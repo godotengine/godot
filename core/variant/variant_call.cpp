@@ -73,6 +73,30 @@ static _FORCE_INLINE_ void vc_method_call(void (T::*method)(P...) const, Variant
 	call_with_variant_argsc_dv(VariantGetInternalPtr<T>::get_ptr(base), method, p_args, p_argcount, r_error, p_defvals);
 }
 
+template <class From, class R, class T, class... P>
+static _FORCE_INLINE_ void vc_convert_method_call(R (T::*method)(P...), Variant *base, const Variant **p_args, int p_argcount, Variant &r_ret, const Vector<Variant> &p_defvals, Callable::CallError &r_error) {
+	T converted(static_cast<T>(*VariantGetInternalPtr<From>::get_ptr(base)));
+	call_with_variant_args_ret_dv(&converted, method, p_args, p_argcount, r_ret, r_error, p_defvals);
+}
+
+template <class From, class R, class T, class... P>
+static _FORCE_INLINE_ void vc_convert_method_call(R (T::*method)(P...) const, Variant *base, const Variant **p_args, int p_argcount, Variant &r_ret, const Vector<Variant> &p_defvals, Callable::CallError &r_error) {
+	T converted(static_cast<T>(*VariantGetInternalPtr<From>::get_ptr(base)));
+	call_with_variant_args_retc_dv(&converted, method, p_args, p_argcount, r_ret, r_error, p_defvals);
+}
+
+template <class From, class T, class... P>
+static _FORCE_INLINE_ void vc_convert_method_call(void (T::*method)(P...), Variant *base, const Variant **p_args, int p_argcount, Variant &r_ret, const Vector<Variant> &p_defvals, Callable::CallError &r_error) {
+	T converted(static_cast<T>(*VariantGetInternalPtr<From>::get_ptr(base)));
+	call_with_variant_args_dv(&converted, method, p_args, p_argcount, r_error, p_defvals);
+}
+
+template <class From, class T, class... P>
+static _FORCE_INLINE_ void vc_convert_method_call(void (T::*method)(P...) const, Variant *base, const Variant **p_args, int p_argcount, Variant &r_ret, const Vector<Variant> &p_defvals, Callable::CallError &r_error) {
+	T converted(static_cast<T>(*VariantGetInternalPtr<From>::get_ptr(base)));
+	call_with_variant_argsc_dv(&converted, method, p_args, p_argcount, r_error, p_defvals);
+}
+
 template <class R, class T, class... P>
 static _FORCE_INLINE_ void vc_method_call_static(R (*method)(T *, P...), Variant *base, const Variant **p_args, int p_argcount, Variant &r_ret, const Vector<Variant> &p_defvals, Callable::CallError &r_error) {
 	call_with_variant_args_retc_static_helper_dv(VariantGetInternalPtr<T>::get_ptr(base), method, p_args, p_argcount, r_ret, p_defvals, r_error);
@@ -100,6 +124,29 @@ static _FORCE_INLINE_ void vc_validated_call(void (T::*method)(P...), Variant *b
 template <class T, class... P>
 static _FORCE_INLINE_ void vc_validated_call(void (T::*method)(P...) const, Variant *base, const Variant **p_args, Variant *r_ret) {
 	call_with_validated_variant_argsc(base, method, p_args);
+}
+
+template <class From, class R, class T, class... P>
+static _FORCE_INLINE_ void vc_convert_validated_call(R (T::*method)(P...), Variant *base, const Variant **p_args, Variant *r_ret) {
+	T converted(static_cast<T>(*VariantGetInternalPtr<From>::get_ptr(base)));
+	call_with_validated_variant_args_ret_helper<T, R, P...>(&converted, method, p_args, r_ret, BuildIndexSequence<sizeof...(P)>{});
+}
+
+template <class From, class R, class T, class... P>
+static _FORCE_INLINE_ void vc_convert_validated_call(R (T::*method)(P...) const, Variant *base, const Variant **p_args, Variant *r_ret) {
+	T converted(static_cast<T>(*VariantGetInternalPtr<From>::get_ptr(base)));
+	call_with_validated_variant_args_retc_helper<T, R, P...>(&converted, method, p_args, r_ret, BuildIndexSequence<sizeof...(P)>{});
+}
+template <class From, class T, class... P>
+static _FORCE_INLINE_ void vc_convert_validated_call(void (T::*method)(P...), Variant *base, const Variant **p_args, Variant *r_ret) {
+	T converted(static_cast<T>(*VariantGetInternalPtr<From>::get_ptr(base)));
+	call_with_validated_variant_args_helper<T, P...>(&converted, method, p_args, r_ret, BuildIndexSequence<sizeof...(P)>{});
+}
+
+template <class From, class T, class... P>
+static _FORCE_INLINE_ void vc_convert_validated_call(void (T::*method)(P...) const, Variant *base, const Variant **p_args, Variant *r_ret) {
+	T converted(static_cast<T>(*VariantGetInternalPtr<From>::get_ptr(base)));
+	call_with_validated_variant_argsc_helper<T, P...>(&converted, method, p_args, r_ret, BuildIndexSequence<sizeof...(P)>{});
 }
 
 template <class R, class T, class... P>
@@ -140,6 +187,30 @@ static _FORCE_INLINE_ void vc_ptrcall(void (T::*method)(P...), void *p_base, con
 template <class T, class... P>
 static _FORCE_INLINE_ void vc_ptrcall(void (T::*method)(P...) const, void *p_base, const void **p_args, void *r_ret) {
 	call_with_ptr_argsc(reinterpret_cast<T *>(p_base), method, p_args);
+}
+
+template <class From, class R, class T, class... P>
+static _FORCE_INLINE_ void vc_convert_ptrcall(R (T::*method)(P...), void *p_base, const void **p_args, void *r_ret) {
+	T converted(*reinterpret_cast<From *>(p_base));
+	call_with_ptr_args_ret(&converted, method, p_args, r_ret);
+}
+
+template <class From, class R, class T, class... P>
+static _FORCE_INLINE_ void vc_convert_ptrcall(R (T::*method)(P...) const, void *p_base, const void **p_args, void *r_ret) {
+	T converted(*reinterpret_cast<From *>(p_base));
+	call_with_ptr_args_retc(&converted, method, p_args, r_ret);
+}
+
+template <class From, class T, class... P>
+static _FORCE_INLINE_ void vc_convert_ptrcall(void (T::*method)(P...), void *p_base, const void **p_args, void *r_ret) {
+	T converted(*reinterpret_cast<From *>(p_base));
+	call_with_ptr_args(&converted, method, p_args);
+}
+
+template <class From, class T, class... P>
+static _FORCE_INLINE_ void vc_convert_ptrcall(void (T::*method)(P...) const, void *p_base, const void **p_args, void *r_ret) {
+	T converted(*reinterpret_cast<From *>(p_base));
+	call_with_ptr_argsc(&converted, method, p_args);
 }
 
 template <class R, class T, class... P>
@@ -331,6 +402,46 @@ static _FORCE_INLINE_ Variant::Type vc_get_base_type(void (T::*method)(P...) con
 		}                                                                                                                                                         \
 		static Variant::Type get_base_type() {                                                                                                                    \
 			return vc_get_base_type(m_method_ptr);                                                                                                                \
+		}                                                                                                                                                         \
+		static StringName get_name() {                                                                                                                            \
+			return #m_method_name;                                                                                                                                \
+		}                                                                                                                                                         \
+	};
+
+#define CONVERT_METHOD_CLASS(m_class, m_method_name, m_method_ptr)                                                                                                \
+	struct Method_##m_class##_##m_method_name {                                                                                                                   \
+		static void call(Variant *base, const Variant **p_args, int p_argcount, Variant &r_ret, const Vector<Variant> &p_defvals, Callable::CallError &r_error) { \
+			vc_convert_method_call<m_class>(m_method_ptr, base, p_args, p_argcount, r_ret, p_defvals, r_error);                                                   \
+		}                                                                                                                                                         \
+		static void validated_call(Variant *base, const Variant **p_args, int p_argcount, Variant *r_ret) {                                                       \
+			vc_convert_validated_call<m_class>(m_method_ptr, base, p_args, r_ret);                                                                                \
+		}                                                                                                                                                         \
+		static void ptrcall(void *p_base, const void **p_args, void *r_ret, int p_argcount) {                                                                     \
+			vc_convert_ptrcall<m_class>(m_method_ptr, p_base, p_args, r_ret);                                                                                     \
+		}                                                                                                                                                         \
+		static int get_argument_count() {                                                                                                                         \
+			return vc_get_argument_count(m_method_ptr);                                                                                                           \
+		}                                                                                                                                                         \
+		static Variant::Type get_argument_type(int p_arg) {                                                                                                       \
+			return vc_get_argument_type(m_method_ptr, p_arg);                                                                                                     \
+		}                                                                                                                                                         \
+		static Variant::Type get_return_type() {                                                                                                                  \
+			return vc_get_return_type(m_method_ptr);                                                                                                              \
+		}                                                                                                                                                         \
+		static bool has_return_type() {                                                                                                                           \
+			return vc_has_return_type(m_method_ptr);                                                                                                              \
+		}                                                                                                                                                         \
+		static bool is_const() {                                                                                                                                  \
+			return vc_is_const(m_method_ptr);                                                                                                                     \
+		}                                                                                                                                                         \
+		static bool is_static() {                                                                                                                                 \
+			return false;                                                                                                                                         \
+		}                                                                                                                                                         \
+		static bool is_vararg() {                                                                                                                                 \
+			return false;                                                                                                                                         \
+		}                                                                                                                                                         \
+		static Variant::Type get_base_type() {                                                                                                                    \
+			return GetTypeInfo<m_class>::VARIANT_TYPE;                                                                                                            \
 		}                                                                                                                                                         \
 		static StringName get_name() {                                                                                                                            \
 			return #m_method_name;                                                                                                                                \
@@ -1422,6 +1533,16 @@ int Variant::get_enum_value(Variant::Type p_type, StringName p_enum_name, String
 #endif
 
 #ifdef DEBUG_METHODS_ENABLED
+#define bind_convert_method(m_type_from, m_type_to, m_method, m_arg_names, m_default_args) \
+	CONVERT_METHOD_CLASS(m_type_from, m_method, &m_type_to::m_method);                     \
+	register_builtin_method<Method_##m_type_from##_##m_method>(m_arg_names, m_default_args);
+#else
+#define bind_convert_method(m_type_from, m_type_to, m_method, m_arg_names, m_default_args) \
+	CONVERT_METHOD_CLASS(m_type_from, m_method, &m_type_to ::m_method);                    \
+	register_builtin_method<Method_##m_type_from##_##m_method>(sarray(), m_default_args);
+#endif
+
+#ifdef DEBUG_METHODS_ENABLED
 #define bind_static_method(m_type, m_method, m_arg_names, m_default_args) \
 	STATIC_METHOD_CLASS(m_type, m_method, m_type::m_method);              \
 	register_builtin_method<Method_##m_type##_##m_method>(m_arg_names, m_default_args);
@@ -1442,6 +1563,16 @@ int Variant::get_enum_value(Variant::Type p_type, StringName p_enum_name, String
 #endif
 
 #ifdef DEBUG_METHODS_ENABLED
+#define bind_convert_methodv(m_type_from, m_type_to, m_name, m_method, m_arg_names, m_default_args) \
+	CONVERT_METHOD_CLASS(m_type_from, m_name, m_method);                                            \
+	register_builtin_method<Method_##m_type_from##_##m_name>(m_arg_names, m_default_args);
+#else
+#define bind_convert_methodv(m_type_from, m_type_to, m_name, m_method, m_arg_names, m_default_args) \
+	CONVERT_METHOD_CLASS(m_type_from, m_name, m_method);                                            \
+	register_builtin_method<Method_##m_type_from##_##m_name>(sarray(), m_default_args);
+#endif
+
+#ifdef DEBUG_METHODS_ENABLED
 #define bind_function(m_type, m_name, m_method, m_arg_names, m_default_args) \
 	FUNCTION_CLASS(m_type, m_name, m_method, true);                          \
 	register_builtin_method<Method_##m_type##_##m_name>(m_arg_names, m_default_args);
@@ -1461,6 +1592,14 @@ int Variant::get_enum_value(Variant::Type p_type, StringName p_enum_name, String
 	register_builtin_method<Method_##m_type##_##m_name>(sarray(), m_default_args);
 #endif
 
+#define bind_string_method(m_method, m_arg_names, m_default_args) \
+	bind_method(String, m_method, m_arg_names, m_default_args);   \
+	bind_convert_method(StringName, String, m_method, m_arg_names, m_default_args);
+
+#define bind_string_methodv(m_name, m_method, m_arg_names, m_default_args) \
+	bind_methodv(String, m_name, m_method, m_arg_names, m_default_args);   \
+	bind_convert_methodv(StringName, String, m_name, m_method, m_arg_names, m_default_args);
+
 #define bind_custom(m_type, m_name, m_method, m_has_return, m_ret_type) \
 	VARARG_CLASS(m_type, m_name, m_method, m_has_return, m_ret_type)    \
 	register_builtin_method<Method_##m_type##_##m_name>(sarray(), Vector<Variant>());
@@ -1477,108 +1616,108 @@ static void _register_variant_builtin_methods() {
 
 	/* String */
 
-	bind_method(String, casecmp_to, sarray("to"), varray());
-	bind_method(String, nocasecmp_to, sarray("to"), varray());
-	bind_method(String, naturalnocasecmp_to, sarray("to"), varray());
-	bind_method(String, length, sarray(), varray());
-	bind_method(String, substr, sarray("from", "len"), varray(-1));
-	bind_method(String, get_slice, sarray("delimiter", "slice"), varray());
-	bind_method(String, get_slicec, sarray("delimiter", "slice"), varray());
-	bind_method(String, get_slice_count, sarray("delimiter"), varray());
-	bind_methodv(String, find, static_cast<int (String::*)(const String &, int) const>(&String::find), sarray("what", "from"), varray(0));
-	bind_method(String, count, sarray("what", "from", "to"), varray(0, 0));
-	bind_method(String, countn, sarray("what", "from", "to"), varray(0, 0));
-	bind_method(String, findn, sarray("what", "from"), varray(0));
-	bind_method(String, rfind, sarray("what", "from"), varray(-1));
-	bind_method(String, rfindn, sarray("what", "from"), varray(-1));
-	bind_method(String, match, sarray("expr"), varray());
-	bind_method(String, matchn, sarray("expr"), varray());
-	bind_methodv(String, begins_with, static_cast<bool (String::*)(const String &) const>(&String::begins_with), sarray("text"), varray());
-	bind_method(String, ends_with, sarray("text"), varray());
-	bind_method(String, is_subsequence_of, sarray("text"), varray());
-	bind_method(String, is_subsequence_ofn, sarray("text"), varray());
-	bind_method(String, bigrams, sarray(), varray());
-	bind_method(String, similarity, sarray("text"), varray());
+	bind_string_method(casecmp_to, sarray("to"), varray());
+	bind_string_method(nocasecmp_to, sarray("to"), varray());
+	bind_string_method(naturalnocasecmp_to, sarray("to"), varray());
+	bind_string_method(length, sarray(), varray());
+	bind_string_method(substr, sarray("from", "len"), varray(-1));
+	bind_string_method(get_slice, sarray("delimiter", "slice"), varray());
+	bind_string_method(get_slicec, sarray("delimiter", "slice"), varray());
+	bind_string_method(get_slice_count, sarray("delimiter"), varray());
+	bind_string_methodv(find, static_cast<int (String::*)(const String &, int) const>(&String::find), sarray("what", "from"), varray(0));
+	bind_string_method(count, sarray("what", "from", "to"), varray(0, 0));
+	bind_string_method(countn, sarray("what", "from", "to"), varray(0, 0));
+	bind_string_method(findn, sarray("what", "from"), varray(0));
+	bind_string_method(rfind, sarray("what", "from"), varray(-1));
+	bind_string_method(rfindn, sarray("what", "from"), varray(-1));
+	bind_string_method(match, sarray("expr"), varray());
+	bind_string_method(matchn, sarray("expr"), varray());
+	bind_string_methodv(begins_with, static_cast<bool (String::*)(const String &) const>(&String::begins_with), sarray("text"), varray());
+	bind_string_method(ends_with, sarray("text"), varray());
+	bind_string_method(is_subsequence_of, sarray("text"), varray());
+	bind_string_method(is_subsequence_ofn, sarray("text"), varray());
+	bind_string_method(bigrams, sarray(), varray());
+	bind_string_method(similarity, sarray("text"), varray());
 
-	bind_method(String, format, sarray("values", "placeholder"), varray("{_}"));
-	bind_methodv(String, replace, static_cast<String (String::*)(const String &, const String &) const>(&String::replace), sarray("what", "forwhat"), varray());
-	bind_method(String, replacen, sarray("what", "forwhat"), varray());
-	bind_method(String, repeat, sarray("count"), varray());
-	bind_method(String, insert, sarray("position", "what"), varray());
-	bind_method(String, capitalize, sarray(), varray());
-	bind_method(String, to_camel_case, sarray(), varray());
-	bind_method(String, to_pascal_case, sarray(), varray());
-	bind_method(String, to_snake_case, sarray(), varray());
-	bind_method(String, split, sarray("delimiter", "allow_empty", "maxsplit"), varray("", true, 0));
-	bind_method(String, rsplit, sarray("delimiter", "allow_empty", "maxsplit"), varray("", true, 0));
-	bind_method(String, split_floats, sarray("delimiter", "allow_empty"), varray(true));
-	bind_method(String, join, sarray("parts"), varray());
+	bind_string_method(format, sarray("values", "placeholder"), varray("{_}"));
+	bind_string_methodv(replace, static_cast<String (String::*)(const String &, const String &) const>(&String::replace), sarray("what", "forwhat"), varray());
+	bind_string_method(replacen, sarray("what", "forwhat"), varray());
+	bind_string_method(repeat, sarray("count"), varray());
+	bind_string_method(insert, sarray("position", "what"), varray());
+	bind_string_method(capitalize, sarray(), varray());
+	bind_string_method(to_camel_case, sarray(), varray());
+	bind_string_method(to_pascal_case, sarray(), varray());
+	bind_string_method(to_snake_case, sarray(), varray());
+	bind_string_method(split, sarray("delimiter", "allow_empty", "maxsplit"), varray("", true, 0));
+	bind_string_method(rsplit, sarray("delimiter", "allow_empty", "maxsplit"), varray("", true, 0));
+	bind_string_method(split_floats, sarray("delimiter", "allow_empty"), varray(true));
+	bind_string_method(join, sarray("parts"), varray());
 
-	bind_method(String, to_upper, sarray(), varray());
-	bind_method(String, to_lower, sarray(), varray());
+	bind_string_method(to_upper, sarray(), varray());
+	bind_string_method(to_lower, sarray(), varray());
 
-	bind_method(String, left, sarray("length"), varray());
-	bind_method(String, right, sarray("length"), varray());
+	bind_string_method(left, sarray("length"), varray());
+	bind_string_method(right, sarray("length"), varray());
 
-	bind_method(String, strip_edges, sarray("left", "right"), varray(true, true));
-	bind_method(String, strip_escapes, sarray(), varray());
-	bind_method(String, lstrip, sarray("chars"), varray());
-	bind_method(String, rstrip, sarray("chars"), varray());
-	bind_method(String, get_extension, sarray(), varray());
-	bind_method(String, get_basename, sarray(), varray());
-	bind_method(String, path_join, sarray("file"), varray());
-	bind_method(String, unicode_at, sarray("at"), varray());
-	bind_method(String, indent, sarray("prefix"), varray());
-	bind_method(String, dedent, sarray(), varray());
+	bind_string_method(strip_edges, sarray("left", "right"), varray(true, true));
+	bind_string_method(strip_escapes, sarray(), varray());
+	bind_string_method(lstrip, sarray("chars"), varray());
+	bind_string_method(rstrip, sarray("chars"), varray());
+	bind_string_method(get_extension, sarray(), varray());
+	bind_string_method(get_basename, sarray(), varray());
+	bind_string_method(path_join, sarray("file"), varray());
+	bind_string_method(unicode_at, sarray("at"), varray());
+	bind_string_method(indent, sarray("prefix"), varray());
+	bind_string_method(dedent, sarray(), varray());
 	bind_method(String, hash, sarray(), varray());
-	bind_method(String, md5_text, sarray(), varray());
-	bind_method(String, sha1_text, sarray(), varray());
-	bind_method(String, sha256_text, sarray(), varray());
-	bind_method(String, md5_buffer, sarray(), varray());
-	bind_method(String, sha1_buffer, sarray(), varray());
-	bind_method(String, sha256_buffer, sarray(), varray());
-	bind_method(String, is_empty, sarray(), varray());
-	bind_methodv(String, contains, static_cast<bool (String::*)(const String &) const>(&String::contains), sarray("what"), varray());
+	bind_string_method(md5_text, sarray(), varray());
+	bind_string_method(sha1_text, sarray(), varray());
+	bind_string_method(sha256_text, sarray(), varray());
+	bind_string_method(md5_buffer, sarray(), varray());
+	bind_string_method(sha1_buffer, sarray(), varray());
+	bind_string_method(sha256_buffer, sarray(), varray());
+	bind_string_method(is_empty, sarray(), varray());
+	bind_string_methodv(contains, static_cast<bool (String::*)(const String &) const>(&String::contains), sarray("what"), varray());
 
-	bind_method(String, is_absolute_path, sarray(), varray());
-	bind_method(String, is_relative_path, sarray(), varray());
-	bind_method(String, simplify_path, sarray(), varray());
-	bind_method(String, get_base_dir, sarray(), varray());
-	bind_method(String, get_file, sarray(), varray());
-	bind_method(String, xml_escape, sarray("escape_quotes"), varray(false));
-	bind_method(String, xml_unescape, sarray(), varray());
-	bind_method(String, uri_encode, sarray(), varray());
-	bind_method(String, uri_decode, sarray(), varray());
-	bind_method(String, c_escape, sarray(), varray());
-	bind_method(String, c_unescape, sarray(), varray());
-	bind_method(String, json_escape, sarray(), varray());
+	bind_string_method(is_absolute_path, sarray(), varray());
+	bind_string_method(is_relative_path, sarray(), varray());
+	bind_string_method(simplify_path, sarray(), varray());
+	bind_string_method(get_base_dir, sarray(), varray());
+	bind_string_method(get_file, sarray(), varray());
+	bind_string_method(xml_escape, sarray("escape_quotes"), varray(false));
+	bind_string_method(xml_unescape, sarray(), varray());
+	bind_string_method(uri_encode, sarray(), varray());
+	bind_string_method(uri_decode, sarray(), varray());
+	bind_string_method(c_escape, sarray(), varray());
+	bind_string_method(c_unescape, sarray(), varray());
+	bind_string_method(json_escape, sarray(), varray());
 
-	bind_method(String, validate_node_name, sarray(), varray());
+	bind_string_method(validate_node_name, sarray(), varray());
 
-	bind_method(String, is_valid_identifier, sarray(), varray());
-	bind_method(String, is_valid_int, sarray(), varray());
-	bind_method(String, is_valid_float, sarray(), varray());
-	bind_method(String, is_valid_hex_number, sarray("with_prefix"), varray(false));
-	bind_method(String, is_valid_html_color, sarray(), varray());
-	bind_method(String, is_valid_ip_address, sarray(), varray());
-	bind_method(String, is_valid_filename, sarray(), varray());
+	bind_string_method(is_valid_identifier, sarray(), varray());
+	bind_string_method(is_valid_int, sarray(), varray());
+	bind_string_method(is_valid_float, sarray(), varray());
+	bind_string_method(is_valid_hex_number, sarray("with_prefix"), varray(false));
+	bind_string_method(is_valid_html_color, sarray(), varray());
+	bind_string_method(is_valid_ip_address, sarray(), varray());
+	bind_string_method(is_valid_filename, sarray(), varray());
 
-	bind_method(String, to_int, sarray(), varray());
-	bind_method(String, to_float, sarray(), varray());
-	bind_method(String, hex_to_int, sarray(), varray());
-	bind_method(String, bin_to_int, sarray(), varray());
+	bind_string_method(to_int, sarray(), varray());
+	bind_string_method(to_float, sarray(), varray());
+	bind_string_method(hex_to_int, sarray(), varray());
+	bind_string_method(bin_to_int, sarray(), varray());
 
-	bind_method(String, lpad, sarray("min_length", "character"), varray(" "));
-	bind_method(String, rpad, sarray("min_length", "character"), varray(" "));
-	bind_method(String, pad_decimals, sarray("digits"), varray());
-	bind_method(String, pad_zeros, sarray("digits"), varray());
-	bind_method(String, trim_prefix, sarray("prefix"), varray());
-	bind_method(String, trim_suffix, sarray("suffix"), varray());
+	bind_string_method(lpad, sarray("min_length", "character"), varray(" "));
+	bind_string_method(rpad, sarray("min_length", "character"), varray(" "));
+	bind_string_method(pad_decimals, sarray("digits"), varray());
+	bind_string_method(pad_zeros, sarray("digits"), varray());
+	bind_string_method(trim_prefix, sarray("prefix"), varray());
+	bind_string_method(trim_suffix, sarray("suffix"), varray());
 
-	bind_method(String, to_ascii_buffer, sarray(), varray());
-	bind_method(String, to_utf8_buffer, sarray(), varray());
-	bind_method(String, to_utf16_buffer, sarray(), varray());
-	bind_method(String, to_utf32_buffer, sarray(), varray());
+	bind_string_method(to_ascii_buffer, sarray(), varray());
+	bind_string_method(to_utf8_buffer, sarray(), varray());
+	bind_string_method(to_utf16_buffer, sarray(), varray());
+	bind_string_method(to_utf32_buffer, sarray(), varray());
 
 	bind_static_method(String, num_scientific, sarray("number"), varray());
 	bind_static_method(String, num, sarray("number", "decimals"), varray(-1));

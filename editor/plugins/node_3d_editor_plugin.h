@@ -384,6 +384,7 @@ private:
 
 	void _view_settings_confirmed(real_t p_interp_delta);
 	void _update_camera(real_t p_interp_delta);
+	void _update_navigation_controls_visibility();
 	Transform3D to_camera_transform(const Cursor &p_cursor) const;
 	void _draw();
 
@@ -399,6 +400,7 @@ private:
 	Camera3D *previewing = nullptr;
 	Camera3D *preview = nullptr;
 
+	bool previewing_camera;
 	bool previewing_cinema;
 	bool _is_node_locked(const Node *p_node);
 	void _preview_exited_scene();
@@ -716,6 +718,7 @@ private:
 	Node3D *selected = nullptr;
 
 	void _request_gizmo(Object *p_obj);
+	void _request_gizmo_for_id(ObjectID p_id);
 	void _set_subgizmo_selection(Object *p_obj, Ref<Node3DGizmo> p_gizmo, int p_id, Transform3D p_transform = Transform3D());
 	void _clear_subgizmo_selection(Object *p_obj = nullptr);
 
@@ -930,6 +933,7 @@ class ViewportNavigationControl : public Control {
 	Node3DEditorViewport *viewport = nullptr;
 	Vector2i focused_mouse_start;
 	Vector2 focused_pos;
+	bool hovered = false;
 	int focused_index = -1;
 	Node3DEditorViewport::NavigationMode nav_mode = Node3DEditorViewport::NavigationMode::NAVIGATION_NONE;
 
@@ -939,6 +943,7 @@ protected:
 	void _notification(int p_what);
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	void _draw();
+	void _on_mouse_entered();
 	void _on_mouse_exited();
 	void _process_click(int p_index, Vector2 p_position, bool p_pressed);
 	void _process_drag(int p_index, Vector2 p_position, Vector2 p_relative_position);

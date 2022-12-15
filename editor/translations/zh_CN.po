@@ -84,12 +84,15 @@
 # nitenook <admin@alterbaum.net>, 2021.
 # jker <cxgmfy@163.com>, 2021.
 # Ankar <1511276198@qq.com>, 2022.
+# 风青山 <idleman@yeah.net>, 2022.
+# 1104 EXSPIRAVIT_ <m18621006730@gmail.com>, 2022.
+# ChairC <974833488@qq.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2022-09-22 15:26+0000\n"
+"PO-Revision-Date: 2022-12-05 08:51+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
@@ -98,7 +101,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.14.1\n"
+"X-Generator: Weblate 4.15-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -142,11 +145,11 @@ msgstr "屏幕常亮"
 
 #: core/bind/core_bind.cpp
 msgid "Min Window Size"
-msgstr "窗口最小大小"
+msgstr "最小窗口大小"
 
 #: core/bind/core_bind.cpp
 msgid "Max Window Size"
-msgstr "窗口最大大小"
+msgstr "最大窗口大小"
 
 #: core/bind/core_bind.cpp
 msgid "Screen Orientation"
@@ -4148,7 +4151,7 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Scene '%s' has broken dependencies:"
-msgstr "场景 “%s” 的依赖已被破坏："
+msgstr "场景 “%s” 的依赖已损坏："
 
 #: editor/editor_node.cpp
 msgid "Clear Recent Scenes"
@@ -5637,12 +5640,12 @@ msgstr "选择框颜色"
 #: editor/editor_settings.cpp editor/plugins/path_editor_plugin.cpp
 #: editor/spatial_editor_gizmos.cpp modules/csg/csg_gizmos.cpp
 msgid "3D Gizmos"
-msgstr "3D 控制器"
+msgstr "3D 小工具"
 
 #: editor/editor_settings.cpp editor/plugins/path_editor_plugin.cpp
 #: editor/spatial_editor_gizmos.cpp modules/csg/csg_gizmos.cpp
 msgid "Gizmo Colors"
-msgstr "控制器颜色"
+msgstr "小工具颜色"
 
 #: editor/editor_settings.cpp
 msgid "Instanced"
@@ -7920,7 +7923,7 @@ msgstr "强制用白色调和"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Include Gizmos (3D)"
-msgstr "包括控制器（3D）"
+msgstr "包括小工具（3D）"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Pin AnimationPlayer"
@@ -8439,7 +8442,7 @@ msgstr "创建光照贴图失败，切确保文件是可写的。"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Failed determining lightmap size. Maximum lightmap size too small?"
-msgstr "无法确定光照贴图大小。最大光照贴图大小太小？"
+msgstr "无法确定光照贴图大小。最大光照贴图尺寸太小？"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
@@ -10984,7 +10987,7 @@ msgstr "查看环境"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Gizmos"
-msgstr "查看控制器"
+msgstr "查看小工具"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Information"
@@ -11090,9 +11093,9 @@ msgid ""
 msgstr ""
 "点击以切换可见状态。\n"
 "\n"
-"睁眼：控制器可见。\n"
-"闭眼：控制器隐藏。\n"
-"半睁眼：控制器也可穿过不透明的表面可见（“X 光”）。"
+"睁眼：小工具可见。\n"
+"闭眼：小工具隐藏。\n"
+"半睁眼：小工具也可穿过不透明的表面可见（“X 光”）。"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Nodes to Floor"
@@ -11224,7 +11227,7 @@ msgstr "4 个视窗"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Gizmos"
-msgstr "控制器"
+msgstr "小工具"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "View Origin"
@@ -11309,19 +11312,19 @@ msgstr "后置"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Manipulator Gizmo Size"
-msgstr "操作控制器大小"
+msgstr "操作小工具大小"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Manipulator Gizmo Opacity"
-msgstr "操作控制器不透明度"
+msgstr "操作小工具不透明度"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Show Viewport Rotation Gizmo"
-msgstr "显示视区旋转控制器"
+msgstr "显示视区旋转小工具"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Unnamed Gizmo"
-msgstr "未命名控制器"
+msgstr "未命名小工具"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create Mesh2D"
@@ -12636,9 +12639,10 @@ msgstr "吸附选项"
 #: scene/2d/path_2d.cpp scene/2d/polygon_2d.cpp scene/2d/sprite.cpp
 #: scene/3d/cpu_particles.cpp scene/3d/label_3d.cpp scene/3d/path.cpp
 #: scene/3d/physics_body.cpp scene/3d/soft_body.cpp scene/3d/sprite_3d.cpp
-#: scene/gui/graph_node.cpp scene/gui/rich_text_effect.cpp
-#: scene/main/canvas_layer.cpp scene/resources/material.cpp
-#: scene/resources/particles_material.cpp scene/resources/style_box.cpp
+#: scene/3d/visual_instance.cpp scene/gui/graph_node.cpp
+#: scene/gui/rich_text_effect.cpp scene/main/canvas_layer.cpp
+#: scene/resources/material.cpp scene/resources/particles_material.cpp
+#: scene/resources/style_box.cpp
 msgid "Offset"
 msgstr "偏移"
 
@@ -14006,15 +14010,16 @@ msgid "Invalid project path (changed anything?)."
 msgstr "项目路径无效（被外部修改？）。"
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid ""
-"Couldn't load project.godot in project path (error %d). It may be missing or "
-"corrupted."
+"Couldn't load project at '%s' (error %d). It may be missing or corrupted."
 msgstr ""
 "无法在项目路径中加载 project.godot 文件（错误 %d）。该文件可能缺失或已损坏。"
 
 #: editor/project_manager.cpp
-msgid "Couldn't edit project.godot in project path."
-msgstr "无法在项目路径下编辑 project.godot 文件。"
+#, fuzzy
+msgid "Couldn't save project at '%s' (error %d)."
+msgstr "无法打开位于“%s”的项目。"
 
 #: editor/project_manager.cpp
 msgid "Couldn't create project.godot in project path."
@@ -16418,7 +16423,7 @@ msgstr "添加架构项"
 
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "GDNativeLibrary"
-msgstr "GDNative 库"
+msgstr "GDNativeLibrary"
 
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
 msgid "Enabled GDNative Singleton"
@@ -20691,7 +20696,7 @@ msgstr "NavigationAgent2D 只能在继承 Node2D 的父节点下使用。"
 
 #: scene/2d/navigation_obstacle_2d.cpp scene/3d/navigation_obstacle.cpp
 msgid "Estimate Radius"
-msgstr "估计半径"
+msgstr "估算半径"
 
 #: scene/2d/navigation_obstacle_2d.cpp
 msgid ""
@@ -21033,7 +21038,7 @@ msgstr "内部顶点数"
 
 #: scene/2d/position_2d.cpp
 msgid "Gizmo Extents"
-msgstr "控制器大小"
+msgstr "小工具范围"
 
 #: scene/2d/ray_cast_2d.cpp scene/3d/ray_cast.cpp
 msgid "Exclude Parent"
@@ -22607,7 +22612,7 @@ msgstr "矩阵"
 
 #: scene/3d/spatial.cpp
 msgid "Gizmo"
-msgstr "控制器"
+msgstr "小工具"
 
 #: scene/3d/spatial_velocity_tracker.cpp
 msgid "Track Physics Step"
@@ -22692,6 +22697,16 @@ msgstr "最大力度"
 #: scene/3d/visibility_notifier.cpp
 msgid "AABB"
 msgstr "AABB"
+
+#: scene/3d/visual_instance.cpp
+#, fuzzy
+msgid "Sorting"
+msgstr "排序"
+
+#: scene/3d/visual_instance.cpp
+#, fuzzy
+msgid "Use AABB Center"
+msgstr "使用环境光"
 
 #: scene/3d/visual_instance.cpp scene/resources/navigation_mesh.cpp
 msgid "Geometry"
@@ -25193,7 +25208,7 @@ msgstr "亮度"
 
 #: scene/resources/environment.cpp
 msgid "Saturation"
-msgstr "对比度"
+msgstr "饱和度"
 
 #: scene/resources/environment.cpp
 msgid "Color Correction"

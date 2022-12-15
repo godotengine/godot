@@ -188,6 +188,7 @@ def get_opts():
         BoolVariable("use_llvm", "Use the LLVM compiler", False),
         BoolVariable("use_static_cpp", "Link MinGW/MSVC C++ runtime libraries statically", True),
         BoolVariable("use_asan", "Use address sanitizer (ASAN)", False),
+        BoolVariable("debug_crt", "Compile with MSVC's debug CRT (/MDd)", False),
     ]
 
 
@@ -339,10 +340,14 @@ def configure_msvc(env, vcvars_msvc_config):
 
     ## Compile/link flags
 
-    if env["use_static_cpp"]:
-        env.AppendUnique(CCFLAGS=["/MT"])
+    if env["debug_crt"]:
+        # Always use dynamic runtime, static debug CRT breaks thread_local.
+        env.AppendUnique(CCFLAGS=["/MDd"])
     else:
-        env.AppendUnique(CCFLAGS=["/MD"])
+        if env["use_static_cpp"]:
+            env.AppendUnique(CCFLAGS=["/MT"])
+        else:
+            env.AppendUnique(CCFLAGS=["/MD"])
 
     if env["arch"] == "x86_32":
         env["x86_libtheora_opt_vc"] = True

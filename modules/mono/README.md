@@ -46,10 +46,10 @@ C# solutions during development to avoid mistakes.
 
 # Double Precision Support (REAL_T_IS_DOUBLE)
 
-Follow the above instructions but build Godot with the float=64 argument to scons
+Follow the above instructions but build Godot with the precision=double argument to scons
 
-When building the NuGet packages, specify `--float=64` - for example:
+When building the NuGet packages, specify `--precision=double` - for example:
 ```sh
 ./modules/mono/build_scripts/build_assemblies.py --godot-output-dir ./bin \
-    --push-nupkgs-local ~/MyLocalNugetSource --float=64
+    --push-nupkgs-local ~/MyLocalNugetSource --precision=double
 ```

@@ -613,8 +613,8 @@ namespace Godot
                         return VariantUtils.CreateFrom(plane);
                     case Callable callable:
                         return VariantUtils.CreateFrom(callable);
-                    case SignalInfo signalInfo:
-                        return VariantUtils.CreateFrom(signalInfo);
+                    case Signal signal:
+                        return VariantUtils.CreateFrom(signal);
                     case string @string:
                         return VariantUtils.CreateFrom(@string);
                     case byte[] byteArray:
@@ -705,7 +705,7 @@ namespace Godot
                     [typeof(Color)] = (in godot_variant variant) => VariantUtils.ConvertTo<Color>(variant),
                     [typeof(Plane)] = (in godot_variant variant) => VariantUtils.ConvertTo<Plane>(variant),
                     [typeof(Callable)] = (in godot_variant variant) => VariantUtils.ConvertTo<Callable>(variant),
-                    [typeof(SignalInfo)] = (in godot_variant variant) => VariantUtils.ConvertTo<SignalInfo>(variant),
+                    [typeof(Signal)] = (in godot_variant variant) => VariantUtils.ConvertTo<Signal>(variant),
                     [typeof(string)] = (in godot_variant variant) => VariantUtils.ConvertTo<string>(variant),
                     [typeof(byte[])] = (in godot_variant variant) => VariantUtils.ConvertTo<byte[]>(variant),
                     [typeof(int[])] = (in godot_variant variant) => VariantUtils.ConvertTo<int[]>(variant),
@@ -738,6 +738,26 @@ namespace Godot
 
                 if (typeof(Godot.Object).IsAssignableFrom(type))
                     return Convert.ChangeType(VariantUtils.ConvertTo<Godot.Object>(variant), type);
+
+                if (typeof(Godot.Object[]).IsAssignableFrom(type))
+                {
+                    static Godot.Object[] ConvertToSystemArrayOfGodotObject(in godot_array nativeArray, Type type)
+                    {
+                        var array = Collections.Array.CreateTakingOwnershipOfDisposableValue(
+                            NativeFuncs.godotsharp_array_new_copy(nativeArray));
+
+                        int length = array.Count;
+                        var ret = (Godot.Object[])Activator.CreateInstance(type, length)!;
+
+                        for (int i = 0; i < length; i++)
+                            ret[i] = array[i].AsGodotObject();
+
+                        return ret;
+                    }
+
+                    using var godotArray = NativeFuncs.godotsharp_variant_as_array(variant);
+                    return Convert.ChangeType(ConvertToSystemArrayOfGodotObject(godotArray, type), type);
+                }
 
                 if (type.IsEnum)
                 {

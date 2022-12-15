@@ -47,7 +47,7 @@ void CanvasGroup::set_clear_margin(real_t p_clear_margin) {
 	ERR_FAIL_COND(p_clear_margin < 0.0);
 
 	clear_margin = p_clear_margin;
-	RS::get_singleton()->canvas_item_set_canvas_group_mode(get_canvas_item(), RS::CANVAS_GROUP_MODE_TRANSPARENT, clear_margin, true, clear_margin, use_mipmaps);
+	RS::get_singleton()->canvas_item_set_canvas_group_mode(get_canvas_item(), RS::CANVAS_GROUP_MODE_TRANSPARENT, clear_margin, true, fit_margin, use_mipmaps);
 
 	queue_redraw();
 }

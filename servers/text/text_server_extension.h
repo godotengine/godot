@@ -84,7 +84,7 @@ public:
 	virtual void font_set_data(const RID &p_font_rid, const PackedByteArray &p_data) override;
 	virtual void font_set_data_ptr(const RID &p_font_rid, const uint8_t *p_data_ptr, int64_t p_data_size) override;
 	GDVIRTUAL2(_font_set_data, RID, const PackedByteArray &);
-	GDVIRTUAL3(_font_set_data_ptr, RID, GDNativeConstPtr<const uint8_t>, int64_t);
+	GDVIRTUAL3(_font_set_data_ptr, RID, GDExtensionConstPtr<const uint8_t>, int64_t);
 
 	virtual void font_set_face_index(const RID &p_font_rid, int64_t p_index) override;
 	virtual int64_t font_get_face_index(const RID &p_font_rid) const override;
@@ -108,6 +108,16 @@ public:
 	virtual String font_get_style_name(const RID &p_font_rid) const override;
 	GDVIRTUAL2(_font_set_style_name, RID, const String &);
 	GDVIRTUAL1RC(String, _font_get_style_name, RID);
+
+	virtual void font_set_weight(const RID &p_font_rid, int64_t p_weight) override;
+	virtual int64_t font_get_weight(const RID &p_font_rid) const override;
+	GDVIRTUAL2(_font_set_weight, RID, int);
+	GDVIRTUAL1RC(int64_t, _font_get_weight, RID);
+
+	virtual void font_set_stretch(const RID &p_font_rid, int64_t p_stretch) override;
+	virtual int64_t font_get_stretch(const RID &p_font_rid) const override;
+	GDVIRTUAL2(_font_set_stretch, RID, int);
+	GDVIRTUAL1RC(int64_t, _font_get_stretch, RID);
 
 	virtual void font_set_antialiasing(const RID &p_font_rid, TextServer::FontAntialiasing p_antialiasing) override;
 	virtual TextServer::FontAntialiasing font_get_antialiasing(const RID &p_font_rid) const override;
@@ -153,6 +163,11 @@ public:
 	virtual Transform2D font_get_transform(const RID &p_font_rid) const override;
 	GDVIRTUAL2(_font_set_transform, RID, Transform2D);
 	GDVIRTUAL1RC(Transform2D, _font_get_transform, RID);
+
+	virtual void font_set_allow_system_fallback(const RID &p_font_rid, bool p_allow_system_fallback) override;
+	virtual bool font_is_allow_system_fallback(const RID &p_font_rid) const override;
+	GDVIRTUAL2(_font_set_allow_system_fallback, RID, bool);
+	GDVIRTUAL1RC(bool, _font_is_allow_system_fallback, RID);
 
 	virtual void font_set_force_autohinter(const RID &p_font_rid, bool p_force_autohinter) override;
 	virtual bool font_is_force_autohinter(const RID &p_font_rid) const override;
@@ -416,8 +431,8 @@ public:
 	virtual const Glyph *shaped_text_get_glyphs(const RID &p_shaped) const override;
 	virtual const Glyph *shaped_text_sort_logical(const RID &p_shaped) override;
 	virtual int64_t shaped_text_get_glyph_count(const RID &p_shaped) const override;
-	GDVIRTUAL1RC(GDNativeConstPtr<const Glyph>, _shaped_text_get_glyphs, RID);
-	GDVIRTUAL1R(GDNativeConstPtr<const Glyph>, _shaped_text_sort_logical, RID);
+	GDVIRTUAL1RC(GDExtensionConstPtr<const Glyph>, _shaped_text_get_glyphs, RID);
+	GDVIRTUAL1R(GDExtensionConstPtr<const Glyph>, _shaped_text_sort_logical, RID);
 	GDVIRTUAL1RC(int64_t, _shaped_text_get_glyph_count, RID);
 
 	virtual Vector2i shaped_text_get_range(const RID &p_shaped) const override;
@@ -436,7 +451,7 @@ public:
 	virtual int64_t shaped_text_get_ellipsis_glyph_count(const RID &p_shaped) const override;
 	GDVIRTUAL1RC(int64_t, _shaped_text_get_trim_pos, RID);
 	GDVIRTUAL1RC(int64_t, _shaped_text_get_ellipsis_pos, RID);
-	GDVIRTUAL1RC(GDNativeConstPtr<const Glyph>, _shaped_text_get_ellipsis_glyphs, RID);
+	GDVIRTUAL1RC(GDExtensionConstPtr<const Glyph>, _shaped_text_get_ellipsis_glyphs, RID);
 	GDVIRTUAL1RC(int64_t, _shaped_text_get_ellipsis_glyph_count, RID);
 
 	virtual void shaped_text_overrun_trim_to_width(const RID &p_shaped, double p_width, BitField<TextServer::TextOverrunFlag> p_trim_flags) override;
@@ -465,7 +480,7 @@ public:
 
 	virtual CaretInfo shaped_text_get_carets(const RID &p_shaped, int64_t p_position) const override;
 	virtual Vector<Vector2> shaped_text_get_selection(const RID &p_shaped, int64_t p_start, int64_t p_end) const override;
-	GDVIRTUAL3C(_shaped_text_get_carets, RID, int64_t, GDNativePtr<CaretInfo>);
+	GDVIRTUAL3C(_shaped_text_get_carets, RID, int64_t, GDExtensionPtr<CaretInfo>);
 	GDVIRTUAL3RC(Vector<Vector2>, _shaped_text_get_selection, RID, int64_t, int64_t);
 
 	virtual int64_t shaped_text_hit_test_grapheme(const RID &p_shaped, double p_coords) const override;
@@ -513,6 +528,9 @@ public:
 	virtual bool spoof_check(const String &p_string) const override;
 	GDVIRTUAL2RC(int64_t, _is_confusable, const String &, const PackedStringArray &);
 	GDVIRTUAL1RC(bool, _spoof_check, const String &);
+
+	virtual void cleanup() override;
+	GDVIRTUAL0(_cleanup);
 
 	TextServerExtension();
 	~TextServerExtension();

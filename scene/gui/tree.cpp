@@ -1018,7 +1018,7 @@ void TreeItem::set_as_cursor(int p_column) {
 	if (tree->select_mode != Tree::SELECT_MULTI) {
 		return;
 	}
-	if (tree->selected_col == p_column) {
+	if (tree->selected_item == this && tree->selected_col == p_column) {
 		return;
 	}
 	tree->selected_item = this;
@@ -2471,6 +2471,8 @@ bool Tree::_is_sibling_branch_selected(TreeItem *p_from) const {
 }
 
 void Tree::select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_col, TreeItem *p_prev, bool *r_in_range, bool p_force_deselect) {
+	popup_editor->hide();
+
 	TreeItem::Cell &selected_cell = p_selected->cells.write[p_col];
 
 	bool switched = false;
@@ -3671,7 +3673,7 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 					drag_accum = 0;
 					//last_drag_accum=0;
 					drag_from = v_scroll->get_value();
-					drag_touching = DisplayServer::get_singleton()->screen_is_touchscreen(DisplayServer::get_singleton()->window_get_current_screen(get_viewport()->get_window_id()));
+					drag_touching = DisplayServer::get_singleton()->is_touchscreen_available();
 					drag_touching_deaccel = false;
 					if (drag_touching) {
 						set_physics_process_internal(true);
@@ -4216,7 +4218,9 @@ Tree::SelectMode Tree::get_select_mode() const {
 void Tree::deselect_all() {
 	TreeItem *item = get_next_selected(get_root());
 	while (item) {
-		item->deselect(selected_col);
+		for (int i = 0; i < columns.size(); i++) {
+			item->deselect(i);
+		}
 		TreeItem *prev_item = item;
 		item = get_next_selected(get_root());
 		ERR_FAIL_COND(item == prev_item);

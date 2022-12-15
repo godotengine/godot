@@ -1071,7 +1071,8 @@
 			Tells the parent [Container] nodes how they should resize and place the node on the Y axis. Use one of the [enum SizeFlags] constants to change the flags. See the constants to learn what each does.
 		</member>
 		<member name="theme" type="Theme" setter="set_theme" getter="get_theme">
-			The [Theme] resource this node and all its [Control] children use. If a child node has its own [Theme] resource set, theme items are merged with child's definitions having higher priority.
+			The [Theme] resource this node and all its [Control] and [Window] children use. If a child node has its own [Theme] resource set, theme items are merged with child's definitions having higher priority.
+			[b]Note:[/b] [Window] styles will have no effect unless the window is embedded.
 		</member>
 		<member name="theme_type_variation" type="StringName" setter="set_theme_type_variation" getter="get_theme_type_variation" default="&amp;&quot;&quot;">
 			The name of a theme type variation used by this [Control] to look up its own theme items. When empty, the class name of the node is used (e.g. [code]Button[/code] for the [Button] control), as well as the class names of all parent classes (in order of inheritance).

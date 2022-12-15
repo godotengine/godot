@@ -236,8 +236,12 @@ Vector<String> OS::get_system_fonts() const {
 	return ::OS::get_singleton()->get_system_fonts();
 }
 
-String OS::get_system_font_path(const String &p_font_name, bool p_bold, bool p_italic) const {
-	return ::OS::get_singleton()->get_system_font_path(p_font_name, p_bold, p_italic);
+String OS::get_system_font_path(const String &p_font_name, int p_weight, int p_stretch, bool p_italic) const {
+	return ::OS::get_singleton()->get_system_font_path(p_font_name, p_weight, p_stretch, p_italic);
+}
+
+Vector<String> OS::get_system_font_path_for_text(const String &p_font_name, const String &p_text, const String &p_locale, const String &p_script, int p_weight, int p_stretch, bool p_italic) const {
+	return ::OS::get_singleton()->get_system_font_path_for_text(p_font_name, p_text, p_locale, p_script, p_weight, p_stretch, p_italic);
 }
 
 String OS::get_executable_path() const {
@@ -532,7 +536,8 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_processor_name"), &OS::get_processor_name);
 
 	ClassDB::bind_method(D_METHOD("get_system_fonts"), &OS::get_system_fonts);
-	ClassDB::bind_method(D_METHOD("get_system_font_path", "font_name", "bold", "italic"), &OS::get_system_font_path, DEFVAL(false), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_system_font_path", "font_name", "weight", "stretch", "italic"), &OS::get_system_font_path, DEFVAL(400), DEFVAL(100), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("get_system_font_path_for_text", "font_name", "text", "locale", "script", "weight", "stretch", "italic"), &OS::get_system_font_path_for_text, DEFVAL(String()), DEFVAL(String()), DEFVAL(400), DEFVAL(100), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_executable_path"), &OS::get_executable_path);
 	ClassDB::bind_method(D_METHOD("read_string_from_stdin", "block"), &OS::read_string_from_stdin, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("execute", "path", "arguments", "output", "read_stderr", "open_console"), &OS::execute, DEFVAL(Array()), DEFVAL(false), DEFVAL(false));

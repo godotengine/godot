@@ -399,6 +399,12 @@
 				Scrolls the window's top line to match first line of the [param paragraph].
 			</description>
 		</method>
+		<method name="scroll_to_selection">
+			<return type="void" />
+			<description>
+				Scrolls to the beginning of the current selection.
+			</description>
+		</method>
 		<method name="select_all">
 			<return type="void" />
 			<description>

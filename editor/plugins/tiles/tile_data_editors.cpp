@@ -1207,8 +1207,6 @@ TileDataDefaultEditor::TileDataDefaultEditor() {
 	label->set_theme_type_variation("HeaderSmall");
 	add_child(label);
 
-	toolbar->add_child(memnew(VSeparator));
-
 	picker_button = memnew(Button);
 	picker_button->set_flat(true);
 	picker_button->set_toggle_mode(true);
@@ -1603,12 +1601,31 @@ void TileDataCollisionEditor::draw_over_tile(CanvasItem *p_canvas_item, Transfor
 	}
 
 	RenderingServer::get_singleton()->canvas_item_add_set_transform(p_canvas_item->get_canvas_item(), p_transform);
+
+	Ref<Texture2D> one_way_icon = get_theme_icon(SNAME("OneWayTile"), SNAME("EditorIcons"));
 	for (int i = 0; i < tile_data->get_collision_polygons_count(physics_layer); i++) {
 		Vector<Vector2> polygon = tile_data->get_collision_polygon_points(physics_layer, i);
-		if (polygon.size() >= 3) {
-			p_canvas_item->draw_polygon(polygon, color);
+		if (polygon.size() < 3) {
+			continue;
+		}
+
+		p_canvas_item->draw_polygon(polygon, color);
+
+		if (tile_data->is_collision_polygon_one_way(physics_layer, i)) {
+			PackedVector2Array uvs;
+			uvs.resize(polygon.size());
+			Vector2 size_1 = Vector2(1, 1) / tile_set->get_tile_size();
+
+			for (int j = 0; j < polygon.size(); j++) {
+				uvs.write[j] = polygon[j] * size_1 + Vector2(0.5, 0.5);
+			}
+
+			Vector<Color> color2;
+			color2.push_back(Color(1, 1, 1, 0.4));
+			p_canvas_item->draw_polygon(polygon, color2, uvs, one_way_icon);
 		}
 	}
+
 	RenderingServer::get_singleton()->canvas_item_add_set_transform(p_canvas_item->get_canvas_item(), Transform2D());
 }
 
@@ -2640,8 +2657,6 @@ TileDataTerrainsEditor::TileDataTerrainsEditor() {
 	add_child(label);
 
 	// Toolbar
-	toolbar->add_child(memnew(VSeparator));
-
 	picker_button = memnew(Button);
 	picker_button->set_flat(true);
 	picker_button->set_toggle_mode(true);

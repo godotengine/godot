@@ -14116,9 +14116,10 @@ msgstr "Поставке Залепљавања"
 #: scene/2d/path_2d.cpp scene/2d/polygon_2d.cpp scene/2d/sprite.cpp
 #: scene/3d/cpu_particles.cpp scene/3d/label_3d.cpp scene/3d/path.cpp
 #: scene/3d/physics_body.cpp scene/3d/soft_body.cpp scene/3d/sprite_3d.cpp
-#: scene/gui/graph_node.cpp scene/gui/rich_text_effect.cpp
-#: scene/main/canvas_layer.cpp scene/resources/material.cpp
-#: scene/resources/particles_material.cpp scene/resources/style_box.cpp
+#: scene/3d/visual_instance.cpp scene/gui/graph_node.cpp
+#: scene/gui/rich_text_effect.cpp scene/main/canvas_layer.cpp
+#: scene/resources/material.cpp scene/resources/particles_material.cpp
+#: scene/resources/style_box.cpp
 #, fuzzy
 msgid "Offset"
 msgstr "Офсет:"
@@ -15791,16 +15792,15 @@ msgstr "Неважећа путања пројекта(нешто је изме�
 #: editor/project_manager.cpp
 #, fuzzy
 msgid ""
-"Couldn't load project.godot in project path (error %d). It may be missing or "
-"corrupted."
+"Couldn't load project at '%s' (error %d). It may be missing or corrupted."
 msgstr ""
 "Неуспешно учитавање project.godot-а у његовој путањи (грешка %d). Могуће да "
 "нешто недостаје или је корумпирано."
 
 #: editor/project_manager.cpp
 #, fuzzy
-msgid "Couldn't edit project.godot in project path."
-msgstr "Неуспешна измена project.godot-а у путањи пројекта."
+msgid "Couldn't save project at '%s' (error %d)."
+msgstr "Не могу отворити '%s'."
 
 #: editor/project_manager.cpp
 #, fuzzy
@@ -25806,6 +25806,15 @@ msgstr "Грешка"
 
 #: scene/3d/visibility_notifier.cpp
 msgid "AABB"
+msgstr ""
+
+#: scene/3d/visual_instance.cpp
+#, fuzzy
+msgid "Sorting"
+msgstr "Сортирање"
+
+#: scene/3d/visual_instance.cpp
+msgid "Use AABB Center"
 msgstr ""
 
 #: scene/3d/visual_instance.cpp scene/resources/navigation_mesh.cpp

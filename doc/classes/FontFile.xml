@@ -542,6 +542,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="allow_system_fallback" type="bool" setter="set_allow_system_fallback" getter="is_allow_system_fallback" default="true">
+			If set to [code]true[/code], system fonts can be automatically used as fallbacks.
+		</member>
 		<member name="antialiasing" type="int" setter="set_antialiasing" getter="get_antialiasing" enum="TextServer.FontAntialiasing" default="1">
 			Font anti-aliasing mode.
 		</member>
@@ -557,8 +560,14 @@
 		<member name="font_name" type="String" setter="set_font_name" getter="get_font_name" default="&quot;&quot;">
 			Font family name.
 		</member>
+		<member name="font_stretch" type="int" setter="set_font_stretch" getter="get_font_stretch" default="100">
+			Font stretch amount, compared to a normal width. A percentage value between [code]50%[/code] and [code]200%[/code].
+		</member>
 		<member name="font_style" type="int" setter="set_font_style" getter="get_font_style" enum="TextServer.FontStyle" default="0">
 			Font style flags, see [enum TextServer.FontStyle].
+		</member>
+		<member name="font_weight" type="int" setter="set_font_weight" getter="get_font_weight" default="400">
+			Weight (boldness) of the font. A value in the [code]100...999[/code] range, normal font weight is [code]400[/code], bold font weight is [code]700[/code].
 		</member>
 		<member name="force_autohinter" type="bool" setter="set_force_autohinter" getter="is_force_autohinter" default="false">
 			If set to [code]true[/code], auto-hinting is supported and preferred over font built-in hinting. Used by dynamic fonts only.

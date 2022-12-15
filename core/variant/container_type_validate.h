@@ -74,22 +74,37 @@ struct ContainerTypeValidate {
 		return true;
 	}
 
-	_FORCE_INLINE_ bool validate(const Variant &p_variant, const char *p_operation = "use") {
+	// Coerces String and StringName into each other when needed.
+	_FORCE_INLINE_ bool validate(Variant &inout_variant, const char *p_operation = "use") {
 		if (type == Variant::NIL) {
 			return true;
 		}
 
-		if (type != p_variant.get_type()) {
-			if (p_variant.get_type() == Variant::NIL && type == Variant::OBJECT) {
+		if (type != inout_variant.get_type()) {
+			if (inout_variant.get_type() == Variant::NIL && type == Variant::OBJECT) {
+				return true;
+			}
+			if (type == Variant::STRING && inout_variant.get_type() == Variant::STRING_NAME) {
+				inout_variant = String(inout_variant);
+				return true;
+			} else if (type == Variant::STRING_NAME && inout_variant.get_type() == Variant::STRING) {
+				inout_variant = StringName(inout_variant);
 				return true;
 			}
 
-			ERR_FAIL_V_MSG(false, "Attempted to " + String(p_operation) + " a variable of type '" + Variant::get_type_name(p_variant.get_type()) + "' into a " + where + " of type '" + Variant::get_type_name(type) + "'.");
+			ERR_FAIL_V_MSG(false, "Attempted to " + String(p_operation) + " a variable of type '" + Variant::get_type_name(inout_variant.get_type()) + "' into a " + where + " of type '" + Variant::get_type_name(type) + "'.");
 		}
 
 		if (type != Variant::OBJECT) {
 			return true;
 		}
+
+		return validate_object(inout_variant, p_operation);
+	}
+
+	_FORCE_INLINE_ bool validate_object(const Variant &p_variant, const char *p_operation = "use") {
+		ERR_FAIL_COND_V(p_variant.get_type() != Variant::OBJECT, false);
+
 #ifdef DEBUG_ENABLED
 		ObjectID object_id = p_variant;
 		if (object_id == ObjectID()) {

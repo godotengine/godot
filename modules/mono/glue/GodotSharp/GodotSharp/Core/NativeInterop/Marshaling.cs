@@ -99,7 +99,7 @@ namespace Godot.NativeInterop
                     if (type == typeof(Callable))
                         return Variant.Type.Callable;
 
-                    if (type == typeof(SignalInfo))
+                    if (type == typeof(Signal))
                         return Variant.Type.Signal;
 
                     if (type.IsEnum)
@@ -288,9 +288,9 @@ namespace Godot.NativeInterop
             return new Callable();
         }
 
-        // SignalInfo
+        // Signal
 
-        public static godot_signal ConvertSignalToNative(in SignalInfo p_managed_signal)
+        public static godot_signal ConvertSignalToNative(in Signal p_managed_signal)
         {
             ulong ownerId = p_managed_signal.Owner.GetInstanceId();
             godot_string_name name;
@@ -308,12 +308,12 @@ namespace Godot.NativeInterop
             return new godot_signal(name, ownerId);
         }
 
-        public static SignalInfo ConvertSignalToManaged(in godot_signal p_signal)
+        public static Signal ConvertSignalToManaged(in godot_signal p_signal)
         {
             var owner = GD.InstanceFromId(p_signal.ObjectId);
             var name = StringName.CreateTakingOwnershipOfDisposableValue(
                 NativeFuncs.godotsharp_string_name_new_copy(p_signal.Name));
-            return new SignalInfo(owner, name);
+            return new Signal(owner, name);
         }
 
         // Array
@@ -329,22 +329,6 @@ namespace Godot.NativeInterop
 
             for (int i = 0; i < length; i++)
                 ret[i] = (T)array[i].AsGodotObject();
-
-            return ret;
-        }
-
-        // TODO: This needs reflection. Look for an alternative.
-        internal static Godot.Object[] ConvertNativeGodotArrayToSystemArrayOfGodotObjectType(in godot_array p_array,
-            Type type)
-        {
-            var array = Collections.Array.CreateTakingOwnershipOfDisposableValue(
-                NativeFuncs.godotsharp_array_new_copy(p_array));
-
-            int length = array.Count;
-            var ret = (Godot.Object[])Activator.CreateInstance(type, length)!;
-
-            for (int i = 0; i < length; i++)
-                ret[i] = array[i].AsGodotObject();
 
             return ret;
         }

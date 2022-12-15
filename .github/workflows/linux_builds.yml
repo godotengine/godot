@@ -32,11 +32,11 @@ jobs:
             proj-conv: true
             artifact: true
 
-          - name: Editor with doubles and GCC sanitizers (target=editor, tests=yes, dev_build=yes, float=64, use_asan=yes, use_ubsan=yes, linker=gold)
+          - name: Editor with doubles and GCC sanitizers (target=editor, tests=yes, dev_build=yes, precision=double, use_asan=yes, use_ubsan=yes, linker=gold)
             cache-name: linux-editor-double-sanitizers
             target: editor
             tests: true
-            sconsflags: dev_build=yes float=64 use_asan=yes use_ubsan=yes linker=gold
+            sconsflags: dev_build=yes precision=double use_asan=yes use_ubsan=yes linker=gold
             proj-test: true
             # Can be turned off for PRs that intentionally break compat with godot-cpp,
             # until both the upstream PR and the matching godot-cpp changes are merged.
@@ -198,20 +198,13 @@ jobs:
           submodules: 'recursive'
           path: 'godot-cpp'
 
-      # Check extension API
-      - name: Check for extension api updates
+      # Dump GDExtension interface and API
+      - name: Dump GDExtension interface and API for godot-cpp build
         if: ${{ matrix.godot-cpp-test }}
         run: |
-          echo "Running --dump-extension-api to create extensions api."
-          VK_ICD_FILENAMES=$(pwd)/vk_swiftshader_icd.json DRI_PRIME=0 xvfb-run ${{ matrix.bin }} --audio-driver Dummy --dump-extension-api 2>&1 > /dev/null || true
-          misc/scripts/compare_extension_api.py godot-cpp/godot-headers/extension_api.json extension_api.json
-
-      # Copy new extension API files into place
-      - name: Copy new extension API files into place
-        if: ${{ matrix.godot-cpp-test }}
-        run: |
-          cp -f extension_api.json godot-cpp/godot-headers/
-          cp -f core/extension/gdnative_interface.h godot-cpp/godot-headers/godot/
+          ${{ matrix.bin }} --headless --dump-gdextension-interface --dump-extension-api
+          cp -f gdextension_interface.h godot-cpp/gdextension/
+          cp -f extension_api.json godot-cpp/gdextension/
 
       # Build godot-cpp test extension
       - name: Build godot-cpp test extension

@@ -260,14 +260,14 @@ void DisplayServerIOS::touches_cancelled(int p_idx) {
 
 // MARK: Keyboard
 
-void DisplayServerIOS::key(Key p_key, bool p_pressed) {
+void DisplayServerIOS::key(Key p_key, char32_t p_char, bool p_pressed) {
 	Ref<InputEventKey> ev;
 	ev.instantiate();
 	ev->set_echo(false);
 	ev->set_pressed(p_pressed);
 	ev->set_keycode(p_key);
 	ev->set_physical_keycode(p_key);
-	ev->set_unicode((char32_t)p_key);
+	ev->set_unicode(p_char);
 	perform_event(ev);
 }
 
@@ -496,6 +496,10 @@ Point2i DisplayServerIOS::window_get_position(WindowID p_window) const {
 	return Point2i();
 }
 
+Point2i DisplayServerIOS::window_get_position_with_decorations(WindowID p_window) const {
+	return Point2i();
+}
+
 void DisplayServerIOS::window_set_position(const Point2i &p_position, WindowID p_window) {
 	// Probably not supported for single window iOS app
 }
@@ -529,7 +533,7 @@ Size2i DisplayServerIOS::window_get_size(WindowID p_window) const {
 	return Size2i(screenBounds.size.width, screenBounds.size.height) * screen_get_max_scale();
 }
 
-Size2i DisplayServerIOS::window_get_real_size(WindowID p_window) const {
+Size2i DisplayServerIOS::window_get_size_with_decorations(WindowID p_window) const {
 	return window_get_size(p_window);
 }
 
@@ -581,8 +585,18 @@ bool DisplayServerIOS::can_any_window_draw() const {
 	return true;
 }
 
-bool DisplayServerIOS::screen_is_touchscreen(int p_screen) const {
+bool DisplayServerIOS::is_touchscreen_available() const {
 	return true;
+}
+
+_FORCE_INLINE_ int _convert_utf32_offset_to_utf16(const String &p_existing_text, int p_pos) {
+	int limit = p_pos;
+	for (int i = 0; i < MIN(p_existing_text.length(), p_pos); i++) {
+		if (p_existing_text[i] > 0xffff) {
+			limit++;
+		}
+	}
+	return limit;
 }
 
 void DisplayServerIOS::virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect, VirtualKeyboardType p_type, int p_max_length, int p_cursor_start, int p_cursor_end) {
@@ -623,8 +637,8 @@ void DisplayServerIOS::virtual_keyboard_show(const String &p_existing_text, cons
 
 	[AppDelegate.viewController.keyboardView
 			becomeFirstResponderWithString:existingString
-							   cursorStart:p_cursor_start
-								 cursorEnd:p_cursor_end];
+							   cursorStart:_convert_utf32_offset_to_utf16(p_existing_text, p_cursor_start)
+								 cursorEnd:_convert_utf32_offset_to_utf16(p_existing_text, p_cursor_end)];
 }
 
 void DisplayServerIOS::virtual_keyboard_hide() {

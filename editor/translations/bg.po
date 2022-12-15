@@ -17,13 +17,14 @@
 # Ivan Gechev <ivan_banov@abv.bg>, 2022.
 # BigHomieDripDrop <bartu.bali@gmail.com>, 2022.
 # xaio <xaio666@gmail.com>, 2022.
+# Vosh <vosh4k@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-09-22 15:26+0000\n"
-"Last-Translator: xaio <xaio666@gmail.com>\n"
+"PO-Revision-Date: 2022-10-25 15:43+0000\n"
+"Last-Translator: Vosh <vosh4k@gmail.com>\n"
 "Language-Team: Bulgarian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/bg/>\n"
 "Language: bg\n"
@@ -31,7 +32,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.14.1\n"
+"X-Generator: Weblate 4.14.2-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -437,19 +438,16 @@ msgid "Button Mask"
 msgstr "Бутон"
 
 #: core/os/input_event.cpp scene/2d/node_2d.cpp scene/gui/control.cpp
-#, fuzzy
 msgid "Global Position"
-msgstr "Глобална константа"
+msgstr "Глобална позиция"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Factor"
-msgstr "Вектор"
+msgstr "Фактор"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Button Index"
-msgstr "Бутон"
+msgstr "Индекс на бутона"
 
 #: core/os/input_event.cpp
 msgid "Doubleclick"
@@ -485,9 +483,8 @@ msgid "Axis"
 msgstr "Ос"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Axis Value"
-msgstr "Закачане на стойността"
+msgstr "Стойност на оста"
 
 #: core/os/input_event.cpp modules/visual_script/visual_script_func_nodes.cpp
 #, fuzzy
@@ -510,14 +507,12 @@ msgid "Delta"
 msgstr "Делта"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Channel"
-msgstr "Промяна на филтъра"
+msgstr "Канал"
 
 #: core/os/input_event.cpp main/main.cpp
-#, fuzzy
 msgid "Message"
-msgstr "Съобщение за подаването"
+msgstr "Съобщение"
 
 #: core/os/input_event.cpp
 #, fuzzy
@@ -527,9 +522,8 @@ msgstr "Скалиране"
 #: core/os/input_event.cpp scene/2d/cpu_particles_2d.cpp
 #: scene/2d/physics_body_2d.cpp scene/3d/cpu_particles.cpp
 #: scene/3d/physics_body.cpp scene/resources/particles_material.cpp
-#, fuzzy
 msgid "Velocity"
-msgstr "Орбитален изглед отдясно"
+msgstr "Скорост"
 
 #: core/os/input_event.cpp
 msgid "Instrument"
@@ -547,14 +541,12 @@ msgstr "Стойност на контролер"
 #: core/project_settings.cpp editor/editor_node.cpp main/main.cpp
 #: platform/iphone/export/export.cpp platform/osx/export/export.cpp
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Application"
-msgstr "Действие"
+msgstr "Приложение"
 
 #: core/project_settings.cpp main/main.cpp
-#, fuzzy
 msgid "Config"
-msgstr "Настройване на прилепването"
+msgstr "Конфигурация"
 
 #: core/project_settings.cpp
 #, fuzzy
@@ -617,9 +609,8 @@ msgstr "Име на персонална потребителска катего
 #: core/project_settings.cpp main/main.cpp
 #: platform/javascript/export/export.cpp platform/osx/export/export.cpp
 #: platform/uwp/os_uwp.cpp
-#, fuzzy
 msgid "Display"
-msgstr "Показване на всичко"
+msgstr "Покажи"
 
 #: core/project_settings.cpp main/main.cpp modules/csg/csg_shape.cpp
 #: modules/opensimplex/noise_texture.cpp scene/2d/line_2d.cpp
@@ -669,9 +660,8 @@ msgid "Main Run Args"
 msgstr ""
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Scene Naming"
-msgstr "Път на сцената:"
+msgstr "Наименование на сцена"
 
 #: core/project_settings.cpp
 msgid "Search In File Extensions"
@@ -682,9 +672,8 @@ msgid "Script Templates Search Path"
 msgstr "Път за търсене на скриптови шаблони"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Version Control Autoload On Startup"
-msgstr "Контрол на версиите"
+msgstr "Стартирай контрол на версиите при стартиране"
 
 #: core/project_settings.cpp
 #, fuzzy
@@ -1053,7 +1042,7 @@ msgstr "Скалиране"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Follow Surface"
-msgstr ""
+msgstr "Следвай повърхност"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Weight Samples"
@@ -1143,9 +1132,8 @@ msgstr "Промяна на повикана функция (Анимация)"
 #: editor/animation_track_editor.cpp scene/2d/animated_sprite.cpp
 #: scene/2d/sprite.cpp scene/3d/sprite_3d.cpp
 #: scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Frame"
-msgstr "Добавяне на кадър"
+msgstr "Кадър"
 
 #: editor/animation_track_editor.cpp editor/editor_profiler.cpp
 #: scene/2d/cpu_particles_2d.cpp scene/2d/particles_2d.cpp
@@ -1156,9 +1144,8 @@ msgstr "Време"
 
 #: editor/animation_track_editor.cpp editor/import/resource_importer_scene.cpp
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Location"
-msgstr "Стъпка при завъртане:"
+msgstr "Местоположение"
 
 #: editor/animation_track_editor.cpp modules/gltf/gltf_node.cpp
 #: scene/2d/polygon_2d.cpp scene/2d/remote_transform_2d.cpp
@@ -1339,19 +1326,16 @@ msgid "Remove this track."
 msgstr "Премахване на тази пътечка."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Time (s):"
-msgstr "Време (сек): "
+msgstr "Време (сек):"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Position:"
-msgstr "Създаване на функция"
+msgstr "Позиция:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Rotation:"
-msgstr "Стъпка при завъртане:"
+msgstr "Завъртане:"
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
@@ -1646,7 +1630,7 @@ msgstr ""
 #: editor/animation_track_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Clipboard is empty!"
-msgstr ""
+msgstr "Клипбордът е празен!"
 
 #: editor/animation_track_editor.cpp
 msgid "Paste Tracks"
@@ -12795,9 +12779,10 @@ msgstr "Настройки за прилепването"
 #: scene/2d/path_2d.cpp scene/2d/polygon_2d.cpp scene/2d/sprite.cpp
 #: scene/3d/cpu_particles.cpp scene/3d/label_3d.cpp scene/3d/path.cpp
 #: scene/3d/physics_body.cpp scene/3d/soft_body.cpp scene/3d/sprite_3d.cpp
-#: scene/gui/graph_node.cpp scene/gui/rich_text_effect.cpp
-#: scene/main/canvas_layer.cpp scene/resources/material.cpp
-#: scene/resources/particles_material.cpp scene/resources/style_box.cpp
+#: scene/3d/visual_instance.cpp scene/gui/graph_node.cpp
+#: scene/gui/rich_text_effect.cpp scene/main/canvas_layer.cpp
+#: scene/resources/material.cpp scene/resources/particles_material.cpp
+#: scene/resources/style_box.cpp
 #, fuzzy
 msgid "Offset"
 msgstr "Отместване:"
@@ -14158,16 +14143,17 @@ msgid "Invalid project path (changed anything?)."
 msgstr "Неправилен път до проекта (Променяли ли сте нещо?)."
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid ""
-"Couldn't load project.godot in project path (error %d). It may be missing or "
-"corrupted."
+"Couldn't load project at '%s' (error %d). It may be missing or corrupted."
 msgstr ""
 "Файлът „project.godot“ не може да бъде зареден от пътя на проекта (грешка "
 "%d). Възможно е той да липсва или да е повреден."
 
 #: editor/project_manager.cpp
-msgid "Couldn't edit project.godot in project path."
-msgstr ""
+#, fuzzy
+msgid "Couldn't save project at '%s' (error %d)."
+msgstr "Не може да бъде отворен проектът в „%s“."
 
 #: editor/project_manager.cpp
 msgid "Couldn't create project.godot in project path."
@@ -23348,6 +23334,15 @@ msgstr "Грешка от %s"
 
 #: scene/3d/visibility_notifier.cpp
 msgid "AABB"
+msgstr ""
+
+#: scene/3d/visual_instance.cpp
+#, fuzzy
+msgid "Sorting"
+msgstr "Сортиране"
+
+#: scene/3d/visual_instance.cpp
+msgid "Use AABB Center"
 msgstr ""
 
 #: scene/3d/visual_instance.cpp scene/resources/navigation_mesh.cpp

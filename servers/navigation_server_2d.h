@@ -108,6 +108,10 @@ public:
 	virtual void region_set_travel_cost(RID p_region, real_t p_travel_cost) const;
 	virtual real_t region_get_travel_cost(RID p_region) const;
 
+	/// Set the node which manages this region.
+	virtual void region_set_owner_id(RID p_region, ObjectID p_owner_id) const;
+	virtual ObjectID region_get_owner_id(RID p_region) const;
+
 	virtual bool region_owns_point(RID p_region, const Vector2 &p_point) const;
 
 	/// Set the map of this region.
@@ -159,6 +163,10 @@ public:
 	/// Set the travel cost of the link.
 	virtual void link_set_travel_cost(RID p_link, real_t p_travel_cost) const;
 	virtual real_t link_get_travel_cost(RID p_link) const;
+
+	/// Set the node which manages this link.
+	virtual void link_set_owner_id(RID p_link, ObjectID p_owner_id) const;
+	virtual ObjectID link_get_owner_id(RID p_link) const;
 
 	/// Creates the agent.
 	virtual RID agent_create() const;
@@ -218,7 +226,7 @@ public:
 	virtual bool agent_is_map_changed(RID p_agent) const;
 
 	/// Callback called at the end of the RVO process
-	virtual void agent_set_callback(RID p_agent, Object *p_receiver, StringName p_method, Variant p_udata = Variant()) const;
+	virtual void agent_set_callback(RID p_agent, ObjectID p_object_id, StringName p_method, Variant p_udata = Variant()) const;
 
 	virtual void query_path(const Ref<NavigationPathQueryParameters2D> &p_query_parameters, Ref<NavigationPathQueryResult2D> p_query_result) const;
 

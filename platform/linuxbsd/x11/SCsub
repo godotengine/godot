@@ -5,12 +5,20 @@ Import("env")
 source_files = [
     "display_server_x11.cpp",
     "key_mapping_x11.cpp",
+    "dynwrappers/xlib-so_wrap.c",
+    "dynwrappers/xcursor-so_wrap.c",
+    "dynwrappers/xinerama-so_wrap.c",
+    "dynwrappers/xinput2-so_wrap.c",
+    "dynwrappers/xrandr-so_wrap.c",
+    "dynwrappers/xrender-so_wrap.c",
+    "dynwrappers/xext-so_wrap.c",
 ]
 
 if env["vulkan"]:
     source_files.append("vulkan_context_x11.cpp")
 
 if env["opengl3"]:
+    env.Append(CPPDEFINES=["GLAD_GLX_NO_X11"])
     source_files.append(["gl_manager_x11.cpp", "detect_prime_x11.cpp", "#thirdparty/glad/glx.c"])
 
 objects = []
