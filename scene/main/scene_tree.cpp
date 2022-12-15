@@ -749,6 +749,12 @@ void SceneTree::finish() {
 		E->get()->release_connections();
 	}
 	timers.clear();
+
+	// Cleanup tweens.
+	for (List<Ref<SceneTreeTween>>::Element *E = tweens.front(); E; E = E->next()) {
+		E->get()->clear();
+	}
+	tweens.clear();
 }
 
 void SceneTree::quit(int p_exit_code) {
