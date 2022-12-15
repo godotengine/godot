@@ -364,7 +364,7 @@
 			<argument index="2" name="strong_magnitude" type="float" />
 			<argument index="3" name="duration" type="float" default="0" />
 			<description>
-				Starts to vibrate the joypad. Joypads usually come with two rumble motors, a strong and a weak one. [code]weak_magnitude[/code] is the strength of the weak motor (between 0 and 1) and [code]strong_magnitude[/code] is the strength of the strong motor (between 0 and 1). [code]duration[/code] is the duration of the effect in seconds (a duration of 0 will try to play the vibration indefinitely).
+				Starts to vibrate the joypad. Joypads usually come with two rumble motors, a strong and a weak one. [code]weak_magnitude[/code] is the strength of the weak motor (between 0 and 1) and [code]strong_magnitude[/code] is the strength of the strong motor (between 0 and 1). [code]duration[/code] is the duration of the effect in seconds (a duration of 0 will try to play the vibration indefinitely). The vibration can be stopped early by calling [method stop_joy_vibration].
 				[b]Note:[/b] Not every hardware is compatible with long effect durations; it is recommended to restart an effect if it has to be played for more than a few seconds.
 			</description>
 		</method>
@@ -372,18 +372,18 @@
 			<return type="void" />
 			<argument index="0" name="device" type="int" />
 			<description>
-				Stops the vibration of the joypad.
+				Stops the vibration of the joypad started with [method start_joy_vibration].
 			</description>
 		</method>
 		<method name="vibrate_handheld">
 			<return type="void" />
 			<argument index="0" name="duration_ms" type="int" default="500" />
 			<description>
-				Vibrate handheld devices.
-				[b]Note:[/b] This method is implemented on Android, iOS, and HTML5.
-				[b]Note:[/b] For Android, it requires enabling the [code]VIBRATE[/code] permission in the export preset.
-				[b]Note:[/b] For iOS, specifying the duration is supported in iOS 13 and later.
-				[b]Note:[/b] Some web browsers such as Safari and Firefox for Android do not support this method.
+				Vibrate the handheld device for the specified duration in milliseconds.
+				[b]Note:[/b] This method is implemented on Android, iOS, and HTML5. It has no effect on other platforms.
+				[b]Note:[/b] For Android, [method vibrate_handheld] requires enabling the [code]VIBRATE[/code] permission in the export preset. Otherwise, [method vibrate_handheld] will have no effect.
+				[b]Note:[/b] For iOS, specifying the duration is only supported in iOS 13 and later.
+				[b]Note:[/b] Some web browsers such as Safari and Firefox for Android do not support [method vibrate_handheld].
 			</description>
 		</method>
 		<method name="warp_mouse_position">
