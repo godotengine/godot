@@ -1739,7 +1739,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		render_data.reflection_probes = &empty;
 	}
 
-	bool reverse_cull = false;
+	bool reverse_cull = render_data.cam_transform.basis.determinant() < 0;
 
 	///////////
 	// Fill Light lists here
