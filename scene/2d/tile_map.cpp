@@ -1092,7 +1092,7 @@ void TileMap::_rendering_update_layer(int p_layer) {
 		/*Transform2D xform;
 		xform.set_origin(Vector2(0, p_layer));
 		rs->canvas_item_set_transform(ci, xform);*/
-		rs->canvas_item_set_draw_index(ci, p_layer);
+		rs->canvas_item_set_draw_index(ci, p_layer - (int64_t)0x80000000);
 
 		layers[p_layer].canvas_item = ci;
 	}
