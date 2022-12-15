@@ -4026,7 +4026,8 @@ GDScriptParser::DataType GDScriptAnalyzer::type_from_variant(const Variant &p_va
 					found = found->get_member(E).m_class;
 				}
 
-				result = found->get_datatype();
+				result.class_type = found;
+				result.script_path = ref->get_parser()->script_path;
 			} else {
 				result.kind = GDScriptParser::DataType::SCRIPT;
 				result.native_type = scr->get_instance_base_type();
