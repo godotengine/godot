@@ -183,7 +183,7 @@ generous deed immortalized in the next stable release of Godot Engine.
     Cristopher
     CT
     CzechBlueBea
-    CzłowiekImadło 
+    CzłowiekImadło
     Daniel Reed
     Daniel Tebbutt
     Darrian Little

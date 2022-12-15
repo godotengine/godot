@@ -783,7 +783,7 @@ void SpatialEditorViewport::_update_name() {
 	}
 
 	if (RoomManager::static_rooms_get_active_and_loaded()) {
-		// TRANSLATORS: This will be appended to the view name when Portal Occulusion is enabled.
+		// TRANSLATORS: This will be appended to the view name when Portal Occlusion is enabled.
 		name += TTR(" [portals active]");
 	}
 
