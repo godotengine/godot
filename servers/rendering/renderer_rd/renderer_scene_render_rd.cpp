@@ -909,10 +909,20 @@ bool RendererSceneRenderRD::is_using_radiance_cubemap_array() const {
 }
 
 void RendererSceneRenderRD::_update_vrs(Ref<RenderSceneBuffersRD> p_render_buffers) {
-	if (p_render_buffers.is_valid() && vrs) {
+	if (p_render_buffers.is_null()) {
+		return;
+	}
+
+	RID render_target = p_render_buffers->get_render_target();
+	if (render_target.is_null()) {
+		// must be rendering reflection probes
+		return;
+	}
+
+	if (vrs) {
 		RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 
-		RS::ViewportVRSMode vrs_mode = texture_storage->render_target_get_vrs_mode(p_render_buffers->get_render_target());
+		RS::ViewportVRSMode vrs_mode = texture_storage->render_target_get_vrs_mode(render_target);
 		if (vrs_mode != RS::VIEWPORT_VRS_DISABLED) {
 			RID vrs_texture = p_render_buffers->get_texture(RB_SCOPE_VRS, RB_TEXTURE);
 
@@ -1064,7 +1074,7 @@ void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render
 	}
 
 	Color clear_color;
-	if (p_render_buffers.is_valid()) {
+	if (p_render_buffers.is_valid() && p_reflection_probe.is_null()) {
 		clear_color = texture_storage->render_target_get_clear_request_color(rb->get_render_target());
 	} else {
 		clear_color = RSG::texture_storage->get_default_clear_color();
