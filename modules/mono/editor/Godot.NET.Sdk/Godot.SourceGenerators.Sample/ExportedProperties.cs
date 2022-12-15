@@ -91,7 +91,7 @@ namespace Godot.SourceGenerators.Sample
             }
         }
 
-        // Lamda Property
+        // Lambda Property
         private String _lamdaProperty_String = "LamdaProperty_String";
         [Export]
         public String LamdaProperty_String
@@ -133,7 +133,7 @@ namespace Godot.SourceGenerators.Sample
         [Export] private Color property_Color { get; set; } = Colors.Aquamarine;
         [Export] private Plane property_Plane { get; set; } = Plane.PlaneXZ;
         [Export] private Callable property_Callable { get; set; } = new Callable(Engine.GetMainLoop(), "_process");
-        [Export] private SignalInfo property_SignalInfo { get; set; } = new SignalInfo(Engine.GetMainLoop(), "property_list_changed");
+        [Export] private Signal property_Signal { get; set; } = new Signal(Engine.GetMainLoop(), "property_list_changed");
 
         // Enums
         [SuppressMessage("ReSharper", "UnusedMember.Local")]

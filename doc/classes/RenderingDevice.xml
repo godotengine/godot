@@ -425,7 +425,7 @@
 			<param index="5" name="multisample_state" type="RDPipelineMultisampleState" />
 			<param index="6" name="stencil_state" type="RDPipelineDepthStencilState" />
 			<param index="7" name="color_blend_state" type="RDPipelineColorBlendState" />
-			<param index="8" name="dynamic_state_flags" type="int" default="0" />
+			<param index="8" name="dynamic_state_flags" type="int" enum="RenderingDevice.PipelineDynamicStateFlags" default="0" />
 			<param index="9" name="for_render_pass" type="int" default="0" />
 			<param index="10" name="specialization_constants" type="RDPipelineSpecializationConstant[]" default="[]" />
 			<description>
@@ -504,7 +504,7 @@
 			<return type="RID" />
 			<param index="0" name="size_bytes" type="int" />
 			<param index="1" name="data" type="PackedByteArray" default="PackedByteArray()" />
-			<param index="2" name="usage" type="int" default="0" />
+			<param index="2" name="usage" type="int" enum="RenderingDevice.StorageBufferUsage" default="0" />
 			<description>
 			</description>
 		</method>
@@ -1273,7 +1273,7 @@
 		</constant>
 		<constant name="INDEX_BUFFER_FORMAT_UINT32" value="1" enum="IndexBufferFormat">
 		</constant>
-		<constant name="STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT" value="1" enum="StorageBufferUsage">
+		<constant name="STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT" value="1" enum="StorageBufferUsage" is_bitfield="true">
 		</constant>
 		<constant name="UNIFORM_TYPE_SAMPLER" value="0" enum="UniformType">
 		</constant>
@@ -1453,19 +1453,19 @@
 		</constant>
 		<constant name="BLEND_OP_MAX" value="5" enum="BlendOperation">
 		</constant>
-		<constant name="DYNAMIC_STATE_LINE_WIDTH" value="1" enum="PipelineDynamicStateFlags">
+		<constant name="DYNAMIC_STATE_LINE_WIDTH" value="1" enum="PipelineDynamicStateFlags" is_bitfield="true">
 		</constant>
-		<constant name="DYNAMIC_STATE_DEPTH_BIAS" value="2" enum="PipelineDynamicStateFlags">
+		<constant name="DYNAMIC_STATE_DEPTH_BIAS" value="2" enum="PipelineDynamicStateFlags" is_bitfield="true">
 		</constant>
-		<constant name="DYNAMIC_STATE_BLEND_CONSTANTS" value="4" enum="PipelineDynamicStateFlags">
+		<constant name="DYNAMIC_STATE_BLEND_CONSTANTS" value="4" enum="PipelineDynamicStateFlags" is_bitfield="true">
 		</constant>
-		<constant name="DYNAMIC_STATE_DEPTH_BOUNDS" value="8" enum="PipelineDynamicStateFlags">
+		<constant name="DYNAMIC_STATE_DEPTH_BOUNDS" value="8" enum="PipelineDynamicStateFlags" is_bitfield="true">
 		</constant>
-		<constant name="DYNAMIC_STATE_STENCIL_COMPARE_MASK" value="16" enum="PipelineDynamicStateFlags">
+		<constant name="DYNAMIC_STATE_STENCIL_COMPARE_MASK" value="16" enum="PipelineDynamicStateFlags" is_bitfield="true">
 		</constant>
-		<constant name="DYNAMIC_STATE_STENCIL_WRITE_MASK" value="32" enum="PipelineDynamicStateFlags">
+		<constant name="DYNAMIC_STATE_STENCIL_WRITE_MASK" value="32" enum="PipelineDynamicStateFlags" is_bitfield="true">
 		</constant>
-		<constant name="DYNAMIC_STATE_STENCIL_REFERENCE" value="64" enum="PipelineDynamicStateFlags">
+		<constant name="DYNAMIC_STATE_STENCIL_REFERENCE" value="64" enum="PipelineDynamicStateFlags" is_bitfield="true">
 		</constant>
 		<constant name="INITIAL_ACTION_CLEAR" value="0" enum="InitialAction">
 		</constant>

@@ -69,13 +69,14 @@
 # عبد الرحمن أبو سعدة ||Abd Alrahman abo saada <abdalrahmanabs2005@gmail.com>, 2022.
 # xX-Void-Xx <arandomdude75@gmail.com>, 2022.
 # أحمد النور <ahmed2699@gmail.com>, 2022.
+# Commander Gordon <gordoncommander@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-09-08 07:39+0000\n"
-"Last-Translator: أحمد النور <ahmed2699@gmail.com>\n"
+"PO-Revision-Date: 2022-10-29 23:55+0000\n"
+"Last-Translator: Commander Gordon <gordoncommander@gmail.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ar/>\n"
 "Language: ar\n"
@@ -84,7 +85,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
 "&& n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
-"X-Generator: Weblate 4.14.1-dev\n"
+"X-Generator: Weblate 4.14.2-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -524,7 +525,7 @@ msgstr "السرعة"
 #: core/os/input_event.cpp editor/project_settings_editor.cpp
 #: scene/3d/sprite_3d.cpp
 msgid "Axis"
-msgstr "محاور"
+msgstr "محور"
 
 #: core/os/input_event.cpp
 msgid "Axis Value"
@@ -714,9 +715,8 @@ msgid "Version Control Autoload On Startup"
 msgstr "التحميل التلقائي للتحكم في الإصدار عند بدء التشغيل"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Version Control Plugin Name"
-msgstr "إدارة الإصدارات (Version Control)"
+msgstr "اسم مدير اصدار الاضافة"
 
 #: core/project_settings.cpp scene/2d/collision_object_2d.cpp
 #: scene/3d/collision_object.cpp scene/gui/control.cpp
@@ -797,9 +797,8 @@ msgid "3D"
 msgstr "ثلاثي الأبعاد 3D"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Smooth Trimesh Collision"
-msgstr "إنشاء متصادم تراميش قريب"
+msgstr "إنشاء متصادم ترام"
 
 #: core/project_settings.cpp drivers/gles2/rasterizer_canvas_base_gles2.cpp
 #: drivers/gles2/rasterizer_scene_gles2.cpp
@@ -1194,7 +1193,7 @@ msgstr "توطين"
 #: scene/3d/remote_transform.cpp scene/3d/spatial.cpp scene/gui/control.cpp
 #, fuzzy
 msgid "Rotation"
-msgstr "خطوة الدوران:"
+msgstr "خطوة الدوران"
 
 #: editor/animation_track_editor.cpp editor/script_editor_debugger.cpp
 #: modules/visual_script/visual_script_nodes.cpp scene/gui/range.cpp
@@ -1204,7 +1203,7 @@ msgstr "قيمة"
 #: editor/animation_track_editor.cpp
 #, fuzzy
 msgid "Arg Count"
-msgstr "الكمية:"
+msgstr "الكمية"
 
 #: editor/animation_track_editor.cpp main/main.cpp
 #: modules/mono/mono_gd/gd_mono.cpp
@@ -1238,12 +1237,12 @@ msgstr "المجرى (Stream)"
 #: editor/animation_track_editor.cpp
 #, fuzzy
 msgid "Start Offset"
-msgstr "مقدار إزاحة الشبكة:"
+msgstr "مقدار إزاحة الشبكة"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
 msgid "End Offset"
-msgstr "المُعادل:"
+msgstr "المُعادل"
 
 #: editor/animation_track_editor.cpp editor/editor_settings.cpp
 #: editor/import/resource_importer_scene.cpp
@@ -1373,7 +1372,7 @@ msgstr "الوقت(ثواني):"
 #: editor/animation_track_editor.cpp
 #, fuzzy
 msgid "Position:"
-msgstr "مكان الرصيف"
+msgstr "مكان الرصيف:"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -1397,27 +1396,27 @@ msgstr "نوع:"
 #: editor/animation_track_editor.cpp
 #, fuzzy
 msgid "(Invalid, expected type: %s)"
-msgstr "إدارة قوالب التصدير:"
+msgstr "إدارة قوالب التصدير"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
 msgid "Easing:"
-msgstr "تسارع بعد بداية بطيئة"
+msgstr "تسارع بعد بداية بطيئة:"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
 msgid "In-Handle:"
-msgstr "حدد المعامل"
+msgstr "حدد المعامل:"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
 msgid "Out-Handle:"
-msgstr "حدد المعامل"
+msgstr "حدد المعامل:"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
 msgid "Stream:"
-msgstr "عنصر خِيار"
+msgstr "عنصر خِيار:"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -2613,7 +2612,7 @@ msgstr "لا يوجد ملف '%s'."
 #: editor/editor_audio_buses.cpp
 #, fuzzy
 msgid "Layout:"
-msgstr "المخطط"
+msgstr "المخطط:"
 
 #: editor/editor_audio_buses.cpp
 msgid "Invalid file, not an audio bus layout."
@@ -2821,7 +2820,7 @@ msgstr "تصدير المشروع لمنصة:"
 #: editor/editor_export.cpp
 #, fuzzy
 msgid "Completed with warnings."
-msgstr "نسخ مسار العُقدة"
+msgstr "نسخ مسار العُقدة."
 
 #: editor/editor_export.cpp
 #, fuzzy
@@ -2831,7 +2830,7 @@ msgstr "اكتمل بنجاح."
 #: editor/editor_export.cpp
 #, fuzzy
 msgid "Failed."
-msgstr "فشل:"
+msgstr "فشل."
 
 #: editor/editor_export.cpp
 msgid "Storing File:"
@@ -2858,12 +2857,12 @@ msgstr "لا يمكن إنشاء المجلد."
 #: editor/editor_export.cpp
 #, fuzzy
 msgid "Failed to export project files."
-msgstr "لم نتمكن من تصدير ملفات المشروع"
+msgstr "لم نتمكن من تصدير ملفات المشروع."
 
 #: editor/editor_export.cpp
 #, fuzzy
 msgid "Can't open file to read from path \"%s\"."
-msgstr "لا يمكن فتح الملف للكتابة:"
+msgstr "لا يمكن فتح الملف للكتابة."
 
 #: editor/editor_export.cpp
 #, fuzzy
@@ -2998,17 +2997,17 @@ msgstr "إدارة القوالب"
 #: editor/editor_export.cpp platform/osx/export/export.cpp
 #, fuzzy
 msgid "The given export path doesn't exist."
-msgstr "مسار التصدير المُزود غير موجود:"
+msgstr "مسار التصدير المُزود غير موجود."
 
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
 #, fuzzy
 msgid "Template file not found: \"%s\"."
-msgstr "ملف النموذج غير موجود:"
+msgstr "ملف النموذج غير موجود: ."
 
 #: editor/editor_export.cpp
 #, fuzzy
 msgid "Failed to copy export template."
-msgstr "إدارة قوالب التصدير:"
+msgstr "إدارة قوالب التصدير."
 
 #: editor/editor_export.cpp platform/windows/export/export.cpp
 #: platform/x11/export/export.cpp
@@ -3304,7 +3303,7 @@ msgstr "الوصول (للملف)"
 #: editor/editor_file_dialog.cpp editor/editor_settings.cpp
 #, fuzzy
 msgid "Display Mode"
-msgstr "وضع التشغيل:"
+msgstr "وضع التشغيل"
 
 #: editor/editor_file_dialog.cpp
 #: editor/import/resource_importer_layered_texture.cpp
@@ -3324,17 +3323,17 @@ msgstr "وضع السحب"
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 #, fuzzy
 msgid "Current Dir"
-msgstr "الحالي:"
+msgstr "الحالي"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 #, fuzzy
 msgid "Current File"
-msgstr "الملف (النسخة) الحالية:"
+msgstr "الملف (النسخة) الحالية"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 #, fuzzy
 msgid "Current Path"
-msgstr "الحالي:"
+msgstr "الحالي"
 
 #: editor/editor_file_dialog.cpp editor/editor_settings.cpp
 #: scene/gui/file_dialog.cpp
@@ -3661,7 +3660,7 @@ msgstr "عنصر مُفعل"
 #: editor/editor_inspector.cpp
 #, fuzzy
 msgid "Draw Red"
-msgstr "استدعاءات الرسم:"
+msgstr "استدعاءات الرسم"
 
 #: editor/editor_inspector.cpp
 #, fuzzy
@@ -4429,7 +4428,7 @@ msgstr "مُتفحص"
 #: editor/editor_node.cpp
 #, fuzzy
 msgid "Default Property Name Style"
-msgstr "مسار المشروع:"
+msgstr "مسار المشروع"
 
 #: editor/editor_node.cpp
 msgid "Default Float Step"
@@ -5278,7 +5277,7 @@ msgstr "فتح الكود البرمجي"
 #: editor/editor_resource_picker.cpp
 #, fuzzy
 msgid "Script Owner"
-msgstr "اسم النص البرمجي:"
+msgstr "اسم النص البرمجي"
 
 #: editor/editor_run_native.cpp
 msgid ""
@@ -5454,12 +5453,12 @@ msgstr "الاتجاهات"
 #: editor/editor_settings.cpp
 #, fuzzy
 msgid "Autoscan Project Path"
-msgstr "مسار المشروع:"
+msgstr "مسار المشروع"
 
 #: editor/editor_settings.cpp
 #, fuzzy
 msgid "Default Project Path"
-msgstr "مسار المشروع:"
+msgstr "مسار المشروع"
 
 #: editor/editor_settings.cpp
 msgid "On Save"
@@ -5482,7 +5481,7 @@ msgstr "نافذة XForm"
 #: editor/editor_settings.cpp
 #, fuzzy
 msgid "Thumbnail Size"
-msgstr "الصورة المصغرة..."
+msgstr "الصورة المصغرة"
 
 #: editor/editor_settings.cpp
 msgid "Docks"
@@ -5612,12 +5611,12 @@ msgstr "المظهر"
 
 #: editor/editor_settings.cpp scene/gui/text_edit.cpp
 msgid "Show Line Numbers"
-msgstr "اضهار رقم الخط"
+msgstr "اظهار رقم الخط"
 
 #: editor/editor_settings.cpp
 #, fuzzy
 msgid "Line Numbers Zero Padded"
-msgstr "رقم الخط:"
+msgstr "رقم الخط"
 
 #: editor/editor_settings.cpp
 msgid "Show Bookmark Gutter"
@@ -5837,12 +5836,12 @@ msgstr "شكل"
 #: editor/editor_settings.cpp
 #, fuzzy
 msgid "Primary Grid Steps"
-msgstr "خطوة الشبكة:"
+msgstr "خطوة الشبكة"
 
 #: editor/editor_settings.cpp
 #, fuzzy
 msgid "Grid Size"
-msgstr "خطوة الشبكة:"
+msgstr "خطوة الشبكة"
 
 #: editor/editor_settings.cpp
 msgid "Grid Division Level Max"
@@ -6027,7 +6026,7 @@ msgstr "إعادة تسمية عنصر اللون"
 #: editor/editor_settings.cpp
 #, fuzzy
 msgid "Bone Selected Color"
-msgstr "عدل على الحساب الحالي:"
+msgstr "عدل على الحساب الحالي"
 
 #: editor/editor_settings.cpp
 msgid "Bone IK Color"
@@ -6040,7 +6039,7 @@ msgstr "لون حدود العظام"
 #: editor/editor_settings.cpp
 #, fuzzy
 msgid "Bone Outline Size"
-msgstr "حجم الخطوط:"
+msgstr "حجم الخطوط"
 
 #: editor/editor_settings.cpp
 msgid "Viewport Border Color"
@@ -6061,7 +6060,7 @@ msgstr "التمرير للتحريك"
 #: editor/editor_settings.cpp
 #, fuzzy
 msgid "Pan Speed"
-msgstr "السرعة:"
+msgstr "السرعة"
 
 #: editor/editor_settings.cpp editor/plugins/polygon_2d_editor_plugin.cpp
 #, fuzzy
@@ -6136,7 +6135,7 @@ msgstr "الاقتطاع التلقائي"
 #: editor/editor_settings.cpp
 #, fuzzy
 msgid "Save Before Running"
-msgstr "احفظ المشهد قبل التشغيل..."
+msgstr "احفظ المشهد قبل التشغيل"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -6182,7 +6181,7 @@ msgstr "مدير المشروع"
 #: editor/editor_settings.cpp
 #, fuzzy
 msgid "Sorting Order"
-msgstr "إعادة تسمية مجلد:"
+msgstr "إعادة تسمية مجلد"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Symbol Color"
@@ -6216,19 +6215,19 @@ msgstr "لون التعليق"
 #: editor/editor_settings.cpp
 #, fuzzy
 msgid "String Color"
-msgstr "تخزين الملف:"
+msgstr "تخزين الملف"
 
 #: editor/editor_settings.cpp platform/javascript/export/export.cpp
 #: platform/uwp/export/export.cpp
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
 msgid "Background Color"
-msgstr "لون خلفية غير صالح."
+msgstr "لون خلفية غير صالح"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 #, fuzzy
 msgid "Completion Background Color"
-msgstr "لون خلفية غير صالح."
+msgstr "لون خلفية غير صالح"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 #, fuzzy
@@ -6255,12 +6254,12 @@ msgstr "الطابق التالي"
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 #, fuzzy
 msgid "Line Number Color"
-msgstr "رقم الخط:"
+msgstr "رقم الخط"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 #, fuzzy
 msgid "Safe Line Number Color"
-msgstr "رقم الخط:"
+msgstr "رقم الخط"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Caret Color"
@@ -6269,7 +6268,7 @@ msgstr "لون علامة الإقحام"
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 #, fuzzy
 msgid "Caret Background Color"
-msgstr "لون خلفية غير صالح."
+msgstr "لون خلفية غير صالح"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -7047,7 +7046,7 @@ msgstr "محدد"
 #: editor/import/resource_importer_layered_texture.cpp
 #, fuzzy
 msgid "ColorCorrect"
-msgstr "الوظيفة البرمجية للون."
+msgstr "الوظيفة البرمجية للون"
 
 #: editor/import/resource_importer_layered_texture.cpp
 msgid "No BPTC If RGB"
@@ -7072,7 +7071,7 @@ msgstr "كرر"
 #: scene/gui/control.cpp
 #, fuzzy
 msgid "Filter"
-msgstr "مرشحات:"
+msgstr "مرشحات"
 
 #: editor/import/resource_importer_layered_texture.cpp
 #: editor/import/resource_importer_texture.cpp
@@ -7101,7 +7100,7 @@ msgstr "الاقتطاع التلقائي"
 #: scene/resources/style_box.cpp
 #, fuzzy
 msgid "Horizontal"
-msgstr "عَرضياً:"
+msgstr "عَرضياً"
 
 #: editor/import/resource_importer_layered_texture.cpp
 #: scene/gui/aspect_ratio_container.cpp scene/gui/control.cpp
@@ -7109,7 +7108,7 @@ msgstr "عَرضياً:"
 #: scene/resources/style_box.cpp
 #, fuzzy
 msgid "Vertical"
-msgstr "شاقولياً:"
+msgstr "شاقولياً"
 
 #: editor/import/resource_importer_obj.cpp
 #, fuzzy
@@ -7124,7 +7123,7 @@ msgstr "وضع التحجيم"
 #: editor/import/resource_importer_obj.cpp
 #, fuzzy
 msgid "Offset Mesh"
-msgstr "المُعادل:"
+msgstr "المُعادل"
 
 #: editor/import/resource_importer_obj.cpp
 #: editor/import/resource_importer_scene.cpp
@@ -7205,7 +7204,7 @@ msgstr "قص العُقد"
 #: editor/import/resource_importer_scene.cpp scene/resources/texture.cpp
 #, fuzzy
 msgid "Storage"
-msgstr "تخزين الملف:"
+msgstr "تخزين الملف"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Use Legacy Names"
@@ -7214,7 +7213,7 @@ msgstr "استخدم الأسماء القديمة"
 #: editor/import/resource_importer_scene.cpp modules/gltf/gltf_state.cpp
 #, fuzzy
 msgid "Materials"
-msgstr "تغيرات المادة:"
+msgstr "تغيرات المادة"
 
 #: editor/import/resource_importer_scene.cpp
 #, fuzzy
@@ -7294,12 +7293,12 @@ msgstr "تفعيل"
 #: editor/import/resource_importer_scene.cpp
 #, fuzzy
 msgid "Max Linear Error"
-msgstr "أقصي أخطاء خطية:"
+msgstr "أقصي أخطاء خطية"
 
 #: editor/import/resource_importer_scene.cpp
 #, fuzzy
 msgid "Max Angular Error"
-msgstr "أقصي أخطاء زواية:"
+msgstr "أقصي أخطاء زواية"
 
 #: editor/import/resource_importer_scene.cpp
 #, fuzzy
@@ -7321,7 +7320,7 @@ msgstr "مقاطع الرسوم المتحركة"
 #: scene/3d/particles.cpp scene/resources/environment.cpp
 #, fuzzy
 msgid "Amount"
-msgstr "الكمية:"
+msgstr "الكمية"
 
 #: editor/import/resource_importer_scene.cpp
 #: editor/plugins/mesh_library_editor_plugin.cpp
@@ -7435,7 +7434,7 @@ msgstr "رأس"
 #: editor/import/resource_importer_texture.cpp
 #, fuzzy
 msgid "Normal Map Invert Y"
-msgstr "حجم عشوائي:"
+msgstr "حجم عشوائي"
 
 #: editor/import/resource_importer_texture.cpp
 msgid "Size Limit"
@@ -7461,12 +7460,12 @@ msgstr ""
 #: editor/import/resource_importer_texture_atlas.cpp
 #, fuzzy
 msgid "Atlas File"
-msgstr "حجم الخطوط:"
+msgstr "حجم الخطوط"
 
 #: editor/import/resource_importer_texture_atlas.cpp
 #, fuzzy
 msgid "Import Mode"
-msgstr "وضع التصدير:"
+msgstr "وضع التصدير"
 
 #: editor/import/resource_importer_texture_atlas.cpp
 #, fuzzy
@@ -7603,7 +7602,7 @@ msgstr "فشل تحميل المورد."
 #: editor/inspector_dock.cpp
 #, fuzzy
 msgid "Property Name Style"
-msgstr "اسم المشروع:"
+msgstr "اسم المشروع"
 
 #: editor/inspector_dock.cpp scene/gui/color_picker.cpp
 msgid "Raw"
@@ -8627,7 +8626,7 @@ msgstr "خطأ في التحميل"
 #: editor/plugins/asset_library_editor_plugin.cpp
 #, fuzzy
 msgid "Available URLs"
-msgstr "الملفات المتوافرة:"
+msgstr "الملفات المتوافرة"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Download for this asset is already in progress!"
@@ -8763,7 +8762,9 @@ msgstr "لا يمكن انشاء خرائط الضوء, تاكد من ان ال�
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid "Failed determining lightmap size. Maximum lightmap size too small?"
-msgstr "فشل تحديد حجم الخريطة الضوئية. الحجم الأقصى للخريطة المضيئة صغير جدًا؟"
+msgstr ""
+"فشل تحديد حجم الخريطة الضوئية (lightmap). هل الحجم الأقصى للخريطة الضوئية "
+"صغير جدًا؟"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
@@ -9688,7 +9689,7 @@ msgstr "بطاقة تعريف"
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
 msgid "Separator"
-msgstr "التباعُدات:"
+msgstr "التباعُدات"
 
 #: editor/plugins/item_list_editor_plugin.cpp
 msgid "Item %d"
@@ -10839,7 +10840,7 @@ msgstr ""
 #: editor/plugins/script_editor_plugin.cpp
 #, fuzzy
 msgid "Current Script Background Color"
-msgstr "لون خلفية غير صالح."
+msgstr "لون خلفية غير صالح"
 
 #: editor/plugins/script_editor_plugin.cpp
 #, fuzzy
@@ -10854,7 +10855,7 @@ msgstr "إنشاء نص برمجي"
 #: editor/plugins/script_editor_plugin.cpp
 #, fuzzy
 msgid "List Script Names As"
-msgstr "اسم النص البرمجي:"
+msgstr "اسم النص البرمجي"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Exec Flags"
@@ -13036,12 +13037,13 @@ msgstr "إعدادت المحاذاة"
 #: scene/2d/path_2d.cpp scene/2d/polygon_2d.cpp scene/2d/sprite.cpp
 #: scene/3d/cpu_particles.cpp scene/3d/label_3d.cpp scene/3d/path.cpp
 #: scene/3d/physics_body.cpp scene/3d/soft_body.cpp scene/3d/sprite_3d.cpp
-#: scene/gui/graph_node.cpp scene/gui/rich_text_effect.cpp
-#: scene/main/canvas_layer.cpp scene/resources/material.cpp
-#: scene/resources/particles_material.cpp scene/resources/style_box.cpp
+#: scene/3d/visual_instance.cpp scene/gui/graph_node.cpp
+#: scene/gui/rich_text_effect.cpp scene/main/canvas_layer.cpp
+#: scene/resources/material.cpp scene/resources/particles_material.cpp
+#: scene/resources/style_box.cpp
 #, fuzzy
 msgid "Offset"
-msgstr "المُعادل:"
+msgstr "المُعادل"
 
 #: editor/plugins/tile_set_editor_plugin.cpp editor/rename_dialog.cpp
 #: scene/gui/range.cpp scene/resources/animation.cpp
@@ -13054,7 +13056,7 @@ msgstr "الخطوة"
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
 msgid "Separation"
-msgstr "التباعُدات:"
+msgstr "التباعُدات"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
@@ -13075,14 +13077,14 @@ msgstr "نص"
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
 msgid "Tex Offset"
-msgstr "مقدار إزاحة الشبكة:"
+msgstr "مقدار إزاحة الشبكة"
 
 #: editor/plugins/tile_set_editor_plugin.cpp modules/csg/csg_shape.cpp
 #: scene/2d/canvas_item.cpp scene/2d/particles_2d.cpp
 #: scene/3d/mesh_instance.cpp scene/resources/primitive_meshes.cpp
 #, fuzzy
 msgid "Material"
-msgstr "تغيرات المادة:"
+msgstr "تغيرات المادة"
 
 #: editor/plugins/tile_set_editor_plugin.cpp scene/2d/canvas_item.cpp
 #: scene/3d/label_3d.cpp scene/3d/sprite_3d.cpp scene/resources/style_box.cpp
@@ -13103,7 +13105,7 @@ msgstr "وضع قناع-البِت"
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
 msgid "Subtile Size"
-msgstr "حجم الخطوط:"
+msgstr "حجم الخطوط"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
@@ -13123,7 +13125,7 @@ msgstr "وضع التنقل"
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
 msgid "Shape Offset"
-msgstr "المُعادل:"
+msgstr "المُعادل"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
@@ -13242,7 +13244,7 @@ msgstr "أختر مسار المفتاح الخاص لSSH"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "SSH Passphrase"
-msgstr "كلمة مرور SSH"
+msgstr "كلمة المرور ل(SSH)"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Detect new changes"
@@ -14395,12 +14397,12 @@ msgstr "تحريك إلي..."
 #: editor/project_export.cpp
 #, fuzzy
 msgid "Export PCK/Zip..."
-msgstr "تصدير PCK/ ملف مضغوط Zip"
+msgstr "تصدير PCK/ ملف مضغوط Zip..."
 
 #: editor/project_export.cpp
 #, fuzzy
 msgid "Export Project..."
-msgstr "تصدير المشروع"
+msgstr "تصدير المشروع..."
 
 #: editor/project_export.cpp
 msgid "Export All"
@@ -14409,12 +14411,12 @@ msgstr "تصدير الكُل"
 #: editor/project_export.cpp
 #, fuzzy
 msgid "Choose an export mode:"
-msgstr "من فضلك اختر مُجلداً فارغاً."
+msgstr "من فضلك اختر مُجلداً فارغاً:"
 
 #: editor/project_export.cpp
 #, fuzzy
 msgid "Export All..."
-msgstr "تصدير الكُل"
+msgstr "تصدير الكُل..."
 
 #: editor/project_export.cpp editor/project_manager.cpp
 msgid "ZIP File"
@@ -14497,15 +14499,16 @@ msgid "Invalid project path (changed anything?)."
 msgstr "مسار مشروع غير صالح (أعدلت شيء؟)."
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid ""
-"Couldn't load project.godot in project path (error %d). It may be missing or "
-"corrupted."
+"Couldn't load project at '%s' (error %d). It may be missing or corrupted."
 msgstr ""
 "لم يتم تحميل project.godot من مسار المشروع (خطأ %d). قد يكون مفقوداً أو تالفاً."
 
 #: editor/project_manager.cpp
-msgid "Couldn't edit project.godot in project path."
-msgstr "لا قدرة على تحرير project.godot في مسار المشروع."
+#, fuzzy
+msgid "Couldn't save project at '%s' (error %d)."
+msgstr "لا يمكن فتح المشروع في '%s'."
 
 #: editor/project_manager.cpp
 msgid "Couldn't create project.godot in project path."
@@ -15541,7 +15544,7 @@ msgstr "اجعله محلياً"
 #: editor/scene_tree_dock.cpp
 #, fuzzy
 msgid "Enable Scene Unique Name(s)"
-msgstr "إسم العقدة:"
+msgstr "إسم العقدة"
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
@@ -15551,7 +15554,7 @@ msgstr "لقد تم استخدام هذا الاسم في وظيفة برمجي�
 #: editor/scene_tree_dock.cpp
 #, fuzzy
 msgid "Disable Scene Unique Name(s)"
-msgstr "إسم العقدة:"
+msgstr "إسم العقدة"
 
 #: editor/scene_tree_dock.cpp
 msgid "New Scene Root"
@@ -15752,7 +15755,7 @@ msgstr "مجموعة الأزرار"
 #: editor/scene_tree_editor.cpp
 #, fuzzy
 msgid "Disable Scene Unique Name"
-msgstr "إسم العقدة:"
+msgstr "إسم العقدة"
 
 #: editor/scene_tree_editor.cpp
 msgid "(Connecting From)"
@@ -16634,7 +16637,7 @@ msgstr "الحجم الكامل"
 #: main/main.cpp scene/resources/dynamic_font.cpp
 #, fuzzy
 msgid "Use Filter"
-msgstr "تصفية:"
+msgstr "تصفية"
 
 #: main/main.cpp scene/resources/style_box.cpp
 #, fuzzy
@@ -16683,7 +16686,7 @@ msgstr ""
 #: main/main.cpp
 #, fuzzy
 msgid "Tooltip Position Offset"
-msgstr "مقدار إزاحة الدوران:"
+msgstr "مقدار إزاحة الدوران"
 
 #: main/main.cpp modules/mono/mono_gd/gd_mono.cpp
 #, fuzzy
@@ -16698,7 +16701,7 @@ msgstr "مُنقح الأخطاء"
 #: main/main.cpp modules/mono/mono_gd/gd_mono.cpp
 #, fuzzy
 msgid "Wait Timeout"
-msgstr "انتهت المهلة."
+msgstr "انتهت المهلة"
 
 #: main/main.cpp
 msgid "Runtime"
@@ -16808,12 +16811,12 @@ msgstr "اقلب الوجوه"
 #: scene/resources/sphere_shape.cpp
 #, fuzzy
 msgid "Radius"
-msgstr "نصف القطر:"
+msgstr "نصف القطر"
 
 #: modules/csg/csg_shape.cpp scene/resources/primitive_meshes.cpp
 #, fuzzy
 msgid "Radial Segments"
-msgstr "معاملات المشهد الرئيس:"
+msgstr "معاملات المشهد الرئيس"
 
 #: modules/csg/csg_shape.cpp scene/resources/primitive_meshes.cpp
 msgid "Rings"
@@ -16878,7 +16881,7 @@ msgstr ""
 #: modules/csg/csg_shape.cpp
 #, fuzzy
 msgid "Path Rotation"
-msgstr "دوران عشوائي:"
+msgstr "دوران عشوائي"
 
 #: modules/csg/csg_shape.cpp
 #, fuzzy
@@ -16897,7 +16900,7 @@ msgstr "المسار المحلي"
 #: modules/csg/csg_shape.cpp
 #, fuzzy
 msgid "Path Joined"
-msgstr "دوران عشوائي:"
+msgstr "دوران عشوائي"
 
 #: modules/enet/networked_multiplayer_enet.cpp
 msgid "Compression Mode"
@@ -17020,12 +17023,12 @@ msgstr "مكتبات:"
 #: modules/gdnative/nativescript/nativescript.cpp
 #, fuzzy
 msgid "Class Name"
-msgstr "اسم الفئة:"
+msgstr "اسم الفئة"
 
 #: modules/gdnative/nativescript/nativescript.cpp
 #, fuzzy
 msgid "Script Class"
-msgstr "اسم النص البرمجي:"
+msgstr "اسم النص البرمجي"
 
 #: modules/gdnative/nativescript/nativescript.cpp
 msgid "Icon Path"
@@ -17134,7 +17137,7 @@ msgstr "الواجهة View الخلفية"
 #: modules/gltf/gltf_accessor.cpp modules/gltf/gltf_buffer_view.cpp
 #, fuzzy
 msgid "Byte Offset"
-msgstr "مقدار إزاحة الشبكة:"
+msgstr "مقدار إزاحة الشبكة"
 
 #: modules/gltf/gltf_accessor.cpp
 msgid "Component Type"
@@ -17147,7 +17150,7 @@ msgstr ""
 #: modules/gltf/gltf_accessor.cpp
 #, fuzzy
 msgid "Count"
-msgstr "الكمية:"
+msgstr "الكمية"
 
 #: modules/gltf/gltf_accessor.cpp scene/resources/visual_shader_nodes.cpp
 msgid "Min"
@@ -17173,7 +17176,7 @@ msgstr ""
 #: modules/gltf/gltf_accessor.cpp
 #, fuzzy
 msgid "Sparse Indices Component Type"
-msgstr "توزيع الأشكال الهندسية..."
+msgstr "توزيع الأشكال الهندسية"
 
 #: modules/gltf/gltf_accessor.cpp
 msgid "Sparse Values Buffer View"
@@ -17252,7 +17255,7 @@ msgstr "طبخ (إعداد) خرائط الضوء"
 #: modules/gltf/gltf_mesh.cpp
 #, fuzzy
 msgid "Instance Materials"
-msgstr "تغيرات المادة:"
+msgstr "تغيرات المادة"
 
 #: modules/gltf/gltf_node.cpp scene/3d/skeleton.cpp
 msgid "Parent"
@@ -17808,7 +17811,7 @@ msgstr "ضوضاء"
 #: modules/opensimplex/noise_texture.cpp
 #, fuzzy
 msgid "Noise Offset"
-msgstr "مقدار إزاحة الشبكة:"
+msgstr "مقدار إزاحة الشبكة"
 
 #: modules/opensimplex/open_simplex_noise.cpp
 msgid "Octaves"
@@ -18363,7 +18366,7 @@ msgstr "اعادة التعيين للإفتراضيات"
 #: modules/visual_script/visual_script_func_nodes.cpp
 #, fuzzy
 msgid "Validate"
-msgstr "الأحرف الصالحة:"
+msgstr "الأحرف الصالحة"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 #, fuzzy
@@ -18457,7 +18460,7 @@ msgstr "تغيير حجم المصفوفة"
 #: scene/resources/visual_shader_nodes.cpp
 #, fuzzy
 msgid "Operator"
-msgstr "مُشغل التراكم."
+msgstr "مُشغل التراكم"
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "Invalid argument of type:"
@@ -18703,7 +18706,7 @@ msgstr "إخلاء سلسلة IK"
 #: modules/websocket/websocket_server.cpp
 #, fuzzy
 msgid "Handshake Timeout"
-msgstr "انتهت المهلة."
+msgstr "انتهت المهلة"
 
 #: modules/webxr/webxr_interface.cpp
 #, fuzzy
@@ -18713,12 +18716,12 @@ msgstr "وضع الأقليم"
 #: modules/webxr/webxr_interface.cpp
 #, fuzzy
 msgid "Required Features"
-msgstr "المزايا الرئيسية:"
+msgstr "المزايا الرئيسية"
 
 #: modules/webxr/webxr_interface.cpp
 #, fuzzy
 msgid "Optional Features"
-msgstr "المزايا الرئيسية:"
+msgstr "المزايا الرئيسية"
 
 #: modules/webxr/webxr_interface.cpp
 msgid "Requested Reference Space Types"
@@ -18825,7 +18828,7 @@ msgstr "مسار التصدير"
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Min SDK"
-msgstr "حجم الخطوط:"
+msgstr "حجم الخطوط"
 
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
@@ -18883,7 +18886,7 @@ msgstr "يَحزم\"ينتج الملف المضغوط\""
 #: platform/android/export/export_plugin.cpp platform/uwp/export/export.cpp
 #, fuzzy
 msgid "Unique Name"
-msgstr "إسم العقدة:"
+msgstr "إسم العقدة"
 
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
@@ -18893,7 +18896,7 @@ msgstr "الإشاراة"
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Classify As Game"
-msgstr "اسم الفئة:"
+msgstr "اسم الفئة"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Retain Data On Uninstall"
@@ -18907,7 +18910,7 @@ msgstr "حذف العُقد"
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Graphics"
-msgstr "مقدار إزاحة الشبكة:"
+msgstr "مقدار إزاحة الشبكة"
 
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
@@ -18979,7 +18982,7 @@ msgstr "المجتمع"
 #: platform/android/export/export_plugin.cpp platform/uwp/export/export.cpp
 #, fuzzy
 msgid "Extra Args"
-msgstr "وسائط إستدعاء إضافية :"
+msgstr "وسائط إستدعاء إضافية"
 
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
@@ -19283,7 +19286,7 @@ msgstr ""
 msgid ""
 "Unable to overwrite res://android/build/res/*.xml files with project name."
 msgstr ""
-"تعذرت كتابة overwrite ملفات res://android/build/res/*.xml مع اسم المشروع"
+"تعذرت كتابة overwrite ملفات res://android/build/res/*.xml مع اسم المشروع."
 
 #: platform/android/export/export_plugin.cpp
 msgid "Could not export project files to gradle project."
@@ -19318,7 +19321,7 @@ msgstr "تعذر نسخ وإعادة تسمية الملف المصدر، تفق
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Package not found: \"%s\"."
-msgstr "لم يتم إيجاد الرسم المتحرك: '%s'"
+msgstr "لم يتم إيجاد الرسم المتحرك: '%s'."
 
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
@@ -19347,7 +19350,7 @@ msgstr "إضافة %s..."
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
 msgid "Could not export project files."
-msgstr "لم نتمكن من تصدير ملفات المشروع"
+msgstr "لم نتمكن من تصدير ملفات المشروع."
 
 #: platform/android/export/export_plugin.cpp
 msgid "Aligning APK..."
@@ -19445,7 +19448,7 @@ msgstr ""
 #: platform/iphone/export/export.cpp
 #, fuzzy
 msgid "Export Method Release"
-msgstr "وضع التصدير:"
+msgstr "وضع التصدير"
 
 #: platform/iphone/export/export.cpp
 msgid "Targeted Device Family"
@@ -19458,7 +19461,7 @@ msgstr ""
 #: platform/iphone/export/export.cpp platform/osx/export/export.cpp
 #, fuzzy
 msgid "Identifier"
-msgstr "مُحدد غير صالح:"
+msgstr "مُحدد غير صالح"
 
 #: platform/iphone/export/export.cpp platform/osx/export/export.cpp
 #, fuzzy
@@ -19488,7 +19491,7 @@ msgstr "الوصول للواي-فاي"
 #: platform/iphone/export/export.cpp
 #, fuzzy
 msgid "Push Notifications"
-msgstr "دوران عشوائي:"
+msgstr "دوران عشوائي"
 
 #: platform/iphone/export/export.cpp
 #, fuzzy
@@ -19629,17 +19632,17 @@ msgstr "شغل ملف HTML المُصدر في المتصفح الإفتراضي
 #: platform/javascript/export/export.cpp
 #, fuzzy
 msgid "Could not open template for export: \"%s\"."
-msgstr "لا يمكن فتح القالب من أجل التصدير:"
+msgstr "لا يمكن فتح القالب من أجل التصدير: ."
 
 #: platform/javascript/export/export.cpp
 #, fuzzy
 msgid "Invalid export template: \"%s\"."
-msgstr "إدارة قوالب التصدير:"
+msgstr "إدارة قوالب التصدير: ."
 
 #: platform/javascript/export/export.cpp
 #, fuzzy
 msgid "Could not write file: \"%s\"."
-msgstr "لا يمكن كتابة الملف:"
+msgstr "لا يمكن كتابة الملف: ."
 
 #: platform/javascript/export/export.cpp platform/osx/export/export.cpp
 #, fuzzy
@@ -19649,7 +19652,7 @@ msgstr "تحديد الهامش"
 #: platform/javascript/export/export.cpp
 #, fuzzy
 msgid "Could not read file: \"%s\"."
-msgstr "لا يمكن كتابة الملف:"
+msgstr "لا يمكن كتابة الملف: ."
 
 #: platform/javascript/export/export.cpp
 msgid "PWA"
@@ -19658,7 +19661,7 @@ msgstr ""
 #: platform/javascript/export/export.cpp
 #, fuzzy
 msgid "Variant"
-msgstr "التباعُدات:"
+msgstr "التباعُدات"
 
 #: platform/javascript/export/export.cpp
 #, fuzzy
@@ -19732,17 +19735,17 @@ msgstr ""
 #: platform/javascript/export/export.cpp
 #, fuzzy
 msgid "Could not read HTML shell: \"%s\"."
-msgstr "لا يمكن قراءة ملف HTML مخصص:"
+msgstr "لا يمكن قراءة ملف HTML مخصص: ."
 
 #: platform/javascript/export/export.cpp
 #, fuzzy
 msgid "Could not create HTTP server directory: %s."
-msgstr "لا يمكن إنشاء مجلد خادم ال HTTP:"
+msgstr "لا يمكن إنشاء مجلد خادم ال HTTP: ."
 
 #: platform/javascript/export/export.cpp
 #, fuzzy
 msgid "Error starting HTTP server: %d."
-msgstr "خطأ في بدء تشغيل خادم HTTP:"
+msgstr "خطأ في بدء تشغيل خادم HTTP: ."
 
 #: platform/javascript/export/export.cpp
 msgid "Web"
@@ -19848,7 +19851,7 @@ msgstr ""
 #: platform/osx/export/export.cpp
 #, fuzzy
 msgid "App Category"
-msgstr "الفئة:"
+msgstr "الفئة"
 
 #: platform/osx/export/export.cpp
 msgid "High Res"
@@ -20044,7 +20047,7 @@ msgstr ""
 #: platform/osx/export/export.cpp
 #, fuzzy
 msgid "Could not open icon file \"%s\"."
-msgstr "لم نتمكن من تصدير ملفات المشروع"
+msgstr "لم نتمكن من تصدير ملفات المشروع."
 
 #: platform/osx/export/export.cpp
 msgid "Could not start xcrun executable."
@@ -20053,7 +20056,7 @@ msgstr "تعذر بدء تشغيل xcrun."
 #: platform/osx/export/export.cpp
 #, fuzzy
 msgid "Notarization failed."
-msgstr "توطين"
+msgstr "توطين."
 
 #: platform/osx/export/export.cpp
 msgid "Notarization request UUID: \"%s\""
@@ -20108,7 +20111,7 @@ msgstr "لم توجد ايقونات."
 #: platform/osx/export/export.cpp
 #, fuzzy
 msgid "Cannot sign file %s."
-msgstr "خطأ في تحميل الملف: %s"
+msgstr "خطأ في تحميل الملف %s."
 
 #: platform/osx/export/export.cpp
 msgid "Relative symlinks are not supported, exported \"%s\" might be broken!"
@@ -20139,12 +20142,12 @@ msgstr "ينشئ الصورة المصغرة"
 #: platform/osx/export/export.cpp
 #, fuzzy
 msgid "Could not find template app to export: \"%s\"."
-msgstr "لم يتم إيجاد قالب التطبيق (Template app) للتصدير:"
+msgstr "لم يتم إيجاد قالب التطبيق (Template app) للتصدير: ."
 
 #: platform/osx/export/export.cpp
 #, fuzzy
 msgid "Invalid export format."
-msgstr "إدارة قوالب التصدير:"
+msgstr "إدارة قوالب التصدير."
 
 #: platform/osx/export/export.cpp
 msgid ""
@@ -20331,7 +20334,7 @@ msgstr "إظهار الكل"
 #: platform/uwp/export/export.cpp
 #, fuzzy
 msgid "Short Name"
-msgstr "اسم النص البرمجي:"
+msgstr "اسم النص البرمجي"
 
 #: platform/uwp/export/export.cpp
 msgid "Publisher"
@@ -20340,12 +20343,12 @@ msgstr ""
 #: platform/uwp/export/export.cpp
 #, fuzzy
 msgid "Publisher Display Name"
-msgstr "اسم الناشر المعروض للرُزمة غير صالح."
+msgstr "اسم الناشر المعروض للرُزمة غير صالح"
 
 #: platform/uwp/export/export.cpp
 #, fuzzy
 msgid "Product GUID"
-msgstr "مُعرف GUID (المُعرّف الفريد العالمي) للمنتج غير صالح."
+msgstr "مُعرف GUID (المُعرّف الفريد العالمي) للمنتج غير صالح"
 
 #: platform/uwp/export/export.cpp
 #, fuzzy
@@ -20360,7 +20363,7 @@ msgstr "الإشاراة"
 #: platform/uwp/export/export.cpp
 #, fuzzy
 msgid "Certificate"
-msgstr "القمم:"
+msgstr "القمم"
 
 #: platform/uwp/export/export.cpp
 #, fuzzy
@@ -20387,7 +20390,7 @@ msgstr "تحديد التعبير"
 
 #: platform/uwp/export/export.cpp
 msgid "Landscape"
-msgstr ""
+msgstr "بشكل افقي (Landscape)"
 
 #: platform/uwp/export/export.cpp
 #, fuzzy
@@ -20430,7 +20433,7 @@ msgstr ""
 #: platform/uwp/export/export.cpp
 #, fuzzy
 msgid "Splash Screen"
-msgstr "استدعاءات الرسم:"
+msgstr "استدعاءات الرسم"
 
 #: platform/uwp/export/export.cpp
 #, fuzzy
@@ -20528,7 +20531,7 @@ msgstr "مُنقح الأخطاء"
 #: platform/windows/export/export.cpp
 #, fuzzy
 msgid "Failed to rename temporary file \"%s\"."
-msgstr "لا يمكن حذف ملف مؤقت:"
+msgstr "لا يمكن حذف ملف مؤقت."
 
 #: platform/windows/export/export.cpp
 msgid "Identity Type"
@@ -20556,17 +20559,17 @@ msgstr "الإصدار"
 #: platform/windows/export/export.cpp
 #, fuzzy
 msgid "Product Version"
-msgstr "مُعرف GUID (المُعرّف الفريد العالمي) للمنتج غير صالح:"
+msgstr "مُعرف GUID (المُعرّف الفريد العالمي) للمنتج غير صالح"
 
 #: platform/windows/export/export.cpp
 #, fuzzy
 msgid "Company Name"
-msgstr "إسم العقدة:"
+msgstr "إسم العقدة"
 
 #: platform/windows/export/export.cpp
 #, fuzzy
 msgid "Product Name"
-msgstr "اسم المشروع:"
+msgstr "اسم المشروع"
 
 #: platform/windows/export/export.cpp
 #, fuzzy
@@ -20580,7 +20583,7 @@ msgstr ""
 #: platform/windows/export/export.cpp
 #, fuzzy
 msgid "Resources Modification"
-msgstr "دوران عشوائي:"
+msgstr "دوران عشوائي"
 
 #: platform/windows/export/export.cpp
 #, fuzzy
@@ -20617,7 +20620,7 @@ msgstr "لا يمكن العثور على مفتاح المتجر، لا يمك�
 #: platform/windows/export/export.cpp
 #, fuzzy
 msgid "Invalid identity type."
-msgstr "مُحدد غير صالح:"
+msgstr "مُحدد غير صالح."
 
 #: platform/windows/export/export.cpp
 #, fuzzy
@@ -20639,7 +20642,7 @@ msgstr "صيغة غير صالحة."
 #: platform/windows/export/export.cpp
 #, fuzzy
 msgid "Failed to remove temporary file \"%s\"."
-msgstr "لا يمكن حذف ملف مؤقت:"
+msgstr "لا يمكن حذف ملف مؤقت."
 
 #: platform/windows/export/export.cpp
 msgid ""
@@ -20690,8 +20693,9 @@ msgid "Osslsigncode"
 msgstr ""
 
 #: platform/windows/export/export.cpp
+#, fuzzy
 msgid "Wine"
-msgstr ""
+msgstr "طبقة المعالجة Wine"
 
 #: platform/x11/export/export.cpp
 msgid "32-bit executables cannot have embedded data >= 4 GiB."
@@ -20828,7 +20832,7 @@ msgstr ""
 #: scene/resources/material.cpp
 #, fuzzy
 msgid "Max Distance"
-msgstr "اختر المسافة:"
+msgstr "اختر المسافة"
 
 #: scene/2d/audio_stream_player_2d.cpp scene/3d/light.cpp
 #, fuzzy
@@ -20858,13 +20862,13 @@ msgstr "وضع الأيقونة"
 #: scene/2d/camera_2d.cpp
 #, fuzzy
 msgid "Rotating"
-msgstr "خطوة الدوران:"
+msgstr "خطوة الدوران"
 
 #: scene/2d/camera_2d.cpp scene/2d/listener_2d.cpp scene/3d/camera.cpp
 #: scene/3d/listener.cpp scene/animation/animation_blend_tree.cpp
 #, fuzzy
 msgid "Current"
-msgstr "الحالي:"
+msgstr "الحالي"
 
 #: scene/2d/camera_2d.cpp scene/gui/graph_edit.cpp
 #, fuzzy
@@ -20948,12 +20952,12 @@ msgstr "تحديد الهامش"
 #: scene/2d/camera_2d.cpp
 #, fuzzy
 msgid "Draw Screen"
-msgstr "استدعاءات الرسم:"
+msgstr "استدعاءات الرسم"
 
 #: scene/2d/camera_2d.cpp
 #, fuzzy
 msgid "Draw Limits"
-msgstr "استدعاءات الرسم:"
+msgstr "استدعاءات الرسم"
 
 #: scene/2d/camera_2d.cpp
 #, fuzzy
@@ -21150,7 +21154,7 @@ msgstr ""
 #: scene/3d/cpu_particles.cpp scene/3d/particles.cpp
 #, fuzzy
 msgid "Emitting"
-msgstr "الإعدادات:"
+msgstr "الإعدادات"
 
 #: scene/2d/cpu_particles_2d.cpp scene/2d/particles_2d.cpp
 #: scene/3d/cpu_particles.cpp scene/3d/particles.cpp
@@ -21178,7 +21182,7 @@ msgstr ""
 #: scene/3d/cpu_particles.cpp scene/3d/particles.cpp
 #, fuzzy
 msgid "Randomness"
-msgstr "إعادة تشغيل عشوائية (ثواني):"
+msgstr "إعادة تشغيل عشوائية (ثواني)"
 
 #: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
 #: scene/resources/particles_material.cpp
@@ -21351,7 +21355,7 @@ msgstr "إغلاق المنحنى"
 #: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
 #, fuzzy
 msgid "Scale Amount"
-msgstr "الكمية:"
+msgstr "الكمية"
 
 #: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
 msgid "Scale Amount Random"
@@ -21377,25 +21381,25 @@ msgstr ""
 #: scene/resources/particles_material.cpp
 #, fuzzy
 msgid "Hue Variation"
-msgstr "التباعُدات:"
+msgstr "التباعُدات"
 
 #: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
 #: scene/resources/particles_material.cpp
 #, fuzzy
 msgid "Variation"
-msgstr "التباعُدات:"
+msgstr "التباعُدات"
 
 #: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
 #: scene/resources/particles_material.cpp
 #, fuzzy
 msgid "Variation Random"
-msgstr "التباعُدات:"
+msgstr "التباعُدات"
 
 #: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
 #: scene/resources/particles_material.cpp
 #, fuzzy
 msgid "Variation Curve"
-msgstr "التباعُدات:"
+msgstr "التباعُدات"
 
 #: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
 #: scene/resources/particles_material.cpp
@@ -21413,7 +21417,7 @@ msgstr "تقسيم المنحنى"
 #: scene/resources/particles_material.cpp
 #, fuzzy
 msgid "Offset Random"
-msgstr "المُعادل:"
+msgstr "المُعادل"
 
 #: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
 #: scene/resources/particles_material.cpp
@@ -21612,12 +21616,12 @@ msgstr "وضع الأقليم"
 #: scene/2d/line_2d.cpp
 #, fuzzy
 msgid "End Cap Mode"
-msgstr "وضع المحاذاة:"
+msgstr "وضع المحاذاة"
 
 #: scene/2d/line_2d.cpp scene/2d/polygon_2d.cpp scene/resources/style_box.cpp
 #, fuzzy
 msgid "Border"
-msgstr "إعادة تسمية مجلد:"
+msgstr "إعادة تسمية مجلد"
 
 #: scene/2d/line_2d.cpp
 msgid "Sharp Limit"
@@ -21646,7 +21650,7 @@ msgstr ""
 #: scene/2d/navigation_2d.cpp scene/3d/navigation.cpp
 #, fuzzy
 msgid "Edge Connection Margin"
-msgstr "تعديل الإتصال:"
+msgstr "تعديل الإتصال"
 
 #: scene/2d/navigation_2d.cpp
 msgid ""
@@ -21663,7 +21667,7 @@ msgstr "الربط"
 #: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
 #, fuzzy
 msgid "Path Desired Distance"
-msgstr "اختر المسافة:"
+msgstr "اختر المسافة"
 
 #: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
 msgid "Target Desired Distance"
@@ -21672,7 +21676,7 @@ msgstr ""
 #: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
 #, fuzzy
 msgid "Path Max Distance"
-msgstr "اختر المسافة:"
+msgstr "اختر المسافة"
 
 #: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
 #, fuzzy
@@ -21700,7 +21704,7 @@ msgstr "القلب أفقياً"
 #: scene/2d/navigation_agent_2d.cpp scene/3d/navigation_agent.cpp
 #, fuzzy
 msgid "Max Speed"
-msgstr "السرعة:"
+msgstr "السرعة"
 
 #: scene/2d/navigation_agent_2d.cpp
 msgid ""
@@ -21744,7 +21748,7 @@ msgstr "السفر"
 #: scene/main/canvas_layer.cpp
 #, fuzzy
 msgid "Rotation Degrees"
-msgstr "يُدير %s من الدرجات."
+msgstr "يُدير %s من الدرجات"
 
 #: scene/2d/node_2d.cpp scene/3d/spatial.cpp
 #, fuzzy
@@ -21754,12 +21758,12 @@ msgstr "ثابت"
 #: scene/2d/node_2d.cpp
 #, fuzzy
 msgid "Global Rotation Degrees"
-msgstr "يُدير %s من الدرجات."
+msgstr "يُدير %s من الدرجات"
 
 #: scene/2d/node_2d.cpp
 #, fuzzy
 msgid "Global Scale"
-msgstr "حجم عشوائي:"
+msgstr "حجم عشوائي"
 
 #: scene/2d/node_2d.cpp scene/3d/spatial.cpp
 #, fuzzy
@@ -21779,7 +21783,7 @@ msgstr ""
 #: scene/2d/parallax_background.cpp
 #, fuzzy
 msgid "Base Offset"
-msgstr "المُعادل:"
+msgstr "المُعادل"
 
 #: scene/2d/parallax_background.cpp
 #, fuzzy
@@ -21878,17 +21882,17 @@ msgstr ""
 #: scene/2d/path_2d.cpp scene/3d/path.cpp
 #, fuzzy
 msgid "Unit Offset"
-msgstr "مقدار إزاحة الشبكة:"
+msgstr "مقدار إزاحة الشبكة"
 
 #: scene/2d/path_2d.cpp scene/3d/camera.cpp scene/3d/path.cpp
 #, fuzzy
 msgid "H Offset"
-msgstr "المُعادل:"
+msgstr "المُعادل"
 
 #: scene/2d/path_2d.cpp scene/3d/camera.cpp scene/3d/path.cpp
 #, fuzzy
 msgid "V Offset"
-msgstr "المُعادل:"
+msgstr "المُعادل"
 
 #: scene/2d/path_2d.cpp scene/3d/path.cpp
 msgid "Cubic Interp"
@@ -21951,7 +21955,7 @@ msgstr ""
 #: scene/2d/physics_body_2d.cpp
 #, fuzzy
 msgid "Inertia"
-msgstr "شاقولياً:"
+msgstr "شاقولياً"
 
 #: scene/2d/physics_body_2d.cpp scene/3d/physics_body.cpp
 #, fuzzy
@@ -21990,7 +21994,7 @@ msgstr "المحاذاة الذكية"
 #: scene/2d/physics_body_2d.cpp scene/3d/physics_body.cpp
 #, fuzzy
 msgid "Can Sleep"
-msgstr "السرعة:"
+msgstr "السرعة"
 
 #: scene/2d/physics_body_2d.cpp scene/3d/physics_body.cpp
 msgid "Damp"
@@ -22037,7 +22041,7 @@ msgstr "البنية (اللاحقة)"
 #: scene/2d/physics_body_2d.cpp scene/3d/physics_body.cpp
 #, fuzzy
 msgid "Remainder"
-msgstr "مُحرك الإخراج البصري:"
+msgstr "مُحرك الإخراج البصري"
 
 #: scene/2d/physics_body_2d.cpp scene/3d/physics_body.cpp
 #, fuzzy
@@ -22239,7 +22243,7 @@ msgstr "وضع الأولية"
 #: scene/2d/tile_map.cpp
 #, fuzzy
 msgid "Centered Textures"
-msgstr "المزايا الرئيسية:"
+msgstr "المزايا الرئيسية"
 
 #: scene/2d/tile_map.cpp
 msgid "Cell Clip UV"
@@ -22371,7 +22375,7 @@ msgstr ""
 #: scene/3d/arvr_nodes.cpp servers/arvr_server.cpp
 #, fuzzy
 msgid "World Scale"
-msgstr "حجم عشوائي:"
+msgstr "حجم عشوائي"
 
 #: scene/3d/audio_stream_player_3d.cpp
 #, fuzzy
@@ -22402,7 +22406,7 @@ msgstr "الوان الإنبعاث"
 #: scene/3d/audio_stream_player_3d.cpp
 #, fuzzy
 msgid "Degrees"
-msgstr "يُدير %s من الدرجات."
+msgstr "يُدير %s من الدرجات"
 
 #: scene/3d/audio_stream_player_3d.cpp
 #, fuzzy
@@ -22489,7 +22493,7 @@ msgstr ""
 #: scene/3d/baked_lightmap.cpp
 #, fuzzy
 msgid "Use Denoiser"
-msgstr "تصفية:"
+msgstr "تصفية"
 
 #: scene/3d/baked_lightmap.cpp scene/resources/texture.cpp
 msgid "Use HDR"
@@ -22518,7 +22522,7 @@ msgstr "عام"
 #: scene/3d/baked_lightmap.cpp
 #, fuzzy
 msgid "Max Size"
-msgstr "الحجم:"
+msgstr "الحجم"
 
 #: scene/3d/baked_lightmap.cpp
 #, fuzzy
@@ -22528,7 +22532,7 @@ msgstr "قص العُقد"
 #: scene/3d/baked_lightmap.cpp
 #, fuzzy
 msgid "Custom Sky Rotation Degrees"
-msgstr "يُدير %s من الدرجات."
+msgstr "يُدير %s من الدرجات"
 
 #: scene/3d/baked_lightmap.cpp scene/3d/ray_cast.cpp
 #, fuzzy
@@ -22562,7 +22566,7 @@ msgstr "مع البيانات"
 #: scene/3d/bone_attachment.cpp scene/3d/physics_body.cpp
 #, fuzzy
 msgid "Bone Name"
-msgstr "إسم العقدة:"
+msgstr "إسم العقدة"
 
 #: scene/3d/camera.cpp
 msgid "Keep Aspect"
@@ -22589,7 +22593,7 @@ msgstr ""
 #: scene/3d/camera.cpp
 #, fuzzy
 msgid "Frustum Offset"
-msgstr "مقدار إزاحة الشبكة:"
+msgstr "مقدار إزاحة الشبكة"
 
 #: scene/3d/camera.cpp
 #, fuzzy
@@ -22853,7 +22857,7 @@ msgstr "الخطوط"
 #: scene/3d/label_3d.cpp scene/resources/primitive_meshes.cpp
 #, fuzzy
 msgid "Horizontal Alignment"
-msgstr "عَرضياً:"
+msgstr "عَرضياً"
 
 #: scene/3d/label_3d.cpp
 #, fuzzy
@@ -22919,7 +22923,7 @@ msgstr "فصل المسار"
 #: scene/3d/light.cpp
 #, fuzzy
 msgid "Blend Splits"
-msgstr "أوقات الدمج:"
+msgstr "أوقات الدمج"
 
 #: scene/3d/light.cpp
 #, fuzzy
@@ -22965,7 +22969,7 @@ msgstr ""
 #: scene/3d/mesh_instance.cpp
 #, fuzzy
 msgid "Transform Normals"
-msgstr "أجهض التحول."
+msgstr "أجهض التحول"
 
 #: scene/3d/navigation.cpp
 msgid ""
@@ -23058,12 +23062,12 @@ msgstr "تشغيل/إطفاء الوضوحية Visibility"
 #: scene/3d/particles.cpp
 #, fuzzy
 msgid "Draw Passes"
-msgstr "استدعاءات الرسم:"
+msgstr "استدعاءات الرسم"
 
 #: scene/3d/particles.cpp
 #, fuzzy
 msgid "Passes"
-msgstr "استدعاءات الرسم:"
+msgstr "استدعاءات الرسم"
 
 #: scene/3d/path.cpp
 msgid "PathFollow only works when set as a child of a Path node."
@@ -23161,7 +23165,7 @@ msgstr ""
 #: scene/3d/vehicle_body.cpp
 #, fuzzy
 msgid "Relaxation"
-msgstr "التباعُدات:"
+msgstr "التباعُدات"
 
 #: scene/3d/physics_body.cpp
 #, fuzzy
@@ -23176,7 +23180,7 @@ msgstr "خطي"
 #: scene/3d/physics_body.cpp
 #, fuzzy
 msgid "Angular Limit Lower"
-msgstr "أقصي أخطاء زواية:"
+msgstr "أقصي أخطاء زواية"
 
 #: scene/3d/physics_body.cpp
 #, fuzzy
@@ -23309,7 +23313,7 @@ msgstr ""
 #: scene/3d/physics_body.cpp
 #, fuzzy
 msgid "Body Offset"
-msgstr "المُعادل:"
+msgstr "المُعادل"
 
 #: scene/3d/physics_joint.cpp
 msgid "Node A and Node B must be PhysicsBodies"
@@ -23342,7 +23346,7 @@ msgstr "استثناء العُقد"
 #: scene/3d/physics_joint.cpp
 #, fuzzy
 msgid "Params"
-msgstr "لقد تم تغيير المَعلم:"
+msgstr "لقد تم تغيير المَعلم"
 
 #: scene/3d/physics_joint.cpp
 msgid "Angular Limit"
@@ -23370,7 +23374,7 @@ msgstr "تحريك المسار لليمين"
 #: scene/3d/physics_joint.cpp
 #, fuzzy
 msgid "Max Impulse"
-msgstr "السرعة:"
+msgstr "السرعة"
 
 #: scene/3d/physics_joint.cpp
 #, fuzzy
@@ -23380,12 +23384,12 @@ msgstr "خطي"
 #: scene/3d/physics_joint.cpp
 #, fuzzy
 msgid "Upper Distance"
-msgstr "اختر المسافة:"
+msgstr "اختر المسافة"
 
 #: scene/3d/physics_joint.cpp
 #, fuzzy
 msgid "Lower Distance"
-msgstr "اختر المسافة:"
+msgstr "اختر المسافة"
 
 #: scene/3d/physics_joint.cpp
 #, fuzzy
@@ -23418,7 +23422,7 @@ msgstr "رسوم متحركة"
 #: scene/3d/physics_joint.cpp
 #, fuzzy
 msgid "Angular Ortho"
-msgstr "أقصي أخطاء زواية:"
+msgstr "أقصي أخطاء زواية"
 
 #: scene/3d/physics_joint.cpp
 #, fuzzy
@@ -23433,7 +23437,7 @@ msgstr "الشروع"
 #: scene/3d/physics_joint.cpp
 #, fuzzy
 msgid "Force Limit"
-msgstr "استدعاءات الرسم:"
+msgstr "استدعاءات الرسم"
 
 #: scene/3d/physics_joint.cpp
 #, fuzzy
@@ -23533,7 +23537,7 @@ msgstr ""
 #: scene/3d/portal.cpp
 #, fuzzy
 msgid "Linked Room"
-msgstr "جذر التعديل المباشر:"
+msgstr "جذر التعديل المباشر"
 
 #: scene/3d/portal.cpp
 #, fuzzy
@@ -23552,7 +23556,7 @@ msgstr ""
 #: scene/3d/proximity_group.cpp
 #, fuzzy
 msgid "Grid Radius"
-msgstr "نصف القطر:"
+msgstr "نصف القطر"
 
 #: scene/3d/ray_cast.cpp
 #, fuzzy
@@ -23570,7 +23574,7 @@ msgstr "وضع التحديث"
 #: scene/3d/reflection_probe.cpp
 #, fuzzy
 msgid "Origin Offset"
-msgstr "مقدار إزاحة الشبكة:"
+msgstr "مقدار إزاحة الشبكة"
 
 #: scene/3d/reflection_probe.cpp
 #, fuzzy
@@ -23823,12 +23827,12 @@ msgstr "إنشاء مُضلع التصادم"
 #: scene/3d/soft_body.cpp
 #, fuzzy
 msgid "Simulation Precision"
-msgstr "شجرة التحريك غير صالحة."
+msgstr "شجرة التحريك غير صالحة"
 
 #: scene/3d/soft_body.cpp
 #, fuzzy
 msgid "Total Mass"
-msgstr "المجموع الكلي:"
+msgstr "المجموع الكلي"
 
 #: scene/3d/soft_body.cpp
 msgid "Linear Stiffness"
@@ -23945,7 +23949,7 @@ msgstr ""
 #: scene/3d/vehicle_body.cpp
 #, fuzzy
 msgid "Use As Traction"
-msgstr "التباعُدات:"
+msgstr "التباعُدات"
 
 #: scene/3d/vehicle_body.cpp
 msgid "Use As Steering"
@@ -23978,6 +23982,16 @@ msgstr "خطأ"
 msgid "AABB"
 msgstr ""
 
+#: scene/3d/visual_instance.cpp
+#, fuzzy
+msgid "Sorting"
+msgstr "ترتيب"
+
+#: scene/3d/visual_instance.cpp
+#, fuzzy
+msgid "Use AABB Center"
+msgstr "استخدم Ambient"
+
 #: scene/3d/visual_instance.cpp scene/resources/navigation_mesh.cpp
 #, fuzzy
 msgid "Geometry"
@@ -23991,7 +24005,7 @@ msgstr "يتجاوز"
 #: scene/3d/visual_instance.cpp
 #, fuzzy
 msgid "Material Overlay"
-msgstr "تغيرات المادة:"
+msgstr "تغيرات المادة"
 
 #: scene/3d/visual_instance.cpp
 #, fuzzy
@@ -24001,7 +24015,7 @@ msgstr "إنشاء عُقدة تظليل"
 #: scene/3d/visual_instance.cpp
 #, fuzzy
 msgid "Extra Cull Margin"
-msgstr "وسائط إستدعاء إضافية :"
+msgstr "وسائط إستدعاء إضافية"
 
 #: scene/3d/visual_instance.cpp
 #, fuzzy
@@ -24026,7 +24040,7 @@ msgstr ""
 #: scene/resources/material.cpp
 #, fuzzy
 msgid "Min Distance"
-msgstr "اختر المسافة:"
+msgstr "اختر المسافة"
 
 #: scene/3d/visual_instance.cpp
 msgid "Min Hysteresis"
@@ -24075,12 +24089,12 @@ msgstr "عقدة الخلط"
 #: scene/animation/animation_blend_tree.cpp
 #, fuzzy
 msgid "Fadein Time"
-msgstr "وقت التلاشي X (ثواني):"
+msgstr "وقت التلاشي X (ثواني)"
 
 #: scene/animation/animation_blend_tree.cpp
 #, fuzzy
 msgid "Fadeout Time"
-msgstr "وقت التلاشي X (ثواني):"
+msgstr "وقت التلاشي X (ثواني)"
 
 #: scene/animation/animation_blend_tree.cpp
 msgid "Auto Restart"
@@ -24097,17 +24111,17 @@ msgstr ""
 #: scene/animation/animation_blend_tree.cpp
 #, fuzzy
 msgid "Random Delay"
-msgstr "إمالة عشوائية:"
+msgstr "إمالة عشوائية"
 
 #: scene/animation/animation_blend_tree.cpp
 #, fuzzy
 msgid "Add Amount"
-msgstr "الكمية:"
+msgstr "الكمية"
 
 #: scene/animation/animation_blend_tree.cpp
 #, fuzzy
 msgid "Blend Amount"
-msgstr "الكمية:"
+msgstr "الكمية"
 
 #: scene/animation/animation_blend_tree.cpp
 #, fuzzy
@@ -24123,7 +24137,7 @@ msgstr "أضف منفذ أدخال"
 #: scene/animation/animation_node_state_machine.cpp
 #, fuzzy
 msgid "Xfade Time"
-msgstr "وقت التلاشي X (ثواني):"
+msgstr "وقت التلاشي X (ثواني)"
 
 #: scene/animation/animation_node_state_machine.cpp
 #, fuzzy
@@ -24171,7 +24185,7 @@ msgstr "أضفة نقطة الرسوم المتحركة"
 #: scene/animation/animation_player.cpp
 #, fuzzy
 msgid "Playback Options"
-msgstr "إعدادات الصف (Class):"
+msgstr "إعدادات الصف (Class)"
 
 #: scene/animation/animation_player.cpp
 #, fuzzy
@@ -24214,7 +24228,7 @@ msgstr "العُقدة الرئيسة لمُشغل الرسومات المتحر
 #: scene/animation/animation_tree.cpp
 #, fuzzy
 msgid "Tree Root"
-msgstr "إنشاء العُقدة الرئيسة (الجذر):"
+msgstr "إنشاء العُقدة الرئيسة (الجذر)"
 
 #: scene/animation/animation_tree.cpp
 #, fuzzy
@@ -24475,12 +24489,12 @@ msgstr "الاتجاهات"
 #: scene/gui/control.cpp scene/resources/navigation_mesh.cpp
 #, fuzzy
 msgid "Min Size"
-msgstr "حجم الخطوط:"
+msgstr "حجم الخطوط"
 
 #: scene/gui/control.cpp
 #, fuzzy
 msgid "Pivot Offset"
-msgstr "مقدار إزاحة الشبكة:"
+msgstr "مقدار إزاحة الشبكة"
 
 #: scene/gui/control.cpp
 #, fuzzy
@@ -24533,7 +24547,7 @@ msgstr ""
 #: scene/gui/control.cpp
 #, fuzzy
 msgid "Default Cursor Shape"
-msgstr "تحميل نسق المسار الإفتراضي."
+msgstr "تحميل نسق المسار الإفتراضي"
 
 #: scene/gui/control.cpp
 msgid "Pass On Modal Close Click"
@@ -24591,12 +24605,12 @@ msgstr "قطع الاتصال"
 #: scene/gui/graph_edit.cpp
 #, fuzzy
 msgid "Scroll Offset"
-msgstr "مقدار إزاحة الشبكة:"
+msgstr "مقدار إزاحة الشبكة"
 
 #: scene/gui/graph_edit.cpp
 #, fuzzy
 msgid "Snap Distance"
-msgstr "اختر المسافة:"
+msgstr "اختر المسافة"
 
 #: scene/gui/graph_edit.cpp
 #, fuzzy
@@ -24696,7 +24710,7 @@ msgstr ""
 #: scene/gui/item_list.cpp
 #, fuzzy
 msgid "Icon Scale"
-msgstr "حجم عشوائي:"
+msgstr "حجم عشوائي"
 
 #: scene/gui/item_list.cpp
 #, fuzzy
@@ -24711,7 +24725,7 @@ msgstr "ألحق"
 #: scene/gui/label.cpp scene/gui/rich_text_label.cpp
 #, fuzzy
 msgid "Visible Characters"
-msgstr "الأحرف الصالحة:"
+msgstr "الأحرف الصالحة"
 
 #: scene/gui/label.cpp scene/gui/rich_text_label.cpp
 #, fuzzy
@@ -24737,7 +24751,7 @@ msgstr ""
 #: scene/gui/line_edit.cpp
 #, fuzzy
 msgid "Secret Character"
-msgstr "الأحرف الصالحة:"
+msgstr "الأحرف الصالحة"
 
 #: scene/gui/line_edit.cpp
 msgid "Expand To Text Length"
@@ -24803,7 +24817,7 @@ msgstr ""
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 #, fuzzy
 msgid "Blink Speed"
-msgstr "السرعة:"
+msgstr "السرعة"
 
 #: scene/gui/link_button.cpp
 msgid "Underline"
@@ -24887,7 +24901,7 @@ msgstr "بحث"
 #: scene/gui/progress_bar.cpp
 #, fuzzy
 msgid "Percent"
-msgstr "الحالي:"
+msgstr "الحالي"
 
 #: scene/gui/range.cpp
 msgid "If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0."
@@ -24948,7 +24962,7 @@ msgstr "مسافة بادئة تلقائية"
 #: scene/gui/rich_text_effect.cpp
 #, fuzzy
 msgid "Elapsed Time"
-msgstr "أوقات الدمج:"
+msgstr "أوقات الدمج"
 
 #: scene/gui/rich_text_effect.cpp
 #, fuzzy
@@ -24958,7 +24972,7 @@ msgstr "النهاية"
 #: scene/gui/rich_text_effect.cpp
 #, fuzzy
 msgid "Character"
-msgstr "الأحرف الصالحة:"
+msgstr "الأحرف الصالحة"
 
 #: scene/gui/rich_text_label.cpp
 msgid "BBCode"
@@ -24971,7 +24985,7 @@ msgstr ""
 #: scene/gui/rich_text_label.cpp
 #, fuzzy
 msgid "Tab Size"
-msgstr "الحجم:"
+msgstr "الحجم"
 
 #: scene/gui/rich_text_label.cpp
 #, fuzzy
@@ -24994,7 +25008,7 @@ msgstr "المحدد فقط"
 #: scene/gui/rich_text_label.cpp scene/gui/text_edit.cpp
 #, fuzzy
 msgid "Override Selected Font Color"
-msgstr "عدل على الحساب الحالي:"
+msgstr "عدل على الحساب الحالي"
 
 #: scene/gui/rich_text_label.cpp
 #, fuzzy
@@ -25024,7 +25038,7 @@ msgstr "تزويد السطح"
 #: scene/gui/scroll_container.cpp
 #, fuzzy
 msgid "Horizontal Enabled"
-msgstr "عَرضياً:"
+msgstr "عَرضياً"
 
 #: scene/gui/scroll_container.cpp
 #, fuzzy
@@ -25047,22 +25061,22 @@ msgstr "اختر لوناً"
 #: scene/gui/slider.cpp
 #, fuzzy
 msgid "Ticks On Borders"
-msgstr "إعادة تسمية مجلد:"
+msgstr "إعادة تسمية مجلد"
 
 #: scene/gui/spin_box.cpp
 #, fuzzy
 msgid "Prefix"
-msgstr "بادئة:"
+msgstr "بادئة"
 
 #: scene/gui/spin_box.cpp
 #, fuzzy
 msgid "Suffix"
-msgstr "لاحقة:"
+msgstr "لاحقة"
 
 #: scene/gui/split_container.cpp
 #, fuzzy
 msgid "Split Offset"
-msgstr "مقدار إزاحة الشبكة:"
+msgstr "مقدار إزاحة الشبكة"
 
 #: scene/gui/split_container.cpp scene/gui/tree.cpp
 #, fuzzy
@@ -25081,7 +25095,7 @@ msgstr ""
 #: scene/gui/tab_container.cpp scene/gui/tabs.cpp
 #, fuzzy
 msgid "Current Tab"
-msgstr "الحالي:"
+msgstr "الحالي"
 
 #: scene/gui/tab_container.cpp
 #, fuzzy
@@ -25095,7 +25109,7 @@ msgstr ""
 #: scene/gui/tab_container.cpp scene/gui/tabs.cpp
 #, fuzzy
 msgid "Drag To Rearrange Enabled"
-msgstr "إسحب وأسقط لإعادة الترتيب."
+msgstr "إسحب وأسقط لإعادة الترتيب"
 
 #: scene/gui/tab_container.cpp
 msgid "Use Hidden Tabs For Min Size"
@@ -25126,7 +25140,7 @@ msgstr "تخطي نقاط التكسّر"
 #: scene/gui/text_edit.cpp
 #, fuzzy
 msgid "Fold Gutter"
-msgstr "مجلد:"
+msgstr "مجلد"
 
 #: scene/gui/text_edit.cpp
 #, fuzzy
@@ -25146,17 +25160,17 @@ msgstr "تفعيل"
 #: scene/gui/text_edit.cpp
 #, fuzzy
 msgid "Scroll Vertical"
-msgstr "شاقولياً:"
+msgstr "شاقولياً"
 
 #: scene/gui/text_edit.cpp
 #, fuzzy
 msgid "Scroll Horizontal"
-msgstr "عَرضياً:"
+msgstr "عَرضياً"
 
 #: scene/gui/text_edit.cpp
 #, fuzzy
 msgid "Draw"
-msgstr "استدعاءات الرسم:"
+msgstr "استدعاءات الرسم"
 
 #: scene/gui/text_edit.cpp
 #, fuzzy
@@ -25216,7 +25230,7 @@ msgstr ""
 #: scene/gui/texture_progress.cpp
 #, fuzzy
 msgid "Fill Mode"
-msgstr "وضع التشغيل:"
+msgstr "وضع التشغيل"
 
 #: scene/gui/texture_progress.cpp scene/resources/material.cpp
 msgid "Tint"
@@ -25234,7 +25248,7 @@ msgstr "الشروع"
 #: scene/gui/texture_progress.cpp
 #, fuzzy
 msgid "Fill Degrees"
-msgstr "يُدير %s من الدرجات."
+msgstr "يُدير %s من الدرجات"
 
 #: scene/gui/texture_progress.cpp scene/resources/primitive_meshes.cpp
 #, fuzzy
@@ -25287,7 +25301,7 @@ msgstr "زر معطّل"
 #: scene/gui/tree.cpp
 #, fuzzy
 msgid "Hide Root"
-msgstr "إنشاء العُقدة الرئيسة (الجذر):"
+msgstr "إنشاء العُقدة الرئيسة (الجذر)"
 
 #: scene/gui/tree.cpp
 msgid "Drop Mode Flags"
@@ -25342,7 +25356,7 @@ msgstr ""
 #: scene/main/http_request.cpp
 #, fuzzy
 msgid "Timeout"
-msgstr "انتهت المهلة."
+msgstr "انتهت المهلة"
 
 #: scene/main/node.cpp
 msgid ""
@@ -25387,17 +25401,17 @@ msgstr "إعادة التسمية"
 #: scene/main/node.cpp
 #, fuzzy
 msgid "Owner"
-msgstr "ملاك:"
+msgstr "ملاك"
 
 #: scene/main/node.cpp scene/main/scene_tree.cpp
 #, fuzzy
 msgid "Multiplayer"
-msgstr "تحديد التكرار:"
+msgstr "تحديد التكرار"
 
 #: scene/main/node.cpp
 #, fuzzy
 msgid "Custom Multiplayer"
-msgstr "تحديد التكرار:"
+msgstr "تحديد التكرار"
 
 #: scene/main/node.cpp
 msgid "Process Priority"
@@ -25434,7 +25448,7 @@ msgstr ""
 #: scene/main/scene_tree.cpp
 #, fuzzy
 msgid "Multiplayer Poll"
-msgstr "تحديد التكرار:"
+msgstr "تحديد التكرار"
 
 #: scene/main/scene_tree.cpp scene/resources/mesh_library.cpp
 #: scene/resources/shape_2d.cpp
@@ -25470,12 +25484,12 @@ msgstr "أنشئ الحد"
 
 #: scene/main/scene_tree.cpp servers/visual_server.cpp
 msgid "Reflections"
-msgstr "الانعكاسات"
+msgstr "انعكاسات"
 
 #: scene/main/scene_tree.cpp
 #, fuzzy
 msgid "Atlas Size"
-msgstr "حجم الخطوط:"
+msgstr "حجم الخطوط"
 
 #: scene/main/scene_tree.cpp
 msgid "Atlas Subdiv"
@@ -25530,7 +25544,7 @@ msgstr ""
 #: scene/main/timer.cpp
 #, fuzzy
 msgid "Autostart"
-msgstr "إعادة تشغيل تلقائية:"
+msgstr "إعادة تشغيل تلقائية"
 
 #: scene/main/viewport.cpp
 #, fuzzy
@@ -25615,7 +25629,7 @@ msgstr "تصحيح الأخطاء"
 #: scene/main/viewport.cpp
 #, fuzzy
 msgid "Render Target"
-msgstr "مُحرك الإخراج البصري:"
+msgstr "مُحرك الإخراج البصري"
 
 #: scene/main/viewport.cpp
 msgid "V Flip"
@@ -25736,7 +25750,7 @@ msgstr ""
 #: scene/resources/concave_polygon_shape_2d.cpp
 #, fuzzy
 msgid "Segments"
-msgstr "معاملات المشهد الرئيس:"
+msgstr "معاملات المشهد الرئيس"
 
 #: scene/resources/curve.cpp
 #, fuzzy
@@ -25779,7 +25793,7 @@ msgstr "القص Clip مُعطّل"
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
 msgid "H Separation"
-msgstr "التباعُدات:"
+msgstr "التباعُدات"
 
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
@@ -25849,7 +25863,7 @@ msgstr "عنصر معطّل"
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
 msgid "Off"
-msgstr "المُعادل:"
+msgstr "المُعادل"
 
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
@@ -25869,12 +25883,12 @@ msgstr "الاجبار على التعديل الابيض"
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
 msgid "Shadow Offset X"
-msgstr "معادل الشبكة على المحور الأفقي X:"
+msgstr "معادل الشبكة على المحور الأفقي X"
 
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
 msgid "Shadow Offset Y"
-msgstr "معادل الشبكة على المحور Y:"
+msgstr "معادل الشبكة على المحور Y"
 
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
@@ -25934,12 +25948,12 @@ msgstr "المشهد الرئيس"
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
 msgid "Folded"
-msgstr "مجلد:"
+msgstr "مجلد"
 
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
 msgid "Fold"
-msgstr "مجلد:"
+msgstr "مجلد"
 
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Font Color Readonly"
@@ -26060,12 +26074,12 @@ msgstr "الاتجاهات"
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
 msgid "Close H Offset"
-msgstr "مقدار إزاحة الشبكة:"
+msgstr "مقدار إزاحة الشبكة"
 
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
 msgid "Close V Offset"
-msgstr "مقدار إزاحة الشبكة:"
+msgstr "مقدار إزاحة الشبكة"
 
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
@@ -26095,7 +26109,7 @@ msgstr "فاصل مُسمّى"
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
 msgid "Font Separator"
-msgstr "مُشغّل اللون."
+msgstr "مُشغّل اللون"
 
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
@@ -26105,12 +26119,12 @@ msgstr "إعادة تسمية عنصر اللون"
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
 msgid "Font Color Separator"
-msgstr "مُشغّل اللون."
+msgstr "مُشغّل اللون"
 
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
 msgid "V Separation"
-msgstr "التباعُدات:"
+msgstr "التباعُدات"
 
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
@@ -26155,17 +26169,17 @@ msgstr "الألوان"
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
 msgid "Title Offset"
-msgstr "مقدار إزاحة الشبكة:"
+msgstr "مقدار إزاحة الشبكة"
 
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
 msgid "Close Offset"
-msgstr "مقدار إزاحة الشبكة:"
+msgstr "مقدار إزاحة الشبكة"
 
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
 msgid "Port Offset"
-msgstr "مقدار إزاحة الشبكة:"
+msgstr "مقدار إزاحة الشبكة"
 
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
@@ -26277,12 +26291,12 @@ msgstr "أظهر الموجهات"
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
 msgid "Scroll Border"
-msgstr "شاقولياً:"
+msgstr "شاقولياً"
 
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
 msgid "Scroll Speed"
-msgstr "مقدار إزاحة الشبكة:"
+msgstr "مقدار إزاحة الشبكة"
 
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
@@ -26292,7 +26306,7 @@ msgstr "تحديد الهامش"
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
 msgid "Line Separation"
-msgstr "التباعُدات:"
+msgstr "التباعُدات"
 
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
@@ -26354,7 +26368,7 @@ msgstr "الهدف"
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
 msgid "Folder"
-msgstr "مجلد:"
+msgstr "مجلد"
 
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
@@ -26394,7 +26408,7 @@ msgstr "بالعرض يساراً"
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
 msgid "Screen Picker"
-msgstr "مُشغل الشاشة."
+msgstr "مُشغل الشاشة"
 
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
@@ -26457,12 +26471,12 @@ msgstr "المشهد الرئيس"
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
 msgid "Table H Separation"
-msgstr "التباعُدات:"
+msgstr "التباعُدات"
 
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
 msgid "Table V Separation"
-msgstr "التباعُدات:"
+msgstr "التباعُدات"
 
 #: scene/resources/default_theme/default_theme.cpp
 #, fuzzy
@@ -26557,7 +26571,7 @@ msgstr "مسار التركيز"
 #: scene/resources/dynamic_font.cpp
 #, fuzzy
 msgid "Outline Size"
-msgstr "حجم الخطوط:"
+msgstr "حجم الخطوط"
 
 #: scene/resources/dynamic_font.cpp
 #, fuzzy
@@ -26572,12 +26586,12 @@ msgstr "الإشارات"
 #: scene/resources/dynamic_font.cpp
 #, fuzzy
 msgid "Extra Spacing"
-msgstr "خيارات إضافية:"
+msgstr "خيارات إضافية"
 
 #: scene/resources/dynamic_font.cpp
 #, fuzzy
 msgid "Char"
-msgstr "الأحرف الصالحة:"
+msgstr "الأحرف الصالحة"
 
 #: scene/resources/dynamic_font.cpp
 #, fuzzy
@@ -26605,12 +26619,12 @@ msgstr "الوثائق الإلكترونية"
 #: scene/resources/environment.cpp
 #, fuzzy
 msgid "Sky Rotation"
-msgstr "خطوة الدوران:"
+msgstr "خطوة الدوران"
 
 #: scene/resources/environment.cpp
 #, fuzzy
 msgid "Sky Rotation Degrees"
-msgstr "يُدير %s من الدرجات."
+msgstr "يُدير %s من الدرجات"
 
 #: scene/resources/environment.cpp
 msgid "Canvas Max Layer"
@@ -26637,12 +26651,12 @@ msgstr ""
 #: scene/resources/environment.cpp
 #, fuzzy
 msgid "Sun Color"
-msgstr "تخزين الملف:"
+msgstr "تخزين الملف"
 
 #: scene/resources/environment.cpp
 #, fuzzy
 msgid "Sun Amount"
-msgstr "الكمية:"
+msgstr "الكمية"
 
 #: scene/resources/environment.cpp
 #, fuzzy
@@ -26733,12 +26747,12 @@ msgstr "الخطوة"
 #: scene/resources/environment.cpp
 #, fuzzy
 msgid "Fade In"
-msgstr "تلاشي في البداية (ثواني):"
+msgstr "تلاشي في البداية (ثواني)"
 
 #: scene/resources/environment.cpp
 #, fuzzy
 msgid "Fade Out"
-msgstr "تلاشي من النهاية (ثواني):"
+msgstr "تلاشي من النهاية (ثواني)"
 
 #: scene/resources/environment.cpp
 #, fuzzy
@@ -26756,7 +26770,7 @@ msgstr ""
 #: scene/resources/environment.cpp
 #, fuzzy
 msgid "Radius 2"
-msgstr "نصف القطر:"
+msgstr "نصف القطر"
 
 #: scene/resources/environment.cpp
 msgid "Intensity 2"
@@ -26787,7 +26801,7 @@ msgstr ""
 #: scene/resources/environment.cpp scene/resources/material.cpp
 #, fuzzy
 msgid "Distance"
-msgstr "اختر المسافة:"
+msgstr "اختر المسافة"
 
 #: scene/resources/environment.cpp
 msgid "Transition"
@@ -26871,17 +26885,17 @@ msgstr "ضوء"
 #: scene/resources/environment.cpp
 #, fuzzy
 msgid "Saturation"
-msgstr "التباعُدات:"
+msgstr "التباعُدات"
 
 #: scene/resources/environment.cpp
 #, fuzzy
 msgid "Color Correction"
-msgstr "الوظيفة البرمجية للون."
+msgstr "الوظيفة البرمجية للون"
 
 #: scene/resources/font.cpp
 #, fuzzy
 msgid "Ascent"
-msgstr "الحالي:"
+msgstr "الحالي"
 
 #: scene/resources/font.cpp
 #, fuzzy
@@ -26896,7 +26910,7 @@ msgstr "العمق"
 #: scene/resources/gradient.cpp
 #, fuzzy
 msgid "Offsets"
-msgstr "المُعادل:"
+msgstr "المُعادل"
 
 #: scene/resources/height_map_shape.cpp
 msgid "Map Width"
@@ -26960,7 +26974,7 @@ msgstr "المسافة البادئة يميناً"
 #: scene/resources/material.cpp
 #, fuzzy
 msgid "Ensure Correct Normals"
-msgstr "أجهض التحول."
+msgstr "أجهض التحول"
 
 #: scene/resources/material.cpp
 msgid "Albedo Tex MSDF"
@@ -26982,7 +26996,7 @@ msgstr ""
 #: scene/resources/material.cpp servers/visual_server.cpp
 #, fuzzy
 msgid "Parameters"
-msgstr "لقد تم تغيير المَعلم:"
+msgstr "لقد تم تغيير المَعلم"
 
 #: scene/resources/material.cpp
 #, fuzzy
@@ -27026,7 +27040,7 @@ msgstr ""
 #: scene/resources/material.cpp
 #, fuzzy
 msgid "Grow Amount"
-msgstr "الكمية:"
+msgstr "الكمية"
 
 #: scene/resources/material.cpp
 msgid "Use Alpha Scissor"
@@ -27133,7 +27147,7 @@ msgstr "الإنتقال"
 #: scene/resources/material.cpp
 #, fuzzy
 msgid "Refraction"
-msgstr "التباعُدات:"
+msgstr "التباعُدات"
 
 #: scene/resources/material.cpp
 msgid "Detail"
@@ -27198,12 +27212,12 @@ msgstr "محو التَحَوّل"
 #: scene/resources/multimesh.cpp
 #, fuzzy
 msgid "Color Format"
-msgstr "مُشغّل اللون."
+msgstr "مُشغّل اللون"
 
 #: scene/resources/multimesh.cpp
 #, fuzzy
 msgid "Transform Format"
-msgstr "أجهض التحول."
+msgstr "أجهض التحول"
 
 #: scene/resources/multimesh.cpp
 msgid "Custom Data Format"
@@ -27221,7 +27235,7 @@ msgstr ""
 #: scene/resources/navigation_mesh.cpp
 #, fuzzy
 msgid "Sampling"
-msgstr "تحجيم:"
+msgstr "تحجيم"
 
 #: scene/resources/navigation_mesh.cpp
 #, fuzzy
@@ -27231,7 +27245,7 @@ msgstr "حدد نوع المتغير"
 #: scene/resources/navigation_mesh.cpp
 #, fuzzy
 msgid "Parsed Geometry Type"
-msgstr "توزيع الأشكال الهندسية..."
+msgstr "توزيع الأشكال الهندسية"
 
 #: scene/resources/navigation_mesh.cpp
 msgid "Source Geometry Mode"
@@ -27249,7 +27263,7 @@ msgstr ""
 #: scene/resources/navigation_mesh.cpp
 #, fuzzy
 msgid "Agents"
-msgstr "معاملات المشهد الرئيس:"
+msgstr "معاملات المشهد الرئيس"
 
 #: scene/resources/navigation_mesh.cpp
 msgid "Max Climb"
@@ -27290,7 +27304,7 @@ msgstr "أظهر الإفتراضي"
 #: scene/resources/navigation_mesh.cpp
 #, fuzzy
 msgid "Sample Distance"
-msgstr "اختر المسافة:"
+msgstr "اختر المسافة"
 
 #: scene/resources/navigation_mesh.cpp
 #, fuzzy
@@ -27317,7 +27331,7 @@ msgstr "توليد AABB"
 #: scene/resources/navigation_mesh.cpp
 #, fuzzy
 msgid "Baking AABB Offset"
-msgstr "المُعادل:"
+msgstr "المُعادل"
 
 #: scene/resources/occluder_shape.cpp
 msgid "Spheres"
@@ -27362,7 +27376,7 @@ msgstr "مُعدّل تباطؤ الرؤية الحُرة"
 #: scene/resources/particles_material.cpp
 #, fuzzy
 msgid "Point Texture"
-msgstr "نقاط الانبعاث:"
+msgstr "نقاط الانبعاث"
 
 #: scene/resources/particles_material.cpp
 msgid "Normal Texture"
@@ -27381,7 +27395,7 @@ msgstr "أضف منفذ أدخال"
 #: scene/resources/particles_material.cpp
 #, fuzzy
 msgid "Scale Random"
-msgstr "نسبة التكبير:"
+msgstr "نسبة التكبير"
 
 #: scene/resources/particles_material.cpp
 #, fuzzy
@@ -27399,7 +27413,7 @@ msgstr ""
 #: scene/resources/plane_shape.cpp
 #, fuzzy
 msgid "Plane"
-msgstr "التبويت:"
+msgstr "التبويت"
 
 #: scene/resources/primitive_meshes.cpp
 #, fuzzy
@@ -27425,7 +27439,7 @@ msgstr ""
 #: scene/resources/primitive_meshes.cpp
 #, fuzzy
 msgid "Top Radius"
-msgstr "نصف القطر:"
+msgstr "نصف القطر"
 
 #: scene/resources/primitive_meshes.cpp
 #, fuzzy
@@ -27476,7 +27490,7 @@ msgstr "العظام"
 #: scene/resources/sky.cpp
 #, fuzzy
 msgid "Radiance Size"
-msgstr "حجم الخطوط:"
+msgstr "حجم الخطوط"
 
 #: scene/resources/sky.cpp
 msgid "Panorama"
@@ -27490,7 +27504,7 @@ msgstr "الطابق التالي"
 #: scene/resources/sky.cpp
 #, fuzzy
 msgid "Horizon Color"
-msgstr "تخزين الملف:"
+msgstr "تخزين الملف"
 
 #: scene/resources/sky.cpp
 #, fuzzy
@@ -27601,7 +27615,7 @@ msgstr "التقاط"
 #: scene/resources/texture.cpp
 #, fuzzy
 msgid "From"
-msgstr "وضع التشغيل:"
+msgstr "وضع التشغيل"
 
 #: scene/resources/texture.cpp
 #, fuzzy
@@ -27769,7 +27783,7 @@ msgstr "أختبار"
 #: scene/resources/world.cpp scene/resources/world_2d.cpp
 #, fuzzy
 msgid "Default Edge Connection Margin"
-msgstr "تعديل الإتصال:"
+msgstr "تعديل الإتصال"
 
 #: scene/resources/world_2d.cpp
 msgid "Canvas"
@@ -27805,7 +27819,7 @@ msgstr "عنصر خِيار"
 #: servers/audio/audio_stream.cpp
 #, fuzzy
 msgid "Random Pitch"
-msgstr "إمالة عشوائية:"
+msgstr "إمالة عشوائية"
 
 #: servers/audio/effects/audio_effect_capture.cpp
 #: servers/audio/effects/audio_effect_spectrum_analyzer.cpp
@@ -27857,7 +27871,7 @@ msgstr ""
 #: servers/audio/effects/audio_effect_panner.cpp
 #, fuzzy
 msgid "Pan"
-msgstr "التبويت:"
+msgstr "التبويت"
 
 #: servers/audio/effects/audio_effect_compressor.cpp
 #: servers/audio/effects/audio_effect_filter.cpp
@@ -27955,7 +27969,7 @@ msgstr ""
 #: servers/audio/effects/audio_effect_spectrum_analyzer.cpp
 #, fuzzy
 msgid "FFT Size"
-msgstr "الحجم:"
+msgstr "الحجم"
 
 #: servers/audio/effects/audio_effect_reverb.cpp
 msgid "Predelay"
@@ -27985,7 +27999,7 @@ msgstr ""
 #: servers/audio/effects/audio_effect_stereo_enhance.cpp
 #, fuzzy
 msgid "Time Pullout (ms)"
-msgstr "انتهت المهلة."
+msgstr "انتهت المهلة"
 
 #: servers/audio/effects/audio_effect_stereo_enhance.cpp
 msgid "Surround"
@@ -28053,7 +28067,7 @@ msgstr ""
 #: servers/physics_2d/physics_2d_server_sw.cpp
 #, fuzzy
 msgid "BP Hash Table Size"
-msgstr "الحجم:"
+msgstr "الحجم"
 
 #: servers/physics_2d/physics_2d_server_sw.cpp
 msgid "Large Object Surface Threshold In Cells"
@@ -28179,7 +28193,7 @@ msgstr "لا يمكن تعديل الثوابت."
 #: servers/visual/visual_server_scene.cpp
 #, fuzzy
 msgid "Spatial Partitioning"
-msgstr "تجزئة..."
+msgstr "تجزئة"
 
 #: servers/visual_server.cpp
 #, fuzzy
@@ -28369,7 +28383,7 @@ msgstr ""
 #: servers/visual_server.cpp
 #, fuzzy
 msgid "Batching"
-msgstr "جاري البحث..."
+msgstr "جاري البحث"
 
 #: servers/visual_server.cpp
 msgid "Use Batching"
@@ -28399,7 +28413,7 @@ msgstr ""
 #: servers/visual_server.cpp
 #, fuzzy
 msgid "Max Join Items"
-msgstr "إدارة العناصر..."
+msgstr "إدارة العناصر"
 
 #: servers/visual_server.cpp
 msgid "Batch Buffer Size"

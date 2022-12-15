@@ -120,7 +120,9 @@ bool TileSetEditor::_can_drop_data_fw(const Point2 &p_point, const Variant &p_da
 }
 
 void TileSetEditor::_update_sources_list(int force_selected_id) {
-	ERR_FAIL_COND(!tile_set.is_valid());
+	if (tile_set.is_null()) {
+		return;
+	}
 
 	// Get the previously selected id.
 	int old_selected = TileSet::INVALID_SOURCE;
@@ -346,6 +348,7 @@ void TileSetEditor::_notification(int p_what) {
 			source_sort_button->set_icon(get_theme_icon(SNAME("Sort"), SNAME("EditorIcons")));
 			sources_advanced_menu_button->set_icon(get_theme_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
 			missing_texture_texture = get_theme_icon(SNAME("TileSet"), SNAME("EditorIcons"));
+			_update_sources_list();
 		} break;
 
 		case NOTIFICATION_INTERNAL_PROCESS: {

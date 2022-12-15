@@ -503,8 +503,7 @@ multiview_data;
 
 /* clang-format on */
 
-//directional light data
-
+// Directional light data.
 #ifndef DISABLE_LIGHT_DIRECTIONAL
 
 struct DirectionalLightData {
@@ -520,11 +519,12 @@ layout(std140) uniform DirectionalLights { // ubo:7
 	DirectionalLightData directional_lights[MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS];
 };
 
-#endif
+#endif // !DISABLE_LIGHT_DIRECTIONAL
 
-// omni and spot
-#if !defined(DISABLE_LIGHT_OMNI) && !defined(DISABLE_LIGHT_SPOT)
-struct LightData { //this structure needs to be as packed as possible
+// Omni and spot light data.
+#if !defined(DISABLE_LIGHT_OMNI) || !defined(DISABLE_LIGHT_SPOT)
+
+struct LightData { // This structure needs to be as packed as possible.
 	highp vec3 position;
 	highp float inv_radius;
 
@@ -539,9 +539,9 @@ struct LightData { //this structure needs to be as packed as possible
 	mediump float specular_amount;
 	mediump float shadow_opacity;
 };
+
 #ifndef DISABLE_LIGHT_OMNI
 layout(std140) uniform OmniLightData { // ubo:5
-
 	LightData omni_lights[MAX_LIGHT_DATA_STRUCTS];
 };
 uniform uint omni_light_indices[MAX_FORWARD_LIGHTS];
@@ -549,9 +549,7 @@ uniform uint omni_light_count;
 #endif
 
 #ifndef DISABLE_LIGHT_SPOT
-
 layout(std140) uniform SpotLightData { // ubo:6
-
 	LightData spot_lights[MAX_LIGHT_DATA_STRUCTS];
 };
 uniform uint spot_light_indices[MAX_FORWARD_LIGHTS];
@@ -562,7 +560,7 @@ uniform uint spot_light_count;
 uniform highp samplerCubeShadow positional_shadow; // texunit:-4
 #endif
 
-#endif // !defined(DISABLE_LIGHT_OMNI) && !defined(DISABLE_LIGHT_SPOT)
+#endif // !defined(DISABLE_LIGHT_OMNI) || !defined(DISABLE_LIGHT_SPOT)
 
 #ifdef USE_MULTIVIEW
 uniform highp sampler2DArray depth_buffer; // texunit:-6
@@ -585,6 +583,7 @@ vec3 F0(float metallic, float specular, vec3 albedo) {
 }
 
 #if !defined(DISABLE_LIGHT_DIRECTIONAL) || !defined(DISABLE_LIGHT_OMNI) || !defined(DISABLE_LIGHT_SPOT)
+
 float D_GGX(float cos_theta_m, float alpha) {
 	float a = cos_theta_m * alpha;
 	float k = alpha / (1.0 - cos_theta_m * cos_theta_m + a * a);
@@ -641,7 +640,6 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, float atte
 
 	/* clang-format off */
 
-
 #CODE : LIGHT
 
 	/* clang-format on */
@@ -672,11 +670,8 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, float atte
 		// https://web.archive.org/web/20210228210901/http://blog.stevemcauley.com/2011/12/03/energy-conserving-wrapped-diffuse/
 		diffuse_brdf_NL = max(0.0, (NdotL + roughness) / ((1.0 + roughness) * (1.0 + roughness))) * (1.0 / M_PI);
 #elif defined(DIFFUSE_TOON)
-
 		diffuse_brdf_NL = smoothstep(-roughness, max(roughness, 0.01), NdotL) * (1.0 / M_PI);
-
 #elif defined(DIFFUSE_BURLEY)
-
 		{
 			float FD90_minus_1 = 2.0 * cLdotH * cLdotH * roughness - 0.5;
 			float FdV = 1.0 + FD90_minus_1 * SchlickFresnel(cNdotV);
@@ -684,7 +679,7 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, float atte
 			diffuse_brdf_NL = (1.0 / M_PI) * FdV * FdL * cNdotL;
 		}
 #else
-		// lambert
+		// Lambert
 		diffuse_brdf_NL = cNdotL * (1.0 / M_PI);
 #endif
 
@@ -720,7 +715,6 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, float atte
 		// shlick+ggx as default
 		float alpha_ggx = roughness * roughness;
 #if defined(LIGHT_ANISOTROPY_USED)
-
 		float aspect = sqrt(1.0 - anisotropy * 0.9);
 		float ax = alpha_ggx / aspect;
 		float ay = alpha_ggx * aspect;
@@ -728,7 +722,7 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, float atte
 		float YdotH = dot(B, H);
 		float D = D_GGX_anisotropic(cNdotH, ax, ay, XdotH, YdotH);
 		float G = V_GGX_anisotropic(ax, ay, dot(T, V), dot(T, L), dot(B, V), dot(B, L), cNdotV, cNdotL);
-#else // LIGHT_ANISOTROPY_USED
+#else
 		float D = D_GGX(cNdotH, alpha_ggx);
 		float G = V_GGX(cNdotL, cNdotV, alpha_ggx);
 #endif // LIGHT_ANISOTROPY_USED
@@ -768,10 +762,10 @@ void light_compute(vec3 N, vec3 L, vec3 V, float A, vec3 light_color, float atte
 	alpha = min(alpha, clamp(1.0 - attenuation, 0.0, 1.0));
 #endif
 
-#endif //defined(LIGHT_CODE_USED)
+#endif // LIGHT_CODE_USED
 }
 
-float get_omni_attenuation(float distance, float inv_range, float decay) {
+float get_omni_spot_attenuation(float distance, float inv_range, float decay) {
 	float nd = distance * inv_range;
 	nd *= nd;
 	nd *= nd; // nd^4
@@ -779,6 +773,7 @@ float get_omni_attenuation(float distance, float inv_range, float decay) {
 	nd *= nd; // nd^2
 	return nd * pow(max(distance, 0.0001), -decay);
 }
+
 #ifndef DISABLE_LIGHT_OMNI
 void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 f0, float roughness, float metallic, float shadow, vec3 albedo, inout float alpha,
 #ifdef LIGHT_BACKLIGHT_USED
@@ -796,7 +791,7 @@ void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 f
 		inout vec3 diffuse_light, inout vec3 specular_light) {
 	vec3 light_rel_vec = omni_lights[idx].position - vertex;
 	float light_length = length(light_rel_vec);
-	float omni_attenuation = get_omni_attenuation(light_length, omni_lights[idx].inv_radius, omni_lights[idx].attenuation);
+	float omni_attenuation = get_omni_spot_attenuation(light_length, omni_lights[idx].inv_radius, omni_lights[idx].attenuation);
 	vec3 color = omni_lights[idx].color;
 	float size_A = 0.0;
 
@@ -842,7 +837,7 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 f
 
 	vec3 light_rel_vec = spot_lights[idx].position - vertex;
 	float light_length = length(light_rel_vec);
-	float spot_attenuation = get_omni_attenuation(light_length, spot_lights[idx].inv_radius, spot_lights[idx].attenuation);
+	float spot_attenuation = get_omni_spot_attenuation(light_length, spot_lights[idx].inv_radius, spot_lights[idx].attenuation);
 	vec3 spot_dir = spot_lights[idx].direction;
 	float scos = max(dot(-normalize(light_rel_vec), spot_dir), spot_lights[idx].cone_angle);
 	float spot_rim = max(0.0001, (1.0 - scos) / (1.0 - spot_lights[idx].cone_angle));
@@ -872,7 +867,8 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 f
 			diffuse_light, specular_light);
 }
 #endif // !DISABLE_LIGHT_SPOT
-#endif // !defined(DISABLE_LIGHT_DIRECTIONAL) || !defined(DISABLE_LIGHT_OMNI) && !defined(DISABLE_LIGHT_SPOT)
+
+#endif // !defined(DISABLE_LIGHT_DIRECTIONAL) || !defined(DISABLE_LIGHT_OMNI) || !defined(DISABLE_LIGHT_SPOT)
 
 #ifndef MODE_RENDER_DEPTH
 vec4 fog_process(vec3 vertex) {
@@ -1070,14 +1066,10 @@ void main() {
 		fog = fog_process(vertex);
 	}
 #endif // !DISABLE_FOG
-#endif //!CUSTOM_FOG_USED
+#endif // !CUSTOM_FOG_USED
 
 	uint fog_rg = packHalf2x16(fog.rg);
 	uint fog_ba = packHalf2x16(fog.ba);
-
-#endif //!MODE_RENDER_DEPTH
-
-#ifndef MODE_RENDER_DEPTH
 
 	// Convert colors to linear
 	albedo = srgb_to_linear(albedo);
@@ -1199,7 +1191,7 @@ void main() {
 				diffuse_light,
 				specular_light);
 	}
-#endif //!DISABLE_LIGHT_DIRECTIONAL
+#endif // !DISABLE_LIGHT_DIRECTIONAL
 
 #ifndef DISABLE_LIGHT_OMNI
 	for (uint i = 0u; i < MAX_FORWARD_LIGHTS; i++) {
@@ -1246,9 +1238,10 @@ void main() {
 #endif
 				diffuse_light, specular_light);
 	}
-
 #endif // !DISABLE_LIGHT_SPOT
+
 #endif // !MODE_UNSHADED
+
 #endif // !MODE_RENDER_DEPTH
 
 #if defined(USE_SHADOW_TO_OPACITY)

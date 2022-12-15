@@ -1068,10 +1068,6 @@ void RasterizerSceneGLES3::environment_glow_set_use_bicubic_upscale(bool p_enabl
 	glow_bicubic_upscale = p_enable;
 }
 
-void RasterizerSceneGLES3::environment_glow_set_use_high_quality(bool p_enable) {
-	glow_high_quality = p_enable;
-}
-
 void RasterizerSceneGLES3::environment_set_ssr_roughness_quality(RS::EnvironmentSSRRoughnessQuality p_quality) {
 }
 
@@ -2210,10 +2206,13 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 				glBindVertexArray(vertex_array_gl);
 			}
 			prev_vertex_array_gl = vertex_array_gl;
+
+			// Invalidate the previous index array
+			prev_index_array_gl = 0;
 		}
 
 		bool use_index_buffer = index_array_gl != 0;
-		if (prev_index_array_gl != index_array_gl || prev_vertex_array_gl != vertex_array_gl) {
+		if (prev_index_array_gl != index_array_gl) {
 			if (index_array_gl != 0) {
 				// Bind index each time so we can use LODs
 				glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_array_gl);

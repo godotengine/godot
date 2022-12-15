@@ -185,16 +185,16 @@
 				[gdscript]
 				print("Team".find("I")) # Prints -1
 
-				print("Potato".find("t"))     # Prints 2
-				print("Potato".find("t", 3))  # Prints 4
-				print("Potato".find("t", 5))  # Prints -1
+				print("Potato".find("t"))    # Prints 2
+				print("Potato".find("t", 3)) # Prints 4
+				print("Potato".find("t", 5)) # Prints -1
 				[/gdscript]
 				[csharp]
 				GD.Print("Team".Find("I")); // Prints -1
 
-				GD.Print("Potato".Find("t"));     // Prints 2
-				GD.print("Potato".Find("t", 3));  // Prints 4
-				GD.print("Potato".Find("t", 5));  // Prints -1
+				GD.Print("Potato".Find("t"));    // Prints 2
+				GD.print("Potato".Find("t", 3)); // Prints 4
+				GD.print("Potato".Find("t", 5)); // Prints -1
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] If you just want to know whether the string contains [param what], use [method contains]. In GDScript, you may also use the [code]in[/code] operator.
@@ -237,7 +237,7 @@
 			<description>
 				If the string is a valid file path, returns the base directory name.
 				[codeblock]
-				var dir_path = "/path/to/file.txt".get_basename() # dir_path is "/path/to"
+				var dir_path = "/path/to/file.txt".get_base_dir() # dir_path is "/path/to"
 				[/codeblock]
 			</description>
 		</method>
@@ -973,11 +973,11 @@
 				[codeblocks]
 				[gdscript]
 				var url = "$DOCS_URL/?highlight=Godot%20Engine%3%docs"
-				print(url.uri_decode()) # Prints "$DOCS_URL/?hightlight=Godot Engine:docs"
+				print(url.uri_decode()) # Prints "$DOCS_URL/?highlight=Godot Engine:docs"
 				[/gdscript]
 				[csharp]
 				var url = "$DOCS_URL/?highlight=Godot%20Engine%3%docs"
-				GD.Print(url.URIDecode()) // Prints "$DOCS_URL/?hightlight=Godot Engine:docs"
+				GD.Print(url.URIDecode()) // Prints "$DOCS_URL/?highlight=Godot Engine:docs"
 				[/csharp]
 				[/codeblocks]
 			</description>
@@ -988,13 +988,13 @@
 				Encodes the string to URL-friendly format. This method is meant to properly encode the parameters in a URL when sending an HTTP request.
 				[codeblocks]
 				[gdscript]
-				var prefix = "$DOCS_URL/?hightlight="
+				var prefix = "$DOCS_URL/?highlight="
 				var url = prefix + "Godot Engine:docs".uri_encode()
 
 				print(url) # Prints "$DOCS_URL/?highlight=Godot%20Engine%3%docs"
 				[/gdscript]
 				[csharp]
-				var prefix = "$DOCS_URL/?hightlight=";
+				var prefix = "$DOCS_URL/?highlight=";
 				var url = prefix + "Godot Engine:docs".URIEncode();
 
 				GD.Print(url); // Prints "$DOCS_URL/?highlight=Godot%20Engine%3%docs"
@@ -1060,6 +1060,12 @@
 			<param index="0" name="right" type="String" />
 			<description>
 				Appends [param right] at the end of this [String], also known as a string concatenation.
+			</description>
+		</operator>
+		<operator name="operator +">
+			<return type="String" />
+			<param index="0" name="right" type="StringName" />
+			<description>
 			</description>
 		</operator>
 		<operator name="operator &lt;">

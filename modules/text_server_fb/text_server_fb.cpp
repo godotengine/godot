@@ -1246,10 +1246,7 @@ void TextServerFallback::_font_set_allow_system_fallback(const RID &p_font_rid, 
 	ERR_FAIL_COND(!fd);
 
 	MutexLock lock(fd->mutex);
-	if (fd->allow_system_fallback != p_allow_system_fallback) {
-		_font_clear_cache(fd);
-		fd->allow_system_fallback = p_allow_system_fallback;
-	}
+	fd->allow_system_fallback = p_allow_system_fallback;
 }
 
 bool TextServerFallback::_font_is_allow_system_fallback(const RID &p_font_rid) const {

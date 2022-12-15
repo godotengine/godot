@@ -3827,7 +3827,7 @@ void ParticleProcessMaterialData::bind_uniforms() {
 	ShaderCompiler::GeneratedCode::Texture *texture_uniforms = shader_data->texture_uniforms.ptrw();
 	for (int ti = 0; ti < texture_cache.size(); ti++) {
 		Texture *texture = TextureStorage::get_singleton()->get_texture(textures[ti]);
-		glActiveTexture(GL_TEXTURE1 + ti); // Start at GL_TEXTURE1 becuase texture slot 0 is reserved for the heightmap texture.
+		glActiveTexture(GL_TEXTURE1 + ti); // Start at GL_TEXTURE1 because texture slot 0 is reserved for the heightmap texture.
 		glBindTexture(target_from_type[texture_uniforms[ti].type], texture->tex_id);
 
 		// Set sampler state here as the same texture can be used in multiple places with different flags

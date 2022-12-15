@@ -50,18 +50,22 @@ class GDScriptAnalyzer {
 	Error check_native_member_name_conflict(const StringName &p_member_name, const GDScriptParser::Node *p_member_node, const StringName &p_native_type_string);
 	Error check_class_member_name_conflict(const GDScriptParser::ClassNode *p_class_node, const StringName &p_member_name, const GDScriptParser::Node *p_member_node);
 
-	Error resolve_inheritance(GDScriptParser::ClassNode *p_class, bool p_recursive = true);
+	void get_class_node_current_scope_classes(GDScriptParser::ClassNode *p_node, List<GDScriptParser::ClassNode *> *p_list);
+
+	Error resolve_class_inheritance(GDScriptParser::ClassNode *p_class, const GDScriptParser::Node *p_source = nullptr);
+	Error resolve_class_inheritance(GDScriptParser::ClassNode *p_class, bool p_recursive);
 	GDScriptParser::DataType resolve_datatype(GDScriptParser::TypeNode *p_type);
 
 	void decide_suite_type(GDScriptParser::Node *p_suite, GDScriptParser::Node *p_statement);
 
-	// This traverses the tree to resolve all TypeNodes.
-	Error resolve_program();
-
 	void resolve_annotation(GDScriptParser::AnnotationNode *p_annotation);
-	void resolve_class_interface(GDScriptParser::ClassNode *p_class);
-	void resolve_class_body(GDScriptParser::ClassNode *p_class);
-	void resolve_function_signature(GDScriptParser::FunctionNode *p_function);
+	void resolve_class_member(GDScriptParser::ClassNode *p_class, StringName p_name, const GDScriptParser::Node *p_source = nullptr);
+	void resolve_class_member(GDScriptParser::ClassNode *p_class, int p_index, const GDScriptParser::Node *p_source = nullptr);
+	void resolve_class_interface(GDScriptParser::ClassNode *p_class, const GDScriptParser::Node *p_source = nullptr);
+	void resolve_class_interface(GDScriptParser::ClassNode *p_class, bool p_recursive);
+	void resolve_class_body(GDScriptParser::ClassNode *p_class, const GDScriptParser::Node *p_source = nullptr);
+	void resolve_class_body(GDScriptParser::ClassNode *p_class, bool p_recursive);
+	void resolve_function_signature(GDScriptParser::FunctionNode *p_function, const GDScriptParser::Node *p_source = nullptr);
 	void resolve_function_body(GDScriptParser::FunctionNode *p_function);
 	void resolve_node(GDScriptParser::Node *p_node, bool p_is_root = true);
 	void resolve_suite(GDScriptParser::SuiteNode *p_suite);
@@ -113,7 +117,7 @@ class GDScriptAnalyzer {
 	GDScriptParser::DataType get_operation_type(Variant::Operator p_operation, const GDScriptParser::DataType &p_a, bool &r_valid, const GDScriptParser::Node *p_source);
 	void update_array_literal_element_type(const GDScriptParser::DataType &p_base_type, GDScriptParser::ArrayNode *p_array_literal);
 	bool is_type_compatible(const GDScriptParser::DataType &p_target, const GDScriptParser::DataType &p_source, bool p_allow_implicit_conversion = false, const GDScriptParser::Node *p_source_node = nullptr);
-	void push_error(const String &p_message, const GDScriptParser::Node *p_origin);
+	void push_error(const String &p_message, const GDScriptParser::Node *p_origin = nullptr);
 	void mark_node_unsafe(const GDScriptParser::Node *p_node);
 	void mark_lambda_use_self();
 	bool class_exists(const StringName &p_class) const;
@@ -126,6 +130,7 @@ public:
 	Error resolve_inheritance();
 	Error resolve_interface();
 	Error resolve_body();
+	Error resolve_dependencies();
 	Error analyze();
 
 	GDScriptAnalyzer(GDScriptParser *p_parser);

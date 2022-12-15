@@ -1584,8 +1584,8 @@ void AnimationTree::_process_graph(double p_delta) {
 							}
 
 							if (player2->is_playing() || seeked) {
-								player2->play(anim_name);
 								player2->seek(at_anim_pos);
+								player2->play(anim_name);
 								t->playing = true;
 								playing_caches.insert(t);
 							} else {
@@ -1759,7 +1759,7 @@ void AnimationTree::_setup_animation_player() {
 
 	AnimationPlayer *new_player = nullptr;
 	if (!animation_player.is_empty()) {
-		new_player = Object::cast_to<AnimationPlayer>(get_node(animation_player));
+		new_player = Object::cast_to<AnimationPlayer>(get_node_or_null(animation_player));
 		if (new_player && !new_player->is_connected("animation_list_changed", callable_mp(this, &AnimationTree::_animation_player_changed))) {
 			new_player->connect("animation_list_changed", callable_mp(this, &AnimationTree::_animation_player_changed));
 		}

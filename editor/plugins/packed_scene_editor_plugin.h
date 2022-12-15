@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  native_extension_manager.h                                           */
+/*  packed_scene_editor_plugin.h                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,47 +28,41 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef NATIVE_EXTENSION_MANAGER_H
-#define NATIVE_EXTENSION_MANAGER_H
+#ifndef PACKED_SCENE_EDITOR_PLUGIN_H
+#define PACKED_SCENE_EDITOR_PLUGIN_H
 
-#include "core/extension/native_extension.h"
+#include "editor/editor_inspector.h"
+#include "editor/editor_plugin.h"
+#include "scene/gui/box_container.h"
 
-class NativeExtensionManager : public Object {
-	GDCLASS(NativeExtensionManager, Object);
+class PackedSceneEditor : public VBoxContainer {
+	GDCLASS(PackedSceneEditor, VBoxContainer);
 
-	int32_t level = -1;
-	HashMap<String, Ref<NativeExtension>> native_extension_map;
+	Ref<PackedScene> packed_scene;
+	Button *open_scene_button;
 
-	static void _bind_methods();
+	void _on_open_scene_pressed();
 
-	static NativeExtensionManager *singleton;
+protected:
+	void _notification(int p_what);
 
 public:
-	enum LoadStatus {
-		LOAD_STATUS_OK,
-		LOAD_STATUS_FAILED,
-		LOAD_STATUS_ALREADY_LOADED,
-		LOAD_STATUS_NOT_LOADED,
-		LOAD_STATUS_NEEDS_RESTART,
-	};
-
-	LoadStatus load_extension(const String &p_path);
-	LoadStatus reload_extension(const String &p_path);
-	LoadStatus unload_extension(const String &p_path);
-	bool is_extension_loaded(const String &p_path) const;
-	Vector<String> get_loaded_extensions() const;
-	Ref<NativeExtension> get_extension(const String &p_path);
-
-	void initialize_extensions(NativeExtension::InitializationLevel p_level);
-	void deinitialize_extensions(NativeExtension::InitializationLevel p_level);
-
-	static NativeExtensionManager *get_singleton();
-
-	void load_extensions();
-
-	NativeExtensionManager();
+	PackedSceneEditor(Ref<PackedScene> &p_packed_scene);
 };
 
-VARIANT_ENUM_CAST(NativeExtensionManager::LoadStatus)
+class EditorInspectorPluginPackedScene : public EditorInspectorPlugin {
+	GDCLASS(EditorInspectorPluginPackedScene, EditorInspectorPlugin);
 
-#endif // NATIVE_EXTENSION_MANAGER_H
+public:
+	virtual bool can_handle(Object *p_object) override;
+	virtual void parse_begin(Object *p_object) override;
+};
+
+class PackedSceneEditorPlugin : public EditorPlugin {
+	GDCLASS(PackedSceneEditorPlugin, EditorPlugin);
+
+public:
+	PackedSceneEditorPlugin();
+};
+
+#endif // PACKED_SCENE_EDITOR_PLUGIN_H

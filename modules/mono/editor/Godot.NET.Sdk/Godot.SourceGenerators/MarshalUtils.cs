@@ -56,7 +56,7 @@ namespace Godot.SourceGenerators
                 MarshalType.Color => VariantType.Color,
                 MarshalType.Plane => VariantType.Plane,
                 MarshalType.Callable => VariantType.Callable,
-                MarshalType.SignalInfo => VariantType.Signal,
+                MarshalType.Signal => VariantType.Signal,
                 MarshalType.Enum => VariantType.Int,
                 MarshalType.ByteArray => VariantType.PackedByteArray,
                 MarshalType.Int32Array => VariantType.PackedInt32Array,
@@ -147,7 +147,7 @@ namespace Godot.SourceGenerators
                                 { Name: "Plane" } => MarshalType.Plane,
                                 { Name: "RID" } => MarshalType.RID,
                                 { Name: "Callable" } => MarshalType.Callable,
-                                { Name: "SignalInfo" } => MarshalType.SignalInfo,
+                                { Name: "Signal" } => MarshalType.Signal,
                                 { Name: "Variant" } => MarshalType.Variant,
                                 _ => null
                             };
@@ -304,7 +304,12 @@ namespace Godot.SourceGenerators
         {
             return marshalType switch
             {
-                // For generic Godot collections, VariantUtils.ConvertTo<T> is slower, so we need this special case
+                // We need a special case for GodotObjectOrDerived[], because it's not supported by VariantUtils.ConvertTo<T>
+                MarshalType.GodotObjectOrDerivedArray =>
+                    source.Append(VariantUtils, ".ConvertToSystemArrayOfGodotObject<",
+                        ((IArrayTypeSymbol)typeSymbol).ElementType.FullQualifiedNameIncludeGlobal(), ">(",
+                        inputExpr, ")"),
+                // We need a special case for generic Godot collections and GodotObjectOrDerived[], because VariantUtils.ConvertTo<T> is slower
                 MarshalType.GodotGenericDictionary =>
                     source.Append(VariantUtils, ".ConvertToDictionaryObject<",
                         ((INamedTypeSymbol)typeSymbol).TypeArguments[0].FullQualifiedNameIncludeGlobal(), ", ",
@@ -324,7 +329,10 @@ namespace Godot.SourceGenerators
         {
             return marshalType switch
             {
-                // For generic Godot collections, VariantUtils.CreateFrom<T> is slower, so we need this special case
+                // We need a special case for GodotObjectOrDerived[], because it's not supported by VariantUtils.CreateFrom<T>
+                MarshalType.GodotObjectOrDerivedArray =>
+                    source.Append(VariantUtils, ".CreateFromSystemArrayOfGodotObject(", inputExpr, ")"),
+                // We need a special case for generic Godot collections and GodotObjectOrDerived[], because VariantUtils.CreateFrom<T> is slower
                 MarshalType.GodotGenericDictionary =>
                     source.Append(VariantUtils, ".CreateFromDictionary(", inputExpr, ")"),
                 MarshalType.GodotGenericArray =>
@@ -339,7 +347,11 @@ namespace Godot.SourceGenerators
         {
             return marshalType switch
             {
-                // For generic Godot collections, Variant.As<T> is slower, so we need this special case
+                // We need a special case for GodotObjectOrDerived[], because it's not supported by Variant.As<T>
+                MarshalType.GodotObjectOrDerivedArray =>
+                    source.Append(inputExpr, ".AsGodotObjectArray<",
+                        ((IArrayTypeSymbol)typeSymbol).ElementType.FullQualifiedNameIncludeGlobal(), ">()"),
+                // We need a special case for generic Godot collections and GodotObjectOrDerived[], because Variant.As<T> is slower
                 MarshalType.GodotGenericDictionary =>
                     source.Append(inputExpr, ".AsGodotDictionary<",
                         ((INamedTypeSymbol)typeSymbol).TypeArguments[0].FullQualifiedNameIncludeGlobal(), ", ",
@@ -357,7 +369,10 @@ namespace Godot.SourceGenerators
         {
             return marshalType switch
             {
-                // For generic Godot collections, Variant.From<T> is slower, so we need this special case
+                // We need a special case for GodotObjectOrDerived[], because it's not supported by Variant.From<T>
+                MarshalType.GodotObjectOrDerivedArray =>
+                    source.Append("global::Godot.Variant.CreateFrom(", inputExpr, ")"),
+                // We need a special case for generic Godot collections, because Variant.From<T> is slower
                 MarshalType.GodotGenericDictionary or MarshalType.GodotGenericArray =>
                     source.Append("global::Godot.Variant.CreateFrom(", inputExpr, ")"),
                 _ => source.Append("global::Godot.Variant.From<",

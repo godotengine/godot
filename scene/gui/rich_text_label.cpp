@@ -150,7 +150,12 @@ RichTextLabel::Item *RichTextLabel::_get_item_at_pos(RichTextLabel::Item *p_item
 					return it;
 				}
 			} break;
-			case ITEM_IMAGE:
+			case ITEM_IMAGE: {
+				offset += 1;
+				if (offset > p_position) {
+					return it;
+				}
+			} break;
 			case ITEM_TABLE: {
 				offset += 1;
 			} break;
@@ -1854,10 +1859,6 @@ void RichTextLabel::_notification(int p_what) {
 }
 
 Control::CursorShape RichTextLabel::get_cursor_shape(const Point2 &p_pos) const {
-	if (!underline_meta) {
-		return get_default_cursor_shape();
-	}
-
 	if (selection.click_item) {
 		return CURSOR_IBEAM;
 	}

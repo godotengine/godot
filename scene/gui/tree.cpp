@@ -2471,6 +2471,8 @@ bool Tree::_is_sibling_branch_selected(TreeItem *p_from) const {
 }
 
 void Tree::select_single_item(TreeItem *p_selected, TreeItem *p_current, int p_col, TreeItem *p_prev, bool *r_in_range, bool p_force_deselect) {
+	popup_editor->hide();
+
 	TreeItem::Cell &selected_cell = p_selected->cells.write[p_col];
 
 	bool switched = false;
@@ -4216,7 +4218,9 @@ Tree::SelectMode Tree::get_select_mode() const {
 void Tree::deselect_all() {
 	TreeItem *item = get_next_selected(get_root());
 	while (item) {
-		item->deselect(selected_col);
+		for (int i = 0; i < columns.size(); i++) {
+			item->deselect(i);
+		}
 		TreeItem *prev_item = item;
 		item = get_next_selected(get_root());
 		ERR_FAIL_COND(item == prev_item);

@@ -42,8 +42,8 @@ class TileSet;
 class Tree;
 class VSeparator;
 
-class TileSetAtlasSourceEditor : public HBoxContainer {
-	GDCLASS(TileSetAtlasSourceEditor, HBoxContainer);
+class TileSetAtlasSourceEditor : public HSplitContainer {
+	GDCLASS(TileSetAtlasSourceEditor, HSplitContainer);
 
 public:
 	// A class to store which tiles are selected.
@@ -77,7 +77,7 @@ public:
 
 	public:
 		void set_id(int p_id);
-		int get_id();
+		int get_id() const;
 
 		void edit(Ref<TileSet> p_tile_set, TileSetAtlasSource *p_tile_set_atlas_source, int p_source_id);
 		TileSetAtlasSource *get_edited() { return tile_set_atlas_source; };
@@ -120,6 +120,7 @@ private:
 	bool tile_set_changed_needs_update = false;
 
 	// -- Properties painting --
+	ScrollContainer *tile_data_editors_scroll = nullptr;
 	VBoxContainer *tile_data_painting_editor_container = nullptr;
 	Label *tile_data_editors_label = nullptr;
 	Button *tile_data_editor_dropdown_button = nullptr;
@@ -137,19 +138,15 @@ private:
 
 	// -- Inspector --
 	AtlasTileProxyObject *tile_proxy_object = nullptr;
-	Label *tile_inspector_label = nullptr;
 	EditorInspector *tile_inspector = nullptr;
 	Label *tile_inspector_no_tile_selected_label = nullptr;
 	String selected_property;
 	void _inspector_property_selected(String p_property);
 
 	TileSetAtlasSourceProxyObject *atlas_source_proxy_object = nullptr;
-	Label *atlas_source_inspector_label = nullptr;
 	EditorInspector *atlas_source_inspector = nullptr;
 
 	// -- Atlas view --
-	HBoxContainer *toolbox = nullptr;
-	Label *tile_atlas_view_missing_source_label = nullptr;
 	TileAtlasView *tile_atlas_view = nullptr;
 
 	// Dragging
@@ -210,7 +207,6 @@ private:
 
 	// Tool settings.
 	HBoxContainer *tool_settings = nullptr;
-	VSeparator *tool_settings_vsep = nullptr;
 	HBoxContainer *tool_settings_tile_data_toolbar_container = nullptr;
 	Button *tools_settings_erase_button = nullptr;
 	MenuButton *tool_advanced_menu_buttom = nullptr;

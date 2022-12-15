@@ -2151,10 +2151,7 @@ void TextServerAdvanced::_font_set_allow_system_fallback(const RID &p_font_rid, 
 	ERR_FAIL_COND(!fd);
 
 	MutexLock lock(fd->mutex);
-	if (fd->allow_system_fallback != p_allow_system_fallback) {
-		_font_clear_cache(fd);
-		fd->allow_system_fallback = p_allow_system_fallback;
-	}
+	fd->allow_system_fallback = p_allow_system_fallback;
 }
 
 bool TextServerAdvanced::_font_is_allow_system_fallback(const RID &p_font_rid) const {
@@ -6199,6 +6196,9 @@ String TextServerAdvanced::_strip_diacritics(const String &p_string) const {
 }
 
 String TextServerAdvanced::_string_to_upper(const String &p_string, const String &p_language) const {
+	if (p_string.is_empty()) {
+		return p_string;
+	}
 	const String lang = (p_language.is_empty()) ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
 
 	// Convert to UTF-16.
@@ -6218,6 +6218,9 @@ String TextServerAdvanced::_string_to_upper(const String &p_string, const String
 }
 
 String TextServerAdvanced::_string_to_lower(const String &p_string, const String &p_language) const {
+	if (p_string.is_empty()) {
+		return p_string;
+	}
 	const String lang = (p_language.is_empty()) ? TranslationServer::get_singleton()->get_tool_locale() : p_language;
 	// Convert to UTF-16.
 	Char16String utf16 = p_string.utf16();

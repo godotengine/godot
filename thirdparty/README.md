@@ -20,7 +20,7 @@ Files extracted from upstream source:
 ## basis_universal
 
 - Upstream: https://github.com/BinomialLLC/basis_universal
-- Version: git (1531cfaf9ed5232248a0a45736686a849ca3befc, 2022)
+- Version: git (a91e94c8495d7f470d3df326a364d49324cfd4a3, 2022)
 - License: Apache 2.0
 
 Files extracted from upstream source:
@@ -217,8 +217,8 @@ Files extracted from upstream source:
 ## graphite
 
 - Upstream: https://github.com/silnrsi/graphite
-- Version: 1.3.14 (80c52493ef42e6fe605a69dcddd2a691cd8a1380, 2021)
-- License: MPL-2.0
+- Version: 1.3.14 (27572742003b93dc53dc02c01c237b72c6c25f54, 2022)
+- License: MIT
 
 Files extracted from upstream source:
 
@@ -548,7 +548,7 @@ Patch files are provided in `oidn/patches/`.
 ## openxr
 
 - Upstream: https://github.com/KhronosGroup/OpenXR-SDK
-- Version: 1.0.25 (c16a18c99740ea5dd251e3af117e0e5aea4ceaa9, 2022)
+- Version: 1.0.26 (e2da9ce83a4388c9622da328bf48548471261290, 2022)
 - License: Apache 2.0
 
 Files extracted from upstream source:

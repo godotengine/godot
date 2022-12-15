@@ -1414,7 +1414,7 @@ void FileSystemDock::_update_dependencies_after_move(const HashMap<String, Strin
 		Error err = ResourceLoader::rename_dependencies(file, p_renames);
 		if (err == OK) {
 			if (ResourceLoader::get_resource_type(file) == "PackedScene") {
-				EditorNode::get_singleton()->reload_scene(file);
+				callable_mp(EditorNode::get_singleton(), &EditorNode::reload_scene).bind(file).call_deferred();
 			}
 		} else {
 			EditorNode::get_singleton()->add_io_error(TTR("Unable to update dependencies:") + "\n" + remaps[i] + "\n");

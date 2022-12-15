@@ -279,6 +279,8 @@ PackedStringArray NavigationLink2D::get_configuration_warnings() const {
 
 NavigationLink2D::NavigationLink2D() {
 	link = NavigationServer2D::get_singleton()->link_create();
+	NavigationServer2D::get_singleton()->link_set_owner_id(link, get_instance_id());
+
 	set_notify_transform(true);
 }
 

@@ -86,13 +86,14 @@
 # Tim <sakul8826@gmail.com>, 2022.
 # Anonynonymouse <tom.spaine60388@gmail.com>, 2022.
 # Felix Bitsch <felix.a.bitsch@gmail.com>, 2022.
+# miguel <miguel-gonzalez@gmx.de>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-09-11 22:22+0000\n"
-"Last-Translator: So Wieso <sowieso@dukun.de>\n"
+"PO-Revision-Date: 2022-12-13 13:21+0000\n"
+"Last-Translator: ‎ <artism90@googlemail.com>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot/de/>\n"
 "Language: de\n"
@@ -100,7 +101,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.14.1-dev\n"
+"X-Generator: Weblate 4.15-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -12889,9 +12890,10 @@ msgstr "Einrasteinstellungen"
 #: scene/2d/path_2d.cpp scene/2d/polygon_2d.cpp scene/2d/sprite.cpp
 #: scene/3d/cpu_particles.cpp scene/3d/label_3d.cpp scene/3d/path.cpp
 #: scene/3d/physics_body.cpp scene/3d/soft_body.cpp scene/3d/sprite_3d.cpp
-#: scene/gui/graph_node.cpp scene/gui/rich_text_effect.cpp
-#: scene/main/canvas_layer.cpp scene/resources/material.cpp
-#: scene/resources/particles_material.cpp scene/resources/style_box.cpp
+#: scene/3d/visual_instance.cpp scene/gui/graph_node.cpp
+#: scene/gui/rich_text_effect.cpp scene/main/canvas_layer.cpp
+#: scene/resources/material.cpp scene/resources/particles_material.cpp
+#: scene/resources/style_box.cpp
 msgid "Offset"
 msgstr "Versatz"
 
@@ -13069,7 +13071,7 @@ msgstr "Pfad des privaten SSH-Schlüssels auswählen"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "SSH Passphrase"
-msgstr "SSH-Passphrase"
+msgstr "SSH Schlüsseltext"
 
 #: editor/plugins/version_control_editor_plugin.cpp
 msgid "Detect new changes"
@@ -14306,16 +14308,17 @@ msgid "Invalid project path (changed anything?)."
 msgstr "Ungültiger Projektpfad (etwas geändert?)."
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid ""
-"Couldn't load project.godot in project path (error %d). It may be missing or "
-"corrupted."
+"Couldn't load project at '%s' (error %d). It may be missing or corrupted."
 msgstr ""
 "Die Datei project.godot im Projektpfad konnte nicht geladen werden (Fehler "
 "%d). Sie könnte fehlen oder beschädigt sein."
 
 #: editor/project_manager.cpp
-msgid "Couldn't edit project.godot in project path."
-msgstr "project.godot des Projektpfads konnte nicht bearbeitet werden."
+#, fuzzy
+msgid "Couldn't save project at '%s' (error %d)."
+msgstr "Projekt in ‚%s‘ kann nicht geöffnet werden."
 
 #: editor/project_manager.cpp
 msgid "Couldn't create project.godot in project path."
@@ -16312,7 +16315,7 @@ msgstr "Ausrichtung"
 #: main/main.cpp scene/gui/scroll_container.cpp scene/gui/text_edit.cpp
 #: scene/main/scene_tree.cpp scene/register_scene_types.cpp
 msgid "Common"
-msgstr "Gewöhnlich"
+msgstr "Allgemein"
 
 #: main/main.cpp
 msgid "Physics FPS"
@@ -23250,6 +23253,16 @@ msgstr "Max Kraft"
 #: scene/3d/visibility_notifier.cpp
 msgid "AABB"
 msgstr "AABB"
+
+#: scene/3d/visual_instance.cpp
+#, fuzzy
+msgid "Sorting"
+msgstr "Sortiere"
+
+#: scene/3d/visual_instance.cpp
+#, fuzzy
+msgid "Use AABB Center"
+msgstr "Ambient verwenden"
 
 #: scene/3d/visual_instance.cpp scene/resources/navigation_mesh.cpp
 msgid "Geometry"

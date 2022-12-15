@@ -62,7 +62,7 @@ using namespace godot;
 
 extern "C" {
 
-GDNativeBool GDN_EXPORT textserver_advanced_init(const GDNativeInterface *p_interface, const GDNativeExtensionClassLibraryPtr p_library, GDNativeInitialization *r_initialization) {
+GDExtensionBool GDN_EXPORT textserver_advanced_init(const GDExtensionInterface *p_interface, const GDExtensionClassLibraryPtr p_library, GDExtensionInitialization *r_initialization) {
 	GDExtensionBinding::InitObject init_obj(p_interface, p_library, r_initialization);
 
 	init_obj.register_initializer(&initialize_text_server_adv_module);

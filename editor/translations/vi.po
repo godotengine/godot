@@ -22,13 +22,14 @@
 # Hung <hungthitkhia@gmail.com>, 2021.
 # Paweł Fertyk <pfertyk@pfertyk.me>, 2022.
 # MInhTriet <luckyblockblack@gmail.com>, 2022.
+# Nhật Huy <nhat.huy.7996@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-08-17 18:20+0000\n"
-"Last-Translator: MInhTriet <luckyblockblack@gmail.com>\n"
+"PO-Revision-Date: 2022-11-30 15:16+0000\n"
+"Last-Translator: Nhật Huy <nhat.huy.7996@gmail.com>\n"
 "Language-Team: Vietnamese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/vi/>\n"
 "Language: vi\n"
@@ -36,7 +37,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.14-dev\n"
+"X-Generator: Weblate 4.15-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -63,9 +64,8 @@ msgid "V-Sync Via Compositor"
 msgstr "V-Sync thông qua Compositor"
 
 #: core/bind/core_bind.cpp main/main.cpp
-#, fuzzy
 msgid "Delta Smoothing"
-msgstr "Delta smoothing"
+msgstr "Dealta smooth"
 
 #: core/bind/core_bind.cpp
 msgid "Low Processor Usage Mode"
@@ -162,9 +162,8 @@ msgid "Target FPS"
 msgstr "FPS cần đạt tới"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Time Scale"
-msgstr "Nút TimeScale"
+msgstr "độ giãn nở thời gian"
 
 #: core/bind/core_bind.cpp main/main.cpp
 #, fuzzy
@@ -13042,9 +13041,10 @@ msgstr "Tùy chọn Dính"
 #: scene/2d/path_2d.cpp scene/2d/polygon_2d.cpp scene/2d/sprite.cpp
 #: scene/3d/cpu_particles.cpp scene/3d/label_3d.cpp scene/3d/path.cpp
 #: scene/3d/physics_body.cpp scene/3d/soft_body.cpp scene/3d/sprite_3d.cpp
-#: scene/gui/graph_node.cpp scene/gui/rich_text_effect.cpp
-#: scene/main/canvas_layer.cpp scene/resources/material.cpp
-#: scene/resources/particles_material.cpp scene/resources/style_box.cpp
+#: scene/3d/visual_instance.cpp scene/gui/graph_node.cpp
+#: scene/gui/rich_text_effect.cpp scene/main/canvas_layer.cpp
+#: scene/resources/material.cpp scene/resources/particles_material.cpp
+#: scene/resources/style_box.cpp
 #, fuzzy
 msgid "Offset"
 msgstr "Độ dời:"
@@ -14457,16 +14457,17 @@ msgid "Invalid project path (changed anything?)."
 msgstr "Đường dẫn dự án không hợp lệ (bạn có thay đổi điều gì?)."
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid ""
-"Couldn't load project.godot in project path (error %d). It may be missing or "
-"corrupted."
+"Couldn't load project at '%s' (error %d). It may be missing or corrupted."
 msgstr ""
 "Không thể nạp 'project.godot' trong đường dẫn dự án (lỗi %d). Nó có thể bị "
 "thiếu hoặc đã hỏng."
 
 #: editor/project_manager.cpp
-msgid "Couldn't edit project.godot in project path."
-msgstr "Không thể chỉnh sửa 'project.godot' trong đường dẫn dự án."
+#, fuzzy
+msgid "Couldn't save project at '%s' (error %d)."
+msgstr "Không thể mở dự án tại '%s'."
 
 #: editor/project_manager.cpp
 msgid "Couldn't create project.godot in project path."
@@ -23930,6 +23931,15 @@ msgstr "Lỗi"
 
 #: scene/3d/visibility_notifier.cpp
 msgid "AABB"
+msgstr ""
+
+#: scene/3d/visual_instance.cpp
+#, fuzzy
+msgid "Sorting"
+msgstr "Sắp xếp"
+
+#: scene/3d/visual_instance.cpp
+msgid "Use AABB Center"
 msgstr ""
 
 #: scene/3d/visual_instance.cpp scene/resources/navigation_mesh.cpp
