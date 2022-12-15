@@ -135,7 +135,7 @@
 		[/csharp]
 		[/codeblocks]
 		[b]Note:[/b] Erasing elements while iterating over dictionaries is [b]not[/b] supported and will result in unpredictable behavior.
-		[b]Note:[/b] When declaring a dictionary with [code]const[/code], the dictionary becomes read-only. A read-only Dictionary's entries cannot be overriden at run-time. This does [i]not[/i] affect nested [Array] and [Dictionary] values.
+		[b]Note:[/b] When declaring a dictionary with [code]const[/code], the dictionary becomes read-only. A read-only Dictionary's entries cannot be overridden at run-time. This does [i]not[/i] affect nested [Array] and [Dictionary] values.
 	</description>
 	<tutorials>
 		<link title="GDScript basics: Dictionary">$DOCS_URL/tutorials/scripting/gdscript/gdscript_basics.html#dictionary</link>

@@ -91,7 +91,7 @@ namespace Godot.SourceGenerators.Sample
             }
         }
 
-        // Lamda Property
+        // Lambda Property
         private String _lamdaProperty_String = "LamdaProperty_String";
         [Export]
         public String LamdaProperty_String

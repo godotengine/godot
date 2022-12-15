@@ -973,11 +973,11 @@
 				[codeblocks]
 				[gdscript]
 				var url = "$DOCS_URL/?highlight=Godot%20Engine%3%docs"
-				print(url.uri_decode()) # Prints "$DOCS_URL/?hightlight=Godot Engine:docs"
+				print(url.uri_decode()) # Prints "$DOCS_URL/?highlight=Godot Engine:docs"
 				[/gdscript]
 				[csharp]
 				var url = "$DOCS_URL/?highlight=Godot%20Engine%3%docs"
-				GD.Print(url.URIDecode()) // Prints "$DOCS_URL/?hightlight=Godot Engine:docs"
+				GD.Print(url.URIDecode()) // Prints "$DOCS_URL/?highlight=Godot Engine:docs"
 				[/csharp]
 				[/codeblocks]
 			</description>
@@ -988,13 +988,13 @@
 				Encodes the string to URL-friendly format. This method is meant to properly encode the parameters in a URL when sending an HTTP request.
 				[codeblocks]
 				[gdscript]
-				var prefix = "$DOCS_URL/?hightlight="
+				var prefix = "$DOCS_URL/?highlight="
 				var url = prefix + "Godot Engine:docs".uri_encode()
 
 				print(url) # Prints "$DOCS_URL/?highlight=Godot%20Engine%3%docs"
 				[/gdscript]
 				[csharp]
-				var prefix = "$DOCS_URL/?hightlight=";
+				var prefix = "$DOCS_URL/?highlight=";
 				var url = prefix + "Godot Engine:docs".URIEncode();
 
 				GD.Print(url); // Prints "$DOCS_URL/?highlight=Godot%20Engine%3%docs"

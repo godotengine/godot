@@ -652,7 +652,7 @@ namespace Godot
         /// added to the first and second values of the final column respectively.
         /// </summary>
         /// <param name="offset">The offset to apply to the projection.</param>
-        /// <returns>The offseted projection.</returns>
+        /// <returns>The offsetted projection.</returns>
         public readonly Projection JitterOffseted(Vector2 offset)
         {
             Projection proj = this;
