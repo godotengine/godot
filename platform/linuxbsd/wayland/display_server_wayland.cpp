@@ -2312,8 +2312,6 @@ void DisplayServerWayland::_show_window() {
 		wd.wl_surface = wl_compositor_create_surface(wls.globals.wl_compositor);
 		wl_surface_add_listener(wd.wl_surface, &wl_surface_listener, &wd);
 
-		wl_surface_commit(wd.wl_surface);
-
 		bool decorated = false;
 
 #ifdef LIBDECOR_ENABLED
@@ -2334,10 +2332,6 @@ void DisplayServerWayland::_show_window() {
 			wd.xdg_toplevel = xdg_surface_get_toplevel(wd.xdg_surface);
 			xdg_toplevel_add_listener(wd.xdg_toplevel, &xdg_toplevel_listener, &wd);
 
-			if (wd.title.utf8().ptr()) {
-				xdg_toplevel_set_title(wd.xdg_toplevel, wd.title.utf8().ptr());
-			}
-
 			if (!window_get_flag(WINDOW_FLAG_BORDERLESS) && wls.globals.xdg_decoration_manager) {
 				wd.xdg_toplevel_decoration = zxdg_decoration_manager_v1_get_toplevel_decoration(wls.globals.xdg_decoration_manager, wd.xdg_toplevel);
 				zxdg_toplevel_decoration_v1_add_listener(wd.xdg_toplevel_decoration, &xdg_toplevel_decoration_listener, &wd);
@@ -2348,7 +2342,10 @@ void DisplayServerWayland::_show_window() {
 			}
 		}
 
-		wd.visible = true;
+		wl_surface_commit(wd.wl_surface);
+
+		// Wait for the surface to be configured before continuing.
+		wl_display_roundtrip(wls.wl_display);
 
 #ifdef VULKAN_ENABLED
 		// Since `VulkanContextWayland::window_create` automatically assigns a buffer
@@ -2369,18 +2366,23 @@ void DisplayServerWayland::_show_window() {
 		}
 #endif
 
-		// Wait for the surface to be configured before continuing.
-		wl_display_roundtrip(wls.wl_display);
-
 		// Actually try to apply any mode the window has now that it's visible.
 		_window_data_set_mode(wd, wd.mode);
 
 #ifdef LIBDECOR_ENABLED
 		if (wd.libdecor_frame) {
 			libdecor_frame_set_visibility(wd.libdecor_frame, !window_get_flag(WINDOW_FLAG_BORDERLESS));
-			libdecor_frame_set_title(wd.libdecor_frame, wd.title.utf8().ptr());
+
+			if (wd.title.utf8().ptr()) {
+				libdecor_frame_set_title(wd.libdecor_frame, wd.title.utf8().ptr());
+			}
 		}
-#endif // LIBDECOR_ENABLED
+#endif // LIBDECOR_ENABLE
+
+		if (wd.xdg_toplevel && wd.title.utf8().ptr()) {
+			xdg_toplevel_set_title(wd.xdg_toplevel, wd.title.utf8().ptr());
+		}
+		wd.visible = true;
 	}
 }
 
