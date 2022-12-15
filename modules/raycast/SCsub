@@ -88,6 +88,21 @@ if env["builtin_embree"]:
         # Embree needs those, it will automatically use SSE2NEON in ARM
         env_thirdparty.Append(CPPDEFINES=["__SSE2__", "__SSE__"])
 
+    if not env.msvc:
+        # Flags synced with upstream gnu.cmake.
+        env_thirdparty.Append(
+            CPPFLAGS=[
+                "-fno-strict-overflow",
+                "-fno-delete-null-pointer-checks",
+                "-fwrapv",
+                "-fsigned-char",
+                "-fno-strict-aliasing",
+                "-fno-tree-vectorize",
+                "-fvisibility=hidden",
+                "-fvisibility-inlines-hidden",
+            ]
+        )
+
     env.modules_sources += thirdparty_obj
 
 
