@@ -189,7 +189,7 @@ bool NativeScript::can_instance() const {
 
 #ifdef TOOLS_ENABLED
 	// Only valid if this is either a tool script or a "regular" script.
-	// (so an environment whre scripting is disabled (and not the editor) would not
+	// (so an environment where scripting is disabled (and not the editor) would not
 	// create objects).
 	return script_data && (is_tool() || ScriptServer::is_scripting_enabled());
 #else
@@ -1760,7 +1760,7 @@ void NativeReloadNode::_notification(int p_what) {
 					// Multiple GDNative libraries may be reloaded. The library and script
 					// path should match to prevent failing `NSL->library_classes` lookup
 					// from `get_script_desc()` in `script->_update_placeholder` below.
-					// This check also prevents "!script_data is true" error from occuring
+					// This check also prevents "!script_data is true" error from occurring
 					// when e. g. re-focusing editor window.
 					if (L->key() != U->key()) {
 						continue;

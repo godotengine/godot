@@ -493,7 +493,7 @@
 			<argument index="0" name="id" type="int" />
 			<description>
 				Emitted when an item of some [code]id[/code] is pressed or its accelerator is activated.
-				[b]Note:[/b] If [code]id[/code] is negative (either explicitly or due to overflow), this will return the correponding index instead.
+				[b]Note:[/b] If [code]id[/code] is negative (either explicitly or due to overflow), this will return the corresponding index instead.
 			</description>
 		</signal>
 		<signal name="index_pressed">

@@ -277,7 +277,7 @@ bool HTTPRequest::_update_connection() {
 
 				call_deferred("_request_done", RESULT_CHUNKED_BODY_SIZE_MISMATCH, response_code, response_headers, PoolByteArray());
 				return true;
-				// Request migh have been done
+				// Request might have been done
 			} else {
 				// Did not request yet, do request
 
