@@ -2591,6 +2591,15 @@ void DisplayServerWayland::window_set_size(const Size2i p_size, DisplayServer::W
 		wl_egl_window_resize(wd.wl_egl_window, wd.rect.size.width, wd.rect.size.height, 0, 0);
 	}
 #endif
+	if (wd.rect_changed_callback.is_valid()) {
+		Variant var_rect = Variant(wd.rect);
+		Variant *arg = &var_rect;
+
+		Variant ret;
+		Callable::CallError ce;
+
+		wd.rect_changed_callback.callp((const Variant **)&arg, 1, ret, ce);
+	}
 }
 
 Size2i DisplayServerWayland::window_get_size(DisplayServer::WindowID p_window) const {
