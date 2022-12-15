@@ -330,7 +330,11 @@ float RichTextLabel::_resize_line(ItemFrame *p_frame, int p_line, const Ref<Font
 					if (table->columns[i].expand && total_ratio > 0 && remaining_width > 0) {
 						table->columns[i].width += table->columns[i].expand_ratio * remaining_width / total_ratio;
 					}
-					table->total_width += table->columns[i].width + theme_cache.table_h_separation;
+					if (i != col_count - 1) {
+						table->total_width += table->columns[i].width + theme_cache.table_h_separation;
+					} else {
+						table->total_width += table->columns[i].width;
+					}
 				}
 
 				// Resize to max_width if needed and distribute the remaining space.
@@ -390,7 +394,6 @@ float RichTextLabel::_resize_line(ItemFrame *p_frame, int p_line, const Ref<Font
 						table->columns[column].width = MAX(table->columns[column].width, ceil(frame->lines[i].text_buf->get_size().x));
 
 						frame->lines[i].offset.y = prev_h;
-						frame->lines[i].offset += offset;
 
 						float h = frame->lines[i].text_buf->get_size().y + (frame->lines[i].text_buf->get_line_count() - 1) * theme_cache.line_separation;
 						if (i > 0) {
@@ -404,6 +407,8 @@ float RichTextLabel::_resize_line(ItemFrame *p_frame, int p_line, const Ref<Font
 						}
 						yofs += h;
 						prev_h = frame->lines[i].offset.y + frame->lines[i].text_buf->get_size().y + frame->lines[i].text_buf->get_line_count() * theme_cache.line_separation;
+
+						frame->lines[i].offset += offset;
 					}
 					yofs += frame->padding.size.y;
 					offset.x += table->columns[column].width + theme_cache.table_h_separation + frame->padding.size.x;
@@ -605,7 +610,11 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 					if (table->columns[i].expand && total_ratio > 0 && remaining_width > 0) {
 						table->columns[i].width += table->columns[i].expand_ratio * remaining_width / total_ratio;
 					}
-					table->total_width += table->columns[i].width + theme_cache.table_h_separation;
+					if (i != col_count - 1) {
+						table->total_width += table->columns[i].width + theme_cache.table_h_separation;
+					} else {
+						table->total_width += table->columns[i].width;
+					}
 				}
 
 				// Resize to max_width if needed and distribute the remaining space.
@@ -666,7 +675,6 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 						table->columns[column].width = MAX(table->columns[column].width, ceil(frame->lines[i].text_buf->get_size().x));
 
 						frame->lines[i].offset.y = prev_h;
-						frame->lines[i].offset += offset;
 
 						float h = frame->lines[i].text_buf->get_size().y + (frame->lines[i].text_buf->get_line_count() - 1) * theme_cache.line_separation;
 						if (i > 0) {
@@ -680,6 +688,8 @@ float RichTextLabel::_shape_line(ItemFrame *p_frame, int p_line, const Ref<Font>
 						}
 						yofs += h;
 						prev_h = frame->lines[i].offset.y + frame->lines[i].text_buf->get_size().y + frame->lines[i].text_buf->get_line_count() * theme_cache.line_separation;
+
+						frame->lines[i].offset += offset;
 					}
 					yofs += frame->padding.size.y;
 					offset.x += table->columns[column].width + theme_cache.table_h_separation + frame->padding.size.x;
