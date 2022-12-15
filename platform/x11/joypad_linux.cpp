@@ -204,6 +204,8 @@ void JoypadLinux::monitor_joypads(udev *p_udev) {
 #endif
 
 void JoypadLinux::monitor_joypads() {
+	bool has_slept = false;
+
 	while (!monitor_joypads_exit.is_set()) {
 		DIR *input_directory;
 		input_directory = opendir("/dev/input");
@@ -222,6 +224,11 @@ void JoypadLinux::monitor_joypads() {
 			}
 		}
 		closedir(input_directory);
+		usleep(1000000); // 1s
+		has_slept = true;
+	}
+
+	if (!has_slept) {
 		usleep(1000000); // 1s
 	}
 }
