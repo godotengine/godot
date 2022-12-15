@@ -1559,7 +1559,7 @@
 			<param index="0" name="instance" type="RID" />
 			<param index="1" name="aabb" type="AABB" />
 			<description>
-				Sets a custom AABB to use when culling objects from the view frustum. Equivalent to [method GeometryInstance3D.set_custom_aabb].
+				Sets a custom AABB to use when culling objects from the view frustum. Equivalent to setting [member GeometryInstance3D.custom_aabb].
 			</description>
 		</method>
 		<method name="instance_set_extra_visibility_margin">

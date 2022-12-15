@@ -16,13 +16,6 @@
 				Get the value of a shader parameter as set on this instance.
 			</description>
 		</method>
-		<method name="set_custom_aabb">
-			<return type="void" />
-			<param index="0" name="aabb" type="AABB" />
-			<description>
-				Overrides the bounding box of this node with a custom one. To remove it, set an [AABB] with all fields set to zero.
-			</description>
-		</method>
 		<method name="set_instance_shader_parameter">
 			<return type="void" />
 			<param index="0" name="name" type="StringName" />
@@ -35,6 +28,9 @@
 	<members>
 		<member name="cast_shadow" type="int" setter="set_cast_shadows_setting" getter="get_cast_shadows_setting" enum="GeometryInstance3D.ShadowCastingSetting" default="1">
 			The selected shadow casting flag. See [enum ShadowCastingSetting] for possible values.
+		</member>
+		<member name="custom_aabb" type="AABB" setter="set_custom_aabb" getter="get_custom_aabb" default="AABB(0, 0, 0, 0, 0, 0)">
+			Overrides the bounding box of this node with a custom one. This can be used to avoid the expensive [AABB] recalculation that happens when a skeleton is used with a [MeshInstance3D] or to have fine control over the [MeshInstance3D]'s bounding box. To remove this, set value to an [AABB] with all fields set to zero.
 		</member>
 		<member name="extra_cull_margin" type="float" setter="set_extra_cull_margin" getter="get_extra_cull_margin" default="0.0">
 			The extra distance added to the GeometryInstance3D's bounding box ([AABB]) to increase its cull box.
