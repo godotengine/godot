@@ -325,7 +325,7 @@ static int sort32a(const void *a,const void *b){
 
 /* decode codebook arrangement is more heavily optimized than encode */
 int vorbis_book_init_decode(codebook *c,const static_codebook *s){
-  int i,j,n=0,tabn;
+  unsigned int i,j,n=0,tabn;
   int *sortindex;
 
   memset(c,0,sizeof(*c));

@@ -1656,7 +1656,7 @@ static void QuickSortEdges(SEdge * pSortBuffer, int iLeft, int iRight, const int
 
 	// Random
 	t=uSeed&31;
-	t=(uSeed<<t)|(uSeed>>(32-t));
+	t=(uSeed<<t)|(uSeed>>(31-t));
 	uSeed=uSeed+t+3;
 	// Random end
 

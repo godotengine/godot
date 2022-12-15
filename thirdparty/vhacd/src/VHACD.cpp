@@ -1166,8 +1166,11 @@ void VHACD::ComputeACD(const Parameters& params)
             }
         }
 
-        Update(95.0 * (1.0 - maxConcavity) / (1.0 - params.m_concavity), 100.0, params);
-        if (GetCancel()) {
+		if(1.0 - params.m_concavity != 0) {
+			Update(95.0 * (1.0 - maxConcavity) / (1.0 - params.m_concavity), 100.0, params);
+		}
+		if (GetCancel()) {
+
             const size_t nTempParts = temp.Size();
             for (size_t p = 0; p < nTempParts; ++p) {
                 delete temp[p];

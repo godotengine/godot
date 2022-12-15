@@ -188,8 +188,12 @@ Ref<TriangleMesh> Mesh::generate_triangle_mesh() const {
 
 			if (primitive == PRIMITIVE_TRIANGLES) {
 				for (int j = 0; j < ic; j++) {
+					ERR_FAIL_COND_V_MSG(indices.size() > j,Ref<TriangleMesh>(),"invalid index");
 					int index = ir[j];
-					facesw[widx++] = vr[index];
+					ERR_FAIL_COND_V_MSG(index > vertices.size(), Ref<TriangleMesh>(), "unable to generate triangle mesh");
+					ERR_FAIL_COND_V_MSG(widx > faces.size(), Ref<TriangleMesh>(), "unable to generate triangle mesh");
+					widx++;
+					facesw[widx] = vr[index];
 				}
 			} else { // PRIMITIVE_TRIANGLE_STRIP
 				for (int j = 2; j < ic; j++) {

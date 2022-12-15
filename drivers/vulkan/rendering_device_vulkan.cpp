@@ -5074,9 +5074,9 @@ Vector<uint8_t> RenderingDeviceVulkan::shader_compile_binary_from_spirv(const Ve
 				ERR_FAIL_COND_V_MSG(result != SPV_REFLECT_RESULT_SUCCESS, Vector<uint8_t>(),
 						"Reflection of SPIR-V shader stage '" + String(shader_stage_names[p_spirv[i].shader_stage]) + "' failed enumerating output variables.");
 
-				if (ov_count) {
+				if (ov_count > 0) {
 					Vector<SpvReflectInterfaceVariable *> output_vars;
-					output_vars.resize(ov_count);
+					output_vars.resize_zeroed(ov_count);
 
 					result = spvReflectEnumerateOutputVariables(&module, &ov_count, output_vars.ptrw());
 					ERR_FAIL_COND_V_MSG(result != SPV_REFLECT_RESULT_SUCCESS, Vector<uint8_t>(),
