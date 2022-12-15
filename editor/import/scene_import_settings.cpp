@@ -555,6 +555,7 @@ void SceneImportSettings::open_settings(const String &p_path, bool p_for_animati
 
 	material_set.clear();
 	mesh_set.clear();
+	animation_map.clear();
 	material_map.clear();
 	mesh_map.clear();
 	node_map.clear();
