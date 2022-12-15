@@ -110,7 +110,7 @@
 			<return type="String" />
 			<argument index="0" name="locale" type="String" />
 			<description>
-				Retunrs [code]locale[/code] string standardized to match known locales (e.g. [code]en-US[/code] would be matched to [code]en_US[/code]).
+				Returns [code]locale[/code] string standardized to match known locales (e.g. [code]en-US[/code] would be matched to [code]en_US[/code]).
 			</description>
 		</method>
 		<method name="translate" qualifiers="const">

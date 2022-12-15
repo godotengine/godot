@@ -122,7 +122,7 @@ public:
 
 		/*
 		struct SceneDataUBO {
-			//this is a std140 compatible struct. Please read the OpenGL 3.3 Specificaiton spec before doing any changes
+			//this is a std140 compatible struct. Please read the OpenGL 3.3 Specification spec before doing any changes
 			float projection_matrix[16];
 			float inv_projection_matrix[16];
 			float camera_inverse_matrix[16];

@@ -90,7 +90,7 @@ void TTS_Windows::_update_tts() {
 
 		UTData ut;
 		ut.string = text;
-		ut.offset = pitch_tag.length(); // Substract injected <pitch> tag offset.
+		ut.offset = pitch_tag.length(); // Subtract injected <pitch> tag offset.
 		ut.id = message.id;
 
 		synth->SetVolume(message.volume);
