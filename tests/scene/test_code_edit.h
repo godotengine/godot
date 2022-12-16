@@ -3027,7 +3027,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 			CHECK(code_edit->get_code_completion_selected_index() == 0);
 
 			Point2 caret_pos = code_edit->get_caret_draw_pos();
-			caret_pos.y -= code_edit->get_line_height();
+			caret_pos.y += code_edit->get_line_height();
 			SEND_GUI_MOUSE_BUTTON_EVENT(code_edit, caret_pos, MouseButton::WHEEL_DOWN, MouseButton::NONE, Key::NONE);
 			CHECK(code_edit->get_code_completion_selected_index() == 1);
 
@@ -3035,6 +3035,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 			CHECK(code_edit->get_code_completion_selected_index() == 0);
 
 			/* Single click selects. */
+			caret_pos.y += code_edit->get_line_height() * 2;
 			SEND_GUI_MOUSE_BUTTON_EVENT(code_edit, caret_pos, MouseButton::LEFT, MouseButton::MASK_LEFT, Key::NONE);
 			CHECK(code_edit->get_code_completion_selected_index() == 2);
 
