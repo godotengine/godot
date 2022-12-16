@@ -289,7 +289,7 @@ is_deleted_glyph (const hb_glyph_info_t *info)
 void
 hb_aat_layout_remove_deleted_glyphs (hb_buffer_t *buffer)
 {
-  hb_ot_layout_delete_glyphs_inplace (buffer, is_deleted_glyph);
+  buffer->delete_glyphs_inplace (is_deleted_glyph);
 }
 
 /**

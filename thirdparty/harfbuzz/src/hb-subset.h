@@ -28,6 +28,7 @@
 #define HB_SUBSET_H
 
 #include "hb.h"
+#include "hb-ot.h"
 
 HB_BEGIN_DECLS
 
@@ -164,8 +165,6 @@ HB_EXTERN void
 hb_subset_input_set_flags (hb_subset_input_t *input,
 			   unsigned value);
 
-#ifdef HB_EXPERIMENTAL_API
-#ifndef HB_NO_VAR
 HB_EXTERN hb_bool_t
 hb_subset_input_pin_axis_to_default (hb_subset_input_t  *input,
 				     hb_face_t          *face,
@@ -176,15 +175,21 @@ hb_subset_input_pin_axis_location (hb_subset_input_t  *input,
 				   hb_face_t          *face,
 				   hb_tag_t            axis_tag,
 				   float               axis_value);
-#endif
-#endif
 
 #ifdef HB_EXPERIMENTAL_API
+HB_EXTERN hb_bool_t
+hb_subset_input_override_name_table (hb_subset_input_t  *input,
+				     hb_ot_name_id_t     name_id,
+				     unsigned            platform_id,
+				     unsigned            encoding_id,
+				     unsigned            language_id,
+				     const char         *name_str,
+				     int                 str_len);
+
+#endif
 
 HB_EXTERN hb_face_t *
 hb_subset_preprocess (hb_face_t *source);
-
-#endif
 
 HB_EXTERN hb_face_t *
 hb_subset_or_fail (hb_face_t *source, const hb_subset_input_t *input);
