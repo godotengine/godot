@@ -198,13 +198,13 @@ bool GodotBodyPair2D::_test_ccd(real_t p_step, GodotBody2D *p_A, int p_shape_A, 
 	Vector2 from = p_xform_A.xform(s[0]);
 	// Back up 10% of the per-frame motion behind the support point and use that as the beginning of our cast.
 	// This should ensure the calculated new velocity will really cause a bit of overlap instead of just getting us very close.
-	from -= motion * 0.1;
 	Vector2 to = from + motion;
 
 	Transform2D from_inv = p_xform_B.affine_inverse();
 
-	// Start from a little inside the bounding box.
-	Vector2 local_from = from_inv.xform(from);
+	// Back up 10% of the per-frame motion behind the support point and use that as the beginning of our cast.
+	// At high speeds, this may mean we're actually casting from well behind the body instead of inside it, which is odd. But it still works out.
+	Vector2 local_from = from_inv.xform(from - motion * 0.1);
 	Vector2 local_to = from_inv.xform(to);
 
 	Vector2 rpos, rnorm;
@@ -228,7 +228,7 @@ bool GodotBodyPair2D::_test_ccd(real_t p_step, GodotBody2D *p_A, int p_shape_A, 
 	// next frame will hit softly or soft enough.
 	Vector2 hitpos = p_xform_B.xform(rpos);
 
-	real_t newlen = hitpos.distance_to(from);
+	real_t newlen = hitpos.distance_to(from) + (max - min) * 0.01; // adding 1% of body length to the distance between collision and support point should cause body A's support point to arrive just within B's collider next frame.
 	p_A->set_linear_velocity(mnormal * (newlen / p_step));
 
 	return true;
