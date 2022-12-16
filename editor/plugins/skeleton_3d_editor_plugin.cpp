@@ -153,9 +153,10 @@ void BoneTransformEditor::set_target(const String &p_prop) {
 
 void BoneTransformEditor::_property_keyed(const String &p_path, bool p_advance) {
 	AnimationTrackEditor *te = AnimationPlayerEditor::get_singleton()->get_track_editor();
-	if (!te->has_keying()) {
+	if (!te || !te->has_keying()) {
 		return;
 	}
+	te->_clear_selection();
 	PackedStringArray split = p_path.split("/");
 	if (split.size() == 3 && split[0] == "bones") {
 		int bone_idx = split[1].to_int();

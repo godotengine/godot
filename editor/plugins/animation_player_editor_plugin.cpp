@@ -1922,10 +1922,12 @@ void AnimationPlayerEditorPlugin::_notification(int p_what) {
 }
 
 void AnimationPlayerEditorPlugin::_property_keyed(const String &p_keyed, const Variant &p_value, bool p_advance) {
-	if (!anim_editor->get_track_editor()->has_keying()) {
+	AnimationTrackEditor *te = anim_editor->get_track_editor();
+	if (!te || !te->has_keying()) {
 		return;
 	}
-	anim_editor->get_track_editor()->insert_value_key(p_keyed, p_value, p_advance);
+	te->_clear_selection();
+	te->insert_value_key(p_keyed, p_value, p_advance);
 }
 
 void AnimationPlayerEditorPlugin::_transform_key_request(Object *sp, const String &p_sub, const Transform3D &p_key) {
