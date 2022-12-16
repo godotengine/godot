@@ -174,13 +174,19 @@ void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color
 	texture_storage->texture_2d_initialize(texture, p_image);
 	RID rd_texture = texture_storage->texture_get_rd_texture(texture);
 
+	RD::SamplerState sampler_state;
+	sampler_state.min_filter = p_use_filter ? RD::SAMPLER_FILTER_LINEAR : RD::SAMPLER_FILTER_NEAREST;
+	sampler_state.mag_filter = p_use_filter ? RD::SAMPLER_FILTER_LINEAR : RD::SAMPLER_FILTER_NEAREST;
+	sampler_state.max_lod = 0;
+	RID sampler = RD::get_singleton()->sampler_create(sampler_state);
+
 	RID uset;
 	{
 		Vector<RD::Uniform> uniforms;
 		RD::Uniform u;
 		u.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
 		u.binding = 0;
-		u.append_id(blit.sampler);
+		u.append_id(sampler);
 		u.append_id(rd_texture);
 		uniforms.push_back(u);
 		uset = RD::get_singleton()->uniform_set_create(uniforms, blit.shader.version_get_shader(blit.shader_version, BLIT_MODE_NORMAL), 0);
@@ -241,6 +247,7 @@ void RendererCompositorRD::set_boot_image(const Ref<Image> &p_image, const Color
 	RD::get_singleton()->swap_buffers();
 
 	texture_storage->texture_free(texture);
+	RD::get_singleton()->free(sampler);
 }
 
 RendererCompositorRD *RendererCompositorRD::singleton = nullptr;
