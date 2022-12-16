@@ -65,7 +65,9 @@ struct hb_face_t
     hb_shape_plan_t *shape_plan;
     plan_node_t *next;
   };
+#ifndef HB_NO_SHAPER
   hb_atomic_ptr_t<plan_node_t> shape_plans;
+#endif
 
   hb_blob_t *reference_table (hb_tag_t tag) const
   {

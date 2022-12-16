@@ -320,7 +320,7 @@ struct AxisValueFormat4
     unsigned total_size = min_size + axisCount * AxisValueRecord::static_size;
     auto *out = c->serializer->allocate_size<AxisValueFormat4> (total_size);
     if (unlikely (!out)) return_trace (false);
-    memcpy (out, this, total_size);
+    hb_memcpy (out, this, total_size);
     return_trace (true);
   }
 

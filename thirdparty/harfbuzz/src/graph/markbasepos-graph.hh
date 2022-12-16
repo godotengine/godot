@@ -112,7 +112,7 @@ struct AnchorMatrix : public OT::Layout::GPOS_impl::AnchorMatrix
       auto& child = c.graph.vertices_[child_idx];
       child.remove_parent (this_index);
 
-      o.real_links.remove (i);
+      o.real_links.remove_unordered (i);
       num_links--;
       i--;
     }
@@ -372,7 +372,7 @@ struct MarkBasePosFormat1 : public OT::Layout::GPOS_impl::MarkBasePosFormat1_2<S
     if (!mark_coverage) return false;
     hb_set_t marks = sc.marks_for (0, count);
     auto new_coverage =
-        + hb_zip (hb_range (), mark_coverage.table->iter ())
+        + hb_enumerate (mark_coverage.table->iter ())
         | hb_filter (marks, hb_first)
         | hb_map_retains_sorting (hb_second)
         ;
@@ -431,7 +431,7 @@ struct MarkBasePosFormat1 : public OT::Layout::GPOS_impl::MarkBasePosFormat1_2<S
     if (!mark_coverage) return false;
     hb_set_t marks = sc.marks_for (start, end);
     auto new_coverage =
-        + hb_zip (hb_range (), mark_coverage.table->iter ())
+        + hb_enumerate (mark_coverage.table->iter ())
         | hb_filter (marks, hb_first)
         | hb_map_retains_sorting (hb_second)
         ;
@@ -477,7 +477,7 @@ struct MarkBasePos : public OT::Layout::GPOS_impl::MarkBasePos
     switch (u.format) {
     case 1:
       return ((MarkBasePosFormat1*)(&u.format1))->split_subtables (c, parent_index, this_index);
-#ifndef HB_NO_BORING_EXPANSION
+#ifndef HB_NO_BEYOND_64K
     case 2: HB_FALLTHROUGH;
       // Don't split 24bit PairPos's.
 #endif
@@ -494,7 +494,7 @@ struct MarkBasePos : public OT::Layout::GPOS_impl::MarkBasePos
     switch (u.format) {
     case 1:
       return ((MarkBasePosFormat1*)(&u.format1))->sanitize (vertex);
-#ifndef HB_NO_BORING_EXPANSION
+#ifndef HB_NO_BEYOND_64K
     case 2: HB_FALLTHROUGH;
 #endif
     default:

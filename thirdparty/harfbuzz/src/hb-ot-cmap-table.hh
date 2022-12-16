@@ -909,7 +909,7 @@ struct DefaultUVS : SortedArray32Of<UnicodeValueRange>
       hb_codepoint_t first = arrayZ[i].startUnicodeValue;
       hb_codepoint_t last = hb_min ((hb_codepoint_t) (first + arrayZ[i].additionalCount),
 				    (hb_codepoint_t) HB_UNICODE_MAX);
-      out->add_range (first, hb_min (last, 0x10FFFFu));
+      out->add_range (first, last);
     }
   }
 
@@ -925,37 +925,75 @@ struct DefaultUVS : SortedArray32Of<UnicodeValueRange>
     if (unlikely (!c->copy<HBUINT32> (len))) return nullptr;
     unsigned init_len = c->length ();
 
-    hb_codepoint_t lastCode = HB_MAP_VALUE_INVALID;
-    int count = -1;
-
-    for (const UnicodeValueRange& _ : as_array ())
+    if (this->len > unicodes->get_population () * hb_bit_storage ((unsigned) this->len))
     {
-      for (const unsigned addcnt : hb_range ((unsigned) _.additionalCount + 1))
-      {
-	unsigned curEntry = (unsigned) _.startUnicodeValue + addcnt;
-	if (!unicodes->has (curEntry)) continue;
-	count += 1;
-	if (lastCode == HB_MAP_VALUE_INVALID)
-	  lastCode = curEntry;
-	else if (lastCode + count != curEntry)
-	{
-	  UnicodeValueRange rec;
-	  rec.startUnicodeValue = lastCode;
-	  rec.additionalCount = count - 1;
-	  c->copy<UnicodeValueRange> (rec);
+      hb_codepoint_t start = HB_SET_VALUE_INVALID;
+      hb_codepoint_t end = HB_SET_VALUE_INVALID;
 
-	  lastCode = curEntry;
-	  count = 0;
+      for (hb_codepoint_t u = HB_SET_VALUE_INVALID;
+	   unicodes->next (&u);)
+      {
+        if (!as_array ().bsearch (u))
+	  continue;
+	if (start == HB_SET_VALUE_INVALID)
+	{
+	  start = u;
+	  end = start - 1;
+	}
+	if (end + 1 != u || end - start == 255)
+        {
+	  UnicodeValueRange rec;
+	  rec.startUnicodeValue = start;
+	  rec.additionalCount = end - start;
+	  c->copy<UnicodeValueRange> (rec);
+	  start = u;
+	}
+	end = u;
+      }
+      if (start != HB_SET_VALUE_INVALID)
+      {
+	UnicodeValueRange rec;
+	rec.startUnicodeValue = start;
+	rec.additionalCount = end - start;
+	c->copy<UnicodeValueRange> (rec);
+      }
+
+    }
+    else
+    {
+      hb_codepoint_t lastCode = HB_SET_VALUE_INVALID;
+      int count = -1;
+
+      for (const UnicodeValueRange& _ : *this)
+      {
+	hb_codepoint_t curEntry = (hb_codepoint_t) (_.startUnicodeValue - 1);
+	hb_codepoint_t end = curEntry + _.additionalCount + 2;
+
+	for (; unicodes->next (&curEntry) && curEntry < end;)
+	{
+	  count += 1;
+	  if (lastCode == HB_SET_VALUE_INVALID)
+	    lastCode = curEntry;
+	  else if (lastCode + count != curEntry)
+	  {
+	    UnicodeValueRange rec;
+	    rec.startUnicodeValue = lastCode;
+	    rec.additionalCount = count - 1;
+	    c->copy<UnicodeValueRange> (rec);
+
+	    lastCode = curEntry;
+	    count = 0;
+	  }
 	}
       }
-    }
 
-    if (lastCode != HB_MAP_VALUE_INVALID)
-    {
-      UnicodeValueRange rec;
-      rec.startUnicodeValue = lastCode;
-      rec.additionalCount = count;
-      c->copy<UnicodeValueRange> (rec);
+      if (lastCode != HB_MAP_VALUE_INVALID)
+      {
+	UnicodeValueRange rec;
+	rec.startUnicodeValue = lastCode;
+	rec.additionalCount = count;
+	c->copy<UnicodeValueRange> (rec);
+      }
     }
 
     if (c->length () - init_len == 0)
@@ -1474,32 +1512,80 @@ struct EncodingRecord
   DEFINE_SIZE_STATIC (8);
 };
 
+struct cmap;
+
 struct SubtableUnicodesCache {
 
  private:
-  const void* base;
-  hb_hashmap_t<intptr_t, hb::unique_ptr<hb_set_t>> cached_unicodes;
+  hb_blob_ptr_t<cmap> base_blob;
+  const char* base;
+  hb_hashmap_t<unsigned, hb::unique_ptr<hb_set_t>> cached_unicodes;
 
  public:
-  SubtableUnicodesCache(const void* cmap_base)
-      : base(cmap_base), cached_unicodes() {}
 
-  hb_set_t* set_for (const EncodingRecord* record)
+  static SubtableUnicodesCache* create (hb_blob_ptr_t<cmap> source_table)
   {
-    if (!cached_unicodes.has ((intptr_t) record))
+    SubtableUnicodesCache* cache =
+        (SubtableUnicodesCache*) hb_malloc (sizeof(SubtableUnicodesCache));
+    new (cache) SubtableUnicodesCache (source_table);
+    return cache;
+  }
+
+  static void destroy (void* value) {
+    if (!value) return;
+
+    SubtableUnicodesCache* cache = (SubtableUnicodesCache*) value;
+    cache->~SubtableUnicodesCache ();
+    hb_free (cache);
+  }
+
+  SubtableUnicodesCache(const void* cmap_base)
+      : base_blob(),
+        base ((const char*) cmap_base),
+        cached_unicodes ()
+  {}
+
+  SubtableUnicodesCache(hb_blob_ptr_t<cmap> base_blob_)
+      : base_blob(base_blob_),
+        base ((const char *) base_blob.get()),
+        cached_unicodes ()
+  {}
+
+  ~SubtableUnicodesCache()
+  {
+    base_blob.destroy ();
+  }
+
+  bool same_base(const void* other) const
+  {
+    return other == (const void*) base;
+  }
+
+  const hb_set_t* set_for (const EncodingRecord* record,
+                           SubtableUnicodesCache& mutable_cache) const
+  {
+    if (cached_unicodes.has ((unsigned) ((const char *) record - base)))
+      return cached_unicodes.get ((unsigned) ((const char *) record - base));
+
+    return mutable_cache.set_for (record);
+  }
+
+  const hb_set_t* set_for (const EncodingRecord* record)
+  {
+    if (!cached_unicodes.has ((unsigned) ((const char *) record - base)))
     {
       hb_set_t *s = hb_set_create ();
       if (unlikely (s->in_error ()))
 	return hb_set_get_empty ();
-	
+
       (base+record->subtable).collect_unicodes (s);
 
-      if (unlikely (!cached_unicodes.set ((intptr_t) record, hb::unique_ptr<hb_set_t> {s})))
+      if (unlikely (!cached_unicodes.set ((unsigned) ((const char *) record - base), hb::unique_ptr<hb_set_t> {s})))
         return hb_set_get_empty ();
 
       return s;
     }
-    return cached_unicodes.get ((intptr_t) record);
+    return cached_unicodes.get ((unsigned) ((const char *) record - base));
   }
 
 };
@@ -1523,13 +1609,30 @@ struct cmap
 {
   static constexpr hb_tag_t tableTag = HB_OT_TAG_cmap;
 
+
+  static SubtableUnicodesCache* create_filled_cache(hb_blob_ptr_t<cmap> source_table) {
+    const cmap* cmap = source_table.get();
+    auto it =
+    + hb_iter (cmap->encodingRecord)
+    | hb_filter ([&](const EncodingRecord& _) {
+      return cmap::filter_encoding_records_for_subset (cmap, _);
+    })
+    ;
+
+    SubtableUnicodesCache* cache = SubtableUnicodesCache::create(source_table);
+    for (const EncodingRecord& _ : it)
+      cache->set_for(&_); // populate the cache for this encoding record.
+
+    return cache;
+  }
+
   template<typename Iterator, typename EncodingRecIter,
 	   hb_requires (hb_is_iterator (EncodingRecIter))>
   bool serialize (hb_serialize_context_t *c,
 		  Iterator it,
 		  EncodingRecIter encodingrec_iter,
 		  const void *base,
-		  const hb_subset_plan_t *plan,
+		  hb_subset_plan_t *plan,
                   bool drop_format_4 = false)
   {
     if (unlikely (!c->extend_min ((*this))))  return false;
@@ -1538,7 +1641,14 @@ struct cmap
     unsigned format4objidx = 0, format12objidx = 0, format14objidx = 0;
     auto snap = c->snapshot ();
 
-    SubtableUnicodesCache unicodes_cache (base);
+    SubtableUnicodesCache local_unicodes_cache (base);
+    const SubtableUnicodesCache* unicodes_cache = &local_unicodes_cache;
+
+    if (plan->accelerator &&
+        plan->accelerator->cmap_cache &&
+        plan->accelerator->cmap_cache->same_base (base))
+      unicodes_cache = plan->accelerator->cmap_cache;
+
     for (const EncodingRecord& _ : encodingrec_iter)
     {
       if (c->in_error ())
@@ -1547,7 +1657,7 @@ struct cmap
       unsigned format = (base+_.subtable).u.format;
       if (format != 4 && format != 12 && format != 14) continue;
 
-      hb_set_t* unicodes_set = unicodes_cache.set_for (&_);
+      const hb_set_t* unicodes_set = unicodes_cache->set_for (&_, local_unicodes_cache);
 
       if (!drop_format_4 && format == 4)
       {
@@ -1566,7 +1676,13 @@ struct cmap
 
       else if (format == 12)
       {
-        if (_can_drop (_, *unicodes_set, base, unicodes_cache, + it | hb_map (hb_first), encodingrec_iter)) continue;
+        if (_can_drop (_,
+                       *unicodes_set,
+                       base,
+                       *unicodes_cache,
+                       local_unicodes_cache,
+                       + it | hb_map (hb_first), encodingrec_iter))
+          continue;
         c->copy (_, + it | hb_filter (*unicodes_set, hb_first), 12u, base, plan, &format12objidx);
       }
       else if (format == 14) c->copy (_, it, 14u, base, plan, &format14objidx);
@@ -1585,7 +1701,8 @@ struct cmap
   bool _can_drop (const EncodingRecord& cmap12,
                   const hb_set_t& cmap12_unicodes,
                   const void* base,
-                  SubtableUnicodesCache& unicodes_cache,
+                  const SubtableUnicodesCache& unicodes_cache,
+                  SubtableUnicodesCache& local_unicodes_cache,
                   Iterator subset_unicodes,
                   EncodingRecordIterator encoding_records)
   {
@@ -1616,7 +1733,7 @@ struct cmap
           || (base+_.subtable).get_language() != target_language)
         continue;
 
-      hb_set_t* sibling_unicodes = unicodes_cache.set_for (&_);
+      const hb_set_t* sibling_unicodes = unicodes_cache.set_for (&_, local_unicodes_cache);
 
       auto cmap12 = + subset_unicodes | hb_filter (cmap12_unicodes);
       auto sibling = + subset_unicodes | hb_filter (*sibling_unicodes);
@@ -1653,17 +1770,9 @@ struct cmap
 
     auto encodingrec_iter =
     + hb_iter (encodingRecord)
-    | hb_filter ([&] (const EncodingRecord& _)
-		{
-		  if ((_.platformID == 0 && _.encodingID == 3) ||
-		      (_.platformID == 0 && _.encodingID == 4) ||
-		      (_.platformID == 3 && _.encodingID == 1) ||
-		      (_.platformID == 3 && _.encodingID == 10) ||
-		      (this + _.subtable).u.format == 14)
-		    return true;
-
-		  return false;
-		})
+    | hb_filter ([&](const EncodingRecord& _) {
+      return cmap::filter_encoding_records_for_subset (this, _);
+    })
     ;
 
     if (unlikely (!encodingrec_iter.len ())) return_trace (false);
@@ -1692,7 +1801,11 @@ struct cmap
 		 { return (_.second != HB_MAP_VALUE_INVALID); })
     ;
 
-    return_trace (cmap_prime->serialize (c->serializer, it, encodingrec_iter, this, c->plan));
+    return_trace (cmap_prime->serialize (c->serializer,
+                                         it,
+                                         encodingrec_iter,
+                                         this,
+                                         c->plan));
   }
 
   const CmapSubtable *find_best_subtable (bool *symbol = nullptr) const
@@ -1926,6 +2039,19 @@ struct cmap
     return_trace (c->check_struct (this) &&
 		  likely (version == 0) &&
 		  encodingRecord.sanitize (c, this));
+  }
+
+ private:
+
+  static bool filter_encoding_records_for_subset(const cmap* cmap,
+                                                 const EncodingRecord& _)
+  {
+    return
+        (_.platformID == 0 && _.encodingID == 3) ||
+        (_.platformID == 0 && _.encodingID == 4) ||
+        (_.platformID == 3 && _.encodingID == 1) ||
+        (_.platformID == 3 && _.encodingID == 10) ||
+        (cmap + _.subtable).u.format == 14;
   }
 
   protected:

@@ -112,7 +112,7 @@ struct ClassDef : public OT::ClassDef
     {
     case 1: return ((ClassDefFormat1*)this)->sanitize (vertex);
     case 2: return ((ClassDefFormat2*)this)->sanitize (vertex);
-#ifndef HB_NO_BORING_EXPANSION
+#ifndef HB_NO_BEYOND_64K
     // Not currently supported
     case 3:
     case 4:

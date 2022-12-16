@@ -80,8 +80,6 @@ struct CoverageFormat2_4
     TRACE_SERIALIZE (this);
     if (unlikely (!c->extend_min (this))) return_trace (false);
 
-    /* TODO(iter) Write more efficiently? */
-
     unsigned num_ranges = 0;
     hb_codepoint_t last = (hb_codepoint_t) -2;
     for (auto g: glyphs)
@@ -115,26 +113,22 @@ struct CoverageFormat2_4
 
   bool intersects (const hb_set_t *glyphs) const
   {
+    if (rangeRecord.len > glyphs->get_population () * hb_bit_storage ((unsigned) rangeRecord.len) / 2)
+    {
+      for (hb_codepoint_t g = HB_SET_VALUE_INVALID; glyphs->next (&g);)
+        if (get_coverage (g) != NOT_COVERED)
+	  return true;
+      return false;
+    }
+
     return hb_any (+ hb_iter (rangeRecord)
                    | hb_map ([glyphs] (const RangeRecord<Types> &range) { return range.intersects (*glyphs); }));
   }
   bool intersects_coverage (const hb_set_t *glyphs, unsigned int index) const
   {
-    auto cmp = [] (const void *pk, const void *pr) -> int
-    {
-      unsigned index = * (const unsigned *) pk;
-      const RangeRecord<Types> &range = * (const RangeRecord<Types> *) pr;
-      if (index < range.value) return -1;
-      if (index > (unsigned int) range.value + (range.last - range.first)) return +1;
-      return 0;
-    };
-
-    auto arr = rangeRecord.as_array ();
-    unsigned idx;
-    if (hb_bsearch_impl (&idx, index,
-                         arr.arrayZ, arr.length, sizeof (arr[0]),
-                         (int (*)(const void *_key, const void *_item)) cmp))
-      return arr.arrayZ[idx].intersects (*glyphs);
+    auto *range = rangeRecord.as_array ().bsearch (index);
+    if (range)
+      return range->intersects (*glyphs);
     return false;
   }
 
@@ -142,9 +136,14 @@ struct CoverageFormat2_4
 	    hb_requires (hb_is_sink_of (IterableOut, hb_codepoint_t))>
   void intersect_set (const hb_set_t &glyphs, IterableOut&& intersect_glyphs) const
   {
+    /* Break out of loop for overlapping, broken, tables,
+     * to avoid fuzzer timouts. */
+    hb_codepoint_t last = 0;
     for (const auto& range : rangeRecord)
     {
-      hb_codepoint_t last = range.last;
+      if (unlikely (range.first < last))
+        break;
+      last = range.last;
       for (hb_codepoint_t g = range.first - 1;
 	   glyphs.next (&g) && g <= last;)
 	intersect_glyphs << g;
