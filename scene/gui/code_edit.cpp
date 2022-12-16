@@ -115,7 +115,9 @@ void CodeEdit::_notification(int p_what) {
 
 				const Point2 caret_pos = get_caret_draw_pos();
 				const int total_height = csb->get_minimum_size().y + code_completion_rect.size.height;
-				if (caret_pos.y + row_height + total_height > get_size().height) {
+				const bool can_fit_completion_above = (caret_pos.y - row_height > total_height);
+				const bool can_fit_completion_below = (caret_pos.y + row_height + total_height <= get_size().height);
+				if (!can_fit_completion_below && can_fit_completion_above) {
 					code_completion_rect.position.y = (caret_pos.y - total_height - row_height) + line_spacing;
 				} else {
 					code_completion_rect.position.y = caret_pos.y + (line_spacing / 2.0f);
