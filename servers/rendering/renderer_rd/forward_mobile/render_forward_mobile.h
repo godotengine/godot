@@ -440,6 +440,7 @@ protected:
 		void *surface = nullptr;
 		RID material_uniform_set;
 		SceneShaderForwardMobile::ShaderData *shader = nullptr;
+		SceneShaderForwardMobile::MaterialData *material = nullptr;
 
 		void *surface_shadow = nullptr;
 		RID material_uniform_set_shadow;

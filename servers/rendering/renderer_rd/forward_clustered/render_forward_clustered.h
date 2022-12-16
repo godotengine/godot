@@ -441,6 +441,7 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		void *surface = nullptr;
 		RID material_uniform_set;
 		SceneShaderForwardClustered::ShaderData *shader = nullptr;
+		SceneShaderForwardClustered::MaterialData *material = nullptr;
 
 		void *surface_shadow = nullptr;
 		RID material_uniform_set_shadow;

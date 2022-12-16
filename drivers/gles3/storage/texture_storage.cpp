@@ -1606,9 +1606,9 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 			return;
 		}
 
-		if (rt->overridden.color.is_valid()) {
-			texture->is_render_target = true;
-		} else {
+		texture->is_render_target = true;
+		texture->render_target = rt;
+		if (rt->overridden.color.is_null()) {
 			texture->format = rt->image_format;
 			texture->real_format = rt->image_format;
 			texture->target = texture_target;
@@ -1717,9 +1717,12 @@ void TextureStorage::_clear_render_target(RenderTarget *rt) {
 			tex->width = 0;
 			tex->height = 0;
 			tex->active = false;
+			tex->render_target = nullptr;
+			tex->is_render_target = false;
 		}
 	} else {
 		Texture *tex = get_texture(rt->overridden.color);
+		tex->render_target = nullptr;
 		tex->is_render_target = false;
 	}
 
@@ -1751,7 +1754,7 @@ void TextureStorage::_clear_render_target(RenderTarget *rt) {
 
 RID TextureStorage::render_target_create() {
 	RenderTarget render_target;
-	//render_target.was_used = false;
+	render_target.used_in_frame = false;
 	render_target.clear_requested = false;
 
 	Texture t;

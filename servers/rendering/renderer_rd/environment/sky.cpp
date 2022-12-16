@@ -1053,6 +1053,8 @@ void SkyRD::setup(RID p_env, Ref<RenderSceneBuffersRD> p_render_buffers, const P
 
 		ERR_FAIL_COND(!shader_data);
 
+		material->set_as_used();
+
 		// Invalidate supbass buffers if screen size changes
 		if (sky->screen_size != p_screen_size) {
 			sky->screen_size = p_screen_size;
@@ -1453,6 +1455,8 @@ void SkyRD::draw(RID p_env, bool p_can_continue_color, bool p_can_continue_depth
 
 	ERR_FAIL_COND(!shader_data);
 
+	material->set_as_used();
+
 	Basis sky_transform = RendererSceneRenderRD::get_singleton()->environment_get_sky_orientation(p_env);
 	sky_transform.invert();
 
@@ -1550,6 +1554,8 @@ void SkyRD::update_res_buffers(RID p_env, uint32_t p_view_count, const Projectio
 
 	ERR_FAIL_COND(!shader_data);
 
+	material->set_as_used();
+
 	Basis sky_transform = RendererSceneRenderRD::get_singleton()->environment_get_sky_orientation(p_env);
 	sky_transform.invert();
 
@@ -1642,6 +1648,8 @@ void SkyRD::draw(RD::DrawListID p_draw_list, RID p_env, RID p_fb, uint32_t p_vie
 	SkyShaderData *shader_data = material->shader_data;
 
 	ERR_FAIL_COND(!shader_data);
+
+	material->set_as_used();
 
 	Basis sky_transform = RendererSceneRenderRD::get_singleton()->environment_get_sky_orientation(p_env);
 	sky_transform.invert();
