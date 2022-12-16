@@ -1346,6 +1346,7 @@
 			<return type="PackedInt32Array" />
 			<param index="0" name="string" type="String" />
 			<param index="1" name="language" type="String" />
+			<param index="2" name="chars_per_line" type="int" />
 			<description>
 			</description>
 		</method>
