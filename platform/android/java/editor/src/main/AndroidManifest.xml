@@ -27,6 +27,7 @@
         android:icon="@mipmap/icon"
         android:label="@string/godot_editor_name_string"
         tools:ignore="GoogleAppIndexingWarning"
+        android:theme="@style/GodotEditorTheme"
         android:requestLegacyExternalStorage="true">
 
         <activity
@@ -35,7 +36,6 @@
             android:launchMode="singleTask"
             android:screenOrientation="userLandscape"
             android:exported="true"
-            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen"
             android:process=":GodotProjectManager">
 
             <layout android:defaultHeight="@dimen/editor_default_window_height"
@@ -53,8 +53,7 @@
             android:process=":GodotEditor"
             android:launchMode="singleTask"
             android:screenOrientation="userLandscape"
-            android:exported="false"
-            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
+            android:exported="false">
             <layout android:defaultHeight="@dimen/editor_default_window_height"
                 android:defaultWidth="@dimen/editor_default_window_width" />
         </activity>
@@ -66,8 +65,7 @@
             android:process=":GodotGame"
             android:launchMode="singleTask"
             android:exported="false"
-            android:screenOrientation="userLandscape"
-            android:theme="@android:style/Theme.Black.NoTitleBar.Fullscreen">
+            android:screenOrientation="userLandscape">
             <layout android:defaultHeight="@dimen/editor_default_window_height"
                 android:defaultWidth="@dimen/editor_default_window_width" />
         </activity>
