@@ -53,7 +53,7 @@ ParticlesStorage::ParticlesStorage() {
 	{
 		String global_defines;
 		global_defines += "#define MAX_GLOBAL_SHADER_UNIFORMS 256\n"; // TODO: this is arbitrary for now
-		material_storage->shaders.particles_process_shader.initialize(global_defines);
+		material_storage->shaders.particles_process_shader.initialize(global_defines, 1);
 	}
 	{
 		// default material and shader for particles shader
