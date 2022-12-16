@@ -333,18 +333,14 @@ void RasterizerGLES3::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 		return;
 	}
 
-	Size2i win_size = DisplayServer::get_singleton()->screen_get_size();
+	Size2i win_size = DisplayServer::get_singleton()->window_get_size();
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glViewport(0, 0, win_size.width, win_size.height);
-	glDisable(GL_BLEND);
+	glEnable(GL_BLEND);
+	glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE);
 	glDepthMask(GL_FALSE);
-	if (false) {
-		//	if (OS::get_singleton()->get_window_per_pixel_transparency_enabled()) {
-		glClearColor(0.0, 0.0, 0.0, 0.0);
-	} else {
-		glClearColor(p_color.r, p_color.g, p_color.b, 1.0);
-	}
+	glClearColor(p_color.r, p_color.g, p_color.b, 1.0);
 	glClear(GL_COLOR_BUFFER_BIT);
 
 	RID texture = texture_storage->texture_allocate();
@@ -370,14 +366,24 @@ void RasterizerGLES3::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 		screenrect.position += ((Size2(win_size.width, win_size.height) - screenrect.size) / 2.0).floor();
 	}
 
+	// Flip Y.
+	screenrect.position.y = win_size.y - screenrect.position.y;
+	screenrect.size.y = -screenrect.size.y;
+
+	// Normalize texture coordinates to window size.
+	screenrect.position /= win_size;
+	screenrect.size /= win_size;
+
 	GLES3::Texture *t = texture_storage->get_texture(texture);
-	glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 1);
+	t->gl_set_filter(p_use_filter ? RS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR : RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST);
+	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, t->tex_id);
+	copy_effects->copy_to_rect(screenrect);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
-	texture_storage->texture_free(texture);
-
 	end_frame(true);
+
+	texture_storage->texture_free(texture);
 }
 
 #endif // GLES3_ENABLED
