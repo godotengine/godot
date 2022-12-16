@@ -1107,6 +1107,7 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 
 	if (m->uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(m->uniform_set)) {
 		RD::get_singleton()->compute_list_bind_uniform_set(compute_list, m->uniform_set, 3);
+		m->set_as_used();
 	}
 
 	RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(ParticlesShader::PushConstant));

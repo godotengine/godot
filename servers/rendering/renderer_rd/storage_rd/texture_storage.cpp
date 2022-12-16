@@ -581,6 +581,9 @@ bool TextureStorage::canvas_texture_get_uniform_set(RID p_texture, RS::CanvasIte
 		}
 
 		ct = t->canvas_texture;
+		if (t->render_target) {
+			t->render_target->was_used = true;
+		}
 	} else {
 		ct = canvas_texture_owner.get_or_null(p_texture);
 	}
@@ -611,6 +614,9 @@ bool TextureStorage::canvas_texture_get_uniform_set(RID p_texture, RS::CanvasIte
 			} else {
 				u.append_id(t->rd_texture);
 				ct->size_cache = Size2i(t->width_2d, t->height_2d);
+				if (t->render_target) {
+					t->render_target->was_used = true;
+				}
 			}
 			uniforms.push_back(u);
 		}
@@ -626,6 +632,9 @@ bool TextureStorage::canvas_texture_get_uniform_set(RID p_texture, RS::CanvasIte
 			} else {
 				u.append_id(t->rd_texture);
 				ct->use_normal_cache = true;
+				if (t->render_target) {
+					t->render_target->was_used = true;
+				}
 			}
 			uniforms.push_back(u);
 		}
@@ -641,6 +650,9 @@ bool TextureStorage::canvas_texture_get_uniform_set(RID p_texture, RS::CanvasIte
 			} else {
 				u.append_id(t->rd_texture);
 				ct->use_specular_cache = true;
+				if (t->render_target) {
+					t->render_target->was_used = true;
+				}
 			}
 			uniforms.push_back(u);
 		}
@@ -2398,6 +2410,10 @@ void TextureStorage::_clear_render_target(RenderTarget *rt) {
 
 	rt->color = RID();
 	rt->color_multisample = RID();
+	if (rt->texture.is_valid()) {
+		Texture *tex = get_texture(rt->texture);
+		tex->render_target = nullptr;
+	}
 }
 
 void TextureStorage::_update_render_target(RenderTarget *rt) {
@@ -2478,6 +2494,7 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 
 		tex->rd_texture = RID();
 		tex->rd_texture_srgb = RID();
+		tex->render_target = rt;
 
 		//create shared textures to the color buffer,
 		//so transparent can be supported

@@ -3027,6 +3027,9 @@ void CanvasMaterialData::bind_uniforms() {
 		Texture *texture = TextureStorage::get_singleton()->get_texture(textures[ti]);
 		glActiveTexture(GL_TEXTURE1 + ti); // Start at GL_TEXTURE1 because texture slot 0 is used by the base texture
 		glBindTexture(target_from_type[texture_uniforms[ti].type], texture->tex_id);
+		if (texture->render_target) {
+			texture->render_target->used_in_frame = true;
+		}
 
 		// Set sampler state here as the same texture can be used in multiple places with different flags
 		// Need to convert sampler state from ShaderLanguage::Texture* to RS::CanvasItemTexture*
@@ -3194,6 +3197,9 @@ void SkyMaterialData::bind_uniforms() {
 		Texture *texture = TextureStorage::get_singleton()->get_texture(textures[ti]);
 		glActiveTexture(GL_TEXTURE0 + ti);
 		glBindTexture(target_from_type[texture_uniforms[ti].type], texture->tex_id);
+		if (texture->render_target) {
+			texture->render_target->used_in_frame = true;
+		}
 
 		// Set sampler state here as the same texture can be used in multiple places with different flags
 		// Need to convert sampler state from ShaderLanguage::Texture* to RS::CanvasItemTexture*
@@ -3447,6 +3453,9 @@ void SceneMaterialData::bind_uniforms() {
 		Texture *texture = TextureStorage::get_singleton()->get_texture(textures[ti]);
 		glActiveTexture(GL_TEXTURE0 + ti);
 		glBindTexture(target_from_type[texture_uniforms[ti].type], texture->tex_id);
+		if (texture->render_target) {
+			texture->render_target->used_in_frame = true;
+		}
 
 		// Set sampler state here as the same texture can be used in multiple places with different flags
 		// Need to convert sampler state from ShaderLanguage::Texture* to RS::CanvasItemTexture*
@@ -3562,6 +3571,9 @@ void ParticleProcessMaterialData::bind_uniforms() {
 		Texture *texture = TextureStorage::get_singleton()->get_texture(textures[ti]);
 		glActiveTexture(GL_TEXTURE1 + ti); // Start at GL_TEXTURE1 because texture slot 0 is reserved for the heightmap texture.
 		glBindTexture(target_from_type[texture_uniforms[ti].type], texture->tex_id);
+		if (texture->render_target) {
+			texture->render_target->used_in_frame = true;
+		}
 
 		// Set sampler state here as the same texture can be used in multiple places with different flags
 		// Need to convert sampler state from ShaderLanguage::Texture* to RS::CanvasItemTexture*

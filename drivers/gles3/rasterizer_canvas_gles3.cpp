@@ -2101,6 +2101,9 @@ void RasterizerCanvasGLES3::_bind_canvas_texture(RID p_texture, RS::CanvasItemTe
 	if (t) {
 		ERR_FAIL_COND(!t->canvas_texture);
 		ct = t->canvas_texture;
+		if (t->render_target) {
+			t->render_target->used_in_frame = true;
+		}
 	} else {
 		ct = texture_storage->get_canvas_texture(p_texture);
 	}
@@ -2128,6 +2131,9 @@ void RasterizerCanvasGLES3::_bind_canvas_texture(RID p_texture, RS::CanvasItemTe
 		glBindTexture(GL_TEXTURE_2D, texture->tex_id);
 		texture->gl_set_filter(filter);
 		texture->gl_set_repeat(repeat);
+		if (texture->render_target) {
+			texture->render_target->used_in_frame = true;
+		}
 	}
 
 	GLES3::Texture *normal_map = texture_storage->get_texture(ct->normal_map);
@@ -2141,6 +2147,9 @@ void RasterizerCanvasGLES3::_bind_canvas_texture(RID p_texture, RS::CanvasItemTe
 		glBindTexture(GL_TEXTURE_2D, normal_map->tex_id);
 		normal_map->gl_set_filter(filter);
 		normal_map->gl_set_repeat(repeat);
+		if (normal_map->render_target) {
+			normal_map->render_target->used_in_frame = true;
+		}
 	}
 
 	GLES3::Texture *specular_map = texture_storage->get_texture(ct->specular);
@@ -2154,6 +2163,9 @@ void RasterizerCanvasGLES3::_bind_canvas_texture(RID p_texture, RS::CanvasItemTe
 		glBindTexture(GL_TEXTURE_2D, specular_map->tex_id);
 		specular_map->gl_set_filter(filter);
 		specular_map->gl_set_repeat(repeat);
+		if (specular_map->render_target) {
+			specular_map->render_target->used_in_frame = true;
+		}
 	}
 }
 
@@ -2631,7 +2643,7 @@ RasterizerCanvasGLES3::RasterizerCanvasGLES3() {
 	global_defines += "#define MAX_LIGHTS " + itos(data.max_lights_per_render) + "\n";
 	global_defines += "#define MAX_DRAW_DATA_INSTANCES " + itos(data.max_instances_per_batch) + "\n";
 
-	GLES3::MaterialStorage::get_singleton()->shaders.canvas_shader.initialize(global_defines);
+	GLES3::MaterialStorage::get_singleton()->shaders.canvas_shader.initialize(global_defines, 1);
 	data.canvas_shader_default_version = GLES3::MaterialStorage::get_singleton()->shaders.canvas_shader.version_create();
 
 	shadow_render.shader.initialize();
