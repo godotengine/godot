@@ -1131,16 +1131,10 @@ void RasterizerCanvasGLES3::_record_item_commands(const Item *p_item, RID p_rend
 					RID particles = pt->particles;
 					state.canvas_instance_batches[state.current_batch_index].tex = pt->texture;
 					state.canvas_instance_batches[state.current_batch_index].shader_variant = CanvasShaderGLES3::MODE_INSTANCED;
-					bool local_coords = particles_storage->particles_is_using_local_coords(particles);
 
 					if (particles_storage->particles_has_collision(particles) && texture_storage->render_target_is_sdf_enabled(p_render_target)) {
 						// Pass collision information.
-						Transform2D xform;
-						if (local_coords) {
-							xform = p_item->final_transform;
-						} else {
-							xform = p_canvas_transform_inverse;
-						}
+						Transform2D xform = p_item->final_transform;
 
 						GLuint sdf_texture = texture_storage->render_target_get_sdf_texture(p_render_target);
 
