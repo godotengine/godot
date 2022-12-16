@@ -63,7 +63,9 @@ struct hb_priority_queue_t
 
     heap.arrayZ[0] = heap.arrayZ[heap.length - 1];
     heap.shrink (heap.length - 1);
-    bubble_down (0);
+
+    if (!is_empty ())
+      bubble_down (0);
 
     return result;
   }
@@ -100,7 +102,7 @@ struct hb_priority_queue_t
 
   void bubble_down (unsigned index)
   {
-    assert (index <= heap.length);
+    assert (index < heap.length);
 
     unsigned left = left_child (index);
     unsigned right = right_child (index);
@@ -112,7 +114,7 @@ struct hb_priority_queue_t
 
     bool has_right = right < heap.length;
     if (heap.arrayZ[index].first <= heap.arrayZ[left].first
-        && (!has_right || heap[index].first <= heap.arrayZ[right].first))
+        && (!has_right || heap.arrayZ[index].first <= heap.arrayZ[right].first))
       return;
 
     if (!has_right || heap.arrayZ[left].first < heap.arrayZ[right].first)
@@ -128,7 +130,7 @@ struct hb_priority_queue_t
 
   void bubble_up (unsigned index)
   {
-    assert (index <= heap.length);
+    assert (index < heap.length);
 
     if (index == 0) return;
 
@@ -142,8 +144,8 @@ struct hb_priority_queue_t
 
   void swap (unsigned a, unsigned b)
   {
-    assert (a <= heap.length);
-    assert (b <= heap.length);
+    assert (a < heap.length);
+    assert (b < heap.length);
     hb_swap (heap.arrayZ[a], heap.arrayZ[b]);
   }
 };

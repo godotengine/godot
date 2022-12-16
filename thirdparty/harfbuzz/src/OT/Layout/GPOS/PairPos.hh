@@ -15,7 +15,7 @@ struct PairPos
   HBUINT16			format;         /* Format identifier */
   PairPosFormat1_3<SmallTypes>	format1;
   PairPosFormat2_4<SmallTypes>	format2;
-#ifndef HB_NO_BORING_EXPANSION
+#ifndef HB_NO_BEYOND_64K
   PairPosFormat1_3<MediumTypes>	format3;
   PairPosFormat2_4<MediumTypes>	format4;
 #endif
@@ -30,7 +30,7 @@ struct PairPos
     switch (u.format) {
     case 1: return_trace (c->dispatch (u.format1, std::forward<Ts> (ds)...));
     case 2: return_trace (c->dispatch (u.format2, std::forward<Ts> (ds)...));
-#ifndef HB_NO_BORING_EXPANSION
+#ifndef HB_NO_BEYOND_64K
     case 3: return_trace (c->dispatch (u.format3, std::forward<Ts> (ds)...));
     case 4: return_trace (c->dispatch (u.format4, std::forward<Ts> (ds)...));
 #endif

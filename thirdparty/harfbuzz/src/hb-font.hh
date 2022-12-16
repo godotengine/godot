@@ -206,14 +206,14 @@ struct hb_font_t
 
   hb_bool_t get_font_h_extents (hb_font_extents_t *extents)
   {
-    memset (extents, 0, sizeof (*extents));
+    hb_memset (extents, 0, sizeof (*extents));
     return klass->get.f.font_h_extents (this, user_data,
 					extents,
 					!klass->user_data ? nullptr : klass->user_data->font_h_extents);
   }
   hb_bool_t get_font_v_extents (hb_font_extents_t *extents)
   {
-    memset (extents, 0, sizeof (*extents));
+    hb_memset (extents, 0, sizeof (*extents));
     return klass->get.f.font_v_extents (this, user_data,
 					extents,
 					!klass->user_data ? nullptr : klass->user_data->font_v_extents);
@@ -342,7 +342,7 @@ struct hb_font_t
   hb_bool_t get_glyph_extents (hb_codepoint_t glyph,
 			       hb_glyph_extents_t *extents)
   {
-    memset (extents, 0, sizeof (*extents));
+    hb_memset (extents, 0, sizeof (*extents));
     return klass->get.f.glyph_extents (this, user_data,
 				       glyph,
 				       extents,

@@ -223,15 +223,15 @@ enum {
   INDIC_BASIC_FEATURES = INDIC_INIT, /* Don't forget to update this! */
 };
 
-static void
+static bool
 setup_syllables_indic (const hb_ot_shape_plan_t *plan,
 		       hb_font_t *font,
 		       hb_buffer_t *buffer);
-static void
+static bool
 initial_reordering_indic (const hb_ot_shape_plan_t *plan,
 			  hb_font_t *font,
 			  hb_buffer_t *buffer);
-static void
+static bool
 final_reordering_indic (const hb_ot_shape_plan_t *plan,
 			hb_font_t *font,
 			hb_buffer_t *buffer);
@@ -413,7 +413,7 @@ setup_masks_indic (const hb_ot_shape_plan_t *plan HB_UNUSED,
     set_indic_properties (info[i]);
 }
 
-static void
+static bool
 setup_syllables_indic (const hb_ot_shape_plan_t *plan HB_UNUSED,
 		       hb_font_t *font HB_UNUSED,
 		       hb_buffer_t *buffer)
@@ -422,6 +422,7 @@ setup_syllables_indic (const hb_ot_shape_plan_t *plan HB_UNUSED,
   find_syllables_indic (buffer);
   foreach_syllable (buffer, start, end)
     buffer->unsafe_to_break (start, end);
+  return false;
 }
 
 static int
@@ -714,6 +715,9 @@ initial_reordering_consonant_syllable (const hb_ot_shape_plan_t *plan,
 	    }
 	}
       } else if (info[i].indic_position() != POS_SMVD) {
+	if (info[i].indic_category() == I_Cat(MPst) &&
+	    i > start && info[i - 1].indic_category() == I_Cat(SM))
+	  info[i - 1].indic_position() = info[i].indic_position();
 	last_pos = (indic_position_t) info[i].indic_position();
       }
     }
@@ -729,7 +733,7 @@ initial_reordering_consonant_syllable (const hb_ot_shape_plan_t *plan,
 	  if (info[j].indic_position() < POS_SMVD)
 	    info[j].indic_position() = info[i].indic_position();
 	last = i;
-      } else if (info[i].indic_category() == I_Cat(M))
+      } else if (FLAG_UNSAFE (info[i].indic_category()) & (FLAG (I_Cat(M)) | FLAG (I_Cat(MPst))))
 	last = i;
   }
 
@@ -742,14 +746,40 @@ initial_reordering_consonant_syllable (const hb_ot_shape_plan_t *plan,
 
     /* Sit tight, rock 'n roll! */
     hb_stable_sort (info + start, end - start, compare_indic_order);
-    /* Find base again */
+
+    /* Find base again; also flip left-matra sequence. */
+    unsigned first_left_matra = end;
+    unsigned last_left_matra = end;
     base = end;
     for (unsigned int i = start; i < end; i++)
+    {
       if (info[i].indic_position() == POS_BASE_C)
       {
 	base = i;
 	break;
       }
+      else if (info[i].indic_position() == POS_PRE_M)
+      {
+        if (first_left_matra == end)
+	  first_left_matra = i;
+	last_left_matra = i;
+      }
+    }
+    /* https://github.com/harfbuzz/harfbuzz/issues/3863 */
+    if (first_left_matra < last_left_matra)
+    {
+      /* No need to merge clusters, handled later. */
+      buffer->reverse_range (first_left_matra, last_left_matra + 1);
+      /* Reverse back nuktas, etc. */
+      unsigned i = first_left_matra;
+      for (unsigned j = i; j <= last_left_matra; j++)
+	if (FLAG_UNSAFE (info[j].indic_category()) & (FLAG (I_Cat(M)) | FLAG (I_Cat(MPst))))
+	{
+	  buffer->reverse_range (i, j + 1);
+	  i = j + 1;
+	}
+    }
+
     /* Things are out-of-control for post base positions, they may shuffle
      * around like crazy.  In old-spec mode, we move halants around, so in
      * that case merge all clusters after base.  Otherwise, check the sort
@@ -955,25 +985,29 @@ initial_reordering_syllable_indic (const hb_ot_shape_plan_t *plan,
   }
 }
 
-static void
+static bool
 initial_reordering_indic (const hb_ot_shape_plan_t *plan,
 			  hb_font_t *font,
 			  hb_buffer_t *buffer)
 {
+  bool ret = false;
   if (!buffer->message (font, "start reordering indic initial"))
-    return;
+    return ret;
 
   update_consonant_positions_indic (plan, font, buffer);
-  hb_syllabic_insert_dotted_circles (font, buffer,
-				     indic_broken_cluster,
-				     I_Cat(DOTTEDCIRCLE),
-				     I_Cat(Repha),
-				     POS_END);
+  if (hb_syllabic_insert_dotted_circles (font, buffer,
+					 indic_broken_cluster,
+					 I_Cat(DOTTEDCIRCLE),
+					 I_Cat(Repha),
+					 POS_END))
+    ret = true;
 
   foreach_syllable (buffer, start, end)
     initial_reordering_syllable_indic (plan, font->face, buffer, start, end);
 
   (void) buffer->message (font, "end reordering indic initial");
+
+  return ret;
 }
 
 static void
@@ -1116,7 +1150,7 @@ final_reordering_syllable_indic (const hb_ot_shape_plan_t *plan,
     {
     search:
       while (new_pos > start &&
-	     !(is_one_of (info[new_pos], (FLAG (I_Cat(M)) | FLAG (I_Cat(H))))))
+	     !(is_one_of (info[new_pos], (FLAG (I_Cat(M)) | FLAG (I_Cat(MPst)) | FLAG (I_Cat(H))))))
 	new_pos--;
 
       /* If we found no Halant we are done.
@@ -1316,7 +1350,8 @@ final_reordering_syllable_indic (const hb_ot_shape_plan_t *plan,
 	  unlikely (is_halant (info[new_reph_pos])))
       {
 	for (unsigned int i = base + 1; i < new_reph_pos; i++)
-	  if (info[i].indic_category() == I_Cat(M)) {
+	  if (FLAG_UNSAFE (info[i].indic_category()) & (FLAG (I_Cat(M)) | FLAG (I_Cat(MPst))))
+	  {
 	    /* Ok, got it. */
 	    new_reph_pos--;
 	  }
@@ -1376,7 +1411,7 @@ final_reordering_syllable_indic (const hb_ot_shape_plan_t *plan,
 	  if (buffer->props.script != HB_SCRIPT_MALAYALAM && buffer->props.script != HB_SCRIPT_TAMIL)
 	  {
 	    while (new_pos > start &&
-		   !(is_one_of (info[new_pos - 1], FLAG(I_Cat(M)) | FLAG (I_Cat(H)))))
+		   !(is_one_of (info[new_pos - 1], FLAG (I_Cat(M)) | FLAG (I_Cat(MPst)) | FLAG (I_Cat(H)))))
 	      new_pos--;
 	  }
 
@@ -1439,13 +1474,13 @@ final_reordering_syllable_indic (const hb_ot_shape_plan_t *plan,
 }
 
 
-static void
+static bool
 final_reordering_indic (const hb_ot_shape_plan_t *plan,
 			hb_font_t *font HB_UNUSED,
 			hb_buffer_t *buffer)
 {
   unsigned int count = buffer->len;
-  if (unlikely (!count)) return;
+  if (unlikely (!count)) return false;
 
   if (buffer->message (font, "start reordering indic final")) {
     foreach_syllable (buffer, start, end)
@@ -1455,6 +1490,8 @@ final_reordering_indic (const hb_ot_shape_plan_t *plan,
 
   HB_BUFFER_DEALLOCATE_VAR (buffer, indic_category);
   HB_BUFFER_DEALLOCATE_VAR (buffer, indic_position);
+
+  return false;
 }
 
 

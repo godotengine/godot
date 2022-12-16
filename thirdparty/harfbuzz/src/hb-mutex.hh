@@ -108,10 +108,11 @@ struct hb_mutex_t
 
 struct hb_lock_t
 {
-  hb_lock_t (hb_mutex_t &mutex_) : mutex (mutex_) { mutex.lock (); }
-  ~hb_lock_t () { mutex.unlock (); }
+  hb_lock_t (hb_mutex_t &mutex_) : mutex (&mutex_) { mutex->lock (); }
+  hb_lock_t (hb_mutex_t *mutex_) : mutex (mutex_) { if (mutex) mutex->lock (); }
+  ~hb_lock_t () { if (mutex) mutex->unlock (); }
   private:
-  hb_mutex_t &mutex;
+  hb_mutex_t *mutex;
 };
 
 

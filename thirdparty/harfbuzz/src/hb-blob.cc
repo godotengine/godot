@@ -495,7 +495,7 @@ hb_blob_t::try_make_writable ()
 
   DEBUG_MSG_FUNC (BLOB, this, "dupped successfully -> %p\n", this->data);
 
-  memcpy (new_data, this->data, this->length);
+  hb_memcpy (new_data, this->data, this->length);
   this->destroy_user_data ();
   this->mode = HB_MEMORY_MODE_WRITABLE;
   this->data = new_data;

@@ -39,11 +39,7 @@
 #define HB_OT_TAG_COLR HB_TAG('C','O','L','R')
 
 #ifndef HB_COLRV1_MAX_NESTING_LEVEL
-#define HB_COLRV1_MAX_NESTING_LEVEL	100
-#endif
-
-#ifndef COLRV1_ENABLE_SUBSETTING
-#define COLRV1_ENABLE_SUBSETTING 1
+#define HB_COLRV1_MAX_NESTING_LEVEL	16
 #endif
 
 namespace OT {
@@ -188,6 +184,7 @@ struct Variable
 
   protected:
   T      value;
+  public:
   VarIdx varIdxBase;
   public:
   DEFINE_SIZE_STATIC (4 + T::static_size);
@@ -196,6 +193,8 @@ struct Variable
 template <typename T>
 struct NoVariable
 {
+  static constexpr uint32_t varIdxBase = VarIdx::NO_VARIATION;
+
   NoVariable<T>* copy (hb_serialize_context_t *c) const
   {
     TRACE_SERIALIZE (this);
@@ -888,12 +887,25 @@ struct PaintComposite
   DEFINE_SIZE_STATIC (8);
 };
 
+struct ClipBoxData
+{
+  int xMin, yMin, xMax, yMax;
+};
+
 struct ClipBoxFormat1
 {
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
     return_trace (c->check_struct (this));
+  }
+
+  void get_clip_box (ClipBoxData &clip_box, const VarStoreInstancer &instancer HB_UNUSED) const
+  {
+    clip_box.xMin = xMin;
+    clip_box.yMin = yMin;
+    clip_box.xMax = xMax;
+    clip_box.yMax = yMax;
   }
 
   public:
@@ -906,7 +918,20 @@ struct ClipBoxFormat1
   DEFINE_SIZE_STATIC (1 + 4 * FWORD::static_size);
 };
 
-struct ClipBoxFormat2 : Variable<ClipBoxFormat1> {};
+struct ClipBoxFormat2 : Variable<ClipBoxFormat1>
+{
+  void get_clip_box (ClipBoxData &clip_box, const VarStoreInstancer &instancer) const
+  {
+    value.get_clip_box(clip_box, instancer);
+    if (instancer)
+    {
+      clip_box.xMin += _hb_roundf (instancer (varIdxBase, 0));
+      clip_box.yMin += _hb_roundf (instancer (varIdxBase, 1));
+      clip_box.xMax += _hb_roundf (instancer (varIdxBase, 2));
+      clip_box.yMax += _hb_roundf (instancer (varIdxBase, 3));
+    }
+  }
+};
 
 struct ClipBox
 {
@@ -932,6 +957,28 @@ struct ClipBox
     }
   }
 
+  bool get_extents (hb_glyph_extents_t *extents,
+                    const VarStoreInstancer &instancer) const
+  {
+    ClipBoxData clip_box;
+    switch (u.format) {
+    case 1:
+      u.format1.get_clip_box (clip_box, instancer);
+      break;
+    case 2:
+      u.format2.get_clip_box (clip_box, instancer);
+      break;
+    default:
+      return false;
+    }
+
+    extents->x_bearing = clip_box.xMin;
+    extents->y_bearing = clip_box.yMax;
+    extents->width = clip_box.xMax - clip_box.xMin;
+    extents->height = clip_box.yMin - clip_box.yMax;
+    return true;
+  }
+
   protected:
   union {
   HBUINT8		format;         /* Format identifier */
@@ -942,6 +989,9 @@ struct ClipBox
 
 struct ClipRecord
 {
+  int cmp (hb_codepoint_t g) const
+  { return g < startGlyphID ? -1 : g <= endGlyphID ? 0 : +1; }
+
   ClipRecord* copy (hb_serialize_context_t *c, const void *base) const
   {
     TRACE_SERIALIZE (this);
@@ -957,6 +1007,13 @@ struct ClipRecord
     return_trace (c->check_struct (this) && clipBox.sanitize (c, base));
   }
 
+  bool get_extents (hb_glyph_extents_t *extents,
+		    const void *base,
+		    const VarStoreInstancer &instancer) const
+  {
+    return (base+clipBox).get_extents (extents, instancer);
+  }
+
   public:
   HBUINT16		startGlyphID;  // first gid clip applies to
   HBUINT16		endGlyphID;    // last gid clip applies to, inclusive
@@ -964,6 +1021,7 @@ struct ClipRecord
   public:
   DEFINE_SIZE_STATIC (7);
 };
+DECLARE_NULL_NAMESPACE_BYTES (OT, ClipRecord);
 
 struct ClipList
 {
@@ -1052,11 +1110,26 @@ struct ClipList
   bool sanitize (hb_sanitize_context_t *c) const
   {
     TRACE_SANITIZE (this);
+    // TODO Make a formatted struct!
     return_trace (c->check_struct (this) && clips.sanitize (c, this));
   }
 
+  bool
+  get_extents (hb_codepoint_t gid,
+	       hb_glyph_extents_t *extents,
+	       const VarStoreInstancer &instancer) const
+  {
+    auto *rec = clips.as_array ().bsearch (gid);
+    if (rec)
+    {
+      rec->get_extents (extents, this, instancer);
+      return true;
+    }
+    return false;
+  }
+
   HBUINT8			format;  // Set to 1.
-  Array32Of<ClipRecord>		clips;  // Clip records, sorted by startGlyphID
+  SortedArray32Of<ClipRecord>	clips;  // Clip records, sorted by startGlyphID
   public:
   DEFINE_SIZE_ARRAY_SIZED (5, clips);
 };
@@ -1359,7 +1432,7 @@ struct COLR
                   (this+baseGlyphsZ).sanitize (c, numBaseGlyphs) &&
                   (this+layersZ).sanitize (c, numLayers) &&
                   (version == 0 ||
-		   (COLRV1_ENABLE_SUBSETTING && version == 1 &&
+		   (version == 1 &&
 		    baseGlyphList.sanitize (c, this) &&
 		    layerList.sanitize (c, this) &&
 		    clipList.sanitize (c, this) &&
@@ -1514,6 +1587,30 @@ struct COLR
     colr_prime->varIdxMap.serialize_copy (c->serializer, varIdxMap, this);
     //TODO: subset varStore once it's implemented in fonttools
     return_trace (true);
+  }
+
+  bool
+  get_extents (hb_font_t *font, hb_codepoint_t glyph, hb_glyph_extents_t *extents) const
+  {
+    if (version != 1)
+      return false;
+
+    VarStoreInstancer instancer (this+varStore,
+				 this+varIdxMap,
+				 hb_array (font->coords, font->num_coords));
+
+    if ((this+clipList).get_extents (glyph,
+				     extents,
+				     instancer))
+    {
+      extents->x_bearing = font->em_scale_x (extents->x_bearing);
+      extents->y_bearing = font->em_scale_x (extents->y_bearing);
+      extents->width = font->em_scale_x (extents->width);
+      extents->height = font->em_scale_x (extents->height);
+      return true;
+    }
+
+    return false;
   }
 
   protected:

@@ -51,8 +51,21 @@ struct PairPosFormat1_3
 
   bool intersects (const hb_set_t *glyphs) const
   {
+    auto &cov = this+coverage;
+
+    if (pairSet.len > glyphs->get_population () * hb_bit_storage ((unsigned) pairSet.len) / 4)
+    {
+      for (hb_codepoint_t g = HB_SET_VALUE_INVALID; glyphs->next (&g);)
+      {
+	unsigned i = cov.get_coverage (g);
+	if ((this+pairSet[i]).intersects (glyphs, valueFormat))
+	  return true;
+      }
+      return false;
+    }
+
     return
-    + hb_zip (this+coverage, pairSet)
+    + hb_zip (cov, pairSet)
     | hb_filter (*glyphs, hb_first)
     | hb_map (hb_second)
     | hb_map ([glyphs, this] (const typename Types::template OffsetTo<PairSet> &_)
@@ -171,12 +184,16 @@ struct PairPosFormat1_3
     unsigned format1 = 0;
     unsigned format2 = 0;
     for (const auto & _ :
-             + hb_zip (this+coverage, pairSet) | hb_filter (glyphset, hb_first) | hb_map (hb_second))
+	  + hb_zip (this+coverage, pairSet)
+	  | hb_filter (glyphset, hb_first)
+	  | hb_map (hb_second)
+	)
     {
       const PairSet& set = (this + _);
       const PairValueRecord *record = &set.firstPairValueRecord;
 
-      for (unsigned i = 0; i < set.len; i++)
+      unsigned count = set.len;
+      for (unsigned i = 0; i < count; i++)
       {
         if (record->intersects (glyphset))
         {
@@ -185,6 +202,9 @@ struct PairPosFormat1_3
         }
         record = &StructAtOffset<const PairValueRecord> (record, record_size);
       }
+
+      if (format1 == valueFormat[0] && format2 == valueFormat[1])
+        break;
     }
 
     return hb_pair (format1, format2);

@@ -434,7 +434,7 @@ struct PairPosFormat2 : public OT::Layout::GPOS_impl::PairPosFormat2_4<SmallType
 
     char* start_addr = ((char*)&values[0]) + start * split_context.class1_record_size;
     unsigned num_records = end - start;
-    memcpy (&pair_pos_prime->values[0],
+    hb_memcpy (&pair_pos_prime->values[0],
             start_addr,
             num_records * split_context.class1_record_size);
 
@@ -611,7 +611,7 @@ struct PairPos : public OT::Layout::GPOS_impl::PairPos
       return ((PairPosFormat1*)(&u.format1))->split_subtables (c, parent_index, this_index);
     case 2:
       return ((PairPosFormat2*)(&u.format2))->split_subtables (c, parent_index, this_index);
-#ifndef HB_NO_BORING_EXPANSION
+#ifndef HB_NO_BEYOND_64K
     case 3: HB_FALLTHROUGH;
     case 4: HB_FALLTHROUGH;
       // Don't split 24bit PairPos's.
@@ -631,7 +631,7 @@ struct PairPos : public OT::Layout::GPOS_impl::PairPos
       return ((PairPosFormat1*)(&u.format1))->sanitize (vertex);
     case 2:
       return ((PairPosFormat2*)(&u.format2))->sanitize (vertex);
-#ifndef HB_NO_BORING_EXPANSION
+#ifndef HB_NO_BEYOND_64K
     case 3: HB_FALLTHROUGH;
     case 4: HB_FALLTHROUGH;
 #endif

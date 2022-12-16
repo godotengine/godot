@@ -201,7 +201,7 @@ struct Lookup : public OT::Lookup
                       + new_subtable_count * OT::Offset16::static_size;
     char* buffer = (char*) hb_calloc (1, new_size);
     c.add_buffer (buffer);
-    memcpy (buffer, v.obj.head, v.table_size());
+    hb_memcpy (buffer, v.obj.head, v.table_size());
 
     v.obj.head = buffer;
     v.obj.tail = buffer + new_size;
@@ -355,7 +355,7 @@ struct GSTAR : public OT::GSUBGPOS
   {
     switch (u.version.major) {
     case 1: return u.version1.get_lookup_list_offset ();
-#ifndef HB_NO_BORING_EXPANSION
+#ifndef HB_NO_BEYOND_64K
     case 2: return u.version2.get_lookup_list_offset ();
 #endif
     default: return 0;
@@ -374,7 +374,7 @@ struct GSTAR : public OT::GSUBGPOS
   {
     switch (u.version.major) {
       case 1: find_lookups<SmallTypes> (graph, lookups); break;
-#ifndef HB_NO_BORING_EXPANSION
+#ifndef HB_NO_BEYOND_64K
       case 2: find_lookups<MediumTypes> (graph, lookups); break;
 #endif
     }

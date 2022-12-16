@@ -67,7 +67,7 @@ _copy_data_to_cbdt (hb_vector_t<char> *cbdt_prime,
 {
   unsigned int new_len = cbdt_prime->length + length;
   if (unlikely (!cbdt_prime->alloc (new_len))) return false;
-  memcpy (cbdt_prime->arrayZ + cbdt_prime->length, data, length);
+  hb_memcpy (cbdt_prime->arrayZ + cbdt_prime->length, data, length);
   cbdt_prime->length = new_len;
   return true;
 }
@@ -468,13 +468,13 @@ struct IndexSubtableRecord
     if (unlikely (!c->serializer->check_success (records->resize (records->length + 1))))
       return_trace (false);
 
-    (*records)[records->length - 1].firstGlyphIndex = 1;
-    (*records)[records->length - 1].lastGlyphIndex = 0;
+    records->tail ().firstGlyphIndex = 1;
+    records->tail ().lastGlyphIndex = 0;
     bitmap_size_context->size += IndexSubtableRecord::min_size;
 
     c->serializer->push ();
 
-    if (unlikely (!add_new_subtable (c, bitmap_size_context, &((*records)[records->length - 1]), lookup, base, start)))
+    if (unlikely (!add_new_subtable (c, bitmap_size_context, &(records->tail ()), lookup, base, start)))
     {
       c->serializer->pop_discard ();
       c->serializer->revert (snap);

@@ -21,9 +21,17 @@ struct SubsetGlyph
 
   bool serialize (hb_serialize_context_t *c,
 		  bool use_short_loca,
-		  const hb_subset_plan_t *plan) const
+		  const hb_subset_plan_t *plan,
+		  hb_font_t *font)
   {
     TRACE_SERIALIZE (this);
+
+    if (font)
+    {
+      const OT::glyf_accelerator_t &glyf = *font->face->table.glyf;
+      if (!this->compile_bytes_with_deltas (plan, font, glyf))
+        return_trace (false);
+    }
 
     hb_bytes_t dest_glyph = dest_start.copy (c);
     dest_glyph = hb_bytes_t (&dest_glyph, dest_glyph.length + dest_end.copy (c).length);

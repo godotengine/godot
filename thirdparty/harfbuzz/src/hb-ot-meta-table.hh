@@ -84,7 +84,7 @@ struct meta
     {
       if (count)
       {
-	+ table->dataMaps.sub_array (start_offset, count)
+	+ table->dataMaps.as_array ().sub_array (start_offset, count)
 	| hb_map (&DataMap::get_tag)
 	| hb_map ([](hb_tag_t tag) { return (hb_ot_meta_tag_t) tag; })
 	| hb_sink (hb_array (entries, *count))

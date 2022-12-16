@@ -132,8 +132,8 @@ struct SimpleGlyph
 	if (unlikely (p + 1 > end)) return false;
 	unsigned int repeat_count = *p++;
 	unsigned stop = hb_min (i + repeat_count, count);
-	for (; i < stop;)
-	  points_.arrayZ[i++].flag = flag;
+	for (; i < stop; i++)
+	  points_.arrayZ[i].flag = flag;
       }
     }
     return true;
@@ -223,33 +223,34 @@ struct SimpleGlyph
       if (value > 0) flag |= same_flag;
       else value = -value;
 
-      coords.push ((uint8_t)value);
+      coords.arrayZ[coords.length++] = (uint8_t) value;
     }
     else
     {
       int16_t val = value;
-      coords.push (val >> 8);
-      coords.push (val & 0xff);
+      coords.arrayZ[coords.length++] = val >> 8;
+      coords.arrayZ[coords.length++] = val & 0xff;
     }
   }
 
   static void encode_flag (uint8_t &flag,
                            uint8_t &repeat,
-                           uint8_t &lastflag,
+                           uint8_t lastflag,
                            hb_vector_t<uint8_t> &flags /* OUT */)
   {
     if (flag == lastflag && repeat != 255)
     {
-      repeat = repeat + 1;
+      repeat++;
       if (repeat == 1)
       {
-        flags.push(flag);
+        /* We know there's room. */
+        flags.arrayZ[flags.length++] = flag;
       }
       else
       {
         unsigned len = flags.length;
-        flags[len-2] = flag | FLAG_REPEAT;
-        flags[len-1] = repeat;
+        flags.arrayZ[len-2] = flag | FLAG_REPEAT;
+        flags.arrayZ[len-1] = repeat;
       }
     }
     else
@@ -257,7 +258,6 @@ struct SimpleGlyph
       repeat = 0;
       flags.push (flag);
     }
-    lastflag = flag;
   }
 
   bool compile_bytes_with_deltas (const contour_point_vector_t &all_points,
@@ -269,7 +269,6 @@ struct SimpleGlyph
       dest_bytes = hb_bytes_t ();
       return true;
     }
-    //convert absolute values to relative values
     unsigned num_points = all_points.length - 4;
 
     hb_vector_t<uint8_t> flags, x_coords, y_coords;
@@ -277,23 +276,23 @@ struct SimpleGlyph
     if (unlikely (!x_coords.alloc (2*num_points))) return false;
     if (unlikely (!y_coords.alloc (2*num_points))) return false;
 
-    uint8_t lastflag = 0, repeat = 0;
-    int prev_x = 0.f, prev_y = 0.f;
-    
+    uint8_t lastflag = 255, repeat = 0;
+    int prev_x = 0, prev_y = 0;
+
     for (unsigned i = 0; i < num_points; i++)
     {
-      uint8_t flag = all_points[i].flag;
+      uint8_t flag = all_points.arrayZ[i].flag;
       flag &= FLAG_ON_CURVE + FLAG_OVERLAP_SIMPLE;
 
-      float cur_x = roundf (all_points[i].x);
-      float cur_y = roundf (all_points[i].y);
+      int cur_x = roundf (all_points.arrayZ[i].x);
+      int cur_y = roundf (all_points.arrayZ[i].y);
       encode_coord (cur_x - prev_x, flag, FLAG_X_SHORT, FLAG_X_SAME, x_coords);
       encode_coord (cur_y - prev_y, flag, FLAG_Y_SHORT, FLAG_Y_SAME, y_coords);
-      if (i == 0) lastflag = flag + 1; //make lastflag != flag for the first point
       encode_flag (flag, repeat, lastflag, flags);
 
       prev_x = cur_x;
       prev_y = cur_y;
+      lastflag = flag;
     }
 
     unsigned len_before_instrs = 2 * header.numberOfContours + 2;
@@ -303,29 +302,29 @@ struct SimpleGlyph
     if (!no_hinting)
       total_len += len_instrs;
 
-    char *p = (char *) hb_calloc (total_len, sizeof (char));
+    char *p = (char *) hb_malloc (total_len);
     if (unlikely (!p)) return false;
 
     const char *src = bytes.arrayZ + GlyphHeader::static_size;
     char *cur = p;
-    memcpy (p, src, len_before_instrs);
+    hb_memcpy (p, src, len_before_instrs);
 
     cur += len_before_instrs;
     src += len_before_instrs;
 
     if (!no_hinting)
     {
-      memcpy (cur, src, len_instrs);
+      hb_memcpy (cur, src, len_instrs);
       cur += len_instrs;
     }
 
-    memcpy (cur, flags.arrayZ, flags.length);
+    hb_memcpy (cur, flags.arrayZ, flags.length);
     cur += flags.length;
 
-    memcpy (cur, x_coords.arrayZ, x_coords.length);
+    hb_memcpy (cur, x_coords.arrayZ, x_coords.length);
     cur += x_coords.length;
 
-    memcpy (cur, y_coords.arrayZ, y_coords.length);
+    hb_memcpy (cur, y_coords.arrayZ, y_coords.length);
 
     dest_bytes = hb_bytes_t (p, total_len);
     return true;

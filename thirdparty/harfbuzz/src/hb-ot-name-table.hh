@@ -30,10 +30,55 @@
 #include "hb-open-type.hh"
 #include "hb-ot-name-language.hh"
 #include "hb-aat-layout.hh"
+#include "hb-utf.hh"
 
 
 namespace OT {
 
+template <typename in_utf_t, typename out_utf_t>
+inline unsigned int
+hb_ot_name_convert_utf (hb_bytes_t                       bytes,
+			unsigned int                    *text_size /* IN/OUT */,
+			typename out_utf_t::codepoint_t *text /* OUT */)
+{
+  unsigned int src_len = bytes.length / sizeof (typename in_utf_t::codepoint_t);
+  const typename in_utf_t::codepoint_t *src = (const typename in_utf_t::codepoint_t *) bytes.arrayZ;
+  const typename in_utf_t::codepoint_t *src_end = src + src_len;
+
+  typename out_utf_t::codepoint_t *dst = text;
+
+  hb_codepoint_t unicode;
+  const hb_codepoint_t replacement = HB_BUFFER_REPLACEMENT_CODEPOINT_DEFAULT;
+
+  if (text_size && *text_size)
+  {
+    (*text_size)--; /* Save room for NUL-termination. */
+    const typename out_utf_t::codepoint_t *dst_end = text + *text_size;
+
+    while (src < src_end && dst < dst_end)
+    {
+      const typename in_utf_t::codepoint_t *src_next = in_utf_t::next (src, src_end, &unicode, replacement);
+      typename out_utf_t::codepoint_t *dst_next = out_utf_t::encode (dst, dst_end, unicode);
+      if (dst_next == dst)
+	break; /* Out-of-room. */
+
+      dst = dst_next;
+      src = src_next;
+    }
+
+    *text_size = dst - text;
+    *dst = 0; /* NUL-terminate. */
+  }
+
+  /* Accumulate length of rest. */
+  unsigned int dst_len = dst - text;
+  while (src < src_end)
+  {
+    src = in_utf_t::next (src, src_end, &unicode, replacement);
+    dst_len += out_utf_t::encode_len (unicode);
+  }
+  return dst_len;
+}
 
 #define entry_score var.u16[0]
 #define entry_index var.u16[1]
@@ -97,12 +142,68 @@ struct NameRecord
     return UNSUPPORTED;
   }
 
-  NameRecord* copy (hb_serialize_context_t *c, const void *base) const
+  NameRecord* copy (hb_serialize_context_t *c, const void *base
+#ifdef HB_EXPERIMENTAL_API
+                    , const hb_hashmap_t<hb_ot_name_record_ids_t, hb_bytes_t> *name_table_overrides
+#endif
+		    ) const
   {
     TRACE_SERIALIZE (this);
+    HB_UNUSED auto snap = c->snapshot ();
     auto *out = c->embed (this);
     if (unlikely (!out)) return_trace (nullptr);
-    out->offset.serialize_copy (c, offset, base, 0, hb_serialize_context_t::Tail, length);
+#ifdef HB_EXPERIMENTAL_API
+    hb_ot_name_record_ids_t record_ids (platformID, encodingID, languageID, nameID);
+    hb_bytes_t* name_bytes;
+
+    if (name_table_overrides->has (record_ids, &name_bytes)) {
+      hb_bytes_t encoded_bytes = *name_bytes;
+      char *name_str_utf16_be = nullptr;
+
+      if (platformID != 1)
+      {
+        unsigned text_size = hb_ot_name_convert_utf<hb_utf8_t, hb_utf16_be_t> (*name_bytes, nullptr, nullptr);
+  
+        text_size++; // needs to consider NULL terminator for use in hb_ot_name_convert_utf()
+        unsigned byte_len = text_size * hb_utf16_be_t::codepoint_t::static_size;
+        name_str_utf16_be = (char *) hb_calloc (byte_len, 1);
+        if (!name_str_utf16_be)
+        {
+          c->revert (snap);
+          return_trace (nullptr);
+        }
+        hb_ot_name_convert_utf<hb_utf8_t, hb_utf16_be_t> (*name_bytes, &text_size,
+                                                          (hb_utf16_be_t::codepoint_t *) name_str_utf16_be);
+  
+        unsigned encoded_byte_len = text_size * hb_utf16_be_t::codepoint_t::static_size;
+        if (!encoded_byte_len || !c->check_assign (out->length, encoded_byte_len, HB_SERIALIZE_ERROR_INT_OVERFLOW)) {
+          c->revert (snap);
+          hb_free (name_str_utf16_be);
+          return_trace (nullptr);
+        }
+  
+        encoded_bytes = hb_bytes_t (name_str_utf16_be, encoded_byte_len);
+      }
+      else
+      {
+        // mac platform, copy the UTF-8 string(all ascii characters) as is
+        if (!c->check_assign (out->length, encoded_bytes.length, HB_SERIALIZE_ERROR_INT_OVERFLOW)) {
+          c->revert (snap);
+          return_trace (nullptr);
+        }
+      }
+
+      out->offset = 0;
+      c->push ();
+      encoded_bytes.copy (c);
+      c->add_link (out->offset, c->pop_pack (), hb_serialize_context_t::Tail, 0);
+      hb_free (name_str_utf16_be);
+    }
+    else
+#endif
+    {
+      out->offset.serialize_copy (c, offset, base, 0, hb_serialize_context_t::Tail, length);
+    }
     return_trace (out);
   }
 
@@ -216,29 +317,61 @@ struct name
 	    hb_requires (hb_is_source_of (Iterator, const NameRecord &))>
   bool serialize (hb_serialize_context_t *c,
 		  Iterator it,
-		  const void *src_string_pool)
+		  const void *src_string_pool
+#ifdef HB_EXPERIMENTAL_API
+                  , const hb_vector_t<hb_ot_name_record_ids_t>& insert_name_records
+		  , const hb_hashmap_t<hb_ot_name_record_ids_t, hb_bytes_t> *name_table_overrides
+#endif
+		  )
   {
     TRACE_SERIALIZE (this);
 
     if (unlikely (!c->extend_min ((*this))))  return_trace (false);
 
+    unsigned total_count = it.len ()
+#ifdef HB_EXPERIMENTAL_API
+        + insert_name_records.length
+#endif
+        ;
     this->format = 0;
-    this->count = it.len ();
+    if (!c->check_assign (this->count, total_count, HB_SERIALIZE_ERROR_INT_OVERFLOW))
+      return false;
 
-    NameRecord *name_records = (NameRecord *) hb_calloc (it.len (), NameRecord::static_size);
+    NameRecord *name_records = (NameRecord *) hb_calloc (total_count, NameRecord::static_size);
     if (unlikely (!name_records)) return_trace (false);
 
-    hb_array_t<NameRecord> records (name_records, it.len ());
+    hb_array_t<NameRecord> records (name_records, total_count);
 
     for (const NameRecord& record : it)
     {
-      memcpy (name_records, &record, NameRecord::static_size);
+      hb_memcpy (name_records, &record, NameRecord::static_size);
       name_records++;
     }
 
+#ifdef HB_EXPERIMENTAL_API
+    for (unsigned i = 0; i < insert_name_records.length; i++)
+    {
+      const hb_ot_name_record_ids_t& ids = insert_name_records[i];
+      NameRecord record;
+      record.platformID = ids.platform_id;
+      record.encodingID = ids.encoding_id;
+      record.languageID = ids.language_id;
+      record.nameID = ids.name_id;
+      record.length = 0; // handled in NameRecord copy()
+      record.offset = 0;
+      memcpy (name_records, &record, NameRecord::static_size);
+      name_records++;
+    }
+#endif
+
     records.qsort ();
 
-    c->copy_all (records, src_string_pool);
+    c->copy_all (records,
+		 src_string_pool
+#ifdef HB_EXPERIMENTAL_API
+		 , name_table_overrides
+#endif
+		 );
     hb_free (records.arrayZ);
 
 
@@ -256,6 +389,11 @@ struct name
     name *name_prime = c->serializer->start_embed<name> ();
     if (unlikely (!name_prime)) return_trace (false);
 
+#ifdef HB_EXPERIMENTAL_API
+    const hb_hashmap_t<hb_ot_name_record_ids_t, hb_bytes_t> *name_table_overrides =
+        c->plan->name_table_overrides;
+#endif
+    
     auto it =
     + nameRecordZ.as_array (count)
     | hb_filter (c->plan->name_ids, &NameRecord::nameID)
@@ -265,10 +403,48 @@ struct name
           (c->plan->flags & HB_SUBSET_FLAGS_NAME_LEGACY)
           || namerecord.isUnicode ();
     })
+#ifdef HB_EXPERIMENTAL_API
+    | hb_filter ([&] (const NameRecord& namerecord) {
+      if (name_table_overrides->is_empty ())
+        return true;
+      hb_ot_name_record_ids_t rec_ids (namerecord.platformID,
+                                       namerecord.encodingID,
+                                       namerecord.languageID,
+                                       namerecord.nameID);
+
+      hb_bytes_t *p;
+      if (name_table_overrides->has (rec_ids, &p) &&
+          (*p).length == 0)
+        return false;
+      return true;
+    })
+#endif
     ;
 
-    name_prime->serialize (c->serializer, it, std::addressof (this + stringOffset));
-    return_trace (name_prime->count);
+#ifdef HB_EXPERIMENTAL_API
+    hb_vector_t<hb_ot_name_record_ids_t> insert_name_records;
+    if (!name_table_overrides->is_empty ())
+    {
+      if (unlikely (!insert_name_records.alloc (name_table_overrides->get_population ())))
+        return_trace (false);
+      for (const auto& record_ids : name_table_overrides->keys ())
+      {
+        if (name_table_overrides->get (record_ids).length == 0)
+          continue;
+        if (has_name_record_with_ids (record_ids))
+          continue;
+        insert_name_records.push (record_ids);
+      }
+    }
+#endif
+
+    return (name_prime->serialize (c->serializer, it,
+                                   std::addressof (this + stringOffset)
+#ifdef HB_EXPERIMENTAL_API
+                                   , insert_name_records
+                                   , name_table_overrides
+#endif
+                                   ));
   }
 
   bool sanitize_records (hb_sanitize_context_t *c) const
@@ -378,6 +554,23 @@ struct name
     hb_vector_t<hb_ot_name_entry_t> names;
   };
 
+  private:
+  // sometimes NameRecords are not sorted in the font file, so use linear search
+  // here
+  bool has_name_record_with_ids (const hb_ot_name_record_ids_t& record_ids) const
+  {
+    for (const auto& record : nameRecordZ.as_array (count))
+    {
+      if (record.platformID == record_ids.platform_id &&
+          record.encodingID == record_ids.encoding_id &&
+          record.languageID == record_ids.language_id &&
+          record.nameID == record_ids.name_id)
+        return true;
+    }
+    return false;
+  }
+
+  public:
   /* We only implement format 0 for now. */
   HBUINT16	format;		/* Format selector (=0/1). */
   HBUINT16	count;		/* Number of name records. */

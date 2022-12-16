@@ -90,7 +90,7 @@ typedef struct OpenTypeOffsetTable
   {
     if (table_count)
     {
-      + tables.sub_array (start_offset, table_count)
+      + tables.as_array ().sub_array (start_offset, table_count)
       | hb_map (&TableRecord::tag)
       | hb_sink (hb_array (table_tags, *table_count))
       ;
@@ -158,7 +158,7 @@ typedef struct OpenTypeOffsetTable
         return_trace (false);
 
       if (likely (len))
-	memcpy (start, blob->data, len);
+	hb_memcpy (start, blob->data, len);
 
       /* 4-byte alignment. */
       c->align (4);

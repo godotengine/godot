@@ -1465,56 +1465,6 @@ hb_ot_layout_substitute_start (hb_font_t    *font,
   _hb_ot_layout_set_glyph_props (font, buffer);
 }
 
-void
-hb_ot_layout_delete_glyphs_inplace (hb_buffer_t *buffer,
-				    bool (*filter) (const hb_glyph_info_t *info))
-{
-  /* Merge clusters and delete filtered glyphs.
-   * NOTE! We can't use out-buffer as we have positioning data. */
-  unsigned int j = 0;
-  unsigned int count = buffer->len;
-  hb_glyph_info_t *info = buffer->info;
-  hb_glyph_position_t *pos = buffer->pos;
-  for (unsigned int i = 0; i < count; i++)
-  {
-    if (filter (&info[i]))
-    {
-      /* Merge clusters.
-       * Same logic as buffer->delete_glyph(), but for in-place removal. */
-
-      unsigned int cluster = info[i].cluster;
-      if (i + 1 < count && cluster == info[i + 1].cluster)
-	continue; /* Cluster survives; do nothing. */
-
-      if (j)
-      {
-	/* Merge cluster backward. */
-	if (cluster < info[j - 1].cluster)
-	{
-	  unsigned int mask = info[i].mask;
-	  unsigned int old_cluster = info[j - 1].cluster;
-	  for (unsigned k = j; k && info[k - 1].cluster == old_cluster; k--)
-	    buffer->set_cluster (info[k - 1], cluster, mask);
-	}
-	continue;
-      }
-
-      if (i + 1 < count)
-	buffer->merge_clusters (i, i + 2); /* Merge cluster forward. */
-
-      continue;
-    }
-
-    if (j != i)
-    {
-      info[j] = info[i];
-      pos[j] = pos[i];
-    }
-    j++;
-  }
-  buffer->len = j;
-}
-
 /**
  * hb_ot_layout_lookup_substitute_closure:
  * @face: #hb_face_t to work upon
@@ -1867,7 +1817,7 @@ apply_forward (OT::hb_ot_apply_context_t *c,
   while (buffer->idx < buffer->len && buffer->successful)
   {
     bool applied = false;
-    if (accel.may_have (buffer->cur().codepoint) &&
+    if (accel.digest.may_have (buffer->cur().codepoint) &&
 	(buffer->cur().mask & c->lookup_mask) &&
 	c->check_glyph_property (&buffer->cur(), c->lookup_props))
      {
@@ -1894,7 +1844,7 @@ apply_backward (OT::hb_ot_apply_context_t *c,
   hb_buffer_t *buffer = c->buffer;
   do
   {
-    if (accel.may_have (buffer->cur().codepoint) &&
+    if (accel.digest.may_have (buffer->cur().codepoint) &&
 	(buffer->cur().mask & c->lookup_mask) &&
 	c->check_glyph_property (&buffer->cur(), c->lookup_props))
      ret |= accel.apply (c, false);
@@ -1908,15 +1858,16 @@ apply_backward (OT::hb_ot_apply_context_t *c,
 }
 
 template <typename Proxy>
-static inline void
+static inline bool
 apply_string (OT::hb_ot_apply_context_t *c,
 	      const typename Proxy::Lookup &lookup,
 	      const OT::hb_ot_layout_lookup_accelerator_t &accel)
 {
+  bool ret = false;
   hb_buffer_t *buffer = c->buffer;
 
   if (unlikely (!buffer->len || !c->lookup_mask))
-    return;
+    return ret;
 
   c->set_lookup_props (lookup.get_props ());
 
@@ -1927,7 +1878,7 @@ apply_string (OT::hb_ot_apply_context_t *c,
       buffer->clear_output ();
 
     buffer->idx = 0;
-    apply_forward (c, accel);
+    ret = apply_forward (c, accel);
 
     if (!Proxy::always_inplace)
       buffer->sync ();
@@ -1937,8 +1888,10 @@ apply_string (OT::hb_ot_apply_context_t *c,
     /* in-place backward substitution/positioning */
     assert (!buffer->have_output);
     buffer->idx = buffer->len - 1;
-    apply_backward (c, accel);
+    ret = apply_backward (c, accel);
   }
+
+  return ret;
 }
 
 template <typename Proxy>
@@ -1957,23 +1910,42 @@ inline void hb_ot_map_t::apply (const Proxy &proxy,
     const stage_map_t *stage = &stages[table_index][stage_index];
     for (; i < stage->last_lookup; i++)
     {
-      unsigned int lookup_index = lookups[table_index][i].index;
-      if (!buffer->message (font, "start lookup %d", lookup_index)) continue;
-      c.set_lookup_index (lookup_index);
-      c.set_lookup_mask (lookups[table_index][i].mask);
-      c.set_auto_zwj (lookups[table_index][i].auto_zwj);
-      c.set_auto_zwnj (lookups[table_index][i].auto_zwnj);
-      c.set_random (lookups[table_index][i].random);
-      c.set_per_syllable (lookups[table_index][i].per_syllable);
+      auto &lookup = lookups[table_index][i];
 
-      apply_string<Proxy> (&c,
-			   proxy.table.get_lookup (lookup_index),
-			   proxy.accels[lookup_index]);
-      (void) buffer->message (font, "end lookup %d", lookup_index);
+      unsigned int lookup_index = lookup.index;
+      if (!buffer->message (font, "start lookup %d feature '%c%c%c%c'", lookup_index, HB_UNTAG (lookup.feature_tag))) continue;
+
+      /* c.digest is a digest of all the current glyphs in the buffer
+       * (plus some past glyphs).
+       *
+       * Only try applying the lookup if there is any overlap. */
+      if (proxy.accels[lookup_index].digest.may_have (c.digest))
+      {
+	c.set_lookup_index (lookup_index);
+	c.set_lookup_mask (lookup.mask);
+	c.set_auto_zwj (lookup.auto_zwj);
+	c.set_auto_zwnj (lookup.auto_zwnj);
+	c.set_random (lookup.random);
+	c.set_per_syllable (lookup.per_syllable);
+
+	apply_string<Proxy> (&c,
+			     proxy.table.get_lookup (lookup_index),
+			     proxy.accels[lookup_index]);
+      }
+      else
+	(void) buffer->message (font, "skipped lookup %d feature '%c%c%c%c' because no glyph matches", lookup_index, HB_UNTAG (lookup.feature_tag));
+
+      (void) buffer->message (font, "end lookup %d feature '%c%c%c%c'", lookup_index, HB_UNTAG (lookup.feature_tag));
     }
 
     if (stage->pause_func)
-      stage->pause_func (plan, font, buffer);
+    {
+      if (stage->pause_func (plan, font, buffer))
+      {
+	/* Refresh working buffer digest since buffer changed. */
+	c.digest = buffer->digest ();
+      }
+    }
   }
 }
 

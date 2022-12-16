@@ -84,7 +84,7 @@ struct post
     post *post_prime = c->allocate_min<post> ();
     if (unlikely (!post_prime))  return_trace (false);
 
-    memcpy (post_prime, this, post::min_size);
+    hb_memcpy (post_prime, this, post::min_size);
     if (!glyph_names)
       return_trace (c->check_assign (post_prime->version.major, 3,
                                      HB_SERIALIZE_ERROR_INT_OVERFLOW)); // Version 3 does not have any glyph names.

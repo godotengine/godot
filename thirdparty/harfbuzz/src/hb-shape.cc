@@ -35,6 +35,8 @@
 #include "hb-machinery.hh"
 
 
+#ifndef HB_NO_SHAPER
+
 /**
  * SECTION:hb-shape
  * @title: hb-shape
@@ -192,3 +194,6 @@ hb_shape (hb_font_t           *font,
 {
   hb_shape_full (font, buffer, features, num_features, nullptr);
 }
+
+
+#endif

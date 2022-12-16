@@ -102,10 +102,6 @@ HB_INTERNAL void
 hb_ot_layout_substitute_start (hb_font_t    *font,
 			       hb_buffer_t  *buffer);
 
-HB_INTERNAL void
-hb_ot_layout_delete_glyphs_inplace (hb_buffer_t *buffer,
-				    bool (*filter) (const hb_glyph_info_t *info));
-
 namespace OT {
   struct hb_ot_apply_context_t;
   struct hb_ot_layout_lookup_accelerator_t;
@@ -552,7 +548,7 @@ _hb_glyph_info_clear_substituted (hb_glyph_info_t *info)
   info->glyph_props() &= ~(HB_OT_LAYOUT_GLYPH_PROPS_SUBSTITUTED);
 }
 
-static inline void
+static inline bool
 _hb_clear_substitution_flags (const hb_ot_shape_plan_t *plan HB_UNUSED,
 			      hb_font_t *font HB_UNUSED,
 			      hb_buffer_t *buffer)
@@ -561,6 +557,7 @@ _hb_clear_substitution_flags (const hb_ot_shape_plan_t *plan HB_UNUSED,
   unsigned int count = buffer->len;
   for (unsigned int i = 0; i < count; i++)
     _hb_glyph_info_clear_substituted (&info[i]);
+  return false;
 }
 
 

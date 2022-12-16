@@ -209,7 +209,7 @@ bool _try_isolating_subgraphs (const hb_vector_t<graph::overflow_record_t>& over
     // Only move at most half of the roots in a space at a time.
     unsigned extra = roots_to_isolate.get_population () - maximum_to_move;
     while (extra--) {
-      unsigned root = HB_SET_VALUE_INVALID;
+      uint32_t root = HB_SET_VALUE_INVALID;
       roots_to_isolate.previous (&root);
       roots_to_isolate.del (root);
     }
@@ -283,6 +283,11 @@ hb_resolve_graph_overflows (hb_tag_t table_tag,
                             graph_t& sorted_graph /* IN/OUT */)
 {
   sorted_graph.sort_shortest_distance ();
+  if (sorted_graph.in_error ())
+  {
+    DEBUG_MSG (SUBSET_REPACK, nullptr, "Sorted graph in error state after initial sort.");
+    return false;
+  }
 
   bool will_overflow = graph::will_overflow (sorted_graph);
   if (!will_overflow)
@@ -376,6 +381,26 @@ hb_resolve_overflows (const T& packed,
                       unsigned max_rounds = 20,
                       bool recalculate_extensions = false) {
   graph_t sorted_graph (packed);
+  if (sorted_graph.in_error ())
+  {
+    // Invalid graph definition.
+    return nullptr;
+  }
+
+  if (!sorted_graph.is_fully_connected ())
+  {
+    sorted_graph.print_orphaned_nodes ();
+    return nullptr;
+  }
+
+  if (sorted_graph.in_error ())
+  {
+    // Allocations failed somewhere
+    DEBUG_MSG (SUBSET_REPACK, nullptr,
+               "Graph is in error, likely due to a memory allocation error.");
+    return nullptr;
+  }
+
   if (!hb_resolve_graph_overflows (table_tag, max_rounds, recalculate_extensions, sorted_graph))
     return nullptr;
 

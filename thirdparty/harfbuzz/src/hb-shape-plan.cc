@@ -31,6 +31,8 @@
 #include "hb-buffer.hh"
 
 
+#ifndef HB_NO_SHAPER
+
 /**
  * SECTION:hb-shape-plan
  * @title: hb-shape-plan
@@ -74,7 +76,7 @@ hb_shape_plan_key_t::init (bool                           copy,
   this->user_features = copy ? features : user_features;
   if (copy && num_user_features)
   {
-    memcpy (features, user_features, num_user_features * sizeof (hb_feature_t));
+    hb_memcpy (features, user_features, num_user_features * sizeof (hb_feature_t));
     /* Make start/end uniform to easier catch bugs. */
     for (unsigned int i = 0; i < num_user_features; i++)
     {
@@ -574,3 +576,6 @@ retry:
 
   return hb_shape_plan_reference (shape_plan);
 }
+
+
+#endif
