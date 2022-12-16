@@ -901,18 +901,19 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 
 				member.signal->set_datatype(resolving_datatype);
 
-				for (int j = 0; j < member.signal->parameters.size(); j++) {
-					GDScriptParser::DataType signal_type = resolve_datatype(member.signal->parameters[j]->datatype_specifier);
-					signal_type.is_meta_type = false;
-					member.signal->parameters[j]->set_datatype(signal_type);
-				}
-				// TODO: Make MethodInfo from signal.
-				GDScriptParser::DataType signal_type;
-				signal_type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
-				signal_type.kind = GDScriptParser::DataType::BUILTIN;
-				signal_type.builtin_type = Variant::SIGNAL;
+				// This is the _only_ way to declare a signal. Therefore, we can generate its
+				// MethodInfo inline so it's a tiny bit more efficient.
+				MethodInfo mi = MethodInfo(member.signal->identifier->name);
 
-				member.signal->set_datatype(signal_type);
+				for (int j = 0; j < member.signal->parameters.size(); j++) {
+					GDScriptParser::ParameterNode *param = member.signal->parameters[j];
+					GDScriptParser::DataType param_type = resolve_datatype(param->datatype_specifier);
+					param_type.is_meta_type = false;
+					param->set_datatype(param_type);
+					mi.arguments.push_back(PropertyInfo(param_type.builtin_type, param->identifier->name));
+					// TODO: add signal parameter default values
+				}
+				member.signal->set_datatype(make_signal_type(mi));
 
 				// Apply annotations.
 				for (GDScriptParser::AnnotationNode *&E : member.signal->annotations) {
