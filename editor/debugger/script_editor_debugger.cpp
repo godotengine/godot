@@ -319,6 +319,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			tabs->set_current_tab(0);
 		}
 		profiler->set_enabled(false, false);
+		visual_profiler->set_enabled(false);
 		inspector->clear_cache(); // Take a chance to force remote objects update.
 
 	} else if (p_msg == "debug_exit") {
@@ -328,8 +329,12 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		_update_buttons_state();
 		_set_reason_text(TTR("Execution resumed."), MESSAGE_SUCCESS);
 		emit_signal(SNAME("breaked"), false, false, "", false);
+
 		profiler->set_enabled(true, false);
 		profiler->disable_seeking();
+
+		visual_profiler->set_enabled(true);
+
 	} else if (p_msg == "set_pid") {
 		ERR_FAIL_COND(p_data.size() < 1);
 		remote_pid = p_data[0];
@@ -901,6 +906,7 @@ void ScriptEditorDebugger::start(Ref<RemoteDebuggerPeer> p_peer) {
 	stop();
 
 	profiler->set_enabled(true, true);
+	visual_profiler->set_enabled(true);
 
 	peer = p_peer;
 	ERR_FAIL_COND(p_peer.is_null());
@@ -957,7 +963,11 @@ void ScriptEditorDebugger::stop() {
 	res_path_cache.clear();
 	profiler_signature.clear();
 
-	profiler->set_enabled(true, false);
+	profiler->set_enabled(false, false);
+	profiler->set_pressed(false);
+
+	visual_profiler->set_enabled(false);
+	visual_profiler->set_pressed(false);
 
 	inspector->edit(nullptr);
 	_update_buttons_state();

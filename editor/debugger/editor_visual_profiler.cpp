@@ -66,6 +66,7 @@ void EditorVisualProfiler::add_frame_metric(const Metric &p_metric) {
 	}
 
 	updating_frame = true;
+	clear_button->set_disabled(false);
 	cursor_metric_edit->set_max(frame_metrics[last_metric].frame_number);
 	cursor_metric_edit->set_min(MAX(frame_metrics[last_metric].frame_number - frame_metrics.size(), 0u));
 
@@ -408,6 +409,7 @@ void EditorVisualProfiler::_activate_pressed() {
 		activate->set_icon(get_theme_icon(SNAME("Stop"), SNAME("EditorIcons")));
 		activate->set_text(TTR("Stop"));
 		_clear_pressed(); //always clear on start
+		clear_button->set_disabled(false);
 	} else {
 		activate->set_icon(get_theme_icon(SNAME("Play"), SNAME("EditorIcons")));
 		activate->set_text(TTR("Start"));
@@ -416,6 +418,7 @@ void EditorVisualProfiler::_activate_pressed() {
 }
 
 void EditorVisualProfiler::_clear_pressed() {
+	clear_button->set_disabled(true);
 	clear();
 	_update_plot();
 }
@@ -647,8 +650,23 @@ void EditorVisualProfiler::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("enable_profiling", PropertyInfo(Variant::BOOL, "enable")));
 }
 
+void EditorVisualProfiler::_update_button_text() {
+	if (activate->is_pressed()) {
+		activate->set_icon(get_theme_icon(SNAME("Stop"), SNAME("EditorIcons")));
+		activate->set_text(TTR("Stop"));
+	} else {
+		activate->set_icon(get_theme_icon(SNAME("Play"), SNAME("EditorIcons")));
+		activate->set_text(TTR("Start"));
+	}
+}
+
 void EditorVisualProfiler::set_enabled(bool p_enable) {
 	activate->set_disabled(!p_enable);
+}
+
+void EditorVisualProfiler::set_pressed(bool p_pressed) {
+	activate->set_pressed(p_pressed);
+	_update_button_text();
 }
 
 bool EditorVisualProfiler::is_profiling() {
@@ -714,12 +732,14 @@ EditorVisualProfiler::EditorVisualProfiler() {
 	add_child(hb);
 	activate = memnew(Button);
 	activate->set_toggle_mode(true);
+	activate->set_disabled(true);
 	activate->set_text(TTR("Start"));
 	activate->connect("pressed", callable_mp(this, &EditorVisualProfiler::_activate_pressed));
 	hb->add_child(activate);
 
 	clear_button = memnew(Button);
 	clear_button->set_text(TTR("Clear"));
+	clear_button->set_disabled(true);
 	clear_button->connect("pressed", callable_mp(this, &EditorVisualProfiler::_clear_pressed));
 	hb->add_child(clear_button);
 
