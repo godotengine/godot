@@ -32,10 +32,6 @@
 
 #include "core/os/mutex.h"
 
-#ifndef _3D_DISABLED
-#include "navigation_mesh_generator.h"
-#endif
-
 using namespace NavigationUtilities;
 
 /// Creates a struct for each function and a function that once called creates
@@ -428,16 +424,6 @@ COMMAND_2(region_set_navigation_mesh, RID, p_region, Ref<NavigationMesh>, p_navi
 	ERR_FAIL_COND(region == nullptr);
 
 	region->set_mesh(p_navigation_mesh);
-}
-
-void GodotNavigationServer::region_bake_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh, Node *p_root_node) const {
-	ERR_FAIL_COND(p_navigation_mesh.is_null());
-	ERR_FAIL_COND(p_root_node == nullptr);
-
-#ifndef _3D_DISABLED
-	NavigationMeshGenerator::get_singleton()->clear(p_navigation_mesh);
-	NavigationMeshGenerator::get_singleton()->bake(p_navigation_mesh, p_root_node);
-#endif
 }
 
 int GodotNavigationServer::region_get_connections_count(RID p_region) const {

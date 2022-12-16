@@ -33,6 +33,10 @@
 #include "mesh_instance_3d.h"
 #include "servers/navigation_server_3d.h"
 
+#ifdef MODULE_NAVIGATION_MESH_GENERATOR_ENABLED
+#include "modules/navigation_mesh_generator/navigation_mesh_generator.h"
+#endif // MODULE_NAVIGATION_MESH_GENERATOR_ENABLED
+
 void NavigationRegion3D::set_enabled(bool p_enabled) {
 	if (enabled == p_enabled) {
 		return;
@@ -235,6 +239,7 @@ Ref<NavigationMesh> NavigationRegion3D::get_navigation_mesh() const {
 	return navigation_mesh;
 }
 
+#ifdef MODULE_NAVIGATION_MESH_GENERATOR_ENABLED
 struct BakeThreadsArgs {
 	NavigationRegion3D *nav_region = nullptr;
 };
@@ -245,7 +250,9 @@ void _bake_navigation_mesh(void *p_user_data) {
 	if (args->nav_region->get_navigation_mesh().is_valid()) {
 		Ref<NavigationMesh> nav_mesh = args->nav_region->get_navigation_mesh()->duplicate();
 
-		NavigationServer3D::get_singleton()->region_bake_navigation_mesh(nav_mesh, args->nav_region);
+		NavigationMeshGenerator::get_singleton()->clear(nav_mesh);
+		NavigationMeshGenerator::get_singleton()->bake(nav_mesh, args->nav_region);
+
 		args->nav_region->call_deferred(SNAME("_bake_finished"), nav_mesh);
 		memdelete(args);
 	} else {
@@ -254,8 +261,10 @@ void _bake_navigation_mesh(void *p_user_data) {
 		memdelete(args);
 	}
 }
+#endif // MODULE_NAVIGATION_MESH_GENERATOR_ENABLED
 
 void NavigationRegion3D::bake_navigation_mesh(bool p_on_thread) {
+#ifdef MODULE_NAVIGATION_MESH_GENERATOR_ENABLED
 	ERR_FAIL_COND_MSG(bake_thread.is_started(), "Unable to start another bake request. The navigation mesh bake thread is already baking a navigation mesh.");
 
 	BakeThreadsArgs *args = memnew(BakeThreadsArgs);
@@ -266,12 +275,27 @@ void NavigationRegion3D::bake_navigation_mesh(bool p_on_thread) {
 	} else {
 		_bake_navigation_mesh(args);
 	}
+#endif // MODULE_NAVIGATION_MESH_GENERATOR_ENABLED
+
+#ifndef MODULE_NAVIGATION_MESH_GENERATOR_ENABLED
+#ifdef DEBUG_ENABLED
+	WARN_PRINT_ONCE("bake_navigation_mesh() is only functional in builds with NavigationMeshGenerator module enabled.");
+#endif // DEBUG_ENABLED
+#endif // MODULE_NAVIGATION_MESH_GENERATOR_ENABLED
 }
 
 void NavigationRegion3D::_bake_finished(Ref<NavigationMesh> p_nav_mesh) {
+#ifdef MODULE_NAVIGATION_MESH_GENERATOR_ENABLED
 	set_navigation_mesh(p_nav_mesh);
 	bake_thread.wait_to_finish();
 	emit_signal(SNAME("bake_finished"));
+#endif // MODULE_NAVIGATION_MESH_GENERATOR_ENABLED
+
+#ifndef MODULE_NAVIGATION_MESH_GENERATOR_ENABLED
+#ifdef DEBUG_ENABLED
+	WARN_PRINT_ONCE("_bake_finished() is only functional in builds with NavigationMeshGenerator module enabled.");
+#endif // DEBUG_ENABLED
+#endif // MODULE_NAVIGATION_MESH_GENERATOR_ENABLED
 }
 
 PackedStringArray NavigationRegion3D::get_configuration_warnings() const {

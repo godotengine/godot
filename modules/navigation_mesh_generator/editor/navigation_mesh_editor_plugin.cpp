@@ -37,6 +37,7 @@
 #include "core/io/resource_saver.h"
 #include "editor/editor_node.h"
 #include "scene/3d/mesh_instance_3d.h"
+#include "scene/3d/navigation_region_3d.h"
 #include "scene/gui/box_container.h"
 
 void NavigationMeshEditor::_node_removed(Node *p_node) {

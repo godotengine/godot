@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  register_types.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,20 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "register_types.h"
+#ifndef NAVIGATION_MESH_GENERATOR_REGISTER_TYPES_H
+#define NAVIGATION_MESH_GENERATOR_REGISTER_TYPES_H
 
-#include "godot_navigation_server.h"
-#include "servers/navigation_server_3d.h"
+#include "modules/register_module_types.h"
 
-NavigationServer3D *new_server() {
-	return memnew(GodotNavigationServer);
-}
+void initialize_navigation_mesh_generator_module(ModuleInitializationLevel p_level);
+void uninitialize_navigation_mesh_generator_module(ModuleInitializationLevel p_level);
 
-void initialize_navigation_module(ModuleInitializationLevel p_level) {
-	if (p_level == MODULE_INITIALIZATION_LEVEL_SERVERS) {
-		NavigationServer3DManager::set_default_server(new_server);
-	}
-}
-
-void uninitialize_navigation_module(ModuleInitializationLevel p_level) {
-}
+#endif // NAVIGATION_MESH_GENERATOR_REGISTER_TYPES_H

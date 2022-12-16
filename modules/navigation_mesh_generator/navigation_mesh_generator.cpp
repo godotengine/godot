@@ -28,12 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef _3D_DISABLED
-
 #include "navigation_mesh_generator.h"
 
 #include "core/math/convex_hull.h"
 #include "core/os/thread.h"
+
+#ifndef _3D_DISABLED
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/multimesh_instance_3d.h"
 #include "scene/3d/physics_body_3d.h"
@@ -60,8 +60,20 @@
 #ifdef MODULE_GRIDMAP_ENABLED
 #include "modules/gridmap/grid_map.h"
 #endif
+#endif // _3D_DISABLED
 
 NavigationMeshGenerator *NavigationMeshGenerator::singleton = nullptr;
+
+NavigationMeshGenerator *NavigationMeshGenerator::get_singleton() {
+	return singleton;
+}
+
+NavigationMeshGenerator::NavigationMeshGenerator() {
+	singleton = this;
+}
+
+NavigationMeshGenerator::~NavigationMeshGenerator() {
+}
 
 void NavigationMeshGenerator::_add_vertex(const Vector3 &p_vec3, Vector<float> &p_vertices) {
 	p_vertices.push_back(p_vec3.x);
@@ -162,6 +174,7 @@ void NavigationMeshGenerator::_add_faces(const PackedVector3Array &p_faces, cons
 }
 
 void NavigationMeshGenerator::_parse_geometry(const Transform3D &p_navmesh_transform, Node *p_node, Vector<float> &p_vertices, Vector<int> &p_indices, NavigationMesh::ParsedGeometryType p_generate_from, uint32_t p_collision_mask, bool p_recurse_children) {
+#ifndef _3D_DISABLED
 	if (Object::cast_to<MeshInstance3D>(p_node) && p_generate_from != NavigationMesh::PARSED_GEOMETRY_STATIC_COLLIDERS) {
 		MeshInstance3D *mesh_instance = Object::cast_to<MeshInstance3D>(p_node);
 		Ref<Mesh> mesh = mesh_instance->get_mesh();
@@ -468,8 +481,10 @@ void NavigationMeshGenerator::_parse_geometry(const Transform3D &p_navmesh_trans
 			_parse_geometry(p_navmesh_transform, p_node->get_child(i), p_vertices, p_indices, p_generate_from, p_collision_mask, p_recurse_children);
 		}
 	}
+#endif // _3D_DISABLED
 }
 
+#ifndef _3D_DISABLED
 void NavigationMeshGenerator::_convert_detail_mesh_to_native_navigation_mesh(const rcPolyMeshDetail *p_detail_mesh, Ref<NavigationMesh> p_navigation_mesh) {
 	Vector<Vector3> nav_vertices;
 
@@ -496,7 +511,9 @@ void NavigationMeshGenerator::_convert_detail_mesh_to_native_navigation_mesh(con
 		}
 	}
 }
+#endif // _3D_DISABLED
 
+#ifndef _3D_DISABLED
 void NavigationMeshGenerator::_build_recast_navigation_mesh(
 		Ref<NavigationMesh> p_navigation_mesh,
 #ifdef TOOLS_ENABLED
@@ -717,20 +734,11 @@ void NavigationMeshGenerator::_build_recast_navigation_mesh(
 	rcFreePolyMeshDetail(detail_mesh);
 	detail_mesh = nullptr;
 }
-
-NavigationMeshGenerator *NavigationMeshGenerator::get_singleton() {
-	return singleton;
-}
-
-NavigationMeshGenerator::NavigationMeshGenerator() {
-	singleton = this;
-}
-
-NavigationMeshGenerator::~NavigationMeshGenerator() {
-}
+#endif // _3D_DISABLED
 
 void NavigationMeshGenerator::bake(Ref<NavigationMesh> p_navigation_mesh, Node *p_root_node) {
 	ERR_FAIL_COND_MSG(!p_navigation_mesh.is_valid(), "Invalid navigation mesh.");
+#ifndef _3D_DISABLED
 
 #ifdef TOOLS_ENABLED
 	EditorProgress *ep(nullptr);
@@ -813,7 +821,8 @@ void NavigationMeshGenerator::bake(Ref<NavigationMesh> p_navigation_mesh, Node *
 	if (ep) {
 		memdelete(ep);
 	}
-#endif
+#endif // TOOLS_ENABLED
+#endif // _3D_DISABLED
 }
 
 void NavigationMeshGenerator::clear(Ref<NavigationMesh> p_navigation_mesh) {
@@ -827,5 +836,3 @@ void NavigationMeshGenerator::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("bake", "navigation_mesh", "root_node"), &NavigationMeshGenerator::bake);
 	ClassDB::bind_method(D_METHOD("clear", "navigation_mesh"), &NavigationMeshGenerator::clear);
 }
-
-#endif

@@ -30,18 +30,33 @@
 
 #include "register_types.h"
 
-#include "godot_navigation_server.h"
-#include "servers/navigation_server_3d.h"
+#include "core/config/engine.h"
+#include "navigation_mesh_generator.h"
 
-NavigationServer3D *new_server() {
-	return memnew(GodotNavigationServer);
-}
+#ifdef TOOLS_ENABLED
+#include "editor/navigation_mesh_editor_plugin.h"
+#endif // TOOLS_ENABLED
 
-void initialize_navigation_module(ModuleInitializationLevel p_level) {
+NavigationMeshGenerator *_nav_mesh_generator = nullptr;
+
+void initialize_navigation_mesh_generator_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SERVERS) {
-		NavigationServer3DManager::set_default_server(new_server);
+		_nav_mesh_generator = memnew(NavigationMeshGenerator);
+		GDREGISTER_CLASS(NavigationMeshGenerator);
+		Engine::get_singleton()->add_singleton(Engine::Singleton("NavigationMeshGenerator", NavigationMeshGenerator::get_singleton(), "NavigationMeshGenerator"));
 	}
+
+#ifdef TOOLS_ENABLED
+	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {
+		EditorPlugins::add_by_type<NavigationMeshEditorPlugin>();
+	}
+#endif // TOOLS_ENABLED
 }
 
-void uninitialize_navigation_module(ModuleInitializationLevel p_level) {
+void uninitialize_navigation_mesh_generator_module(ModuleInitializationLevel p_level) {
+	if (p_level == MODULE_INITIALIZATION_LEVEL_SERVERS) {
+		if (_nav_mesh_generator) {
+			memdelete(_nav_mesh_generator);
+		}
+	}
 }
