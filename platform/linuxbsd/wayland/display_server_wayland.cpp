@@ -178,8 +178,9 @@ void DisplayServerWayland::libdecor_on_error(struct libdecor *context, enum libd
 	ERR_PRINT(vformat("libdecor error %d: %s", error, message));
 }
 
-// NOTE: This is pretty much a reimplementation of _xdg_surface_on_configure.
-// Libdecor really likes wrapping everything, forcing us to do stuff like this.
+// NOTE: This is pretty much a reimplementation of _xdg_surface_on_configure
+// and _xdg_toplevel_on_configure. Libdecor really likes wrapping everything,
+// forcing us to do stuff like this.
 void DisplayServerWayland::libdecor_frame_on_configure(struct libdecor_frame *frame, struct libdecor_configuration *configuration, void *user_data) {
 	WindowData *wd = (WindowData *)user_data;
 	ERR_FAIL_NULL(wd);
@@ -200,6 +201,28 @@ void DisplayServerWayland::libdecor_frame_on_configure(struct libdecor_frame *fr
 		wd->rect.size.height = height;
 	}
 
+	libdecor_window_state window_state = LIBDECOR_WINDOW_STATE_NONE;
+
+	// Expect the window to be in windowed mode. The mode will get overridden if
+	// the compositor reports otherwise.
+	wd->mode = WINDOW_MODE_WINDOWED;
+
+	if (libdecor_configuration_get_window_state(configuration, &window_state)) {
+		switch (window_state) {
+			case LIBDECOR_WINDOW_STATE_MAXIMIZED: {
+				wd->mode = WINDOW_MODE_MAXIMIZED;
+			} break;
+
+			case LIBDECOR_WINDOW_STATE_FULLSCREEN: {
+				wd->mode = WINDOW_MODE_FULLSCREEN;
+			} break;
+
+			default: {
+				// We don't care about the other states (for now).
+			} break;
+		}
+	}
+
 	Ref<WaylandWindowRectMessage> winrect_msg;
 	winrect_msg.instantiate();
 
@@ -207,9 +230,9 @@ void DisplayServerWayland::libdecor_frame_on_configure(struct libdecor_frame *fr
 
 	wls->message_queue.push_back(winrect_msg);
 
-	struct libdecor_state *state = libdecor_state_new(width, height);
-	libdecor_frame_commit(frame, state, configuration);
-	libdecor_state_free(state);
+	struct libdecor_state *new_state = libdecor_state_new(width, height);
+	libdecor_frame_commit(frame, new_state, configuration);
+	libdecor_state_free(new_state);
 
 	DEBUG_LOG_WAYLAND("libdecor frame on configure");
 }
