@@ -217,7 +217,7 @@ bool OpenXRAPI::is_top_level_path_supported(const String &p_toplevel_path) {
 	String required_extension = OpenXRInteractionProfileMetaData::get_singleton()->get_top_level_extension(p_toplevel_path);
 
 	// If unsupported is returned we likely have a misspelled interaction profile path in our action map. Always output that as an error.
-	ERR_FAIL_COND_V_MSG(required_extension == XR_PATH_UNSUPPORTED_NAME, false, "OpenXR: Unsupported interaction profile " + p_toplevel_path);
+	ERR_FAIL_COND_V_MSG(required_extension == XR_PATH_UNSUPPORTED_NAME, false, "OpenXR: Unsupported toplevel path " + p_toplevel_path);
 
 	if (required_extension == "") {
 		// no extension needed, core top level are always "supported", they just won't be used if not really supported
