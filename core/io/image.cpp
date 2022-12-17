@@ -2594,6 +2594,11 @@ Error Image::compress(CompressMode p_mode, CompressSource p_source, float p_loss
 }
 
 Error Image::compress_from_channels(CompressMode p_mode, UsedChannels p_channels, float p_lossy_quality) {
+	if (data.is_empty()) {
+		ERR_PRINT_ONCE_ED("Empty Image data.");
+		return ERR_INVALID_DATA;
+	}
+
 	switch (p_mode) {
 		case COMPRESS_S3TC: {
 			ERR_FAIL_COND_V(!_image_compress_bc_func, ERR_UNAVAILABLE);
