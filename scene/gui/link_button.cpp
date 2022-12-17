@@ -108,6 +108,14 @@ String LinkButton::get_language() const {
 	return language;
 }
 
+void LinkButton::set_uri(const String &p_uri) {
+	uri = p_uri;
+}
+
+String LinkButton::get_uri() const {
+	return uri;
+}
+
 void LinkButton::set_underline_mode(UnderlineMode p_underline_mode) {
 	if (underline_mode == p_underline_mode) {
 		return;
@@ -119,6 +127,14 @@ void LinkButton::set_underline_mode(UnderlineMode p_underline_mode) {
 
 LinkButton::UnderlineMode LinkButton::get_underline_mode() const {
 	return underline_mode;
+}
+
+void LinkButton::pressed() {
+	if (uri.is_empty()) {
+		return;
+	}
+
+	OS::get_singleton()->shell_open(uri);
 }
 
 Size2 LinkButton::get_minimum_size() const {
@@ -245,6 +261,8 @@ void LinkButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_text_direction"), &LinkButton::get_text_direction);
 	ClassDB::bind_method(D_METHOD("set_language", "language"), &LinkButton::set_language);
 	ClassDB::bind_method(D_METHOD("get_language"), &LinkButton::get_language);
+	ClassDB::bind_method(D_METHOD("set_uri", "uri"), &LinkButton::set_uri);
+	ClassDB::bind_method(D_METHOD("get_uri"), &LinkButton::get_uri);
 	ClassDB::bind_method(D_METHOD("set_underline_mode", "underline_mode"), &LinkButton::set_underline_mode);
 	ClassDB::bind_method(D_METHOD("get_underline_mode"), &LinkButton::get_underline_mode);
 	ClassDB::bind_method(D_METHOD("set_structured_text_bidi_override", "parser"), &LinkButton::set_structured_text_bidi_override);
@@ -258,6 +276,7 @@ void LinkButton::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text"), "set_text", "get_text");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "underline", PROPERTY_HINT_ENUM, "Always,On Hover,Never"), "set_underline_mode", "get_underline_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "uri"), "set_uri", "get_uri");
 
 	ADD_GROUP("BiDi", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_direction", PROPERTY_HINT_ENUM, "Auto,Left-to-Right,Right-to-Left,Inherited"), "set_text_direction", "get_text_direction");
