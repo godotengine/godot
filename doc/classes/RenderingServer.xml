@@ -241,6 +241,7 @@
 			<param index="4" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
 			<param index="5" name="outline_size" type="int" default="0" />
 			<param index="6" name="px_range" type="float" default="1.0" />
+			<param index="7" name="scale" type="float" default="1.0" />
 			<description>
 			</description>
 		</method>
