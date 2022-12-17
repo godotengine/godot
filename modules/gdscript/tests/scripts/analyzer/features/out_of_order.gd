@@ -42,7 +42,8 @@ const c2 := EV2
 
 enum {
 	EV1 = 42,
-	EV2 = EV3 + 1
+	UNUSED = EV3,
+	EV2
 }
 
 enum {

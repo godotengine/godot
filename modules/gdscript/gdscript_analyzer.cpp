@@ -996,7 +996,9 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 					check_class_member_name_conflict(p_class, member.enum_value.identifier->name, member.enum_value.parent_enum);
 
 					if (member.enum_value.index > 0) {
-						member.enum_value.value = member.enum_value.parent_enum->values[member.enum_value.index - 1].value + 1;
+						const GDScriptParser::EnumNode::Value &prev_value = member.enum_value.parent_enum->values[member.enum_value.index - 1];
+						resolve_class_member(p_class, prev_value.identifier->name, member.enum_value.identifier);
+						member.enum_value.value = prev_value.value + 1;
 					} else {
 						member.enum_value.value = 0;
 					}
