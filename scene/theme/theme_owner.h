@@ -43,6 +43,7 @@ class ThemeOwner : public Object {
 	Window *owner_window = nullptr;
 
 	Node *_get_next_owner_node(Node *p_from_node) const;
+	Ref<Theme> _get_owner_node_theme(Node *p_owner_node) const;
 
 public:
 	// Theme owner node.
