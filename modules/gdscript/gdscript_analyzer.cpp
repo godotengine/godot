@@ -3167,7 +3167,7 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 		// TODO: Allow outer static functions.
 		if (base_class->outer != nullptr) {
 			List<GDScriptParser::ClassNode *> script_classes;
-			get_class_node_current_scope_classes(parser->current_class, &script_classes);
+			get_class_node_current_scope_classes(base_class->outer, &script_classes);
 			for (GDScriptParser::ClassNode *script_class : script_classes) {
 				if (script_class->has_member(name)) {
 					resolve_class_member(script_class, name, p_identifier);
