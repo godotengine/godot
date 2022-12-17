@@ -1204,7 +1204,7 @@
 		</member>
 		<member name="window_per_pixel_transparency_enabled" type="bool" setter="set_window_per_pixel_transparency_enabled" getter="get_window_per_pixel_transparency_enabled" default="false">
 			If [code]true[/code], the window background is transparent and the window frame is removed.
-			Use [code]get_tree().get_root().set_transparent_background(true)[/code] to disable main viewport background rendering.
+			Enable [member ProjectSettings.rendering/viewport/transparent_background] or call [code]get_tree().get_root().set_transparent_background(true)[/code] to disable background rendering on the root [Viewport].
 			[b]Note:[/b] This property has no effect if [member ProjectSettings.display/window/per_pixel_transparency/allowed] setting is disabled.
 			[b]Note:[/b] This property is implemented on HTML5, Linux, macOS, Windows, and Android. It can't be changed at runtime for Android. Use [member ProjectSettings.display/window/per_pixel_transparency/enabled] to set it at startup instead.
 		</member>

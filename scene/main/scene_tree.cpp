@@ -2250,6 +2250,9 @@ SceneTree::SceneTree() {
 	const bool use_fxaa = GLOBAL_DEF("rendering/quality/filters/use_fxaa", false);
 	root->set_use_fxaa(use_fxaa);
 
+	const bool transparent_background = GLOBAL_DEF("rendering/viewport/transparent_background", false);
+	root->set_transparent_background(transparent_background);
+
 	const bool use_debanding = GLOBAL_DEF("rendering/quality/filters/use_debanding", false);
 	root->set_use_debanding(use_debanding);
 

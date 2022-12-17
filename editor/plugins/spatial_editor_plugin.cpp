@@ -2691,12 +2691,15 @@ void SpatialEditorViewport::_project_settings_changed() {
 		viewport->set_shadow_atlas_quadrant_subdiv(2, Viewport::ShadowAtlasQuadrantSubdiv(atlas_q2));
 		viewport->set_shadow_atlas_quadrant_subdiv(3, Viewport::ShadowAtlasQuadrantSubdiv(atlas_q3));
 
-		// Update MSAA, FXAA, debanding and HDR if changed.
+		// Update MSAA, FXAA, transparent background, debanding, sharpening and HDR if changed.
 		int msaa_mode = ProjectSettings::get_singleton()->get("rendering/quality/filters/msaa");
 		viewport->set_msaa(Viewport::MSAA(msaa_mode));
 
 		bool use_fxaa = ProjectSettings::get_singleton()->get("rendering/quality/filters/use_fxaa");
 		viewport->set_use_fxaa(use_fxaa);
+
+		const bool transparent_background = GLOBAL_GET("rendering/viewport/transparent_background");
+		viewport->set_transparent_background(transparent_background);
 
 		bool use_debanding = ProjectSettings::get_singleton()->get("rendering/quality/filters/use_debanding");
 		viewport->set_use_debanding(use_debanding);
