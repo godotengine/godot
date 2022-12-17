@@ -1118,7 +1118,19 @@ bool ArrayMesh::_set(const StringName &p_name, const Variant &p_value) {
 		if (sl == -1) {
 			return false;
 		}
-		int idx = sname.substr(8, sl - 8).to_int() - 1;
+		int idx = sname.substr(8, sl - 8).to_int();
+
+		// This is a bit of a hack to ensure compatibility with older material
+		// overrides that start indexing at 1.
+		// We assume that idx 0 is always read first, if its not, this won't work.
+		if (idx == 0) {
+			surface_index_0 = true;
+		}
+		if (!surface_index_0) {
+			// This means the file was created when the indexing started at 1, so decrease by one.
+			idx--;
+		}
+
 		String what = sname.get_slicec('/', 1);
 		if (what == "material") {
 			surface_set_material(idx, p_value);
@@ -1491,7 +1503,7 @@ bool ArrayMesh::_get(const StringName &p_name, Variant &r_ret) const {
 		if (sl == -1) {
 			return false;
 		}
-		int idx = sname.substr(8, sl - 8).to_int() - 1;
+		int idx = sname.substr(8, sl - 8).to_int();
 		String what = sname.get_slicec('/', 1);
 		if (what == "material") {
 			r_ret = surface_get_material(idx);
@@ -1519,11 +1531,11 @@ void ArrayMesh::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 
 	for (int i = 0; i < surfaces.size(); i++) {
-		p_list->push_back(PropertyInfo(Variant::STRING, "surface_" + itos(i + 1) + "/name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
+		p_list->push_back(PropertyInfo(Variant::STRING, "surface_" + itos(i) + "/name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR));
 		if (surfaces[i].is_2d) {
-			p_list->push_back(PropertyInfo(Variant::OBJECT, "surface_" + itos(i + 1) + "/material", PROPERTY_HINT_RESOURCE_TYPE, "CanvasItemMaterial,ShaderMaterial", PROPERTY_USAGE_EDITOR));
+			p_list->push_back(PropertyInfo(Variant::OBJECT, "surface_" + itos(i) + "/material", PROPERTY_HINT_RESOURCE_TYPE, "CanvasItemMaterial,ShaderMaterial", PROPERTY_USAGE_EDITOR));
 		} else {
-			p_list->push_back(PropertyInfo(Variant::OBJECT, "surface_" + itos(i + 1) + "/material", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial", PROPERTY_USAGE_EDITOR));
+			p_list->push_back(PropertyInfo(Variant::OBJECT, "surface_" + itos(i) + "/material", PROPERTY_HINT_RESOURCE_TYPE, "BaseMaterial3D,ShaderMaterial", PROPERTY_USAGE_EDITOR));
 		}
 	}
 }
