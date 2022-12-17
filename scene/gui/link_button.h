@@ -46,6 +46,7 @@ public:
 
 private:
 	String text;
+	String url;
 	String xl_text;
 	UnderlineMode underline_mode;
 
@@ -53,10 +54,16 @@ protected:
 	virtual Size2 get_minimum_size() const;
 	void _notification(int p_what);
 	static void _bind_methods();
+	void pressed();
+
+	void update_text();
 
 public:
 	void set_text(const String &p_text);
 	String get_text() const;
+
+	void set_url(const String &p_url);
+	String get_url() const;
 
 	void set_underline_mode(UnderlineMode p_underline_mode);
 	UnderlineMode get_underline_mode() const;
