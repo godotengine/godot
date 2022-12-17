@@ -57,7 +57,7 @@ protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
-	bool old_surface_index = false;
+	bool surface_index_0 = false;
 
 	void _notification(int p_what);
 	static void _bind_methods();
