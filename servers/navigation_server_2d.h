@@ -34,7 +34,7 @@
 #include "core/object/class_db.h"
 #include "core/templates/rid.h"
 
-#include "scene/2d/navigation_region_2d.h"
+#include "scene/resources/navigation_polygon.h"
 #include "servers/navigation/navigation_path_query_parameters_2d.h"
 #include "servers/navigation/navigation_path_query_result_2d.h"
 
