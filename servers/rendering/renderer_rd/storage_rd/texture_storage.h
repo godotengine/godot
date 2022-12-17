@@ -108,6 +108,8 @@ private:
 
 	/* Texture API */
 
+	struct RenderTarget;
+
 	class Texture {
 	public:
 		TextureType type;
@@ -141,6 +143,7 @@ private:
 		Vector<BufferSlice3D> buffer_slices_3d;
 		uint32_t buffer_size_3d = 0;
 
+		RenderTarget *render_target = nullptr;
 		bool is_render_target;
 		bool is_proxy;
 
