@@ -308,7 +308,7 @@ void OpenXRInteractionProfileEditor::_update_interaction_profile() {
 
 void OpenXRInteractionProfileEditor::_theme_changed() {
 	for (int i = 0; i < main_hb->get_child_count(); i++) {
-		Control *panel = static_cast<Control *>(main_hb->get_child(i));
+		Control *panel = Object::cast_to<Control>(main_hb->get_child(i));
 		if (panel) {
 			panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("TabContainer")));
 		}
