@@ -3377,15 +3377,15 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 	for (int32_t i = 0; i < p_state->materials.size(); i++) {
 		Dictionary d;
 		Ref<Material> material = p_state->materials[i];
-		if (material.is_null()) {
-			materials.push_back(d);
-			continue;
-		}
 		if (!material->get_name().is_empty()) {
 			d["name"] = _gen_unique_name(p_state, material->get_name());
 		}
 		Ref<BaseMaterial3D> base_material = material;
-		if (base_material.is_valid()) {
+		if (base_material.is_null()) {
+			materials.push_back(d);
+			continue;
+		}
+		{
 			Dictionary mr;
 			{
 				Array arr;
@@ -3397,27 +3397,25 @@ Error GLTFDocument::_serialize_materials(Ref<GLTFState> p_state) {
 				mr["baseColorFactor"] = arr;
 			}
 			{
-				Dictionary bct;
-				if (base_material.is_valid()) {
-					Ref<Texture2D> albedo_texture = base_material->get_texture(BaseMaterial3D::TEXTURE_ALBEDO);
-					GLTFTextureIndex gltf_texture_index = -1;
+				Ref<Texture2D> albedo_texture = base_material->get_texture(BaseMaterial3D::TEXTURE_ALBEDO);
+				GLTFTextureIndex gltf_texture_index = -1;
 
-					if (albedo_texture.is_valid() && albedo_texture->get_image().is_valid()) {
-						albedo_texture->set_name(material->get_name() + "_albedo");
-						gltf_texture_index = _set_texture(p_state, albedo_texture, base_material->get_texture_filter(), base_material->get_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT));
+				if (albedo_texture.is_valid() && albedo_texture->get_image().is_valid()) {
+					albedo_texture->set_name(material->get_name() + "_albedo");
+					gltf_texture_index = _set_texture(p_state, albedo_texture, base_material->get_texture_filter(), base_material->get_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT));
+				}
+				if (gltf_texture_index != -1) {
+					Dictionary bct;
+					bct["index"] = gltf_texture_index;
+					Dictionary extensions = _serialize_texture_transform_uv1(base_material);
+					if (!extensions.is_empty()) {
+						bct["extensions"] = extensions;
+						p_state->use_khr_texture_transform = true;
 					}
-					if (gltf_texture_index != -1) {
-						bct["index"] = gltf_texture_index;
-						Dictionary extensions = _serialize_texture_transform_uv1(material);
-						if (!extensions.is_empty()) {
-							bct["extensions"] = extensions;
-							p_state->use_khr_texture_transform = true;
-						}
-						mr["baseColorTexture"] = bct;
-					}
+					mr["baseColorTexture"] = bct;
 				}
 			}
-			if (base_material.is_valid()) {
+			{
 				mr["metallicFactor"] = base_material->get_metallic();
 				mr["roughnessFactor"] = base_material->get_roughness();
 				bool has_roughness = base_material->get_texture(BaseMaterial3D::TEXTURE_ROUGHNESS).is_valid() && base_material->get_texture(BaseMaterial3D::TEXTURE_ROUGHNESS)->get_image().is_valid();
