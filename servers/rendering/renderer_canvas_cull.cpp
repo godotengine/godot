@@ -1185,7 +1185,7 @@ void RendererCanvasCull::canvas_item_add_texture_rect(RID p_item, const Rect2 &p
 	rect->texture = p_texture;
 }
 
-void RendererCanvasCull::canvas_item_add_msdf_texture_rect_region(RID p_item, const Rect2 &p_rect, RID p_texture, const Rect2 &p_src_rect, const Color &p_modulate, int p_outline_size, float p_px_range) {
+void RendererCanvasCull::canvas_item_add_msdf_texture_rect_region(RID p_item, const Rect2 &p_rect, RID p_texture, const Rect2 &p_src_rect, const Color &p_modulate, int p_outline_size, float p_px_range, float p_scale) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
 	ERR_FAIL_COND(!canvas_item);
 
@@ -1215,7 +1215,7 @@ void RendererCanvasCull::canvas_item_add_msdf_texture_rect_region(RID p_item, co
 		rect->flags ^= RendererCanvasRender::CANVAS_RECT_FLIP_V;
 		rect->source.size.y = -rect->source.size.y;
 	}
-	rect->outline = p_outline_size;
+	rect->outline = (float)p_outline_size / p_scale / 4.0;
 	rect->px_range = p_px_range;
 }
 
