@@ -1591,35 +1591,28 @@ bool AtlasTexture::get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect,
 		return false;
 	}
 
-	Rect2 rc = region;
-
 	Rect2 src = p_src_rect;
 	if (src.size == Size2()) {
-		src.size = rc.size;
+		src.size = region.size;
 	}
 	Vector2 scale = p_rect.size / src.size;
 
-	src.position += (rc.position - margin.position);
-	Rect2 src_c = rc.intersection(src);
-	if (src_c.size == Size2()) {
+	src.position += (region.position - margin.position);
+	Rect2 src_clipped = region.intersection(src);
+	if (src_clipped.size == Size2()) {
 		return false;
 	}
-	Vector2 ofs = (src_c.position - src.position);
 
+	Vector2 ofs = (src_clipped.position - src.position);
 	if (scale.x < 0) {
-		float mx = (margin.size.width - margin.position.x);
-		mx -= margin.position.x;
-		ofs.x = -(ofs.x + mx);
+		ofs.x += (src_clipped.size.x - src.size.x);
 	}
 	if (scale.y < 0) {
-		float my = margin.size.height - margin.position.y;
-		my -= margin.position.y;
-		ofs.y = -(ofs.y + my);
+		ofs.y += (src_clipped.size.y - src.size.y);
 	}
-	Rect2 dr(p_rect.position + ofs * scale, src_c.size * scale);
 
-	r_rect = dr;
-	r_src_rect = src_c;
+	r_rect = Rect2(p_rect.position + ofs * scale, src_clipped.size * scale);
+	r_src_rect = src_clipped;
 	return true;
 }
 
