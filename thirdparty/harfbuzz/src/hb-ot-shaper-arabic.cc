@@ -161,22 +161,23 @@ static const struct arabic_state_table_entry {
 };
 
 
-static void
+static bool
 arabic_fallback_shape (const hb_ot_shape_plan_t *plan,
 		       hb_font_t *font,
 		       hb_buffer_t *buffer);
 
-static void
+static bool
 record_stch (const hb_ot_shape_plan_t *plan,
 	     hb_font_t *font,
 	     hb_buffer_t *buffer);
 
-static void
+static bool
 deallocate_buffer_var (const hb_ot_shape_plan_t *plan,
 		       hb_font_t *font,
 		       hb_buffer_t *buffer)
 {
   HB_BUFFER_DEALLOCATE_VAR (buffer, arabic_shaping_action);
+  return false;
 }
 
 static void
@@ -412,19 +413,19 @@ setup_masks_arabic (const hb_ot_shape_plan_t *plan,
   setup_masks_arabic_plan (arabic_plan, buffer, plan->props.script);
 }
 
-static void
+static bool
 arabic_fallback_shape (const hb_ot_shape_plan_t *plan,
 		       hb_font_t *font,
 		       hb_buffer_t *buffer)
 {
 #ifdef HB_NO_OT_SHAPER_ARABIC_FALLBACK
-  return;
+  return false;
 #endif
 
   const arabic_shape_plan_t *arabic_plan = (const arabic_shape_plan_t *) plan->data;
 
   if (!arabic_plan->do_fallback)
-    return;
+    return false;
 
 retry:
   arabic_fallback_plan_t *fallback_plan = arabic_plan->fallback_plan;
@@ -440,6 +441,7 @@ retry:
   }
 
   arabic_fallback_plan_shape (fallback_plan, font, buffer);
+  return true;
 }
 
 /*
@@ -450,14 +452,14 @@ retry:
  * marks can use it as well.
  */
 
-static void
+static bool
 record_stch (const hb_ot_shape_plan_t *plan,
 	     hb_font_t *font HB_UNUSED,
 	     hb_buffer_t *buffer)
 {
   const arabic_shape_plan_t *arabic_plan = (const arabic_shape_plan_t *) plan->data;
   if (!arabic_plan->has_stch)
-    return;
+    return false;
 
   /* 'stch' feature was just applied.  Look for anything that multiplied,
    * and record it for stch treatment later.  Note that rtlm, frac, etc
@@ -473,6 +475,7 @@ record_stch (const hb_ot_shape_plan_t *plan,
       info[i].arabic_shaping_action() = comp % 2 ? STCH_REPEATING : STCH_FIXED;
       buffer->scratch_flags |= HB_BUFFER_SCRATCH_FLAG_ARABIC_HAS_STCH;
     }
+  return false;
 }
 
 static void

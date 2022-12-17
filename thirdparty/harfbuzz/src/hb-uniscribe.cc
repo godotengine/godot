@@ -355,7 +355,7 @@ _hb_rename_font (hb_blob_t *blob, wchar_t *new_name)
     return nullptr;
   }
 
-  memcpy(new_sfnt_data, orig_sfnt_data, length);
+  hb_memcpy(new_sfnt_data, orig_sfnt_data, length);
 
   OT::name &name = StructAtOffset<OT::name> (new_sfnt_data, name_table_offset);
   name.format = 0;
@@ -478,11 +478,11 @@ populate_log_font (LOGFONTW  *lf,
 		   hb_font_t *font,
 		   unsigned int font_size)
 {
-  memset (lf, 0, sizeof (*lf));
+  hb_memset (lf, 0, sizeof (*lf));
   lf->lfHeight = - (int) font_size;
   lf->lfCharSet = DEFAULT_CHARSET;
 
-  memcpy (lf->lfFaceName, font->face->data.uniscribe->face_name, sizeof (lf->lfFaceName));
+  hb_memcpy (lf->lfFaceName, font->face->data.uniscribe->face_name, sizeof (lf->lfFaceName));
 
   return true;
 }

@@ -288,6 +288,7 @@ hb_face_destroy (hb_face_t *face)
 {
   if (!hb_object_destroy (face)) return;
 
+#ifndef HB_NO_SHAPER
   for (hb_face_t::plan_node_t *node = face->shape_plans; node; )
   {
     hb_face_t::plan_node_t *next = node->next;
@@ -295,6 +296,7 @@ hb_face_destroy (hb_face_t *face)
     hb_free (node);
     node = next;
   }
+#endif
 
   face->data.fini ();
   face->table.fini ();
@@ -636,7 +638,7 @@ hb_face_collect_variation_unicodes (hb_face_t *face,
 struct face_table_info_t
 {
   hb_blob_t* data;
-  unsigned order;
+  signed order;
 };
 
 struct hb_face_builder_data_t
@@ -784,16 +786,16 @@ hb_face_builder_create ()
 hb_bool_t
 hb_face_builder_add_table (hb_face_t *face, hb_tag_t tag, hb_blob_t *blob)
 {
-  if (tag == HB_MAP_VALUE_INVALID)
+  if (unlikely (face->destroy != (hb_destroy_func_t) _hb_face_builder_data_destroy))
     return false;
 
-  if (unlikely (face->destroy != (hb_destroy_func_t) _hb_face_builder_data_destroy))
+  if (tag == HB_MAP_VALUE_INVALID)
     return false;
 
   hb_face_builder_data_t *data = (hb_face_builder_data_t *) face->user_data;
 
   hb_blob_t* previous = data->tables.get (tag).data;
-  if (!data->tables.set (tag, face_table_info_t {hb_blob_reference (blob), 0}))
+  if (!data->tables.set (tag, face_table_info_t {hb_blob_reference (blob), -1}))
   {
     hb_blob_destroy (blob);
     return false;
@@ -819,13 +821,16 @@ void
 hb_face_builder_sort_tables (hb_face_t *face,
                              const hb_tag_t  *tags)
 {
+  if (unlikely (face->destroy != (hb_destroy_func_t) _hb_face_builder_data_destroy))
+    return;
+
   hb_face_builder_data_t *data = (hb_face_builder_data_t *) face->user_data;
 
   // Sort all unspecified tables after any specified tables.
   for (auto& info : data->tables.values_ref())
-    info.order = -1;
+    info.order = (unsigned) -1;
 
-  unsigned order = 0;
+  signed order = 0;
   for (const hb_tag_t* tag = tags;
        *tag;
        tag++)

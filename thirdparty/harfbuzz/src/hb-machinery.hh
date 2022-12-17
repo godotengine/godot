@@ -136,6 +136,13 @@ static inline Type& StructAfter(TObject &X)
 
 /*
  * Lazy loaders.
+ *
+ * The lazy-loaders are thread-safe pointer-like objects that create their
+ * instead on-demand.  They also support access to a "data" object that is
+ * necessary for creating their instance.  The data object, if specified,
+ * is accessed via pointer math, located at a location before the position
+ * of the loader itself.  This avoids having to store a pointer to data
+ * for every lazy-loader.  Multiple lazy-loaders can access the same data.
  */
 
 template <typename Data, unsigned int WheresData>
@@ -228,7 +235,8 @@ struct hb_lazy_loader_t : hb_data_wrapper_t<Data, WheresData>
 
   bool cmpexch (Stored *current, Stored *value) const
   {
-    /* This *must* be called when there are no other threads accessing. */
+    /* This function can only be safely called directly if no
+     * other thread is accessing. */
     return this->instance.cmpexch (current, value);
   }
 
@@ -261,7 +269,7 @@ struct hb_lazy_loader_t : hb_data_wrapper_t<Data, WheresData>
     hb_free (p);
   }
 
-//  private:
+  private:
   /* Must only have one pointer. */
   hb_atomic_ptr_t<Stored *> instance;
 };
@@ -283,7 +291,7 @@ struct hb_table_lazy_loader_t : hb_lazy_loader_t<T,
   {
     auto c = hb_sanitize_context_t ();
     if (core)
-      c.set_num_glyphs (0); // So we don't recurse ad infinitum...
+      c.set_num_glyphs (0); // So we don't recurse ad infinitum, or doesn't need num_glyphs
     return c.reference_table<T> (face);
   }
   static void destroy (hb_blob_t *p) { hb_blob_destroy (p); }

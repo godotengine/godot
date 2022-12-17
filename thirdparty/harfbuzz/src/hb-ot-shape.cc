@@ -91,9 +91,11 @@ hb_ot_shape_planner_t::hb_ot_shape_planner_t (hb_face_t                     *fac
   script_zero_marks = shaper->zero_width_marks != HB_OT_SHAPE_ZERO_WIDTH_MARKS_NONE;
   script_fallback_mark_positioning = shaper->fallback_position;
 
+#ifndef HB_NO_AAT_SHAPE
   /* https://github.com/harfbuzz/harfbuzz/issues/1528 */
   if (apply_morx && shaper != &_hb_ot_shaper_default)
     shaper = &_hb_ot_shaper_dumber;
+#endif
 }
 
 void
@@ -864,7 +866,7 @@ hb_ot_hide_default_ignorables (hb_buffer_t *buffer,
     }
   }
   else
-    hb_ot_layout_delete_glyphs_inplace (buffer, _hb_glyph_info_is_default_ignorable);
+    buffer->delete_glyphs_inplace (_hb_glyph_info_is_default_ignorable);
 }
 
 
