@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  navigation_region_2d.h                                               */
+/*  navigation_polygon.h                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,58 +28,67 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef NAVIGATION_REGION_2D_H
-#define NAVIGATION_REGION_2D_H
+#ifndef NAVIGATION_POLYGON_H
+#define NAVIGATION_POLYGON_H
 
-#include "scene/resources/navigation_polygon.h"
+#include "scene/2d/node_2d.h"
+#include "scene/resources/navigation_mesh.h"
 
-class NavigationRegion2D : public Node2D {
-	GDCLASS(NavigationRegion2D, Node2D);
+class NavigationPolygon : public Resource {
+	GDCLASS(NavigationPolygon, Resource);
 
-	bool enabled = true;
-	RID region;
-	uint32_t navigation_layers = 1;
-	real_t enter_cost = 0.0;
-	real_t travel_cost = 1.0;
-	Ref<NavigationPolygon> navpoly;
+	Vector<Vector2> vertices;
+	struct Polygon {
+		Vector<int> indices;
+	};
+	Vector<Polygon> polygons;
+	Vector<Vector<Vector2>> outlines;
 
-	void _navpoly_changed();
-	void _map_changed(RID p_RID);
+	mutable Rect2 item_rect;
+	mutable bool rect_cache_dirty = true;
+
+	Mutex navmesh_generation;
+	// Navigation mesh
+	Ref<NavigationMesh> navmesh;
 
 protected:
-	void _notification(int p_what);
 	static void _bind_methods();
+
+	void _set_polygons(const TypedArray<Vector<int32_t>> &p_array);
+	TypedArray<Vector<int32_t>> _get_polygons() const;
+
+	void _set_outlines(const TypedArray<Vector<Vector2>> &p_array);
+	TypedArray<Vector<Vector2>> _get_outlines() const;
 
 public:
 #ifdef TOOLS_ENABLED
-	virtual Rect2 _edit_get_rect() const override;
-	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const override;
+	Rect2 _edit_get_rect() const;
+	bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const;
 #endif
 
-	void set_enabled(bool p_enabled);
-	bool is_enabled() const;
+	void set_vertices(const Vector<Vector2> &p_vertices);
+	Vector<Vector2> get_vertices() const;
 
-	void set_navigation_layers(uint32_t p_navigation_layers);
-	uint32_t get_navigation_layers() const;
+	void add_polygon(const Vector<int> &p_polygon);
+	int get_polygon_count() const;
 
-	void set_navigation_layer_value(int p_layer_number, bool p_value);
-	bool get_navigation_layer_value(int p_layer_number) const;
+	void add_outline(const Vector<Vector2> &p_outline);
+	void add_outline_at_index(const Vector<Vector2> &p_outline, int p_index);
+	void set_outline(int p_idx, const Vector<Vector2> &p_outline);
+	Vector<Vector2> get_outline(int p_idx) const;
+	void remove_outline(int p_idx);
+	int get_outline_count() const;
 
-	RID get_region_rid() const;
+	void clear_outlines();
+	void make_polygons_from_outlines();
 
-	void set_enter_cost(real_t p_enter_cost);
-	real_t get_enter_cost() const;
+	Vector<int> get_polygon(int p_idx);
+	void clear_polygons();
 
-	void set_travel_cost(real_t p_travel_cost);
-	real_t get_travel_cost() const;
+	Ref<NavigationMesh> get_mesh();
 
-	void set_navigation_polygon(const Ref<NavigationPolygon> &p_navpoly);
-	Ref<NavigationPolygon> get_navigation_polygon() const;
-
-	PackedStringArray get_configuration_warnings() const override;
-
-	NavigationRegion2D();
-	~NavigationRegion2D();
+	NavigationPolygon() {}
+	~NavigationPolygon() {}
 };
 
-#endif // NAVIGATION_REGION_2D_H
+#endif // NAVIGATION_POLYGON_H
