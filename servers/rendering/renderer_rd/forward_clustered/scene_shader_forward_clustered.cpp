@@ -256,6 +256,7 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 		depth_stencil_state.depth_compare_operator = RD::COMPARE_OP_LESS_OR_EQUAL;
 		depth_stencil_state.enable_depth_write = depth_draw != DEPTH_DRAW_DISABLED ? true : false;
 	}
+	bool depth_pre_pass_enabled = bool(GLOBAL_GET("rendering/driver/depth_prepass/enable"));
 
 	for (int i = 0; i < CULL_VARIANT_MAX; i++) {
 		RD::PolygonCullMode cull_mode_rd_table[CULL_VARIANT_MAX][3] = {
@@ -307,8 +308,16 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 							continue;
 						}
 
-						RD::PipelineColorBlendState blend_state;
 						RD::PipelineDepthStencilState depth_stencil = depth_stencil_state;
+						if (depth_pre_pass_enabled && casts_shadows()) {
+							// We already have a depth from the depth pre-pass, there is no need to write it again.
+							// In addition we can use COMPARE_OP_EQUAL instead of COMPARE_OP_LESS_OR_EQUAL.
+							// This way we can use the early depth test to discard transparent fragments before the fragment shader even starts.
+							depth_stencil.depth_compare_operator = RD::COMPARE_OP_EQUAL;
+							depth_stencil.enable_depth_write = false;
+						}
+
+						RD::PipelineColorBlendState blend_state;
 						RD::PipelineMultisampleState multisample_state;
 
 						int shader_flags = 0;
