@@ -194,14 +194,13 @@ bool GodotBodyPair3D::_test_ccd(real_t p_step, GodotBody3D *p_A, int p_shape_A, 
 	// convert mnormal into body A's local xform because get_support requires (and returns) local coordinates.
 	Vector3 s = p_A->get_shape(p_shape_A)->get_support(p_xform_A.basis.xform_inv(mnormal).normalized());
 	Vector3 from = p_xform_A.xform(s);
-	// Back up 10% of the per-frame motion behind the support point and use that as the beginning of our cast.
-	// This should ensure the calculated new velocity will really cause a bit of overlap instead of just getting us very close.
-	from -= motion * 0.1;
 	Vector3 to = from + motion;
 
 	Transform3D from_inv = p_xform_B.affine_inverse();
 
-	Vector3 local_from = from_inv.xform(from);
+	// Back up 10% of the per-frame motion behind the support point and use that as the beginning of our cast.
+	// At high speeds, this may mean we're actually casting from well behind the body instead of inside it, which is odd. But it still works out.
+	Vector3 local_from = from_inv.xform(from - motion * 0.1);
 	Vector3 local_to = from_inv.xform(to);
 
 	Vector3 rpos, rnorm;
@@ -214,7 +213,8 @@ bool GodotBodyPair3D::_test_ccd(real_t p_step, GodotBody3D *p_A, int p_shape_A, 
 	// Shorten the linear velocity so it will collide next frame.
 	Vector3 hitpos = p_xform_B.xform(rpos);
 
-	real_t newlen = hitpos.distance_to(from); // this length (speed) should cause the point we chose slightly behind A's support point to arrive right at B's collider next frame.
+	real_t newlen = hitpos.distance_to(from) + (max - min) * 0.01; // adding 1% of body length to the distance between collision and support point should cause body A's support point to arrive just within B's collider next frame.
+
 	p_A->set_linear_velocity((mnormal * newlen) / p_step);
 
 	return true;
