@@ -33,10 +33,10 @@
 			The path query uses the default A* pathfinding algorithm.
 		</constant>
 		<constant name="PATH_POSTPROCESSING_CORRIDORFUNNEL" value="0" enum="PathPostProcessing">
-			Applies a funnel algorithm to the raw path corridor found by the pathfinding algorithm. This will result in the shortest path possible inside the path corridor. This postprocessing very much depends on the navmesh polygon layout and the created corridor. Especially tile- or gridbased layouts can face artificial corners with diagonal movement due to a jagged path corridor imposed by the cell shapes.
+			Applies a funnel algorithm to the raw path corridor found by the pathfinding algorithm. This will result in the shortest path possible inside the path corridor. This postprocessing very much depends on the navigation mesh polygon layout and the created corridor. Especially tile- or gridbased layouts can face artificial corners with diagonal movement due to a jagged path corridor imposed by the cell shapes.
 		</constant>
 		<constant name="PATH_POSTPROCESSING_EDGECENTERED" value="1" enum="PathPostProcessing">
-			Centers every path position in the middle of the traveled navmesh polygon edge. This creates better paths for tile- or gridbased layouts that restrict the movement to the cells center.
+			Centers every path position in the middle of the traveled navigation mesh polygon edge. This creates better paths for tile- or gridbased layouts that restrict the movement to the cells center.
 		</constant>
 	</constants>
 </class>

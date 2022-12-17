@@ -433,12 +433,12 @@
 				Queries a path in a given navigation map. Start and target position and other parameters are defined through [NavigationPathQueryParameters3D]. Updates the provided [NavigationPathQueryResult3D] result object with the path among other results requested by the query.
 			</description>
 		</method>
-		<method name="region_bake_navmesh" qualifiers="const">
+		<method name="region_bake_navigation_mesh" qualifiers="const">
 			<return type="void" />
-			<param index="0" name="mesh" type="NavigationMesh" />
-			<param index="1" name="node" type="Node" />
+			<param index="0" name="navigation_mesh" type="NavigationMesh" />
+			<param index="1" name="root_node" type="Node" />
 			<description>
-				Bakes the navigation mesh.
+				Bakes the [param navigation_mesh] with bake source geometry collected starting from the [param root_node].
 			</description>
 		</method>
 		<method name="region_create" qualifiers="const">
@@ -539,10 +539,10 @@
 				Set the region's navigation layers. This allows selecting regions from a path request (when using [method NavigationServer3D.map_get_path]).
 			</description>
 		</method>
-		<method name="region_set_navmesh" qualifiers="const">
+		<method name="region_set_navigation_mesh" qualifiers="const">
 			<return type="void" />
 			<param index="0" name="region" type="RID" />
-			<param index="1" name="nav_mesh" type="NavigationMesh" />
+			<param index="1" name="navigation_mesh" type="NavigationMesh" />
 			<description>
 				Sets the navigation mesh for the region.
 			</description>
