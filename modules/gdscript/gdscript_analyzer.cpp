@@ -3996,37 +3996,27 @@ GDScriptParser::DataType GDScriptAnalyzer::type_from_variant(const Variant &p_va
 				result.kind = GDScriptParser::DataType::CLASS;
 				// This might be an inner class, so we want to get the parser for the root.
 				// But still get the inner class from that tree.
-				GDScript *current = gds.ptr();
-				List<StringName> class_chain;
-				while (current->_owner) {
-					// Push to front so it's in reverse.
-					class_chain.push_front(current->name);
-					current = current->_owner;
-				}
-
-				Ref<GDScriptParserRef> ref = get_parser_for(current->get_path());
+				String script_path = gds->get_script_path();
+				Ref<GDScriptParserRef> ref = get_parser_for(script_path);
 				if (ref.is_null()) {
-					push_error("Could not find script in path.", p_source);
+					push_error(vformat(R"(Could not find script "%s".)", script_path), p_source);
 					GDScriptParser::DataType error_type;
 					error_type.kind = GDScriptParser::DataType::VARIANT;
 					return error_type;
 				}
-				ref->raise_status(GDScriptParserRef::INHERITANCE_SOLVED);
-
-				GDScriptParser::ClassNode *found = ref->get_parser()->head;
-
-				for (const StringName &E : class_chain) {
-					if (!found->has_member(E)) {
-						return GDScriptParser::DataType();
+				Error err = ref->raise_status(GDScriptParserRef::INHERITANCE_SOLVED);
+				GDScriptParser::ClassNode *found = nullptr;
+				if (err == OK) {
+					found = ref->get_parser()->find_class(gds->fully_qualified_name);
+					if (found != nullptr) {
+						err = resolve_class_inheritance(found, p_source);
 					}
-
-					if (found->get_member(E).type != GDScriptParser::ClassNode::Member::CLASS) {
-						return GDScriptParser::DataType();
-					}
-
-					resolve_class_member(found, E, p_source);
-
-					found = found->get_member(E).m_class;
+				}
+				if (err || found == nullptr) {
+					push_error(vformat(R"(Could not resolve script "%s".)", script_path), p_source);
+					GDScriptParser::DataType error_type;
+					error_type.kind = GDScriptParser::DataType::VARIANT;
+					return error_type;
 				}
 
 				result.class_type = found;
