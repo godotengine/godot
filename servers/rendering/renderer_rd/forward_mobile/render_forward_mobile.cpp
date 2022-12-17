@@ -673,7 +673,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 
 	Size2i screen_size;
 	RID framebuffer;
-	bool reverse_cull = false;
+	bool reverse_cull = p_render_data->scene_data->cam_transform.basis.determinant() < 0;
 	bool using_subpass_transparent = true;
 	bool using_subpass_post_process = true;
 
