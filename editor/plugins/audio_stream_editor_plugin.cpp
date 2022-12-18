@@ -34,6 +34,7 @@
 #include "editor/audio_stream_preview.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "scene/resources/audio_stream_wav.h"
 
 // AudioStreamEditor
 
@@ -258,7 +259,7 @@ AudioStreamEditor::AudioStreamEditor() {
 // EditorInspectorPluginAudioStream
 
 bool EditorInspectorPluginAudioStream::can_handle(Object *p_object) {
-	return Object::cast_to<AudioStream>(p_object) != nullptr;
+	return Object::cast_to<AudioStreamWAV>(p_object) != nullptr;
 }
 
 void EditorInspectorPluginAudioStream::parse_begin(Object *p_object) {
