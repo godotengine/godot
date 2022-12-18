@@ -59,7 +59,7 @@ public:
 			type = p_type;
 		}
 		Address(AddressMode p_mode, uint32_t p_address, const GDScriptDataType &p_type = GDScriptDataType()) {
-			mode = p_mode,
+			mode = p_mode;
 			address = p_address;
 			type = p_type;
 		}

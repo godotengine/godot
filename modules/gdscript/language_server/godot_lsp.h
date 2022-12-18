@@ -702,7 +702,7 @@ struct DiagnosticRelatedInformation {
 
 	Dictionary to_json() const {
 		Dictionary dict;
-		dict["location"] = location.to_json(),
+		dict["location"] = location.to_json();
 		dict["message"] = message;
 		return dict;
 	}
