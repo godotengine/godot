@@ -1414,10 +1414,10 @@ Node *ResourceImporterScene::_replace_node_with_type_and_script(Node *p_node, St
 	return p_node;
 }
 
-Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> &collision_map, Pair<PackedVector3Array, PackedInt32Array> &r_occluder_arrays, HashSet<Ref<ImporterMesh>> &r_scanned_meshes, const Dictionary &p_node_data, const Dictionary &p_material_data, const Dictionary &p_animation_data, float p_animation_fps, float p_applied_root_scale, const String &p_source_file, const HashMap<StringName, Variant> &p_options) {
+Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> &collision_map, Pair<PackedVector3Array, PackedInt32Array> &r_occluder_arrays, HashSet<Ref<ImporterMesh>> &r_scanned_meshes, const Dictionary &p_node_data, const Dictionary &p_material_data, const Dictionary &p_animation_data, float p_animation_fps, float p_applied_root_scale, const String &p_source_file, const HashMap<StringName, Variant> &p_options, int p_default_collisions) {
 	// children first
 	for (int i = 0; i < p_node->get_child_count(); i++) {
-		Node *r = _post_fix_node(p_node->get_child(i), p_root, collision_map, r_occluder_arrays, r_scanned_meshes, p_node_data, p_material_data, p_animation_data, p_animation_fps, p_applied_root_scale, p_source_file, p_options);
+		Node *r = _post_fix_node(p_node->get_child(i), p_root, collision_map, r_occluder_arrays, r_scanned_meshes, p_node_data, p_material_data, p_animation_data, p_animation_fps, p_applied_root_scale, p_source_file, p_options, p_default_collisions);
 		if (!r) {
 			i--; //was erased
 		}
@@ -1650,10 +1650,15 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 				r_scanned_meshes.insert(m);
 			}
 
+			if ((!node_settings.has("generate/physics") || (node_settings.has("generate/physics") && int(node_settings["generate/physics"]) == PHYSICS_DEFAULT)) && p_default_collisions == CollisionMode::COLLISION_STATIC) {
+				node_settings["generate/physics"] = PHYSICS_ENABLE;
+				node_settings["physics/shape_type"] = SHAPE_TYPE_TRIMESH;
+			}
+
 			if (node_settings.has("generate/physics")) {
 				int mesh_physics_mode = MeshPhysicsMode::MESH_PHYSICS_DISABLED;
 
-				const bool generate_collider = node_settings["generate/physics"];
+				const bool generate_collider = int(node_settings["generate/physics"]) == PHYSICS_ENABLE;
 				if (generate_collider) {
 					mesh_physics_mode = MeshPhysicsMode::MESH_PHYSICS_MESH_AND_STATIC_COLLIDER;
 					if (node_settings.has("physics/body_type")) {
@@ -2124,7 +2129,7 @@ void ResourceImporterScene::get_internal_import_options(InternalImportCategory p
 		case INTERNAL_IMPORT_CATEGORY_MESH_3D_NODE: {
 			r_options->push_back(ImportOption(PropertyInfo(Variant::OBJECT, "node/script", PROPERTY_HINT_RESOURCE_TYPE, "Script"), Variant()));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "import/skip_import", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
-			r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "generate/physics", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
+			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "generate/physics", PROPERTY_HINT_ENUM, "Default,Enabled,Disabled", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 0));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "generate/navmesh", PROPERTY_HINT_ENUM, "Disabled,Mesh + NavMesh,NavMesh Only"), 0));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/body_type", PROPERTY_HINT_ENUM, "StaticBody3D,RigidBody3D,Area3D"), 0));
 			r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "physics/shape_type", PROPERTY_HINT_ENUM, "Decompose Convex (Slow),Single Convex (Average),Trimesh (Slow),Box (Fast),Sphere (Fast),Cylinder (Average),Capsule (Fast),Automatic", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 7));
@@ -2267,7 +2272,7 @@ bool ResourceImporterScene::get_internal_option_visibility(InternalImportCategor
 		case INTERNAL_IMPORT_CATEGORY_MESH_3D_NODE: {
 			const bool generate_physics =
 					p_options.has("generate/physics") &&
-					p_options["generate/physics"].operator bool();
+					p_options["generate/physics"].operator int() == PHYSICS_ENABLE;
 
 			if (p_option.contains("physics/")) {
 				// Show if need to generate collisions.
@@ -2523,6 +2528,7 @@ void ResourceImporterScene::get_import_options(const String &p_path, List<Import
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "nodes/use_node_type_suffixes"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/ensure_tangents"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/generate_lods"), true));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "meshes/generate_collisions", PROPERTY_HINT_ENUM, "Disabled,Static", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/create_shadow_meshes"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "meshes/light_baking", PROPERTY_HINT_ENUM, "Disabled,Static,Static Lightmaps,Dynamic", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), 1));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "meshes/lightmap_texel_size", PROPERTY_HINT_RANGE, "0.001,100,0.001"), 0.2));
@@ -3204,13 +3210,18 @@ Error ResourceImporterScene::import(ResourceUID::ID p_source_id, const String &p
 		mesh_data = subresources["meshes"];
 	}
 
+	int default_collisions = COLLISION_DISABLED;
+	if (p_options.has(SNAME("meshes/generate_collisions"))) {
+		default_collisions = (int)p_options["meshes/generate_collisions"];
+	}
+
 	float fps = 30;
 	if (p_options.has(SNAME("animation/fps"))) {
 		fps = (float)p_options[SNAME("animation/fps")];
 	}
 	bool remove_immutable_tracks = p_options.has("animation/remove_immutable_tracks") ? (bool)p_options["animation/remove_immutable_tracks"] : true;
 	_pre_fix_animations(scene, scene, node_data, animation_data, fps);
-	_post_fix_node(scene, scene, collision_map, occluder_arrays, scanned_meshes, node_data, material_data, animation_data, fps, apply_root ? root_scale : 1.0, p_source_file, p_options);
+	_post_fix_node(scene, scene, collision_map, occluder_arrays, scanned_meshes, node_data, material_data, animation_data, fps, apply_root ? root_scale : 1.0, p_source_file, p_options, default_collisions);
 	_post_fix_animations(scene, scene, node_data, animation_data, fps, remove_immutable_tracks);
 
 	String root_type = p_options["nodes/root_type"];
