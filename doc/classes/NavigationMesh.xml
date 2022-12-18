@@ -137,9 +137,6 @@
 			The name of the group to scan for geometry.
 			Only used when [member geometry_source_geometry_mode] is [constant SOURCE_GEOMETRY_GROUPS_WITH_CHILDREN] or [constant SOURCE_GEOMETRY_GROUPS_EXPLICIT].
 		</member>
-		<member name="polygon_vertices_per_polyon" type="float" setter="set_vertices_per_polyon" getter="get_vertices_per_polyon" default="6.0">
-			The maximum number of vertices allowed for polygons generated during the contour to polygon conversion process.
-		</member>
 		<member name="region_merge_size" type="float" setter="set_region_merge_size" getter="get_region_merge_size" default="20.0">
 			Any regions with a size smaller than this will be merged with larger regions if possible.
 			[b]Note:[/b] This value will be squared to calculate the number of cells. For example, a value of 20 will set the number of cells to 400.
@@ -150,6 +147,9 @@
 		</member>
 		<member name="sample_partition_type" type="int" setter="set_sample_partition_type" getter="get_sample_partition_type" enum="NavigationMesh.SamplePartitionType" default="0">
 			Partitioning algorithm for creating the navigation mesh polys. See [enum SamplePartitionType] for possible values.
+		</member>
+		<member name="vertices_per_polygon" type="float" setter="set_vertices_per_polygon" getter="get_vertices_per_polygon" default="6.0">
+			The maximum number of vertices allowed for polygons generated during the contour to polygon conversion process.
 		</member>
 	</members>
 	<constants>
