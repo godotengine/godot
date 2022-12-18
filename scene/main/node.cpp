@@ -391,7 +391,9 @@ void Node::_move_child(Node *p_child, int p_index, bool p_ignore_end) {
 	// notification second
 	move_child_notify(p_child);
 	for (int i = motion_from; i <= motion_to; i++) {
-		data.children[i]->notification(NOTIFICATION_MOVED_IN_PARENT);
+		if (data.children[i]->data.notify_moved_in_parent) {
+			data.children[i]->notification(NOTIFICATION_MOVED_IN_PARENT);
+		}
 	}
 	p_child->_propagate_groups_dirty();
 
@@ -1209,8 +1211,11 @@ void Node::remove_child(Node *p_child) {
 	children = data.children.ptrw();
 
 	for (int i = idx; i < child_count; i++) {
-		children[i]->data.index = i;
-		children[i]->notification(NOTIFICATION_MOVED_IN_PARENT);
+		Node *child = children[i];
+		child->data.index = i;
+		if (child->data.notify_moved_in_parent) {
+			child->notification(NOTIFICATION_MOVED_IN_PARENT);
+		}
 	}
 
 	p_child->data.parent = nullptr;
@@ -1219,6 +1224,10 @@ void Node::remove_child(Node *p_child) {
 	if (data.inside_tree) {
 		p_child->_propagate_after_exit_tree();
 	}
+}
+
+void Node::set_notify_moved_in_parent(bool enabled) {
+	data.notify_moved_in_parent = enabled;
 }
 
 int Node::get_child_count(bool p_include_internal) const {

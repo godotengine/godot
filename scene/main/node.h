@@ -151,6 +151,8 @@ private:
 		bool display_folded = false;
 		bool editable_instance = false;
 
+		bool notify_moved_in_parent = false;
+
 		mutable NodePath *path_cache = nullptr;
 
 	} data;
@@ -502,6 +504,8 @@ public:
 	Error rpcp(int p_peer_id, const StringName &p_method, const Variant **p_arg, int p_argcount);
 
 	Ref<MultiplayerAPI> get_multiplayer() const;
+
+	void set_notify_moved_in_parent(bool enabled);
 
 	Node();
 	~Node();

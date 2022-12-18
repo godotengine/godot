@@ -344,6 +344,7 @@ void CanvasLayer::_bind_methods() {
 
 CanvasLayer::CanvasLayer() {
 	canvas = RS::get_singleton()->canvas_create();
+	set_notify_moved_in_parent(true);
 }
 
 CanvasLayer::~CanvasLayer() {

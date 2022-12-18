@@ -1302,6 +1302,7 @@ CanvasItem::TextureRepeat CanvasItem::get_texture_repeat_in_tree() {
 CanvasItem::CanvasItem() :
 		xform_change(this) {
 	canvas_item = RenderingServer::get_singleton()->canvas_item_create();
+	set_notify_moved_in_parent(true);
 }
 
 CanvasItem::~CanvasItem() {
