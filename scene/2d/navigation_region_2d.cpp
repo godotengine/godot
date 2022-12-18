@@ -309,6 +309,25 @@ void NavigationRegion2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "travel_cost"), "set_travel_cost", "get_travel_cost");
 }
 
+#ifndef DISABLE_DEPRECATED
+// Compatibility with earlier 4.0 betas.
+bool NavigationRegion2D::_set(const StringName &p_name, const Variant &p_value) {
+	if (p_name == "navpoly") {
+		set_navigation_polygon(p_value);
+		return true;
+	}
+	return false;
+}
+
+bool NavigationRegion2D::_get(const StringName &p_name, Variant &r_ret) const {
+	if (p_name == "navpoly") {
+		r_ret = get_navigation_polygon();
+		return true;
+	}
+	return false;
+}
+#endif // DISABLE_DEPRECATED
+
 NavigationRegion2D::NavigationRegion2D() {
 	set_notify_transform(true);
 
