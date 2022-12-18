@@ -280,6 +280,8 @@ class EditorInspectorSection : public Container {
 	HashSet<StringName> revertable_properties;
 
 	void _test_unfold();
+	int _get_header_height();
+	Ref<Texture2D> _get_arrow();
 
 protected:
 	Object *object = nullptr;
