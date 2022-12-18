@@ -449,12 +449,8 @@ void AudioServer::_mix_step() {
 			case AudioStreamPlaybackListNode::AWAITING_DELETION:
 			case AudioStreamPlaybackListNode::FADE_OUT_TO_DELETION:
 				playback_list.erase(playback, [](AudioStreamPlaybackListNode *p) {
-					if (p->prev_bus_details) {
-						delete p->prev_bus_details;
-					}
-					if (p->bus_details) {
-						delete p->bus_details;
-					}
+					delete p->prev_bus_details;
+					delete p->bus_details;
 					p->stream_playback.unref();
 					delete p;
 				});
