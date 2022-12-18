@@ -101,7 +101,7 @@ protected:
 	float region_merge_size = 20.0f;
 	float edge_max_length = 12.0f;
 	float edge_max_error = 1.3f;
-	float vertices_per_polyon = 6.0f;
+	float vertices_per_polygon = 6.0f;
 	float detail_sample_distance = 6.0f;
 	float detail_sample_max_error = 1.0f;
 
@@ -168,8 +168,8 @@ public:
 	void set_edge_max_error(float p_value);
 	float get_edge_max_error() const;
 
-	void set_vertices_per_polyon(float p_value);
-	float get_vertices_per_polyon() const;
+	void set_vertices_per_polygon(float p_value);
+	float get_vertices_per_polygon() const;
 
 	void set_detail_sample_distance(float p_value);
 	float get_detail_sample_distance() const;

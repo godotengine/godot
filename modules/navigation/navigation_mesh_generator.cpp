@@ -538,7 +538,7 @@ void NavigationMeshGenerator::_build_recast_navigation_mesh(
 	cfg.maxSimplificationError = p_navigation_mesh->get_edge_max_error();
 	cfg.minRegionArea = (int)(p_navigation_mesh->get_region_min_size() * p_navigation_mesh->get_region_min_size());
 	cfg.mergeRegionArea = (int)(p_navigation_mesh->get_region_merge_size() * p_navigation_mesh->get_region_merge_size());
-	cfg.maxVertsPerPoly = (int)p_navigation_mesh->get_vertices_per_polyon();
+	cfg.maxVertsPerPoly = (int)p_navigation_mesh->get_vertices_per_polygon();
 	cfg.detailSampleDist = MAX(p_navigation_mesh->get_cell_size() * p_navigation_mesh->get_detail_sample_distance(), 0.1f);
 	cfg.detailSampleMaxError = p_navigation_mesh->get_cell_height() * p_navigation_mesh->get_detail_sample_max_error();
 
@@ -560,8 +560,8 @@ void NavigationMeshGenerator::_build_recast_navigation_mesh(
 	if (!Math::is_equal_approx((float)cfg.mergeRegionArea, p_navigation_mesh->get_region_merge_size() * p_navigation_mesh->get_region_merge_size())) {
 		WARN_PRINT("Property region_merge_size is converted to int and loses precision.");
 	}
-	if (!Math::is_equal_approx((float)cfg.maxVertsPerPoly, p_navigation_mesh->get_vertices_per_polyon())) {
-		WARN_PRINT("Property vertices_per_polyon is converted to int and loses precision.");
+	if (!Math::is_equal_approx((float)cfg.maxVertsPerPoly, p_navigation_mesh->get_vertices_per_polygon())) {
+		WARN_PRINT("Property vertices_per_polygon is converted to int and loses precision.");
 	}
 	if (p_navigation_mesh->get_cell_size() * p_navigation_mesh->get_detail_sample_distance() < 0.1f) {
 		WARN_PRINT("Property detail_sample_distance is clamped to 0.1 world units as the resulting value from multiplying with cell_size is too low.");
