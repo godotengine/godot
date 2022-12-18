@@ -172,19 +172,23 @@ public:
 
 	void set_rotation_order(EulerOrder p_order);
 	void set_rotation(const Vector3 &p_euler_rad);
+	void set_rotation_degrees(const Vector3 &p_euler_degrees);
 	void set_scale(const Vector3 &p_scale);
 
 	void set_global_position(const Vector3 &p_position);
 	void set_global_rotation(const Vector3 &p_euler_rad);
+	void set_global_rotation_degrees(const Vector3 &p_euler_degrees);
 
 	Vector3 get_position() const;
 
 	EulerOrder get_rotation_order() const;
 	Vector3 get_rotation() const;
+	Vector3 get_rotation_degrees() const;
 	Vector3 get_scale() const;
 
 	Vector3 get_global_position() const;
 	Vector3 get_global_rotation() const;
+	Vector3 get_global_rotation_degrees() const;
 
 	void set_transform(const Transform3D &p_transform);
 	void set_basis(const Basis &p_basis);
