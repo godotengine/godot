@@ -1020,28 +1020,38 @@ void EditorInspectorSection::_test_unfold() {
 	}
 }
 
+Ref<Texture> EditorInspectorSection::_get_arrow() {
+	Ref<Texture> arrow;
+	if (foldable) {
+		if (object->editor_is_section_unfolded(section)) {
+			arrow = get_icon("arrow", "Tree");
+		} else {
+			arrow = get_icon("arrow_collapsed", "Tree");
+		}
+	}
+	return arrow;
+}
+
+int EditorInspectorSection::_get_header_height() {
+	Ref<Font> font = get_font("font", "Tree");
+
+	int header_height = font->get_height();
+	Ref<Texture> arrow = _get_arrow();
+	if (arrow.is_valid()) {
+		header_height = MAX(header_height, arrow->get_height());
+	}
+	header_height += get_constant("vseparation", "Tree");
+
+	return header_height;
+}
+
 void EditorInspectorSection::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_SORT_CHILDREN: {
-			Ref<Font> font = get_font("font", "Tree");
-			Ref<Texture> arrow;
-
-			if (foldable) {
-				if (object->editor_is_section_unfolded(section)) {
-					arrow = get_icon("arrow", "Tree");
-				} else {
-					arrow = get_icon("arrow_collapsed", "Tree");
-				}
-			}
-
 			Size2 size = get_size();
 			Point2 offset;
-			offset.y = font->get_height();
-			if (arrow.is_valid()) {
-				offset.y = MAX(offset.y, arrow->get_height());
-			}
 
-			offset.y += get_constant("vseparation", "Tree");
+			offset.y = _get_header_height();
 			offset.x += get_constant("inspector_margin", "Editor");
 
 			Rect2 rect(offset, size - offset);
@@ -1066,23 +1076,7 @@ void EditorInspectorSection::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_DRAW: {
-			Ref<Texture> arrow;
-
-			if (foldable) {
-				if (object->editor_is_section_unfolded(section)) {
-					arrow = get_icon("arrow", "Tree");
-				} else {
-					arrow = get_icon("arrow_collapsed", "Tree");
-				}
-			}
-
-			Ref<Font> font = get_font("font", "Tree");
-
-			int h = font->get_height();
-			if (arrow.is_valid()) {
-				h = MAX(h, arrow->get_height());
-			}
-			h += get_constant("vseparation", "Tree");
+			int h = _get_header_height();
 
 			Rect2 header_rect = Rect2(Vector2(), Vector2(get_size().width, h));
 			Color c = bg_color;
@@ -1094,8 +1088,10 @@ void EditorInspectorSection::_notification(int p_what) {
 
 			const int arrow_margin = 3;
 			Color color = get_color("font_color", "Tree");
+			Ref<Font> font = get_font("font", "Tree");
 			draw_string(font, Point2(Math::round((16 + arrow_margin) * EDSCALE), font->get_ascent() + (h - font->get_height()) / 2).floor(), label, color, get_size().width);
 
+			Ref<Texture> arrow = _get_arrow();
 			if (arrow.is_valid()) {
 				draw_texture(arrow, Point2(Math::round(arrow_margin * EDSCALE), (h - arrow->get_height()) / 2).floor());
 			}
@@ -1161,8 +1157,7 @@ void EditorInspectorSection::_gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
-		Ref<Font> font = get_font("font", "Tree");
-		if (mb->get_position().y > font->get_height()) { //clicked outside
+		if (mb->get_position().y >= _get_header_height()) {
 			return;
 		}
 
