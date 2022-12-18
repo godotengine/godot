@@ -50,8 +50,8 @@ protected:
 
 	void _bind_tracker();
 	void _unbind_tracker();
-	void _changed_tracker(const StringName p_tracker_name, int p_tracker_type);
-	void _removed_tracker(const StringName p_tracker_name, int p_tracker_type);
+	void _changed_tracker(const StringName &p_tracker_name, int p_tracker_type);
+	void _removed_tracker(const StringName &p_tracker_name, int p_tracker_type);
 	void _pose_changed(const Ref<XRPose> &p_pose);
 
 public:
@@ -87,23 +87,23 @@ protected:
 
 	virtual void _bind_tracker();
 	virtual void _unbind_tracker();
-	void _changed_tracker(const StringName p_tracker_name, int p_tracker_type);
-	void _removed_tracker(const StringName p_tracker_name, int p_tracker_type);
+	void _changed_tracker(const StringName &p_tracker_name, int p_tracker_type);
+	void _removed_tracker(const StringName &p_tracker_name, int p_tracker_type);
 
 	void _pose_changed(const Ref<XRPose> &p_pose);
 
 public:
 	void _validate_property(PropertyInfo &p_property) const;
-	void set_tracker(const StringName p_tracker_name);
+	void set_tracker(const StringName &p_tracker_name);
 	StringName get_tracker() const;
 
-	void set_pose_name(const StringName p_pose);
+	void set_pose_name(const StringName &p_pose_name);
 	StringName get_pose_name() const;
 
 	bool get_is_active() const;
 	bool get_has_tracking_data() const;
 
-	void trigger_haptic_pulse(const String &p_action_name, double p_frequency, double p_amplitude, double p_duration_sec, double p_delay_sec = 0);
+	void trigger_haptic_pulse(const String &p_action_name, double p_frequency, double p_amplitude, double p_duration_sec, double p_delay_sec = 0) const;
 
 	Ref<XRPose> get_pose();
 
@@ -193,7 +193,7 @@ public:
 	PackedStringArray get_configuration_warnings() const override;
 
 	real_t get_world_scale() const;
-	void set_world_scale(real_t p_world_scale);
+	void set_world_scale(real_t p_world_scale) const;
 
 	void set_current(bool p_enabled);
 	bool is_current() const;

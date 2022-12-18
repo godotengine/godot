@@ -27,7 +27,7 @@
 				Returns the [XRPose] containing the current state of the pose being tracked. This gives access to additional properties of this pose.
 			</description>
 		</method>
-		<method name="trigger_haptic_pulse">
+		<method name="trigger_haptic_pulse" qualifiers="const">
 			<return type="void" />
 			<param index="0" name="action_name" type="String" />
 			<param index="1" name="frequency" type="float" />
