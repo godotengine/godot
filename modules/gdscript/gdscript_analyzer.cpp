@@ -250,9 +250,13 @@ Error GDScriptAnalyzer::check_class_member_name_conflict(const GDScriptParser::C
 }
 
 void GDScriptAnalyzer::get_class_node_current_scope_classes(GDScriptParser::ClassNode *p_node, List<GDScriptParser::ClassNode *> *p_list) {
+	ERR_FAIL_NULL(p_node);
+	ERR_FAIL_NULL(p_list);
+
 	if (p_list->find(p_node) != nullptr) {
 		return;
 	}
+
 	p_list->push_back(p_node);
 
 	// TODO: Try to solve class inheritance if not yet resolving.
@@ -2915,6 +2919,18 @@ GDScriptParser::DataType GDScriptAnalyzer::make_global_class_meta_type(const Str
 	}
 }
 
+void GDScriptAnalyzer::reduce_identifier_from_base_set_class(GDScriptParser::IdentifierNode *p_identifier, GDScriptParser::DataType p_identifier_datatype) {
+	ERR_FAIL_NULL(p_identifier);
+
+	p_identifier->set_datatype(p_identifier_datatype);
+	Error err = OK;
+	GDScript *scr = GDScriptCache::get_full_script(p_identifier_datatype.script_path, err).ptr();
+	ERR_FAIL_COND_MSG(err != OK, "Error while getting full script.");
+	scr = scr->find_class(p_identifier_datatype.class_type->fqcn);
+	p_identifier->reduced_value = scr;
+	p_identifier->is_constant = true;
+}
+
 void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNode *p_identifier, GDScriptParser::DataType *p_base) {
 	if (!p_identifier->get_datatype().has_no_type()) {
 		return;
@@ -2993,108 +3009,91 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 	}
 
 	GDScriptParser::ClassNode *base_class = base.class_type;
+	List<GDScriptParser::ClassNode *> script_classes;
+	bool is_base = true;
 
-	// TODO: Switch current class/function/suite here to avoid misrepresenting identifiers (in recursive reduce calls).
-	while (base_class != nullptr) {
-		if (base_class->identifier && base_class->identifier->name == name) {
-			p_identifier->set_datatype(base_class->get_datatype());
+	if (base_class != nullptr) {
+		get_class_node_current_scope_classes(base_class, &script_classes);
+	}
+
+	for (GDScriptParser::ClassNode *script_class : script_classes) {
+		if (p_base == nullptr && script_class->identifier && script_class->identifier->name == name) {
+			reduce_identifier_from_base_set_class(p_identifier, script_class->get_datatype());
 			return;
 		}
 
-		if (base_class->has_member(name)) {
-			resolve_class_member(base_class, name, p_identifier);
+		if (script_class->has_member(name)) {
+			resolve_class_member(script_class, name, p_identifier);
 
-			GDScriptParser::ClassNode::Member member = base_class->get_member(name);
-			p_identifier->set_datatype(member.get_datatype());
+			GDScriptParser::ClassNode::Member member = script_class->get_member(name);
 			switch (member.type) {
-				case GDScriptParser::ClassNode::Member::CONSTANT:
+				case GDScriptParser::ClassNode::Member::CONSTANT: {
+					p_identifier->set_datatype(member.get_datatype());
 					p_identifier->is_constant = true;
 					p_identifier->reduced_value = member.constant->initializer->reduced_value;
 					p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_CONSTANT;
 					p_identifier->constant_source = member.constant;
-					break;
-				case GDScriptParser::ClassNode::Member::ENUM_VALUE:
-					p_identifier->is_constant = true;
-					p_identifier->reduced_value = member.enum_value.value;
-					p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_CONSTANT;
-					break;
-				case GDScriptParser::ClassNode::Member::ENUM:
-					p_identifier->is_constant = true;
-					p_identifier->reduced_value = member.m_enum->dictionary;
-					p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_CONSTANT;
-					break;
-				case GDScriptParser::ClassNode::Member::VARIABLE:
-					p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_VARIABLE;
-					p_identifier->variable_source = member.variable;
-					member.variable->usages += 1;
-					break;
-				case GDScriptParser::ClassNode::Member::SIGNAL:
-					p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_SIGNAL;
-					break;
-				case GDScriptParser::ClassNode::Member::FUNCTION:
-					p_identifier->set_datatype(make_callable_type(member.function->info));
-					break;
-				case GDScriptParser::ClassNode::Member::CLASS:
-					if (p_base != nullptr && p_base->is_constant) {
-						p_identifier->is_constant = true;
-						p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_CONSTANT;
-
-						Error err = OK;
-						GDScript *scr = GDScriptCache::get_full_script(base.script_path, err).ptr();
-						ERR_FAIL_COND_MSG(err != OK, "Error while getting subscript full script.");
-						scr = scr->find_class(p_identifier->get_datatype().class_type->fqcn);
-						p_identifier->reduced_value = scr;
-					}
-					break;
-				default:
-					break; // Type already set.
-			}
-			return;
-		}
-
-		// Check outer constants.
-		// TODO: Allow outer static functions.
-		if (base_class->outer != nullptr) {
-			List<GDScriptParser::ClassNode *> script_classes;
-			get_class_node_current_scope_classes(base_class->outer, &script_classes);
-			for (GDScriptParser::ClassNode *script_class : script_classes) {
-				if (script_class->identifier && script_class->identifier->name == name) {
-					p_identifier->set_datatype(script_class->get_datatype());
 					return;
 				}
 
-				if (script_class->has_member(name)) {
-					resolve_class_member(script_class, name, p_identifier);
+				case GDScriptParser::ClassNode::Member::ENUM_VALUE: {
+					p_identifier->set_datatype(member.get_datatype());
+					p_identifier->is_constant = true;
+					p_identifier->reduced_value = member.enum_value.value;
+					p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_CONSTANT;
+					return;
+				}
 
-					GDScriptParser::ClassNode::Member member = script_class->get_member(name);
-					switch (member.type) {
-						case GDScriptParser::ClassNode::Member::CONSTANT:
-							// TODO: Make sure loops won't cause problem. And make special error message for those.
-							p_identifier->set_datatype(member.get_datatype());
-							p_identifier->is_constant = true;
-							p_identifier->reduced_value = member.constant->initializer->reduced_value;
-							return;
-						case GDScriptParser::ClassNode::Member::ENUM_VALUE:
-							p_identifier->set_datatype(member.get_datatype());
-							p_identifier->is_constant = true;
-							p_identifier->reduced_value = member.enum_value.value;
-							return;
-						case GDScriptParser::ClassNode::Member::ENUM:
-							p_identifier->set_datatype(member.get_datatype());
-							p_identifier->is_constant = true;
-							p_identifier->reduced_value = member.m_enum->dictionary;
-							return;
-						case GDScriptParser::ClassNode::Member::CLASS:
-							p_identifier->set_datatype(member.get_datatype());
-							return;
-						default:
-							break;
+				case GDScriptParser::ClassNode::Member::ENUM: {
+					p_identifier->set_datatype(member.get_datatype());
+					p_identifier->is_constant = true;
+					p_identifier->reduced_value = member.m_enum->dictionary;
+					p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_CONSTANT;
+					return;
+				}
+
+				case GDScriptParser::ClassNode::Member::VARIABLE: {
+					if (is_base && !base.is_meta_type) {
+						p_identifier->set_datatype(member.get_datatype());
+						p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_VARIABLE;
+						p_identifier->variable_source = member.variable;
+						member.variable->usages += 1;
+						return;
 					}
+				} break;
+
+				case GDScriptParser::ClassNode::Member::SIGNAL: {
+					if (is_base && !base.is_meta_type) {
+						p_identifier->set_datatype(member.get_datatype());
+						p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_SIGNAL;
+						return;
+					}
+				} break;
+
+				case GDScriptParser::ClassNode::Member::FUNCTION: {
+					if (is_base && !base.is_meta_type) {
+						p_identifier->set_datatype(make_callable_type(member.function->info));
+						return;
+					}
+				} break;
+
+				case GDScriptParser::ClassNode::Member::CLASS: {
+					reduce_identifier_from_base_set_class(p_identifier, member.get_datatype());
+					return;
+				}
+
+				default: {
+					// Do nothing
 				}
 			}
 		}
 
-		base_class = base_class->base_type.class_type;
+		if (is_base) {
+			is_base = script_class->base_type.class_type != nullptr;
+			if (!is_base && p_base != nullptr) {
+				break;
+			}
+		}
 	}
 
 	// Check native members. No need for native class recursion because Node exposes all Object's properties.
@@ -3225,18 +3224,20 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 	}
 
 	if (found_source) {
-		if ((p_identifier->source == GDScriptParser::IdentifierNode::MEMBER_VARIABLE || p_identifier->source == GDScriptParser::IdentifierNode::INHERITED_VARIABLE) && parser->current_function && parser->current_function->is_static) {
+		bool source_is_variable = p_identifier->source == GDScriptParser::IdentifierNode::MEMBER_VARIABLE || p_identifier->source == GDScriptParser::IdentifierNode::INHERITED_VARIABLE;
+		bool source_is_signal = p_identifier->source == GDScriptParser::IdentifierNode::MEMBER_SIGNAL;
+		if ((source_is_variable || source_is_signal) && parser->current_function && parser->current_function->is_static) {
 			// Get the parent function above any lambda.
 			GDScriptParser::FunctionNode *parent_function = parser->current_function;
 			while (parent_function->source_lambda) {
 				parent_function = parent_function->source_lambda->parent_function;
 			}
-			push_error(vformat(R"*(Cannot access instance variable "%s" from the static function "%s()".)*", p_identifier->name, parent_function->identifier->name), p_identifier);
+			push_error(vformat(R"*(Cannot access %s "%s" from the static function "%s()".)*", source_is_signal ? "signal" : "instance variable", p_identifier->name, parent_function->identifier->name), p_identifier);
 		}
 
 		if (!lambda_stack.is_empty()) {
-			// If the identifier is a member variable (including the native class properties), we consider the lambda to be using `self`, so we keep a reference to the current instance.
-			if (p_identifier->source == GDScriptParser::IdentifierNode::MEMBER_VARIABLE || p_identifier->source == GDScriptParser::IdentifierNode::INHERITED_VARIABLE) {
+			// If the identifier is a member variable (including the native class properties) or a signal, we consider the lambda to be using `self`, so we keep a reference to the current instance.
+			if (source_is_variable || source_is_signal) {
 				mark_lambda_use_self();
 				return; // No need to capture.
 			}

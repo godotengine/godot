@@ -1,0 +1,6 @@
+GDTEST_RUNTIME_ERROR
+>> SCRIPT ERROR
+>> on function: test()
+>> analyzer/errors/outer_class_constants_as_variant.gd
+>> 9
+>> Invalid get index 'OUTER_CONST' (on base: 'GDScript').
