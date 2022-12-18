@@ -451,7 +451,9 @@ public:
 	void set_scale(const Vector2 &p_scale);
 	Vector2 get_scale() const;
 	void set_rotation(real_t p_radians);
+	void set_rotation_degrees(real_t p_degrees);
 	real_t get_rotation() const;
+	real_t get_rotation_degrees() const;
 	void set_pivot_offset(const Vector2 &p_pivot);
 	Vector2 get_pivot_offset() const;
 
