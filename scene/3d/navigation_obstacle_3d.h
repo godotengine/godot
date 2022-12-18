@@ -75,9 +75,9 @@ public:
 	PackedStringArray get_configuration_warnings() const override;
 
 private:
-	void initialize_agent();
-	void reevaluate_agent_radius();
-	real_t estimate_agent_radius() const;
+	void _initialize_agent() const;
+	void _reevaluate_agent_radius() const;
+	real_t _estimate_agent_radius() const;
 };
 
 #endif // NAVIGATION_OBSTACLE_3D_H
