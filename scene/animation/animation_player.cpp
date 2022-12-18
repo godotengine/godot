@@ -113,20 +113,6 @@ bool AnimationPlayer::_set(const StringName &p_name, const Variant &p_value) {
 	} else if (name.begins_with("next/")) {
 		String which = name.get_slicec('/', 1);
 		animation_set_next(which, p_value);
-
-	} else if (p_name == SceneStringNames::get_singleton()->blend_times) {
-		Array array = p_value;
-		int len = array.size();
-		ERR_FAIL_COND_V(len % 3, false);
-
-		for (int i = 0; i < len / 3; i++) {
-			StringName from = array[i * 3 + 0];
-			StringName to = array[i * 3 + 1];
-			float time = array[i * 3 + 2];
-
-			set_blend_time(from, to, time);
-		}
-
 	} else {
 		return false;
 	}
@@ -154,20 +140,6 @@ bool AnimationPlayer::_get(const StringName &p_name, Variant &r_ret) const {
 
 		r_ret = animation_get_next(which);
 
-	} else if (name == "blend_times") {
-		Vector<BlendKey> keys;
-		for (const KeyValue<BlendKey, double> &E : blend_times) {
-			keys.ordered_insert(E.key);
-		}
-
-		Array array;
-		for (int i = 0; i < keys.size(); i++) {
-			array.push_back(keys[i].from);
-			array.push_back(keys[i].to);
-			array.push_back(blend_times.get(keys[i]));
-		}
-
-		r_ret = array;
 	} else {
 		return false;
 	}
@@ -212,8 +184,6 @@ void AnimationPlayer::_get_property_list(List<PropertyInfo> *p_list) const {
 	for (const PropertyInfo &E : anim_names) {
 		p_list->push_back(E);
 	}
-
-	p_list->push_back(PropertyInfo(Variant::ARRAY, "blend_times", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 }
 
 void AnimationPlayer::advance(double p_time) {
@@ -468,7 +438,7 @@ Variant AnimationPlayer::_post_process_key_value(const Ref<Animation> &p_anim, i
 	return p_value;
 }
 
-void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double p_prev_time, double p_time, double p_delta, float p_interp, bool p_is_current, bool p_seeked, bool p_started, Animation::LoopedFlag p_looped_flag) {
+void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double p_prev_time, double p_time, double p_delta, bool p_is_current, bool p_seeked, bool p_started, Animation::LoopedFlag p_looped_flag) {
 	_ensure_node_caches(p_anim);
 	ERR_FAIL_COND(p_anim->node_cache.size() != p_anim->animation->get_track_count());
 
@@ -522,7 +492,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 					nc->rot_accum = nc->init_rot;
 					nc->scale_accum = nc->init_scale;
 				} else {
-					nc->loc_accum = nc->loc_accum.lerp(loc, p_interp);
+					nc->loc_accum = loc;
 				}
 #endif // _3D_DISABLED
 			} break;
@@ -550,7 +520,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 					nc->rot_accum = rot;
 					nc->scale_accum = nc->init_scale;
 				} else {
-					nc->rot_accum = nc->rot_accum.slerp(rot, p_interp);
+					nc->rot_accum = rot;
 				}
 #endif // _3D_DISABLED
 			} break;
@@ -578,7 +548,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 					nc->rot_accum = nc->init_rot;
 					nc->scale_accum = scale;
 				} else {
-					nc->scale_accum = nc->scale_accum.lerp(scale, p_interp);
+					nc->scale_accum = scale;
 				}
 #endif // _3D_DISABLED
 			} break;
@@ -604,7 +574,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 					cache_update[cache_update_size++] = nc;
 					nc->blend_shape_accum = blend;
 				} else {
-					nc->blend_shape_accum = Math::lerp(nc->blend_shape_accum, blend, p_interp);
+					nc->blend_shape_accum = blend;
 				}
 #endif // _3D_DISABLED
 			} break;
@@ -657,7 +627,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 							pa->value_accum = interp_value;
 							pa->accum_pass = accum_pass;
 						} else {
-							pa->value_accum = Animation::interpolate_variant(pa->value_accum, interp_value, p_interp);
+							pa->value_accum = interp_value;
 						}
 
 						continue; //handled
@@ -678,7 +648,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 						pa->value_accum = value;
 						pa->accum_pass = accum_pass;
 					} else {
-						pa->value_accum = Animation::interpolate_variant(pa->value_accum, value, p_interp);
+						pa->value_accum = value;
 					}
 
 				} else {
@@ -803,7 +773,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 					ba->bezier_accum = bezier;
 					ba->accum_pass = accum_pass;
 				} else {
-					ba->bezier_accum = Math::lerp(ba->bezier_accum, (float)bezier, p_interp);
+					ba->bezier_accum = bezier;
 				}
 
 			} break;
@@ -998,7 +968,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 	}
 }
 
-void AnimationPlayer::_animation_process_data(PlaybackData &cd, double p_delta, float p_blend, bool p_seeked, bool p_started) {
+void AnimationPlayer::_animation_process_data(PlaybackData &cd, double p_delta, bool p_seeked, bool p_started) {
 	double delta = p_delta * speed_scale * cd.speed_scale;
 	double next_pos = cd.pos + delta;
 	bool backwards = signbit(delta); // Negative zero means playing backwards too.
@@ -1046,7 +1016,7 @@ void AnimationPlayer::_animation_process_data(PlaybackData &cd, double p_delta, 
 	cd.pos = next_pos;
 
 	AnimationData *prev_from = cd.from;
-	_animation_process_animation(cd.from, prev_pos, cd.pos, delta, p_blend, &cd == &playback.current, p_seeked, p_started, looped_flag);
+	_animation_process_animation(cd.from, prev_pos, cd.pos, delta, &cd == &playback.current, p_seeked, p_started, looped_flag);
 
 	// End detection.
 	if (cd.from->animation->get_loop_mode() == Animation::LOOP_NONE) {
@@ -1076,21 +1046,7 @@ void AnimationPlayer::_animation_process2(double p_delta, bool p_started) {
 		c.seeked = false;
 	}
 
-	_animation_process_data(c.current, p_delta, 1.0f, seeked, p_started);
-
-	List<Blend>::Element *prev = nullptr;
-	for (List<Blend>::Element *E = c.blend.back(); E; E = prev) {
-		Blend &b = E->get();
-		float blend = b.blend_left / b.blend_time;
-		b.blend_left -= Math::absf(speed_scale * p_delta);
-		prev = E->prev();
-		if (b.blend_left < 0) {
-			c.blend.erase(E);
-		}
-		// The effect of animation changes during blending is unknown...
-		// In that case, we recommends to use method call mode "deferred", not "immediate".
-		_animation_process_data(b.data, p_delta, blend, false, false);
-	}
+	_animation_process_data(c.current, p_delta, seeked, p_started);
 }
 
 void AnimationPlayer::_animation_update_transforms() {
@@ -1318,55 +1274,9 @@ void AnimationPlayer::_animation_removed(const StringName &p_name, const StringN
 	}
 
 	_animation_set_cache_update();
-
-	// Erase blends if needed
-	List<BlendKey> to_erase;
-	for (const KeyValue<BlendKey, double> &E : blend_times) {
-		BlendKey bk = E.key;
-		if (bk.from == name || bk.to == name) {
-			to_erase.push_back(bk);
-		}
-	}
-
-	while (to_erase.size()) {
-		blend_times.erase(to_erase.front()->get());
-		to_erase.pop_front();
-	}
 }
 
 void AnimationPlayer::_rename_animation(const StringName &p_from_name, const StringName &p_to_name) {
-	// Rename autoplay or blends if needed.
-	List<BlendKey> to_erase;
-	HashMap<BlendKey, double, BlendKey> to_insert;
-	for (const KeyValue<BlendKey, double> &E : blend_times) {
-		BlendKey bk = E.key;
-		BlendKey new_bk = bk;
-		bool erase = false;
-		if (bk.from == p_from_name) {
-			new_bk.from = p_to_name;
-			erase = true;
-		}
-		if (bk.to == p_from_name) {
-			new_bk.to = p_to_name;
-			erase = true;
-		}
-
-		if (erase) {
-			to_erase.push_back(bk);
-			to_insert[new_bk] = E.value;
-		}
-	}
-
-	while (to_erase.size()) {
-		blend_times.erase(to_erase.front()->get());
-		to_erase.pop_front();
-	}
-
-	while (to_insert.size()) {
-		blend_times[to_insert.begin()->key] = to_insert.begin()->value;
-		to_insert.remove(to_insert.begin());
-	}
-
 	if (autoplay == p_from_name) {
 		autoplay = p_to_name;
 	}
@@ -1547,33 +1457,6 @@ void AnimationPlayer::get_animation_list(List<StringName> *p_animations) const {
 	}
 }
 
-void AnimationPlayer::set_blend_time(const StringName &p_animation1, const StringName &p_animation2, double p_time) {
-	ERR_FAIL_COND_MSG(!animation_set.has(p_animation1), vformat("Animation not found: %s.", p_animation1));
-	ERR_FAIL_COND_MSG(!animation_set.has(p_animation2), vformat("Animation not found: %s.", p_animation2));
-	ERR_FAIL_COND_MSG(p_time < 0, "Blend time cannot be smaller than 0.");
-
-	BlendKey bk;
-	bk.from = p_animation1;
-	bk.to = p_animation2;
-	if (p_time == 0) {
-		blend_times.erase(bk);
-	} else {
-		blend_times[bk] = p_time;
-	}
-}
-
-double AnimationPlayer::get_blend_time(const StringName &p_animation1, const StringName &p_animation2) const {
-	BlendKey bk;
-	bk.from = p_animation1;
-	bk.to = p_animation2;
-
-	if (blend_times.has(bk)) {
-		return blend_times[bk];
-	} else {
-		return 0;
-	}
-}
-
 void AnimationPlayer::queue(const StringName &p_name) {
 	if (!is_playing()) {
 		play(p_name);
@@ -1595,11 +1478,11 @@ void AnimationPlayer::clear_queue() {
 	queued.clear();
 }
 
-void AnimationPlayer::play_backwards(const StringName &p_name, double p_custom_blend) {
-	play(p_name, p_custom_blend, -1, true);
+void AnimationPlayer::play_backwards(const StringName &p_name) {
+	play(p_name, -1, true);
 }
 
-void AnimationPlayer::play(const StringName &p_name, double p_custom_blend, float p_custom_scale, bool p_from_end) {
+void AnimationPlayer::play(const StringName &p_name, float p_custom_scale, bool p_from_end) {
 	StringName name = p_name;
 
 	if (String(name) == "") {
@@ -1609,42 +1492,6 @@ void AnimationPlayer::play(const StringName &p_name, double p_custom_blend, floa
 	ERR_FAIL_COND_MSG(!animation_set.has(name), vformat("Animation not found: %s.", name));
 
 	Playback &c = playback;
-
-	if (c.current.from) {
-		double blend_time = 0.0;
-		// find if it can blend
-		BlendKey bk;
-		bk.from = c.current.from->name;
-		bk.to = name;
-
-		if (p_custom_blend >= 0) {
-			blend_time = p_custom_blend;
-		} else if (blend_times.has(bk)) {
-			blend_time = blend_times[bk];
-		} else {
-			bk.from = "*";
-			if (blend_times.has(bk)) {
-				blend_time = blend_times[bk];
-			} else {
-				bk.from = c.current.from->name;
-				bk.to = "*";
-
-				if (blend_times.has(bk)) {
-					blend_time = blend_times[bk];
-				}
-			}
-		}
-
-		if (p_custom_blend < 0 && blend_time == 0 && default_blend_time) {
-			blend_time = default_blend_time;
-		}
-		if (blend_time > 0) {
-			Blend b;
-			b.data = c.current;
-			b.blend_time = b.blend_left = blend_time;
-			c.blend.push_back(b);
-		}
-	}
 
 	if (get_current_animation() != p_name) {
 		_stop_playing_caches();
@@ -1723,7 +1570,6 @@ String AnimationPlayer::get_assigned_animation() const {
 void AnimationPlayer::stop(bool p_reset) {
 	_stop_playing_caches();
 	Playback &c = playback;
-	c.blend.clear();
 	if (p_reset) {
 		c.current.from = nullptr;
 		c.current.speed_scale = 1;
@@ -1958,14 +1804,6 @@ StringName AnimationPlayer::animation_get_next(const StringName &p_animation) co
 	return animation_set[p_animation].next;
 }
 
-void AnimationPlayer::set_default_blend_time(double p_default) {
-	default_blend_time = p_default;
-}
-
-double AnimationPlayer::get_default_blend_time() const {
-	return default_blend_time;
-}
-
 void AnimationPlayer::set_root(const NodePath &p_root) {
 	root = p_root;
 	clear_caches();
@@ -2100,14 +1938,8 @@ void AnimationPlayer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("animation_set_next", "anim_from", "anim_to"), &AnimationPlayer::animation_set_next);
 	ClassDB::bind_method(D_METHOD("animation_get_next", "anim_from"), &AnimationPlayer::animation_get_next);
 
-	ClassDB::bind_method(D_METHOD("set_blend_time", "anim_from", "anim_to", "sec"), &AnimationPlayer::set_blend_time);
-	ClassDB::bind_method(D_METHOD("get_blend_time", "anim_from", "anim_to"), &AnimationPlayer::get_blend_time);
-
-	ClassDB::bind_method(D_METHOD("set_default_blend_time", "sec"), &AnimationPlayer::set_default_blend_time);
-	ClassDB::bind_method(D_METHOD("get_default_blend_time"), &AnimationPlayer::get_default_blend_time);
-
-	ClassDB::bind_method(D_METHOD("play", "name", "custom_blend", "custom_speed", "from_end"), &AnimationPlayer::play, DEFVAL(""), DEFVAL(-1), DEFVAL(1.0), DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("play_backwards", "name", "custom_blend"), &AnimationPlayer::play_backwards, DEFVAL(""), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("play", "name", "custom_speed", "from_end"), &AnimationPlayer::play, DEFVAL(""), DEFVAL(1.0), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("play_backwards", "name"), &AnimationPlayer::play_backwards, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("stop", "reset"), &AnimationPlayer::stop, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("is_playing"), &AnimationPlayer::is_playing);
 
@@ -2165,7 +1997,6 @@ void AnimationPlayer::_bind_methods() {
 
 	ADD_GROUP("Playback Options", "playback_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "playback_process_mode", PROPERTY_HINT_ENUM, "Physics,Idle,Manual"), "set_process_callback", "get_process_callback");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "playback_default_blend_time", PROPERTY_HINT_RANGE, "0,4096,0.01,suffix:s"), "set_default_blend_time", "get_default_blend_time");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playback_active", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_active", "is_active");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "playback_speed", PROPERTY_HINT_RANGE, "-64,64,0.01"), "set_speed_scale", "get_speed_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "method_call_mode", PROPERTY_HINT_ENUM, "Deferred,Immediate"), "set_method_call_mode", "get_method_call_mode");

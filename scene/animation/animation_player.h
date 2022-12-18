@@ -79,7 +79,6 @@ public:
 private:
 	enum {
 		NODE_CACHE_UPDATE_MAX = 1024,
-		BLEND_FROM_MAX = 3
 	};
 
 	enum SpecialProperty {
@@ -191,7 +190,6 @@ private:
 
 	uint64_t accum_pass = 1;
 	float speed_scale = 1.0;
-	double default_blend_time = 0.0;
 
 	struct AnimationData {
 		String name;
@@ -212,41 +210,13 @@ private:
 
 	LocalVector<AnimationLibraryData> animation_libraries;
 
-	struct BlendKey {
-		StringName from;
-		StringName to;
-		static uint32_t hash(const BlendKey &p_key) {
-			return hash_one_uint64((uint64_t(p_key.from.hash()) << 32) | uint32_t(p_key.to.hash()));
-		}
-		bool operator==(const BlendKey &bk) const {
-			return from == bk.from && to == bk.to;
-		}
-		bool operator<(const BlendKey &bk) const {
-			if (from == bk.from) {
-				return to < bk.to;
-			} else {
-				return from < bk.from;
-			}
-		}
-	};
-
-	HashMap<BlendKey, double, BlendKey> blend_times;
-
 	struct PlaybackData {
 		AnimationData *from = nullptr;
 		double pos = 0.0;
 		float speed_scale = 1.0;
 	};
 
-	struct Blend {
-		PlaybackData data;
-
-		double blend_time = 0.0;
-		double blend_left = 0.0;
-	};
-
 	struct Playback {
-		List<Blend> blend;
 		PlaybackData current;
 		StringName assigned;
 		bool seeked = false;
@@ -268,10 +238,10 @@ private:
 
 	NodePath root;
 
-	void _animation_process_animation(AnimationData *p_anim, double p_prev_time, double p_time, double p_delta, float p_interp, bool p_is_current = true, bool p_seeked = false, bool p_started = false, Animation::LoopedFlag p_looped_flag = Animation::LOOPED_FLAG_NONE);
+	void _animation_process_animation(AnimationData *p_anim, double p_prev_time, double p_time, double p_delta, bool p_is_current = true, bool p_seeked = false, bool p_started = false, Animation::LoopedFlag p_looped_flag = Animation::LOOPED_FLAG_NONE);
 
 	void _ensure_node_caches(AnimationData *p_anim, Node *p_root_override = nullptr);
-	void _animation_process_data(PlaybackData &cd, double p_delta, float p_blend, bool p_seeked, bool p_started);
+	void _animation_process_data(PlaybackData &cd, double p_delta, bool p_seeked, bool p_started);
 	void _animation_process2(double p_delta, bool p_started);
 	void _animation_update_transforms();
 	void _animation_process(double p_delta);
@@ -332,17 +302,11 @@ public:
 	void get_animation_list(List<StringName> *p_animations) const;
 	bool has_animation(const StringName &p_name) const;
 
-	void set_blend_time(const StringName &p_animation1, const StringName &p_animation2, double p_time);
-	double get_blend_time(const StringName &p_animation1, const StringName &p_animation2) const;
-
 	void animation_set_next(const StringName &p_animation, const StringName &p_next);
 	StringName animation_get_next(const StringName &p_animation) const;
 
-	void set_default_blend_time(double p_default);
-	double get_default_blend_time() const;
-
-	void play(const StringName &p_name = StringName(), double p_custom_blend = -1, float p_custom_scale = 1.0, bool p_from_end = false);
-	void play_backwards(const StringName &p_name = StringName(), double p_custom_blend = -1);
+	void play(const StringName &p_name = StringName(), float p_custom_scale = 1.0, bool p_from_end = false);
+	void play_backwards(const StringName &p_name = StringName());
 	void queue(const StringName &p_name);
 	Vector<String> get_queue();
 	void clear_queue();

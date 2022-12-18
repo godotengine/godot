@@ -196,7 +196,6 @@ public:
 	StringName playback_speed;
 	StringName playback_active;
 	StringName autoplay;
-	StringName blend_times;
 	StringName speed;
 
 	NodePath path_pp;

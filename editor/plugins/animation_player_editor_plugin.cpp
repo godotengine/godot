@@ -105,8 +105,6 @@ void AnimationPlayerEditor::_notification(int p_what) {
 
 			onion_skinning->get_popup()->connect("id_pressed", callable_mp(this, &AnimationPlayerEditor::_onion_skinning_menu));
 
-			blend_editor.next->connect("item_selected", callable_mp(this, &AnimationPlayerEditor::_blend_editor_next_changed));
-
 			get_tree()->connect("node_removed", callable_mp(this, &AnimationPlayerEditor::_node_removed));
 
 			add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("panel"), SNAME("Panel")));
@@ -153,7 +151,6 @@ void AnimationPlayerEditor::_notification(int p_what) {
 			ITEM_ICON(TOOL_ANIM_LIBRARY, "AnimationLibrary");
 			ITEM_ICON(TOOL_DUPLICATE_ANIM, "Duplicate");
 			ITEM_ICON(TOOL_RENAME_ANIM, "Rename");
-			ITEM_ICON(TOOL_EDIT_TRANSITIONS, "Blend");
 			ITEM_ICON(TOOL_EDIT_RESOURCE, "Edit");
 			ITEM_ICON(TOOL_REMOVE_ANIM, "Remove");
 
@@ -197,7 +194,7 @@ void AnimationPlayerEditor::_play_pressed() {
 
 	if (!current.is_empty()) {
 		if (current == player->get_assigned_animation()) {
-			player->stop(); //so it won't blend with itself
+			player->stop();
 		}
 		ERR_FAIL_COND_EDMSG(!_validate_tracks(player->get_animation(current)), "Animation tracks may have any invalid key, abort playing.");
 		player->play(current);
@@ -213,7 +210,7 @@ void AnimationPlayerEditor::_play_from_pressed() {
 	if (!current.is_empty()) {
 		float time = player->get_current_animation_position();
 		if (current == player->get_assigned_animation() && player->is_playing()) {
-			player->stop(); //so it won't blend with itself
+			player->stop();
 		}
 		ERR_FAIL_COND_EDMSG(!_validate_tracks(player->get_animation(current)), "Animation tracks may have any invalid key, abort playing.");
 		player->seek(time);
@@ -235,10 +232,10 @@ void AnimationPlayerEditor::_play_bw_pressed() {
 	String current = _get_current();
 	if (!current.is_empty()) {
 		if (current == player->get_assigned_animation()) {
-			player->stop(); //so it won't blend with itself
+			player->stop();
 		}
 		ERR_FAIL_COND_EDMSG(!_validate_tracks(player->get_animation(current)), "Animation tracks may have any invalid key, abort playing.");
-		player->play(current, -1, -1, true);
+		player->play(current, -1, true);
 	}
 
 	//unstop
@@ -251,11 +248,11 @@ void AnimationPlayerEditor::_play_bw_from_pressed() {
 	if (!current.is_empty()) {
 		float time = player->get_current_animation_position();
 		if (current == player->get_assigned_animation()) {
-			player->stop(); //so it won't blend with itself
+			player->stop();
 		}
 		ERR_FAIL_COND_EDMSG(!_validate_tracks(player->get_animation(current)), "Animation tracks may have any invalid key, abort playing.");
 		player->seek(time);
-		player->play(current, -1, -1, true);
+		player->play(current, -1, true);
 	}
 
 	//unstop
@@ -277,7 +274,7 @@ void AnimationPlayerEditor::_animation_selected(int p_which) {
 		return;
 	}
 	// when selecting an animation, the idea is that the only interesting behavior
-	// ui-wise is that it should play/blend the next one if currently playing
+	// ui-wise is that it should play the next one if currently playing
 	String current = _get_current();
 
 	if (!current.is_empty()) {
@@ -592,110 +589,6 @@ void AnimationPlayerEditor::_animation_name_edited() {
 	name_dialog->hide();
 }
 
-void AnimationPlayerEditor::_blend_editor_next_changed(const int p_idx) {
-	if (!animation->has_selectable_items()) {
-		return;
-	}
-
-	String current = animation->get_item_text(animation->get_selected());
-
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
-	undo_redo->create_action(TTR("Blend Next Changed"));
-	undo_redo->add_do_method(player, "animation_set_next", current, blend_editor.next->get_item_text(p_idx));
-	undo_redo->add_undo_method(player, "animation_set_next", current, player->animation_get_next(current));
-	undo_redo->add_do_method(this, "_animation_player_changed", player);
-	undo_redo->add_undo_method(this, "_animation_player_changed", player);
-	undo_redo->commit_action();
-}
-
-void AnimationPlayerEditor::_animation_blend() {
-	if (updating_blends) {
-		return;
-	}
-
-	blend_editor.tree->clear();
-
-	if (!animation->has_selectable_items()) {
-		return;
-	}
-
-	String current = animation->get_item_text(animation->get_selected());
-
-	blend_editor.dialog->popup_centered(Size2(400, 400) * EDSCALE);
-
-	blend_editor.tree->set_hide_root(true);
-	blend_editor.tree->set_column_expand_ratio(0, 10);
-	blend_editor.tree->set_column_clip_content(0, true);
-	blend_editor.tree->set_column_expand_ratio(1, 3);
-	blend_editor.tree->set_column_clip_content(1, true);
-
-	List<StringName> anims;
-	player->get_animation_list(&anims);
-	TreeItem *root = blend_editor.tree->create_item();
-	updating_blends = true;
-
-	int i = 0;
-	bool anim_found = false;
-	blend_editor.next->clear();
-	blend_editor.next->add_item("", i);
-
-	for (const StringName &to : anims) {
-		TreeItem *blend = blend_editor.tree->create_item(root);
-		blend->set_editable(0, false);
-		blend->set_editable(1, true);
-		blend->set_text(0, to);
-		blend->set_cell_mode(1, TreeItem::CELL_MODE_RANGE);
-		blend->set_range_config(1, 0, 3600, 0.001);
-		blend->set_range(1, player->get_blend_time(current, to));
-
-		i++;
-		blend_editor.next->add_item(to, i);
-		if (to == player->animation_get_next(current)) {
-			blend_editor.next->select(i);
-			anim_found = true;
-		}
-	}
-
-	// make sure we reset it else it becomes out of sync and could contain a deleted animation
-	if (!anim_found) {
-		blend_editor.next->select(0);
-		player->animation_set_next(current, blend_editor.next->get_item_text(0));
-	}
-
-	updating_blends = false;
-}
-
-void AnimationPlayerEditor::_blend_edited() {
-	if (updating_blends) {
-		return;
-	}
-
-	if (!animation->has_selectable_items()) {
-		return;
-	}
-
-	String current = animation->get_item_text(animation->get_selected());
-
-	TreeItem *selected = blend_editor.tree->get_edited();
-	if (!selected) {
-		return;
-	}
-
-	updating_blends = true;
-	String to = selected->get_text(0);
-	float blend_time = selected->get_range(1);
-	float prev_blend_time = player->get_blend_time(current, to);
-
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
-	undo_redo->create_action(TTR("Change Blend Time"));
-	undo_redo->add_do_method(player, "set_blend_time", current, to, blend_time);
-	undo_redo->add_undo_method(player, "set_blend_time", current, to, prev_blend_time);
-	undo_redo->add_do_method(this, "_animation_player_changed", player);
-	undo_redo->add_undo_method(this, "_animation_player_changed", player);
-	undo_redo->commit_action();
-	updating_blends = false;
-}
-
 void AnimationPlayerEditor::ensure_visibility() {
 	if (player && pin->is_pressed()) {
 		return; // another player is pinned, don't reset
@@ -876,7 +769,6 @@ void AnimationPlayerEditor::_update_player() {
 
 	ITEM_CHECK_DISABLED(TOOL_DUPLICATE_ANIM);
 	ITEM_CHECK_DISABLED(TOOL_RENAME_ANIM);
-	ITEM_CHECK_DISABLED(TOOL_EDIT_TRANSITIONS);
 	ITEM_CHECK_DISABLED(TOOL_REMOVE_ANIM);
 	ITEM_CHECK_DISABLED(TOOL_EDIT_RESOURCE);
 
@@ -1166,9 +1058,6 @@ void AnimationPlayerEditor::_seek_value_changed(float p_value, bool p_set, bool 
 void AnimationPlayerEditor::_animation_player_changed(Object *p_pl) {
 	if (player == p_pl && is_visible_in_tree()) {
 		_update_player();
-		if (blend_editor.dialog->is_visible()) {
-			_animation_blend(); // Update.
-		}
 		if (library_editor->is_visible()) {
 			library_editor->update_tree();
 		}
@@ -1235,9 +1124,6 @@ void AnimationPlayerEditor::_animation_tool_menu(int p_option) {
 		} break;
 		case TOOL_RENAME_ANIM: {
 			_animation_rename();
-		} break;
-		case TOOL_EDIT_TRANSITIONS: {
-			_animation_blend();
 		} break;
 		case TOOL_REMOVE_ANIM: {
 			_animation_remove();
@@ -1616,7 +1502,6 @@ void AnimationPlayerEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_animation_new"), &AnimationPlayerEditor::_animation_new);
 	ClassDB::bind_method(D_METHOD("_animation_rename"), &AnimationPlayerEditor::_animation_rename);
 	ClassDB::bind_method(D_METHOD("_animation_remove"), &AnimationPlayerEditor::_animation_remove);
-	ClassDB::bind_method(D_METHOD("_animation_blend"), &AnimationPlayerEditor::_animation_blend);
 	ClassDB::bind_method(D_METHOD("_animation_edit"), &AnimationPlayerEditor::_animation_edit);
 	ClassDB::bind_method(D_METHOD("_animation_resource_edit"), &AnimationPlayerEditor::_animation_resource_edit);
 	ClassDB::bind_method(D_METHOD("_animation_player_changed"), &AnimationPlayerEditor::_animation_player_changed);
@@ -1709,7 +1594,6 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/duplicate_animation", TTR("Duplicate...")), TOOL_DUPLICATE_ANIM);
 	tool_anim->get_popup()->add_separator();
 	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/rename_animation", TTR("Rename...")), TOOL_RENAME_ANIM);
-	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/edit_transitions", TTR("Edit Transitions...")), TOOL_EDIT_TRANSITIONS);
 	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/open_animation_in_inspector", TTR("Open in Inspector")), TOOL_EDIT_RESOURCE);
 	tool_anim->get_popup()->add_separator();
 	tool_anim->get_popup()->add_shortcut(ED_SHORTCUT("animation_player_editor/remove_animation", TTR("Remove")), TOOL_REMOVE_ANIM);
@@ -1809,22 +1693,6 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	add_child(error_dialog);
 
 	name_dialog->connect("confirmed", callable_mp(this, &AnimationPlayerEditor::_animation_name_edited));
-
-	blend_editor.dialog = memnew(AcceptDialog);
-	add_child(blend_editor.dialog);
-	blend_editor.dialog->set_ok_button_text(TTR("Close"));
-	blend_editor.dialog->set_hide_on_ok(true);
-	VBoxContainer *blend_vb = memnew(VBoxContainer);
-	blend_editor.dialog->add_child(blend_vb);
-	blend_editor.tree = memnew(Tree);
-	blend_editor.tree->set_columns(2);
-	blend_vb->add_margin_child(TTR("Blend Times:"), blend_editor.tree, true);
-	blend_editor.next = memnew(OptionButton);
-	blend_vb->add_margin_child(TTR("Next (Auto Queue):"), blend_editor.next);
-	blend_editor.dialog->set_title(TTR("Cross-Animation Blend Times"));
-	updating_blends = false;
-
-	blend_editor.tree->connect("item_edited", callable_mp(this, &AnimationPlayerEditor::_blend_edited));
 
 	autoplay->connect("pressed", callable_mp(this, &AnimationPlayerEditor::_autoplay_pressed));
 	autoplay->set_toggle_mode(true);

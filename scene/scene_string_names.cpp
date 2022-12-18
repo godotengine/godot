@@ -187,7 +187,6 @@ SceneStringNames::SceneStringNames() {
 	playback_speed = StaticCString::create("playback/speed");
 	playback_active = StaticCString::create("playback/active");
 	autoplay = StaticCString::create("autoplay");
-	blend_times = StaticCString::create("blend_times");
 	speed = StaticCString::create("speed");
 
 	node_configuration_warning_changed = StaticCString::create("node_configuration_warning_changed");

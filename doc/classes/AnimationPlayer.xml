@@ -97,14 +97,6 @@
 				Returns the list of stored animation keys.
 			</description>
 		</method>
-		<method name="get_blend_time" qualifiers="const">
-			<return type="float" />
-			<param index="0" name="anim_from" type="StringName" />
-			<param index="1" name="anim_to" type="StringName" />
-			<description>
-				Gets the blend time (in seconds) between two animations, referenced by their keys.
-			</description>
-		</method>
 		<method name="get_playing_speed" qualifiers="const">
 			<return type="float" />
 			<description>
@@ -140,9 +132,8 @@
 		<method name="play">
 			<return type="void" />
 			<param index="0" name="name" type="StringName" default="&quot;&quot;" />
-			<param index="1" name="custom_blend" type="float" default="-1" />
-			<param index="2" name="custom_speed" type="float" default="1.0" />
-			<param index="3" name="from_end" type="bool" default="false" />
+			<param index="1" name="custom_speed" type="float" default="1.0" />
+			<param index="2" name="from_end" type="bool" default="false" />
 			<description>
 				Plays the animation with key [param name]. Custom blend times and speed can be set. If [param custom_speed] is negative and [param from_end] is [code]true[/code], the animation will play backwards (which is equivalent to calling [method play_backwards]).
 				The [AnimationPlayer] keeps track of its current or last played animation with [member assigned_animation]. If this method is called with that same animation [param name], or with no [param name] parameter, the assigned animation will resume playing if it was paused, or restart if it was stopped (see [method stop] for both pause and stop). If the animation was already playing, it will keep playing.
@@ -152,7 +143,6 @@
 		<method name="play_backwards">
 			<return type="void" />
 			<param index="0" name="name" type="StringName" default="&quot;&quot;" />
-			<param index="1" name="custom_blend" type="float" default="-1" />
 			<description>
 				Plays the animation with key [param name] in reverse.
 				This method is a shorthand for [method play] with [code]custom_speed = -1.0[/code] and [code]from_end = true[/code], so see its description for more information.
@@ -190,15 +180,6 @@
 				[b]Note:[/b] Seeking to the end of the animation doesn't emit [signal animation_finished]. If you want to skip animation and emit the signal, use [method advance].
 			</description>
 		</method>
-		<method name="set_blend_time">
-			<return type="void" />
-			<param index="0" name="anim_from" type="StringName" />
-			<param index="1" name="anim_to" type="StringName" />
-			<param index="2" name="sec" type="float" />
-			<description>
-				Specifies a blend time (in seconds) between two animations, referenced by their keys.
-			</description>
-		</method>
 		<method name="stop">
 			<return type="void" />
 			<param index="0" name="reset" type="bool" default="true" />
@@ -234,9 +215,6 @@
 		</member>
 		<member name="playback_active" type="bool" setter="set_active" getter="is_active">
 			If [code]true[/code], updates animations in response to process-related notifications.
-		</member>
-		<member name="playback_default_blend_time" type="float" setter="set_default_blend_time" getter="get_default_blend_time" default="0.0">
-			The default time in which to blend animations. Ranges from 0 to 4096 with 0.01 precision.
 		</member>
 		<member name="playback_process_mode" type="int" setter="set_process_callback" getter="get_process_callback" enum="AnimationPlayer.AnimationProcessCallback" default="1">
 			The process notification in which to update animations.

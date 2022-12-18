@@ -54,7 +54,6 @@ class AnimationPlayerEditor : public VBoxContainer {
 		TOOL_ANIM_LIBRARY,
 		TOOL_DUPLICATE_ANIM,
 		TOOL_RENAME_ANIM,
-		TOOL_EDIT_TRANSITIONS,
 		TOOL_REMOVE_ANIM,
 		TOOL_EDIT_RESOURCE
 	};
@@ -112,19 +111,11 @@ class AnimationPlayerEditor : public VBoxContainer {
 
 	AnimationLibraryEditor *library_editor = nullptr;
 
-	struct BlendEditor {
-		AcceptDialog *dialog = nullptr;
-		Tree *tree = nullptr;
-		OptionButton *next = nullptr;
-
-	} blend_editor;
-
 	ConfirmationDialog *name_dialog = nullptr;
 	ConfirmationDialog *error_dialog = nullptr;
 	int name_dialog_op = TOOL_NEW_ANIM;
 
 	bool updating;
-	bool updating_blends;
 
 	AnimationTrackEditor *track_editor = nullptr;
 	static AnimationPlayerEditor *singleton;
@@ -176,21 +167,18 @@ class AnimationPlayerEditor : public VBoxContainer {
 
 	void _animation_remove();
 	void _animation_remove_confirmed();
-	void _animation_blend();
 	void _animation_edit();
 	void _animation_duplicate();
 	Ref<Animation> _animation_clone(const Ref<Animation> p_anim);
 	void _animation_resource_edit();
 	void _scale_changed(const String &p_scale);
 	void _seek_value_changed(float p_value, bool p_set = false, bool p_timeline_only = false);
-	void _blend_editor_next_changed(const int p_idx);
 
 	void _list_changed();
 	void _update_animation();
 	void _update_player();
 	void _update_animation_list_icons();
 	void _update_name_dialog_library_dropdown();
-	void _blend_edited();
 
 	void _animation_player_changed(Object *p_pl);
 	void _animation_libraries_updated();
