@@ -183,16 +183,37 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 	// Create a tree item for the subdirectory.
 	TreeItem *subdirectory_item = tree->create_item(p_parent);
 	String dname = p_dir->get_name();
+	String lpath = p_dir->get_path();
+
 	if (dname.is_empty()) {
 		dname = "res://";
+	}
+
+	// Set custom folder color (if applicable).
+	bool has_custom_color = assigned_folder_colors.has(lpath);
+	Color custom_color = has_custom_color ? folder_colors[assigned_folder_colors[lpath]] : Color();
+
+	if (has_custom_color) {
+		subdirectory_item->set_icon_modulate(0, editor_is_dark_theme ? custom_color : custom_color * 1.75);
+		subdirectory_item->set_custom_bg_color(0, Color(custom_color, editor_is_dark_theme ? 0.1 : 0.15));
+	} else {
+		TreeItem *parent = subdirectory_item->get_parent();
+		if (parent) {
+			Color parent_bg_color = parent->get_custom_bg_color(0);
+			if (parent_bg_color != Color()) {
+				bool parent_has_custom_color = assigned_folder_colors.has(parent->get_metadata(0));
+				subdirectory_item->set_custom_bg_color(0, parent_has_custom_color ? parent_bg_color.darkened(0.3) : parent_bg_color);
+				subdirectory_item->set_icon_modulate(0, parent->get_icon_modulate(0));
+			} else {
+				subdirectory_item->set_icon_modulate(0, get_theme_color(SNAME("folder_icon_color"), SNAME("FileDialog")));
+			}
+		}
 	}
 
 	subdirectory_item->set_text(0, dname);
 	subdirectory_item->set_structured_text_bidi_override(0, TextServer::STRUCTURED_TEXT_FILE);
 	subdirectory_item->set_icon(0, get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
-	subdirectory_item->set_icon_modulate(0, get_theme_color(SNAME("folder_icon_color"), SNAME("FileDialog")));
 	subdirectory_item->set_selectable(0, true);
-	String lpath = p_dir->get_path();
 	subdirectory_item->set_metadata(0, lpath);
 	if (!p_select_in_favorites && (current_path == lpath || ((display_mode == DISPLAY_MODE_SPLIT) && current_path.get_base_dir() == lpath))) {
 		subdirectory_item->select(0);
@@ -260,6 +281,12 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 			file_item->set_text(0, fi.name);
 			file_item->set_structured_text_bidi_override(0, TextServer::STRUCTURED_TEXT_FILE);
 			file_item->set_icon(0, _get_tree_item_icon(!fi.import_broken, fi.type));
+			Color parent_bg_color = subdirectory_item->get_custom_bg_color(0);
+			if (has_custom_color) {
+				file_item->set_custom_bg_color(0, parent_bg_color.darkened(0.3));
+			} else if (parent_bg_color != Color()) {
+				file_item->set_custom_bg_color(0, parent_bg_color);
+			}
 			String file_metadata = lpath.path_join(fi.name);
 			file_item->set_metadata(0, file_metadata);
 			if (!p_select_in_favorites && current_path == file_metadata) {
@@ -355,14 +382,14 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 		EditorSettings::get_singleton()->set_favorites(favorite_paths);
 	}
 
+	Ref<Texture2D> folder_icon = get_theme_icon(SNAME("Folder"), SNAME("EditorIcons"));
+	const Color default_folder_color = get_theme_color(SNAME("folder_icon_color"), SNAME("FileDialog"));
+
 	for (int i = 0; i < favorite_paths.size(); i++) {
 		String favorite = favorite_paths[i];
 		if (!favorite.begins_with("res://")) {
 			continue;
 		}
-
-		Ref<Texture2D> folder_icon = get_theme_icon(SNAME("Folder"), SNAME("EditorIcons"));
-		const Color folder_color = get_theme_color(SNAME("folder_icon_color"), SNAME("FileDialog"));
 
 		String text;
 		Ref<Texture2D> icon;
@@ -370,11 +397,11 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 		if (favorite == "res://") {
 			text = "/";
 			icon = folder_icon;
-			color = folder_color;
+			color = default_folder_color;
 		} else if (favorite.ends_with("/")) {
 			text = favorite.substr(0, favorite.length() - 1).get_file();
 			icon = folder_icon;
-			color = folder_color;
+			color = assigned_folder_colors.has(favorite) ? folder_colors[assigned_folder_colors[favorite]] : default_folder_color;
 		} else {
 			text = favorite.get_file();
 			int index;
@@ -581,11 +608,24 @@ void FileSystemDock::_notification(int p_what) {
 			file_list_search_box->set_clear_button_enabled(true);
 			file_list_button_sort->set_icon(get_theme_icon(SNAME("Sort"), SNAME("EditorIcons")));
 
-			// Update always show folders.
+			// Update editor dark theme & always show folders states from editor settings, redraw if needed.
+			bool do_redraw = false;
+
+			bool new_editor_is_dark_theme = EditorSettings::get_singleton()->is_dark_theme();
+			if (new_editor_is_dark_theme != editor_is_dark_theme) {
+				editor_is_dark_theme = new_editor_is_dark_theme;
+				do_redraw = true;
+			}
+
 			bool new_always_show_folders = bool(EDITOR_GET("docks/filesystem/always_show_folders"));
 			if (new_always_show_folders != always_show_folders) {
 				always_show_folders = new_always_show_folders;
+				do_redraw = true;
+			}
+
+			if (do_redraw) {
 				_update_file_list(true);
+				_update_tree(get_uncollapsed_paths());
 			}
 
 			// Change full tree mode.
@@ -900,7 +940,7 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 	}
 
 	Ref<Texture2D> folder_icon = (use_thumbnails) ? folder_thumbnail : get_theme_icon(SNAME("folder"), SNAME("FileDialog"));
-	const Color folder_color = get_theme_color(SNAME("folder_icon_color"), SNAME("FileDialog"));
+	const Color default_folder_color = get_theme_color(SNAME("folder_icon_color"), SNAME("FileDialog"));
 
 	// Build the FileInfo list.
 	List<FileInfo> file_list;
@@ -967,6 +1007,21 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 			_search(EditorFileSystem::get_singleton()->get_filesystem(), &file_list, 10000);
 		} else {
 			if (display_mode == DISPLAY_MODE_TREE_ONLY || always_show_folders) {
+				// Check for a folder color to inherit (if one is assigned).
+				Color inherited_folder_color = default_folder_color;
+				String color_scan_dir = directory;
+				while (color_scan_dir != "res://" && inherited_folder_color == default_folder_color) {
+					if (!color_scan_dir.ends_with("/")) {
+						color_scan_dir += "/";
+					}
+
+					if (assigned_folder_colors.has(color_scan_dir)) {
+						inherited_folder_color = folder_colors[assigned_folder_colors[color_scan_dir]];
+					}
+
+					color_scan_dir = color_scan_dir.rstrip("/").get_base_dir();
+				}
+
 				// Display folders in the list.
 				if (directory != "res://") {
 					files->add_item("..", folder_icon, true);
@@ -978,7 +1033,7 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 
 					files->set_item_metadata(-1, bd);
 					files->set_item_selectable(-1, false);
-					files->set_item_icon_modulate(-1, folder_color);
+					files->set_item_icon_modulate(-1, editor_is_dark_theme ? inherited_folder_color : inherited_folder_color * 1.75);
 				}
 
 				bool reversed = file_sort == FILE_SORT_NAME_REVERSE;
@@ -986,10 +1041,13 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 						reversed ? i >= 0 : i < efd->get_subdir_count();
 						reversed ? i-- : i++) {
 					String dname = efd->get_subdir(i)->get_name();
+					String dpath = directory.path_join(dname) + "/";
+					bool has_custom_color = assigned_folder_colors.has(dpath);
 
 					files->add_item(dname, folder_icon, true);
-					files->set_item_metadata(-1, directory.path_join(dname) + "/");
-					files->set_item_icon_modulate(-1, folder_color);
+					files->set_item_metadata(-1, dpath);
+					Color this_folder_color = has_custom_color ? folder_colors[assigned_folder_colors[dpath]] : inherited_folder_color;
+					files->set_item_icon_modulate(-1, editor_is_dark_theme ? this_folder_color : this_folder_color * 1.75);
 
 					if (cselection.has(dname)) {
 						files->select(files->get_item_count() - 1, false);
@@ -2706,6 +2764,42 @@ void FileSystemDock::_get_drag_target_folder(String &target, bool &target_favori
 	}
 }
 
+void FileSystemDock::_folder_color_index_pressed(int p_index, PopupMenu *p_menu) {
+	Variant chosen_color_name = p_menu->get_item_metadata(p_index);
+	Vector<String> selected;
+
+	// Get all selected folders based on whether the files panel or tree panel is currently focused.
+	if (files->has_focus()) {
+		Vector<int> files_selected_ids = files->get_selected_items();
+		for (int i = 0; i < files_selected_ids.size(); i++) {
+			selected.push_back(files->get_item_metadata(files_selected_ids[i]));
+		}
+	} else {
+		TreeItem *tree_selected = tree->get_root();
+		tree_selected = tree->get_next_selected(tree_selected);
+		while (tree_selected) {
+			selected.push_back(tree_selected->get_metadata(0));
+			tree_selected = tree->get_next_selected(tree_selected);
+		}
+	}
+
+	// Update project settings with new folder colors.
+	for (int i = 0; i < selected.size(); i++) {
+		String fpath = selected[i];
+
+		if (chosen_color_name) {
+			assigned_folder_colors[fpath] = chosen_color_name;
+		} else {
+			assigned_folder_colors.erase(fpath);
+		}
+	}
+
+	ProjectSettings::get_singleton()->save();
+
+	_update_tree(get_uncollapsed_paths());
+	_update_file_list(true);
+}
+
 void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<String> p_paths, bool p_display_path_dependent_options) {
 	// Add options for files and folders.
 	ERR_FAIL_COND_MSG(p_paths.is_empty(), "Path cannot be empty.");
@@ -2798,6 +2892,27 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 		}
 
 		p_popup->add_separator();
+
+		if (p_paths[0] != "res://") {
+			PopupMenu *folder_colors_menu = memnew(PopupMenu);
+			folder_colors_menu->set_name("FolderColor");
+			folder_colors_menu->connect("id_pressed", callable_mp(this, &FileSystemDock::_folder_color_index_pressed).bind(folder_colors_menu));
+
+			p_popup->add_child(folder_colors_menu);
+			p_popup->add_submenu_item(TTR("Set Folder Color..."), "FolderColor");
+			p_popup->set_item_icon(-1, get_theme_icon(SNAME("CanvasItem"), SNAME("EditorIcons")));
+
+			folder_colors_menu->add_icon_item(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")), TTR("Default (Reset)"));
+			folder_colors_menu->set_item_icon_modulate(0, get_theme_color(SNAME("folder_icon_color"), SNAME("FileDialog")));
+			folder_colors_menu->add_separator();
+
+			for (const KeyValue<String, Color> &E : folder_colors) {
+				folder_colors_menu->add_icon_item(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")), TTR(E.key.capitalize()));
+
+				folder_colors_menu->set_item_icon_modulate(-1, editor_is_dark_theme ? E.value : E.value * 2);
+				folder_colors_menu->set_item_metadata(-1, E.key);
+			}
+		}
 	}
 
 	if (p_paths.size() == 1) {
@@ -2882,6 +2997,8 @@ void FileSystemDock::_tree_rmb_select(const Vector2 &p_pos, MouseButton p_button
 	if (p_button != MouseButton::RIGHT) {
 		return;
 	}
+	tree->grab_focus();
+
 	// Right click is pressed in the tree.
 	Vector<String> paths = _tree_get_selected(false);
 
@@ -2929,6 +3046,7 @@ void FileSystemDock::_file_list_item_clicked(int p_item, const Vector2 &p_pos, M
 	if (p_mouse_button_index != MouseButton::RIGHT) {
 		return;
 	}
+	files->grab_focus();
 
 	// Right click is pressed in the file list.
 	Vector<String> paths;
@@ -3332,6 +3450,8 @@ FileSystemDock::FileSystemDock() {
 	set_name("FileSystem");
 	current_path = "res://";
 
+	ProjectSettings::get_singleton()->add_hidden_prefix("file_customization/");
+
 	// `KeyModifierMask::CMD_OR_CTRL | Key::C` conflicts with other editor shortcuts.
 	ED_SHORTCUT("filesystem_dock/copy_path", TTR("Copy Path"), KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT | Key::C);
 	ED_SHORTCUT("filesystem_dock/copy_uid", TTR("Copy UID"));
@@ -3344,6 +3464,21 @@ FileSystemDock::FileSystemDock() {
 	ED_SHORTCUT("filesystem_dock/show_in_explorer", TTR("Open in File Manager"));
 	ED_SHORTCUT("filesystem_dock/open_in_external_program", TTR("Open in External Program"));
 #endif
+
+	folder_colors = HashMap<String, Color>();
+	folder_colors["red"] = Color(1.0, 0.271, 0.271);
+	folder_colors["orange"] = Color(1.0, 0.561, 0.271);
+	folder_colors["yellow"] = Color(1.0, 0.890, 0.271);
+	folder_colors["green"] = Color(0.502, 1.0, 0.271);
+	folder_colors["teal"] = Color(0.271, 1.0, 0.635);
+	folder_colors["blue"] = Color(0.271, 0.843, 1.0);
+	folder_colors["purple"] = Color(0.502, 0.271, 1.0);
+	folder_colors["pink"] = Color(1.0, 0.271, 0.588);
+	folder_colors["gray"] = Color(0.616, 0.616, 0.616);
+
+	assigned_folder_colors = ProjectSettings::get_singleton()->get_setting("file_customization/folder_colors");
+
+	editor_is_dark_theme = EditorSettings::get_singleton()->is_dark_theme();
 
 	VBoxContainer *top_vbc = memnew(VBoxContainer);
 	add_child(top_vbc);
