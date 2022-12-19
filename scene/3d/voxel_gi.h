@@ -122,7 +122,7 @@ private:
 	Ref<CameraAttributes> camera_attributes;
 
 	struct PlotMesh {
-		Ref<Material> override_material;
+		Ref<Material> material_override;
 		Vector<Ref<Material>> instance_materials;
 		Ref<Mesh> mesh;
 		Transform3D local_xform;

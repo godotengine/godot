@@ -1593,13 +1593,13 @@
 				Sets the scenario that the instance is in. The scenario is the 3D world that the objects will be displayed in.
 			</description>
 		</method>
-		<method name="instance_set_surface_override_material">
+		<method name="instance_set_surface_material_override">
 			<return type="void" />
 			<param index="0" name="instance" type="RID" />
 			<param index="1" name="surface" type="int" />
 			<param index="2" name="material" type="RID" />
 			<description>
-				Sets the override material of a specific surface. Equivalent to [method MeshInstance3D.set_surface_override_material].
+				Sets the material override of a specific surface. Equivalent to [method MeshInstance3D.set_surface_material_override].
 			</description>
 		</method>
 		<method name="instance_set_transform">

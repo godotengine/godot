@@ -4152,10 +4152,10 @@ bool Node3DEditorViewport::_apply_preview_material(ObjectID p_target, const Poin
 			return false;
 		}
 
-		if (spatial_editor->get_preview_material() != mesh_instance->get_surface_override_material(closest_surface)) {
+		if (spatial_editor->get_preview_material() != mesh_instance->get_surface_material_override(closest_surface)) {
 			spatial_editor->set_preview_material_surface(closest_surface);
-			spatial_editor->set_preview_reset_material(mesh_instance->get_surface_override_material(closest_surface));
-			mesh_instance->set_surface_override_material(closest_surface, spatial_editor->get_preview_material());
+			spatial_editor->set_preview_reset_material(mesh_instance->get_surface_material_override(closest_surface));
+			mesh_instance->set_surface_material_override(closest_surface, spatial_editor->get_preview_material());
 		}
 
 		return true;
@@ -4181,7 +4181,7 @@ void Node3DEditorViewport::_reset_preview_material() const {
 	MeshInstance3D *mesh_instance = Object::cast_to<MeshInstance3D>(last_target_inst);
 	GeometryInstance3D *geometry_instance = Object::cast_to<GeometryInstance3D>(last_target_inst);
 	if (mesh_instance && spatial_editor->get_preview_material_surface() != -1) {
-		mesh_instance->set_surface_override_material(spatial_editor->get_preview_material_surface(), spatial_editor->get_preview_reset_material());
+		mesh_instance->set_surface_material_override(spatial_editor->get_preview_material_surface(), spatial_editor->get_preview_reset_material());
 		spatial_editor->set_preview_material_surface(-1);
 	} else if (geometry_instance) {
 		geometry_instance->set_material_override(spatial_editor->get_preview_reset_material());
@@ -4291,8 +4291,8 @@ void Node3DEditorViewport::_perform_drop_data() {
 		MeshInstance3D *mesh_instance = Object::cast_to<MeshInstance3D>(ObjectDB::get_instance(spatial_editor->get_preview_material_target()));
 		if (mesh_instance && spatial_editor->get_preview_material_surface() != -1) {
 			undo_redo->create_action(vformat(TTR("Set Surface %d Override Material"), spatial_editor->get_preview_material_surface()));
-			undo_redo->add_do_method(geometry_instance, "set_surface_override_material", spatial_editor->get_preview_material_surface(), spatial_editor->get_preview_material());
-			undo_redo->add_undo_method(geometry_instance, "set_surface_override_material", spatial_editor->get_preview_material_surface(), spatial_editor->get_preview_reset_material());
+			undo_redo->add_do_method(geometry_instance, "set_surface_material_override", spatial_editor->get_preview_material_surface(), spatial_editor->get_preview_material());
+			undo_redo->add_undo_method(geometry_instance, "set_surface_material_override", spatial_editor->get_preview_material_surface(), spatial_editor->get_preview_reset_material());
 			undo_redo->commit_action();
 		} else if (geometry_instance) {
 			undo_redo->create_action(TTR("Set Material Override"));

@@ -48,7 +48,7 @@ protected:
 
 	LocalVector<float> blend_shape_tracks;
 	HashMap<StringName, int> blend_shape_properties;
-	Vector<Ref<Material>> surface_override_materials;
+	Vector<Ref<Material>> surface_material_overrides;
 
 	void _mesh_changed();
 	void _resolve_skeleton_path();
@@ -77,9 +77,9 @@ public:
 	float get_blend_shape_value(int p_blend_shape) const;
 	void set_blend_shape_value(int p_blend_shape, float p_value);
 
-	int get_surface_override_material_count() const;
-	void set_surface_override_material(int p_surface, const Ref<Material> &p_material);
-	Ref<Material> get_surface_override_material(int p_surface) const;
+	int get_surface_material_override_count() const;
+	void set_surface_material_override(int p_surface, const Ref<Material> &p_material);
+	Ref<Material> get_surface_material_override(int p_surface) const;
 	Ref<Material> get_active_material(int p_surface) const;
 
 	Node *create_trimesh_collision_node();

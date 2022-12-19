@@ -378,7 +378,7 @@ Voxelizer::MaterialCache Voxelizer::_get_material_cache(Ref<Material> p_material
 	return mc;
 }
 
-void Voxelizer::plot_mesh(const Transform3D &p_xform, Ref<Mesh> &p_mesh, const Vector<Ref<Material>> &p_materials, const Ref<Material> &p_override_material) {
+void Voxelizer::plot_mesh(const Transform3D &p_xform, Ref<Mesh> &p_mesh, const Vector<Ref<Material>> &p_materials, const Ref<Material> &p_material_override) {
 	for (int i = 0; i < p_mesh->get_surface_count(); i++) {
 		if (p_mesh->surface_get_primitive_type(i) != Mesh::PRIMITIVE_TRIANGLES) {
 			continue; //only triangles
@@ -386,8 +386,8 @@ void Voxelizer::plot_mesh(const Transform3D &p_xform, Ref<Mesh> &p_mesh, const V
 
 		Ref<Material> src_material;
 
-		if (p_override_material.is_valid()) {
-			src_material = p_override_material;
+		if (p_material_override.is_valid()) {
+			src_material = p_material_override;
 		} else if (i < p_materials.size() && p_materials[i].is_valid()) {
 			src_material = p_materials[i];
 		} else {

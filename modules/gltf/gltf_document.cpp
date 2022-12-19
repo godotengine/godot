@@ -5138,8 +5138,8 @@ GLTFMeshIndex GLTFDocument::_convert_mesh_to_gltf(Ref<GLTFState> p_state, MeshIn
 	TypedArray<Material> instance_materials;
 	for (int32_t surface_i = 0; surface_i < current_mesh->get_surface_count(); surface_i++) {
 		Ref<Material> mat = current_mesh->get_surface_material(surface_i);
-		if (p_mesh_instance->get_surface_override_material(surface_i).is_valid()) {
-			mat = p_mesh_instance->get_surface_override_material(surface_i);
+		if (p_mesh_instance->get_surface_material_override(surface_i).is_valid()) {
+			mat = p_mesh_instance->get_surface_material_override(surface_i);
 		}
 		if (p_mesh_instance->get_material_override().is_valid()) {
 			mat = p_mesh_instance->get_material_override();

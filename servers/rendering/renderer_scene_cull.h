@@ -936,7 +936,7 @@ public:
 	virtual void instance_set_transform(RID p_instance, const Transform3D &p_transform);
 	virtual void instance_attach_object_instance_id(RID p_instance, ObjectID p_id);
 	virtual void instance_set_blend_shape_weight(RID p_instance, int p_shape, float p_weight);
-	virtual void instance_set_surface_override_material(RID p_instance, int p_surface, RID p_material);
+	virtual void instance_set_surface_material_override(RID p_instance, int p_surface, RID p_material);
 	virtual void instance_set_visible(RID p_instance, bool p_visible);
 	virtual void instance_geometry_set_transparency(RID p_instance, float p_transparency);
 

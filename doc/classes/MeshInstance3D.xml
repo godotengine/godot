@@ -65,17 +65,17 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_surface_override_material" qualifiers="const">
+		<method name="get_surface_material_override" qualifiers="const">
 			<return type="Material" />
 			<param index="0" name="surface" type="int" />
 			<description>
-				Returns the override [Material] for the specified surface of the [Mesh] resource.
+				Returns the [Material] override for the specified surface of the [Mesh] resource.
 			</description>
 		</method>
-		<method name="get_surface_override_material_count" qualifiers="const">
+		<method name="get_surface_material_override_count" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the number of surface override materials. This is equivalent to [method Mesh.get_surface_count].
+				Returns the number of surface material overrides. This is equivalent to [method Mesh.get_surface_count].
 			</description>
 		</method>
 		<method name="set_blend_shape_value">
@@ -85,12 +85,12 @@
 			<description>
 			</description>
 		</method>
-		<method name="set_surface_override_material">
+		<method name="set_surface_material_override">
 			<return type="void" />
 			<param index="0" name="surface" type="int" />
 			<param index="1" name="material" type="Material" />
 			<description>
-				Sets the override [Material] for the specified surface of the [Mesh] resource. This material is associated with this [MeshInstance3D] rather than with the [Mesh] resource.
+				Sets the [Material] override for the specified surface of the [Mesh] resource. This material is associated with this [MeshInstance3D] rather than with the [Mesh] resource.
 			</description>
 		</method>
 	</methods>

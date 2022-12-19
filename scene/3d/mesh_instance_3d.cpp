@@ -64,11 +64,11 @@ bool MeshInstance3D::_set(const StringName &p_name, const Variant &p_value) {
 			idx--;
 		}
 
-		if (idx > surface_override_materials.size() || idx < 0) {
+		if (idx > surface_material_overrides.size() || idx < 0) {
 			return false;
 		}
 
-		set_surface_override_material(idx, p_value);
+		set_surface_material_override(idx, p_value);
 		return true;
 	}
 
@@ -88,10 +88,10 @@ bool MeshInstance3D::_get(const StringName &p_name, Variant &r_ret) const {
 
 	if (p_name.operator String().begins_with("surface_material_override/")) {
 		int idx = p_name.operator String().get_slicec('/', 1).to_int();
-		if (idx >= surface_override_materials.size() || idx < 0) {
+		if (idx >= surface_material_overrides.size() || idx < 0) {
 			return false;
 		}
-		r_ret = surface_override_materials[idx];
+		r_ret = surface_material_overrides[idx];
 		return true;
 	}
 	return false;
@@ -342,26 +342,26 @@ void MeshInstance3D::_notification(int p_what) {
 	}
 }
 
-int MeshInstance3D::get_surface_override_material_count() const {
-	return surface_override_materials.size();
+int MeshInstance3D::get_surface_material_override_count() const {
+	return surface_material_overrides.size();
 }
 
-void MeshInstance3D::set_surface_override_material(int p_surface, const Ref<Material> &p_material) {
-	ERR_FAIL_INDEX(p_surface, surface_override_materials.size());
+void MeshInstance3D::set_surface_material_override(int p_surface, const Ref<Material> &p_material) {
+	ERR_FAIL_INDEX(p_surface, surface_material_overrides.size());
 
-	surface_override_materials.write[p_surface] = p_material;
+	surface_material_overrides.write[p_surface] = p_material;
 
-	if (surface_override_materials[p_surface].is_valid()) {
-		RS::get_singleton()->instance_set_surface_override_material(get_instance(), p_surface, surface_override_materials[p_surface]->get_rid());
+	if (surface_material_overrides[p_surface].is_valid()) {
+		RS::get_singleton()->instance_set_surface_material_override(get_instance(), p_surface, surface_material_overrides[p_surface]->get_rid());
 	} else {
-		RS::get_singleton()->instance_set_surface_override_material(get_instance(), p_surface, RID());
+		RS::get_singleton()->instance_set_surface_material_override(get_instance(), p_surface, RID());
 	}
 }
 
-Ref<Material> MeshInstance3D::get_surface_override_material(int p_surface) const {
-	ERR_FAIL_INDEX_V(p_surface, surface_override_materials.size(), Ref<Material>());
+Ref<Material> MeshInstance3D::get_surface_material_override(int p_surface) const {
+	ERR_FAIL_INDEX_V(p_surface, surface_material_overrides.size(), Ref<Material>());
 
-	return surface_override_materials[p_surface];
+	return surface_material_overrides[p_surface];
 }
 
 Ref<Material> MeshInstance3D::get_active_material(int p_surface) const {
@@ -370,7 +370,7 @@ Ref<Material> MeshInstance3D::get_active_material(int p_surface) const {
 		return mat_override;
 	}
 
-	Ref<Material> surface_material = get_surface_override_material(p_surface);
+	Ref<Material> surface_material = get_surface_material_override(p_surface);
 	if (surface_material.is_valid()) {
 		return surface_material;
 	}
@@ -385,7 +385,7 @@ Ref<Material> MeshInstance3D::get_active_material(int p_surface) const {
 
 void MeshInstance3D::_mesh_changed() {
 	ERR_FAIL_COND(mesh.is_null());
-	surface_override_materials.resize(mesh->get_surface_count());
+	surface_material_overrides.resize(mesh->get_surface_count());
 
 	uint32_t initialize_bs_from = blend_shape_tracks.size();
 	blend_shape_tracks.resize(mesh->get_blend_shape_count());
@@ -401,8 +401,8 @@ void MeshInstance3D::_mesh_changed() {
 
 	int surface_count = mesh->get_surface_count();
 	for (int surface_index = 0; surface_index < surface_count; ++surface_index) {
-		if (surface_override_materials[surface_index].is_valid()) {
-			RS::get_singleton()->instance_set_surface_override_material(get_instance(), surface_index, surface_override_materials[surface_index]->get_rid());
+		if (surface_material_overrides[surface_index].is_valid()) {
+			RS::get_singleton()->instance_set_surface_material_override(get_instance(), surface_index, surface_material_overrides[surface_index]->get_rid());
 		}
 	}
 
@@ -504,9 +504,9 @@ void MeshInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_skin", "skin"), &MeshInstance3D::set_skin);
 	ClassDB::bind_method(D_METHOD("get_skin"), &MeshInstance3D::get_skin);
 
-	ClassDB::bind_method(D_METHOD("get_surface_override_material_count"), &MeshInstance3D::get_surface_override_material_count);
-	ClassDB::bind_method(D_METHOD("set_surface_override_material", "surface", "material"), &MeshInstance3D::set_surface_override_material);
-	ClassDB::bind_method(D_METHOD("get_surface_override_material", "surface"), &MeshInstance3D::get_surface_override_material);
+	ClassDB::bind_method(D_METHOD("get_surface_material_override_count"), &MeshInstance3D::get_surface_material_override_count);
+	ClassDB::bind_method(D_METHOD("set_surface_material_override", "surface", "material"), &MeshInstance3D::set_surface_material_override);
+	ClassDB::bind_method(D_METHOD("get_surface_material_override", "surface"), &MeshInstance3D::get_surface_material_override);
 	ClassDB::bind_method(D_METHOD("get_active_material", "surface"), &MeshInstance3D::get_active_material);
 
 	ClassDB::bind_method(D_METHOD("create_trimesh_collision"), &MeshInstance3D::create_trimesh_collision);

@@ -375,8 +375,8 @@ static const char *gdscript_function_renames[][2] = {
 	{ "get_spatial_node", "get_node_3d" }, // EditorNode3DGizmo
 	{ "get_speed", "get_velocity" }, // InputEventMouseMotion
 	{ "get_stylebox_types", "get_stylebox_type_list" }, // Theme
-	{ "get_surface_material", "get_surface_override_material" }, // MeshInstance3D broke ImporterMesh
-	{ "get_surface_material_count", "get_surface_override_material_count" }, // MeshInstance3D
+	{ "get_surface_material", "get_surface_material_override" }, // MeshInstance3D broke ImporterMesh
+	{ "get_surface_material_count", "get_surface_material_override_count" }, // MeshInstance3D
 	{ "get_tab_disabled", "is_tab_disabled" }, // Tab
 	{ "get_tab_hidden", "is_tab_hidden" }, // Tab
 	{ "get_text_align", "get_text_alignment" }, // Button
@@ -413,7 +413,7 @@ static const char *gdscript_function_renames[][2] = {
 	{ "http_escape", "uri_encode" }, // String
 	{ "http_unescape", "uri_decode" }, // String
 	{ "import_scene_from_other_importer", "_import_scene" }, //EditorSceneFormatImporter
-	{ "instance_set_surface_material", "instance_set_surface_override_material" }, // RenderingServer
+	{ "instance_set_surface_material", "instance_set_surface_material_override" }, // RenderingServer
 	{ "interpolate", "sample" }, // Curve, Curve2D, Curve3D, Gradient
 	{ "intersect_polygons_2d", "intersect_polygons" }, // Geometry2D
 	{ "intersect_polyline_with_polygon_2d", "intersect_polyline_with_polygon" }, // Geometry2D
@@ -550,7 +550,7 @@ static const char *gdscript_function_renames[][2] = {
 	{ "set_spatial_node", "set_node_3d" }, // EditorNode3DGizmo
 	{ "set_speed", "set_velocity" }, // InputEventMouseMotion
 	{ "set_ssao_edge_sharpness", "set_ssao_sharpness" }, // Environment
-	{ "set_surface_material", "set_surface_override_material" }, // MeshInstance3D broke ImporterMesh
+	{ "set_surface_material", "set_surface_material_override" }, // MeshInstance3D broke ImporterMesh
 	{ "set_tab_align", "set_tab_alignment" }, //TabContainer
 	{ "set_tangent", "surface_set_tangent" }, // ImmediateGeometry broke SurfaceTool
 	{ "set_text_align", "set_text_alignment" }, // Button

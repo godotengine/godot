@@ -304,9 +304,9 @@ void VoxelGI::_find_meshes(Node *p_at_node, List<PlotMesh> &plot_meshes) {
 				pm.local_xform = xf;
 				pm.mesh = mesh;
 				for (int i = 0; i < mesh->get_surface_count(); i++) {
-					pm.instance_materials.push_back(mi->get_surface_override_material(i));
+					pm.instance_materials.push_back(mi->get_surface_material_override(i));
 				}
-				pm.override_material = mi->get_material_override();
+				pm.material_override = mi->get_material_override();
 				plot_meshes.push_back(pm);
 			}
 		}
@@ -408,7 +408,7 @@ void VoxelGI::bake(Node *p_from_node, bool p_create_visual_debug) {
 
 		pmc++;
 
-		baker.plot_mesh(E.local_xform, E.mesh, E.instance_materials, E.override_material);
+		baker.plot_mesh(E.local_xform, E.mesh, E.instance_materials, E.material_override);
 	}
 	if (bake_step_function) {
 		bake_step_function(pmc++, RTR("Finishing Plot"));

@@ -137,9 +137,9 @@ void NavigationLink3D::_update_debug_mesh() {
 	Ref<StandardMaterial3D> disabled_link_material = NavigationServer3D::get_singleton_mut()->get_debug_navigation_link_connections_disabled_material();
 
 	if (enabled) {
-		RS::get_singleton()->instance_set_surface_override_material(debug_instance, 0, link_material->get_rid());
+		RS::get_singleton()->instance_set_surface_material_override(debug_instance, 0, link_material->get_rid());
 	} else {
-		RS::get_singleton()->instance_set_surface_override_material(debug_instance, 0, disabled_link_material->get_rid());
+		RS::get_singleton()->instance_set_surface_material_override(debug_instance, 0, disabled_link_material->get_rid());
 	}
 }
 #endif // DEBUG_ENABLED
@@ -261,10 +261,10 @@ void NavigationLink3D::set_enabled(bool p_enabled) {
 	if (debug_instance.is_valid() && debug_mesh.is_valid()) {
 		if (enabled) {
 			Ref<StandardMaterial3D> link_material = NavigationServer3D::get_singleton_mut()->get_debug_navigation_link_connections_material();
-			RS::get_singleton()->instance_set_surface_override_material(debug_instance, 0, link_material->get_rid());
+			RS::get_singleton()->instance_set_surface_material_override(debug_instance, 0, link_material->get_rid());
 		} else {
 			Ref<StandardMaterial3D> disabled_link_material = NavigationServer3D::get_singleton_mut()->get_debug_navigation_link_connections_disabled_material();
-			RS::get_singleton()->instance_set_surface_override_material(debug_instance, 0, disabled_link_material->get_rid());
+			RS::get_singleton()->instance_set_surface_material_override(debug_instance, 0, disabled_link_material->get_rid());
 		}
 	}
 #endif // DEBUG_ENABLED

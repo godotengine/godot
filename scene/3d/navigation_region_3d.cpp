@@ -55,19 +55,19 @@ void NavigationRegion3D::set_enabled(bool p_enabled) {
 		if (!is_enabled()) {
 			if (debug_mesh.is_valid()) {
 				if (debug_mesh->get_surface_count() > 0) {
-					RS::get_singleton()->instance_set_surface_override_material(debug_instance, 0, NavigationServer3D::get_singleton_mut()->get_debug_navigation_geometry_face_disabled_material()->get_rid());
+					RS::get_singleton()->instance_set_surface_material_override(debug_instance, 0, NavigationServer3D::get_singleton_mut()->get_debug_navigation_geometry_face_disabled_material()->get_rid());
 				}
 				if (debug_mesh->get_surface_count() > 1) {
-					RS::get_singleton()->instance_set_surface_override_material(debug_instance, 1, NavigationServer3D::get_singleton_mut()->get_debug_navigation_geometry_edge_disabled_material()->get_rid());
+					RS::get_singleton()->instance_set_surface_material_override(debug_instance, 1, NavigationServer3D::get_singleton_mut()->get_debug_navigation_geometry_edge_disabled_material()->get_rid());
 				}
 			}
 		} else {
 			if (debug_mesh.is_valid()) {
 				if (debug_mesh->get_surface_count() > 0) {
-					RS::get_singleton()->instance_set_surface_override_material(debug_instance, 0, RID());
+					RS::get_singleton()->instance_set_surface_material_override(debug_instance, 0, RID());
 				}
 				if (debug_mesh->get_surface_count() > 1) {
-					RS::get_singleton()->instance_set_surface_override_material(debug_instance, 1, RID());
+					RS::get_singleton()->instance_set_surface_material_override(debug_instance, 1, RID());
 				}
 			}
 		}
@@ -496,19 +496,19 @@ void NavigationRegion3D::_update_debug_mesh() {
 	if (!is_enabled()) {
 		if (debug_mesh.is_valid()) {
 			if (debug_mesh->get_surface_count() > 0) {
-				RS::get_singleton()->instance_set_surface_override_material(debug_instance, 0, NavigationServer3D::get_singleton_mut()->get_debug_navigation_geometry_face_disabled_material()->get_rid());
+				RS::get_singleton()->instance_set_surface_material_override(debug_instance, 0, NavigationServer3D::get_singleton_mut()->get_debug_navigation_geometry_face_disabled_material()->get_rid());
 			}
 			if (debug_mesh->get_surface_count() > 1) {
-				RS::get_singleton()->instance_set_surface_override_material(debug_instance, 1, NavigationServer3D::get_singleton_mut()->get_debug_navigation_geometry_edge_disabled_material()->get_rid());
+				RS::get_singleton()->instance_set_surface_material_override(debug_instance, 1, NavigationServer3D::get_singleton_mut()->get_debug_navigation_geometry_edge_disabled_material()->get_rid());
 			}
 		}
 	} else {
 		if (debug_mesh.is_valid()) {
 			if (debug_mesh->get_surface_count() > 0) {
-				RS::get_singleton()->instance_set_surface_override_material(debug_instance, 0, RID());
+				RS::get_singleton()->instance_set_surface_material_override(debug_instance, 0, RID());
 			}
 			if (debug_mesh->get_surface_count() > 1) {
-				RS::get_singleton()->instance_set_surface_override_material(debug_instance, 1, RID());
+				RS::get_singleton()->instance_set_surface_material_override(debug_instance, 1, RID());
 			}
 		}
 	}

@@ -765,7 +765,7 @@ public:
 	FUNC2(instance_set_transform, RID, const Transform3D &)
 	FUNC2(instance_attach_object_instance_id, RID, ObjectID)
 	FUNC3(instance_set_blend_shape_weight, RID, int, float)
-	FUNC3(instance_set_surface_override_material, RID, int, RID)
+	FUNC3(instance_set_surface_material_override, RID, int, RID)
 	FUNC2(instance_set_visible, RID, bool)
 
 	FUNC2(instance_set_custom_aabb, RID, AABB)

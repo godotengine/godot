@@ -357,7 +357,7 @@ void LightmapGI::_find_meshes_and_lights(Node *p_at_node, Vector<MeshesFound> &m
 					if (all_override.is_valid()) {
 						mf.overrides.push_back(all_override);
 					} else {
-						mf.overrides.push_back(mi->get_surface_override_material(i));
+						mf.overrides.push_back(mi->get_surface_material_override(i));
 					}
 				}
 

@@ -113,7 +113,7 @@ private:
 
 public:
 	void begin_bake(int p_subdiv, const AABB &p_bounds, float p_exposure_normalization);
-	void plot_mesh(const Transform3D &p_xform, Ref<Mesh> &p_mesh, const Vector<Ref<Material>> &p_materials, const Ref<Material> &p_override_material);
+	void plot_mesh(const Transform3D &p_xform, Ref<Mesh> &p_mesh, const Vector<Ref<Material>> &p_materials, const Ref<Material> &p_material_override);
 	void end_bake();
 
 	int get_voxel_gi_octree_depth() const;
