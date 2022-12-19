@@ -922,7 +922,7 @@ void TileMapEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p_over
 
 							// Get the tile modulation.
 							Color modulate = tile_data->get_modulate();
-							Color self_modulate = tile_map->get_self_modulate();
+							Color self_modulate = tile_map->get_modulate_in_tree() * tile_map->get_self_modulate();
 							modulate *= self_modulate;
 
 							// Draw the tile.
