@@ -34,6 +34,7 @@
 #include "physics_body_3d.h"
 #include "scene/resources/concave_polygon_shape_3d.h"
 #include "scene/resources/convex_polygon_shape_3d.h"
+#include "scene/resources/world_boundary_shape_3d.h"
 
 void CollisionShape3D::make_convex_from_siblings() {
 	Node *p = get_parent();
@@ -125,10 +126,12 @@ PackedStringArray CollisionShape3D::get_configuration_warnings() const {
 		warnings.push_back(RTR("A shape must be provided for CollisionShape3D to function. Please create a shape resource for it."));
 	}
 
-	if (shape.is_valid() &&
-			Object::cast_to<RigidBody3D>(get_parent()) &&
-			Object::cast_to<ConcavePolygonShape3D>(*shape)) {
-		warnings.push_back(RTR("ConcavePolygonShape3D doesn't support RigidBody3D in another mode than static."));
+	if (shape.is_valid() && Object::cast_to<RigidBody3D>(get_parent())) {
+		if (Object::cast_to<ConcavePolygonShape3D>(*shape)) {
+			warnings.push_back(RTR("ConcavePolygonShape3D doesn't support RigidBody3D in another mode than static."));
+		} else if (Object::cast_to<WorldBoundaryShape3D>(*shape)) {
+			warnings.push_back(RTR("WorldBoundaryShape3D doesn't support RigidBody3D in another mode than static."));
+		}
 	}
 
 	return warnings;
