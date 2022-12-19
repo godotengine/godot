@@ -224,6 +224,7 @@ public:
 
 	void set_modulate(const Color &p_modulate);
 	Color get_modulate() const;
+	Color get_modulate_in_tree() const;
 
 	void set_self_modulate(const Color &p_self_modulate);
 	Color get_self_modulate() const;
