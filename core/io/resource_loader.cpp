@@ -259,7 +259,7 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 	}
 
 	if (load_task.resource.is_valid()) {
-		load_task.resource->set_path(load_task.local_path);
+		load_task.resource->set_path(load_task.local_path, load_task.cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE);
 
 		if (load_task.xl_remapped) {
 			load_task.resource->set_as_translation_remapped(true);
@@ -530,18 +530,19 @@ Ref<Resource> ResourceLoader::load(const String &p_path, const String &p_type_hi
 			return load_threaded_get(p_path, r_error);
 		}
 
-		//Is it cached?
+		if (p_cache_mode != ResourceFormatLoader::CACHE_MODE_REPLACE) {
+			//Is it cached?
+			Ref<Resource> existing = ResourceCache::get_ref(local_path);
 
-		Ref<Resource> existing = ResourceCache::get_ref(local_path);
+			if (existing.is_valid()) {
+				thread_load_mutex->unlock();
 
-		if (existing.is_valid()) {
-			thread_load_mutex->unlock();
+				if (r_error) {
+					*r_error = OK;
+				}
 
-			if (r_error) {
-				*r_error = OK;
+				return existing; //use cached
 			}
-
-			return existing; //use cached
 		}
 
 		//load using task (but this thread)
@@ -551,7 +552,7 @@ Ref<Resource> ResourceLoader::load(const String &p_path, const String &p_type_hi
 		load_task.local_path = local_path;
 		load_task.remapped_path = _path_remap(local_path, &load_task.xl_remapped);
 		load_task.type_hint = p_type_hint;
-		load_task.cache_mode = p_cache_mode; //ignore
+		load_task.cache_mode = p_cache_mode;
 		load_task.loader_id = Thread::get_caller_id();
 
 		thread_load_tasks[local_path] = load_task;

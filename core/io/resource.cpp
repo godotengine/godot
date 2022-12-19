@@ -178,7 +178,7 @@ void Resource::reload_from_file() {
 		return;
 	}
 
-	Ref<Resource> s = ResourceLoader::load(ResourceLoader::path_remap(path), get_class(), ResourceFormatLoader::CACHE_MODE_IGNORE);
+	Ref<Resource> s = ResourceLoader::load(ResourceLoader::path_remap(path), get_class(), ResourceFormatLoader::CACHE_MODE_REPLACE);
 
 	if (!s.is_valid()) {
 		return;
