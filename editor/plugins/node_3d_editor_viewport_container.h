@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  node_3d_editor_plugin.cpp                                            */
+/*  node_3d_editor_viewport_container.h                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,61 +28,48 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "node_3d_editor_plugin.h"
+#ifndef NODE_3D_EDITOR_VIEWPORT_CONTAINER_H
+#define NODE_3D_EDITOR_VIEWPORT_CONTAINER_H
 
-#include "editor/editor_node.h"
+#include "scene/gui/container.h"
 
-void Node3DEditorPlugin::make_visible(bool p_visible) {
-	if (p_visible) {
-		spatial_editor->show();
-		spatial_editor->set_process(true);
-		spatial_editor->set_physics_process(true);
+class Node3DEditorViewportContainer : public Container {
+	GDCLASS(Node3DEditorViewportContainer, Container);
 
-	} else {
-		spatial_editor->hide();
-		spatial_editor->set_process(false);
-		spatial_editor->set_physics_process(false);
-	}
-}
+public:
+	enum View {
+		VIEW_USE_1_VIEWPORT,
+		VIEW_USE_2_VIEWPORTS,
+		VIEW_USE_2_VIEWPORTS_ALT,
+		VIEW_USE_3_VIEWPORTS,
+		VIEW_USE_3_VIEWPORTS_ALT,
+		VIEW_USE_4_VIEWPORTS,
+	};
 
-void Node3DEditorPlugin::edit(Object *p_object) {
-	spatial_editor->edit(Object::cast_to<Node3D>(p_object));
-}
+private:
+	View view;
+	bool mouseover;
+	real_t ratio_h;
+	real_t ratio_v;
 
-bool Node3DEditorPlugin::handles(Object *p_object) const {
-	if (p_object->is_class("Node3D")) {
-		return true;
-	} else {
-		// This ensures that gizmos are cleared when selecting a non-Node3D node.
-		const_cast<Node3DEditorPlugin *>(this)->edit((Object *)nullptr);
-		return false;
-	}
-}
+	bool hovering_v;
+	bool hovering_h;
 
-Dictionary Node3DEditorPlugin::get_state() const {
-	return spatial_editor->get_state();
-}
+	bool dragging_v;
+	bool dragging_h;
+	Vector2 drag_begin_pos;
+	Vector2 drag_begin_ratio;
 
-void Node3DEditorPlugin::set_state(const Dictionary &p_state) {
-	spatial_editor->set_state(p_state);
-}
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
-void Node3DEditorPlugin::edited_scene_changed() {
-	for (uint32_t i = 0; i < Node3DEditor::VIEWPORTS_COUNT; i++) {
-		Node3DEditorViewport *viewport = Node3DEditor::get_singleton()->get_editor_viewport(i);
-		if (viewport->is_visible()) {
-			viewport->notification(Control::NOTIFICATION_VISIBILITY_CHANGED);
-		}
-	}
-}
+protected:
+	void _notification(int p_what);
 
-Node3DEditorPlugin::Node3DEditorPlugin() {
-	spatial_editor = memnew(Node3DEditor);
-	spatial_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	EditorNode::get_singleton()->get_main_screen_control()->add_child(spatial_editor);
+public:
+	void set_view(View p_view);
+	View get_view();
 
-	spatial_editor->hide();
-}
+	Node3DEditorViewportContainer();
+};
 
-Node3DEditorPlugin::~Node3DEditorPlugin() {
-}
+#endif // NODE_3D_EDITOR_VIEWPORT_CONTAINER_H

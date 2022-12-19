@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  node_3d_editor_plugin.cpp                                            */
+/*  viewport_rotation_control.h                                          */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,61 +28,49 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "node_3d_editor_plugin.h"
+#ifndef VIEWPORT_ROTATION_CONTROL_H
+#define VIEWPORT_ROTATION_CONTROL_H
 
-#include "editor/editor_node.h"
+#include "editor/editor_scale.h"
+#include "node_3d_editor_viewport.h"
 
-void Node3DEditorPlugin::make_visible(bool p_visible) {
-	if (p_visible) {
-		spatial_editor->show();
-		spatial_editor->set_process(true);
-		spatial_editor->set_physics_process(true);
+class ViewportRotationControl : public Control {
+	GDCLASS(ViewportRotationControl, Control);
 
-	} else {
-		spatial_editor->hide();
-		spatial_editor->set_process(false);
-		spatial_editor->set_physics_process(false);
-	}
-}
+	struct Axis2D {
+		Vector2i screen_point;
+		float z_axis = -99.0;
+		int axis = -1;
+	};
 
-void Node3DEditorPlugin::edit(Object *p_object) {
-	spatial_editor->edit(Object::cast_to<Node3D>(p_object));
-}
-
-bool Node3DEditorPlugin::handles(Object *p_object) const {
-	if (p_object->is_class("Node3D")) {
-		return true;
-	} else {
-		// This ensures that gizmos are cleared when selecting a non-Node3D node.
-		const_cast<Node3DEditorPlugin *>(this)->edit((Object *)nullptr);
-		return false;
-	}
-}
-
-Dictionary Node3DEditorPlugin::get_state() const {
-	return spatial_editor->get_state();
-}
-
-void Node3DEditorPlugin::set_state(const Dictionary &p_state) {
-	spatial_editor->set_state(p_state);
-}
-
-void Node3DEditorPlugin::edited_scene_changed() {
-	for (uint32_t i = 0; i < Node3DEditor::VIEWPORTS_COUNT; i++) {
-		Node3DEditorViewport *viewport = Node3DEditor::get_singleton()->get_editor_viewport(i);
-		if (viewport->is_visible()) {
-			viewport->notification(Control::NOTIFICATION_VISIBILITY_CHANGED);
+	struct Axis2DCompare {
+		_FORCE_INLINE_ bool operator()(const Axis2D &l, const Axis2D &r) const {
+			return l.z_axis < r.z_axis;
 		}
-	}
-}
+	};
 
-Node3DEditorPlugin::Node3DEditorPlugin() {
-	spatial_editor = memnew(Node3DEditor);
-	spatial_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	EditorNode::get_singleton()->get_main_screen_control()->add_child(spatial_editor);
+	Node3DEditorViewport *viewport = nullptr;
+	Vector<Color> axis_colors;
+	Vector<int> axis_menu_options;
+	Vector2i orbiting_mouse_start;
+	int orbiting_index = -1;
+	int focused_axis = -2;
 
-	spatial_editor->hide();
-}
+	const float AXIS_CIRCLE_RADIUS = 8.0f * EDSCALE;
 
-Node3DEditorPlugin::~Node3DEditorPlugin() {
-}
+protected:
+	void _notification(int p_what);
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+	void _draw();
+	void _draw_axis(const Axis2D &p_axis);
+	void _get_sorted_axis(Vector<Axis2D> &r_axis);
+	void _update_focus();
+	void _on_mouse_exited();
+	void _process_click(int p_index, Vector2 p_position, bool p_pressed);
+	void _process_drag(Ref<InputEventWithModifiers> p_event, int p_index, Vector2 p_position, Vector2 p_relative_position);
+
+public:
+	void set_viewport(Node3DEditorViewport *p_viewport);
+};
+
+#endif // VIEWPORT_ROTATION_CONTROL_H

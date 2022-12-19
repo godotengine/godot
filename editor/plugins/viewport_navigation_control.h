@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  node_3d_editor_plugin.cpp                                            */
+/*  viewport_navigation_control.h                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,61 +28,37 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "node_3d_editor_plugin.h"
+#ifndef VIEWPORT_NAVIGATION_CONTROL_H
+#define VIEWPORT_NAVIGATION_CONTROL_H
 
-#include "editor/editor_node.h"
+#include "editor/editor_scale.h"
+#include "node_3d_editor_viewport.h"
 
-void Node3DEditorPlugin::make_visible(bool p_visible) {
-	if (p_visible) {
-		spatial_editor->show();
-		spatial_editor->set_process(true);
-		spatial_editor->set_physics_process(true);
+class ViewportNavigationControl : public Control {
+	GDCLASS(ViewportNavigationControl, Control);
 
-	} else {
-		spatial_editor->hide();
-		spatial_editor->set_process(false);
-		spatial_editor->set_physics_process(false);
-	}
-}
+	Node3DEditorViewport *viewport = nullptr;
+	Vector2i focused_mouse_start;
+	Vector2 focused_pos;
+	bool hovered = false;
+	int focused_index = -1;
+	Node3DEditorViewport::NavigationMode nav_mode = Node3DEditorViewport::NavigationMode::NAVIGATION_NONE;
 
-void Node3DEditorPlugin::edit(Object *p_object) {
-	spatial_editor->edit(Object::cast_to<Node3D>(p_object));
-}
+	const float AXIS_CIRCLE_RADIUS = 30.0f * EDSCALE;
 
-bool Node3DEditorPlugin::handles(Object *p_object) const {
-	if (p_object->is_class("Node3D")) {
-		return true;
-	} else {
-		// This ensures that gizmos are cleared when selecting a non-Node3D node.
-		const_cast<Node3DEditorPlugin *>(this)->edit((Object *)nullptr);
-		return false;
-	}
-}
+protected:
+	void _notification(int p_what);
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
+	void _draw();
+	void _on_mouse_entered();
+	void _on_mouse_exited();
+	void _process_click(int p_index, Vector2 p_position, bool p_pressed);
+	void _process_drag(int p_index, Vector2 p_position, Vector2 p_relative_position);
+	void _update_navigation();
 
-Dictionary Node3DEditorPlugin::get_state() const {
-	return spatial_editor->get_state();
-}
+public:
+	void set_navigation_mode(Node3DEditorViewport::NavigationMode p_nav_mode);
+	void set_viewport(Node3DEditorViewport *p_viewport);
+};
 
-void Node3DEditorPlugin::set_state(const Dictionary &p_state) {
-	spatial_editor->set_state(p_state);
-}
-
-void Node3DEditorPlugin::edited_scene_changed() {
-	for (uint32_t i = 0; i < Node3DEditor::VIEWPORTS_COUNT; i++) {
-		Node3DEditorViewport *viewport = Node3DEditor::get_singleton()->get_editor_viewport(i);
-		if (viewport->is_visible()) {
-			viewport->notification(Control::NOTIFICATION_VISIBILITY_CHANGED);
-		}
-	}
-}
-
-Node3DEditorPlugin::Node3DEditorPlugin() {
-	spatial_editor = memnew(Node3DEditor);
-	spatial_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	EditorNode::get_singleton()->get_main_screen_control()->add_child(spatial_editor);
-
-	spatial_editor->hide();
-}
-
-Node3DEditorPlugin::~Node3DEditorPlugin() {
-}
+#endif // VIEWPORT_NAVIGATION_CONTROL_H

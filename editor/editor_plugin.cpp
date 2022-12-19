@@ -49,6 +49,7 @@
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/project_settings_editor.h"
 #include "editor/scene_tree_dock.h"
+#include "editor_scale.h"
 #include "main/main.h"
 #include "scene/3d/camera_3d.h"
 #include "scene/gui/popup_menu.h"

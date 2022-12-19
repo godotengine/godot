@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  node_3d_editor_plugin.cpp                                            */
+/*  node_3d_editor_selected_item.cpp                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,61 +28,19 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "node_3d_editor_plugin.h"
+#include "node_3d_editor_selected_item.h"
 
-#include "editor/editor_node.h"
-
-void Node3DEditorPlugin::make_visible(bool p_visible) {
-	if (p_visible) {
-		spatial_editor->show();
-		spatial_editor->set_process(true);
-		spatial_editor->set_physics_process(true);
-
-	} else {
-		spatial_editor->hide();
-		spatial_editor->set_process(false);
-		spatial_editor->set_physics_process(false);
+Node3DEditorSelectedItem::~Node3DEditorSelectedItem() {
+	if (sbox_instance.is_valid()) {
+		RenderingServer::get_singleton()->free(sbox_instance);
 	}
-}
-
-void Node3DEditorPlugin::edit(Object *p_object) {
-	spatial_editor->edit(Object::cast_to<Node3D>(p_object));
-}
-
-bool Node3DEditorPlugin::handles(Object *p_object) const {
-	if (p_object->is_class("Node3D")) {
-		return true;
-	} else {
-		// This ensures that gizmos are cleared when selecting a non-Node3D node.
-		const_cast<Node3DEditorPlugin *>(this)->edit((Object *)nullptr);
-		return false;
+	if (sbox_instance_offset.is_valid()) {
+		RenderingServer::get_singleton()->free(sbox_instance_offset);
 	}
-}
-
-Dictionary Node3DEditorPlugin::get_state() const {
-	return spatial_editor->get_state();
-}
-
-void Node3DEditorPlugin::set_state(const Dictionary &p_state) {
-	spatial_editor->set_state(p_state);
-}
-
-void Node3DEditorPlugin::edited_scene_changed() {
-	for (uint32_t i = 0; i < Node3DEditor::VIEWPORTS_COUNT; i++) {
-		Node3DEditorViewport *viewport = Node3DEditor::get_singleton()->get_editor_viewport(i);
-		if (viewport->is_visible()) {
-			viewport->notification(Control::NOTIFICATION_VISIBILITY_CHANGED);
-		}
+	if (sbox_instance_xray.is_valid()) {
+		RenderingServer::get_singleton()->free(sbox_instance_xray);
 	}
-}
-
-Node3DEditorPlugin::Node3DEditorPlugin() {
-	spatial_editor = memnew(Node3DEditor);
-	spatial_editor->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	EditorNode::get_singleton()->get_main_screen_control()->add_child(spatial_editor);
-
-	spatial_editor->hide();
-}
-
-Node3DEditorPlugin::~Node3DEditorPlugin() {
+	if (sbox_instance_xray_offset.is_valid()) {
+		RenderingServer::get_singleton()->free(sbox_instance_xray_offset);
+	}
 }
