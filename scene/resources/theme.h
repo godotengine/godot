@@ -105,7 +105,7 @@ protected:
 	// Default values configurable for each individual theme.
 	float default_base_scale = 0.0;
 	Ref<Font> default_font;
-	int default_font_size = -1;
+	int default_font_size = 16;
 
 	static void _bind_methods();
 

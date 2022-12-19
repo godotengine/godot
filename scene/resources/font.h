@@ -71,7 +71,7 @@ protected:
 public:
 	virtual void _invalidate_rids();
 
-	static constexpr int DEFAULT_FONT_SIZE = 16;
+	static constexpr int DEFAULT_FONT_SIZE = 14;
 
 	// Fallbacks.
 	virtual void set_fallbacks(const TypedArray<Font> &p_fallbacks);

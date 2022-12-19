@@ -148,6 +148,7 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	const float embolden_strength = 0.6;
 
 	Ref<Font> default_font = load_internal_font(_font_NotoSans_Regular, _font_NotoSans_Regular_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false);
+	Ref<Font> default_theme_font = load_internal_font(_font_OpenSans_SemiBold, _font_OpenSans_SemiBold_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, false);
 	Ref<Font> default_font_msdf = load_internal_font(_font_NotoSans_Regular, _font_NotoSans_Regular_size, font_hinting, font_antialiasing, true, font_subpixel_positioning, true);
 
 	TypedArray<Font> fallbacks;
@@ -225,6 +226,23 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	}
 	default_fc->set_spacing(TextServer::SPACING_TOP, -EDSCALE);
 	default_fc->set_spacing(TextServer::SPACING_BOTTOM, -EDSCALE);
+
+	Ref<FontVariation> default_theme_fc;
+	default_theme_fc.instantiate();
+	if (custom_font_path.length() > 0 && dir->file_exists(custom_font_path)) {
+		Ref<FontFile> custom_font = load_external_font(custom_font_path, font_hinting, font_antialiasing, true, font_subpixel_positioning);
+		{
+			TypedArray<Font> fallback_custom;
+			fallback_custom.push_back(default_font);
+			custom_font->set_fallbacks(fallback_custom);
+		}
+		default_theme_fc->set_base_font(custom_font);
+	} else {
+		EditorSettings::get_singleton()->set_manually("interface/editor/main_font", "");
+		default_theme_fc->set_base_font(default_theme_font);
+	}
+	default_theme_fc->set_spacing(TextServer::SPACING_TOP, -EDSCALE);
+	default_theme_fc->set_spacing(TextServer::SPACING_BOTTOM, -EDSCALE);
 
 	Ref<FontVariation> default_fc_msdf;
 	default_fc_msdf.instantiate();
@@ -372,7 +390,7 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 
 	// Setup theme.
 
-	p_theme->set_default_font(default_fc); // Default theme font config.
+	p_theme->set_default_font(default_theme_fc); // Default theme font config.
 	p_theme->set_default_font_size(default_font_size);
 
 	// Main font.
