@@ -930,6 +930,7 @@
 			<param index="1" name="language" type="String" default="&quot;&quot;" />
 			<description>
 				Converts a number from the Western Arabic (0..9) to the numeral systems used in [param language].
+				If [param language] is omitted, the active locale will be used.
 			</description>
 		</method>
 		<method name="free_rid">
