@@ -351,7 +351,7 @@ double AnimationNodeOneShot::process(double p_time, bool p_seek, bool p_is_exter
 	} else {
 		main_rem = blend_input(0, p_time, p_seek, p_is_external_seeking, 1.0 - blend, FILTER_BLEND, sync); // Unlike below, processing this edge is a corner case.
 	}
-	double os_rem = blend_input(1, os_seek ? cur_time : p_time, os_seek, p_is_external_seeking, MAX(CMP_EPSILON, blend), FILTER_PASS, true); // Blend values must be more than CMP_EPSILON to process discrete keys in edge.
+	double os_rem = blend_input(1, os_seek ? cur_time : p_time, os_seek, p_is_external_seeking, Math::is_zero_approx(blend) ? CMP_EPSILON : blend, FILTER_PASS, true); // Blend values must be more than CMP_EPSILON to process discrete keys in edge.
 
 	if (do_start) {
 		cur_remaining = os_rem;
@@ -769,17 +769,18 @@ double AnimationNodeTransition::process(double p_time, bool p_seek, bool p_is_ex
 		}
 
 		// Blend values must be more than CMP_EPSILON to process discrete keys in edge.
+		real_t blend_inv = 1.0 - blend;
 		if (from_start && !p_seek && switched) { //just switched, seek to start of current
-			rem = blend_input(cur_current, 0, true, p_is_external_seeking, MAX(CMP_EPSILON, 1.0 - blend), FILTER_IGNORE, true);
+			rem = blend_input(cur_current, 0, true, p_is_external_seeking, Math::is_zero_approx(blend_inv) ? CMP_EPSILON : blend_inv, FILTER_IGNORE, true);
 		} else {
-			rem = blend_input(cur_current, p_time, p_seek, p_is_external_seeking, MAX(CMP_EPSILON, 1.0 - blend), FILTER_IGNORE, true);
+			rem = blend_input(cur_current, p_time, p_seek, p_is_external_seeking, Math::is_zero_approx(blend_inv) ? CMP_EPSILON : blend_inv, FILTER_IGNORE, true);
 		}
 
 		if (p_seek) {
-			blend_input(cur_prev, p_time, true, p_is_external_seeking, MAX(CMP_EPSILON, blend), FILTER_IGNORE, true);
+			blend_input(cur_prev, p_time, true, p_is_external_seeking, Math::is_zero_approx(blend) ? CMP_EPSILON : blend, FILTER_IGNORE, true);
 			cur_time = p_time;
 		} else {
-			blend_input(cur_prev, p_time, false, p_is_external_seeking, MAX(CMP_EPSILON, blend), FILTER_IGNORE, true);
+			blend_input(cur_prev, p_time, false, p_is_external_seeking, Math::is_zero_approx(blend) ? CMP_EPSILON : blend, FILTER_IGNORE, true);
 			cur_time += p_time;
 			cur_prev_xfading -= p_time;
 			if (cur_prev_xfading < 0) {
