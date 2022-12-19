@@ -369,6 +369,7 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 					// can't travel, then teleport
 					path.clear();
 					current = start_request;
+					play_start = true;
 				}
 				start_request = StringName(); //clear start request
 			}
@@ -414,7 +415,7 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 				fading_pos += p_time;
 			}
 			fade_blend = MIN(1.0, fading_pos / fading_time);
-			if (fade_blend >= 1.0) {
+			if (fade_blend > 1.0) {
 				fading_from = StringName();
 			}
 		}
@@ -423,9 +424,9 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 	if (current_curve.is_valid()) {
 		fade_blend = current_curve->sample(fade_blend);
 	}
-	float rem = p_state_machine->blend_node(current, p_state_machine->states[current].node, p_time, p_seek, p_is_external_seeking, Math::is_zero_approx(fade_blend) ? CMP_EPSILON : fade_blend, AnimationNode::FILTER_IGNORE, true); // Blend values must be more than CMP_EPSILON to process discrete keys in edge.
+	double rem = p_state_machine->blend_node(current, p_state_machine->states[current].node, p_time, p_seek, p_is_external_seeking, Math::is_zero_approx(fade_blend) ? CMP_EPSILON : fade_blend, AnimationNode::FILTER_IGNORE, true); // Blend values must be more than CMP_EPSILON to process discrete keys in edge.
 
-	float fade_blend_inv = 1.0 - fade_blend;
+	double fade_blend_inv = 1.0 - fade_blend;
 	if (fading_from != StringName()) {
 		p_state_machine->blend_node(fading_from, p_state_machine->states[fading_from].node, p_time, p_seek, p_is_external_seeking, Math::is_zero_approx(fade_blend_inv) ? CMP_EPSILON : fade_blend_inv, AnimationNode::FILTER_IGNORE, true); // Blend values must be more than CMP_EPSILON to process discrete keys in edge.
 	}
@@ -436,14 +437,14 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 	}
 
 	{ //advance and loop check
-		float next_pos = len_current - rem;
+		double next_pos = len_current - rem;
 		end_loop = next_pos < pos_current;
 		pos_current = next_pos; //looped
 	}
 
 	//find next
 	StringName next;
-	float next_xfade = 0.0;
+	double next_xfade = 0.0;
 	AnimationNodeStateMachineTransition::SwitchMode switch_mode = AnimationNodeStateMachineTransition::SWITCH_MODE_IMMEDIATE;
 
 	if (path.size()) {

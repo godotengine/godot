@@ -432,7 +432,6 @@ void AnimationNode::_bind_methods() {
 	GDVIRTUAL_BIND(_has_filter);
 
 	ADD_SIGNAL(MethodInfo("removed_from_graph"));
-
 	ADD_SIGNAL(MethodInfo("tree_changed"));
 
 	BIND_ENUM_CONSTANT(FILTER_IGNORE);
@@ -2037,6 +2036,10 @@ void AnimationTree::_bind_methods() {
 	BIND_ENUM_CONSTANT(ANIMATION_PROCESS_MANUAL);
 
 	ADD_SIGNAL(MethodInfo("animation_player_changed"));
+
+	// Signals from AnimationNodes.
+	ADD_SIGNAL(MethodInfo("animation_started", PropertyInfo(Variant::STRING_NAME, "anim_name")));
+	ADD_SIGNAL(MethodInfo("animation_finished", PropertyInfo(Variant::STRING_NAME, "anim_name")));
 }
 
 AnimationTree::AnimationTree() {
