@@ -205,11 +205,12 @@ void OpenXRActionMapEditor::_on_remove_action_set(Object *p_action_set_editor) {
 	action_map->set_edited(true);
 }
 
-void OpenXRActionMapEditor::_on_action_removed() {
+void OpenXRActionMapEditor::_on_action_removed(Ref<OpenXRAction> p_action) {
 	for (int i = 0; i < tabs->get_tab_count(); i++) {
 		// First tab won't be an interaction profile editor, but being thorough..
 		OpenXRInteractionProfileEditorBase *interaction_profile_editor = Object::cast_to<OpenXRInteractionProfileEditorBase>(tabs->get_tab_control(i));
 		if (interaction_profile_editor) {
+			interaction_profile_editor->remove_all_bindings_for_action(p_action);
 		}
 	}
 }

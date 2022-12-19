@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "openxr_action_set_editor.h"
+#include "editor/editor_node.h"
 #include "openxr_action_editor.h"
 
 void OpenXRActionSetEditor::_bind_methods() {
@@ -211,6 +212,7 @@ void OpenXRActionSetEditor::set_focus_on_entry() {
 }
 
 OpenXRActionSetEditor::OpenXRActionSetEditor(Ref<OpenXRActionMap> p_action_map, Ref<OpenXRActionSet> p_action_set) {
+	undo_redo = EditorNode::get_undo_redo();
 	action_map = p_action_map;
 	action_set = p_action_set;
 
