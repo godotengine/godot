@@ -309,7 +309,22 @@ void GenericTilePolygonEditor::_advanced_menu_item_pressed(int p_item_pressed) {
 		case ROTATE_LEFT:
 		case FLIP_HORIZONTALLY:
 		case FLIP_VERTICALLY: {
-			undo_redo->create_action(TTR("Rotate Polygons Left"));
+			switch (p_item_pressed) {
+				case ROTATE_RIGHT: {
+					undo_redo->create_action(TTR("Rotate Polygons Right"));
+				} break;
+				case ROTATE_LEFT: {
+					undo_redo->create_action(TTR("Rotate Polygons Left"));
+				} break;
+				case FLIP_HORIZONTALLY: {
+					undo_redo->create_action(TTR("Flip Polygons Horizontally"));
+				} break;
+				case FLIP_VERTICALLY: {
+					undo_redo->create_action(TTR("Flip Polygons Vertically"));
+				} break;
+				default:
+					break;
+			}
 			for (unsigned int i = 0; i < polygons.size(); i++) {
 				Vector<Point2> new_polygon;
 				for (int point_index = 0; point_index < polygons[i].size(); point_index++) {
