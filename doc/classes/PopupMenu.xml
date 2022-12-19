@@ -209,6 +209,13 @@
 				Returns the maximum allowed width of the icon for the item at the given [param index].
 			</description>
 		</method>
+		<method name="get_item_icon_modulate" qualifiers="const">
+			<return type="Color" />
+			<param index="0" name="index" type="int" />
+			<description>
+				Returns a [Color] modulating the item's icon at the given [param index].
+			</description>
+		</method>
 		<method name="get_item_id" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="index" type="int" />
@@ -410,6 +417,14 @@
 			<param index="1" name="width" type="int" />
 			<description>
 				Sets the maximum allowed width of the icon for the item at the given [param index]. This limit is applied on top of the default size of the icon and on top of [theme_item icon_max_width]. The height is adjusted according to the icon's ratio.
+			</description>
+		</method>
+		<method name="set_item_icon_modulate">
+			<return type="void" />
+			<param index="0" name="index" type="int" />
+			<param index="1" name="modulate" type="Color" />
+			<description>
+				Sets a modulating [Color] of the item's icon at the given [param index].
 			</description>
 		</method>
 		<method name="set_item_id">

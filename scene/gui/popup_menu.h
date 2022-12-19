@@ -43,6 +43,7 @@ class PopupMenu : public Popup {
 	struct Item {
 		Ref<Texture2D> icon;
 		int icon_max_width = 0;
+		Color icon_modulate = Color(1, 1, 1, 1);
 		String text;
 		String xl_text;
 		Ref<TextLine> text_buf;
@@ -226,6 +227,7 @@ public:
 	void set_item_language(int p_idx, const String &p_language);
 	void set_item_icon(int p_idx, const Ref<Texture2D> &p_icon);
 	void set_item_icon_max_width(int p_idx, int p_width);
+	void set_item_icon_modulate(int p_idx, const Color &p_modulate);
 	void set_item_checked(int p_idx, bool p_checked);
 	void set_item_id(int p_idx, int p_id);
 	void set_item_accelerator(int p_idx, Key p_accel);
@@ -250,6 +252,7 @@ public:
 	int get_item_idx_from_text(const String &text) const;
 	Ref<Texture2D> get_item_icon(int p_idx) const;
 	int get_item_icon_max_width(int p_idx) const;
+	Color get_item_icon_modulate(int p_idx) const;
 	bool is_item_checked(int p_idx) const;
 	int get_item_id(int p_idx) const;
 	int get_item_index(int p_id) const;
