@@ -18,6 +18,12 @@
 				Returns the RID of the canvas used by this layer.
 			</description>
 		</method>
+		<method name="get_final_transform" qualifiers="const">
+			<return type="Transform2D" />
+			<description>
+				Returns the transform from the [CanvasLayer]s coordinate system to the [Viewport]s coordinate system.
+			</description>
+		</method>
 		<method name="hide">
 			<return type="void" />
 			<description>
