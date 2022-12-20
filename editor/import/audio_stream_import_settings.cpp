@@ -552,7 +552,7 @@ AudioStreamImportSettings::AudioStreamImportSettings() {
 	bpm_edit->connect("value_changed", callable_mp(this, &AudioStreamImportSettings::_settings_changed).unbind(1));
 	interactive_hb->add_child(bpm_edit);
 	interactive_hb->add_spacer();
-	bar_beats_label = memnew(Label(TTR("Beats/Bar:")));
+	bar_beats_label = memnew(Label(TTR("Bar Beats:")));
 	interactive_hb->add_child(bar_beats_label);
 	bar_beats_edit = memnew(SpinBox);
 	bar_beats_edit->set_tooltip_text(TTR("Configure the Beats Per Bar. This used for music-aware transitions between AudioStreams."));
@@ -562,7 +562,7 @@ AudioStreamImportSettings::AudioStreamImportSettings() {
 	interactive_hb->add_child(bar_beats_edit);
 	interactive_hb->add_spacer();
 	beats_enabled = memnew(CheckBox);
-	beats_enabled->set_text(TTR("Length (in beats):"));
+	beats_enabled->set_text(TTR("Beat Count:"));
 	beats_enabled->connect("toggled", callable_mp(this, &AudioStreamImportSettings::_settings_changed).unbind(1));
 	interactive_hb->add_child(beats_enabled);
 	beats_edit = memnew(SpinBox);
