@@ -69,6 +69,13 @@
 				[b]Note:[/b] This method is not thread-safe. If called from a [Thread], it will return an empty [PackedVector3Array] and will print an error message.
 			</description>
 		</method>
+		<method name="get_point_weight_scale" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="id" type="Vector2i" />
+			<description>
+				Returns the weight scale of the point associated with the given [param id].
+			</description>
+		</method>
 		<method name="is_dirty" qualifiers="const">
 			<return type="bool" />
 			<description>
@@ -106,6 +113,15 @@
 				[b]Note:[/b] Calling [method update] is not needed after the call of this function.
 			</description>
 		</method>
+		<method name="set_point_weight_scale">
+			<return type="void" />
+			<param index="0" name="id" type="Vector2i" />
+			<param index="1" name="weight_scale" type="float" />
+			<description>
+				Sets the [param weight_scale] for the point with the given [param id]. The [param weight_scale] is multiplied by the result of [method _compute_cost] when determining the overall cost of traveling across a segment from a neighboring point to this point.
+				[b]Note:[/b] Calling [method update] is not needed after the call of this function.
+			</description>
+		</method>
 		<method name="update">
 			<return type="void" />
 			<description>
@@ -125,6 +141,7 @@
 		</member>
 		<member name="jumping_enabled" type="bool" setter="set_jumping_enabled" getter="is_jumping_enabled" default="false">
 			Enables or disables jumping to skip up the intermediate points and speeds up the searching algorithm.
+			[b]Note:[/b] Currently, toggling it on disables the consideration of weight scaling in pathfinding.
 		</member>
 		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2(0, 0)">
 			The offset of the grid which will be applied to calculate the resulting point position returned by [method get_point_path]. If changed, [method update] needs to be called before finding the next path.

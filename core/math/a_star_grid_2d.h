@@ -72,6 +72,7 @@ private:
 
 		bool solid = false;
 		Vector2 pos;
+		real_t weight_scale = 1.0;
 
 		// Used for pathfinding.
 		Point *prev_point = nullptr;
@@ -165,6 +166,9 @@ public:
 
 	void set_point_solid(const Vector2i &p_id, bool p_solid = true);
 	bool is_point_solid(const Vector2i &p_id) const;
+
+	void set_point_weight_scale(const Vector2i &p_id, real_t p_weight_scale);
+	real_t get_point_weight_scale(const Vector2i &p_id) const;
 
 	void clear();
 
