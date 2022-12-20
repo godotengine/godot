@@ -88,6 +88,10 @@ Object *RayCast3D::get_collider() const {
 	return ObjectDB::get_instance(against);
 }
 
+Variant RayCast3D::_get_collider_bind() const {
+	return Variant(get_collider());
+}
+
 RID RayCast3D::get_collider_rid() const {
 	return against_rid;
 }
@@ -307,7 +311,7 @@ void RayCast3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_colliding"), &RayCast3D::is_colliding);
 	ClassDB::bind_method(D_METHOD("force_raycast_update"), &RayCast3D::force_raycast_update);
 
-	ClassDB::bind_method(D_METHOD("get_collider"), &RayCast3D::get_collider);
+	ClassDB::bind_method(D_METHOD("get_collider"), &RayCast3D::_get_collider_bind);
 	ClassDB::bind_method(D_METHOD("get_collider_rid"), &RayCast3D::get_collider_rid);
 	ClassDB::bind_method(D_METHOD("get_collider_shape"), &RayCast3D::get_collider_shape);
 	ClassDB::bind_method(D_METHOD("get_collision_point"), &RayCast3D::get_collision_point);

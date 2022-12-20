@@ -498,6 +498,10 @@ class KinematicCollision3D : public RefCounted {
 	friend class CharacterBody3D;
 	PhysicsServer3D::MotionResult result;
 
+	Variant _get_local_shape_bind(int p_collision_index) const;
+	Variant _get_collider_bind(int p_collision_index) const;
+	Variant _get_collider_shape_bind(int p_collision_index) const;
+
 protected:
 	static void _bind_methods();
 

@@ -410,6 +410,10 @@ Object *EditorProperty::get_edited_object() {
 	return object;
 }
 
+Variant EditorProperty::_get_edited_object_bind() {
+	return Variant(object);
+}
+
 StringName EditorProperty::get_edited_property() const {
 	return property;
 }
@@ -964,7 +968,7 @@ void EditorProperty::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_deletable"), &EditorProperty::is_deletable);
 
 	ClassDB::bind_method(D_METHOD("get_edited_property"), &EditorProperty::get_edited_property);
-	ClassDB::bind_method(D_METHOD("get_edited_object"), &EditorProperty::get_edited_object);
+	ClassDB::bind_method(D_METHOD("get_edited_object"), &EditorProperty::_get_edited_object_bind);
 
 	ClassDB::bind_method(D_METHOD("update_property"), &EditorProperty::update_property);
 

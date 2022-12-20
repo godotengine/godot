@@ -407,7 +407,7 @@ private:
 	void _expand_encompassing_rect_using_children(Rect2 &r_rect, const Node *p_node, bool &r_first, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D(), bool include_locked_nodes = true);
 	Rect2 _get_encompassing_rect(const Node *p_node);
 
-	Object *_get_editor_data(Object *p_what);
+	Variant _get_editor_data(Object *p_what);
 
 	void _insert_animation_keys(bool p_location, bool p_rotation, bool p_scale, bool p_on_existing);
 

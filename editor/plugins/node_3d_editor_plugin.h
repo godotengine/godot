@@ -711,7 +711,7 @@ private:
 
 	Node *custom_camera = nullptr;
 
-	Object *_get_editor_data(Object *p_what);
+	Variant _get_editor_data(Object *p_what);
 
 	Ref<Environment> viewport_environment;
 

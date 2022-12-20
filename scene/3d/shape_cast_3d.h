@@ -74,6 +74,8 @@ class ShapeCast3D : public Node3D {
 
 	~ShapeCast3D();
 
+	Variant _get_collider_bind(int p_idx) const;
+
 protected:
 	void _notification(int p_what);
 	void _update_shapecast_state();

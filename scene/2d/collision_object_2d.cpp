@@ -397,6 +397,10 @@ Object *CollisionObject2D::shape_owner_get_owner(uint32_t p_owner) const {
 	return ObjectDB::get_instance(shapes[p_owner].owner_id);
 }
 
+Variant CollisionObject2D::_shape_owner_get_owner_bind(uint32_t p_owner) const {
+	return Variant(shape_owner_get_owner(p_owner));
+}
+
 void CollisionObject2D::shape_owner_add_shape(uint32_t p_owner, const Ref<Shape2D> &p_shape) {
 	ERR_FAIL_COND(!shapes.has(p_owner));
 	ERR_FAIL_COND(p_shape.is_null());
@@ -596,7 +600,7 @@ void CollisionObject2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_shape_owners"), &CollisionObject2D::_get_shape_owners);
 	ClassDB::bind_method(D_METHOD("shape_owner_set_transform", "owner_id", "transform"), &CollisionObject2D::shape_owner_set_transform);
 	ClassDB::bind_method(D_METHOD("shape_owner_get_transform", "owner_id"), &CollisionObject2D::shape_owner_get_transform);
-	ClassDB::bind_method(D_METHOD("shape_owner_get_owner", "owner_id"), &CollisionObject2D::shape_owner_get_owner);
+	ClassDB::bind_method(D_METHOD("shape_owner_get_owner", "owner_id"), &CollisionObject2D::_shape_owner_get_owner_bind);
 	ClassDB::bind_method(D_METHOD("shape_owner_set_disabled", "owner_id", "disabled"), &CollisionObject2D::shape_owner_set_disabled);
 	ClassDB::bind_method(D_METHOD("is_shape_owner_disabled", "owner_id"), &CollisionObject2D::is_shape_owner_disabled);
 	ClassDB::bind_method(D_METHOD("shape_owner_set_one_way_collision", "owner_id", "enable"), &CollisionObject2D::shape_owner_set_one_way_collision);

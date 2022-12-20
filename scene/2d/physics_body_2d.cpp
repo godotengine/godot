@@ -1836,12 +1836,20 @@ Object *KinematicCollision2D::get_local_shape() const {
 	return owner->shape_owner_get_owner(ownerid);
 }
 
+Variant KinematicCollision2D::_get_local_shape_bind() const {
+	return Variant(get_local_shape());
+}
+
 Object *KinematicCollision2D::get_collider() const {
 	if (result.collider_id.is_valid()) {
 		return ObjectDB::get_instance(result.collider_id);
 	}
 
 	return nullptr;
+}
+
+Variant KinematicCollision2D::_get_collider_bind() const {
+	return Variant(get_collider());
 }
 
 ObjectID KinematicCollision2D::get_collider_id() const {
@@ -1865,6 +1873,10 @@ Object *KinematicCollision2D::get_collider_shape() const {
 	return nullptr;
 }
 
+Variant KinematicCollision2D::_get_collider_shape_bind() const {
+	return Variant(get_collider_shape());
+}
+
 int KinematicCollision2D::get_collider_shape_index() const {
 	return result.collider_shape;
 }
@@ -1880,11 +1892,11 @@ void KinematicCollision2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_remainder"), &KinematicCollision2D::get_remainder);
 	ClassDB::bind_method(D_METHOD("get_angle", "up_direction"), &KinematicCollision2D::get_angle, DEFVAL(Vector2(0.0, -1.0)));
 	ClassDB::bind_method(D_METHOD("get_depth"), &KinematicCollision2D::get_depth);
-	ClassDB::bind_method(D_METHOD("get_local_shape"), &KinematicCollision2D::get_local_shape);
-	ClassDB::bind_method(D_METHOD("get_collider"), &KinematicCollision2D::get_collider);
+	ClassDB::bind_method(D_METHOD("get_local_shape"), &KinematicCollision2D::_get_local_shape_bind);
+	ClassDB::bind_method(D_METHOD("get_collider"), &KinematicCollision2D::_get_collider_bind);
 	ClassDB::bind_method(D_METHOD("get_collider_id"), &KinematicCollision2D::get_collider_id);
 	ClassDB::bind_method(D_METHOD("get_collider_rid"), &KinematicCollision2D::get_collider_rid);
-	ClassDB::bind_method(D_METHOD("get_collider_shape"), &KinematicCollision2D::get_collider_shape);
+	ClassDB::bind_method(D_METHOD("get_collider_shape"), &KinematicCollision2D::_get_collider_shape_bind);
 	ClassDB::bind_method(D_METHOD("get_collider_shape_index"), &KinematicCollision2D::get_collider_shape_index);
 	ClassDB::bind_method(D_METHOD("get_collider_velocity"), &KinematicCollision2D::get_collider_velocity);
 }

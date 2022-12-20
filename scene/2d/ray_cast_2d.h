@@ -58,6 +58,8 @@ class RayCast2D : public Node2D {
 
 	void _draw_debug_shape();
 
+	Variant _get_collider_bind() const;
+
 protected:
 	void _notification(int p_what);
 	void _update_raycast_state();

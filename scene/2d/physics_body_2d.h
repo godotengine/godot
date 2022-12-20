@@ -465,6 +465,10 @@ class KinematicCollision2D : public RefCounted {
 	friend class CharacterBody2D;
 	PhysicsServer2D::MotionResult result;
 
+	Variant _get_local_shape_bind() const;
+	Variant _get_collider_bind() const;
+	Variant _get_collider_shape_bind() const;
+
 protected:
 	static void _bind_methods();
 

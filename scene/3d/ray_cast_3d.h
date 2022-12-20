@@ -70,6 +70,8 @@ class RayCast3D : public Node3D {
 
 	bool hit_from_inside = false;
 
+	Variant _get_collider_bind() const;
+
 protected:
 	void _notification(int p_what);
 	void _update_raycast_state();

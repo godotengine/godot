@@ -94,6 +94,8 @@ private:
 	void _apply_disabled();
 	void _apply_enabled();
 
+	Variant _shape_owner_get_owner_bind(uint32_t p_owner) const;
+
 protected:
 	CollisionObject3D(RID p_rid, bool p_area);
 

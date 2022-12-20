@@ -40,6 +40,8 @@
 #include "core/object/callable_method_pointer.h"
 #include "core/templates/hash_set.h"
 
+#include <type_traits>
+
 #define DEFVAL(m_defval) (m_defval)
 
 #ifdef DEBUG_METHODS_ENABLED
@@ -241,8 +243,28 @@ public:
 
 	static uint64_t get_api_hash(APIType p_api);
 
+	template <typename>
+	struct member_function_traits;
+
+	template <typename R, typename T, typename... Args>
+	struct member_function_traits<R (T::*)(Args...)> {
+		using return_type = R;
+	};
+
+	template <typename R, typename T, typename... Args>
+	struct member_function_traits<R (T::*)(Args...) const> {
+		using return_type = R;
+	};
+
+	template <typename R, typename... Args>
+	struct member_function_traits<R (*)(Args...)> {
+		using return_type = R;
+	};
+
 	template <class N, class M, typename... VarArgs>
 	static MethodBind *bind_method(N p_method_name, M p_method, VarArgs... p_args) {
+		static_assert(!std::is_same<typename member_function_traits<M>::return_type, Object *>::value, "Binding a function returning Object * is unsafe. Please make a binding that returns Variant.");
+
 		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
 		const Variant *argptrs[sizeof...(p_args) + 1];
 		for (uint32_t i = 0; i < sizeof...(p_args); i++) {
@@ -254,6 +276,8 @@ public:
 
 	template <class N, class M, typename... VarArgs>
 	static MethodBind *bind_static_method(const StringName &p_class, N p_method_name, M p_method, VarArgs... p_args) {
+		static_assert(!std::is_same<typename member_function_traits<M>::return_type, Object *>::value, "Binding a function returning Object * is unsafe. Please make a binding that returns Variant.");
+
 		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
 		const Variant *argptrs[sizeof...(p_args) + 1];
 		for (uint32_t i = 0; i < sizeof...(p_args); i++) {
@@ -266,6 +290,8 @@ public:
 
 	template <class M>
 	static MethodBind *bind_vararg_method(uint32_t p_flags, const StringName &p_name, M p_method, const MethodInfo &p_info = MethodInfo(), const Vector<Variant> &p_default_args = Vector<Variant>(), bool p_return_nil_is_variant = true) {
+		static_assert(!std::is_same<typename member_function_traits<M>::return_type, Object *>::value, "Binding a function returning Object * is unsafe. Please make a binding that returns Variant.");
+
 		GLOBAL_LOCK_FUNCTION;
 
 		MethodBind *bind = create_vararg_method_bind(p_method, p_info, p_return_nil_is_variant);

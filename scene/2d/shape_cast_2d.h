@@ -63,6 +63,8 @@ class ShapeCast2D : public Node2D {
 	Array _get_collision_result() const;
 	void _redraw_shape();
 
+	Variant _get_collider_bind(int p_idx) const;
+
 protected:
 	void _notification(int p_what);
 	void _update_shapecast_state();

@@ -126,6 +126,8 @@ private:
 
 	void _update_pin_flags();
 
+	Variant _get_edited_object_bind();
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();

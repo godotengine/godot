@@ -515,13 +515,13 @@ void CanvasItemEditor::shortcut_input(const Ref<InputEvent> &p_ev) {
 	}
 }
 
-Object *CanvasItemEditor::_get_editor_data(Object *p_what) {
+Variant CanvasItemEditor::_get_editor_data(Object *p_what) {
 	CanvasItem *ci = Object::cast_to<CanvasItem>(p_what);
 	if (!ci) {
-		return nullptr;
+		return Variant();
 	}
 
-	return memnew(CanvasItemEditorSelectedItem);
+	return Variant(memnew(CanvasItemEditorSelectedItem));
 }
 
 void CanvasItemEditor::_keying_changed() {

@@ -5636,10 +5636,10 @@ void Node3DEditor::update_all_gizmos(Node *p_node) {
 	_update_all_gizmos(p_node);
 }
 
-Object *Node3DEditor::_get_editor_data(Object *p_what) {
+Variant Node3DEditor::_get_editor_data(Object *p_what) {
 	Node3D *sp = Object::cast_to<Node3D>(p_what);
 	if (!sp) {
-		return nullptr;
+		return Variant();
 	}
 
 	Node3DEditorSelectedItem *si = memnew(Node3DEditorSelectedItem);
@@ -5686,7 +5686,7 @@ Object *Node3DEditor::_get_editor_data(Object *p_what) {
 	RS::get_singleton()->instance_geometry_set_flag(si->sbox_instance_xray_offset, RS::INSTANCE_FLAG_IGNORE_OCCLUSION_CULLING, true);
 	RS::get_singleton()->instance_geometry_set_flag(si->sbox_instance_xray_offset, RS::INSTANCE_FLAG_USE_BAKED_LIGHT, false);
 
-	return si;
+	return Variant(si);
 }
 
 void Node3DEditor::_generate_selection_boxes() {

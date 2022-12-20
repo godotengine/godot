@@ -114,7 +114,7 @@ void ShapeCast3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("force_shapecast_update"), &ShapeCast3D::force_shapecast_update);
 
-	ClassDB::bind_method(D_METHOD("get_collider", "index"), &ShapeCast3D::get_collider);
+	ClassDB::bind_method(D_METHOD("get_collider", "index"), &ShapeCast3D::_get_collider_bind);
 	ClassDB::bind_method(D_METHOD("get_collider_rid", "index"), &ShapeCast3D::get_collider_rid);
 	ClassDB::bind_method(D_METHOD("get_collider_shape", "index"), &ShapeCast3D::get_collider_shape);
 	ClassDB::bind_method(D_METHOD("get_collision_point", "index"), &ShapeCast3D::get_collision_point);
@@ -281,6 +281,10 @@ Object *ShapeCast3D::get_collider(int p_idx) const {
 		return nullptr;
 	}
 	return ObjectDB::get_instance(result[p_idx].collider_id);
+}
+
+Variant ShapeCast3D::_get_collider_bind(int p_idx) const {
+	return Variant(get_collider(p_idx));
 }
 
 RID ShapeCast3D::get_collider_rid(int p_idx) const {
