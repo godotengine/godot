@@ -463,6 +463,12 @@ void AStarGrid2D::clear() {
 	size = Vector2i();
 }
 
+Vector2 AStarGrid2D::get_point_position(const Vector2i &p_id) const {
+	ERR_FAIL_COND_V_MSG(dirty, Vector2(), "Grid is not initialized. Call the update method.");
+	ERR_FAIL_COND_V_MSG(!is_in_boundsv(p_id), Vector2(), vformat("Can't get point's position. Point out of bounds (%s/%s, %s/%s).", p_id.x, size.width, p_id.y, size.height));
+	return points[p_id.y][p_id.x].pos;
+}
+
 Vector<Vector2> AStarGrid2D::get_point_path(const Vector2i &p_from_id, const Vector2i &p_to_id) {
 	ERR_FAIL_COND_V_MSG(dirty, Vector<Vector2>(), "Grid is not initialized. Call the update method.");
 	ERR_FAIL_COND_V_MSG(!is_in_boundsv(p_from_id), Vector<Vector2>(), vformat("Can't get id path. Point out of bounds (%s/%s, %s/%s)", p_from_id.x, size.width, p_from_id.y, size.height));
@@ -580,6 +586,7 @@ void AStarGrid2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_point_weight_scale", "id"), &AStarGrid2D::get_point_weight_scale);
 	ClassDB::bind_method(D_METHOD("clear"), &AStarGrid2D::clear);
 
+	ClassDB::bind_method(D_METHOD("get_point_position", "id"), &AStarGrid2D::get_point_position);
 	ClassDB::bind_method(D_METHOD("get_point_path", "from_id", "to_id"), &AStarGrid2D::get_point_path);
 	ClassDB::bind_method(D_METHOD("get_id_path", "from_id", "to_id"), &AStarGrid2D::get_id_path);
 
