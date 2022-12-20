@@ -419,8 +419,8 @@ void EditorVCSInterface::create_vcs_metadata_files(VCSMetadata p_vcs_metadata_ty
 			ERR_FAIL_MSG("Couldn't create .gitattributes in project path.");
 		} else {
 			f->store_line("# Properly detect languages on GitHub");
-			f->store_line("*.gd linguist-language=GDScript")
-			f->store_line("")
+			f->store_line("*.gd linguist-language=GDScript");
+			f->store_line("");
 			f->store_line("# Normalize EOL for all files that Git considers text files");
 			f->store_line("* text=auto eol=lf");
 			f->store_line("# Except for Batch files, which don't behave correctly otherwise");
