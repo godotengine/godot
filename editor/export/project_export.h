@@ -31,11 +31,11 @@
 #ifndef PROJECT_EXPORT_H
 #define PROJECT_EXPORT_H
 
+#include "editor/export/editor_export_preset.h"
 #include "scene/gui/dialogs.h"
 
 class CheckBox;
 class CheckButton;
-class EditorExportPreset;
 class EditorFileDialog;
 class EditorFileSystemDirectory;
 class EditorInspector;
@@ -43,6 +43,7 @@ class EditorPropertyPath;
 class ItemList;
 class MenuButton;
 class OptionButton;
+class PopupMenu;
 class RichTextLabel;
 class TabContainer;
 class Tree;
@@ -75,6 +76,8 @@ private:
 	LineEdit *include_filters = nullptr;
 	LineEdit *exclude_filters = nullptr;
 	Tree *include_files = nullptr;
+	Label *server_strip_message = nullptr;
+	PopupMenu *file_mode_popup = nullptr;
 
 	Label *include_label = nullptr;
 	MarginContainer *include_margin = nullptr;
@@ -113,9 +116,12 @@ private:
 	void _export_type_changed(int p_which);
 	void _filter_changed(const String &p_filter);
 	void _fill_resource_tree();
-	bool _fill_tree(EditorFileSystemDirectory *p_dir, TreeItem *p_item, Ref<EditorExportPreset> &current, bool p_only_scenes);
+	void _setup_item_for_file_mode(TreeItem *p_item, EditorExportPreset::FileExportMode p_mode);
+	bool _fill_tree(EditorFileSystemDirectory *p_dir, TreeItem *p_item, Ref<EditorExportPreset> &current, EditorExportPreset::ExportFilter p_export_filter);
 	void _tree_changed();
 	void _check_propagated_to_item(Object *p_obj, int column);
+	void _tree_popup_edited(bool p_arrow_clicked);
+	void _set_file_export_mode(int p_id);
 
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;

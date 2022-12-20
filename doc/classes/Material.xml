@@ -31,6 +31,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="create_placeholder" qualifiers="const">
+			<return type="Resource" />
+			<description>
+				Creates a placeholder version of this resource ([PlaceholderMaterial]).
+			</description>
+		</method>
 		<method name="inspect_native_shader_code">
 			<return type="void" />
 			<description>

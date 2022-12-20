@@ -114,6 +114,12 @@
 				[b]Note:[/b] This method typically returns the vertices in reverse order (e.g. clockwise to counterclockwise).
 			</description>
 		</method>
+		<method name="create_placeholder" qualifiers="const">
+			<return type="Resource" />
+			<description>
+				Creates a placeholder version of this resource ([PlaceholderMesh]).
+			</description>
+		</method>
 		<method name="create_trimesh_shape" qualifiers="const">
 			<return type="ConcavePolygonShape3D" />
 			<description>
