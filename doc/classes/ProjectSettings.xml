@@ -2231,6 +2231,13 @@
 		<member name="rendering/textures/lossless_compression/force_png" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the texture importer will import lossless textures using the PNG format. Otherwise, it will default to using WebP.
 		</member>
+		<member name="rendering/textures/lossless_compression/webp_compression_level" type="int" setter="" getter="" default="2">
+			The default compression level for lossless WebP. Higher levels result in smaller files at the cost of compression speed. Decompression speed is mostly unaffected by the compression level. Supported values are 0 to 9. Note that compression levels above 6 are very slow and offer very little savings.
+		</member>
+		<member name="rendering/textures/vram_compression/import_astc" type="bool" setter="" getter="" default="true">
+            If [code]true[/code], the texture importer will import VRAM-compressed textures using the ASTC algorithm.
+			[b]Note:[/b] Changing this setting does [i]not[/i] impact textures that were already imported before. To make this setting apply to textures that were already imported, exit the editor, remove the [code].godot/imported/[/code] folder located inside the project folder then restart the editor (see [member application/config/use_hidden_project_data_directory]).
+		</member>
 		<member name="rendering/textures/vram_compression/import_bptc" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the texture importer will import VRAM-compressed textures using the BPTC algorithm. This texture compression algorithm is only supported on desktop platforms, and only when using the Vulkan renderer.
 			[b]Note:[/b] Changing this setting does [i]not[/i] impact textures that were already imported before. To make this setting apply to textures that were already imported, exit the editor, remove the [code].godot/imported/[/code] folder located inside the project folder then restart the editor (see [member application/config/use_hidden_project_data_directory]).

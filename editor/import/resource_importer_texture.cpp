@@ -38,6 +38,7 @@
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
+#include "modules/astcenc/image_compress_astcenc.h"
 
 void ResourceImporterTexture::_texture_reimport_roughness(const Ref<CompressedTexture2D> &p_tex, const String &p_normal_path, RS::TextureDetectRoughnessChannel p_channel) {
 	ERR_FAIL_COND(p_tex.is_null());
@@ -599,8 +600,15 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 
 		const bool is_hdr = (image->get_format() >= Image::FORMAT_RF && image->get_format() <= Image::FORMAT_RGBE9995);
 		bool is_ldr = (image->get_format() >= Image::FORMAT_L8 && image->get_format() <= Image::FORMAT_RGB565);
-		const bool can_bptc = GLOBAL_GET("rendering/textures/vram_compression/import_bptc");
-		const bool can_s3tc = GLOBAL_GET("rendering/textures/vram_compression/import_s3tc");
+		const bool can_bptc = ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_bptc");
+		const bool can_s3tc = ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_s3tc");
+		const bool can_astc = ProjectSettings::get_singleton()->get("rendering/textures/vram_compression/import_astc");
+
+		if (can_astc) {
+			_save_ctex(image, p_save_path + ".astc.ctex", compress_mode, lossy, Image::COMPRESS_ASTC, mipmaps, stream, detect_3d, detect_roughness, detect_normal, force_normal, srgb_friendly_pack, true, mipmap_limit, normal_image, roughness_channel);
+			r_platform_variants->push_back("astc");
+			formats_imported.push_back("astc");
+		}
 
 		if (can_bptc) {
 			// Add to the list anyway.

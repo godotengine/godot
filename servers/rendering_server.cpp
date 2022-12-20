@@ -2849,6 +2849,7 @@ RenderingServer::RenderingServer() {
 void RenderingServer::init() {
 	GLOBAL_DEF_RST("rendering/textures/vram_compression/import_bptc", false);
 	GLOBAL_DEF_RST("rendering/textures/vram_compression/import_s3tc", true);
+	GLOBAL_DEF_RST("rendering/textures/vram_compression/import_astc", true);
 	GLOBAL_DEF_RST("rendering/textures/vram_compression/import_etc", false);
 	GLOBAL_DEF_RST("rendering/textures/vram_compression/import_etc2", true);
 
