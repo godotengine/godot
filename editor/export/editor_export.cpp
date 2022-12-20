@@ -45,6 +45,7 @@ void EditorExport::_save() {
 		config->set_value(section, "name", preset->get_name());
 		config->set_value(section, "platform", preset->get_platform()->get_name());
 		config->set_value(section, "runnable", preset->is_runnable());
+		config->set_value(section, "dedicated_server", preset->is_dedicated_server());
 		config->set_value(section, "custom_features", preset->get_custom_features());
 
 		bool save_files = false;
@@ -64,6 +65,11 @@ void EditorExport::_save() {
 				config->set_value(section, "export_filter", "exclude");
 				save_files = true;
 			} break;
+			case EditorExportPreset::EXPORT_CUSTOMIZED: {
+				config->set_value(section, "export_filter", "customized");
+				config->set_value(section, "customized_files", preset->get_customized_files());
+				save_files = false;
+			};
 		}
 
 		if (save_files) {
@@ -208,6 +214,7 @@ void EditorExport::load_config() {
 
 		preset->set_name(config->get_value(section, "name"));
 		preset->set_runnable(config->get_value(section, "runnable"));
+		preset->set_dedicated_server(config->get_value(section, "dedicated_server", false));
 
 		if (config->has_section_key(section, "custom_features")) {
 			preset->set_custom_features(config->get_value(section, "custom_features"));
@@ -228,6 +235,10 @@ void EditorExport::load_config() {
 		} else if (export_filter == "exclude") {
 			preset->set_export_filter(EditorExportPreset::EXCLUDE_SELECTED_RESOURCES);
 			get_files = true;
+		} else if (export_filter == "customized") {
+			preset->set_export_filter(EditorExportPreset::EXPORT_CUSTOMIZED);
+			preset->set_customized_files(config->get_value(section, "customized_files", Dictionary()));
+			get_files = false;
 		}
 
 		if (get_files) {

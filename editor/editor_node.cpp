@@ -124,6 +124,7 @@
 #include "editor/plugins/asset_library_editor_plugin.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #include "editor/plugins/debugger_editor_plugin.h"
+#include "editor/plugins/dedicated_server_export_plugin.h"
 #include "editor/plugins/editor_preview_plugins.h"
 #include "editor/plugins/editor_resource_conversion_plugin.h"
 #include "editor/plugins/gdextension_export_plugin.h"
@@ -7349,6 +7350,11 @@ EditorNode::EditorNode() {
 	gdextension_export_plugin.instantiate();
 
 	EditorExport::get_singleton()->add_export_plugin(gdextension_export_plugin);
+
+	Ref<DedicatedServerExportPlugin> dedicated_server_export_plugin;
+	dedicated_server_export_plugin.instantiate();
+
+	EditorExport::get_singleton()->add_export_plugin(dedicated_server_export_plugin);
 
 	Ref<PackedSceneEditorTranslationParserPlugin> packed_scene_translation_parser_plugin;
 	packed_scene_translation_parser_plugin.instantiate();

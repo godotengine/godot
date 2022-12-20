@@ -45,6 +45,7 @@
 #include "scene/gui/link_button.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/option_button.h"
+#include "scene/gui/popup_menu.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
@@ -165,7 +166,7 @@ void ProjectExportDialog::_update_presets() {
 		if (preset->is_runnable()) {
 			preset_name += " (" + TTR("Runnable") + ")";
 		}
-		preset->update_files_to_export();
+		preset->update_files();
 		presets->add_item(preset_name, preset->get_platform()->get_logo());
 	}
 
@@ -244,6 +245,7 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 	export_filter->select(current->get_export_filter());
 	include_filters->set_text(current->get_include_filter());
 	exclude_filters->set_text(current->get_exclude_filter());
+	server_strip_message->set_visible(current->get_export_filter() == EditorExportPreset::EXPORT_CUSTOMIZED);
 
 	_fill_resource_tree();
 
@@ -586,6 +588,7 @@ void ProjectExportDialog::_duplicate_preset() {
 	if (make_runnable) {
 		preset->set_runnable(make_runnable);
 	}
+	preset->set_dedicated_server(current->is_dedicated_server());
 	preset->set_export_filter(current->get_export_filter());
 	preset->set_include_filter(current->get_include_filter());
 	preset->set_exclude_filter(current->get_exclude_filter());
@@ -708,7 +711,16 @@ void ProjectExportDialog::_export_type_changed(int p_which) {
 		return;
 	}
 
-	current->set_export_filter(EditorExportPreset::ExportFilter(p_which));
+	EditorExportPreset::ExportFilter filter_type = (EditorExportPreset::ExportFilter)p_which;
+	current->set_export_filter(filter_type);
+	current->set_dedicated_server(filter_type == EditorExportPreset::EXPORT_CUSTOMIZED);
+	server_strip_message->set_visible(filter_type == EditorExportPreset::EXPORT_CUSTOMIZED);
+
+	// Default to stripping everything when first switching to server build.
+	if (filter_type == EditorExportPreset::EXPORT_CUSTOMIZED && current->get_customized_files_count() == 0) {
+		current->set_file_export_mode("res://", EditorExportPreset::MODE_FILE_STRIP);
+	}
+
 	updating = true;
 	_fill_resource_tree();
 	updating = false;
@@ -744,25 +756,53 @@ void ProjectExportDialog::_fill_resource_tree() {
 		return;
 	}
 
+	TreeItem *root = include_files->create_item();
+
+	if (f == EditorExportPreset::EXPORT_CUSTOMIZED) {
+		include_files->set_columns(2);
+		include_files->set_column_expand(1, false);
+		include_files->set_column_custom_minimum_width(1, 250 * EDSCALE);
+	} else {
+		include_files->set_columns(1);
+	}
+
 	include_label->show();
 	include_margin->show();
 
-	TreeItem *root = include_files->create_item();
-
-	_fill_tree(EditorFileSystem::get_singleton()->get_filesystem(), root, current, f == EditorExportPreset::EXPORT_SELECTED_SCENES);
+	_fill_tree(EditorFileSystem::get_singleton()->get_filesystem(), root, current, f);
 }
 
-bool ProjectExportDialog::_fill_tree(EditorFileSystemDirectory *p_dir, TreeItem *p_item, Ref<EditorExportPreset> &current, bool p_only_scenes) {
+void ProjectExportDialog::_setup_item_for_file_mode(TreeItem *p_item, EditorExportPreset::FileExportMode p_mode) {
+	if (p_mode == EditorExportPreset::MODE_FILE_NOT_CUSTOMIZED) {
+		p_item->set_checked(0, false);
+		p_item->set_cell_mode(1, TreeItem::CELL_MODE_STRING);
+		p_item->set_text(1, "");
+		p_item->set_editable(1, false);
+		p_item->set_selectable(1, false);
+	} else {
+		p_item->set_checked(0, true);
+		p_item->set_cell_mode(1, TreeItem::CELL_MODE_CUSTOM);
+		p_item->set_text(1, file_mode_popup->get_item_text(file_mode_popup->get_item_index(p_mode)));
+		p_item->set_editable(1, true);
+		p_item->set_selectable(1, true);
+	}
+}
+
+bool ProjectExportDialog::_fill_tree(EditorFileSystemDirectory *p_dir, TreeItem *p_item, Ref<EditorExportPreset> &current, EditorExportPreset::ExportFilter p_export_filter) {
 	p_item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
 	p_item->set_icon(0, presets->get_theme_icon(SNAME("folder"), SNAME("FileDialog")));
 	p_item->set_text(0, p_dir->get_name() + "/");
 	p_item->set_editable(0, true);
 	p_item->set_metadata(0, p_dir->get_path());
 
+	if (p_export_filter == EditorExportPreset::EXPORT_CUSTOMIZED) {
+		_setup_item_for_file_mode(p_item, current->get_file_export_mode(p_dir->get_path()));
+	}
+
 	bool used = false;
 	for (int i = 0; i < p_dir->get_subdir_count(); i++) {
 		TreeItem *subdir = include_files->create_item(p_item);
-		if (_fill_tree(p_dir->get_subdir(i), subdir, current, p_only_scenes)) {
+		if (_fill_tree(p_dir->get_subdir(i), subdir, current, p_export_filter)) {
 			used = true;
 		} else {
 			memdelete(subdir);
@@ -771,7 +811,7 @@ bool ProjectExportDialog::_fill_tree(EditorFileSystemDirectory *p_dir, TreeItem 
 
 	for (int i = 0; i < p_dir->get_file_count(); i++) {
 		String type = p_dir->get_file_type(i);
-		if (p_only_scenes && type != "PackedScene") {
+		if (p_export_filter == EditorExportPreset::EXPORT_SELECTED_SCENES && type != "PackedScene") {
 			continue;
 		}
 		if (type == "TextFile") {
@@ -786,9 +826,14 @@ bool ProjectExportDialog::_fill_tree(EditorFileSystemDirectory *p_dir, TreeItem 
 
 		file->set_icon(0, EditorNode::get_singleton()->get_class_icon(type));
 		file->set_editable(0, true);
-		file->set_checked(0, current->has_export_file(path));
 		file->set_metadata(0, path);
-		file->propagate_check(0);
+
+		if (p_export_filter == EditorExportPreset::EXPORT_CUSTOMIZED) {
+			_setup_item_for_file_mode(file, current->get_file_export_mode(path));
+		} else {
+			file->set_checked(0, current->has_export_file(path));
+			file->propagate_check(0);
+		}
 
 		used = true;
 	}
@@ -810,7 +855,19 @@ void ProjectExportDialog::_tree_changed() {
 		return;
 	}
 
-	item->propagate_check(0);
+	if (current->get_export_filter() == EditorExportPreset::EXPORT_CUSTOMIZED) {
+		EditorExportPreset::FileExportMode file_mode = EditorExportPreset::MODE_FILE_NOT_CUSTOMIZED;
+		String path = item->get_metadata(0);
+
+		if (item->is_checked(0)) {
+			file_mode = current->get_file_export_mode(path, EditorExportPreset::MODE_FILE_STRIP);
+		}
+
+		_setup_item_for_file_mode(item, file_mode);
+		current->set_file_export_mode(path, file_mode);
+	} else {
+		item->propagate_check(0);
+	}
 }
 
 void ProjectExportDialog::_check_propagated_to_item(Object *p_obj, int column) {
@@ -828,6 +885,30 @@ void ProjectExportDialog::_check_propagated_to_item(Object *p_obj, int column) {
 			current->remove_export_file(path);
 		}
 	}
+}
+
+void ProjectExportDialog::_tree_popup_edited(bool p_arrow_clicked) {
+	Rect2 bounds = include_files->get_custom_popup_rect();
+	bounds.position += get_global_canvas_transform().get_origin();
+	bounds.size *= get_global_canvas_transform().get_scale();
+	if (!is_embedding_subwindows()) {
+		bounds.position += get_position();
+	}
+	file_mode_popup->popup(bounds);
+}
+
+void ProjectExportDialog::_set_file_export_mode(int p_id) {
+	Ref<EditorExportPreset> current = get_current_preset();
+	if (current.is_null()) {
+		return;
+	}
+
+	TreeItem *item = include_files->get_edited();
+	String path = item->get_metadata(0);
+
+	current->set_file_export_mode(path, (EditorExportPreset::FileExportMode)p_id);
+
+	item->set_text(1, file_mode_popup->get_item_text(file_mode_popup->get_item_index(p_id)));
 }
 
 void ProjectExportDialog::_export_pck_zip() {
@@ -1088,6 +1169,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	export_filter->add_item(TTR("Export selected scenes (and dependencies)"));
 	export_filter->add_item(TTR("Export selected resources (and dependencies)"));
 	export_filter->add_item(TTR("Export all resources in the project except resources checked below"));
+	export_filter->add_item(TTR("Export as dedicated server"));
 	resources_vb->add_margin_child(TTR("Export Mode:"), export_filter);
 	export_filter->connect("item_selected", callable_mp(this, &ProjectExportDialog::_export_type_changed));
 
@@ -1102,6 +1184,36 @@ ProjectExportDialog::ProjectExportDialog() {
 	include_margin->add_child(include_files);
 	include_files->connect("item_edited", callable_mp(this, &ProjectExportDialog::_tree_changed));
 	include_files->connect("check_propagated_to_item", callable_mp(this, &ProjectExportDialog::_check_propagated_to_item));
+	include_files->connect("custom_popup_edited", callable_mp(this, &ProjectExportDialog::_tree_popup_edited));
+
+	server_strip_message = memnew(Label);
+	server_strip_message->set_visible(false);
+	server_strip_message->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
+	resources_vb->add_child(server_strip_message);
+
+	{
+		List<StringName> resource_names;
+		ClassDB::get_inheriters_from_class("Resource", &resource_names);
+
+		PackedStringArray strippable;
+		for (StringName resource_name : resource_names) {
+			if (ClassDB::has_method(resource_name, "create_placeholder", true)) {
+				strippable.push_back(resource_name);
+			}
+		}
+		strippable.sort();
+
+		String message = TTR("\"Strip Visuals\" will replace the following resources with placeholders:") + " ";
+		message += String(", ").join(strippable);
+		server_strip_message->set_text(message);
+	}
+
+	file_mode_popup = memnew(PopupMenu);
+	add_child(file_mode_popup);
+	file_mode_popup->add_item(TTR("Strip Visuals"), EditorExportPreset::MODE_FILE_STRIP);
+	file_mode_popup->add_item(TTR("Keep"), EditorExportPreset::MODE_FILE_KEEP);
+	file_mode_popup->add_item(TTR("Remove"), EditorExportPreset::MODE_FILE_REMOVE);
+	file_mode_popup->connect("id_pressed", callable_mp(this, &ProjectExportDialog::_set_file_export_mode));
 
 	include_filters = memnew(LineEdit);
 	resources_vb->add_margin_child(
