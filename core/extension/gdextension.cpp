@@ -286,6 +286,7 @@ void GDExtension::_register_extension_class(GDExtensionClassLibraryPtr p_library
 	const GDExtensionClassCreationInfo2 class_info2 = {
 		p_extension_funcs->is_virtual, // GDExtensionBool is_virtual;
 		p_extension_funcs->is_abstract, // GDExtensionBool is_abstract;
+		true, // GDExtensionBool is_exposed;
 		p_extension_funcs->set_func, // GDExtensionClassSet set_func;
 		p_extension_funcs->get_func, // GDExtensionClassGet get_func;
 		p_extension_funcs->get_property_list_func, // GDExtensionClassGetPropertyList get_property_list_func;
@@ -352,6 +353,7 @@ void GDExtension::_register_extension_class_internal(GDExtensionClassLibraryPtr 
 	extension->gdextension.editor_class = self->level_initialized == INITIALIZATION_LEVEL_EDITOR;
 	extension->gdextension.is_virtual = p_extension_funcs->is_virtual;
 	extension->gdextension.is_abstract = p_extension_funcs->is_abstract;
+	extension->gdextension.is_exposed = p_extension_funcs->is_exposed;
 	extension->gdextension.set = p_extension_funcs->set_func;
 	extension->gdextension.get = p_extension_funcs->get_func;
 	extension->gdextension.get_property_list = p_extension_funcs->get_property_list_func;

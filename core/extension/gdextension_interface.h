@@ -291,6 +291,7 @@ typedef struct {
 typedef struct {
 	GDExtensionBool is_virtual;
 	GDExtensionBool is_abstract;
+	GDExtensionBool is_exposed;
 	GDExtensionClassSet set_func;
 	GDExtensionClassGet get_func;
 	GDExtensionClassGetPropertyList get_property_list_func;

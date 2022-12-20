@@ -315,6 +315,7 @@ struct ObjectGDExtension {
 	bool editor_class = false;
 	bool is_virtual = false;
 	bool is_abstract = false;
+	bool is_exposed = true;
 	GDExtensionClassSet set;
 	GDExtensionClassGet get;
 	GDExtensionClassGetPropertyList get_property_list;

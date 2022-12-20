@@ -212,6 +212,21 @@ public:
 		//nothing
 	}
 
+	template <class T>
+	static void register_internal_class() {
+		GLOBAL_LOCK_FUNCTION;
+		static_assert(TypesAreSame<typename T::self_type, T>::value, "Class not declared properly, please use GDCLASS.");
+		T::initialize_class();
+		ClassInfo *t = classes.getptr(T::get_class_static());
+		ERR_FAIL_COND(!t);
+		t->creation_func = &creator<T>;
+		t->exposed = false;
+		t->is_virtual = false;
+		t->class_ptr = T::get_class_ptr_static();
+		t->api = current_api;
+		T::register_custom_data_to_otdb();
+	}
+
 	static void register_extension_class(ObjectGDExtension *p_extension);
 	static void unregister_extension_class(const StringName &p_class);
 
@@ -482,6 +497,10 @@ _FORCE_INLINE_ Vector<Error> errarray(P... p_args) {
 #define GDREGISTER_ABSTRACT_CLASS(m_class)             \
 	if (m_class::_class_is_enabled) {                  \
 		::ClassDB::register_abstract_class<m_class>(); \
+	}
+#define GDREGISTER_INTERNAL_CLASS(m_class)             \
+	if (m_class::_class_is_enabled) {                  \
+		::ClassDB::register_internal_class<m_class>(); \
 	}
 
 #define GDREGISTER_NATIVE_STRUCT(m_class, m_code) ClassDB::register_native_struct(#m_class, m_code, sizeof(m_class))
