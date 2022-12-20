@@ -74,7 +74,7 @@ bool GridMap::_set(const StringName &p_name, const Variant &p_value) {
 			bm.mesh = meshes[i];
 			ERR_CONTINUE(!bm.mesh.is_valid());
 			bm.instance = RS::get_singleton()->instance_create();
-			RS::get_singleton()->get_singleton()->instance_set_base(bm.instance, bm.mesh->get_rid());
+			RS::get_singleton()->instance_set_base(bm.instance, bm.mesh->get_rid());
 			RS::get_singleton()->instance_attach_object_instance_id(bm.instance, get_instance_id());
 			if (is_inside_tree()) {
 				RS::get_singleton()->instance_set_scenario(bm.instance, get_world_3d()->get_scenario());
@@ -1296,7 +1296,7 @@ void GridMap::make_baked_meshes(bool p_gen_lightmap_uv, float p_lightmap_uv_texe
 		BakedMesh bm;
 		bm.mesh = mesh;
 		bm.instance = RS::get_singleton()->instance_create();
-		RS::get_singleton()->get_singleton()->instance_set_base(bm.instance, bm.mesh->get_rid());
+		RS::get_singleton()->instance_set_base(bm.instance, bm.mesh->get_rid());
 		RS::get_singleton()->instance_attach_object_instance_id(bm.instance, get_instance_id());
 		if (is_inside_tree()) {
 			RS::get_singleton()->instance_set_scenario(bm.instance, get_world_3d()->get_scenario());
