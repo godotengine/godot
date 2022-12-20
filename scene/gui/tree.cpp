@@ -3785,7 +3785,9 @@ bool Tree::edit_selected() {
 	} else if (c.mode == TreeItem::CELL_MODE_STRING || c.mode == TreeItem::CELL_MODE_RANGE) {
 		Rect2 popup_rect;
 
-		Vector2 ofs(0, Math::floor((text_editor->get_size().height - rect.size.height) / 2)); // "floor()" centers vertically.
+		int value_editor_height = c.mode == TreeItem::CELL_MODE_RANGE ? value_editor->get_minimum_size().height : 0;
+		// "floor()" centers vertically.
+		Vector2 ofs(0, Math::floor((MAX(text_editor->get_minimum_size().height, rect.size.height - value_editor_height) - rect.size.height) / 2));
 
 		Point2i textedpos = get_screen_position() + rect.position - ofs;
 		cache.text_editor_position = textedpos;
@@ -3801,7 +3803,7 @@ bool Tree::edit_selected() {
 		text_editor->select_all();
 
 		if (c.mode == TreeItem::CELL_MODE_RANGE) {
-			popup_rect.size.y += value_editor->get_minimum_size().height;
+			popup_rect.size.y += value_editor_height;
 
 			value_editor->show();
 			updating_value_editor = true;
@@ -5281,7 +5283,6 @@ Tree::Tree() {
 	add_child(popup_menu, false, INTERNAL_MODE_FRONT);
 
 	popup_editor = memnew(Popup);
-	popup_editor->set_wrap_controls(true);
 	add_child(popup_editor, false, INTERNAL_MODE_FRONT);
 	popup_editor_vb = memnew(VBoxContainer);
 	popup_editor->add_child(popup_editor_vb);
@@ -5290,11 +5291,9 @@ Tree::Tree() {
 	text_editor = memnew(LineEdit);
 	popup_editor_vb->add_child(text_editor);
 	text_editor->set_v_size_flags(SIZE_EXPAND_FILL);
-	text_editor->set_h_size_flags(SIZE_EXPAND_FILL);
 	value_editor = memnew(HSlider);
-	value_editor->set_v_size_flags(SIZE_EXPAND_FILL);
-	value_editor->set_h_size_flags(SIZE_EXPAND_FILL);
 	popup_editor_vb->add_child(value_editor);
+	value_editor->set_v_size_flags(SIZE_EXPAND_FILL);
 	value_editor->hide();
 
 	h_scroll = memnew(HScrollBar);
