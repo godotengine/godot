@@ -36,7 +36,18 @@
 #include "core/os/os.h"
 #include "drivers/unix/ip_unix.h"
 
+#include <signal.h>
 class OS_Unix : public OS {
+private:
+	Mutex mutex;
+	struct sigaction old_sigaction;
+	typedef void (*SigchldHandlerCallback)(int p_pid, void *userdata);
+	struct SigchldCallbackItem {
+		SigchldHandlerCallback callback;
+		void *userdata = nullptr;
+	};
+	static Vector<SigchldCallbackItem *> sigchld_handler_callbacks;
+
 protected:
 	// UNIX only handles the core functions.
 	// inheriting platforms under unix (eg. X11) should handle the rest
@@ -47,11 +58,14 @@ protected:
 	virtual void finalize_core() override;
 
 	String stdin_buf;
+	static void handle_sigchld(int sig, siginfo_t *info, void *ucontext);
 
 public:
 	OS_Unix();
 
 	virtual Vector<String> get_video_adapter_driver_info() const override;
+	// Override return type to make writing static callbacks less tedious.
+	static OS_Unix *get_singleton();
 
 	virtual String get_stdin_string(bool p_block) override;
 
@@ -90,6 +104,9 @@ public:
 
 	virtual String get_executable_path() const override;
 	virtual String get_user_data_dir() const override;
+
+	void add_sigchld_callback(SigchldHandlerCallback p_callback, void *userdata);
+	void remove_sigchld_callback(SigchldHandlerCallback p_callback, void *userdata);
 };
 
 class UnixTerminalLogger : public StdLogger {

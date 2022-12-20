@@ -665,6 +665,23 @@ The `tinyexr.cc` file was modified to include `zlib.h` which we provide,
 instead of `miniz.h` as an external dependency.
 
 
+## tiny-process-library
+
+- Upstream: https://gitlab.com/eidheim/tiny-process-library/-/tree/master
+- Version: git (27bf021d97d428b3c0cef4009cb9c03ad46c4376, 2022)
+- License: MIT
+
+Files extracted from upstream source:
+
+- `process_win.cpp`, `process_unix.cpp`, `process.cpp` and `process.hpp`
+- `LICENSE`
+
+Some changes have been made in order to remove exceptions.
+They are marked with `// -- GODOT start --` and `// -- GODOT end --`
+comments. Apply the patches in the `patches/` folder when syncing on newer upstream
+commits.
+
+
 ## thorvg
 
 - Upstream: https://github.com/Samsung/thorvg

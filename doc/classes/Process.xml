@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Process" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Class for running and controlling processes.
+	</brief_description>
+	<description>
+		Process type. It is used to run processes and reading/writing to their standard inputs and outputs.
+		[Process] can't be instantiated directly. Instead it is created with a static method that takes the path to the program that will be ran.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="close_stdin">
+			<return type="void" />
+			<description>
+				Closes the standard input, this is useful for some programs that only start processing when this happens.
+			</description>
+		</method>
+		<method name="create" qualifiers="static">
+			<return type="Process" />
+			<param index="0" name="path" type="String" />
+			<param index="1" name="arguments" type="PackedStringArray" default="PackedStringArray()" />
+			<param index="2" name="working_directory" type="String" default="&quot;&quot;" />
+			<param index="3" name="open_stdin" type="bool" default="false" />
+			<description>
+				Creates a [Process] object and runs the specified program.
+				[param path] is the path to the binary to run, this must be an absolute path, you can use use [method ProjectSettings.globalize_path] if needed.
+				[param arguments] are the arguments that will be passed to the program when executed.
+				[param working_directory] is the working directory on which the program will be ran, if empty will default to the location of the engine binary.
+				[param open_stdin] opens the standard input for writing, this enables usage of [method write].
+				Returns [code]null[/code] if creating processes is not supported on the current platform.
+			</description>
+		</method>
+		<method name="get_available_stderr_lines" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns how many standard error output lines are available to read using [method get_stderr_line].
+			</description>
+		</method>
+		<method name="get_available_stdout_lines" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns how many standard output lines are available to read using [method get_stdout_line].
+			</description>
+		</method>
+		<method name="get_exit_status" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the exit status code returned by the process after it's finished executing, returns [code]-1[/code] if the process is still running.
+			</description>
+		</method>
+		<method name="get_id" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the process ID of the process.
+			</description>
+		</method>
+		<method name="get_stderr_line">
+			<return type="String" />
+			<description>
+				Returns the next standard error output line.
+			</description>
+		</method>
+		<method name="get_stdout_line">
+			<return type="String" />
+			<description>
+				Returns the next standard output line.
+			</description>
+		</method>
+		<method name="kill">
+			<return type="void" />
+			<param index="0" name="force" type="bool" default="false" />
+			<description>
+				Tells the process to end execution as soon as possible, set [param force] to [code]true[/code] to force it to finish.
+				[b]Note:[/b] [param force] has no effect on Windows.
+			</description>
+		</method>
+		<method name="write">
+			<return type="bool" />
+			<param index="0" name="input" type="String" />
+			<description>
+				Writes to the standard input of the program, needs [code]open_stdin[/code] to be [code]true[/code] to work.
+				Returns [code]true[/code] if the write was succesful.
+			</description>
+		</method>
+	</methods>
+</class>

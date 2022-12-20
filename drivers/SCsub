@@ -32,6 +32,9 @@ if env["opengl3"]:
 # Core dependencies
 SConscript("png/SCsub")
 
+# Tiny process library
+SConscript("tiny-process-lib/SCsub")
+
 env.add_source_files(env.drivers_sources, "*.cpp")
 
 lib = env.add_library("drivers", env.drivers_sources)

@@ -97,6 +97,20 @@ thirdparty_minizip_sources = ["ioapi.c", "unzip.c", "zip.c"]
 thirdparty_minizip_sources = [thirdparty_minizip_dir + file for file in thirdparty_minizip_sources]
 env_thirdparty.add_source_files(thirdparty_obj, thirdparty_minizip_sources)
 
+# Tiny-process-library
+thirdparty_tiny_process_library_dir = "#thirdparty/tiny-process-library/"
+thirdparty_tiny_process_library_sources = []
+
+if env["platform"] in ["linuxbsd", "macos", "android"]:
+    thirdparty_tiny_process_library_sources = ["process.cpp", "process_unix.cpp"]
+elif env["platform"] == "windows":
+    thirdparty_tiny_process_library_sources = ["process.cpp", "process_win.cpp"]
+
+thirdparty_tiny_process_library_sources = [
+    thirdparty_tiny_process_library_dir + file for file in thirdparty_tiny_process_library_sources
+]
+env_thirdparty.add_source_files(thirdparty_obj, thirdparty_tiny_process_library_sources)
+
 # Zstd library, can be unbundled in theory
 # though we currently use some private symbols
 # https://github.com/godotengine/godot/issues/17374
