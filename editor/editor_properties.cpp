@@ -697,7 +697,6 @@ public:
 				const int vofs = (grid_size.height - h) / 2;
 
 				int layer_index = 0;
-				int block_index = 0;
 
 				Point2 arrow_pos;
 
@@ -769,8 +768,6 @@ public:
 							break;
 						}
 					}
-
-					++block_index;
 				}
 
 				if ((expansion_rows != prev_expansion_rows) && expanded) {
