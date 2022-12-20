@@ -117,8 +117,8 @@ protected:
 	GDVIRTUAL0R(bool, _shut_down);
 	GDVIRTUAL0R(String, _get_vcs_name);
 	GDVIRTUAL1R(TypedArray<Dictionary>, _get_previous_commits, int);
-	GDVIRTUAL0R(TypedArray<Dictionary>, _get_branch_list);
-	GDVIRTUAL0R(TypedArray<Dictionary>, _get_remotes);
+	GDVIRTUAL0R(TypedArray<String>, _get_branch_list);
+	GDVIRTUAL0R(TypedArray<String>, _get_remotes);
 	GDVIRTUAL1(_create_branch, String);
 	GDVIRTUAL1(_remove_branch, String);
 	GDVIRTUAL2(_create_remote, String, String);
