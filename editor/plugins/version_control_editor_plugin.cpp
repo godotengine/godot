@@ -67,6 +67,7 @@ void VersionControlEditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_ssh_private_key_selected"), &VersionControlEditorPlugin::_ssh_private_key_selected);
 	ClassDB::bind_method(D_METHOD("_commit_message_gui_input"), &VersionControlEditorPlugin::_commit_message_gui_input);
 	ClassDB::bind_method(D_METHOD("_cell_button_pressed"), &VersionControlEditorPlugin::_cell_button_pressed);
+	ClassDB::bind_method(D_METHOD("_confirm_discard_all"), &VersionControlEditorPlugin::_confirm_discard_all);
 	ClassDB::bind_method(D_METHOD("_discard_all"), &VersionControlEditorPlugin::_discard_all);
 	ClassDB::bind_method(D_METHOD("_create_branch"), &VersionControlEditorPlugin::_create_branch);
 	ClassDB::bind_method(D_METHOD("_create_remote"), &VersionControlEditorPlugin::_create_remote);
@@ -433,6 +434,10 @@ void VersionControlEditorPlugin::_discard_file(String p_file_path, EditorVCSInte
 	}
 	// FIXIT: The project.godot file shows weird behavior
 	EditorFileSystem::get_singleton()->update_file(p_file_path);
+}
+
+void VersionControlEditorPlugin::_confirm_discard_all() {
+	discard_all_confirm->popup_centered();
 }
 
 void VersionControlEditorPlugin::_discard_all() {
@@ -1240,10 +1245,21 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	refresh_button->connect(SNAME("pressed"), callable_mp(this, &VersionControlEditorPlugin::_refresh_remote_list));
 	unstage_title->add_child(refresh_button);
 
+	discard_all_confirm = memnew(AcceptDialog);
+	discard_all_confirm->set_title(TTR("Discard all changes"));
+	discard_all_confirm->set_min_size(Size2i(400, 50));
+	discard_all_confirm->set_text(TTR("This operation is IRREVERSIBLE. Your changes will be deleted FOREVER."));
+	discard_all_confirm->set_hide_on_ok(true);
+	discard_all_confirm->set_ok_button_text(TTR("Permanentally delete my changes"));
+	discard_all_confirm->add_cancel_button();
+	version_commit_dock->add_child(discard_all_confirm);
+
+	discard_all_confirm->get_ok_button()->connect(SNAME("pressed"), callable_mp(this, &VersionControlEditorPlugin::_discard_all));
+
 	discard_all_button = memnew(Button);
 	discard_all_button->set_tooltip_text(TTR("Discard all changes"));
 	discard_all_button->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
-	discard_all_button->connect(SNAME("pressed"), callable_mp(this, &VersionControlEditorPlugin::_discard_all));
+	discard_all_button->connect(SNAME("pressed"), callable_mp(this, &VersionControlEditorPlugin::_confirm_discard_all));
 	discard_all_button->set_flat(true);
 	unstage_title->add_child(discard_all_button);
 
