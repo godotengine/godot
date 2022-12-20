@@ -1966,6 +1966,16 @@ void GDScriptLanguage::add_named_global_constant(const StringName &p_name, const
 	named_globals[p_name] = p_value;
 }
 
+Variant GDScriptLanguage::get_any_global_constant(const StringName &p_name) {
+	if (named_globals.has(p_name)) {
+		return named_globals[p_name];
+	}
+	if (globals.has(p_name)) {
+		return _global_array[globals[p_name]];
+	}
+	ERR_FAIL_V_MSG(Variant(), vformat("Could not find any global constant with name: %s.", p_name));
+}
+
 void GDScriptLanguage::remove_named_global_constant(const StringName &p_name) {
 	ERR_FAIL_COND(!named_globals.has(p_name));
 	named_globals.erase(p_name);
