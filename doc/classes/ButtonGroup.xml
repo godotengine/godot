@@ -4,8 +4,8 @@
 		Group of Buttons.
 	</brief_description>
 	<description>
-		Group of [Button]. All direct and indirect children buttons become radios. Only one allows being pressed.
-		[member BaseButton.toggle_mode] should be [code]true[/code].
+		Group of [BaseButton]. The members of this group are treated like radio buttons in the sense that only one button can be pressed at the same time.
+		Every member of the ButtonGroup should have [member BaseButton.toggle_mode] set to [code]true[/code].
 	</description>
 	<tutorials>
 	</tutorials>

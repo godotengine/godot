@@ -300,6 +300,7 @@ void BaseButton::set_toggle_mode(bool p_on) {
 	}
 
 	toggle_mode = p_on;
+	update_configuration_warnings();
 }
 
 bool BaseButton::is_toggle_mode() const {
@@ -381,6 +382,7 @@ void BaseButton::set_button_group(const Ref<ButtonGroup> &p_group) {
 	}
 
 	queue_redraw(); //checkbox changes to radio if set a buttongroup
+	update_configuration_warnings();
 }
 
 Ref<ButtonGroup> BaseButton::get_button_group() const {
@@ -397,6 +399,16 @@ void BaseButton::set_shortcut_feedback(bool p_feedback) {
 
 bool BaseButton::is_shortcut_feedback() const {
 	return shortcut_feedback;
+}
+
+PackedStringArray BaseButton::get_configuration_warnings() const {
+	PackedStringArray warnings = Control::get_configuration_warnings();
+
+	if (get_button_group().is_valid() && !is_toggle_mode()) {
+		warnings.push_back(RTR("ButtonGroup is intended to be used only with buttons that have toggle_mode set to true."));
+	}
+
+	return warnings;
 }
 
 void BaseButton::_bind_methods() {

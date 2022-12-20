@@ -136,6 +136,8 @@ public:
 	void set_shortcut_feedback(bool p_feedback);
 	bool is_shortcut_feedback() const;
 
+	PackedStringArray get_configuration_warnings() const override;
+
 	BaseButton();
 	~BaseButton();
 };
