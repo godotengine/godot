@@ -950,14 +950,14 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_self_modulate", "self_modulate"), &CanvasItem::set_self_modulate);
 	ClassDB::bind_method(D_METHOD("get_self_modulate"), &CanvasItem::get_self_modulate);
 
-	ClassDB::bind_method(D_METHOD("set_z_index", "z_index"), &Node2D::set_z_index);
-	ClassDB::bind_method(D_METHOD("get_z_index"), &Node2D::get_z_index);
+	ClassDB::bind_method(D_METHOD("set_z_index", "z_index"), &CanvasItem::set_z_index);
+	ClassDB::bind_method(D_METHOD("get_z_index"), &CanvasItem::get_z_index);
 
-	ClassDB::bind_method(D_METHOD("set_z_as_relative", "enable"), &Node2D::set_z_as_relative);
-	ClassDB::bind_method(D_METHOD("is_z_relative"), &Node2D::is_z_relative);
+	ClassDB::bind_method(D_METHOD("set_z_as_relative", "enable"), &CanvasItem::set_z_as_relative);
+	ClassDB::bind_method(D_METHOD("is_z_relative"), &CanvasItem::is_z_relative);
 
-	ClassDB::bind_method(D_METHOD("set_y_sort_enabled", "enabled"), &Node2D::set_y_sort_enabled);
-	ClassDB::bind_method(D_METHOD("is_y_sort_enabled"), &Node2D::is_y_sort_enabled);
+	ClassDB::bind_method(D_METHOD("set_y_sort_enabled", "enabled"), &CanvasItem::set_y_sort_enabled);
+	ClassDB::bind_method(D_METHOD("is_y_sort_enabled"), &CanvasItem::is_y_sort_enabled);
 
 	ClassDB::bind_method(D_METHOD("set_draw_behind_parent", "enable"), &CanvasItem::set_draw_behind_parent);
 	ClassDB::bind_method(D_METHOD("is_draw_behind_parent_enabled"), &CanvasItem::is_draw_behind_parent_enabled);
