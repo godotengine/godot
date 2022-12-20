@@ -112,7 +112,7 @@ void Joint2D::_update_joint(bool p_only_free) {
 
 	ERR_FAIL_COND_MSG(!joint.is_valid(), "Failed to configure the joint.");
 
-	PhysicsServer2D::get_singleton()->get_singleton()->joint_set_param(joint, PhysicsServer2D::JOINT_PARAM_BIAS, bias);
+	PhysicsServer2D::get_singleton()->joint_set_param(joint, PhysicsServer2D::JOINT_PARAM_BIAS, bias);
 
 	ba = body_a->get_rid();
 	bb = body_b->get_rid();
@@ -188,7 +188,7 @@ void Joint2D::_notification(int p_what) {
 void Joint2D::set_bias(real_t p_bias) {
 	bias = p_bias;
 	if (joint.is_valid()) {
-		PhysicsServer2D::get_singleton()->get_singleton()->joint_set_param(joint, PhysicsServer2D::JOINT_PARAM_BIAS, bias);
+		PhysicsServer2D::get_singleton()->joint_set_param(joint, PhysicsServer2D::JOINT_PARAM_BIAS, bias);
 	}
 }
 

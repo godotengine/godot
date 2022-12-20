@@ -1726,13 +1726,13 @@ void LightStorage::lightmap_set_textures(RID p_lightmap, RID p_light, bool p_use
 
 	//erase lightmap users
 	if (lm->light_texture.is_valid()) {
-		TextureStorage::Texture *t = texture_storage->get_singleton()->get_texture(lm->light_texture);
+		TextureStorage::Texture *t = texture_storage->get_texture(lm->light_texture);
 		if (t) {
 			t->lightmap_users.erase(p_lightmap);
 		}
 	}
 
-	TextureStorage::Texture *t = texture_storage->get_singleton()->get_texture(p_light);
+	TextureStorage::Texture *t = texture_storage->get_texture(p_light);
 	lm->light_texture = p_light;
 	lm->uses_spherical_harmonics = p_uses_spherical_haromics;
 
