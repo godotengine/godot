@@ -3254,13 +3254,9 @@ bool OS_Windows::set_environment(const String &p_var, const String &p_value) con
 	return (bool)SetEnvironmentVariableW(p_var.c_str(), p_value.c_str());
 }
 
-String OS_Windows::get_stdin_string(bool p_block) {
-	if (p_block) {
-		char buff[1024];
-		return fgets(buff, 1024, stdin);
-	};
-
-	return String();
+String OS_Windows::get_stdin_string() {
+	char buff[1024];
+	return fgets(buff, 1024, stdin);
 }
 
 void OS_Windows::enable_for_stealing_focus(ProcessID pid) {

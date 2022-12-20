@@ -437,7 +437,7 @@ public:
 	LRESULT WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!");
-	String get_stdin_string(bool p_block);
+	String get_stdin_string();
 
 	void set_mouse_mode(MouseMode p_mode);
 	MouseMode get_mouse_mode() const;

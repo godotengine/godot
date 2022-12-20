@@ -136,15 +136,11 @@ void OS_Unix::alert(const String &p_alert, const String &p_title) {
 	fprintf(stderr, "ALERT: %s: %s\n", p_title.utf8().get_data(), p_alert.utf8().get_data());
 }
 
-String OS_Unix::get_stdin_string(bool p_block) {
-	if (p_block) {
-		char buff[1024];
-		String ret = stdin_buf + fgets(buff, 1024, stdin);
-		stdin_buf = "";
-		return ret;
-	}
-
-	return "";
+String OS_Unix::get_stdin_string() {
+	char buff[1024];
+	String ret = stdin_buf + fgets(buff, 1024, stdin);
+	stdin_buf = "";
+	return ret;
 }
 
 String OS_Unix::get_name() const {
