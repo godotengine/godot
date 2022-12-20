@@ -73,8 +73,6 @@ private:
 	AcceptDialog *set_up_dialog = nullptr;
 	CheckButton *toggle_vcs_choice = nullptr;
 	OptionButton *set_up_choice = nullptr;
-	LineEdit *project_path_input = nullptr;
-	Button *select_project_path_button = nullptr;
 	VBoxContainer *set_up_vbc = nullptr;
 	VBoxContainer *set_up_settings_vbc = nullptr;
 	LineEdit *set_up_username = nullptr;
@@ -150,7 +148,7 @@ private:
 	void _update_opened_tabs();
 	void _update_extra_options();
 
-	bool _load_plugin(String p_name, String p_project_path);
+	bool _load_plugin(String p_name);
 
 	void _pull();
 	void _push();
@@ -193,7 +191,6 @@ private:
 	void _create_vcs_metadata_files();
 	void _popup_file_dialog(Variant p_file_dialog_variant);
 	void _toggle_vcs_integration(bool p_toggled);
-	void _project_path_selected(String p_project_path);
 
 	friend class EditorVCSInterface;
 

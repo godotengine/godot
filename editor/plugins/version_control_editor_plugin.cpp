@@ -94,12 +94,10 @@ void VersionControlEditorPlugin::_create_vcs_metadata_files() {
 void VersionControlEditorPlugin::_notification(int p_what) {
 	if (p_what == NOTIFICATION_READY) {
 		String installed_plugin = GLOBAL_DEF("editor/version_control/plugin_name", "");
-		String project_path = GLOBAL_DEF("editor/version_control/project_path", OS::get_singleton()->get_resource_dir());
-		project_path_input->set_text(project_path);
 		bool has_autoload_enable = GLOBAL_DEF("editor/version_control/autoload_on_startup", false);
 
 		if (installed_plugin != "" && has_autoload_enable) {
-			if (_load_plugin(installed_plugin, project_path)) {
+			if (_load_plugin(installed_plugin)) {
 				_set_credentials();
 			}
 		}
@@ -144,18 +142,15 @@ void VersionControlEditorPlugin::_initialize_vcs() {
 	const int id = set_up_choice->get_selected_id();
 	String selected_plugin = set_up_choice->get_item_text(id);
 
-	if (_load_plugin(selected_plugin, project_path_input->get_text())) {
+	if (_load_plugin(selected_plugin)) {
 		ProjectSettings::get_singleton()->set("editor/version_control/autoload_on_startup", true);
 		ProjectSettings::get_singleton()->set("editor/version_control/plugin_name", selected_plugin);
-		ProjectSettings::get_singleton()->set("editor/version_control/project_path", project_path_input->get_text());
 		ProjectSettings::get_singleton()->save();
 	}
 }
 
 void VersionControlEditorPlugin::_set_vcs_ui_state(bool p_enabled) {
-	select_project_path_button->set_disabled(p_enabled);
 	set_up_dialog->get_ok_button()->set_disabled(!p_enabled);
-	project_path_input->set_editable(!p_enabled);
 	set_up_choice->set_disabled(p_enabled);
 	toggle_vcs_choice->set_pressed_no_signal(p_enabled);
 }
@@ -181,14 +176,14 @@ void VersionControlEditorPlugin::_set_credentials() {
 	EditorSettings::get_singleton()->set_setting("version_control/ssh_private_key_path", ssh_private_key);
 }
 
-bool VersionControlEditorPlugin::_load_plugin(String p_name, String p_project_path) {
+bool VersionControlEditorPlugin::_load_plugin(String p_name) {
 	Object *extension_instance = ClassDB::instantiate(p_name);
 	ERR_FAIL_NULL_V_MSG(extension_instance, false, "Received a nullptr VCS extension instance during construction.");
 
 	EditorVCSInterface *vcs_plugin = Object::cast_to<EditorVCSInterface>(extension_instance);
 	ERR_FAIL_NULL_V_MSG(vcs_plugin, false, vformat("Could not cast VCS extension instance to %s.", EditorVCSInterface::get_class_static()));
 
-	String res_dir = project_path_input->get_text();
+	String res_dir = OS::get_singleton()->get_resource_dir();
 
 	ERR_FAIL_COND_V_MSG(!vcs_plugin->initialize(res_dir), false, "Could not initialize " + p_name);
 
@@ -943,10 +938,6 @@ void VersionControlEditorPlugin::_toggle_vcs_integration(bool p_toggled) {
 	}
 }
 
-void VersionControlEditorPlugin::_project_path_selected(String p_project_path) {
-	project_path_input->set_text(p_project_path);
-}
-
 void VersionControlEditorPlugin::fetch_available_vcs_plugin_names() {
 	available_plugins.clear();
 	ClassDB::get_direct_inheriters_from_class(EditorVCSInterface::get_class_static(), &available_plugins);
@@ -1039,34 +1030,6 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	set_up_choice = memnew(OptionButton);
 	set_up_choice->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	set_up_hbc->add_child(set_up_choice);
-
-	HBoxContainer *project_path_hbc = memnew(HBoxContainer);
-	project_path_hbc->set_h_size_flags(Control::SIZE_FILL);
-	set_up_vbc->add_child(project_path_hbc);
-
-	Label *project_path_label = memnew(Label);
-	project_path_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	project_path_label->set_text(TTR("VCS Project Path"));
-	project_path_hbc->add_child(project_path_label);
-
-	project_path_input = memnew(LineEdit);
-	project_path_input->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	project_path_input->set_text(OS::get_singleton()->get_resource_dir());
-	project_path_hbc->add_child(project_path_input);
-
-	FileDialog *select_project_path_file_dialog = memnew(FileDialog);
-	select_project_path_file_dialog->set_access(FileDialog::ACCESS_FILESYSTEM);
-	select_project_path_file_dialog->set_file_mode(FileDialog::FILE_MODE_OPEN_DIR);
-	select_project_path_file_dialog->set_show_hidden_files(true);
-	select_project_path_file_dialog->set_current_dir(OS::get_singleton()->get_resource_dir());
-	select_project_path_file_dialog->connect(SNAME("dir_selected"), callable_mp(this, &VersionControlEditorPlugin::_project_path_selected));
-	project_path_hbc->add_child(select_project_path_file_dialog);
-
-	select_project_path_button = memnew(Button);
-	select_project_path_button->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("Folder", "EditorIcons"));
-	select_project_path_button->connect(SNAME("pressed"), callable_mp(this, &VersionControlEditorPlugin::_popup_file_dialog).bind(select_project_path_file_dialog));
-	select_project_path_button->set_tooltip_text(TTR("Select VCS project path"));
-	project_path_hbc->add_child(select_project_path_button);
 
 	HBoxContainer *toggle_vcs_hbc = memnew(HBoxContainer);
 	toggle_vcs_hbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
