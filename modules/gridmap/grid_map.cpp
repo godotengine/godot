@@ -138,7 +138,7 @@ void GridMap::_get_property_list(List<PropertyInfo> *p_list) const {
 
 void GridMap::set_collision_layer(uint32_t p_layer) {
 	collision_layer = p_layer;
-	_reset_physic_bodies_collision_filters();
+	_update_physics_bodies_collision_properties();
 }
 
 uint32_t GridMap::get_collision_layer() const {
@@ -147,7 +147,7 @@ uint32_t GridMap::get_collision_layer() const {
 
 void GridMap::set_collision_mask(uint32_t p_mask) {
 	collision_mask = p_mask;
-	_reset_physic_bodies_collision_filters();
+	_update_physics_bodies_collision_properties();
 }
 
 uint32_t GridMap::get_collision_mask() const {
@@ -182,6 +182,15 @@ void GridMap::set_collision_mask_value(int p_layer_number, bool p_value) {
 		mask &= ~(1 << (p_layer_number - 1));
 	}
 	set_collision_mask(mask);
+}
+
+void GridMap::set_collision_priority(real_t p_priority) {
+	collision_priority = p_priority;
+	_update_physics_bodies_collision_properties();
+}
+
+real_t GridMap::get_collision_priority() const {
+	return collision_priority;
 }
 
 void GridMap::set_physics_material(Ref<PhysicsMaterial> p_material) {
@@ -385,6 +394,7 @@ void GridMap::set_cell_item(const Vector3i &p_position, int p_item, int p_rot) {
 		PhysicsServer3D::get_singleton()->body_attach_object_instance_id(g->static_body, get_instance_id());
 		PhysicsServer3D::get_singleton()->body_set_collision_layer(g->static_body, collision_layer);
 		PhysicsServer3D::get_singleton()->body_set_collision_mask(g->static_body, collision_mask);
+		PhysicsServer3D::get_singleton()->body_set_collision_priority(g->static_body, collision_priority);
 		if (physics_material.is_valid()) {
 			PhysicsServer3D::get_singleton()->body_set_param(g->static_body, PhysicsServer3D::BODY_PARAM_FRICTION, physics_material->get_friction());
 			PhysicsServer3D::get_singleton()->body_set_param(g->static_body, PhysicsServer3D::BODY_PARAM_BOUNCE, physics_material->get_bounce());
@@ -751,10 +761,11 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 	return false;
 }
 
-void GridMap::_reset_physic_bodies_collision_filters() {
+void GridMap::_update_physics_bodies_collision_properties() {
 	for (const KeyValue<OctantKey, Octant *> &E : octant_map) {
 		PhysicsServer3D::get_singleton()->body_set_collision_layer(E.value->static_body, collision_layer);
 		PhysicsServer3D::get_singleton()->body_set_collision_mask(E.value->static_body, collision_mask);
+		PhysicsServer3D::get_singleton()->body_set_collision_priority(E.value->static_body, collision_priority);
 	}
 }
 
@@ -1047,6 +1058,9 @@ void GridMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_collision_layer_value", "layer_number", "value"), &GridMap::set_collision_layer_value);
 	ClassDB::bind_method(D_METHOD("get_collision_layer_value", "layer_number"), &GridMap::get_collision_layer_value);
 
+	ClassDB::bind_method(D_METHOD("set_collision_priority", "priority"), &GridMap::set_collision_priority);
+	ClassDB::bind_method(D_METHOD("get_collision_priority"), &GridMap::get_collision_priority);
+
 	ClassDB::bind_method(D_METHOD("set_physics_material", "material"), &GridMap::set_physics_material);
 	ClassDB::bind_method(D_METHOD("get_physics_material"), &GridMap::get_physics_material);
 
@@ -1118,6 +1132,7 @@ void GridMap::_bind_methods() {
 	ADD_GROUP("Collision", "collision_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layer", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_layer", "get_collision_layer");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision_priority"), "set_collision_priority", "get_collision_priority");
 	ADD_GROUP("Navigation", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "bake_navigation"), "set_bake_navigation", "is_baking_navigation");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_layers", PROPERTY_HINT_LAYERS_3D_NAVIGATION), "set_navigation_layers", "get_navigation_layers");
