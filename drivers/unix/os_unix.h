@@ -53,7 +53,7 @@ public:
 	OS_Unix();
 
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!");
-	virtual String get_stdin_string(bool p_block);
+	virtual String get_stdin_string();
 
 	//virtual void set_mouse_show(bool p_show);
 	//virtual void set_mouse_grab(bool p_grab);
