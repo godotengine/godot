@@ -835,7 +835,8 @@ void AnimationNodeStateMachine::rename_node(const StringName &p_name, const Stri
 
 	_rename_transitions(p_name, p_new_name);
 
-	emit_signal("tree_changed");
+	emit_changed();
+	emit_signal(SNAME("tree_changed"));
 }
 
 void AnimationNodeStateMachine::_rename_transitions(const StringName &p_name, const StringName &p_new_name) {
@@ -878,9 +879,8 @@ void AnimationNodeStateMachine::_rename_transitions(const StringName &p_name, co
 
 			transitions.write[i].to = p_new_name;
 		}
-
-		updating_transitions = false;
 	}
+	updating_transitions = false;
 }
 
 void AnimationNodeStateMachine::get_node_list(List<StringName> *r_nodes) const {
@@ -1292,6 +1292,7 @@ Vector2 AnimationNodeStateMachine::get_node_position(const StringName &p_name) c
 }
 
 void AnimationNodeStateMachine::_tree_changed() {
+	emit_changed();
 	emit_signal(SNAME("tree_changed"));
 }
 
