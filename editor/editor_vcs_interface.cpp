@@ -57,7 +57,7 @@ void EditorVCSInterface::set_credentials(String p_username, String p_password, S
 }
 
 List<String> EditorVCSInterface::get_remotes() {
-	TypedArray<Dictionary> result;
+	TypedArray<String> result;
 	if (!GDVIRTUAL_CALL(_get_remotes, result)) {
 		UNIMPLEMENTED();
 		return {};
@@ -137,7 +137,7 @@ List<EditorVCSInterface::Commit> EditorVCSInterface::get_previous_commits(int p_
 }
 
 List<String> EditorVCSInterface::get_branch_list() {
-	TypedArray<Dictionary> result;
+	TypedArray<String> result;
 	if (!GDVIRTUAL_CALL(_get_branch_list, result)) {
 		UNIMPLEMENTED();
 		return {};

@@ -53,7 +53,7 @@
 			</description>
 		</method>
 		<method name="_get_branch_list" qualifiers="virtual">
-			<return type="Dictionary[]" />
+			<return type="String[]" />
 			<description>
 				Gets an instance of an [Array] of [String]s containing available branch names in the VCS.
 			</description>
@@ -94,7 +94,7 @@
 			</description>
 		</method>
 		<method name="_get_remotes" qualifiers="virtual">
-			<return type="Dictionary[]" />
+			<return type="String[]" />
 			<description>
 				Returns an [Array] of [String]s, each containing the name of a remote configured in the VCS.
 			</description>
