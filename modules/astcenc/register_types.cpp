@@ -30,13 +30,14 @@
 
 #include "register_types.h"
 
-#include "image_compress_astcenc.h"
+#include "image_astcenc.h"
 
 void initialize_astcenc_module(ModuleInitializationLevel p_level) {
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}
 	Image::_image_compress_astc_func = _compress_astc;
+	Image::_image_decompress_astc = _decompress_astc;
 }
 
 void uninitialize_astcenc_module(ModuleInitializationLevel p_level) {

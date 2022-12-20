@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  image_compress_astcenc.h                                             */
+/*  image_astcenc.h                                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,11 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef IMAGE_COMPRESS_ASTCENC_H
-#define IMAGE_COMPRESS_ASTCENC_H
+#ifndef IMAGE_ASTCENC_H
+#define IMAGE_ASTCENC_H
 
 #include "core/io/image.h"
 
 void _compress_astc(Image *r_img, float p_quality, Image::ASTCFormat p_format);
+void _decompress_astc(Image *r_img);
 
-#endif // IMAGE_COMPRESS_ASTCENC_H
+#endif // IMAGE_ASTCENC_H
