@@ -172,6 +172,7 @@ public:
 
 	void clear();
 
+	Vector2 get_point_position(const Vector2i &p_id) const;
 	Vector<Vector2> get_point_path(const Vector2i &p_from, const Vector2i &p_to);
 	TypedArray<Vector2i> get_id_path(const Vector2i &p_from, const Vector2i &p_to);
 };

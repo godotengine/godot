@@ -69,6 +69,13 @@
 				[b]Note:[/b] This method is not thread-safe. If called from a [Thread], it will return an empty [PackedVector3Array] and will print an error message.
 			</description>
 		</method>
+		<method name="get_point_position" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="id" type="Vector2i" />
+			<description>
+				Returns the position of the point associated with the given [param id].
+			</description>
+		</method>
 		<method name="get_point_weight_scale" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="id" type="Vector2i" />
