@@ -606,8 +606,8 @@ void BitMap::resize(const Size2 &p_new_size) {
 	Ref<BitMap> new_bitmap;
 	new_bitmap.instance();
 	new_bitmap->create(p_new_size);
-	int lw = MIN(width, p_new_size.width);
-	int lh = MIN(height, p_new_size.height);
+	int lw = MIN(width, new_bitmap->width);
+	int lh = MIN(height, new_bitmap->height);
 	for (int x = 0; x < lw; x++) {
 		for (int y = 0; y < lh; y++) {
 			new_bitmap->set_bit(Vector2(x, y), get_bit(Vector2(x, y)));
