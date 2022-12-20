@@ -423,7 +423,7 @@ void EditorVCSInterface::create_vcs_metadata_files(VCSMetadata p_vcs_metadata_ty
 			f->store_line("")
 			f->store_line("# Normalize EOL for all files that Git considers text files");
 			f->store_line("* text=auto eol=lf");
-			f->store_line("# Except for bat files, which are Windows only files")
+			f->store_line("# Except for Batch files, which don't behave correctly otherwise");
 			f->store_line("*.bat eol=crlf")
 		}
 	}
