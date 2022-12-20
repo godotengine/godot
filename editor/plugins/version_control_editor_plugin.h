@@ -86,6 +86,8 @@ private:
 	FileDialog *set_up_ssh_private_key_file_dialog = nullptr;
 	Label *set_up_warning_text = nullptr;
 
+	AcceptDialog *discard_all_confirm = nullptr;
+
 	OptionButton *commit_list_size_button = nullptr;
 
 	AcceptDialog *branch_create_confirm = nullptr;
@@ -157,6 +159,7 @@ private:
 	void _force_push();
 	void _fetch();
 	void _commit();
+	void _confirm_discard_all();
 	void _discard_all();
 	void _refresh_stage_area();
 	void _refresh_branch_list();
