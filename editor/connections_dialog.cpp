@@ -214,22 +214,7 @@ void ConnectDialog::_remove_bind() {
  * Automatically generates a name for the callback method.
  */
 StringName ConnectDialog::generate_method_callback_name(Node *p_source, String p_signal_name, Node *p_target) {
-	String node_name = p_source->get_name();
-	for (int i = 0; i < node_name.length(); i++) { // TODO: Regex filter may be cleaner.
-		char32_t c = node_name[i];
-		if (!is_ascii_identifier_char(c)) {
-			if (c == ' ') {
-				// Replace spaces with underlines.
-				c = '_';
-			} else {
-				// Remove any other characters.
-				node_name.remove_at(i);
-				i--;
-				continue;
-			}
-		}
-		node_name[i] = c;
-	}
+	String node_name = String(p_source->get_name()).replace("-", "_");
 
 	Dictionary subst;
 	subst["NodeName"] = node_name.to_pascal_case();
@@ -247,7 +232,7 @@ StringName ConnectDialog::generate_method_callback_name(Node *p_source, String p
 		dst_method = String(EDITOR_GET("interface/editors/default_signal_callback_name")).format(subst);
 	}
 
-	return dst_method;
+	return dst_method.validate_identifier();
 }
 
 /*

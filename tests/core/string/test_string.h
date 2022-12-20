@@ -1678,14 +1678,26 @@ TEST_CASE("[String] validate_identifier") {
 	String empty_string;
 	CHECK(empty_string.validate_identifier() == "_");
 
-	String numeric_only = "12345";
-	CHECK(numeric_only.validate_identifier() == "_2345");
+	String valid_identifier = "abc_123_Test4";
+	CHECK(valid_identifier.validate_identifier() == "abc_123_Test4");
+
+	String numeric_prefix = "123abc";
+	CHECK(numeric_prefix.validate_identifier() == "_123abc");
+
+	String invalid_prefix = String::utf8(":@*#&世界abc");
+	CHECK(invalid_prefix.validate_identifier() == "abc");
+
+	String invalid_and_numeric_prefix = String::utf8(":@*#&世界123abc");
+	CHECK(invalid_and_numeric_prefix.validate_identifier() == "_123abc");
 
 	String name_with_spaces = "Name with spaces";
-	CHECK(name_with_spaces.validate_identifier() == "Name_with_spaces");
+	CHECK(name_with_spaces.validate_identifier() == "Namewithspaces");
 
 	String name_with_invalid_chars = String::utf8("Invalid characters:@*#&世界");
-	CHECK(name_with_invalid_chars.validate_identifier() == "Invalid_characters_______");
+	CHECK(name_with_invalid_chars.validate_identifier() == "Invalidcharacters");
+
+	String invalid_chars_only = String::utf8(":@*#&世界");
+	CHECK(invalid_chars_only.validate_identifier() == "_");
 }
 
 TEST_CASE("[String] Variant indexed get") {
