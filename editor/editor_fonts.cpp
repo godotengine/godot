@@ -390,7 +390,7 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 
 	// Setup theme.
 
-	p_theme->set_default_font(default_theme_fc); // Default theme font config.
+	p_theme->set_default_font(default_fc); // Default theme font config.
 	p_theme->set_default_font_size(default_font_size);
 
 	// Main font.
