@@ -11,6 +11,13 @@
  *        implementations of these functions, or implementations specific to
  *        their platform, which can be statically linked to the library or
  *        dynamically configured at runtime.
+ *
+ *        When all compilation options related to platform abstraction are
+ *        disabled, this header just defines `mbedtls_xxx` function names
+ *        as aliases to the standard `xxx` function.
+ *
+ *        Most modules in the library and example programs are expected to
+ *        include this header.
  */
 /*
  *  Copyright The Mbed TLS Contributors
