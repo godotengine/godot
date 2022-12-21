@@ -1136,6 +1136,7 @@ void RendererCanvasRenderRD::_render_items(RID p_to_render_target, int p_item_co
 					// Update uniform set.
 					if (material_data->uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(material_data->uniform_set)) { // Material may not have a uniform set.
 						RD::get_singleton()->draw_list_bind_uniform_set(draw_list, material_data->uniform_set, MATERIAL_UNIFORM_SET);
+						material_data->set_as_used();
 					}
 				} else {
 					pipeline_variants = &shader.pipeline_variants;

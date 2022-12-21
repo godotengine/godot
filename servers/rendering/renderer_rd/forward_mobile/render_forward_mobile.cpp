@@ -154,8 +154,8 @@ void RenderForwardMobile::RenderBufferDataForwardMobile::configure(RenderSceneBu
 
 		render_buffers->create_texture(RB_SCOPE_MOBILE, RB_TEX_COLOR_MSAA, format, usage_bits, texture_samples);
 
-		format = RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_D24_UNORM_S8_UINT, RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) ? RD::DATA_FORMAT_D24_UNORM_S8_UINT : RD::DATA_FORMAT_D32_SFLOAT_S8_UINT;
 		usage_bits = RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT;
+		format = RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_D24_UNORM_S8_UINT, usage_bits) ? RD::DATA_FORMAT_D24_UNORM_S8_UINT : RD::DATA_FORMAT_D32_SFLOAT_S8_UINT;
 
 		render_buffers->create_texture(RB_SCOPE_MOBILE, RB_TEX_DEPTH_MSAA, format, usage_bits, texture_samples);
 	}
@@ -673,7 +673,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 
 	Size2i screen_size;
 	RID framebuffer;
-	bool reverse_cull = false;
+	bool reverse_cull = p_render_data->scene_data->cam_transform.basis.determinant() < 0;
 	bool using_subpass_transparent = true;
 	bool using_subpass_post_process = true;
 
@@ -2092,6 +2092,7 @@ void RenderForwardMobile::_render_list_template(RenderingDevice::DrawListID p_dr
 #endif
 				material_uniform_set = surf->material_uniform_set;
 				shader = surf->shader;
+				surf->material->set_as_used();
 #ifdef DEBUG_ENABLED
 			}
 #endif
@@ -2407,6 +2408,7 @@ void RenderForwardMobile::_geometry_instance_add_surface_with_material(GeometryI
 	sdcache->flags = flags;
 
 	sdcache->shader = p_material->shader_data;
+	sdcache->material = p_material;
 	sdcache->material_uniform_set = p_material->uniform_set;
 	sdcache->surface = mesh_storage->mesh_get_surface(p_mesh, p_surface);
 	sdcache->primitive = mesh_storage->mesh_surface_get_primitive(sdcache->surface);

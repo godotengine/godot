@@ -183,7 +183,7 @@ _hb_buffer_serialize_glyphs_json (hb_buffer_t *buffer,
     unsigned int l = p - b;
     if (buf_size > l)
     {
-      memcpy (buf, b, l);
+      hb_memcpy (buf, b, l);
       buf += l;
       buf_size -= l;
       *buf_consumed += l;
@@ -241,7 +241,7 @@ _hb_buffer_serialize_unicode_json (hb_buffer_t *buffer,
     unsigned int l = p - b;
     if (buf_size > l)
     {
-      memcpy (buf, b, l);
+      hb_memcpy (buf, b, l);
       buf += l;
       buf_size -= l;
       *buf_consumed += l;
@@ -329,7 +329,7 @@ _hb_buffer_serialize_glyphs_text (hb_buffer_t *buffer,
     unsigned int l = p - b;
     if (buf_size > l)
     {
-      memcpy (buf, b, l);
+      hb_memcpy (buf, b, l);
       buf += l;
       buf_size -= l;
       *buf_consumed += l;
@@ -381,7 +381,7 @@ _hb_buffer_serialize_unicode_text (hb_buffer_t *buffer,
     unsigned int l = p - b;
     if (buf_size > l)
     {
-      memcpy (buf, b, l);
+      hb_memcpy (buf, b, l);
       buf += l;
       buf_size -= l;
       *buf_consumed += l;

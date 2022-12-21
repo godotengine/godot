@@ -283,7 +283,7 @@ void RendererEnvironmentStorage::environment_set_volumetric_fog(RID p_env, bool 
 	env->volumetric_fog_scattering = p_albedo;
 	env->volumetric_fog_emission = p_emission;
 	env->volumetric_fog_emission_energy = p_emission_energy;
-	env->volumetric_fog_anisotropy = p_anisotropy,
+	env->volumetric_fog_anisotropy = p_anisotropy;
 	env->volumetric_fog_length = p_length;
 	env->volumetric_fog_detail_spread = p_detail_spread;
 	env->volumetric_fog_gi_inject = p_gi_inject;

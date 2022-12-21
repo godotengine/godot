@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NavigationAgent2D" inherits="Node" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="NavigationAgent2D" inherits="Node" is_experimental="true" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		2D Agent used in navigation for collision avoidance.
 	</brief_description>
@@ -16,22 +16,28 @@
 				Returns the distance to the target location, using the agent's global position. The user must set [member target_location] in order for this to be accurate.
 			</description>
 		</method>
-		<method name="get_final_location">
-			<return type="Vector2" />
-			<description>
-				Returns the reachable final location in global coordinates. This can change if the navigation path is altered in any way. Because of this, it would be best to check this each frame.
-			</description>
-		</method>
-		<method name="get_nav_path" qualifiers="const">
+		<method name="get_current_navigation_path" qualifiers="const">
 			<return type="PackedVector2Array" />
 			<description>
 				Returns this agent's current path from start to finish in global coordinates. The path only updates when the target location is changed or the agent requires a repath. The path array is not intended to be used in direct path movement as the agent has its own internal path logic that would get corrupted by changing the path array manually. Use the intended [method get_next_location] once every physics frame to receive the next path point for the agents movement as this function also updates the internal path logic.
 			</description>
 		</method>
-		<method name="get_nav_path_index" qualifiers="const">
+		<method name="get_current_navigation_path_index" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns which index the agent is currently on in the navigation path's [PackedVector2Array].
+			</description>
+		</method>
+		<method name="get_current_navigation_result" qualifiers="const">
+			<return type="NavigationPathQueryResult2D" />
+			<description>
+				Returns the path query result for the path the agent is currently following.
+			</description>
+		</method>
+		<method name="get_final_location">
+			<return type="Vector2" />
+			<description>
+				Returns the reachable final location in global coordinates. This can change if the navigation path is altered in any way. Because of this, it would be best to check this each frame.
 			</description>
 		</method>
 		<method name="get_navigation_layer_value" qualifiers="const">
@@ -122,6 +128,9 @@
 		<member name="path_max_distance" type="float" setter="set_path_max_distance" getter="get_path_max_distance" default="3.0">
 			The maximum distance the agent is allowed away from the ideal path to the final location. This can happen due to trying to avoid collisions. When the maximum distance is exceeded, it recalculates the ideal path.
 		</member>
+		<member name="path_metadata_flags" type="int" setter="set_path_metadata_flags" getter="get_path_metadata_flags" enum="NavigationPathQueryParameters2D.PathMetadataFlags" default="7">
+			Additional information to return with the navigation path.
+		</member>
 		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="10.0">
 			The radius of the avoidance agent. This is the "body" of the avoidance agent and not the avoidance maneuver starting radius (which is controlled by [member neighbor_distance]).
 			Does not affect normal pathfinding. To change an actor's pathfinding radius bake [NavigationMesh] resources with a different [member NavigationMesh.agent_radius] property and use different navigation maps for each actor size.
@@ -137,6 +146,17 @@
 		</member>
 	</members>
 	<signals>
+		<signal name="link_reached">
+			<param index="0" name="details" type="Dictionary" />
+			<description>
+				Notifies when a navigation link has been reached.
+				The details dictionary may contain the following keys depending on the value of [member path_metadata_flags]:
+				- [code]location[/code]: The start location of the link that was reached.
+				- [code]type[/code]: Always [constant NavigationPathQueryResult2D.PATH_SEGMENT_TYPE_LINK].
+				- [code]rid[/code]: The [RID] of the link.
+				- [code]owner[/code]: The object which manages the link (usually [NavigationLink2D]).
+			</description>
+		</signal>
 		<signal name="navigation_finished">
 			<description>
 				Notifies when the final location is reached.
@@ -156,6 +176,17 @@
 			<param index="0" name="safe_velocity" type="Vector2" />
 			<description>
 				Notifies when the collision avoidance velocity is calculated. Emitted by [method set_velocity]. Only emitted when [member avoidance_enabled] is true.
+			</description>
+		</signal>
+		<signal name="waypoint_reached">
+			<param index="0" name="details" type="Dictionary" />
+			<description>
+				Notifies when a waypoint along the path has been reached.
+				The details dictionary may contain the following keys depending on the value of [member path_metadata_flags]:
+				- [code]location[/code]: The location of the waypoint that was reached.
+				- [code]type[/code]: The type of navigation primitive (region or link) that contains this waypoint.
+				- [code]rid[/code]: The [RID] of the containing navigation primitive (region or link).
+				- [code]owner[/code]: The object which manages the containing navigation primitive (region or link).
 			</description>
 		</signal>
 	</signals>

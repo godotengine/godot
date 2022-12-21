@@ -367,6 +367,7 @@
 			<return type="void" />
 			<param index="0" name="columns" type="int" />
 			<param index="1" name="inline_align" type="int" enum="InlineAlignment" default="0" />
+			<param index="2" name="align_to_row" type="int" default="-1" />
 			<description>
 				Adds a [code][table=columns,inline_align][/code] tag to the tag stack.
 			</description>
@@ -655,6 +656,7 @@
 		</theme_item>
 		<theme_item name="outline_size" data_type="constant" type="int" default="0">
 			The size of the text outline.
+			[b]Note:[/b] If using a font with [member FontFile.multichannel_signed_distance_field] enabled, its [member FontFile.msdf_pixel_range] must be set to at least [i]twice[/i] the value of [theme_item outline_size] for outline rendering to look correct. Otherwise, the outline may appear to be cut off earlier than intended.
 		</theme_item>
 		<theme_item name="shadow_offset_x" data_type="constant" type="int" default="1">
 			The horizontal offset of the font's shadow.

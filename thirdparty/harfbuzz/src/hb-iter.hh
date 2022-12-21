@@ -73,8 +73,10 @@ struct hb_iter_t
   /* Operators. */
   iter_t iter () const { return *thiz(); }
   iter_t operator + () const { return *thiz(); }
-  iter_t begin () const { return *thiz(); }
-  iter_t end () const { return thiz()->__end__ (); }
+  iter_t _begin () const { return *thiz(); }
+  iter_t begin () const { return _begin (); }
+  iter_t _end () const { return thiz()->__end__ (); }
+  iter_t end () const { return _end (); }
   explicit operator bool () const { return thiz()->__more__ (); }
   unsigned len () const { return thiz()->__len__ (); }
   /* The following can only be enabled if item_t is reference type.  Otherwise
@@ -118,7 +120,9 @@ struct hb_iter_t
 
 #define HB_ITER_USING(Name) \
   using item_t = typename Name::item_t; \
+  using Name::_begin; \
   using Name::begin; \
+  using Name::_end; \
   using Name::end; \
   using Name::get_item_size; \
   using Name::is_iterator; \
@@ -377,7 +381,7 @@ struct hb_map_iter_t :
   void __forward__ (unsigned n) { it += n; }
   void __prev__ () { --it; }
   void __rewind__ (unsigned n) { it -= n; }
-  hb_map_iter_t __end__ () const { return hb_map_iter_t (it.end (), f); }
+  hb_map_iter_t __end__ () const { return hb_map_iter_t (it._end (), f); }
   bool operator != (const hb_map_iter_t& o) const
   { return it != o.it; }
 
@@ -440,7 +444,7 @@ struct hb_filter_iter_t :
   bool __more__ () const { return bool (it); }
   void __next__ () { do ++it; while (it && !hb_has (p.get (), hb_get (f.get (), *it))); }
   void __prev__ () { do --it; while (it && !hb_has (p.get (), hb_get (f.get (), *it))); }
-  hb_filter_iter_t __end__ () const { return hb_filter_iter_t (it.end (), p, f); }
+  hb_filter_iter_t __end__ () const { return hb_filter_iter_t (it._end (), p, f); }
   bool operator != (const hb_filter_iter_t& o) const
   { return it != o.it; }
 
@@ -553,7 +557,7 @@ struct hb_zip_iter_t :
   void __forward__ (unsigned n) { a += n; b += n; }
   void __prev__ () { --a; --b; }
   void __rewind__ (unsigned n) { a -= n; b -= n; }
-  hb_zip_iter_t __end__ () const { return hb_zip_iter_t (a.end (), b.end ()); }
+  hb_zip_iter_t __end__ () const { return hb_zip_iter_t (a._end (), b._end ()); }
   /* Note, we should stop if ANY of the iters reaches end.  As such two compare
    * unequal if both items are unequal, NOT if either is unequal. */
   bool operator != (const hb_zip_iter_t& o) const
@@ -637,7 +641,7 @@ struct hb_concat_iter_t :
     }
   }
 
-  hb_concat_iter_t __end__ () const { return hb_concat_iter_t (a.end (), b.end ()); }
+  hb_concat_iter_t __end__ () const { return hb_concat_iter_t (a._end (), b._end ()); }
   bool operator != (const hb_concat_iter_t& o) const
   {
     return a != o.a

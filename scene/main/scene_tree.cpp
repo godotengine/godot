@@ -594,6 +594,12 @@ void SceneTree::finalize() {
 		timer->release_connections();
 	}
 	timers.clear();
+
+	// Cleanup tweens.
+	for (Ref<Tween> &tween : tweens) {
+		tween->clear();
+	}
+	tweens.clear();
 }
 
 void SceneTree::quit(int p_exit_code) {
@@ -942,6 +948,9 @@ void SceneTree::_call_input_pause(const StringName &p_group, CallInputType p_cal
 	}
 
 	for (const ObjectID &id : no_context_node_ids) {
+		if (p_viewport->is_input_handled()) {
+			break;
+		}
 		Node *n = Object::cast_to<Node>(ObjectDB::get_instance(id));
 		if (n) {
 			n->_call_shortcut_input(p_input);
@@ -1413,7 +1422,7 @@ SceneTree::SceneTree() {
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/anti_aliasing/quality/msaa_3d", PropertyInfo(Variant::INT, "rendering/anti_aliasing/quality/msaa_3d", PROPERTY_HINT_ENUM, String::utf8("Disabled (Fastest),2× (Average),4× (Slow),8× (Slowest)")));
 	root->set_msaa_3d(Viewport::MSAA(msaa_mode_3d));
 
-	const bool transparent_background = GLOBAL_DEF("rendering/transparent_background", false);
+	const bool transparent_background = GLOBAL_DEF("rendering/viewport/transparent_background", false);
 	root->set_transparent_background(transparent_background);
 
 	const int ssaa_mode = GLOBAL_DEF_BASIC("rendering/anti_aliasing/quality/screen_space_aa", 0);

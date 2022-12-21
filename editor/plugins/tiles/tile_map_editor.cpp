@@ -924,6 +924,7 @@ void TileMapEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p_over
 							Color modulate = tile_data->get_modulate();
 							Color self_modulate = tile_map->get_self_modulate();
 							modulate *= self_modulate;
+							modulate *= tile_map->get_layer_modulate(tile_map_layer);
 
 							// Draw the tile.
 							p_overlay->draw_texture_rect_region(atlas_source->get_texture(), dest_rect, source_rect, modulate * Color(1.0, 1.0, 1.0, 0.5), transpose, tile_set->is_uv_clipping());

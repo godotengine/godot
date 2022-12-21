@@ -2606,7 +2606,7 @@ void Node3DEditorViewport::_project_settings_changed() {
 	const bool use_taa = GLOBAL_GET("rendering/anti_aliasing/quality/use_taa");
 	viewport->set_use_taa(use_taa);
 
-	const bool transparent_background = GLOBAL_GET("rendering/transparent_background");
+	const bool transparent_background = GLOBAL_GET("rendering/viewport/transparent_background");
 	viewport->set_transparent_background(transparent_background);
 
 	const bool use_debanding = GLOBAL_GET("rendering/anti_aliasing/quality/use_debanding");

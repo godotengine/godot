@@ -2359,7 +2359,7 @@ void TextServerFallback::_font_draw_glyph(const RID &p_font_rid, const RID &p_ca
 					Point2 cpos = p_pos;
 					cpos += gl.rect.position * (double)p_size / (double)fd->msdf_source_size;
 					Size2 csize = gl.rect.size * (double)p_size / (double)fd->msdf_source_size;
-					RenderingServer::get_singleton()->canvas_item_add_msdf_texture_rect_region(p_canvas, Rect2(cpos, csize), texture, gl.uv_rect, modulate, 0, fd->msdf_range);
+					RenderingServer::get_singleton()->canvas_item_add_msdf_texture_rect_region(p_canvas, Rect2(cpos, csize), texture, gl.uv_rect, modulate, 0, fd->msdf_range, (double)p_size / (double)fd->msdf_source_size);
 				} else {
 					Point2 cpos = p_pos;
 					double scale = _font_get_scale(p_font_rid, p_size);
@@ -2451,7 +2451,7 @@ void TextServerFallback::_font_draw_glyph_outline(const RID &p_font_rid, const R
 					Point2 cpos = p_pos;
 					cpos += gl.rect.position * (double)p_size / (double)fd->msdf_source_size;
 					Size2 csize = gl.rect.size * (double)p_size / (double)fd->msdf_source_size;
-					RenderingServer::get_singleton()->canvas_item_add_msdf_texture_rect_region(p_canvas, Rect2(cpos, csize), texture, gl.uv_rect, modulate, p_outline_size * 2, fd->msdf_range);
+					RenderingServer::get_singleton()->canvas_item_add_msdf_texture_rect_region(p_canvas, Rect2(cpos, csize), texture, gl.uv_rect, modulate, p_outline_size, fd->msdf_range, (double)p_size / (double)fd->msdf_source_size);
 				} else {
 					Point2 cpos = p_pos;
 					double scale = _font_get_scale(p_font_rid, p_size);
@@ -2917,7 +2917,7 @@ bool TextServerFallback::_shaped_text_add_string(const RID &p_shaped, const Stri
 	return true;
 }
 
-bool TextServerFallback::_shaped_text_add_object(const RID &p_shaped, const Variant &p_key, const Size2 &p_size, InlineAlignment p_inline_align, int64_t p_length) {
+bool TextServerFallback::_shaped_text_add_object(const RID &p_shaped, const Variant &p_key, const Size2 &p_size, InlineAlignment p_inline_align, int64_t p_length, float p_baseline) {
 	ShapedTextDataFallback *sd = shaped_owner.get_or_null(p_shaped);
 	ERR_FAIL_COND_V(!sd, false);
 
@@ -2938,6 +2938,7 @@ bool TextServerFallback::_shaped_text_add_object(const RID &p_shaped, const Vari
 	obj.inline_align = p_inline_align;
 	obj.rect.size = p_size;
 	obj.pos = span.start;
+	obj.baseline = p_baseline;
 
 	sd->spans.push_back(span);
 	sd->text = sd->text + String::chr(0xfffc).repeat(p_length);
@@ -2948,7 +2949,7 @@ bool TextServerFallback::_shaped_text_add_object(const RID &p_shaped, const Vari
 	return true;
 }
 
-bool TextServerFallback::_shaped_text_resize_object(const RID &p_shaped, const Variant &p_key, const Size2 &p_size, InlineAlignment p_inline_align) {
+bool TextServerFallback::_shaped_text_resize_object(const RID &p_shaped, const Variant &p_key, const Size2 &p_size, InlineAlignment p_inline_align, float p_baseline) {
 	ShapedTextDataFallback *sd = shaped_owner.get_or_null(p_shaped);
 	ERR_FAIL_COND_V(!sd, false);
 
@@ -2956,6 +2957,7 @@ bool TextServerFallback::_shaped_text_resize_object(const RID &p_shaped, const V
 	ERR_FAIL_COND_V(!sd->objects.has(p_key), false);
 	sd->objects[p_key].rect.size = p_size;
 	sd->objects[p_key].inline_align = p_inline_align;
+	sd->objects[p_key].baseline = p_baseline;
 	if (sd->valid) {
 		// Recalc string metrics.
 		sd->ascent = 0;
@@ -3042,6 +3044,9 @@ void TextServerFallback::_realign(ShapedTextDataFallback *p_sd) const {
 					case INLINE_ALIGNMENT_CENTER_TO: {
 						E.value.rect.position.y -= E.value.rect.size.y / 2;
 					} break;
+					case INLINE_ALIGNMENT_BASELINE_TO: {
+						E.value.rect.position.y -= E.value.baseline;
+					} break;
 					case INLINE_ALIGNMENT_TOP_TO: {
 						// NOP
 					} break;
@@ -3069,6 +3074,9 @@ void TextServerFallback::_realign(ShapedTextDataFallback *p_sd) const {
 					} break;
 					case INLINE_ALIGNMENT_CENTER_TO: {
 						E.value.rect.position.x -= E.value.rect.size.x / 2;
+					} break;
+					case INLINE_ALIGNMENT_BASELINE_TO: {
+						E.value.rect.position.x -= E.value.baseline;
 					} break;
 					case INLINE_ALIGNMENT_TOP_TO: {
 						// NOP
@@ -4091,25 +4099,68 @@ String TextServerFallback::_string_to_lower(const String &p_string, const String
 	return lower;
 }
 
-PackedInt32Array TextServerFallback::_string_get_word_breaks(const String &p_string, const String &p_language) const {
+PackedInt32Array TextServerFallback::_string_get_word_breaks(const String &p_string, const String &p_language, int p_chars_per_line) const {
 	PackedInt32Array ret;
+
+	int line_start = 0;
+	int line_end = 0; // End of last word on current line.
+	int word_start = 0; // -1 if no word encountered. Leading spaces are part of a word.
+	int word_length = 0;
+
 	for (int i = 0; i < p_string.length(); i++) {
-		char32_t c = p_string[i];
-		if (c == 0xfffc) {
-			continue;
-		}
-		if (is_punct(c) && c != 0x005F) {
+		const char32_t c = p_string[i];
+
+		if (is_linebreak(c)) {
+			// Force newline.
+			ret.push_back(line_start);
 			ret.push_back(i);
+			line_start = i + 1;
+			line_end = line_start;
+			word_start = line_start;
+			word_length = 0;
+		} else if (c == 0xfffc) {
 			continue;
+		} else if ((is_punct(c) && c != 0x005F) || is_underscore(c) || c == '\t' || is_whitespace(c)) {
+			// A whitespace ends current word.
+			if (word_length > 0) {
+				line_end = i - 1;
+				word_start = -1;
+				word_length = 0;
+			}
+		} else {
+			if (word_start == -1) {
+				word_start = i;
+				if (p_chars_per_line <= 0) {
+					ret.push_back(line_start);
+					ret.push_back(line_end + 1);
+					line_start = word_start;
+					line_end = line_start;
+				}
+			}
+			word_length += 1;
+
+			if (p_chars_per_line > 0) {
+				if (word_length > p_chars_per_line) {
+					// Word too long: wrap before current character.
+					ret.push_back(line_start);
+					ret.push_back(i);
+					line_start = i;
+					line_end = i;
+					word_start = i;
+					word_length = 1;
+				} else if (i - line_start + 1 > p_chars_per_line) {
+					// Line too long: wrap after the last word.
+					ret.push_back(line_start);
+					ret.push_back(line_end + 1);
+					line_start = word_start;
+					line_end = line_start;
+				}
+			}
 		}
-		if (is_underscore(c)) {
-			ret.push_back(i);
-			continue;
-		}
-		if (is_whitespace(c) || is_linebreak(c)) {
-			ret.push_back(i);
-			continue;
-		}
+	}
+	if (line_start < p_string.length()) {
+		ret.push_back(line_start);
+		ret.push_back(p_string.length());
 	}
 	return ret;
 }

@@ -225,13 +225,13 @@ float NavigationMesh::get_edge_max_error() const {
 	return edge_max_error;
 }
 
-void NavigationMesh::set_verts_per_poly(float p_value) {
+void NavigationMesh::set_vertices_per_polygon(float p_value) {
 	ERR_FAIL_COND(p_value < 3);
-	verts_per_poly = p_value;
+	vertices_per_polygon = p_value;
 }
 
-float NavigationMesh::get_verts_per_poly() const {
-	return verts_per_poly;
+float NavigationMesh::get_vertices_per_polygon() const {
+	return vertices_per_polygon;
 }
 
 void NavigationMesh::set_detail_sample_distance(float p_value) {
@@ -483,8 +483,8 @@ void NavigationMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_edge_max_error", "edge_max_error"), &NavigationMesh::set_edge_max_error);
 	ClassDB::bind_method(D_METHOD("get_edge_max_error"), &NavigationMesh::get_edge_max_error);
 
-	ClassDB::bind_method(D_METHOD("set_verts_per_poly", "verts_per_poly"), &NavigationMesh::set_verts_per_poly);
-	ClassDB::bind_method(D_METHOD("get_verts_per_poly"), &NavigationMesh::get_verts_per_poly);
+	ClassDB::bind_method(D_METHOD("set_vertices_per_polygon", "vertices_per_polygon"), &NavigationMesh::set_vertices_per_polygon);
+	ClassDB::bind_method(D_METHOD("get_vertices_per_polygon"), &NavigationMesh::get_vertices_per_polygon);
 
 	ClassDB::bind_method(D_METHOD("set_detail_sample_distance", "detail_sample_dist"), &NavigationMesh::set_detail_sample_distance);
 	ClassDB::bind_method(D_METHOD("get_detail_sample_distance"), &NavigationMesh::get_detail_sample_distance);
@@ -527,9 +527,9 @@ void NavigationMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "geometry_parsed_geometry_type", PROPERTY_HINT_ENUM, "Mesh Instances,Static Colliders,Both"), "set_parsed_geometry_type", "get_parsed_geometry_type");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "geometry_collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
 	ADD_PROPERTY_DEFAULT("geometry_collision_mask", 0xFFFFFFFF);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "geometry_source_geometry_mode", PROPERTY_HINT_ENUM, "NavMesh Children,Group With Children,Group Explicit"), "set_source_geometry_mode", "get_source_geometry_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "geometry_source_geometry_mode", PROPERTY_HINT_ENUM, "Root Node Children,Group With Children,Group Explicit"), "set_source_geometry_mode", "get_source_geometry_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "geometry_source_group_name"), "set_source_group_name", "get_source_group_name");
-	ADD_PROPERTY_DEFAULT("geometry_source_group_name", StringName("navmesh"));
+	ADD_PROPERTY_DEFAULT("geometry_source_group_name", StringName("navigation_mesh_source_group"));
 	ADD_GROUP("Cells", "cell_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "cell_size", PROPERTY_HINT_RANGE, "0.01,500.0,0.01,or_greater,suffix:m"), "set_cell_size", "get_cell_size");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "cell_height", PROPERTY_HINT_RANGE, "0.01,500.0,0.01,or_greater,suffix:m"), "set_cell_height", "get_cell_height");
@@ -544,8 +544,8 @@ void NavigationMesh::_bind_methods() {
 	ADD_GROUP("Edges", "edge_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "edge_max_length", PROPERTY_HINT_RANGE, "0.0,50.0,0.01,or_greater,suffix:m"), "set_edge_max_length", "get_edge_max_length");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "edge_max_error", PROPERTY_HINT_RANGE, "0.1,3.0,0.01,or_greater,suffix:m"), "set_edge_max_error", "get_edge_max_error");
-	ADD_GROUP("Polygons", "polygon_");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "polygon_verts_per_poly", PROPERTY_HINT_RANGE, "3.0,12.0,1.0,or_greater"), "set_verts_per_poly", "get_verts_per_poly");
+	ADD_GROUP("Polygons", "");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "vertices_per_polygon", PROPERTY_HINT_RANGE, "3.0,12.0,1.0,or_greater"), "set_vertices_per_polygon", "get_vertices_per_polygon");
 	ADD_GROUP("Details", "detail_");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "detail_sample_distance", PROPERTY_HINT_RANGE, "0.1,16.0,0.01,or_greater,suffix:m"), "set_detail_sample_distance", "get_detail_sample_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "detail_sample_max_error", PROPERTY_HINT_RANGE, "0.0,16.0,0.01,or_greater,suffix:m"), "set_detail_sample_max_error", "get_detail_sample_max_error");
@@ -566,7 +566,7 @@ void NavigationMesh::_bind_methods() {
 	BIND_ENUM_CONSTANT(PARSED_GEOMETRY_BOTH);
 	BIND_ENUM_CONSTANT(PARSED_GEOMETRY_MAX);
 
-	BIND_ENUM_CONSTANT(SOURCE_GEOMETRY_NAVMESH_CHILDREN);
+	BIND_ENUM_CONSTANT(SOURCE_GEOMETRY_ROOT_NODE_CHILDREN);
 	BIND_ENUM_CONSTANT(SOURCE_GEOMETRY_GROUPS_WITH_CHILDREN);
 	BIND_ENUM_CONSTANT(SOURCE_GEOMETRY_GROUPS_EXPLICIT);
 	BIND_ENUM_CONSTANT(SOURCE_GEOMETRY_MAX);
@@ -581,7 +581,7 @@ void NavigationMesh::_validate_property(PropertyInfo &p_property) const {
 	}
 
 	if (p_property.name == "geometry_source_group_name") {
-		if (source_geometry_mode == SOURCE_GEOMETRY_NAVMESH_CHILDREN) {
+		if (source_geometry_mode == SOURCE_GEOMETRY_ROOT_NODE_CHILDREN) {
 			p_property.usage = PROPERTY_USAGE_NONE;
 			return;
 		}
@@ -595,13 +595,16 @@ bool NavigationMesh::_set(const StringName &p_name, const Variant &p_value) {
 		// Compatibility with pre-3.5 "category/path" property names.
 		prop_name = prop_name.replace("/", "_");
 		if (prop_name == "sample_partition_type_sample_partition_type") {
-			set("sample_partition_type", p_value);
+			set_sample_partition_type((NavigationMesh::SamplePartitionType)p_value.operator int());
 		} else if (prop_name == "filter_filter_walkable_low_height_spans") {
-			set("filter_walkable_low_height_spans", p_value);
+			set_filter_walkable_low_height_spans(p_value);
 		} else {
 			set(prop_name, p_value);
 		}
-
+		return true;
+	}
+	if (p_name == "polygon_verts_per_poly") { // Renamed in 4.0 beta 9.
+		set_vertices_per_polygon(p_value);
 		return true;
 	}
 	return false;
@@ -613,12 +616,16 @@ bool NavigationMesh::_get(const StringName &p_name, Variant &r_ret) const {
 		// Compatibility with pre-3.5 "category/path" property names.
 		prop_name = prop_name.replace("/", "_");
 		if (prop_name == "sample_partition_type_sample_partition_type") {
-			r_ret = get("sample_partition_type");
+			r_ret = get_sample_partition_type();
 		} else if (prop_name == "filter_filter_walkable_low_height_spans") {
-			r_ret = get("filter_walkable_low_height_spans");
+			r_ret = get_filter_walkable_low_height_spans();
 		} else {
 			r_ret = get(prop_name);
 		}
+		return true;
+	}
+	if (p_name == "polygon_verts_per_poly") { // Renamed in 4.0 beta 9.
+		r_ret = get_vertices_per_polygon();
 		return true;
 	}
 	return false;

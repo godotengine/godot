@@ -120,12 +120,11 @@ struct Mesh {
 	Surface **surfaces = nullptr;
 	uint32_t surface_count = 0;
 
-	Vector<AABB> bone_aabbs;
-
 	bool has_bone_weights = false;
 
 	AABB aabb;
 	AABB custom_aabb;
+	uint64_t skeleton_aabb_version = 0;
 
 	Vector<RID> material_cache;
 

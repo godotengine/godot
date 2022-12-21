@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NavigationMesh" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="NavigationMesh" inherits="Resource" is_experimental="true" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A mesh to approximate the walkable areas and obstacles.
 	</brief_description>
@@ -133,12 +133,9 @@
 		<member name="geometry_source_geometry_mode" type="int" setter="set_source_geometry_mode" getter="get_source_geometry_mode" enum="NavigationMesh.SourceGeometryMode" default="0">
 			The source of the geometry used when baking. See [enum SourceGeometryMode] for possible values.
 		</member>
-		<member name="geometry_source_group_name" type="StringName" setter="set_source_group_name" getter="get_source_group_name" default="&amp;&quot;navmesh&quot;">
+		<member name="geometry_source_group_name" type="StringName" setter="set_source_group_name" getter="get_source_group_name" default="&amp;&quot;navigation_mesh_source_group&quot;">
 			The name of the group to scan for geometry.
 			Only used when [member geometry_source_geometry_mode] is [constant SOURCE_GEOMETRY_GROUPS_WITH_CHILDREN] or [constant SOURCE_GEOMETRY_GROUPS_EXPLICIT].
-		</member>
-		<member name="polygon_verts_per_poly" type="float" setter="set_verts_per_poly" getter="get_verts_per_poly" default="6.0">
-			The maximum number of vertices allowed for polygons generated during the contour to polygon conversion process.
 		</member>
 		<member name="region_merge_size" type="float" setter="set_region_merge_size" getter="get_region_merge_size" default="20.0">
 			Any regions with a size smaller than this will be merged with larger regions if possible.
@@ -150,6 +147,9 @@
 		</member>
 		<member name="sample_partition_type" type="int" setter="set_sample_partition_type" getter="get_sample_partition_type" enum="NavigationMesh.SamplePartitionType" default="0">
 			Partitioning algorithm for creating the navigation mesh polys. See [enum SamplePartitionType] for possible values.
+		</member>
+		<member name="vertices_per_polygon" type="float" setter="set_vertices_per_polygon" getter="get_vertices_per_polygon" default="6.0">
+			The maximum number of vertices allowed for polygons generated during the contour to polygon conversion process.
 		</member>
 	</members>
 	<constants>
@@ -177,8 +177,8 @@
 		<constant name="PARSED_GEOMETRY_MAX" value="3" enum="ParsedGeometryType">
 			Represents the size of the [enum ParsedGeometryType] enum.
 		</constant>
-		<constant name="SOURCE_GEOMETRY_NAVMESH_CHILDREN" value="0" enum="SourceGeometryMode">
-			Scans the child nodes of [NavigationRegion3D] recursively for geometry.
+		<constant name="SOURCE_GEOMETRY_ROOT_NODE_CHILDREN" value="0" enum="SourceGeometryMode">
+			Scans the child nodes of the root node recursively for geometry.
 		</constant>
 		<constant name="SOURCE_GEOMETRY_GROUPS_WITH_CHILDREN" value="1" enum="SourceGeometryMode">
 			Scans nodes in a group and their child nodes recursively for geometry. The group is specified by [member geometry_source_group_name].

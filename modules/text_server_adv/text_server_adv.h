@@ -467,6 +467,7 @@ class TextServerAdvanced : public TextServerExtension {
 			int pos = 0;
 			InlineAlignment inline_align = INLINE_ALIGNMENT_CENTER;
 			Rect2 rect;
+			float baseline = 0;
 		};
 		HashMap<Variant, EmbeddedObject, VariantHasher, VariantComparator> objects;
 
@@ -868,8 +869,8 @@ public:
 	MODBIND2RC(int64_t, shaped_text_get_spacing, const RID &, SpacingType);
 
 	MODBIND7R(bool, shaped_text_add_string, const RID &, const String &, const TypedArray<RID> &, int64_t, const Dictionary &, const String &, const Variant &);
-	MODBIND5R(bool, shaped_text_add_object, const RID &, const Variant &, const Size2 &, InlineAlignment, int64_t);
-	MODBIND4R(bool, shaped_text_resize_object, const RID &, const Variant &, const Size2 &, InlineAlignment);
+	MODBIND6R(bool, shaped_text_add_object, const RID &, const Variant &, const Size2 &, InlineAlignment, int64_t, float);
+	MODBIND5R(bool, shaped_text_resize_object, const RID &, const Variant &, const Size2 &, InlineAlignment, float);
 
 	MODBIND1RC(int64_t, shaped_get_span_count, const RID &);
 	MODBIND2RC(Variant, shaped_get_span_meta, const RID &, int64_t);
@@ -914,7 +915,7 @@ public:
 	MODBIND2RC(String, parse_number, const String &, const String &);
 	MODBIND1RC(String, percent_sign, const String &);
 
-	MODBIND2RC(PackedInt32Array, string_get_word_breaks, const String &, const String &);
+	MODBIND3RC(PackedInt32Array, string_get_word_breaks, const String &, const String &, int);
 
 	MODBIND2RC(int64_t, is_confusable, const String &, const PackedStringArray &);
 	MODBIND1RC(bool, spoof_check, const String &);

@@ -53,7 +53,7 @@ ParticlesStorage::ParticlesStorage() {
 	{
 		String global_defines;
 		global_defines += "#define MAX_GLOBAL_SHADER_UNIFORMS 256\n"; // TODO: this is arbitrary for now
-		material_storage->shaders.particles_process_shader.initialize(global_defines);
+		material_storage->shaders.particles_process_shader.initialize(global_defines, 1);
 	}
 	{
 		// default material and shader for particles shader
@@ -528,6 +528,15 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 			//2D collision
 
 			Transform2D xform = p_particles->sdf_collision_transform; //will use dotproduct manually so invert beforehand
+
+			if (!p_particles->use_local_coords) {
+				Transform2D emission;
+				emission.columns[0] = Vector2(p_particles->emission_transform.basis.get_column(0).x, p_particles->emission_transform.basis.get_column(0).y);
+				emission.columns[1] = Vector2(p_particles->emission_transform.basis.get_column(1).x, p_particles->emission_transform.basis.get_column(1).y);
+				emission.set_origin(Vector2(p_particles->emission_transform.origin.x, p_particles->emission_transform.origin.y));
+				xform = xform * emission.affine_inverse();
+			}
+
 			Transform2D revert = xform.affine_inverse();
 			frame_params.collider_count = 1;
 			frame_params.colliders[0].transform[0] = xform.columns[0][0];

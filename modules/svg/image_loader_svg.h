@@ -41,6 +41,7 @@ class ImageLoaderSVG : public ImageFormatLoader {
 public:
 	static void set_forced_color_map(const HashMap<Color, Color> &p_color_map);
 
+	Error create_image_from_utf8_buffer(Ref<Image> p_image, const PackedByteArray &p_buffer, float p_scale, bool p_upsample);
 	Error create_image_from_string(Ref<Image> p_image, String p_string, float p_scale, bool p_upsample, const HashMap<Color, Color> &p_color_map);
 
 	virtual Error load_image(Ref<Image> p_image, Ref<FileAccess> p_fileaccess, BitField<ImageFormatLoader::LoaderFlags> p_flags, float p_scale) override;
