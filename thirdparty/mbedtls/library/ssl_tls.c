@@ -29,13 +29,7 @@
 
 #if defined(MBEDTLS_SSL_TLS_C)
 
-#if defined(MBEDTLS_PLATFORM_C)
 #include "mbedtls/platform.h"
-#else
-#include <stdlib.h>
-#define mbedtls_calloc    calloc
-#define mbedtls_free      free
-#endif
 
 #include "mbedtls/ssl.h"
 #include "mbedtls/ssl_internal.h"
@@ -766,7 +760,9 @@ static int tls_prf_generic( mbedtls_md_type_t md_type,
 exit:
     mbedtls_md_free( &md_ctx );
 
-    mbedtls_platform_zeroize( tmp, tmp_len );
+    if ( tmp != NULL )
+        mbedtls_platform_zeroize( tmp, tmp_len );
+
     mbedtls_platform_zeroize( h_i, sizeof( h_i ) );
 
     mbedtls_free( tmp );
@@ -985,6 +981,7 @@ static int ssl_populate_transform( mbedtls_ssl_transform *transform,
 #if defined(MBEDTLS_USE_PSA_CRYPTO)
     int psa_fallthrough;
 #endif /* MBEDTLS_USE_PSA_CRYPTO */
+    int do_mbedtls_cipher_setup;
     unsigned char keyblk[256];
     unsigned char *key1;
     unsigned char *key2;
@@ -1363,6 +1360,7 @@ static int ssl_populate_transform( mbedtls_ssl_transform *transform,
     }
 #endif
 
+    do_mbedtls_cipher_setup = 1;
 #if defined(MBEDTLS_USE_PSA_CRYPTO)
 
     /* Only use PSA-based ciphers for TLS-1.2.
@@ -1398,15 +1396,18 @@ static int ssl_populate_transform( mbedtls_ssl_transform *transform,
     psa_fallthrough = 1;
 #endif /* MBEDTLS_SSL_PROTO_TLS1_2 */
 
-    if( psa_fallthrough == 1 )
+    if( psa_fallthrough == 0 )
+        do_mbedtls_cipher_setup = 0;
 #endif /* MBEDTLS_USE_PSA_CRYPTO */
-    if( ( ret = mbedtls_cipher_setup( &transform->cipher_ctx_enc,
-                                 cipher_info ) ) != 0 )
+    if( do_mbedtls_cipher_setup &&
+            ( ret = mbedtls_cipher_setup( &transform->cipher_ctx_enc,
+                                          cipher_info ) ) != 0 )
     {
         MBEDTLS_SSL_DEBUG_RET( 1, "mbedtls_cipher_setup", ret );
         goto end;
     }
 
+    do_mbedtls_cipher_setup = 1;
 #if defined(MBEDTLS_USE_PSA_CRYPTO)
     /* Only use PSA-based ciphers for TLS-1.2.
      * That's relevant at least for TLS-1.0, where
@@ -1441,10 +1442,12 @@ static int ssl_populate_transform( mbedtls_ssl_transform *transform,
     psa_fallthrough = 1;
 #endif /* MBEDTLS_SSL_PROTO_TLS1_2 */
 
-    if( psa_fallthrough == 1 )
+    if( psa_fallthrough == 0 )
+        do_mbedtls_cipher_setup = 0;
 #endif /* MBEDTLS_USE_PSA_CRYPTO */
-    if( ( ret = mbedtls_cipher_setup( &transform->cipher_ctx_dec,
-                                 cipher_info ) ) != 0 )
+    if( do_mbedtls_cipher_setup &&
+            ( ret = mbedtls_cipher_setup( &transform->cipher_ctx_dec,
+                                          cipher_info ) ) != 0 )
     {
         MBEDTLS_SSL_DEBUG_RET( 1, "mbedtls_cipher_setup", ret );
         goto end;
@@ -3411,7 +3414,7 @@ static void ssl_calc_finished_tls_sha384(
                    sha512.state, sizeof( sha512.state ) );
 #endif
     /* mbedtls_sha512_finish_ret's output parameter is declared as a
-     * 64-byte buffer, but sice we're using SHA-384, we know that the
+     * 64-byte buffer, but since we're using SHA-384, we know that the
      * output fits in 48 bytes. This is correct C, but GCC 11.1 warns
      * about it.
      */
@@ -4089,9 +4092,12 @@ int mbedtls_ssl_session_reset_int( mbedtls_ssl_context *ssl, int partial )
 
     memset( ssl->out_buf, 0, out_buf_len );
 
+    int clear_in_buf = 1;
 #if defined(MBEDTLS_SSL_DTLS_CLIENT_PORT_REUSE) && defined(MBEDTLS_SSL_SRV_C)
-    if( partial == 0 )
+    if( partial != 0 )
+        clear_in_buf = 0;
 #endif /* MBEDTLS_SSL_DTLS_CLIENT_PORT_REUSE && MBEDTLS_SSL_SRV_C */
+    if( clear_in_buf )
     {
         ssl->in_left = 0;
         memset( ssl->in_buf, 0, in_buf_len );
@@ -4128,9 +4134,12 @@ int mbedtls_ssl_session_reset_int( mbedtls_ssl_context *ssl, int partial )
 #endif
 
 #if defined(MBEDTLS_SSL_DTLS_HELLO_VERIFY) && defined(MBEDTLS_SSL_SRV_C)
+    int free_cli_id = 1;
 #if defined(MBEDTLS_SSL_DTLS_CLIENT_PORT_REUSE)
-    if( partial == 0 )
+    if( partial != 0 )
+        free_cli_id = 0;
 #endif
+    if( free_cli_id )
     {
         mbedtls_free( ssl->cli_id );
         ssl->cli_id = NULL;
@@ -4471,7 +4480,7 @@ static void ssl_conf_remove_psk( mbedtls_ssl_config *conf )
         conf->psk_opaque = MBEDTLS_SVC_KEY_ID_INIT;
     }
     /* This and the following branch should never
-     * be taken simultaenously as we maintain the
+     * be taken simultaneously as we maintain the
      * invariant that raw and opaque PSKs are never
      * configured simultaneously. As a safeguard,
      * though, `else` is omitted here. */
@@ -6335,7 +6344,7 @@ int mbedtls_ssl_context_save( mbedtls_ssl_context *ssl,
         MBEDTLS_SSL_DEBUG_MSG( 1, ( "There is pending outgoing data" ) );
         return( MBEDTLS_ERR_SSL_BAD_INPUT_DATA );
     }
-    /* Protocol must be DLTS, not TLS */
+    /* Protocol must be DTLS, not TLS */
     if( ssl->conf->transport != MBEDTLS_SSL_TRANSPORT_DATAGRAM )
     {
         MBEDTLS_SSL_DEBUG_MSG( 1, ( "Only DTLS is supported" ) );
@@ -6510,23 +6519,40 @@ int mbedtls_ssl_context_save( mbedtls_ssl_context *ssl,
  * Helper to get TLS 1.2 PRF from ciphersuite
  * (Duplicates bits of logic from ssl_set_handshake_prfs().)
  */
+#if defined(MBEDTLS_SHA256_C) || \
+    (defined(MBEDTLS_SHA512_C) && !defined(MBEDTLS_SHA512_NO_SHA384))
 typedef int (*tls_prf_fn)( const unsigned char *secret, size_t slen,
                            const char *label,
                            const unsigned char *random, size_t rlen,
                            unsigned char *dstbuf, size_t dlen );
 static tls_prf_fn ssl_tls12prf_from_cs( int ciphersuite_id )
 {
-#if defined(MBEDTLS_SHA512_C) && !defined(MBEDTLS_SHA512_NO_SHA384)
     const mbedtls_ssl_ciphersuite_t * const ciphersuite_info =
          mbedtls_ssl_ciphersuite_from_id( ciphersuite_id );
 
+    if( ciphersuite_info == NULL )
+        return( NULL );
+
+#if defined(MBEDTLS_SHA512_C) && !defined(MBEDTLS_SHA512_NO_SHA384)
     if( ciphersuite_info->mac == MBEDTLS_MD_SHA384 )
         return( tls_prf_sha384 );
-#else
-    (void) ciphersuite_id;
+    else
 #endif
-    return( tls_prf_sha256 );
+#if defined(MBEDTLS_SHA256_C)
+    {
+        if( ciphersuite_info->mac == MBEDTLS_MD_SHA256 )
+            return( tls_prf_sha256 );
+    }
+#endif
+#if !defined(MBEDTLS_SHA256_C) && \
+    (!defined(MBEDTLS_SHA512_C) || defined(MBEDTLS_SHA512_NO_SHA384))
+    (void) ciphersuite_info;
+#endif
+    return( NULL );
 }
+
+#endif /* MBEDTLS_SHA256_C ||
+          (MBEDTLS_SHA512_C && !MBEDTLS_SHA512_NO_SHA384) */
 
 /*
  * Deserialize context, see mbedtls_ssl_context_save() for format.
@@ -6543,6 +6569,7 @@ static int ssl_context_load( mbedtls_ssl_context *ssl,
     const unsigned char * const end = buf + len;
     size_t session_len;
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
+    tls_prf_fn prf_func = NULL;
 
     /*
      * The context should have been freshly setup or reset.
@@ -6630,6 +6657,10 @@ static int ssl_context_load( mbedtls_ssl_context *ssl,
     ssl->transform_out = ssl->transform;
     ssl->transform_negotiate = NULL;
 
+    prf_func = ssl_tls12prf_from_cs( ssl->session->ciphersuite );
+    if( prf_func == NULL )
+        return( MBEDTLS_ERR_SSL_BAD_INPUT_DATA );
+
     /* Read random bytes and populate structure */
     if( (size_t)( end - p ) < sizeof( ssl->transform->randbytes ) )
         return( MBEDTLS_ERR_SSL_BAD_INPUT_DATA );
@@ -6648,7 +6679,7 @@ static int ssl_context_load( mbedtls_ssl_context *ssl,
 #if defined(MBEDTLS_ZLIB_SUPPORT)
                   ssl->session->compression,
 #endif
-                  ssl_tls12prf_from_cs( ssl->session->ciphersuite ),
+                  prf_func,
                   p, /* currently pointing to randbytes */
                   MBEDTLS_SSL_MINOR_VERSION_3, /* (D)TLS 1.2 is forced */
                   ssl->conf->endpoint,
@@ -6921,7 +6952,7 @@ void mbedtls_ssl_free( mbedtls_ssl_context *ssl )
 }
 
 /*
- * Initialze mbedtls_ssl_config
+ * Initialize mbedtls_ssl_config
  */
 void mbedtls_ssl_config_init( mbedtls_ssl_config *conf )
 {

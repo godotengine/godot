@@ -50,13 +50,7 @@
 #include "mbedtls/asn1.h"
 #endif
 
-#if defined(MBEDTLS_PLATFORM_C)
 #include "mbedtls/platform.h"
-#else
-#include <stdlib.h>
-#define mbedtls_calloc    calloc
-#define mbedtls_free       free
-#endif
 
 #include <limits.h>
 #include <stdint.h>
@@ -872,7 +866,7 @@ static void *pk_opaque_alloc_wrap( void )
 {
     void *ctx = mbedtls_calloc( 1, sizeof( psa_key_id_t ) );
 
-    /* no _init() function to call, an calloc() already zeroized */
+    /* no _init() function to call, as calloc() already zeroized */
 
     return( ctx );
 }

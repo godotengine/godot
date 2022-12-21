@@ -1,0 +1,16 @@
+diff --git a/thirdparty/mbedtls/library/timing.c b/thirdparty/mbedtls/library/timing.c
+index 6c14a4fd01..151292e325 100644
+--- a/thirdparty/mbedtls/library/timing.c
++++ b/thirdparty/mbedtls/library/timing.c
+@@ -190,8 +190,10 @@ unsigned long mbedtls_timing_hardclock( void )
+ #endif /* !HAVE_HARDCLOCK && MBEDTLS_HAVE_ASM &&
+           __GNUC__ && __ia64__ */
+ 
+-#if !defined(HAVE_HARDCLOCK) && defined(_MSC_VER) && \
++// -- GODOT start --
++#if !defined(HAVE_HARDCLOCK) && defined(_WIN32) && \
+     !defined(EFIX64) && !defined(EFI32)
++// -- GODOT end --
+ 
+ #define HAVE_HARDCLOCK
+ 

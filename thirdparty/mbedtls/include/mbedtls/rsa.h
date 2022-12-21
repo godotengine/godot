@@ -491,7 +491,7 @@ int mbedtls_rsa_check_pubkey( const mbedtls_rsa_context *ctx );
  *             the current function does not have access to them,
  *             and therefore cannot check them. See mbedtls_rsa_complete().
  *             If you want to check the consistency of the entire
- *             content of an PKCS1-encoded RSA private key, for example, you
+ *             content of a PKCS1-encoded RSA private key, for example, you
  *             should use mbedtls_rsa_validate_params() before setting
  *             up the RSA context.
  *             Additionally, if the implementation performs empirical checks,

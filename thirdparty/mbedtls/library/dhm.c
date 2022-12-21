@@ -43,15 +43,7 @@
 #include "mbedtls/asn1.h"
 #endif
 
-#if defined(MBEDTLS_PLATFORM_C)
 #include "mbedtls/platform.h"
-#else
-#include <stdlib.h>
-#include <stdio.h>
-#define mbedtls_printf     printf
-#define mbedtls_calloc    calloc
-#define mbedtls_free       free
-#endif
 
 #if !defined(MBEDTLS_DHM_ALT)
 

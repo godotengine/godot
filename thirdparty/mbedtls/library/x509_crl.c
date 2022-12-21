@@ -1,5 +1,5 @@
 /*
- *  X.509 Certidicate Revocation List (CRL) parsing
+ *  X.509 Certificate Revocation List (CRL) parsing
  *
  *  Copyright The Mbed TLS Contributors
  *  SPDX-License-Identifier: Apache-2.0
@@ -42,15 +42,7 @@
 #include "mbedtls/pem.h"
 #endif
 
-#if defined(MBEDTLS_PLATFORM_C)
 #include "mbedtls/platform.h"
-#else
-#include <stdlib.h>
-#include <stdio.h>
-#define mbedtls_free       free
-#define mbedtls_calloc    calloc
-#define mbedtls_snprintf   snprintf
-#endif
 
 #if defined(MBEDTLS_HAVE_TIME)
 #if defined(_WIN32) && !defined(EFIX64) && !defined(EFI32)

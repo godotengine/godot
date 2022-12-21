@@ -21,16 +21,7 @@
 
 #if defined(MBEDTLS_DEBUG_C)
 
-#if defined(MBEDTLS_PLATFORM_C)
 #include "mbedtls/platform.h"
-#else
-#include <stdlib.h>
-#define mbedtls_calloc      calloc
-#define mbedtls_free        free
-#define mbedtls_time_t      time_t
-#define mbedtls_snprintf    snprintf
-#define mbedtls_vsnprintf   vsnprintf
-#endif
 
 #include "mbedtls/debug.h"
 #include "mbedtls/error.h"
@@ -38,11 +29,6 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
-
-#if ( defined(__ARMCC_VERSION) || defined(_MSC_VER) ) && \
-    !defined(inline) && !defined(__cplusplus)
-#define inline __inline
-#endif
 
 #define DEBUG_BUF_SIZE      512
 
