@@ -3867,6 +3867,10 @@ void EditorInspector::_notification(int p_what) {
 			_update_inspector_bg();
 		} break;
 
+		case NOTIFICATION_THEME_CHANGED: {
+			update_tree();
+		} break;
+
 		case NOTIFICATION_ENTER_TREE: {
 			if (!sub_inspector) {
 				get_tree()->connect("node_removed", callable_mp(this, &EditorInspector::_node_removed));
