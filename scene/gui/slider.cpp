@@ -320,7 +320,7 @@ void Slider::set_find_ticks(bool p_find_ticks) {
 	}
 
 	find_ticks = p_find_ticks;
-	update();
+	queue_redraw();
 }
 
 bool Slider::is_finding_ticks() const {
