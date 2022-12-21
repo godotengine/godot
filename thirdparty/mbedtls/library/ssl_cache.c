@@ -25,13 +25,7 @@
 
 #if defined(MBEDTLS_SSL_CACHE_C)
 
-#if defined(MBEDTLS_PLATFORM_C)
 #include "mbedtls/platform.h"
-#else
-#include <stdlib.h>
-#define mbedtls_calloc    calloc
-#define mbedtls_free      free
-#endif
 
 #include "mbedtls/ssl_cache.h"
 #include "mbedtls/ssl_internal.h"

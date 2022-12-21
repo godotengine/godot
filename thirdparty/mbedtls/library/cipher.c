@@ -63,12 +63,7 @@
 #include "mbedtls/nist_kw.h"
 #endif
 
-#if defined(MBEDTLS_PLATFORM_C)
 #include "mbedtls/platform.h"
-#else
-#define mbedtls_calloc calloc
-#define mbedtls_free   free
-#endif
 
 #define CIPHER_VALIDATE_RET( cond )    \
     MBEDTLS_INTERNAL_VALIDATE_RET( cond, MBEDTLS_ERR_CIPHER_BAD_INPUT_DATA )

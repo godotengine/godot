@@ -32,7 +32,6 @@
 
 #include <stddef.h>
 
-
 /** Turn a value into a mask:
  * - if \p value == 0, return the all-bits 0 mask, aka 0
  * - otherwise, return the all-bits 1 mask, aka (unsigned) -1
@@ -46,7 +45,7 @@
  */
 unsigned mbedtls_ct_uint_mask( unsigned value );
 
-#if defined(MBEDTLS_SSL_SOME_SUITES_USE_TLS_CBC)
+#if defined(MBEDTLS_SSL_SOME_MODES_USE_MAC)
 
 /** Turn a value into a mask:
  * - if \p value == 0, return the all-bits 0 mask, aka 0
@@ -61,7 +60,7 @@ unsigned mbedtls_ct_uint_mask( unsigned value );
  */
 size_t mbedtls_ct_size_mask( size_t value );
 
-#endif /* MBEDTLS_SSL_SOME_SUITES_USE_TLS_CBC */
+#endif /* MBEDTLS_SSL_SOME_MODES_USE_MAC */
 
 #if defined(MBEDTLS_BIGNUM_C)
 
@@ -196,7 +195,7 @@ signed char mbedtls_ct_base64_dec_value( unsigned char c );
 
 #endif /* MBEDTLS_BASE64_C */
 
-#if defined(MBEDTLS_SSL_SOME_SUITES_USE_TLS_CBC)
+#if defined(MBEDTLS_SSL_SOME_MODES_USE_MAC)
 
 /** Conditional memcpy without branches.
  *
@@ -292,7 +291,7 @@ int mbedtls_ct_hmac( mbedtls_md_context_t *ctx,
                      size_t max_data_len,
                      unsigned char *output );
 
-#endif /* MBEDTLS_SSL_SOME_SUITES_USE_TLS_CBC */
+#endif /* MBEDTLS_SSL_SOME_MODES_USE_MAC */
 
 #if defined(MBEDTLS_PKCS1_V15) && defined(MBEDTLS_RSA_C) && !defined(MBEDTLS_RSA_ALT)
 

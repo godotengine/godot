@@ -21,13 +21,7 @@
 
 #if defined(MBEDTLS_SSL_CLI_C)
 
-#if defined(MBEDTLS_PLATFORM_C)
 #include "mbedtls/platform.h"
-#else
-#include <stdlib.h>
-#define mbedtls_calloc    calloc
-#define mbedtls_free      free
-#endif
 
 #include "mbedtls/ssl.h"
 #include "mbedtls/ssl_internal.h"
@@ -174,7 +168,7 @@ static int ssl_write_renegotiation_ext( mbedtls_ssl_context *ssl,
 
     *olen = 0;
 
-    /* We're always including an TLS_EMPTY_RENEGOTIATION_INFO_SCSV in the
+    /* We're always including a TLS_EMPTY_RENEGOTIATION_INFO_SCSV in the
      * initial ClientHello, in which case also adding the renegotiation
      * info extension is NOT RECOMMENDED as per RFC 5746 Section 3.4. */
     if( ssl->renego_status != MBEDTLS_SSL_RENEGOTIATION_IN_PROGRESS )
@@ -1004,9 +998,12 @@ static int ssl_write_client_hello( mbedtls_ssl_context *ssl )
         return( MBEDTLS_ERR_SSL_NO_RNG );
     }
 
+    int renegotiating = 0;
 #if defined(MBEDTLS_SSL_RENEGOTIATION)
-    if( ssl->renego_status == MBEDTLS_SSL_INITIAL_HANDSHAKE )
+    if( ssl->renego_status != MBEDTLS_SSL_INITIAL_HANDSHAKE )
+        renegotiating = 1;
 #endif
+    if( !renegotiating )
     {
         ssl->major_ver = ssl->conf->min_major_ver;
         ssl->minor_ver = ssl->conf->min_minor_ver;
@@ -1092,9 +1089,7 @@ static int ssl_write_client_hello( mbedtls_ssl_context *ssl )
      * RFC 5077 section 3.4: "When presenting a ticket, the client MAY
      * generate and include a Session ID in the TLS ClientHello."
      */
-#if defined(MBEDTLS_SSL_RENEGOTIATION)
-    if( ssl->renego_status == MBEDTLS_SSL_INITIAL_HANDSHAKE )
-#endif
+    if( !renegotiating )
     {
         if( ssl->session_negotiate->ticket != NULL &&
                 ssl->session_negotiate->ticket_len != 0 )
@@ -1209,9 +1204,7 @@ static int ssl_write_client_hello( mbedtls_ssl_context *ssl )
     /*
      * Add TLS_EMPTY_RENEGOTIATION_INFO_SCSV
      */
-#if defined(MBEDTLS_SSL_RENEGOTIATION)
-    if( ssl->renego_status == MBEDTLS_SSL_INITIAL_HANDSHAKE )
-#endif
+    if( !renegotiating )
     {
         MBEDTLS_SSL_DEBUG_MSG( 3, ( "adding EMPTY_RENEGOTIATION_INFO_SCSV" ) );
         MBEDTLS_SSL_CHK_BUF_PTR( p, end, 2 );
@@ -2062,6 +2055,30 @@ static int ssl_parse_hello_verify_request( mbedtls_ssl_context *ssl )
 }
 #endif /* MBEDTLS_SSL_PROTO_DTLS */
 
+static int is_compression_bad( mbedtls_ssl_context *ssl, unsigned char comp )
+{
+    int bad_comp = 0;
+
+    /* Suppress warnings in some configurations */
+    (void) ssl;
+#if defined(MBEDTLS_ZLIB_SUPPORT)
+    /* See comments in ssl_write_client_hello() */
+#if defined(MBEDTLS_SSL_PROTO_DTLS)
+    if( ssl->conf->transport == MBEDTLS_SSL_TRANSPORT_DATAGRAM &&
+        comp != MBEDTLS_SSL_COMPRESS_NULL )
+        bad_comp = 1;
+#endif
+
+    if( comp != MBEDTLS_SSL_COMPRESS_NULL &&
+        comp != MBEDTLS_SSL_COMPRESS_DEFLATE )
+        bad_comp = 1;
+#else /* MBEDTLS_ZLIB_SUPPORT */
+    if( comp != MBEDTLS_SSL_COMPRESS_NULL )
+        bad_comp = 1;
+#endif/* MBEDTLS_ZLIB_SUPPORT */
+    return bad_comp;
+}
+
 MBEDTLS_CHECK_RETURN_CRITICAL
 static int ssl_parse_server_hello( mbedtls_ssl_context *ssl )
 {
@@ -2070,9 +2087,6 @@ static int ssl_parse_server_hello( mbedtls_ssl_context *ssl )
     size_t ext_len;
     unsigned char *buf, *ext;
     unsigned char comp;
-#if defined(MBEDTLS_ZLIB_SUPPORT)
-    int accept_comp;
-#endif
 #if defined(MBEDTLS_SSL_RENEGOTIATION)
     int renegotiation_info_seen = 0;
 #endif
@@ -2241,20 +2255,7 @@ static int ssl_parse_server_hello( mbedtls_ssl_context *ssl )
      */
     comp = buf[37 + n];
 
-#if defined(MBEDTLS_ZLIB_SUPPORT)
-    /* See comments in ssl_write_client_hello() */
-#if defined(MBEDTLS_SSL_PROTO_DTLS)
-    if( ssl->conf->transport == MBEDTLS_SSL_TRANSPORT_DATAGRAM )
-        accept_comp = 0;
-    else
-#endif
-        accept_comp = 1;
-
-    if( comp != MBEDTLS_SSL_COMPRESS_NULL &&
-        ( comp != MBEDTLS_SSL_COMPRESS_DEFLATE || accept_comp == 0 ) )
-#else /* MBEDTLS_ZLIB_SUPPORT */
-    if( comp != MBEDTLS_SSL_COMPRESS_NULL )
-#endif/* MBEDTLS_ZLIB_SUPPORT */
+    if( is_compression_bad( ssl, comp ) )
     {
         MBEDTLS_SSL_DEBUG_MSG( 1,
             ( "server hello, bad compression: %d", comp ) );
@@ -2687,7 +2688,7 @@ static int ssl_check_server_ecdh_params( const mbedtls_ssl_context *ssl )
     grp_id = ssl->handshake->ecdh_ctx.grp.id;
 #else
     grp_id = ssl->handshake->ecdh_ctx.grp_id;
-#endif
+#endif /* MBEDTLS_ECDH_LEGACY_CONTEXT */
 
     curve_info = mbedtls_ecp_curve_info_from_grp_id( grp_id );
     if( curve_info == NULL )
@@ -2700,11 +2701,12 @@ static int ssl_check_server_ecdh_params( const mbedtls_ssl_context *ssl )
 
 #if defined(MBEDTLS_ECP_C)
     if( mbedtls_ssl_check_curve( ssl, grp_id ) != 0 )
+        return( -1 );
 #else
     if( ssl->handshake->ecdh_ctx.grp.nbits < 163 ||
         ssl->handshake->ecdh_ctx.grp.nbits > 521 )
-#endif
         return( -1 );
+#endif /* MBEDTLS_ECP_C */
 
     MBEDTLS_SSL_DEBUG_ECDH( 3, &ssl->handshake->ecdh_ctx,
                             MBEDTLS_DEBUG_ECDH_QP );
@@ -2858,8 +2860,8 @@ static int ssl_parse_server_psk_hint( mbedtls_ssl_context *ssl,
     }
 
     /*
-     * Note: we currently ignore the PKS identity hint, as we only allow one
-     * PSK to be provisionned on the client. This could be changed later if
+     * Note: we currently ignore the PSK identity hint, as we only allow one
+     * PSK to be provisioned on the client. This could be changed later if
      * someone needs that feature.
      */
     *p += len;
@@ -3452,23 +3454,23 @@ start_processing:
 #if defined(MBEDTLS_SSL_ECP_RESTARTABLE_ENABLED)
         if( ssl->handshake->ecrs_enabled )
             rs_ctx = &ssl->handshake->ecrs_ctx.pk;
-#endif
+#endif /* MBEDTLS_SSL_ECP_RESTARTABLE_ENABLED */
 
         if( ( ret = mbedtls_pk_verify_restartable( peer_pk,
                         md_alg, hash, hashlen, p, sig_len, rs_ctx ) ) != 0 )
         {
 #if defined(MBEDTLS_SSL_ECP_RESTARTABLE_ENABLED)
-            if( ret != MBEDTLS_ERR_ECP_IN_PROGRESS )
-#endif
-                mbedtls_ssl_send_alert_message(
-                    ssl,
-                    MBEDTLS_SSL_ALERT_LEVEL_FATAL,
-                    MBEDTLS_SSL_ALERT_MSG_DECRYPT_ERROR );
-            MBEDTLS_SSL_DEBUG_RET( 1, "mbedtls_pk_verify", ret );
-#if defined(MBEDTLS_SSL_ECP_RESTARTABLE_ENABLED)
             if( ret == MBEDTLS_ERR_ECP_IN_PROGRESS )
-                ret = MBEDTLS_ERR_SSL_CRYPTO_IN_PROGRESS;
-#endif
+            {
+                MBEDTLS_SSL_DEBUG_RET( 1, "mbedtls_pk_verify", ret );
+                return( MBEDTLS_ERR_SSL_CRYPTO_IN_PROGRESS );
+            }
+#endif /* MBEDTLS_SSL_ECP_RESTARTABLE_ENABLED */
+            mbedtls_ssl_send_alert_message(
+                ssl,
+                MBEDTLS_SSL_ALERT_LEVEL_FATAL,
+                MBEDTLS_SSL_ALERT_MSG_DECRYPT_ERROR );
+            MBEDTLS_SSL_DEBUG_RET( 1, "mbedtls_pk_verify", ret );
             return( ret );
         }
 
