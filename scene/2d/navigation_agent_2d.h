@@ -61,6 +61,7 @@ class NavigationAgent2D : public Node {
 	real_t path_max_distance = 3.0;
 
 	Vector2 target_location;
+	bool target_position_submitted = false;
 	Ref<NavigationPathQueryParameters2D> navigation_query;
 	Ref<NavigationPathQueryResult2D> navigation_result;
 	int navigation_path_index = 0;
