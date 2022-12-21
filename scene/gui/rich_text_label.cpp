@@ -3071,18 +3071,18 @@ void RichTextLabel::add_newline() {
 	queue_redraw();
 }
 
-bool RichTextLabel::remove_line(const int p_line) {
+bool RichTextLabel::remove_paragraph(const int p_paragraph) {
 	_stop_thread();
 	MutexLock data_lock(data_mutex);
 
-	if (p_line >= (int)current_frame->lines.size() || p_line < 0) {
+	if (p_paragraph >= (int)current_frame->lines.size() || p_paragraph < 0) {
 		return false;
 	}
 
 	// Remove all subitems with the same line as that provided.
 	Vector<int> subitem_indices_to_remove;
 	for (int i = 0; i < current->subitems.size(); i++) {
-		if (current->subitems[i]->line == p_line) {
+		if (current->subitems[i]->line == p_paragraph) {
 			subitem_indices_to_remove.push_back(i);
 		}
 	}
@@ -3092,17 +3092,17 @@ bool RichTextLabel::remove_line(const int p_line) {
 	for (int i = subitem_indices_to_remove.size() - 1; i >= 0; i--) {
 		int subitem_idx = subitem_indices_to_remove[i];
 		had_newline = had_newline || current->subitems[subitem_idx]->type == ITEM_NEWLINE;
-		_remove_item(current->subitems[subitem_idx], current->subitems[subitem_idx]->line, p_line);
+		_remove_item(current->subitems[subitem_idx], current->subitems[subitem_idx]->line, p_paragraph);
 	}
 
 	if (!had_newline) {
-		current_frame->lines.remove_at(p_line);
+		current_frame->lines.remove_at(p_paragraph);
 		if (current_frame->lines.size() == 0) {
 			current_frame->lines.resize(1);
 		}
 	}
 
-	if (p_line == 0 && current->subitems.size() > 0) {
+	if (p_paragraph == 0 && current->subitems.size() > 0) {
 		main->lines[0].from = main;
 	}
 
@@ -5313,7 +5313,7 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_text", "text"), &RichTextLabel::set_text);
 	ClassDB::bind_method(D_METHOD("add_image", "image", "width", "height", "color", "inline_align", "region"), &RichTextLabel::add_image, DEFVAL(0), DEFVAL(0), DEFVAL(Color(1.0, 1.0, 1.0)), DEFVAL(INLINE_ALIGNMENT_CENTER), DEFVAL(Rect2(0, 0, 0, 0)));
 	ClassDB::bind_method(D_METHOD("newline"), &RichTextLabel::add_newline);
-	ClassDB::bind_method(D_METHOD("remove_line", "line"), &RichTextLabel::remove_line);
+	ClassDB::bind_method(D_METHOD("remove_paragraph", "paragraph"), &RichTextLabel::remove_paragraph);
 	ClassDB::bind_method(D_METHOD("push_font", "font", "font_size"), &RichTextLabel::push_font);
 	ClassDB::bind_method(D_METHOD("push_font_size", "font_size"), &RichTextLabel::push_font_size);
 	ClassDB::bind_method(D_METHOD("push_normal"), &RichTextLabel::push_normal);
