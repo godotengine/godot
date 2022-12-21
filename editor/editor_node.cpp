@@ -5194,15 +5194,15 @@ void EditorNode::_layout_menu_option(int p_id) {
 			current_menu_option = p_id;
 			layout_dialog->set_title(TTR("Save Layout"));
 			layout_dialog->set_ok_button_text(TTR("Save"));
-			layout_dialog->popup_centered();
 			layout_dialog->set_name_line_enabled(true);
+			layout_dialog->popup_centered();
 		} break;
 		case SETTINGS_LAYOUT_DELETE: {
 			current_menu_option = p_id;
 			layout_dialog->set_title(TTR("Delete Layout"));
 			layout_dialog->set_ok_button_text(TTR("Delete"));
-			layout_dialog->popup_centered();
 			layout_dialog->set_name_line_enabled(false);
+			layout_dialog->popup_centered();
 		} break;
 		case SETTINGS_LAYOUT_DEFAULT: {
 			_load_docks_from_config(default_layout, "docks");
