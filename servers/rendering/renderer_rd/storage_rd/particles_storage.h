@@ -485,9 +485,9 @@ public:
 	_FORCE_INLINE_ RID particles_get_instance_buffer_uniform_set(RID p_particles, RID p_shader, uint32_t p_set) {
 		Particles *particles = particles_owner.get_or_null(p_particles);
 		ERR_FAIL_COND_V(!particles, RID());
-		if (particles->particles_transforms_buffer_uniform_set.is_null()) {
+		if (particles->particles_transforms_buffer_uniform_set.is_null() || !RD::get_singleton()->uniform_set_is_valid(particles->particles_transforms_buffer_uniform_set)) {
 			_particles_update_buffers(particles);
-
+			update_particles();
 			Vector<RD::Uniform> uniforms;
 
 			{
