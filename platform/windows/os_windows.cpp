@@ -1164,8 +1164,11 @@ bool OS_Windows::set_environment(const String &p_var, const String &p_value) con
 
 String OS_Windows::get_stdin_string(bool p_block) {
 	if (p_block) {
-		char buff[1024];
-		return fgets(buff, 1024, stdin);
+		WCHAR buff[1024];
+		DWORD count = 0;
+		if (ReadConsoleW(GetStdHandle(STD_INPUT_HANDLE), buff, 1024, &count, nullptr)) {
+			return String::utf16((const char16_t *)buff, count);
+		}
 	}
 
 	return String();
