@@ -47,44 +47,7 @@
 VersionControlEditorPlugin *VersionControlEditorPlugin::singleton = nullptr;
 
 void VersionControlEditorPlugin::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_initialize_vcs"), &VersionControlEditorPlugin::_initialize_vcs);
-	ClassDB::bind_method(D_METHOD("_set_credentials"), &VersionControlEditorPlugin::_set_credentials);
-	ClassDB::bind_method(D_METHOD("_update_set_up_warning"), &VersionControlEditorPlugin::_update_set_up_warning);
-	ClassDB::bind_method(D_METHOD("_commit"), &VersionControlEditorPlugin::_commit);
-	ClassDB::bind_method(D_METHOD("_refresh_stage_area"), &VersionControlEditorPlugin::_refresh_stage_area);
-	ClassDB::bind_method(D_METHOD("_move_all"), &VersionControlEditorPlugin::_move_all);
-	ClassDB::bind_method(D_METHOD("_load_diff"), &VersionControlEditorPlugin::_load_diff);
-	ClassDB::bind_method(D_METHOD("_display_diff"), &VersionControlEditorPlugin::_display_diff);
-	ClassDB::bind_method(D_METHOD("_item_activated"), &VersionControlEditorPlugin::_item_activated);
-	ClassDB::bind_method(D_METHOD("_update_branch_create_button"), &VersionControlEditorPlugin::_update_branch_create_button);
-	ClassDB::bind_method(D_METHOD("_update_remote_create_button"), &VersionControlEditorPlugin::_update_remote_create_button);
-	ClassDB::bind_method(D_METHOD("_update_commit_button"), &VersionControlEditorPlugin::_update_commit_button);
-	ClassDB::bind_method(D_METHOD("_refresh_branch_list"), &VersionControlEditorPlugin::_refresh_branch_list);
-	ClassDB::bind_method(D_METHOD("_set_commit_list_size"), &VersionControlEditorPlugin::_set_commit_list_size);
-	ClassDB::bind_method(D_METHOD("_refresh_commit_list"), &VersionControlEditorPlugin::_refresh_commit_list);
-	ClassDB::bind_method(D_METHOD("_refresh_remote_list"), &VersionControlEditorPlugin::_refresh_remote_list);
-	ClassDB::bind_method(D_METHOD("_ssh_public_key_selected"), &VersionControlEditorPlugin::_ssh_public_key_selected);
-	ClassDB::bind_method(D_METHOD("_ssh_private_key_selected"), &VersionControlEditorPlugin::_ssh_private_key_selected);
-	ClassDB::bind_method(D_METHOD("_commit_message_gui_input"), &VersionControlEditorPlugin::_commit_message_gui_input);
-	ClassDB::bind_method(D_METHOD("_cell_button_pressed"), &VersionControlEditorPlugin::_cell_button_pressed);
-	ClassDB::bind_method(D_METHOD("_confirm_discard_all"), &VersionControlEditorPlugin::_confirm_discard_all);
-	ClassDB::bind_method(D_METHOD("_discard_all"), &VersionControlEditorPlugin::_discard_all);
-	ClassDB::bind_method(D_METHOD("_create_branch"), &VersionControlEditorPlugin::_create_branch);
-	ClassDB::bind_method(D_METHOD("_create_remote"), &VersionControlEditorPlugin::_create_remote);
-	ClassDB::bind_method(D_METHOD("_remove_branch"), &VersionControlEditorPlugin::_remove_branch);
-	ClassDB::bind_method(D_METHOD("_remove_remote"), &VersionControlEditorPlugin::_remove_remote);
-	ClassDB::bind_method(D_METHOD("_branch_item_selected"), &VersionControlEditorPlugin::_branch_item_selected);
-	ClassDB::bind_method(D_METHOD("_remote_selected"), &VersionControlEditorPlugin::_remote_selected);
-	ClassDB::bind_method(D_METHOD("_fetch"), &VersionControlEditorPlugin::_fetch);
-	ClassDB::bind_method(D_METHOD("_pull"), &VersionControlEditorPlugin::_pull);
-	ClassDB::bind_method(D_METHOD("_push"), &VersionControlEditorPlugin::_push);
-	ClassDB::bind_method(D_METHOD("_extra_option_selected"), &VersionControlEditorPlugin::_extra_option_selected);
-	ClassDB::bind_method(D_METHOD("_update_extra_options"), &VersionControlEditorPlugin::_update_extra_options);
-	ClassDB::bind_method(D_METHOD("_popup_branch_remove_confirm"), &VersionControlEditorPlugin::_popup_branch_remove_confirm);
-	ClassDB::bind_method(D_METHOD("_popup_remote_remove_confirm"), &VersionControlEditorPlugin::_popup_remote_remove_confirm);
-	ClassDB::bind_method(D_METHOD("_popup_file_dialog"), &VersionControlEditorPlugin::_popup_file_dialog);
-
-	ClassDB::bind_method(D_METHOD("popup_vcs_set_up_dialog"), &VersionControlEditorPlugin::popup_vcs_set_up_dialog);
+	// No binds required so far.
 }
 
 void VersionControlEditorPlugin::_create_vcs_metadata_files() {
