@@ -21,13 +21,7 @@
 
 #if defined(MBEDTLS_SSL_SRV_C)
 
-#if defined(MBEDTLS_PLATFORM_C)
 #include "mbedtls/platform.h"
-#else
-#include <stdlib.h>
-#define mbedtls_calloc    calloc
-#define mbedtls_free      free
-#endif
 
 #include "mbedtls/ssl.h"
 #include "mbedtls/ssl_internal.h"
@@ -1460,6 +1454,7 @@ static int ssl_parse_client_hello( mbedtls_ssl_context *ssl )
 
     MBEDTLS_SSL_DEBUG_MSG( 2, ( "=> parse client hello" ) );
 
+    int renegotiating = 0;
 #if defined(MBEDTLS_SSL_DTLS_ANTI_REPLAY)
 read_record_header:
 #endif
@@ -1469,8 +1464,10 @@ read_record_header:
      * ClientHello, which doesn't use the same record layer format.
      */
 #if defined(MBEDTLS_SSL_RENEGOTIATION)
-    if( ssl->renego_status == MBEDTLS_SSL_INITIAL_HANDSHAKE )
+    if( ssl->renego_status != MBEDTLS_SSL_INITIAL_HANDSHAKE )
+        renegotiating = 1;
 #endif
+    if( !renegotiating )
     {
         if( ( ret = mbedtls_ssl_fetch_input( ssl, 5 ) ) != 0 )
         {
@@ -1483,9 +1480,12 @@ read_record_header:
     buf = ssl->in_hdr;
 
 #if defined(MBEDTLS_SSL_SRV_SUPPORT_SSLV2_CLIENT_HELLO)
+    int is_dtls = 0;
 #if defined(MBEDTLS_SSL_PROTO_DTLS)
-    if( ssl->conf->transport == MBEDTLS_SSL_TRANSPORT_STREAM )
+    if( ssl->conf->transport == MBEDTLS_SSL_TRANSPORT_DATAGRAM )
+        is_dtls = 1;
 #endif
+    if( !is_dtls )
         if( ( buf[0] & 0x80 ) != 0 )
             return( ssl_parse_client_hello_v2( ssl ) );
 #endif
@@ -3903,8 +3903,14 @@ static int ssl_decrypt_encrypted_pms( mbedtls_ssl_context *ssl,
                                       size_t peer_pmssize )
 {
     int ret = MBEDTLS_ERR_ERROR_CORRUPTION_DETECTED;
+
+    mbedtls_x509_crt *own_cert = mbedtls_ssl_own_cert( ssl );
+    if( own_cert == NULL ) {
+        MBEDTLS_SSL_DEBUG_MSG( 1, ( "got no local certificate" ) );
+        return( MBEDTLS_ERR_SSL_NO_CLIENT_CERTIFICATE );
+    }
+    mbedtls_pk_context *public_key = &own_cert->pk;
     mbedtls_pk_context *private_key = mbedtls_ssl_own_key( ssl );
-    mbedtls_pk_context *public_key = &mbedtls_ssl_own_cert( ssl )->pk;
     size_t len = mbedtls_pk_get_len( public_key );
 
 #if defined(MBEDTLS_SSL_ASYNC_PRIVATE)
