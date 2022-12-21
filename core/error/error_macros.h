@@ -836,6 +836,16 @@ void _physics_interpolation_warning(const char *p_function, const char *p_file, 
 #endif
 
 #ifdef DEV_ENABLED
+#define DEV_CHECK(m_cond) \
+	if (unlikely(!(m_cond))) { \
+		_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "DEV_CHECK failed  \"" _STR(m_cond) "\" is false."); \
+	} else \
+		((void)0)
+#else
+#define DEV_CHECK(m_cond)
+#endif
+
+#ifdef DEV_ENABLED
 #define DEV_CHECK_ONCE(m_cond) \
 	if (true) { \
 		static bool first_print = true; \
