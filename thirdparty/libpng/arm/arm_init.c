@@ -36,7 +36,10 @@
 #ifndef PNG_ARM_NEON_FILE
 #  if defined(__aarch64__) || defined(_M_ARM64)
      /* ARM Neon is expected to be unconditionally available on ARM64. */
-#    error "PNG_ARM_NEON_CHECK_SUPPORTED must not be defined on this platform"
+#    error "PNG_ARM_NEON_CHECK_SUPPORTED must not be defined on ARM64"
+#  elif defined(__ARM_NEON__) || defined(__ARM_NEON)
+     /* ARM Neon is expected to be available on the target CPU architecture. */
+#    error "PNG_ARM_NEON_CHECK_SUPPORTED must not be defined on this CPU arch"
 #  elif defined(__linux__)
 #    define PNG_ARM_NEON_FILE "contrib/arm-neon/linux.c"
 #  else
