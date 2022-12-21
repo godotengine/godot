@@ -2530,6 +2530,134 @@ void RendererCanvasRenderRD::_record_item_commands(const Item *p_item, RenderTar
 				_add_to_batch(r_batch_broken, r_current_batch);
 			} break;
 
+			case Item::Command::TYPE_MULTIRECT: {
+				const Item::CommandMultiRect *mr = static_cast<const Item::CommandMultiRect *>(c);
+
+				if (r_current_batch->command_type != Item::Command::TYPE_MULTIRECT) {
+					r_current_batch = _new_batch(r_batch_broken);
+					r_current_batch->command_type = Item::Command::TYPE_MULTIRECT;
+					r_current_batch->command = c;
+					// default variant
+					r_current_batch->shader_variant = SHADER_VARIANT_QUAD;
+					r_current_batch->render_primitive = RD::RENDER_PRIMITIVE_TRIANGLES;
+					r_current_batch->flags = 0;
+				}
+
+				RenderingServer::CanvasItemTextureRepeat rect_repeat = texture_repeat;
+				if (bool(mr->flags & CANVAS_RECT_TILE)) {
+					rect_repeat = RenderingServer::CanvasItemTextureRepeat::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED;
+				}
+
+				Color modulated = mr->modulate * base_color;
+				if (use_linear_colors) {
+					modulated = modulated.srgb_to_linear();
+				}
+
+				bool has_blend = bool(mr->flags & CANVAS_RECT_LCD);
+				// Start a new batch if the blend mode has changed,
+				// or blend mode is enabled and the modulation has changed.
+				if (has_blend != r_current_batch->has_blend || (has_blend && modulated != r_current_batch->modulate)) {
+					r_current_batch = _new_batch(r_batch_broken);
+					r_current_batch->has_blend = has_blend;
+					r_current_batch->modulate = modulated;
+					r_current_batch->shader_variant = SHADER_VARIANT_QUAD;
+					r_current_batch->render_primitive = RD::RENDER_PRIMITIVE_TRIANGLES;
+				}
+
+				bool has_msdf = bool(mr->flags & CANVAS_RECT_MSDF);
+				TextureState tex_state(mr->texture, texture_filter, rect_repeat, has_msdf, use_linear_colors);
+				TextureInfo *tex_info = texture_info_map.getptr(tex_state);
+				if (!tex_info) {
+					tex_info = &texture_info_map.insert(tex_state, TextureInfo())->value;
+					_prepare_batch_texture_info(mr->texture, tex_state, tex_info);
+				}
+
+				if (has_msdf != r_current_batch->use_msdf) {
+					r_current_batch = _new_batch(r_batch_broken);
+					r_current_batch->use_msdf = has_msdf;
+					r_current_batch->msdf_pix_range = mr->px_range;
+					r_current_batch->msdf_outline = mr->outline;
+				}
+
+				bool has_lcd = bool(mr->flags & CANVAS_RECT_LCD);
+				if (has_lcd != r_current_batch->use_lcd) {
+					r_current_batch = _new_batch(r_batch_broken);
+					r_current_batch->use_lcd = has_lcd;
+				}
+
+				if (r_current_batch->tex_info != tex_info) {
+					r_current_batch = _new_batch(r_batch_broken);
+					r_current_batch->tex_info = tex_info;
+				}
+
+				int i = 0;
+				Rect2 src_rect;
+				Rect2 dst_rect;
+				InstanceData *instance_data = new_instance_data(*r_current_batch, template_instance);
+
+				bool valid_tex = mr->texture.is_valid();
+				while (i < mr->rects.size()) {
+					if (valid_tex) {
+						src_rect = (mr->flags & CANVAS_RECT_REGION) ? Rect2(mr->sources[i].position * tex_info->texpixel_size, mr->sources[i].size * tex_info->texpixel_size) : Rect2(0, 0, 1, 1);
+						dst_rect = Rect2(mr->rects[i].position, mr->rects[i].size);
+
+						if (dst_rect.size.width < 0) {
+							dst_rect.position.x += dst_rect.size.width;
+							dst_rect.size.width *= -1;
+						}
+						if (dst_rect.size.height < 0) {
+							dst_rect.position.y += dst_rect.size.height;
+							dst_rect.size.height *= -1;
+						}
+
+						if (mr->flags & CANVAS_RECT_FLIP_H) {
+							src_rect.size.x *= -1;
+						}
+
+						if (mr->flags & CANVAS_RECT_FLIP_V) {
+							src_rect.size.y *= -1;
+						}
+
+						if (mr->flags & CANVAS_RECT_TRANSPOSE) {
+							instance_data->flags |= INSTANCE_FLAGS_TRANSPOSE_RECT;
+						}
+
+						if (mr->flags & CANVAS_RECT_CLIP_UV) {
+							instance_data->flags |= INSTANCE_FLAGS_CLIP_RECT_UV;
+						}
+					} else {
+						dst_rect = Rect2(mr->rects[i].position, mr->rects[i].size);
+
+						if (dst_rect.size.width < 0) {
+							dst_rect.position.x += dst_rect.size.width;
+							dst_rect.size.width *= -1;
+						}
+						if (dst_rect.size.height < 0) {
+							dst_rect.position.y += dst_rect.size.height;
+							dst_rect.size.height *= -1;
+						}
+
+						src_rect = Rect2(0, 0, 1, 1);
+					}
+					instance_data->modulation[0] = modulated.r;
+					instance_data->modulation[1] = modulated.g;
+					instance_data->modulation[2] = modulated.b;
+					instance_data->modulation[3] = modulated.a;
+
+					instance_data->src_rect[0] = src_rect.position.x;
+					instance_data->src_rect[1] = src_rect.position.y;
+					instance_data->src_rect[2] = src_rect.size.width;
+					instance_data->src_rect[3] = src_rect.size.height;
+
+					instance_data->dst_rect[0] = dst_rect.position.x;
+					instance_data->dst_rect[1] = dst_rect.position.y;
+					instance_data->dst_rect[2] = dst_rect.size.width;
+					instance_data->dst_rect[3] = dst_rect.size.height;
+					_add_to_batch(r_batch_broken, r_current_batch);
+					i += 1;
+				}
+			} break;
+
 			case Item::Command::TYPE_NINEPATCH: {
 				const Item::CommandNinePatch *np = static_cast<const Item::CommandNinePatch *>(c);
 
@@ -3053,6 +3181,7 @@ void RendererCanvasRenderRD::_render_batch(RD::DrawListID p_draw_list, CanvasSha
 
 	switch (p_batch->command_type) {
 		case Item::Command::TYPE_RECT:
+		case Item::Command::TYPE_MULTIRECT:
 		case Item::Command::TYPE_NINEPATCH: {
 			PushConstant push_constant = p_batch->push_constant();
 

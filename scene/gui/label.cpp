@@ -388,9 +388,9 @@ void Label::_update_visible() const {
 	}
 }
 
-inline void draw_glyph(const Glyph &p_gl, const RID &p_canvas, const Color &p_font_color, const Vector2 &p_ofs) {
+inline void draw_glyph(const Glyph &p_gl, const RID &p_canvas, const Color &p_font_color, const Vector2 &p_ofs, MultiRect *p_multirect) {
 	if (p_gl.font_rid != RID()) {
-		TS->font_draw_glyph(p_gl.font_rid, p_canvas, p_gl.font_size, p_ofs + Vector2(p_gl.x_off, p_gl.y_off), p_gl.index, p_font_color);
+		TS->font_draw_glyph_multirect(p_multirect, p_gl.font_rid, p_canvas, p_gl.font_size, p_ofs + Vector2(p_gl.x_off, p_gl.y_off), p_gl.index, p_font_color);
 	} else if (((p_gl.flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) && ((p_gl.flags & TextServer::GRAPHEME_IS_EMBEDDED_OBJECT) != TextServer::GRAPHEME_IS_EMBEDDED_OBJECT)) {
 		TS->draw_hex_code_box(p_canvas, p_gl.font_size, p_ofs + Vector2(p_gl.x_off, p_gl.y_off), p_gl.index, p_font_color);
 	}
@@ -880,7 +880,8 @@ void Label::_notification(int p_what) {
 
 						// Draw text.
 						{
-							draw_text(rtl, ellipsis_pos, ellipsis_gl_size, ellipsis_glyphs, trim_chars, para.start, visible_chars, trim_glyphs_ltr, processed_glyphs_step, processed_glyphs, visible_glyphs, trim_glyphs_rtl, total_glyphs, ci, ofs, gl_size, trim_pos, glyphs, font_color, draw_glyph);
+							MultiRect mr;
+							draw_text(rtl, ellipsis_pos, ellipsis_gl_size, ellipsis_glyphs, trim_chars, para.start, visible_chars, trim_glyphs_ltr, processed_glyphs_step, processed_glyphs, visible_glyphs, trim_glyphs_rtl, total_glyphs, ci, ofs, gl_size, trim_pos, glyphs, font_color, draw_glyph, &mr);
 						}
 
 						processed_glyphs = processed_glyphs_step;
