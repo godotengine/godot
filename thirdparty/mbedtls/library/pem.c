@@ -32,13 +32,7 @@
 
 #include <string.h>
 
-#if defined(MBEDTLS_PLATFORM_C)
 #include "mbedtls/platform.h"
-#else
-#include <stdlib.h>
-#define mbedtls_calloc    calloc
-#define mbedtls_free       free
-#endif
 
 #if defined(MBEDTLS_PEM_PARSE_C)
 void mbedtls_pem_init( mbedtls_pem_context *ctx )
