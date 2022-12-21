@@ -44,5 +44,19 @@ namespace Godot
                 return (WeakRef)InteropUtils.UnmanagedGetManaged(weakRef.Reference);
             }
         }
+
+        /// <summary>
+        /// <para>Gets a <see cref="ISignalEmitter"/> to emit a signal.</para>
+        /// <para>Example:</para>
+        /// <code>GetEmitter&lt;SignalEmit.SignalName&gt;().Emit();</code>
+        /// </summary>
+        /// <returns>A <typeparamref name="TSignalEmitter"/> ready to call <see langword="Emit"/> on.</returns>
+        protected TSignalEmitter GetEmitter<TSignalEmitter>()
+            where TSignalEmitter : struct, ISignalEmitter
+        {
+            var signalEmitter = default(TSignalEmitter);
+            signalEmitter.Bound = this;
+            return signalEmitter;
+        }
     }
 }

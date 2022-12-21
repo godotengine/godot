@@ -1762,6 +1762,51 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 	}
 	output << INDENT1 "}\n";
 
+	// SignalEmitter
+	if (is_inherit) {
+		output << MEMBER_BEGIN "public new class SignalEmitter : " << obj_types[itype.base_name].proxy_name << ".SignalEmitter";
+	} else {
+		output << MEMBER_BEGIN "public class SignalEmitter";
+	}
+	output << "\n"
+		   << INDENT1 "{\n";
+	for (const SignalInterface &isignal : itype.signals_) {
+		// Get arguments
+		StringBuilder arg_sig;
+		StringBuilder arg_call_sig;
+		const ArgumentInterface &first_arg = isignal.arguments.front()->get();
+		for (const ArgumentInterface &iarg : isignal.arguments) {
+			const TypeInterface *arg_type = _get_type_or_null(iarg.type);
+
+			if (&iarg != &first_arg) {
+				arg_sig << ", ";
+			}
+			arg_call_sig << ", ";
+
+			// Fix for arg types with the same name as the signal (e.g. CollisionObject2D.InputEvent)
+			if (arg_type->cs_type == isignal.proxy_name) {
+				arg_sig << "Godot.";
+			}
+			arg_sig << arg_type->cs_type << " " << iarg.name;
+
+			if (arg_type->is_enum) {
+				arg_call_sig << "(long)";
+			}
+			arg_call_sig << iarg.name;
+		}
+
+		output << INDENT2 "public struct " << isignal.proxy_name << " : Godot.ISignalEmitter\n"
+			   << INDENT2 "{\n";
+
+		output << INDENT3 "public Object Bound { get; set; }\n";
+
+		output << INDENT3 "public void Emit(" << arg_sig << ") => Bound.EmitSignal("
+			   << "SignalName." << isignal.proxy_name << arg_call_sig << ");\n";
+
+		output << INDENT2 "}\n";
+	}
+	output << INDENT1 "}\n";
+
 	output.append(CLOSE_BLOCK /* class */);
 
 	output.append("\n"

@@ -5,13 +5,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 
-// TODO:
-//   Determine a proper way to emit the signal.
-//   'Emit(nameof(TheEvent))' creates a StringName every time and has the overhead of string marshaling.
-//   I haven't decided on the best option yet. Some possibilities:
-//     - Expose the generated StringName fields to the user, for use with 'Emit(...)'.
-//     - Generate a 'EmitSignalName' method for each event signal.
-
 namespace Godot.SourceGenerators
 {
     [Generator]
@@ -80,6 +73,10 @@ namespace Godot.SourceGenerators
             bool hasNamespace = classNs.Length != 0;
 
             bool isInnerClass = symbol.ContainingType != null;
+
+
+            string fullName = symbol.FullQualifiedNameIncludeGlobal();
+            string baseFullName = symbol.BaseType.FullQualifiedNameIncludeGlobal();
 
             string uniqueHint = symbol.FullQualifiedNameOmitGlobal().SanitizeQualifiedNameForUniqueHint()
                                 + "_ScriptSignals.generated";
@@ -177,7 +174,7 @@ namespace Godot.SourceGenerators
             source.Append("#pragma warning disable CS0109 // Disable warning about redundant 'new' keyword\n");
 
             source.Append(
-                $"    public new class SignalName : {symbol.BaseType.FullQualifiedNameIncludeGlobal()}.SignalName {{\n");
+                $"    public new class SignalName : {baseFullName}.SignalName {{\n");
 
             // Generate cached StringNames for methods and properties, for fast lookup
 
@@ -271,6 +268,63 @@ namespace Godot.SourceGenerators
 
                 source.Append("    }\n");
             }
+
+            // Generate SignalEmitter
+
+            source.Append("    public new class SignalEmitter : ")
+                .Append(baseFullName)
+                .Append(".SignalEmitter\n")
+                .Append("    {\n");
+
+            foreach (var signalDelegate in godotSignalDelegates)
+            {
+                source.Append("        public struct ")
+                    .Append(signalDelegate.Name)
+                    .Append(" : ISignalEmitter\n")
+                    .Append("        {\n");
+
+                source.Append("            public Object Bound { get; set; }\n");
+
+                // Generate Emit method
+
+                var parameters = signalDelegate.InvokeMethodData.Method.Parameters;
+                string @params = "";
+                string paramsCall = "";
+
+                for (int i = 0; i < parameters.Length; i++)
+                {
+                    IParameterSymbol parameter = parameters[i];
+
+                    if (i > 0)
+                        @params += ", ";
+
+                    @params += $"{parameter.Type.FullQualifiedNameIncludeGlobal()} {parameter.Name}";
+
+                    // Enums must be converted to the underlying type before they can be implicitly converted to Variant
+                    if (parameter.Type.TypeKind == TypeKind.Enum)
+                    {
+                        var underlyingType = ((INamedTypeSymbol)parameter.Type).EnumUnderlyingType!;
+                        source.Append($", ({underlyingType.FullQualifiedNameIncludeGlobal()}){parameter.Name}");
+                        continue;
+                    }
+
+                    paramsCall += $", {parameter.Name}";
+                }
+
+                source.Append("            public void Emit(")
+                    .Append(@params)
+                    .Append(")\n")
+                    .Append("                => Bound.EmitSignal(")
+                    .Append(fullName)
+                    .Append(".SignalName.")
+                    .Append(signalDelegate.Name)
+                    .Append(paramsCall)
+                    .Append(");\n");
+
+                source.Append("        }\n");
+            }
+
+            source.Append("    }\n");
 
             source.Append("}\n"); // partial class
 
