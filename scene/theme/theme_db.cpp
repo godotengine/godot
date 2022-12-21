@@ -70,7 +70,9 @@ void ThemeDB::initialize_theme() {
 	Ref<Font> font;
 	if (!font_path.is_empty()) {
 		font = ResourceLoader::load(font_path);
-		if (!font.is_valid()) {
+		if (font.is_valid()) {
+			set_fallback_font(font);
+		} else {
 			ERR_PRINT("Error loading custom font '" + font_path + "'");
 		}
 	}
@@ -84,9 +86,6 @@ void ThemeDB::initialize_theme() {
 		Ref<Theme> theme = ResourceLoader::load(theme_path);
 		if (theme.is_valid()) {
 			set_project_theme(theme);
-			if (font.is_valid()) {
-				set_fallback_font(font);
-			}
 		} else {
 			ERR_PRINT("Error loading custom theme '" + theme_path + "'");
 		}
