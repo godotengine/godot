@@ -36,6 +36,7 @@
 #include "core/object/script_language_extension.h"
 #include "core/string/ustring.h"
 #include "core/variant/type_info.h"
+#include "editor/editor_plugin.h"
 
 class EditorVCSInterface : public Object {
 	GDCLASS(EditorVCSInterface, Object)
@@ -105,6 +106,10 @@ protected:
 	Commit _convert_commit(Dictionary p_commit);
 	StatusFile _convert_status_file(Dictionary p_status_file);
 
+	// UI implementations from the VCS plugins
+	GDVIRTUAL1(_attach_ui, EditorPlugin *);
+	GDVIRTUAL1(_remove_ui, EditorPlugin *);
+
 	// Proxy endpoints for extensions to implement
 	GDVIRTUAL1R(bool, _initialize, String);
 	GDVIRTUAL5(_set_credentials, String, String, String, String, String);
@@ -140,7 +145,11 @@ public:
 	};
 	static void create_vcs_metadata_files(VCSMetadata p_vcs_metadata_type, String &p_dir);
 
-	// Proxies to the editor for use
+	// UI registrations
+	void attach_ui(EditorPlugin *p_vcs_editor_plugin);
+	void remove_ui(EditorPlugin *p_vcs_editor_plugin);
+
+	// Proxies for the editor to use
 	bool initialize(String p_project_path);
 	void set_credentials(String p_username, String p_password, String p_ssh_public_key_path, String p_ssh_private_key_path, String p_ssh_passphrase);
 	List<StatusFile> get_modified_files_data();

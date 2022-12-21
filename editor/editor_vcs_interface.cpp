@@ -41,6 +41,18 @@ void EditorVCSInterface::popup_error(String p_msg) {
 	EditorNode::get_singleton()->show_warning(p_msg.strip_edges(), vformat(TTR("%s Error"), get_vcs_name()));
 }
 
+void EditorVCSInterface::attach_ui(EditorPlugin *p_vcs_editor_plugin) {
+	if (!GDVIRTUAL_CALL(_attach_ui, p_vcs_editor_plugin)) {
+		UNIMPLEMENTED();
+	}
+}
+
+void EditorVCSInterface::remove_ui(EditorPlugin *p_vcs_editor_plugin) {
+	if (!GDVIRTUAL_CALL(_remove_ui, p_vcs_editor_plugin)) {
+		UNIMPLEMENTED();
+	}
+}
+
 bool EditorVCSInterface::initialize(String p_project_path) {
 	bool result = false;
 	if (!GDVIRTUAL_CALL(_initialize, p_project_path, result)) {
@@ -351,6 +363,9 @@ EditorVCSInterface::StatusFile EditorVCSInterface::_convert_status_file(Dictiona
 }
 
 void EditorVCSInterface::_bind_methods() {
+	GDVIRTUAL_BIND(_attach_ui, "vcs_plugin_editor_plugin");
+	GDVIRTUAL_BIND(_remove_ui, "vcs_plugin_editor_plugin");
+
 	// Proxy end points that implement the VCS specific operations that the editor demands.
 	GDVIRTUAL_BIND(_initialize, "project_path");
 	GDVIRTUAL_BIND(_set_credentials, "username", "password", "ssh_public_key_path", "ssh_private_key_path", "ssh_passphrase");
