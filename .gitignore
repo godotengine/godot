@@ -242,8 +242,10 @@ xcuserdata/
 [Rr]eleases/
 x64/
 x86/
-# Not build results, this is Theora source code.
-!thirdparty/libtheora/x86/
+
+# Do not ignore x86 folders anywhere under thirdparty libraries
+!thirdparty/**/x86/
+
 [Ww][Ii][Nn]32/
 [Aa][Rr][Mm]/
 [Aa][Rr][Mm]64/
