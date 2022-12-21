@@ -45,7 +45,7 @@ VersionControlEditorPlugin *VersionControlEditorPlugin::get_singleton() {
 
 bool VersionControlEditorPlugin::_assign_plugin_singleton(String p_plugin_name) {
 	if (EditorVCSInterface::get_singleton()) {
-		_unassign_plugin_singleton();
+		_destroy_plugin_and_ui();
 	}
 
 	Object *extension_instance = ClassDB::instantiate(p_plugin_name);
@@ -62,38 +62,35 @@ bool VersionControlEditorPlugin::_assign_plugin_singleton(String p_plugin_name) 
 	return true;
 }
 
-void VersionControlEditorPlugin::_unassign_plugin_singleton() {
-	if (!EditorVCSInterface::get_singleton()) {
-		return;
+void VersionControlEditorPlugin::_instantiate_plugin_and_ui(String p_plugin_name) {
+	if (!_assign_plugin_singleton(p_plugin_name)) {
+		toggle_vcs_choice->set_disabled(true);
+		ERR_FAIL_MSG(false, "Could not assign VCS plugin instance as singleton.");
 	}
 
-	EditorVCSInterface::get_singleton()->shut_down();
-	memdelete(EditorVCSInterface::get_singleton());
-	EditorVCSInterface::set_singleton(nullptr);
-}
-
-void VersionControlEditorPlugin::_attach_plugin_ui() {
 	EditorVCSInterface::get_singleton()->attach_ui(this);
+	toggle_vcs_choice->set_disabled(false);
 }
 
-void VersionControlEditorPlugin::_remove_plugin_ui() {
+void VersionControlEditorPlugin::_destroy_plugin_and_ui() {
 	if (!EditorVCSInterface::get_singleton()) {
 		return;
 	}
 
 	EditorVCSInterface::get_singleton()->remove_ui(this);
+
+	EditorVCSInterface::get_singleton()->shut_down();
+	memdelete(EditorVCSInterface::get_singleton());
+	EditorVCSInterface::set_singleton(nullptr);
+
+	toggle_vcs_choice->set_disabled(true);
 }
 
 void VersionControlEditorPlugin::_toggle_vcs_integration(bool p_toggled) {
 	if (p_toggled) {
-		if (!_assign_plugin_singleton(set_up_choice->get_item_text(set_up_choice->get_selected_id()))) {
-			toggle_vcs_choice->set_disabled(true);
-			ERR_FAIL_MSG("Could not assign VCS plugin instance as singleton.");
-		}
-		_attach_plugin_ui();
+		_instantiate_plugin_and_ui(set_up_choice->get_item_text(set_up_choice->get_selected_id()));
 	} else {
-		_remove_plugin_ui();
-		_unassign_plugin_singleton();
+		_destroy_plugin_and_ui();
 	}
 }
 

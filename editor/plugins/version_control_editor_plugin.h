@@ -60,11 +60,10 @@ class VersionControlEditorPlugin : public EditorPlugin {
 	void _create_vcs_metadata_files();
 	void _toggle_vcs_integration(bool p_toggled);
 
-	bool _assign_plugin_singleton(String p_plugin_name);
-	void _unassign_plugin_singleton();
+	void _instantiate_plugin_and_ui(String p_plugin_name);
+	void _destroy_plugin_and_ui();
 
-	void _attach_plugin_ui();
-	void _remove_plugin_ui();
+	bool _assign_plugin_singleton(String p_plugin_name);
 
 protected:
 	static void _bind_methods();
