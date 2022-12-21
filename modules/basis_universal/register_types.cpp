@@ -277,6 +277,7 @@ void initialize_basis_universal_module(ModuleInitializationLevel p_level) {
 	basisu_encoder_init();
 	Image::basis_universal_packer = basis_universal_packer;
 #endif
+	basist::basisu_transcoder_init();
 	Image::basis_universal_unpacker = basis_universal_unpacker;
 	Image::basis_universal_unpacker_ptr = basis_universal_unpacker_ptr;
 }
