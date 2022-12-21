@@ -38,6 +38,18 @@
 
 #define THREE_POINTS_CROSS_PRODUCT(m_a, m_b, m_c) (((m_c) - (m_a)).cross((m_b) - (m_a)))
 
+// Helper macro
+#define APPEND_METADATA(poly)                                  \
+	if (r_path_types) {                                        \
+		r_path_types->push_back(poly->owner->get_type());      \
+	}                                                          \
+	if (r_path_rids) {                                         \
+		r_path_rids->push_back(poly->owner->get_self());       \
+	}                                                          \
+	if (r_path_owners) {                                       \
+		r_path_owners->push_back(poly->owner->get_owner_id()); \
+	}
+
 void NavMap::set_up(Vector3 p_up) {
 	up = p_up;
 	regenerate_polygons = true;
@@ -71,7 +83,18 @@ gd::PointKey NavMap::get_point_key(const Vector3 &p_pos) const {
 	return p;
 }
 
-Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p_optimize, uint32_t p_navigation_layers) const {
+Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p_optimize, uint32_t p_navigation_layers, Vector<int32_t> *r_path_types, TypedArray<RID> *r_path_rids, Vector<int64_t> *r_path_owners) const {
+	// Clear metadata outputs.
+	if (r_path_types) {
+		r_path_types->clear();
+	}
+	if (r_path_rids) {
+		r_path_rids->clear();
+	}
+	if (r_path_owners) {
+		r_path_owners->clear();
+	}
+
 	// Find the start poly and the end poly on this map.
 	const gd::Polygon *begin_poly = nullptr;
 	const gd::Polygon *end_poly = nullptr;
@@ -115,6 +138,24 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 		return Vector<Vector3>();
 	}
 	if (begin_poly == end_poly) {
+		if (r_path_types) {
+			r_path_types->resize(2);
+			r_path_types->write[0] = begin_poly->owner->get_type();
+			r_path_types->write[1] = end_poly->owner->get_type();
+		}
+
+		if (r_path_rids) {
+			r_path_rids->resize(2);
+			(*r_path_rids)[0] = begin_poly->owner->get_self();
+			(*r_path_rids)[1] = end_poly->owner->get_self();
+		}
+
+		if (r_path_owners) {
+			r_path_owners->resize(2);
+			r_path_owners->write[0] = begin_poly->owner->get_owner_id();
+			r_path_owners->write[1] = end_poly->owner->get_owner_id();
+		}
+
 		Vector<Vector3> path;
 		path.resize(2);
 		path.write[0] = begin_point;
@@ -296,6 +337,7 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 		gd::NavigationPoly *p = apex_poly;
 
 		path.push_back(end_point);
+		APPEND_METADATA(end_poly);
 
 		while (p) {
 			// Set left and right points of the pathway between polygons.
@@ -312,7 +354,7 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 					left_poly = p;
 					left_portal = left;
 				} else {
-					clip_path(navigation_polys, path, apex_poly, right_portal, right_poly);
+					clip_path(navigation_polys, path, apex_poly, right_portal, right_poly, r_path_types, r_path_rids, r_path_owners);
 
 					apex_point = right_portal;
 					p = right_poly;
@@ -320,7 +362,9 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 					apex_poly = p;
 					left_portal = apex_point;
 					right_portal = apex_point;
+
 					path.push_back(apex_point);
+					APPEND_METADATA(apex_poly->poly);
 					skip = true;
 				}
 			}
@@ -331,7 +375,7 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 					right_poly = p;
 					right_portal = right;
 				} else {
-					clip_path(navigation_polys, path, apex_poly, left_portal, left_poly);
+					clip_path(navigation_polys, path, apex_poly, left_portal, left_poly, r_path_types, r_path_rids, r_path_owners);
 
 					apex_point = left_portal;
 					p = left_poly;
@@ -339,7 +383,9 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 					apex_poly = p;
 					right_portal = apex_point;
 					left_portal = apex_point;
+
 					path.push_back(apex_point);
+					APPEND_METADATA(apex_poly->poly);
 				}
 			}
 
@@ -355,12 +401,23 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 		// If the last point is not the begin point, add it to the list.
 		if (path[path.size() - 1] != begin_point) {
 			path.push_back(begin_point);
+			APPEND_METADATA(begin_poly);
 		}
 
 		path.reverse();
+		if (r_path_types) {
+			r_path_types->reverse();
+		}
+		if (r_path_rids) {
+			r_path_rids->reverse();
+		}
+		if (r_path_owners) {
+			r_path_owners->reverse();
+		}
 
 	} else {
 		path.push_back(end_point);
+		APPEND_METADATA(end_poly);
 
 		// Add mid points
 		int np_id = least_cost_id;
@@ -369,17 +426,36 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 				int prev = navigation_polys[np_id].back_navigation_edge;
 				int prev_n = (navigation_polys[np_id].back_navigation_edge + 1) % navigation_polys[np_id].poly->points.size();
 				Vector3 point = (navigation_polys[np_id].poly->points[prev].pos + navigation_polys[np_id].poly->points[prev_n].pos) * 0.5;
+
 				path.push_back(point);
+				APPEND_METADATA(navigation_polys[np_id].poly);
 			} else {
 				path.push_back(navigation_polys[np_id].entry);
+				APPEND_METADATA(navigation_polys[np_id].poly);
 			}
 
 			np_id = navigation_polys[np_id].back_navigation_poly_id;
 		}
 
 		path.push_back(begin_point);
+		APPEND_METADATA(begin_poly);
+
 		path.reverse();
+		if (r_path_types) {
+			r_path_types->reverse();
+		}
+		if (r_path_rids) {
+			r_path_rids->reverse();
+		}
+		if (r_path_owners) {
+			r_path_owners->reverse();
+		}
 	}
+
+	// Ensure post conditions (path arrays MUST match in size).
+	CRASH_COND(r_path_types && path.size() != r_path_types->size());
+	CRASH_COND(r_path_rids && path.size() != r_path_rids->size());
+	CRASH_COND(r_path_owners && path.size() != r_path_owners->size());
 
 	return path;
 }
@@ -837,7 +913,7 @@ void NavMap::dispatch_callbacks() {
 	}
 }
 
-void NavMap::clip_path(const LocalVector<gd::NavigationPoly> &p_navigation_polys, Vector<Vector3> &path, const gd::NavigationPoly *from_poly, const Vector3 &p_to_point, const gd::NavigationPoly *p_to_poly) const {
+void NavMap::clip_path(const LocalVector<gd::NavigationPoly> &p_navigation_polys, Vector<Vector3> &path, const gd::NavigationPoly *from_poly, const Vector3 &p_to_point, const gd::NavigationPoly *p_to_poly, Vector<int32_t> *r_path_types, TypedArray<RID> *r_path_rids, Vector<int64_t> *r_path_owners) const {
 	Vector3 from = path[path.size() - 1];
 
 	if (from.is_equal_approx(p_to_point)) {
@@ -863,6 +939,7 @@ void NavMap::clip_path(const LocalVector<gd::NavigationPoly> &p_navigation_polys
 			if (cut_plane.intersects_segment(pathway_start, pathway_end, &inters)) {
 				if (!inters.is_equal_approx(p_to_point) && !inters.is_equal_approx(path[path.size() - 1])) {
 					path.push_back(inters);
+					APPEND_METADATA(from_poly->poly);
 				}
 			}
 		}

@@ -32,10 +32,10 @@
 #define NAVIGATION_AGENT_3D_H
 
 #include "scene/main/node.h"
+#include "servers/navigation/navigation_path_query_parameters_3d.h"
+#include "servers/navigation/navigation_path_query_result_3d.h"
 
 class Node3D;
-class NavigationPathQueryParameters3D;
-class NavigationPathQueryResult3D;
 
 class NavigationAgent3D : public Node {
 	GDCLASS(NavigationAgent3D, Node);
@@ -48,6 +48,7 @@ class NavigationAgent3D : public Node {
 
 	bool avoidance_enabled = false;
 	uint32_t navigation_layers = 1;
+	BitField<NavigationPathQueryParameters3D::PathMetadataFlags> path_metadata_flags = NavigationPathQueryParameters3D::PathMetadataFlags::PATH_METADATA_INCLUDE_ALL;
 
 	real_t path_desired_distance = 1.0;
 	real_t target_desired_distance = 1.0;
@@ -96,6 +97,11 @@ public:
 
 	void set_navigation_layer_value(int p_layer_number, bool p_value);
 	bool get_navigation_layer_value(int p_layer_number) const;
+
+	void set_path_metadata_flags(BitField<NavigationPathQueryParameters3D::PathMetadataFlags> p_flags);
+	BitField<NavigationPathQueryParameters3D::PathMetadataFlags> get_path_metadata_flags() const {
+		return path_metadata_flags;
+	}
 
 	void set_navigation_map(RID p_navigation_map);
 	RID get_navigation_map() const;
@@ -153,8 +159,12 @@ public:
 
 	Vector3 get_next_location();
 
-	const Vector<Vector3> &get_current_navigation_path() const;
-
+	Ref<NavigationPathQueryResult3D> get_current_navigation_result() const {
+		return navigation_result;
+	}
+	const Vector<Vector3> &get_current_navigation_path() const {
+		return navigation_result->get_path();
+	}
 	int get_current_navigation_path_index() const {
 		return navigation_path_index;
 	}
