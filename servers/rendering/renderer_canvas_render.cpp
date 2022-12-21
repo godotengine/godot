@@ -61,6 +61,10 @@ const Rect2 &RendererCanvasRender::Item::get_rect() const {
 				r = crect->rect;
 
 			} break;
+			case Item::Command::TYPE_MULTIRECT: {
+				const Item::CommandMultiRect *mrect = static_cast<const Item::CommandMultiRect *>(c);
+				r = mrect->full_rect;
+			} break;
 			case Item::Command::TYPE_NINEPATCH: {
 				const Item::CommandNinePatch *style = static_cast<const Item::CommandNinePatch *>(c);
 				r = style->rect;

@@ -30,14 +30,15 @@
 
 #pragma once
 
-#include "core/input/input.h"
-#include "servers/display/display_server.h"
-
 #define FontVariation __FontVariation
 
 #import <AppKit/AppKit.h>
 
 #undef FontVariation
+
+// Must come after AppKit.h so include chain up to TypeDefs.h appropriately undefines MAX/MIN
+#include "core/input/input.h"
+#include "servers/display/display_server.h"
 
 class DisplayServerMacOSBase : public DisplayServer {
 	GDSOFTCLASS(DisplayServerMacOSBase, DisplayServer)
