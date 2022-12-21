@@ -3403,8 +3403,8 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 					}
 				}
 			} else if (ResourceLoader::get_resource_type(autoload.path) == "PackedScene") {
-				if (GDScriptLanguage::get_singleton()->get_named_globals_map().has(name)) {
-					Variant constant = GDScriptLanguage::get_singleton()->get_named_globals_map()[name];
+				if (GDScriptLanguage::get_singleton()->has_any_global_constant(name)) {
+					Variant constant = GDScriptLanguage::get_singleton()->get_any_global_constant(name);
 					Node *node = Object::cast_to<Node>(constant);
 					if (node != nullptr) {
 						Ref<GDScript> scr = node->get_script();
@@ -3426,17 +3426,8 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 		}
 	}
 
-	if (GDScriptLanguage::get_singleton()->get_global_map().has(name)) {
-		int idx = GDScriptLanguage::get_singleton()->get_global_map()[name];
-		Variant constant = GDScriptLanguage::get_singleton()->get_global_array()[idx];
-		p_identifier->set_datatype(type_from_variant(constant, p_identifier));
-		p_identifier->is_constant = true;
-		p_identifier->reduced_value = constant;
-		return;
-	}
-
-	if (GDScriptLanguage::get_singleton()->get_named_globals_map().has(name)) {
-		Variant constant = GDScriptLanguage::get_singleton()->get_named_globals_map()[name];
+	if (GDScriptLanguage::get_singleton()->has_any_global_constant(name)) {
+		Variant constant = GDScriptLanguage::get_singleton()->get_any_global_constant(name);
 		p_identifier->set_datatype(type_from_variant(constant, p_identifier));
 		p_identifier->is_constant = true;
 		p_identifier->reduced_value = constant;
