@@ -106,6 +106,9 @@ private:
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
+	void _on_filter_focused();
+	void _on_filter_unfocused();
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();

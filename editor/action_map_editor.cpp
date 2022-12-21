@@ -35,6 +35,7 @@
 #include "editor/input_event_configuration_dialog.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/tree.h"
+#include "scene/scene_string_names.h"
 
 static bool _is_action_name_valid(const String &p_name) {
 	const char32_t *cstr = p_name.get_data();
@@ -362,6 +363,8 @@ void ActionMapEditor::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("action_removed", PropertyInfo(Variant::STRING, "name")));
 	ADD_SIGNAL(MethodInfo("action_renamed", PropertyInfo(Variant::STRING, "old_name"), PropertyInfo(Variant::STRING, "new_name")));
 	ADD_SIGNAL(MethodInfo("action_reordered", PropertyInfo(Variant::STRING, "action_name"), PropertyInfo(Variant::STRING, "relative_to"), PropertyInfo(Variant::BOOL, "before")));
+	ADD_SIGNAL(MethodInfo(SNAME("filter_focused")));
+	ADD_SIGNAL(MethodInfo(SNAME("filter_unfocused")));
 }
 
 LineEdit *ActionMapEditor::get_search_box() const {
@@ -492,6 +495,14 @@ void ActionMapEditor::use_external_search_box(LineEdit *p_searchbox) {
 	action_list_search->connect("text_changed", callable_mp(this, &ActionMapEditor::_search_term_updated));
 }
 
+void ActionMapEditor::_on_filter_focused() {
+	emit_signal(SNAME("filter_focused"));
+}
+
+void ActionMapEditor::_on_filter_unfocused() {
+	emit_signal(SNAME("filter_unfocused"));
+}
+
 ActionMapEditor::ActionMapEditor() {
 	// Main Vbox Container
 	VBoxContainer *main_vbox = memnew(VBoxContainer);
@@ -512,6 +523,8 @@ ActionMapEditor::ActionMapEditor() {
 	action_list_search_by_event->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	action_list_search_by_event->set_stretch_ratio(0.75);
 	action_list_search_by_event->connect("event_changed", callable_mp(this, &ActionMapEditor::_search_by_event));
+	action_list_search_by_event->connect(SceneStringNames::get_singleton()->focus_entered, callable_mp(this, &ActionMapEditor::_on_filter_focused));
+	action_list_search_by_event->connect(SceneStringNames::get_singleton()->focus_exited, callable_mp(this, &ActionMapEditor::_on_filter_unfocused));
 	top_hbox->add_child(action_list_search_by_event);
 
 	Button *clear_all_search = memnew(Button);
