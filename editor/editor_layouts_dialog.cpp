@@ -98,6 +98,11 @@ void EditorLayoutsDialog::_post_popup() {
 	for (const String &E : layouts) {
 		layout_names->add_item(E);
 	}
+	if (name->is_visible()) {
+		name->grab_focus();
+	} else {
+		layout_names->grab_focus();
+	}
 }
 
 EditorLayoutsDialog::EditorLayoutsDialog() {
@@ -109,7 +114,6 @@ EditorLayoutsDialog::EditorLayoutsDialog() {
 	layout_names = memnew(ItemList);
 	layout_names->set_auto_height(true);
 	makevb->add_margin_child(TTR("Select existing layout:"), layout_names);
-	makevb->add_child(layout_names);
 	layout_names->set_custom_minimum_size(Size2(300 * EDSCALE, 1));
 	layout_names->set_visible(true);
 	layout_names->set_offset(SIDE_TOP, 5);
