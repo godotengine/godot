@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="GLTFState" inherits="Resource" version="3.6" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
 	<brief_description>
+		Represents all data of a GLTF file.
 	</brief_description>
 	<description>
 		[b]Note:[/b] This class is only compiled in editor builds. Run-time glTF loading and saving is [i]not[/i] available in exported projects. References to [GLTFState] within a script will cause an error in an exported project.
@@ -44,6 +45,7 @@
 		<method name="get_animations">
 			<return type="Array" />
 			<description>
+				Returns an array of all [GLTFAnimation]s in the GLTF file. When importing, these will be generated as animations in an [AnimationPlayer] node. When exporting, these will be generated from Godot [AnimationPlayer] nodes.
 			</description>
 		</method>
 		<method name="get_buffer_views">
@@ -54,6 +56,7 @@
 		<method name="get_cameras">
 			<return type="Array" />
 			<description>
+				Returns an array of all [GLTFCamera]s in the GLTF file. These are the cameras that the [member GLTFNode.camera] index refers to.
 			</description>
 		</method>
 		<method name="get_images">
@@ -64,6 +67,7 @@
 		<method name="get_lights">
 			<return type="Array" />
 			<description>
+				Returns an array of all [GLTFLight]s in the GLTF file. These are the lights that the [member GLTFNode.light] index refers to.
 			</description>
 		</method>
 		<method name="get_materials">
@@ -74,11 +78,13 @@
 		<method name="get_meshes">
 			<return type="Array" />
 			<description>
+				Returns an array of all [GLTFMesh]es in the GLTF file. These are the meshes that the [member GLTFNode.mesh] index refers to.
 			</description>
 		</method>
 		<method name="get_nodes">
 			<return type="Array" />
 			<description>
+				Returns an array of all [GLTFNode]s in the GLTF file. These are the nodes that [member GLTFNode.children] and [member root_nodes] refer to. This includes nodes that may not be generated in the Godot scene, or nodes that may generate multiple Godot scene nodes.
 			</description>
 		</method>
 		<method name="get_scene_node">
@@ -95,11 +101,13 @@
 		<method name="get_skeletons">
 			<return type="Array" />
 			<description>
+				Returns an array of all [GLTFSkeleton]s in the GLTF file. These are the skeletons that the [member GLTFNode.skeleton] index refers to.
 			</description>
 		</method>
 		<method name="get_skins">
 			<return type="Array" />
 			<description>
+				Returns an array of all [GLTFSkin]s in the GLTF file. These are the skins that the [member GLTFNode.skin] index refers to.
 			</description>
 		</method>
 		<method name="get_texture_samplers">
@@ -116,11 +124,13 @@
 		<method name="get_unique_animation_names">
 			<return type="Array" />
 			<description>
+				Returns an array of unique animation names. This is only used during the import process.
 			</description>
 		</method>
 		<method name="get_unique_names">
 			<return type="Array" />
 			<description>
+				Returns an array of unique node names. This is used in both the import process and export process.
 			</description>
 		</method>
 		<method name="set_accessors">
@@ -244,8 +254,10 @@
 		<member name="minor_version" type="int" setter="set_minor_version" getter="get_minor_version" default="0">
 		</member>
 		<member name="root_nodes" type="Array" setter="set_root_nodes" getter="get_root_nodes" default="[  ]">
+			The root nodes of the GLTF file. Typically, a GLTF file will only have one scene, and therefore one root node. However, a GLTF file may have multiple scenes and therefore multiple root nodes, which will be generated as siblings of each other and as children of the root node of the generated Godot scene.
 		</member>
 		<member name="scene_name" type="String" setter="set_scene_name" getter="get_scene_name" default="&quot;&quot;">
+			The name of the scene. When importing, if not specified, this will be the file name. When exporting, if specified, the scene name will be saved to the GLTF file.
 		</member>
 		<member name="use_named_skin_binds" type="bool" setter="set_use_named_skin_binds" getter="get_use_named_skin_binds" default="false">
 		</member>
