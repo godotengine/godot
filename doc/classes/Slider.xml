@@ -10,8 +10,8 @@
 	<tutorials>
 	</tutorials>
 	<members>
-		<member name="adjust_step" type="bool" setter="set_adjust_step" getter="is_adjusting_step" default="false">
-			If [code]true[/code], the number of ticks will be calculated from the number of steps. The steps will be reduced if the ticks cannot be aligned on the grabber.
+		<member name="find_ticks" type="bool" setter="set_find_ticks" getter="is_finding_ticks" default="false">
+			If [code]true[/code], the number of ticks will be found from the number of steps. The steps will be reduced if the ticks cannot be aligned on the grabber.
 		</member>
 		<member name="editable" type="bool" setter="set_editable" getter="is_editable" default="true">
 			If [code]true[/code], the slider can be interacted with. If [code]false[/code], the value can be changed only by code.

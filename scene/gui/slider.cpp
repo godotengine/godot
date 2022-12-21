@@ -189,7 +189,7 @@ void Slider::_notification(int p_what) {
 			Size2i size = get_size();
 			double ratio = Math::is_nan(get_as_ratio()) ? 0 : get_as_ratio();
 
-			if (adjust_step) {
+			if (find_ticks) {
 				float step = get_step(), dist = get_max() - get_min();
 				int idist = dist;
 				if (step > dist) {
@@ -314,17 +314,17 @@ void Slider::set_ticks_on_borders(bool _tob) {
 	queue_redraw();
 }
 
-void Slider::set_adjust_step(bool p_adjust) {
-	if (adjust_step == p_adjust) {
+void Slider::set_find_ticks(bool p_find_ticks) {
+	if (find_ticks == p_find_ticks) {
 		return;
 	}
 
-	adjust_step = p_adjust;
+	find_ticks = p_find_ticks;
 	update();
 }
 
-bool Slider::is_adjusting_step() const {
-	return adjust_step;
+bool Slider::is_finding_ticks() const {
+	return find_ticks;
 }
 
 void Slider::set_editable(bool p_editable) {
@@ -355,8 +355,8 @@ void Slider::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_ticks_on_borders"), &Slider::get_ticks_on_borders);
 	ClassDB::bind_method(D_METHOD("set_ticks_on_borders", "ticks_on_border"), &Slider::set_ticks_on_borders);
 
-	ClassDB::bind_method(D_METHOD("set_adjust_step", "count"), &Slider::set_adjust_step);
-	ClassDB::bind_method(D_METHOD("is_adjusting_step"), &Slider::is_adjusting_step);
+	ClassDB::bind_method(D_METHOD("set_find_ticks", "find_ticks"), &Slider::set_find_ticks);
+	ClassDB::bind_method(D_METHOD("is_finding_ticks"), &Slider::is_finding_ticks);
 
 	ClassDB::bind_method(D_METHOD("set_editable", "editable"), &Slider::set_editable);
 	ClassDB::bind_method(D_METHOD("is_editable"), &Slider::is_editable);
@@ -370,7 +370,7 @@ void Slider::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scrollable"), "set_scrollable", "is_scrollable");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tick_count", PROPERTY_HINT_RANGE, "0,4096,1"), "set_ticks", "get_ticks");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ticks_on_borders"), "set_ticks_on_borders", "get_ticks_on_borders");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "adjust_step"), "set_adjust_step", "is_adjusting_step");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "find_ticks"), "set_find_ticks", "is_finding_ticks");
 }
 
 Slider::Slider(Orientation p_orientation) {

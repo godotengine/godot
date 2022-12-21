@@ -48,7 +48,7 @@ class Slider : public Range {
 	double custom_step = -1.0;
 	bool editable = true;
 	bool scrollable = true;
-	bool adjust_step = false;
+	bool find_ticks = false;
 
 	struct ThemeCache {
 		Ref<StyleBox> slider_style;
@@ -81,8 +81,8 @@ public:
 	void set_ticks_on_borders(bool);
 	bool get_ticks_on_borders() const;
 
-	void set_adjust_step(bool p_adjust);
-	bool is_adjusting_step() const;
+	void set_find_ticks(bool p_find_ticks);
+	bool is_finding_ticks() const;
 
 	void set_editable(bool p_editable);
 	bool is_editable() const;
