@@ -30,6 +30,7 @@
 
 #include "test_main.h"
 
+#include "tests/core/config/test_project_settings.h"
 #include "tests/core/input/test_input_event_key.h"
 #include "tests/core/input/test_shortcut.h"
 #include "tests/core/io/test_config_file.h"
