@@ -153,6 +153,8 @@ namespace Godot.NativeInterop
         internal static partial void godotsharp_callable_call_deferred(in godot_callable p_callable,
             godot_variant** p_args, int p_arg_count);
 
+        internal static partial Color godotsharp_color_from_ok_hsl(float p_h, float p_s, float p_l, float p_alpha);
+
         // GDNative functions
 
         // gdnative.h

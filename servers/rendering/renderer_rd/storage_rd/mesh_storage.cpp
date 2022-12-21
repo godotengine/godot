@@ -434,27 +434,8 @@ void MeshStorage::mesh_add_surface(RID p_mesh, const RS::SurfaceData &p_surface)
 	}
 
 	if (mesh->surface_count == 0) {
-		mesh->bone_aabbs = p_surface.bone_aabbs;
 		mesh->aabb = p_surface.aabb;
 	} else {
-		if (mesh->bone_aabbs.size() < p_surface.bone_aabbs.size()) {
-			// ArrayMesh::_surface_set_data only allocates bone_aabbs up to max_bone
-			// Each surface may affect different numbers of bones.
-			mesh->bone_aabbs.resize(p_surface.bone_aabbs.size());
-		}
-		for (int i = 0; i < p_surface.bone_aabbs.size(); i++) {
-			const AABB &bone = p_surface.bone_aabbs[i];
-			if (bone.has_volume()) {
-				AABB &mesh_bone = mesh->bone_aabbs.write[i];
-				if (mesh_bone != AABB()) {
-					// Already initialized, merge AABBs.
-					mesh_bone.merge_with(bone);
-				} else {
-					// Not yet initialized, copy the bone AABB.
-					mesh_bone = bone;
-				}
-			}
-		}
 		mesh->aabb.merge_with(p_surface.aabb);
 	}
 
@@ -714,6 +695,8 @@ AABB MeshStorage::mesh_get_aabb(RID p_mesh, RID p_skeleton) {
 			aabb.merge_with(laabb);
 		}
 	}
+
+	mesh->aabb = aabb;
 
 	mesh->skeleton_aabb_version = skeleton->version;
 	return aabb;

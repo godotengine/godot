@@ -73,8 +73,6 @@ private:
 	AcceptDialog *set_up_dialog = nullptr;
 	CheckButton *toggle_vcs_choice = nullptr;
 	OptionButton *set_up_choice = nullptr;
-	LineEdit *project_path_input = nullptr;
-	Button *select_project_path_button = nullptr;
 	VBoxContainer *set_up_vbc = nullptr;
 	VBoxContainer *set_up_settings_vbc = nullptr;
 	LineEdit *set_up_username = nullptr;
@@ -85,6 +83,8 @@ private:
 	FileDialog *set_up_ssh_public_key_file_dialog = nullptr;
 	FileDialog *set_up_ssh_private_key_file_dialog = nullptr;
 	Label *set_up_warning_text = nullptr;
+
+	AcceptDialog *discard_all_confirm = nullptr;
 
 	OptionButton *commit_list_size_button = nullptr;
 
@@ -150,13 +150,14 @@ private:
 	void _update_opened_tabs();
 	void _update_extra_options();
 
-	bool _load_plugin(String p_name, String p_project_path);
+	bool _load_plugin(String p_name);
 
 	void _pull();
 	void _push();
 	void _force_push();
 	void _fetch();
 	void _commit();
+	void _confirm_discard_all();
 	void _discard_all();
 	void _refresh_stage_area();
 	void _refresh_branch_list();
@@ -193,7 +194,6 @@ private:
 	void _create_vcs_metadata_files();
 	void _popup_file_dialog(Variant p_file_dialog_variant);
 	void _toggle_vcs_integration(bool p_toggled);
-	void _project_path_selected(String p_project_path);
 
 	friend class EditorVCSInterface;
 

@@ -33,6 +33,8 @@
 
 #ifdef TOOLS_ENABLED
 
+#include "editor/editor_file_system.h"
+#include "editor/fbx_importer_manager.h"
 #include "editor/import/resource_importer_scene.h"
 
 class Animation;
@@ -51,6 +53,15 @@ public:
 			List<ResourceImporter::ImportOption> *r_options) override;
 	virtual Variant get_option_visibility(const String &p_path, bool p_for_animation, const String &p_option,
 			const HashMap<StringName, Variant> &p_options) override;
+};
+
+class EditorFileSystemImportFormatSupportQueryFBX : public EditorFileSystemImportFormatSupportQuery {
+	GDCLASS(EditorFileSystemImportFormatSupportQueryFBX, EditorFileSystemImportFormatSupportQuery);
+
+public:
+	virtual bool is_active() const override;
+	virtual Vector<String> get_file_extensions() const override;
+	virtual bool query() override;
 };
 
 #endif // TOOLS_ENABLED

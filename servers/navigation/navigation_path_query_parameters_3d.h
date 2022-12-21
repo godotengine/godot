@@ -52,6 +52,14 @@ public:
 		PATH_POSTPROCESSING_EDGECENTERED,
 	};
 
+	enum PathMetadataFlags {
+		PATH_METADATA_INCLUDE_NONE = NavigationUtilities::PathMetadataFlags::PATH_INCLUDE_NONE,
+		PATH_METADATA_INCLUDE_TYPES = NavigationUtilities::PathMetadataFlags::PATH_INCLUDE_TYPES,
+		PATH_METADATA_INCLUDE_RIDS = NavigationUtilities::PathMetadataFlags::PATH_INCLUDE_RIDS,
+		PATH_METADATA_INCLUDE_OWNERS = NavigationUtilities::PathMetadataFlags::PATH_INCLUDE_OWNERS,
+		PATH_METADATA_INCLUDE_ALL = NavigationUtilities::PathMetadataFlags::PATH_INCLUDE_ALL
+	};
+
 	const NavigationUtilities::PathQueryParameters &get_parameters() const { return parameters; }
 
 	void set_pathfinding_algorithm(const PathfindingAlgorithm p_pathfinding_algorithm);
@@ -71,9 +79,13 @@ public:
 
 	void set_navigation_layers(uint32_t p_navigation_layers);
 	uint32_t get_navigation_layers() const;
+
+	void set_metadata_flags(BitField<NavigationPathQueryParameters3D::PathMetadataFlags> p_flags);
+	BitField<NavigationPathQueryParameters3D::PathMetadataFlags> get_metadata_flags() const;
 };
 
 VARIANT_ENUM_CAST(NavigationPathQueryParameters3D::PathfindingAlgorithm);
 VARIANT_ENUM_CAST(NavigationPathQueryParameters3D::PathPostProcessing);
+VARIANT_BITFIELD_CAST(NavigationPathQueryParameters3D::PathMetadataFlags);
 
 #endif // NAVIGATION_PATH_QUERY_PARAMETERS_3D_H

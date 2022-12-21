@@ -124,8 +124,8 @@ void OpenXRInteractionProfileEditorBase::remove_all_bindings_for_action(Ref<Open
 		undo_redo->create_action(TTR("Remove action from interaction profile"));
 		PackedStringArray paths = binding->get_paths();
 		for (const String &path : paths) {
-			undo_redo->add_do_method(this, "_remove_binding", p_action, path);
-			undo_redo->add_undo_method(this, "_add_binding", p_action, path);
+			undo_redo->add_do_method(this, "_remove_binding", action_name, path);
+			undo_redo->add_undo_method(this, "_add_binding", action_name, path);
 		}
 		undo_redo->commit_action(false);
 
@@ -308,7 +308,7 @@ void OpenXRInteractionProfileEditor::_update_interaction_profile() {
 
 void OpenXRInteractionProfileEditor::_theme_changed() {
 	for (int i = 0; i < main_hb->get_child_count(); i++) {
-		Control *panel = static_cast<Control *>(main_hb->get_child(i));
+		Control *panel = Object::cast_to<Control>(main_hb->get_child(i));
 		if (panel) {
 			panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("TabContainer")));
 		}

@@ -153,6 +153,7 @@
 			<param index="3" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
 			<param index="4" name="outline" type="float" default="0.0" />
 			<param index="5" name="pixel_range" type="float" default="4.0" />
+			<param index="6" name="scale" type="float" default="1.0" />
 			<description>
 				Draws a textured rectangle region of the multi-channel signed distance field texture at a given position, optionally modulated by a color. See [member FontFile.multichannel_signed_distance_field] for more information and caveats about MSDF font rendering.
 				If [param outline] is positive, each alpha channel value of pixel in region is set to maximum value of true distance in the [param outline] radius.
@@ -404,7 +405,7 @@
 		<method name="get_canvas_transform" qualifiers="const">
 			<return type="Transform2D" />
 			<description>
-				Returns the transform matrix of this item's canvas.
+				Returns the transform from the coordinate system of the canvas, this item is in, to the [Viewport]s coordinate system.
 			</description>
 		</method>
 		<method name="get_global_mouse_position" qualifiers="const">
@@ -422,7 +423,7 @@
 		<method name="get_global_transform_with_canvas" qualifiers="const">
 			<return type="Transform2D" />
 			<description>
-				Returns the global transform matrix of this item in relation to the canvas.
+				Returns the transform from the local coordinate system of this [CanvasItem] to the [Viewport]s coordinate system.
 			</description>
 		</method>
 		<method name="get_local_mouse_position" qualifiers="const">
@@ -453,7 +454,7 @@
 		<method name="get_viewport_transform" qualifiers="const">
 			<return type="Transform2D" />
 			<description>
-				Returns this item's transform in relation to the viewport.
+				Returns the transform from the coordinate system of the canvas, this item is in, to the [Viewport]s embedders coordinate system.
 			</description>
 		</method>
 		<method name="get_visibility_layer_bit" qualifiers="const">

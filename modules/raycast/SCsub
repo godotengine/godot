@@ -68,10 +68,10 @@ if env["builtin_embree"]:
 
     if not env.msvc:
         if env["arch"] in ["x86_64", "x86_32"]:
-            env_raycast.Append(CPPFLAGS=["-msse2", "-mxsave"])
+            env_raycast.Append(CCFLAGS=["-msse2", "-mxsave"])
 
         if env["platform"] == "windows":
-            env_raycast.Append(CPPFLAGS=["-mstackrealign"])
+            env_raycast.Append(CCFLAGS=["-mstackrealign"])
 
     if env["platform"] == "windows":
         if env.msvc:
@@ -92,11 +92,15 @@ if env["builtin_embree"]:
         env_thirdparty.Append(CPPDEFINES=["__SSE2__", "__SSE__"])
 
     if env["platform"] == "web":
-        env_thirdparty.Append(CPPFLAGS=["-msimd128"])
+        env_thirdparty.Append(CXXFLAGS=["-msimd128"])
 
     if not env.msvc:
+        # Flags synced with upstream gnu.cmake.
+        if env["arch"] == "arm64" and env["platform"] == "linuxbsd":
+            env_thirdparty.Append(CXXFLAGS=["-flax-vector-conversions"])
+
         env_thirdparty.Append(
-            CPPFLAGS=[
+            CXXFLAGS=[
                 "-fno-strict-overflow",
                 "-fno-delete-null-pointer-checks",
                 "-fwrapv",

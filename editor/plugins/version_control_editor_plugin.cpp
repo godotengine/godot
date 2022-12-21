@@ -47,43 +47,7 @@
 VersionControlEditorPlugin *VersionControlEditorPlugin::singleton = nullptr;
 
 void VersionControlEditorPlugin::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_initialize_vcs"), &VersionControlEditorPlugin::_initialize_vcs);
-	ClassDB::bind_method(D_METHOD("_set_credentials"), &VersionControlEditorPlugin::_set_credentials);
-	ClassDB::bind_method(D_METHOD("_update_set_up_warning"), &VersionControlEditorPlugin::_update_set_up_warning);
-	ClassDB::bind_method(D_METHOD("_commit"), &VersionControlEditorPlugin::_commit);
-	ClassDB::bind_method(D_METHOD("_refresh_stage_area"), &VersionControlEditorPlugin::_refresh_stage_area);
-	ClassDB::bind_method(D_METHOD("_move_all"), &VersionControlEditorPlugin::_move_all);
-	ClassDB::bind_method(D_METHOD("_load_diff"), &VersionControlEditorPlugin::_load_diff);
-	ClassDB::bind_method(D_METHOD("_display_diff"), &VersionControlEditorPlugin::_display_diff);
-	ClassDB::bind_method(D_METHOD("_item_activated"), &VersionControlEditorPlugin::_item_activated);
-	ClassDB::bind_method(D_METHOD("_update_branch_create_button"), &VersionControlEditorPlugin::_update_branch_create_button);
-	ClassDB::bind_method(D_METHOD("_update_remote_create_button"), &VersionControlEditorPlugin::_update_remote_create_button);
-	ClassDB::bind_method(D_METHOD("_update_commit_button"), &VersionControlEditorPlugin::_update_commit_button);
-	ClassDB::bind_method(D_METHOD("_refresh_branch_list"), &VersionControlEditorPlugin::_refresh_branch_list);
-	ClassDB::bind_method(D_METHOD("_set_commit_list_size"), &VersionControlEditorPlugin::_set_commit_list_size);
-	ClassDB::bind_method(D_METHOD("_refresh_commit_list"), &VersionControlEditorPlugin::_refresh_commit_list);
-	ClassDB::bind_method(D_METHOD("_refresh_remote_list"), &VersionControlEditorPlugin::_refresh_remote_list);
-	ClassDB::bind_method(D_METHOD("_ssh_public_key_selected"), &VersionControlEditorPlugin::_ssh_public_key_selected);
-	ClassDB::bind_method(D_METHOD("_ssh_private_key_selected"), &VersionControlEditorPlugin::_ssh_private_key_selected);
-	ClassDB::bind_method(D_METHOD("_commit_message_gui_input"), &VersionControlEditorPlugin::_commit_message_gui_input);
-	ClassDB::bind_method(D_METHOD("_cell_button_pressed"), &VersionControlEditorPlugin::_cell_button_pressed);
-	ClassDB::bind_method(D_METHOD("_discard_all"), &VersionControlEditorPlugin::_discard_all);
-	ClassDB::bind_method(D_METHOD("_create_branch"), &VersionControlEditorPlugin::_create_branch);
-	ClassDB::bind_method(D_METHOD("_create_remote"), &VersionControlEditorPlugin::_create_remote);
-	ClassDB::bind_method(D_METHOD("_remove_branch"), &VersionControlEditorPlugin::_remove_branch);
-	ClassDB::bind_method(D_METHOD("_remove_remote"), &VersionControlEditorPlugin::_remove_remote);
-	ClassDB::bind_method(D_METHOD("_branch_item_selected"), &VersionControlEditorPlugin::_branch_item_selected);
-	ClassDB::bind_method(D_METHOD("_remote_selected"), &VersionControlEditorPlugin::_remote_selected);
-	ClassDB::bind_method(D_METHOD("_fetch"), &VersionControlEditorPlugin::_fetch);
-	ClassDB::bind_method(D_METHOD("_pull"), &VersionControlEditorPlugin::_pull);
-	ClassDB::bind_method(D_METHOD("_push"), &VersionControlEditorPlugin::_push);
-	ClassDB::bind_method(D_METHOD("_extra_option_selected"), &VersionControlEditorPlugin::_extra_option_selected);
-	ClassDB::bind_method(D_METHOD("_update_extra_options"), &VersionControlEditorPlugin::_update_extra_options);
-	ClassDB::bind_method(D_METHOD("_popup_branch_remove_confirm"), &VersionControlEditorPlugin::_popup_branch_remove_confirm);
-	ClassDB::bind_method(D_METHOD("_popup_remote_remove_confirm"), &VersionControlEditorPlugin::_popup_remote_remove_confirm);
-	ClassDB::bind_method(D_METHOD("_popup_file_dialog"), &VersionControlEditorPlugin::_popup_file_dialog);
-
-	ClassDB::bind_method(D_METHOD("popup_vcs_set_up_dialog"), &VersionControlEditorPlugin::popup_vcs_set_up_dialog);
+	// No binds required so far.
 }
 
 void VersionControlEditorPlugin::_create_vcs_metadata_files() {
@@ -94,12 +58,10 @@ void VersionControlEditorPlugin::_create_vcs_metadata_files() {
 void VersionControlEditorPlugin::_notification(int p_what) {
 	if (p_what == NOTIFICATION_READY) {
 		String installed_plugin = GLOBAL_DEF("editor/version_control/plugin_name", "");
-		String project_path = GLOBAL_DEF("editor/version_control/project_path", OS::get_singleton()->get_resource_dir());
-		project_path_input->set_text(project_path);
 		bool has_autoload_enable = GLOBAL_DEF("editor/version_control/autoload_on_startup", false);
 
 		if (installed_plugin != "" && has_autoload_enable) {
-			if (_load_plugin(installed_plugin, project_path)) {
+			if (_load_plugin(installed_plugin)) {
 				_set_credentials();
 			}
 		}
@@ -144,18 +106,15 @@ void VersionControlEditorPlugin::_initialize_vcs() {
 	const int id = set_up_choice->get_selected_id();
 	String selected_plugin = set_up_choice->get_item_text(id);
 
-	if (_load_plugin(selected_plugin, project_path_input->get_text())) {
+	if (_load_plugin(selected_plugin)) {
 		ProjectSettings::get_singleton()->set("editor/version_control/autoload_on_startup", true);
 		ProjectSettings::get_singleton()->set("editor/version_control/plugin_name", selected_plugin);
-		ProjectSettings::get_singleton()->set("editor/version_control/project_path", project_path_input->get_text());
 		ProjectSettings::get_singleton()->save();
 	}
 }
 
 void VersionControlEditorPlugin::_set_vcs_ui_state(bool p_enabled) {
-	select_project_path_button->set_disabled(p_enabled);
 	set_up_dialog->get_ok_button()->set_disabled(!p_enabled);
-	project_path_input->set_editable(!p_enabled);
 	set_up_choice->set_disabled(p_enabled);
 	toggle_vcs_choice->set_pressed_no_signal(p_enabled);
 }
@@ -181,14 +140,14 @@ void VersionControlEditorPlugin::_set_credentials() {
 	EditorSettings::get_singleton()->set_setting("version_control/ssh_private_key_path", ssh_private_key);
 }
 
-bool VersionControlEditorPlugin::_load_plugin(String p_name, String p_project_path) {
+bool VersionControlEditorPlugin::_load_plugin(String p_name) {
 	Object *extension_instance = ClassDB::instantiate(p_name);
 	ERR_FAIL_NULL_V_MSG(extension_instance, false, "Received a nullptr VCS extension instance during construction.");
 
 	EditorVCSInterface *vcs_plugin = Object::cast_to<EditorVCSInterface>(extension_instance);
 	ERR_FAIL_NULL_V_MSG(vcs_plugin, false, vformat("Could not cast VCS extension instance to %s.", EditorVCSInterface::get_class_static()));
 
-	String res_dir = project_path_input->get_text();
+	String res_dir = OS::get_singleton()->get_resource_dir();
 
 	ERR_FAIL_COND_V_MSG(!vcs_plugin->initialize(res_dir), false, "Could not initialize " + p_name);
 
@@ -433,6 +392,10 @@ void VersionControlEditorPlugin::_discard_file(String p_file_path, EditorVCSInte
 	}
 	// FIXIT: The project.godot file shows weird behavior
 	EditorFileSystem::get_singleton()->update_file(p_file_path);
+}
+
+void VersionControlEditorPlugin::_confirm_discard_all() {
+	discard_all_confirm->popup_centered();
 }
 
 void VersionControlEditorPlugin::_discard_all() {
@@ -943,10 +906,6 @@ void VersionControlEditorPlugin::_toggle_vcs_integration(bool p_toggled) {
 	}
 }
 
-void VersionControlEditorPlugin::_project_path_selected(String p_project_path) {
-	project_path_input->set_text(p_project_path);
-}
-
 void VersionControlEditorPlugin::fetch_available_vcs_plugin_names() {
 	available_plugins.clear();
 	ClassDB::get_direct_inheriters_from_class(EditorVCSInterface::get_class_static(), &available_plugins);
@@ -1039,34 +998,6 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	set_up_choice = memnew(OptionButton);
 	set_up_choice->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	set_up_hbc->add_child(set_up_choice);
-
-	HBoxContainer *project_path_hbc = memnew(HBoxContainer);
-	project_path_hbc->set_h_size_flags(Control::SIZE_FILL);
-	set_up_vbc->add_child(project_path_hbc);
-
-	Label *project_path_label = memnew(Label);
-	project_path_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	project_path_label->set_text(TTR("VCS Project Path"));
-	project_path_hbc->add_child(project_path_label);
-
-	project_path_input = memnew(LineEdit);
-	project_path_input->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	project_path_input->set_text(OS::get_singleton()->get_resource_dir());
-	project_path_hbc->add_child(project_path_input);
-
-	FileDialog *select_project_path_file_dialog = memnew(FileDialog);
-	select_project_path_file_dialog->set_access(FileDialog::ACCESS_FILESYSTEM);
-	select_project_path_file_dialog->set_file_mode(FileDialog::FILE_MODE_OPEN_DIR);
-	select_project_path_file_dialog->set_show_hidden_files(true);
-	select_project_path_file_dialog->set_current_dir(OS::get_singleton()->get_resource_dir());
-	select_project_path_file_dialog->connect(SNAME("dir_selected"), callable_mp(this, &VersionControlEditorPlugin::_project_path_selected));
-	project_path_hbc->add_child(select_project_path_file_dialog);
-
-	select_project_path_button = memnew(Button);
-	select_project_path_button->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon("Folder", "EditorIcons"));
-	select_project_path_button->connect(SNAME("pressed"), callable_mp(this, &VersionControlEditorPlugin::_popup_file_dialog).bind(select_project_path_file_dialog));
-	select_project_path_button->set_tooltip_text(TTR("Select VCS project path"));
-	project_path_hbc->add_child(select_project_path_button);
 
 	HBoxContainer *toggle_vcs_hbc = memnew(HBoxContainer);
 	toggle_vcs_hbc->set_h_size_flags(Control::SIZE_EXPAND_FILL);
@@ -1240,10 +1171,21 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	refresh_button->connect(SNAME("pressed"), callable_mp(this, &VersionControlEditorPlugin::_refresh_remote_list));
 	unstage_title->add_child(refresh_button);
 
+	discard_all_confirm = memnew(AcceptDialog);
+	discard_all_confirm->set_title(TTR("Discard all changes"));
+	discard_all_confirm->set_min_size(Size2i(400, 50));
+	discard_all_confirm->set_text(TTR("This operation is IRREVERSIBLE. Your changes will be deleted FOREVER."));
+	discard_all_confirm->set_hide_on_ok(true);
+	discard_all_confirm->set_ok_button_text(TTR("Permanentally delete my changes"));
+	discard_all_confirm->add_cancel_button();
+	version_commit_dock->add_child(discard_all_confirm);
+
+	discard_all_confirm->get_ok_button()->connect(SNAME("pressed"), callable_mp(this, &VersionControlEditorPlugin::_discard_all));
+
 	discard_all_button = memnew(Button);
 	discard_all_button->set_tooltip_text(TTR("Discard all changes"));
 	discard_all_button->set_icon(EditorNode::get_singleton()->get_gui_base()->get_theme_icon(SNAME("Close"), SNAME("EditorIcons")));
-	discard_all_button->connect(SNAME("pressed"), callable_mp(this, &VersionControlEditorPlugin::_discard_all));
+	discard_all_button->connect(SNAME("pressed"), callable_mp(this, &VersionControlEditorPlugin::_confirm_discard_all));
 	discard_all_button->set_flat(true);
 	unstage_title->add_child(discard_all_button);
 

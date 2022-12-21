@@ -205,16 +205,7 @@ Variant ThemeOwner::get_theme_item_in_types(Theme::DataType p_data_type, const S
 	while (owner_node) {
 		// For each theme resource check the theme types provided and see if p_name exists with any of them.
 		for (const StringName &E : p_theme_types) {
-			Ref<Theme> owner_theme;
-
-			Control *owner_c = Object::cast_to<Control>(owner_node);
-			if (owner_c) {
-				owner_theme = owner_c->get_theme();
-			}
-			Window *owner_w = Object::cast_to<Window>(owner_node);
-			if (owner_w) {
-				owner_theme = owner_w->get_theme();
-			}
+			Ref<Theme> owner_theme = _get_owner_node_theme(owner_node);
 
 			if (owner_theme.is_valid() && owner_theme->has_theme_item(p_data_type, p_name, E)) {
 				return owner_theme->get_theme_item(p_data_type, p_name, E);
@@ -254,16 +245,7 @@ bool ThemeOwner::has_theme_item_in_types(Theme::DataType p_data_type, const Stri
 	while (owner_node) {
 		// For each theme resource check the theme types provided and see if p_name exists with any of them.
 		for (const StringName &E : p_theme_types) {
-			Ref<Theme> owner_theme;
-
-			Control *owner_c = Object::cast_to<Control>(owner_node);
-			if (owner_c) {
-				owner_theme = owner_c->get_theme();
-			}
-			Window *owner_w = Object::cast_to<Window>(owner_node);
-			if (owner_w) {
-				owner_theme = owner_w->get_theme();
-			}
+			Ref<Theme> owner_theme = _get_owner_node_theme(owner_node);
 
 			if (owner_theme.is_valid() && owner_theme->has_theme_item(p_data_type, p_name, E)) {
 				return true;
@@ -299,16 +281,7 @@ float ThemeOwner::get_theme_default_base_scale() {
 	Node *owner_node = get_owner_node();
 
 	while (owner_node) {
-		Ref<Theme> owner_theme;
-
-		Control *owner_c = Object::cast_to<Control>(owner_node);
-		if (owner_c) {
-			owner_theme = owner_c->get_theme();
-		}
-		Window *owner_w = Object::cast_to<Window>(owner_node);
-		if (owner_w) {
-			owner_theme = owner_w->get_theme();
-		}
+		Ref<Theme> owner_theme = _get_owner_node_theme(owner_node);
 
 		if (owner_theme.is_valid() && owner_theme->has_default_base_scale()) {
 			return owner_theme->get_default_base_scale();
@@ -338,16 +311,7 @@ Ref<Font> ThemeOwner::get_theme_default_font() {
 	Node *owner_node = get_owner_node();
 
 	while (owner_node) {
-		Ref<Theme> owner_theme;
-
-		Control *owner_c = Object::cast_to<Control>(owner_node);
-		if (owner_c) {
-			owner_theme = owner_c->get_theme();
-		}
-		Window *owner_w = Object::cast_to<Window>(owner_node);
-		if (owner_w) {
-			owner_theme = owner_w->get_theme();
-		}
+		Ref<Theme> owner_theme = _get_owner_node_theme(owner_node);
 
 		if (owner_theme.is_valid() && owner_theme->has_default_font()) {
 			return owner_theme->get_default_font();
@@ -377,16 +341,7 @@ int ThemeOwner::get_theme_default_font_size() {
 	Node *owner_node = get_owner_node();
 
 	while (owner_node) {
-		Ref<Theme> owner_theme;
-
-		Control *owner_c = Object::cast_to<Control>(owner_node);
-		if (owner_c) {
-			owner_theme = owner_c->get_theme();
-		}
-		Window *owner_w = Object::cast_to<Window>(owner_node);
-		if (owner_w) {
-			owner_theme = owner_w->get_theme();
-		}
+		Ref<Theme> owner_theme = _get_owner_node_theme(owner_node);
 
 		if (owner_theme.is_valid() && owner_theme->has_default_font_size()) {
 			return owner_theme->get_default_font_size();
@@ -407,4 +362,18 @@ int ThemeOwner::get_theme_default_font_size() {
 		return ThemeDB::get_singleton()->get_default_theme()->get_default_font_size();
 	}
 	return ThemeDB::get_singleton()->get_fallback_font_size();
+}
+
+Ref<Theme> ThemeOwner::_get_owner_node_theme(Node *p_owner_node) const {
+	const Control *owner_c = Object::cast_to<Control>(p_owner_node);
+	if (owner_c) {
+		return owner_c->get_theme();
+	}
+
+	const Window *owner_w = Object::cast_to<Window>(p_owner_node);
+	if (owner_w) {
+		return owner_w->get_theme();
+	}
+
+	return Ref<Theme>();
 }

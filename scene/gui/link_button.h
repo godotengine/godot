@@ -49,6 +49,7 @@ private:
 	String xl_text;
 	Ref<TextLine> text_buf;
 	UnderlineMode underline_mode = UNDERLINE_MODE_ALWAYS;
+	String uri;
 
 	String language;
 	TextDirection text_direction = TEXT_DIRECTION_AUTO;
@@ -76,6 +77,7 @@ private:
 	void _shape();
 
 protected:
+	virtual void pressed() override;
 	virtual Size2 get_minimum_size() const override;
 	virtual void _update_theme_item_cache() override;
 	void _notification(int p_what);
@@ -84,6 +86,8 @@ protected:
 public:
 	void set_text(const String &p_text);
 	String get_text() const;
+	void set_uri(const String &p_uri);
+	String get_uri() const;
 
 	void set_structured_text_bidi_override(TextServer::StructuredTextParser p_parser);
 	TextServer::StructuredTextParser get_structured_text_bidi_override() const;

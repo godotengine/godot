@@ -1111,21 +1111,27 @@ bool GDScript::inherits_script(const Ref<Script> &p_script) const {
 GDScript *GDScript::find_class(const String &p_qualified_name) {
 	String first = p_qualified_name.get_slice("::", 0);
 
+	Vector<String> class_names;
 	GDScript *result = nullptr;
+	// Empty initial name means start here.
 	if (first.is_empty() || first == name) {
+		class_names = p_qualified_name.split("::");
 		result = this;
-	} else if (first == get_root_script()->path) {
+	} else if (p_qualified_name.begins_with(get_root_script()->path)) {
+		// Script path could have a class path separator("::") in it.
+		class_names = p_qualified_name.trim_prefix(get_root_script()->path).split("::");
 		result = get_root_script();
 	} else if (HashMap<StringName, Ref<GDScript>>::Iterator E = subclasses.find(first)) {
+		class_names = p_qualified_name.split("::");
 		result = E->value.ptr();
 	} else if (_owner != nullptr) {
 		// Check parent scope.
 		return _owner->find_class(p_qualified_name);
 	}
 
-	int name_count = p_qualified_name.get_slice_count("::");
-	for (int i = 1; result != nullptr && i < name_count; i++) {
-		String current_name = p_qualified_name.get_slice("::", i);
+	// Starts at index 1 because index 0 was handled above.
+	for (int i = 1; result != nullptr && i < class_names.size(); i++) {
+		String current_name = class_names[i];
 		if (HashMap<StringName, Ref<GDScript>>::Iterator E = result->subclasses.find(current_name)) {
 			result = E->value.ptr();
 		} else {
@@ -1137,11 +1143,12 @@ GDScript *GDScript::find_class(const String &p_qualified_name) {
 	return result;
 }
 
-bool GDScript::is_subclass(const GDScript *p_script) {
+bool GDScript::has_class(const GDScript *p_script) {
 	String fqn = p_script->fully_qualified_name;
-	if (!fqn.is_empty() && fqn != fully_qualified_name && fqn.begins_with(fully_qualified_name)) {
-		String fqn_rest = fqn.substr(fully_qualified_name.length());
-		return find_class(fqn_rest) == p_script;
+	if (fully_qualified_name.is_empty() && fqn.get_slice("::", 0).is_empty()) {
+		return p_script == this;
+	} else if (fqn.begins_with(fully_qualified_name)) {
+		return p_script == find_class(fqn.trim_prefix(fully_qualified_name));
 	}
 	return false;
 }
@@ -1288,15 +1295,10 @@ String GDScript::_get_gdscript_reference_class_name(const GDScript *p_gdscript) 
 }
 
 GDScript *GDScript::_get_gdscript_from_variant(const Variant &p_variant) {
-	Variant::Type type = p_variant.get_type();
-	if (type != Variant::Type::OBJECT)
-		return nullptr;
-
 	Object *obj = p_variant;
-	if (obj == nullptr) {
+	if (obj == nullptr || obj->get_instance_id().is_null()) {
 		return nullptr;
 	}
-
 	return Object::cast_to<GDScript>(obj);
 }
 
@@ -1964,6 +1966,16 @@ void GDScriptLanguage::add_named_global_constant(const StringName &p_name, const
 	named_globals[p_name] = p_value;
 }
 
+Variant GDScriptLanguage::get_any_global_constant(const StringName &p_name) {
+	if (named_globals.has(p_name)) {
+		return named_globals[p_name];
+	}
+	if (globals.has(p_name)) {
+		return _global_array[globals[p_name]];
+	}
+	ERR_FAIL_V_MSG(Variant(), vformat("Could not find any global constant with name: %s.", p_name));
+}
+
 void GDScriptLanguage::remove_named_global_constant(const StringName &p_name) {
 	ERR_FAIL_COND(!named_globals.has(p_name));
 	named_globals.erase(p_name);
@@ -2597,8 +2609,7 @@ Ref<GDScript> GDScriptLanguage::get_script_by_fully_qualified_name(const String 
 		SelfList<GDScript> *elem = script_list.first();
 		while (elem) {
 			GDScript *scr = elem->self();
-			scr = scr->find_class(p_name);
-			if (scr != nullptr) {
+			if (scr->fully_qualified_name == p_name) {
 				return scr;
 			}
 			elem = elem->next();

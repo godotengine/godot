@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NavigationMeshGenerator" inherits="Object" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="NavigationMeshGenerator" inherits="Object" is_experimental="true" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Helper class for creating and clearing navigation meshes.
 	</brief_description>
@@ -15,17 +15,17 @@
 	<methods>
 		<method name="bake">
 			<return type="void" />
-			<param index="0" name="nav_mesh" type="NavigationMesh" />
+			<param index="0" name="navigation_mesh" type="NavigationMesh" />
 			<param index="1" name="root_node" type="Node" />
 			<description>
-				Bakes navigation data to the provided [param nav_mesh] by parsing child nodes under the provided [param root_node] or a specific group of nodes for potential source geometry. The parse behavior can be controlled with the [member NavigationMesh.geometry_parsed_geometry_type] and [member NavigationMesh.geometry_source_geometry_mode] properties on the [NavigationMesh] resource.
+				Bakes navigation data to the provided [param navigation_mesh] by parsing child nodes under the provided [param root_node] or a specific group of nodes for potential source geometry. The parse behavior can be controlled with the [member NavigationMesh.geometry_parsed_geometry_type] and [member NavigationMesh.geometry_source_geometry_mode] properties on the [NavigationMesh] resource.
 			</description>
 		</method>
 		<method name="clear">
 			<return type="void" />
-			<param index="0" name="nav_mesh" type="NavigationMesh" />
+			<param index="0" name="navigation_mesh" type="NavigationMesh" />
 			<description>
-				Removes all polygons and vertices from the provided [param nav_mesh] resource.
+				Removes all polygons and vertices from the provided [param navigation_mesh] resource.
 			</description>
 		</method>
 	</methods>

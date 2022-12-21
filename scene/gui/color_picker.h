@@ -68,8 +68,8 @@ public:
 	~ColorPresetButton();
 };
 
-class ColorPicker : public BoxContainer {
-	GDCLASS(ColorPicker, BoxContainer);
+class ColorPicker : public VBoxContainer {
+	GDCLASS(ColorPicker, VBoxContainer);
 
 public:
 	enum ColorModeType {

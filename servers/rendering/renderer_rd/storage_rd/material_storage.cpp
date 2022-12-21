@@ -1319,6 +1319,10 @@ void MaterialStorage::MaterialData::update_textures(const HashMap<StringName, Va
 						roughness_detect_texture = tex;
 						roughness_channel = RS::TextureDetectRoughnessChannel(p_texture_uniforms[i].hint - ShaderLanguage::ShaderNode::Uniform::HINT_ROUGHNESS_R);
 					}
+					if (tex->render_target) {
+						tex->render_target->was_used = true;
+						render_target_cache.push_back(tex->render_target);
+					}
 #endif
 				}
 				if (rd_texture.is_null()) {
@@ -1405,6 +1409,7 @@ bool MaterialStorage::MaterialData::update_parameters_uniform_set(const HashMap<
 
 	if ((uint32_t)texture_cache.size() != tex_uniform_count || p_textures_dirty) {
 		texture_cache.resize(tex_uniform_count);
+		render_target_cache.clear();
 		p_textures_dirty = true;
 
 		//clear previous uniform set
@@ -1463,6 +1468,12 @@ bool MaterialStorage::MaterialData::update_parameters_uniform_set(const HashMap<
 	RD::get_singleton()->uniform_set_set_invalidation_callback(uniform_set, MaterialStorage::_material_uniform_set_erased, &self);
 
 	return true;
+}
+
+void MaterialStorage::MaterialData::set_as_used() {
+	for (int i = 0; i < render_target_cache.size(); i++) {
+		render_target_cache[i]->was_used = true;
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////

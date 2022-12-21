@@ -2871,6 +2871,89 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 		CHECK(code_edit->get_text() == "\'\'\'");
 	}
 
+	SUBCASE("[CodeEdit] autocomplete with brace completion") {
+		code_edit->set_auto_brace_completion_enabled(true);
+		CHECK(code_edit->is_auto_brace_completion_enabled());
+
+		code_edit->insert_text_at_caret("(te)");
+		code_edit->set_caret_column(3);
+
+		// Full completion.
+		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_FUNCTION, "test()", "test()");
+		code_edit->update_code_completion_options();
+		code_edit->confirm_code_completion();
+		CHECK(code_edit->get_line(0) == "(test())");
+		CHECK(code_edit->get_caret_column() == 7);
+		code_edit->undo();
+
+		// With "arg".
+		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_FUNCTION, "test(", "test(");
+		code_edit->update_code_completion_options();
+		code_edit->confirm_code_completion();
+		CHECK(code_edit->get_line(0) == "(test())");
+		CHECK(code_edit->get_caret_column() == 6);
+		code_edit->undo();
+
+		// brace completion disbaled
+		code_edit->set_auto_brace_completion_enabled(false);
+
+		// Full completion.
+		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_FUNCTION, "test()", "test()");
+		code_edit->update_code_completion_options();
+		code_edit->confirm_code_completion();
+		CHECK(code_edit->get_line(0) == "(test())");
+		CHECK(code_edit->get_caret_column() == 7);
+		code_edit->undo();
+
+		// With "arg".
+		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_FUNCTION, "test(", "test(");
+		code_edit->update_code_completion_options();
+		code_edit->confirm_code_completion();
+		CHECK(code_edit->get_line(0) == "(test()");
+		CHECK(code_edit->get_caret_column() == 6);
+
+		// String
+		code_edit->set_auto_brace_completion_enabled(true);
+		code_edit->clear();
+		code_edit->insert_text_at_caret("\"\"");
+		code_edit->set_caret_column(1);
+
+		// Full completion.
+		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_NODE_PATH, "\"test\"", "\"test\"");
+		code_edit->update_code_completion_options();
+		code_edit->confirm_code_completion();
+		CHECK(code_edit->get_line(0) == "\"test\"");
+		CHECK(code_edit->get_caret_column() == 6);
+		code_edit->undo();
+
+		// With "arg".
+		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_NODE_PATH, "\"test", "\"test");
+		code_edit->update_code_completion_options();
+		code_edit->confirm_code_completion();
+		CHECK(code_edit->get_line(0) == "\"\"test\"\"");
+		CHECK(code_edit->get_caret_column() == 7);
+		code_edit->undo();
+
+		// brace completion disbaled
+		code_edit->set_auto_brace_completion_enabled(false);
+
+		// Full completion.
+		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_NODE_PATH, "\"test\"", "\"test\"");
+		code_edit->update_code_completion_options();
+		code_edit->confirm_code_completion();
+		CHECK(code_edit->get_line(0) == "\"test\"");
+		CHECK(code_edit->get_caret_column() == 6);
+		code_edit->undo();
+
+		// With "arg".
+		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_NODE_PATH, "\"test", "\"test");
+		code_edit->update_code_completion_options();
+		code_edit->confirm_code_completion();
+		CHECK(code_edit->get_line(0) == "\"\"test\"");
+		CHECK(code_edit->get_caret_column() == 7);
+		code_edit->undo();
+	}
+
 	SUBCASE("[CodeEdit] autocomplete") {
 		code_edit->set_code_completion_enabled(true);
 		CHECK(code_edit->is_code_completion_enabled());
@@ -3027,7 +3110,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 			CHECK(code_edit->get_code_completion_selected_index() == 0);
 
 			Point2 caret_pos = code_edit->get_caret_draw_pos();
-			caret_pos.y -= code_edit->get_line_height();
+			caret_pos.y += code_edit->get_line_height();
 			SEND_GUI_MOUSE_BUTTON_EVENT(code_edit, caret_pos, MouseButton::WHEEL_DOWN, MouseButton::NONE, Key::NONE);
 			CHECK(code_edit->get_code_completion_selected_index() == 1);
 
@@ -3035,6 +3118,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 			CHECK(code_edit->get_code_completion_selected_index() == 0);
 
 			/* Single click selects. */
+			caret_pos.y += code_edit->get_line_height() * 2;
 			SEND_GUI_MOUSE_BUTTON_EVENT(code_edit, caret_pos, MouseButton::LEFT, MouseButton::MASK_LEFT, Key::NONE);
 			CHECK(code_edit->get_code_completion_selected_index() == 2);
 

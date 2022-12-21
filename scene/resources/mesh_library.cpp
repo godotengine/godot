@@ -57,10 +57,18 @@ bool MeshLibrary::_set(const StringName &p_name, const Variant &p_value) {
 			_set_item_shapes(idx, p_value);
 		} else if (what == "preview") {
 			set_item_preview(idx, p_value);
-		} else if (what == "navmesh") {
-			set_item_navmesh(idx, p_value);
-		} else if (what == "navmesh_transform") {
-			set_item_navmesh_transform(idx, p_value);
+		} else if (what == "navigation_mesh") {
+			set_item_navigation_mesh(idx, p_value);
+		} else if (what == "navigation_mesh_transform") {
+			set_item_navigation_mesh_transform(idx, p_value);
+#ifndef DISABLE_DEPRECATED
+		} else if (what == "navmesh") { // Renamed in 4.0 beta 9.
+			set_item_navigation_mesh(idx, p_value);
+		} else if (what == "navmesh_transform") { // Renamed in 4.0 beta 9.
+			set_item_navigation_mesh_transform(idx, p_value);
+#endif // DISABLE_DEPRECATED
+		} else if (what == "navigation_layers") {
+			set_item_navigation_layers(idx, p_value);
 		} else {
 			return false;
 		}
@@ -85,10 +93,18 @@ bool MeshLibrary::_get(const StringName &p_name, Variant &r_ret) const {
 		r_ret = get_item_mesh_transform(idx);
 	} else if (what == "shapes") {
 		r_ret = _get_item_shapes(idx);
-	} else if (what == "navmesh") {
-		r_ret = get_item_navmesh(idx);
-	} else if (what == "navmesh_transform") {
-		r_ret = get_item_navmesh_transform(idx);
+	} else if (what == "navigation_mesh") {
+		r_ret = get_item_navigation_mesh(idx);
+	} else if (what == "navigation_mesh_transform") {
+		r_ret = get_item_navigation_mesh_transform(idx);
+#ifndef DISABLE_DEPRECATED
+	} else if (what == "navmesh") { // Renamed in 4.0 beta 9.
+		r_ret = get_item_navigation_mesh(idx);
+	} else if (what == "navmesh_transform") { // Renamed in 4.0 beta 9.
+		r_ret = get_item_navigation_mesh_transform(idx);
+#endif // DISABLE_DEPRECATED
+	} else if (what == "navigation_layers") {
+		r_ret = get_item_navigation_layers(idx);
 	} else if (what == "preview") {
 		r_ret = get_item_preview(idx);
 	} else {
@@ -105,8 +121,9 @@ void MeshLibrary::_get_property_list(List<PropertyInfo> *p_list) const {
 		p_list->push_back(PropertyInfo(Variant::OBJECT, prop_name + PNAME("mesh"), PROPERTY_HINT_RESOURCE_TYPE, "Mesh"));
 		p_list->push_back(PropertyInfo(Variant::TRANSFORM3D, prop_name + PNAME("mesh_transform"), PROPERTY_HINT_NONE, "suffix:m"));
 		p_list->push_back(PropertyInfo(Variant::ARRAY, prop_name + PNAME("shapes")));
-		p_list->push_back(PropertyInfo(Variant::OBJECT, prop_name + PNAME("navmesh"), PROPERTY_HINT_RESOURCE_TYPE, "NavigationMesh"));
-		p_list->push_back(PropertyInfo(Variant::TRANSFORM3D, prop_name + PNAME("navmesh_transform"), PROPERTY_HINT_NONE, "suffix:m"));
+		p_list->push_back(PropertyInfo(Variant::OBJECT, prop_name + PNAME("navigation_mesh"), PROPERTY_HINT_RESOURCE_TYPE, "NavigationMesh"));
+		p_list->push_back(PropertyInfo(Variant::TRANSFORM3D, prop_name + PNAME("navigation_mesh_transform"), PROPERTY_HINT_NONE, "suffix:m"));
+		p_list->push_back(PropertyInfo(Variant::INT, prop_name + PNAME("navigation_layers"), PROPERTY_HINT_LAYERS_3D_NAVIGATION));
 		p_list->push_back(PropertyInfo(Variant::OBJECT, prop_name + PNAME("preview"), PROPERTY_HINT_RESOURCE_TYPE, "Texture2D", PROPERTY_USAGE_DEFAULT));
 	}
 }
@@ -150,18 +167,27 @@ void MeshLibrary::set_item_shapes(int p_item, const Vector<ShapeData> &p_shapes)
 	notify_property_list_changed();
 }
 
-void MeshLibrary::set_item_navmesh(int p_item, const Ref<NavigationMesh> &p_navmesh) {
+void MeshLibrary::set_item_navigation_mesh(int p_item, const Ref<NavigationMesh> &p_navigation_mesh) {
 	ERR_FAIL_COND_MSG(!item_map.has(p_item), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
-	item_map[p_item].navmesh = p_navmesh;
+	item_map[p_item].navigation_mesh = p_navigation_mesh;
 	notify_property_list_changed();
 	notify_change_to_owners();
 	emit_changed();
 	notify_property_list_changed();
 }
 
-void MeshLibrary::set_item_navmesh_transform(int p_item, const Transform3D &p_transform) {
+void MeshLibrary::set_item_navigation_mesh_transform(int p_item, const Transform3D &p_transform) {
 	ERR_FAIL_COND_MSG(!item_map.has(p_item), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
-	item_map[p_item].navmesh_transform = p_transform;
+	item_map[p_item].navigation_mesh_transform = p_transform;
+	notify_change_to_owners();
+	emit_changed();
+	notify_property_list_changed();
+}
+
+void MeshLibrary::set_item_navigation_layers(int p_item, uint32_t p_navigation_layers) {
+	ERR_FAIL_COND_MSG(!item_map.has(p_item), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
+	item_map[p_item].navigation_layers = p_navigation_layers;
+	notify_property_list_changed();
 	notify_change_to_owners();
 	emit_changed();
 	notify_property_list_changed();
@@ -194,14 +220,19 @@ Vector<MeshLibrary::ShapeData> MeshLibrary::get_item_shapes(int p_item) const {
 	return item_map[p_item].shapes;
 }
 
-Ref<NavigationMesh> MeshLibrary::get_item_navmesh(int p_item) const {
+Ref<NavigationMesh> MeshLibrary::get_item_navigation_mesh(int p_item) const {
 	ERR_FAIL_COND_V_MSG(!item_map.has(p_item), Ref<NavigationMesh>(), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
-	return item_map[p_item].navmesh;
+	return item_map[p_item].navigation_mesh;
 }
 
-Transform3D MeshLibrary::get_item_navmesh_transform(int p_item) const {
+Transform3D MeshLibrary::get_item_navigation_mesh_transform(int p_item) const {
 	ERR_FAIL_COND_V_MSG(!item_map.has(p_item), Transform3D(), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
-	return item_map[p_item].navmesh_transform;
+	return item_map[p_item].navigation_mesh_transform;
+}
+
+uint32_t MeshLibrary::get_item_navigation_layers(int p_item) const {
+	ERR_FAIL_COND_V_MSG(!item_map.has(p_item), 0, "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
+	return item_map[p_item].navigation_layers;
 }
 
 Ref<Texture2D> MeshLibrary::get_item_preview(int p_item) const {
@@ -314,15 +345,17 @@ void MeshLibrary::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_item_name", "id", "name"), &MeshLibrary::set_item_name);
 	ClassDB::bind_method(D_METHOD("set_item_mesh", "id", "mesh"), &MeshLibrary::set_item_mesh);
 	ClassDB::bind_method(D_METHOD("set_item_mesh_transform", "id", "mesh_transform"), &MeshLibrary::set_item_mesh_transform);
-	ClassDB::bind_method(D_METHOD("set_item_navmesh", "id", "navmesh"), &MeshLibrary::set_item_navmesh);
-	ClassDB::bind_method(D_METHOD("set_item_navmesh_transform", "id", "navmesh"), &MeshLibrary::set_item_navmesh_transform);
+	ClassDB::bind_method(D_METHOD("set_item_navigation_mesh", "id", "navigation_mesh"), &MeshLibrary::set_item_navigation_mesh);
+	ClassDB::bind_method(D_METHOD("set_item_navigation_mesh_transform", "id", "navigation_mesh"), &MeshLibrary::set_item_navigation_mesh_transform);
+	ClassDB::bind_method(D_METHOD("set_item_navigation_layers", "id", "navigation_layers"), &MeshLibrary::set_item_navigation_layers);
 	ClassDB::bind_method(D_METHOD("set_item_shapes", "id", "shapes"), &MeshLibrary::_set_item_shapes);
 	ClassDB::bind_method(D_METHOD("set_item_preview", "id", "texture"), &MeshLibrary::set_item_preview);
 	ClassDB::bind_method(D_METHOD("get_item_name", "id"), &MeshLibrary::get_item_name);
 	ClassDB::bind_method(D_METHOD("get_item_mesh", "id"), &MeshLibrary::get_item_mesh);
 	ClassDB::bind_method(D_METHOD("get_item_mesh_transform", "id"), &MeshLibrary::get_item_mesh_transform);
-	ClassDB::bind_method(D_METHOD("get_item_navmesh", "id"), &MeshLibrary::get_item_navmesh);
-	ClassDB::bind_method(D_METHOD("get_item_navmesh_transform", "id"), &MeshLibrary::get_item_navmesh_transform);
+	ClassDB::bind_method(D_METHOD("get_item_navigation_mesh", "id"), &MeshLibrary::get_item_navigation_mesh);
+	ClassDB::bind_method(D_METHOD("get_item_navigation_mesh_transform", "id"), &MeshLibrary::get_item_navigation_mesh_transform);
+	ClassDB::bind_method(D_METHOD("get_item_navigation_layers", "id"), &MeshLibrary::get_item_navigation_layers);
 	ClassDB::bind_method(D_METHOD("get_item_shapes", "id"), &MeshLibrary::_get_item_shapes);
 	ClassDB::bind_method(D_METHOD("get_item_preview", "id"), &MeshLibrary::get_item_preview);
 	ClassDB::bind_method(D_METHOD("remove_item", "id"), &MeshLibrary::remove_item);

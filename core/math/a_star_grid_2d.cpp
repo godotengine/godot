@@ -155,6 +155,19 @@ bool AStarGrid2D::is_point_solid(const Vector2i &p_id) const {
 	return points[p_id.y][p_id.x].solid;
 }
 
+void AStarGrid2D::set_point_weight_scale(const Vector2i &p_id, real_t p_weight_scale) {
+	ERR_FAIL_COND_MSG(dirty, "Grid is not initialized. Call the update method.");
+	ERR_FAIL_COND_MSG(!is_in_boundsv(p_id), vformat("Can't set point's weight scale. Point out of bounds (%s/%s, %s/%s).", p_id.x, size.width, p_id.y, size.height));
+	ERR_FAIL_COND_MSG(p_weight_scale < 0.0, vformat("Can't set point's weight scale less than 0.0: %f.", p_weight_scale));
+	points[p_id.y][p_id.x].weight_scale = p_weight_scale;
+}
+
+real_t AStarGrid2D::get_point_weight_scale(const Vector2i &p_id) const {
+	ERR_FAIL_COND_V_MSG(dirty, 0, "Grid is not initialized. Call the update method.");
+	ERR_FAIL_COND_V_MSG(!is_in_boundsv(p_id), 0, vformat("Can't get point's weight scale. Point out of bounds (%s/%s, %s/%s).", p_id.x, size.width, p_id.y, size.height));
+	return points[p_id.y][p_id.x].weight_scale;
+}
+
 AStarGrid2D::Point *AStarGrid2D::_jump(Point *p_from, Point *p_to) {
 	if (!p_to || p_to->solid) {
 		return nullptr;
@@ -388,7 +401,10 @@ bool AStarGrid2D::_solve(Point *p_begin_point, Point *p_end_point) {
 		_get_nbors(p, nbors);
 		for (List<Point *>::Element *E = nbors.front(); E; E = E->next()) {
 			Point *e = E->get(); // The neighbour point.
+			real_t weight_scale = 1.0;
+
 			if (jumping_enabled) {
+				// TODO: Make it works with weight_scale.
 				e = _jump(p, e);
 				if (!e || e->closed_pass == pass) {
 					continue;
@@ -397,9 +413,10 @@ bool AStarGrid2D::_solve(Point *p_begin_point, Point *p_end_point) {
 				if (e->solid || e->closed_pass == pass) {
 					continue;
 				}
+				weight_scale = e->weight_scale;
 			}
 
-			real_t tentative_g_score = p->g_score + _compute_cost(p->id, e->id);
+			real_t tentative_g_score = p->g_score + _compute_cost(p->id, e->id) * weight_scale;
 			bool new_point = false;
 
 			if (e->open_pass != pass) { // The point wasn't inside the open list.
@@ -444,6 +461,12 @@ real_t AStarGrid2D::_compute_cost(const Vector2i &p_from_id, const Vector2i &p_t
 void AStarGrid2D::clear() {
 	points.clear();
 	size = Vector2i();
+}
+
+Vector2 AStarGrid2D::get_point_position(const Vector2i &p_id) const {
+	ERR_FAIL_COND_V_MSG(dirty, Vector2(), "Grid is not initialized. Call the update method.");
+	ERR_FAIL_COND_V_MSG(!is_in_boundsv(p_id), Vector2(), vformat("Can't get point's position. Point out of bounds (%s/%s, %s/%s).", p_id.x, size.width, p_id.y, size.height));
+	return points[p_id.y][p_id.x].pos;
 }
 
 Vector<Vector2> AStarGrid2D::get_point_path(const Vector2i &p_from_id, const Vector2i &p_to_id) {
@@ -559,8 +582,11 @@ void AStarGrid2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_default_heuristic"), &AStarGrid2D::get_default_heuristic);
 	ClassDB::bind_method(D_METHOD("set_point_solid", "id", "solid"), &AStarGrid2D::set_point_solid, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("is_point_solid", "id"), &AStarGrid2D::is_point_solid);
+	ClassDB::bind_method(D_METHOD("set_point_weight_scale", "id", "weight_scale"), &AStarGrid2D::set_point_weight_scale);
+	ClassDB::bind_method(D_METHOD("get_point_weight_scale", "id"), &AStarGrid2D::get_point_weight_scale);
 	ClassDB::bind_method(D_METHOD("clear"), &AStarGrid2D::clear);
 
+	ClassDB::bind_method(D_METHOD("get_point_position", "id"), &AStarGrid2D::get_point_position);
 	ClassDB::bind_method(D_METHOD("get_point_path", "from_id", "to_id"), &AStarGrid2D::get_point_path);
 	ClassDB::bind_method(D_METHOD("get_id_path", "from_id", "to_id"), &AStarGrid2D::get_id_path);
 

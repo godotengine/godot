@@ -642,7 +642,7 @@ void Viewport::_process_picking() {
 				ObjectID canvas_layer_id;
 				if (E) {
 					// A descendant CanvasLayer.
-					canvas_layer_transform = E->get_transform();
+					canvas_layer_transform = E->get_final_transform();
 					canvas_layer_id = E->get_instance_id();
 				} else {
 					// This Viewport's builtin canvas.

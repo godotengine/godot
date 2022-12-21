@@ -53,7 +53,7 @@ static struct hb_shapers_lazy_loader_t : hb_lazy_loader_t<hb_shaper_entry_t,
     if (unlikely (!shapers))
       return nullptr;
 
-    memcpy (shapers, _hb_all_shapers, sizeof (_hb_all_shapers));
+    hb_memcpy (shapers, _hb_all_shapers, sizeof (_hb_all_shapers));
 
      /* Reorder shaper list to prefer requested shapers. */
     unsigned int i = 0;

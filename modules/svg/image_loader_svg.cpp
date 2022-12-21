@@ -67,19 +67,12 @@ void ImageLoaderSVG::_replace_color_property(const HashMap<Color, Color> &p_colo
 	}
 }
 
-Error ImageLoaderSVG::create_image_from_string(Ref<Image> p_image, String p_string, float p_scale, bool p_upsample, const HashMap<Color, Color> &p_color_map) {
+Error ImageLoaderSVG::create_image_from_utf8_buffer(Ref<Image> p_image, const PackedByteArray &p_buffer, float p_scale, bool p_upsample) {
 	ERR_FAIL_COND_V_MSG(Math::is_zero_approx(p_scale), ERR_INVALID_PARAMETER, "ImageLoaderSVG: Can't load SVG with a scale of 0.");
 
-	if (p_color_map.size()) {
-		_replace_color_property(p_color_map, "stop-color=\"", p_string);
-		_replace_color_property(p_color_map, "fill=\"", p_string);
-		_replace_color_property(p_color_map, "stroke=\"", p_string);
-	}
-
 	std::unique_ptr<tvg::Picture> picture = tvg::Picture::gen();
-	PackedByteArray bytes = p_string.to_utf8_buffer();
 
-	tvg::Result result = picture->load((const char *)bytes.ptr(), bytes.size(), "svg", true);
+	tvg::Result result = picture->load((const char *)p_buffer.ptr(), p_buffer.size(), "svg", true);
 	if (result != tvg::Result::Success) {
 		return ERR_INVALID_DATA;
 	}
@@ -147,6 +140,18 @@ Error ImageLoaderSVG::create_image_from_string(Ref<Image> p_image, String p_stri
 
 	p_image->set_data(width, height, false, Image::FORMAT_RGBA8, image);
 	return OK;
+}
+
+Error ImageLoaderSVG::create_image_from_string(Ref<Image> p_image, String p_string, float p_scale, bool p_upsample, const HashMap<Color, Color> &p_color_map) {
+	if (p_color_map.size()) {
+		_replace_color_property(p_color_map, "stop-color=\"", p_string);
+		_replace_color_property(p_color_map, "fill=\"", p_string);
+		_replace_color_property(p_color_map, "stroke=\"", p_string);
+	}
+
+	PackedByteArray bytes = p_string.to_utf8_buffer();
+
+	return create_image_from_utf8_buffer(p_image, bytes, p_scale, p_upsample);
 }
 
 void ImageLoaderSVG::get_recognized_extensions(List<String> *p_extensions) const {

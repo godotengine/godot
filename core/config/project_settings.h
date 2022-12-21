@@ -141,7 +141,7 @@ public:
 	static const int CONFIG_VERSION = 5;
 
 	void set_setting(const String &p_setting, const Variant &p_value);
-	Variant get_setting(const String &p_setting) const;
+	Variant get_setting(const String &p_setting, const Variant &p_default_value = Variant()) const;
 
 	bool has_setting(String p_var) const;
 	String localize_path(const String &p_path) const;
