@@ -345,7 +345,7 @@ Files extracted from upstream source:
 ## mbedtls
 
 - Upstream: https://github.com/Mbed-TLS/mbedtls
-- Version: 2.18.1 (dd79db10014d85b26d11fe57218431f2e5ede6f2, 2022)
+- Version: 2.18.2 (89f040a5c938985c5f30728baed21e49d0846a53, 2022)
 - License: Apache 2.0
 
 File extracted from upstream release tarball:
@@ -355,11 +355,9 @@ File extracted from upstream release tarball:
 - The `LICENSE` file.
 - Applied the patch in `patches/1453.diff` (upstream PR:
   https://github.com/ARMmbed/mbedtls/pull/1453).
+  Applied the patch in `patches/windows-arm64-hardclock.diff`
 - Added 2 files `godot_core_mbedtls_platform.c` and `godot_core_mbedtls_config.h`
   providing configuration for light bundling with core.
-
-Some changes have been made in order to fix Windows on ARM build errors.
-They are marked with `// -- GODOT start --` and `// -- GODOT end --`
 
 
 ## meshoptimizer
