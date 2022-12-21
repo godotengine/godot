@@ -2607,7 +2607,7 @@ bool Main::start() {
 		if (debug_navigation) {
 			sml->set_debug_navigation_hint(true);
 			NavigationServer3D::get_singleton()->set_active(true);
-			NavigationServer3D::get_singleton_mut()->set_debug_enabled(true);
+			NavigationServer3D::get_singleton()->set_debug_enabled(true);
 		}
 #endif
 
@@ -3032,7 +3032,7 @@ bool Main::iteration() {
 			break;
 		}
 
-		NavigationServer3D::get_singleton_mut()->process(physics_step * time_scale);
+		NavigationServer3D::get_singleton()->process(physics_step * time_scale);
 
 		message_queue->flush();
 

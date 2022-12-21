@@ -1310,8 +1310,8 @@ RID GridMap::get_bake_mesh_instance(int p_idx) {
 GridMap::GridMap() {
 	set_notify_transform(true);
 #ifdef DEBUG_ENABLED
-	NavigationServer3D::get_singleton_mut()->connect("map_changed", callable_mp(this, &GridMap::_navigation_map_changed));
-	NavigationServer3D::get_singleton_mut()->connect("navigation_debug_changed", callable_mp(this, &GridMap::_update_navigation_debug_edge_connections));
+	NavigationServer3D::get_singleton()->connect("map_changed", callable_mp(this, &GridMap::_navigation_map_changed));
+	NavigationServer3D::get_singleton()->connect("navigation_debug_changed", callable_mp(this, &GridMap::_update_navigation_debug_edge_connections));
 #endif // DEBUG_ENABLED
 }
 
@@ -1338,8 +1338,8 @@ GridMap::~GridMap() {
 
 	clear();
 #ifdef DEBUG_ENABLED
-	NavigationServer3D::get_singleton_mut()->disconnect("map_changed", callable_mp(this, &GridMap::_navigation_map_changed));
-	NavigationServer3D::get_singleton_mut()->disconnect("navigation_debug_changed", callable_mp(this, &GridMap::_update_navigation_debug_edge_connections));
+	NavigationServer3D::get_singleton()->disconnect("map_changed", callable_mp(this, &GridMap::_navigation_map_changed));
+	NavigationServer3D::get_singleton()->disconnect("navigation_debug_changed", callable_mp(this, &GridMap::_update_navigation_debug_edge_connections));
 #endif // DEBUG_ENABLED
 }
 
@@ -1421,7 +1421,7 @@ void GridMap::_update_octant_navigation_debug_edge_connections_mesh(const Octant
 		return;
 	}
 
-	Ref<StandardMaterial3D> edge_connections_material = NavigationServer3D::get_singleton_mut()->get_debug_navigation_edge_connections_material();
+	Ref<StandardMaterial3D> edge_connections_material = NavigationServer3D::get_singleton()->get_debug_navigation_edge_connections_material();
 
 	Array mesh_array;
 	mesh_array.resize(Mesh::ARRAY_MAX);

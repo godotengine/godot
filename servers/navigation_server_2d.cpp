@@ -36,15 +36,20 @@
 
 NavigationServer2D *NavigationServer2D::singleton = nullptr;
 
+#define FORWARD_0(FUNC_NAME)                                     \
+	NavigationServer2D::FUNC_NAME() {                            \
+		return NavigationServer3D::get_singleton()->FUNC_NAME(); \
+	}
+
 #define FORWARD_0_C(FUNC_NAME)                                   \
 	NavigationServer2D::FUNC_NAME()                              \
 			const {                                              \
 		return NavigationServer3D::get_singleton()->FUNC_NAME(); \
 	}
 
-#define FORWARD_1(FUNC_NAME, T_0, D_0, CONV_0)                                  \
-	NavigationServer2D::FUNC_NAME(T_0 D_0) {                                    \
-		return NavigationServer3D::get_singleton_mut()->FUNC_NAME(CONV_0(D_0)); \
+#define FORWARD_1(FUNC_NAME, T_0, D_0, CONV_0)                              \
+	NavigationServer2D::FUNC_NAME(T_0 D_0) {                                \
+		return NavigationServer3D::get_singleton()->FUNC_NAME(CONV_0(D_0)); \
 	}
 
 #define FORWARD_1_C(FUNC_NAME, T_0, D_0, CONV_0)                            \
@@ -59,6 +64,11 @@ NavigationServer2D *NavigationServer2D::singleton = nullptr;
 		return CONV_R(NavigationServer3D::get_singleton()->FUNC_NAME(CONV_0(D_0))); \
 	}
 
+#define FORWARD_2(FUNC_NAME, T_0, D_0, T_1, D_1, CONV_0, CONV_1)                         \
+	NavigationServer2D::FUNC_NAME(T_0 D_0, T_1 D_1) {                                    \
+		return NavigationServer3D::get_singleton()->FUNC_NAME(CONV_0(D_0), CONV_1(D_1)); \
+	}
+
 #define FORWARD_2_C(FUNC_NAME, T_0, D_0, T_1, D_1, CONV_0, CONV_1)                       \
 	NavigationServer2D::FUNC_NAME(T_0 D_0, T_1 D_1)                                      \
 			const {                                                                      \
@@ -69,6 +79,11 @@ NavigationServer2D *NavigationServer2D::singleton = nullptr;
 	NavigationServer2D::FUNC_NAME(T_0 D_0, T_1 D_1)                                              \
 			const {                                                                              \
 		return CONV_R(NavigationServer3D::get_singleton()->FUNC_NAME(CONV_0(D_0), CONV_1(D_1))); \
+	}
+
+#define FORWARD_4(FUNC_NAME, T_0, D_0, T_1, D_1, T_2, D_2, T_3, D_3, CONV_0, CONV_1, CONV_2, CONV_3)               \
+	NavigationServer2D::FUNC_NAME(T_0 D_0, T_1 D_1, T_2 D_2, T_3 D_3) {                                            \
+		return NavigationServer3D::get_singleton()->FUNC_NAME(CONV_0(D_0), CONV_1(D_1), CONV_2(D_2), CONV_3(D_3)); \
 	}
 
 #define FORWARD_4_R_C(CONV_R, FUNC_NAME, T_0, D_0, T_1, D_1, T_2, D_2, T_3, D_3, CONV_0, CONV_1, CONV_2, CONV_3)           \
@@ -166,14 +181,14 @@ void NavigationServer2D::_emit_map_changed(RID p_map) {
 
 #ifdef DEBUG_ENABLED
 void NavigationServer2D::set_debug_enabled(bool p_enabled) {
-	NavigationServer3D::get_singleton_mut()->set_debug_enabled(p_enabled);
+	NavigationServer3D::get_singleton()->set_debug_enabled(p_enabled);
 }
 bool NavigationServer2D::get_debug_enabled() const {
 	return NavigationServer3D::get_singleton()->get_debug_enabled();
 }
 
 void NavigationServer2D::set_debug_navigation_edge_connection_color(const Color &p_color) {
-	NavigationServer3D::get_singleton_mut()->set_debug_navigation_edge_connection_color(p_color);
+	NavigationServer3D::get_singleton()->set_debug_navigation_edge_connection_color(p_color);
 }
 
 Color NavigationServer2D::get_debug_navigation_edge_connection_color() const {
@@ -181,7 +196,7 @@ Color NavigationServer2D::get_debug_navigation_edge_connection_color() const {
 }
 
 void NavigationServer2D::set_debug_navigation_geometry_face_color(const Color &p_color) {
-	NavigationServer3D::get_singleton_mut()->set_debug_navigation_geometry_face_color(p_color);
+	NavigationServer3D::get_singleton()->set_debug_navigation_geometry_face_color(p_color);
 }
 
 Color NavigationServer2D::get_debug_navigation_geometry_face_color() const {
@@ -189,7 +204,7 @@ Color NavigationServer2D::get_debug_navigation_geometry_face_color() const {
 }
 
 void NavigationServer2D::set_debug_navigation_geometry_face_disabled_color(const Color &p_color) {
-	NavigationServer3D::get_singleton_mut()->set_debug_navigation_geometry_face_disabled_color(p_color);
+	NavigationServer3D::get_singleton()->set_debug_navigation_geometry_face_disabled_color(p_color);
 }
 
 Color NavigationServer2D::get_debug_navigation_geometry_face_disabled_color() const {
@@ -197,7 +212,7 @@ Color NavigationServer2D::get_debug_navigation_geometry_face_disabled_color() co
 }
 
 void NavigationServer2D::set_debug_navigation_link_connection_color(const Color &p_color) {
-	NavigationServer3D::get_singleton_mut()->set_debug_navigation_link_connection_color(p_color);
+	NavigationServer3D::get_singleton()->set_debug_navigation_link_connection_color(p_color);
 }
 
 Color NavigationServer2D::get_debug_navigation_link_connection_color() const {
@@ -205,7 +220,7 @@ Color NavigationServer2D::get_debug_navigation_link_connection_color() const {
 }
 
 void NavigationServer2D::set_debug_navigation_link_connection_disabled_color(const Color &p_color) {
-	NavigationServer3D::get_singleton_mut()->set_debug_navigation_link_connection_disabled_color(p_color);
+	NavigationServer3D::get_singleton()->set_debug_navigation_link_connection_disabled_color(p_color);
 }
 
 Color NavigationServer2D::get_debug_navigation_link_connection_disabled_color() const {
@@ -213,7 +228,7 @@ Color NavigationServer2D::get_debug_navigation_link_connection_disabled_color() 
 }
 
 void NavigationServer2D::set_debug_navigation_enable_edge_connections(const bool p_value) {
-	NavigationServer3D::get_singleton_mut()->set_debug_navigation_enable_edge_connections(p_value);
+	NavigationServer3D::get_singleton()->set_debug_navigation_enable_edge_connections(p_value);
 }
 
 bool NavigationServer2D::get_debug_navigation_enable_edge_connections() const {
@@ -303,7 +318,7 @@ void NavigationServer2D::_bind_methods() {
 NavigationServer2D::NavigationServer2D() {
 	singleton = this;
 	ERR_FAIL_COND_MSG(!NavigationServer3D::get_singleton(), "The Navigation3D singleton should be initialized before the 2D one.");
-	NavigationServer3D::get_singleton_mut()->connect("map_changed", callable_mp(this, &NavigationServer2D::_emit_map_changed));
+	NavigationServer3D::get_singleton()->connect("map_changed", callable_mp(this, &NavigationServer2D::_emit_map_changed));
 }
 
 NavigationServer2D::~NavigationServer2D() {
@@ -322,23 +337,23 @@ RID FORWARD_1_C(region_get_map, RID, p_region, rid_to_rid);
 
 RID FORWARD_1_C(agent_get_map, RID, p_agent, rid_to_rid);
 
-RID FORWARD_0_C(map_create);
+RID FORWARD_0(map_create);
 
-void FORWARD_2_C(map_set_active, RID, p_map, bool, p_active, rid_to_rid, bool_to_bool);
+void FORWARD_2(map_set_active, RID, p_map, bool, p_active, rid_to_rid, bool_to_bool);
 
 bool FORWARD_1_C(map_is_active, RID, p_map, rid_to_rid);
 
 void NavigationServer2D::map_force_update(RID p_map) {
-	NavigationServer3D::get_singleton_mut()->map_force_update(p_map);
+	NavigationServer3D::get_singleton()->map_force_update(p_map);
 }
 
-void FORWARD_2_C(map_set_cell_size, RID, p_map, real_t, p_cell_size, rid_to_rid, real_to_real);
+void FORWARD_2(map_set_cell_size, RID, p_map, real_t, p_cell_size, rid_to_rid, real_to_real);
 real_t FORWARD_1_C(map_get_cell_size, RID, p_map, rid_to_rid);
 
-void FORWARD_2_C(map_set_edge_connection_margin, RID, p_map, real_t, p_connection_margin, rid_to_rid, real_to_real);
+void FORWARD_2(map_set_edge_connection_margin, RID, p_map, real_t, p_connection_margin, rid_to_rid, real_to_real);
 real_t FORWARD_1_C(map_get_edge_connection_margin, RID, p_map, rid_to_rid);
 
-void FORWARD_2_C(map_set_link_connection_radius, RID, p_map, real_t, p_connection_radius, rid_to_rid, real_to_real);
+void FORWARD_2(map_set_link_connection_radius, RID, p_map, real_t, p_connection_radius, rid_to_rid, real_to_real);
 real_t FORWARD_1_C(map_get_link_connection_radius, RID, p_map, rid_to_rid);
 
 Vector<Vector2> FORWARD_5_R_C(vector_v3_to_v2, map_get_path, RID, p_map, Vector2, p_origin, Vector2, p_destination, bool, p_optimize, uint32_t, p_layers, rid_to_rid, v2_to_v3, v2_to_v3, bool_to_bool, uint32_to_uint32);
@@ -346,22 +361,22 @@ Vector<Vector2> FORWARD_5_R_C(vector_v3_to_v2, map_get_path, RID, p_map, Vector2
 Vector2 FORWARD_2_R_C(v3_to_v2, map_get_closest_point, RID, p_map, const Vector2 &, p_point, rid_to_rid, v2_to_v3);
 RID FORWARD_2_C(map_get_closest_point_owner, RID, p_map, const Vector2 &, p_point, rid_to_rid, v2_to_v3);
 
-RID FORWARD_0_C(region_create);
+RID FORWARD_0(region_create);
 
-void FORWARD_2_C(region_set_enter_cost, RID, p_region, real_t, p_enter_cost, rid_to_rid, real_to_real);
+void FORWARD_2(region_set_enter_cost, RID, p_region, real_t, p_enter_cost, rid_to_rid, real_to_real);
 real_t FORWARD_1_C(region_get_enter_cost, RID, p_region, rid_to_rid);
-void FORWARD_2_C(region_set_travel_cost, RID, p_region, real_t, p_travel_cost, rid_to_rid, real_to_real);
+void FORWARD_2(region_set_travel_cost, RID, p_region, real_t, p_travel_cost, rid_to_rid, real_to_real);
 real_t FORWARD_1_C(region_get_travel_cost, RID, p_region, rid_to_rid);
-void FORWARD_2_C(region_set_owner_id, RID, p_region, ObjectID, p_owner_id, rid_to_rid, id_to_id);
+void FORWARD_2(region_set_owner_id, RID, p_region, ObjectID, p_owner_id, rid_to_rid, id_to_id);
 ObjectID FORWARD_1_C(region_get_owner_id, RID, p_region, rid_to_rid);
 bool FORWARD_2_C(region_owns_point, RID, p_region, const Vector2 &, p_point, rid_to_rid, v2_to_v3);
 
-void FORWARD_2_C(region_set_map, RID, p_region, RID, p_map, rid_to_rid, rid_to_rid);
-void FORWARD_2_C(region_set_navigation_layers, RID, p_region, uint32_t, p_navigation_layers, rid_to_rid, uint32_to_uint32);
+void FORWARD_2(region_set_map, RID, p_region, RID, p_map, rid_to_rid, rid_to_rid);
+void FORWARD_2(region_set_navigation_layers, RID, p_region, uint32_t, p_navigation_layers, rid_to_rid, uint32_to_uint32);
 uint32_t FORWARD_1_C(region_get_navigation_layers, RID, p_region, rid_to_rid);
-void FORWARD_2_C(region_set_transform, RID, p_region, Transform2D, p_transform, rid_to_rid, trf2_to_trf3);
+void FORWARD_2(region_set_transform, RID, p_region, Transform2D, p_transform, rid_to_rid, trf2_to_trf3);
 
-void NavigationServer2D::region_set_navigation_polygon(RID p_region, Ref<NavigationPolygon> p_navigation_polygon) const {
+void NavigationServer2D::region_set_navigation_polygon(RID p_region, Ref<NavigationPolygon> p_navigation_polygon) {
 	NavigationServer3D::get_singleton()->region_set_navigation_mesh(p_region, poly_to_mesh(p_navigation_polygon));
 }
 
@@ -369,56 +384,45 @@ int FORWARD_1_C(region_get_connections_count, RID, p_region, rid_to_rid);
 Vector2 FORWARD_2_R_C(v3_to_v2, region_get_connection_pathway_start, RID, p_region, int, p_connection_id, rid_to_rid, int_to_int);
 Vector2 FORWARD_2_R_C(v3_to_v2, region_get_connection_pathway_end, RID, p_region, int, p_connection_id, rid_to_rid, int_to_int);
 
-RID FORWARD_0_C(link_create);
+RID FORWARD_0(link_create);
 
-void FORWARD_2_C(link_set_map, RID, p_link, RID, p_map, rid_to_rid, rid_to_rid);
+void FORWARD_2(link_set_map, RID, p_link, RID, p_map, rid_to_rid, rid_to_rid);
 RID FORWARD_1_C(link_get_map, RID, p_link, rid_to_rid);
-void FORWARD_2_C(link_set_bidirectional, RID, p_link, bool, p_bidirectional, rid_to_rid, bool_to_bool);
+void FORWARD_2(link_set_bidirectional, RID, p_link, bool, p_bidirectional, rid_to_rid, bool_to_bool);
 bool FORWARD_1_C(link_is_bidirectional, RID, p_link, rid_to_rid);
-void FORWARD_2_C(link_set_navigation_layers, RID, p_link, uint32_t, p_navigation_layers, rid_to_rid, uint32_to_uint32);
+void FORWARD_2(link_set_navigation_layers, RID, p_link, uint32_t, p_navigation_layers, rid_to_rid, uint32_to_uint32);
 uint32_t FORWARD_1_C(link_get_navigation_layers, RID, p_link, rid_to_rid);
-void FORWARD_2_C(link_set_start_location, RID, p_link, Vector2, p_location, rid_to_rid, v2_to_v3);
+void FORWARD_2(link_set_start_location, RID, p_link, Vector2, p_location, rid_to_rid, v2_to_v3);
 Vector2 FORWARD_1_R_C(v3_to_v2, link_get_start_location, RID, p_link, rid_to_rid);
-void FORWARD_2_C(link_set_end_location, RID, p_link, Vector2, p_location, rid_to_rid, v2_to_v3);
+void FORWARD_2(link_set_end_location, RID, p_link, Vector2, p_location, rid_to_rid, v2_to_v3);
 Vector2 FORWARD_1_R_C(v3_to_v2, link_get_end_location, RID, p_link, rid_to_rid);
-void FORWARD_2_C(link_set_enter_cost, RID, p_link, real_t, p_enter_cost, rid_to_rid, real_to_real);
+void FORWARD_2(link_set_enter_cost, RID, p_link, real_t, p_enter_cost, rid_to_rid, real_to_real);
 real_t FORWARD_1_C(link_get_enter_cost, RID, p_link, rid_to_rid);
-void FORWARD_2_C(link_set_travel_cost, RID, p_link, real_t, p_travel_cost, rid_to_rid, real_to_real);
+void FORWARD_2(link_set_travel_cost, RID, p_link, real_t, p_travel_cost, rid_to_rid, real_to_real);
 real_t FORWARD_1_C(link_get_travel_cost, RID, p_link, rid_to_rid);
-void FORWARD_2_C(link_set_owner_id, RID, p_link, ObjectID, p_owner_id, rid_to_rid, id_to_id);
+void FORWARD_2(link_set_owner_id, RID, p_link, ObjectID, p_owner_id, rid_to_rid, id_to_id);
 ObjectID FORWARD_1_C(link_get_owner_id, RID, p_link, rid_to_rid);
 
-RID NavigationServer2D::agent_create() const {
+RID NavigationServer2D::agent_create() {
 	RID agent = NavigationServer3D::get_singleton()->agent_create();
 	NavigationServer3D::get_singleton()->agent_set_ignore_y(agent, true);
 	return agent;
 }
 
-void FORWARD_2_C(agent_set_map, RID, p_agent, RID, p_map, rid_to_rid, rid_to_rid);
-
-void FORWARD_2_C(agent_set_neighbor_distance, RID, p_agent, real_t, p_dist, rid_to_rid, real_to_real);
-
-void FORWARD_2_C(agent_set_max_neighbors, RID, p_agent, int, p_count, rid_to_rid, int_to_int);
-
-void FORWARD_2_C(agent_set_time_horizon, RID, p_agent, real_t, p_time, rid_to_rid, real_to_real);
-
-void FORWARD_2_C(agent_set_radius, RID, p_agent, real_t, p_radius, rid_to_rid, real_to_real);
-
-void FORWARD_2_C(agent_set_max_speed, RID, p_agent, real_t, p_max_speed, rid_to_rid, real_to_real);
-
-void FORWARD_2_C(agent_set_velocity, RID, p_agent, Vector2, p_velocity, rid_to_rid, v2_to_v3);
-
-void FORWARD_2_C(agent_set_target_velocity, RID, p_agent, Vector2, p_velocity, rid_to_rid, v2_to_v3);
-
-void FORWARD_2_C(agent_set_position, RID, p_agent, Vector2, p_position, rid_to_rid, v2_to_v3);
-
-void FORWARD_2_C(agent_set_ignore_y, RID, p_agent, bool, p_ignore, rid_to_rid, bool_to_bool);
-
+void FORWARD_2(agent_set_map, RID, p_agent, RID, p_map, rid_to_rid, rid_to_rid);
+void FORWARD_2(agent_set_neighbor_distance, RID, p_agent, real_t, p_dist, rid_to_rid, real_to_real);
+void FORWARD_2(agent_set_max_neighbors, RID, p_agent, int, p_count, rid_to_rid, int_to_int);
+void FORWARD_2(agent_set_time_horizon, RID, p_agent, real_t, p_time, rid_to_rid, real_to_real);
+void FORWARD_2(agent_set_radius, RID, p_agent, real_t, p_radius, rid_to_rid, real_to_real);
+void FORWARD_2(agent_set_max_speed, RID, p_agent, real_t, p_max_speed, rid_to_rid, real_to_real);
+void FORWARD_2(agent_set_velocity, RID, p_agent, Vector2, p_velocity, rid_to_rid, v2_to_v3);
+void FORWARD_2(agent_set_target_velocity, RID, p_agent, Vector2, p_velocity, rid_to_rid, v2_to_v3);
+void FORWARD_2(agent_set_position, RID, p_agent, Vector2, p_position, rid_to_rid, v2_to_v3);
+void FORWARD_2(agent_set_ignore_y, RID, p_agent, bool, p_ignore, rid_to_rid, bool_to_bool);
 bool FORWARD_1_C(agent_is_map_changed, RID, p_agent, rid_to_rid);
+void FORWARD_4(agent_set_callback, RID, p_agent, ObjectID, p_object_id, StringName, p_method, Variant, p_udata, rid_to_rid, id_to_id, sn_to_sn, var_to_var);
 
-void FORWARD_4_C(agent_set_callback, RID, p_agent, ObjectID, p_object_id, StringName, p_method, Variant, p_udata, rid_to_rid, id_to_id, sn_to_sn, var_to_var);
-
-void FORWARD_1_C(free, RID, p_object, rid_to_rid);
+void FORWARD_1(free, RID, p_object, rid_to_rid);
 
 void NavigationServer2D::query_path(const Ref<NavigationPathQueryParameters2D> &p_query_parameters, Ref<NavigationPathQueryResult2D> p_query_result) const {
 	ERR_FAIL_COND(!p_query_parameters.is_valid());

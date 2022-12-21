@@ -401,7 +401,7 @@ Ref<ArrayMesh> NavigationMesh::get_debug_mesh() {
 	}
 
 	debug_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, face_mesh_array);
-	Ref<StandardMaterial3D> debug_geometry_face_material = NavigationServer3D::get_singleton_mut()->get_debug_navigation_geometry_face_material();
+	Ref<StandardMaterial3D> debug_geometry_face_material = NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_material();
 	debug_mesh->surface_set_material(0, debug_geometry_face_material);
 
 	// if enabled build geometry edge line surface
@@ -426,7 +426,7 @@ Ref<ArrayMesh> NavigationMesh::get_debug_mesh() {
 		line_mesh_array.resize(Mesh::ARRAY_MAX);
 		line_mesh_array[Mesh::ARRAY_VERTEX] = line_vertex_array;
 		debug_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_LINES, line_mesh_array);
-		Ref<StandardMaterial3D> debug_geometry_edge_material = NavigationServer3D::get_singleton_mut()->get_debug_navigation_geometry_edge_material();
+		Ref<StandardMaterial3D> debug_geometry_edge_material = NavigationServer3D::get_singleton()->get_debug_navigation_geometry_edge_material();
 		debug_mesh->surface_set_material(1, debug_geometry_edge_material);
 	}
 
