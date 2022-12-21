@@ -125,11 +125,7 @@ void NavigationServer3D::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("navigation_debug_changed"));
 }
 
-const NavigationServer3D *NavigationServer3D::get_singleton() {
-	return singleton;
-}
-
-NavigationServer3D *NavigationServer3D::get_singleton_mut() {
+NavigationServer3D *NavigationServer3D::get_singleton() {
 	return singleton;
 }
 
