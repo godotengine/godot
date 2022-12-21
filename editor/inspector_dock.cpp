@@ -400,6 +400,9 @@ void InspectorDock::_bind_methods() {
 	ClassDB::bind_method("_edit_forward", &InspectorDock::_edit_forward);
 	ClassDB::bind_method("_edit_back", &InspectorDock::_edit_back);
 
+	ClassDB::bind_method("store_script_properties", &InspectorDock::store_script_properties);
+	ClassDB::bind_method("apply_script_properties", &InspectorDock::apply_script_properties);
+
 	ADD_SIGNAL(MethodInfo("request_help"));
 }
 
@@ -525,6 +528,32 @@ void InspectorDock::update_keying() {
 
 EditorPropertyNameProcessor::Style InspectorDock::get_property_name_style() const {
 	return property_name_style;
+}
+
+void InspectorDock::store_script_properties(Object *p_object) {
+	ERR_FAIL_NULL(p_object);
+	ScriptInstance *si = p_object->get_script_instance();
+	if (!si) {
+		return;
+	}
+	si->get_property_state(stored_properties);
+}
+
+void InspectorDock::apply_script_properties(Object *p_object) {
+	ERR_FAIL_NULL(p_object);
+	ScriptInstance *si = p_object->get_script_instance();
+	if (!si) {
+		return;
+	}
+
+	for (List<Pair<StringName, Variant>>::Element *E = stored_properties.front(); E; E = E->next()) {
+		const Pair<StringName, Variant> &p = E->get();
+		Variant current;
+		if (si->get(p.first, current) && current.get_type() == p.second.get_type()) {
+			si->set(p.first, p.second);
+		}
+	}
+	stored_properties.clear();
 }
 
 InspectorDock::InspectorDock(EditorNode *p_editor, EditorData &p_editor_data) {

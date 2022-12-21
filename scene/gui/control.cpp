@@ -432,6 +432,10 @@ void Control::_validate_property(PropertyInfo &property) const {
 
 		property.hint_string = hint_string;
 	}
+
+	if (property.name == "rect_scale") {
+		property.hint = PROPERTY_HINT_LINK;
+	}
 }
 
 Control *Control::get_parent_control() const {

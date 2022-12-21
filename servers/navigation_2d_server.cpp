@@ -146,16 +146,16 @@ Transform trf2_to_trf3(const Transform2D &d) {
 	return Transform(b, o);
 }
 
-Object *obj_to_obj(Object *d) {
-	return d;
-}
-
 StringName sn_to_sn(StringName &d) {
 	return d;
 }
 
 Variant var_to_var(Variant &d) {
 	return d;
+}
+
+ObjectID id_to_id(const ObjectID &id) {
+	return id;
 }
 
 Ref<NavigationMesh> poly_to_mesh(Ref<NavigationPolygon> d) {
@@ -218,7 +218,7 @@ void Navigation2DServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("agent_set_target_velocity", "agent", "target_velocity"), &Navigation2DServer::agent_set_target_velocity);
 	ClassDB::bind_method(D_METHOD("agent_set_position", "agent", "position"), &Navigation2DServer::agent_set_position);
 	ClassDB::bind_method(D_METHOD("agent_is_map_changed", "agent"), &Navigation2DServer::agent_is_map_changed);
-	ClassDB::bind_method(D_METHOD("agent_set_callback", "agent", "receiver", "method", "userdata"), &Navigation2DServer::agent_set_callback, DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("agent_set_callback", "agent", "object_id", "method", "userdata"), &Navigation2DServer::agent_set_callback, DEFVAL(Variant()));
 
 	ClassDB::bind_method(D_METHOD("free_rid", "rid"), &Navigation2DServer::free);
 
@@ -319,6 +319,6 @@ void FORWARD_2_C(agent_set_ignore_y, RID, p_agent, bool, p_ignore, rid_to_rid, b
 
 bool FORWARD_1_C(agent_is_map_changed, RID, p_agent, rid_to_rid);
 
-void FORWARD_4_C(agent_set_callback, RID, p_agent, Object *, p_receiver, StringName, p_method, Variant, p_udata, rid_to_rid, obj_to_obj, sn_to_sn, var_to_var);
+void FORWARD_4_C(agent_set_callback, RID, p_agent, ObjectID, p_object_id, StringName, p_method, Variant, p_udata, rid_to_rid, id_to_id, sn_to_sn, var_to_var);
 
 void FORWARD_1_C(free, RID, p_object, rid_to_rid);

@@ -100,6 +100,7 @@ class InspectorDock : public VBoxContainer {
 	AcceptDialog *warning_dialog;
 
 	EditorPropertyNameProcessor::Style property_name_style;
+	List<Pair<StringName, Variant>> stored_properties;
 
 	void _prepare_menu();
 	void _menu_option(int p_option);
@@ -143,6 +144,9 @@ public:
 	EditorInspector *get_inspector() { return inspector; }
 
 	EditorPropertyNameProcessor::Style get_property_name_style() const;
+
+	void store_script_properties(Object *p_object);
+	void apply_script_properties(Object *p_object);
 
 	InspectorDock(EditorNode *p_editor, EditorData &p_editor_data);
 	~InspectorDock();
