@@ -59,6 +59,13 @@
 				Returns the item's name.
 			</description>
 		</method>
+		<method name="get_item_navigation_layers" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="id" type="int" />
+			<description>
+				Returns the item's navigation layers bitmask.
+			</description>
+		</method>
 		<method name="get_item_navigation_mesh" qualifiers="const">
 			<return type="NavigationMesh" />
 			<param index="0" name="id" type="int" />
@@ -124,6 +131,14 @@
 			<description>
 				Sets the item's name.
 				This name is shown in the editor. It can also be used to look up the item later using [method find_item_by_name].
+			</description>
+		</method>
+		<method name="set_item_navigation_layers">
+			<return type="void" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="navigation_layers" type="int" />
+			<description>
+				Sets the item's navigation layers bitmask.
 			</description>
 		</method>
 		<method name="set_item_navigation_mesh">
