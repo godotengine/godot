@@ -309,10 +309,8 @@ int mbedtls_ecdsa_sign_det_ext( mbedtls_ecp_group *grp, mbedtls_mpi *r,
  *                  This must be initialized.
  *
  * \return          \c 0 on success.
- * \return          #MBEDTLS_ERR_ECP_BAD_INPUT_DATA if the signature
- *                  is invalid.
  * \return          An \c MBEDTLS_ERR_ECP_XXX or \c MBEDTLS_MPI_XXX
- *                  error code on failure for any other reason.
+ *                  error code on failure.
  */
 int mbedtls_ecdsa_verify( mbedtls_ecp_group *grp,
                           const unsigned char *buf, size_t blen,
