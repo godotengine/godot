@@ -229,7 +229,7 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 
 	Ref<FontVariation> default_theme_fc;
 	default_theme_fc.instantiate();
-	if (custom_font_path.length() > 0 && dir->file_exists(custom_font_path)) {
+	if (!custom_font_path.is_empty() && dir->file_exists(custom_font_path)) {
 		Ref<FontFile> custom_font = load_external_font(custom_font_path, font_hinting, font_antialiasing, true, font_subpixel_positioning);
 		{
 			TypedArray<Font> fallback_custom;
