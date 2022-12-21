@@ -304,6 +304,11 @@ void main() {
 			PARTICLE.flags = PARTICLE_FLAG_ACTIVE | (particles.data[src_idx].flags & (PARTICLE_FRAME_MASK << PARTICLE_FRAME_SHIFT));
 			return; //- this appears like it should be correct, but it seems not to be.. wonder why.
 		}
+		if (!bool(particles.data[src_idx].flags & PARTICLE_FLAG_ACTIVE)) {
+			// Disable the entire trail if the parent is no longer active.
+			PARTICLE.flags = 0;
+			return;
+		}
 	} else {
 		PARTICLE.flags &= ~PARTICLE_FLAG_STARTED;
 	}
