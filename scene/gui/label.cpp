@@ -250,9 +250,9 @@ void Label::_update_visible() {
 	}
 }
 
-inline void draw_glyph(const Glyph &p_gl, const RID &p_canvas, const Color &p_font_color, const Vector2 &p_ofs) {
+inline void draw_glyph(const Glyph &p_gl, const RID &p_canvas, const Color &p_font_color, const Vector2 &p_ofs, MultiRect *p_multirect) {
 	if (p_gl.font_rid != RID()) {
-		TS->font_draw_glyph(p_gl.font_rid, p_canvas, p_gl.font_size, p_ofs + Vector2(p_gl.x_off, p_gl.y_off), p_gl.index, p_font_color);
+		TS->font_draw_glyph_multirect(p_multirect, p_gl.font_rid, p_canvas, p_gl.font_size, p_ofs + Vector2(p_gl.x_off, p_gl.y_off), p_gl.index, p_font_color);
 	} else {
 		TS->draw_hex_code_box(p_canvas, p_gl.font_size, p_ofs + Vector2(p_gl.x_off, p_gl.y_off), p_gl.index, p_font_color);
 	}
@@ -533,13 +533,14 @@ void Label::_notification(int p_what) {
 				// Draw main text. Note: Do not merge this into the single loop with the outline, to prevent overlaps.
 
 				// Draw RTL ellipsis string when necessary.
+				MultiRect multirect;
 				if (rtl && ellipsis_pos >= 0) {
 					for (int gl_idx = ellipsis_gl_size - 1; gl_idx >= 0; gl_idx--) {
 						for (int j = 0; j < ellipsis_glyphs[gl_idx].repeat; j++) {
 							bool skip = (trim_chars && ellipsis_glyphs[gl_idx].end > visible_chars) || (trim_glyphs_ltr && (processed_glyphs >= visible_glyphs)) || (trim_glyphs_rtl && (processed_glyphs < total_glyphs - visible_glyphs));
 							//Draw glyph outlines and shadow.
 							if (!skip) {
-								draw_glyph(ellipsis_glyphs[gl_idx], ci, font_color, ofs);
+								draw_glyph(ellipsis_glyphs[gl_idx], ci, font_color, ofs, &multirect);
 							}
 							processed_glyphs++;
 							ofs.x += ellipsis_glyphs[gl_idx].advance;
@@ -566,7 +567,7 @@ void Label::_notification(int p_what) {
 
 						// Draw glyph outlines and shadow.
 						if (!skip) {
-							draw_glyph(glyphs[j], ci, font_color, ofs);
+							draw_glyph(glyphs[j], ci, font_color, ofs, &multirect);
 						}
 						processed_glyphs++;
 						ofs.x += glyphs[j].advance;
@@ -579,7 +580,7 @@ void Label::_notification(int p_what) {
 							bool skip = (trim_chars && ellipsis_glyphs[gl_idx].end > visible_chars) || (trim_glyphs_ltr && (processed_glyphs >= visible_glyphs)) || (trim_glyphs_rtl && (processed_glyphs < total_glyphs - visible_glyphs));
 							//Draw glyph outlines and shadow.
 							if (!skip) {
-								draw_glyph(ellipsis_glyphs[gl_idx], ci, font_color, ofs);
+								draw_glyph(ellipsis_glyphs[gl_idx], ci, font_color, ofs, &multirect);
 							}
 							processed_glyphs++;
 							ofs.x += ellipsis_glyphs[gl_idx].advance;

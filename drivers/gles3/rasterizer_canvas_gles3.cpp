@@ -962,6 +962,9 @@ void RasterizerCanvasGLES3::_record_item_commands(const Item *p_item, RID p_rend
 				_add_to_batch(r_index, r_batch_broken);
 			} break;
 
+			case Item::Command::TYPE_MULTIRECT: {
+			} break;
+
 			case Item::Command::TYPE_NINEPATCH: {
 				const Item::CommandNinePatch *np = static_cast<const Item::CommandNinePatch *>(c);
 
@@ -1231,6 +1234,8 @@ void RasterizerCanvasGLES3::_render_batch(Light *p_lights, uint32_t p_index) {
 			glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, state.canvas_instance_batches[p_index].instance_count);
 			glBindVertexArray(0);
 
+		} break;
+		case Item::Command::TYPE_MULTIRECT: {
 		} break;
 
 		case Item::Command::TYPE_POLYGON: {

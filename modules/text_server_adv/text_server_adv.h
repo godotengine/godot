@@ -819,6 +819,7 @@ public:
 
 	MODBIND6C(font_draw_glyph, const RID &, const RID &, int64_t, const Vector2 &, int64_t, const Color &);
 	MODBIND7C(font_draw_glyph_outline, const RID &, const RID &, int64_t, int64_t, const Vector2 &, int64_t, const Color &);
+	MODBIND7C(font_draw_glyph_multirect, MultiRect *, const RID &, const RID &, int64_t, const Vector2 &, int64_t, const Color &);
 
 	MODBIND2RC(bool, font_is_language_supported, const RID &, const String &);
 	MODBIND3(font_set_language_support_override, const RID &, const String &, bool);

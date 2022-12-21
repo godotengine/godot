@@ -585,6 +585,10 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 
 			} break;
 
+			case Item::Command::TYPE_MULTIRECT: {
+				// NYI
+			} break;
+
 			case Item::Command::TYPE_NINEPATCH: {
 				const Item::CommandNinePatch *np = static_cast<const Item::CommandNinePatch *>(c);
 

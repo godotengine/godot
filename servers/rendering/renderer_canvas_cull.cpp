@@ -1292,6 +1292,29 @@ void RendererCanvasCull::canvas_item_add_texture_rect_region(RID p_item, const R
 	}
 }
 
+void RendererCanvasCull::canvas_item_add_texture_multirect_region(RID p_item, const Vector<Rect2> &p_rects, RID p_texture, const Vector<Rect2> &p_src_rects, const Color &p_modulate, uint32_t p_canvas_rect_flags) {
+	ERR_FAIL_COND(p_rects.size() != p_src_rects.size());
+
+#if 0
+	// Compatibility until clayjohn has implemented
+	for (int n = 0; n < p_rects.size(); n++) {
+		canvas_item_add_texture_rect_region(p_item, p_rects[n], p_texture, p_src_rects[n], p_modulate, p_canvas_rect_flags & RendererCanvasRender::CANVAS_RECT_TRANSPOSE, p_canvas_rect_flags & RendererCanvasRender::CANVAS_RECT_CLIP_UV);
+	}
+#else
+	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
+	ERR_FAIL_COND(!canvas_item);
+
+	Item::CommandMultiRect *mrect = canvas_item->alloc_command<Item::CommandMultiRect>();
+	ERR_FAIL_COND(!mrect);
+	mrect->modulate = p_modulate;
+	mrect->texture = p_texture;
+	mrect->flags = p_canvas_rect_flags;
+
+	mrect->rects = p_rects;
+	mrect->sources = p_src_rects;
+#endif
+}
+
 void RendererCanvasCull::canvas_item_add_nine_patch(RID p_item, const Rect2 &p_rect, const Rect2 &p_source, RID p_texture, const Vector2 &p_topleft, const Vector2 &p_bottomright, RS::NinePatchAxisMode p_x_axis_mode, RS::NinePatchAxisMode p_y_axis_mode, bool p_draw_center, const Color &p_modulate) {
 	Item *canvas_item = canvas_item_owner.get_or_null(p_item);
 	ERR_FAIL_COND(!canvas_item);

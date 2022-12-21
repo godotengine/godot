@@ -801,4 +801,28 @@ void _err_flush_stdout();
 #define DEV_ASSERT(m_cond)
 #endif
 
+/**
+ * These should be 'free' checks for program flow and should not be needed in any releases,
+ *  only used in dev builds.
+ */
+#ifdef DEV_ENABLED
+#define DEV_CHECK(m_cond)                                              \
+	if (unlikely(!(m_cond))) {                                         \
+		ERR_PRINT("DEV_CHECK failed  \"" _STR(m_cond) "\" is false."); \
+	} else                                                             \
+		((void)0)
+#else
+#define DEV_CHECK(m_cond)
+#endif
+
+#ifdef DEV_ENABLED
+#define DEV_CHECK_ONCE(m_cond)                                                   \
+	if (unlikely(!(m_cond))) {                                                   \
+		ERR_PRINT_ONCE("DEV_CHECK_ONCE failed  \"" _STR(m_cond) "\" is false."); \
+	} else                                                                       \
+		((void)0)
+#else
+#define DEV_CHECK_ONCE(m_cond)
+#endif
+
 #endif // ERROR_MACROS_H

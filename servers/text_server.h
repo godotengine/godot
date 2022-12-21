@@ -36,6 +36,7 @@
 #include "core/templates/rid.h"
 #include "core/variant/native_ptr.h"
 #include "core/variant/variant.h"
+#include "servers/rendering/renderer_canvas_helper.h"
 
 template <typename T>
 class TypedArray;
@@ -367,6 +368,7 @@ public:
 
 	virtual void font_draw_glyph(const RID &p_font, const RID &p_canvas, int64_t p_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color = Color(1, 1, 1)) const = 0;
 	virtual void font_draw_glyph_outline(const RID &p_font, const RID &p_canvas, int64_t p_size, int64_t p_outline_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color = Color(1, 1, 1)) const = 0;
+	virtual void font_draw_glyph_multirect(MultiRect *p_multirect, const RID &p_font, const RID &p_canvas, int64_t p_size, const Vector2 &p_pos, int64_t p_index, const Color &p_color = Color(1, 1, 1)) const { font_draw_glyph(p_font, p_canvas, p_size, p_pos, p_index, p_color); }
 
 	virtual bool font_is_language_supported(const RID &p_font_rid, const String &p_language) const = 0;
 	virtual void font_set_language_support_override(const RID &p_font_rid, const String &p_language, bool p_supported) = 0;
