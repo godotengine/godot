@@ -1263,7 +1263,7 @@ Dictionary VisualShaderEditor::get_custom_node_data(Ref<VisualShaderNodeCustom> 
 
 void VisualShaderEditor::update_custom_type(const Ref<Resource> &p_resource) {
 	Ref<Script> scr = Ref<Script>(p_resource.ptr());
-	if (scr.is_null() || scr->get_instance_base_type() != String("VisualShaderNodeCustom")) {
+	if (scr.is_null() || scr->get_instance_base_type() != "VisualShaderNodeCustom") {
 		return;
 	}
 
