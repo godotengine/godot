@@ -100,6 +100,11 @@ static Ref<StyleBox> make_empty_stylebox(float p_margin_left = -1, float p_margi
 void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const Ref<Font> &bold_font, const Ref<Font> &bold_italics_font, const Ref<Font> &italics_font, Ref<Texture2D> &default_icon, Ref<StyleBox> &default_style, float p_scale) {
 	scale = p_scale;
 
+	// Default theme properties.
+	theme->set_default_font(default_font);
+	theme->set_default_font_size(default_font_size * scale);
+	theme->set_default_base_scale(scale);
+
 	// Font colors
 	const Color control_font_color = Color(0.875, 0.875, 0.875);
 	const Color control_font_low_color = Color(0.7, 0.7, 0.7);
