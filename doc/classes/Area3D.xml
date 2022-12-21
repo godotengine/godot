@@ -133,15 +133,13 @@
 		<signal name="area_entered">
 			<param index="0" name="area" type="Area3D" />
 			<description>
-				Emitted when another Area3D enters this Area3D. Requires [member monitoring] to be set to [code]true[/code].
-				[param area] the other Area3D.
+				Emitted when the received [param area] enters this area. Requires [member monitoring] to be set to [code]true[/code].
 			</description>
 		</signal>
 		<signal name="area_exited">
 			<param index="0" name="area" type="Area3D" />
 			<description>
-				Emitted when another Area3D exits this Area3D. Requires [member monitoring] to be set to [code]true[/code].
-				[param area] the other Area3D.
+				Emitted when the received [param area] exits this area. Requires [member monitoring] to be set to [code]true[/code].
 			</description>
 		</signal>
 		<signal name="area_shape_entered">
@@ -150,11 +148,18 @@
 			<param index="2" name="area_shape_index" type="int" />
 			<param index="3" name="local_shape_index" type="int" />
 			<description>
-				Emitted when one of another Area3D's [Shape3D]s enters one of this Area3D's [Shape3D]s. Requires [member monitoring] to be set to [code]true[/code].
-				[param area_rid] the [RID] of the other Area3D's [CollisionObject3D] used by the [PhysicsServer3D].
-				[param area] the other Area3D.
-				[param area_shape_index] the index of the [Shape3D] of the other Area3D used by the [PhysicsServer3D]. Get the [CollisionShape3D] node with [code]area.shape_owner_get_owner(area.shape_find_owner(area_shape_index))[/code].
-				[param local_shape_index] the index of the [Shape3D] of this Area3D used by the [PhysicsServer3D]. Get the [CollisionShape3D] node with [code]self.shape_owner_get_owner(self.shape_find_owner(local_shape_index))[/code].
+				Emitted when a [Shape3D] of the received [param area] enters a shape of this area. Requires [member monitoring] to be set to [code]true[/code].
+				[param local_shape_index] and [param area_shape_index] contain indices of the interacting shapes from this area and the other area, respectively. [param area_rid] contains the [RID] of the other area. These values can be used with the [PhysicsServer3D].
+				[b]Example of getting the[/b] [CollisionShape3D] [b]node from the shape index:[/b]
+				[codeblocks]
+				[gdscript]
+				var other_shape_owner = area.shape_find_owner(area_shape_index)
+				var other_shape_node = area.shape_owner_get_owner(other_shape_owner)
+
+				var local_shape_owner = shape_find_owner(local_shape_index)
+				var local_shape_node = shape_owner_get_owner(local_shape_owner)
+				[/gdscript]
+				[/codeblocks]
 			</description>
 		</signal>
 		<signal name="area_shape_exited">
@@ -163,25 +168,20 @@
 			<param index="2" name="area_shape_index" type="int" />
 			<param index="3" name="local_shape_index" type="int" />
 			<description>
-				Emitted when one of another Area3D's [Shape3D]s exits one of this Area3D's [Shape3D]s. Requires [member monitoring] to be set to [code]true[/code].
-				[param area_rid] the [RID] of the other Area3D's [CollisionObject3D] used by the [PhysicsServer3D].
-				[param area] the other Area3D.
-				[param area_shape_index] the index of the [Shape3D] of the other Area3D used by the [PhysicsServer3D]. Get the [CollisionShape3D] node with [code]area.shape_owner_get_owner(area.shape_find_owner(area_shape_index))[/code].
-				[param local_shape_index] the index of the [Shape3D] of this Area3D used by the [PhysicsServer3D]. Get the [CollisionShape3D] node with [code]self.shape_owner_get_owner(self.shape_find_owner(local_shape_index))[/code].
+				Emitted when a [Shape3D] of the received [param area] exits a shape of this area. Requires [member monitoring] to be set to [code]true[/code].
+				See also [signal area_shape_entered].
 			</description>
 		</signal>
 		<signal name="body_entered">
 			<param index="0" name="body" type="Node3D" />
 			<description>
-				Emitted when a [PhysicsBody3D] or [GridMap] enters this Area3D. Requires [member monitoring] to be set to [code]true[/code]. [GridMap]s are detected if the [MeshLibrary] has Collision [Shape3D]s.
-				[param body] the [Node], if it exists in the tree, of the other [PhysicsBody3D] or [GridMap].
+				Emitted when the received [param body] enters this area. [param body] can be a [PhysicsBody3D] or a [GridMap]. [GridMap]s are detected if their [MeshLibrary] has collision shapes configured. Requires [member monitoring] to be set to [code]true[/code].
 			</description>
 		</signal>
 		<signal name="body_exited">
 			<param index="0" name="body" type="Node3D" />
 			<description>
-				Emitted when a [PhysicsBody3D] or [GridMap] exits this Area3D. Requires [member monitoring] to be set to [code]true[/code]. [GridMap]s are detected if the [MeshLibrary] has Collision [Shape3D]s.
-				[param body] the [Node], if it exists in the tree, of the other [PhysicsBody3D] or [GridMap].
+				Emitted when the received [param body] exits this area. [param body] can be a [PhysicsBody3D] or a [GridMap]. [GridMap]s are detected if their [MeshLibrary] has collision shapes configured. Requires [member monitoring] to be set to [code]true[/code].
 			</description>
 		</signal>
 		<signal name="body_shape_entered">
@@ -190,11 +190,18 @@
 			<param index="2" name="body_shape_index" type="int" />
 			<param index="3" name="local_shape_index" type="int" />
 			<description>
-				Emitted when one of a [PhysicsBody3D] or [GridMap]'s [Shape3D]s enters one of this Area3D's [Shape3D]s. Requires [member monitoring] to be set to [code]true[/code]. [GridMap]s are detected if the [MeshLibrary] has Collision [Shape3D]s.
-				[param body_rid] the [RID] of the [PhysicsBody3D] or [MeshLibrary]'s [CollisionObject3D] used by the [PhysicsServer3D].
-				[param body] the [Node], if it exists in the tree, of the [PhysicsBody3D] or [GridMap].
-				[param body_shape_index] the index of the [Shape3D] of the [PhysicsBody3D] or [GridMap] used by the [PhysicsServer3D]. Get the [CollisionShape3D] node with [code]body.shape_owner_get_owner(body.shape_find_owner(body_shape_index))[/code].
-				[param local_shape_index] the index of the [Shape3D] of this Area3D used by the [PhysicsServer3D]. Get the [CollisionShape3D] node with [code]self.shape_owner_get_owner(self.shape_find_owner(local_shape_index))[/code].
+				Emitted when a [Shape3D] of the received [param body] enters a shape of this area. [param body] can be a [PhysicsBody3D] or a [GridMap]. [GridMap]s are detected if their [MeshLibrary] has collision shapes configured. Requires [member monitoring] to be set to [code]true[/code].
+				[param local_shape_index] and [param body_shape_index] contain indices of the interacting shapes from this area and the interacting body, respectively. [param body_rid] contains the [RID] of the body. These values can be used with the [PhysicsServer3D].
+				[b]Example of getting the[/b] [CollisionShape3D] [b]node from the shape index:[/b]
+				[codeblocks]
+				[gdscript]
+				var body_shape_owner = body.shape_find_owner(body_shape_index)
+				var body_shape_node = body.shape_owner_get_owner(body_shape_owner)
+
+				var local_shape_owner = shape_find_owner(local_shape_index)
+				var local_shape_node = shape_owner_get_owner(local_shape_owner)
+				[/gdscript]
+				[/codeblocks]
 			</description>
 		</signal>
 		<signal name="body_shape_exited">
@@ -203,11 +210,8 @@
 			<param index="2" name="body_shape_index" type="int" />
 			<param index="3" name="local_shape_index" type="int" />
 			<description>
-				Emitted when one of a [PhysicsBody3D] or [GridMap]'s [Shape3D]s enters one of this Area3D's [Shape3D]s. Requires [member monitoring] to be set to [code]true[/code]. [GridMap]s are detected if the [MeshLibrary] has Collision [Shape3D]s.
-				[param body_rid] the [RID] of the [PhysicsBody3D] or [MeshLibrary]'s [CollisionObject3D] used by the [PhysicsServer3D].
-				[param body] the [Node], if it exists in the tree, of the [PhysicsBody3D] or [GridMap].
-				[param body_shape_index] the index of the [Shape3D] of the [PhysicsBody3D] or [GridMap] used by the [PhysicsServer3D]. Get the [CollisionShape3D] node with [code]body.shape_owner_get_owner(body.shape_find_owner(body_shape_index))[/code].
-				[param local_shape_index] the index of the [Shape3D] of this Area3D used by the [PhysicsServer3D]. Get the [CollisionShape3D] node with [code]self.shape_owner_get_owner(self.shape_find_owner(local_shape_index))[/code].
+				Emitted when a [Shape3D] of the received [param body] exits a shape of this area. [param body] can be a [PhysicsBody3D] or a [GridMap]. [GridMap]s are detected if their [MeshLibrary] has collision shapes configured. Requires [member monitoring] to be set to [code]true[/code].
+				See also [signal body_shape_entered].
 			</description>
 		</signal>
 	</signals>
