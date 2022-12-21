@@ -892,7 +892,7 @@ void Object::set_meta(const StringName &p_name, const Variant &p_value) {
 	if (E) {
 		E->value = p_value;
 	} else {
-		ERR_FAIL_COND(!p_name.operator String().is_valid_identifier());
+		ERR_FAIL_COND_MSG(!p_name.operator String().is_valid_identifier(), "Invalid metadata identifier: '" + p_name + "'.");
 		Variant *V = &metadata.insert(p_name, p_value)->value;
 		metadata_properties["metadata/" + p_name.operator String()] = V;
 		notify_property_list_changed();
