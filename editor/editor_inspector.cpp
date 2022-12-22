@@ -2693,8 +2693,9 @@ void EditorInspector::_update_tree() {
 			}
 
 			continue;
+		}
 
-		} else if (p.usage & PROPERTY_USAGE_GROUP) {
+		if (p.usage & PROPERTY_USAGE_GROUP) {
 			// Setup a property group.
 			group = p.name;
 
@@ -2710,8 +2711,9 @@ void EditorInspector::_update_tree() {
 			subgroup_base = "";
 
 			continue;
+		}
 
-		} else if (p.usage & PROPERTY_USAGE_CATEGORY) {
+		if (p.usage & PROPERTY_USAGE_CATEGORY) {
 			// Setup a property category.
 			group = "";
 			group_base = "";
@@ -2729,17 +2731,27 @@ void EditorInspector::_update_tree() {
 			}
 
 			// Iterate over remaining properties. If no properties in category, skip the category.
-			List<PropertyInfo>::Element *N = E_property->next();
 			bool valid = true;
-			while (N) {
-				if (!N->get().name.begins_with("metadata/_") && N->get().usage & PROPERTY_USAGE_EDITOR && (!restrict_to_basic || (N->get().usage & PROPERTY_USAGE_EDITOR_BASIC_SETTING))) {
-					break;
+			for (List<PropertyInfo>::Element *N = E_property->next(); N; N = N->next()) {
+				const PropertyInfo &info = N->get();
+
+				if (info.name.begins_with("metadata/_") || !(info.usage & PROPERTY_USAGE_EDITOR)) {
+					// These properties are not shown in the inspector.
+					continue;
 				}
-				if (N->get().usage & PROPERTY_USAGE_CATEGORY) {
+
+				if (filter.is_empty() && restrict_to_basic && !(info.usage & PROPERTY_USAGE_EDITOR_BASIC_SETTING)) {
+					// Skip advanced properties.
+					continue;
+				}
+
+				if (info.usage & PROPERTY_USAGE_CATEGORY) {
+					// End of current category reached.
 					valid = false;
-					break;
 				}
-				N = N->next();
+
+				// Any other properties make the category visible.
+				break;
 			}
 			if (!valid) {
 				continue; // Empty, ignore it.
@@ -2821,9 +2833,15 @@ void EditorInspector::_update_tree() {
 			}
 
 			continue;
+		}
 
-		} else if (p.name.begins_with("metadata/_") || !(p.usage & PROPERTY_USAGE_EDITOR) || _is_property_disabled_by_feature_profile(p.name) || (restrict_to_basic && !(p.usage & PROPERTY_USAGE_EDITOR_BASIC_SETTING))) {
+		if (p.name.begins_with("metadata/_") || !(p.usage & PROPERTY_USAGE_EDITOR) || _is_property_disabled_by_feature_profile(p.name)) {
 			// Ignore properties that are not supposed to be in the inspector.
+			continue;
+		}
+
+		if (filter.is_empty() && restrict_to_basic && !(p.usage & PROPERTY_USAGE_EDITOR_BASIC_SETTING)) {
+			// Skip advanced properties.
 			continue;
 		}
 

@@ -237,9 +237,13 @@ void SectionedInspector::update_category_list() {
 	const EditorPropertyNameProcessor::Style tooltip_style = EditorPropertyNameProcessor::get_tooltip_style(name_style);
 
 	for (PropertyInfo &pi : pinfo) {
-		if (pi.usage & PROPERTY_USAGE_CATEGORY) {
+		if (pi.usage & PROPERTY_USAGE_CATEGORY || !(pi.usage & PROPERTY_USAGE_EDITOR)) {
+			// These properties are not shown in the inspector.
 			continue;
-		} else if (!(pi.usage & PROPERTY_USAGE_EDITOR) || (restrict_to_basic && !(pi.usage & PROPERTY_USAGE_EDITOR_BASIC_SETTING))) {
+		}
+
+		if (filter_text.is_empty() && restrict_to_basic && !(pi.usage & PROPERTY_USAGE_EDITOR_BASIC_SETTING)) {
+			// Skip advanced properties.
 			continue;
 		}
 
