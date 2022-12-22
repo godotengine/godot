@@ -48,7 +48,9 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
 
 #### Thirdparty
 
+- libpng updated to version 1.6.39.
 - libwebp updated to version 1.2.4.
+- mbedtls updated to version 2.28.2.
 - miniupnpc updated to version 2.2.4.
 - nanosvg updated to 2022-11-21 git snapshot.
 - Recast updated to 2022-11-26 git snapshot.
@@ -61,6 +63,7 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
 #### 2D
 
 - Fix CanvasLayer visibility toggle can only run once per frame ([GH-69558](https://github.com/godotengine/godot/pull/69558)).
+- Fix AtlasTexture rects calculation when flipping ([GH-70227](https://github.com/godotengine/godot/pull/70227)).
 
 #### 3D
 
@@ -113,7 +116,6 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
 #### Input
 
 - Fix setting Input action `raw strength` and `exact` in `action_press()`/`action_release()` ([GH-66480](https://github.com/godotengine/godot/pull/66480)).
-- Fix routing of InputEventScreenDrag events to Control nodes ([GH-68630](https://github.com/godotengine/godot/pull/68630)).
 
 #### Mono (C#)
 
@@ -133,15 +135,16 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
 
 - Fix computation of RigidBody2D `inverse_mass` when inertia is defined by the user ([GH-68659](https://github.com/godotengine/godot/pull/68659)).
 - Fix typo bug in heightmap shape ([GH-69852](https://github.com/godotengine/godot/pull/69852)).
+- Fix pairing crash in physics Octree ([GH-70365](https://github.com/godotengine/godot/pull/70365)).
 
 #### Porting
 
 - Android: Fix potential null in keyboard handling ([GH-66942](https://github.com/godotengine/godot/pull/66942)).
 - Android: Fix exporting custom `APPLICATION_ATTRIBS` ([GH-69024](https://github.com/godotengine/godot/pull/69024)).
 - HTML5: Add missing `OS::get_cursor_shape()` implementation ([GH-66871](https://github.com/godotengine/godot/pull/66871)).
+- HTML5: Fix bug in setting custom cursor ([GH-67044](https://github.com/godotengine/godot/pull/67044)).
 - Linux: Fix burning CPU with udev disabled on Flatpak ([GH-69563](https://github.com/godotengine/godot/pull/69563)).
 - macOS: Update activation hack to work on Ventura ([GH-68777](https://github.com/godotengine/godot/pull/68777)).
-- Web: Fix bug in setting custom cursor ([GH-67044](https://github.com/godotengine/godot/pull/67044)).
 - Windows: Fix handling of some dead key combinations using Unicode char instead of Virtual key ([GH-66314](https://github.com/godotengine/godot/pull/66314)).
 - Windows: Fix Directory `make_dir()` choking on ".." ([GH-66467](https://github.com/godotengine/godot/pull/66467)).
 - Windows: Fix newlines not honored in Windows console subsystem ([GH-67236](https://github.com/godotengine/godot/pull/67236)).
