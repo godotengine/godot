@@ -57,6 +57,7 @@ public:
 	struct AnnotationNode;
 	struct ArrayNode;
 	struct AssertNode;
+	struct AssignableNode;
 	struct AssignmentNode;
 	struct AwaitNode;
 	struct BinaryOpNode;
@@ -352,6 +353,19 @@ public:
 		AssertNode() {
 			type = ASSERT;
 		}
+	};
+
+	struct AssignableNode : public Node {
+		IdentifierNode *identifier = nullptr;
+		ExpressionNode *initializer = nullptr;
+		TypeNode *datatype_specifier = nullptr;
+		bool infer_datatype = false;
+		int usages = 0;
+
+		virtual ~AssignableNode() {}
+
+	protected:
+		AssignableNode() {}
 	};
 
 	struct AssignmentNode : public ExpressionNode {
@@ -732,12 +746,7 @@ public:
 		}
 	};
 
-	struct ConstantNode : public Node {
-		IdentifierNode *identifier = nullptr;
-		ExpressionNode *initializer = nullptr;
-		TypeNode *datatype_specifier = nullptr;
-		bool infer_datatype = false;
-		int usages = 0;
+	struct ConstantNode : public AssignableNode {
 #ifdef TOOLS_ENABLED
 		String doc_description;
 #endif // TOOLS_ENABLED
@@ -902,13 +911,7 @@ public:
 		}
 	};
 
-	struct ParameterNode : public Node {
-		IdentifierNode *identifier = nullptr;
-		ExpressionNode *default_value = nullptr;
-		TypeNode *datatype_specifier = nullptr;
-		bool infer_datatype = false;
-		int usages = 0;
-
+	struct ParameterNode : public AssignableNode {
 		ParameterNode() {
 			type = PARAMETER;
 		}
@@ -1157,17 +1160,12 @@ public:
 		}
 	};
 
-	struct VariableNode : public Node {
+	struct VariableNode : public AssignableNode {
 		enum PropertyStyle {
 			PROP_NONE,
 			PROP_INLINE,
 			PROP_SETGET,
 		};
-
-		IdentifierNode *identifier = nullptr;
-		ExpressionNode *initializer = nullptr;
-		TypeNode *datatype_specifier = nullptr;
-		bool infer_datatype = false;
 
 		PropertyStyle property = PROP_NONE;
 		union {
@@ -1184,7 +1182,6 @@ public:
 		bool onready = false;
 		PropertyInfo export_info;
 		int assignments = 0;
-		int usages = 0;
 		bool use_conversion_assign = false;
 #ifdef TOOLS_ENABLED
 		String doc_description;

@@ -1,2 +1,2 @@
 GDTEST_ANALYZER_ERROR
-Value of type "MyOtherEnum (enum)" cannot be assigned to a variable of type "MyEnum (enum)".
+Cannot assign a value of type MyOtherEnum (enum) to variable "local_var" with specified type MyEnum (enum).
