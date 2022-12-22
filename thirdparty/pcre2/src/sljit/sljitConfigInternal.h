@@ -59,7 +59,8 @@ extern "C" {
      SLJIT_64BIT_ARCHITECTURE : 64 bit architecture
      SLJIT_LITTLE_ENDIAN : little endian architecture
      SLJIT_BIG_ENDIAN : big endian architecture
-     SLJIT_UNALIGNED : allows unaligned memory accesses for non-fpu operations (only!)
+     SLJIT_UNALIGNED : unaligned memory accesses for non-fpu operations are supported
+     SLJIT_FPU_UNALIGNED : unaligned memory accesses for fpu operations are supported
      SLJIT_INDIRECT_CALL : see SLJIT_FUNC_ADDR() for more information
 
    Constants:
@@ -98,7 +99,8 @@ extern "C" {
 	+ (defined SLJIT_CONFIG_PPC_64 && SLJIT_CONFIG_PPC_64) \
 	+ (defined SLJIT_CONFIG_MIPS_32 && SLJIT_CONFIG_MIPS_32) \
 	+ (defined SLJIT_CONFIG_MIPS_64 && SLJIT_CONFIG_MIPS_64) \
-	+ (defined SLJIT_CONFIG_SPARC_32 && SLJIT_CONFIG_SPARC_32) \
+	+ (defined SLJIT_CONFIG_RISCV_32 && SLJIT_CONFIG_RISCV_32) \
+	+ (defined SLJIT_CONFIG_RISCV_64 && SLJIT_CONFIG_RISCV_64) \
 	+ (defined SLJIT_CONFIG_S390X && SLJIT_CONFIG_S390X) \
 	+ (defined SLJIT_CONFIG_AUTO && SLJIT_CONFIG_AUTO) \
 	+ (defined SLJIT_CONFIG_UNSUPPORTED && SLJIT_CONFIG_UNSUPPORTED) >= 2
@@ -115,7 +117,8 @@ extern "C" {
 	&& !(defined SLJIT_CONFIG_PPC_64 && SLJIT_CONFIG_PPC_64) \
 	&& !(defined SLJIT_CONFIG_MIPS_32 && SLJIT_CONFIG_MIPS_32) \
 	&& !(defined SLJIT_CONFIG_MIPS_64 && SLJIT_CONFIG_MIPS_64) \
-	&& !(defined SLJIT_CONFIG_SPARC_32 && SLJIT_CONFIG_SPARC_32) \
+	&& !(defined SLJIT_CONFIG_RISCV_32 && SLJIT_CONFIG_RISCV_32) \
+	&& !(defined SLJIT_CONFIG_RISCV_64 && SLJIT_CONFIG_RISCV_64) \
 	&& !(defined SLJIT_CONFIG_S390X && SLJIT_CONFIG_S390X) \
 	&& !(defined SLJIT_CONFIG_UNSUPPORTED && SLJIT_CONFIG_UNSUPPORTED) \
 	&& !(defined SLJIT_CONFIG_AUTO && SLJIT_CONFIG_AUTO)
@@ -156,8 +159,10 @@ extern "C" {
 #define SLJIT_CONFIG_MIPS_32 1
 #elif defined(__mips64)
 #define SLJIT_CONFIG_MIPS_64 1
-#elif (defined(__sparc__) || defined(__sparc)) && !defined(_LP64)
-#define SLJIT_CONFIG_SPARC_32 1
+#elif defined (__riscv_xlen) && (__riscv_xlen == 32)
+#define SLJIT_CONFIG_RISCV_32 1
+#elif defined (__riscv_xlen) && (__riscv_xlen == 64)
+#define SLJIT_CONFIG_RISCV_64 1
 #elif defined(__s390x__)
 #define SLJIT_CONFIG_S390X 1
 #else
@@ -205,8 +210,8 @@ extern "C" {
 #define SLJIT_CONFIG_PPC 1
 #elif (defined SLJIT_CONFIG_MIPS_32 && SLJIT_CONFIG_MIPS_32) || (defined SLJIT_CONFIG_MIPS_64 && SLJIT_CONFIG_MIPS_64)
 #define SLJIT_CONFIG_MIPS 1
-#elif (defined SLJIT_CONFIG_SPARC_32 && SLJIT_CONFIG_SPARC_32) || (defined SLJIT_CONFIG_SPARC_64 && SLJIT_CONFIG_SPARC_64)
-#define SLJIT_CONFIG_SPARC 1
+#elif (defined SLJIT_CONFIG_RISCV_32 && SLJIT_CONFIG_RISCV_32) || (defined SLJIT_CONFIG_RISCV_64 && SLJIT_CONFIG_RISCV_64)
+#define SLJIT_CONFIG_RISCV 1
 #endif
 
 /***********************************************************/
@@ -330,8 +335,14 @@ extern "C" {
  * older versions are known to abort in some targets
  * https://github.com/PhilipHazel/pcre2/issues/92
  *
- * beware APPLE is known to have removed the code in iOS so
- * it will need to be excempted or result in broken builds
+ * beware some vendors (ex: Microsoft, Apple) are known to have
+ * removed the code to support this builtin even if the call for
+ * __has_builtin reports it is available.
+ *
+ * make sure linking doesn't fail because __clear_cache() is
+ * missing before changing it or add an exception so that the
+ * system provided method that should be defined below is used
+ * instead.
  */
 #if (!defined SLJIT_CACHE_FLUSH && defined __has_builtin)
 #if __has_builtin(__builtin___clear_cache) && !defined(__clang__)
@@ -339,9 +350,9 @@ extern "C" {
 /*
  * https://gcc.gnu.org/bugzilla//show_bug.cgi?id=91248
  * https://gcc.gnu.org/bugzilla//show_bug.cgi?id=93811
- * gcc's clear_cache builtin for power and sparc are broken
+ * gcc's clear_cache builtin for power is broken
  */
-#if !defined(SLJIT_CONFIG_PPC) && !defined(SLJIT_CONFIG_SPARC_32)
+#if !defined(SLJIT_CONFIG_PPC)
 #define SLJIT_CACHE_FLUSH(from, to) \
 	__builtin___clear_cache((char*)(from), (char*)(to))
 #endif
@@ -373,12 +384,10 @@ extern "C" {
 	ppc_cache_flush((from), (to))
 #define SLJIT_CACHE_FLUSH_OWN_IMPL 1
 
-#elif (defined SLJIT_CONFIG_SPARC_32 && SLJIT_CONFIG_SPARC_32)
+#elif defined(_WIN32)
 
-/* The __clear_cache() implementation of GCC is a dummy function on Sparc. */
 #define SLJIT_CACHE_FLUSH(from, to) \
-	sparc_cache_flush((from), (to))
-#define SLJIT_CACHE_FLUSH_OWN_IMPL 1
+	FlushInstructionCache(GetCurrentProcess(), (void*)(from), (char*)(to) - (char*)(from))
 
 #elif (defined(__GNUC__) && (__GNUC__ >= 5 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 3))) || defined(__clang__)
 
@@ -391,11 +400,6 @@ extern "C" {
 #include <sys/cachectl.h>
 #define SLJIT_CACHE_FLUSH(from, to) \
 	cacheflush((long)(from), (long)(to), 0)
-
-#elif defined _WIN32
-
-#define SLJIT_CACHE_FLUSH(from, to) \
-	FlushInstructionCache(GetCurrentProcess(), (void*)(from), (char*)(to) - (char*)(from))
 
 #else
 
@@ -435,6 +439,7 @@ typedef long int sljit_sw;
 	&& !(defined SLJIT_CONFIG_ARM_64 && SLJIT_CONFIG_ARM_64) \
 	&& !(defined SLJIT_CONFIG_PPC_64 && SLJIT_CONFIG_PPC_64) \
 	&& !(defined SLJIT_CONFIG_MIPS_64 && SLJIT_CONFIG_MIPS_64) \
+	&& !(defined SLJIT_CONFIG_RISCV_64 && SLJIT_CONFIG_RISCV_64) \
 	&& !(defined SLJIT_CONFIG_S390X && SLJIT_CONFIG_S390X)
 #define SLJIT_32BIT_ARCHITECTURE 1
 #define SLJIT_WORD_SHIFT 2
@@ -495,8 +500,7 @@ typedef double sljit_f64;
 #if !defined(SLJIT_BIG_ENDIAN) && !defined(SLJIT_LITTLE_ENDIAN)
 
 /* These macros are mostly useful for the applications. */
-#if (defined SLJIT_CONFIG_PPC_32 && SLJIT_CONFIG_PPC_32) \
-	|| (defined SLJIT_CONFIG_PPC_64 && SLJIT_CONFIG_PPC_64)
+#if (defined SLJIT_CONFIG_PPC && SLJIT_CONFIG_PPC)
 
 #ifdef __LITTLE_ENDIAN__
 #define SLJIT_LITTLE_ENDIAN 1
@@ -504,8 +508,7 @@ typedef double sljit_f64;
 #define SLJIT_BIG_ENDIAN 1
 #endif
 
-#elif (defined SLJIT_CONFIG_MIPS_32 && SLJIT_CONFIG_MIPS_32) \
-	|| (defined SLJIT_CONFIG_MIPS_64 && SLJIT_CONFIG_MIPS_64)
+#elif (defined SLJIT_CONFIG_MIPS && SLJIT_CONFIG_MIPS)
 
 #ifdef __MIPSEL__
 #define SLJIT_LITTLE_ENDIAN 1
@@ -532,8 +535,7 @@ typedef double sljit_f64;
 
 #endif /* !SLJIT_MIPS_REV */
 
-#elif (defined SLJIT_CONFIG_SPARC_32 && SLJIT_CONFIG_SPARC_32) \
-	|| (defined SLJIT_CONFIG_S390X && SLJIT_CONFIG_S390X)
+#elif (defined SLJIT_CONFIG_S390X && SLJIT_CONFIG_S390X)
 
 #define SLJIT_BIG_ENDIAN 1
 
@@ -554,18 +556,29 @@ typedef double sljit_f64;
 
 #ifndef SLJIT_UNALIGNED
 
-#if (defined SLJIT_CONFIG_X86_32 && SLJIT_CONFIG_X86_32) \
-	|| (defined SLJIT_CONFIG_X86_64 && SLJIT_CONFIG_X86_64) \
+#if (defined SLJIT_CONFIG_X86 && SLJIT_CONFIG_X86) \
 	|| (defined SLJIT_CONFIG_ARM_V7 && SLJIT_CONFIG_ARM_V7) \
 	|| (defined SLJIT_CONFIG_ARM_THUMB2 && SLJIT_CONFIG_ARM_THUMB2) \
 	|| (defined SLJIT_CONFIG_ARM_64 && SLJIT_CONFIG_ARM_64) \
-	|| (defined SLJIT_CONFIG_PPC_32 && SLJIT_CONFIG_PPC_32) \
-	|| (defined SLJIT_CONFIG_PPC_64 && SLJIT_CONFIG_PPC_64) \
+	|| (defined SLJIT_CONFIG_PPC && SLJIT_CONFIG_PPC) \
+	|| (defined SLJIT_CONFIG_RISCV && SLJIT_CONFIG_RISCV) \
 	|| (defined SLJIT_CONFIG_S390X && SLJIT_CONFIG_S390X)
 #define SLJIT_UNALIGNED 1
 #endif
 
 #endif /* !SLJIT_UNALIGNED */
+
+#ifndef SLJIT_FPU_UNALIGNED
+
+#if (defined SLJIT_CONFIG_X86 && SLJIT_CONFIG_X86) \
+	|| (defined SLJIT_CONFIG_ARM_64 && SLJIT_CONFIG_ARM_64) \
+	|| (defined SLJIT_CONFIG_PPC && SLJIT_CONFIG_PPC) \
+	|| (defined SLJIT_CONFIG_RISCV && SLJIT_CONFIG_RISCV) \
+	|| (defined SLJIT_CONFIG_S390X && SLJIT_CONFIG_S390X)
+#define SLJIT_FPU_UNALIGNED 1
+#endif
+
+#endif /* !SLJIT_FPU_UNALIGNED */
 
 #if (defined SLJIT_CONFIG_X86_32 && SLJIT_CONFIG_X86_32)
 /* Auto detect SSE2 support using CPUID.
@@ -578,38 +591,7 @@ typedef double sljit_f64;
 /*****************************************************************************************/
 
 #ifndef SLJIT_FUNC
-
-#if (defined SLJIT_USE_CDECL_CALLING_CONVENTION && SLJIT_USE_CDECL_CALLING_CONVENTION) \
-	|| !(defined SLJIT_CONFIG_X86_32 && SLJIT_CONFIG_X86_32)
-
 #define SLJIT_FUNC
-
-#elif defined(__GNUC__) && !defined(__APPLE__)
-
-#if __GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4)
-#define SLJIT_FUNC __attribute__ ((fastcall))
-#define SLJIT_X86_32_FASTCALL 1
-#else
-#define SLJIT_FUNC
-#endif /* gcc >= 3.4 */
-
-#elif defined(_MSC_VER)
-
-#define SLJIT_FUNC __fastcall
-#define SLJIT_X86_32_FASTCALL 1
-
-#elif defined(__BORLANDC__)
-
-#define SLJIT_FUNC __msfastcall
-#define SLJIT_X86_32_FASTCALL 1
-
-#else /* Unknown compiler. */
-
-/* The cdecl calling convention is usually the x86 default. */
-#define SLJIT_FUNC
-
-#endif /* SLJIT_USE_CDECL_CALLING_CONVENTION */
-
 #endif /* !SLJIT_FUNC */
 
 #ifndef SLJIT_INDIRECT_CALL
@@ -621,14 +603,10 @@ typedef double sljit_f64;
 #endif
 #endif /* SLJIT_INDIRECT_CALL */
 
-/* The offset which needs to be substracted from the return address to
+/* The offset which needs to be subtracted from the return address to
 determine the next executed instruction after return. */
 #ifndef SLJIT_RETURN_ADDRESS_OFFSET
-#if (defined SLJIT_CONFIG_SPARC_32 && SLJIT_CONFIG_SPARC_32)
-#define SLJIT_RETURN_ADDRESS_OFFSET 8
-#else
 #define SLJIT_RETURN_ADDRESS_OFFSET 0
-#endif
 #endif /* SLJIT_RETURN_ADDRESS_OFFSET */
 
 /***************************************************/
@@ -666,10 +644,10 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_sw sljit_exec_offset(void* ptr);
 #if (defined SLJIT_CONFIG_X86_32 && SLJIT_CONFIG_X86_32)
 
 #define SLJIT_NUMBER_OF_REGISTERS 12
-#define SLJIT_NUMBER_OF_SAVED_REGISTERS 9
+#define SLJIT_NUMBER_OF_SAVED_REGISTERS 7
 #define SLJIT_NUMBER_OF_FLOAT_REGISTERS 7
 #define SLJIT_NUMBER_OF_SAVED_FLOAT_REGISTERS 0
-#define SLJIT_LOCALS_OFFSET_BASE (compiler->locals_offset)
+#define SLJIT_LOCALS_OFFSET_BASE (8 * SSIZE_OF(sw))
 #define SLJIT_PREF_SHIFT_REG SLJIT_R2
 
 #elif (defined SLJIT_CONFIG_X86_64 && SLJIT_CONFIG_X86_64)
@@ -683,7 +661,7 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_sw sljit_exec_offset(void* ptr);
 #else /* _WIN64 */
 #define SLJIT_NUMBER_OF_SAVED_REGISTERS 8
 #define SLJIT_NUMBER_OF_SAVED_FLOAT_REGISTERS 10
-#define SLJIT_LOCALS_OFFSET_BASE (4 * (sljit_s32)sizeof(sljit_sw))
+#define SLJIT_LOCALS_OFFSET_BASE (4 * SSIZE_OF(sw))
 #endif /* !_WIN64 */
 #define SLJIT_PREF_SHIFT_REG SLJIT_R3
 
@@ -740,17 +718,13 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_sw sljit_exec_offset(void* ptr);
 #define SLJIT_NUMBER_OF_SAVED_FLOAT_REGISTERS 8
 #endif
 
-#elif (defined SLJIT_CONFIG_SPARC && SLJIT_CONFIG_SPARC)
+#elif (defined SLJIT_CONFIG_RISCV && SLJIT_CONFIG_RISCV)
 
-#define SLJIT_NUMBER_OF_REGISTERS 18
-#define SLJIT_NUMBER_OF_SAVED_REGISTERS 14
-#define SLJIT_NUMBER_OF_FLOAT_REGISTERS 14
-#define SLJIT_NUMBER_OF_SAVED_FLOAT_REGISTERS 0
-#if (defined SLJIT_CONFIG_SPARC_32 && SLJIT_CONFIG_SPARC_32)
-/* saved registers (16), return struct pointer (1), space for 6 argument words (1),
-   4th double arg (2), double alignment (1). */
-#define SLJIT_LOCALS_OFFSET_BASE ((16 + 1 + 6 + 2 + 1) * (sljit_s32)sizeof(sljit_sw))
-#endif
+#define SLJIT_NUMBER_OF_REGISTERS 23
+#define SLJIT_NUMBER_OF_SAVED_REGISTERS 12
+#define SLJIT_LOCALS_OFFSET_BASE 0
+#define SLJIT_NUMBER_OF_FLOAT_REGISTERS 30
+#define SLJIT_NUMBER_OF_SAVED_FLOAT_REGISTERS 12
 
 #elif (defined SLJIT_CONFIG_S390X && SLJIT_CONFIG_S390X)
 
@@ -806,7 +780,7 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_sw sljit_exec_offset(void* ptr);
 #if (defined SLJIT_CONFIG_ARM && SLJIT_CONFIG_ARM) \
 	|| (defined SLJIT_CONFIG_PPC && SLJIT_CONFIG_PPC) \
 	|| (defined SLJIT_CONFIG_MIPS && SLJIT_CONFIG_MIPS) \
-	|| (defined SLJIT_CONFIG_SPARC && SLJIT_CONFIG_SPARC) \
+	|| (defined SLJIT_CONFIG_RISCV && SLJIT_CONFIG_RISCV) \
 	|| (defined SLJIT_CONFIG_S390X && SLJIT_CONFIG_S390X)
 #define SLJIT_HAS_STATUS_FLAGS_STATE 1
 #endif

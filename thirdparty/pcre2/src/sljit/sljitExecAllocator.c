@@ -152,9 +152,6 @@ static SLJIT_INLINE void apple_update_wx_flags(sljit_s32 enable_exec)
 {
 #if MAC_OS_X_VERSION_MIN_REQUIRED >= 110000
 	pthread_jit_write_protect_np(enable_exec);
-#elif defined(__clang__)
-	if (__builtin_available(macOS 11.0, *))
-		pthread_jit_write_protect_np(enable_exec);
 #else
 #error "Must target Big Sur or newer"
 #endif /* BigSur */

@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2021 University of Cambridge
+          New API code Copyright (c) 2016-2022 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -259,16 +259,16 @@ PCRE2_UNSET, so as not to imply an offset in the replacement. */
 
 if ((options & (PCRE2_PARTIAL_HARD|PCRE2_PARTIAL_SOFT)) != 0)
   return PCRE2_ERROR_BADOPTION;
-  
-/* Validate length and find the end of the replacement. A NULL replacement of 
+
+/* Validate length and find the end of the replacement. A NULL replacement of
 zero length is interpreted as an empty string. */
 
-if (replacement == NULL) 
+if (replacement == NULL)
   {
   if (rlength != 0) return PCRE2_ERROR_NULL;
-  replacement = (PCRE2_SPTR)""; 
-  } 
-   
+  replacement = (PCRE2_SPTR)"";
+  }
+
 if (rlength == PCRE2_ZERO_TERMINATED) rlength = PRIV(strlen)(replacement);
 repend = replacement + rlength;
 
@@ -282,8 +282,9 @@ replacement_only = ((options & PCRE2_SUBSTITUTE_REPLACEMENT_ONLY) != 0);
 match data block. We create an internal match_data block in two cases: (a) an
 external one is not supplied (and we are not starting from an existing match);
 (b) an existing match is to be used for the first substitution. In the latter
-case, we copy the existing match into the internal block. This ensures that no
-changes are made to the existing match data block. */
+case, we copy the existing match into the internal block, except for any cached
+heap frame size and pointer. This ensures that no changes are made to the
+external match data block. */
 
 if (match_data == NULL)
   {
@@ -309,6 +310,8 @@ else if (use_existing_match)
   if (internal_match_data == NULL) return PCRE2_ERROR_NOMEMORY;
   memcpy(internal_match_data, match_data, offsetof(pcre2_match_data, ovector)
     + 2*pairs*sizeof(PCRE2_SIZE));
+  internal_match_data->heapframes = NULL;
+  internal_match_data->heapframes_size = 0;
   match_data = internal_match_data;
   }
 
@@ -328,9 +331,9 @@ scb.ovector = ovector;
 
 if (subject == NULL)
   {
-  if (length != 0) return PCRE2_ERROR_NULL; 
+  if (length != 0) return PCRE2_ERROR_NULL;
   subject = (PCRE2_SPTR)"";
-  } 
+  }
 
 /* Find length of zero-terminated subject */
 

@@ -110,8 +110,10 @@ pcre2_jit_free_unused_memory(pcre2_general_context *gcontext)
 (void)gcontext;     /* Suppress warning */
 #else  /* SUPPORT_JIT */
 SLJIT_UNUSED_ARG(gcontext);
+#if (defined SLJIT_EXECUTABLE_ALLOCATOR && SLJIT_EXECUTABLE_ALLOCATOR)
 sljit_free_unused_memory_exec();
-#endif  /* SUPPORT_JIT */
+#endif /* SLJIT_EXECUTABLE_ALLOCATOR */
+#endif /* SUPPORT_JIT */
 }
 
 
