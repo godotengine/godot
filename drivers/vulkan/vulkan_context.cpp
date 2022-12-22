@@ -413,6 +413,7 @@ Error VulkanContext::_initialize_instance_extensions() {
 		register_requested_instance_extension(VK_EXT_DEBUG_REPORT_EXTENSION_NAME, false);
 	}
 
+	// This extension allows us to use the properties2 features to query additional device capabilities
 	register_requested_instance_extension(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME, false);
 
 	// Only enable debug utils in verbose mode or DEV_ENABLED.
@@ -493,7 +494,10 @@ Error VulkanContext::_initialize_device_extensions() {
 	register_requested_device_extension(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME, false);
 	register_requested_device_extension(VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME, false);
 	register_requested_device_extension(VK_KHR_SHADER_FLOAT16_INT8_EXTENSION_NAME, false);
+	register_requested_device_extension(VK_KHR_STORAGE_BUFFER_STORAGE_CLASS_EXTENSION_NAME, false);
 	register_requested_device_extension(VK_KHR_16BIT_STORAGE_EXTENSION_NAME, false);
+	register_requested_device_extension(VK_KHR_IMAGE_FORMAT_LIST_EXTENSION_NAME, false);
+	register_requested_device_extension(VK_KHR_MAINTENANCE_2_EXTENSION_NAME, false);
 
 	// TODO consider the following extensions:
 	// - VK_KHR_spirv_1_4
@@ -744,48 +748,90 @@ Error VulkanContext::_check_capabilities() {
 		}
 		if (vkGetPhysicalDeviceFeatures2_func != nullptr) {
 			// Check our extended features.
-			VkPhysicalDeviceFragmentShadingRateFeaturesKHR vrs_features = {
-				/*sType*/ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR,
-				/*pNext*/ nullptr,
-				/*pipelineFragmentShadingRate*/ false,
-				/*primitiveFragmentShadingRate*/ false,
-				/*attachmentFragmentShadingRate*/ false,
-			};
+			void *next = nullptr;
 
-			VkPhysicalDeviceShaderFloat16Int8FeaturesKHR shader_features = {
-				/*sType*/ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT16_INT8_FEATURES_KHR,
-				/*pNext*/ &vrs_features,
-				/*shaderFloat16*/ false,
-				/*shaderInt8*/ false,
-			};
+			// We must check that the relative extension is present before assuming a
+			// feature as enabled.
+			// See also: https://github.com/godotengine/godot/issues/65409
 
-			VkPhysicalDevice16BitStorageFeaturesKHR storage_feature = {
-				/*sType*/ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES_KHR,
-				/*pNext*/ &shader_features,
-				/*storageBuffer16BitAccess*/ false,
-				/*uniformAndStorageBuffer16BitAccess*/ false,
-				/*storagePushConstant16*/ false,
-				/*storageInputOutput16*/ false,
-			};
+			VkPhysicalDeviceVulkan12Features device_features_vk12 = {};
+			VkPhysicalDeviceShaderFloat16Int8FeaturesKHR shader_features = {};
+			VkPhysicalDeviceFragmentShadingRateFeaturesKHR vrs_features = {};
+			VkPhysicalDevice16BitStorageFeaturesKHR storage_feature = {};
+			VkPhysicalDeviceMultiviewFeatures multiview_features = {};
 
-			VkPhysicalDeviceMultiviewFeatures multiview_features = {
-				/*sType*/ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES,
-				/*pNext*/ &storage_feature,
-				/*multiview*/ false,
-				/*multiviewGeometryShader*/ false,
-				/*multiviewTessellationShader*/ false,
-			};
+			if (device_api_version >= VK_API_VERSION_1_2) {
+				device_features_vk12.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
+				device_features_vk12.pNext = next;
+				next = &device_features_vk12;
+			} else {
+				if (is_device_extension_enabled(VK_KHR_SHADER_FLOAT16_INT8_EXTENSION_NAME)) {
+					shader_features = {
+						/*sType*/ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_FLOAT16_INT8_FEATURES_KHR,
+						/*pNext*/ next,
+						/*shaderFloat16*/ false,
+						/*shaderInt8*/ false,
+					};
+					next = &shader_features;
+				}
+			}
+
+			if (is_device_extension_enabled(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME)) {
+				vrs_features = {
+					/*sType*/ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADING_RATE_FEATURES_KHR,
+					/*pNext*/ next,
+					/*pipelineFragmentShadingRate*/ false,
+					/*primitiveFragmentShadingRate*/ false,
+					/*attachmentFragmentShadingRate*/ false,
+				};
+				next = &vrs_features;
+			}
+
+			if (is_device_extension_enabled(VK_KHR_16BIT_STORAGE_EXTENSION_NAME)) {
+				storage_feature = {
+					/*sType*/ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_16BIT_STORAGE_FEATURES_KHR,
+					/*pNext*/ next,
+					/*storageBuffer16BitAccess*/ false,
+					/*uniformAndStorageBuffer16BitAccess*/ false,
+					/*storagePushConstant16*/ false,
+					/*storageInputOutput16*/ false,
+				};
+				next = &storage_feature;
+			}
+
+			if (is_device_extension_enabled(VK_KHR_MULTIVIEW_EXTENSION_NAME)) {
+				multiview_features = {
+					/*sType*/ VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MULTIVIEW_FEATURES,
+					/*pNext*/ next,
+					/*multiview*/ false,
+					/*multiviewGeometryShader*/ false,
+					/*multiviewTessellationShader*/ false,
+				};
+				next = &multiview_features;
+			}
 
 			VkPhysicalDeviceFeatures2 device_features;
 			device_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
-			device_features.pNext = &multiview_features;
+			device_features.pNext = next;
 
 			vkGetPhysicalDeviceFeatures2_func(gpu, &device_features);
 
-			// We must check that the relative extension is present before assuming a
-			// feature as enabled. Actually, according to the spec we shouldn't add the
-			// structs in pNext at all, but this works fine.
-			// See also: https://github.com/godotengine/godot/issues/65409
+			if (device_api_version >= VK_API_VERSION_1_2) {
+#ifdef MACOS_ENABLED
+				ERR_FAIL_COND_V_MSG(!device_features_vk12.shaderSampledImageArrayNonUniformIndexing, ERR_CANT_CREATE, "Your GPU doesn't support shaderSampledImageArrayNonUniformIndexing which is required to use the Vulkan-based renderers in Godot.");
+#endif
+
+				if (is_device_extension_enabled(VK_KHR_SHADER_FLOAT16_INT8_EXTENSION_NAME)) {
+					shader_capabilities.shader_float16_is_supported = device_features_vk12.shaderFloat16;
+					shader_capabilities.shader_int8_is_supported = device_features_vk12.shaderInt8;
+				}
+			} else {
+				if (is_device_extension_enabled(VK_KHR_SHADER_FLOAT16_INT8_EXTENSION_NAME)) {
+					shader_capabilities.shader_float16_is_supported = shader_features.shaderFloat16;
+					shader_capabilities.shader_int8_is_supported = shader_features.shaderInt8;
+				}
+			}
+
 			if (is_device_extension_enabled(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME)) {
 				vrs_capabilities.pipeline_vrs_supported = vrs_features.pipelineFragmentShadingRate;
 				vrs_capabilities.primitive_vrs_supported = vrs_features.primitiveFragmentShadingRate;
@@ -796,11 +842,6 @@ Error VulkanContext::_check_capabilities() {
 				multiview_capabilities.is_supported = multiview_features.multiview;
 				multiview_capabilities.geometry_shader_is_supported = multiview_features.multiviewGeometryShader;
 				multiview_capabilities.tessellation_shader_is_supported = multiview_features.multiviewTessellationShader;
-			}
-
-			if (is_device_extension_enabled(VK_KHR_SHADER_FLOAT16_INT8_EXTENSION_NAME)) {
-				shader_capabilities.shader_float16_is_supported = shader_features.shaderFloat16;
-				shader_capabilities.shader_int8_is_supported = shader_features.shaderInt8;
 			}
 
 			if (is_device_extension_enabled(VK_KHR_16BIT_STORAGE_EXTENSION_NAME)) {
@@ -1278,6 +1319,10 @@ Error VulkanContext::_create_physical_device(VkSurfaceKHR p_surface) {
 	//  If app has specific feature requirements it should check supported
 	//  features based on this query
 	vkGetPhysicalDeviceFeatures(gpu, &physical_device_features);
+
+	// Check required features
+	ERR_FAIL_COND_V_MSG(!physical_device_features.imageCubeArray, ERR_CANT_CREATE, "Your GPU doesn't support image cube arrays which are required to use the Vulkan-based renderers in Godot.");
+	ERR_FAIL_COND_V_MSG(!physical_device_features.independentBlend, ERR_CANT_CREATE, "Your GPU doesn't support independentBlend which is required to use the Vulkan-based renderers in Godot.");
 
 	physical_device_features.robustBufferAccess = false; // Turn off robust buffer access, which can hamper performance on some hardware.
 
