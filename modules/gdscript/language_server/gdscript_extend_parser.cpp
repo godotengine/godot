@@ -350,8 +350,8 @@ void ExtendGDScriptParser::parse_function_symbol(const GDScriptParser::FunctionN
 		if (parameter->get_datatype().is_hard_type()) {
 			parameters += ": " + parameter->get_datatype().to_string();
 		}
-		if (parameter->default_value != nullptr) {
-			parameters += " = " + parameter->default_value->reduced_value.to_json_string();
+		if (parameter->initializer != nullptr) {
+			parameters += " = " + parameter->initializer->reduced_value.to_json_string();
 		}
 	}
 	r_symbol.detail += parameters + ")";
@@ -695,8 +695,8 @@ Dictionary ExtendGDScriptParser::dump_function_api(const GDScriptParser::Functio
 		Dictionary arg;
 		arg["name"] = p_func->parameters[i]->identifier->name;
 		arg["type"] = p_func->parameters[i]->get_datatype().to_string();
-		if (p_func->parameters[i]->default_value != nullptr) {
-			arg["default_value"] = p_func->parameters[i]->default_value->reduced_value;
+		if (p_func->parameters[i]->initializer != nullptr) {
+			arg["default_value"] = p_func->parameters[i]->initializer->reduced_value;
 		}
 		parameters.push_back(arg);
 	}
