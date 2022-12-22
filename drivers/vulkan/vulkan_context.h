@@ -280,6 +280,7 @@ public:
 	const VRSCapabilities &get_vrs_capabilities() const { return vrs_capabilities; };
 	const ShaderCapabilities &get_shader_capabilities() const { return shader_capabilities; };
 	const StorageBufferCapabilities &get_storage_buffer_capabilities() const { return storage_buffer_capabilities; };
+	const VkPhysicalDeviceFeatures &get_physical_device_features() const { return physical_device_features; };
 
 	VkDevice get_device();
 	VkPhysicalDevice get_physical_device();
