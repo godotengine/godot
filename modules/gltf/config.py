@@ -14,6 +14,7 @@ def get_doc_classes():
         "GLTFBufferView",
         "GLTFCamera",
         "GLTFDocument",
+        "GLTFDocumentExtension",
         "GLTFLight",
         "GLTFMesh",
         "GLTFNode",

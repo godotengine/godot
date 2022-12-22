@@ -79,6 +79,8 @@ class GLTFState : public Resource {
 	Ref<GLTFTextureSampler> default_texture_sampler;
 	Vector<Ref<Image>> images;
 	Map<GLTFTextureIndex, Ref<Texture>> texture_cache;
+	Vector<String> extensions_used;
+	Vector<String> extensions_required;
 
 	Vector<Ref<GLTFSkin>> skins;
 	Vector<Ref<GLTFCamera>> cameras;
@@ -93,11 +95,14 @@ class GLTFState : public Resource {
 
 	Map<ObjectID, GLTFSkeletonIndex> skeleton3d_to_gltf_skeleton;
 	Map<ObjectID, Map<ObjectID, GLTFSkinIndex>> skin_and_skeleton3d_to_gltf_skin;
+	Dictionary additional_data;
 
 protected:
 	static void _bind_methods();
 
 public:
+	void add_used_extension(const String &p_extension, bool p_required = false);
+
 	Dictionary get_json();
 	void set_json(Dictionary p_json);
 
@@ -178,6 +183,9 @@ public:
 	int get_animation_players_count(int idx);
 
 	AnimationPlayer *get_animation_player(int idx);
+
+	Variant get_additional_data(const String &p_extension_name);
+	void set_additional_data(const String &p_extension_name, Variant p_additional_data);
 };
 
 #endif // GLTF_STATE_H

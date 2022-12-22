@@ -57,6 +57,8 @@ void GLTFNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_children", "children"), &GLTFNode::set_children);
 	ClassDB::bind_method(D_METHOD("get_light"), &GLTFNode::get_light);
 	ClassDB::bind_method(D_METHOD("set_light", "light"), &GLTFNode::set_light);
+	ClassDB::bind_method(D_METHOD("get_additional_data", "extension_name"), &GLTFNode::get_additional_data);
+	ClassDB::bind_method(D_METHOD("set_additional_data", "extension_name", "additional_data"), &GLTFNode::set_additional_data);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "parent"), "set_parent", "get_parent"); // GLTFNodeIndex
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "height"), "set_height", "get_height"); // int
@@ -175,4 +177,12 @@ GLTFLightIndex GLTFNode::get_light() {
 
 void GLTFNode::set_light(GLTFLightIndex p_light) {
 	light = p_light;
+}
+
+Variant GLTFNode::get_additional_data(const String &p_extension_name) {
+	return additional_data[p_extension_name];
+}
+
+void GLTFNode::set_additional_data(const String &p_extension_name, Variant p_additional_data) {
+	additional_data[p_extension_name] = p_additional_data;
 }
