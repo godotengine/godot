@@ -45,11 +45,11 @@
 		<method name="create_item">
 			<return type="TreeItem" />
 			<param index="0" name="parent" type="TreeItem" default="null" />
-			<param index="1" name="idx" type="int" default="-1" />
+			<param index="1" name="index" type="int" default="-1" />
 			<description>
 				Creates an item in the tree and adds it as a child of [param parent], which can be either a valid [TreeItem] or [code]null[/code].
 				If [param parent] is [code]null[/code], the root item will be the parent, or the new item will be the root itself if the tree is empty.
-				The new item will be the [param idx]th child of parent, or it will be the last child if there are not enough siblings.
+				The new item will be the [param index]-th child of parent, or it will be the last child if there are not enough siblings.
 			</description>
 		</method>
 		<method name="edit_selected">
