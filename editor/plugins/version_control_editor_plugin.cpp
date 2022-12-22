@@ -594,7 +594,6 @@ void VersionControlEditorPlugin::_display_diff(int p_idx) {
 		diff->pop();
 		diff->pop();
 
-		diff->add_newline();
 		diff->push_font(EditorNode::get_singleton()->get_gui_base()->get_theme_font(SNAME("status_source"), SNAME("EditorFonts")));
 		for (int j = 0; j < diff_file.diff_hunks.size(); j++) {
 			EditorVCSInterface::DiffHunk hunk = diff_file.diff_hunks[j];
@@ -604,6 +603,7 @@ void VersionControlEditorPlugin::_display_diff(int p_idx) {
 			String old_lines = String::num_int64(hunk.old_lines);
 			String new_lines = String::num_int64(hunk.new_lines);
 
+			diff->add_newline();
 			diff->append_text("[center]@@ " + old_start + "," + old_lines + " " + new_start + "," + new_lines + " @@[/center]");
 			diff->add_newline();
 
@@ -615,7 +615,6 @@ void VersionControlEditorPlugin::_display_diff(int p_idx) {
 					_display_diff_unified_view(hunk.diff_lines);
 					break;
 			}
-			diff->add_newline();
 			diff->add_newline();
 		}
 		diff->pop();
@@ -684,10 +683,8 @@ void VersionControlEditorPlugin::_display_diff_split_view(List<EditorVCSInterfac
 
 		if (diff_line.old_line_no >= 0) {
 			diff->push_cell();
-			diff->push_indent(1);
 			diff->push_color(has_change ? red : white);
 			diff->add_text(String::num_int64(diff_line.old_line_no));
-			diff->pop();
 			diff->pop();
 			diff->pop();
 
@@ -716,10 +713,8 @@ void VersionControlEditorPlugin::_display_diff_split_view(List<EditorVCSInterfac
 
 		if (diff_line.new_line_no >= 0) {
 			diff->push_cell();
-			diff->push_indent(1);
 			diff->push_color(has_change ? green : white);
 			diff->add_text(String::num_int64(diff_line.new_line_no));
-			diff->pop();
 			diff->pop();
 			diff->pop();
 
