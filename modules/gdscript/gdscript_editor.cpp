@@ -2848,16 +2848,6 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 				break;
 			}
 
-			GDScriptParser::CompletionContext c = completion_context;
-			c.current_function = nullptr;
-			c.current_suite = nullptr;
-			c.base = base.value.get_type() == Variant::OBJECT ? base.value.operator Object *() : nullptr;
-			if (base.type.kind == GDScriptParser::DataType::CLASS) {
-				c.current_class = base.type.class_type;
-			} else {
-				c.current_class = nullptr;
-			}
-
 			_find_identifiers_in_base(base, false, options, 0);
 		} break;
 		case GDScriptParser::COMPLETION_TYPE_ATTRIBUTE: {
