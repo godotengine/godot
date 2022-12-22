@@ -288,7 +288,7 @@ License: Apache-2.0
 
 Files: ./thirdparty/meshoptimizer/
 Comment: meshoptimizer
-Copyright: 2016-2021, Arseny Kapoulkine
+Copyright: 2016-2022, Arseny Kapoulkine
 License: Expat
 
 Files: ./thirdparty/minimp3/

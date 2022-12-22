@@ -1307,7 +1307,8 @@ Vector<int> SurfaceTool::generate_lod(float p_threshold, int p_target_index_coun
 	}
 
 	float error;
-	uint32_t index_count = simplify_func((unsigned int *)lod.ptrw(), (unsigned int *)index_array.ptr(), index_array.size(), vertices.ptr(), vertex_array.size(), sizeof(float) * 3, p_target_index_count, p_threshold, &error);
+	const int simplify_options = SIMPLIFY_LOCK_BORDER;
+	uint32_t index_count = simplify_func((unsigned int *)lod.ptrw(), (unsigned int *)index_array.ptr(), index_array.size(), vertices.ptr(), vertex_array.size(), sizeof(float) * 3, p_target_index_count, p_threshold, simplify_options, &error);
 	ERR_FAIL_COND_V(index_count == 0, lod);
 	lod.resize(index_count);
 

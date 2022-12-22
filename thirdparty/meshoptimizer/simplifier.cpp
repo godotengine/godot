@@ -254,7 +254,7 @@ static bool hasEdge(const EdgeAdjacency& adjacency, unsigned int a, unsigned int
 	return false;
 }
 
-static void classifyVertices(unsigned char* result, unsigned int* loop, unsigned int* loopback, size_t vertex_count, const EdgeAdjacency& adjacency, const unsigned int* remap, const unsigned int* wedge)
+static void classifyVertices(unsigned char* result, unsigned int* loop, unsigned int* loopback, size_t vertex_count, const EdgeAdjacency& adjacency, const unsigned int* remap, const unsigned int* wedge, unsigned int options)
 {
 	memset(loop, -1, vertex_count * sizeof(unsigned int));
 	memset(loopback, -1, vertex_count * sizeof(unsigned int));
@@ -363,6 +363,11 @@ static void classifyVertices(unsigned char* result, unsigned int* loop, unsigned
 			result[i] = result[remap[i]];
 		}
 	}
+
+	if (options & meshopt_SimplifyLockBorder)
+		for (size_t i = 0; i < vertex_count; ++i)
+			if (result[i] == Kind_Border)
+				result[i] = Kind_Locked;
 
 #if TRACE
 	printf("locked: many open edges %d, disconnected seam %d, many seam edges %d, many wedges %d\n",
@@ -1434,19 +1439,20 @@ MESHOPTIMIZER_API unsigned int* meshopt_simplifyDebugLoop = 0;
 MESHOPTIMIZER_API unsigned int* meshopt_simplifyDebugLoopBack = 0;
 #endif
 
-size_t meshopt_simplify(unsigned int* destination, const unsigned int* indices, size_t index_count, const float* vertex_positions_data, size_t vertex_count, size_t vertex_positions_stride, size_t target_index_count, float target_error, float* out_result_error)
+size_t meshopt_simplify(unsigned int* destination, const unsigned int* indices, size_t index_count, const float* vertex_positions_data, size_t vertex_count, size_t vertex_positions_stride, size_t target_index_count, float target_error, unsigned int options, float* out_result_error)
 {
-	return meshopt_simplifyWithAttributes(destination, indices, index_count, vertex_positions_data, vertex_count, vertex_positions_stride, target_index_count, target_error, out_result_error, 0, 0, 0);
+	return meshopt_simplifyWithAttributes(destination, indices, index_count, vertex_positions_data, vertex_count, vertex_positions_stride, target_index_count, target_error, options, out_result_error, 0, 0, 0);
 }
 
-size_t meshopt_simplifyWithAttributes(unsigned int* destination, const unsigned int* indices, size_t index_count, const float* vertex_data, size_t vertex_count, size_t vertex_stride, size_t target_index_count, float target_error, float* out_result_error, const float* attributes, const float* attribute_weights, size_t attribute_count)
+size_t meshopt_simplifyWithAttributes(unsigned int* destination, const unsigned int* indices, size_t index_count, const float* vertex_data, size_t vertex_count, size_t vertex_stride, size_t target_index_count, float target_error, unsigned int options, float* out_result_error, const float* attributes, const float* attribute_weights, size_t attribute_count)
 {
 	using namespace meshopt;
 
 	assert(index_count % 3 == 0);
-	assert(vertex_stride > 0 && vertex_stride <= 256);
+	assert(vertex_stride >= 12 && vertex_stride <= 256);
 	assert(vertex_stride % sizeof(float) == 0);
 	assert(target_index_count <= index_count);
+	assert((options & ~(meshopt_SimplifyLockBorder)) == 0);
 	assert(attribute_count <= ATTRIBUTES);
 
 	meshopt_Allocator allocator;
@@ -1467,7 +1473,7 @@ size_t meshopt_simplifyWithAttributes(unsigned int* destination, const unsigned 
 	unsigned char* vertex_kind = allocator.allocate<unsigned char>(vertex_count);
 	unsigned int* loop = allocator.allocate<unsigned int>(vertex_count);
 	unsigned int* loopback = allocator.allocate<unsigned int>(vertex_count);
-	classifyVertices(vertex_kind, loop, loopback, vertex_count, adjacency, remap, wedge);
+	classifyVertices(vertex_kind, loop, loopback, vertex_count, adjacency, remap, wedge, options);
 
 #if TRACE
 	size_t unique_positions = 0;
@@ -1605,7 +1611,7 @@ size_t meshopt_simplifySloppy(unsigned int* destination, const unsigned int* ind
 	using namespace meshopt;
 
 	assert(index_count % 3 == 0);
-	assert(vertex_positions_stride > 0 && vertex_positions_stride <= 256);
+	assert(vertex_positions_stride >= 12 && vertex_positions_stride <= 256);
 	assert(vertex_positions_stride % sizeof(float) == 0);
 	assert(target_index_count <= index_count);
 
@@ -1736,7 +1742,7 @@ size_t meshopt_simplifyPoints(unsigned int* destination, const float* vertex_pos
 {
 	using namespace meshopt;
 
-	assert(vertex_positions_stride > 0 && vertex_positions_stride <= 256);
+	assert(vertex_positions_stride >= 12 && vertex_positions_stride <= 256);
 	assert(vertex_positions_stride % sizeof(float) == 0);
 	assert(target_vertex_count <= vertex_count);
 
@@ -1848,7 +1854,7 @@ float meshopt_simplifyScale(const float* vertex_positions, size_t vertex_count, 
 {
 	using namespace meshopt;
 
-	assert(vertex_positions_stride > 0 && vertex_positions_stride <= 256);
+	assert(vertex_positions_stride >= 12 && vertex_positions_stride <= 256);
 	assert(vertex_positions_stride % sizeof(float) == 0);
 
 	float extent = rescalePositions(NULL, vertex_positions, vertex_count, vertex_positions_stride);

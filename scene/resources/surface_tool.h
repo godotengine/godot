@@ -74,11 +74,16 @@ public:
 		SKIN_8_WEIGHTS
 	};
 
+	enum {
+		/* Do not move vertices that are located on the topological border (vertices on triangle edges that don't have a paired triangle). Useful for simplifying portions of the larger mesh. */
+		SIMPLIFY_LOCK_BORDER = 1 << 0, // From meshopt_SimplifyLockBorder
+	};
+
 	typedef void (*OptimizeVertexCacheFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, size_t vertex_count);
 	static OptimizeVertexCacheFunc optimize_vertex_cache_func;
-	typedef size_t (*SimplifyFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, const float *vertex_positions, size_t vertex_count, size_t vertex_positions_stride, size_t target_index_count, float target_error, float *r_error);
+	typedef size_t (*SimplifyFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, const float *vertex_positions, size_t vertex_count, size_t vertex_positions_stride, size_t target_index_count, float target_error, unsigned int options, float *r_error);
 	static SimplifyFunc simplify_func;
-	typedef size_t (*SimplifyWithAttribFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, const float *vertex_data, size_t vertex_count, size_t vertex_stride, size_t target_index_count, float target_error, float *result_error, const float *attributes, const float *attribute_weights, size_t attribute_count);
+	typedef size_t (*SimplifyWithAttribFunc)(unsigned int *destination, const unsigned int *indices, size_t index_count, const float *vertex_data, size_t vertex_count, size_t vertex_stride, size_t target_index_count, float target_error, unsigned int options, float *result_error, const float *attributes, const float *attribute_weights, size_t attribute_count);
 	static SimplifyWithAttribFunc simplify_with_attrib_func;
 	typedef float (*SimplifyScaleFunc)(const float *vertex_positions, size_t vertex_count, size_t vertex_positions_stride);
 	static SimplifyScaleFunc simplify_scale_func;
