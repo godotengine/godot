@@ -790,7 +790,7 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 					ERR_BREAK(particles_storage->particles_get_mode(pt->particles) != RS::PARTICLES_MODE_2D);
 					particles_storage->particles_request_process(pt->particles);
 
-					if (particles_storage->particles_is_inactive(pt->particles)) {
+					if (particles_storage->particles_is_inactive(pt->particles) || particles_storage->particles_get_frame_counter(pt->particles) == 0) {
 						break;
 					}
 
