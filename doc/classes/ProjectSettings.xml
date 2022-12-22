@@ -494,13 +494,15 @@
 			[b]Note:[/b] This setting has no effect on the home indicator if [code]hide_home_indicator[/code] is [code]true[/code].
 		</member>
 		<member name="display/window/per_pixel_transparency/allowed" type="bool" setter="" getter="" default="false">
-			If [code]true[/code], allows per-pixel transparency for the window background. This affects performance, so leave it on [code]false[/code] unless you need it.
+			If [code]true[/code], allows per-pixel transparency for the window background. This affects performance, so leave it on [code]false[/code] unless you need it. See also [member display/window/per_pixel_transparency/enabled] and [member rendering/viewport/transparent_background].
+			[b]Note:[/b] Enabling [member display/window/per_pixel_transparency/allowed] does not make the background actually transparent. For the background to be transparent, the root viewport must also be made transparent by enabling [member rendering/viewport/transparent_background]. [member display/window/per_pixel_transparency/enabled] must also be enabled.
 			See [member OS.window_per_pixel_transparency_enabled] for more details.
 			[b]Note:[/b] This feature is implemented on HTML5, Linux, macOS, Windows, and Android.
 		</member>
 		<member name="display/window/per_pixel_transparency/enabled" type="bool" setter="" getter="" default="false">
 			Sets the window background to transparent when it starts.
 			See [member OS.window_per_pixel_transparency_enabled] for more details.
+			[b]Note:[/b] Enabling [member display/window/per_pixel_transparency/enabled] does not make the background actually transparent. For the background to be transparent, the root viewport must also be made transparent by enabling [member rendering/viewport/transparent_background]. [member display/window/per_pixel_transparency/allowed] must also be enabled.
 			[b]Note:[/b] This feature is implemented on HTML5, Linux, macOS, Windows, and Android.
 		</member>
 		<member name="display/window/size/always_on_top" type="bool" setter="" getter="" default="false">
@@ -1834,6 +1836,9 @@
 		<member name="rendering/threads/thread_safe_bvh" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], a thread safe version of BVH (bounding volume hierarchy) will be used in rendering and Godot physics.
 			Try enabling this option if you see any visual anomalies in 3D (such as incorrect object visibility).
+		</member>
+		<member name="rendering/viewport/transparent_background" type="bool" setter="" getter="" default="false">
+			If [code]true[/code], enables [member Viewport.transparent_bg] on the root viewport. This allows per-pixel transparency to be effective after also enabling [member display/window/per_pixel_transparency/allowed] and [member display/window/per_pixel_transparency/enabled].
 		</member>
 		<member name="rendering/vram_compression/import_bptc" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], the texture importer will import VRAM-compressed textures using the BPTC algorithm. This texture compression algorithm is only supported on desktop platforms, and only when using the GLES3 renderer.
