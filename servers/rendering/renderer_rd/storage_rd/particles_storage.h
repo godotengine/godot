@@ -455,6 +455,12 @@ public:
 		return particles->mode;
 	}
 
+	_FORCE_INLINE_ uint32_t particles_get_frame_counter(RID p_particles) {
+		Particles *particles = particles_owner.get_or_null(p_particles);
+		ERR_FAIL_COND_V(!particles, false);
+		return particles->frame_counter;
+	}
+
 	_FORCE_INLINE_ uint32_t particles_get_amount(RID p_particles, uint32_t &r_trail_divisor) {
 		Particles *particles = particles_owner.get_or_null(p_particles);
 		ERR_FAIL_COND_V(!particles, 0);
@@ -487,7 +493,6 @@ public:
 		ERR_FAIL_COND_V(!particles, RID());
 		if (particles->particles_transforms_buffer_uniform_set.is_null() || !RD::get_singleton()->uniform_set_is_valid(particles->particles_transforms_buffer_uniform_set)) {
 			_particles_update_buffers(particles);
-			update_particles();
 			Vector<RD::Uniform> uniforms;
 
 			{
