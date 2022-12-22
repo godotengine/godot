@@ -237,6 +237,8 @@ class EditorInspectorSection : public Container {
 	bool foldable;
 
 	void _test_unfold();
+	int _get_header_height();
+	Ref<Texture> _get_arrow();
 
 protected:
 	void _notification(int p_what);
