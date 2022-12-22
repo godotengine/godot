@@ -1,5 +1,5 @@
 diff --git a/thirdparty/meshoptimizer/simplifier.cpp b/thirdparty/meshoptimizer/simplifier.cpp
-index 5e92e2dc73..e40c141e76 100644
+index d8d4a67391..3847afc736 100644
 --- a/thirdparty/meshoptimizer/simplifier.cpp
 +++ b/thirdparty/meshoptimizer/simplifier.cpp
 @@ -20,7 +20,7 @@
@@ -11,7 +11,7 @@ index 5e92e2dc73..e40c141e76 100644
  
  // This work is based on:
  // Michael Garland and Paul S. Heckbert. Surface simplification using quadric error metrics. 1997
-@@ -453,6 +453,7 @@ struct Collapse
+@@ -458,6 +458,7 @@ struct Collapse
  		float error;
  		unsigned int errorui;
  	};
@@ -19,7 +19,7 @@ index 5e92e2dc73..e40c141e76 100644
  };
  
  static float normalize(Vector3& v)
-@@ -533,6 +534,34 @@ static float quadricError(const Quadric& Q, const Vector3& v)
+@@ -538,6 +539,34 @@ static float quadricError(const Quadric& Q, const Vector3& v)
  	return fabsf(r) * s;
  }
  
@@ -54,7 +54,7 @@ index 5e92e2dc73..e40c141e76 100644
  static void quadricFromPlane(Quadric& Q, float a, float b, float c, float d, float w)
  {
  	float aw = a * w;
-@@ -688,7 +717,7 @@ static void quadricUpdateAttributes(Quadric& Q, const Vector3& p0, const Vector3
+@@ -693,7 +722,7 @@ static void quadricUpdateAttributes(Quadric& Q, const Vector3& p0, const Vector3
  }
  #endif
  
@@ -63,7 +63,7 @@ index 5e92e2dc73..e40c141e76 100644
  {
  	for (size_t i = 0; i < index_count; i += 3)
  	{
-@@ -698,6 +727,9 @@ static void fillFaceQuadrics(Quadric* vertex_quadrics, const unsigned int* indic
+@@ -703,6 +732,9 @@ static void fillFaceQuadrics(Quadric* vertex_quadrics, const unsigned int* indic
  
  		Quadric Q;
  		quadricFromTriangle(Q, vertex_positions[i0], vertex_positions[i1], vertex_positions[i2], 1.f);
@@ -73,7 +73,7 @@ index 5e92e2dc73..e40c141e76 100644
  
  #if ATTRIBUTES
  		quadricUpdateAttributes(Q, vertex_positions[i0], vertex_positions[i1], vertex_positions[i2], Q.w);
-@@ -708,7 +740,7 @@ static void fillFaceQuadrics(Quadric* vertex_quadrics, const unsigned int* indic
+@@ -713,7 +745,7 @@ static void fillFaceQuadrics(Quadric* vertex_quadrics, const unsigned int* indic
  	}
  }
  
@@ -82,7 +82,7 @@ index 5e92e2dc73..e40c141e76 100644
  {
  	for (size_t i = 0; i < index_count; i += 3)
  	{
-@@ -752,6 +784,9 @@ static void fillEdgeQuadrics(Quadric* vertex_quadrics, const unsigned int* indic
+@@ -757,6 +789,9 @@ static void fillEdgeQuadrics(Quadric* vertex_quadrics, const unsigned int* indic
  
  			quadricAdd(vertex_quadrics[remap[i0]], Q);
  			quadricAdd(vertex_quadrics[remap[i1]], Q);
@@ -92,7 +92,7 @@ index 5e92e2dc73..e40c141e76 100644
  		}
  	}
  }
-@@ -856,7 +891,7 @@ static size_t pickEdgeCollapses(Collapse* collapses, const unsigned int* indices
+@@ -861,7 +896,7 @@ static size_t pickEdgeCollapses(Collapse* collapses, const unsigned int* indices
  	return collapse_count;
  }
  
@@ -101,7 +101,7 @@ index 5e92e2dc73..e40c141e76 100644
  {
  	for (size_t i = 0; i < collapse_count; ++i)
  	{
-@@ -876,10 +911,14 @@ static void rankEdgeCollapses(Collapse* collapses, size_t collapse_count, const
+@@ -881,10 +916,14 @@ static void rankEdgeCollapses(Collapse* collapses, size_t collapse_count, const
  		float ei = quadricError(qi, vertex_positions[i1]);
  		float ej = quadricError(qj, vertex_positions[j1]);
  
@@ -116,7 +116,7 @@ index 5e92e2dc73..e40c141e76 100644
  	}
  }
  
-@@ -976,7 +1015,7 @@ static void sortEdgeCollapses(unsigned int* sort_order, const Collapse* collapse
+@@ -981,7 +1020,7 @@ static void sortEdgeCollapses(unsigned int* sort_order, const Collapse* collapse
  	}
  }
  
@@ -125,7 +125,7 @@ index 5e92e2dc73..e40c141e76 100644
  {
  	size_t edge_collapses = 0;
  	size_t triangle_collapses = 0;
-@@ -1038,6 +1077,7 @@ static size_t performEdgeCollapses(unsigned int* collapse_remap, unsigned char*
+@@ -1043,6 +1082,7 @@ static size_t performEdgeCollapses(unsigned int* collapse_remap, unsigned char*
  		assert(collapse_remap[r1] == r1);
  
  		quadricAdd(vertex_quadrics[r1], vertex_quadrics[r0]);
@@ -133,7 +133,7 @@ index 5e92e2dc73..e40c141e76 100644
  
  		if (vertex_kind[i0] == Kind_Complex)
  		{
-@@ -1075,7 +1115,7 @@ static size_t performEdgeCollapses(unsigned int* collapse_remap, unsigned char*
+@@ -1080,7 +1120,7 @@ static size_t performEdgeCollapses(unsigned int* collapse_remap, unsigned char*
  		triangle_collapses += (vertex_kind[i0] == Kind_Border) ? 1 : 2;
  		edge_collapses++;
  
@@ -142,7 +142,7 @@ index 5e92e2dc73..e40c141e76 100644
  	}
  
  #if TRACE
-@@ -1463,9 +1503,11 @@ size_t meshopt_simplifyWithAttributes(unsigned int* destination, const unsigned
+@@ -1469,9 +1509,11 @@ size_t meshopt_simplifyWithAttributes(unsigned int* destination, const unsigned
  
  	Quadric* vertex_quadrics = allocator.allocate<Quadric>(vertex_count);
  	memset(vertex_quadrics, 0, vertex_count * sizeof(Quadric));
@@ -156,7 +156,7 @@ index 5e92e2dc73..e40c141e76 100644
  
  	if (result != indices)
  		memcpy(result, indices, index_count * sizeof(unsigned int));
-@@ -1496,7 +1538,7 @@ size_t meshopt_simplifyWithAttributes(unsigned int* destination, const unsigned
+@@ -1502,7 +1544,7 @@ size_t meshopt_simplifyWithAttributes(unsigned int* destination, const unsigned
  		if (edge_collapse_count == 0)
  			break;
  
@@ -165,7 +165,7 @@ index 5e92e2dc73..e40c141e76 100644
  
  #if TRACE > 1
  		dumpEdgeCollapses(edge_collapses, edge_collapse_count, vertex_kind);
-@@ -1515,7 +1557,7 @@ size_t meshopt_simplifyWithAttributes(unsigned int* destination, const unsigned
+@@ -1521,7 +1563,7 @@ size_t meshopt_simplifyWithAttributes(unsigned int* destination, const unsigned
  		printf("pass %d: ", int(pass_count++));
  #endif
  

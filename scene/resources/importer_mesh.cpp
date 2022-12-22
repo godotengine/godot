@@ -452,6 +452,7 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 			new_indices.resize(index_count);
 
 			Vector<float> merged_normals_f32 = vector3_to_float32_array(merged_normals.ptr(), merged_normals.size());
+			const int simplify_options = SurfaceTool::SIMPLIFY_LOCK_BORDER;
 
 			size_t new_index_count = SurfaceTool::simplify_with_attrib_func(
 					(unsigned int *)new_indices.ptrw(),
@@ -460,6 +461,7 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 					sizeof(float) * 3, // Vertex stride
 					index_target,
 					max_mesh_error,
+					simplify_options,
 					&mesh_error,
 					merged_normals_f32.ptr(),
 					normal_weights.ptr(), 3);

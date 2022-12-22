@@ -542,13 +542,14 @@ void OccluderInstance3D::_bake_surface(const Transform3D &p_transform, Array p_s
 		float error = -1.0f;
 		int target_index_count = MIN(indices.size(), 36);
 
+		const int simplify_options = SurfaceTool::SIMPLIFY_LOCK_BORDER;
+
 		uint32_t index_count = SurfaceTool::simplify_func(
 				(unsigned int *)indices.ptrw(),
 				(unsigned int *)indices.ptr(),
 				indices.size(),
 				vertices_f32.ptr(), vertices.size(), sizeof(float) * 3,
-				target_index_count, target_error, &error);
-
+				target_index_count, target_error, simplify_options, &error);
 		indices.resize(index_count);
 	}
 
