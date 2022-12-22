@@ -289,7 +289,7 @@
 		<method name="get_canvas_transform" qualifiers="const">
 			<return type="Transform2D" />
 			<description>
-				Returns the transform matrix of this item's canvas.
+				Returns the transform from the coordinate system of the canvas, this item is in, to the [Viewport]s coordinate system.
 			</description>
 		</method>
 		<method name="get_global_mouse_position" qualifiers="const">
@@ -307,7 +307,7 @@
 		<method name="get_global_transform_with_canvas" qualifiers="const">
 			<return type="Transform2D" />
 			<description>
-				Returns the global transform matrix of this item in relation to the canvas.
+				Returns the transform from the local coordinate system of this [CanvasItem] to the [Viewport]s coordinate system.
 			</description>
 		</method>
 		<method name="get_local_mouse_position" qualifiers="const">
@@ -331,7 +331,7 @@
 		<method name="get_viewport_transform" qualifiers="const">
 			<return type="Transform2D" />
 			<description>
-				Returns this item's transform in relation to the viewport.
+				Returns the transform from the coordinate system of the canvas, this item is in, to the [Viewport]s embedders coordinate system.
 			</description>
 		</method>
 		<method name="get_world_2d" qualifiers="const">
