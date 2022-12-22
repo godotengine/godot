@@ -80,11 +80,11 @@ class GroupDialog : public AcceptDialog {
 	void _group_renamed();
 	void _rename_group_item(const String &p_old_name, const String &p_new_name);
 
-	void _add_group(String p_name);
+	void _add_group(String p_name, bool p_can_be_edited = true);
 	void _modify_group_pressed(Object *p_item, int p_column, int p_id, MouseButton p_button);
 	void _delete_group_item(const String &p_name);
 
-	void _load_groups(Node *p_current);
+	void _load_groups(Node *p_current, HashMap<StringName, bool> &p_groups_map);
 	void _load_nodes(Node *p_current);
 
 protected:

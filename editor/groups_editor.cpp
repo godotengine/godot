@@ -57,6 +57,18 @@ static bool can_edit(Node *p_node, String p_group) {
 	return can_edit;
 }
 
+struct _GroupInfoComparator {
+	bool operator()(const Node::GroupInfo &p_a, const Node::GroupInfo &p_b) const {
+		return p_a.name.operator String() < p_b.name.operator String();
+	}
+};
+
+struct _GroupComparator {
+	bool operator()(const StringName &p_a, const StringName &p_b) const {
+		return p_a.operator String() < p_b.operator String();
+	}
+};
+
 void GroupDialog::_group_selected() {
 	nodes_to_add->clear();
 	add_node_root = nodes_to_add->create_item();
@@ -196,22 +208,20 @@ void GroupDialog::_add_group_pressed(const String &p_name) {
 	add_group_text->clear();
 }
 
-void GroupDialog::_add_group(String p_name) {
+void GroupDialog::_add_group(String p_name, bool p_can_be_edited) {
 	if (!is_visible()) {
 		return; // No need to edit the dialog if it's not being used.
 	}
 
-	String name = p_name.strip_edges();
-	if (name.is_empty() || groups->get_item_with_text(name)) {
-		return;
+	TreeItem *new_group = groups->create_item(groups_root);
+	new_group->set_text(0, p_name);
+
+	if (p_can_be_edited) {
+		new_group->set_editable(0, true);
+		new_group->add_button(0, groups->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), DELETE_GROUP);
 	}
 
-	TreeItem *new_group = groups->create_item(groups_root);
-	new_group->set_text(0, name);
-	new_group->add_button(0, groups->get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), DELETE_GROUP);
 	new_group->add_button(0, groups->get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")), COPY_GROUP);
-	new_group->set_editable(0, true);
-	new_group->select(0);
 	groups->ensure_cursor_is_visible();
 }
 
@@ -295,19 +305,26 @@ void GroupDialog::_rename_group_item(const String &p_old_name, const String &p_n
 	}
 }
 
-void GroupDialog::_load_groups(Node *p_current) {
-	List<Node::GroupInfo> gi;
-	p_current->get_groups(&gi);
+void GroupDialog::_load_groups(Node *p_current, HashMap<StringName, bool> &p_groups_map) {
+	List<GroupInfo> groups_list;
+	p_current->get_groups(&groups_list);
 
-	for (const Node::GroupInfo &E : gi) {
-		if (!E.persistent) {
+	for (GroupInfo &group : groups_list) {
+		if (!group.persistent) {
 			continue;
 		}
-		_add_group(E.name);
+
+		StringName name = group.name;
+		if (p_groups_map.has(name) && !p_groups_map[name]) {
+			// Group is already known and not editable, no further checks needed.
+			continue;
+		}
+		// Save group together with a flag which determines whether this group can be edited or not.
+		p_groups_map[name] = can_edit(p_current, name);
 	}
 
 	for (int i = 0; i < p_current->get_child_count(); i++) {
-		_load_groups(p_current->get_child(i));
+		_load_groups(p_current->get_child(i), p_groups_map);
 	}
 }
 
@@ -419,7 +436,22 @@ void GroupDialog::edit() {
 	add_filter->clear();
 	remove_filter->clear();
 
-	_load_groups(scene_tree->get_edited_scene_root());
+	HashMap<StringName, bool> groups_map;
+	_load_groups(scene_tree->get_edited_scene_root(), groups_map);
+
+	// Sort the groups first.
+	List<StringName> groups_list;
+	for (const KeyValue<StringName, bool> &E : groups_map) {
+		groups_list.push_back(E.key);
+	}
+	groups_list.sort_custom<_GroupComparator>();
+
+	for (StringName &group : groups_list) {
+		bool can_be_edited = groups_map[group];
+
+		_add_group(group, can_be_edited);
+	}
+	groups->grab_focus();
 }
 
 void GroupDialog::_bind_methods() {
@@ -712,12 +744,6 @@ void GroupsEditor::_group_name_changed(const String &p_new_text) {
 	add->set_disabled(p_new_text.strip_edges().is_empty());
 }
 
-struct _GroupInfoComparator {
-	bool operator()(const Node::GroupInfo &p_a, const Node::GroupInfo &p_b) const {
-		return p_a.name.operator String() < p_b.name.operator String();
-	}
-};
-
 void GroupsEditor::update_tree() {
 	tree->clear();
 
@@ -725,7 +751,7 @@ void GroupsEditor::update_tree() {
 		return;
 	}
 
-	List<Node::GroupInfo> groups;
+	List<GroupInfo> groups;
 	node->get_groups(&groups);
 	groups.sort_custom<_GroupInfoComparator>();
 
@@ -737,33 +763,15 @@ void GroupsEditor::update_tree() {
 			continue;
 		}
 
-		Node *n = node;
-		bool can_be_deleted = true;
-
-		while (n) {
-			Ref<SceneState> ss = (n == EditorNode::get_singleton()->get_edited_scene()) ? n->get_scene_inherited_state() : n->get_scene_instance_state();
-
-			if (ss.is_valid()) {
-				int path = ss->find_node_by_path(n->get_path_to(node));
-				if (path != -1) {
-					if (ss->is_node_in_group(path, gi.name)) {
-						can_be_deleted = false;
-					}
-				}
-			}
-
-			n = n->get_owner();
-		}
+		bool can_be_edited = can_edit(node, gi.name);
 
 		TreeItem *item = tree->create_item(root);
 		item->set_text(0, gi.name);
-		item->set_editable(0, true);
-		if (can_be_deleted) {
+		if (can_be_edited) {
+			item->set_editable(0, true);
 			item->add_button(0, get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")), DELETE_GROUP);
-			item->add_button(0, get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")), COPY_GROUP);
-		} else {
-			item->set_selectable(0, false);
 		}
+		item->add_button(0, get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")), COPY_GROUP);
 	}
 }
 
