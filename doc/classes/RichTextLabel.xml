@@ -378,12 +378,12 @@
 				Adds a [code][u][/code] tag to the tag stack.
 			</description>
 		</method>
-		<method name="remove_line">
+		<method name="remove_paragraph">
 			<return type="bool" />
-			<param index="0" name="line" type="int" />
+			<param index="0" name="paragraph" type="int" />
 			<description>
-				Removes a line of content from the label. Returns [code]true[/code] if the line exists.
-				The [param line] argument is the index of the line to remove, it can take values in the interval [code][0, get_line_count() - 1][/code].
+				Removes a paragraph of content from the label. Returns [code]true[/code] if the paragraph exists.
+				The [param paragraph] argument is the index of the paragraph to remove, it can take values in the interval [code][0, get_paragraph_count() - 1][/code].
 			</description>
 		</method>
 		<method name="scroll_to_line">
