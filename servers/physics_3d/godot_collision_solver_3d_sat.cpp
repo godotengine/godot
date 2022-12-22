@@ -1718,6 +1718,7 @@ static void _collision_capsule_cylinder(const GodotShape3D *p_a, const Transform
 		return;
 	}
 
+	/*
 	real_t proj = capsule_A_axis.cross(cylinder_B_axis).cross(cylinder_B_axis).dot(capsule_A_axis);
 	if (Math::is_zero_approx(proj)) {
 		// Parallel capsule and cylinder axes, handle with specific axes only.
@@ -1725,6 +1726,7 @@ static void _collision_capsule_cylinder(const GodotShape3D *p_a, const Transform
 		separator.generate_contacts();
 		return;
 	}
+	*/
 
 	// Get axes from closest points between capsule axis and cylinder end caps.
 	Vector<Vector3> circle_closest;
