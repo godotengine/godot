@@ -3598,6 +3598,10 @@ void RenderForwardClustered::_geometry_instance_update(RenderGeometryInstance *p
 		}
 		ginstance->transforms_uniform_set = particles_storage->particles_get_instance_buffer_uniform_set(ginstance->data->base, scene_shader.default_shader_rd, TRANSFORMS_UNIFORM_SET);
 
+		if (particles_storage->particles_get_frame_counter(ginstance->data->base) == 0) {
+			// Particles haven't been cleared or updated, update once now to ensure they are ready to render.
+			particles_storage->update_particles();
+		}
 	} else if (ginstance->data->base_type == RS::INSTANCE_MESH) {
 		if (mesh_storage->skeleton_is_valid(ginstance->data->skeleton)) {
 			ginstance->transforms_uniform_set = mesh_storage->skeleton_get_3d_uniform_set(ginstance->data->skeleton, scene_shader.default_shader_rd, TRANSFORMS_UNIFORM_SET);
