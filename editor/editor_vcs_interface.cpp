@@ -363,8 +363,8 @@ EditorVCSInterface::StatusFile EditorVCSInterface::_convert_status_file(Dictiona
 }
 
 void EditorVCSInterface::_bind_methods() {
-	GDVIRTUAL_BIND(_attach_ui, "vcs_plugin_editor_plugin");
-	GDVIRTUAL_BIND(_remove_ui, "vcs_plugin_editor_plugin");
+	GDVIRTUAL_BIND(_attach_ui, "vcs_editor_plugin");
+	GDVIRTUAL_BIND(_remove_ui, "vcs_editor_plugin");
 
 	// Proxy end points that implement the VCS specific operations that the editor demands.
 	GDVIRTUAL_BIND(_initialize, "project_path");
