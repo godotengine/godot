@@ -247,15 +247,15 @@ public:
 
 	void add_button(int p_column, const Ref<Texture2D> &p_button, int p_id = -1, bool p_disabled = false, const String &p_tooltip = "");
 	int get_button_count(int p_column) const;
-	String get_button_tooltip_text(int p_column, int p_idx) const;
-	Ref<Texture2D> get_button(int p_column, int p_idx) const;
-	int get_button_id(int p_column, int p_idx) const;
-	void erase_button(int p_column, int p_idx);
+	String get_button_tooltip_text(int p_column, int p_index) const;
+	Ref<Texture2D> get_button(int p_column, int p_index) const;
+	int get_button_id(int p_column, int p_index) const;
+	void erase_button(int p_column, int p_index);
 	int get_button_by_id(int p_column, int p_id) const;
-	void set_button(int p_column, int p_idx, const Ref<Texture2D> &p_button);
-	void set_button_color(int p_column, int p_idx, const Color &p_color);
-	void set_button_disabled(int p_column, int p_idx, bool p_disabled);
-	bool is_button_disabled(int p_column, int p_idx) const;
+	void set_button(int p_column, int p_index, const Ref<Texture2D> &p_button);
+	void set_button_color(int p_column, int p_index, const Color &p_color);
+	void set_button_disabled(int p_column, int p_index, bool p_disabled);
+	bool is_button_disabled(int p_column, int p_index) const;
 
 	/* range works for mode number or mode combo */
 
@@ -329,7 +329,7 @@ public:
 
 	/* Item manipulation */
 
-	TreeItem *create_child(int p_idx = -1);
+	TreeItem *create_child(int p_index = -1);
 
 	Tree *get_tree() const;
 
@@ -341,7 +341,7 @@ public:
 	TreeItem *get_prev_visible(bool p_wrap = false);
 	TreeItem *get_next_visible(bool p_wrap = false);
 
-	TreeItem *get_child(int p_idx);
+	TreeItem *get_child(int p_index);
 	int get_visible_child_count();
 	int get_child_count();
 	TypedArray<TreeItem> get_children();
@@ -647,7 +647,7 @@ public:
 
 	void clear();
 
-	TreeItem *create_item(TreeItem *p_parent = nullptr, int p_idx = -1);
+	TreeItem *create_item(TreeItem *p_parent = nullptr, int p_index = -1);
 	TreeItem *get_root() const;
 	TreeItem *get_last_item() const;
 

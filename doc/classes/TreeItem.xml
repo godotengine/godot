@@ -18,7 +18,7 @@
 			<param index="3" name="disabled" type="bool" default="false" />
 			<param index="4" name="tooltip_text" type="String" default="&quot;&quot;" />
 			<description>
-				Adds a button with [Texture2D] [param button] at column [param column]. The [param id] is used to identify the button. If not specified, the next available index is used, which may be retrieved by calling [method get_button_count] immediately before this method. Optionally, the button can be [param disabled] and have a [param tooltip_text].
+				Adds a button with [Texture2D] [param button] at column [param column]. The [param id] is used to identify the button in the according [signal Tree.button_clicked] signal and can be different from the buttons index. If not specified, the next available index is used, which may be retrieved by calling [method get_button_count] immediately before this method. Optionally, the button can be [param disabled] and have a [param tooltip_text].
 			</description>
 		</method>
 		<method name="call_recursive" qualifiers="vararg">
@@ -44,10 +44,10 @@
 		</method>
 		<method name="create_child">
 			<return type="TreeItem" />
-			<param index="0" name="idx" type="int" default="-1" />
+			<param index="0" name="index" type="int" default="-1" />
 			<description>
 				Creates an item and adds it as a child.
-				The new item will be inserted as position [param idx] (the default value [code]-1[/code] means the last position), or it will be the last child if [param idx] is higher than the child count.
+				The new item will be inserted as position [param index] (the default value [code]-1[/code] means the last position), or it will be the last child if [param index] is higher than the child count.
 			</description>
 		</method>
 		<method name="deselect">
@@ -60,17 +60,17 @@
 		<method name="erase_button">
 			<return type="void" />
 			<param index="0" name="column" type="int" />
-			<param index="1" name="button_idx" type="int" />
+			<param index="1" name="button_index" type="int" />
 			<description>
-				Removes the button at index [param button_idx] in column [param column].
+				Removes the button at index [param button_index] in column [param column].
 			</description>
 		</method>
 		<method name="get_button" qualifiers="const">
 			<return type="Texture2D" />
 			<param index="0" name="column" type="int" />
-			<param index="1" name="button_idx" type="int" />
+			<param index="1" name="button_index" type="int" />
 			<description>
-				Returns the [Texture2D] of the button at index [param button_idx] in column [param column].
+				Returns the [Texture2D] of the button at index [param button_index] in column [param column].
 			</description>
 		</method>
 		<method name="get_button_by_id" qualifiers="const">
@@ -91,17 +91,17 @@
 		<method name="get_button_id" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="column" type="int" />
-			<param index="1" name="button_idx" type="int" />
+			<param index="1" name="button_index" type="int" />
 			<description>
-				Returns the ID for the button at index [param button_idx] in column [param column].
+				Returns the ID for the button at index [param button_index] in column [param column].
 			</description>
 		</method>
 		<method name="get_button_tooltip_text" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="column" type="int" />
-			<param index="1" name="button_idx" type="int" />
+			<param index="1" name="button_index" type="int" />
 			<description>
-				Returns the tooltip text for the button at index [param button_idx] in column [param column].
+				Returns the tooltip text for the button at index [param button_index] in column [param column].
 			</description>
 		</method>
 		<method name="get_cell_mode" qualifiers="const">
@@ -113,9 +113,9 @@
 		</method>
 		<method name="get_child">
 			<return type="TreeItem" />
-			<param index="0" name="idx" type="int" />
+			<param index="0" name="index" type="int" />
 			<description>
-				Returns a child item by its index (see [method get_child_count]). This method is often used for iterating all children of an item.
+				Returns a child item by its [param index] (see [method get_child_count]). This method is often used for iterating all children of an item.
 				Negative indices access the children from the last one.
 			</description>
 		</method>
@@ -332,9 +332,9 @@
 		<method name="is_button_disabled" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="column" type="int" />
-			<param index="1" name="button_idx" type="int" />
+			<param index="1" name="button_index" type="int" />
 			<description>
-				Returns [code]true[/code] if the button at index [param button_idx] for the given [param column] is disabled.
+				Returns [code]true[/code] if the button at index [param button_index] for the given [param column] is disabled.
 			</description>
 		</method>
 		<method name="is_checked" qualifiers="const">
@@ -419,28 +419,28 @@
 		<method name="set_button">
 			<return type="void" />
 			<param index="0" name="column" type="int" />
-			<param index="1" name="button_idx" type="int" />
+			<param index="1" name="button_index" type="int" />
 			<param index="2" name="button" type="Texture2D" />
 			<description>
-				Sets the given column's button [Texture2D] at index [param button_idx] to [param button].
+				Sets the given column's button [Texture2D] at index [param button_index] to [param button].
 			</description>
 		</method>
 		<method name="set_button_color">
 			<return type="void" />
 			<param index="0" name="column" type="int" />
-			<param index="1" name="button_idx" type="int" />
+			<param index="1" name="button_index" type="int" />
 			<param index="2" name="color" type="Color" />
 			<description>
-				Sets the given column's button color at index [param button_idx] to [param color].
+				Sets the given column's button color at index [param button_index] to [param color].
 			</description>
 		</method>
 		<method name="set_button_disabled">
 			<return type="void" />
 			<param index="0" name="column" type="int" />
-			<param index="1" name="button_idx" type="int" />
+			<param index="1" name="button_index" type="int" />
 			<param index="2" name="disabled" type="bool" />
 			<description>
-				If [code]true[/code], disables the button at index [param button_idx] in the given [param column].
+				If [code]true[/code], disables the button at index [param button_index] in the given [param column].
 			</description>
 		</method>
 		<method name="set_cell_mode">
