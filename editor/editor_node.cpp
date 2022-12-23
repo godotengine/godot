@@ -5846,10 +5846,14 @@ void EditorNode::_bottom_panel_raise_toggled(bool p_pressed) {
 }
 
 void EditorNode::_update_renderer_color() {
-	if (renderer->get_text() == "gl_compatibility") {
+	if (renderer->get_text() == "Forward+") {
+		renderer->add_theme_color_override("font_color", Color::hex(0x5d8c3fff));
+	}
+	if (renderer->get_text() == "Mobile") {
+		renderer->add_theme_color_override("font_color", Color::hex(0xa5557dff));
+	}
+	if (renderer->get_text() == "Compatibility") {
 		renderer->add_theme_color_override("font_color", Color::hex(0x5586a4ff));
-	} else if (renderer->get_text() == "forward_plus" || renderer->get_text() == "mobile") {
-		renderer->add_theme_color_override("font_color", theme_base->get_theme_color(SNAME("highend_color"), SNAME("Editor")));
 	}
 }
 
@@ -6937,14 +6941,14 @@ EditorNode::EditorNode() {
 	menu_hb->add_child(right_menu_hb);
 
 	renderer = memnew(OptionButton);
-	// Hide the renderer selection dropdown until OpenGL support is more mature.
-	// The renderer can still be changed in the project settings or using `--rendering-driver opengl3`.
-	renderer->set_visible(false);
+	renderer->set_visible(true);
 	renderer->set_flat(true);
+	renderer->set_fit_to_longest_item(false);
 	renderer->set_focus_mode(Control::FOCUS_NONE);
 	renderer->connect("item_selected", callable_mp(this, &EditorNode::_renderer_selected));
 	renderer->add_theme_font_override("font", gui_base->get_theme_font(SNAME("bold"), SNAME("EditorFonts")));
 	renderer->add_theme_font_size_override("font_size", gui_base->get_theme_font_size(SNAME("bold_size"), SNAME("EditorFonts")));
+	renderer->set_tooltip_text(TTR("Choose a renderer."));
 
 	right_menu_hb->add_child(renderer);
 
@@ -6967,7 +6971,15 @@ EditorNode::EditorNode() {
 		String rendering_method = renderers[i];
 
 		// Add the renderers name to the UI.
-		renderer->add_item(rendering_method);
+		if (rendering_method == "forward_plus") {
+			renderer->add_item(TTR("Forward+"));
+		}
+		if (rendering_method == "mobile") {
+			renderer->add_item(TTR("Mobile"));
+		}
+		if (rendering_method == "gl_compatibility") {
+			renderer->add_item(TTR("Compatibility"));
+		}
 		renderer->set_item_metadata(i, rendering_method);
 
 		// Lowercase for standard comparison.
