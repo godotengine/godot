@@ -140,8 +140,11 @@
 		<member name="cell_size" type="Vector2" setter="set_cell_size" getter="get_cell_size" default="Vector2(1, 1)">
 			The size of the point cell which will be applied to calculate the resulting point position returned by [method get_point_path]. If changed, [method update] needs to be called before finding the next path.
 		</member>
-		<member name="default_heuristic" type="int" setter="set_default_heuristic" getter="get_default_heuristic" enum="AStarGrid2D.Heuristic" default="0">
-			The default [enum Heuristic] which will be used to calculate the path if [method _compute_cost] and/or [method _estimate_cost] were not overridden.
+		<member name="default_compute_heuristic" type="int" setter="set_default_compute_heuristic" getter="get_default_compute_heuristic" enum="AStarGrid2D.Heuristic" default="0">
+			The default [enum Heuristic] which will be used to calculate the cost between two points if [method _compute_cost] was not overridden.
+		</member>
+		<member name="default_estimate_heuristic" type="int" setter="set_default_estimate_heuristic" getter="get_default_estimate_heuristic" enum="AStarGrid2D.Heuristic" default="0">
+			The default [enum Heuristic] which will be used to calculate the cost between the point and the end point if [method _estimate_cost] was not overridden.
 		</member>
 		<member name="diagonal_mode" type="int" setter="set_diagonal_mode" getter="get_diagonal_mode" enum="AStarGrid2D.DiagonalMode" default="0">
 			A specific [enum DiagonalMode] mode which will force the path to avoid or accept the specified diagonals.
