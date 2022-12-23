@@ -249,57 +249,6 @@ Ref<RenderSceneBuffers> RendererSceneRenderRD::render_buffers_create() {
 	return rb;
 }
 
-void RendererSceneRenderRD::_allocate_luminance_textures(Ref<RenderSceneBuffersRD> rb) {
-	ERR_FAIL_COND(!rb->luminance.current.is_null());
-
-	Size2i internal_size = rb->get_internal_size();
-	int w = internal_size.x;
-	int h = internal_size.y;
-
-	while (true) {
-		w = MAX(w / 8, 1);
-		h = MAX(h / 8, 1);
-
-		RD::TextureFormat tf;
-		tf.format = RD::DATA_FORMAT_R32_SFLOAT;
-		tf.width = w;
-		tf.height = h;
-
-		bool final = w == 1 && h == 1;
-
-		if (_render_buffers_can_be_storage()) {
-			tf.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT;
-			if (final) {
-				tf.usage_bits |= RD::TEXTURE_USAGE_SAMPLING_BIT;
-			}
-		} else {
-			tf.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT;
-		}
-
-		RID texture = RD::get_singleton()->texture_create(tf, RD::TextureView());
-
-		rb->luminance.reduce.push_back(texture);
-		if (!_render_buffers_can_be_storage()) {
-			Vector<RID> fb;
-			fb.push_back(texture);
-
-			rb->luminance.fb.push_back(RD::get_singleton()->framebuffer_create(fb));
-		}
-
-		if (final) {
-			rb->luminance.current = RD::get_singleton()->texture_create(tf, RD::TextureView());
-
-			if (!_render_buffers_can_be_storage()) {
-				Vector<RID> fb;
-				fb.push_back(rb->luminance.current);
-
-				rb->luminance.current_fb = RD::get_singleton()->framebuffer_create(fb);
-			}
-			break;
-		}
-	}
-}
-
 void RendererSceneRenderRD::_render_buffers_copy_screen_texture(const RenderDataRD *p_render_data) {
 	Ref<RenderSceneBuffersRD> rb = p_render_data->render_buffers;
 	ERR_FAIL_COND(rb.is_null());
@@ -443,9 +392,9 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		RENDER_TIMESTAMP("Auto exposure");
 
 		RD::get_singleton()->draw_command_begin_label("Auto exposure");
-		if (rb->luminance.current.is_null()) {
-			_allocate_luminance_textures(rb);
-		}
+
+		Ref<RendererRD::Luminance::LuminanceBuffers> luminance_buffers = luminance->get_luminance_buffers(rb);
+
 		uint64_t auto_exposure_version = RSG::camera_attributes->camera_attributes_get_auto_exposure_version(p_render_data->camera_attributes);
 		bool set_immediate = auto_exposure_version != rb->get_auto_exposure_version();
 		rb->set_auto_exposure_version(auto_exposure_version);
@@ -453,16 +402,9 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		double step = RSG::camera_attributes->camera_attributes_get_auto_exposure_adjust_speed(p_render_data->camera_attributes) * time_step;
 		float auto_exposure_min_sensitivity = RSG::camera_attributes->camera_attributes_get_auto_exposure_min_sensitivity(p_render_data->camera_attributes);
 		float auto_exposure_max_sensitivity = RSG::camera_attributes->camera_attributes_get_auto_exposure_max_sensitivity(p_render_data->camera_attributes);
-		if (can_use_storage) {
-			RendererCompositorRD::singleton->get_effects()->luminance_reduction(internal_texture, internal_size, rb->luminance.reduce, rb->luminance.current, auto_exposure_min_sensitivity, auto_exposure_max_sensitivity, step, set_immediate);
-		} else {
-			RendererCompositorRD::singleton->get_effects()->luminance_reduction_raster(internal_texture, internal_size, rb->luminance.reduce, rb->luminance.fb, rb->luminance.current, auto_exposure_min_sensitivity, auto_exposure_max_sensitivity, step, set_immediate);
-		}
+		luminance->luminance_reduction(internal_texture, internal_size, luminance_buffers, auto_exposure_min_sensitivity, auto_exposure_max_sensitivity, step, set_immediate);
+
 		// Swap final reduce with prev luminance.
-		SWAP(rb->luminance.current, rb->luminance.reduce.write[rb->luminance.reduce.size() - 1]);
-		if (!can_use_storage) {
-			SWAP(rb->luminance.current_fb, rb->luminance.fb.write[rb->luminance.fb.size() - 1]);
-		}
 
 		auto_exposure_scale = RSG::camera_attributes->camera_attributes_get_auto_exposure_scale(p_render_data->camera_attributes);
 
@@ -496,8 +438,8 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 
 				if (i == 0) {
 					RID luminance_texture;
-					if (RSG::camera_attributes->camera_attributes_uses_auto_exposure(p_render_data->camera_attributes) && rb->luminance.current.is_valid()) {
-						luminance_texture = rb->luminance.current;
+					if (RSG::camera_attributes->camera_attributes_uses_auto_exposure(p_render_data->camera_attributes)) {
+						luminance_texture = luminance->get_current_luminance_buffer(rb); // this will return and empty RID if we don't have an auto exposure buffer
 					}
 					RID source = rb->get_internal_texture(l);
 					RID dest = rb->get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_BLUR_1, l, i);
@@ -530,9 +472,9 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 
 		RendererRD::ToneMapper::TonemapSettings tonemap;
 
-		if (can_use_effects && RSG::camera_attributes->camera_attributes_uses_auto_exposure(p_render_data->camera_attributes) && rb->luminance.current.is_valid()) {
+		tonemap.exposure_texture = luminance->get_current_luminance_buffer(rb);
+		if (can_use_effects && RSG::camera_attributes->camera_attributes_uses_auto_exposure(p_render_data->camera_attributes) && tonemap.exposure_texture.is_valid()) {
 			tonemap.use_auto_exposure = true;
-			tonemap.exposure_texture = rb->luminance.current;
 			tonemap.auto_exposure_scale = auto_exposure_scale;
 		} else {
 			tonemap.exposure_texture = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_WHITE);
@@ -746,10 +688,11 @@ void RendererSceneRenderRD::_render_buffers_debug_draw(Ref<RenderSceneBuffersRD>
 	}
 
 	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_SCENE_LUMINANCE) {
-		if (p_render_buffers->luminance.current.is_valid()) {
+		RID luminance_texture = luminance->get_current_luminance_buffer(p_render_buffers);
+		if (luminance_texture.is_valid()) {
 			Size2i rtsize = texture_storage->render_target_get_size(render_target);
 
-			copy_effects->copy_to_fb_rect(p_render_buffers->luminance.current, texture_storage->render_target_get_rd_framebuffer(render_target), Rect2(Vector2(), rtsize / 8), false, true);
+			copy_effects->copy_to_fb_rect(luminance_texture, texture_storage->render_target_get_rd_framebuffer(render_target), Rect2(Vector2(), rtsize / 8), false, true);
 		}
 	}
 
@@ -1334,6 +1277,7 @@ void RendererSceneRenderRD::init() {
 	bool can_use_vrs = is_vrs_supported();
 	bokeh_dof = memnew(RendererRD::BokehDOF(!can_use_storage));
 	copy_effects = memnew(RendererRD::CopyEffects(!can_use_storage));
+	luminance = memnew(RendererRD::Luminance(!can_use_storage));
 	tone_mapper = memnew(RendererRD::ToneMapper);
 	if (can_use_vrs) {
 		vrs = memnew(RendererRD::VRS);
@@ -1353,6 +1297,9 @@ RendererSceneRenderRD::~RendererSceneRenderRD() {
 	}
 	if (copy_effects) {
 		memdelete(copy_effects);
+	}
+	if (luminance) {
+		memdelete(luminance);
 	}
 	if (tone_mapper) {
 		memdelete(tone_mapper);

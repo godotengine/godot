@@ -38,6 +38,7 @@
 #include "servers/rendering/renderer_rd/effects/bokeh_dof.h"
 #include "servers/rendering/renderer_rd/effects/copy_effects.h"
 #include "servers/rendering/renderer_rd/effects/fsr.h"
+#include "servers/rendering/renderer_rd/effects/luminance.h"
 #include "servers/rendering/renderer_rd/effects/tone_mapper.h"
 #include "servers/rendering/renderer_rd/effects/vrs.h"
 #include "servers/rendering/renderer_rd/environment/fog.h"
@@ -105,6 +106,7 @@ protected:
 	RendererRD::ForwardIDStorage *forward_id_storage = nullptr;
 	RendererRD::BokehDOF *bokeh_dof = nullptr;
 	RendererRD::CopyEffects *copy_effects = nullptr;
+	RendererRD::Luminance *luminance = nullptr;
 	RendererRD::ToneMapper *tone_mapper = nullptr;
 	RendererRD::FSR *fsr = nullptr;
 	RendererRD::VRS *vrs = nullptr;
@@ -179,9 +181,6 @@ private:
 	RS::LightProjectorFilter light_projectors_filter = RS::LIGHT_PROJECTOR_FILTER_LINEAR_MIPMAPS;
 
 	/* RENDER BUFFERS */
-
-	// TODO move into effects/luminance.h/cpp
-	void _allocate_luminance_textures(Ref<RenderSceneBuffersRD> rb);
 
 	/* GI */
 	bool screen_space_roughness_limiter = false;
