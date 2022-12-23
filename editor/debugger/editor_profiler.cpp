@@ -106,7 +106,7 @@ void EditorProfiler::clear() {
 	seeking = false;
 
 	// Ensure button text (start, stop) is correct
-	_set_button_text();
+	_update_button_text();
 	emit_signal(SNAME("enable_profiling"), activate->is_pressed());
 }
 
@@ -376,7 +376,7 @@ void EditorProfiler::_update_frame() {
 	updating_frame = false;
 }
 
-void EditorProfiler::_set_button_text() {
+void EditorProfiler::_update_button_text() {
 	if (activate->is_pressed()) {
 		activate->set_icon(get_theme_icon(SNAME("Stop"), SNAME("EditorIcons")));
 		activate->set_text(TTR("Stop"));
@@ -387,7 +387,7 @@ void EditorProfiler::_set_button_text() {
 }
 
 void EditorProfiler::_activate_pressed() {
-	_set_button_text();
+	_update_button_text();
 
 	if (activate->is_pressed()) {
 		_clear_pressed();
@@ -510,11 +510,15 @@ void EditorProfiler::_bind_methods() {
 }
 
 void EditorProfiler::set_enabled(bool p_enable, bool p_clear) {
-	activate->set_pressed(false);
 	activate->set_disabled(!p_enable);
 	if (p_clear) {
 		clear();
 	}
+}
+
+void EditorProfiler::set_pressed(bool p_pressed) {
+	activate->set_pressed(p_pressed);
+	_update_button_text();
 }
 
 bool EditorProfiler::is_profiling() {
@@ -595,6 +599,7 @@ EditorProfiler::EditorProfiler() {
 	add_child(hb);
 	activate = memnew(Button);
 	activate->set_toggle_mode(true);
+	activate->set_disabled(true);
 	activate->set_text(TTR("Start"));
 	activate->connect("pressed", callable_mp(this, &EditorProfiler::_activate_pressed));
 	hb->add_child(activate);
