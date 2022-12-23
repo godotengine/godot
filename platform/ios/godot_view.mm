@@ -151,7 +151,7 @@ static const float earth_gravity = 9.80665;
 }
 
 - (void)godot_commonInit {
-	self.contentScaleFactor = [UIScreen mainScreen].nativeScale;
+	self.contentScaleFactor = [UIScreen mainScreen].scale;
 
 	[self initTouches];
 
