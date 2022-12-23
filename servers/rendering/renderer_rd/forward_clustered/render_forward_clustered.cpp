@@ -1636,7 +1636,21 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	bool reverse_cull = p_render_data->scene_data->cam_transform.basis.determinant() < 0;
 	bool using_ssil = p_render_data->environment.is_valid() && environment_get_ssil_enabled(p_render_data->environment);
 
-	if (rb.is_valid()) {
+	if (p_render_data->reflection_probe.is_valid()) {
+		uint32_t resolution = light_storage->reflection_probe_instance_get_resolution(p_render_data->reflection_probe);
+		screen_size.x = resolution;
+		screen_size.y = resolution;
+
+		color_framebuffer = light_storage->reflection_probe_instance_get_framebuffer(p_render_data->reflection_probe, p_render_data->reflection_probe_pass);
+		color_only_framebuffer = color_framebuffer;
+		depth_framebuffer = light_storage->reflection_probe_instance_get_depth_framebuffer(p_render_data->reflection_probe, p_render_data->reflection_probe_pass);
+
+		if (light_storage->reflection_probe_is_interior(light_storage->reflection_probe_instance_get_probe(p_render_data->reflection_probe))) {
+			p_render_data->environment = RID(); //no environment on interiors
+		}
+
+		reverse_cull = true; // for some reason our views are inverted
+	} else if (rb.is_valid()) {
 		screen_size = rb->get_internal_size();
 
 		if (rb->get_use_taa() || get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_MOTION_VECTORS) {
@@ -1688,20 +1702,6 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 
 		color_framebuffer = rb_data->get_color_pass_fb(color_pass_flags);
 		color_only_framebuffer = rb_data->get_color_only_fb();
-	} else if (p_render_data->reflection_probe.is_valid()) {
-		uint32_t resolution = light_storage->reflection_probe_instance_get_resolution(p_render_data->reflection_probe);
-		screen_size.x = resolution;
-		screen_size.y = resolution;
-
-		color_framebuffer = light_storage->reflection_probe_instance_get_framebuffer(p_render_data->reflection_probe, p_render_data->reflection_probe_pass);
-		color_only_framebuffer = color_framebuffer;
-		depth_framebuffer = light_storage->reflection_probe_instance_get_depth_framebuffer(p_render_data->reflection_probe, p_render_data->reflection_probe_pass);
-
-		if (light_storage->reflection_probe_is_interior(light_storage->reflection_probe_instance_get_probe(p_render_data->reflection_probe))) {
-			p_render_data->environment = RID(); //no environment on interiors
-		}
-
-		reverse_cull = true; // for some reason our views are inverted
 	} else {
 		ERR_FAIL(); //bug?
 	}
@@ -1790,29 +1790,40 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 			default: {
 			}
 		}
+
 		// setup sky if used for ambient, reflections, or background
 		if (draw_sky || draw_sky_fog_only || environment_get_reflection_source(p_render_data->environment) == RS::ENV_REFLECTION_SOURCE_SKY || environment_get_ambient_source(p_render_data->environment) == RS::ENV_AMBIENT_SOURCE_SKY) {
 			RENDER_TIMESTAMP("Setup Sky");
 			RD::get_singleton()->draw_command_begin_label("Setup Sky");
-			Projection projection = p_render_data->scene_data->cam_projection;
+
+			// Setup our sky render information for this frame/viewport
 			if (p_render_data->reflection_probe.is_valid()) {
+				Vector3 eye_offset;
 				Projection correction;
 				correction.set_depth_correction(true);
-				projection = correction * p_render_data->scene_data->cam_projection;
-			}
+				Projection projection = correction * p_render_data->scene_data->cam_projection;
 
-			sky.setup(p_render_data->environment, rb, *p_render_data->lights, p_render_data->camera_attributes, projection, p_render_data->scene_data->cam_transform, screen_size, this);
+				sky.setup_sky(p_render_data->environment, rb, *p_render_data->lights, p_render_data->camera_attributes, 1, &projection, &eye_offset, p_render_data->scene_data->cam_transform, screen_size, this);
+			} else {
+				sky.setup_sky(p_render_data->environment, rb, *p_render_data->lights, p_render_data->camera_attributes, p_render_data->scene_data->view_count, p_render_data->scene_data->view_projection, p_render_data->scene_data->view_eye_offset, p_render_data->scene_data->cam_transform, screen_size, this);
+			}
 
 			sky_energy_multiplier *= bg_energy_multiplier;
 
 			RID sky_rid = environment_get_sky(p_render_data->environment);
 			if (sky_rid.is_valid()) {
-				sky.update(p_render_data->environment, projection, p_render_data->scene_data->cam_transform, time, sky_energy_multiplier);
+				sky.update_radiance_buffers(rb, p_render_data->environment, p_render_data->scene_data->cam_transform.origin, time, sky_energy_multiplier);
 				radiance_texture = sky.sky_get_radiance_texture_rd(sky_rid);
 			} else {
 				// do not try to draw sky if invalid
 				draw_sky = false;
 			}
+
+			if (draw_sky || draw_sky_fog_only) {
+				// update sky half/quarter res buffers (if required)
+				sky.update_res_buffers(rb, p_render_data->environment, time, sky_energy_multiplier);
+			}
+
 			RD::get_singleton()->draw_command_end_label();
 		}
 	} else {
@@ -1962,15 +1973,11 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 		RENDER_TIMESTAMP("Render Sky");
 
 		RD::get_singleton()->draw_command_begin_label("Draw Sky");
+		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(color_only_framebuffer, RD::INITIAL_ACTION_CONTINUE, can_continue_color ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CONTINUE, can_continue_depth ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ);
 
-		if (p_render_data->reflection_probe.is_valid()) {
-			Projection correction;
-			correction.set_depth_correction(true);
-			Projection projection = correction * p_render_data->scene_data->cam_projection;
-			sky.draw(p_render_data->environment, can_continue_color, can_continue_depth, color_only_framebuffer, 1, &projection, p_render_data->scene_data->cam_transform, time, sky_energy_multiplier);
-		} else {
-			sky.draw(p_render_data->environment, can_continue_color, can_continue_depth, color_only_framebuffer, p_render_data->scene_data->view_count, p_render_data->scene_data->view_projection, p_render_data->scene_data->cam_transform, time, sky_energy_multiplier);
-		}
+		sky.draw_sky(draw_list, rb, p_render_data->environment, color_only_framebuffer, time, sky_energy_multiplier);
+
+		RD::get_singleton()->draw_list_end();
 		RD::get_singleton()->draw_command_end_label();
 	}
 
