@@ -44,14 +44,19 @@ public:
 		SWITCH_MODE_AT_END,
 	};
 
+	enum AdvanceMode {
+		ADVANCE_MODE_DISABLED,
+		ADVANCE_MODE_ENABLED,
+		ADVANCE_MODE_AUTO,
+	};
+
 private:
 	SwitchMode switch_mode = SWITCH_MODE_IMMEDIATE;
-	bool auto_advance = false;
+	AdvanceMode advance_mode = ADVANCE_MODE_ENABLED;
 	StringName advance_condition;
 	StringName advance_condition_name;
 	float xfade_time = 0.0;
 	Ref<Curve> xfade_curve;
-	bool disabled = false;
 	int priority = 1;
 	String advance_expression;
 
@@ -65,8 +70,8 @@ public:
 	void set_switch_mode(SwitchMode p_mode);
 	SwitchMode get_switch_mode() const;
 
-	void set_auto_advance(bool p_enable);
-	bool has_auto_advance() const;
+	void set_advance_mode(AdvanceMode p_mode);
+	AdvanceMode get_advance_mode() const;
 
 	void set_advance_condition(const StringName &p_condition);
 	StringName get_advance_condition() const;
@@ -82,9 +87,6 @@ public:
 	void set_xfade_curve(const Ref<Curve> &p_curve);
 	Ref<Curve> get_xfade_curve() const;
 
-	void set_disabled(bool p_disabled);
-	bool is_disabled() const;
-
 	void set_priority(int p_priority);
 	int get_priority() const;
 
@@ -92,6 +94,7 @@ public:
 };
 
 VARIANT_ENUM_CAST(AnimationNodeStateMachineTransition::SwitchMode)
+VARIANT_ENUM_CAST(AnimationNodeStateMachineTransition::AdvanceMode)
 
 class AnimationNodeStateMachine;
 
