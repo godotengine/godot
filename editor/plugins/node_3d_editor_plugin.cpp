@@ -3104,7 +3104,7 @@ void Node3DEditorViewport::_draw() {
 }
 
 void Node3DEditorViewport::_menu_option(int p_option) {
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	switch (p_option) {
 		case VIEW_TOP: {
 			cursor.y_rot = 0;
@@ -4257,7 +4257,7 @@ bool Node3DEditorViewport::_create_instance(Node *parent, String &path, const Po
 		instantiated_scene->set_scene_file_path(ProjectSettings::get_singleton()->localize_path(path));
 	}
 
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->add_do_method(parent, "add_child", instantiated_scene, true);
 	undo_redo->add_do_method(instantiated_scene, "set_owner", EditorNode::get_singleton()->get_edited_scene());
 	undo_redo->add_do_reference(instantiated_scene);
@@ -4286,7 +4286,7 @@ bool Node3DEditorViewport::_create_instance(Node *parent, String &path, const Po
 }
 
 void Node3DEditorViewport::_perform_drop_data() {
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	if (spatial_editor->get_preview_material_target().is_valid()) {
 		GeometryInstance3D *geometry_instance = Object::cast_to<GeometryInstance3D>(ObjectDB::get_instance(spatial_editor->get_preview_material_target()));
 		MeshInstance3D *mesh_instance = Object::cast_to<MeshInstance3D>(ObjectDB::get_instance(spatial_editor->get_preview_material_target()));
@@ -4496,7 +4496,7 @@ void Node3DEditorViewport::commit_transform() {
 		TTRC("Translate"),
 		TTRC("Scale"),
 	};
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(_transform_name[_edit.mode]);
 
 	List<Node *> &selection = editor_selection->get_selected_node_list();
@@ -6014,7 +6014,7 @@ void Node3DEditor::_xform_dialog_action() {
 	t.basis.rotate(rotate);
 	t.origin = translate;
 
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("XForm Dialog"));
 
 	const List<Node *> &selection = editor_selection->get_selected_node_list();
@@ -6126,7 +6126,7 @@ void Node3DEditor::_update_camera_override_viewport(Object *p_viewport) {
 }
 
 void Node3DEditor::_menu_item_pressed(int p_option) {
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	switch (p_option) {
 		case MENU_TOOL_SELECT:
 		case MENU_TOOL_MOVE:
@@ -7312,7 +7312,7 @@ void Node3DEditor::_snap_selected_nodes_to_floor() {
 		}
 
 		if (snapped_to_floor) {
-			Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 			undo_redo->create_action(TTR("Snap Nodes to Floor"));
 
 			// Perform snapping if at least one node can be snapped
@@ -7382,7 +7382,7 @@ void Node3DEditor::_add_sun_to_scene(bool p_already_added_environment) {
 	ERR_FAIL_COND(!base);
 	Node *new_sun = preview_sun->duplicate();
 
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Add Preview Sun to Scene"));
 	undo_redo->add_do_method(base, "add_child", new_sun, true);
 	// Move to the beginning of the scene tree since more "global" nodes
@@ -7416,7 +7416,7 @@ void Node3DEditor::_add_environment_to_scene(bool p_already_added_sun) {
 		new_env->set_camera_attributes(preview_environment->get_camera_attributes()->duplicate(true));
 	}
 
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Add Preview Environment to Scene"));
 	undo_redo->add_do_method(base, "add_child", new_env, true);
 	// Move to the beginning of the scene tree since more "global" nodes

@@ -133,7 +133,7 @@ private:
 	HashMap<String, Vector<CustomType>> custom_types;
 
 	List<PropertyData> clipboard;
-	Ref<EditorUndoRedoManager> undo_redo_manager;
+	EditorUndoRedoManager *undo_redo_manager;
 	Vector<Callable> undo_redo_callbacks;
 	HashMap<StringName, Callable> move_element_functions;
 
@@ -168,7 +168,6 @@ public:
 	int get_editor_plugin_count() const;
 	EditorPlugin *get_editor_plugin(int p_idx);
 
-	Ref<EditorUndoRedoManager> &get_undo_redo();
 	void add_undo_redo_inspector_hook_callback(Callable p_callable); // Callbacks should have this signature: void (Object* undo_redo, Object *modified_object, String property, Variant new_value)
 	void remove_undo_redo_inspector_hook_callback(Callable p_callable);
 	const Vector<Callable> get_undo_redo_inspector_hook_callback();
@@ -245,6 +244,7 @@ public:
 	void script_class_load_icon_paths();
 
 	EditorData();
+	~EditorData();
 };
 
 /**

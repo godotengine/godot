@@ -148,7 +148,7 @@ protected:
 	void _notification(int p_what);
 
 	static void _bind_methods();
-	Ref<EditorUndoRedoManager> get_undo_redo();
+	EditorUndoRedoManager *get_undo_redo();
 
 	void add_custom_type(const String &p_type, const String &p_base, const Ref<Script> &p_script, const Ref<Texture2D> &p_icon);
 	void remove_custom_type(const String &p_type);

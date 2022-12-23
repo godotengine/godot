@@ -156,7 +156,7 @@ void Polygon2DEditor::_sync_bones() {
 
 	Array new_bones = node->call("_get_bones");
 
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Sync Bones"));
 	undo_redo->add_do_method(node, "_set_bones", new_bones);
 	undo_redo->add_undo_method(node, "_set_bones", prev_bones);
@@ -286,7 +286,7 @@ void Polygon2DEditor::_uv_edit_popup_hide() {
 }
 
 void Polygon2DEditor::_menu_option(int p_option) {
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	switch (p_option) {
 		case MODE_EDIT_UV: {
 			if (node->get_texture().is_null()) {
@@ -399,7 +399,7 @@ void Polygon2DEditor::_update_polygon_editing_state() {
 
 void Polygon2DEditor::_commit_action() {
 	// Makes that undo/redoing actions made outside of the UV editor still affect its polygon.
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->add_do_method(uv_edit_draw, "queue_redraw");
 	undo_redo->add_undo_method(uv_edit_draw, "queue_redraw");
 	undo_redo->add_do_method(CanvasItemEditor::get_singleton(), "update_viewport");
@@ -467,7 +467,7 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 	mtx.columns[2] = -uv_draw_ofs;
 	mtx.scale_basis(Vector2(uv_draw_zoom, uv_draw_zoom));
 
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 
 	Ref<InputEventMouseButton> mb = p_input;
 	if (mb.is_valid()) {

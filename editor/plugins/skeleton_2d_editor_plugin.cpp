@@ -61,7 +61,7 @@ void Skeleton2DEditor::_menu_option(int p_option) {
 				err_dialog->popup_centered();
 				return;
 			}
-			Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
+			EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 			ur->create_action(TTR("Set Rest Pose to Bones"));
 			for (int i = 0; i < node->get_bone_count(); i++) {
 				Bone2D *bone = node->get_bone(i);
@@ -77,7 +77,7 @@ void Skeleton2DEditor::_menu_option(int p_option) {
 				err_dialog->popup_centered();
 				return;
 			}
-			Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
+			EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 			ur->create_action(TTR("Create Rest Pose from Bones"));
 			for (int i = 0; i < node->get_bone_count(); i++) {
 				Bone2D *bone = node->get_bone(i);

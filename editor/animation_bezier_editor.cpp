@@ -788,7 +788,7 @@ void AnimationBezierTrackEdit::_clear_selection() {
 }
 
 void AnimationBezierTrackEdit::_change_selected_keys_handle_mode(Animation::HandleMode p_mode, bool p_auto) {
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Update Selected Key Handles"));
 	for (SelectionSet::Element *E = selection.back(); E; E = E->prev()) {
 		const IntPair track_key_pair = E->get();
@@ -985,7 +985,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				if (I.value.has_point(mb->get_position())) {
 					if (I.key == REMOVE_ICON) {
 						if (!read_only) {
-							Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+							EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 							undo_redo->create_action("Remove Bezier Track");
 
 							undo_redo->add_do_method(this, "_update_locked_tracks_after", track);
@@ -1172,7 +1172,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				time += 0.0001;
 			}
 
-			Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 			undo_redo->create_action(TTR("Add Bezier Point"));
 			undo_redo->add_do_method(animation.ptr(), "bezier_track_insert_key", selected_track, time, new_point);
 			undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_time", selected_track, time);
@@ -1270,7 +1270,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			if (moving_selection) {
 				//combit it
 
-				Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+				EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 				undo_redo->create_action(TTR("Move Bezier Points"));
 
 				List<AnimMoveRestore> to_restore;
@@ -1471,7 +1471,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 
 	if ((moving_handle == -1 || moving_handle == 1) && mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 		if (!read_only) {
-			Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 			undo_redo->create_action(TTR("Move Bezier Points"));
 			if (moving_handle == -1) {
 				real_t ratio = timeline->get_zoom_scale() * v_zoom;
@@ -1543,7 +1543,7 @@ void AnimationBezierTrackEdit::_menu_selected(int p_index) {
 					time += 0.001;
 				}
 
-				Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+				EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 				undo_redo->create_action(TTR("Add Bezier Point"));
 				undo_redo->add_do_method(animation.ptr(), "track_insert_key", selected_track, time, new_point);
 				undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_time", selected_track, time);
@@ -1591,7 +1591,7 @@ void AnimationBezierTrackEdit::duplicate_selection() {
 		}
 	}
 
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Animation Duplicate Keys"));
 
 	List<Pair<int, real_t>> new_selection_values;
@@ -1637,7 +1637,7 @@ void AnimationBezierTrackEdit::duplicate_selection() {
 
 void AnimationBezierTrackEdit::delete_selection() {
 	if (selection.size()) {
-		Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 		undo_redo->create_action(TTR("Animation Delete Keys"));
 
 		for (SelectionSet::Element *E = selection.back(); E; E = E->prev()) {

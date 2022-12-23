@@ -48,7 +48,7 @@ class OpenXRActionMapEditor : public VBoxContainer {
 	GDCLASS(OpenXRActionMapEditor, VBoxContainer);
 
 private:
-	Ref<EditorUndoRedoManager> undo_redo;
+	EditorUndoRedoManager *undo_redo;
 	String edited_path;
 	Ref<OpenXRActionMap> action_map;
 

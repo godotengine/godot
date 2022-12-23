@@ -120,7 +120,7 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 				}
 
 				// Check for point deletion.
-				Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+				EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 				if ((mb->get_button_index() == MouseButton::RIGHT && mode == MODE_EDIT) || (mb->get_button_index() == MouseButton::LEFT && mode == MODE_DELETE)) {
 					if (dist_to_p < grab_threshold) {
 						undo_redo->create_action(TTR("Remove Point from Curve"));
@@ -155,7 +155,7 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 		if (mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT && ((mb->is_command_or_control_pressed() && mode == MODE_EDIT) || mode == MODE_CREATE)) {
 			Ref<Curve2D> curve = node->get_curve();
 
-			Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 			undo_redo->create_action(TTR("Add Point to Curve"));
 			undo_redo->add_do_method(curve.ptr(), "add_point", cpoint);
 			undo_redo->add_undo_method(curve.ptr(), "remove_point", curve->get_point_count());
@@ -191,7 +191,7 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 				insertion_point = curve->get_point_count() - 2;
 			}
 
-			Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 			undo_redo->create_action(TTR("Split Curve"));
 			undo_redo->add_do_method(curve.ptr(), "add_point", xform.affine_inverse().xform(gpoint2), Vector2(0, 0), Vector2(0, 0), insertion_point + 1);
 			undo_redo->add_undo_method(curve.ptr(), "remove_point", insertion_point + 1);
@@ -215,7 +215,7 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 		if (!mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT && action != ACTION_NONE) {
 			Ref<Curve2D> curve = node->get_curve();
 
-			Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 			Vector2 new_pos = moving_from + xform.affine_inverse().basis_xform(gpoint - moving_screen_from);
 			switch (action) {
 				case ACTION_NONE:
@@ -491,7 +491,7 @@ void Path2DEditor::_mode_selected(int p_mode) {
 			return;
 		}
 
-		Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 		undo_redo->create_action(TTR("Remove Point from Curve"));
 		undo_redo->add_do_method(node->get_curve().ptr(), "add_point", begin);
 		undo_redo->add_undo_method(node->get_curve().ptr(), "remove_point", node->get_curve()->get_point_count());

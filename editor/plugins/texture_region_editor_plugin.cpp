@@ -300,7 +300,7 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 		mtx.xform(rect.position + Vector2(0, rect.size.y / 2)) + Vector2(-handle_offset, 0)
 	};
 
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	Ref<InputEventMouseButton> mb = p_input;
 	if (mb.is_valid()) {
 		if (mb->get_button_index() == MouseButton::LEFT) {

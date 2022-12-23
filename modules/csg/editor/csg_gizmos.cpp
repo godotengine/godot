@@ -217,7 +217,7 @@ void CSGShape3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int 
 			return;
 		}
 
-		Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
+		EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 		ur->create_action(TTR("Change Sphere Shape Radius"));
 		ur->add_do_method(s, "set_radius", s->get_radius());
 		ur->add_undo_method(s, "set_radius", p_restore);
@@ -231,7 +231,7 @@ void CSGShape3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int 
 			return;
 		}
 
-		Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
+		EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 		ur->create_action(TTR("Change Box Shape Size"));
 		ur->add_do_method(s, "set_size", s->get_size());
 		ur->add_undo_method(s, "set_size", p_restore);
@@ -249,7 +249,7 @@ void CSGShape3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int 
 			return;
 		}
 
-		Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
+		EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 		if (p_id == 0) {
 			ur->create_action(TTR("Change Cylinder Radius"));
 			ur->add_do_method(s, "set_radius", s->get_radius());
@@ -274,7 +274,7 @@ void CSGShape3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int 
 			return;
 		}
 
-		Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
+		EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 		if (p_id == 0) {
 			ur->create_action(TTR("Change Torus Inner Radius"));
 			ur->add_do_method(s, "set_inner_radius", s->get_inner_radius());

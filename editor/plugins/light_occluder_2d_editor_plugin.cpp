@@ -84,7 +84,7 @@ void LightOccluder2DEditor::_set_polygon(int p_idx, const Variant &p_polygon) co
 
 void LightOccluder2DEditor::_action_set_polygon(int p_idx, const Variant &p_previous, const Variant &p_polygon) {
 	Ref<OccluderPolygon2D> occluder = _ensure_occluder();
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->add_do_method(occluder.ptr(), "set_polygon", p_polygon);
 	undo_redo->add_undo_method(occluder.ptr(), "set_polygon", p_previous);
 }
@@ -98,7 +98,7 @@ void LightOccluder2DEditor::_create_resource() {
 		return;
 	}
 
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Create Occluder Polygon"));
 	undo_redo->add_do_method(node, "set_occluder_polygon", Ref<OccluderPolygon2D>(memnew(OccluderPolygon2D)));
 	undo_redo->add_undo_method(node, "set_occluder_polygon", Variant(Ref<RefCounted>()));

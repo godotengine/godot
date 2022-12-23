@@ -40,7 +40,7 @@ class EditorUndoRedoManager;
 class HistoryDock : public VBoxContainer {
 	GDCLASS(HistoryDock, VBoxContainer);
 
-	Ref<EditorUndoRedoManager> ur_manager;
+	EditorUndoRedoManager *ur_manager;
 	ItemList *action_list = nullptr;
 
 	CheckBox *current_scene_checkbox = nullptr;

@@ -44,7 +44,7 @@ class OpenXRActionSetEditor : public HBoxContainer {
 	GDCLASS(OpenXRActionSetEditor, HBoxContainer);
 
 private:
-	Ref<EditorUndoRedoManager> undo_redo;
+	EditorUndoRedoManager *undo_redo;
 	Ref<OpenXRActionMap> action_map;
 	Ref<OpenXRActionSet> action_set;
 

@@ -142,7 +142,7 @@ void ReplicationEditor::_add_sync_property(String p_path) {
 		return;
 	}
 
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_singleton()->get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Add property to synchronizer"));
 
 	if (config.is_null()) {
@@ -357,7 +357,7 @@ void ReplicationEditor::_tree_item_edited() {
 	int column = tree->get_edited_column();
 	ERR_FAIL_COND(column < 1 || column > 2);
 	const NodePath prop = ti->get_metadata(0);
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	bool value = ti->is_checked(column);
 	String method;
 	if (column == 1) {
@@ -397,7 +397,7 @@ void ReplicationEditor::_dialog_closed(bool p_confirmed) {
 		int idx = config->property_get_index(prop);
 		bool spawn = config->property_get_spawn(prop);
 		bool sync = config->property_get_sync(prop);
-		Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 		undo_redo->create_action(TTR("Remove Property"));
 		undo_redo->add_do_method(config.ptr(), "remove_property", prop);
 		undo_redo->add_undo_method(config.ptr(), "add_property", prop, idx);

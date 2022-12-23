@@ -237,7 +237,7 @@ void TileSetScenesCollectionSourceEditor::_scenes_list_item_activated(int p_inde
 
 void TileSetScenesCollectionSourceEditor::_source_add_pressed() {
 	int scene_id = tile_set_scenes_collection_source->get_next_scene_tile_id();
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Add a Scene Tile"));
 	undo_redo->add_do_method(tile_set_scenes_collection_source, "create_scene_tile", Ref<PackedScene>(), scene_id);
 	undo_redo->add_undo_method(tile_set_scenes_collection_source, "remove_scene_tile", scene_id);
@@ -252,7 +252,7 @@ void TileSetScenesCollectionSourceEditor::_source_delete_pressed() {
 	ERR_FAIL_COND(selected_indices.size() <= 0);
 	int scene_id = scene_tiles_list->get_item_metadata(selected_indices[0]);
 
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Remove a Scene Tile"));
 	undo_redo->add_do_method(tile_set_scenes_collection_source, "remove_scene_tile", scene_id);
 	undo_redo->add_undo_method(tile_set_scenes_collection_source, "create_scene_tile", tile_set_scenes_collection_source->get_scene_tile_scene(scene_id), scene_id);
@@ -404,7 +404,7 @@ void TileSetScenesCollectionSourceEditor::_drop_data_fw(const Point2 &p_point, c
 			Ref<PackedScene> resource = ResourceLoader::load(files[i]);
 			if (resource.is_valid()) {
 				int scene_id = tile_set_scenes_collection_source->get_next_scene_tile_id();
-				Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+				EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 				undo_redo->create_action(TTR("Add a Scene Tile"));
 				undo_redo->add_do_method(tile_set_scenes_collection_source, "create_scene_tile", resource, scene_id);
 				undo_redo->add_undo_method(tile_set_scenes_collection_source, "remove_scene_tile", scene_id);

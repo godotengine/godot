@@ -229,7 +229,7 @@ void ShaderEditorPlugin::_close_shader(int p_index) {
 	memdelete(c);
 	edited_shaders.remove_at(p_index);
 	_update_shader_list();
-	EditorNode::get_undo_redo()->clear_history(); // To prevent undo on deleted graphs.
+	EditorUndoRedoManager::get_singleton()->clear_history(); // To prevent undo on deleted graphs.
 }
 
 void ShaderEditorPlugin::_resource_saved(Object *obj) {

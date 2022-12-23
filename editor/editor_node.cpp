@@ -288,7 +288,7 @@ void EditorNode::_update_scene_tabs() {
 			icon = EditorNode::get_singleton()->get_object_icon(type_node, "Node");
 		}
 
-		bool unsaved = get_undo_redo()->is_history_unsaved(editor_data.get_scene_history_id(i));
+		bool unsaved = EditorUndoRedoManager::get_singleton()->is_history_unsaved(editor_data.get_scene_history_id(i));
 		scene_tabs->add_tab(disambiguated_scene_names[i] + (unsaved ? "(*)" : ""), icon);
 
 		if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_GLOBAL_MENU)) {
@@ -533,8 +533,8 @@ void EditorNode::_notification(int p_what) {
 				opening_prev = false;
 			}
 
-			bool global_unsaved = get_undo_redo()->is_history_unsaved(EditorUndoRedoManager::GLOBAL_HISTORY);
-			bool scene_or_global_unsaved = global_unsaved || get_undo_redo()->is_history_unsaved(editor_data.get_current_edited_scene_history_id());
+			bool global_unsaved = EditorUndoRedoManager::get_singleton()->is_history_unsaved(EditorUndoRedoManager::GLOBAL_HISTORY);
+			bool scene_or_global_unsaved = global_unsaved || EditorUndoRedoManager::get_singleton()->is_history_unsaved(editor_data.get_current_edited_scene_history_id());
 			if (unsaved_cache != scene_or_global_unsaved) {
 				unsaved_cache = scene_or_global_unsaved;
 				_update_title();
@@ -1130,7 +1130,7 @@ void EditorNode::_version_button_pressed() {
 }
 
 void EditorNode::_update_undo_redo_allowed() {
-	Ref<EditorUndoRedoManager> undo_redo = get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	file_menu->set_item_disabled(file_menu->get_item_index(EDIT_UNDO), !undo_redo->has_undo());
 	file_menu->set_item_disabled(file_menu->get_item_index(EDIT_REDO), !undo_redo->has_redo());
 }
@@ -1682,7 +1682,7 @@ int EditorNode::_save_external_resources() {
 		saved++;
 	}
 
-	get_undo_redo()->set_history_as_saved(EditorUndoRedoManager::GLOBAL_HISTORY);
+	EditorUndoRedoManager::get_singleton()->set_history_as_saved(EditorUndoRedoManager::GLOBAL_HISTORY);
 
 	return saved;
 }
@@ -1859,7 +1859,7 @@ void EditorNode::_mark_unsaved_scenes() {
 		String path = node->get_scene_file_path();
 		if (!path.is_empty() && !FileAccess::exists(path)) {
 			// Mark scene tab as unsaved if the file is gone.
-			get_undo_redo()->set_history_as_unsaved(editor_data.get_scene_history_id(i));
+			EditorUndoRedoManager::get_singleton()->set_history_as_unsaved(editor_data.get_scene_history_id(i));
 		}
 	}
 
@@ -2746,9 +2746,10 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			if ((int)Input::get_singleton()->get_mouse_button_mask() & 0x7) {
 				log->add_message(TTR("Can't undo while mouse buttons are pressed."), EditorLog::MSG_TYPE_EDITOR);
 			} else {
-				String action = editor_data.get_undo_redo()->get_current_action_name();
-				int id = editor_data.get_undo_redo()->get_current_action_history_id();
-				if (!editor_data.get_undo_redo()->undo()) {
+				EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+				String action = undo_redo->get_current_action_name();
+				int id = undo_redo->get_current_action_history_id();
+				if (!undo_redo->undo()) {
 					log->add_message(TTR("Nothing to undo."), EditorLog::MSG_TYPE_EDITOR);
 				} else if (!action.is_empty()) {
 					switch (id) {
@@ -2765,18 +2766,19 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			}
 		} break;
 		case EDIT_REDO: {
+			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 			if ((int)Input::get_singleton()->get_mouse_button_mask() & 0x7) {
 				log->add_message(TTR("Can't redo while mouse buttons are pressed."), EditorLog::MSG_TYPE_EDITOR);
 			} else {
-				if (!editor_data.get_undo_redo()->redo()) {
+				if (!undo_redo->redo()) {
 					log->add_message(TTR("Nothing to redo."), EditorLog::MSG_TYPE_EDITOR);
 				} else {
-					String action = editor_data.get_undo_redo()->get_current_action_name();
+					String action = undo_redo->get_current_action_name();
 					if (action.is_empty()) {
 						break;
 					}
 
-					switch (editor_data.get_undo_redo()->get_current_action_history_id()) {
+					switch (undo_redo->get_current_action_history_id()) {
 						case EditorUndoRedoManager::GLOBAL_HISTORY:
 							log->add_message(vformat(TTR("Global Redo: %s"), action), EditorLog::MSG_TYPE_EDITOR);
 							break;
@@ -2819,7 +2821,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 				ERR_PRINT("Failed to load scene");
 			}
 			editor_data.move_edited_scene_to_index(cur_idx);
-			get_undo_redo()->clear_history(false, editor_data.get_current_edited_scene_history_id());
+			EditorUndoRedoManager::get_singleton()->clear_history(false, editor_data.get_current_edited_scene_history_id());
 			scene_tabs->set_current_tab(cur_idx);
 
 		} break;
@@ -2911,7 +2913,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		case RELOAD_CURRENT_PROJECT: {
 			if (!p_confirmed) {
 				bool save_each = EDITOR_GET("interface/editor/save_each_scene_on_quit");
-				if (_next_unsaved_scene(!save_each) == -1 && !get_undo_redo()->is_history_unsaved(EditorUndoRedoManager::GLOBAL_HISTORY)) {
+				if (_next_unsaved_scene(!save_each) == -1 && !EditorUndoRedoManager::get_singleton()->is_history_unsaved(EditorUndoRedoManager::GLOBAL_HISTORY)) {
 					_discard_changes();
 					break;
 				} else {
@@ -3150,7 +3152,7 @@ int EditorNode::_next_unsaved_scene(bool p_valid_filename, int p_start) {
 		if (!editor_data.get_edited_scene_root(i)) {
 			continue;
 		}
-		bool unsaved = get_undo_redo()->is_history_unsaved(editor_data.get_scene_history_id(i));
+		bool unsaved = EditorUndoRedoManager::get_singleton()->is_history_unsaved(editor_data.get_scene_history_id(i));
 		if (unsaved) {
 			String scene_filename = editor_data.get_edited_scene_root(i)->get_scene_file_path();
 			if (p_valid_filename && scene_filename.length() == 0) {
@@ -3659,7 +3661,7 @@ void EditorNode::set_current_scene(int p_idx) {
 			editor_folding.load_scene_folding(editor_data.get_edited_scene_root(p_idx), editor_data.get_scene_path(p_idx));
 		}
 
-		get_undo_redo()->clear_history(false, editor_data.get_scene_history_id(p_idx));
+		EditorUndoRedoManager::get_singleton()->clear_history(false, editor_data.get_scene_history_id(p_idx));
 	}
 
 	changing_scene = true;
@@ -3726,7 +3728,7 @@ int EditorNode::new_scene() {
 	// Remove placeholder empty scene.
 	if (editor_data.get_edited_scene_count() > 1) {
 		for (int i = 0; i < editor_data.get_edited_scene_count() - 1; i++) {
-			bool unsaved = get_undo_redo()->is_history_unsaved(editor_data.get_scene_history_id(i));
+			bool unsaved = EditorUndoRedoManager::get_singleton()->is_history_unsaved(editor_data.get_scene_history_id(i));
 			if (!unsaved && editor_data.get_scene_path(i).is_empty() && editor_data.get_edited_scene_root(i) == nullptr) {
 				editor_data.remove_scene(i);
 				idx--;
@@ -3949,10 +3951,6 @@ void EditorNode::request_instantiate_scene(const String &p_path) {
 
 void EditorNode::request_instantiate_scenes(const Vector<String> &p_files) {
 	SceneTreeDock::get_singleton()->instantiate_scenes(p_files);
-}
-
-Ref<EditorUndoRedoManager> &EditorNode::get_undo_redo() {
-	return singleton->editor_data.get_undo_redo();
 }
 
 void EditorNode::_inherit_request(String p_file) {
@@ -5224,7 +5222,7 @@ void EditorNode::_scene_tab_closed(int p_tab, int option) {
 		return;
 	}
 
-	bool unsaved = get_undo_redo()->is_history_unsaved(editor_data.get_scene_history_id(p_tab));
+	bool unsaved = EditorUndoRedoManager::get_singleton()->is_history_unsaved(editor_data.get_scene_history_id(p_tab));
 	if (unsaved) {
 		save_confirmation->set_ok_button_text(TTR("Save & Close"));
 		save_confirmation->set_text(vformat(TTR("Save changes to '%s' before closing?"), !scene->get_scene_file_path().is_empty() ? scene->get_scene_file_path() : "unsaved scene"));
@@ -5723,7 +5721,7 @@ void EditorNode::reload_scene(const String &p_path) {
 	if (scene_idx == -1) {
 		if (get_edited_scene()) {
 			// Scene is not open, so at it might be instantiated. We'll refresh the whole scene later.
-			editor_data.get_undo_redo()->clear_history(false, editor_data.get_current_edited_scene_history_id());
+			EditorUndoRedoManager::get_singleton()->clear_history(false, editor_data.get_current_edited_scene_history_id());
 		}
 		return;
 	}
@@ -5739,7 +5737,7 @@ void EditorNode::reload_scene(const String &p_path) {
 
 	// Adjust index so tab is back a the previous position.
 	editor_data.move_edited_scene_to_index(scene_idx);
-	get_undo_redo()->clear_history(false, editor_data.get_scene_history_id(scene_idx));
+	EditorUndoRedoManager::get_singleton()->clear_history(false, editor_data.get_scene_history_id(scene_idx));
 
 	// Recover the tab.
 	scene_tabs->set_current_tab(current_tab);
@@ -6057,8 +6055,8 @@ EditorNode::EditorNode() {
 
 	singleton = this;
 
-	get_undo_redo()->connect("version_changed", callable_mp(this, &EditorNode::_update_undo_redo_allowed));
-	get_undo_redo()->connect("history_changed", callable_mp(this, &EditorNode::_update_undo_redo_allowed));
+	EditorUndoRedoManager::get_singleton()->connect("version_changed", callable_mp(this, &EditorNode::_update_undo_redo_allowed));
+	EditorUndoRedoManager::get_singleton()->connect("history_changed", callable_mp(this, &EditorNode::_update_undo_redo_allowed));
 
 	TranslationServer::get_singleton()->set_enabled(false);
 	// Load settings.

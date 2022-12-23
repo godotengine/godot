@@ -140,7 +140,7 @@ void CurveEditor::gui_input(const Ref<InputEvent> &p_event) {
 		if (!mb.is_pressed() && _dragging && mb.get_button_index() == MouseButton::LEFT) {
 			_dragging = false;
 			if (_has_undo_data) {
-				Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+				EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 				undo_redo->create_action(_selected_tangent == TANGENT_NONE ? TTR("Modify Curve Point") : TTR("Modify Curve Tangent"));
 				undo_redo->add_do_method(*_curve_ref, "_set_data", _curve_ref->get_data());
 				undo_redo->add_undo_method(*_curve_ref, "_set_data", _undo_data);
@@ -301,7 +301,7 @@ void CurveEditor::on_preset_item_selected(int preset_id) {
 			break;
 	}
 
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Load Curve Preset"));
 	undo_redo->add_do_method(&curve, "_set_data", curve.get_data());
 	undo_redo->add_undo_method(&curve, "_set_data", previous_data);
@@ -433,7 +433,7 @@ CurveEditor::TangentIndex CurveEditor::get_tangent_at(Vector2 pos) const {
 void CurveEditor::add_point(Vector2 pos) {
 	ERR_FAIL_COND(_curve_ref.is_null());
 
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Remove Curve Point"));
 
 	Vector2 point_pos = get_world_pos(pos);
@@ -455,7 +455,7 @@ void CurveEditor::add_point(Vector2 pos) {
 void CurveEditor::remove_point(int index) {
 	ERR_FAIL_COND(_curve_ref.is_null());
 
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Remove Curve Point"));
 
 	Curve::Point p = _curve_ref->get_point(index);
@@ -477,7 +477,7 @@ void CurveEditor::remove_point(int index) {
 void CurveEditor::toggle_linear(TangentIndex tangent) {
 	ERR_FAIL_COND(_curve_ref.is_null());
 
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Toggle Curve Linear Tangent"));
 
 	if (tangent == TANGENT_NONE) {

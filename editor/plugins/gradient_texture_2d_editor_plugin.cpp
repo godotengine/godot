@@ -55,7 +55,7 @@ void GradientTexture2DEditorRect::_update_fill_position() {
 
 	String property_name = handle == HANDLE_FILL_FROM ? "fill_from" : "fill_to";
 
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(vformat(TTR("Set %s"), property_name), UndoRedo::MERGE_ENDS);
 	undo_redo->add_do_property(texture.ptr(), property_name, percent);
 	undo_redo->add_undo_property(texture.ptr(), property_name, handle == HANDLE_FILL_FROM ? texture->get_fill_from() : texture->get_fill_to());
@@ -188,7 +188,7 @@ GradientTexture2DEditorRect::GradientTexture2DEditorRect() {
 ///////////////////////
 
 void GradientTexture2DEditor::_reverse_button_pressed() {
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Swap GradientTexture2D Fill Points"));
 	undo_redo->add_do_property(texture.ptr(), "fill_from", texture->get_fill_to());
 	undo_redo->add_do_property(texture.ptr(), "fill_to", texture->get_fill_from());
