@@ -65,7 +65,8 @@ private:
 
 	bool jumping_enabled = false;
 	DiagonalMode diagonal_mode = DIAGONAL_MODE_ALWAYS;
-	Heuristic default_heuristic = HEURISTIC_EUCLIDEAN;
+	Heuristic default_compute_heuristic = HEURISTIC_EUCLIDEAN;
+	Heuristic default_estimate_heuristic = HEURISTIC_EUCLIDEAN;
 
 	struct Point {
 		Vector2i id;
@@ -161,8 +162,11 @@ public:
 	void set_diagonal_mode(DiagonalMode p_diagonal_mode);
 	DiagonalMode get_diagonal_mode() const;
 
-	void set_default_heuristic(Heuristic p_heuristic);
-	Heuristic get_default_heuristic() const;
+	void set_default_compute_heuristic(Heuristic p_heuristic);
+	Heuristic get_default_compute_heuristic() const;
+
+	void set_default_estimate_heuristic(Heuristic p_heuristic);
+	Heuristic get_default_estimate_heuristic() const;
 
 	void set_point_solid(const Vector2i &p_id, bool p_solid = true);
 	bool is_point_solid(const Vector2i &p_id) const;
