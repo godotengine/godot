@@ -7262,6 +7262,7 @@ EditorNode::EditorNode() {
 	gui_base->add_child(disk_changed);
 
 	add_editor_plugin(memnew(AnimationPlayerEditorPlugin));
+	add_editor_plugin(memnew(AnimationTrackKeyEditEditorPlugin));
 	add_editor_plugin(memnew(CanvasItemEditorPlugin));
 	add_editor_plugin(memnew(Node3DEditorPlugin));
 	add_editor_plugin(memnew(ScriptEditorPlugin));

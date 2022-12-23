@@ -305,9 +305,9 @@
 			<return type="int" />
 			<param index="0" name="track_idx" type="int" />
 			<param index="1" name="time" type="float" />
-			<param index="2" name="exact" type="bool" default="false" />
+			<param index="2" name="find_mode" type="int" enum="Animation.FindMode" default="0" />
 			<description>
-				Finds the key index by time in a given track. Optionally, only find it if the exact time is given.
+				Finds the key index by time in a given track. Optionally, only find it if the approx/exact time is given.
 			</description>
 		</method>
 		<method name="track_get_interpolation_loop_wrap" qualifiers="const">
@@ -621,6 +621,15 @@
 		</constant>
 		<constant name="LOOPED_FLAG_START" value="2" enum="LoopedFlag">
 			This flag indicates that the animation has reached the start of the animation and just after loop processed.
+		</constant>
+		<constant name="FIND_MODE_NEAREST" value="0" enum="FindMode">
+			Finds the nearest time key.
+		</constant>
+		<constant name="FIND_MODE_APPROX" value="1" enum="FindMode">
+			Finds only the key with approximating the time.
+		</constant>
+		<constant name="FIND_MODE_EXACT" value="2" enum="FindMode">
+			Finds only the key with matching the time.
 		</constant>
 	</constants>
 </class>

@@ -398,7 +398,7 @@ TileProxiesManagerDialog::TileProxiesManagerDialog() {
 	source_from_property_editor->connect("property_changed", callable_mp(this, &TileProxiesManagerDialog::_property_changed));
 	source_from_property_editor->set_selectable(false);
 	source_from_property_editor->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	source_from_property_editor->setup(-1, 99999, 1, true, false);
+	source_from_property_editor->setup(-1, 99999, 1, false, true, false);
 	vboxcontainer_from->add_child(source_from_property_editor);
 
 	coords_from_property_editor = memnew(EditorPropertyVector2i);
@@ -417,7 +417,7 @@ TileProxiesManagerDialog::TileProxiesManagerDialog() {
 	alternative_from_property_editor->connect("property_changed", callable_mp(this, &TileProxiesManagerDialog::_property_changed));
 	alternative_from_property_editor->set_selectable(false);
 	alternative_from_property_editor->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	alternative_from_property_editor->setup(-1, 99999, 1, true, false);
+	alternative_from_property_editor->setup(-1, 99999, 1, false, true, false);
 	alternative_from_property_editor->hide();
 	vboxcontainer_from->add_child(alternative_from_property_editor);
 
@@ -432,7 +432,7 @@ TileProxiesManagerDialog::TileProxiesManagerDialog() {
 	source_to_property_editor->connect("property_changed", callable_mp(this, &TileProxiesManagerDialog::_property_changed));
 	source_to_property_editor->set_selectable(false);
 	source_to_property_editor->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	source_to_property_editor->setup(-1, 99999, 1, true, false);
+	source_to_property_editor->setup(-1, 99999, 1, false, true, false);
 	vboxcontainer_to->add_child(source_to_property_editor);
 
 	coords_to_property_editor = memnew(EditorPropertyVector2i);
@@ -451,7 +451,7 @@ TileProxiesManagerDialog::TileProxiesManagerDialog() {
 	alternative_to_property_editor->connect("property_changed", callable_mp(this, &TileProxiesManagerDialog::_property_changed));
 	alternative_to_property_editor->set_selectable(false);
 	alternative_to_property_editor->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	alternative_to_property_editor->setup(-1, 99999, 1, true, false);
+	alternative_to_property_editor->setup(-1, 99999, 1, false, true, false);
 	alternative_to_property_editor->hide();
 	vboxcontainer_to->add_child(alternative_to_property_editor);
 

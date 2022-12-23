@@ -79,6 +79,12 @@ public:
 		LOOPED_FLAG_START,
 	};
 
+	enum FindMode {
+		FIND_MODE_NEAREST,
+		FIND_MODE_APPROX,
+		FIND_MODE_EXACT,
+	};
+
 #ifdef TOOLS_ENABLED
 	enum HandleMode {
 		HANDLE_MODE_FREE,
@@ -392,7 +398,7 @@ public:
 	void track_set_key_transition(int p_track, int p_key_idx, real_t p_transition);
 	void track_set_key_value(int p_track, int p_key_idx, const Variant &p_value);
 	void track_set_key_time(int p_track, int p_key_idx, double p_time);
-	int track_find_key(int p_track, double p_time, bool p_exact = false) const;
+	int track_find_key(int p_track, double p_time, FindMode p_find_mode = FIND_MODE_NEAREST) const;
 	void track_remove_key(int p_track, int p_idx);
 	void track_remove_key_at_time(int p_track, double p_time);
 	int track_get_key_count(int p_track) const;
@@ -489,6 +495,7 @@ VARIANT_ENUM_CAST(Animation::InterpolationType);
 VARIANT_ENUM_CAST(Animation::UpdateMode);
 VARIANT_ENUM_CAST(Animation::LoopMode);
 VARIANT_ENUM_CAST(Animation::LoopedFlag);
+VARIANT_ENUM_CAST(Animation::FindMode);
 #ifdef TOOLS_ENABLED
 VARIANT_ENUM_CAST(Animation::HandleMode);
 VARIANT_ENUM_CAST(Animation::HandleSetMode);
