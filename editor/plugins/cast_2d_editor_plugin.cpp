@@ -77,7 +77,7 @@ bool Cast2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_event) {
 				return false;
 			}
 		} else if (pressed) {
-			Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 			undo_redo->create_action(TTR("Set target_position"));
 			undo_redo->add_do_property(node, "target_position", target_position);
 			undo_redo->add_do_method(canvas_item_editor, "update_viewport");

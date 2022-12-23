@@ -1332,7 +1332,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_gui_input(const Ref<InputEven
 }
 
 void TileSetAtlasSourceEditor::_end_dragging() {
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	switch (drag_type) {
 		case DRAG_TYPE_CREATE_TILES:
 			undo_redo->create_action(TTR("Create tiles"));
@@ -1563,7 +1563,7 @@ HashMap<Vector2i, List<const PropertyInfo *>> TileSetAtlasSourceEditor::_group_p
 }
 
 void TileSetAtlasSourceEditor::_menu_option(int p_option) {
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 
 	switch (p_option) {
 		case TILE_DELETE: {
@@ -2079,8 +2079,8 @@ void TileSetAtlasSourceEditor::_atlas_source_proxy_object_changed(String p_what)
 }
 
 void TileSetAtlasSourceEditor::_undo_redo_inspector_callback(Object *p_undo_redo, Object *p_edited, String p_property, Variant p_new_value) {
-	Ref<EditorUndoRedoManager> undo_redo_man = Object::cast_to<EditorUndoRedoManager>(p_undo_redo);
-	ERR_FAIL_COND(!undo_redo_man.is_valid());
+	EditorUndoRedoManager *undo_redo_man = Object::cast_to<EditorUndoRedoManager>(p_undo_redo);
+	ERR_FAIL_NULL(undo_redo_man);
 
 #define ADD_UNDO(obj, property) undo_redo_man->add_undo_property(obj, property, obj->get(property));
 
@@ -2210,7 +2210,7 @@ void TileSetAtlasSourceEditor::_auto_create_tiles() {
 		Vector2i separation = tile_set_atlas_source->get_separation();
 		Vector2i texture_region_size = tile_set_atlas_source->get_texture_region_size();
 		Size2i grid_size = tile_set_atlas_source->get_atlas_grid_size();
-		Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 		undo_redo->create_action(TTR("Create tiles in non-transparent texture regions"));
 		for (int y = 0; y < grid_size.y; y++) {
 			for (int x = 0; x < grid_size.x; x++) {
@@ -2256,7 +2256,7 @@ void TileSetAtlasSourceEditor::_auto_remove_tiles() {
 		Vector2i texture_region_size = tile_set_atlas_source->get_texture_region_size();
 		Vector2i grid_size = tile_set_atlas_source->get_atlas_grid_size();
 
-		Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 		undo_redo->create_action(TTR("Remove tiles in fully transparent texture regions"));
 
 		List<PropertyInfo> list;

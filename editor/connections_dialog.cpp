@@ -685,7 +685,7 @@ void ConnectionsDock::_connect(ConnectDialog::ConnectionData p_cd) {
 	}
 
 	Callable callable = p_cd.get_callable();
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(vformat(TTR("Connect '%s' to '%s'"), String(p_cd.signal), String(p_cd.method)));
 	undo_redo->add_do_method(source, "connect", p_cd.signal, callable, p_cd.flags);
 	undo_redo->add_undo_method(source, "disconnect", p_cd.signal, callable);
@@ -706,7 +706,7 @@ void ConnectionsDock::_disconnect(TreeItem &p_item) {
 
 	ERR_FAIL_COND(cd.source != selected_node); // Shouldn't happen but... Bugcheck.
 
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(vformat(TTR("Disconnect '%s' from '%s'"), cd.signal, cd.method));
 
 	Callable callable = cd.get_callable();
@@ -733,7 +733,7 @@ void ConnectionsDock::_disconnect_all() {
 
 	TreeItem *child = item->get_first_child();
 	String signal_name = item->get_metadata(0).operator Dictionary()["name"];
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(vformat(TTR("Disconnect all from signal: '%s'"), signal_name));
 
 	while (child) {

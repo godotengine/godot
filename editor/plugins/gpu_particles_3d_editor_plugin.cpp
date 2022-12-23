@@ -274,7 +274,7 @@ void GPUParticles3DEditor::_menu_option(int p_option) {
 			cpu_particles->set_visible(node->is_visible());
 			cpu_particles->set_process_mode(node->get_process_mode());
 
-			Ref<EditorUndoRedoManager> &ur = EditorNode::get_singleton()->get_undo_redo();
+			EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 			ur->create_action(TTR("Convert to CPUParticles3D"));
 			ur->add_do_method(SceneTreeDock::get_singleton(), "replace_node", node, cpu_particles, true, false);
 			ur->add_do_reference(cpu_particles);
@@ -324,7 +324,7 @@ void GPUParticles3DEditor::_generate_aabb() {
 		node->set_emitting(false);
 	}
 
-	Ref<EditorUndoRedoManager> &ur = EditorNode::get_singleton()->get_undo_redo();
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 	ur->create_action(TTR("Generate Visibility AABB"));
 	ur->add_do_method(node, "set_visibility_aabb", rect);
 	ur->add_undo_method(node, "set_visibility_aabb", node->get_visibility_aabb());

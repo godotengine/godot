@@ -390,7 +390,7 @@ void EditorData::set_scene_as_saved(int p_idx) {
 	}
 	ERR_FAIL_INDEX(p_idx, edited_scene.size());
 
-	get_undo_redo()->set_history_as_saved(edited_scene[p_idx].history_id);
+	undo_redo_manager->set_history_as_saved(edited_scene[p_idx].history_id);
 }
 
 bool EditorData::is_scene_changed(int p_idx) {
@@ -399,7 +399,7 @@ bool EditorData::is_scene_changed(int p_idx) {
 	}
 	ERR_FAIL_INDEX_V(p_idx, edited_scene.size(), false);
 
-	uint64_t current_scene_version = get_undo_redo()->get_or_create_history(edited_scene[p_idx].history_id).undo_redo->get_version();
+	uint64_t current_scene_version = undo_redo_manager->get_or_create_history(edited_scene[p_idx].history_id).undo_redo->get_version();
 	bool is_changed = edited_scene[p_idx].last_checked_version != current_scene_version;
 	edited_scene.write[p_idx].last_checked_version = current_scene_version;
 	return is_changed;
@@ -423,10 +423,6 @@ int EditorData::get_current_edited_scene_history_id() const {
 
 int EditorData::get_scene_history_id(int p_idx) const {
 	return edited_scene[p_idx].history_id;
-}
-
-Ref<EditorUndoRedoManager> &EditorData::get_undo_redo() {
-	return undo_redo_manager;
 }
 
 void EditorData::add_undo_redo_inspector_hook_callback(Callable p_callable) {
@@ -1043,8 +1039,12 @@ void EditorData::script_class_load_icon_paths() {
 
 EditorData::EditorData() {
 	current_edited_scene = -1;
-	undo_redo_manager.instantiate();
+	undo_redo_manager = memnew(EditorUndoRedoManager);
 	script_class_load_icon_paths();
+}
+
+EditorData::~EditorData() {
+	memdelete(undo_redo_manager);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
