@@ -311,12 +311,12 @@ namespace Godot.SourceGenerators
                         inputExpr, ")"),
                 // We need a special case for generic Godot collections and GodotObjectOrDerived[], because VariantUtils.ConvertTo<T> is slower
                 MarshalType.GodotGenericDictionary =>
-                    source.Append(VariantUtils, ".ConvertToDictionaryObject<",
+                    source.Append(VariantUtils, ".ConvertToDictionary<",
                         ((INamedTypeSymbol)typeSymbol).TypeArguments[0].FullQualifiedNameIncludeGlobal(), ", ",
                         ((INamedTypeSymbol)typeSymbol).TypeArguments[1].FullQualifiedNameIncludeGlobal(), ">(",
                         inputExpr, ")"),
                 MarshalType.GodotGenericArray =>
-                    source.Append(VariantUtils, ".ConvertToArrayObject<",
+                    source.Append(VariantUtils, ".ConvertToArray<",
                         ((INamedTypeSymbol)typeSymbol).TypeArguments[0].FullQualifiedNameIncludeGlobal(), ">(",
                         inputExpr, ")"),
                 _ => source.Append(VariantUtils, ".ConvertTo<",

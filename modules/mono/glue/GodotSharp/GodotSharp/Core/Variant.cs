@@ -212,7 +212,7 @@ public partial struct Variant : IDisposable
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public string AsString() =>
-        VariantUtils.ConvertToStringObject((godot_variant)NativeVar);
+        VariantUtils.ConvertToString((godot_variant)NativeVar);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Vector2 AsVector2() =>
@@ -280,11 +280,11 @@ public partial struct Variant : IDisposable
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Callable AsCallable() =>
-        VariantUtils.ConvertToCallableManaged((godot_variant)NativeVar);
+        VariantUtils.ConvertToCallable((godot_variant)NativeVar);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Signal AsSignal() =>
-        VariantUtils.ConvertToSignalManaged((godot_variant)NativeVar);
+        VariantUtils.ConvertToSignal((godot_variant)NativeVar);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public byte[] AsByteArray() =>
@@ -329,11 +329,11 @@ public partial struct Variant : IDisposable
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Collections.Dictionary<TKey, TValue> AsGodotDictionary<TKey, TValue>() =>
-        VariantUtils.ConvertToDictionaryObject<TKey, TValue>((godot_variant)NativeVar);
+        VariantUtils.ConvertToDictionary<TKey, TValue>((godot_variant)NativeVar);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Collections.Array<T> AsGodotArray<T>() =>
-        VariantUtils.ConvertToArrayObject<T>((godot_variant)NativeVar);
+        VariantUtils.ConvertToArray<T>((godot_variant)NativeVar);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public StringName[] AsSystemArrayOfStringName() =>
@@ -353,11 +353,11 @@ public partial struct Variant : IDisposable
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public StringName AsStringName() =>
-        VariantUtils.ConvertToStringNameObject((godot_variant)NativeVar);
+        VariantUtils.ConvertToStringName((godot_variant)NativeVar);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public NodePath AsNodePath() =>
-        VariantUtils.ConvertToNodePathObject((godot_variant)NativeVar);
+        VariantUtils.ConvertToNodePath((godot_variant)NativeVar);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public RID AsRID() =>
@@ -365,11 +365,11 @@ public partial struct Variant : IDisposable
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Collections.Dictionary AsGodotDictionary() =>
-        VariantUtils.ConvertToDictionaryObject((godot_variant)NativeVar);
+        VariantUtils.ConvertToDictionary((godot_variant)NativeVar);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Collections.Array AsGodotArray() =>
-        VariantUtils.ConvertToArrayObject((godot_variant)NativeVar);
+        VariantUtils.ConvertToArray((godot_variant)NativeVar);
 
     // Explicit conversion operators to supported types
 

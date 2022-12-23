@@ -499,7 +499,7 @@ namespace Godot.Collections
             VariantUtils.CreateFromArray(godotArray);
 
         private static Array<T> FromVariantFunc(in godot_variant variant) =>
-            VariantUtils.ConvertToArrayObject<T>(variant);
+            VariantUtils.ConvertToArray<T>(variant);
 
         static unsafe Array()
         {

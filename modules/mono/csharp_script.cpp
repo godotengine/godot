@@ -451,7 +451,7 @@ static String variant_type_to_managed_name(const String &p_var_type_name) {
 	}
 
 	if (p_var_type_name == Variant::get_type_name(Variant::SIGNAL)) {
-		return "SignalInfo";
+		return "Signal";
 	}
 
 	Variant::Type var_types[] = {

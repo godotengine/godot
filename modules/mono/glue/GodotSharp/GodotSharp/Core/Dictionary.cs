@@ -366,7 +366,7 @@ namespace Godot.Collections
             VariantUtils.CreateFromDictionary(godotDictionary);
 
         private static Dictionary<TKey, TValue> FromVariantFunc(in godot_variant variant) =>
-            VariantUtils.ConvertToDictionaryObject<TKey, TValue>(variant);
+            VariantUtils.ConvertToDictionary<TKey, TValue>(variant);
 
         static unsafe Dictionary()
         {
