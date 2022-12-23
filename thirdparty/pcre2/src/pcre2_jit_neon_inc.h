@@ -183,8 +183,6 @@ restart:;
 #endif
 
 #if defined(FFCPS)
-if (str_ptr >= str_end)
-  return NULL;
 sljit_u8 *p1 = str_ptr - diff;
 #endif
 sljit_s32 align_offset = ((uint64_t)str_ptr & 0xf);
@@ -329,7 +327,7 @@ match:;
     return NULL;
 
 #if defined(FF_UTF)
-  if (utf_continue((PCRE2_SPTR)str_ptr - offs1))
+  if (utf_continue(str_ptr + IN_UCHARS(-offs1)))
     {
     /* Not a match. */
     str_ptr += IN_UCHARS(1);

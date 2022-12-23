@@ -1,5 +1,5 @@
 def can_build(env, platform):
-    return True
+    return not env["arch"].startswith("rv")
 
 
 def configure(env):
