@@ -3302,6 +3302,99 @@ void RenderForwardClustered::sub_surface_scattering_set_scale(float p_scale, flo
 
 RenderForwardClustered *RenderForwardClustered::singleton = nullptr;
 
+void RenderForwardClustered::sdfgi_update(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_environment, const Vector3 &p_world_position) {
+	Ref<RenderSceneBuffersRD> rb = p_render_buffers;
+	ERR_FAIL_COND(rb.is_null());
+	Ref<RendererRD::GI::SDFGI> sdfgi;
+	if (rb->has_custom_data(RB_SCOPE_SDFGI)) {
+		sdfgi = rb->get_custom_data(RB_SCOPE_SDFGI);
+	}
+
+	bool needs_sdfgi = p_environment.is_valid() && environment_get_sdfgi_enabled(p_environment);
+
+	if (!needs_sdfgi) {
+		if (sdfgi.is_valid()) {
+			// delete it
+			sdfgi.unref();
+			rb->set_custom_data(RB_SCOPE_SDFGI, sdfgi);
+		}
+		return;
+	}
+
+	static const uint32_t history_frames_to_converge[RS::ENV_SDFGI_CONVERGE_MAX] = { 5, 10, 15, 20, 25, 30 };
+	uint32_t requested_history_size = history_frames_to_converge[gi.sdfgi_frames_to_converge];
+
+	if (sdfgi.is_valid() && (sdfgi->num_cascades != environment_get_sdfgi_cascades(p_environment) || sdfgi->min_cell_size != environment_get_sdfgi_min_cell_size(p_environment) || requested_history_size != sdfgi->history_size || sdfgi->uses_occlusion != environment_get_sdfgi_use_occlusion(p_environment) || sdfgi->y_scale_mode != environment_get_sdfgi_y_scale(p_environment))) {
+		//configuration changed, erase
+		sdfgi.unref();
+		rb->set_custom_data(RB_SCOPE_SDFGI, sdfgi);
+	}
+
+	if (sdfgi.is_null()) {
+		// re-create
+		sdfgi = gi.create_sdfgi(p_environment, p_world_position, requested_history_size);
+		rb->set_custom_data(RB_SCOPE_SDFGI, sdfgi);
+	} else {
+		//check for updates
+		sdfgi->update(p_environment, p_world_position);
+	}
+}
+
+int RenderForwardClustered::sdfgi_get_pending_region_count(const Ref<RenderSceneBuffers> &p_render_buffers) const {
+	Ref<RenderSceneBuffersRD> rb = p_render_buffers;
+	ERR_FAIL_COND_V(rb.is_null(), 0);
+
+	if (!rb->has_custom_data(RB_SCOPE_SDFGI)) {
+		return 0;
+	}
+	Ref<RendererRD::GI::SDFGI> sdfgi = rb->get_custom_data(RB_SCOPE_SDFGI);
+
+	int dirty_count = 0;
+	for (uint32_t i = 0; i < sdfgi->cascades.size(); i++) {
+		const RendererRD::GI::SDFGI::Cascade &c = sdfgi->cascades[i];
+
+		if (c.dirty_regions == RendererRD::GI::SDFGI::Cascade::DIRTY_ALL) {
+			dirty_count++;
+		} else {
+			for (int j = 0; j < 3; j++) {
+				if (c.dirty_regions[j] != 0) {
+					dirty_count++;
+				}
+			}
+		}
+	}
+
+	return dirty_count;
+}
+
+AABB RenderForwardClustered::sdfgi_get_pending_region_bounds(const Ref<RenderSceneBuffers> &p_render_buffers, int p_region) const {
+	AABB bounds;
+	Vector3i from;
+	Vector3i size;
+
+	Ref<RenderSceneBuffersRD> rb = p_render_buffers;
+	ERR_FAIL_COND_V(rb.is_null(), AABB());
+	Ref<RendererRD::GI::SDFGI> sdfgi = rb->get_custom_data(RB_SCOPE_SDFGI);
+	ERR_FAIL_COND_V(sdfgi.is_null(), AABB());
+
+	int c = sdfgi->get_pending_region_data(p_region, from, size, bounds);
+	ERR_FAIL_COND_V(c == -1, AABB());
+	return bounds;
+}
+
+uint32_t RenderForwardClustered::sdfgi_get_pending_region_cascade(const Ref<RenderSceneBuffers> &p_render_buffers, int p_region) const {
+	AABB bounds;
+	Vector3i from;
+	Vector3i size;
+
+	Ref<RenderSceneBuffersRD> rb = p_render_buffers;
+	ERR_FAIL_COND_V(rb.is_null(), -1);
+	Ref<RendererRD::GI::SDFGI> sdfgi = rb->get_custom_data(RB_SCOPE_SDFGI);
+	ERR_FAIL_COND_V(sdfgi.is_null(), -1);
+
+	return sdfgi->get_pending_region_data(p_region, from, size, bounds);
+}
+
 void RenderForwardClustered::GeometryInstanceForwardClustered::_mark_dirty() {
 	if (dirty_list_element.in_list()) {
 		return;
