@@ -220,17 +220,18 @@ not rely on this. */
 
 #define COMPILE_ERROR_BASE 100
 
-/* The initial frames vector for remembering pcre2_match() backtracking points
-is allocated on the heap, of this size (bytes) or ten times the frame size if
-larger, unless the heap limit is smaller. Typical frame sizes are a few hundred
-bytes (it depends on the number of capturing parentheses) so 20KiB handles
-quite a few frames. A larger vector on the heap is obtained for matches that
-need more frames, subject to the heap limit. */
+/* The initial frames vector for remembering backtracking points in
+pcre2_match() is allocated on the system stack, of this size (bytes). The size
+must be a multiple of sizeof(PCRE2_SPTR) in all environments, so making it a
+multiple of 8 is best. Typical frame sizes are a few hundred bytes (it depends
+on the number of capturing parentheses) so 20KiB handles quite a few frames. A
+larger vector on the heap is obtained for patterns that need more frames. The
+maximum size of this can be limited. */
 
 #define START_FRAMES_SIZE 20480
 
-/* For DFA matching, an initial internal workspace vector is allocated on the
-stack. The heap is used only if this turns out to be too small. */
+/* Similarly, for DFA matching, an initial internal workspace vector is
+allocated on the stack. */
 
 #define DFA_START_RWS_SIZE 30720
 

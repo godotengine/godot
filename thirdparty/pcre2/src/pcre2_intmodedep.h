@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2022 University of Cambridge
+          New API code Copyright (c) 2016-2018 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -649,23 +649,19 @@ the size varies from call to call. As the maximum number of capturing
 subpatterns is 65535 we must allow for 65536 strings to include the overall
 match. (See also the heapframe structure below.) */
 
-struct heapframe;  /* Forward reference */
-
 typedef struct pcre2_real_match_data {
-  pcre2_memctl     memctl;           /* Memory control fields */
-  const pcre2_real_code *code;       /* The pattern used for the match */
-  PCRE2_SPTR       subject;          /* The subject that was matched */
-  PCRE2_SPTR       mark;             /* Pointer to last mark */
-  struct heapframe *heapframes;      /* Backtracking frames heap memory */
-  PCRE2_SIZE       heapframes_size;  /* Malloc-ed size */
-  PCRE2_SIZE       leftchar;         /* Offset to leftmost code unit */
-  PCRE2_SIZE       rightchar;        /* Offset to rightmost code unit */
-  PCRE2_SIZE       startchar;        /* Offset to starting code unit */
-  uint8_t          matchedby;        /* Type of match (normal, JIT, DFA) */
-  uint8_t          flags;            /* Various flags */
-  uint16_t         oveccount;        /* Number of pairs */
-  int              rc;               /* The return code from the match */
-  PCRE2_SIZE       ovector[131072];  /* Must be last in the structure */
+  pcre2_memctl     memctl;
+  const pcre2_real_code *code;    /* The pattern used for the match */
+  PCRE2_SPTR       subject;       /* The subject that was matched */
+  PCRE2_SPTR       mark;          /* Pointer to last mark */
+  PCRE2_SIZE       leftchar;      /* Offset to leftmost code unit */
+  PCRE2_SIZE       rightchar;     /* Offset to rightmost code unit */
+  PCRE2_SIZE       startchar;     /* Offset to starting code unit */
+  uint8_t          matchedby;     /* Type of match (normal, JIT, DFA) */
+  uint8_t          flags;         /* Various flags */
+  uint16_t         oveccount;     /* Number of pairs */
+  int              rc;            /* The return code from the match */
+  PCRE2_SIZE       ovector[131072]; /* Must be last in the structure */
 } pcre2_real_match_data;
 
 
@@ -858,6 +854,10 @@ doing traditional NFA matching (pcre2_match() and friends). */
 
 typedef struct match_block {
   pcre2_memctl memctl;            /* For general use */
+  PCRE2_SIZE frame_vector_size;   /* Size of a backtracking frame */
+  heapframe *match_frames;        /* Points to vector of frames */
+  heapframe *match_frames_top;    /* Points after the end of the vector */
+  heapframe *stack_frames;        /* The original vector on the stack */
   PCRE2_SIZE heap_limit;          /* As it says */
   uint32_t match_limit;           /* As it says */
   uint32_t match_limit_depth;     /* As it says */
