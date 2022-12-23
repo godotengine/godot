@@ -295,8 +295,8 @@ namespace Godot.SourceGenerators
             foreach (var property in properties)
             {
                 // TODO: We should still restore read-only properties after reloading assembly. Two possible ways: reflection or turn RestoreGodotObjectData into a constructor overload.
-                // Ignore properties without a getter or without a setter. Godot properties must be both readable and writable.
-                if (property.IsWriteOnly || property.IsReadOnly)
+                // Ignore properties without a getter, without a setter or with an init-only setter. Godot properties must be both readable and writable.
+                if (property.IsWriteOnly || property.IsReadOnly || property.SetMethod!.IsInitOnly)
                     continue;
 
                 var marshalType = MarshalUtils.ConvertManagedTypeToMarshalType(property.Type, typeCache);
