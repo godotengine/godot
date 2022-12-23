@@ -53,18 +53,7 @@ bool MeshInstance3D::_set(const StringName &p_name, const Variant &p_value) {
 	if (p_name.operator String().begins_with("surface_material_override/")) {
 		int idx = p_name.operator String().get_slicec('/', 1).to_int();
 
-		// This is a bit of a hack to ensure compatibility with material
-		// overrides that start indexing at 1.
-		// We assume that idx 0 is always read first, if its not, this won't work.
-		if (idx == 0) {
-			surface_index_0 = true;
-		}
-		if (!surface_index_0) {
-			// This means the file was created when the indexing started at 1, so decrease by one.
-			idx--;
-		}
-
-		if (idx > surface_override_materials.size() || idx < 0) {
+		if (idx >= surface_override_materials.size() || idx < 0) {
 			return false;
 		}
 
