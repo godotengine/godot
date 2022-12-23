@@ -246,17 +246,11 @@ AStarGrid2D::Point *AStarGrid2D::_jump(Point *p_from, Point *p_to) {
 		}
 	} else { // DIAGONAL_MODE_NEVER
 		if (dx != 0) {
-			if (!_is_walkable(to_x + dx, to_y)) {
+			if ((_is_walkable(to_x, to_y - 1) && !_is_walkable(to_x - dx, to_y - 1)) || (_is_walkable(to_x, to_y + 1) && !_is_walkable(to_x - dx, to_y + 1))) {
 				return p_to;
 			}
-			if (_jump(p_to, _get_point(to_x, to_y + 1)) != nullptr) {
-				return p_to;
-			}
-			if (_jump(p_to, _get_point(to_x, to_y - 1)) != nullptr) {
-				return p_to;
-			}
-		} else {
-			if (!_is_walkable(to_x, to_y + dy)) {
+		} else if (dy != 0) {
+			if ((_is_walkable(to_x - 1, to_y) && !_is_walkable(to_x - 1, to_y - dy)) || (_is_walkable(to_x + 1, to_y) && !_is_walkable(to_x + 1, to_y - dy))) {
 				return p_to;
 			}
 			if (_jump(p_to, _get_point(to_x + 1, to_y)) != nullptr) {
@@ -266,9 +260,7 @@ AStarGrid2D::Point *AStarGrid2D::_jump(Point *p_from, Point *p_to) {
 				return p_to;
 			}
 		}
-		if (_is_walkable(to_x + dx, to_y + dy) && _is_walkable(to_x + dx, to_y) && _is_walkable(to_x, to_y + dy)) {
-			return _jump(p_to, _get_point(to_x + dx, to_y + dy));
-		}
+		return _jump(p_to, _get_point(to_x + dx, to_y + dy));
 	}
 	return nullptr;
 }
