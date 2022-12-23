@@ -3139,6 +3139,12 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 					p_identifier->reduced_value = member.enum_value.value;
 					p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_CONSTANT;
 					break;
+				case GDScriptParser::ClassNode::Member::ENUM:
+					if (p_base != nullptr && p_base->is_constant) {
+						p_identifier->is_constant = true;
+						p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_CONSTANT;
+					}
+					break;
 				case GDScriptParser::ClassNode::Member::VARIABLE:
 					p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_VARIABLE;
 					p_identifier->variable_source = member.variable;
@@ -3152,12 +3158,14 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 					break;
 				case GDScriptParser::ClassNode::Member::CLASS:
 					if (p_base != nullptr && p_base->is_constant) {
+						p_identifier->is_constant = true;
+						p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_CONSTANT;
+
 						Error err = OK;
 						GDScript *scr = GDScriptCache::get_full_script(base.script_path, err).ptr();
 						ERR_FAIL_COND_MSG(err != OK, "Error while getting subscript full script.");
 						scr = scr->find_class(p_identifier->get_datatype().class_type->fqcn);
 						p_identifier->reduced_value = scr;
-						p_identifier->is_constant = true;
 					}
 					break;
 				default:
