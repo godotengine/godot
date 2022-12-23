@@ -170,39 +170,66 @@ namespace Godot.NativeInterop
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static godot_variant CreateFromPackedByteArray(Span<byte> from)
-            => CreateFromPackedByteArray(Marshaling.ConvertSystemArrayToNativePackedByteArray(from));
+        {
+            using var nativePackedArray = Marshaling.ConvertSystemArrayToNativePackedByteArray(from);
+            return CreateFromPackedByteArray(nativePackedArray);
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static godot_variant CreateFromPackedInt32Array(Span<int> from)
-            => CreateFromPackedInt32Array(Marshaling.ConvertSystemArrayToNativePackedInt32Array(from));
+        {
+            using var nativePackedArray = Marshaling.ConvertSystemArrayToNativePackedInt32Array(from);
+            return CreateFromPackedInt32Array(nativePackedArray);
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static godot_variant CreateFromPackedInt64Array(Span<long> from)
-            => CreateFromPackedInt64Array(Marshaling.ConvertSystemArrayToNativePackedInt64Array(from));
+        {
+            using var nativePackedArray = Marshaling.ConvertSystemArrayToNativePackedInt64Array(from);
+            return CreateFromPackedInt64Array(nativePackedArray);
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static godot_variant CreateFromPackedFloat32Array(Span<float> from)
-            => CreateFromPackedFloat32Array(Marshaling.ConvertSystemArrayToNativePackedFloat32Array(from));
+        {
+            using var nativePackedArray = Marshaling.ConvertSystemArrayToNativePackedFloat32Array(from);
+            return CreateFromPackedFloat32Array(nativePackedArray);
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static godot_variant CreateFromPackedFloat64Array(Span<double> from)
-            => CreateFromPackedFloat64Array(Marshaling.ConvertSystemArrayToNativePackedFloat64Array(from));
+        {
+            using var nativePackedArray = Marshaling.ConvertSystemArrayToNativePackedFloat64Array(from);
+            return CreateFromPackedFloat64Array(nativePackedArray);
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static godot_variant CreateFromPackedStringArray(Span<string> from)
-            => CreateFromPackedStringArray(Marshaling.ConvertSystemArrayToNativePackedStringArray(from));
+        {
+            using var nativePackedArray = Marshaling.ConvertSystemArrayToNativePackedStringArray(from);
+            return CreateFromPackedStringArray(nativePackedArray);
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static godot_variant CreateFromPackedVector2Array(Span<Vector2> from)
-            => CreateFromPackedVector2Array(Marshaling.ConvertSystemArrayToNativePackedVector2Array(from));
+        {
+            using var nativePackedArray = Marshaling.ConvertSystemArrayToNativePackedVector2Array(from);
+            return CreateFromPackedVector2Array(nativePackedArray);
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static godot_variant CreateFromPackedVector3Array(Span<Vector3> from)
-            => CreateFromPackedVector3Array(Marshaling.ConvertSystemArrayToNativePackedVector3Array(from));
+        {
+            using var nativePackedArray = Marshaling.ConvertSystemArrayToNativePackedVector3Array(from);
+            return CreateFromPackedVector3Array(nativePackedArray);
+        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static godot_variant CreateFromPackedColorArray(Span<Color> from)
-            => CreateFromPackedColorArray(Marshaling.ConvertSystemArrayToNativePackedColorArray(from));
+        {
+            using var nativePackedArray = Marshaling.ConvertSystemArrayToNativePackedColorArray(from);
+            return CreateFromPackedColorArray(nativePackedArray);
+        }
 
         public static godot_variant CreateFromSystemArrayOfStringName(Span<StringName> from)
             => CreateFromArray(new Collections.Array(from));
