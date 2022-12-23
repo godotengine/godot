@@ -400,6 +400,9 @@ void PhysicsServer3DExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_joint_set_solver_priority, "joint", "priority");
 	GDVIRTUAL_BIND(_joint_get_solver_priority, "joint");
 
+	GDVIRTUAL_BIND(_joint_disable_collisions_between_bodies, "joint", "disable");
+	GDVIRTUAL_BIND(_joint_is_disabled_collisions_between_bodies, "joint");
+
 	GDVIRTUAL_BIND(_free_rid, "rid");
 
 	GDVIRTUAL_BIND(_set_active, "active");
