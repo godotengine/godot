@@ -200,8 +200,6 @@ public:
 	virtual Transform combatant_get_local_transform(const RID_TYPE& r_com);
 	virtual Transform combatant_get_combined_transform(const RID_TYPE& r_com);
 	virtual void combatant_set_space_transform(const RID_TYPE& r_com, const Transform& trans);
-	virtual void combatant_set_stand(const RID_TYPE& r_com, const uint32_t& stand);
-	virtual uint32_t combatant_get_stand(const RID_TYPE& r_com);
 	virtual uint32_t combatant_get_status(const RID_TYPE& r_com);
 	virtual void combatant_set_iid(const RID_TYPE& r_com, const uint64_t& iid);
 	virtual uint64_t combatant_get_iid(const RID_TYPE& r_com);
@@ -212,6 +210,8 @@ public:
 	virtual void combatant_unbind_chip(const RID_TYPE& r_com);
 	virtual void combatant_set_profile(const RID_TYPE& r_com, const Ref<RCSCombatantProfile>& profile);
 	virtual Ref<RCSCombatantProfile> combatant_get_profile(const RID_TYPE& r_com);
+	virtual void combatant_set_projectile_profile(const RID_TYPE& r_com, const Ref<RCSProjectileProfile>& profile);
+	virtual Ref<RCSProjectileProfile> combatant_get_projectile_profile(const RID_TYPE& r_com);
 
 	/* Squad API */
 	virtual RID_TYPE squad_create();
@@ -256,7 +256,7 @@ public:
 	virtual RID_TYPE radar_get_simulation(const RID_TYPE& r_rad);
 	virtual void radar_set_profile(const RID_TYPE& r_rad, const Ref<RCSRadarProfile>& profile);
 	virtual Ref<RCSRadarProfile> radar_get_profile(const RID_TYPE& r_rad);
-	virtual void radar_request_recheck_on(const RID_TYPE& r_rad, const RID_TYPE& r_com);
+	virtual void request_radar_recheck_on(const RID_TYPE& r_rad, const RID_TYPE& r_com);
 	virtual Vector<RID_TYPE> radar_get_detected(const RID_TYPE& r_rad);
 	virtual Vector<RID_TYPE> radar_get_locked(const RID_TYPE& r_rad);
 };

@@ -32,6 +32,7 @@
 class RCSCombatantProfile;
 class RCSCombatant;
 class RCSProjectileBind;
+class RCSProjectileProfile;
 class RCSSquad;
 class RCSUnilateralTeamsBind;
 class RCSTeam;
@@ -51,7 +52,7 @@ class CombatantEventReport;
 class SquadEventReport;
 class TeamEventReport;
 class ProjectileEventReport;
-class ComRadarEventReport;
+class RadarEventReport;
 
 #define REPORTER_CLASS(base, inherited)                                        \
 	friend class RCSSimulation;                                                \
@@ -165,8 +166,8 @@ public:
 	_ALWAYS_INLINE_ uint32_t get_packagae_a_id() const noexcept { return pcka_id; }
 	_ALWAYS_INLINE_ uint32_t get_packagae_b_id() const noexcept { return pckb_id; }
 };
-class ComRadarEventReport : public EventReport {
-	REPORTER_CLASS(ComRadarEventReport, EventReport);
+class RadarEventReport : public EventReport {
+	REPORTER_CLASS(RadarEventReport, EventReport);
 public:
 	// Opaque record
 	struct ScanConclusion{
@@ -202,7 +203,7 @@ private:
 	friend class RCSSimulation;
 	friend class RCSRadar;
 public:
-	ComRadarEventReport();
+	RadarEventReport();
 };
 
 class RCSSpatial : public RID_RCS {
@@ -396,7 +397,6 @@ private:
 	float total_heat = 0.0;
 	float time_elapsed = 0.0;
 private:
-	VECTOR<RID_TYPE> participating_teams;
 	RID_TYPE offending_team;
 	RID_TYPE deffending_team;
 	RID_TYPE offending_squads;
@@ -406,7 +406,7 @@ private:
 	friend class RCSTeam;
 	friend class RCSSquad;
 private:
-	VECTOR<RCSEngagement*> referencing;
+	List<RCSEngagement*> referencing;
 
 	// void cut_ties_team(RCSTeam* team);
 	// void cut_ties_squad(RCSSquad* squad);
@@ -424,11 +424,10 @@ public:
 	_ALWAYS_INLINE_ uint32_t get_scale() const noexcept { return scale; }
 	_ALWAYS_INLINE_ float get_heat_meter() const noexcept { return (total_heat / time_elapsed); }
 	_ALWAYS_INLINE_ float get_time_elapsed() const noexcept { return time_elapsed; }
-	_ALWAYS_INLINE_ VECTOR<RID_TYPE> *_get_participating() { return &participating_teams; }
-	_ALWAYS_INLINE_ RID_TYPE _get_offending_team()  const { return offending_team; }
-	_ALWAYS_INLINE_ RID_TYPE _get_deffending_team() const { return deffending_team; }
-	_ALWAYS_INLINE_ RID_TYPE _get_offending_squads() { return offending_squads; }
-	_ALWAYS_INLINE_ RID_TYPE _get_deffending_squads() { return deffending_squads; }
+	_ALWAYS_INLINE_ RID_TYPE _get_offending_team()  const noexcept { return offending_team; }
+	_ALWAYS_INLINE_ RID_TYPE _get_deffending_team() const noexcept { return deffending_team; }
+	_ALWAYS_INLINE_ RID_TYPE _get_offending_squads() const noexcept { return offending_squads; }
+	_ALWAYS_INLINE_ RID_TYPE _get_deffending_squads() const noexcept { return deffending_squads; }
 // ---------------------------------------------
 	Array get_involving_teams() const;
 	Array get_involving_squads() const;
@@ -472,18 +471,18 @@ public:
 	RCSEngagement();
 	~RCSEngagement();
 
-	_FORCE_INLINE_ bool is_engagement_happening() const		{ ERR_FAIL_COND_V(!logger, false)  ; return logger->is_engagement_happening(); }
-	_FORCE_INLINE_ bool is_engagement_over() const			{ ERR_FAIL_COND_V(!logger, false)  ; return logger->is_engagement_over(); }
-	_FORCE_INLINE_ EngagementScale get_scale() const		{ ERR_FAIL_COND_V(!logger, NA)     ; return (EngagementScale)logger->get_scale(); }
-	_FORCE_INLINE_ Array get_involving_teams() const		{ ERR_FAIL_COND_V(!logger, Array()); return logger->get_involving_teams(); }
-	_FORCE_INLINE_ Array get_involving_squads() const		{ ERR_FAIL_COND_V(!logger, Array()); return logger->get_involving_squads(); }
-	_FORCE_INLINE_ RID_TYPE get_offending_team() const		{ ERR_FAIL_COND_V(!logger, RID_TYPE())  ; return logger->get_offending_team(); }
-	_FORCE_INLINE_ RID_TYPE get_deffending_team() const		{ ERR_FAIL_COND_V(!logger, RID_TYPE()); return logger->get_deffending_team(); }
-	_FORCE_INLINE_ RID_TYPE get_offending_squad() const	{ ERR_FAIL_COND_V(!logger, RID_TYPE()); return logger->get_offending_squad(); }
-	_FORCE_INLINE_ RID_TYPE get_deffending_squad() const	{ ERR_FAIL_COND_V(!logger, RID_TYPE()); return logger->get_deffending_squad(); }
+	_FORCE_INLINE_ bool is_engagement_happening()	const { ERR_FAIL_COND_V(!logger, false)  ; return logger->is_engagement_happening(); }
+	_FORCE_INLINE_ bool is_engagement_over()		const { ERR_FAIL_COND_V(!logger, false)  ; return logger->is_engagement_over(); }
+	_FORCE_INLINE_ EngagementScale get_scale()		const { ERR_FAIL_COND_V(!logger, NA)     ; return (EngagementScale)logger->get_scale(); }
+	_FORCE_INLINE_ Array get_involving_teams()		const { ERR_FAIL_COND_V(!logger, Array()); return logger->get_involving_teams(); }
+	_FORCE_INLINE_ Array get_involving_squads()		const { ERR_FAIL_COND_V(!logger, Array()); return logger->get_involving_squads(); }
+	_FORCE_INLINE_ RID_TYPE get_offending_team()	const { ERR_FAIL_COND_V(!logger, RID_TYPE())  ; return logger->get_offending_team(); }
+	_FORCE_INLINE_ RID_TYPE get_deffending_team()	const { ERR_FAIL_COND_V(!logger, RID_TYPE()); return logger->get_deffending_team(); }
+	_FORCE_INLINE_ RID_TYPE get_offending_squad()	const { ERR_FAIL_COND_V(!logger, RID_TYPE()); return logger->get_offending_squad(); }
+	_FORCE_INLINE_ RID_TYPE get_deffending_squad()	const { ERR_FAIL_COND_V(!logger, RID_TYPE()); return logger->get_deffending_squad(); }
 };
 
-class RCSSimulation : public RID_RCS{
+class RCSSimulation : public RID_RCS {
 private:
 	VECTOR<RCSCombatant *> combatants;
 	VECTOR<RCSSquad *> squads;
@@ -496,7 +495,7 @@ private:
 	VECTOR<std::shared_ptr<RCSEngagementInternal>> engagements;
 private:
 	void ihandler_projectile_fired(std::shared_ptr<ProjectileEventReport>& event);
-	void ihandler_radar_scan_concluded(std::shared_ptr<ComRadarEventReport>& event);
+	void ihandler_radar_scan_concluded(std::shared_ptr<RadarEventReport>& event);
 public:
 	RCSSimulation();
 	~RCSSimulation();
@@ -511,36 +510,30 @@ public:
 	void remove_team(RCSTeam *team);
 	void remove_radar(RCSRadar *rad);
 
-	VECTOR<RCSCombatant *> *get_combatants() { return &combatants; }
-	VECTOR<RCSSquad *> *get_squads() { return &squads; }
-	VECTOR<RCSTeam *> *get_teams() { return &teams; }
-	VECTOR<RCSRadar *> *get_radars() { return &radars; }
+	_FORCE_INLINE_ uint32_t count_combatants() const { return combatants.size(); }
+	_FORCE_INLINE_ uint32_t count_squads() const { return squads.size(); }
+	_FORCE_INLINE_ uint32_t count_teams() const { return teams.size(); }
+	_FORCE_INLINE_ uint32_t count_radars() const { return radars.size(); }
 
 	void poll(const float &delta) override;
 
-	std::weak_ptr<RCSEngagementInternal> find_active_engagement(const RID_TYPE& offending_squad, const RID_TYPE& defending_squad) const;
-	VECTOR<std::weak_ptr<RCSEngagementInternal>> find_engagements(const RID_TYPE& offending_squad, const RID_TYPE& defending_squad) const;
 	_FORCE_INLINE_ std::weak_ptr<RCSEngagementInternal> create_engagement(){
 		auto en = std::make_shared<RCSEngagementInternal>();
 		engagements.push_back(en);
 		return en;
 	}
 
-	// World related
+	// Request read actions
+	std::weak_ptr<RCSEngagementInternal> request_active_engagement(const RID_TYPE& offending_squad, const RID_TYPE& defending_squad) const;
+	VECTOR<std::weak_ptr<RCSEngagementInternal>> request_engagements_list(const RID_TYPE& offending_squad, const RID_TYPE& defending_squad) const;
 	Vector<RCSSquad*> request_scanable_squads(const RCSSquad* base) const;
 	Vector<RCSSquad*> request_reachable_squads(const RCSSquad* from) const;
 	Vector<RCSCombatant*> request_reachable_combatants(const RCSSquad* from) const;
-	// ---------------------------
-	_FORCE_INLINE_ uint32_t get_allocatable_workers() const {
-		// auto size = combatants.size();
-		// uint32_t re = 1U;
-		// if (size < 50) re = 1;
-		// else if (size < 200) re = 2;
-		// else if (size < 2000) re = 4;
-		// else re = 8;
-		// return re;
-		return MAX_ALLOCATABLE_WORKER_PER_OBJECT;
-	}
+	RCSCombatant *request_combatant_from_iid(const uint64_t &iid) const;
+	
+	// Request write actions
+	void demand_radar_recheck(RadarRecheckTicket* ticket) { rrecheck_requests.push_back(ticket); }
+	void demand_radar_conclude(RadarConcludeTicket* ticket) { rconclude_requests.push_back(ticket); }
 
 	void set_recorder(RCSRecording *rec);
 	_FORCE_INLINE_ bool has_recorder() const { return recorder != nullptr; }
@@ -549,14 +542,7 @@ public:
 	void squad_event(std::shared_ptr<SquadEventReport>& event);
 	void team_event(std::shared_ptr<TeamEventReport>& event);
 	void projectile_event(std::shared_ptr<ProjectileEventReport>& event);
-	void radar_event(std::shared_ptr<ComRadarEventReport>& event);
-
-	RCSCombatant *get_combatant_from_iid(const uint64_t &iid) const;
-
-	void radar_request_recheck(RadarRecheckTicket* ticket) { rrecheck_requests.push_back(ticket); }
-	void radar_request_conclude(RadarConcludeTicket* ticket) { rconclude_requests.push_back(ticket); }
-
-
+	void radar_event(std::shared_ptr<RadarEventReport>& event);
 };
 
 class RCSCombatantProfile : public Resource{
@@ -616,6 +602,26 @@ public:
 	_FORCE_INLINE_ bool get_phantom_mode() const { return is_phantom; }
 };
 
+#define MAX_HEAT_PER_INSTANCE 1000
+
+class RCSProjectileProfile : public Resource {
+	GDCLASS(RCSProjectileProfile, Resource);
+private:
+	float heat_per_launch = 0.0;
+	float heat_per_second = 0.0;
+protected:
+	static void _bind_methods();
+public:
+	RCSProjectileProfile() = default;
+	~RCSProjectileProfile() = default;
+
+	_FORCE_INLINE_ void set_hpl(const float& hpl) { heat_per_launch = CLAMP(hpl, 0.0, MAX_HEAT_PER_INSTANCE); emit_changed(); }
+	_FORCE_INLINE_ float get_hpl() const { return heat_per_launch; }
+
+	_FORCE_INLINE_ void set_hps(const float& hps) { heat_per_second = CLAMP(hps, 0.0, MAX_HEAT_PER_INSTANCE); emit_changed(); }
+	_FORCE_INLINE_ float get_hps() const { return heat_per_second; }
+};
+
 #define COMBATANT_DETECTION_LIMIT 10.0
 
 class RCSCombatant : public RCSSpatial {
@@ -626,7 +632,7 @@ private:
 	// RCSProjectileBind *projectile_bind;
 	std::unique_ptr<RCSProjectileBind> projectile_bind;
 	RCSCombatant* fired_by;
-	VECTOR<RCSProjectileBind*> punishers;
+	List<RCSProjectileBind*> punishers;
 private:
 	Transform space_transform;
 	Transform local_transform;
@@ -665,8 +671,12 @@ public:
 	// _FORCE_INLINE_ RCSProjectileBind *get_projectile_bind() { return projectile_bind; }
 	_FORCE_INLINE_ RCSProjectileBind *get_projectile_bind() { return projectile_bind.get(); }
 	_FORCE_INLINE_ void add_punisher(RCSProjectileBind* bind){ punishers.push_back(bind);  }
-	_FORCE_INLINE_ void erase_punisher(RCSProjectileBind *bind) VEC_ERASE(punishers, bind)
-	_FORCE_INLINE_ bool has_punisher(RCSProjectileBind *bind) const VEC_HAS(punishers, bind)
+	_FORCE_INLINE_ void erase_punisher(RCSProjectileBind *bind) { auto res = punishers.find(bind); if (res) punishers.erase(res); }
+	_FORCE_INLINE_ bool has_punisher(RCSProjectileBind *bind) { auto res = punishers.find(bind); return res; }
+
+	// _FORCE_INLINE_ const RCSProjectileBind* get_projectile_bind() const { return (const RCSProjectileBind*)projectile_bind.get(); }
+	void set_projectile_profile(const Ref<RCSProjectileProfile>& new_prof);
+	Ref<RCSProjectileProfile> get_projectile_profile() const;
 
 	virtual void set_st(const Transform& trans) { space_transform = trans;}
 
@@ -676,11 +686,11 @@ public:
 	_FORCE_INLINE_ Transform get_global_transform() const override { return space_transform;  }
 	_FORCE_INLINE_ Transform get_local_transform() const override { return local_transform;  }
 
-	virtual void set_cname(const StringName& cname);
-	virtual StringName get_cname() const;
+	// virtual void set_cname(const StringName& cname);
+	// virtual StringName get_cname() const;
 
-	virtual void set_stand(const uint32_t& new_stand);
-	virtual uint32_t get_stand() const;
+	// virtual void set_stand(const uint32_t& new_stand);
+	// virtual uint32_t get_stand() const;
 
 	virtual void set_status(const uint32_t& new_status) { status = new_status;  }
 	virtual uint32_t get_status() const { return status; }
@@ -700,6 +710,7 @@ public:
 
 class RCSProjectileBind {
 private:
+	Ref<RCSProjectileProfile> profile;
 	RCSCombatant *host = nullptr;
 	RCSCombatant *fired_by = nullptr;
 	RCSCombatant *target = nullptr;
@@ -724,6 +735,12 @@ public:
 		sim->projectile_event(event);
 	}
 	_ALWAYS_INLINE_ RCSCombatant* get_host() noexcept { return host; }
+
+	_ALWAYS_INLINE_ void set_profile(const Ref<RCSProjectileProfile>& new_profile){
+		profile = new_profile;
+	}
+
+	_ALWAYS_INLINE_ Ref<RCSProjectileProfile> get_profile() const { return profile; }
 
 	_ALWAYS_INLINE_ void set_marked(const bool& mark) {
 		is_marked = mark;
@@ -1211,8 +1228,8 @@ private:
 	List<RID_TYPE> locked;
 
 	// Fodder lists, become unusable after 1st iteration
-	List<RID_TYPE> prev_detected;
-	List<RID_TYPE> prev_locked;
+	// List<RID_TYPE> prev_detected;
+	// List<RID_TYPE> prev_locked;
 
 	// Positive-changes list, reset after one radar cycle
 	List<RID_TYPE> newly_detected;

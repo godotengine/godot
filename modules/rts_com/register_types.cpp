@@ -14,6 +14,7 @@ void register_rts_com_types(){
 	ClassDB::register_class<RCSEngagement>();
 	ClassDB::register_class<RCSRadarProfile>();
 	ClassDB::register_class<RCSCombatantProfile>();
+	ClassDB::register_class<RCSProjectileProfile>();
 	ClassDB::register_class<RCSUnilateralTeamsBind>();
 	RTSCombatServerPtr = memnew(Sentrience);
 	Engine::get_singleton()->add_singleton(Engine::Singleton("Sentrience", Sentrience::get_singleton()));

@@ -4,7 +4,8 @@
 #include "core/ustring.h"
 #include "core/print_string.h"
 
-#include <functional>
+#include <cstdlib>
+// #include <functional>
 #include <thread>
 #include <mutex>
 #include <chrono>
@@ -39,6 +40,102 @@
 		to.push_back(from[i]);                                          \
 	}                                                                   \
 }
+
+// template <class T> class CArray {
+// private:
+// 	Array();
+// 	struct CArrayPrivate {
+// 		void* ptr;
+// 		int size = 0;
+// 		SafeRefCount refcount;
+// 	};
+// private:
+// 	size_t type_size = 0;
+// 	mutable CArrayPrivate* inner_array;
+// 	void _ref(const CArray& from){
+// 		if (!from.inner_array) return;
+// 		inner_array = from.inner_array;
+// 		inner_array->refcount.ref();
+// 	}
+// 	void _unref(){
+// 		if (!inner_array) return;
+// 		if (inner_array->refcount.unref()) delete inner_array;
+// 		inner_array = nullptr;
+// 	}
+// 	void mass_copy(const void* from, void* to, const uint32_t& item_count){
+// 		for (uint32_t i = 0; i < item_count; i++){
+// 			// *(T*)((size_t)to + (type_size * i)) = *(T*)((size_t)from + (type_size * i));
+// 			((T*)to)[i] = ((T*)from)[i];
+// 		}
+// 	}
+// 	void mass_alloc(void* at, const uint32_t& item_count){
+// 		for (uint32_t i = 0; i < item_count; i++){
+// 			auto item_ptr = ((T*)at)[i];
+// 			new (item_ptr) T();
+// 		}
+// 	}
+// 	void mass_delete(void* at, const uint32_t& item_count){
+// 		for (uint32_t i = 0; i < item_count; i++){
+// 			auto item_ptr = ((T*)at)[i];
+// 			item_ptr->~T();
+// 		}
+// 	}
+// public:
+// 	_FORCE_INLINE_ CArray(){
+// 		type_size = sizeof(T);
+// 		inner_array = new CArrayPrivate();
+// 		inner_array->refcount.init();
+// 	}
+// 	_FORCE_INLINE_ CArray(const CArray& from){
+// 		type_size = sizeof(T);
+// 		_unref();
+// 		_ref(from);
+// 	}
+// 	_FORCE_INLINE_ ~CArray(){
+// 		_unref();
+// 	}
+// 	_FORCE_INLINE_ void reallocate(const uint32_t& new_size){
+// 		ERR_FAIL_COND(!inner_array || new_size < 0);
+// 		uint32_t delta = (new_size - inner_array->size);
+// 		uint32_t retained = new_size > inner_array->size ? inner_array->size : new_size;
+// 		delta = delta < 0 ? -delta : delta;
+// 		if (delta == 0) return;
+// 		void* new_ptr = malloc(type_size * new_size);
+// 		if (inner_array->size == 0){
+// 			mass_alloc(new_ptr, new_size);
+// 		}
+// 		else if (new_size == 0){
+// 			mass_delete(inner_array->ptr, inner_array->size);
+// 		}
+// 		else if (new_size > inner_array->size){
+// 			mass_copy(inner_array->ptr, new_ptr, retained);
+// 			mass_alloc((size_t)new_ptr + (type_size * inner_array->size), delta);
+// 		} else  {
+// 			mass_copy(inner_array->ptr, new_ptr, retained);
+// 			mass_delete((size_t)inner_array->ptr + (type_size * new_size), delta);
+// 		}
+// 		inner_array->ptr = new_ptr;
+// 		inner_array->size = new_size;
+// 	}
+// 	_FORCE_INLINE_ uint32_t size() const noexcept { 
+// 		ERR_FAIL_COND_V(!inner_array, 0);
+// 		return inner_array->size;
+// 	}
+// 	_FORCE_INLINE_ bool empty() const noexcept { return size() == 0; }
+// 	_FORCE_INLINE_ T& operator[](const uint32_t& idx){
+// 		ERR_FAIL_COND_V(!inner_array, *(new T()));
+// 		return (T*)(inner_array->ptr)[idx];
+// 	}
+// 	_FORCE_INLINE_ const T& operator[](const uint32_t& idx) const {
+// 		ERR_FAIL_COND_V(!inner_array, *(new T()));
+// 		return (T*)(inner_array->ptr)[idx];
+// 	}
+// 	_FORCE_INLINE_ void push_back(const T& val){
+// 		ERR_FAIL_COND(!inner_array);
+// 		reallocate(inner_array->size + 1);
+// 		(T*)(inner_array->ptr)[inner_array->size - 1] = val;
+// 	}
+// };
 
 template <class T> class WrappedVector {
 private:

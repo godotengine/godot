@@ -1,12 +1,14 @@
 #ifndef RTSCOM_META_H
 #define RTSCOM_META_H
 
+// #include <string>
 
 #include "servers/physics_server.h"
 #include "core/reference.h"
 #include "core/string_name.h"
 #include "core/script_language.h"
 #include "core/print_string.h"
+#include "core/list.h"
 #include "rcs_types.h"
 
 #define MAX_ALLOCATABLE_WORKER_PER_OBJECT 4

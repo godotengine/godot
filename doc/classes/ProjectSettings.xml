@@ -205,6 +205,9 @@
 			The project's name. It is used both by the Project Manager and by exporters. The project name can be translated by translating its value in localization files. The window title will be set to match the project name automatically on startup.
 			[b]Note:[/b] Changing this value will also change the user data folder's path if [member application/config/use_custom_user_dir] is [code]false[/code]. After renaming the project, you will no longer be able to access existing data in [code]user://[/code] unless you rename the old folder to match the new project name. See [url=$DOCS_URL/tutorials/io/data_paths.html]Data paths[/url] in the documentation for more information.
 		</member>
+		<member name="application/config/ignore_project_settings_override" type="bool" setter="" getter="" default="&quot;&quot;">
+			Allow or disallow the engine to override project.godot or project.binary with a override.cfg file which live in the same directory as the application data pack.
+		</member>
 		<member name="application/config/project_settings_override" type="String" setter="" getter="" default="&quot;&quot;">
 			Specifies a file to override project settings. For example: [code]user://custom_settings.cfg[/code]. See "Overriding" in the [ProjectSettings] class description at the top for more information.
 			[b]Note:[/b] Regardless of this setting's value, [code]res://override.cfg[/code] will still be read to override the project settings.

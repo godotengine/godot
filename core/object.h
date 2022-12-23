@@ -789,7 +789,7 @@ class ObjectDB {
 public:
 	typedef void (*DebugFunc)(Object *p_obj);
 
-	static Object *get_instance(ObjectID p_instance_id);
+	static Object *get_instance(const ObjectID& p_instance_id);
 	static void debug_objects(DebugFunc p_func);
 	static int get_object_count();
 

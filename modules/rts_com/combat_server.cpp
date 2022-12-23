@@ -114,16 +114,16 @@ RCSMemoryAllocation::~RCSMemoryAllocation(){
 	tracker_ptr = nullptr;
 }
 
-void *operator new(size_t size){
-	RCSMemoryAllocation::tracker_ptr->add_allocated(size);
-	// print_verbose(String("{Sentrience:allocator] ") + String(p_description));
-	return malloc(size);
-}
+// void *operator new(size_t size){
+// 	RCSMemoryAllocation::tracker_ptr->add_allocated(size);
+// 	// print_verbose(String("{Sentrience:allocator] ") + String(p_description));
+// 	return malloc(size);
+// }
 
-void operator delete(void* memory, size_t size){
-	RCSMemoryAllocation::tracker_ptr->add_deallocated(size);
-	free(memory);
-}
+// void operator delete(void* memory, size_t size){
+// 	RCSMemoryAllocation::tracker_ptr->add_deallocated(size);
+// 	free(memory);
+// }
 
 void SentrienceContext::_bind_methods(){
 	ClassDB::bind_method(D_METHOD("flush_all"), &SentrienceContext::flush_all);
@@ -376,8 +376,6 @@ void Sentrience::_bind_methods(){
 	ClassDB::bind_method(D_METHOD("combatant_get_local_transform", "r_com"), &Sentrience::combatant_get_local_transform);
 	ClassDB::bind_method(D_METHOD("combatant_get_space_transform", "r_com"), &Sentrience::combatant_get_space_transform);
 	ClassDB::bind_method(D_METHOD("combatant_get_combined_transform", "r_com"), &Sentrience::combatant_get_combined_transform);
-	ClassDB::bind_method(D_METHOD("combatant_set_stand", "r_com", "stand"), &Sentrience::combatant_set_stand);
-	ClassDB::bind_method(D_METHOD("combatant_get_stand", "r_com"), &Sentrience::combatant_get_stand);
 	ClassDB::bind_method(D_METHOD("combatant_get_status", "r_com"), &Sentrience::combatant_get_status);
 	ClassDB::bind_method(D_METHOD("combatant_set_iid", "r_com", "iid"), &Sentrience::combatant_set_iid);
 	ClassDB::bind_method(D_METHOD("combatant_get_iid", "r_com"), &Sentrience::combatant_get_iid);
@@ -429,7 +427,7 @@ void Sentrience::_bind_methods(){
 	ClassDB::bind_method(D_METHOD("radar_set_simulation", "r_rad", "r_simul"), &Sentrience::radar_set_simulation);
 	ClassDB::bind_method(D_METHOD("radar_set_profile", "r_rad", "profile"), &Sentrience::radar_set_profile);
 	ClassDB::bind_method(D_METHOD("radar_get_profile", "r_rad"), &Sentrience::radar_get_profile);
-	ClassDB::bind_method(D_METHOD("radar_request_recheck_on", "r_rad", "r_com"), &Sentrience::radar_request_recheck_on);
+	ClassDB::bind_method(D_METHOD("request_radar_recheck_on", "r_rad", "r_com"), &Sentrience::request_radar_recheck_on);
 	ClassDB::bind_method(D_METHOD("radar_get_detected", "r_rad"), &Sentrience::radar_get_detected);
 	ClassDB::bind_method(D_METHOD("radar_get_locked", "r_rad"), &Sentrience::radar_get_locked);
 }
@@ -636,25 +634,25 @@ uint32_t Sentrience::simulation_count_combatant(const RID_TYPE& r_simul){
 	SIMULATION_THREAD_SAFE;
 	auto simulation = simulation_owner.get(r_simul);
 	ERR_FAIL_COND_V(!simulation, 0);
-	return simulation->get_combatants()->size();
+	return simulation->count_combatants();
 }
 uint32_t Sentrience::simulation_count_squad(const RID_TYPE& r_simul){
 	SIMULATION_THREAD_SAFE;
 	auto simulation = simulation_owner.get(r_simul);
 	ERR_FAIL_COND_V(!simulation, 0);
-	return simulation->get_squads()->size();
+	return simulation->count_squads();
 }
 uint32_t Sentrience::simulation_count_team(const RID_TYPE& r_simul){
 	SIMULATION_THREAD_SAFE;
 	auto simulation = simulation_owner.get(r_simul);
 	ERR_FAIL_COND_V(!simulation, 0);
-	return simulation->get_teams()->size();
+	return simulation->count_teams();
 }
 uint32_t Sentrience::simulation_count_radar(const RID_TYPE& r_simul){
 	SIMULATION_THREAD_SAFE;
 	auto simulation = simulation_owner.get(r_simul);
 	ERR_FAIL_COND_V(!simulation, 0);
-	return simulation->get_radars()->size();
+	return simulation->count_radars();
 }
 uint32_t Sentrience::simulation_count_engagement(const RID_TYPE& r_simul){
 	SIMULATION_THREAD_SAFE;
@@ -666,10 +664,10 @@ uint32_t Sentrience::simulation_count_all_instances(const RID_TYPE& r_simul){
 	SIMULATION_THREAD_SAFE;
 	auto simulation = simulation_owner.get(r_simul);
 	ERR_FAIL_COND_V(!simulation, 0);
-	return (simulation->get_combatants()->size()	+
-			simulation->get_squads()->size()		+
-			simulation->get_teams()->size()			+
-			simulation->get_radars()->size()		 );
+	return (simulation->count_combatants()	+
+			simulation->count_squads()		+
+			simulation->count_teams()		+
+			simulation->count_radars());
 }
 
 RID_TYPE Sentrience::combatant_create(){
@@ -757,19 +755,6 @@ Transform Sentrience::combatant_get_combined_transform(const RID_TYPE& r_com){
 	ERR_FAIL_COND_V(!combatant, Transform());
 	return combatant->get_combined_transform();
 }
-
-void Sentrience::combatant_set_stand(const RID_TYPE& r_com, const uint32_t& stand){
-	COMBATANTS_THREAD_SAFE;
-	auto combatant = combatant_owner.get(r_com);
-	ERR_FAIL_COND(!combatant);
-	combatant->set_stand(stand);
-}
-uint32_t Sentrience::combatant_get_stand(const RID_TYPE& r_com){
-	COMBATANTS_THREAD_SAFE;
-	auto combatant = combatant_owner.get(r_com);
-	ERR_FAIL_COND_V(!combatant, 0);
-	return combatant->get_stand();
-}
 uint32_t Sentrience::combatant_get_status(const RID_TYPE& r_com){
 	COMBATANTS_THREAD_SAFE;
 	auto combatant = combatant_owner.get(r_com);
@@ -836,6 +821,19 @@ Ref<RCSCombatantProfile> Sentrience::combatant_get_profile(const RID_TYPE& r_com
 	auto combatant = combatant_owner.get(r_com);
 	ERR_FAIL_COND_V(!combatant, Ref<RCSCombatantProfile>());
 	return combatant->get_profile();
+}
+
+void Sentrience::combatant_set_projectile_profile(const RID_TYPE& r_com, const Ref<RCSProjectileProfile>& profile){
+	COMBATANTS_THREAD_SAFE;
+	auto combatant = combatant_owner.get(r_com);
+	ERR_FAIL_COND(!combatant);
+	combatant->set_projectile_profile(profile);
+}
+Ref<RCSProjectileProfile> Sentrience::combatant_get_projectile_profile(const RID_TYPE& r_com){
+	COMBATANTS_THREAD_SAFE;
+	auto combatant = combatant_owner.get(r_com);
+	ERR_FAIL_COND_V(!combatant, Ref<RCSProjectileProfile>());
+	return combatant->get_projectile_profile();
 }
 
 RID_TYPE Sentrience::squad_create(){
@@ -1083,14 +1081,14 @@ Ref<RCSRadarProfile> Sentrience::radar_get_profile(const RID_TYPE& r_rad){
 	ERR_FAIL_COND_V(!radar, Ref<RCSRadarProfile>());
 	return radar->get_profile();
 }
-void Sentrience::radar_request_recheck_on(const RID_TYPE& r_rad, const RID_TYPE& r_com){
+void Sentrience::request_radar_recheck_on(const RID_TYPE& r_rad, const RID_TYPE& r_com){
 	RADARS_THREAD_SAFE;
 	auto radar = radar_owner.get(r_rad);
 	auto combatant = combatant_owner.get(r_com);
 	ERR_FAIL_COND(!radar || !combatant);
 	auto simulation = radar->simulation;
 	ERR_FAIL_COND(!simulation);
-	simulation->radar_request_recheck(new RadarRecheckTicket(radar, combatant));
+	simulation->demand_radar_recheck(new RadarRecheckTicket(radar, combatant));
 }
 Vector<RID_TYPE> Sentrience::radar_get_detected(const RID_TYPE& r_rad){
 	RADARS_THREAD_SAFE;

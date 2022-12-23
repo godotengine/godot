@@ -76,6 +76,7 @@ public:
 	};
 
 protected:
+	Error _load_override_settings(const String& p_path, const bool& p_ignore_override);
 	struct VariantContainer {
 		int order;
 		bool persist;

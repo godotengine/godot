@@ -43,7 +43,8 @@ SettingsServer::SettingsServer(){
 	last_window_pos = OS::get_singleton()->get_window_position();
 
 	// if (!Engine::get_singleton()->is_editor_hint())
-	// 	OS::get_singleton()->set_window_resizable(false);
+	// OS::get_singleton()->set_window_resizable(true);
+	// OS::get_singleton()->set_window_maximized(true);
 
 	// auto main_loop = OS::get_singleton()->get_main_loop();
 	// ERR_FAIL_COND(!main_loop->is_class("SceneTree"));
@@ -137,14 +138,15 @@ void SettingsServer::set_vp_internal(Viewport* vp){
 	main_viewport = vp;
 	// current_resolution = main_viewport->get_size();
 	current_resolution = default_window_size;
-	set_res_internal();
-	load_gpp_internal();
+	if (!Engine::get_singleton()->is_editor_hint()){
+		set_res_internal();
+		load_gpp_internal();
+	}
 }
 
 void SettingsServer::set_main_viewport(Node* vp){
-	if (vp && vp->is_class("Viewport")) {
-		set_vp_internal((Viewport*)vp);
-	}
+	auto casted = dynamic_cast<Viewport*>(vp);
+	if (casted) set_vp_internal(casted);
 }
 
 void SettingsServer::set_ssaa_internal(const float& val){

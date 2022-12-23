@@ -332,6 +332,17 @@ void ProjectSettings::_convert_to_last_version(int p_from_version) {
 	}
 }
 
+Error ProjectSettings::_load_override_settings(const String& p_path, const bool& p_ignore_override){
+	bool user_ignore_override = false;
+	if (!p_ignore_override){
+		auto fetched = get_setting("application/config/ignore_project_settings_override");
+		if (fetched.get_type() == Variant::BOOL) user_ignore_override = (bool)fetched;
+	}
+	if (!p_ignore_override && !user_ignore_override)
+		return _load_settings_text(p_path);
+	return OK;
+}
+
 /*
  * This method is responsible for loading a project.godot file and/or data file
  * using the following merit order:
@@ -364,7 +375,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		Error err = _load_settings_text_or_binary("res://project.godot", "res://project.binary");
 		if (err == OK && !p_ignore_override) {
 			// Optional, we don't mind if it fails
-			_load_settings_text("res://override.cfg");
+			_load_override_settings("res://override.cfg", p_ignore_override);
 		}
 		return err;
 	}
@@ -379,7 +390,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		if (err == OK && !p_ignore_override) {
 			// Load override from location of the main pack
 			// Optional, we don't mind if it fails
-			_load_settings_text(p_main_pack.get_base_dir().plus_file("override.cfg"));
+			_load_override_settings(p_main_pack.get_base_dir().plus_file("override.cfg"), p_ignore_override);
 		}
 		return err;
 	}
@@ -429,7 +440,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 			if (err == OK && !p_ignore_override) {
 				// Load override from location of the executable.
 				// Optional, we don't mind if it fails.
-				_load_settings_text(exec_path.get_base_dir().plus_file("override.cfg"));
+				_load_override_settings(exec_path.get_base_dir().plus_file("override.cfg"), p_ignore_override);
 			}
 			return err;
 		}
@@ -449,7 +460,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		Error err = _load_settings_text_or_binary("res://project.godot", "res://project.binary");
 		if (err == OK && !p_ignore_override) {
 			// Optional, we don't mind if it fails.
-			_load_settings_text("res://override.cfg");
+			_load_override_settings("res://override.cfg", p_ignore_override);
 		}
 		return err;
 	}
@@ -470,7 +481,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 		err = _load_settings_text_or_binary(current_dir.plus_file("project.godot"), current_dir.plus_file("project.binary"));
 		if (err == OK && !p_ignore_override) {
 			// Optional, we don't mind if it fails.
-			_load_settings_text(current_dir.plus_file("override.cfg"));
+			_load_override_settings(current_dir.plus_file("override.cfg"), p_ignore_override);
 			candidate = current_dir;
 			found = true;
 			break;
@@ -1059,6 +1070,7 @@ ProjectSettings::ProjectSettings() {
 	Ref<InputEventJoypadButton> joyb;
 
 	GLOBAL_DEF("application/config/name", "");
+	GLOBAL_DEF("application/config/ignore_project_settings_override", false);
 	GLOBAL_DEF("application/config/description", "");
 	custom_prop_info["application/config/description"] = PropertyInfo(Variant::STRING, "application/config/description", PROPERTY_HINT_MULTILINE_TEXT);
 	GLOBAL_DEF("application/run/main_scene", "");
