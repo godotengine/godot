@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2022 University of Cambridge
+          New API code Copyright (c) 2016-2018 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -65,8 +65,9 @@ POSSIBILITY OF SUCH DAMAGE.
 #define STR_QUERY_s STR_LEFT_PARENTHESIS STR_QUESTION_MARK STR_s STR_RIGHT_PARENTHESIS
 #define STR_STAR_NUL STR_LEFT_PARENTHESIS STR_ASTERISK STR_N STR_U STR_L STR_RIGHT_PARENTHESIS
 
-/* States for POSIX processing */
+/* States for range and POSIX processing */
 
+enum { RANGE_NOT_STARTED, RANGE_STARTING, RANGE_STARTED };
 enum { POSIX_START_REGEX, POSIX_ANCHORED, POSIX_NOT_BRACKET,
        POSIX_CLASS_NOT_STARTED, POSIX_CLASS_STARTING, POSIX_CLASS_STARTED };
 
