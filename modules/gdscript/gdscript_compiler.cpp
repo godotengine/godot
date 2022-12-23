@@ -2637,10 +2637,6 @@ Error GDScriptCompiler::_compile_class(GDScript *p_script, const GDScriptParser:
 		}
 	}
 
-#ifdef TOOLS_ENABLED
-	p_script->_update_doc();
-#endif
-
 	p_script->_init_rpc_methods_properties();
 
 	p_script->valid = true;
@@ -2724,6 +2720,10 @@ Error GDScriptCompiler::compile(const GDScriptParser *p_parser, GDScript *p_scri
 	if (err) {
 		return err;
 	}
+
+#ifdef TOOLS_ENABLED
+	p_script->_update_doc();
+#endif
 
 	return GDScriptCache::finish_compiling(main_script->get_path());
 }
