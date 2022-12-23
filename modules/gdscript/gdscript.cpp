@@ -629,6 +629,10 @@ void GDScript::_update_doc() {
 		}
 	}
 
+	for (KeyValue<StringName, Ref<GDScript>> &E : subclasses) {
+		E.value->_update_doc();
+	}
+
 	_add_doc(doc);
 }
 #endif
