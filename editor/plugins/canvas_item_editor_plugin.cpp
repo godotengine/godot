@@ -135,7 +135,7 @@ public:
 		label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 		grid_step_x = memnew(SpinBox);
-		grid_step_x->set_min(0.01);
+		grid_step_x->set_min(1);
 		grid_step_x->set_max(SPIN_BOX_GRID_RANGE);
 		grid_step_x->set_allow_greater(true);
 		grid_step_x->set_suffix("px");
@@ -144,7 +144,7 @@ public:
 		child_container->add_child(grid_step_x);
 
 		grid_step_y = memnew(SpinBox);
-		grid_step_y->set_min(0.01);
+		grid_step_y->set_min(1);
 		grid_step_y->set_max(SPIN_BOX_GRID_RANGE);
 		grid_step_y->set_allow_greater(true);
 		grid_step_y->set_suffix("px");
