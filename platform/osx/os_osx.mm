@@ -818,7 +818,7 @@ static void _mouseDownEvent(NSEvent *event, int index, int mask, bool pressed) {
 	NSEventSubtype subtype = [event subtype];
 	if (subtype == NSEventSubtypeTabletPoint) {
 		const NSPoint p = [event tilt];
-		mm->set_tilt(Vector2(p.x, p.y));
+		mm->set_tilt(Vector2(p.x, -p.y));
 		mm->set_pen_inverted(OS_OSX::singleton->last_pen_inverted);
 	} else if (subtype == NSEventSubtypeTabletProximity) {
 		// Check if using the eraser end of pen only on proximity event.
