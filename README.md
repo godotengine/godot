@@ -1,4 +1,4 @@
-# Godot Engine
+# Godot Game Engine
 
 <p align="center">
   <a href="https://godotengine.org">
@@ -8,7 +8,7 @@
 
 ## 2D and 3D cross-platform game engine
 
-**[Godot Engine](https://godotengine.org) is a feature-packed, cross-platform
+**[Godot](https://godotengine.org) is a feature-packed, cross-platform
 game engine to create 2D and 3D games from a unified interface.** It provides a
 comprehensive set of [common tools](https://godotengine.org/features), so that users can focus on making games
 without having to reinvent the wheel. Games can be exported with one click to a
