@@ -540,6 +540,9 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 
 			drag_event->set_position(position);
 			drag_event->set_relative(relative);
+			drag_event->set_tilt(mm->get_tilt());
+			drag_event->set_pen_inverted(mm->get_pen_inverted());
+			drag_event->set_pressure(mm->get_pressure());
 			drag_event->set_velocity(get_last_mouse_velocity());
 
 			event_dispatch_function(drag_event);
@@ -605,6 +608,9 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 			motion_event.instantiate();
 
 			motion_event->set_device(InputEvent::DEVICE_ID_TOUCH_MOUSE);
+			motion_event->set_tilt(sd->get_tilt());
+			motion_event->set_pen_inverted(sd->get_pen_inverted());
+			motion_event->set_pressure(sd->get_pressure());
 			motion_event->set_position(sd->get_position());
 			motion_event->set_global_position(sd->get_position());
 			motion_event->set_relative(sd->get_relative());
