@@ -570,7 +570,7 @@ Exclude:
 ## pcre2
 
 - Upstream: http://www.pcre.org
-- Version: 10.40 (3103b8f20a3b9944b177e812fde29fbfb8b90558, 2022)
+- Version: 10.42 (52c08847921a324c804cabf2814549f50bce1265, 2022)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
