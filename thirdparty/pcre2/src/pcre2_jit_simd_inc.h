@@ -776,7 +776,7 @@ typedef union {
 } int_char;
 
 #if defined SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH != 32
-static SLJIT_INLINE int utf_continue(sljit_u8 *s)
+static SLJIT_INLINE int utf_continue(PCRE2_SPTR s)
 {
 #if PCRE2_CODE_UNIT_WIDTH == 8
 return (*s & 0xc0) == 0x80;
