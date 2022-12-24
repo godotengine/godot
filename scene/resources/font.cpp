@@ -270,24 +270,18 @@ void Font::set_cache_capacity(int p_single_line, int p_multi_line) {
 }
 
 Size2 Font::get_string_size(const String &p_text, HorizontalAlignment p_alignment, float p_width, int p_font_size, BitField<TextServer::JustificationFlag> p_jst_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation) const {
-	uint64_t hash = p_text.hash64();
-	hash = hash_djb2_one_64(p_font_size, hash);
-	if (p_alignment == HORIZONTAL_ALIGNMENT_FILL) {
-		hash = hash_djb2_one_64(hash_murmur3_one_float(p_width), hash);
-		hash = hash_djb2_one_64(p_jst_flags.operator int64_t(), hash);
-	}
-	hash = hash_djb2_one_64(p_direction, hash);
-	hash = hash_djb2_one_64(p_orientation, hash);
+	bool fill = (p_alignment == HORIZONTAL_ALIGNMENT_FILL);
+	ShapedTextKey key = ShapedTextKey(p_text, p_font_size, fill ? p_width : 0.0, fill ? p_jst_flags : TextServer::JUSTIFICATION_NONE, TextServer::BREAK_NONE, p_direction, p_orientation);
 
 	Ref<TextLine> buffer;
-	if (cache.has(hash)) {
-		buffer = cache.get(hash);
+	if (cache.has(key)) {
+		buffer = cache.get(key);
 	} else {
 		buffer.instantiate();
 		buffer->set_direction(p_direction);
 		buffer->set_orientation(p_orientation);
 		buffer->add_string(p_text, Ref<Font>(this), p_font_size);
-		cache.insert(hash, buffer);
+		cache.insert(key, buffer);
 	}
 
 	buffer->set_width(p_width);
@@ -300,17 +294,11 @@ Size2 Font::get_string_size(const String &p_text, HorizontalAlignment p_alignmen
 }
 
 Size2 Font::get_multiline_string_size(const String &p_text, HorizontalAlignment p_alignment, float p_width, int p_font_size, int p_max_lines, BitField<TextServer::LineBreakFlag> p_brk_flags, BitField<TextServer::JustificationFlag> p_jst_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation) const {
-	uint64_t hash = p_text.hash64();
-	hash = hash_djb2_one_64(p_font_size, hash);
-	hash = hash_djb2_one_64(hash_murmur3_one_float(p_width), hash);
-	hash = hash_djb2_one_64(p_brk_flags.operator int64_t(), hash);
-	hash = hash_djb2_one_64(p_jst_flags.operator int64_t(), hash);
-	hash = hash_djb2_one_64(p_direction, hash);
-	hash = hash_djb2_one_64(p_orientation, hash);
+	ShapedTextKey key = ShapedTextKey(p_text, p_font_size, p_width, p_jst_flags, p_brk_flags, p_direction, p_orientation);
 
 	Ref<TextParagraph> lines_buffer;
-	if (cache_wrap.has(hash)) {
-		lines_buffer = cache_wrap.get(hash);
+	if (cache_wrap.has(key)) {
+		lines_buffer = cache_wrap.get(key);
 	} else {
 		lines_buffer.instantiate();
 		lines_buffer->set_direction(p_direction);
@@ -319,7 +307,7 @@ Size2 Font::get_multiline_string_size(const String &p_text, HorizontalAlignment 
 		lines_buffer->set_width(p_width);
 		lines_buffer->set_break_flags(p_brk_flags);
 		lines_buffer->set_justification_flags(p_jst_flags);
-		cache_wrap.insert(hash, lines_buffer);
+		cache_wrap.insert(key, lines_buffer);
 	}
 
 	lines_buffer->set_alignment(p_alignment);
@@ -329,24 +317,18 @@ Size2 Font::get_multiline_string_size(const String &p_text, HorizontalAlignment 
 }
 
 void Font::draw_string(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment, float p_width, int p_font_size, const Color &p_modulate, BitField<TextServer::JustificationFlag> p_jst_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation) const {
-	uint64_t hash = p_text.hash64();
-	hash = hash_djb2_one_64(p_font_size, hash);
-	if (p_alignment == HORIZONTAL_ALIGNMENT_FILL) {
-		hash = hash_djb2_one_64(hash_murmur3_one_float(p_width), hash);
-		hash = hash_djb2_one_64(p_jst_flags.operator int64_t(), hash);
-	}
-	hash = hash_djb2_one_64(p_direction, hash);
-	hash = hash_djb2_one_64(p_orientation, hash);
+	bool fill = (p_alignment == HORIZONTAL_ALIGNMENT_FILL);
+	ShapedTextKey key = ShapedTextKey(p_text, p_font_size, fill ? p_width : 0.0, fill ? p_jst_flags : TextServer::JUSTIFICATION_NONE, TextServer::BREAK_NONE, p_direction, p_orientation);
 
 	Ref<TextLine> buffer;
-	if (cache.has(hash)) {
-		buffer = cache.get(hash);
+	if (cache.has(key)) {
+		buffer = cache.get(key);
 	} else {
 		buffer.instantiate();
 		buffer->set_direction(p_direction);
 		buffer->set_orientation(p_orientation);
 		buffer->add_string(p_text, Ref<Font>(this), p_font_size);
-		cache.insert(hash, buffer);
+		cache.insert(key, buffer);
 	}
 
 	Vector2 ofs = p_pos;
@@ -366,17 +348,11 @@ void Font::draw_string(RID p_canvas_item, const Point2 &p_pos, const String &p_t
 }
 
 void Font::draw_multiline_string(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment, float p_width, int p_font_size, int p_max_lines, const Color &p_modulate, BitField<TextServer::LineBreakFlag> p_brk_flags, BitField<TextServer::JustificationFlag> p_jst_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation) const {
-	uint64_t hash = p_text.hash64();
-	hash = hash_djb2_one_64(p_font_size, hash);
-	hash = hash_djb2_one_64(hash_murmur3_one_float(p_width), hash);
-	hash = hash_djb2_one_64(p_brk_flags.operator int64_t(), hash);
-	hash = hash_djb2_one_64(p_jst_flags.operator int64_t(), hash);
-	hash = hash_djb2_one_64(p_direction, hash);
-	hash = hash_djb2_one_64(p_orientation, hash);
+	ShapedTextKey key = ShapedTextKey(p_text, p_font_size, p_width, p_jst_flags, p_brk_flags, p_direction, p_orientation);
 
 	Ref<TextParagraph> lines_buffer;
-	if (cache_wrap.has(hash)) {
-		lines_buffer = cache_wrap.get(hash);
+	if (cache_wrap.has(key)) {
+		lines_buffer = cache_wrap.get(key);
 	} else {
 		lines_buffer.instantiate();
 		lines_buffer->set_direction(p_direction);
@@ -385,7 +361,7 @@ void Font::draw_multiline_string(RID p_canvas_item, const Point2 &p_pos, const S
 		lines_buffer->set_width(p_width);
 		lines_buffer->set_break_flags(p_brk_flags);
 		lines_buffer->set_justification_flags(p_jst_flags);
-		cache_wrap.insert(hash, lines_buffer);
+		cache_wrap.insert(key, lines_buffer);
 	}
 
 	Vector2 ofs = p_pos;
@@ -402,24 +378,18 @@ void Font::draw_multiline_string(RID p_canvas_item, const Point2 &p_pos, const S
 }
 
 void Font::draw_string_outline(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment, float p_width, int p_font_size, int p_size, const Color &p_modulate, BitField<TextServer::JustificationFlag> p_jst_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation) const {
-	uint64_t hash = p_text.hash64();
-	hash = hash_djb2_one_64(p_font_size, hash);
-	if (p_alignment == HORIZONTAL_ALIGNMENT_FILL) {
-		hash = hash_djb2_one_64(hash_murmur3_one_float(p_width), hash);
-		hash = hash_djb2_one_64(p_jst_flags.operator int64_t(), hash);
-	}
-	hash = hash_djb2_one_64(p_direction, hash);
-	hash = hash_djb2_one_64(p_orientation, hash);
+	bool fill = (p_alignment == HORIZONTAL_ALIGNMENT_FILL);
+	ShapedTextKey key = ShapedTextKey(p_text, p_font_size, fill ? p_width : 0.0, fill ? p_jst_flags : TextServer::JUSTIFICATION_NONE, TextServer::BREAK_NONE, p_direction, p_orientation);
 
 	Ref<TextLine> buffer;
-	if (cache.has(hash)) {
-		buffer = cache.get(hash);
+	if (cache.has(key)) {
+		buffer = cache.get(key);
 	} else {
 		buffer.instantiate();
 		buffer->set_direction(p_direction);
 		buffer->set_orientation(p_orientation);
 		buffer->add_string(p_text, Ref<Font>(this), p_font_size);
-		cache.insert(hash, buffer);
+		cache.insert(key, buffer);
 	}
 
 	Vector2 ofs = p_pos;
@@ -439,17 +409,11 @@ void Font::draw_string_outline(RID p_canvas_item, const Point2 &p_pos, const Str
 }
 
 void Font::draw_multiline_string_outline(RID p_canvas_item, const Point2 &p_pos, const String &p_text, HorizontalAlignment p_alignment, float p_width, int p_font_size, int p_max_lines, int p_size, const Color &p_modulate, BitField<TextServer::LineBreakFlag> p_brk_flags, BitField<TextServer::JustificationFlag> p_jst_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation) const {
-	uint64_t hash = p_text.hash64();
-	hash = hash_djb2_one_64(p_font_size, hash);
-	hash = hash_djb2_one_64(hash_murmur3_one_float(p_width), hash);
-	hash = hash_djb2_one_64(p_brk_flags.operator int64_t(), hash);
-	hash = hash_djb2_one_64(p_jst_flags.operator int64_t(), hash);
-	hash = hash_djb2_one_64(p_direction, hash);
-	hash = hash_djb2_one_64(p_orientation, hash);
+	ShapedTextKey key = ShapedTextKey(p_text, p_font_size, p_width, p_jst_flags, p_brk_flags, p_direction, p_orientation);
 
 	Ref<TextParagraph> lines_buffer;
-	if (cache_wrap.has(hash)) {
-		lines_buffer = cache_wrap.get(hash);
+	if (cache_wrap.has(key)) {
+		lines_buffer = cache_wrap.get(key);
 	} else {
 		lines_buffer.instantiate();
 		lines_buffer->set_direction(p_direction);
@@ -458,7 +422,7 @@ void Font::draw_multiline_string_outline(RID p_canvas_item, const Point2 &p_pos,
 		lines_buffer->set_width(p_width);
 		lines_buffer->set_break_flags(p_brk_flags);
 		lines_buffer->set_justification_flags(p_jst_flags);
-		cache_wrap.insert(hash, lines_buffer);
+		cache_wrap.insert(key, lines_buffer);
 	}
 
 	Vector2 ofs = p_pos;

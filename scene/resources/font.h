@@ -47,9 +47,44 @@ class TextParagraph;
 class Font : public Resource {
 	GDCLASS(Font, Resource);
 
+	struct ShapedTextKey {
+		String text;
+		int font_size = 14;
+		float width = 0.f;
+		BitField<TextServer::JustificationFlag> jst_flags = TextServer::JUSTIFICATION_NONE;
+		BitField<TextServer::LineBreakFlag> brk_flags = TextServer::BREAK_MANDATORY;
+		TextServer::Direction direction = TextServer::DIRECTION_AUTO;
+		TextServer::Orientation orientation = TextServer::ORIENTATION_HORIZONTAL;
+
+		bool operator==(const ShapedTextKey &p_b) const {
+			return (font_size == p_b.font_size) && (width == p_b.width) && (jst_flags == p_b.jst_flags) && (brk_flags == p_b.brk_flags) && (direction == p_b.direction) && (orientation == p_b.orientation) && (text == p_b.text);
+		}
+
+		ShapedTextKey() {}
+		ShapedTextKey(const String &p_text, int p_font_size, float p_width, BitField<TextServer::JustificationFlag> p_jst_flags, BitField<TextServer::LineBreakFlag> p_brk_flags, TextServer::Direction p_direction, TextServer::Orientation p_orientation) {
+			text = p_text;
+			font_size = p_font_size;
+			width = p_width;
+			jst_flags = p_jst_flags;
+			brk_flags = p_brk_flags;
+			direction = p_direction;
+			orientation = p_orientation;
+		}
+	};
+
+	struct ShapedTextKeyHasher {
+		_FORCE_INLINE_ static uint32_t hash(const ShapedTextKey &p_a) {
+			uint32_t hash = p_a.text.hash();
+			hash = hash_murmur3_one_32(p_a.font_size, hash);
+			hash = hash_murmur3_one_float(p_a.width, hash);
+			hash = hash_murmur3_one_32(p_a.brk_flags | (p_a.jst_flags << 6) | (p_a.direction << 12) | (p_a.orientation << 15), hash);
+			return hash_fmix32(hash);
+		}
+	};
+
 	// Shaped string cache.
-	mutable LRUCache<uint64_t, Ref<TextLine>> cache;
-	mutable LRUCache<uint64_t, Ref<TextParagraph>> cache_wrap;
+	mutable LRUCache<ShapedTextKey, Ref<TextLine>, ShapedTextKeyHasher> cache;
+	mutable LRUCache<ShapedTextKey, Ref<TextParagraph>, ShapedTextKeyHasher> cache_wrap;
 
 protected:
 	// Output.
