@@ -123,7 +123,7 @@ namespace Godot
         /// <returns>The angle between the two vectors, in radians.</returns>
         public readonly real_t AngleToPoint(Vector2i to)
         {
-            return Mathf.Atan2(y - to.y, x - to.x);
+            return Mathf.Atan2(to.y - y, to.x - x);
         }
 
         /// <summary>
