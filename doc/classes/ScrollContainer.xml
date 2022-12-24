@@ -86,6 +86,9 @@
 		<constant name="SCROLL_MODE_SHOW_NEVER" value="3" enum="ScrollMode">
 			Scrolling enabled, scrollbar will be hidden.
 		</constant>
+		<constant name="SCROLL_MODE_MANUAL" value="4" enum="ScrollMode">
+			Scrolling input will be ignored, scrollbar will be hidden and scrolling disabled except for scrolling in code i.e. by setting the value of [member scroll_horizontal] or [member scroll_vertical]. useful for customized scrolling like the usage of [Button]s to scroll.
+		</constant>
 	</constants>
 	<theme_items>
 		<theme_item name="panel" data_type="style" type="StyleBox">
