@@ -1690,17 +1690,21 @@ void CodeTextEditor::toggle_inline_comment(const String &delimiter) {
 			String line_text = text_editor->get_line(begin);
 			int delimiter_length = delimiter.length();
 
-			int col = text_editor->get_caret_column(c);
-			if (line_text.begins_with(delimiter)) {
+			bool has_delimiter = line_text.begins_with(delimiter);
+			if (has_delimiter) {
 				line_text = line_text.substr(delimiter_length, line_text.length());
-				col -= delimiter_length;
 			} else {
 				line_text = delimiter + line_text;
-				col += delimiter_length;
 			}
 
 			text_editor->set_line(begin, line_text);
-			text_editor->set_caret_column(col, c == 0, c);
+			if (caret_edit_order.size() == 1 && begin < text_editor->get_line_count() - 1) {
+				text_editor->set_caret_line(begin + 1, false);
+			} else {
+				int col = text_editor->get_caret_column(c);
+				int delta = has_delimiter ? -delimiter_length : delimiter_length;
+				text_editor->set_caret_column(col + delta, c == 0, c);
+			}
 		}
 	}
 	text_editor->merge_overlapping_carets();
