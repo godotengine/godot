@@ -3793,6 +3793,26 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 			variable->export_info.type = Variant::INT;
 		}
 	}
+	if (p_annotation->name == SNAME("@export_multiline")) {
+		if (export_type.builtin_type == Variant::ARRAY && export_type.has_container_element_type()) {
+			DataType inner_type = export_type.get_container_element_type();
+			if (inner_type.builtin_type != Variant::STRING) {
+				push_error(vformat(R"("%s" annotation on arrays requires a string type but type "%s" was given instead.)", p_annotation->name.operator String(), inner_type.to_string()), variable);
+				return false;
+			}
+
+			String hint_prefix = itos(inner_type.builtin_type) + "/" + itos(variable->export_info.hint);
+			variable->export_info.hint = PROPERTY_HINT_TYPE_STRING;
+			variable->export_info.hint_string = hint_prefix + ":" + variable->export_info.hint_string;
+			variable->export_info.type = Variant::ARRAY;
+
+			return true;
+		} else if (export_type.builtin_type == Variant::DICTIONARY) {
+			variable->export_info.type = Variant::DICTIONARY;
+
+			return true;
+		}
+	}
 
 	if (p_annotation->name == SNAME("@export")) {
 		if (variable->datatype_specifier == nullptr && variable->initializer == nullptr) {
