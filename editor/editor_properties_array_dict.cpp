@@ -818,6 +818,10 @@ void EditorPropertyDictionary::_change_type_menu(int p_index) {
 	update_property();
 }
 
+void EditorPropertyDictionary::setup(PropertyHint p_hint) {
+	property_hint = p_hint;
+}
+
 void EditorPropertyDictionary::update_property() {
 	Variant updated_val = get_edited_object()->get(get_edited_property());
 
@@ -929,7 +933,13 @@ void EditorPropertyDictionary::update_property() {
 					prop = editor;
 				} break;
 				case Variant::STRING: {
-					prop = memnew(EditorPropertyText);
+					if (i != amount && property_hint == PROPERTY_HINT_MULTILINE_TEXT) {
+						// If this is NOT the new key field and there's a multiline hint,
+						// show the field as multiline
+						prop = memnew(EditorPropertyMultilineText);
+					} else {
+						prop = memnew(EditorPropertyText);
+					}
 
 				} break;
 
