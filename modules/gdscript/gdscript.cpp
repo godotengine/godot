@@ -866,6 +866,8 @@ Error GDScript::reload(bool p_keep_state) {
 		return ERR_PARSE_ERROR;
 	}
 
+	GDScriptCompiler::make_scripts(this, parser.get_tree(), true);
+
 	GDScriptAnalyzer analyzer(&parser);
 	err = analyzer.analyze();
 
