@@ -297,7 +297,7 @@ namespace Godot.Bridge
 
                 foreach (var type in assembly.GetTypes())
                 {
-                    if (type.IsNested)
+                    if (type.IsNested || type.IsGenericType)
                         continue;
 
                     if (!typeOfGodotObject.IsAssignableFrom(type))
@@ -314,9 +314,12 @@ namespace Godot.Bridge
 
                 if (scriptTypes != null)
                 {
-                    for (int i = 0; i < scriptTypes.Length; i++)
+                    foreach (var type in scriptTypes)
                     {
-                        LookupScriptForClass(scriptTypes[i]);
+                        if (type.IsGenericType)
+                            continue;
+
+                        LookupScriptForClass(type);
                     }
                 }
             }
@@ -729,6 +732,7 @@ namespace Godot.Bridge
             {
                 ExceptionUtils.LogException(e);
                 *outTool = godot_bool.False;
+                *outMethodsDest = NativeFuncs.godotsharp_array_new();
                 *outRpcFunctionsDest = NativeFuncs.godotsharp_dictionary_new();
                 *outEventSignalsDest = NativeFuncs.godotsharp_dictionary_new();
                 *outBaseScript = default;
