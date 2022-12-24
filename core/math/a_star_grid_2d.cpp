@@ -134,13 +134,22 @@ AStarGrid2D::DiagonalMode AStarGrid2D::get_diagonal_mode() const {
 	return diagonal_mode;
 }
 
-void AStarGrid2D::set_default_heuristic(Heuristic p_heuristic) {
+void AStarGrid2D::set_default_compute_heuristic(Heuristic p_heuristic) {
 	ERR_FAIL_INDEX((int)p_heuristic, (int)HEURISTIC_MAX);
-	default_heuristic = p_heuristic;
+	default_compute_heuristic = p_heuristic;
 }
 
-AStarGrid2D::Heuristic AStarGrid2D::get_default_heuristic() const {
-	return default_heuristic;
+AStarGrid2D::Heuristic AStarGrid2D::get_default_compute_heuristic() const {
+	return default_compute_heuristic;
+}
+
+void AStarGrid2D::set_default_estimate_heuristic(Heuristic p_heuristic) {
+	ERR_FAIL_INDEX((int)p_heuristic, (int)HEURISTIC_MAX);
+	default_estimate_heuristic = p_heuristic;
+}
+
+AStarGrid2D::Heuristic AStarGrid2D::get_default_estimate_heuristic() const {
+	return default_estimate_heuristic;
 }
 
 void AStarGrid2D::set_point_solid(const Vector2i &p_id, bool p_solid) {
@@ -447,7 +456,7 @@ real_t AStarGrid2D::_estimate_cost(const Vector2i &p_from_id, const Vector2i &p_
 	if (GDVIRTUAL_CALL(_estimate_cost, p_from_id, p_to_id, scost)) {
 		return scost;
 	}
-	return heuristics[default_heuristic](p_from_id, p_to_id);
+	return heuristics[default_estimate_heuristic](p_from_id, p_to_id);
 }
 
 real_t AStarGrid2D::_compute_cost(const Vector2i &p_from_id, const Vector2i &p_to_id) {
@@ -455,7 +464,7 @@ real_t AStarGrid2D::_compute_cost(const Vector2i &p_from_id, const Vector2i &p_t
 	if (GDVIRTUAL_CALL(_compute_cost, p_from_id, p_to_id, scost)) {
 		return scost;
 	}
-	return heuristics[default_heuristic](p_from_id, p_to_id);
+	return heuristics[default_compute_heuristic](p_from_id, p_to_id);
 }
 
 void AStarGrid2D::clear() {
@@ -578,8 +587,10 @@ void AStarGrid2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_jumping_enabled"), &AStarGrid2D::is_jumping_enabled);
 	ClassDB::bind_method(D_METHOD("set_diagonal_mode", "mode"), &AStarGrid2D::set_diagonal_mode);
 	ClassDB::bind_method(D_METHOD("get_diagonal_mode"), &AStarGrid2D::get_diagonal_mode);
-	ClassDB::bind_method(D_METHOD("set_default_heuristic", "heuristic"), &AStarGrid2D::set_default_heuristic);
-	ClassDB::bind_method(D_METHOD("get_default_heuristic"), &AStarGrid2D::get_default_heuristic);
+	ClassDB::bind_method(D_METHOD("set_default_compute_heuristic", "heuristic"), &AStarGrid2D::set_default_compute_heuristic);
+	ClassDB::bind_method(D_METHOD("get_default_compute_heuristic"), &AStarGrid2D::get_default_compute_heuristic);
+	ClassDB::bind_method(D_METHOD("set_default_estimate_heuristic", "heuristic"), &AStarGrid2D::set_default_estimate_heuristic);
+	ClassDB::bind_method(D_METHOD("get_default_estimate_heuristic"), &AStarGrid2D::get_default_estimate_heuristic);
 	ClassDB::bind_method(D_METHOD("set_point_solid", "id", "solid"), &AStarGrid2D::set_point_solid, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("is_point_solid", "id"), &AStarGrid2D::is_point_solid);
 	ClassDB::bind_method(D_METHOD("set_point_weight_scale", "id", "weight_scale"), &AStarGrid2D::set_point_weight_scale);
@@ -598,8 +609,9 @@ void AStarGrid2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "cell_size"), "set_cell_size", "get_cell_size");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "jumping_enabled"), "set_jumping_enabled", "is_jumping_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "default_heuristic", PROPERTY_HINT_ENUM, "Euclidean,Manhattan,Octile,Chebyshev,Max"), "set_default_heuristic", "get_default_heuristic");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "diagonal_mode", PROPERTY_HINT_ENUM, "Never,Always,At Least One Walkable,Only If No Obstacles,Max"), "set_diagonal_mode", "get_diagonal_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "default_compute_heuristic", PROPERTY_HINT_ENUM, "Euclidean,Manhattan,Octile,Chebyshev"), "set_default_compute_heuristic", "get_default_compute_heuristic");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "default_estimate_heuristic", PROPERTY_HINT_ENUM, "Euclidean,Manhattan,Octile,Chebyshev"), "set_default_estimate_heuristic", "get_default_estimate_heuristic");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "diagonal_mode", PROPERTY_HINT_ENUM, "Never,Always,At Least One Walkable,Only If No Obstacles"), "set_diagonal_mode", "get_diagonal_mode");
 
 	BIND_ENUM_CONSTANT(HEURISTIC_EUCLIDEAN);
 	BIND_ENUM_CONSTANT(HEURISTIC_MANHATTAN);
