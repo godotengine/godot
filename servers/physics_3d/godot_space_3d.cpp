@@ -690,8 +690,12 @@ bool GodotSpace3D::test_body_motion(GodotBody3D *p_body, const PhysicsServer3D::
 	real_t min_contact_depth = margin * TEST_MOTION_MIN_CONTACT_DEPTH_FACTOR;
 
 	real_t motion_length = p_parameters.motion.length();
-	Vector3 motion_normal = p_parameters.motion / motion_length;
 
+	//#define USE_ITERATIVE
+
+#ifdef USE_ITERATIVE
+	Vector3 motion_normal = p_parameters.motion / motion_length;
+#endif
 	Transform3D body_transform = p_parameters.from;
 
 	bool recovered = false;
@@ -819,12 +823,12 @@ bool GodotSpace3D::test_body_motion(GodotBody3D *p_body, const PhysicsServer3D::
 			}
 
 			Transform3D body_shape_xform = body_transform * p_body->get_shape_transform(j);
-
+#ifdef USE_ITERATIVE
 			Transform3D body_shape_xform_inv = body_shape_xform.affine_inverse();
 			GodotMotionShape3D mshape;
 			mshape.shape = body_shape;
 			mshape.motion = body_shape_xform_inv.basis.xform(p_parameters.motion);
-
+#endif
 			bool stuck = false;
 
 			real_t best_safe = 1;
@@ -840,12 +844,30 @@ bool GodotSpace3D::test_body_motion(GodotBody3D *p_body, const PhysicsServer3D::
 				}
 
 				int shape_idx = intersection_query_subindex_results[i];
+				Transform3D col_obj_xform = col_obj->get_transform() * col_obj->get_shape_transform(shape_idx);
 
+#ifndef USE_ITERATIVE
+				real_t max_advance;
+				bool collided = GodotCollisionSolver3D::sweep(body_shape, body_shape_xform, col_obj->get_shape(shape_idx), col_obj_xform, p_parameters.motion, max_advance, motion_aabb, 0.001);
+
+				if (collided) {
+					if (max_advance == 0.0) {
+						stuck = true;
+						break;
+					}
+
+					real_t fraction = p_parameters.motion.length() / 64.0;
+					real_t from_safe = MAX(0, max_advance - fraction);
+					if (from_safe < best_safe) {
+						best_safe = from_safe;
+						best_unsafe = MIN(1.0, max_advance + fraction);
+					}
+				}
+#else
 				//test initial overlap, does it collide if going all the way?
 				Vector3 point_A, point_B;
 				Vector3 sep_axis = motion_normal;
 
-				Transform3D col_obj_xform = col_obj->get_transform() * col_obj->get_shape_transform(shape_idx);
 				//test initial overlap, does it collide if going all the way?
 				if (GodotCollisionSolver3D::solve_distance(&mshape, body_shape_xform, col_obj->get_shape(shape_idx), col_obj_xform, point_A, point_B, motion_aabb, &sep_axis)) {
 					continue;
@@ -899,6 +921,7 @@ bool GodotSpace3D::test_body_motion(GodotBody3D *p_body, const PhysicsServer3D::
 					best_safe = low;
 					best_unsafe = hi;
 				}
+#endif
 			}
 
 			if (stuck) {

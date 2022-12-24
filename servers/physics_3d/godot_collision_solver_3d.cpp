@@ -587,3 +587,196 @@ bool GodotCollisionSolver3D::solve_distance(const GodotShape3D *p_shape_A, const
 		return gjk_epa_calculate_distance(p_shape_A, p_transform_A, p_shape_B, p_transform_B, r_point_A, r_point_B); //should pass sepaxis..
 	}
 }
+
+struct _ConcaveSweepInfo {
+	const Transform3D *transform_A = nullptr;
+	const GodotShape3D *shape_A = nullptr;
+	const Transform3D *transform_B = nullptr;
+	Vector3 original_motion_A;
+	Vector3 motion_A;
+	uint32_t tests = 0;
+	real_t min_advance = 0;
+	bool collided = false;
+	real_t error = 0;
+};
+
+bool GodotCollisionSolver3D::concave_sweep_callback(void *p_userdata, GodotShape3D *p_convex) {
+	_ConcaveSweepInfo &cinfo = *(static_cast<_ConcaveSweepInfo *>(p_userdata));
+	cinfo.tests++;
+
+	real_t advance = 0;
+
+	bool collided = sweep(cinfo.shape_A, *cinfo.transform_A, p_convex, *cinfo.transform_B, cinfo.motion_A, advance, AABB(), cinfo.error);
+
+	if (collided) {
+		if (!cinfo.collided || advance < cinfo.min_advance) {
+			cinfo.min_advance = advance;
+			cinfo.motion_A = cinfo.original_motion_A * advance; // Shorten distance for future collisions.
+		}
+
+		cinfo.collided = true;
+
+		if (advance == 0.0) {
+			return true; // No need to continue processing collisions, no further advance possible.
+		}
+	}
+
+	return false;
+}
+
+bool GodotCollisionSolver3D::sweep(const GodotShape3D *p_shape_A, const Transform3D &p_transform_A, const GodotShape3D *p_shape_B, const Transform3D &p_transform_B, const Vector3 &p_motion_A, real_t &r_distance, const AABB &p_concave_hint, real_t p_error) {
+	if (p_shape_A->is_concave()) {
+		return false;
+	}
+
+	if (p_shape_B->get_type() == PhysicsServer3D::SHAPE_WORLD_BOUNDARY) {
+		const GodotWorldBoundaryShape3D *plane_B = static_cast<const GodotWorldBoundaryShape3D *>(p_shape_B);
+
+		Plane p = p_transform_B.xform(plane_B->get_plane());
+
+		// Get a support closest to the plane and use this for all math
+		Vector3 s = p_transform_A.xform(p_shape_A->get_support(p_transform_A.basis.inverse().xform(-p.normal).normalized()));
+
+		if (p.distance_to(s) <= 0) {
+			// Already colliding
+			r_distance = 0;
+			return true;
+		}
+
+		if (p.distance_to(s + p_motion_A) > 0) {
+			// Does not collide
+			return false;
+		}
+
+		Vector3 inters;
+		if (!p.intersects_segment(s, s + p_motion_A, &inters)) {
+			return false;
+		}
+
+		// See how much to advance to hit intersection
+		r_distance = (inters - s).length() / p_motion_A.length();
+		return true;
+
+	} else if (p_shape_B->is_concave()) {
+		if (p_shape_A->is_concave()) {
+			return false;
+		}
+
+		const GodotConcaveShape3D *concave_B = static_cast<const GodotConcaveShape3D *>(p_shape_B);
+
+		_ConcaveSweepInfo cinfo;
+		cinfo.transform_A = &p_transform_A;
+		cinfo.shape_A = p_shape_A;
+		cinfo.transform_B = &p_transform_B;
+		cinfo.original_motion_A = p_motion_A;
+		cinfo.motion_A = p_motion_A;
+		cinfo.error = p_error;
+
+		Transform3D rel_transform = p_transform_A;
+		rel_transform.origin -= p_transform_B.origin;
+
+		//quickly compute a local AABB
+
+		bool use_cc_hint = p_concave_hint != AABB();
+		AABB cc_hint_aabb;
+		if (use_cc_hint) {
+			cc_hint_aabb = p_concave_hint;
+			cc_hint_aabb.position -= p_transform_B.origin;
+		}
+
+		AABB local_aabb;
+		for (int i = 0; i < 3; i++) {
+			Vector3 axis(p_transform_B.basis.get_column(i));
+			real_t axis_scale = ((real_t)1.0) / axis.length();
+			axis *= axis_scale;
+
+			real_t smin, smax;
+
+			if (use_cc_hint) {
+				cc_hint_aabb.project_range_in_plane(Plane(axis), smin, smax);
+			} else {
+				p_shape_A->project_range(axis, rel_transform, smin, smax);
+			}
+
+			smin *= axis_scale;
+			smax *= axis_scale;
+
+			local_aabb.position[i] = smin;
+			local_aabb.size[i] = smax - smin;
+		}
+
+		concave_B->cull(local_aabb, concave_sweep_callback, &cinfo, false);
+
+		if (cinfo.collided) {
+			r_distance = cinfo.min_advance;
+			return true;
+		} else {
+			return false;
+		}
+	} else {
+		Vector3 res_A, res_B;
+
+		bool collided = !gjk_epa_calculate_distance(p_shape_A, p_transform_A, p_shape_B, p_transform_B, res_A, res_B);
+		if (collided) {
+			r_distance = 0;
+			return true;
+		}
+
+		uint32_t iterations = 0;
+		const uint32_t MAX_ITERATIONS = 32;
+
+		real_t dist = res_A.distance_to(res_B);
+		Vector3 n = (res_B - res_A).normalized();
+
+		real_t advance = 0;
+		real_t prev_advance = 0;
+
+		Transform3D advance_xform_A = p_transform_A;
+
+		while (dist > p_error) {
+			iterations++;
+			if (iterations > MAX_ITERATIONS) {
+				return false; // Failure.
+			}
+
+			// Project advance against normal to keep it safe.
+			real_t proj_motion = p_motion_A.dot(n);
+
+			advance += dist / proj_motion;
+
+			// Went past end of motion and no collision.
+			if (advance > 1.0)
+				return false;
+
+			// Went back, meaning no collision. This is possible if collision normal is backwards (meaning no possible collision).
+			if (advance < 0.0)
+				return false;
+
+			// Not advancing, also means no collision.
+			if (advance <= prev_advance) {
+				return false;
+			}
+
+			prev_advance = advance;
+
+			advance_xform_A.origin = p_transform_A.origin + p_motion_A * advance;
+
+			collided = !gjk_epa_calculate_distance(p_shape_A, advance_xform_A, p_shape_B, p_transform_B, res_A, res_B);
+
+			if (collided) {
+				r_distance = advance;
+				return true;
+			}
+
+			dist = res_A.distance_to(res_B);
+			n = (res_B - res_A).normalized();
+		}
+
+		if (p_motion_A.dot(n) <= p_error) // Do not accept negative distance
+			return false;
+
+		// This means it got very close without entirely colliding (likely tiny objects very far away).
+		r_distance = advance;
+		return true;
+	}
+}
