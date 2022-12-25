@@ -2263,6 +2263,10 @@ void ScriptEditorDebugger::_item_menu_id_pressed(int p_option) {
 				file_dialog->add_filter("*." + extensions[i] + " ; " + extensions[i].to_upper());
 			}
 
+			TreeItem *ti = inspect_scene_tree->get_selected();
+			String filename = ti->get_text(0) + "." + extensions.front()->get().to_lower();
+
+			file_dialog->set_current_path(filename);
 			file_dialog->popup_centered_ratio();
 		} break;
 		case ITEM_MENU_COPY_NODE_PATH: {
