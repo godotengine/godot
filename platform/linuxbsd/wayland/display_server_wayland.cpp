@@ -3035,6 +3035,16 @@ void DisplayServerWayland::process_events() {
 
 		if (winev_msg.is_valid()) {
 			_send_window_event(winev_msg->event);
+
+			if (winev_msg->event == WINDOW_EVENT_FOCUS_IN) {
+				if (OS::get_singleton()->get_main_loop()) {
+					OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_IN);
+				}
+			} else if (winev_msg->event == WINDOW_EVENT_FOCUS_OUT) {
+				if (OS::get_singleton()->get_main_loop()) {
+					OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_APPLICATION_FOCUS_OUT);
+				}
+			}
 		}
 
 		Ref<WaylandInputEventMessage> inputev_msg = msg;
