@@ -497,6 +497,8 @@ int ScrollContainer::get_v_scroll() const {
 	return v_scroll->get_value();
 }
 void ScrollContainer::set_v_scroll(int p_pos) {
+	_update_dimensions();
+	update_scrollbars();
 	v_scroll->set_value(p_pos);
 	_cancel_drag();
 }
@@ -505,6 +507,8 @@ int ScrollContainer::get_h_scroll() const {
 	return h_scroll->get_value();
 }
 void ScrollContainer::set_h_scroll(int p_pos) {
+	_update_dimensions();
+	update_scrollbars();
 	h_scroll->set_value(p_pos);
 	_cancel_drag();
 }
