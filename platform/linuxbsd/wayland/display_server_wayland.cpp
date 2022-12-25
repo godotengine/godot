@@ -2630,6 +2630,7 @@ void DisplayServerWayland::window_set_size(const Size2i p_size, DisplayServer::W
 		wl_egl_window_resize(wd.wl_egl_window, wd.rect.size.width, wd.rect.size.height, 0, 0);
 	}
 #endif
+
 	if (wd.rect_changed_callback.is_valid()) {
 		Variant var_rect = Variant(wd.rect);
 		Variant *arg = &var_rect;
@@ -3019,32 +3020,7 @@ void DisplayServerWayland::process_events() {
 
 		if (winrect_msg.is_valid()) {
 			Rect2i rect = winrect_msg->rect;
-			WindowData &wd = wls.main_window;
-
-			if (wd.visible && wd.rect == rect) {
-				// Resizing is very costly, do it only if this is the last rect update.
-#ifdef VULKAN_ENABLED
-				if (context_vulkan) {
-					context_vulkan->window_resize(MAIN_WINDOW_ID, rect.size.width, rect.size.height);
-				}
-#endif
-
-#ifdef GLES3_ENABLED
-				if (egl_manager) {
-					wl_egl_window_resize(wd.wl_egl_window, rect.size.width, rect.size.height, 0, 0);
-				}
-#endif
-			}
-
-			if (wd.rect_changed_callback.is_valid()) {
-				Variant var_rect = Variant(rect);
-				Variant *arg = &var_rect;
-
-				Variant ret;
-				Callable::CallError ce;
-
-				wd.rect_changed_callback.callp((const Variant **)&arg, 1, ret, ce);
-			}
+			window_set_size(rect.size);
 		}
 
 		Ref<WaylandWindowEventMessage> winev_msg = msg;
