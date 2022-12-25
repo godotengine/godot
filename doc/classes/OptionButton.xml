@@ -94,6 +94,8 @@
 			<return type="int" />
 			<param index="0" name="from_last" type="bool" default="false" />
 			<description>
+				Returns the index of the first item which is not disabled, or marked as a separator. If [param from_last] is [code]true[/code], the items will be searched in reverse order.
+				Returns [code]-1[/code] if no item is found.
 			</description>
 		</method>
 		<method name="get_selected_id" qualifiers="const">
@@ -111,6 +113,7 @@
 		<method name="has_selectable_items" qualifiers="const">
 			<return type="bool" />
 			<description>
+				Returns [code]true[/code] if this button contains at least one item which is not disabled, or marked as a separator.
 			</description>
 		</method>
 		<method name="is_item_disabled" qualifiers="const">
@@ -124,6 +127,7 @@
 			<return type="bool" />
 			<param index="0" name="idx" type="int" />
 			<description>
+				Returns [code]true[/code] if the item at index [param idx] is marked as a separator.
 			</description>
 		</method>
 		<method name="remove_item">
