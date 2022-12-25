@@ -424,8 +424,8 @@ class DisplayServerWayland : public DisplayServer {
 
 	static String _string_read_fd(int fd);
 
-	String _wl_data_offer_read(wl_data_offer *wl_data_offer) const;
-	String _wp_primary_selection_offer_read(zwp_primary_selection_offer_v1 *wp_primary_selection_offer) const;
+	static String _wl_data_offer_read(struct wl_display *wl_display, struct wl_data_offer *wl_data_offer);
+	static String _wp_primary_selection_offer_read(struct wl_display *wl_display, struct zwp_primary_selection_offer_v1 *wp_primary_selection_offer);
 
 	static void _seat_state_override_cursor_shape(SeatState &p_ss, CursorShape p_shape);
 	static void _seat_state_set_current(SeatState &p_ss);

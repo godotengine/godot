@@ -124,8 +124,8 @@ String DisplayServerWayland::_string_read_fd(int fd) {
 }
 
 // Read the content of a "text/plain" wl_data_offer.
-String DisplayServerWayland::_wl_data_offer_read(wl_data_offer *wl_data_offer) const {
-	if (!wl_data_offer) {
+String DisplayServerWayland::_wl_data_offer_read(struct wl_display *p_display, struct wl_data_offer *p_offer) {
+	if (!p_offer) {
 		return "";
 	}
 
@@ -133,10 +133,10 @@ String DisplayServerWayland::_wl_data_offer_read(wl_data_offer *wl_data_offer) c
 	if (pipe(fds) == 0) {
 		// This function expects to return a string, so we can only ask for a MIME of
 		// "text/plain"
-		wl_data_offer_receive(wl_data_offer, "text/plain", fds[1]);
+		wl_data_offer_receive(p_offer, "text/plain", fds[1]);
 
 		// Wait for the compositor to know about the pipe.
-		wl_display_roundtrip(wls.wl_display);
+		wl_display_roundtrip(p_display);
 
 		// Close the write end of the pipe, which we don't need and would otherwise
 		// just stall our next `read`s.
@@ -149,8 +149,8 @@ String DisplayServerWayland::_wl_data_offer_read(wl_data_offer *wl_data_offer) c
 }
 
 // Read the content of a "text/plain" wp_primary_selection_offer.
-String DisplayServerWayland::_wp_primary_selection_offer_read(zwp_primary_selection_offer_v1 *wp_primary_selection_offer) const {
-	if (!wp_primary_selection_offer) {
+String DisplayServerWayland::_wp_primary_selection_offer_read(struct wl_display *p_display, struct zwp_primary_selection_offer_v1 *p_offer) {
+	if (!p_offer) {
 		return "";
 	}
 
@@ -158,10 +158,10 @@ String DisplayServerWayland::_wp_primary_selection_offer_read(zwp_primary_select
 	if (pipe(fds) == 0) {
 		// This function expects to return a string, so we can only ask for a MIME of
 		// "text/plain"
-		zwp_primary_selection_offer_v1_receive(wp_primary_selection_offer, "text/plain", fds[1]);
+		zwp_primary_selection_offer_v1_receive(p_offer, "text/plain", fds[1]);
 
 		// Wait for the compositor to know about the pipe.
-		wl_display_roundtrip(wls.wl_display);
+		wl_display_roundtrip(p_display);
 
 		// Close the write end of the pipe, which we don't need and would otherwise
 		// just stall our next `read`s.
@@ -2165,7 +2165,7 @@ String DisplayServerWayland::clipboard_get() const {
 		return String();
 	}
 
-	return _wl_data_offer_read(wls.current_seat->wl_data_offer_selection);
+	return _wl_data_offer_read(wls.wl_display, wls.current_seat->wl_data_offer_selection);
 }
 
 void DisplayServerWayland::clipboard_set_primary(const String &p_text) {
@@ -2200,7 +2200,7 @@ String DisplayServerWayland::clipboard_get_primary() const {
 		return String();
 	}
 
-	return _wp_primary_selection_offer_read(wls.current_seat->wp_primary_selection_offer);
+	return _wp_primary_selection_offer_read(wls.wl_display, wls.current_seat->wp_primary_selection_offer);
 }
 
 int DisplayServerWayland::get_screen_count() const {
