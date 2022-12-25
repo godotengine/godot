@@ -2522,12 +2522,12 @@ void DisplayServerWayland::window_set_max_size(const Size2i p_size, DisplayServe
 
 	if (wd.wl_surface) {
 		if (wd.xdg_toplevel) {
-			xdg_toplevel_set_max_size(wd.xdg_toplevel, p_size.width, p_size.height);
+			xdg_toplevel_set_max_size(wd.xdg_toplevel, wd.max_size.width, wd.max_size.height);
 		}
 
 #ifdef LIBDECOR_ENABLED
 		if (wd.libdecor_frame) {
-			libdecor_frame_set_max_content_size(wd.libdecor_frame, p_size.width, p_size.height);
+			libdecor_frame_set_max_content_size(wd.libdecor_frame, wd.max_size.width, wd.max_size.height);
 		}
 #endif // LIBDECOR_ENABLED
 
@@ -2571,10 +2571,17 @@ void DisplayServerWayland::window_set_min_size(const Size2i p_size, DisplayServe
 
 	wd.min_size = p_size;
 
-	if (wd.wl_surface && wd.xdg_toplevel) {
-		xdg_toplevel_set_min_size(wd.xdg_toplevel, p_size.width, p_size.height);
-		wl_surface_commit(wd.wl_surface);
+#ifdef LIBDECOR_ENABLED
+	if (wd.libdecor_frame) {
+		libdecor_frame_set_min_content_size(wd.libdecor_frame, wd.min_size.width, wd.min_size.height);
 	}
+#endif
+
+	if (wd.wl_surface && wd.xdg_toplevel) {
+		xdg_toplevel_set_min_size(wd.xdg_toplevel, wd.min_size.width, wd.min_size.height);
+	}
+
+	wl_surface_commit(wd.wl_surface);
 }
 
 Size2i DisplayServerWayland::window_get_min_size(DisplayServer::WindowID p_window) const {
