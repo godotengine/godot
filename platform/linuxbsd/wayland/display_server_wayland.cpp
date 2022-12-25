@@ -59,7 +59,16 @@ void DisplayServerWayland::_poll_events_thread(void *p_wls) {
 	while (true) {
 		// Empty the event queue while it's full.
 		while (wl_display_prepare_read(wls->wl_display) != 0) {
+			// We aren't using wl_display_dispatch(), instead "manually" handling events
+			// through wl_display_dispatch_pending so that we can use a global wmutex and
+			// be sure that this and the main thread won't race over stuff, as long as
+			// the main thread locks it too.
+			//
+			// Note that the main thread can still call wl_display_roundtrip as it
+			// directly handles all events, effectively bypassing this polling loop and
+			// thus the mutex locking, avoiding a deadlock.
 			MutexLock mutex_lock(wls->mutex);
+
 			wl_display_dispatch_pending(wls->wl_display);
 		}
 
