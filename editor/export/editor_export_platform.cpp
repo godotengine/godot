@@ -786,6 +786,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	HashSet<String> paths;
 	Vector<String> path_remaps;
 
+	paths.insert(ProjectSettings::get_singleton()->get_project_data_path().path_join("global_script_class_cache.cfg"));
 	if (p_preset->get_export_filter() == EditorExportPreset::EXPORT_ALL_RESOURCES) {
 		//find stuff
 		_export_find_resources(EditorFileSystem::get_singleton()->get_filesystem(), paths);

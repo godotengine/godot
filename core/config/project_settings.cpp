@@ -33,6 +33,7 @@
 #include "core/core_bind.h" // For Compression enum.
 #include "core/core_string_names.h"
 #include "core/input/input_map.h"
+#include "core/io/config_file.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/file_access_network.h"
@@ -1146,6 +1147,29 @@ Variant ProjectSettings::get_setting(const String &p_setting, const Variant &p_d
 	} else {
 		return p_default_value;
 	}
+}
+
+Array ProjectSettings::get_global_class_list() {
+	Array script_classes;
+
+	Ref<ConfigFile> cf;
+	cf.instantiate();
+	if (cf->load(get_project_data_path().path_join("global_script_class_cache.cfg")) == OK) {
+		script_classes = cf->get_value("", "list");
+	} else {
+#ifndef TOOLS_ENABLED
+		// Script classes can't be recreated in exported project, so print an error.
+		ERR_PRINT("Could not load global script cache.");
+#endif
+	}
+	return script_classes;
+}
+
+void ProjectSettings::store_global_class_list(const Array &p_classes) {
+	Ref<ConfigFile> cf;
+	cf.instantiate();
+	cf->set_value("", "list", p_classes);
+	cf->save(get_project_data_path().path_join("global_script_class_cache.cfg"));
 }
 
 bool ProjectSettings::has_custom_feature(const String &p_feature) const {

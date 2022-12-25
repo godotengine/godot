@@ -994,6 +994,8 @@ void EditorData::script_class_set_name(const String &p_path, const StringName &p
 }
 
 void EditorData::script_class_save_icon_paths() {
+	Array script_classes = ProjectSettings::get_singleton()->get_global_class_list();
+
 	Dictionary d;
 	for (const KeyValue<StringName, String> &E : _script_class_icon_paths) {
 		if (ScriptServer::is_global_class(E.key)) {
@@ -1001,27 +1003,20 @@ void EditorData::script_class_save_icon_paths() {
 		}
 	}
 
-	Dictionary old;
-	if (ProjectSettings::get_singleton()->has_setting("_global_script_class_icons")) {
-		old = GLOBAL_GET("_global_script_class_icons");
-	}
-	if ((!old.is_empty() || d.is_empty()) && d.hash() == old.hash()) {
-		return;
-	}
-
-	if (d.is_empty()) {
-		if (ProjectSettings::get_singleton()->has_setting("_global_script_class_icons")) {
-			ProjectSettings::get_singleton()->clear("_global_script_class_icons");
+	for (int i = 0; i < script_classes.size(); i++) {
+		Dictionary d2 = script_classes[i];
+		if (!d2.has("class")) {
+			continue;
 		}
-	} else {
-		ProjectSettings::get_singleton()->set("_global_script_class_icons", d);
+		d2["icon"] = d.get(d2["class"], "");
 	}
-	ProjectSettings::get_singleton()->save();
+	ProjectSettings::get_singleton()->store_global_class_list(script_classes);
 }
 
 void EditorData::script_class_load_icon_paths() {
 	script_class_clear_icon_paths();
 
+#ifndef DISABLE_DEPRECATED
 	if (ProjectSettings::get_singleton()->has_setting("_global_script_class_icons")) {
 		Dictionary d = GLOBAL_GET("_global_script_class_icons");
 		List<Variant> keys;
@@ -1034,6 +1029,20 @@ void EditorData::script_class_load_icon_paths() {
 			String path = ScriptServer::get_global_class_path(name);
 			script_class_set_name(path, name);
 		}
+		ProjectSettings::get_singleton()->clear("_global_script_class_icons");
+	}
+#endif
+
+	Array script_classes = ProjectSettings::get_singleton()->get_global_class_list();
+	for (int i = 0; i < script_classes.size(); i++) {
+		Dictionary d = script_classes[i];
+		if (!d.has("class") || !d.has("path") || !d.has("icon")) {
+			continue;
+		}
+
+		String name = d["class"];
+		_script_class_icon_paths[name] = d["icon"];
+		script_class_set_name(d["path"], name);
 	}
 }
 
