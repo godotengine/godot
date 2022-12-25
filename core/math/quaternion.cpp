@@ -220,7 +220,7 @@ Quaternion Quaternion::spherical_cubic_interpolate(const Quaternion &p_b, const 
 	ln.z = Math::cubic_interpolate(ln_from.z, ln_to.z, ln_pre.z, ln_post.z, p_weight);
 	Quaternion q2 = to_q * ln.exp();
 
-	// To cancel error made by Expmap ambiguity, do blends.
+	// To cancel error made by Expmap ambiguity, do blending.
 	return q1.slerp(q2, p_weight);
 }
 
@@ -271,7 +271,7 @@ Quaternion Quaternion::spherical_cubic_interpolate_in_time(const Quaternion &p_b
 	ln.z = Math::cubic_interpolate_in_time(ln_from.z, ln_to.z, ln_pre.z, ln_post.z, p_weight, p_b_t, p_pre_a_t, p_post_b_t);
 	Quaternion q2 = to_q * ln.exp();
 
-	// To cancel error made by Expmap ambiguity, do blends.
+	// To cancel error made by Expmap ambiguity, do blending.
 	return q1.slerp(q2, p_weight);
 }
 

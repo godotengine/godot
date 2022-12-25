@@ -2463,135 +2463,118 @@ T Animation::_interpolate(const Vector<TKey<T>> &p_keys, double p_time, Interpol
 	int idx = _find(p_keys, p_time, p_backward);
 
 	ERR_FAIL_COND_V(idx == -2, T());
+	int maxi = len - 1;
+	bool is_start_edge = idx == -1;
+	bool is_end_edge = p_backward ? idx == 0 : idx >= maxi;
 
-	int next = 0;
 	real_t c = 0.0;
-	// prepare for all cases of interpolation
+	// Prepare for all cases of interpolation.
+	real_t delta = 0.0;
+	real_t from = 0.0;
 
-	if (loop_mode == LOOP_LINEAR && p_loop_wrap) {
-		// loop
-		if (!p_backward) {
-			// no backward
-			if (idx >= 0) {
-				if (idx < len - 1) {
-					next = idx + 1;
-					real_t delta = p_keys[next].time - p_keys[idx].time;
-					real_t from = p_time - p_keys[idx].time;
+	int pre = -1;
+	int next = -1;
+	int post = -1;
+	real_t pre_t = 0.0;
+	real_t to_t = 0.0;
+	real_t post_t = 0.0;
 
-					if (Math::is_zero_approx(delta)) {
-						c = 0;
-					} else {
-						c = from / delta;
-					}
-				} else {
-					next = 0;
-					real_t delta = (length - p_keys[idx].time) + p_keys[next].time;
-					real_t from = p_time - p_keys[idx].time;
+	bool use_cubic = p_interp == INTERPOLATION_CUBIC || p_interp == INTERPOLATION_CUBIC_ANGLE;
 
-					if (Math::is_zero_approx(delta)) {
-						c = 0;
-					} else {
-						c = from / delta;
-					}
-				}
-			} else {
-				// on loop, behind first key
-				idx = len - 1;
-				next = 0;
+	if (!p_loop_wrap || loop_mode == LOOP_NONE) {
+		if (is_start_edge) {
+			idx = p_backward ? maxi : 0;
+		}
+		next = CLAMP(idx + (p_backward ? -1 : 1), 0, maxi);
+		if (use_cubic) {
+			pre = CLAMP(idx + (p_backward ? 1 : -1), 0, maxi);
+			post = CLAMP(idx + (p_backward ? -2 : 2), 0, maxi);
+		}
+	} else if (loop_mode == LOOP_LINEAR) {
+		if (is_start_edge) {
+			idx = p_backward ? 0 : maxi;
+		}
+		next = Math::posmod(idx + (p_backward ? -1 : 1), len);
+		if (use_cubic) {
+			pre = Math::posmod(idx + (p_backward ? 1 : -1), len);
+			post = Math::posmod(idx + (p_backward ? -2 : 2), len);
+		}
+		if (is_start_edge) {
+			if (!p_backward) {
 				real_t endtime = (length - p_keys[idx].time);
 				if (endtime < 0) { // may be keys past the end
 					endtime = 0;
 				}
-				real_t delta = endtime + p_keys[next].time;
-				real_t from = endtime + p_time;
-
-				if (Math::is_zero_approx(delta)) {
-					c = 0;
-				} else {
-					c = from / delta;
-				}
-			}
-		} else {
-			// backward
-			if (idx <= len - 1) {
-				if (idx > 0) {
-					next = idx - 1;
-					real_t delta = (length - p_keys[next].time) - (length - p_keys[idx].time);
-					real_t from = (length - p_time) - (length - p_keys[idx].time);
-
-					if (Math::is_zero_approx(delta)) {
-						c = 0;
-					} else {
-						c = from / delta;
-					}
-				} else {
-					next = len - 1;
-					real_t delta = p_keys[idx].time + (length - p_keys[next].time);
-					real_t from = (length - p_time) - (length - p_keys[idx].time);
-
-					if (Math::is_zero_approx(delta)) {
-						c = 0;
-					} else {
-						c = from / delta;
-					}
-				}
+				delta = endtime + p_keys[next].time;
+				from = endtime + p_time;
 			} else {
-				// on loop, in front of last key
-				idx = 0;
-				next = len - 1;
 				real_t endtime = p_keys[idx].time;
 				if (endtime > length) { // may be keys past the end
 					endtime = length;
 				}
-				real_t delta = p_keys[next].time - endtime;
-				real_t from = p_time - endtime;
-
-				if (Math::is_zero_approx(delta)) {
-					c = 0;
-				} else {
-					c = from / delta;
-				}
+				delta = endtime + length - p_keys[next].time;
+				from = endtime + length - p_time;
+			}
+		} else if (is_end_edge) {
+			if (!p_backward) {
+				delta = (length - p_keys[idx].time) + p_keys[next].time;
+				from = p_time - p_keys[idx].time;
+			} else {
+				delta = p_keys[idx].time + (length - p_keys[next].time);
+				from = (length - p_time) - (length - p_keys[idx].time);
 			}
 		}
-	} else { // no loop
+	} else {
+		if (is_start_edge) {
+			idx = p_backward ? len : -1;
+		}
+		next = (int)Math::round(Math::pingpong((float)(idx + (p_backward ? -1 : 1)) + 0.5f, (float)len) - 0.5f);
+		if (use_cubic) {
+			pre = (int)Math::round(Math::pingpong((float)(idx + (p_backward ? 1 : -1)) + 0.5f, (float)len) - 0.5f);
+			post = (int)Math::round(Math::pingpong((float)(idx + (p_backward ? -2 : 2)) + 0.5f, (float)len) - 0.5f);
+		}
+		idx = (int)Math::round(Math::pingpong((float)idx + 0.5f, (float)len) - 0.5f);
+		if (is_start_edge) {
+			if (!p_backward) {
+				real_t endtime = p_keys[idx].time;
+				if (endtime < 0) { // may be keys past the end
+					endtime = 0;
+				}
+				delta = endtime + p_keys[next].time;
+				from = endtime + p_time;
+			} else {
+				real_t endtime = length - p_keys[idx].time;
+				if (endtime > length) { // may be keys past the end
+					endtime = length;
+				}
+				delta = endtime + length - p_keys[next].time;
+				from = endtime + length - p_time;
+			}
+		} else if (is_end_edge) {
+			if (!p_backward) {
+				delta = length * 2.0 - p_keys[idx].time - p_keys[next].time;
+				from = p_time - p_keys[idx].time;
+			} else {
+				delta = p_keys[idx].time + p_keys[next].time;
+				from = (length - p_time) - (length - p_keys[idx].time);
+			}
+		}
+	}
+
+	if (!is_start_edge && !is_end_edge) {
 		if (!p_backward) {
-			if (idx >= 0) {
-				if (idx < len - 1) {
-					next = idx + 1;
-					real_t delta = p_keys[next].time - p_keys[idx].time;
-					real_t from = p_time - p_keys[idx].time;
-
-					if (Math::is_zero_approx(delta)) {
-						c = 0;
-					} else {
-						c = from / delta;
-					}
-				} else {
-					next = idx;
-				}
-			} else {
-				idx = next = 0;
-			}
+			delta = p_keys[next].time - p_keys[idx].time;
+			from = p_time - p_keys[idx].time;
 		} else {
-			if (idx <= len - 1) {
-				if (idx > 0) {
-					next = idx - 1;
-					real_t delta = (length - p_keys[next].time) - (length - p_keys[idx].time);
-					real_t from = (length - p_time) - (length - p_keys[idx].time);
-
-					if (Math::is_zero_approx(delta)) {
-						c = 0;
-					} else {
-						c = from / delta;
-					}
-
-				} else {
-					next = idx;
-				}
-			} else {
-				idx = next = len - 1;
-			}
+			delta = (length - p_keys[next].time) - (length - p_keys[idx].time);
+			from = (length - p_time) - (length - p_keys[idx].time);
 		}
+	}
+
+	if (Math::is_zero_approx(delta)) {
+		c = 0;
+	} else {
+		c = from / delta;
 	}
 
 	if (p_ok) {
@@ -2599,9 +2582,8 @@ T Animation::_interpolate(const Vector<TKey<T>> &p_keys, double p_time, Interpol
 	}
 
 	real_t tr = p_keys[idx].transition;
-
-	if (tr == 0 || idx == next) {
-		// don't interpolate if not needed
+	if (tr == 0) {
+		// Don't interpolate if not needed.
 		return p_keys[idx].value;
 	}
 
@@ -2621,48 +2603,11 @@ T Animation::_interpolate(const Vector<TKey<T>> &p_keys, double p_time, Interpol
 		} break;
 		case INTERPOLATION_CUBIC:
 		case INTERPOLATION_CUBIC_ANGLE: {
-			int pre = 0;
-			int post = 0;
-			if (!p_backward) {
-				pre = idx - 1;
-				if (pre < 0) {
-					if (loop_mode == LOOP_LINEAR && p_loop_wrap) {
-						pre = len - 1;
-					} else {
-						pre = 0;
-					}
-				}
-				post = next + 1;
-				if (post >= len) {
-					if (loop_mode == LOOP_LINEAR && p_loop_wrap) {
-						post = 0;
-					} else {
-						post = next;
-					}
-				}
-			} else {
-				pre = idx + 1;
-				if (pre >= len) {
-					if (loop_mode == LOOP_LINEAR && p_loop_wrap) {
-						pre = 0;
-					} else {
-						pre = idx;
-					}
-				}
-				post = next - 1;
-				if (post < 0) {
-					if (loop_mode == LOOP_LINEAR && p_loop_wrap) {
-						post = len - 1;
-					} else {
-						post = 0;
-					}
-				}
-			}
-
-			real_t pre_t = 0.0;
-			real_t to_t = 0.0;
-			real_t post_t = 0.0;
-			if (loop_mode == LOOP_LINEAR && p_loop_wrap) {
+			if (!p_loop_wrap || loop_mode == LOOP_NONE) {
+				pre_t = p_keys[pre].time - p_keys[idx].time;
+				to_t = p_keys[next].time - p_keys[idx].time;
+				post_t = p_keys[post].time - p_keys[idx].time;
+			} else if (loop_mode == LOOP_LINEAR) {
 				pre_t = pre > idx ? -length + p_keys[pre].time - p_keys[idx].time : p_keys[pre].time - p_keys[idx].time;
 				to_t = next < idx ? length + p_keys[next].time - p_keys[idx].time : p_keys[next].time - p_keys[idx].time;
 				post_t = next < idx || post <= idx ? length + p_keys[post].time - p_keys[idx].time : p_keys[post].time - p_keys[idx].time;
@@ -2670,6 +2615,19 @@ T Animation::_interpolate(const Vector<TKey<T>> &p_keys, double p_time, Interpol
 				pre_t = p_keys[pre].time - p_keys[idx].time;
 				to_t = p_keys[next].time - p_keys[idx].time;
 				post_t = p_keys[post].time - p_keys[idx].time;
+
+				if ((pre > idx && idx == next && post < next) || (pre < idx && idx == next && post > next)) {
+					pre_t = p_keys[idx].time - p_keys[pre].time;
+				} else if (pre == idx) {
+					pre_t = idx < next ? -p_keys[idx].time * 2.0 : (length - p_keys[idx].time) * 2.0;
+				}
+
+				if (idx == next) {
+					to_t = pre < idx ? (length - p_keys[idx].time) * 2.0 : -p_keys[idx].time * 2.0;
+					post_t = p_keys[next].time - p_keys[post].time + to_t;
+				} else if (next == post) {
+					post_t = idx < next ? (length - p_keys[next].time) * 2.0 + to_t : -p_keys[next].time * 2.0 + to_t;
+				}
 			}
 
 			if (p_interp == INTERPOLATION_CUBIC_ANGLE) {
