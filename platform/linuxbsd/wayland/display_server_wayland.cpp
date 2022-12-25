@@ -1338,7 +1338,7 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 				mb->set_button_index(test_button);
 				mb->set_pressed((pd.pressed_button_mask & test_button_mask) != MouseButton::NONE);
 
-				if (pd.last_button_pressed == old_pd.last_button_pressed && (pd.button_time - old_pd.button_time) < 400 && Vector2(pd.position).distance_to(Vector2(old_pd.position)) < 5) {
+				if (mb->is_pressed() && pd.last_button_pressed == old_pd.last_button_pressed && (pd.button_time - old_pd.button_time) < 400 && Vector2(pd.position).distance_to(Vector2(old_pd.position)) < 5) {
 					mb->set_double_click(true);
 				}
 
