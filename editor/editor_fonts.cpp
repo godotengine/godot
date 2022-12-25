@@ -93,6 +93,55 @@ Ref<FontFile> load_internal_font(const uint8_t *p_data, size_t p_size, TextServe
 	return font;
 }
 
+bool load_custom_font(Ref<FontVariation> p_font, Ref<Font> p_default_font, const String &p_path_or_name, TextServer::Hinting p_hinting, TextServer::FontAntialiasing p_aa, bool p_autohint, TextServer::SubpixelPositioning p_font_subpixel_positioning, bool p_msdf = false, const String &p_fb_path_or_name = String(), float p_embolden_strength = 1.0) {
+	Ref<DirAccess> dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+	if (p_path_or_name.is_empty()) {
+		if (p_fb_path_or_name.is_empty()) {
+			p_font->set_base_font(p_default_font);
+			return false;
+		} else if (dir->file_exists(p_fb_path_or_name)) {
+			Ref<FontFile> custom_font = load_external_font(p_fb_path_or_name, p_hinting, p_aa, p_autohint, p_font_subpixel_positioning, p_msdf);
+			{
+				TypedArray<Font> fallback_custom;
+				fallback_custom.push_back(p_default_font);
+				custom_font->set_fallbacks(fallback_custom);
+			}
+			p_font->set_base_font(custom_font);
+			p_font->set_variation_embolden(p_embolden_strength);
+		} else {
+			Vector<String> list;
+			list.push_back(p_fb_path_or_name);
+			Ref<SystemFont> custom_font = load_system_font(list, p_hinting, p_aa, p_autohint, p_font_subpixel_positioning, p_msdf);
+			{
+				TypedArray<Font> fallback_custom;
+				fallback_custom.push_back(p_default_font);
+				custom_font->set_fallbacks(fallback_custom);
+				custom_font->set_font_weight(1000 * p_embolden_strength);
+			}
+			p_font->set_base_font(custom_font);
+		}
+	} else if (dir->file_exists(p_path_or_name)) {
+		Ref<FontFile> custom_font = load_external_font(p_path_or_name, p_hinting, p_aa, p_autohint, p_font_subpixel_positioning, p_msdf);
+		{
+			TypedArray<Font> fallback_custom;
+			fallback_custom.push_back(p_default_font);
+			custom_font->set_fallbacks(fallback_custom);
+		}
+		p_font->set_base_font(custom_font);
+	} else {
+		Vector<String> list;
+		list.push_back(p_path_or_name);
+		Ref<SystemFont> custom_font = load_system_font(list, p_hinting, p_aa, p_autohint, p_font_subpixel_positioning, p_msdf);
+		{
+			TypedArray<Font> fallback_custom;
+			fallback_custom.push_back(p_default_font);
+			custom_font->set_fallbacks(fallback_custom);
+		}
+		p_font->set_base_font(custom_font);
+	}
+	return true;
+}
+
 Ref<FontVariation> make_bold_font(const Ref<Font> &p_font, double p_embolden, TypedArray<Font> *r_fallbacks = nullptr) {
 	Ref<FontVariation> font_var;
 	font_var.instantiate();
@@ -205,109 +254,42 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	default_font_mono->set_fallbacks(fallbacks);
 
 	// Init base font configs and load custom fonts.
-	String custom_font_path = EDITOR_GET("interface/editor/main_font");
-	String custom_font_path_bold = EDITOR_GET("interface/editor/main_font_bold");
-	String custom_font_path_source = EDITOR_GET("interface/editor/code_font");
+	String custom_font_name = EDITOR_GET("interface/editor/main_font");
+	String custom_font_name_bold = EDITOR_GET("interface/editor/main_font_bold");
+	String custom_font_name_source = EDITOR_GET("interface/editor/code_font");
 
 	Ref<FontVariation> default_fc;
 	default_fc.instantiate();
-	if (custom_font_path.length() > 0 && dir->file_exists(custom_font_path)) {
-		Ref<FontFile> custom_font = load_external_font(custom_font_path, font_hinting, font_antialiasing, true, font_subpixel_positioning);
-		{
-			TypedArray<Font> fallback_custom;
-			fallback_custom.push_back(default_font);
-			custom_font->set_fallbacks(fallback_custom);
-		}
-		default_fc->set_base_font(custom_font);
-	} else {
+	if (!load_custom_font(default_fc, default_font, custom_font_name, font_hinting, font_antialiasing, true, font_subpixel_positioning, false)) {
 		EditorSettings::get_singleton()->set_manually("interface/editor/main_font", "");
-		default_fc->set_base_font(default_font);
 	}
 	default_fc->set_spacing(TextServer::SPACING_TOP, -EDSCALE);
 	default_fc->set_spacing(TextServer::SPACING_BOTTOM, -EDSCALE);
 
 	Ref<FontVariation> default_fc_msdf;
 	default_fc_msdf.instantiate();
-	if (custom_font_path.length() > 0 && dir->file_exists(custom_font_path)) {
-		Ref<FontFile> custom_font = load_external_font(custom_font_path, font_hinting, font_antialiasing, true, font_subpixel_positioning);
-		{
-			TypedArray<Font> fallback_custom;
-			fallback_custom.push_back(default_font_msdf);
-			custom_font->set_fallbacks(fallback_custom);
-		}
-		default_fc_msdf->set_base_font(custom_font);
-	} else {
-		EditorSettings::get_singleton()->set_manually("interface/editor/main_font", "");
-		default_fc_msdf->set_base_font(default_font_msdf);
-	}
+	load_custom_font(default_fc_msdf, default_font_msdf, custom_font_name, font_hinting, font_antialiasing, true, font_subpixel_positioning, true);
 	default_fc_msdf->set_spacing(TextServer::SPACING_TOP, -EDSCALE);
 	default_fc_msdf->set_spacing(TextServer::SPACING_BOTTOM, -EDSCALE);
 
 	Ref<FontVariation> bold_fc;
 	bold_fc.instantiate();
-	if (custom_font_path_bold.length() > 0 && dir->file_exists(custom_font_path_bold)) {
-		Ref<FontFile> custom_font = load_external_font(custom_font_path_bold, font_hinting, font_antialiasing, true, font_subpixel_positioning);
-		{
-			TypedArray<Font> fallback_custom;
-			fallback_custom.push_back(default_font_bold);
-			custom_font->set_fallbacks(fallback_custom);
-		}
-		bold_fc->set_base_font(custom_font);
-	} else if (custom_font_path.length() > 0 && dir->file_exists(custom_font_path)) {
-		Ref<FontFile> custom_font = load_external_font(custom_font_path, font_hinting, font_antialiasing, true, font_subpixel_positioning);
-		{
-			TypedArray<Font> fallback_custom;
-			fallback_custom.push_back(default_font_bold);
-			custom_font->set_fallbacks(fallback_custom);
-		}
-		bold_fc->set_base_font(custom_font);
-		bold_fc->set_variation_embolden(embolden_strength);
-	} else {
+	if (!load_custom_font(bold_fc, default_font_bold, custom_font_name_bold, font_hinting, font_antialiasing, true, font_subpixel_positioning, false, custom_font_name, embolden_strength)) {
 		EditorSettings::get_singleton()->set_manually("interface/editor/main_font_bold", "");
-		bold_fc->set_base_font(default_font_bold);
 	}
 	bold_fc->set_spacing(TextServer::SPACING_TOP, -EDSCALE);
 	bold_fc->set_spacing(TextServer::SPACING_BOTTOM, -EDSCALE);
 
 	Ref<FontVariation> bold_fc_msdf;
 	bold_fc_msdf.instantiate();
-	if (custom_font_path_bold.length() > 0 && dir->file_exists(custom_font_path_bold)) {
-		Ref<FontFile> custom_font = load_external_font(custom_font_path_bold, font_hinting, font_antialiasing, true, font_subpixel_positioning);
-		{
-			TypedArray<Font> fallback_custom;
-			fallback_custom.push_back(default_font_bold_msdf);
-			custom_font->set_fallbacks(fallback_custom);
-		}
-		bold_fc_msdf->set_base_font(custom_font);
-	} else if (custom_font_path.length() > 0 && dir->file_exists(custom_font_path)) {
-		Ref<FontFile> custom_font = load_external_font(custom_font_path, font_hinting, font_antialiasing, true, font_subpixel_positioning);
-		{
-			TypedArray<Font> fallback_custom;
-			fallback_custom.push_back(default_font_bold_msdf);
-			custom_font->set_fallbacks(fallback_custom);
-		}
-		bold_fc_msdf->set_base_font(custom_font);
-		bold_fc_msdf->set_variation_embolden(embolden_strength);
-	} else {
-		EditorSettings::get_singleton()->set_manually("interface/editor/main_font_bold", "");
-		bold_fc_msdf->set_base_font(default_font_bold_msdf);
-	}
+	load_custom_font(bold_fc_msdf, default_font_bold_msdf, custom_font_name_bold, font_hinting, font_antialiasing, true, font_subpixel_positioning, true, custom_font_name, embolden_strength);
 	bold_fc_msdf->set_spacing(TextServer::SPACING_TOP, -EDSCALE);
 	bold_fc_msdf->set_spacing(TextServer::SPACING_BOTTOM, -EDSCALE);
 
 	Ref<FontVariation> mono_fc;
 	mono_fc.instantiate();
-	if (custom_font_path_source.length() > 0 && dir->file_exists(custom_font_path_source)) {
-		Ref<FontFile> custom_font = load_external_font(custom_font_path_source, font_mono_hinting, font_antialiasing, true, font_subpixel_positioning);
-		{
-			TypedArray<Font> fallback_custom;
-			fallback_custom.push_back(default_font_mono);
-			custom_font->set_fallbacks(fallback_custom);
-		}
-		mono_fc->set_base_font(custom_font);
-	} else {
+	if (!load_custom_font(mono_fc, default_font_mono, custom_font_name_source, font_hinting, font_antialiasing, true, font_subpixel_positioning, false)) {
 		EditorSettings::get_singleton()->set_manually("interface/editor/code_font", "");
-		mono_fc->set_base_font(default_font_mono);
 	}
 	mono_fc->set_spacing(TextServer::SPACING_TOP, -EDSCALE);
 	mono_fc->set_spacing(TextServer::SPACING_BOTTOM, -EDSCALE);

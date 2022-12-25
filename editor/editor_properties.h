@@ -134,6 +134,41 @@ public:
 	EditorPropertyTextEnum();
 };
 
+class EditorSystemFont : public EditorProperty {
+	GDCLASS(EditorSystemFont, EditorProperty);
+
+	enum FontIDS {
+		ID_CUSTOM_FILE,
+		ID_SANS_SERIF,
+		ID_SERIF,
+		ID_MONO,
+		ID_FANTASY,
+		ID_CURSIVE,
+		ID_FIRST_SYSTEM = 100,
+	};
+	Vector<String> extensions;
+	EditorFileDialog *dialog = nullptr;
+	PopupMenu *menu = nullptr;
+	LineEdit *name_or_path = nullptr;
+	Button *edit = nullptr;
+
+	void _selected(const String &p_path);
+	void _focus_exited();
+	void _edit_pressed();
+	void _menu_select(int p_option);
+	void _drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
+	bool _can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
+
+protected:
+	static void _bind_methods(){};
+	void _notification(int p_what);
+
+public:
+	void setup(const Vector<String> &p_extensions);
+	virtual void update_property() override;
+	EditorSystemFont();
+};
+
 class EditorPropertyPath : public EditorProperty {
 	GDCLASS(EditorPropertyPath, EditorProperty);
 	Vector<String> extensions;

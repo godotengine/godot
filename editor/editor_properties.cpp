@@ -452,6 +452,146 @@ EditorPropertyLocale::EditorPropertyLocale() {
 	locale_edit->connect("pressed", callable_mp(this, &EditorPropertyLocale::_locale_pressed));
 }
 
+////////////////// SYSTEM FONT //////////////////////
+
+void EditorSystemFont::_selected(const String &p_path) {
+	emit_changed(get_edited_property(), p_path);
+	update_property();
+}
+
+void EditorSystemFont::_menu_select(int p_option) {
+	if (p_option == ID_CUSTOM_FILE) {
+		if (!dialog) {
+			dialog = memnew(EditorFileDialog);
+			dialog->connect("file_selected", callable_mp(this, &EditorSystemFont::_selected));
+			add_child(dialog);
+		}
+		dialog->clear_filters();
+		dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
+		dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
+		for (int i = 0; i < extensions.size(); i++) {
+			String e = extensions[i].strip_edges();
+			if (!e.is_empty()) {
+				dialog->add_filter(extensions[i].strip_edges());
+			}
+		}
+
+		dialog->popup_file_dialog();
+	} else {
+		_selected(menu->get_item_text(menu->get_item_index(p_option)));
+	}
+}
+
+void EditorSystemFont::_edit_pressed() {
+	if (!menu) {
+		menu = memnew(PopupMenu);
+		add_child(menu);
+		menu->connect("id_pressed", callable_mp(this, &EditorSystemFont::_menu_select));
+	}
+	menu->clear();
+	if (!extensions.is_empty()) {
+		menu->add_item("Select file...", ID_CUSTOM_FILE);
+		menu->add_separator();
+	}
+	menu->add_item("Sans-Serif", ID_SANS_SERIF);
+	menu->add_item("Serif", ID_SERIF);
+	menu->add_item("Monospace", ID_MONO);
+	menu->add_item("Fantasy", ID_FANTASY);
+	menu->add_item("Cursive", ID_CURSIVE);
+	menu->add_separator();
+	if (OS::get_singleton()) {
+		Vector<String> fonts = OS::get_singleton()->get_system_fonts();
+		for (int i = 0; i < fonts.size(); i++) {
+			menu->add_item(fonts[i], ID_FIRST_SYSTEM + i);
+		}
+	}
+	Rect2 gp = edit->get_screen_rect();
+	menu->reset_size();
+	Vector2 popup_pos = gp.position - Vector2(menu->get_contents_minimum_size().x, 0);
+	menu->set_position(popup_pos);
+	menu->popup();
+}
+
+void EditorSystemFont::update_property() {
+	name_or_path->set_text(get_edited_object()->get(get_edited_property()));
+}
+
+void EditorSystemFont::setup(const Vector<String> &p_extensions) {
+	extensions = p_extensions;
+}
+
+void EditorSystemFont::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
+			edit->set_icon(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")));
+		} break;
+	}
+}
+
+void EditorSystemFont::_focus_exited() {
+	_selected(name_or_path->get_text());
+}
+
+void EditorSystemFont::_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
+	const Dictionary drag_data = p_data;
+	if (!drag_data.has("type")) {
+		return;
+	}
+	if (String(drag_data["type"]) != "files") {
+		return;
+	}
+	const Vector<String> filesPaths = drag_data["files"];
+	if (filesPaths.size() == 0) {
+		return;
+	}
+
+	emit_changed(get_edited_property(), filesPaths[0]);
+	update_property();
+}
+
+bool EditorSystemFont::_can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
+	const Dictionary drag_data = p_data;
+	if (!drag_data.has("type")) {
+		return false;
+	}
+	if (String(drag_data["type"]) != "files") {
+		return false;
+	}
+	const Vector<String> filesPaths = drag_data["files"];
+	if (filesPaths.size() == 0) {
+		return false;
+	}
+
+	for (const String &extension : extensions) {
+		if (filesPaths[0].ends_with(extension.substr(1, extension.size() - 1))) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+EditorSystemFont::EditorSystemFont() {
+	HBoxContainer *name_or_path_hb = memnew(HBoxContainer);
+	add_child(name_or_path_hb);
+	name_or_path = memnew(LineEdit);
+	SET_DRAG_FORWARDING_CDU(name_or_path, EditorSystemFont);
+	name_or_path->set_structured_text_bidi_override(TextServer::STRUCTURED_TEXT_FILE);
+	name_or_path_hb->add_child(name_or_path);
+	name_or_path->connect("text_submitted", callable_mp(this, &EditorSystemFont::_selected));
+	name_or_path->connect("focus_exited", callable_mp(this, &EditorSystemFont::_focus_exited));
+	name_or_path->set_h_size_flags(SIZE_EXPAND_FILL);
+
+	edit = memnew(Button);
+	edit->set_clip_text(true);
+	name_or_path_hb->add_child(edit);
+	add_focusable(name_or_path);
+	dialog = nullptr;
+	menu = nullptr;
+	edit->connect("pressed", callable_mp(this, &EditorSystemFont::_edit_pressed));
+}
+
 ///////////////////// PATH /////////////////////////
 
 void EditorPropertyPath::_set_read_only(bool p_read_only) {
@@ -4381,6 +4521,11 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 			} else if (p_hint == PROPERTY_HINT_LOCALE_ID) {
 				EditorPropertyLocale *editor = memnew(EditorPropertyLocale);
 				editor->setup(p_hint_text);
+				return editor;
+			} else if (p_hint == PROPERTY_HINT_SYSTEM_FONT) {
+				Vector<String> extensions = p_hint_text.split(",");
+				EditorSystemFont *editor = memnew(EditorSystemFont);
+				editor->setup(extensions);
 				return editor;
 			} else if (p_hint == PROPERTY_HINT_DIR || p_hint == PROPERTY_HINT_FILE || p_hint == PROPERTY_HINT_SAVE_FILE || p_hint == PROPERTY_HINT_GLOBAL_SAVE_FILE || p_hint == PROPERTY_HINT_GLOBAL_DIR || p_hint == PROPERTY_HINT_GLOBAL_FILE) {
 				Vector<String> extensions = p_hint_text.split(",");

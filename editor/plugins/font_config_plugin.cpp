@@ -1001,7 +1001,7 @@ void EditorPropertyFontNamesArray::_add_font(int p_option) {
 	int previous_size = array.call("size");
 
 	array.call("resize", previous_size + 1);
-	array.set(previous_size, menu->get_item_text(p_option));
+	array.set(previous_size, menu->get_item_text(menu->get_item_index(p_option)));
 
 	emit_changed(get_edited_property(), array, "", false);
 	object->set_array(array);
@@ -1010,18 +1010,18 @@ void EditorPropertyFontNamesArray::_add_font(int p_option) {
 
 EditorPropertyFontNamesArray::EditorPropertyFontNamesArray() {
 	menu = memnew(PopupMenu);
-	menu->add_item("Sans-Serif", 0);
-	menu->add_item("Serif", 1);
-	menu->add_item("Monospace", 2);
-	menu->add_item("Fantasy", 3);
-	menu->add_item("Cursive", 4);
+	menu->add_item("Sans-Serif", ID_SANS_SERIF);
+	menu->add_item("Serif", ID_SERIF);
+	menu->add_item("Monospace", ID_MONO);
+	menu->add_item("Fantasy", ID_FANTASY);
+	menu->add_item("Cursive", ID_CURSIVE);
 
 	menu->add_separator();
 
 	if (OS::get_singleton()) {
 		Vector<String> fonts = OS::get_singleton()->get_system_fonts();
 		for (int i = 0; i < fonts.size(); i++) {
-			menu->add_item(fonts[i], i + 6);
+			menu->add_item(fonts[i], ID_FIRST_SYSTEM + i);
 		}
 	}
 	add_child(menu);

@@ -249,7 +249,14 @@ public:
 
 class EditorPropertyFontNamesArray : public EditorPropertyArray {
 	GDCLASS(EditorPropertyFontNamesArray, EditorPropertyArray);
-
+	enum FontIDS {
+		ID_SANS_SERIF,
+		ID_SERIF,
+		ID_MONO,
+		ID_FANTASY,
+		ID_CURSIVE,
+		ID_FIRST_SYSTEM = 100,
+	};
 	PopupMenu *menu = nullptr;
 
 protected:
