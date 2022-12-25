@@ -49,52 +49,6 @@
 
 // Implementation specific methods.
 
-void DisplayServerWayland::_poll_events_thread(void *p_wls) {
-	WaylandState *wls = (WaylandState *)p_wls;
-
-	struct pollfd poll_fd;
-	poll_fd.fd = wl_display_get_fd(wls->wl_display);
-	poll_fd.events = POLLIN | POLLHUP;
-
-	while (true) {
-		// Empty the event queue while it's full.
-		while (wl_display_prepare_read(wls->wl_display) != 0) {
-			// We aren't using wl_display_dispatch(), instead "manually" handling events
-			// through wl_display_dispatch_pending so that we can use a global wmutex and
-			// be sure that this and the main thread won't race over stuff, as long as
-			// the main thread locks it too.
-			//
-			// Note that the main thread can still call wl_display_roundtrip as it
-			// directly handles all events, effectively bypassing this polling loop and
-			// thus the mutex locking, avoiding a deadlock.
-			MutexLock mutex_lock(wls->mutex);
-
-			wl_display_dispatch_pending(wls->wl_display);
-		}
-
-		if (wl_display_flush(wls->wl_display) == -1) {
-			if (errno != EAGAIN) {
-				print_error(vformat("Error %d while flushing the Wayland display.", errno));
-				wls->events_thread_done.set();
-			}
-		}
-
-		// Wait for the event file descriptor to have new data.
-		poll(&poll_fd, 1, -1);
-
-		if (wls->events_thread_done.is_set()) {
-			wl_display_cancel_read(wls->wl_display);
-			break;
-		}
-
-		if (poll_fd.revents | POLLIN) {
-			wl_display_read_events(wls->wl_display);
-		} else {
-			wl_display_cancel_read(wls->wl_display);
-		}
-	}
-}
-
 // Read the content pointed by fd into a string.
 String DisplayServerWayland::_string_read_fd(int fd) {
 	// This is pretty much an arbitrary size.
@@ -130,6 +84,44 @@ String DisplayServerWayland::_string_read_fd(int fd) {
 	String ret;
 	ret.parse_utf8((const char *)data.ptr(), bytes_read);
 	return ret;
+}
+
+// Based on the wayland book's shared memory boilerplate (PD/CC0).
+// See: https://wayland-book.com/surfaces/shared-memory.html
+int DisplayServerWayland::_allocate_shm_file(size_t size) {
+	int retries = 100;
+
+	do {
+		// Generate a random name.
+		char name[] = "/wl_shm-godot-XXXXXX";
+		for (long unsigned int i = sizeof(name) - 7; i < sizeof(name) - 1; i++) {
+			name[i] = Math::random('A', 'Z');
+		}
+
+		// Try to open a shared memory object with that name.
+		int fd = shm_open(name, O_RDWR | O_CREAT | O_EXCL, 0600);
+		if (fd >= 0) {
+			// Success, unlink its name as we just need the file descriptor.
+			shm_unlink(name);
+
+			// Resize the file to the requested length.
+			int ret;
+			do {
+				ret = ftruncate(fd, size);
+			} while (ret < 0 && errno == EINTR);
+
+			if (ret < 0) {
+				close(fd);
+				return -1;
+			}
+
+			return fd;
+		}
+
+		retries--;
+	} while (retries > 0 && errno == EEXIST);
+
+	return -1;
 }
 
 // Read the content of a "text/plain" wl_data_offer.
@@ -182,100 +174,6 @@ String DisplayServerWayland::_wp_primary_selection_offer_read(struct wl_display 
 	return "";
 }
 
-#ifdef LIBDECOR_ENABLED
-void DisplayServerWayland::libdecor_on_error(struct libdecor *context, enum libdecor_error error, const char *message) {
-	ERR_PRINT(vformat("libdecor error %d: %s", error, message));
-}
-
-// NOTE: This is pretty much a reimplementation of _xdg_surface_on_configure
-// and _xdg_toplevel_on_configure. Libdecor really likes wrapping everything,
-// forcing us to do stuff like this.
-void DisplayServerWayland::libdecor_frame_on_configure(struct libdecor_frame *frame, struct libdecor_configuration *configuration, void *user_data) {
-	WindowData *wd = (WindowData *)user_data;
-	ERR_FAIL_NULL(wd);
-
-	WaylandState *wls = wd->wls;
-	ERR_FAIL_NULL(wls);
-
-	int width = 0;
-	int height = 0;
-
-	if (!libdecor_configuration_get_content_size(configuration, frame, &width, &height)) {
-		// The configuration doesn't have a size. We'll use the one already set in the window.
-		width = wd->rect.size.width;
-		height = wd->rect.size.height;
-	} else {
-		// The configuration has a size, let's update the window rect.
-		wd->rect.size.width = width;
-		wd->rect.size.height = height;
-	}
-
-	libdecor_window_state window_state = LIBDECOR_WINDOW_STATE_NONE;
-
-	// Expect the window to be in windowed mode. The mode will get overridden if
-	// the compositor reports otherwise.
-	wd->mode = WINDOW_MODE_WINDOWED;
-
-	if (libdecor_configuration_get_window_state(configuration, &window_state)) {
-		switch (window_state) {
-			case LIBDECOR_WINDOW_STATE_MAXIMIZED: {
-				wd->mode = WINDOW_MODE_MAXIMIZED;
-			} break;
-
-			case LIBDECOR_WINDOW_STATE_FULLSCREEN: {
-				wd->mode = WINDOW_MODE_FULLSCREEN;
-			} break;
-
-			default: {
-				// We don't care about the other states (for now).
-			} break;
-		}
-	}
-
-	Ref<WaylandWindowRectMessage> winrect_msg;
-	winrect_msg.instantiate();
-
-	winrect_msg->rect = wd->rect;
-
-	wls->message_queue.push_back(winrect_msg);
-
-	struct libdecor_state *new_state = libdecor_state_new(width, height);
-	libdecor_frame_commit(frame, new_state, configuration);
-	libdecor_state_free(new_state);
-
-	DEBUG_LOG_WAYLAND("libdecor frame on configure");
-}
-
-void DisplayServerWayland::libdecor_frame_on_close(struct libdecor_frame *frame, void *user_data) {
-	WindowData *wd = (WindowData *)user_data;
-	ERR_FAIL_NULL(wd);
-
-	WaylandState *wls = wd->wls;
-	ERR_FAIL_NULL(wls);
-
-	Ref<WaylandWindowEventMessage> winevent_msg;
-	winevent_msg.instantiate();
-
-	winevent_msg->event = WINDOW_EVENT_CLOSE_REQUEST;
-
-	wls->message_queue.push_back(winevent_msg);
-
-	DEBUG_LOG_WAYLAND("libdecor frame on close");
-}
-
-void DisplayServerWayland::libdecor_frame_on_commit(struct libdecor_frame *frame, void *user_data) {
-	WindowData *wd = (WindowData *)user_data;
-	ERR_FAIL_NULL(wd);
-
-	wl_surface_commit(wd->wl_surface);
-
-	DEBUG_LOG_WAYLAND("libdecor frame on commit");
-}
-
-void DisplayServerWayland::libdecor_frame_on_dismiss_popup(struct libdecor_frame *frame, const char *seat_name, void *user_data) {
-}
-#endif // LIBDECOR_ENABLED
-
 void DisplayServerWayland::_seat_state_set_current(SeatState &p_ss) {
 	WaylandState *wls = p_ss.wls;
 	ERR_FAIL_NULL(wls);
@@ -302,6 +200,48 @@ void DisplayServerWayland::_seat_state_set_current(SeatState &p_ss) {
 	wls->current_seat = &p_ss;
 
 	_wayland_state_update_cursor(*wls);
+}
+
+// Sets up an `InputEventKey` and returns whether it has any meaningful value.
+bool DisplayServerWayland::_seat_state_configure_key_event(SeatState &p_ss, Ref<InputEventKey> p_event, xkb_keycode_t p_keycode, bool p_pressed) {
+	// TODO: Handle keys that release multiple symbols?
+	Key keycode = KeyMappingXKB::get_keycode(xkb_state_key_get_one_sym(p_ss.xkb_state, p_keycode));
+	Key physical_keycode = KeyMappingXKB::get_scancode(p_keycode);
+
+	if (physical_keycode == Key::NONE) {
+		return false;
+	}
+
+	if (keycode == Key::NONE) {
+		keycode = physical_keycode;
+	}
+
+	if (keycode >= Key::A + 32 && keycode <= Key::Z + 32) {
+		keycode -= 'a' - 'A';
+	}
+
+	p_event->set_window_id(MAIN_WINDOW_ID);
+
+	// Set all pressed modifiers.
+	p_event->set_shift_pressed(p_ss.shift_pressed);
+	p_event->set_ctrl_pressed(p_ss.ctrl_pressed);
+	p_event->set_alt_pressed(p_ss.alt_pressed);
+	p_event->set_meta_pressed(p_ss.meta_pressed);
+
+	p_event->set_keycode(keycode);
+	p_event->set_physical_keycode(physical_keycode);
+	p_event->set_unicode(xkb_state_key_get_utf32(p_ss.xkb_state, p_keycode));
+	p_event->set_pressed(p_pressed);
+
+	// Taken from DisplayServerX11.
+	if (p_event->get_keycode() == Key::BACKTAB) {
+		// Make it consistent across platforms.
+		p_event->set_keycode(Key::TAB);
+		p_event->set_physical_keycode(Key::TAB);
+		p_event->set_shift_pressed(true);
+	}
+
+	return true;
 }
 
 void DisplayServerWayland::_wayland_state_update_cursor(WaylandState &p_wls) {
@@ -411,64 +351,6 @@ void DisplayServerWayland::_wayland_state_update_cursor(WaylandState &p_wls) {
 	}
 }
 
-void DisplayServerWayland::dispatch_input_events(const Ref<InputEvent> &p_event) {
-	((DisplayServerWayland *)(get_singleton()))->_dispatch_input_event(p_event);
-}
-
-void DisplayServerWayland::_dispatch_input_event(const Ref<InputEvent> &p_event) {
-	Variant ev = p_event;
-	Variant *evp = &ev;
-	Variant ret;
-	Callable::CallError ce;
-
-	Callable callable = wls.main_window.input_event_callback;
-	if (callable.is_valid()) {
-		callable.callp((const Variant **)&evp, 1, ret, ce);
-	}
-}
-
-// Sets up an `InputEventKey` and returns whether it has any meaningful value.
-bool DisplayServerWayland::_seat_state_configure_key_event(SeatState &p_ss, Ref<InputEventKey> p_event, xkb_keycode_t p_keycode, bool p_pressed) {
-	// TODO: Handle keys that release multiple symbols?
-	Key keycode = KeyMappingXKB::get_keycode(xkb_state_key_get_one_sym(p_ss.xkb_state, p_keycode));
-	Key physical_keycode = KeyMappingXKB::get_scancode(p_keycode);
-
-	if (physical_keycode == Key::NONE) {
-		return false;
-	}
-
-	if (keycode == Key::NONE) {
-		keycode = physical_keycode;
-	}
-
-	if (keycode >= Key::A + 32 && keycode <= Key::Z + 32) {
-		keycode -= 'a' - 'A';
-	}
-
-	p_event->set_window_id(MAIN_WINDOW_ID);
-
-	// Set all pressed modifiers.
-	p_event->set_shift_pressed(p_ss.shift_pressed);
-	p_event->set_ctrl_pressed(p_ss.ctrl_pressed);
-	p_event->set_alt_pressed(p_ss.alt_pressed);
-	p_event->set_meta_pressed(p_ss.meta_pressed);
-
-	p_event->set_keycode(keycode);
-	p_event->set_physical_keycode(physical_keycode);
-	p_event->set_unicode(xkb_state_key_get_utf32(p_ss.xkb_state, p_keycode));
-	p_event->set_pressed(p_pressed);
-
-	// Taken from DisplayServerX11.
-	if (p_event->get_keycode() == Key::BACKTAB) {
-		// Make it consistent across platforms.
-		p_event->set_keycode(Key::TAB);
-		p_event->set_physical_keycode(Key::TAB);
-		p_event->set_shift_pressed(true);
-	}
-
-	return true;
-}
-
 void DisplayServerWayland::_send_window_event(WindowEvent p_event) {
 	WindowData &wd = wls.main_window;
 
@@ -483,42 +365,66 @@ void DisplayServerWayland::_send_window_event(WindowEvent p_event) {
 	}
 }
 
-// Based on the wayland book's shared memory boilerplate (PD/CC0).
-// See: https://wayland-book.com/surfaces/shared-memory.html
-int DisplayServerWayland::_allocate_shm_file(size_t size) {
-	int retries = 100;
+void DisplayServerWayland::_poll_events_thread(void *p_wls) {
+	WaylandState *wls = (WaylandState *)p_wls;
 
-	do {
-		// Generate a random name.
-		char name[] = "/wl_shm-godot-XXXXXX";
-		for (long unsigned int i = sizeof(name) - 7; i < sizeof(name) - 1; i++) {
-			name[i] = Math::random('A', 'Z');
+	struct pollfd poll_fd;
+	poll_fd.fd = wl_display_get_fd(wls->wl_display);
+	poll_fd.events = POLLIN | POLLHUP;
+
+	while (true) {
+		// Empty the event queue while it's full.
+		while (wl_display_prepare_read(wls->wl_display) != 0) {
+			// We aren't using wl_display_dispatch(), instead "manually" handling events
+			// through wl_display_dispatch_pending so that we can use a global wmutex and
+			// be sure that this and the main thread won't race over stuff, as long as
+			// the main thread locks it too.
+			//
+			// Note that the main thread can still call wl_display_roundtrip as it
+			// directly handles all events, effectively bypassing this polling loop and
+			// thus the mutex locking, avoiding a deadlock.
+			MutexLock mutex_lock(wls->mutex);
+
+			wl_display_dispatch_pending(wls->wl_display);
 		}
 
-		// Try to open a shared memory object with that name.
-		int fd = shm_open(name, O_RDWR | O_CREAT | O_EXCL, 0600);
-		if (fd >= 0) {
-			// Success, unlink its name as we just need the file descriptor.
-			shm_unlink(name);
-
-			// Resize the file to the requested length.
-			int ret;
-			do {
-				ret = ftruncate(fd, size);
-			} while (ret < 0 && errno == EINTR);
-
-			if (ret < 0) {
-				close(fd);
-				return -1;
+		if (wl_display_flush(wls->wl_display) == -1) {
+			if (errno != EAGAIN) {
+				print_error(vformat("Error %d while flushing the Wayland display.", errno));
+				wls->events_thread_done.set();
 			}
-
-			return fd;
 		}
 
-		retries--;
-	} while (retries > 0 && errno == EEXIST);
+		// Wait for the event file descriptor to have new data.
+		poll(&poll_fd, 1, -1);
 
-	return -1;
+		if (wls->events_thread_done.is_set()) {
+			wl_display_cancel_read(wls->wl_display);
+			break;
+		}
+
+		if (poll_fd.revents | POLLIN) {
+			wl_display_read_events(wls->wl_display);
+		} else {
+			wl_display_cancel_read(wls->wl_display);
+		}
+	}
+}
+
+void DisplayServerWayland::dispatch_input_events(const Ref<InputEvent> &p_event) {
+	((DisplayServerWayland *)(get_singleton()))->_dispatch_input_event(p_event);
+}
+
+void DisplayServerWayland::_dispatch_input_event(const Ref<InputEvent> &p_event) {
+	Variant ev = p_event;
+	Variant *evp = &ev;
+	Variant ret;
+	Callable::CallError ce;
+
+	Callable callable = wls.main_window.input_event_callback;
+	if (callable.is_valid()) {
+		callable.callp((const Variant **)&evp, 1, ret, ce);
+	}
 }
 
 void DisplayServerWayland::_wl_registry_on_global(void *data, struct wl_registry *wl_registry, uint32_t name, const char *interface, uint32_t version) {
@@ -1836,6 +1742,100 @@ void DisplayServerWayland::_wp_primary_selection_source_on_cancelled(void *data,
 		return;
 	}
 }
+
+#ifdef LIBDECOR_ENABLED
+void DisplayServerWayland::libdecor_on_error(struct libdecor *context, enum libdecor_error error, const char *message) {
+	ERR_PRINT(vformat("libdecor error %d: %s", error, message));
+}
+
+// NOTE: This is pretty much a reimplementation of _xdg_surface_on_configure
+// and _xdg_toplevel_on_configure. Libdecor really likes wrapping everything,
+// forcing us to do stuff like this.
+void DisplayServerWayland::libdecor_frame_on_configure(struct libdecor_frame *frame, struct libdecor_configuration *configuration, void *user_data) {
+	WindowData *wd = (WindowData *)user_data;
+	ERR_FAIL_NULL(wd);
+
+	WaylandState *wls = wd->wls;
+	ERR_FAIL_NULL(wls);
+
+	int width = 0;
+	int height = 0;
+
+	if (!libdecor_configuration_get_content_size(configuration, frame, &width, &height)) {
+		// The configuration doesn't have a size. We'll use the one already set in the window.
+		width = wd->rect.size.width;
+		height = wd->rect.size.height;
+	} else {
+		// The configuration has a size, let's update the window rect.
+		wd->rect.size.width = width;
+		wd->rect.size.height = height;
+	}
+
+	libdecor_window_state window_state = LIBDECOR_WINDOW_STATE_NONE;
+
+	// Expect the window to be in windowed mode. The mode will get overridden if
+	// the compositor reports otherwise.
+	wd->mode = WINDOW_MODE_WINDOWED;
+
+	if (libdecor_configuration_get_window_state(configuration, &window_state)) {
+		switch (window_state) {
+			case LIBDECOR_WINDOW_STATE_MAXIMIZED: {
+				wd->mode = WINDOW_MODE_MAXIMIZED;
+			} break;
+
+			case LIBDECOR_WINDOW_STATE_FULLSCREEN: {
+				wd->mode = WINDOW_MODE_FULLSCREEN;
+			} break;
+
+			default: {
+				// We don't care about the other states (for now).
+			} break;
+		}
+	}
+
+	Ref<WaylandWindowRectMessage> winrect_msg;
+	winrect_msg.instantiate();
+
+	winrect_msg->rect = wd->rect;
+
+	wls->message_queue.push_back(winrect_msg);
+
+	struct libdecor_state *new_state = libdecor_state_new(width, height);
+	libdecor_frame_commit(frame, new_state, configuration);
+	libdecor_state_free(new_state);
+
+	DEBUG_LOG_WAYLAND("libdecor frame on configure");
+}
+
+void DisplayServerWayland::libdecor_frame_on_close(struct libdecor_frame *frame, void *user_data) {
+	WindowData *wd = (WindowData *)user_data;
+	ERR_FAIL_NULL(wd);
+
+	WaylandState *wls = wd->wls;
+	ERR_FAIL_NULL(wls);
+
+	Ref<WaylandWindowEventMessage> winevent_msg;
+	winevent_msg.instantiate();
+
+	winevent_msg->event = WINDOW_EVENT_CLOSE_REQUEST;
+
+	wls->message_queue.push_back(winevent_msg);
+
+	DEBUG_LOG_WAYLAND("libdecor frame on close");
+}
+
+void DisplayServerWayland::libdecor_frame_on_commit(struct libdecor_frame *frame, void *user_data) {
+	WindowData *wd = (WindowData *)user_data;
+	ERR_FAIL_NULL(wd);
+
+	wl_surface_commit(wd->wl_surface);
+
+	DEBUG_LOG_WAYLAND("libdecor frame on commit");
+}
+
+void DisplayServerWayland::libdecor_frame_on_dismiss_popup(struct libdecor_frame *frame, const char *seat_name, void *user_data) {
+}
+#endif // LIBDECOR_ENABLED
 
 // Interface mthods
 
