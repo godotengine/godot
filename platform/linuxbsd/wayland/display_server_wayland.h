@@ -435,7 +435,6 @@ class DisplayServerWayland : public DisplayServer {
 
 	static bool _seat_state_configure_key_event(SeatState &p_seat, Ref<InputEventKey> p_event, xkb_keycode_t p_keycode, bool p_pressed);
 
-	void _window_data_set_mode(WindowData &p_wd, WindowMode p_mode);
 	void _send_window_event(WindowEvent p_event);
 
 	static int _allocate_shm_file(size_t size);
