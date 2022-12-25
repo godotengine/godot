@@ -49,6 +49,7 @@ List<Color> ColorPicker::recent_preset_cache;
 void ColorPicker::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
+			text_type->set_icon(get_theme_icon(SNAME("Script"), SNAME("EditorIcons")));
 			_update_color();
 #ifdef TOOLS_ENABLED
 			if (Engine::get_singleton()->is_editor_hint()) {
@@ -489,13 +490,31 @@ void ColorPicker::_reset_theme() {
 	}
 }
 
-void ColorPicker::_html_submitted(const String &p_html) {
-	if (updating || text_is_constructor || !c_text->is_visible()) {
+void ColorPicker::_text_submitted(const String &p_text) {
+	if (updating || !c_text->is_visible()) {
 		return;
 	}
 
 	Color previous_color = color;
-	color = Color::html(p_html);
+
+	if (text_is_constructor) {
+		PackedStringArray rgb_color = p_text.lstrip("Color(").rstrip(")").replace(" ", "").split(",");
+		int arr_size = rgb_color.size();
+
+		if (arr_size < 3) {
+			return;
+		}
+
+		float r = rgb_color[0].to_float();
+		float g = rgb_color[1].to_float();
+		float b = rgb_color[2].to_float();
+		float a = arr_size > 3 ? rgb_color[3].to_float() : 1.0f;
+
+		color = Color(r, g, b, a);
+	} else {
+		color = Color::html(p_text);
+	}
+
 	if (!is_editing_alpha()) {
 		color.a = previous_color.a;
 	}
@@ -589,20 +608,8 @@ void ColorPicker::_update_recent_presets() {
 }
 
 void ColorPicker::_text_type_toggled() {
-	text_is_constructor = !text_is_constructor;
-	if (text_is_constructor) {
-		text_type->set_text("");
-		text_type->set_icon(get_theme_icon(SNAME("Script"), SNAME("EditorIcons")));
-
-		c_text->set_editable(false);
-		c_text->set_h_size_flags(SIZE_EXPAND_FILL);
-	} else {
-		text_type->set_text("#");
-		text_type->set_icon(nullptr);
-
-		c_text->set_editable(true);
-		c_text->set_h_size_flags(SIZE_FILL);
-	}
+	text_is_constructor = text_type->is_pressed();
+	hex_label->set_text(text_is_constructor ? "Code" : "Hex");
 	_update_color();
 }
 
@@ -915,11 +922,11 @@ bool ColorPicker::is_deferred_mode() const {
 }
 
 void ColorPicker::_update_text_value() {
-	bool text_visible = true;
+	bool hex_available = true;
 	if (text_is_constructor) {
-		String t = "Color(" + String::num(color.r) + ", " + String::num(color.g) + ", " + String::num(color.b);
+		String t = "Color(" + String::num(color.r, 3) + ", " + String::num(color.g, 3) + ", " + String::num(color.b, 3);
 		if (edit_alpha && color.a < 1) {
-			t += ", " + String::num(color.a) + ")";
+			t += ", " + String::num(color.a, 3) + ")";
 		} else {
 			t += ")";
 		}
@@ -927,13 +934,13 @@ void ColorPicker::_update_text_value() {
 	}
 
 	if (color.r > 1 || color.g > 1 || color.b > 1 || color.r < 0 || color.g < 0 || color.b < 0) {
-		text_visible = false;
+		hex_available = false;
+		text_type->set_pressed(true);
 	} else if (!text_is_constructor) {
 		c_text->set_text(color.to_html(edit_alpha && color.a < 1));
 	}
 
-	text_type->set_visible(text_visible);
-	c_text->set_visible(text_visible);
+	text_type->set_disabled(!hex_available);
 }
 
 void ColorPicker::_sample_input(const Ref<InputEvent> &p_event) {
@@ -1428,11 +1435,11 @@ void ColorPicker::_screen_pick_pressed() {
 	//screen->show_modal();
 }
 
-void ColorPicker::_html_focus_exit() {
+void ColorPicker::_text_focus_exit() {
 	if (c_text->is_menu_visible()) {
 		return;
 	}
-	_html_submitted(c_text->get_text());
+	_text_submitted(c_text->get_text());
 }
 
 void ColorPicker::set_can_add_swatches(bool p_enabled) {
@@ -1690,25 +1697,28 @@ ColorPicker::ColorPicker() {
 	hex_hbc->set_alignment(ALIGNMENT_BEGIN);
 	vbr->add_child(hex_hbc);
 
-	hex_hbc->add_child(memnew(Label("Hex")));
+	hex_label = memnew(Label("Hex"));
+	hex_hbc->add_child(hex_label);
+
+	c_text = memnew(LineEdit);
+	hex_hbc->add_child(c_text);
+	c_text->set_select_all_on_focus(true);
+	c_text->connect("text_submitted", callable_mp(this, &ColorPicker::_text_submitted));
+	c_text->connect("text_changed", callable_mp(this, &ColorPicker::_text_changed));
+	c_text->connect("focus_exited", callable_mp(this, &ColorPicker::_text_focus_exit));
+	c_text->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
 	text_type = memnew(Button);
 	hex_hbc->add_child(text_type);
-	text_type->set_text("#");
-	text_type->set_tooltip_text(RTR("Switch between hexadecimal and code values."));
+	text_type->set_tooltip_text(RTR("Switch between hexadecimal and RGB code values."));
+	text_type->set_h_size_flags(Control::SIZE_SHRINK_END);
+	text_type->set_toggle_mode(true);
 	if (Engine::get_singleton()->is_editor_hint()) {
 		text_type->connect("pressed", callable_mp(this, &ColorPicker::_text_type_toggled));
 	} else {
 		text_type->set_flat(true);
 		text_type->set_mouse_filter(MOUSE_FILTER_IGNORE);
 	}
-
-	c_text = memnew(LineEdit);
-	hex_hbc->add_child(c_text);
-	c_text->set_select_all_on_focus(true);
-	c_text->connect("text_submitted", callable_mp(this, &ColorPicker::_html_submitted));
-	c_text->connect("text_changed", callable_mp(this, &ColorPicker::_text_changed));
-	c_text->connect("focus_exited", callable_mp(this, &ColorPicker::_html_focus_exit));
 
 	wheel_edit = memnew(AspectRatioContainer);
 	wheel_edit->set_h_size_flags(SIZE_EXPAND_FILL);

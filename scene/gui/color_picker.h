@@ -130,6 +130,7 @@ private:
 	HBoxContainer *sample_hbc = nullptr;
 	GridContainer *slider_gc = nullptr;
 	HBoxContainer *hex_hbc = nullptr;
+	Label *hex_label = nullptr;
 	MenuButton *btn_mode = nullptr;
 	Button *mode_btns[MODE_BUTTON_COUNT];
 	Ref<ButtonGroup> mode_group = nullptr;
@@ -190,7 +191,7 @@ private:
 	PickerShapeType _get_actual_shape() const;
 	void create_slider(GridContainer *gc, int idx);
 	void _reset_theme();
-	void _html_submitted(const String &p_html);
+	void _text_submitted(const String &p_text);
 	void _value_changed(double);
 	void _update_controls();
 	void _update_color(bool p_update_sliders = true);
@@ -211,7 +212,7 @@ private:
 	void _text_changed(const String &p_new_text);
 	void _add_preset_pressed();
 	void _screen_pick_pressed();
-	void _html_focus_exit();
+	void _text_focus_exit();
 
 	inline int _get_preset_size();
 	void _add_preset_button(int p_size, const Color &p_color);
