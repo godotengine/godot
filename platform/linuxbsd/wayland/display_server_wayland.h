@@ -423,19 +423,17 @@ class DisplayServerWayland : public DisplayServer {
 #endif
 
 	static String _string_read_fd(int fd);
+	static int _allocate_shm_file(size_t size);
 
 	static String _wl_data_offer_read(struct wl_display *wl_display, struct wl_data_offer *wl_data_offer);
 	static String _wp_primary_selection_offer_read(struct wl_display *wl_display, struct zwp_primary_selection_offer_v1 *wp_primary_selection_offer);
 
-	static void _seat_state_override_cursor_shape(SeatState &p_ss, CursorShape p_shape);
 	static void _seat_state_set_current(SeatState &p_ss);
-	static void _wayland_state_update_cursor(WaylandState &p_wls);
-
 	static bool _seat_state_configure_key_event(SeatState &p_seat, Ref<InputEventKey> p_event, xkb_keycode_t p_keycode, bool p_pressed);
 
-	void _send_window_event(WindowEvent p_event);
+	static void _wayland_state_update_cursor(WaylandState &p_wls);
 
-	static int _allocate_shm_file(size_t size);
+	void _send_window_event(WindowEvent p_event);
 
 	static void _poll_events_thread(void *p_wls);
 

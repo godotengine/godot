@@ -297,54 +297,11 @@ void DisplayServerWayland::_seat_state_set_current(SeatState &p_ss) {
 			zwp_confined_pointer_v1_destroy(wls->current_seat->wp_confined_pointer);
 			wls->current_seat->wp_confined_pointer = nullptr;
 		}
-
-		_seat_state_override_cursor_shape(*wls->current_seat, CURSOR_ARROW);
 	}
 
 	wls->current_seat = &p_ss;
 
 	_wayland_state_update_cursor(*wls);
-}
-
-void DisplayServerWayland::_seat_state_override_cursor_shape(SeatState &p_ss, CursorShape p_shape) {
-	if (!p_ss.wl_pointer) {
-		return;
-	}
-
-	ERR_FAIL_NULL(p_ss.wls);
-
-	struct wl_buffer *cursor_buffer = nullptr;
-	Point2i hotspot;
-
-	if (!p_ss.wls->custom_cursors.has(p_shape)) {
-		// Select the default cursor data.
-		struct wl_cursor_image *cursor_image = p_ss.wls->cursor_images[p_shape];
-
-		if (!cursor_image) {
-			// TODO: Error out?
-			return;
-		}
-
-		cursor_buffer = p_ss.wls->cursor_bufs[p_shape];
-		hotspot.x = cursor_image->hotspot_x;
-		hotspot.y = cursor_image->hotspot_y;
-	} else {
-		// Select the custom cursor data.
-		CustomWaylandCursor &custom_cursor = p_ss.wls->custom_cursors[p_shape];
-
-		cursor_buffer = custom_cursor.wl_buffer;
-		hotspot = custom_cursor.hotspot;
-	}
-
-	// Update the cursor's hotspot.
-	wl_pointer_set_cursor(p_ss.wl_pointer, p_ss.pointer_enter_serial, p_ss.cursor_surface, hotspot.x, hotspot.y);
-
-	// Attach the new cursor's buffer and damage it.
-	wl_surface_attach(p_ss.cursor_surface, cursor_buffer, 0, 0);
-	wl_surface_damage_buffer(p_ss.cursor_surface, 0, 0, INT_MAX, INT_MAX);
-
-	// Commit everything.
-	wl_surface_commit(p_ss.cursor_surface);
 }
 
 void DisplayServerWayland::_wayland_state_update_cursor(WaylandState &p_wls) {
@@ -359,7 +316,8 @@ void DisplayServerWayland::_wayland_state_update_cursor(WaylandState &p_wls) {
 	struct wl_pointer *wp = ss.wl_pointer;
 	struct zwp_pointer_constraints_v1 *pc = p_wls.globals.wp_pointer_constraints;
 
-	// We want to change the location of these pointers so we get their reference.
+	// In order to change the address of the SeatState's pointers we need to get
+	// their reference first.
 	struct zwp_locked_pointer_v1 *&lp = ss.wp_locked_pointer;
 	struct zwp_confined_pointer_v1 *&cp = ss.wp_confined_pointer;
 
@@ -374,7 +332,42 @@ void DisplayServerWayland::_wayland_state_update_cursor(WaylandState &p_wls) {
 		wl_surface_commit(ss.cursor_surface);
 	} else {
 		// Update the cursor shape.
-		_seat_state_override_cursor_shape(ss, p_wls.cursor_shape);
+		if (!ss.wl_pointer) {
+			return;
+		}
+
+		struct wl_buffer *cursor_buffer = nullptr;
+		Point2i hotspot;
+
+		if (!p_wls.custom_cursors.has(p_wls.cursor_shape)) {
+			// Select the default cursor data.
+			struct wl_cursor_image *cursor_image = p_wls.cursor_images[p_wls.cursor_shape];
+
+			if (!cursor_image) {
+				// TODO: Error out?
+				return;
+			}
+
+			cursor_buffer = p_wls.cursor_bufs[p_wls.cursor_shape];
+			hotspot.x = cursor_image->hotspot_x;
+			hotspot.y = cursor_image->hotspot_y;
+		} else {
+			// Select the custom cursor data.
+			CustomWaylandCursor &custom_cursor = p_wls.custom_cursors[p_wls.cursor_shape];
+
+			cursor_buffer = custom_cursor.wl_buffer;
+			hotspot = custom_cursor.hotspot;
+		}
+
+		// Update the cursor's hotspot.
+		wl_pointer_set_cursor(ss.wl_pointer, ss.pointer_enter_serial, ss.cursor_surface, hotspot.x, hotspot.y);
+
+		// Attach the new cursor's buffer and damage it.
+		wl_surface_attach(ss.cursor_surface, cursor_buffer, 0, 0);
+		wl_surface_damage_buffer(ss.cursor_surface, 0, 0, INT_MAX, INT_MAX);
+
+		// Commit everything.
+		wl_surface_commit(ss.cursor_surface);
 	}
 
 	WindowData &wd = p_wls.main_window;
@@ -944,8 +937,8 @@ void DisplayServerWayland::_wl_pointer_on_enter(void *data, struct wl_pointer *w
 	WaylandState *wls = ss->wls;
 	ERR_FAIL_NULL(wls);
 
-	// Restore the cursor with our own cursor surface.
-	_seat_state_override_cursor_shape(*ss, wls->cursor_shape);
+	// Make sure the cursor shows its assigned surface.
+	_wayland_state_update_cursor(*wls);
 
 	ss->pointer_enter_serial = serial;
 
