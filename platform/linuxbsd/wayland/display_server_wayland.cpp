@@ -1572,7 +1572,11 @@ void DisplayServerWayland::_xdg_toplevel_on_wm_capabilities(void *data, struct x
 
 void DisplayServerWayland::_xdg_toplevel_decoration_on_configure(void *data, struct zxdg_toplevel_decoration_v1 *xdg_toplevel_decoration, uint32_t mode) {
 	if (mode == ZXDG_TOPLEVEL_DECORATION_V1_MODE_CLIENT_SIDE) {
-		WARN_PRINT_ONCE("Client side decorations are not yet supported!");
+#ifdef LIBDECOR_ENABLED
+		WARN_PRINT_ONCE("Native client side decorations are not yet supported without libdecor!");
+#else
+		WARN_PRINT_ONCE("Native client side decorations are not yet supported!");
+#endif // LIBDECOR_ENABLED
 	}
 }
 
