@@ -431,8 +431,6 @@ class DisplayServerWayland : public DisplayServer {
 	static void _seat_state_set_current(SeatState &p_ss);
 	static void _wayland_state_update_cursor(WaylandState &p_wls);
 
-	static void _wayland_state_send_mouse_button(WaylandState &p_wls, MouseButton p_button);
-
 	static bool _seat_state_configure_key_event(SeatState &p_seat, Ref<InputEventKey> p_event, xkb_keycode_t p_keycode, bool p_pressed);
 
 	void _send_window_event(WindowEvent p_event);
