@@ -1162,6 +1162,7 @@ void RenderForwardClustered::_update_volumetric_fog(Ref<RenderSceneBuffersRD> p_
 	ERR_FAIL_COND(p_render_buffers.is_null());
 
 	Ref<RenderBufferDataForwardClustered> rb_data = p_render_buffers->get_custom_data(RB_SCOPE_FORWARD_CLUSTERED);
+	ERR_FAIL_COND(rb_data.is_null());
 
 	ERR_FAIL_COND(!p_render_buffers->has_custom_data(RB_SCOPE_GI));
 	Ref<RendererRD::GI::RenderBuffersGI> rbgi = p_render_buffers->get_custom_data(RB_SCOPE_GI);
@@ -1332,7 +1333,9 @@ void RenderForwardClustered::_pre_opaque_render(RenderDataRD *p_render_data, boo
 
 	Ref<RenderSceneBuffersRD> rb = p_render_data->render_buffers;
 	Ref<RenderBufferDataForwardClustered> rb_data;
-	if (rb.is_valid()) {
+	if (rb.is_valid() && rb->has_custom_data(RB_SCOPE_FORWARD_CLUSTERED)) {
+		// Our forward clustered custom data buffer will only be available when we're rendering our normal view.
+		// This will not be available when rendering reflection probes.
 		rb_data = rb->get_custom_data(RB_SCOPE_FORWARD_CLUSTERED);
 	}
 
@@ -1485,7 +1488,7 @@ void RenderForwardClustered::_pre_opaque_render(RenderDataRD *p_render_data, boo
 		current_cluster_builder->bake_cluster();
 	}
 
-	if (rb.is_valid()) {
+	if (rb_data.is_valid()) {
 		bool directional_shadows = RendererRD::LightStorage::get_singleton()->has_directional_shadows(directional_light_count);
 		_update_volumetric_fog(rb, p_render_data->environment, p_render_data->scene_data->cam_projection, p_render_data->scene_data->cam_transform, p_render_data->scene_data->prev_cam_transform.affine_inverse(), p_render_data->shadow_atlas, directional_light_count, directional_shadows, positional_light_count, p_render_data->voxel_gi_count, *p_render_data->fog_volumes);
 	}
@@ -1551,7 +1554,11 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	Ref<RenderBufferDataForwardClustered> rb_data;
 	if (p_render_data && p_render_data->render_buffers.is_valid()) {
 		rb = p_render_data->render_buffers;
-		rb_data = rb->get_custom_data(RB_SCOPE_FORWARD_CLUSTERED);
+		if (rb->has_custom_data(RB_SCOPE_FORWARD_CLUSTERED)) {
+			// Our forward clustered custom data buffer will only be available when we're rendering our normal view.
+			// This will not be available when rendering reflection probes.
+			rb_data = rb->get_custom_data(RB_SCOPE_FORWARD_CLUSTERED);
+		}
 	}
 	static const int texture_multisamples[RS::VIEWPORT_MSAA_MAX] = { 1, 2, 4, 8 };
 
@@ -1570,32 +1577,32 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	}
 
 	// obtain cluster builder
-	if (rb_data.is_valid()) {
-		current_cluster_builder = rb_data->cluster_builder;
-	} else if (light_storage->owns_reflection_probe_instance(p_render_data->reflection_probe)) {
+	if (light_storage->owns_reflection_probe_instance(p_render_data->reflection_probe)) {
 		current_cluster_builder = light_storage->reflection_probe_instance_get_cluster_builder(p_render_data->reflection_probe, &cluster_builder_shared);
 
 		if (p_render_data->camera_attributes.is_valid()) {
 			light_storage->reflection_probe_set_baked_exposure(light_storage->reflection_probe_instance_get_probe(p_render_data->reflection_probe), RSG::camera_attributes->camera_attributes_get_exposure_normalization_factor(p_render_data->camera_attributes));
 		}
+	} else if (rb_data.is_valid()) {
+		current_cluster_builder = rb_data->cluster_builder;
+
+		p_render_data->voxel_gi_count = 0;
+
+		if (rb.is_valid()) {
+			if (rb->has_custom_data(RB_SCOPE_SDFGI)) {
+				Ref<RendererRD::GI::SDFGI> sdfgi = rb->get_custom_data(RB_SCOPE_SDFGI);
+				if (sdfgi.is_valid()) {
+					sdfgi->update_cascades();
+					sdfgi->pre_process_gi(p_render_data->scene_data->cam_transform, p_render_data);
+					sdfgi->update_light();
+				}
+			}
+
+			gi.setup_voxel_gi_instances(p_render_data, p_render_data->render_buffers, p_render_data->scene_data->cam_transform, *p_render_data->voxel_gi_instances, p_render_data->voxel_gi_count);
+		}
 	} else {
 		ERR_PRINT("No render buffer nor reflection atlas, bug"); //should never happen, will crash
 		current_cluster_builder = nullptr;
-	}
-
-	p_render_data->voxel_gi_count = 0;
-
-	if (rb.is_valid()) {
-		if (rb->has_custom_data(RB_SCOPE_SDFGI)) {
-			Ref<RendererRD::GI::SDFGI> sdfgi = rb->get_custom_data(RB_SCOPE_SDFGI);
-			if (sdfgi.is_valid()) {
-				sdfgi->update_cascades();
-				sdfgi->pre_process_gi(p_render_data->scene_data->cam_transform, p_render_data);
-				sdfgi->update_light();
-			}
-		}
-
-		gi.setup_voxel_gi_instances(p_render_data, p_render_data->render_buffers, p_render_data->scene_data->cam_transform, *p_render_data->voxel_gi_instances, p_render_data->voxel_gi_count);
 	}
 
 	if (current_cluster_builder != nullptr) {
@@ -2054,7 +2061,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 
 	RD::get_singleton()->draw_command_begin_label("Resolve");
 
-	if (rb.is_valid() && rb->get_msaa_3d() != RS::VIEWPORT_MSAA_DISABLED) {
+	if (rb_data.is_valid() && rb->get_msaa_3d() != RS::VIEWPORT_MSAA_DISABLED) {
 		for (uint32_t v = 0; v < rb->get_view_count(); v++) {
 			RD::get_singleton()->texture_resolve_multisample(rb_data->get_color_msaa(v), rb->get_internal_texture(v));
 			resolve_effects->resolve_depth(rb_data->get_depth_msaa(v), rb->get_depth_texture(v), rb->get_internal_size(), texture_multisamples[rb->get_msaa_3d()]);
@@ -2073,12 +2080,12 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	}
 	RD::get_singleton()->draw_command_end_label();
 
-	if (rb.is_valid() && taa && rb->get_use_taa()) {
+	if (rb_data.is_valid() && taa && rb->get_use_taa()) {
 		RENDER_TIMESTAMP("TAA")
 		taa->process(rb, _render_buffers_get_color_format(), p_render_data->scene_data->z_near, p_render_data->scene_data->z_far);
 	}
 
-	if (rb.is_valid()) {
+	if (rb_data.is_valid()) {
 		_debug_draw_cluster(rb);
 
 		RENDER_TIMESTAMP("Tonemap");
@@ -2086,7 +2093,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 		_render_buffers_post_process_and_tonemap(p_render_data);
 	}
 
-	if (rb.is_valid()) {
+	if (rb_data.is_valid()) {
 		_render_buffers_debug_draw(rb, p_render_data->shadow_atlas, p_render_data->occluder_debug_tex);
 
 		if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_SDFGI && rb->has_custom_data(RB_SCOPE_SDFGI)) {
@@ -2876,7 +2883,11 @@ RID RenderForwardClustered::_setup_render_pass_uniform_set(RenderListType p_rend
 	Ref<RenderBufferDataForwardClustered> rb_data;
 	if (p_render_data && p_render_data->render_buffers.is_valid()) {
 		rb = p_render_data->render_buffers;
-		rb_data = rb->get_custom_data(RB_SCOPE_FORWARD_CLUSTERED);
+		if (rb->has_custom_data(RB_SCOPE_FORWARD_CLUSTERED)) {
+			// Our forward clustered custom data buffer will only be available when we're rendering our normal view.
+			// This will not be available when rendering reflection probes.
+			rb_data = rb->get_custom_data(RB_SCOPE_FORWARD_CLUSTERED);
+		}
 	}
 
 	//default render buffer and scene state uniform set

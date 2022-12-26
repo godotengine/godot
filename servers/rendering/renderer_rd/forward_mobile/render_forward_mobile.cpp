@@ -362,6 +362,8 @@ RID RenderForwardMobile::_setup_render_pass_uniform_set(RenderListType p_render_
 	if (p_render_data && p_render_data->render_buffers.is_valid()) {
 		rb = p_render_data->render_buffers;
 		if (rb->has_custom_data(RB_SCOPE_MOBILE)) {
+			// Our forward mobile custom data buffer will only be available when we're rendering our normal view.
+			// This will not be available when rendering reflection probes.
 			rb_data = rb->get_custom_data(RB_SCOPE_MOBILE);
 		}
 	}
@@ -643,6 +645,8 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 	if (p_render_data->render_buffers.is_valid()) {
 		rb = p_render_data->render_buffers;
 		if (rb->has_custom_data(RB_SCOPE_MOBILE)) {
+			// Our forward mobile custom data buffer will only be available when we're rendering our normal view.
+			// This will not be available when rendering reflection probes.
 			rb_data = rb->get_custom_data(RB_SCOPE_MOBILE);
 		}
 	}
