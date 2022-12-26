@@ -590,19 +590,6 @@ void NavigationMesh::_validate_property(PropertyInfo &p_property) const {
 
 #ifndef DISABLE_DEPRECATED
 bool NavigationMesh::_set(const StringName &p_name, const Variant &p_value) {
-	String prop_name = p_name;
-	if (prop_name.find("/") != -1) {
-		// Compatibility with pre-3.5 "category/path" property names.
-		prop_name = prop_name.replace("/", "_");
-		if (prop_name == "sample_partition_type_sample_partition_type") {
-			set_sample_partition_type((NavigationMesh::SamplePartitionType)p_value.operator int());
-		} else if (prop_name == "filter_filter_walkable_low_height_spans") {
-			set_filter_walkable_low_height_spans(p_value);
-		} else {
-			set(prop_name, p_value);
-		}
-		return true;
-	}
 	if (p_name == "polygon_verts_per_poly") { // Renamed in 4.0 beta 9.
 		set_vertices_per_polygon(p_value);
 		return true;
@@ -611,19 +598,6 @@ bool NavigationMesh::_set(const StringName &p_name, const Variant &p_value) {
 }
 
 bool NavigationMesh::_get(const StringName &p_name, Variant &r_ret) const {
-	String prop_name = p_name;
-	if (prop_name.find("/") != -1) {
-		// Compatibility with pre-3.5 "category/path" property names.
-		prop_name = prop_name.replace("/", "_");
-		if (prop_name == "sample_partition_type_sample_partition_type") {
-			r_ret = get_sample_partition_type();
-		} else if (prop_name == "filter_filter_walkable_low_height_spans") {
-			r_ret = get_filter_walkable_low_height_spans();
-		} else {
-			r_ret = get(prop_name);
-		}
-		return true;
-	}
 	if (p_name == "polygon_verts_per_poly") { // Renamed in 4.0 beta 9.
 		r_ret = get_vertices_per_polygon();
 		return true;

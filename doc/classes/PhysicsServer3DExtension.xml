@@ -772,6 +772,13 @@
 			<description>
 			</description>
 		</method>
+		<method name="_joint_disable_collisions_between_bodies" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="disable" type="bool" />
+			<description>
+			</description>
+		</method>
 		<method name="_joint_get_solver_priority" qualifiers="virtual const">
 			<return type="int" />
 			<param index="0" name="joint" type="RID" />
@@ -780,6 +787,12 @@
 		</method>
 		<method name="_joint_get_type" qualifiers="virtual const">
 			<return type="int" enum="PhysicsServer3D.JointType" />
+			<param index="0" name="joint" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="_joint_is_disabled_collisions_between_bodies" qualifiers="virtual const">
+			<return type="bool" />
 			<param index="0" name="joint" type="RID" />
 			<description>
 			</description>

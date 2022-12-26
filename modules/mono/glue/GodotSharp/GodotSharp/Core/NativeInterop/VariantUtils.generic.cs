@@ -315,13 +315,13 @@ public partial class VariantUtils
             return UnsafeAsT(ConvertToPlane(variant));
 
         if (typeof(T) == typeof(Callable))
-            return UnsafeAsT(ConvertToCallableManaged(variant));
+            return UnsafeAsT(ConvertToCallable(variant));
 
         if (typeof(T) == typeof(Signal))
-            return UnsafeAsT(ConvertToSignalManaged(variant));
+            return UnsafeAsT(ConvertToSignal(variant));
 
         if (typeof(T) == typeof(string))
-            return UnsafeAsT(ConvertToStringObject(variant));
+            return UnsafeAsT(ConvertToString(variant));
 
         if (typeof(T) == typeof(byte[]))
             return UnsafeAsT(ConvertAsPackedByteArrayToSystemArray(variant));
@@ -360,19 +360,19 @@ public partial class VariantUtils
             return UnsafeAsT(ConvertToSystemArrayOfRID(variant));
 
         if (typeof(T) == typeof(StringName))
-            return UnsafeAsT(ConvertToStringNameObject(variant));
+            return UnsafeAsT(ConvertToStringName(variant));
 
         if (typeof(T) == typeof(NodePath))
-            return UnsafeAsT(ConvertToNodePathObject(variant));
+            return UnsafeAsT(ConvertToNodePath(variant));
 
         if (typeof(T) == typeof(RID))
             return UnsafeAsT(ConvertToRID(variant));
 
         if (typeof(T) == typeof(Godot.Collections.Dictionary))
-            return UnsafeAsT(ConvertToDictionaryObject(variant));
+            return UnsafeAsT(ConvertToDictionary(variant));
 
         if (typeof(T) == typeof(Godot.Collections.Array))
-            return UnsafeAsT(ConvertToArrayObject(variant));
+            return UnsafeAsT(ConvertToArray(variant));
 
         if (typeof(T) == typeof(Variant))
             return UnsafeAsT(Variant.CreateCopyingBorrowed(variant));

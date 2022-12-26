@@ -437,7 +437,7 @@ float DisplayServerIOS::screen_get_refresh_rate(int p_screen) const {
 }
 
 float DisplayServerIOS::screen_get_scale(int p_screen) const {
-	return [UIScreen mainScreen].nativeScale;
+	return [UIScreen mainScreen].scale;
 }
 
 Vector<DisplayServer::WindowID> DisplayServerIOS::get_window_list() const {

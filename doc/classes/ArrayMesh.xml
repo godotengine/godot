@@ -102,13 +102,13 @@
 			<param index="0" name="transform" type="Transform3D" />
 			<param index="1" name="texel_size" type="float" />
 			<description>
-				Will perform a UV unwrap on the [ArrayMesh] to prepare the mesh for lightmapping.
+				Performs a UV unwrap on the [ArrayMesh] to prepare the mesh for lightmapping.
 			</description>
 		</method>
 		<method name="regen_normal_maps">
 			<return type="void" />
 			<description>
-				Will regenerate normal maps for the [ArrayMesh].
+				Regenerates tangents for each of the [ArrayMesh]'s surfaces.
 			</description>
 		</method>
 		<method name="set_blend_shape_name">

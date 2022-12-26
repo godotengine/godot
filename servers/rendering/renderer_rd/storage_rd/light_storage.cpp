@@ -1315,6 +1315,10 @@ void LightStorage::reflection_atlas_set_size(RID p_ref_atlas, int p_reflection_s
 
 		ra->reflections.clear();
 	}
+
+	if (ra->render_buffers.is_valid()) {
+		ra->render_buffers->cleanup();
+	}
 }
 
 int LightStorage::reflection_atlas_get_size(RID p_ref_atlas) const {
@@ -1360,6 +1364,9 @@ void LightStorage::reflection_probe_release_atlas_index(RID p_instance) {
 	ERR_FAIL_COND(!atlas);
 	ERR_FAIL_INDEX(rpi->atlas_index, atlas->reflections.size());
 	atlas->reflections.write[rpi->atlas_index].owner = RID();
+
+	// TODO investigate if this is enough? shouldn't we be freeing our textures and framebuffers?
+
 	rpi->atlas_index = -1;
 	rpi->atlas = RID();
 }
@@ -1397,6 +1404,10 @@ bool LightStorage::reflection_probe_instance_begin_render(RID p_instance, RID p_
 
 	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.get_or_null(p_instance);
 	ERR_FAIL_COND_V(!rpi, false);
+
+	if (atlas->render_buffers.is_null()) {
+		atlas->render_buffers.instantiate();
+	}
 
 	RD::get_singleton()->draw_command_begin_label("Reflection probe render");
 
@@ -1455,6 +1466,9 @@ bool LightStorage::reflection_probe_instance_begin_render(RID p_instance, RID p_
 		Vector<RID> fb;
 		fb.push_back(atlas->depth_buffer);
 		atlas->depth_fb = RD::get_singleton()->framebuffer_create(fb);
+
+		atlas->render_buffers->cleanup();
+		atlas->render_buffers->configure_for_reflections(Size2i(atlas->size, atlas->size));
 	}
 
 	if (rpi->atlas_index == -1) {
@@ -1492,6 +1506,13 @@ bool LightStorage::reflection_probe_instance_begin_render(RID p_instance, RID p_
 	RD::get_singleton()->draw_command_end_label();
 
 	return true;
+}
+
+Ref<RenderSceneBuffers> LightStorage::reflection_probe_atlas_get_render_buffers(RID p_reflection_atlas) {
+	ReflectionAtlas *atlas = reflection_atlas_owner.get_or_null(p_reflection_atlas);
+	ERR_FAIL_COND_V(!atlas, Ref<RenderSceneBuffersRD>());
+
+	return atlas->render_buffers;
 }
 
 bool LightStorage::reflection_probe_instance_postprocess_step(RID p_instance) {

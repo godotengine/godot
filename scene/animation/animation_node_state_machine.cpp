@@ -41,12 +41,12 @@ AnimationNodeStateMachineTransition::SwitchMode AnimationNodeStateMachineTransit
 	return switch_mode;
 }
 
-void AnimationNodeStateMachineTransition::set_auto_advance(bool p_enable) {
-	auto_advance = p_enable;
+void AnimationNodeStateMachineTransition::set_advance_mode(AdvanceMode p_mode) {
+	advance_mode = p_mode;
 }
 
-bool AnimationNodeStateMachineTransition::has_auto_advance() const {
-	return auto_advance;
+AnimationNodeStateMachineTransition::AdvanceMode AnimationNodeStateMachineTransition::get_advance_mode() const {
+	return advance_mode;
 }
 
 void AnimationNodeStateMachineTransition::set_advance_condition(const StringName &p_condition) {
@@ -107,15 +107,6 @@ Ref<Curve> AnimationNodeStateMachineTransition::get_xfade_curve() const {
 	return xfade_curve;
 }
 
-void AnimationNodeStateMachineTransition::set_disabled(bool p_disabled) {
-	disabled = p_disabled;
-	emit_changed();
-}
-
-bool AnimationNodeStateMachineTransition::is_disabled() const {
-	return disabled;
-}
-
 void AnimationNodeStateMachineTransition::set_priority(int p_priority) {
 	priority = p_priority;
 	emit_changed();
@@ -129,8 +120,8 @@ void AnimationNodeStateMachineTransition::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_switch_mode", "mode"), &AnimationNodeStateMachineTransition::set_switch_mode);
 	ClassDB::bind_method(D_METHOD("get_switch_mode"), &AnimationNodeStateMachineTransition::get_switch_mode);
 
-	ClassDB::bind_method(D_METHOD("set_auto_advance", "auto_advance"), &AnimationNodeStateMachineTransition::set_auto_advance);
-	ClassDB::bind_method(D_METHOD("has_auto_advance"), &AnimationNodeStateMachineTransition::has_auto_advance);
+	ClassDB::bind_method(D_METHOD("set_advance_mode", "mode"), &AnimationNodeStateMachineTransition::set_advance_mode);
+	ClassDB::bind_method(D_METHOD("get_advance_mode"), &AnimationNodeStateMachineTransition::get_advance_mode);
 
 	ClassDB::bind_method(D_METHOD("set_advance_condition", "name"), &AnimationNodeStateMachineTransition::set_advance_condition);
 	ClassDB::bind_method(D_METHOD("get_advance_condition"), &AnimationNodeStateMachineTransition::get_advance_condition);
@@ -140,9 +131,6 @@ void AnimationNodeStateMachineTransition::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_xfade_curve", "curve"), &AnimationNodeStateMachineTransition::set_xfade_curve);
 	ClassDB::bind_method(D_METHOD("get_xfade_curve"), &AnimationNodeStateMachineTransition::get_xfade_curve);
-
-	ClassDB::bind_method(D_METHOD("set_disabled", "disabled"), &AnimationNodeStateMachineTransition::set_disabled);
-	ClassDB::bind_method(D_METHOD("is_disabled"), &AnimationNodeStateMachineTransition::is_disabled);
 
 	ClassDB::bind_method(D_METHOD("set_priority", "priority"), &AnimationNodeStateMachineTransition::set_priority);
 	ClassDB::bind_method(D_METHOD("get_priority"), &AnimationNodeStateMachineTransition::get_priority);
@@ -155,16 +143,18 @@ void AnimationNodeStateMachineTransition::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "priority", PROPERTY_HINT_RANGE, "0,32,1"), "set_priority", "get_priority");
 	ADD_GROUP("Switch", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "switch_mode", PROPERTY_HINT_ENUM, "Immediate,Sync,At End"), "set_switch_mode", "get_switch_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_advance"), "set_auto_advance", "has_auto_advance");
 	ADD_GROUP("Advance", "advance_");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "advance_mode", PROPERTY_HINT_ENUM, "Disabled,Enabled,Auto"), "set_advance_mode", "get_advance_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "advance_condition"), "set_advance_condition", "get_advance_condition");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "advance_expression", PROPERTY_HINT_EXPRESSION, ""), "set_advance_expression", "get_advance_expression");
-	ADD_GROUP("Disabling", "");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
 
 	BIND_ENUM_CONSTANT(SWITCH_MODE_IMMEDIATE);
 	BIND_ENUM_CONSTANT(SWITCH_MODE_SYNC);
 	BIND_ENUM_CONSTANT(SWITCH_MODE_AT_END);
+
+	BIND_ENUM_CONSTANT(ADVANCE_MODE_DISABLED);
+	BIND_ENUM_CONSTANT(ADVANCE_MODE_ENABLED);
+	BIND_ENUM_CONSTANT(ADVANCE_MODE_AUTO);
 
 	ADD_SIGNAL(MethodInfo("advance_condition_changed"));
 }
@@ -234,7 +224,7 @@ bool AnimationNodeStateMachinePlayback::_travel(AnimationNodeStateMachine *p_sta
 
 	//build open list
 	for (int i = 0; i < p_state_machine->transitions.size(); i++) {
-		if (p_state_machine->transitions[i].transition->is_disabled()) {
+		if (p_state_machine->transitions[i].transition->get_advance_mode() == AnimationNodeStateMachineTransition::ADVANCE_MODE_DISABLED) {
 			continue;
 		}
 
@@ -279,7 +269,7 @@ bool AnimationNodeStateMachinePlayback::_travel(AnimationNodeStateMachine *p_sta
 		StringName transition = p_state_machine->transitions[least_cost_transition->get()].local_to;
 
 		for (int i = 0; i < p_state_machine->transitions.size(); i++) {
-			if (p_state_machine->transitions[i].transition->is_disabled()) {
+			if (p_state_machine->transitions[i].transition->get_advance_mode() == AnimationNodeStateMachineTransition::ADVANCE_MODE_DISABLED) {
 				continue;
 			}
 
@@ -379,6 +369,7 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 					// can't travel, then teleport
 					path.clear();
 					current = start_request;
+					play_start = true;
 				}
 				start_request = StringName(); //clear start request
 			}
@@ -424,7 +415,7 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 				fading_pos += p_time;
 			}
 			fade_blend = MIN(1.0, fading_pos / fading_time);
-			if (fade_blend >= 1.0) {
+			if (fade_blend > 1.0) {
 				fading_from = StringName();
 			}
 		}
@@ -433,9 +424,9 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 	if (current_curve.is_valid()) {
 		fade_blend = current_curve->sample(fade_blend);
 	}
-	float rem = p_state_machine->blend_node(current, p_state_machine->states[current].node, p_time, p_seek, p_is_external_seeking, Math::is_zero_approx(fade_blend) ? CMP_EPSILON : fade_blend, AnimationNode::FILTER_IGNORE, true); // Blend values must be more than CMP_EPSILON to process discrete keys in edge.
+	double rem = p_state_machine->blend_node(current, p_state_machine->states[current].node, p_time, p_seek, p_is_external_seeking, Math::is_zero_approx(fade_blend) ? CMP_EPSILON : fade_blend, AnimationNode::FILTER_IGNORE, true); // Blend values must be more than CMP_EPSILON to process discrete keys in edge.
 
-	float fade_blend_inv = 1.0 - fade_blend;
+	double fade_blend_inv = 1.0 - fade_blend;
 	if (fading_from != StringName()) {
 		p_state_machine->blend_node(fading_from, p_state_machine->states[fading_from].node, p_time, p_seek, p_is_external_seeking, Math::is_zero_approx(fade_blend_inv) ? CMP_EPSILON : fade_blend_inv, AnimationNode::FILTER_IGNORE, true); // Blend values must be more than CMP_EPSILON to process discrete keys in edge.
 	}
@@ -446,19 +437,19 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 	}
 
 	{ //advance and loop check
-		float next_pos = len_current - rem;
+		double next_pos = len_current - rem;
 		end_loop = next_pos < pos_current;
 		pos_current = next_pos; //looped
 	}
 
 	//find next
 	StringName next;
-	float next_xfade = 0.0;
+	double next_xfade = 0.0;
 	AnimationNodeStateMachineTransition::SwitchMode switch_mode = AnimationNodeStateMachineTransition::SWITCH_MODE_IMMEDIATE;
 
 	if (path.size()) {
 		for (int i = 0; i < p_state_machine->transitions.size(); i++) {
-			if (p_state_machine->transitions[i].transition->is_disabled()) {
+			if (p_state_machine->transitions[i].transition->get_advance_mode() == AnimationNodeStateMachineTransition::ADVANCE_MODE_DISABLED) {
 				continue;
 			}
 
@@ -474,7 +465,7 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 		int auto_advance_to = -1;
 
 		for (int i = 0; i < p_state_machine->transitions.size(); i++) {
-			if (p_state_machine->transitions[i].transition->is_disabled()) {
+			if (p_state_machine->transitions[i].transition->get_advance_mode() == AnimationNodeStateMachineTransition::ADVANCE_MODE_DISABLED) {
 				continue;
 			}
 
@@ -542,7 +533,7 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 				int auto_advance_to = -1;
 
 				for (int i = 0; i < prev_state_machine->transitions.size(); i++) {
-					if (prev_state_machine->transitions[i].transition->is_disabled()) {
+					if (prev_state_machine->transitions[i].transition->get_advance_mode() == AnimationNodeStateMachineTransition::ADVANCE_MODE_DISABLED) {
 						continue;
 					}
 
@@ -629,14 +620,14 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 }
 
 bool AnimationNodeStateMachinePlayback::_check_advance_condition(const Ref<AnimationNodeStateMachine> state_machine, const Ref<AnimationNodeStateMachineTransition> transition) const {
-	if (transition->has_auto_advance()) {
-		return true;
+	if (transition->get_advance_mode() != AnimationNodeStateMachineTransition::ADVANCE_MODE_AUTO) {
+		return false;
 	}
 
 	StringName advance_condition_name = transition->get_advance_condition_name();
 
-	if (advance_condition_name != StringName() && bool(state_machine->get_parameter(advance_condition_name))) {
-		return true;
+	if (advance_condition_name != StringName() && !bool(state_machine->get_parameter(advance_condition_name))) {
+		return false;
 	}
 
 	if (transition->expression.is_valid()) {
@@ -646,20 +637,18 @@ bool AnimationNodeStateMachinePlayback::_check_advance_condition(const Ref<Anima
 		NodePath advance_expression_base_node_path = tree_base->get_advance_expression_base_node();
 		Node *expression_base = tree_base->get_node_or_null(advance_expression_base_node_path);
 
-		WARN_PRINT_ONCE("Animation transition has a valid expression, but no expression base node was set on its AnimationTree.");
-
 		if (expression_base) {
 			Ref<Expression> exp = transition->expression;
 			bool ret = exp->execute(Array(), expression_base, false, Engine::get_singleton()->is_editor_hint()); // Avoids allowing the user to crash the system with an expression by only allowing const calls.
-			if (!exp->has_execute_failed()) {
-				if (ret) {
-					return true;
-				}
+			if (exp->has_execute_failed() || !ret) {
+				return false;
 			}
+		} else {
+			WARN_PRINT_ONCE("Animation transition has a valid expression, but no expression base node was set on its AnimationTree.");
 		}
 	}
 
-	return false;
+	return true;
 }
 
 void AnimationNodeStateMachinePlayback::_bind_methods() {
