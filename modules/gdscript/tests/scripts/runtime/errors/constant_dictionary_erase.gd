@@ -1,4 +1,4 @@
 const dictionary := {}
 
 func test():
-  dictionary.erase(0)
+	dictionary.erase(0)

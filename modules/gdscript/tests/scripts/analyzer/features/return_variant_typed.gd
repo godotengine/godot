@@ -1,5 +1,5 @@
 func variant() -> Variant:
-  return 'variant'
+	return 'variant'
 
 func test():
-  print(variant())
+	print(variant())
