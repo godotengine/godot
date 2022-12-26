@@ -733,6 +733,8 @@ void ScriptDebuggerRemote::_poll_events() {
 			if (get_break_language()) {
 				debug(get_break_language());
 			}
+		} else if (command == "save_node") {
+			_save_node(cmd[1], cmd[2]);
 		} else if (command == "request_scene_tree") {
 #ifdef DEBUG_ENABLED
 			if (scene_tree) {
