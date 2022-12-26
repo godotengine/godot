@@ -2954,15 +2954,18 @@ void ScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Co
 
 			Ref<Resource> res = open_file(file);
 			if (res.is_valid()) {
-				if (tab_container->get_tab_count() > num_tabs_before) {
+				const int num_tabs = tab_container->get_tab_count();
+				if (num_tabs > num_tabs_before) {
 					tab_container->move_child(tab_container->get_tab_control(tab_container->get_tab_count() - 1), new_index);
-					num_tabs_before = tab_container->get_tab_count();
-				} else { /* Maybe script was already open */
+					num_tabs_before = num_tabs;
+				} else if (num_tabs > 0) { /* Maybe script was already open */
 					tab_container->move_child(tab_container->get_tab_control(tab_container->get_current_tab()), new_index);
 				}
 			}
 		}
-		tab_container->set_current_tab(new_index);
+		if (tab_container->get_tab_count() > 0) {
+			tab_container->set_current_tab(new_index);
+		}
 		_update_script_names();
 	}
 }
