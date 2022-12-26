@@ -933,10 +933,8 @@ Vector3 Geometry3D::get_closest_point_to_segment_uncapped(const Vector3 &p_point
 }
 
 Vector<Vector3> Geometry3D::get_closest_points_between_line_and_circle(const Vector3 &p_line_origin, const Vector3 &p_line_direction, const Vector3 &p_circle_center, const Vector3 &p_circle_normal, const real_t p_circle_radius) {
-	Vector<Vector3> line_closest;
-	line_closest.resize_zeroed(2);
-	Vector<Vector3> circle_closest;
-	circle_closest.resize_zeroed(2);
+	Vector3 line_closest[2];
+	Vector3 circle_closest[2];
 	size_t num_closest_pairs = 0;
 	bool equidistant = false;
 	::Geometry3D::get_closest_points_between_line_and_circle(p_line_origin, p_line_direction, p_circle_center, p_circle_normal, p_circle_radius, line_closest, circle_closest, num_closest_pairs, equidistant);

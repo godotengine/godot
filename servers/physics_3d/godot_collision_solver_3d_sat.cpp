@@ -1729,10 +1729,8 @@ static void _collision_capsule_cylinder(const GodotShape3D *p_a, const Transform
 	*/
 
 	// Get axes from closest points between capsule axis and cylinder end caps.
-	Vector<Vector3> circle_closest;
-	circle_closest.resize_zeroed(2);
-	Vector<Vector3> line_closest;
-	line_closest.resize_zeroed(2);
+	Vector3 circle_closest[2];
+	Vector3 line_closest[2];
 	size_t num_closest_pairs = 0;
 	bool equidistant;
 	Vector3 cylinder_B_circle1_center = p_transform_b.origin + cylinder_B_axis * cylinder_B->get_height() * 0.5;
@@ -1985,10 +1983,8 @@ static void _collision_cylinder_cylinder(const GodotShape3D *p_a, const Transfor
 	}
 
 	// Get axes from closest points between cylinder A axis and cylinder B end caps.
-	Vector<Vector3> circle_closest;
-	circle_closest.resize_zeroed(2);
-	Vector<Vector3> line_closest;
-	line_closest.resize_zeroed(2);
+	Vector3 circle_closest[2];
+	Vector3 line_closest[2];
 	size_t num_closest_pairs = 0;
 	bool equidistant;
 	Vector3 cylinder_B_circle1_center = p_transform_b.origin + cylinder_B_axis * cylinder_B->get_height() * 0.5;

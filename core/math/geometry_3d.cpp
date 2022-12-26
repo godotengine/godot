@@ -1196,12 +1196,9 @@ Vector3 get_some_orthogonal_vector(const Vector3 &p_vector, bool p_unit_length) 
 	return result;
 }
 
-void Geometry3D::get_closest_points_between_line_and_circle(const Vector3 &p_line_origin, const Vector3 &p_line_direction, const Vector3 &p_circle_center, const Vector3 &p_circle_normal, const real_t p_circle_radius, Vector<Vector3> &r_line_closest, Vector<Vector3> &r_circle_closest, size_t &r_num_closest_pairs, bool &r_equidistant) {
+void Geometry3D::get_closest_points_between_line_and_circle(const Vector3 &p_line_origin, const Vector3 &p_line_direction, const Vector3 &p_circle_center, const Vector3 &p_circle_normal, const real_t p_circle_radius, Vector3 *r_line_closest, Vector3 *r_circle_closest, size_t &r_num_closest_pairs, bool &r_equidistant) {
 	// Based on David Eberly's Distance Between a Line and a Circle: polynomial-based algorithm.
 	// The only difference is the use of Godot's types, and the use of a numerical iterative root finder.
-
-	Vector3 *circle_closest = r_circle_closest.ptrw();
-	Vector3 *line_closest = r_line_closest.ptrw();
 
 	Vector3 D = p_line_origin - p_circle_center;
 	Vector3 NxM = p_circle_normal.cross(p_line_direction);
@@ -1264,12 +1261,12 @@ void Geometry3D::get_closest_points_between_line_and_circle(const Vector3 &p_lin
 				point_pairs.sort_custom<LineCirclePointPairSort>();
 
 				r_num_closest_pairs = 1;
-				circle_closest[0] = point_pairs[0].circle_point;
-				line_closest[0] = point_pairs[0].line_point;
+				r_circle_closest[0] = point_pairs[0].circle_point;
+				r_line_closest[0] = point_pairs[0].line_point;
 				if (point_pairs.size() > 1 && Math::is_equal_approx(point_pairs[0].squared_distance, point_pairs[1].squared_distance)) {
 					r_num_closest_pairs = 2;
-					circle_closest[1] = point_pairs[1].circle_point;
-					line_closest[1] = point_pairs[1].line_point;
+					r_circle_closest[1] = point_pairs[1].circle_point;
+					r_line_closest[1] = point_pairs[1].line_point;
 				}
 			} else {
 				// The line is parallel to the plane of the circle.
@@ -1282,13 +1279,13 @@ void Geometry3D::get_closest_points_between_line_and_circle(const Vector3 &p_lin
 					r_num_closest_pairs = 2;
 					real_t rootDiscr = Math::sqrt(discr);
 					t = -v + rootDiscr;
-					get_point_pair_from_line_parameter(p_circle_center, p_circle_normal, p_circle_radius, p_line_direction, D, t, line_closest[0], circle_closest[0]);
+					get_point_pair_from_line_parameter(p_circle_center, p_circle_normal, p_circle_radius, p_line_direction, D, t, r_line_closest[0], r_circle_closest[0]);
 					t = -v - rootDiscr;
-					get_point_pair_from_line_parameter(p_circle_center, p_circle_normal, p_circle_radius, p_line_direction, D, t, line_closest[1], circle_closest[1]);
+					get_point_pair_from_line_parameter(p_circle_center, p_circle_normal, p_circle_radius, p_line_direction, D, t, r_line_closest[1], r_circle_closest[1]);
 				} else {
 					r_num_closest_pairs = 1;
 					t = -v;
-					get_point_pair_from_line_parameter(p_circle_center, p_circle_normal, p_circle_radius, p_line_direction, D, t, line_closest[0], circle_closest[0]);
+					get_point_pair_from_line_parameter(p_circle_center, p_circle_normal, p_circle_radius, p_line_direction, D, t, r_line_closest[0], r_circle_closest[0]);
 				}
 			}
 		} else {
@@ -1299,9 +1296,9 @@ void Geometry3D::get_closest_points_between_line_and_circle(const Vector3 &p_lin
 			// minimum. The other roots produce the global minimum.
 			r_num_closest_pairs = 2;
 			t = p_circle_radius * NxM.length();
-			get_point_pair_from_line_parameter(p_circle_center, p_circle_normal, p_circle_radius, p_line_direction, D, t, line_closest[0], circle_closest[0]);
+			get_point_pair_from_line_parameter(p_circle_center, p_circle_normal, p_circle_radius, p_line_direction, D, t, r_line_closest[0], r_circle_closest[0]);
 			t = -t;
-			get_point_pair_from_line_parameter(p_circle_center, p_circle_normal, p_circle_radius, p_line_direction, D, t, line_closest[1], circle_closest[1]);
+			get_point_pair_from_line_parameter(p_circle_center, p_circle_normal, p_circle_radius, p_line_direction, D, t, r_line_closest[1], r_circle_closest[1]);
 		}
 		r_equidistant = false;
 	} else {
@@ -1311,15 +1308,15 @@ void Geometry3D::get_closest_points_between_line_and_circle(const Vector3 &p_lin
 			// H(t) = |Cross(N,D)|^2*(t + Dot(M,D))^2.
 			r_num_closest_pairs = 1;
 			t = -p_line_direction.dot(D);
-			get_point_pair_from_line_parameter(p_circle_center, p_circle_normal, p_circle_radius, p_line_direction, D, t, line_closest[0], circle_closest[0]);
+			get_point_pair_from_line_parameter(p_circle_center, p_circle_normal, p_circle_radius, p_line_direction, D, t, r_line_closest[0], r_circle_closest[0]);
 			r_equidistant = false;
 		} else {
 			// The line is C+t*N, so C is the closest point for the
 			// line and all circle points are equidistant from it.
 			Vector3 U = get_some_orthogonal_vector(p_circle_normal, true);
 			r_num_closest_pairs = 1;
-			line_closest[0] = p_circle_center;
-			circle_closest[0] = p_circle_center + p_circle_radius * U;
+			r_line_closest[0] = p_circle_center;
+			r_circle_closest[0] = p_circle_center + p_circle_radius * U;
 			r_equidistant = true;
 		}
 	}
