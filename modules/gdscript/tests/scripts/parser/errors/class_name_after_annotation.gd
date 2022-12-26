@@ -3,4 +3,4 @@
 class_name HelloWorld
 
 func test():
-    pass
+	pass

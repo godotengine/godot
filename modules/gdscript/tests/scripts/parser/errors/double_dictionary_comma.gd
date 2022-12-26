@@ -1,2 +1,2 @@
 func test():
-    var dictionary = { hello = "world",, }
+	var dictionary = { hello = "world",, }
