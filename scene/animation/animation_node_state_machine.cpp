@@ -367,9 +367,15 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 			} else {
 				if (!_travel(p_state_machine, start_request)) {
 					// can't travel, then teleport
-					path.clear();
-					current = start_request;
-					play_start = true;
+					if (p_state_machine->states.has(start_request)) {
+						path.clear();
+						current = start_request;
+						play_start = true;
+					} else {
+						StringName node = start_request;
+						start_request = StringName(); //clear start request
+						ERR_FAIL_V_MSG(0, "No such node: '" + node + "'");
+					}
 				}
 				start_request = StringName(); //clear start request
 			}
