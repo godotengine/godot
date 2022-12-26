@@ -2060,6 +2060,7 @@ static void _collision_cylinder_cylinder(const GodotShape3D *p_a, const Transfor
 		}
 	}
 
+	/*
 	real_t proj = cylinder_A_axis.cross(cylinder_B_axis).cross(cylinder_B_axis).dot(cylinder_A_axis);
 	if (Math::is_zero_approx(proj)) {
 		// Parallel cylinders, handle with specific axes only.
@@ -2067,6 +2068,7 @@ static void _collision_cylinder_cylinder(const GodotShape3D *p_a, const Transfor
 		separator.generate_contacts();
 		return;
 	}
+	*/
 
 	GodotCollisionSolver3D::CallbackResult callback = SeparatorAxisTest<GodotCylinderShape3D, GodotCylinderShape3D, withMargin>::test_contact_points;
 
