@@ -1739,6 +1739,7 @@ void TileMap::_navigation_update_dirty_quadrants(SelfList<TileMapQuadrant>::List
 							NavigationServer2D::get_singleton()->region_set_owner_id(region, get_instance_id());
 							NavigationServer2D::get_singleton()->region_set_map(region, get_world_2d()->get_navigation_map());
 							NavigationServer2D::get_singleton()->region_set_transform(region, tilemap_xform * tile_transform);
+							NavigationServer2D::get_singleton()->region_set_navigation_layers(region, tile_set->get_navigation_layer_layers(layer_index));
 							NavigationServer2D::get_singleton()->region_set_navigation_polygon(region, navigation_polygon);
 							q.navigation_regions[E_cell].write[layer_index] = region;
 						}

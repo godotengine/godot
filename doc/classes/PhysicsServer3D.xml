@@ -815,6 +815,14 @@
 			<description>
 			</description>
 		</method>
+		<method name="joint_disable_collisions_between_bodies">
+			<return type="void" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="disable" type="bool" />
+			<description>
+				Sets whether the bodies attached to the [Joint3D] will collide with each other.
+			</description>
+		</method>
 		<method name="joint_get_solver_priority" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="joint" type="RID" />
@@ -827,6 +835,13 @@
 			<param index="0" name="joint" type="RID" />
 			<description>
 				Returns the type of the Joint3D.
+			</description>
+		</method>
+		<method name="joint_is_disabled_collisions_between_bodies" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="joint" type="RID" />
+			<description>
+				Returns whether the bodies attached to the [Joint3D] will collide with each other.
 			</description>
 		</method>
 		<method name="joint_make_cone_twist">

@@ -1586,6 +1586,15 @@
 				Sets the render layers that this instance will be drawn to. Equivalent to [member VisualInstance3D.layers].
 			</description>
 		</method>
+		<method name="instance_set_pivot_data">
+			<return type="void" />
+			<param index="0" name="instance" type="RID" />
+			<param index="1" name="sorting_offset" type="float" />
+			<param index="2" name="use_aabb_center" type="bool" />
+			<description>
+				Sets the sorting offset and switches between using the bounding box or instance origin for depth sorting.
+			</description>
+		</method>
 		<method name="instance_set_scenario">
 			<return type="void" />
 			<param index="0" name="instance" type="RID" />

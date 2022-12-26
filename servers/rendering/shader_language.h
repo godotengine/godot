@@ -247,6 +247,7 @@ public:
 	enum DataInterpolation {
 		INTERPOLATION_FLAT,
 		INTERPOLATION_SMOOTH,
+		INTERPOLATION_DEFAULT,
 	};
 
 	enum Operator {
@@ -774,6 +775,7 @@ public:
 	static bool is_token_arg_qual(TokenType p_type);
 	static DataPrecision get_token_precision(TokenType p_type);
 	static String get_precision_name(DataPrecision p_type);
+	static String get_interpolation_name(DataInterpolation p_interpolation);
 	static String get_datatype_name(DataType p_type);
 	static String get_uniform_hint_name(ShaderNode::Uniform::Hint p_hint);
 	static String get_texture_filter_name(TextureFilter p_filter);

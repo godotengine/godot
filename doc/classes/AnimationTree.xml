@@ -111,9 +111,23 @@
 		</member>
 	</members>
 	<signals>
+		<signal name="animation_finished">
+			<param index="0" name="anim_name" type="StringName" />
+			<description>
+				Notifies when an animation finished playing.
+				[b]Note:[/b] This signal is not emitted if an animation is looping or aborted. Also be aware of the possibility of unseen playback by sync and xfade.
+			</description>
+		</signal>
 		<signal name="animation_player_changed">
 			<description>
 				Emitted when the [member anim_player] is changed.
+			</description>
+		</signal>
+		<signal name="animation_started">
+			<param index="0" name="anim_name" type="StringName" />
+			<description>
+				Notifies when an animation starts playing.
+				[b]Note:[/b] This signal is not emitted if an animation is looping or playbacked from the middle. Also be aware of the possibility of unseen playback by sync and xfade.
 			</description>
 		</signal>
 	</signals>
