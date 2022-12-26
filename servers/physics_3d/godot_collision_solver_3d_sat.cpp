@@ -1751,10 +1751,8 @@ static void _collision_capsule_cylinder(const GodotShape3D *p_a, const Transform
 	}
 
 	// Get axes from closest points between capsule cylinder caps and cylinder end caps.
-	Vector<Vector3> circle0_closest;
-	circle0_closest.resize_zeroed(2);
-	Vector<Vector3> circle1_closest;
-	circle1_closest.resize_zeroed(2);
+	Vector3 circle0_closest[2];
+	Vector3 circle1_closest[2];
 	Geometry3D::get_closest_points_between_circle_and_circle(capsule_A_ball_1, capsule_A_axis, capsule_A->get_radius(), cylinder_B_circle1_center, cylinder_B_axis, cylinder_B->get_radius(), circle0_closest, circle1_closest, num_closest_pairs, equidistant);
 	for (size_t i = 0; i < num_closest_pairs; i++) {
 		Vector3 axis = (circle0_closest[i] - circle1_closest[i]).normalized();
@@ -2023,10 +2021,8 @@ static void _collision_cylinder_cylinder(const GodotShape3D *p_a, const Transfor
 	}
 
 	// Get axes from closest points between cylinder A end caps and cylinder B end caps.
-	Vector<Vector3> circle0_closest;
-	circle0_closest.resize_zeroed(2);
-	Vector<Vector3> circle1_closest;
-	circle1_closest.resize_zeroed(2);
+	Vector3 circle0_closest[2];
+	Vector3 circle1_closest[2];
 	Geometry3D::get_closest_points_between_circle_and_circle(cylinder_A_circle1_center, cylinder_A_axis, cylinder_A->get_radius(), cylinder_B_circle1_center, cylinder_B_axis, cylinder_B->get_radius(), circle0_closest, circle1_closest, num_closest_pairs, equidistant);
 	for (size_t i = 0; i < num_closest_pairs; i++) {
 		Vector3 axis = (circle0_closest[i] - circle1_closest[i]).normalized();

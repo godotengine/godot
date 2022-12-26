@@ -947,10 +947,8 @@ Vector<Vector3> Geometry3D::get_closest_points_between_line_and_circle(const Vec
 }
 
 Vector<Vector3> Geometry3D::get_closest_points_between_circle_and_circle(const Vector3 &p_circle0_center, const Vector3 &p_circle0_normal, const real_t p_circle0_radius, const Vector3 &p_circle1_center, const Vector3 &p_circle1_normal, const real_t p_circle1_radius) {
-	Vector<Vector3> circle0_closest;
-	circle0_closest.resize_zeroed(2);
-	Vector<Vector3> circle1_closest;
-	circle1_closest.resize_zeroed(2);
+	Vector3 circle0_closest[2];
+	Vector3 circle1_closest[2];
 	size_t num_closest_pairs = 0;
 	bool equidistant = false;
 	::Geometry3D::get_closest_points_between_circle_and_circle(p_circle0_center, p_circle0_normal, p_circle0_radius, p_circle1_center, p_circle1_normal, p_circle1_radius, circle0_closest, circle1_closest, num_closest_pairs, equidistant);

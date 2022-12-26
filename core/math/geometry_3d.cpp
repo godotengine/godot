@@ -1367,12 +1367,9 @@ bool compute_orthonormal_basis(Vector3 &r_vector0, Vector3 &r_vector1, Vector3 &
 	return r_vector2 != Vector3(0, 0, 0);
 }
 
-void Geometry3D::get_closest_points_between_circle_and_circle(const Vector3 &p_circle0_center, const Vector3 &p_circle0_normal, const real_t p_circle0_radius, const Vector3 &p_circle1_center, const Vector3 &p_circle1_normal, const real_t p_circle1_radius, Vector<Vector3> &r_circle0_closest, Vector<Vector3> &r_circle1_closest, size_t &r_num_closest_pairs, bool &r_equidistant) {
+void Geometry3D::get_closest_points_between_circle_and_circle(const Vector3 &p_circle0_center, const Vector3 &p_circle0_normal, const real_t p_circle0_radius, const Vector3 &p_circle1_center, const Vector3 &p_circle1_normal, const real_t p_circle1_radius, Vector3 *r_circle0_closest, Vector3 *r_circle1_closest, size_t &r_num_closest_pairs, bool &r_equidistant) {
 	// Based on David Eberly's Distance Between Two Circles algorithm.
 	// The only difference is the use of Godot's types (and a minimalist Polynomial type), and the use of a different numerical iterative root finder.
-
-	Vector3 *circle0_closest = r_circle0_closest.ptrw();
-	Vector3 *circle1_closest = r_circle1_closest.ptrw();
 
 	Vector3 N0 = p_circle0_normal;
 	Vector3 N1 = p_circle1_normal;
@@ -1503,13 +1500,13 @@ void Geometry3D::get_closest_points_between_circle_and_circle(const Vector3 &p_c
 		candidates.sort_custom<CircleCirclePointPairSort>();
 
 		r_num_closest_pairs = 1;
-		circle0_closest[0] = candidates[0].circle0_point;
-		circle1_closest[0] = candidates[0].circle1_point;
+		r_circle0_closest[0] = candidates[0].circle0_point;
+		r_circle1_closest[0] = candidates[0].circle1_point;
 		r_equidistant = candidates[0].equidistant;
 		if (candidates.size() > 1 && candidates[1].squared_distance == candidates[0].squared_distance) {
 			r_num_closest_pairs = 2;
-			circle0_closest[1] = candidates[1].circle0_point;
-			circle1_closest[1] = candidates[1].circle1_point;
+			r_circle0_closest[1] = candidates[1].circle0_point;
+			r_circle1_closest[1] = candidates[1].circle1_point;
 		}
 	} else {
 		// The planes of the circles are parallel. Whether the planes
@@ -1532,8 +1529,6 @@ void Geometry3D::get_closest_points_between_circle_and_circle(const Vector3 &p_c
 		// intervals of projection of the circles on to the D-line.
 		// Circle0 projects to [-r0,r0] and circle1 projects to
 		// [d-r1,d+r1].
-		real_t r0 = p_circle0_radius;
-		real_t r1 = p_circle1_radius;
 		real_t dmr1 = d - r1;
 		//real_t distance;
 		if (dmr1 >= r0) // d >= r0 + r1
@@ -1542,8 +1537,8 @@ void Geometry3D::get_closest_points_between_circle_and_circle(const Vector3 &p_c
 			// outside the other (d = r0 + r1).
 			//distance = dmr1 - r0;
 			r_num_closest_pairs = 1;
-			circle0_closest[0] = p_circle0_center + r0 * U;
-			circle1_closest[0] = p_circle1_center - r1 * U;
+			r_circle0_closest[0] = p_circle0_center + r0 * U;
+			r_circle1_closest[0] = p_circle1_center - r1 * U;
 			r_equidistant = false;
 		} else { // d < r0 + r1
 			// The cases implicitly use the knowledge that d >= 0.
@@ -1553,16 +1548,16 @@ void Geometry3D::get_closest_points_between_circle_and_circle(const Vector3 &p_c
 				//distance = r0 - dpr1;
 				r_num_closest_pairs = 1;
 				if (d > 0.0) {
-					circle0_closest[0] = p_circle0_center + r0 * U;
-					circle1_closest[0] = p_circle1_center + r1 * U;
+					r_circle0_closest[0] = p_circle0_center + r0 * U;
+					r_circle1_closest[0] = p_circle1_center + r1 * U;
 					r_equidistant = false;
 				} else {
 					// The circles are concentric, so U = (0,0,0).
 					// Construct a vector perpendicular to N0 to use for
 					// closest points.
 					U = get_some_orthogonal_vector(p_circle0_normal, true);
-					circle0_closest[0] = p_circle0_center + r0 * U;
-					circle1_closest[0] = p_circle1_center + r1 * U;
+					r_circle0_closest[0] = p_circle0_center + r0 * U;
+					r_circle1_closest[0] = p_circle1_center + r1 * U;
 					r_equidistant = true;
 				}
 			} else if (dmr1 <= -r0) {
@@ -1570,16 +1565,16 @@ void Geometry3D::get_closest_points_between_circle_and_circle(const Vector3 &p_c
 				//distance = -r0 - dmr1;
 				r_num_closest_pairs = 1;
 				if (d > 0.0) {
-					circle0_closest[0] = p_circle0_center - r0 * U;
-					circle1_closest[0] = p_circle1_center - r1 * U;
+					r_circle0_closest[0] = p_circle0_center - r0 * U;
+					r_circle1_closest[0] = p_circle1_center - r1 * U;
 					r_equidistant = false;
 				} else {
 					// The circles are concentric, so U = (0,0,0).
 					// Construct a vector perpendicular to N0 to use for
 					// closest points.
 					U = get_some_orthogonal_vector(p_circle0_normal, true);
-					circle0_closest[0] = p_circle0_center + r0 * U;
-					circle1_closest[0] = p_circle1_center + r1 * U;
+					r_circle0_closest[0] = p_circle0_center + r0 * U;
+					r_circle1_closest[0] = p_circle1_center + r1 * U;
 					r_equidistant = true;
 				}
 			} else {
@@ -1597,10 +1592,10 @@ void Geometry3D::get_closest_points_between_circle_and_circle(const Vector3 &p_c
 				Vector3 hNxU = h * p_circle0_normal.cross(U);
 				//distance = 0.0;
 				r_num_closest_pairs = 2;
-				circle0_closest[0] = midpoint + hNxU;
-				circle0_closest[1] = midpoint - hNxU;
-				circle1_closest[0] = circle0_closest[0] + normProj;
-				circle1_closest[1] = circle0_closest[1] + normProj;
+				r_circle0_closest[0] = midpoint + hNxU;
+				r_circle0_closest[1] = midpoint - hNxU;
+				r_circle1_closest[0] = r_circle0_closest[0] + normProj;
+				r_circle1_closest[1] = r_circle0_closest[1] + normProj;
 				r_equidistant = false;
 			}
 		}
