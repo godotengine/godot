@@ -1,0 +1,416 @@
+diff --git b/thirdparty/misc/rpoly.hpp a/thirdparty/misc/rpoly.hpp
+index 86dda06037..5b45e8a9d9 100644
+--- b/thirdparty/misc/rpoly.hpp
++++ a/thirdparty/misc/rpoly.hpp
+@@ -1,6 +1,7 @@
+-/*      rpoly.cpp -- Jenkins-Traub real polynomial root finder.
++/*      rpoly.hpp -- Jenkins-Traub real polynomial root finder.
+  *
+- *      (C) 2000, C. Bond.  All rights reserved.
++ *      Author: C. Bond (2000).
++ *      This is free software released into the public domain.
+  *
+  *      Translation of TOMS493 from FORTRAN to C. This
+  *      implementation of Jenkins-Traub partially adapts
+@@ -26,7 +27,9 @@
+  *                  number of roots found. 
+  */
+ 
+-#include "math.h"
++#include "core/math/math_funcs.h"
++
++namespace RPOLY {
+ 
+ void quad(double a,double b1,double c,double *sr,double *si,
+         double *lr,double *li);
+@@ -38,11 +41,11 @@ void nextk(int *type);
+ void newest(int type,double *uu,double *vv);
+ void quadsd(int n,double *u,double *v,double *p,double *q,
+         double *a,double *b);
+-double *p,*qp,*k,*qk,*svk;
+-double sr,si,u,v,a,b,c,d,a1,a2;
+-double a3,a6,a7,e,f,g,h,szr,szi,lzr,lzi;
++thread_local double *p,*qp,*k,*qk,*svk;
++thread_local double sr,si,u,v,a,b,c,d,a1,a2;
++thread_local double a3,a6,a7,e,f,g,h,szr,szi,lzr,lzi;
+ double eta,are,mre;
+-int n,nn,nmi,zerok;
++thread_local int n,nmi;
+ 
+ int rpoly(double *op, int degree, double *zeror, double *zeroi) 
+ {
+@@ -61,12 +64,12 @@ int rpoly(double *op, int degree, double *zeror, double *zeroi)
+     mre = eta;
+     lo = smalno/eta;
+ /*  Initialization of constants for shift rotation. */        
+-    xx = sqrt(0.5);
++    xx = Math::sqrt(0.5);
+     yy = -xx;
+     rot = 94.0;
+     rot *= 0.017453293;
+-    cosr = cos(rot);
+-    sinr = sin(rot);
++    cosr = Math::cos(rot);
++    sinr = Math::sin(rot);
+     n = degree;
+ /*  Algorithm fails of the leading coefficient is zero. */
+     if (op[0] == 0.0) return -1;
+@@ -110,7 +113,7 @@ _40:
+     max = 0.0;
+     min = infin;
+     for (i=0;i<=n;i++) {
+-        x = fabs(p[i]);
++        x = Math::abs(p[i]);
+         if (x > max) max = x;
+         if (x != 0.0 && x < min) min = x;
+     }
+@@ -127,8 +130,8 @@ _40:
+         if (sc == 0.0)
+             sc = smalno;
+     }
+-    l = (int)(log(sc)/log(base) + 0.5);
+-    factor = pow(base*1.0,l);
++    l = (int)(Math::log(sc)/Math::log(base) + 0.5);
++    factor = Math::pow(base*1.0,l);
+     if (factor != 1.0) {
+         for (i=0;i<=n;i++) 
+             p[i] = factor*p[i];     /* Scale polynomial. */
+@@ -136,11 +139,11 @@ _40:
+ _110:
+ /*  Compute lower bound on moduli of roots. */
+     for (i=0;i<=n;i++) {
+-        pt[i] = (fabs(p[i]));
++        pt[i] = (Math::abs(p[i]));
+     }
+     pt[n] = - pt[n];
+ /*  Compute upper estimate of bound. */
+-    x = exp((log(-pt[n])-log(pt[0])) / (double)n);
++    x = Math::exp((Math::log(-pt[n])-Math::log(pt[0])) / (double)n);
+ /*  If Newton step at the origin is better, use it. */        
+     if (pt[n-1] != 0.0) {
+         xm = -pt[n]/pt[n-1];
+@@ -159,7 +162,7 @@ _110:
+ /*  Do Newton interation until x converges to two 
+  *  decimal places. 
+  */
+-    while (fabs(dx/x) > 0.005) {
++    while (Math::abs(dx/x) > 0.005) {
+         ff = pt[0];
+         df = ff;
+         for (i=1;i<n;i++) { 
+@@ -191,7 +194,7 @@ _110:
+                 k[j] = t*k[j-1]+p[j];
+             }
+             k[0] = p[0];
+-            zerok = (fabs(k[n-1]) <= fabs(bb)*eta*10.0);
++            zerok = (Math::abs(k[n-1]) <= Math::abs(bb)*eta*10.0);
+         }
+         else {
+ /*  Use unscaled form of recurrence. */
+@@ -268,7 +271,7 @@ void fxshfr(int l2,int *nz)
+ {
+     double svu,svv,ui,vi,s;
+     double betas,betav,oss,ovv,ss,vv,ts,tv;
+-    double ots,otv,tvv,tss;
++    double ots=0.0,otv=0.0,tvv,tss;
+ 	int type, i,j,iflag,vpass,spass,vtry,stry;
+ 
+ 	*nz = 0;
+@@ -292,8 +295,8 @@ void fxshfr(int l2,int *nz)
+ 		ts = 1.0;
+ 		if (j == 0 || type == 3) goto _70;
+ /*  Compute relative measures of convergence of s and v sequences. */
+-        if (vv != 0.0) tv = fabs((vv-ovv)/vv);
+-        if (ss != 0.0) ts = fabs((ss-oss)/ss);
++        if (vv != 0.0) tv = Math::abs((vv-ovv)/vv);
++        if (ss != 0.0) ts = Math::abs((ss-oss)/ss);
+ /*  If decreasing, multiply two most recent convergence measures. */
+ 		tvv = 1.0;
+ 		if (tv < otv) tvv = tv*otv;
+@@ -317,7 +320,7 @@ void fxshfr(int l2,int *nz)
+  */
+ 		vtry = 0;
+ 		stry = 0;
+-		if (spass && (!vpass) || tss < tvv) goto _40;
++		if ((spass && (!vpass)) || tss < tvv) goto _40;
+ _20:        
+ 		quadit(&ui,&vi,nz);
+         if (*nz > 0) return;
+@@ -380,7 +383,7 @@ _70:
+ void quadit(double *uu,double *vv,int *nz)
+ {
+     double ui,vi;
+-    double mp,omp,ee,relstp,t,zm;
++    double mp,omp=0.0,ee,relstp=0.0,t,zm;
+ 	int type,i,j,tried;
+ 
+ 	*nz = 0;
+@@ -395,23 +398,23 @@ _10:
+  *  close to multiple or nearly equal and of opposite
+  *  sign.
+  */
+-    if (fabs(fabs(szr)-fabs(lzr)) > 0.01 * fabs(lzr)) return;
++    if (Math::abs(Math::abs(szr)-Math::abs(lzr)) > 0.01 * Math::abs(lzr)) return;
+ /*  Evaluate polynomial by quadratic synthetic division. */
+     quadsd(n,&u,&v,p,qp,&a,&b);
+-    mp = fabs(a-szr*b) + fabs(szi*b);
++    mp = Math::abs(a-szr*b) + Math::abs(szi*b);
+ /*  Compute a rigorous bound on the rounding error in
+  *  evaluating p.
+  */
+-    zm = sqrt(fabs(v));
+-    ee = 2.0*fabs(qp[0]);
++    zm = Math::sqrt(Math::abs(v));
++    ee = 2.0*Math::abs(qp[0]);
+ 	t = -szr*b;
+ 	for (i=1;i<n;i++) {
+-        ee = ee*zm + fabs(qp[i]);
++        ee = ee*zm + Math::abs(qp[i]);
+ 	}
+-    ee = ee*zm + fabs(a+t);
++    ee = ee*zm + Math::abs(a+t);
+     ee *= (5.0 *mre + 4.0*are);
+-       ee = ee -(5.0*mre+2.0*are)*(fabs(a+t) +fabs(b*zm));
+-       ee = ee+2.0*are*fabs(t);
++       ee = ee -(5.0*mre+2.0*are)*(Math::abs(a+t) +Math::abs(b*zm));
++       ee = ee+2.0*are*Math::abs(t);
+ /*  Iteration has converged sufficiently if the
+  *  polynomial value is less than 20 times this bound.
+  */
+@@ -419,7 +422,7 @@ _10:
+         *nz = 2;
+         return;
+     }
+-_30:
++//_30:
+ 	j++;
+ /*  Stop iteration after 20 steps. */
+ 	if (j > 20) return;
+@@ -430,7 +433,7 @@ _30:
+  *  to the cluster.
+  */
+ 	if (relstp < eta) relstp = eta;
+-	relstp = sqrt(relstp);
++	relstp = Math::sqrt(relstp);
+ 	u = u - u*relstp;
+ 	v = v + v*relstp;
+     quadsd(n,&u,&v,p,qp,&a,&b);
+@@ -449,7 +452,7 @@ _50:
+ 	newest(type,&ui,&vi);
+ /*  If vi is zero the iteration is not converging. */
+     if (vi == 0.0) return;
+-    relstp = fabs((vi-v)/vi);
++    relstp = Math::abs((vi-v)/vi);
+ 	u = ui;
+ 	v = vi;
+ 	goto _10;
+@@ -461,8 +464,8 @@ _50:
+  */
+ void realit(double sss, int *nz, int *iflag)
+ {
+-    double pv,kv,t,s;
+-    double ms,mp,omp,ee;
++    double pv,kv,t=0.0,s;
++    double ms,mp,omp=0.0,ee;
+     int i,j;
+ 
+ 	*nz = 0;
+@@ -478,12 +481,12 @@ void realit(double sss, int *nz, int *iflag)
+             pv = pv*s + p[i];
+             qp[i] = pv;
+         }
+-        mp = fabs(pv);
++        mp = Math::abs(pv);
+ /*  Compute a rigorous bound on the error in evaluating p. */
+-        ms = fabs(s);
+-        ee = (mre/(are+mre))*fabs(qp[0]);
++        ms = Math::abs(s);
++        ee = (mre/(are+mre))*Math::abs(qp[0]);
+         for (i=1;i<=n;i++) {
+-            ee = ee*ms + fabs(qp[i]);
++            ee = ee*ms + Math::abs(qp[i]);
+         }
+ /*  Iteration has converged sufficiently if the polynomial
+  *  value is less than 20 times this bound.
+@@ -497,7 +500,7 @@ void realit(double sss, int *nz, int *iflag)
+ /*  Stop iteration after 10 steps. */
+         if (j > 10) return;
+         if (j < 2) goto _50;
+-        if (fabs(t) > 0.001*fabs(s-t) || mp < omp) goto _50;
++        if (Math::abs(t) > 0.001*Math::abs(s-t) || mp < omp) goto _50;
+ /*  A cluster of zeros near the real axis has been
+  *  encountered. Return with iflag set to initiate a
+  *  quadratic iteration.
+@@ -514,7 +517,7 @@ _50:
+             kv = kv*s + k[i];
+             qk[i] = kv;
+         }
+-        if (fabs(kv) <= fabs(k[n])*10.0*eta) {
++        if (Math::abs(kv) <= Math::abs(k[n])*10.0*eta) {
+ /*  Use unscaled form. */
+             k[0] = 0.0;
+             for (i=1;i<n;i++) {
+@@ -536,7 +539,7 @@ _50:
+             kv = kv*s + k[i];
+         }
+         t = 0.0;
+-        if (fabs(kv) > fabs(k[n-1]*10.0*eta)) t = -pv/kv;
++        if (Math::abs(kv) > Math::abs(k[n-1]*10.0*eta)) t = -pv/kv;
+         s += t;
+     }
+ }
+@@ -551,13 +554,13 @@ void calcsc(int *type)
+ {
+ /*  Synthetic division of k by the quadratic 1,u,v */    
+     quadsd(n-1,&u,&v,k,qk,&c,&d);
+-    if (fabs(c) > fabs(k[n-1]*100.0*eta)) goto _10;
+-    if (fabs(d) > fabs(k[n-2]*100.0*eta)) goto _10;
++    if (Math::abs(c) > Math::abs(k[n-1]*100.0*eta)) goto _10;
++    if (Math::abs(d) > Math::abs(k[n-2]*100.0*eta)) goto _10;
+ 	*type = 3;
+ /*  Type=3 indicates the quadratic is almost a factor of k. */
+ 	return;
+ _10:
+-    if (fabs(d) < fabs(c)) {
++    if (Math::abs(d) < Math::abs(c)) {
+         *type = 1;
+ /*  Type=1 indicates that all formulas are divided by c. */   
+         e = a/c;
+@@ -598,7 +601,7 @@ void nextk(int *type)
+     }
+ 	temp = a;
+ 	if (*type == 1) temp = b;
+-    if (fabs(a1) <= fabs(temp)*eta*10.0) {
++    if (Math::abs(a1) <= Math::abs(temp)*eta*10.0) {
+ /*  If a1 is nearly zero then use a special form of the
+  *  recurrence.
+  */
+@@ -660,20 +663,20 @@ void newest(int type,double *uu,double *vv)
+ /*  Divides p by the quadratic 1,u,v placing the quotient
+  *  in q and the remainder in a,b.
+  */
+-void quadsd(int nn,double *u,double *v,double *p,double *q,
+-    double *a,double *b)
++void quadsd(int p_nn,double *p_u,double *p_v,double *p_p,double *r_q,
++    double *r_a,double *r_b)
+ {
+-    double c;
++    double l_c;
+ 	int i;
+-	*b = p[0];
+-	q[0] = *b;
+-    *a = p[1] - (*b)*(*u);
+-	q[1] = *a;
+-    for (i=2;i<=nn;i++) {
+-        c = p[i] - (*a)*(*u) - (*b)*(*v);
+-		q[i] = c;
+-		*b = *a;
+-		*a = c;
++	*r_b = p_p[0];
++	r_q[0] = *r_b;
++    *r_a = p_p[1] - (*r_b)*(*p_u);
++	r_q[1] = *r_a;
++    for (i=2;i<=p_nn;i++) {
++        l_c = p_p[i] - (*r_a)*(*p_u) - (*r_b)*(*p_v);
++		r_q[i] = l_c;
++		*r_b = *r_a;
++		*r_a = l_c;
+ 	}
+ }
+ /*  Calculate the zeros of the quadratic a*z^2 + b1*z + c.
+@@ -682,56 +685,58 @@ void quadsd(int nn,double *u,double *v,double *p,double *q,
+  *  are complex. The smaller real zero is found directly from 
+  *  the product of the zeros c/a.
+  */
+-void quad(double a,double b1,double c,double *sr,double *si,
+-        double *lr,double *li)
++void quad(double p_a,double p_b1,double p_c,double *r_sr,double *r_si,
++        double *r_lr,double *r_li)
+ {
+-        double b,d,e;
++        double l_b,l_d,l_e;
+ 
+-        if (a == 0.0) {         /* less than two roots */
+-            if (b1 != 0.0)     
+-				*sr = -c/b1;
++        if (p_a == 0.0) {         /* less than two roots */
++            if (p_b1 != 0.0)     
++				*r_sr = -p_c/p_b1;
+ 			else 
+-                *sr = 0.0;
+-            *lr = 0.0;
+-            *si = 0.0;
+-            *li = 0.0;
++                *r_sr = 0.0;
++            *r_lr = 0.0;
++            *r_si = 0.0;
++            *r_li = 0.0;
+ 			return;
+ 		}
+-        if (c == 0.0) {         /* one real root, one zero root */
+-            *sr = 0.0;
+-			*lr = -b1/a;
+-            *si = 0.0;
+-            *li = 0.0;
++        if (p_c == 0.0) {         /* one real root, one zero root */
++            *r_sr = 0.0;
++			*r_lr = -p_b1/p_a;
++            *r_si = 0.0;
++            *r_li = 0.0;
+ 			return;
+ 		}
+ /* Compute discriminant avoiding overflow. */
+-		b = b1/2.0;
+-        if (fabs(b) < fabs(c)) { 
+-            if (c < 0.0) 
+-				e = -a;
++		l_b = p_b1/2.0;
++        if (Math::abs(l_b) < Math::abs(p_c)) {
++            if (p_c < 0.0) 
++				l_e = -p_a;
+ 			else
+-				e = a;
+-            e = b*(b/fabs(c)) - e;
+-            d = sqrt(fabs(e))*sqrt(fabs(c));
++				l_e = p_a;
++            l_e = l_b*(l_b/Math::abs(p_c)) - l_e;
++            l_d = Math::sqrt(Math::abs(l_e))*Math::sqrt(Math::abs(p_c));
+ 		}
+ 		else {
+-			e = 1.0 - (a/b)*(c/b);
+-            d = sqrt(fabs(e))*fabs(b);
++			l_e = 1.0 - (p_a/l_b)*(p_c/l_b);
++            l_d = Math::sqrt(Math::abs(l_e))*Math::abs(l_b);
+ 		}
+-        if (e < 0.0) {      /* complex conjugate zeros */
+-			*sr = -b/a;
+-			*lr = *sr;
+-            *si = fabs(d/a);
+-			*li = -(*si);
++        if (l_e < 0.0) {      /* complex conjugate zeros */
++			*r_sr = -l_b/p_a;
++			*r_lr = *r_sr;
++            *r_si = Math::abs(l_d/p_a);
++			*r_li = -(*r_si);
+ 		}
+ 		else {
+-            if (b >= 0.0)   /* real zeros. */
+-				d = -d;
+-				*lr = (-b+d)/a;
+-                *sr = 0.0;
+-                if (*lr != 0.0) 
+-					*sr = (c/ *lr)/a;
+-                *si = 0.0;
+-                *li = 0.0;
++            if (l_b >= 0.0)   /* real zeros. */
++				l_d = -l_d;
++			*r_lr = (-l_b+l_d)/p_a;
++            *r_sr = 0.0;
++            if (*r_lr != 0.0) 
++				*r_sr = (p_c/ *r_lr)/p_a;
++            *r_si = 0.0;
++            *r_li = 0.0;
+ 		}
+ }
++
++}

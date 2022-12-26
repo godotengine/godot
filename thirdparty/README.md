@@ -480,6 +480,10 @@ Collection of single-file libraries used in Godot components.
   * Upstream: https://github.com/fahickman/r128
   * Version: 1.4.4 (cf2e88fc3e7d7dfe99189686f914874cd0bda15e, 2020)
   * License: Public Domain or Unlicense
+- `rpoly.hpp`
+  * Upstream: http://www.crbond.com/downloads/rpoly.cpp (retrieved December 24, 2022)
+  * License: Public domain
+  * Modifications: License included in header, change to Godot math functions, use thread_local, and silence compilation warnings (see provided patch).
 - `smaz.{c,h}`
   * Upstream: https://github.com/antirez/smaz
   * Version: git (2f625846a775501fb69456567409a8b12f10ea25, 2012)
