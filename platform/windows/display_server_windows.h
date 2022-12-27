@@ -152,7 +152,6 @@ typedef UINT(WINAPI *WTInfoPtr)(UINT p_category, UINT p_index, LPVOID p_output);
 typedef BOOL(WINAPI *WTPacketPtr)(HANDLE p_ctx, UINT p_param, LPVOID p_packets);
 typedef BOOL(WINAPI *WTEnablePtr)(HANDLE p_ctx, BOOL p_enable);
 
-typedef bool(WINAPI *IsDarkModeAllowedForAppPtr)();
 typedef bool(WINAPI *ShouldAppsUseDarkModePtr)();
 typedef DWORD(WINAPI *GetImmersiveColorFromColorSetExPtr)(UINT dwImmersiveColorSet, UINT dwImmersiveColorType, bool bIgnoreHighContrast, UINT dwHighContrastCacheMode);
 typedef int(WINAPI *GetImmersiveColorTypeFromNamePtr)(const WCHAR *name);
@@ -288,7 +287,6 @@ class DisplayServerWindows : public DisplayServer {
 	// UXTheme API
 	static bool dark_title_available;
 	static bool ux_theme_available;
-	static IsDarkModeAllowedForAppPtr IsDarkModeAllowedForApp;
 	static ShouldAppsUseDarkModePtr ShouldAppsUseDarkMode;
 	static GetImmersiveColorFromColorSetExPtr GetImmersiveColorFromColorSetEx;
 	static GetImmersiveColorTypeFromNamePtr GetImmersiveColorTypeFromName;
