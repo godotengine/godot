@@ -69,6 +69,7 @@ public:
 
 	bool pwa_needs_update() const { return pwa_is_waiting; }
 	Error pwa_update();
+	void force_fs_sync();
 
 	void initialize_joypads() override;
 
