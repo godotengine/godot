@@ -768,6 +768,20 @@ StringName TranslationServer::doc_translate_plural(const StringName &p_message, 
 	return p_message_plural;
 }
 
+void TranslationServer::set_property_translation(const Ref<Translation> &p_translation) {
+	property_translation = p_translation;
+}
+
+StringName TranslationServer::property_translate(const StringName &p_message) const {
+	if (property_translation.is_valid()) {
+		StringName r = property_translation->get_message(p_message);
+		if (r) {
+			return r;
+		}
+	}
+	return p_message;
+}
+
 bool TranslationServer::is_pseudolocalization_enabled() const {
 	return pseudolocalization_enabled;
 }
