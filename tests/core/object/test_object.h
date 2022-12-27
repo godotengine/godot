@@ -281,6 +281,84 @@ TEST_CASE("[Object] Absent name getter") {
 			actual_value == Variant(),
 			"The returned value should equal nil variant.");
 }
+
+TEST_CASE("[Object] Signals") {
+	Object object;
+
+	CHECK_FALSE(object.has_signal("my_custom_signal"));
+
+	List<MethodInfo> signals_before;
+	object.get_signal_list(&signals_before);
+
+	object.add_user_signal(MethodInfo("my_custom_signal"));
+
+	CHECK(object.has_signal("my_custom_signal"));
+
+	List<MethodInfo> signals_after;
+	object.get_signal_list(&signals_after);
+
+	// Should be one more signal.
+	CHECK_EQ(signals_before.size() + 1, signals_after.size());
+
+	SUBCASE("Adding the same user signal again should not have any effect") {
+		CHECK(object.has_signal("my_custom_signal"));
+		ERR_PRINT_OFF;
+		object.add_user_signal(MethodInfo("my_custom_signal"));
+		ERR_PRINT_ON;
+		CHECK(object.has_signal("my_custom_signal"));
+
+		List<MethodInfo> signals_after_existing_added;
+		object.get_signal_list(&signals_after_existing_added);
+
+		CHECK_EQ(signals_after.size(), signals_after_existing_added.size());
+	}
+
+	SUBCASE("Trying to add a preexisting signal should not have any effect") {
+		CHECK(object.has_signal("script_changed"));
+		ERR_PRINT_OFF;
+		object.add_user_signal(MethodInfo("script_changed"));
+		ERR_PRINT_ON;
+		CHECK(object.has_signal("script_changed"));
+
+		List<MethodInfo> signals_after_existing_added;
+		object.get_signal_list(&signals_after_existing_added);
+
+		CHECK_EQ(signals_after.size(), signals_after_existing_added.size());
+	}
+
+	SUBCASE("Adding an empty signal should not have any effect") {
+		CHECK_FALSE(object.has_signal(""));
+		ERR_PRINT_OFF;
+		object.add_user_signal(MethodInfo(""));
+		ERR_PRINT_ON;
+		CHECK_FALSE(object.has_signal(""));
+
+		List<MethodInfo> signals_after_empty_added;
+		object.get_signal_list(&signals_after_empty_added);
+
+		CHECK_EQ(signals_after.size(), signals_after_empty_added.size());
+	}
+
+	SUBCASE("Emitting a non existing signal will return an error") {
+		Error err = object.emit_signal("some_signal");
+		CHECK(err == ERR_UNAVAILABLE);
+	}
+
+	SUBCASE("Emitting an existing signal should call the connected method") {
+		Array empty_signal_args;
+		empty_signal_args.push_back(Array());
+
+		SIGNAL_WATCH(&object, "my_custom_signal");
+		SIGNAL_CHECK_FALSE("my_custom_signal");
+
+		Error err = object.emit_signal("my_custom_signal");
+		CHECK(err == OK);
+
+		SIGNAL_CHECK("my_custom_signal", empty_signal_args);
+		SIGNAL_UNWATCH(&object, "my_custom_signal");
+	}
+}
+
 } // namespace TestObject
 
 #endif // TEST_OBJECT_H
