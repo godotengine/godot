@@ -361,6 +361,11 @@ void JavaScriptBridge::download_buffer(Vector<uint8_t> p_arr, const String &p_na
 bool JavaScriptBridge::pwa_needs_update() const {
 	return OS_Web::get_singleton()->pwa_needs_update();
 }
+
 Error JavaScriptBridge::pwa_update() {
 	return OS_Web::get_singleton()->pwa_update();
+}
+
+void JavaScriptBridge::force_fs_sync() {
+	OS_Web::get_singleton()->force_fs_sync();
 }
