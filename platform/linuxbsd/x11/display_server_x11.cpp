@@ -3914,6 +3914,9 @@ void DisplayServerX11::process_events() {
 
 				XWindowAttributes xwa;
 				XSync(x11_display, False);
+
+				// Grab the server to avoid map_state changes between calling XGetWindowAttributes and XSetInputFocus.
+				XGrabServer(x11_display);
 				XGetWindowAttributes(x11_display, wd.x11_window, &xwa);
 
 				// Set focus when menu window is re-used.
@@ -3922,6 +3925,7 @@ void DisplayServerX11::process_events() {
 				if ((xwa.map_state == IsViewable) && !wd.no_focus && !wd.is_popup) {
 					XSetInputFocus(x11_display, wd.x11_window, RevertToPointerRoot, CurrentTime);
 				}
+				XUngrabServer(x11_display); // Very important to ungrab the server otherwise X11 becomes unresponsive.
 
 				_window_changed(&event);
 			} break;
