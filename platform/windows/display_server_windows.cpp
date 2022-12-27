@@ -3709,7 +3709,6 @@ WTEnablePtr DisplayServerWindows::wintab_WTEnable = nullptr;
 // UXTheme API.
 bool DisplayServerWindows::dark_title_available = false;
 bool DisplayServerWindows::ux_theme_available = false;
-IsDarkModeAllowedForAppPtr DisplayServerWindows::IsDarkModeAllowedForApp = nullptr;
 ShouldAppsUseDarkModePtr DisplayServerWindows::ShouldAppsUseDarkMode = nullptr;
 GetImmersiveColorFromColorSetExPtr DisplayServerWindows::GetImmersiveColorFromColorSetEx = nullptr;
 GetImmersiveColorTypeFromNamePtr DisplayServerWindows::GetImmersiveColorTypeFromName = nullptr;
@@ -3727,7 +3726,7 @@ typedef enum _SHC_PROCESS_DPI_AWARENESS {
 } SHC_PROCESS_DPI_AWARENESS;
 
 bool DisplayServerWindows::is_dark_mode_supported() const {
-	return ux_theme_available && IsDarkModeAllowedForApp();
+	return ux_theme_available;
 }
 
 bool DisplayServerWindows::is_dark_mode() const {
@@ -3817,13 +3816,12 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	// Load UXTheme.
 	HMODULE ux_theme_lib = LoadLibraryW(L"uxtheme.dll");
 	if (ux_theme_lib) {
-		IsDarkModeAllowedForApp = (IsDarkModeAllowedForAppPtr)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(136));
 		ShouldAppsUseDarkMode = (ShouldAppsUseDarkModePtr)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(132));
 		GetImmersiveColorFromColorSetEx = (GetImmersiveColorFromColorSetExPtr)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(95));
 		GetImmersiveColorTypeFromName = (GetImmersiveColorTypeFromNamePtr)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(96));
 		GetImmersiveUserColorSetPreference = (GetImmersiveUserColorSetPreferencePtr)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(98));
 
-		ux_theme_available = IsDarkModeAllowedForApp && ShouldAppsUseDarkMode && GetImmersiveColorFromColorSetEx && GetImmersiveColorTypeFromName && GetImmersiveUserColorSetPreference;
+		ux_theme_available = ShouldAppsUseDarkMode && GetImmersiveColorFromColorSetEx && GetImmersiveColorTypeFromName && GetImmersiveUserColorSetPreference;
 		if (os_ver.dwBuildNumber >= 22000) {
 			dark_title_available = true;
 		}
