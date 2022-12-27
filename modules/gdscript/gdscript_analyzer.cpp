@@ -4174,7 +4174,7 @@ bool GDScriptAnalyzer::get_function_signature(GDScriptParser::Node *p_source, bo
 				r_default_arg_count++;
 			}
 		}
-		r_return_type = found_function->get_datatype();
+		r_return_type = p_is_constructor ? p_base_type : found_function->get_datatype();
 		r_return_type.is_meta_type = false;
 		r_return_type.is_coroutine = found_function->is_coroutine;
 
