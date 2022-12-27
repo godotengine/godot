@@ -339,9 +339,6 @@ def configure(env: "Environment"):
     env.Prepend(CPPPATH=["#platform/linuxbsd"])
 
     if env["x11"]:
-        if not env["vulkan"]:
-            print("Error: X11 support requires vulkan=yes")
-            env.Exit(255)
         env.Append(CPPDEFINES=["X11_ENABLED"])
 
     env.Append(CPPDEFINES=["UNIX_ENABLED"])
