@@ -105,14 +105,6 @@ void AStarGrid2D::update() {
 	dirty = false;
 }
 
-bool AStarGrid2D::is_in_bounds(int p_x, int p_y) const {
-	return p_x >= 0 && p_x < size.width && p_y >= 0 && p_y < size.height;
-}
-
-bool AStarGrid2D::is_in_boundsv(const Vector2i &p_id) const {
-	return p_id.x >= 0 && p_id.x < size.width && p_id.y >= 0 && p_id.y < size.height;
-}
-
 bool AStarGrid2D::is_dirty() const {
 	return dirty;
 }
@@ -126,7 +118,7 @@ bool AStarGrid2D::is_jumping_enabled() const {
 }
 
 void AStarGrid2D::set_diagonal_mode(DiagonalMode p_diagonal_mode) {
-	ERR_FAIL_INDEX((int)p_diagonal_mode, (int)DIAGONAL_MODE_MAX);
+	ERR_FAIL_INDEX(p_diagonal_mode, DIAGONAL_MODE_MAX);
 	diagonal_mode = p_diagonal_mode;
 }
 
@@ -135,7 +127,7 @@ AStarGrid2D::DiagonalMode AStarGrid2D::get_diagonal_mode() const {
 }
 
 void AStarGrid2D::set_default_compute_heuristic(Heuristic p_heuristic) {
-	ERR_FAIL_INDEX((int)p_heuristic, (int)HEURISTIC_MAX);
+	ERR_FAIL_INDEX(p_heuristic, HEURISTIC_MAX);
 	default_compute_heuristic = p_heuristic;
 }
 
@@ -144,7 +136,7 @@ AStarGrid2D::Heuristic AStarGrid2D::get_default_compute_heuristic() const {
 }
 
 void AStarGrid2D::set_default_estimate_heuristic(Heuristic p_heuristic) {
-	ERR_FAIL_INDEX((int)p_heuristic, (int)HEURISTIC_MAX);
+	ERR_FAIL_INDEX(p_heuristic, HEURISTIC_MAX);
 	default_estimate_heuristic = p_heuristic;
 }
 
@@ -177,11 +169,11 @@ real_t AStarGrid2D::get_point_weight_scale(const Vector2i &p_id) const {
 	return points[p_id.y][p_id.x].weight_scale;
 }
 
-AStarGrid2D::Point *AStarGrid2D::_jump(Point *p_from, Point *p_to) {
+const AStarGrid2D::Point *AStarGrid2D::_jump(const Point *p_from, const Point *p_to, const Point *p_end) const {
 	if (!p_to || p_to->solid) {
 		return nullptr;
 	}
-	if (p_to == end) {
+	if (p_to == p_end) {
 		return p_to;
 	}
 
@@ -199,10 +191,10 @@ AStarGrid2D::Point *AStarGrid2D::_jump(Point *p_from, Point *p_to) {
 			if ((_is_walkable(to_x - dx, to_y + dy) && !_is_walkable(to_x - dx, to_y)) || (_is_walkable(to_x + dx, to_y - dy) && !_is_walkable(to_x, to_y - dy))) {
 				return p_to;
 			}
-			if (_jump(p_to, _get_point(to_x + dx, to_y)) != nullptr) {
+			if (_jump(p_to, _get_point(to_x + dx, to_y), p_end) != nullptr) {
 				return p_to;
 			}
-			if (_jump(p_to, _get_point(to_x, to_y + dy)) != nullptr) {
+			if (_jump(p_to, _get_point(to_x, to_y + dy), p_end) != nullptr) {
 				return p_to;
 			}
 		} else {
@@ -217,17 +209,17 @@ AStarGrid2D::Point *AStarGrid2D::_jump(Point *p_from, Point *p_to) {
 			}
 		}
 		if (_is_walkable(to_x + dx, to_y + dy) && (diagonal_mode == DIAGONAL_MODE_ALWAYS || (_is_walkable(to_x + dx, to_y) || _is_walkable(to_x, to_y + dy)))) {
-			return _jump(p_to, _get_point(to_x + dx, to_y + dy));
+			return _jump(p_to, _get_point(to_x + dx, to_y + dy), p_end);
 		}
 	} else if (diagonal_mode == DIAGONAL_MODE_ONLY_IF_NO_OBSTACLES) {
 		if (dx != 0 && dy != 0) {
 			if ((_is_walkable(to_x + dx, to_y + dy) && !_is_walkable(to_x, to_y + dy)) || !_is_walkable(to_x + dx, to_y)) {
 				return p_to;
 			}
-			if (_jump(p_to, _get_point(to_x + dx, to_y)) != nullptr) {
+			if (_jump(p_to, _get_point(to_x + dx, to_y), p_end) != nullptr) {
 				return p_to;
 			}
-			if (_jump(p_to, _get_point(to_x, to_y + dy)) != nullptr) {
+			if (_jump(p_to, _get_point(to_x, to_y + dy), p_end) != nullptr) {
 				return p_to;
 			}
 		} else {
@@ -242,7 +234,7 @@ AStarGrid2D::Point *AStarGrid2D::_jump(Point *p_from, Point *p_to) {
 			}
 		}
 		if (_is_walkable(to_x + dx, to_y + dy) && _is_walkable(to_x + dx, to_y) && _is_walkable(to_x, to_y + dy)) {
-			return _jump(p_to, _get_point(to_x + dx, to_y + dy));
+			return _jump(p_to, _get_point(to_x + dx, to_y + dy), p_end);
 		}
 	} else { // DIAGONAL_MODE_NEVER
 		if (dx != 0) {
@@ -253,33 +245,33 @@ AStarGrid2D::Point *AStarGrid2D::_jump(Point *p_from, Point *p_to) {
 			if ((_is_walkable(to_x - 1, to_y) && !_is_walkable(to_x - 1, to_y - dy)) || (_is_walkable(to_x + 1, to_y) && !_is_walkable(to_x + 1, to_y - dy))) {
 				return p_to;
 			}
-			if (_jump(p_to, _get_point(to_x + 1, to_y)) != nullptr) {
+			if (_jump(p_to, _get_point(to_x + 1, to_y), p_end) != nullptr) {
 				return p_to;
 			}
-			if (_jump(p_to, _get_point(to_x - 1, to_y)) != nullptr) {
+			if (_jump(p_to, _get_point(to_x - 1, to_y), p_end) != nullptr) {
 				return p_to;
 			}
 		}
-		return _jump(p_to, _get_point(to_x + dx, to_y + dy));
+		return _jump(p_to, _get_point(to_x + dx, to_y + dy), p_end);
 	}
 	return nullptr;
 }
 
-void AStarGrid2D::_get_nbors(Point *p_point, List<Point *> &r_nbors) {
+void AStarGrid2D::_get_nbors(const Point *p_point, LocalVector<const Point *> &r_nbors) const {
 	bool ts0 = false, td0 = false,
 		 ts1 = false, td1 = false,
 		 ts2 = false, td2 = false,
 		 ts3 = false, td3 = false;
 
-	Point *left = nullptr;
-	Point *right = nullptr;
-	Point *top = nullptr;
-	Point *bottom = nullptr;
+	const Point *left = nullptr;
+	const Point *right = nullptr;
+	const Point *top = nullptr;
+	const Point *bottom = nullptr;
 
-	Point *top_left = nullptr;
-	Point *top_right = nullptr;
-	Point *bottom_left = nullptr;
-	Point *bottom_right = nullptr;
+	const Point *top_left = nullptr;
+	const Point *top_right = nullptr;
+	const Point *bottom_left = nullptr;
+	const Point *bottom_right = nullptr;
 
 	{
 		bool has_left = false;
@@ -369,81 +361,91 @@ void AStarGrid2D::_get_nbors(Point *p_point, List<Point *> &r_nbors) {
 	}
 }
 
-bool AStarGrid2D::_solve(Point *p_begin_point, Point *p_end_point) {
-	pass++;
-
+bool AStarGrid2D::_solve(const Point *p_begin_point, const Point *p_end_point, List<const Point *> &r_path) const {
 	if (p_end_point->solid) {
 		return false;
 	}
 
-	bool found_route = false;
+	LocalVector<Pass *> open_list;
+	SortArray<Pass *, SortPasses> sorter;
 
-	Vector<Point *> open_list;
-	SortArray<Point *, SortPoints> sorter;
-
-	p_begin_point->g_score = 0;
-	p_begin_point->f_score = _estimate_cost(p_begin_point->id, p_end_point->id);
-	open_list.push_back(p_begin_point);
-	end = p_end_point;
+	RBMap<Vector2i, Pass> data;
+	open_list.push_back(&data.insert(p_begin_point->id, Pass(p_begin_point, _estimate_cost(p_begin_point->id, p_end_point->id)))->get());
 
 	while (!open_list.is_empty()) {
-		Point *p = open_list[0]; // The currently processed point.
+		Pass *p_pass = open_list[0];
+		const Point *p = p_pass->point; // The currently processed point.
 
 		if (p == p_end_point) {
-			found_route = true;
-			break;
+			// Create a path and return.
+			while (p != p_begin_point) {
+				r_path.push_front(p);
+				p = p_pass->prev_point;
+				p_pass = &data[p->id];
+			}
+			r_path.push_front(p_begin_point);
+			return true;
 		}
 
-		sorter.pop_heap(0, open_list.size(), open_list.ptrw()); // Remove the current point from the open list.
+		sorter.pop_heap(0, open_list.size(), open_list.ptr()); // Remove the current point from the open list.
 		open_list.remove_at(open_list.size() - 1);
-		p->closed_pass = pass; // Mark the point as closed.
+		p_pass->is_closed = true; // Mark the point as closed.
 
-		List<Point *> nbors;
+		LocalVector<const Point *> nbors;
 		_get_nbors(p, nbors);
-		for (List<Point *>::Element *E = nbors.front(); E; E = E->next()) {
-			Point *e = E->get(); // The neighbor point.
+
+		for (const Point *e : nbors) {
+			Pass *e_pass = nullptr;
 			real_t weight_scale = 1.0;
+			bool new_point = false;
 
 			if (jumping_enabled) {
 				// TODO: Make it works with weight_scale.
-				e = _jump(p, e);
-				if (!e || e->closed_pass == pass) {
+				e = _jump(p, e, p_end_point);
+				if (!e) {
 					continue;
 				}
 			} else {
-				if (e->solid || e->closed_pass == pass) {
+				if (e->solid) {
 					continue;
 				}
 				weight_scale = e->weight_scale;
 			}
 
-			real_t tentative_g_score = p->g_score + _compute_cost(p->id, e->id) * weight_scale;
-			bool new_point = false;
-
-			if (e->open_pass != pass) { // The point wasn't inside the open list.
-				e->open_pass = pass;
-				open_list.push_back(e);
+			if (data.has(e->id)) {
+				e_pass = &data[e->id];
+				if (e_pass->is_closed) {
+					continue;
+				}
+			} else {
+				e_pass = &data.insert(e->id, Pass(e))->get();
 				new_point = true;
-			} else if (tentative_g_score >= e->g_score) { // The new path is worse than the previous.
+			}
+
+			real_t tentative_g_score = p_pass->g_score + _compute_cost(p->id, e->id) * weight_scale;
+
+			if (new_point) { // The point wasn't inside the open list.
+				open_list.push_back(e_pass);
+			} else if (tentative_g_score >= e_pass->g_score) { // The new path is worse than the previous.
 				continue;
 			}
 
-			e->prev_point = p;
-			e->g_score = tentative_g_score;
-			e->f_score = e->g_score + _estimate_cost(e->id, p_end_point->id);
+			e_pass->prev_point = p;
+			e_pass->g_score = tentative_g_score;
+			e_pass->f_score = e_pass->g_score + _estimate_cost(e->id, p_end_point->id);
 
 			if (new_point) { // The position of the new points is already known.
-				sorter.push_heap(0, open_list.size() - 1, 0, e, open_list.ptrw());
+				sorter.push_heap(0, open_list.size() - 1, 0, e_pass, open_list.ptr());
 			} else {
-				sorter.push_heap(0, open_list.find(e), 0, e, open_list.ptrw());
+				sorter.push_heap(0, open_list.find(e_pass), 0, e_pass, open_list.ptr());
 			}
 		}
 	}
 
-	return found_route;
+	return false;
 }
 
-real_t AStarGrid2D::_estimate_cost(const Vector2i &p_from_id, const Vector2i &p_to_id) {
+real_t AStarGrid2D::_estimate_cost(const Vector2i &p_from_id, const Vector2i &p_to_id) const {
 	real_t scost;
 	if (GDVIRTUAL_CALL(_estimate_cost, p_from_id, p_to_id, scost)) {
 		return scost;
@@ -451,7 +453,7 @@ real_t AStarGrid2D::_estimate_cost(const Vector2i &p_from_id, const Vector2i &p_
 	return heuristics[default_estimate_heuristic](p_from_id, p_to_id);
 }
 
-real_t AStarGrid2D::_compute_cost(const Vector2i &p_from_id, const Vector2i &p_to_id) {
+real_t AStarGrid2D::_compute_cost(const Vector2i &p_from_id, const Vector2i &p_to_id) const {
 	real_t scost;
 	if (GDVIRTUAL_CALL(_compute_cost, p_from_id, p_to_id, scost)) {
 		return scost;
@@ -470,95 +472,58 @@ Vector2 AStarGrid2D::get_point_position(const Vector2i &p_id) const {
 	return points[p_id.y][p_id.x].pos;
 }
 
-Vector<Vector2> AStarGrid2D::get_point_path(const Vector2i &p_from_id, const Vector2i &p_to_id) {
+Vector<Vector2> AStarGrid2D::get_point_path(const Vector2i &p_from_id, const Vector2i &p_to_id) const {
 	ERR_FAIL_COND_V_MSG(dirty, Vector<Vector2>(), "Grid is not initialized. Call the update method.");
 	ERR_FAIL_COND_V_MSG(!is_in_boundsv(p_from_id), Vector<Vector2>(), vformat("Can't get id path. Point out of bounds (%s/%s, %s/%s)", p_from_id.x, size.width, p_from_id.y, size.height));
 	ERR_FAIL_COND_V_MSG(!is_in_boundsv(p_to_id), Vector<Vector2>(), vformat("Can't get id path. Point out of bounds (%s/%s, %s/%s)", p_to_id.x, size.width, p_to_id.y, size.height));
 
-	Point *a = _get_point(p_from_id.x, p_from_id.y);
-	Point *b = _get_point(p_to_id.x, p_to_id.y);
+	const Point *begin_point = _get_point_unchecked(p_from_id.x, p_from_id.y);
+	const Point *end_point = _get_point_unchecked(p_to_id.x, p_to_id.y);
 
-	if (a == b) {
-		Vector<Vector2> ret;
-		ret.push_back(a->pos);
-		return ret;
+	if (begin_point == end_point) {
+		return { begin_point->pos };
 	}
 
-	Point *begin_point = a;
-	Point *end_point = b;
-
-	bool found_route = _solve(begin_point, end_point);
-	if (!found_route) {
+	List<const Point *> point_path;
+	if (!_solve(begin_point, end_point, point_path)) {
 		return Vector<Vector2>();
 	}
 
-	Point *p = end_point;
-	int64_t pc = 1;
-	while (p != begin_point) {
-		pc++;
-		p = p->prev_point;
-	}
-
 	Vector<Vector2> path;
-	path.resize(pc);
+	path.resize(point_path.size());
+	Vector2 *w = path.ptrw();
 
-	{
-		Vector2 *w = path.ptrw();
-
-		p = end_point;
-		int64_t idx = pc - 1;
-		while (p != begin_point) {
-			w[idx--] = p->pos;
-			p = p->prev_point;
-		}
-
-		w[0] = p->pos;
+	int64_t idx = 0;
+	for (const Point *p : point_path) {
+		w[idx++] = p->pos;
 	}
 
 	return path;
 }
 
-TypedArray<Vector2i> AStarGrid2D::get_id_path(const Vector2i &p_from_id, const Vector2i &p_to_id) {
+TypedArray<Vector2i> AStarGrid2D::get_id_path(const Vector2i &p_from_id, const Vector2i &p_to_id) const {
 	ERR_FAIL_COND_V_MSG(dirty, TypedArray<Vector2i>(), "Grid is not initialized. Call the update method.");
 	ERR_FAIL_COND_V_MSG(!is_in_boundsv(p_from_id), TypedArray<Vector2i>(), vformat("Can't get id path. Point out of bounds (%s/%s, %s/%s)", p_from_id.x, size.width, p_from_id.y, size.height));
 	ERR_FAIL_COND_V_MSG(!is_in_boundsv(p_to_id), TypedArray<Vector2i>(), vformat("Can't get id path. Point out of bounds (%s/%s, %s/%s)", p_to_id.x, size.width, p_to_id.y, size.height));
 
-	Point *a = _get_point(p_from_id.x, p_from_id.y);
-	Point *b = _get_point(p_to_id.x, p_to_id.y);
+	const Point *begin_point = _get_point_unchecked(p_from_id.x, p_from_id.y);
+	const Point *end_point = _get_point_unchecked(p_to_id.x, p_to_id.y);
 
-	if (a == b) {
-		TypedArray<Vector2i> ret;
-		ret.push_back(a->id);
-		return ret;
+	if (begin_point == end_point) {
+		return { begin_point->id };
 	}
 
-	Point *begin_point = a;
-	Point *end_point = b;
-
-	bool found_route = _solve(begin_point, end_point);
-	if (!found_route) {
+	List<const Point *> point_path;
+	if (!_solve(begin_point, end_point, point_path)) {
 		return TypedArray<Vector2i>();
 	}
 
-	Point *p = end_point;
-	int64_t pc = 1;
-	while (p != begin_point) {
-		pc++;
-		p = p->prev_point;
-	}
-
 	TypedArray<Vector2i> path;
-	path.resize(pc);
+	path.resize(point_path.size());
 
-	{
-		p = end_point;
-		int64_t idx = pc - 1;
-		while (p != begin_point) {
-			path[idx--] = p->id;
-			p = p->prev_point;
-		}
-
-		path[0] = p->id;
+	int64_t idx = 0;
+	for (const Point *p : point_path) {
+		path[idx++] = p->id;
 	}
 
 	return path;

@@ -75,35 +75,42 @@ private:
 		Vector2 pos;
 		real_t weight_scale = 1.0;
 
-		// Used for pathfinding.
-		Point *prev_point = nullptr;
-		real_t g_score = 0;
-		real_t f_score = 0;
-		uint64_t open_pass = 0;
-		uint64_t closed_pass = 0;
-
 		Point() {}
 
 		Point(const Vector2i &p_id, const Vector2 &p_pos) :
 				id(p_id), pos(p_pos) {}
 	};
 
-	struct SortPoints {
-		_FORCE_INLINE_ bool operator()(const Point *A, const Point *B) const { // Returns true when the Point A is worse than Point B.
+	// Temporary data used for pathfinding.
+	struct Pass {
+		const Point *point = nullptr;
+		const Point *prev_point = nullptr;
+
+		real_t g_score = 0;
+		real_t f_score = 0;
+
+		bool is_closed = false;
+
+		Pass() {}
+
+		Pass(const Point *p_point, real_t p_f_score = 0) :
+				point(p_point), f_score(p_f_score) {
+		}
+	};
+
+	struct SortPasses {
+		_FORCE_INLINE_ bool operator()(const Pass *A, const Pass *B) const { // Returns true when the Pass A is worse than Pass B.
 			if (A->f_score > B->f_score) {
 				return true;
 			} else if (A->f_score < B->f_score) {
 				return false;
 			} else {
-				return A->g_score < B->g_score; // If the f_costs are the same then prioritize the points that are further away from the start.
+				return A->g_score < B->g_score; // If the f_costs are the same then prioritize the point passes that are further away from the start.
 			}
 		}
 	};
 
 	LocalVector<LocalVector<Point>> points;
-	Point *end = nullptr;
-
-	uint64_t pass = 1;
 
 private: // Internal routines.
 	_FORCE_INLINE_ bool _is_walkable(int64_t p_x, int64_t p_y) const {
@@ -113,26 +120,26 @@ private: // Internal routines.
 		return false;
 	}
 
-	_FORCE_INLINE_ Point *_get_point(int64_t p_x, int64_t p_y) {
+	_FORCE_INLINE_ const Point *_get_point(int64_t p_x, int64_t p_y) const {
 		if (p_x >= 0 && p_y >= 0 && p_x < size.width && p_y < size.height) {
 			return &points[p_y][p_x];
 		}
 		return nullptr;
 	}
 
-	_FORCE_INLINE_ Point *_get_point_unchecked(int64_t p_x, int64_t p_y) {
+	_FORCE_INLINE_ const Point *_get_point_unchecked(int64_t p_x, int64_t p_y) const {
 		return &points[p_y][p_x];
 	}
 
-	void _get_nbors(Point *p_point, List<Point *> &r_nbors);
-	Point *_jump(Point *p_from, Point *p_to);
-	bool _solve(Point *p_begin_point, Point *p_end_point);
+	void _get_nbors(const Point *p_point, LocalVector<const Point *> &r_nbors) const;
+	const Point *_jump(const Point *p_from, const Point *p_to, const Point *p_end) const;
+	bool _solve(const Point *p_begin_point, const Point *p_end_point, List<const Point *> &r_path) const;
 
 protected:
 	static void _bind_methods();
 
-	virtual real_t _estimate_cost(const Vector2i &p_from_id, const Vector2i &p_to_id);
-	virtual real_t _compute_cost(const Vector2i &p_from_id, const Vector2i &p_to_id);
+	virtual real_t _estimate_cost(const Vector2i &p_from_id, const Vector2i &p_to_id) const;
+	virtual real_t _compute_cost(const Vector2i &p_from_id, const Vector2i &p_to_id) const;
 
 	GDVIRTUAL2RC(real_t, _estimate_cost, Vector2i, Vector2i)
 	GDVIRTUAL2RC(real_t, _compute_cost, Vector2i, Vector2i)
@@ -152,8 +159,13 @@ public:
 	int get_width() const;
 	int get_height() const;
 
-	bool is_in_bounds(int p_x, int p_y) const;
-	bool is_in_boundsv(const Vector2i &p_id) const;
+	_FORCE_INLINE_ bool is_in_bounds(int p_x, int p_y) const {
+		return p_x >= 0 && p_x < size.width && p_y >= 0 && p_y < size.height;
+	}
+	_FORCE_INLINE_ bool is_in_boundsv(const Vector2i &p_id) const {
+		return p_id.x >= 0 && p_id.x < size.width && p_id.y >= 0 && p_id.y < size.height;
+	}
+
 	bool is_dirty() const;
 
 	void set_jumping_enabled(bool p_enabled);
@@ -177,8 +189,8 @@ public:
 	void clear();
 
 	Vector2 get_point_position(const Vector2i &p_id) const;
-	Vector<Vector2> get_point_path(const Vector2i &p_from, const Vector2i &p_to);
-	TypedArray<Vector2i> get_id_path(const Vector2i &p_from, const Vector2i &p_to);
+	Vector<Vector2> get_point_path(const Vector2i &p_from, const Vector2i &p_to) const;
+	TypedArray<Vector2i> get_id_path(const Vector2i &p_from, const Vector2i &p_to) const;
 };
 
 VARIANT_ENUM_CAST(AStarGrid2D::DiagonalMode);
