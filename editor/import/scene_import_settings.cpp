@@ -703,15 +703,17 @@ void SceneImportSettings::_select(Tree *p_from, String p_type, String p_id) {
 		}
 
 		MeshData &md = mesh_map[p_id];
-		if (p_from != mesh_tree) {
-			md.mesh_node->uncollapse_tree();
-			md.mesh_node->select(0);
-			mesh_tree->ensure_cursor_is_visible();
-		}
-		if (p_from != scene_tree) {
-			md.scene_node->uncollapse_tree();
-			md.scene_node->select(0);
-			scene_tree->ensure_cursor_is_visible();
+		if (md.mesh_node != nullptr) {
+			if (p_from != mesh_tree) {
+				md.mesh_node->uncollapse_tree();
+				md.mesh_node->select(0);
+				mesh_tree->ensure_cursor_is_visible();
+			}
+			if (p_from != scene_tree) {
+				md.scene_node->uncollapse_tree();
+				md.scene_node->select(0);
+				scene_tree->ensure_cursor_is_visible();
+			}
 		}
 
 		mesh_preview->set_mesh(md.mesh);
