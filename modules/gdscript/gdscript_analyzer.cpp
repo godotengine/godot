@@ -937,6 +937,7 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 				const GDScriptParser::EnumNode *prev_enum = current_enum;
 				current_enum = member.m_enum;
 
+				Dictionary dictionary;
 				for (int j = 0; j < member.m_enum->values.size(); j++) {
 					GDScriptParser::EnumNode::Value &element = member.m_enum->values.write[j];
 
@@ -960,11 +961,13 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 					}
 
 					enum_type.enum_values[element.identifier->name] = element.value;
+					dictionary[String(element.identifier->name)] = element.value;
 				}
 
 				current_enum = prev_enum;
 
 				member.m_enum->set_datatype(enum_type);
+				member.m_enum->dictionary = dictionary;
 
 				// Apply annotations.
 				for (GDScriptParser::AnnotationNode *&E : member.m_enum->annotations) {
@@ -3140,10 +3143,9 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 					p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_CONSTANT;
 					break;
 				case GDScriptParser::ClassNode::Member::ENUM:
-					if (p_base != nullptr && p_base->is_constant) {
-						p_identifier->is_constant = true;
-						p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_CONSTANT;
-					}
+					p_identifier->is_constant = true;
+					p_identifier->reduced_value = member.m_enum->dictionary;
+					p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_CONSTANT;
 					break;
 				case GDScriptParser::ClassNode::Member::VARIABLE:
 					p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_VARIABLE;
@@ -3197,7 +3199,8 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 							return;
 						case GDScriptParser::ClassNode::Member::ENUM:
 							p_identifier->set_datatype(member.get_datatype());
-							p_identifier->is_constant = false;
+							p_identifier->is_constant = true;
+							p_identifier->reduced_value = member.m_enum->dictionary;
 							return;
 						case GDScriptParser::ClassNode::Member::CLASS:
 							p_identifier->set_datatype(member.get_datatype());
