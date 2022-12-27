@@ -20,16 +20,19 @@
 		<constant name="OP_TYPE_INT" value="1" enum="OpType">
 			An integer scalar.
 		</constant>
-		<constant name="OP_TYPE_VECTOR_2D" value="2" enum="OpType">
+		<constant name="OP_TYPE_UINT" value="2" enum="OpType">
+			An unsigned integer scalar.
+		</constant>
+		<constant name="OP_TYPE_VECTOR_2D" value="3" enum="OpType">
 			A 2D vector type.
 		</constant>
-		<constant name="OP_TYPE_VECTOR_3D" value="3" enum="OpType">
+		<constant name="OP_TYPE_VECTOR_3D" value="4" enum="OpType">
 			A 3D vector type.
 		</constant>
-		<constant name="OP_TYPE_VECTOR_4D" value="4" enum="OpType">
+		<constant name="OP_TYPE_VECTOR_4D" value="5" enum="OpType">
 			A 4D vector type.
 		</constant>
-		<constant name="OP_TYPE_MAX" value="5" enum="OpType">
+		<constant name="OP_TYPE_MAX" value="6" enum="OpType">
 			Represents the size of the [enum OpType] enum.
 		</constant>
 	</constants>

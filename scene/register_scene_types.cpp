@@ -602,6 +602,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(VisualShaderNodeComment);
 	GDREGISTER_CLASS(VisualShaderNodeFloatConstant);
 	GDREGISTER_CLASS(VisualShaderNodeIntConstant);
+	GDREGISTER_CLASS(VisualShaderNodeUIntConstant);
 	GDREGISTER_CLASS(VisualShaderNodeBooleanConstant);
 	GDREGISTER_CLASS(VisualShaderNodeColorConstant);
 	GDREGISTER_CLASS(VisualShaderNodeVec2Constant);
@@ -610,12 +611,14 @@ void register_scene_types() {
 	GDREGISTER_CLASS(VisualShaderNodeTransformConstant);
 	GDREGISTER_CLASS(VisualShaderNodeFloatOp);
 	GDREGISTER_CLASS(VisualShaderNodeIntOp);
+	GDREGISTER_CLASS(VisualShaderNodeUIntOp);
 	GDREGISTER_CLASS(VisualShaderNodeVectorOp);
 	GDREGISTER_CLASS(VisualShaderNodeColorOp);
 	GDREGISTER_CLASS(VisualShaderNodeTransformOp);
 	GDREGISTER_CLASS(VisualShaderNodeTransformVecMult);
 	GDREGISTER_CLASS(VisualShaderNodeFloatFunc);
 	GDREGISTER_CLASS(VisualShaderNodeIntFunc);
+	GDREGISTER_CLASS(VisualShaderNodeUIntFunc);
 	GDREGISTER_CLASS(VisualShaderNodeVectorFunc);
 	GDREGISTER_CLASS(VisualShaderNodeColorFunc);
 	GDREGISTER_CLASS(VisualShaderNodeTransformFunc);
@@ -648,6 +651,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(VisualShaderNodeParameterRef);
 	GDREGISTER_CLASS(VisualShaderNodeFloatParameter);
 	GDREGISTER_CLASS(VisualShaderNodeIntParameter);
+	GDREGISTER_CLASS(VisualShaderNodeUIntParameter);
 	GDREGISTER_CLASS(VisualShaderNodeBooleanParameter);
 	GDREGISTER_CLASS(VisualShaderNodeColorParameter);
 	GDREGISTER_CLASS(VisualShaderNodeVec2Parameter);

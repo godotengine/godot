@@ -208,17 +208,19 @@
 		</constant>
 		<constant name="VARYING_TYPE_INT" value="1" enum="VaryingType">
 		</constant>
-		<constant name="VARYING_TYPE_VECTOR_2D" value="2" enum="VaryingType">
+		<constant name="VARYING_TYPE_UINT" value="2" enum="VaryingType">
 		</constant>
-		<constant name="VARYING_TYPE_VECTOR_3D" value="3" enum="VaryingType">
+		<constant name="VARYING_TYPE_VECTOR_2D" value="3" enum="VaryingType">
 		</constant>
-		<constant name="VARYING_TYPE_VECTOR_4D" value="4" enum="VaryingType">
+		<constant name="VARYING_TYPE_VECTOR_3D" value="4" enum="VaryingType">
 		</constant>
-		<constant name="VARYING_TYPE_BOOLEAN" value="5" enum="VaryingType">
+		<constant name="VARYING_TYPE_VECTOR_4D" value="5" enum="VaryingType">
 		</constant>
-		<constant name="VARYING_TYPE_TRANSFORM" value="6" enum="VaryingType">
+		<constant name="VARYING_TYPE_BOOLEAN" value="6" enum="VaryingType">
 		</constant>
-		<constant name="VARYING_TYPE_MAX" value="7" enum="VaryingType">
+		<constant name="VARYING_TYPE_TRANSFORM" value="7" enum="VaryingType">
+		</constant>
+		<constant name="VARYING_TYPE_MAX" value="8" enum="VaryingType">
 		</constant>
 		<constant name="NODE_ID_INVALID" value="-1">
 		</constant>
