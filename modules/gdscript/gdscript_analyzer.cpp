@@ -68,9 +68,6 @@ static MethodInfo info_from_utility_func(const StringName &p_function) {
 			pi.name = "arg" + itos(i + 1);
 #endif
 			pi.type = Variant::get_utility_function_argument_type(p_function, i);
-			if (pi.type == Variant::NIL) {
-				pi.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
-			}
 			info.arguments.push_back(pi);
 		}
 	}
@@ -2456,7 +2453,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 					bool types_match = true;
 
 					for (int i = 0; i < p_call->arguments.size(); i++) {
-						GDScriptParser::DataType par_type = type_from_property(info.arguments[i]);
+						GDScriptParser::DataType par_type = type_from_property(info.arguments[i], true);
 
 						if (!is_type_compatible(par_type, p_call->arguments[i]->get_datatype(), true)) {
 							types_match = false;
@@ -2513,7 +2510,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 					case Callable::CallError::CALL_ERROR_INVALID_ARGUMENT: {
 						PropertyInfo wrong_arg = function_info.arguments[err.argument];
 						push_error(vformat(R"*(Invalid argument for "%s()" function: argument %d should be "%s" but is "%s".)*", function_name, err.argument + 1,
-										   type_from_property(wrong_arg).to_string(), p_call->arguments[err.argument]->get_datatype().to_string()),
+										   type_from_property(wrong_arg, true).to_string(), p_call->arguments[err.argument]->get_datatype().to_string()),
 								p_call->arguments[err.argument]);
 					} break;
 					case Callable::CallError::CALL_ERROR_INVALID_METHOD:
@@ -2560,7 +2557,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 					case Callable::CallError::CALL_ERROR_INVALID_ARGUMENT: {
 						String expected_type_name;
 						if (err.argument < function_info.arguments.size()) {
-							expected_type_name = type_from_property(function_info.arguments[err.argument]).to_string();
+							expected_type_name = type_from_property(function_info.arguments[err.argument], true).to_string();
 						} else {
 							expected_type_name = Variant::get_type_name((Variant::Type)err.expected);
 						}
@@ -3921,10 +3918,10 @@ GDScriptParser::DataType GDScriptAnalyzer::type_from_metatype(const GDScriptPars
 	return result;
 }
 
-GDScriptParser::DataType GDScriptAnalyzer::type_from_property(const PropertyInfo &p_property) const {
+GDScriptParser::DataType GDScriptAnalyzer::type_from_property(const PropertyInfo &p_property, bool p_is_arg) const {
 	GDScriptParser::DataType result;
 	result.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
-	if (p_property.type == Variant::NIL && (p_property.usage & PROPERTY_USAGE_NIL_IS_VARIANT)) {
+	if (p_property.type == Variant::NIL && (p_is_arg || (p_property.usage & PROPERTY_USAGE_NIL_IS_VARIANT))) {
 		// Variant
 		result.kind = GDScriptParser::DataType::VARIANT;
 		return result;
@@ -4111,7 +4108,7 @@ bool GDScriptAnalyzer::function_signature_from_info(const MethodInfo &p_info, GD
 	r_static = (p_info.flags & METHOD_FLAG_STATIC) != 0;
 
 	for (const PropertyInfo &E : p_info.arguments) {
-		r_par_types.push_back(type_from_property(E));
+		r_par_types.push_back(type_from_property(E, true));
 	}
 	return true;
 }
@@ -4120,7 +4117,7 @@ bool GDScriptAnalyzer::validate_call_arg(const MethodInfo &p_method, const GDScr
 	List<GDScriptParser::DataType> arg_types;
 
 	for (const PropertyInfo &E : p_method.arguments) {
-		arg_types.push_back(type_from_property(E));
+		arg_types.push_back(type_from_property(E, true));
 	}
 
 	return validate_call_arg(arg_types, p_method.default_arguments.size(), (p_method.flags & METHOD_FLAG_VARARG) != 0, p_call);
