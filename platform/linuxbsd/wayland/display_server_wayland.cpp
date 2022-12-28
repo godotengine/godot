@@ -948,8 +948,6 @@ void DisplayServerWayland::_wl_pointer_on_axis(void *data, struct wl_pointer *wl
 
 	PointerData &pd = ss->pointer_data_buffer;
 
-	MouseButton button_pressed = MouseButton::NONE;
-
 	switch (axis) {
 		case WL_POINTER_AXIS_VERTICAL_SCROLL: {
 			pd.scroll_vector.y = wl_fixed_to_double(value);
@@ -959,10 +957,6 @@ void DisplayServerWayland::_wl_pointer_on_axis(void *data, struct wl_pointer *wl
 			pd.scroll_vector.x = wl_fixed_to_double(value);
 		} break;
 	}
-
-	// These buttons will get unpressed when the event is sent.
-	pd.pressed_button_mask |= mouse_button_to_mask(button_pressed);
-	pd.last_button_pressed = button_pressed;
 
 	pd.button_time = time;
 }
