@@ -1195,10 +1195,6 @@ void GDScriptAnalyzer::resolve_node(GDScriptParser::Node *p_node, bool p_is_root
 		case GDScriptParser::Node::FOR:
 			resolve_for(static_cast<GDScriptParser::ForNode *>(p_node));
 			break;
-		case GDScriptParser::Node::FUNCTION:
-			resolve_function_signature(static_cast<GDScriptParser::FunctionNode *>(p_node));
-			resolve_function_body(static_cast<GDScriptParser::FunctionNode *>(p_node));
-			break;
 		case GDScriptParser::Node::IF:
 			resolve_if(static_cast<GDScriptParser::IfNode *>(p_node));
 			break;
@@ -1258,6 +1254,7 @@ void GDScriptAnalyzer::resolve_node(GDScriptParser::Node *p_node, bool p_is_root
 		case GDScriptParser::Node::BREAKPOINT:
 		case GDScriptParser::Node::CONTINUE:
 		case GDScriptParser::Node::ENUM:
+		case GDScriptParser::Node::FUNCTION:
 		case GDScriptParser::Node::PASS:
 		case GDScriptParser::Node::SIGNAL:
 			// Nothing to do.
@@ -1269,13 +1266,15 @@ void GDScriptAnalyzer::resolve_annotation(GDScriptParser::AnnotationNode *p_anno
 	// TODO: Add second validation function for annotations, so they can use checked types.
 }
 
-void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *p_function, const GDScriptParser::Node *p_source) {
+void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *p_function, const GDScriptParser::Node *p_source, bool p_is_lambda) {
 	if (p_source == nullptr) {
 		p_source = p_function;
 	}
 
+	StringName function_name = p_function->identifier != nullptr ? p_function->identifier->name : StringName();
+
 	if (p_function->get_datatype().is_resolving()) {
-		push_error(vformat(R"(Could not resolve function "%s": Cyclic reference.)", p_function->identifier->name), p_source);
+		push_error(vformat(R"(Could not resolve function "%s": Cyclic reference.)", function_name), p_source);
 		return;
 	}
 
@@ -1301,7 +1300,7 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 		resolve_parameter(p_function->parameters[i]);
 #ifdef DEBUG_ENABLED
 		if (p_function->parameters[i]->usages == 0 && !String(p_function->parameters[i]->identifier->name).begins_with("_")) {
-			parser->push_warning(p_function->parameters[i]->identifier, GDScriptWarning::UNUSED_PARAMETER, p_function->identifier->name, p_function->parameters[i]->identifier->name);
+			parser->push_warning(p_function->parameters[i]->identifier, GDScriptWarning::UNUSED_PARAMETER, function_name, p_function->parameters[i]->identifier->name);
 		}
 		is_shadowing(p_function->parameters[i]->identifier, "function parameter");
 #endif // DEBUG_ENABLED
@@ -1318,7 +1317,7 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 #endif // TOOLS_ENABLED
 	}
 
-	if (p_function->identifier->name == GDScriptLanguage::get_singleton()->strings._init) {
+	if (!p_is_lambda && function_name == GDScriptLanguage::get_singleton()->strings._init) {
 		// Constructor.
 		GDScriptParser::DataType return_type = parser->current_class->get_datatype();
 		return_type.is_meta_type = false;
@@ -1350,7 +1349,7 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 		int default_par_count = 0;
 		bool is_static = false;
 		bool is_vararg = false;
-		if (get_function_signature(p_function, false, base_type, p_function->identifier->name, parent_return_type, parameters_types, default_par_count, is_static, is_vararg)) {
+		if (!p_is_lambda && get_function_signature(p_function, false, base_type, function_name, parent_return_type, parameters_types, default_par_count, is_static, is_vararg)) {
 			bool valid = p_function->is_static == is_static;
 			valid = valid && parent_return_type == p_function->get_datatype();
 
@@ -1365,7 +1364,7 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 
 			if (!valid) {
 				// Compute parent signature as a string to show in the error message.
-				String parent_signature = p_function->identifier->name.operator String() + "(";
+				String parent_signature = function_name.operator String() + "(";
 				int j = 0;
 				for (const GDScriptParser::DataType &par_type : parameters_types) {
 					if (j > 0) {
@@ -1404,7 +1403,7 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 	parser->current_function = previous_function;
 }
 
-void GDScriptAnalyzer::resolve_function_body(GDScriptParser::FunctionNode *p_function) {
+void GDScriptAnalyzer::resolve_function_body(GDScriptParser::FunctionNode *p_function, bool p_is_lambda) {
 	if (p_function->resolved_body) {
 		return;
 	}
@@ -1422,7 +1421,7 @@ void GDScriptAnalyzer::resolve_function_body(GDScriptParser::FunctionNode *p_fun
 		return_type.type_source = GDScriptParser::DataType::INFERRED;
 		p_function->set_datatype(p_function->body->get_datatype());
 	} else if (p_function->get_datatype().is_hard_type() && (p_function->get_datatype().kind != GDScriptParser::DataType::BUILTIN || p_function->get_datatype().builtin_type != Variant::NIL)) {
-		if (!p_function->body->has_return && p_function->identifier->name != GDScriptLanguage::get_singleton()->strings._init) {
+		if (!p_function->body->has_return && (p_is_lambda || p_function->identifier->name != GDScriptLanguage::get_singleton()->strings._init)) {
 			push_error(R"(Not all code paths return a value.)", p_function);
 		}
 	}
@@ -3297,16 +3296,10 @@ void GDScriptAnalyzer::reduce_lambda(GDScriptParser::LambdaNode *p_lambda) {
 		return;
 	}
 
-	GDScriptParser::FunctionNode *previous_function = parser->current_function;
-	parser->current_function = p_lambda->function;
-
 	lambda_stack.push_back(p_lambda);
-
-	for (int i = 0; i < p_lambda->function->parameters.size(); i++) {
-		resolve_parameter(p_lambda->function->parameters[i]);
-	}
-
-	resolve_suite(p_lambda->function->body);
+	resolve_function_signature(p_lambda->function, p_lambda, true);
+	resolve_function_body(p_lambda->function, true);
+	lambda_stack.pop_back();
 
 	int captures_amount = p_lambda->captures.size();
 	if (captures_amount > 0) {
@@ -3331,9 +3324,6 @@ void GDScriptAnalyzer::reduce_lambda(GDScriptParser::LambdaNode *p_lambda) {
 			p_lambda->function->parameters_indices[capture->name] = i;
 		}
 	}
-
-	lambda_stack.pop_back();
-	parser->current_function = previous_function;
 }
 
 void GDScriptAnalyzer::reduce_literal(GDScriptParser::LiteralNode *p_literal) {
