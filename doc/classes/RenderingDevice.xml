@@ -32,7 +32,10 @@
 		<method name="buffer_get_data">
 			<return type="PackedByteArray" />
 			<param index="0" name="buffer" type="RID" />
+			<param index="1" name="offset_bytes" type="int" default="0" />
+			<param index="2" name="size_bytes" type="int" default="0" />
 			<description>
+				Returns a copy of the data of the specified [param buffer], optionally [param offset_bytes] and [param size_bytes] can be set to copy only a portion of the buffer.
 			</description>
 		</method>
 		<method name="buffer_update">
