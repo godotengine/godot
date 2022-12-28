@@ -202,6 +202,7 @@ void RenderSceneBuffersRD::configure(RID p_render_target, const Size2i p_interna
 		vrs_texture = create_texture(RB_SCOPE_VRS, RB_TEXTURE, RD::DATA_FORMAT_R8_UINT, usage_bits, RD::TEXTURE_SAMPLES_1, vrs->get_vrs_texture_size(internal_size));
 	}
 
+	// (re-)configure any named buffers
 	for (KeyValue<StringName, Ref<RenderBufferCustomDataRD>> &E : data_buffers) {
 		E.value->configure(this);
 	}
@@ -220,6 +221,14 @@ void RenderSceneBuffersRD::configure_for_reflections(const Size2i p_reflection_s
 	use_taa = false;
 	use_debanding = false;
 	view_count = 1;
+
+	// cleanout any old buffers we had.
+	cleanup();
+
+	// (re-)configure any named buffers
+	for (KeyValue<StringName, Ref<RenderBufferCustomDataRD>> &E : data_buffers) {
+		E.value->configure(this);
+	}
 }
 
 void RenderSceneBuffersRD::set_fsr_sharpness(float p_fsr_sharpness) {
@@ -498,10 +507,6 @@ void RenderSceneBuffersRD::set_custom_data(const StringName &p_name, Ref<RenderB
 }
 
 Ref<RenderBufferCustomDataRD> RenderSceneBuffersRD::get_custom_data(const StringName &p_name) const {
-	if (!data_buffers.has(p_name)) {
-		print_line("test");
-	}
-
 	ERR_FAIL_COND_V(!data_buffers.has(p_name), Ref<RenderBufferCustomDataRD>());
 
 	Ref<RenderBufferCustomDataRD> ret = data_buffers[p_name];
