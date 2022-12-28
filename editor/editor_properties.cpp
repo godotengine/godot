@@ -4119,7 +4119,7 @@ void EditorPropertyResource::update_property() {
 					}
 				}
 
-				if (use_editor) {
+				if (use_editor && !is_keying()) {
 					// Open editor directly and hide other such editors which are currently open.
 					_open_editor_pressed();
 					if (is_inside_tree()) {
