@@ -758,24 +758,72 @@ public:
 
 typedef void (*CollisionFunc)(const GodotShape3D *, const Transform3D &, const GodotShape3D *, const Transform3D &, _CollectorCallback *p_callback, real_t, real_t);
 
+// Perform analytic sphere-sphere collision and report results to collector
+template <bool withMargin>
+static void analytic_sphere_collision(const Vector3 &p_origin_a, real_t p_radius_a, const Vector3 &p_origin_b, real_t p_radius_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
+	// Expand the spheres by the margins if enabled
+	if (withMargin) {
+		p_radius_a += p_margin_a;
+		p_radius_b += p_margin_b;
+	}
+
+	// Get the vector from sphere B to A
+	Vector3 b_to_a = p_origin_a - p_origin_b;
+
+	// Get the length from B to A
+	real_t b_to_a_len = b_to_a.length();
+
+	// Calculate the sphere overlap, and bail if not overlapping
+	real_t overlap = p_radius_a + p_radius_b - b_to_a_len;
+	if (overlap < 0)
+		return;
+
+	// Report collision
+	p_collector->collided = true;
+
+	// Bail if there is no callback to receive the A and B collision points.
+	if (!p_collector->callback) {
+		return;
+	}
+
+	// Normalize the B to A vector
+	if (b_to_a_len < CMP_EPSILON) {
+		b_to_a = Vector3(0, 1, 0); // Spheres coincident, use arbitrary direction
+	} else {
+		b_to_a /= b_to_a_len;
+	}
+
+	// Report collision points. The operations below are intended to minimize
+	// floating-point precision errors. This is done by calculating the first
+	// collision point from the smaller sphere, and then jumping across to
+	// the larger spheres collision point using the overlap distance. This
+	// jump is usually small even if the large sphere is massive, and so the
+	// second point will not suffer from precision errors.
+	if (p_radius_a < p_radius_b) {
+		Vector3 point_a = p_origin_a - b_to_a * p_radius_a;
+		Vector3 point_b = point_a + b_to_a * overlap;
+		p_collector->call(point_a, point_b); // Consider adding b_to_a vector
+	} else {
+		Vector3 point_b = p_origin_b + b_to_a * p_radius_b;
+		Vector3 point_a = point_b - b_to_a * overlap;
+		p_collector->call(point_a, point_b); // Consider adding b_to_a vector
+	}
+}
+
 template <bool withMargin>
 static void _collision_sphere_sphere(const GodotShape3D *p_a, const Transform3D &p_transform_a, const GodotShape3D *p_b, const Transform3D &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
 	const GodotSphereShape3D *sphere_A = static_cast<const GodotSphereShape3D *>(p_a);
 	const GodotSphereShape3D *sphere_B = static_cast<const GodotSphereShape3D *>(p_b);
 
-	SeparatorAxisTest<GodotSphereShape3D, GodotSphereShape3D, withMargin> separator(sphere_A, p_transform_a, sphere_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
-
-	// previous axis
-
-	if (!separator.test_previous_axis()) {
-		return;
-	}
-
-	if (!separator.test_axis((p_transform_a.origin - p_transform_b.origin).normalized())) {
-		return;
-	}
-
-	separator.generate_contacts();
+	// Perform an analytic sphere collision between the two spheres
+	analytic_sphere_collision<withMargin>(
+			p_transform_a.origin,
+			sphere_A->get_radius(),
+			p_transform_b.origin,
+			sphere_B->get_radius(),
+			p_collector,
+			p_margin_a,
+			p_margin_b);
 }
 
 template <bool withMargin>
@@ -834,41 +882,26 @@ static void _collision_sphere_capsule(const GodotShape3D *p_a, const Transform3D
 	const GodotSphereShape3D *sphere_A = static_cast<const GodotSphereShape3D *>(p_a);
 	const GodotCapsuleShape3D *capsule_B = static_cast<const GodotCapsuleShape3D *>(p_b);
 
-	SeparatorAxisTest<GodotSphereShape3D, GodotCapsuleShape3D, withMargin> separator(sphere_A, p_transform_a, capsule_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
+	real_t capsule_B_radius = capsule_B->get_radius();
 
-	if (!separator.test_previous_axis()) {
-		return;
-	}
+	// Construct the capsule segment (ball-center to ball-center)
+	Vector3 capsule_segment[2];
+	Vector3 capsule_axis = p_transform_b.basis.get_column(1) * (capsule_B->get_height() * 0.5 - capsule_B_radius);
+	capsule_segment[0] = p_transform_b.origin + capsule_axis;
+	capsule_segment[1] = p_transform_b.origin - capsule_axis;
 
-	//capsule sphere 1, sphere
+	// Get the capsules closest segment-point to the sphere
+	Vector3 capsule_closest = Geometry3D::get_closest_point_to_segment(p_transform_a.origin, capsule_segment);
 
-	Vector3 capsule_axis = p_transform_b.basis.get_column(1) * (capsule_B->get_height() * 0.5 - capsule_B->get_radius());
-
-	Vector3 capsule_ball_1 = p_transform_b.origin + capsule_axis;
-
-	if (!separator.test_axis((capsule_ball_1 - p_transform_a.origin).normalized())) {
-		return;
-	}
-
-	//capsule sphere 2, sphere
-
-	Vector3 capsule_ball_2 = p_transform_b.origin - capsule_axis;
-
-	if (!separator.test_axis((capsule_ball_2 - p_transform_a.origin).normalized())) {
-		return;
-	}
-
-	//capsule edge, sphere
-
-	Vector3 b2a = p_transform_a.origin - p_transform_b.origin;
-
-	Vector3 axis = b2a.cross(capsule_axis).cross(capsule_axis).normalized();
-
-	if (!separator.test_axis(axis)) {
-		return;
-	}
-
-	separator.generate_contacts();
+	// Perform an analytic sphere collision between the sphere and the sphere-collider in the capsule
+	analytic_sphere_collision<withMargin>(
+			p_transform_a.origin,
+			sphere_A->get_radius(),
+			capsule_closest,
+			capsule_B_radius,
+			p_collector,
+			p_margin_a,
+			p_margin_b);
 }
 
 template <bool withMargin>
@@ -1615,63 +1648,31 @@ static void _collision_capsule_capsule(const GodotShape3D *p_a, const Transform3
 	const GodotCapsuleShape3D *capsule_A = static_cast<const GodotCapsuleShape3D *>(p_a);
 	const GodotCapsuleShape3D *capsule_B = static_cast<const GodotCapsuleShape3D *>(p_b);
 
-	SeparatorAxisTest<GodotCapsuleShape3D, GodotCapsuleShape3D, withMargin> separator(capsule_A, p_transform_a, capsule_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
+	real_t capsule_A_radius = capsule_A->get_radius();
+	real_t capsule_B_radius = capsule_B->get_radius();
 
-	if (!separator.test_previous_axis()) {
-		return;
-	}
+	// Get the closest points between the capsule segments
+	Vector3 capsule_A_closest;
+	Vector3 capsule_B_closest;
+	Vector3 capsule_A_axis = p_transform_a.basis.get_column(1) * (capsule_A->get_height() * 0.5 - capsule_A_radius);
+	Vector3 capsule_B_axis = p_transform_b.basis.get_column(1) * (capsule_B->get_height() * 0.5 - capsule_B_radius);
+	Geometry3D::get_closest_points_between_segments(
+			p_transform_a.origin + capsule_A_axis,
+			p_transform_a.origin - capsule_A_axis,
+			p_transform_b.origin + capsule_B_axis,
+			p_transform_b.origin - capsule_B_axis,
+			capsule_A_closest,
+			capsule_B_closest);
 
-	// some values
-
-	Vector3 capsule_A_axis = p_transform_a.basis.get_column(1) * (capsule_A->get_height() * 0.5 - capsule_A->get_radius());
-	Vector3 capsule_B_axis = p_transform_b.basis.get_column(1) * (capsule_B->get_height() * 0.5 - capsule_B->get_radius());
-
-	Vector3 capsule_A_ball_1 = p_transform_a.origin + capsule_A_axis;
-	Vector3 capsule_A_ball_2 = p_transform_a.origin - capsule_A_axis;
-	Vector3 capsule_B_ball_1 = p_transform_b.origin + capsule_B_axis;
-	Vector3 capsule_B_ball_2 = p_transform_b.origin - capsule_B_axis;
-
-	//balls-balls
-
-	if (!separator.test_axis((capsule_A_ball_1 - capsule_B_ball_1).normalized())) {
-		return;
-	}
-	if (!separator.test_axis((capsule_A_ball_1 - capsule_B_ball_2).normalized())) {
-		return;
-	}
-
-	if (!separator.test_axis((capsule_A_ball_2 - capsule_B_ball_1).normalized())) {
-		return;
-	}
-	if (!separator.test_axis((capsule_A_ball_2 - capsule_B_ball_2).normalized())) {
-		return;
-	}
-
-	// edges-balls
-
-	if (!separator.test_axis((capsule_A_ball_1 - capsule_B_ball_1).cross(capsule_A_axis).cross(capsule_A_axis).normalized())) {
-		return;
-	}
-
-	if (!separator.test_axis((capsule_A_ball_1 - capsule_B_ball_2).cross(capsule_A_axis).cross(capsule_A_axis).normalized())) {
-		return;
-	}
-
-	if (!separator.test_axis((capsule_B_ball_1 - capsule_A_ball_1).cross(capsule_B_axis).cross(capsule_B_axis).normalized())) {
-		return;
-	}
-
-	if (!separator.test_axis((capsule_B_ball_1 - capsule_A_ball_2).cross(capsule_B_axis).cross(capsule_B_axis).normalized())) {
-		return;
-	}
-
-	// edges
-
-	if (!separator.test_axis(capsule_A_axis.cross(capsule_B_axis).normalized())) {
-		return;
-	}
-
-	separator.generate_contacts();
+	// Perform the analytic collision between the two closest capsule spheres
+	analytic_sphere_collision<withMargin>(
+			capsule_A_closest,
+			capsule_A_radius,
+			capsule_B_closest,
+			capsule_B_radius,
+			p_collector,
+			p_margin_a,
+			p_margin_b);
 }
 
 template <bool withMargin>
