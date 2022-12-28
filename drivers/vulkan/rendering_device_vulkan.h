@@ -1122,7 +1122,7 @@ public:
 
 	virtual Error buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const void *p_data, BitField<BarrierMask> p_post_barrier = BARRIER_MASK_ALL_BARRIERS); // Works for any buffer.
 	virtual Error buffer_clear(RID p_buffer, uint32_t p_offset, uint32_t p_size, BitField<BarrierMask> p_post_barrier = BARRIER_MASK_ALL_BARRIERS);
-	virtual Vector<uint8_t> buffer_get_data(RID p_buffer);
+	virtual Vector<uint8_t> buffer_get_data(RID p_buffer, uint32_t p_offset = 0, uint32_t p_size = 0);
 
 	/*************************/
 	/**** RENDER PIPELINE ****/
