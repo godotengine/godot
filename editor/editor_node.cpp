@@ -630,6 +630,10 @@ void EditorNode::_notification(int p_what) {
 					set_addon_plugin_enabled(addons[i], true);
 				}
 				_initializing_plugins = false;
+
+				if (!pending_addons.is_empty()) {
+					EditorFileSystem::get_singleton()->connect("script_classes_updated", callable_mp(this, &EditorNode::_enable_pending_addons));
+				}
 			}
 
 			RenderingServer::get_singleton()->viewport_set_disable_2d(get_scene_root()->get_viewport_rid(), true);
@@ -3487,6 +3491,12 @@ void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled,
 
 		// Errors in the script cause the base_type to be an empty StringName.
 		if (scr->get_instance_base_type() == StringName()) {
+			if (_initializing_plugins) {
+				// However, if it happens during initialization, waiting for file scan might help.
+				pending_addons.push_back(p_addon);
+				return;
+			}
+
 			show_warning(vformat(TTR("Unable to load addon script from path: '%s'. This might be due to a code error in that script.\nDisabling the addon at '%s' to prevent further errors."), script_path, addon_path));
 			_remove_plugin_from_enabled(addon_path);
 			return;
@@ -4392,6 +4402,13 @@ void EditorNode::_build_icon_type_cache() {
 		}
 		icon_type_cache[E] = theme_base->get_theme()->get_icon(E, SNAME("EditorIcons"));
 	}
+}
+
+void EditorNode::_enable_pending_addons() {
+	for (uint32_t i = 0; i < pending_addons.size(); i++) {
+		set_addon_plugin_enabled(pending_addons[i], true);
+	}
+	pending_addons.clear();
 }
 
 void EditorNode::_file_dialog_register(FileDialog *p_dialog) {
