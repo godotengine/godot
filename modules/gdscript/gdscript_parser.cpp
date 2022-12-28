@@ -1799,24 +1799,29 @@ GDScriptParser::AssertNode *GDScriptParser::parse_assert() {
 	// TODO: Add assert message.
 	AssertNode *assert = alloc_node<AssertNode>();
 
+	push_multiline(true);
 	consume(GDScriptTokenizer::Token::PARENTHESIS_OPEN, R"(Expected "(" after "assert".)");
+
 	assert->condition = parse_expression(false);
 	if (assert->condition == nullptr) {
 		push_error("Expected expression to assert.");
+		pop_multiline();
 		complete_extents(assert);
 		return nullptr;
 	}
 
-	if (match(GDScriptTokenizer::Token::COMMA)) {
-		// Error message.
+	if (match(GDScriptTokenizer::Token::COMMA) && !check(GDScriptTokenizer::Token::PARENTHESIS_CLOSE)) {
 		assert->message = parse_expression(false);
 		if (assert->message == nullptr) {
 			push_error(R"(Expected error message for assert after ",".)");
+			pop_multiline();
 			complete_extents(assert);
 			return nullptr;
 		}
+		match(GDScriptTokenizer::Token::COMMA);
 	}
 
+	pop_multiline();
 	consume(GDScriptTokenizer::Token::PARENTHESIS_CLOSE, R"*(Expected ")" after assert expression.)*");
 
 	complete_extents(assert);
