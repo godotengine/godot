@@ -65,8 +65,8 @@ class GDScriptAnalyzer {
 	void resolve_class_interface(GDScriptParser::ClassNode *p_class, bool p_recursive);
 	void resolve_class_body(GDScriptParser::ClassNode *p_class, const GDScriptParser::Node *p_source = nullptr);
 	void resolve_class_body(GDScriptParser::ClassNode *p_class, bool p_recursive);
-	void resolve_function_signature(GDScriptParser::FunctionNode *p_function, const GDScriptParser::Node *p_source = nullptr);
-	void resolve_function_body(GDScriptParser::FunctionNode *p_function);
+	void resolve_function_signature(GDScriptParser::FunctionNode *p_function, const GDScriptParser::Node *p_source = nullptr, bool p_is_lambda = false);
+	void resolve_function_body(GDScriptParser::FunctionNode *p_function, bool p_is_lambda = false);
 	void resolve_node(GDScriptParser::Node *p_node, bool p_is_root = true);
 	void resolve_suite(GDScriptParser::SuiteNode *p_suite);
 	void resolve_assignable(GDScriptParser::AssignableNode *p_assignable, const char *p_kind);
