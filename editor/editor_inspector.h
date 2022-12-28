@@ -542,8 +542,6 @@ class EditorInspector : public ScrollContainer {
 	void _show_add_meta_dialog();
 	void _check_meta_name(const String &p_name);
 
-	void _update_tree();
-
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
