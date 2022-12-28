@@ -138,8 +138,8 @@ Error GLTFDocumentExtension::export_preflight(Ref<GLTFState> p_state, Node *p_ro
 }
 
 void GLTFDocumentExtension::convert_scene_node(Ref<GLTFState> p_state, Ref<GLTFNode> p_gltf_node, Node *p_scene_node) {
-	ERR_FAIL_NULL(p_state.is_null());
-	ERR_FAIL_NULL(p_gltf_node.is_null());
+	ERR_FAIL_COND(p_state.is_null());
+	ERR_FAIL_COND(p_gltf_node.is_null());
 	ERR_FAIL_NULL(p_scene_node);
 	ScriptInstance *si = get_script_instance();
 	if (!si) {
@@ -149,8 +149,8 @@ void GLTFDocumentExtension::convert_scene_node(Ref<GLTFState> p_state, Ref<GLTFN
 }
 
 Error GLTFDocumentExtension::export_node(Ref<GLTFState> p_state, Ref<GLTFNode> p_gltf_node, Dictionary &r_dict, Node *p_node) {
-	ERR_FAIL_NULL_V(p_state.is_null(), ERR_INVALID_PARAMETER);
-	ERR_FAIL_NULL_V(p_gltf_node.is_null(), ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(p_state.is_null(), ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(p_gltf_node.is_null(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_NULL_V(p_node, ERR_INVALID_PARAMETER);
 	ScriptInstance *si = get_script_instance();
 	if (!si) {
@@ -161,7 +161,7 @@ Error GLTFDocumentExtension::export_node(Ref<GLTFState> p_state, Ref<GLTFNode> p
 }
 
 Error GLTFDocumentExtension::export_post(Ref<GLTFState> p_state) {
-	ERR_FAIL_NULL_V(p_state.is_null(), ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(p_state.is_null(), ERR_INVALID_PARAMETER);
 	ScriptInstance *si = get_script_instance();
 	if (!si) {
 		return Error::OK;
