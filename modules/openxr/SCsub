@@ -95,10 +95,13 @@ if env["opengl3"]:
 
 env_openxr.add_source_files(module_obj, "extensions/openxr_palm_pose_extension.cpp")
 env_openxr.add_source_files(module_obj, "extensions/openxr_composition_layer_depth_extension.cpp")
+env_openxr.add_source_files(module_obj, "extensions/openxr_htc_controller_extension.cpp")
 env_openxr.add_source_files(module_obj, "extensions/openxr_htc_vive_tracker_extension.cpp")
+env_openxr.add_source_files(module_obj, "extensions/openxr_huawei_controller_extension.cpp")
 env_openxr.add_source_files(module_obj, "extensions/openxr_hand_tracking_extension.cpp")
 env_openxr.add_source_files(module_obj, "extensions/openxr_fb_passthrough_extension_wrapper.cpp")
 env_openxr.add_source_files(module_obj, "extensions/openxr_fb_display_refresh_rate_extension.cpp")
+env_openxr.add_source_files(module_obj, "extensions/openxr_wmr_controller_extension.cpp")
 
 env.modules_sources += module_obj
 

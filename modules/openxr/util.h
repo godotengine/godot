@@ -40,7 +40,7 @@
 		ERR_FAIL_COND_V(XR_FAILED(get_instance_proc_addr_result), false);                                             \
 	} while (0)
 
-#define EXT_INIT_XR_FUNC_V(name) INIT_XR_FUNC_V(openxr_api, name)
+#define EXT_INIT_XR_FUNC_V(name) INIT_XR_FUNC_V(OpenXRAPI::get_singleton(), name)
 #define OPENXR_API_INIT_XR_FUNC_V(name) INIT_XR_FUNC_V(this, name)
 
 #define INIT_XR_FUNC(openxr_api, name)                                                                                \
@@ -50,7 +50,7 @@
 		ERR_FAIL_COND(XR_FAILED(get_instance_proc_addr_result));                                                      \
 	} while (0)
 
-#define EXT_INIT_XR_FUNC(name) INIT_XR_FUNC(openxr_api, name)
+#define EXT_INIT_XR_FUNC(name) INIT_XR_FUNC(OpenXRAPI::get_singleton(), name)
 #define OPENXR_API_INIT_XR_FUNC(name) INIT_XR_FUNC(this, name)
 
 #define EXT_PROTO_XRRESULT_FUNC1(func_name, arg1_type, arg1)                    \

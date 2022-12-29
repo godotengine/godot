@@ -41,14 +41,8 @@ OpenXRHandTrackingExtension *OpenXRHandTrackingExtension::get_singleton() {
 	return singleton;
 }
 
-OpenXRHandTrackingExtension::OpenXRHandTrackingExtension(OpenXRAPI *p_openxr_api) :
-		OpenXRExtensionWrapper(p_openxr_api) {
+OpenXRHandTrackingExtension::OpenXRHandTrackingExtension() {
 	singleton = this;
-
-	// Extensions we use for our hand tracking.
-	request_extensions[XR_EXT_HAND_TRACKING_EXTENSION_NAME] = &hand_tracking_ext;
-	request_extensions[XR_EXT_HAND_JOINTS_MOTION_RANGE_EXTENSION_NAME] = &hand_motion_range_ext;
-	request_extensions[XR_FB_HAND_TRACKING_AIM_EXTENSION_NAME] = &hand_tracking_aim_state_ext;
 
 	// Make sure this is cleared until we actually request it
 	handTrackingSystemProperties.supportsHandTracking = false;
@@ -56,6 +50,16 @@ OpenXRHandTrackingExtension::OpenXRHandTrackingExtension(OpenXRAPI *p_openxr_api
 
 OpenXRHandTrackingExtension::~OpenXRHandTrackingExtension() {
 	singleton = nullptr;
+}
+
+HashMap<String, bool *> OpenXRHandTrackingExtension::get_requested_extensions() {
+	HashMap<String, bool *> request_extensions;
+
+	request_extensions[XR_EXT_HAND_TRACKING_EXTENSION_NAME] = &hand_tracking_ext;
+	request_extensions[XR_EXT_HAND_JOINTS_MOTION_RANGE_EXTENSION_NAME] = &hand_motion_range_ext;
+	request_extensions[XR_FB_HAND_TRACKING_AIM_EXTENSION_NAME] = &hand_tracking_aim_state_ext;
+
+	return request_extensions;
 }
 
 void OpenXRHandTrackingExtension::on_instance_created(const XrInstance p_instance) {
@@ -127,7 +131,7 @@ void OpenXRHandTrackingExtension::on_process() {
 	}
 
 	// process our hands
-	const XrTime time = openxr_api->get_next_frame_time(); // This data will be used for the next frame we render
+	const XrTime time = OpenXRAPI::get_singleton()->get_next_frame_time(); // This data will be used for the next frame we render
 
 	XrResult result;
 
@@ -140,10 +144,10 @@ void OpenXRHandTrackingExtension::on_process() {
 				XR_HAND_JOINT_SET_DEFAULT_EXT, // handJointSet
 			};
 
-			result = xrCreateHandTrackerEXT(openxr_api->get_session(), &createInfo, &hand_trackers[i].hand_tracker);
+			result = xrCreateHandTrackerEXT(OpenXRAPI::get_singleton()->get_session(), &createInfo, &hand_trackers[i].hand_tracker);
 			if (XR_FAILED(result)) {
 				// not successful? then we do nothing.
-				print_line("OpenXR: Failed to obtain hand tracking information [", openxr_api->get_error_string(result), "]");
+				print_line("OpenXR: Failed to obtain hand tracking information [", OpenXRAPI::get_singleton()->get_error_string(result), "]");
 				hand_trackers[i].is_initialized = false;
 			} else {
 				void *next_pointer = nullptr;
@@ -192,14 +196,14 @@ void OpenXRHandTrackingExtension::on_process() {
 			XrHandJointsLocateInfoEXT locateInfo = {
 				XR_TYPE_HAND_JOINTS_LOCATE_INFO_EXT, // type
 				next_pointer, // next
-				openxr_api->get_play_space(), // baseSpace
+				OpenXRAPI::get_singleton()->get_play_space(), // baseSpace
 				time, // time
 			};
 
 			result = xrLocateHandJointsEXT(hand_trackers[i].hand_tracker, &locateInfo, &hand_trackers[i].locations);
 			if (XR_FAILED(result)) {
 				// not successful? then we do nothing.
-				print_line("OpenXR: Failed to get tracking for hand", i, "[", openxr_api->get_error_string(result), "]");
+				print_line("OpenXR: Failed to get tracking for hand", i, "[", OpenXRAPI::get_singleton()->get_error_string(result), "]");
 				continue;
 			}
 

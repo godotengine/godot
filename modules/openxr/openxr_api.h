@@ -65,6 +65,9 @@ private:
 	// our singleton
 	static OpenXRAPI *singleton;
 
+	// Registered extension wrappers
+	static Vector<OpenXRExtensionWrapper *> registered_extension_wrappers;
+
 	// linked XR interface
 	OpenXRInterface *xr_interface = nullptr;
 
@@ -75,14 +78,7 @@ private:
 	// extensions
 	uint32_t num_supported_extensions = 0;
 	XrExtensionProperties *supported_extensions = nullptr;
-	Vector<OpenXRExtensionWrapper *> registered_extension_wrappers;
 	Vector<CharString> enabled_extensions;
-
-	bool ext_hp_mixed_reality_available = false;
-	bool ext_samsung_odyssey_available = false;
-	bool ext_vive_cosmos_available = false;
-	bool ext_vive_focus3_available = false;
-	bool ext_huawei_controller_available = false;
 
 	// composition layer providers
 	Vector<OpenXRCompositionLayerProvider *> composition_layer_providers;
@@ -307,14 +303,16 @@ public:
 	bool interaction_profile_supports_io_path(const String &p_ip_path, const String &p_io_path);
 
 	static bool openxr_is_enabled(bool p_check_run_in_editor = true);
-	static OpenXRAPI *get_singleton();
+	_FORCE_INLINE_ static OpenXRAPI *get_singleton() { return singleton; }
 
 	XrResult get_instance_proc_addr(const char *p_name, PFN_xrVoidFunction *p_addr);
 	String get_error_string(XrResult result);
 	String get_swapchain_format_name(int64_t p_swapchain_format) const;
 
 	void set_xr_interface(OpenXRInterface *p_xr_interface);
-	void register_extension_wrapper(OpenXRExtensionWrapper *p_extension_wrapper);
+	static void register_extension_wrapper(OpenXRExtensionWrapper *p_extension_wrapper);
+	static void register_extension_metadata();
+	static void cleanup_extension_wrappers();
 
 	void set_form_factor(XrFormFactor p_form_factor);
 	XrFormFactor get_form_factor() const { return form_factor; }

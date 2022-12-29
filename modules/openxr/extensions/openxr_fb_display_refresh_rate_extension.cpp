@@ -36,16 +36,20 @@ OpenXRDisplayRefreshRateExtension *OpenXRDisplayRefreshRateExtension::get_single
 	return singleton;
 }
 
-OpenXRDisplayRefreshRateExtension::OpenXRDisplayRefreshRateExtension(OpenXRAPI *p_openxr_api) :
-		OpenXRExtensionWrapper(p_openxr_api) {
+OpenXRDisplayRefreshRateExtension::OpenXRDisplayRefreshRateExtension() {
 	singleton = this;
-
-	// Extensions we use for our hand tracking.
-	request_extensions[XR_FB_DISPLAY_REFRESH_RATE_EXTENSION_NAME] = &display_refresh_rate_ext;
 }
 
 OpenXRDisplayRefreshRateExtension::~OpenXRDisplayRefreshRateExtension() {
 	display_refresh_rate_ext = false;
+}
+
+HashMap<String, bool *> OpenXRDisplayRefreshRateExtension::get_requested_extensions() {
+	HashMap<String, bool *> request_extensions;
+
+	request_extensions[XR_FB_DISPLAY_REFRESH_RATE_EXTENSION_NAME] = &display_refresh_rate_ext;
+
+	return request_extensions;
 }
 
 void OpenXRDisplayRefreshRateExtension::on_instance_created(const XrInstance p_instance) {
@@ -65,9 +69,9 @@ float OpenXRDisplayRefreshRateExtension::get_refresh_rate() const {
 
 	if (display_refresh_rate_ext) {
 		float rate;
-		XrResult result = xrGetDisplayRefreshRateFB(openxr_api->get_session(), &rate);
+		XrResult result = xrGetDisplayRefreshRateFB(OpenXRAPI::get_singleton()->get_session(), &rate);
 		if (XR_FAILED(result)) {
-			print_line("OpenXR: Failed to obtain refresh rate [", openxr_api->get_error_string(result), "]");
+			print_line("OpenXR: Failed to obtain refresh rate [", OpenXRAPI::get_singleton()->get_error_string(result), "]");
 		} else {
 			refresh_rate = rate;
 		}
@@ -78,9 +82,9 @@ float OpenXRDisplayRefreshRateExtension::get_refresh_rate() const {
 
 void OpenXRDisplayRefreshRateExtension::set_refresh_rate(float p_refresh_rate) {
 	if (display_refresh_rate_ext) {
-		XrResult result = xrRequestDisplayRefreshRateFB(openxr_api->get_session(), p_refresh_rate);
+		XrResult result = xrRequestDisplayRefreshRateFB(OpenXRAPI::get_singleton()->get_session(), p_refresh_rate);
 		if (XR_FAILED(result)) {
-			print_line("OpenXR: Failed to set refresh rate [", openxr_api->get_error_string(result), "]");
+			print_line("OpenXR: Failed to set refresh rate [", OpenXRAPI::get_singleton()->get_error_string(result), "]");
 		}
 	}
 }
@@ -91,21 +95,21 @@ Array OpenXRDisplayRefreshRateExtension::get_available_refresh_rates() const {
 
 	if (display_refresh_rate_ext) {
 		uint32_t display_refresh_rate_count = 0;
-		result = xrEnumerateDisplayRefreshRatesFB(openxr_api->get_session(), 0, &display_refresh_rate_count, nullptr);
+		result = xrEnumerateDisplayRefreshRatesFB(OpenXRAPI::get_singleton()->get_session(), 0, &display_refresh_rate_count, nullptr);
 		if (XR_FAILED(result)) {
-			print_line("OpenXR: Failed to obtain refresh rates count [", openxr_api->get_error_string(result), "]");
+			print_line("OpenXR: Failed to obtain refresh rates count [", OpenXRAPI::get_singleton()->get_error_string(result), "]");
 		}
 
 		if (display_refresh_rate_count > 0) {
 			float *display_refresh_rates = (float *)memalloc(sizeof(float) * display_refresh_rate_count);
 			if (display_refresh_rates == nullptr) {
-				print_line("OpenXR: Failed to obtain refresh rates memory buffer [", openxr_api->get_error_string(result), "]");
+				print_line("OpenXR: Failed to obtain refresh rates memory buffer [", OpenXRAPI::get_singleton()->get_error_string(result), "]");
 				return arr;
 			}
 
-			result = xrEnumerateDisplayRefreshRatesFB(openxr_api->get_session(), display_refresh_rate_count, &display_refresh_rate_count, display_refresh_rates);
+			result = xrEnumerateDisplayRefreshRatesFB(OpenXRAPI::get_singleton()->get_session(), display_refresh_rate_count, &display_refresh_rate_count, display_refresh_rates);
 			if (XR_FAILED(result)) {
-				print_line("OpenXR: Failed to obtain refresh rates count [", openxr_api->get_error_string(result), "]");
+				print_line("OpenXR: Failed to obtain refresh rates count [", OpenXRAPI::get_singleton()->get_error_string(result), "]");
 				memfree(display_refresh_rates);
 				return arr;
 			}

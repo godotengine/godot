@@ -35,18 +35,14 @@
 
 class OpenXRHTCViveTrackerExtension : public OpenXRExtensionWrapper {
 public:
-	static OpenXRHTCViveTrackerExtension *get_singleton();
-
-	OpenXRHTCViveTrackerExtension(OpenXRAPI *p_openxr_api);
-	virtual ~OpenXRHTCViveTrackerExtension() override;
+	virtual HashMap<String, bool *> get_requested_extensions() override;
 
 	bool is_available();
 
+	virtual void on_register_metadata() override;
 	virtual bool on_event_polled(const XrEventDataBuffer &event) override;
 
 private:
-	static OpenXRHTCViveTrackerExtension *singleton;
-
 	bool available = false;
 };
 

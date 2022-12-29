@@ -45,8 +45,10 @@ class OpenXRDisplayRefreshRateExtension : public OpenXRExtensionWrapper {
 public:
 	static OpenXRDisplayRefreshRateExtension *get_singleton();
 
-	OpenXRDisplayRefreshRateExtension(OpenXRAPI *p_openxr_api);
+	OpenXRDisplayRefreshRateExtension();
 	virtual ~OpenXRDisplayRefreshRateExtension() override;
+
+	virtual HashMap<String, bool *> get_requested_extensions() override;
 
 	virtual void on_instance_created(const XrInstance p_instance) override;
 	virtual void on_instance_destroyed() override;
