@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  openxr_android_extension.h                                           */
+/*  openxr_wmr_controller_extension.h                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,32 +28,27 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef OPENXR_ANDROID_EXTENSION_H
-#define OPENXR_ANDROID_EXTENSION_H
+#ifndef OPENXR_WMR_CONTROLLER_EXTENSION_H
+#define OPENXR_WMR_CONTROLLER_EXTENSION_H
 
-#include "../util.h"
 #include "openxr_extension_wrapper.h"
 
-class OpenXRAndroidExtension : public OpenXRExtensionWrapper {
+class OpenXRWMRControllerExtension : public OpenXRExtensionWrapper {
 public:
-	static OpenXRAndroidExtension *get_singleton();
-
-	OpenXRAndroidExtension();
+	enum WMRControllers {
+		WMR_HPMR,
+		WMR_SAMSUNG_ODESSY,
+		WMR_MAX_CONTROLLERS
+	};
 
 	virtual HashMap<String, bool *> get_requested_extensions() override;
-	virtual void on_before_instance_created() override;
-	virtual void *set_instance_create_info_and_get_next_pointer(void *p_next_pointer) override;
 
-	virtual ~OpenXRAndroidExtension() override;
+	bool is_available(WMRControllers p_type);
+
+	virtual void on_register_metadata() override;
 
 private:
-	static OpenXRAndroidExtension *singleton;
-
-	bool loader_init_extension_available = false;
-	bool create_instance_extension_available = false;
-
-	// Initialize the loader
-	EXT_PROTO_XRRESULT_FUNC1(xrInitializeLoaderKHR, (const XrLoaderInitInfoBaseHeaderKHR *), loaderInitInfo)
+	bool available[WMR_MAX_CONTROLLERS] = { false, false };
 };
 
-#endif // OPENXR_ANDROID_EXTENSION_H
+#endif // OPENXR_WMR_CONTROLLER_EXTENSION_H

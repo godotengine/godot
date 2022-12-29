@@ -41,6 +41,20 @@
 
 #include "scene/openxr_hand.h"
 
+#ifdef ANDROID_ENABLED
+#include "extensions/openxr_android_extension.h"
+#endif
+
+#include "extensions/openxr_composition_layer_depth_extension.h"
+#include "extensions/openxr_fb_display_refresh_rate_extension.h"
+#include "extensions/openxr_fb_passthrough_extension_wrapper.h"
+#include "extensions/openxr_hand_tracking_extension.h"
+#include "extensions/openxr_htc_controller_extension.h"
+#include "extensions/openxr_htc_vive_tracker_extension.h"
+#include "extensions/openxr_huawei_controller_extension.h"
+#include "extensions/openxr_palm_pose_extension.h"
+#include "extensions/openxr_wmr_controller_extension.h"
+
 static OpenXRAPI *openxr_api = nullptr;
 static OpenXRInteractionProfileMetaData *openxr_interaction_profile_meta_data = nullptr;
 static Ref<OpenXRInterface> openxr_interface;
@@ -69,7 +83,24 @@ static void _editor_init() {
 
 void initialize_openxr_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SERVERS) {
-		// For now we create our openxr device here. If we merge it with openxr_interface we'll create that here soon.
+		if (OpenXRAPI::openxr_is_enabled(false)) {
+			// Always register our extension wrappers even if we don't initialise OpenXR.
+			// Some of these wrappers will add functionality to our editor.
+#ifdef ANDROID_ENABLED
+			OpenXRAPI::register_extension_wrapper(memnew(OpenXRAndroidExtension));
+#endif
+
+			// register our other extensions
+			OpenXRAPI::register_extension_wrapper(memnew(OpenXRPalmPoseExtension));
+			OpenXRAPI::register_extension_wrapper(memnew(OpenXRCompositionLayerDepthExtension));
+			OpenXRAPI::register_extension_wrapper(memnew(OpenXRHTCControllerExtension));
+			OpenXRAPI::register_extension_wrapper(memnew(OpenXRHTCViveTrackerExtension));
+			OpenXRAPI::register_extension_wrapper(memnew(OpenXRHuaweiControllerExtension));
+			OpenXRAPI::register_extension_wrapper(memnew(OpenXRHandTrackingExtension));
+			OpenXRAPI::register_extension_wrapper(memnew(OpenXRFbPassthroughExtensionWrapper));
+			OpenXRAPI::register_extension_wrapper(memnew(OpenXRDisplayRefreshRateExtension));
+			OpenXRAPI::register_extension_wrapper(memnew(OpenXRWMRControllerExtension));
+		}
 
 		if (OpenXRAPI::openxr_is_enabled()) {
 			openxr_interaction_profile_meta_data = memnew(OpenXRInteractionProfileMetaData);
@@ -139,6 +170,7 @@ void uninitialize_openxr_module(ModuleInitializationLevel p_level) {
 
 	if (openxr_api) {
 		openxr_api->finish();
+
 		memdelete(openxr_api);
 		openxr_api = nullptr;
 	}
@@ -147,4 +179,7 @@ void uninitialize_openxr_module(ModuleInitializationLevel p_level) {
 		memdelete(openxr_interaction_profile_meta_data);
 		openxr_interaction_profile_meta_data = nullptr;
 	}
+
+	// cleanup our extension wrappers
+	OpenXRAPI::cleanup_extension_wrappers();
 }

@@ -37,24 +37,21 @@
 #include "servers/rendering/rendering_server_globals.h"
 #include "servers/rendering_server.h"
 
-OpenXROpenGLExtension::OpenXROpenGLExtension(OpenXRAPI *p_openxr_api) :
-		OpenXRGraphicsExtensionWrapper(p_openxr_api) {
+HashMap<String, bool *> OpenXROpenGLExtension::get_requested_extensions() {
+	HashMap<String, bool *> request_extensions;
+
 #ifdef ANDROID_ENABLED
 	request_extensions[XR_KHR_OPENGL_ES_ENABLE_EXTENSION_NAME] = nullptr;
 #else
 	request_extensions[XR_KHR_OPENGL_ENABLE_EXTENSION_NAME] = nullptr;
 #endif
 
-	ERR_FAIL_NULL(openxr_api);
-}
-
-OpenXROpenGLExtension::~OpenXROpenGLExtension() {
+	return request_extensions;
 }
 
 void OpenXROpenGLExtension::on_instance_created(const XrInstance p_instance) {
-	ERR_FAIL_NULL(openxr_api);
-
 	// Obtain pointers to functions we're accessing here.
+	ERR_FAIL_NULL(OpenXRAPI::get_singleton());
 
 #ifdef ANDROID_ENABLED
 	EXT_INIT_XR_FUNC(xrGetOpenGLESGraphicsRequirementsKHR);
@@ -65,10 +62,10 @@ void OpenXROpenGLExtension::on_instance_created(const XrInstance p_instance) {
 }
 
 bool OpenXROpenGLExtension::check_graphics_api_support(XrVersion p_desired_version) {
-	ERR_FAIL_NULL_V(openxr_api, false);
+	ERR_FAIL_NULL_V(OpenXRAPI::get_singleton(), false);
 
-	XrSystemId system_id = openxr_api->get_system_id();
-	XrInstance instance = openxr_api->get_instance();
+	XrSystemId system_id = OpenXRAPI::get_singleton()->get_system_id();
+	XrInstance instance = OpenXRAPI::get_singleton()->get_instance();
 
 #ifdef ANDROID_ENABLED
 	XrGraphicsRequirementsOpenGLESKHR opengl_requirements;
@@ -76,7 +73,7 @@ bool OpenXROpenGLExtension::check_graphics_api_support(XrVersion p_desired_versi
 	opengl_requirements.next = nullptr;
 
 	XrResult result = xrGetOpenGLESGraphicsRequirementsKHR(instance, system_id, &opengl_requirements);
-	if (!openxr_api->xr_result(result, "Failed to get OpenGL graphics requirements!")) {
+	if (!OpenXRAPI::get_singleton()->xr_result(result, "Failed to get OpenGL graphics requirements!")) {
 		return false;
 	}
 #else
@@ -85,7 +82,7 @@ bool OpenXROpenGLExtension::check_graphics_api_support(XrVersion p_desired_versi
 	opengl_requirements.next = nullptr;
 
 	XrResult result = xrGetOpenGLGraphicsRequirementsKHR(instance, system_id, &opengl_requirements);
-	if (!openxr_api->xr_result(result, "Failed to get OpenGL graphics requirements!")) {
+	if (!OpenXRAPI::get_singleton()->xr_result(result, "Failed to get OpenGL graphics requirements!")) {
 		return false;
 	}
 #endif
@@ -177,7 +174,7 @@ bool OpenXROpenGLExtension::get_swapchain_image_data(XrSwapchain p_swapchain, in
 	uint32_t swapchain_length;
 	XrResult result = xrEnumerateSwapchainImages(p_swapchain, 0, &swapchain_length, nullptr);
 	if (XR_FAILED(result)) {
-		print_line("OpenXR: Failed to get swapchaim image count [", openxr_api->get_error_string(result), "]");
+		print_line("OpenXR: Failed to get swapchaim image count [", OpenXRAPI::get_singleton()->get_error_string(result), "]");
 		return false;
 	}
 
@@ -200,7 +197,7 @@ bool OpenXROpenGLExtension::get_swapchain_image_data(XrSwapchain p_swapchain, in
 
 	result = xrEnumerateSwapchainImages(p_swapchain, swapchain_length, &swapchain_length, (XrSwapchainImageBaseHeader *)images);
 	if (XR_FAILED(result)) {
-		print_line("OpenXR: Failed to get swapchaim images [", openxr_api->get_error_string(result), "]");
+		print_line("OpenXR: Failed to get swapchaim images [", OpenXRAPI::get_singleton()->get_error_string(result), "]");
 		memfree(images);
 		return false;
 	}

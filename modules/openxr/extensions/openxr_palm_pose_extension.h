@@ -37,8 +37,10 @@ class OpenXRPalmPoseExtension : public OpenXRExtensionWrapper {
 public:
 	static OpenXRPalmPoseExtension *get_singleton();
 
-	OpenXRPalmPoseExtension(OpenXRAPI *p_openxr_api);
+	OpenXRPalmPoseExtension();
 	virtual ~OpenXRPalmPoseExtension() override;
+
+	virtual HashMap<String, bool *> get_requested_extensions() override;
 
 	bool is_available();
 

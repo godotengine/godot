@@ -43,9 +43,12 @@ class Viewport;
 
 // Wrapper for the set of Facebook XR passthrough extensions.
 class OpenXRFbPassthroughExtensionWrapper : public OpenXRExtensionWrapper, public OpenXRCompositionLayerProvider {
-	friend class OpenXRAPI;
-
 public:
+	OpenXRFbPassthroughExtensionWrapper();
+	~OpenXRFbPassthroughExtensionWrapper();
+
+	virtual HashMap<String, bool *> get_requested_extensions() override;
+
 	void on_instance_created(const XrInstance instance) override;
 
 	void on_session_created(const XrSession session) override;
@@ -67,10 +70,6 @@ public:
 	void stop_passthrough();
 
 	static OpenXRFbPassthroughExtensionWrapper *get_singleton();
-
-protected:
-	OpenXRFbPassthroughExtensionWrapper(OpenXRAPI *p_openxr_api);
-	~OpenXRFbPassthroughExtensionWrapper();
 
 private:
 	// Create a passthrough feature
@@ -208,7 +207,7 @@ private:
 	//  returned even when the operation is valid on Meta Quest devices.
 	//  The issue should be addressed on that platform in OS release v37.
 	inline bool is_valid_passthrough_result(XrResult result, const char *format) {
-		return openxr_api->xr_result(result, format) || result == XR_ERROR_UNEXPECTED_STATE_PASSTHROUGH_FB;
+		return OpenXRAPI::get_singleton()->xr_result(result, format) || result == XR_ERROR_UNEXPECTED_STATE_PASSTHROUGH_FB;
 	}
 
 	Viewport *get_main_viewport();
@@ -233,12 +232,6 @@ private:
 		passthrough_handle,
 		XR_PASSTHROUGH_IS_RUNNING_AT_CREATION_BIT_FB,
 		XR_PASSTHROUGH_LAYER_PURPOSE_RECONSTRUCTION_FB,
-	};
-	XrPassthroughStyleFB passthrough_layer_style = {
-		XR_TYPE_PASSTHROUGH_STYLE_FB,
-		nullptr,
-		1,
-		{ 0, 0, 0, 0 },
 	};
 	XrPassthroughLayerFB passthrough_layer = XR_NULL_HANDLE;
 
