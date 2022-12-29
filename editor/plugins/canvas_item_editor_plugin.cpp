@@ -4594,11 +4594,11 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			_focus_selection(p_op);
 
 		} break;
-		case PREVIEW_CANVAS_SCALE: {
-			bool preview = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(PREVIEW_CANVAS_SCALE));
-			preview = !preview;
-			RS::get_singleton()->canvas_set_disable_scale(!preview);
-			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(PREVIEW_CANVAS_SCALE), preview);
+		case DISABLE_CANVAS_SCALE: {
+			bool disable = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(DISABLE_CANVAS_SCALE));
+			disable = !disable;
+			RS::get_singleton()->canvas_set_disable_scale(disable);
+			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(DISABLE_CANVAS_SCALE), disable);
 
 		} break;
 		case SKELETON_MAKE_BONES: {
@@ -5310,7 +5310,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/frame_selection", TTR("Frame Selection"), KeyModifierMask::SHIFT | Key::F), VIEW_FRAME_TO_SELECTION);
 	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/clear_guides", TTR("Clear Guides")), CLEAR_GUIDES);
 	p->add_separator();
-	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/preview_canvas_scale", TTR("Preview Canvas Scale")), PREVIEW_CANVAS_SCALE);
+	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/disable_canvas_scale", TTR("Disable Canvas Scale")), DISABLE_CANVAS_SCALE);
 
 	main_menu_hbox->add_child(memnew(VSeparator));
 
@@ -5960,8 +5960,6 @@ CanvasItemEditorViewport::CanvasItemEditorViewport(CanvasItemEditor *p_canvas_it
 	label_desc->add_theme_constant_override("line_spacing", 0);
 	label_desc->hide();
 	canvas_item_editor->get_controls_container()->add_child(label_desc);
-
-	RS::get_singleton()->canvas_set_disable_scale(true);
 }
 
 CanvasItemEditorViewport::~CanvasItemEditorViewport() {
