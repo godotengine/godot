@@ -2094,8 +2094,13 @@ void CodeEdit::confirm_code_completion(bool p_replace) {
 				remove_text(caret_line, get_caret_column(i), caret_line, get_caret_column(i) + 1);
 				adjust_carets_after_edit(i, caret_line, get_caret_column(i), caret_line, get_caret_column(i) + 1);
 			} else if (auto_brace_completion_enabled && pre_brace_pair != -1) {
-				insert_text_at_caret(auto_brace_completion_pairs[pre_brace_pair].close_key, i);
-				set_caret_column(get_caret_column(i) - auto_brace_completion_pairs[pre_brace_pair].close_key.length(), i == 0, i);
+				auto first_completion_char = insert_text[0];
+				if (((first_completion_char == '"' && last_completion_char == '"' && insert_text.count("\"") == 2) || (first_completion_char == '\'' && last_completion_char == '\'' && insert_text.count("\'") == 2))) {
+					set_caret_column(get_caret_column(i) - auto_brace_completion_pairs[pre_brace_pair].close_key.length() + 1, i == 0, i);
+				} else {
+					insert_text_at_caret(auto_brace_completion_pairs[pre_brace_pair].close_key, i);
+					set_caret_column(get_caret_column(i) - auto_brace_completion_pairs[pre_brace_pair].close_key.length(), i == 0, i);
+				}
 			}
 		}
 
