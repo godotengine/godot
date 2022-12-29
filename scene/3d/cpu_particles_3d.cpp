@@ -1616,8 +1616,8 @@ void CPUParticles3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "anim_speed_min", PROPERTY_HINT_RANGE, "0,128,0.01,or_greater,or_less"), "set_param_min", "get_param_min", PARAM_ANIM_SPEED);
 	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "anim_speed_max", PROPERTY_HINT_RANGE, "0,128,0.01,or_greater,or_less"), "set_param_max", "get_param_max", PARAM_ANIM_SPEED);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "anim_speed_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_param_curve", "get_param_curve", PARAM_ANIM_SPEED);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "anim_offset_min", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param_min", "get_param_min", PARAM_ANIM_OFFSET);
-	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "anim_offset_max", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param_max", "get_param_max", PARAM_ANIM_OFFSET);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "anim_offset_min", PROPERTY_HINT_RANGE, "0,1,0.0001"), "set_param_min", "get_param_min", PARAM_ANIM_OFFSET);
+	ADD_PROPERTYI(PropertyInfo(Variant::FLOAT, "anim_offset_max", PROPERTY_HINT_RANGE, "0,1,0.0001"), "set_param_max", "get_param_max", PARAM_ANIM_OFFSET);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "anim_offset_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_param_curve", "get_param_curve", PARAM_ANIM_OFFSET);
 
 	BIND_ENUM_CONSTANT(PARAM_INITIAL_LINEAR_VELOCITY);
