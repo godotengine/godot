@@ -165,8 +165,7 @@ void ShaderRD::_clear_version(Version *p_version) {
 }
 
 void ShaderRD::_build_variant_code(StringBuilder &builder, uint32_t p_variant, const Version *p_version, const StageTemplate &p_template) {
-	for (uint32_t i = 0; i < p_template.chunks.size(); i++) {
-		const StageTemplate::Chunk &chunk = p_template.chunks[i];
+	for (const StageTemplate::Chunk &chunk : p_template.chunks) {
 		switch (chunk.type) {
 			case StageTemplate::Chunk::TYPE_VERSION_DEFINES: {
 				builder.append("\n"); //make sure defines begin at newline

@@ -444,9 +444,7 @@ private:
 		params.result_array = nullptr;
 		params.subindex_array = nullptr;
 
-		for (unsigned int n = 0; n < changed_items.size(); n++) {
-			const BVHHandle &h = changed_items[n];
-
+		for (const BVHHandle &h : changed_items) {
 			// use the expanded aabb for pairing
 			const BOUNDS &expanded_aabb = tree._pairs[h.id()].expanded_aabb;
 			BVHABB_CLASS abb;
@@ -465,9 +463,7 @@ private:
 			params.result_count_overall = 0; // might not be needed
 			tree.cull_aabb(params, false);
 
-			for (unsigned int i = 0; i < tree._cull_hits.size(); i++) {
-				uint32_t ref_id = tree._cull_hits[i];
-
+			for (const uint32_t ref_id : tree._cull_hits) {
 				// don't collide against ourself
 				if (ref_id == changed_item_ref_id) {
 					continue;

@@ -2181,8 +2181,7 @@ void EditorInspectorArray::_notification(int p_what) {
 			odd_style->set_bg_color(color.darkened(-0.08));
 			even_style->set_bg_color(color.darkened(0.08));
 
-			for (int i = 0; i < (int)array_elements.size(); i++) {
-				ArrayElement &ae = array_elements[i];
+			for (ArrayElement &ae : array_elements) {
 				if (ae.move_texture_rect) {
 					ae.move_texture_rect->set_texture(get_theme_icon(SNAME("TripleBar"), SNAME("EditorIcons")));
 				}

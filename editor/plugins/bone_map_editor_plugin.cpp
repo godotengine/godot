@@ -566,9 +566,9 @@ int BoneMapper::search_bone_by_name(Skeleton3D *p_skeleton, Vector<String> p_pic
 
 			if (hit_list.size() > 0) {
 				shortest = hit_list[0];
-				for (uint32_t i = 0; i < hit_list.size(); i++) {
-					if (hit_list[i].length() < shortest.length()) {
-						shortest = hit_list[i]; // Prioritize parent.
+				for (const String &hit : hit_list) {
+					if (hit.length() < shortest.length()) {
+						shortest = hit; // Prioritize parent.
 					}
 				}
 			}
@@ -592,9 +592,9 @@ int BoneMapper::search_bone_by_name(Skeleton3D *p_skeleton, Vector<String> p_pic
 
 			if (hit_list.size() > 0) {
 				shortest = hit_list[0];
-				for (uint32_t i = 0; i < hit_list.size(); i++) {
-					if (hit_list[i].length() <= shortest.length()) {
-						shortest = hit_list[i]; // Prioritize parent.
+				for (const String &hit : hit_list) {
+					if (hit.length() <= shortest.length()) {
+						shortest = hit; // Prioritize parent.
 					}
 				}
 			}

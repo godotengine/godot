@@ -151,8 +151,8 @@ void unregister_named_setters_getters() {
 bool Variant::has_member(Variant::Type p_type, const StringName &p_member) {
 	ERR_FAIL_INDEX_V(p_type, Variant::VARIANT_MAX, false);
 
-	for (uint32_t i = 0; i < variant_setters_getters_names[p_type].size(); i++) {
-		if (variant_setters_getters_names[p_type][i] == p_member) {
+	for (const StringName &member : variant_setters_getters_names[p_type]) {
+		if (member == p_member) {
 			return true;
 		}
 	}
@@ -172,8 +172,8 @@ Variant::Type Variant::get_member_type(Variant::Type p_type, const StringName &p
 }
 
 void Variant::get_member_list(Variant::Type p_type, List<StringName> *r_members) {
-	for (uint32_t i = 0; i < variant_setters_getters_names[p_type].size(); i++) {
-		r_members->push_back(variant_setters_getters_names[p_type][i]);
+	for (const StringName &member : variant_setters_getters_names[p_type]) {
+		r_members->push_back(member);
 	}
 }
 

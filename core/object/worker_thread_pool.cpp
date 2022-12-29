@@ -377,11 +377,11 @@ void WorkerThreadPool::wait_for_group_task_completion(GroupID p_group) {
 	Group *group = *groupp;
 
 	if (group->low_priority_native_tasks.size() > 0) {
-		for (uint32_t i = 0; i < group->low_priority_native_tasks.size(); i++) {
-			group->low_priority_native_tasks[i]->low_priority_thread->wait_to_finish();
-			native_thread_allocator.free(group->low_priority_native_tasks[i]->low_priority_thread);
+		for (Task *task : group->low_priority_native_tasks) {
+			task->low_priority_thread->wait_to_finish();
+			native_thread_allocator.free(task->low_priority_thread);
 			task_mutex.lock();
-			task_allocator.free(group->low_priority_native_tasks[i]);
+			task_allocator.free(task);
 			task_mutex.unlock();
 		}
 
@@ -449,8 +449,8 @@ void WorkerThreadPool::finish() {
 		task_available_semaphore.post();
 	}
 
-	for (uint32_t i = 0; i < threads.size(); i++) {
-		threads[i].thread.wait_to_finish();
+	for (ThreadData &data : threads) {
+		data.thread.wait_to_finish();
 	}
 
 	threads.clear();

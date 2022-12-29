@@ -135,8 +135,8 @@ void TextParagraph::_bind_methods() {
 
 void TextParagraph::_shape_lines() {
 	if (lines_dirty) {
-		for (int i = 0; i < (int)lines_rid.size(); i++) {
-			TS->free_rid(lines_rid[i]);
+		for (const RID &line_rid : lines_rid) {
+			TS->free_rid(line_rid);
 		}
 		lines_rid.clear();
 
@@ -234,14 +234,14 @@ void TextParagraph::_shape_lines() {
 
 		} else {
 			// Autowrap disabled.
-			for (int i = 0; i < (int)lines_rid.size(); i++) {
+			for (const RID &line_rid : lines_rid) {
 				if (alignment == HORIZONTAL_ALIGNMENT_FILL) {
-					TS->shaped_text_fit_to_width(lines_rid[i], width, jst_flags);
+					TS->shaped_text_fit_to_width(line_rid, width, jst_flags);
 					overrun_flags.set_flag(TextServer::OVERRUN_JUSTIFICATION_AWARE);
-					TS->shaped_text_overrun_trim_to_width(lines_rid[i], width, overrun_flags);
-					TS->shaped_text_fit_to_width(lines_rid[i], width, jst_flags | TextServer::JUSTIFICATION_CONSTRAIN_ELLIPSIS);
+					TS->shaped_text_overrun_trim_to_width(line_rid, width, overrun_flags);
+					TS->shaped_text_fit_to_width(line_rid, width, jst_flags | TextServer::JUSTIFICATION_CONSTRAIN_ELLIPSIS);
 				} else {
-					TS->shaped_text_overrun_trim_to_width(lines_rid[i], width, overrun_flags);
+					TS->shaped_text_overrun_trim_to_width(line_rid, width, overrun_flags);
 				}
 			}
 		}
@@ -268,8 +268,8 @@ RID TextParagraph::get_dropcap_rid() const {
 void TextParagraph::clear() {
 	_THREAD_SAFE_METHOD_
 
-	for (int i = 0; i < (int)lines_rid.size(); i++) {
-		TS->free_rid(lines_rid[i]);
+	for (const RID &line_rid : lines_rid) {
+		TS->free_rid(line_rid);
 	}
 	lines_rid.clear();
 	TS->shaped_text_clear(rid);
@@ -915,17 +915,17 @@ int TextParagraph::hit_test(const Point2 &p_coords) const {
 			return 0;
 		}
 	}
-	for (int i = 0; i < (int)lines_rid.size(); i++) {
-		if (TS->shaped_text_get_orientation(lines_rid[i]) == TextServer::ORIENTATION_HORIZONTAL) {
-			if ((p_coords.y >= ofs.y) && (p_coords.y <= ofs.y + TS->shaped_text_get_size(lines_rid[i]).y)) {
-				return TS->shaped_text_hit_test_position(lines_rid[i], p_coords.x);
+	for (const RID &line_rid : lines_rid) {
+		if (TS->shaped_text_get_orientation(line_rid) == TextServer::ORIENTATION_HORIZONTAL) {
+			if ((p_coords.y >= ofs.y) && (p_coords.y <= ofs.y + TS->shaped_text_get_size(line_rid).y)) {
+				return TS->shaped_text_hit_test_position(line_rid, p_coords.x);
 			}
-			ofs.y += TS->shaped_text_get_size(lines_rid[i]).y;
+			ofs.y += TS->shaped_text_get_size(line_rid).y;
 		} else {
-			if ((p_coords.x >= ofs.x) && (p_coords.x <= ofs.x + TS->shaped_text_get_size(lines_rid[i]).x)) {
-				return TS->shaped_text_hit_test_position(lines_rid[i], p_coords.y);
+			if ((p_coords.x >= ofs.x) && (p_coords.x <= ofs.x + TS->shaped_text_get_size(line_rid).x)) {
+				return TS->shaped_text_hit_test_position(line_rid, p_coords.y);
 			}
-			ofs.y += TS->shaped_text_get_size(lines_rid[i]).x;
+			ofs.y += TS->shaped_text_get_size(line_rid).x;
 		}
 	}
 	return TS->shaped_text_get_range(rid).y;
@@ -1027,8 +1027,8 @@ TextParagraph::TextParagraph() {
 }
 
 TextParagraph::~TextParagraph() {
-	for (int i = 0; i < (int)lines_rid.size(); i++) {
-		TS->free_rid(lines_rid[i]);
+	for (const RID &line_rid : lines_rid) {
+		TS->free_rid(line_rid);
 	}
 	lines_rid.clear();
 	TS->free_rid(rid);

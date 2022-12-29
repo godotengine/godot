@@ -99,8 +99,7 @@ void UndoRedo::create_action(const String &p_name, MergeMode p_mode) {
 					}
 				}
 
-				for (unsigned int i = 0; i < to_remove.size(); i++) {
-					List<Operation>::Element *E = to_remove[i];
+				for (List<Operation>::Element *E : to_remove) {
 					// Delete all object references
 					E->get().delete_reference();
 					E->erase();

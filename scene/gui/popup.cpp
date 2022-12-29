@@ -59,9 +59,9 @@ void Popup::_initialize_visible_parents() {
 
 void Popup::_deinitialize_visible_parents() {
 	if (is_embedded()) {
-		for (uint32_t i = 0; i < visible_parents.size(); ++i) {
-			visible_parents[i]->disconnect("focus_entered", callable_mp(this, &Popup::_parent_focused));
-			visible_parents[i]->disconnect("tree_exited", callable_mp(this, &Popup::_deinitialize_visible_parents));
+		for (Window *parent_window : visible_parents) {
+			parent_window->disconnect("focus_entered", callable_mp(this, &Popup::_parent_focused));
+			parent_window->disconnect("tree_exited", callable_mp(this, &Popup::_deinitialize_visible_parents));
 		}
 
 		visible_parents.clear();

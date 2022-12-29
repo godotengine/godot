@@ -2802,9 +2802,7 @@ void RenderingServer::mesh_add_surface_from_mesh_data(RID p_mesh, const Geometry
 	Vector<Vector3> vertices;
 	Vector<Vector3> normals;
 
-	for (uint32_t i = 0; i < p_mesh_data.faces.size(); i++) {
-		const Geometry3D::MeshData::Face &f = p_mesh_data.faces[i];
-
+	for (const Geometry3D::MeshData::Face &f : p_mesh_data.faces) {
 		for (uint32_t j = 2; j < f.indices.size(); j++) {
 			vertices.push_back(p_mesh_data.vertices[f.indices[0]]);
 			normals.push_back(f.plane.normal);

@@ -103,9 +103,7 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 	float begin_d = 1e20;
 	float end_d = 1e20;
 	// Find the initial poly and the end poly on this map.
-	for (size_t i(0); i < polygons.size(); i++) {
-		const gd::Polygon &p = polygons[i];
-
+	for (const gd::Polygon &p : polygons) {
 		// Only consider the polygon if it in a region with compatible layers.
 		if ((p_navigation_layers & p.owner->get_navigation_layers()) == 0) {
 			continue;
@@ -190,9 +188,7 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 
 	while (true) {
 		// Takes the current least_cost_poly neighbors (iterating over its edges) and compute the traveled_distance.
-		for (size_t i = 0; i < navigation_polys[least_cost_id].poly->edges.size(); i++) {
-			const gd::Edge &edge = navigation_polys[least_cost_id].poly->edges[i];
-
+		for (const gd::Edge &edge : navigation_polys[least_cost_id].poly->edges) {
 			// Iterate over connections in this edge, then compute the new optimized travel distance assigned to this polygon.
 			for (int connection_index = 0; connection_index < edge.connections.size(); connection_index++) {
 				const gd::Edge::Connection &connection = edge.connections[connection_index];
@@ -465,9 +461,7 @@ Vector3 NavMap::get_closest_point_to_segment(const Vector3 &p_from, const Vector
 	Vector3 closest_point;
 	real_t closest_point_d = 1e20;
 
-	for (size_t i(0); i < polygons.size(); i++) {
-		const gd::Polygon &p = polygons[i];
-
+	for (const gd::Polygon &p : polygons) {
 		// For each face check the distance to the segment
 		for (size_t point_id = 2; point_id < p.points.size(); point_id += 1) {
 			const Face3 f(p.points[0].pos, p.points[point_id - 1].pos, p.points[point_id].pos);
@@ -623,20 +617,20 @@ void NavMap::sync() {
 
 	// Check if we need to update the links.
 	if (regenerate_polygons) {
-		for (uint32_t r = 0; r < regions.size(); r++) {
-			regions[r]->scratch_polygons();
+		for (NavRegion *region : regions) {
+			region->scratch_polygons();
 		}
 		regenerate_links = true;
 	}
 
-	for (uint32_t r = 0; r < regions.size(); r++) {
-		if (regions[r]->sync()) {
+	for (NavRegion *region : regions) {
+		if (region->sync()) {
 			regenerate_links = true;
 		}
 	}
 
-	for (uint32_t l = 0; l < links.size(); l++) {
-		if (links[l]->check_dirty()) {
+	for (NavLink *link : links) {
+		if (link->check_dirty()) {
 			regenerate_links = true;
 		}
 	}
@@ -649,34 +643,32 @@ void NavMap::sync() {
 		_new_pm_edge_free_count = 0;
 
 		// Remove regions connections.
-		for (uint32_t r = 0; r < regions.size(); r++) {
-			regions[r]->get_connections().clear();
+		for (NavRegion *region : regions) {
+			region->get_connections().clear();
 		}
 
 		// Resize the polygon count.
 		int count = 0;
-		for (uint32_t r = 0; r < regions.size(); r++) {
-			count += regions[r]->get_polygons().size();
+		for (const NavRegion *region : regions) {
+			count += region->get_polygons().size();
 		}
 		polygons.resize(count);
 
 		// Copy all region polygons in the map.
 		count = 0;
-		for (uint32_t r = 0; r < regions.size(); r++) {
-			const LocalVector<gd::Polygon> &polygons_source = regions[r]->get_polygons();
+		for (const NavRegion *region : regions) {
+			const LocalVector<gd::Polygon> &polygons_source = region->get_polygons();
 			for (uint32_t n = 0; n < polygons_source.size(); n++) {
 				polygons[count + n] = polygons_source[n];
 			}
-			count += regions[r]->get_polygons().size();
+			count += region->get_polygons().size();
 		}
 
 		_new_pm_polygon_count = polygons.size();
 
 		// Group all edges per key.
 		HashMap<gd::EdgeKey, Vector<gd::Edge::Connection>, gd::EdgeKey> connections;
-		for (uint32_t poly_id = 0; poly_id < polygons.size(); poly_id++) {
-			gd::Polygon &poly(polygons[poly_id]);
-
+		for (gd::Polygon &poly : polygons) {
 			for (uint32_t p = 0; p < poly.points.size(); p++) {
 				int next_point = (p + 1) % poly.points.size();
 				gd::EdgeKey ek(poly.points[p].key, poly.points[next_point].key);
@@ -787,8 +779,7 @@ void NavMap::sync() {
 		link_polygons.resize(links.size());
 
 		// Search for polygons within range of a nav link.
-		for (uint32_t l = 0; l < links.size(); l++) {
-			const NavLink *link = links[l];
+		for (const NavLink *link : links) {
 			const Vector3 start = link->get_start_location();
 			const Vector3 end = link->get_end_location();
 
@@ -820,9 +811,7 @@ void NavMap::sync() {
 			}
 
 			// Find any polygons within the search radius of the end point.
-			for (uint32_t end_index = 0; end_index < polygons.size(); end_index++) {
-				gd::Polygon &end_poly = polygons[end_index];
-
+			for (gd::Polygon &end_poly : polygons) {
 				// For each face check the distance to the end
 				for (uint32_t end_point_id = 2; end_point_id < end_poly.points.size(); end_point_id += 1) {
 					const Face3 end_face(end_poly.points[0].pos, end_poly.points[end_point_id - 1].pos, end_poly.points[end_point_id].pos);
@@ -906,8 +895,8 @@ void NavMap::sync() {
 		// cannot use LocalVector here as RVO library expects std::vector to build KdTree
 		std::vector<RVO::Agent *> raw_agents;
 		raw_agents.reserve(agents.size());
-		for (size_t i(0); i < agents.size(); i++) {
-			raw_agents.push_back(agents[i]->get_agent());
+		for (RvoAgent *agent : agents) {
+			raw_agents.push_back(agent->get_agent());
 		}
 		rvo.buildAgentTree(raw_agents);
 	}
@@ -941,8 +930,8 @@ void NavMap::step(real_t p_deltatime) {
 }
 
 void NavMap::dispatch_callbacks() {
-	for (int i(0); i < static_cast<int>(controlled_agents.size()); i++) {
-		controlled_agents[i]->dispatch_callback();
+	for (RvoAgent *agent : controlled_agents) {
+		agent->dispatch_callback();
 	}
 }
 
