@@ -1,0 +1,6 @@
+GDTEST_RUNTIME_ERROR
+>> SCRIPT ERROR
+>> on function: test()
+>> runtime/errors/use_return_value_of_void_native_method_call.gd
+>> 4
+>> Trying to get a return value of a method that returns "void"

@@ -15,10 +15,10 @@ func test():
 	var string_array: Array[String] = []
 	var stringname_array: Array[StringName] = []
 
-	assert(!string_array.push_back(&"abc"))
+	string_array.push_back(&"abc")
 	print("Array[String] insert converted: ", typeof(string_array[0]) == TYPE_STRING)
 
-	assert(!stringname_array.push_back("abc"))
+	stringname_array.push_back("abc")
 	print("Array[StringName] insert converted: ", typeof(stringname_array[0]) == TYPE_STRING_NAME)
 
 	print("StringName in Array[String]: ", &"abc" in string_array)
@@ -28,8 +28,8 @@ func test():
 	assert(!packed_string_array.push_back("abc"))
 	print("StringName in PackedStringArray: ", &"abc" in packed_string_array)
 
-	assert(!string_array.push_back("abc"))
+	string_array.push_back("abc")
 	print("StringName finds String in Array: ", string_array.find(&"abc"))
 
-	assert(!stringname_array.push_back(&"abc"))
+	stringname_array.push_back(&"abc")
 	print("String finds StringName in Array: ", stringname_array.find("abc"))
