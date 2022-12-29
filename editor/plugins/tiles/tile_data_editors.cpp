@@ -169,8 +169,7 @@ void GenericTilePolygonEditor::_base_control_draw() {
 	}
 
 	// Draw the polygons.
-	for (unsigned int i = 0; i < polygons.size(); i++) {
-		const Vector<Vector2> &polygon = polygons[i];
+	for (const Vector<Vector2> &polygon : polygons) {
 		Color color = polygon_color;
 		if (!in_creation_polygon.is_empty()) {
 			color = color.darkened(0.3);
@@ -285,8 +284,8 @@ void GenericTilePolygonEditor::_advanced_menu_item_pressed(int p_item_pressed) {
 			undo_redo->add_do_method(base_control, "queue_redraw");
 			undo_redo->add_do_method(this, "emit_signal", "polygons_changed");
 			undo_redo->add_undo_method(this, "clear_polygons");
-			for (unsigned int i = 0; i < polygons.size(); i++) {
-				undo_redo->add_undo_method(this, "add_polygon", polygons[i]);
+			for (const PackedVector2Array &poly : polygons) {
+				undo_redo->add_undo_method(this, "add_polygon", poly);
 			}
 			undo_redo->add_undo_method(base_control, "queue_redraw");
 			undo_redo->add_undo_method(this, "emit_signal", "polygons_changed");
@@ -298,8 +297,8 @@ void GenericTilePolygonEditor::_advanced_menu_item_pressed(int p_item_pressed) {
 			undo_redo->add_do_method(base_control, "queue_redraw");
 			undo_redo->add_do_method(this, "emit_signal", "polygons_changed");
 			undo_redo->add_undo_method(this, "clear_polygons");
-			for (unsigned int i = 0; i < polygons.size(); i++) {
-				undo_redo->add_undo_method(this, "add_polygon", polygons[i]);
+			for (const PackedVector2Array &polygon : polygons) {
+				undo_redo->add_undo_method(this, "add_polygon", polygon);
 			}
 			undo_redo->add_undo_method(base_control, "queue_redraw");
 			undo_redo->add_undo_method(this, "emit_signal", "polygons_changed");
@@ -327,8 +326,8 @@ void GenericTilePolygonEditor::_advanced_menu_item_pressed(int p_item_pressed) {
 			}
 			for (unsigned int i = 0; i < polygons.size(); i++) {
 				Vector<Point2> new_polygon;
-				for (int point_index = 0; point_index < polygons[i].size(); point_index++) {
-					Vector2 point = polygons[i][point_index];
+				for (const Vector2 &vec : polygons[i]) {
+					Vector2 point = vec;
 					switch (p_item_pressed) {
 						case ROTATE_RIGHT: {
 							point = Vector2(-point.y, point.x);
@@ -351,8 +350,8 @@ void GenericTilePolygonEditor::_advanced_menu_item_pressed(int p_item_pressed) {
 			}
 			undo_redo->add_do_method(base_control, "queue_redraw");
 			undo_redo->add_do_method(this, "emit_signal", "polygons_changed");
-			for (unsigned int i = 0; i < polygons.size(); i++) {
-				undo_redo->add_undo_method(this, "set_polygon", polygons[i]);
+			for (const PackedVector2Array &polygon : polygons) {
+				undo_redo->add_undo_method(this, "set_polygon", polygon);
 			}
 			undo_redo->add_undo_method(base_control, "queue_redraw");
 			undo_redo->add_undo_method(this, "emit_signal", "polygons_changed");

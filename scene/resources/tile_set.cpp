@@ -404,8 +404,8 @@ void TileSet::_update_terrains_cache() {
 	if (terrains_cache_dirty) {
 		// Organizes tiles into structures.
 		per_terrain_pattern_tiles.resize(terrain_sets.size());
-		for (int i = 0; i < (int)per_terrain_pattern_tiles.size(); i++) {
-			per_terrain_pattern_tiles[i].clear();
+		for (RBMap<TileSet::TerrainsPattern, RBSet<TileMapCell>> &tiles : per_terrain_pattern_tiles) {
+			tiles.clear();
 		}
 
 		for (const KeyValue<int, Ref<TileSetSource>> &kv : sources) {
@@ -1342,8 +1342,8 @@ void TileSet::clear_tile_proxies() {
 int TileSet::add_pattern(Ref<TileMapPattern> p_pattern, int p_index) {
 	ERR_FAIL_COND_V(!p_pattern.is_valid(), -1);
 	ERR_FAIL_COND_V_MSG(p_pattern->is_empty(), -1, "Cannot add an empty pattern to the TileSet.");
-	for (unsigned int i = 0; i < patterns.size(); i++) {
-		ERR_FAIL_COND_V_MSG(patterns[i] == p_pattern, -1, "TileSet has already this pattern.");
+	for (const Ref<TileMapPattern> &pattern : patterns) {
+		ERR_FAIL_COND_V_MSG(pattern == p_pattern, -1, "TileSet has already this pattern.");
 	}
 	ERR_FAIL_COND_V(p_index > (int)patterns.size(), -1);
 	if (p_index < 0) {
@@ -4190,8 +4190,8 @@ real_t TileSetAtlasSource::get_tile_animation_total_duration(const Vector2i p_at
 	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), 1, vformat("TileSetAtlasSource has no tile at %s.", Vector2i(p_atlas_coords)));
 
 	real_t sum = 0.0;
-	for (int frame = 0; frame < (int)tiles[p_atlas_coords].animation_frames_durations.size(); frame++) {
-		sum += tiles[p_atlas_coords].animation_frames_durations[frame];
+	for (const real_t &duration : tiles[p_atlas_coords].animation_frames_durations) {
+		sum += duration;
 	}
 	return sum;
 }
@@ -4573,8 +4573,8 @@ void TileSetAtlasSource::_clear_tiles_outside_texture() {
 		}
 	}
 
-	for (unsigned int i = 0; i < to_remove.size(); i++) {
-		remove_tile(to_remove[i]);
+	for (const Vector2i &v : to_remove) {
+		remove_tile(v);
 	}
 }
 

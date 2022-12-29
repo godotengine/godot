@@ -402,8 +402,7 @@ Node *SceneState::instantiate(GenEditState p_edit_state) const {
 		}
 	}
 
-	for (uint32_t i = 0; i < deferred_node_paths.size(); i++) {
-		const DeferredNodePathProperties &dnp = deferred_node_paths[i];
+	for (const DeferredNodePathProperties &dnp : deferred_node_paths) {
 		Node *other = dnp.base->get_node_or_null(dnp.path);
 		dnp.base->set(dnp.property, other);
 	}

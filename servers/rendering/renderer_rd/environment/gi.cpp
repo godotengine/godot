@@ -540,9 +540,7 @@ void GI::SDFGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_re
 		occlusion_texture = RD::get_singleton()->texture_create_shared(tv, occlusion_data);
 	}
 
-	for (uint32_t i = 0; i < cascades.size(); i++) {
-		SDFGI::Cascade &cascade = cascades[i];
-
+	for (SDFGI::Cascade &cascade : cascades) {
 		/* 3D Textures */
 
 		cascade.sdf_tex = RD::get_singleton()->texture_create(tf_sdf, RD::TextureView());
@@ -743,9 +741,7 @@ void GI::SDFGI::create(RID p_env, const Vector3 &p_world_position, uint32_t p_re
 	}
 
 	//direct light
-	for (uint32_t i = 0; i < cascades.size(); i++) {
-		SDFGI::Cascade &cascade = cascades[i];
-
+	for (SDFGI::Cascade &cascade : cascades) {
 		Vector<RD::Uniform> uniforms;
 		{
 			RD::Uniform u;
@@ -1134,8 +1130,7 @@ void GI::SDFGI::free_data() {
 }
 
 GI::SDFGI::~SDFGI() {
-	for (uint32_t i = 0; i < cascades.size(); i++) {
-		const SDFGI::Cascade &c = cascades[i];
+	for (const SDFGI::Cascade &c : cascades) {
 		RD::get_singleton()->free(c.light_data);
 		RD::get_singleton()->free(c.light_aniso_0_tex);
 		RD::get_singleton()->free(c.light_aniso_1_tex);
@@ -1198,8 +1193,7 @@ void GI::SDFGI::update(RID p_env, const Vector3 &p_world_position) {
 
 	int32_t drag_margin = (cascade_size / SDFGI::PROBE_DIVISOR) / 2;
 
-	for (uint32_t i = 0; i < cascades.size(); i++) {
-		SDFGI::Cascade &cascade = cascades[i];
+	for (SDFGI::Cascade &cascade : cascades) {
 		cascade.dirty_regions = Vector3i();
 
 		Vector3 probe_half_size = Vector3(1, 1, 1) * cascade.cell_size * float(cascade_size / SDFGI::PROBE_DIVISOR) * 0.5;

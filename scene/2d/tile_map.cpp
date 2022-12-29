@@ -803,10 +803,10 @@ void TileMap::_make_quadrant_dirty(HashMap<Vector2i, TileMapQuadrant>::Iterator 
 
 void TileMap::_make_all_quadrants_dirty() {
 	// Make all quandrants dirty, then trigger an update later.
-	for (unsigned int layer = 0; layer < layers.size(); layer++) {
-		for (KeyValue<Vector2i, TileMapQuadrant> &E : layers[layer].quadrant_map) {
+	for (TileMapLayer &layer : layers) {
+		for (KeyValue<Vector2i, TileMapQuadrant> &E : layer.quadrant_map) {
 			if (!E.value.dirty_list_element.in_list()) {
-				layers[layer].dirty_quadrant_list.add(&E.value.dirty_list_element);
+				layer.dirty_quadrant_list.add(&E.value.dirty_list_element);
 			}
 		}
 	}
@@ -1014,8 +1014,8 @@ void TileMap::_rendering_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_CANVAS: {
 			bool node_visible = is_visible_in_tree();
-			for (int layer = 0; layer < (int)layers.size(); layer++) {
-				for (KeyValue<Vector2i, TileMapQuadrant> &E_quadrant : layers[layer].quadrant_map) {
+			for (TileMapLayer &layer : layers) {
+				for (KeyValue<Vector2i, TileMapQuadrant> &E_quadrant : layer.quadrant_map) {
 					TileMapQuadrant &q = E_quadrant.value;
 					for (const KeyValue<Vector2i, RID> &kv : q.occluders) {
 						Transform2D xform;
@@ -1030,8 +1030,8 @@ void TileMap::_rendering_notification(int p_what) {
 
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			bool node_visible = is_visible_in_tree();
-			for (int layer = 0; layer < (int)layers.size(); layer++) {
-				for (KeyValue<Vector2i, TileMapQuadrant> &E_quadrant : layers[layer].quadrant_map) {
+			for (TileMapLayer &layer : layers) {
+				for (KeyValue<Vector2i, TileMapQuadrant> &E_quadrant : layer.quadrant_map) {
 					TileMapQuadrant &q = E_quadrant.value;
 
 					// Update occluders transform.
@@ -1050,8 +1050,8 @@ void TileMap::_rendering_notification(int p_what) {
 			if (!is_inside_tree()) {
 				return;
 			}
-			for (int layer = 0; layer < (int)layers.size(); layer++) {
-				for (KeyValue<Vector2i, TileMapQuadrant> &E_quadrant : layers[layer].quadrant_map) {
+			for (TileMapLayer &layer : layers) {
+				for (KeyValue<Vector2i, TileMapQuadrant> &E_quadrant : layer.quadrant_map) {
 					TileMapQuadrant &q = E_quadrant.value;
 
 					// Update occluders transform.
@@ -1071,8 +1071,8 @@ void TileMap::_rendering_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_EXIT_CANVAS: {
-			for (int layer = 0; layer < (int)layers.size(); layer++) {
-				for (KeyValue<Vector2i, TileMapQuadrant> &E_quadrant : layers[layer].quadrant_map) {
+			for (TileMapLayer &layer : layers) {
+				for (KeyValue<Vector2i, TileMapQuadrant> &E_quadrant : layer.quadrant_map) {
 					TileMapQuadrant &q = E_quadrant.value;
 					for (const KeyValue<Vector2i, RID> &kv : q.occluders) {
 						RS::get_singleton()->canvas_light_occluder_attach_to_canvas(kv.value, RID());
@@ -1257,16 +1257,16 @@ void TileMap::_rendering_update_dirty_quadrants(SelfList<TileMapQuadrant>::List 
 	if (_rendering_quadrant_order_dirty) {
 		int index = -(int64_t)0x80000000; //always must be drawn below children.
 
-		for (int layer = 0; layer < (int)layers.size(); layer++) {
+		for (TileMapLayer &layer : layers) {
 			// Sort the quadrants coords per local coordinates.
 			RBMap<Vector2i, Vector2i, TileMapQuadrant::CoordsWorldComparator> local_to_map;
-			for (const KeyValue<Vector2i, TileMapQuadrant> &E : layers[layer].quadrant_map) {
+			for (const KeyValue<Vector2i, TileMapQuadrant> &E : layer.quadrant_map) {
 				local_to_map[map_to_local(E.key)] = E.key;
 			}
 
 			// Sort the quadrants.
 			for (const KeyValue<Vector2i, Vector2i> &E : local_to_map) {
-				TileMapQuadrant &q = layers[layer].quadrant_map[E.value];
+				TileMapQuadrant &q = layer.quadrant_map[E.value];
 				for (const RID &ci : q.canvas_items) {
 					RS::get_singleton()->canvas_item_set_draw_index(ci, index++);
 				}
@@ -1453,8 +1453,8 @@ void TileMap::_physics_notification(int p_what) {
 			if (is_inside_tree() && (!collision_animatable || in_editor)) {
 				// Update the new transform directly if we are not in animatable mode.
 				Transform2D gl_transform = get_global_transform();
-				for (int layer = 0; layer < (int)layers.size(); layer++) {
-					for (KeyValue<Vector2i, TileMapQuadrant> &E : layers[layer].quadrant_map) {
+				for (TileMapLayer &layer : layers) {
+					for (KeyValue<Vector2i, TileMapQuadrant> &E : layer.quadrant_map) {
 						TileMapQuadrant &q = E.value;
 
 						for (RID body : q.bodies) {
@@ -1476,8 +1476,8 @@ void TileMap::_physics_notification(int p_what) {
 			if (is_inside_tree() && !in_editor && collision_animatable) {
 				// Only active when animatable. Send the new transform to the physics...
 				new_transform = get_global_transform();
-				for (int layer = 0; layer < (int)layers.size(); layer++) {
-					for (KeyValue<Vector2i, TileMapQuadrant> &E : layers[layer].quadrant_map) {
+				for (TileMapLayer &layer : layers) {
+					for (KeyValue<Vector2i, TileMapQuadrant> &E : layer.quadrant_map) {
 						TileMapQuadrant &q = E.value;
 
 						for (RID body : q.bodies) {
@@ -1667,13 +1667,12 @@ void TileMap::_navigation_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			if (is_inside_tree()) {
-				for (int layer = 0; layer < (int)layers.size(); layer++) {
+				for (TileMapLayer &layer : layers) {
 					Transform2D tilemap_xform = get_global_transform();
-					for (KeyValue<Vector2i, TileMapQuadrant> &E_quadrant : layers[layer].quadrant_map) {
+					for (KeyValue<Vector2i, TileMapQuadrant> &E_quadrant : layer.quadrant_map) {
 						TileMapQuadrant &q = E_quadrant.value;
 						for (const KeyValue<Vector2i, Vector<RID>> &E_region : q.navigation_regions) {
-							for (int layer_index = 0; layer_index < E_region.value.size(); layer_index++) {
-								RID region = E_region.value[layer_index];
+							for (const RID &region : E_region.value) {
 								if (!region.is_valid()) {
 									continue;
 								}
@@ -2815,8 +2814,8 @@ void TileMap::clear_layer(int p_layer) {
 void TileMap::clear() {
 	// Remove all tiles.
 	_clear_internals();
-	for (unsigned int i = 0; i < layers.size(); i++) {
-		layers[i].tile_map.clear();
+	for (TileMapLayer &layer : layers) {
+		layer.tile_map.clear();
 	}
 	_recreate_internals();
 	used_rect_cache_dirty = true;
@@ -3956,15 +3955,15 @@ PackedStringArray TileMap::get_configuration_warnings() const {
 
 	// Retrieve the set of Z index values with a Y-sorted layer.
 	RBSet<int> y_sorted_z_index;
-	for (int layer = 0; layer < (int)layers.size(); layer++) {
-		if (layers[layer].y_sort_enabled) {
-			y_sorted_z_index.insert(layers[layer].z_index);
+	for (const TileMapLayer &layer : layers) {
+		if (layer.y_sort_enabled) {
+			y_sorted_z_index.insert(layer.z_index);
 		}
 	}
 
 	// Check if we have a non-sorted layer in a Z-index with a Y-sorted layer.
-	for (int layer = 0; layer < (int)layers.size(); layer++) {
-		if (!layers[layer].y_sort_enabled && y_sorted_z_index.has(layers[layer].z_index)) {
+	for (const TileMapLayer &layer : layers) {
+		if (!layer.y_sort_enabled && y_sorted_z_index.has(layer.z_index)) {
 			warnings.push_back(RTR("A Y-sorted layer has the same Z-index value as a not Y-sorted layer.\nThis may lead to unwanted behaviors, as a layer that is not Y-sorted will be Y-sorted as a whole with tiles from Y-sorted layers."));
 			break;
 		}
@@ -3973,8 +3972,8 @@ PackedStringArray TileMap::get_configuration_warnings() const {
 	if (tile_set.is_valid() && tile_set->get_tile_shape() == TileSet::TILE_SHAPE_ISOMETRIC) {
 		bool warn = !is_y_sort_enabled();
 		if (!warn) {
-			for (int layer = 0; layer < (int)layers.size(); layer++) {
-				if (!layers[layer].y_sort_enabled) {
+			for (const TileMapLayer &layer : layers) {
+				if (!layer.y_sort_enabled) {
 					warn = true;
 					break;
 				}
