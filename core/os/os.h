@@ -131,7 +131,7 @@ public:
 	void print_rich(const char *p_format, ...) _PRINTF_FORMAT_ATTRIBUTE_2_3;
 	void printerr(const char *p_format, ...) _PRINTF_FORMAT_ATTRIBUTE_2_3;
 
-	virtual String get_stdin_string(bool p_block = true) = 0;
+	virtual String get_stdin_string() = 0;
 
 	virtual Error get_entropy(uint8_t *r_buffer, int p_bytes) = 0; // Should return cryptographically-safe random bytes.
 

@@ -51,7 +51,7 @@ public:
 
 	virtual Vector<String> get_video_adapter_driver_info() const override;
 
-	virtual String get_stdin_string(bool p_block) override;
+	virtual String get_stdin_string() override;
 
 	virtual Error get_entropy(uint8_t *r_buffer, int p_bytes) override;
 

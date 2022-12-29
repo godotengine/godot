@@ -572,10 +572,9 @@
 		</method>
 		<method name="read_string_from_stdin">
 			<return type="String" />
-			<param index="0" name="block" type="bool" default="true" />
 			<description>
-				Reads a user input string from the standard input (usually the terminal).
-				[b]Note:[/b] This method is implemented on Linux, macOS and Windows. Non-blocking reads are not currently supported on any platform.
+				Reads a user input string from the standard input (usually the terminal). This operation is [i]blocking[/i], which causes the window to freeze if [method read_string_from_stdin] is called on the main thread. The thread calling [method read_string_from_stdin] will block until the program receives a line break in standard input (usually by the user pressing [kbd]Enter[/kbd]).
+				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>
 		<method name="request_permission">
