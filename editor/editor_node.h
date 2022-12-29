@@ -914,7 +914,7 @@ public:
 
 	bool ensure_main_scene(bool p_from_native);
 
-	Error run_play_native(int p_idx, int p_platform);
+	Error run_play_native(int p_id);
 	void run_play();
 	void run_play_current();
 	void run_play_custom(const String &p_custom);

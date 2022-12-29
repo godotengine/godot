@@ -213,7 +213,7 @@ Dictionary DebugAdapterParser::req_launch(const Dictionary &p_params) const {
 		}
 
 		EditorNode *editor = EditorNode::get_singleton();
-		Error err = platform_string == "android" ? editor->run_play_native(device, idx) : editor->run_play_native(-1, idx);
+		Error err = platform_string == "android" ? editor->run_play_native(device * 10000 + idx) : editor->run_play_native(idx);
 		if (err) {
 			if (err == ERR_INVALID_PARAMETER && platform_string == "android") {
 				return prepare_error_response(p_params, DAP::ErrorType::MISSING_DEVICE);
