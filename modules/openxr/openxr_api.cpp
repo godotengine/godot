@@ -30,6 +30,7 @@
 
 #include "openxr_api.h"
 
+#include "extensions/openxr_extension_wrapper_extension.h"
 #include "openxr_interface.h"
 #include "openxr_util.h"
 

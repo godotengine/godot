@@ -53,6 +53,7 @@ OpenXRAndroidExtension::OpenXRAndroidExtension() {
 HashMap<String, bool *> OpenXRAndroidExtension::get_requested_extensions() {
 	HashMap<String, bool *> request_extensions;
 
+	request_extensions[XR_KHR_LOADER_INIT_ANDROID_EXTENSION_NAME] = &loader_init_extension_available;
 	request_extensions[XR_KHR_ANDROID_CREATE_INSTANCE_EXTENSION_NAME] = &create_instance_extension_available;
 
 	return request_extensions;
