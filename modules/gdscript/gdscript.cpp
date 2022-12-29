@@ -394,7 +394,7 @@ ScriptInstance *GDScript::instance_create(Object *p_this) {
 	}
 
 	if (top->native.is_valid()) {
-		if (!ClassDB::is_parent_class(p_this->get_class_name(), top->native->get_name())) {
+		if (p_this->get_class_name() != top->native->get_name()) {
 			if (EngineDebugger::is_active()) {
 				GDScriptLanguage::get_singleton()->debug_break_parse(_get_debug_path(), 1, "Script inherits from native type '" + String(top->native->get_name()) + "', so it can't be assigned to an object of type: '" + p_this->get_class() + "'");
 			}
