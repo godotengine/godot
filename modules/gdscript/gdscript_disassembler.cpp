@@ -128,7 +128,9 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				text += DADDR(3);
 				text += " = ";
 				text += DADDR(1);
-				text += " <operator function> ";
+				text += " ";
+				text += operator_names[_code_ptr[ip + 4]];
+				text += " ";
 				text += DADDR(2);
 
 				incr += 5;
@@ -230,7 +232,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				text += "set_named validated ";
 				text += DADDR(1);
 				text += "[\"";
-				text += "<unknown name>";
+				text += setter_names[_code_ptr[ip + 3]];
 				text += "\"] = ";
 				text += DADDR(2);
 
@@ -253,7 +255,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				text += " = ";
 				text += DADDR(1);
 				text += "[\"";
-				text += "<unknown name>";
+				text += getter_names[_code_ptr[ip + 3]];
 				text += "\"]";
 
 				incr += 4;
@@ -398,7 +400,8 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				text += DADDR(1 + argc);
 				text += " = ";
 
-				text += "<unknown type>(";
+				text += constructors_names[_code_ptr[ip + 3 + argc]];
+				text += "(";
 				for (int i = 0; i < argc; i++) {
 					if (i > 0) {
 						text += ", ";
@@ -687,7 +690,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				text += DADDR(2 + argc) + " = ";
 
 				text += DADDR(1) + ".";
-				text += "<unknown method>";
+				text += builtin_methods_names[_code_ptr[ip + 4 + argc]];
 
 				text += "(";
 
@@ -725,12 +728,12 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 			case OPCODE_CALL_UTILITY_VALIDATED: {
 				int instr_var_args = _code_ptr[++ip];
 
-				text += "call-utility ";
+				text += "call-utility validated ";
 
 				int argc = _code_ptr[ip + 1 + instr_var_args];
 				text += DADDR(1 + argc) + " = ";
 
-				text += "<unknown function>";
+				text += utilities_names[_code_ptr[ip + 3 + argc]];
 				text += "(";
 
 				for (int i = 0; i < argc; i++) {
@@ -746,12 +749,12 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 			case OPCODE_CALL_GDSCRIPT_UTILITY: {
 				int instr_var_args = _code_ptr[++ip];
 
-				text += "call-gscript-utility ";
+				text += "call-gdscript-utility ";
 
 				int argc = _code_ptr[ip + 1 + instr_var_args];
 				text += DADDR(1 + argc) + " = ";
 
-				text += "<unknown function>";
+				text += gds_utilities_names[_code_ptr[ip + 3 + argc]];
 				text += "(";
 
 				for (int i = 0; i < argc; i++) {
