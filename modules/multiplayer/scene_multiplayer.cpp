@@ -610,7 +610,6 @@ Error SceneMultiplayer::object_configuration_remove(Object *p_obj, Variant p_con
 }
 
 void SceneMultiplayer::set_server_relay_enabled(bool p_enabled) {
-	ERR_FAIL_COND_MSG(multiplayer_peer.is_valid() && multiplayer_peer->get_connection_status() != MultiplayerPeer::CONNECTION_DISCONNECTED, "Cannot change the server relay option while the multiplayer peer is active.");
 	server_relay = p_enabled;
 }
 
