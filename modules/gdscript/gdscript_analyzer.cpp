@@ -431,7 +431,7 @@ Error GDScriptAnalyzer::resolve_class_inheritance(GDScriptParser::ClassNode *p_c
 					return err;
 				}
 				base = info_parser->get_parser()->head->get_datatype();
-			} else if (class_exists(name) && ClassDB::can_instantiate(name)) {
+			} else if (class_exists(name)) {
 				base.kind = GDScriptParser::DataType::NATIVE;
 				base.native_type = name;
 			} else {
@@ -4010,6 +4010,25 @@ bool GDScriptAnalyzer::get_function_signature(GDScriptParser::Node *p_source, bo
 		return false;
 	}
 
+	StringName base_native = p_base_type.native_type;
+	if (base_native != StringName()) {
+		// Empty native class might happen in some Script implementations.
+		// Just ignore it.
+		if (!class_exists(base_native)) {
+			push_error(vformat("Native class %s used in script doesn't exist or isn't exposed.", base_native), p_source);
+			return false;
+		} else if (p_is_constructor && !ClassDB::can_instantiate(base_native)) {
+			if (p_base_type.kind == GDScriptParser::DataType::CLASS) {
+				push_error(vformat(R"(Class "%s" cannot be constructed as it is based on abstract native class "%s".)", p_base_type.class_type->fqcn.get_file(), base_native), p_source);
+			} else if (p_base_type.kind == GDScriptParser::DataType::SCRIPT) {
+				push_error(vformat(R"(Script "%s" cannot be constructed as it is based on abstract native class "%s".)", p_base_type.script_path.get_file(), base_native), p_source);
+			} else {
+				push_error(vformat(R"(Native class "%s" cannot be constructed as it is abstract.)", base_native), p_source);
+			}
+			return false;
+		}
+	}
+
 	if (p_is_constructor) {
 		function_name = "_init";
 		r_static = true;
@@ -4069,17 +4088,6 @@ bool GDScriptAnalyzer::get_function_signature(GDScriptParser::Node *p_source, bo
 			return function_signature_from_info(info, r_return_type, r_par_types, r_default_arg_count, r_static, r_vararg);
 		}
 	}
-
-	StringName base_native = p_base_type.native_type;
-#ifdef DEBUG_ENABLED
-	if (base_native != StringName()) {
-		// Empty native class might happen in some Script implementations.
-		// Just ignore it.
-		if (!class_exists(base_native)) {
-			ERR_FAIL_V_MSG(false, vformat("Native class %s used in script doesn't exist or isn't exposed.", base_native));
-		}
-	}
-#endif
 
 	if (p_is_constructor) {
 		// Native types always have a default constructor.
