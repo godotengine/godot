@@ -2688,9 +2688,12 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 	const String quote_style = EDITOR_GET("text_editor/completion/use_single_quotes") ? "'" : "\"";
 
 	GDScriptParser parser;
-	GDScriptAnalyzer analyzer(&parser);
+	Error parser_error = parser.parse(p_code, p_path, true);
+	if (parser_error) {
+		return parser_error;
+	}
 
-	parser.parse(p_code, p_path, true);
+	GDScriptAnalyzer analyzer(&parser);
 	analyzer.analyze();
 
 	r_forced = false;
@@ -3276,7 +3279,10 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 	}
 
 	GDScriptParser parser;
-	parser.parse(p_code, p_path, true);
+	Error parser_error = parser.parse(p_code, p_path, true);
+	if (parser_error) {
+		return parser_error;
+	}
 
 	GDScriptParser::CompletionContext context = parser.get_completion_context();
 	context.base = p_owner;
