@@ -95,5 +95,11 @@
 			<description>
 			</description>
 		</method>
+		<method name="is_body_excluded_from_query" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="body" type="RID" />
+			<description>
+			</description>
+		</method>
 	</methods>
 </class>
