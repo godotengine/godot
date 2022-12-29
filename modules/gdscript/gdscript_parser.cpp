@@ -1319,14 +1319,8 @@ GDScriptParser::EnumNode *GDScriptParser::parse_enum() {
 			if (elements.has(item.identifier->name)) {
 				push_error(vformat(R"(Name "%s" was already in this enum (at line %d).)", item.identifier->name, elements[item.identifier->name]), item.identifier);
 			} else if (!named) {
-				// TODO: Abstract this recursive member check.
-				ClassNode *parent = current_class;
-				while (parent != nullptr) {
-					if (parent->members_indices.has(item.identifier->name)) {
-						push_error(vformat(R"(Name "%s" is already used as a class %s.)", item.identifier->name, parent->get_member(item.identifier->name).get_type_name()));
-						break;
-					}
-					parent = parent->outer;
+				if (current_class->members_indices.has(item.identifier->name)) {
+					push_error(vformat(R"(Name "%s" is already used as a class %s.)", item.identifier->name, current_class->get_member(item.identifier->name).get_type_name()));
 				}
 			}
 
