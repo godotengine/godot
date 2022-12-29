@@ -37,6 +37,8 @@ bool PhysicsDirectSpaceState3DExtension::is_body_excluded_from_query(const RID &
 thread_local const HashSet<RID> *PhysicsDirectSpaceState3DExtension::exclude = nullptr;
 
 void PhysicsDirectSpaceState3DExtension::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("is_body_excluded_from_query", "body"), &PhysicsDirectSpaceState3DExtension::is_body_excluded_from_query);
+
 	GDVIRTUAL_BIND(_intersect_ray, "from", "to", "collision_mask", "collide_with_bodies", "collide_with_areas", "hit_from_inside", "hit_back_faces", "result");
 	GDVIRTUAL_BIND(_intersect_point, "position", "collision_mask", "collide_with_bodies", "collide_with_areas", "results", "max_results");
 	GDVIRTUAL_BIND(_intersect_shape, "shape_rid", "transform", "motion", "margin", "collision_mask", "collide_with_bodies", "collide_with_areas", "result_count", "max_results");
@@ -205,6 +207,9 @@ void PhysicsServer3DExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_area_set_area_monitor_callback, "area", "callback");
 
 	/* BODY API */
+
+	ClassDB::bind_method(D_METHOD("body_test_motion_is_excluding_body", "body"), &PhysicsServer3DExtension::body_test_motion_is_excluding_body);
+	ClassDB::bind_method(D_METHOD("body_test_motion_is_excluding_object", "object"), &PhysicsServer3DExtension::body_test_motion_is_excluding_object);
 
 	GDVIRTUAL_BIND(_body_create);
 

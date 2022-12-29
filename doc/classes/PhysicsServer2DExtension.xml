@@ -933,5 +933,17 @@
 			<description>
 			</description>
 		</method>
+		<method name="body_test_motion_is_excluding_body" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="body" type="RID" />
+			<description>
+			</description>
+		</method>
+		<method name="body_test_motion_is_excluding_object" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="object" type="int" />
+			<description>
+			</description>
+		</method>
 	</methods>
 </class>
