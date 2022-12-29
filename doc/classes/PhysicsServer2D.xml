@@ -790,6 +790,23 @@
 				Sets a joint parameter. See [enum JointParam] for a list of available parameters.
 			</description>
 		</method>
+		<method name="pin_joint_get_param" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="param" type="int" enum="PhysicsServer2D.PinJointParam" />
+			<description>
+				Returns the value of a pin joint parameter. See [enum PinJointParam] for a list of available parameters.
+			</description>
+		</method>
+		<method name="pin_joint_set_param">
+			<return type="void" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="param" type="int" enum="PhysicsServer2D.PinJointParam" />
+			<param index="2" name="value" type="float" />
+			<description>
+				Sets a pin joint parameter. See [enum PinJointParam] for a list of available parameters.
+			</description>
+		</method>
 		<method name="rectangle_shape_create">
 			<return type="RID" />
 			<description>
