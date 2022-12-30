@@ -445,12 +445,22 @@ void ShaderPreprocessor::process_define(Tokenizer *p_tokenizer) {
 
 		Define *define = memnew(Define);
 		define->arguments = args;
-		define->body = tokens_to_string(p_tokenizer->advance('\n')).strip_edges();
+		if (define_override.has(label)) {
+			define->body = define_override[label];
+			p_tokenizer->advance('\n');
+		} else {
+			define->body = tokens_to_string(p_tokenizer->advance('\n')).strip_edges();
+		}
 		state->defines[label] = define;
 	} else {
 		// Simple substitution macro.
 		Define *define = memnew(Define);
-		define->body = tokens_to_string(p_tokenizer->advance('\n')).strip_edges();
+		if (define_override.has(label)) {
+			define->body = define_override[label];
+			p_tokenizer->advance('\n');
+		} else {
+			define->body = tokens_to_string(p_tokenizer->advance('\n')).strip_edges();
+		}
 		state->defines[label] = define;
 	}
 }
@@ -1257,6 +1267,16 @@ Error ShaderPreprocessor::preprocess(State *p_state, const String &p_code, Strin
 	r_result = vector_to_string(output);
 
 	return OK;
+}
+
+void ShaderPreprocessor::set_define_override(const StringName &p_name, const String &p_value) {
+	if (p_value.is_empty()) {
+		if (define_override.has(p_name)) {
+			define_override.erase(p_name);
+		}
+	} else {
+		define_override[p_name] = p_value;
+	}
 }
 
 Error ShaderPreprocessor::preprocess(const String &p_code, const String &p_filename, String &r_result, String *r_error_text, List<FilePosition> *r_error_position, List<Region> *r_regions, HashSet<Ref<ShaderInclude>> *r_includes, List<ScriptLanguage::CodeCompletionOption> *r_completion_options, List<ScriptLanguage::CodeCompletionOption> *r_completion_defines, IncludeCompletionFunction p_include_completion_func) {

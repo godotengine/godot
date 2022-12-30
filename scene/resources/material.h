@@ -84,9 +84,13 @@ public:
 class ShaderMaterial : public Material {
 	GDCLASS(ShaderMaterial, Material);
 	Ref<Shader> shader;
+	Ref<Shader> shader_with_macro_override;
 
 	mutable HashMap<StringName, StringName> remap_cache;
+	mutable HashMap<StringName, String> macro_cache;
 	mutable HashMap<StringName, Variant> param_cache;
+
+	bool macro_dirty = false;
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -110,6 +114,10 @@ public:
 
 	void set_shader_parameter(const StringName &p_param, const Variant &p_value);
 	Variant get_shader_parameter(const StringName &p_param) const;
+
+	void set_shader_macro_override(const StringName &p_name, const String &p_value);
+	String get_shader_macro_override(const StringName &p_name) const;
+	void clear_shader_macro_overrides();
 
 	virtual Shader::Mode get_shader_mode() const override;
 

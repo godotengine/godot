@@ -10,11 +10,29 @@
 		<link title="Shaders documentation index">$DOCS_URL/tutorials/shaders/index.html</link>
 	</tutorials>
 	<methods>
+		<method name="clear_shader_macro_overrides">
+			<return type="void" />
+			<description>
+			</description>
+		</method>
+		<method name="get_shader_macro_override" qualifiers="const">
+			<return type="String" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+			</description>
+		</method>
 		<method name="get_shader_parameter" qualifiers="const">
 			<return type="Variant" />
 			<param index="0" name="param" type="StringName" />
 			<description>
 				Returns the current value set for this material of a uniform in the shader.
+			</description>
+		</method>
+		<method name="set_shader_macro_override">
+			<return type="void" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="value" type="String" />
+			<description>
 			</description>
 		</method>
 		<method name="set_shader_parameter">

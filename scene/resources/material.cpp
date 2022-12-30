@@ -32,6 +32,7 @@
 
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
+#include "core/core_string_names.h"
 #include "core/error/error_macros.h"
 #include "core/version.h"
 #include "scene/main/scene_tree.h"
@@ -337,26 +338,47 @@ bool ShaderMaterial::_property_get_revert(const StringName &p_name, Variant &r_p
 }
 
 void ShaderMaterial::set_shader(const Ref<Shader> &p_shader) {
+	if (shader == p_shader) {
+		return;
+	}
+
 	// Only connect/disconnect the signal when running in the editor.
 	// This can be a slow operation, and `notify_property_list_changed()` (which is called by `_shader_changed()`)
 	// does nothing in non-editor builds anyway. See GH-34741 for details.
 	if (shader.is_valid() && Engine::get_singleton()->is_editor_hint()) {
-		shader->disconnect("changed", callable_mp(this, &ShaderMaterial::_shader_changed));
+		shader->disconnect(CoreStringNames::get_singleton()->changed, callable_mp(this, &ShaderMaterial::_shader_changed));
 	}
 
 	shader = p_shader;
+	macro_dirty = false;
 
 	RID rid;
 	if (shader.is_valid()) {
 		rid = shader->get_rid();
 
-		if (Engine::get_singleton()->is_editor_hint()) {
-			shader->connect("changed", callable_mp(this, &ShaderMaterial::_shader_changed));
+		if (shader_with_macro_override.is_valid()) {
+			shader_with_macro_override->set_code(shader->get_code());
+			rid = shader_with_macro_override->get_rid();
+		} else {
+			if (!macro_cache.is_empty()) {
+				shader_with_macro_override.instantiate();
+				for (const KeyValue<StringName, String> &macro : macro_cache) {
+					shader_with_macro_override->set_define_override(macro.key, macro.value);
+				}
+				shader_with_macro_override->set_code(shader->get_code());
+				rid = shader_with_macro_override->get_rid();
+			}
 		}
+
+		if (Engine::get_singleton()->is_editor_hint()) {
+			shader->connect(CoreStringNames::get_singleton()->changed, callable_mp(this, &ShaderMaterial::_shader_changed));
+		}
+	} else if (shader_with_macro_override.is_valid()) {
+		shader_with_macro_override.unref();
 	}
 
 	RS::get_singleton()->material_set_shader(_get_material(), rid);
-	notify_property_list_changed(); //properties for shader exposed
+	notify_property_list_changed(); // Properties for shader exposed.
 	emit_changed();
 }
 
@@ -400,15 +422,87 @@ Variant ShaderMaterial::get_shader_parameter(const StringName &p_param) const {
 	}
 }
 
+void ShaderMaterial::set_shader_macro_override(const StringName &p_name, const String &p_value) {
+	String value = p_value.strip_edges();
+
+	if (value.is_empty()) {
+		if (macro_cache.erase(p_name)) {
+			if (macro_cache.is_empty()) {
+				if (shader_with_macro_override.is_valid()) {
+					shader_with_macro_override.unref();
+				}
+
+				// Use original shader.
+				RS::get_singleton()->material_set_shader(_get_material(), shader.is_valid() ? shader->get_rid() : RID());
+				notify_property_list_changed(); // Update all properties.
+				return;
+			}
+		} else {
+			return;
+		}
+	} else {
+		if (macro_cache[p_name] != value) {
+			macro_cache[p_name] = value;
+		} else {
+			return;
+		}
+	}
+
+	if (shader_with_macro_override.is_null()) {
+		shader_with_macro_override.instantiate();
+	}
+
+	shader_with_macro_override->set_define_override(p_name, value);
+
+	// Applies changes on the next idle frame to allow user to make more calls of set_shader_macro_override at the stage.
+	if (!macro_dirty) {
+		macro_dirty = true;
+		call_deferred("_shader_changed");
+	}
+}
+
+String ShaderMaterial::get_shader_macro_override(const StringName &p_name) const {
+	if (macro_cache.has(p_name)) {
+		return macro_cache[p_name];
+	} else {
+		return String();
+	}
+}
+
+void ShaderMaterial::clear_shader_macro_overrides() {
+	macro_cache.clear();
+
+	if (shader_with_macro_override.is_valid()) {
+		shader_with_macro_override.unref();
+
+		// Use original shader.
+		RS::get_singleton()->material_set_shader(_get_material(), shader->get_rid());
+		notify_property_list_changed(); // Update all properties.
+	}
+}
+
 void ShaderMaterial::_shader_changed() {
-	notify_property_list_changed(); //update all properties
+	macro_dirty = false;
+
+	if (shader_with_macro_override.is_valid() && shader.is_valid()) {
+		shader_with_macro_override->set_code(shader->get_code());
+		RS::get_singleton()->material_set_shader(_get_material(), shader_with_macro_override->get_rid());
+	}
+
+	notify_property_list_changed(); // Update all properties.
 }
 
 void ShaderMaterial::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("_shader_changed"), &ShaderMaterial::_shader_changed);
+
 	ClassDB::bind_method(D_METHOD("set_shader", "shader"), &ShaderMaterial::set_shader);
 	ClassDB::bind_method(D_METHOD("get_shader"), &ShaderMaterial::get_shader);
 	ClassDB::bind_method(D_METHOD("set_shader_parameter", "param", "value"), &ShaderMaterial::set_shader_parameter);
 	ClassDB::bind_method(D_METHOD("get_shader_parameter", "param"), &ShaderMaterial::get_shader_parameter);
+
+	ClassDB::bind_method(D_METHOD("set_shader_macro_override", "name", "value"), &ShaderMaterial::set_shader_macro_override);
+	ClassDB::bind_method(D_METHOD("get_shader_macro_override", "name"), &ShaderMaterial::get_shader_macro_override);
+	ClassDB::bind_method(D_METHOD("clear_shader_macro_overrides"), &ShaderMaterial::clear_shader_macro_overrides);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shader", PROPERTY_HINT_RESOURCE_TYPE, "Shader"), "set_shader", "get_shader");
 }
@@ -443,7 +537,9 @@ Shader::Mode ShaderMaterial::get_shader_mode() const {
 	}
 }
 RID ShaderMaterial::get_shader_rid() const {
-	if (shader.is_valid()) {
+	if (shader_with_macro_override.is_valid()) {
+		return shader_with_macro_override->get_rid();
+	} else if (shader.is_valid()) {
 		return shader->get_rid();
 	} else {
 		return RID();

@@ -61,6 +61,16 @@ void Shader::set_include_path(const String &p_path) {
 	include_path = p_path;
 }
 
+void Shader::set_define_override(const StringName &p_name, const String &p_value) {
+	if (p_value.is_empty()) {
+		if (define_override.has(p_name)) {
+			define_override.erase(p_name);
+		}
+	} else {
+		define_override[p_name] = p_value;
+	}
+}
+
 void Shader::set_code(const String &p_code) {
 	for (Ref<ShaderInclude> E : include_dependencies) {
 		E->disconnect(SNAME("changed"), callable_mp(this, &Shader::_dependency_changed));
@@ -94,6 +104,9 @@ void Shader::set_code(const String &p_code) {
 		// 1) Need to keep track of include dependencies at resource level
 		// 2) Server does not do interaction with Resource filetypes, this is a scene level feature.
 		ShaderPreprocessor preprocessor;
+		for (const KeyValue<StringName, String> &define : define_override) {
+			preprocessor.set_define_override(define.key, define.value);
+		}
 		preprocessor.preprocess(p_code, path, pp_code, nullptr, nullptr, nullptr, &new_include_dependencies);
 	}
 

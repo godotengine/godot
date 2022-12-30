@@ -168,6 +168,7 @@ private:
 
 private:
 	LocalVector<char32_t> output;
+	RBMap<StringName, String> define_override;
 	State *state = nullptr;
 
 private:
@@ -218,6 +219,8 @@ private:
 
 public:
 	typedef void (*IncludeCompletionFunction)(List<ScriptLanguage::CodeCompletionOption> *);
+
+	void set_define_override(const StringName &p_name, const String &p_value);
 
 	Error preprocess(const String &p_code, const String &p_filename, String &r_result, String *r_error_text = nullptr, List<FilePosition> *r_error_position = nullptr, List<Region> *r_regions = nullptr, HashSet<Ref<ShaderInclude>> *r_includes = nullptr, List<ScriptLanguage::CodeCompletionOption> *r_completion_options = nullptr, List<ScriptLanguage::CodeCompletionOption> *r_completion_defines = nullptr, IncludeCompletionFunction p_include_completion_func = nullptr);
 

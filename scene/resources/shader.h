@@ -59,6 +59,7 @@ private:
 	String include_path;
 
 	HashMap<StringName, HashMap<int, Ref<Texture2D>>> default_textures;
+	HashMap<StringName, String> define_override;
 
 	void _dependency_changed();
 	void _recompile();
@@ -74,6 +75,8 @@ public:
 
 	virtual void set_path(const String &p_path, bool p_take_over = false) override;
 	void set_include_path(const String &p_path);
+
+	void set_define_override(const StringName &p_name, const String &p_value);
 
 	void set_code(const String &p_code);
 	String get_code() const;
