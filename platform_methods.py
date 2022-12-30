@@ -80,7 +80,7 @@ def subprocess_main(namespace):
 
 
 # CPU architecture options.
-architectures = ["x86_32", "x86_64", "arm32", "arm64", "rv64", "ppc32", "ppc64", "wasm32"]
+architectures = ["x86_32", "x86_64", "arm32", "arm64", "rv64", "ppc32", "ppc64", "wasm32", "universal"]
 architecture_aliases = {
     "x86": "x86_32",
     "x64": "x86_64",

@@ -79,7 +79,7 @@ def get_mvk_sdk_path():
 
 def configure(env: "Environment"):
     # Validate arch.
-    supported_arches = ["x86_64", "arm64"]
+    supported_arches = ["x86_64", "arm64", "universal"]
     if env["arch"] not in supported_arches:
         print(
             'Unsupported CPU architecture "%s" for macOS. Supported architectures are: %s.'
@@ -102,7 +102,12 @@ def configure(env: "Environment"):
         env["osxcross"] = True
 
     # CPU architecture.
-    if env["arch"] == "arm64":
+    if env["arch"] == "universal":
+        print("Building for macOS 11.0+ (Universal).")
+        env.Append(ASFLAGS=["-arch", "arm64", "-arch", "x86_64", "-mmacosx-version-min=11.0"])
+        env.Append(CCFLAGS=["-arch", "arm64", "-arch", "x86_64", "-mmacosx-version-min=11.0"])
+        env.Append(LINKFLAGS=["-arch", "arm64", "-arch", "x86_64", "-mmacosx-version-min=11.0"])
+    elif env["arch"] == "arm64":
         print("Building for macOS 11.0+.")
         env.Append(ASFLAGS=["-arch", "arm64", "-mmacosx-version-min=11.0"])
         env.Append(CCFLAGS=["-arch", "arm64", "-mmacosx-version-min=11.0"])
