@@ -464,9 +464,6 @@
 		<member name="debug/gdscript/warnings/unused_variable" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a local variable is unused.
 		</member>
-		<member name="debug/gdscript/warnings/void_assignment" type="int" setter="" getter="" default="1">
-			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when assigning the result of a function that returns [code]void[/code] to a variable.
-		</member>
 		<member name="debug/settings/crash_handler/message" type="String" setter="" getter="" default="&quot;Please include this when reporting the bug to the project developer.&quot;">
 			Message to be displayed before the backtrace when the engine crashes. By default, this message is only used in exported projects due to the editor-only override applied to this setting.
 		</member>

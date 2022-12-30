@@ -57,7 +57,6 @@ public:
 		UNREACHABLE_CODE, // Code after a return statement.
 		UNREACHABLE_PATTERN, // Pattern in a match statement after a catch all pattern (wildcard or bind).
 		STANDALONE_EXPRESSION, // Expression not assigned to a variable.
-		VOID_ASSIGNMENT, // Function returns void but it's assigned to a variable.
 		NARROWING_CONVERSION, // Float value into an integer slot, precision is lost.
 		INCOMPATIBLE_TERNARY, // Possible values of a ternary if are not mutually compatible.
 		UNUSED_SIGNAL, // Signal is defined but never emitted.
