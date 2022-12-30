@@ -73,6 +73,9 @@ public:
 	virtual Error open_internal(const String &p_path, int p_mode_flags) override; ///< open a file
 	virtual bool is_open() const override; ///< true when file is open
 
+	virtual String get_path() const override; /// returns the path for the current open file
+	virtual String get_path_absolute() const override; /// returns the absolute path for the current open file
+
 	virtual void seek(uint64_t p_position) override; ///< seek to a given position
 	virtual void seek_end(int64_t p_position = 0) override; ///< seek from the end of file
 	virtual uint64_t get_position() const override; ///< get position in the file
