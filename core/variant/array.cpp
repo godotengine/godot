@@ -553,6 +553,56 @@ bool Array::any(const Callable &p_callable) const {
 	return false;
 }
 
+int Array::find_first(const Callable &p_callable, const int p_from) const {
+	const Variant *argptrs[1];
+
+	if (_p->array.size() == 0) {
+		return -1;
+	}
+
+	for (int i = p_from; i < size(); i++) {
+		argptrs[0] = &get(i);
+
+		Variant result;
+		Callable::CallError ce;
+		p_callable.callp(argptrs, 1, result, ce);
+		if (ce.error != Callable::CallError::CALL_OK) {
+			ERR_FAIL_V_MSG(false, "Error calling method from 'find first': " + Variant::get_callable_error_text(p_callable, argptrs, 1, ce));
+		}
+
+		if (result.operator bool()) {
+			return i;
+		}
+	}
+
+	return -1;
+}
+
+Variant Array::get_first(const Callable &p_callable, const Variant &p_default, const int p_from) const {
+	const Variant *argptrs[1];
+
+	if (_p->array.size() == 0 || p_from < 0) {
+		return -1;
+	}
+
+	for (int i = p_from; i < size(); i++) {
+		argptrs[0] = &get(i);
+
+		Variant result;
+		Callable::CallError ce;
+		p_callable.callp(argptrs, 1, result, ce);
+		if (ce.error != Callable::CallError::CALL_OK) {
+			ERR_FAIL_V_MSG(false, "Error calling method from 'get first': " + Variant::get_callable_error_text(p_callable, argptrs, 1, ce));
+		}
+
+		if (result.operator bool()) {
+			return get(i);
+		}
+	}
+
+	return p_default;
+}
+
 bool Array::all(const Callable &p_callable) const {
 	const Variant *argptrs[1];
 	for (int i = 0; i < size(); i++) {

@@ -108,6 +108,8 @@ public:
 	Array map(const Callable &p_callable) const;
 	Variant reduce(const Callable &p_callable, const Variant &p_accum) const;
 	bool any(const Callable &p_callable) const;
+	int find_first(const Callable &p_callable, const int p_from = 0) const;
+	Variant get_first(const Callable &p_callable, const Variant &p_default, const int p_from = 0) const;
 	bool all(const Callable &p_callable) const;
 
 	bool operator<(const Array &p_array) const;

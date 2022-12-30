@@ -175,7 +175,7 @@
 				func greater_than_5(number):
 				    return number &gt; 5
 				[/codeblock]
-				See also [method all], [method filter], [method map] and [method reduce].
+				See also [method all], [method filter], [method find_first], [method map] and [method reduce].
 				[b]Note:[/b] Unlike relying on the size of an array returned by [method filter], this method will return as early as possible to improve performance (especially with large arrays).
 				[b]Note:[/b] For an empty array, this method always returns [code]false[/code].
 			</description>
@@ -302,11 +302,30 @@
 				Searches the array for a value and returns its index or [code]-1[/code] if not found. Optionally, the initial search index can be passed.
 			</description>
 		</method>
+		<method name="find_first" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="method" type="Callable" />
+			<param index="1" name="from" type="int" />
+			<description>
+				Returns the index of the first element that returns [code]true[/code] when passed to the provided [Callable].
+				If the [Callable] returns [code]false[/code] for all elements in the array, this method returns [code]-1[/code].
+			</description>
+		</method>
 		<method name="front" qualifiers="const">
 			<return type="Variant" />
 			<description>
 				Returns the first element of the array. Prints an error and returns [code]null[/code] if the array is empty.
 				[b]Note:[/b] Calling this function is not the same as writing [code]array[0][/code]. If the array is empty, accessing by index will pause project execution when running from the editor.
+			</description>
+		</method>
+		<method name="get_first" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="method" type="Callable" />
+			<param index="1" name="default" type="Variant" />
+			<param index="2" name="from" type="int" />
+			<description>
+				Returns the first element that returns [code]true[/code] when passed to the provided [Callable].
+				If the [Callable] returns [code]false[/code] for all elements in the array, this method returns the given default value.
 			</description>
 		</method>
 		<method name="get_typed_builtin" qualifiers="const">

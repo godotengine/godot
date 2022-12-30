@@ -2216,6 +2216,8 @@ static void _register_variant_builtin_methods() {
 	bind_method(Array, map, sarray("method"), varray());
 	bind_method(Array, reduce, sarray("method", "accum"), varray(Variant()));
 	bind_method(Array, any, sarray("method"), varray());
+	bind_method(Array, find_first, sarray("method", "from"), varray());
+	bind_method(Array, get_first, sarray("method", "default", "from"), varray());
 	bind_method(Array, all, sarray("method"), varray());
 	bind_method(Array, max, sarray(), varray());
 	bind_method(Array, min, sarray(), varray());
