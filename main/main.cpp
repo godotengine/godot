@@ -2968,6 +2968,7 @@ bool Main::is_iterating() {
 // For performance metrics.
 static uint64_t physics_process_max = 0;
 static uint64_t process_max = 0;
+static uint64_t navigation_process_max = 0;
 
 bool Main::iteration() {
 	//for now do not error on this
@@ -2996,6 +2997,7 @@ bool Main::iteration() {
 
 	uint64_t physics_process_ticks = 0;
 	uint64_t process_ticks = 0;
+	uint64_t navigation_process_ticks = 0;
 
 	frame += ticks_elapsed;
 
@@ -3033,6 +3035,12 @@ bool Main::iteration() {
 		}
 
 		NavigationServer3D::get_singleton()->process(physics_step * time_scale);
+		uint64_t navigation_begin = OS::get_singleton()->get_ticks_usec();
+
+		NavigationServer3D::get_singleton()->process(physics_step * time_scale);
+
+		navigation_process_ticks = MAX(navigation_process_ticks, OS::get_singleton()->get_ticks_usec() - navigation_begin); // keep the largest one for reference
+		navigation_process_max = MAX(OS::get_singleton()->get_ticks_usec() - navigation_begin, navigation_process_max);
 
 		message_queue->flush();
 
@@ -3112,8 +3120,10 @@ bool Main::iteration() {
 		Engine::get_singleton()->_fps = frames;
 		performance->set_process_time(USEC_TO_SEC(process_max));
 		performance->set_physics_process_time(USEC_TO_SEC(physics_process_max));
+		performance->set_navigation_process_time(USEC_TO_SEC(navigation_process_max));
 		process_max = 0;
 		physics_process_max = 0;
+		navigation_process_max = 0;
 
 		frame %= 1000000;
 		frames = 0;

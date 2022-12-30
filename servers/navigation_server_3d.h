@@ -260,6 +260,20 @@ public:
 	NavigationServer3D();
 	virtual ~NavigationServer3D();
 
+	enum ProcessInfo {
+		INFO_ACTIVE_MAPS,
+		INFO_REGION_COUNT,
+		INFO_AGENT_COUNT,
+		INFO_LINK_COUNT,
+		INFO_POLYGON_COUNT,
+		INFO_EDGE_COUNT,
+		INFO_EDGE_MERGE_COUNT,
+		INFO_EDGE_CONNECTION_COUNT,
+		INFO_EDGE_FREE_COUNT,
+	};
+
+	virtual int get_process_info(ProcessInfo p_info) const = 0;
+
 #ifdef DEBUG_ENABLED
 private:
 	bool debug_enabled = false;
@@ -356,5 +370,7 @@ public:
 	static void set_default_server(NavigationServer3DCallback p_callback);
 	static NavigationServer3D *new_default_server();
 };
+
+VARIANT_ENUM_CAST(NavigationServer3D::ProcessInfo);
 
 #endif // NAVIGATION_SERVER_3D_H
