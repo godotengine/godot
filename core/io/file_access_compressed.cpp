@@ -190,6 +190,22 @@ bool FileAccessCompressed::is_open() const {
 	return f != nullptr;
 }
 
+String FileAccessCompressed::get_path() const {
+	if (f) {
+		return f->get_path();
+	} else {
+		return "";
+	}
+}
+
+String FileAccessCompressed::get_path_absolute() const {
+	if (f) {
+		return f->get_path_absolute();
+	} else {
+		return "";
+	}
+}
+
 void FileAccessCompressed::seek(uint64_t p_position) {
 	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
 
