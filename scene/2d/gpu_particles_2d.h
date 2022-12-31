@@ -58,7 +58,7 @@ private:
 	bool local_coords = false;
 	int fixed_fps = 0;
 	bool fractional_delta = false;
-	bool interpolate = true;
+	bool interpolate = false;
 #ifdef TOOLS_ENABLED
 	bool show_visibility_rect = false;
 #endif

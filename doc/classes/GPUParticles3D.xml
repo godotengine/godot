@@ -83,14 +83,16 @@
 		<member name="explosiveness" type="float" setter="set_explosiveness_ratio" getter="get_explosiveness_ratio" default="0.0">
 			Time ratio between each emission. If [code]0[/code], particles are emitted continuously. If [code]1[/code], all particles are emitted simultaneously.
 		</member>
-		<member name="fixed_fps" type="int" setter="set_fixed_fps" getter="get_fixed_fps" default="30">
-			The particle system's frame rate is fixed to a value. For example, changing the value to 2 will make the particles render at 2 frames per second. Note this does not slow down the simulation of the particle system itself.
+		<member name="fixed_fps" type="int" setter="set_fixed_fps" getter="get_fixed_fps" default="0">
+			If set to a value higher than [code]0[/code], fixes particle system's simulation frame rate to the specified value. For example, changing the value to [code]2[/code] will make the particles render at 2 frames per second. If set to [code]0[/code], particles will be simulated every rendered frame. Simulating particles every rendered frame looks the smoothest with [member interpolate] disabled, but it will cause physics simulation to vary depending on rendering FPS. This can be noticeable for particles with collision enabled.
+			[b]Note:[/b] This does not slow down the simulation of the particle system itself (see [member speed_scale] instead).
 		</member>
 		<member name="fract_delta" type="bool" setter="set_fractional_delta" getter="get_fractional_delta" default="true">
 			If [code]true[/code], results in fractional delta calculation which has a smoother particles display effect.
 		</member>
-		<member name="interpolate" type="bool" setter="set_interpolate" getter="get_interpolate" default="true">
-			Enables particle interpolation, which makes the particle movement smoother when their [member fixed_fps] is lower than the screen refresh rate.
+		<member name="interpolate" type="bool" setter="set_interpolate" getter="get_interpolate" default="false">
+			If [code]true[/code], enables particle interpolation, which makes the particle movement smoother when their [member fixed_fps] is greater than [code]0[/code] but lower than the screen refresh rate.
+			[b]Note:[/b] Not all particle properties (such as color and scale curves) are interpolated yet.
 		</member>
 		<member name="lifetime" type="float" setter="set_lifetime" getter="get_lifetime" default="1.0">
 			Amount of time each particle will exist.

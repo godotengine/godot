@@ -617,9 +617,9 @@ GPUParticles3D::GPUParticles3D() {
 	set_one_shot(false);
 	set_amount(8);
 	set_lifetime(1);
-	set_fixed_fps(30);
+	set_fixed_fps(0);
 	set_fractional_delta(true);
-	set_interpolate(true);
+	set_interpolate(false);
 	set_pre_process_time(0);
 	set_explosiveness_ratio(0);
 	set_randomness_ratio(0);

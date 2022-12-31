@@ -225,8 +225,8 @@ private:
 
 		double speed_scale = 1.0;
 
-		int fixed_fps = 30;
-		bool interpolate = true;
+		int fixed_fps = 0;
+		bool interpolate = false;
 		bool fractional_delta = false;
 		double frame_remainder = 0;
 		real_t collision_base_size = 0.01;

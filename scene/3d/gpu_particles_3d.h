@@ -71,7 +71,7 @@ private:
 	bool local_coords = false;
 	int fixed_fps = 0;
 	bool fractional_delta = false;
-	bool interpolate = true;
+	bool interpolate = false;
 	NodePath sub_emitter;
 	real_t collision_base_size = 0.01;
 
