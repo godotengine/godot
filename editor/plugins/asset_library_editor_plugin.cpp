@@ -705,6 +705,12 @@ const char *EditorAssetLibrary::support_key[SUPPORT_MAX] = {
 	"testing",
 };
 
+const char *EditorAssetLibrary::support_text[SUPPORT_MAX] = {
+	TTRC("Official"),
+	TTRC("Community"),
+	TTRC("Testing"),
+};
+
 void EditorAssetLibrary::_select_author(int p_id) {
 	// Open author window.
 }
@@ -1242,15 +1248,28 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 			library_vb->add_child(asset_bottom_page);
 
 			if (result.is_empty()) {
+				String support_list;
+				for (int i = 0; i < SUPPORT_MAX; i++) {
+					if (support->get_popup()->is_item_checked(i)) {
+						if (!support_list.is_empty()) {
+							support_list += ", ";
+						}
+						support_list += TTRGET(support_text[i]);
+					}
+				}
+				if (support_list.is_empty()) {
+					support_list = "-";
+				}
+
 				if (!filter->get_text().is_empty()) {
 					library_info->set_text(
-							vformat(TTR("No results for \"%s\"."), filter->get_text()));
+							vformat(TTR("No results for \"%s\" for support level(s): %s."), filter->get_text(), support_list));
 				} else {
 					// No results, even though the user didn't search for anything specific.
 					// This is typically because the version number changed recently
 					// and no assets compatible with the new version have been published yet.
 					library_info->set_text(
-							vformat(TTR("No results compatible with %s %s."), String(VERSION_SHORT_NAME).capitalize(), String(VERSION_BRANCH)));
+							vformat(TTR("No results compatible with %s %s for support level(s): %s.\nCheck the enabled support levels using the 'Support' button in the top-right corner."), String(VERSION_SHORT_NAME).capitalize(), String(VERSION_BRANCH), support_list));
 				}
 				library_info->show();
 			} else {
@@ -1510,9 +1529,9 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	search_hb2->add_child(support);
 	support->set_text(TTR("Support"));
 	support->get_popup()->set_hide_on_checkable_item_selection(false);
-	support->get_popup()->add_check_item(TTR("Official"), SUPPORT_OFFICIAL);
-	support->get_popup()->add_check_item(TTR("Community"), SUPPORT_COMMUNITY);
-	support->get_popup()->add_check_item(TTR("Testing"), SUPPORT_TESTING);
+	support->get_popup()->add_check_item(TTRGET(support_text[SUPPORT_OFFICIAL]), SUPPORT_OFFICIAL);
+	support->get_popup()->add_check_item(TTRGET(support_text[SUPPORT_COMMUNITY]), SUPPORT_COMMUNITY);
+	support->get_popup()->add_check_item(TTRGET(support_text[SUPPORT_TESTING]), SUPPORT_TESTING);
 	support->get_popup()->set_item_checked(SUPPORT_OFFICIAL, true);
 	support->get_popup()->set_item_checked(SUPPORT_COMMUNITY, true);
 	support->get_popup()->connect("id_pressed", callable_mp(this, &EditorAssetLibrary::_support_toggled));
