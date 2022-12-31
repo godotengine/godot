@@ -8,7 +8,7 @@ dependencies {
     implementation libraries.kotlinStdLib
     implementation libraries.androidxFragment
     implementation project(":lib")
-
+    implementation 'cat.ereza:customactivityoncrash:2.4.0'
     implementation "androidx.window:window:1.0.0"
 }
 
