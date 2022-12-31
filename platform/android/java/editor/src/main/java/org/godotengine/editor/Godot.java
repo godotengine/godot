@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  GodotEditor.kt                                                       */
+/*  Godot.java                                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -33,16 +33,9 @@ package org.godotengine.editor
 import cat.ereza.customactivityoncrash.config.*;
 import android.app.Application;
 
-
-/**
- * Base class for the Godot Android Editor activities.
- *
- * This provides the basic templates for the activities making up this application.
- * Each derived activity runs in its own process, which enable up to have several instances of
- * the Godot engine up and running at the same time.
- *
- * It also plays the role of the primary editor window.
- */
+/*
+  TO HANDLE CRASH. 
+*/
 public class Godot extends Application {
    @Override
 public void onCreate() {
