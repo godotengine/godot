@@ -2657,7 +2657,7 @@ bool Main::start() {
 				ERR_FAIL_V_MSG(false, vformat("Can't load the script \"%s\" as it doesn't inherit from SceneTree or MainLoop.", script));
 			}
 
-			script_loop->set_initialize_script(script_res);
+			script_loop->set_script(script_res);
 			main_loop = script_loop;
 		} else {
 			return false;
@@ -2680,7 +2680,7 @@ bool Main::start() {
 				OS::get_singleton()->alert("Error: Invalid MainLoop script base type: " + script_base);
 				ERR_FAIL_V_MSG(false, vformat("The global class %s does not inherit from SceneTree or MainLoop.", main_loop_type));
 			}
-			script_loop->set_initialize_script(script_res);
+			script_loop->set_script(script_res);
 			main_loop = script_loop;
 		}
 	}
@@ -2704,6 +2704,8 @@ bool Main::start() {
 			}
 		}
 	}
+
+	OS::get_singleton()->set_main_loop(main_loop);
 
 	SceneTree *sml = Object::cast_to<SceneTree>(main_loop);
 	if (sml) {
@@ -3053,8 +3055,6 @@ bool Main::start() {
 		Ref<Image> icon = memnew(Image(app_icon_png));
 		DisplayServer::get_singleton()->set_icon(icon);
 	}
-
-	OS::get_singleton()->set_main_loop(main_loop);
 
 	if (movie_writer) {
 		movie_writer->begin(DisplayServer::get_singleton()->window_get_size(), fixed_fps, Engine::get_singleton()->get_write_movie_path());
