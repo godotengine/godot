@@ -4362,7 +4362,9 @@ int TextEdit::get_minimap_line_at_pos(const Point2i &p_pos) const {
 	if (first_vis_line > 0 && minimap_line >= 0) {
 		minimap_line -= get_next_visible_line_index_offset_from(first_vis_line, 0, -num_lines_before).x;
 		minimap_line -= (minimap_line > 0 && smooth_scroll_enabled ? 1 : 0);
-	} else {
+	}
+
+	if (minimap_line < 0) {
 		minimap_line = 0;
 	}
 
