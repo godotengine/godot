@@ -831,8 +831,8 @@ Rect2 AnimationTrackEditTypeAudio::get_key_rect(int p_index, float p_pixels_sec)
 
 	len -= end_ofs;
 	len -= start_ofs;
-	if (len <= 0.001) {
-		len = 0.001;
+	if (len <= 0.0001) {
+		len = 0.0001;
 	}
 
 	if (get_animation()->track_get_key_count(get_track()) > p_index + 1) {
@@ -887,8 +887,8 @@ void AnimationTrackEditTypeAudio::draw_key(int p_index, float p_pixels_sec, int 
 	len -= end_ofs;
 	len -= start_ofs;
 
-	if (len <= 0.001) {
-		len = 0.001;
+	if (len <= 0.0001) {
+		len = 0.0001;
 	}
 
 	int pixel_len = len * p_pixels_sec;
@@ -1014,8 +1014,8 @@ void AnimationTrackEditTypeAudio::drop_data(const Point2 &p_point, const Variant
 
 			ofs = get_editor()->snap_time(ofs);
 
-			while (get_animation()->track_find_key(get_track(), ofs, true) != -1) { //make sure insertion point is valid
-				ofs += 0.001;
+			while (get_animation()->track_find_key(get_track(), ofs, Animation::FIND_MODE_APPROX) != -1) { //make sure insertion point is valid
+				ofs += 0.0001;
 			}
 
 			Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();

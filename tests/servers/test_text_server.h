@@ -593,12 +593,18 @@ TEST_SUITE("[TextServer]") {
 					String text1 = U"linguistically similar and effectively form";
 					//                           14^     22^ 26^         38^
 					PackedInt32Array breaks = ts->string_get_word_breaks(text1, "en");
-					CHECK(breaks.size() == 4);
-					if (breaks.size() == 4) {
-						CHECK(breaks[0] == 14);
-						CHECK(breaks[1] == 22);
-						CHECK(breaks[2] == 26);
-						CHECK(breaks[3] == 38);
+					CHECK(breaks.size() == 10);
+					if (breaks.size() == 10) {
+						CHECK(breaks[0] == 0);
+						CHECK(breaks[1] == 14);
+						CHECK(breaks[2] == 15);
+						CHECK(breaks[3] == 22);
+						CHECK(breaks[4] == 23);
+						CHECK(breaks[5] == 26);
+						CHECK(breaks[6] == 27);
+						CHECK(breaks[7] == 38);
+						CHECK(breaks[8] == 39);
+						CHECK(breaks[9] == 43);
 					}
 				}
 
@@ -608,16 +614,26 @@ TEST_SUITE("[TextServer]") {
 					//                 3^   7^    13^ 16^  20^   25^ 29^ 32^
 
 					PackedInt32Array breaks = ts->string_get_word_breaks(text2, "th");
-					CHECK(breaks.size() == 8);
-					if (breaks.size() == 8) {
-						CHECK(breaks[0] == 3);
-						CHECK(breaks[1] == 7);
-						CHECK(breaks[2] == 13);
-						CHECK(breaks[3] == 16);
-						CHECK(breaks[4] == 20);
-						CHECK(breaks[5] == 25);
-						CHECK(breaks[6] == 29);
-						CHECK(breaks[7] == 32);
+					CHECK(breaks.size() == 18);
+					if (breaks.size() == 18) {
+						CHECK(breaks[0] == 0);
+						CHECK(breaks[1] == 4);
+						CHECK(breaks[2] == 4);
+						CHECK(breaks[3] == 8);
+						CHECK(breaks[4] == 8);
+						CHECK(breaks[5] == 14);
+						CHECK(breaks[6] == 14);
+						CHECK(breaks[7] == 17);
+						CHECK(breaks[8] == 17);
+						CHECK(breaks[9] == 21);
+						CHECK(breaks[10] == 21);
+						CHECK(breaks[11] == 26);
+						CHECK(breaks[12] == 26);
+						CHECK(breaks[13] == 30);
+						CHECK(breaks[14] == 30);
+						CHECK(breaks[15] == 33);
+						CHECK(breaks[16] == 33);
+						CHECK(breaks[17] == 42);
 					}
 				}
 			}

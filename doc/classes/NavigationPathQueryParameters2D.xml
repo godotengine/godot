@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NavigationPathQueryParameters2D" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="NavigationPathQueryParameters2D" inherits="RefCounted" is_experimental="true" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Parameters to be sent to a 2D navigation path query.
 	</brief_description>
@@ -11,6 +11,9 @@
 	<members>
 		<member name="map" type="RID" setter="set_map" getter="get_map">
 			The navigation [code]map[/code] [RID] used in the path query.
+		</member>
+		<member name="metadata_flags" type="int" setter="set_metadata_flags" getter="get_metadata_flags" enum="NavigationPathQueryParameters2D.PathMetadataFlags" default="7">
+			Additional information to include with the navigation path.
 		</member>
 		<member name="navigation_layers" type="int" setter="set_navigation_layers" getter="get_navigation_layers" default="1">
 			The navigation layers the query will use (as a bitmask).
@@ -33,10 +36,25 @@
 			The path query uses the default A* pathfinding algorithm.
 		</constant>
 		<constant name="PATH_POSTPROCESSING_CORRIDORFUNNEL" value="0" enum="PathPostProcessing">
-			Applies a funnel algorithm to the raw path corridor found by the pathfinding algorithm. This will result in the shortest path possible inside the path corridor. This postprocessing very much depends on the navmesh polygon layout and the created corridor. Especially tile- or gridbased layouts can face artificial corners with diagonal movement due to a jagged path corridor imposed by the cell shapes.
+			Applies a funnel algorithm to the raw path corridor found by the pathfinding algorithm. This will result in the shortest path possible inside the path corridor. This postprocessing very much depends on the navigation mesh polygon layout and the created corridor. Especially tile- or gridbased layouts can face artificial corners with diagonal movement due to a jagged path corridor imposed by the cell shapes.
 		</constant>
 		<constant name="PATH_POSTPROCESSING_EDGECENTERED" value="1" enum="PathPostProcessing">
-			Centers every path position in the middle of the traveled navmesh polygon edge. This creates better paths for tile- or gridbased layouts that restrict the movement to the cells center.
+			Centers every path position in the middle of the traveled navigation mesh polygon edge. This creates better paths for tile- or gridbased layouts that restrict the movement to the cells center.
+		</constant>
+		<constant name="PATH_METADATA_INCLUDE_NONE" value="0" enum="PathMetadataFlags" is_bitfield="true">
+			Don't include any additional metadata about the returned path.
+		</constant>
+		<constant name="PATH_METADATA_INCLUDE_TYPES" value="1" enum="PathMetadataFlags" is_bitfield="true">
+			Include the type of navigation primitive (region or link) that each point of the path goes through.
+		</constant>
+		<constant name="PATH_METADATA_INCLUDE_RIDS" value="2" enum="PathMetadataFlags" is_bitfield="true">
+			Include the [RID]s of the regions and links that each point of the path goes through.
+		</constant>
+		<constant name="PATH_METADATA_INCLUDE_OWNERS" value="4" enum="PathMetadataFlags" is_bitfield="true">
+			Include the [code]ObjectID[/code]s of the [Object]s which manage the regions and links each point of the path goes through.
+		</constant>
+		<constant name="PATH_METADATA_INCLUDE_ALL" value="7" enum="PathMetadataFlags" is_bitfield="true">
+			Include all available metadata about the returned path.
 		</constant>
 	</constants>
 </class>

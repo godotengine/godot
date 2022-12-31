@@ -3186,7 +3186,7 @@ png_check_chunk_length(png_const_structrp png_ptr, png_uint_32 length)
    {
       png_debug2(0," length = %lu, limit = %lu",
          (unsigned long)length,(unsigned long)limit);
-      png_chunk_error(png_ptr, "chunk data is too large");
+      png_benign_error(png_ptr, "chunk data is too large");
    }
 }
 

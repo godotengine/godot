@@ -215,7 +215,7 @@ MBEDTLS_CHECK_RETURN_TYPICAL
 int mbedtls_md_setup( mbedtls_md_context_t *ctx, const mbedtls_md_info_t *md_info, int hmac );
 
 /**
- * \brief           This function clones the state of an message-digest
+ * \brief           This function clones the state of a message-digest
  *                  context.
  *
  * \note            You must call mbedtls_md_setup() on \c dst before calling

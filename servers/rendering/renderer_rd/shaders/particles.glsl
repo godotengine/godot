@@ -243,8 +243,14 @@ void main() {
 
 	if (params.trail_size > 1) {
 		if (params.trail_pass) {
+			if (particle >= params.total_particles * (params.trail_size - 1)) {
+				return;
+			}
 			particle += (particle / (params.trail_size - 1)) + 1;
 		} else {
+			if (particle >= params.total_particles) {
+				return;
+			}
 			particle *= params.trail_size;
 		}
 	}
@@ -298,12 +304,17 @@ void main() {
 			PARTICLE.flags = PARTICLE_FLAG_TRAILED | ((frame_history.data[0].frame & PARTICLE_FRAME_MASK) << PARTICLE_FRAME_SHIFT); //mark it as trailed, save in which frame it will start
 			PARTICLE.xform = particles.data[src_idx].xform;
 		}
-
+		if (!bool(particles.data[src_idx].flags & PARTICLE_FLAG_ACTIVE)) {
+			// Disable the entire trail if the parent is no longer active.
+			PARTICLE.flags = 0;
+			return;
+		}
 		if (bool(PARTICLE.flags & PARTICLE_FLAG_TRAILED) && ((PARTICLE.flags >> PARTICLE_FRAME_SHIFT) == (FRAME.frame & PARTICLE_FRAME_MASK))) { //check this is trailed and see if it should start now
 			// we just assume that this is the first frame of the particle, the rest is deterministic
 			PARTICLE.flags = PARTICLE_FLAG_ACTIVE | (particles.data[src_idx].flags & (PARTICLE_FRAME_MASK << PARTICLE_FRAME_SHIFT));
 			return; //- this appears like it should be correct, but it seems not to be.. wonder why.
 		}
+
 	} else {
 		PARTICLE.flags &= ~PARTICLE_FLAG_STARTED;
 	}

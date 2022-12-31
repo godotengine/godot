@@ -25,11 +25,7 @@
 
 #if defined(MBEDTLS_ERROR_C)
 
-#if defined(MBEDTLS_PLATFORM_C)
 #include "mbedtls/platform.h"
-#else
-#define mbedtls_snprintf snprintf
-#endif
 
 #include <stdio.h>
 #include <string.h>
@@ -961,7 +957,7 @@ void mbedtls_strerror( int ret, char *buf, size_t buflen )
 #else /* MBEDTLS_ERROR_C */
 
 /*
- * Provide an non-function in case MBEDTLS_ERROR_C is not defined
+ * Provide a dummy implementation when MBEDTLS_ERROR_C is not defined
  */
 void mbedtls_strerror( int ret, char *buf, size_t buflen )
 {

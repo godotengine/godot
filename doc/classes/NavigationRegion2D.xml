@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NavigationRegion2D" inherits="Node2D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="NavigationRegion2D" inherits="Node2D" is_experimental="true" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		A region of the 2D navigation map.
 	</brief_description>
 	<description>
 		A region of the navigation map. It tells the [NavigationServer2D] what can be navigated and what cannot, based on its [NavigationPolygon] resource.
 		Two regions can be connected to each other if they share a similar edge. You can set the minimum distance between two vertices required to connect two edges by using [method NavigationServer2D.map_set_edge_connection_margin].
-		[b]Note:[/b] Overlapping two regions' polygons is not enough for connecting two regions. They must share a similar edge.
+		[b]Note:[/b] Overlapping two regions' navigation polygons is not enough for connecting two regions. They must share a similar edge.
 		The pathfinding cost of entering this region from another region can be controlled with the [member enter_cost] value.
 		[b]Note:[/b] This value is not added to the path cost when the start position is already inside this region.
 		The pathfinding cost of traveling distances inside this region can be controlled with the [member travel_cost] multiplier.
@@ -42,16 +42,16 @@
 			Determines if the [NavigationRegion2D] is enabled or disabled.
 		</member>
 		<member name="enter_cost" type="float" setter="set_enter_cost" getter="get_enter_cost" default="0.0">
-			When pathfinding enters this region's navmesh from another regions navmesh the [code]enter_cost[/code] value is added to the path distance for determining the shortest path.
+			When pathfinding enters this region's navigation mesh from another regions navigation mesh the [code]enter_cost[/code] value is added to the path distance for determining the shortest path.
 		</member>
 		<member name="navigation_layers" type="int" setter="set_navigation_layers" getter="get_navigation_layers" default="1">
 			A bitfield determining all navigation layers the region belongs to. These navigation layers can be checked upon when requesting a path with [method NavigationServer2D.map_get_path].
 		</member>
-		<member name="navpoly" type="NavigationPolygon" setter="set_navigation_polygon" getter="get_navigation_polygon">
+		<member name="navigation_polygon" type="NavigationPolygon" setter="set_navigation_polygon" getter="get_navigation_polygon">
 			The [NavigationPolygon] resource to use.
 		</member>
 		<member name="travel_cost" type="float" setter="set_travel_cost" getter="get_travel_cost" default="1.0">
-			When pathfinding moves inside this region's navmesh the traveled distances are multiplied with [code]travel_cost[/code] for determining the shortest path.
+			When pathfinding moves inside this region's navigation mesh the traveled distances are multiplied with [code]travel_cost[/code] for determining the shortest path.
 		</member>
 	</members>
 </class>

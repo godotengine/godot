@@ -138,8 +138,6 @@ private:
 		Surface **surfaces = nullptr;
 		uint32_t surface_count = 0;
 
-		Vector<AABB> bone_aabbs;
-
 		bool has_bone_weights = false;
 
 		AABB aabb;

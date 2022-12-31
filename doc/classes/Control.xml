@@ -1050,6 +1050,9 @@
 		<member name="rotation" type="float" setter="set_rotation" getter="get_rotation" default="0.0">
 			The node's rotation around its pivot, in radians. See [member pivot_offset] to change the pivot's position.
 		</member>
+		<member name="rotation_degrees" type="float" setter="set_rotation_degrees" getter="get_rotation_degrees">
+			Helper property to access [member rotation] in degrees instead of radians.
+		</member>
 		<member name="scale" type="Vector2" setter="set_scale" getter="get_scale" default="Vector2(1, 1)">
 			The node's scale, relative to its [member size]. Change this property to scale the node around its [member pivot_offset]. The Control's [member tooltip_text] will also scale according to this value.
 			[b]Note:[/b] This property is mainly intended to be used for animation purposes. Text inside the Control will look pixelated or blurry when the Control is scaled. To support multiple resolutions in your project, use an appropriate viewport stretch mode as described in the [url=$DOCS_URL/tutorials/rendering/multiple_resolutions.html]documentation[/url] instead of scaling Controls individually.

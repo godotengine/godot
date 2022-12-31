@@ -35,6 +35,7 @@
 
 #include "core/crypto/crypto_core.h"
 #include "core/io/file_access.h"
+#include "core/os/time.h"
 
 class PListNode;
 
@@ -55,7 +56,19 @@ public:
 	};
 
 private:
+	struct PListTrailer {
+		uint8_t offset_size;
+		uint8_t ref_size;
+		uint64_t object_num;
+		uint64_t root_offset_idx;
+		uint64_t offset_table_start;
+	};
+
+	PListTrailer trailer;
 	Ref<PListNode> root;
+
+	uint64_t read_bplist_var_size_int(Ref<FileAccess> p_file, uint8_t p_size);
+	Ref<PListNode> read_bplist_obj(Ref<FileAccess> p_file, uint64_t p_offset_idx);
 
 public:
 	PList();
@@ -82,19 +95,23 @@ public:
 	Vector<Ref<PListNode>> data_array;
 	HashMap<String, Ref<PListNode>> data_dict;
 	union {
-		int32_t data_int;
+		int64_t data_int;
 		bool data_bool;
-		float data_real;
+		double data_real;
 	};
 
+	PList::PLNodeType get_type() const;
+	Variant get_value() const;
+
+	static Ref<PListNode> new_node(const Variant &p_value);
 	static Ref<PListNode> new_array();
 	static Ref<PListNode> new_dict();
 	static Ref<PListNode> new_string(const String &p_string);
 	static Ref<PListNode> new_data(const String &p_string);
 	static Ref<PListNode> new_date(const String &p_string);
 	static Ref<PListNode> new_bool(bool p_bool);
-	static Ref<PListNode> new_int(int32_t p_int);
-	static Ref<PListNode> new_real(float p_real);
+	static Ref<PListNode> new_int(int64_t p_int);
+	static Ref<PListNode> new_real(double p_real);
 
 	bool push_subnode(const Ref<PListNode> &p_node, const String &p_key = "");
 

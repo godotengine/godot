@@ -102,6 +102,7 @@ public:
 	bool operator==(const String &p_name) const;
 	bool operator==(const char *p_name) const;
 	bool operator!=(const String &p_name) const;
+	bool operator!=(const char *p_name) const;
 
 	_FORCE_INLINE_ bool is_node_unique_name() const {
 		if (!_data) {

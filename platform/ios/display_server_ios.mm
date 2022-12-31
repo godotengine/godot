@@ -227,27 +227,23 @@ void DisplayServerIOS::_window_callback(const Callable &p_callable, const Varian
 // MARK: Touches
 
 void DisplayServerIOS::touch_press(int p_idx, int p_x, int p_y, bool p_pressed, bool p_double_click) {
-	if (!GLOBAL_GET("debug/disable_touch")) {
-		Ref<InputEventScreenTouch> ev;
-		ev.instantiate();
+	Ref<InputEventScreenTouch> ev;
+	ev.instantiate();
 
-		ev->set_index(p_idx);
-		ev->set_pressed(p_pressed);
-		ev->set_position(Vector2(p_x, p_y));
-		ev->set_double_tap(p_double_click);
-		perform_event(ev);
-	}
+	ev->set_index(p_idx);
+	ev->set_pressed(p_pressed);
+	ev->set_position(Vector2(p_x, p_y));
+	ev->set_double_tap(p_double_click);
+	perform_event(ev);
 }
 
 void DisplayServerIOS::touch_drag(int p_idx, int p_prev_x, int p_prev_y, int p_x, int p_y) {
-	if (!GLOBAL_GET("debug/disable_touch")) {
-		Ref<InputEventScreenDrag> ev;
-		ev.instantiate();
-		ev->set_index(p_idx);
-		ev->set_position(Vector2(p_x, p_y));
-		ev->set_relative(Vector2(p_x - p_prev_x, p_y - p_prev_y));
-		perform_event(ev);
-	}
+	Ref<InputEventScreenDrag> ev;
+	ev.instantiate();
+	ev->set_index(p_idx);
+	ev->set_position(Vector2(p_x, p_y));
+	ev->set_relative(Vector2(p_x - p_prev_x, p_y - p_prev_y));
+	perform_event(ev);
 }
 
 void DisplayServerIOS::perform_event(const Ref<InputEvent> &p_event) {
@@ -441,7 +437,7 @@ float DisplayServerIOS::screen_get_refresh_rate(int p_screen) const {
 }
 
 float DisplayServerIOS::screen_get_scale(int p_screen) const {
-	return [UIScreen mainScreen].nativeScale;
+	return [UIScreen mainScreen].scale;
 }
 
 Vector<DisplayServer::WindowID> DisplayServerIOS::get_window_list() const {

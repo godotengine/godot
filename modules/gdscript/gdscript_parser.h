@@ -483,6 +483,7 @@ public:
 
 		IdentifierNode *identifier = nullptr;
 		Vector<Value> values;
+		Variant dictionary;
 #ifdef TOOLS_ENABLED
 		String doc_description;
 #endif // TOOLS_ENABLED

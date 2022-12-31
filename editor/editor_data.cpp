@@ -947,9 +947,10 @@ Variant EditorData::script_class_instance(const String &p_class) {
 	if (ScriptServer::is_global_class(p_class)) {
 		Ref<Script> script = script_class_load_script(p_class);
 		if (script.is_valid()) {
-			Object *obj = ClassDB::instantiate(script->get_instance_base_type());
+			// Store in a variant to initialize the refcount if needed.
+			Variant obj = ClassDB::instantiate(script->get_instance_base_type());
 			if (obj) {
-				obj->set_script(script);
+				obj.operator Object *()->set_script(script);
 			}
 			return obj;
 		}

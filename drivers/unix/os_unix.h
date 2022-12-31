@@ -46,8 +46,6 @@ protected:
 
 	virtual void finalize_core() override;
 
-	String stdin_buf;
-
 public:
 	OS_Unix();
 

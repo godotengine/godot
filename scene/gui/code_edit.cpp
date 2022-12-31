@@ -115,7 +115,9 @@ void CodeEdit::_notification(int p_what) {
 
 				const Point2 caret_pos = get_caret_draw_pos();
 				const int total_height = csb->get_minimum_size().y + code_completion_rect.size.height;
-				if (caret_pos.y + row_height + total_height > get_size().height) {
+				const bool can_fit_completion_above = (caret_pos.y - row_height > total_height);
+				const bool can_fit_completion_below = (caret_pos.y + row_height + total_height <= get_size().height);
+				if (!can_fit_completion_below && can_fit_completion_above) {
 					code_completion_rect.position.y = (caret_pos.y - total_height - row_height) + line_spacing;
 				} else {
 					code_completion_rect.position.y = caret_pos.y + (line_spacing / 2.0f);
@@ -2079,20 +2081,22 @@ void CodeEdit::confirm_code_completion(bool p_replace) {
 		}
 		char32_t last_completion_char_display = display_text[display_text.length() - 1];
 
+		bool last_char_matches = (last_completion_char == next_char || last_completion_char_display == next_char);
 		int pre_brace_pair = get_caret_column(i) > 0 ? _get_auto_brace_pair_open_at_pos(caret_line, get_caret_column(i)) : -1;
 		int post_brace_pair = get_caret_column(i) < get_line(caret_line).length() ? _get_auto_brace_pair_close_at_pos(caret_line, get_caret_column(i)) : -1;
 
-		if (post_brace_pair != -1 && (last_completion_char == next_char || last_completion_char_display == next_char)) {
+		// Strings do not nest like brackets, so ensure we don't add an additional closing pair.
+		if (has_string_delimiter(String::chr(last_completion_char)) && post_brace_pair != -1 && last_char_matches) {
 			remove_text(caret_line, get_caret_column(i), caret_line, get_caret_column(i) + 1);
 			adjust_carets_after_edit(i, caret_line, get_caret_column(i), caret_line, get_caret_column(i) + 1);
-		}
-
-		if (pre_brace_pair != -1 && pre_brace_pair != post_brace_pair && (last_completion_char == next_char || last_completion_char_display == next_char)) {
-			remove_text(caret_line, get_caret_column(i), caret_line, get_caret_column(i) + 1);
-			adjust_carets_after_edit(i, caret_line, get_caret_column(i), caret_line, get_caret_column(i) + 1);
-		} else if (auto_brace_completion_enabled && pre_brace_pair != -1 && post_brace_pair == -1) {
-			insert_text_at_caret(auto_brace_completion_pairs[pre_brace_pair].close_key, i);
-			set_caret_column(get_caret_column(i) - auto_brace_completion_pairs[pre_brace_pair].close_key.length(), i == 0, i);
+		} else {
+			if (pre_brace_pair != -1 && pre_brace_pair != post_brace_pair && last_char_matches) {
+				remove_text(caret_line, get_caret_column(i), caret_line, get_caret_column(i) + 1);
+				adjust_carets_after_edit(i, caret_line, get_caret_column(i), caret_line, get_caret_column(i) + 1);
+			} else if (auto_brace_completion_enabled && pre_brace_pair != -1) {
+				insert_text_at_caret(auto_brace_completion_pairs[pre_brace_pair].close_key, i);
+				set_caret_column(get_caret_column(i) - auto_brace_completion_pairs[pre_brace_pair].close_key.length(), i == 0, i);
+			}
 		}
 
 		if (pre_brace_pair == -1 && post_brace_pair == -1 && get_caret_column(i) > 0 && get_caret_column(i) < get_line(caret_line).length()) {

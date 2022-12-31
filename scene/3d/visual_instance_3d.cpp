@@ -30,6 +30,7 @@
 
 #include "visual_instance_3d.h"
 
+#include "core/core_string_names.h"
 #include "scene/scene_string_names.h"
 
 AABB VisualInstance3D::get_aabb() const {
@@ -101,6 +102,24 @@ bool VisualInstance3D::get_layer_mask_value(int p_layer_number) const {
 	return layers & (1 << (p_layer_number - 1));
 }
 
+void VisualInstance3D::set_sorting_offset(float p_offset) {
+	sorting_offset = p_offset;
+	RenderingServer::get_singleton()->instance_set_pivot_data(instance, sorting_offset, sorting_use_aabb_center);
+}
+
+float VisualInstance3D::get_sorting_offset() const {
+	return sorting_offset;
+}
+
+void VisualInstance3D::set_sorting_use_aabb_center(bool p_enabled) {
+	sorting_use_aabb_center = p_enabled;
+	RenderingServer::get_singleton()->instance_set_pivot_data(instance, sorting_offset, sorting_use_aabb_center);
+}
+
+bool VisualInstance3D::is_sorting_use_aabb_center() const {
+	return sorting_use_aabb_center;
+}
+
 void VisualInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_base", "base"), &VisualInstance3D::set_base);
 	ClassDB::bind_method(D_METHOD("get_base"), &VisualInstance3D::get_base);
@@ -109,9 +128,17 @@ void VisualInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_layer_mask"), &VisualInstance3D::get_layer_mask);
 	ClassDB::bind_method(D_METHOD("set_layer_mask_value", "layer_number", "value"), &VisualInstance3D::set_layer_mask_value);
 	ClassDB::bind_method(D_METHOD("get_layer_mask_value", "layer_number"), &VisualInstance3D::get_layer_mask_value);
+	ClassDB::bind_method(D_METHOD("set_sorting_offset", "offset"), &VisualInstance3D::set_sorting_offset);
+	ClassDB::bind_method(D_METHOD("get_sorting_offset"), &VisualInstance3D::get_sorting_offset);
+	ClassDB::bind_method(D_METHOD("set_sorting_use_aabb_center", "enabled"), &VisualInstance3D::set_sorting_use_aabb_center);
+	ClassDB::bind_method(D_METHOD("is_sorting_use_aabb_center"), &VisualInstance3D::is_sorting_use_aabb_center);
 
 	GDVIRTUAL_BIND(_get_aabb);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "layers", PROPERTY_HINT_LAYERS_3D_RENDER), "set_layer_mask", "get_layer_mask");
+
+	ADD_GROUP("Sorting", "sorting_");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sorting_offset"), "set_sorting_offset", "get_sorting_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sorting_use_aabb_center"), "set_sorting_use_aabb_center", "is_sorting_use_aabb_center");
 }
 
 void VisualInstance3D::set_base(const RID &p_base) {
@@ -134,7 +161,13 @@ VisualInstance3D::~VisualInstance3D() {
 }
 
 void GeometryInstance3D::set_material_override(const Ref<Material> &p_material) {
+	if (material_override.is_valid()) {
+		material_override->disconnect(CoreStringNames::get_singleton()->property_list_changed, callable_mp((Object *)this, &Object::notify_property_list_changed));
+	}
 	material_override = p_material;
+	if (material_override.is_valid()) {
+		material_override->connect(CoreStringNames::get_singleton()->property_list_changed, callable_mp((Object *)this, &Object::notify_property_list_changed));
+	}
 	RS::get_singleton()->instance_geometry_set_material_override(get_instance(), p_material.is_valid() ? p_material->get_rid() : RID());
 }
 
@@ -331,8 +364,16 @@ Variant GeometryInstance3D::get_instance_shader_parameter(const StringName &p_na
 	return RS::get_singleton()->instance_geometry_get_shader_parameter(get_instance(), p_name);
 }
 
-void GeometryInstance3D::set_custom_aabb(AABB aabb) {
-	RS::get_singleton()->instance_set_custom_aabb(get_instance(), aabb);
+void GeometryInstance3D::set_custom_aabb(AABB p_aabb) {
+	if (p_aabb == custom_aabb) {
+		return;
+	}
+	custom_aabb = p_aabb;
+	RS::get_singleton()->instance_set_custom_aabb(get_instance(), custom_aabb);
+}
+
+AABB GeometryInstance3D::get_custom_aabb() const {
+	return custom_aabb;
 }
 
 void GeometryInstance3D::set_lightmap_scale(LightmapScale p_scale) {
@@ -442,6 +483,7 @@ void GeometryInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_ignoring_occlusion_culling"), &GeometryInstance3D::is_ignoring_occlusion_culling);
 
 	ClassDB::bind_method(D_METHOD("set_custom_aabb", "aabb"), &GeometryInstance3D::set_custom_aabb);
+	ClassDB::bind_method(D_METHOD("get_custom_aabb"), &GeometryInstance3D::get_custom_aabb);
 
 	ClassDB::bind_method(D_METHOD("get_aabb"), &GeometryInstance3D::get_aabb);
 
@@ -451,6 +493,7 @@ void GeometryInstance3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "transparency", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_transparency", "get_transparency");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cast_shadow", PROPERTY_HINT_ENUM, "Off,On,Double-Sided,Shadows Only"), "set_cast_shadows_setting", "get_cast_shadows_setting");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "extra_cull_margin", PROPERTY_HINT_RANGE, "0,16384,0.01,suffix:m"), "set_extra_cull_margin", "get_extra_cull_margin");
+	ADD_PROPERTY(PropertyInfo(Variant::AABB, "custom_aabb", PROPERTY_HINT_NONE, "suffix:m"), "set_custom_aabb", "get_custom_aabb");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lod_bias", PROPERTY_HINT_RANGE, "0.001,128,0.001"), "set_lod_bias", "get_lod_bias");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ignore_occlusion_culling"), "set_ignore_occlusion_culling", "is_ignoring_occlusion_culling");
 

@@ -930,6 +930,7 @@
 			<param index="1" name="language" type="String" default="&quot;&quot;" />
 			<description>
 				Converts a number from the Western Arabic (0..9) to the numeral systems used in [param language].
+				If [param language] is omitted, the active locale will be used.
 			</description>
 		</method>
 		<method name="free_rid">
@@ -1097,6 +1098,7 @@
 			<param index="2" name="size" type="Vector2" />
 			<param index="3" name="inline_align" type="int" enum="InlineAlignment" default="5" />
 			<param index="4" name="length" type="int" default="1" />
+			<param index="5" name="baseline" type="float" default="0.0" />
 			<description>
 				Adds inline object to the text buffer, [param key] must be unique. In the text, object is represented as [param length] object replacement characters.
 			</description>
@@ -1438,6 +1440,7 @@
 			<param index="1" name="key" type="Variant" />
 			<param index="2" name="size" type="Vector2" />
 			<param index="3" name="inline_align" type="int" enum="InlineAlignment" default="5" />
+			<param index="4" name="baseline" type="float" default="0.0" />
 			<description>
 				Sets new size and alignment of embedded object.
 			</description>
@@ -1546,8 +1549,15 @@
 			<return type="PackedInt32Array" />
 			<param index="0" name="string" type="String" />
 			<param index="1" name="language" type="String" default="&quot;&quot;" />
+			<param index="2" name="chars_per_line" type="int" default="0" />
 			<description>
-				Returns array of the word break character offsets.
+				Returns an array of the word break boundaries. Elements in the returned array are the offsets of the start and end of words. Therefore the length of the array is always even.
+				When [param chars_per_line] is greater than zero, line break boundaries are returned instead.
+				[codeblock]
+				var ts = TextServerManager.get_primary_interface()
+				print(ts.string_get_word_breaks("Godot Engine")) # Prints [0, 5, 6, 12]
+				print(ts.string_get_word_breaks("Godot Engine", "en", 5)) # Prints [0, 5, 6, 11, 11, 12]
+				[/codeblock]
 			</description>
 		</method>
 		<method name="string_to_lower" qualifiers="const">

@@ -36,6 +36,8 @@
 #include "navigation_mesh_generator.h"
 #endif
 
+using namespace NavigationUtilities;
+
 /// Creates a struct for each function and a function that once called creates
 /// an instance of that struct with the submitted parameters.
 /// Then, that struct is stored in an array; the `sync` function consume that array.
@@ -228,7 +230,7 @@ Vector<Vector3> GodotNavigationServer::map_get_path(RID p_map, Vector3 p_origin,
 	const NavMap *map = map_owner.get_or_null(p_map);
 	ERR_FAIL_COND_V(map == nullptr, Vector<Vector3>());
 
-	return map->get_path(p_origin, p_destination, p_optimize, p_navigation_layers);
+	return map->get_path(p_origin, p_destination, p_optimize, p_navigation_layers, nullptr, nullptr, nullptr);
 }
 
 Vector3 GodotNavigationServer::map_get_closest_point_to_segment(RID p_map, const Vector3 &p_from, const Vector3 &p_to, const bool p_use_collision) const {
@@ -421,20 +423,20 @@ uint32_t GodotNavigationServer::region_get_navigation_layers(RID p_region) const
 	return region->get_navigation_layers();
 }
 
-COMMAND_2(region_set_navmesh, RID, p_region, Ref<NavigationMesh>, p_nav_mesh) {
+COMMAND_2(region_set_navigation_mesh, RID, p_region, Ref<NavigationMesh>, p_navigation_mesh) {
 	NavRegion *region = region_owner.get_or_null(p_region);
 	ERR_FAIL_COND(region == nullptr);
 
-	region->set_mesh(p_nav_mesh);
+	region->set_mesh(p_navigation_mesh);
 }
 
-void GodotNavigationServer::region_bake_navmesh(Ref<NavigationMesh> r_mesh, Node *p_node) const {
-	ERR_FAIL_COND(r_mesh.is_null());
-	ERR_FAIL_COND(p_node == nullptr);
+void GodotNavigationServer::region_bake_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh, Node *p_root_node) const {
+	ERR_FAIL_COND(p_navigation_mesh.is_null());
+	ERR_FAIL_COND(p_root_node == nullptr);
 
 #ifndef _3D_DISABLED
-	NavigationMeshGenerator::get_singleton()->clear(r_mesh);
-	NavigationMeshGenerator::get_singleton()->bake(r_mesh, p_node);
+	NavigationMeshGenerator::get_singleton()->clear(p_navigation_mesh);
+	NavigationMeshGenerator::get_singleton()->bake(p_navigation_mesh, p_root_node);
 #endif
 }
 
@@ -838,20 +840,34 @@ void GodotNavigationServer::process(real_t p_delta_time) {
 	}
 }
 
-NavigationUtilities::PathQueryResult GodotNavigationServer::_query_path(const NavigationUtilities::PathQueryParameters &p_parameters) const {
-	NavigationUtilities::PathQueryResult r_query_result;
+PathQueryResult GodotNavigationServer::_query_path(const PathQueryParameters &p_parameters) const {
+	PathQueryResult r_query_result;
 
 	const NavMap *map = map_owner.get_or_null(p_parameters.map);
 	ERR_FAIL_COND_V(map == nullptr, r_query_result);
 
 	// run the pathfinding
 
-	if (p_parameters.pathfinding_algorithm == NavigationUtilities::PathfindingAlgorithm::PATHFINDING_ALGORITHM_ASTAR) {
+	if (p_parameters.pathfinding_algorithm == PathfindingAlgorithm::PATHFINDING_ALGORITHM_ASTAR) {
 		// while postprocessing is still part of map.get_path() need to check and route it here for the correct "optimize" post-processing
-		if (p_parameters.path_postprocessing == NavigationUtilities::PathPostProcessing::PATH_POSTPROCESSING_CORRIDORFUNNEL) {
-			r_query_result.path = map->get_path(p_parameters.start_position, p_parameters.target_position, true, p_parameters.navigation_layers);
-		} else if (p_parameters.path_postprocessing == NavigationUtilities::PathPostProcessing::PATH_POSTPROCESSING_EDGECENTERED) {
-			r_query_result.path = map->get_path(p_parameters.start_position, p_parameters.target_position, false, p_parameters.navigation_layers);
+		if (p_parameters.path_postprocessing == PathPostProcessing::PATH_POSTPROCESSING_CORRIDORFUNNEL) {
+			r_query_result.path = map->get_path(
+					p_parameters.start_position,
+					p_parameters.target_position,
+					true,
+					p_parameters.navigation_layers,
+					p_parameters.metadata_flags.has_flag(PathMetadataFlags::PATH_INCLUDE_TYPES) ? &r_query_result.path_types : nullptr,
+					p_parameters.metadata_flags.has_flag(PathMetadataFlags::PATH_INCLUDE_RIDS) ? &r_query_result.path_rids : nullptr,
+					p_parameters.metadata_flags.has_flag(PathMetadataFlags::PATH_INCLUDE_OWNERS) ? &r_query_result.path_owner_ids : nullptr);
+		} else if (p_parameters.path_postprocessing == PathPostProcessing::PATH_POSTPROCESSING_EDGECENTERED) {
+			r_query_result.path = map->get_path(
+					p_parameters.start_position,
+					p_parameters.target_position,
+					false,
+					p_parameters.navigation_layers,
+					p_parameters.metadata_flags.has_flag(PathMetadataFlags::PATH_INCLUDE_TYPES) ? &r_query_result.path_types : nullptr,
+					p_parameters.metadata_flags.has_flag(PathMetadataFlags::PATH_INCLUDE_RIDS) ? &r_query_result.path_rids : nullptr,
+					p_parameters.metadata_flags.has_flag(PathMetadataFlags::PATH_INCLUDE_OWNERS) ? &r_query_result.path_owner_ids : nullptr);
 		}
 	} else {
 		return r_query_result;

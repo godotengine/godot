@@ -31,6 +31,8 @@
 #ifndef MATERIAL_STORAGE_RD_H
 #define MATERIAL_STORAGE_RD_H
 
+#include "texture_storage.h"
+
 #include "core/math/projection.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
@@ -54,24 +56,30 @@ public:
 	};
 
 	struct ShaderData {
-		virtual void set_code(const String &p_Code) = 0;
-		virtual void set_path_hint(const String &p_hint) = 0;
-		virtual void set_default_texture_parameter(const StringName &p_name, RID p_texture, int p_index) = 0;
-		virtual void get_shader_uniform_list(List<PropertyInfo> *p_param_list) const = 0;
+		String path;
+		HashMap<StringName, ShaderLanguage::ShaderNode::Uniform> uniforms;
+		HashMap<StringName, HashMap<int, RID>> default_texture_params;
 
-		virtual void get_instance_param_list(List<RendererMaterialStorage::InstanceShaderParam> *p_param_list) const = 0;
-		virtual bool is_parameter_texture(const StringName &p_param) const = 0;
+		virtual void set_path_hint(const String &p_hint);
+		virtual void set_default_texture_parameter(const StringName &p_name, RID p_texture, int p_index);
+		virtual Variant get_default_parameter(const StringName &p_parameter) const;
+		virtual void get_shader_uniform_list(List<PropertyInfo> *p_param_list) const;
+		virtual void get_instance_param_list(List<RendererMaterialStorage::InstanceShaderParam> *p_param_list) const;
+		virtual bool is_parameter_texture(const StringName &p_param) const;
+
+		virtual void set_code(const String &p_Code) = 0;
 		virtual bool is_animated() const = 0;
 		virtual bool casts_shadows() const = 0;
-		virtual Variant get_default_parameter(const StringName &p_parameter) const = 0;
 		virtual RS::ShaderNativeSourceCode get_native_source_code() const { return RS::ShaderNativeSourceCode(); }
 
 		virtual ~ShaderData() {}
 	};
 
 	struct MaterialData {
+		Vector<RendererRD::TextureStorage::RenderTarget *> render_target_cache;
 		void update_uniform_buffer(const HashMap<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const HashMap<StringName, Variant> &p_parameters, uint8_t *p_buffer, uint32_t p_buffer_size, bool p_use_linear_color);
 		void update_textures(const HashMap<StringName, Variant> &p_parameters, const HashMap<StringName, HashMap<int, RID>> &p_default_textures, const Vector<ShaderCompiler::GeneratedCode::Texture> &p_texture_uniforms, RID *p_textures, bool p_use_linear_color);
+		void set_as_used();
 
 		virtual void set_render_priority(int p_priority) = 0;
 		virtual void set_next_pass(RID p_pass) = 0;

@@ -89,13 +89,6 @@
 				Returns an array of [Transform3D] and [Mesh] references corresponding to the non-empty cells in the grid. The transforms are specified in local space.
 			</description>
 		</method>
-		<method name="get_navigation_layer_value" qualifiers="const">
-			<return type="bool" />
-			<param index="0" name="layer_number" type="int" />
-			<description>
-				Returns whether or not the specified layer of the [member navigation_layers] bitmask is enabled, given a [code]layer_number[/code] between 1 and 32.
-			</description>
-		</method>
 		<method name="get_navigation_map" qualifiers="const">
 			<return type="RID" />
 			<description>
@@ -179,14 +172,6 @@
 				Based on [code]value[/code], enables or disables the specified layer in the [member collision_mask], given a [code]layer_number[/code] between 1 and 32.
 			</description>
 		</method>
-		<method name="set_navigation_layer_value">
-			<return type="void" />
-			<param index="0" name="layer_number" type="int" />
-			<param index="1" name="value" type="bool" />
-			<description>
-				Based on [code]value[/code], enables or disables the specified layer in the [member navigation_layers] bitmask, given a [code]layer_number[/code] between 1 and 32.
-			</description>
-		</method>
 		<method name="set_navigation_map">
 			<return type="void" />
 			<param index="0" name="navigation_map" type="RID" />
@@ -197,7 +182,7 @@
 	</methods>
 	<members>
 		<member name="bake_navigation" type="bool" setter="set_bake_navigation" getter="is_baking_navigation" default="false">
-			If [code]true[/code], this GridMap bakes a navigation region.
+			If [code]true[/code], this GridMap creates a navigation region for each cell that uses a [member mesh_library] item with a navigation mesh. The created navigation region will use the navigation layers bitmask assigned to the [MeshLibrary]'s item.
 		</member>
 		<member name="cell_center_x" type="bool" setter="set_center_x" getter="get_center_x" default="true">
 			If [code]true[/code], grid items are centered on the X axis.
@@ -226,11 +211,11 @@
 		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="1">
 			The physics layers this GridMap detects collisions in. See [url=$DOCS_URL/tutorials/physics/physics_introduction.html#collision-layers-and-masks]Collision layers and masks[/url] in the documentation for more information.
 		</member>
+		<member name="collision_priority" type="float" setter="set_collision_priority" getter="get_collision_priority" default="1.0">
+			The priority used to solve colliding when occurring penetration. The higher the priority is, the lower the penetration into the object will be. This can for example be used to prevent the player from breaking through the boundaries of a level.
+		</member>
 		<member name="mesh_library" type="MeshLibrary" setter="set_mesh_library" getter="get_mesh_library">
 			The assigned [MeshLibrary].
-		</member>
-		<member name="navigation_layers" type="int" setter="set_navigation_layers" getter="get_navigation_layers" default="1">
-			A bitmask determining all navigation layers the GridMap generated navigation regions belong to. These navigation layers can be checked upon when requesting a path with [method NavigationServer3D.map_get_path].
 		</member>
 		<member name="physics_material" type="PhysicsMaterial" setter="set_physics_material" getter="get_physics_material">
 			Overrides the default friction and bounce physics properties for the whole [GridMap].

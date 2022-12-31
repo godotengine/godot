@@ -451,7 +451,7 @@ static String variant_type_to_managed_name(const String &p_var_type_name) {
 	}
 
 	if (p_var_type_name == Variant::get_type_name(Variant::SIGNAL)) {
-		return "SignalInfo";
+		return "Signal";
 	}
 
 	Variant::Type var_types[] = {
@@ -2292,7 +2292,7 @@ bool CSharpScript::can_instantiate() const {
 	// For tool scripts, this will never fire if the class is not found. That's because we
 	// don't know if it's a tool script if we can't find the class to access the attributes.
 	if (extra_cond && !valid) {
-		ERR_FAIL_V_MSG(false, "Cannot instance script because the associated class could not be found. Script: '" + get_path() + "'.");
+		ERR_FAIL_V_MSG(false, "Cannot instance script because the associated class could not be found. Script: '" + get_path() + "'. Make sure the script exists and contains a class definition with a name that matches the filename of the script exactly (it's case-sensitive).");
 	}
 
 	return valid && extra_cond;

@@ -95,10 +95,11 @@ class GridMap : public Node3D {
 	 * A GridMap can have multiple Octants.
 	 */
 	struct Octant {
-		struct NavMesh {
+		struct NavigationCell {
 			RID region;
 			Transform3D xform;
-			RID navmesh_debug_instance;
+			RID navigation_mesh_debug_instance;
+			uint32_t navigation_layers = 1;
 		};
 
 		struct MultimeshInstance {
@@ -124,7 +125,7 @@ class GridMap : public Node3D {
 
 		bool dirty = false;
 		RID static_body;
-		HashMap<IndexKey, NavMesh> navmesh_ids;
+		HashMap<IndexKey, NavigationCell> navigation_cell_ids;
 	};
 
 	union OctantKey {
@@ -150,6 +151,7 @@ class GridMap : public Node3D {
 
 	uint32_t collision_layer = 1;
 	uint32_t collision_mask = 1;
+	real_t collision_priority = 1.0;
 	Ref<PhysicsMaterial> physics_material;
 	bool bake_navigation = false;
 	RID map_override;
@@ -185,7 +187,7 @@ class GridMap : public Node3D {
 		return Vector3(p_key.x, p_key.y, p_key.z) * cell_size * octant_size;
 	}
 
-	void _reset_physic_bodies_collision_filters();
+	void _update_physics_bodies_collision_properties();
 	void _octant_enter_world(const OctantKey &p_key);
 	void _octant_exit_world(const OctantKey &p_key);
 	bool _octant_update(const OctantKey &p_key);
@@ -240,6 +242,9 @@ public:
 	void set_collision_mask_value(int p_layer_number, bool p_value);
 	bool get_collision_mask_value(int p_layer_number) const;
 
+	void set_collision_priority(real_t p_priority);
+	real_t get_collision_priority() const;
+
 	void set_physics_material(Ref<PhysicsMaterial> p_material);
 	Ref<PhysicsMaterial> get_physics_material() const;
 
@@ -250,12 +255,6 @@ public:
 
 	void set_navigation_map(RID p_navigation_map);
 	RID get_navigation_map() const;
-
-	void set_navigation_layers(uint32_t p_navigation_layers);
-	uint32_t get_navigation_layers() const;
-
-	void set_navigation_layer_value(int p_layer_number, bool p_value);
-	bool get_navigation_layer_value(int p_layer_number) const;
 
 	void set_mesh_library(const Ref<MeshLibrary> &p_mesh_library);
 	Ref<MeshLibrary> get_mesh_library() const;

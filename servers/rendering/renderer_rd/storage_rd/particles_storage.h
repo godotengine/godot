@@ -313,15 +313,12 @@ private:
 		RID version;
 		bool uses_collision = false;
 
-		HashMap<StringName, ShaderLanguage::ShaderNode::Uniform> uniforms;
 		Vector<ShaderCompiler::GeneratedCode::Texture> texture_uniforms;
 
 		Vector<uint32_t> ubo_offsets;
 		uint32_t ubo_size = 0;
 
-		String path;
 		String code;
-		HashMap<StringName, HashMap<int, RID>> default_texture_params;
 
 		RID pipeline;
 
@@ -331,14 +328,8 @@ private:
 		uint32_t userdata_count = 0;
 
 		virtual void set_code(const String &p_Code);
-		virtual void set_path_hint(const String &p_hint);
-		virtual void set_default_texture_parameter(const StringName &p_name, RID p_texture, int p_index);
-		virtual void get_shader_uniform_list(List<PropertyInfo> *p_param_list) const;
-		virtual void get_instance_param_list(List<RendererMaterialStorage::InstanceShaderParam> *p_param_list) const;
-		virtual bool is_parameter_texture(const StringName &p_param) const;
 		virtual bool is_animated() const;
 		virtual bool casts_shadows() const;
-		virtual Variant get_default_parameter(const StringName &p_parameter) const;
 		virtual RS::ShaderNativeSourceCode get_native_source_code() const;
 
 		ParticlesShaderData() {}
@@ -464,6 +455,12 @@ public:
 		return particles->mode;
 	}
 
+	_FORCE_INLINE_ uint32_t particles_get_frame_counter(RID p_particles) {
+		Particles *particles = particles_owner.get_or_null(p_particles);
+		ERR_FAIL_COND_V(!particles, false);
+		return particles->frame_counter;
+	}
+
 	_FORCE_INLINE_ uint32_t particles_get_amount(RID p_particles, uint32_t &r_trail_divisor) {
 		Particles *particles = particles_owner.get_or_null(p_particles);
 		ERR_FAIL_COND_V(!particles, 0);
@@ -494,9 +491,8 @@ public:
 	_FORCE_INLINE_ RID particles_get_instance_buffer_uniform_set(RID p_particles, RID p_shader, uint32_t p_set) {
 		Particles *particles = particles_owner.get_or_null(p_particles);
 		ERR_FAIL_COND_V(!particles, RID());
-		if (particles->particles_transforms_buffer_uniform_set.is_null()) {
+		if (particles->particles_transforms_buffer_uniform_set.is_null() || !RD::get_singleton()->uniform_set_is_valid(particles->particles_transforms_buffer_uniform_set)) {
 			_particles_update_buffers(particles);
-
 			Vector<RD::Uniform> uniforms;
 
 			{

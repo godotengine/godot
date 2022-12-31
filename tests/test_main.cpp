@@ -30,6 +30,7 @@
 
 #include "test_main.h"
 
+#include "tests/core/config/test_project_settings.h"
 #include "tests/core/input/test_input_event_key.h"
 #include "tests/core/input/test_shortcut.h"
 #include "tests/core/io/test_config_file.h"
@@ -97,6 +98,7 @@
 #include "tests/scene/test_sprite_frames.h"
 #include "tests/scene/test_text_edit.h"
 #include "tests/scene/test_theme.h"
+#include "tests/scene/test_visual_shader.h"
 #include "tests/servers/test_text_server.h"
 #include "tests/test_validate_testing.h"
 

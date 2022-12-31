@@ -39,6 +39,8 @@ class VisualInstance3D : public Node3D {
 	RID base;
 	RID instance;
 	uint32_t layers = 1;
+	float sorting_offset = 0.0;
+	bool sorting_use_aabb_center = true;
 
 protected:
 	void _update_visibility();
@@ -66,6 +68,12 @@ public:
 
 	void set_layer_mask_value(int p_layer_number, bool p_enable);
 	bool get_layer_mask_value(int p_layer_number) const;
+
+	void set_sorting_offset(float p_offset);
+	float get_sorting_offset() const;
+
+	void set_sorting_use_aabb_center(bool p_enabled);
+	bool is_sorting_use_aabb_center() const;
 
 	VisualInstance3D();
 	~VisualInstance3D();
@@ -121,6 +129,7 @@ private:
 	mutable HashMap<StringName, StringName> instance_shader_parameter_property_remap;
 
 	float extra_cull_margin = 0.0;
+	AABB custom_aabb;
 	LightmapScale lightmap_scale = LIGHTMAP_SCALE_1X;
 	GIMode gi_mode = GI_MODE_STATIC;
 	bool ignore_occlusion_culling = false;
@@ -177,7 +186,8 @@ public:
 	void set_instance_shader_parameter(const StringName &p_name, const Variant &p_value);
 	Variant get_instance_shader_parameter(const StringName &p_name) const;
 
-	void set_custom_aabb(AABB aabb);
+	void set_custom_aabb(AABB p_aabb);
+	AABB get_custom_aabb() const;
 
 	void set_ignore_occlusion_culling(bool p_enabled);
 	bool is_ignoring_occlusion_culling();

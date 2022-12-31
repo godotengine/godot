@@ -109,6 +109,10 @@ public:
 		FORMAT_ETC2_RGB8A1,
 		FORMAT_ETC2_RA_AS_RG, //used to make basis universal happy
 		FORMAT_DXT5_RA_AS_RG, //used to make basis universal happy
+		FORMAT_ASTC_4x4,
+		FORMAT_ASTC_4x4_HDR,
+		FORMAT_ASTC_8x8,
+		FORMAT_ASTC_8x8_HDR,
 		FORMAT_MAX
 	};
 
@@ -134,6 +138,11 @@ public:
 	};
 	//some functions provided by something else
 
+	enum ASTCFormat {
+		ASTC_FORMAT_4x4,
+		ASTC_FORMAT_8x8,
+	};
+
 	static ImageMemLoadFunc _png_mem_loader_func;
 	static ImageMemLoadFunc _jpg_mem_loader_func;
 	static ImageMemLoadFunc _webp_mem_loader_func;
@@ -144,11 +153,13 @@ public:
 	static void (*_image_compress_bptc_func)(Image *, float p_lossy_quality, UsedChannels p_channels);
 	static void (*_image_compress_etc1_func)(Image *, float);
 	static void (*_image_compress_etc2_func)(Image *, float, UsedChannels p_channels);
+	static void (*_image_compress_astc_func)(Image *, float, ASTCFormat p_format);
 
 	static void (*_image_decompress_bc)(Image *);
 	static void (*_image_decompress_bptc)(Image *);
 	static void (*_image_decompress_etc1)(Image *);
 	static void (*_image_decompress_etc2)(Image *);
+	static void (*_image_decompress_astc)(Image *);
 
 	static Vector<uint8_t> (*webp_lossy_packer)(const Ref<Image> &p_image, float p_quality);
 	static Vector<uint8_t> (*webp_lossless_packer)(const Ref<Image> &p_image);
@@ -347,6 +358,7 @@ public:
 		COMPRESS_ETC,
 		COMPRESS_ETC2,
 		COMPRESS_BPTC,
+		COMPRESS_ASTC,
 		COMPRESS_MAX,
 	};
 	enum CompressSource {
@@ -356,8 +368,8 @@ public:
 		COMPRESS_SOURCE_MAX,
 	};
 
-	Error compress(CompressMode p_mode, CompressSource p_source = COMPRESS_SOURCE_GENERIC, float p_lossy_quality = 0.7);
-	Error compress_from_channels(CompressMode p_mode, UsedChannels p_channels, float p_lossy_quality = 0.7);
+	Error compress(CompressMode p_mode, CompressSource p_source = COMPRESS_SOURCE_GENERIC, float p_lossy_quality = 0.7, ASTCFormat p_astc_format = ASTC_FORMAT_4x4);
+	Error compress_from_channels(CompressMode p_mode, UsedChannels p_channels, float p_lossy_quality = 0.7, ASTCFormat p_astc_format = ASTC_FORMAT_4x4);
 	Error decompress();
 	bool is_compressed() const;
 
@@ -429,5 +441,6 @@ VARIANT_ENUM_CAST(Image::CompressSource)
 VARIANT_ENUM_CAST(Image::UsedChannels)
 VARIANT_ENUM_CAST(Image::AlphaMode)
 VARIANT_ENUM_CAST(Image::RoughnessChannel)
+VARIANT_ENUM_CAST(Image::ASTCFormat)
 
 #endif // IMAGE_H
