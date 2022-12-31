@@ -234,6 +234,7 @@ class EditorAssetLibrary : public PanelContainer {
 	static const char *sort_key[SORT_MAX];
 	static const char *sort_text[SORT_MAX];
 	static const char *support_key[SUPPORT_MAX];
+	static const char *support_text[SUPPORT_MAX];
 
 	///MainListing
 
