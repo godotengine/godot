@@ -1975,6 +1975,22 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 				if (to_duplicate.is_file) {
 					String name = to_duplicate.path.get_file();
 					duplicate_dialog->set_title(TTR("Duplicating file:") + " " + name);
+					// Add a number to the end of the file name if it already exists.
+					String base_name = name.get_basename();
+					const String ext = name.get_extension();
+					const int underscore_index = base_name.rfind("_");
+					int number = 1;
+					if (underscore_index != -1) {
+						const String last = base_name.substr(underscore_index + 1, base_name.length());
+						if (last.is_valid_int()) {
+							base_name = base_name.substr(0, underscore_index);
+							number = last.to_int();
+						}
+					}
+					while (FileAccess::exists(to_duplicate.path.get_base_dir().path_join(base_name + "_" + itos(number) + "." + ext))) {
+						number++;
+					}
+					name = base_name + "_" + itos(number) + "." + ext;
 					duplicate_dialog_text->set_text(name);
 					duplicate_dialog_text->select(0, name.rfind("."));
 				} else {
