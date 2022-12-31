@@ -1842,6 +1842,29 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			}
 		} break;
 
+		case FILE_NEW_MATERIAL_FROM_SHADER: {
+			// Create a new shader material from the selected shader resource.
+			if (p_selected.size() == 1) {
+				const String &p_file = p_selected[0];
+				Ref<ShaderMaterial> shader_material = Ref<ShaderMaterial>(memnew(ShaderMaterial));
+				shader_material->set_shader(Ref<Shader>(ResourceLoader::load(p_file)));
+				// Add number suffix to the file name if it already exists.
+				const String base_name = p_file.get_file().get_basename() + "_material";
+				const String ext = "tres";
+				String material_path = p_file.get_base_dir().path_join(base_name + "." + ext);
+				int number = 1;
+				while (FileAccess::exists(material_path)) {
+					material_path = p_file.get_base_dir().path_join(base_name + "_" + itos(number) + "." + ext);
+					number++;
+				}
+				Error err = ResourceSaver::save(shader_material, material_path);
+				if (err != OK) {
+					EditorNode::get_singleton()->show_warning(TTR("Could not save shader material!"), TTR("New Shader Material"));
+					return;
+				}
+			}
+		} break;
+
 		case FILE_MAIN_SCENE: {
 			// Set as main scene with selected scene file.
 			if (p_selected.size() == 1) {
@@ -2502,6 +2525,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 	bool all_folders = true;
 	bool all_favorites = true;
 	bool all_not_favorites = true;
+	bool all_files_shaders = true;
 
 	for (int i = 0; i < p_paths.size(); i++) {
 		String fpath = p_paths[i];
@@ -2511,7 +2535,11 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 		} else {
 			filenames.push_back(fpath);
 			all_folders = false;
-			all_files_scenes &= (EditorFileSystem::get_singleton()->get_file_type(fpath) == "PackedScene");
+			const String file_type = EditorFileSystem::get_singleton()->get_file_type(fpath);
+			const bool is_scene = file_type == "PackedScene";
+			const bool is_shader = file_type == "Shader" || file_type == "VisualShader";
+			all_files_scenes &= is_scene;
+			all_files_shaders &= is_shader;
 		}
 
 		// Check if in favorites.
@@ -2542,6 +2570,12 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 			}
 			p_popup->add_icon_item(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")), TTR("Instantiate"), FILE_INSTANTIATE);
 			p_popup->add_separator();
+		} else if (all_files_shaders) {
+			if (filenames.size() == 1) {
+				p_popup->add_icon_item(get_theme_icon(SNAME("Load"), SNAME("EditorIcons")), TTR("Open Shader"), FILE_OPEN);
+				p_popup->add_icon_item(get_theme_icon(SNAME("ShaderMaterial"), SNAME("EditorIcons")), TTR("New Material From Shader"), FILE_NEW_MATERIAL_FROM_SHADER);
+				p_popup->add_separator();
+			}
 		} else if (filenames.size() == 1) {
 			p_popup->add_icon_item(get_theme_icon(SNAME("Load"), SNAME("EditorIcons")), TTR("Open"), FILE_OPEN);
 			p_popup->add_separator();
