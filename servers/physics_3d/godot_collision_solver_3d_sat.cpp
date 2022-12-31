@@ -783,50 +783,36 @@ static void _collision_sphere_box(const GodotShape3D *p_a, const Transform3D &p_
 	const GodotSphereShape3D *sphere_A = static_cast<const GodotSphereShape3D *>(p_a);
 	const GodotBoxShape3D *box_B = static_cast<const GodotBoxShape3D *>(p_b);
 
-	SeparatorAxisTest<GodotSphereShape3D, GodotBoxShape3D, withMargin> separator(sphere_A, p_transform_a, box_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
+	// Find the point on the box nearest to the center of the sphere.
 
-	if (!separator.test_previous_axis()) {
+	Vector3 center = p_transform_b.xform_inv(p_transform_a.origin);
+	Vector3 extents = box_B->get_half_extents();
+	Vector3 nearest(MIN(MAX(center.x, -extents.x), extents.x),
+			MIN(MAX(center.y, -extents.y), extents.y),
+			MIN(MAX(center.z, -extents.z), extents.z));
+	nearest = p_transform_b.xform(nearest);
+
+	// See if it is inside the sphere.
+
+	Vector3 delta = nearest - p_transform_a.origin;
+	real_t length = delta.length();
+	if (length > sphere_A->get_radius() + p_margin_a + p_margin_b) {
 		return;
 	}
-
-	// test faces
-
-	for (int i = 0; i < 3; i++) {
-		Vector3 axis = p_transform_b.basis.get_column(i).normalized();
-
-		if (!separator.test_axis(axis)) {
-			return;
-		}
-	}
-
-	// calculate closest point to sphere
-
-	Vector3 cnormal = p_transform_b.xform_inv(p_transform_a.origin);
-
-	Vector3 cpoint = p_transform_b.xform(Vector3(
-
-			(cnormal.x < 0) ? -box_B->get_half_extents().x : box_B->get_half_extents().x,
-			(cnormal.y < 0) ? -box_B->get_half_extents().y : box_B->get_half_extents().y,
-			(cnormal.z < 0) ? -box_B->get_half_extents().z : box_B->get_half_extents().z));
-
-	// use point to test axis
-	Vector3 point_axis = (p_transform_a.origin - cpoint).normalized();
-
-	if (!separator.test_axis(point_axis)) {
+	p_collector->collided = true;
+	if (!p_collector->callback) {
 		return;
 	}
-
-	// test edges
-
-	for (int i = 0; i < 3; i++) {
-		Vector3 axis = point_axis.cross(p_transform_b.basis.get_column(i)).cross(p_transform_b.basis.get_column(i)).normalized();
-
-		if (!separator.test_axis(axis)) {
-			return;
-		}
+	Vector3 axis;
+	if (length == 0) {
+		// The box passes through the sphere center.  Select an axis based on the box's center.
+		axis = (p_transform_b.origin - nearest).normalized();
+	} else {
+		axis = delta / length;
 	}
-
-	separator.generate_contacts();
+	Vector3 point_a = p_transform_a.origin + (sphere_A->get_radius() + p_margin_a) * axis;
+	Vector3 point_b = (withMargin ? nearest + p_margin_b * axis : nearest);
+	p_collector->call(point_a, point_b);
 }
 
 template <bool withMargin>
@@ -872,62 +858,51 @@ static void _collision_sphere_capsule(const GodotShape3D *p_a, const Transform3D
 }
 
 template <bool withMargin>
+static void analytic_sphere_cylinder_collision(real_t p_radius_a, real_t p_radius_b, real_t p_height_b, const Transform3D &p_transform_a, const Transform3D &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
+	// Find the point on the cylinder nearest to the center of the sphere.
+
+	Vector3 center = p_transform_b.xform_inv(p_transform_a.origin);
+	Vector3 nearest = center;
+	real_t radius = p_radius_b;
+	real_t r = Math::sqrt(center.x * center.x + center.z * center.z);
+	if (r > radius) {
+		real_t scale = radius / r;
+		nearest.x *= scale;
+		nearest.z *= scale;
+	}
+	real_t half_height = p_height_b / 2;
+	nearest.y = MIN(MAX(center.y, -half_height), half_height);
+	nearest = p_transform_b.xform(nearest);
+
+	// See if it is inside the sphere.
+
+	Vector3 delta = nearest - p_transform_a.origin;
+	real_t length = delta.length();
+	if (length > p_radius_a + p_margin_a + p_margin_b) {
+		return;
+	}
+	p_collector->collided = true;
+	if (!p_collector->callback) {
+		return;
+	}
+	Vector3 axis;
+	if (length == 0) {
+		// The cylinder passes through the sphere center.  Select an axis based on the cylinder's center.
+		axis = (p_transform_b.origin - nearest).normalized();
+	} else {
+		axis = delta / length;
+	}
+	Vector3 point_a = p_transform_a.origin + (p_radius_a + p_margin_a) * axis;
+	Vector3 point_b = (withMargin ? nearest + p_margin_b * axis : nearest);
+	p_collector->call(point_a, point_b);
+}
+
+template <bool withMargin>
 static void _collision_sphere_cylinder(const GodotShape3D *p_a, const Transform3D &p_transform_a, const GodotShape3D *p_b, const Transform3D &p_transform_b, _CollectorCallback *p_collector, real_t p_margin_a, real_t p_margin_b) {
 	const GodotSphereShape3D *sphere_A = static_cast<const GodotSphereShape3D *>(p_a);
 	const GodotCylinderShape3D *cylinder_B = static_cast<const GodotCylinderShape3D *>(p_b);
 
-	SeparatorAxisTest<GodotSphereShape3D, GodotCylinderShape3D, withMargin> separator(sphere_A, p_transform_a, cylinder_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
-
-	if (!separator.test_previous_axis()) {
-		return;
-	}
-
-	// Cylinder B end caps.
-	Vector3 cylinder_B_axis = p_transform_b.basis.get_column(1).normalized();
-	if (!separator.test_axis(cylinder_B_axis)) {
-		return;
-	}
-
-	Vector3 cylinder_diff = p_transform_b.origin - p_transform_a.origin;
-
-	// Cylinder B lateral surface.
-	if (!separator.test_axis(cylinder_B_axis.cross(cylinder_diff).cross(cylinder_B_axis).normalized())) {
-		return;
-	}
-
-	// Closest point to cylinder caps.
-	const Vector3 &sphere_center = p_transform_a.origin;
-	Vector3 cyl_axis = p_transform_b.basis.get_column(1);
-	Vector3 cap_axis = p_transform_b.basis.get_column(0);
-	real_t height_scale = cyl_axis.length();
-	real_t cap_dist = cylinder_B->get_height() * 0.5 * height_scale;
-	cyl_axis /= height_scale;
-	real_t radius_scale = cap_axis.length();
-	real_t cap_radius = cylinder_B->get_radius() * radius_scale;
-
-	for (int i = 0; i < 2; i++) {
-		Vector3 cap_dir = ((i == 0) ? cyl_axis : -cyl_axis);
-		Vector3 cap_pos = p_transform_b.origin + cap_dir * cap_dist;
-
-		Vector3 closest_point;
-
-		Vector3 diff = sphere_center - cap_pos;
-		Vector3 proj = diff - cap_dir.dot(diff) * cap_dir;
-
-		real_t proj_len = proj.length();
-		if (Math::is_zero_approx(proj_len)) {
-			// Point is equidistant to all circle points.
-			continue;
-		}
-
-		closest_point = cap_pos + (cap_radius / proj_len) * proj;
-
-		if (!separator.test_axis((closest_point - sphere_center).normalized())) {
-			return;
-		}
-	}
-
-	separator.generate_contacts();
+	analytic_sphere_cylinder_collision<withMargin>(sphere_A->get_radius(), cylinder_B->get_radius(), cylinder_B->get_height(), p_transform_a, p_transform_b, p_collector, p_margin_a, p_margin_b);
 }
 
 template <bool withMargin>
@@ -1679,61 +1654,24 @@ static void _collision_capsule_cylinder(const GodotShape3D *p_a, const Transform
 	const GodotCapsuleShape3D *capsule_A = static_cast<const GodotCapsuleShape3D *>(p_a);
 	const GodotCylinderShape3D *cylinder_B = static_cast<const GodotCylinderShape3D *>(p_b);
 
-	SeparatorAxisTest<GodotCapsuleShape3D, GodotCylinderShape3D, withMargin> separator(capsule_A, p_transform_a, cylinder_B, p_transform_b, p_collector, p_margin_a, p_margin_b);
+	// Find the closest points between the axes of the two objects.
 
-	if (!separator.test_previous_axis()) {
-		return;
-	}
+	Vector3 capsule_A_closest;
+	Vector3 cylinder_B_closest;
+	Vector3 capsule_A_axis = p_transform_a.basis.get_column(1) * (capsule_A->get_height() * 0.5 - capsule_A->get_radius());
+	Vector3 cylinder_B_axis = p_transform_b.basis.get_column(1) * (cylinder_B->get_height() * 0.5);
+	Geometry3D::get_closest_points_between_segments(
+			p_transform_a.origin + capsule_A_axis,
+			p_transform_a.origin - capsule_A_axis,
+			p_transform_b.origin + cylinder_B_axis,
+			p_transform_b.origin - cylinder_B_axis,
+			capsule_A_closest,
+			cylinder_B_closest);
 
-	// Cylinder B end caps.
-	Vector3 cylinder_B_axis = p_transform_b.basis.get_column(1).normalized();
-	if (!separator.test_axis(cylinder_B_axis)) {
-		return;
-	}
+	// Perform the collision test between the cylinder and the nearest sphere on the capsule axis.
 
-	// Cylinder edge against capsule balls.
-
-	Vector3 capsule_A_axis = p_transform_a.basis.get_column(1);
-
-	Vector3 capsule_A_ball_1 = p_transform_a.origin + capsule_A_axis * (capsule_A->get_height() * 0.5 - capsule_A->get_radius());
-	Vector3 capsule_A_ball_2 = p_transform_a.origin - capsule_A_axis * (capsule_A->get_height() * 0.5 - capsule_A->get_radius());
-
-	if (!separator.test_axis((p_transform_b.origin - capsule_A_ball_1).cross(cylinder_B_axis).cross(cylinder_B_axis).normalized())) {
-		return;
-	}
-
-	if (!separator.test_axis((p_transform_b.origin - capsule_A_ball_2).cross(cylinder_B_axis).cross(cylinder_B_axis).normalized())) {
-		return;
-	}
-
-	// Cylinder edge against capsule edge.
-
-	Vector3 center_diff = p_transform_b.origin - p_transform_a.origin;
-
-	if (!separator.test_axis(capsule_A_axis.cross(center_diff).cross(capsule_A_axis).normalized())) {
-		return;
-	}
-
-	if (!separator.test_axis(cylinder_B_axis.cross(center_diff).cross(cylinder_B_axis).normalized())) {
-		return;
-	}
-
-	real_t proj = capsule_A_axis.cross(cylinder_B_axis).cross(cylinder_B_axis).dot(capsule_A_axis);
-	if (Math::is_zero_approx(proj)) {
-		// Parallel capsule and cylinder axes, handle with specific axes only.
-		// Note: GJKEPA with no margin can lead to degenerate cases in this situation.
-		separator.generate_contacts();
-		return;
-	}
-
-	GodotCollisionSolver3D::CallbackResult callback = SeparatorAxisTest<GodotCapsuleShape3D, GodotCylinderShape3D, withMargin>::test_contact_points;
-
-	// Fallback to generic algorithm to find the best separating axis.
-	if (!fallback_collision_solver(p_a, p_transform_a, p_b, p_transform_b, callback, &separator, false, p_margin_a, p_margin_b)) {
-		return;
-	}
-
-	separator.generate_contacts();
+	Transform3D sphere_transform(p_transform_a.basis, capsule_A_closest);
+	analytic_sphere_cylinder_collision<withMargin>(capsule_A->get_radius(), cylinder_B->get_radius(), cylinder_B->get_height(), sphere_transform, p_transform_b, p_collector, p_margin_a, p_margin_b);
 }
 
 template <bool withMargin>
