@@ -208,6 +208,8 @@ private:
 	Variant final_val;
 	Variant delta_val;
 
+	Ref<RefCounted> ref_copy; // Makes sure that RefCounted objects are not freed too early.
+
 	double duration = 0;
 	Tween::TransitionType trans_type = Tween::TRANS_MAX; // This is set inside set_tween();
 	Tween::EaseType ease_type = Tween::EASE_MAX;
@@ -249,6 +251,8 @@ protected:
 private:
 	Callable callback;
 	double delay = 0;
+
+	Ref<RefCounted> ref_copy;
 };
 
 class MethodTweener : public Tweener {
@@ -280,6 +284,8 @@ private:
 	Variant delta_val;
 	Variant final_val;
 	Callable callback;
+
+	Ref<RefCounted> ref_copy;
 };
 
 #endif // TWEEN_H
