@@ -262,8 +262,8 @@ private:
 
 	// -- Misc --
 	void _auto_create_tiles(Vector<Ref<TileSetAtlasSource>> const &new_tile_set_atlas_sources);
-	void _auto_create_tiles();
-	void _auto_create_tiles_cancel();
+	void _confirm_auto_create_tiles();
+	void _cancel_auto_create_tiles();
 	void _auto_remove_tiles();
 	AcceptDialog *confirm_auto_create_tiles = nullptr;
 

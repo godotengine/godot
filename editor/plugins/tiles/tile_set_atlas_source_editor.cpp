@@ -2207,12 +2207,12 @@ void TileSetAtlasSourceEditor::init_source(Vector<Ref<TileSetAtlasSource>> newSo
 	confirm_auto_create_tiles->popup_centered();
 }
 
-void TileSetAtlasSourceEditor::_auto_create_tiles() {
+void TileSetAtlasSourceEditor::_confirm_auto_create_tiles() {
 	_auto_create_tiles(pendingAtlases);
 	pendingAtlases.clear();
 }
 
-void TileSetAtlasSourceEditor::_auto_create_tiles_cancel() {
+void TileSetAtlasSourceEditor::_cancel_auto_create_tiles() {
 	pendingAtlases.clear();
 }
 
@@ -2584,8 +2584,8 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	confirm_auto_create_tiles->set_title(TTR("Auto Create Tiles in Non-Transparent Texture Regions?"));
 	confirm_auto_create_tiles->set_ok_button_text(TTR("Yes"));
 	confirm_auto_create_tiles->add_cancel_button()->set_text(TTR("No"));
-	confirm_auto_create_tiles->connect("confirmed", callable_mp(this, &TileSetAtlasSourceEditor::_auto_create_tiles));
-	confirm_auto_create_tiles->connect("cancelled", callable_mp(this, &TileSetAtlasSourceEditor::_auto_create_tiles_cancel));
+	confirm_auto_create_tiles->connect("confirmed", callable_mp(this, &TileSetAtlasSourceEditor::_confirm_auto_create_tiles));
+	confirm_auto_create_tiles->connect("cancelled", callable_mp(this, &TileSetAtlasSourceEditor::_cancel_auto_create_tiles));
 	add_child(confirm_auto_create_tiles);
 
 	// Inspector plugin.
