@@ -2026,6 +2026,10 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			make_script_dialog->popup_centered();
 		} break;
 
+		case FILE_NEW_MATERIAL_FROM_SHADER: {
+			break;
+		}
+
 		case FILE_COPY_PATH: {
 			if (!p_selected.is_empty()) {
 				String fpath = p_selected[0];
@@ -2549,7 +2553,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 			p_popup->add_separator();
 		} else if (all_files_shaders) {
 			p_popup->add_icon_item(get_theme_icon(SNAME("Load"), SNAME("EditorIcons")), TTR("Open"), FILE_OPEN);
-			p_popup->add_icon_item(get_theme_icon(SNAME("ShaderMaterial"), SNAME("EditorIcons")), TTR("New Material From Shader"), FILE_INHERIT);
+			p_popup->add_icon_item(get_theme_icon(SNAME("ShaderMaterial"), SNAME("EditorIcons")), TTR("New Material From Shader"), FILE_NEW_MATERIAL_FROM_SHADER);
 			p_popup->add_separator();
 		} else if (filenames.size() == 1) {
 			p_popup->add_icon_item(get_theme_icon(SNAME("Load"), SNAME("EditorIcons")), TTR("Open"), FILE_OPEN);
