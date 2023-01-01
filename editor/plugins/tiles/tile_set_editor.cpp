@@ -55,9 +55,9 @@ void TileSetEditor::_drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 	if (p_from == sources_list) {
 		// Handle dropping a texture in the list of atlas resources.
 		int source_id = TileSet::INVALID_SOURCE;
-		int added = 0;
 		Dictionary d = p_data;
 		Vector<String> files = d["files"];
+		Vector<Ref<TileSetAtlasSource>> newSources;
 		for (int i = 0; i < files.size(); i++) {
 			Ref<Texture2D> resource = ResourceLoader::load(files[i]);
 			if (resource.is_valid()) {
@@ -66,6 +66,7 @@ void TileSetEditor::_drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 
 				// Actually create the new source.
 				Ref<TileSetAtlasSource> atlas_source = memnew(TileSetAtlasSource);
+				newSources.append(atlas_source);
 				atlas_source->set_texture(resource);
 				Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 				undo_redo->create_action(TTR("Add a new atlas source"));
@@ -73,13 +74,10 @@ void TileSetEditor::_drop_data_fw(const Point2 &p_point, const Variant &p_data, 
 				undo_redo->add_do_method(*atlas_source, "set_texture_region_size", tile_set->get_tile_size());
 				undo_redo->add_undo_method(*tile_set, "remove_source", source_id);
 				undo_redo->commit_action();
-				added += 1;
 			}
 		}
 
-		if (added == 1) {
-			tile_set_atlas_source_editor->init_source();
-		}
+		tile_set_atlas_source_editor->init_source(newSources);
 
 		// Update the selected source (thus triggering an update).
 		_update_sources_list(source_id);

@@ -119,6 +119,8 @@ private:
 
 	bool tile_set_changed_needs_update = false;
 
+	Vector<Ref<TileSetAtlasSource>> pendingAtlases;
+
 	// -- Properties painting --
 	ScrollContainer *tile_data_editors_scroll = nullptr;
 	VBoxContainer *tile_data_painting_editor_container = nullptr;
@@ -259,7 +261,9 @@ private:
 	void _unhandled_key_input(const Ref<InputEvent> &p_event);
 
 	// -- Misc --
+	void _auto_create_tiles(Vector<Ref<TileSetAtlasSource>> const &new_tile_set_atlas_sources);
 	void _auto_create_tiles();
+	void _auto_create_tiles_cancel();
 	void _auto_remove_tiles();
 	AcceptDialog *confirm_auto_create_tiles = nullptr;
 
@@ -275,7 +279,7 @@ protected:
 
 public:
 	void edit(Ref<TileSet> p_tile_set, TileSetAtlasSource *p_tile_set_source, int p_source_id);
-	void init_source();
+	void init_source(Vector<Ref<TileSetAtlasSource>> newSources);
 
 	TileSetAtlasSourceEditor();
 	~TileSetAtlasSourceEditor();

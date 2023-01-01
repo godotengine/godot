@@ -1648,7 +1648,9 @@ void TileSetAtlasSourceEditor::_menu_option(int p_option) {
 			_update_tile_id_label();
 		} break;
 		case ADVANCED_AUTO_CREATE_TILES: {
-			_auto_create_tiles();
+			if (tile_set_atlas_source != nullptr) {
+				_auto_create_tiles(Vector<Ref<TileSetAtlasSource>>{ tile_set_atlas_source });
+			}
 		} break;
 		case ADVANCED_AUTO_REMOVE_TILES: {
 			_auto_remove_tiles();
@@ -2195,53 +2197,63 @@ void TileSetAtlasSourceEditor::edit(Ref<TileSet> p_tile_set, TileSetAtlasSource 
 	_update_current_tile_data_editor();
 }
 
-void TileSetAtlasSourceEditor::init_source() {
+void TileSetAtlasSourceEditor::init_source(Vector<Ref<TileSetAtlasSource>> newSources) {
+	pendingAtlases = newSources;
 	confirm_auto_create_tiles->popup_centered();
 }
 
 void TileSetAtlasSourceEditor::_auto_create_tiles() {
-	if (!tile_set_atlas_source) {
-		return;
-	}
+	_auto_create_tiles(pendingAtlases);
+	pendingAtlases.clear();
+}
 
-	Ref<Texture2D> texture = tile_set_atlas_source->get_texture();
-	if (texture.is_valid()) {
-		Vector2i margins = tile_set_atlas_source->get_margins();
-		Vector2i separation = tile_set_atlas_source->get_separation();
-		Vector2i texture_region_size = tile_set_atlas_source->get_texture_region_size();
-		Size2i grid_size = tile_set_atlas_source->get_atlas_grid_size();
-		Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
-		undo_redo->create_action(TTR("Create tiles in non-transparent texture regions"));
-		for (int y = 0; y < grid_size.y; y++) {
-			for (int x = 0; x < grid_size.x; x++) {
-				// Check if we have a tile at the coord
-				Vector2i coords = Vector2i(x, y);
-				if (tile_set_atlas_source->get_tile_at_coords(coords) == TileSetSource::INVALID_ATLAS_COORDS) {
-					// Check if the texture is empty at the given coords.
-					Rect2i region = Rect2i(margins + (coords * (texture_region_size + separation)), texture_region_size);
-					bool is_opaque = false;
-					for (int region_x = region.get_position().x; region_x < region.get_end().x; region_x++) {
-						for (int region_y = region.get_position().y; region_y < region.get_end().y; region_y++) {
-							if (texture->is_pixel_opaque(region_x, region_y)) {
-								is_opaque = true;
+void TileSetAtlasSourceEditor::_auto_create_tiles_cancel() {
+	pendingAtlases.clear();
+}
+
+void TileSetAtlasSourceEditor::_auto_create_tiles(Vector<Ref<TileSetAtlasSource>> const &new_tile_set_atlas_sources) {
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	undo_redo->create_action(TTR("Create tiles in non-transparent texture regions"));
+
+	for (Ref<TileSetAtlasSource> tileset : new_tile_set_atlas_sources) {
+		Ref<Texture2D> texture = tileset->get_texture();
+		if (texture.is_valid()) {
+			Vector2i margins = tileset->get_margins();
+			Vector2i separation = tileset->get_separation();
+			Vector2i texture_region_size = tileset->get_texture_region_size();
+			Size2i grid_size = tileset->get_atlas_grid_size();
+
+			for (int y = 0; y < grid_size.y; y++) {
+				for (int x = 0; x < grid_size.x; x++) {
+					// Check if we have a tile at the coord
+					Vector2i coords = Vector2i(x, y);
+					if (tileset->get_tile_at_coords(coords) == TileSetSource::INVALID_ATLAS_COORDS) {
+						// Check if the texture is empty at the given coords.
+						Rect2i region = Rect2i(margins + (coords * (texture_region_size + separation)), texture_region_size);
+						bool is_opaque = false;
+						for (int region_x = region.get_position().x; region_x < region.get_end().x; region_x++) {
+							for (int region_y = region.get_position().y; region_y < region.get_end().y; region_y++) {
+								if (texture->is_pixel_opaque(region_x, region_y)) {
+									is_opaque = true;
+									break;
+								}
+							}
+							if (is_opaque) {
 								break;
 							}
 						}
-						if (is_opaque) {
-							break;
-						}
-					}
 
-					// If we do have opaque pixels, create a tile.
-					if (is_opaque) {
-						undo_redo->add_do_method(tile_set_atlas_source, "create_tile", coords);
-						undo_redo->add_undo_method(tile_set_atlas_source, "remove_tile", coords);
+						// If we do have opaque pixels, create a tile.
+						if (is_opaque) {
+							undo_redo->add_do_method(*tileset, "create_tile", coords);
+							undo_redo->add_undo_method(*tileset, "remove_tile", coords);
+						}
 					}
 				}
 			}
 		}
-		undo_redo->commit_action();
 	}
+	undo_redo->commit_action();
 }
 
 void TileSetAtlasSourceEditor::_auto_remove_tiles() {
@@ -2569,6 +2581,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	confirm_auto_create_tiles->set_ok_button_text(TTR("Yes"));
 	confirm_auto_create_tiles->add_cancel_button()->set_text(TTR("No"));
 	confirm_auto_create_tiles->connect("confirmed", callable_mp(this, &TileSetAtlasSourceEditor::_auto_create_tiles));
+	confirm_auto_create_tiles->connect("cancelled", callable_mp(this, &TileSetAtlasSourceEditor::_auto_create_tiles_cancel));
 	add_child(confirm_auto_create_tiles);
 
 	// Inspector plugin.
