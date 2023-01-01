@@ -219,6 +219,7 @@ PluginConfigDialog::PluginConfigDialog() {
 
 	GridContainer *grid = memnew(GridContainer);
 	grid->set_columns(3);
+	grid->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	vbox->add_child(grid);
 
 	// Plugin Name
@@ -265,6 +266,8 @@ PluginConfigDialog::PluginConfigDialog() {
 	desc_edit = memnew(TextEdit);
 	desc_edit->set_custom_minimum_size(Size2(400, 80) * EDSCALE);
 	desc_edit->set_line_wrapping_mode(TextEdit::LineWrappingMode::LINE_WRAPPING_BOUNDARY);
+	desc_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	desc_edit->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	grid->add_child(desc_edit);
 
 	// Author
