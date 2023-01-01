@@ -865,7 +865,7 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 	int hand_tracking_frequency_index = p_preset->get("xr_features/hand_tracking_frequency");
 
 	bool backup_allowed = p_preset->get("user_data_backup/allow");
-	bool classify_as_game = p_preset->get("package/classify_as_game");
+	int app_category = p_preset->get("package/app_category");
 	bool retain_data_on_uninstall = p_preset->get("package/retain_data_on_uninstall");
 	bool exclude_from_recents = p_preset->get("package/exclude_from_recents");
 	bool is_resizeable = bool(GLOBAL_GET("display/window/size/resizable"));
@@ -964,8 +964,12 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 						encode_uint32(backup_allowed, &p_manifest.write[iofs + 16]);
 					}
 
+					if (tname == "application" && attrname == "appCategory") {
+						encode_uint32(_get_app_category_value(app_category), &p_manifest.write[iofs + 16]);
+					}
+
 					if (tname == "application" && attrname == "isGame") {
-						encode_uint32(classify_as_game, &p_manifest.write[iofs + 16]);
+						encode_uint32(app_category == APP_CATEGORY_GAME, &p_manifest.write[iofs + 16]);
 					}
 
 					if (tname == "application" && attrname == "hasFragileUserData") {
@@ -1727,7 +1731,7 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "package/unique_name", PROPERTY_HINT_PLACEHOLDER_TEXT, "ext.domain.name"), "org.godotengine.$genname"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "package/name", PROPERTY_HINT_PLACEHOLDER_TEXT, "Game Name [default if blank]"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "package/signed"), true));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "package/classify_as_game"), true));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "package/app_category", PROPERTY_HINT_ENUM, "Accessibility,Audio,Game,Image,Maps,News,Productivity,Social,Video"), APP_CATEGORY_GAME));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "package/retain_data_on_uninstall"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "package/exclude_from_recents"), false));
 
