@@ -2199,6 +2199,11 @@ void TileSetAtlasSourceEditor::edit(Ref<TileSet> p_tile_set, TileSetAtlasSource 
 
 void TileSetAtlasSourceEditor::init_source(Vector<Ref<TileSetAtlasSource>> newSources) {
 	pendingAtlases = newSources;
+	if (newSources.size() == 1) {
+		confirm_auto_create_tiles->set_text(TTR("Would you like to automatically create tiles for the newly added atlas?"));
+	} else {
+		confirm_auto_create_tiles->set_text(TTR("Would you like to automatically create for every new atlas?"));
+	}
 	confirm_auto_create_tiles->popup_centered();
 }
 
@@ -2577,7 +2582,6 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	// -- Dialogs --
 	confirm_auto_create_tiles = memnew(AcceptDialog);
 	confirm_auto_create_tiles->set_title(TTR("Auto Create Tiles in Non-Transparent Texture Regions?"));
-	confirm_auto_create_tiles->set_text(TTR("The atlas's texture was modified.\nWould you like to automatically create tiles in the atlas?"));
 	confirm_auto_create_tiles->set_ok_button_text(TTR("Yes"));
 	confirm_auto_create_tiles->add_cancel_button()->set_text(TTR("No"));
 	confirm_auto_create_tiles->connect("confirmed", callable_mp(this, &TileSetAtlasSourceEditor::_auto_create_tiles));
