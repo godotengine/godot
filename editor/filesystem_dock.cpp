@@ -2027,6 +2027,22 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 		} break;
 
 		case FILE_NEW_MATERIAL_FROM_SHADER: {
+			Variant new_material_v = ClassDB::instantiate("ShaderMaterial");
+			EditorNode::get_editor_data().instantiate_object_properties(new_material_v);
+
+			ShaderMaterial *new_material = Object::cast_to<ShaderMaterial>(new_material_v);
+
+			Ref<Resource> shader_res = ResourceLoader::load(p_selected[0]);
+			Shader *shader = Object::cast_to<Shader>(*shader_res);
+
+			ERR_FAIL_COND(!shader);
+			new_material->set_shader(shader);
+
+			String fpath = p_selected[0].get_base_dir();
+			Resource *new_material_res = Object::cast_to<Resource>(new_material);
+			EditorNode::get_singleton()->push_item(new_material_res);
+			EditorNode::get_singleton()->save_resource_as(Ref<Resource>(new_material_res), fpath);
+
 			break;
 		}
 
