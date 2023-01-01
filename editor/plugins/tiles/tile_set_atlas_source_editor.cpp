@@ -2197,7 +2197,7 @@ void TileSetAtlasSourceEditor::edit(Ref<TileSet> p_tile_set, TileSetAtlasSource 
 	_update_current_tile_data_editor();
 }
 
-void TileSetAtlasSourceEditor::init_source(Vector<Ref<TileSetAtlasSource>> newSources) {
+void TileSetAtlasSourceEditor::init_sources(Vector<Ref<TileSetAtlasSource>> newSources) {
 	pendingAtlases = newSources;
 	if (newSources.size() == 1) {
 		confirm_auto_create_tiles->set_text(TTR("Would you like to automatically create tiles for the newly added atlas?"));
