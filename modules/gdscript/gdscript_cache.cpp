@@ -298,13 +298,7 @@ Ref<GDScript> GDScriptCache::get_full_script(const String &p_path, Error &r_erro
 	singleton->full_gdscript_cache[p_path] = script;
 	singleton->shallow_gdscript_cache.erase(p_path);
 
-	r_error = script->reload(true);
-	if (r_error) {
-		singleton->shallow_gdscript_cache[p_path] = script;
-		singleton->full_gdscript_cache.erase(p_path);
-		return script;
-	}
-
+	script->reload(true);
 	return script;
 }
 
