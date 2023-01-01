@@ -2499,6 +2499,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 
 	bool all_files = true;
 	bool all_files_scenes = true;
+	bool all_files_shaders = true;
 	bool all_folders = true;
 	bool all_favorites = true;
 	bool all_not_favorites = true;
@@ -2511,7 +2512,11 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 		} else {
 			filenames.push_back(fpath);
 			all_folders = false;
-			all_files_scenes &= (EditorFileSystem::get_singleton()->get_file_type(fpath) == "PackedScene");
+			const String file_type = EditorFileSystem::get_singleton()->get_file_type(fpath);
+			const bool is_scene = file_type == "PackedScene";
+			const bool is_shader = file_type == "Shader" || file_type == "VisualShader";
+			all_files_scenes &= is_scene;		
+			all_files_shaders &= is_shader;
 		}
 
 		// Check if in favorites.
@@ -2541,6 +2546,10 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 				p_popup->add_icon_item(get_theme_icon(SNAME("Load"), SNAME("EditorIcons")), TTR("Open Scenes"), FILE_OPEN);
 			}
 			p_popup->add_icon_item(get_theme_icon(SNAME("Instance"), SNAME("EditorIcons")), TTR("Instantiate"), FILE_INSTANTIATE);
+			p_popup->add_separator();
+		} else if (all_files_shaders) {
+			p_popup->add_icon_item(get_theme_icon(SNAME("Load"), SNAME("EditorIcons")), TTR("Open"), FILE_OPEN);
+			p_popup->add_icon_item(get_theme_icon(SNAME("ShaderMaterial"), SNAME("EditorIcons")), TTR("New Material From Shader"), FILE_INHERIT);
 			p_popup->add_separator();
 		} else if (filenames.size() == 1) {
 			p_popup->add_icon_item(get_theme_icon(SNAME("Load"), SNAME("EditorIcons")), TTR("Open"), FILE_OPEN);
