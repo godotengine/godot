@@ -2000,6 +2000,12 @@ void GDScriptAnalyzer::resolve_parameter(GDScriptParser::ParameterNode *p_parame
 	if (p_parameter->default_value != nullptr) {
 		reduce_expression(p_parameter->default_value);
 		result = p_parameter->default_value->get_datatype();
+
+		// We can assume nothing from a parameter whose default value is null.
+		if (p_parameter->default_value->is_constant && p_parameter->default_value->reduced_value.get_type() == Variant::NIL) {
+			result.kind = GDScriptParser::DataType::VARIANT;
+		}
+
 		if (p_parameter->infer_datatype) {
 			result.type_source = GDScriptParser::DataType::ANNOTATED_INFERRED;
 		} else {
