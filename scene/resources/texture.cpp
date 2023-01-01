@@ -3386,7 +3386,7 @@ RID PlaceholderTexture2D::get_rid() const {
 void PlaceholderTexture2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_size", "size"), &PlaceholderTexture2D::set_size);
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "size", PROPERTY_HINT_NONE, "suffix:px"), "set_size", "get_size");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "size", PROPERTY_HINT_NONE, "suffix:px"), "set_size", "get_size");
 }
 
 PlaceholderTexture2D::PlaceholderTexture2D() {
