@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  mesh_instance_3d_editor_plugin.h                                     */
+/*  concave_mesh_shape_3d.h                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,80 +28,60 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef MESH_INSTANCE_3D_EDITOR_PLUGIN_H
-#define MESH_INSTANCE_3D_EDITOR_PLUGIN_H
+#ifndef CONCAVE_MESH_SHAPE_3D_H
+#define CONCAVE_MESH_SHAPE_3D_H
 
-#include "editor/editor_plugin.h"
-#include "scene/3d/mesh_instance_3d.h"
-#include "scene/gui/spin_box.h"
+#include "scene/resources/mesh.h"
+#include "scene/resources/shape_3d.h"
 
-class AcceptDialog;
-class ConfirmationDialog;
-class MenuButton;
+class ConcaveMeshShape3D : public Shape3D {
+	GDCLASS(ConcaveMeshShape3D, Shape3D);
 
-class MeshInstance3DEditor : public Control {
-	GDCLASS(MeshInstance3DEditor, Control);
+	Ref<Mesh> mesh;
+	Vector<Vector3> faces;
+	bool backface_collision = false;
 
-	enum Menu {
-		MENU_OPTION_CREATE_STATIC_TRIMESH_BODY,
-		MENU_OPTION_CREATE_TRIMESH_COLLISION_SHAPE,
-		MENU_OPTION_CREATE_TRIMESH_MESH_COLLISION_SHAPE,
-		MENU_OPTION_CREATE_SINGLE_CONVEX_COLLISION_SHAPE,
-		MENU_OPTION_CREATE_CONVEX_MESH_COLLISION_SHAPE,
-		MENU_OPTION_CREATE_SIMPLIFIED_CONVEX_COLLISION_SHAPE,
-		MENU_OPTION_CREATE_MULTIPLE_CONVEX_COLLISION_SHAPES,
-		MENU_OPTION_CREATE_NAVMESH,
-		MENU_OPTION_CREATE_OUTLINE_MESH,
-		MENU_OPTION_CREATE_DEBUG_TANGENTS,
-		MENU_OPTION_CREATE_UV2,
-		MENU_OPTION_DEBUG_UV1,
-		MENU_OPTION_DEBUG_UV2,
+	struct DrawEdge {
+		Vector3 a;
+		Vector3 b;
+		static uint32_t hash(const DrawEdge &p_edge) {
+			uint32_t h = hash_murmur3_one_32(HashMapHasherDefault::hash(p_edge.a));
+			return hash_murmur3_one_32(HashMapHasherDefault::hash(p_edge.b), h);
+		}
+		bool operator==(const DrawEdge &p_edge) const {
+			return (a == p_edge.a && b == p_edge.b);
+		}
+
+		DrawEdge(const Vector3 &p_a = Vector3(), const Vector3 &p_b = Vector3()) {
+			a = p_a;
+			b = p_b;
+			if (a < b) {
+				SWAP(a, b);
+			}
+		}
 	};
 
-	MeshInstance3D *node = nullptr;
-
-	MenuButton *options = nullptr;
-
-	ConfirmationDialog *outline_dialog = nullptr;
-	SpinBox *outline_size = nullptr;
-
-	AcceptDialog *err_dialog = nullptr;
-
-	AcceptDialog *debug_uv_dialog = nullptr;
-	Control *debug_uv = nullptr;
-	Vector<Vector2> uv_lines;
-
-	void _menu_option(int p_option);
-	void _create_outline_mesh();
-
-	void _create_uv_lines(int p_layer);
-	friend class MeshInstance3DEditorPlugin;
-
-	void _debug_uv_draw();
-
 protected:
-	void _node_removed(Node *p_node);
 	static void _bind_methods();
 
-public:
-	void edit(MeshInstance3D *p_mesh);
-	MeshInstance3DEditor();
-};
-
-class MeshInstance3DEditorPlugin : public EditorPlugin {
-	GDCLASS(MeshInstance3DEditorPlugin, EditorPlugin);
-
-	MeshInstance3DEditor *mesh_editor = nullptr;
+	virtual void _update_shape() override;
+	void _update_mesh();
 
 public:
-	virtual String get_name() const override { return "MeshInstance3D"; }
-	bool has_main_screen() const override { return false; }
-	virtual void edit(Object *p_object) override;
-	virtual bool handles(Object *p_object) const override;
-	virtual void make_visible(bool p_visible) override;
+	void set_mesh(const Ref<Mesh> &p_mesh);
+	Ref<Mesh> get_mesh() const;
 
-	MeshInstance3DEditorPlugin();
-	~MeshInstance3DEditorPlugin();
+	void set_faces(const Vector<Vector3> &p_faces);
+	Vector<Vector3> get_faces() const;
+
+	void set_backface_collision_enabled(bool p_enabled);
+	bool is_backface_collision_enabled() const;
+
+	virtual Vector<Vector3> get_debug_mesh_lines() const override;
+	virtual real_t get_enclosing_radius() const override;
+
+	ConcaveMeshShape3D();
+	ConcaveMeshShape3D(const Ref<Mesh> &p_mesh);
 };
 
-#endif // MESH_INSTANCE_3D_EDITOR_PLUGIN_H
+#endif // CONCAVE_MESH_SHAPE_3D_H

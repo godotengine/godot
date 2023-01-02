@@ -39,7 +39,9 @@
 #include "scene/3d/physics_body_3d.h"
 #include "scene/resources/box_shape_3d.h"
 #include "scene/resources/capsule_shape_3d.h"
+#include "scene/resources/concave_mesh_shape_3d.h"
 #include "scene/resources/concave_polygon_shape_3d.h"
+#include "scene/resources/convex_mesh_shape_3d.h"
 #include "scene/resources/convex_polygon_shape_3d.h"
 #include "scene/resources/cylinder_shape_3d.h"
 #include "scene/resources/height_map_shape_3d.h"
@@ -256,9 +258,38 @@ void NavigationMeshGenerator::_parse_geometry(const Transform3D &p_navmesh_trans
 						_add_faces(concave_polygon->get_faces(), transform, p_vertices, p_indices);
 					}
 
+					ConcaveMeshShape3D *concave_mesh = Object::cast_to<ConcaveMeshShape3D>(*s);
+					if (concave_mesh) {
+						_add_faces(concave_mesh->get_faces(), transform, p_vertices, p_indices);
+					}
+
 					ConvexPolygonShape3D *convex_polygon = Object::cast_to<ConvexPolygonShape3D>(*s);
 					if (convex_polygon) {
 						Vector<Vector3> varr = Variant(convex_polygon->get_points());
+						Geometry3D::MeshData md;
+
+						Error err = ConvexHullComputer::convex_hull(varr, md);
+
+						if (err == OK) {
+							PackedVector3Array faces;
+
+							for (uint32_t j = 0; j < md.faces.size(); ++j) {
+								const Geometry3D::MeshData::Face &face = md.faces[j];
+
+								for (uint32_t k = 2; k < face.indices.size(); ++k) {
+									faces.push_back(md.vertices[face.indices[0]]);
+									faces.push_back(md.vertices[face.indices[k - 1]]);
+									faces.push_back(md.vertices[face.indices[k]]);
+								}
+							}
+
+							_add_faces(faces, transform, p_vertices, p_indices);
+						}
+					}
+
+					ConvexMeshShape3D *convex_mesh = Object::cast_to<ConvexMeshShape3D>(*s);
+					if (convex_mesh) {
+						Vector<Vector3> varr = Variant(convex_mesh->get_points());
 						Geometry3D::MeshData md;
 
 						Error err = ConvexHullComputer::convex_hull(varr, md);

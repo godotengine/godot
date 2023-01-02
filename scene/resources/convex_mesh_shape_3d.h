@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  mesh_instance_3d_editor_plugin.h                                     */
+/*  convex_mesh_shape_3d.h                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,80 +28,44 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef MESH_INSTANCE_3D_EDITOR_PLUGIN_H
-#define MESH_INSTANCE_3D_EDITOR_PLUGIN_H
+#ifndef CONVEX_MESH_SHAPE_3D_H
+#define CONVEX_MESH_SHAPE_3D_H
 
-#include "editor/editor_plugin.h"
-#include "scene/3d/mesh_instance_3d.h"
-#include "scene/gui/spin_box.h"
+#include "scene/resources/mesh.h"
+#include "scene/resources/shape_3d.h"
 
-class AcceptDialog;
-class ConfirmationDialog;
-class MenuButton;
+class ConvexMeshShape3D : public Shape3D {
+	GDCLASS(ConvexMeshShape3D, Shape3D);
 
-class MeshInstance3DEditor : public Control {
-	GDCLASS(MeshInstance3DEditor, Control);
-
-	enum Menu {
-		MENU_OPTION_CREATE_STATIC_TRIMESH_BODY,
-		MENU_OPTION_CREATE_TRIMESH_COLLISION_SHAPE,
-		MENU_OPTION_CREATE_TRIMESH_MESH_COLLISION_SHAPE,
-		MENU_OPTION_CREATE_SINGLE_CONVEX_COLLISION_SHAPE,
-		MENU_OPTION_CREATE_CONVEX_MESH_COLLISION_SHAPE,
-		MENU_OPTION_CREATE_SIMPLIFIED_CONVEX_COLLISION_SHAPE,
-		MENU_OPTION_CREATE_MULTIPLE_CONVEX_COLLISION_SHAPES,
-		MENU_OPTION_CREATE_NAVMESH,
-		MENU_OPTION_CREATE_OUTLINE_MESH,
-		MENU_OPTION_CREATE_DEBUG_TANGENTS,
-		MENU_OPTION_CREATE_UV2,
-		MENU_OPTION_DEBUG_UV1,
-		MENU_OPTION_DEBUG_UV2,
-	};
-
-	MeshInstance3D *node = nullptr;
-
-	MenuButton *options = nullptr;
-
-	ConfirmationDialog *outline_dialog = nullptr;
-	SpinBox *outline_size = nullptr;
-
-	AcceptDialog *err_dialog = nullptr;
-
-	AcceptDialog *debug_uv_dialog = nullptr;
-	Control *debug_uv = nullptr;
-	Vector<Vector2> uv_lines;
-
-	void _menu_option(int p_option);
-	void _create_outline_mesh();
-
-	void _create_uv_lines(int p_layer);
-	friend class MeshInstance3DEditorPlugin;
-
-	void _debug_uv_draw();
+	Ref<Mesh> mesh;
+	bool clean = true;
+	bool simplify = false;
+	Vector<Vector3> points;
 
 protected:
-	void _node_removed(Node *p_node);
 	static void _bind_methods();
 
-public:
-	void edit(MeshInstance3D *p_mesh);
-	MeshInstance3DEditor();
-};
-
-class MeshInstance3DEditorPlugin : public EditorPlugin {
-	GDCLASS(MeshInstance3DEditorPlugin, EditorPlugin);
-
-	MeshInstance3DEditor *mesh_editor = nullptr;
+	virtual void _update_shape() override;
+	void _update_mesh();
 
 public:
-	virtual String get_name() const override { return "MeshInstance3D"; }
-	bool has_main_screen() const override { return false; }
-	virtual void edit(Object *p_object) override;
-	virtual bool handles(Object *p_object) const override;
-	virtual void make_visible(bool p_visible) override;
+	void set_mesh(const Ref<Mesh> &p_mesh);
+	Ref<Mesh> get_mesh() const;
 
-	MeshInstance3DEditorPlugin();
-	~MeshInstance3DEditorPlugin();
+	void set_clean(bool p_clean);
+	bool is_clean() const;
+
+	void set_simplify(bool p_simplify);
+	bool is_simplify() const;
+
+	void set_points(const Vector<Vector3> &p_points);
+	Vector<Vector3> get_points() const;
+
+	virtual Vector<Vector3> get_debug_mesh_lines() const override;
+	virtual real_t get_enclosing_radius() const override;
+
+	ConvexMeshShape3D();
+	ConvexMeshShape3D(const Ref<Mesh> &p_mesh);
 };
 
-#endif // MESH_INSTANCE_3D_EDITOR_PLUGIN_H
+#endif // CONVEX_MESH_SHAPE_3D_H
