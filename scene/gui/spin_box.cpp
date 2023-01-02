@@ -39,7 +39,7 @@ Size2 SpinBox::get_minimum_size() const {
 	return ms;
 }
 
-void SpinBox::_value_changed(double p_value) {
+void SpinBox::_update_text() {
 	String value = String::num(get_value(), Math::range_step_decimals(get_step()));
 	if (is_localizing_numeral_system()) {
 		value = TS->format_number(value);
@@ -55,7 +55,6 @@ void SpinBox::_value_changed(double p_value) {
 	}
 
 	line_edit->set_text(value);
-	Range::_value_changed(p_value);
 }
 
 void SpinBox::_text_submitted(const String &p_string) {
@@ -73,7 +72,7 @@ void SpinBox::_text_submitted(const String &p_string) {
 	if (value.get_type() != Variant::NIL) {
 		set_value(value);
 	}
-	_value_changed(0);
+	_update_text();
 }
 
 void SpinBox::_text_changed(const String &p_string) {
@@ -192,7 +191,7 @@ void SpinBox::gui_input(const Ref<InputEvent> &p_event) {
 
 void SpinBox::_line_edit_focus_enter() {
 	int col = line_edit->get_caret_column();
-	_value_changed(0); // Update the LineEdit's text.
+	_update_text();
 	line_edit->set_caret_column(col);
 
 	// LineEdit text might change and it clears any selection. Have to re-select here.
@@ -202,6 +201,10 @@ void SpinBox::_line_edit_focus_enter() {
 }
 
 void SpinBox::_line_edit_focus_exit() {
+	// Discontinue because the focus_exit was caused by left-clicking the arrows.
+	if (get_viewport()->gui_get_focus_owner() == get_line_edit()) {
+		return;
+	}
 	// Discontinue because the focus_exit was caused by right-click context menu.
 	if (line_edit->is_menu_visible()) {
 		return;
@@ -228,6 +231,7 @@ void SpinBox::_update_theme_item_cache() {
 void SpinBox::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
+			_update_text();
 			_adjust_width_for_icon(theme_cache.updown_icon);
 
 			RID ci = get_canvas_item();
@@ -242,7 +246,7 @@ void SpinBox::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
 			_adjust_width_for_icon(theme_cache.updown_icon);
-			_value_changed(0);
+			_update_text();
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -250,7 +254,6 @@ void SpinBox::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_TRANSLATION_CHANGED: {
-			_value_changed(0);
 			queue_redraw();
 		} break;
 
@@ -279,7 +282,7 @@ void SpinBox::set_suffix(const String &p_suffix) {
 	}
 
 	suffix = p_suffix;
-	_value_changed(0);
+	_update_text();
 }
 
 String SpinBox::get_suffix() const {
@@ -292,7 +295,7 @@ void SpinBox::set_prefix(const String &p_prefix) {
 	}
 
 	prefix = p_prefix;
-	_value_changed(0);
+	_update_text();
 }
 
 String SpinBox::get_prefix() const {

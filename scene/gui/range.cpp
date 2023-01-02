@@ -74,16 +74,26 @@ void Range::Shared::emit_changed(const char *p_what) {
 	}
 }
 
+void Range::Shared::redraw_owners() {
+	for (Range *E : owners) {
+		Range *r = E;
+		if (!r->is_inside_tree()) {
+			continue;
+		}
+		r->queue_redraw();
+	}
+}
+
 void Range::set_value(double p_val) {
 	double prev_val = shared->val;
-	set_value_no_signal(p_val);
+	_set_value_no_signal(p_val);
 
 	if (shared->val != prev_val) {
 		shared->emit_value_changed();
 	}
 }
 
-void Range::set_value_no_signal(double p_val) {
+void Range::_set_value_no_signal(double p_val) {
 	if (shared->step > 0) {
 		p_val = Math::round((p_val - shared->min) / shared->step) * shared->step + shared->min;
 	}
@@ -105,6 +115,15 @@ void Range::set_value_no_signal(double p_val) {
 	}
 
 	shared->val = p_val;
+}
+
+void Range::set_value_no_signal(double p_val) {
+	double prev_val = shared->val;
+	_set_value_no_signal(p_val);
+
+	if (shared->val != prev_val) {
+		shared->redraw_owners();
+	}
 }
 
 void Range::set_min(double p_min) {
