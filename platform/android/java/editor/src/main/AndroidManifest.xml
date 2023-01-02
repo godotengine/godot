@@ -71,7 +71,7 @@
                 android:defaultWidth="@dimen/editor_default_window_width" />
         </activity>
         <activity
-            android:name=".CrashDefaultActivity"
+            android:name=".CrashHandlerActivity"
             android:process=":error_activity" />
 
     </application>
