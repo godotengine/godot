@@ -380,7 +380,7 @@ void LineBuilder::build() {
 		current_distance1 += pos0.distance_to(pos1);
 	}
 	if (_interpolate_color) {
-		color1 = gradient->get_color(gradient->get_points_count() - 1);
+		color1 = gradient->get_color(gradient->get_point_count() - 1);
 	}
 	if (retrieve_curve) {
 		width_factor = curve->sample_baked(1.f);
@@ -406,7 +406,7 @@ void LineBuilder::build() {
 	// End cap (round)
 	if (end_cap_mode == Line2D::LINE_CAP_ROUND) {
 		// Note: color is not used in case we don't interpolate...
-		Color color = _interpolate_color ? gradient->get_color(gradient->get_points_count() - 1) : Color(0, 0, 0);
+		Color color = _interpolate_color ? gradient->get_color(gradient->get_point_count() - 1) : Color(0, 0, 0);
 		float dist = 0;
 		if (texture_mode == Line2D::LINE_TEXTURE_TILE) {
 			dist = width_factor / tile_aspect;
