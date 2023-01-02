@@ -104,8 +104,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 		text += ": ";
 
 		// This makes the compiler complain if some opcode is unchecked in the switch.
-		Opcode opcode = Opcode(_code_ptr[ip] & INSTR_MASK);
-		int instr_var_args = (_code_ptr[ip] & INSTR_ARGS_MASK) >> INSTR_BITS;
+		Opcode opcode = Opcode(_code_ptr[ip]);
 
 		switch (opcode) {
 			case OPCODE_OPERATOR: {
@@ -372,6 +371,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				incr += 4;
 			} break;
 			case OPCODE_CONSTRUCT: {
+				int instr_var_args = _code_ptr[++ip];
 				Variant::Type t = Variant::Type(_code_ptr[ip + 3 + instr_var_args]);
 				int argc = _code_ptr[ip + 1 + instr_var_args];
 
@@ -391,6 +391,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				incr = 3 + instr_var_args;
 			} break;
 			case OPCODE_CONSTRUCT_VALIDATED: {
+				int instr_var_args = _code_ptr[++ip];
 				int argc = _code_ptr[ip + 1 + instr_var_args];
 
 				text += "construct validated ";
@@ -409,6 +410,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				incr = 3 + instr_var_args;
 			} break;
 			case OPCODE_CONSTRUCT_ARRAY: {
+				int instr_var_args = _code_ptr[++ip];
 				int argc = _code_ptr[ip + 1 + instr_var_args];
 				text += " make_array ";
 				text += DADDR(1 + argc);
@@ -426,6 +428,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				incr += 3 + argc;
 			} break;
 			case OPCODE_CONSTRUCT_TYPED_ARRAY: {
+				int instr_var_args = _code_ptr[++ip];
 				int argc = _code_ptr[ip + 1 + instr_var_args];
 
 				Ref<Script> script_type = get_constant(_code_ptr[ip + argc + 2]);
@@ -460,6 +463,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				incr += 3 + argc;
 			} break;
 			case OPCODE_CONSTRUCT_DICTIONARY: {
+				int instr_var_args = _code_ptr[++ip];
 				int argc = _code_ptr[ip + 1 + instr_var_args];
 				text += "make_dict ";
 				text += DADDR(1 + argc * 2);
@@ -481,8 +485,10 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 			case OPCODE_CALL:
 			case OPCODE_CALL_RETURN:
 			case OPCODE_CALL_ASYNC: {
-				bool ret = (_code_ptr[ip] & INSTR_MASK) == OPCODE_CALL_RETURN;
-				bool async = (_code_ptr[ip] & INSTR_MASK) == OPCODE_CALL_ASYNC;
+				bool ret = (_code_ptr[ip]) == OPCODE_CALL_RETURN;
+				bool async = (_code_ptr[ip]) == OPCODE_CALL_ASYNC;
+
+				int instr_var_args = _code_ptr[++ip];
 
 				if (ret) {
 					text += "call-ret ";
@@ -513,7 +519,8 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 			} break;
 			case OPCODE_CALL_METHOD_BIND:
 			case OPCODE_CALL_METHOD_BIND_RET: {
-				bool ret = (_code_ptr[ip] & INSTR_MASK) == OPCODE_CALL_METHOD_BIND_RET;
+				bool ret = (_code_ptr[ip]) == OPCODE_CALL_METHOD_BIND_RET;
+				int instr_var_args = _code_ptr[++ip];
 
 				if (ret) {
 					text += "call-method_bind-ret ";
@@ -543,6 +550,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				incr = 5 + argc;
 			} break;
 			case OPCODE_CALL_BUILTIN_STATIC: {
+				int instr_var_args = _code_ptr[++ip];
 				Variant::Type type = (Variant::Type)_code_ptr[ip + 1 + instr_var_args];
 				int argc = _code_ptr[ip + 3 + instr_var_args];
 
@@ -565,6 +573,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				incr += 5 + argc;
 			} break;
 			case OPCODE_CALL_NATIVE_STATIC: {
+				int instr_var_args = _code_ptr[++ip];
 				MethodBind *method = _methods_ptr[_code_ptr[ip + 1 + instr_var_args]];
 				int argc = _code_ptr[ip + 2 + instr_var_args];
 
@@ -587,6 +596,8 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				incr += 4 + argc;
 			} break;
 			case OPCODE_CALL_PTRCALL_NO_RETURN: {
+				int instr_var_args = _code_ptr[++ip];
+
 				text += "call-ptrcall (no return) ";
 
 				MethodBind *method = _methods_ptr[_code_ptr[ip + 2 + instr_var_args]];
@@ -610,6 +621,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 #define DISASSEMBLE_PTRCALL(m_type)                                            \
 	case OPCODE_CALL_PTRCALL_##m_type: {                                       \
+		int instr_var_args = _code_ptr[++ip];                                  \
 		text += "call-ptrcall (return ";                                       \
 		text += #m_type;                                                       \
 		text += ") ";                                                          \
@@ -667,6 +679,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				DISASSEMBLE_PTRCALL(PACKED_COLOR_ARRAY);
 
 			case OPCODE_CALL_BUILTIN_TYPE_VALIDATED: {
+				int instr_var_args = _code_ptr[++ip];
 				int argc = _code_ptr[ip + 1 + instr_var_args];
 
 				text += "call-builtin-method validated ";
@@ -689,6 +702,8 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				incr = 5 + argc;
 			} break;
 			case OPCODE_CALL_UTILITY: {
+				int instr_var_args = _code_ptr[++ip];
+
 				text += "call-utility ";
 
 				int argc = _code_ptr[ip + 1 + instr_var_args];
@@ -708,6 +723,8 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				incr = 4 + argc;
 			} break;
 			case OPCODE_CALL_UTILITY_VALIDATED: {
+				int instr_var_args = _code_ptr[++ip];
+
 				text += "call-utility ";
 
 				int argc = _code_ptr[ip + 1 + instr_var_args];
@@ -727,6 +744,8 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				incr = 4 + argc;
 			} break;
 			case OPCODE_CALL_GDSCRIPT_UTILITY: {
+				int instr_var_args = _code_ptr[++ip];
+
 				text += "call-gscript-utility ";
 
 				int argc = _code_ptr[ip + 1 + instr_var_args];
@@ -746,6 +765,8 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				incr = 4 + argc;
 			} break;
 			case OPCODE_CALL_SELF_BASE: {
+				int instr_var_args = _code_ptr[++ip];
+
 				text += "call-self-base ";
 
 				int argc = _code_ptr[ip + 1 + instr_var_args];
@@ -777,6 +798,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				incr = 2;
 			} break;
 			case OPCODE_CREATE_LAMBDA: {
+				int instr_var_args = _code_ptr[++ip];
 				int captures_count = _code_ptr[ip + 1 + instr_var_args];
 				GDScriptFunction *lambda = _lambdas_ptr[_code_ptr[ip + 2 + instr_var_args]];
 
@@ -796,6 +818,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				incr = 3 + captures_count;
 			} break;
 			case OPCODE_CREATE_SELF_LAMBDA: {
+				int instr_var_args = _code_ptr[++ip];
 				int captures_count = _code_ptr[ip + 1 + instr_var_args];
 				GDScriptFunction *lambda = _lambdas_ptr[_code_ptr[ip + 2 + instr_var_args]];
 
