@@ -42,7 +42,7 @@ TEST_CASE("[Gradient] Default gradient") {
 	Ref<Gradient> gradient = memnew(Gradient);
 
 	CHECK_MESSAGE(
-			gradient->get_points_count() == 2,
+			gradient->get_point_count() == 2,
 			"Default gradient should contain the expected number of points.");
 
 	CHECK_MESSAGE(
@@ -77,7 +77,7 @@ TEST_CASE("[Gradient] Custom gradient (points specified in order)") {
 	gradient->set_points(points);
 
 	CHECK_MESSAGE(
-			gradient->get_points_count() == 3,
+			gradient->get_point_count() == 3,
 			"Custom gradient should contain the expected number of points.");
 
 	CHECK_MESSAGE(
@@ -98,7 +98,7 @@ TEST_CASE("[Gradient] Custom gradient (points specified in order)") {
 
 	gradient->remove_point(1);
 	CHECK_MESSAGE(
-			gradient->get_points_count() == 2,
+			gradient->get_point_count() == 2,
 			"Custom gradient should contain the expected number of points after removing one point.");
 	CHECK_MESSAGE(
 			gradient->get_color_at_offset(0.5).is_equal_approx(Color(0.5, 1, 0)),
@@ -119,7 +119,7 @@ TEST_CASE("[Gradient] Custom gradient (points specified out-of-order)") {
 	gradient->set_points(points);
 
 	CHECK_MESSAGE(
-			gradient->get_points_count() == 6,
+			gradient->get_point_count() == 6,
 			"Custom out-of-order gradient should contain the expected number of points.");
 
 	CHECK_MESSAGE(
@@ -137,7 +137,7 @@ TEST_CASE("[Gradient] Custom gradient (points specified out-of-order)") {
 
 	gradient->remove_point(0);
 	CHECK_MESSAGE(
-			gradient->get_points_count() == 5,
+			gradient->get_point_count() == 5,
 			"Custom out-of-order gradient should contain the expected number of points after removing one point.");
 	// The color will be clamped to the nearest point (which is at offset 0.2).
 	CHECK_MESSAGE(
