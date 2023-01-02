@@ -385,11 +385,17 @@ void TextServerAdvanced::_free_rid(const RID &p_rid) {
 	_THREAD_SAFE_METHOD_
 	if (font_owner.owns(p_rid)) {
 		FontAdvanced *fd = font_owner.get_or_null(p_rid);
-		font_owner.free(p_rid);
+		{
+			MutexLock lock(fd->mutex);
+			font_owner.free(p_rid);
+		}
 		memdelete(fd);
 	} else if (shaped_owner.owns(p_rid)) {
 		ShapedTextDataAdvanced *sd = shaped_owner.get_or_null(p_rid);
-		shaped_owner.free(p_rid);
+		{
+			MutexLock lock(sd->mutex);
+			shaped_owner.free(p_rid);
+		}
 		memdelete(sd);
 	}
 }
