@@ -1,21 +1,34 @@
-/*
- *
- *  * Copyright © 2018-19 Rohit Sahebrao Surwase.
- *  *
- *  *    Licensed under the Apache License, Version 2.0 (the "License");
- *  *    you may not use this file except in compliance with the License.
- *  *    You may obtain a copy of the License at
- *  *
- *  *        http://www.apache.org/licenses/LICENSE-2.0
- *  *
- *  *    Unless required by applicable law or agreed to in writing, software
- *  *    distributed under the License is distributed on an "AS IS" BASIS,
- *  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  *    See the License for the specific language governing permissions and
- *  * limitations under the License.
- *
- */
-package com.rohitss.uceh;
+/*************************************************************************/
+/*  CrashHandlerActivity.java                                                       */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                      https://godotengine.org                          */
+/*************************************************************************/
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
+
+package org.godotengine.editor;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -49,22 +62,21 @@ import java.util.Date;
 import java.util.Locale;
 
 /**
- * Created by Rohit.
+ * Created by Raj
  */
-public final class UCEDefaultActivity extends Activity {
+public final class CrashHandlerActivity extends Activity {
     private File txtFile;
     private String strCurrentErrorLog;
 
     @SuppressLint("PrivateResource")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        setTheme(android.R.style.Theme_Holo_Light_DarkActionBar);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.default_error_activity);
         findViewById(R.id.button_close_app).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                UCEHandler.closeApplication(UCEDefaultActivity.this);
+                CrashHandler.closeApplication(CrashHandlerActivity.this);
             }
         });
         findViewById(R.id.button_copy_error_log).setOnClickListener(new View.OnClickListener() {
@@ -79,24 +91,12 @@ public final class UCEDefaultActivity extends Activity {
                 shareErrorLog();
             }
         });
-        findViewById(R.id.button_save_error_log).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                saveErrorLogToFile(true);
-            }
-        });
-        findViewById(R.id.button_email_error_log).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                emailErrorLog();
-            }
-        });
         findViewById(R.id.button_view_error_log).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                AlertDialog dialog = new AlertDialog.Builder(UCEDefaultActivity.this)
+                AlertDialog dialog = new AlertDialog.Builder(CrashHandlerActivity.this)
                         .setTitle("Error Log")
-                        .setMessage(getAllErrorDetailsFromIntent(UCEDefaultActivity.this, getIntent()))
+                        .setMessage(getAllErrorDetailsFromIntent(CrashHandlerActivity.this, getIntent()))
                         .setPositiveButton("Copy Log & Close",
                                 new DialogInterface.OnClickListener() {
                                     @Override
@@ -144,55 +144,6 @@ public final class UCEDefaultActivity extends Activity {
         return intent.getStringExtra(UCEHandler.EXTRA_STACK_TRACE);
     }
 
-    private void emailErrorLog() {
-        saveErrorLogToFile(false);
-        String errorLog = getAllErrorDetailsFromIntent(UCEDefaultActivity.this, getIntent());
-        String[] emailAddressArray = UCEHandler.COMMA_SEPARATED_EMAIL_ADDRESSES.trim().split("\\s*,\\s*");
-        Intent emailIntent = new Intent(android.content.Intent.ACTION_SEND);
-        emailIntent.setType("plain/text");
-        emailIntent.putExtra(Intent.EXTRA_EMAIL, emailAddressArray);
-        emailIntent.putExtra(Intent.EXTRA_SUBJECT, getApplicationName(UCEDefaultActivity.this) + " Application Crash Error Log");
-        emailIntent.putExtra(Intent.EXTRA_TEXT, getString(R.string.email_welcome_note) + errorLog);
-        if (txtFile.exists()) {
-            Uri filePath = FileProvider.getUriForFile(this, this.getApplicationContext().getPackageName() + ".provider", txtFile);
-            emailIntent.putExtra(Intent.EXTRA_STREAM, filePath);
-        }
-        emailIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        startActivity(Intent.createChooser(emailIntent, "Email Error Log"));
-    }
-
-    private void saveErrorLogToFile(boolean isShowToast) {
-        Boolean isSDPresent = Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED);
-        if (isSDPresent && isExternalStorageWritable()) {
-            Date currentDate = new Date();
-            DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
-            String strCurrentDate = dateFormat.format(currentDate);
-            strCurrentDate = strCurrentDate.replace(" ", "_");
-            String errorLogFileName = getApplicationName(UCEDefaultActivity.this) + "_Error-Log_" + strCurrentDate;
-            String errorLog = getAllErrorDetailsFromIntent(UCEDefaultActivity.this, getIntent());
-            String fullPath = Environment.getExternalStorageDirectory() + "/AppErrorLogs_UCEH/";
-            FileOutputStream outputStream;
-            try {
-                File file = new File(fullPath);
-                file.mkdir();
-                txtFile = new File(fullPath + errorLogFileName + ".txt");
-                txtFile.createNewFile();
-                outputStream = new FileOutputStream(txtFile);
-                outputStream.write(errorLog.getBytes());
-                outputStream.close();
-                if (txtFile.exists() && isShowToast) {
-                    Toast.makeText(this, "File Saved Successfully", Toast.LENGTH_SHORT).show();
-                }
-            } catch (IOException e) {
-                Log.e("REQUIRED", "This app does not have write storage permission to save log file.");
-                if (isShowToast) {
-                    Toast.makeText(this, "Storage Permission Not Found", Toast.LENGTH_SHORT).show();
-                }
-                e.printStackTrace();
-            }
-        }
-    }
-
     private void shareErrorLog() {
         String errorLog = getAllErrorDetailsFromIntent(UCEDefaultActivity.this, getIntent());
         Intent share = new Intent(Intent.ACTION_SEND);
@@ -217,8 +168,6 @@ public final class UCEDefaultActivity extends Activity {
         if (TextUtils.isEmpty(strCurrentErrorLog)) {
             String LINE_SEPARATOR = "\n";
             StringBuilder errorReport = new StringBuilder();
-            errorReport.append("***** UCE HANDLER Library ");
-            errorReport.append("\n***** by Rohit Surwase \n");
             errorReport.append("\n***** DEVICE INFO \n");
             errorReport.append("Brand: ");
             errorReport.append(Build.BRAND);
@@ -306,13 +255,5 @@ public final class UCEDefaultActivity extends Activity {
         } catch (PackageManager.NameNotFoundException e) {
             return "";
         }
-    }
-
-    public boolean isExternalStorageWritable() {
-        String state = Environment.getExternalStorageState();
-        if (Environment.MEDIA_MOUNTED.equals(state)) {
-            return true;
-        }
-        return false;
     }
 }
