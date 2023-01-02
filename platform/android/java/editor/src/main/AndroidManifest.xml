@@ -25,7 +25,7 @@
     <application
         android:allowBackup="false"
         android:icon="@mipmap/icon"
-        Android:name=".Godot"
+        android:name=".Godot"
         android:label="@string/godot_editor_name_string"
         tools:ignore="GoogleAppIndexingWarning"
         android:theme="@style/GodotEditorTheme"
