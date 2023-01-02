@@ -52,21 +52,7 @@
                 android:text="Share Error Log"
                 android:textColor="#212121"/>
 
-            <Button
-                android:id="@+id/button_email_error_log"
-                android:layout_width="150dp"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:text="Email Error Log"
-                android:textColor="#212121"/>
-
-            <Button
-                android:id="@+id/button_save_error_log"
-                android:layout_width="150dp"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:text="Save Error Log"
-                android:textColor="#212121"/>
+            
 
             <Button
                 android:id="@+id/button_close_app"
