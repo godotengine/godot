@@ -405,6 +405,7 @@ public:
 		ADDR_TYPE_STACK = 0,
 		ADDR_TYPE_CONSTANT = 1,
 		ADDR_TYPE_MEMBER = 2,
+		ADDR_TYPE_MAX = 3,
 	};
 
 	enum FixedAddresses {
@@ -414,12 +415,6 @@ public:
 		ADDR_SELF = ADDR_STACK_SELF | (ADDR_TYPE_STACK << ADDR_BITS),
 		ADDR_CLASS = ADDR_STACK_CLASS | (ADDR_TYPE_STACK << ADDR_BITS),
 		ADDR_NIL = ADDR_STACK_NIL | (ADDR_TYPE_STACK << ADDR_BITS),
-	};
-
-	enum Instruction {
-		INSTR_BITS = 20,
-		INSTR_MASK = ((1 << INSTR_BITS) - 1),
-		INSTR_ARGS_MASK = ~INSTR_MASK,
 	};
 
 	struct StackDebug {
@@ -514,7 +509,6 @@ private:
 
 	Variant _get_default_variant_for_data_type(const GDScriptDataType &p_data_type);
 
-	_FORCE_INLINE_ Variant *_get_variant(int p_address, GDScriptInstance *p_instance, Variant *p_stack, String &r_error) const;
 	_FORCE_INLINE_ String _get_call_error(const Callable::CallError &p_err, const String &p_where, const Variant **argptrs) const;
 
 	friend class GDScriptLanguage;

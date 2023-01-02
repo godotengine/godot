@@ -183,7 +183,7 @@ GDScriptFunction *GDScriptByteCodeGenerator::write_end() {
 		ERR_PRINT("Non-zero temporary variables at end of function: " + itos(used_temporaries.size()));
 	}
 #endif
-	append(GDScriptFunction::OPCODE_END, 0);
+	append_opcode(GDScriptFunction::OPCODE_END);
 
 	for (int i = 0; i < temporaries.size(); i++) {
 		int stack_index = i + max_locals + RESERVED_STACK;
@@ -424,115 +424,115 @@ void GDScriptByteCodeGenerator::set_initial_line(int p_line) {
 void GDScriptByteCodeGenerator::write_type_adjust(const Address &p_target, Variant::Type p_new_type) {
 	switch (p_new_type) {
 		case Variant::BOOL:
-			append(GDScriptFunction::OPCODE_TYPE_ADJUST_BOOL, 1);
+			append_opcode(GDScriptFunction::OPCODE_TYPE_ADJUST_BOOL);
 			break;
 		case Variant::INT:
-			append(GDScriptFunction::OPCODE_TYPE_ADJUST_INT, 1);
+			append_opcode(GDScriptFunction::OPCODE_TYPE_ADJUST_INT);
 			break;
 		case Variant::FLOAT:
-			append(GDScriptFunction::OPCODE_TYPE_ADJUST_FLOAT, 1);
+			append_opcode(GDScriptFunction::OPCODE_TYPE_ADJUST_FLOAT);
 			break;
 		case Variant::STRING:
-			append(GDScriptFunction::OPCODE_TYPE_ADJUST_STRING, 1);
+			append_opcode(GDScriptFunction::OPCODE_TYPE_ADJUST_STRING);
 			break;
 		case Variant::VECTOR2:
-			append(GDScriptFunction::OPCODE_TYPE_ADJUST_VECTOR2, 1);
+			append_opcode(GDScriptFunction::OPCODE_TYPE_ADJUST_VECTOR2);
 			break;
 		case Variant::VECTOR2I:
-			append(GDScriptFunction::OPCODE_TYPE_ADJUST_VECTOR2I, 1);
+			append_opcode(GDScriptFunction::OPCODE_TYPE_ADJUST_VECTOR2I);
 			break;
 		case Variant::RECT2:
-			append(GDScriptFunction::OPCODE_TYPE_ADJUST_RECT2, 1);
+			append_opcode(GDScriptFunction::OPCODE_TYPE_ADJUST_RECT2);
 			break;
 		case Variant::RECT2I:
-			append(GDScriptFunction::OPCODE_TYPE_ADJUST_RECT2I, 1);
+			append_opcode(GDScriptFunction::OPCODE_TYPE_ADJUST_RECT2I);
 			break;
 		case Variant::VECTOR3:
-			append(GDScriptFunction::OPCODE_TYPE_ADJUST_VECTOR3, 1);
+			append_opcode(GDScriptFunction::OPCODE_TYPE_ADJUST_VECTOR3);
 			break;
 		case Variant::VECTOR3I:
-			append(GDScriptFunction::OPCODE_TYPE_ADJUST_VECTOR3I, 1);
+			append_opcode(GDScriptFunction::OPCODE_TYPE_ADJUST_VECTOR3I);
 			break;
 		case Variant::TRANSFORM2D:
-			append(GDScriptFunction::OPCODE_TYPE_ADJUST_TRANSFORM2D, 1);
+			append_opcode(GDScriptFunction::OPCODE_TYPE_ADJUST_TRANSFORM2D);
 			break;
 		case Variant::VECTOR4:
-			append(GDScriptFunction::OPCODE_TYPE_ADJUST_VECTOR3, 1);
+			append_opcode(GDScriptFunction::OPCODE_TYPE_ADJUST_VECTOR3);
 			break;
 		case Variant::VECTOR4I:
-			append(GDScriptFunction::OPCODE_TYPE_ADJUST_VECTOR3I, 1);
+			append_opcode(GDScriptFunction::OPCODE_TYPE_ADJUST_VECTOR3I);
 			break;
 		case Variant::PLANE:
-			append(GDScriptFunction::OPCODE_TYPE_ADJUST_PLANE, 1);
+			append_opcode(GDScriptFunction::OPCODE_TYPE_ADJUST_PLANE);
 			break;
 		case Variant::QUATERNION:
-			append(GDScriptFunction::OPCODE_TYPE_ADJUST_QUATERNION, 1);
+			append_opcode(GDScriptFunction::OPCODE_TYPE_ADJUST_QUATERNION);
 			break;
 		case Variant::AABB:
-			append(GDScriptFunction::OPCODE_TYPE_ADJUST_AABB, 1);
+			append_opcode(GDScriptFunction::OPCODE_TYPE_ADJUST_AABB);
 			break;
 		case Variant::BASIS:
-			append(GDScriptFunction::OPCODE_TYPE_ADJUST_BASIS, 1);
+			append_opcode(GDScriptFunction::OPCODE_TYPE_ADJUST_BASIS);
 			break;
 		case Variant::TRANSFORM3D:
-			append(GDScriptFunction::OPCODE_TYPE_ADJUST_TRANSFORM3D, 1);
+			append_opcode(GDScriptFunction::OPCODE_TYPE_ADJUST_TRANSFORM3D);
 			break;
 		case Variant::PROJECTION:
-			append(GDScriptFunction::OPCODE_TYPE_ADJUST_PROJECTION, 1);
+			append_opcode(GDScriptFunction::OPCODE_TYPE_ADJUST_PROJECTION);
 			break;
 		case Variant::COLOR:
-			append(GDScriptFunction::OPCODE_TYPE_ADJUST_COLOR, 1);
+			append_opcode(GDScriptFunction::OPCODE_TYPE_ADJUST_COLOR);
 			break;
 		case Variant::STRING_NAME:
-			append(GDScriptFunction::OPCODE_TYPE_ADJUST_STRING_NAME, 1);
+			append_opcode(GDScriptFunction::OPCODE_TYPE_ADJUST_STRING_NAME);
 			break;
 		case Variant::NODE_PATH:
-			append(GDScriptFunction::OPCODE_TYPE_ADJUST_NODE_PATH, 1);
+			append_opcode(GDScriptFunction::OPCODE_TYPE_ADJUST_NODE_PATH);
 			break;
 		case Variant::RID:
-			append(GDScriptFunction::OPCODE_TYPE_ADJUST_RID, 1);
+			append_opcode(GDScriptFunction::OPCODE_TYPE_ADJUST_RID);
 			break;
 		case Variant::OBJECT:
-			append(GDScriptFunction::OPCODE_TYPE_ADJUST_OBJECT, 1);
+			append_opcode(GDScriptFunction::OPCODE_TYPE_ADJUST_OBJECT);
 			break;
 		case Variant::CALLABLE:
-			append(GDScriptFunction::OPCODE_TYPE_ADJUST_CALLABLE, 1);
+			append_opcode(GDScriptFunction::OPCODE_TYPE_ADJUST_CALLABLE);
 			break;
 		case Variant::SIGNAL:
-			append(GDScriptFunction::OPCODE_TYPE_ADJUST_SIGNAL, 1);
+			append_opcode(GDScriptFunction::OPCODE_TYPE_ADJUST_SIGNAL);
 			break;
 		case Variant::DICTIONARY:
-			append(GDScriptFunction::OPCODE_TYPE_ADJUST_DICTIONARY, 1);
+			append_opcode(GDScriptFunction::OPCODE_TYPE_ADJUST_DICTIONARY);
 			break;
 		case Variant::ARRAY:
-			append(GDScriptFunction::OPCODE_TYPE_ADJUST_ARRAY, 1);
+			append_opcode(GDScriptFunction::OPCODE_TYPE_ADJUST_ARRAY);
 			break;
 		case Variant::PACKED_BYTE_ARRAY:
-			append(GDScriptFunction::OPCODE_TYPE_ADJUST_PACKED_BYTE_ARRAY, 1);
+			append_opcode(GDScriptFunction::OPCODE_TYPE_ADJUST_PACKED_BYTE_ARRAY);
 			break;
 		case Variant::PACKED_INT32_ARRAY:
-			append(GDScriptFunction::OPCODE_TYPE_ADJUST_PACKED_INT32_ARRAY, 1);
+			append_opcode(GDScriptFunction::OPCODE_TYPE_ADJUST_PACKED_INT32_ARRAY);
 			break;
 		case Variant::PACKED_INT64_ARRAY:
-			append(GDScriptFunction::OPCODE_TYPE_ADJUST_PACKED_INT64_ARRAY, 1);
+			append_opcode(GDScriptFunction::OPCODE_TYPE_ADJUST_PACKED_INT64_ARRAY);
 			break;
 		case Variant::PACKED_FLOAT32_ARRAY:
-			append(GDScriptFunction::OPCODE_TYPE_ADJUST_PACKED_FLOAT32_ARRAY, 1);
+			append_opcode(GDScriptFunction::OPCODE_TYPE_ADJUST_PACKED_FLOAT32_ARRAY);
 			break;
 		case Variant::PACKED_FLOAT64_ARRAY:
-			append(GDScriptFunction::OPCODE_TYPE_ADJUST_PACKED_FLOAT64_ARRAY, 1);
+			append_opcode(GDScriptFunction::OPCODE_TYPE_ADJUST_PACKED_FLOAT64_ARRAY);
 			break;
 		case Variant::PACKED_STRING_ARRAY:
-			append(GDScriptFunction::OPCODE_TYPE_ADJUST_PACKED_STRING_ARRAY, 1);
+			append_opcode(GDScriptFunction::OPCODE_TYPE_ADJUST_PACKED_STRING_ARRAY);
 			break;
 		case Variant::PACKED_VECTOR2_ARRAY:
-			append(GDScriptFunction::OPCODE_TYPE_ADJUST_PACKED_VECTOR2_ARRAY, 1);
+			append_opcode(GDScriptFunction::OPCODE_TYPE_ADJUST_PACKED_VECTOR2_ARRAY);
 			break;
 		case Variant::PACKED_VECTOR3_ARRAY:
-			append(GDScriptFunction::OPCODE_TYPE_ADJUST_PACKED_VECTOR3_ARRAY, 1);
+			append_opcode(GDScriptFunction::OPCODE_TYPE_ADJUST_PACKED_VECTOR3_ARRAY);
 			break;
 		case Variant::PACKED_COLOR_ARRAY:
-			append(GDScriptFunction::OPCODE_TYPE_ADJUST_PACKED_COLOR_ARRAY, 1);
+			append_opcode(GDScriptFunction::OPCODE_TYPE_ADJUST_PACKED_COLOR_ARRAY);
 			break;
 		case Variant::NIL:
 		case Variant::VARIANT_MAX:
@@ -546,7 +546,7 @@ void GDScriptByteCodeGenerator::write_unary_operator(const Address &p_target, Va
 		// Gather specific operator.
 		Variant::ValidatedOperatorEvaluator op_func = Variant::get_validated_operator_evaluator(p_operator, p_left_operand.type.builtin_type, Variant::NIL);
 
-		append(GDScriptFunction::OPCODE_OPERATOR_VALIDATED, 3);
+		append_opcode(GDScriptFunction::OPCODE_OPERATOR_VALIDATED);
 		append(p_left_operand);
 		append(Address());
 		append(p_target);
@@ -555,7 +555,7 @@ void GDScriptByteCodeGenerator::write_unary_operator(const Address &p_target, Va
 	}
 
 	// No specific types, perform variant evaluation.
-	append(GDScriptFunction::OPCODE_OPERATOR, 3);
+	append_opcode(GDScriptFunction::OPCODE_OPERATOR);
 	append(p_left_operand);
 	append(Address());
 	append(p_target);
@@ -575,7 +575,7 @@ void GDScriptByteCodeGenerator::write_binary_operator(const Address &p_target, V
 		// Gather specific operator.
 		Variant::ValidatedOperatorEvaluator op_func = Variant::get_validated_operator_evaluator(p_operator, p_left_operand.type.builtin_type, p_right_operand.type.builtin_type);
 
-		append(GDScriptFunction::OPCODE_OPERATOR_VALIDATED, 3);
+		append_opcode(GDScriptFunction::OPCODE_OPERATOR_VALIDATED);
 		append(p_left_operand);
 		append(p_right_operand);
 		append(p_target);
@@ -584,7 +584,7 @@ void GDScriptByteCodeGenerator::write_binary_operator(const Address &p_target, V
 	}
 
 	// No specific types, perform variant evaluation.
-	append(GDScriptFunction::OPCODE_OPERATOR, 3);
+	append_opcode(GDScriptFunction::OPCODE_OPERATOR);
 	append(p_left_operand);
 	append(p_right_operand);
 	append(p_target);
@@ -592,28 +592,28 @@ void GDScriptByteCodeGenerator::write_binary_operator(const Address &p_target, V
 }
 
 void GDScriptByteCodeGenerator::write_type_test(const Address &p_target, const Address &p_source, const Address &p_type) {
-	append(GDScriptFunction::OPCODE_EXTENDS_TEST, 3);
+	append_opcode(GDScriptFunction::OPCODE_EXTENDS_TEST);
 	append(p_source);
 	append(p_type);
 	append(p_target);
 }
 
 void GDScriptByteCodeGenerator::write_type_test_builtin(const Address &p_target, const Address &p_source, Variant::Type p_type) {
-	append(GDScriptFunction::OPCODE_IS_BUILTIN, 2);
+	append_opcode(GDScriptFunction::OPCODE_IS_BUILTIN);
 	append(p_source);
 	append(p_target);
 	append(p_type);
 }
 
 void GDScriptByteCodeGenerator::write_and_left_operand(const Address &p_left_operand) {
-	append(GDScriptFunction::OPCODE_JUMP_IF_NOT, 1);
+	append_opcode(GDScriptFunction::OPCODE_JUMP_IF_NOT);
 	append(p_left_operand);
 	logic_op_jump_pos1.push_back(opcodes.size());
 	append(0); // Jump target, will be patched.
 }
 
 void GDScriptByteCodeGenerator::write_and_right_operand(const Address &p_right_operand) {
-	append(GDScriptFunction::OPCODE_JUMP_IF_NOT, 1);
+	append_opcode(GDScriptFunction::OPCODE_JUMP_IF_NOT);
 	append(p_right_operand);
 	logic_op_jump_pos2.push_back(opcodes.size());
 	append(0); // Jump target, will be patched.
@@ -621,29 +621,29 @@ void GDScriptByteCodeGenerator::write_and_right_operand(const Address &p_right_o
 
 void GDScriptByteCodeGenerator::write_end_and(const Address &p_target) {
 	// If here means both operands are true.
-	append(GDScriptFunction::OPCODE_ASSIGN_TRUE, 1);
+	append_opcode(GDScriptFunction::OPCODE_ASSIGN_TRUE);
 	append(p_target);
 	// Jump away from the fail condition.
-	append(GDScriptFunction::OPCODE_JUMP, 0);
+	append_opcode(GDScriptFunction::OPCODE_JUMP);
 	append(opcodes.size() + 3);
 	// Here it means one of operands is false.
 	patch_jump(logic_op_jump_pos1.back()->get());
 	patch_jump(logic_op_jump_pos2.back()->get());
 	logic_op_jump_pos1.pop_back();
 	logic_op_jump_pos2.pop_back();
-	append(GDScriptFunction::OPCODE_ASSIGN_FALSE, 1);
+	append_opcode(GDScriptFunction::OPCODE_ASSIGN_FALSE);
 	append(p_target);
 }
 
 void GDScriptByteCodeGenerator::write_or_left_operand(const Address &p_left_operand) {
-	append(GDScriptFunction::OPCODE_JUMP_IF, 1);
+	append_opcode(GDScriptFunction::OPCODE_JUMP_IF);
 	append(p_left_operand);
 	logic_op_jump_pos1.push_back(opcodes.size());
 	append(0); // Jump target, will be patched.
 }
 
 void GDScriptByteCodeGenerator::write_or_right_operand(const Address &p_right_operand) {
-	append(GDScriptFunction::OPCODE_JUMP_IF, 1);
+	append_opcode(GDScriptFunction::OPCODE_JUMP_IF);
 	append(p_right_operand);
 	logic_op_jump_pos2.push_back(opcodes.size());
 	append(0); // Jump target, will be patched.
@@ -651,17 +651,17 @@ void GDScriptByteCodeGenerator::write_or_right_operand(const Address &p_right_op
 
 void GDScriptByteCodeGenerator::write_end_or(const Address &p_target) {
 	// If here means both operands are false.
-	append(GDScriptFunction::OPCODE_ASSIGN_FALSE, 1);
+	append_opcode(GDScriptFunction::OPCODE_ASSIGN_FALSE);
 	append(p_target);
 	// Jump away from the success condition.
-	append(GDScriptFunction::OPCODE_JUMP, 0);
+	append_opcode(GDScriptFunction::OPCODE_JUMP);
 	append(opcodes.size() + 3);
 	// Here it means one of operands is true.
 	patch_jump(logic_op_jump_pos1.back()->get());
 	patch_jump(logic_op_jump_pos2.back()->get());
 	logic_op_jump_pos1.pop_back();
 	logic_op_jump_pos2.pop_back();
-	append(GDScriptFunction::OPCODE_ASSIGN_TRUE, 1);
+	append_opcode(GDScriptFunction::OPCODE_ASSIGN_TRUE);
 	append(p_target);
 }
 
@@ -670,18 +670,18 @@ void GDScriptByteCodeGenerator::write_start_ternary(const Address &p_target) {
 }
 
 void GDScriptByteCodeGenerator::write_ternary_condition(const Address &p_condition) {
-	append(GDScriptFunction::OPCODE_JUMP_IF_NOT, 1);
+	append_opcode(GDScriptFunction::OPCODE_JUMP_IF_NOT);
 	append(p_condition);
 	ternary_jump_fail_pos.push_back(opcodes.size());
 	append(0); // Jump target, will be patched.
 }
 
 void GDScriptByteCodeGenerator::write_ternary_true_expr(const Address &p_expr) {
-	append(GDScriptFunction::OPCODE_ASSIGN, 2);
+	append_opcode(GDScriptFunction::OPCODE_ASSIGN);
 	append(ternary_result.back()->get());
 	append(p_expr);
 	// Jump away from the false path.
-	append(GDScriptFunction::OPCODE_JUMP, 0);
+	append_opcode(GDScriptFunction::OPCODE_JUMP);
 	ternary_jump_skip_pos.push_back(opcodes.size());
 	append(0);
 	// Fail must jump here.
@@ -690,7 +690,7 @@ void GDScriptByteCodeGenerator::write_ternary_true_expr(const Address &p_expr) {
 }
 
 void GDScriptByteCodeGenerator::write_ternary_false_expr(const Address &p_expr) {
-	append(GDScriptFunction::OPCODE_ASSIGN, 2);
+	append_opcode(GDScriptFunction::OPCODE_ASSIGN);
 	append(ternary_result.back()->get());
 	append(p_expr);
 }
@@ -707,7 +707,7 @@ void GDScriptByteCodeGenerator::write_set(const Address &p_target, const Address
 				IS_BUILTIN_TYPE(p_source, Variant::get_indexed_element_type(p_target.type.builtin_type))) {
 			// Use indexed setter instead.
 			Variant::ValidatedIndexedSetter setter = Variant::get_member_validated_indexed_setter(p_target.type.builtin_type);
-			append(GDScriptFunction::OPCODE_SET_INDEXED_VALIDATED, 3);
+			append_opcode(GDScriptFunction::OPCODE_SET_INDEXED_VALIDATED);
 			append(p_target);
 			append(p_index);
 			append(p_source);
@@ -715,7 +715,7 @@ void GDScriptByteCodeGenerator::write_set(const Address &p_target, const Address
 			return;
 		} else if (Variant::get_member_validated_keyed_setter(p_target.type.builtin_type)) {
 			Variant::ValidatedKeyedSetter setter = Variant::get_member_validated_keyed_setter(p_target.type.builtin_type);
-			append(GDScriptFunction::OPCODE_SET_KEYED_VALIDATED, 3);
+			append_opcode(GDScriptFunction::OPCODE_SET_KEYED_VALIDATED);
 			append(p_target);
 			append(p_index);
 			append(p_source);
@@ -724,7 +724,7 @@ void GDScriptByteCodeGenerator::write_set(const Address &p_target, const Address
 		}
 	}
 
-	append(GDScriptFunction::OPCODE_SET_KEYED, 3);
+	append_opcode(GDScriptFunction::OPCODE_SET_KEYED);
 	append(p_target);
 	append(p_index);
 	append(p_source);
@@ -735,7 +735,7 @@ void GDScriptByteCodeGenerator::write_get(const Address &p_target, const Address
 		if (IS_BUILTIN_TYPE(p_index, Variant::INT) && Variant::get_member_validated_indexed_getter(p_source.type.builtin_type)) {
 			// Use indexed getter instead.
 			Variant::ValidatedIndexedGetter getter = Variant::get_member_validated_indexed_getter(p_source.type.builtin_type);
-			append(GDScriptFunction::OPCODE_GET_INDEXED_VALIDATED, 3);
+			append_opcode(GDScriptFunction::OPCODE_GET_INDEXED_VALIDATED);
 			append(p_source);
 			append(p_index);
 			append(p_target);
@@ -743,7 +743,7 @@ void GDScriptByteCodeGenerator::write_get(const Address &p_target, const Address
 			return;
 		} else if (Variant::get_member_validated_keyed_getter(p_source.type.builtin_type)) {
 			Variant::ValidatedKeyedGetter getter = Variant::get_member_validated_keyed_getter(p_source.type.builtin_type);
-			append(GDScriptFunction::OPCODE_GET_KEYED_VALIDATED, 3);
+			append_opcode(GDScriptFunction::OPCODE_GET_KEYED_VALIDATED);
 			append(p_source);
 			append(p_index);
 			append(p_target);
@@ -751,7 +751,7 @@ void GDScriptByteCodeGenerator::write_get(const Address &p_target, const Address
 			return;
 		}
 	}
-	append(GDScriptFunction::OPCODE_GET_KEYED, 3);
+	append_opcode(GDScriptFunction::OPCODE_GET_KEYED);
 	append(p_source);
 	append(p_index);
 	append(p_target);
@@ -761,13 +761,13 @@ void GDScriptByteCodeGenerator::write_set_named(const Address &p_target, const S
 	if (HAS_BUILTIN_TYPE(p_target) && Variant::get_member_validated_setter(p_target.type.builtin_type, p_name) &&
 			IS_BUILTIN_TYPE(p_source, Variant::get_member_type(p_target.type.builtin_type, p_name))) {
 		Variant::ValidatedSetter setter = Variant::get_member_validated_setter(p_target.type.builtin_type, p_name);
-		append(GDScriptFunction::OPCODE_SET_NAMED_VALIDATED, 2);
+		append_opcode(GDScriptFunction::OPCODE_SET_NAMED_VALIDATED);
 		append(p_target);
 		append(p_source);
 		append(setter);
 		return;
 	}
-	append(GDScriptFunction::OPCODE_SET_NAMED, 2);
+	append_opcode(GDScriptFunction::OPCODE_SET_NAMED);
 	append(p_target);
 	append(p_source);
 	append(p_name);
@@ -776,26 +776,26 @@ void GDScriptByteCodeGenerator::write_set_named(const Address &p_target, const S
 void GDScriptByteCodeGenerator::write_get_named(const Address &p_target, const StringName &p_name, const Address &p_source) {
 	if (HAS_BUILTIN_TYPE(p_source) && Variant::get_member_validated_getter(p_source.type.builtin_type, p_name)) {
 		Variant::ValidatedGetter getter = Variant::get_member_validated_getter(p_source.type.builtin_type, p_name);
-		append(GDScriptFunction::OPCODE_GET_NAMED_VALIDATED, 2);
+		append_opcode(GDScriptFunction::OPCODE_GET_NAMED_VALIDATED);
 		append(p_source);
 		append(p_target);
 		append(getter);
 		return;
 	}
-	append(GDScriptFunction::OPCODE_GET_NAMED, 2);
+	append_opcode(GDScriptFunction::OPCODE_GET_NAMED);
 	append(p_source);
 	append(p_target);
 	append(p_name);
 }
 
 void GDScriptByteCodeGenerator::write_set_member(const Address &p_value, const StringName &p_name) {
-	append(GDScriptFunction::OPCODE_SET_MEMBER, 1);
+	append_opcode(GDScriptFunction::OPCODE_SET_MEMBER);
 	append(p_value);
 	append(p_name);
 }
 
 void GDScriptByteCodeGenerator::write_get_member(const Address &p_target, const StringName &p_name) {
-	append(GDScriptFunction::OPCODE_GET_MEMBER, 1);
+	append_opcode(GDScriptFunction::OPCODE_GET_MEMBER);
 	append(p_target);
 	append(p_name);
 }
@@ -804,11 +804,11 @@ void GDScriptByteCodeGenerator::write_assign_with_conversion(const Address &p_ta
 	switch (p_target.type.kind) {
 		case GDScriptDataType::BUILTIN: {
 			if (p_target.type.builtin_type == Variant::ARRAY && p_target.type.has_container_element_type()) {
-				append(GDScriptFunction::OPCODE_ASSIGN_TYPED_ARRAY, 2);
+				append_opcode(GDScriptFunction::OPCODE_ASSIGN_TYPED_ARRAY);
 				append(p_target);
 				append(p_source);
 			} else {
-				append(GDScriptFunction::OPCODE_ASSIGN_TYPED_BUILTIN, 2);
+				append_opcode(GDScriptFunction::OPCODE_ASSIGN_TYPED_BUILTIN);
 				append(p_target);
 				append(p_source);
 				append(p_target.type.builtin_type);
@@ -818,7 +818,7 @@ void GDScriptByteCodeGenerator::write_assign_with_conversion(const Address &p_ta
 			int class_idx = GDScriptLanguage::get_singleton()->get_global_map()[p_target.type.native_type];
 			Variant nc = GDScriptLanguage::get_singleton()->get_global_array()[class_idx];
 			class_idx = get_constant_pos(nc) | (GDScriptFunction::ADDR_TYPE_CONSTANT << GDScriptFunction::ADDR_BITS);
-			append(GDScriptFunction::OPCODE_ASSIGN_TYPED_NATIVE, 3);
+			append_opcode(GDScriptFunction::OPCODE_ASSIGN_TYPED_NATIVE);
 			append(p_target);
 			append(p_source);
 			append(class_idx);
@@ -828,7 +828,7 @@ void GDScriptByteCodeGenerator::write_assign_with_conversion(const Address &p_ta
 			Variant script = p_target.type.script_type;
 			int idx = get_constant_pos(script) | (GDScriptFunction::ADDR_TYPE_CONSTANT << GDScriptFunction::ADDR_BITS);
 
-			append(GDScriptFunction::OPCODE_ASSIGN_TYPED_SCRIPT, 3);
+			append_opcode(GDScriptFunction::OPCODE_ASSIGN_TYPED_SCRIPT);
 			append(p_target);
 			append(p_source);
 			append(idx);
@@ -837,7 +837,7 @@ void GDScriptByteCodeGenerator::write_assign_with_conversion(const Address &p_ta
 			ERR_PRINT("Compiler bug: unresolved assign.");
 
 			// Shouldn't get here, but fail-safe to a regular assignment
-			append(GDScriptFunction::OPCODE_ASSIGN, 2);
+			append_opcode(GDScriptFunction::OPCODE_ASSIGN);
 			append(p_target);
 			append(p_source);
 		}
@@ -846,29 +846,29 @@ void GDScriptByteCodeGenerator::write_assign_with_conversion(const Address &p_ta
 
 void GDScriptByteCodeGenerator::write_assign(const Address &p_target, const Address &p_source) {
 	if (p_target.type.kind == GDScriptDataType::BUILTIN && p_target.type.builtin_type == Variant::ARRAY && p_target.type.has_container_element_type()) {
-		append(GDScriptFunction::OPCODE_ASSIGN_TYPED_ARRAY, 2);
+		append_opcode(GDScriptFunction::OPCODE_ASSIGN_TYPED_ARRAY);
 		append(p_target);
 		append(p_source);
 	} else if (p_target.type.kind == GDScriptDataType::BUILTIN && p_source.type.kind == GDScriptDataType::BUILTIN && p_target.type.builtin_type != p_source.type.builtin_type) {
 		// Need conversion.
-		append(GDScriptFunction::OPCODE_ASSIGN_TYPED_BUILTIN, 2);
+		append_opcode(GDScriptFunction::OPCODE_ASSIGN_TYPED_BUILTIN);
 		append(p_target);
 		append(p_source);
 		append(p_target.type.builtin_type);
 	} else {
-		append(GDScriptFunction::OPCODE_ASSIGN, 2);
+		append_opcode(GDScriptFunction::OPCODE_ASSIGN);
 		append(p_target);
 		append(p_source);
 	}
 }
 
 void GDScriptByteCodeGenerator::write_assign_true(const Address &p_target) {
-	append(GDScriptFunction::OPCODE_ASSIGN_TRUE, 1);
+	append_opcode(GDScriptFunction::OPCODE_ASSIGN_TRUE);
 	append(p_target);
 }
 
 void GDScriptByteCodeGenerator::write_assign_false(const Address &p_target) {
-	append(GDScriptFunction::OPCODE_ASSIGN_FALSE, 1);
+	append_opcode(GDScriptFunction::OPCODE_ASSIGN_FALSE);
 	append(p_target);
 }
 
@@ -878,13 +878,13 @@ void GDScriptByteCodeGenerator::write_assign_default_parameter(const Address &p_
 }
 
 void GDScriptByteCodeGenerator::write_store_global(const Address &p_dst, int p_global_index) {
-	append(GDScriptFunction::OPCODE_STORE_GLOBAL, 1);
+	append_opcode(GDScriptFunction::OPCODE_STORE_GLOBAL);
 	append(p_dst);
 	append(p_global_index);
 }
 
 void GDScriptByteCodeGenerator::write_store_named_global(const Address &p_dst, const StringName &p_global) {
-	append(GDScriptFunction::OPCODE_STORE_NAMED_GLOBAL, 1);
+	append_opcode(GDScriptFunction::OPCODE_STORE_NAMED_GLOBAL);
 	append(p_dst);
 	append(p_global);
 }
@@ -894,20 +894,20 @@ void GDScriptByteCodeGenerator::write_cast(const Address &p_target, const Addres
 
 	switch (p_type.kind) {
 		case GDScriptDataType::BUILTIN: {
-			append(GDScriptFunction::OPCODE_CAST_TO_BUILTIN, 2);
+			append_opcode(GDScriptFunction::OPCODE_CAST_TO_BUILTIN);
 			index = p_type.builtin_type;
 		} break;
 		case GDScriptDataType::NATIVE: {
 			int class_idx = GDScriptLanguage::get_singleton()->get_global_map()[p_type.native_type];
 			Variant nc = GDScriptLanguage::get_singleton()->get_global_array()[class_idx];
-			append(GDScriptFunction::OPCODE_CAST_TO_NATIVE, 3);
+			append_opcode(GDScriptFunction::OPCODE_CAST_TO_NATIVE);
 			index = get_constant_pos(nc) | (GDScriptFunction::ADDR_TYPE_CONSTANT << GDScriptFunction::ADDR_BITS);
 		} break;
 		case GDScriptDataType::SCRIPT:
 		case GDScriptDataType::GDSCRIPT: {
 			Variant script = p_type.script_type;
 			int idx = get_constant_pos(script) | (GDScriptFunction::ADDR_TYPE_CONSTANT << GDScriptFunction::ADDR_BITS);
-			append(GDScriptFunction::OPCODE_CAST_TO_SCRIPT, 3);
+			append_opcode(GDScriptFunction::OPCODE_CAST_TO_SCRIPT);
 			index = idx;
 		} break;
 		default: {
@@ -921,7 +921,7 @@ void GDScriptByteCodeGenerator::write_cast(const Address &p_target, const Addres
 }
 
 void GDScriptByteCodeGenerator::write_call(const Address &p_target, const Address &p_base, const StringName &p_function_name, const Vector<Address> &p_arguments) {
-	append(p_target.mode == Address::NIL ? GDScriptFunction::OPCODE_CALL : GDScriptFunction::OPCODE_CALL_RETURN, 2 + p_arguments.size());
+	append_opcode_and_argcount(p_target.mode == Address::NIL ? GDScriptFunction::OPCODE_CALL : GDScriptFunction::OPCODE_CALL_RETURN, 2 + p_arguments.size());
 	for (int i = 0; i < p_arguments.size(); i++) {
 		append(p_arguments[i]);
 	}
@@ -932,7 +932,7 @@ void GDScriptByteCodeGenerator::write_call(const Address &p_target, const Addres
 }
 
 void GDScriptByteCodeGenerator::write_super_call(const Address &p_target, const StringName &p_function_name, const Vector<Address> &p_arguments) {
-	append(GDScriptFunction::OPCODE_CALL_SELF_BASE, 1 + p_arguments.size());
+	append_opcode_and_argcount(GDScriptFunction::OPCODE_CALL_SELF_BASE, 1 + p_arguments.size());
 	for (int i = 0; i < p_arguments.size(); i++) {
 		append(p_arguments[i]);
 	}
@@ -942,7 +942,7 @@ void GDScriptByteCodeGenerator::write_super_call(const Address &p_target, const 
 }
 
 void GDScriptByteCodeGenerator::write_call_async(const Address &p_target, const Address &p_base, const StringName &p_function_name, const Vector<Address> &p_arguments) {
-	append(GDScriptFunction::OPCODE_CALL_ASYNC, 2 + p_arguments.size());
+	append_opcode_and_argcount(GDScriptFunction::OPCODE_CALL_ASYNC, 2 + p_arguments.size());
 	for (int i = 0; i < p_arguments.size(); i++) {
 		append(p_arguments[i]);
 	}
@@ -953,7 +953,7 @@ void GDScriptByteCodeGenerator::write_call_async(const Address &p_target, const 
 }
 
 void GDScriptByteCodeGenerator::write_call_gdscript_utility(const Address &p_target, GDScriptUtilityFunctions::FunctionPtr p_function, const Vector<Address> &p_arguments) {
-	append(GDScriptFunction::OPCODE_CALL_GDSCRIPT_UTILITY, 1 + p_arguments.size());
+	append_opcode_and_argcount(GDScriptFunction::OPCODE_CALL_GDSCRIPT_UTILITY, 1 + p_arguments.size());
 	for (int i = 0; i < p_arguments.size(); i++) {
 		append(p_arguments[i]);
 	}
@@ -979,7 +979,7 @@ void GDScriptByteCodeGenerator::write_call_utility(const Address &p_target, cons
 	}
 
 	if (is_validated) {
-		append(GDScriptFunction::OPCODE_CALL_UTILITY_VALIDATED, 1 + p_arguments.size());
+		append_opcode_and_argcount(GDScriptFunction::OPCODE_CALL_UTILITY_VALIDATED, 1 + p_arguments.size());
 		for (int i = 0; i < p_arguments.size(); i++) {
 			append(p_arguments[i]);
 		}
@@ -987,7 +987,7 @@ void GDScriptByteCodeGenerator::write_call_utility(const Address &p_target, cons
 		append(p_arguments.size());
 		append(Variant::get_validated_utility_function(p_function));
 	} else {
-		append(GDScriptFunction::OPCODE_CALL_UTILITY, 1 + p_arguments.size());
+		append_opcode_and_argcount(GDScriptFunction::OPCODE_CALL_UTILITY, 1 + p_arguments.size());
 		for (int i = 0; i < p_arguments.size(); i++) {
 			append(p_arguments[i]);
 		}
@@ -1029,7 +1029,7 @@ void GDScriptByteCodeGenerator::write_call_builtin_type(const Address &p_target,
 		}
 	}
 
-	append(GDScriptFunction::OPCODE_CALL_BUILTIN_TYPE_VALIDATED, 2 + p_arguments.size());
+	append_opcode_and_argcount(GDScriptFunction::OPCODE_CALL_BUILTIN_TYPE_VALIDATED, 2 + p_arguments.size());
 
 	for (int i = 0; i < p_arguments.size(); i++) {
 		append(p_arguments[i]);
@@ -1060,7 +1060,7 @@ void GDScriptByteCodeGenerator::write_call_builtin_type_static(const Address &p_
 
 	if (!is_validated) {
 		// Perform regular call.
-		append(GDScriptFunction::OPCODE_CALL_BUILTIN_STATIC, p_arguments.size() + 1);
+		append_opcode_and_argcount(GDScriptFunction::OPCODE_CALL_BUILTIN_STATIC, p_arguments.size() + 1);
 		for (int i = 0; i < p_arguments.size(); i++) {
 			append(p_arguments[i]);
 		}
@@ -1079,7 +1079,7 @@ void GDScriptByteCodeGenerator::write_call_builtin_type_static(const Address &p_
 		}
 	}
 
-	append(GDScriptFunction::OPCODE_CALL_BUILTIN_TYPE_VALIDATED, 2 + p_arguments.size());
+	append_opcode_and_argcount(GDScriptFunction::OPCODE_CALL_BUILTIN_TYPE_VALIDATED, 2 + p_arguments.size());
 
 	for (int i = 0; i < p_arguments.size(); i++) {
 		append(p_arguments[i]);
@@ -1097,7 +1097,7 @@ void GDScriptByteCodeGenerator::write_call_native_static(const Address &p_target
 
 	if (!is_validated) {
 		// Perform regular call.
-		append(GDScriptFunction::OPCODE_CALL_NATIVE_STATIC, p_arguments.size() + 1);
+		append_opcode_and_argcount(GDScriptFunction::OPCODE_CALL_NATIVE_STATIC, p_arguments.size() + 1);
 		for (int i = 0; i < p_arguments.size(); i++) {
 			append(p_arguments[i]);
 		}
@@ -1109,7 +1109,7 @@ void GDScriptByteCodeGenerator::write_call_native_static(const Address &p_target
 }
 
 void GDScriptByteCodeGenerator::write_call_method_bind(const Address &p_target, const Address &p_base, MethodBind *p_method, const Vector<Address> &p_arguments) {
-	append(p_target.mode == Address::NIL ? GDScriptFunction::OPCODE_CALL_METHOD_BIND : GDScriptFunction::OPCODE_CALL_METHOD_BIND_RET, 2 + p_arguments.size());
+	append_opcode_and_argcount(p_target.mode == Address::NIL ? GDScriptFunction::OPCODE_CALL_METHOD_BIND : GDScriptFunction::OPCODE_CALL_METHOD_BIND_RET, 2 + p_arguments.size());
 	for (int i = 0; i < p_arguments.size(); i++) {
 		append(p_arguments[i]);
 	}
@@ -1120,9 +1120,9 @@ void GDScriptByteCodeGenerator::write_call_method_bind(const Address &p_target, 
 }
 
 void GDScriptByteCodeGenerator::write_call_ptrcall(const Address &p_target, const Address &p_base, MethodBind *p_method, const Vector<Address> &p_arguments) {
-#define CASE_TYPE(m_type)                                                               \
-	case Variant::m_type:                                                               \
-		append(GDScriptFunction::OPCODE_CALL_PTRCALL_##m_type, 2 + p_arguments.size()); \
+#define CASE_TYPE(m_type)                                                                                   \
+	case Variant::m_type:                                                                                   \
+		append_opcode_and_argcount(GDScriptFunction::OPCODE_CALL_PTRCALL_##m_type, 2 + p_arguments.size()); \
 		break
 
 	bool is_ptrcall = true;
@@ -1166,12 +1166,12 @@ void GDScriptByteCodeGenerator::write_call_ptrcall(const Address &p_target, cons
 			CASE_TYPE(PACKED_VECTOR3_ARRAY);
 			CASE_TYPE(PACKED_COLOR_ARRAY);
 			default:
-				append(p_target.mode == Address::NIL ? GDScriptFunction::OPCODE_CALL_METHOD_BIND : GDScriptFunction::OPCODE_CALL_METHOD_BIND_RET, 2 + p_arguments.size());
+				append_opcode_and_argcount(p_target.mode == Address::NIL ? GDScriptFunction::OPCODE_CALL_METHOD_BIND : GDScriptFunction::OPCODE_CALL_METHOD_BIND_RET, 2 + p_arguments.size());
 				is_ptrcall = false;
 				break;
 		}
 	} else {
-		append(GDScriptFunction::OPCODE_CALL_PTRCALL_NO_RETURN, 2 + p_arguments.size());
+		append_opcode_and_argcount(GDScriptFunction::OPCODE_CALL_PTRCALL_NO_RETURN, 2 + p_arguments.size());
 	}
 
 	for (int i = 0; i < p_arguments.size(); i++) {
@@ -1189,7 +1189,7 @@ void GDScriptByteCodeGenerator::write_call_ptrcall(const Address &p_target, cons
 }
 
 void GDScriptByteCodeGenerator::write_call_self(const Address &p_target, const StringName &p_function_name, const Vector<Address> &p_arguments) {
-	append(p_target.mode == Address::NIL ? GDScriptFunction::OPCODE_CALL : GDScriptFunction::OPCODE_CALL_RETURN, 2 + p_arguments.size());
+	append_opcode_and_argcount(p_target.mode == Address::NIL ? GDScriptFunction::OPCODE_CALL : GDScriptFunction::OPCODE_CALL_RETURN, 2 + p_arguments.size());
 	for (int i = 0; i < p_arguments.size(); i++) {
 		append(p_arguments[i]);
 	}
@@ -1200,7 +1200,7 @@ void GDScriptByteCodeGenerator::write_call_self(const Address &p_target, const S
 }
 
 void GDScriptByteCodeGenerator::write_call_self_async(const Address &p_target, const StringName &p_function_name, const Vector<Address> &p_arguments) {
-	append(GDScriptFunction::OPCODE_CALL_ASYNC, 2 + p_arguments.size());
+	append_opcode_and_argcount(GDScriptFunction::OPCODE_CALL_ASYNC, 2 + p_arguments.size());
 	for (int i = 0; i < p_arguments.size(); i++) {
 		append(p_arguments[i]);
 	}
@@ -1211,7 +1211,7 @@ void GDScriptByteCodeGenerator::write_call_self_async(const Address &p_target, c
 }
 
 void GDScriptByteCodeGenerator::write_call_script_function(const Address &p_target, const Address &p_base, const StringName &p_function_name, const Vector<Address> &p_arguments) {
-	append(p_target.mode == Address::NIL ? GDScriptFunction::OPCODE_CALL : GDScriptFunction::OPCODE_CALL_RETURN, 2 + p_arguments.size());
+	append_opcode_and_argcount(p_target.mode == Address::NIL ? GDScriptFunction::OPCODE_CALL : GDScriptFunction::OPCODE_CALL_RETURN, 2 + p_arguments.size());
 	for (int i = 0; i < p_arguments.size(); i++) {
 		append(p_arguments[i]);
 	}
@@ -1222,7 +1222,7 @@ void GDScriptByteCodeGenerator::write_call_script_function(const Address &p_targ
 }
 
 void GDScriptByteCodeGenerator::write_lambda(const Address &p_target, GDScriptFunction *p_function, const Vector<Address> &p_captures, bool p_use_self) {
-	append(p_use_self ? GDScriptFunction::OPCODE_CREATE_SELF_LAMBDA : GDScriptFunction::OPCODE_CREATE_LAMBDA, 1 + p_captures.size());
+	append_opcode_and_argcount(p_use_self ? GDScriptFunction::OPCODE_CREATE_SELF_LAMBDA : GDScriptFunction::OPCODE_CREATE_LAMBDA, 1 + p_captures.size());
 	for (int i = 0; i < p_captures.size(); i++) {
 		append(p_captures[i]);
 	}
@@ -1262,7 +1262,7 @@ void GDScriptByteCodeGenerator::write_construct(const Address &p_target, Variant
 			}
 		}
 		if (valid_constructor >= 0) {
-			append(GDScriptFunction::OPCODE_CONSTRUCT_VALIDATED, 1 + p_arguments.size());
+			append_opcode_and_argcount(GDScriptFunction::OPCODE_CONSTRUCT_VALIDATED, 1 + p_arguments.size());
 			for (int i = 0; i < p_arguments.size(); i++) {
 				append(p_arguments[i]);
 			}
@@ -1273,7 +1273,7 @@ void GDScriptByteCodeGenerator::write_construct(const Address &p_target, Variant
 		}
 	}
 
-	append(GDScriptFunction::OPCODE_CONSTRUCT, 1 + p_arguments.size());
+	append_opcode_and_argcount(GDScriptFunction::OPCODE_CONSTRUCT, 1 + p_arguments.size());
 	for (int i = 0; i < p_arguments.size(); i++) {
 		append(p_arguments[i]);
 	}
@@ -1283,7 +1283,7 @@ void GDScriptByteCodeGenerator::write_construct(const Address &p_target, Variant
 }
 
 void GDScriptByteCodeGenerator::write_construct_array(const Address &p_target, const Vector<Address> &p_arguments) {
-	append(GDScriptFunction::OPCODE_CONSTRUCT_ARRAY, 1 + p_arguments.size());
+	append_opcode_and_argcount(GDScriptFunction::OPCODE_CONSTRUCT_ARRAY, 1 + p_arguments.size());
 	for (int i = 0; i < p_arguments.size(); i++) {
 		append(p_arguments[i]);
 	}
@@ -1292,7 +1292,7 @@ void GDScriptByteCodeGenerator::write_construct_array(const Address &p_target, c
 }
 
 void GDScriptByteCodeGenerator::write_construct_typed_array(const Address &p_target, const GDScriptDataType &p_element_type, const Vector<Address> &p_arguments) {
-	append(GDScriptFunction::OPCODE_CONSTRUCT_TYPED_ARRAY, 2 + p_arguments.size());
+	append_opcode_and_argcount(GDScriptFunction::OPCODE_CONSTRUCT_TYPED_ARRAY, 2 + p_arguments.size());
 	for (int i = 0; i < p_arguments.size(); i++) {
 		append(p_arguments[i]);
 	}
@@ -1311,7 +1311,7 @@ void GDScriptByteCodeGenerator::write_construct_typed_array(const Address &p_tar
 }
 
 void GDScriptByteCodeGenerator::write_construct_dictionary(const Address &p_target, const Vector<Address> &p_arguments) {
-	append(GDScriptFunction::OPCODE_CONSTRUCT_DICTIONARY, 1 + p_arguments.size());
+	append_opcode_and_argcount(GDScriptFunction::OPCODE_CONSTRUCT_DICTIONARY, 1 + p_arguments.size());
 	for (int i = 0; i < p_arguments.size(); i++) {
 		append(p_arguments[i]);
 	}
@@ -1320,21 +1320,21 @@ void GDScriptByteCodeGenerator::write_construct_dictionary(const Address &p_targ
 }
 
 void GDScriptByteCodeGenerator::write_await(const Address &p_target, const Address &p_operand) {
-	append(GDScriptFunction::OPCODE_AWAIT, 1);
+	append_opcode(GDScriptFunction::OPCODE_AWAIT);
 	append(p_operand);
-	append(GDScriptFunction::OPCODE_AWAIT_RESUME, 1);
+	append_opcode(GDScriptFunction::OPCODE_AWAIT_RESUME);
 	append(p_target);
 }
 
 void GDScriptByteCodeGenerator::write_if(const Address &p_condition) {
-	append(GDScriptFunction::OPCODE_JUMP_IF_NOT, 1);
+	append_opcode(GDScriptFunction::OPCODE_JUMP_IF_NOT);
 	append(p_condition);
 	if_jmp_addrs.push_back(opcodes.size());
 	append(0); // Jump destination, will be patched.
 }
 
 void GDScriptByteCodeGenerator::write_else() {
-	append(GDScriptFunction::OPCODE_JUMP, 0); // Jump from true if block;
+	append_opcode(GDScriptFunction::OPCODE_JUMP); // Jump from true if block;
 	int else_jmp_addr = opcodes.size();
 	append(0); // Jump destination, will be patched.
 
@@ -1349,7 +1349,7 @@ void GDScriptByteCodeGenerator::write_endif() {
 }
 
 void GDScriptByteCodeGenerator::write_jump_if_shared(const Address &p_value) {
-	append(GDScriptFunction::OPCODE_JUMP_IF_SHARED, 1);
+	append_opcode(GDScriptFunction::OPCODE_JUMP_IF_SHARED);
 	append(p_value);
 	if_jmp_addrs.push_back(opcodes.size());
 	append(0); // Jump destination, will be patched.
@@ -1373,7 +1373,7 @@ void GDScriptByteCodeGenerator::write_for_assignment(const Address &p_variable, 
 	const Address &container = for_container_variables.back()->get();
 
 	// Assign container.
-	append(GDScriptFunction::OPCODE_ASSIGN, 2);
+	append_opcode(GDScriptFunction::OPCODE_ASSIGN);
 	append(container);
 	append(p_list);
 
@@ -1475,19 +1475,19 @@ void GDScriptByteCodeGenerator::write_for() {
 	}
 
 	// Begin loop.
-	append(begin_opcode, 3);
+	append_opcode(begin_opcode);
 	append(counter);
 	append(container);
 	append(iterator);
 	for_jmp_addrs.push_back(opcodes.size());
 	append(0); // End of loop address, will be patched.
-	append(GDScriptFunction::OPCODE_JUMP, 0);
+	append_opcode(GDScriptFunction::OPCODE_JUMP);
 	append(opcodes.size() + 6); // Skip over 'continue' code.
 
 	// Next iteration.
 	int continue_addr = opcodes.size();
 	continue_addrs.push_back(continue_addr);
-	append(iterate_opcode, 3);
+	append_opcode(iterate_opcode);
 	append(counter);
 	append(container);
 	append(iterator);
@@ -1497,7 +1497,7 @@ void GDScriptByteCodeGenerator::write_for() {
 
 void GDScriptByteCodeGenerator::write_endfor() {
 	// Jump back to loop check.
-	append(GDScriptFunction::OPCODE_JUMP, 0);
+	append_opcode(GDScriptFunction::OPCODE_JUMP);
 	append(continue_addrs.back()->get());
 	continue_addrs.pop_back();
 
@@ -1526,7 +1526,7 @@ void GDScriptByteCodeGenerator::start_while_condition() {
 
 void GDScriptByteCodeGenerator::write_while(const Address &p_condition) {
 	// Condition check.
-	append(GDScriptFunction::OPCODE_JUMP_IF_NOT, 1);
+	append_opcode(GDScriptFunction::OPCODE_JUMP_IF_NOT);
 	append(p_condition);
 	while_jmp_addrs.push_back(opcodes.size());
 	append(0); // End of loop address, will be patched.
@@ -1534,7 +1534,7 @@ void GDScriptByteCodeGenerator::write_while(const Address &p_condition) {
 
 void GDScriptByteCodeGenerator::write_endwhile() {
 	// Jump back to loop check.
-	append(GDScriptFunction::OPCODE_JUMP, 0);
+	append_opcode(GDScriptFunction::OPCODE_JUMP);
 	append(continue_addrs.back()->get());
 	continue_addrs.pop_back();
 
@@ -1572,28 +1572,28 @@ void GDScriptByteCodeGenerator::end_match() {
 }
 
 void GDScriptByteCodeGenerator::write_break() {
-	append(GDScriptFunction::OPCODE_JUMP, 0);
+	append_opcode(GDScriptFunction::OPCODE_JUMP);
 	current_breaks_to_patch.back()->get().push_back(opcodes.size());
 	append(0);
 }
 
 void GDScriptByteCodeGenerator::write_continue() {
-	append(GDScriptFunction::OPCODE_JUMP, 0);
+	append_opcode(GDScriptFunction::OPCODE_JUMP);
 	append(continue_addrs.back()->get());
 }
 
 void GDScriptByteCodeGenerator::write_continue_match() {
-	append(GDScriptFunction::OPCODE_JUMP, 0);
+	append_opcode(GDScriptFunction::OPCODE_JUMP);
 	match_continues_to_patch.back()->get().push_back(opcodes.size());
 	append(0);
 }
 
 void GDScriptByteCodeGenerator::write_breakpoint() {
-	append(GDScriptFunction::OPCODE_BREAKPOINT, 0);
+	append_opcode(GDScriptFunction::OPCODE_BREAKPOINT);
 }
 
 void GDScriptByteCodeGenerator::write_newline(int p_line) {
-	append(GDScriptFunction::OPCODE_LINE, 0);
+	append_opcode(GDScriptFunction::OPCODE_LINE);
 	append(p_line);
 	current_line = p_line;
 }
@@ -1611,23 +1611,23 @@ void GDScriptByteCodeGenerator::write_return(const Address &p_return_value) {
 				Variant script = element_type.script_type;
 				int script_idx = get_constant_pos(script) | (GDScriptFunction::ADDR_TYPE_CONSTANT << GDScriptFunction::ADDR_BITS);
 
-				append(GDScriptFunction::OPCODE_RETURN_TYPED_ARRAY, 2);
+				append_opcode(GDScriptFunction::OPCODE_RETURN_TYPED_ARRAY);
 				append(p_return_value);
 				append(script_idx);
 				append(element_type.kind == GDScriptDataType::BUILTIN ? element_type.builtin_type : Variant::OBJECT);
 				append(element_type.native_type);
 			} else if (function->return_type.kind == GDScriptDataType::BUILTIN && p_return_value.type.kind == GDScriptDataType::BUILTIN && function->return_type.builtin_type != p_return_value.type.builtin_type) {
 				// Add conversion.
-				append(GDScriptFunction::OPCODE_RETURN_TYPED_BUILTIN, 1);
+				append_opcode(GDScriptFunction::OPCODE_RETURN_TYPED_BUILTIN);
 				append(p_return_value);
 				append(function->return_type.builtin_type);
 			} else {
 				// Just assign.
-				append(GDScriptFunction::OPCODE_RETURN, 1);
+				append_opcode(GDScriptFunction::OPCODE_RETURN);
 				append(p_return_value);
 			}
 		} else {
-			append(GDScriptFunction::OPCODE_RETURN, 1);
+			append_opcode(GDScriptFunction::OPCODE_RETURN);
 			append(p_return_value);
 		}
 	} else {
@@ -1640,19 +1640,19 @@ void GDScriptByteCodeGenerator::write_return(const Address &p_return_value) {
 					int script_idx = get_constant_pos(script);
 					script_idx |= (GDScriptFunction::ADDR_TYPE_CONSTANT << GDScriptFunction::ADDR_BITS);
 
-					append(GDScriptFunction::OPCODE_RETURN_TYPED_ARRAY, 2);
+					append_opcode(GDScriptFunction::OPCODE_RETURN_TYPED_ARRAY);
 					append(p_return_value);
 					append(script_idx);
 					append(element_type.kind == GDScriptDataType::BUILTIN ? element_type.builtin_type : Variant::OBJECT);
 					append(element_type.native_type);
 				} else {
-					append(GDScriptFunction::OPCODE_RETURN_TYPED_BUILTIN, 1);
+					append_opcode(GDScriptFunction::OPCODE_RETURN_TYPED_BUILTIN);
 					append(p_return_value);
 					append(function->return_type.builtin_type);
 				}
 			} break;
 			case GDScriptDataType::NATIVE: {
-				append(GDScriptFunction::OPCODE_RETURN_TYPED_NATIVE, 2);
+				append_opcode(GDScriptFunction::OPCODE_RETURN_TYPED_NATIVE);
 				append(p_return_value);
 				int class_idx = GDScriptLanguage::get_singleton()->get_global_map()[function->return_type.native_type];
 				Variant nc = GDScriptLanguage::get_singleton()->get_global_array()[class_idx];
@@ -1664,7 +1664,7 @@ void GDScriptByteCodeGenerator::write_return(const Address &p_return_value) {
 				Variant script = function->return_type.script_type;
 				int script_idx = get_constant_pos(script) | (GDScriptFunction::ADDR_TYPE_CONSTANT << GDScriptFunction::ADDR_BITS);
 
-				append(GDScriptFunction::OPCODE_RETURN_TYPED_SCRIPT, 2);
+				append_opcode(GDScriptFunction::OPCODE_RETURN_TYPED_SCRIPT);
 				append(p_return_value);
 				append(script_idx);
 			} break;
@@ -1672,7 +1672,7 @@ void GDScriptByteCodeGenerator::write_return(const Address &p_return_value) {
 				ERR_PRINT("Compiler bug: unresolved return.");
 
 				// Shouldn't get here, but fail-safe to a regular return;
-				append(GDScriptFunction::OPCODE_RETURN, 1);
+				append_opcode(GDScriptFunction::OPCODE_RETURN);
 				append(p_return_value);
 			} break;
 		}
@@ -1680,7 +1680,7 @@ void GDScriptByteCodeGenerator::write_return(const Address &p_return_value) {
 }
 
 void GDScriptByteCodeGenerator::write_assert(const Address &p_test, const Address &p_message) {
-	append(GDScriptFunction::OPCODE_ASSERT, 2);
+	append_opcode(GDScriptFunction::OPCODE_ASSERT);
 	append(p_test);
 	append(p_message);
 }

@@ -331,8 +331,13 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 		return -1; // Unreachable.
 	}
 
-	void append(GDScriptFunction::Opcode p_code, int p_argument_count) {
-		opcodes.push_back((p_code & GDScriptFunction::INSTR_MASK) | (p_argument_count << GDScriptFunction::INSTR_BITS));
+	void append_opcode(GDScriptFunction::Opcode p_code) {
+		opcodes.push_back(p_code);
+	}
+
+	void append_opcode_and_argcount(GDScriptFunction::Opcode p_code, int p_argument_count) {
+		opcodes.push_back(p_code);
+		opcodes.push_back(p_argument_count);
 		instr_args_max = MAX(instr_args_max, p_argument_count);
 	}
 
