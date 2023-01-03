@@ -210,10 +210,10 @@ void NavigationMeshGenerator::_parse_geometry(const Transform &p_navmesh_xform, 
 			for (List<uint32_t>::Element *E = shape_owners.front(); E; E = E->next()) {
 				uint32_t shape_owner = E->get();
 				const int shape_count = static_body->shape_owner_get_shape_count(shape_owner);
+				if (static_body->is_shape_owner_disabled(shape_owner)) {
+					continue;
+				}
 				for (int i = 0; i < shape_count; i++) {
-					if (static_body->is_shape_owner_disabled(i)) {
-						continue;
-					}
 					Ref<Shape> s = static_body->shape_owner_get_shape(shape_owner, i);
 					if (s.is_null()) {
 						continue;
