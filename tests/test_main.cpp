@@ -92,6 +92,7 @@
 #include "tests/scene/test_code_edit.h"
 #include "tests/scene/test_curve.h"
 #include "tests/scene/test_gradient.h"
+#include "tests/scene/test_node.h"
 #include "tests/scene/test_path_2d.h"
 #include "tests/scene/test_path_3d.h"
 #include "tests/scene/test_primitives.h"
