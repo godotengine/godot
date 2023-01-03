@@ -3557,6 +3557,7 @@ void Node3DEditorViewport::_init_gizmo_instance(int p_idx) {
 }
 
 void Node3DEditorViewport::_finish_gizmo_instances() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	for (int i = 0; i < 3; i++) {
 		RS::get_singleton()->free(move_gizmo_instance[i]);
 		RS::get_singleton()->free(move_plane_gizmo_instance[i]);
@@ -5536,6 +5537,7 @@ Node3DEditorViewportContainer::Node3DEditorViewportContainer() {
 Node3DEditor *Node3DEditor::singleton = nullptr;
 
 Node3DEditorSelectedItem::~Node3DEditorSelectedItem() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	if (sbox_instance.is_valid()) {
 		RenderingServer::get_singleton()->free(sbox_instance);
 	}

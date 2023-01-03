@@ -60,6 +60,8 @@ void RendererSceneOcclusionCull::HZBuffer::clear() {
 	if (debug_image.is_valid()) {
 		debug_image.unref();
 	}
+
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RS::get_singleton()->free(debug_texture);
 }
 

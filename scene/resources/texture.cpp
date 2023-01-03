@@ -324,6 +324,7 @@ ImageTexture::ImageTexture() {}
 
 ImageTexture::~ImageTexture() {
 	if (texture.is_valid()) {
+		ERR_FAIL_NULL(RenderingServer::get_singleton());
 		RenderingServer::get_singleton()->free(texture);
 	}
 }
@@ -630,6 +631,7 @@ PortableCompressedTexture2D::PortableCompressedTexture2D() {}
 
 PortableCompressedTexture2D::~PortableCompressedTexture2D() {
 	if (texture.is_valid()) {
+		ERR_FAIL_NULL(RenderingServer::get_singleton());
 		RenderingServer::get_singleton()->free(texture);
 	}
 }
@@ -1041,6 +1043,7 @@ CompressedTexture2D::CompressedTexture2D() {}
 
 CompressedTexture2D::~CompressedTexture2D() {
 	if (texture.is_valid()) {
+		ERR_FAIL_NULL(RenderingServer::get_singleton());
 		RS::get_singleton()->free(texture);
 	}
 }
@@ -1225,6 +1228,7 @@ ImageTexture3D::ImageTexture3D() {
 
 ImageTexture3D::~ImageTexture3D() {
 	if (texture.is_valid()) {
+		ERR_FAIL_NULL(RenderingServer::get_singleton());
 		RS::get_singleton()->free(texture);
 	}
 }
@@ -1386,6 +1390,7 @@ CompressedTexture3D::CompressedTexture3D() {}
 
 CompressedTexture3D::~CompressedTexture3D() {
 	if (texture.is_valid()) {
+		ERR_FAIL_NULL(RenderingServer::get_singleton());
 		RS::get_singleton()->free(texture);
 	}
 }
@@ -1911,6 +1916,7 @@ CurveTexture::CurveTexture() {}
 
 CurveTexture::~CurveTexture() {
 	if (_texture.is_valid()) {
+		ERR_FAIL_NULL(RenderingServer::get_singleton());
 		RS::get_singleton()->free(_texture);
 	}
 }
@@ -2109,6 +2115,7 @@ CurveXYZTexture::CurveXYZTexture() {}
 
 CurveXYZTexture::~CurveXYZTexture() {
 	if (_texture.is_valid()) {
+		ERR_FAIL_NULL(RenderingServer::get_singleton());
 		RS::get_singleton()->free(_texture);
 	}
 }
@@ -2121,6 +2128,7 @@ GradientTexture1D::GradientTexture1D() {
 
 GradientTexture1D::~GradientTexture1D() {
 	if (texture.is_valid()) {
+		ERR_FAIL_NULL(RenderingServer::get_singleton());
 		RS::get_singleton()->free(texture);
 	}
 }
@@ -2263,6 +2271,7 @@ GradientTexture2D::GradientTexture2D() {
 
 GradientTexture2D::~GradientTexture2D() {
 	if (texture.is_valid()) {
+		ERR_FAIL_NULL(RenderingServer::get_singleton());
 		RS::get_singleton()->free(texture);
 	}
 }
@@ -2521,6 +2530,7 @@ void ProxyTexture::set_base(const Ref<Texture2D> &p_texture) {
 
 	base = p_texture;
 	if (base.is_valid()) {
+		ERR_FAIL_NULL(RenderingServer::get_singleton());
 		if (proxy_ph.is_valid()) {
 			RS::get_singleton()->texture_proxy_update(proxy, base->get_rid());
 			RS::get_singleton()->free(proxy_ph);
@@ -2571,6 +2581,7 @@ ProxyTexture::ProxyTexture() {
 }
 
 ProxyTexture::~ProxyTexture() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	if (proxy_ph.is_valid()) {
 		RS::get_singleton()->free(proxy_ph);
 	}
@@ -2828,6 +2839,7 @@ AnimatedTexture::AnimatedTexture() {
 }
 
 AnimatedTexture::~AnimatedTexture() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RS::get_singleton()->free(proxy);
 	RS::get_singleton()->free(proxy_ph);
 }
@@ -3031,6 +3043,7 @@ ImageTextureLayered::ImageTextureLayered(LayeredType p_layered_type) {
 
 ImageTextureLayered::~ImageTextureLayered() {
 	if (texture.is_valid()) {
+		ERR_FAIL_NULL(RenderingServer::get_singleton());
 		RS::get_singleton()->free(texture);
 	}
 }
@@ -3198,6 +3211,7 @@ CompressedTextureLayered::CompressedTextureLayered(LayeredType p_type) {
 
 CompressedTextureLayered::~CompressedTextureLayered() {
 	if (texture.is_valid()) {
+		ERR_FAIL_NULL(RenderingServer::get_singleton());
 		RS::get_singleton()->free(texture);
 	}
 }
@@ -3353,6 +3367,7 @@ CameraTexture::CameraTexture() {}
 
 CameraTexture::~CameraTexture() {
 	if (_texture.is_valid()) {
+		ERR_FAIL_NULL(RenderingServer::get_singleton());
 		RenderingServer::get_singleton()->free(_texture);
 	}
 }
@@ -3394,6 +3409,7 @@ PlaceholderTexture2D::PlaceholderTexture2D() {
 }
 
 PlaceholderTexture2D::~PlaceholderTexture2D() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RS::get_singleton()->free(rid);
 }
 
@@ -3441,6 +3457,7 @@ PlaceholderTexture3D::PlaceholderTexture3D() {
 	rid = RS::get_singleton()->texture_3d_placeholder_create();
 }
 PlaceholderTexture3D::~PlaceholderTexture3D() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RS::get_singleton()->free(rid);
 }
 
@@ -3499,5 +3516,6 @@ PlaceholderTextureLayered::PlaceholderTextureLayered(LayeredType p_type) {
 	rid = RS::get_singleton()->texture_2d_layered_placeholder_create(RS::TextureLayeredType(layered_type));
 }
 PlaceholderTextureLayered::~PlaceholderTextureLayered() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RS::get_singleton()->free(rid);
 }

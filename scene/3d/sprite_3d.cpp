@@ -611,6 +611,7 @@ SpriteBase3D::SpriteBase3D() {
 }
 
 SpriteBase3D::~SpriteBase3D() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RenderingServer::get_singleton()->free(mesh);
 	RenderingServer::get_singleton()->free(material);
 }

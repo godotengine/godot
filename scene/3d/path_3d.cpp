@@ -40,6 +40,7 @@ Path3D::Path3D() {
 }
 
 Path3D::~Path3D() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	if (debug_instance.is_valid()) {
 		RS::get_singleton()->free(debug_instance);
 	}

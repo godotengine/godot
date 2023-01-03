@@ -294,6 +294,8 @@ CanvasItemMaterial::CanvasItemMaterial() :
 CanvasItemMaterial::~CanvasItemMaterial() {
 	MutexLock lock(material_mutex);
 
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
+
 	if (shader_map.has(current_key)) {
 		shader_map[current_key].users--;
 		if (shader_map[current_key].users == 0) {

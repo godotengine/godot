@@ -197,6 +197,7 @@ NavigationAgent2D::NavigationAgent2D() {
 }
 
 NavigationAgent2D::~NavigationAgent2D() {
+	ERR_FAIL_NULL(NavigationServer2D::get_singleton());
 	NavigationServer2D::get_singleton()->free(agent);
 	agent = RID(); // Pointless
 }

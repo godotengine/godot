@@ -139,6 +139,7 @@ Occluder3D::Occluder3D() {
 
 Occluder3D::~Occluder3D() {
 	if (occluder.is_valid()) {
+		ERR_FAIL_NULL(RenderingServer::get_singleton());
 		RS::get_singleton()->free(occluder);
 	}
 }

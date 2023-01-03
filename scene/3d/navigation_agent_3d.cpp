@@ -204,6 +204,7 @@ NavigationAgent3D::NavigationAgent3D() {
 }
 
 NavigationAgent3D::~NavigationAgent3D() {
+	ERR_FAIL_NULL(NavigationServer3D::get_singleton());
 	NavigationServer3D::get_singleton()->free(agent);
 	agent = RID(); // Pointless
 }

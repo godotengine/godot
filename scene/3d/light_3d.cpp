@@ -476,6 +476,7 @@ Light3D::Light3D() {
 }
 
 Light3D::~Light3D() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RS::get_singleton()->instance_set_base(get_instance(), RID());
 
 	if (light.is_valid()) {
