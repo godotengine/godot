@@ -3365,7 +3365,10 @@ void EditorInspector::set_keying(bool p_active) {
 		return;
 	}
 	keying = p_active;
-	update_tree();
+	// Propagate the keying state to its editor properties.
+	Array args;
+	args.append(keying);
+	main_vbox->propagate_call(SNAME("set_keying"), args, true);
 }
 
 void EditorInspector::set_read_only(bool p_read_only) {
