@@ -171,7 +171,7 @@ public:
 		}
 	}
 
-	int get_points_count() const;
+	int get_point_count() const;
 };
 
 VARIANT_ENUM_CAST(Gradient::InterpolationMode);

@@ -2312,9 +2312,9 @@ void GradientTexture2D::_update() {
 	Ref<Image> image;
 	image.instantiate();
 
-	if (gradient->get_points_count() <= 1) { // No need to interpolate.
+	if (gradient->get_point_count() <= 1) { // No need to interpolate.
 		image->initialize_data(width, height, false, (use_hdr) ? Image::FORMAT_RGBAF : Image::FORMAT_RGBA8);
-		image->fill((gradient->get_points_count() == 1) ? gradient->get_color(0) : Color(0, 0, 0, 1));
+		image->fill((gradient->get_point_count() == 1) ? gradient->get_color(0) : Color(0, 0, 0, 1));
 	} else {
 		if (use_hdr) {
 			image->initialize_data(width, height, false, Image::FORMAT_RGBAF);
