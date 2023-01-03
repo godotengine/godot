@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="NavigationMeshGeneratorManager" inherits="Object" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Manager for [NavigationMeshGenerator] server implementations.
+	</brief_description>
+	<description>
+		[NavigationMeshGeneratorManager] is the API for registering [NavigationMeshGenerator] implementations, and for setting the default implementation.
+		[b]Note:[/b] It is not possible to switch navigation mesh generators at runtime. This class is only used on startup at the server initialization level by Godot.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="register_server">
+			<return type="void" />
+			<param index="0" name="name" type="String" />
+			<param index="1" name="create_callback" type="Callable" />
+			<description>
+				Register a [NavigationMeshGenerator] implementation by passing a [param name] and a [Callable] that returns a [NavigationMeshGenerator] object.
+			</description>
+		</method>
+		<method name="set_default_server">
+			<return type="void" />
+			<param index="0" name="name" type="String" />
+			<param index="1" name="priority" type="int" />
+			<description>
+				Set the default [NavigationMeshGenerator] implementation to the one identified by [param name], if [param priority] is greater than the priority of the current default implementation.
+			</description>
+		</method>
+	</methods>
+</class>

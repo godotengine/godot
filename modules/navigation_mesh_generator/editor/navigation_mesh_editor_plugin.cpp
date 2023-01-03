@@ -32,15 +32,16 @@
 
 #ifdef TOOLS_ENABLED
 
-#include "../navigation_mesh_generator.h"
 #include "core/io/marshalls.h"
 #include "core/io/resource_saver.h"
 #include "editor/editor_node.h"
 #include "scene/3d/mesh_instance_3d.h"
+#include "scene/3d/navigation_region_3d.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/label.h"
+#include "servers/navigation/navigation_mesh_generator.h"
 
 void NavigationMeshEditor::_node_removed(Node *p_node) {
 	if (p_node == node) {
@@ -63,14 +64,14 @@ void NavigationMeshEditor::_bake_pressed() {
 	button_bake->set_pressed(false);
 
 	ERR_FAIL_COND(!node);
-	Ref<NavigationMesh> navmesh = node->get_navigation_mesh();
-	if (!navmesh.is_valid()) {
+	Ref<NavigationMesh> navigation_mesh = node->get_navigation_mesh();
+	if (!navigation_mesh.is_valid()) {
 		err_dialog->set_text(TTR("A NavigationMesh resource must be set or created for this node to work."));
 		err_dialog->popup_centered();
 		return;
 	}
 
-	String path = navmesh->get_path();
+	String path = navigation_mesh->get_path();
 	if (!path.is_resource_file()) {
 		int srpos = path.find("::");
 		if (srpos != -1) {
@@ -97,15 +98,16 @@ void NavigationMeshEditor::_bake_pressed() {
 		}
 	}
 
-	NavigationMeshGenerator::get_singleton()->clear(node->get_navigation_mesh());
-	NavigationMeshGenerator::get_singleton()->bake(node->get_navigation_mesh(), node);
+	node->bake_navigation_mesh(true);
 
 	node->update_gizmos();
 }
 
 void NavigationMeshEditor::_clear_pressed() {
 	if (node) {
-		NavigationMeshGenerator::get_singleton()->clear(node->get_navigation_mesh());
+		if (node->get_navigation_mesh().is_valid()) {
+			node->get_navigation_mesh()->clear();
+		}
 	}
 
 	button_bake->set_pressed(false);
@@ -134,14 +136,15 @@ NavigationMeshEditor::NavigationMeshEditor() {
 	button_bake->set_flat(true);
 	bake_hbox->add_child(button_bake);
 	button_bake->set_toggle_mode(true);
-	button_bake->set_text(TTR("Bake NavMesh"));
+	button_bake->set_text(TTR("Bake NavigationMesh"));
+	button_bake->set_tooltip_text(TTR("Bakes the NavigationMesh by first parsing the scene for source geometry and then creating the navigation mesh vertices and indices."));
 	button_bake->connect("pressed", callable_mp(this, &NavigationMeshEditor::_bake_pressed));
 
 	button_reset = memnew(Button);
 	button_reset->set_flat(true);
 	bake_hbox->add_child(button_reset);
-	// No button text, we only use a revert icon which is set when entering the tree.
-	button_reset->set_tooltip_text(TTR("Clear the navigation mesh."));
+	button_reset->set_text(TTR("Clear NavigationMesh"));
+	button_reset->set_tooltip_text(TTR("Clears the internal NavigationMesh vertices and indices."));
 	button_reset->connect("pressed", callable_mp(this, &NavigationMeshEditor::_clear_pressed));
 
 	bake_info = memnew(Label);

@@ -32,8 +32,10 @@
 
 #include "register_types.h"
 
-#include "core/object/class_db.h"
 #include "grid_map.h"
+
+#include "geometry_parser/gridmap_navigation_geometry_parser_3d.h"
+#include "servers/navigation/navigation_mesh_generator.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/grid_map_editor_plugin.h"
@@ -42,6 +44,8 @@
 void initialize_gridmap_module(ModuleInitializationLevel p_level) {
 	if (p_level == MODULE_INITIALIZATION_LEVEL_SCENE) {
 		GDREGISTER_CLASS(GridMap);
+
+		NavigationMeshGenerator::get_singleton()->register_geometry_parser_3d(memnew(GridMap3DNavigationGeometryParser3D));
 	}
 #ifdef TOOLS_ENABLED
 	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {

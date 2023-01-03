@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="NavigationGeometryParser3D" inherits="RefCounted" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Parser to contribute a node's geometry data for [NavigationMesh] baking.
+	</brief_description>
+	<description>
+		Parser to contribute a node's geometry data for [NavigationMesh] baking. If a script extends this class and the function [method _parses_node] is overridden and returns [code]true[/code], the overridden function [method _parse_geometry] gets called and can be used to add custom geometry data for the [NavigationMesh] baking process.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_parse_geometry" qualifiers="virtual const">
+			<return type="void" />
+			<param index="0" name="node" type="Node" />
+			<param index="1" name="navigation_mesh" type="NavigationMesh" />
+			<param index="2" name="source_geometry" type="NavigationMeshSourceGeometryData3D" />
+			<description>
+				Called when overridden and the [NavigationMeshGenerator] is parsing geometry for [NavigationMesh] baking. Custom 3D geometry can be added to the [param source_geometry].
+			</description>
+		</method>
+		<method name="_parses_node" qualifiers="virtual const">
+			<return type="bool" />
+			<param index="0" name="node" type="Node" />
+			<description>
+				Called when parsing geometry nodes for [NavigationMesh] baking. If [code]true[/code] will call [method _parse_geometry] with this node.
+			</description>
+		</method>
+	</methods>
+</class>

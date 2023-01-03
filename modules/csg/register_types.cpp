@@ -34,6 +34,9 @@
 
 #include "csg_shape.h"
 
+#include "modules/csg/geometry_parser/csgshape3d_navigation_geometry_parser_3d.h"
+#include "servers/navigation/navigation_mesh_generator.h"
+
 #ifdef TOOLS_ENABLED
 #include "editor/csg_gizmos.h"
 #endif
@@ -49,6 +52,8 @@ void initialize_csg_module(ModuleInitializationLevel p_level) {
 		GDREGISTER_CLASS(CSGTorus3D);
 		GDREGISTER_CLASS(CSGPolygon3D);
 		GDREGISTER_CLASS(CSGCombiner3D);
+
+		NavigationMeshGenerator::get_singleton()->register_geometry_parser_3d(memnew(CSGShape3DNavigationGeometryParser3D));
 	}
 #ifdef TOOLS_ENABLED
 	if (p_level == MODULE_INITIALIZATION_LEVEL_EDITOR) {

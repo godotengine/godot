@@ -116,6 +116,7 @@
 #include "tests/test_macros.h"
 
 #include "scene/theme/theme_db.h"
+#include "servers/navigation/navigation_mesh_generator.h"
 #include "servers/navigation_server_2d.h"
 #include "servers/navigation_server_3d.h"
 #include "servers/physics_server_2d.h"
@@ -196,6 +197,7 @@ struct GodotTestCaseListener : public doctest::IReporter {
 	PhysicsServer2D *physics_server_2d = nullptr;
 	NavigationServer3D *navigation_server_3d = nullptr;
 	NavigationServer2D *navigation_server_2d = nullptr;
+	NavigationMeshGenerator *navigation_mesh_generator = nullptr;
 	ThemeDB *theme_db = nullptr;
 
 	void test_case_start(const doctest::TestCaseData &p_in) override {
@@ -230,6 +232,9 @@ struct GodotTestCaseListener : public doctest::IReporter {
 
 			navigation_server_3d = NavigationServer3DManager::new_default_server();
 			navigation_server_2d = memnew(NavigationServer2D);
+
+			// creating the server and singleton here is to late for modules
+			//navigation_mesh_generator = NavigationMeshGeneratorManager::get_singleton()->new_default_server();
 
 			memnew(InputMap);
 			InputMap::get_singleton()->load_default();
@@ -277,6 +282,11 @@ struct GodotTestCaseListener : public doctest::IReporter {
 		if (theme_db) {
 			memdelete(theme_db);
 			theme_db = nullptr;
+		}
+
+		if (navigation_mesh_generator) {
+			memdelete(navigation_mesh_generator);
+			navigation_mesh_generator = nullptr;
 		}
 
 		if (navigation_server_3d) {

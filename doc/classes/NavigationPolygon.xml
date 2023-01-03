@@ -1,44 +1,48 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="NavigationPolygon" inherits="Resource" is_experimental="true" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		A node that has methods to draw outlines or use indices of vertices to create navigation polygons.
+		A NavigationPolygon is used in pathfinding to describe the traversable area that is safe from collision and other obstructions, assuming an agent's center position at zero radius.
 	</brief_description>
 	<description>
-		There are two ways to create polygons. Either by using the [method add_outline] method, or using the [method add_polygon] method.
+		A NavigationPolygon is used in pathfinding to describe the traversable area that is safe from collision and other obstructions, assuming an agent's center position at zero radius. The mesh data can be created and baked to polygons with the [NavigationMeshGenerator] by drawing outlines in the Editor, or defining outlines by script, or by parsing source geometry from the [SceneTree]. The mesh data can also be created without outlines and baking by adding the required arrays of vertices and polygon indices more manually and calling [method commit_changes] afterwards.
+		When doing procedual changes a call to [method commit_changes] is required to apply all the made changes and to synchronize the changes with the [NavigationServer2D].
+		In scripts there are two more manual ways to create navigation polygons. Either by using the [method add_outline] method and baking with the [NavigationMeshGenerator], or using the methods [method set_vertices] and [method set_polygons] directly.
 		Using [method add_outline]:
 		[codeblocks]
 		[gdscript]
-		var polygon = NavigationPolygon.new()
-		var outline = PackedVector2Array([Vector2(0, 0), Vector2(0, 50), Vector2(50, 50), Vector2(50, 0)])
-		polygon.add_outline(outline)
-		polygon.make_polygons_from_outlines()
-		$NavigationRegion2D.navigation_polygon = polygon
+		var new_navigation_polygon = NavigationPolygon.new()
+		var new_navigation_polygon_outline = PackedVector2Array([Vector2(0, 0), Vector2(0, 50), Vector2(50, 50), Vector2(50, 0)])
+		new_navigation_polygon.add_outline(new_navigation_polygon_outline)
+		NavigationMeshGenerator.bake_2d_from_source_geometry_data(new_navigation_polygon, NavigationMeshSourceGeometryData2D.new());
+		$NavigationRegion2D.navigation_polygon = new_navigation_polygon
 		[/gdscript]
 		[csharp]
-		var polygon = new NavigationPolygon();
-		var outline = new Vector2[] { new Vector2(0, 0), new Vector2(0, 50), new Vector2(50, 50), new Vector2(50, 0) };
-		polygon.AddOutline(outline);
-		polygon.MakePolygonsFromOutlines();
-		GetNode&lt;NavigationRegion2D&gt;("NavigationRegion2D").NavigationPolygon = polygon;
+		var new_navigation_polygon = new NavigationPolygon();
+		var new_navigation_polygon_outline = new Vector2[] { new Vector2(0, 0), new Vector2(0, 50), new Vector2(50, 50), new Vector2(50, 0) };
+		new_navigation_polygon.AddOutline(new_navigation_polygon_outline);
+		NavigationMeshGenerator.Bake2DFromSourceGeometryData(new_navigation_polygon, new NavigationMeshSourceGeometryData2D());
+		GetNode&lt;NavigationRegion2D&gt;("NavigationRegion2D").NavigationPolygon = new_navigation_polygon;
 		[/csharp]
 		[/codeblocks]
 		Using [method add_polygon] and indices of the vertices array.
 		[codeblocks]
 		[gdscript]
-		var polygon = NavigationPolygon.new()
-		var vertices = PackedVector2Array([Vector2(0, 0), Vector2(0, 50), Vector2(50, 50), Vector2(50, 0)])
-		polygon.vertices = vertices
-		var indices = PackedInt32Array([0, 1, 2, 3])
-		polygon.add_polygon(indices)
-		$NavigationRegion2D.navigation_polygon = polygon
+		var new_navigation_polygon = NavigationPolygon.new()
+		var new_navigation_polygon_vertices = PackedVector2Array([Vector2(0, 0), Vector2(0, 50), Vector2(50, 50), Vector2(50, 0)])
+		new_navigation_polygon.vertices = new_navigation_polygon_vertices
+		var new_navigation_polygon_polygon_indices = PackedInt32Array([0, 1, 2, 3])
+		new_navigation_polygon.add_polygon(new_navigation_polygon_polygon_indices)
+		new_navigation_polygon.commit_changes()
+		$NavigationRegion2D.navigation_polygon = new_navigation_polygon
 		[/gdscript]
 		[csharp]
-		var polygon = new NavigationPolygon();
-		var vertices = new Vector2[] { new Vector2(0, 0), new Vector2(0, 50), new Vector2(50, 50), new Vector2(50, 0) };
-		polygon.Vertices = vertices;
-		var indices = new int[] { 0, 1, 2, 3 };
-		polygon.AddPolygon(indices);
-		GetNode&lt;NavigationRegion2D&gt;("NavigationRegion2D").NavigationPolygon = polygon;
+		var new_navigation_polygon = new NavigationPolygon();
+		var new_navigation_polygon_vertices = new Vector2[] { new Vector2(0, 0), new Vector2(0, 50), new Vector2(50, 50), new Vector2(50, 0) };
+		new_navigation_polygon.Vertices = new_navigation_polygon_vertices;
+		var new_navigation_polygon_polygon_indices = new int[] { 0, 1, 2, 3 };
+		new_navigation_polygon.AddPolygon(new_navigation_polygon_polygon_indices);
+		new_navigation_polygon.CommitChanges();
+		GetNode&lt;NavigationRegion2D&gt;("NavigationRegion2D").NavigationPolygon = new_navigation_polygon;
 		[/csharp]
 		[/codeblocks]
 	</description>
@@ -51,7 +55,7 @@
 			<return type="void" />
 			<param index="0" name="outline" type="PackedVector2Array" />
 			<description>
-				Appends a [PackedVector2Array] that contains the vertices of an outline to the internal array that contains all the outlines. You have to call [method make_polygons_from_outlines] in order for this array to be converted to polygons that the engine will use.
+				Appends a [PackedVector2Array] that contains the vertices of an outline to the internal array that contains all the outlines.
 			</description>
 		</method>
 		<method name="add_outline_at_index">
@@ -59,7 +63,7 @@
 			<param index="0" name="outline" type="PackedVector2Array" />
 			<param index="1" name="index" type="int" />
 			<description>
-				Adds a [PackedVector2Array] that contains the vertices of an outline to the internal array that contains all the outlines at a fixed position. You have to call [method make_polygons_from_outlines] in order for this array to be converted to polygons that the engine will use.
+				Adds a [PackedVector2Array] that contains the vertices of an outline to the internal array that contains all the outlines at a fixed position.
 			</description>
 		</method>
 		<method name="add_polygon">
@@ -81,6 +85,25 @@
 				Clears the array of polygons, but it doesn't clear the array of outlines and vertices.
 			</description>
 		</method>
+		<method name="commit_changes">
+			<return type="void" />
+			<description>
+				Applies all changes to vertices and polygons and synchronizes with the [NavigationServer2D].
+			</description>
+		</method>
+		<method name="get_baked_outlines" qualifiers="const">
+			<return type="PackedVector2Array[]" />
+			<description>
+				Returns the array of baked outlines. The baked outlines are the result of a finished [NavigationMeshGenerator] baking process and primarily used for debugging purposes.
+			</description>
+		</method>
+		<method name="get_collision_mask_value" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="layer_number" type="int" />
+			<description>
+				Returns whether or not the specified layer of the [member geometry_collision_mask] is enabled, given a [param layer_number] between 1 and 32.
+			</description>
+		</method>
 		<method name="get_navigation_mesh">
 			<return type="NavigationMesh" />
 			<description>
@@ -89,7 +112,7 @@
 		</method>
 		<method name="get_outline" qualifiers="const">
 			<return type="PackedVector2Array" />
-			<param index="0" name="idx" type="int" />
+			<param index="0" name="index" type="int" />
 			<description>
 				Returns a [PackedVector2Array] containing the vertices of an outline that was created in the editor or by script.
 			</description>
@@ -100,9 +123,15 @@
 				Returns the number of outlines that were created in the editor or by script.
 			</description>
 		</method>
+		<method name="get_outlines" qualifiers="const">
+			<return type="PackedVector2Array[]" />
+			<description>
+				Returns the array of user defined polygon outlines.
+			</description>
+		</method>
 		<method name="get_polygon">
 			<return type="PackedInt32Array" />
-			<param index="0" name="idx" type="int" />
+			<param index="0" name="index" type="int" />
 			<description>
 				Returns a [PackedInt32Array] containing the indices of the vertices of a created polygon.
 			</description>
@@ -110,7 +139,13 @@
 		<method name="get_polygon_count" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the count of all polygons.
+				Returns the number of polygons.
+			</description>
+		</method>
+		<method name="get_polygons" qualifiers="const">
+			<return type="PackedInt32Array[]" />
+			<description>
+				Returns the array of polygons used by the internal navigation mesh. Each polygon array consists of the indices for the vertices that make the polygon.
 			</description>
 		</method>
 		<method name="get_vertices" qualifiers="const">
@@ -119,33 +154,139 @@
 				Returns a [PackedVector2Array] containing all the vertices being used to create the polygons.
 			</description>
 		</method>
-		<method name="make_polygons_from_outlines">
+		<method name="make_polygons_from_outlines" is_deprecated="true">
 			<return type="void" />
 			<description>
 				Creates polygons from the outlines added in the editor or by script.
+				[b]Deprecated:[/b] Use the [NavigationMeshGenerator] bake functions to convert the defined outlines into optimized polygons.
 			</description>
 		</method>
 		<method name="remove_outline">
 			<return type="void" />
-			<param index="0" name="idx" type="int" />
+			<param index="0" name="index" type="int" />
 			<description>
-				Removes an outline created in the editor or by script. You have to call [method make_polygons_from_outlines] for the polygons to update.
+				Removes an outline created in the editor or by script.
+			</description>
+		</method>
+		<method name="set_baked_outlines">
+			<return type="void" />
+			<param index="0" name="baked_outlines" type="PackedVector2Array[]" />
+			<description>
+				Sets the array of baked outlines. The baked outlines are the result of a finished [NavigationMeshGenerator] baking process and primarily used for debugging purposes.
+			</description>
+		</method>
+		<method name="set_collision_mask_value">
+			<return type="void" />
+			<param index="0" name="layer_number" type="int" />
+			<param index="1" name="value" type="bool" />
+			<description>
+				Based on [param value], enables or disables the specified layer in the [member geometry_collision_mask], given a [param layer_number] between 1 and 32.
 			</description>
 		</method>
 		<method name="set_outline">
 			<return type="void" />
-			<param index="0" name="idx" type="int" />
+			<param index="0" name="index" type="int" />
 			<param index="1" name="outline" type="PackedVector2Array" />
 			<description>
-				Changes an outline created in the editor or by script. You have to call [method make_polygons_from_outlines] for the polygons to update.
+				Changes an outline created in the editor or by script. You have to call [method commit_changes] for the polygons to update.
+			</description>
+		</method>
+		<method name="set_outlines">
+			<return type="void" />
+			<param index="0" name="outlines" type="PackedVector2Array[]" />
+			<description>
+				Sets the outline arrays. The outlines need to be baked to actual navigation mesh polygons by using the [NavigationMeshGenerator].
+			</description>
+		</method>
+		<method name="set_polygons">
+			<return type="void" />
+			<param index="0" name="polygons" type="PackedInt32Array[]" />
+			<description>
+				Sets the navigation mesh polygons. Each polygon array needs to consist of the indices for the vertices that make the polygon.
 			</description>
 		</method>
 		<method name="set_vertices">
 			<return type="void" />
 			<param index="0" name="vertices" type="PackedVector2Array" />
 			<description>
-				Sets the vertices that can be then indexed to create polygons with the [method add_polygon] method.
+				Sets the vertices that need to be indexed with the [method add_polygon] or [method set_polygons] methods. When finished changing the navigation polygon call [method commit_changes] in order to synchronize the changes with the [NavigationServer2D].
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="agent_radius" type="float" setter="set_agent_radius" getter="get_agent_radius" default="10.0">
+			The distance to erode/shrink the traversable area from obstructions when baking polygons.
+		</member>
+		<member name="geometry_collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="4294967295">
+			The physics layers to scan for static colliders. Only used when [member geometry_parsed_geometry_type] is [constant PARSED_GEOMETRY_STATIC_COLLIDERS] or [constant PARSED_GEOMETRY_BOTH].
+		</member>
+		<member name="geometry_parsed_geometry_type" type="int" setter="set_parsed_geometry_type" getter="get_parsed_geometry_type" enum="NavigationPolygon.ParsedGeometryType" default="0">
+			Determines which type of nodes will be parsed as geometry. See [enum ParsedGeometryType] for possible values.
+		</member>
+		<member name="geometry_source_geometry_mode" type="int" setter="set_source_geometry_mode" getter="get_source_geometry_mode" enum="NavigationPolygon.SourceGeometryMode" default="0">
+			The source of the geometry used when baking. See [enum SourceGeometryMode] for possible values.
+		</member>
+		<member name="geometry_source_group_name" type="StringName" setter="set_source_group_name" getter="get_source_group_name" default="&amp;&quot;navigation_polygon_source_group&quot;">
+			The name of the group to scan for geometry. Only used when [member geometry_source_geometry_mode] is [constant SOURCE_GEOMETRY_GROUPS_WITH_CHILDREN] or [constant SOURCE_GEOMETRY_GROUPS_EXPLICIT].
+		</member>
+		<member name="offsetting_jointype" type="int" setter="set_offsetting_jointype" getter="get_offsetting_jointype" enum="NavigationPolygon.OffsettingJoinType" default="2">
+			The [enum OffsettingJoinType] used for joins when offsetting the bake polygons by [member agent_radius].
+		</member>
+		<member name="polygon_bake_fillrule" type="int" setter="set_polygon_bake_fillrule" getter="get_polygon_bake_fillrule" enum="NavigationPolygon.PolygonFillRule" default="0">
+			Filling rule for baking polygons that defines in complex polygons which polygon sub-regions will be considered inside a given polygon, and which sub-regions will not, aka what is a hole.
+		</member>
+	</members>
+	<constants>
+		<constant name="PARSED_GEOMETRY_MESH_INSTANCES" value="0" enum="ParsedGeometryType">
+			Parses mesh instances and other visual shapes as geometry. This includes [MeshInstance2D], [MultiMeshInstance2D], [Polygon2D], and [TileMap] (first TileMapLayer only) nodes.
+		</constant>
+		<constant name="PARSED_GEOMETRY_STATIC_COLLIDERS" value="1" enum="ParsedGeometryType">
+			Parses [StaticBody2D], and [TileMap] (first TileMapLayer only) colliders as geometry. The collider should be in any of the layers specified by [member geometry_collision_mask].
+		</constant>
+		<constant name="PARSED_GEOMETRY_BOTH" value="2" enum="ParsedGeometryType">
+			Both [constant PARSED_GEOMETRY_MESH_INSTANCES] and [constant PARSED_GEOMETRY_STATIC_COLLIDERS].
+		</constant>
+		<constant name="PARSED_GEOMETRY_MAX" value="3" enum="ParsedGeometryType">
+			Represents the size of the [enum ParsedGeometryType] enum.
+		</constant>
+		<constant name="SOURCE_GEOMETRY_ROOT_NODE_CHILDREN" value="0" enum="SourceGeometryMode">
+			Scans the child nodes of the root node recursively for geometry.
+		</constant>
+		<constant name="SOURCE_GEOMETRY_GROUPS_WITH_CHILDREN" value="1" enum="SourceGeometryMode">
+			Scans nodes in a group and their child nodes recursively for geometry. The group is specified by [member geometry_source_group_name].
+		</constant>
+		<constant name="SOURCE_GEOMETRY_GROUPS_EXPLICIT" value="2" enum="SourceGeometryMode">
+			Uses nodes in a group for geometry. The group is specified by [member geometry_source_group_name].
+		</constant>
+		<constant name="SOURCE_GEOMETRY_MAX" value="3" enum="SourceGeometryMode">
+			Represents the size of the [enum SourceGeometryMode] enum.
+		</constant>
+		<constant name="POLYGON_FILLRULE_EVENODD" value="0" enum="PolygonFillRule">
+			Only odd numbered sub-regions are filled
+		</constant>
+		<constant name="POLYGON_FILLRULE_NONZERO" value="1" enum="PolygonFillRule">
+			Only non-zero sub-regions are filled
+		</constant>
+		<constant name="POLYGON_FILLRULE_POSITIVE" value="2" enum="PolygonFillRule">
+			Only sub-regions with winding counts greater zero are filled.
+		</constant>
+		<constant name="POLYGON_FILLRULE_NEGATIVE" value="3" enum="PolygonFillRule">
+			Only sub-regions with winding counts smaller zero are filled.
+		</constant>
+		<constant name="POLYGON_FILLRULE_MAX" value="4" enum="PolygonFillRule">
+			Represents the size of the [enum PolygonFillRule] enum.
+		</constant>
+		<constant name="OFFSETTING_JOINTYPE_SQUARE" value="0" enum="OffsettingJoinType">
+			Squaring is applied uniformally at all joins where the internal join angle is less that 90 degrees. The squared edge will be at exactly the offset distance from the join vertex.
+		</constant>
+		<constant name="OFFSETTING_JOINTYPE_ROUND" value="1" enum="OffsettingJoinType">
+			Rounding is applied to all joins that have convex external angles and the exact offset distance from the join vertex is maintained.
+		</constant>
+		<constant name="OFFSETTING_JOINTYPE_MITER" value="2" enum="OffsettingJoinType">
+			Creates mitered joins such that the line of junction bisects the angle. To avoid narrow angled joins producing excessively long and narrow spikes mitered joins are automatically squared when they exceed a given maximum miter distance relative to the offset distance.
+		</constant>
+		<constant name="OFFSETTING_JOINTYPE_MAX" value="3" enum="OffsettingJoinType">
+			Represents the size of the [enum OffsettingJoinType] enum.
+		</constant>
+	</constants>
 </class>

@@ -800,6 +800,16 @@ RID TileMap::get_navigation_map(int p_layer) const {
 	return RID();
 }
 
+void TileMap::set_bake_navigation(bool p_bake_navigation) {
+	bake_navigation = p_bake_navigation;
+	_clear_internals();
+	_recreate_internals();
+}
+
+bool TileMap::is_baking_navigation() {
+	return bake_navigation;
+}
+
 void TileMap::set_y_sort_enabled(bool p_enable) {
 	if (is_y_sort_enabled() == p_enable) {
 		return;
@@ -1800,46 +1810,48 @@ void TileMap::_navigation_update_dirty_quadrants(SelfList<TileMapQuadrant>::List
 		}
 		q.navigation_regions.clear();
 
-		// Get the navigation polygons and create regions.
-		for (const Vector2i &E_cell : q.cells) {
-			TileMapCell c = get_cell(q.layer, E_cell, true);
+		if (bake_navigation) {
+			// Get the navigation polygons and create regions.
+			for (const Vector2i &E_cell : q.cells) {
+				TileMapCell c = get_cell(q.layer, E_cell, true);
 
-			TileSetSource *source;
-			if (tile_set->has_source(c.source_id)) {
-				source = *tile_set->get_source(c.source_id);
+				TileSetSource *source;
+				if (tile_set->has_source(c.source_id)) {
+					source = *tile_set->get_source(c.source_id);
 
-				if (!source->has_tile(c.get_atlas_coords()) || !source->has_alternative_tile(c.get_atlas_coords(), c.alternative_tile)) {
-					continue;
-				}
-
-				TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
-				if (atlas_source) {
-					const TileData *tile_data;
-					if (q.runtime_tile_data_cache.has(E_cell)) {
-						tile_data = q.runtime_tile_data_cache[E_cell];
-					} else {
-						tile_data = atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile);
+					if (!source->has_tile(c.get_atlas_coords()) || !source->has_alternative_tile(c.get_atlas_coords(), c.alternative_tile)) {
+						continue;
 					}
-					q.navigation_regions[E_cell].resize(tile_set->get_navigation_layers_count());
 
-					for (int layer_index = 0; layer_index < tile_set->get_navigation_layers_count(); layer_index++) {
-						if (layer_index >= (int)layers.size() || !layers[layer_index].navigation_map.is_valid()) {
-							continue;
+					TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
+					if (atlas_source) {
+						const TileData *tile_data;
+						if (q.runtime_tile_data_cache.has(E_cell)) {
+							tile_data = q.runtime_tile_data_cache[E_cell];
+						} else {
+							tile_data = atlas_source->get_tile_data(c.get_atlas_coords(), c.alternative_tile);
 						}
-						Ref<NavigationPolygon> navigation_polygon;
-						navigation_polygon = tile_data->get_navigation_polygon(layer_index);
+						q.navigation_regions[E_cell].resize(tile_set->get_navigation_layers_count());
 
-						if (navigation_polygon.is_valid()) {
-							Transform2D tile_transform;
-							tile_transform.set_origin(map_to_local(E_cell));
+						for (int layer_index = 0; layer_index < tile_set->get_navigation_layers_count(); layer_index++) {
+							if (layer_index >= (int)layers.size() || !layers[layer_index].navigation_map.is_valid()) {
+								continue;
+							}
+							Ref<NavigationPolygon> navigation_polygon;
+							navigation_polygon = tile_data->get_navigation_polygon(layer_index);
 
-							RID region = NavigationServer2D::get_singleton()->region_create();
-							NavigationServer2D::get_singleton()->region_set_owner_id(region, get_instance_id());
-							NavigationServer2D::get_singleton()->region_set_map(region, layers[layer_index].navigation_map);
-							NavigationServer2D::get_singleton()->region_set_transform(region, tilemap_xform * tile_transform);
-							NavigationServer2D::get_singleton()->region_set_navigation_layers(region, tile_set->get_navigation_layer_layers(layer_index));
-							NavigationServer2D::get_singleton()->region_set_navigation_polygon(region, navigation_polygon);
-							q.navigation_regions[E_cell].write[layer_index] = region;
+							if (navigation_polygon.is_valid()) {
+								Transform2D tile_transform;
+								tile_transform.set_origin(map_to_local(E_cell));
+
+								RID region = NavigationServer2D::get_singleton()->region_create();
+								NavigationServer2D::get_singleton()->region_set_owner_id(region, get_instance_id());
+								NavigationServer2D::get_singleton()->region_set_map(region, layers[layer_index].navigation_map);
+								NavigationServer2D::get_singleton()->region_set_transform(region, tilemap_xform * tile_transform);
+								NavigationServer2D::get_singleton()->region_set_navigation_layers(region, tile_set->get_navigation_layer_layers(layer_index));
+								NavigationServer2D::get_singleton()->region_set_navigation_polygon(region, navigation_polygon);
+								q.navigation_regions[E_cell].write[layer_index] = region;
+							}
 						}
 					}
 				}
@@ -1876,7 +1888,7 @@ void TileMap::_navigation_draw_quadrant_debug(TileMapQuadrant *p_quadrant) {
 	bool show_navigation = false;
 	switch (navigation_visibility_mode) {
 		case TileMap::VISIBILITY_MODE_DEFAULT:
-			show_navigation = !Engine::get_singleton()->is_editor_hint() && (get_tree() && get_tree()->is_debugging_navigation_hint());
+			show_navigation = !Engine::get_singleton()->is_editor_hint() && (get_tree() && get_tree()->is_debugging_navigation_hint()) && bake_navigation;
 			break;
 		case TileMap::VISIBILITY_MODE_FORCE_HIDE:
 			show_navigation = false;
@@ -4153,6 +4165,9 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_navigation_map", "layer", "map"), &TileMap::set_navigation_map);
 	ClassDB::bind_method(D_METHOD("get_navigation_map", "layer"), &TileMap::get_navigation_map);
 
+	ClassDB::bind_method(D_METHOD("set_bake_navigation", "bake_navigation"), &TileMap::set_bake_navigation);
+	ClassDB::bind_method(D_METHOD("is_baking_navigation"), &TileMap::is_baking_navigation);
+
 	ClassDB::bind_method(D_METHOD("set_cell", "layer", "coords", "source_id", "atlas_coords", "alternative_tile"), &TileMap::set_cell, DEFVAL(TileSet::INVALID_SOURCE), DEFVAL(TileSetSource::INVALID_ATLAS_COORDS), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("erase_cell", "layer", "coords"), &TileMap::erase_cell);
 	ClassDB::bind_method(D_METHOD("get_cell_source_id", "layer", "coords", "use_proxies"), &TileMap::get_cell_source_id, DEFVAL(false));
@@ -4199,6 +4214,8 @@ void TileMap::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collision_animatable"), "set_collision_animatable", "is_collision_animatable");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_visibility_mode", PROPERTY_HINT_ENUM, "Default,Force Show,Force Hide"), "set_collision_visibility_mode", "get_collision_visibility_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_visibility_mode", PROPERTY_HINT_ENUM, "Default,Force Show,Force Hide"), "set_navigation_visibility_mode", "get_navigation_visibility_mode");
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "bake_navigation"), "set_bake_navigation", "is_baking_navigation");
 
 	ADD_ARRAY("layers", "layer_");
 

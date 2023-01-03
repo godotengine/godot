@@ -58,7 +58,6 @@ thirdparty_misc_sources = [
     # C++ sources
     "pcg.cpp",
     "polypartition.cpp",
-    "clipper.cpp",
     "smolv.cpp",
 ]
 thirdparty_misc_sources = [thirdparty_misc_dir + file for file in thirdparty_misc_sources]
@@ -114,6 +113,22 @@ if env["builtin_zlib"]:
         env_thirdparty.Append(CPPDEFINES=["ZLIB_DEBUG"])
 
     env_thirdparty.add_source_files(thirdparty_obj, thirdparty_zlib_sources)
+
+# Clipper2 Thirdparty source files used for polygon and polyline boolean operations e.g. Geometry2D
+if env["builtin_clipper2"]:
+    thirdparty_clipper_dir = "#thirdparty/clipper2/"
+    thirdparty_clipper_sources = [
+        "src/clipper.engine.cpp",
+        "src/clipper.offset.cpp",
+        "src/clipper.rectclip.cpp",
+    ]
+    thirdparty_clipper_sources = [thirdparty_clipper_dir + file for file in thirdparty_clipper_sources]
+
+    env_thirdparty.Prepend(CPPPATH=[thirdparty_clipper_dir + "include"])
+
+    env_thirdparty.Append(CPPDEFINES=["CLIPPER_ENABLED"])
+    env_thirdparty.add_source_files(thirdparty_obj, thirdparty_clipper_sources)
+    env.Append(CPPDEFINES=["CLIPPER_ENABLED"])
 
 # Minizip library, could be unbundled in theory
 # However, our version has some custom modifications, so it won't compile with the system one

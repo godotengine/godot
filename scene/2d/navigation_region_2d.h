@@ -38,31 +38,36 @@ class NavigationRegion2D : public Node2D {
 
 	bool enabled = true;
 	RID region;
+	RID map_override;
 	uint32_t navigation_layers = 1;
 	real_t enter_cost = 0.0;
 	real_t travel_cost = 1.0;
 	Ref<NavigationPolygon> navigation_polygon;
+	bool baking_started = false;
 
 	void _navigation_polygon_changed();
-	void _map_changed(RID p_RID);
+
+#ifdef DEBUG_ENABLED
+	void _update_debug_mesh();
+	void _update_debug_edge_connections_mesh();
+	void _navigation_map_changed(RID p_map);
+#endif // DEBUG_ENABLED
 
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
-#ifndef DISABLE_DEPRECATED
-	bool _set(const StringName &p_name, const Variant &p_value);
-	bool _get(const StringName &p_name, Variant &r_ret) const;
-#endif // DISABLE_DEPRECATED
-
 public:
-#ifdef TOOLS_ENABLED
-	virtual Rect2 _edit_get_rect() const override;
-	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const override;
-#endif
+	RID get_region_rid() const;
 
 	void set_enabled(bool p_enabled);
 	bool is_enabled() const;
+
+	void set_navigation_polygon(const Ref<NavigationPolygon> &p_navigation_polygon);
+	Ref<NavigationPolygon> get_navigation_polygon() const;
+
+	void set_navigation_map(RID p_navigation_map);
+	RID get_navigation_map() const;
 
 	void set_navigation_layers(uint32_t p_navigation_layers);
 	uint32_t get_navigation_layers() const;
@@ -70,21 +75,24 @@ public:
 	void set_navigation_layer_value(int p_layer_number, bool p_value);
 	bool get_navigation_layer_value(int p_layer_number) const;
 
-	RID get_region_rid() const;
-
 	void set_enter_cost(real_t p_enter_cost);
 	real_t get_enter_cost() const;
 
 	void set_travel_cost(real_t p_travel_cost);
 	real_t get_travel_cost() const;
 
-	void set_navigation_polygon(const Ref<NavigationPolygon> &p_navigation_polygon);
-	Ref<NavigationPolygon> get_navigation_polygon() const;
-
 	PackedStringArray get_configuration_warnings() const override;
+
+	void bake_navigation_polygon(bool p_on_thread);
+	void _bake_finished();
 
 	NavigationRegion2D();
 	~NavigationRegion2D();
+
+#ifdef TOOLS_ENABLED
+	virtual Rect2 _edit_get_rect() const override;
+	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const override;
+#endif
 };
 
 #endif // NAVIGATION_REGION_2D_H

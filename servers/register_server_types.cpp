@@ -60,6 +60,7 @@
 #include "movie_writer/movie_writer.h"
 #include "movie_writer/movie_writer_mjpeg.h"
 #include "movie_writer/movie_writer_pngwav.h"
+#include "navigation/navigation_mesh_generator.h"
 #include "navigation_server_2d.h"
 #include "navigation_server_3d.h"
 #include "physics_2d/godot_physics_server_2d.h"
@@ -161,6 +162,10 @@ void register_server_types() {
 	GDREGISTER_NATIVE_STRUCT(PhysicsServer3DExtensionMotionCollision, "Vector3 position;Vector3 normal;Vector3 collider_velocity;Vector3 collider_angular_velocity;real_t depth;int local_shape;ObjectID collider_id;RID collider;int collider_shape");
 	GDREGISTER_NATIVE_STRUCT(PhysicsServer3DExtensionMotionResult, "Vector3 travel;Vector3 remainder;real_t collision_depth;real_t collision_safe_fraction;real_t collision_unsafe_fraction;PhysicsServer3DExtensionMotionCollision collisions[32];int collision_count");
 
+	GDREGISTER_CLASS(NavigationMeshGeneratorManager);
+	Engine::get_singleton()->add_singleton(Engine::Singleton("NavigationMeshGeneratorManager", NavigationMeshGeneratorManager::get_singleton(), "NavigationMeshGeneratorManager"));
+
+	GDREGISTER_ABSTRACT_CLASS(NavigationMeshGenerator);
 	GDREGISTER_ABSTRACT_CLASS(NavigationServer2D);
 	GDREGISTER_ABSTRACT_CLASS(NavigationServer3D);
 	GDREGISTER_CLASS(NavigationPathQueryParameters2D);
@@ -280,6 +285,10 @@ void register_server_types() {
 
 	PhysicsServer3DManager::get_singleton()->register_server("GodotPhysics3D", callable_mp_static(_createGodotPhysics3DCallback));
 	PhysicsServer3DManager::get_singleton()->set_default_server("GodotPhysics3D");
+
+	// NavigationMeshGenerator
+	GLOBAL_DEF(NavigationMeshGeneratorManager::setting_property_name, "DEFAULT");
+	ProjectSettings::get_singleton()->set_custom_property_info(PropertyInfo(Variant::STRING, NavigationMeshGeneratorManager::setting_property_name, PROPERTY_HINT_ENUM, "DEFAULT"));
 
 	writer_mjpeg = memnew(MovieWriterMJPEG);
 	MovieWriter::add_writer(writer_mjpeg);

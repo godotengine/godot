@@ -189,6 +189,7 @@ private:
 	bool collision_animatable = false;
 	VisibilityMode collision_visibility_mode = VISIBILITY_MODE_DEFAULT;
 	VisibilityMode navigation_visibility_mode = VISIBILITY_MODE_DEFAULT;
+	bool bake_navigation = true;
 
 	// Updates.
 	bool pending_update = false;
@@ -347,6 +348,9 @@ public:
 
 	void set_navigation_map(int p_layer, RID p_map);
 	RID get_navigation_map(int p_layer) const;
+
+	void set_bake_navigation(bool p_bake_navigation);
+	bool is_baking_navigation();
 
 	// Cells accessors.
 	void set_cell(int p_layer, const Vector2i &p_coords, int p_source_id = TileSet::INVALID_SOURCE, const Vector2i p_atlas_coords = TileSetSource::INVALID_ATLAS_COORDS, int p_alternative_tile = 0);

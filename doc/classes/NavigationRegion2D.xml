@@ -16,11 +16,24 @@
 		<link title="Using NavigationRegions">$DOCS_URL/tutorials/navigation/navigation_using_navigationregions.html</link>
 	</tutorials>
 	<methods>
+		<method name="bake_navigation_polygon">
+			<return type="void" />
+			<param index="0" name="on_thread" type="bool" default="true" />
+			<description>
+				Bakes the [NavigationPolygon]. If [param on_thread] is set to [code]true[/code] (default), the baking is done on a separate thread.
+			</description>
+		</method>
 		<method name="get_navigation_layer_value" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="layer_number" type="int" />
 			<description>
 				Returns whether or not the specified layer of the [member navigation_layers] bitmask is enabled, given a [param layer_number] between 1 and 32.
+			</description>
+		</method>
+		<method name="get_navigation_map" qualifiers="const">
+			<return type="RID" />
+			<description>
+				Returns the current navigation map [RID] use by this region.
 			</description>
 		</method>
 		<method name="get_region_rid" qualifiers="const">
@@ -35,6 +48,13 @@
 			<param index="1" name="value" type="bool" />
 			<description>
 				Based on [param value], enables or disables the specified layer in the [member navigation_layers] bitmask, given a [param layer_number] between 1 and 32.
+			</description>
+		</method>
+		<method name="set_navigation_map">
+			<return type="void" />
+			<param index="0" name="navigation_map" type="RID" />
+			<description>
+				Sets the [RID] of the navigation map this region should use. By default the region will automatically join the [World2D] default navigation map so this function is only required to override the default map.
 			</description>
 		</method>
 	</methods>
@@ -55,4 +75,16 @@
 			When pathfinding moves inside this region's navigation mesh the traveled distances are multiplied with [code]travel_cost[/code] for determining the shortest path.
 		</member>
 	</members>
+	<signals>
+		<signal name="bake_finished">
+			<description>
+				Emitted when a navigation polygon bake operation is completed.
+			</description>
+		</signal>
+		<signal name="navigation_polygon_changed">
+			<description>
+				Emitted when the used navigation polygon is replaced or changes to the internals of the current navigation polygon are committed.
+			</description>
+		</signal>
+	</signals>
 </class>

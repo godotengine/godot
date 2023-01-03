@@ -476,7 +476,6 @@ const char *RenamesMap3To4::gdscript_function_renames[][2] = {
 	{ "property_list_changed_notify", "notify_property_list_changed" }, // Object
 	{ "recognize", "_recognize" }, // ResourceFormatLoader
 	{ "regen_normalmaps", "regen_normal_maps" }, // ArrayMesh
-	{ "region_bake_navmesh", "region_bake_navigation_mesh" }, // Navigation3DServer
 	{ "region_set_navmesh", "region_set_navigation_mesh" }, // Navigation3DServer
 	{ "region_set_navpoly", "region_set_navigation_polygon" }, // Navigation2DServer
 	{ "remove_animation", "remove_animation_library" }, // AnimationPlayer

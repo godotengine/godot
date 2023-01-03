@@ -1,32 +1,111 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="NavigationMeshGenerator" inherits="Object" is_experimental="true" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Helper class for creating and clearing navigation meshes.
+		Server for navigation mesh baking and source geometry parsing.
 	</brief_description>
 	<description>
-		This class is responsible for creating and clearing 3D navigation meshes used as [NavigationMesh] resources inside [NavigationRegion3D]. The [NavigationMeshGenerator] has very limited to no use for 2D as the navigation mesh baking process expects 3D node types and 3D source geometry to parse.
-		The entire navigation mesh baking is best done in a separate thread as the voxelization, collision tests and mesh optimization steps involved are very performance and time hungry operations.
-		Navigation mesh baking happens in multiple steps and the result depends on 3D source geometry and properties of the [NavigationMesh] resource. In the first step, starting from a root node and depending on [NavigationMesh] properties all valid 3D source geometry nodes are collected from the [SceneTree]. Second, all collected nodes are parsed for their relevant 3D geometry data and a combined 3D mesh is build. Due to the many different types of parsable objects, from normal [MeshInstance3D]s to [CSGShape3D]s or various [CollisionObject3D]s, some operations to collect geometry data can trigger [RenderingServer] and [PhysicsServer3D] synchronizations. Server synchronization can have a negative effect on baking time or framerate as it often involves [Mutex] locking for thread security. Many parsable objects and the continuous synchronization with other threaded Servers can increase the baking time significantly. On the other hand only a few but very large and complex objects will take some time to prepare for the Servers which can noticeably stall the next frame render. As a general rule the total number of parsable objects and their individual size and complexity should be balanced to avoid framerate issues or very long baking times. The combined mesh is then passed to the Recast Navigation Object to test the source geometry for walkable terrain suitable to [NavigationMesh] agent properties by creating a voxel world around the meshes bounding area.
-		The finalized navigation mesh is then returned and stored inside the [NavigationMesh] for use as a resource inside [NavigationRegion3D] nodes.
-		[b]Note:[/b] Using meshes to not only define walkable surfaces but also obstruct navigation baking does not always work. The navigation baking has no concept of what is a geometry "inside" when dealing with mesh source geometry and this is intentional. Depending on current baking parameters, as soon as the obstructing mesh is large enough to fit a navigation mesh area inside, the baking will generate navigation mesh areas that are inside the obstructing source geometry mesh.
+		Server for navigation mesh baking and source geometry parsing. [NavigationMesh] baking is the process of creating a simplified mesh used for pathfinding out of (complex) level geometry. For this process, the [NavigationMeshGenerator] parses scene geometry from nodes and uses this information for the creation of the final navigation mesh according to bake parameters.
+		Source geometry parsing and navigation mesh baking are costly operations. It is best to do them infrequently and with the help of background threads at runtime. Source geometry parsing has to finish on the exact frame it was started even when using threads, as the scene tree is not safe to parse when doing updates, and also, by nature, the scene tree itself is not thread-safe. If the amount of geometry that must be parsed is too big, framerate issues may occur.
+		To work around the runtime framerate issues, the source geometry can be parsed to a [NavigationMeshSourceGeometryData2D] or a [NavigationMeshSourceGeometryData3D] resource. This resource can later be (re)used at runtime to bake multiple navigation meshes with different parameters in background threads without touching the scene tree again (assuming the nodes that contribute source geometry have not changed).
 	</description>
 	<tutorials>
 		<link title="Using NavigationMeshes">$DOCS_URL/tutorials/navigation/navigation_using_navigationmeshes.html</link>
 	</tutorials>
 	<methods>
-		<method name="bake">
+		<method name="bake_2d_from_source_geometry_data">
+			<return type="void" />
+			<param index="0" name="navigation_polygon" type="NavigationPolygon" />
+			<param index="1" name="source_geometry_data" type="NavigationMeshSourceGeometryData2D" />
+			<param index="2" name="callback" type="Callable" />
+			<description>
+				Bakes the provided [param navigation_polygon] with the data from the provided [param source_geometry_data]. After the process is finished the optional [param callback] will be called.
+			</description>
+		</method>
+		<method name="bake_3d_from_source_geometry_data">
+			<return type="void" />
+			<param index="0" name="navigation_mesh" type="NavigationMesh" />
+			<param index="1" name="source_geometry_data" type="NavigationMeshSourceGeometryData3D" />
+			<param index="2" name="callback" type="Callable" />
+			<description>
+				Bakes the provided [param navigation_mesh] with the data from the provided [param source_geometry_data]. After the process is finished the optional [param callback] will be called.
+			</description>
+		</method>
+		<method name="is_navigation_mesh_baking" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="navigation_mesh" type="NavigationMesh" />
+			<description>
+				Returns [code]true[/code] if [param navigation_mesh] is currently baking or geometry parsing.
+			</description>
+		</method>
+		<method name="is_navigation_polygon_baking" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="navigation_polygon" type="NavigationPolygon" />
+			<description>
+				Returns [code]true[/code] if [param navigation_polygon] is currently baking or geometry parsing.
+			</description>
+		</method>
+		<method name="parse_2d_source_geometry_data">
+			<return type="NavigationMeshSourceGeometryData2D" />
+			<param index="0" name="navigation_polygon" type="NavigationPolygon" />
+			<param index="1" name="root_node" type="Node" />
+			<param index="2" name="callback" type="Callable" />
+			<description>
+				Parses the [SceneTree] (not thread-safe) for source geometry according to the properties of [param navigation_polygon] and returns a [NavigationMeshSourceGeometryData2D] that can be used to bake a navigation mesh. After the process is finished the optional [param callback] will be called.
+			</description>
+		</method>
+		<method name="parse_3d_source_geometry_data">
+			<return type="NavigationMeshSourceGeometryData3D" />
+			<param index="0" name="navigation_mesh" type="NavigationMesh" />
+			<param index="1" name="root_node" type="Node" />
+			<param index="2" name="callback" type="Callable" />
+			<description>
+				Parses the [SceneTree] (not thread-safe) for source geometry according to the properties of [param navigation_mesh] and returns a [NavigationMeshSourceGeometryData2D] that can be used to bake a navigation mesh. After the process is finished the optional [param callback] will be called.
+			</description>
+		</method>
+		<method name="parse_and_bake_2d">
+			<return type="void" />
+			<param index="0" name="navigation_polygon" type="NavigationPolygon" />
+			<param index="1" name="root_node" type="Node" />
+			<param index="2" name="callback" type="Callable" />
+			<description>
+				Uses both [method parse_2d_source_geometry_data] and [method bake_2d_from_source_geometry_data] in sequence. After the process is finished the optional [param callback] will be called.
+			</description>
+		</method>
+		<method name="parse_and_bake_3d">
 			<return type="void" />
 			<param index="0" name="navigation_mesh" type="NavigationMesh" />
 			<param index="1" name="root_node" type="Node" />
+			<param index="2" name="callback" type="Callable" />
 			<description>
-				Bakes navigation data to the provided [param navigation_mesh] by parsing child nodes under the provided [param root_node] or a specific group of nodes for potential source geometry. The parse behavior can be controlled with the [member NavigationMesh.geometry_parsed_geometry_type] and [member NavigationMesh.geometry_source_geometry_mode] properties on the [NavigationMesh] resource.
+				Uses both [method parse_3d_source_geometry_data] and [method bake_3d_from_source_geometry_data] in sequence. After the process is finished the optional [param callback] will be called.
 			</description>
 		</method>
-		<method name="clear">
+		<method name="register_geometry_parser_2d">
 			<return type="void" />
-			<param index="0" name="navigation_mesh" type="NavigationMesh" />
+			<param index="0" name="geometry_parser" type="NavigationGeometryParser2D" />
 			<description>
-				Removes all polygons and vertices from the provided [param navigation_mesh] resource.
+				Registers a 2d navigation geometry parser to contribute geometry data from parser specified node class(es) for navigation mesh baking.
+			</description>
+		</method>
+		<method name="register_geometry_parser_3d">
+			<return type="void" />
+			<param index="0" name="geometry_parser" type="NavigationGeometryParser3D" />
+			<description>
+				Registers a 3d navigation geometry parser to contribute geometry data from parser specified node class(es) for navigation mesh baking.
+			</description>
+		</method>
+		<method name="unregister_geometry_parser_2d">
+			<return type="void" />
+			<param index="0" name="geometry_parser" type="NavigationGeometryParser2D" />
+			<description>
+				Unregisters the specific 2d navigation geometry parser.
+			</description>
+		</method>
+		<method name="unregister_geometry_parser_3d">
+			<return type="void" />
+			<param index="0" name="geometry_parser" type="NavigationGeometryParser3D" />
+			<description>
+				Unregisters the specific 3d navigation geometry parser.
 			</description>
 		</method>
 	</methods>

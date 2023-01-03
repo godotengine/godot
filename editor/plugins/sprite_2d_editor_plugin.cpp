@@ -42,7 +42,10 @@
 #include "scene/2d/polygon_2d.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/menu_button.h"
-#include "thirdparty/misc/clipper.hpp"
+
+#ifdef CLIPPER_ENABLED
+#include "thirdparty/clipper2/include/clipper2/clipper.h"
+#endif // CLIPPER_ENABLED
 
 void Sprite2DEditor::_node_removed(Node *p_node) {
 	if (p_node == node) {
@@ -55,64 +58,56 @@ void Sprite2DEditor::edit(Sprite2D *p_sprite) {
 	node = p_sprite;
 }
 
-#define PRECISION 10.0
+Vector<Vector<Vector2>> Sprite2DEditor::simplify_polygon(const Vector<Vector<Vector2>> &p_lines, const Rect2i &p_rect, float p_epsilon) {
+	ERR_FAIL_COND_V(p_lines.size() == 0, Vector<Vector<Vector2>>());
 
-Vector<Vector2> expand(const Vector<Vector2> &points, const Rect2i &rect, float epsilon = 2.0) {
-	int size = points.size();
-	ERR_FAIL_COND_V(size < 2, Vector<Vector2>());
+	Vector<Vector<Vector2>> new_polygon_outline_paths;
 
-	ClipperLib::Path subj;
-	ClipperLib::PolyTree solution;
-	ClipperLib::PolyTree out;
+#ifdef CLIPPER_ENABLED
+	using namespace Clipper2Lib;
 
-	for (int i = 0; i < points.size(); i++) {
-		subj << ClipperLib::IntPoint(points[i].x * PRECISION, points[i].y * PRECISION);
-	}
-	ClipperLib::ClipperOffset co;
-	co.AddPath(subj, ClipperLib::jtMiter, ClipperLib::etClosedPolygon);
-	co.Execute(solution, epsilon * PRECISION);
+	Paths64 subject_paths;
 
-	ClipperLib::PolyNode *p = solution.GetFirst();
-
-	ERR_FAIL_COND_V(!p, points);
-
-	while (p->IsHole()) {
-		p = p->GetNext();
-	}
-
-	//turn the result into simply polygon (AKA, fix overlap)
-
-	//clamp into the specified rect
-	ClipperLib::Clipper cl;
-	cl.StrictlySimple(true);
-	cl.AddPath(p->Contour, ClipperLib::ptSubject, true);
-	//create the clipping rect
-	ClipperLib::Path clamp;
-	clamp.push_back(ClipperLib::IntPoint(0, 0));
-	clamp.push_back(ClipperLib::IntPoint(rect.size.width * PRECISION, 0));
-	clamp.push_back(ClipperLib::IntPoint(rect.size.width * PRECISION, rect.size.height * PRECISION));
-	clamp.push_back(ClipperLib::IntPoint(0, rect.size.height * PRECISION));
-	cl.AddPath(clamp, ClipperLib::ptClip, true);
-	cl.Execute(ClipperLib::ctIntersection, out);
-
-	Vector<Vector2> outPoints;
-	ClipperLib::PolyNode *p2 = out.GetFirst();
-	ERR_FAIL_COND_V(!p2, points);
-
-	while (p2->IsHole()) {
-		p2 = p2->GetNext();
-	}
-
-	int lasti = p2->Contour.size() - 1;
-	Vector2 prev = Vector2(p2->Contour[lasti].X / PRECISION, p2->Contour[lasti].Y / PRECISION);
-	for (uint64_t i = 0; i < p2->Contour.size(); i++) {
-		Vector2 cur = Vector2(p2->Contour[i].X / PRECISION, p2->Contour[i].Y / PRECISION);
-		if (cur.distance_to(prev) > 0.5) {
-			outPoints.push_back(cur);
-			prev = cur;
+	for (const Vector<Vector2> &p_polygon_outline : p_lines) {
+		if (p_polygon_outline.size() < 2) {
+			continue;
 		}
+		Path64 subject_path;
+		for (const Vector2 &polygon_outline_vertex : p_polygon_outline) {
+			const Point64 &point = Point64(polygon_outline_vertex.x, polygon_outline_vertex.y);
+			subject_path.push_back(point);
+		}
+		subject_paths.push_back(subject_path);
 	}
-	return outPoints;
+
+	ERR_FAIL_COND_V(subject_paths.size() == 0, Vector<Vector<Vector2>>());
+
+	Paths64 dummy_clip_paths;
+
+	Paths64 paths_solution = Union(subject_paths, dummy_clip_paths, FillRule::NonZero);
+
+	Path64 rect_clip_path;
+	rect_clip_path.push_back(Point64(0, 0));
+	rect_clip_path.push_back(Point64(p_rect.size.width, 0));
+	rect_clip_path.push_back(Point64(p_rect.size.width, p_rect.size.height));
+	rect_clip_path.push_back(Point64(0, p_rect.size.height));
+
+	Paths64 rect_clip_paths;
+	rect_clip_paths.push_back(rect_clip_path);
+
+	paths_solution = Intersect(paths_solution, rect_clip_paths, FillRule::NonZero);
+	paths_solution = RamerDouglasPeucker(paths_solution, p_epsilon);
+
+	for (const Path64 &path_solution : paths_solution) {
+		Vector<Vector2> polygon_outline_path;
+		for (const Point64 &path_solution_point : path_solution) {
+			polygon_outline_path.push_back(Vector2(static_cast<real_t>(path_solution_point.x), static_cast<real_t>(path_solution_point.y)));
+		}
+		new_polygon_outline_paths.push_back(polygon_outline_path);
+	}
+#endif // CLIPPER_ENABLED
+
+	return new_polygon_outline_paths;
 }
 
 void Sprite2DEditor::_menu_option(int p_option) {
@@ -211,7 +206,7 @@ void Sprite2DEditor::_update_mesh_data() {
 	float epsilon = simplification->get_value();
 
 	Vector<Vector<Vector2>> lines = bm->clip_opaque_to_polygons(rect, epsilon);
-
+	lines = simplify_polygon(lines, rect, epsilon);
 	uv_lines.clear();
 
 	computed_vertices.clear();
@@ -219,9 +214,6 @@ void Sprite2DEditor::_update_mesh_data() {
 	computed_indices.clear();
 
 	Size2 img_size = image->get_size();
-	for (int i = 0; i < lines.size(); i++) {
-		lines.write[i] = expand(lines[i], rect, epsilon);
-	}
 
 	if (selected_menu_item == MENU_OPTION_CONVERT_TO_MESH_2D) {
 		for (int j = 0; j < lines.size(); j++) {

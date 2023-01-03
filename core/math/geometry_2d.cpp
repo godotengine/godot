@@ -30,7 +30,9 @@
 
 #include "geometry_2d.h"
 
-#include "thirdparty/misc/clipper.hpp"
+#ifdef CLIPPER_ENABLED
+#include "thirdparty/clipper2/include/clipper2/clipper.h"
+#endif // CLIPPER_ENABLED
 #include "thirdparty/misc/polypartition.h"
 #define STB_RECT_PACK_IMPLEMENTATION
 #include "thirdparty/misc/stb_rect_pack.h"
@@ -196,128 +198,187 @@ void Geometry2D::make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_re
 }
 
 Vector<Vector<Point2>> Geometry2D::_polypaths_do_operation(PolyBooleanOperation p_op, const Vector<Point2> &p_polypath_a, const Vector<Point2> &p_polypath_b, bool is_a_open) {
-	using namespace ClipperLib;
+	Vector<Vector<Vector2>> finished_polygons;
 
-	ClipType op = ctUnion;
+#ifdef CLIPPER_ENABLED
+	using namespace Clipper2Lib;
 
-	switch (p_op) {
-		case OPERATION_UNION:
-			op = ctUnion;
-			break;
-		case OPERATION_DIFFERENCE:
-			op = ctDifference;
-			break;
-		case OPERATION_INTERSECTION:
-			op = ctIntersection;
-			break;
-		case OPERATION_XOR:
-			op = ctXor;
-			break;
-	}
-	Path path_a, path_b;
+	Paths64 polyon_paths_solution;
 
-	// Need to scale points (Clipper's requirement for robust computation).
-	for (int i = 0; i != p_polypath_a.size(); ++i) {
-		path_a << IntPoint(p_polypath_a[i].x * (real_t)SCALE_FACTOR, p_polypath_a[i].y * (real_t)SCALE_FACTOR);
-	}
-	for (int i = 0; i != p_polypath_b.size(); ++i) {
-		path_b << IntPoint(p_polypath_b[i].x * (real_t)SCALE_FACTOR, p_polypath_b[i].y * (real_t)SCALE_FACTOR);
-	}
-	Clipper clp;
-	clp.AddPath(path_a, ptSubject, !is_a_open); // Forward compatible with Clipper 10.0.0.
-	clp.AddPath(path_b, ptClip, true); // Polylines cannot be set as clip.
-
-	Paths paths;
+	ClipType clipper_cliptype = ClipType::Union;
+	FillRule clipper_fillrule = FillRule::EvenOdd;
 
 	if (is_a_open) {
-		PolyTree tree; // Needed to populate polylines.
-		clp.Execute(op, tree);
-		OpenPathsFromPolyTree(tree, paths);
-	} else {
-		clp.Execute(op, paths); // Works on closed polygons only.
-	}
-	// Have to scale points down now.
-	Vector<Vector<Point2>> polypaths;
+		// Polyline with Polygon
+		Clipper64 clipper_64;
 
-	for (Paths::size_type i = 0; i < paths.size(); ++i) {
-		Vector<Vector2> polypath;
+		Paths64 polyline_paths;
+		Paths64 polygon_paths_b;
 
-		const Path &scaled_path = paths[i];
+		Path64 polyline_path_a;
+		Path64 polygon_path_b;
 
-		for (Paths::size_type j = 0; j < scaled_path.size(); ++j) {
-			polypath.push_back(Point2(
-					static_cast<real_t>(scaled_path[j].X) / (real_t)SCALE_FACTOR,
-					static_cast<real_t>(scaled_path[j].Y) / (real_t)SCALE_FACTOR));
+		for (const Vector2 &polyline_point : p_polypath_a) {
+			const Point64 &point = Point64(polyline_point.x * (real_t)SCALE_FACTOR, polyline_point.y * (real_t)SCALE_FACTOR);
+			polyline_path_a.push_back(point);
 		}
-		polypaths.push_back(polypath);
+		polyline_paths.push_back(polyline_path_a);
+
+		for (const Vector2 &polypath_outline_point : p_polypath_b) {
+			const Point64 &point = Point64(polypath_outline_point.x * (real_t)SCALE_FACTOR, polypath_outline_point.y * (real_t)SCALE_FACTOR);
+			polygon_path_b.push_back(point);
+		}
+		polygon_paths_b.push_back(polygon_path_b);
+
+		switch (p_op) {
+			case OPERATION_UNION:
+				// not supported for polyline (in Godot)
+				return finished_polygons;
+
+			case OPERATION_DIFFERENCE:
+				clipper_cliptype = ClipType::Difference;
+				clipper_fillrule = FillRule::EvenOdd;
+				clipper_64.AddOpenSubject(polyline_paths);
+				clipper_64.AddClip(polygon_paths_b);
+				break;
+
+			case OPERATION_INTERSECTION:
+				clipper_cliptype = ClipType::Intersection;
+				clipper_fillrule = FillRule::EvenOdd;
+				clipper_64.AddOpenSubject(polyline_paths);
+				clipper_64.AddClip(polygon_paths_b);
+				break;
+
+			case OPERATION_XOR:
+				// not supported for polyline
+				return finished_polygons;
+		}
+
+		Paths64 polygon_solution, polyline_solution;
+		clipper_64.Execute(clipper_cliptype, clipper_fillrule, polygon_solution, polyline_solution);
+		polyon_paths_solution = polyline_solution;
+
+	} else {
+		// Polygon with Polygon
+		Paths64 polygon_paths;
+		Paths64 polygon_clip_paths;
+
+		Path64 polygon_path_a;
+		Path64 polygon_path_b;
+
+		for (const Vector2 &polypath_outline_point : p_polypath_a) {
+			const Point64 &point = Point64(polypath_outline_point.x * (real_t)SCALE_FACTOR, polypath_outline_point.y * (real_t)SCALE_FACTOR);
+			polygon_path_a.push_back(point);
+		}
+		polygon_paths.push_back(polygon_path_a);
+
+		for (const Vector2 &polypath_outline_point : p_polypath_b) {
+			const Point64 &point = Point64(polypath_outline_point.x * (real_t)SCALE_FACTOR, polypath_outline_point.y * (real_t)SCALE_FACTOR);
+			polygon_path_b.push_back(point);
+		}
+		polygon_clip_paths.push_back(polygon_path_b);
+
+		switch (p_op) {
+			case OPERATION_UNION:
+				clipper_cliptype = ClipType::Union;
+				clipper_fillrule = FillRule::NonZero;
+
+				polyon_paths_solution = Union(polygon_paths, polygon_clip_paths, clipper_fillrule);
+				break;
+			case OPERATION_DIFFERENCE:
+				clipper_cliptype = ClipType::Difference;
+				clipper_fillrule = FillRule::EvenOdd;
+
+				polyon_paths_solution = Difference(polygon_paths, polygon_clip_paths, clipper_fillrule);
+				break;
+			case OPERATION_INTERSECTION:
+				clipper_cliptype = ClipType::Intersection;
+				clipper_fillrule = FillRule::NonZero;
+
+				polyon_paths_solution = Intersect(polygon_paths, polygon_clip_paths, clipper_fillrule);
+				break;
+			case OPERATION_XOR:
+				clipper_cliptype = ClipType::Xor;
+				clipper_fillrule = FillRule::NonZero;
+
+				polyon_paths_solution = Xor(polygon_paths, polygon_clip_paths, clipper_fillrule);
+				break;
+		}
 	}
-	return polypaths;
+
+	for (const Path64 &polyon_path : polyon_paths_solution) {
+		Vector<Vector2> finished_polygon;
+		for (const Point64 &polyon_path_point : polyon_path) {
+			finished_polygon.push_back(Vector2(static_cast<real_t>(polyon_path_point.x), static_cast<real_t>(polyon_path_point.y)) / (real_t)SCALE_FACTOR);
+		}
+		finished_polygons.push_back(finished_polygon);
+	}
+#endif // CLIPPER_ENABLED
+
+	return finished_polygons;
 }
 
 Vector<Vector<Point2>> Geometry2D::_polypath_offset(const Vector<Point2> &p_polypath, real_t p_delta, PolyJoinType p_join_type, PolyEndType p_end_type) {
-	using namespace ClipperLib;
+	Vector<Vector<Vector2>> finished_polygons;
 
-	JoinType jt = jtSquare;
+#ifdef CLIPPER_ENABLED
+	using namespace Clipper2Lib;
+
+	JoinType clipper_jointype = JoinType::Miter;
 
 	switch (p_join_type) {
 		case JOIN_SQUARE:
-			jt = jtSquare;
+			clipper_jointype = JoinType::Square;
 			break;
 		case JOIN_ROUND:
-			jt = jtRound;
+			clipper_jointype = JoinType::Round;
 			break;
 		case JOIN_MITER:
-			jt = jtMiter;
+			clipper_jointype = JoinType::Miter;
 			break;
 	}
 
-	EndType et = etClosedPolygon;
+	EndType clipper_endtype = EndType::Polygon;
 
 	switch (p_end_type) {
 		case END_POLYGON:
-			et = etClosedPolygon;
+			clipper_endtype = EndType::Polygon;
 			break;
 		case END_JOINED:
-			et = etClosedLine;
+			clipper_endtype = EndType::Joined;
 			break;
 		case END_BUTT:
-			et = etOpenButt;
+			clipper_endtype = EndType::Butt;
 			break;
 		case END_SQUARE:
-			et = etOpenSquare;
+			clipper_endtype = EndType::Square;
 			break;
 		case END_ROUND:
-			et = etOpenRound;
+			clipper_endtype = EndType::Round;
 			break;
 	}
-	ClipperOffset co(2.0, 0.25f * (real_t)SCALE_FACTOR); // Defaults from ClipperOffset.
-	Path path;
 
-	// Need to scale points (Clipper's requirement for robust computation).
-	for (int i = 0; i != p_polypath.size(); ++i) {
-		path << IntPoint(p_polypath[i].x * (real_t)SCALE_FACTOR, p_polypath[i].y * (real_t)SCALE_FACTOR);
+	Paths64 polygon_paths;
+
+	Path64 polygon_path;
+	for (const Vector2 &polypath_outline_point : p_polypath) {
+		const Point64 &point = Point64(polypath_outline_point.x * (real_t)SCALE_FACTOR, polypath_outline_point.y * (real_t)SCALE_FACTOR);
+		polygon_path.push_back(point);
 	}
-	co.AddPath(path, jt, et);
+	polygon_paths.push_back(polygon_path);
 
-	Paths paths;
-	co.Execute(paths, p_delta * (real_t)SCALE_FACTOR); // Inflate/deflate.
+	Paths64 paths_solution = InflatePaths(polygon_paths, p_delta, clipper_jointype, clipper_endtype);
 
-	// Have to scale points down now.
-	Vector<Vector<Point2>> polypaths;
-
-	for (Paths::size_type i = 0; i < paths.size(); ++i) {
+	for (const Path64 &scaled_path : paths_solution) {
 		Vector<Vector2> polypath;
-
-		const Path &scaled_path = paths[i];
-
-		for (Paths::size_type j = 0; j < scaled_path.size(); ++j) {
-			polypath.push_back(Point2(
-					static_cast<real_t>(scaled_path[j].X) / (real_t)SCALE_FACTOR,
-					static_cast<real_t>(scaled_path[j].Y) / (real_t)SCALE_FACTOR));
+		for (const Point64 &scaled_point : scaled_path) {
+			polypath.push_back(Vector2(static_cast<real_t>(scaled_point.x), static_cast<real_t>(scaled_point.y)) / (real_t)SCALE_FACTOR);
 		}
-		polypaths.push_back(polypath);
+		finished_polygons.push_back(polypath);
 	}
-	return polypaths;
+#endif // CLIPPER_ENABLED
+
+	return finished_polygons;
 }
 
 Vector<Vector3i> Geometry2D::partial_pack_rects(const Vector<Vector2i> &p_sizes, const Size2i &p_atlas_size) {

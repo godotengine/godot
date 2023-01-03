@@ -3,3 +3,5 @@
 Import("env")
 
 env.add_source_files(env.servers_sources, "*.cpp")
+env.add_source_files(env.servers_sources, "geometry_parser_2d/*.cpp")
+env.add_source_files(env.servers_sources, "geometry_parser_3d/*.cpp")

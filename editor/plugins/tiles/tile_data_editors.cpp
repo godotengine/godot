@@ -45,6 +45,8 @@
 #include "scene/gui/option_button.h"
 #include "scene/gui/separator.h"
 
+#include "servers/navigation/navigation_mesh_generator.h"
+
 #ifdef DEBUG_ENABLED
 #include "servers/navigation_server_3d.h"
 #endif // DEBUG_ENABLED
@@ -2758,7 +2760,16 @@ Variant TileDataNavigationEditor::_get_painted_value() {
 		nav_polygon->add_outline(polygon);
 	}
 
-	nav_polygon->make_polygons_from_outlines();
+	if (nav_polygon->get_outline_count() > 0) {
+		Ref<NavigationMeshSourceGeometryData2D> source_geometry_dummy = Ref<NavigationMeshSourceGeometryData2D>();
+		source_geometry_dummy.instantiate();
+		// Sorry TileMap but your tile puzzle is the exact opposite what is needed for agent radius offsets so you get disabled.
+		nav_polygon->set_agent_radius(0.0);
+		NavigationMeshGenerator::get_singleton()->bake_2d_from_source_geometry_data(nav_polygon, source_geometry_dummy);
+	} else {
+		nav_polygon->clear();
+	}
+
 	return nav_polygon;
 }
 

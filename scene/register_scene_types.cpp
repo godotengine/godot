@@ -54,6 +54,7 @@
 #include "scene/2d/mesh_instance_2d.h"
 #include "scene/2d/multimesh_instance_2d.h"
 #include "scene/2d/navigation_agent_2d.h"
+#include "scene/2d/navigation_geometry_parser_2d.h"
 #include "scene/2d/navigation_link_2d.h"
 #include "scene/2d/navigation_obstacle_2d.h"
 #include "scene/2d/navigation_region_2d.h"
@@ -165,6 +166,8 @@
 #include "scene/resources/mesh_data_tool.h"
 #include "scene/resources/multimesh.h"
 #include "scene/resources/navigation_mesh.h"
+#include "scene/resources/navigation_mesh_source_geometry_data_2d.h"
+#include "scene/resources/navigation_mesh_source_geometry_data_3d.h"
 #include "scene/resources/navigation_polygon.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/particle_process_material.h"
@@ -236,6 +239,7 @@
 #include "scene/3d/mesh_instance_3d.h"
 #include "scene/3d/multimesh_instance_3d.h"
 #include "scene/3d/navigation_agent_3d.h"
+#include "scene/3d/navigation_geometry_parser_3d.h"
 #include "scene/3d/navigation_link_3d.h"
 #include "scene/3d/navigation_obstacle_3d.h"
 #include "scene/3d/navigation_region_3d.h"
@@ -573,6 +577,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(ConeTwistJoint3D);
 	GDREGISTER_CLASS(Generic6DOFJoint3D);
 
+	GDREGISTER_CLASS(NavigationGeometryParser3D);
 	GDREGISTER_CLASS(NavigationRegion3D);
 	GDREGISTER_CLASS(NavigationAgent3D);
 	GDREGISTER_CLASS(NavigationObstacle3D);
@@ -928,7 +933,10 @@ void register_scene_types() {
 	GDREGISTER_CLASS(Path2D);
 	GDREGISTER_CLASS(PathFollow2D);
 
+	GDREGISTER_CLASS(NavigationGeometryParser2D);
 	GDREGISTER_CLASS(NavigationMesh);
+	GDREGISTER_CLASS(NavigationMeshSourceGeometryData3D);
+	GDREGISTER_CLASS(NavigationMeshSourceGeometryData2D);
 	GDREGISTER_CLASS(NavigationPolygon);
 	GDREGISTER_CLASS(NavigationRegion2D);
 	GDREGISTER_CLASS(NavigationAgent2D);

@@ -48,6 +48,8 @@
 #include "scene/gui/split_container.h"
 #include "scene/gui/tab_container.h"
 
+#include "servers/navigation/navigation_mesh_generator.h"
+
 #include "core/core_string_names.h"
 #include "core/math/geometry_2d.h"
 #include "core/os/keyboard.h"
@@ -2689,7 +2691,15 @@ void EditorPropertyTilePolygon::_polygons_changed() {
 					Vector<Vector2> polygon = generic_tile_polygon_editor->get_polygon(i);
 					navigation_polygon->add_outline(polygon);
 				}
-				navigation_polygon->make_polygons_from_outlines();
+				if (navigation_polygon->get_outline_count() > 0) {
+					Ref<NavigationMeshSourceGeometryData2D> source_geometry_dummy = Ref<NavigationMeshSourceGeometryData2D>();
+					source_geometry_dummy.instantiate();
+					// Sorry TileMap but your tile puzzle is the exact opposite what is needed for agent radius offsets so you get disabled.
+					navigation_polygon->set_agent_radius(0.0);
+					NavigationMeshGenerator::get_singleton()->bake_2d_from_source_geometry_data(navigation_polygon, source_geometry_dummy);
+				} else {
+					navigation_polygon->clear();
+				}
 			}
 			emit_changed(get_edited_property(), navigation_polygon);
 		}

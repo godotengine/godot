@@ -97,6 +97,9 @@ protected:
 public:
 	void edit(Sprite2D *p_sprite);
 	Sprite2DEditor();
+
+private:
+	Vector<Vector<Vector2>> simplify_polygon(const Vector<Vector<Vector2>> &p_lines, const Rect2i &p_rect, float p_epsilon);
 };
 
 class Sprite2DEditorPlugin : public EditorPlugin {

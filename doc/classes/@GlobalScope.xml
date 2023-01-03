@@ -1503,6 +1503,9 @@
 		<member name="NavigationMeshGenerator" type="NavigationMeshGenerator" setter="" getter="">
 			The [NavigationMeshGenerator] singleton.
 		</member>
+		<member name="NavigationMeshGeneratorManager" type="NavigationMeshGeneratorManager" setter="" getter="">
+			The [NavigationMeshGeneratorManager] singleton.
+		</member>
 		<member name="NavigationServer2D" type="NavigationServer2D" setter="" getter="">
 			The [NavigationServer2D] singleton.
 		</member>

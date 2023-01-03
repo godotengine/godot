@@ -53,6 +53,18 @@ Files extracted from upstream source:
 - `LICENSE`
 
 
+## clipper2
+
+- Upstream: https://github.com/AngusJohnson/Clipper2
+- Version: 1.1.1 (49b97f74d063b9f5487475689fca669b23117408, 2023)
+- License: Boost Software License 1.0
+
+Files extracted from upstream source:
+
+- `CPP/Clipper2Lib` folder
+- `LICENSE`
+
+
 ## certs
 
 - Upstream: Mozilla, via https://github.com/bagder/ca-bundle

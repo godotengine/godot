@@ -70,6 +70,8 @@
 #include "servers/display_server.h"
 #include "servers/movie_writer/movie_writer.h"
 #include "servers/movie_writer/movie_writer_mjpeg.h"
+#include "servers/navigation/navigation_mesh_generator.h"
+#include "servers/navigation/navigation_mesh_generator_dummy.h"
 #include "servers/navigation_server_2d.h"
 #include "servers/navigation_server_3d.h"
 #include "servers/navigation_server_3d_dummy.h"
@@ -143,6 +145,8 @@ static PhysicsServer3DManager *physics_server_3d_manager = nullptr;
 static PhysicsServer3D *physics_server_3d = nullptr;
 static PhysicsServer2DManager *physics_server_2d_manager = nullptr;
 static PhysicsServer2D *physics_server_2d = nullptr;
+static NavigationMeshGeneratorManager *navigation_mesh_generator_manager = nullptr;
+static NavigationMeshGenerator *navigation_mesh_generator = nullptr;
 static NavigationServer3D *navigation_server_3d = nullptr;
 static NavigationServer2D *navigation_server_2d = nullptr;
 static ThemeDB *theme_db = nullptr;
@@ -285,6 +289,36 @@ void finalize_display() {
 	memdelete(rendering_server);
 
 	memdelete(display_server);
+}
+
+void initialize_navigation_mesh_generator() {
+	// Init chosen NavigationMeshGenerator
+	const String &server_name = GLOBAL_GET(NavigationMeshGeneratorManager::setting_property_name);
+	navigation_mesh_generator = NavigationMeshGeneratorManager::get_singleton()->new_server(server_name);
+
+	// Fall back to default if not found
+	if (!navigation_mesh_generator) {
+		// Navigation server not found, so use the default.
+		navigation_mesh_generator = NavigationMeshGeneratorManager::get_singleton()->new_default_server();
+	}
+
+	// Fall back to dummy if no default server has been registered.
+	if (!navigation_mesh_generator) {
+		ERR_PRINT("No NavigationMeshGenerator implementation has been registered! Falling back to a dummy implementation: navigation mesh baking features will be unavailable.");
+		navigation_mesh_generator = memnew(NavigationMeshGeneratorDummy);
+	}
+
+	if (navigation_mesh_generator) {
+		// need to register singleton earlier so modules / extensions / addons can use it on SCENE / SERVER init level
+		Engine::get_singleton()->add_singleton(Engine::Singleton("NavigationMeshGenerator", NavigationMeshGenerator::get_singleton()));
+	}
+
+	ERR_FAIL_NULL_MSG(navigation_mesh_generator, "Failed to initialize NavigationMeshGenerator.");
+}
+
+void finalize_navigation_mesh_generator() {
+	memdelete(navigation_mesh_generator);
+	navigation_mesh_generator = nullptr;
 }
 
 void initialize_navigation_server() {
@@ -500,6 +534,8 @@ Error Main::test_setup() {
 	physics_server_3d_manager = memnew(PhysicsServer3DManager);
 	physics_server_2d_manager = memnew(PhysicsServer2DManager);
 
+	navigation_mesh_generator_manager = memnew(NavigationMeshGeneratorManager);
+
 	// From `Main::setup2()`.
 	initialize_modules(MODULE_INITIALIZATION_LEVEL_CORE);
 	register_core_extensions();
@@ -509,6 +545,7 @@ Error Main::test_setup() {
 	/** INITIALIZE SERVERS **/
 	register_server_types();
 	XRServer::set_xr_mode(XRServer::XRMODE_OFF); // Skip in tests.
+	initialize_navigation_mesh_generator(); // needs to happen before MODULE_INITIALIZATION_LEVEL_SERVERS or MODULE_INITIALIZATION_LEVEL_SCENE, required for modules that register to singleton
 	initialize_modules(MODULE_INITIALIZATION_LEVEL_SERVERS);
 	GDExtensionManager::get_singleton()->initialize_extensions(GDExtension::INITIALIZATION_LEVEL_SERVERS);
 
@@ -613,6 +650,9 @@ void Main::test_cleanup() {
 	}
 	if (tsman) {
 		memdelete(tsman);
+	}
+	if (navigation_mesh_generator_manager) {
+		memdelete(navigation_mesh_generator_manager);
 	}
 	if (physics_server_3d_manager) {
 		memdelete(physics_server_3d_manager);
@@ -1976,6 +2016,8 @@ Error Main::setup2() {
 	physics_server_3d_manager = memnew(PhysicsServer3DManager);
 	physics_server_2d_manager = memnew(PhysicsServer2DManager);
 
+	navigation_mesh_generator_manager = memnew(NavigationMeshGeneratorManager);
+
 	register_server_types();
 	initialize_modules(MODULE_INITIALIZATION_LEVEL_SERVERS);
 	GDExtensionManager::get_singleton()->initialize_extensions(GDExtension::INITIALIZATION_LEVEL_SERVERS);
@@ -2353,6 +2395,8 @@ Error Main::setup2() {
 	} else {
 		ERR_FAIL_V_MSG(ERR_CANT_CREATE, "TextServer: Unable to create TextServer interface.");
 	}
+
+	initialize_navigation_mesh_generator(); // needs to be initialized before MODULE_INITIALIZATION_LEVEL_SCENE is send for other modules / extensions / addons
 
 	engine->startup_benchmark_end_measure(); // servers
 
@@ -3238,6 +3282,8 @@ bool Main::iteration() {
 	}
 	message_queue->flush();
 
+	NavigationMeshGenerator::get_singleton()->process();
+
 	RenderingServer::get_singleton()->sync(); //sync if still drawing from previous frames.
 
 	if (DisplayServer::get_singleton()->can_any_window_draw() &&
@@ -3416,6 +3462,7 @@ void Main::cleanup(bool p_force) {
 
 	// Before deinitializing server extensions, finalize servers which may be loaded as extensions.
 	finalize_navigation_server();
+	finalize_navigation_mesh_generator();
 	finalize_physics();
 
 	GDExtensionManager::get_singleton()->deinitialize_extensions(GDExtension::INITIALIZATION_LEVEL_SERVERS);
@@ -3471,6 +3518,9 @@ void Main::cleanup(bool p_force) {
 	}
 	if (physics_server_2d_manager) {
 		memdelete(physics_server_2d_manager);
+	}
+	if (navigation_mesh_generator_manager) {
+		memdelete(navigation_mesh_generator_manager);
 	}
 	if (globals) {
 		memdelete(globals);

@@ -36,37 +36,17 @@
 class NavigationMesh : public Resource {
 	GDCLASS(NavigationMesh, Resource);
 
+	RID navmesh_rid;
 	Vector<Vector3> vertices;
-	struct Polygon {
-		Vector<int> indices;
-	};
-	Vector<Polygon> polygons;
 	Ref<ArrayMesh> debug_mesh;
 
-	struct _EdgeKey {
-		Vector3 from;
-		Vector3 to;
+	bool navigation_mesh_dirty = true;
 
-		static uint32_t hash(const _EdgeKey &p_key) {
-			return HashMapHasherDefault::hash(p_key.from) ^ HashMapHasherDefault::hash(p_key.to);
-		}
-
-		bool operator==(const _EdgeKey &p_with) const {
-			return HashMapComparatorDefault<Vector3>::compare(from, p_with.from) && HashMapComparatorDefault<Vector3>::compare(to, p_with.to);
-		}
-	};
+	Vector<Vector<int>> polygons;
 
 protected:
 	static void _bind_methods();
 	void _validate_property(PropertyInfo &p_property) const;
-
-#ifndef DISABLE_DEPRECATED
-	bool _set(const StringName &p_name, const Variant &p_value);
-	bool _get(const StringName &p_name, Variant &r_ret) const;
-#endif // DISABLE_DEPRECATED
-
-	void _set_polygons(const Array &p_array);
-	Array _get_polygons() const;
 
 public:
 	enum SamplePartitionType {
@@ -90,7 +70,6 @@ public:
 		SOURCE_GEOMETRY_MAX
 	};
 
-protected:
 	float cell_size = 0.25f;
 	float cell_height = 0.25f;
 	float agent_height = 1.5f;
@@ -118,8 +97,18 @@ protected:
 	AABB filter_baking_aabb;
 	Vector3 filter_baking_aabb_offset;
 
-public:
-	// Recast settings
+	RID get_rid() const override;
+
+	void set_vertices(const Vector<Vector3> &p_vertices);
+	Vector<Vector3> get_vertices() const;
+
+	void set_polygons(const TypedArray<Vector<int32_t>> &p_array);
+	TypedArray<Vector<int32_t>> get_polygons() const;
+
+	void add_polygon(const Vector<int> &p_polygon);
+	Vector<int> get_polygon(int p_index);
+	int get_polygon_count() const;
+
 	void set_sample_partition_type(SamplePartitionType p_value);
 	SamplePartitionType get_sample_partition_type() const;
 
@@ -194,19 +183,19 @@ public:
 
 	void create_from_mesh(const Ref<Mesh> &p_mesh);
 
-	void set_vertices(const Vector<Vector3> &p_vertices);
-	Vector<Vector3> get_vertices() const;
-
-	void add_polygon(const Vector<int> &p_polygon);
-	int get_polygon_count() const;
-	Vector<int> get_polygon(int p_idx);
 	void clear_polygons();
+	void clear();
+	void commit_changes();
+
+	void internal_set_polygons(const Vector<Vector<int>> &p_polygons);
+	const Vector<Vector<int>> &internal_get_polygons() const;
+
+	NavigationMesh();
+	~NavigationMesh();
 
 #ifdef DEBUG_ENABLED
 	Ref<ArrayMesh> get_debug_mesh();
 #endif // DEBUG_ENABLED
-
-	NavigationMesh();
 };
 
 VARIANT_ENUM_CAST(NavigationMesh::SamplePartitionType);

@@ -1766,6 +1766,22 @@
 		<member name="navigation/3d/default_link_connection_radius" type="float" setter="" getter="" default="1.0">
 			Default link connection radius for 3D navigation maps. See [method NavigationServer3D.map_set_link_connection_radius].
 		</member>
+		<member name="navigation/baking/generator/navigation_mesh_generator" type="String" setter="" getter="" default="&quot;DEFAULT&quot;">
+			Sets which navigation mesh generator to use to bake navigation meshes and parse source geometry from the scene.
+			"DEFAULT" and "GodotNavigationMeshGenerator" are the same, as there is currently no alternative navigation mesh generator implemented.
+		</member>
+		<member name="navigation/baking/thread_model/baking_use_high_priority_threads" type="bool" setter="" getter="" default="true">
+			If [code]true[/code] the thread tasks run with high priority when the navigation mesh generator uses threads for baking navigation meshes.
+		</member>
+		<member name="navigation/baking/thread_model/baking_use_multiple_threads" type="bool" setter="" getter="" default="true">
+			If [code]true[/code] the navigation mesh generator uses threads for baking navigation meshes.
+		</member>
+		<member name="navigation/baking/thread_model/parsing_use_high_priority_threads" type="bool" setter="" getter="" default="true">
+			If [code]true[/code] the thread tasks run with with high priority when the navigation mesh generator uses threads for parsing source geometry from the scene.
+		</member>
+		<member name="navigation/baking/thread_model/parsing_use_multiple_threads" type="bool" setter="" getter="" default="true">
+			If [code]true[/code] the navigation mesh generator uses threads for parsing source geometry from the scene.
+		</member>
 		<member name="network/limits/debugger/max_chars_per_second" type="int" setter="" getter="" default="32768">
 			Maximum number of characters allowed to send as output from the debugger. Over this value, content is dropped. This helps not to stall the debugger connection.
 		</member>
