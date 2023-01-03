@@ -3997,10 +3997,8 @@ GDScriptParser::DataType GDScriptAnalyzer::type_from_variant(const Variant &p_va
 			scr = obj->get_script();
 		}
 		if (scr.is_valid()) {
-			result.script_path = scr->get_path();
 			Ref<GDScript> gds = scr;
 			if (gds.is_valid()) {
-				result.kind = GDScriptParser::DataType::CLASS;
 				// This might be an inner class, so we want to get the parser for the root.
 				// But still get the inner class from that tree.
 				String script_path = gds->get_script_path();
@@ -4026,11 +4024,14 @@ GDScriptParser::DataType GDScriptAnalyzer::type_from_variant(const Variant &p_va
 					return error_type;
 				}
 
+				result.kind = GDScriptParser::DataType::CLASS;
+				result.native_type = found->get_datatype().native_type;
 				result.class_type = found;
 				result.script_path = ref->get_parser()->script_path;
 			} else {
 				result.kind = GDScriptParser::DataType::SCRIPT;
 				result.native_type = scr->get_instance_base_type();
+				result.script_path = scr->get_path();
 			}
 			result.script_type = scr;
 		} else {
