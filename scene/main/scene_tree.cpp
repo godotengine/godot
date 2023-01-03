@@ -1397,6 +1397,7 @@ SceneTree::SceneTree() {
 	// Create with mainloop.
 
 	root = memnew(Window);
+	root->set_min_size(Size2i(64, 64)); // Define a very small minimum window size to prevent bugs such as GH-37242.
 	root->set_process_mode(Node::PROCESS_MODE_PAUSABLE);
 	root->set_name("root");
 	root->set_title(GLOBAL_GET("application/config/name"));
