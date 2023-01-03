@@ -3847,41 +3847,38 @@ Size2 Tree::get_internal_min_size() const {
 }
 
 void Tree::update_scrollbars() {
-	Size2 size = get_size();
-	int tbh;
-	if (show_column_titles) {
-		tbh = _get_title_button_height();
-	} else {
-		tbh = 0;
-	}
+	const Size2 size = get_size();
+	const Size2 hmin = h_scroll->get_combined_minimum_size();
+	const Size2 vmin = v_scroll->get_combined_minimum_size();
 
-	Size2 hmin = h_scroll->get_combined_minimum_size();
-	Size2 vmin = v_scroll->get_combined_minimum_size();
+	const Rect2 content_rect = Rect2(theme_cache.panel_style->get_offset(), size - theme_cache.panel_style->get_minimum_size());
+	v_scroll->set_begin(content_rect.get_position() + Vector2(content_rect.get_size().x - vmin.width, 0));
+	v_scroll->set_end(content_rect.get_end() - Vector2(0, hmin.height));
+	h_scroll->set_begin(content_rect.get_position() + Vector2(0, content_rect.get_size().y - hmin.height));
+	h_scroll->set_end(content_rect.get_end() - Vector2(vmin.width, 0));
 
-	v_scroll->set_begin(Point2(size.width - vmin.width, theme_cache.panel_style->get_margin(SIDE_TOP)));
-	v_scroll->set_end(Point2(size.width, size.height - theme_cache.panel_style->get_margin(SIDE_TOP) - theme_cache.panel_style->get_margin(SIDE_BOTTOM)));
+	const Size2 internal_min_size = get_internal_min_size();
+	const int title_button_height = _get_title_button_height();
 
-	h_scroll->set_begin(Point2(0, size.height - hmin.height));
-	h_scroll->set_end(Point2(size.width - vmin.width, size.height));
-
-	Size2 internal_min_size = get_internal_min_size();
-
-	bool display_vscroll = internal_min_size.height + theme_cache.panel_style->get_margin(SIDE_TOP) > size.height;
-	bool display_hscroll = internal_min_size.width + theme_cache.panel_style->get_margin(SIDE_LEFT) > size.width;
+	Size2 tree_content_size = content_rect.get_size() - Vector2(0, title_button_height);
+	bool display_vscroll = internal_min_size.height > tree_content_size.height;
+	bool display_hscroll = internal_min_size.width > tree_content_size.width;
 	for (int i = 0; i < 2; i++) {
 		// Check twice, as both values are dependent on each other.
 		if (display_hscroll) {
-			display_vscroll = internal_min_size.height + theme_cache.panel_style->get_margin(SIDE_TOP) + hmin.height > size.height;
+			tree_content_size.height = content_rect.get_size().height - title_button_height - hmin.height;
+			display_vscroll = internal_min_size.height > tree_content_size.height;
 		}
 		if (display_vscroll) {
-			display_hscroll = internal_min_size.width + theme_cache.panel_style->get_margin(SIDE_LEFT) + vmin.width > size.width;
+			tree_content_size.width = content_rect.get_size().width - vmin.width;
+			display_hscroll = internal_min_size.width > tree_content_size.width;
 		}
 	}
 
 	if (display_vscroll) {
 		v_scroll->show();
 		v_scroll->set_max(internal_min_size.height);
-		v_scroll->set_page(size.height - hmin.height - tbh);
+		v_scroll->set_page(tree_content_size.height);
 		theme_cache.offset.y = v_scroll->get_value();
 	} else {
 		v_scroll->hide();
@@ -3891,7 +3888,7 @@ void Tree::update_scrollbars() {
 	if (display_hscroll) {
 		h_scroll->show();
 		h_scroll->set_max(internal_min_size.width);
-		h_scroll->set_page(size.width - vmin.width);
+		h_scroll->set_page(tree_content_size.width);
 		theme_cache.offset.x = h_scroll->get_value();
 	} else {
 		h_scroll->hide();
