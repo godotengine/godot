@@ -2769,10 +2769,6 @@ bool Main::start() {
 			DisplayServer::get_singleton()->window_set_title(appname);
 #endif
 
-			// Define a very small minimum window size to prevent bugs such as GH-37242.
-			// It can still be overridden by the user in a script.
-			DisplayServer::get_singleton()->window_set_min_size(Size2i(64, 64));
-
 			bool snap_controls = GLOBAL_GET("gui/common/snap_controls_to_pixels");
 			sml->get_root()->set_snap_controls_to_pixels(snap_controls);
 

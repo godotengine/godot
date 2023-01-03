@@ -3008,7 +3008,10 @@ ProjectManager::ProjectManager() {
 	SceneTree::get_singleton()->get_root()->connect("files_dropped", callable_mp(this, &ProjectManager::_files_dropped));
 
 	// Define a minimum window size to prevent UI elements from overlapping or being cut off.
-	DisplayServer::get_singleton()->window_set_min_size(Size2(520, 350) * EDSCALE);
+	Window *w = Object::cast_to<Window>(SceneTree::get_singleton()->get_root());
+	if (w) {
+		w->set_min_size(Size2(520, 350) * EDSCALE);
+	}
 
 	// Resize the bootsplash window based on Editor display scale EDSCALE.
 	float scale_factor = MAX(1, EDSCALE);
