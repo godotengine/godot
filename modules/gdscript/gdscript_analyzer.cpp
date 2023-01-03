@@ -2047,6 +2047,9 @@ void GDScriptAnalyzer::resolve_return(GDScriptParser::ReturnNode *p_return) {
 				update_array_literal_element_type(expected_type, static_cast<GDScriptParser::ArrayNode *>(p_return->return_value));
 			}
 		}
+		if (has_expected_type && expected_type.is_hard_type() && expected_type.kind == GDScriptParser::DataType::BUILTIN && expected_type.builtin_type == Variant::NIL) {
+			push_error("A void function cannot return a value.", p_return);
+		}
 		result = p_return->return_value->get_datatype();
 	} else {
 		// Return type is null by default.
