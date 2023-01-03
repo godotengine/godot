@@ -59,6 +59,7 @@ Error GLTFDocumentExtensionConvertImporterMesh::import_post(Ref<GLTFState> p_sta
 				mesh_instance_node_3d->set_skeleton_path(mesh_3d->get_skeleton_path());
 				node->replace_by(mesh_instance_node_3d);
 				delete_queue.push_back(node);
+				node = mesh_instance_node_3d;
 			} else {
 				memdelete(mesh_instance_node_3d);
 			}
