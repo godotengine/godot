@@ -541,6 +541,7 @@ public:
 		Vector3 position;
 		Vector3 normal;
 		Vector3 collider_velocity;
+		Vector3 collider_angular_velocity;
 		real_t depth = 0.0;
 		int local_shape = 0;
 		ObjectID collider_id;
