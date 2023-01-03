@@ -61,7 +61,7 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 	uses_alpha = false;
 	uses_alpha_clip = false;
 	uses_blend_alpha = false;
-	uses_depth_pre_pass = false;
+	uses_depth_prepass_alpha = false;
 	uses_discard = false;
 	uses_roughness = false;
 	uses_normal = false;
@@ -114,7 +114,7 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 	// Use alpha clip pipeline for alpha hash/dither.
 	// This prevents sorting issues inherent to alpha blending and allows such materials to cast shadows.
 	actions.usage_flag_pointers["ALPHA_HASH_SCALE"] = &uses_alpha_clip;
-	actions.render_mode_flags["depth_prepass_alpha"] = &uses_depth_pre_pass;
+	actions.render_mode_flags["depth_prepass_alpha"] = &uses_depth_prepass_alpha;
 
 	actions.usage_flag_pointers["SSS_STRENGTH"] = &uses_sss;
 	actions.usage_flag_pointers["SSS_TRANSMITTANCE_DEPTH"] = &uses_transmittance;
@@ -309,10 +309,11 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 						}
 
 						RD::PipelineDepthStencilState depth_stencil = depth_stencil_state;
-						if (depth_pre_pass_enabled && casts_shadows()) {
+						if (depth_pre_pass_enabled && casts_shadows() && !uses_depth_prepass_alpha) {
 							// We already have a depth from the depth pre-pass, there is no need to write it again.
 							// In addition we can use COMPARE_OP_EQUAL instead of COMPARE_OP_LESS_OR_EQUAL.
 							// This way we can use the early depth test to discard transparent fragments before the fragment shader even starts.
+							// This cannot be used with depth_prepass_alpha as it uses a different threshold during the depth-prepass and regular drawing.
 							depth_stencil.depth_compare_operator = RD::COMPARE_OP_EQUAL;
 							depth_stencil.enable_depth_write = false;
 						}
@@ -394,7 +395,7 @@ bool SceneShaderForwardClustered::ShaderData::casts_shadows() const {
 	bool has_base_alpha = (uses_alpha && !uses_alpha_clip) || has_read_screen_alpha;
 	bool has_alpha = has_base_alpha || uses_blend_alpha;
 
-	return !has_alpha || (uses_depth_pre_pass && !(depth_draw == DEPTH_DRAW_DISABLED || depth_test == DEPTH_TEST_DISABLED));
+	return !has_alpha || (uses_depth_prepass_alpha && !(depth_draw == DEPTH_DRAW_DISABLED || depth_test == DEPTH_TEST_DISABLED));
 }
 
 RS::ShaderNativeSourceCode SceneShaderForwardClustered::ShaderData::get_native_source_code() const {

@@ -3237,7 +3237,7 @@ void SceneShaderData::set_code(const String &p_code) {
 	uses_alpha = false;
 	uses_alpha_clip = false;
 	uses_blend_alpha = false;
-	uses_depth_pre_pass = false;
+	uses_depth_prepass_alpha = false;
 	uses_discard = false;
 	uses_roughness = false;
 	uses_normal = false;
@@ -3288,7 +3288,7 @@ void SceneShaderData::set_code(const String &p_code) {
 	// Use alpha clip pipeline for alpha hash/dither.
 	// This prevents sorting issues inherent to alpha blending and allows such materials to cast shadows.
 	actions.usage_flag_pointers["ALPHA_HASH_SCALE"] = &uses_alpha_clip;
-	actions.render_mode_flags["depth_prepass_alpha"] = &uses_depth_pre_pass;
+	actions.render_mode_flags["depth_prepass_alpha"] = &uses_depth_prepass_alpha;
 
 	actions.usage_flag_pointers["SSS_STRENGTH"] = &uses_sss;
 	actions.usage_flag_pointers["SSS_TRANSMITTANCE_DEPTH"] = &uses_transmittance;
@@ -3398,7 +3398,7 @@ bool SceneShaderData::casts_shadows() const {
 	bool has_base_alpha = (uses_alpha && !uses_alpha_clip) || has_read_screen_alpha;
 	bool has_alpha = has_base_alpha || uses_blend_alpha;
 
-	return !has_alpha || (uses_depth_pre_pass && !(depth_draw == DEPTH_DRAW_DISABLED || depth_test == DEPTH_TEST_DISABLED));
+	return !has_alpha || (uses_depth_prepass_alpha && !(depth_draw == DEPTH_DRAW_DISABLED || depth_test == DEPTH_TEST_DISABLED));
 }
 
 RS::ShaderNativeSourceCode SceneShaderData::get_native_source_code() const {

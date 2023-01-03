@@ -2378,7 +2378,7 @@ void RenderForwardMobile::_geometry_instance_add_surface_with_material(GeometryI
 	if (has_alpha || has_read_screen_alpha || p_material->shader_data->depth_draw == SceneShaderForwardMobile::ShaderData::DEPTH_DRAW_DISABLED || p_material->shader_data->depth_test == SceneShaderForwardMobile::ShaderData::DEPTH_TEST_DISABLED) {
 		//material is only meant for alpha pass
 		flags |= GeometryInstanceSurfaceDataCache::FLAG_PASS_ALPHA;
-		if (p_material->shader_data->uses_depth_pre_pass && !(p_material->shader_data->depth_draw == SceneShaderForwardMobile::ShaderData::DEPTH_DRAW_DISABLED || p_material->shader_data->depth_test == SceneShaderForwardMobile::ShaderData::DEPTH_TEST_DISABLED)) {
+		if (p_material->shader_data->uses_depth_prepass_alpha && !(p_material->shader_data->depth_draw == SceneShaderForwardMobile::ShaderData::DEPTH_DRAW_DISABLED || p_material->shader_data->depth_test == SceneShaderForwardMobile::ShaderData::DEPTH_TEST_DISABLED)) {
 			flags |= GeometryInstanceSurfaceDataCache::FLAG_PASS_DEPTH;
 			flags |= GeometryInstanceSurfaceDataCache::FLAG_PASS_SHADOW;
 		}
@@ -2394,7 +2394,7 @@ void RenderForwardMobile::_geometry_instance_add_surface_with_material(GeometryI
 
 	SceneShaderForwardMobile::MaterialData *material_shadow = nullptr;
 	void *surface_shadow = nullptr;
-	if (!p_material->shader_data->uses_particle_trails && !p_material->shader_data->writes_modelview_or_projection && !p_material->shader_data->uses_vertex && !p_material->shader_data->uses_discard && !p_material->shader_data->uses_depth_pre_pass && !p_material->shader_data->uses_alpha_clip) {
+	if (!p_material->shader_data->uses_particle_trails && !p_material->shader_data->writes_modelview_or_projection && !p_material->shader_data->uses_vertex && !p_material->shader_data->uses_discard && !p_material->shader_data->uses_depth_prepass_alpha && !p_material->shader_data->uses_alpha_clip) {
 		flags |= GeometryInstanceSurfaceDataCache::FLAG_USES_SHARED_SHADOW_MATERIAL;
 		material_shadow = static_cast<SceneShaderForwardMobile::MaterialData *>(RendererRD::MaterialStorage::get_singleton()->material_get_data(scene_shader.default_material, RendererRD::MaterialStorage::SHADER_TYPE_3D));
 
