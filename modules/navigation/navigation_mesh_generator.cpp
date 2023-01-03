@@ -207,11 +207,11 @@ void NavigationMeshGenerator::_parse_geometry(const Transform3D &p_navmesh_trans
 			List<uint32_t> shape_owners;
 			static_body->get_shape_owners(&shape_owners);
 			for (uint32_t shape_owner : shape_owners) {
+				if (static_body->is_shape_owner_disabled(shape_owner)) {
+					continue;
+				}
 				const int shape_count = static_body->shape_owner_get_shape_count(shape_owner);
 				for (int i = 0; i < shape_count; i++) {
-					if (static_body->is_shape_owner_disabled(i)) {
-						continue;
-					}
 					Ref<Shape3D> s = static_body->shape_owner_get_shape(shape_owner, i);
 					if (s.is_null()) {
 						continue;
