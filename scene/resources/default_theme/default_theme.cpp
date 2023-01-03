@@ -509,14 +509,15 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	Ref<Texture2D> empty_icon = memnew(ImageTexture);
 
-	const Ref<StyleBoxFlat> style_scrollbar = make_flat_stylebox(style_normal_color, 4, 4, 4, 4, 10);
+	const Ref<StyleBoxFlat> style_h_scrollbar = make_flat_stylebox(style_normal_color, 0, 4, 0, 4, 10);
+	const Ref<StyleBoxFlat> style_v_scrollbar = make_flat_stylebox(style_normal_color, 4, 0, 4, 0, 10);
 	Ref<StyleBoxFlat> style_scrollbar_grabber = make_flat_stylebox(style_progress_color, 4, 4, 4, 4, 10);
 	Ref<StyleBoxFlat> style_scrollbar_grabber_highlight = make_flat_stylebox(style_focus_color, 4, 4, 4, 4, 10);
 	Ref<StyleBoxFlat> style_scrollbar_grabber_pressed = make_flat_stylebox(style_focus_color * Color(0.75, 0.75, 0.75), 4, 4, 4, 4, 10);
 
 	// HScrollBar
 
-	theme->set_stylebox("scroll", "HScrollBar", style_scrollbar);
+	theme->set_stylebox("scroll", "HScrollBar", style_h_scrollbar);
 	theme->set_stylebox("scroll_focus", "HScrollBar", focus);
 	theme->set_stylebox("grabber", "HScrollBar", style_scrollbar_grabber);
 	theme->set_stylebox("grabber_highlight", "HScrollBar", style_scrollbar_grabber_highlight);
@@ -531,7 +532,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	// VScrollBar
 
-	theme->set_stylebox("scroll", "VScrollBar", style_scrollbar);
+	theme->set_stylebox("scroll", "VScrollBar", style_v_scrollbar);
 	theme->set_stylebox("scroll_focus", "VScrollBar", focus);
 	theme->set_stylebox("grabber", "VScrollBar", style_scrollbar_grabber);
 	theme->set_stylebox("grabber_highlight", "VScrollBar", style_scrollbar_grabber_highlight);
