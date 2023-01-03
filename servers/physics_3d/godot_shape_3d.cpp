@@ -844,36 +844,55 @@ void GodotConvexPolygonShape3D::project_range(const Vector3 &p_normal, const Tra
 }
 
 Vector3 GodotConvexPolygonShape3D::get_support(const Vector3 &p_normal) const {
+	// Skip if there are no vertices in the mesh
 	if (mesh.vertices.size() == 0) {
 		return Vector3();
 	}
 
-	// Find an initial guess for the support vertex by checking the ones we
-	// found in _setup().
+	// Get the array of vertices
+	const Vector3 *const vertices_array = mesh.vertices.ptr();
 
-	int best_vertex = -1;
-	real_t max_support = 0.0;
-	for (uint32_t i = 0; i < extreme_vertices.size(); i++) {
-		real_t s = p_normal.dot(mesh.vertices[extreme_vertices[i]]);
-		if (best_vertex == -1 || s > max_support) {
-			best_vertex = extreme_vertices[i];
+	// Get the array of extreme vertices
+	const int *const extreme_array = extreme_vertices.ptr();
+	const uint32_t extreme_size = extreme_vertices.size();
+
+	// Start with an initial assumption of the first extreme vertex
+	int best_vertex = extreme_array[0];
+	real_t max_support = p_normal.dot(vertices_array[best_vertex]);
+
+	// Check the remaining extreme vertices for a better vertex
+	for (uint32_t i = 0; i < extreme_size; ++i) {
+		int vert = extreme_array[i];
+		real_t s = p_normal.dot(vertices_array[vert]);
+		if (s > max_support) {
+			best_vertex = vert;
 			max_support = s;
 		}
 	}
-	if (extreme_vertices.size() == mesh.vertices.size()) {
-		// We've already checked every vertex, so we can return now.
-		return mesh.vertices[best_vertex];
+
+	// If we checked all vertices in the mesh then we're done
+	if (extreme_size == mesh.vertices.size()) {
+		return vertices_array[best_vertex];
 	}
 
-	// Move along the surface until we reach the true support vertex.
+	// Get the array of neighbor arrays for each vertex
+	const LocalVector<int> *const vertex_neighbors_array = vertex_neighbors.ptr();
 
+	// Move along the surface until we reach the true support vertex.
 	int last_vertex = -1;
 	while (true) {
 		int next_vertex = -1;
-		for (uint32_t i = 0; i < vertex_neighbors[best_vertex].size(); i++) {
-			int vert = vertex_neighbors[best_vertex][i];
+
+		// Get the array of neighbors around the best vertex
+		const LocalVector<int> &neighbors = vertex_neighbors_array[best_vertex];
+		const int *const neighbors_array = neighbors.ptr();
+		const uint32_t neighbors_size = neighbors.size();
+
+		// Iterate over all the neighbors checking for a better vertex
+		for (uint32_t i = 0; i < neighbors_size; ++i) {
+			int vert = neighbors_array[i];
 			if (vert != last_vertex) {
-				real_t s = p_normal.dot(mesh.vertices[vert]);
+				real_t s = p_normal.dot(vertices_array[vert]);
 				if (s > max_support) {
 					next_vertex = vert;
 					max_support = s;
@@ -881,9 +900,13 @@ Vector3 GodotConvexPolygonShape3D::get_support(const Vector3 &p_normal) const {
 				}
 			}
 		}
+
+		// No better vertex found, we have the best
 		if (next_vertex == -1) {
-			return mesh.vertices[best_vertex];
+			return vertices_array[best_vertex];
 		}
+
+		// Move to the better vertex and try again
 		last_vertex = best_vertex;
 		best_vertex = next_vertex;
 	}
