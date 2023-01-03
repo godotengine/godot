@@ -1533,8 +1533,28 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				Callable::CallError err;
 				if (call_ret) {
 					GET_INSTRUCTION_ARG(ret, argc + 1);
+#ifdef DEBUG_ENABLED
+					Variant::Type base_type = base->get_type();
+					Object *base_obj = base->get_validated_object();
+					StringName base_class = base_obj ? base_obj->get_class_name() : StringName();
+#endif
 					base->callp(*methodname, (const Variant **)argptrs, argc, *ret, err);
 #ifdef DEBUG_ENABLED
+					if (ret->get_type() == Variant::NIL) {
+						if (base_type == Variant::OBJECT) {
+							if (base_obj) {
+								MethodBind *method = ClassDB::get_method(base_class, *methodname);
+								if (*methodname == CoreStringNames::get_singleton()->_free || (method && !method->has_return())) {
+									err_text = R"(Trying to get a return value of a method that returns "void")";
+									OPCODE_BREAK;
+								}
+							}
+						} else if (Variant::has_builtin_method(base_type, *methodname) && !Variant::has_builtin_method_return_value(base_type, *methodname)) {
+							err_text = R"(Trying to get a return value of a method that returns "void")";
+							OPCODE_BREAK;
+						}
+					}
+
 					if (!call_async && ret->get_type() == Variant::OBJECT) {
 						// Check if getting a function state without await.
 						bool was_freed = false;

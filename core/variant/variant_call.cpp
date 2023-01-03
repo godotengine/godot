@@ -65,11 +65,13 @@ static _FORCE_INLINE_ void vc_method_call(R (T::*method)(P...) const, Variant *b
 
 template <class T, class... P>
 static _FORCE_INLINE_ void vc_method_call(void (T::*method)(P...), Variant *base, const Variant **p_args, int p_argcount, Variant &r_ret, const Vector<Variant> &p_defvals, Callable::CallError &r_error) {
+	VariantInternal::clear(&r_ret);
 	call_with_variant_args_dv(VariantGetInternalPtr<T>::get_ptr(base), method, p_args, p_argcount, r_error, p_defvals);
 }
 
 template <class T, class... P>
 static _FORCE_INLINE_ void vc_method_call(void (T::*method)(P...) const, Variant *base, const Variant **p_args, int p_argcount, Variant &r_ret, const Vector<Variant> &p_defvals, Callable::CallError &r_error) {
+	VariantInternal::clear(&r_ret);
 	call_with_variant_argsc_dv(VariantGetInternalPtr<T>::get_ptr(base), method, p_args, p_argcount, r_error, p_defvals);
 }
 
