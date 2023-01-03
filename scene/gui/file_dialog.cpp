@@ -411,7 +411,7 @@ void FileDialog::_go_back() {
 }
 
 void FileDialog::_go_forward() {
-	if (local_history_pos == local_history.size() - 1) {
+	if (local_history_pos >= local_history.size() - 1) {
 		return;
 	}
 
