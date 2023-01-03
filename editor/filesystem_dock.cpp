@@ -2775,8 +2775,6 @@ void FileSystemDock::_reselect_items_selected_on_drag_begin(bool reset) {
 }
 
 void FileSystemDock::_tree_gui_input(Ref<InputEvent> p_event) {
-	Ref<InputEventKey> key = p_event;
-
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (mm.is_valid()) {
 		TreeItem *item = tree->get_item_at_position(mm->get_position());
@@ -2805,6 +2803,7 @@ void FileSystemDock::_tree_gui_input(Ref<InputEvent> p_event) {
 		}
 	}
 
+	Ref<InputEventKey> key = p_event;
 	if (key.is_valid() && key->is_pressed() && !key->is_echo()) {
 		if (ED_IS_SHORTCUT("filesystem_dock/duplicate", p_event)) {
 			_tree_rmb_option(FILE_DUPLICATE);
@@ -2818,6 +2817,8 @@ void FileSystemDock::_tree_gui_input(Ref<InputEvent> p_event) {
 			_tree_rmb_option(FILE_RENAME);
 		} else if (ED_IS_SHORTCUT("editor/open_search", p_event)) {
 			focus_on_filter();
+		} else if (key->get_keycode() == Key::ESCAPE) {
+			tree->deselect_all();
 		} else {
 			return;
 		}
@@ -2876,6 +2877,8 @@ void FileSystemDock::_file_list_gui_input(Ref<InputEvent> p_event) {
 			_file_list_rmb_option(FILE_RENAME);
 		} else if (ED_IS_SHORTCUT("editor/open_search", p_event)) {
 			focus_on_filter();
+		} else if (key->get_keycode() == Key::ESCAPE) {
+			files->deselect_all();
 		} else {
 			return;
 		}

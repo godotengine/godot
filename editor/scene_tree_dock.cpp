@@ -89,6 +89,14 @@ void SceneTreeDock::input(const Ref<InputEvent> &p_event) {
 			pending_click_select = nullptr;
 		}
 	}
+
+	Ref<InputEventKey> k = p_event;
+
+	if (k.is_valid() && k->is_pressed()) {
+		if (k->get_keycode() == Key::ESCAPE) {
+			editor_selection->clear();
+		}
+	}
 }
 
 void SceneTreeDock::shortcut_input(const Ref<InputEvent> &p_event) {
@@ -2773,7 +2781,7 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 	if (profile_allow_editing) {
 		menu->add_icon_shortcut(get_theme_icon(SNAME("ActionCut"), SNAME("EditorIcons")), ED_GET_SHORTCUT("scene_tree/cut_node"), TOOL_CUT);
 		menu->add_icon_shortcut(get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")), ED_GET_SHORTCUT("scene_tree/copy_node"), TOOL_COPY);
-		if (selection.size() == 1 && !node_clipboard.is_empty()) {
+		if (!node_clipboard.is_empty()) {
 			menu->add_icon_shortcut(get_theme_icon(SNAME("ActionPaste"), SNAME("EditorIcons")), ED_GET_SHORTCUT("scene_tree/paste_node"), TOOL_PASTE);
 		}
 		menu->add_separator();
@@ -3172,19 +3180,7 @@ List<Node *> SceneTreeDock::paste_nodes() {
 		return pasted_nodes;
 	}
 
-	Node *paste_parent = edited_scene;
 	List<Node *> selection = editor_selection->get_selected_node_list();
-	if (selection.size() > 0) {
-		paste_parent = selection.back()->get();
-	}
-
-	Node *owner = nullptr;
-	if (paste_parent) {
-		owner = paste_parent->get_owner();
-	}
-	if (!owner) {
-		owner = paste_parent;
-	}
 
 	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
 	ur->create_action(TTR("Paste Node(s)"), UndoRedo::MERGE_DISABLE, EditorNode::get_singleton()->get_edited_scene());
@@ -3207,42 +3203,49 @@ List<Node *> SceneTreeDock::paste_nodes() {
 	}
 
 	for (Node *node : node_clipboard) {
-		HashMap<const Node *, Node *> duplimap;
-
-		Node *dup = node->duplicate_from_editor(duplimap, resource_remap);
-		ERR_CONTINUE(!dup);
-
-		pasted_nodes.push_back(dup);
-
-		if (!paste_parent) {
-			paste_parent = dup;
-			owner = dup;
-			ur->add_do_method(EditorNode::get_singleton(), "set_edited_scene", dup);
-		} else {
-			ur->add_do_method(paste_parent, "add_child", dup, true);
-		}
-
-		for (KeyValue<const Node *, Node *> &E2 : duplimap) {
-			Node *d = E2.value;
-			if (d != dup) {
-				ur->add_do_method(d, "set_owner", owner);
+		for (Node *target_node : selection) {
+			Node *owner = target_node->get_owner();
+			if (!owner) {
+				owner = target_node;
 			}
-		}
 
-		if (dup != owner) {
-			ur->add_do_method(dup, "set_owner", owner);
-		}
-		ur->add_do_method(editor_selection, "add_node", dup);
+			HashMap<const Node *, Node *> duplimap;
 
-		if (dup == paste_parent) {
-			ur->add_undo_method(EditorNode::get_singleton(), "set_edited_scene", (Object *)nullptr);
-		} else {
-			ur->add_undo_method(paste_parent, "remove_child", dup);
-		}
-		ur->add_do_reference(dup);
+			Node *dup = node->duplicate_from_editor(duplimap, resource_remap);
+			ERR_CONTINUE(!dup);
 
-		if (node_clipboard.size() == 1) {
-			ur->add_do_method(EditorNode::get_singleton(), "push_item", dup);
+			pasted_nodes.push_back(dup);
+
+			if (!target_node) {
+				target_node = dup;
+				owner = dup;
+				ur->add_do_method(EditorNode::get_singleton(), "set_edited_scene", dup);
+			} else {
+				ur->add_do_method(target_node, "add_child", dup, true);
+			}
+
+			for (KeyValue<const Node *, Node *> &E2 : duplimap) {
+				Node *d = E2.value;
+				if (d != dup) {
+					ur->add_do_method(d, "set_owner", owner);
+				}
+			}
+
+			if (dup != owner) {
+				ur->add_do_method(dup, "set_owner", owner);
+			}
+			ur->add_do_method(editor_selection, "add_node", dup);
+
+			if (dup == target_node) {
+				ur->add_undo_method(EditorNode::get_singleton(), "set_edited_scene", (Object *)nullptr);
+			} else {
+				ur->add_undo_method(target_node, "remove_child", dup);
+			}
+			ur->add_do_reference(dup);
+
+			if (node_clipboard.size() == 1) {
+				ur->add_do_method(EditorNode::get_singleton(), "push_item", dup);
+			}
 		}
 	}
 
