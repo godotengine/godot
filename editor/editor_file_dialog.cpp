@@ -1500,7 +1500,7 @@ void EditorFileDialog::_go_back() {
 }
 
 void EditorFileDialog::_go_forward() {
-	if (local_history_pos == local_history.size() - 1) {
+	if (local_history_pos >= local_history.size() - 1) {
 		return;
 	}
 
