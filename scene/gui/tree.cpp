@@ -2580,8 +2580,8 @@ void Tree::_range_click_timeout() {
 		mb.instantiate();
 
 		int x_limit = get_size().width - theme_cache.panel_style->get_minimum_size().width;
-		if (h_scroll->is_visible()) {
-			x_limit -= h_scroll->get_minimum_size().width;
+		if (v_scroll->is_visible()) {
+			x_limit -= v_scroll->get_minimum_size().width;
 		}
 
 		cache.rtl = is_layout_rtl();
@@ -3640,8 +3640,8 @@ void Tree::gui_input(const Ref<InputEvent> &p_event) {
 				propagate_mouse_activated = false;
 
 				int x_limit = get_size().width - theme_cache.panel_style->get_minimum_size().width;
-				if (h_scroll->is_visible()) {
-					x_limit -= h_scroll->get_minimum_size().width;
+				if (v_scroll->is_visible()) {
+					x_limit -= v_scroll->get_minimum_size().width;
 				}
 
 				cache.rtl = is_layout_rtl();
@@ -4015,8 +4015,8 @@ void Tree::_notification(int p_what) {
 			Point2 draw_ofs;
 			draw_ofs += bg->get_offset();
 			Size2 draw_size = get_size() - bg->get_minimum_size();
-			if (h_scroll->is_visible()) {
-				draw_size.width -= h_scroll->get_minimum_size().width;
+			if (v_scroll->is_visible()) {
+				draw_size.width -= v_scroll->get_minimum_size().width;
 			}
 
 			bg->draw(ci, Rect2(Point2(), get_size()));
