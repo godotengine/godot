@@ -1184,7 +1184,9 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 						break;
 					case TOOL_CREATE_USER_INTERFACE: {
 						Control *node = memnew(Control);
-						node->set_anchors_and_offsets_preset(PRESET_FULL_RECT); //more useful for resizable UIs.
+						// Making the root control full rect by default is more useful for resizable UIs.
+						node->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
+						node->set_grow_direction_preset(PRESET_FULL_RECT);
 						new_node = node;
 
 					} break;

@@ -171,7 +171,9 @@ Node *SceneCreateDialog::create_scene_root() {
 			break;
 		case ROOT_USER_INTERFACE: {
 			Control *gui_ctl = memnew(Control);
+			// Making the root control full rect by default is more useful for resizable UIs.
 			gui_ctl->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
+			gui_ctl->set_grow_direction_preset(Control::PRESET_FULL_RECT);
 			root = gui_ctl;
 		} break;
 		case ROOT_OTHER:
