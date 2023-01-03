@@ -213,11 +213,55 @@ static bool _have_exact_arguments(const MethodBind *p_method, const Vector<GDScr
 }
 
 GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &codegen, Error &r_error, const GDScriptParser::ExpressionNode *p_expression, bool p_root, bool p_initializer, const GDScriptCodeGenerator::Address &p_index_addr) {
+	GDScriptCodeGenerator *gen = codegen.generator;
+
 	if (p_expression->is_constant) {
+		if (p_expression->type == GDScriptParser::Node::IDENTIFIER) {
+			// Look for identifiers in current scope.
+			const GDScriptParser::IdentifierNode *in = static_cast<const GDScriptParser::IdentifierNode *>(p_expression);
+
+			StringName identifier = in->name;
+
+			switch (in->source) {
+				case GDScriptParser::IdentifierNode::MEMBER_CONSTANT: { // Get property.
+					// Try class constants.
+					{
+						GDScript *owner = codegen.script;
+						while (owner) {
+							GDScript *scr = owner;
+							GDScriptNativeClass *nc = nullptr;
+							while (scr) {
+								if (scr->constants.has(identifier)) {
+									return codegen.add_constant(scr->constants[identifier]); // TODO: Get type here.
+								}
+								if (scr->native.is_valid()) {
+									nc = scr->native.ptr();
+								}
+								scr = scr->_base;
+							}
+
+							// Class C++ integer constant.
+							if (nc) {
+								bool success = false;
+								int64_t constant = ClassDB::get_integer_constant(nc->get_name(), identifier, &success);
+								if (success) {
+									return codegen.add_constant(constant);
+								}
+							}
+
+							owner = owner->_owner;
+						}
+					}
+				} break;
+				case GDScriptParser::IdentifierNode::LOCAL_CONSTANT: {
+					return codegen.locals[identifier];
+				} break;
+				default: {
+				} break;
+			}
+		}
 		return codegen.add_constant(p_expression->reduced_value);
 	}
-
-	GDScriptCodeGenerator *gen = codegen.generator;
 
 	switch (p_expression->type) {
 		case GDScriptParser::Node::IDENTIFIER: {
@@ -1953,6 +1997,7 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 					return ERR_PARSE_ERROR;
 				}
 
+				GDScriptCompiler::convert_to_initializer_type(lc->initializer->reduced_value, lc);
 				codegen.add_local_constant(lc->identifier->name, lc->initializer->reduced_value);
 			} break;
 			case GDScriptParser::Node::PASS:
@@ -2406,6 +2451,7 @@ Error GDScriptCompiler::_populate_class_members(GDScript *p_script, const GDScri
 				const GDScriptParser::ConstantNode *constant = member.constant;
 				StringName name = constant->identifier->name;
 
+				GDScriptCompiler::convert_to_initializer_type(constant->initializer->reduced_value, constant);
 				p_script->constants.insert(name, constant->initializer->reduced_value);
 #ifdef TOOLS_ENABLED
 				p_script->member_lines[name] = constant->start_line;
@@ -2642,16 +2688,16 @@ Error GDScriptCompiler::_compile_class(GDScript *p_script, const GDScriptParser:
 	return OK;
 }
 
-void GDScriptCompiler::convert_to_initializer_type(Variant &p_variant, const GDScriptParser::VariableNode *p_node) {
+void GDScriptCompiler::convert_to_initializer_type(Variant &r_variant, GDScriptParser::DataType p_datatype, GDScriptParser::ExpressionNode *p_initializer) {
 	// Set p_variant to the value of p_node's initializer, with the type of p_node's variable.
-	GDScriptParser::DataType member_t = p_node->datatype;
-	GDScriptParser::DataType init_t = p_node->initializer->datatype;
+	GDScriptParser::DataType member_t = p_datatype;
+	GDScriptParser::DataType init_t = p_initializer->datatype;
 	if (member_t.is_hard_type() && init_t.is_hard_type() &&
 			member_t.kind == GDScriptParser::DataType::BUILTIN && init_t.kind == GDScriptParser::DataType::BUILTIN) {
 		if (Variant::can_convert_strict(init_t.builtin_type, member_t.builtin_type)) {
-			Variant *v = &p_node->initializer->reduced_value;
+			Variant *v = &p_initializer->reduced_value;
 			Callable::CallError ce;
-			Variant::construct(member_t.builtin_type, p_variant, const_cast<const Variant **>(&v), 1, ce);
+			Variant::construct(member_t.builtin_type, r_variant, const_cast<const Variant **>(&v), 1, ce);
 		}
 	}
 }

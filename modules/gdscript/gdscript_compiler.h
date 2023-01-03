@@ -140,7 +140,14 @@ class GDScriptCompiler {
 	bool within_await = false;
 
 public:
-	static void convert_to_initializer_type(Variant &p_variant, const GDScriptParser::VariableNode *p_node);
+	_FORCE_INLINE_ static void convert_to_initializer_type(Variant &r_variant, const GDScriptParser::VariableNode *p_node) {
+		convert_to_initializer_type(r_variant, p_node->datatype, p_node->initializer);
+	}
+	_FORCE_INLINE_ static void convert_to_initializer_type(Variant &r_variant, const GDScriptParser::ConstantNode *p_node) {
+		convert_to_initializer_type(r_variant, p_node->datatype, p_node->initializer);
+	}
+	static void convert_to_initializer_type(Variant &r_variant, GDScriptParser::DataType p_datatype, GDScriptParser::ExpressionNode *p_initializer);
+
 	static void make_scripts(GDScript *p_script, const GDScriptParser::ClassNode *p_class, bool p_keep_state);
 	Error compile(const GDScriptParser *p_parser, GDScript *p_script, bool p_keep_state = false);
 
