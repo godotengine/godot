@@ -118,6 +118,7 @@ void EditorDebuggerTree::_scene_tree_rmb_selected(const Vector2 &p_position, Mou
 	item_menu->add_icon_item(get_theme_icon(SNAME("CreateNewSceneFrom"), SNAME("EditorIcons")), TTR("Save Branch as Scene"), ITEM_MENU_SAVE_REMOTE_NODE);
 	item_menu->add_icon_item(get_theme_icon(SNAME("CopyNodePath"), SNAME("EditorIcons")), TTR("Copy Node Path"), ITEM_MENU_COPY_NODE_PATH);
 	item_menu->set_position(get_screen_position() + get_local_mouse_position());
+	item_menu->reset_size();
 	item_menu->popup();
 }
 
@@ -323,6 +324,8 @@ void EditorDebuggerTree::_item_menu_id_pressed(int p_option) {
 				file_dialog->add_filter("*." + extensions[i], extensions[i].to_upper());
 			}
 
+			String filename = get_selected_path().get_file() + "." + extensions.front()->get().to_lower();
+			file_dialog->set_current_path(filename);
 			file_dialog->popup_file_dialog();
 		} break;
 		case ITEM_MENU_COPY_NODE_PATH: {
