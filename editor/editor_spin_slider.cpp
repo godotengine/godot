@@ -331,33 +331,29 @@ void EditorSpinSlider::_draw_spin_slider() {
 	}
 
 	int suffix_start = numstr.length();
-	RID num_rid = TS->create_shaped_text();
-	TS->shaped_text_add_string(num_rid, numstr + U"\u2009" + suffix, font->get_rids(), font_size, font->get_opentype_features());
-	for (int i = 0; i < TextServer::SPACING_MAX; i++) {
-		TS->shaped_text_set_spacing(num_rid, TextServer::SpacingType(i), font->get_spacing(TextServer::SpacingType(i)));
-	}
+	Ref<TextLine> num_text;
+	num_text.instantiate();
+	num_text->add_string(numstr + U"\u2009" + suffix, font, font_size);
 
 	float text_start = rtl ? Math::round(sb->get_offset().x) : Math::round(sb->get_offset().x + label_width + sep);
-	Vector2 text_ofs = rtl ? Vector2(text_start + (number_width - TS->shaped_text_get_width(num_rid)), vofs) : Vector2(text_start, vofs);
-	int v_size = TS->shaped_text_get_glyph_count(num_rid);
-	const Glyph *glyphs = TS->shaped_text_get_glyphs(num_rid);
-	for (int i = 0; i < v_size; i++) {
-		for (int j = 0; j < glyphs[i].repeat; j++) {
-			if (text_ofs.x >= text_start && (text_ofs.x + glyphs[i].advance) <= (text_start + number_width)) {
-				Color color = fc;
-				if (glyphs[i].start >= suffix_start) {
-					color.a *= 0.4;
+	Vector2 text_ofs = rtl ? Vector2(text_start + (number_width - num_text->get_line_width()), vofs) : Vector2(text_start, vofs);
+
+	num_text->draw_custom(
+			text_ofs,
+			[&](const Glyph &p_gl, const Vector2 &p_ofs, int p_line_id) {
+				if (p_ofs.x >= text_start && (p_ofs.x + p_gl.advance) <= (text_start + number_width)) {
+					Color color = fc;
+					if (p_gl.start >= suffix_start) {
+						color.a *= 0.4;
+					}
+					if (p_gl.font_rid != RID()) {
+						TS->font_draw_glyph(p_gl.font_rid, ci, p_gl.font_size, p_ofs, p_gl.index, color);
+					} else if ((p_gl.flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) {
+						TS->draw_hex_code_box(ci, p_gl.font_size, p_ofs, p_gl.index, color);
+					}
 				}
-				if (glyphs[i].font_rid != RID()) {
-					TS->font_draw_glyph(glyphs[i].font_rid, ci, glyphs[i].font_size, text_ofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, color);
-				} else if ((glyphs[i].flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL) {
-					TS->draw_hex_code_box(ci, glyphs[i].font_size, text_ofs + Vector2(glyphs[i].x_off, glyphs[i].y_off), glyphs[i].index, color);
-				}
-			}
-			text_ofs.x += glyphs[i].advance;
-		}
-	}
-	TS->free_rid(num_rid);
+				return true;
+			});
 
 	if (!hide_slider) {
 		if (get_step() == 1) {

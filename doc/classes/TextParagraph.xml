@@ -53,6 +53,17 @@
 				Draw all lines of the text and drop cap into a canvas item at a given position, with [param color]. [param pos] specifies the top left corner of the bounding box.
 			</description>
 		</method>
+		<method name="draw_custom" qualifiers="const">
+			<return type="void" />
+			<param index="0" name="canvas" type="RID" />
+			<param index="1" name="pos" type="Vector2" />
+			<param index="2" name="callback" type="Callable" />
+			<description>
+				Draw text using custom glyph drawing callback.
+				The callback should have 4 arguments: [Dictionary] [code]glyph[/code], [Vector2] [code]position[/code], [RID] [code]canvas[/code], [int] [code]line_number[/code].
+				The callback should return [bool], if [code]false[/code] is returned, drawing is aborted.
+			</description>
+		</method>
 		<method name="draw_dropcap" qualifiers="const">
 			<return type="void" />
 			<param index="0" name="canvas" type="RID" />
@@ -104,10 +115,30 @@
 				Draw outlines of all lines of the text and drop cap into a canvas item at a given position, with [param color]. [param pos] specifies the top left corner of the bounding box.
 			</description>
 		</method>
+		<method name="draw_underline_custom" qualifiers="const">
+			<return type="void" />
+			<param index="0" name="canvas" type="RID" />
+			<param index="1" name="pos" type="Vector2" />
+			<param index="2" name="line_type" type="int" enum="TextServer.LinePosition" />
+			<param index="3" name="start" type="int" />
+			<param index="4" name="end" type="int" />
+			<param index="5" name="callback" type="Callable" />
+			<description>
+				Draw underline/overline/strikethrough for the specific range of text using custom drawing callback.
+				The callback should have 3 arguments: [Rect2] [code]rect[/code], [RID] [code]canvas[/code], [int] [code]line_number[/code].
+				The callback should return [bool], if [code]false[/code] is returned, drawing is aborted.
+			</description>
+		</method>
 		<method name="get_dropcap_lines" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns number of lines used by dropcap.
+			</description>
+		</method>
+		<method name="get_dropcap_offset" qualifiers="const">
+			<return type="Vector2" />
+			<description>
+				Returns drawing offset of the dropcap.
 			</description>
 		</method>
 		<method name="get_dropcap_rid" qualifiers="const">
@@ -120,6 +151,12 @@
 			<return type="Vector2" />
 			<description>
 				Returns drop cap bounding box size.
+			</description>
+		</method>
+		<method name="get_glyph_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns number of glyphs in the paragraph.
 			</description>
 		</method>
 		<method name="get_line_ascent" qualifiers="const">
@@ -155,6 +192,13 @@
 			<param index="0" name="line" type="int" />
 			<description>
 				Returns array of inline objects in the line.
+			</description>
+		</method>
+		<method name="get_line_offset" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="line" type="int" />
+			<description>
+				Returnes drawing offset of the text line.
 			</description>
 		</method>
 		<method name="get_line_range" qualifiers="const">
@@ -217,6 +261,24 @@
 				Returns the size of the bounding box of the paragraph.
 			</description>
 		</method>
+		<method name="get_span_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns numbrer of text spans.
+			</description>
+		</method>
+		<method name="get_visible_line_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns visible line count.
+			</description>
+		</method>
+		<method name="has_invalid_glyphs" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if paragraph has glyphs that can't be rendered using current font.
+			</description>
+		</method>
 		<method name="hit_test" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="coords" type="Vector2" />
@@ -260,13 +322,22 @@
 				Aligns paragraph to the given tab-stops.
 			</description>
 		</method>
+		<method name="update_span_font">
+			<return type="void" />
+			<param index="0" name="span" type="int" />
+			<param index="1" name="font" type="Font" />
+			<param index="2" name="font_size" type="int" />
+			<description>
+				Sets font and font size of the text span (added by [method add_string]).
+			</description>
+		</method>
 	</methods>
 	<members>
-		<member name="alignment" type="int" setter="set_alignment" getter="get_alignment" enum="HorizontalAlignment" default="0">
-			Paragraph horizontal alignment.
-		</member>
 		<member name="break_flags" type="int" setter="set_break_flags" getter="get_break_flags" enum="TextServer.LineBreakFlag" default="3">
 			Line breaking rules. For more info see [TextServer].
+		</member>
+		<member name="clip" type="bool" setter="set_clip" getter="get_clip" default="true">
+			If [code]true[/code], only shows the text that fits inside its bounding rectangle and will clip text.
 		</member>
 		<member name="custom_punctuation" type="String" setter="set_custom_punctuation" getter="get_custom_punctuation" default="&quot;&quot;">
 			Custom punctuation character list, used for word breaking. If set to empty string, server defaults are used.
@@ -274,8 +345,23 @@
 		<member name="direction" type="int" setter="set_direction" getter="get_direction" enum="TextServer.Direction" default="0">
 			Text writing direction.
 		</member>
+		<member name="extra_line_spacing" type="float" setter="set_extra_line_spacing" getter="get_extra_line_spacing" default="0.0">
+			Extra line spacing.
+		</member>
+		<member name="height" type="float" setter="set_height" getter="get_height" default="-1.0">
+			Target height for paragraph alignment.
+		</member>
+		<member name="horizontal_alignment" type="int" setter="set_horizontal_alignment" getter="get_horizontal_alignment" enum="HorizontalAlignment" default="0">
+			Paragraph horizontal (alignment in the direction of text) alignment.
+		</member>
+		<member name="invert_line_order" type="bool" setter="set_invert_line_order" getter="get_invert_line_order" default="false">
+			If [code]true[/code], line drawing order is inverted.
+		</member>
 		<member name="justification_flags" type="int" setter="set_justification_flags" getter="get_justification_flags" enum="TextServer.JustificationFlag" default="3">
 			Line alignment rules. For more info see [TextServer].
+		</member>
+		<member name="lines_skipped" type="int" setter="set_lines_skipped" getter="get_lines_skipped" default="0">
+			Number of lines to skip.
 		</member>
 		<member name="max_lines_visible" type="int" setter="set_max_lines_visible" getter="get_max_lines_visible" default="-1">
 			Limits the lines of text shown.
@@ -292,8 +378,14 @@
 		<member name="text_overrun_behavior" type="int" setter="set_text_overrun_behavior" getter="get_text_overrun_behavior" enum="TextServer.OverrunBehavior" default="0">
 			Sets the clipping behavior when the text exceeds the paragraph's set width. See [enum TextServer.OverrunBehavior] for a description of all modes.
 		</member>
+		<member name="uniform_line_height" type="bool" setter="set_uniform_line_height" getter="get_uniform_line_height" default="false">
+			If [code]true[/code], heigth of every line is set to the maximum line height.
+		</member>
+		<member name="vertical_alignment" type="int" setter="set_vertical_alignment" getter="get_vertical_alignment" enum="VerticalAlignment" default="0">
+			Paragraph vertical (alignment in the direction of lines) alignment.
+		</member>
 		<member name="width" type="float" setter="set_width" getter="get_width" default="-1.0">
-			Paragraph width.
+			Target width for paragraph alignment.
 		</member>
 	</members>
 </class>

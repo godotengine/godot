@@ -51,14 +51,29 @@ private:
 
 	bool lines_dirty = true;
 
+	bool clip = true;
+
 	float width = -1.0;
+	float height = -1.0;
 	int max_lines_visible = -1;
+	int lines_skipped = 0;
+	float line_spacing = 0;
+
+	bool uniform_line_height = false;
+	bool invert_line_order = false;
+
+	bool lines_offsets_dirty = true;
+	float vsep = 0.0;
+	float line_height = 0.0;
+	Vector2 dc_offset;
+	Vector<Vector2> line_offsets;
 
 	BitField<TextServer::LineBreakFlag> brk_flags = TextServer::BREAK_MANDATORY | TextServer::BREAK_WORD_BOUND;
 	BitField<TextServer::JustificationFlag> jst_flags = TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA;
 	TextServer::OverrunBehavior overrun_behavior = TextServer::OVERRUN_NO_TRIMMING;
 
-	HorizontalAlignment alignment = HORIZONTAL_ALIGNMENT_LEFT;
+	HorizontalAlignment horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT;
+	VerticalAlignment vertical_alignment = VERTICAL_ALIGNMENT_TOP;
 
 	Vector<float> tab_stops;
 
@@ -66,6 +81,7 @@ protected:
 	static void _bind_methods();
 
 	void _shape_lines();
+	void _update_line_offsets();
 
 public:
 	RID get_rid() const;
@@ -94,12 +110,27 @@ public:
 	bool set_dropcap(const String &p_text, const Ref<Font> &p_font, int p_font_size, const Rect2 &p_dropcap_margins = Rect2(), const String &p_language = "");
 	void clear_dropcap();
 
+	int get_span_count() const;
+	void update_span_font(int p_span, const Ref<Font> &p_font, int p_font_size);
+
 	bool add_string(const String &p_text, const Ref<Font> &p_font, int p_font_size, const String &p_language = "", const Variant &p_meta = Variant());
 	bool add_object(Variant p_key, const Size2 &p_size, InlineAlignment p_inline_align = INLINE_ALIGNMENT_CENTER, int p_length = 1, float p_baseline = 0.0);
 	bool resize_object(Variant p_key, const Size2 &p_size, InlineAlignment p_inline_align = INLINE_ALIGNMENT_CENTER, float p_baseline = 0.0);
 
-	void set_alignment(HorizontalAlignment p_alignment);
-	HorizontalAlignment get_alignment() const;
+	void set_horizontal_alignment(HorizontalAlignment p_alignment);
+	HorizontalAlignment get_horizontal_alignment() const;
+
+	void set_vertical_alignment(VerticalAlignment p_alignment);
+	VerticalAlignment get_vertical_alignment() const;
+
+	void set_uniform_line_height(bool p_enabled);
+	bool get_uniform_line_height() const;
+
+	void set_invert_line_order(bool p_enabled);
+	bool get_invert_line_order() const;
+
+	void set_clip(bool p_enabled);
+	bool get_clip() const;
 
 	void tab_align(const Vector<float> &p_tab_stops);
 
@@ -115,6 +146,12 @@ public:
 	void set_width(float p_width);
 	float get_width() const;
 
+	void set_height(float p_height);
+	float get_height() const;
+
+	void set_lines_skipped(int p_lines);
+	int get_lines_skipped() const;
+
 	void set_max_lines_visible(int p_lines);
 	int get_max_lines_visible() const;
 
@@ -123,6 +160,7 @@ public:
 	Size2 get_size() const;
 
 	int get_line_count() const;
+	int get_visible_line_count() const;
 
 	Array get_line_objects(int p_line) const;
 	Rect2 get_line_object_rect(int p_line, Variant p_key) const;
@@ -130,22 +168,31 @@ public:
 	float get_line_ascent(int p_line) const;
 	float get_line_descent(int p_line) const;
 	float get_line_width(int p_line) const;
+	Vector2 get_line_offset(int p_line) const;
 	Vector2i get_line_range(int p_line) const;
 	float get_line_underline_position(int p_line) const;
 	float get_line_underline_thickness(int p_line) const;
 
-	int get_spacing_top() const;
-	int get_spacing_bottom() const;
+	void set_extra_line_spacing(float p_spacing);
+	float get_extra_line_spacing() const;
 
 	Size2 get_dropcap_size() const;
+	Vector2 get_dropcap_offset() const;
 	int get_dropcap_lines() const;
+
+	bool has_invalid_glyphs() const;
+	int get_glyph_count() const;
 
 	void draw(RID p_canvas, const Vector2 &p_pos, const Color &p_color = Color(1, 1, 1), const Color &p_dc_color = Color(1, 1, 1)) const;
 	void draw_outline(RID p_canvas, const Vector2 &p_pos, int p_outline_size = 1, const Color &p_color = Color(1, 1, 1), const Color &p_dc_color = Color(1, 1, 1)) const;
+	void draw_custom(const Vector2 &p_pos, std::function<bool(const Glyph &, const Vector2 &, int)> p_draw_fn) const;
+	void _draw_custom(RID p_canvas, const Vector2 &p_pos, const Callable &p_callback) const;
+
+	void draw_underline_custom(const Vector2 &p_pos, TextServer::LinePosition p_line, int p_start, int p_end, std::function<bool(const Rect2 &, int)> p_draw_fn) const;
+	void _draw_underline_custom(RID p_canvas, const Vector2 &p_pos, TextServer::LinePosition p_line, int p_start, int p_end, const Callable &p_callback) const;
 
 	void draw_line(RID p_canvas, const Vector2 &p_pos, int p_line, const Color &p_color = Color(1, 1, 1)) const;
 	void draw_line_outline(RID p_canvas, const Vector2 &p_pos, int p_line, int p_outline_size = 1, const Color &p_color = Color(1, 1, 1)) const;
-
 	void draw_dropcap(RID p_canvas, const Vector2 &p_pos, const Color &p_color = Color(1, 1, 1)) const;
 	void draw_dropcap_outline(RID p_canvas, const Vector2 &p_pos, int p_outline_size = 1, const Color &p_color = Color(1, 1, 1)) const;
 
@@ -153,7 +200,7 @@ public:
 
 	Mutex &get_mutex() const { return _thread_safe_; };
 
-	TextParagraph(const String &p_text, const Ref<Font> &p_font, int p_font_size, const String &p_language = "", float p_width = -1.f, TextServer::Direction p_direction = TextServer::DIRECTION_AUTO, TextServer::Orientation p_orientation = TextServer::ORIENTATION_HORIZONTAL);
+	TextParagraph(const String &p_text, const Ref<Font> &p_font, int p_font_size, const String &p_language = "", float p_width = -1.f, float p_height = -1.f, TextServer::Direction p_direction = TextServer::DIRECTION_AUTO, TextServer::Orientation p_orientation = TextServer::ORIENTATION_HORIZONTAL);
 	TextParagraph();
 	~TextParagraph();
 };

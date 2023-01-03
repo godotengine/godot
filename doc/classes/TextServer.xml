@@ -563,6 +563,7 @@
 			<param index="0" name="font_rid" type="RID" />
 			<param index="1" name="size" type="Vector2i" />
 			<param index="2" name="index" type="int" />
+			<param index="3" name="include_sideways" type="bool" default="false" />
 			<description>
 				Renders specified glyph to the font cache texture.
 			</description>
@@ -573,6 +574,7 @@
 			<param index="1" name="size" type="Vector2i" />
 			<param index="2" name="start" type="int" />
 			<param index="3" name="end" type="int" />
+			<param index="4" name="include_sideways" type="bool" default="false" />
 			<description>
 				Renders the range of characters to the font cache texture.
 			</description>
@@ -1135,6 +1137,20 @@
 				Draw shaped text into a canvas item at a given position, with [param color]. [param pos] specifies the leftmost point of the baseline (for horizontal layout) or topmost point of the baseline (for vertical layout).
 			</description>
 		</method>
+		<method name="shaped_text_draw_custom" qualifiers="const">
+			<return type="void" />
+			<param index="0" name="shaped" type="RID" />
+			<param index="1" name="canvas" type="RID" />
+			<param index="2" name="pos" type="Vector2" />
+			<param index="3" name="clip_l" type="float" />
+			<param index="4" name="clip_r" type="float" />
+			<param index="5" name="callback" type="Callable" />
+			<description>
+				Draw text using custom glyph drawing callback.
+				The callback should have 3 arguments: [Dictionary] [code]glyph[/code], [Vector2] [code]position[/code], [RID] [code]canvas[/code].
+				The callback should return [bool], if [code]false[/code] is returned, drawing is aborted.
+			</description>
+		</method>
 		<method name="shaped_text_draw_outline" qualifiers="const">
 			<return type="void" />
 			<param index="0" name="shaped" type="RID" />
@@ -1369,6 +1385,13 @@
 			<param index="0" name="shaped" type="RID" />
 			<description>
 				Returns thickness of the underline.
+			</description>
+		</method>
+		<method name="shaped_text_get_vertical_bounds" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="shaped" type="RID" />
+			<description>
+				Returned real vertical bounds of the line (like ascent/descent, but counting only space occupied by glyphs).
 			</description>
 		</method>
 		<method name="shaped_text_get_width" qualifiers="const">
@@ -1625,6 +1648,15 @@
 		</constant>
 		<constant name="FONT_LCD_SUBPIXEL_LAYOUT_MAX" value="5" enum="FontLCDSubpixelLayout">
 		</constant>
+		<constant name="UNDERLINE" value="0" enum="LinePosition">
+			Underline position.
+		</constant>
+		<constant name="OVERDERLINE" value="1" enum="LinePosition">
+			Overline position.
+		</constant>
+		<constant name="STRIKETHROUGH" value="2" enum="LinePosition">
+			Strikethrough position.
+		</constant>
 		<constant name="DIRECTION_AUTO" value="0" enum="Direction">
 			Text direction is determined based on contents and current locale.
 		</constant>
@@ -1637,9 +1669,14 @@
 		<constant name="ORIENTATION_HORIZONTAL" value="0" enum="Orientation">
 			Text is written horizontally.
 		</constant>
-		<constant name="ORIENTATION_VERTICAL" value="1" enum="Orientation">
-			Left to right text is written vertically from top to bottom.
-			Right to left text is written vertically from bottom to top.
+		<constant name="ORIENTATION_VERTICAL_UPRIGHT" value="1" enum="Orientation">
+			Text is written vertically from top to bottom (LTR) / bottom to top (RTL), all glyphs are drawn upright.
+		</constant>
+		<constant name="ORIENTATION_VERTICAL_MIXED" value="2" enum="Orientation">
+			Text is written vertically from top to bottom (LTR) / bottom to top (RTL), CJK glyphs are drawn upright, other glyphs are drawn sideways (90 deg. CW).
+		</constant>
+		<constant name="ORIENTATION_VERTICAL_SIDEWAYS" value="3" enum="Orientation">
+			Text is written vertically from top to bottom (LTR) / bottom to top (RTL), all glyphs are drawn sideways (90 deg. CW).
 		</constant>
 		<constant name="JUSTIFICATION_NONE" value="0" enum="JustificationFlag" is_bitfield="true">
 			Do not justify text.

@@ -55,6 +55,9 @@ void TextLine::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_bidi_override", "override"), &TextLine::set_bidi_override);
 
+	ClassDB::bind_method(D_METHOD("get_span_count"), &TextLine::get_span_count);
+	ClassDB::bind_method(D_METHOD("update_span_font", "span", "font", "font_size"), &TextLine::update_span_font);
+
 	ClassDB::bind_method(D_METHOD("add_string", "text", "font", "font_size", "language", "meta"), &TextLine::add_string, DEFVAL(""), DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("add_object", "key", "size", "inline_align", "length", "baseline"), &TextLine::add_object, DEFVAL(INLINE_ALIGNMENT_CENTER), DEFVAL(1), DEFVAL(0.0));
 	ClassDB::bind_method(D_METHOD("resize_object", "key", "size", "inline_align", "baseline"), &TextLine::resize_object, DEFVAL(INLINE_ALIGNMENT_CENTER), DEFVAL(0.0));
@@ -68,6 +71,11 @@ void TextLine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_horizontal_alignment"), &TextLine::get_horizontal_alignment);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "alignment", PROPERTY_HINT_ENUM, "Left,Center,Right,Fill"), "set_horizontal_alignment", "get_horizontal_alignment");
+
+	ClassDB::bind_method(D_METHOD("set_clip", "clip"), &TextLine::set_clip);
+	ClassDB::bind_method(D_METHOD("get_clip"), &TextLine::get_clip);
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip"), "set_clip", "get_clip");
 
 	ClassDB::bind_method(D_METHOD("tab_align", "tab_stops"), &TextLine::tab_align);
 
@@ -94,8 +102,14 @@ void TextLine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_line_underline_position"), &TextLine::get_line_underline_position);
 	ClassDB::bind_method(D_METHOD("get_line_underline_thickness"), &TextLine::get_line_underline_thickness);
 
+	ClassDB::bind_method(D_METHOD("has_invalid_glyphs"), &TextLine::has_invalid_glyphs);
+	ClassDB::bind_method(D_METHOD("get_glyph_count"), &TextLine::get_glyph_count);
+
 	ClassDB::bind_method(D_METHOD("draw", "canvas", "pos", "color"), &TextLine::draw, DEFVAL(Color(1, 1, 1)));
 	ClassDB::bind_method(D_METHOD("draw_outline", "canvas", "pos", "outline_size", "color"), &TextLine::draw_outline, DEFVAL(1), DEFVAL(Color(1, 1, 1)));
+	ClassDB::bind_method(D_METHOD("draw_custom", "canvas", "pos", "callback"), &TextLine::_draw_custom);
+
+	ClassDB::bind_method(D_METHOD("draw_underline_custom", "canvas", "pos", "line_type", "start", "end", "callback"), &TextLine::_draw_underline_custom);
 
 	ClassDB::bind_method(D_METHOD("hit_test", "coords"), &TextLine::hit_test);
 }
@@ -192,6 +206,16 @@ void TextLine::set_bidi_override(const Array &p_override) {
 	dirty = true;
 }
 
+int TextLine::get_span_count() const {
+	return TS->shaped_get_span_count(rid);
+}
+
+void TextLine::update_span_font(int p_span, const Ref<Font> &p_font, int p_font_size) {
+	ERR_FAIL_COND(p_font.is_null());
+
+	TS->shaped_set_span_update_font(rid, p_span, p_font->get_rids(), p_font_size, p_font->get_opentype_features());
+}
+
 bool TextLine::add_string(const String &p_text, const Ref<Font> &p_font, int p_font_size, const String &p_language, const Variant &p_meta) {
 	ERR_FAIL_COND_V(p_font.is_null(), false);
 	bool res = TS->shaped_text_add_string(rid, p_text, p_font->get_rids(), p_font_size, p_font->get_opentype_features(), p_language, p_meta);
@@ -277,6 +301,14 @@ HorizontalAlignment TextLine::get_horizontal_alignment() const {
 	return alignment;
 }
 
+void TextLine::set_clip(bool p_enabled) {
+	clip = p_enabled;
+}
+
+bool TextLine::get_clip() const {
+	return clip;
+}
+
 void TextLine::tab_align(const Vector<float> &p_tab_stops) {
 	tab_stops = p_tab_stops;
 	dirty = true;
@@ -345,7 +377,72 @@ float TextLine::get_line_underline_thickness() const {
 	return TS->shaped_text_get_underline_thickness(rid);
 }
 
-void TextLine::draw(RID p_canvas, const Vector2 &p_pos, const Color &p_color) const {
+bool TextLine::has_invalid_glyphs() const {
+	const Glyph *glyph = TS->shaped_text_get_glyphs(rid);
+	int64_t glyph_count = TS->shaped_text_get_glyph_count(rid);
+	for (int64_t i = 0; i < glyph_count; i++) {
+		if (glyph[i].font_rid == RID()) {
+			return true;
+		}
+	}
+	return false;
+}
+
+int TextLine::get_glyph_count() const {
+	return TS->shaped_text_get_glyph_count(rid) + TS->shaped_text_get_ellipsis_glyph_count(rid);
+}
+
+void TextLine::draw_underline_custom(const Vector2 &p_pos, TextServer::LinePosition p_line, int p_start, int p_end, std::function<bool(const Rect2 &)> p_draw_fn) const {
+	TextServer::Orientation orientation = TS->shaped_text_get_orientation(rid);
+
+	draw_custom(
+			p_pos,
+			[&](const Glyph &p_gl, const Vector2 &p_ofs, int p_line_id) {
+				if (p_gl.font_rid != RID() && p_gl.start >= p_start && p_gl.end <= p_end) {
+					float l_ofs = 0.0;
+					switch (p_line) {
+						case TextServer::UNDERLINE: {
+							l_ofs = TS->font_get_underline_position(p_gl.font_rid, p_gl.font_size);
+						} break;
+						case TextServer::OVERDERLINE: {
+							l_ofs = -TS->font_get_ascent(p_gl.font_rid, p_gl.font_size);
+						} break;
+						case TextServer::STRIKETHROUGH: {
+							l_ofs = -(TS->font_get_ascent(p_gl.font_rid, p_gl.font_size) + TS->font_get_descent(p_gl.font_rid, p_gl.font_size)) / 2.0;
+						} break;
+					}
+					float l_h = TS->font_get_underline_thickness(p_gl.font_rid, p_gl.font_size);
+					float l_w = p_gl.advance;
+					if (orientation == TextServer::ORIENTATION_HORIZONTAL) {
+						return p_draw_fn(Rect2(p_ofs + Vector2(0, l_ofs), Vector2(l_w, l_h)));
+					} else {
+						return p_draw_fn(Rect2(p_ofs + Vector2(-l_ofs, 0), Vector2(l_h, l_w)));
+					}
+				}
+				return true;
+			});
+}
+
+void TextLine::_draw_underline_custom(RID p_canvas, const Vector2 &p_pos, TextServer::LinePosition p_line, int p_start, int p_end, const Callable &p_callback) const {
+	draw_underline_custom(
+			p_pos,
+			p_line,
+			p_start,
+			p_end,
+			[&](const Rect2 &p_rect) {
+				Variant args[] = { p_rect, p_canvas };
+				const Variant *args_ptr[] = { &args[0], &args[1] };
+				Variant ret;
+				Callable::CallError ce;
+				p_callback.callp(args_ptr, 2, ret, ce);
+				if (ce.error != Callable::CallError::CALL_OK) {
+					ERR_PRINT_ONCE("Error calling glyph draw callback method " + Variant::get_callable_error_text(p_callback, args_ptr, 2, ce));
+				}
+				return ret.operator bool();
+			});
+}
+
+void TextLine::draw_custom(const Vector2 &p_pos, std::function<bool(const Glyph &, const Vector2 &, int)> p_draw_fn) const {
 	const_cast<TextLine *>(this)->_shape();
 
 	Vector2 ofs = p_pos;
@@ -381,62 +478,76 @@ void TextLine::draw(RID p_canvas, const Vector2 &p_pos, const Color &p_color) co
 		}
 	}
 
-	float clip_l;
+	float clip_l = 0.0;
+	float clip_r = 0.0;
 	if (TS->shaped_text_get_orientation(rid) == TextServer::ORIENTATION_HORIZONTAL) {
 		ofs.y += TS->shaped_text_get_ascent(rid);
-		clip_l = MAX(0, p_pos.x - ofs.x);
+		if (clip && width > 0) {
+			clip_l = Math::floor(MAX(0, p_pos.x - ofs.x));
+			clip_r = Math::ceil(clip_l + width);
+		}
 	} else {
 		ofs.x += TS->shaped_text_get_ascent(rid);
-		clip_l = MAX(0, p_pos.y - ofs.y);
+		if (clip && width > 0) {
+			clip_l = Math::floor(MAX(0, p_pos.y - ofs.y));
+			clip_r = Math::ceil(clip_l + width);
+		}
 	}
-	return TS->shaped_text_draw(rid, p_canvas, ofs, clip_l, clip_l + width, p_color);
+	TS->shaped_text_draw_custom(rid, ofs, clip_l, clip_r, p_draw_fn, 0);
+}
+
+void TextLine::_draw_custom(RID p_canvas, const Vector2 &p_pos, const Callable &p_callback) const {
+	draw_custom(
+			p_pos,
+			[&](const Glyph &p_gl, const Vector2 &p_ofs, int p_line_id) {
+				Dictionary glyph;
+
+				glyph["start"] = p_gl.start;
+				glyph["end"] = p_gl.end;
+				glyph["repeat"] = p_gl.repeat;
+				glyph["count"] = p_gl.count;
+				glyph["flags"] = p_gl.flags;
+				glyph["offset"] = Vector2(p_gl.x_off, p_gl.y_off);
+				glyph["advance"] = p_gl.advance;
+				glyph["font_rid"] = p_gl.font_rid;
+				glyph["font_size"] = p_gl.font_size;
+				glyph["index"] = p_gl.index;
+
+				Variant args[] = { glyph, p_ofs, p_canvas };
+				const Variant *args_ptr[] = { &args[0], &args[1], &args[2] };
+				Variant ret;
+				Callable::CallError ce;
+				p_callback.callp(args_ptr, 3, ret, ce);
+				if (ce.error != Callable::CallError::CALL_OK) {
+					ERR_PRINT_ONCE("Error calling glyph draw callback method " + Variant::get_callable_error_text(p_callback, args_ptr, 3, ce));
+				}
+				return ret.operator bool();
+			});
+}
+
+void TextLine::draw(RID p_canvas, const Vector2 &p_pos, const Color &p_color) const {
+	bool hex_codes = TS->shaped_text_get_preserve_control(rid) || TS->shaped_text_get_preserve_invalid(rid);
+	draw_custom(
+			p_pos,
+			[&](const Glyph &p_gl, const Vector2 &p_ofs, int p_line_id) {
+				if (p_gl.font_rid != RID()) {
+					TS->font_draw_glyph(p_gl.font_rid, p_canvas, p_gl.font_size, p_ofs, p_gl.index, p_color);
+				} else if (hex_codes && ((p_gl.flags & TextServer::GRAPHEME_IS_VIRTUAL) != TextServer::GRAPHEME_IS_VIRTUAL)) {
+					TS->draw_hex_code_box(p_canvas, p_gl.font_size, p_ofs, p_gl.index, p_color);
+				}
+				return true;
+			});
 }
 
 void TextLine::draw_outline(RID p_canvas, const Vector2 &p_pos, int p_outline_size, const Color &p_color) const {
-	const_cast<TextLine *>(this)->_shape();
-
-	Vector2 ofs = p_pos;
-
-	float length = TS->shaped_text_get_width(rid);
-	if (width > 0) {
-		switch (alignment) {
-			case HORIZONTAL_ALIGNMENT_FILL:
-			case HORIZONTAL_ALIGNMENT_LEFT:
-				break;
-			case HORIZONTAL_ALIGNMENT_CENTER: {
-				if (length <= width) {
-					if (TS->shaped_text_get_orientation(rid) == TextServer::ORIENTATION_HORIZONTAL) {
-						ofs.x += Math::floor((width - length) / 2.0);
-					} else {
-						ofs.y += Math::floor((width - length) / 2.0);
-					}
-				} else if (TS->shaped_text_get_inferred_direction(rid) == TextServer::DIRECTION_RTL) {
-					if (TS->shaped_text_get_orientation(rid) == TextServer::ORIENTATION_HORIZONTAL) {
-						ofs.x += width - length;
-					} else {
-						ofs.y += width - length;
-					}
+	draw_custom(
+			p_pos,
+			[&](const Glyph &p_gl, const Vector2 &p_ofs, int p_line_id) {
+				if (p_gl.font_rid != RID()) {
+					TS->font_draw_glyph_outline(p_gl.font_rid, p_canvas, p_gl.font_size, p_outline_size, p_ofs, p_gl.index, p_color);
 				}
-			} break;
-			case HORIZONTAL_ALIGNMENT_RIGHT: {
-				if (TS->shaped_text_get_orientation(rid) == TextServer::ORIENTATION_HORIZONTAL) {
-					ofs.x += width - length;
-				} else {
-					ofs.y += width - length;
-				}
-			} break;
-		}
-	}
-
-	float clip_l;
-	if (TS->shaped_text_get_orientation(rid) == TextServer::ORIENTATION_HORIZONTAL) {
-		ofs.y += TS->shaped_text_get_ascent(rid);
-		clip_l = MAX(0, p_pos.x - ofs.x);
-	} else {
-		ofs.x += TS->shaped_text_get_ascent(rid);
-		clip_l = MAX(0, p_pos.y - ofs.y);
-	}
-	return TS->shaped_text_draw_outline(rid, p_canvas, ofs, clip_l, clip_l + width, p_outline_size, p_color);
+				return true;
+			});
 }
 
 int TextLine::hit_test(float p_coords) const {

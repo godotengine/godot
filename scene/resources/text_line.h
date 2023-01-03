@@ -41,9 +41,9 @@ class TextLine : public RefCounted {
 
 private:
 	RID rid;
-
 	bool dirty = true;
 
+	bool clip = true;
 	float width = -1.0;
 	BitField<TextServer::JustificationFlag> flags = TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA;
 	HorizontalAlignment alignment = HORIZONTAL_ALIGNMENT_LEFT;
@@ -64,8 +64,6 @@ public:
 	void set_direction(TextServer::Direction p_direction);
 	TextServer::Direction get_direction() const;
 
-	void set_bidi_override(const Array &p_override);
-
 	void set_orientation(TextServer::Orientation p_orientation);
 	TextServer::Orientation get_orientation() const;
 
@@ -75,12 +73,20 @@ public:
 	void set_preserve_control(bool p_enabled);
 	bool get_preserve_control() const;
 
+	void set_bidi_override(const Array &p_override);
+
+	int get_span_count() const;
+	void update_span_font(int p_span, const Ref<Font> &p_font, int p_font_size);
+
 	bool add_string(const String &p_text, const Ref<Font> &p_font, int p_font_size, const String &p_language = "", const Variant &p_meta = Variant());
 	bool add_object(Variant p_key, const Size2 &p_size, InlineAlignment p_inline_align = INLINE_ALIGNMENT_CENTER, int p_length = 1, float p_baseline = 0.0);
 	bool resize_object(Variant p_key, const Size2 &p_size, InlineAlignment p_inline_align = INLINE_ALIGNMENT_CENTER, float p_baseline = 0.0);
 
 	void set_horizontal_alignment(HorizontalAlignment p_alignment);
 	HorizontalAlignment get_horizontal_alignment() const;
+
+	void set_clip(bool p_enabled);
+	bool get_clip() const;
 
 	void tab_align(const Vector<float> &p_tab_stops);
 
@@ -104,8 +110,16 @@ public:
 	float get_line_underline_position() const;
 	float get_line_underline_thickness() const;
 
+	bool has_invalid_glyphs() const;
+	int get_glyph_count() const;
+
 	void draw(RID p_canvas, const Vector2 &p_pos, const Color &p_color = Color(1, 1, 1)) const;
 	void draw_outline(RID p_canvas, const Vector2 &p_pos, int p_outline_size = 1, const Color &p_color = Color(1, 1, 1)) const;
+	void draw_custom(const Vector2 &p_pos, std::function<bool(const Glyph &, const Vector2 &, int)> p_draw_fn) const;
+	void _draw_custom(RID p_canvas, const Vector2 &p_pos, const Callable &p_callback) const;
+
+	void draw_underline_custom(const Vector2 &p_pos, TextServer::LinePosition p_line, int p_start, int p_end, std::function<bool(const Rect2 &)> p_draw_fn) const;
+	void _draw_underline_custom(RID p_canvas, const Vector2 &p_pos, TextServer::LinePosition p_line, int p_start, int p_end, const Callable &p_callback) const;
 
 	int hit_test(float p_coords) const;
 

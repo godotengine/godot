@@ -33,26 +33,20 @@
 
 #include "scene/gui/control.h"
 #include "scene/resources/label_settings.h"
+#include "scene/resources/text_paragraph.h"
 
 class Label : public Control {
 	GDCLASS(Label, Control);
 
 private:
-	HorizontalAlignment horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT;
-	VerticalAlignment vertical_alignment = VERTICAL_ALIGNMENT_TOP;
 	String text;
 	String xl_text;
 	TextServer::AutowrapMode autowrap_mode = TextServer::AUTOWRAP_OFF;
-	bool clip = false;
-	TextServer::OverrunBehavior overrun_behavior = TextServer::OVERRUN_NO_TRIMMING;
 	Size2 minsize;
 	bool uppercase = false;
 
-	bool lines_dirty = true;
-	bool dirty = true;
-	bool font_dirty = true;
-	RID text_rid;
-	Vector<RID> lines_rid;
+	bool text_set = false;
+	Ref<TextParagraph> text_para;
 
 	String language;
 	TextDirection text_direction = TEXT_DIRECTION_AUTO;
@@ -62,8 +56,6 @@ private:
 	TextServer::VisibleCharactersBehavior visible_chars_behavior = TextServer::VC_CHARS_BEFORE_SHAPING;
 	int visible_chars = -1;
 	float visible_ratio = 1.0;
-	int lines_skipped = 0;
-	int max_lines_visible = -1;
 
 	Ref<LabelSettings> settings;
 
@@ -82,8 +74,9 @@ private:
 	} theme_cache;
 
 	void _update_visible();
-	void _shape();
-	void _invalidate();
+	void _update_text();
+	void _update_fonts();
+	void _invalidate_fonts();
 
 protected:
 	virtual void _update_theme_item_cache() override;
@@ -109,6 +102,15 @@ public:
 
 	void set_text_direction(TextDirection p_text_direction);
 	TextDirection get_text_direction() const;
+
+	void set_orientation(TextServer::Orientation p_orientation);
+	TextServer::Orientation get_orientation() const;
+
+	void set_uniform_line_height(bool p_enabled);
+	bool get_uniform_line_height() const;
+
+	void set_invert_line_order(bool p_enabled);
+	bool get_invert_line_order() const;
 
 	void set_language(const String &p_language);
 	String get_language() const;

@@ -59,8 +59,14 @@
 			Higher font sizes require more time to render new characters, which can cause stuttering during gameplay.
 		</member>
 		<member name="gi_mode" type="int" setter="set_gi_mode" getter="get_gi_mode" overrides="GeometryInstance3D" enum="GeometryInstance3D.GIMode" default="0" />
+		<member name="height" type="float" setter="set_height" getter="get_height" default="500.0">
+			Text height (in pixels), used for alignment.
+		</member>
 		<member name="horizontal_alignment" type="int" setter="set_horizontal_alignment" getter="get_horizontal_alignment" enum="HorizontalAlignment" default="1">
 			Controls the text's horizontal alignment. Supports left, center, right, and fill, or justify. Set it to one of the [enum HorizontalAlignment] constants.
+		</member>
+		<member name="invert_line_order" type="bool" setter="set_invert_line_order" getter="get_invert_line_order" default="false">
+			If [code]true[/code], line drawing order is inverted.
 		</member>
 		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
 			Language code used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
@@ -76,6 +82,9 @@
 		</member>
 		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2(0, 0)">
 			The text drawing offset (in pixels).
+		</member>
+		<member name="orientation" type="int" setter="set_orientation" getter="get_orientation" enum="TextServer.Orientation" default="0">
+			Text orientation.
 		</member>
 		<member name="outline_modulate" type="Color" setter="set_outline_modulate" getter="get_outline_modulate" default="Color(0, 0, 0, 1)">
 			The tint of text outline.
@@ -111,8 +120,14 @@
 		<member name="text_direction" type="int" setter="set_text_direction" getter="get_text_direction" enum="TextServer.Direction" default="0">
 			Base text writing direction.
 		</member>
+		<member name="text_overrun_behavior" type="int" setter="set_text_overrun_behavior" getter="get_text_overrun_behavior" enum="TextServer.OverrunBehavior" default="0">
+			Sets the clipping behavior when the text exceeds the paragraph's set width. See [enum TextServer.OverrunBehavior] for a description of all modes.
+		</member>
 		<member name="texture_filter" type="int" setter="set_texture_filter" getter="get_texture_filter" enum="BaseMaterial3D.TextureFilter" default="3">
 			Filter flags for the texture. See [enum BaseMaterial3D.TextureFilter] for options.
+		</member>
+		<member name="uniform_line_height" type="bool" setter="set_uniform_line_height" getter="get_uniform_line_height" default="false">
+			If [code]true[/code], heigth of every line is set to the maximum line height.
 		</member>
 		<member name="uppercase" type="bool" setter="set_uppercase" getter="is_uppercase" default="false">
 			If [code]true[/code], all the text displays as UPPERCASE.
@@ -121,7 +136,7 @@
 			Controls the text's vertical alignment. Supports top, center, bottom. Set it to one of the [enum VerticalAlignment] constants.
 		</member>
 		<member name="width" type="float" setter="set_width" getter="get_width" default="500.0">
-			Text width (in pixels), used for autowrap and fill alignment.
+			Text width (in pixels), used for autowrap and alignment.
 		</member>
 	</members>
 	<constants>

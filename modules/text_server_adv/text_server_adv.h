@@ -609,8 +609,8 @@ class TextServerAdvanced : public TextServerExtension {
 	int64_t _convert_pos(const ShapedTextDataAdvanced *p_sd, int64_t p_pos) const;
 	int64_t _convert_pos_inv(const ShapedTextDataAdvanced *p_sd, int64_t p_pos) const;
 	bool _shape_substr(ShapedTextDataAdvanced *p_new_sd, const ShapedTextDataAdvanced *p_sd, int64_t p_start, int64_t p_length) const;
-	void _shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_start, int64_t p_end, hb_script_t p_script, hb_direction_t p_direction, TypedArray<RID> p_fonts, int64_t p_span, int64_t p_fb_index, int64_t p_prev_start, int64_t p_prev_end);
-	Glyph _shape_single_glyph(ShapedTextDataAdvanced *p_sd, char32_t p_char, hb_script_t p_script, hb_direction_t p_direction, const RID &p_font, int64_t p_font_size);
+	void _shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_start, int64_t p_end, hb_script_t p_script, hb_direction_t p_direction, TypedArray<RID> p_fonts, int64_t p_span, int64_t p_fb_index, int64_t p_prev_start, int64_t p_prev_end, GlyphRotation p_rot);
+	Glyph _shape_single_glyph(ShapedTextDataAdvanced *p_sd, char32_t p_char, hb_script_t p_script, hb_direction_t p_direction, const RID &p_font, int64_t p_font_size, GlyphRotation p_rot);
 
 	_FORCE_INLINE_ void _add_featuers(const Dictionary &p_source, Vector<hb_feature_t> &r_ftrs);
 
@@ -814,8 +814,8 @@ public:
 	MODBIND2RC(bool, font_has_char, const RID &, int64_t);
 	MODBIND1RC(String, font_get_supported_chars, const RID &);
 
-	MODBIND4(font_render_range, const RID &, const Vector2i &, int64_t, int64_t);
-	MODBIND3(font_render_glyph, const RID &, const Vector2i &, int64_t);
+	MODBIND5(font_render_range, const RID &, const Vector2i &, int64_t, int64_t, bool);
+	MODBIND4(font_render_glyph, const RID &, const Vector2i &, int64_t, bool);
 
 	MODBIND6C(font_draw_glyph, const RID &, const RID &, int64_t, const Vector2 &, int64_t, const Color &);
 	MODBIND7C(font_draw_glyph_outline, const RID &, const RID &, int64_t, int64_t, const Vector2 &, int64_t, const Color &);
@@ -905,6 +905,7 @@ public:
 	MODBIND2RC(Rect2, shaped_text_get_object_rect, const RID &, const Variant &);
 
 	MODBIND1RC(Size2, shaped_text_get_size, const RID &);
+	MODBIND1RC(Size2, shaped_text_get_vertical_bounds, const RID &);
 	MODBIND1RC(double, shaped_text_get_ascent, const RID &);
 	MODBIND1RC(double, shaped_text_get_descent, const RID &);
 	MODBIND1RC(double, shaped_text_get_width, const RID &);

@@ -396,7 +396,6 @@ class TextServerFallback : public TextServerExtension {
 		String text;
 		String custom_punct;
 		TextServer::Direction direction = DIRECTION_LTR; // Desired text direction.
-		TextServer::Orientation orientation = ORIENTATION_HORIZONTAL;
 
 		struct Span {
 			int start = -1;
@@ -689,8 +688,8 @@ public:
 	MODBIND2RC(bool, font_has_char, const RID &, int64_t);
 	MODBIND1RC(String, font_get_supported_chars, const RID &);
 
-	MODBIND4(font_render_range, const RID &, const Vector2i &, int64_t, int64_t);
-	MODBIND3(font_render_glyph, const RID &, const Vector2i &, int64_t);
+	MODBIND5(font_render_range, const RID &, const Vector2i &, int64_t, int64_t, bool);
+	MODBIND4(font_render_glyph, const RID &, const Vector2i &, int64_t, bool);
 
 	MODBIND6C(font_draw_glyph, const RID &, const RID &, int64_t, const Vector2 &, int64_t, const Color &);
 	MODBIND7C(font_draw_glyph_outline, const RID &, const RID &, int64_t, int64_t, const Vector2 &, int64_t, const Color &);
@@ -780,6 +779,7 @@ public:
 	MODBIND2RC(Rect2, shaped_text_get_object_rect, const RID &, const Variant &);
 
 	MODBIND1RC(Size2, shaped_text_get_size, const RID &);
+	MODBIND1RC(Size2, shaped_text_get_vertical_bounds, const RID &);
 	MODBIND1RC(double, shaped_text_get_ascent, const RID &);
 	MODBIND1RC(double, shaped_text_get_descent, const RID &);
 	MODBIND1RC(double, shaped_text_get_width, const RID &);

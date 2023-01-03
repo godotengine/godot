@@ -46,6 +46,17 @@
 				Draw text into a canvas item at a given position, with [param color]. [param pos] specifies the top left corner of the bounding box.
 			</description>
 		</method>
+		<method name="draw_custom" qualifiers="const">
+			<return type="void" />
+			<param index="0" name="canvas" type="RID" />
+			<param index="1" name="pos" type="Vector2" />
+			<param index="2" name="callback" type="Callable" />
+			<description>
+				Draw text using custom glyph drawing callback.
+				The callback should have 3 arguments: [Dictionary] [code]glyph[/code], [Vector2] [code]position[/code], [RID] [code]canvas[/code].
+				The callback should return [bool], if [code]false[/code] is returned, drawing is aborted.
+			</description>
+		</method>
 		<method name="draw_outline" qualifiers="const">
 			<return type="void" />
 			<param index="0" name="canvas" type="RID" />
@@ -54,6 +65,26 @@
 			<param index="3" name="color" type="Color" default="Color(1, 1, 1, 1)" />
 			<description>
 				Draw text into a canvas item at a given position, with [param color]. [param pos] specifies the top left corner of the bounding box.
+			</description>
+		</method>
+		<method name="draw_underline_custom" qualifiers="const">
+			<return type="void" />
+			<param index="0" name="canvas" type="RID" />
+			<param index="1" name="pos" type="Vector2" />
+			<param index="2" name="line_type" type="int" enum="TextServer.LinePosition" />
+			<param index="3" name="start" type="int" />
+			<param index="4" name="end" type="int" />
+			<param index="5" name="callback" type="Callable" />
+			<description>
+				Draw underline/overline/strikethrough for the specific range of text using custom drawing callback.
+				The callback should have 2 arguments: [Rect2] [code]rect[/code], [RID] [code]canvas[/code].
+				The callback should return [bool], if [code]false[/code] is returned, drawing is aborted.
+			</description>
+		</method>
+		<method name="get_glyph_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns number of glyphs in the line.
 			</description>
 		</method>
 		<method name="get_line_ascent" qualifiers="const">
@@ -111,6 +142,18 @@
 				Returns size of the bounding box of the text.
 			</description>
 		</method>
+		<method name="get_span_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns numbrer of text spans.
+			</description>
+		</method>
+		<method name="has_invalid_glyphs" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if line has glyphs that can't be rendered using current font.
+			</description>
+		</method>
 		<method name="hit_test" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="coords" type="float" />
@@ -143,10 +186,22 @@
 				Aligns text to the given tab-stops.
 			</description>
 		</method>
+		<method name="update_span_font">
+			<return type="void" />
+			<param index="0" name="span" type="int" />
+			<param index="1" name="font" type="Font" />
+			<param index="2" name="font_size" type="int" />
+			<description>
+				Sets font and font size of the text span (added by [method add_string]).
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="alignment" type="int" setter="set_horizontal_alignment" getter="get_horizontal_alignment" enum="HorizontalAlignment" default="0">
 			Sets text alignment within the line as if the line was horizontal.
+		</member>
+		<member name="clip" type="bool" setter="set_clip" getter="get_clip" default="true">
+			If [code]true[/code], only shows the text that fits inside its bounding rectangle and will clip text horizontally.
 		</member>
 		<member name="direction" type="int" setter="set_direction" getter="get_direction" enum="TextServer.Direction" default="0">
 			Text writing direction.

@@ -33,6 +33,7 @@
 
 #include "scene/gui/control.h"
 #include "scene/gui/popup_menu.h"
+#include "scene/resources/text_paragraph.h"
 
 class LineEdit : public Control {
 	GDCLASS(LineEdit, Control);

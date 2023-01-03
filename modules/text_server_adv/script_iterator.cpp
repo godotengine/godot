@@ -65,7 +65,7 @@ ScriptIterator::ScriptIterator(const String &p_string, int p_start, int p_length
 		script_code = USCRIPT_COMMON;
 		for (script_start = script_end; script_end < p_length; script_end++) {
 			UChar32 ch = str[script_end];
-			UScriptCode sc = uscript_getScript(ch, &err);
+			UScriptCode sc = is_digit(ch) ? USCRIPT_CODE_LIMIT : uscript_getScript(ch, &err);
 			if (U_FAILURE(err)) {
 				memfree(paren_stack);
 				ERR_FAIL_MSG(u_errorName(err));
@@ -117,7 +117,7 @@ ScriptIterator::ScriptIterator(const String &p_string, int p_start, int p_length
 		}
 
 		ScriptRange rng;
-		rng.script = hb_icu_script_to_script(script_code);
+		rng.script = (script_code == USCRIPT_CODE_LIMIT) ? HB_SCRIPT_COMMON : hb_icu_script_to_script(script_code);
 		rng.start = script_start;
 		rng.end = script_end;
 

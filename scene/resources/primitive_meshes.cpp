@@ -2889,95 +2889,11 @@ void TextMesh::_create_mesh_array(Array &p_arr) const {
 		dirty_cache = false;
 	}
 
-	// Update text buffer.
-	if (dirty_text) {
-		TS->shaped_text_clear(text_rid);
-		TS->shaped_text_set_direction(text_rid, text_direction);
-
-		String txt = (uppercase) ? TS->string_to_upper(xl_text, language) : xl_text;
-		TS->shaped_text_add_string(text_rid, txt, font->get_rids(), font_size, font->get_opentype_features(), language);
-		for (int i = 0; i < TextServer::SPACING_MAX; i++) {
-			TS->shaped_text_set_spacing(text_rid, TextServer::SpacingType(i), font->get_spacing(TextServer::SpacingType(i)));
-		}
-
-		Array stt;
-		if (st_parser == TextServer::STRUCTURED_TEXT_CUSTOM) {
-			GDVIRTUAL_CALL(_structured_text_parser, st_args, txt, stt);
-		} else {
-			stt = TS->parse_structured_text(st_parser, st_args, txt);
-		}
-		TS->shaped_text_set_bidi_override(text_rid, stt);
-
-		dirty_text = false;
-		dirty_font = false;
-		dirty_lines = true;
-	} else if (dirty_font) {
-		int spans = TS->shaped_get_span_count(text_rid);
-		for (int i = 0; i < spans; i++) {
-			TS->shaped_set_span_update_font(text_rid, i, font->get_rids(), font_size, font->get_opentype_features());
-		}
-		for (int i = 0; i < TextServer::SPACING_MAX; i++) {
-			TS->shaped_text_set_spacing(text_rid, TextServer::SpacingType(i), font->get_spacing(TextServer::SpacingType(i)));
-		}
-
-		dirty_font = false;
-		dirty_lines = true;
-	}
-
-	if (dirty_lines) {
-		for (int i = 0; i < lines_rid.size(); i++) {
-			TS->free_rid(lines_rid[i]);
-		}
-		lines_rid.clear();
-
-		BitField<TextServer::LineBreakFlag> autowrap_flags = TextServer::BREAK_MANDATORY;
-		switch (autowrap_mode) {
-			case TextServer::AUTOWRAP_WORD_SMART:
-				autowrap_flags = TextServer::BREAK_WORD_BOUND | TextServer::BREAK_ADAPTIVE | TextServer::BREAK_MANDATORY;
-				break;
-			case TextServer::AUTOWRAP_WORD:
-				autowrap_flags = TextServer::BREAK_WORD_BOUND | TextServer::BREAK_MANDATORY;
-				break;
-			case TextServer::AUTOWRAP_ARBITRARY:
-				autowrap_flags = TextServer::BREAK_GRAPHEME_BOUND | TextServer::BREAK_MANDATORY;
-				break;
-			case TextServer::AUTOWRAP_OFF:
-				break;
-		}
-		PackedInt32Array line_breaks = TS->shaped_text_get_line_breaks(text_rid, width, 0, autowrap_flags);
-
-		float max_line_w = 0.0;
-		for (int i = 0; i < line_breaks.size(); i = i + 2) {
-			RID line = TS->shaped_text_substr(text_rid, line_breaks[i], line_breaks[i + 1] - line_breaks[i]);
-			max_line_w = MAX(max_line_w, TS->shaped_text_get_width(line));
-			lines_rid.push_back(line);
-		}
-
-		if (horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL) {
-			for (int i = 0; i < lines_rid.size() - 1; i++) {
-				TS->shaped_text_fit_to_width(lines_rid[i], (width > 0) ? width : max_line_w, TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA);
-			}
-		}
-		dirty_lines = false;
-	}
-
-	float total_h = 0.0;
-	for (int i = 0; i < lines_rid.size(); i++) {
-		total_h += (TS->shaped_text_get_size(lines_rid[i]).y + line_spacing) * pixel_size;
-	}
-
-	float vbegin = 0.0;
-	switch (vertical_alignment) {
-		case VERTICAL_ALIGNMENT_FILL:
-		case VERTICAL_ALIGNMENT_TOP: {
-			// Nothing.
-		} break;
-		case VERTICAL_ALIGNMENT_CENTER: {
-			vbegin = (total_h - line_spacing * pixel_size) / 2.0;
-		} break;
-		case VERTICAL_ALIGNMENT_BOTTOM: {
-			vbegin = (total_h - line_spacing * pixel_size);
-		} break;
+	Vector2 ofs = lbl_offset;
+	if (text_para->get_orientation() == TextServer::ORIENTATION_VERTICAL_MIXED) {
+		ofs -= Vector2(text_para->get_width(), text_para->get_height()) / 2.0;
+	} else {
+		ofs -= Vector2(text_para->get_height(), text_para->get_width()) / 2.0;
 	}
 
 	Vector<Vector3> vertices;
@@ -2988,70 +2904,41 @@ void TextMesh::_create_mesh_array(Array &p_arr) const {
 
 	Vector2 min_p = Vector2(INFINITY, INFINITY);
 	Vector2 max_p = Vector2(-INFINITY, -INFINITY);
+	bool has_depth = !Math::is_zero_approx(depth);
 
 	int32_t p_size = 0;
 	int32_t i_size = 0;
 
-	Vector2 offset = Vector2(0, vbegin + lbl_offset.y * pixel_size);
-	for (int i = 0; i < lines_rid.size(); i++) {
-		const Glyph *glyphs = TS->shaped_text_get_glyphs(lines_rid[i]);
-		int gl_size = TS->shaped_text_get_glyph_count(lines_rid[i]);
-		float line_width = TS->shaped_text_get_width(lines_rid[i]) * pixel_size;
+	text_para->draw_custom(
+			ofs,
+			[&](const Glyph &p_gl, const Vector2 &p_ofs, int p_line_id) {
+				if (p_gl.font_rid != RID() && p_gl.index != 0) {
+					GlyphMeshKey key = GlyphMeshKey(p_gl.font_rid.get_id(), p_gl.index);
+					_generate_glyph_mesh_data(key, p_gl);
+					GlyphMeshData &gl_data = cache[key];
 
-		switch (horizontal_alignment) {
-			case HORIZONTAL_ALIGNMENT_LEFT:
-				offset.x = 0.0;
-				break;
-			case HORIZONTAL_ALIGNMENT_FILL:
-			case HORIZONTAL_ALIGNMENT_CENTER: {
-				offset.x = -line_width / 2.0;
-			} break;
-			case HORIZONTAL_ALIGNMENT_RIGHT: {
-				offset.x = -line_width;
-			} break;
-		}
-		offset.x += lbl_offset.x * pixel_size;
-		offset.y -= TS->shaped_text_get_ascent(lines_rid[i]) * pixel_size;
+					p_size += p_gl.repeat * gl_data.triangles.size() * ((has_depth) ? 2 : 1);
+					i_size += p_gl.repeat * gl_data.triangles.size() * ((has_depth) ? 2 : 1);
 
-		bool has_depth = !Math::is_zero_approx(depth);
-
-		for (int j = 0; j < gl_size; j++) {
-			if (glyphs[j].index == 0) {
-				offset.x += glyphs[j].advance * pixel_size * glyphs[j].repeat;
-				continue;
-			}
-			if (glyphs[j].font_rid != RID()) {
-				GlyphMeshKey key = GlyphMeshKey(glyphs[j].font_rid.get_id(), glyphs[j].index);
-				_generate_glyph_mesh_data(key, glyphs[j]);
-				GlyphMeshData &gl_data = cache[key];
-
-				p_size += glyphs[j].repeat * gl_data.triangles.size() * ((has_depth) ? 2 : 1);
-				i_size += glyphs[j].repeat * gl_data.triangles.size() * ((has_depth) ? 2 : 1);
-
-				if (has_depth) {
-					for (int k = 0; k < gl_data.contours.size(); k++) {
-						p_size += glyphs[j].repeat * gl_data.contours[k].size() * 4;
-						i_size += glyphs[j].repeat * gl_data.contours[k].size() * 6;
+					if (has_depth) {
+						for (int k = 0; k < gl_data.contours.size(); k++) {
+							p_size += p_gl.repeat * gl_data.contours[k].size() * 4;
+							i_size += p_gl.repeat * gl_data.contours[k].size() * 6;
+						}
 					}
+
+					for (int r = 0; r < p_gl.repeat; r++) {
+						min_p.x = MIN(gl_data.min_p.x + p_ofs.x * pixel_size, min_p.x);
+						min_p.y = MIN(gl_data.min_p.y + p_ofs.y * pixel_size, min_p.y);
+						max_p.x = MAX(gl_data.max_p.x + p_ofs.x * pixel_size, max_p.x);
+						max_p.y = MAX(gl_data.max_p.y + p_ofs.y * pixel_size, max_p.y);
+					}
+				} else {
+					p_size += p_gl.repeat * 4;
+					i_size += p_gl.repeat * 6;
 				}
-
-				for (int r = 0; r < glyphs[j].repeat; r++) {
-					min_p.x = MIN(gl_data.min_p.x + offset.x, min_p.x);
-					min_p.y = MIN(gl_data.min_p.y - offset.y, min_p.y);
-					max_p.x = MAX(gl_data.max_p.x + offset.x, max_p.x);
-					max_p.y = MAX(gl_data.max_p.y - offset.y, max_p.y);
-
-					offset.x += glyphs[j].advance * pixel_size;
-				}
-			} else {
-				p_size += glyphs[j].repeat * 4;
-				i_size += glyphs[j].repeat * 6;
-
-				offset.x += glyphs[j].advance * pixel_size * glyphs[j].repeat;
-			}
-		}
-		offset.y -= (TS->shaped_text_get_descent(lines_rid[i]) + line_spacing) * pixel_size;
-	}
+				return true;
+			});
 
 	vertices.resize(p_size);
 	normals.resize(p_size);
@@ -3069,48 +2956,21 @@ void TextMesh::_create_mesh_array(Array &p_arr) const {
 	int32_t p_idx = 0;
 	int32_t i_idx = 0;
 
-	offset = Vector2(0, vbegin + lbl_offset.y * pixel_size);
-	for (int i = 0; i < lines_rid.size(); i++) {
-		const Glyph *glyphs = TS->shaped_text_get_glyphs(lines_rid[i]);
-		int gl_size = TS->shaped_text_get_glyph_count(lines_rid[i]);
-		float line_width = TS->shaped_text_get_width(lines_rid[i]) * pixel_size;
+	text_para->draw_custom(
+			ofs,
+			[&](const Glyph &p_gl, const Vector2 &p_ofs, int p_line_id) {
+				if (p_gl.font_rid != RID() && p_gl.index != 0) {
+					GlyphMeshKey key = GlyphMeshKey(p_gl.font_rid.get_id(), p_gl.index);
+					_generate_glyph_mesh_data(key, p_gl);
+					const GlyphMeshData &gl_data = cache[key];
 
-		switch (horizontal_alignment) {
-			case HORIZONTAL_ALIGNMENT_LEFT:
-				offset.x = 0.0;
-				break;
-			case HORIZONTAL_ALIGNMENT_FILL:
-			case HORIZONTAL_ALIGNMENT_CENTER: {
-				offset.x = -line_width / 2.0;
-			} break;
-			case HORIZONTAL_ALIGNMENT_RIGHT: {
-				offset.x = -line_width;
-			} break;
-		}
-		offset.x += lbl_offset.x * pixel_size;
-		offset.y -= TS->shaped_text_get_ascent(lines_rid[i]) * pixel_size;
+					int64_t ts = gl_data.triangles.size();
+					const Vector2 *ts_ptr = gl_data.triangles.ptr();
 
-		bool has_depth = !Math::is_zero_approx(depth);
-
-		// Generate glyph data, precalculate size of the arrays and mesh bounds for UV.
-		for (int j = 0; j < gl_size; j++) {
-			if (glyphs[j].index == 0) {
-				offset.x += glyphs[j].advance * pixel_size * glyphs[j].repeat;
-				continue;
-			}
-			if (glyphs[j].font_rid != RID()) {
-				GlyphMeshKey key = GlyphMeshKey(glyphs[j].font_rid.get_id(), glyphs[j].index);
-				_generate_glyph_mesh_data(key, glyphs[j]);
-				const GlyphMeshData &gl_data = cache[key];
-
-				int64_t ts = gl_data.triangles.size();
-				const Vector2 *ts_ptr = gl_data.triangles.ptr();
-
-				for (int r = 0; r < glyphs[j].repeat; r++) {
 					for (int k = 0; k < ts; k += 3) {
 						// Add front face.
 						for (int l = 0; l < 3; l++) {
-							Vector3 point = Vector3(ts_ptr[k + l].x + offset.x, -ts_ptr[k + l].y + offset.y, depth / 2.0);
+							Vector3 point = Vector3(ts_ptr[k + l].x + p_ofs.x * pixel_size, -ts_ptr[k + l].y - p_ofs.y * pixel_size, depth / 2.0);
 							vertices_ptr[p_idx] = point;
 							normals_ptr[p_idx] = Vector3(0.0, 0.0, 1.0);
 							if (has_depth) {
@@ -3128,7 +2988,7 @@ void TextMesh::_create_mesh_array(Array &p_arr) const {
 						if (has_depth) {
 							// Add back face.
 							for (int l = 2; l >= 0; l--) {
-								Vector3 point = Vector3(ts_ptr[k + l].x + offset.x, -ts_ptr[k + l].y + offset.y, -depth / 2.0);
+								Vector3 point = Vector3(ts_ptr[k + l].x + p_ofs.x * pixel_size, -ts_ptr[k + l].y - p_ofs.y * pixel_size, -depth / 2.0);
 								vertices_ptr[p_idx] = point;
 								normals_ptr[p_idx] = Vector3(0.0, 0.0, -1.0);
 								uvs_ptr[p_idx] = Vector2(Math::remap(point.x, min_p.x, max_p.x, real_t(0.0), real_t(1.0)), Math::remap(point.y, -max_p.y, -min_p.y, real_t(0.8), real_t(0.4)));
@@ -3161,10 +3021,10 @@ void TextMesh::_create_mesh_array(Array &p_arr) const {
 								real_t seg_len = (ps_ptr[next].point - ps_ptr[l].point).length();
 
 								Vector3 quad_faces[4] = {
-									Vector3(ps_ptr[l].point.x + offset.x, -ps_ptr[l].point.y + offset.y, -depth / 2.0),
-									Vector3(ps_ptr[next].point.x + offset.x, -ps_ptr[next].point.y + offset.y, -depth / 2.0),
-									Vector3(ps_ptr[l].point.x + offset.x, -ps_ptr[l].point.y + offset.y, depth / 2.0),
-									Vector3(ps_ptr[next].point.x + offset.x, -ps_ptr[next].point.y + offset.y, depth / 2.0),
+									Vector3(ps_ptr[l].point.x + p_ofs.x * pixel_size, -ps_ptr[l].point.y - p_ofs.y * pixel_size, -depth / 2.0),
+									Vector3(ps_ptr[next].point.x + p_ofs.x * pixel_size, -ps_ptr[next].point.y - p_ofs.y * pixel_size, -depth / 2.0),
+									Vector3(ps_ptr[l].point.x + p_ofs.x * pixel_size, -ps_ptr[l].point.y - p_ofs.y * pixel_size, depth / 2.0),
+									Vector3(ps_ptr[next].point.x + p_ofs.x * pixel_size, -ps_ptr[next].point.y - p_ofs.y * pixel_size, depth / 2.0),
 								};
 								for (int m = 0; m < 4; m++) {
 									const Vector2 &d = ((m % 2) == 0) ? d1 : d2;
@@ -3195,17 +3055,14 @@ void TextMesh::_create_mesh_array(Array &p_arr) const {
 							}
 						}
 					}
-					offset.x += glyphs[j].advance * pixel_size;
-				}
-			} else {
-				// Add fallback quad for missing glyphs.
-				for (int r = 0; r < glyphs[j].repeat; r++) {
-					Size2 sz = TS->get_hex_code_box_size(glyphs[j].font_size, glyphs[j].index) * pixel_size;
+				} else if (p_gl.index != 0) {
+					// Add fallback quad for missing glyphs.
+					Size2 sz = TS->get_hex_code_box_size(p_gl.font_size, p_gl.index) * pixel_size;
 					Vector3 quad_faces[4] = {
-						Vector3(offset.x, offset.y, 0.0),
-						Vector3(offset.x, sz.y + offset.y, 0.0),
-						Vector3(sz.x + offset.x, sz.y + offset.y, 0.0),
-						Vector3(sz.x + offset.x, offset.y, 0.0),
+						Vector3(p_ofs.x * pixel_size, -p_ofs.y * pixel_size, 0.0),
+						Vector3(p_ofs.x * pixel_size, sz.y - p_ofs.y * pixel_size, 0.0),
+						Vector3(sz.x + p_ofs.x * pixel_size, sz.y - p_ofs.y * pixel_size, 0.0),
+						Vector3(sz.x + p_ofs.x * pixel_size, -p_ofs.y * pixel_size, 0.0),
 					};
 					for (int k = 0; k < 4; k++) {
 						vertices_ptr[p_idx + k] = quad_faces[k];
@@ -3229,13 +3086,9 @@ void TextMesh::_create_mesh_array(Array &p_arr) const {
 					indices_ptr[i_idx++] = p_idx + 2;
 					indices_ptr[i_idx++] = p_idx + 3;
 					p_idx += 4;
-
-					offset.x += glyphs[j].advance * pixel_size;
 				}
-			}
-		}
-		offset.y -= (TS->shaped_text_get_descent(lines_rid[i]) + line_spacing) * pixel_size;
-	}
+				return true;
+			});
 
 	if (indices.is_empty()) {
 		// If empty, add single triangle to suppress errors.
@@ -3286,6 +3139,9 @@ void TextMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_width", "width"), &TextMesh::set_width);
 	ClassDB::bind_method(D_METHOD("get_width"), &TextMesh::get_width);
 
+	ClassDB::bind_method(D_METHOD("set_height", "height"), &TextMesh::set_height);
+	ClassDB::bind_method(D_METHOD("get_height"), &TextMesh::get_height);
+
 	ClassDB::bind_method(D_METHOD("set_pixel_size", "pixel_size"), &TextMesh::set_pixel_size);
 	ClassDB::bind_method(D_METHOD("get_pixel_size"), &TextMesh::get_pixel_size);
 
@@ -3297,6 +3153,15 @@ void TextMesh::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_text_direction", "direction"), &TextMesh::set_text_direction);
 	ClassDB::bind_method(D_METHOD("get_text_direction"), &TextMesh::get_text_direction);
+
+	ClassDB::bind_method(D_METHOD("set_orientation", "orientation"), &TextMesh::set_orientation);
+	ClassDB::bind_method(D_METHOD("get_orientation"), &TextMesh::get_orientation);
+
+	ClassDB::bind_method(D_METHOD("set_uniform_line_height", "enabled"), &TextMesh::set_uniform_line_height);
+	ClassDB::bind_method(D_METHOD("get_uniform_line_height"), &TextMesh::get_uniform_line_height);
+
+	ClassDB::bind_method(D_METHOD("set_invert_line_order", "enabled"), &TextMesh::set_invert_line_order);
+	ClassDB::bind_method(D_METHOD("get_invert_line_order"), &TextMesh::get_invert_line_order);
 
 	ClassDB::bind_method(D_METHOD("set_language", "language"), &TextMesh::set_language);
 	ClassDB::bind_method(D_METHOD("get_language"), &TextMesh::get_language);
@@ -3310,7 +3175,7 @@ void TextMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_uppercase", "enable"), &TextMesh::set_uppercase);
 	ClassDB::bind_method(D_METHOD("is_uppercase"), &TextMesh::is_uppercase);
 
-	ClassDB::bind_method(D_METHOD("_font_changed"), &TextMesh::_font_changed);
+	ClassDB::bind_method(D_METHOD("_invalidate_fonts"), &TextMesh::_invalidate_fonts);
 	ClassDB::bind_method(D_METHOD("_request_update"), &TextMesh::_request_update);
 
 	ADD_GROUP("Text", "");
@@ -3322,12 +3187,16 @@ void TextMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uppercase"), "set_uppercase", "is_uppercase");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "line_spacing", PROPERTY_HINT_NONE, "suffix:px"), "set_line_spacing", "get_line_spacing");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "autowrap_mode", PROPERTY_HINT_ENUM, "Off,Arbitrary,Word,Word (Smart)"), "set_autowrap_mode", "get_autowrap_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "orientation", PROPERTY_HINT_ENUM, "Horizontal,Vertical Upright,Vertical Mixed,Vertical Sideways"), "set_orientation", "get_orientation");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uniform_line_height"), "set_uniform_line_height", "get_uniform_line_height");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "invert_line_order"), "set_invert_line_order", "get_invert_line_order");
 
 	ADD_GROUP("Mesh", "");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pixel_size", PROPERTY_HINT_RANGE, "0.0001,128,0.0001,suffix:m"), "set_pixel_size", "get_pixel_size");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "curve_step", PROPERTY_HINT_RANGE, "0.1,10,0.1,suffix:px"), "set_curve_step", "get_curve_step");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "depth", PROPERTY_HINT_RANGE, "0.0,100.0,0.001,or_greater,suffix:m"), "set_depth", "get_depth");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "width", PROPERTY_HINT_NONE, "suffix:m"), "set_width", "get_width");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "height", PROPERTY_HINT_NONE, "suffix:px"), "set_height", "get_height");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset", PROPERTY_HINT_NONE, "suffix:px"), "set_offset", "get_offset");
 
 	ADD_GROUP("BiDi", "");
@@ -3345,7 +3214,7 @@ void TextMesh::_notification(int p_what) {
 				return; // Nothing new.
 			}
 			xl_text = new_text;
-			dirty_text = true;
+			_update_text();
 			_request_update();
 		} break;
 	}
@@ -3353,50 +3222,85 @@ void TextMesh::_notification(int p_what) {
 
 TextMesh::TextMesh() {
 	primitive_type = PRIMITIVE_TRIANGLES;
-	text_rid = TS->create_shaped_text();
+
+	text_para.instantiate();
+	text_para->set_width(500.0);
+	text_para->set_height(500.0);
+	text_para->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
+	text_para->set_vertical_alignment(VERTICAL_ALIGNMENT_CENTER);
+	text_para->set_break_flags(TextServer::BREAK_MANDATORY | TextServer::BREAK_TRIM_EDGE_SPACES);
+	text_para->set_clip(false);
 }
 
 TextMesh::~TextMesh() {
-	for (int i = 0; i < lines_rid.size(); i++) {
-		TS->free_rid(lines_rid[i]);
-	}
-	lines_rid.clear();
+}
 
-	TS->free_rid(text_rid);
+void TextMesh::_update_text() {
+	Ref<Font> font = _get_font_or_default();
+
+	text_para->clear();
+	if (font.is_valid()) {
+		String txt = (uppercase) ? TS->string_to_upper(xl_text, language) : xl_text;
+		text_para->add_string(txt, font, font_size, language);
+
+		TypedArray<Vector2i> stt;
+		if (st_parser == TextServer::STRUCTURED_TEXT_CUSTOM) {
+			GDVIRTUAL_CALL(_structured_text_parser, st_args, txt, stt);
+		} else {
+			stt = TS->parse_structured_text(st_parser, st_args, txt);
+		}
+		text_para->set_bidi_override(stt);
+		text_set = true;
+	} else {
+		text_set = false;
+	}
+}
+
+void TextMesh::_update_fonts() {
+	dirty_cache = true;
+	if (!text_set) {
+		_update_text();
+	} else {
+		Ref<Font> font = _get_font_or_default();
+
+		if (font.is_valid()) {
+			int spans = text_para->get_span_count();
+			for (int i = 0; i < spans; i++) {
+				text_para->update_span_font(i, font, font_size);
+			}
+		}
+	}
 }
 
 void TextMesh::set_horizontal_alignment(HorizontalAlignment p_alignment) {
 	ERR_FAIL_INDEX((int)p_alignment, 4);
-	if (horizontal_alignment != p_alignment) {
-		if (horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL || p_alignment == HORIZONTAL_ALIGNMENT_FILL) {
-			dirty_lines = true;
-		}
-		horizontal_alignment = p_alignment;
+	if (text_para->get_horizontal_alignment() != p_alignment) {
+		text_para->set_horizontal_alignment(p_alignment);
 		_request_update();
 	}
 }
 
 HorizontalAlignment TextMesh::get_horizontal_alignment() const {
-	return horizontal_alignment;
+	return text_para->get_horizontal_alignment();
 }
 
 void TextMesh::set_vertical_alignment(VerticalAlignment p_alignment) {
 	ERR_FAIL_INDEX((int)p_alignment, 4);
-	if (vertical_alignment != p_alignment) {
-		vertical_alignment = p_alignment;
+	if (text_para->get_vertical_alignment() != p_alignment) {
+		text_para->set_vertical_alignment(p_alignment);
 		_request_update();
 	}
 }
 
 VerticalAlignment TextMesh::get_vertical_alignment() const {
-	return vertical_alignment;
+	return text_para->get_vertical_alignment();
 }
 
 void TextMesh::set_text(const String &p_string) {
 	if (text != p_string) {
 		text = p_string;
 		xl_text = tr(text);
-		dirty_text = true;
+		_update_text();
 		_request_update();
 	}
 }
@@ -3405,22 +3309,20 @@ String TextMesh::get_text() const {
 	return text;
 }
 
-void TextMesh::_font_changed() {
-	dirty_font = true;
-	dirty_cache = true;
+void TextMesh::_invalidate_fonts() {
+	_update_fonts();
 	call_deferred(SNAME("_request_update"));
 }
 
 void TextMesh::set_font(const Ref<Font> &p_font) {
 	if (font_override != p_font) {
 		if (font_override.is_valid()) {
-			font_override->disconnect(CoreStringNames::get_singleton()->changed, Callable(this, "_font_changed"));
+			font_override->disconnect(CoreStringNames::get_singleton()->changed, Callable(this, "_invalidate_fonts"));
 		}
 		font_override = p_font;
-		dirty_font = true;
-		dirty_cache = true;
+		_update_fonts();
 		if (font_override.is_valid()) {
-			font_override->connect(CoreStringNames::get_singleton()->changed, Callable(this, "_font_changed"));
+			font_override->connect(CoreStringNames::get_singleton()->changed, Callable(this, "_invalidate_fonts"));
 		}
 		_request_update();
 	}
@@ -3466,8 +3368,7 @@ Ref<Font> TextMesh::_get_font_or_default() const {
 void TextMesh::set_font_size(int p_size) {
 	if (font_size != p_size) {
 		font_size = CLAMP(p_size, 1, 127);
-		dirty_font = true;
-		dirty_cache = true;
+		_update_fonts();
 		_request_update();
 	}
 }
@@ -3477,20 +3378,37 @@ int TextMesh::get_font_size() const {
 }
 
 void TextMesh::set_line_spacing(float p_line_spacing) {
-	if (line_spacing != p_line_spacing) {
-		line_spacing = p_line_spacing;
+	if (text_para->get_extra_line_spacing() != p_line_spacing) {
+		text_para->set_extra_line_spacing(p_line_spacing);
 		_request_update();
 	}
 }
 
 float TextMesh::get_line_spacing() const {
-	return line_spacing;
+	return text_para->get_extra_line_spacing();
 }
 
 void TextMesh::set_autowrap_mode(TextServer::AutowrapMode p_mode) {
 	if (autowrap_mode != p_mode) {
 		autowrap_mode = p_mode;
-		dirty_lines = true;
+
+		BitField<TextServer::LineBreakFlag> autowrap_flags = TextServer::BREAK_MANDATORY;
+		switch (autowrap_mode) {
+			case TextServer::AUTOWRAP_WORD_SMART:
+				autowrap_flags = TextServer::BREAK_WORD_BOUND | TextServer::BREAK_ADAPTIVE | TextServer::BREAK_MANDATORY;
+				break;
+			case TextServer::AUTOWRAP_WORD:
+				autowrap_flags = TextServer::BREAK_WORD_BOUND | TextServer::BREAK_MANDATORY;
+				break;
+			case TextServer::AUTOWRAP_ARBITRARY:
+				autowrap_flags = TextServer::BREAK_GRAPHEME_BOUND | TextServer::BREAK_MANDATORY;
+				break;
+			case TextServer::AUTOWRAP_OFF:
+				break;
+		}
+		autowrap_flags = autowrap_flags | TextServer::BREAK_TRIM_EDGE_SPACES;
+		text_para->set_break_flags(autowrap_flags);
+
 		_request_update();
 	}
 }
@@ -3511,15 +3429,25 @@ real_t TextMesh::get_depth() const {
 }
 
 void TextMesh::set_width(real_t p_width) {
-	if (width != p_width) {
-		width = p_width;
-		dirty_lines = true;
+	if (text_para->get_width() != p_width) {
+		text_para->set_width(p_width);
 		_request_update();
 	}
 }
 
 real_t TextMesh::get_width() const {
-	return width;
+	return text_para->get_width();
+}
+
+void TextMesh::set_height(float p_height) {
+	if (text_para->get_height() != p_height) {
+		text_para->set_height(p_height);
+		_request_update();
+	}
+}
+
+float TextMesh::get_height() const {
+	return text_para->get_height();
 }
 
 void TextMesh::set_pixel_size(real_t p_amount) {
@@ -3559,21 +3487,54 @@ real_t TextMesh::get_curve_step() const {
 
 void TextMesh::set_text_direction(TextServer::Direction p_text_direction) {
 	ERR_FAIL_COND((int)p_text_direction < -1 || (int)p_text_direction > 3);
-	if (text_direction != p_text_direction) {
-		text_direction = p_text_direction;
-		dirty_text = true;
+	if (text_para->get_direction() != p_text_direction) {
+		text_para->set_direction(p_text_direction);
 		_request_update();
 	}
 }
 
 TextServer::Direction TextMesh::get_text_direction() const {
-	return text_direction;
+	return text_para->get_direction();
+}
+
+void TextMesh::set_orientation(TextServer::Orientation p_orientation) {
+	ERR_FAIL_COND((int)p_orientation < 0 || (int)p_orientation > 3);
+	if (text_para->get_orientation() != p_orientation) {
+		text_para->set_orientation(p_orientation);
+		_request_update();
+	}
+}
+
+TextServer::Orientation TextMesh::get_orientation() const {
+	return text_para->get_orientation();
+}
+
+void TextMesh::set_uniform_line_height(bool p_enabled) {
+	if (text_para->get_uniform_line_height() != p_enabled) {
+		text_para->set_uniform_line_height(p_enabled);
+		_request_update();
+	}
+}
+
+bool TextMesh::get_uniform_line_height() const {
+	return text_para->get_uniform_line_height();
+}
+
+void TextMesh::set_invert_line_order(bool p_enabled) {
+	if (text_para->get_invert_line_order() != p_enabled) {
+		text_para->set_invert_line_order(p_enabled);
+		_request_update();
+	}
+}
+
+bool TextMesh::get_invert_line_order() const {
+	return text_para->get_invert_line_order();
 }
 
 void TextMesh::set_language(const String &p_language) {
 	if (language != p_language) {
 		language = p_language;
-		dirty_text = true;
+		_update_text();
 		_request_update();
 	}
 }
@@ -3585,7 +3546,7 @@ String TextMesh::get_language() const {
 void TextMesh::set_structured_text_bidi_override(TextServer::StructuredTextParser p_parser) {
 	if (st_parser != p_parser) {
 		st_parser = p_parser;
-		dirty_text = true;
+		_update_text();
 		_request_update();
 	}
 }
@@ -3597,7 +3558,7 @@ TextServer::StructuredTextParser TextMesh::get_structured_text_bidi_override() c
 void TextMesh::set_structured_text_bidi_override_options(Array p_args) {
 	if (st_args != p_args) {
 		st_args = p_args;
-		dirty_text = true;
+		_update_text();
 		_request_update();
 	}
 }
@@ -3609,7 +3570,7 @@ Array TextMesh::get_structured_text_bidi_override_options() const {
 void TextMesh::set_uppercase(bool p_uppercase) {
 	if (uppercase != p_uppercase) {
 		uppercase = p_uppercase;
-		dirty_text = true;
+		_update_text();
 		_request_update();
 	}
 }
