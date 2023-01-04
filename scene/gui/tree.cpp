@@ -2758,12 +2758,6 @@ Size2 Tree::get_internal_min_size() const {
 
 void Tree::update_scrollbars() {
 	Size2 size = get_size();
-	int tbh;
-	if (show_column_titles) {
-		tbh = _get_title_button_height();
-	} else {
-		tbh = 0;
-	}
 
 	Size2 hmin = h_scroll->get_combined_minimum_size();
 	Size2 vmin = v_scroll->get_combined_minimum_size();
@@ -2775,14 +2769,15 @@ void Tree::update_scrollbars() {
 	h_scroll->set_end(Point2(size.width - vmin.width, size.height));
 
 	Size2 min = get_internal_min_size();
+	const real_t tree_content_height = size.height - hmin.height - _get_title_button_height();
 
-	if (min.height < size.height - hmin.height) {
+	if (min.height < tree_content_height) {
 		v_scroll->hide();
 		cache.offset.y = 0;
 	} else {
 		v_scroll->show();
 		v_scroll->set_max(min.height);
-		v_scroll->set_page(size.height - hmin.height - tbh);
+		v_scroll->set_page(tree_content_height);
 		cache.offset.y = v_scroll->get_value();
 	}
 
