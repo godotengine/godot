@@ -4121,8 +4121,6 @@ void EditorPropertyResource::update_property() {
 
 				if (use_editor) {
 					// Open editor directly and hide other such editors which are currently open.
-					// The opened editor is the one that edits the sub-resource, so keying state will be toggled to false.
-					sub_inspector->set_keying(false);
 					_open_editor_pressed();
 					if (is_inside_tree()) {
 						get_tree()->call_deferred(SNAME("call_group"), "_editor_resource_properties", "_fold_other_editors", this);
