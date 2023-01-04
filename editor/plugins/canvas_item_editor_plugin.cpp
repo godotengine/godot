@@ -2750,7 +2750,7 @@ void CanvasItemEditor::_draw_guides() {
 	if (drag_type == DRAG_DOUBLE_GUIDE || drag_type == DRAG_V_GUIDE) {
 		String str = TS->format_number(vformat("%d px", Math::round(xform.affine_inverse().xform(dragged_guide_pos).x)));
 		Ref<Font> font = get_theme_font(SNAME("bold"), SNAME("EditorFonts"));
-		int font_size = get_theme_font_size(SNAME("bold_size"), SNAME("EditorFonts"));
+		int font_size = 1.3 * get_theme_font_size(SNAME("bold_size"), SNAME("EditorFonts"));
 		Size2 text_size = font->get_string_size(str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size);
 		viewport->draw_string_outline(font, Point2(dragged_guide_pos.x + 10, RULER_WIDTH + text_size.y / 2 + 10), str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, outline_size, outline_color);
 		viewport->draw_string(font, Point2(dragged_guide_pos.x + 10, RULER_WIDTH + text_size.y / 2 + 10), str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, text_color);
@@ -2759,7 +2759,7 @@ void CanvasItemEditor::_draw_guides() {
 	if (drag_type == DRAG_DOUBLE_GUIDE || drag_type == DRAG_H_GUIDE) {
 		String str = TS->format_number(vformat("%d px", Math::round(xform.affine_inverse().xform(dragged_guide_pos).y)));
 		Ref<Font> font = get_theme_font(SNAME("bold"), SNAME("EditorFonts"));
-		int font_size = get_theme_font_size(SNAME("bold_size"), SNAME("EditorFonts"));
+		int font_size = 1.3 * get_theme_font_size(SNAME("bold_size"), SNAME("EditorFonts"));
 		Size2 text_size = font->get_string_size(str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size);
 		viewport->draw_string_outline(font, Point2(RULER_WIDTH + 10, dragged_guide_pos.y + text_size.y / 2 + 10), str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, outline_size, outline_color);
 		viewport->draw_string(font, Point2(RULER_WIDTH + 10, dragged_guide_pos.y + text_size.y / 2 + 10), str, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, text_color);
@@ -2961,14 +2961,14 @@ void CanvasItemEditor::_draw_ruler_tool() {
 		const real_t vertical_angle_rad = Math_PI / 2.0 - horizontal_angle_rad;
 
 		Ref<Font> font = get_theme_font(SNAME("bold"), SNAME("EditorFonts"));
-		int font_size = get_theme_font_size(SNAME("bold_size"), SNAME("EditorFonts"));
+		int font_size = 1.3 * get_theme_font_size(SNAME("bold_size"), SNAME("EditorFonts"));
 		Color font_color = get_theme_color(SNAME("font_color"), SNAME("Editor"));
 		Color font_secondary_color = font_color;
 		font_secondary_color.set_v(font_secondary_color.get_v() > 0.5 ? 0.7 : 0.3);
 		Color outline_color = font_color.inverted();
 		float text_height = font->get_height(font_size);
 
-		const float outline_size = 2;
+		const float outline_size = 4;
 		const float text_width = 76;
 		const float angle_text_width = 54;
 
