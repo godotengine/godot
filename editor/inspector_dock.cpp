@@ -35,6 +35,7 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/filesystem_dock.h"
 #include "editor/plugins/script_editor_plugin.h"
 
 InspectorDock *InspectorDock::singleton = nullptr;
@@ -85,6 +86,11 @@ void InspectorDock::_menu_option_confirm(int p_option, bool p_confirmed) {
 		} break;
 		case RESOURCE_EDIT_CLIPBOARD: {
 			_paste_resource();
+		} break;
+		case RESOURCE_SHOW_IN_FILESYSTEM: {
+			Ref<Resource> current_res = _get_current_resource();
+			ERR_FAIL_COND(current_res.is_null());
+			FileSystemDock::get_singleton()->navigate_to_path(current_res->get_path());
 		} break;
 
 		case OBJECT_REQUEST_HELP: {
@@ -291,6 +297,10 @@ void InspectorDock::_prepare_resource_extra_popup() {
 	Ref<Resource> r = EditorSettings::get_singleton()->get_resource_clipboard();
 	PopupMenu *popup = resource_extra_button->get_popup();
 	popup->set_item_disabled(popup->get_item_index(RESOURCE_EDIT_CLIPBOARD), r.is_null());
+
+	Ref<Resource> current_res = _get_current_resource();
+	ERR_FAIL_COND(current_res.is_null());
+	popup->set_item_disabled(popup->get_item_index(RESOURCE_SHOW_IN_FILESYSTEM), current_res->is_built_in());
 }
 
 Ref<Resource> InspectorDock::_get_current_resource() const {
@@ -655,6 +665,7 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	resource_extra_button->get_popup()->add_icon_shortcut(get_theme_icon(SNAME("ActionCopy"), SNAME("EditorIcons")), ED_SHORTCUT("property_editor/copy_resource", TTR("Copy Resource")), RESOURCE_COPY);
 	resource_extra_button->get_popup()->set_item_disabled(1, true);
 	resource_extra_button->get_popup()->add_separator();
+	resource_extra_button->get_popup()->add_shortcut(ED_SHORTCUT("property_editor/show_in_filesystem", TTR("Show in FileSystem")), RESOURCE_SHOW_IN_FILESYSTEM);
 	resource_extra_button->get_popup()->add_shortcut(ED_SHORTCUT("property_editor/unref_resource", TTR("Make Resource Built-In")), RESOURCE_MAKE_BUILT_IN);
 	resource_extra_button->get_popup()->set_item_disabled(3, true);
 	resource_extra_button->get_popup()->connect("id_pressed", callable_mp(this, &InspectorDock::_menu_option));
