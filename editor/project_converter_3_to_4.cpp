@@ -210,6 +210,7 @@ static const char *gdscript_function_renames[][2] = {
 	// { "set_v_offset", "set_drag_vertical_offset" }, // Camera2D broke Camera3D, PathFollow3D, PathFollow2D
 	// {"get_points","get_points_id"},// Astar, broke Line2D, Convexpolygonshape
 	// {"get_v_scroll","get_v_scroll_bar"},//ItemList, broke TextView
+	// { "get_stylebox", "get_theme_stylebox" }, // Control - Will rename the method in Theme as well, skipping
 	{ "_about_to_show", "_about_to_popup" }, // ColorPickerButton
 	{ "_get_configuration_warning", "_get_configuration_warnings" }, // Node
 	{ "_set_current", "set_current" }, // Camera2D
@@ -665,6 +666,7 @@ static const char *csharp_function_renames[][2] = {
 	// { "SetVOffset", "SetDragVerticalOffset" }, // Camera2D broke Camera3D, PathFollow3D, PathFollow2D
 	// {"GetPoints","GetPointsId"},// Astar, broke Line2D, Convexpolygonshape
 	// {"GetVScroll","GetVScrollBar"},//ItemList, broke TextView
+	// { "GetStylebox", "GetThemeStylebox" }, // Control - Will rename the method in Theme as well, skipping
 	{ "AddSpatialGizmoPlugin", "AddNode3dGizmoPlugin" }, // EditorPlugin
 	{ "RenderingServer", "GetTabAlignment" }, // Tab
 	{ "_AboutToShow", "_AboutToPopup" }, // ColorPickerButton
@@ -1078,6 +1080,7 @@ static const char *gdscript_properties_renames[][2] = {
 	//	{ "zfar", "far" }, // Camera3D
 	//	{ "znear", "near" }, // Camera3D
 	//	{ "filename", "scene_file_path" }, // Node
+	//	{ "pressed", "button_pressed" }, // BaseButton - Will also rename the signal, skipping for now
 	{ "as_normalmap", "as_normal_map" }, // NoiseTexture
 	{ "bbcode_text", "text" }, // RichTextLabel
 	{ "bg", "panel" }, // Theme
@@ -1113,6 +1116,7 @@ static const char *gdscript_properties_renames[][2] = {
 	{ "gravity_vec", "gravity_direction" }, // Area2D
 	{ "hint_tooltip", "tooltip_text" }, // Control
 	{ "hseparation", "h_separation" }, // Theme
+	{ "icon_align", "icon_alignment" }, // Button
 	{ "iterations_per_second", "physics_ticks_per_second" }, // Engine
 	{ "invert_enable", "invert_enabled" }, // Polygon2D
 	{ "margin_bottom", "offset_bottom" }, // Control broke NinePatchRect, StyleBox
@@ -1137,7 +1141,7 @@ static const char *gdscript_properties_renames[][2] = {
 	{ "rect_position", "position" }, // Control
 	{ "rect_global_position", "global_position" }, // Control
 	{ "rect_size", "size" }, // Control
-	{ "rect_min_size", "minimum_size" }, // Control
+	{ "rect_min_size", "custom_minimum_size" }, // Control
 	{ "rect_rotation", "rotation" }, // Control
 	{ "rect_scale", "scale" }, // Control
 	{ "rect_pivot_offset", "pivot_offset" }, // Control
@@ -1192,6 +1196,7 @@ static const char *csharp_properties_renames[][2] = {
 	//	{ "WrapEnabled", "WrapMode" }, // TextEdit
 	//	{ "Zfar", "Far" }, // Camera3D
 	//	{ "Znear", "Near" }, // Camera3D
+	//	{ "Pressed", "ButtonPressed" }, // BaseButton - Will also rename the signal, skipping for now
 	{ "AsNormalmap", "AsNormalMap" }, // NoiseTexture
 	{ "BbcodeText", "Text" }, // RichTextLabel
 	{ "CaretBlinkSpeed", "CaretBlinkInterval" }, // TextEdit, LineEdit
@@ -1221,6 +1226,7 @@ static const char *csharp_properties_renames[][2] = {
 	{ "GravityVec", "GravityDirection" }, // Area2D
 	{ "HintTooltip", "TooltipText" }, // Control
 	{ "Hseparation", "HSeparation" }, // Theme
+	{ "IconAlign", "IconAlignment" }, // Button
 	{ "IterationsPerSecond", "PhysicsTicksPerSecond" }, // Engine
 	{ "InvertEnable", "InvertEnabled" }, // Polygon2D
 	{ "MarginBottom", "OffsetBottom" }, // Control broke NinePatchRect, StyleBox
@@ -3880,10 +3886,32 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 	if (line.contains("OS.set_window_title")) {
 		line = line.replace("OS.set_window_title", "get_window().set_title");
 	}
+
+	// get_tree().set_input_as_handled() -> get_viewport().set_input_as_handled()
+	if (line.contains("get_tree().set_input_as_handled()")) {
+		line = line.replace("get_tree().set_input_as_handled()", "get_viewport().set_input_as_handled()");
+	}
+
+	// Fix the simple case of using _unhandled_key_input
+	// func _unhandled_key_input(event: InputEventKey) -> _unhandled_key_input(event: InputEvent)
+	if (line.contains("_unhandled_key_input(event: InputEventKey)")) {
+		line = line.replace("_unhandled_key_input(event: InputEventKey)", "_unhandled_key_input(event: InputEvent)");
+	}
 }
 
 void ProjectConverter3To4::process_csharp_line(String &line, const RegExContainer &reg_container) {
 	line = line.replace("OS.GetWindowSafeArea()", "DisplayServer.ScreenGetUsableRect()");
+
+	// GetTree().SetInputAsHandled() -> GetViewport().SetInputAsHandled()
+	if (line.contains("GetTree().SetInputAsHandled()")) {
+		line = line.replace("GetTree().SetInputAsHandled()", "GetViewport().SetInputAsHandled()");
+	}
+
+	// Fix the simple case of using _UnhandledKeyInput
+	// func _UnhandledKeyInput(InputEventKey @event) -> _UnhandledKeyInput(InputEvent @event)
+	if (line.contains("_UnhandledKeyInput(InputEventKey @event)")) {
+		line = line.replace("_UnhandledKeyInput(InputEventKey @event)", "_UnhandledKeyInput(InputEvent @event)");
+	}
 
 	// -- Connect(,,,things) -> Connect(,Callable(,),things)      Object
 	if (line.contains("Connect(")) {
