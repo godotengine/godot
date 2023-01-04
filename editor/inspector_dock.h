@@ -119,6 +119,7 @@ class InspectorDock : public VBoxContainer {
 	void _copy_resource();
 	void _paste_resource();
 	void _prepare_resource_extra_popup();
+	Ref<Resource> _get_current_resource() const;
 
 	void _info_pressed();
 	void _resource_created();

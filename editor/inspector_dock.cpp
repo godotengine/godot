@@ -257,12 +257,8 @@ void InspectorDock::_resource_file_selected(String p_file) {
 }
 
 void InspectorDock::_save_resource(bool save_as) {
-	ObjectID current_id = EditorNode::get_singleton()->get_editor_selection_history()->get_current();
-	Object *current_obj = current_id.is_valid() ? ObjectDB::get_instance(current_id) : nullptr;
-
-	ERR_FAIL_COND(!Object::cast_to<Resource>(current_obj));
-
-	Ref<Resource> current_res = Ref<Resource>(Object::cast_to<Resource>(current_obj));
+	Ref<Resource> current_res = _get_current_resource();
+	ERR_FAIL_COND(current_res.is_null());
 
 	if (save_as) {
 		EditorNode::get_singleton()->save_resource_as(current_res);
@@ -272,24 +268,15 @@ void InspectorDock::_save_resource(bool save_as) {
 }
 
 void InspectorDock::_unref_resource() {
-	ObjectID current_id = EditorNode::get_singleton()->get_editor_selection_history()->get_current();
-	Object *current_obj = current_id.is_valid() ? ObjectDB::get_instance(current_id) : nullptr;
-
-	ERR_FAIL_COND(!Object::cast_to<Resource>(current_obj));
-
-	Ref<Resource> current_res = Ref<Resource>(Object::cast_to<Resource>(current_obj));
+	Ref<Resource> current_res = _get_current_resource();
+	ERR_FAIL_COND(current_res.is_null());
 	current_res->set_path("");
 	EditorNode::get_singleton()->edit_current();
 }
 
 void InspectorDock::_copy_resource() {
-	ObjectID current_id = EditorNode::get_singleton()->get_editor_selection_history()->get_current();
-	Object *current_obj = current_id.is_valid() ? ObjectDB::get_instance(current_id) : nullptr;
-
-	ERR_FAIL_COND(!Object::cast_to<Resource>(current_obj));
-
-	Ref<Resource> current_res = Ref<Resource>(Object::cast_to<Resource>(current_obj));
-
+	Ref<Resource> current_res = _get_current_resource();
+	ERR_FAIL_COND(current_res.is_null());
 	EditorSettings::get_singleton()->set_resource_clipboard(current_res);
 }
 
@@ -304,6 +291,12 @@ void InspectorDock::_prepare_resource_extra_popup() {
 	Ref<Resource> r = EditorSettings::get_singleton()->get_resource_clipboard();
 	PopupMenu *popup = resource_extra_button->get_popup();
 	popup->set_item_disabled(popup->get_item_index(RESOURCE_EDIT_CLIPBOARD), r.is_null());
+}
+
+Ref<Resource> InspectorDock::_get_current_resource() const {
+	ObjectID current_id = EditorNode::get_singleton()->get_editor_selection_history()->get_current();
+	Object *current_obj = current_id.is_valid() ? ObjectDB::get_instance(current_id) : nullptr;
+	return Ref<Resource>(Object::cast_to<Resource>(current_obj));
 }
 
 void InspectorDock::_prepare_history() {
