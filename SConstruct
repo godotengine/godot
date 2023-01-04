@@ -445,6 +445,9 @@ if not env_base["deprecated"]:
 if env_base["precision"] == "double":
     env_base.Append(CPPDEFINES=["REAL_T_IS_DOUBLE"])
 
+if env_base["platform"] == "linuxbsd" and not env_base["x11"]:
+    env_base["opengl3"] = False
+
 if selected_platform in platform_list:
     tmppath = "./platform/" + selected_platform
     sys.path.insert(0, tmppath)

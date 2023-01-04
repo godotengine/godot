@@ -246,6 +246,9 @@ String OS_LinuxBSD::get_version() const {
 }
 
 Vector<String> OS_LinuxBSD::get_video_adapter_driver_info() const {
+#ifndef X11_ENABLED
+	return Vector<String>();
+#else
 	if (RenderingServer::get_singleton()->get_rendering_device() == nullptr) {
 		return Vector<String>();
 	}
@@ -362,6 +365,7 @@ Vector<String> OS_LinuxBSD::get_video_adapter_driver_info() const {
 	info.push_back(driver_version);
 
 	return info;
+#endif // X11_ENABLED
 }
 
 Vector<String> OS_LinuxBSD::lspci_device_filter(Vector<String> vendor_device_id_mapping, String class_suffix, String check_column, String whitelist) const {
