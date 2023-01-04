@@ -1240,6 +1240,14 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF_BASIC("display/window/size/mode", 0);
 	custom_prop_info["display/window/size/mode"] = PropertyInfo(Variant::INT, "display/window/size/mode", PROPERTY_HINT_ENUM, "Windowed,Minimized,Maximized,Fullscreen,Exclusive Fullscreen");
 
+	// Keep the enum values in sync with the `DisplayServer::SCREEN_` enum.
+	GLOBAL_DEF_BASIC("display/window/size/initial_screen", -2);
+	String screen_hints = "Primary Monitor:-2"; // Note: Main Window Monitor:-1 is not used for the main window, skip it.
+	for (int i = 0; i < 64; i++) {
+		screen_hints += ",Monitor " + itos(i + 1) + ":" + itos(i);
+	}
+	custom_prop_info["display/window/size/initial_screen"] = PropertyInfo(Variant::INT, "display/window/size/initial_screen", PROPERTY_HINT_ENUM, screen_hints);
+
 	GLOBAL_DEF_BASIC("display/window/size/resizable", true);
 	GLOBAL_DEF_BASIC("display/window/size/borderless", false);
 	GLOBAL_DEF("display/window/size/always_on_top", false);

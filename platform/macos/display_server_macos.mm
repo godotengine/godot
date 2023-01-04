@@ -109,7 +109,7 @@ NSMenu *DisplayServerMacOS::_get_menu_root(const String &p_menu_root) {
 	return menu;
 }
 
-DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mode, VSyncMode p_vsync_mode, const Rect2i &p_rect, int p_screen) {
+DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mode, VSyncMode p_vsync_mode, const Rect2i &p_rect) {
 	WindowID id;
 	const float scale = screen_get_max_scale();
 	{
@@ -119,36 +119,30 @@ DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mod
 		ERR_FAIL_COND_V_MSG(wd.window_delegate == nil, INVALID_WINDOW_ID, "Can't create a window delegate");
 		[wd.window_delegate setWindowID:window_id_counter];
 
-		int nearest_area = 0;
-		int pos_screen = -1;
-		for (int i = 0; i < get_screen_count(); i++) {
-			Rect2i r = screen_get_usable_rect(i);
-			Rect2 inters = r.intersection(p_rect);
-			int area = inters.size.width * inters.size.height;
-			if (area > nearest_area && area > 0) {
-				pos_screen = i;
-				nearest_area = area;
-			}
+		int rq_screen = get_screen_from_rect(p_rect);
+		if (rq_screen < 0) {
+			rq_screen = get_primary_screen(); // Requested window rect is outside any screen bounds.
 		}
 
-		Rect2i srect = screen_get_usable_rect(p_screen);
-		Point2i wpos = p_rect.position - ((pos_screen >= 0) ? screen_get_position(pos_screen) : Vector2i());
-		wpos += srect.position;
-		wpos.x = CLAMP(wpos.x, srect.position.x, srect.position.x + srect.size.width - p_rect.size.width / 3);
-		wpos.y = CLAMP(wpos.y, srect.position.y, srect.position.y + srect.size.height - p_rect.size.height / 3);
+		Rect2i srect = screen_get_usable_rect(rq_screen);
+		Point2i wpos = p_rect.position;
+		if (srect != Rect2i()) {
+			wpos.x = CLAMP(wpos.x, srect.position.x, srect.position.x + srect.size.width - p_rect.size.width / 3);
+			wpos.y = CLAMP(wpos.y, srect.position.y, srect.position.y + srect.size.height - p_rect.size.height / 3);
+		}
 		// OS X native y-coordinate relative to _get_screens_origin() is negative,
 		// Godot passes a positive value.
 		wpos.y *= -1;
 		wpos += _get_screens_origin();
+		wpos /= scale;
 
 		// initWithContentRect uses bottom-left corner of the window’s frame as origin.
 		wd.window_object = [[GodotWindow alloc]
-				initWithContentRect:NSMakeRect(0, 0, p_rect.size.width / scale, p_rect.size.height / scale)
+				initWithContentRect:NSMakeRect(100, 100, p_rect.size.width / scale, p_rect.size.height / scale)
 						  styleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable
 							backing:NSBackingStoreBuffered
 							  defer:NO];
 		ERR_FAIL_COND_V_MSG(wd.window_object == nil, INVALID_WINDOW_ID, "Can't create a window");
-		[wd.window_object setFrameTopLeftPoint:NSMakePoint(wpos.x / scale, wpos.y / scale)];
 		[wd.window_object setWindowID:window_id_counter];
 
 		wd.window_view = [[GodotContentView alloc] init];
@@ -186,6 +180,16 @@ DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mod
 		window_set_vsync_mode(p_vsync_mode, window_id_counter);
 #endif
 		[wd.window_view updateLayerDelegate];
+
+		const NSRect contentRect = [wd.window_view frame];
+		const NSRect windowRect = [wd.window_object frame];
+		const NSRect nsrect = [wd.window_object convertRectToScreen:contentRect];
+		Point2i offset;
+		offset.x = (nsrect.origin.x - windowRect.origin.x);
+		offset.y = (nsrect.origin.y + nsrect.size.height);
+		offset.y -= (windowRect.origin.y + windowRect.size.height);
+		[wd.window_object setFrameTopLeftPoint:NSMakePoint(wpos.x - offset.x, wpos.y - offset.y)];
+
 		id = window_id_counter++;
 		windows[id] = wd;
 	}
@@ -2077,11 +2081,22 @@ int DisplayServerMacOS::get_screen_count() const {
 	return [screenArray count];
 }
 
+int DisplayServerMacOS::get_primary_screen() const {
+	return 0;
+}
+
 Point2i DisplayServerMacOS::screen_get_position(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
-	if (p_screen == SCREEN_OF_MAIN_WINDOW) {
-		p_screen = window_get_current_screen();
+	switch (p_screen) {
+		case SCREEN_PRIMARY: {
+			p_screen = get_primary_screen();
+		} break;
+		case SCREEN_OF_MAIN_WINDOW: {
+			p_screen = window_get_current_screen(MAIN_WINDOW_ID);
+		} break;
+		default:
+			break;
 	}
 
 	Point2i position = _get_native_screen_position(p_screen) - _get_screens_origin();
@@ -2094,8 +2109,15 @@ Point2i DisplayServerMacOS::screen_get_position(int p_screen) const {
 Size2i DisplayServerMacOS::screen_get_size(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
-	if (p_screen == SCREEN_OF_MAIN_WINDOW) {
-		p_screen = window_get_current_screen();
+	switch (p_screen) {
+		case SCREEN_PRIMARY: {
+			p_screen = get_primary_screen();
+		} break;
+		case SCREEN_OF_MAIN_WINDOW: {
+			p_screen = window_get_current_screen(MAIN_WINDOW_ID);
+		} break;
+		default:
+			break;
 	}
 
 	NSArray *screenArray = [NSScreen screens];
@@ -2111,8 +2133,15 @@ Size2i DisplayServerMacOS::screen_get_size(int p_screen) const {
 int DisplayServerMacOS::screen_get_dpi(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
-	if (p_screen == SCREEN_OF_MAIN_WINDOW) {
-		p_screen = window_get_current_screen();
+	switch (p_screen) {
+		case SCREEN_PRIMARY: {
+			p_screen = get_primary_screen();
+		} break;
+		case SCREEN_OF_MAIN_WINDOW: {
+			p_screen = window_get_current_screen(MAIN_WINDOW_ID);
+		} break;
+		default:
+			break;
 	}
 
 	NSArray *screenArray = [NSScreen screens];
@@ -2135,9 +2164,17 @@ int DisplayServerMacOS::screen_get_dpi(int p_screen) const {
 float DisplayServerMacOS::screen_get_scale(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
-	if (p_screen == SCREEN_OF_MAIN_WINDOW) {
-		p_screen = window_get_current_screen();
+	switch (p_screen) {
+		case SCREEN_PRIMARY: {
+			p_screen = get_primary_screen();
+		} break;
+		case SCREEN_OF_MAIN_WINDOW: {
+			p_screen = window_get_current_screen(MAIN_WINDOW_ID);
+		} break;
+		default:
+			break;
 	}
+
 	if (OS::get_singleton()->is_hidpi_allowed()) {
 		NSArray *screenArray = [NSScreen screens];
 		if ((NSUInteger)p_screen < [screenArray count]) {
@@ -2160,8 +2197,15 @@ float DisplayServerMacOS::screen_get_max_scale() const {
 Rect2i DisplayServerMacOS::screen_get_usable_rect(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
-	if (p_screen == SCREEN_OF_MAIN_WINDOW) {
-		p_screen = window_get_current_screen();
+	switch (p_screen) {
+		case SCREEN_PRIMARY: {
+			p_screen = get_primary_screen();
+		} break;
+		case SCREEN_OF_MAIN_WINDOW: {
+			p_screen = window_get_current_screen(MAIN_WINDOW_ID);
+		} break;
+		default:
+			break;
 	}
 
 	NSArray *screenArray = [NSScreen screens];
@@ -2182,8 +2226,15 @@ Rect2i DisplayServerMacOS::screen_get_usable_rect(int p_screen) const {
 float DisplayServerMacOS::screen_get_refresh_rate(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
-	if (p_screen == SCREEN_OF_MAIN_WINDOW) {
-		p_screen = window_get_current_screen();
+	switch (p_screen) {
+		case SCREEN_PRIMARY: {
+			p_screen = get_primary_screen();
+		} break;
+		case SCREEN_OF_MAIN_WINDOW: {
+			p_screen = window_get_current_screen(MAIN_WINDOW_ID);
+		} break;
+		default:
+			break;
 	}
 
 	NSArray *screenArray = [NSScreen screens];
@@ -2225,10 +2276,10 @@ Vector<DisplayServer::WindowID> DisplayServerMacOS::get_window_list() const {
 	return ret;
 }
 
-DisplayServer::WindowID DisplayServerMacOS::create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect, int p_screen) {
+DisplayServer::WindowID DisplayServerMacOS::create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect) {
 	_THREAD_SAFE_METHOD_
 
-	WindowID id = _create_window(p_mode, p_vsync_mode, p_rect, p_screen);
+	WindowID id = _create_window(p_mode, p_vsync_mode, p_rect);
 	for (int i = 0; i < WINDOW_FLAG_MAX; i++) {
 		if (p_flags & (1 << i)) {
 			window_set_flag(WindowFlags(i), true, id);
@@ -3520,8 +3571,8 @@ void DisplayServerMacOS::set_icon(const Ref<Image> &p_icon) {
 	[NSApp setApplicationIconImage:nsimg];
 }
 
-DisplayServer *DisplayServerMacOS::create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, Error &r_error) {
-	DisplayServer *ds = memnew(DisplayServerMacOS(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, r_error));
+DisplayServer *DisplayServerMacOS::create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error) {
+	DisplayServer *ds = memnew(DisplayServerMacOS(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, r_error));
 	if (r_error != OK) {
 		if (p_rendering_driver == "vulkan") {
 			String executable_command;
@@ -3690,7 +3741,7 @@ bool DisplayServerMacOS::mouse_process_popups(bool p_close) {
 	return closed;
 }
 
-DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, Error &r_error) {
+DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error) {
 	Input::get_singleton()->set_event_dispatch_function(_dispatch_input_events);
 
 	r_error = OK;
@@ -3796,15 +3847,17 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 	}
 #endif
 
-	Point2i window_position(
-			screen_get_position(0).x + (screen_get_size(0).width - p_resolution.width) / 2,
-			screen_get_position(0).y + (screen_get_size(0).height - p_resolution.height) / 2);
-
+	Point2i window_position;
 	if (p_position != nullptr) {
 		window_position = *p_position;
+	} else {
+		if (p_screen == SCREEN_OF_MAIN_WINDOW) {
+			p_screen = SCREEN_PRIMARY;
+		}
+		window_position = screen_get_position(p_screen) + (screen_get_size(p_screen) - p_resolution) / 2;
 	}
 
-	WindowID main_window = _create_window(p_mode, p_vsync_mode, Rect2i(window_position, p_resolution), 0);
+	WindowID main_window = _create_window(p_mode, p_vsync_mode, Rect2i(window_position, p_resolution));
 	ERR_FAIL_COND(main_window == INVALID_WINDOW_ID);
 	for (int i = 0; i < WINDOW_FLAG_MAX; i++) {
 		if (p_flags & (1 << i)) {

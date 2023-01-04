@@ -1298,7 +1298,6 @@ void Viewport::_gui_show_tooltip() {
 		r.position.y = vr.position.y;
 	}
 
-	gui.tooltip_popup->set_current_screen(window->get_current_screen());
 	gui.tooltip_popup->set_position(r.position);
 	gui.tooltip_popup->set_size(r.size);
 
