@@ -179,7 +179,7 @@ static DisplayServer::VSyncMode window_vsync_mode = DisplayServer::VSYNC_ENABLED
 static uint32_t window_flags = 0;
 static Size2i window_size = Size2i(1152, 648);
 
-static int init_screen = -1;
+static int init_screen = DisplayServer::SCREEN_PRIMARY;
 static bool init_fullscreen = false;
 static bool init_maximized = false;
 static bool init_windowed = false;
@@ -377,7 +377,8 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  -w, --windowed                    Request windowed mode.\n");
 	OS::get_singleton()->print("  -t, --always-on-top               Request an always-on-top window.\n");
 	OS::get_singleton()->print("  --resolution <W>x<H>              Request window resolution.\n");
-	OS::get_singleton()->print("  --position <X>,<Y>                Request window position.\n");
+	OS::get_singleton()->print("  --position <X>,<Y>                Request window position (if set, screen argument is ignored).\n");
+	OS::get_singleton()->print("  --screen <N>                      Request window screen.\n");
 	OS::get_singleton()->print("  --single-window                   Use a single window (no separate subwindows).\n");
 	OS::get_singleton()->print("  --xr-mode <mode>                  Select XR (Extended Reality) mode ['default', 'off', 'on'].\n");
 	OS::get_singleton()->print("\n");
@@ -956,6 +957,17 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				N = I->next()->next();
 			} else {
 				OS::get_singleton()->print("Missing resolution argument, aborting.\n");
+				goto error;
+			}
+
+		} else if (I->get() == "--screen") { // set window screen
+
+			if (I->next()) {
+				init_screen = I->next()->get().to_int();
+
+				N = I->next()->next();
+			} else {
+				OS::get_singleton()->print("Missing screen argument, aborting.\n");
 				goto error;
 			}
 
@@ -1658,6 +1670,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			window_flags |= DisplayServer::WINDOW_FLAG_NO_FOCUS_BIT;
 		}
 		window_mode = (DisplayServer::WindowMode)(GLOBAL_GET("display/window/size/mode").operator int());
+		init_screen = GLOBAL_GET("display/window/size/initial_screen").operator int();
 	}
 
 	GLOBAL_DEF("internationalization/locale/include_text_server_data", false);
@@ -1909,7 +1922,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 		// rendering_driver now held in static global String in main and initialized in setup()
 		Error err;
-		display_server = DisplayServer::create(display_driver_idx, rendering_driver, window_mode, window_vsync_mode, window_flags, window_position, window_size, err);
+		display_server = DisplayServer::create(display_driver_idx, rendering_driver, window_mode, window_vsync_mode, window_flags, window_position, window_size, init_screen, err);
 		if (err != OK || display_server == nullptr) {
 			// We can't use this display server, try other ones as fallback.
 			// Skip headless (always last registered) because that's not what users
@@ -1918,7 +1931,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 				if (i == display_driver_idx) {
 					continue; // Don't try the same twice.
 				}
-				display_server = DisplayServer::create(i, rendering_driver, window_mode, window_vsync_mode, window_flags, window_position, window_size, err);
+				display_server = DisplayServer::create(i, rendering_driver, window_mode, window_vsync_mode, window_flags, window_position, window_size, init_screen, err);
 				if (err == OK && display_server != nullptr) {
 					break;
 				}
@@ -2015,10 +2028,6 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 	print_line(" "); //add a blank line for readability
 
-	if (init_use_custom_pos) {
-		display_server->window_set_position(init_custom_pos);
-	}
-
 	// right moment to create and initialize the audio server
 
 	audio_server = memnew(AudioServer);
@@ -2037,9 +2046,6 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	bool show_logo = true;
 #endif
 
-	if (init_screen != -1) {
-		DisplayServer::get_singleton()->window_set_current_screen(init_screen);
-	}
 	if (init_windowed) {
 		//do none..
 	} else if (init_maximized) {

@@ -3014,16 +3014,15 @@ ProjectManager::ProjectManager() {
 	float scale_factor = MAX(1, EDSCALE);
 	if (scale_factor > 1.0) {
 		Vector2i window_size = DisplayServer::get_singleton()->window_get_size();
-		Vector2i screen_size = DisplayServer::get_singleton()->screen_get_size();
-		Vector2i screen_position = DisplayServer::get_singleton()->screen_get_position();
+		Rect2i screen_rect = DisplayServer::get_singleton()->screen_get_usable_rect(DisplayServer::get_singleton()->window_get_current_screen());
 
 		window_size *= scale_factor;
 
 		DisplayServer::get_singleton()->window_set_size(window_size);
-		if (screen_size != Vector2i()) {
+		if (screen_rect.size != Vector2i()) {
 			Vector2i window_position;
-			window_position.x = screen_position.x + (screen_size.x - window_size.x) / 2;
-			window_position.y = screen_position.y + (screen_size.y - window_size.y) / 2;
+			window_position.x = screen_rect.position.x + (screen_rect.size.x - window_size.x) / 2;
+			window_position.y = screen_rect.position.y + (screen_rect.size.y - window_size.y) / 2;
 			DisplayServer::get_singleton()->window_set_position(window_position);
 		}
 	}
