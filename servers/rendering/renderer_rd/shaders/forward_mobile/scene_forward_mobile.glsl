@@ -866,7 +866,7 @@ void main() {
 		uint decal_indices = draw_call.decals.x;
 		for (uint i = 0; i < 8; i++) {
 			uint decal_index = decal_indices & 0xFF;
-			if (i == 4) {
+			if (i == 3) {
 				decal_indices = draw_call.decals.y;
 			} else {
 				decal_indices = decal_indices >> 8;
@@ -1148,7 +1148,7 @@ void main() {
 
 		for (uint i = 0; i < 8; i++) {
 			uint reflection_index = reflection_indices & 0xFF;
-			if (i == 4) {
+			if (i == 3) {
 				reflection_indices = draw_call.reflection_probes.y;
 			} else {
 				reflection_indices = reflection_indices >> 8;
@@ -1551,7 +1551,7 @@ void main() {
 		uint light_indices = draw_call.omni_lights.x;
 		for (uint i = 0; i < 8; i++) {
 			uint light_index = light_indices & 0xFF;
-			if (i == 4) {
+			if (i == 3) {
 				light_indices = draw_call.omni_lights.y;
 			} else {
 				light_indices = light_indices >> 8;
@@ -1596,7 +1596,7 @@ void main() {
 		uint light_indices = draw_call.spot_lights.x;
 		for (uint i = 0; i < 8; i++) {
 			uint light_index = light_indices & 0xFF;
-			if (i == 4) {
+			if (i == 3) {
 				light_indices = draw_call.spot_lights.y;
 			} else {
 				light_indices = light_indices >> 8;
