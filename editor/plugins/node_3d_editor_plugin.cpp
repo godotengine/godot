@@ -8670,13 +8670,7 @@ void Node3DEditorPlugin::edit(Object *p_object) {
 }
 
 bool Node3DEditorPlugin::handles(Object *p_object) const {
-	if (p_object->is_class("Node3D")) {
-		return true;
-	} else {
-		// This ensures that gizmos are cleared when selecting a non-Node3D node.
-		const_cast<Node3DEditorPlugin *>(this)->edit((Object *)nullptr);
-		return false;
-	}
+	return p_object->is_class("Node3D");
 }
 
 Dictionary Node3DEditorPlugin::get_state() const {
