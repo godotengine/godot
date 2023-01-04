@@ -1644,6 +1644,13 @@ void Tree::_update_theme_item_cache() {
 	theme_cache.scroll_border = get_theme_constant(SNAME("scroll_border"));
 	theme_cache.scroll_speed = get_theme_constant(SNAME("scroll_speed"));
 
+	theme_cache.scrollbar_margin_top = get_theme_constant(SNAME("scrollbar_margin_top"));
+	theme_cache.scrollbar_margin_right = get_theme_constant(SNAME("scrollbar_margin_right"));
+	theme_cache.scrollbar_margin_bottom = get_theme_constant(SNAME("scrollbar_margin_bottom"));
+	theme_cache.scrollbar_margin_left = get_theme_constant(SNAME("scrollbar_margin_left"));
+	theme_cache.scrollbar_h_separation = get_theme_constant(SNAME("scrollbar_h_separation"));
+	theme_cache.scrollbar_v_separation = get_theme_constant(SNAME("scrollbar_v_separation"));
+
 	theme_cache.title_button = get_theme_stylebox(SNAME("title_button_normal"));
 	theme_cache.title_button_pressed = get_theme_stylebox(SNAME("title_button_pressed"));
 	theme_cache.title_button_hover = get_theme_stylebox(SNAME("title_button_hover"));
@@ -2018,9 +2025,8 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 			if (i == 0) {
 				if (p_item->cells[0].selected && select_mode == SELECT_ROW) {
-					Rect2i row_rect = Rect2i(Point2i(theme_cache.panel_style->get_margin(SIDE_LEFT), item_rect.position.y), Size2i(get_size().width - theme_cache.panel_style->get_minimum_size().width, item_rect.size.y));
-					//Rect2 r = Rect2i(row_rect.pos,row_rect.size);
-					//r.grow(cache.selected->get_margin(SIDE_LEFT));
+					const Rect2 content_rect = _get_content_rect();
+					Rect2i row_rect = Rect2i(Point2i(content_rect.position.x, item_rect.position.y), Size2i(content_rect.size.x, item_rect.size.y));
 					if (rtl) {
 						row_rect.position.x = get_size().width - row_rect.position.x - row_rect.size.x;
 					}
@@ -3188,6 +3194,42 @@ bool Tree::_scroll(bool p_horizontal, float p_pages) {
 	return scroll->get_value() != prev_value;
 }
 
+Rect2 Tree::_get_scrollbar_layout_rect() const {
+	const Size2 control_size = get_size();
+	const Ref<StyleBox> background = theme_cache.panel_style;
+
+	// This is the background stylebox's content rect.
+	const real_t width = control_size.x - background->get_margin(SIDE_LEFT) - background->get_margin(SIDE_RIGHT);
+	const real_t height = control_size.y - background->get_margin(SIDE_TOP) - background->get_margin(SIDE_BOTTOM);
+	const Rect2 content_rect = Rect2(background->get_offset(), Size2(width, height));
+
+	// Use the stylebox's margins by default. Can be overridden by `scrollbar_margin_*`.
+	const real_t top = theme_cache.scrollbar_margin_top < 0 ? content_rect.get_position().y : theme_cache.scrollbar_margin_top;
+	const real_t right = theme_cache.scrollbar_margin_right < 0 ? content_rect.get_end().x : (control_size.x - theme_cache.scrollbar_margin_right);
+	const real_t bottom = theme_cache.scrollbar_margin_bottom < 0 ? content_rect.get_end().y : (control_size.y - theme_cache.scrollbar_margin_bottom);
+	const real_t left = theme_cache.scrollbar_margin_left < 0 ? content_rect.get_position().x : theme_cache.scrollbar_margin_left;
+
+	return Rect2(left, top, right - left, bottom - top);
+}
+
+Rect2 Tree::_get_content_rect() const {
+	const Size2 control_size = get_size();
+	const Ref<StyleBox> background = theme_cache.panel_style;
+
+	// This is the background stylebox's content rect.
+	const real_t width = control_size.x - background->get_margin(SIDE_LEFT) - background->get_margin(SIDE_RIGHT);
+	const real_t height = control_size.y - background->get_margin(SIDE_TOP) - background->get_margin(SIDE_BOTTOM);
+	const Rect2 content_rect = Rect2(background->get_offset(), Size2(width, height));
+
+	// Scrollbars won't affect Tree's content rect if they're not visible or placed inside the stylebox margin area.
+	const real_t v_size = v_scroll->is_visible() ? (v_scroll->get_combined_minimum_size().x + theme_cache.scrollbar_h_separation) : 0;
+	const real_t h_size = h_scroll->is_visible() ? (h_scroll->get_combined_minimum_size().y + theme_cache.scrollbar_v_separation) : 0;
+	const Point2 scroll_begin = _get_scrollbar_layout_rect().get_end() - Vector2(v_size, h_size);
+	const Size2 offset = (content_rect.get_end() - scroll_begin).max(Vector2(0, 0));
+
+	return content_rect.grow_individual(0, 0, -offset.x, -offset.y);
+}
+
 void Tree::gui_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
@@ -3837,7 +3879,7 @@ bool Tree::is_editing() {
 }
 
 Size2 Tree::get_internal_min_size() const {
-	Size2i size = theme_cache.panel_style->get_offset();
+	Size2i size;
 	if (root) {
 		size.height += get_item_height(root);
 	}
@@ -3849,15 +3891,16 @@ Size2 Tree::get_internal_min_size() const {
 }
 
 void Tree::update_scrollbars() {
-	const Size2 size = get_size();
+	const Size2 control_size = get_size();
+	const Ref<StyleBox> background = theme_cache.panel_style;
+
+	// This is the background stylebox's content rect.
+	const real_t width = control_size.x - background->get_margin(SIDE_LEFT) - background->get_margin(SIDE_RIGHT);
+	const real_t height = control_size.y - background->get_margin(SIDE_TOP) - background->get_margin(SIDE_BOTTOM);
+	const Rect2 content_rect = Rect2(background->get_offset(), Size2(width, height));
+
 	const Size2 hmin = h_scroll->get_combined_minimum_size();
 	const Size2 vmin = v_scroll->get_combined_minimum_size();
-
-	const Rect2 content_rect = Rect2(theme_cache.panel_style->get_offset(), size - theme_cache.panel_style->get_minimum_size());
-	v_scroll->set_begin(content_rect.get_position() + Vector2(content_rect.get_size().x - vmin.width, 0));
-	v_scroll->set_end(content_rect.get_end() - Vector2(0, hmin.height));
-	h_scroll->set_begin(content_rect.get_position() + Vector2(0, content_rect.get_size().y - hmin.height));
-	h_scroll->set_end(content_rect.get_end() - Vector2(vmin.width, 0));
 
 	const Size2 internal_min_size = get_internal_min_size();
 	const int title_button_height = _get_title_button_height();
@@ -3896,6 +3939,12 @@ void Tree::update_scrollbars() {
 		h_scroll->hide();
 		theme_cache.offset.x = 0;
 	}
+
+	const Rect2 scroll_rect = _get_scrollbar_layout_rect();
+	v_scroll->set_begin(scroll_rect.get_position() + Vector2(scroll_rect.get_size().x - vmin.width, 0));
+	v_scroll->set_end(scroll_rect.get_end() - Vector2(0, display_hscroll ? hmin.height : 0));
+	h_scroll->set_begin(scroll_rect.get_position() + Vector2(0, scroll_rect.get_size().y - hmin.height));
+	h_scroll->set_end(scroll_rect.get_end() - Vector2(display_vscroll ? vmin.width : 0, 0));
 }
 
 int Tree::_get_title_button_height() const {
@@ -4010,13 +4059,10 @@ void Tree::_notification(int p_what) {
 			RID ci = get_canvas_item();
 
 			Ref<StyleBox> bg = theme_cache.panel_style;
+			const Rect2 content_rect = _get_content_rect();
 
-			Point2 draw_ofs;
-			draw_ofs += bg->get_offset();
-			Size2 draw_size = get_size() - bg->get_minimum_size();
-			if (v_scroll->is_visible()) {
-				draw_size.width -= v_scroll->get_minimum_size().width;
-			}
+			Point2 draw_ofs = content_rect.position;
+			Size2 draw_size = content_rect.size;
 
 			bg->draw(ci, Rect2(Point2(), get_size()));
 
@@ -4475,18 +4521,7 @@ int Tree::get_column_width(int p_column) const {
 	int column_width = get_column_minimum_width(p_column);
 
 	if (columns[p_column].expand) {
-		int expand_area = get_size().width;
-
-		Ref<StyleBox> bg = theme_cache.panel_style;
-
-		if (bg.is_valid()) {
-			expand_area -= bg->get_margin(SIDE_LEFT) + bg->get_margin(SIDE_RIGHT);
-		}
-
-		if (v_scroll->is_visible_in_tree()) {
-			expand_area -= v_scroll->get_combined_minimum_size().width;
-		}
-
+		int expand_area = _get_content_rect().size.width;
 		int expanding_total = 0;
 
 		for (int i = 0; i < columns.size(); i++) {
@@ -4586,7 +4621,7 @@ void Tree::ensure_cursor_is_visible() {
 	}
 
 	// Note: Code below similar to Tree::scroll_to_item(), in case of bug fix both.
-	const Size2 area_size = get_size() - theme_cache.panel_style->get_minimum_size();
+	const Size2 area_size = _get_content_rect().size;
 
 	int y_offset = get_item_offset(selected_item);
 	if (y_offset != -1) {
@@ -4595,9 +4630,6 @@ void Tree::ensure_cursor_is_visible() {
 
 		const int cell_h = compute_item_height(selected_item) + theme_cache.v_separation;
 		int screen_h = area_size.height - tbh;
-		if (h_scroll->is_visible()) {
-			screen_h -= h_scroll->get_combined_minimum_size().height;
-		}
 
 		if (cell_h > screen_h) { // Screen size is too small, maybe it was not resized yet.
 			v_scroll->set_value(y_offset);
@@ -4615,7 +4647,7 @@ void Tree::ensure_cursor_is_visible() {
 		}
 
 		const int cell_w = get_column_width(selected_col);
-		const int screen_w = area_size.width - v_scroll->get_combined_minimum_size().width;
+		const int screen_w = area_size.width;
 
 		if (cell_w > screen_w) {
 			h_scroll->set_value(x_offset);
@@ -4773,7 +4805,7 @@ void Tree::scroll_to_item(TreeItem *p_item, bool p_center_on_item) {
 	update_scrollbars();
 
 	// Note: Code below similar to Tree::ensure_cursor_is_visible(), in case of bug fix both.
-	const Size2 area_size = get_size() - theme_cache.panel_style->get_minimum_size();
+	const Size2 area_size = _get_content_rect().size;
 
 	int y_offset = get_item_offset(p_item);
 	if (y_offset != -1) {
@@ -4782,9 +4814,6 @@ void Tree::scroll_to_item(TreeItem *p_item, bool p_center_on_item) {
 
 		const int cell_h = compute_item_height(p_item) + theme_cache.v_separation;
 		int screen_h = area_size.height - tbh;
-		if (h_scroll->is_visible()) {
-			screen_h -= h_scroll->get_combined_minimum_size().height;
-		}
 
 		if (p_center_on_item) {
 			v_scroll->set_value(y_offset - (screen_h - cell_h) / 2.0f);

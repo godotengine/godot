@@ -783,6 +783,12 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("scroll_speed", "Tree", 12);
 	theme->set_constant("outline_size", "Tree", 0);
 	theme->set_constant("icon_max_width", "Tree", 0);
+	theme->set_constant("scrollbar_margin_left", "Tree", -1);
+	theme->set_constant("scrollbar_margin_top", "Tree", -1);
+	theme->set_constant("scrollbar_margin_right", "Tree", -1);
+	theme->set_constant("scrollbar_margin_bottom", "Tree", -1);
+	theme->set_constant("scrollbar_h_separation", "Tree", 4 * scale);
+	theme->set_constant("scrollbar_v_separation", "Tree", 4 * scale);
 
 	// ItemList
 
