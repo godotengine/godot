@@ -563,6 +563,10 @@ PropertyTweener::PropertyTweener(Object *p_target, NodePath p_property, Variant 
 	base_final_val = p_to;
 	final_val = base_final_val;
 	duration = p_duration;
+
+	if (p_target->is_ref_counted()) {
+		ref_copy = p_target;
+	}
 }
 
 PropertyTweener::PropertyTweener() {
@@ -640,6 +644,11 @@ void CallbackTweener::_bind_methods() {
 
 CallbackTweener::CallbackTweener(Callable p_callback) {
 	callback = p_callback;
+
+	Object *callback_instance = p_callback.get_object();
+	if (callback_instance && callback_instance->is_ref_counted()) {
+		ref_copy = callback_instance;
+	}
 }
 
 CallbackTweener::CallbackTweener() {
@@ -728,6 +737,11 @@ MethodTweener::MethodTweener(Callable p_callback, Variant p_from, Variant p_to, 
 	delta_val = Animation::subtract_variant(p_to, p_from);
 	final_val = p_to;
 	duration = p_duration;
+
+	Object *callback_instance = p_callback.get_object();
+	if (callback_instance && callback_instance->is_ref_counted()) {
+		ref_copy = callback_instance;
+	}
 }
 
 MethodTweener::MethodTweener() {
