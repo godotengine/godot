@@ -118,5 +118,6 @@ FogVolume::FogVolume() {
 }
 
 FogVolume::~FogVolume() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RS::get_singleton()->free(volume);
 }

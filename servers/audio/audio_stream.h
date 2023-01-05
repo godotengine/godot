@@ -53,7 +53,7 @@ protected:
 	GDVIRTUAL0RC(int, _get_loop_count)
 	GDVIRTUAL0RC(double, _get_playback_position)
 	GDVIRTUAL1(_seek, double)
-	GDVIRTUAL3R(int, _mix, GDNativePtr<AudioFrame>, float, int)
+	GDVIRTUAL3R(int, _mix, GDExtensionPtr<AudioFrame>, float, int)
 	GDVIRTUAL0(_tag_used_streams)
 public:
 	virtual void start(double p_from_pos = 0.0);
@@ -91,7 +91,7 @@ protected:
 	virtual int _mix_internal(AudioFrame *p_buffer, int p_frames);
 	virtual float get_stream_sampling_rate();
 
-	GDVIRTUAL2R(int, _mix_resampled, GDNativePtr<AudioFrame>, int)
+	GDVIRTUAL2R(int, _mix_resampled, GDExtensionPtr<AudioFrame>, int)
 	GDVIRTUAL0RC(float, _get_stream_sampling_rate)
 
 	static void _bind_methods();
@@ -241,7 +241,7 @@ protected:
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 public:
-	void add_stream(int p_index);
+	void add_stream(int p_index, Ref<AudioStream> p_stream, float p_weight = 1.0);
 	void move_stream(int p_index_from, int p_index_to);
 	void remove_stream(int p_index);
 

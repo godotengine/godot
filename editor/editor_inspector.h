@@ -280,6 +280,8 @@ class EditorInspectorSection : public Container {
 	HashSet<StringName> revertable_properties;
 
 	void _test_unfold();
+	int _get_header_height();
+	Ref<Texture2D> _get_arrow();
 
 protected:
 	Object *object = nullptr;
@@ -539,6 +541,8 @@ class EditorInspector : public ScrollContainer {
 	void _add_meta_confirm();
 	void _show_add_meta_dialog();
 	void _check_meta_name(const String &p_name);
+
+	void _update_tree();
 
 protected:
 	static void _bind_methods();

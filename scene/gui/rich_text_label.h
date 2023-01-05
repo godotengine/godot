@@ -268,7 +268,9 @@ private:
 
 		LocalVector<Column> columns;
 		LocalVector<float> rows;
+		LocalVector<float> rows_baseline;
 
+		int align_to_row = -1;
 		int total_width = 0;
 		int total_height = 0;
 		InlineAlignment inline_align = INLINE_ALIGNMENT_TOP;
@@ -571,7 +573,7 @@ public:
 	void add_text(const String &p_text);
 	void add_image(const Ref<Texture2D> &p_image, const int p_width = 0, const int p_height = 0, const Color &p_color = Color(1.0, 1.0, 1.0), InlineAlignment p_alignment = INLINE_ALIGNMENT_CENTER, const Rect2 &p_region = Rect2(0, 0, 0, 0));
 	void add_newline();
-	bool remove_line(const int p_line);
+	bool remove_paragraph(const int p_paragraph);
 	void push_dropcap(const String &p_string, const Ref<Font> &p_font, int p_size, const Rect2 &p_dropcap_margins = Rect2(), const Color &p_color = Color(1, 1, 1), int p_ol_size = 0, const Color &p_ol_color = Color(0, 0, 0, 0));
 	void _push_def_font(DefaultFont p_def_font);
 	void _push_def_font_var(DefaultFont p_def_font, const Ref<Font> &p_font, int p_size = -1);
@@ -592,7 +594,7 @@ public:
 	void push_list(int p_level, ListType p_list, bool p_capitalize);
 	void push_meta(const Variant &p_meta);
 	void push_hint(const String &p_string);
-	void push_table(int p_columns, InlineAlignment p_alignment = INLINE_ALIGNMENT_TOP);
+	void push_table(int p_columns, InlineAlignment p_alignment = INLINE_ALIGNMENT_TOP, int p_align_to_row = -1);
 	void push_fade(int p_start_index, int p_length);
 	void push_shake(int p_strength, float p_rate, bool p_connected);
 	void push_wave(float p_frequency, float p_amplitude, bool p_connected);
@@ -656,6 +658,8 @@ public:
 
 	int get_content_height() const;
 	int get_content_width() const;
+
+	void scroll_to_selection();
 
 	VScrollBar *get_v_scroll_bar() { return vscroll; }
 

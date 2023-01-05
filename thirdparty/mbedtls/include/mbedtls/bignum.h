@@ -182,6 +182,20 @@
     #endif /* !MBEDTLS_NO_UDBL_DIVISION */
 #endif /* !MBEDTLS_HAVE_INT64 */
 
+/** \typedef mbedtls_mpi_uint
+ * \brief The type of machine digits in a bignum, called _limbs_.
+ *
+ * This is always an unsigned integer type with no padding bits. The size
+ * is platform-dependent.
+ */
+
+/** \typedef mbedtls_mpi_sint
+ * \brief The signed type corresponding to #mbedtls_mpi_uint.
+ *
+ * This is always a signed integer type with no padding bits. The size
+ * is platform-dependent.
+ */
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -191,9 +205,27 @@ extern "C" {
  */
 typedef struct mbedtls_mpi
 {
-    int s;              /*!<  Sign: -1 if the mpi is negative, 1 otherwise */
-    size_t n;           /*!<  total # of limbs  */
-    mbedtls_mpi_uint *p;          /*!<  pointer to limbs  */
+    /** Sign: -1 if the mpi is negative, 1 otherwise.
+     *
+     * The number 0 must be represented with `s = +1`. Although many library
+     * functions treat all-limbs-zero as equivalent to a valid representation
+     * of 0 regardless of the sign bit, there are exceptions, so bignum
+     * functions and external callers must always set \c s to +1 for the
+     * number zero.
+     *
+     * Note that this implies that calloc() or `... = {0}` does not create
+     * a valid MPI representation. You must call mbedtls_mpi_init().
+     */
+    int s;
+
+    /** Total number of limbs in \c p.  */
+    size_t n;
+
+    /** Pointer to limbs.
+     *
+     * This may be \c NULL if \c n is 0.
+     */
+    mbedtls_mpi_uint *p;
 }
 mbedtls_mpi;
 
@@ -280,7 +312,7 @@ void mbedtls_mpi_swap( mbedtls_mpi *X, mbedtls_mpi *Y );
  * \param Y        The MPI to be assigned from. This must point to an
  *                 initialized MPI.
  * \param assign   The condition deciding whether to perform the
- *                 assignment or not. Possible values:
+ *                 assignment or not. Must be either 0 or 1:
  *                 * \c 1: Perform the assignment `X = Y`.
  *                 * \c 0: Keep the original value of \p X.
  *
@@ -290,6 +322,10 @@ void mbedtls_mpi_swap( mbedtls_mpi *X, mbedtls_mpi *Y );
  *                 the assignment was done or not (the above code may leak
  *                 information through branch prediction and/or memory access
  *                 patterns analysis).
+ *
+ * \warning        If \p assign is neither 0 nor 1, the result of this function
+ *                 is indeterminate, and the resulting value in \p X might be
+ *                 neither its original value nor the value in \p Y.
  *
  * \return         \c 0 if successful.
  * \return         #MBEDTLS_ERR_MPI_ALLOC_FAILED if memory allocation failed.
@@ -303,24 +339,28 @@ int mbedtls_mpi_safe_cond_assign( mbedtls_mpi *X, const mbedtls_mpi *Y, unsigned
  *
  * \param X        The first MPI. This must be initialized.
  * \param Y        The second MPI. This must be initialized.
- * \param assign   The condition deciding whether to perform
- *                 the swap or not. Possible values:
+ * \param swap     The condition deciding whether to perform
+ *                 the swap or not. Must be either 0 or 1:
  *                 * \c 1: Swap the values of \p X and \p Y.
  *                 * \c 0: Keep the original values of \p X and \p Y.
  *
  * \note           This function is equivalent to
- *                      if( assign ) mbedtls_mpi_swap( X, Y );
+ *                      if( swap ) mbedtls_mpi_swap( X, Y );
  *                 except that it avoids leaking any information about whether
- *                 the assignment was done or not (the above code may leak
+ *                 the swap was done or not (the above code may leak
  *                 information through branch prediction and/or memory access
  *                 patterns analysis).
+ *
+ * \warning        If \p swap is neither 0 nor 1, the result of this function
+ *                 is indeterminate, and both \p X and \p Y might end up with
+ *                 values different to either of the original ones.
  *
  * \return         \c 0 if successful.
  * \return         #MBEDTLS_ERR_MPI_ALLOC_FAILED if memory allocation failed.
  * \return         Another negative error code on other kinds of failure.
  *
  */
-int mbedtls_mpi_safe_cond_swap( mbedtls_mpi *X, mbedtls_mpi *Y, unsigned char assign );
+int mbedtls_mpi_safe_cond_swap( mbedtls_mpi *X, mbedtls_mpi *Y, unsigned char swap );
 
 /**
  * \brief          Store integer value in MPI.
@@ -753,11 +793,11 @@ int mbedtls_mpi_mul_int( mbedtls_mpi *X, const mbedtls_mpi *A,
  *
  * \param Q        The destination MPI for the quotient.
  *                 This may be \c NULL if the value of the
- *                 quotient is not needed.
+ *                 quotient is not needed. This must not alias A or B.
  * \param R        The destination MPI for the remainder value.
  *                 This may be \c NULL if the value of the
- *                 remainder is not needed.
- * \param A        The dividend. This must point to an initialized MPi.
+ *                 remainder is not needed. This must not alias A or B.
+ * \param A        The dividend. This must point to an initialized MPI.
  * \param B        The divisor. This must point to an initialized MPI.
  *
  * \return         \c 0 if successful.
@@ -774,10 +814,10 @@ int mbedtls_mpi_div_mpi( mbedtls_mpi *Q, mbedtls_mpi *R, const mbedtls_mpi *A,
  *
  * \param Q        The destination MPI for the quotient.
  *                 This may be \c NULL if the value of the
- *                 quotient is not needed.
+ *                 quotient is not needed.  This must not alias A.
  * \param R        The destination MPI for the remainder value.
  *                 This may be \c NULL if the value of the
- *                 remainder is not needed.
+ *                 remainder is not needed.  This must not alias A.
  * \param A        The dividend. This must point to an initialized MPi.
  * \param b        The divisor.
  *
@@ -832,6 +872,7 @@ int mbedtls_mpi_mod_int( mbedtls_mpi_uint *r, const mbedtls_mpi *A,
  * \brief          Perform a sliding-window exponentiation: X = A^E mod N
  *
  * \param X        The destination MPI. This must point to an initialized MPI.
+ *                 This must not alias E or N.
  * \param A        The base of the exponentiation.
  *                 This must point to an initialized MPI.
  * \param E        The exponent MPI. This must point to an initialized MPI.

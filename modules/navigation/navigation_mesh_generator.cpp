@@ -470,14 +470,14 @@ void NavigationMeshGenerator::_parse_geometry(const Transform3D &p_navmesh_trans
 	}
 }
 
-void NavigationMeshGenerator::_convert_detail_mesh_to_native_navigation_mesh(const rcPolyMeshDetail *p_detail_mesh, Ref<NavigationMesh> p_nav_mesh) {
+void NavigationMeshGenerator::_convert_detail_mesh_to_native_navigation_mesh(const rcPolyMeshDetail *p_detail_mesh, Ref<NavigationMesh> p_navigation_mesh) {
 	Vector<Vector3> nav_vertices;
 
 	for (int i = 0; i < p_detail_mesh->nverts; i++) {
 		const float *v = &p_detail_mesh->verts[i * 3];
 		nav_vertices.push_back(Vector3(v[0], v[1], v[2]));
 	}
-	p_nav_mesh->set_vertices(nav_vertices);
+	p_navigation_mesh->set_vertices(nav_vertices);
 
 	for (int i = 0; i < p_detail_mesh->nmeshes; i++) {
 		const unsigned int *m = &p_detail_mesh->meshes[i * 4];
@@ -492,13 +492,13 @@ void NavigationMeshGenerator::_convert_detail_mesh_to_native_navigation_mesh(con
 			nav_indices.write[0] = ((int)(bverts + tris[j * 4 + 0]));
 			nav_indices.write[1] = ((int)(bverts + tris[j * 4 + 2]));
 			nav_indices.write[2] = ((int)(bverts + tris[j * 4 + 1]));
-			p_nav_mesh->add_polygon(nav_indices);
+			p_navigation_mesh->add_polygon(nav_indices);
 		}
 	}
 }
 
 void NavigationMeshGenerator::_build_recast_navigation_mesh(
-		Ref<NavigationMesh> p_nav_mesh,
+		Ref<NavigationMesh> p_navigation_mesh,
 #ifdef TOOLS_ENABLED
 		EditorProgress *ep,
 #endif
@@ -528,42 +528,42 @@ void NavigationMeshGenerator::_build_recast_navigation_mesh(
 	rcConfig cfg;
 	memset(&cfg, 0, sizeof(cfg));
 
-	cfg.cs = p_nav_mesh->get_cell_size();
-	cfg.ch = p_nav_mesh->get_cell_height();
-	cfg.walkableSlopeAngle = p_nav_mesh->get_agent_max_slope();
-	cfg.walkableHeight = (int)Math::ceil(p_nav_mesh->get_agent_height() / cfg.ch);
-	cfg.walkableClimb = (int)Math::floor(p_nav_mesh->get_agent_max_climb() / cfg.ch);
-	cfg.walkableRadius = (int)Math::ceil(p_nav_mesh->get_agent_radius() / cfg.cs);
-	cfg.maxEdgeLen = (int)(p_nav_mesh->get_edge_max_length() / p_nav_mesh->get_cell_size());
-	cfg.maxSimplificationError = p_nav_mesh->get_edge_max_error();
-	cfg.minRegionArea = (int)(p_nav_mesh->get_region_min_size() * p_nav_mesh->get_region_min_size());
-	cfg.mergeRegionArea = (int)(p_nav_mesh->get_region_merge_size() * p_nav_mesh->get_region_merge_size());
-	cfg.maxVertsPerPoly = (int)p_nav_mesh->get_verts_per_poly();
-	cfg.detailSampleDist = MAX(p_nav_mesh->get_cell_size() * p_nav_mesh->get_detail_sample_distance(), 0.1f);
-	cfg.detailSampleMaxError = p_nav_mesh->get_cell_height() * p_nav_mesh->get_detail_sample_max_error();
+	cfg.cs = p_navigation_mesh->get_cell_size();
+	cfg.ch = p_navigation_mesh->get_cell_height();
+	cfg.walkableSlopeAngle = p_navigation_mesh->get_agent_max_slope();
+	cfg.walkableHeight = (int)Math::ceil(p_navigation_mesh->get_agent_height() / cfg.ch);
+	cfg.walkableClimb = (int)Math::floor(p_navigation_mesh->get_agent_max_climb() / cfg.ch);
+	cfg.walkableRadius = (int)Math::ceil(p_navigation_mesh->get_agent_radius() / cfg.cs);
+	cfg.maxEdgeLen = (int)(p_navigation_mesh->get_edge_max_length() / p_navigation_mesh->get_cell_size());
+	cfg.maxSimplificationError = p_navigation_mesh->get_edge_max_error();
+	cfg.minRegionArea = (int)(p_navigation_mesh->get_region_min_size() * p_navigation_mesh->get_region_min_size());
+	cfg.mergeRegionArea = (int)(p_navigation_mesh->get_region_merge_size() * p_navigation_mesh->get_region_merge_size());
+	cfg.maxVertsPerPoly = (int)p_navigation_mesh->get_vertices_per_polygon();
+	cfg.detailSampleDist = MAX(p_navigation_mesh->get_cell_size() * p_navigation_mesh->get_detail_sample_distance(), 0.1f);
+	cfg.detailSampleMaxError = p_navigation_mesh->get_cell_height() * p_navigation_mesh->get_detail_sample_max_error();
 
-	if (!Math::is_equal_approx((float)cfg.walkableHeight * cfg.ch, p_nav_mesh->get_agent_height())) {
+	if (!Math::is_equal_approx((float)cfg.walkableHeight * cfg.ch, p_navigation_mesh->get_agent_height())) {
 		WARN_PRINT("Property agent_height is ceiled to cell_height voxel units and loses precision.");
 	}
-	if (!Math::is_equal_approx((float)cfg.walkableClimb * cfg.ch, p_nav_mesh->get_agent_max_climb())) {
+	if (!Math::is_equal_approx((float)cfg.walkableClimb * cfg.ch, p_navigation_mesh->get_agent_max_climb())) {
 		WARN_PRINT("Property agent_max_climb is floored to cell_height voxel units and loses precision.");
 	}
-	if (!Math::is_equal_approx((float)cfg.walkableRadius * cfg.cs, p_nav_mesh->get_agent_radius())) {
+	if (!Math::is_equal_approx((float)cfg.walkableRadius * cfg.cs, p_navigation_mesh->get_agent_radius())) {
 		WARN_PRINT("Property agent_radius is ceiled to cell_size voxel units and loses precision.");
 	}
-	if (!Math::is_equal_approx((float)cfg.maxEdgeLen * cfg.cs, p_nav_mesh->get_edge_max_length())) {
+	if (!Math::is_equal_approx((float)cfg.maxEdgeLen * cfg.cs, p_navigation_mesh->get_edge_max_length())) {
 		WARN_PRINT("Property edge_max_length is rounded to cell_size voxel units and loses precision.");
 	}
-	if (!Math::is_equal_approx((float)cfg.minRegionArea, p_nav_mesh->get_region_min_size() * p_nav_mesh->get_region_min_size())) {
+	if (!Math::is_equal_approx((float)cfg.minRegionArea, p_navigation_mesh->get_region_min_size() * p_navigation_mesh->get_region_min_size())) {
 		WARN_PRINT("Property region_min_size is converted to int and loses precision.");
 	}
-	if (!Math::is_equal_approx((float)cfg.mergeRegionArea, p_nav_mesh->get_region_merge_size() * p_nav_mesh->get_region_merge_size())) {
+	if (!Math::is_equal_approx((float)cfg.mergeRegionArea, p_navigation_mesh->get_region_merge_size() * p_navigation_mesh->get_region_merge_size())) {
 		WARN_PRINT("Property region_merge_size is converted to int and loses precision.");
 	}
-	if (!Math::is_equal_approx((float)cfg.maxVertsPerPoly, p_nav_mesh->get_verts_per_poly())) {
-		WARN_PRINT("Property verts_per_poly is converted to int and loses precision.");
+	if (!Math::is_equal_approx((float)cfg.maxVertsPerPoly, p_navigation_mesh->get_vertices_per_polygon())) {
+		WARN_PRINT("Property vertices_per_polygon is converted to int and loses precision.");
 	}
-	if (p_nav_mesh->get_cell_size() * p_nav_mesh->get_detail_sample_distance() < 0.1f) {
+	if (p_navigation_mesh->get_cell_size() * p_navigation_mesh->get_detail_sample_distance() < 0.1f) {
 		WARN_PRINT("Property detail_sample_distance is clamped to 0.1 world units as the resulting value from multiplying with cell_size is too low.");
 	}
 
@@ -574,9 +574,9 @@ void NavigationMeshGenerator::_build_recast_navigation_mesh(
 	cfg.bmax[1] = bmax[1];
 	cfg.bmax[2] = bmax[2];
 
-	AABB baking_aabb = p_nav_mesh->get_filter_baking_aabb();
+	AABB baking_aabb = p_navigation_mesh->get_filter_baking_aabb();
 	if (baking_aabb.has_volume()) {
-		Vector3 baking_aabb_offset = p_nav_mesh->get_filter_baking_aabb_offset();
+		Vector3 baking_aabb_offset = p_navigation_mesh->get_filter_baking_aabb_offset();
 		cfg.bmin[0] = baking_aabb.position[0] + baking_aabb_offset.x;
 		cfg.bmin[1] = baking_aabb.position[1] + baking_aabb_offset.y;
 		cfg.bmin[2] = baking_aabb.position[2] + baking_aabb_offset.z;
@@ -627,13 +627,13 @@ void NavigationMeshGenerator::_build_recast_navigation_mesh(
 		ERR_FAIL_COND(!rcRasterizeTriangles(&ctx, verts, nverts, tris, tri_areas.ptr(), ntris, *hf, cfg.walkableClimb));
 	}
 
-	if (p_nav_mesh->get_filter_low_hanging_obstacles()) {
+	if (p_navigation_mesh->get_filter_low_hanging_obstacles()) {
 		rcFilterLowHangingWalkableObstacles(&ctx, cfg.walkableClimb, *hf);
 	}
-	if (p_nav_mesh->get_filter_ledge_spans()) {
+	if (p_navigation_mesh->get_filter_ledge_spans()) {
 		rcFilterLedgeSpans(&ctx, cfg.walkableHeight, cfg.walkableClimb, *hf);
 	}
-	if (p_nav_mesh->get_filter_walkable_low_height_spans()) {
+	if (p_navigation_mesh->get_filter_walkable_low_height_spans()) {
 		rcFilterWalkableLowHeightSpans(&ctx, cfg.walkableHeight, *hf);
 	}
 
@@ -665,10 +665,10 @@ void NavigationMeshGenerator::_build_recast_navigation_mesh(
 	}
 #endif
 
-	if (p_nav_mesh->get_sample_partition_type() == NavigationMesh::SAMPLE_PARTITION_WATERSHED) {
+	if (p_navigation_mesh->get_sample_partition_type() == NavigationMesh::SAMPLE_PARTITION_WATERSHED) {
 		ERR_FAIL_COND(!rcBuildDistanceField(&ctx, *chf));
 		ERR_FAIL_COND(!rcBuildRegions(&ctx, *chf, 0, cfg.minRegionArea, cfg.mergeRegionArea));
-	} else if (p_nav_mesh->get_sample_partition_type() == NavigationMesh::SAMPLE_PARTITION_MONOTONE) {
+	} else if (p_navigation_mesh->get_sample_partition_type() == NavigationMesh::SAMPLE_PARTITION_MONOTONE) {
 		ERR_FAIL_COND(!rcBuildRegionsMonotone(&ctx, *chf, 0, cfg.minRegionArea, cfg.mergeRegionArea));
 	} else {
 		ERR_FAIL_COND(!rcBuildLayerRegions(&ctx, *chf, 0, cfg.minRegionArea));
@@ -710,7 +710,7 @@ void NavigationMeshGenerator::_build_recast_navigation_mesh(
 	}
 #endif
 
-	_convert_detail_mesh_to_native_navigation_mesh(detail_mesh, p_nav_mesh);
+	_convert_detail_mesh_to_native_navigation_mesh(detail_mesh, p_navigation_mesh);
 
 	rcFreePolyMesh(poly_mesh);
 	poly_mesh = nullptr;
@@ -729,8 +729,8 @@ NavigationMeshGenerator::NavigationMeshGenerator() {
 NavigationMeshGenerator::~NavigationMeshGenerator() {
 }
 
-void NavigationMeshGenerator::bake(Ref<NavigationMesh> p_nav_mesh, Node *p_node) {
-	ERR_FAIL_COND_MSG(!p_nav_mesh.is_valid(), "Invalid navigation mesh.");
+void NavigationMeshGenerator::bake(Ref<NavigationMesh> p_navigation_mesh, Node *p_root_node) {
+	ERR_FAIL_COND_MSG(!p_navigation_mesh.is_valid(), "Invalid navigation mesh.");
 
 #ifdef TOOLS_ENABLED
 	EditorProgress *ep(nullptr);
@@ -755,17 +755,17 @@ void NavigationMeshGenerator::bake(Ref<NavigationMesh> p_nav_mesh, Node *p_node)
 
 	List<Node *> parse_nodes;
 
-	if (p_nav_mesh->get_source_geometry_mode() == NavigationMesh::SOURCE_GEOMETRY_NAVMESH_CHILDREN) {
-		parse_nodes.push_back(p_node);
+	if (p_navigation_mesh->get_source_geometry_mode() == NavigationMesh::SOURCE_GEOMETRY_ROOT_NODE_CHILDREN) {
+		parse_nodes.push_back(p_root_node);
 	} else {
-		p_node->get_tree()->get_nodes_in_group(p_nav_mesh->get_source_group_name(), &parse_nodes);
+		p_root_node->get_tree()->get_nodes_in_group(p_navigation_mesh->get_source_group_name(), &parse_nodes);
 	}
 
-	Transform3D navmesh_xform = Object::cast_to<Node3D>(p_node)->get_global_transform().affine_inverse();
+	Transform3D navmesh_xform = Object::cast_to<Node3D>(p_root_node)->get_global_transform().affine_inverse();
 	for (Node *E : parse_nodes) {
-		NavigationMesh::ParsedGeometryType geometry_type = p_nav_mesh->get_parsed_geometry_type();
-		uint32_t collision_mask = p_nav_mesh->get_collision_mask();
-		bool recurse_children = p_nav_mesh->get_source_geometry_mode() != NavigationMesh::SOURCE_GEOMETRY_GROUPS_EXPLICIT;
+		NavigationMesh::ParsedGeometryType geometry_type = p_navigation_mesh->get_parsed_geometry_type();
+		uint32_t collision_mask = p_navigation_mesh->get_collision_mask();
+		bool recurse_children = p_navigation_mesh->get_source_geometry_mode() != NavigationMesh::SOURCE_GEOMETRY_GROUPS_EXPLICIT;
 		_parse_geometry(navmesh_xform, E, vertices, indices, geometry_type, collision_mask, recurse_children);
 	}
 
@@ -777,7 +777,7 @@ void NavigationMeshGenerator::bake(Ref<NavigationMesh> p_nav_mesh, Node *p_node)
 		rcPolyMeshDetail *detail_mesh = nullptr;
 
 		_build_recast_navigation_mesh(
-				p_nav_mesh,
+				p_navigation_mesh,
 #ifdef TOOLS_ENABLED
 				ep,
 #endif
@@ -816,16 +816,16 @@ void NavigationMeshGenerator::bake(Ref<NavigationMesh> p_nav_mesh, Node *p_node)
 #endif
 }
 
-void NavigationMeshGenerator::clear(Ref<NavigationMesh> p_nav_mesh) {
-	if (p_nav_mesh.is_valid()) {
-		p_nav_mesh->clear_polygons();
-		p_nav_mesh->set_vertices(Vector<Vector3>());
+void NavigationMeshGenerator::clear(Ref<NavigationMesh> p_navigation_mesh) {
+	if (p_navigation_mesh.is_valid()) {
+		p_navigation_mesh->clear_polygons();
+		p_navigation_mesh->set_vertices(Vector<Vector3>());
 	}
 }
 
 void NavigationMeshGenerator::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("bake", "nav_mesh", "root_node"), &NavigationMeshGenerator::bake);
-	ClassDB::bind_method(D_METHOD("clear", "nav_mesh"), &NavigationMeshGenerator::clear);
+	ClassDB::bind_method(D_METHOD("bake", "navigation_mesh", "root_node"), &NavigationMeshGenerator::bake);
+	ClassDB::bind_method(D_METHOD("clear", "navigation_mesh"), &NavigationMeshGenerator::clear);
 }
 
 #endif

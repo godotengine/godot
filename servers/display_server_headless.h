@@ -66,7 +66,7 @@ public:
 
 	Vector<DisplayServer::WindowID> get_window_list() const override { return Vector<DisplayServer::WindowID>(); }
 
-	WindowID create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i()) override { return 0; }
+	WindowID create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i(), int p_screen = 0) override { return 0; }
 	void show_window(WindowID p_id) override {}
 	void delete_sub_window(WindowID p_id) override {}
 
@@ -90,6 +90,7 @@ public:
 	void window_set_current_screen(int p_screen, WindowID p_window = MAIN_WINDOW_ID) override {}
 
 	Point2i window_get_position(WindowID p_window = MAIN_WINDOW_ID) const override { return Point2i(); }
+	Point2i window_get_position_with_decorations(WindowID p_window = MAIN_WINDOW_ID) const override { return Point2i(); }
 	void window_set_position(const Point2i &p_position, WindowID p_window = MAIN_WINDOW_ID) override {}
 
 	void window_set_transient(WindowID p_window, WindowID p_parent) override {}
@@ -102,7 +103,7 @@ public:
 
 	void window_set_size(const Size2i p_size, WindowID p_window = MAIN_WINDOW_ID) override {}
 	Size2i window_get_size(WindowID p_window = MAIN_WINDOW_ID) const override { return Size2i(); }
-	Size2i window_get_real_size(WindowID p_window = MAIN_WINDOW_ID) const override { return Size2i(); }
+	Size2i window_get_size_with_decorations(WindowID p_window = MAIN_WINDOW_ID) const override { return Size2i(); }
 
 	void window_set_mode(WindowMode p_mode, WindowID p_window = MAIN_WINDOW_ID) override {}
 	WindowMode window_get_mode(WindowID p_window = MAIN_WINDOW_ID) const override { return WINDOW_MODE_MINIMIZED; }

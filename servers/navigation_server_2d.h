@@ -34,7 +34,7 @@
 #include "core/object/class_db.h"
 #include "core/templates/rid.h"
 
-#include "scene/2d/navigation_region_2d.h"
+#include "scene/resources/navigation_polygon.h"
 #include "servers/navigation/navigation_path_query_parameters_2d.h"
 #include "servers/navigation/navigation_path_query_result_2d.h"
 
@@ -108,6 +108,10 @@ public:
 	virtual void region_set_travel_cost(RID p_region, real_t p_travel_cost) const;
 	virtual real_t region_get_travel_cost(RID p_region) const;
 
+	/// Set the node which manages this region.
+	virtual void region_set_owner_id(RID p_region, ObjectID p_owner_id) const;
+	virtual ObjectID region_get_owner_id(RID p_region) const;
+
 	virtual bool region_owns_point(RID p_region, const Vector2 &p_point) const;
 
 	/// Set the map of this region.
@@ -122,7 +126,7 @@ public:
 	virtual void region_set_transform(RID p_region, Transform2D p_transform) const;
 
 	/// Set the navigation poly of this region.
-	virtual void region_set_navpoly(RID p_region, Ref<NavigationPolygon> p_nav_mesh) const;
+	virtual void region_set_navigation_polygon(RID p_region, Ref<NavigationPolygon> p_navigation_polygon) const;
 
 	/// Get a list of a region's connection to other regions.
 	virtual int region_get_connections_count(RID p_region) const;
@@ -159,6 +163,10 @@ public:
 	/// Set the travel cost of the link.
 	virtual void link_set_travel_cost(RID p_link, real_t p_travel_cost) const;
 	virtual real_t link_get_travel_cost(RID p_link) const;
+
+	/// Set the node which manages this link.
+	virtual void link_set_owner_id(RID p_link, ObjectID p_owner_id) const;
+	virtual ObjectID link_get_owner_id(RID p_link) const;
 
 	/// Creates the agent.
 	virtual RID agent_create() const;
@@ -218,7 +226,7 @@ public:
 	virtual bool agent_is_map_changed(RID p_agent) const;
 
 	/// Callback called at the end of the RVO process
-	virtual void agent_set_callback(RID p_agent, Object *p_receiver, StringName p_method, Variant p_udata = Variant()) const;
+	virtual void agent_set_callback(RID p_agent, ObjectID p_object_id, StringName p_method, Variant p_udata = Variant()) const;
 
 	virtual void query_path(const Ref<NavigationPathQueryParameters2D> &p_query_parameters, Ref<NavigationPathQueryResult2D> p_query_result) const;
 

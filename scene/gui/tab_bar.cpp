@@ -154,7 +154,9 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 			queue_redraw();
 		}
 
-		_update_hover();
+		if (!tabs.is_empty()) {
+			_update_hover();
+		}
 
 		return;
 	}
@@ -362,12 +364,19 @@ void TabBar::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_DRAW: {
+			bool rtl = is_layout_rtl();
+			Vector2 size = get_size();
+
 			if (tabs.is_empty()) {
+				// Draw the drop indicator where the first tab would be if there are no tabs.
+				if (dragging_valid_tab) {
+					int x = rtl ? size.x : 0;
+					theme_cache.drop_mark_icon->draw(get_canvas_item(), Point2(x - (theme_cache.drop_mark_icon->get_width() / 2), (size.height - theme_cache.drop_mark_icon->get_height()) / 2), theme_cache.drop_mark_color);
+				}
+
 				return;
 			}
 
-			bool rtl = is_layout_rtl();
-			Vector2 size = get_size();
 			int limit_minus_buttons = size.width - theme_cache.increment_icon->get_width() - theme_cache.decrement_icon->get_width();
 
 			int ofs = tabs[offset].ofs_cache;
@@ -1092,7 +1101,8 @@ void TabBar::drop_data(const Point2 &p_point, const Variant &p_data) {
 					hover_now += 1;
 				}
 			} else {
-				hover_now = is_layout_rtl() ^ (p_point.x < get_tab_rect(0).position.x) ? 0 : get_tab_count() - 1;
+				int x = tabs.is_empty() ? 0 : get_tab_rect(0).position.x;
+				hover_now = is_layout_rtl() ^ (p_point.x < x) ? 0 : get_tab_count() - 1;
 			}
 
 			move_tab(tab_from_id, hover_now);
@@ -1118,7 +1128,7 @@ void TabBar::drop_data(const Point2 &p_point, const Variant &p_data) {
 						hover_now += 1;
 					}
 				} else {
-					hover_now = is_layout_rtl() ^ (p_point.x < get_tab_rect(0).position.x) ? 0 : get_tab_count();
+					hover_now = tabs.is_empty() || (is_layout_rtl() ^ (p_point.x < get_tab_rect(0).position.x)) ? 0 : get_tab_count();
 				}
 
 				Tab moving_tab = from_tabs->tabs[tab_from_id];
@@ -1154,10 +1164,13 @@ void TabBar::drop_data(const Point2 &p_point, const Variant &p_data) {
 
 int TabBar::get_tab_idx_at_point(const Point2 &p_point) const {
 	int hover_now = -1;
-	for (int i = offset; i <= max_drawn_tab; i++) {
-		Rect2 rect = get_tab_rect(i);
-		if (rect.has_point(p_point)) {
-			hover_now = i;
+
+	if (!tabs.is_empty()) {
+		for (int i = offset; i <= max_drawn_tab; i++) {
+			Rect2 rect = get_tab_rect(i);
+			if (rect.has_point(p_point)) {
+				hover_now = i;
+			}
 		}
 	}
 

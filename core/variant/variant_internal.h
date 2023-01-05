@@ -1314,7 +1314,7 @@ struct VariantZeroAssigner<float> {
 
 template <>
 struct VariantZeroAssigner<String> {
-	static _FORCE_INLINE_ void zero(Variant *v) {}
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_string(v) = String(); }
 };
 
 template <>
@@ -1399,12 +1399,12 @@ struct VariantZeroAssigner<Color> {
 
 template <>
 struct VariantZeroAssigner<StringName> {
-	static _FORCE_INLINE_ void zero(Variant *v) {}
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_string_name(v) = StringName(); }
 };
 
 template <>
 struct VariantZeroAssigner<NodePath> {
-	static _FORCE_INLINE_ void zero(Variant *v) {}
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_node_path(v) = NodePath(); }
 };
 
 template <>
@@ -1414,12 +1414,12 @@ struct VariantZeroAssigner<::RID> {
 
 template <>
 struct VariantZeroAssigner<Callable> {
-	static _FORCE_INLINE_ void zero(Variant *v) {}
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_callable(v) = Callable(); }
 };
 
 template <>
 struct VariantZeroAssigner<Signal> {
-	static _FORCE_INLINE_ void zero(Variant *v) {}
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_signal(v) = Signal(); }
 };
 
 template <>
@@ -1434,47 +1434,47 @@ struct VariantZeroAssigner<Array> {
 
 template <>
 struct VariantZeroAssigner<PackedByteArray> {
-	static _FORCE_INLINE_ void zero(Variant *v) {}
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_byte_array(v) = PackedByteArray(); }
 };
 
 template <>
 struct VariantZeroAssigner<PackedInt32Array> {
-	static _FORCE_INLINE_ void zero(Variant *v) {}
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_int32_array(v) = PackedInt32Array(); }
 };
 
 template <>
 struct VariantZeroAssigner<PackedInt64Array> {
-	static _FORCE_INLINE_ void zero(Variant *v) {}
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_int64_array(v) = PackedInt64Array(); }
 };
 
 template <>
 struct VariantZeroAssigner<PackedFloat32Array> {
-	static _FORCE_INLINE_ void zero(Variant *v) {}
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_float32_array(v) = PackedFloat32Array(); }
 };
 
 template <>
 struct VariantZeroAssigner<PackedFloat64Array> {
-	static _FORCE_INLINE_ void zero(Variant *v) {}
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_float64_array(v) = PackedFloat64Array(); }
 };
 
 template <>
 struct VariantZeroAssigner<PackedStringArray> {
-	static _FORCE_INLINE_ void zero(Variant *v) {}
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_string_array(v) = PackedStringArray(); }
 };
 
 template <>
 struct VariantZeroAssigner<PackedVector2Array> {
-	static _FORCE_INLINE_ void zero(Variant *v) {}
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_vector2_array(v) = PackedVector2Array(); }
 };
 
 template <>
 struct VariantZeroAssigner<PackedVector3Array> {
-	static _FORCE_INLINE_ void zero(Variant *v) {}
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_vector3_array(v) = PackedVector3Array(); }
 };
 
 template <>
 struct VariantZeroAssigner<PackedColorArray> {
-	static _FORCE_INLINE_ void zero(Variant *v) {}
+	static _FORCE_INLINE_ void zero(Variant *v) { *VariantInternal::get_color_array(v) = PackedColorArray(); }
 };
 
 template <class T>
@@ -1517,7 +1517,7 @@ struct VariantTypeAdjust<Object *> {
 	}
 };
 
-// GDNative extension helpers.
+// GDExtension helpers.
 
 template <class T>
 struct VariantTypeConstructor {

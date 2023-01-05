@@ -268,8 +268,9 @@ namespace Godot.SourceGenerators
             if (parameters.Length > paramTypes.Length)
                 return null; // Ignore incompatible method
 
-            return new GodotMethodData(method, paramTypes, parameters
-                .Select(p => p.Type).ToImmutableArray(), retType, retSymbol);
+            return new GodotMethodData(method, paramTypes,
+                parameters.Select(p => p.Type).ToImmutableArray(),
+                retType != null ? (retType.Value, retSymbol) : null);
         }
 
         public static IEnumerable<GodotMethodData> WhereHasGodotCompatibleSignature(
@@ -294,8 +295,8 @@ namespace Godot.SourceGenerators
             foreach (var property in properties)
             {
                 // TODO: We should still restore read-only properties after reloading assembly. Two possible ways: reflection or turn RestoreGodotObjectData into a constructor overload.
-                // Ignore properties without a getter or without a setter. Godot properties must be both readable and writable.
-                if (property.IsWriteOnly || property.IsReadOnly)
+                // Ignore properties without a getter, without a setter or with an init-only setter. Godot properties must be both readable and writable.
+                if (property.IsWriteOnly || property.IsReadOnly || property.SetMethod!.IsInitOnly)
                     continue;
 
                 var marshalType = MarshalUtils.ConvertManagedTypeToMarshalType(property.Type, typeCache);
@@ -330,10 +331,10 @@ namespace Godot.SourceGenerators
 
         public static string Path(this Location location)
             => location.SourceTree?.GetLineSpan(location.SourceSpan).Path
-            ?? location.GetLineSpan().Path;
+               ?? location.GetLineSpan().Path;
 
         public static int StartLine(this Location location)
             => location.SourceTree?.GetLineSpan(location.SourceSpan).StartLinePosition.Line
-            ?? location.GetLineSpan().StartLinePosition.Line;
+               ?? location.GetLineSpan().StartLinePosition.Line;
     }
 }

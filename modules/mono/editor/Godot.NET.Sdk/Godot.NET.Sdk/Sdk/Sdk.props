@@ -12,8 +12,7 @@
     <Configurations>Debug;ExportDebug;ExportRelease</Configurations>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
 
-    <GodotProjectDir Condition=" '$(SolutionDir)' != '' ">$(SolutionDir)</GodotProjectDir>
-    <GodotProjectDir Condition=" '$(SolutionDir)' == '' ">$(MSBuildProjectDirectory)</GodotProjectDir>
+    <GodotProjectDir Condition=" '$(GodotProjectDir)' == '' ">$(MSBuildProjectDirectory)</GodotProjectDir>
     <GodotProjectDir>$([MSBuild]::EnsureTrailingSlash('$(GodotProjectDir)'))</GodotProjectDir>
 
     <!-- Custom output paths for Godot projects. In brief, 'bin\' and 'obj\' are moved to '$(GodotProjectDir)\.godot\mono\temp\'. -->

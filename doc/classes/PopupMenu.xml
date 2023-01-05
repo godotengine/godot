@@ -206,7 +206,7 @@
 			<return type="int" />
 			<param index="0" name="index" type="int" />
 			<description>
-				Returns the id of the item at the given [param index]. [code]id[/code] can be manually assigned, while index can not.
+				Returns the ID of the item at the given [param index]. [code]id[/code] can be manually assigned, while index can not.
 			</description>
 		</method>
 		<method name="get_item_indent" qualifiers="const">
@@ -584,6 +584,7 @@
 		</theme_item>
 		<theme_item name="outline_size" data_type="constant" type="int" default="0">
 			The size of the item text outline.
+			[b]Note:[/b] If using a font with [member FontFile.multichannel_signed_distance_field] enabled, its [member FontFile.msdf_pixel_range] must be set to at least [i]twice[/i] the value of [theme_item outline_size] for outline rendering to look correct. Otherwise, the outline may appear to be cut off earlier than intended.
 		</theme_item>
 		<theme_item name="separator_outline_size" data_type="constant" type="int" default="0">
 			The size of the labeled separator text outline.

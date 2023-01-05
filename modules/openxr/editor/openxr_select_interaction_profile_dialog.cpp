@@ -46,7 +46,7 @@ void OpenXRSelectInteractionProfileDialog::_notification(int p_what) {
 void OpenXRSelectInteractionProfileDialog::_on_select_interaction_profile(const String p_interaction_profile) {
 	if (selected_interaction_profile != "") {
 		NodePath button_path = ip_buttons[selected_interaction_profile];
-		Button *button = static_cast<Button *>(get_node(button_path));
+		Button *button = Object::cast_to<Button>(get_node(button_path));
 		if (button != nullptr) {
 			button->set_flat(true);
 		}
@@ -56,7 +56,7 @@ void OpenXRSelectInteractionProfileDialog::_on_select_interaction_profile(const 
 
 	if (selected_interaction_profile != "") {
 		NodePath button_path = ip_buttons[selected_interaction_profile];
-		Button *button = static_cast<Button *>(get_node(button_path));
+		Button *button = Object::cast_to<Button>(get_node(button_path));
 		if (button != nullptr) {
 			button->set_flat(false);
 		}
@@ -75,13 +75,13 @@ void OpenXRSelectInteractionProfileDialog::open(PackedStringArray p_do_not_inclu
 	ip_buttons.clear();
 
 	// in with the new
-	PackedStringArray interaction_profiles = OpenXRDefs::get_interaction_profile_paths();
+	PackedStringArray interaction_profiles = OpenXRInteractionProfileMetaData::get_singleton()->get_interaction_profile_paths();
 	for (int i = 0; i < interaction_profiles.size(); i++) {
 		String path = interaction_profiles[i];
 		if (!p_do_not_include.has(path)) {
 			Button *ip_button = memnew(Button);
 			ip_button->set_flat(true);
-			ip_button->set_text(OpenXRDefs::get_profile(path)->display_name);
+			ip_button->set_text(OpenXRInteractionProfileMetaData::get_singleton()->get_profile(path)->display_name);
 			ip_button->connect("pressed", callable_mp(this, &OpenXRSelectInteractionProfileDialog::_on_select_interaction_profile).bind(path));
 			main_vb->add_child(ip_button);
 

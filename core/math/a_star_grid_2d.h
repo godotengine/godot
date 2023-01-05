@@ -65,13 +65,15 @@ private:
 
 	bool jumping_enabled = false;
 	DiagonalMode diagonal_mode = DIAGONAL_MODE_ALWAYS;
-	Heuristic default_heuristic = HEURISTIC_EUCLIDEAN;
+	Heuristic default_compute_heuristic = HEURISTIC_EUCLIDEAN;
+	Heuristic default_estimate_heuristic = HEURISTIC_EUCLIDEAN;
 
 	struct Point {
 		Vector2i id;
 
 		bool solid = false;
 		Vector2 pos;
+		real_t weight_scale = 1.0;
 
 		// Used for pathfinding.
 		Point *prev_point = nullptr;
@@ -160,14 +162,21 @@ public:
 	void set_diagonal_mode(DiagonalMode p_diagonal_mode);
 	DiagonalMode get_diagonal_mode() const;
 
-	void set_default_heuristic(Heuristic p_heuristic);
-	Heuristic get_default_heuristic() const;
+	void set_default_compute_heuristic(Heuristic p_heuristic);
+	Heuristic get_default_compute_heuristic() const;
+
+	void set_default_estimate_heuristic(Heuristic p_heuristic);
+	Heuristic get_default_estimate_heuristic() const;
 
 	void set_point_solid(const Vector2i &p_id, bool p_solid = true);
 	bool is_point_solid(const Vector2i &p_id) const;
 
+	void set_point_weight_scale(const Vector2i &p_id, real_t p_weight_scale);
+	real_t get_point_weight_scale(const Vector2i &p_id) const;
+
 	void clear();
 
+	Vector2 get_point_position(const Vector2i &p_id) const;
 	Vector<Vector2> get_point_path(const Vector2i &p_from, const Vector2i &p_to);
 	TypedArray<Vector2i> get_id_path(const Vector2i &p_from, const Vector2i &p_to);
 };

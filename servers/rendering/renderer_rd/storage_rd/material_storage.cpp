@@ -928,6 +928,104 @@ _FORCE_INLINE_ static void _fill_std140_ubo_empty(ShaderLanguage::DataType type,
 }
 
 ///////////////////////////////////////////////////////////////////////////
+// MaterialStorage::ShaderData
+
+void MaterialStorage::ShaderData::set_path_hint(const String &p_hint) {
+	path = p_hint;
+}
+
+void MaterialStorage::ShaderData::set_default_texture_parameter(const StringName &p_name, RID p_texture, int p_index) {
+	if (!p_texture.is_valid()) {
+		if (default_texture_params.has(p_name) && default_texture_params[p_name].has(p_index)) {
+			default_texture_params[p_name].erase(p_index);
+
+			if (default_texture_params[p_name].is_empty()) {
+				default_texture_params.erase(p_name);
+			}
+		}
+	} else {
+		if (!default_texture_params.has(p_name)) {
+			default_texture_params[p_name] = HashMap<int, RID>();
+		}
+		default_texture_params[p_name][p_index] = p_texture;
+	}
+}
+
+Variant MaterialStorage::ShaderData::get_default_parameter(const StringName &p_parameter) const {
+	if (uniforms.has(p_parameter)) {
+		ShaderLanguage::ShaderNode::Uniform uniform = uniforms[p_parameter];
+		Vector<ShaderLanguage::ConstantNode::Value> default_value = uniform.default_value;
+		return ShaderLanguage::constant_value_to_variant(default_value, uniform.type, uniform.array_size, uniform.hint);
+	}
+	return Variant();
+}
+
+void MaterialStorage::ShaderData::get_shader_uniform_list(List<PropertyInfo> *p_param_list) const {
+	SortArray<Pair<StringName, int>, ShaderLanguage::UniformOrderComparator> sorter;
+	LocalVector<Pair<StringName, int>> filtered_uniforms;
+
+	for (const KeyValue<StringName, ShaderLanguage::ShaderNode::Uniform> &E : uniforms) {
+		if (E.value.scope != ShaderLanguage::ShaderNode::Uniform::SCOPE_LOCAL) {
+			continue;
+		}
+		if (E.value.texture_order >= 0) {
+			filtered_uniforms.push_back(Pair<StringName, int>(E.key, E.value.texture_order + 100000));
+		} else {
+			filtered_uniforms.push_back(Pair<StringName, int>(E.key, E.value.order));
+		}
+	}
+	int uniform_count = filtered_uniforms.size();
+	sorter.sort(filtered_uniforms.ptr(), uniform_count);
+
+	String last_group;
+	for (int i = 0; i < uniform_count; i++) {
+		const StringName &uniform_name = filtered_uniforms[i].first;
+		const ShaderLanguage::ShaderNode::Uniform &uniform = uniforms[uniform_name];
+
+		String group = uniform.group;
+		if (!uniform.subgroup.is_empty()) {
+			group += "::" + uniform.subgroup;
+		}
+
+		if (group != last_group) {
+			PropertyInfo pi;
+			pi.usage = PROPERTY_USAGE_GROUP;
+			pi.name = group;
+			p_param_list->push_back(pi);
+
+			last_group = group;
+		}
+
+		PropertyInfo pi = ShaderLanguage::uniform_to_property_info(uniform);
+		pi.name = uniform_name;
+		p_param_list->push_back(pi);
+	}
+}
+
+void MaterialStorage::ShaderData::get_instance_param_list(List<RendererMaterialStorage::InstanceShaderParam> *p_param_list) const {
+	for (const KeyValue<StringName, ShaderLanguage::ShaderNode::Uniform> &E : uniforms) {
+		if (E.value.scope != ShaderLanguage::ShaderNode::Uniform::SCOPE_INSTANCE) {
+			continue;
+		}
+
+		RendererMaterialStorage::InstanceShaderParam p;
+		p.info = ShaderLanguage::uniform_to_property_info(E.value);
+		p.info.name = E.key; //supply name
+		p.index = E.value.instance_index;
+		p.default_value = ShaderLanguage::constant_value_to_variant(E.value.default_value, E.value.type, E.value.array_size, E.value.hint);
+		p_param_list->push_back(p);
+	}
+}
+
+bool MaterialStorage::ShaderData::is_parameter_texture(const StringName &p_param) const {
+	if (!uniforms.has(p_param)) {
+		return false;
+	}
+
+	return uniforms[p_param].texture_order >= 0;
+}
+
+///////////////////////////////////////////////////////////////////////////
 // MaterialStorage::MaterialData
 
 void MaterialStorage::MaterialData::update_uniform_buffer(const HashMap<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const HashMap<StringName, Variant> &p_parameters, uint8_t *p_buffer, uint32_t p_buffer_size, bool p_use_linear_color) {
@@ -1221,6 +1319,10 @@ void MaterialStorage::MaterialData::update_textures(const HashMap<StringName, Va
 						roughness_detect_texture = tex;
 						roughness_channel = RS::TextureDetectRoughnessChannel(p_texture_uniforms[i].hint - ShaderLanguage::ShaderNode::Uniform::HINT_ROUGHNESS_R);
 					}
+					if (tex->render_target) {
+						tex->render_target->was_used = true;
+						render_target_cache.push_back(tex->render_target);
+					}
 #endif
 				}
 				if (rd_texture.is_null()) {
@@ -1307,6 +1409,7 @@ bool MaterialStorage::MaterialData::update_parameters_uniform_set(const HashMap<
 
 	if ((uint32_t)texture_cache.size() != tex_uniform_count || p_textures_dirty) {
 		texture_cache.resize(tex_uniform_count);
+		render_target_cache.clear();
 		p_textures_dirty = true;
 
 		//clear previous uniform set
@@ -1365,6 +1468,12 @@ bool MaterialStorage::MaterialData::update_parameters_uniform_set(const HashMap<
 	RD::get_singleton()->uniform_set_set_invalidation_callback(uniform_set, MaterialStorage::_material_uniform_set_erased, &self);
 
 	return true;
+}
+
+void MaterialStorage::MaterialData::set_as_used() {
+	for (int i = 0; i < render_target_cache.size(); i++) {
+		render_target_cache[i]->was_used = true;
+	}
 }
 
 ///////////////////////////////////////////////////////////////////////////

@@ -1894,6 +1894,7 @@ ParticleProcessMaterial::ParticleProcessMaterial() :
 }
 
 ParticleProcessMaterial::~ParticleProcessMaterial() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	MutexLock lock(material_mutex);
 
 	if (shader_map.has(current_key)) {

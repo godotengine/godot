@@ -124,7 +124,8 @@ namespace Godot.SourceGenerators
 
             source.Append("#pragma warning disable CS0109 // Disable warning about redundant 'new' keyword\n");
 
-            source.Append($"    public new class PropertyName : {symbol.BaseType.FullQualifiedNameIncludeGlobal()}.PropertyName {{\n");
+            source.Append(
+                $"    public new class PropertyName : {symbol.BaseType.FullQualifiedNameIncludeGlobal()}.PropertyName {{\n");
 
             // Generate cached StringNames for methods and properties, for fast lookup
 
@@ -157,7 +158,7 @@ namespace Godot.SourceGenerators
                 // Generate SetGodotClassPropertyValue
 
                 bool allPropertiesAreReadOnly = godotClassFields.All(fi => fi.FieldSymbol.IsReadOnly) &&
-                                                godotClassProperties.All(pi => pi.PropertySymbol.IsReadOnly);
+                                                godotClassProperties.All(pi => pi.PropertySymbol.IsReadOnly || pi.PropertySymbol.SetMethod!.IsInitOnly);
 
                 if (!allPropertiesAreReadOnly)
                 {
@@ -167,7 +168,7 @@ namespace Godot.SourceGenerators
                     isFirstEntry = true;
                     foreach (var property in godotClassProperties)
                     {
-                        if (property.PropertySymbol.IsReadOnly)
+                        if (property.PropertySymbol.IsReadOnly || property.PropertySymbol.SetMethod!.IsInitOnly)
                             continue;
 
                         GeneratePropertySetter(property.PropertySymbol.Name,
@@ -199,14 +200,14 @@ namespace Godot.SourceGenerators
                 foreach (var property in godotClassProperties)
                 {
                     GeneratePropertyGetter(property.PropertySymbol.Name,
-                        property.Type, source, isFirstEntry);
+                        property.PropertySymbol.Type, property.Type, source, isFirstEntry);
                     isFirstEntry = false;
                 }
 
                 foreach (var field in godotClassFields)
                 {
                     GeneratePropertyGetter(field.FieldSymbol.Name,
-                        field.Type, source, isFirstEntry);
+                        field.FieldSymbol.Type, field.Type, source, isFirstEntry);
                     isFirstEntry = false;
                 }
 
@@ -303,6 +304,7 @@ namespace Godot.SourceGenerators
 
         private static void GeneratePropertyGetter(
             string propertyMemberName,
+            ITypeSymbol propertyTypeSymbol,
             MarshalType propertyMarshalType,
             StringBuilder source,
             bool isFirstEntry
@@ -317,7 +319,8 @@ namespace Godot.SourceGenerators
                 .Append(propertyMemberName)
                 .Append(") {\n")
                 .Append("            value = ")
-                .AppendManagedToNativeVariantExpr("this." + propertyMemberName, propertyMarshalType)
+                .AppendManagedToNativeVariantExpr("this." + propertyMemberName,
+                    propertyTypeSymbol, propertyMarshalType)
                 .Append(";\n")
                 .Append("            return true;\n")
                 .Append("        }\n");
@@ -376,7 +379,8 @@ namespace Godot.SourceGenerators
                     if (propertyUsage != PropertyUsageFlags.Category && attr.ConstructorArguments.Length > 1)
                         hintString = attr.ConstructorArguments[1].Value?.ToString();
 
-                    yield return new PropertyInfo(VariantType.Nil, name, PropertyHint.None, hintString, propertyUsage.Value, true);
+                    yield return new PropertyInfo(VariantType.Nil, name, PropertyHint.None, hintString,
+                        propertyUsage.Value, true);
                 }
             }
         }
@@ -403,7 +407,7 @@ namespace Godot.SourceGenerators
                     return null;
                 }
 
-                if (propertySymbol.SetMethod == null)
+                if (propertySymbol.SetMethod == null || propertySymbol.SetMethod.IsInitOnly)
                 {
                     // This should never happen, as we filtered ReadOnly properties, but just in case.
                     Common.ReportExportedMemberIsReadOnly(context, propertySymbol);

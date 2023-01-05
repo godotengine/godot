@@ -82,7 +82,7 @@ static String get_property_info_type_name(const PropertyInfo &p_info) {
 	return get_builtin_or_variant_type_name(p_info.type);
 }
 
-Dictionary NativeExtensionAPIDump::generate_extension_api() {
+Dictionary GDExtensionAPIDump::generate_extension_api() {
 	Dictionary api_dump;
 
 	{
@@ -177,8 +177,8 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 		};
 
 		// Validate sizes at compile time for the current build configuration.
-		static_assert(type_size_array[Variant::BOOL][sizeof(void *)] == sizeof(GDNativeBool), "Size of bool mismatch");
-		static_assert(type_size_array[Variant::INT][sizeof(void *)] == sizeof(GDNativeInt), "Size of int mismatch");
+		static_assert(type_size_array[Variant::BOOL][sizeof(void *)] == sizeof(GDExtensionBool), "Size of bool mismatch");
+		static_assert(type_size_array[Variant::INT][sizeof(void *)] == sizeof(GDExtensionInt), "Size of int mismatch");
 		static_assert(type_size_array[Variant::FLOAT][sizeof(void *)] == sizeof(double), "Size of float mismatch");
 		static_assert(type_size_array[Variant::STRING][sizeof(void *)] == sizeof(String), "Size of String mismatch");
 		static_assert(type_size_array[Variant::VECTOR2][sizeof(void *)] == sizeof(Vector2), "Size of Vector2 mismatch");
@@ -252,63 +252,140 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 	}
 
 	{
-		// Member offsets sizes.
+		// Member offsets, meta types and sizes.
+
+#define REAL_MEMBER_OFFSET(type, member) \
+	{                                    \
+		type,                            \
+				member,                  \
+				"float",                 \
+				sizeof(float),           \
+				"float",                 \
+				sizeof(float),           \
+				"double",                \
+				sizeof(double),          \
+				"double",                \
+				sizeof(double),          \
+	}
+
+#define INT32_MEMBER_OFFSET(type, member) \
+	{                                     \
+		type,                             \
+				member,                   \
+				"int32",                  \
+				sizeof(int32_t),          \
+				"int32",                  \
+				sizeof(int32_t),          \
+				"int32",                  \
+				sizeof(int32_t),          \
+				"int32",                  \
+				sizeof(int32_t),          \
+	}
+
+#define INT32_BASED_BUILTIN_MEMBER_OFFSET(type, member, member_type, member_elems) \
+	{                                                                              \
+		type,                                                                      \
+				member,                                                            \
+				member_type,                                                       \
+				sizeof(int32_t) * member_elems,                                    \
+				member_type,                                                       \
+				sizeof(int32_t) * member_elems,                                    \
+				member_type,                                                       \
+				sizeof(int32_t) * member_elems,                                    \
+				member_type,                                                       \
+				sizeof(int32_t) * member_elems,                                    \
+	}
+
+#define REAL_BASED_BUILTIN_MEMBER_OFFSET(type, member, member_type, member_elems) \
+	{                                                                             \
+		type,                                                                     \
+				member,                                                           \
+				member_type,                                                      \
+				sizeof(float) * member_elems,                                     \
+				member_type,                                                      \
+				sizeof(float) * member_elems,                                     \
+				member_type,                                                      \
+				sizeof(double) * member_elems,                                    \
+				member_type,                                                      \
+				sizeof(double) * member_elems,                                    \
+	}
+
 		struct {
 			Variant::Type type;
 			const char *member;
-			uint32_t offset_32_bits_real_float;
-			uint32_t offset_64_bits_real_float;
-			uint32_t offset_32_bits_real_double;
-			uint32_t offset_64_bits_real_double;
+			const char *member_meta_32_bits_real_float;
+			const uint32_t member_size_32_bits_real_float;
+			const char *member_meta_64_bits_real_float;
+			const uint32_t member_size_64_bits_real_float;
+			const char *member_meta_32_bits_real_double;
+			const uint32_t member_size_32_bits_real_double;
+			const char *member_meta_64_bits_real_double;
+			const uint32_t member_size_64_bits_real_double;
 		} member_offset_array[] = {
-			{ Variant::VECTOR2, "x", 0, 0, 0, 0 },
-			{ Variant::VECTOR2, "y", sizeof(float), sizeof(float), sizeof(double), sizeof(double) },
-			{ Variant::VECTOR2I, "x", 0, 0, 0, 0 },
-			{ Variant::VECTOR2I, "y", sizeof(int32_t), sizeof(int32_t), sizeof(int32_t), sizeof(int32_t) },
-			{ Variant::RECT2, "position", 0, 0, 0, 0 },
-			{ Variant::RECT2, "size", 2 * sizeof(float), 2 * sizeof(float), 2 * sizeof(double), 2 * sizeof(double) },
-			{ Variant::RECT2I, "position", 0, 0, 0, 0 },
-			{ Variant::RECT2I, "size", 2 * sizeof(int32_t), 2 * sizeof(int32_t), 2 * sizeof(int32_t), 2 * sizeof(int32_t) },
-			{ Variant::VECTOR3, "x", 0, 0, 0, 0 },
-			{ Variant::VECTOR3, "y", sizeof(float), sizeof(float), sizeof(double), sizeof(double) },
-			{ Variant::VECTOR3, "z", 2 * sizeof(float), 2 * sizeof(float), 2 * sizeof(double), 2 * sizeof(double) },
-			{ Variant::VECTOR3I, "x", 0, 0, 0, 0 },
-			{ Variant::VECTOR3I, "y", sizeof(int32_t), sizeof(int32_t), sizeof(int32_t), sizeof(int32_t) },
-			{ Variant::VECTOR3I, "z", 2 * sizeof(int32_t), 2 * sizeof(int32_t), 2 * sizeof(int32_t), 2 * sizeof(int32_t) },
-			{ Variant::TRANSFORM2D, "x", 0, 0, 0, 0 },
-			{ Variant::TRANSFORM2D, "y", 2 * sizeof(float), 2 * sizeof(float), 2 * sizeof(double), 2 * sizeof(double) },
-			{ Variant::TRANSFORM2D, "origin", 4 * sizeof(float), 4 * sizeof(float), 4 * sizeof(double), 4 * sizeof(double) },
-			{ Variant::VECTOR4, "x", 0, 0, 0, 0 },
-			{ Variant::VECTOR4, "y", sizeof(float), sizeof(float), sizeof(double), sizeof(double) },
-			{ Variant::VECTOR4, "z", 2 * sizeof(float), 2 * sizeof(float), 2 * sizeof(double), 2 * sizeof(double) },
-			{ Variant::VECTOR4, "w", 3 * sizeof(float), 3 * sizeof(float), 3 * sizeof(double), 3 * sizeof(double) },
-			{ Variant::VECTOR4I, "x", 0, 0, 0, 0 },
-			{ Variant::VECTOR4I, "y", sizeof(int32_t), sizeof(int32_t), sizeof(int32_t), sizeof(int32_t) },
-			{ Variant::VECTOR4I, "z", 2 * sizeof(int32_t), 2 * sizeof(int32_t), 2 * sizeof(int32_t), 2 * sizeof(int32_t) },
-			{ Variant::VECTOR4I, "w", 3 * sizeof(int32_t), 3 * sizeof(int32_t), 3 * sizeof(int32_t), 3 * sizeof(int32_t) },
-			{ Variant::PLANE, "normal", 0, 0, 0, 0 },
-			{ Variant::PLANE, "d", vec3_elems * sizeof(float), vec3_elems * sizeof(float), vec3_elems * sizeof(double), vec3_elems * sizeof(double) },
-			{ Variant::QUATERNION, "x", 0, 0, 0, 0 },
-			{ Variant::QUATERNION, "y", sizeof(float), sizeof(float), sizeof(double), sizeof(double) },
-			{ Variant::QUATERNION, "z", 2 * sizeof(float), 2 * sizeof(float), 2 * sizeof(double), 2 * sizeof(double) },
-			{ Variant::QUATERNION, "w", 3 * sizeof(float), 3 * sizeof(float), 3 * sizeof(double), 3 * sizeof(double) },
-			{ Variant::AABB, "position", 0, 0, 0, 0 },
-			{ Variant::AABB, "size", vec3_elems * sizeof(float), vec3_elems * sizeof(float), vec3_elems * sizeof(double), vec3_elems * sizeof(double) },
-			// Remember that basis vectors are flipped!
-			{ Variant::BASIS, "x", 0, 0, 0, 0 },
-			{ Variant::BASIS, "y", vec3_elems * sizeof(float), vec3_elems * sizeof(float), vec3_elems * sizeof(double), vec3_elems * sizeof(double) },
-			{ Variant::BASIS, "z", vec3_elems * 2 * sizeof(float), vec3_elems * 2 * sizeof(float), vec3_elems * 2 * sizeof(double), vec3_elems * 2 * sizeof(double) },
-			{ Variant::TRANSFORM3D, "basis", 0, 0, 0, 0 },
-			{ Variant::TRANSFORM3D, "origin", (vec3_elems * 3) * sizeof(float), (vec3_elems * 3) * sizeof(float), (vec3_elems * 3) * sizeof(double), (vec3_elems * 3) * sizeof(double) },
-			{ Variant::PROJECTION, "x", 0, 0, 0, 0 },
-			{ Variant::PROJECTION, "y", vec4_elems * sizeof(float), vec4_elems * sizeof(float), vec4_elems * sizeof(double), vec4_elems * sizeof(double) },
-			{ Variant::PROJECTION, "z", vec4_elems * 2 * sizeof(float), vec4_elems * 2 * sizeof(float), vec4_elems * 2 * sizeof(double), vec4_elems * 2 * sizeof(double) },
-			{ Variant::PROJECTION, "w", vec4_elems * 3 * sizeof(float), vec4_elems * 3 * sizeof(float), vec4_elems * 3 * sizeof(double), vec4_elems * 3 * sizeof(double) },
-			{ Variant::COLOR, "r", 0, 0, 0, 0 },
-			{ Variant::COLOR, "g", sizeof(float), sizeof(float), sizeof(float), sizeof(float) },
-			{ Variant::COLOR, "b", 2 * sizeof(float), 2 * sizeof(float), 2 * sizeof(float), 2 * sizeof(float) },
-			{ Variant::COLOR, "a", 3 * sizeof(float), 3 * sizeof(float), 3 * sizeof(float), 3 * sizeof(float) },
-			{ Variant::NIL, nullptr, 0, 0, 0, 0 },
+			// Vector2
+			REAL_MEMBER_OFFSET(Variant::VECTOR2, "x"),
+			REAL_MEMBER_OFFSET(Variant::VECTOR2, "y"),
+			// Vector2i
+			INT32_MEMBER_OFFSET(Variant::VECTOR2I, "x"),
+			INT32_MEMBER_OFFSET(Variant::VECTOR2I, "y"),
+			// Rect2
+			REAL_BASED_BUILTIN_MEMBER_OFFSET(Variant::RECT2, "position", "Vector2", 2),
+			REAL_BASED_BUILTIN_MEMBER_OFFSET(Variant::RECT2, "size", "Vector2", 2),
+			// Rect2i
+			INT32_BASED_BUILTIN_MEMBER_OFFSET(Variant::RECT2I, "position", "Vector2i", 2),
+			INT32_BASED_BUILTIN_MEMBER_OFFSET(Variant::RECT2I, "size", "Vector2i", 2),
+			// Vector3
+			REAL_MEMBER_OFFSET(Variant::VECTOR3, "x"),
+			REAL_MEMBER_OFFSET(Variant::VECTOR3, "y"),
+			REAL_MEMBER_OFFSET(Variant::VECTOR3, "z"),
+			// Vector3i
+			INT32_MEMBER_OFFSET(Variant::VECTOR3I, "x"),
+			INT32_MEMBER_OFFSET(Variant::VECTOR3I, "y"),
+			INT32_MEMBER_OFFSET(Variant::VECTOR3I, "z"),
+			// Transform2D
+			REAL_BASED_BUILTIN_MEMBER_OFFSET(Variant::TRANSFORM2D, "x", "Vector2", 2),
+			REAL_BASED_BUILTIN_MEMBER_OFFSET(Variant::TRANSFORM2D, "y", "Vector2", 2),
+			REAL_BASED_BUILTIN_MEMBER_OFFSET(Variant::TRANSFORM2D, "origin", "Vector2", 2),
+			// Vector4
+			REAL_MEMBER_OFFSET(Variant::VECTOR4, "x"),
+			REAL_MEMBER_OFFSET(Variant::VECTOR4, "y"),
+			REAL_MEMBER_OFFSET(Variant::VECTOR4, "z"),
+			REAL_MEMBER_OFFSET(Variant::VECTOR4, "w"),
+			// Vector4i
+			INT32_MEMBER_OFFSET(Variant::VECTOR4I, "x"),
+			INT32_MEMBER_OFFSET(Variant::VECTOR4I, "y"),
+			INT32_MEMBER_OFFSET(Variant::VECTOR4I, "z"),
+			INT32_MEMBER_OFFSET(Variant::VECTOR4I, "w"),
+			// Plane
+			REAL_BASED_BUILTIN_MEMBER_OFFSET(Variant::PLANE, "normal", "Vector3", vec3_elems),
+			REAL_MEMBER_OFFSET(Variant::PLANE, "d"),
+			// Quaternion
+			REAL_MEMBER_OFFSET(Variant::QUATERNION, "x"),
+			REAL_MEMBER_OFFSET(Variant::QUATERNION, "y"),
+			REAL_MEMBER_OFFSET(Variant::QUATERNION, "z"),
+			REAL_MEMBER_OFFSET(Variant::QUATERNION, "w"),
+			// AABB
+			REAL_BASED_BUILTIN_MEMBER_OFFSET(Variant::AABB, "position", "Vector3", vec3_elems),
+			REAL_BASED_BUILTIN_MEMBER_OFFSET(Variant::AABB, "size", "Vector3", vec3_elems),
+			// Basis (remember that basis vectors are flipped!)
+			REAL_BASED_BUILTIN_MEMBER_OFFSET(Variant::BASIS, "x", "Vector3", vec3_elems),
+			REAL_BASED_BUILTIN_MEMBER_OFFSET(Variant::BASIS, "y", "Vector3", vec3_elems),
+			REAL_BASED_BUILTIN_MEMBER_OFFSET(Variant::BASIS, "z", "Vector3", vec3_elems),
+			// Transform3D
+			REAL_BASED_BUILTIN_MEMBER_OFFSET(Variant::TRANSFORM3D, "basis", "Basis", vec3_elems * 3),
+			REAL_BASED_BUILTIN_MEMBER_OFFSET(Variant::TRANSFORM3D, "origin", "Vector3", vec3_elems),
+			// Projection
+			REAL_BASED_BUILTIN_MEMBER_OFFSET(Variant::PROJECTION, "x", "Vector4", vec4_elems),
+			REAL_BASED_BUILTIN_MEMBER_OFFSET(Variant::PROJECTION, "y", "Vector4", vec4_elems),
+			REAL_BASED_BUILTIN_MEMBER_OFFSET(Variant::PROJECTION, "z", "Vector4", vec4_elems),
+			REAL_BASED_BUILTIN_MEMBER_OFFSET(Variant::PROJECTION, "w", "Vector4", vec4_elems),
+			// Color (always composed of 4bytes floats)
+			{ Variant::COLOR, "r", "float", sizeof(float), "float", sizeof(float), "float", sizeof(float), "float", sizeof(float) },
+			{ Variant::COLOR, "g", "float", sizeof(float), "float", sizeof(float), "float", sizeof(float), "float", sizeof(float) },
+			{ Variant::COLOR, "b", "float", sizeof(float), "float", sizeof(float), "float", sizeof(float), "float", sizeof(float) },
+			{ Variant::COLOR, "a", "float", sizeof(float), "float", sizeof(float), "float", sizeof(float), "float", sizeof(float) },
+			// End marker, must stay last
+			{ Variant::NIL, nullptr, nullptr, 0, nullptr, 0, nullptr, 0, nullptr, 0 },
 		};
 
 		Array core_type_member_offsets;
@@ -319,15 +396,16 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 			Array type_offsets;
 			uint32_t idx = 0;
 
-			Variant::Type last_type = Variant::NIL;
+			Variant::Type previous_type = Variant::NIL;
 
 			Dictionary d2;
 			Array members;
+			uint32_t offset = 0;
 
 			while (true) {
 				Variant::Type t = member_offset_array[idx].type;
-				if (t != last_type) {
-					if (last_type != Variant::NIL) {
+				if (t != previous_type) {
+					if (previous_type != Variant::NIL) {
 						d2["members"] = members;
 						type_offsets.push_back(d2);
 					}
@@ -338,27 +416,35 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 					String name = t == Variant::VARIANT_MAX ? String("Variant") : Variant::get_type_name(t);
 					d2 = Dictionary();
 					members = Array();
+					offset = 0;
 					d2["name"] = name;
-					last_type = t;
+					previous_type = t;
 				}
 				Dictionary d3;
-				uint32_t offset = 0;
+				const char *member_meta = nullptr;
+				uint32_t member_size = 0;
 				switch (i) {
 					case 0:
-						offset = member_offset_array[idx].offset_32_bits_real_float;
+						member_meta = member_offset_array[idx].member_meta_32_bits_real_float;
+						member_size = member_offset_array[idx].member_size_32_bits_real_float;
 						break;
 					case 1:
-						offset = member_offset_array[idx].offset_64_bits_real_float;
+						member_meta = member_offset_array[idx].member_meta_64_bits_real_float;
+						member_size = member_offset_array[idx].member_size_64_bits_real_float;
 						break;
 					case 2:
-						offset = member_offset_array[idx].offset_32_bits_real_double;
+						member_meta = member_offset_array[idx].member_meta_32_bits_real_double;
+						member_size = member_offset_array[idx].member_size_32_bits_real_double;
 						break;
 					case 3:
-						offset = member_offset_array[idx].offset_64_bits_real_double;
+						member_meta = member_offset_array[idx].member_meta_64_bits_real_double;
+						member_size = member_offset_array[idx].member_size_64_bits_real_double;
 						break;
 				}
 				d3["member"] = member_offset_array[idx].member;
 				d3["offset"] = offset;
+				d3["meta"] = member_meta;
+				offset += member_size;
 				members.push_back(d3);
 				idx++;
 			}
@@ -943,7 +1029,7 @@ Dictionary NativeExtensionAPIDump::generate_extension_api() {
 	return api_dump;
 }
 
-void NativeExtensionAPIDump::generate_extension_json_file(const String &p_path) {
+void GDExtensionAPIDump::generate_extension_json_file(const String &p_path) {
 	Dictionary api = generate_extension_api();
 	Ref<JSON> json;
 	json.instantiate();

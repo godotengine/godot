@@ -345,6 +345,7 @@ void MenuBar::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_MOUSE_EXIT: {
 			focused_menu = -1;
+			selected_menu = -1;
 			queue_redraw();
 		} break;
 		case NOTIFICATION_TRANSLATION_CHANGED:

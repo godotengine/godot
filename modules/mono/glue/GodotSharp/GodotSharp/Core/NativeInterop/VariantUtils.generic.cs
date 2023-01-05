@@ -4,6 +4,8 @@ using System.Runtime.CompilerServices;
 
 namespace Godot.NativeInterop;
 
+#nullable enable
+
 public partial class VariantUtils
 {
     private static Exception UnsupportedType<T>() => new InvalidOperationException(
@@ -90,6 +92,9 @@ public partial class VariantUtils
         if (typeof(T) == typeof(Transform2D))
             return CreateFromTransform2D(UnsafeAs<Transform2D>(from));
 
+        if (typeof(T) == typeof(Projection))
+            return CreateFromProjection(UnsafeAs<Projection>(from));
+
         if (typeof(T) == typeof(Vector3))
             return CreateFromVector3(UnsafeAs<Vector3>(from));
 
@@ -123,8 +128,8 @@ public partial class VariantUtils
         if (typeof(T) == typeof(Callable))
             return CreateFromCallable(UnsafeAs<Callable>(from));
 
-        if (typeof(T) == typeof(SignalInfo))
-            return CreateFromSignalInfo(UnsafeAs<SignalInfo>(from));
+        if (typeof(T) == typeof(Signal))
+            return CreateFromSignal(UnsafeAs<Signal>(from));
 
         if (typeof(T) == typeof(string))
             return CreateFromString(UnsafeAs<string>(from));
@@ -291,6 +296,9 @@ public partial class VariantUtils
         if (typeof(T) == typeof(Transform3D))
             return UnsafeAsT(ConvertToTransform3D(variant));
 
+        if (typeof(T) == typeof(Projection))
+            return UnsafeAsT(ConvertToProjection(variant));
+
         if (typeof(T) == typeof(Vector4))
             return UnsafeAsT(ConvertToVector4(variant));
 
@@ -307,13 +315,13 @@ public partial class VariantUtils
             return UnsafeAsT(ConvertToPlane(variant));
 
         if (typeof(T) == typeof(Callable))
-            return UnsafeAsT(ConvertToCallableManaged(variant));
+            return UnsafeAsT(ConvertToCallable(variant));
 
-        if (typeof(T) == typeof(SignalInfo))
-            return UnsafeAsT(ConvertToSignalInfo(variant));
+        if (typeof(T) == typeof(Signal))
+            return UnsafeAsT(ConvertToSignal(variant));
 
         if (typeof(T) == typeof(string))
-            return UnsafeAsT(ConvertToStringObject(variant));
+            return UnsafeAsT(ConvertToString(variant));
 
         if (typeof(T) == typeof(byte[]))
             return UnsafeAsT(ConvertAsPackedByteArrayToSystemArray(variant));
@@ -352,19 +360,19 @@ public partial class VariantUtils
             return UnsafeAsT(ConvertToSystemArrayOfRID(variant));
 
         if (typeof(T) == typeof(StringName))
-            return UnsafeAsT(ConvertToStringNameObject(variant));
+            return UnsafeAsT(ConvertToStringName(variant));
 
         if (typeof(T) == typeof(NodePath))
-            return UnsafeAsT(ConvertToNodePathObject(variant));
+            return UnsafeAsT(ConvertToNodePath(variant));
 
         if (typeof(T) == typeof(RID))
             return UnsafeAsT(ConvertToRID(variant));
 
         if (typeof(T) == typeof(Godot.Collections.Dictionary))
-            return UnsafeAsT(ConvertToDictionaryObject(variant));
+            return UnsafeAsT(ConvertToDictionary(variant));
 
         if (typeof(T) == typeof(Godot.Collections.Array))
-            return UnsafeAsT(ConvertToArrayObject(variant));
+            return UnsafeAsT(ConvertToArray(variant));
 
         if (typeof(T) == typeof(Variant))
             return UnsafeAsT(Variant.CreateCopyingBorrowed(variant));

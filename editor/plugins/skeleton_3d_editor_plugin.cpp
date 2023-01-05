@@ -47,6 +47,7 @@
 #include "scene/resources/skeleton_profile.h"
 #include "scene/resources/sphere_shape_3d.h"
 #include "scene/resources/surface_tool.h"
+#include "scene/scene_string_names.h"
 
 void BoneTransformEditor::create_editors() {
 	const Color section_color = get_theme_color(SNAME("prop_subsection"), SNAME("Editor"));
@@ -152,9 +153,10 @@ void BoneTransformEditor::set_target(const String &p_prop) {
 
 void BoneTransformEditor::_property_keyed(const String &p_path, bool p_advance) {
 	AnimationTrackEditor *te = AnimationPlayerEditor::get_singleton()->get_track_editor();
-	if (!te->has_keying()) {
+	if (!te || !te->has_keying()) {
 		return;
 	}
+	te->_clear_selection();
 	PackedStringArray split = p_path.split("/");
 	if (split.size() == 3 && split[0] == "bones") {
 		int bone_idx = split[1].to_int();
@@ -399,8 +401,8 @@ void Skeleton3DEditor::create_physical_skeleton() {
 								ur->add_do_method(physical_bone, "set_joint_type", PhysicalBone3D::JOINT_TYPE_PIN);
 							}
 
-							ur->add_do_method(Node3DEditor::get_singleton(), "_request_gizmo", physical_bone);
-							ur->add_do_method(Node3DEditor::get_singleton(), "_request_gizmo", collision_shape);
+							ur->add_do_method(Node3DEditor::get_singleton(), SceneStringNames::get_singleton()->_request_gizmo, physical_bone);
+							ur->add_do_method(Node3DEditor::get_singleton(), SceneStringNames::get_singleton()->_request_gizmo, collision_shape);
 
 							ur->add_do_reference(physical_bone);
 							ur->add_undo_method(skeleton, "remove_child", physical_bone);

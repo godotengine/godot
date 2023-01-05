@@ -135,7 +135,8 @@ namespace Godot.SourceGenerators
 
             source.Append("#pragma warning disable CS0109 // Disable warning about redundant 'new' keyword\n");
 
-            source.Append($"    public new class MethodName : {symbol.BaseType.FullQualifiedNameIncludeGlobal()}.MethodName {{\n");
+            source.Append(
+                $"    public new class MethodName : {symbol.BaseType.FullQualifiedNameIncludeGlobal()}.MethodName {{\n");
 
             // Generate cached StringNames for methods and properties, for fast lookup
 
@@ -297,7 +298,7 @@ namespace Godot.SourceGenerators
 
             if (method.RetType != null)
             {
-                returnVal = DeterminePropertyInfo(method.RetType.Value, name: string.Empty);
+                returnVal = DeterminePropertyInfo(method.RetType.Value.MarshalType, name: string.Empty);
             }
             else
             {
@@ -391,7 +392,8 @@ namespace Godot.SourceGenerators
             {
                 source.Append("            ret = ");
 
-                source.AppendManagedToNativeVariantExpr("callRet", method.RetType.Value);
+                source.AppendManagedToNativeVariantExpr("callRet",
+                    method.RetType.Value.TypeSymbol, method.RetType.Value.MarshalType);
                 source.Append(";\n");
 
                 source.Append("            return true;\n");

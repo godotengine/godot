@@ -152,12 +152,10 @@ Vector<String> OS_Unix::get_video_adapter_driver_info() const {
 String OS_Unix::get_stdin_string(bool p_block) {
 	if (p_block) {
 		char buff[1024];
-		String ret = stdin_buf + fgets(buff, 1024, stdin);
-		stdin_buf = "";
-		return ret;
+		return String::utf8(fgets(buff, 1024, stdin));
 	}
 
-	return "";
+	return String();
 }
 
 Error OS_Unix::get_entropy(uint8_t *r_buffer, int p_bytes) {

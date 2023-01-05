@@ -58,7 +58,7 @@ void Gradient::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("sample", "offset"), &Gradient::get_color_at_offset);
 
-	ClassDB::bind_method(D_METHOD("get_point_count"), &Gradient::get_points_count);
+	ClassDB::bind_method(D_METHOD("get_point_count"), &Gradient::get_point_count);
 
 	ClassDB::bind_method(D_METHOD("set_offsets", "offsets"), &Gradient::set_offsets);
 	ClassDB::bind_method(D_METHOD("get_offsets"), &Gradient::get_offsets);
@@ -190,6 +190,6 @@ Color Gradient::get_color(int pos) {
 	return points[pos].color;
 }
 
-int Gradient::get_points_count() const {
+int Gradient::get_point_count() const {
 	return points.size();
 }

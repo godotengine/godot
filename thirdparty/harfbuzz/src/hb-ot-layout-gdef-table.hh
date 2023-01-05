@@ -73,7 +73,7 @@ struct AttachList
 
     if (point_count)
     {
-      + points.sub_array (start_offset, point_count)
+      + points.as_array ().sub_array (start_offset, point_count)
       | hb_sink (hb_array (point_array, *point_count))
       ;
     }
@@ -322,7 +322,7 @@ struct LigGlyph
   {
     if (caret_count)
     {
-      + carets.sub_array (start_offset, caret_count)
+      + carets.as_array ().sub_array (start_offset, caret_count)
       | hb_map (hb_add (this))
       | hb_map ([&] (const CaretValue &value) { return value.get_caret_value (font, direction, glyph_id, var_store); })
       | hb_sink (hb_array (caret_array, *caret_count))

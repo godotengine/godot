@@ -228,12 +228,12 @@ private:
 		StringName theme_type_variation;
 
 		bool bulk_theme_override = false;
-		Theme::ThemeIconMap icon_override;
-		Theme::ThemeStyleMap style_override;
-		Theme::ThemeFontMap font_override;
-		Theme::ThemeFontSizeMap font_size_override;
-		Theme::ThemeColorMap color_override;
-		Theme::ThemeConstantMap constant_override;
+		Theme::ThemeIconMap theme_icon_override;
+		Theme::ThemeStyleMap theme_style_override;
+		Theme::ThemeFontMap theme_font_override;
+		Theme::ThemeFontSizeMap theme_font_size_override;
+		Theme::ThemeColorMap theme_color_override;
+		Theme::ThemeConstantMap theme_constant_override;
 
 		mutable HashMap<StringName, Theme::ThemeIconMap> theme_icon_cache;
 		mutable HashMap<StringName, Theme::ThemeStyleMap> theme_style_cache;
@@ -451,7 +451,9 @@ public:
 	void set_scale(const Vector2 &p_scale);
 	Vector2 get_scale() const;
 	void set_rotation(real_t p_radians);
+	void set_rotation_degrees(real_t p_degrees);
 	real_t get_rotation() const;
+	real_t get_rotation_degrees() const;
 	void set_pivot_offset(const Vector2 &p_pivot);
 	Vector2 get_pivot_offset() const;
 

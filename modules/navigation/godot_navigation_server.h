@@ -125,6 +125,9 @@ public:
 	COMMAND_2(region_set_travel_cost, RID, p_region, real_t, p_travel_cost);
 	virtual real_t region_get_travel_cost(RID p_region) const override;
 
+	COMMAND_2(region_set_owner_id, RID, p_region, ObjectID, p_owner_id);
+	virtual ObjectID region_get_owner_id(RID p_region) const override;
+
 	virtual bool region_owns_point(RID p_region, const Vector3 &p_point) const override;
 
 	COMMAND_2(region_set_map, RID, p_region, RID, p_map);
@@ -132,8 +135,8 @@ public:
 	COMMAND_2(region_set_navigation_layers, RID, p_region, uint32_t, p_navigation_layers);
 	virtual uint32_t region_get_navigation_layers(RID p_region) const override;
 	COMMAND_2(region_set_transform, RID, p_region, Transform3D, p_transform);
-	COMMAND_2(region_set_navmesh, RID, p_region, Ref<NavigationMesh>, p_nav_mesh);
-	virtual void region_bake_navmesh(Ref<NavigationMesh> r_mesh, Node *p_node) const override;
+	COMMAND_2(region_set_navigation_mesh, RID, p_region, Ref<NavigationMesh>, p_navigation_mesh);
+	virtual void region_bake_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh, Node *p_root_node) const override;
 	virtual int region_get_connections_count(RID p_region) const override;
 	virtual Vector3 region_get_connection_pathway_start(RID p_region, int p_connection_id) const override;
 	virtual Vector3 region_get_connection_pathway_end(RID p_region, int p_connection_id) const override;
@@ -153,6 +156,8 @@ public:
 	virtual real_t link_get_enter_cost(RID p_link) const override;
 	COMMAND_2(link_set_travel_cost, RID, p_link, real_t, p_travel_cost);
 	virtual real_t link_get_travel_cost(RID p_link) const override;
+	COMMAND_2(link_set_owner_id, RID, p_link, ObjectID, p_owner_id);
+	virtual ObjectID link_get_owner_id(RID p_link) const override;
 
 	virtual RID agent_create() const override;
 	COMMAND_2(agent_set_map, RID, p_agent, RID, p_map);
@@ -167,7 +172,7 @@ public:
 	COMMAND_2(agent_set_position, RID, p_agent, Vector3, p_position);
 	COMMAND_2(agent_set_ignore_y, RID, p_agent, bool, p_ignore);
 	virtual bool agent_is_map_changed(RID p_agent) const override;
-	COMMAND_4_DEF(agent_set_callback, RID, p_agent, Object *, p_receiver, StringName, p_method, Variant, p_udata, Variant());
+	COMMAND_4_DEF(agent_set_callback, RID, p_agent, ObjectID, p_object_id, StringName, p_method, Variant, p_udata, Variant());
 
 	COMMAND_1(free, RID, p_object);
 

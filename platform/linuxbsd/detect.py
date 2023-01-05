@@ -184,13 +184,14 @@ def configure(env: "Environment"):
     ## Dependencies
 
     if env["x11"]:
-        env.ParseConfig("pkg-config x11 --cflags --libs")
-        env.ParseConfig("pkg-config xcursor --cflags --libs")
-        env.ParseConfig("pkg-config xinerama --cflags --libs")
-        env.ParseConfig("pkg-config xext --cflags --libs")
-        env.ParseConfig("pkg-config xrandr --cflags --libs")
-        env.ParseConfig("pkg-config xrender --cflags --libs")
-        env.ParseConfig("pkg-config xi --cflags --libs")
+        # Only cflags, we dlopen the libraries.
+        env.ParseConfig("pkg-config x11 --cflags")
+        env.ParseConfig("pkg-config xcursor --cflags")
+        env.ParseConfig("pkg-config xinerama --cflags")
+        env.ParseConfig("pkg-config xext --cflags")
+        env.ParseConfig("pkg-config xrandr --cflags")
+        env.ParseConfig("pkg-config xrender --cflags")
+        env.ParseConfig("pkg-config xi --cflags")
 
     if env["touch"]:
         env.Append(CPPDEFINES=["TOUCH_ENABLED"])
@@ -338,9 +339,6 @@ def configure(env: "Environment"):
     env.Prepend(CPPPATH=["#platform/linuxbsd"])
 
     if env["x11"]:
-        if not env["vulkan"]:
-            print("Error: X11 support requires vulkan=yes")
-            env.Exit(255)
         env.Append(CPPDEFINES=["X11_ENABLED"])
 
     env.Append(CPPDEFINES=["UNIX_ENABLED"])

@@ -31,7 +31,7 @@
 #include "register_scene_types.h"
 
 #include "core/config/project_settings.h"
-#include "core/extension/native_extension_manager.h"
+#include "core/extension/gdextension_manager.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "scene/2d/animated_sprite_2d.h"
@@ -56,6 +56,7 @@
 #include "scene/2d/navigation_agent_2d.h"
 #include "scene/2d/navigation_link_2d.h"
 #include "scene/2d/navigation_obstacle_2d.h"
+#include "scene/2d/navigation_region_2d.h"
 #include "scene/2d/parallax_background.h"
 #include "scene/2d/parallax_layer.h"
 #include "scene/2d/path_2d.h"
@@ -163,6 +164,7 @@
 #include "scene/resources/mesh_data_tool.h"
 #include "scene/resources/multimesh.h"
 #include "scene/resources/navigation_mesh.h"
+#include "scene/resources/navigation_polygon.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/particle_process_material.h"
 #include "scene/resources/physics_material.h"
@@ -827,14 +829,14 @@ void register_scene_types() {
 	GDREGISTER_CLASS(ConvexPolygonShape3D);
 	GDREGISTER_CLASS(ConcavePolygonShape3D);
 
-	ClassDB::register_class<SkeletonModificationStack3D>();
-	ClassDB::register_class<SkeletonModification3D>();
-	ClassDB::register_class<SkeletonModification3DLookAt>();
-	ClassDB::register_class<SkeletonModification3DCCDIK>();
-	ClassDB::register_class<SkeletonModification3DFABRIK>();
-	ClassDB::register_class<SkeletonModification3DJiggle>();
-	ClassDB::register_class<SkeletonModification3DTwoBoneIK>();
-	ClassDB::register_class<SkeletonModification3DStackHolder>();
+	GDREGISTER_CLASS(SkeletonModificationStack3D);
+	GDREGISTER_CLASS(SkeletonModification3D);
+	GDREGISTER_CLASS(SkeletonModification3DLookAt);
+	GDREGISTER_CLASS(SkeletonModification3DCCDIK);
+	GDREGISTER_CLASS(SkeletonModification3DFABRIK);
+	GDREGISTER_CLASS(SkeletonModification3DJiggle);
+	GDREGISTER_CLASS(SkeletonModification3DTwoBoneIK);
+	GDREGISTER_CLASS(SkeletonModification3DStackHolder);
 
 	OS::get_singleton()->yield(); // may take time to init
 #endif // _3D_DISABLED

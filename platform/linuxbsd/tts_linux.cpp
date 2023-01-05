@@ -117,13 +117,12 @@ void TTS_Linux::speech_event_callback(size_t p_msg_id, size_t p_client_id, SPDNo
 				free_spd_voices(voices);
 			}
 			PackedInt32Array breaks = TS->string_get_word_breaks(message.text, language);
-			int prev = 0;
-			for (int i = 0; i < breaks.size(); i++) {
-				text += message.text.substr(prev, breaks[i] - prev);
-				text += "<mark name=\"" + String::num_int64(breaks[i], 10) + "\"/>";
-				prev = breaks[i];
+			for (int i = 0; i < breaks.size(); i += 2) {
+				const int start = breaks[i];
+				const int end = breaks[i + 1];
+				text += message.text.substr(start, end - start + 1);
+				text += "<mark name=\"" + String::num_int64(end, 10) + "\"/>";
 			}
-			text += message.text.substr(prev, -1);
 
 			spd_set_synthesis_voice(tts->synth, message.voice.utf8().get_data());
 			spd_set_volume(tts->synth, message.volume * 2 - 100);

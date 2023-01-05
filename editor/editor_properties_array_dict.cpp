@@ -919,7 +919,7 @@ void EditorPropertyDictionary::update_property() {
 				} break;
 				case Variant::INT: {
 					EditorPropertyInteger *editor = memnew(EditorPropertyInteger);
-					editor->setup(-100000, 100000, 1, true, true);
+					editor->setup(-100000, 100000, 1, false, true, true);
 					prop = editor;
 
 				} break;
@@ -942,7 +942,7 @@ void EditorPropertyDictionary::update_property() {
 				} break;
 				case Variant::VECTOR2I: {
 					EditorPropertyVector2i *editor = memnew(EditorPropertyVector2i);
-					editor->setup(-100000, 100000, true);
+					editor->setup(-100000, 100000);
 					prop = editor;
 
 				} break;
@@ -954,7 +954,7 @@ void EditorPropertyDictionary::update_property() {
 				} break;
 				case Variant::RECT2I: {
 					EditorPropertyRect2i *editor = memnew(EditorPropertyRect2i);
-					editor->setup(-100000, 100000, true);
+					editor->setup(-100000, 100000);
 					prop = editor;
 
 				} break;
@@ -966,7 +966,7 @@ void EditorPropertyDictionary::update_property() {
 				} break;
 				case Variant::VECTOR3I: {
 					EditorPropertyVector3i *editor = memnew(EditorPropertyVector3i);
-					editor->setup(-100000, 100000, true);
+					editor->setup(-100000, 100000);
 					prop = editor;
 
 				} break;
@@ -978,7 +978,7 @@ void EditorPropertyDictionary::update_property() {
 				} break;
 				case Variant::VECTOR4I: {
 					EditorPropertyVector4i *editor = memnew(EditorPropertyVector4i);
-					editor->setup(-100000, 100000, true);
+					editor->setup(-100000, 100000);
 					prop = editor;
 
 				} break;

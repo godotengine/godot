@@ -432,7 +432,6 @@ void AnimationNode::_bind_methods() {
 	GDVIRTUAL_BIND(_has_filter);
 
 	ADD_SIGNAL(MethodInfo("removed_from_graph"));
-
 	ADD_SIGNAL(MethodInfo("tree_changed"));
 
 	BIND_ENUM_CONSTANT(FILTER_IGNORE);
@@ -586,7 +585,7 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 							track_value->object = child;
 						}
 
-						track_value->is_discrete = anim->value_track_get_update_mode(i) == Animation::UPDATE_DISCRETE || anim->value_track_get_update_mode(i) == Animation::UPDATE_TRIGGER;
+						track_value->is_discrete = anim->value_track_get_update_mode(i) == Animation::UPDATE_DISCRETE;
 						track_value->is_using_angle = anim->track_get_interpolation_type(i) == Animation::INTERPOLATION_LINEAR_ANGLE || anim->track_get_interpolation_type(i) == Animation::INTERPOLATION_CUBIC_ANGLE;
 
 						track_value->subpath = leftover_path;
@@ -803,11 +802,11 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 				TrackCacheValue *track_value = static_cast<TrackCacheValue *>(track);
 				bool was_discrete = track_value->is_discrete;
 				bool was_using_angle = track_value->is_using_angle;
-				track_value->is_discrete |= anim->value_track_get_update_mode(i) == Animation::UPDATE_DISCRETE || anim->value_track_get_update_mode(i) == Animation::UPDATE_TRIGGER;
+				track_value->is_discrete |= anim->value_track_get_update_mode(i) == Animation::UPDATE_DISCRETE;
 				track_value->is_using_angle |= anim->track_get_interpolation_type(i) == Animation::INTERPOLATION_LINEAR_ANGLE || anim->track_get_interpolation_type(i) == Animation::INTERPOLATION_CUBIC_ANGLE;
 
 				if (was_discrete != track_value->is_discrete) {
-					ERR_PRINT_ED("Value track: " + String(path) + " with different update modes are blended. Blending prioritizes Discrete/Trigger mode, so other update mode tracks will not be blended.");
+					ERR_PRINT_ED("Value track: " + String(path) + " with different update modes are blended. Blending prioritizes Discrete mode, so other update mode tracks will not be blended.");
 				}
 				if (was_using_angle != track_value->is_using_angle) {
 					WARN_PRINT_ED("Value track: " + String(path) + " with different interpolation types for rotation are blended. Blending prioritizes angle interpolation, so the blending result uses the shortest path referenced to the initial (RESET animation) value.");
@@ -1031,7 +1030,9 @@ void AnimationTree::_process_graph(double p_delta) {
 				}
 
 				NodePath path = a->track_get_path(i);
-				ERR_CONTINUE(!track_cache.has(path));
+				if (!track_cache.has(path)) {
+					continue; // No path, but avoid error spamming.
+				}
 				TrackCache *track = track_cache[path];
 
 				ERR_CONTINUE(!state.track_map.has(path));
@@ -1381,7 +1382,7 @@ void AnimationTree::_process_graph(double p_delta) {
 							}
 						} else {
 							if (seeked) {
-								int idx = a->track_find_key(i, time, !is_external_seeking);
+								int idx = a->track_find_key(i, time, is_external_seeking ? Animation::FIND_MODE_NEAREST : Animation::FIND_MODE_EXACT);
 								if (idx < 0) {
 									continue;
 								}
@@ -1404,7 +1405,7 @@ void AnimationTree::_process_graph(double p_delta) {
 						TrackCacheMethod *t = static_cast<TrackCacheMethod *>(track);
 
 						if (seeked) {
-							int idx = a->track_find_key(i, time, !is_external_seeking);
+							int idx = a->track_find_key(i, time, is_external_seeking ? Animation::FIND_MODE_NEAREST : Animation::FIND_MODE_EXACT);
 							if (idx < 0) {
 								continue;
 							}
@@ -1438,7 +1439,7 @@ void AnimationTree::_process_graph(double p_delta) {
 
 						if (seeked) {
 							//find whatever should be playing
-							int idx = a->track_find_key(i, time, !is_external_seeking);
+							int idx = a->track_find_key(i, time, is_external_seeking ? Animation::FIND_MODE_NEAREST : Animation::FIND_MODE_EXACT);
 							if (idx < 0) {
 								continue;
 							}
@@ -1551,7 +1552,7 @@ void AnimationTree::_process_graph(double p_delta) {
 
 						if (seeked) {
 							//seek
-							int idx = a->track_find_key(i, time, !is_external_seeking);
+							int idx = a->track_find_key(i, time, is_external_seeking ? Animation::FIND_MODE_NEAREST : Animation::FIND_MODE_EXACT);
 							if (idx < 0) {
 								continue;
 							}
@@ -1582,8 +1583,8 @@ void AnimationTree::_process_graph(double p_delta) {
 							}
 
 							if (player2->is_playing() || seeked) {
-								player2->play(anim_name);
 								player2->seek(at_anim_pos);
+								player2->play(anim_name);
 								t->playing = true;
 								playing_caches.insert(t);
 							} else {
@@ -1670,7 +1671,7 @@ void AnimationTree::_process_graph(double p_delta) {
 					TrackCacheValue *t = static_cast<TrackCacheValue *>(track);
 
 					if (t->is_discrete) {
-						break; // Don't overwrite the value set by UPDATE_DISCRETE or UPDATE_TRIGGER.
+						break; // Don't overwrite the value set by UPDATE_DISCRETE.
 					}
 
 					if (t->init_value.get_type() == Variant::BOOL) {
@@ -1757,7 +1758,7 @@ void AnimationTree::_setup_animation_player() {
 
 	AnimationPlayer *new_player = nullptr;
 	if (!animation_player.is_empty()) {
-		new_player = Object::cast_to<AnimationPlayer>(get_node(animation_player));
+		new_player = Object::cast_to<AnimationPlayer>(get_node_or_null(animation_player));
 		if (new_player && !new_player->is_connected("animation_list_changed", callable_mp(this, &AnimationTree::_animation_player_changed))) {
 			new_player->connect("animation_list_changed", callable_mp(this, &AnimationTree::_animation_player_changed));
 		}
@@ -2035,6 +2036,10 @@ void AnimationTree::_bind_methods() {
 	BIND_ENUM_CONSTANT(ANIMATION_PROCESS_MANUAL);
 
 	ADD_SIGNAL(MethodInfo("animation_player_changed"));
+
+	// Signals from AnimationNodes.
+	ADD_SIGNAL(MethodInfo("animation_started", PropertyInfo(Variant::STRING_NAME, "anim_name")));
+	ADD_SIGNAL(MethodInfo("animation_finished", PropertyInfo(Variant::STRING_NAME, "anim_name")));
 }
 
 AnimationTree::AnimationTree() {

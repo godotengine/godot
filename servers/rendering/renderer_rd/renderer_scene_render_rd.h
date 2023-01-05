@@ -114,7 +114,6 @@ protected:
 	/* ENVIRONMENT */
 
 	bool glow_bicubic_upscale = false;
-	bool glow_high_quality = false;
 
 	bool use_physical_light_units = false;
 
@@ -218,14 +217,6 @@ public:
 
 	RendererRD::SkyRD *get_sky() { return &sky; }
 
-	/* SDFGI UPDATE */
-
-	virtual void sdfgi_update(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_environment, const Vector3 &p_world_position) override;
-	virtual int sdfgi_get_pending_region_count(const Ref<RenderSceneBuffers> &p_render_buffers) const override;
-	virtual AABB sdfgi_get_pending_region_bounds(const Ref<RenderSceneBuffers> &p_render_buffers, int p_region) const override;
-	virtual uint32_t sdfgi_get_pending_region_cascade(const Ref<RenderSceneBuffers> &p_render_buffers, int p_region) const override;
-	RID sdfgi_get_ubo() const { return gi.sdfgi_ubo; }
-
 	/* SKY API */
 
 	virtual RID sky_allocate() override;
@@ -239,7 +230,6 @@ public:
 	/* ENVIRONMENT API */
 
 	virtual void environment_glow_set_use_bicubic_upscale(bool p_enable) override;
-	virtual void environment_glow_set_use_high_quality(bool p_enable) override;
 
 	virtual void environment_set_volumetric_fog_volume_size(int p_size, int p_depth) override;
 	virtual void environment_set_volumetric_fog_filter_active(bool p_enable) override;

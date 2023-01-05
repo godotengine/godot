@@ -59,7 +59,7 @@ struct InstanceRecord
     const hb_hashmap_t<hb_tag_t, float> *axes_location = c->plan->user_axes_location;
     for (unsigned i = 0 ; i < axis_count; i++)
     {
-      unsigned *axis_tag;
+      uint32_t *axis_tag;
       // only keep instances whose coordinates == pinned axis location
       if (!c->plan->axes_old_index_tag_map->has (i, &axis_tag)) continue;
 
@@ -337,13 +337,13 @@ struct fvar
     {
       const InstanceRecord *instance = get_instance (i);
 
-      if (hb_any (+ hb_zip (instance->get_coordinates (axisCount), hb_range ((unsigned)axisCount))
-                  | hb_filter (pinned_axes, hb_second)
-                  | hb_map ([&] (const hb_pair_t<const F16DOT16&, unsigned>& _)
+      if (hb_any (+ hb_enumerate (instance->get_coordinates (axisCount))
+                  | hb_filter (pinned_axes, hb_first)
+                  | hb_map ([&] (const hb_pair_t<unsigned, const F16DOT16&>& _)
                             {
-                              hb_tag_t axis_tag = pinned_axes.get (_.second);
+                              hb_tag_t axis_tag = pinned_axes.get (_.first);
                               float location = user_axes_location->get (axis_tag);
-                              if (fabs ((double)location - (double)_.first.to_float ()) > 0.001) return true;
+                              if (fabs ((double)location - (double)_.second.to_float ()) > 0.001) return true;
                               return false;
                             })
                   ))

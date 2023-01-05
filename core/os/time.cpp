@@ -52,8 +52,8 @@ static const uint8_t MONTH_DAYS_TABLE[2][12] = {
 	{ 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
 };
 
-VARIANT_ENUM_CAST(Time::Month);
-VARIANT_ENUM_CAST(Time::Weekday);
+VARIANT_ENUM_CAST(Month);
+VARIANT_ENUM_CAST(Weekday);
 
 #define UNIX_TIME_TO_HMS                                                     \
 	uint8_t hour, minute, second;                                            \

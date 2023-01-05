@@ -12,7 +12,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2022-08-30 03:11+0000\n"
+"PO-Revision-Date: 2022-12-03 04:48+0000\n"
 "Last-Translator: Marco Santos <enum.scima@gmail.com>\n"
 "Language-Team: Filipino <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fil/>\n"
@@ -21,7 +21,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1 && n != 2 && n != 3 && (n % 10 == 4 "
 "|| n % 10 == 6 || n % 10 == 9);\n"
-"X-Generator: Weblate 4.14.1-dev\n"
+"X-Generator: Weblate 4.15-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -300,7 +300,7 @@ msgstr "Max na Nakabinbing Koneksyon"
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
 msgstr ""
-"Invalid na argumento ng type sa convert(), gumamit ng mga TYPE_* constant."
+"Invalid na type argument sa convert(), gamitin ang mga TYPE_* constant."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 msgid "Expected a string of length 1 (a character)."
@@ -310,7 +310,7 @@ msgstr "Inaasahan ang isang string na may habang 1 (karakter)."
 #: modules/mono/glue/gd_glue.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
-msgstr "Kulang sa bytes para i-decode ang bytes, o invalid na format."
+msgstr "Kulang sa espasyo para ma-decode ang bytes, o invalid na format."
 
 #: core/math/expression.cpp
 msgid "Invalid input %d (not passed) in expression"
@@ -318,23 +318,23 @@ msgstr "Invalid na input na %d (di pinasa) sa expression"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
-msgstr "Di magagamit ang self dahil null ang instance (di pinasa)"
+msgstr "Hindi magagamit ang self dahil null ang instance (di pinasa)"
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
-msgstr "Mga invalid na operand sa operator %s, %s, at %s."
+msgstr "Mga invalid na operand aa operator %s, %s, at %s."
 
 #: core/math/expression.cpp
 msgid "Invalid index of type %s for base type %s"
-msgstr "Invalid na index ng type na %s para sa base type na %s"
+msgstr "Invalid na index ng type %s para sa base type %s"
 
 #: core/math/expression.cpp
 msgid "Invalid named index '%s' for base type %s"
-msgstr "Invalid na napangalanang index na '%s' para sa base type na %s"
+msgstr "Invalid na may pangalang index '%s' para sa base type %s"
 
 #: core/math/expression.cpp
 msgid "Invalid arguments to construct '%s'"
-msgstr "Mga invalid na argumento para i-construct ang '%s'"
+msgstr "Mga invalid na argument para i-construct ang '%s'"
 
 #: core/math/expression.cpp
 msgid "On call to '%s':"
@@ -1033,7 +1033,7 @@ msgstr "Max na Laki ng Buffer ng Blend Shape (KB)"
 #. TRANSLATORS: Adjective, refers to the mode for Bezier handles (Free, Balanced, Mirror).
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
-msgstr "Libre"
+msgstr "Malaya"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Balanced"
@@ -1053,51 +1053,51 @@ msgstr "Value:"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Insert Key Here"
-msgstr "Magpasok ng Key Rito"
+msgstr "Mag-key rito"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Duplicate Selected Key(s)"
-msgstr "Doblehin ang (mga) Napiling Key"
+msgstr "Doblehin ang (mga) napiling key"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Delete Selected Key(s)"
-msgstr "Burahin ang (mga) Napiling Key"
+msgstr "Burahin ang (mga) napiling key"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Add Bezier Point"
-msgstr "Magdagdag ng Bezier Point"
+msgstr "Magdagdag ng bezier point"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Move Bezier Points"
-msgstr "Maglipat ng (mga) Bezier Point"
+msgstr "Maglipat ng (mga) bezier point"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
-msgstr "Anim Duplicate Keys"
+msgstr "I-anim ang mga key sa pagdoble"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Delete Keys"
-msgstr "Anim Delete Keys"
+msgstr "I-anim ang mga key sa pagbura"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Keyframe Time"
-msgstr "Anim Change Keyframe Time"
+msgstr "I-anim ang oras ng pagpalit keyframe"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Transition"
-msgstr "Anim Change Transition"
+msgstr "I-anim ang pagpalit transition"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Transform"
-msgstr "Anim Change Transform"
+msgstr "I-anim ang pagpalit transform"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Keyframe Value"
-msgstr "Anim Change Keyframe Value"
+msgstr "I-anim ang value ng pagpalit keyframe"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Call"
-msgstr "Anim Change Call"
+msgstr "I-anim ang pagpalit call"
 
 #: editor/animation_track_editor.cpp scene/2d/animated_sprite.cpp
 #: scene/2d/sprite.cpp scene/3d/sprite_3d.cpp
@@ -1207,36 +1207,36 @@ msgstr "Anim Multi Change Call"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Length"
-msgstr "Baguhin ang Haba ng Animation"
+msgstr "Baguhin ang haba ng animation"
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Change Animation Loop"
-msgstr "Baguhin ang Animation Loop"
+msgstr "Baguhin ang loop sa animation"
 
 #: editor/animation_track_editor.cpp
 msgid "Property Track"
-msgstr "Property Track"
+msgstr "Katangian"
 
 #: editor/animation_track_editor.cpp
 msgid "3D Transform Track"
-msgstr "3D Transform Track"
+msgstr "3D Transform"
 
 #: editor/animation_track_editor.cpp
 msgid "Call Method Track"
-msgstr "Call Method Track"
+msgstr "Call Method"
 
 #: editor/animation_track_editor.cpp
 msgid "Bezier Curve Track"
-msgstr "Bezier Curve Track"
+msgstr "Kurbang Bezier"
 
 #: editor/animation_track_editor.cpp
 msgid "Audio Playback Track"
-msgstr "Audio Playback Track"
+msgstr "Pag-play ng tunog"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Playback Track"
-msgstr "Animation Playback Track"
+msgstr "Pag-play sa animation"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation length (frames)"
@@ -1248,28 +1248,28 @@ msgstr "Haba ng animation (segundo)"
 
 #: editor/animation_track_editor.cpp
 msgid "Add Track"
-msgstr "Magdagdag ng Track"
+msgstr "Magdagdag ng track"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Looping"
-msgstr "Pag-loop sa Animation"
+msgstr "I-loop ang animation"
 
 #: editor/animation_track_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Functions:"
-msgstr "Mga Function:"
+msgstr "Mga function:"
 
 #: editor/animation_track_editor.cpp
 msgid "Audio Clips:"
-msgstr "Mga Audio Clip:"
+msgstr "Mga tunog:"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Clips:"
-msgstr "Mga Anim Clip:"
+msgstr "Mga anim clip:"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Track Path"
-msgstr "Baguhin ang Track Path"
+msgstr "Baguhin ang track path"
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle this track on/off."
@@ -1277,15 +1277,15 @@ msgstr "Buksan/isara ang track na ito."
 
 #: editor/animation_track_editor.cpp
 msgid "Update Mode (How this property is set)"
-msgstr "Update Mode (kung paano itinatakda ang property na ito)"
+msgstr "Update Mode (Kung paano tinakda ang katangian na ito)"
 
 #: editor/animation_track_editor.cpp scene/resources/gradient.cpp
 msgid "Interpolation Mode"
-msgstr "Interpolation Mode"
+msgstr "Interpolation"
 
 #: editor/animation_track_editor.cpp
 msgid "Loop Wrap Mode (Interpolate end with beginning on loop)"
-msgstr "Loop Wrap Mode (ini-interpolate ang dulo sa simula ng loop)"
+msgstr "Paikot-ikot (i-interpolate ang dulo sa simula ng loop)"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove this track."
@@ -1358,7 +1358,7 @@ msgstr "Mga Anim Clip:"
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle Track Enabled"
-msgstr "Nakabukas ang Toggle Track"
+msgstr "Nakabukas ang toggle track"
 
 #: editor/animation_track_editor.cpp
 msgid "Continuous"
@@ -1378,7 +1378,7 @@ msgstr "I-capture"
 
 #: editor/animation_track_editor.cpp
 msgid "Nearest"
-msgstr "Pinakamalapit"
+msgstr "Malapit"
 
 #: editor/animation_track_editor.cpp editor/plugins/curve_editor_plugin.cpp
 #: editor/property_editor.cpp scene/2d/physics_body_2d.cpp
@@ -1392,20 +1392,20 @@ msgstr "Cubic"
 
 #: editor/animation_track_editor.cpp
 msgid "Clamp Loop Interp"
-msgstr "Clamp Loop Interp"
+msgstr "I-clamp ang loop interp"
 
 #: editor/animation_track_editor.cpp
 msgid "Wrap Loop Interp"
-msgstr "Wrap Loop Interp"
+msgstr "I-wrap ang loop interp"
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key"
-msgstr "Magpasok ng Key"
+msgstr "Magsingit ng key"
 
 #: editor/animation_track_editor.cpp
 msgid "Duplicate Key(s)"
-msgstr "Doblehin ang (mga) Key"
+msgstr "Doblehin ang (mga) key"
 
 #: editor/animation_track_editor.cpp
 msgid "Add RESET Value(s)"
@@ -1413,23 +1413,23 @@ msgstr "Magdagdag ng (mga) RESET value"
 
 #: editor/animation_track_editor.cpp
 msgid "Delete Key(s)"
-msgstr "Burahin ang (mga) Key"
+msgstr "Burahin ang (mga) key"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Update Mode"
-msgstr "Baguhin ang Animation Update Mode"
+msgstr "Baguhin ang pag-update sa animation"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Interpolation Mode"
-msgstr "Baguhin ang Animation Interpolation Mode"
+msgstr "Baguhin ang interpolation ng animation"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Loop Mode"
-msgstr "Baguhin ang Animation Loop Mode"
+msgstr "Baguhin ang pag-loop sa animation"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove Anim Track"
-msgstr "Tanggalin ang Anim Track"
+msgstr "Tanggalin ang anim track"
 
 #: editor/animation_track_editor.cpp editor/editor_settings.cpp
 #: editor/plugins/path_editor_plugin.cpp
@@ -1448,7 +1448,7 @@ msgstr ""
 #. TRANSLATORS: %s will be replaced by a phrase describing the target of track.
 #: editor/animation_track_editor.cpp
 msgid "Create NEW track for %s and insert key?"
-msgstr ""
+msgstr "Gumawa ng BAGONG track para sa %s at magsingit ng key?"
 
 #: editor/animation_track_editor.cpp
 msgid "Create %d NEW tracks and insert keys?"
@@ -12480,9 +12480,10 @@ msgstr "Pag-snap"
 #: scene/2d/path_2d.cpp scene/2d/polygon_2d.cpp scene/2d/sprite.cpp
 #: scene/3d/cpu_particles.cpp scene/3d/label_3d.cpp scene/3d/path.cpp
 #: scene/3d/physics_body.cpp scene/3d/soft_body.cpp scene/3d/sprite_3d.cpp
-#: scene/gui/graph_node.cpp scene/gui/rich_text_effect.cpp
-#: scene/main/canvas_layer.cpp scene/resources/material.cpp
-#: scene/resources/particles_material.cpp scene/resources/style_box.cpp
+#: scene/3d/visual_instance.cpp scene/gui/graph_node.cpp
+#: scene/gui/rich_text_effect.cpp scene/main/canvas_layer.cpp
+#: scene/resources/material.cpp scene/resources/particles_material.cpp
+#: scene/resources/style_box.cpp
 msgid "Offset"
 msgstr ""
 
@@ -13833,12 +13834,11 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid ""
-"Couldn't load project.godot in project path (error %d). It may be missing or "
-"corrupted."
+"Couldn't load project at '%s' (error %d). It may be missing or corrupted."
 msgstr ""
 
 #: editor/project_manager.cpp
-msgid "Couldn't edit project.godot in project path."
+msgid "Couldn't save project at '%s' (error %d)."
 msgstr ""
 
 #: editor/project_manager.cpp
@@ -22506,6 +22506,15 @@ msgstr "Salamin"
 
 #: scene/3d/visibility_notifier.cpp
 msgid "AABB"
+msgstr ""
+
+#: scene/3d/visual_instance.cpp
+#, fuzzy
+msgid "Sorting"
+msgstr "Pagsasaayos"
+
+#: scene/3d/visual_instance.cpp
+msgid "Use AABB Center"
 msgstr ""
 
 #: scene/3d/visual_instance.cpp scene/resources/navigation_mesh.cpp

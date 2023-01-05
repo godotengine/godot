@@ -233,8 +233,7 @@ protected:
 public:
 	PackedStringArray get_configuration_warnings() const override;
 
-	SpotLight3D() :
-			Light3D(RenderingServer::LIGHT_SPOT) {}
+	SpotLight3D();
 };
 
 #endif // LIGHT_3D_H

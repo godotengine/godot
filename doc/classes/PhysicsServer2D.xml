@@ -736,6 +736,14 @@
 			<description>
 			</description>
 		</method>
+		<method name="joint_disable_collisions_between_bodies">
+			<return type="void" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="disable" type="bool" />
+			<description>
+				Sets whether the bodies attached to the [Joint2D] will collide with each other.
+			</description>
+		</method>
 		<method name="joint_get_param" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="joint" type="RID" />
@@ -749,6 +757,13 @@
 			<param index="0" name="joint" type="RID" />
 			<description>
 				Returns a joint's type (see [enum JointType]).
+			</description>
+		</method>
+		<method name="joint_is_disabled_collisions_between_bodies" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="joint" type="RID" />
+			<description>
+				Returns whether the bodies attached to the [Joint2D] will collide with each other.
 			</description>
 		</method>
 		<method name="joint_make_damped_spring">
@@ -788,6 +803,23 @@
 			<param index="2" name="value" type="float" />
 			<description>
 				Sets a joint parameter. See [enum JointParam] for a list of available parameters.
+			</description>
+		</method>
+		<method name="pin_joint_get_param" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="param" type="int" enum="PhysicsServer2D.PinJointParam" />
+			<description>
+				Returns the value of a pin joint parameter. See [enum PinJointParam] for a list of available parameters.
+			</description>
+		</method>
+		<method name="pin_joint_set_param">
+			<return type="void" />
+			<param index="0" name="joint" type="RID" />
+			<param index="1" name="param" type="int" enum="PhysicsServer2D.PinJointParam" />
+			<param index="2" name="value" type="float" />
+			<description>
+				Sets a pin joint parameter. See [enum PinJointParam] for a list of available parameters.
 			</description>
 		</method>
 		<method name="rectangle_shape_create">

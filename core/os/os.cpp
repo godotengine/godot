@@ -155,10 +155,6 @@ int OS::get_process_id() const {
 	return -1;
 }
 
-void OS::vibrate_handheld(int p_duration_ms) {
-	WARN_PRINT("vibrate_handheld() only works with Android, iOS and Web");
-}
-
 bool OS::is_stdout_verbose() const {
 	return _verbose_stdout;
 }
@@ -353,20 +349,36 @@ bool OS::has_feature(const String &p_feature) {
 	if (p_feature == "debug") {
 		return true;
 	}
-#else
-	if (p_feature == "release") {
-		return true;
-	}
-#endif
+#endif // DEBUG_ENABLED
+
 #ifdef TOOLS_ENABLED
 	if (p_feature == "editor") {
 		return true;
 	}
 #else
-	if (p_feature == "standalone") {
+	if (p_feature == "template") {
 		return true;
 	}
-#endif
+#ifdef DEBUG_ENABLED
+	if (p_feature == "template_debug") {
+		return true;
+	}
+#else
+	if (p_feature == "template_release" || p_feature == "release") {
+		return true;
+	}
+#endif // DEBUG_ENABLED
+#endif // TOOLS_ENABLED
+
+#ifdef REAL_T_IS_DOUBLE
+	if (p_feature == "double") {
+		return true;
+	}
+#else
+	if (p_feature == "single") {
+		return true;
+	}
+#endif // REAL_T_IS_DOUBLE
 
 	if (sizeof(void *) == 8 && p_feature == "64") {
 		return true;

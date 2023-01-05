@@ -120,7 +120,9 @@ bool TileSetEditor::_can_drop_data_fw(const Point2 &p_point, const Variant &p_da
 }
 
 void TileSetEditor::_update_sources_list(int force_selected_id) {
-	ERR_FAIL_COND(!tile_set.is_valid());
+	if (tile_set.is_null()) {
+		return;
+	}
 
 	// Get the previously selected id.
 	int old_selected = TileSet::INVALID_SOURCE;
@@ -151,7 +153,7 @@ void TileSetEditor::_update_sources_list(int force_selected_id) {
 
 		// Common to all type of sources.
 		if (!source->get_name().is_empty()) {
-			item_text = vformat(TTR("%s (id:%d)"), source->get_name(), source_id);
+			item_text = vformat(TTR("%s (ID: %d)"), source->get_name(), source_id);
 		}
 
 		// Atlas source.
@@ -160,7 +162,7 @@ void TileSetEditor::_update_sources_list(int force_selected_id) {
 			texture = atlas_source->get_texture();
 			if (item_text.is_empty()) {
 				if (texture.is_valid()) {
-					item_text = vformat("%s (ID: %d)", texture->get_path().get_file(), source_id);
+					item_text = vformat(TTR("%s (ID: %d)"), texture->get_path().get_file(), source_id);
 				} else {
 					item_text = vformat(TTR("No Texture Atlas Source (ID: %d)"), source_id);
 				}
@@ -346,6 +348,7 @@ void TileSetEditor::_notification(int p_what) {
 			source_sort_button->set_icon(get_theme_icon(SNAME("Sort"), SNAME("EditorIcons")));
 			sources_advanced_menu_button->set_icon(get_theme_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
 			missing_texture_texture = get_theme_icon(SNAME("TileSet"), SNAME("EditorIcons"));
+			_update_sources_list();
 		} break;
 
 		case NOTIFICATION_INTERNAL_PROCESS: {

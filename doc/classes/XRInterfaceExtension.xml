@@ -24,7 +24,7 @@
 		<method name="_get_camera_feed_id" qualifiers="virtual const">
 			<return type="int" />
 			<description>
-				Returns the camera feed id for the [CameraFeed] registered with the [CameraServer] that should be presented as the background on an AR capable device (if applicable).
+				Returns the camera feed ID for the [CameraFeed] registered with the [CameraServer] that should be presented as the background on an AR capable device (if applicable).
 			</description>
 		</method>
 		<method name="_get_camera_transform" qualifiers="virtual">

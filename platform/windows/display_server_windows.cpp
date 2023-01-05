@@ -625,10 +625,10 @@ DisplayServer::WindowID DisplayServerWindows::get_window_at_screen_position(cons
 	return INVALID_WINDOW_ID;
 }
 
-DisplayServer::WindowID DisplayServerWindows::create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect) {
+DisplayServer::WindowID DisplayServerWindows::create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect, int p_screen) {
 	_THREAD_SAFE_METHOD_
 
-	WindowID window_id = _create_window(p_mode, p_vsync_mode, p_flags, p_rect);
+	WindowID window_id = _create_window(p_mode, p_vsync_mode, p_flags, p_rect, p_screen);
 	ERR_FAIL_COND_V_MSG(window_id == INVALID_WINDOW_ID, INVALID_WINDOW_ID, "Failed to create sub window.");
 
 	WindowData &wd = windows[window_id];
@@ -865,19 +865,24 @@ void DisplayServerWindows::window_set_current_screen(int p_screen, WindowID p_wi
 	ERR_FAIL_COND(!windows.has(p_window));
 	ERR_FAIL_INDEX(p_screen, get_screen_count());
 
+	if (window_get_current_screen(p_window) == p_screen) {
+		return;
+	}
 	const WindowData &wd = windows[p_window];
 	if (wd.fullscreen) {
-		int cs = window_get_current_screen(p_window);
-		if (cs == p_screen) {
-			return;
-		}
 		Point2 pos = screen_get_position(p_screen);
 		Size2 size = screen_get_size(p_screen);
 
 		MoveWindow(wd.hWnd, pos.x, pos.y, size.width, size.height, TRUE);
 	} else {
-		Vector2 ofs = window_get_position(p_window) - screen_get_position(window_get_current_screen(p_window));
-		window_set_position(ofs + screen_get_position(p_screen), p_window);
+		Rect2i srect = screen_get_usable_rect(p_screen);
+		Point2i wpos = window_get_position(p_window) - screen_get_position(window_get_current_screen(p_window));
+		Size2i wsize = window_get_size(p_window);
+		wpos += srect.position;
+
+		wpos.x = CLAMP(wpos.x, srect.position.x, srect.position.x + srect.size.width - wsize.width / 3);
+		wpos.y = CLAMP(wpos.y, srect.position.y, srect.position.y + srect.size.height - wsize.height / 3);
+		window_set_position(wpos, p_window);
 	}
 
 	// Don't let the mouse leave the window when resizing to a smaller resolution.
@@ -907,6 +912,24 @@ Point2i DisplayServerWindows::window_get_position(WindowID p_window) const {
 	ClientToScreen(wd.hWnd, &point);
 
 	return Point2i(point.x, point.y);
+}
+
+Point2i DisplayServerWindows::window_get_position_with_decorations(WindowID p_window) const {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND_V(!windows.has(p_window), Point2i());
+	const WindowData &wd = windows[p_window];
+
+	if (wd.minimized) {
+		return wd.last_pos;
+	}
+
+	RECT r;
+	if (GetWindowRect(wd.hWnd, &r)) {
+		return Point2i(r.left, r.top);
+	}
+
+	return Point2i();
 }
 
 void DisplayServerWindows::_update_real_mouse_position(WindowID p_window) {
@@ -1124,7 +1147,7 @@ Size2i DisplayServerWindows::window_get_size(WindowID p_window) const {
 	return Size2();
 }
 
-Size2i DisplayServerWindows::window_get_real_size(WindowID p_window) const {
+Size2i DisplayServerWindows::window_get_size_with_decorations(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(!windows.has(p_window), Size2i());
@@ -2414,7 +2437,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		case WM_GETMINMAXINFO: {
 			if (windows[window_id].resizable && !windows[window_id].fullscreen) {
 				// Size of window decorations.
-				Size2 decor = window_get_real_size(window_id) - window_get_size(window_id);
+				Size2 decor = window_get_size_with_decorations(window_id) - window_get_size(window_id);
 
 				MINMAXINFO *min_max_info = (MINMAXINFO *)lParam;
 				if (windows[window_id].min_size != Size2()) {
@@ -2473,7 +2496,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				window_mouseover_id = INVALID_WINDOW_ID;
 
 				_send_window_event(windows[window_id], WINDOW_EVENT_MOUSE_EXIT);
-			} else if (window_mouseover_id != INVALID_WINDOW_ID) {
+			} else if (window_mouseover_id != INVALID_WINDOW_ID && windows.has(window_mouseover_id)) {
 				// This is reached during drag and drop, after dropping in a different window.
 				// Once-off notification, must call again.
 				track_mouse_leave_event(windows[window_mouseover_id].hWnd);
@@ -2712,7 +2735,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				// Mouse enter.
 
 				if (mouse_mode != MOUSE_MODE_CAPTURED) {
-					if (window_mouseover_id != INVALID_WINDOW_ID) {
+					if (window_mouseover_id != INVALID_WINDOW_ID && windows.has(window_mouseover_id)) {
 						// Leave previous window.
 						_send_window_event(windows[window_mouseover_id], WINDOW_EVENT_MOUSE_EXIT);
 					}
@@ -2814,7 +2837,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			}
 
 			DisplayServer::WindowID over_id = get_window_at_screen_position(mouse_get_position());
-			if (!Rect2(window_get_position(over_id), Point2(windows[over_id].width, windows[over_id].height)).has_point(mouse_get_position())) {
+			if (windows.has(over_id) && !Rect2(window_get_position(over_id), Point2(windows[over_id].width, windows[over_id].height)).has_point(mouse_get_position())) {
 				// Don't consider the windowborder as part of the window.
 				over_id = INVALID_WINDOW_ID;
 			}
@@ -2822,12 +2845,12 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				// Mouse enter.
 
 				if (mouse_mode != MOUSE_MODE_CAPTURED) {
-					if (window_mouseover_id != INVALID_WINDOW_ID) {
+					if (window_mouseover_id != INVALID_WINDOW_ID && windows.has(window_mouseover_id)) {
 						// Leave previous window.
 						_send_window_event(windows[window_mouseover_id], WINDOW_EVENT_MOUSE_EXIT);
 					}
 
-					if (over_id != INVALID_WINDOW_ID) {
+					if (over_id != INVALID_WINDOW_ID && windows.has(over_id)) {
 						_send_window_event(windows[over_id], WINDOW_EVENT_MOUSE_ENTER);
 					}
 				}
@@ -2910,11 +2933,10 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			old_x = mm->get_position().x;
 			old_y = mm->get_position().y;
 
-			if (!windows[receiving_window_id].window_has_focus) {
-				// In case of unfocused Popups, adjust event position.
-				Point2i pos = mm->get_position() - window_get_position(receiving_window_id) + window_get_position(window_id);
-				mm->set_position(pos);
-				mm->set_global_position(pos);
+			if (receiving_window_id != window_id) {
+				// Adjust event position relative to window distance when event is sent to a different window.
+				mm->set_position(mm->get_position() - window_get_position(receiving_window_id) + window_get_position(window_id));
+				mm->set_global_position(mm->get_position());
 			}
 			Input::get_singleton()->parse_input_event(mm);
 
@@ -3517,11 +3539,11 @@ void DisplayServerWindows::_update_tablet_ctx(const String &p_old_driver, const 
 	}
 }
 
-DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect) {
+DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect, int p_screen) {
 	DWORD dwExStyle;
 	DWORD dwStyle;
 
-	_get_window_style(window_id_counter == MAIN_WINDOW_ID, (p_mode == WINDOW_MODE_FULLSCREEN || p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN), p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN, p_flags & WINDOW_FLAG_BORDERLESS_BIT, !(p_flags & WINDOW_FLAG_RESIZE_DISABLED_BIT), p_mode == WINDOW_MODE_MAXIMIZED, (p_flags & WINDOW_FLAG_NO_FOCUS_BIT), dwStyle, dwExStyle);
+	_get_window_style(window_id_counter == MAIN_WINDOW_ID, (p_mode == WINDOW_MODE_FULLSCREEN || p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN), p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN, p_flags & WINDOW_FLAG_BORDERLESS_BIT, !(p_flags & WINDOW_FLAG_RESIZE_DISABLED_BIT), p_mode == WINDOW_MODE_MAXIMIZED, (p_flags & WINDOW_FLAG_NO_FOCUS_BIT) | (p_flags & WINDOW_FLAG_POPUP), dwStyle, dwExStyle);
 
 	RECT WindowRect;
 
@@ -3531,24 +3553,37 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 	WindowRect.bottom = p_rect.position.y + p_rect.size.y;
 
 	if (p_mode == WINDOW_MODE_FULLSCREEN || p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
+		Rect2i screen_rect = Rect2i(screen_get_position(p_screen), screen_get_size(p_screen));
+
+		WindowRect.left = screen_rect.position.x;
+		WindowRect.right = screen_rect.position.x + screen_rect.size.x;
+		WindowRect.top = screen_rect.position.y;
+		WindowRect.bottom = screen_rect.position.y + screen_rect.size.y;
+	} else {
 		int nearest_area = 0;
-		Rect2i screen_rect;
+		int pos_screen = -1;
 		for (int i = 0; i < get_screen_count(); i++) {
 			Rect2i r;
 			r.position = screen_get_position(i);
 			r.size = screen_get_size(i);
 			Rect2 inters = r.intersection(p_rect);
 			int area = inters.size.width * inters.size.height;
-			if (area >= nearest_area) {
-				screen_rect = r;
+			if (area > nearest_area) {
+				pos_screen = i;
 				nearest_area = area;
 			}
 		}
 
-		WindowRect.left = screen_rect.position.x;
-		WindowRect.right = screen_rect.position.x + screen_rect.size.x;
-		WindowRect.top = screen_rect.position.y;
-		WindowRect.bottom = screen_rect.position.y + screen_rect.size.y;
+		Rect2i srect = screen_get_usable_rect(p_screen);
+		Point2i wpos = p_rect.position - ((pos_screen >= 0) ? screen_get_position(pos_screen) : Vector2i());
+		wpos += srect.position;
+		wpos.x = CLAMP(wpos.x, srect.position.x, srect.position.x + srect.size.width - p_rect.size.width / 3);
+		wpos.y = CLAMP(wpos.y, srect.position.y, srect.position.y + srect.size.height - p_rect.size.height / 3);
+
+		WindowRect.left = wpos.x;
+		WindowRect.right = wpos.x + p_rect.size.x;
+		WindowRect.top = wpos.y;
+		WindowRect.bottom = wpos.y + p_rect.size.y;
 	}
 
 	AdjustWindowRectEx(&WindowRect, dwStyle, FALSE, dwExStyle);
@@ -3692,7 +3727,6 @@ WTEnablePtr DisplayServerWindows::wintab_WTEnable = nullptr;
 // UXTheme API.
 bool DisplayServerWindows::dark_title_available = false;
 bool DisplayServerWindows::ux_theme_available = false;
-IsDarkModeAllowedForAppPtr DisplayServerWindows::IsDarkModeAllowedForApp = nullptr;
 ShouldAppsUseDarkModePtr DisplayServerWindows::ShouldAppsUseDarkMode = nullptr;
 GetImmersiveColorFromColorSetExPtr DisplayServerWindows::GetImmersiveColorFromColorSetEx = nullptr;
 GetImmersiveColorTypeFromNamePtr DisplayServerWindows::GetImmersiveColorTypeFromName = nullptr;
@@ -3710,7 +3744,7 @@ typedef enum _SHC_PROCESS_DPI_AWARENESS {
 } SHC_PROCESS_DPI_AWARENESS;
 
 bool DisplayServerWindows::is_dark_mode_supported() const {
-	return ux_theme_available && IsDarkModeAllowedForApp();
+	return ux_theme_available;
 }
 
 bool DisplayServerWindows::is_dark_mode() const {
@@ -3800,13 +3834,12 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	// Load UXTheme.
 	HMODULE ux_theme_lib = LoadLibraryW(L"uxtheme.dll");
 	if (ux_theme_lib) {
-		IsDarkModeAllowedForApp = (IsDarkModeAllowedForAppPtr)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(136));
 		ShouldAppsUseDarkMode = (ShouldAppsUseDarkModePtr)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(132));
 		GetImmersiveColorFromColorSetEx = (GetImmersiveColorFromColorSetExPtr)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(95));
 		GetImmersiveColorTypeFromName = (GetImmersiveColorTypeFromNamePtr)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(96));
 		GetImmersiveUserColorSetPreference = (GetImmersiveUserColorSetPreferencePtr)GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(98));
 
-		ux_theme_available = IsDarkModeAllowedForApp && ShouldAppsUseDarkMode && GetImmersiveColorFromColorSetEx && GetImmersiveColorTypeFromName && GetImmersiveUserColorSetPreference;
+		ux_theme_available = ShouldAppsUseDarkMode && GetImmersiveColorFromColorSetEx && GetImmersiveColorTypeFromName && GetImmersiveUserColorSetPreference;
 		if (os_ver.dwBuildNumber >= 22000) {
 			dark_title_available = true;
 		}
@@ -3916,7 +3949,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		window_position = *p_position;
 	}
 
-	WindowID main_window = _create_window(p_mode, p_vsync_mode, 0, Rect2i(window_position, p_resolution));
+	WindowID main_window = _create_window(p_mode, p_vsync_mode, 0, Rect2i(window_position, p_resolution), 0);
 	ERR_FAIL_COND_MSG(main_window == INVALID_WINDOW_ID, "Failed to create main window.");
 
 	joypad = new JoypadWindows(&windows[MAIN_WINDOW_ID].hWnd);

@@ -419,11 +419,12 @@ TextureStorage::TextureStorage() {
 		tformat.format = RD::DATA_FORMAT_R8_UINT;
 		tformat.width = 4;
 		tformat.height = 4;
-		tformat.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
-		if (RD::get_singleton()->has_feature(RD::SUPPORTS_ATTACHMENT_VRS)) {
-			tformat.usage_bits |= RD::TEXTURE_USAGE_VRS_ATTACHMENT_BIT;
-		}
+		tformat.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT | RD::TEXTURE_USAGE_VRS_ATTACHMENT_BIT;
 		tformat.texture_type = RD::TEXTURE_TYPE_2D;
+		if (!RD::get_singleton()->has_feature(RD::SUPPORTS_ATTACHMENT_VRS)) {
+			tformat.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
+			tformat.format = RD::DATA_FORMAT_R8_UNORM;
+		}
 
 		Vector<uint8_t> pv;
 		pv.resize(4 * 4);
@@ -581,6 +582,9 @@ bool TextureStorage::canvas_texture_get_uniform_set(RID p_texture, RS::CanvasIte
 		}
 
 		ct = t->canvas_texture;
+		if (t->render_target) {
+			t->render_target->was_used = true;
+		}
 	} else {
 		ct = canvas_texture_owner.get_or_null(p_texture);
 	}
@@ -611,6 +615,9 @@ bool TextureStorage::canvas_texture_get_uniform_set(RID p_texture, RS::CanvasIte
 			} else {
 				u.append_id(t->rd_texture);
 				ct->size_cache = Size2i(t->width_2d, t->height_2d);
+				if (t->render_target) {
+					t->render_target->was_used = true;
+				}
 			}
 			uniforms.push_back(u);
 		}
@@ -626,6 +633,9 @@ bool TextureStorage::canvas_texture_get_uniform_set(RID p_texture, RS::CanvasIte
 			} else {
 				u.append_id(t->rd_texture);
 				ct->use_normal_cache = true;
+				if (t->render_target) {
+					t->render_target->was_used = true;
+				}
 			}
 			uniforms.push_back(u);
 		}
@@ -641,6 +651,9 @@ bool TextureStorage::canvas_texture_get_uniform_set(RID p_texture, RS::CanvasIte
 			} else {
 				u.append_id(t->rd_texture);
 				ct->use_specular_cache = true;
+				if (t->render_target) {
+					t->render_target->was_used = true;
+				}
 			}
 			uniforms.push_back(u);
 		}
@@ -1764,6 +1777,46 @@ Ref<Image> TextureStorage::_validate_texture_format(const Ref<Image> &p_image, T
 			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_ZERO;
 			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
 		} break;
+		case Image::FORMAT_ASTC_4x4:
+		case Image::FORMAT_ASTC_4x4_HDR: {
+			if (RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_ASTC_4x4_UNORM_BLOCK, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT)) {
+				r_format.format = RD::DATA_FORMAT_ASTC_4x4_UNORM_BLOCK;
+				if (p_image->get_format() == Image::FORMAT_ASTC_4x4) {
+					r_format.format_srgb = RD::DATA_FORMAT_ASTC_4x4_SRGB_BLOCK;
+				}
+			} else {
+				//not supported, reconvert
+				r_format.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
+				r_format.format_srgb = RD::DATA_FORMAT_R8G8B8A8_SRGB;
+				image->decompress();
+				image->convert(Image::FORMAT_RGBA8);
+			}
+			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
+			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
+			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
+			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_A;
+
+		} break; // astc 4x4
+		case Image::FORMAT_ASTC_8x8:
+		case Image::FORMAT_ASTC_8x8_HDR: {
+			if (RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_ASTC_8x8_UNORM_BLOCK, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT)) {
+				r_format.format = RD::DATA_FORMAT_ASTC_8x8_UNORM_BLOCK;
+				if (p_image->get_format() == Image::FORMAT_ASTC_8x8) {
+					r_format.format_srgb = RD::DATA_FORMAT_ASTC_8x8_SRGB_BLOCK;
+				}
+			} else {
+				//not supported, reconvert
+				r_format.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
+				r_format.format_srgb = RD::DATA_FORMAT_R8G8B8A8_SRGB;
+				image->decompress();
+				image->convert(Image::FORMAT_RGBA8);
+			}
+			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
+			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
+			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
+			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_A;
+
+		} break; // astc 8x8
 
 		default: {
 		}
@@ -2398,6 +2451,10 @@ void TextureStorage::_clear_render_target(RenderTarget *rt) {
 
 	rt->color = RID();
 	rt->color_multisample = RID();
+	if (rt->texture.is_valid()) {
+		Texture *tex = get_texture(rt->texture);
+		tex->render_target = nullptr;
+	}
 }
 
 void TextureStorage::_update_render_target(RenderTarget *rt) {
@@ -2478,6 +2535,7 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 
 		tex->rd_texture = RID();
 		tex->rd_texture_srgb = RID();
+		tex->render_target = rt;
 
 		//create shared textures to the color buffer,
 		//so transparent can be supported
@@ -3140,13 +3198,13 @@ void TextureStorage::render_target_copy_to_back_buffer(RID p_render_target, cons
 		region.position.y >>= 1;
 		region.size.x = MAX(1, region.size.x >> 1);
 		region.size.y = MAX(1, region.size.y >> 1);
+		texture_size.x = MAX(1, texture_size.x >> 1);
+		texture_size.y = MAX(1, texture_size.y >> 1);
 
 		RID mipmap = rt->backbuffer_mipmaps[i];
 		if (RendererSceneRenderRD::get_singleton()->_render_buffers_can_be_storage()) {
-			copy_effects->gaussian_blur(prev_texture, mipmap, region, true);
+			copy_effects->gaussian_blur(prev_texture, mipmap, region, texture_size, true);
 		} else {
-			texture_size.x = MAX(1, texture_size.x >> 1);
-			texture_size.y = MAX(1, texture_size.y >> 1);
 			copy_effects->gaussian_blur_raster(prev_texture, mipmap, region, texture_size);
 		}
 		prev_texture = mipmap;
@@ -3179,7 +3237,7 @@ void TextureStorage::render_target_clear_back_buffer(RID p_render_target, const 
 	if (RendererSceneRenderRD::get_singleton()->_render_buffers_can_be_storage()) {
 		copy_effects->set_color(rt->backbuffer_mipmap0, p_color, region, true);
 	} else {
-		copy_effects->set_color(rt->backbuffer_mipmap0, p_color, region, true);
+		copy_effects->set_color_raster(rt->backbuffer_mipmap0, p_color, region);
 	}
 }
 
@@ -3213,14 +3271,14 @@ void TextureStorage::render_target_gen_back_buffer_mipmaps(RID p_render_target, 
 		region.position.y >>= 1;
 		region.size.x = MAX(1, region.size.x >> 1);
 		region.size.y = MAX(1, region.size.y >> 1);
+		texture_size.x = MAX(1, texture_size.x >> 1);
+		texture_size.y = MAX(1, texture_size.y >> 1);
 
 		RID mipmap = rt->backbuffer_mipmaps[i];
 
 		if (RendererSceneRenderRD::get_singleton()->_render_buffers_can_be_storage()) {
-			copy_effects->gaussian_blur(prev_texture, mipmap, region, true);
+			copy_effects->gaussian_blur(prev_texture, mipmap, region, texture_size, true);
 		} else {
-			texture_size.x = MAX(1, texture_size.x >> 1);
-			texture_size.y = MAX(1, texture_size.y >> 1);
 			copy_effects->gaussian_blur_raster(prev_texture, mipmap, region, texture_size);
 		}
 		prev_texture = mipmap;

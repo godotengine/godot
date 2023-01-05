@@ -52,6 +52,7 @@ bool MeshInstance3D::_set(const StringName &p_name, const Variant &p_value) {
 
 	if (p_name.operator String().begins_with("surface_material_override/")) {
 		int idx = p_name.operator String().get_slicec('/', 1).to_int();
+
 		if (idx >= surface_override_materials.size() || idx < 0) {
 			return false;
 		}
@@ -321,6 +322,11 @@ void MeshInstance3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			_resolve_skeleton_path();
+		} break;
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			if (mesh.is_valid()) {
+				mesh->notification(NOTIFICATION_TRANSLATION_CHANGED);
+			}
 		} break;
 	}
 }

@@ -555,6 +555,7 @@ void SceneImportSettings::open_settings(const String &p_path, bool p_for_animati
 
 	material_set.clear();
 	mesh_set.clear();
+	animation_map.clear();
 	material_map.clear();
 	mesh_map.clear();
 	node_map.clear();
@@ -957,15 +958,15 @@ void SceneImportSettings::_notification(int p_what) {
 void SceneImportSettings::_menu_callback(int p_id) {
 	switch (p_id) {
 		case ACTION_EXTRACT_MATERIALS: {
-			save_path->set_text(TTR("Select folder to extract material resources"));
+			save_path->set_title(TTR("Select folder to extract material resources"));
 			external_extension_type->select(0);
 		} break;
 		case ACTION_CHOOSE_MESH_SAVE_PATHS: {
-			save_path->set_text(TTR("Select folder where mesh resources will save on import"));
+			save_path->set_title(TTR("Select folder where mesh resources will save on import"));
 			external_extension_type->select(1);
 		} break;
 		case ACTION_CHOOSE_ANIMATION_SAVE_PATHS: {
-			save_path->set_text(TTR("Select folder where animations will save on import"));
+			save_path->set_title(TTR("Select folder where animations will save on import"));
 			external_extension_type->select(1);
 		} break;
 	}

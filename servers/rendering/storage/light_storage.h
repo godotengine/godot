@@ -31,6 +31,7 @@
 #ifndef LIGHT_STORAGE_H
 #define LIGHT_STORAGE_H
 
+#include "render_scene_buffers.h"
 #include "servers/rendering_server.h"
 
 class RendererLightStorage {
@@ -142,6 +143,7 @@ public:
 	virtual bool reflection_probe_instance_needs_redraw(RID p_instance) = 0;
 	virtual bool reflection_probe_instance_has_reflection(RID p_instance) = 0;
 	virtual bool reflection_probe_instance_begin_render(RID p_instance, RID p_reflection_atlas) = 0;
+	virtual Ref<RenderSceneBuffers> reflection_probe_atlas_get_render_buffers(RID p_reflection_atlas) = 0;
 	virtual bool reflection_probe_instance_postprocess_step(RID p_instance) = 0;
 
 	/* LIGHTMAP  */

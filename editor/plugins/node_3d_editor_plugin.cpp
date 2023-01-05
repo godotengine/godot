@@ -92,6 +92,9 @@ void ViewportNavigationControl::_notification(int p_what) {
 			if (!is_connected("mouse_exited", callable_mp(this, &ViewportNavigationControl::_on_mouse_exited))) {
 				connect("mouse_exited", callable_mp(this, &ViewportNavigationControl::_on_mouse_exited));
 			}
+			if (!is_connected("mouse_entered", callable_mp(this, &ViewportNavigationControl::_on_mouse_entered))) {
+				connect("mouse_entered", callable_mp(this, &ViewportNavigationControl::_on_mouse_entered));
+			}
 		} break;
 
 		case NOTIFICATION_DRAW: {
@@ -112,7 +115,7 @@ void ViewportNavigationControl::_draw() {
 	float radius = get_size().x / 2.0;
 
 	const bool focused = focused_index != -1;
-	draw_circle(center, radius, Color(0.5, 0.5, 0.5, focused ? 0.25 : 0.05));
+	draw_circle(center, radius, Color(0.5, 0.5, 0.5, focused || hovered ? 0.35 : 0.15));
 
 	const Color c = focused ? Color(0.9, 0.9, 0.9, 0.9) : Color(0.5, 0.5, 0.5, 0.25);
 
@@ -123,6 +126,9 @@ void ViewportNavigationControl::_draw() {
 }
 
 void ViewportNavigationControl::_process_click(int p_index, Vector2 p_position, bool p_pressed) {
+	hovered = false;
+	queue_redraw();
+
 	if (focused_index != -1 && focused_index != p_index) {
 		return;
 	}
@@ -233,7 +239,13 @@ void ViewportNavigationControl::_update_navigation() {
 	}
 }
 
+void ViewportNavigationControl::_on_mouse_entered() {
+	hovered = true;
+	queue_redraw();
+}
+
 void ViewportNavigationControl::_on_mouse_exited() {
+	hovered = false;
 	queue_redraw();
 }
 
@@ -449,6 +461,15 @@ void Node3DEditorViewport::_view_settings_confirmed(real_t p_interp_delta) {
 	cursor.fov_scale = 1.0;
 
 	_update_camera(p_interp_delta);
+}
+
+void Node3DEditorViewport::_update_navigation_controls_visibility() {
+	bool show_viewport_rotation_gizmo = EDITOR_GET("editors/3d/navigation/show_viewport_rotation_gizmo") && (!previewing_cinema && !previewing_camera);
+	rotation_control->set_visible(show_viewport_rotation_gizmo);
+
+	bool show_viewport_navigation_gizmo = EDITOR_GET("editors/3d/navigation/show_viewport_navigation_gizmo") && (!previewing_cinema && !previewing_camera);
+	position_control->set_visible(show_viewport_navigation_gizmo);
+	look_control->set_visible(show_viewport_navigation_gizmo);
 }
 
 void Node3DEditorViewport::_update_camera(real_t p_interp_delta) {
@@ -2585,7 +2606,7 @@ void Node3DEditorViewport::_project_settings_changed() {
 	const bool use_taa = GLOBAL_GET("rendering/anti_aliasing/quality/use_taa");
 	viewport->set_use_taa(use_taa);
 
-	const bool transparent_background = GLOBAL_GET("rendering/transparent_background");
+	const bool transparent_background = GLOBAL_GET("rendering/viewport/transparent_background");
 	viewport->set_transparent_background(transparent_background);
 
 	const bool use_debanding = GLOBAL_GET("rendering/anti_aliasing/quality/use_debanding");
@@ -2630,9 +2651,6 @@ void Node3DEditorViewport::_notification(int p_what) {
 				set_freelook_active(false);
 			}
 			call_deferred(SNAME("update_transform_gizmo_view"));
-			rotation_control->set_visible(EDITOR_GET("editors/3d/navigation/show_viewport_rotation_gizmo"));
-			position_control->set_visible(EDITOR_GET("editors/3d/navigation/show_viewport_navigation_gizmo"));
-			look_control->set_visible(EDITOR_GET("editors/3d/navigation/show_viewport_navigation_gizmo"));
 		} break;
 
 		case NOTIFICATION_RESIZED: {
@@ -2650,6 +2668,7 @@ void Node3DEditorViewport::_notification(int p_what) {
 				}
 			}
 
+			_update_navigation_controls_visibility();
 			_update_freelook(delta);
 
 			Node *scene_root = SceneTreeDock::get_singleton()->get_editor_data()->get_edited_scene_root();
@@ -3538,6 +3557,7 @@ void Node3DEditorViewport::_init_gizmo_instance(int p_idx) {
 }
 
 void Node3DEditorViewport::_finish_gizmo_instances() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	for (int i = 0; i < 3; i++) {
 		RS::get_singleton()->free(move_gizmo_instance[i]);
 		RS::get_singleton()->free(move_plane_gizmo_instance[i]);
@@ -3554,9 +3574,8 @@ void Node3DEditorViewport::_toggle_camera_preview(bool p_activate) {
 	ERR_FAIL_COND(p_activate && !preview);
 	ERR_FAIL_COND(!p_activate && !previewing);
 
-	rotation_control->set_visible(!p_activate);
-	position_control->set_visible(!p_activate);
-	look_control->set_visible(!p_activate);
+	previewing_camera = p_activate;
+	_update_navigation_controls_visibility();
 
 	if (!p_activate) {
 		previewing->disconnect("tree_exiting", callable_mp(this, &Node3DEditorViewport::_preview_exited_scene));
@@ -3577,9 +3596,7 @@ void Node3DEditorViewport::_toggle_camera_preview(bool p_activate) {
 
 void Node3DEditorViewport::_toggle_cinema_preview(bool p_activate) {
 	previewing_cinema = p_activate;
-	rotation_control->set_visible(!p_activate);
-	position_control->set_visible(!p_activate);
-	look_control->set_visible(!p_activate);
+	_update_navigation_controls_visibility();
 
 	if (!previewing_cinema) {
 		if (previewing != nullptr) {
@@ -5133,7 +5150,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	// Prevent visible spacing between frame time labels.
 	top_right_vbox->add_theme_constant_override("separation", 0);
 
-	const int navigation_control_size = 200;
+	const int navigation_control_size = 150;
 
 	position_control = memnew(ViewportNavigationControl);
 	position_control->set_navigation_mode(Node3DEditorViewport::NAVIGATION_MOVE);
@@ -5520,6 +5537,7 @@ Node3DEditorViewportContainer::Node3DEditorViewportContainer() {
 Node3DEditor *Node3DEditor::singleton = nullptr;
 
 Node3DEditorSelectedItem::~Node3DEditorSelectedItem() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	if (sbox_instance.is_valid()) {
 		RenderingServer::get_singleton()->free(sbox_instance);
 	}
@@ -7465,6 +7483,8 @@ void Node3DEditor::_notification(int p_what) {
 
 			sun_state->set_custom_minimum_size(sun_vb->get_combined_minimum_size());
 			environ_state->set_custom_minimum_size(environ_vb->get_combined_minimum_size());
+
+			EditorNode::get_singleton()->connect("project_settings_changed", callable_mp(this, &Node3DEditor::update_all_gizmos).bind(Variant()));
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
@@ -7622,6 +7642,13 @@ void Node3DEditor::_request_gizmo(Object *p_obj) {
 		if (!sp->get_gizmos().is_empty()) {
 			sp->update_gizmos();
 		}
+	}
+}
+
+void Node3DEditor::_request_gizmo_for_id(ObjectID p_id) {
+	Node3D *node = Object::cast_to<Node3D>(ObjectDB::get_instance(p_id));
+	if (node) {
+		_request_gizmo(node);
 	}
 }
 
@@ -7805,6 +7832,7 @@ void Node3DEditor::_register_all_gizmos() {
 void Node3DEditor::_bind_methods() {
 	ClassDB::bind_method("_get_editor_data", &Node3DEditor::_get_editor_data);
 	ClassDB::bind_method("_request_gizmo", &Node3DEditor::_request_gizmo);
+	ClassDB::bind_method("_request_gizmo_for_id", &Node3DEditor::_request_gizmo_for_id);
 	ClassDB::bind_method("_set_subgizmo_selection", &Node3DEditor::_set_subgizmo_selection);
 	ClassDB::bind_method("_clear_subgizmo_selection", &Node3DEditor::_clear_subgizmo_selection);
 	ClassDB::bind_method("_refresh_menu_icons", &Node3DEditor::_refresh_menu_icons);
@@ -8407,8 +8435,8 @@ Node3DEditor::Node3DEditor() {
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "editors/3d/manipulator_gizmo_size", PROPERTY_HINT_RANGE, "16,160,1"));
 	EDITOR_DEF("editors/3d/manipulator_gizmo_opacity", 0.9);
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::FLOAT, "editors/3d/manipulator_gizmo_opacity", PROPERTY_HINT_RANGE, "0,1,0.01"));
-	EDITOR_DEF_RST("editors/3d/navigation/show_viewport_rotation_gizmo", true);
-	EDITOR_DEF_RST("editors/3d/navigation/show_viewport_navigation_gizmo", DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_TOUCHSCREEN));
+	EDITOR_DEF("editors/3d/navigation/show_viewport_rotation_gizmo", true);
+	EDITOR_DEF("editors/3d/navigation/show_viewport_navigation_gizmo", DisplayServer::get_singleton()->is_touchscreen_available());
 
 	current_hover_gizmo_handle = -1;
 	current_hover_gizmo_handle_secondary = false;

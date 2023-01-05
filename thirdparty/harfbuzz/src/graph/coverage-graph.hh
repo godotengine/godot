@@ -136,7 +136,7 @@ struct Coverage : public OT::Layout::Common::Coverage
     {
     case 1: return ((CoverageFormat1*)this)->sanitize (vertex);
     case 2: return ((CoverageFormat2*)this)->sanitize (vertex);
-#ifndef HB_NO_BORING_EXPANSION
+#ifndef HB_NO_BEYOND_64K
     // Not currently supported
     case 3:
     case 4:

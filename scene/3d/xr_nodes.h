@@ -183,6 +183,8 @@ private:
 	bool current = false;
 	static Vector<XROrigin3D *> origin_nodes; // all origin nodes in tree
 
+	void _set_current(bool p_enabled, bool p_update_others);
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();

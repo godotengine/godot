@@ -37,6 +37,7 @@
 #include "../editor/openxr_select_interaction_profile_dialog.h"
 
 #include "editor/editor_plugin.h"
+#include "editor/editor_undo_redo_manager.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/label.h"
@@ -47,9 +48,9 @@ class OpenXRActionMapEditor : public VBoxContainer {
 	GDCLASS(OpenXRActionMapEditor, VBoxContainer);
 
 private:
+	Ref<EditorUndoRedoManager> undo_redo;
 	String edited_path;
 	Ref<OpenXRActionMap> action_map;
-	Vector<Node *> interaction_profiles;
 
 	HBoxContainer *top_hb = nullptr;
 	Label *header_label = nullptr;
@@ -64,9 +65,9 @@ private:
 	OpenXRSelectInteractionProfileDialog *select_interaction_profile_dialog = nullptr;
 
 	OpenXRActionSetEditor *_add_action_set_editor(Ref<OpenXRActionSet> p_action_set);
-	void _update_action_sets();
+	void _create_action_sets();
 	OpenXRInteractionProfileEditorBase *_add_interaction_profile_editor(Ref<OpenXRInteractionProfile> p_interaction_profile);
-	void _update_interaction_profiles();
+	void _create_interaction_profiles();
 
 	OpenXRActionSetEditor *_add_action_set(String p_name);
 	void _remove_action_set(String p_name);
@@ -74,7 +75,7 @@ private:
 	void _on_add_action_set();
 	void _set_focus_on_action_set(OpenXRActionSetEditor *p_action_set_editor);
 	void _on_remove_action_set(Object *p_action_set_editor);
-	void _on_action_removed();
+	void _on_action_removed(Ref<OpenXRAction> p_action);
 
 	void _on_add_interaction_profile();
 	void _on_interaction_profile_selected(const String p_path);
@@ -89,6 +90,14 @@ private:
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
+
+	void _clear_action_map();
+
+	// used for undo/redo
+	void _do_add_action_set_editor(OpenXRActionSetEditor *p_action_set_editor);
+	void _do_remove_action_set_editor(OpenXRActionSetEditor *p_action_set_editor);
+	void _do_add_interaction_profile_editor(OpenXRInteractionProfileEditorBase *p_interaction_profile_editor);
+	void _do_remove_interaction_profile_editor(OpenXRInteractionProfileEditorBase *p_interaction_profile_editor);
 
 public:
 	void open_action_map(String p_path);

@@ -66,6 +66,19 @@ void main() {
 
 	vec4 normal_roughness = imageLoad(source_normal_roughness, ssC);
 	vec3 normal = normal_roughness.xyz * 2.0 - 1.0;
+	float roughness = normal_roughness.w;
+
+	// The roughness cutoff of 0.6 is chosen to match the roughness fadeout from GH-69828.
+	if (roughness > 0.6) {
+		// Do not compute SSR for rough materials to improve performance at the cost of
+		// subtle artifacting.
+#ifdef MODE_ROUGH
+		imageStore(blur_radius_image, ssC, vec4(0.0));
+#endif
+		imageStore(ssr_image, ssC, vec4(0.0));
+		return;
+	}
+
 	normal = normalize(normal);
 	normal.y = -normal.y; //because this code reads flipped
 
@@ -81,8 +94,6 @@ void main() {
 		imageStore(ssr_image, ssC, vec4(0.0));
 		return;
 	}
-	//ray_dir = normalize(view_dir - normal * dot(normal,view_dir) * 2.0);
-	//ray_dir = normalize(vec3(1.0, 1.0, -1.0));
 
 	////////////////
 
@@ -212,6 +223,9 @@ void main() {
 		float grad = (steps_taken + 1.0) / float(params.num_steps);
 		float initial_fade = params.curve_fade_in == 0.0 ? 1.0 : pow(clamp(grad, 0.0, 1.0), params.curve_fade_in);
 		float fade = pow(clamp(1.0 - grad, 0.0, 1.0), params.distance_fade) * initial_fade;
+		// This is an ad-hoc term to fade out the SSR as roughness increases. Values used
+		// are meant to match the visual appearance of a ReflectionProbe.
+		float roughness_fade = smoothstep(0.4, 0.7, 1.0 - normal_roughness.w);
 		final_pos = pos;
 
 		vec4 final_color;
@@ -220,7 +234,6 @@ void main() {
 
 		// if roughness is enabled, do screen space cone tracing
 		float blur_radius = 0.0;
-		float roughness = normal_roughness.w;
 
 		if (roughness > 0.001) {
 			float cone_angle = min(roughness, 0.999) * M_PI * 0.5;
@@ -246,7 +259,7 @@ void main() {
 
 #endif // MODE_ROUGH
 
-		final_color = vec4(imageLoad(source_diffuse, ivec2(final_pos - 0.5)).rgb, fade * margin_blend);
+		final_color = vec4(imageLoad(source_diffuse, ivec2(final_pos - 0.5)).rgb, fade * margin_blend * roughness_fade);
 
 		// Schlick term.
 		float metallic = texelFetch(source_metallic, ssC << 1, 0).w;

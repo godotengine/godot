@@ -219,6 +219,8 @@ public:
 	static void load_translation_remaps();
 	static void clear_translation_remaps();
 
+	static void clear_thread_load_tasks();
+
 	static void set_load_callback(ResourceLoadedCallback p_callback);
 	static ResourceLoaderImport import;
 

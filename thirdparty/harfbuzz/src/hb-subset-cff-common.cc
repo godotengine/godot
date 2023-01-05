@@ -66,8 +66,7 @@ hb_plan_subset_cff_fdselect (const hb_subset_plan_t *plan,
 
   {
     /* use hb_set to determine the subset of font dicts */
-    hb_set_t *set = hb_set_create ();
-    if (unlikely (set == &Null (hb_set_t))) return false;
+    hb_set_t set;
     hb_codepoint_t prev_fd = CFF_UNDEF_CODE;
     for (hb_codepoint_t i = 0; i < subset_num_glyphs; i++)
     {
@@ -79,7 +78,7 @@ hb_plan_subset_cff_fdselect (const hb_subset_plan_t *plan,
 	glyph = i;
       }
       fd = src.get_fd (glyph);
-      set->add (fd);
+      set.add (fd);
 
       if (fd != prev_fd)
       {
@@ -90,12 +89,11 @@ hb_plan_subset_cff_fdselect (const hb_subset_plan_t *plan,
       }
     }
 
-    subset_fd_count = set->get_population ();
+    subset_fd_count = set.get_population ();
     if (subset_fd_count == fdCount)
     {
       /* all font dicts belong to the subset. no need to subset FDSelect & FDArray */
       fdmap.identity (fdCount);
-      hb_set_destroy (set);
     }
     else
     {
@@ -103,9 +101,8 @@ hb_plan_subset_cff_fdselect (const hb_subset_plan_t *plan,
       fdmap.reset ();
 
       hb_codepoint_t fd = CFF_UNDEF_CODE;
-      while (set->next (&fd))
+      while (set.next (&fd))
 	fdmap.add (fd);
-      hb_set_destroy (set);
       if (unlikely (fdmap.get_population () != subset_fd_count))
 	return false;
     }

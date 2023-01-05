@@ -58,10 +58,10 @@ Ref<Skin> SkinReference::get_skin() const {
 }
 
 SkinReference::~SkinReference() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	if (skeleton_node) {
 		skeleton_node->skin_bindings.erase(this);
 	}
-
 	RS::get_singleton()->free(skeleton);
 }
 

@@ -87,13 +87,13 @@ void AnimationPlayerEditor::_notification(int p_what) {
 				}
 				frame->set_value(player->get_current_animation_position());
 				track_editor->set_anim_pos(player->get_current_animation_position());
-
 			} else if (!player->is_valid()) {
 				// Reset timeline when the player has been stopped externally
 				frame->set_value(0);
 			} else if (last_active) {
 				// Need the last frame after it stopped.
 				frame->set_value(player->get_current_animation_position());
+				track_editor->set_anim_pos(player->get_current_animation_position());
 			}
 
 			last_active = player->is_playing();
@@ -199,6 +199,7 @@ void AnimationPlayerEditor::_play_pressed() {
 		if (current == player->get_assigned_animation()) {
 			player->stop(); //so it won't blend with itself
 		}
+		ERR_FAIL_COND_EDMSG(!_validate_tracks(player->get_animation(current)), "Animation tracks may have any invalid key, abort playing.");
 		player->play(current);
 	}
 
@@ -211,13 +212,12 @@ void AnimationPlayerEditor::_play_from_pressed() {
 
 	if (!current.is_empty()) {
 		float time = player->get_current_animation_position();
-
 		if (current == player->get_assigned_animation() && player->is_playing()) {
 			player->stop(); //so it won't blend with itself
 		}
-
-		player->play(current);
+		ERR_FAIL_COND_EDMSG(!_validate_tracks(player->get_animation(current)), "Animation tracks may have any invalid key, abort playing.");
 		player->seek(time);
+		player->play(current);
 	}
 
 	//unstop
@@ -237,6 +237,7 @@ void AnimationPlayerEditor::_play_bw_pressed() {
 		if (current == player->get_assigned_animation()) {
 			player->stop(); //so it won't blend with itself
 		}
+		ERR_FAIL_COND_EDMSG(!_validate_tracks(player->get_animation(current)), "Animation tracks may have any invalid key, abort playing.");
 		player->play(current, -1, -1, true);
 	}
 
@@ -252,9 +253,9 @@ void AnimationPlayerEditor::_play_bw_from_pressed() {
 		if (current == player->get_assigned_animation()) {
 			player->stop(); //so it won't blend with itself
 		}
-
-		player->play(current, -1, -1, true);
+		ERR_FAIL_COND_EDMSG(!_validate_tracks(player->get_animation(current)), "Animation tracks may have any invalid key, abort playing.");
 		player->seek(time);
+		player->play(current, -1, -1, true);
 	}
 
 	//unstop
@@ -422,7 +423,7 @@ void AnimationPlayerEditor::_select_anim_by_name(const String &p_anim) {
 	_animation_selected(idx);
 }
 
-double AnimationPlayerEditor::_get_editor_step() const {
+float AnimationPlayerEditor::_get_editor_step() const {
 	// Returns the effective snapping value depending on snapping modifiers, or 0 if snapping is disabled.
 	if (track_editor->is_snap_enabled()) {
 		const String current = player->get_assigned_animation();
@@ -433,7 +434,7 @@ double AnimationPlayerEditor::_get_editor_step() const {
 		return Input::get_singleton()->is_key_pressed(Key::SHIFT) ? anim->get_step() * 0.25 : anim->get_step();
 	}
 
-	return 0.0;
+	return 0.0f;
 }
 
 void AnimationPlayerEditor::_animation_name_edited() {
@@ -1564,6 +1565,53 @@ void AnimationPlayerEditor::_pin_pressed() {
 	SceneTreeDock::get_singleton()->get_tree_editor()->update_tree();
 }
 
+bool AnimationPlayerEditor::_validate_tracks(const Ref<Animation> p_anim) {
+	bool is_valid = true;
+	if (!p_anim.is_valid()) {
+		return true; // There is a problem outside of the animation track.
+	}
+	int len = p_anim->get_track_count();
+	for (int i = 0; i < len; i++) {
+		Animation::TrackType ttype = p_anim->track_get_type(i);
+		if (ttype == Animation::TYPE_ROTATION_3D) {
+			int key_len = p_anim->track_get_key_count(i);
+			for (int j = 0; j < key_len; j++) {
+				Quaternion q;
+				p_anim->rotation_track_get_key(i, j, &q);
+				ERR_BREAK_EDMSG(!q.is_normalized(), "AnimationPlayer: '" + player->get_name() + "', Animation: '" + player->get_current_animation() + "', rotation track:  '" + p_anim->track_get_path(i) + "' contains unnormalized Quaternion key.");
+			}
+		} else if (ttype == Animation::TYPE_VALUE) {
+			int key_len = p_anim->track_get_key_count(i);
+			if (key_len == 0) {
+				continue;
+			}
+			switch (p_anim->track_get_key_value(i, 0).get_type()) {
+				case Variant::QUATERNION: {
+					for (int j = 0; j < key_len; j++) {
+						Quaternion q = Quaternion(p_anim->track_get_key_value(i, j));
+						if (!q.is_normalized()) {
+							is_valid = false;
+							ERR_BREAK_EDMSG(true, "AnimationPlayer: '" + player->get_name() + "', Animation: '" + player->get_current_animation() + "', value track:  '" + p_anim->track_get_path(i) + "' contains unnormalized Quaternion key.");
+						}
+					}
+				} break;
+				case Variant::TRANSFORM3D: {
+					for (int j = 0; j < key_len; j++) {
+						Transform3D t = Transform3D(p_anim->track_get_key_value(i, j));
+						if (!t.basis.orthonormalized().is_rotation()) {
+							is_valid = false;
+							ERR_BREAK_EDMSG(true, "AnimationPlayer: '" + player->get_name() + "', Animation: '" + player->get_current_animation() + "', value track:  '" + p_anim->track_get_path(i) + "' contains corrupted basis (some axes are too close other axis or scaled by zero) Transform3D key.");
+						}
+					}
+				} break;
+				default: {
+				} break;
+			}
+		}
+	}
+	return is_valid;
+}
+
 void AnimationPlayerEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_animation_new"), &AnimationPlayerEditor::_animation_new);
 	ClassDB::bind_method(D_METHOD("_animation_rename"), &AnimationPlayerEditor::_animation_rename);
@@ -1874,10 +1922,12 @@ void AnimationPlayerEditorPlugin::_notification(int p_what) {
 }
 
 void AnimationPlayerEditorPlugin::_property_keyed(const String &p_keyed, const Variant &p_value, bool p_advance) {
-	if (!anim_editor->get_track_editor()->has_keying()) {
+	AnimationTrackEditor *te = anim_editor->get_track_editor();
+	if (!te || !te->has_keying()) {
 		return;
 	}
-	anim_editor->get_track_editor()->insert_value_key(p_keyed, p_value, p_advance);
+	te->_clear_selection();
+	te->insert_value_key(p_keyed, p_value, p_advance);
 }
 
 void AnimationPlayerEditorPlugin::_transform_key_request(Object *sp, const String &p_sub, const Transform3D &p_key) {
@@ -1922,4 +1972,27 @@ AnimationPlayerEditorPlugin::AnimationPlayerEditorPlugin() {
 }
 
 AnimationPlayerEditorPlugin::~AnimationPlayerEditorPlugin() {
+}
+
+// AnimationTrackKeyEditEditorPlugin
+
+bool EditorInspectorPluginAnimationTrackKeyEdit::can_handle(Object *p_object) {
+	return Object::cast_to<AnimationTrackKeyEdit>(p_object) != nullptr;
+}
+
+void EditorInspectorPluginAnimationTrackKeyEdit::parse_begin(Object *p_object) {
+	AnimationTrackKeyEdit *atk = Object::cast_to<AnimationTrackKeyEdit>(p_object);
+	ERR_FAIL_COND(!atk);
+
+	atk_editor = memnew(AnimationTrackKeyEditEditor(atk->animation, atk->track, atk->key_ofs, atk->use_fps));
+	add_custom_control(atk_editor);
+}
+
+AnimationTrackKeyEditEditorPlugin::AnimationTrackKeyEditEditorPlugin() {
+	atk_plugin = memnew(EditorInspectorPluginAnimationTrackKeyEdit);
+	EditorInspector::add_inspector_plugin(atk_plugin);
+}
+
+bool AnimationTrackKeyEditEditorPlugin::handles(Object *p_object) const {
+	return p_object->is_class("AnimationTrackKeyEdit");
 }

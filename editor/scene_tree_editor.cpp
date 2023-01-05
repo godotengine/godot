@@ -132,8 +132,16 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 		if (config_err.is_empty()) {
 			return;
 		}
-		config_err = config_err.word_wrap(80);
-		warning->set_text(config_err);
+
+		const PackedInt32Array boundaries = TS->string_get_word_breaks(config_err, "", 80);
+		PackedStringArray lines;
+		for (int i = 0; i < boundaries.size(); i += 2) {
+			const int start = boundaries[i];
+			const int end = boundaries[i + 1];
+			lines.append(config_err.substr(start, end - start + 1));
+		}
+
+		warning->set_text(String("\n").join(lines));
 		warning->popup_centered();
 
 	} else if (p_id == BUTTON_SIGNALS) {

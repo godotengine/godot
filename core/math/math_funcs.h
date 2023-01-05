@@ -453,7 +453,10 @@ public:
 	}
 	static _ALWAYS_INLINE_ double wrapf(double value, double min, double max) {
 		double range = max - min;
-		double result = is_zero_approx(range) ? min : value - (range * Math::floor((value - min) / range));
+		if (is_zero_approx(range)) {
+			return min;
+		}
+		double result = value - (range * Math::floor((value - min) / range));
 		if (is_equal_approx(result, max)) {
 			return min;
 		}
@@ -461,7 +464,10 @@ public:
 	}
 	static _ALWAYS_INLINE_ float wrapf(float value, float min, float max) {
 		float range = max - min;
-		float result = is_zero_approx(range) ? min : value - (range * Math::floor((value - min) / range));
+		if (is_zero_approx(range)) {
+			return min;
+		}
+		float result = value - (range * Math::floor((value - min) / range));
 		if (is_equal_approx(result, max)) {
 			return min;
 		}

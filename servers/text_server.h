@@ -250,6 +250,12 @@ public:
 	virtual void font_set_style_name(const RID &p_font_rid, const String &p_name) = 0;
 	virtual String font_get_style_name(const RID &p_font_rid) const = 0;
 
+	virtual void font_set_weight(const RID &p_font_rid, int64_t p_weight) = 0;
+	virtual int64_t font_get_weight(const RID &p_font_rid) const = 0;
+
+	virtual void font_set_stretch(const RID &p_font_rid, int64_t p_stretch) = 0;
+	virtual int64_t font_get_stretch(const RID &p_font_rid) const = 0;
+
 	virtual void font_set_antialiasing(const RID &p_font_rid, FontAntialiasing p_antialiasing) = 0;
 	virtual FontAntialiasing font_get_antialiasing(const RID &p_font_rid) const = 0;
 
@@ -267,6 +273,9 @@ public:
 
 	virtual void font_set_fixed_size(const RID &p_font_rid, int64_t p_fixed_size) = 0;
 	virtual int64_t font_get_fixed_size(const RID &p_font_rid) const = 0;
+
+	virtual void font_set_allow_system_fallback(const RID &p_font_rid, bool p_allow_system_fallback) = 0;
+	virtual bool font_is_allow_system_fallback(const RID &p_font_rid) const = 0;
 
 	virtual void font_set_force_autohinter(const RID &p_font_rid, bool p_force_autohinter) = 0;
 	virtual bool font_is_force_autohinter(const RID &p_font_rid) const = 0;
@@ -411,8 +420,8 @@ public:
 	virtual int64_t shaped_text_get_spacing(const RID &p_shaped, SpacingType p_spacing) const = 0;
 
 	virtual bool shaped_text_add_string(const RID &p_shaped, const String &p_text, const TypedArray<RID> &p_fonts, int64_t p_size, const Dictionary &p_opentype_features = Dictionary(), const String &p_language = "", const Variant &p_meta = Variant()) = 0;
-	virtual bool shaped_text_add_object(const RID &p_shaped, const Variant &p_key, const Size2 &p_size, InlineAlignment p_inline_align = INLINE_ALIGNMENT_CENTER, int64_t p_length = 1) = 0;
-	virtual bool shaped_text_resize_object(const RID &p_shaped, const Variant &p_key, const Size2 &p_size, InlineAlignment p_inline_align = INLINE_ALIGNMENT_CENTER) = 0;
+	virtual bool shaped_text_add_object(const RID &p_shaped, const Variant &p_key, const Size2 &p_size, InlineAlignment p_inline_align = INLINE_ALIGNMENT_CENTER, int64_t p_length = 1, float p_baseline = 0.0) = 0;
+	virtual bool shaped_text_resize_object(const RID &p_shaped, const Variant &p_key, const Size2 &p_size, InlineAlignment p_inline_align = INLINE_ALIGNMENT_CENTER, float p_baseline = 0.0) = 0;
 
 	virtual int64_t shaped_get_span_count(const RID &p_shaped) const = 0;
 	virtual Variant shaped_get_span_meta(const RID &p_shaped, int64_t p_index) const = 0;
@@ -484,7 +493,7 @@ public:
 	virtual String percent_sign(const String &p_language = "") const = 0;
 
 	// String functions.
-	virtual PackedInt32Array string_get_word_breaks(const String &p_string, const String &p_language = "") const = 0;
+	virtual PackedInt32Array string_get_word_breaks(const String &p_string, const String &p_language = "", int p_chars_per_line = 0) const = 0;
 
 	virtual int64_t is_confusable(const String &p_string, const PackedStringArray &p_dict) const { return -1; };
 	virtual bool spoof_check(const String &p_string) const { return false; };
@@ -497,6 +506,8 @@ public:
 	virtual String string_to_lower(const String &p_string, const String &p_language = "") const = 0;
 
 	TypedArray<Vector2i> parse_structured_text(StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const;
+
+	virtual void cleanup() {}
 
 	TextServer();
 	~TextServer();

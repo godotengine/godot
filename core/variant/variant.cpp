@@ -940,7 +940,7 @@ bool Variant::is_zero() const {
 			return reinterpret_cast<const Signal *>(_data._mem)->is_null();
 		}
 		case STRING_NAME: {
-			return *reinterpret_cast<const StringName *>(_data._mem) != StringName();
+			return *reinterpret_cast<const StringName *>(_data._mem) == StringName();
 		}
 		case NODE_PATH: {
 			return reinterpret_cast<const NodePath *>(_data._mem)->is_empty();
@@ -3489,6 +3489,19 @@ bool Variant::hash_compare(const Variant &p_variant, int recursion_count) const 
 			evaluate(OP_EQUAL, *this, p_variant, r, v);
 			return r;
 	}
+}
+
+bool StringLikeVariantComparator::compare(const Variant &p_lhs, const Variant &p_rhs) {
+	if (p_lhs.hash_compare(p_rhs)) {
+		return true;
+	}
+	if (p_lhs.get_type() == Variant::STRING && p_rhs.get_type() == Variant::STRING_NAME) {
+		return *VariantInternal::get_string(&p_lhs) == *VariantInternal::get_string_name(&p_rhs);
+	}
+	if (p_lhs.get_type() == Variant::STRING_NAME && p_rhs.get_type() == Variant::STRING) {
+		return *VariantInternal::get_string_name(&p_lhs) == *VariantInternal::get_string(&p_rhs);
+	}
+	return false;
 }
 
 bool Variant::is_ref_counted() const {

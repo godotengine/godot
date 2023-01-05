@@ -291,7 +291,7 @@
 			</description>
 		</signal>
 		<signal name="connection_drag_started">
-			<param index="0" name="from_node" type="String" />
+			<param index="0" name="from_node" type="StringName" />
 			<param index="1" name="from_port" type="int" />
 			<param index="2" name="is_output" type="bool" />
 			<description>

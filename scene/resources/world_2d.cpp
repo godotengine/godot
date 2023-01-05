@@ -89,6 +89,9 @@ World2D::World2D() {
 }
 
 World2D::~World2D() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
+	ERR_FAIL_NULL(PhysicsServer2D::get_singleton());
+	ERR_FAIL_NULL(NavigationServer2D::get_singleton());
 	RenderingServer::get_singleton()->free(canvas);
 	PhysicsServer2D::get_singleton()->free(space);
 	NavigationServer2D::get_singleton()->free(navigation_map);

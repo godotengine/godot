@@ -58,11 +58,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include <X11/Xatom.h>
-#include <X11/Xutil.h>
-#include <X11/extensions/Xinerama.h>
-#include <X11/extensions/shape.h>
-
 // ICCCM
 #define WM_NormalState 1L // window normal state
 #define WM_IconicState 3L // window minimized
@@ -1240,10 +1235,10 @@ Vector<DisplayServer::WindowID> DisplayServerX11::get_window_list() const {
 	return ret;
 }
 
-DisplayServer::WindowID DisplayServerX11::create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect) {
+DisplayServer::WindowID DisplayServerX11::create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect, int p_screen) {
 	_THREAD_SAFE_METHOD_
 
-	WindowID id = _create_window(p_mode, p_vsync_mode, p_flags, p_rect);
+	WindowID id = _create_window(p_mode, p_vsync_mode, p_flags, p_rect, p_screen);
 	for (int i = 0; i < WINDOW_FLAG_MAX; i++) {
 		if (p_flags & (1 << i)) {
 			window_set_flag(WindowFlags(i), true, id);
@@ -1262,6 +1257,8 @@ void DisplayServerX11::show_window(WindowID p_id) {
 	DEBUG_LOG_X11("show_window: %lu (%u) \n", wd.x11_window, p_id);
 
 	XMapWindow(x11_display, wd.x11_window);
+	XSync(x11_display, False);
+	_validate_mode_on_map(p_id);
 }
 
 void DisplayServerX11::delete_sub_window(WindowID p_id) {
@@ -1402,8 +1399,8 @@ void DisplayServerX11::window_set_mouse_passthrough(const Vector<Vector2> &p_reg
 			XRectangle rect;
 			rect.x = 0;
 			rect.y = 0;
-			rect.width = window_get_real_size(p_window).x;
-			rect.height = window_get_real_size(p_window).y;
+			rect.width = window_get_size_with_decorations(p_window).x;
+			rect.height = window_get_size_with_decorations(p_window).y;
 			XUnionRectWithRegion(&rect, region, region);
 		} else {
 			XPoint *points = (XPoint *)memalloc(sizeof(XPoint) * p_region.size());
@@ -1510,16 +1507,24 @@ void DisplayServerX11::window_set_current_screen(int p_screen, WindowID p_window
 	// Check if screen is valid
 	ERR_FAIL_INDEX(p_screen, get_screen_count());
 
+	if (window_get_current_screen(p_window) == p_screen) {
+		return;
+	}
+
 	if (window_get_mode(p_window) == WINDOW_MODE_FULLSCREEN) {
 		Point2i position = screen_get_position(p_screen);
 		Size2i size = screen_get_size(p_screen);
 
 		XMoveResizeWindow(x11_display, wd.x11_window, position.x, position.y, size.x, size.y);
 	} else {
-		if (p_screen != window_get_current_screen(p_window)) {
-			Vector2 ofs = window_get_position(p_window) - screen_get_position(window_get_current_screen(p_window));
-			window_set_position(ofs + screen_get_position(p_screen), p_window);
-		}
+		Rect2i srect = screen_get_usable_rect(p_screen);
+		Point2i wpos = window_get_position(p_window) - screen_get_position(window_get_current_screen(p_window));
+		Size2i wsize = window_get_size(p_window);
+		wpos += srect.position;
+
+		wpos.x = CLAMP(wpos.x, srect.position.x, srect.position.x + srect.size.width - wsize.width / 3);
+		wpos.y = CLAMP(wpos.y, srect.position.y, srect.position.y + srect.size.height - wsize.height / 3);
+		window_set_position(wpos, p_window);
 	}
 }
 
@@ -1587,7 +1592,7 @@ void DisplayServerX11::_update_size_hints(WindowID p_window) {
 	xsh->width = wd.size.width;
 	xsh->height = wd.size.height;
 
-	if (window_mode == WINDOW_MODE_FULLSCREEN) {
+	if (window_mode == WINDOW_MODE_FULLSCREEN || window_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
 		// Do not set any other hints to prevent the window manager from ignoring the fullscreen flags
 	} else if (window_get_flag(WINDOW_FLAG_RESIZE_DISABLED, p_window)) {
 		// If resizing is disabled, use the forced size
@@ -1621,6 +1626,40 @@ Point2i DisplayServerX11::window_get_position(WindowID p_window) const {
 	const WindowData &wd = windows[p_window];
 
 	return wd.position;
+}
+
+Point2i DisplayServerX11::window_get_position_with_decorations(WindowID p_window) const {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND_V(!windows.has(p_window), Size2i());
+	const WindowData &wd = windows[p_window];
+
+	if (wd.fullscreen) {
+		return wd.position;
+	}
+
+	XWindowAttributes xwa;
+	XSync(x11_display, False);
+	XGetWindowAttributes(x11_display, wd.x11_window, &xwa);
+	int x = wd.position.x;
+	int y = wd.position.y;
+	Atom prop = XInternAtom(x11_display, "_NET_FRAME_EXTENTS", True);
+	if (prop != None) {
+		Atom type;
+		int format;
+		unsigned long len;
+		unsigned long remaining;
+		unsigned char *data = nullptr;
+		if (XGetWindowProperty(x11_display, wd.x11_window, prop, 0, 4, False, AnyPropertyType, &type, &format, &len, &remaining, &data) == Success) {
+			if (format == 32 && len == 4 && data) {
+				long *extents = (long *)data;
+				x -= extents[0]; // left
+				y -= extents[2]; // top
+			}
+			XFree(data);
+		}
+	}
+	return Size2i(x, y);
 }
 
 void DisplayServerX11::window_set_position(const Point2i &p_position, WindowID p_window) {
@@ -1767,11 +1806,15 @@ Size2i DisplayServerX11::window_get_size(WindowID p_window) const {
 	return wd.size;
 }
 
-Size2i DisplayServerX11::window_get_real_size(WindowID p_window) const {
+Size2i DisplayServerX11::window_get_size_with_decorations(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(!windows.has(p_window), Size2i());
 	const WindowData &wd = windows[p_window];
+
+	if (wd.fullscreen) {
+		return wd.size;
+	}
 
 	XWindowAttributes xwa;
 	XSync(x11_display, False);
@@ -1954,7 +1997,7 @@ void DisplayServerX11::_validate_mode_on_map(WindowID p_window) {
 	// Check if we applied any window modes that didn't take effect while unmapped
 	const WindowData &wd = windows[p_window];
 	if (wd.fullscreen && !_window_fullscreen_check(p_window)) {
-		_set_wm_fullscreen(p_window, true);
+		_set_wm_fullscreen(p_window, true, wd.exclusive_fullscreen);
 	} else if (wd.maximized && !_window_maximize_check(p_window, "_NET_WM_STATE")) {
 		_set_wm_maximized(p_window, true);
 	} else if (wd.minimized && !_window_minimize_check(p_window)) {
@@ -2029,7 +2072,7 @@ void DisplayServerX11::_set_wm_minimized(WindowID p_window, bool p_enabled) {
 	wd.minimized = p_enabled;
 }
 
-void DisplayServerX11::_set_wm_fullscreen(WindowID p_window, bool p_enabled) {
+void DisplayServerX11::_set_wm_fullscreen(WindowID p_window, bool p_enabled, bool p_exclusive) {
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
@@ -2068,7 +2111,14 @@ void DisplayServerX11::_set_wm_fullscreen(WindowID p_window, bool p_enabled) {
 
 	// set bypass compositor hint
 	Atom bypass_compositor = XInternAtom(x11_display, "_NET_WM_BYPASS_COMPOSITOR", False);
-	unsigned long compositing_disable_on = p_enabled ? 1 : 0;
+	unsigned long compositing_disable_on = 0; // Use default.
+	if (p_enabled) {
+		if (p_exclusive) {
+			compositing_disable_on = 1; // Force composition OFF to reduce overhead.
+		} else {
+			compositing_disable_on = 2; // Force composition ON to allow popup windows.
+		}
+	}
 	if (bypass_compositor != None) {
 		XChangeProperty(x11_display, wd.x11_window, bypass_compositor, XA_CARDINAL, 32, PropModeReplace, (unsigned char *)&compositing_disable_on, 1);
 	}
@@ -2114,8 +2164,9 @@ void DisplayServerX11::window_set_mode(WindowMode p_mode, WindowID p_window) {
 		case WINDOW_MODE_FULLSCREEN: {
 			//Remove full-screen
 			wd.fullscreen = false;
+			wd.exclusive_fullscreen = false;
 
-			_set_wm_fullscreen(p_window, false);
+			_set_wm_fullscreen(p_window, false, false);
 
 			//un-maximize required for always on top
 			bool on_top = window_get_flag(WINDOW_FLAG_ALWAYS_ON_TOP, p_window);
@@ -2148,7 +2199,13 @@ void DisplayServerX11::window_set_mode(WindowMode p_mode, WindowID p_window) {
 			}
 
 			wd.fullscreen = true;
-			_set_wm_fullscreen(p_window, true);
+			if (p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
+				wd.exclusive_fullscreen = true;
+				_set_wm_fullscreen(p_window, true, true);
+			} else {
+				wd.exclusive_fullscreen = false;
+				_set_wm_fullscreen(p_window, true, false);
+			}
 		} break;
 		case WINDOW_MODE_MAXIMIZED: {
 			_set_wm_maximized(p_window, true);
@@ -2163,7 +2220,11 @@ DisplayServer::WindowMode DisplayServerX11::window_get_mode(WindowID p_window) c
 	const WindowData &wd = windows[p_window];
 
 	if (wd.fullscreen) { //if fullscreen, it's not in another mode
-		return WINDOW_MODE_FULLSCREEN;
+		if (wd.exclusive_fullscreen) {
+			return WINDOW_MODE_EXCLUSIVE_FULLSCREEN;
+		} else {
+			return WINDOW_MODE_FULLSCREEN;
+		}
 	}
 
 	// Test maximized.
@@ -3934,29 +3995,40 @@ void DisplayServerX11::process_events() {
 				} else {
 					DEBUG_LOG_X11("[%u] ButtonRelease window=%lu (%u), button_index=%u \n", frame, event.xbutton.window, window_id, mb->get_button_index());
 
-					if (!wd.focused) {
+					WindowID window_id_other = INVALID_WINDOW_ID;
+					Window wd_other_x11_window;
+					if (wd.focused) {
+						// Handle cases where an unfocused popup is open that needs to receive button-up events.
+						WindowID popup_id = _get_focused_window_or_popup();
+						if (popup_id != INVALID_WINDOW_ID && popup_id != window_id) {
+							window_id_other = popup_id;
+							wd_other_x11_window = windows[popup_id].x11_window;
+						}
+					} else {
 						// Propagate the event to the focused window,
 						// because it's received only on the topmost window.
 						// Note: This is needed for drag & drop to work between windows,
 						// because the engine expects events to keep being processed
 						// on the same window dragging started.
 						for (const KeyValue<WindowID, WindowData> &E : windows) {
-							const WindowData &wd_other = E.value;
-							WindowID window_id_other = E.key;
-							if (wd_other.focused) {
-								if (window_id_other != window_id) {
-									int x, y;
-									Window child;
-									XTranslateCoordinates(x11_display, wd.x11_window, wd_other.x11_window, event.xbutton.x, event.xbutton.y, &x, &y, &child);
-
-									mb->set_window_id(window_id_other);
-									mb->set_position(Vector2(x, y));
-									mb->set_global_position(mb->get_position());
-									Input::get_singleton()->parse_input_event(mb);
+							if (E.value.focused) {
+								if (E.key != window_id) {
+									window_id_other = E.key;
+									wd_other_x11_window = E.value.x11_window;
 								}
 								break;
 							}
 						}
+					}
+
+					if (window_id_other != INVALID_WINDOW_ID) {
+						int x, y;
+						Window child;
+						XTranslateCoordinates(x11_display, wd.x11_window, wd_other_x11_window, event.xbutton.x, event.xbutton.y, &x, &y, &child);
+
+						mb->set_window_id(window_id_other);
+						mb->set_position(Vector2(x, y));
+						mb->set_global_position(mb->get_position());
 					}
 				}
 
@@ -4469,7 +4541,7 @@ DisplayServer *DisplayServerX11::create_func(const String &p_rendering_driver, W
 	return ds;
 }
 
-DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect) {
+DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect, int p_screen) {
 	//Create window
 
 	XVisualInfo visualInfo;
@@ -4545,8 +4617,38 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 		valuemask |= CWOverrideRedirect | CWSaveUnder;
 	}
 
+	Rect2i win_rect = p_rect;
+	if (p_mode == WINDOW_MODE_FULLSCREEN || p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
+		Rect2i screen_rect = Rect2i(screen_get_position(p_screen), screen_get_size(p_screen));
+
+		win_rect = screen_rect;
+	} else {
+		int nearest_area = 0;
+		int pos_screen = -1;
+		for (int i = 0; i < get_screen_count(); i++) {
+			Rect2i r;
+			r.position = screen_get_position(i);
+			r.size = screen_get_size(i);
+			Rect2 inters = r.intersection(p_rect);
+
+			int area = inters.size.width * inters.size.height;
+			if (area > nearest_area) {
+				pos_screen = i;
+				nearest_area = area;
+			}
+		}
+
+		Rect2i srect = screen_get_usable_rect(p_screen);
+		Point2i wpos = p_rect.position - ((pos_screen >= 0) ? screen_get_position(pos_screen) : Vector2i());
+		wpos += srect.position;
+		wpos.x = CLAMP(wpos.x, srect.position.x, srect.position.x + srect.size.width - p_rect.size.width / 3);
+		wpos.y = CLAMP(wpos.y, srect.position.y, srect.position.y + srect.size.height - p_rect.size.height / 3);
+
+		win_rect.position = wpos;
+	}
+
 	{
-		wd.x11_window = XCreateWindow(x11_display, RootWindow(x11_display, visualInfo.screen), p_rect.position.x, p_rect.position.y, p_rect.size.width > 0 ? p_rect.size.width : 1, p_rect.size.height > 0 ? p_rect.size.height : 1, 0, visualInfo.depth, InputOutput, visualInfo.visual, valuemask, &windowAttributes);
+		wd.x11_window = XCreateWindow(x11_display, RootWindow(x11_display, visualInfo.screen), win_rect.position.x, win_rect.position.y, win_rect.size.width > 0 ? win_rect.size.width : 1, win_rect.size.height > 0 ? win_rect.size.height : 1, 0, visualInfo.depth, InputOutput, visualInfo.visual, valuemask, &windowAttributes);
 
 		// Enable receiving notification when the window is initialized (MapNotify)
 		// so the focus can be set at the right time.
@@ -4667,13 +4769,13 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 
 #if defined(VULKAN_ENABLED)
 		if (context_vulkan) {
-			Error err = context_vulkan->window_create(id, p_vsync_mode, wd.x11_window, x11_display, p_rect.size.width, p_rect.size.height);
+			Error err = context_vulkan->window_create(id, p_vsync_mode, wd.x11_window, x11_display, win_rect.size.width, win_rect.size.height);
 			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't create a Vulkan window");
 		}
 #endif
 #ifdef GLES3_ENABLED
 		if (gl_manager) {
-			Error err = gl_manager->window_create(id, wd.x11_window, x11_display, p_rect.size.width, p_rect.size.height);
+			Error err = gl_manager->window_create(id, wd.x11_window, x11_display, win_rect.size.width, win_rect.size.height);
 			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't create an OpenGL window");
 			window_set_vsync_mode(p_vsync_mode, id);
 		}
@@ -4710,6 +4812,46 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 }
 
 DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, Error &r_error) {
+#ifdef DEBUG_ENABLED
+	int dylibloader_verbose = 1;
+#else
+	int dylibloader_verbose = 0;
+#endif
+	if (initialize_xlib(dylibloader_verbose) != 0) {
+		r_error = ERR_UNAVAILABLE;
+		ERR_FAIL_MSG("Can't load Xlib dynamically.");
+	}
+
+	if (initialize_xcursor(dylibloader_verbose) != 0) {
+		r_error = ERR_UNAVAILABLE;
+		ERR_FAIL_MSG("Can't load XCursor dynamically.");
+	}
+
+	if (initialize_xext(dylibloader_verbose) != 0) {
+		r_error = ERR_UNAVAILABLE;
+		ERR_FAIL_MSG("Can't load Xext dynamically.");
+	}
+
+	if (initialize_xinerama(dylibloader_verbose) != 0) {
+		r_error = ERR_UNAVAILABLE;
+		ERR_FAIL_MSG("Can't load Xinerama dynamically.");
+	}
+
+	if (initialize_xrandr(dylibloader_verbose) != 0) {
+		r_error = ERR_UNAVAILABLE;
+		ERR_FAIL_MSG("Can't load Xrandr dynamically.");
+	}
+
+	if (initialize_xrender(dylibloader_verbose) != 0) {
+		r_error = ERR_UNAVAILABLE;
+		ERR_FAIL_MSG("Can't load Xrender dynamically.");
+	}
+
+	if (initialize_xinput2(dylibloader_verbose) != 0) {
+		r_error = ERR_UNAVAILABLE;
+		ERR_FAIL_MSG("Can't load Xinput2 dynamically.");
+	}
+
 	Input::get_singleton()->set_event_dispatch_function(_dispatch_input_events);
 
 	r_error = OK;
@@ -4910,7 +5052,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 
 		gl_manager = memnew(GLManager_X11(p_resolution, opengl_api_type));
 
-		if (gl_manager->initialize() != OK) {
+		if (gl_manager->initialize(x11_display) != OK) {
 			memdelete(gl_manager);
 			gl_manager = nullptr;
 			r_error = ERR_UNAVAILABLE;
@@ -4936,12 +5078,13 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	Point2i window_position(
 			(screen_get_size(0).width - p_resolution.width) / 2,
 			(screen_get_size(0).height - p_resolution.height) / 2);
+	window_position += screen_get_position(0);
 
 	if (p_position != nullptr) {
 		window_position = *p_position;
 	}
 
-	WindowID main_window = _create_window(p_mode, p_vsync_mode, p_flags, Rect2i(window_position, p_resolution));
+	WindowID main_window = _create_window(p_mode, p_vsync_mode, p_flags, Rect2i(window_position, p_resolution), 0);
 	if (main_window == INVALID_WINDOW_ID) {
 		r_error = ERR_CANT_CREATE;
 		return;
@@ -4952,8 +5095,6 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 		}
 	}
 	show_window(main_window);
-	XSync(x11_display, False);
-	_validate_mode_on_map(main_window);
 
 #if defined(VULKAN_ENABLED)
 	if (rendering_driver == "vulkan") {

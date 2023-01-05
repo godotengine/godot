@@ -704,6 +704,7 @@ SoftBody3D::SoftBody3D() :
 
 SoftBody3D::~SoftBody3D() {
 	memdelete(rendering_server_handler);
+	ERR_FAIL_NULL(PhysicsServer3D::get_singleton());
 	PhysicsServer3D::get_singleton()->free(physics_rid);
 }
 

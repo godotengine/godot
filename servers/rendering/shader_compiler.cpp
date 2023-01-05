@@ -134,6 +134,8 @@ static String _interpstr(SL::DataInterpolation p_interp) {
 			return "flat ";
 		case SL::INTERPOLATION_SMOOTH:
 			return "";
+		case SL::INTERPOLATION_DEFAULT:
+			return "";
 	}
 	return "";
 }
@@ -666,6 +668,9 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 					var_frag_to_light.push_back(Pair<StringName, SL::ShaderNode::Varying>(varying_name, varying));
 					fragment_varyings.insert(varying_name);
 					continue;
+				}
+				if (varying.type < SL::TYPE_INT) {
+					continue; // Ignore boolean types to prevent crashing (if varying is just declared).
 				}
 
 				String vcode;
@@ -1287,7 +1292,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 					}
 					code += ")";
 					if (is_screen_texture && actions.apply_luminance_multiplier) {
-						code = "(" + code + " / vec4(vec3(sc_luminance_multiplier), 1.0))";
+						code = "(" + code + " * vec4(vec3(sc_luminance_multiplier), 1.0))";
 					}
 				} break;
 				case SL::OP_INDEX: {

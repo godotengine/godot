@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NavigationLink2D" inherits="Node2D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="NavigationLink2D" inherits="Node2D" is_experimental="true" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Creates a link between two locations that [NavigationServer2D] can route agents through.
 	</brief_description>
@@ -38,7 +38,7 @@
 			The distance the link will search is controlled by [method NavigationServer2D.map_set_link_connection_radius].
 		</member>
 		<member name="enter_cost" type="float" setter="set_enter_cost" getter="get_enter_cost" default="0.0">
-			When pathfinding enters this link from another regions navmesh the [code]enter_cost[/code] value is added to the path distance for determining the shortest path.
+			When pathfinding enters this link from another regions navigation mesh the [code]enter_cost[/code] value is added to the path distance for determining the shortest path.
 		</member>
 		<member name="navigation_layers" type="int" setter="set_navigation_layers" getter="get_navigation_layers" default="1">
 			A bitfield determining all navigation layers the link belongs to. These navigation layers will be checked when requesting a path with [method NavigationServer2D.map_get_path].

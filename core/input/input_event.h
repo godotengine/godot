@@ -384,6 +384,9 @@ class InputEventScreenDrag : public InputEventFromWindow {
 	Vector2 pos;
 	Vector2 relative;
 	Vector2 velocity;
+	Vector2 tilt;
+	float pressure = 0;
+	bool pen_inverted = false;
 
 protected:
 	static void _bind_methods();
@@ -391,6 +394,15 @@ protected:
 public:
 	void set_index(int p_index);
 	int get_index() const;
+
+	void set_tilt(const Vector2 &p_tilt);
+	Vector2 get_tilt() const;
+
+	void set_pressure(float p_pressure);
+	float get_pressure() const;
+
+	void set_pen_inverted(bool p_inverted);
+	bool get_pen_inverted() const;
 
 	void set_position(const Vector2 &p_pos);
 	Vector2 get_position() const;

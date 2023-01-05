@@ -64,11 +64,19 @@
 #include "../freedesktop_screensaver.h"
 #endif
 
-#include <X11/Xcursor/Xcursor.h>
+#include <X11/Xatom.h>
 #include <X11/Xlib.h>
-#include <X11/extensions/XInput2.h>
-#include <X11/extensions/Xrandr.h>
+#include <X11/Xutil.h>
 #include <X11/keysym.h>
+
+#include "dynwrappers/xlib-so_wrap.h"
+
+#include "dynwrappers/xcursor-so_wrap.h"
+#include "dynwrappers/xext-so_wrap.h"
+#include "dynwrappers/xinerama-so_wrap.h"
+#include "dynwrappers/xinput2-so_wrap.h"
+#include "dynwrappers/xrandr-so_wrap.h"
+#include "dynwrappers/xrender-so_wrap.h"
 
 typedef struct _xrr_monitor_info {
 	Atom name;
@@ -151,6 +159,7 @@ class DisplayServerX11 : public DisplayServer {
 		//better to guess on the fly, given WM can change it
 		//WindowMode mode;
 		bool fullscreen = false; //OS can't exit from this mode
+		bool exclusive_fullscreen = false;
 		bool on_top = false;
 		bool borderless = false;
 		bool resize_disabled = false;
@@ -176,7 +185,7 @@ class DisplayServerX11 : public DisplayServer {
 	WindowID last_focused_window = INVALID_WINDOW_ID;
 
 	WindowID window_id_counter = MAIN_WINDOW_ID;
-	WindowID _create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect);
+	WindowID _create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect, int p_screen);
 
 	String internal_clipboard;
 	String internal_clipboard_primary;
@@ -275,7 +284,7 @@ class DisplayServerX11 : public DisplayServer {
 	bool _window_minimize_check(WindowID p_window) const;
 	void _validate_mode_on_map(WindowID p_window);
 	void _update_size_hints(WindowID p_window);
-	void _set_wm_fullscreen(WindowID p_window, bool p_enabled);
+	void _set_wm_fullscreen(WindowID p_window, bool p_enabled, bool p_exclusive);
 	void _set_wm_maximized(WindowID p_window, bool p_enabled);
 	void _set_wm_minimized(WindowID p_window, bool p_enabled);
 
@@ -356,7 +365,7 @@ public:
 
 	virtual Vector<DisplayServer::WindowID> get_window_list() const override;
 
-	virtual WindowID create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i()) override;
+	virtual WindowID create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i(), int p_screen = 0) override;
 	virtual void show_window(WindowID p_id) override;
 	virtual void delete_sub_window(WindowID p_id) override;
 
@@ -384,6 +393,7 @@ public:
 	virtual void window_set_current_screen(int p_screen, WindowID p_window = MAIN_WINDOW_ID) override;
 
 	virtual Point2i window_get_position(WindowID p_window = MAIN_WINDOW_ID) const override;
+	virtual Point2i window_get_position_with_decorations(WindowID p_window = MAIN_WINDOW_ID) const override;
 	virtual void window_set_position(const Point2i &p_position, WindowID p_window = MAIN_WINDOW_ID) override;
 
 	virtual void window_set_max_size(const Size2i p_size, WindowID p_window = MAIN_WINDOW_ID) override;
@@ -397,7 +407,7 @@ public:
 
 	virtual void window_set_size(const Size2i p_size, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual Size2i window_get_size(WindowID p_window = MAIN_WINDOW_ID) const override;
-	virtual Size2i window_get_real_size(WindowID p_window = MAIN_WINDOW_ID) const override;
+	virtual Size2i window_get_size_with_decorations(WindowID p_window = MAIN_WINDOW_ID) const override;
 
 	virtual void window_set_mode(WindowMode p_mode, WindowID p_window = MAIN_WINDOW_ID) override;
 	virtual WindowMode window_get_mode(WindowID p_window = MAIN_WINDOW_ID) const override;

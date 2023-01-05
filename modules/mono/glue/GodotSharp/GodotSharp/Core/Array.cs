@@ -418,8 +418,8 @@ namespace Godot.Collections
             {
                 for (int i = 0; i < count; i++)
                 {
-                    object obj = Marshaling.ConvertVariantToManagedObject(NativeValue.DangerousSelfRef.Elements[i]);
-                    array.SetValue(obj, index);
+                    object boxedVariant = Variant.CreateCopyingBorrowed(NativeValue.DangerousSelfRef.Elements[i]);
+                    array.SetValue(boxedVariant, index);
                     index++;
                 }
             }
@@ -499,7 +499,7 @@ namespace Godot.Collections
             VariantUtils.CreateFromArray(godotArray);
 
         private static Array<T> FromVariantFunc(in godot_variant variant) =>
-            VariantUtils.ConvertToArrayObject<T>(variant);
+            VariantUtils.ConvertToArray<T>(variant);
 
         static unsafe Array()
         {

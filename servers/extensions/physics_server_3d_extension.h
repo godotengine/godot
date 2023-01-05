@@ -128,12 +128,12 @@ protected:
 	static void _bind_methods();
 	bool is_body_excluded_from_query(const RID &p_body) const;
 
-	GDVIRTUAL8R(bool, _intersect_ray, const Vector3 &, const Vector3 &, uint32_t, bool, bool, bool, bool, GDNativePtr<PhysicsServer3DExtensionRayResult>)
-	GDVIRTUAL6R(int, _intersect_point, const Vector3 &, uint32_t, bool, bool, GDNativePtr<PhysicsServer3DExtensionShapeResult>, int)
-	GDVIRTUAL9R(int, _intersect_shape, RID, const Transform3D &, const Vector3 &, real_t, uint32_t, bool, bool, GDNativePtr<PhysicsServer3DExtensionShapeResult>, int)
-	GDVIRTUAL10R(bool, _cast_motion, RID, const Transform3D &, const Vector3 &, real_t, uint32_t, bool, bool, GDNativePtr<real_t>, GDNativePtr<real_t>, GDNativePtr<PhysicsServer3DExtensionShapeRestInfo>)
-	GDVIRTUAL10R(bool, _collide_shape, RID, const Transform3D &, const Vector3 &, real_t, uint32_t, bool, bool, GDNativePtr<Vector3>, int, GDNativePtr<int>)
-	GDVIRTUAL8R(bool, _rest_info, RID, const Transform3D &, const Vector3 &, real_t, uint32_t, bool, bool, GDNativePtr<PhysicsServer3DExtensionShapeRestInfo>)
+	GDVIRTUAL8R(bool, _intersect_ray, const Vector3 &, const Vector3 &, uint32_t, bool, bool, bool, bool, GDExtensionPtr<PhysicsServer3DExtensionRayResult>)
+	GDVIRTUAL6R(int, _intersect_point, const Vector3 &, uint32_t, bool, bool, GDExtensionPtr<PhysicsServer3DExtensionShapeResult>, int)
+	GDVIRTUAL9R(int, _intersect_shape, RID, const Transform3D &, const Vector3 &, real_t, uint32_t, bool, bool, GDExtensionPtr<PhysicsServer3DExtensionShapeResult>, int)
+	GDVIRTUAL10R(bool, _cast_motion, RID, const Transform3D &, const Vector3 &, real_t, uint32_t, bool, bool, GDExtensionPtr<real_t>, GDExtensionPtr<real_t>, GDExtensionPtr<PhysicsServer3DExtensionShapeRestInfo>)
+	GDVIRTUAL10R(bool, _collide_shape, RID, const Transform3D &, const Vector3 &, real_t, uint32_t, bool, bool, GDExtensionPtr<Vector3>, int, GDExtensionPtr<int>)
+	GDVIRTUAL8R(bool, _rest_info, RID, const Transform3D &, const Vector3 &, real_t, uint32_t, bool, bool, GDExtensionPtr<PhysicsServer3DExtensionShapeRestInfo>)
 	GDVIRTUAL2RC(Vector3, _get_closest_point_to_object_volume, RID, const Vector3 &)
 
 public:
@@ -382,7 +382,7 @@ public:
 
 	EXBIND2(body_set_ray_pickable, RID, bool)
 
-	GDVIRTUAL7RC(bool, _body_test_motion, RID, const Transform3D &, const Vector3 &, real_t, int, bool, GDNativePtr<PhysicsServer3DExtensionMotionResult>)
+	GDVIRTUAL7RC(bool, _body_test_motion, RID, const Transform3D &, const Vector3 &, real_t, int, bool, GDExtensionPtr<PhysicsServer3DExtensionMotionResult>)
 
 	thread_local static const HashSet<RID> *exclude_bodies;
 	thread_local static const HashSet<ObjectID> *exclude_objects;

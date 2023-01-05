@@ -141,6 +141,7 @@ Material::Material() {
 }
 
 Material::~Material() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RenderingServer::get_singleton()->free(material);
 }
 
@@ -1252,15 +1253,16 @@ void BaseMaterial3D::_update_shader() {
 	}
 
 	if (distance_fade != DISTANCE_FADE_DISABLED) {
+		// Use the slightly more expensive circular fade (distance to the object) instead of linear
+		// (Z distance), so that the fade is always the same regardless of the camera angle.
 		if ((distance_fade == DISTANCE_FADE_OBJECT_DITHER || distance_fade == DISTANCE_FADE_PIXEL_DITHER)) {
 			if (!RenderingServer::get_singleton()->is_low_end()) {
 				code += "	{\n";
 
 				if (distance_fade == DISTANCE_FADE_OBJECT_DITHER) {
-					code += "		float fade_distance = abs((VIEW_MATRIX * MODEL_MATRIX[3]).z);\n";
-
+					code += "		float fade_distance = length((VIEW_MATRIX * MODEL_MATRIX[3]));\n";
 				} else {
-					code += "		float fade_distance = -VERTEX.z;\n";
+					code += "		float fade_distance = length(VERTEX);\n";
 				}
 				// Use interleaved gradient noise, which is fast but still looks good.
 				code += "		const vec3 magic = vec3(0.06711056f, 0.00583715f, 52.9829189f);";
@@ -1274,7 +1276,7 @@ void BaseMaterial3D::_update_shader() {
 			}
 
 		} else {
-			code += "	ALPHA*=clamp(smoothstep(distance_fade_min,distance_fade_max,-VERTEX.z),0.0,1.0);\n";
+			code += "	ALPHA *= clamp(smoothstep(distance_fade_min, distance_fade_max, length(VERTEX)), 0.0, 1.0);\n";
 		}
 	}
 
@@ -3004,6 +3006,7 @@ BaseMaterial3D::BaseMaterial3D(bool p_orm) :
 }
 
 BaseMaterial3D::~BaseMaterial3D() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	MutexLock lock(material_mutex);
 
 	if (shader_map.has(current_key)) {

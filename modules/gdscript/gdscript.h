@@ -187,7 +187,7 @@ public:
 	bool inherits_script(const Ref<Script> &p_script) const override;
 
 	GDScript *find_class(const String &p_qualified_name);
-	bool is_subclass(const GDScript *p_script);
+	bool has_class(const GDScript *p_script);
 	GDScript *get_root_script();
 	bool is_root_script() const { return _owner == nullptr; }
 	String get_fully_qualified_name() const { return fully_qualified_name; }
@@ -240,6 +240,7 @@ public:
 	virtual Error reload(bool p_keep_state = false) override;
 
 	virtual void set_path(const String &p_path, bool p_take_over = false) override;
+	String get_script_path() const;
 	Error load_source_code(const String &p_path);
 	Error load_byte_code(const String &p_path);
 
@@ -432,7 +433,7 @@ public:
 			csi.write[_debug_call_stack_pos - i - 1].line = _call_stack[i].line ? *_call_stack[i].line : 0;
 			if (_call_stack[i].function) {
 				csi.write[_debug_call_stack_pos - i - 1].func = _call_stack[i].function->get_name();
-				csi.write[_debug_call_stack_pos - i - 1].file = _call_stack[i].function->get_script()->get_path();
+				csi.write[_debug_call_stack_pos - i - 1].file = _call_stack[i].function->get_script()->get_script_path();
 			}
 		}
 		return csi;
@@ -454,6 +455,9 @@ public:
 	_FORCE_INLINE_ Variant *get_global_array() { return _global_array; }
 	_FORCE_INLINE_ const HashMap<StringName, int> &get_global_map() const { return globals; }
 	_FORCE_INLINE_ const HashMap<StringName, Variant> &get_named_globals_map() const { return named_globals; }
+	// These two functions should be used when behavior needs to be consistent between in-editor and running the scene
+	bool has_any_global_constant(const StringName &p_name) { return named_globals.has(p_name) || globals.has(p_name); }
+	Variant get_any_global_constant(const StringName &p_name);
 
 	_FORCE_INLINE_ static GDScriptLanguage *get_singleton() { return singleton; }
 

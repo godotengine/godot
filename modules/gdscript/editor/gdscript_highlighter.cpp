@@ -115,10 +115,10 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			}
 
 			if (from != line_length) {
-				/* check if we are in entering a region */
+				// Check if we are in entering a region.
 				if (in_region == -1) {
 					for (int c = 0; c < color_regions.size(); c++) {
-						/* check there is enough room */
+						// Check there is enough room.
 						int chars_left = line_length - from;
 						int start_key_length = color_regions[c].start_key.length();
 						int end_key_length = color_regions[c].end_key.length();
@@ -126,7 +126,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 							continue;
 						}
 
-						/* search the line */
+						// Search the line.
 						bool match = true;
 						const char32_t *start_key = color_regions[c].start_key.get_data();
 						for (int k = 0; k < start_key_length; k++) {
@@ -141,7 +141,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 						in_region = c;
 						from += start_key_length;
 
-						/* check if it's the whole line */
+						// Check if it's the whole line.
 						if (end_key_length == 0 || color_regions[c].line_only || from + end_key_length > line_length) {
 							if (from + end_key_length > line_length) {
 								// If it's key length and there is a '\', dont skip to highlight esc chars.
@@ -166,7 +166,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 					}
 				}
 
-				/* if we are in one find the end key */
+				// If we are in one, find the end key.
 				if (in_region != -1) {
 					Color region_color = color_regions[in_region].color;
 					if (in_node_path && (color_regions[in_region].start_key == "\"" || color_regions[in_region].start_key == "\'")) {
@@ -183,7 +183,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 					highlighter_info["color"] = region_color;
 					color_map[j] = highlighter_info;
 
-					/* search the line */
+					// Search the line.
 					int region_end_index = -1;
 					int end_key_length = color_regions[in_region].end_key.length();
 					const char32_t *end_key = color_regions[in_region].end_key.get_data();
@@ -267,14 +267,14 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			in_keyword = false;
 		}
 
-		// allow ABCDEF in hex notation
+		// Allow ABCDEF in hex notation.
 		if (is_hex_notation && (is_hex_digit(str[j]) || is_a_digit)) {
 			is_a_digit = true;
 		} else {
 			is_hex_notation = false;
 		}
 
-		// disallow anything not a 0 or 1 in binary notation
+		// Disallow anything not a 0 or 1 in binary notation.
 		if (is_bin_notation && !is_binary_digit(str[j])) {
 			is_a_digit = false;
 			is_bin_notation = false;
@@ -284,7 +284,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			in_number = true;
 		}
 
-		// Special cases for numbers
+		// Special cases for numbers.
 		if (in_number && !is_a_digit) {
 			if (str[j] == 'b' && str[j - 1] == '0') {
 				is_bin_notation = true;
@@ -349,7 +349,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			if (col != Color()) {
 				for (int k = j - 1; k >= 0; k--) {
 					if (str[k] == '.') {
-						col = Color(); // keyword, member & global func indexing not allowed
+						col = Color(); // Keyword, member & global func indexing not allowed.
 						break;
 					} else if (str[k] > 32) {
 						break;
@@ -372,7 +372,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 					k++;
 				}
 
-				// check for space between name and bracket
+				// Check for space between name and bracket.
 				while (k < line_length && is_whitespace(str[k])) {
 					k++;
 				}
@@ -445,7 +445,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			in_member_variable = false;
 		}
 
-		// Keep symbol color for binary '&&'. In the case of '&&&' use StringName color for the last ampersand
+		// Keep symbol color for binary '&&'. In the case of '&&&' use StringName color for the last ampersand.
 		if (!in_string_name && in_region == -1 && str[j] == '&' && !is_binary_op) {
 			if (j >= 2 && str[j - 1] == '&' && str[j - 2] != '&' && prev_is_binary_op) {
 				is_binary_op = true;
@@ -456,7 +456,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			in_string_name = false;
 		}
 
-		// '^^' has no special meaning, so unlike StringName, when binary, use NodePath color for the last caret
+		// '^^' has no special meaning, so unlike StringName, when binary, use NodePath color for the last caret.
 		if (!in_node_path && in_region == -1 && str[j] == '^' && !is_binary_op && (j == 0 || (j > 0 && str[j - 1] != '^') || prev_is_binary_op)) {
 			in_node_path = true;
 		} else if (in_region != -1 || is_a_symbol) {
@@ -465,7 +465,8 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 
 		if (!in_node_ref && in_region == -1 && (str[j] == '$' || (str[j] == '%' && !is_binary_op))) {
 			in_node_ref = true;
-		} else if (in_region != -1 || (is_a_symbol && str[j] != '/' && str[j] != '%')) {
+		} else if (in_region != -1 || (is_a_symbol && str[j] != '/' && str[j] != '%') || (is_a_digit && j > 0 && (str[j - 1] == '$' || str[j - 1] == '/' || str[j - 1] == '%'))) {
+			// NodeRefs can't start with digits, so point out wrong syntax immediately.
 			in_node_ref = false;
 		}
 
@@ -525,7 +526,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 				prev_type = current_type;
 				current_type = next_type;
 
-				// no need to store regions...
+				// No need to store regions...
 				if (prev_type == REGION) {
 					prev_text = "";
 					prev_column = j;
@@ -533,7 +534,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 					String text = str.substr(prev_column, j - prev_column).strip_edges();
 					prev_column = j;
 
-					// ignore if just whitespace
+					// Ignore if just whitespace.
 					if (!text.is_empty()) {
 						prev_text = text;
 					}
