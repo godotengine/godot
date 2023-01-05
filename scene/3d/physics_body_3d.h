@@ -656,6 +656,7 @@ private:
 
 	JointData *joint_data = nullptr;
 	Transform3D joint_offset;
+	bool joint_exclude_nodes_from_collision = true;
 	RID joint;
 
 	Skeleton3D *parent_skeleton = nullptr;
@@ -737,6 +738,9 @@ public:
 
 	void set_body_offset(const Transform3D &p_offset);
 	const Transform3D &get_body_offset() const;
+
+	void set_joint_exclude_nodes_from_collision(bool p_exclude_nodes_from_collision);
+	bool get_joint_exclude_nodes_from_collision() const;
 
 	void set_simulate_physics(bool p_simulate);
 	bool get_simulate_physics();
