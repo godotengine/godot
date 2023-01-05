@@ -1240,6 +1240,14 @@ static const char *csharp_properties_renames[][2] = {
 	{ "PhysicalScancode", "PhysicalKeycode" }, // InputEventKey
 	{ "PopupExclusive", "Exclusive" }, // Window
 	{ "ProximityFadeEnable", "ProximityFadeEnabled" }, // Material
+	{ "RectPosition", "Position" }, // Control
+	{ "RectGlobalPosition", "GlobalPosition" }, // Control
+	{ "RectSize", "Size" }, // Control
+	{ "RectMinSize", "CustomMinimumSize" }, // Control
+	{ "RectRotation", "Rotation" }, // Control
+	{ "RectScale", "Scale" }, // Control
+	{ "RectPivotOffset", "PivotOffset" }, // Control
+	{ "RectClipContent", "ClipContents" }, // Control
 	{ "RefuseNewNetworkConnections", "RefuseNewConnections" }, // MultiplayerAPI
 	{ "RegionFilterClip", "RegionFilterClipEnabled" }, // Sprite2D
 	{ "ReverbBusEnable", "ReverbBusEnabled" }, // Area3D
@@ -2727,7 +2735,7 @@ bool ProjectConverter3To4::test_array_names() {
 	valid = valid && test_single_array(gdscript_function_renames, true);
 	valid = valid && test_single_array(csharp_function_renames, true);
 	valid = valid && test_single_array(gdscript_properties_renames, true);
-	valid = valid && test_single_array(csharp_properties_renames);
+	valid = valid && test_single_array(csharp_properties_renames, true);
 	valid = valid && test_single_array(shaders_renames, true);
 	valid = valid && test_single_array(gdscript_signals_renames);
 	valid = valid && test_single_array(project_settings_renames);
