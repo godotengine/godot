@@ -1653,6 +1653,7 @@ VARIANT_ENUM_CAST(RenderingServer::ViewportUpdateMode);
 VARIANT_ENUM_CAST(RenderingServer::ViewportClearMode);
 VARIANT_ENUM_CAST(RenderingServer::ViewportEnvironmentMode);
 VARIANT_ENUM_CAST(RenderingServer::ViewportMSAA);
+VARIANT_ENUM_CAST(RenderingServer::ViewportMode);
 VARIANT_ENUM_CAST(RenderingServer::ViewportScreenSpaceAA);
 VARIANT_ENUM_CAST(RenderingServer::ViewportRenderInfo);
 VARIANT_ENUM_CAST(RenderingServer::ViewportRenderInfoType);

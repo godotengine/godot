@@ -1369,6 +1369,11 @@ void RasterizerSceneGLES3::_setup_environment(const RenderDataGLES3 *p_render_da
 	//time global variables
 	scene_state.ubo.time = time;
 
+	if (p_render_data->viewport_mode == RS::VIEWPORT_MODE_3D) {
+		scene_state.ubo.use_linearize = false;
+		scene_state.ubo.use_tonemap = false;
+	}
+
 	if (is_environment(p_render_data->environment)) {
 		RS::EnvironmentBG env_bg = environment_get_background(p_render_data->environment);
 		RS::EnvironmentAmbientSource ambient_src = environment_get_ambient_source(p_render_data->environment);
@@ -1748,6 +1753,7 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		} else {
 			render_data.screen_mesh_lod_threshold = p_screen_mesh_lod_threshold;
 		}
+		render_data.viewport_mode = rt->viewport_mode;
 		render_data.render_info = r_render_info;
 	}
 

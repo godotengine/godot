@@ -1598,11 +1598,17 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 	}
 
 	Config *config = Config::get_singleton();
-
-	rt->color_internal_format = rt->is_transparent ? GL_RGBA8 : GL_RGB10_A2;
-	rt->color_format = GL_RGBA;
-	rt->color_type = rt->is_transparent ? GL_UNSIGNED_BYTE : GL_UNSIGNED_INT_2_10_10_10_REV;
-	rt->image_format = Image::FORMAT_RGBA8;
+	if (rt->viewport_mode == RS::VIEWPORT_MODE_3D && config->framebuffer_float_supported) {
+		rt->color_internal_format = rt->is_transparent ? GL_RGBA16F : GL_RGB16F;
+		rt->color_format = GL_RGBA;
+		rt->color_type = GL_HALF_FLOAT;
+		rt->image_format = Image::FORMAT_RGBAF;
+	} else {
+		rt->color_internal_format = rt->is_transparent ? GL_RGBA8 : GL_RGB10_A2;
+		rt->color_format = GL_RGBA;
+		rt->color_type = rt->is_transparent ? GL_UNSIGNED_BYTE : GL_UNSIGNED_INT_2_10_10_10_REV;
+		rt->image_format = Image::FORMAT_RGBA8;
+	}
 
 	glDisable(GL_SCISSOR_TEST);
 	glColorMask(1, 1, 1, 1);
@@ -1947,6 +1953,8 @@ void TextureStorage::render_target_set_viewport_mode(RID p_render_target, RS::Vi
 	ERR_FAIL_COND(!rt);
 
 	rt->viewport_mode = p_viewport_mode;
+
+	_update_render_target(rt);
 }
 
 RS::ViewportMode TextureStorage::render_target_get_viewport_mode(RID p_render_target) const {

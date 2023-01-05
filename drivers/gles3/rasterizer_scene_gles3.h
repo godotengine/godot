@@ -119,6 +119,8 @@ struct RenderDataGLES3 {
 	uint32_t spot_light_count = 0;
 	uint32_t omni_light_count = 0;
 
+	RS::ViewportMode viewport_mode = RS::VIEWPORT_MODE_2D_AND_3D;
+
 	RenderingMethod::RenderInfo *render_info = nullptr;
 };
 
@@ -336,8 +338,10 @@ private:
 			float fog_light_color[3];
 			float fog_sun_scatter;
 			uint32_t camera_visible_layers;
-			uint32_t pad1;
-			uint32_t pad2;
+
+			uint32_t use_linearize = 1;
+			uint32_t use_tonemap = 1;
+
 			uint32_t pad3;
 		};
 		static_assert(sizeof(UBO) % 16 == 0, "Scene UBO size must be a multiple of 16 bytes");

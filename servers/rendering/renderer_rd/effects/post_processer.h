@@ -85,7 +85,7 @@ private:
 		uint32_t use_debanding; //  4 - 112
 		float pad[2]; //  12 - 124
 		uint32_t use_tonemap; //  4 - 128
-		uint32_t use_linearize; //  4 - 128
+		uint32_t use_linearize; //  4 - 132
 	};
 
 	/* PostProcess actually writes to a framebuffer, which is

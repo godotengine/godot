@@ -433,6 +433,15 @@
 		<constant name="MSAA_MAX" value="4" enum="MSAA">
 			Represents the size of the [enum MSAA] enum.
 		</constant>
+		<constant name="VIEWPORT_MODE_2D_AND_3D" value="0" enum="ViewportMode">
+			Standard render pipeline, serve a texture ready for screen
+		</constant>
+		<constant name="VIEWPORT_MODE_3D" value="1" enum="ViewportMode">
+			Render with no linearization nor tonemapping
+		</constant>
+		<constant name="VIEWPORT_MODE_XR" value="2" enum="ViewportMode">
+			Render XR output
+		</constant>
 		<constant name="SCREEN_SPACE_AA_DISABLED" value="0" enum="ScreenSpaceAA">
 			Do not perform any antialiasing in the full screen post-process.
 		</constant>
@@ -441,15 +450,6 @@
 		</constant>
 		<constant name="SCREEN_SPACE_AA_MAX" value="2" enum="ScreenSpaceAA">
 			Represents the size of the [enum ScreenSpaceAA] enum.
-		</constant>
-		<constant name="2D_AND_3D" value="0" enum="ViewportMode">
-			Standard render pipeline, serve a texture ready for screen
-		</constant>
-		<constant name="3D" value="1" enum="ViewportMode">
-			Render with no linearization nor tonemapping
-		</constant>
-		<constant name="XR" value="2" enum="ViewportMode">
-			Render XR output
 		</constant>
 		<constant name="RENDER_INFO_OBJECTS_IN_FRAME" value="0" enum="RenderInfo">
 			Amount of objects in frame.

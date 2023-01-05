@@ -152,9 +152,11 @@ layout(std140) uniform SceneData { // ubo:2
 	vec3 fog_light_color;
 	float fog_sun_scatter;
 	uint camera_visible_layers;
-	uint pad3;
-	uint pad4;
-	uint pad5;
+
+	bool use_linearize;
+	bool use_tonemap;
+
+	uint pad;
 }
 scene_data;
 
@@ -484,9 +486,11 @@ layout(std140) uniform SceneData { // ubo:2
 	vec3 fog_light_color;
 	float fog_sun_scatter;
 	uint camera_visible_layers;
-	uint pad3;
-	uint pad4;
-	uint pad5;
+
+	bool use_linearize;
+	bool use_tonemap;
+
+	uint pad;
 }
 scene_data;
 
@@ -1087,8 +1091,10 @@ void main() {
 	uint fog_ba = packHalf2x16(fog.ba);
 
 	// Convert colors to linear
-	albedo = srgb_to_linear(albedo);
-	emission = srgb_to_linear(emission);
+	if (scene_data.use_linearize) {
+		albedo = srgb_to_linear(albedo);
+		emission = srgb_to_linear(emission);
+	}
 	// TODO Backlight and transmittance when used
 #ifndef MODE_UNSHADED
 	vec3 f0 = F0(metallic, specular, albedo);
@@ -1312,8 +1318,12 @@ void main() {
 
 	// Tonemap before writing as we are writing to an sRGB framebuffer
 	frag_color.rgb *= exposure;
-	frag_color.rgb = apply_tonemapping(frag_color.rgb, white);
-	frag_color.rgb = linear_to_srgb(frag_color.rgb);
+	if (scene_data.use_tonemap) {
+		frag_color.rgb = apply_tonemapping(frag_color.rgb, white);
+	}
+	if (scene_data.use_linearize) {
+		frag_color.rgb = linear_to_srgb(frag_color.rgb);
+	}
 
 #ifdef USE_BCS
 	frag_color.rgb = apply_bcs(frag_color.rgb, bcs);
