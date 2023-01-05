@@ -74,8 +74,7 @@
 
 class OpenXROpenGLExtension : public OpenXRGraphicsExtensionWrapper {
 public:
-	OpenXROpenGLExtension(OpenXRAPI *p_openxr_api);
-	virtual ~OpenXROpenGLExtension() override;
+	virtual HashMap<String, bool *> get_requested_extensions() override;
 
 	virtual void on_instance_created(const XrInstance p_instance) override;
 	virtual void *set_session_create_and_get_next_pointer(void *p_next_pointer) override;

@@ -38,9 +38,10 @@ class OpenXRCompositionLayerDepthExtension : public OpenXRExtensionWrapper, publ
 public:
 	static OpenXRCompositionLayerDepthExtension *get_singleton();
 
-	OpenXRCompositionLayerDepthExtension(OpenXRAPI *p_openxr_api);
+	OpenXRCompositionLayerDepthExtension();
 	virtual ~OpenXRCompositionLayerDepthExtension() override;
 
+	virtual HashMap<String, bool *> get_requested_extensions() override;
 	bool is_available();
 	virtual XrCompositionLayerBaseHeader *get_composition_layer() override;
 

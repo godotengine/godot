@@ -42,7 +42,6 @@
 
 #ifdef ANDROID_ENABLED
 #define OPENXR_LOADER_NAME "libopenxr_loader.so"
-#include "extensions/openxr_android_extension.h"
 #endif
 
 // We need to have all the graphics API defines before the Vulkan or OpenGL
@@ -81,13 +80,11 @@
 #include "extensions/openxr_composition_layer_depth_extension.h"
 #include "extensions/openxr_fb_display_refresh_rate_extension.h"
 #include "extensions/openxr_fb_passthrough_extension_wrapper.h"
-#include "extensions/openxr_hand_tracking_extension.h"
-#include "extensions/openxr_htc_vive_tracker_extension.h"
-#include "extensions/openxr_palm_pose_extension.h"
 
 #include "modules/openxr/openxr_interface.h"
 
 OpenXRAPI *OpenXRAPI::singleton = nullptr;
+Vector<OpenXRExtensionWrapper *> OpenXRAPI::registered_extension_wrappers;
 
 bool OpenXRAPI::openxr_is_enabled(bool p_check_run_in_editor) {
 	// @TODO we need an overrule switch so we can force enable openxr, i.e run "godot --openxr_enabled"
@@ -102,10 +99,6 @@ bool OpenXRAPI::openxr_is_enabled(bool p_check_run_in_editor) {
 			return XRServer::get_xr_mode() == XRServer::XRMODE_ON;
 		}
 	}
-}
-
-OpenXRAPI *OpenXRAPI::get_singleton() {
-	return singleton;
 }
 
 String OpenXRAPI::get_default_action_map_resource_name() {
@@ -303,21 +296,13 @@ bool OpenXRAPI::create_instance() {
 	// Append the extensions requested by the registered extension wrappers.
 	HashMap<String, bool *> requested_extensions;
 	for (OpenXRExtensionWrapper *wrapper : registered_extension_wrappers) {
-		const HashMap<String, bool *> &wrapper_request_extensions = wrapper->get_request_extensions();
+		const HashMap<String, bool *> &wrapper_request_extensions = wrapper->get_requested_extensions();
 
 		// requested_extensions.insert(wrapper_request_extensions.begin(), wrapper_request_extensions.end());
 		for (auto &requested_extension : wrapper_request_extensions) {
 			requested_extensions[requested_extension.key] = requested_extension.value;
 		}
 	}
-
-	// Add optional extensions for controllers that may be supported.
-	// Overkill to create extension classes for this.
-	requested_extensions[XR_EXT_HP_MIXED_REALITY_CONTROLLER_EXTENSION_NAME] = &ext_hp_mixed_reality_available;
-	requested_extensions[XR_EXT_SAMSUNG_ODYSSEY_CONTROLLER_EXTENSION_NAME] = &ext_samsung_odyssey_available;
-	requested_extensions[XR_HTC_VIVE_COSMOS_CONTROLLER_INTERACTION_EXTENSION_NAME] = &ext_vive_cosmos_available;
-	requested_extensions[XR_HTC_VIVE_FOCUS3_CONTROLLER_INTERACTION_EXTENSION_NAME] = &ext_vive_focus3_available;
-	requested_extensions[XR_HUAWEI_CONTROLLER_INTERACTION_EXTENSION_NAME] = &ext_huawei_controller_available;
 
 	// Check which extensions are supported
 	enabled_extensions.clear();
@@ -1259,7 +1244,7 @@ bool OpenXRAPI::initialize(const String &p_rendering_driver) {
 
 	if (p_rendering_driver == "vulkan") {
 #ifdef VULKAN_ENABLED
-		graphics_extension = memnew(OpenXRVulkanExtension(this));
+		graphics_extension = memnew(OpenXRVulkanExtension);
 		register_extension_wrapper(graphics_extension);
 #else
 		// shouldn't be possible...
@@ -1267,7 +1252,7 @@ bool OpenXRAPI::initialize(const String &p_rendering_driver) {
 #endif
 	} else if (p_rendering_driver == "opengl3") {
 #ifdef GLES3_ENABLED
-		graphics_extension = memnew(OpenXROpenGLExtension(this));
+		graphics_extension = memnew(OpenXROpenGLExtension);
 		register_extension_wrapper(graphics_extension);
 #else
 		// shouldn't be possible...
@@ -1356,6 +1341,19 @@ void OpenXRAPI::set_xr_interface(OpenXRInterface *p_xr_interface) {
 
 void OpenXRAPI::register_extension_wrapper(OpenXRExtensionWrapper *p_extension_wrapper) {
 	registered_extension_wrappers.push_back(p_extension_wrapper);
+}
+
+void OpenXRAPI::register_extension_metadata() {
+	for (OpenXRExtensionWrapper *extension_wrapper : registered_extension_wrappers) {
+		extension_wrapper->on_register_metadata();
+	}
+}
+
+void OpenXRAPI::cleanup_extension_wrappers() {
+	for (OpenXRExtensionWrapper *extension_wrapper : registered_extension_wrappers) {
+		memdelete(extension_wrapper);
+	}
+	registered_extension_wrappers.clear();
 }
 
 Size2 OpenXRAPI::get_recommended_target_size() {
@@ -1957,19 +1955,6 @@ OpenXRAPI::OpenXRAPI() {
 	// reset a few things that can't be done in our class definition
 	frame_state.predictedDisplayTime = 0;
 	frame_state.predictedDisplayPeriod = 0;
-
-#ifdef ANDROID_ENABLED
-	// our android wrapper will initialize our android loader at this point
-	register_extension_wrapper(memnew(OpenXRAndroidExtension(this)));
-#endif
-
-	// register our other extensions
-	register_extension_wrapper(memnew(OpenXRPalmPoseExtension(this)));
-	register_extension_wrapper(memnew(OpenXRCompositionLayerDepthExtension(this)));
-	register_extension_wrapper(memnew(OpenXRHTCViveTrackerExtension(this)));
-	register_extension_wrapper(memnew(OpenXRHandTrackingExtension(this)));
-	register_extension_wrapper(memnew(OpenXRFbPassthroughExtensionWrapper(this)));
-	register_extension_wrapper(memnew(OpenXRDisplayRefreshRateExtension(this)));
 }
 
 OpenXRAPI::~OpenXRAPI() {
@@ -1978,12 +1963,6 @@ OpenXRAPI::~OpenXRAPI() {
 		memdelete(provider);
 	}
 	composition_layer_providers.clear();
-
-	// cleanup our extension wrappers
-	for (OpenXRExtensionWrapper *extension_wrapper : registered_extension_wrappers) {
-		memdelete(extension_wrapper);
-	}
-	registered_extension_wrappers.clear();
 
 	if (supported_extensions != nullptr) {
 		memfree(supported_extensions);

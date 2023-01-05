@@ -36,15 +36,20 @@ OpenXRCompositionLayerDepthExtension *OpenXRCompositionLayerDepthExtension::get_
 	return singleton;
 }
 
-OpenXRCompositionLayerDepthExtension::OpenXRCompositionLayerDepthExtension(OpenXRAPI *p_openxr_api) :
-		OpenXRExtensionWrapper(p_openxr_api) {
+OpenXRCompositionLayerDepthExtension::OpenXRCompositionLayerDepthExtension() {
 	singleton = this;
-
-	request_extensions[XR_KHR_COMPOSITION_LAYER_DEPTH_EXTENSION_NAME] = &available;
 }
 
 OpenXRCompositionLayerDepthExtension::~OpenXRCompositionLayerDepthExtension() {
 	singleton = nullptr;
+}
+
+HashMap<String, bool *> OpenXRCompositionLayerDepthExtension::get_requested_extensions() {
+	HashMap<String, bool *> request_extensions;
+
+	request_extensions[XR_KHR_COMPOSITION_LAYER_DEPTH_EXTENSION_NAME] = &available;
+
+	return request_extensions;
 }
 
 bool OpenXRCompositionLayerDepthExtension::is_available() {
