@@ -2586,7 +2586,7 @@ bool EditorInspector::_is_property_disabled_by_feature_profile(const StringName 
 	return false;
 }
 
-void EditorInspector::_update_tree() {
+void EditorInspector::update_tree() {
 	//to update properly if all is refreshed
 	StringName current_selected = property_selected;
 	int current_focusable = -1;
@@ -3305,10 +3305,6 @@ void EditorInspector::_update_tree() {
 	}
 }
 
-void EditorInspector::update_tree() {
-	update_tree_pending = true;
-}
-
 void EditorInspector::update_property(const String &p_prop) {
 	if (!editor_property_map.has(p_prop)) {
 		return;
@@ -3365,10 +3361,7 @@ void EditorInspector::set_keying(bool p_active) {
 		return;
 	}
 	keying = p_active;
-	// Propagate the keying state to its editor properties.
-	Array args;
-	args.append(keying);
-	main_vbox->propagate_call(SNAME("set_keying"), args, true);
+	update_tree();
 }
 
 void EditorInspector::set_read_only(bool p_read_only) {
@@ -3906,9 +3899,10 @@ void EditorInspector::_notification(int p_what) {
 			changing++;
 
 			if (update_tree_pending) {
+				update_tree();
 				update_tree_pending = false;
 				pending.clear();
-				_update_tree();
+
 			} else {
 				while (pending.size()) {
 					StringName prop = *pending.begin();
