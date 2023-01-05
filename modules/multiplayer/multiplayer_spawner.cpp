@@ -93,13 +93,6 @@ PackedStringArray MultiplayerSpawner::get_configuration_warnings() const {
 	if (spawn_path.is_empty() || !has_node(spawn_path)) {
 		warnings.push_back(RTR("A valid NodePath must be set in the \"Spawn Path\" property in order for MultiplayerSpawner to be able to spawn Nodes."));
 	}
-	bool has_scenes = get_spawnable_scene_count() > 0;
-	// Can't check if method is overridden in placeholder scripts.
-	bool has_placeholder_script = get_script_instance() && get_script_instance()->is_placeholder();
-	if (!has_scenes && !GDVIRTUAL_IS_OVERRIDDEN(_spawn_custom) && !has_placeholder_script) {
-		warnings.push_back(RTR("A list of PackedScenes must be set in the \"Auto Spawn List\" property in order for MultiplayerSpawner to automatically spawn them remotely when added as child of \"spawn_path\"."));
-		warnings.push_back(RTR("Alternatively, a Script implementing the function \"_spawn_custom\" must be set for this MultiplayerSpawner, and \"spawn\" must be called explicitly in code."));
-	}
 	return warnings;
 }
 
@@ -162,7 +155,9 @@ void MultiplayerSpawner::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_spawn_limit", "limit"), &MultiplayerSpawner::set_spawn_limit);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "spawn_limit", PROPERTY_HINT_RANGE, "0,1024,1,or_greater"), "set_spawn_limit", "get_spawn_limit");
 
-	GDVIRTUAL_BIND(_spawn_custom, "data");
+	ClassDB::bind_method(D_METHOD("get_spawn_function"), &MultiplayerSpawner::get_spawn_function);
+	ClassDB::bind_method(D_METHOD("set_spawn_function", "spawn_function"), &MultiplayerSpawner::set_spawn_function);
+	ADD_PROPERTY(PropertyInfo(Variant::CALLABLE, "spawn_function", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_spawn_function", "get_spawn_function");
 
 	ADD_SIGNAL(MethodInfo("despawned", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 	ADD_SIGNAL(MethodInfo("spawned", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
@@ -183,7 +178,7 @@ void MultiplayerSpawner::_update_spawn_node() {
 	Node *node = spawn_path.is_empty() && is_inside_tree() ? nullptr : get_node_or_null(spawn_path);
 	if (node) {
 		spawn_node = node->get_instance_id();
-		if (get_spawnable_scene_count() && !GDVIRTUAL_IS_OVERRIDDEN(_spawn_custom)) {
+		if (get_spawnable_scene_count()) {
 			node->connect("child_entered_tree", callable_mp(this, &MultiplayerSpawner::_node_added));
 		}
 	} else {
@@ -298,23 +293,26 @@ Node *MultiplayerSpawner::instantiate_scene(int p_id) {
 
 Node *MultiplayerSpawner::instantiate_custom(const Variant &p_data) {
 	ERR_FAIL_COND_V_MSG(spawn_limit && spawn_limit <= tracked_nodes.size(), nullptr, "Spawn limit reached!");
-	Node *node = nullptr;
-	if (GDVIRTUAL_CALL(_spawn_custom, p_data, node)) {
-		return node;
-	}
-	ERR_FAIL_V_MSG(nullptr, "Method '_spawn_custom' is not implemented on this peer.");
+	ERR_FAIL_COND_V_MSG(!spawn_function.is_valid(), nullptr, "Custom spawn requires a valid 'spawn_function'.");
+	const Variant *argv[1] = { &p_data };
+	Variant ret;
+	Callable::CallError ce;
+	spawn_function.callp(argv, 1, ret, ce);
+	ERR_FAIL_COND_V_MSG(ce.error != Callable::CallError::CALL_OK, nullptr, "Failed to call spawn function.");
+	ERR_FAIL_COND_V_MSG(ret.get_type() != Variant::OBJECT, nullptr, "The spawn function must return a Node.");
+	return Object::cast_to<Node>(ret.operator Object *());
 }
 
 Node *MultiplayerSpawner::spawn(const Variant &p_data) {
 	ERR_FAIL_COND_V(!is_inside_tree() || !get_multiplayer()->has_multiplayer_peer() || !is_multiplayer_authority(), nullptr);
 	ERR_FAIL_COND_V_MSG(spawn_limit && spawn_limit <= tracked_nodes.size(), nullptr, "Spawn limit reached!");
-	ERR_FAIL_COND_V_MSG(!GDVIRTUAL_IS_OVERRIDDEN(_spawn_custom), nullptr, "Custom spawn requires the '_spawn_custom' virtual method to be implemented via script.");
+	ERR_FAIL_COND_V_MSG(!spawn_function.is_valid(), nullptr, "Custom spawn requires the 'spawn_function' property to be a valid callable.");
 
 	Node *parent = get_spawn_node();
 	ERR_FAIL_COND_V_MSG(!parent, nullptr, "Cannot find spawn node.");
 
 	Node *node = instantiate_custom(p_data);
-	ERR_FAIL_COND_V_MSG(!node, nullptr, "The '_spawn_custom' implementation must return a valid Node.");
+	ERR_FAIL_COND_V_MSG(!node, nullptr, "The 'spawn_function' callable must return a valid node.");
 
 	_track(node, p_data);
 	parent->add_child(node, true);

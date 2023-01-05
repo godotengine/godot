@@ -71,6 +71,7 @@ private:
 	ObjectID spawn_node;
 	HashMap<ObjectID, SpawnInfo> tracked_nodes;
 	uint32_t spawn_limit = 0;
+	Callable spawn_function;
 
 	void _update_spawn_node();
 	void _track(Node *p_node, const Variant &p_argument, int p_scene_id = INVALID_ID);
@@ -106,6 +107,8 @@ public:
 	void set_spawn_path(const NodePath &p_path);
 	uint32_t get_spawn_limit() const { return spawn_limit; }
 	void set_spawn_limit(uint32_t p_limit) { spawn_limit = p_limit; }
+	void set_spawn_function(Callable p_spawn_function) { spawn_function = p_spawn_function; }
+	Callable get_spawn_function() const { return spawn_function; }
 
 	const Variant get_spawn_argument(const ObjectID &p_id) const;
 	int find_spawnable_scene_index_from_object(const ObjectID &p_id) const;
@@ -113,8 +116,6 @@ public:
 	Node *spawn(const Variant &p_data = Variant());
 	Node *instantiate_custom(const Variant &p_data);
 	Node *instantiate_scene(int p_idx);
-
-	GDVIRTUAL1R(Node *, _spawn_custom, const Variant &);
 
 	MultiplayerSpawner() {}
 };
