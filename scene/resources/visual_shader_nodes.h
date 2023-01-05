@@ -385,6 +385,8 @@ public:
 		SOURCE_2D_NORMAL,
 		SOURCE_DEPTH,
 		SOURCE_PORT,
+		SOURCE_3D_NORMAL,
+		SOURCE_ROUGHNESS,
 		SOURCE_MAX,
 	};
 
@@ -668,6 +670,7 @@ public:
 	virtual String get_output_port_name(int p_port) const override;
 	virtual bool has_output_port_preview(int p_port) const override;
 
+	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const override;
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
 
 	VisualShaderNodeLinearSceneDepth();
@@ -2362,11 +2365,20 @@ public:
 		REPEAT_MAX,
 	};
 
+	enum TextureSource {
+		SOURCE_NONE,
+		SOURCE_SCREEN,
+		SOURCE_DEPTH,
+		SOURCE_NORMAL_ROUGHNESS,
+		SOURCE_MAX,
+	};
+
 protected:
 	TextureType texture_type = TYPE_DATA;
 	ColorDefault color_default = COLOR_DEFAULT_WHITE;
 	TextureFilter texture_filter = FILTER_DEFAULT;
 	TextureRepeat texture_repeat = REPEAT_DEFAULT;
+	TextureSource texture_source = SOURCE_NONE;
 
 protected:
 	static void _bind_methods();
@@ -2398,6 +2410,9 @@ public:
 	void set_texture_repeat(TextureRepeat p_repeat);
 	TextureRepeat get_texture_repeat() const;
 
+	void set_texture_source(TextureSource p_source);
+	TextureSource get_texture_source() const;
+
 	bool is_qualifier_supported(Qualifier p_qual) const override;
 	bool is_convertible_to_constant() const override;
 
@@ -2408,6 +2423,7 @@ VARIANT_ENUM_CAST(VisualShaderNodeTextureParameter::TextureType)
 VARIANT_ENUM_CAST(VisualShaderNodeTextureParameter::ColorDefault)
 VARIANT_ENUM_CAST(VisualShaderNodeTextureParameter::TextureFilter)
 VARIANT_ENUM_CAST(VisualShaderNodeTextureParameter::TextureRepeat)
+VARIANT_ENUM_CAST(VisualShaderNodeTextureParameter::TextureSource)
 
 ///////////////////////////////////////
 

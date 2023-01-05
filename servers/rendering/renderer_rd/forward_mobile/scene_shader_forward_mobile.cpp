@@ -46,7 +46,6 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 	valid = false;
 	ubo_size = 0;
 	uniforms.clear();
-	uses_screen_texture = false;
 
 	if (code.is_empty()) {
 		return; //just invalid, but no error
@@ -74,9 +73,6 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 	uses_vertex = false;
 	uses_sss = false;
 	uses_transmittance = false;
-	uses_screen_texture = false;
-	uses_depth_texture = false;
-	uses_normal_texture = false;
 	uses_time = false;
 	writes_modelview_or_projection = false;
 	uses_world_coordinates = false;
@@ -121,9 +117,6 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 	// actions.usage_flag_pointers["SSS_STRENGTH"] = &uses_sss;
 	// actions.usage_flag_pointers["SSS_TRANSMITTANCE_DEPTH"] = &uses_transmittance;
 
-	actions.usage_flag_pointers["SCREEN_TEXTURE"] = &uses_screen_texture;
-	actions.usage_flag_pointers["DEPTH_TEXTURE"] = &uses_depth_texture;
-	actions.usage_flag_pointers["NORMAL_ROUGHNESS_TEXTURE"] = &uses_normal_texture;
 	actions.usage_flag_pointers["DISCARD"] = &uses_discard;
 	actions.usage_flag_pointers["TIME"] = &uses_time;
 	actions.usage_flag_pointers["ROUGHNESS"] = &uses_roughness;
@@ -152,6 +145,10 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 	depth_test = DepthTest(depth_testi);
 	uses_vertex_time = gen_code.uses_vertex_time;
 	uses_fragment_time = gen_code.uses_fragment_time;
+	uses_screen_texture_mipmaps = gen_code.uses_screen_texture_mipmaps;
+	uses_screen_texture = gen_code.uses_screen_texture;
+	uses_depth_texture = gen_code.uses_depth_texture;
+	uses_normal_texture = gen_code.uses_normal_roughness_texture;
 
 #if 0
 	print_line("**compiling shader:");
@@ -498,9 +495,6 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 		actions.renames["POINT_COORD"] = "gl_PointCoord";
 		actions.renames["INSTANCE_CUSTOM"] = "instance_custom";
 		actions.renames["SCREEN_UV"] = "screen_uv";
-		actions.renames["SCREEN_TEXTURE"] = "color_buffer";
-		actions.renames["DEPTH_TEXTURE"] = "depth_buffer";
-		actions.renames["NORMAL_ROUGHNESS_TEXTURE"] = "normal_roughness_buffer";
 		actions.renames["DEPTH"] = "gl_FragDepth";
 		actions.renames["OUTPUT_IS_SRGB"] = "true";
 		actions.renames["FOG"] = "fog";
@@ -565,7 +559,6 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 		actions.usage_defines["SSS_STRENGTH"] = "#define ENABLE_SSS\n";
 		actions.usage_defines["SSS_TRANSMITTANCE_DEPTH"] = "#define ENABLE_TRANSMITTANCE\n";
 		actions.usage_defines["BACKLIGHT"] = "#define LIGHT_BACKLIGHT_USED\n";
-		actions.usage_defines["SCREEN_TEXTURE"] = "#define SCREEN_TEXTURE_USED\n";
 		actions.usage_defines["SCREEN_UV"] = "#define SCREEN_UV_USED\n";
 
 		actions.usage_defines["DIFFUSE_LIGHT"] = "#define USE_LIGHT_SHADER_CODE\n";
