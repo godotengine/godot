@@ -323,6 +323,9 @@
 		<member name="docks/scene_tree/derive_script_globals_by_name" type="bool" setter="" getter="">
 			If [code]true[/code], when extending a script, the global class name of the script is inserted in the script creation dialog, if it exists. If [code]false[/code], the script's file path is always inserted.
 		</member>
+		<member name="docks/scene_tree/enable_editable_children_by_default" type="bool" setter="" getter="">
+			If [code]true[/code], instantiated nodes will automatically have Editable Children set to [code]true[/code] in the scene tree dock.
+		</member>
 		<member name="docks/scene_tree/hide_filtered_out_parents" type="bool" setter="" getter="">
 			If [code]true[/code], the scene tree dock will only show nodes that match the filter, without showing parents that don't. This settings can also be changed in the Scene dock's top menu.
 		</member>
