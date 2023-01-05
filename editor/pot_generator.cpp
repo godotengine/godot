@@ -159,20 +159,25 @@ void POTGenerator::_write_to_pot(const String &p_file) {
 
 void POTGenerator::_write_msgid(Ref<FileAccess> r_file, const String &p_id, bool p_plural) {
 	// Split \\n and \n.
-	Vector<String> temp = p_id.split("\\n");
 	Vector<String> msg_lines;
+	Vector<String> temp = p_id.split("\\n");
 	for (int i = 0; i < temp.size(); i++) {
 		msg_lines.append_array(temp[i].split("\n"));
-		if (i < temp.size() - 1) {
-			// Add \n.
-			msg_lines.set(msg_lines.size() - 1, msg_lines[msg_lines.size() - 1] + "\\n");
-		}
+	}
+
+	// Add \n.
+	for (int i = 0; i < msg_lines.size() - 1; i++) {
+		msg_lines.set(i, msg_lines[i] + "\\n");
 	}
 
 	if (p_plural) {
 		r_file->store_string("msgid_plural ");
 	} else {
 		r_file->store_string("msgid ");
+	}
+
+	if (msg_lines.size() > 1) {
+		r_file->store_line("\"\"");
 	}
 
 	for (int i = 0; i < msg_lines.size(); i++) {
