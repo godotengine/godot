@@ -1942,6 +1942,20 @@ void TextureStorage::render_target_free(RID p_rid) {
 	render_target_owner.free(p_rid);
 }
 
+void TextureStorage::render_target_set_viewport_mode(RID p_render_target, RS::ViewportMode p_viewport_mode) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND(!rt);
+
+	rt->viewport_mode = p_viewport_mode;
+}
+
+RS::ViewportMode TextureStorage::render_target_get_viewport_mode(RID p_render_target) const {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND_V(!rt, RS::VIEWPORT_MODE_2D_AND_3D);
+
+	return rt->viewport_mode;
+}
+
 void TextureStorage::render_target_set_position(RID p_render_target, int p_x, int p_y) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_COND(!rt);

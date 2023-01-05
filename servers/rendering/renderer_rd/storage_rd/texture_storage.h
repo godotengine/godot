@@ -313,6 +313,7 @@ private:
 		RID color_multisample; // Needed when MSAA is enabled.
 
 		RS::ViewportMSAA msaa = RS::VIEWPORT_MSAA_DISABLED;
+		RS::ViewportMode viewport_mode = RS::VIEWPORT_MODE_2D_AND_3D;
 
 		//used for retrieving from CPU
 		RD::DataFormat color_format = RD::DATA_FORMAT_R4G4_UNORM_PACK8;
@@ -679,6 +680,10 @@ public:
 
 	virtual RID render_target_create() override;
 	virtual void render_target_free(RID p_rid) override;
+
+	
+	virtual void render_target_set_viewport_mode(RID p_render_target, RS::ViewportMode p_viewport_mode) override;
+	virtual RS::ViewportMode render_target_get_viewport_mode(RID p_render_target) const override;
 
 	virtual void render_target_set_position(RID p_render_target, int p_x, int p_y) override;
 	virtual Point2i render_target_get_position(RID p_render_target) const override;

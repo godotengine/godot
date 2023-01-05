@@ -2573,10 +2573,17 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 	if (rt->size.width == 0 || rt->size.height == 0) {
 		return;
 	}
-	//until we implement support for HDR monitors (and render target is attached to screen), this is enough.
-	rt->color_format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
-	rt->color_format_srgb = RD::DATA_FORMAT_R8G8B8A8_SRGB;
-	rt->image_format = rt->is_transparent ? Image::FORMAT_RGBA8 : Image::FORMAT_RGB8;
+	if (rt->viewport_mode == RS::VIEWPORT_MODE_3D) {
+		// For 3D only viewport keep precision
+		rt->color_format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
+		rt->color_format_srgb = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
+		rt->image_format = rt->is_transparent ? Image::FORMAT_RGBAH : Image::FORMAT_RGBH;
+	} else {
+		//until we implement support for HDR monitors (and render target is attached to screen), this is enough.
+		rt->color_format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
+		rt->color_format_srgb = RD::DATA_FORMAT_R8G8B8A8_SRGB;
+		rt->image_format = rt->is_transparent ? Image::FORMAT_RGBA8 : Image::FORMAT_RGB8;
+	}
 
 	RD::TextureFormat rd_color_attachment_format;
 	RD::TextureView rd_view;
@@ -2726,6 +2733,21 @@ void TextureStorage::render_target_free(RID p_rid) {
 	}
 
 	render_target_owner.free(p_rid);
+}
+
+RS::ViewportMode TextureStorage::render_target_get_viewport_mode(RID p_render_target) const {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND_V(!rt, RS::VIEWPORT_MODE_2D_AND_3D);
+	return rt->viewport_mode;
+}
+
+void TextureStorage::render_target_set_viewport_mode(RID p_render_target, RS::ViewportMode p_viewport_mode) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND(!rt);
+	if (rt->viewport_mode != p_viewport_mode) {
+		rt->viewport_mode = p_viewport_mode;
+		_update_render_target(rt);
+	}
 }
 
 void TextureStorage::render_target_set_position(RID p_render_target, int p_x, int p_y) {

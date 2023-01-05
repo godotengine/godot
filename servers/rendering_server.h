@@ -777,6 +777,12 @@ public:
 
 	/* VIEWPORT API */
 
+	enum ViewportMode {
+		VIEWPORT_MODE_2D_AND_3D,
+		VIEWPORT_MODE_3D,
+		VIEWPORT_MODE_XR
+	};
+
 	enum CanvasItemTextureFilter {
 		CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, // Uses canvas item setting for draw command, uses global setting for canvas item.
 		CANVAS_ITEM_TEXTURE_FILTER_NEAREST,
@@ -805,6 +811,7 @@ public:
 		VIEWPORT_SCALING_3D_MODE_OFF = 255, // for internal use only
 	};
 
+	virtual void viewport_set_viewport_mode(RID p_viewport, ViewportMode p_viewport_mode) = 0;
 	virtual void viewport_set_use_xr(RID p_viewport, bool p_use_xr) = 0;
 	virtual void viewport_set_size(RID p_viewport, int p_width, int p_height) = 0;
 	virtual void viewport_set_active(RID p_viewport, bool p_active) = 0;

@@ -107,6 +107,7 @@ void ToneMapper::tonemapper(RID p_source_color, RID p_dst_framebuffer, const Ton
 	tonemap.push_constant.glow_texture_size[0] = p_settings.glow_texture_size.x;
 	tonemap.push_constant.glow_texture_size[1] = p_settings.glow_texture_size.y;
 	tonemap.push_constant.glow_mode = p_settings.glow_mode;
+	tonemap.push_constant.keep_linear = p_settings.keep_linear;
 
 	int mode = p_settings.glow_use_bicubic_upscale ? TONEMAP_MODE_BICUBIC_GLOW_FILTER : TONEMAP_MODE_NORMAL;
 	if (p_settings.use_1d_color_correction) {

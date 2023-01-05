@@ -3087,6 +3087,16 @@ bool Viewport::is_using_occlusion_culling() const {
 	return use_occlusion_culling;
 }
 
+void Viewport::set_viewport_mode(ViewportMode p_viewport_mode) {
+	printf("Changing viewport mode");
+	viewport_mode = p_viewport_mode;
+	RS::get_singleton()->viewport_set_viewport_mode(viewport, RS::ViewportMode(p_viewport_mode));
+}
+
+Viewport::ViewportMode Viewport::get_viewport_mode() const {
+	return viewport_mode;
+}
+
 void Viewport::set_debug_draw(DebugDraw p_debug_draw) {
 	debug_draw = p_debug_draw;
 	RS::get_singleton()->viewport_set_debug_draw(viewport, RS::ViewportDebugDraw(p_debug_draw));
@@ -3957,6 +3967,9 @@ void Viewport::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_process_picking"), &Viewport::_process_picking);
 
+	ClassDB::bind_method(D_METHOD("set_viewport_mode", "viewport_mode"), &Viewport::set_viewport_mode);
+	ClassDB::bind_method(D_METHOD("get_viewport_mode"), &Viewport::get_viewport_mode);
+
 #ifndef _3D_DISABLED
 	ClassDB::bind_method(D_METHOD("set_world_3d", "world_3d"), &Viewport::set_world_3d);
 	ClassDB::bind_method(D_METHOD("get_world_3d"), &Viewport::get_world_3d);
@@ -3994,6 +4007,7 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_vrs_texture"), &Viewport::get_vrs_texture);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disable_3d"), "set_disable_3d", "is_3d_disabled");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "viewport_mode", PROPERTY_HINT_ENUM, "2D_AND_3D,3D,XR"), "set_viewport_mode", "get_viewport_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_xr"), "set_use_xr", "is_using_xr");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "own_world_3d"), "set_use_own_world_3d", "is_using_own_world_3d");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "world_3d", PROPERTY_HINT_RESOURCE_TYPE, "World3D"), "set_world_3d", "get_world_3d");

@@ -89,6 +89,11 @@ class Viewport : public Node {
 	GDCLASS(Viewport, Node);
 
 public:
+	enum ViewportMode {
+		VIEWPORT_MODE_2D_AND_3D,
+		VIEWPORT_MODE_3D,
+		VIEWPORT_MODE_XR
+	};
 	enum Scaling3DMode {
 		SCALING_3D_MODE_BILINEAR,
 		SCALING_3D_MODE_FSR,
@@ -285,6 +290,7 @@ private:
 	void _update_audio_listener_2d();
 
 	bool disable_3d = false;
+	ViewportMode viewport_mode = VIEWPORT_MODE_2D_AND_3D;
 
 	void _propagate_viewport_notification(Node *p_node, int p_what);
 
@@ -593,6 +599,9 @@ public:
 
 	PackedStringArray get_configuration_warnings() const override;
 
+	void set_viewport_mode(ViewportMode p_viewport_mode);
+	ViewportMode get_viewport_mode() const;
+
 	void set_debug_draw(DebugDraw p_debug_draw);
 	DebugDraw get_debug_draw() const;
 
@@ -797,6 +806,7 @@ VARIANT_ENUM_CAST(Viewport::Scaling3DMode);
 VARIANT_ENUM_CAST(SubViewport::UpdateMode);
 VARIANT_ENUM_CAST(Viewport::PositionalShadowAtlasQuadrantSubdiv);
 VARIANT_ENUM_CAST(Viewport::MSAA);
+VARIANT_ENUM_CAST(Viewport::ViewportMode);
 VARIANT_ENUM_CAST(Viewport::ScreenSpaceAA);
 VARIANT_ENUM_CAST(Viewport::DebugDraw);
 VARIANT_ENUM_CAST(Viewport::SDFScale);

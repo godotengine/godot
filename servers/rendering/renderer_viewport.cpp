@@ -792,6 +792,17 @@ void RendererViewport::viewport_initialize(RID p_rid) {
 	viewport->fsr_enabled = !RSG::rasterizer->is_low_end() && !viewport->disable_3d;
 }
 
+void RendererViewport::viewport_set_viewport_mode(RID p_viewport, RS::ViewportMode p_viewport_mode) {
+	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
+	ERR_FAIL_COND(!viewport);
+	if (viewport->viewport_mode == p_viewport_mode) {
+		return;
+	}
+	viewport->viewport_mode = p_viewport_mode;
+	RSG::texture_storage->render_target_set_viewport_mode(viewport->render_target, p_viewport_mode);
+	// _configure_3d_render_buffers(viewport);
+}
+
 void RendererViewport::viewport_set_use_xr(RID p_viewport, bool p_use_xr) {
 	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_COND(!viewport);

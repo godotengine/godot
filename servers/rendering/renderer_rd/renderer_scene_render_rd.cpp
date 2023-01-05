@@ -551,7 +551,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 
 		tonemap.luminance_multiplier = _render_buffers_get_luminance_multiplier();
 		tonemap.view_count = rb->get_view_count();
-
+		tonemap.keep_linear = texture_storage->render_target_get_viewport_mode(render_target) != RS::VIEWPORT_MODE_2D_AND_3D;
 		RID dest_fb;
 		if (fsr && can_use_effects && rb->get_scaling_3d_mode() == RS::VIEWPORT_SCALING_3D_MODE_FSR) {
 			// If we use FSR to upscale we need to write our result into an intermediate buffer.
@@ -572,7 +572,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 
 	if (fsr && can_use_effects && rb->get_scaling_3d_mode() == RS::VIEWPORT_SCALING_3D_MODE_FSR) {
 		RD::get_singleton()->draw_command_begin_label("FSR 1.0 Upscale");
-
+		printf("FSR ?");
 		for (uint32_t v = 0; v < rb->get_view_count(); v++) {
 			RID source_texture = rb->get_texture_slice(SNAME("Tonemapper"), SNAME("destination"), v, 0);
 			RID dest_texture = texture_storage->render_target_get_rd_texture_slice(render_target, v);
@@ -648,7 +648,7 @@ void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_fr
 	tonemap.view_count = rb->get_view_count();
 
 	tone_mapper->tonemapper(draw_list, p_source_texture, RD::get_singleton()->framebuffer_get_format(p_framebuffer), tonemap);
-
+	printf("Tonemapping here \n");
 	RD::get_singleton()->draw_command_end_label();
 }
 

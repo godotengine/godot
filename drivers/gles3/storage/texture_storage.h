@@ -347,6 +347,8 @@ struct RenderTarget {
 	GLuint backbuffer = 0;
 	GLuint backbuffer_depth = 0;
 
+	RS::ViewportMode viewport_mode = RS::VIEWPORT_MODE_2D_AND_3D;
+
 	GLuint color_internal_format = GL_RGBA8;
 	GLuint color_format = GL_RGBA;
 	GLuint color_type = GL_UNSIGNED_BYTE;
@@ -610,6 +612,8 @@ public:
 	virtual RID render_target_create() override;
 	virtual void render_target_free(RID p_rid) override;
 
+	virtual void render_target_set_viewport_mode(RID p_render_target, RS::ViewportMode p_viewport_mode) override;
+	virtual RS::ViewportMode render_target_get_viewport_mode(RID p_render_target) const override;
 	virtual void render_target_set_position(RID p_render_target, int p_x, int p_y) override;
 	virtual Point2i render_target_get_position(RID p_render_target) const override;
 	virtual void render_target_set_size(RID p_render_target, int p_width, int p_height, uint32_t p_view_count) override;
