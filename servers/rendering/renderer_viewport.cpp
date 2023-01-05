@@ -189,7 +189,7 @@ void RendererViewport::_draw_3d(Viewport *p_viewport) {
 	RENDER_TIMESTAMP("> Render 3D Scene");
 
 	Ref<XRInterface> xr_interface;
-	if (p_viewport->use_xr && XRServer::get_singleton() != nullptr) {
+	if (p_viewport->viewport_mode == RS::VIEWPORT_MODE_XR && XRServer::get_singleton() != nullptr) {
 		xr_interface = XRServer::get_singleton()->get_primary_interface();
 	}
 
@@ -631,7 +631,7 @@ void RendererViewport::draw_viewports() {
 
 		bool visible = vp->viewport_to_screen_rect != Rect2();
 
-		if (vp->use_xr) {
+		if (vp->viewport_mode == RS::VIEWPORT_MODE_XR) {
 			if (xr_interface.is_valid()) {
 				// Ignore update mode we have to commit frames to our XR interface
 				visible = true;
@@ -682,7 +682,7 @@ void RendererViewport::draw_viewports() {
 		RENDER_TIMESTAMP("> Render Viewport " + itos(i));
 
 		RSG::texture_storage->render_target_set_as_unused(vp->render_target);
-		if (vp->use_xr && xr_interface.is_valid()) {
+		if (vp->viewport_mode == RS::VIEWPORT_MODE_XR && xr_interface.is_valid()) {
 			// Inform XR interface we're about to render its viewport,
 			// if this returns false we don't render.
 			// This usually is a result of the player taking off their headset and OpenXR telling us to skip
@@ -798,27 +798,13 @@ void RendererViewport::viewport_set_viewport_mode(RID p_viewport, RS::ViewportMo
 	if (viewport->viewport_mode == p_viewport_mode) {
 		return;
 	}
+	bool was_xr = viewport->viewport_mode == RS::VIEWPORT_MODE_XR;
 	viewport->viewport_mode = p_viewport_mode;
 	RSG::texture_storage->render_target_set_viewport_mode(viewport->render_target, p_viewport_mode);
-	// _configure_3d_render_buffers(viewport);
-}
-
-void RendererViewport::viewport_set_use_xr(RID p_viewport, bool p_use_xr) {
-	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
-	ERR_FAIL_COND(!viewport);
-
-	if (viewport->use_xr == p_use_xr) {
-		return;
-	}
-
-	viewport->use_xr = p_use_xr;
-
-	// Re-configure the 3D render buffers when disabling XR. They'll get
-	// re-configured when enabling XR in draw_viewports().
-	if (!p_use_xr) {
+	if (was_xr) {
 		viewport->view_count = 1;
-		_configure_3d_render_buffers(viewport);
 	}
+	_configure_3d_render_buffers(viewport);
 }
 
 void RendererViewport::viewport_set_scaling_3d_mode(RID p_viewport, RS::ViewportScaling3DMode p_mode) {
@@ -869,7 +855,7 @@ void RendererViewport::viewport_set_size(RID p_viewport, int p_width, int p_heig
 
 	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_COND(!viewport);
-	ERR_FAIL_COND_MSG(viewport->use_xr, "Cannot set viewport size when using XR");
+	ERR_FAIL_COND_MSG(viewport->viewport_mode == RS::VIEWPORT_MODE_XR, "Cannot set viewport size when using XR");
 
 	_viewport_set_size(viewport, p_width, p_height, 1);
 }

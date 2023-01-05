@@ -69,7 +69,7 @@
 		func _webxr_session_started():
 		    $Button.visible = false
 		    # This tells Godot to start rendering to the headset.
-		    get_viewport().use_xr = true
+		    get_viewport().viewport_mode = 2
 		    # This will be the reference space type you ultimately got, out of the
 		    # types that you requested above. This is useful if you want the game to
 		    # work a little differently in 'bounded-floor' versus 'local-floor'.
@@ -79,7 +79,7 @@
 		    $Button.visible = true
 		    # If the user exits immersive mode, then we tell Godot to render to the web
 		    # page again.
-		    get_viewport().use_xr = false
+		    get_viewport().viewport_mode = 0
 
 		func _webxr_session_failed(message):
 		    OS.alert("Failed to initialize: " + message)
@@ -198,7 +198,7 @@
 		<signal name="session_ended">
 			<description>
 				Emitted when the user ends the WebXR session (which can be done using UI from the browser or device).
-				At this point, you should do [code]get_viewport().use_xr = false[/code] to instruct Godot to resume rendering to the screen.
+				At this point, you should do [code]get_viewport().viewport_mode = RS::VIEWPORT_2D_AND_3D[/code] to instruct Godot to resume rendering to the screen.
 			</description>
 		</signal>
 		<signal name="session_failed">
@@ -211,7 +211,7 @@
 		<signal name="session_started">
 			<description>
 				Emitted by [method XRInterface.initialize] if the session is successfully started.
-				At this point, it's safe to do [code]get_viewport().use_xr = true[/code] to instruct Godot to start rendering to the XR device.
+				At this point, it's safe to do [code]get_viewport().viewport_mode = RS::VIEWPORT_MODE_XR[/code] to instruct Godot to start rendering to the XR device.
 			</description>
 		</signal>
 		<signal name="session_supported">

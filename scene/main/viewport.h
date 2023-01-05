@@ -670,7 +670,6 @@ public:
 	virtual Transform2D get_popup_base_transform() const { return Transform2D(); }
 
 #ifndef _3D_DISABLED
-	bool use_xr = false;
 	friend class AudioListener3D;
 	AudioListener3D *audio_listener_3d = nullptr;
 	HashSet<AudioListener3D *> audio_listener_3d_set;
@@ -738,9 +737,6 @@ public:
 	bool is_using_own_world_3d() const;
 	void _propagate_enter_world_3d(Node *p_node);
 	void _propagate_exit_world_3d(Node *p_node);
-
-	void set_use_xr(bool p_use_xr);
-	bool is_using_xr();
 #endif // _3D_DISABLED
 
 	void _validate_property(PropertyInfo &p_property) const;

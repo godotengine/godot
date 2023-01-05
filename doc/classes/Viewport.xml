@@ -342,9 +342,6 @@
 			Enables Temporal Anti-Aliasing for this viewport. TAA works by jittering the camera and accumulating the images of the last rendered frames, motion vector rendering is used to account for camera and object motion.
 			[b]Note:[/b] The implementation is not complete yet, some visual instances such as particles and skinned meshes may show artifacts.
 		</member>
-		<member name="use_xr" type="bool" setter="set_use_xr" getter="is_using_xr" default="false">
-			If [code]true[/code], the viewport will use the primary XR interface to render XR output. When applicable this can result in a stereoscopic image and the resulting render being output to a headset.
-		</member>
 		<member name="viewport_mode" type="int" setter="set_viewport_mode" getter="get_viewport_mode" enum="Viewport.ViewportMode" default="0">
 			Change global mode of viewport and output type.
 		</member>
