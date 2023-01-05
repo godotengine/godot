@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="IKRay3D" inherits="RefCounted" is_experimental="true" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_heading">
+			<return type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="get_intersects_plane">
+			<return type="Vector3" />
+			<param index="0" name="a" type="Vector3" />
+			<param index="1" name="b" type="Vector3" />
+			<param index="2" name="c" type="Vector3" />
+			<description>
+			</description>
+		</method>
+		<method name="get_scaled_projection">
+			<return type="float" />
+			<param index="0" name="input" type="Vector3" />
+			<description>
+			</description>
+		</method>
+	</methods>
+</class>

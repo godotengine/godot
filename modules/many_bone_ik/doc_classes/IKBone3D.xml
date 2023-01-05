@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="IKBone3D" inherits="Resource" is_experimental="true" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_constraint" qualifiers="const">
+			<return type="IKKusudama3D" />
+			<description>
+			</description>
+		</method>
+		<method name="get_constraint_orientation_transform">
+			<return type="IKNode3D" />
+			<description>
+			</description>
+		</method>
+		<method name="get_constraint_twist_transform">
+			<return type="IKNode3D" />
+			<description>
+			</description>
+		</method>
+		<method name="get_pin" qualifiers="const">
+			<return type="IKEffector3D" />
+			<description>
+			</description>
+		</method>
+		<method name="is_pinned" qualifiers="const">
+			<return type="bool" />
+			<description>
+			</description>
+		</method>
+		<method name="set_pin">
+			<return type="void" />
+			<param index="0" name="pin" type="IKEffector3D" />
+			<description>
+			</description>
+		</method>
+	</methods>
+</class>
