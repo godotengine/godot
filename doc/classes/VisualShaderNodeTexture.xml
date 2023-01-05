@@ -33,12 +33,18 @@
 			Use the texture from this shader's normal map built-in.
 		</constant>
 		<constant name="SOURCE_DEPTH" value="4" enum="Source">
-			Use the depth texture available for this shader.
+			Use the depth texture captured during the depth prepass. Only available when the depth prepass is used (i.e. in spatial shaders and in the forward_plus or gl_compatibility renderers).
 		</constant>
 		<constant name="SOURCE_PORT" value="5" enum="Source">
 			Use the texture provided in the input port for this function.
 		</constant>
-		<constant name="SOURCE_MAX" value="6" enum="Source">
+		<constant name="SOURCE_3D_NORMAL" value="6" enum="Source">
+			Use the normal buffer captured during the depth prepass. Only available when the normal-roughness buffer is available (i.e. in spatial shaders and in the forward_plus renderer).
+		</constant>
+		<constant name="SOURCE_ROUGHNESS" value="7" enum="Source">
+			Use the roughness buffer captured during the depth prepass. Only available when the normal-roughness buffer is available (i.e. in spatial shaders and in the forward_plus renderer).
+		</constant>
+		<constant name="SOURCE_MAX" value="8" enum="Source">
 			Represents the size of the [enum Source] enum.
 		</constant>
 		<constant name="TYPE_DATA" value="0" enum="TextureType">

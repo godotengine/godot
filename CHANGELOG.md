@@ -227,6 +227,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   - More information in the [progress report](https://godotengine.org/article/improvements-shaders-visual-shaders-godot-4).
 - [Add Billboard mode to visual shaders.](https://github.com/godotengine/godot/pull/49157)
 - [The constants `PI`, `TAU` and `E` are now available in the shader language.](https://github.com/godotengine/godot/pull/48837)
+- Uniform hints to control textures (`repeat_enabled`, `repeat_disabled`, `filter_linear`, `filter_nearest`, `hint_screen_texture`, etc.).
 
 #### Miscellaneous
 
@@ -400,6 +401,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   - Vulkan, OpenGL 3.3, OpenGL ES 3.0 or WebGL 2.0 support is now required to run Godot.
 - [Removed support for 16× MSAA due to driver bugs and low performance.](https://github.com/godotengine/godot/pull/49063)
   - For high-quality offline rendering, using supersampling together with 8× MSAA is a better option anyway.
+
+#### Shaders
+
+- Removed `SCREEN_TEXTURE` and `DEPTH_TEXTURE` in favour of uniform hints `hint_screen_texture` and `hint_depth_texture`.
 
 ### Fixed
 
