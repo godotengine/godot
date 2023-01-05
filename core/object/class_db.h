@@ -372,16 +372,16 @@ public:
 	static uint64_t get_native_struct_size(const StringName &p_name); // Used for asserting
 };
 
-#ifdef DEBUG_METHODS_ENABLED
-
-#define BIND_CONSTANT(m_constant) \
-	::ClassDB::bind_integer_constant(get_class_static(), StringName(), #m_constant, m_constant);
-
 #define BIND_ENUM_CONSTANT(m_constant) \
 	::ClassDB::bind_integer_constant(get_class_static(), __constant_get_enum_name(m_constant, #m_constant), #m_constant, m_constant);
 
 #define BIND_BITFIELD_FLAG(m_constant) \
 	::ClassDB::bind_integer_constant(get_class_static(), __constant_get_bitfield_name(m_constant, #m_constant), #m_constant, m_constant, true);
+
+#define BIND_CONSTANT(m_constant) \
+	::ClassDB::bind_integer_constant(get_class_static(), StringName(), #m_constant, m_constant);
+
+#ifdef DEBUG_METHODS_ENABLED
 
 _FORCE_INLINE_ void errarray_add_str(Vector<Error> &arr) {
 }
@@ -407,15 +407,6 @@ _FORCE_INLINE_ Vector<Error> errarray(P... p_args) {
 	::ClassDB::set_method_error_return_values(get_class_static(), m_method, errarray(__VA_ARGS__));
 
 #else
-
-#define BIND_CONSTANT(m_constant) \
-	::ClassDB::bind_integer_constant(get_class_static(), StringName(), #m_constant, m_constant);
-
-#define BIND_ENUM_CONSTANT(m_constant) \
-	::ClassDB::bind_integer_constant(get_class_static(), StringName(), #m_constant, m_constant);
-
-#define BIND_BITFIELD_FLAG(m_constant) \
-	::ClassDB::bind_integer_constant(get_class_static(), StringName(), #m_constant, m_constant, true);
 
 #define BIND_METHOD_ERR_RETURN_DOC(m_method, ...)
 
