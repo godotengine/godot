@@ -69,16 +69,17 @@ class GDScriptAnalyzer {
 	void resolve_function_body(GDScriptParser::FunctionNode *p_function);
 	void resolve_node(GDScriptParser::Node *p_node, bool p_is_root = true);
 	void resolve_suite(GDScriptParser::SuiteNode *p_suite);
+	void resolve_assignable(GDScriptParser::AssignableNode *p_assignable, const char *p_kind);
+	void resolve_variable(GDScriptParser::VariableNode *p_variable, bool p_is_local);
+	void resolve_constant(GDScriptParser::ConstantNode *p_constant, bool p_is_local);
+	void resolve_parameter(GDScriptParser::ParameterNode *p_parameter);
 	void resolve_if(GDScriptParser::IfNode *p_if);
 	void resolve_for(GDScriptParser::ForNode *p_for);
 	void resolve_while(GDScriptParser::WhileNode *p_while);
-	void resolve_variable(GDScriptParser::VariableNode *p_variable);
-	void resolve_constant(GDScriptParser::ConstantNode *p_constant);
 	void resolve_assert(GDScriptParser::AssertNode *p_assert);
 	void resolve_match(GDScriptParser::MatchNode *p_match);
 	void resolve_match_branch(GDScriptParser::MatchBranchNode *p_match_branch, GDScriptParser::ExpressionNode *p_match_test);
 	void resolve_match_pattern(GDScriptParser::PatternNode *p_match_pattern, GDScriptParser::ExpressionNode *p_match_test);
-	void resolve_parameter(GDScriptParser::ParameterNode *p_parameter);
 	void resolve_return(GDScriptParser::ReturnNode *p_return);
 
 	// Reduction functions.
