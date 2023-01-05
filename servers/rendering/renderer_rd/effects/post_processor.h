@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  post_processer.h                                                     */
+/*  post_processor.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef POST_PROCESSER_RD_H
-#define POST_PROCESSER_RD_H
+#ifndef POST_PROCESSOR_RD_H
+#define POST_PROCESSOR_RD_H
 
 #include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
 #include "servers/rendering/renderer_rd/shaders/effects/post_process.glsl.gen.h"
@@ -39,7 +39,7 @@
 
 namespace RendererRD {
 
-class PostProcesser {
+class PostProcessor {
 private:
 	enum TonemapMode {
 		TONEMAP_MODE_NORMAL,
@@ -66,7 +66,7 @@ private:
 		uint32_t use_glow; //  4 - 20
 		uint32_t use_auto_exposure; //  4 - 24
 		uint32_t use_color_correction; //  4 - 28
-		uint32_t PostProcesser; //  4 - 32
+		uint32_t PostProcessor; //  4 - 32
 
 		uint32_t glow_texture_size[2]; //  8 - 40
 		float glow_intensity; //  4 - 44
@@ -100,8 +100,8 @@ private:
 	} post_process;
 
 public:
-	PostProcesser();
-	~PostProcesser();
+	PostProcessor();
+	~PostProcessor();
 
 	struct PostProcessSettings {
 		bool use_glow = false;
@@ -148,10 +148,10 @@ public:
 		bool use_tonemap = true;
 	};
 
-	void postprocesser(RID p_source_color, RID p_dst_framebuffer, const PostProcessSettings &p_settings);
-	void postprocesser(RD::DrawListID p_subpass_draw_list, RID p_source_color, RD::FramebufferFormatID p_dst_format_id, const PostProcessSettings &p_settings);
+	void postprocessor(RID p_source_color, RID p_dst_framebuffer, const PostProcessSettings &p_settings);
+	void postprocessor(RD::DrawListID p_subpass_draw_list, RID p_source_color, RD::FramebufferFormatID p_dst_format_id, const PostProcessSettings &p_settings);
 };
 
 } // namespace RendererRD
 
-#endif // POST_PROCESSER_RD_H
+#endif // POST_PROCESSOR_RD_H

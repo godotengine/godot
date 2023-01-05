@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  post_processer.cpp                                                   */
+/*  post_processor.cpp                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,16 +28,16 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "post_processer.h"
+#include "post_processor.h"
 #include "servers/rendering/renderer_rd/renderer_compositor_rd.h"
 #include "servers/rendering/renderer_rd/storage_rd/material_storage.h"
 #include "servers/rendering/renderer_rd/uniform_set_cache_rd.h"
 
 using namespace RendererRD;
 
-PostProcesser::PostProcesser() {
+PostProcessor::PostProcessor() {
 	{
-		// Initialize PostProcesser
+		// Initialize PostProcessor
 		Vector<String> tonemap_modes;
 		tonemap_modes.push_back("\n");
 		tonemap_modes.push_back("\n#define USE_GLOW_FILTER_BICUBIC\n");
@@ -77,11 +77,11 @@ PostProcesser::PostProcesser() {
 	}
 }
 
-PostProcesser::~PostProcesser() {
+PostProcessor::~PostProcessor() {
 	post_process.shader.version_free(post_process.shader_version);
 }
 
-void PostProcesser::postprocesser(RID p_source_color, RID p_dst_framebuffer, const PostProcessSettings &p_settings) {
+void PostProcessor::postprocessor(RID p_source_color, RID p_dst_framebuffer, const PostProcessSettings &p_settings) {
 	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
 	ERR_FAIL_NULL(uniform_set_cache);
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
@@ -115,7 +115,7 @@ void PostProcesser::postprocesser(RID p_source_color, RID p_dst_framebuffer, con
 		mode += 2;
 	}
 
-	post_process.push_constant.PostProcesser = p_settings.tonemap_mode;
+	post_process.push_constant.PostProcessor = p_settings.tonemap_mode;
 	post_process.push_constant.use_auto_exposure = p_settings.use_auto_exposure;
 	post_process.push_constant.exposure = p_settings.exposure;
 	post_process.push_constant.white = p_settings.white;
@@ -179,7 +179,7 @@ void PostProcesser::postprocesser(RID p_source_color, RID p_dst_framebuffer, con
 	RD::get_singleton()->draw_list_end();
 }
 
-void PostProcesser::postprocesser(RD::DrawListID p_subpass_draw_list, RID p_source_color, RD::FramebufferFormatID p_dst_format_id, const PostProcessSettings &p_settings) {
+void PostProcessor::postprocessor(RD::DrawListID p_subpass_draw_list, RID p_source_color, RD::FramebufferFormatID p_dst_format_id, const PostProcessSettings &p_settings) {
 	UniformSetCacheRD *uniform_set_cache = UniformSetCacheRD::get_singleton();
 	ERR_FAIL_NULL(uniform_set_cache);
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
@@ -201,7 +201,7 @@ void PostProcesser::postprocesser(RD::DrawListID p_subpass_draw_list, RID p_sour
 		mode += 6;
 	}
 
-	post_process.push_constant.PostProcesser = p_settings.tonemap_mode;
+	post_process.push_constant.PostProcessor = p_settings.tonemap_mode;
 	post_process.push_constant.use_auto_exposure = p_settings.use_auto_exposure;
 	post_process.push_constant.exposure = p_settings.exposure;
 	post_process.push_constant.white = p_settings.white;

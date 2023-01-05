@@ -484,7 +484,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		RENDER_TIMESTAMP("PostProcess");
 		RD::get_singleton()->draw_command_begin_label("PostProcess");
 
-		RendererRD::PostProcesser::PostProcessSettings post_process_settings;
+		RendererRD::PostProcessor::PostProcessSettings post_process_settings;
 
 		post_process_settings.exposure_texture = luminance->get_current_luminance_buffer(rb);
 		if (can_use_effects && RSG::camera_attributes->camera_attributes_uses_auto_exposure(p_render_data->camera_attributes) && post_process_settings.exposure_texture.is_valid()) {
@@ -496,7 +496,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 
 		if (can_use_effects && p_render_data->environment.is_valid() && environment_get_glow_enabled(p_render_data->environment)) {
 			post_process_settings.use_glow = true;
-			post_process_settings.glow_mode = RendererRD::PostProcesser::PostProcessSettings::GlowMode(environment_get_glow_blend_mode(p_render_data->environment));
+			post_process_settings.glow_mode = RendererRD::PostProcessor::PostProcessSettings::GlowMode(environment_get_glow_blend_mode(p_render_data->environment));
 			post_process_settings.glow_intensity = environment_get_glow_blend_mode(p_render_data->environment) == RS::ENV_GLOW_BLEND_MODE_MIX ? environment_get_glow_mix(p_render_data->environment) : environment_get_glow_intensity(p_render_data->environment);
 			for (int i = 0; i < RS::MAX_GLOW_LEVELS; i++) {
 				post_process_settings.glow_levels[i] = environment_get_glow_levels(p_render_data->environment)[i];
@@ -559,7 +559,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		if (fsr && can_use_effects && rb->get_scaling_3d_mode() == RS::VIEWPORT_SCALING_3D_MODE_FSR) {
 			// If we use FSR to upscale we need to write our result into an intermediate buffer.
 			// Note that this is cached so we only create the texture the first time.
-			RID dest_texture = rb->create_texture(SNAME("PostProcesser"), SNAME("destination"), _render_buffers_get_color_format(), RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT);
+			RID dest_texture = rb->create_texture(SNAME("PostProcessor"), SNAME("destination"), _render_buffers_get_color_format(), RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT);
 			dest_fb = FramebufferCacheRD::get_singleton()->get_cache(dest_texture);
 		} else {
 			// If we do a bilinear upscale we just render into our render target and our shader will upscale automatically.
@@ -568,7 +568,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 			dest_fb = texture_storage->render_target_get_rd_framebuffer(render_target);
 		}
 
-		post_processer->postprocesser(internal_texture, dest_fb, post_process_settings);
+		post_processor->postprocessor(internal_texture, dest_fb, post_process_settings);
 
 		RD::get_singleton()->draw_command_end_label();
 	}
@@ -577,7 +577,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		RD::get_singleton()->draw_command_begin_label("FSR 1.0 Upscale");
 		printf("FSR ?");
 		for (uint32_t v = 0; v < rb->get_view_count(); v++) {
-			RID source_texture = rb->get_texture_slice(SNAME("PostProcesser"), SNAME("destination"), v, 0);
+			RID source_texture = rb->get_texture_slice(SNAME("PostProcessor"), SNAME("destination"), v, 0);
 			RID dest_texture = texture_storage->render_target_get_rd_texture_slice(render_target, v);
 
 			fsr->fsr_upscale(rb, source_texture, dest_texture);
@@ -603,7 +603,7 @@ void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_fr
 
 	RD::DrawListID draw_list = RD::get_singleton()->draw_list_switch_to_next_pass();
 
-	RendererRD::PostProcesser::PostProcessSettings post_process_settings;
+	RendererRD::PostProcessor::PostProcessSettings post_process_settings;
 
 	if (p_render_data->environment.is_valid()) {
 		post_process_settings.tonemap_mode = environment_get_tone_mapper(p_render_data->environment);
@@ -650,7 +650,7 @@ void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_fr
 	post_process_settings.luminance_multiplier = _render_buffers_get_luminance_multiplier();
 	post_process_settings.view_count = rb->get_view_count();
 
-	post_processer->postprocesser(draw_list, p_source_texture, RD::get_singleton()->framebuffer_get_format(p_framebuffer), post_process_settings);
+	post_processor->postprocessor(draw_list, p_source_texture, RD::get_singleton()->framebuffer_get_format(p_framebuffer), post_process_settings);
 	RD::get_singleton()->draw_command_end_label();
 }
 
@@ -1291,7 +1291,7 @@ void RendererSceneRenderRD::init() {
 	bokeh_dof = memnew(RendererRD::BokehDOF(!can_use_storage));
 	copy_effects = memnew(RendererRD::CopyEffects(!can_use_storage));
 	luminance = memnew(RendererRD::Luminance(!can_use_storage));
-	post_processer = memnew(RendererRD::PostProcesser);
+	post_processor = memnew(RendererRD::PostProcessor);
 	if (can_use_vrs) {
 		vrs = memnew(RendererRD::VRS);
 	}
@@ -1314,8 +1314,8 @@ RendererSceneRenderRD::~RendererSceneRenderRD() {
 	if (luminance) {
 		memdelete(luminance);
 	}
-	if (post_processer) {
-		memdelete(post_processer);
+	if (post_processor) {
+		memdelete(post_processor);
 	}
 	if (vrs) {
 		memdelete(vrs);
