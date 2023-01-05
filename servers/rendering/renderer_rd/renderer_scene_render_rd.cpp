@@ -481,82 +481,85 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 	}
 
 	{
-		RENDER_TIMESTAMP("Tonemap");
-		RD::get_singleton()->draw_command_begin_label("Tonemap");
+		RENDER_TIMESTAMP("PostProcess");
+		RD::get_singleton()->draw_command_begin_label("PostProcess");
 
-		RendererRD::ToneMapper::TonemapSettings tonemap;
+		RendererRD::PostProcesser::PostProcessSettings post_process_settings;
 
-		tonemap.exposure_texture = luminance->get_current_luminance_buffer(rb);
-		if (can_use_effects && RSG::camera_attributes->camera_attributes_uses_auto_exposure(p_render_data->camera_attributes) && tonemap.exposure_texture.is_valid()) {
-			tonemap.use_auto_exposure = true;
-			tonemap.auto_exposure_scale = auto_exposure_scale;
+		post_process_settings.exposure_texture = luminance->get_current_luminance_buffer(rb);
+		if (can_use_effects && RSG::camera_attributes->camera_attributes_uses_auto_exposure(p_render_data->camera_attributes) && post_process_settings.exposure_texture.is_valid()) {
+			post_process_settings.use_auto_exposure = true;
+			post_process_settings.auto_exposure_scale = auto_exposure_scale;
 		} else {
-			tonemap.exposure_texture = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_WHITE);
+			post_process_settings.exposure_texture = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_WHITE);
 		}
 
 		if (can_use_effects && p_render_data->environment.is_valid() && environment_get_glow_enabled(p_render_data->environment)) {
-			tonemap.use_glow = true;
-			tonemap.glow_mode = RendererRD::ToneMapper::TonemapSettings::GlowMode(environment_get_glow_blend_mode(p_render_data->environment));
-			tonemap.glow_intensity = environment_get_glow_blend_mode(p_render_data->environment) == RS::ENV_GLOW_BLEND_MODE_MIX ? environment_get_glow_mix(p_render_data->environment) : environment_get_glow_intensity(p_render_data->environment);
+			post_process_settings.use_glow = true;
+			post_process_settings.glow_mode = RendererRD::PostProcesser::PostProcessSettings::GlowMode(environment_get_glow_blend_mode(p_render_data->environment));
+			post_process_settings.glow_intensity = environment_get_glow_blend_mode(p_render_data->environment) == RS::ENV_GLOW_BLEND_MODE_MIX ? environment_get_glow_mix(p_render_data->environment) : environment_get_glow_intensity(p_render_data->environment);
 			for (int i = 0; i < RS::MAX_GLOW_LEVELS; i++) {
-				tonemap.glow_levels[i] = environment_get_glow_levels(p_render_data->environment)[i];
+				post_process_settings.glow_levels[i] = environment_get_glow_levels(p_render_data->environment)[i];
 			}
 
 			Size2i msize = rb->get_texture_slice_size(RB_SCOPE_BUFFERS, RB_TEX_BLUR_1, 0);
-			tonemap.glow_texture_size.x = msize.width;
-			tonemap.glow_texture_size.y = msize.height;
-			tonemap.glow_use_bicubic_upscale = glow_bicubic_upscale;
-			tonemap.glow_texture = rb->get_texture(RB_SCOPE_BUFFERS, RB_TEX_BLUR_1);
+			post_process_settings.glow_texture_size.x = msize.width;
+			post_process_settings.glow_texture_size.y = msize.height;
+			post_process_settings.glow_use_bicubic_upscale = glow_bicubic_upscale;
+			post_process_settings.glow_texture = rb->get_texture(RB_SCOPE_BUFFERS, RB_TEX_BLUR_1);
 			if (environment_get_glow_map(p_render_data->environment).is_valid()) {
-				tonemap.glow_map_strength = environment_get_glow_map_strength(p_render_data->environment);
-				tonemap.glow_map = texture_storage->texture_get_rd_texture(environment_get_glow_map(p_render_data->environment));
+				post_process_settings.glow_map_strength = environment_get_glow_map_strength(p_render_data->environment);
+				post_process_settings.glow_map = texture_storage->texture_get_rd_texture(environment_get_glow_map(p_render_data->environment));
 			} else {
-				tonemap.glow_map_strength = 0.0f;
-				tonemap.glow_map = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_WHITE);
+				post_process_settings.glow_map_strength = 0.0f;
+				post_process_settings.glow_map = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_WHITE);
 			}
 
 		} else {
-			tonemap.glow_texture = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_BLACK);
-			tonemap.glow_map = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_WHITE);
+			post_process_settings.glow_texture = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_BLACK);
+			post_process_settings.glow_map = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_WHITE);
 		}
 
 		if (rb->get_screen_space_aa() == RS::VIEWPORT_SCREEN_SPACE_AA_FXAA) {
-			tonemap.use_fxaa = true;
+			post_process_settings.use_fxaa = true;
 		}
 
-		tonemap.use_debanding = rb->get_use_debanding();
-		tonemap.texture_size = Vector2i(rb->get_internal_size().x, rb->get_internal_size().y);
+		post_process_settings.use_debanding = rb->get_use_debanding();
+		post_process_settings.texture_size = Vector2i(rb->get_internal_size().x, rb->get_internal_size().y);
 
 		if (p_render_data->environment.is_valid()) {
-			tonemap.tonemap_mode = environment_get_tone_mapper(p_render_data->environment);
-			tonemap.white = environment_get_white(p_render_data->environment);
-			tonemap.exposure = environment_get_exposure(p_render_data->environment);
+			post_process_settings.tonemap_mode = environment_get_tone_mapper(p_render_data->environment);
+			post_process_settings.white = environment_get_white(p_render_data->environment);
+			post_process_settings.exposure = environment_get_exposure(p_render_data->environment);
 		}
 
-		tonemap.use_color_correction = false;
-		tonemap.use_1d_color_correction = false;
-		tonemap.color_correction_texture = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_3D_WHITE);
+		post_process_settings.use_color_correction = false;
+		post_process_settings.use_1d_color_correction = false;
+		post_process_settings.color_correction_texture = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_3D_WHITE);
 
 		if (can_use_effects && p_render_data->environment.is_valid()) {
-			tonemap.use_bcs = environment_get_adjustments_enabled(p_render_data->environment);
-			tonemap.brightness = environment_get_adjustments_brightness(p_render_data->environment);
-			tonemap.contrast = environment_get_adjustments_contrast(p_render_data->environment);
-			tonemap.saturation = environment_get_adjustments_saturation(p_render_data->environment);
+			post_process_settings.use_bcs = environment_get_adjustments_enabled(p_render_data->environment);
+			post_process_settings.brightness = environment_get_adjustments_brightness(p_render_data->environment);
+			post_process_settings.contrast = environment_get_adjustments_contrast(p_render_data->environment);
+			post_process_settings.saturation = environment_get_adjustments_saturation(p_render_data->environment);
 			if (environment_get_adjustments_enabled(p_render_data->environment) && environment_get_color_correction(p_render_data->environment).is_valid()) {
-				tonemap.use_color_correction = true;
-				tonemap.use_1d_color_correction = environment_get_use_1d_color_correction(p_render_data->environment);
-				tonemap.color_correction_texture = texture_storage->texture_get_rd_texture(environment_get_color_correction(p_render_data->environment));
+				post_process_settings.use_color_correction = true;
+				post_process_settings.use_1d_color_correction = environment_get_use_1d_color_correction(p_render_data->environment);
+				post_process_settings.color_correction_texture = texture_storage->texture_get_rd_texture(environment_get_color_correction(p_render_data->environment));
 			}
 		}
 
-		tonemap.luminance_multiplier = _render_buffers_get_luminance_multiplier();
-		tonemap.view_count = rb->get_view_count();
-		tonemap.keep_linear = texture_storage->render_target_get_viewport_mode(render_target) != RS::VIEWPORT_MODE_2D_AND_3D;
+		post_process_settings.luminance_multiplier = _render_buffers_get_luminance_multiplier();
+		post_process_settings.view_count = rb->get_view_count();
+		if (texture_storage->render_target_get_viewport_mode(render_target) == RS::VIEWPORT_MODE_3D) {
+			post_process_settings.use_linearize = false;
+			post_process_settings.use_tonemap = false;
+		}
 		RID dest_fb;
 		if (fsr && can_use_effects && rb->get_scaling_3d_mode() == RS::VIEWPORT_SCALING_3D_MODE_FSR) {
 			// If we use FSR to upscale we need to write our result into an intermediate buffer.
 			// Note that this is cached so we only create the texture the first time.
-			RID dest_texture = rb->create_texture(SNAME("Tonemapper"), SNAME("destination"), _render_buffers_get_color_format(), RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT);
+			RID dest_texture = rb->create_texture(SNAME("PostProcesser"), SNAME("destination"), _render_buffers_get_color_format(), RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT);
 			dest_fb = FramebufferCacheRD::get_singleton()->get_cache(dest_texture);
 		} else {
 			// If we do a bilinear upscale we just render into our render target and our shader will upscale automatically.
@@ -565,7 +568,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 			dest_fb = texture_storage->render_target_get_rd_framebuffer(render_target);
 		}
 
-		tone_mapper->tonemapper(internal_texture, dest_fb, tonemap);
+		post_processer->postprocesser(internal_texture, dest_fb, post_process_settings);
 
 		RD::get_singleton()->draw_command_end_label();
 	}
@@ -574,7 +577,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		RD::get_singleton()->draw_command_begin_label("FSR 1.0 Upscale");
 		printf("FSR ?");
 		for (uint32_t v = 0; v < rb->get_view_count(); v++) {
-			RID source_texture = rb->get_texture_slice(SNAME("Tonemapper"), SNAME("destination"), v, 0);
+			RID source_texture = rb->get_texture_slice(SNAME("PostProcesser"), SNAME("destination"), v, 0);
 			RID dest_texture = texture_storage->render_target_get_rd_texture_slice(render_target, v);
 
 			fsr->fsr_upscale(rb, source_texture, dest_texture);
@@ -600,12 +603,12 @@ void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_fr
 
 	RD::DrawListID draw_list = RD::get_singleton()->draw_list_switch_to_next_pass();
 
-	RendererRD::ToneMapper::TonemapSettings tonemap;
+	RendererRD::PostProcesser::PostProcessSettings post_process_settings;
 
 	if (p_render_data->environment.is_valid()) {
-		tonemap.tonemap_mode = environment_get_tone_mapper(p_render_data->environment);
-		tonemap.exposure = environment_get_exposure(p_render_data->environment);
-		tonemap.white = environment_get_white(p_render_data->environment);
+		post_process_settings.tonemap_mode = environment_get_tone_mapper(p_render_data->environment);
+		post_process_settings.exposure = environment_get_exposure(p_render_data->environment);
+		post_process_settings.white = environment_get_white(p_render_data->environment);
 	}
 
 	// We don't support glow or auto exposure here, if they are needed, don't use subpasses!
@@ -619,36 +622,35 @@ void RendererSceneRenderRD::_post_process_subpass(RID p_source_texture, RID p_fr
 		ERR_FAIL_MSG("Auto Exposure is not supported when using subpasses.");
 	}
 
-	tonemap.use_glow = false;
-	tonemap.glow_texture = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_BLACK);
-	tonemap.glow_map = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_WHITE);
-	tonemap.use_auto_exposure = false;
-	tonemap.exposure_texture = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_WHITE);
+	post_process_settings.use_glow = false;
+	post_process_settings.glow_texture = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_BLACK);
+	post_process_settings.glow_map = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_WHITE);
+	post_process_settings.use_auto_exposure = false;
+	post_process_settings.exposure_texture = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_WHITE);
 
-	tonemap.use_color_correction = false;
-	tonemap.use_1d_color_correction = false;
-	tonemap.color_correction_texture = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_3D_WHITE);
+	post_process_settings.use_color_correction = false;
+	post_process_settings.use_1d_color_correction = false;
+	post_process_settings.color_correction_texture = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_3D_WHITE);
 
 	if (can_use_effects && p_render_data->environment.is_valid()) {
-		tonemap.use_bcs = environment_get_adjustments_enabled(p_render_data->environment);
-		tonemap.brightness = environment_get_adjustments_brightness(p_render_data->environment);
-		tonemap.contrast = environment_get_adjustments_contrast(p_render_data->environment);
-		tonemap.saturation = environment_get_adjustments_saturation(p_render_data->environment);
+		post_process_settings.use_bcs = environment_get_adjustments_enabled(p_render_data->environment);
+		post_process_settings.brightness = environment_get_adjustments_brightness(p_render_data->environment);
+		post_process_settings.contrast = environment_get_adjustments_contrast(p_render_data->environment);
+		post_process_settings.saturation = environment_get_adjustments_saturation(p_render_data->environment);
 		if (environment_get_adjustments_enabled(p_render_data->environment) && environment_get_color_correction(p_render_data->environment).is_valid()) {
-			tonemap.use_color_correction = true;
-			tonemap.use_1d_color_correction = environment_get_use_1d_color_correction(p_render_data->environment);
-			tonemap.color_correction_texture = texture_storage->texture_get_rd_texture(environment_get_color_correction(p_render_data->environment));
+			post_process_settings.use_color_correction = true;
+			post_process_settings.use_1d_color_correction = environment_get_use_1d_color_correction(p_render_data->environment);
+			post_process_settings.color_correction_texture = texture_storage->texture_get_rd_texture(environment_get_color_correction(p_render_data->environment));
 		}
 	}
 
-	tonemap.use_debanding = rb->get_use_debanding();
-	tonemap.texture_size = Vector2i(target_size.x, target_size.y);
+	post_process_settings.use_debanding = rb->get_use_debanding();
+	post_process_settings.texture_size = Vector2i(target_size.x, target_size.y);
 
-	tonemap.luminance_multiplier = _render_buffers_get_luminance_multiplier();
-	tonemap.view_count = rb->get_view_count();
+	post_process_settings.luminance_multiplier = _render_buffers_get_luminance_multiplier();
+	post_process_settings.view_count = rb->get_view_count();
 
-	tone_mapper->tonemapper(draw_list, p_source_texture, RD::get_singleton()->framebuffer_get_format(p_framebuffer), tonemap);
-	printf("Tonemapping here \n");
+	post_processer->postprocesser(draw_list, p_source_texture, RD::get_singleton()->framebuffer_get_format(p_framebuffer), post_process_settings);
 	RD::get_singleton()->draw_command_end_label();
 }
 
@@ -1289,7 +1291,7 @@ void RendererSceneRenderRD::init() {
 	bokeh_dof = memnew(RendererRD::BokehDOF(!can_use_storage));
 	copy_effects = memnew(RendererRD::CopyEffects(!can_use_storage));
 	luminance = memnew(RendererRD::Luminance(!can_use_storage));
-	tone_mapper = memnew(RendererRD::ToneMapper);
+	post_processer = memnew(RendererRD::PostProcesser);
 	if (can_use_vrs) {
 		vrs = memnew(RendererRD::VRS);
 	}
@@ -1312,8 +1314,8 @@ RendererSceneRenderRD::~RendererSceneRenderRD() {
 	if (luminance) {
 		memdelete(luminance);
 	}
-	if (tone_mapper) {
-		memdelete(tone_mapper);
+	if (post_processer) {
+		memdelete(post_processer);
 	}
 	if (vrs) {
 		memdelete(vrs);

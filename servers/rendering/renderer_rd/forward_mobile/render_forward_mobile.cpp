@@ -1068,11 +1068,11 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		}
 	}
 
-	if (rb_data.is_valid() && !using_subpass_post_process ) {
+	if (rb_data.is_valid() && !using_subpass_post_process) {
 		RD::get_singleton()->draw_command_begin_label("Post process pass");
 
 		// If we need extra effects we do this in its own pass
-		RENDER_TIMESTAMP("Tonemap");
+		RENDER_TIMESTAMP("PostProcess");
 
 		_render_buffers_post_process_and_tonemap(p_render_data);
 

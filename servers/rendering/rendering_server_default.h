@@ -587,7 +587,7 @@ public:
 	/* VIEWPORT TARGET API */
 
 	FUNCRIDSPLIT(viewport)
-	
+
 	FUNC2(viewport_set_viewport_mode, RID, ViewportMode)
 	FUNC2(viewport_set_use_xr, RID, bool)
 	FUNC3(viewport_set_size, RID, int, int)

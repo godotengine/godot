@@ -137,7 +137,7 @@ public:
 
 	virtual void render_target_set_viewport_mode(RID p_render_target, RS::ViewportMode p_viewport_mode) = 0;
 	virtual RS::ViewportMode render_target_get_viewport_mode(RID p_render_target) const = 0;
-	
+
 	virtual void render_target_set_position(RID p_render_target, int p_x, int p_y) = 0; // Q change input to const Point2i &p_position ?
 	virtual Point2i render_target_get_position(RID p_render_target) const = 0;
 	virtual void render_target_set_size(RID p_render_target, int p_width, int p_height, uint32_t p_view_count) = 0; // Q change input to const Size2i &p_size ?

@@ -681,7 +681,6 @@ public:
 	virtual RID render_target_create() override;
 	virtual void render_target_free(RID p_rid) override;
 
-	
 	virtual void render_target_set_viewport_mode(RID p_render_target, RS::ViewportMode p_viewport_mode) override;
 	virtual RS::ViewportMode render_target_get_viewport_mode(RID p_render_target) const override;
 

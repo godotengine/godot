@@ -81,8 +81,9 @@ layout(push_constant, std430) uniform Params {
 	vec2 pixel_size;
 	bool use_fxaa;
 	bool use_debanding;
-	vec3 pad;
-	bool keep_linear;
+	vec2 pad;
+	bool use_linearize;
+	bool use_tonemap;
 }
 params;
 
@@ -463,9 +464,10 @@ void main() {
 		color.rgb = mix(color.rgb, glow, params.glow_intensity);
 	}
 #endif
-
-	color.rgb = apply_tonemapping(color.rgb, params.white);
-	if (!params.keep_linear) {
+	if (params.use_tonemap) {
+		color.rgb = apply_tonemapping(color.rgb, params.white);
+	}
+	if (params.use_linearize) {
 		color.rgb = linear_to_srgb(color.rgb); // regular linear -> SRGB conversion
 	}
 
