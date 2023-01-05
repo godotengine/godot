@@ -214,7 +214,7 @@ class AnimatedSprite3D : public SpriteBase3D {
 	bool backwards = false;
 	StringName animation = "default";
 	int frame = 0;
-	float speed_scale = 1.0f;
+	float speed_scale = 1.0;
 
 	bool centered = false;
 
@@ -248,8 +248,8 @@ public:
 	void set_frame(int p_frame);
 	int get_frame() const;
 
-	void set_speed_scale(double p_speed_scale);
-	double get_speed_scale() const;
+	void set_speed_scale(float p_speed_scale);
+	float get_speed_scale() const;
 
 	virtual Rect2 get_item_rect() const override;
 

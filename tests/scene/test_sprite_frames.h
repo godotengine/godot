@@ -210,9 +210,9 @@ TEST_CASE("[SpriteFrames] Frame addition, removal, and retrieval") {
 			frames.get_frame_count(test_animation_name) == 0,
 			"Animation has a default frame count of 0");
 
-	frames.add_frame(test_animation_name, dummy_frame1, 0);
-	frames.add_frame(test_animation_name, dummy_frame1, 1);
-	frames.add_frame(test_animation_name, dummy_frame1, 2);
+	frames.add_frame(test_animation_name, dummy_frame1, 1.0, 0);
+	frames.add_frame(test_animation_name, dummy_frame1, 1.0, 1);
+	frames.add_frame(test_animation_name, dummy_frame1, 1.0, 2);
 
 	CHECK_MESSAGE(
 			frames.get_frame_count(test_animation_name) == 3,
@@ -227,7 +227,7 @@ TEST_CASE("[SpriteFrames] Frame addition, removal, and retrieval") {
 
 	// These error handling cases should not crash.
 	ERR_PRINT_OFF;
-	frames.add_frame("does not exist", dummy_frame1, 0);
+	frames.add_frame("does not exist", dummy_frame1, 1.0, 0);
 	frames.remove_frame(test_animation_name, -99);
 	frames.remove_frame("does not exist", 0);
 	ERR_PRINT_ON;
