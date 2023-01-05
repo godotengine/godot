@@ -2134,6 +2134,7 @@ void GraphEdit::arrange_nodes() {
 	Dictionary node_names;
 	HashSet<StringName> selected_nodes;
 
+	bool arrange_entire_graph = true;
 	for (int i = get_child_count() - 1; i >= 0; i--) {
 		GraphNode *gn = Object::cast_to<GraphNode>(get_child(i));
 		if (!gn) {
@@ -2141,6 +2142,10 @@ void GraphEdit::arrange_nodes() {
 		}
 
 		node_names[gn->get_name()] = gn;
+
+		if (gn->is_selected()) {
+			arrange_entire_graph = false;
+		}
 	}
 
 	HashMap<StringName, HashSet<StringName>> upper_neighbours;
@@ -2156,12 +2161,12 @@ void GraphEdit::arrange_nodes() {
 			continue;
 		}
 
-		if (gn->is_selected()) {
+		if (gn->is_selected() || arrange_entire_graph) {
 			selected_nodes.insert(gn->get_name());
 			HashSet<StringName> s;
 			for (List<Connection>::Element *E = connections.front(); E; E = E->next()) {
 				GraphNode *p_from = Object::cast_to<GraphNode>(node_names[E->get().from]);
-				if (E->get().to == gn->get_name() && p_from->is_selected() && E->get().to != E->get().from) {
+				if (E->get().to == gn->get_name() && (p_from->is_selected() || arrange_entire_graph) && E->get().to != E->get().from) {
 					if (!s.has(p_from->get_name())) {
 						s.insert(p_from->get_name());
 					}
