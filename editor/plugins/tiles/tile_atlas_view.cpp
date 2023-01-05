@@ -53,14 +53,14 @@ void TileAtlasView::_scroll_callback(Vector2 p_scroll_vec, bool p_alt) {
 
 void TileAtlasView::_pan_callback(Vector2 p_scroll_vec) {
 	panning += p_scroll_vec;
-	emit_signal(SNAME("transform_changed"), zoom_widget->get_zoom(), panning);
 	_update_zoom_and_panning(true);
+	emit_signal(SNAME("transform_changed"), zoom_widget->get_zoom(), panning);
 }
 
 void TileAtlasView::_zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin, bool p_alt) {
 	zoom_widget->set_zoom_by_increments(-p_scroll_vec.y * 2);
-	emit_signal(SNAME("transform_changed"), zoom_widget->get_zoom(), panning);
 	_update_zoom_and_panning(true);
+	emit_signal(SNAME("transform_changed"), zoom_widget->get_zoom(), panning);
 }
 
 Size2i TileAtlasView::_compute_base_tiles_control_size() {
