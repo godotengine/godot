@@ -127,8 +127,6 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 	void _add_animation_type(int p_index);
 	void _connect_to(int p_index);
 
-	void _removed_from_graph();
-
 	struct NodeRect {
 		StringName node_name;
 		Rect2 node;

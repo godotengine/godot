@@ -3925,7 +3925,7 @@ void EditorPropertyResource::_open_editor_pressed() {
 	Ref<Resource> res = get_edited_object()->get(get_edited_property());
 	if (res.is_valid()) {
 		// May clear the editor so do it deferred.
-		EditorNode::get_singleton()->call_deferred(SNAME("edit_item_resource"), res);
+		callable_mp(EditorNode::get_singleton(), &EditorNode::edit_item_resource).bind(res).call_deferred();
 	}
 }
 
@@ -4189,7 +4189,6 @@ void EditorPropertyResource::_notification(int p_what) {
 }
 
 void EditorPropertyResource::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_open_editor_pressed"), &EditorPropertyResource::_open_editor_pressed);
 	ClassDB::bind_method(D_METHOD("_fold_other_editors"), &EditorPropertyResource::_fold_other_editors);
 }
 

@@ -815,12 +815,6 @@ void AnimationNodeBlendTreeEditor::_inspect_filters(const String &p_which) {
 	filter_dialog->popup_centered(Size2(500, 500) * EDSCALE);
 }
 
-void AnimationNodeBlendTreeEditor::_removed_from_graph() {
-	if (is_visible()) {
-		EditorNode::get_singleton()->edit_item(nullptr);
-	}
-}
-
 void AnimationNodeBlendTreeEditor::_update_editor_settings() {
 	graph->get_panner()->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
 	graph->set_warped_panning(bool(EDITOR_GET("editors/panning/warped_mouse_panning")));
@@ -1050,7 +1044,6 @@ bool AnimationNodeBlendTreeEditor::can_edit(const Ref<AnimationNode> &p_node) {
 void AnimationNodeBlendTreeEditor::edit(const Ref<AnimationNode> &p_node) {
 	if (blend_tree.is_valid()) {
 		blend_tree->disconnect("node_changed", callable_mp(this, &AnimationNodeBlendTreeEditor::_node_changed));
-		blend_tree->disconnect("removed_from_graph", callable_mp(this, &AnimationNodeBlendTreeEditor::_removed_from_graph));
 	}
 
 	blend_tree = p_node;
@@ -1063,7 +1056,6 @@ void AnimationNodeBlendTreeEditor::edit(const Ref<AnimationNode> &p_node) {
 		read_only = EditorNode::get_singleton()->is_resource_read_only(blend_tree);
 
 		blend_tree->connect("node_changed", callable_mp(this, &AnimationNodeBlendTreeEditor::_node_changed));
-		blend_tree->connect("removed_from_graph", callable_mp(this, &AnimationNodeBlendTreeEditor::_removed_from_graph));
 
 		update_graph();
 	}

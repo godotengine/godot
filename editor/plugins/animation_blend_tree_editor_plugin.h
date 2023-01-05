@@ -123,7 +123,6 @@ class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 	void _connection_from_empty(const String &p_to, int p_to_slot, const Vector2 &p_release_position);
 
 	void _property_changed(const StringName &p_property, const Variant &p_value, const String &p_field, bool p_changing);
-	void _removed_from_graph();
 
 	void _update_editor_settings();
 	void _update_theme();

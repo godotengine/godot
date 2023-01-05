@@ -165,11 +165,6 @@
 		</member>
 	</members>
 	<signals>
-		<signal name="removed_from_graph">
-			<description>
-				Emitted when the node was removed from the graph.
-			</description>
-		</signal>
 		<signal name="tree_changed">
 			<description>
 				Emitted by nodes that inherit from this class and that have an internal tree when one of their nodes changes. The nodes that emit this signal are [AnimationNodeBlendSpace1D], [AnimationNodeBlendSpace2D], [AnimationNodeStateMachine], and [AnimationNodeBlendTree].

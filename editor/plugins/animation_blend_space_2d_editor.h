@@ -121,8 +121,6 @@ class AnimationNodeBlendSpace2DEditor : public AnimationTreeNodeEditorPlugin {
 	void _edit_point_pos(double);
 	void _open_editor();
 
-	void _removed_from_graph();
-
 	void _auto_triangles_toggled();
 
 	StringName get_blend_position_path() const;
