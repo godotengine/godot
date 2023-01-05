@@ -795,7 +795,6 @@ public:
 	void push_item(Object *p_object, const String &p_property = "", bool p_inspector_only = false);
 	void edit_item(Object *p_object);
 	void edit_item_resource(Ref<Resource> p_resource);
-	bool item_has_editor(Object *p_object);
 	void hide_top_editors();
 
 	void select_editor_by_name(const String &p_name);

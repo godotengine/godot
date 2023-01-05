@@ -855,10 +855,6 @@ void AnimationNodeBlendSpace2DEditor::_open_editor() {
 	}
 }
 
-void AnimationNodeBlendSpace2DEditor::_removed_from_graph() {
-	EditorNode::get_singleton()->edit_item(nullptr);
-}
-
 void AnimationNodeBlendSpace2DEditor::_auto_triangles_toggled() {
 	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("Toggle Auto Triangles"));
@@ -874,8 +870,6 @@ void AnimationNodeBlendSpace2DEditor::_bind_methods() {
 	ClassDB::bind_method("_update_tool_erase", &AnimationNodeBlendSpace2DEditor::_update_tool_erase);
 
 	ClassDB::bind_method("_update_edited_point_pos", &AnimationNodeBlendSpace2DEditor::_update_edited_point_pos);
-
-	ClassDB::bind_method("_removed_from_graph", &AnimationNodeBlendSpace2DEditor::_removed_from_graph);
 }
 
 AnimationNodeBlendSpace2DEditor *AnimationNodeBlendSpace2DEditor::singleton = nullptr;
