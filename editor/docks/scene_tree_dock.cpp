@@ -364,6 +364,8 @@ void SceneTreeDock::_perform_instantiate_scenes(const Vector<String> &p_files, N
 	undo_redo->create_action_for_history(TTRN("Instantiate Scene", "Instantiate Scenes", instances.size()), editor_data->get_current_edited_scene_history_id());
 	undo_redo->add_do_method(editor_selection, "clear");
 
+	bool enable_editable_children_by_default = EDITOR_GET("docks/scene_tree/enable_editable_children_by_default");
+
 	for (int i = 0; i < instances.size(); i++) {
 		Node *instantiated_scene = instances[i];
 
@@ -375,6 +377,11 @@ void SceneTreeDock::_perform_instantiate_scenes(const Vector<String> &p_files, N
 		undo_redo->add_do_method(editor_selection, "add_node", instantiated_scene);
 		undo_redo->add_do_reference(instantiated_scene);
 		undo_redo->add_undo_method(p_parent, "remove_child", instantiated_scene);
+
+		if (enable_editable_children_by_default) {
+			undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "set_editable_instance", instantiated_scene, true);
+			undo_redo->add_do_method(instantiated_scene, "set_display_folded", true);
+		}
 
 		String new_name = p_parent->validate_child_name(instantiated_scene);
 		EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();

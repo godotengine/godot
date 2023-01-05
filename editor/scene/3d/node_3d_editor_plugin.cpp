@@ -5718,6 +5718,11 @@ bool Node3DEditorViewport::_create_instance(Node *p_parent, const String &p_path
 	undo_redo->add_undo_method(p_parent, "remove_child", instantiated_scene);
 	undo_redo->add_do_method(editor_selection, "add_node", instantiated_scene);
 
+	if (EDITOR_GET("docks/scene_tree/enable_editable_children_by_default")) {
+		undo_redo->add_do_method(EditorNode::get_singleton()->get_edited_scene(), "set_editable_instance", instantiated_scene, true);
+		undo_redo->add_do_method(instantiated_scene, "set_display_folded", true);
+	}
+
 	String new_name = p_parent->validate_child_name(instantiated_scene);
 	EditorDebuggerNode *ed = EditorDebuggerNode::get_singleton();
 	undo_redo->add_do_method(ed, "live_debug_instantiate_node", EditorNode::get_singleton()->get_edited_scene()->get_path_to(p_parent), p_path, new_name);
