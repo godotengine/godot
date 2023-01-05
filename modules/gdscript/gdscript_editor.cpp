@@ -702,13 +702,13 @@ static String _make_arguments_hint(const GDScriptParser::FunctionNode *p_functio
 				} break;
 				case GDScriptParser::Node::ARRAY: {
 					const GDScriptParser::ArrayNode *arr = static_cast<const GDScriptParser::ArrayNode *>(par->default_value);
-					if (arr->is_constant && arr->reduced) {
+					if (arr->reduced_value.get_type() != Variant::NIL && arr->reduced) {
 						def_val = arr->reduced_value.operator String();
 					}
 				} break;
 				case GDScriptParser::Node::DICTIONARY: {
 					const GDScriptParser::DictionaryNode *dict = static_cast<const GDScriptParser::DictionaryNode *>(par->default_value);
-					if (dict->is_constant && dict->reduced) {
+					if (dict->reduced_value.get_type() != Variant::NIL && dict->reduced) {
 						def_val = dict->reduced_value.operator String();
 					}
 				} break;

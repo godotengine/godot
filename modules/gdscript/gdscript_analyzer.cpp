@@ -1429,7 +1429,11 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 		if (p_function->parameters[i]->default_value) {
 			default_value_count++;
 
-			if (p_function->parameters[i]->default_value->is_constant) {
+			if (p_function->parameters[i]->default_value->type == GDScriptParser::Node::ARRAY || p_function->parameters[i]->default_value->type == GDScriptParser::Node::DICTIONARY) {
+				if (p_function->parameters[i]->default_value->reduced_value.get_type() != Variant::NIL) {
+					p_function->default_arg_values.push_back(p_function->parameters[i]->default_value->reduced_value);
+				}
+			} else if (p_function->parameters[i]->default_value->is_constant) {
 				p_function->default_arg_values.push_back(p_function->parameters[i]->default_value->reduced_value);
 			} else {
 				p_function->default_arg_values.push_back(Variant()); // Prevent shift.
@@ -1992,6 +1996,13 @@ void GDScriptAnalyzer::resolve_parameter(GDScriptParser::ParameterNode *p_parame
 			result.type_source = GDScriptParser::DataType::ANNOTATED_INFERRED;
 		} else {
 			result.type_source = GDScriptParser::DataType::INFERRED;
+		}
+		result.is_constant = false;
+
+		if (p_parameter->default_value->type == GDScriptParser::Node::ARRAY) {
+			parameter_fold_array(static_cast<GDScriptParser::ArrayNode *>(p_parameter->default_value));
+		} else if (p_parameter->default_value->type == GDScriptParser::Node::DICTIONARY) {
+			parameter_fold_dictionary(static_cast<GDScriptParser::DictionaryNode *>(p_parameter->default_value));
 		}
 	}
 
@@ -3920,8 +3931,6 @@ void GDScriptAnalyzer::reduce_unary_op(GDScriptParser::UnaryOpNode *p_unary_op) 
 }
 
 void GDScriptAnalyzer::const_fold_array(GDScriptParser::ArrayNode *p_array) {
-	bool all_is_constant = true;
-
 	for (int i = 0; i < p_array->elements.size(); i++) {
 		GDScriptParser::ExpressionNode *element = p_array->elements[i];
 
@@ -3931,8 +3940,7 @@ void GDScriptAnalyzer::const_fold_array(GDScriptParser::ArrayNode *p_array) {
 			const_fold_dictionary(static_cast<GDScriptParser::DictionaryNode *>(element));
 		}
 
-		all_is_constant = all_is_constant && element->is_constant;
-		if (!all_is_constant) {
+		if (!element->is_constant) {
 			return;
 		}
 	}
@@ -3947,8 +3955,6 @@ void GDScriptAnalyzer::const_fold_array(GDScriptParser::ArrayNode *p_array) {
 }
 
 void GDScriptAnalyzer::const_fold_dictionary(GDScriptParser::DictionaryNode *p_dictionary) {
-	bool all_is_constant = true;
-
 	for (int i = 0; i < p_dictionary->elements.size(); i++) {
 		const GDScriptParser::DictionaryNode::Pair &element = p_dictionary->elements[i];
 
@@ -3958,8 +3964,7 @@ void GDScriptAnalyzer::const_fold_dictionary(GDScriptParser::DictionaryNode *p_d
 			const_fold_dictionary(static_cast<GDScriptParser::DictionaryNode *>(element.value));
 		}
 
-		all_is_constant = all_is_constant && element.key->is_constant && element.value->is_constant;
-		if (!all_is_constant) {
+		if (!element.key->is_constant || !element.value->is_constant) {
 			return;
 		}
 	}
@@ -3970,6 +3975,60 @@ void GDScriptAnalyzer::const_fold_dictionary(GDScriptParser::DictionaryNode *p_d
 		dict[element.key->reduced_value] = element.value->reduced_value;
 	}
 	p_dictionary->is_constant = true;
+	p_dictionary->reduced_value = dict;
+}
+
+void GDScriptAnalyzer::parameter_fold_array(GDScriptParser::ArrayNode *p_array) {
+	for (int i = 0; i < p_array->elements.size(); i++) {
+		GDScriptParser::ExpressionNode *element = p_array->elements[i];
+
+		if (element->type == GDScriptParser::Node::ARRAY) {
+			parameter_fold_array(static_cast<GDScriptParser::ArrayNode *>(element));
+			if (element->reduced_value.get_type() == Variant::NIL) {
+				return;
+			}
+		} else if (element->type == GDScriptParser::Node::DICTIONARY) {
+			parameter_fold_dictionary(static_cast<GDScriptParser::DictionaryNode *>(element));
+			if (element->reduced_value.get_type() == Variant::NIL) {
+				return;
+			}
+		} else if (!element->is_constant) {
+			return;
+		}
+	}
+
+	Array array;
+	array.resize(p_array->elements.size());
+	for (int i = 0; i < p_array->elements.size(); i++) {
+		array[i] = p_array->elements[i]->reduced_value;
+	}
+	p_array->reduced_value = array;
+}
+
+void GDScriptAnalyzer::parameter_fold_dictionary(GDScriptParser::DictionaryNode *p_dictionary) {
+	for (int i = 0; i < p_dictionary->elements.size(); i++) {
+		const GDScriptParser::DictionaryNode::Pair &element = p_dictionary->elements[i];
+
+		if (element.value->type == GDScriptParser::Node::ARRAY) {
+			parameter_fold_array(static_cast<GDScriptParser::ArrayNode *>(element.value));
+			if (element.value->reduced_value.get_type() == Variant::NIL) {
+				return;
+			}
+		} else if (element.value->type == GDScriptParser::Node::DICTIONARY) {
+			parameter_fold_dictionary(static_cast<GDScriptParser::DictionaryNode *>(element.value));
+			if (element.value->reduced_value.get_type() == Variant::NIL) {
+				return;
+			}
+		} else if (!element.key->is_constant || !element.value->is_constant) {
+			return;
+		}
+	}
+
+	Dictionary dict;
+	for (int i = 0; i < p_dictionary->elements.size(); i++) {
+		const GDScriptParser::DictionaryNode::Pair &element = p_dictionary->elements[i];
+		dict[element.key->reduced_value] = element.value->reduced_value;
+	}
 	p_dictionary->reduced_value = dict;
 }
 
