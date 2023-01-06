@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  openxr_vulkan_extension.cpp                                          */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  openxr_vulkan_extension.cpp                                           */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "core/string/print_string.h"
 
@@ -37,21 +37,24 @@
 #include "servers/rendering/rendering_server_globals.h"
 #include "servers/rendering_server.h"
 
-OpenXRVulkanExtension::OpenXRVulkanExtension(OpenXRAPI *p_openxr_api) :
-		OpenXRGraphicsExtensionWrapper(p_openxr_api) {
+OpenXRVulkanExtension::OpenXRVulkanExtension() {
 	VulkanContext::set_vulkan_hooks(this);
-
-	request_extensions[XR_KHR_VULKAN_ENABLE2_EXTENSION_NAME] = nullptr; // must be available
-
-	ERR_FAIL_NULL(openxr_api);
 }
 
 OpenXRVulkanExtension::~OpenXRVulkanExtension() {
 	VulkanContext::set_vulkan_hooks(nullptr);
 }
 
+HashMap<String, bool *> OpenXRVulkanExtension::get_requested_extensions() {
+	HashMap<String, bool *> request_extensions;
+
+	request_extensions[XR_KHR_VULKAN_ENABLE2_EXTENSION_NAME] = nullptr; // must be available
+
+	return request_extensions;
+}
+
 void OpenXRVulkanExtension::on_instance_created(const XrInstance p_instance) {
-	ERR_FAIL_NULL(openxr_api);
+	ERR_FAIL_NULL(OpenXRAPI::get_singleton());
 
 	// Obtain pointers to functions we're accessing here, they are (not yet) part of core.
 
@@ -63,7 +66,7 @@ void OpenXRVulkanExtension::on_instance_created(const XrInstance p_instance) {
 }
 
 bool OpenXRVulkanExtension::check_graphics_api_support(XrVersion p_desired_version) {
-	ERR_FAIL_NULL_V(openxr_api, false);
+	ERR_FAIL_NULL_V(OpenXRAPI::get_singleton(), false);
 
 	XrGraphicsRequirementsVulkan2KHR vulkan_requirements = {
 		XR_TYPE_GRAPHICS_REQUIREMENTS_VULKAN2_KHR, // type
@@ -72,9 +75,9 @@ bool OpenXRVulkanExtension::check_graphics_api_support(XrVersion p_desired_versi
 		0 // maxApiVersionSupported
 	};
 
-	XrResult result = xrGetVulkanGraphicsRequirements2KHR(openxr_api->get_instance(), openxr_api->get_system_id(), &vulkan_requirements);
+	XrResult result = xrGetVulkanGraphicsRequirements2KHR(OpenXRAPI::get_singleton()->get_instance(), OpenXRAPI::get_singleton()->get_system_id(), &vulkan_requirements);
 	if (XR_FAILED(result)) {
-		print_line("OpenXR: Failed to get vulkan graphics requirements [", openxr_api->get_error_string(result), "]");
+		print_line("OpenXR: Failed to get vulkan graphics requirements [", OpenXRAPI::get_singleton()->get_error_string(result), "]");
 		return false;
 	}
 
@@ -118,7 +121,7 @@ bool OpenXRVulkanExtension::create_vulkan_instance(const VkInstanceCreateInfo *p
 	XrVulkanInstanceCreateInfoKHR xr_vulkan_instance_info = {
 		XR_TYPE_VULKAN_INSTANCE_CREATE_INFO_KHR, // type
 		nullptr, // next
-		openxr_api->get_system_id(), // systemId
+		OpenXRAPI::get_singleton()->get_system_id(), // systemId
 		0, // createFlags
 		vkGetInstanceProcAddr, // pfnGetInstanceProcAddr
 		p_vulkan_create_info, // vulkanCreateInfo
@@ -126,9 +129,9 @@ bool OpenXRVulkanExtension::create_vulkan_instance(const VkInstanceCreateInfo *p
 	};
 
 	VkResult vk_result = VK_SUCCESS;
-	XrResult result = xrCreateVulkanInstanceKHR(openxr_api->get_instance(), &xr_vulkan_instance_info, &vulkan_instance, &vk_result);
+	XrResult result = xrCreateVulkanInstanceKHR(OpenXRAPI::get_singleton()->get_instance(), &xr_vulkan_instance_info, &vulkan_instance, &vk_result);
 	if (XR_FAILED(result)) {
-		print_line("OpenXR: Failed to create vulkan instance [", openxr_api->get_error_string(result), "]");
+		print_line("OpenXR: Failed to create vulkan instance [", OpenXRAPI::get_singleton()->get_error_string(result), "]");
 		return false;
 	}
 
@@ -151,18 +154,18 @@ bool OpenXRVulkanExtension::create_vulkan_instance(const VkInstanceCreateInfo *p
 }
 
 bool OpenXRVulkanExtension::get_physical_device(VkPhysicalDevice *r_device) {
-	ERR_FAIL_NULL_V(openxr_api, false);
+	ERR_FAIL_NULL_V(OpenXRAPI::get_singleton(), false);
 
 	XrVulkanGraphicsDeviceGetInfoKHR get_info = {
 		XR_TYPE_VULKAN_GRAPHICS_DEVICE_GET_INFO_KHR, // type
 		nullptr, // next
-		openxr_api->get_system_id(), // systemId
+		OpenXRAPI::get_singleton()->get_system_id(), // systemId
 		vulkan_instance, // vulkanInstance
 	};
 
-	XrResult result = xrGetVulkanGraphicsDevice2KHR(openxr_api->get_instance(), &get_info, &vulkan_physical_device);
+	XrResult result = xrGetVulkanGraphicsDevice2KHR(OpenXRAPI::get_singleton()->get_instance(), &get_info, &vulkan_physical_device);
 	if (XR_FAILED(result)) {
-		print_line("OpenXR: Failed to obtain vulkan physical device [", openxr_api->get_error_string(result), "]");
+		print_line("OpenXR: Failed to obtain vulkan physical device [", OpenXRAPI::get_singleton()->get_error_string(result), "]");
 		return false;
 	}
 
@@ -172,7 +175,7 @@ bool OpenXRVulkanExtension::get_physical_device(VkPhysicalDevice *r_device) {
 }
 
 bool OpenXRVulkanExtension::create_vulkan_device(const VkDeviceCreateInfo *p_device_create_info, VkDevice *r_device) {
-	ERR_FAIL_NULL_V(openxr_api, false);
+	ERR_FAIL_NULL_V(OpenXRAPI::get_singleton(), false);
 
 	// the first entry in our queue list should be the one we need to remember...
 	vulkan_queue_family_index = p_device_create_info->pQueueCreateInfos[0].queueFamilyIndex;
@@ -181,7 +184,7 @@ bool OpenXRVulkanExtension::create_vulkan_device(const VkDeviceCreateInfo *p_dev
 	XrVulkanDeviceCreateInfoKHR create_info = {
 		XR_TYPE_VULKAN_DEVICE_CREATE_INFO_KHR, // type
 		nullptr, // next
-		openxr_api->get_system_id(), // systemId
+		OpenXRAPI::get_singleton()->get_system_id(), // systemId
 		0, // createFlags
 		vkGetInstanceProcAddr, // pfnGetInstanceProcAddr
 		vulkan_physical_device, // vulkanPhysicalDevice
@@ -190,9 +193,9 @@ bool OpenXRVulkanExtension::create_vulkan_device(const VkDeviceCreateInfo *p_dev
 	};
 
 	VkResult vk_result = VK_SUCCESS;
-	XrResult result = xrCreateVulkanDeviceKHR(openxr_api->get_instance(), &create_info, &vulkan_device, &vk_result);
+	XrResult result = xrCreateVulkanDeviceKHR(OpenXRAPI::get_singleton()->get_instance(), &create_info, &vulkan_device, &vk_result);
 	if (XR_FAILED(result)) {
-		print_line("OpenXR: Failed to create vulkan device [", openxr_api->get_error_string(result), "]");
+		print_line("OpenXR: Failed to create vulkan device [", OpenXRAPI::get_singleton()->get_error_string(result), "]");
 		return false;
 	}
 
@@ -245,7 +248,7 @@ bool OpenXRVulkanExtension::get_swapchain_image_data(XrSwapchain p_swapchain, in
 	uint32_t swapchain_length;
 	XrResult result = xrEnumerateSwapchainImages(p_swapchain, 0, &swapchain_length, nullptr);
 	if (XR_FAILED(result)) {
-		print_line("OpenXR: Failed to get swapchaim image count [", openxr_api->get_error_string(result), "]");
+		print_line("OpenXR: Failed to get swapchaim image count [", OpenXRAPI::get_singleton()->get_error_string(result), "]");
 		return false;
 	}
 
@@ -260,7 +263,7 @@ bool OpenXRVulkanExtension::get_swapchain_image_data(XrSwapchain p_swapchain, in
 
 	result = xrEnumerateSwapchainImages(p_swapchain, swapchain_length, &swapchain_length, (XrSwapchainImageBaseHeader *)images);
 	if (XR_FAILED(result)) {
-		print_line("OpenXR: Failed to get swapchaim images [", openxr_api->get_error_string(result), "]");
+		print_line("OpenXR: Failed to get swapchaim images [", OpenXRAPI::get_singleton()->get_error_string(result), "]");
 		memfree(images);
 		return false;
 	}

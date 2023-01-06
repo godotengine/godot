@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  gdscript_parser.cpp                                                  */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  gdscript_parser.cpp                                                   */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "gdscript_parser.h"
 
@@ -1219,7 +1219,7 @@ GDScriptParser::ParameterNode *GDScriptParser::parse_parameter() {
 
 	if (match(GDScriptTokenizer::Token::EQUAL)) {
 		// Default value.
-		parameter->default_value = parse_expression(false);
+		parameter->initializer = parse_expression(false);
 	}
 
 	complete_extents(parameter);
@@ -1250,7 +1250,7 @@ GDScriptParser::SignalNode *GDScriptParser::parse_signal() {
 				push_error("Expected signal parameter name.");
 				break;
 			}
-			if (parameter->default_value != nullptr) {
+			if (parameter->initializer != nullptr) {
 				push_error(R"(Signal parameters cannot have a default value.)");
 			}
 			if (signal->parameters_indices.has(parameter->identifier->name)) {
@@ -1395,7 +1395,7 @@ void GDScriptParser::parse_function_signature(FunctionNode *p_function, SuiteNod
 			if (parameter == nullptr) {
 				break;
 			}
-			if (parameter->default_value != nullptr) {
+			if (parameter->initializer != nullptr) {
 				default_used = true;
 			} else {
 				if (default_used) {
@@ -4776,9 +4776,9 @@ void GDScriptParser::TreePrinter::print_parameter(ParameterNode *p_parameter) {
 		push_text(" : ");
 		print_type(p_parameter->datatype_specifier);
 	}
-	if (p_parameter->default_value != nullptr) {
+	if (p_parameter->initializer != nullptr) {
 		push_text(" = ");
-		print_expression(p_parameter->default_value);
+		print_expression(p_parameter->initializer);
 	}
 }
 

@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  gdscript_editor.cpp                                                  */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  gdscript_editor.cpp                                                   */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "gdscript.h"
 
@@ -683,37 +683,37 @@ static String _make_arguments_hint(const GDScriptParser::FunctionNode *p_functio
 			arghint += par->identifier->name.operator String() + ": " + par->get_datatype().to_string();
 		}
 
-		if (par->default_value) {
+		if (par->initializer) {
 			String def_val = "<unknown>";
-			switch (par->default_value->type) {
+			switch (par->initializer->type) {
 				case GDScriptParser::Node::LITERAL: {
-					const GDScriptParser::LiteralNode *literal = static_cast<const GDScriptParser::LiteralNode *>(par->default_value);
+					const GDScriptParser::LiteralNode *literal = static_cast<const GDScriptParser::LiteralNode *>(par->initializer);
 					def_val = literal->value.get_construct_string();
 				} break;
 				case GDScriptParser::Node::IDENTIFIER: {
-					const GDScriptParser::IdentifierNode *id = static_cast<const GDScriptParser::IdentifierNode *>(par->default_value);
+					const GDScriptParser::IdentifierNode *id = static_cast<const GDScriptParser::IdentifierNode *>(par->initializer);
 					def_val = id->name.operator String();
 				} break;
 				case GDScriptParser::Node::CALL: {
-					const GDScriptParser::CallNode *call = static_cast<const GDScriptParser::CallNode *>(par->default_value);
+					const GDScriptParser::CallNode *call = static_cast<const GDScriptParser::CallNode *>(par->initializer);
 					if (call->is_constant && call->reduced) {
 						def_val = call->function_name.operator String() + call->reduced_value.operator String();
 					}
 				} break;
 				case GDScriptParser::Node::ARRAY: {
-					const GDScriptParser::ArrayNode *arr = static_cast<const GDScriptParser::ArrayNode *>(par->default_value);
+					const GDScriptParser::ArrayNode *arr = static_cast<const GDScriptParser::ArrayNode *>(par->initializer);
 					if (arr->is_constant && arr->reduced) {
 						def_val = arr->reduced_value.operator String();
 					}
 				} break;
 				case GDScriptParser::Node::DICTIONARY: {
-					const GDScriptParser::DictionaryNode *dict = static_cast<const GDScriptParser::DictionaryNode *>(par->default_value);
+					const GDScriptParser::DictionaryNode *dict = static_cast<const GDScriptParser::DictionaryNode *>(par->initializer);
 					if (dict->is_constant && dict->reduced) {
 						def_val = dict->reduced_value.operator String();
 					}
 				} break;
 				case GDScriptParser::Node::SUBSCRIPT: {
-					const GDScriptParser::SubscriptNode *sub = static_cast<const GDScriptParser::SubscriptNode *>(par->default_value);
+					const GDScriptParser::SubscriptNode *sub = static_cast<const GDScriptParser::SubscriptNode *>(par->initializer);
 					if (sub->is_constant) {
 						if (sub->datatype.kind == GDScriptParser::DataType::ENUM) {
 							def_val = sub->get_datatype().to_string();
@@ -1856,9 +1856,9 @@ static bool _guess_identifier_type(GDScriptParser::CompletionContext &p_context,
 					}
 					break;
 				case GDScriptParser::SuiteNode::Local::PARAMETER:
-					if (local.parameter->default_value) {
-						last_assign_line = local.parameter->default_value->end_line;
-						last_assigned_expression = local.parameter->default_value;
+					if (local.parameter->initializer) {
+						last_assign_line = local.parameter->initializer->end_line;
+						last_assigned_expression = local.parameter->initializer;
 					}
 					is_function_parameter = true;
 					break;
@@ -1939,12 +1939,12 @@ static bool _guess_identifier_type(GDScriptParser::CompletionContext &p_context,
 						if ((!id_type.is_set() || id_type.is_variant()) && parameter->get_datatype().is_hard_type()) {
 							id_type = parameter->get_datatype();
 						}
-						if (parameter->default_value) {
+						if (parameter->initializer) {
 							GDScriptParser::CompletionContext c = p_context;
 							c.current_function = parent_function;
 							c.current_class = base_type.class_type;
 							c.base = nullptr;
-							if (_guess_expression_type(c, parameter->default_value, r_type)) {
+							if (_guess_expression_type(c, parameter->initializer, r_type)) {
 								return true;
 							}
 						}

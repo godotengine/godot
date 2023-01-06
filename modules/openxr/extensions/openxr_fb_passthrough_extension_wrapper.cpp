@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  openxr_fb_passthrough_extension_wrapper.cpp                          */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  openxr_fb_passthrough_extension_wrapper.cpp                           */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "openxr_fb_passthrough_extension_wrapper.h"
 
@@ -42,15 +42,21 @@ OpenXRFbPassthroughExtensionWrapper *OpenXRFbPassthroughExtensionWrapper::get_si
 	return singleton;
 }
 
-OpenXRFbPassthroughExtensionWrapper::OpenXRFbPassthroughExtensionWrapper(OpenXRAPI *p_openxr_api) :
-		OpenXRExtensionWrapper(p_openxr_api) {
-	request_extensions[XR_FB_PASSTHROUGH_EXTENSION_NAME] = &fb_passthrough_ext;
-	request_extensions[XR_FB_TRIANGLE_MESH_EXTENSION_NAME] = &fb_triangle_mesh_ext;
+OpenXRFbPassthroughExtensionWrapper::OpenXRFbPassthroughExtensionWrapper() {
 	singleton = this;
 }
 
 OpenXRFbPassthroughExtensionWrapper::~OpenXRFbPassthroughExtensionWrapper() {
 	cleanup();
+}
+
+HashMap<String, bool *> OpenXRFbPassthroughExtensionWrapper::get_requested_extensions() {
+	HashMap<String, bool *> request_extensions;
+
+	request_extensions[XR_FB_PASSTHROUGH_EXTENSION_NAME] = &fb_passthrough_ext;
+	request_extensions[XR_FB_TRIANGLE_MESH_EXTENSION_NAME] = &fb_triangle_mesh_ext;
+
+	return request_extensions;
 }
 
 void OpenXRFbPassthroughExtensionWrapper::cleanup() {
@@ -93,7 +99,7 @@ void OpenXRFbPassthroughExtensionWrapper::on_instance_created(const XrInstance i
 	}
 
 	if (fb_passthrough_ext) {
-		openxr_api->register_composition_layer_provider(this);
+		OpenXRAPI::get_singleton()->register_composition_layer_provider(this);
 	}
 }
 
@@ -122,7 +128,7 @@ bool OpenXRFbPassthroughExtensionWrapper::start_passthrough() {
 	}
 
 	// Create the passthrough layer
-	result = xrCreatePassthroughLayerFB(openxr_api->get_session(), &passthrough_layer_config, &passthrough_layer);
+	result = xrCreatePassthroughLayerFB(OpenXRAPI::get_singleton()->get_session(), &passthrough_layer_config, &passthrough_layer);
 	if (!is_valid_passthrough_result(result, "Failed to create the passthrough layer")) {
 		stop_passthrough();
 		return false;
@@ -142,8 +148,8 @@ bool OpenXRFbPassthroughExtensionWrapper::start_passthrough() {
 void OpenXRFbPassthroughExtensionWrapper::on_session_created(const XrSession session) {
 	if (fb_passthrough_ext) {
 		// Create the passthrough feature and start it.
-		XrResult result = xrCreatePassthroughFB(openxr_api->get_session(), &passthrough_create_info, &passthrough_handle);
-		if (!openxr_api->xr_result(result, "Failed to create passthrough")) {
+		XrResult result = xrCreatePassthroughFB(OpenXRAPI::get_singleton()->get_session(), &passthrough_create_info, &passthrough_handle);
+		if (!OpenXRAPI::get_singleton()->xr_result(result, "Failed to create passthrough")) {
 			passthrough_handle = XR_NULL_HANDLE;
 			return;
 		}
@@ -169,13 +175,13 @@ void OpenXRFbPassthroughExtensionWrapper::stop_passthrough() {
 	if (passthrough_layer != XR_NULL_HANDLE) {
 		// Destroy the layer
 		result = xrDestroyPassthroughLayerFB(passthrough_layer);
-		openxr_api->xr_result(result, "Unable to destroy passthrough layer");
+		OpenXRAPI::get_singleton()->xr_result(result, "Unable to destroy passthrough layer");
 		passthrough_layer = XR_NULL_HANDLE;
 	}
 
 	if (passthrough_handle != XR_NULL_HANDLE) {
 		result = xrPassthroughPauseFB(passthrough_handle);
-		openxr_api->xr_result(result, "Unable to stop passthrough feature");
+		OpenXRAPI::get_singleton()->xr_result(result, "Unable to stop passthrough feature");
 	}
 }
 
@@ -186,7 +192,7 @@ void OpenXRFbPassthroughExtensionWrapper::on_session_destroyed() {
 		XrResult result;
 		if (passthrough_handle != XR_NULL_HANDLE) {
 			result = xrDestroyPassthroughFB(passthrough_handle);
-			openxr_api->xr_result(result, "Unable to destroy passthrough feature");
+			OpenXRAPI::get_singleton()->xr_result(result, "Unable to destroy passthrough feature");
 			passthrough_handle = XR_NULL_HANDLE;
 		}
 	}
@@ -194,13 +200,13 @@ void OpenXRFbPassthroughExtensionWrapper::on_session_destroyed() {
 
 void OpenXRFbPassthroughExtensionWrapper::on_instance_destroyed() {
 	if (fb_passthrough_ext) {
-		openxr_api->unregister_composition_layer_provider(this);
+		OpenXRAPI::get_singleton()->unregister_composition_layer_provider(this);
 	}
 	cleanup();
 }
 
 bool OpenXRFbPassthroughExtensionWrapper::initialize_fb_passthrough_extension(const XrInstance p_instance) {
-	ERR_FAIL_NULL_V(openxr_api, false);
+	ERR_FAIL_NULL_V(OpenXRAPI::get_singleton(), false);
 
 	EXT_INIT_XR_FUNC_V(xrCreatePassthroughFB);
 	EXT_INIT_XR_FUNC_V(xrDestroyPassthroughFB);
@@ -219,7 +225,7 @@ bool OpenXRFbPassthroughExtensionWrapper::initialize_fb_passthrough_extension(co
 }
 
 bool OpenXRFbPassthroughExtensionWrapper::initialize_fb_triangle_mesh_extension(const XrInstance p_instance) {
-	ERR_FAIL_NULL_V(openxr_api, false);
+	ERR_FAIL_NULL_V(OpenXRAPI::get_singleton(), false);
 
 	EXT_INIT_XR_FUNC_V(xrCreateTriangleMeshFB);
 	EXT_INIT_XR_FUNC_V(xrDestroyTriangleMeshFB);

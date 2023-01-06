@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  visual_shader_editor_plugin.cpp                                      */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  visual_shader_editor_plugin.cpp                                       */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "visual_shader_editor_plugin.h"
 
@@ -5383,6 +5383,10 @@ VisualShaderEditor::VisualShaderEditor() {
 
 	add_options.push_back(AddOption("Binormal", "Input/Vertex", "VisualShaderNodeInput", vformat(input_param_for_vertex_and_fragment_shader_modes, "binormal", "BINORMAL"), { "binormal" }, VisualShaderNode::PORT_TYPE_VECTOR_3D, TYPE_FLAGS_VERTEX, Shader::MODE_SPATIAL));
 	add_options.push_back(AddOption("Color", "Input/Vertex", "VisualShaderNodeInput", vformat(input_param_for_vertex_and_fragment_shader_modes, "color", "COLOR"), { "color" }, VisualShaderNode::PORT_TYPE_VECTOR_4D, TYPE_FLAGS_VERTEX, Shader::MODE_SPATIAL));
+	add_options.push_back(AddOption("Custom0", "Input/Vertex", "VisualShaderNodeInput", vformat(input_param_for_vertex_shader_mode, "custom0", "CUSTOM0"), { "custom0" }, VisualShaderNode::PORT_TYPE_VECTOR_4D, TYPE_FLAGS_VERTEX, Shader::MODE_SPATIAL));
+	add_options.push_back(AddOption("Custom1", "Input/Vertex", "VisualShaderNodeInput", vformat(input_param_for_vertex_shader_mode, "custom1", "CUSTOM1"), { "custom1" }, VisualShaderNode::PORT_TYPE_VECTOR_4D, TYPE_FLAGS_VERTEX, Shader::MODE_SPATIAL));
+	add_options.push_back(AddOption("Custom2", "Input/Vertex", "VisualShaderNodeInput", vformat(input_param_for_vertex_shader_mode, "custom2", "CUSTOM2"), { "custom2" }, VisualShaderNode::PORT_TYPE_VECTOR_4D, TYPE_FLAGS_VERTEX, Shader::MODE_SPATIAL));
+	add_options.push_back(AddOption("Custom3", "Input/Vertex", "VisualShaderNodeInput", vformat(input_param_for_vertex_shader_mode, "custom3", "CUSTOM3"), { "custom3" }, VisualShaderNode::PORT_TYPE_VECTOR_4D, TYPE_FLAGS_VERTEX, Shader::MODE_SPATIAL));
 	add_options.push_back(AddOption("InstanceId", "Input/Vertex", "VisualShaderNodeInput", vformat(input_param_for_vertex_shader_mode, "instance_id", "INSTANCE_ID"), { "instance_id" }, VisualShaderNode::PORT_TYPE_SCALAR_INT, TYPE_FLAGS_VERTEX, Shader::MODE_SPATIAL));
 	add_options.push_back(AddOption("InstanceCustom", "Input/Vertex", "VisualShaderNodeInput", vformat(input_param_for_vertex_shader_mode, "instance_custom", "INSTANCE_CUSTOM"), { "instance_custom" }, VisualShaderNode::PORT_TYPE_VECTOR_4D, TYPE_FLAGS_VERTEX, Shader::MODE_SPATIAL));
 	add_options.push_back(AddOption("ModelViewMatrix", "Input/Vertex", "VisualShaderNodeInput", vformat(input_param_for_vertex_shader_mode, "modelview_matrix", "MODELVIEW_MATRIX"), { "modelview_matrix" }, VisualShaderNode::PORT_TYPE_TRANSFORM, TYPE_FLAGS_VERTEX, Shader::MODE_SPATIAL));

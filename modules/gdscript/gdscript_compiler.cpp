@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  gdscript_compiler.cpp                                                */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  gdscript_compiler.cpp                                                 */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "gdscript_compiler.h"
 
@@ -538,20 +538,20 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				// Construct a built-in type.
 				Variant::Type vtype = GDScriptParser::get_builtin_type(static_cast<GDScriptParser::IdentifierNode *>(call->callee)->name);
 
-				gen->write_construct(result, vtype, arguments);
+				gen->write_construct(return_addr, vtype, arguments);
 			} else if (!call->is_super && call->callee->type == GDScriptParser::Node::IDENTIFIER && Variant::has_utility_function(call->function_name)) {
 				// Variant utility function.
-				gen->write_call_utility(result, call->function_name, arguments);
+				gen->write_call_utility(return_addr, call->function_name, arguments);
 			} else if (!call->is_super && call->callee->type == GDScriptParser::Node::IDENTIFIER && GDScriptUtilityFunctions::function_exists(call->function_name)) {
 				// GDScript utility function.
-				gen->write_call_gdscript_utility(result, GDScriptUtilityFunctions::get_function(call->function_name), arguments);
+				gen->write_call_gdscript_utility(return_addr, GDScriptUtilityFunctions::get_function(call->function_name), arguments);
 			} else {
 				// Regular function.
 				const GDScriptParser::ExpressionNode *callee = call->callee;
 
 				if (call->is_super) {
 					// Super call.
-					gen->write_super_call(result, call->function_name, arguments);
+					gen->write_super_call(return_addr, call->function_name, arguments);
 				} else {
 					if (callee->type == GDScriptParser::Node::IDENTIFIER) {
 						// Self function call.
@@ -563,22 +563,22 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 
 							if (_have_exact_arguments(method, arguments)) {
 								// Exact arguments, use ptrcall.
-								gen->write_call_ptrcall(result, self, method, arguments);
+								gen->write_call_ptrcall(return_addr, self, method, arguments);
 							} else {
 								// Not exact arguments, but still can use method bind call.
-								gen->write_call_method_bind(result, self, method, arguments);
+								gen->write_call_method_bind(return_addr, self, method, arguments);
 							}
 						} else if ((codegen.function_node && codegen.function_node->is_static) || call->function_name == "new") {
 							GDScriptCodeGenerator::Address self;
 							self.mode = GDScriptCodeGenerator::Address::CLASS;
 							if (within_await) {
-								gen->write_call_async(result, self, call->function_name, arguments);
+								gen->write_call_async(return_addr, self, call->function_name, arguments);
 							} else {
 								gen->write_call(return_addr, self, call->function_name, arguments);
 							}
 						} else {
 							if (within_await) {
-								gen->write_call_self_async(result, call->function_name, arguments);
+								gen->write_call_self_async(return_addr, call->function_name, arguments);
 							} else {
 								gen->write_call_self(return_addr, call->function_name, arguments);
 							}
@@ -589,18 +589,18 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 						if (subscript->is_attribute) {
 							// May be static built-in method call.
 							if (!call->is_super && subscript->base->type == GDScriptParser::Node::IDENTIFIER && GDScriptParser::get_builtin_type(static_cast<GDScriptParser::IdentifierNode *>(subscript->base)->name) < Variant::VARIANT_MAX) {
-								gen->write_call_builtin_type_static(result, GDScriptParser::get_builtin_type(static_cast<GDScriptParser::IdentifierNode *>(subscript->base)->name), subscript->attribute->name, arguments);
+								gen->write_call_builtin_type_static(return_addr, GDScriptParser::get_builtin_type(static_cast<GDScriptParser::IdentifierNode *>(subscript->base)->name), subscript->attribute->name, arguments);
 							} else if (!call->is_super && subscript->base->type == GDScriptParser::Node::IDENTIFIER && call->function_name != SNAME("new") &&
 									ClassDB::class_exists(static_cast<GDScriptParser::IdentifierNode *>(subscript->base)->name) && !Engine::get_singleton()->has_singleton(static_cast<GDScriptParser::IdentifierNode *>(subscript->base)->name)) {
 								// It's a static native method call.
-								gen->write_call_native_static(result, static_cast<GDScriptParser::IdentifierNode *>(subscript->base)->name, subscript->attribute->name, arguments);
+								gen->write_call_native_static(return_addr, static_cast<GDScriptParser::IdentifierNode *>(subscript->base)->name, subscript->attribute->name, arguments);
 							} else {
 								GDScriptCodeGenerator::Address base = _parse_expression(codegen, r_error, subscript->base);
 								if (r_error) {
 									return GDScriptCodeGenerator::Address();
 								}
 								if (within_await) {
-									gen->write_call_async(result, base, call->function_name, arguments);
+									gen->write_call_async(return_addr, base, call->function_name, arguments);
 								} else if (base.type.has_type && base.type.kind != GDScriptDataType::BUILTIN) {
 									// Native method, use faster path.
 									StringName class_name;
@@ -613,16 +613,16 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 										MethodBind *method = ClassDB::get_method(class_name, call->function_name);
 										if (_have_exact_arguments(method, arguments)) {
 											// Exact arguments, use ptrcall.
-											gen->write_call_ptrcall(result, base, method, arguments);
+											gen->write_call_ptrcall(return_addr, base, method, arguments);
 										} else {
 											// Not exact arguments, but still can use method bind call.
-											gen->write_call_method_bind(result, base, method, arguments);
+											gen->write_call_method_bind(return_addr, base, method, arguments);
 										}
 									} else {
 										gen->write_call(return_addr, base, call->function_name, arguments);
 									}
 								} else if (base.type.has_type && base.type.kind == GDScriptDataType::BUILTIN) {
-									gen->write_call_builtin_type(result, base, base.type.builtin_type, call->function_name, arguments);
+									gen->write_call_builtin_type(return_addr, base, base.type.builtin_type, call->function_name, arguments);
 								} else {
 									gen->write_call(return_addr, base, call->function_name, arguments);
 								}
@@ -2022,10 +2022,10 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 		for (int i = 0; i < p_func->parameters.size(); i++) {
 			const GDScriptParser::ParameterNode *parameter = p_func->parameters[i];
 			GDScriptDataType par_type = _gdtype_from_datatype(parameter->get_datatype(), p_script);
-			uint32_t par_addr = codegen.generator->add_parameter(parameter->identifier->name, parameter->default_value != nullptr, par_type);
+			uint32_t par_addr = codegen.generator->add_parameter(parameter->identifier->name, parameter->initializer != nullptr, par_type);
 			codegen.parameters[parameter->identifier->name] = GDScriptCodeGenerator::Address(GDScriptCodeGenerator::Address::FUNCTION_PARAMETER, par_addr, par_type);
 
-			if (p_func->parameters[i]->default_value != nullptr) {
+			if (p_func->parameters[i]->initializer != nullptr) {
 				optional_parameters++;
 			}
 		}
@@ -2097,7 +2097,7 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 			codegen.generator->start_parameters();
 			for (int i = p_func->parameters.size() - optional_parameters; i < p_func->parameters.size(); i++) {
 				const GDScriptParser::ParameterNode *parameter = p_func->parameters[i];
-				GDScriptCodeGenerator::Address src_addr = _parse_expression(codegen, r_error, parameter->default_value);
+				GDScriptCodeGenerator::Address src_addr = _parse_expression(codegen, r_error, parameter->initializer);
 				if (r_error) {
 					memdelete(codegen.generator);
 					return nullptr;
@@ -2636,10 +2636,6 @@ Error GDScriptCompiler::_compile_class(GDScript *p_script, const GDScriptParser:
 		}
 	}
 
-#ifdef TOOLS_ENABLED
-	p_script->_update_doc();
-#endif
-
 	p_script->_init_rpc_methods_properties();
 
 	p_script->valid = true;
@@ -2723,6 +2719,10 @@ Error GDScriptCompiler::compile(const GDScriptParser *p_parser, GDScript *p_scri
 	if (err) {
 		return err;
 	}
+
+#ifdef TOOLS_ENABLED
+	p_script->_update_doc();
+#endif
 
 	return GDScriptCache::finish_compiling(main_script->get_path());
 }

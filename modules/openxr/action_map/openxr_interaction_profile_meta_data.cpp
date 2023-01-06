@@ -1,36 +1,35 @@
-/*************************************************************************/
-/*  openxr_interaction_profile_meta_data.cpp                             */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  openxr_interaction_profile_meta_data.cpp                              */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "openxr_interaction_profile_meta_data.h"
-
-#include <openxr/openxr.h>
+#include "../openxr_api.h"
 
 OpenXRInteractionProfileMetaData *OpenXRInteractionProfileMetaData::singleton = nullptr;
 
@@ -38,6 +37,7 @@ OpenXRInteractionProfileMetaData::OpenXRInteractionProfileMetaData() {
 	singleton = this;
 
 	_register_core_metadata();
+	OpenXRAPI::register_extension_metadata();
 }
 
 OpenXRInteractionProfileMetaData::~OpenXRInteractionProfileMetaData() {
@@ -394,320 +394,4 @@ void OpenXRInteractionProfileMetaData::_register_core_metadata() {
 
 	register_io_path("/interaction_profiles/valve/index_controller", "Haptic output", "/user/hand/left", "/user/hand/left/output/haptic", "", OpenXRAction::OPENXR_ACTION_HAPTIC);
 	register_io_path("/interaction_profiles/valve/index_controller", "Haptic output", "/user/hand/right", "/user/hand/right/output/haptic", "", OpenXRAction::OPENXR_ACTION_HAPTIC);
-
-	// HP MR controller (newer G2 controllers)
-	// TODO move this into an extension once this is supported.
-	register_interaction_profile("HPMR controller", "/interaction_profiles/hp/mixed_reality_controller", XR_EXT_HP_MIXED_REALITY_CONTROLLER_EXTENSION_NAME);
-	register_io_path("/interaction_profiles/hp/mixed_reality_controller", "Grip pose", "/user/hand/left", "/user/hand/left/input/grip/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
-	register_io_path("/interaction_profiles/hp/mixed_reality_controller", "Grip pose", "/user/hand/right", "/user/hand/right/input/grip/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
-	register_io_path("/interaction_profiles/hp/mixed_reality_controller", "Aim pose", "/user/hand/left", "/user/hand/left/input/aim/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
-	register_io_path("/interaction_profiles/hp/mixed_reality_controller", "Aim pose", "/user/hand/right", "/user/hand/right/input/aim/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
-	register_io_path("/interaction_profiles/hp/mixed_reality_controller", "Palm pose", "/user/hand/left", "/user/hand/left/input/palm_ext/pose", XR_EXT_PALM_POSE_EXTENSION_NAME, OpenXRAction::OPENXR_ACTION_POSE);
-	register_io_path("/interaction_profiles/hp/mixed_reality_controller", "Palm pose", "/user/hand/right", "/user/hand/right/input/palm_ext/pose", XR_EXT_PALM_POSE_EXTENSION_NAME, OpenXRAction::OPENXR_ACTION_POSE);
-
-	register_io_path("/interaction_profiles/hp/mixed_reality_controller", "Menu click", "/user/hand/left", "/user/hand/left/input/menu/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/hp/mixed_reality_controller", "Menu click", "/user/hand/right", "/user/hand/right/input/menu/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-
-	register_io_path("/interaction_profiles/hp/mixed_reality_controller", "X click", "/user/hand/left", "/user/hand/left/input/x/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/hp/mixed_reality_controller", "Y click", "/user/hand/left", "/user/hand/left/input/y/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/hp/mixed_reality_controller", "A click", "/user/hand/right", "/user/hand/right/input/a/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/hp/mixed_reality_controller", "B click", "/user/hand/right", "/user/hand/right/input/b/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-
-	register_io_path("/interaction_profiles/hp/mixed_reality_controller", "Trigger", "/user/hand/left", "/user/hand/left/input/trigger/value", "", OpenXRAction::OPENXR_ACTION_FLOAT);
-	register_io_path("/interaction_profiles/hp/mixed_reality_controller", "Trigger click", "/user/hand/left", "/user/hand/left/input/trigger/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/hp/mixed_reality_controller", "Trigger", "/user/hand/right", "/user/hand/right/input/trigger/value", "", OpenXRAction::OPENXR_ACTION_FLOAT);
-	register_io_path("/interaction_profiles/hp/mixed_reality_controller", "Trigger click", "/user/hand/right", "/user/hand/right/input/trigger/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-
-	register_io_path("/interaction_profiles/hp/mixed_reality_controller", "Squeeze", "/user/hand/left", "/user/hand/left/input/squeeze/value", "", OpenXRAction::OPENXR_ACTION_FLOAT);
-	register_io_path("/interaction_profiles/hp/mixed_reality_controller", "Squeeze", "/user/hand/right", "/user/hand/right/input/squeeze/value", "", OpenXRAction::OPENXR_ACTION_FLOAT);
-
-	register_io_path("/interaction_profiles/hp/mixed_reality_controller", "Thumbstick", "/user/hand/left", "/user/hand/left/input/thumbstick", "", OpenXRAction::OPENXR_ACTION_VECTOR2);
-	register_io_path("/interaction_profiles/hp/mixed_reality_controller", "Thumbstick click", "/user/hand/left", "/user/hand/left/input/thumbstick/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/hp/mixed_reality_controller", "Thumbstick", "/user/hand/right", "/user/hand/right/input/thumbstick", "", OpenXRAction::OPENXR_ACTION_VECTOR2);
-	register_io_path("/interaction_profiles/hp/mixed_reality_controller", "Thumbstick click", "/user/hand/right", "/user/hand/right/input/thumbstick/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-
-	register_io_path("/interaction_profiles/hp/mixed_reality_controller", "Haptic output", "/user/hand/left", "/user/hand/left/output/haptic", "", OpenXRAction::OPENXR_ACTION_HAPTIC);
-	register_io_path("/interaction_profiles/hp/mixed_reality_controller", "Haptic output", "/user/hand/right", "/user/hand/right/output/haptic", "", OpenXRAction::OPENXR_ACTION_HAPTIC);
-
-	// Samsung Odyssey controller
-	// TODO move this into an extension once this is supported.
-	register_interaction_profile("Samsung Odyssey controller", "/interaction_profiles/samsung/odyssey_controller", XR_EXT_SAMSUNG_ODYSSEY_CONTROLLER_EXTENSION_NAME);
-	register_io_path("/interaction_profiles/samsung/odyssey_controller", "Grip pose", "/user/hand/left", "/user/hand/left/input/grip/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
-	register_io_path("/interaction_profiles/samsung/odyssey_controller", "Grip pose", "/user/hand/right", "/user/hand/right/input/grip/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
-	register_io_path("/interaction_profiles/samsung/odyssey_controller", "Aim pose", "/user/hand/left", "/user/hand/left/input/aim/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
-	register_io_path("/interaction_profiles/samsung/odyssey_controller", "Aim pose", "/user/hand/right", "/user/hand/right/input/aim/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
-	register_io_path("/interaction_profiles/samsung/odyssey_controller", "Palm pose", "/user/hand/left", "/user/hand/left/input/palm_ext/pose", XR_EXT_PALM_POSE_EXTENSION_NAME, OpenXRAction::OPENXR_ACTION_POSE);
-	register_io_path("/interaction_profiles/samsung/odyssey_controller", "Palm pose", "/user/hand/right", "/user/hand/right/input/palm_ext/pose", XR_EXT_PALM_POSE_EXTENSION_NAME, OpenXRAction::OPENXR_ACTION_POSE);
-
-	register_io_path("/interaction_profiles/samsung/odyssey_controller", "Menu click", "/user/hand/left", "/user/hand/left/input/menu/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/samsung/odyssey_controller", "Menu click", "/user/hand/right", "/user/hand/right/input/menu/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-
-	register_io_path("/interaction_profiles/samsung/odyssey_controller", "Trigger", "/user/hand/left", "/user/hand/left/input/trigger/value", "", OpenXRAction::OPENXR_ACTION_FLOAT);
-	register_io_path("/interaction_profiles/samsung/odyssey_controller", "Trigger click", "/user/hand/left", "/user/hand/left/input/trigger/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/samsung/odyssey_controller", "Trigger", "/user/hand/right", "/user/hand/right/input/trigger/value", "", OpenXRAction::OPENXR_ACTION_FLOAT);
-	register_io_path("/interaction_profiles/samsung/odyssey_controller", "Trigger click", "/user/hand/right", "/user/hand/right/input/trigger/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-
-	register_io_path("/interaction_profiles/samsung/odyssey_controller", "Squeeze click", "/user/hand/left", "/user/hand/left/input/squeeze/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/samsung/odyssey_controller", "Squeeze click", "/user/hand/right", "/user/hand/right/input/squeeze/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-
-	register_io_path("/interaction_profiles/samsung/odyssey_controller", "Thumbstick", "/user/hand/left", "/user/hand/left/input/thumbstick", "", OpenXRAction::OPENXR_ACTION_VECTOR2);
-	register_io_path("/interaction_profiles/samsung/odyssey_controller", "Thumbstick click", "/user/hand/left", "/user/hand/left/input/thumbstick/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/samsung/odyssey_controller", "Thumbstick", "/user/hand/right", "/user/hand/right/input/thumbstick", "", OpenXRAction::OPENXR_ACTION_VECTOR2);
-	register_io_path("/interaction_profiles/samsung/odyssey_controller", "Thumbstick click", "/user/hand/right", "/user/hand/right/input/thumbstick/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-
-	register_io_path("/interaction_profiles/samsung/odyssey_controller", "Trackpad", "/user/hand/left", "/user/hand/left/input/trackpad", "", OpenXRAction::OPENXR_ACTION_VECTOR2);
-	register_io_path("/interaction_profiles/samsung/odyssey_controller", "Trackpad click", "/user/hand/left", "/user/hand/left/input/trackpad/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/samsung/odyssey_controller", "Trackpad touch", "/user/hand/left", "/user/hand/left/input/trackpad/touch", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/samsung/odyssey_controller", "Trackpad", "/user/hand/right", "/user/hand/right/input/trackpad", "", OpenXRAction::OPENXR_ACTION_VECTOR2);
-	register_io_path("/interaction_profiles/samsung/odyssey_controller", "Trackpad click", "/user/hand/right", "/user/hand/right/input/trackpad/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/samsung/odyssey_controller", "Trackpad touch", "/user/hand/right", "/user/hand/right/input/trackpad/touch", "", OpenXRAction::OPENXR_ACTION_BOOL);
-
-	register_io_path("/interaction_profiles/samsung/odyssey_controller", "Haptic output", "/user/hand/left", "/user/hand/left/output/haptic", "", OpenXRAction::OPENXR_ACTION_HAPTIC);
-	register_io_path("/interaction_profiles/samsung/odyssey_controller", "Haptic output", "/user/hand/right", "/user/hand/right/output/haptic", "", OpenXRAction::OPENXR_ACTION_HAPTIC);
-
-	// HTC Vive Cosmos controller
-	// TODO move this into an extension once this is supported.
-	register_interaction_profile("Vive Cosmos controller", "/interaction_profiles/htc/vive_cosmos_controller", XR_HTC_VIVE_COSMOS_CONTROLLER_INTERACTION_EXTENSION_NAME);
-	register_io_path("/interaction_profiles/htc/vive_cosmos_controller", "Grip pose", "/user/hand/left", "/user/hand/left/input/grip/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
-	register_io_path("/interaction_profiles/htc/vive_cosmos_controller", "Grip pose", "/user/hand/right", "/user/hand/right/input/grip/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
-	register_io_path("/interaction_profiles/htc/vive_cosmos_controller", "Aim pose", "/user/hand/left", "/user/hand/left/input/aim/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
-	register_io_path("/interaction_profiles/htc/vive_cosmos_controller", "Aim pose", "/user/hand/right", "/user/hand/right/input/aim/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
-	register_io_path("/interaction_profiles/htc/vive_cosmos_controller", "Palm pose", "/user/hand/left", "/user/hand/left/input/palm_ext/pose", XR_EXT_PALM_POSE_EXTENSION_NAME, OpenXRAction::OPENXR_ACTION_POSE);
-	register_io_path("/interaction_profiles/htc/vive_cosmos_controller", "Palm pose", "/user/hand/right", "/user/hand/right/input/palm_ext/pose", XR_EXT_PALM_POSE_EXTENSION_NAME, OpenXRAction::OPENXR_ACTION_POSE);
-
-	register_io_path("/interaction_profiles/htc/vive_cosmos_controller", "Menu click", "/user/hand/left", "/user/hand/left/input/menu/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_cosmos_controller", "System click", "/user/hand/right", "/user/hand/right/input/system/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-
-	register_io_path("/interaction_profiles/htc/vive_cosmos_controller", "X click", "/user/hand/left", "/user/hand/left/input/x/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_cosmos_controller", "Y click", "/user/hand/left", "/user/hand/left/input/y/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_cosmos_controller", "A click", "/user/hand/right", "/user/hand/right/input/a/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_cosmos_controller", "B click", "/user/hand/right", "/user/hand/right/input/b/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-
-	register_io_path("/interaction_profiles/htc/vive_cosmos_controller", "Shoulder click", "/user/hand/left", "/user/hand/left/input/shoulder/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_cosmos_controller", "Shoulder click", "/user/hand/right", "/user/hand/right/input/shoulder/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-
-	register_io_path("/interaction_profiles/htc/vive_cosmos_controller", "Trigger", "/user/hand/left", "/user/hand/left/input/trigger/value", "", OpenXRAction::OPENXR_ACTION_FLOAT);
-	register_io_path("/interaction_profiles/htc/vive_cosmos_controller", "Trigger click", "/user/hand/left", "/user/hand/left/input/trigger/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_cosmos_controller", "Trigger", "/user/hand/right", "/user/hand/right/input/trigger/value", "", OpenXRAction::OPENXR_ACTION_FLOAT);
-	register_io_path("/interaction_profiles/htc/vive_cosmos_controller", "Trigger click", "/user/hand/right", "/user/hand/right/input/trigger/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-
-	register_io_path("/interaction_profiles/htc/vive_cosmos_controller", "Squeeze click", "/user/hand/left", "/user/hand/left/input/squeeze/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_cosmos_controller", "Squeeze click", "/user/hand/right", "/user/hand/right/input/squeeze/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-
-	register_io_path("/interaction_profiles/htc/vive_cosmos_controller", "Thumbstick", "/user/hand/left", "/user/hand/left/input/thumbstick", "", OpenXRAction::OPENXR_ACTION_VECTOR2);
-	register_io_path("/interaction_profiles/htc/vive_cosmos_controller", "Thumbstick click", "/user/hand/left", "/user/hand/left/input/thumbstick/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_cosmos_controller", "Thumbstick touch", "/user/hand/left", "/user/hand/left/input/thumbstick/touch", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_cosmos_controller", "Thumbstick", "/user/hand/right", "/user/hand/right/input/thumbstick", "", OpenXRAction::OPENXR_ACTION_VECTOR2);
-	register_io_path("/interaction_profiles/htc/vive_cosmos_controller", "Thumbstick click", "/user/hand/right", "/user/hand/right/input/thumbstick/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_cosmos_controller", "Thumbstick touch", "/user/hand/right", "/user/hand/right/input/thumbstick/touch", "", OpenXRAction::OPENXR_ACTION_BOOL);
-
-	register_io_path("/interaction_profiles/htc/vive_cosmos_controller", "Haptic output", "/user/hand/left", "/user/hand/left/output/haptic", "", OpenXRAction::OPENXR_ACTION_HAPTIC);
-	register_io_path("/interaction_profiles/htc/vive_cosmos_controller", "Haptic output", "/user/hand/right", "/user/hand/right/output/haptic", "", OpenXRAction::OPENXR_ACTION_HAPTIC);
-
-	// HTC Vive Focus 3 controller
-	// TODO move this into an extension once this is supported.
-	register_interaction_profile("Vive Focus 3 controller", "/interaction_profiles/htc/vive_focus3_controller", XR_HTC_VIVE_FOCUS3_CONTROLLER_INTERACTION_EXTENSION_NAME);
-	register_io_path("/interaction_profiles/htc/vive_focus3_controller", "Grip pose", "/user/hand/left", "/user/hand/left/input/grip/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
-	register_io_path("/interaction_profiles/htc/vive_focus3_controller", "Grip pose", "/user/hand/right", "/user/hand/right/input/grip/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
-	register_io_path("/interaction_profiles/htc/vive_focus3_controller", "Aim pose", "/user/hand/left", "/user/hand/left/input/aim/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
-	register_io_path("/interaction_profiles/htc/vive_focus3_controller", "Aim pose", "/user/hand/right", "/user/hand/right/input/aim/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
-	register_io_path("/interaction_profiles/htc/vive_focus3_controller", "Palm pose", "/user/hand/left", "/user/hand/left/input/palm_ext/pose", XR_EXT_PALM_POSE_EXTENSION_NAME, OpenXRAction::OPENXR_ACTION_POSE);
-	register_io_path("/interaction_profiles/htc/vive_focus3_controller", "Palm pose", "/user/hand/right", "/user/hand/right/input/palm_ext/pose", XR_EXT_PALM_POSE_EXTENSION_NAME, OpenXRAction::OPENXR_ACTION_POSE);
-
-	register_io_path("/interaction_profiles/htc/vive_focus3_controller", "Menu click", "/user/hand/left", "/user/hand/left/input/menu/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_focus3_controller", "System click", "/user/hand/right", "/user/hand/right/input/system/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-
-	register_io_path("/interaction_profiles/htc/vive_focus3_controller", "X click", "/user/hand/left", "/user/hand/left/input/x/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_focus3_controller", "Y click", "/user/hand/left", "/user/hand/left/input/y/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_focus3_controller", "A click", "/user/hand/right", "/user/hand/right/input/a/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_focus3_controller", "B click", "/user/hand/right", "/user/hand/right/input/b/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-
-	register_io_path("/interaction_profiles/htc/vive_focus3_controller", "Trigger", "/user/hand/left", "/user/hand/left/input/trigger/value", "", OpenXRAction::OPENXR_ACTION_FLOAT);
-	register_io_path("/interaction_profiles/htc/vive_focus3_controller", "Trigger click", "/user/hand/left", "/user/hand/left/input/trigger/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_focus3_controller", "Trigger touch", "/user/hand/left", "/user/hand/left/input/trigger/touch", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_focus3_controller", "Trigger", "/user/hand/right", "/user/hand/right/input/trigger/value", "", OpenXRAction::OPENXR_ACTION_FLOAT);
-	register_io_path("/interaction_profiles/htc/vive_focus3_controller", "Trigger click", "/user/hand/right", "/user/hand/right/input/trigger/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_focus3_controller", "Trigger touch", "/user/hand/right", "/user/hand/right/input/trigger/touch	", "", OpenXRAction::OPENXR_ACTION_BOOL);
-
-	register_io_path("/interaction_profiles/htc/vive_focus3_controller", "Squeeze click", "/user/hand/left", "/user/hand/left/input/squeeze/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_focus3_controller", "Squeeze touch", "/user/hand/left", "/user/hand/left/input/squeeze/touch", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_focus3_controller", "Squeeze click", "/user/hand/right", "/user/hand/right/input/squeeze/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_focus3_controller", "Squeeze touch", "/user/hand/right", "/user/hand/right/input/squeeze/touch", "", OpenXRAction::OPENXR_ACTION_BOOL);
-
-	register_io_path("/interaction_profiles/htc/vive_focus3_controller", "Thumbstick", "/user/hand/left", "/user/hand/left/input/thumbstick", "", OpenXRAction::OPENXR_ACTION_VECTOR2);
-	register_io_path("/interaction_profiles/htc/vive_focus3_controller", "Thumbstick click", "/user/hand/left", "/user/hand/left/input/thumbstick/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_focus3_controller", "Thumbstick touch", "/user/hand/left", "/user/hand/left/input/thumbstick/touch", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_focus3_controller", "Thumbstick", "/user/hand/right", "/user/hand/right/input/thumbstick", "", OpenXRAction::OPENXR_ACTION_VECTOR2);
-	register_io_path("/interaction_profiles/htc/vive_focus3_controller", "Thumbstick click", "/user/hand/right", "/user/hand/right/input/thumbstick/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_focus3_controller", "Thumbstick touch", "/user/hand/right", "/user/hand/right/input/thumbstick/touch", "", OpenXRAction::OPENXR_ACTION_BOOL);
-
-	register_io_path("/interaction_profiles/htc/vive_focus3_controller", "Thumbrest touch", "/user/hand/right", "/user/hand/right/input/thumbrest/touch", "", OpenXRAction::OPENXR_ACTION_BOOL);
-
-	register_io_path("/interaction_profiles/htc/vive_focus3_controller", "Haptic output", "/user/hand/left", "/user/hand/left/output/haptic", "", OpenXRAction::OPENXR_ACTION_HAPTIC);
-	register_io_path("/interaction_profiles/htc/vive_focus3_controller", "Haptic output", "/user/hand/right", "/user/hand/right/output/haptic", "", OpenXRAction::OPENXR_ACTION_HAPTIC);
-
-	// Huawei controller
-	// TODO move this into an extension once this is supported.
-	register_interaction_profile("Huawei controller", "/interaction_profiles/huawei/controller", XR_HUAWEI_CONTROLLER_INTERACTION_EXTENSION_NAME);
-	register_io_path("/interaction_profiles/huawei/controller", "Grip pose", "/user/hand/left", "/user/hand/left/input/grip/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
-	register_io_path("/interaction_profiles/huawei/controller", "Grip pose", "/user/hand/right", "/user/hand/right/input/grip/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
-	register_io_path("/interaction_profiles/huawei/controller", "Aim pose", "/user/hand/left", "/user/hand/left/input/aim/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
-	register_io_path("/interaction_profiles/huawei/controller", "Aim pose", "/user/hand/right", "/user/hand/right/input/aim/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
-	register_io_path("/interaction_profiles/huawei/controller", "Palm pose", "/user/hand/left", "/user/hand/left/input/palm_ext/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
-	register_io_path("/interaction_profiles/huawei/controller", "Palm pose", "/user/hand/right", "/user/hand/right/input/palm_ext/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
-
-	register_io_path("/interaction_profiles/huawei/controller", "Home click", "/user/hand/left", "/user/hand/left/input/home/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/huawei/controller", "Home click", "/user/hand/right", "/user/hand/right/input/home/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/huawei/controller", "Back click", "/user/hand/left", "/user/hand/left/input/back/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/huawei/controller", "Back click", "/user/hand/right", "/user/hand/right/input/back/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-
-	register_io_path("/interaction_profiles/huawei/controller", "Volume up click", "/user/hand/left", "/user/hand/left/input/volume_up/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/huawei/controller", "Volume up click", "/user/hand/right", "/user/hand/right/input/volume_up/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/huawei/controller", "Volume down click", "/user/hand/left", "/user/hand/left/input/volume_down/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/huawei/controller", "Volume down click", "/user/hand/right", "/user/hand/right/input/volume_down/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-
-	register_io_path("/interaction_profiles/huawei/controller", "Trigger", "/user/hand/left", "/user/hand/left/input/trigger/value", "", OpenXRAction::OPENXR_ACTION_FLOAT);
-	register_io_path("/interaction_profiles/huawei/controller", "Trigger click", "/user/hand/left", "/user/hand/left/input/trigger/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/huawei/controller", "Trigger", "/user/hand/right", "/user/hand/right/input/trigger/value", "", OpenXRAction::OPENXR_ACTION_FLOAT);
-	register_io_path("/interaction_profiles/huawei/controller", "Trigger click", "/user/hand/right", "/user/hand/right/input/trigger/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-
-	register_io_path("/interaction_profiles/huawei/controller", "Trackpad", "/user/hand/left", "/user/hand/left/input/trackpad", "", OpenXRAction::OPENXR_ACTION_VECTOR2);
-	register_io_path("/interaction_profiles/huawei/controller", "Trackpad click", "/user/hand/left", "/user/hand/left/input/trackpad/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/huawei/controller", "Trackpad touch", "/user/hand/left", "/user/hand/left/input/trackpad/touch", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/huawei/controller", "Trackpad", "/user/hand/right", "/user/hand/right/input/trackpad", "", OpenXRAction::OPENXR_ACTION_VECTOR2);
-	register_io_path("/interaction_profiles/huawei/controller", "Trackpad click", "/user/hand/right", "/user/hand/right/input/trackpad/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/huawei/controller", "Trackpad touch", "/user/hand/right", "/user/hand/right/input/trackpad/touch", "", OpenXRAction::OPENXR_ACTION_BOOL);
-
-	register_io_path("/interaction_profiles/huawei/controller", "Haptic output", "/user/hand/left", "/user/hand/left/output/haptic", "", OpenXRAction::OPENXR_ACTION_HAPTIC);
-	register_io_path("/interaction_profiles/huawei/controller", "Haptic output", "/user/hand/right", "/user/hand/right/output/haptic", "", OpenXRAction::OPENXR_ACTION_HAPTIC);
-
-	// HTC Vive tracker
-	// Interestingly enough trackers don't have buttons or inputs, yet these are defined in the spec.
-	// I think this can be supported through attachments on the trackers.
-	// TODO move this into an extension once this is supported.
-	register_interaction_profile("HTC Vive tracker", "/interaction_profiles/htc/vive_tracker_htcx", XR_HTCX_VIVE_TRACKER_INTERACTION_EXTENSION_NAME);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Menu click", "/user/vive_tracker_htcx/role/left_foot", "/user/vive_tracker_htcx/role/left_foot/input/menu/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Menu click", "/user/vive_tracker_htcx/role/right_foot", "/user/vive_tracker_htcx/role/right_foot/input/menu/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Menu click", "/user/vive_tracker_htcx/role/left_shoulder", "/user/vive_tracker_htcx/role/left_shoulder/input/menu/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Menu click", "/user/vive_tracker_htcx/role/right_shoulder", "/user/vive_tracker_htcx/role/right_shoulder/input/menu/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Menu click", "/user/vive_tracker_htcx/role/left_elbow", "/user/vive_tracker_htcx/role/left_elbow/input/menu/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Menu click", "/user/vive_tracker_htcx/role/right_elbow", "/user/vive_tracker_htcx/role/right_elbow/input/menu/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Menu click", "/user/vive_tracker_htcx/role/left_knee", "/user/vive_tracker_htcx/role/left_knee/input/menu/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Menu click", "/user/vive_tracker_htcx/role/right_knee", "/user/vive_tracker_htcx/role/right_knee/input/menu/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Menu click", "/user/vive_tracker_htcx/role/waist", "/user/vive_tracker_htcx/role/waist/input/menu/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Menu click", "/user/vive_tracker_htcx/role/chest", "/user/vive_tracker_htcx/role/chest/input/menu/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Menu click", "/user/vive_tracker_htcx/role/camera", "/user/vive_tracker_htcx/role/camera/input/menu/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Menu click", "/user/vive_tracker_htcx/role/keyboard", "/user/vive_tracker_htcx/role/keyboard/input/menu/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-
-	// register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trigger", "/user/vive_tracker_htcx/role/handheld_object", "/user/vive_tracker_htcx/role/handheld_object/input/trigger/value", "", OpenXRAction::OPENXR_ACTION_FLOAT);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trigger", "/user/vive_tracker_htcx/role/left_foot", "/user/vive_tracker_htcx/role/left_foot/input/trigger/value", "", OpenXRAction::OPENXR_ACTION_FLOAT);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trigger", "/user/vive_tracker_htcx/role/right_foot", "/user/vive_tracker_htcx/role/right_foot/input/trigger/value", "", OpenXRAction::OPENXR_ACTION_FLOAT);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trigger", "/user/vive_tracker_htcx/role/left_shoulder", "/user/vive_tracker_htcx/role/left_shoulder/input/trigger/value", "", OpenXRAction::OPENXR_ACTION_FLOAT);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trigger", "/user/vive_tracker_htcx/role/right_shoulder", "/user/vive_tracker_htcx/role/right_shoulder/input/trigger/value", "", OpenXRAction::OPENXR_ACTION_FLOAT);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trigger", "/user/vive_tracker_htcx/role/left_elbow", "/user/vive_tracker_htcx/role/left_elbow/input/trigger/value", "", OpenXRAction::OPENXR_ACTION_FLOAT);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trigger", "/user/vive_tracker_htcx/role/right_elbow", "/user/vive_tracker_htcx/role/right_elbow/input/trigger/value", "", OpenXRAction::OPENXR_ACTION_FLOAT);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trigger", "/user/vive_tracker_htcx/role/left_knee", "/user/vive_tracker_htcx/role/left_knee/input/trigger/value", "", OpenXRAction::OPENXR_ACTION_FLOAT);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trigger", "/user/vive_tracker_htcx/role/right_knee", "/user/vive_tracker_htcx/role/right_knee/input/trigger/value", "", OpenXRAction::OPENXR_ACTION_FLOAT);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trigger", "/user/vive_tracker_htcx/role/waist", "/user/vive_tracker_htcx/role/waist/input/trigger/value", "", OpenXRAction::OPENXR_ACTION_FLOAT);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trigger", "/user/vive_tracker_htcx/role/chest", "/user/vive_tracker_htcx/role/chest/input/trigger/value", "", OpenXRAction::OPENXR_ACTION_FLOAT);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trigger", "/user/vive_tracker_htcx/role/camera", "/user/vive_tracker_htcx/role/camera/input/trigger/value", "", OpenXRAction::OPENXR_ACTION_FLOAT);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trigger", "/user/vive_tracker_htcx/role/keyboard", "/user/vive_tracker_htcx/role/keyboard/input/trigger/value", "", OpenXRAction::OPENXR_ACTION_FLOAT);
-
-	// register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trigger click", "/user/vive_tracker_htcx/role/handheld_object", "/user/vive_tracker_htcx/role/handheld_object/input/trigger/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trigger click", "/user/vive_tracker_htcx/role/left_foot", "/user/vive_tracker_htcx/role/left_foot/input/trigger/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trigger click", "/user/vive_tracker_htcx/role/right_foot", "/user/vive_tracker_htcx/role/right_foot/input/trigger/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trigger click", "/user/vive_tracker_htcx/role/left_shoulder", "/user/vive_tracker_htcx/role/left_shoulder/input/trigger/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trigger click", "/user/vive_tracker_htcx/role/right_shoulder", "/user/vive_tracker_htcx/role/right_shoulder/input/trigger/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trigger click", "/user/vive_tracker_htcx/role/left_elbow", "/user/vive_tracker_htcx/role/left_elbow/input/trigger/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trigger click", "/user/vive_tracker_htcx/role/right_elbow", "/user/vive_tracker_htcx/role/right_elbow/input/trigger/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trigger click", "/user/vive_tracker_htcx/role/left_knee", "/user/vive_tracker_htcx/role/left_knee/input/trigger/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trigger click", "/user/vive_tracker_htcx/role/right_knee", "/user/vive_tracker_htcx/role/right_knee/input/trigger/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trigger click", "/user/vive_tracker_htcx/role/waist", "/user/vive_tracker_htcx/role/waist/input/trigger/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trigger click", "/user/vive_tracker_htcx/role/chest", "/user/vive_tracker_htcx/role/chest/input/trigger/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trigger click", "/user/vive_tracker_htcx/role/camera", "/user/vive_tracker_htcx/role/camera/input/trigger/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trigger click", "/user/vive_tracker_htcx/role/keyboard", "/user/vive_tracker_htcx/role/keyboard/input/trigger/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-
-	// register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Squeeze click", "/user/vive_tracker_htcx/role/handheld_object", "/user/vive_tracker_htcx/role/handheld_object/input/squeeze/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Squeeze click", "/user/vive_tracker_htcx/role/left_foot", "/user/vive_tracker_htcx/role/left_foot/input/squeeze/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Squeeze click", "/user/vive_tracker_htcx/role/right_foot", "/user/vive_tracker_htcx/role/right_foot/input/squeeze/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Squeeze click", "/user/vive_tracker_htcx/role/left_shoulder", "/user/vive_tracker_htcx/role/left_shoulder/input/squeeze/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Squeeze click", "/user/vive_tracker_htcx/role/right_shoulder", "/user/vive_tracker_htcx/role/right_shoulder/input/squeeze/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Squeeze click", "/user/vive_tracker_htcx/role/left_elbow", "/user/vive_tracker_htcx/role/left_elbow/input/squeeze/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Squeeze click", "/user/vive_tracker_htcx/role/right_elbow", "/user/vive_tracker_htcx/role/right_elbow/input/squeeze/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Squeeze click", "/user/vive_tracker_htcx/role/left_knee", "/user/vive_tracker_htcx/role/left_knee/input/squeeze/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Squeeze click", "/user/vive_tracker_htcx/role/right_knee", "/user/vive_tracker_htcx/role/right_knee/input/squeeze/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Squeeze click", "/user/vive_tracker_htcx/role/waist", "/user/vive_tracker_htcx/role/waist/input/squeeze/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Squeeze click", "/user/vive_tracker_htcx/role/chest", "/user/vive_tracker_htcx/role/chest/input/squeeze/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Squeeze click", "/user/vive_tracker_htcx/role/camera", "/user/vive_tracker_htcx/role/camera/input/squeeze/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Squeeze click", "/user/vive_tracker_htcx/role/keyboard", "/user/vive_tracker_htcx/role/keyboard/input/squeeze/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-
-	// register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trackpad", "/user/vive_tracker_htcx/role/handheld_object", "/user/vive_tracker_htcx/role/handheld_object/input/trackpad", "", OpenXRAction::OPENXR_ACTION_VECTOR2);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trackpad", "/user/vive_tracker_htcx/role/left_foot", "/user/vive_tracker_htcx/role/left_foot/input/trackpad", "", OpenXRAction::OPENXR_ACTION_VECTOR2);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trackpad", "/user/vive_tracker_htcx/role/right_foot", "/user/vive_tracker_htcx/role/right_foot/input/trackpad", "", OpenXRAction::OPENXR_ACTION_VECTOR2);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trackpad", "/user/vive_tracker_htcx/role/left_shoulder", "/user/vive_tracker_htcx/role/left_shoulder/input/trackpad", "", OpenXRAction::OPENXR_ACTION_VECTOR2);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trackpad", "/user/vive_tracker_htcx/role/right_shoulder", "/user/vive_tracker_htcx/role/right_shoulder/input/trackpad", "", OpenXRAction::OPENXR_ACTION_VECTOR2);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trackpad", "/user/vive_tracker_htcx/role/left_elbow", "/user/vive_tracker_htcx/role/left_elbow/input/trackpad", "", OpenXRAction::OPENXR_ACTION_VECTOR2);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trackpad", "/user/vive_tracker_htcx/role/right_elbow", "/user/vive_tracker_htcx/role/right_elbow/input/trackpad", "", OpenXRAction::OPENXR_ACTION_VECTOR2);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trackpad", "/user/vive_tracker_htcx/role/left_knee", "/user/vive_tracker_htcx/role/left_knee/input/trackpad", "", OpenXRAction::OPENXR_ACTION_VECTOR2);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trackpad", "/user/vive_tracker_htcx/role/right_knee", "/user/vive_tracker_htcx/role/right_knee/input/trackpad", "", OpenXRAction::OPENXR_ACTION_VECTOR2);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trackpad", "/user/vive_tracker_htcx/role/waist", "/user/vive_tracker_htcx/role/waist/input/trackpad", "", OpenXRAction::OPENXR_ACTION_VECTOR2);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trackpad", "/user/vive_tracker_htcx/role/chest", "/user/vive_tracker_htcx/role/chest/input/trackpad", "", OpenXRAction::OPENXR_ACTION_VECTOR2);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trackpad", "/user/vive_tracker_htcx/role/camera", "/user/vive_tracker_htcx/role/camera/input/trackpad", "", OpenXRAction::OPENXR_ACTION_VECTOR2);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trackpad", "/user/vive_tracker_htcx/role/keyboard", "/user/vive_tracker_htcx/role/keyboard/input/trackpad", "", OpenXRAction::OPENXR_ACTION_VECTOR2);
-
-	// register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trackpad click", "/user/vive_tracker_htcx/role/handheld_object", "/user/vive_tracker_htcx/role/handheld_object/input/trackpad/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trackpad click", "/user/vive_tracker_htcx/role/left_foot", "/user/vive_tracker_htcx/role/left_foot/input/trackpad/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trackpad click", "/user/vive_tracker_htcx/role/right_foot", "/user/vive_tracker_htcx/role/right_foot/input/trackpad/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trackpad click", "/user/vive_tracker_htcx/role/left_shoulder", "/user/vive_tracker_htcx/role/left_shoulder/input/trackpad/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trackpad click", "/user/vive_tracker_htcx/role/right_shoulder", "/user/vive_tracker_htcx/role/right_shoulder/input/trackpad/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trackpad click", "/user/vive_tracker_htcx/role/left_elbow", "/user/vive_tracker_htcx/role/left_elbow/input/trackpad/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trackpad click", "/user/vive_tracker_htcx/role/right_elbow", "/user/vive_tracker_htcx/role/right_elbow/input/trackpad/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trackpad click", "/user/vive_tracker_htcx/role/left_knee", "/user/vive_tracker_htcx/role/left_knee/input/trackpad/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trackpad click", "/user/vive_tracker_htcx/role/right_knee", "/user/vive_tracker_htcx/role/right_knee/input/trackpad/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trackpad click", "/user/vive_tracker_htcx/role/waist", "/user/vive_tracker_htcx/role/waist/input/trackpad/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trackpad click", "/user/vive_tracker_htcx/role/chest", "/user/vive_tracker_htcx/role/chest/input/trackpad/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trackpad click", "/user/vive_tracker_htcx/role/camera", "/user/vive_tracker_htcx/role/camera/input/trackpad/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trackpad click", "/user/vive_tracker_htcx/role/keyboard", "/user/vive_tracker_htcx/role/keyboard/input/trackpad/click", "", OpenXRAction::OPENXR_ACTION_BOOL);
-
-	// register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trackpad touch", "/user/vive_tracker_htcx/role/handheld_object", "/user/vive_tracker_htcx/role/handheld_object/input/trackpad/touch", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trackpad touch", "/user/vive_tracker_htcx/role/left_foot", "/user/vive_tracker_htcx/role/left_foot/input/trackpad/touch", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trackpad touch", "/user/vive_tracker_htcx/role/right_foot", "/user/vive_tracker_htcx/role/right_foot/input/trackpad/touch", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trackpad touch", "/user/vive_tracker_htcx/role/left_shoulder", "/user/vive_tracker_htcx/role/left_shoulder/input/trackpad/touch", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trackpad touch", "/user/vive_tracker_htcx/role/right_shoulder", "/user/vive_tracker_htcx/role/right_shoulder/input/trackpad/touch", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trackpad touch", "/user/vive_tracker_htcx/role/left_elbow", "/user/vive_tracker_htcx/role/left_elbow/input/trackpad/touch", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trackpad touch", "/user/vive_tracker_htcx/role/right_elbow", "/user/vive_tracker_htcx/role/right_elbow/input/trackpad/touch", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trackpad touch", "/user/vive_tracker_htcx/role/left_knee", "/user/vive_tracker_htcx/role/left_knee/input/trackpad/touch", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trackpad touch", "/user/vive_tracker_htcx/role/right_knee", "/user/vive_tracker_htcx/role/right_knee/input/trackpad/touch", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trackpad touch", "/user/vive_tracker_htcx/role/waist", "/user/vive_tracker_htcx/role/waist/input/trackpad/touch", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trackpad touch", "/user/vive_tracker_htcx/role/chest", "/user/vive_tracker_htcx/role/chest/input/trackpad/touch", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trackpad touch", "/user/vive_tracker_htcx/role/camera", "/user/vive_tracker_htcx/role/camera/input/trackpad/touch", "", OpenXRAction::OPENXR_ACTION_BOOL);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Trackpad touch", "/user/vive_tracker_htcx/role/keyboard", "/user/vive_tracker_htcx/role/keyboard/input/trackpad/touch", "", OpenXRAction::OPENXR_ACTION_BOOL);
-
-	// register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Grip pose", "/user/vive_tracker_htcx/role/handheld_object", "/user/vive_tracker_htcx/role/handheld_object/input/grip/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Grip pose", "/user/vive_tracker_htcx/role/left_foot", "/user/vive_tracker_htcx/role/left_foot/input/grip/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Grip pose", "/user/vive_tracker_htcx/role/right_foot", "/user/vive_tracker_htcx/role/right_foot/input/grip/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Grip pose", "/user/vive_tracker_htcx/role/left_shoulder", "/user/vive_tracker_htcx/role/left_shoulder/input/grip/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Grip pose", "/user/vive_tracker_htcx/role/right_shoulder", "/user/vive_tracker_htcx/role/right_shoulder/input/grip/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Grip pose", "/user/vive_tracker_htcx/role/left_elbow", "/user/vive_tracker_htcx/role/left_elbow/input/grip/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Grip pose", "/user/vive_tracker_htcx/role/right_elbow", "/user/vive_tracker_htcx/role/right_elbow/input/grip/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Grip pose", "/user/vive_tracker_htcx/role/left_knee", "/user/vive_tracker_htcx/role/left_knee/input/grip/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Grip pose", "/user/vive_tracker_htcx/role/right_knee", "/user/vive_tracker_htcx/role/right_knee/input/grip/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Grip pose", "/user/vive_tracker_htcx/role/waist", "/user/vive_tracker_htcx/role/waist/input/grip/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Grip pose", "/user/vive_tracker_htcx/role/chest", "/user/vive_tracker_htcx/role/chest/input/grip/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Grip pose", "/user/vive_tracker_htcx/role/camera", "/user/vive_tracker_htcx/role/camera/input/grip/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Grip pose", "/user/vive_tracker_htcx/role/keyboard", "/user/vive_tracker_htcx/role/keyboard/input/grip/pose", "", OpenXRAction::OPENXR_ACTION_POSE);
-
-	// register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Haptic output", "/user/vive_tracker_htcx/role/handheld_object", "/user/vive_tracker_htcx/role/handheld_object/output/haptic", "", OpenXRAction::OPENXR_ACTION_HAPTIC);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Haptic output", "/user/vive_tracker_htcx/role/left_foot", "/user/vive_tracker_htcx/role/left_foot/output/haptic", "", OpenXRAction::OPENXR_ACTION_HAPTIC);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Haptic output", "/user/vive_tracker_htcx/role/right_foot", "/user/vive_tracker_htcx/role/right_foot/output/haptic", "", OpenXRAction::OPENXR_ACTION_HAPTIC);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Haptic output", "/user/vive_tracker_htcx/role/left_shoulder", "/user/vive_tracker_htcx/role/left_shoulder/output/haptic", "", OpenXRAction::OPENXR_ACTION_HAPTIC);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Haptic output", "/user/vive_tracker_htcx/role/right_shoulder", "/user/vive_tracker_htcx/role/right_shoulder/output/haptic", "", OpenXRAction::OPENXR_ACTION_HAPTIC);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Haptic output", "/user/vive_tracker_htcx/role/left_elbow", "/user/vive_tracker_htcx/role/left_elbow/output/haptic", "", OpenXRAction::OPENXR_ACTION_HAPTIC);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Haptic output", "/user/vive_tracker_htcx/role/right_elbow", "/user/vive_tracker_htcx/role/right_elbow/output/haptic", "", OpenXRAction::OPENXR_ACTION_HAPTIC);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Haptic output", "/user/vive_tracker_htcx/role/left_knee", "/user/vive_tracker_htcx/role/left_knee/output/haptic", "", OpenXRAction::OPENXR_ACTION_HAPTIC);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Haptic output", "/user/vive_tracker_htcx/role/right_knee", "/user/vive_tracker_htcx/role/right_knee/output/haptic", "", OpenXRAction::OPENXR_ACTION_HAPTIC);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Haptic output", "/user/vive_tracker_htcx/role/waist", "/user/vive_tracker_htcx/role/waist/output/haptic", "", OpenXRAction::OPENXR_ACTION_HAPTIC);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Haptic output", "/user/vive_tracker_htcx/role/chest", "/user/vive_tracker_htcx/role/chest/output/haptic", "", OpenXRAction::OPENXR_ACTION_HAPTIC);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Haptic output", "/user/vive_tracker_htcx/role/camera", "/user/vive_tracker_htcx/role/camera/output/haptic", "", OpenXRAction::OPENXR_ACTION_HAPTIC);
-	register_io_path("/interaction_profiles/htc/vive_tracker_htcx", "Haptic output", "/user/vive_tracker_htcx/role/keyboard", "/user/vive_tracker_htcx/role/keyboard/output/haptic", "", OpenXRAction::OPENXR_ACTION_HAPTIC);
 }
