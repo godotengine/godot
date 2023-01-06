@@ -1,0 +1,61 @@
+# Only keep if you want it.
+name: Android editor builder
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+  workflow_dispatch:
+
+jobs:
+
+# Build editor for arm64 or arm64v8 Android devices.
+  build_apk_arm64:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install NDK
+      run: echo "y" | sudo ${ANDROID_HOME}/tools/bin/sdkmanager --install  "platform-tools" "build-tools;30.0.3" "platforms;android-29" "cmdline-tools;latest" "cmake;3.10.2.4988404"
+    - name: Download depends
+      run: sudo apt-get install build-essential scons pkg-config libx11-dev libxcursor-dev libxinerama-dev libgl1-mesa-dev libglu-dev libasound2-dev libpulse-dev libudev-dev libxi-dev libxrandr-dev -y
+    - name: Build scons
+      run: scons platform=android target=editor arch=arm64v8
+    - name: Build Gradle
+      run: cd platform/android/java && ./gradlew generateGodotEditor && ls -R
+    - uses: actions/upload-artifact@v3
+      with:
+        name: godot_android_editor_arm64
+        path: platform/android/java/editor/build/outputs/apk/debug/*apk
+
+# Build editor for armv7l or arm32 Android devices
+  build_apk_arm32:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install NDK
+      run: echo "y" | sudo ${ANDROID_HOME}/tools/bin/sdkmanager --install  "platform-tools" "build-tools;30.0.3" "platforms;android-29" "cmdline-tools;latest" "cmake;3.10.2.4988404"
+    - name: Download depends
+      run: sudo apt-get install build-essential scons pkg-config libx11-dev libxcursor-dev libxinerama-dev libgl1-mesa-dev libglu-dev libasound2-dev libpulse-dev libudev-dev libxi-dev libxrandr-dev -y
+    - name: Build scons
+      run: scons platform=android target=editor arch=armv7
+    - name: Build Gradle
+      run: cd platform/android/java && ./gradlew generateGodotEditor
+    - uses: actions/upload-artifact@v3
+      with:
+        name: godot_android_editor_arm32
+        path: platform/android/java/editor/build/outputs/apk/debug/*apk
+
+#step to ensure project has no error.
+  #build:
+   # runs-on: ubuntu-latest
+
+    #steps:
+    #- uses: actions/checkout@v3
+    #- name: Install NDK
+   #   run: echo "y" | sudo ${ANDROID_HOME}/tools/bin/sdkmanager --install  "platform-tools" "build-tools;30.0.3" "platforms;android-29" "cmdline-tools;latest" "cmake;3.10.2.4988404"
+   # - name: Download depends
+    #  run: sudo apt-get install build-essential scons pkg-config libx11-dev libxcursor-dev libxinerama-dev libgl1-mesa-dev libglu-dev libasound2-dev libpulse-dev libudev-dev libxi-dev libxrandr-dev -y
+   # - name: Build Gradle
+     # run: cd platform/android/java && ./gradlew build
