@@ -100,6 +100,12 @@
 				Calls the method represented by this [Callable]. Unlike [method call], this method expects all arguments to be contained inside the [param arguments] [Array].
 			</description>
 		</method>
+		<method name="get_bound_arguments_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the total amount of arguments bound (or unbound) via successive [method bind] or [method unbind] calls. If the amount of arguments unbound is greater than the ones bound, this function returns a value less than zero.
+			</description>
+		</method>
 		<method name="get_method" qualifiers="const">
 			<return type="StringName" />
 			<description>
