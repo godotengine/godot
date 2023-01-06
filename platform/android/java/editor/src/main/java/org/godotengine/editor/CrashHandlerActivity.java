@@ -45,7 +45,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.support.v4.content.FileProvider;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.TypedValue;
@@ -83,12 +82,6 @@ public final class CrashHandlerActivity extends Activity {
             @Override
             public void onClick(View v) {
                 copyErrorToClipboard();
-            }
-        });
-        findViewById(R.id.button_share_error_log).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                shareErrorLog();
             }
         });
         findViewById(R.id.button_view_error_log).setOnClickListener(new View.OnClickListener() {
@@ -137,30 +130,20 @@ public final class CrashHandlerActivity extends Activity {
     }
 
     private String getActivityLogFromIntent(Intent intent) {
-        return intent.getStringExtra(UCEHandler.EXTRA_ACTIVITY_LOG);
+        return intent.getStringExtra(CrashHandler.EXTRA_ACTIVITY_LOG);
     }
 
     private String getStackTraceFromIntent(Intent intent) {
-        return intent.getStringExtra(UCEHandler.EXTRA_STACK_TRACE);
-    }
-
-    private void shareErrorLog() {
-        String errorLog = getAllErrorDetailsFromIntent(UCEDefaultActivity.this, getIntent());
-        Intent share = new Intent(Intent.ACTION_SEND);
-        share.setType("text/plain");
-        share.addFlags(Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET);
-        share.putExtra(Intent.EXTRA_SUBJECT, "Application Crash Error Log");
-        share.putExtra(Intent.EXTRA_TEXT, errorLog);
-        startActivity(Intent.createChooser(share, "Share Error Log"));
+        return intent.getStringExtra(CrashHandler.EXTRA_STACK_TRACE);
     }
 
     private void copyErrorToClipboard() {
-        String errorInformation = getAllErrorDetailsFromIntent(UCEDefaultActivity.this, getIntent());
+        String errorInformation = getAllErrorDetailsFromIntent(CrashHandlerActivity.this, getIntent());
         ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
         if (clipboard != null) {
             ClipData clip = ClipData.newPlainText("View Error Log", errorInformation);
             clipboard.setPrimaryClip(clip);
-            Toast.makeText(UCEDefaultActivity.this, "Error Log Copied", Toast.LENGTH_SHORT).show();
+            Toast.makeText(CrashHandlerActivity.this, "Error Log Copied", Toast.LENGTH_SHORT).show();
         }
     }
 
