@@ -2868,21 +2868,17 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 				return -1;
 			}
 
-			if (select_mode == SELECT_MULTI && p_mod->is_command_or_control_pressed() && c.selectable) {
-				if (!c.selected || p_button == MouseButton::RIGHT) {
-					p_item->select(col);
-					emit_signal(SNAME("multi_selected"), p_item, col, true);
-					emit_signal(SNAME("item_mouse_selected"), get_local_mouse_position(), p_button);
-
-					//p_item->selected_signal.call(col);
+			if (c.selectable) {
+				if (select_mode == SELECT_MULTI && p_mod->is_command_or_control_pressed()) {
+					if (c.selected && p_button == MouseButton::LEFT) {
+						p_item->deselect(col);
+						emit_signal(SNAME("multi_selected"), p_item, col, false);
+					} else {
+						p_item->select(col);
+						emit_signal(SNAME("multi_selected"), p_item, col, true);
+						emit_signal(SNAME("item_mouse_selected"), get_local_mouse_position(), p_button);
+					}
 				} else {
-					p_item->deselect(col);
-					emit_signal(SNAME("multi_selected"), p_item, col, false);
-					//p_item->deselected_signal.call(col);
-				}
-
-			} else {
-				if (c.selectable) {
 					if (select_mode == SELECT_MULTI && p_mod->is_shift_pressed() && selected_item && selected_item != p_item) {
 						bool inrange = false;
 
@@ -2902,12 +2898,6 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, int 
 							emit_signal(SNAME("item_mouse_selected"), get_local_mouse_position(), p_button);
 						}
 					}
-
-					/*
-					if (!c.selected && select_mode==SELECT_MULTI) {
-						emit_signal(SNAME("multi_selected"),p_item,col,true);
-					}
-					*/
 					queue_redraw();
 				}
 			}
@@ -4400,9 +4390,7 @@ void Tree::item_selected(int p_column, TreeItem *p_item) {
 		//emit_signal(SNAME("multi_selected"),p_item,p_column,true); - NO this is for TreeItem::select
 
 		selected_col = p_column;
-		if (!selected_item) {
-			selected_item = p_item;
-		}
+		selected_item = p_item;
 	} else {
 		select_single_item(p_item, root, p_column);
 	}
@@ -4410,11 +4398,18 @@ void Tree::item_selected(int p_column, TreeItem *p_item) {
 }
 
 void Tree::item_deselected(int p_column, TreeItem *p_item) {
-	if (selected_item == p_item) {
+	if (select_mode == SELECT_SINGLE && selected_item == p_item && selected_col == p_column) {
 		selected_item = nullptr;
-
-		if (selected_col == p_column) {
+		selected_col = -1;
+	} else {
+		if (select_mode == SELECT_ROW && selected_item == p_item) {
+			selected_item = nullptr;
 			selected_col = -1;
+		} else {
+			if (select_mode == SELECT_MULTI) {
+				selected_item = p_item;
+				selected_col = p_column;
+			}
 		}
 	}
 
