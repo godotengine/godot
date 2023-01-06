@@ -872,8 +872,12 @@ void GDScriptByteCodeGenerator::write_assign_false(const Address &p_target) {
 	append(p_target);
 }
 
-void GDScriptByteCodeGenerator::write_assign_default_parameter(const Address &p_dst, const Address &p_src) {
-	write_assign(p_dst, p_src);
+void GDScriptByteCodeGenerator::write_assign_default_parameter(const Address &p_dst, const Address &p_src, bool p_use_conversion) {
+	if (p_use_conversion) {
+		write_assign_with_conversion(p_dst, p_src);
+	} else {
+		write_assign(p_dst, p_src);
+	}
 	function->default_arguments.push_back(opcodes.size());
 }
 
