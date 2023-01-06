@@ -1059,6 +1059,22 @@ static const GLenum target_from_type[ShaderLanguage::TYPE_MAX] = {
 	GL_TEXTURE_2D, // TYPE_STRUCT
 };
 
+static const RS::CanvasItemTextureRepeat repeat_from_uniform[ShaderLanguage::REPEAT_DEFAULT + 1] = {
+	RS::CanvasItemTextureRepeat::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED, // ShaderLanguage::TextureRepeat::REPEAT_DISABLE,
+	RS::CanvasItemTextureRepeat::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED, // ShaderLanguage::TextureRepeat::REPEAT_ENABLE,
+	RS::CanvasItemTextureRepeat::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED, // ShaderLanguage::TextureRepeat::REPEAT_DEFAULT,
+};
+
+static const RS::CanvasItemTextureFilter filter_from_uniform[ShaderLanguage::FILTER_DEFAULT + 1] = {
+	RS::CanvasItemTextureFilter::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, // ShaderLanguage::TextureFilter::FILTER_NEAREST,
+	RS::CanvasItemTextureFilter::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, // ShaderLanguage::TextureFilter::FILTER_LINEAR,
+	RS::CanvasItemTextureFilter::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS, // ShaderLanguage::TextureFilter::FILTER_NEAREST_MIPMAP,
+	RS::CanvasItemTextureFilter::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, // ShaderLanguage::TextureFilter::FILTER_LINEAR_MIPMAP,
+	RS::CanvasItemTextureFilter::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIPMAPS_ANISOTROPIC, // ShaderLanguage::TextureFilter::FILTER_NEAREST_MIPMAP_ANISOTROPIC,
+	RS::CanvasItemTextureFilter::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC, // ShaderLanguage::TextureFilter::FILTER_LINEAR_MIPMAP_ANISOTROPIC,
+	RS::CanvasItemTextureFilter::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, // ShaderLanguage::TextureFilter::FILTER_DEFAULT,
+};
+
 void MaterialData::update_uniform_buffer(const HashMap<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const HashMap<StringName, Variant> &p_parameters, uint8_t *p_buffer, uint32_t p_buffer_size, bool p_use_linear_color) {
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
 	bool uses_global_buffer = false;
@@ -3031,12 +3047,8 @@ void CanvasMaterialData::bind_uniforms() {
 			texture->render_target->used_in_frame = true;
 		}
 
-		// Set sampler state here as the same texture can be used in multiple places with different flags
-		// Need to convert sampler state from ShaderLanguage::Texture* to RS::CanvasItemTexture*
-		RS::CanvasItemTextureFilter filter = RS::CanvasItemTextureFilter((int(texture_uniforms[ti].filter) + 1) % RS::CANVAS_ITEM_TEXTURE_FILTER_MAX);
-		RS::CanvasItemTextureRepeat repeat = RS::CanvasItemTextureRepeat((int(texture_uniforms[ti].repeat) + 1) % RS::CANVAS_ITEM_TEXTURE_REPEAT_MIRROR);
-		texture->gl_set_filter(filter);
-		texture->gl_set_repeat(repeat);
+		texture->gl_set_filter(filter_from_uniform[int(texture_uniforms[ti].filter)]);
+		texture->gl_set_repeat(repeat_from_uniform[int(texture_uniforms[ti].repeat)]);
 	}
 }
 
@@ -3201,12 +3213,8 @@ void SkyMaterialData::bind_uniforms() {
 			texture->render_target->used_in_frame = true;
 		}
 
-		// Set sampler state here as the same texture can be used in multiple places with different flags
-		// Need to convert sampler state from ShaderLanguage::Texture* to RS::CanvasItemTexture*
-		RS::CanvasItemTextureFilter filter = RS::CanvasItemTextureFilter((int(texture_uniforms[ti].filter) + 1) % RS::CANVAS_ITEM_TEXTURE_FILTER_MAX);
-		RS::CanvasItemTextureRepeat repeat = RS::CanvasItemTextureRepeat((int(texture_uniforms[ti].repeat) + 1) % RS::CANVAS_ITEM_TEXTURE_REPEAT_MIRROR);
-		texture->gl_set_filter(filter);
-		texture->gl_set_repeat(repeat);
+		texture->gl_set_filter(filter_from_uniform[int(texture_uniforms[ti].filter)]);
+		texture->gl_set_repeat(repeat_from_uniform[int(texture_uniforms[ti].repeat)]);
 	}
 }
 
@@ -3457,12 +3465,8 @@ void SceneMaterialData::bind_uniforms() {
 			texture->render_target->used_in_frame = true;
 		}
 
-		// Set sampler state here as the same texture can be used in multiple places with different flags
-		// Need to convert sampler state from ShaderLanguage::Texture* to RS::CanvasItemTexture*
-		RS::CanvasItemTextureFilter filter = RS::CanvasItemTextureFilter((int(texture_uniforms[ti].filter) + 1) % RS::CANVAS_ITEM_TEXTURE_FILTER_MAX);
-		RS::CanvasItemTextureRepeat repeat = RS::CanvasItemTextureRepeat((int(texture_uniforms[ti].repeat) + 1) % RS::CANVAS_ITEM_TEXTURE_REPEAT_MIRROR);
-		texture->gl_set_filter(filter);
-		texture->gl_set_repeat(repeat);
+		texture->gl_set_filter(filter_from_uniform[int(texture_uniforms[ti].filter)]);
+		texture->gl_set_repeat(repeat_from_uniform[int(texture_uniforms[ti].repeat)]);
 	}
 }
 
@@ -3575,12 +3579,8 @@ void ParticleProcessMaterialData::bind_uniforms() {
 			texture->render_target->used_in_frame = true;
 		}
 
-		// Set sampler state here as the same texture can be used in multiple places with different flags
-		// Need to convert sampler state from ShaderLanguage::Texture* to RS::CanvasItemTexture*
-		RS::CanvasItemTextureFilter filter = RS::CanvasItemTextureFilter((int(texture_uniforms[ti].filter) + 1) % RS::CANVAS_ITEM_TEXTURE_FILTER_MAX);
-		RS::CanvasItemTextureRepeat repeat = RS::CanvasItemTextureRepeat((int(texture_uniforms[ti].repeat) + 1) % RS::CANVAS_ITEM_TEXTURE_REPEAT_MIRROR);
-		texture->gl_set_filter(filter);
-		texture->gl_set_repeat(repeat);
+		texture->gl_set_filter(filter_from_uniform[int(texture_uniforms[ti].filter)]);
+		texture->gl_set_repeat(repeat_from_uniform[int(texture_uniforms[ti].repeat)]);
 	}
 }
 
