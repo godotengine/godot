@@ -10,7 +10,7 @@ on:
 jobs:
 
 # Build editor for arm64 or arm64v8 Android devices.
-  Build Editor for arm64 Android devices:
+  Build_Editor_for_arm64_Android_devices:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -33,7 +33,7 @@ jobs:
         path: platform/android/java/editor/build/outputs/apk/debug/*apk
 
 # Build editor for armv7l or arm32 Android devices
-  Build Editor for arm32 Android devices:
+  Build_Editor_for_arm32_Android_devices:
     runs-on: ubuntu-latest
 
     steps:
