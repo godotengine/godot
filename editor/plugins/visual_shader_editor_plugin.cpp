@@ -2941,7 +2941,7 @@ void VisualShaderEditor::_add_node(int p_idx, const Vector<Variant> &p_ops, Stri
 
 	VisualShaderNodeExpression *expr = Object::cast_to<VisualShaderNodeExpression>(vsnode.ptr());
 	if (expr) {
-		undo_redo->add_do_method(expr, "set_size", Size2(250 * EDSCALE, 150 * EDSCALE));
+		expr->set_size(Size2(250 * EDSCALE, 150 * EDSCALE));
 	}
 
 	bool created_expression_port = false;
@@ -2950,9 +2950,7 @@ void VisualShaderEditor::_add_node(int p_idx, const Vector<Variant> &p_ops, Stri
 		VisualShaderNode::PortType input_port_type = visual_shader->get_node(type, to_node)->get_input_port_type(to_slot);
 
 		if (expr && expr->is_editable() && input_port_type != VisualShaderNode::PORT_TYPE_SAMPLER) {
-			undo_redo->add_do_method(expr, "add_output_port", 0, input_port_type, "output0");
-			undo_redo->add_undo_method(expr, "remove_output_port", 0);
-
+			expr->add_output_port(0, input_port_type, "output0");
 			String initial_expression_code;
 
 			switch (input_port_type) {
@@ -2981,9 +2979,8 @@ void VisualShaderEditor::_add_node(int p_idx, const Vector<Variant> &p_ops, Stri
 					break;
 			}
 
-			undo_redo->add_do_method(expr, "set_expression", initial_expression_code);
-			undo_redo->add_do_method(graph_plugin.ptr(), "update_node", type, id_to_use);
-
+			expr->set_expression(initial_expression_code);
+			expr->set_size(Size2(500 * EDSCALE, 200 * EDSCALE));
 			created_expression_port = true;
 		}
 		if (vsnode->get_output_port_count() > 0 || created_expression_port) {
@@ -3019,10 +3016,7 @@ void VisualShaderEditor::_add_node(int p_idx, const Vector<Variant> &p_ops, Stri
 		VisualShaderNode::PortType output_port_type = visual_shader->get_node(type, from_node)->get_output_port_type(from_slot);
 
 		if (expr && expr->is_editable()) {
-			undo_redo->add_do_method(expr, "add_input_port", 0, output_port_type, "input0");
-			undo_redo->add_undo_method(expr, "remove_input_port", 0);
-			undo_redo->add_do_method(graph_plugin.ptr(), "update_node", type, id_to_use);
-
+			expr->add_input_port(0, output_port_type, "input0");
 			created_expression_port = true;
 		}
 
@@ -3334,20 +3328,6 @@ void VisualShaderEditor::_delete_nodes(int p_type, const List<int> &p_nodes) {
 		undo_redo->add_do_method(visual_shader.ptr(), "remove_node", type, F);
 		undo_redo->add_undo_method(visual_shader.ptr(), "add_node", type, node, visual_shader->get_node_position(type, F), F);
 		undo_redo->add_undo_method(graph_plugin.ptr(), "add_node", type, F);
-
-		// restore size, inputs and outputs if node is group
-		VisualShaderNodeGroupBase *group = Object::cast_to<VisualShaderNodeGroupBase>(node.ptr());
-		if (group) {
-			undo_redo->add_undo_method(group, "set_size", group->get_size());
-			undo_redo->add_undo_method(group, "set_inputs", group->get_inputs());
-			undo_redo->add_undo_method(group, "set_outputs", group->get_outputs());
-		}
-
-		// restore expression text if node is expression
-		VisualShaderNodeExpression *expression = Object::cast_to<VisualShaderNodeExpression>(node.ptr());
-		if (expression) {
-			undo_redo->add_undo_method(expression, "set_expression", expression->get_expression());
-		}
 
 		VisualShaderNodeParameter *parameter = Object::cast_to<VisualShaderNodeParameter>(node.ptr());
 		if (parameter) {
