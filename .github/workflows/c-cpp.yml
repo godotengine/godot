@@ -23,7 +23,7 @@ jobs:
       run: cd platform/android/java && ./gradlew generateGodotEditor && ls -R
     - uses: actions/upload-artifact@v3
       with:
-        path: app/build/outputs/apk/debug/*apk
+        path: editor/build/outputs/apk/debug/*apk
 
   build:
     runs-on: ubuntu-latest
