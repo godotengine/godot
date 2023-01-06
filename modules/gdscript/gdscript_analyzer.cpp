@@ -1485,7 +1485,6 @@ void GDScriptAnalyzer::resolve_assignable(GDScriptParser::AssignableNode *p_assi
 	GDScriptParser::DataType type;
 	type.kind = GDScriptParser::DataType::VARIANT;
 
-	bool is_variable = p_assignable->type == GDScriptParser::Node::VARIABLE;
 	bool is_constant = p_assignable->type == GDScriptParser::Node::CONSTANT;
 
 	GDScriptParser::DataType specified_type;
@@ -1548,13 +1547,11 @@ void GDScriptAnalyzer::resolve_assignable(GDScriptParser::AssignableNode *p_assi
 		} else if (!specified_type.is_variant()) {
 			if (initializer_type.is_variant() || !initializer_type.is_hard_type()) {
 				mark_node_unsafe(p_assignable->initializer);
-				if (is_variable) {
-					static_cast<GDScriptParser::VariableNode *>(p_assignable)->use_conversion_assign = true;
-				}
+				p_assignable->use_conversion_assign = true;
 			} else if (!is_type_compatible(specified_type, initializer_type, true, p_assignable->initializer)) {
-				if (is_variable && is_type_compatible(initializer_type, specified_type, true, p_assignable->initializer)) {
+				if (!is_constant && is_type_compatible(initializer_type, specified_type, true, p_assignable->initializer)) {
 					mark_node_unsafe(p_assignable->initializer);
-					static_cast<GDScriptParser::VariableNode *>(p_assignable)->use_conversion_assign = true;
+					p_assignable->use_conversion_assign = true;
 				} else {
 					push_error(vformat(R"(Cannot assign a value of type %s to %s "%s" with specified type %s.)", initializer_type.to_string(), p_kind, p_assignable->identifier->name, specified_type.to_string()), p_assignable->initializer);
 				}
