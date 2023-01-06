@@ -43,8 +43,7 @@ void initialize_webrtc_module(ModuleInitializationLevel p_level) {
 	}
 
 #define SET_HINT(NAME, _VAL_, _MAX_) \
-	GLOBAL_DEF(NAME, _VAL_);         \
-	ProjectSettings::get_singleton()->set_custom_property_info(NAME, PropertyInfo(Variant::INT, NAME, PROPERTY_HINT_RANGE, "2," #_MAX_ ",1,or_greater"));
+	GLOBAL_DEF(PropertyInfo(Variant::INT, NAME, PROPERTY_HINT_RANGE, "2," #_MAX_ ",1,or_greater"), _VAL_);
 
 	SET_HINT(WRTC_IN_BUF, 64, 4096);
 

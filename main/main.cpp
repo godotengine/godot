@@ -1359,35 +1359,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	ResourceUID::get_singleton()->load_from_cache(); // load UUIDs from cache.
 
-	ProjectSettings::get_singleton()->set_custom_property_info("memory/limits/multithreaded_server/rid_pool_prealloc",
-			PropertyInfo(Variant::INT,
-					"memory/limits/multithreaded_server/rid_pool_prealloc",
-					PROPERTY_HINT_RANGE,
-					"0,500,1")); // No negative and limit to 500 due to crashes
-	GLOBAL_DEF("network/limits/debugger/max_chars_per_second", 32768);
-	ProjectSettings::get_singleton()->set_custom_property_info("network/limits/debugger/max_chars_per_second",
-			PropertyInfo(Variant::INT,
-					"network/limits/debugger/max_chars_per_second",
-					PROPERTY_HINT_RANGE,
-					"0, 4096, 1, or_greater"));
-	GLOBAL_DEF("network/limits/debugger/max_queued_messages", 2048);
-	ProjectSettings::get_singleton()->set_custom_property_info("network/limits/debugger/max_queued_messages",
-			PropertyInfo(Variant::INT,
-					"network/limits/debugger/max_queued_messages",
-					PROPERTY_HINT_RANGE,
-					"0, 8192, 1, or_greater"));
-	GLOBAL_DEF("network/limits/debugger/max_errors_per_second", 400);
-	ProjectSettings::get_singleton()->set_custom_property_info("network/limits/debugger/max_errors_per_second",
-			PropertyInfo(Variant::INT,
-					"network/limits/debugger/max_errors_per_second",
-					PROPERTY_HINT_RANGE,
-					"0, 200, 1, or_greater"));
-	GLOBAL_DEF("network/limits/debugger/max_warnings_per_second", 400);
-	ProjectSettings::get_singleton()->set_custom_property_info("network/limits/debugger/max_warnings_per_second",
-			PropertyInfo(Variant::INT,
-					"network/limits/debugger/max_warnings_per_second",
-					PROPERTY_HINT_RANGE,
-					"0, 200, 1, or_greater"));
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "network/limits/debugger/max_chars_per_second", PROPERTY_HINT_RANGE, "0, 4096, 1, or_greater"), 32768);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "network/limits/debugger/max_queued_messages", PROPERTY_HINT_RANGE, "0, 8192, 1, or_greater"), 2048);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "network/limits/debugger/max_errors_per_second", PROPERTY_HINT_RANGE, "0, 200, 1, or_greater"), 400);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "network/limits/debugger/max_warnings_per_second", PROPERTY_HINT_RANGE, "0, 200, 1, or_greater"), 400);
 
 	EngineDebugger::initialize(debug_uri, skip_breakpoints, breakpoints, []() {
 		if (editor_pid) {
@@ -1424,12 +1399,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	// are disabled while in the editor (even if they should logically apply).
 	GLOBAL_DEF("debug/file_logging/enable_file_logging.pc", true);
 	GLOBAL_DEF("debug/file_logging/log_path", "user://logs/godot.log");
-	GLOBAL_DEF("debug/file_logging/max_log_files", 5);
-	ProjectSettings::get_singleton()->set_custom_property_info("debug/file_logging/max_log_files",
-			PropertyInfo(Variant::INT,
-					"debug/file_logging/max_log_files",
-					PROPERTY_HINT_RANGE,
-					"0,20,1,or_greater")); //no negative numbers
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "debug/file_logging/max_log_files", PROPERTY_HINT_RANGE, "0,20,1,or_greater"), 5);
+
 	if (!project_manager && !editor && FileAccess::get_create_func(FileAccess::ACCESS_USERDATA) &&
 			GLOBAL_GET("debug/file_logging/enable_file_logging")) {
 		// Don't create logs for the project manager as they would be written to
@@ -1485,21 +1456,11 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 		// For now everything defaults to vulkan when available. This can change in future updates.
 		GLOBAL_DEF("rendering/rendering_device/driver", default_driver);
-		GLOBAL_DEF("rendering/rendering_device/driver.windows", default_driver);
-		ProjectSettings::get_singleton()->set_custom_property_info("rendering/rendering_device/driver.windows",
-				PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.windows", PROPERTY_HINT_ENUM, driver_hints));
-		GLOBAL_DEF("rendering/rendering_device/driver.linuxbsd", default_driver);
-		ProjectSettings::get_singleton()->set_custom_property_info("rendering/rendering_device/driver.linuxbsd",
-				PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.linuxbsd", PROPERTY_HINT_ENUM, driver_hints));
-		GLOBAL_DEF("rendering/rendering_device/driver.android", default_driver);
-		ProjectSettings::get_singleton()->set_custom_property_info("rendering/rendering_device/driver.android",
-				PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.android", PROPERTY_HINT_ENUM, driver_hints));
-		GLOBAL_DEF("rendering/rendering_device/driver.ios", default_driver);
-		ProjectSettings::get_singleton()->set_custom_property_info("rendering/rendering_device/driver.ios",
-				PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.ios", PROPERTY_HINT_ENUM, driver_hints));
-		GLOBAL_DEF("rendering/rendering_device/driver.macos", default_driver);
-		ProjectSettings::get_singleton()->set_custom_property_info("rendering/rendering_device/driver.macos",
-				PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.macos", PROPERTY_HINT_ENUM, driver_hints));
+		GLOBAL_DEF(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.windows", PROPERTY_HINT_ENUM, driver_hints), default_driver);
+		GLOBAL_DEF(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.linuxbsd", PROPERTY_HINT_ENUM, driver_hints), default_driver);
+		GLOBAL_DEF(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.android", PROPERTY_HINT_ENUM, driver_hints), default_driver);
+		GLOBAL_DEF(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.ios", PROPERTY_HINT_ENUM, driver_hints), default_driver);
+		GLOBAL_DEF(PropertyInfo(Variant::STRING, "rendering/rendering_device/driver.macos", PROPERTY_HINT_ENUM, driver_hints), default_driver);
 
 		driver_hints = "";
 #ifdef GLES3_ENABLED
@@ -1509,24 +1470,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		default_driver = driver_hints.get_slice(",", 0);
 
 		GLOBAL_DEF("rendering/gl_compatibility/driver", default_driver);
-		GLOBAL_DEF("rendering/gl_compatibility/driver.windows", default_driver);
-		ProjectSettings::get_singleton()->set_custom_property_info("rendering/gl_compatibility/driver.windows",
-				PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.windows", PROPERTY_HINT_ENUM, driver_hints));
-		GLOBAL_DEF("rendering/gl_compatibility/driver.linuxbsd", default_driver);
-		ProjectSettings::get_singleton()->set_custom_property_info("rendering/gl_compatibility/driver.linuxbsd",
-				PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.linuxbsd", PROPERTY_HINT_ENUM, driver_hints));
-		GLOBAL_DEF("rendering/gl_compatibility/driver.web", default_driver);
-		ProjectSettings::get_singleton()->set_custom_property_info("rendering/gl_compatibility/driver.web",
-				PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.web", PROPERTY_HINT_ENUM, driver_hints));
-		GLOBAL_DEF("rendering/gl_compatibility/driver.android", default_driver);
-		ProjectSettings::get_singleton()->set_custom_property_info("rendering/gl_compatibility/driver.android",
-				PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.android", PROPERTY_HINT_ENUM, driver_hints));
-		GLOBAL_DEF("rendering/gl_compatibility/driver.ios", default_driver);
-		ProjectSettings::get_singleton()->set_custom_property_info("rendering/gl_compatibility/driver.ios",
-				PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.ios", PROPERTY_HINT_ENUM, driver_hints));
-		GLOBAL_DEF("rendering/gl_compatibility/driver.macos", default_driver);
-		ProjectSettings::get_singleton()->set_custom_property_info("rendering/gl_compatibility/driver.macos",
-				PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.macos", PROPERTY_HINT_ENUM, driver_hints));
+		GLOBAL_DEF(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.windows", PROPERTY_HINT_ENUM, driver_hints), default_driver);
+		GLOBAL_DEF(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.linuxbsd", PROPERTY_HINT_ENUM, driver_hints), default_driver);
+		GLOBAL_DEF(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.web", PROPERTY_HINT_ENUM, driver_hints), default_driver);
+		GLOBAL_DEF(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.android", PROPERTY_HINT_ENUM, driver_hints), default_driver);
+		GLOBAL_DEF(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.ios", PROPERTY_HINT_ENUM, driver_hints), default_driver);
+		GLOBAL_DEF(PropertyInfo(Variant::STRING, "rendering/gl_compatibility/driver.macos", PROPERTY_HINT_ENUM, driver_hints), default_driver);
 	}
 
 	// Start with RenderingDevice-based backends. Should be included if any RD driver present.
@@ -1646,14 +1595,9 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 	default_renderer = renderer_hints.get_slice(",", 0);
-	GLOBAL_DEF_RST_BASIC("rendering/renderer/rendering_method", default_renderer);
+	GLOBAL_DEF_RST_BASIC(PropertyInfo(Variant::STRING, "rendering/renderer/rendering_method", PROPERTY_HINT_ENUM, renderer_hints), default_renderer);
 	GLOBAL_DEF_RST_BASIC("rendering/renderer/rendering_method.mobile", default_renderer_mobile);
 	GLOBAL_DEF_RST_BASIC("rendering/renderer/rendering_method.web", "gl_compatibility"); // This is a bit of a hack until we have WebGPU support.
-
-	ProjectSettings::get_singleton()->set_custom_property_info("rendering/renderer/rendering_method",
-			PropertyInfo(Variant::STRING,
-					"rendering/renderer/rendering_method",
-					PROPERTY_HINT_ENUM, renderer_hints));
 
 	// Default to ProjectSettings default if nothing set on the command line.
 	if (rendering_method.is_empty()) {
@@ -1795,22 +1739,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			window_vsync_mode = DisplayServer::VSyncMode::VSYNC_DISABLED;
 		}
 	}
-	Engine::get_singleton()->set_physics_ticks_per_second(GLOBAL_DEF_BASIC("physics/common/physics_ticks_per_second", 60));
-	ProjectSettings::get_singleton()->set_custom_property_info("physics/common/physics_ticks_per_second",
-			PropertyInfo(Variant::INT, "physics/common/physics_ticks_per_second",
-					PROPERTY_HINT_RANGE, "1,1000,1"));
-
-	Engine::get_singleton()->set_max_physics_steps_per_frame(GLOBAL_DEF("physics/common/max_physics_steps_per_frame", 8));
-	ProjectSettings::get_singleton()->set_custom_property_info("physics/common/max_physics_steps_per_frame",
-			PropertyInfo(Variant::INT, "physics/common/max_physics_steps_per_frame",
-					PROPERTY_HINT_RANGE, "1,100,1"));
-
+	Engine::get_singleton()->set_physics_ticks_per_second(GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "physics/common/physics_ticks_per_second", PROPERTY_HINT_RANGE, "1,1000,1"), 60));
+	Engine::get_singleton()->set_max_physics_steps_per_frame(GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "physics/common/max_physics_steps_per_frame", PROPERTY_HINT_RANGE, "1,100,1"), 8));
 	Engine::get_singleton()->set_physics_jitter_fix(GLOBAL_DEF("physics/common/physics_jitter_fix", 0.5));
-	Engine::get_singleton()->set_max_fps(GLOBAL_DEF("application/run/max_fps", 0));
-	ProjectSettings::get_singleton()->set_custom_property_info("application/run/max_fps",
-			PropertyInfo(Variant::INT,
-					"application/run/max_fps",
-					PROPERTY_HINT_RANGE, "0,1000,1"));
+	Engine::get_singleton()->set_max_fps(GLOBAL_DEF(PropertyInfo(Variant::INT, "application/run/max_fps", PROPERTY_HINT_RANGE, "0,1000,1"), 0));
 
 	GLOBAL_DEF("debug/settings/stdout/print_fps", false);
 	GLOBAL_DEF("debug/settings/stdout/print_gpu_profile", false);
@@ -1821,46 +1753,25 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 	if (frame_delay == 0) {
-		frame_delay = GLOBAL_DEF("application/run/frame_delay_msec", 0);
-		ProjectSettings::get_singleton()->set_custom_property_info("application/run/frame_delay_msec",
-				PropertyInfo(Variant::INT,
-						"application/run/frame_delay_msec",
-						PROPERTY_HINT_RANGE,
-						"0,100,1,or_greater")); // No negative numbers
+		frame_delay = GLOBAL_DEF(PropertyInfo(Variant::INT, "application/run/frame_delay_msec", PROPERTY_HINT_RANGE, "0,100,1,or_greater"), 0);
 	}
 
 	OS::get_singleton()->set_low_processor_usage_mode(GLOBAL_DEF("application/run/low_processor_mode", false));
 	OS::get_singleton()->set_low_processor_usage_mode_sleep_usec(
-			GLOBAL_DEF("application/run/low_processor_mode_sleep_usec", 6900)); // Roughly 144 FPS
-	ProjectSettings::get_singleton()->set_custom_property_info("application/run/low_processor_mode_sleep_usec",
-			PropertyInfo(Variant::INT,
-					"application/run/low_processor_mode_sleep_usec",
-					PROPERTY_HINT_RANGE,
-					"0,33200,1,or_greater")); // No negative numbers
+			GLOBAL_DEF(PropertyInfo(Variant::INT, "application/run/low_processor_mode_sleep_usec", PROPERTY_HINT_RANGE, "0,33200,1,or_greater"), 6900)); // Roughly 144 FPS
 
 	GLOBAL_DEF("display/window/ios/allow_high_refresh_rate", true);
 	GLOBAL_DEF("display/window/ios/hide_home_indicator", true);
 	GLOBAL_DEF("display/window/ios/hide_status_bar", true);
 	GLOBAL_DEF("display/window/ios/suppress_ui_gesture", true);
-	GLOBAL_DEF("input_devices/pointing/ios/touch_delay", 0.15);
-	ProjectSettings::get_singleton()->set_custom_property_info("input_devices/pointing/ios/touch_delay",
-			PropertyInfo(Variant::FLOAT,
-					"input_devices/pointing/ios/touch_delay",
-					PROPERTY_HINT_RANGE, "0,1,0.001"));
+	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "input_devices/pointing/ios/touch_delay", PROPERTY_HINT_RANGE, "0,1,0.001"), 0.15);
 
 	// XR project settings.
 	GLOBAL_DEF_RST_BASIC("xr/openxr/enabled", false);
-	GLOBAL_DEF_BASIC("xr/openxr/default_action_map", "res://openxr_action_map.tres");
-	ProjectSettings::get_singleton()->set_custom_property_info("xr/openxr/default_action_map", PropertyInfo(Variant::STRING, "xr/openxr/default_action_map", PROPERTY_HINT_FILE, "*.tres"));
-
-	GLOBAL_DEF_BASIC("xr/openxr/form_factor", "0");
-	ProjectSettings::get_singleton()->set_custom_property_info("xr/openxr/form_factor", PropertyInfo(Variant::INT, "xr/openxr/form_factor", PROPERTY_HINT_ENUM, "Head Mounted,Handheld"));
-
-	GLOBAL_DEF_BASIC("xr/openxr/view_configuration", "1");
-	ProjectSettings::get_singleton()->set_custom_property_info("xr/openxr/view_configuration", PropertyInfo(Variant::INT, "xr/openxr/view_configuration", PROPERTY_HINT_ENUM, "Mono,Stereo")); // "Mono,Stereo,Quad,Observer"
-
-	GLOBAL_DEF_BASIC("xr/openxr/reference_space", "1");
-	ProjectSettings::get_singleton()->set_custom_property_info("xr/openxr/reference_space", PropertyInfo(Variant::INT, "xr/openxr/reference_space", PROPERTY_HINT_ENUM, "Local,Stage"));
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "xr/openxr/default_action_map", PROPERTY_HINT_FILE, "*.tres"), "res://openxr_action_map.tres");
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/form_factor", PROPERTY_HINT_ENUM, "Head Mounted,Handheld"), "0");
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/view_configuration", PROPERTY_HINT_ENUM, "Mono,Stereo"), "1"); // "Mono,Stereo,Quad,Observer"
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/reference_space", PROPERTY_HINT_ENUM, "Local,Stage"), "1");
 
 	GLOBAL_DEF_BASIC("xr/openxr/submit_depth_buffer", false);
 
@@ -2046,8 +1957,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 	{
 		GLOBAL_DEF_RST_NOVAL("input_devices/pen_tablet/driver", "");
-		GLOBAL_DEF_RST_NOVAL("input_devices/pen_tablet/driver.windows", "");
-		ProjectSettings::get_singleton()->set_custom_property_info("input_devices/pen_tablet/driver.windows", PropertyInfo(Variant::STRING, "input_devices/pen_tablet/driver.windows", PROPERTY_HINT_ENUM, "wintab,winink"));
+		GLOBAL_DEF_RST_NOVAL(PropertyInfo(Variant::STRING, "input_devices/pen_tablet/driver.windows", PROPERTY_HINT_ENUM, "wintab,winink"), "");
 	}
 
 	if (tablet_driver.is_empty()) { // specified in project.godot
@@ -2148,13 +2058,9 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 	if (show_logo) { //boot logo!
 		const bool boot_logo_image = GLOBAL_DEF_BASIC("application/boot_splash/show_image", true);
-		const String boot_logo_path = String(GLOBAL_DEF_BASIC("application/boot_splash/image", String())).strip_edges();
+		const String boot_logo_path = String(GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "application/boot_splash/image", PROPERTY_HINT_FILE, "*.png"), String())).strip_edges();
 		const bool boot_logo_scale = GLOBAL_DEF_BASIC("application/boot_splash/fullsize", true);
 		const bool boot_logo_filter = GLOBAL_DEF_BASIC("application/boot_splash/use_filter", true);
-		ProjectSettings::get_singleton()->set_custom_property_info("application/boot_splash/image",
-				PropertyInfo(Variant::STRING,
-						"application/boot_splash/image",
-						PROPERTY_HINT_FILE, "*.png"));
 
 		Ref<Image> boot_logo;
 
@@ -2212,22 +2118,9 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	RenderingServer::get_singleton()->set_default_clear_color(
 			GLOBAL_GET("rendering/environment/defaults/default_clear_color"));
 
-	GLOBAL_DEF("application/config/icon", String());
-	ProjectSettings::get_singleton()->set_custom_property_info("application/config/icon",
-			PropertyInfo(Variant::STRING, "application/config/icon",
-					PROPERTY_HINT_FILE, "*.png,*.webp,*.svg"));
-
-	GLOBAL_DEF("application/config/macos_native_icon", String());
-	ProjectSettings::get_singleton()->set_custom_property_info("application/config/macos_native_icon",
-			PropertyInfo(Variant::STRING,
-					"application/config/macos_native_icon",
-					PROPERTY_HINT_FILE, "*.icns"));
-
-	GLOBAL_DEF("application/config/windows_native_icon", String());
-	ProjectSettings::get_singleton()->set_custom_property_info("application/config/windows_native_icon",
-			PropertyInfo(Variant::STRING,
-					"application/config/windows_native_icon",
-					PROPERTY_HINT_FILE, "*.ico"));
+	GLOBAL_DEF(PropertyInfo(Variant::STRING, "application/config/icon", PROPERTY_HINT_FILE, "*.png,*.webp,*.svg"), String());
+	GLOBAL_DEF(PropertyInfo(Variant::STRING, "application/config/macos_native_icon", PROPERTY_HINT_FILE, "*.icns"), String());
+	GLOBAL_DEF(PropertyInfo(Variant::STRING, "application/config/windows_native_icon", PROPERTY_HINT_FILE, "*.ico"), String());
 
 	Input *id = Input::get_singleton();
 	if (id) {
@@ -2272,7 +2165,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		}
 		text_driver_options += driver_name;
 	}
-	ProjectSettings::get_singleton()->set_custom_property_info("internationalization/rendering/text_driver", PropertyInfo(Variant::STRING, "internationalization/rendering/text_driver", PROPERTY_HINT_ENUM, text_driver_options));
+	ProjectSettings::get_singleton()->set_custom_property_info(PropertyInfo(Variant::STRING, "internationalization/rendering/text_driver", PROPERTY_HINT_ENUM, text_driver_options));
 
 	/* Determine text driver */
 	if (text_driver.is_empty()) {
@@ -2341,13 +2234,9 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	initialize_theme_db();
 	register_scene_singletons();
 
-	GLOBAL_DEF_BASIC("display/mouse_cursor/custom_image", String());
+	GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "display/mouse_cursor/custom_image", PROPERTY_HINT_FILE, "*.png,*.webp"), String());
 	GLOBAL_DEF_BASIC("display/mouse_cursor/custom_image_hotspot", Vector2());
 	GLOBAL_DEF_BASIC("display/mouse_cursor/tooltip_position_offset", Point2(10, 10));
-	ProjectSettings::get_singleton()->set_custom_property_info("display/mouse_cursor/custom_image",
-			PropertyInfo(Variant::STRING,
-					"display/mouse_cursor/custom_image",
-					PROPERTY_HINT_FILE, "*.png,*.webp"));
 
 	if (String(GLOBAL_GET("display/mouse_cursor/custom_image")) != String()) {
 		Ref<Texture2D> cursor = ResourceLoader::load(
@@ -2504,12 +2393,7 @@ bool Main::start() {
 #endif
 	}
 
-	uint64_t minimum_time_msec = GLOBAL_DEF("application/boot_splash/minimum_display_time", 0);
-	ProjectSettings::get_singleton()->set_custom_property_info("application/boot_splash/minimum_display_time",
-			PropertyInfo(Variant::INT,
-					"application/boot_splash/minimum_display_time",
-					PROPERTY_HINT_RANGE,
-					"0,100,1,or_greater,suffix:ms")); // No negative numbers.
+	uint64_t minimum_time_msec = GLOBAL_DEF(PropertyInfo(Variant::INT, "application/boot_splash/minimum_display_time", PROPERTY_HINT_RANGE, "0,100,1,or_greater,suffix:ms"), 0);
 
 #ifdef TOOLS_ENABLED
 	if (!doc_tool_path.is_empty()) {
@@ -2823,39 +2707,16 @@ bool Main::start() {
 			startup_benchmark_file = String();
 		}
 #endif
-		GLOBAL_DEF_BASIC("display/window/stretch/mode", "disabled");
-		ProjectSettings::get_singleton()->set_custom_property_info("display/window/stretch/mode",
-				PropertyInfo(Variant::STRING,
-						"display/window/stretch/mode",
-						PROPERTY_HINT_ENUM,
-						"disabled,canvas_items,viewport"));
-		GLOBAL_DEF_BASIC("display/window/stretch/aspect", "keep");
-		ProjectSettings::get_singleton()->set_custom_property_info("display/window/stretch/aspect",
-				PropertyInfo(Variant::STRING,
-						"display/window/stretch/aspect",
-						PROPERTY_HINT_ENUM,
-						"ignore,keep,keep_width,keep_height,expand"));
-		GLOBAL_DEF_BASIC("display/window/stretch/scale", 1.0);
-		ProjectSettings::get_singleton()->set_custom_property_info("display/window/stretch/scale",
-				PropertyInfo(Variant::FLOAT,
-						"display/window/stretch/scale",
-						PROPERTY_HINT_RANGE,
-						"0.5,8.0,0.01"));
+		GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "display/window/stretch/mode", PROPERTY_HINT_ENUM, "disabled,canvas_items,viewport"), "disabled");
+		GLOBAL_DEF_BASIC(PropertyInfo(Variant::STRING, "display/window/stretch/aspect", PROPERTY_HINT_ENUM, "ignore,keep,keep_width,keep_height,expand"), "keep");
+		GLOBAL_DEF_BASIC(PropertyInfo(Variant::FLOAT, "display/window/stretch/scale", PROPERTY_HINT_RANGE, "0.5,8.0,0.01"), 1.0);
 		sml->set_auto_accept_quit(GLOBAL_DEF("application/config/auto_accept_quit", true));
 		sml->set_quit_on_go_back(GLOBAL_DEF("application/config/quit_on_go_back", true));
 		GLOBAL_DEF_BASIC("gui/common/snap_controls_to_pixels", true);
 		GLOBAL_DEF_BASIC("gui/fonts/dynamic_fonts/use_oversampling", true);
 
-		GLOBAL_DEF_BASIC("rendering/textures/canvas_textures/default_texture_filter", 1);
-		ProjectSettings::get_singleton()->set_custom_property_info(
-				"rendering/textures/canvas_textures/default_texture_filter",
-				PropertyInfo(Variant::INT, "rendering/textures/canvas_textures/default_texture_filter", PROPERTY_HINT_ENUM,
-						"Nearest,Linear,Linear Mipmap,Nearest Mipmap"));
-		GLOBAL_DEF_BASIC("rendering/textures/canvas_textures/default_texture_repeat", 0);
-		ProjectSettings::get_singleton()->set_custom_property_info(
-				"rendering/textures/canvas_textures/default_texture_repeat",
-				PropertyInfo(Variant::INT, "rendering/textures/canvas_textures/default_texture_repeat", PROPERTY_HINT_ENUM,
-						"Disable,Enable,Mirror"));
+		GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "rendering/textures/canvas_textures/default_texture_filter", PROPERTY_HINT_ENUM, "Nearest,Linear,Linear Mipmap,Nearest Mipmap"), 1);
+		GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "rendering/textures/canvas_textures/default_texture_repeat", PROPERTY_HINT_ENUM, "Disable,Enable,Mirror"), 0);
 
 		if (!editor && !project_manager) {
 			//standard helpers that can be changed from main config

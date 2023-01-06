@@ -1048,6 +1048,12 @@ Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default, bool p_restar
 	return ret;
 }
 
+Variant _GLOBAL_DEF(const PropertyInfo &p_info, const Variant &p_default, bool p_restart_if_changed, bool p_ignore_value_in_docs, bool p_basic, bool p_internal) {
+	Variant ret = _GLOBAL_DEF(p_info.name, p_default, p_restart_if_changed, p_ignore_value_in_docs, p_basic, p_internal);
+	ProjectSettings::get_singleton()->set_custom_property_info(p_info);
+	return ret;
+}
+
 Vector<String> ProjectSettings::get_optimizer_presets() const {
 	List<PropertyInfo> pi;
 	ProjectSettings::get_singleton()->get_property_list(&pi);
@@ -1082,13 +1088,13 @@ void ProjectSettings::_add_property_info_bind(const Dictionary &p_info) {
 		pinfo.hint_string = p_info["hint_string"];
 	}
 
-	set_custom_property_info(pinfo.name, pinfo);
+	set_custom_property_info(pinfo);
 }
 
-void ProjectSettings::set_custom_property_info(const String &p_prop, const PropertyInfo &p_info) {
-	ERR_FAIL_COND(!props.has(p_prop));
-	custom_prop_info[p_prop] = p_info;
-	custom_prop_info[p_prop].name = p_prop;
+void ProjectSettings::set_custom_property_info(const PropertyInfo &p_info) {
+	const String &prop_name = p_info.name;
+	ERR_FAIL_COND(!props.has(prop_name));
+	custom_prop_info[prop_name] = p_info;
 }
 
 const HashMap<StringName, PropertyInfo> &ProjectSettings::get_custom_property_info() const {
@@ -1301,12 +1307,11 @@ ProjectSettings::ProjectSettings() {
 			String("Please include this when reporting the bug to the project developer."));
 	GLOBAL_DEF("debug/settings/crash_handler/message.editor",
 			String("Please include this when reporting the bug on: https://github.com/godotengine/godot/issues"));
-	GLOBAL_DEF_RST("rendering/occlusion_culling/bvh_build_quality", 2);
-	GLOBAL_DEF("memory/limits/multithreaded_server/rid_pool_prealloc", 60);
+	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/occlusion_culling/bvh_build_quality", PROPERTY_HINT_ENUM, "Low,Medium,High"), 2);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "memory/limits/multithreaded_server/rid_pool_prealloc", PROPERTY_HINT_RANGE, "0,500,1"), 60); // No negative and limit to 500 due to crashes.
 	GLOBAL_DEF_RST("internationalization/rendering/force_right_to_left_layout_direction", false);
 
-	GLOBAL_DEF("gui/timers/incremental_search_max_interval_msec", 2000);
-	ProjectSettings::get_singleton()->set_custom_property_info("gui/timers/incremental_search_max_interval_msec", PropertyInfo(Variant::INT, "gui/timers/incremental_search_max_interval_msec", PROPERTY_HINT_RANGE, "0,10000,1,or_greater")); // No negative numbers.
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "gui/timers/incremental_search_max_interval_msec", PROPERTY_HINT_RANGE, "0,10000,1,or_greater"), 2000);
 
 	GLOBAL_DEF("rendering/rendering_device/staging_buffer/block_size_kb", 256);
 	GLOBAL_DEF("rendering/rendering_device/staging_buffer/max_size_mb", 128);
