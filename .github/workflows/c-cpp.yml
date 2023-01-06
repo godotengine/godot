@@ -15,6 +15,6 @@ jobs:
     - name: Download depends
       run: sudo apt-get install build-essential scons pkg-config libx11-dev libxcursor-dev libxinerama-dev libgl1-mesa-dev libglu-dev libasound2-dev libpulse-dev libudev-dev libxi-dev libxrandr-dev -y
     - name: Build scons
-      run: scons platform=android target=tools arch=arm64v8
+      run: scons platform=android target=editor arch=arm64v8
     - name: Build Gradle
       run: cd platform/android/java && ./gradlew generateGodotEditor
