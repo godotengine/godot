@@ -25,6 +25,7 @@
     <application
         android:allowBackup="false"
         android:icon="@mipmap/icon"
+        android:name=".Godot"
         android:label="@string/godot_editor_name_string"
         tools:ignore="GoogleAppIndexingWarning"
         android:theme="@style/GodotEditorTheme"
@@ -69,6 +70,9 @@
             <layout android:defaultHeight="@dimen/editor_default_window_height"
                 android:defaultWidth="@dimen/editor_default_window_width" />
         </activity>
+        <activity
+            android:name=".CrashHandlerActivity"
+            android:process=":error_activity" />
 
     </application>
 

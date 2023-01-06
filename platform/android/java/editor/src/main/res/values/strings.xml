@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 	<string name="godot_editor_name_string">Godot Editor 4.x</string>
-
+        <string name="ask_for_error_log">do you want log?</string>
+	<string name="copyright_info">https://github.com/godotengine/godot</string>
 	<string name="denied_storage_permission_error_msg">Missing storage access permission!</string>
 </resources>
