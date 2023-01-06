@@ -45,6 +45,11 @@
 #include "core/io/dir_access.h"
 #include "core/version.h"
 
+#include "modules/modules_enabled.gen.h"
+#ifdef MODULE_GDSCRIPT_ENABLED
+#include "modules/gdscript/gdscript_cache.h"
+#endif
+
 #define _printerr() ERR_PRINT(String(res_path + ":" + itos(lines) + " - Parse Error: " + error_text).utf8().get_data());
 
 ///
@@ -486,6 +491,14 @@ Error ResourceLoaderText::load() {
 
 		} else {
 			Ref<Resource> res = ResourceLoader::load(path, type);
+
+#ifdef MODULE_GDSCRIPT_ENABLED
+			// GDScript has a way to load cyclic dependencies
+			if (res.is_null() && ResourceLoader::get_resource_type(path) == "GDScript") {
+				Error err = OK;
+				res = GDScriptCache::get_shallow_script(path, err);
+			}
+#endif
 
 			if (res.is_null()) {
 				if (ResourceLoader::get_abort_on_missing_resources()) {
