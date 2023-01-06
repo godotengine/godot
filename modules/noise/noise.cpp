@@ -30,11 +30,13 @@
 
 #include "noise.h"
 
+#include <float.h>
+
 Ref<Image> Noise::get_seamless_image(int p_width, int p_height, bool p_invert, bool p_in_3d_space, real_t p_blend_skirt) const {
 	ERR_FAIL_COND_V(p_width <= 0 || p_height <= 0, Ref<Image>());
 
-	int skirt_width = p_width * p_blend_skirt;
-	int skirt_height = p_height * p_blend_skirt;
+	int skirt_width = MAX(1, p_width * p_blend_skirt);
+	int skirt_height = MAX(1, p_height * p_blend_skirt);
 	int src_width = p_width + skirt_width;
 	int src_height = p_height + skirt_height;
 
@@ -67,8 +69,8 @@ Ref<Image> Noise::get_image(int p_width, int p_height, bool p_invert, bool p_in_
 	// Get all values and identify min/max values.
 	Vector<real_t> values;
 	values.resize(p_width * p_height);
-	real_t min_val = 1000;
-	real_t max_val = -1000;
+	real_t min_val = FLT_MAX;
+	real_t max_val = -FLT_MAX;
 
 	for (int y = 0, i = 0; y < p_height; y++) {
 		for (int x = 0; x < p_width; x++, i++) {
