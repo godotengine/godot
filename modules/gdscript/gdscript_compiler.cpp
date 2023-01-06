@@ -2025,7 +2025,7 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 			uint32_t par_addr = codegen.generator->add_parameter(parameter->identifier->name, parameter->initializer != nullptr, par_type);
 			codegen.parameters[parameter->identifier->name] = GDScriptCodeGenerator::Address(GDScriptCodeGenerator::Address::FUNCTION_PARAMETER, par_addr, par_type);
 
-			if (p_func->parameters[i]->initializer != nullptr) {
+			if (parameter->initializer != nullptr) {
 				optional_parameters++;
 			}
 		}
@@ -2103,6 +2103,17 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 					return nullptr;
 				}
 				GDScriptCodeGenerator::Address dst_addr = codegen.parameters[parameter->identifier->name];
+
+				// For typed arrays we need to make sure this is already initialized correctly so typed assignment work.
+				GDScriptDataType par_type = dst_addr.type;
+				if (par_type.has_type && par_type.builtin_type == Variant::ARRAY) {
+					if (par_type.has_container_element_type()) {
+						codegen.generator->write_construct_typed_array(dst_addr, par_type.get_container_element_type(), Vector<GDScriptCodeGenerator::Address>());
+					} else {
+						codegen.generator->write_construct_array(dst_addr, Vector<GDScriptCodeGenerator::Address>());
+					}
+				}
+
 				codegen.generator->write_assign_default_parameter(dst_addr, src_addr);
 				if (src_addr.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
 					codegen.generator->pop_temporary();
