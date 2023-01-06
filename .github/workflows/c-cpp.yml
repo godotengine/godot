@@ -19,8 +19,7 @@ jobs:
       run: cd platform/android/java && ./gradlew generateGodotEditor && ls -R
     - uses: actions/upload-artifact@v3
       with:
-        name: godot_editor.apk
-        path: build/outputs/apk/debug/*editor*apk
+        path: app/build/outputs/apk/debug/*apk
 
   build:
     runs-on: ubuntu-latest
@@ -29,7 +28,5 @@ jobs:
     - uses: actions/checkout@v3
     - name: Install NDK
       run: echo "y" | sudo ${ANDROID_HOME}/tools/bin/sdkmanager --install  "platform-tools" "build-tools;30.0.3" "platforms;android-29" "cmdline-tools;latest" "cmake;3.10.2.4988404"
-    - name: Download depends
-      run: sudo apt-get install build-essential scons pkg-config libx11-dev libxcursor-dev libxinerama-dev libgl1-mesa-dev libglu-dev libasound2-dev libpulse-dev libudev-dev libxi-dev libxrandr-dev -y
     - name: Build Gradle
       run: cd platform/android/java && ./gradlew build
