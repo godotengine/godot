@@ -2338,7 +2338,7 @@ void CodeEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_code_completion_enabled"), &CodeEdit::is_code_completion_enabled);
 
 	ClassDB::bind_method(D_METHOD("set_code_completion_prefixes", "prefixes"), &CodeEdit::set_code_completion_prefixes);
-	ClassDB::bind_method(D_METHOD("get_code_comletion_prefixes"), &CodeEdit::get_code_completion_prefixes);
+	ClassDB::bind_method(D_METHOD("get_code_completion_prefixes"), &CodeEdit::get_code_completion_prefixes);
 
 	// Overridable
 
@@ -2382,7 +2382,7 @@ void CodeEdit::_bind_methods() {
 
 	ADD_GROUP("Code Completion", "code_completion_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "code_completion_enabled"), "set_code_completion_enabled", "is_code_completion_enabled");
-	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "code_completion_prefixes"), "set_code_completion_prefixes", "get_code_comletion_prefixes");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "code_completion_prefixes"), "set_code_completion_prefixes", "get_code_completion_prefixes");
 
 	ADD_GROUP("Indentation", "indent_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "indent_size"), "set_indent_size", "get_indent_size");

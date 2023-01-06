@@ -448,7 +448,7 @@
 		<member name="code_completion_enabled" type="bool" setter="set_code_completion_enabled" getter="is_code_completion_enabled" default="false">
 			Sets whether code completion is allowed.
 		</member>
-		<member name="code_completion_prefixes" type="String[]" setter="set_code_completion_prefixes" getter="get_code_comletion_prefixes" default="[]">
+		<member name="code_completion_prefixes" type="String[]" setter="set_code_completion_prefixes" getter="get_code_completion_prefixes" default="[]">
 			Sets prefixes that will trigger code completion.
 		</member>
 		<member name="delimiter_comments" type="String[]" setter="set_comment_delimiters" getter="get_comment_delimiters" default="[]">
