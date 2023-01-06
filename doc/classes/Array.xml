@@ -40,6 +40,7 @@
 		[/codeblocks]
 		[b]Note:[/b] Concatenating with the [code]+=[/code] operator will create a new array, which has a cost. If you want to append another array to an existing array, [method append_array] is more efficient.
 		[b]Note:[/b] Arrays are always passed by reference. To get a copy of an array that can be modified independently of the original array, use [method duplicate].
+		[b]Note:[/b] Erasing elements while iterating over arrays is [b]not[/b] supported and will result in unpredictable behavior.
 		[b]Note:[/b] When declaring an array with [code]const[/code], the array itself can still be mutated by defining the values at individual indices or pushing/removing elements. Using [code]const[/code] will only prevent assigning the constant with another value after it was initialized.
 	</description>
 	<tutorials>
@@ -253,6 +254,7 @@
 				Removes the first occurrence of a value from the array. If the value does not exist in the array, nothing happens. To remove an element by index, use [method remove_at] instead.
 				[b]Note:[/b] This method acts in-place and doesn't return a value.
 				[b]Note:[/b] On large arrays, this method will be slower if the removed element is close to the beginning of the array (index 0). This is because all elements placed after the removed element have to be reindexed.
+				[b]Note:[/b] Do not erase entries while iterating over the array.
 			</description>
 		</method>
 		<method name="fill">
