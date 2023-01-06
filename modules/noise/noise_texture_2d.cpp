@@ -88,7 +88,7 @@ void NoiseTexture2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "in_3d_space"), "set_in_3d_space", "is_in_3d_space");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "generate_mipmaps"), "set_generate_mipmaps", "is_generating_mipmaps");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "seamless"), "set_seamless", "get_seamless");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "seamless_blend_skirt", PROPERTY_HINT_RANGE, "0.05,1,0.001"), "set_seamless_blend_skirt", "get_seamless_blend_skirt");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "seamless_blend_skirt", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_seamless_blend_skirt", "get_seamless_blend_skirt");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "as_normal_map"), "set_as_normal_map", "is_normal_map");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bump_strength", PROPERTY_HINT_RANGE, "0,32,0.1,or_greater"), "set_bump_strength", "get_bump_strength");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "color_ramp", PROPERTY_HINT_RESOURCE_TYPE, "Gradient"), "set_color_ramp", "get_color_ramp");
@@ -182,7 +182,7 @@ Ref<Image> NoiseTexture2D::_modulate_with_gradient(Ref<Image> p_image, Ref<Gradi
 	for (int row = 0; row < height; row++) {
 		for (int col = 0; col < width; col++) {
 			Color pixel_color = p_image->get_pixel(col, row);
-			Color ramp_color = color_ramp->get_color_at_offset(pixel_color.get_luminance());
+			Color ramp_color = p_gradient->get_color_at_offset(pixel_color.get_luminance());
 			new_image->set_pixel(col, row, ramp_color);
 		}
 	}
@@ -296,7 +296,7 @@ bool NoiseTexture2D::get_seamless() {
 }
 
 void NoiseTexture2D::set_seamless_blend_skirt(real_t p_blend_skirt) {
-	ERR_FAIL_COND(p_blend_skirt < 0.05 || p_blend_skirt > 1);
+	ERR_FAIL_COND(p_blend_skirt < 0 || p_blend_skirt > 1);
 
 	if (p_blend_skirt == seamless_blend_skirt) {
 		return;
