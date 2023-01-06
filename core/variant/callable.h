@@ -98,6 +98,7 @@ public:
 
 	template <typename... VarArgs>
 	Callable bind(VarArgs... p_args);
+	Callable bindv(const Array &p_arguments);
 
 	Callable bindp(const Variant **p_arguments, int p_argcount) const;
 	Callable unbind(int p_argcount) const;

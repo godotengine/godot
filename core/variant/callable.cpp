@@ -102,6 +102,20 @@ Callable Callable::bindp(const Variant **p_arguments, int p_argcount) const {
 	}
 	return Callable(memnew(CallableCustomBind(*this, args)));
 }
+
+Callable Callable::bindv(const Array &p_arguments) {
+	if (p_arguments.is_empty()) {
+		return *this; // No point in creating a new callable if nothing is bound.
+	}
+
+	Vector<Variant> args;
+	args.resize(p_arguments.size());
+	for (int i = 0; i < p_arguments.size(); i++) {
+		args.write[i] = p_arguments[i];
+	}
+	return Callable(memnew(CallableCustomBind(*this, args)));
+}
+
 Callable Callable::unbind(int p_argcount) const {
 	return Callable(memnew(CallableCustomUnbind(*this, p_argcount)));
 }
