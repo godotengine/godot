@@ -10,8 +10,5 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: configure
-      run: |
-        sdkmanager
-        sudo apt-get install build-essential scons pkg-config libx11-dev libxcursor-dev libxinerama-dev libgl1-mesa-dev libglu-dev libasound2-dev libpulse-dev libudev-dev libxi-dev libxrandr-dev yasm -y
-        
+    - name: Install NDK
+      run: echo "y" | sudo ${ANDROID_HOME}/tools/bin/sdkmanager --install "ndk;20.0.5594570" --sdk_root=${ANDROID_SDK_ROOT}
