@@ -142,10 +142,11 @@ void InspectorDock::_menu_option_confirm(int p_option, bool p_confirmed) {
 						ti->set_text(0, bool(EDITOR_GET("interface/inspector/capitalize_properties")) ? propname.capitalize() : propname);
 					}
 
+					unique_resources_label->set_text(TTR("The following resources will be duplicated and embedded within this resource/object."));
 					unique_resources_confirmation->popup_centered();
 				} else {
-					unique_resources_confirmation->set_text(TTR("This object has no resources."));
 					current_option = -1;
+					unique_resources_label->set_text(TTR("This object has no resources."));
 					unique_resources_confirmation->popup_centered();
 				}
 			} else {
@@ -734,9 +735,8 @@ InspectorDock::InspectorDock(EditorData &p_editor_data) {
 	VBoxContainer *container = memnew(VBoxContainer);
 	unique_resources_confirmation->add_child(container);
 
-	Label *top_label = memnew(Label);
-	top_label->set_text(TTR("The following resources will be duplicated and embedded within this resource/object."));
-	container->add_child(top_label);
+	unique_resources_label = memnew(Label);
+	container->add_child(unique_resources_label);
 
 	unique_resources_list_tree = memnew(Tree);
 	unique_resources_list_tree->set_hide_root(true);
