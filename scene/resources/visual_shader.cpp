@@ -403,6 +403,7 @@ void VisualShaderNode::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(PORT_TYPE_SCALAR);
 	BIND_ENUM_CONSTANT(PORT_TYPE_SCALAR_INT);
+	BIND_ENUM_CONSTANT(PORT_TYPE_SCALAR_UINT);
 	BIND_ENUM_CONSTANT(PORT_TYPE_VECTOR_2D);
 	BIND_ENUM_CONSTANT(PORT_TYPE_VECTOR_3D);
 	BIND_ENUM_CONSTANT(PORT_TYPE_VECTOR_4D);
@@ -951,7 +952,7 @@ bool VisualShader::can_connect_nodes(Type p_type, int p_from_node, int p_from_po
 }
 
 bool VisualShader::is_port_types_compatible(int p_a, int p_b) const {
-	return MAX(0, p_a - 5) == (MAX(0, p_b - 5));
+	return MAX(0, p_a - (int)VisualShaderNode::PORT_TYPE_BOOLEAN) == (MAX(0, p_b - (int)VisualShaderNode::PORT_TYPE_BOOLEAN));
 }
 
 void VisualShader::connect_nodes_forced(Type p_type, int p_from_node, int p_from_port, int p_to_node, int p_to_port) {
@@ -1196,6 +1197,9 @@ String VisualShader::generate_preview_shader(Type p_type, int p_node, int p_port
 			shader_code += "	COLOR.rgb = vec3(n_out" + itos(p_node) + "p" + itos(p_port) + ");\n";
 		} break;
 		case VisualShaderNode::PORT_TYPE_SCALAR_INT: {
+			shader_code += "	COLOR.rgb = vec3(float(n_out" + itos(p_node) + "p" + itos(p_port) + "));\n";
+		} break;
+		case VisualShaderNode::PORT_TYPE_SCALAR_UINT: {
 			shader_code += "	COLOR.rgb = vec3(float(n_out" + itos(p_node) + "p" + itos(p_port) + "));\n";
 		} break;
 		case VisualShaderNode::PORT_TYPE_BOOLEAN: {
@@ -1689,6 +1693,9 @@ Error VisualShader::_write_node(Type type, StringBuilder *p_global_code, StringB
 							case VisualShaderNode::PORT_TYPE_SCALAR_INT: {
 								inputs[i] = "float(" + src_var + ")";
 							} break;
+							case VisualShaderNode::PORT_TYPE_SCALAR_UINT: {
+								inputs[i] = "float(" + src_var + ")";
+							} break;
 							case VisualShaderNode::PORT_TYPE_BOOLEAN: {
 								inputs[i] = "(" + src_var + " ? 1.0 : 0.0)";
 							} break;
@@ -1710,17 +1717,44 @@ Error VisualShader::_write_node(Type type, StringBuilder *p_global_code, StringB
 							case VisualShaderNode::PORT_TYPE_SCALAR: {
 								inputs[i] = "int(" + src_var + ")";
 							} break;
+							case VisualShaderNode::PORT_TYPE_SCALAR_UINT: {
+								inputs[i] = "int(" + src_var + ")";
+							} break;
 							case VisualShaderNode::PORT_TYPE_BOOLEAN: {
 								inputs[i] = "(" + src_var + " ? 1 : 0)";
 							} break;
 							case VisualShaderNode::PORT_TYPE_VECTOR_2D: {
-								inputs[i] = "dot(float(" + src_var + "), vec2(0.5, 0.5))";
+								inputs[i] = "int(" + src_var + ".x)";
 							} break;
 							case VisualShaderNode::PORT_TYPE_VECTOR_3D: {
-								inputs[i] = "dot(float(" + src_var + "), vec3(0.333333, 0.333333, 0.333333))";
+								inputs[i] = "int(" + src_var + ".x)";
 							} break;
 							case VisualShaderNode::PORT_TYPE_VECTOR_4D: {
-								inputs[i] = "dot(float(" + src_var + "), vec4(0.25, 0.25, 0.25, 0.25))";
+								inputs[i] = "int(" + src_var + ".x)";
+							} break;
+							default:
+								break;
+						}
+					} break;
+					case VisualShaderNode::PORT_TYPE_SCALAR_UINT: {
+						switch (out_type) {
+							case VisualShaderNode::PORT_TYPE_SCALAR: {
+								inputs[i] = "uint(" + src_var + ")";
+							} break;
+							case VisualShaderNode::PORT_TYPE_SCALAR_INT: {
+								inputs[i] = "uint(" + src_var + ")";
+							} break;
+							case VisualShaderNode::PORT_TYPE_BOOLEAN: {
+								inputs[i] = "(" + src_var + " ? 1u : 0u)";
+							} break;
+							case VisualShaderNode::PORT_TYPE_VECTOR_2D: {
+								inputs[i] = "uint(" + src_var + ".x)";
+							} break;
+							case VisualShaderNode::PORT_TYPE_VECTOR_3D: {
+								inputs[i] = "uint(" + src_var + ".x)";
+							} break;
+							case VisualShaderNode::PORT_TYPE_VECTOR_4D: {
+								inputs[i] = "uint(" + src_var + ".x)";
 							} break;
 							default:
 								break;
@@ -1733,6 +1767,9 @@ Error VisualShader::_write_node(Type type, StringBuilder *p_global_code, StringB
 							} break;
 							case VisualShaderNode::PORT_TYPE_SCALAR_INT: {
 								inputs[i] = src_var + " > 0 ? true : false";
+							} break;
+							case VisualShaderNode::PORT_TYPE_SCALAR_UINT: {
+								inputs[i] = src_var + " > 0u ? true : false";
 							} break;
 							case VisualShaderNode::PORT_TYPE_VECTOR_2D: {
 								inputs[i] = "all(bvec2(" + src_var + "))";
@@ -1755,6 +1792,9 @@ Error VisualShader::_write_node(Type type, StringBuilder *p_global_code, StringB
 							case VisualShaderNode::PORT_TYPE_SCALAR_INT: {
 								inputs[i] = "vec2(float(" + src_var + "))";
 							} break;
+							case VisualShaderNode::PORT_TYPE_SCALAR_UINT: {
+								inputs[i] = "vec2(float(" + src_var + "))";
+							} break;
 							case VisualShaderNode::PORT_TYPE_BOOLEAN: {
 								inputs[i] = "vec2(" + src_var + " ? 1.0 : 0.0)";
 							} break;
@@ -1773,6 +1813,9 @@ Error VisualShader::_write_node(Type type, StringBuilder *p_global_code, StringB
 								inputs[i] = "vec3(" + src_var + ")";
 							} break;
 							case VisualShaderNode::PORT_TYPE_SCALAR_INT: {
+								inputs[i] = "vec3(float(" + src_var + "))";
+							} break;
+							case VisualShaderNode::PORT_TYPE_SCALAR_UINT: {
 								inputs[i] = "vec3(float(" + src_var + "))";
 							} break;
 							case VisualShaderNode::PORT_TYPE_BOOLEAN: {
@@ -1794,6 +1837,9 @@ Error VisualShader::_write_node(Type type, StringBuilder *p_global_code, StringB
 								inputs[i] = "vec4(" + src_var + ")";
 							} break;
 							case VisualShaderNode::PORT_TYPE_SCALAR_INT: {
+								inputs[i] = "vec4(float(" + src_var + "))";
+							} break;
+							case VisualShaderNode::PORT_TYPE_SCALAR_UINT: {
 								inputs[i] = "vec4(float(" + src_var + "))";
 							} break;
 							case VisualShaderNode::PORT_TYPE_BOOLEAN: {
@@ -1826,7 +1872,11 @@ Error VisualShader::_write_node(Type type, StringBuilder *p_global_code, StringB
 			} else if (defval.get_type() == Variant::INT) {
 				int val = defval;
 				inputs[i] = "n_in" + itos(p_node) + "p" + itos(i);
-				node_code += "	int " + inputs[i] + " = " + itos(val) + ";\n";
+				if (vsnode->get_input_port_type(i) == VisualShaderNode::PORT_TYPE_SCALAR_UINT) {
+					node_code += "	uint " + inputs[i] + " = " + itos(val) + "u;\n";
+				} else {
+					node_code += "	int " + inputs[i] + " = " + itos(val) + ";\n";
+				}
 			} else if (defval.get_type() == Variant::BOOL) {
 				bool val = defval;
 				inputs[i] = "n_in" + itos(p_node) + "p" + itos(i);
@@ -1906,6 +1956,9 @@ Error VisualShader::_write_node(Type type, StringBuilder *p_global_code, StringB
 				case VisualShaderNode::PORT_TYPE_SCALAR_INT:
 					outputs[i] = "int " + var_name;
 					break;
+				case VisualShaderNode::PORT_TYPE_SCALAR_UINT:
+					outputs[i] = "uint " + var_name;
+					break;
 				case VisualShaderNode::PORT_TYPE_VECTOR_2D:
 					outputs[i] = "vec2 " + var_name;
 					break;
@@ -1950,6 +2003,9 @@ Error VisualShader::_write_node(Type type, StringBuilder *p_global_code, StringB
 					break;
 				case VisualShaderNode::PORT_TYPE_SCALAR_INT:
 					r_code += "	int " + outputs[i] + ";\n";
+					break;
+				case VisualShaderNode::PORT_TYPE_SCALAR_UINT:
+					r_code += "	uint " + outputs[i] + ";\n";
 					break;
 				case VisualShaderNode::PORT_TYPE_VECTOR_2D:
 					r_code += "	vec2 " + outputs[i] + ";\n";
@@ -2214,6 +2270,12 @@ void VisualShader::_update_shader() const {
 					}
 					global_code += "int ";
 					break;
+				case VaryingType::VARYING_TYPE_UINT:
+					if (E.value.mode == VaryingMode::VARYING_MODE_VERTEX_TO_FRAG_LIGHT) {
+						global_code += "flat ";
+					}
+					global_code += "uint ";
+					break;
 				case VaryingType::VARYING_TYPE_VECTOR_2D:
 					global_code += "vec2 ";
 					break;
@@ -2282,6 +2344,9 @@ void VisualShader::_update_shader() const {
 								break;
 							case VaryingType::VARYING_TYPE_INT:
 								code2 += "0";
+								break;
+							case VaryingType::VARYING_TYPE_UINT:
+								code2 += "0u";
 								break;
 							case VaryingType::VARYING_TYPE_VECTOR_2D:
 								code2 += "vec2(0.0)";
@@ -2583,6 +2648,7 @@ void VisualShader::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(VARYING_TYPE_FLOAT);
 	BIND_ENUM_CONSTANT(VARYING_TYPE_INT);
+	BIND_ENUM_CONSTANT(VARYING_TYPE_UINT);
 	BIND_ENUM_CONSTANT(VARYING_TYPE_VECTOR_2D);
 	BIND_ENUM_CONSTANT(VARYING_TYPE_VECTOR_3D);
 	BIND_ENUM_CONSTANT(VARYING_TYPE_VECTOR_4D);
@@ -2648,7 +2714,7 @@ const VisualShaderNodeInput::Port VisualShaderNodeInput::ports[] = {
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_VECTOR_3D, "node_position_world", "NODE_POSITION_WORLD" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_VECTOR_3D, "camera_position_world", "CAMERA_POSITION_WORLD" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_VECTOR_3D, "camera_direction_world", "CAMERA_DIRECTION_WORLD" },
-	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_SCALAR_INT, "camera_visible_layers", "CAMERA_VISIBLE_LAYERS" },
+	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_SCALAR_UINT, "camera_visible_layers", "CAMERA_VISIBLE_LAYERS" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_VECTOR_3D, "node_position_view", "NODE_POSITION_VIEW" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_VECTOR_4D, "custom0", "CUSTOM0" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_VERTEX, VisualShaderNode::PORT_TYPE_VECTOR_4D, "custom1", "CUSTOM1" },
@@ -2685,7 +2751,7 @@ const VisualShaderNodeInput::Port VisualShaderNodeInput::ports[] = {
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_VECTOR_3D, "node_position_world", "NODE_POSITION_WORLD" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_VECTOR_3D, "camera_position_world", "CAMERA_POSITION_WORLD" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_VECTOR_3D, "camera_direction_world", "CAMERA_DIRECTION_WORLD" },
-	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_SCALAR_INT, "camera_visible_layers", "CAMERA_VISIBLE_LAYERS" },
+	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_SCALAR_UINT, "camera_visible_layers", "CAMERA_VISIBLE_LAYERS" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_VECTOR_3D, "node_position_view", "NODE_POSITION_VIEW" },
 
 	// Node3D, Light
@@ -2776,7 +2842,9 @@ const VisualShaderNodeInput::Port VisualShaderNodeInput::ports[] = {
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_START, VisualShaderNode::PORT_TYPE_TRANSFORM, "transform", "TRANSFORM" },
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_START, VisualShaderNode::PORT_TYPE_SCALAR, "delta", "DELTA" },
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_START, VisualShaderNode::PORT_TYPE_SCALAR, "lifetime", "LIFETIME" },
-	{ Shader::MODE_PARTICLES, VisualShader::TYPE_START, VisualShaderNode::PORT_TYPE_SCALAR_INT, "index", "INDEX" },
+	{ Shader::MODE_PARTICLES, VisualShader::TYPE_START, VisualShaderNode::PORT_TYPE_SCALAR_UINT, "index", "INDEX" },
+	{ Shader::MODE_PARTICLES, VisualShader::TYPE_START, VisualShaderNode::PORT_TYPE_SCALAR_UINT, "number", "NUMBER" },
+	{ Shader::MODE_PARTICLES, VisualShader::TYPE_START, VisualShaderNode::PORT_TYPE_SCALAR_UINT, "random_seed", "RANDOM_SEED" },
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_START, VisualShaderNode::PORT_TYPE_TRANSFORM, "emission_transform", "EMISSION_TRANSFORM" },
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_START, VisualShaderNode::PORT_TYPE_SCALAR, "time", "TIME" },
 
@@ -2790,7 +2858,9 @@ const VisualShaderNodeInput::Port VisualShaderNodeInput::ports[] = {
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_START_CUSTOM, VisualShaderNode::PORT_TYPE_TRANSFORM, "transform", "TRANSFORM" },
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_START_CUSTOM, VisualShaderNode::PORT_TYPE_SCALAR, "delta", "DELTA" },
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_START_CUSTOM, VisualShaderNode::PORT_TYPE_SCALAR, "lifetime", "LIFETIME" },
-	{ Shader::MODE_PARTICLES, VisualShader::TYPE_START_CUSTOM, VisualShaderNode::PORT_TYPE_SCALAR_INT, "index", "INDEX" },
+	{ Shader::MODE_PARTICLES, VisualShader::TYPE_START_CUSTOM, VisualShaderNode::PORT_TYPE_SCALAR_UINT, "index", "INDEX" },
+	{ Shader::MODE_PARTICLES, VisualShader::TYPE_START_CUSTOM, VisualShaderNode::PORT_TYPE_SCALAR_UINT, "number", "NUMBER" },
+	{ Shader::MODE_PARTICLES, VisualShader::TYPE_START_CUSTOM, VisualShaderNode::PORT_TYPE_SCALAR_UINT, "random_seed", "RANDOM_SEED" },
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_START_CUSTOM, VisualShaderNode::PORT_TYPE_TRANSFORM, "emission_transform", "EMISSION_TRANSFORM" },
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_START_CUSTOM, VisualShaderNode::PORT_TYPE_SCALAR, "time", "TIME" },
 
@@ -2804,7 +2874,9 @@ const VisualShaderNodeInput::Port VisualShaderNodeInput::ports[] = {
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_PROCESS, VisualShaderNode::PORT_TYPE_TRANSFORM, "transform", "TRANSFORM" },
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_PROCESS, VisualShaderNode::PORT_TYPE_SCALAR, "delta", "DELTA" },
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_PROCESS, VisualShaderNode::PORT_TYPE_SCALAR, "lifetime", "LIFETIME" },
-	{ Shader::MODE_PARTICLES, VisualShader::TYPE_PROCESS, VisualShaderNode::PORT_TYPE_SCALAR_INT, "index", "INDEX" },
+	{ Shader::MODE_PARTICLES, VisualShader::TYPE_PROCESS, VisualShaderNode::PORT_TYPE_SCALAR_UINT, "index", "INDEX" },
+	{ Shader::MODE_PARTICLES, VisualShader::TYPE_PROCESS, VisualShaderNode::PORT_TYPE_SCALAR_UINT, "number", "NUMBER" },
+	{ Shader::MODE_PARTICLES, VisualShader::TYPE_PROCESS, VisualShaderNode::PORT_TYPE_SCALAR_UINT, "random_seed", "RANDOM_SEED" },
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_PROCESS, VisualShaderNode::PORT_TYPE_TRANSFORM, "emission_transform", "EMISSION_TRANSFORM" },
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_PROCESS, VisualShaderNode::PORT_TYPE_SCALAR, "time", "TIME" },
 
@@ -2818,7 +2890,9 @@ const VisualShaderNodeInput::Port VisualShaderNodeInput::ports[] = {
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_PROCESS_CUSTOM, VisualShaderNode::PORT_TYPE_TRANSFORM, "transform", "TRANSFORM" },
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_PROCESS_CUSTOM, VisualShaderNode::PORT_TYPE_SCALAR, "delta", "DELTA" },
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_PROCESS_CUSTOM, VisualShaderNode::PORT_TYPE_SCALAR, "lifetime", "LIFETIME" },
-	{ Shader::MODE_PARTICLES, VisualShader::TYPE_PROCESS_CUSTOM, VisualShaderNode::PORT_TYPE_SCALAR_INT, "index", "INDEX" },
+	{ Shader::MODE_PARTICLES, VisualShader::TYPE_PROCESS_CUSTOM, VisualShaderNode::PORT_TYPE_SCALAR_UINT, "index", "INDEX" },
+	{ Shader::MODE_PARTICLES, VisualShader::TYPE_PROCESS_CUSTOM, VisualShaderNode::PORT_TYPE_SCALAR_UINT, "number", "NUMBER" },
+	{ Shader::MODE_PARTICLES, VisualShader::TYPE_PROCESS_CUSTOM, VisualShaderNode::PORT_TYPE_SCALAR_UINT, "random_seed", "RANDOM_SEED" },
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_PROCESS_CUSTOM, VisualShaderNode::PORT_TYPE_TRANSFORM, "emission_transform", "EMISSION_TRANSFORM" },
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_PROCESS_CUSTOM, VisualShaderNode::PORT_TYPE_SCALAR, "time", "TIME" },
 
@@ -2834,7 +2908,9 @@ const VisualShaderNodeInput::Port VisualShaderNodeInput::ports[] = {
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_COLLIDE, VisualShaderNode::PORT_TYPE_TRANSFORM, "transform", "TRANSFORM" },
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_COLLIDE, VisualShaderNode::PORT_TYPE_SCALAR, "delta", "DELTA" },
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_COLLIDE, VisualShaderNode::PORT_TYPE_SCALAR, "lifetime", "LIFETIME" },
-	{ Shader::MODE_PARTICLES, VisualShader::TYPE_COLLIDE, VisualShaderNode::PORT_TYPE_SCALAR_INT, "index", "INDEX" },
+	{ Shader::MODE_PARTICLES, VisualShader::TYPE_COLLIDE, VisualShaderNode::PORT_TYPE_SCALAR_UINT, "index", "INDEX" },
+	{ Shader::MODE_PARTICLES, VisualShader::TYPE_COLLIDE, VisualShaderNode::PORT_TYPE_SCALAR_UINT, "number", "NUMBER" },
+	{ Shader::MODE_PARTICLES, VisualShader::TYPE_COLLIDE, VisualShaderNode::PORT_TYPE_SCALAR_UINT, "random_seed", "RANDOM_SEED" },
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_COLLIDE, VisualShaderNode::PORT_TYPE_TRANSFORM, "emission_transform", "EMISSION_TRANSFORM" },
 	{ Shader::MODE_PARTICLES, VisualShader::TYPE_COLLIDE, VisualShaderNode::PORT_TYPE_SCALAR, "time", "TIME" },
 
@@ -3252,6 +3328,8 @@ int VisualShaderNodeParameterRef::get_output_port_count() const {
 			return 1;
 		case PARAMETER_TYPE_INT:
 			return 1;
+		case PARAMETER_TYPE_UINT:
+			return 1;
 		case PARAMETER_TYPE_BOOLEAN:
 			return 1;
 		case PARAMETER_TYPE_VECTOR2:
@@ -3278,6 +3356,8 @@ VisualShaderNodeParameterRef::PortType VisualShaderNodeParameterRef::get_output_
 			return PortType::PORT_TYPE_SCALAR;
 		case PARAMETER_TYPE_INT:
 			return PortType::PORT_TYPE_SCALAR_INT;
+		case PARAMETER_TYPE_UINT:
+			return PortType::PORT_TYPE_SCALAR_UINT;
 		case PARAMETER_TYPE_BOOLEAN:
 			return PortType::PORT_TYPE_BOOLEAN;
 		case PARAMETER_TYPE_VECTOR2:
@@ -3308,6 +3388,8 @@ String VisualShaderNodeParameterRef::get_output_port_name(int p_port) const {
 		case PARAMETER_TYPE_FLOAT:
 			return "";
 		case PARAMETER_TYPE_INT:
+			return "";
+		case PARAMETER_TYPE_UINT:
 			return "";
 		case PARAMETER_TYPE_BOOLEAN:
 			return "";
@@ -3403,6 +3485,8 @@ VisualShaderNodeParameterRef::PortType VisualShaderNodeParameterRef::get_port_ty
 				return PORT_TYPE_SCALAR;
 			case PARAMETER_TYPE_INT:
 				return PORT_TYPE_SCALAR_INT;
+			case PARAMETER_TYPE_UINT:
+				return PORT_TYPE_SCALAR_UINT;
 			case UNIFORM_TYPE_SAMPLER:
 				return PORT_TYPE_SAMPLER;
 			case PARAMETER_TYPE_VECTOR2:
@@ -4659,6 +4743,8 @@ String VisualShaderNodeVarying::get_type_str() const {
 			return "float";
 		case VisualShader::VARYING_TYPE_INT:
 			return "int";
+		case VisualShader::VARYING_TYPE_UINT:
+			return "uint";
 		case VisualShader::VARYING_TYPE_VECTOR_2D:
 			return "vec2";
 		case VisualShader::VARYING_TYPE_VECTOR_3D:
@@ -4679,6 +4765,8 @@ VisualShaderNodeVarying::PortType VisualShaderNodeVarying::get_port_type(VisualS
 	switch (p_type) {
 		case VisualShader::VARYING_TYPE_INT:
 			return PORT_TYPE_SCALAR_INT;
+		case VisualShader::VARYING_TYPE_UINT:
+			return PORT_TYPE_SCALAR_UINT;
 		case VisualShader::VARYING_TYPE_VECTOR_2D:
 			return PORT_TYPE_VECTOR_2D;
 		case VisualShader::VARYING_TYPE_VECTOR_3D:
@@ -4810,6 +4898,9 @@ String VisualShaderNodeVaryingGetter::generate_code(Shader::Mode p_mode, VisualS
 				break;
 			case VisualShader::VARYING_TYPE_INT:
 				from = "0";
+				break;
+			case VisualShader::VARYING_TYPE_UINT:
+				from = "0u";
 				break;
 			case VisualShader::VARYING_TYPE_VECTOR_2D:
 				from = "vec2(0.0)";
