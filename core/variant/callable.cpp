@@ -151,6 +151,14 @@ StringName Callable::get_method() const {
 	return method;
 }
 
+int Callable::get_bound_arguments_count() const {
+	if (!is_null() && is_custom()) {
+		return custom->get_bound_arguments_count();
+	} else {
+		return 0;
+	}
+}
+
 CallableCustom *Callable::get_custom() const {
 	ERR_FAIL_COND_V_MSG(!is_custom(), nullptr,
 			vformat("Can't get custom on non-CallableCustom \"%s\".", operator String()));
@@ -356,6 +364,10 @@ Error CallableCustom::rpc(int p_peer_id, const Variant **p_arguments, int p_argc
 
 const Callable *CallableCustom::get_base_comparator() const {
 	return nullptr;
+}
+
+int CallableCustom::get_bound_arguments_count() const {
+	return 0;
 }
 
 CallableCustom::CallableCustom() {
