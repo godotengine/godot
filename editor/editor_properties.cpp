@@ -3847,7 +3847,87 @@ void EditorPropertyResource::_resource_selected(const Ref<Resource> &p_resource,
 	}
 }
 
+static bool _find_recursive_resources(const Variant &v, HashSet<Resource *> &resources_found) {
+	switch (v.get_type()) {
+		case Variant::ARRAY: {
+			Array a = v;
+			for (int i = 0; i < a.size(); i++) {
+				Variant v2 = a[i];
+				if (v2.get_type() != Variant::ARRAY && v2.get_type() != Variant::DICTIONARY && v2.get_type() != Variant::OBJECT) {
+					continue;
+				}
+				if (_find_recursive_resources(v2, resources_found)) {
+					return true;
+				}
+			}
+		} break;
+		case Variant::DICTIONARY: {
+			Dictionary d = v;
+			List<Variant> keys;
+			d.get_key_list(&keys);
+			for (const Variant &k : keys) {
+				if (k.get_type() == Variant::ARRAY || k.get_type() == Variant::DICTIONARY || k.get_type() == Variant::OBJECT) {
+					if (_find_recursive_resources(k, resources_found)) {
+						return true;
+					}
+				}
+				Variant v2 = d[k];
+				if (v2.get_type() == Variant::ARRAY || v2.get_type() == Variant::DICTIONARY || v2.get_type() == Variant::OBJECT) {
+					if (_find_recursive_resources(v2, resources_found)) {
+						return true;
+					}
+				}
+			}
+		} break;
+		case Variant::OBJECT: {
+			Ref<Resource> r = v;
+
+			if (r.is_null()) {
+				return false;
+			}
+
+			if (resources_found.has(r.ptr())) {
+				return true;
+			}
+
+			resources_found.insert(r.ptr());
+
+			List<PropertyInfo> plist;
+			r->get_property_list(&plist);
+			for (const PropertyInfo &pinfo : plist) {
+				if (!(pinfo.usage & PROPERTY_USAGE_STORAGE)) {
+					continue;
+				}
+
+				if (pinfo.type != Variant::ARRAY && pinfo.type != Variant::DICTIONARY && pinfo.type != Variant::OBJECT) {
+					continue;
+				}
+				if (_find_recursive_resources(r->get(pinfo.name), resources_found)) {
+					return true;
+				}
+			}
+		} break;
+		default: {
+		}
+	}
+	return false;
+}
+
 void EditorPropertyResource::_resource_changed(const Ref<Resource> &p_resource) {
+	Resource *r = Object::cast_to<Resource>(get_edited_object());
+	if (r) {
+		// Check for recursive setting of resource
+		HashSet<Resource *> resources_found;
+		resources_found.insert(r);
+		bool found = _find_recursive_resources(p_resource, resources_found);
+		if (found) {
+			EditorNode::get_singleton()->show_warning(TTR("Recursion detected, unable to assign resource to property."));
+			emit_changed(get_edited_property(), Ref<Resource>());
+			update_property();
+			return;
+		}
+	}
+
 	// Make visual script the correct type.
 	Ref<Script> s = p_resource;
 
@@ -3863,7 +3943,7 @@ void EditorPropertyResource::_resource_changed(const Ref<Resource> &p_resource) 
 	// Prevent the creation of invalid ViewportTextures when possible.
 	Ref<ViewportTexture> vpt = p_resource;
 	if (vpt.is_valid()) {
-		Resource *r = Object::cast_to<Resource>(get_edited_object());
+		r = Object::cast_to<Resource>(get_edited_object());
 		if (r && r->get_path().is_resource_file()) {
 			EditorNode::get_singleton()->show_warning(TTR("Can't create a ViewportTexture on resources saved as a file.\nResource needs to belong to a scene."));
 			emit_changed(get_edited_property(), Ref<Resource>());
