@@ -4,8 +4,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build apk:
-
+  build_apk:
     runs-on: ubuntu-latest
 
     steps:
@@ -23,8 +22,7 @@ jobs:
         name: godot_editor.apk
         path: build/outputs/apk/debug/*editor*apk
 
-build:
-
+  build:
     runs-on: ubuntu-latest
 
     steps:
