@@ -654,63 +654,6 @@
 		<constant name="RENDERING_DRIVER_OPENGL3" value="1" enum="RenderingDriver">
 			The OpenGL 3 rendering driver. It uses OpenGL 3.3 Core Profile on desktop platforms, OpenGL ES 3.0 on mobile devices, and WebGL 2.0 on Web.
 		</constant>
-		<constant name="DAY_SUNDAY" value="0" enum="Weekday">
-			Sunday.
-		</constant>
-		<constant name="DAY_MONDAY" value="1" enum="Weekday">
-			Monday.
-		</constant>
-		<constant name="DAY_TUESDAY" value="2" enum="Weekday">
-			Tuesday.
-		</constant>
-		<constant name="DAY_WEDNESDAY" value="3" enum="Weekday">
-			Wednesday.
-		</constant>
-		<constant name="DAY_THURSDAY" value="4" enum="Weekday">
-			Thursday.
-		</constant>
-		<constant name="DAY_FRIDAY" value="5" enum="Weekday">
-			Friday.
-		</constant>
-		<constant name="DAY_SATURDAY" value="6" enum="Weekday">
-			Saturday.
-		</constant>
-		<constant name="MONTH_JANUARY" value="1" enum="Month">
-			January.
-		</constant>
-		<constant name="MONTH_FEBRUARY" value="2" enum="Month">
-			February.
-		</constant>
-		<constant name="MONTH_MARCH" value="3" enum="Month">
-			March.
-		</constant>
-		<constant name="MONTH_APRIL" value="4" enum="Month">
-			April.
-		</constant>
-		<constant name="MONTH_MAY" value="5" enum="Month">
-			May.
-		</constant>
-		<constant name="MONTH_JUNE" value="6" enum="Month">
-			June.
-		</constant>
-		<constant name="MONTH_JULY" value="7" enum="Month">
-			July.
-		</constant>
-		<constant name="MONTH_AUGUST" value="8" enum="Month">
-			August.
-		</constant>
-		<constant name="MONTH_SEPTEMBER" value="9" enum="Month">
-			September.
-		</constant>
-		<constant name="MONTH_OCTOBER" value="10" enum="Month">
-			October.
-		</constant>
-		<constant name="MONTH_NOVEMBER" value="11" enum="Month">
-			November.
-		</constant>
-		<constant name="MONTH_DECEMBER" value="12" enum="Month">
-			December.
-		</constant>
 		<constant name="SYSTEM_DIR_DESKTOP" value="0" enum="SystemDir">
 			Desktop directory path.
 		</constant>

@@ -1,35 +1,36 @@
-/*************************************************************************/
-/*  importer_mesh.cpp                                                    */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  importer_mesh.cpp                                                     */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "importer_mesh.h"
 
+#include "core/io/marshalls.h"
 #include "core/math/random_pcg.h"
 #include "core/math/static_raycaster.h"
 #include "scene/resources/surface_tool.h"
@@ -424,9 +425,8 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 			normal_weights[j] = 2.0; // Give some weight to normal preservation, may be worth exposing as an import setting
 		}
 
-		const float max_mesh_error = FLT_MAX; // We don't want to limit by error, just by index target
-		float scale = SurfaceTool::simplify_scale_func((const float *)merged_vertices_ptr, merged_vertex_count, sizeof(Vector3));
-		float mesh_error = 0.0f;
+		Vector<float> merged_vertices_f32 = vector3_to_float32_array(merged_vertices_ptr, merged_vertex_count);
+		float scale = SurfaceTool::simplify_scale_func(merged_vertices_f32.ptr(), merged_vertex_count, sizeof(float) * 3);
 
 		unsigned int index_target = 12; // Start with the smallest target, 4 triangles
 		unsigned int last_index_count = 0;
@@ -446,11 +446,25 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 			raycaster->commit();
 		}
 
+		const float max_mesh_error = FLT_MAX; // We don't want to limit by error, just by index target
+		float mesh_error = 0.0f;
+
 		while (index_target < index_count) {
 			PackedInt32Array new_indices;
 			new_indices.resize(index_count);
 
-			size_t new_index_count = SurfaceTool::simplify_with_attrib_func((unsigned int *)new_indices.ptrw(), (const uint32_t *)merged_indices_ptr, index_count, (const float *)merged_vertices_ptr, merged_vertex_count, sizeof(Vector3), index_target, max_mesh_error, &mesh_error, (float *)merged_normals.ptr(), normal_weights.ptr(), 3);
+			Vector<float> merged_normals_f32 = vector3_to_float32_array(merged_normals.ptr(), merged_normals.size());
+
+			size_t new_index_count = SurfaceTool::simplify_with_attrib_func(
+					(unsigned int *)new_indices.ptrw(),
+					(const uint32_t *)merged_indices_ptr, index_count,
+					merged_vertices_f32.ptr(), merged_vertex_count,
+					sizeof(float) * 3, // Vertex stride
+					index_target,
+					max_mesh_error,
+					&mesh_error,
+					merged_normals_f32.ptr(),
+					normal_weights.ptr(), 3);
 
 			if (new_index_count < last_index_count * 1.5f) {
 				index_target = index_target * 1.5f;

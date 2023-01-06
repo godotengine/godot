@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  plugin_config_dialog.cpp                                             */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  plugin_config_dialog.cpp                                              */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "plugin_config_dialog.h"
 
@@ -219,6 +219,7 @@ PluginConfigDialog::PluginConfigDialog() {
 
 	GridContainer *grid = memnew(GridContainer);
 	grid->set_columns(3);
+	grid->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	vbox->add_child(grid);
 
 	// Plugin Name
@@ -234,6 +235,7 @@ PluginConfigDialog::PluginConfigDialog() {
 	name_edit = memnew(LineEdit);
 	name_edit->connect("text_changed", callable_mp(this, &PluginConfigDialog::_on_required_text_changed));
 	name_edit->set_placeholder("MyPlugin");
+	name_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	grid->add_child(name_edit);
 
 	// Subfolder
@@ -248,6 +250,7 @@ PluginConfigDialog::PluginConfigDialog() {
 
 	subfolder_edit = memnew(LineEdit);
 	subfolder_edit->set_placeholder("\"my_plugin\" -> res://addons/my_plugin");
+	subfolder_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	subfolder_edit->connect("text_changed", callable_mp(this, &PluginConfigDialog::_on_required_text_changed));
 	grid->add_child(subfolder_edit);
 
@@ -263,6 +266,8 @@ PluginConfigDialog::PluginConfigDialog() {
 	desc_edit = memnew(TextEdit);
 	desc_edit->set_custom_minimum_size(Size2(400, 80) * EDSCALE);
 	desc_edit->set_line_wrapping_mode(TextEdit::LineWrappingMode::LINE_WRAPPING_BOUNDARY);
+	desc_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	desc_edit->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	grid->add_child(desc_edit);
 
 	// Author
@@ -276,6 +281,7 @@ PluginConfigDialog::PluginConfigDialog() {
 
 	author_edit = memnew(LineEdit);
 	author_edit->set_placeholder("Godette");
+	author_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	grid->add_child(author_edit);
 
 	// Version
@@ -289,6 +295,7 @@ PluginConfigDialog::PluginConfigDialog() {
 
 	version_edit = memnew(LineEdit);
 	version_edit->set_placeholder("1.0");
+	version_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	grid->add_child(version_edit);
 
 	// Language dropdown
@@ -326,6 +333,7 @@ PluginConfigDialog::PluginConfigDialog() {
 	script_edit = memnew(LineEdit);
 	script_edit->connect("text_changed", callable_mp(this, &PluginConfigDialog::_on_required_text_changed));
 	script_edit->set_placeholder("\"plugin.gd\" -> res://addons/my_plugin/plugin.gd");
+	script_edit->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	grid->add_child(script_edit);
 
 	// Activate now checkbox

@@ -194,7 +194,7 @@ namespace Godot
                 0);
             Quaternion q2 = toQ * ln.Exp();
 
-            // To cancel error made by Expmap ambiguity, do blends.
+            // To cancel error made by Expmap ambiguity, do blending.
             return q1.Slerp(q2, weight);
         }
 
@@ -263,7 +263,7 @@ namespace Godot
                 0);
             Quaternion q2 = toQ * ln.Exp();
 
-            // To cancel error made by Expmap ambiguity, do blends.
+            // To cancel error made by Expmap ambiguity, do blending.
             return q1.Slerp(q2, weight);
         }
 
