@@ -11,4 +11,10 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Install NDK
-      run: echo "y" | sudo ${ANDROID_HOME}/tools/bin/sdkmanager --install "ndk;20.0.5594570" --sdk_root=${ANDROID_SDK_ROOT}
+      run: echo "y" | sudo ${ANDROID_HOME}/tools/bin/sdkmanager --install  "platform-tools" "build-tools;30.0.3" "platforms;android-29" "cmdline-tools;latest" "cmake;3.10.2.4988404"
+    - name: Download depends
+      run: sudo apt-get install build-essential scons pkg-config libx11-dev libxcursor-dev libxinerama-dev libgl1-mesa-dev libglu-dev libasound2-dev libpulse-dev libudev-dev libxi-dev libxrandr-dev -y
+    - name: Build scons
+      run: scons platform=android target=tools arch=arm64v8
+    - name: Build Gradle
+      run: cd platform/android/java && ./gradlew generateGodotEditor
