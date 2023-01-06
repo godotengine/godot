@@ -719,12 +719,12 @@
 		</signal>
 		<signal name="mouse_entered">
 			<description>
-				Emitted when the mouse cursor enters the [Window]'s area, regardless if it's currently focused or not.
+				Emitted when the mouse cursor enters the [Window]'s visible area, that is not occluded behind other [Control]s or windows, provided its [member Viewport.gui_disable_input] is [code]false[/code] and regardless if it's currently focused or not.
 			</description>
 		</signal>
 		<signal name="mouse_exited">
 			<description>
-				Emitted when the mouse cursor exits the [Window]'s area (including when it's hovered over another window on top of this one).
+				Emitted when the mouse cursor leaves the [Window]'s visible area, that is not occluded behind other [Control]s or windows, provided its [member Viewport.gui_disable_input] is [code]false[/code] and regardless if it's currently focused or not.
 			</description>
 		</signal>
 		<signal name="theme_changed">

@@ -1052,10 +1052,10 @@
 			Notification received from the OS when the screen's DPI has been changed. Only implemented on macOS.
 		</constant>
 		<constant name="NOTIFICATION_VP_MOUSE_ENTER" value="1010">
-			Notification received when the mouse enters the viewport.
+			Notification received when the mouse cursor enters the [Viewport]'s visible area, that is not occluded behind other [Control]s or [Window]s, provided its [member Viewport.gui_disable_input] is [code]false[/code] and regardless if it's currently focused or not.
 		</constant>
 		<constant name="NOTIFICATION_VP_MOUSE_EXIT" value="1011">
-			Notification received when the mouse leaves the viewport.
+			Notification received when the mouse cursor leaves the [Viewport]'s visible area, that is not occluded behind other [Control]s or [Window]s, provided its [member Viewport.gui_disable_input] is [code]false[/code] and regardless if it's currently focused or not.
 		</constant>
 		<constant name="NOTIFICATION_OS_MEMORY_WARNING" value="2009">
 			Notification received from the OS when the application is exceeding its allocated memory.
