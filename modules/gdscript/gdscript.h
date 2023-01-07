@@ -62,13 +62,21 @@ class GDScript : public Script {
 	bool tool = false;
 	bool valid = false;
 	bool reloading = false;
-	bool skip_dependencies = false;
 
 	struct MemberInfo {
 		int index = 0;
 		StringName setter;
 		StringName getter;
 		GDScriptDataType data_type;
+	};
+
+	struct ClearData {
+		RBSet<GDScriptFunction *> functions;
+		RBSet<Ref<Script>> scripts;
+		void clear() {
+			functions.clear();
+			scripts.clear();
+		}
 	};
 
 	friend class GDScriptInstance;
@@ -157,7 +165,7 @@ class GDScript : public Script {
 
 	bool _update_exports(bool *r_err = nullptr, bool p_recursive_call = false, PlaceHolderScriptInstance *p_instance_to_update = nullptr);
 
-	void _save_orphaned_subclasses();
+	void _save_orphaned_subclasses(GDScript::ClearData *p_clear_data);
 	void _init_rpc_methods_properties();
 
 	void _get_script_property_list(List<PropertyInfo> *r_list, bool p_include_base) const;
@@ -180,7 +188,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void clear();
+	void clear(GDScript::ClearData *p_clear_data = nullptr);
 
 	virtual bool is_valid() const override { return valid; }
 
