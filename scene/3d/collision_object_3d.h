@@ -52,6 +52,7 @@ private:
 	bool area = false;
 
 	RID rid;
+	uint32_t callback_lock = 0;
 
 	DisableMode disable_mode = DISABLE_MODE_REMOVE;
 
@@ -96,6 +97,12 @@ private:
 
 protected:
 	CollisionObject3D(RID p_rid, bool p_area);
+
+	_FORCE_INLINE_ void lock_callback() { callback_lock++; }
+	_FORCE_INLINE_ void unlock_callback() {
+		ERR_FAIL_COND(callback_lock == 0);
+		callback_lock--;
+	}
 
 	void _notification(int p_what);
 	static void _bind_methods();
