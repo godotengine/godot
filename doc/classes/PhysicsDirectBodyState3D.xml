@@ -151,6 +151,13 @@
 				[b]Note:[/b] By default, this returns 0 unless bodies are configured to monitor contacts. See [member RigidBody3D.contact_monitor].
 			</description>
 		</method>
+		<method name="get_contact_depth" qualifiers="const">
+			<return type="float" />
+			<param index="0" name="contact_idx" type="int" />
+			<description>
+				Returns the penetration depth of the collsion.
+			</description>
+		</method>
 		<method name="get_contact_impulse" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="contact_idx" type="int" />

@@ -186,6 +186,11 @@ int GodotPhysicsDirectBodyState2D::get_contact_local_shape(int p_contact_idx) co
 	return body->contacts[p_contact_idx].local_shape;
 }
 
+real_t GodotPhysicsDirectBodyState2D::get_contact_depth(int p_contact_idx) const {
+	ERR_FAIL_INDEX_V(p_contact_idx, body->contact_count, -1);
+	return body->contacts[p_contact_idx].depth;
+}
+
 RID GodotPhysicsDirectBodyState2D::get_contact_collider(int p_contact_idx) const {
 	ERR_FAIL_INDEX_V(p_contact_idx, body->contact_count, RID());
 	return body->contacts[p_contact_idx].collider;
