@@ -381,7 +381,7 @@ class Thread : public RefCounted {
 
 protected:
 	Variant ret;
-	SafeFlag running;
+	SafeFlag running, joinable;
 	Callable target_callable;
 	::Thread thread;
 	static void _bind_methods();
@@ -399,7 +399,8 @@ public:
 	String get_id() const;
 	bool is_started() const;
 	bool is_alive() const;
-	Variant wait_to_finish();
+	Variant join();
+	void detach();
 };
 
 namespace special {

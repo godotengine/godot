@@ -99,8 +99,8 @@ public:
 
 	void start(Thread::Callback p_callback, void *p_user, const Settings &p_settings = Settings());
 	bool is_started() const;
-	///< waits until thread is finished, and deallocates it.
-	void wait_to_finish();
+	void join();
+	void detach();
 
 	Thread();
 	~Thread();

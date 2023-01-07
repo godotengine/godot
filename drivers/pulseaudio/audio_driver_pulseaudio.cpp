@@ -659,7 +659,7 @@ void AudioDriverPulseAudio::finish() {
 	}
 
 	exit_thread.set();
-	thread.wait_to_finish();
+	thread.join();
 
 	finish_device();
 

@@ -73,9 +73,11 @@ void Thread::callback(Thread *p_self, const Settings &p_settings, Callback p_cal
 void Thread::start(Thread::Callback p_callback, void *p_user, const Settings &p_settings) {
 	if (id != _thread_id_hash(std::thread::id())) {
 #ifdef DEBUG_ENABLED
-		WARN_PRINT("A Thread object has been re-started without wait_to_finish() having been called on it. Please do so to ensure correct cleanup of the thread.");
+		WARN_PRINT("A Thread object has been re-started; original thread detached.");
 #endif
-		thread.detach();
+		if(thread.joinable()) {
+			thread.detach();
+		}
 		std::thread empty_thread;
 		thread.swap(empty_thread);
 	}
@@ -88,10 +90,23 @@ bool Thread::is_started() const {
 	return id != _thread_id_hash(std::thread::id());
 }
 
-void Thread::wait_to_finish() {
+void Thread::join() {
 	if (id != _thread_id_hash(std::thread::id())) {
-		ERR_FAIL_COND_MSG(id == get_caller_id(), "A Thread can't wait for itself to finish.");
+		ERR_FAIL_COND_MSG(id == get_caller_id(), "A Thread can't join itself.");
+		ERR_FAIL_COND_MSG(!thread.joinable(), "Thread object not joinable/detachable.");
+
 		thread.join();
+		std::thread empty_thread;
+		thread.swap(empty_thread);
+		id = _thread_id_hash(std::thread::id());
+	}
+}
+
+void Thread::detach() {
+	if (id != _thread_id_hash(std::thread::id())) {
+		ERR_FAIL_COND_MSG(!thread.joinable(), "Thread object not joinable/detachable.");
+
+		thread.detach();
 		std::thread empty_thread;
 		thread.swap(empty_thread);
 		id = _thread_id_hash(std::thread::id());
@@ -112,10 +127,13 @@ Thread::Thread() {
 
 Thread::~Thread() {
 	if (id != _thread_id_hash(std::thread::id())) {
-#ifdef DEBUG_ENABLED
-		WARN_PRINT("A Thread object has been destroyed without wait_to_finish() having been called on it. Please do so to ensure correct cleanup of the thread.");
-#endif
-		thread.detach();
+		if(thread.joinable()) {
+			thread.detach();
+		}
+
+		std::thread empty_thread;
+		thread.swap(empty_thread);
+		id = _thread_id_hash(std::thread::id());
 	}
 }
 

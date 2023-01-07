@@ -44,7 +44,7 @@ NoiseTexture2D::~NoiseTexture2D() {
 	if (texture.is_valid()) {
 		RS::get_singleton()->free(texture);
 	}
-	noise_thread.wait_to_finish();
+	noise_thread.join();
 }
 
 void NoiseTexture2D::_bind_methods() {
@@ -124,7 +124,7 @@ void NoiseTexture2D::_set_texture_image(const Ref<Image> &p_image) {
 
 void NoiseTexture2D::_thread_done(const Ref<Image> &p_image) {
 	_set_texture_image(p_image);
-	noise_thread.wait_to_finish();
+	noise_thread.join();
 	if (regen_queued) {
 		noise_thread.start(_thread_function, this);
 		regen_queued = false;

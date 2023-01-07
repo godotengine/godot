@@ -494,7 +494,7 @@ Ref<Resource> ResourceLoader::load_threaded_get(const String &p_path, Error *r_e
 
 	if (load_task.requests == 0) {
 		if (load_task.thread) { //thread may not have been used
-			load_task.thread->wait_to_finish();
+			load_task.thread->join();
 			memdelete(load_task.thread);
 		}
 		thread_load_tasks.erase(local_path);
@@ -934,7 +934,7 @@ void ResourceLoader::clear_thread_load_tasks() {
 
 			case ResourceLoader::ThreadLoadStatus::THREAD_LOAD_IN_PROGRESS: {
 				if (E.value.thread != nullptr) {
-					E.value.thread->wait_to_finish();
+					E.value.thread->join();
 					memdelete(E.value.thread);
 					E.value.thread = nullptr;
 				}

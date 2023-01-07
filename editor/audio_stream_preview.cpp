@@ -231,7 +231,7 @@ void AudioStreamPreviewGenerator::_notification(int p_what) {
 			for (KeyValue<ObjectID, Preview> &E : previews) {
 				if (!E.value.generating.is_set()) {
 					if (E.value.thread) {
-						E.value.thread->wait_to_finish();
+						E.value.thread->join();
 						memdelete(E.value.thread);
 						E.value.thread = nullptr;
 					}

@@ -1201,7 +1201,7 @@ void EditorFileSystem::_notification(int p_what) {
 				while (scanning) {
 					OS::get_singleton()->delay_usec(1000);
 				}
-				active_thread.wait_to_finish();
+				active_thread.join();
 				WARN_PRINT("Scan thread aborted...");
 				set_process(false);
 			}
@@ -1224,7 +1224,7 @@ void EditorFileSystem::_notification(int p_what) {
 
 						set_process(false);
 
-						thread_sources.wait_to_finish();
+						thread_sources.join();
 						if (_update_scan_actions()) {
 							emit_signal(SNAME("filesystem_changed"));
 						}
@@ -1240,7 +1240,7 @@ void EditorFileSystem::_notification(int p_what) {
 					}
 					filesystem = new_filesystem;
 					new_filesystem = nullptr;
-					thread.wait_to_finish();
+					thread.join();
 					_update_scan_actions();
 					emit_signal(SNAME("filesystem_changed"));
 					emit_signal(SNAME("sources_changed"), sources_changed.size() > 0);

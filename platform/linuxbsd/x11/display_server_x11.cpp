@@ -5299,7 +5299,7 @@ DisplayServerX11::~DisplayServerX11() {
 	_clipboard_transfer_ownership(XInternAtom(x11_display, "CLIPBOARD", 0), x11_main_window);
 
 	events_thread_done.set();
-	events_thread.wait_to_finish();
+	events_thread.join();
 
 	//destroy all windows
 	for (KeyValue<WindowID, WindowData> &E : windows) {

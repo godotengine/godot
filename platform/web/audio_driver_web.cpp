@@ -243,5 +243,5 @@ void AudioDriverWorklet::unlock() {
 
 void AudioDriverWorklet::finish_driver() {
 	quit = true; // Ask thread to quit.
-	thread.wait_to_finish();
+	thread.join();
 }

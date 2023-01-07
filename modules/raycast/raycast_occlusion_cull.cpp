@@ -405,7 +405,7 @@ bool RaycastOcclusionCull::Scenario::update() {
 
 	if (commit_thread->is_started()) {
 		if (commit_done) {
-			commit_thread->wait_to_finish();
+			commit_thread->join();
 			current_scene_idx = 1 - current_scene_idx;
 		} else {
 			return false;
@@ -604,7 +604,7 @@ RaycastOcclusionCull::~RaycastOcclusionCull() {
 	for (KeyValue<RID, Scenario> &K : scenarios) {
 		Scenario &scenario = K.value;
 		if (scenario.commit_thread) {
-			scenario.commit_thread->wait_to_finish();
+			scenario.commit_thread->join();
 			memdelete(scenario.commit_thread);
 		}
 

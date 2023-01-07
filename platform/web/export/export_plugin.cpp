@@ -665,5 +665,5 @@ EditorExportPlatformWeb::EditorExportPlatformWeb() {
 EditorExportPlatformWeb::~EditorExportPlatformWeb() {
 	server->stop();
 	server_quit = true;
-	server_thread.wait_to_finish();
+	server_thread.join();
 }

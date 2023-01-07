@@ -109,7 +109,7 @@ void PhysicsServer2DWrapMT::init() {
 void PhysicsServer2DWrapMT::finish() {
 	if (thread.is_started()) {
 		command_queue.push(this, &PhysicsServer2DWrapMT::thread_exit);
-		thread.wait_to_finish();
+		thread.join();
 	} else {
 		physics_server_2d->finish();
 	}

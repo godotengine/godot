@@ -207,7 +207,7 @@ Error MIDIDriverALSAMidi::open() {
 
 void MIDIDriverALSAMidi::close() {
 	exit_thread.set();
-	thread.wait_to_finish();
+	thread.join();
 
 	for (int i = 0; i < connected_inputs.size(); i++) {
 		snd_rawmidi_t *midi_in = connected_inputs[i].rawmidi_ptr;

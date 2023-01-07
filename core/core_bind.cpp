@@ -1167,6 +1167,7 @@ Error Thread::start(const Callable &p_callable, Priority p_priority) {
 
 	ret = Variant();
 	target_callable = p_callable;
+	joinable.set();
 	running.set();
 
 	Ref<Thread> *ud = memnew(Ref<Thread>(this));
@@ -1190,13 +1191,26 @@ bool Thread::is_alive() const {
 	return running.is_set();
 }
 
-Variant Thread::wait_to_finish() {
-	ERR_FAIL_COND_V_MSG(!is_started(), Variant(), "Thread must have been started to wait for its completion.");
-	thread.wait_to_finish();
+Variant Thread::join() {
+	ERR_FAIL_COND_V_MSG(!is_started(), Variant(), "Thread must have been started to join it.");
+	ERR_FAIL_COND_V_MSG(joinable.is_set(), Variant(), "Thread not joinable.");
+
+	thread.join();
+	joinable.clear();
 	Variant r = ret;
 	target_callable = Callable();
 
 	return r;
+}
+
+void Thread::detach() {
+	ERR_FAIL_COND_MSG(!is_started(), "Thread must have been started to detach it.");
+	ERR_FAIL_COND_MSG(joinable.is_set(), "Thread not detachable.");
+
+	thread.detach();
+	joinable.clear();
+
+	//target_callable = Callable();
 }
 
 void Thread::_bind_methods() {
@@ -1204,7 +1218,8 @@ void Thread::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_id"), &Thread::get_id);
 	ClassDB::bind_method(D_METHOD("is_started"), &Thread::is_started);
 	ClassDB::bind_method(D_METHOD("is_alive"), &Thread::is_alive);
-	ClassDB::bind_method(D_METHOD("wait_to_finish"), &Thread::wait_to_finish);
+	ClassDB::bind_method(D_METHOD("join"), &Thread::join);
+	ClassDB::bind_method(D_METHOD("detach"), &Thread::detach);
 
 	BIND_ENUM_CONSTANT(PRIORITY_LOW);
 	BIND_ENUM_CONSTANT(PRIORITY_NORMAL);

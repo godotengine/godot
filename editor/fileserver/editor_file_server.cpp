@@ -285,7 +285,7 @@ void EditorFileServer::_thread_start(void *s) {
 			Thread *w = *self->to_wait.begin();
 			self->to_wait.erase(w);
 			self->wait_mutex.unlock();
-			w->wait_to_finish();
+			w->join();
 			self->wait_mutex.lock();
 		}
 		self->wait_mutex.unlock();
@@ -319,5 +319,5 @@ EditorFileServer::EditorFileServer() {
 
 EditorFileServer::~EditorFileServer() {
 	quit = true;
-	thread.wait_to_finish();
+	thread.join();
 }

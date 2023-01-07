@@ -154,7 +154,7 @@ void AudioDriverXAudio2::unlock() {
 
 void AudioDriverXAudio2::finish() {
 	exit_thread.set();
-	thread.wait_to_finish();
+	thread.join();
 
 	if (source_voice) {
 		source_voice->Stop(0);

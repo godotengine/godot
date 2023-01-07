@@ -350,7 +350,7 @@ IP::IP() {
 IP::~IP() {
 	resolver->thread_abort = true;
 	resolver->sem.post();
-	resolver->thread.wait_to_finish();
+	resolver->thread.join();
 
 	memdelete(resolver);
 }

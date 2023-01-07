@@ -92,8 +92,8 @@ JoypadLinux::JoypadLinux(Input *in) {
 JoypadLinux::~JoypadLinux() {
 	monitor_joypads_exit.set();
 	joypad_events_exit.set();
-	monitor_joypads_thread.wait_to_finish();
-	joypad_events_thread.wait_to_finish();
+	monitor_joypads_thread.join();
+	joypad_events_thread.join();
 	close_joypads();
 }
 

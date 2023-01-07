@@ -147,7 +147,7 @@ void VideoStreamPlaybackTheora::clear() {
 #ifdef THEORA_USE_THREAD_STREAMING
 	thread_exit = true;
 	thread_sem->post(); //just in case
-	thread.wait_to_finish();
+	thread.join();
 	ring_buffer.clear();
 #endif
 

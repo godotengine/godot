@@ -251,7 +251,7 @@ TTS_Linux::TTS_Linux() {
 }
 
 TTS_Linux::~TTS_Linux() {
-	init_thread.wait_to_finish();
+	init_thread.join();
 	if (synth) {
 		spd_close(synth);
 	}

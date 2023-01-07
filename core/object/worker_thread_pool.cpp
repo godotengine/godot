@@ -250,7 +250,7 @@ void WorkerThreadPool::wait_for_task_completion(TaskID p_task_id) {
 	task_mutex.unlock();
 
 	if (use_native_low_priority_threads && task->low_priority) {
-		task->low_priority_thread->wait_to_finish();
+		task->low_priority_thread->join();
 		native_thread_allocator.free(task->low_priority_thread);
 	} else {
 		int *index = thread_ids.getptr(Thread::get_caller_id());
@@ -378,7 +378,7 @@ void WorkerThreadPool::wait_for_group_task_completion(GroupID p_group) {
 
 	if (group->low_priority_native_tasks.size() > 0) {
 		for (uint32_t i = 0; i < group->low_priority_native_tasks.size(); i++) {
-			group->low_priority_native_tasks[i]->low_priority_thread->wait_to_finish();
+			group->low_priority_native_tasks[i]->low_priority_thread->join();
 			native_thread_allocator.free(group->low_priority_native_tasks[i]->low_priority_thread);
 			task_mutex.lock();
 			task_allocator.free(group->low_priority_native_tasks[i]);
@@ -450,7 +450,7 @@ void WorkerThreadPool::finish() {
 	}
 
 	for (uint32_t i = 0; i < threads.size(); i++) {
-		threads[i].thread.wait_to_finish();
+		threads[i].thread.join();
 	}
 
 	threads.clear();

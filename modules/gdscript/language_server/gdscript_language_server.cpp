@@ -100,7 +100,7 @@ void GDScriptLanguageServer::stop() {
 	if (use_thread) {
 		ERR_FAIL_COND(!thread.is_started());
 		thread_running = false;
-		thread.wait_to_finish();
+		thread.join();
 	}
 	protocol.stop();
 	started = false;

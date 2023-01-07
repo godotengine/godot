@@ -79,7 +79,7 @@ void thread_process_array(uint32_t p_elements, C *p_instance, M p_method, U p_us
 	}
 
 	for (int i = 0; i < thread_count; i++) {
-		threads[i].wait_to_finish();
+		threads[i].join();
 	}
 	memdelete_arr(threads);
 }

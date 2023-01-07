@@ -109,7 +109,7 @@ void PhysicsServer3DWrapMT::init() {
 void PhysicsServer3DWrapMT::finish() {
 	if (thread.is_started()) {
 		command_queue.push(this, &PhysicsServer3DWrapMT::thread_exit);
-		thread.wait_to_finish();
+		thread.join();
 	} else {
 		physics_server_3d->finish();
 	}

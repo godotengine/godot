@@ -237,7 +237,7 @@ void RenderingServerDefault::init() {
 void RenderingServerDefault::finish() {
 	if (create_thread) {
 		command_queue.push(this, &RenderingServerDefault::_thread_exit);
-		thread.wait_to_finish();
+		thread.join();
 	} else {
 		_finish();
 	}

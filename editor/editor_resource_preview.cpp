@@ -436,7 +436,7 @@ void EditorResourcePreview::stop() {
 			OS::get_singleton()->delay_usec(10000);
 			RenderingServer::get_singleton()->sync(); //sync pending stuff, as thread may be blocked on rendering server
 		}
-		thread.wait_to_finish();
+		thread.join();
 	}
 }
 

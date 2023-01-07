@@ -2677,7 +2677,7 @@ void RichTextLabel::_thread_function(void *self) {
 void RichTextLabel::_stop_thread() {
 	if (threaded) {
 		stop_thread.store(true);
-		thread.wait_to_finish();
+		thread.join();
 	}
 }
 

@@ -270,7 +270,7 @@ void NavigationRegion3D::bake_navigation_mesh(bool p_on_thread) {
 
 void NavigationRegion3D::_bake_finished(Ref<NavigationMesh> p_nav_mesh) {
 	set_navigation_mesh(p_nav_mesh);
-	bake_thread.wait_to_finish();
+	bake_thread.join();
 	emit_signal(SNAME("bake_finished"));
 }
 

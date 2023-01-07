@@ -216,7 +216,7 @@ FileAccessNetworkClient::FileAccessNetworkClient() {
 FileAccessNetworkClient::~FileAccessNetworkClient() {
 	quit = true;
 	sem.post();
-	thread.wait_to_finish();
+	thread.join();
 }
 
 void FileAccessNetwork::_set_block(uint64_t p_offset, const Vector<uint8_t> &p_block) {

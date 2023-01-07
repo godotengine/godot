@@ -136,7 +136,7 @@ void AudioDriverDummy::mix_audio(int p_frames, int32_t *p_buffer) {
 void AudioDriverDummy::finish() {
 	if (use_threads) {
 		exit_thread.set();
-		thread.wait_to_finish();
+		thread.join();
 	}
 
 	if (samples_in) {

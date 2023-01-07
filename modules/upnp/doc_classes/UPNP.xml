@@ -45,7 +45,7 @@
 
 		func _exit_tree():
 		    # Wait for thread finish here to handle game exit while the thread is running.
-		    thread.wait_to_finish()
+		    thread.join()
 		[/codeblock]
 		[b]Terminology:[/b] In the context of UPnP networking, "gateway" (or "internet gateway device", short IGD) refers to network devices that allow computers in the local network to access the internet ("wide area network", WAN). These gateways are often also called "routers".
 		[b]Pitfalls:[/b]

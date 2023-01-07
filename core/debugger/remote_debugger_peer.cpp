@@ -66,7 +66,7 @@ int RemoteDebuggerPeerTCP::get_max_message_size() const {
 
 void RemoteDebuggerPeerTCP::close() {
 	running = false;
-	thread.wait_to_finish();
+	thread.join();
 	tcp_client->disconnect_from_host();
 	out_buf.clear();
 	in_buf.clear();

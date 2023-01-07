@@ -5990,7 +5990,7 @@ int EditorNode::execute_and_show_output(const String &p_title, const String &p_p
 		OS::get_singleton()->delay_usec(1000);
 	}
 
-	eta.execute_output_thread.wait_to_finish();
+	eta.execute_output_thread.join();
 	execute_outputs->add_text("\nExit Code: " + itos(eta.exitcode));
 
 	if (p_close_on_errors && eta.exitcode != 0) {

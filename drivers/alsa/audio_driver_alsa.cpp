@@ -325,7 +325,7 @@ void AudioDriverALSA::finish_device() {
 
 void AudioDriverALSA::finish() {
 	exit_thread.set();
-	thread.wait_to_finish();
+	thread.join();
 
 	finish_device();
 }

@@ -931,7 +931,7 @@ void AudioDriverWASAPI::unlock() {
 
 void AudioDriverWASAPI::finish() {
 	exit_thread.set();
-	thread.wait_to_finish();
+	thread.join();
 
 	finish_capture_device();
 	finish_render_device();
