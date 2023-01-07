@@ -37,7 +37,7 @@ void EditorTitleBar::input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (mm.is_valid() && moving) {
-		if ((mm->get_button_mask() & MouseButton::LEFT) == MouseButton::LEFT) {
+		if (mm->get_button_mask().has_flag(MouseButtonMask::LEFT)) {
 			Window *w = Object::cast_to<Window>(get_viewport());
 			if (w) {
 				Point2 mouse = DisplayServer::get_singleton()->mouse_get_position();

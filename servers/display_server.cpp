@@ -331,8 +331,8 @@ Point2i DisplayServer::mouse_get_position() const {
 	ERR_FAIL_V_MSG(Point2i(), "Mouse is not supported by this display server.");
 }
 
-MouseButton DisplayServer::mouse_get_button_state() const {
-	ERR_FAIL_V_MSG(MouseButton::NONE, "Mouse is not supported by this display server.");
+BitField<MouseButtonMask> DisplayServer::mouse_get_button_state() const {
+	ERR_FAIL_V_MSG(0, "Mouse is not supported by this display server.");
 }
 
 void DisplayServer::clipboard_set(const String &p_text) {

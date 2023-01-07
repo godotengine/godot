@@ -1577,7 +1577,7 @@ void EditorPropertyEasing::_drag_easing(const Ref<InputEvent> &p_ev) {
 
 	const Ref<InputEventMouseMotion> mm = p_ev;
 
-	if (dragging && mm.is_valid() && (mm->get_button_mask() & MouseButton::MASK_LEFT) != MouseButton::NONE) {
+	if (dragging && mm.is_valid() && (mm->get_button_mask().has_flag(MouseButtonMask::LEFT))) {
 		float rel = mm->get_relative().x;
 		if (rel == 0) {
 			return;
