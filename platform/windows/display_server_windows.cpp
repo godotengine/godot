@@ -348,11 +348,9 @@ typedef struct {
 
 static BOOL CALLBACK _MonitorEnumProcPrim(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData) {
 	EnumScreenData *data = (EnumScreenData *)dwData;
-	if (data->monitor == hMonitor) {
-		if ((lprcMonitor->left == 0) && (lprcMonitor->top == 0)) {
-			data->screen = data->count;
-			return FALSE;
-		}
+	if ((lprcMonitor->left == 0) && (lprcMonitor->top == 0)) {
+		data->screen = data->count;
+		return FALSE;
 	}
 
 	data->count++;
