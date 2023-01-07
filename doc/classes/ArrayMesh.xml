@@ -65,7 +65,7 @@
 			<param index="1" name="arrays" type="Array" />
 			<param index="2" name="blend_shapes" type="Array[]" default="[]" />
 			<param index="3" name="lods" type="Dictionary" default="{}" />
-			<param index="4" name="compress_flags" type="int" default="0" />
+			<param index="4" name="compress_flags" type="int" enum="Mesh.ArrayFormat" default="0" />
 			<description>
 				Creates a new surface.
 				Surfaces are created to be rendered using a [param primitive], which may be any of the types defined in [enum Mesh.PrimitiveType]. (As a note, when using indices, it is recommended to only use points, lines, or triangles.) [method Mesh.get_surface_count] will become the [code]surf_idx[/code] for this new surface.
@@ -141,7 +141,7 @@
 			</description>
 		</method>
 		<method name="surface_get_format" qualifiers="const">
-			<return type="int" />
+			<return type="int" enum="Mesh.ArrayFormat" />
 			<param index="0" name="surf_idx" type="int" />
 			<description>
 				Returns the format mask of the requested surface (see [method add_surface_from_arrays]).

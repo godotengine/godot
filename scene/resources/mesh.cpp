@@ -75,7 +75,7 @@ Dictionary Mesh::surface_get_lods(int p_surface) const {
 	return ret;
 }
 
-uint32_t Mesh::surface_get_format(int p_idx) const {
+BitField<Mesh::ArrayFormat> Mesh::surface_get_format(int p_idx) const {
 	uint32_t ret = 0;
 	GDVIRTUAL_REQUIRED_CALL(_surface_get_format, p_idx, ret);
 	return ret;
@@ -658,35 +658,35 @@ void Mesh::_bind_methods() {
 	BIND_ENUM_CONSTANT(ARRAY_CUSTOM_RGBA_FLOAT);
 	BIND_ENUM_CONSTANT(ARRAY_CUSTOM_MAX);
 
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_VERTEX);
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_NORMAL);
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_TANGENT);
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_COLOR);
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_TEX_UV);
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_TEX_UV2);
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_CUSTOM0);
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_CUSTOM1);
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_CUSTOM2);
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_CUSTOM3);
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_BONES);
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_WEIGHTS);
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_INDEX);
+	BIND_BITFIELD_FLAG(ARRAY_FORMAT_VERTEX);
+	BIND_BITFIELD_FLAG(ARRAY_FORMAT_NORMAL);
+	BIND_BITFIELD_FLAG(ARRAY_FORMAT_TANGENT);
+	BIND_BITFIELD_FLAG(ARRAY_FORMAT_COLOR);
+	BIND_BITFIELD_FLAG(ARRAY_FORMAT_TEX_UV);
+	BIND_BITFIELD_FLAG(ARRAY_FORMAT_TEX_UV2);
+	BIND_BITFIELD_FLAG(ARRAY_FORMAT_CUSTOM0);
+	BIND_BITFIELD_FLAG(ARRAY_FORMAT_CUSTOM1);
+	BIND_BITFIELD_FLAG(ARRAY_FORMAT_CUSTOM2);
+	BIND_BITFIELD_FLAG(ARRAY_FORMAT_CUSTOM3);
+	BIND_BITFIELD_FLAG(ARRAY_FORMAT_BONES);
+	BIND_BITFIELD_FLAG(ARRAY_FORMAT_WEIGHTS);
+	BIND_BITFIELD_FLAG(ARRAY_FORMAT_INDEX);
 
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_BLEND_SHAPE_MASK);
+	BIND_BITFIELD_FLAG(ARRAY_FORMAT_BLEND_SHAPE_MASK);
 
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_CUSTOM_BASE);
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_CUSTOM_BITS);
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_CUSTOM0_SHIFT);
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_CUSTOM1_SHIFT);
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_CUSTOM2_SHIFT);
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_CUSTOM3_SHIFT);
+	BIND_BITFIELD_FLAG(ARRAY_FORMAT_CUSTOM_BASE);
+	BIND_BITFIELD_FLAG(ARRAY_FORMAT_CUSTOM_BITS);
+	BIND_BITFIELD_FLAG(ARRAY_FORMAT_CUSTOM0_SHIFT);
+	BIND_BITFIELD_FLAG(ARRAY_FORMAT_CUSTOM1_SHIFT);
+	BIND_BITFIELD_FLAG(ARRAY_FORMAT_CUSTOM2_SHIFT);
+	BIND_BITFIELD_FLAG(ARRAY_FORMAT_CUSTOM3_SHIFT);
 
-	BIND_ENUM_CONSTANT(ARRAY_FORMAT_CUSTOM_MASK);
-	BIND_ENUM_CONSTANT(ARRAY_COMPRESS_FLAGS_BASE);
+	BIND_BITFIELD_FLAG(ARRAY_FORMAT_CUSTOM_MASK);
+	BIND_BITFIELD_FLAG(ARRAY_COMPRESS_FLAGS_BASE);
 
-	BIND_ENUM_CONSTANT(ARRAY_FLAG_USE_2D_VERTICES);
-	BIND_ENUM_CONSTANT(ARRAY_FLAG_USE_DYNAMIC_UPDATE);
-	BIND_ENUM_CONSTANT(ARRAY_FLAG_USE_8_BONE_WEIGHTS);
+	BIND_BITFIELD_FLAG(ARRAY_FLAG_USE_2D_VERTICES);
+	BIND_BITFIELD_FLAG(ARRAY_FLAG_USE_DYNAMIC_UPDATE);
+	BIND_BITFIELD_FLAG(ARRAY_FLAG_USE_8_BONE_WEIGHTS);
 
 	BIND_ENUM_CONSTANT(BLEND_SHAPE_MODE_NORMALIZED);
 	BIND_ENUM_CONSTANT(BLEND_SHAPE_MODE_RELATIVE);
@@ -1554,7 +1554,7 @@ void ArrayMesh::_recompute_aabb() {
 }
 
 // TODO: Need to add binding to add_surface using future MeshSurfaceData object.
-void ArrayMesh::add_surface(uint32_t p_format, PrimitiveType p_primitive, const Vector<uint8_t> &p_array, const Vector<uint8_t> &p_attribute_array, const Vector<uint8_t> &p_skin_array, int p_vertex_count, const Vector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<uint8_t> &p_blend_shape_data, const Vector<AABB> &p_bone_aabbs, const Vector<RS::SurfaceData::LOD> &p_lods) {
+void ArrayMesh::add_surface(BitField<ArrayFormat> p_format, PrimitiveType p_primitive, const Vector<uint8_t> &p_array, const Vector<uint8_t> &p_attribute_array, const Vector<uint8_t> &p_skin_array, int p_vertex_count, const Vector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<uint8_t> &p_blend_shape_data, const Vector<AABB> &p_bone_aabbs, const Vector<RS::SurfaceData::LOD> &p_lods) {
 	_create_if_empty();
 
 	Surface s;
@@ -1589,7 +1589,7 @@ void ArrayMesh::add_surface(uint32_t p_format, PrimitiveType p_primitive, const 
 	emit_changed();
 }
 
-void ArrayMesh::add_surface_from_arrays(PrimitiveType p_primitive, const Array &p_arrays, const TypedArray<Array> &p_blend_shapes, const Dictionary &p_lods, uint32_t p_flags) {
+void ArrayMesh::add_surface_from_arrays(PrimitiveType p_primitive, const Array &p_arrays, const TypedArray<Array> &p_blend_shapes, const Dictionary &p_lods, BitField<ArrayFormat> p_flags) {
 	ERR_FAIL_COND(p_arrays.size() != ARRAY_MAX);
 
 	RS::SurfaceData surface;
@@ -1705,7 +1705,7 @@ int ArrayMesh::surface_get_array_index_len(int p_idx) const {
 	return surfaces[p_idx].index_array_length;
 }
 
-uint32_t ArrayMesh::surface_get_format(int p_idx) const {
+BitField<Mesh::ArrayFormat> ArrayMesh::surface_get_format(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, surfaces.size(), 0);
 	return surfaces[p_idx].format;
 }

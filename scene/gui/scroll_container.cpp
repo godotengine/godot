@@ -327,10 +327,10 @@ void ScrollContainer::_reposition_children() {
 		Size2 minsize = c->get_combined_minimum_size();
 
 		Rect2 r = Rect2(-Size2(get_h_scroll(), get_v_scroll()), minsize);
-		if (c->get_h_size_flags() & SIZE_EXPAND) {
+		if (c->get_h_size_flags().has_flag(SIZE_EXPAND)) {
 			r.size.width = MAX(size.width, minsize.width);
 		}
-		if (c->get_v_size_flags() & SIZE_EXPAND) {
+		if (c->get_v_size_flags().has_flag(SIZE_EXPAND)) {
 			r.size.height = MAX(size.height, minsize.height);
 		}
 		r.position += ofs;

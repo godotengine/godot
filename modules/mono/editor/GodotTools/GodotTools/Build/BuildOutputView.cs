@@ -356,19 +356,19 @@ namespace GodotTools.Build
         {
             base._Ready();
 
-            SizeFlagsVertical = (int)SizeFlags.ExpandFill;
+            SizeFlagsVertical = SizeFlags.ExpandFill;
 
             var hsc = new HSplitContainer
             {
-                SizeFlagsHorizontal = (int)SizeFlags.ExpandFill,
-                SizeFlagsVertical = (int)SizeFlags.ExpandFill
+                SizeFlagsHorizontal = SizeFlags.ExpandFill,
+                SizeFlagsVertical = SizeFlags.ExpandFill
             };
             AddChild(hsc);
 
             _issuesList = new ItemList
             {
-                SizeFlagsVertical = (int)SizeFlags.ExpandFill,
-                SizeFlagsHorizontal = (int)SizeFlags.ExpandFill // Avoid being squashed by the build log
+                SizeFlagsVertical = SizeFlags.ExpandFill,
+                SizeFlagsHorizontal = SizeFlags.ExpandFill // Avoid being squashed by the build log
             };
             _issuesList.ItemActivated += IssueActivated;
             _issuesList.AllowRmbSelect = true;
@@ -382,8 +382,8 @@ namespace GodotTools.Build
             _buildLog = new TextEdit
             {
                 Editable = false,
-                SizeFlagsVertical = (int)SizeFlags.ExpandFill,
-                SizeFlagsHorizontal = (int)SizeFlags.ExpandFill // Avoid being squashed by the issues list
+                SizeFlagsVertical = SizeFlags.ExpandFill,
+                SizeFlagsHorizontal = SizeFlags.ExpandFill // Avoid being squashed by the issues list
             };
             hsc.AddChild(_buildLog);
 

@@ -156,7 +156,7 @@ public:
 	virtual Array surface_get_arrays(int p_surface) const;
 	virtual TypedArray<Array> surface_get_blend_shape_arrays(int p_surface) const;
 	virtual Dictionary surface_get_lods(int p_surface) const;
-	virtual uint32_t surface_get_format(int p_idx) const;
+	virtual BitField<ArrayFormat> surface_get_format(int p_idx) const;
 	virtual PrimitiveType surface_get_primitive_type(int p_idx) const;
 	virtual void surface_set_material(int p_idx, const Ref<Material> &p_material);
 	virtual Ref<Material> surface_get_material(int p_idx) const;
@@ -269,9 +269,9 @@ protected:
 	static void _bind_methods();
 
 public:
-	void add_surface_from_arrays(PrimitiveType p_primitive, const Array &p_arrays, const TypedArray<Array> &p_blend_shapes = TypedArray<Array>(), const Dictionary &p_lods = Dictionary(), uint32_t p_flags = 0);
+	void add_surface_from_arrays(PrimitiveType p_primitive, const Array &p_arrays, const TypedArray<Array> &p_blend_shapes = TypedArray<Array>(), const Dictionary &p_lods = Dictionary(), BitField<ArrayFormat> p_flags = 0);
 
-	void add_surface(uint32_t p_format, PrimitiveType p_primitive, const Vector<uint8_t> &p_array, const Vector<uint8_t> &p_attribute_array, const Vector<uint8_t> &p_skin_array, int p_vertex_count, const Vector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<uint8_t> &p_blend_shape_data = Vector<uint8_t>(), const Vector<AABB> &p_bone_aabbs = Vector<AABB>(), const Vector<RS::SurfaceData::LOD> &p_lods = Vector<RS::SurfaceData::LOD>());
+	void add_surface(BitField<ArrayFormat> p_format, PrimitiveType p_primitive, const Vector<uint8_t> &p_array, const Vector<uint8_t> &p_attribute_array, const Vector<uint8_t> &p_skin_array, int p_vertex_count, const Vector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<uint8_t> &p_blend_shape_data = Vector<uint8_t>(), const Vector<AABB> &p_bone_aabbs = Vector<AABB>(), const Vector<RS::SurfaceData::LOD> &p_lods = Vector<RS::SurfaceData::LOD>());
 
 	Array surface_get_arrays(int p_surface) const override;
 	TypedArray<Array> surface_get_blend_shape_arrays(int p_surface) const override;
@@ -298,7 +298,7 @@ public:
 
 	int surface_get_array_len(int p_idx) const override;
 	int surface_get_array_index_len(int p_idx) const override;
-	uint32_t surface_get_format(int p_idx) const override;
+	BitField<ArrayFormat> surface_get_format(int p_idx) const override;
 	PrimitiveType surface_get_primitive_type(int p_idx) const override;
 
 	virtual void surface_set_material(int p_idx, const Ref<Material> &p_material) override;
@@ -330,7 +330,7 @@ public:
 };
 
 VARIANT_ENUM_CAST(Mesh::ArrayType);
-VARIANT_ENUM_CAST(Mesh::ArrayFormat);
+VARIANT_BITFIELD_CAST(Mesh::ArrayFormat);
 VARIANT_ENUM_CAST(Mesh::ArrayCustomFormat);
 VARIANT_ENUM_CAST(Mesh::PrimitiveType);
 VARIANT_ENUM_CAST(Mesh::BlendShapeMode);
@@ -351,7 +351,7 @@ public:
 	virtual Array surface_get_arrays(int p_surface) const override { return Array(); }
 	virtual TypedArray<Array> surface_get_blend_shape_arrays(int p_surface) const override { return TypedArray<Array>(); }
 	virtual Dictionary surface_get_lods(int p_surface) const override { return Dictionary(); }
-	virtual uint32_t surface_get_format(int p_idx) const override { return 0; }
+	virtual BitField<ArrayFormat> surface_get_format(int p_idx) const override { return 0; }
 	virtual PrimitiveType surface_get_primitive_type(int p_idx) const override { return PRIMITIVE_TRIANGLES; }
 	virtual void surface_set_material(int p_idx, const Ref<Material> &p_material) override {}
 	virtual Ref<Material> surface_get_material(int p_idx) const override { return Ref<Material>(); }

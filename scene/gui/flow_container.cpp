@@ -86,7 +86,7 @@ void FlowContainer::_resort() {
 			}
 
 			line_height = MAX(line_height, child_msc.x);
-			if (child->get_v_size_flags() & SIZE_EXPAND) {
+			if (child->get_v_size_flags().has_flag(SIZE_EXPAND)) {
 				line_stretch_ratio_total += child->get_stretch_ratio();
 			}
 			ofs.y += child_msc.y;
@@ -108,7 +108,7 @@ void FlowContainer::_resort() {
 			}
 
 			line_height = MAX(line_height, child_msc.y);
-			if (child->get_h_size_flags() & SIZE_EXPAND) {
+			if (child->get_h_size_flags().has_flag(SIZE_EXPAND)) {
 				line_stretch_ratio_total += child->get_stretch_ratio();
 			}
 			ofs.x += child_msc.x;
@@ -175,21 +175,21 @@ void FlowContainer::_resort() {
 		}
 
 		if (vertical) { /* VERTICAL */
-			if (child->get_h_size_flags() & (SIZE_FILL | SIZE_SHRINK_CENTER | SIZE_SHRINK_END)) {
+			if (child->get_h_size_flags().has_flag(SIZE_FILL) || child->get_h_size_flags().has_flag(SIZE_SHRINK_CENTER) || child->get_h_size_flags().has_flag(SIZE_SHRINK_END)) {
 				child_size.width = line_data.min_line_height;
 			}
 
-			if (child->get_v_size_flags() & SIZE_EXPAND) {
+			if (child->get_v_size_flags().has_flag(SIZE_EXPAND)) {
 				int stretch = line_data.stretch_avail * child->get_stretch_ratio() / line_data.stretch_ratio_total;
 				child_size.height += stretch;
 			}
 
 		} else { /* HORIZONTAL */
-			if (child->get_v_size_flags() & (SIZE_FILL | SIZE_SHRINK_CENTER | SIZE_SHRINK_END)) {
+			if (child->get_v_size_flags().has_flag(SIZE_FILL) || child->get_v_size_flags().has_flag(SIZE_SHRINK_CENTER) || child->get_v_size_flags().has_flag(SIZE_SHRINK_END)) {
 				child_size.height = line_data.min_line_height;
 			}
 
-			if (child->get_h_size_flags() & SIZE_EXPAND) {
+			if (child->get_h_size_flags().has_flag(SIZE_EXPAND)) {
 				int stretch = line_data.stretch_avail * child->get_stretch_ratio() / line_data.stretch_ratio_total;
 				child_size.width += stretch;
 			}

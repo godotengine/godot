@@ -73,10 +73,10 @@ void GridContainer::_notification(int p_what) {
 					row_minh[row] = ms.height;
 				}
 
-				if (c->get_h_size_flags() & SIZE_EXPAND) {
+				if (c->get_h_size_flags().has_flag(SIZE_EXPAND)) {
 					col_expanded.insert(col);
 				}
-				if (c->get_v_size_flags() & SIZE_EXPAND) {
+				if (c->get_v_size_flags().has_flag(SIZE_EXPAND)) {
 					row_expanded.insert(row);
 				}
 			}

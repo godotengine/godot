@@ -99,7 +99,7 @@ public:
 	virtual Array surface_get_arrays(int p_surface) const override;
 	virtual TypedArray<Array> surface_get_blend_shape_arrays(int p_surface) const override;
 	virtual Dictionary surface_get_lods(int p_surface) const override;
-	virtual uint32_t surface_get_format(int p_idx) const override;
+	virtual BitField<ArrayFormat> surface_get_format(int p_idx) const override;
 	virtual PrimitiveType surface_get_primitive_type(int p_idx) const override;
 	virtual void surface_set_material(int p_idx, const Ref<Material> &p_material) override;
 	virtual Ref<Material> surface_get_material(int p_idx) const override;

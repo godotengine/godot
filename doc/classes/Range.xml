@@ -62,7 +62,7 @@
 		<member name="rounded" type="bool" setter="set_use_rounded_values" getter="is_using_rounded_values" default="false">
 			If [code]true[/code], [code]value[/code] will always be rounded to the nearest integer.
 		</member>
-		<member name="size_flags_vertical" type="int" setter="set_v_size_flags" getter="get_v_size_flags" overrides="Control" default="0" />
+		<member name="size_flags_vertical" type="int" setter="set_v_size_flags" getter="get_v_size_flags" overrides="Control" enum="Control.SizeFlags" default="0" />
 		<member name="step" type="float" setter="set_step" getter="get_step" default="0.01">
 			If greater than 0, [code]value[/code] will always be rounded to a multiple of [code]step[/code]. If [code]rounded[/code] is also [code]true[/code], [code]value[/code] will first be rounded to a multiple of [code]step[/code] then rounded to the nearest integer.
 		</member>

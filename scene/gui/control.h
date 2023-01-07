@@ -198,8 +198,8 @@ private:
 
 		// Container sizing.
 
-		int h_size_flags = SIZE_FILL;
-		int v_size_flags = SIZE_FILL;
+		BitField<SizeFlags> h_size_flags = SIZE_FILL;
+		BitField<SizeFlags> v_size_flags = SIZE_FILL;
 		real_t expand = 1.0;
 		Point2 custom_minimum_size;
 
@@ -471,10 +471,10 @@ public:
 
 	// Container sizing.
 
-	void set_h_size_flags(int p_flags);
-	int get_h_size_flags() const;
-	void set_v_size_flags(int p_flags);
-	int get_v_size_flags() const;
+	void set_h_size_flags(BitField<SizeFlags> p_flags);
+	BitField<SizeFlags> get_h_size_flags() const;
+	void set_v_size_flags(BitField<SizeFlags> p_flags);
+	BitField<SizeFlags> get_v_size_flags() const;
 	void set_stretch_ratio(real_t p_ratio);
 	real_t get_stretch_ratio() const;
 
@@ -619,7 +619,7 @@ public:
 };
 
 VARIANT_ENUM_CAST(Control::FocusMode);
-VARIANT_ENUM_CAST(Control::SizeFlags);
+VARIANT_BITFIELD_CAST(Control::SizeFlags);
 VARIANT_ENUM_CAST(Control::CursorShape);
 VARIANT_ENUM_CAST(Control::LayoutPreset);
 VARIANT_ENUM_CAST(Control::LayoutPresetMode);
