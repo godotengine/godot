@@ -175,6 +175,7 @@ void Area2D::_body_inout(int p_status, const RID &p_body, ObjectID p_instance, i
 		return; //does not exist because it was likely removed from the tree
 	}
 
+	lock_callback();
 	locked = true;
 
 	if (body_in) {
@@ -224,6 +225,7 @@ void Area2D::_body_inout(int p_status, const RID &p_body, ObjectID p_instance, i
 	}
 
 	locked = false;
+	unlock_callback();
 }
 
 void Area2D::_area_enter_tree(ObjectID p_id) {
@@ -268,6 +270,8 @@ void Area2D::_area_inout(int p_status, const RID &p_area, ObjectID p_instance, i
 	if (!area_in && !E) {
 		return; //likely removed from the tree
 	}
+
+	lock_callback();
 	locked = true;
 
 	if (area_in) {
@@ -317,6 +321,7 @@ void Area2D::_area_inout(int p_status, const RID &p_area, ObjectID p_instance, i
 	}
 
 	locked = false;
+	unlock_callback();
 }
 
 void Area2D::_clear_monitoring() {

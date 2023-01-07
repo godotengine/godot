@@ -100,10 +100,14 @@ void CollisionObject3D::_notification(int p_what) {
 			bool disabled = !is_enabled();
 
 			if (!disabled || (disable_mode != DISABLE_MODE_REMOVE)) {
-				if (area) {
-					PhysicsServer3D::get_singleton()->area_set_space(rid, RID());
+				if (callback_lock > 0) {
+					ERR_PRINT("Removing a CollisionObject node during a physics callback is not allowed and will cause undesired behavior. Remove with call_deferred() instead.");
 				} else {
-					PhysicsServer3D::get_singleton()->body_set_space(rid, RID());
+					if (area) {
+						PhysicsServer3D::get_singleton()->area_set_space(rid, RID());
+					} else {
+						PhysicsServer3D::get_singleton()->body_set_space(rid, RID());
+					}
 				}
 			}
 
@@ -223,10 +227,14 @@ void CollisionObject3D::_apply_disabled() {
 	switch (disable_mode) {
 		case DISABLE_MODE_REMOVE: {
 			if (is_inside_tree()) {
-				if (area) {
-					PhysicsServer3D::get_singleton()->area_set_space(rid, RID());
+				if (callback_lock > 0) {
+					ERR_PRINT("Disabling a CollisionObject node during a physics callback is not allowed and will cause undesired behavior. Disable with call_deferred() instead.");
 				} else {
-					PhysicsServer3D::get_singleton()->body_set_space(rid, RID());
+					if (area) {
+						PhysicsServer3D::get_singleton()->area_set_space(rid, RID());
+					} else {
+						PhysicsServer3D::get_singleton()->body_set_space(rid, RID());
+					}
 				}
 			}
 		} break;

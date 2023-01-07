@@ -434,6 +434,8 @@ struct _RigidBody2DInOut {
 };
 
 void RigidBody2D::_body_state_changed(PhysicsDirectBodyState2D *p_state) {
+	lock_callback();
+
 	set_block_transform_notify(true); // don't want notify (would feedback loop)
 	if (!freeze || freeze_mode != FREEZE_MODE_KINEMATIC) {
 		set_global_transform(p_state->get_transform());
@@ -527,6 +529,8 @@ void RigidBody2D::_body_state_changed(PhysicsDirectBodyState2D *p_state) {
 
 		contact_monitor->locked = false;
 	}
+
+	unlock_callback();
 }
 
 void RigidBody2D::_apply_body_mode() {

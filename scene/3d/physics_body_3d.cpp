@@ -484,6 +484,8 @@ struct _RigidBodyInOut {
 };
 
 void RigidBody3D::_body_state_changed(PhysicsDirectBodyState3D *p_state) {
+	lock_callback();
+
 	set_ignore_transform_notification(true);
 	set_global_transform(p_state->get_transform());
 
@@ -578,6 +580,8 @@ void RigidBody3D::_body_state_changed(PhysicsDirectBodyState3D *p_state) {
 
 		contact_monitor->locked = false;
 	}
+
+	unlock_callback();
 }
 
 void RigidBody3D::_notification(int p_what) {

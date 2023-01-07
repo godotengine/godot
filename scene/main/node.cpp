@@ -278,7 +278,10 @@ void Node::_propagate_exit_tree() {
 	//block while removing children
 
 #ifdef DEBUG_ENABLED
-	SceneDebugger::remove_from_cache(data.scene_file_path, this);
+	if (!data.scene_file_path.is_empty()) {
+		// Only remove if file path is set (optimization).
+		SceneDebugger::remove_from_cache(data.scene_file_path, this);
+	}
 #endif
 	data.blocked++;
 
@@ -304,7 +307,6 @@ void Node::_propagate_exit_tree() {
 	}
 
 	// exit groups
-
 	for (KeyValue<StringName, GroupData> &E : data.grouped) {
 		data.tree->remove_from_group(E.key, this);
 		E.value.group = nullptr;
@@ -1165,7 +1167,7 @@ void Node::add_sibling(Node *p_sibling, bool p_force_readable_name) {
 
 void Node::remove_child(Node *p_child) {
 	ERR_FAIL_NULL(p_child);
-	ERR_FAIL_COND_MSG(data.blocked > 0, "Parent node is busy setting up children, `remove_child()` failed. Consider using `remove_child.call_deferred(child)` instead.");
+	ERR_FAIL_COND_MSG(data.blocked > 0, "Parent node is busy adding/removing children, `remove_child()` can't be called at this time. Consider using `remove_child.call_deferred(child)` instead.");
 
 	int child_count = data.children.size();
 	Node **children = data.children.ptrw();
@@ -1196,11 +1198,13 @@ void Node::remove_child(Node *p_child) {
 		data.internal_children_back--;
 	}
 
+	data.blocked++;
 	p_child->_set_tree(nullptr);
 	//}
 
 	remove_child_notify(p_child);
 	p_child->notification(NOTIFICATION_UNPARENTED);
+	data.blocked--;
 
 	data.children.remove_at(idx);
 
