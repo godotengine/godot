@@ -1846,7 +1846,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const Color base_type_color = dark_theme ? Color(0.26, 1.0, 0.76) : Color(0, 0.6, 0.2);
 	const Color engine_type_color = dark_theme ? Color(0.56, 1, 0.86) : Color(0.11, 0.55, 0.4);
 	const Color user_type_color = dark_theme ? Color(0.78, 1, 0.93) : Color(0.18, 0.45, 0.4);
-	const Color comment_color = dark_theme ? dim_color : Color(0.08, 0.08, 0.08, 0.5);
+	const Color comment_color = dark_theme ? Color(0.62, 0.66, 1.0, 0.61) : Color(0.11, 0.17, 0.7, 0.61);
 	const Color string_color = dark_theme ? Color(1, 0.93, 0.63) : Color(0.6, 0.42, 0);
 
 	// Use the brightest background color on a light theme (which generally uses a negative contrast rate).
