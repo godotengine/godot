@@ -125,7 +125,8 @@ public:
 		}
 		Variant ret;
 		GDVIRTUAL_REQUIRED_CALL(_get_property_default_value, p_property, ret);
-		return ret;
+		r_value = ret;
+		return true;
 	}
 
 	EXBIND0(update_exports)
