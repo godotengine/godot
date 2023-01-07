@@ -130,10 +130,23 @@
 				The names of built-in display servers are [code]Windows[/code], [code]macOS[/code], [code]X11[/code] (Linux), [code]Android[/code], [code]iOS[/code], [code]web[/code] (HTML5) and [code]headless[/code] (when started with the [code]--headless[/code] [url=$DOCS_URL/tutorials/editor/command_line_tutorial.html]command line argument[/url]).
 			</description>
 		</method>
+		<method name="get_primary_screen" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns index of the primary screen.
+			</description>
+		</method>
 		<method name="get_screen_count" qualifiers="const">
 			<return type="int" />
 			<description>
 				Returns the number of displays available.
+			</description>
+		</method>
+		<method name="get_screen_from_rect" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="rect" type="Rect2" />
+			<description>
+				Returns index of the screen which contains specified rectangle.
 			</description>
 		</method>
 		<method name="get_swap_cancel_ok">
@@ -1520,6 +1533,9 @@
 		</constant>
 		<constant name="MOUSE_MODE_CONFINED_HIDDEN" value="4" enum="MouseMode">
 			Confines the mouse cursor to the game window, and make it hidden.
+		</constant>
+		<constant name="SCREEN_PRIMARY" value="-2">
+			Represents the primary screen.
 		</constant>
 		<constant name="SCREEN_OF_MAIN_WINDOW" value="-1">
 			Represents the screen where the main window is located. This is usually the default value in functions that allow specifying one of several screens.

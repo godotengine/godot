@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  noise.h                                                              */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  noise.h                                                               */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef NOISE_H
 #define NOISE_H
@@ -107,8 +107,8 @@ class Noise : public Resource {
 		int skirt_height = MAX(1, p_height * p_blend_skirt);
 		int src_width = p_width + skirt_width;
 		int src_height = p_height + skirt_height;
-		int half_width = p_width * .5;
-		int half_height = p_height * .5;
+		int half_width = p_width * 0.5;
+		int half_height = p_height * 0.5;
 		int skirt_edge_x = half_width + skirt_width;
 		int skirt_edge_y = half_height + skirt_height;
 
@@ -146,7 +146,7 @@ class Noise : public Resource {
 
 		// Blend the vertical skirt over the middle seam.
 		for (int x = half_width; x < skirt_edge_x; x++) {
-			int alpha = 255 * (1 - Math::smoothstep(.1f, .9f, float(x - half_width) / float(skirt_width)));
+			int alpha = 255 * (1 - Math::smoothstep(0.1f, 0.9f, float(x - half_width) / float(skirt_width)));
 			for (int y = 0; y < p_height; y++) {
 				// Skip the center square
 				if (y == half_height) {
@@ -160,7 +160,7 @@ class Noise : public Resource {
 
 		// Blend the horizontal skirt over the middle seam.
 		for (int y = half_height; y < skirt_edge_y; y++) {
-			int alpha = 255 * (1 - Math::smoothstep(.1f, .9f, float(y - half_height) / float(skirt_height)));
+			int alpha = 255 * (1 - Math::smoothstep(0.1f, 0.9f, float(y - half_height) / float(skirt_height)));
 			for (int x = 0; x < p_width; x++) {
 				// Skip the center square
 				if (x == half_width) {
@@ -175,8 +175,8 @@ class Noise : public Resource {
 		// Fill in the center square. Wr starts at the top left of Q4, which is the equivalent of the top left of s3, unless a modulo is used.
 		for (int y = half_height; y < skirt_edge_y; y++) {
 			for (int x = half_width; x < skirt_edge_x; x++) {
-				int xpos = 255 * (1 - Math::smoothstep(.1f, .9f, float(x - half_width) / float(skirt_width)));
-				int ypos = 255 * (1 - Math::smoothstep(.1f, .9f, float(y - half_height) / float(skirt_height)));
+				int xpos = 255 * (1 - Math::smoothstep(0.1f, 0.9f, float(x - half_width) / float(skirt_width)));
+				int ypos = 255 * (1 - Math::smoothstep(0.1f, 0.9f, float(y - half_height) / float(skirt_height)));
 
 				// Blend s3(Q1) onto s5(Q2) for the top half.
 				T top_blend = _alpha_blend<T>(rd_src(x, y, img_buff<T>::ALT_X), rd_src(x, y, img_buff<T>::DEFAULT), xpos);

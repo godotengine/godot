@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  gradle_export_util.cpp                                               */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  gradle_export_util.cpp                                                */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "gradle_export_util.h"
 
@@ -69,6 +69,54 @@ String _get_android_orientation_label(DisplayServer::ScreenOrientation screen_or
 		case DisplayServer::SCREEN_LANDSCAPE:
 		default:
 			return "landscape";
+	}
+}
+
+int _get_app_category_value(int category_index) {
+	switch (category_index) {
+		case APP_CATEGORY_ACCESSIBILITY:
+			return 8;
+		case APP_CATEGORY_AUDIO:
+			return 1;
+		case APP_CATEGORY_IMAGE:
+			return 3;
+		case APP_CATEGORY_MAPS:
+			return 6;
+		case APP_CATEGORY_NEWS:
+			return 5;
+		case APP_CATEGORY_PRODUCTIVITY:
+			return 7;
+		case APP_CATEGORY_SOCIAL:
+			return 4;
+		case APP_CATEGORY_VIDEO:
+			return 2;
+		case APP_CATEGORY_GAME:
+		default:
+			return 0;
+	}
+}
+
+String _get_app_category_label(int category_index) {
+	switch (category_index) {
+		case APP_CATEGORY_ACCESSIBILITY:
+			return "accessibility";
+		case APP_CATEGORY_AUDIO:
+			return "audio";
+		case APP_CATEGORY_IMAGE:
+			return "image";
+		case APP_CATEGORY_MAPS:
+			return "maps";
+		case APP_CATEGORY_NEWS:
+			return "news";
+		case APP_CATEGORY_PRODUCTIVITY:
+			return "productivity";
+		case APP_CATEGORY_SOCIAL:
+			return "social";
+		case APP_CATEGORY_VIDEO:
+			return "video";
+		case APP_CATEGORY_GAME:
+		default:
+			return "game";
 	}
 }
 
@@ -253,21 +301,27 @@ String _get_activity_tag(const Ref<EditorExportPreset> &p_preset) {
 }
 
 String _get_application_tag(const Ref<EditorExportPreset> &p_preset, bool p_has_read_write_storage_permission) {
+	int app_category_index = (int)(p_preset->get("package/app_category"));
+	bool is_game = app_category_index == APP_CATEGORY_GAME;
+
 	int xr_mode_index = (int)(p_preset->get("xr_features/xr_mode"));
 	bool uses_xr = xr_mode_index == XR_MODE_OPENXR;
+
 	String manifest_application_text = vformat(
 			"    <application android:label=\"@string/godot_project_name_string\"\n"
 			"        android:allowBackup=\"%s\"\n"
 			"        android:icon=\"@mipmap/icon\"\n"
+			"        android:appCategory=\"%s\"\n"
 			"        android:isGame=\"%s\"\n"
 			"        android:hasFragileUserData=\"%s\"\n"
 			"        android:requestLegacyExternalStorage=\"%s\"\n"
-			"        tools:replace=\"android:allowBackup,android:isGame,android:hasFragileUserData,android:requestLegacyExternalStorage\"\n"
+			"        tools:replace=\"android:allowBackup,android:appCategory,android:isGame,android:hasFragileUserData,android:requestLegacyExternalStorage\"\n"
 			"        tools:ignore=\"GoogleAppIndexingWarning\">\n\n"
 			"        <meta-data tools:node=\"remove\" android:name=\"xr_hand_tracking_version_name\" />\n"
 			"        <meta-data tools:node=\"remove\" android:name=\"xr_hand_tracking_metadata_name\" />\n",
 			bool_to_string(p_preset->get("user_data_backup/allow")),
-			bool_to_string(p_preset->get("package/classify_as_game")),
+			_get_app_category_label(app_category_index),
+			bool_to_string(is_game),
 			bool_to_string(p_preset->get("package/retain_data_on_uninstall")),
 			bool_to_string(p_has_read_write_storage_permission));
 

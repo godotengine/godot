@@ -77,6 +77,13 @@
 				Returns a copy of this [Callable] with one or more arguments bound. When called, the bound arguments are passed [i]after[/i] the arguments supplied by [method call].
 			</description>
 		</method>
+		<method name="bindv">
+			<return type="Callable" />
+			<param index="0" name="arguments" type="Array" />
+			<description>
+				Returns a copy of this [Callable] with one or more arguments bound, reading them from an array. When called, the bound arguments are passed [i]after[/i] the arguments supplied by [method call].
+			</description>
+		</method>
 		<method name="call" qualifiers="vararg const">
 			<return type="Variant" />
 			<description>

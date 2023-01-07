@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  godot_shape_3d.cpp                                                   */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  godot_shape_3d.cpp                                                    */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "godot_shape_3d.h"
 
@@ -844,36 +844,55 @@ void GodotConvexPolygonShape3D::project_range(const Vector3 &p_normal, const Tra
 }
 
 Vector3 GodotConvexPolygonShape3D::get_support(const Vector3 &p_normal) const {
+	// Skip if there are no vertices in the mesh
 	if (mesh.vertices.size() == 0) {
 		return Vector3();
 	}
 
-	// Find an initial guess for the support vertex by checking the ones we
-	// found in _setup().
+	// Get the array of vertices
+	const Vector3 *const vertices_array = mesh.vertices.ptr();
 
-	int best_vertex = -1;
-	real_t max_support = 0.0;
-	for (uint32_t i = 0; i < extreme_vertices.size(); i++) {
-		real_t s = p_normal.dot(mesh.vertices[extreme_vertices[i]]);
-		if (best_vertex == -1 || s > max_support) {
-			best_vertex = extreme_vertices[i];
+	// Get the array of extreme vertices
+	const int *const extreme_array = extreme_vertices.ptr();
+	const uint32_t extreme_size = extreme_vertices.size();
+
+	// Start with an initial assumption of the first extreme vertex
+	int best_vertex = extreme_array[0];
+	real_t max_support = p_normal.dot(vertices_array[best_vertex]);
+
+	// Check the remaining extreme vertices for a better vertex
+	for (uint32_t i = 0; i < extreme_size; ++i) {
+		int vert = extreme_array[i];
+		real_t s = p_normal.dot(vertices_array[vert]);
+		if (s > max_support) {
+			best_vertex = vert;
 			max_support = s;
 		}
 	}
-	if (extreme_vertices.size() == mesh.vertices.size()) {
-		// We've already checked every vertex, so we can return now.
-		return mesh.vertices[best_vertex];
+
+	// If we checked all vertices in the mesh then we're done
+	if (extreme_size == mesh.vertices.size()) {
+		return vertices_array[best_vertex];
 	}
 
-	// Move along the surface until we reach the true support vertex.
+	// Get the array of neighbor arrays for each vertex
+	const LocalVector<int> *const vertex_neighbors_array = vertex_neighbors.ptr();
 
+	// Move along the surface until we reach the true support vertex.
 	int last_vertex = -1;
 	while (true) {
 		int next_vertex = -1;
-		for (uint32_t i = 0; i < vertex_neighbors[best_vertex].size(); i++) {
-			int vert = vertex_neighbors[best_vertex][i];
+
+		// Get the array of neighbors around the best vertex
+		const LocalVector<int> &neighbors = vertex_neighbors_array[best_vertex];
+		const int *const neighbors_array = neighbors.ptr();
+		const uint32_t neighbors_size = neighbors.size();
+
+		// Iterate over all the neighbors checking for a better vertex
+		for (uint32_t i = 0; i < neighbors_size; ++i) {
+			int vert = neighbors_array[i];
 			if (vert != last_vertex) {
-				real_t s = p_normal.dot(mesh.vertices[vert]);
+				real_t s = p_normal.dot(vertices_array[vert]);
 				if (s > max_support) {
 					next_vertex = vert;
 					max_support = s;
@@ -881,9 +900,13 @@ Vector3 GodotConvexPolygonShape3D::get_support(const Vector3 &p_normal) const {
 				}
 			}
 		}
+
+		// No better vertex found, we have the best
 		if (next_vertex == -1) {
-			return mesh.vertices[best_vertex];
+			return vertices_array[best_vertex];
 		}
+
+		// Move to the better vertex and try again
 		last_vertex = best_vertex;
 		best_vertex = next_vertex;
 	}
