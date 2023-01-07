@@ -353,19 +353,19 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joyhat(JNIEnv *env, j
 	AndroidInputHandler::JoypadEvent jevent;
 	jevent.device = p_device;
 	jevent.type = AndroidInputHandler::JOY_EVENT_HAT;
-	HatMask hat = HatMask::CENTER;
+	BitField<HatMask> hat;
 	if (p_hat_x != 0) {
 		if (p_hat_x < 0) {
-			hat |= HatMask::LEFT;
+			hat.set_flag(HatMask::LEFT);
 		} else {
-			hat |= HatMask::RIGHT;
+			hat.set_flag(HatMask::RIGHT);
 		}
 	}
 	if (p_hat_y != 0) {
 		if (p_hat_y < 0) {
-			hat |= HatMask::UP;
+			hat.set_flag(HatMask::UP);
 		} else {
-			hat |= HatMask::DOWN;
+			hat.set_flag(HatMask::DOWN);
 		}
 	}
 	jevent.hat = hat;

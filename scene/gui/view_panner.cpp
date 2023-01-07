@@ -114,7 +114,7 @@ bool ViewPanner::gui_input(const Ref<InputEvent> &p_event, Rect2 p_canvas_rect) 
 	if (k.is_valid()) {
 		if (pan_view_shortcut.is_valid() && pan_view_shortcut->matches_event(k)) {
 			pan_key_pressed = k->is_pressed();
-			if (simple_panning_enabled || (Input::get_singleton()->get_mouse_button_mask() & MouseButton::LEFT) != MouseButton::NONE) {
+			if (simple_panning_enabled || Input::get_singleton()->get_mouse_button_mask().has_flag(MouseButtonMask::LEFT)) {
 				is_dragging = pan_key_pressed;
 			}
 			return true;

@@ -33,7 +33,7 @@
 
 #include "core/variant/binder_common.h"
 
-VARIANT_ENUM_CAST(MethodFlags)
+VARIANT_BITFIELD_CAST(MethodFlags)
 
 // some helpers
 

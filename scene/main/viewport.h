@@ -259,7 +259,7 @@ private:
 		bool control = false;
 		bool shift = false;
 		bool meta = false;
-		MouseButton mouse_mask = MouseButton::NONE;
+		BitField<MouseButtonMask> mouse_mask;
 
 	} physics_last_mouse_state;
 
@@ -358,7 +358,7 @@ private:
 		Control *mouse_focus = nullptr;
 		Control *last_mouse_focus = nullptr;
 		Control *mouse_click_grabber = nullptr;
-		MouseButton mouse_focus_mask = MouseButton::NONE;
+		BitField<MouseButtonMask> mouse_focus_mask;
 		Control *key_focus = nullptr;
 		Control *mouse_over = nullptr;
 		Control *drag_mouse_over = nullptr;

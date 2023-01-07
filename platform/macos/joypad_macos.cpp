@@ -402,10 +402,10 @@ bool joypad::check_ff_features() {
 	return false;
 }
 
-static HatMask process_hat_value(int p_min, int p_max, int p_value, bool p_offset_hat) {
+static BitField<HatMask> process_hat_value(int p_min, int p_max, int p_value, bool p_offset_hat) {
 	int range = (p_max - p_min + 1);
 	int value = p_value - p_min;
-	HatMask hat_value = HatMask::CENTER;
+	BitField<HatMask> hat_value;
 	if (range == 4) {
 		value *= 2;
 	}
@@ -415,31 +415,34 @@ static HatMask process_hat_value(int p_min, int p_max, int p_value, bool p_offse
 
 	switch (value) {
 		case 0:
-			hat_value = HatMask::UP;
+			hat_value.set_flag(HatMask::UP);
 			break;
 		case 1:
-			hat_value = (HatMask::UP | HatMask::RIGHT);
+			hat_value.set_flag(HatMask::UP);
+			hat_value.set_flag(HatMask::RIGHT);
 			break;
 		case 2:
-			hat_value = HatMask::RIGHT;
+			hat_value.set_flag(HatMask::RIGHT);
 			break;
 		case 3:
-			hat_value = (HatMask::DOWN | HatMask::RIGHT);
+			hat_value.set_flag(HatMask::DOWN);
+			hat_value.set_flag(HatMask::RIGHT);
 			break;
 		case 4:
-			hat_value = HatMask::DOWN;
+			hat_value.set_flag(HatMask::DOWN);
 			break;
 		case 5:
-			hat_value = (HatMask::DOWN | HatMask::LEFT);
+			hat_value.set_flag(HatMask::DOWN);
+			hat_value.set_flag(HatMask::LEFT);
 			break;
 		case 6:
-			hat_value = HatMask::LEFT;
+			hat_value.set_flag(HatMask::LEFT);
 			break;
 		case 7:
-			hat_value = (HatMask::UP | HatMask::LEFT);
+			hat_value.set_flag(HatMask::UP);
+			hat_value.set_flag(HatMask::LEFT);
 			break;
 		default:
-			hat_value = HatMask::CENTER;
 			break;
 	}
 	return hat_value;
@@ -474,7 +477,7 @@ void JoypadMacOS::process_joypads() {
 		for (int j = 0; j < joy.hat_elements.size(); j++) {
 			rec_element &elem = joy.hat_elements.write[j];
 			int value = joy.get_hid_element_state(&elem);
-			HatMask hat_value = process_hat_value(elem.min, elem.max, value, joy.offset_hat);
+			BitField<HatMask> hat_value = process_hat_value(elem.min, elem.max, value, joy.offset_hat);
 			input->joy_hat(joy.id, hat_value);
 		}
 

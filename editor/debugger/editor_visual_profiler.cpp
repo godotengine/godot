@@ -544,7 +544,7 @@ void EditorVisualProfiler::_graph_tex_input(const Ref<InputEvent> &p_ev) {
 			hover_metric = -1;
 		}
 
-		if (mb.is_valid() || (mm->get_button_mask() & MouseButton::MASK_LEFT) != MouseButton::NONE) {
+		if (mb.is_valid() || mm->get_button_mask().has_flag(MouseButtonMask::LEFT)) {
 			//cursor_metric=x;
 			updating_frame = true;
 

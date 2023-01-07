@@ -154,7 +154,7 @@ private:
 
 	CGEventSourceRef event_source;
 	MouseMode mouse_mode = MOUSE_MODE_VISIBLE;
-	MouseButton last_button_state = MouseButton::NONE;
+	BitField<MouseButtonMask> last_button_state;
 
 	bool drop_events = false;
 	bool in_dispatch_input_event = false;
@@ -317,8 +317,8 @@ public:
 	bool update_mouse_wrap(WindowData &p_wd, NSPoint &r_delta, NSPoint &r_mpos, NSTimeInterval p_timestamp);
 	virtual void warp_mouse(const Point2i &p_position) override;
 	virtual Point2i mouse_get_position() const override;
-	void mouse_set_button_state(MouseButton p_state);
-	virtual MouseButton mouse_get_button_state() const override;
+	void mouse_set_button_state(BitField<MouseButtonMask> p_state);
+	virtual BitField<MouseButtonMask> mouse_get_button_state() const override;
 
 	virtual void clipboard_set(const String &p_text) override;
 	virtual String clipboard_get() const override;

@@ -62,7 +62,7 @@ private:
 		float curr_axis[MAX_ABS];
 		int key_map[MAX_KEY];
 		int abs_map[MAX_ABS];
-		HatMask dpad = HatMask::CENTER;
+		BitField<HatMask> dpad;
 		int fd = -1;
 
 		String devpath;

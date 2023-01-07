@@ -371,19 +371,21 @@
 	ds->cursor_update_shape();
 }
 
-- (void)processMouseEvent:(NSEvent *)event index:(MouseButton)index mask:(MouseButton)mask pressed:(bool)pressed {
+- (void)processMouseEvent:(NSEvent *)event index:(MouseButton)index pressed:(bool)pressed {
 	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
 	if (!ds || !ds->has_window(window_id)) {
 		return;
 	}
 
 	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
-	MouseButton last_button_state = ds->mouse_get_button_state();
+	BitField<MouseButtonMask> last_button_state = ds->mouse_get_button_state();
+
+	MouseButtonMask mask = mouse_button_to_mask(index);
 
 	if (pressed) {
-		last_button_state |= mask;
+		last_button_state.set_flag(mask);
 	} else {
-		last_button_state &= (MouseButton)~mask;
+		last_button_state.clear_flag(mask);
 	}
 	ds->mouse_set_button_state(last_button_state);
 
@@ -407,10 +409,10 @@
 - (void)mouseDown:(NSEvent *)event {
 	if (([event modifierFlags] & NSEventModifierFlagControl)) {
 		mouse_down_control = true;
-		[self processMouseEvent:event index:MouseButton::RIGHT mask:MouseButton::MASK_RIGHT pressed:true];
+		[self processMouseEvent:event index:MouseButton::RIGHT pressed:true];
 	} else {
 		mouse_down_control = false;
-		[self processMouseEvent:event index:MouseButton::LEFT mask:MouseButton::MASK_LEFT pressed:true];
+		[self processMouseEvent:event index:MouseButton::LEFT pressed:true];
 	}
 }
 
@@ -420,9 +422,9 @@
 
 - (void)mouseUp:(NSEvent *)event {
 	if (mouse_down_control) {
-		[self processMouseEvent:event index:MouseButton::RIGHT mask:MouseButton::MASK_RIGHT pressed:false];
+		[self processMouseEvent:event index:MouseButton::RIGHT pressed:false];
 	} else {
-		[self processMouseEvent:event index:MouseButton::LEFT mask:MouseButton::MASK_LEFT pressed:false];
+		[self processMouseEvent:event index:MouseButton::LEFT pressed:false];
 	}
 }
 
@@ -469,7 +471,7 @@
 }
 
 - (void)rightMouseDown:(NSEvent *)event {
-	[self processMouseEvent:event index:MouseButton::RIGHT mask:MouseButton::MASK_RIGHT pressed:true];
+	[self processMouseEvent:event index:MouseButton::RIGHT pressed:true];
 }
 
 - (void)rightMouseDragged:(NSEvent *)event {
@@ -477,16 +479,16 @@
 }
 
 - (void)rightMouseUp:(NSEvent *)event {
-	[self processMouseEvent:event index:MouseButton::RIGHT mask:MouseButton::MASK_RIGHT pressed:false];
+	[self processMouseEvent:event index:MouseButton::RIGHT pressed:false];
 }
 
 - (void)otherMouseDown:(NSEvent *)event {
 	if ((int)[event buttonNumber] == 2) {
-		[self processMouseEvent:event index:MouseButton::MIDDLE mask:MouseButton::MASK_MIDDLE pressed:true];
+		[self processMouseEvent:event index:MouseButton::MIDDLE pressed:true];
 	} else if ((int)[event buttonNumber] == 3) {
-		[self processMouseEvent:event index:MouseButton::MB_XBUTTON1 mask:MouseButton::MASK_XBUTTON1 pressed:true];
+		[self processMouseEvent:event index:MouseButton::MB_XBUTTON1 pressed:true];
 	} else if ((int)[event buttonNumber] == 4) {
-		[self processMouseEvent:event index:MouseButton::MB_XBUTTON2 mask:MouseButton::MASK_XBUTTON2 pressed:true];
+		[self processMouseEvent:event index:MouseButton::MB_XBUTTON2 pressed:true];
 	} else {
 		return;
 	}
@@ -498,11 +500,11 @@
 
 - (void)otherMouseUp:(NSEvent *)event {
 	if ((int)[event buttonNumber] == 2) {
-		[self processMouseEvent:event index:MouseButton::MIDDLE mask:MouseButton::MASK_MIDDLE pressed:false];
+		[self processMouseEvent:event index:MouseButton::MIDDLE pressed:false];
 	} else if ((int)[event buttonNumber] == 3) {
-		[self processMouseEvent:event index:MouseButton::MB_XBUTTON1 mask:MouseButton::MASK_XBUTTON1 pressed:false];
+		[self processMouseEvent:event index:MouseButton::MB_XBUTTON1 pressed:false];
 	} else if ((int)[event buttonNumber] == 4) {
-		[self processMouseEvent:event index:MouseButton::MB_XBUTTON2 mask:MouseButton::MASK_XBUTTON2 pressed:false];
+		[self processMouseEvent:event index:MouseButton::MB_XBUTTON2 pressed:false];
 	} else {
 		return;
 	}
@@ -751,7 +753,8 @@
 	}
 
 	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
-	MouseButton mask = mouse_button_to_mask(button);
+	MouseButtonMask mask = mouse_button_to_mask(button);
+	BitField<MouseButtonMask> last_button_state = ds->mouse_get_button_state();
 
 	Ref<InputEventMouseButton> sc;
 	sc.instantiate();
@@ -763,7 +766,7 @@
 	sc->set_pressed(true);
 	sc->set_position(wd.mouse_pos);
 	sc->set_global_position(wd.mouse_pos);
-	MouseButton last_button_state = ds->mouse_get_button_state() | (MouseButton)mask;
+	last_button_state.set_flag(mask);
 	sc->set_button_mask(last_button_state);
 	ds->mouse_set_button_state(last_button_state);
 
@@ -776,7 +779,7 @@
 	sc->set_pressed(false);
 	sc->set_position(wd.mouse_pos);
 	sc->set_global_position(wd.mouse_pos);
-	last_button_state &= (MouseButton)~mask;
+	last_button_state.clear_flag(mask);
 	sc->set_button_mask(last_button_state);
 	ds->mouse_set_button_state(last_button_state);
 

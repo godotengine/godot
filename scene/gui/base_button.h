@@ -46,7 +46,7 @@ public:
 	};
 
 private:
-	MouseButton button_mask = MouseButton::MASK_LEFT;
+	BitField<MouseButtonMask> button_mask;
 	bool toggle_mode = false;
 	bool shortcut_in_tooltip = true;
 	bool was_mouse_pressed = false;
@@ -122,8 +122,8 @@ public:
 	void set_keep_pressed_outside(bool p_on);
 	bool is_keep_pressed_outside() const;
 
-	void set_button_mask(MouseButton p_mask);
-	MouseButton get_button_mask() const;
+	void set_button_mask(BitField<MouseButtonMask> p_mask);
+	BitField<MouseButtonMask> get_button_mask() const;
 
 	void set_shortcut(const Ref<Shortcut> &p_shortcut);
 	Ref<Shortcut> get_shortcut() const;

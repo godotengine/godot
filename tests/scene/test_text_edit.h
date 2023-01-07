@@ -891,8 +891,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			text_edit->grab_focus();
 			MessageQueue::get_singleton()->flush();
 
-			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, text_edit->get_pos_at_line_column(0, 1), MouseButton::LEFT, MouseButton::MASK_LEFT, Key::NONE);
-			SEND_GUI_MOUSE_MOTION_EVENT(text_edit, text_edit->get_pos_at_line_column(0, 7), MouseButton::MASK_LEFT, Key::NONE);
+			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, text_edit->get_pos_at_line_column(0, 1), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
+			SEND_GUI_MOUSE_MOTION_EVENT(text_edit, text_edit->get_pos_at_line_column(0, 7), MouseButtonMask::LEFT, Key::NONE);
 			CHECK(text_edit->has_selection());
 			CHECK(text_edit->get_selected_text() == "for s");
 			CHECK(text_edit->get_selection_mode() == TextEdit::SELECTION_MODE_POINTER);
@@ -903,12 +903,12 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_line() == 1);
 			CHECK(text_edit->get_caret_column() == 5);
 
-			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, text_edit->get_pos_at_line_column(0, 9), MouseButton::LEFT, MouseButton::MASK_LEFT, Key::NONE);
+			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, text_edit->get_pos_at_line_column(0, 9), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
 			CHECK_FALSE(text_edit->has_selection());
 
 			text_edit->set_selecting_enabled(false);
-			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, text_edit->get_pos_at_line_column(0, 1), MouseButton::LEFT, MouseButton::MASK_LEFT, Key::NONE);
-			SEND_GUI_MOUSE_MOTION_EVENT(text_edit, text_edit->get_pos_at_line_column(0, 7), MouseButton::MASK_LEFT, Key::NONE);
+			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, text_edit->get_pos_at_line_column(0, 1), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
+			SEND_GUI_MOUSE_MOTION_EVENT(text_edit, text_edit->get_pos_at_line_column(0, 7), MouseButtonMask::LEFT, Key::NONE);
 			CHECK_FALSE(text_edit->has_selection());
 			CHECK(text_edit->get_caret_line() == 1);
 			CHECK(text_edit->get_caret_column() == 5);
@@ -935,7 +935,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_column() == 3);
 			SIGNAL_CHECK("caret_changed", empty_signal_args);
 
-			SEND_GUI_MOUSE_MOTION_EVENT(text_edit, text_edit->get_pos_at_line_column(0, 7), MouseButton::MASK_LEFT, Key::NONE);
+			SEND_GUI_MOUSE_MOTION_EVENT(text_edit, text_edit->get_pos_at_line_column(0, 7), MouseButtonMask::LEFT, Key::NONE);
 			CHECK(text_edit->has_selection());
 			CHECK(text_edit->get_selected_text() == "for selection");
 			CHECK(text_edit->get_selection_mode() == TextEdit::SELECTION_MODE_WORD);
@@ -949,7 +949,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 
 			Point2i line_0 = text_edit->get_pos_at_line_column(0, 0);
 			line_0.y /= 2;
-			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, line_0, MouseButton::LEFT, MouseButton::MASK_LEFT, Key::NONE);
+			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, line_0, MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
 			CHECK_FALSE(text_edit->has_selection());
 
 			text_edit->set_selecting_enabled(false);
@@ -968,7 +968,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			MessageQueue::get_singleton()->flush();
 
 			SEND_GUI_DOUBLE_CLICK(text_edit, text_edit->get_pos_at_line_column(0, 2), Key::NONE);
-			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, text_edit->get_pos_at_line_column(0, 2), MouseButton::LEFT, MouseButton::MASK_LEFT, Key::NONE);
+			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, text_edit->get_pos_at_line_column(0, 2), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
 			CHECK(text_edit->has_selection());
 			CHECK(text_edit->get_selected_text() == "for selection");
 			CHECK(text_edit->get_selection_mode() == TextEdit::SELECTION_MODE_LINE);
@@ -981,12 +981,12 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 
 			Point2i line_0 = text_edit->get_pos_at_line_column(0, 0);
 			line_0.y /= 2;
-			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, line_0, MouseButton::LEFT, MouseButton::MASK_LEFT, Key::NONE);
+			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, line_0, MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
 			CHECK_FALSE(text_edit->has_selection());
 
 			text_edit->set_selecting_enabled(false);
 			SEND_GUI_DOUBLE_CLICK(text_edit, text_edit->get_pos_at_line_column(0, 2), Key::NONE);
-			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, text_edit->get_pos_at_line_column(0, 2), MouseButton::LEFT, MouseButton::MASK_LEFT, Key::NONE);
+			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, text_edit->get_pos_at_line_column(0, 2), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
 			CHECK_FALSE(text_edit->has_selection());
 			CHECK(text_edit->get_caret_line() == 1);
 			CHECK(text_edit->get_caret_column() == 0);
@@ -1000,8 +1000,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			text_edit->set_text("this is some text\nfor selection");
 			MessageQueue::get_singleton()->flush();
 
-			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, text_edit->get_pos_at_line_column(0, 0), MouseButton::LEFT, MouseButton::MASK_LEFT, Key::NONE);
-			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, text_edit->get_pos_at_line_column(0, 7), MouseButton::LEFT, MouseButton::MASK_LEFT, Key::NONE | KeyModifierMask::SHIFT);
+			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, text_edit->get_pos_at_line_column(0, 0), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
+			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, text_edit->get_pos_at_line_column(0, 7), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE | KeyModifierMask::SHIFT);
 			CHECK(text_edit->has_selection());
 			CHECK(text_edit->get_selected_text() == "for s");
 			CHECK(text_edit->get_selection_mode() == TextEdit::SELECTION_MODE_POINTER);
@@ -1012,12 +1012,12 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_line() == 1);
 			CHECK(text_edit->get_caret_column() == 5);
 
-			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, text_edit->get_pos_at_line_column(0, 9), MouseButton::LEFT, MouseButton::MASK_LEFT, Key::NONE);
+			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, text_edit->get_pos_at_line_column(0, 9), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
 			CHECK_FALSE(text_edit->has_selection());
 
 			text_edit->set_selecting_enabled(false);
-			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, text_edit->get_pos_at_line_column(0, 0), MouseButton::LEFT, MouseButton::MASK_LEFT, Key::NONE);
-			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, text_edit->get_pos_at_line_column(0, 7), MouseButton::LEFT, MouseButton::MASK_LEFT, Key::NONE | KeyModifierMask::SHIFT);
+			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, text_edit->get_pos_at_line_column(0, 0), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
+			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, text_edit->get_pos_at_line_column(0, 7), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE | KeyModifierMask::SHIFT);
 			CHECK_FALSE(text_edit->has_selection());
 			CHECK(text_edit->get_caret_line() == 1);
 			CHECK(text_edit->get_caret_column() == 5);
@@ -1149,19 +1149,19 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 
 			Point2i line_0 = text_edit->get_pos_at_line_column(0, 0);
 			line_0.y /= 2;
-			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, line_0, MouseButton::LEFT, MouseButton::MASK_LEFT, Key::NONE);
+			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, line_0, MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
 			CHECK(text_edit->is_mouse_over_selection());
-			SEND_GUI_MOUSE_MOTION_EVENT(text_edit, text_edit->get_pos_at_line_column(0, 7), MouseButton::MASK_LEFT, Key::NONE);
+			SEND_GUI_MOUSE_MOTION_EVENT(text_edit, text_edit->get_pos_at_line_column(0, 7), MouseButtonMask::LEFT, Key::NONE);
 			CHECK(text_edit->get_viewport()->gui_is_dragging());
 			CHECK(text_edit->get_viewport()->gui_get_drag_data() == "drag me");
 
 			line_0 = target_text_edit->get_pos_at_line_column(0, 0);
 			line_0.y /= 2;
 			line_0.x += 401; // As empty add one.
-			SEND_GUI_MOUSE_MOTION_EVENT(target_text_edit, line_0, MouseButton::MASK_LEFT, Key::NONE);
+			SEND_GUI_MOUSE_MOTION_EVENT(target_text_edit, line_0, MouseButtonMask::LEFT, Key::NONE);
 			CHECK(text_edit->get_viewport()->gui_is_dragging());
 
-			SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(target_text_edit, line_0, MouseButton::LEFT, MouseButton::MASK_LEFT, Key::NONE);
+			SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(target_text_edit, line_0, MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
 
 			CHECK_FALSE(text_edit->get_viewport()->gui_is_dragging());
 			CHECK(text_edit->get_text() == "");
@@ -3093,14 +3093,14 @@ TEST_CASE("[SceneTree][TextEdit] context menu") {
 	CHECK_FALSE(text_edit->is_context_menu_enabled());
 
 	CHECK_FALSE(text_edit->is_menu_visible());
-	SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, Point2i(600, 10), MouseButton::RIGHT, MouseButton::MASK_RIGHT, Key::NONE);
+	SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, Point2i(600, 10), MouseButton::RIGHT, MouseButtonMask::RIGHT, Key::NONE);
 	CHECK_FALSE(text_edit->is_menu_visible());
 
 	text_edit->set_context_menu_enabled(true);
 	CHECK(text_edit->is_context_menu_enabled());
 
 	CHECK_FALSE(text_edit->is_menu_visible());
-	SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, Point2i(700, 10), MouseButton::RIGHT, MouseButton::MASK_RIGHT, Key::NONE);
+	SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, Point2i(700, 10), MouseButton::RIGHT, MouseButtonMask::RIGHT, Key::NONE);
 	CHECK(text_edit->is_menu_visible());
 
 	memdelete(text_edit);
@@ -3340,13 +3340,13 @@ TEST_CASE("[SceneTree][TextEdit] caret") {
 	text_edit->set_move_caret_on_right_click_enabled(false);
 	CHECK_FALSE(text_edit->is_move_caret_on_right_click_enabled());
 
-	SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, Point2i(100, 1), MouseButton::RIGHT, MouseButton::MASK_RIGHT, Key::NONE);
+	SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, Point2i(100, 1), MouseButton::RIGHT, MouseButtonMask::RIGHT, Key::NONE);
 	CHECK(text_edit->get_caret_column() == caret_col);
 
 	text_edit->set_move_caret_on_right_click_enabled(true);
 	CHECK(text_edit->is_move_caret_on_right_click_enabled());
 
-	SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, Point2i(100, 1), MouseButton::RIGHT, MouseButton::MASK_RIGHT, Key::NONE);
+	SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, Point2i(100, 1), MouseButton::RIGHT, MouseButtonMask::RIGHT, Key::NONE);
 	CHECK(text_edit->get_caret_column() != caret_col);
 
 	text_edit->set_move_caret_on_right_click_enabled(false);
@@ -3860,28 +3860,28 @@ TEST_CASE("[SceneTree][TextEdit] viewport") {
 
 	// Scroll.
 	int v_scroll = text_edit->get_v_scroll();
-	SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, Point2i(10, 10), MouseButton::WHEEL_DOWN, MouseButton::WHEEL_DOWN, Key::NONE);
+	SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, Point2i(10, 10), MouseButton::WHEEL_DOWN, 0, Key::NONE);
 	CHECK(text_edit->get_v_scroll() > v_scroll);
-	SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, Point2i(10, 10), MouseButton::WHEEL_UP, MouseButton::WHEEL_UP, Key::NONE);
+	SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, Point2i(10, 10), MouseButton::WHEEL_UP, 0, Key::NONE);
 	CHECK(text_edit->get_v_scroll() == v_scroll);
 
 	// smooth scroll speed.
 	text_edit->set_smooth_scroll_enabled(true);
 
 	v_scroll = text_edit->get_v_scroll();
-	SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, Point2i(10, 10), MouseButton::WHEEL_DOWN, MouseButton::WHEEL_DOWN, Key::NONE);
+	SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, Point2i(10, 10), MouseButton::WHEEL_DOWN, 0, Key::NONE);
 	text_edit->notification(TextEdit::NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
 	CHECK(text_edit->get_v_scroll() >= v_scroll);
-	SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, Point2i(10, 10), MouseButton::WHEEL_UP, MouseButton::WHEEL_UP, Key::NONE);
+	SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, Point2i(10, 10), MouseButton::WHEEL_UP, 0, Key::NONE);
 	text_edit->notification(TextEdit::NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
 	CHECK(text_edit->get_v_scroll() == v_scroll);
 
 	v_scroll = text_edit->get_v_scroll();
 	text_edit->set_v_scroll_speed(10000);
-	SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, Point2i(10, 10), MouseButton::WHEEL_DOWN, MouseButton::WHEEL_DOWN, Key::NONE);
+	SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, Point2i(10, 10), MouseButton::WHEEL_DOWN, 0, Key::NONE);
 	text_edit->notification(TextEdit::NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
 	CHECK(text_edit->get_v_scroll() >= v_scroll);
-	SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, Point2i(10, 10), MouseButton::WHEEL_UP, MouseButton::WHEEL_UP, Key::NONE);
+	SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, Point2i(10, 10), MouseButton::WHEEL_UP, 0, Key::NONE);
 	text_edit->notification(TextEdit::NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
 	CHECK(text_edit->get_v_scroll() == v_scroll);
 

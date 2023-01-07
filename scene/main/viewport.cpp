@@ -603,9 +603,9 @@ void Viewport::_process_picking() {
 			physics_last_mouse_state.meta = mb->is_meta_pressed();
 
 			if (mb->is_pressed()) {
-				physics_last_mouse_state.mouse_mask |= mouse_button_to_mask(mb->get_button_index());
+				physics_last_mouse_state.mouse_mask.set_flag(mouse_button_to_mask(mb->get_button_index()));
 			} else {
-				physics_last_mouse_state.mouse_mask &= ~mouse_button_to_mask(mb->get_button_index());
+				physics_last_mouse_state.mouse_mask.clear_flag(mouse_button_to_mask(mb->get_button_index()));
 
 				// If touch mouse raised, assume we don't know last mouse pos until new events come
 				if (mb->get_device() == InputEvent::DEVICE_ID_TOUCH_MOUSE) {
@@ -1496,19 +1496,20 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		Point2 mpos = mb->get_position();
 		if (mb->is_pressed()) {
 			Size2 pos = mpos;
-			if (gui.mouse_focus_mask != MouseButton::NONE) {
+			if (!gui.mouse_focus_mask.is_empty()) {
 				// Do not steal mouse focus and stuff while a focus mask exists.
-				gui.mouse_focus_mask |= mouse_button_to_mask(mb->get_button_index());
+				gui.mouse_focus_mask.set_flag(mouse_button_to_mask(mb->get_button_index()));
 			} else {
 				gui.mouse_focus = gui_find_control(pos);
 				gui.last_mouse_focus = gui.mouse_focus;
 
 				if (!gui.mouse_focus) {
-					gui.mouse_focus_mask = MouseButton::NONE;
+					gui.mouse_focus_mask.clear();
 					return;
 				}
 
-				gui.mouse_focus_mask = mouse_button_to_mask(mb->get_button_index());
+				gui.mouse_focus_mask.clear();
+				gui.mouse_focus_mask.set_flag(mouse_button_to_mask(mb->get_button_index()));
 
 				if (mb->get_button_index() == MouseButton::LEFT) {
 					gui.drag_accum = Vector2();
@@ -1578,7 +1579,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				_perform_drop(gui.drag_mouse_over, gui.drag_mouse_over_pos);
 			}
 
-			gui.mouse_focus_mask &= ~mouse_button_to_mask(mb->get_button_index()); // Remove from mask.
+			gui.mouse_focus_mask.clear_flag(mouse_button_to_mask(mb->get_button_index())); // Remove from mask.
 
 			if (!gui.mouse_focus) {
 				// Release event is only sent if a mouse focus (previously pressed button) exists.
@@ -1597,7 +1598,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			// Disable mouse focus if needed before calling input,
 			// this makes popups on mouse press event work better,
 			// as the release will never be received otherwise.
-			if (gui.mouse_focus_mask == MouseButton::NONE) {
+			if (gui.mouse_focus_mask.is_empty()) {
 				gui.mouse_focus = nullptr;
 				gui.forced_mouse_focus = false;
 			}
@@ -1619,7 +1620,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		Point2 mpos = mm->get_position();
 
 		// Drag & drop.
-		if (!gui.drag_attempted && gui.mouse_focus && (mm->get_button_mask() & MouseButton::MASK_LEFT) != MouseButton::NONE) {
+		if (!gui.drag_attempted && gui.mouse_focus && (mm->get_button_mask().has_flag(MouseButtonMask::LEFT))) {
 			gui.drag_accum += mm->get_relative();
 			float len = gui.drag_accum.length();
 			if (len > 10) {
@@ -1633,7 +1634,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 							if (gui.drag_data.get_type() != Variant::NIL) {
 								gui.mouse_focus = nullptr;
 								gui.forced_mouse_focus = false;
-								gui.mouse_focus_mask = MouseButton::NONE;
+								gui.mouse_focus_mask.clear();
 								break;
 							} else {
 								Control *drag_preview = _gui_get_drag_preview();
@@ -1701,7 +1702,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			mm->set_velocity(velocity);
 			mm->set_relative(rel);
 
-			if (mm->get_button_mask() == MouseButton::NONE) {
+			if (mm->get_button_mask().is_empty()) {
 				// Nothing pressed.
 
 				bool is_tooltip_shown = false;
@@ -1744,7 +1745,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				Control *c = over;
 				Vector2 cpos = pos;
 				while (c) {
-					if (gui.mouse_focus_mask != MouseButton::NONE || c->has_point(cpos)) {
+					if (!gui.mouse_focus_mask.is_empty() || c->has_point(cpos)) {
 						cursor_shape = c->get_cursor_shape(cpos);
 					} else {
 						cursor_shape = Control::CURSOR_ARROW;
@@ -2103,7 +2104,7 @@ void Viewport::_gui_cleanup_internal_state(Ref<InputEvent> p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid()) {
 		if (!mb->is_pressed()) {
-			gui.mouse_focus_mask &= ~mouse_button_to_mask(mb->get_button_index()); // Remove from mask.
+			gui.mouse_focus_mask.clear_flag(mouse_button_to_mask(mb->get_button_index())); // Remove from mask.
 		}
 	}
 }
@@ -2194,7 +2195,7 @@ void Viewport::_gui_remove_control(Control *p_control) {
 	if (gui.mouse_focus == p_control) {
 		gui.mouse_focus = nullptr;
 		gui.forced_mouse_focus = false;
-		gui.mouse_focus_mask = MouseButton::NONE;
+		gui.mouse_focus_mask.clear();
 	}
 	if (gui.last_mouse_focus == p_control) {
 		gui.last_mouse_focus = nullptr;
@@ -2263,10 +2264,10 @@ void Viewport::_drop_mouse_over() {
 
 void Viewport::_drop_mouse_focus() {
 	Control *c = gui.mouse_focus;
-	MouseButton mask = gui.mouse_focus_mask;
+	BitField<MouseButtonMask> mask = gui.mouse_focus_mask;
 	gui.mouse_focus = nullptr;
 	gui.forced_mouse_focus = false;
-	gui.mouse_focus_mask = MouseButton::NONE;
+	gui.mouse_focus_mask.clear();
 
 	for (int i = 0; i < 3; i++) {
 		if ((int)mask & (1 << i)) {
@@ -2374,7 +2375,7 @@ void Viewport::_post_gui_grab_click_focus() {
 			return;
 		}
 
-		MouseButton mask = gui.mouse_focus_mask;
+		BitField<MouseButtonMask> mask = gui.mouse_focus_mask;
 		Point2 click = gui.mouse_focus->get_global_transform_with_canvas().affine_inverse().xform(gui.last_mouse_pos);
 
 		for (int i = 0; i < 3; i++) {
@@ -3239,7 +3240,7 @@ void Viewport::pass_mouse_focus_to(Viewport *p_viewport, Control *p_control) {
 
 		gui.mouse_focus = nullptr;
 		gui.forced_mouse_focus = false;
-		gui.mouse_focus_mask = MouseButton::NONE;
+		gui.mouse_focus_mask.clear();
 	}
 }
 

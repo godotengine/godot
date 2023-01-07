@@ -61,7 +61,7 @@ public:
 		int index = 0; // Can be either JoyAxis or JoyButton.
 		bool pressed = false;
 		float value = 0;
-		HatMask hat = HatMask::CENTER;
+		BitField<HatMask> hat;
 	};
 
 private:
@@ -70,7 +70,7 @@ private:
 	bool control_mem = false;
 	bool meta_mem = false;
 
-	MouseButton buttons_state = MouseButton::NONE;
+	BitField<MouseButtonMask> buttons_state;
 
 	Vector<TouchPos> touch;
 	MouseEventInfo mouse_event_info;
@@ -78,12 +78,12 @@ private:
 
 	void _set_key_modifier_state(Ref<InputEventWithModifiers> ev);
 
-	static MouseButton _button_index_from_mask(MouseButton button_mask);
-	static MouseButton _android_button_mask_to_godot_button_mask(int android_button_mask);
+	static MouseButton _button_index_from_mask(BitField<MouseButtonMask> button_mask);
+	static BitField<MouseButtonMask> _android_button_mask_to_godot_button_mask(int android_button_mask);
 
-	void _wheel_button_click(MouseButton event_buttons_mask, const Ref<InputEventMouseButton> &ev, MouseButton wheel_button, float factor);
+	void _wheel_button_click(BitField<MouseButtonMask> event_buttons_mask, const Ref<InputEventMouseButton> &ev, MouseButton wheel_button, float factor);
 
-	void _parse_mouse_event_info(MouseButton event_buttons_mask, bool p_pressed, bool p_double_click, bool p_source_mouse_relative);
+	void _parse_mouse_event_info(BitField<MouseButtonMask> event_buttons_mask, bool p_pressed, bool p_double_click, bool p_source_mouse_relative);
 
 	void _release_mouse_event_info(bool p_source_mouse_relative = false);
 

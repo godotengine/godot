@@ -257,7 +257,7 @@ Point2i DisplayServerWindows::mouse_get_position() const {
 	return Point2i(p.x, p.y) - _get_screens_origin();
 }
 
-MouseButton DisplayServerWindows::mouse_get_button_state() const {
+BitField<MouseButtonMask> DisplayServerWindows::mouse_get_button_state() const {
 	return last_button_state;
 }
 
@@ -3162,9 +3162,9 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			mb->set_alt_pressed(alt_mem);
 			// mb->is_alt_pressed()=(wParam&MK_MENU)!=0;
 			if (mb->is_pressed()) {
-				last_button_state |= mouse_button_to_mask(mb->get_button_index());
+				last_button_state.set_flag(mouse_button_to_mask(mb->get_button_index()));
 			} else {
-				last_button_state &= ~mouse_button_to_mask(mb->get_button_index());
+				last_button_state.clear_flag(mouse_button_to_mask(mb->get_button_index()));
 			}
 			mb->set_button_mask(last_button_state);
 
@@ -3205,7 +3205,7 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				// Send release for mouse wheel.
 				Ref<InputEventMouseButton> mbd = mb->duplicate();
 				mbd->set_window_id(window_id);
-				last_button_state &= ~mouse_button_to_mask(mbd->get_button_index());
+				last_button_state.clear_flag(mouse_button_to_mask(mbd->get_button_index()));
 				mbd->set_button_mask(last_button_state);
 				mbd->set_pressed(false);
 				Input::get_singleton()->parse_input_event(mbd);
