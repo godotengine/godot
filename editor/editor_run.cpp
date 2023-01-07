@@ -93,30 +93,24 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie) {
 	}
 
 	int screen = EDITOR_GET("run/window_placement/screen");
-	if (screen == 0) {
+	if (screen == -5) {
 		// Same as editor
 		screen = DisplayServer::get_singleton()->window_get_current_screen();
-	} else if (screen == 1) {
+	} else if (screen == -4) {
 		// Previous monitor (wrap to the other end if needed)
 		screen = Math::wrapi(
 				DisplayServer::get_singleton()->window_get_current_screen() - 1,
 				0,
 				DisplayServer::get_singleton()->get_screen_count());
-	} else if (screen == 2) {
+	} else if (screen == -3) {
 		// Next monitor (wrap to the other end if needed)
 		screen = Math::wrapi(
 				DisplayServer::get_singleton()->window_get_current_screen() + 1,
 				0,
 				DisplayServer::get_singleton()->get_screen_count());
-	} else {
-		// Fixed monitor ID
-		// There are 3 special options, so decrement the option ID by 3 to get the monitor ID
-		screen -= 3;
 	}
 
-	Rect2 screen_rect;
-	screen_rect.position = DisplayServer::get_singleton()->screen_get_position(screen);
-	screen_rect.size = DisplayServer::get_singleton()->screen_get_size(screen);
+	Rect2 screen_rect = DisplayServer::get_singleton()->screen_get_usable_rect(screen);
 
 	int window_placement = EDITOR_GET("run/window_placement/rect");
 	if (screen_rect != Rect2()) {
@@ -169,13 +163,13 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie) {
 				args.push_back(itos(pos.x) + "," + itos(pos.y));
 			} break;
 			case 3: { // force maximized
-				Vector2 pos = screen_rect.position;
+				Vector2 pos = screen_rect.position + screen_rect.size / 2;
 				args.push_back("--position");
 				args.push_back(itos(pos.x) + "," + itos(pos.y));
 				args.push_back("--maximized");
 			} break;
 			case 4: { // force fullscreen
-				Vector2 pos = screen_rect.position;
+				Vector2 pos = screen_rect.position + screen_rect.size / 2;
 				args.push_back("--position");
 				args.push_back(itos(pos.x) + "," + itos(pos.y));
 				args.push_back("--fullscreen");

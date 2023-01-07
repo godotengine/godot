@@ -87,11 +87,16 @@ public:
 		DEFAULT_WINDOW_SIZE = 100,
 	};
 
+	enum WindowInitialPosition {
+		WINDOW_INITIAL_POSITION_ABSOLUTE,
+		WINDOW_INITIAL_POSITION_CENTER_SCREEN,
+	};
+
 private:
 	DisplayServer::WindowID window_id = DisplayServer::INVALID_WINDOW_ID;
 
 	String title;
-	mutable int current_screen = 0;
+	mutable int current_screen = DisplayServer::SCREEN_PRIMARY;
 	mutable Vector2i position;
 	mutable Size2i size = Size2i(DEFAULT_WINDOW_SIZE, DEFAULT_WINDOW_SIZE);
 	mutable Size2i min_size;
@@ -100,6 +105,7 @@ private:
 	mutable bool flags[FLAG_MAX] = {};
 	bool visible = true;
 	bool focused = false;
+	WindowInitialPosition initial_position = WINDOW_INITIAL_POSITION_ABSOLUTE;
 
 	bool use_font_oversampling = false;
 	bool transient = false;
@@ -200,6 +206,9 @@ public:
 
 	void set_title(const String &p_title);
 	String get_title() const;
+
+	void set_initial_position(WindowInitialPosition p_initial_position);
+	WindowInitialPosition get_initial_position() const;
 
 	void set_current_screen(int p_screen);
 	int get_current_screen() const;
@@ -369,5 +378,6 @@ VARIANT_ENUM_CAST(Window::Flags);
 VARIANT_ENUM_CAST(Window::ContentScaleMode);
 VARIANT_ENUM_CAST(Window::ContentScaleAspect);
 VARIANT_ENUM_CAST(Window::LayoutDirection);
+VARIANT_ENUM_CAST(Window::WindowInitialPosition);
 
 #endif // WINDOW_H

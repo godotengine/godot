@@ -254,7 +254,7 @@ void DisplayServerWindows::warp_mouse(const Point2i &p_position) {
 Point2i DisplayServerWindows::mouse_get_position() const {
 	POINT p;
 	GetCursorPos(&p);
-	return Point2i(p.x, p.y);
+	return Point2i(p.x, p.y) - _get_screens_origin();
 }
 
 MouseButton DisplayServerWindows::mouse_get_button_state() const {
@@ -346,6 +346,19 @@ typedef struct {
 	HMONITOR monitor;
 } EnumScreenData;
 
+static BOOL CALLBACK _MonitorEnumProcPrim(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData) {
+	EnumScreenData *data = (EnumScreenData *)dwData;
+	if (data->monitor == hMonitor) {
+		if ((lprcMonitor->left == 0) && (lprcMonitor->top == 0)) {
+			data->screen = data->count;
+			return FALSE;
+		}
+	}
+
+	data->count++;
+	return TRUE;
+}
+
 static BOOL CALLBACK _MonitorEnumProcScreen(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData) {
 	EnumScreenData *data = (EnumScreenData *)dwData;
 	if (data->monitor == hMonitor) {
@@ -370,6 +383,12 @@ int DisplayServerWindows::get_screen_count() const {
 	return data;
 }
 
+int DisplayServerWindows::get_primary_screen() const {
+	EnumScreenData data = { 0, 0, 0 };
+	EnumDisplayMonitors(nullptr, nullptr, _MonitorEnumProcPrim, (LPARAM)&data);
+	return data.screen;
+}
+
 typedef struct {
 	int count;
 	int screen;
@@ -387,12 +406,39 @@ static BOOL CALLBACK _MonitorEnumProcPos(HMONITOR hMonitor, HDC hdcMonitor, LPRE
 	return TRUE;
 }
 
+static BOOL CALLBACK _MonitorEnumProcOrigin(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData) {
+	EnumPosData *data = (EnumPosData *)dwData;
+	data->pos.x = MIN(data->pos.x, lprcMonitor->left);
+	data->pos.y = MIN(data->pos.y, lprcMonitor->top);
+
+	return TRUE;
+}
+
+Point2i DisplayServerWindows::_get_screens_origin() const {
+	_THREAD_SAFE_METHOD_
+
+	EnumPosData data = { 0, 0, Point2() };
+	EnumDisplayMonitors(nullptr, nullptr, _MonitorEnumProcOrigin, (LPARAM)&data);
+	return data.pos;
+}
+
 Point2i DisplayServerWindows::screen_get_position(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
-	EnumPosData data = { 0, p_screen == SCREEN_OF_MAIN_WINDOW ? window_get_current_screen() : p_screen, Point2() };
+	switch (p_screen) {
+		case SCREEN_PRIMARY: {
+			p_screen = get_primary_screen();
+		} break;
+		case SCREEN_OF_MAIN_WINDOW: {
+			p_screen = window_get_current_screen(MAIN_WINDOW_ID);
+		} break;
+		default:
+			break;
+	}
+
+	EnumPosData data = { 0, p_screen, Point2() };
 	EnumDisplayMonitors(nullptr, nullptr, _MonitorEnumProcPos, (LPARAM)&data);
-	return data.pos;
+	return data.pos - _get_screens_origin();
 }
 
 typedef struct {
@@ -427,7 +473,18 @@ static BOOL CALLBACK _MonitorEnumProcSize(HMONITOR hMonitor, HDC hdcMonitor, LPR
 Size2i DisplayServerWindows::screen_get_size(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
-	EnumSizeData data = { 0, p_screen == SCREEN_OF_MAIN_WINDOW ? window_get_current_screen() : p_screen, Size2() };
+	switch (p_screen) {
+		case SCREEN_PRIMARY: {
+			p_screen = get_primary_screen();
+		} break;
+		case SCREEN_OF_MAIN_WINDOW: {
+			p_screen = window_get_current_screen(MAIN_WINDOW_ID);
+		} break;
+		default:
+			break;
+	}
+
+	EnumSizeData data = { 0, p_screen, Size2() };
 	EnumDisplayMonitors(nullptr, nullptr, _MonitorEnumProcSize, (LPARAM)&data);
 	return data.size;
 }
@@ -473,8 +530,20 @@ static BOOL CALLBACK _MonitorEnumProcRefreshRate(HMONITOR hMonitor, HDC hdcMonit
 Rect2i DisplayServerWindows::screen_get_usable_rect(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
-	EnumRectData data = { 0, p_screen == SCREEN_OF_MAIN_WINDOW ? window_get_current_screen() : p_screen, Rect2i() };
+	switch (p_screen) {
+		case SCREEN_PRIMARY: {
+			p_screen = get_primary_screen();
+		} break;
+		case SCREEN_OF_MAIN_WINDOW: {
+			p_screen = window_get_current_screen(MAIN_WINDOW_ID);
+		} break;
+		default:
+			break;
+	}
+
+	EnumRectData data = { 0, p_screen, Rect2i() };
 	EnumDisplayMonitors(nullptr, nullptr, _MonitorEnumProcUsableSize, (LPARAM)&data);
+	data.rect.position -= _get_screens_origin();
 	return data.rect;
 }
 
@@ -549,14 +618,36 @@ static BOOL CALLBACK _MonitorEnumProcDpi(HMONITOR hMonitor, HDC hdcMonitor, LPRE
 int DisplayServerWindows::screen_get_dpi(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
-	EnumDpiData data = { 0, p_screen == SCREEN_OF_MAIN_WINDOW ? window_get_current_screen() : p_screen, 72 };
+	switch (p_screen) {
+		case SCREEN_PRIMARY: {
+			p_screen = get_primary_screen();
+		} break;
+		case SCREEN_OF_MAIN_WINDOW: {
+			p_screen = window_get_current_screen(MAIN_WINDOW_ID);
+		} break;
+		default:
+			break;
+	}
+
+	EnumDpiData data = { 0, p_screen, 72 };
 	EnumDisplayMonitors(nullptr, nullptr, _MonitorEnumProcDpi, (LPARAM)&data);
 	return data.dpi;
 }
 float DisplayServerWindows::screen_get_refresh_rate(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
-	EnumRefreshRateData data = { 0, p_screen == SCREEN_OF_MAIN_WINDOW ? window_get_current_screen() : p_screen, SCREEN_REFRESH_RATE_FALLBACK };
+	switch (p_screen) {
+		case SCREEN_PRIMARY: {
+			p_screen = get_primary_screen();
+		} break;
+		case SCREEN_OF_MAIN_WINDOW: {
+			p_screen = window_get_current_screen(MAIN_WINDOW_ID);
+		} break;
+		default:
+			break;
+	}
+
+	EnumRefreshRateData data = { 0, p_screen, SCREEN_REFRESH_RATE_FALLBACK };
 	EnumDisplayMonitors(nullptr, nullptr, _MonitorEnumProcRefreshRate, (LPARAM)&data);
 	return data.rate;
 }
@@ -612,9 +703,10 @@ Vector<DisplayServer::WindowID> DisplayServerWindows::get_window_list() const {
 }
 
 DisplayServer::WindowID DisplayServerWindows::get_window_at_screen_position(const Point2i &p_position) const {
+	Point2i offset = _get_screens_origin();
 	POINT p;
-	p.x = p_position.x;
-	p.y = p_position.y;
+	p.x = p_position.x + offset.x;
+	p.y = p_position.y + offset.y;
 	HWND hwnd = WindowFromPoint(p);
 	for (const KeyValue<WindowID, WindowData> &E : windows) {
 		if (E.value.hWnd == hwnd) {
@@ -625,10 +717,10 @@ DisplayServer::WindowID DisplayServerWindows::get_window_at_screen_position(cons
 	return INVALID_WINDOW_ID;
 }
 
-DisplayServer::WindowID DisplayServerWindows::create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect, int p_screen) {
+DisplayServer::WindowID DisplayServerWindows::create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect) {
 	_THREAD_SAFE_METHOD_
 
-	WindowID window_id = _create_window(p_mode, p_vsync_mode, p_flags, p_rect, p_screen);
+	WindowID window_id = _create_window(p_mode, p_vsync_mode, p_flags, p_rect);
 	ERR_FAIL_COND_V_MSG(window_id == INVALID_WINDOW_ID, INVALID_WINDOW_ID, "Failed to create sub window.");
 
 	WindowData &wd = windows[window_id];
@@ -870,7 +962,7 @@ void DisplayServerWindows::window_set_current_screen(int p_screen, WindowID p_wi
 	}
 	const WindowData &wd = windows[p_window];
 	if (wd.fullscreen) {
-		Point2 pos = screen_get_position(p_screen);
+		Point2 pos = screen_get_position(p_screen) + _get_screens_origin();
 		Size2 size = screen_get_size(p_screen);
 
 		MoveWindow(wd.hWnd, pos.x, pos.y, size.width, size.height, TRUE);
@@ -911,7 +1003,7 @@ Point2i DisplayServerWindows::window_get_position(WindowID p_window) const {
 
 	ClientToScreen(wd.hWnd, &point);
 
-	return Point2i(point.x, point.y);
+	return Point2i(point.x, point.y) - _get_screens_origin();
 }
 
 Point2i DisplayServerWindows::window_get_position_with_decorations(WindowID p_window) const {
@@ -926,7 +1018,7 @@ Point2i DisplayServerWindows::window_get_position_with_decorations(WindowID p_wi
 
 	RECT r;
 	if (GetWindowRect(wd.hWnd, &r)) {
-		return Point2i(r.left, r.top);
+		return Point2i(r.left, r.top) - _get_screens_origin();
 	}
 
 	return Point2i();
@@ -956,11 +1048,13 @@ void DisplayServerWindows::window_set_position(const Point2i &p_position, Window
 		return;
 	}
 
+	Point2i offset = _get_screens_origin();
+
 	RECT rc;
-	rc.left = p_position.x;
-	rc.right = p_position.x + wd.width;
-	rc.bottom = p_position.y + wd.height;
-	rc.top = p_position.y;
+	rc.left = p_position.x + offset.x;
+	rc.right = p_position.x + wd.width + offset.x;
+	rc.bottom = p_position.y + wd.height + offset.y;
+	rc.top = p_position.y + offset.y;
 
 	const DWORD style = GetWindowLongPtr(wd.hWnd, GWL_STYLE);
 	const DWORD exStyle = GetWindowLongPtr(wd.hWnd, GWL_EXSTYLE);
@@ -1296,7 +1390,7 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 		}
 
 		int cs = window_get_current_screen(p_window);
-		Point2 pos = screen_get_position(cs);
+		Point2 pos = screen_get_position(cs) + _get_screens_origin();
 		Size2 size = screen_get_size(cs);
 
 		wd.fullscreen = true;
@@ -2277,7 +2371,7 @@ LRESULT DisplayServerWindows::MouseProc(int code, WPARAM wParam, LPARAM lParam) 
 			case WM_RBUTTONDOWN:
 			case WM_MBUTTONDOWN: {
 				MOUSEHOOKSTRUCT *ms = (MOUSEHOOKSTRUCT *)lParam;
-				Point2i pos = Point2i(ms->pt.x, ms->pt.y);
+				Point2i pos = Point2i(ms->pt.x, ms->pt.y) - _get_screens_origin();
 				List<WindowID>::Element *C = nullptr;
 				List<WindowID>::Element *E = popup_list.back();
 				// Find top popup to close.
@@ -3130,10 +3224,12 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				ClientToScreen(hWnd, (POINT *)&rect.left);
 				ClientToScreen(hWnd, (POINT *)&rect.right);
 				window_client_rect = Rect2i(rect.left, rect.top, rect.right - rect.left, rect.bottom - rect.top);
+				window_client_rect.position -= _get_screens_origin();
 
 				RECT wrect;
 				GetWindowRect(hWnd, &wrect);
 				window_rect = Rect2i(wrect.left, wrect.top, wrect.right - wrect.left, wrect.bottom - wrect.top);
+				window_rect.position -= _get_screens_origin();
 			}
 
 			WINDOWPOS *window_pos_params = (WINDOWPOS *)lParam;
@@ -3539,7 +3635,7 @@ void DisplayServerWindows::_update_tablet_ctx(const String &p_old_driver, const 
 	}
 }
 
-DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect, int p_screen) {
+DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect) {
 	DWORD dwExStyle;
 	DWORD dwStyle;
 
@@ -3552,39 +3648,37 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 	WindowRect.top = p_rect.position.y;
 	WindowRect.bottom = p_rect.position.y + p_rect.size.y;
 
+	int rq_screen = get_screen_from_rect(p_rect);
+	if (rq_screen < 0) {
+		rq_screen = get_primary_screen(); // Requested window rect is outside any screen bounds.
+	}
+
 	if (p_mode == WINDOW_MODE_FULLSCREEN || p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
-		Rect2i screen_rect = Rect2i(screen_get_position(p_screen), screen_get_size(p_screen));
+		Rect2i screen_rect = Rect2i(screen_get_position(rq_screen), screen_get_size(rq_screen));
 
 		WindowRect.left = screen_rect.position.x;
 		WindowRect.right = screen_rect.position.x + screen_rect.size.x;
 		WindowRect.top = screen_rect.position.y;
 		WindowRect.bottom = screen_rect.position.y + screen_rect.size.y;
 	} else {
-		int nearest_area = 0;
-		int pos_screen = -1;
-		for (int i = 0; i < get_screen_count(); i++) {
-			Rect2i r;
-			r.position = screen_get_position(i);
-			r.size = screen_get_size(i);
-			Rect2 inters = r.intersection(p_rect);
-			int area = inters.size.width * inters.size.height;
-			if (area > nearest_area) {
-				pos_screen = i;
-				nearest_area = area;
-			}
+		Rect2i srect = screen_get_usable_rect(rq_screen);
+		Point2i wpos = p_rect.position;
+		if (srect != Rect2i()) {
+			wpos.x = CLAMP(wpos.x, srect.position.x, srect.position.x + srect.size.width - p_rect.size.width / 3);
+			wpos.y = CLAMP(wpos.y, srect.position.y, srect.position.y + srect.size.height - p_rect.size.height / 3);
 		}
-
-		Rect2i srect = screen_get_usable_rect(p_screen);
-		Point2i wpos = p_rect.position - ((pos_screen >= 0) ? screen_get_position(pos_screen) : Vector2i());
-		wpos += srect.position;
-		wpos.x = CLAMP(wpos.x, srect.position.x, srect.position.x + srect.size.width - p_rect.size.width / 3);
-		wpos.y = CLAMP(wpos.y, srect.position.y, srect.position.y + srect.size.height - p_rect.size.height / 3);
 
 		WindowRect.left = wpos.x;
 		WindowRect.right = wpos.x + p_rect.size.x;
 		WindowRect.top = wpos.y;
 		WindowRect.bottom = wpos.y + p_rect.size.y;
 	}
+
+	Point2i offset = _get_screens_origin();
+	WindowRect.left += offset.x;
+	WindowRect.right += offset.x;
+	WindowRect.top += offset.y;
+	WindowRect.bottom += offset.y;
 
 	AdjustWindowRectEx(&WindowRect, dwStyle, FALSE, dwExStyle);
 
@@ -3794,7 +3888,7 @@ void DisplayServerWindows::tablet_set_current_driver(const String &p_driver) {
 	}
 }
 
-DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, Error &r_error) {
+DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error) {
 	drop_events = false;
 	key_event_pos = 0;
 
@@ -3941,15 +4035,17 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 
 	mouse_monitor = SetWindowsHookEx(WH_MOUSE, ::MouseProc, nullptr, GetCurrentThreadId());
 
-	Point2i window_position(
-			(screen_get_size(0).width - p_resolution.width) / 2,
-			(screen_get_size(0).height - p_resolution.height) / 2);
-
+	Point2i window_position;
 	if (p_position != nullptr) {
 		window_position = *p_position;
+	} else {
+		if (p_screen == SCREEN_OF_MAIN_WINDOW) {
+			p_screen = SCREEN_PRIMARY;
+		}
+		window_position = screen_get_position(p_screen) + (screen_get_size(p_screen) - p_resolution) / 2;
 	}
 
-	WindowID main_window = _create_window(p_mode, p_vsync_mode, 0, Rect2i(window_position, p_resolution), 0);
+	WindowID main_window = _create_window(p_mode, p_vsync_mode, 0, Rect2i(window_position, p_resolution));
 	ERR_FAIL_COND_MSG(main_window == INVALID_WINDOW_ID, "Failed to create main window.");
 
 	joypad = new JoypadWindows(&windows[MAIN_WINDOW_ID].hWnd);
@@ -4012,8 +4108,8 @@ Vector<String> DisplayServerWindows::get_rendering_drivers_func() {
 	return drivers;
 }
 
-DisplayServer *DisplayServerWindows::create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, Error &r_error) {
-	DisplayServer *ds = memnew(DisplayServerWindows(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, r_error));
+DisplayServer *DisplayServerWindows::create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error) {
+	DisplayServer *ds = memnew(DisplayServerWindows(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, r_error));
 	if (r_error != OK) {
 		if (p_rendering_driver == "vulkan") {
 			String executable_name = OS::get_singleton()->get_executable_path().get_file();
