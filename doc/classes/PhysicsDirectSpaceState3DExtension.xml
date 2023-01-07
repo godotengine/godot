@@ -16,8 +16,8 @@
 			<param index="4" name="collision_mask" type="int" />
 			<param index="5" name="collide_with_bodies" type="bool" />
 			<param index="6" name="collide_with_areas" type="bool" />
-			<param index="7" name="closest_safe" type="float*" />
-			<param index="8" name="closest_unsafe" type="float*" />
+			<param index="7" name="closest_safe" type="double*" />
+			<param index="8" name="closest_unsafe" type="double*" />
 			<param index="9" name="info" type="PhysicsServer3DExtensionShapeRestInfo*" />
 			<description>
 			</description>

@@ -12,7 +12,7 @@
 	</tutorials>
 	<methods>
 		<method name="cast_motion">
-			<return type="PackedFloat32Array" />
+			<return type="PackedFloat64Array" />
 			<param index="0" name="parameters" type="PhysicsShapeQueryParameters3D" />
 			<description>
 				Checks how far a [Shape3D] can move without colliding. All the parameters for the query, including the shape, are supplied through a [PhysicsShapeQueryParameters3D] object.

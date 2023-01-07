@@ -40,7 +40,7 @@
 			</description>
 		</method>
 		<method name="get_baked_tilts" qualifiers="const">
-			<return type="PackedFloat32Array" />
+			<return type="PackedFloat64Array" />
 			<description>
 				Returns the cache of tilts as a [PackedFloat32Array].
 			</description>
