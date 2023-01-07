@@ -387,6 +387,7 @@ public:
 
 	virtual Size2 _edit_get_minimum_size() const override;
 #endif
+	virtual void reparent(Node *p_parent, bool p_keep_global_transform = true) override;
 
 	// Editor integration.
 

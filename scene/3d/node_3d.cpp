@@ -623,6 +623,14 @@ void Node3D::set_disable_gizmos(bool p_enabled) {
 #endif
 }
 
+void Node3D::reparent(Node *p_parent, bool p_keep_global_transform) {
+	Transform3D temp = get_global_transform();
+	Node::reparent(p_parent);
+	if (p_keep_global_transform) {
+		set_global_transform(temp);
+	}
+}
+
 void Node3D::set_disable_scale(bool p_enabled) {
 	data.disable_scale = p_enabled;
 }

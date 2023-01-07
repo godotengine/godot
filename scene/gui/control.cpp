@@ -186,6 +186,14 @@ Size2 Control::_edit_get_minimum_size() const {
 }
 #endif
 
+void Control::reparent(Node *p_parent, bool p_keep_global_transform) {
+	Transform2D temp = get_global_transform();
+	Node::reparent(p_parent);
+	if (p_keep_global_transform) {
+		set_global_position(temp.get_origin());
+	}
+}
+
 // Editor integration.
 
 void Control::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {

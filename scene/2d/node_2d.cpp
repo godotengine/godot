@@ -133,6 +133,14 @@ void Node2D::_update_transform() {
 	_notify_transform();
 }
 
+void Node2D::reparent(Node *p_parent, bool p_keep_global_transform) {
+	Transform2D temp = get_global_transform();
+	Node::reparent(p_parent);
+	if (p_keep_global_transform) {
+		set_global_transform(temp);
+	}
+}
+
 void Node2D::set_position(const Point2 &p_pos) {
 	if (_xform_dirty) {
 		const_cast<Node2D *>(this)->_update_xform_values();
