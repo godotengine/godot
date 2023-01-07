@@ -1196,6 +1196,7 @@ ConnectionsDock::ConnectionsDock() {
 	tree->set_columns(1);
 	tree->set_select_mode(Tree::SELECT_ROW);
 	tree->set_hide_root(true);
+	tree->set_column_clip_content(0, true);
 	vbc->add_child(tree);
 	tree->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	tree->set_allow_rmb_select(true);

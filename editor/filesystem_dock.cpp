@@ -3120,6 +3120,7 @@ FileSystemDock::FileSystemDock() {
 	tree->set_allow_rmb_select(true);
 	tree->set_select_mode(Tree::SELECT_MULTI);
 	tree->set_custom_minimum_size(Size2(0, 15 * EDSCALE));
+	tree->set_column_clip_content(0, true);
 	split_box->add_child(tree);
 
 	tree->connect("item_activated", callable_mp(this, &FileSystemDock::_tree_activate_file));
