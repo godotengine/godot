@@ -373,7 +373,11 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 				print_verbose("OBJ: Current material " + current_material + " has " + itos(material_map.has(current_material_library) && material_map[current_material_library].has(current_material)));
 
 				if (material_map.has(current_material_library) && material_map[current_material_library].has(current_material)) {
-					surf_tool->set_material(material_map[current_material_library][current_material]);
+					Ref<StandardMaterial3D> &material = material_map[current_material_library][current_material];
+					if (!colors.is_empty()) {
+						material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
+					}
+					surf_tool->set_material(material);
 				}
 
 				mesh = surf_tool->commit(mesh, mesh_flags);
