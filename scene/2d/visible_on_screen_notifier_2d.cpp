@@ -124,6 +124,9 @@ void VisibleOnScreenEnabler2D::_screen_exit() {
 
 void VisibleOnScreenEnabler2D::set_enable_mode(EnableMode p_mode) {
 	enable_mode = p_mode;
+	if (Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (is_inside_tree()) {
 		_update_enable_mode(is_on_screen());
 	}
@@ -137,6 +140,9 @@ void VisibleOnScreenEnabler2D::set_enable_node_path(NodePath p_path) {
 		return;
 	}
 	enable_node_path = p_path;
+	if (Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
 	if (is_inside_tree()) {
 		node_id = ObjectID();
 		Node *node = get_node(enable_node_path);
