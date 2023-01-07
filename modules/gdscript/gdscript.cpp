@@ -1307,7 +1307,7 @@ GDScript *GDScript::_get_gdscript_from_variant(const Variant &p_variant) {
 }
 
 void GDScript::_get_dependencies(RBSet<GDScript *> &p_dependencies, const GDScript *p_except) {
-	if (skip_dependencies || p_dependencies.has(this)) {
+	if (p_dependencies.has(this)) {
 		return;
 	}
 	p_dependencies.insert(this);
@@ -1365,7 +1365,7 @@ GDScript::GDScript() :
 	}
 }
 
-void GDScript::_save_orphaned_subclasses() {
+void GDScript::_save_orphaned_subclasses(GDScript::ClearData *p_clear_data) {
 	struct ClassRefWithName {
 		ObjectID id;
 		String fully_qualified_name;
@@ -1381,8 +1381,17 @@ void GDScript::_save_orphaned_subclasses() {
 	}
 
 	// clear subclasses to allow unused subclasses to be deleted
+	for (KeyValue<StringName, Ref<GDScript>> &E : subclasses) {
+		p_clear_data->scripts.insert(E.value);
+	}
 	subclasses.clear();
 	// subclasses are also held by constants, clear those as well
+	for (KeyValue<StringName, Variant> &E : constants) {
+		GDScript *gdscr = _get_gdscript_from_variant(E.value);
+		if (gdscr != nullptr) {
+			p_clear_data->scripts.insert(gdscr);
+		}
+	}
 	constants.clear();
 
 	// keep orphan subclass only for subclasses that are still in use
@@ -1413,60 +1422,50 @@ void GDScript::_init_rpc_methods_properties() {
 	}
 }
 
-void GDScript::clear() {
+void GDScript::clear(GDScript::ClearData *p_clear_data) {
 	if (clearing) {
 		return;
 	}
 	clearing = true;
 
+	GDScript::ClearData data;
+	GDScript::ClearData *clear_data = p_clear_data;
+	bool is_root = false;
+
+	// If `clear_data` is `nullptr`, it means that it's the root.
+	// The root is in charge to clear functions and scripts of itself and its dependencies
+	if (clear_data == nullptr) {
+		clear_data = &data;
+		is_root = true;
+	}
+
 	RBSet<GDScript *> must_clear_dependencies = get_must_clear_dependencies();
-	HashMap<GDScript *, ObjectID> must_clear_dependencies_objectids;
-
-	// Log the objectids before clearing, as a cascade of clear could
-	// remove instances that are still in the clear loop
 	for (GDScript *E : must_clear_dependencies) {
-		must_clear_dependencies_objectids.insert(E, E->get_instance_id());
+		clear_data->scripts.insert(E);
+		E->clear(clear_data);
 	}
 
-	for (GDScript *E : must_clear_dependencies) {
-		Object *obj = ObjectDB::get_instance(must_clear_dependencies_objectids[E]);
-		if (obj == nullptr) {
-			continue;
-		}
-
-		E->skip_dependencies = true;
-		E->clear();
-		E->skip_dependencies = false;
-		GDScriptCache::remove_script(E->get_path());
-	}
-
-	RBSet<StringName> member_function_names;
 	for (const KeyValue<StringName, GDScriptFunction *> &E : member_functions) {
-		member_function_names.insert(E.key);
+		clear_data->functions.insert(E.value);
 	}
-	for (const StringName &E : member_function_names) {
-		if (member_functions.has(E)) {
-			memdelete(member_functions[E]);
-		}
-	}
-	member_function_names.clear();
 	member_functions.clear();
 
 	for (KeyValue<StringName, GDScript::MemberInfo> &E : member_indices) {
+		clear_data->scripts.insert(E.value.data_type.script_type_ref);
 		E.value.data_type.script_type_ref = Ref<Script>();
 	}
 
 	if (implicit_initializer) {
-		memdelete(implicit_initializer);
+		clear_data->functions.insert(implicit_initializer);
+		implicit_initializer = nullptr;
 	}
-	implicit_initializer = nullptr;
 
 	if (implicit_ready) {
-		memdelete(implicit_ready);
+		clear_data->functions.insert(implicit_ready);
+		implicit_ready = nullptr;
 	}
-	implicit_ready = nullptr;
 
-	_save_orphaned_subclasses();
+	_save_orphaned_subclasses(clear_data);
 
 #ifdef TOOLS_ENABLED
 	// Clearing inner class doc, script doc only cleared when the script source deleted.
@@ -1474,7 +1473,21 @@ void GDScript::clear() {
 		_clear_doc();
 	}
 #endif
-	clearing = false;
+
+	// If it's not the root, skip clearing the data
+	if (is_root) {
+		// All dependencies have been accounted for
+		for (GDScriptFunction *E : clear_data->functions) {
+			memdelete(E);
+		}
+		for (Ref<Script> &E : clear_data->scripts) {
+			Ref<GDScript> gdscr = E;
+			if (gdscr.is_valid()) {
+				GDScriptCache::remove_script(gdscr->get_path());
+			}
+		}
+		clear_data->clear();
+	}
 }
 
 GDScript::~GDScript() {
