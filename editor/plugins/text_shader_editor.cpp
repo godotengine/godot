@@ -301,7 +301,9 @@ void ShaderTextEditor::_load_theme_settings() {
 	syntax_highlighter->clear_color_regions();
 	syntax_highlighter->add_color_region("/*", "*/", comment_color, false);
 	syntax_highlighter->add_color_region("//", "", comment_color, true);
-	syntax_highlighter->set_disabled_branch_color(comment_color);
+
+	// Disabled preprocessor branches use translucent text color to be easier to distinguish from comments.
+	syntax_highlighter->set_disabled_branch_color(Color(EDITOR_GET("text_editor/theme/highlighting/text_color")) * Color(1, 1, 1, 0.5));
 
 	te->clear_comment_delimiters();
 	te->add_comment_delimiter("/*", "*/", false);
