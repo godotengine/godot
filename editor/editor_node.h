@@ -577,6 +577,8 @@ private:
 	void _titlebar_resized();
 	void _version_button_pressed();
 
+	void _update_undo_redo_allowed();
+
 	int _save_external_resources();
 
 	bool _validate_scene_recursive(const String &p_filename, Node *p_node);
