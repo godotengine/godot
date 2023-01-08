@@ -1123,6 +1123,12 @@ void EditorNode::_version_button_pressed() {
 	DisplayServer::get_singleton()->clipboard_set(version_btn->get_meta(META_TEXT_TO_COPY));
 }
 
+void EditorNode::_update_undo_redo_allowed() {
+	Ref<EditorUndoRedoManager> undo_redo = get_undo_redo();
+	file_menu->set_item_disabled(file_menu->get_item_index(EDIT_UNDO), !undo_redo->has_undo());
+	file_menu->set_item_disabled(file_menu->get_item_index(EDIT_REDO), !undo_redo->has_redo());
+}
+
 void EditorNode::_node_renamed() {
 	if (InspectorDock::get_inspector_singleton()) {
 		InspectorDock::get_inspector_singleton()->update_tree();
@@ -3251,10 +3257,7 @@ void EditorNode::_update_file_menu_opened() {
 	reopen_closed_scene_sc->set_name(TTR("Reopen Closed Scene"));
 
 	file_menu->set_item_disabled(file_menu->get_item_index(FILE_OPEN_PREV), previous_scenes.is_empty());
-
-	Ref<EditorUndoRedoManager> undo_redo = editor_data.get_undo_redo();
-	file_menu->set_item_disabled(file_menu->get_item_index(EDIT_UNDO), !undo_redo->has_undo());
-	file_menu->set_item_disabled(file_menu->get_item_index(EDIT_REDO), !undo_redo->has_redo());
+	_update_undo_redo_allowed();
 }
 
 void EditorNode::_update_file_menu_closed() {
@@ -6052,6 +6055,9 @@ EditorNode::EditorNode() {
 	}
 
 	singleton = this;
+
+	get_undo_redo()->connect("version_changed", callable_mp(this, &EditorNode::_update_undo_redo_allowed));
+	get_undo_redo()->connect("history_changed", callable_mp(this, &EditorNode::_update_undo_redo_allowed));
 
 	TranslationServer::get_singleton()->set_enabled(false);
 	// Load settings.
