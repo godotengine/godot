@@ -3535,12 +3535,12 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 			Variant value = p_subscript->base->reduced_value.get(p_subscript->index->reduced_value, &valid);
 			if (!valid) {
 				push_error(vformat(R"(Cannot get index "%s" from "%s".)", p_subscript->index->reduced_value, p_subscript->base->reduced_value), p_subscript->index);
+				result_type.kind = GDScriptParser::DataType::VARIANT;
 			} else {
 				p_subscript->is_constant = true;
 				p_subscript->reduced_value = value;
 				result_type = type_from_variant(value, p_subscript);
 			}
-			result_type.kind = GDScriptParser::DataType::VARIANT;
 		} else {
 			GDScriptParser::DataType base_type = p_subscript->base->get_datatype();
 			GDScriptParser::DataType index_type = p_subscript->index->get_datatype();
@@ -3801,8 +3801,6 @@ void GDScriptAnalyzer::reduce_unary_op(GDScriptParser::UnaryOpNode *p_unary_op) 
 }
 
 void GDScriptAnalyzer::const_fold_array(GDScriptParser::ArrayNode *p_array, bool p_is_const) {
-	bool all_is_constant = true;
-
 	for (int i = 0; i < p_array->elements.size(); i++) {
 		GDScriptParser::ExpressionNode *element = p_array->elements[i];
 
@@ -3812,8 +3810,7 @@ void GDScriptAnalyzer::const_fold_array(GDScriptParser::ArrayNode *p_array, bool
 			const_fold_dictionary(static_cast<GDScriptParser::DictionaryNode *>(element), p_is_const);
 		}
 
-		all_is_constant = all_is_constant && element->is_constant;
-		if (!all_is_constant) {
+		if (!element->is_constant) {
 			return;
 		}
 	}
@@ -3831,8 +3828,6 @@ void GDScriptAnalyzer::const_fold_array(GDScriptParser::ArrayNode *p_array, bool
 }
 
 void GDScriptAnalyzer::const_fold_dictionary(GDScriptParser::DictionaryNode *p_dictionary, bool p_is_const) {
-	bool all_is_constant = true;
-
 	for (int i = 0; i < p_dictionary->elements.size(); i++) {
 		const GDScriptParser::DictionaryNode::Pair &element = p_dictionary->elements[i];
 
@@ -3842,8 +3837,7 @@ void GDScriptAnalyzer::const_fold_dictionary(GDScriptParser::DictionaryNode *p_d
 			const_fold_dictionary(static_cast<GDScriptParser::DictionaryNode *>(element.value), p_is_const);
 		}
 
-		all_is_constant = all_is_constant && element.key->is_constant && element.value->is_constant;
-		if (!all_is_constant) {
+		if (!element.key->is_constant || !element.value->is_constant) {
 			return;
 		}
 	}
