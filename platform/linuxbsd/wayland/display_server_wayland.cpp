@@ -457,7 +457,7 @@ void DisplayServerWayland::_wl_registry_on_global(void *data, struct wl_registry
 
 		for (SeatState &ss : wls->seats) {
 			// Initialize the data device for all current seats.
-			if (!ss.wl_data_device && globals.wl_data_device_manager) {
+			if (ss.wl_seat && !ss.wl_data_device && globals.wl_data_device_manager) {
 				ss.wl_data_device = wl_data_device_manager_get_data_device(wls->globals.wl_data_device_manager, ss.wl_seat);
 				wl_data_device_add_listener(ss.wl_data_device, &wl_data_device_listener, &ss);
 			}
