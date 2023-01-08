@@ -320,10 +320,10 @@ public:
 
 	virtual void mesh_set_blend_shape_count(RID p_mesh, int p_blend_shape_count) = 0;
 
-	virtual uint32_t mesh_surface_get_format_offset(uint32_t p_format, int p_vertex_len, int p_array_index) const;
-	virtual uint32_t mesh_surface_get_format_vertex_stride(uint32_t p_format, int p_vertex_len) const;
-	virtual uint32_t mesh_surface_get_format_attribute_stride(uint32_t p_format, int p_vertex_len) const;
-	virtual uint32_t mesh_surface_get_format_skin_stride(uint32_t p_format, int p_vertex_len) const;
+	virtual uint32_t mesh_surface_get_format_offset(BitField<ArrayFormat> p_format, int p_vertex_len, int p_array_index) const;
+	virtual uint32_t mesh_surface_get_format_vertex_stride(BitField<ArrayFormat> p_format, int p_vertex_len) const;
+	virtual uint32_t mesh_surface_get_format_attribute_stride(BitField<ArrayFormat> p_format, int p_vertex_len) const;
+	virtual uint32_t mesh_surface_get_format_skin_stride(BitField<ArrayFormat> p_format, int p_vertex_len) const;
 
 	/// Returns stride
 	virtual void mesh_surface_make_offsets_from_format(uint32_t p_format, int p_vertex_len, int p_index_len, uint32_t *r_offsets, uint32_t &r_vertex_element_size, uint32_t &r_attrib_element_size, uint32_t &r_skin_element_size) const;
@@ -333,7 +333,7 @@ public:
 	TypedArray<Array> mesh_surface_get_blend_shape_arrays(RID p_mesh, int p_surface) const;
 	Dictionary mesh_surface_get_lods(RID p_mesh, int p_surface) const;
 
-	virtual void mesh_add_surface_from_arrays(RID p_mesh, PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes = Array(), const Dictionary &p_lods = Dictionary(), uint32_t p_compress_format = 0);
+	virtual void mesh_add_surface_from_arrays(RID p_mesh, PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes = Array(), const Dictionary &p_lods = Dictionary(), BitField<ArrayFormat> p_compress_format = 0);
 	virtual void mesh_add_surface(RID p_mesh, const SurfaceData &p_surface) = 0;
 
 	virtual int mesh_get_blend_shape_count(RID p_mesh) const = 0;
@@ -1610,7 +1610,7 @@ VARIANT_ENUM_CAST(RenderingServer::TextureLayeredType);
 VARIANT_ENUM_CAST(RenderingServer::CubeMapLayer);
 VARIANT_ENUM_CAST(RenderingServer::ShaderMode);
 VARIANT_ENUM_CAST(RenderingServer::ArrayType);
-VARIANT_ENUM_CAST(RenderingServer::ArrayFormat);
+VARIANT_BITFIELD_CAST(RenderingServer::ArrayFormat);
 VARIANT_ENUM_CAST(RenderingServer::ArrayCustomFormat);
 VARIANT_ENUM_CAST(RenderingServer::PrimitiveType);
 VARIANT_ENUM_CAST(RenderingServer::BlendShapeMode);
