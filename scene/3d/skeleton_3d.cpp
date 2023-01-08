@@ -1189,6 +1189,13 @@ void Skeleton3D::execute_modifications(real_t p_delta, int p_execution_mode) {
 		modification_stack->set_skeleton(this);
 	}
 
+	clear_bones_local_pose_override();
+	force_update_all_dirty_bones();
+
+	for (int i = 0; i < bones.size(); i++) {
+		update_bone_rest_forward_vector(i);
+	}
+
 	modification_stack->execute(p_delta, p_execution_mode);
 }
 
