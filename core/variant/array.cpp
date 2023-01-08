@@ -54,16 +54,6 @@ void Array::_ref(const Array &p_from) const {
 
 	ERR_FAIL_COND(!_fp); // should NOT happen.
 
-	if (unlikely(_fp->read_only != nullptr)) {
-		// If p_from is a read-only array, just copy the contents to avoid further modification.
-		_unref();
-		_p = memnew(ArrayPrivate);
-		_p->refcount.init();
-		_p->array = _fp->array;
-		_p->typed = _fp->typed;
-		return;
-	}
-
 	if (_fp == _p) {
 		return; // whatever it is, nothing to do here move along
 	}
