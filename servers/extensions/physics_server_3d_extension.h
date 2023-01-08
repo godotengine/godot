@@ -94,7 +94,7 @@ public:
 
 	EXBIND1RC(Vector3, get_contact_local_position, int)
 	EXBIND1RC(Vector3, get_contact_local_normal, int)
-	EXBIND1RC(real_t, get_contact_impulse, int)
+	EXBIND1RC(Vector3, get_contact_impulse, int)
 	EXBIND1RC(int, get_contact_local_shape, int)
 	EXBIND1RC(RID, get_contact_collider, int)
 	EXBIND1RC(Vector3, get_contact_collider_position, int)
