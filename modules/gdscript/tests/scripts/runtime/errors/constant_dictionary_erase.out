@@ -1,0 +1,7 @@
+GDTEST_RUNTIME_ERROR
+>> ERROR
+>> on function: erase()
+>> core/variant/dictionary.cpp
+>> 177
+>> Condition "_p->read_only" is true. Returning: false
+>> Dictionary is in read-only state.

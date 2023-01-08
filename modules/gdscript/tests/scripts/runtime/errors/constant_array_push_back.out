@@ -1,0 +1,7 @@
+GDTEST_RUNTIME_ERROR
+>> ERROR
+>> on function: push_back()
+>> core/variant/array.cpp
+>> 253
+>> Condition "_p->read_only" is true.
+>> Array is in read-only state.
