@@ -2231,7 +2231,7 @@ void AnimationTrackEdit::draw_key(int p_index, float p_pixels_sec, int p_x, bool
 			if (i > 0) {
 				text += ", ";
 			}
-			text += String(args[i]);
+			text += args[i].get_construct_string();
 		}
 		text += ")";
 
@@ -2539,7 +2539,7 @@ String AnimationTrackEdit::get_tooltip(const Point2 &p_pos) const {
 						if (i > 0) {
 							text += ", ";
 						}
-						text += String(args[i]);
+						text += args[i].get_construct_string();
 					}
 					text += ")\n";
 
