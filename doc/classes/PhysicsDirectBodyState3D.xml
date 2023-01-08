@@ -152,10 +152,10 @@
 			</description>
 		</method>
 		<method name="get_contact_impulse" qualifiers="const">
-			<return type="float" />
+			<return type="Vector3" />
 			<param index="0" name="contact_idx" type="int" />
 			<description>
-				Impulse created by the contact. Only implemented for Bullet physics.
+				Impulse created by the contact.
 			</description>
 		</method>
 		<method name="get_contact_local_normal" qualifiers="const">
