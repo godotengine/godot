@@ -52,6 +52,12 @@
 				The new item will be the [param idx]th child of parent, or it will be the last child if there are not enough siblings.
 			</description>
 		</method>
+		<method name="deselect_all">
+			<return type="void" />
+			<description>
+				Deselects all tree items (rows and columns). In [constant SELECT_MULTI] mode also removes selection cursor.
+			</description>
+		</method>
 		<method name="edit_selected">
 			<return type="bool" />
 			<description>
