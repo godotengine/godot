@@ -2599,7 +2599,8 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 
 		String fpath = p_paths[0];
 		String item_text = fpath.ends_with("/") ? TTR("Open in File Manager") : TTR("Show in File Manager");
-		p_popup->add_icon_item(get_theme_icon(SNAME("Filesystem"), SNAME("EditorIcons")), item_text, FILE_SHOW_IN_EXPLORER);
+		p_popup->add_icon_shortcut(get_theme_icon(SNAME("Filesystem"), SNAME("EditorIcons")), ED_GET_SHORTCUT("filesystem_dock/show_in_explorer"), FILE_SHOW_IN_EXPLORER);
+		p_popup->set_item_text(p_popup->get_item_index(FILE_SHOW_IN_EXPLORER), item_text);
 		path = fpath;
 	}
 }
@@ -2644,7 +2645,7 @@ void FileSystemDock::_tree_empty_click(const Vector2 &p_pos, MouseButton p_butto
 	tree_popup->add_icon_item(get_theme_icon(SNAME("Object"), SNAME("EditorIcons")), TTR("New Resource..."), FILE_NEW_RESOURCE);
 	tree_popup->add_icon_item(get_theme_icon(SNAME("TextFile"), SNAME("EditorIcons")), TTR("New TextFile..."), FILE_NEW_TEXTFILE);
 	tree_popup->add_separator();
-	tree_popup->add_icon_item(get_theme_icon(SNAME("Filesystem"), SNAME("EditorIcons")), TTR("Open in File Manager"), FILE_SHOW_IN_EXPLORER);
+	tree_popup->add_icon_shortcut(get_theme_icon(SNAME("Filesystem"), SNAME("EditorIcons")), ED_GET_SHORTCUT("filesystem_dock/show_in_explorer"), FILE_SHOW_IN_EXPLORER);
 
 	tree_popup->set_position(tree->get_screen_position() + p_pos);
 	tree_popup->reset_size();
@@ -2704,7 +2705,7 @@ void FileSystemDock::_file_list_empty_clicked(const Vector2 &p_pos, MouseButton 
 	file_list_popup->add_icon_item(get_theme_icon(SNAME("Object"), SNAME("EditorIcons")), TTR("New Resource..."), FILE_NEW_RESOURCE);
 	file_list_popup->add_icon_item(get_theme_icon(SNAME("TextFile"), SNAME("EditorIcons")), TTR("New TextFile..."), FILE_NEW_TEXTFILE);
 	file_list_popup->add_separator();
-	file_list_popup->add_icon_item(get_theme_icon(SNAME("Filesystem"), SNAME("EditorIcons")), TTR("Open in File Manager"), FILE_SHOW_IN_EXPLORER);
+	file_list_popup->add_icon_shortcut(get_theme_icon(SNAME("Filesystem"), SNAME("EditorIcons")), ED_GET_SHORTCUT("filesystem_dock/show_in_explorer"), FILE_SHOW_IN_EXPLORER);
 	file_list_popup->set_position(files->get_screen_position() + p_pos);
 	file_list_popup->reset_size();
 	file_list_popup->popup();
@@ -2816,6 +2817,8 @@ void FileSystemDock::_tree_gui_input(Ref<InputEvent> p_event) {
 			_tree_rmb_option(FILE_REMOVE);
 		} else if (ED_IS_SHORTCUT("filesystem_dock/rename", p_event)) {
 			_tree_rmb_option(FILE_RENAME);
+		} else if (ED_IS_SHORTCUT("filesystem_dock/show_in_explorer", p_event)) {
+			_tree_rmb_option(FILE_SHOW_IN_EXPLORER);
 		} else if (ED_IS_SHORTCUT("editor/open_search", p_event)) {
 			focus_on_filter();
 		} else {
@@ -2874,6 +2877,8 @@ void FileSystemDock::_file_list_gui_input(Ref<InputEvent> p_event) {
 			_file_list_rmb_option(FILE_REMOVE);
 		} else if (ED_IS_SHORTCUT("filesystem_dock/rename", p_event)) {
 			_file_list_rmb_option(FILE_RENAME);
+		} else if (ED_IS_SHORTCUT("filesystem_dock/show_in_explorer", p_event)) {
+			_file_list_rmb_option(FILE_SHOW_IN_EXPLORER);
 		} else if (ED_IS_SHORTCUT("editor/open_search", p_event)) {
 			focus_on_filter();
 		} else {
@@ -3045,6 +3050,7 @@ FileSystemDock::FileSystemDock() {
 	ED_SHORTCUT("filesystem_dock/delete", TTR("Delete"), Key::KEY_DELETE);
 	ED_SHORTCUT("filesystem_dock/rename", TTR("Rename..."), Key::F2);
 	ED_SHORTCUT_OVERRIDE("filesystem_dock/rename", "macos", Key::ENTER);
+	ED_SHORTCUT("filesystem_dock/show_in_explorer", TTR("Open in File Manager"));
 
 	VBoxContainer *top_vbc = memnew(VBoxContainer);
 	add_child(top_vbc);
