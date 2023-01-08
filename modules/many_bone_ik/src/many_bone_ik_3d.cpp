@@ -30,9 +30,8 @@
 
 #include "many_bone_ik_3d.h"
 #include "core/core_string_names.h"
-#include "core/variant/typed_array.h"
+#include "core/error/error_macros.h"
 #include "ik_bone_3d.h"
-#include "ik_bone_segment_3d.h"
 #include "ik_kusudama_3d.h"
 
 #ifdef TOOLS_ENABLED
@@ -478,10 +477,7 @@ void ManyBoneIK3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_ui_selected_bone"), &ManyBoneIK3D::get_ui_selected_bone);
 	ClassDB::bind_method(D_METHOD("set_filter_bones", "bones"), &ManyBoneIK3D::set_filter_bones);
 	ClassDB::bind_method(D_METHOD("get_filter_bones"), &ManyBoneIK3D::get_filter_bones);
-	ClassDB::bind_method(D_METHOD("set_child_segments", "segments"), &ManyBoneIK3D::set_child_segments);
-	ClassDB::bind_method(D_METHOD("get_child_segments"), &ManyBoneIK3D::get_child_segments);
 
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "child_segments", PROPERTY_HINT_ARRAY_TYPE, "IKBoneSegment3D"), "set_child_segments", "get_child_segments");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "skeleton_node_path"), "set_skeleton_node_path", "get_skeleton_node_path");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "iterations_per_frame", PROPERTY_HINT_RANGE, "1,150,1,or_greater"), "set_iterations_per_frame", "get_iterations_per_frame");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "default_damp", PROPERTY_HINT_RANGE, "0.01,180.0,0.01,radians,exp", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_default_damp", "get_default_damp");
@@ -675,6 +671,9 @@ void ManyBoneIK3D::_set_constraint_name(int32_t p_index, String p_name) {
 	set_dirty();
 }
 
+Vector<Ref<IKBoneSegment3D>> ManyBoneIK3D::get_segmented_skeletons() {
+	return segmented_skeletons;
+}
 float ManyBoneIK3D::get_iterations_per_frame() const {
 	return iterations_per_frame;
 }
@@ -744,9 +743,7 @@ void ManyBoneIK3D::execute(real_t delta) {
 	}
 	update_ik_bones_transform();
 	for (int32_t i = 0; i < get_iterations_per_frame(); i++) {
-		TypedArray<IKBoneSegment3D> segments = segmented_skeletons;
-		for (int32_t segment_i = 0; segment_i < segments.size(); segment_i++) {
-			Ref<IKBoneSegment3D> segmented_skeleton = segments[segment_i];
+		for (Ref<IKBoneSegment3D> segmented_skeleton : segmented_skeletons) {
 			if (segmented_skeleton.is_null()) {
 				continue;
 			}
@@ -959,22 +956,12 @@ Vector<Ref<IKBone3D>> ManyBoneIK3D::get_bone_list() {
 
 void ManyBoneIK3D::set_bone_direction_transform(int32_t p_index, Transform3D p_transform) {
 	ERR_FAIL_INDEX(p_index, constraint_names.size());
-
-	if (!segmented_skeletons.size()) {
-		return;
-	}
-	if (!get_skeleton()) {
-		return;
-	}
 	String bone_name = constraint_names[p_index];
-
-	TypedArray<IKBoneSegment3D> segments = segmented_skeletons;
-	for (int32_t segment_i = 0; segment_i < segments.size(); segment_i++) {
-		Ref<IKBoneSegment3D> segmented_skeleton = segments[segment_i];
+	for (Ref<IKBoneSegment3D> segmented_skeleton : segmented_skeletons) {
 		if (segmented_skeleton.is_null()) {
 			continue;
 		}
-		Ref<IKBone3D> ik_bone = segmented_skeleton->find_ik_bone(get_skeleton()->find_bone(bone_name));
+		Ref<IKBone3D> ik_bone = segmented_skeleton->get_ik_bone(get_skeleton()->find_bone(bone_name));
 		if (ik_bone.is_null()) {
 			continue;
 		}
@@ -995,13 +982,11 @@ Transform3D ManyBoneIK3D::get_bone_direction_transform(int32_t p_index) const {
 	if (!get_skeleton()) {
 		return Transform3D();
 	}
-	TypedArray<IKBoneSegment3D> segments = segmented_skeletons;
-	for (int32_t segment_i = 0; segment_i < segments.size(); segment_i++) {
-		Ref<IKBoneSegment3D> segmented_skeleton = segments[segment_i];
+	for (Ref<IKBoneSegment3D> segmented_skeleton : segmented_skeletons) {
 		if (segmented_skeleton.is_null()) {
 			continue;
 		}
-		Ref<IKBone3D> ik_bone = segmented_skeleton->find_ik_bone(get_skeleton()->find_bone(bone_name));
+		Ref<IKBone3D> ik_bone = segmented_skeleton->get_ik_bone(get_skeleton()->find_bone(bone_name));
 		if (ik_bone.is_null()) {
 			continue;
 		}
@@ -1022,13 +1007,11 @@ Transform3D ManyBoneIK3D::get_constraint_orientation_transform(int32_t p_index) 
 	if (!get_skeleton()) {
 		return Transform3D();
 	}
-	TypedArray<IKBoneSegment3D> segments = segmented_skeletons;
-	for (int32_t segment_i = 0; segment_i < segments.size(); segment_i++) {
-		Ref<IKBoneSegment3D> segmented_skeleton = segments[segment_i];
+	for (Ref<IKBoneSegment3D> segmented_skeleton : segmented_skeletons) {
 		if (segmented_skeleton.is_null()) {
 			continue;
 		}
-		Ref<IKBone3D> ik_bone = segmented_skeleton->find_ik_bone(get_skeleton()->find_bone(bone_name));
+		Ref<IKBone3D> ik_bone = segmented_skeleton->get_ik_bone(get_skeleton()->find_bone(bone_name));
 		if (ik_bone.is_null()) {
 			continue;
 		}
@@ -1043,19 +1026,14 @@ Transform3D ManyBoneIK3D::get_constraint_orientation_transform(int32_t p_index) 
 void ManyBoneIK3D::set_constraint_orientation_transform(int32_t p_index, Transform3D p_transform) {
 	ERR_FAIL_INDEX(p_index, constraint_names.size());
 	String bone_name = constraint_names[p_index];
-	if (!segmented_skeletons.size()) {
-		return;
-	}
 	if (!get_skeleton()) {
 		return;
 	}
-	TypedArray<IKBoneSegment3D> segments = segmented_skeletons;
-	for (int32_t segment_i = 0; segment_i < segments.size(); segment_i++) {
-		Ref<IKBoneSegment3D> segmented_skeleton = segments[segment_i];
+	for (Ref<IKBoneSegment3D> segmented_skeleton : segmented_skeletons) {
 		if (segmented_skeleton.is_null()) {
 			continue;
 		}
-		Ref<IKBone3D> ik_bone = segmented_skeleton->find_ik_bone(get_skeleton()->find_bone(bone_name));
+		Ref<IKBone3D> ik_bone = segmented_skeleton->get_ik_bone(get_skeleton()->find_bone(bone_name));
 		if (ik_bone.is_null()) {
 			continue;
 		}
@@ -1076,13 +1054,11 @@ Transform3D ManyBoneIK3D::get_constraint_twist_transform(int32_t p_index) const 
 	if (!get_skeleton()) {
 		return Transform3D();
 	}
-	TypedArray<IKBoneSegment3D> segments = segmented_skeletons;
-	for (int32_t segment_i = 0; segment_i < segments.size(); segment_i++) {
-		Ref<IKBoneSegment3D> segmented_skeleton = segments[segment_i];
+	for (Ref<IKBoneSegment3D> segmented_skeleton : segmented_skeletons) {
 		if (segmented_skeleton.is_null()) {
 			continue;
 		}
-		Ref<IKBone3D> ik_bone = segmented_skeleton->find_ik_bone(get_skeleton()->find_bone(bone_name));
+		Ref<IKBone3D> ik_bone = segmented_skeleton->get_ik_bone(get_skeleton()->find_bone(bone_name));
 		if (ik_bone.is_null()) {
 			continue;
 		}
@@ -1097,20 +1073,14 @@ Transform3D ManyBoneIK3D::get_constraint_twist_transform(int32_t p_index) const 
 void ManyBoneIK3D::set_constraint_twist_transform(int32_t p_index, Transform3D p_transform) {
 	ERR_FAIL_INDEX(p_index, constraint_names.size());
 	String bone_name = constraint_names[p_index];
-
-	if (!segmented_skeletons.size()) {
-		return;
-	}
 	if (!get_skeleton()) {
 		return;
 	}
-	TypedArray<IKBoneSegment3D> segments = segmented_skeletons;
-	for (int32_t segment_i = 0; segment_i < segments.size(); segment_i++) {
-		Ref<IKBoneSegment3D> segmented_skeleton = segments[segment_i];
+	for (Ref<IKBoneSegment3D> segmented_skeleton : segmented_skeletons) {
 		if (segmented_skeleton.is_null()) {
 			continue;
 		}
-		Ref<IKBone3D> ik_bone = segmented_skeleton->find_ik_bone(get_skeleton()->find_bone(bone_name));
+		Ref<IKBone3D> ik_bone = segmented_skeleton->get_ik_bone(get_skeleton()->find_bone(bone_name));
 		if (ik_bone.is_null()) {
 			continue;
 		}

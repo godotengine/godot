@@ -80,7 +80,7 @@ public:
 	Transform3D get_target_global_transform() const;
 	void set_target_node_rotation(bool p_use);
 	bool get_target_node_rotation() const;
-	Ref<IKBone3D> find_ik_bone_3d() const;
+	Ref<IKBone3D> get_ik_bone_3d() const;
 	bool is_following_translation_only() const;
 	int32_t update_effector_target_headings(PackedVector3Array *p_headings, int32_t p_index, Ref<IKBone3D> p_for_bone, const Vector<real_t> *p_weights) const;
 	int32_t update_effector_tip_headings(PackedVector3Array *p_headings, int32_t p_index, Ref<IKBone3D> p_for_bone, bool p_is_uniform) const;
