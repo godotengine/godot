@@ -55,42 +55,39 @@ protected:
 
 public:
 	/// Thread safe, can be used across many threads.
-	static const NavigationServer3D *get_singleton();
-
-	/// MUST be used in single thread!
-	static NavigationServer3D *get_singleton_mut();
+	static NavigationServer3D *get_singleton();
 
 	virtual TypedArray<RID> get_maps() const = 0;
 
 	/// Create a new map.
-	virtual RID map_create() const = 0;
+	virtual RID map_create() = 0;
 
 	/// Set map active.
-	virtual void map_set_active(RID p_map, bool p_active) const = 0;
+	virtual void map_set_active(RID p_map, bool p_active) = 0;
 
 	/// Returns true if the map is active.
 	virtual bool map_is_active(RID p_map) const = 0;
 
 	/// Set the map UP direction.
-	virtual void map_set_up(RID p_map, Vector3 p_up) const = 0;
+	virtual void map_set_up(RID p_map, Vector3 p_up) = 0;
 
 	/// Returns the map UP direction.
 	virtual Vector3 map_get_up(RID p_map) const = 0;
 
 	/// Set the map cell size used to weld the navigation mesh polygons.
-	virtual void map_set_cell_size(RID p_map, real_t p_cell_size) const = 0;
+	virtual void map_set_cell_size(RID p_map, real_t p_cell_size) = 0;
 
 	/// Returns the map cell size.
 	virtual real_t map_get_cell_size(RID p_map) const = 0;
 
 	/// Set the map edge connection margin used to weld the compatible region edges.
-	virtual void map_set_edge_connection_margin(RID p_map, real_t p_connection_margin) const = 0;
+	virtual void map_set_edge_connection_margin(RID p_map, real_t p_connection_margin) = 0;
 
 	/// Returns the edge connection margin of this map.
 	virtual real_t map_get_edge_connection_margin(RID p_map) const = 0;
 
 	/// Set the map link connection radius used to attach links to the nav mesh.
-	virtual void map_set_link_connection_radius(RID p_map, real_t p_connection_radius) const = 0;
+	virtual void map_set_link_connection_radius(RID p_map, real_t p_connection_radius) = 0;
 
 	/// Returns the link connection radius of this map.
 	virtual real_t map_get_link_connection_radius(RID p_map) const = 0;
@@ -110,38 +107,38 @@ public:
 	virtual void map_force_update(RID p_map) = 0;
 
 	/// Creates a new region.
-	virtual RID region_create() const = 0;
+	virtual RID region_create() = 0;
 
 	/// Set the enter_cost of a region
-	virtual void region_set_enter_cost(RID p_region, real_t p_enter_cost) const = 0;
+	virtual void region_set_enter_cost(RID p_region, real_t p_enter_cost) = 0;
 	virtual real_t region_get_enter_cost(RID p_region) const = 0;
 
 	/// Set the travel_cost of a region
-	virtual void region_set_travel_cost(RID p_region, real_t p_travel_cost) const = 0;
+	virtual void region_set_travel_cost(RID p_region, real_t p_travel_cost) = 0;
 	virtual real_t region_get_travel_cost(RID p_region) const = 0;
 
 	/// Set the node which manages this region.
-	virtual void region_set_owner_id(RID p_region, ObjectID p_owner_id) const = 0;
+	virtual void region_set_owner_id(RID p_region, ObjectID p_owner_id) = 0;
 	virtual ObjectID region_get_owner_id(RID p_region) const = 0;
 
 	virtual bool region_owns_point(RID p_region, const Vector3 &p_point) const = 0;
 
 	/// Set the map of this region.
-	virtual void region_set_map(RID p_region, RID p_map) const = 0;
+	virtual void region_set_map(RID p_region, RID p_map) = 0;
 	virtual RID region_get_map(RID p_region) const = 0;
 
 	/// Set the region's layers
-	virtual void region_set_navigation_layers(RID p_region, uint32_t p_navigation_layers) const = 0;
+	virtual void region_set_navigation_layers(RID p_region, uint32_t p_navigation_layers) = 0;
 	virtual uint32_t region_get_navigation_layers(RID p_region) const = 0;
 
 	/// Set the global transformation of this region.
-	virtual void region_set_transform(RID p_region, Transform3D p_transform) const = 0;
+	virtual void region_set_transform(RID p_region, Transform3D p_transform) = 0;
 
 	/// Set the navigation mesh of this region.
-	virtual void region_set_navigation_mesh(RID p_region, Ref<NavigationMesh> p_navigation_mesh) const = 0;
+	virtual void region_set_navigation_mesh(RID p_region, Ref<NavigationMesh> p_navigation_mesh) = 0;
 
 	/// Bake the navigation mesh.
-	virtual void region_bake_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh, Node *p_root_node) const = 0;
+	virtual void region_bake_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh, Node *p_root_node) = 0;
 
 	/// Get a list of a region's connection to other regions.
 	virtual int region_get_connections_count(RID p_region) const = 0;
@@ -149,45 +146,45 @@ public:
 	virtual Vector3 region_get_connection_pathway_end(RID p_region, int p_connection_id) const = 0;
 
 	/// Creates a new link between locations in the nav map.
-	virtual RID link_create() const = 0;
+	virtual RID link_create() = 0;
 
 	/// Set the map of this link.
-	virtual void link_set_map(RID p_link, RID p_map) const = 0;
+	virtual void link_set_map(RID p_link, RID p_map) = 0;
 	virtual RID link_get_map(RID p_link) const = 0;
 
 	/// Set whether this link travels in both directions.
-	virtual void link_set_bidirectional(RID p_link, bool p_bidirectional) const = 0;
+	virtual void link_set_bidirectional(RID p_link, bool p_bidirectional) = 0;
 	virtual bool link_is_bidirectional(RID p_link) const = 0;
 
 	/// Set the link's layers.
-	virtual void link_set_navigation_layers(RID p_link, uint32_t p_navigation_layers) const = 0;
+	virtual void link_set_navigation_layers(RID p_link, uint32_t p_navigation_layers) = 0;
 	virtual uint32_t link_get_navigation_layers(RID p_link) const = 0;
 
 	/// Set the start location of the link.
-	virtual void link_set_start_location(RID p_link, Vector3 p_location) const = 0;
+	virtual void link_set_start_location(RID p_link, Vector3 p_location) = 0;
 	virtual Vector3 link_get_start_location(RID p_link) const = 0;
 
 	/// Set the end location of the link.
-	virtual void link_set_end_location(RID p_link, Vector3 p_location) const = 0;
+	virtual void link_set_end_location(RID p_link, Vector3 p_location) = 0;
 	virtual Vector3 link_get_end_location(RID p_link) const = 0;
 
 	/// Set the enter cost of the link.
-	virtual void link_set_enter_cost(RID p_link, real_t p_enter_cost) const = 0;
+	virtual void link_set_enter_cost(RID p_link, real_t p_enter_cost) = 0;
 	virtual real_t link_get_enter_cost(RID p_link) const = 0;
 
 	/// Set the travel cost of the link.
-	virtual void link_set_travel_cost(RID p_link, real_t p_travel_cost) const = 0;
+	virtual void link_set_travel_cost(RID p_link, real_t p_travel_cost) = 0;
 	virtual real_t link_get_travel_cost(RID p_link) const = 0;
 
 	/// Set the node which manages this link.
-	virtual void link_set_owner_id(RID p_link, ObjectID p_owner_id) const = 0;
+	virtual void link_set_owner_id(RID p_link, ObjectID p_owner_id) = 0;
 	virtual ObjectID link_get_owner_id(RID p_link) const = 0;
 
 	/// Creates the agent.
-	virtual RID agent_create() const = 0;
+	virtual RID agent_create() = 0;
 
 	/// Put the agent in the map.
-	virtual void agent_set_map(RID p_agent, RID p_map) const = 0;
+	virtual void agent_set_map(RID p_agent, RID p_map) = 0;
 	virtual RID agent_get_map(RID p_agent) const = 0;
 
 	/// The maximum distance (center point to
@@ -197,7 +194,7 @@ public:
 	/// time of the simulation. If the number is too
 	/// low, the simulation will not be safe.
 	/// Must be non-negative.
-	virtual void agent_set_neighbor_distance(RID p_agent, real_t p_distance) const = 0;
+	virtual void agent_set_neighbor_distance(RID p_agent, real_t p_distance) = 0;
 
 	/// The maximum number of other agents this
 	/// agent takes into account in the navigation.
@@ -205,7 +202,7 @@ public:
 	/// running time of the simulation. If the
 	/// number is too low, the simulation will not
 	/// be safe.
-	virtual void agent_set_max_neighbors(RID p_agent, int p_count) const = 0;
+	virtual void agent_set_max_neighbors(RID p_agent, int p_count) = 0;
 
 	/// The minimal amount of time for which this
 	/// agent's velocities that are computed by the
@@ -215,39 +212,39 @@ public:
 	/// other agents, but the less freedom this
 	/// agent has in choosing its velocities.
 	/// Must be positive.
-	virtual void agent_set_time_horizon(RID p_agent, real_t p_time) const = 0;
+	virtual void agent_set_time_horizon(RID p_agent, real_t p_time) = 0;
 
 	/// The radius of this agent.
 	/// Must be non-negative.
-	virtual void agent_set_radius(RID p_agent, real_t p_radius) const = 0;
+	virtual void agent_set_radius(RID p_agent, real_t p_radius) = 0;
 
 	/// The maximum speed of this agent.
 	/// Must be non-negative.
-	virtual void agent_set_max_speed(RID p_agent, real_t p_max_speed) const = 0;
+	virtual void agent_set_max_speed(RID p_agent, real_t p_max_speed) = 0;
 
 	/// Current velocity of the agent
-	virtual void agent_set_velocity(RID p_agent, Vector3 p_velocity) const = 0;
+	virtual void agent_set_velocity(RID p_agent, Vector3 p_velocity) = 0;
 
 	/// The new target velocity.
-	virtual void agent_set_target_velocity(RID p_agent, Vector3 p_velocity) const = 0;
+	virtual void agent_set_target_velocity(RID p_agent, Vector3 p_velocity) = 0;
 
 	/// Position of the agent in world space.
-	virtual void agent_set_position(RID p_agent, Vector3 p_position) const = 0;
+	virtual void agent_set_position(RID p_agent, Vector3 p_position) = 0;
 
 	/// Agent ignore the Y axis and avoid collisions by moving only on the horizontal plane
-	virtual void agent_set_ignore_y(RID p_agent, bool p_ignore) const = 0;
+	virtual void agent_set_ignore_y(RID p_agent, bool p_ignore) = 0;
 
 	/// Returns true if the map got changed the previous frame.
 	virtual bool agent_is_map_changed(RID p_agent) const = 0;
 
 	/// Callback called at the end of the RVO process
-	virtual void agent_set_callback(RID p_agent, ObjectID p_object_id, StringName p_method, Variant p_udata = Variant()) const = 0;
+	virtual void agent_set_callback(RID p_agent, ObjectID p_object_id, StringName p_method, Variant p_udata = Variant()) = 0;
 
 	/// Destroy the `RID`
-	virtual void free(RID p_object) const = 0;
+	virtual void free(RID p_object) = 0;
 
 	/// Control activation of this server.
-	virtual void set_active(bool p_active) const = 0;
+	virtual void set_active(bool p_active) = 0;
 
 	/// Process the collision avoidance agents.
 	/// The result of this process is needed by the physics server,
