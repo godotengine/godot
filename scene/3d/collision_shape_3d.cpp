@@ -130,7 +130,7 @@ PackedStringArray CollisionShape3D::get_configuration_warnings() const {
 		if (Object::cast_to<ConcavePolygonShape3D>(*shape)) {
 			warnings.push_back(RTR("ConcavePolygonShape3D doesn't support RigidBody3D in another mode than static."));
 		} else if (Object::cast_to<WorldBoundaryShape3D>(*shape)) {
-			warnings.push_back(RTR("WorldBoundaryShape3D doesn't support RigidBody3D in another mode than static."));
+			warnings.push_back(RTR("WorldBoundaryShape3D is only supported as a direct child of a PhysicsBody3D or Area3D using a CollisionShape3D node."));
 		}
 	}
 
