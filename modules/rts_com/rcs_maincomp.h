@@ -429,12 +429,14 @@ public:
 		_FORCE_INLINE_ StaticWorldCell* get_cell(const Vector2& loc) {
 			uint32_t loc_1d = (loc.y * cpr) + loc.x;
 			ERR_FAIL_COND_V_MSG(loc_1d >= cell_count, nullptr, "Index overflowed");
-			return &cells_2d_array.get(loc_1d);
+			//return &cells_2d_array.get(loc_1d);
+			return nullptr;
 		}
 		_FORCE_INLINE_ const StaticWorldCell* get_cell(const Vector2& loc) const {
 			uint32_t loc_1d = (loc.y * cpr) + loc.x;
 			ERR_FAIL_COND_V_MSG(loc_1d >= cell_count, nullptr, "Index overflowed");
-			return &cells_2d_array.get(loc_1d);
+			// return &cells_2d_array.get(loc_1d);
+			return nullptr;
 		}
 	};
 private:

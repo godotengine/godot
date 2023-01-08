@@ -681,7 +681,7 @@ public:
 
 class TimerRAII{
 private:
-	std::chrono::steady_clock::time_point start;
+	std::chrono::time_point<std::chrono::high_resolution_clock> start;
 	bool print_additional_info;
 	bool use_micro;
 	const char* function;
@@ -708,7 +708,7 @@ public:
 		this->start = std::chrono::high_resolution_clock::now();
 	}
 	_FORCE_INLINE_ ~TimerRAII(){
-		auto end = std::chrono::high_resolution_clock::now();;
+		std::chrono::time_point<std::chrono::high_resolution_clock> end = std::chrono::high_resolution_clock::now();;
 		uint64_t count = 0;
 		if (use_micro) {
 			count = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();

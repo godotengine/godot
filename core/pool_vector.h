@@ -31,7 +31,7 @@
 #ifndef POOL_VECTOR_H
 #define POOL_VECTOR_H
 
-#define VECTOR_CONVERSION
+// #define VECTOR_CONVERSION
 
 #ifdef VECTOR_CONVERSION
 #include "core/vector.h"
