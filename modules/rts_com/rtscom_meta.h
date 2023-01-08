@@ -10,6 +10,7 @@
 #include "core/print_string.h"
 #include "core/list.h"
 #include "rcs_types.h"
+// #include "combat_server.h"
 
 #define MAX_ALLOCATABLE_WORKER_PER_OBJECT 4
 

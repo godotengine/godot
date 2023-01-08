@@ -5,6 +5,7 @@
 
 #include <string>
 
+// #include "combat_server.h"
 #include "modules/advanced_curve/advanced_curve.h"
 #include "scene/resources/world.h"
 #include "core/print_string.h"
@@ -18,7 +19,6 @@
 #include "core/reference.h"
 #include "rtscom_rid.h"
 #include "rtscom_meta.h"
-// #include "rcs_simulation.h"
 
 #define MIN_RADAR_SPREAD 0.008726646
 #define MAX_RADAR_SPREAD Math_PI
@@ -29,10 +29,14 @@
 #define MIN_RPD 0.1
 #define MAX_RPD 5.0
 
+class RCSProfile;
+class RCSSimulationProfile;
+class RCSSpatialProfile;
 class RCSCombatantProfile;
 class RCSCombatant;
 class RCSProjectileBind;
 class RCSProjectileProfile;
+class RCSSquadProfile;
 class RCSSquad;
 class RCSUnilateralTeamsBind;
 class RCSTeam;
@@ -53,25 +57,18 @@ class SquadEventReport;
 class TeamEventReport;
 class ProjectileEventReport;
 class RadarEventReport;
+class EngagementEventReport;
 
-#define REPORTER_CLASS(base, inherited)                                        \
-	friend class RCSSimulation;                                                \
-	friend class RCSRecording;                                                 \
-protected:                                                                     \
-	RCSSimulation *simulation = nullptr;                                       \
-	static _FORCE_INLINE_ void _bind_methods() {}                              \
-	_FORCE_INLINE_ Dictionary (base::*__get_primitive_describer())() {         \
-		return &base::primitive_describe;                                      \
-	}                                                                          \
-public:                                                                        \
-	_FORCE_INLINE_ RCSSimulation* get_simulation() { return simulation; }      \
+#define REPORTER_CLASS(base, inherited)                                                    \
+	friend class RCSSimulation;                                                            \
+	friend class RCSRecording;                                                             \
 private:
 
 
 //--------------------------------------------------------------------------
 
 
-struct RCSMemoryAllocation{
+struct RCSMemoryAllocation {
 private:
 	std::atomic<uint64_t> allocated;
 	std::atomic<uint64_t> deallocated;
@@ -97,7 +94,8 @@ public:
 #ifdef DEBUG_ENABLED
 		auto al = allocated.load(std::memory_order_acquire);
 		auto de = deallocated.load(std::memory_order_acquire);
-		if (al < de) return 0;
+		if (al < de)
+			return 0;
 		return al - de;
 #else
 		return 0;
@@ -106,11 +104,17 @@ public:
 
 };
 
+#define EventRecord(dic, ev) dic[#ev] = ev
+
 class EventReport {
+private:
+	RCSSimulation* simulation = nullptr;
 protected:
-	_FORCE_INLINE_ Dictionary primitive_describe() { return Dictionary(); }
+	virtual Dictionary primitive_describe() const { return Dictionary(); }
 // -------------------------------------------
 	REPORTER_CLASS(EventReport, Reference);
+public:
+	_FORCE_INLINE_ const RCSSimulation* get_simulation() const { return simulation; }
 };
 class CombatantEventReport : public EventReport {
 	REPORTER_CLASS(CombatantEventReport, EventReport);
@@ -126,6 +130,64 @@ class TeamEventReport : public EventReport {
 	REPORTER_CLASS(TeamEventReport, EventReport);
 public:
 	TeamEventReport();
+};
+class EngagementEventReport : public EventReport {
+	REPORTER_CLASS(EngagementEventReport, EventReport);
+public:
+	enum EER_EventType : unsigned int {
+		NA = 0,
+		EngagementStarted,
+		EngagementFinished,
+		EngagementScaleChanged,
+	};
+	uint32_t event_type = 0;
+	uint32_t scale = 0;
+	uint32_t old_scale = 0;
+	RID_TYPE offender;
+	RID_TYPE deffender;
+	RID_TYPE winner;
+	std::weak_ptr<RCSEngagementInternal> opaque_engagement;
+public:
+	EngagementEventReport();
+
+	_FORCE_INLINE_ uint32_t get_event_type() const { return event_type; }
+	_FORCE_INLINE_ Dictionary primitive_describe() const override {
+		Dictionary re;
+		re["event_name"] = "EngagementEventReport";
+		auto event_type_uint32_t = (uint32_t)event_type;
+		EventRecord(re, event_type_uint32_t);
+		EventRecord(re, scale);
+		EventRecord(re, old_scale);
+		EventRecord(re, offender);
+		EventRecord(re, deffender);
+		EventRecord(re, winner);
+		return re;
+	}
+};
+class SimulationEventReport : public EventReport {
+	REPORTER_CLASS(SimulationEventReport, EventReport);
+public:
+	enum SER_EventType : unsigned int {
+		NA = 0,
+		CombatantAdded, CombatantRemoved,
+		SquadAdded, SquadRemoved,
+		TeamAdded, TeamRemoved,
+		RadarAdded, RadarRemoved,
+	};
+private:
+	RID_TYPE event_subject{};
+	SER_EventType event_type = NA;
+public:
+	SimulationEventReport() = default;
+	Dictionary primitive_describe() const override {
+		Dictionary re;
+		re["event_name"] = "SimulationEventReport";
+		auto event_type_uint32_t = (uint32_t)event_type;
+		// auto emitter = !sender ? RID_TYPE() : sender->get_self();
+		EventRecord(re, event_type_uint32_t);
+		EventRecord(re, event_subject);
+		return re;
+	}
 };
 class ProjectileEventReport : public EventReport {
 	REPORTER_CLASS(ProjectileEventReport, EventReport);
@@ -149,6 +211,8 @@ private:
 	uint32_t pckb_id = 0;
 public:
 	ProjectileEventReport();
+
+	Dictionary primitive_describe() const override;
 
 	_FORCE_INLINE_ void set_sender(RCSProjectileBind* bind) { sender = bind; }
 	_FORCE_INLINE_ RCSProjectileBind* get_sender() { return sender; }
@@ -197,16 +261,67 @@ public:
 private:
 	RDR_EventType event_type;
 	RCSRadar* sender = nullptr;
+	uint32_t target_mode{};
 
 	std::unique_ptr<ScanConclusion> conclusion;
 
 	friend class RCSSimulation;
 	friend class RCSRadar;
 public:
+	Dictionary primitive_describe() const override;
 	RadarEventReport();
 };
 
+#define COMBATANT_DETECTION_LIMIT 10.0
+#define COMBATANT_MAGIC 0xe1d12196
+#define SQUAD_MAGIC 0xd9c50688
+
+
+class RCSProfile : public Resource {
+	GDCLASS(RCSProfile, Resource);
+private:
+	StringName profile_name;
+protected:
+	static void _bind_methods();
+public:
+	RCSProfile() = default;
+	~RCSProfile() = default;
+
+	_FORCE_INLINE_ void set_pname(const StringName& name) { profile_name = name; emit_changed(); }
+	_FORCE_INLINE_ StringName get_pname() const { return profile_name; }
+};
+
+class RCSSpatialProfile : public RCSProfile {
+	GDCLASS(RCSSpatialProfile, RCSProfile);
+private:
+	double detection_threshold = 0.7;
+	double acquisition_threshold = 0.5;
+	double detection_subvention = 0.5;
+	bool is_phantom = false;
+protected:
+	static void _bind_methods();
+public:
+	RCSSpatialProfile() = default;
+	~RCSSpatialProfile() = default;
+
+	_FORCE_INLINE_ void set_detection_threshold(const double& new_threshold) { detection_threshold = CLAMP(new_threshold, 0.001, 0.98); emit_changed(); }
+	_FORCE_INLINE_ double get_detection_threshold() const { return detection_threshold; }
+
+	_FORCE_INLINE_ void set_acquisition_threshold(const double& new_threshold) { acquisition_threshold = CLAMP(new_threshold, 0.001, 0.98); emit_changed(); }
+	_FORCE_INLINE_ double get_acquisition_threshold() const { return acquisition_threshold; }
+
+	_FORCE_INLINE_ void set_subvention(const double& new_sub) { detection_subvention = CLAMP(new_sub, 0.001, 1.0); emit_changed(); }
+	_FORCE_INLINE_ double get_subvention() const { return detection_subvention; }
+
+	_FORCE_INLINE_ void set_phantom_mode(const bool& pm) { is_phantom = pm; emit_changed(); }
+	_FORCE_INLINE_ bool get_phantom_mode() const { return is_phantom; }
+
+};
+
 class RCSSpatial : public RID_RCS {
+protected:
+	uint32_t magic{};
+	double detection_meter = 0.0F;
 public:
 	RCSSpatial() = default;
 	virtual ~RCSSpatial() = default;
@@ -214,6 +329,13 @@ public:
 	virtual Transform get_combined_transform() const { return Transform(); }
 	virtual Transform get_global_transform() const { return Transform(); }
 	virtual Transform get_local_transform() const { return Transform(); }
+
+	virtual Ref<RCSSpatialProfile> get_spatial_profile() const { return Ref<RCSSpatialProfile>(); }
+
+	_FORCE_INLINE_ uint32_t get_magic() const { return magic; }
+
+	_FORCE_INLINE_ void _set_detection_meter(const double& dm) { detection_meter = CLAMP(dm, 0.0, COMBATANT_DETECTION_LIMIT); }
+	_FORCE_INLINE_ double _get_detection_meter() const { return detection_meter; }
 };
 
 //--------------------------------------------------------------------------
@@ -368,16 +490,26 @@ public:
 	friend class RCSSimulation;
 	friend class Sentrience;
 
+	_FORCE_INLINE_ void start_recording() {
+		if (start_time_usec != 0) return;
+		running = true;
+		start_time_usec = OS::get_singleton()->get_ticks_usec();
+	}
+	_FORCE_INLINE_ void end_recording() {
+		running = false;
+	}
+
 	void poll(const float& delta) override;
 	void purge();
-	VECTOR<std::weak_ptr<EventReportTicket>> events_by_simulation(RCSSimulation* simulation) const;
+	VECTOR<std::weak_ptr<EventReportTicket>> events_by_simulation(const RCSSimulation* simulation) const;
+	Dictionary events_by_simulation_compat(const RCSSimulation* simulation) const;
 	VECTOR<std::weak_ptr<EventReportTicket>> get_all_events() const;
 };
 
 struct RadarRecheckTicket {
 	RCSRadar *request_sender;
-	RCSCombatant *bogey;
-	RadarRecheckTicket(RCSRadar *sender, RCSCombatant *reciever) {
+	RCSSpatial *bogey;
+	RadarRecheckTicket(RCSRadar *sender, RCSSpatial *reciever) {
 		request_sender = sender;
 		bogey = reciever;
 	}
@@ -396,17 +528,24 @@ private:
 	float degrade_to_finished = 120.0;
 	float total_heat = 0.0;
 	float time_elapsed = 0.0;
+	float engagement_time = 0.0;
+	std::weak_ptr<RCSEngagementInternal> self_ref;
+	RCSSimulation* sim{};
 private:
 	RID_TYPE offending_team;
 	RID_TYPE deffending_team;
 	RID_TYPE offending_squads;
 	RID_TYPE deffending_squads;
 
+	RID_TYPE winner;
+
+	List<RID_TYPE> scouting;
+
 	friend class RCSSimulation;
 	friend class RCSTeam;
 	friend class RCSSquad;
 private:
-	List<RCSEngagement*> referencing;
+	mutable List<RCSEngagement*> referencing;
 
 	// void cut_ties_team(RCSTeam* team);
 	// void cut_ties_squad(RCSSquad* squad);
@@ -428,6 +567,7 @@ public:
 	_ALWAYS_INLINE_ RID_TYPE _get_deffending_team() const noexcept { return deffending_team; }
 	_ALWAYS_INLINE_ RID_TYPE _get_offending_squads() const noexcept { return offending_squads; }
 	_ALWAYS_INLINE_ RID_TYPE _get_deffending_squads() const noexcept { return deffending_squads; }
+	_ALWAYS_INLINE_ List<RID_TYPE>& get_active_radars() { return scouting; }
 // ---------------------------------------------
 	Array get_involving_teams() const;
 	Array get_involving_squads() const;
@@ -437,7 +577,8 @@ public:
 	_ALWAYS_INLINE_ RID_TYPE get_deffending_squad() const noexcept { return deffending_squads; }
 // ---------------------------------------------
 
-	Ref<RCSEngagement> spawn_reference();
+	Ref<RCSEngagement> spawn_reference() const;
+	void remove_side(RCSSquad* which);
 
 	_ALWAYS_INLINE_ void reset_action_timer() { time_since_last_action = 0.0; }
 	void poll(const float& delta) override;
@@ -446,7 +587,7 @@ public:
 class RCSEngagement : public Reference {
 	GDCLASS(RCSEngagement, Reference);
 private:
-	RCSEngagementInternal *logger;
+	RCSEngagementInternal *logger{};
 public:
 	enum EngagementScale : unsigned int {
 		// No Engagement
@@ -454,8 +595,8 @@ public:
 		Stalk,
 		Standoff,
 		// Small scale
-		Skirmish,
 		Ambush,
+		Skirmish,
 		// Full scale
 		Assault,
 		// Siege related
@@ -482,6 +623,35 @@ public:
 	_FORCE_INLINE_ RID_TYPE get_deffending_squad()	const { ERR_FAIL_COND_V(!logger, RID_TYPE()); return logger->get_deffending_squad(); }
 };
 
+class RCSSimulationProfile : public RCSProfile {
+	GDCLASS(RCSSimulationProfile, RCSProfile);
+private:
+	float engagement_deactivation_time = 120.0;
+protected:
+	static void _bind_methods();
+
+	static void static_copy(RCSSimulationProfile* des, const RCSSimulationProfile* other){
+		// memcpy((void*)des, (const void*)other, sizeof(RCSSimulationProfile));
+		des->engagement_deactivation_time = other->engagement_deactivation_time;
+	}
+public:
+	RCSSimulationProfile() = default;
+
+	_FORCE_INLINE_ void set_edt(const float& edt) { engagement_deactivation_time = edt; emit_changed(); }
+	_FORCE_INLINE_ float get_edt() const noexcept { return engagement_deactivation_time; }
+
+	_FORCE_INLINE_ void copy(const Ref<RCSSimulationProfile>& other) {
+		// engagement_deactivation_time = other->engagement_deactivation_time;
+		if (other.is_null()) return;
+		static_copy(this, other.ptr());
+	}
+	_FORCE_INLINE_ Ref<RCSSimulationProfile> duplicate() const {
+		Ref<RCSSimulationProfile> re = memnew(RCSSimulationProfile);
+		re->copy(Ref<RCSSimulationProfile>(this));
+		return re;
+	}
+};
+
 class RCSSimulation : public RID_RCS {
 private:
 	VECTOR<RCSCombatant *> combatants;
@@ -490,6 +660,7 @@ private:
 	VECTOR<RCSRadar *> radars;
 	VECTOR<RadarRecheckTicket *> rrecheck_requests;
 	VECTOR<RadarConcludeTicket*> rconclude_requests;
+	Ref<RCSSimulationProfile> profile;
 	RCSRecording* recorder;
 
 	VECTOR<std::shared_ptr<RCSEngagementInternal>> engagements;
@@ -499,6 +670,9 @@ private:
 public:
 	RCSSimulation();
 	~RCSSimulation();
+
+	_FORCE_INLINE_ void set_profile(const Ref<RCSSimulationProfile>& new_profile) { profile->copy(new_profile); }
+	_FORCE_INLINE_ Ref<RCSSimulationProfile> get_profile() const { return profile->duplicate(); }
 
 	void add_combatant(RCSCombatant *com);
 	void add_squad(RCSSquad *squad);
@@ -519,6 +693,8 @@ public:
 
 	_FORCE_INLINE_ std::weak_ptr<RCSEngagementInternal> create_engagement(){
 		auto en = std::make_shared<RCSEngagementInternal>();
+		en->sim = this;
+		en->self_ref = en;
 		engagements.push_back(en);
 		return en;
 	}
@@ -526,11 +702,28 @@ public:
 	// Request read actions
 	std::weak_ptr<RCSEngagementInternal> request_active_engagement(const RID_TYPE& offending_squad, const RID_TYPE& defending_squad) const;
 	VECTOR<std::weak_ptr<RCSEngagementInternal>> request_engagements_list(const RID_TYPE& offending_squad, const RID_TYPE& defending_squad) const;
+	Vector<std::weak_ptr<RCSEngagementInternal>> request_all_active_engagements() const;
+	Array request_all_active_engagements_compat() const;
+	Vector<std::weak_ptr<RCSEngagementInternal>> request_all_engagements() const;
+	Array request_all_engagements_compat() const;
 	Vector<RCSSquad*> request_scanable_squads(const RCSSquad* base) const;
 	Vector<RCSSquad*> request_reachable_squads(const RCSSquad* from) const;
 	Vector<RCSCombatant*> request_reachable_combatants(const RCSSquad* from) const;
 	RCSCombatant *request_combatant_from_iid(const uint64_t &iid) const;
-	
+
+#define SimRecordSearch(what, rec, retval)                                  \
+	for (uint32_t i = 0, s = rec.size(); i < s; i++){                       \
+		auto elem = rec[i];                                                 \
+		if (elem->get_self() == what){                                      \
+			retval = elem; break;                                           \
+		}                                                                   \
+	}
+
+	const RCSCombatant* request_combatant_from_rid(const RID_TYPE& rid) const;
+	const RCSSquad* request_squad_from_rid(const RID_TYPE& rid) const;
+	const RCSTeam* request_team_from_rid(const RID_TYPE& rid) const;
+	const RCSRadar* request_radar_from_rid(const RID_TYPE& rid) const;
+
 	// Request write actions
 	void demand_radar_recheck(RadarRecheckTicket* ticket) { rrecheck_requests.push_back(ticket); }
 	void demand_radar_conclude(RadarConcludeTicket* ticket) { rconclude_requests.push_back(ticket); }
@@ -538,15 +731,17 @@ public:
 	void set_recorder(RCSRecording *rec);
 	_FORCE_INLINE_ bool has_recorder() const { return recorder != nullptr; }
 	_FORCE_INLINE_ bool is_recording() const { return (has_recorder() ? (recorder->running) : false); }
+	void simulation_event(std::shared_ptr<SimulationEventReport>& event);
 	void combatant_event(std::shared_ptr<CombatantEventReport>& event);
 	void squad_event(std::shared_ptr<SquadEventReport>& event);
 	void team_event(std::shared_ptr<TeamEventReport>& event);
 	void projectile_event(std::shared_ptr<ProjectileEventReport>& event);
+	void engagement_event(std::shared_ptr<EngagementEventReport>& event);
 	void radar_event(std::shared_ptr<RadarEventReport>& event);
 };
 
-class RCSCombatantProfile : public Resource{
-	GDCLASS(RCSCombatantProfile, Resource);
+class RCSCombatantProfile : public RCSSpatialProfile {
+	GDCLASS(RCSCombatantProfile, RCSSpatialProfile);
 public:
 	enum CombatantAttribute : unsigned int {
 		NormalCombatant = 0,
@@ -563,11 +758,6 @@ public:
 		Aggressive = 16,
 	};
 private:
-	double detection_threshold = 0.7;
-	double acquisition_threshold = 0.5;
-	double detection_subvention = 0.5;
-	bool is_phantom = false;
-	StringName combatant_name;
 	// uint32_t combatant_id = 0;
 	uint32_t attributes = NormalCombatant;
 	uint32_t stand = Movable + Deffensive;
@@ -582,24 +772,9 @@ public:
 
 	_FORCE_INLINE_ void set_stand(const uint32_t& new_stand) { stand = new_stand; emit_changed(); }
 	_FORCE_INLINE_ uint32_t get_stand() const { return stand; }
-
-	_FORCE_INLINE_ void set_pname(const StringName& name) { combatant_name = name; emit_changed(); }
-	_FORCE_INLINE_ StringName get_pname() const { return combatant_name; }
-
-	_FORCE_INLINE_ void set_detection_threshold(const double& new_threshold) { detection_threshold = CLAMP(new_threshold, 0.001, 0.98); emit_changed(); }
-	_FORCE_INLINE_ double get_detection_threshold() const { return detection_threshold; }
-
+	
 	_FORCE_INLINE_ void set_combatant_attributes(const uint32_t& attr) { attributes = attr; emit_changed(); }
 	_FORCE_INLINE_ uint32_t get_combatant_attributes() const { return attributes; }
-
-	_FORCE_INLINE_ void set_acquisition_threshold(const double& new_threshold) { acquisition_threshold = CLAMP(new_threshold, 0.001, 0.98); emit_changed(); }
-	_FORCE_INLINE_ double get_acquisition_threshold() const { return acquisition_threshold; }
-
-	_FORCE_INLINE_ void set_subvention(const double& new_sub) { detection_subvention = CLAMP(new_sub, 0.001, 1.0); emit_changed(); }
-	_FORCE_INLINE_ double get_subvention() const { return detection_subvention; }
-
-	_FORCE_INLINE_ void set_phantom_mode(const bool& pm) { is_phantom = pm; emit_changed(); }
-	_FORCE_INLINE_ bool get_phantom_mode() const { return is_phantom; }
 };
 
 #define MAX_HEAT_PER_INSTANCE 1000
@@ -621,8 +796,6 @@ public:
 	_FORCE_INLINE_ void set_hps(const float& hps) { heat_per_second = CLAMP(hps, 0.0, MAX_HEAT_PER_INSTANCE); emit_changed(); }
 	_FORCE_INLINE_ float get_hps() const { return heat_per_second; }
 };
-
-#define COMBATANT_DETECTION_LIMIT 10.0
 
 class RCSCombatant : public RCSSpatial {
 private:
@@ -656,14 +829,15 @@ public:
 	virtual Ref<RawRecord> serialize() const;
 	virtual bool serialize(const Ref<RawRecord>& from);
 
+	_FORCE_INLINE_ Ref<RCSSpatialProfile> get_spatial_profile() const override {
+		return *(Ref<RCSSpatialProfile>)((void*)&combatant_profile);
+	}
+
 	_FORCE_INLINE_ void set_combatant_id(const uint32_t& new_id) { combatant_id = new_id; }
 	_FORCE_INLINE_ uint32_t get_combatant_id() const { return combatant_id; }
 
 	_FORCE_INLINE_ void set_iid(const uint64_t& new_id) { identifier_id = new_id; }
 	_FORCE_INLINE_ uint64_t get_iid() const { return identifier_id; }
-
-	_FORCE_INLINE_ void _set_detection_meter(const double& dm) { detection_meter = CLAMP(dm, 0.0, COMBATANT_DETECTION_LIMIT); }
-	_FORCE_INLINE_ double _get_detection_meter() const { return detection_meter; }
 
 	_FORCE_INLINE_ void set_fired_by(RCSCombatant* by) { fired_by = by; }
 	_FORCE_INLINE_ RCSCombatant* get_fired_by() { return fired_by; }
@@ -788,6 +962,12 @@ public:
 	_ALWAYS_INLINE_ RCSCombatant* get_target() noexcept { return target; }
 };
 
+class RCSSquadProfile : public RCSSpatialProfile {
+	GDCLASS(RCSSquadProfile, RCSSpatialProfile);
+public:
+	RCSSquadProfile() = default;
+};
+
 class RCSSquad : public RCSSpatial {
 public:
 	struct SquadSummarization {
@@ -796,6 +976,7 @@ public:
 		real_t radius_squared = 0.0F;
 	};
 private:
+	Ref<RCSSquadProfile> squad_profile;
 	StringName squad_name;
 	uint32_t squad_id = 0;
 	SafeRefCount refcount;
@@ -805,6 +986,7 @@ private:
 	RCSTeam *my_team;
 
 	VECTOR<RCSCombatant*> combatants;
+	// List<RID_TYPE> tracked_by_radars;
 
 	// friend class RCSEngagementInternal;
 	friend class RCSSimulation;
@@ -812,6 +994,16 @@ private:
 public:
 	RCSSquad();
 	~RCSSquad();
+
+	_FORCE_INLINE_ void set_profile(const Ref<RCSSquadProfile>& new_profile) {
+		squad_profile = new_profile;
+	}
+	_FORCE_INLINE_ Ref<RCSSquadProfile> get_profile() const {
+		return squad_profile;
+	}
+	_FORCE_INLINE_ Ref<RCSSpatialProfile> get_spatial_profile() const override {
+		return *(Ref<RCSSpatialProfile>*)((void*)&squad_profile);
+	}
 
 	_FORCE_INLINE_ void add_participating(const std::shared_ptr<RCSEngagementInternal>& engagement){
 		participating.push_back(engagement);
@@ -837,6 +1029,9 @@ public:
 		auto idx = find_participating(engagement);
 		if (idx == -1) return;
 		VEC_REMOVE(participating, idx);
+	}
+	_ALWAYS_INLINE_ const VECTOR<std::weak_ptr<RCSEngagementInternal>>& get_participating() const {
+		return participating;
 	}
 
 	_FORCE_INLINE_ void set_squad_name(const StringName& new_name) { squad_name = new_name; }
@@ -895,6 +1090,44 @@ public:
 			sum.height_differences = get_combatants_displacement(sum.center, padding);
 		return sum;
 	}
+	_FORCE_INLINE_ Transform get_combined_transform() const override {
+		Vector3 general_position{};
+		Vector3 general_direction_x{};
+		Vector3 general_direction_y{};
+		Vector3 general_direction_z{};
+		for (uint32_t i = 0, s = combatants.size(); i < s; i++){
+			auto com = combatants[i];
+			auto com_transform = com->get_combined_transform();
+			general_position += com_transform.get_origin();
+			general_direction_x += com_transform.get_basis()[0];
+			general_direction_y += com_transform.get_basis()[1];
+			general_direction_z += com_transform.get_basis()[2];
+		}
+		general_direction_x.normalize();
+		general_direction_y.normalize();
+		general_direction_z.normalize();
+		general_position = (general_position / combatants.size());
+		return Transform(Basis(general_direction_x, general_direction_y, general_direction_z), general_position);
+	}
+	// Can't be inline thanks to its position in the code
+	// void add_tracking_radar(const RCSRadar* rad){
+	// 	tracked_by_radars.push_back(rad->get_self());
+	// }
+	// void remove_tracking_radar(const RID_TYPE& rid){
+	// 	auto idx = tracked_by_radars.find(rid);
+	// 	if (idx) tracked_by_radars.erase(idx);
+	// }
+	// void remove_tracking_radar(const RCSRadar* rad){
+	// 	remove_tracking_radar(rad->get_self());
+	// }
+	// _FORCE_INLINE_ const List<RID_TYPE>& get_tracking_radars() const {
+	// 	return tracked_by_radars;
+	// }
+	// _FORCE_INLINE_ Vector<RID_TYPE> get_tracking_radars_compat() const {
+	// 	Vector<RID_TYPE> re;
+	// 	List2Vector(tracked_by_radars, re);
+	// 	return re;
+	// }
 	_FORCE_INLINE_ Transform get_global_transform() const override {
 		return Transform(Basis(), get_spatial_position());
 	}
@@ -974,7 +1207,7 @@ private:
 	StringName team_name;
 	uint32_t team_id = 0;
 	SafeRefCount refcount;
-	VECTOR<std::weak_ptr<RCSEngagementInternal>> participating;
+	// VECTOR<std::weak_ptr<RCSEngagementInternal>> participating;
 private:
 	RCSSimulation* simulation;
 	VECTOR<RCSSquad*> squads;
@@ -991,31 +1224,8 @@ public:
 	RCSTeam();
 	~RCSTeam();
 
-	_FORCE_INLINE_ void add_participating(const std::shared_ptr<RCSEngagementInternal>& engagement){
-		participating.push_back(engagement);
-	}
-	_FORCE_INLINE_ int64_t find_participating(const std::shared_ptr<RCSEngagementInternal>& engagement){
-		for (uint32_t i = 0, size = participating.size(); i < size; i++){
-			auto curr = participating[i];
-			auto locked = curr.lock();
-			if (!locked){
-				VEC_REMOVE(participating, i);
-				i -= 1;
-				continue;
-			} else if (locked == engagement){
-				return i;
-			}
-		}
-		return -1;
-	}
-	_FORCE_INLINE_ bool has_participating(const std::shared_ptr<RCSEngagementInternal>& engagement){
-		return find_participating(engagement) != -1;
-	}
-	_FORCE_INLINE_ void remove_participating(const std::shared_ptr<RCSEngagementInternal>& engagement){
-		auto idx = find_participating(engagement);
-		if (idx == -1) return;
-		VEC_REMOVE(participating, idx);
-	}
+	VECTOR<std::weak_ptr<RCSEngagementInternal>> get_all_engagements() const;
+	Array get_all_engagements_compat() const;
 
 	_FORCE_INLINE_ void set_team_name(const StringName& new_name) { team_name = new_name; }
 	_FORCE_INLINE_ StringName get_team_name() const { return team_name; }
@@ -1023,7 +1233,6 @@ public:
 	_FORCE_INLINE_ void set_team_id(const uint32_t& new_id) { team_id = new_id;}
 	_FORCE_INLINE_ uint32_t get_team_id() const { return team_id; }
 
-	Array get_engagements_ref() const;
 	void purge_all_links();
 
 	_FORCE_INLINE_ VECTOR<RCSSquad*>* get_squads() { return &squads; }
@@ -1057,10 +1266,11 @@ public:
 	std::weak_ptr<RCSCombatant> from;
 	std::weak_ptr<RCSCombatant> to;
 #else
-	RCSCombatant *from;
-	RCSCombatant *to;
+	RCSSpatial *from;
+	RCSSpatial *to;
 #endif
 	Transform self_transform;
+	Ref<RCSSpatialProfile> bogey_profile;
 	bool compute_lock = false;
 	bool detect_result = false;
 	bool lock_result = false;
@@ -1073,7 +1283,7 @@ public:
 		this->compute_lock = cl;
 	}
 #else
-	RadarPingRequest(RCSCombatant *from, RCSCombatant *to, const bool& cl = false) {
+	RadarPingRequest(RCSSpatial *from, RCSSpatial *to, const bool& cl = false) {
 		this->from = from;
 		this->to = to;
 		this->compute_lock = cl;
@@ -1081,8 +1291,8 @@ public:
 #endif
 };
 
-class RCSRadarProfile : public Resource{
-	GDCLASS(RCSRadarProfile, Resource);
+class RCSRadarProfile : public RCSProfile{
+	GDCLASS(RCSRadarProfile, RCSProfile);
 public:
 	struct RadarPingCache {
 		Vector3 from_origin;
@@ -1114,7 +1324,6 @@ public:
 private:
 	Ref<AdvancedCurve> detection_curve;
 	Ref<AdvancedCurve> acquisition_curve;
-	StringName rp_name;
 	double spread = Math::deg2rad(30.0);
 	double frequency = 1.0;
 	double scan_contribution = 0.3;
@@ -1137,9 +1346,6 @@ public:
 
 	_FORCE_INLINE_ void set_acurve(const Ref<AdvancedCurve>& curve) { acquisition_curve = curve; emit_changed(); }
 	_FORCE_INLINE_ Ref<AdvancedCurve> get_acurve() const noexcept { return acquisition_curve; }
-
-	_FORCE_INLINE_ void set_pname(const StringName& name) { rp_name = name; emit_changed(); }
-	_FORCE_INLINE_ StringName get_pname() const noexcept { return rp_name; }
 
 	_FORCE_INLINE_ void set_spread(const double& new_spread) { spread = CLAMP(new_spread, MIN_RADAR_SPREAD, MAX_RADAR_SPREAD); emit_changed(); }
 	_FORCE_INLINE_ double get_spread() const noexcept { return spread; }
@@ -1180,6 +1386,10 @@ public:
 		// Reference-able Vectors
 		Vector<RCSSquad*> scanable_squads;
 		Vector<RCSCombatant*> scanable_combatants;
+		Vector<RCSSpatial*> selected_scanable;
+		_FORCE_INLINE_ Vector<RCSSpatial*> get_scanable() const {
+			return selected_scanable;
+		}
 		_FORCE_INLINE_ Vector<RCSCombatant*> get_combatants() const {
 			Vector<RCSCombatant*> re;
 			for (uint32_t i = 0, size = scanable_squads.size(); i < size; i++){
@@ -1243,8 +1453,8 @@ private:
 	double timer = 0.0;
 
 	void fetch_space_state();
-	void combatant_detected(RCSCombatant* com);
-	void combatant_locked(RCSCombatant* com);
+	void target_detected(RCSSpatial* com);
+	void target_locked(RCSSpatial* com);
 	void send_conclusion();
 
 	void ping_base_transform(const float& delta);

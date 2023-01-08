@@ -36,6 +36,11 @@
 #include "core/os/os.h"
 #include "core/project_settings.h"
 
+// #define TRY_LOAD_MEMFS
+#ifdef TRY_LOAD_MEMFS
+#include "modules/enhancer/vfile_access.h"
+#endif
+
 FileAccess::CreateFunc FileAccess::create_func[ACCESS_MAX] = { nullptr, nullptr };
 
 FileAccess::FileCloseFailNotify FileAccess::close_fail_notify = nullptr;
@@ -51,6 +56,9 @@ FileAccess *FileAccess::create(AccessType p_access) {
 }
 
 bool FileAccess::exists(const String &p_name) {
+#ifdef TRY_LOAD_MEMFS
+	if (MemFS::file_exists(p_name)) return true;
+#endif
 	if (PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled() && PackedData::get_singleton()->has_path(p_name)) {
 		return true;
 	}
@@ -89,6 +97,15 @@ FileAccess *FileAccess::open(const String &p_path, int p_mode_flags, Error *r_er
 	//try packed data first
 
 	FileAccess *ret = nullptr;
+#ifdef TRY_LOAD_MEMFS
+	if (MemFS::file_exists(p_path)) {
+		ret = VFileAccess::open_path(p_path, p_mode_flags);
+		if (r_error && ret) {
+			*r_error = OK;
+		}
+		return ret;
+	}
+#endif
 	if (!(p_mode_flags & WRITE) && PackedData::get_singleton() && !PackedData::get_singleton()->is_disabled()) {
 		ret = PackedData::get_singleton()->try_open_path(p_path);
 		if (ret) {

@@ -33,6 +33,27 @@
 
 #include "core/os/file_access.h"
 
+#define FAE_USE_STD_VECTOR
+// #define FAE_SUPPRESS_OUTPUT
+
+#ifdef FAE_USE_STD_VECTOR
+#include <vector>
+#endif
+
+#ifdef FAE_SUPPRESS_OUTPUT
+#define fae_err_fail_cond(cond)						if (cond) return; else ((void)0)
+#define fae_err_fail_cond_v(cond, v)				if (cond) return v; else ((void)0)
+#define fae_err_fail_cond_v_msg(cond, v, msg)		if (cond) return v; else ((void)0)
+#define fae_err_fail_cond_msg(cond, msg)			if (cond) return; else ((void)0)
+#define fae_err_fail_index_v(index, size, retval)	if (((index) < 0) || ((index) >= (size))) return retval; else ((void)0)
+#else
+#define fae_err_fail_cond(cond)						ERR_FAIL_COND(cond)
+#define fae_err_fail_cond_v(cond, v)				ERR_FAIL_COND_V(cond, v)
+#define fae_err_fail_cond_v_msg(cond, v, msg)		ERR_FAIL_COND_V_MSG(cond, v, msg);
+#define fae_err_fail_cond_msg(cond, msg)			ERR_FAIL_COND_MSG(cond, msg);
+#define fae_err_fail_index_v(index, size, retval)	ERR_FAIL_INDEX_V(index, size, retval)
+#endif
+
 class FileAccessEncrypted : public FileAccess {
 public:
 	enum Mode {
@@ -48,7 +69,11 @@ private:
 	FileAccess *file;
 	uint64_t base;
 	uint64_t length;
+#ifdef FAE_USE_STD_VECTOR
+	std::vector<uint8_t> data;
+#else
 	Vector<uint8_t> data;
+#endif
 	mutable uint64_t pos;
 	mutable bool eofed;
 

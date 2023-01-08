@@ -4,6 +4,7 @@
 #include "node_dispatcher.h"
 #include "modules/instance_pool/instance_pool.h"
 #include "modules/rts_com/combat_server.h"
+#include "modules/enhancer/basic_scheduler.h"
 
 class SceneTreeHook {
 public:
@@ -14,9 +15,10 @@ public:
 	static _ALWAYS_INLINE_ void dispatch_physics(const float& delta){
 		NodeDispatcher::get_singleton()->dispatch_physics();
 		Sentrience::get_singleton()->poll(delta);
+		SynchronizationPoint::get_singleton()->iter_sync(delta);
 	}
 	static _ALWAYS_INLINE_ void dispatch_close(){
-		Sentrience::get_singleton()->pre_close();
+		// Sentrience::get_singleton()->pre_close();
 	}
 
 	friend class SceneTree;

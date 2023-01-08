@@ -11,7 +11,8 @@
 #include "core/object.h"
 #include "core/rid.h"
 #include "core/vector.h"
-#include "rcs_maincomp.h"
+#include "rtscom_meta.h"
+#include "rcs_types.h"
 
 //#define MAX_OBJECT_PER_CONTAINER 1024
 // #define USE_THREAD_SAFE_API
@@ -25,6 +26,26 @@
 
 class Sentrience;
 class SentrienceContext;
+
+class RCSProfile;
+class RCSSimulationProfile;
+class RCSSpatialProfile;
+class RCSCombatantProfile;
+class RCSCombatant;
+class RCSProjectileBind;
+class RCSProjectileProfile;
+class RCSSquadProfile;
+class RCSSquad;
+class RCSUnilateralTeamsBind;
+class RCSTeam;
+class RCSRecording;
+class RCSSimulation;
+class RCSRadarProfile;
+class RCSRadar;
+class RCSEngagement;
+class RCSEngagementInternal;
+
+uint64_t sentrience_get_memory_usage();
 
 class SentrienceContext : public Reference {
 	GDCLASS(SentrienceContext, Reference);
@@ -110,7 +131,6 @@ class Sentrience : public Object {
 	mutable RID_Owner<RCSRadar> radar_owner;
 #endif
 protected:
-	void pre_close();
 	virtual void poll(const float& delta);
 	static void _bind_methods();
 	static Sentrience* singleton;
@@ -128,6 +148,7 @@ protected:
 	void free_rid_internal();
 	void gc_worker();
 	friend class SceneTreeHook;
+	friend class RCSSimulation;
 public:
 	Sentrience();
 	~Sentrience();
@@ -149,7 +170,7 @@ public:
 		return active_watcher->size();
 	}
 #endif
-	_FORCE_INLINE_ uint64_t get_memory_usage() const { return RCSMemoryAllocation::tracker_ptr->currently_allocated(); }
+	_FORCE_INLINE_ uint64_t get_memory_usage() const { return sentrience_get_memory_usage(); }
 	_FORCE_INLINE_ String get_memory_usage_humanized() const { return String::humanize_size(get_memory_usage()); }
 	virtual void free_rid(const RID_TYPE& target);
 	void free_all_instances();
@@ -159,7 +180,7 @@ public:
 	void memcontext_remove();
 	void memcontext_flush(Ref<SentrienceContext> watcher);
 #else
-	_FORCE_INLINE_ uint8_t memcontext_create() { return 0; }
+	_FORCE_INLINE_ uint32_t memcontext_create() { return 0; }
 	_FORCE_INLINE_ void memcontext_remove() {}
 	void memcontext_flush(uint32_t& watcher) {}
 #endif
@@ -167,6 +188,9 @@ public:
 	/* Recording API */
 	virtual RID_TYPE recording_create();
 	virtual bool recording_assert(const RID_TYPE& r_rec);
+	virtual void recording_add_simulation(const RID_TYPE& r_rec, const RID_TYPE& r_simul);
+	virtual void recording_remove_simulation(const RID_TYPE& r_rec, const RID_TYPE& r_simul);
+	virtual Dictionary recording_compile_by_simulation(const RID_TYPE& r_rec, const RID_TYPE& r_simul);
 	virtual bool recording_start(const RID_TYPE& r_rec);
 	virtual bool recording_end(const RID_TYPE& r_rec);
 	virtual bool recording_running(const RID_TYPE& r_rec);
@@ -178,6 +202,9 @@ public:
 	virtual void simulation_set_active(const RID_TYPE& r_simul, const bool& p_active);
 	virtual bool simulation_is_active(const RID_TYPE& r_simul);
 	virtual Array simulation_get_all_engagements(const RID_TYPE& r_simul);
+	virtual Array simulation_get_all_active_engagements(const RID_TYPE& r_simul);
+	virtual void simulation_set_profile(const RID_TYPE& r_simul, const Ref<RCSSimulationProfile>& profile);
+	virtual Ref<RCSSimulationProfile> simulation_get_profile(const RID_TYPE& r_simul);
 	virtual void simulation_bind_recording(const RID_TYPE& r_simul, const RID_TYPE& r_rec);
 	virtual void simulation_unbind_recording(const RID_TYPE& r_simul);
 	virtual uint32_t simulation_count_combatant(const RID_TYPE& r_simul);
@@ -260,5 +287,7 @@ public:
 	virtual Vector<RID_TYPE> radar_get_detected(const RID_TYPE& r_rad);
 	virtual Vector<RID_TYPE> radar_get_locked(const RID_TYPE& r_rad);
 };
+
+#include "rcs_maincomp.h"
 
 #endif

@@ -289,7 +289,8 @@ void SettingsServer::load_gpp_internal() const{
 			// Engine::get_singleton()->set_iterations_per_second(120);
 			main_viewport->set_hdr(true);
 			main_viewport->set_use_debanding(true);
-			main_viewport->set_use_32_bpc_depth(true);
+			// main_viewport->set_use_32_bpc_depth(true);
+			main_viewport->set_use_32_bpc_depth(false);
 			main_viewport->set_use_fxaa(false);
 			main_viewport->set_sharpen_intensity(0.0);
 			main_viewport->set_msaa(Viewport::MSAA_16X);

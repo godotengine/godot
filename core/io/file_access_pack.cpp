@@ -123,10 +123,44 @@ PackedData::~PackedData() {
 	_free_packed_dirs(root);
 }
 
+#define MEMFS_PACK_LOAD_LIMIT 536'870'912U
+
+// #define TRY_LOAD_MEMFS
+
+#ifdef TRY_LOAD_MEMFS
+#include "modules/enhancer/vfile_access.h"
+#endif
+
 //////////////////////////////////////////////////////////////////
 
 bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, uint64_t p_offset) {
+#ifdef TRY_LOAD_MEMFS
+	FileAccess *f = nullptr;
+	FileAccess *fa = FileAccess::open(p_path, FileAccess::READ);
+	if (!fa) {
+		f = FileAccess::open(p_path, FileAccess::READ);
+	} else if (fa->get_len() > MEMFS_PACK_LOAD_LIMIT) {
+		print_line(String("Pack file is overweight (Limit: ") + String::humanize_size(MEMFS_PACK_LOAD_LIMIT) + String(")."));
+		f = FileAccess::open(p_path, FileAccess::READ);
+	} else {
+		MemFS::virtualize_file(p_path, fa);
+		fa->close();
+		memdelete(fa);
+		if (!MemFS::file_exists(p_path)){
+			f = FileAccess::open(p_path, FileAccess::READ);
+		} else {
+			f = memnew(VFileAccess);
+			// f->_open(p_path, FileAccess::READ);
+			((VFileAccess*)f)->_open(p_path, FileAccess::READ);
+			if (!f->is_open()){
+				VFileAccess::free((const VFileAccess*)f);
+				f = nullptr;
+			}
+		}
+	}
+#else
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
+#endif
 	if (!f) {
 		return false;
 	}
@@ -198,6 +232,9 @@ bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files, 
 	if (!pck_header_found) {
 		f->close();
 		memdelete(f);
+#ifdef TRY_LOAD_MEMFS
+		MemFS::delete_file(p_path);
+#endif
 		return false;
 	}
 

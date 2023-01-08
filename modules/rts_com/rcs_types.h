@@ -41,6 +41,12 @@
 	}                                                                   \
 }
 
+#define List2Vector(from, to)                                           \
+	uint32_t __iter = 0;                                                \
+	for (auto E = from.front(); E; E = E->next() && __iter += 1){       \
+		to.write[__iter] = E->get();                                    \
+	}
+
 // template <class T> class CArray {
 // private:
 // 	Array();
@@ -715,98 +721,6 @@ public:
 			print_verbose(String("   at (") + String(file) + String(":") + String(function) + String(") - ") + itos(line));
 		}
 	}
-};
-
-class WorkerPool {
-public:
-	struct WorkerSettings {
-		enum YieldMode : unsigned int {
-			AutoYield,
-			StaticWait,
-			DynamicWait,
-		};
-		YieldMode mode = AutoYield;
-		uint64_t thread_wait_usec = 0;
-	};
-private:
-	std::vector<std::thread*> threads_pool;
-	std::vector<bool> killsig;
-	SafeNumeric<uint32_t> refcount;
-
-	_ALWAYS_INLINE_ void internal_callback(uint32_t idx, WorkerSettings settings, void (*invoke)(void*), void* userdata = (void*)nullptr){
-		auto start_time = std::chrono::high_resolution_clock::now();
-		while (!killsig[idx]){
-			invoke(userdata);
-			switch (settings.mode){
-				case WorkerSettings::AutoYield:
-					std::this_thread::yield();
-					break;
-				case WorkerSettings::StaticWait:
-					std::this_thread::sleep_for(std::chrono::microseconds(settings.thread_wait_usec));
-				case WorkerSettings::DynamicWait: {
-					auto end_time = start_time + std::chrono::microseconds(settings.thread_wait_usec);
-					start_time = std::chrono::high_resolution_clock::now();
-					std::this_thread::sleep_until(end_time);
-				} default: ERR_FAIL_MSG("Invalid wait mode");
-			}
-		}
-	}
-public:
-	_FORCE_INLINE_ void initialize(const uint32_t& size){
-		threads_pool.clear();
-		killsig.clear();
-		threads_pool.resize(size + 1);
-		killsig.resize(size + 1);
-		// std::fill(killsig.front(), killsig.back(), false);
-		for (uint32_t i = 0; i <= size; i++){
-			killsig[i] = false;
-		}
-		refcount.set(0);
-	}
-	_FORCE_INLINE_ WorkerPool(const uint32_t& size){
-		initialize(size);
-	}
-	_FORCE_INLINE_ ~WorkerPool(){
-		mass_layoff();
-	}
-	// _FORCE_INLINE_ std::thread* get(const uint32_t& idx) { return threads_pool[idx]; }
-	// _FORCE_INLINE_ const std::thread* c_get(const uint32_t& idx) const { return threads_pool[idx]; }
-	// _FORCE_INLINE_ std::thread* operator[](const uint32_t& idx) { return get(idx); }
-	// _FORCE_INLINE_ const std::thread* operator[](const uint32_t& idx) const { return c_get(idx); }
-
-	_FORCE_INLINE_ uint32_t add_low_wage_exploitable_worker(const WorkerSettings& settings, void (*invoke)(void*), void* userdata = (void*)nullptr){
-		auto idx = refcount.increment();
-		ERR_FAIL_COND_V(idx >= threads_pool.size(), 0);
-		auto thread = threads_pool[idx];
-		ERR_FAIL_COND_V(thread, 0);
-		thread = new std::thread(&WorkerPool::internal_callback, this, idx, settings, invoke, userdata);
-		return idx;
-	}
-
-	_FORCE_INLINE_ void layoff(const uint32_t& idx) {
-		ERR_FAIL_COND(idx >= threads_pool.size());
-		auto thread = threads_pool[idx];
-		if (!thread) return;
-		killsig[idx] = true;
-		thread->join();
-		delete thread;
-		killsig[idx] = false;
-
-	}
-	_FORCE_INLINE_ uint32_t employed() const { return refcount.get(); }
-	_FORCE_INLINE_ void mass_layoff(const uint32_t& new_size = 0) {
-		for (uint32_t i = 0, size = threads_pool.size(); i < size; i++){
-			std::thread* thread = threads_pool[i];
-			// bool& ks = killsig.at(i);
-			if (!thread) continue;
-			killsig[i] = true;
-			thread->join(); delete thread;
-		}
-		if (new_size == 0)
-			initialize(threads_pool.size());
-		else initialize(new_size);
-	}
-	_FORCE_INLINE_ void rescale_operation(const uint32_t& new_size) { mass_layoff(new_size); }
 };
 
 #endif

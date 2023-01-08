@@ -110,20 +110,20 @@ Sentrience* Sentrience::singleton = nullptr;
 
 #define RCS_DEBUG
 
-RCSMemoryAllocation::~RCSMemoryAllocation(){
-	tracker_ptr = nullptr;
+uint64_t sentrience_get_memory_usage() {
+	return RCSMemoryAllocation::tracker_ptr->currently_allocated();
 }
 
-// void *operator new(size_t size){
-// 	RCSMemoryAllocation::tracker_ptr->add_allocated(size);
-// 	// print_verbose(String("{Sentrience:allocator] ") + String(p_description));
-// 	return malloc(size);
-// }
+void *operator new(size_t size){
+	if (RCSMemoryAllocation::tracker_ptr) RCSMemoryAllocation::tracker_ptr->add_allocated(size);
+	// print_verbose(String("{Sentrience:allocator] ") + String(p_description));
+	return malloc(size);
+}
 
-// void operator delete(void* memory, size_t size){
-// 	RCSMemoryAllocation::tracker_ptr->add_deallocated(size);
-// 	free(memory);
-// }
+void operator delete(void* memory, size_t size){
+	if (RCSMemoryAllocation::tracker_ptr) RCSMemoryAllocation::tracker_ptr->add_deallocated(size);
+	free(memory);
+}
 
 void SentrienceContext::_bind_methods(){
 	ClassDB::bind_method(D_METHOD("flush_all"), &SentrienceContext::flush_all);
@@ -201,6 +201,8 @@ Sentrience::~Sentrience(){
     auto rcs_alloc = RCSMemoryAllocation::tracker_ptr->currently_allocated();
 	if (rcs_alloc > 0){
 		log(String("There is currently ") + String::humanize_size(rcs_alloc) + String(" of memory spawned by Sentrience that hasn\'t been freed."));
+	} else {
+		log("All stray instances have been cleaned up");
 	}
 #ifdef USE_THREAD_SAFE_API
 	gc_close = true;
@@ -321,9 +323,6 @@ String Sentrience::rid_sort(const RID_TYPE& target){
 	else RIDSort(radar_owner, RCSRadar, target)
 	return String("<unknown>");
 }
-void Sentrience::pre_close(){
-	log("exitting...");
-}
 
 void Sentrience::_bind_methods(){
 	ClassDB::bind_method(D_METHOD("set_scatter", "s"), &Sentrience::set_scatter);
@@ -345,6 +344,9 @@ void Sentrience::_bind_methods(){
 
 	ClassDB::bind_method(D_METHOD("recording_create"), &Sentrience::recording_create);
 	ClassDB::bind_method(D_METHOD("recording_assert", "r_rec"), &Sentrience::recording_assert);
+	ClassDB::bind_method(D_METHOD("recording_add_simulation", "r_rec", "r_simul"), &Sentrience::recording_add_simulation);
+	ClassDB::bind_method(D_METHOD("recording_remove_simulation", "r_rec", "r_simul"), &Sentrience::recording_remove_simulation);
+	ClassDB::bind_method(D_METHOD("recording_compile_by_simulation", "r_rec", "r_simul"), &Sentrience::recording_compile_by_simulation);
 	ClassDB::bind_method(D_METHOD("recording_start", "r_rec"), &Sentrience::recording_start);
 	ClassDB::bind_method(D_METHOD("recording_end", "r_rec"), &Sentrience::recording_end);
 	ClassDB::bind_method(D_METHOD("recording_running", "r_rec"), &Sentrience::recording_running);
@@ -355,6 +357,9 @@ void Sentrience::_bind_methods(){
 	ClassDB::bind_method(D_METHOD("simulation_set_active", "r_simul", "p_active"), &Sentrience::simulation_set_active);
 	ClassDB::bind_method(D_METHOD("simulation_is_active", "r_simul"), &Sentrience::simulation_is_active);
 	ClassDB::bind_method(D_METHOD("simulation_get_all_engagements", "r_simul"), &Sentrience::simulation_get_all_engagements);
+	ClassDB::bind_method(D_METHOD("simulation_get_all_active_engagements", "r_simul"), &Sentrience::simulation_get_all_active_engagements);
+	ClassDB::bind_method(D_METHOD("simulation_set_profile", "r_simul", "profile"), &Sentrience::simulation_set_profile);
+	ClassDB::bind_method(D_METHOD("simulation_get_profile", "r_simul"), &Sentrience::simulation_get_profile);
 	ClassDB::bind_method(D_METHOD("simulation_bind_recording", "r_simul", "r_rec"), &Sentrience::simulation_bind_recording);
 	ClassDB::bind_method(D_METHOD("simulation_unbind_recording", "r_simul"), &Sentrience::simulation_unbind_recording);
 	ClassDB::bind_method(D_METHOD("simulation_count_combatant", "r_simul"), &Sentrience::simulation_count_combatant);
@@ -441,14 +446,6 @@ void Sentrience::poll(const float& delta){
 		if (space) space->poll(delta);
 		// else {
 		// 	active_simulations.remove(i);
-		// 	i -= 1;
-		// }
-	}
-	for (uint32_t i = 0; i < active_rec.size(); i++){
-		auto rec = active_rec[i];
-		if (rec) rec->poll(delta);
-		// else {
-		// 	active_rec.remove(i);
 		// 	i -= 1;
 		// }
 	}
@@ -543,6 +540,27 @@ RID_TYPE Sentrience::recording_create(){
 bool Sentrience::recording_assert(const RID_TYPE& r_rec){
 	return recording_owner.owns(r_rec);
 }
+void Sentrience::recording_add_simulation(const RID_TYPE& r_rec, const RID_TYPE& r_simul){
+	RECORDINGS_THREAD_SAFE;
+	auto recording = recording_owner.get(r_rec);
+	auto simulation = simulation_owner.get(r_simul);
+	ERR_FAIL_COND(!recording || !simulation || simulation->has_recorder());
+	simulation->set_recorder(recording);
+}
+void Sentrience::recording_remove_simulation(const RID_TYPE& r_rec, const RID_TYPE& r_simul){
+	RECORDINGS_THREAD_SAFE;
+	auto recording = recording_owner.get(r_rec);
+	auto simulation = simulation_owner.get(r_simul);
+	ERR_FAIL_COND(!recording || !simulation || !simulation->has_recorder());
+	simulation->set_recorder(nullptr);
+}
+Dictionary Sentrience::recording_compile_by_simulation(const RID_TYPE& r_rec, const RID_TYPE& r_simul){
+	RECORDINGS_THREAD_SAFE;
+	auto recording = recording_owner.get(r_rec);
+	auto simulation = simulation_owner.get(r_simul);
+	ERR_FAIL_COND_V(!recording || !simulation, Dictionary());
+	return recording->events_by_simulation_compat(simulation);
+}
 bool Sentrience::recording_start(const RID_TYPE& r_rec){
 	RECORDINGS_THREAD_SAFE;
 	auto recording = recording_owner.get(r_rec);
@@ -551,8 +569,8 @@ bool Sentrience::recording_start(const RID_TYPE& r_rec){
 	VEC_FIND(active_rec, recording, search_res);
 	if (search_res != -1) return false;
 	OverweightAssertReturn(active_rec, false);
-	active_rec.push_back(recording);
-	recording->running = true;
+	// active_rec.push_back(recording);
+	recording->start_recording();
 	return true;
 }
 bool Sentrience::recording_end(const RID_TYPE& r_rec){
@@ -563,8 +581,8 @@ bool Sentrience::recording_end(const RID_TYPE& r_rec){
 	VEC_FIND(active_rec, recording, search_res);
 	if (search_res != -1) return false;
 
-	VEC_ERASE(active_rec, recording);
-	recording->running = false;
+	// VEC_ERASE(active_rec, recording);
+	recording->end_recording();
 	return false;
 }
 
@@ -615,7 +633,25 @@ Array Sentrience::simulation_get_all_engagements(const RID_TYPE& r_simul){
 	SIMULATION_THREAD_SAFE;
 	auto simulation = simulation_owner.get(r_simul);
 	ERR_FAIL_COND_V(!simulation, Array());
-	return Array();
+	return simulation->request_all_engagements_compat();
+}
+Array Sentrience::simulation_get_all_active_engagements(const RID_TYPE& r_simul){
+	SIMULATION_THREAD_SAFE;
+	auto simulation = simulation_owner.get(r_simul);
+	ERR_FAIL_COND_V(!simulation, Array());
+	return simulation->request_all_active_engagements_compat();
+}
+void Sentrience::simulation_set_profile(const RID_TYPE& r_simul, const Ref<RCSSimulationProfile>& profile){
+	SIMULATION_THREAD_SAFE;
+	auto simulation = simulation_owner.get(r_simul);
+	ERR_FAIL_COND(!simulation);
+	simulation->set_profile(profile);
+}
+Ref<RCSSimulationProfile> Sentrience::simulation_get_profile(const RID_TYPE& r_simul){
+	SIMULATION_THREAD_SAFE;
+	auto simulation = simulation_owner.get(r_simul);
+	ERR_FAIL_COND_V(!simulation, Ref<RCSSimulationProfile>());
+	return simulation->get_profile();
 }
 void Sentrience::simulation_bind_recording(const RID_TYPE& r_simul, const RID_TYPE& r_rec){
 	SIMULATION_THREAD_SAFE;
@@ -704,16 +740,17 @@ bool Sentrience::combatant_is_team(const RID_TYPE& r_com, const RID_TYPE& r_team
 	return (team->get_self() == r_team);
 }
 Array Sentrience::combatant_get_involving_engagements(const RID_TYPE& r_com){
-	COMBATANTS_THREAD_SAFE;
-	auto combatant = combatant_owner.get(r_com);
-	Array re;
-	ERR_FAIL_COND_V(!combatant, re);
-	// Manually doing this to avoid prompting errors
-	auto squad = combatant->get_squad();
-	if (!squad) return re;
-	auto team = squad->get_team();
-	if (!team) return re;
-	return team->get_engagements_ref();
+	// COMBATANTS_THREAD_SAFE;
+	// auto combatant = combatant_owner.get(r_com);
+	// Array re;
+	// ERR_FAIL_COND_V(!combatant, re);
+	// // Manually doing this to avoid prompting errors
+	// auto squad = combatant->get_squad();
+	// if (!squad) return re;
+	// auto team = squad->get_team();
+	// if (!team) return re;
+	// return team->get_engagements_ref();
+	ERR_FAIL_V_MSG(Array(), "Deprecated method");
 }
 void Sentrience::combatant_set_simulation(const RID_TYPE& r_com, const RID_TYPE& r_simul){
 	COMBATANTS_THREAD_SAFE;
@@ -864,13 +901,14 @@ bool Sentrience::squad_is_team(const RID_TYPE& r_squad, const RID_TYPE& r_team){
 }
 
 Array Sentrience::squad_get_involving_engagements(const RID_TYPE& r_squad){
-	SQUADS_THREAD_SAFE;
-	auto squad = squad_owner.get(r_squad);
-	Array re;
-	ERR_FAIL_COND_V(!squad, re);
-	auto team = squad->get_team();
-	if (!team) return re;
-	return team->get_engagements_ref();
+	// SQUADS_THREAD_SAFE;
+	// auto squad = squad_owner.get(r_squad);
+	// Array re;
+	// ERR_FAIL_COND_V(!squad, re);
+	// auto team = squad->get_team();
+	// if (!team) return re;
+	// return team->get_engagements_ref();
+	ERR_FAIL_V_MSG(Array(), "Deprecated method");
 }
 
 void Sentrience::squad_add_combatant(const RID_TYPE& r_squad, const RID_TYPE& r_com){
@@ -968,7 +1006,7 @@ void Sentrience::team_remove_squad(const RID_TYPE& r_team, const RID_TYPE& r_squ
 Array Sentrience::team_get_involving_engagements(const RID_TYPE& r_team){
 	auto team = team_owner.get(r_team);
 	ERR_FAIL_COND_V(!team, Array());
-	return team->get_engagements_ref();
+	return team->get_all_engagements_compat();
 }
 bool Sentrience::team_has_squad(const RID_TYPE& r_team, const RID_TYPE& r_squad){
 	TEAMS_THREAD_SAFE;
