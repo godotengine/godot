@@ -718,35 +718,9 @@ void ManyBoneIK3D::execute(real_t delta) {
 		set_dirty();
 	}
 	if (is_dirty) {
-		Vector<Transform3D> twist_constraint_transform;
-		Vector<Transform3D> orientation_constraint_transform;
-		Vector<Transform3D> bone_direction_constraint_transform;
-		int32_t constraint_count = get_constraint_count();
-		twist_constraint_transform.resize(constraint_count);
-		orientation_constraint_transform.resize(constraint_count);
-		bone_direction_constraint_transform.resize(constraint_count);
-		for (int32_t constraint_i = 0; constraint_i < constraint_count; constraint_i++) {
-			Transform3D ik_transform = get_constraint_twist_transform(constraint_i);
-			twist_constraint_transform.write[constraint_i] = ik_transform;
-			ik_transform = get_constraint_orientation_transform(constraint_i);
-			orientation_constraint_transform.write[constraint_i] = ik_transform;
-			ik_transform = get_bone_direction_transform(constraint_i);
-			bone_direction_constraint_transform.write[constraint_i] = ik_transform;
-		}
 		skeleton_changed(get_skeleton());
-		for (int32_t constraint_i = 0; constraint_i < get_constraint_count(); constraint_i++) {
-			if (constraint_i < twist_constraint_transform.size()) {
-				set_constraint_twist_transform(constraint_i, twist_constraint_transform[constraint_i]);
-			}
-			if (constraint_i < orientation_constraint_transform.size()) {
-				set_constraint_orientation_transform(constraint_i, orientation_constraint_transform[constraint_i]);
-			}
-			if (constraint_i < bone_direction_constraint_transform.size()) {
-				set_bone_direction_transform(constraint_i, bone_direction_constraint_transform[constraint_i]);
-			}
-		}
-		update_gizmos();
 		is_dirty = false;
+		update_gizmos();
 	}
 	if (bone_list.size()) {
 		Ref<IKNode3D> root_ik_bone = bone_list.write[0]->get_ik_transform();
@@ -924,6 +898,9 @@ void ManyBoneIK3D::_notification(int p_what) {
 			set_notify_transform(true);
 		} break;
 		case NOTIFICATION_INTERNAL_PROCESS: {
+			if (is_dirty) {
+				skeleton_changed(get_skeleton());
+			}
 			if (is_visible_in_tree()) {
 				execute(get_process_delta_time());
 			}
