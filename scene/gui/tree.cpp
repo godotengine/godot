@@ -5180,6 +5180,7 @@ void Tree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_pressed_button"), &Tree::get_pressed_button);
 	ClassDB::bind_method(D_METHOD("set_select_mode", "mode"), &Tree::set_select_mode);
 	ClassDB::bind_method(D_METHOD("get_select_mode"), &Tree::get_select_mode);
+	ClassDB::bind_method(D_METHOD("deselect_all"), &Tree::deselect_all);
 
 	ClassDB::bind_method(D_METHOD("set_columns", "amount"), &Tree::set_columns);
 	ClassDB::bind_method(D_METHOD("get_columns"), &Tree::get_columns);
