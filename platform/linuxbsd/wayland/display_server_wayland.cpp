@@ -2255,8 +2255,9 @@ void DisplayServerWayland::_show_window() {
 			window_set_vsync_mode(wd.vsync_mode, MAIN_WINDOW_ID);
 		}
 #endif
+		wd.visible = true;
 
-		// Actually try to apply any mode the window has now that it's visible.
+		// Actually try to apply the window's mode now that it's visible.
 		window_set_mode(setup_mode);
 
 #ifdef LIBDECOR_ENABLED
@@ -2272,8 +2273,6 @@ void DisplayServerWayland::_show_window() {
 		if (wd.xdg_toplevel && wd.title.utf8().ptr()) {
 			xdg_toplevel_set_title(wd.xdg_toplevel, wd.title.utf8().ptr());
 		}
-
-		wd.visible = true;
 	}
 }
 
