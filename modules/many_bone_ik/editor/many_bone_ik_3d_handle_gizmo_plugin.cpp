@@ -97,8 +97,9 @@ void ManyBoneIK3DHandleGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		Vector<int> bones_to_process = many_bone_ik_skeleton->get_parentless_bones();
 		int bones_to_process_i = 0;
 		Vector<BoneId> processing_bones;
-		Vector<Ref<IKBoneSegment3D>> bone_segments = many_bone_ik->get_segmented_skeletons();
-		for (Ref<IKBoneSegment3D> bone_segment : bone_segments) {
+		TypedArray<IKBoneSegment3D> bone_segments = many_bone_ik->get_child_segments();
+		for (int32_t segment_i = 0; segment_i < bone_segments.size(); segment_i++) {
+			Ref<IKBoneSegment3D> bone_segment = bone_segments[segment_i];
 			if (bone_segment.is_null()) {
 				continue;
 			}
@@ -113,7 +114,7 @@ void ManyBoneIK3DHandleGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 			}
 			Color current_bone_color = bone_color;
 			for (BoneId bone_i : bones_to_process) {
-				Ref<IKBone3D> ik_bone = bone_segment->get_ik_bone(bone_i);
+				Ref<IKBone3D> ik_bone = bone_segment->find_ik_bone(bone_i);
 				if (ik_bone.is_null()) {
 					continue;
 				}

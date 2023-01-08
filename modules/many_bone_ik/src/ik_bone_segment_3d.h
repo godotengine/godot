@@ -50,9 +50,8 @@ class IKBoneSegment3D : public Resource {
 	Ref<IKBone3D> tip;
 	Vector<Ref<IKBone3D>> bones;
 	Vector<Ref<IKBone3D>> pinned_bones;
-	Vector<Ref<IKBoneSegment3D>> child_segments; // Contains only direct child chains that end with effectors or have child that end with effectors
+	TypedArray<IKBoneSegment3D> child_segments; // Contains only direct child chains that end with effectors or have child that end with effectors
 	Ref<IKBoneSegment3D> parent_segment;
-	Ref<IKBoneSegment3D> root_segment;
 	Vector<Ref<IKEffector3D>> effector_list;
 	PackedVector3Array target_headings;
 	PackedVector3Array tip_headings;
@@ -72,12 +71,14 @@ class IKBoneSegment3D : public Resource {
 	void qcp_solver(const Vector<float> &p_damp, float p_default_damp, bool p_translate, bool p_constraint_mode);
 	void update_optimal_rotation(Ref<IKBone3D> p_for_bone, real_t p_damp, bool p_translate, bool p_constraint_mode);
 	float get_manual_msd(const PackedVector3Array &r_htip, const PackedVector3Array &r_htarget, const Vector<real_t> &p_weights);
-	HashMap<BoneId, Ref<IKBone3D>> bone_map;
 
 protected:
 	static void _bind_methods();
 
 public:
+	Ref<IKBone3D> get_root();
+	int32_t get_default_stabilizing_pass_count();
+	void set_default_stabilizing_pass_count(int32_t p_count);
 	const double evec_prec = static_cast<double>(1E-6);
 	const double eval_prec = static_cast<double>(1E-11);
 	static Quaternion clamp_to_quadrance_angle(Quaternion p_quat, real_t p_cos_half_angle);
@@ -85,14 +86,19 @@ public:
 	void create_headings_arrays();
 	void recursive_create_penalty_array(Ref<IKBoneSegment3D> p_bone_segment, Vector<Vector<real_t>> &r_penalty_array, Vector<Ref<IKBone3D>> &r_pinned_bones, real_t p_falloff);
 	Ref<IKBoneSegment3D> get_parent_segment();
+	void set_parent_segment(Ref<IKBoneSegment3D> p_parent_segment);
 	void segment_solver(const Vector<float> &p_damp, float p_default_damp, bool p_constraint_mode);
-	Ref<IKBone3D> get_root() const;
 	Ref<IKBone3D> get_tip() const;
+	void set_tip(Ref<IKBone3D> p_tip);
 	bool is_pinned() const;
-	Vector<Ref<IKBoneSegment3D>> get_child_segments() const;
+	TypedArray<IKBoneSegment3D> get_child_segments() const;
+	void set_child_segments(TypedArray<IKBoneSegment3D> p_child_segments);
 	void create_bone_list(Vector<Ref<IKBone3D>> &p_list, bool p_recursive = false, bool p_debug_skeleton = false) const;
 	Vector<Ref<IKBone3D>> get_bone_list() const;
-	Ref<IKBone3D> get_ik_bone(BoneId p_bone) const;
+	void set_bone_list(Vector<Ref<IKBone3D>> p_bone_list) {
+		bones = p_bone_list;
+	}
+	Ref<IKBone3D> find_ik_bone(BoneId p_bone) const;
 	void generate_default_segments_from_root(Vector<Ref<IKEffectorTemplate3D>> &p_pins, BoneId p_root_bone, BoneId p_tip_bone, ManyBoneIK3D *p_many_bone_ik);
 	void update_pinned_list(Vector<Vector<real_t>> &r_weights);
 	IKBoneSegment3D() {}

@@ -49,7 +49,7 @@ class ManyBoneIK3D : public Node3D {
 private:
 	bool is_constraint_mode = false;
 	NodePath skeleton_path;
-	Vector<Ref<IKBoneSegment3D>> segmented_skeletons;
+	TypedArray<IKBoneSegment3D> segmented_skeletons;
 	int32_t constraint_count = 0;
 	Vector<StringName> constraint_names;
 	int32_t pin_count = 0;
@@ -91,6 +91,13 @@ protected:
 	void _notification(int p_what);
 
 public:
+	void set_child_segments(TypedArray<IKBoneSegment3D> p_child_segments) {
+		segmented_skeletons = p_child_segments;
+	}
+	TypedArray<IKBoneSegment3D> get_child_segments() const {
+		return segmented_skeletons;
+	}
+
 	Transform3D get_godot_skeleton_transform_inverse() {
 		return godot_skeleton_transform_inverse;
 	}
@@ -111,7 +118,6 @@ public:
 	NodePath get_skeleton_node_path();
 	Skeleton3D *get_skeleton() const;
 	Vector<Ref<IKBone3D>> get_bone_list();
-	Vector<Ref<IKBoneSegment3D>> get_segmented_skeletons();
 	float get_iterations_per_frame() const;
 	void set_iterations_per_frame(const float &p_iterations_per_frame);
 	void queue_print_skeleton();

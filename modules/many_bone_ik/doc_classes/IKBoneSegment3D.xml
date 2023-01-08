@@ -7,7 +7,7 @@
 	<tutorials>
 	</tutorials>
 	<methods>
-		<method name="get_ik_bone" qualifiers="const">
+		<method name="find_ik_bone" qualifiers="const">
 			<return type="IKBone3D" />
 			<param index="0" name="bone" type="int" />
 			<description>
