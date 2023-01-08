@@ -528,7 +528,7 @@ TypedArray<Vector2i> AStarGrid2D::get_id_path(const Vector2i &p_from_id, const V
 
 	if (a == b) {
 		TypedArray<Vector2i> ret;
-		ret.push_back(a);
+		ret.push_back(a->id);
 		return ret;
 	}
 
