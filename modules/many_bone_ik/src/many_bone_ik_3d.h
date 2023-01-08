@@ -137,12 +137,12 @@ public:
 	StringName get_constraint_name(int32_t p_index) const;
 	void set_kusudama_twist(int32_t p_index, Vector2 p_limit);
 
-	void set_constraint_twist_transform(int32_t p_index, Transform3D p_transform);
-	Transform3D get_constraint_twist_transform(int32_t p_index) const;
-	void set_constraint_orientation_transform(int32_t p_index, Transform3D p_transform);
-	Transform3D get_constraint_orientation_transform(int32_t p_index) const;
-	void set_bone_direction_transform(int32_t p_index, Transform3D p_transform);
-	Transform3D get_bone_direction_transform(int32_t p_index) const;
+	void set_constraint_twist_transform(int32_t p_bone_index, Transform3D p_transform);
+	Transform3D get_constraint_twist_transform(int32_t p_bone_index) const;
+	void set_constraint_orientation_transform(int32_t p_bone_index, Transform3D p_transform);
+	Transform3D get_constraint_orientation_transform(int32_t p_bone_index) const;
+	void set_bone_direction_transform(int32_t p_bone_index, Transform3D p_transform);
+	Transform3D get_bone_direction_transform(int32_t p_bone_index) const;
 
 	Vector2 get_kusudama_twist(int32_t p_index) const;
 	void set_kusudama_limit_cone(int32_t p_bone, int32_t p_index,
