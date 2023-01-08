@@ -2195,8 +2195,8 @@ void DisplayServerWayland::_show_window() {
 	if (!wd.visible) {
 		DEBUG_LOG_WAYLAND("Showing window");
 
-		// Showing the window will reset the window mode. We'll reapply what was
-		// configured.
+		// Showing this window will reset its mode with whatever the compositor
+		// reports. We'll save the mode beforehand so that we can reapply it later.
 		WindowMode setup_mode = wd.mode;
 
 		wd.wl_surface = wl_compositor_create_surface(wls.globals.wl_compositor);
@@ -2214,8 +2214,8 @@ void DisplayServerWayland::_show_window() {
 #endif
 
 		if (!decorated) {
-			// libdecor is failed or disabled, we shall handle xdg_toplevel creation and
-			// decoration ourselves.
+			// libdecor has failed loading or is disabled, we shall handle xdg_toplevel
+			// reation and decoration ourselves.
 			wd.xdg_surface = xdg_wm_base_get_xdg_surface(wls.globals.xdg_wm_base, wd.wl_surface);
 			xdg_surface_add_listener(wd.xdg_surface, &xdg_surface_listener, &wd);
 
@@ -2237,10 +2237,11 @@ void DisplayServerWayland::_show_window() {
 		// Wait for the surface to be configured before continuing.
 		wl_display_roundtrip(wls.wl_display);
 
+		// NOTE: The XDG Shell protocol is built in a way that causes the window to
+		// be immediately shown as soon as a valid buffer is assigned to it. Hence,
+		// the only acceptable way of implementing window showing is to move the
+		// graphics context window creation logic here.
 #ifdef VULKAN_ENABLED
-		// Since `VulkanContextWayland::window_create` automatically assigns a buffer
-		// to the `wl_surface` and doing so instantly maps it, moving this method here
-		// is the only solution I can think of to implement this method properly.
 		if (context_vulkan) {
 			Error err = context_vulkan->window_create(MAIN_WINDOW_ID, wd.vsync_mode, wls.wl_display, wd.wl_surface, wd.rect.size.width, wd.rect.size.height);
 			ERR_FAIL_COND_MSG(err == ERR_CANT_CREATE, "Can't show a Vulkan window.");
@@ -2250,11 +2251,15 @@ void DisplayServerWayland::_show_window() {
 #ifdef GLES3_ENABLED
 		if (egl_manager) {
 			wd.wl_egl_window = wl_egl_window_create(wd.wl_surface, wd.rect.size.width, wd.rect.size.height);
+
 			Error err = egl_manager->window_create(MAIN_WINDOW_ID, wls.wl_display, wd.wl_egl_window, wd.rect.size.width, wd.rect.size.height);
 			ERR_FAIL_COND_MSG(err == ERR_CANT_CREATE, "Can't show a GLES3 window.");
+
 			window_set_vsync_mode(wd.vsync_mode, MAIN_WINDOW_ID);
 		}
 #endif
+		// NOTE: The public window-handling methods might depend on this flag being
+		// set. Ensure to make any of these calls not before this assignment.
 		wd.visible = true;
 
 		// Actually try to apply the window's mode now that it's visible.
