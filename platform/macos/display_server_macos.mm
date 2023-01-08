@@ -3880,7 +3880,9 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 	}
 #endif
 
-	screen_set_keep_on(GLOBAL_GET("display/window/energy_saving/keep_screen_on"));
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		screen_set_keep_on(GLOBAL_GET("display/window/energy_saving/keep_screen_on"));
+	}
 }
 
 DisplayServerMacOS::~DisplayServerMacOS() {

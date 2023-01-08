@@ -3907,7 +3907,9 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	tts = memnew(TTS_Windows);
 
 	// Enforce default keep screen on value.
-	screen_set_keep_on(GLOBAL_GET("display/window/energy_saving/keep_screen_on"));
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		screen_set_keep_on(GLOBAL_GET("display/window/energy_saving/keep_screen_on"));
+	}
 
 	// Load Windows version info.
 	OSVERSIONINFOW os_ver;
@@ -4147,7 +4149,9 @@ DisplayServerWindows::~DisplayServerWindows() {
 	}
 
 	// Close power request handle.
-	screen_set_keep_on(false);
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		screen_set_keep_on(false);
+	}
 
 #ifdef GLES3_ENABLED
 	// destroy windows .. NYI?

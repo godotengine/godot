@@ -5284,7 +5284,10 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 
 #ifdef DBUS_ENABLED
 	screensaver = memnew(FreeDesktopScreenSaver);
-	screen_set_keep_on(GLOBAL_GET("display/window/energy_saving/keep_screen_on"));
+
+	if (!Engine::get_singleton()->is_editor_hint()) {
+		screen_set_keep_on(GLOBAL_GET("display/window/energy_saving/keep_screen_on"));
+	}
 
 	portal_desktop = memnew(FreeDesktopPortalDesktop);
 #endif
