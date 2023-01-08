@@ -2287,10 +2287,14 @@ DisplayServer::WindowID DisplayServerWayland::get_window_at_screen_position(cons
 }
 
 void DisplayServerWayland::window_attach_instance_id(ObjectID p_instance, WindowID p_window) {
+	MutexLock mutex_lock(wls.mutex);
+
 	wls.main_window.instance_id = p_instance;
 }
 
 ObjectID DisplayServerWayland::window_get_attached_instance_id(WindowID p_window) const {
+	MutexLock mutex_lock(wls.mutex);
+
 	return wls.main_window.instance_id;
 }
 
