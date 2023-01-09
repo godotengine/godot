@@ -121,7 +121,7 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 
 	actions.usage_flag_pointers["SCREEN_TEXTURE"] = &uses_screen_texture;
 	actions.usage_flag_pointers["DEPTH_TEXTURE"] = &uses_depth_texture;
-	actions.usage_flag_pointers["NORMAL_TEXTURE"] = &uses_normal_texture;
+	actions.usage_flag_pointers["NORMAL_ROUGHNESS_TEXTURE"] = &uses_normal_texture;
 	actions.usage_flag_pointers["DISCARD"] = &uses_discard;
 	actions.usage_flag_pointers["TIME"] = &uses_time;
 	actions.usage_flag_pointers["ROUGHNESS"] = &uses_roughness;
