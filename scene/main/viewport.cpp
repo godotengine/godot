@@ -2329,8 +2329,8 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 					}
 					touch_event->set_position(pos);
 					_gui_call_input(over, touch_event);
+					set_input_as_handled();
 				}
-				set_input_as_handled();
 				return;
 			}
 		} else {
@@ -2346,8 +2346,8 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				touch_event->set_position(pos);
 
 				_gui_call_input(over, touch_event);
+				set_input_as_handled();
 			}
-			set_input_as_handled();
 			gui.touch_focus.erase(touch_index);
 			return;
 		}
