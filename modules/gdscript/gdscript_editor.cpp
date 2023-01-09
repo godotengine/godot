@@ -2977,7 +2977,9 @@ static void _find_call_arguments(GDScriptParser::CompletionContext &p_context, c
 					// The path needs quotes if it's not a valid identifier (with an exception
 					// for "/" as path separator, which also doesn't require quotes).
 					if (!opt.replace("/", "_").is_valid_identifier()) {
-						opt = opt.quote(quote_style); // Handle user preference.
+						// Ignore quote_style and just use double quotes for paths with apostrophes.
+						// Double quotes don't need to be checked because they're not valid in node and property names.
+						opt = opt.quote(opt.contains("'") ? "\"" : quote_style); // Handle user preference.
 					}
 					ScriptLanguage::CodeCompletionOption option(opt, ScriptLanguage::CODE_COMPLETION_KIND_NODE_PATH);
 					options.insert(option.display, option);

@@ -266,79 +266,79 @@
 		<constant name="ARRAY_CUSTOM_MAX" value="8" enum="ArrayCustomFormat">
 			Represents the size of the [enum ArrayCustomFormat] enum.
 		</constant>
-		<constant name="ARRAY_FORMAT_VERTEX" value="1" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_VERTEX" value="1" enum="ArrayFormat" is_bitfield="true">
 			Mesh array contains vertices. All meshes require a vertex array so this should always be present.
 		</constant>
-		<constant name="ARRAY_FORMAT_NORMAL" value="2" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_NORMAL" value="2" enum="ArrayFormat" is_bitfield="true">
 			Mesh array contains normals.
 		</constant>
-		<constant name="ARRAY_FORMAT_TANGENT" value="4" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_TANGENT" value="4" enum="ArrayFormat" is_bitfield="true">
 			Mesh array contains tangents.
 		</constant>
-		<constant name="ARRAY_FORMAT_COLOR" value="8" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_COLOR" value="8" enum="ArrayFormat" is_bitfield="true">
 			Mesh array contains colors.
 		</constant>
-		<constant name="ARRAY_FORMAT_TEX_UV" value="16" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_TEX_UV" value="16" enum="ArrayFormat" is_bitfield="true">
 			Mesh array contains UVs.
 		</constant>
-		<constant name="ARRAY_FORMAT_TEX_UV2" value="32" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_TEX_UV2" value="32" enum="ArrayFormat" is_bitfield="true">
 			Mesh array contains second UV.
 		</constant>
-		<constant name="ARRAY_FORMAT_CUSTOM0" value="64" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_CUSTOM0" value="64" enum="ArrayFormat" is_bitfield="true">
 			Mesh array contains custom channel index 0.
 		</constant>
-		<constant name="ARRAY_FORMAT_CUSTOM1" value="128" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_CUSTOM1" value="128" enum="ArrayFormat" is_bitfield="true">
 			Mesh array contains custom channel index 1.
 		</constant>
-		<constant name="ARRAY_FORMAT_CUSTOM2" value="256" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_CUSTOM2" value="256" enum="ArrayFormat" is_bitfield="true">
 			Mesh array contains custom channel index 2.
 		</constant>
-		<constant name="ARRAY_FORMAT_CUSTOM3" value="512" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_CUSTOM3" value="512" enum="ArrayFormat" is_bitfield="true">
 			Mesh array contains custom channel index 3.
 		</constant>
-		<constant name="ARRAY_FORMAT_BONES" value="1024" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_BONES" value="1024" enum="ArrayFormat" is_bitfield="true">
 			Mesh array contains bones.
 		</constant>
-		<constant name="ARRAY_FORMAT_WEIGHTS" value="2048" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_WEIGHTS" value="2048" enum="ArrayFormat" is_bitfield="true">
 			Mesh array contains bone weights.
 		</constant>
-		<constant name="ARRAY_FORMAT_INDEX" value="4096" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_INDEX" value="4096" enum="ArrayFormat" is_bitfield="true">
 			Mesh array uses indices.
 		</constant>
-		<constant name="ARRAY_FORMAT_BLEND_SHAPE_MASK" value="7" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_BLEND_SHAPE_MASK" value="7" enum="ArrayFormat" is_bitfield="true">
 			Mask of mesh channels permitted in blend shapes.
 		</constant>
-		<constant name="ARRAY_FORMAT_CUSTOM_BASE" value="13" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_CUSTOM_BASE" value="13" enum="ArrayFormat" is_bitfield="true">
 			Shift of first custom channel.
 		</constant>
-		<constant name="ARRAY_FORMAT_CUSTOM_BITS" value="3" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_CUSTOM_BITS" value="3" enum="ArrayFormat" is_bitfield="true">
 			Number of format bits per custom channel. See [enum ArrayCustomFormat].
 		</constant>
-		<constant name="ARRAY_FORMAT_CUSTOM0_SHIFT" value="13" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_CUSTOM0_SHIFT" value="13" enum="ArrayFormat" is_bitfield="true">
 			Amount to shift [enum ArrayCustomFormat] for custom channel index 0.
 		</constant>
-		<constant name="ARRAY_FORMAT_CUSTOM1_SHIFT" value="16" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_CUSTOM1_SHIFT" value="16" enum="ArrayFormat" is_bitfield="true">
 			Amount to shift [enum ArrayCustomFormat] for custom channel index 1.
 		</constant>
-		<constant name="ARRAY_FORMAT_CUSTOM2_SHIFT" value="19" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_CUSTOM2_SHIFT" value="19" enum="ArrayFormat" is_bitfield="true">
 			Amount to shift [enum ArrayCustomFormat] for custom channel index 2.
 		</constant>
-		<constant name="ARRAY_FORMAT_CUSTOM3_SHIFT" value="22" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_CUSTOM3_SHIFT" value="22" enum="ArrayFormat" is_bitfield="true">
 			Amount to shift [enum ArrayCustomFormat] for custom channel index 3.
 		</constant>
-		<constant name="ARRAY_FORMAT_CUSTOM_MASK" value="7" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_CUSTOM_MASK" value="7" enum="ArrayFormat" is_bitfield="true">
 			Mask of custom format bits per custom channel. Must be shifted by one of the SHIFT constants. See [enum ArrayCustomFormat].
 		</constant>
-		<constant name="ARRAY_COMPRESS_FLAGS_BASE" value="25" enum="ArrayFormat">
+		<constant name="ARRAY_COMPRESS_FLAGS_BASE" value="25" enum="ArrayFormat" is_bitfield="true">
 			Shift of first compress flag. Compress flags should be passed to [method ArrayMesh.add_surface_from_arrays] and [method SurfaceTool.commit].
 		</constant>
-		<constant name="ARRAY_FLAG_USE_2D_VERTICES" value="33554432" enum="ArrayFormat">
+		<constant name="ARRAY_FLAG_USE_2D_VERTICES" value="33554432" enum="ArrayFormat" is_bitfield="true">
 			Flag used to mark that the array contains 2D vertices.
 		</constant>
-		<constant name="ARRAY_FLAG_USE_DYNAMIC_UPDATE" value="67108864" enum="ArrayFormat">
+		<constant name="ARRAY_FLAG_USE_DYNAMIC_UPDATE" value="67108864" enum="ArrayFormat" is_bitfield="true">
 			Flag indices that the mesh data will use [code]GL_DYNAMIC_DRAW[/code] on GLES. Unused on Vulkan.
 		</constant>
-		<constant name="ARRAY_FLAG_USE_8_BONE_WEIGHTS" value="134217728" enum="ArrayFormat">
+		<constant name="ARRAY_FLAG_USE_8_BONE_WEIGHTS" value="134217728" enum="ArrayFormat" is_bitfield="true">
 			Flag used to mark that the mesh contains up to 8 bone influences per vertex. This flag indicates that [constant ARRAY_BONES] and [constant ARRAY_WEIGHTS] elements will have double length.
 		</constant>
 		<constant name="BLEND_SHAPE_MODE_NORMALIZED" value="0" enum="BlendShapeMode">

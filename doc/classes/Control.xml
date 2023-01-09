@@ -1064,13 +1064,13 @@
 		<member name="size" type="Vector2" setter="_set_size" getter="get_size" default="Vector2(0, 0)">
 			The size of the node's bounding rectangle, in pixels. [Container] nodes update this property automatically.
 		</member>
-		<member name="size_flags_horizontal" type="int" setter="set_h_size_flags" getter="get_h_size_flags" default="1">
+		<member name="size_flags_horizontal" type="int" setter="set_h_size_flags" getter="get_h_size_flags" enum="Control.SizeFlags" default="1">
 			Tells the parent [Container] nodes how they should resize and place the node on the X axis. Use one of the [enum SizeFlags] constants to change the flags. See the constants to learn what each does.
 		</member>
 		<member name="size_flags_stretch_ratio" type="float" setter="set_stretch_ratio" getter="get_stretch_ratio" default="1.0">
 			If the node and at least one of its neighbors uses the [constant SIZE_EXPAND] size flag, the parent [Container] will let it take more or less space depending on this property. If this node has a stretch ratio of 2 and its neighbor a ratio of 1, this node will take two thirds of the available space.
 		</member>
-		<member name="size_flags_vertical" type="int" setter="set_v_size_flags" getter="get_v_size_flags" default="1">
+		<member name="size_flags_vertical" type="int" setter="set_v_size_flags" getter="get_v_size_flags" enum="Control.SizeFlags" default="1">
 			Tells the parent [Container] nodes how they should resize and place the node on the Y axis. Use one of the [enum SizeFlags] constants to change the flags. See the constants to learn what each does.
 		</member>
 		<member name="theme" type="Theme" setter="set_theme" getter="get_theme">
@@ -1315,23 +1315,23 @@
 		<constant name="PRESET_MODE_KEEP_SIZE" value="3" enum="LayoutPresetMode">
 			The control's size will not change.
 		</constant>
-		<constant name="SIZE_SHRINK_BEGIN" value="0" enum="SizeFlags">
+		<constant name="SIZE_SHRINK_BEGIN" value="0" enum="SizeFlags" is_bitfield="true">
 			Tells the parent [Container] to align the node with its start, either the top or the left edge. It is mutually exclusive with [constant SIZE_FILL] and other shrink size flags, but can be used with [constant SIZE_EXPAND] in some containers. Use with [member size_flags_horizontal] and [member size_flags_vertical].
 			[b]Note:[/b] Setting this flag is equal to not having any size flags.
 		</constant>
-		<constant name="SIZE_FILL" value="1" enum="SizeFlags">
+		<constant name="SIZE_FILL" value="1" enum="SizeFlags" is_bitfield="true">
 			Tells the parent [Container] to expand the bounds of this node to fill all the available space without pushing any other node. It is mutually exclusive with shrink size flags. Use with [member size_flags_horizontal] and [member size_flags_vertical].
 		</constant>
-		<constant name="SIZE_EXPAND" value="2" enum="SizeFlags">
+		<constant name="SIZE_EXPAND" value="2" enum="SizeFlags" is_bitfield="true">
 			Tells the parent [Container] to let this node take all the available space on the axis you flag. If multiple neighboring nodes are set to expand, they'll share the space based on their stretch ratio. See [member size_flags_stretch_ratio]. Use with [member size_flags_horizontal] and [member size_flags_vertical].
 		</constant>
-		<constant name="SIZE_EXPAND_FILL" value="3" enum="SizeFlags">
+		<constant name="SIZE_EXPAND_FILL" value="3" enum="SizeFlags" is_bitfield="true">
 			Sets the node's size flags to both fill and expand. See [constant SIZE_FILL] and [constant SIZE_EXPAND] for more information.
 		</constant>
-		<constant name="SIZE_SHRINK_CENTER" value="4" enum="SizeFlags">
+		<constant name="SIZE_SHRINK_CENTER" value="4" enum="SizeFlags" is_bitfield="true">
 			Tells the parent [Container] to center the node in the available space. It is mutually exclusive with [constant SIZE_FILL] and other shrink size flags, but can be used with [constant SIZE_EXPAND] in some containers. Use with [member size_flags_horizontal] and [member size_flags_vertical].
 		</constant>
-		<constant name="SIZE_SHRINK_END" value="8" enum="SizeFlags">
+		<constant name="SIZE_SHRINK_END" value="8" enum="SizeFlags" is_bitfield="true">
 			Tells the parent [Container] to align the node with its end, either the bottom or the right edge. It is mutually exclusive with [constant SIZE_FILL] and other shrink size flags, but can be used with [constant SIZE_EXPAND] in some containers. Use with [member size_flags_horizontal] and [member size_flags_vertical].
 		</constant>
 		<constant name="MOUSE_FILTER_STOP" value="0" enum="MouseFilter">

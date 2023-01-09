@@ -131,7 +131,7 @@
 			</description>
 		</method>
 		<method name="_get_contact_impulse" qualifiers="virtual const">
-			<return type="float" />
+			<return type="Vector3" />
 			<param index="0" name="contact_idx" type="int" />
 			<description>
 			</description>

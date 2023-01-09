@@ -68,12 +68,12 @@ void BoxContainer::_resort() {
 		if (vertical) { /* VERTICAL */
 			stretch_min += size.height;
 			msc.min_size = size.height;
-			msc.will_stretch = c->get_v_size_flags() & SIZE_EXPAND;
+			msc.will_stretch = c->get_v_size_flags().has_flag(SIZE_EXPAND);
 
 		} else { /* HORIZONTAL */
 			stretch_min += size.width;
 			msc.min_size = size.width;
-			msc.will_stretch = c->get_h_size_flags() & SIZE_EXPAND;
+			msc.will_stretch = c->get_h_size_flags().has_flag(SIZE_EXPAND);
 		}
 
 		if (msc.will_stretch) {
