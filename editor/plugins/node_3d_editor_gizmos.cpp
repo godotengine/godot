@@ -115,6 +115,15 @@ Variant EditorNode3DGizmo::get_handle_value(int p_id, bool p_secondary) const {
 	return gizmo_plugin->get_handle_value(this, p_id, p_secondary);
 }
 
+void EditorNode3DGizmo::begin_handle_action(int p_id, bool p_secondary) {
+	if (GDVIRTUAL_CALL(_begin_handle_action, p_id, p_secondary)) {
+		return;
+	}
+
+	ERR_FAIL_COND(!gizmo_plugin);
+	gizmo_plugin->begin_handle_action(this, p_id, p_secondary);
+}
+
 void EditorNode3DGizmo::set_handle(int p_id, bool p_secondary, Camera3D *p_camera, const Point2 &p_point) {
 	if (GDVIRTUAL_CALL(_set_handle, p_id, p_secondary, p_camera, p_point)) {
 		return;
@@ -1093,6 +1102,10 @@ Variant EditorNode3DGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_giz
 	Variant ret;
 	GDVIRTUAL_CALL(_get_handle_value, Ref<EditorNode3DGizmo>(p_gizmo), p_id, p_secondary, ret);
 	return ret;
+}
+
+void EditorNode3DGizmoPlugin::begin_handle_action(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) {
+	GDVIRTUAL_CALL(_begin_handle_action, Ref<EditorNode3DGizmo>(p_gizmo), p_id, p_secondary);
 }
 
 void EditorNode3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, Camera3D *p_camera, const Point2 &p_point) {
