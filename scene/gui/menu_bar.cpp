@@ -842,27 +842,6 @@ String MenuBar::get_tooltip(const Point2 &p_pos) const {
 	}
 }
 
-void MenuBar::get_translatable_strings(List<String> *p_strings) const {
-	Vector<PopupMenu *> popups = _get_popups();
-	for (int i = 0; i < popups.size(); i++) {
-		PopupMenu *pm = popups[i];
-
-		if (!pm->has_meta("_menu_name") && !pm->has_meta("_menu_tooltip")) {
-			continue;
-		}
-
-		String name = pm->get_meta("_menu_name");
-		if (!name.is_empty()) {
-			p_strings->push_back(name);
-		}
-
-		String tooltip = pm->get_meta("_menu_tooltip");
-		if (!tooltip.is_empty()) {
-			p_strings->push_back(tooltip);
-		}
-	}
-}
-
 MenuBar::MenuBar() {
 	set_process_shortcut_input(true);
 }
