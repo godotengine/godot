@@ -99,7 +99,7 @@ class GDScriptAnalyzer {
 	void reduce_preload(GDScriptParser::PreloadNode *p_preload);
 	void reduce_self(GDScriptParser::SelfNode *p_self);
 	void reduce_subscript(GDScriptParser::SubscriptNode *p_subscript);
-	void reduce_ternary_op(GDScriptParser::TernaryOpNode *p_ternary_op);
+	void reduce_ternary_op(GDScriptParser::TernaryOpNode *p_ternary_op, bool p_is_root = false);
 	void reduce_unary_op(GDScriptParser::UnaryOpNode *p_unary_op);
 
 	void const_fold_array(GDScriptParser::ArrayNode *p_array, bool p_is_const);
