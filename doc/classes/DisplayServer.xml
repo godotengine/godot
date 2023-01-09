@@ -785,7 +785,7 @@
 			</description>
 		</method>
 		<method name="mouse_get_button_state" qualifiers="const">
-			<return type="int" enum="MouseButton" />
+			<return type="int" enum="MouseButtonMask" />
 			<description>
 				Returns the current state of mouse buttons (whether each button is pressed) as a bitmask. If multiple mouse buttons are pressed at the same time, the bits are added together. Equivalent to [method Input.get_mouse_button_mask].
 			</description>

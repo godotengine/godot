@@ -458,7 +458,7 @@ Point2i DisplayServerX11::mouse_get_position() const {
 	return Vector2i();
 }
 
-MouseButton DisplayServerX11::mouse_get_button_state() const {
+BitField<MouseButtonMask> DisplayServerX11::mouse_get_button_state() const {
 	return last_button_state;
 }
 
@@ -2843,13 +2843,13 @@ void DisplayServerX11::_get_key_modifier_state(unsigned int p_x11_state, Ref<Inp
 	state->set_meta_pressed((p_x11_state & Mod4Mask));
 }
 
-MouseButton DisplayServerX11::_get_mouse_button_state(MouseButton p_x11_button, int p_x11_type) {
-	MouseButton mask = mouse_button_to_mask(p_x11_button);
+BitField<MouseButtonMask> DisplayServerX11::_get_mouse_button_state(MouseButton p_x11_button, int p_x11_type) {
+	MouseButtonMask mask = mouse_button_to_mask(p_x11_button);
 
 	if (p_x11_type == ButtonPress) {
-		last_button_state |= mask;
+		last_button_state.set_flag(mask);
 	} else {
-		last_button_state &= ~mask;
+		last_button_state.clear_flag(mask);
 	}
 
 	return last_button_state;
@@ -4171,13 +4171,13 @@ void DisplayServerX11::process_events() {
 				if (xi.pressure_supported) {
 					mm->set_pressure(xi.pressure);
 				} else {
-					mm->set_pressure(bool(mouse_get_button_state() & MouseButton::MASK_LEFT) ? 1.0f : 0.0f);
+					mm->set_pressure(bool(mouse_get_button_state().has_flag(MouseButtonMask::LEFT)) ? 1.0f : 0.0f);
 				}
 				mm->set_tilt(xi.tilt);
 				mm->set_pen_inverted(xi.pen_inverted);
 
 				_get_key_modifier_state(event.xmotion.state, mm);
-				mm->set_button_mask((MouseButton)mouse_get_button_state());
+				mm->set_button_mask(mouse_get_button_state());
 				mm->set_position(pos);
 				mm->set_global_position(pos);
 				mm->set_velocity(Input::get_singleton()->get_last_mouse_velocity());

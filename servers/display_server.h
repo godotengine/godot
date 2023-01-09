@@ -230,7 +230,7 @@ public:
 
 	virtual void warp_mouse(const Point2i &p_position);
 	virtual Point2i mouse_get_position() const;
-	virtual MouseButton mouse_get_button_state() const;
+	virtual BitField<MouseButtonMask> mouse_get_button_state() const;
 
 	virtual void clipboard_set(const String &p_text);
 	virtual String clipboard_get() const;

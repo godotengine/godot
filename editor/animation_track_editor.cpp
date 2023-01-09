@@ -2919,7 +2919,7 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 		}
 	}
 
-	if (mm.is_valid() && (mm->get_button_mask() & MouseButton::MASK_LEFT) != MouseButton::NONE && moving_selection_attempt) {
+	if (mm.is_valid() && mm->get_button_mask().has_flag(MouseButtonMask::LEFT) && moving_selection_attempt) {
 		if (!moving_selection) {
 			moving_selection = true;
 			emit_signal(SNAME("move_selection_begin"));
@@ -5309,7 +5309,7 @@ void AnimationTrackEditor::_scroll_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseMotion> mm = p_event;
 
 	if (mm.is_valid() && box_selecting) {
-		if ((mm->get_button_mask() & MouseButton::MASK_LEFT) == MouseButton::NONE) {
+		if (!mm->get_button_mask().has_flag(MouseButtonMask::LEFT)) {
 			// No longer.
 			box_selection->hide();
 			box_selecting = false;

@@ -59,7 +59,7 @@ JoypadLinux::Joypad::~Joypad() {
 }
 
 void JoypadLinux::Joypad::reset() {
-	dpad = HatMask::CENTER;
+	dpad = 0;
 	fd = -1;
 	for (int i = 0; i < MAX_ABS; i++) {
 		abs_map[i] = -1;
@@ -485,27 +485,33 @@ void JoypadLinux::process_joypads() {
 						case ABS_HAT0X:
 							if (joypad_event.value != 0) {
 								if (joypad_event.value < 0) {
-									joypad.dpad = (HatMask)((joypad.dpad | HatMask::LEFT) & ~HatMask::RIGHT);
+									joypad.dpad.set_flag(HatMask::LEFT);
+									joypad.dpad.clear_flag(HatMask::RIGHT);
 								} else {
-									joypad.dpad = (HatMask)((joypad.dpad | HatMask::RIGHT) & ~HatMask::LEFT);
+									joypad.dpad.set_flag(HatMask::RIGHT);
+									joypad.dpad.clear_flag(HatMask::LEFT);
 								}
 							} else {
-								joypad.dpad &= ~(HatMask::LEFT | HatMask::RIGHT);
+								joypad.dpad.clear_flag(HatMask::LEFT);
+								joypad.dpad.clear_flag(HatMask::RIGHT);
 							}
-							input->joy_hat(i, (HatMask)joypad.dpad);
+							input->joy_hat(i, joypad.dpad);
 							break;
 
 						case ABS_HAT0Y:
 							if (joypad_event.value != 0) {
 								if (joypad_event.value < 0) {
-									joypad.dpad = (HatMask)((joypad.dpad | HatMask::UP) & ~HatMask::DOWN);
+									joypad.dpad.set_flag(HatMask::UP);
+									joypad.dpad.clear_flag(HatMask::DOWN);
 								} else {
-									joypad.dpad = (HatMask)((joypad.dpad | HatMask::DOWN) & ~HatMask::UP);
+									joypad.dpad.set_flag(HatMask::DOWN);
+									joypad.dpad.clear_flag(HatMask::UP);
 								}
 							} else {
-								joypad.dpad &= ~(HatMask::UP | HatMask::DOWN);
+								joypad.dpad.clear_flag(HatMask::UP);
+								joypad.dpad.clear_flag(HatMask::DOWN);
 							}
-							input->joy_hat(i, (HatMask)joypad.dpad);
+							input->joy_hat(i, joypad.dpad);
 							break;
 
 						default:

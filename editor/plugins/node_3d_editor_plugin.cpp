@@ -1911,7 +1911,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			}
 		}
 
-		if (spatial_editor->get_current_hover_gizmo().is_null() && (m->get_button_mask() & MouseButton::MASK_LEFT) == MouseButton::NONE && !_edit.gizmo.is_valid()) {
+		if (spatial_editor->get_current_hover_gizmo().is_null() && !m->get_button_mask().has_flag(MouseButtonMask::LEFT) && !_edit.gizmo.is_valid()) {
 			_transform_gizmo_select(_edit.mouse_pos, true);
 		}
 
@@ -1924,7 +1924,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 			String n = _edit.gizmo->get_handle_name(_edit.gizmo_handle, _edit.gizmo_handle_secondary);
 			set_message(n + ": " + String(v));
 
-		} else if ((m->get_button_mask() & MouseButton::MASK_LEFT) != MouseButton::NONE || _edit.instant) {
+		} else if (m->get_button_mask().has_flag(MouseButtonMask::LEFT) || _edit.instant) {
 			if (nav_scheme == NAVIGATION_MAYA && m->is_alt_pressed()) {
 				nav_mode = NAVIGATION_ORBIT;
 			} else if (nav_scheme == NAVIGATION_MODO && m->is_alt_pressed() && m->is_shift_pressed()) {
@@ -1963,7 +1963,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 
 				update_transform(m->get_position(), _get_key_modifier(m) == Key::SHIFT);
 			}
-		} else if ((m->get_button_mask() & MouseButton::MASK_RIGHT) != MouseButton::NONE || freelook_active) {
+		} else if (m->get_button_mask().has_flag(MouseButtonMask::RIGHT) || freelook_active) {
 			if (nav_scheme == NAVIGATION_MAYA && m->is_alt_pressed()) {
 				nav_mode = NAVIGATION_ZOOM;
 			} else if (freelook_active) {
@@ -1972,7 +1972,7 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 				nav_mode = NAVIGATION_PAN;
 			}
 
-		} else if ((m->get_button_mask() & MouseButton::MASK_MIDDLE) != MouseButton::NONE) {
+		} else if (m->get_button_mask().has_flag(MouseButtonMask::MIDDLE)) {
 			const Key mod = _get_key_modifier(m);
 			if (nav_scheme == NAVIGATION_GODOT) {
 				if (mod == _get_key_modifier_setting("editors/3d/navigation/pan_modifier")) {
@@ -7995,7 +7995,7 @@ void Node3DEditor::_update_preview_environment() {
 
 void Node3DEditor::_sun_direction_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseMotion> mm = p_event;
-	if (mm.is_valid() && (mm->get_button_mask() & MouseButton::MASK_LEFT) != MouseButton::NONE) {
+	if (mm.is_valid() && (mm->get_button_mask().has_flag(MouseButtonMask::LEFT))) {
 		sun_rotation.x += mm->get_relative().y * (0.02 * EDSCALE);
 		sun_rotation.y -= mm->get_relative().x * (0.02 * EDSCALE);
 		sun_rotation.x = CLAMP(sun_rotation.x, -Math_TAU / 4, Math_TAU / 4);

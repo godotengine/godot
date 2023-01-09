@@ -2319,31 +2319,31 @@
 		<constant name="KEY_YDIAERESIS" value="255" enum="Key">
 			ÿ key.
 		</constant>
-		<constant name="KEY_CODE_MASK" value="8388607" enum="KeyModifierMask">
+		<constant name="KEY_CODE_MASK" value="8388607" enum="KeyModifierMask" is_bitfield="true">
 			Key Code mask.
 		</constant>
-		<constant name="KEY_MODIFIER_MASK" value="532676608" enum="KeyModifierMask">
+		<constant name="KEY_MODIFIER_MASK" value="532676608" enum="KeyModifierMask" is_bitfield="true">
 			Modifier key mask.
 		</constant>
-		<constant name="KEY_MASK_CMD_OR_CTRL" value="16777216" enum="KeyModifierMask">
+		<constant name="KEY_MASK_CMD_OR_CTRL" value="16777216" enum="KeyModifierMask" is_bitfield="true">
 			Automatically remapped to [constant KEY_META] on macOS and [constant KEY_CTRL] on other platforms, this mask is never set in the actual events, and should be used for key mapping only.
 		</constant>
-		<constant name="KEY_MASK_SHIFT" value="33554432" enum="KeyModifierMask">
+		<constant name="KEY_MASK_SHIFT" value="33554432" enum="KeyModifierMask" is_bitfield="true">
 			Shift key mask.
 		</constant>
-		<constant name="KEY_MASK_ALT" value="67108864" enum="KeyModifierMask">
+		<constant name="KEY_MASK_ALT" value="67108864" enum="KeyModifierMask" is_bitfield="true">
 			Alt or Option (on macOS) key mask.
 		</constant>
-		<constant name="KEY_MASK_META" value="134217728" enum="KeyModifierMask">
+		<constant name="KEY_MASK_META" value="134217728" enum="KeyModifierMask" is_bitfield="true">
 			Command (on macOS) or Meta/Windows key mask.
 		</constant>
-		<constant name="KEY_MASK_CTRL" value="268435456" enum="KeyModifierMask">
+		<constant name="KEY_MASK_CTRL" value="268435456" enum="KeyModifierMask" is_bitfield="true">
 			Ctrl key mask.
 		</constant>
-		<constant name="KEY_MASK_KPAD" value="536870912" enum="KeyModifierMask">
+		<constant name="KEY_MASK_KPAD" value="536870912" enum="KeyModifierMask" is_bitfield="true">
 			Keypad key mask.
 		</constant>
-		<constant name="KEY_MASK_GROUP_SWITCH" value="1073741824" enum="KeyModifierMask">
+		<constant name="KEY_MASK_GROUP_SWITCH" value="1073741824" enum="KeyModifierMask" is_bitfield="true">
 			Group Switch key mask.
 		</constant>
 		<constant name="MOUSE_BUTTON_NONE" value="0" enum="MouseButton">
@@ -2376,19 +2376,19 @@
 		<constant name="MOUSE_BUTTON_XBUTTON2" value="9" enum="MouseButton">
 			Extra mouse button 2. This is sometimes present, usually to the sides of the mouse.
 		</constant>
-		<constant name="MOUSE_BUTTON_MASK_LEFT" value="1" enum="MouseButton">
+		<constant name="MOUSE_BUTTON_MASK_LEFT" value="1" enum="MouseButtonMask" is_bitfield="true">
 			Primary mouse button mask, usually for the left button.
 		</constant>
-		<constant name="MOUSE_BUTTON_MASK_RIGHT" value="2" enum="MouseButton">
+		<constant name="MOUSE_BUTTON_MASK_RIGHT" value="2" enum="MouseButtonMask" is_bitfield="true">
 			Secondary mouse button mask, usually for the right button.
 		</constant>
-		<constant name="MOUSE_BUTTON_MASK_MIDDLE" value="4" enum="MouseButton">
+		<constant name="MOUSE_BUTTON_MASK_MIDDLE" value="4" enum="MouseButtonMask" is_bitfield="true">
 			Middle mouse button mask.
 		</constant>
-		<constant name="MOUSE_BUTTON_MASK_XBUTTON1" value="128" enum="MouseButton">
+		<constant name="MOUSE_BUTTON_MASK_MB_XBUTTON1" value="128" enum="MouseButtonMask" is_bitfield="true">
 			Extra mouse button 1 mask.
 		</constant>
-		<constant name="MOUSE_BUTTON_MASK_XBUTTON2" value="256" enum="MouseButton">
+		<constant name="MOUSE_BUTTON_MASK_MB_XBUTTON2" value="256" enum="MouseButtonMask" is_bitfield="true">
 			Extra mouse button 2 mask.
 		</constant>
 		<constant name="JOY_BUTTON_INVALID" value="-1" enum="JoyButton">
@@ -2840,111 +2840,111 @@
 		</constant>
 		<constant name="PROPERTY_HINT_MAX" value="45" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_USAGE_NONE" value="0" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_NONE" value="0" enum="PropertyUsageFlags" is_bitfield="true">
 			The property is not stored, and does not display in the editor. This is the default for non-exported properties.
 		</constant>
-		<constant name="PROPERTY_USAGE_STORAGE" value="2" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_STORAGE" value="2" enum="PropertyUsageFlags" is_bitfield="true">
 			The property is serialized and saved in the scene file (default).
 		</constant>
-		<constant name="PROPERTY_USAGE_EDITOR" value="4" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_EDITOR" value="4" enum="PropertyUsageFlags" is_bitfield="true">
 			The property is shown in the [EditorInspector] (default).
 		</constant>
-		<constant name="PROPERTY_USAGE_CHECKABLE" value="8" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_CHECKABLE" value="8" enum="PropertyUsageFlags" is_bitfield="true">
 			The property can be checked in the [EditorInspector].
 		</constant>
-		<constant name="PROPERTY_USAGE_CHECKED" value="16" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_CHECKED" value="16" enum="PropertyUsageFlags" is_bitfield="true">
 			The property is checked in the [EditorInspector].
 		</constant>
-		<constant name="PROPERTY_USAGE_INTERNATIONALIZED" value="32" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_INTERNATIONALIZED" value="32" enum="PropertyUsageFlags" is_bitfield="true">
 			The property is a translatable string.
 		</constant>
-		<constant name="PROPERTY_USAGE_GROUP" value="64" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_GROUP" value="64" enum="PropertyUsageFlags" is_bitfield="true">
 			Used to group properties together in the editor. See [EditorInspector].
 		</constant>
-		<constant name="PROPERTY_USAGE_CATEGORY" value="128" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_CATEGORY" value="128" enum="PropertyUsageFlags" is_bitfield="true">
 			Used to categorize properties together in the editor.
 		</constant>
-		<constant name="PROPERTY_USAGE_SUBGROUP" value="256" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_SUBGROUP" value="256" enum="PropertyUsageFlags" is_bitfield="true">
 			Used to group properties together in the editor in a subgroup (under a group). See [EditorInspector].
 		</constant>
-		<constant name="PROPERTY_USAGE_CLASS_IS_BITFIELD" value="512" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_CLASS_IS_BITFIELD" value="512" enum="PropertyUsageFlags" is_bitfield="true">
 		</constant>
-		<constant name="PROPERTY_USAGE_NO_INSTANCE_STATE" value="1024" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_NO_INSTANCE_STATE" value="1024" enum="PropertyUsageFlags" is_bitfield="true">
 			The property does not save its state in [PackedScene].
 		</constant>
-		<constant name="PROPERTY_USAGE_RESTART_IF_CHANGED" value="2048" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_RESTART_IF_CHANGED" value="2048" enum="PropertyUsageFlags" is_bitfield="true">
 			Editing the property prompts the user for restarting the editor.
 		</constant>
-		<constant name="PROPERTY_USAGE_SCRIPT_VARIABLE" value="4096" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_SCRIPT_VARIABLE" value="4096" enum="PropertyUsageFlags" is_bitfield="true">
 			The property is a script variable which should be serialized and saved in the scene file.
 		</constant>
-		<constant name="PROPERTY_USAGE_STORE_IF_NULL" value="8192" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_STORE_IF_NULL" value="8192" enum="PropertyUsageFlags" is_bitfield="true">
 		</constant>
-		<constant name="PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED" value="16384" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED" value="16384" enum="PropertyUsageFlags" is_bitfield="true">
 		</constant>
-		<constant name="PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE" value="32768" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_SCRIPT_DEFAULT_VALUE" value="32768" enum="PropertyUsageFlags" is_bitfield="true">
 		</constant>
-		<constant name="PROPERTY_USAGE_CLASS_IS_ENUM" value="65536" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_CLASS_IS_ENUM" value="65536" enum="PropertyUsageFlags" is_bitfield="true">
 		</constant>
-		<constant name="PROPERTY_USAGE_NIL_IS_VARIANT" value="131072" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_NIL_IS_VARIANT" value="131072" enum="PropertyUsageFlags" is_bitfield="true">
 		</constant>
-		<constant name="PROPERTY_USAGE_INTERNAL" value="262144" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_INTERNAL" value="262144" enum="PropertyUsageFlags" is_bitfield="true">
 		</constant>
-		<constant name="PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE" value="524288" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE" value="524288" enum="PropertyUsageFlags" is_bitfield="true">
 			If the property is a [Resource], a new copy of it is always created when calling [method Node.duplicate] or [method Resource.duplicate].
 		</constant>
-		<constant name="PROPERTY_USAGE_HIGH_END_GFX" value="1048576" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_HIGH_END_GFX" value="1048576" enum="PropertyUsageFlags" is_bitfield="true">
 			The property is only shown in the editor if modern renderers are supported (GLES3 is excluded).
 		</constant>
-		<constant name="PROPERTY_USAGE_NODE_PATH_FROM_SCENE_ROOT" value="2097152" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_NODE_PATH_FROM_SCENE_ROOT" value="2097152" enum="PropertyUsageFlags" is_bitfield="true">
 		</constant>
-		<constant name="PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT" value="4194304" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT" value="4194304" enum="PropertyUsageFlags" is_bitfield="true">
 		</constant>
-		<constant name="PROPERTY_USAGE_KEYING_INCREMENTS" value="8388608" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_KEYING_INCREMENTS" value="8388608" enum="PropertyUsageFlags" is_bitfield="true">
 		</constant>
-		<constant name="PROPERTY_USAGE_DEFERRED_SET_RESOURCE" value="16777216" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_DEFERRED_SET_RESOURCE" value="16777216" enum="PropertyUsageFlags" is_bitfield="true">
 		</constant>
-		<constant name="PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT" value="33554432" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_EDITOR_INSTANTIATE_OBJECT" value="33554432" enum="PropertyUsageFlags" is_bitfield="true">
 		</constant>
-		<constant name="PROPERTY_USAGE_EDITOR_BASIC_SETTING" value="67108864" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_EDITOR_BASIC_SETTING" value="67108864" enum="PropertyUsageFlags" is_bitfield="true">
 		</constant>
-		<constant name="PROPERTY_USAGE_READ_ONLY" value="134217728" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_READ_ONLY" value="134217728" enum="PropertyUsageFlags" is_bitfield="true">
 			The property is read-only in the [EditorInspector].
 		</constant>
-		<constant name="PROPERTY_USAGE_ARRAY" value="268435456" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_ARRAY" value="268435456" enum="PropertyUsageFlags" is_bitfield="true">
 			The property is an array.
 		</constant>
-		<constant name="PROPERTY_USAGE_DEFAULT" value="6" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_DEFAULT" value="6" enum="PropertyUsageFlags" is_bitfield="true">
 			Default usage (storage, editor and network).
 		</constant>
-		<constant name="PROPERTY_USAGE_DEFAULT_INTL" value="38" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_DEFAULT_INTL" value="38" enum="PropertyUsageFlags" is_bitfield="true">
 			Default usage for translatable strings (storage, editor, network and internationalized).
 		</constant>
-		<constant name="PROPERTY_USAGE_NO_EDITOR" value="2" enum="PropertyUsageFlags">
+		<constant name="PROPERTY_USAGE_NO_EDITOR" value="2" enum="PropertyUsageFlags" is_bitfield="true">
 			Default usage but without showing the property in the editor (storage, network).
 		</constant>
-		<constant name="METHOD_FLAG_NORMAL" value="1" enum="MethodFlags">
+		<constant name="METHOD_FLAG_NORMAL" value="1" enum="MethodFlags" is_bitfield="true">
 			Flag for a normal method.
 		</constant>
-		<constant name="METHOD_FLAG_EDITOR" value="2" enum="MethodFlags">
+		<constant name="METHOD_FLAG_EDITOR" value="2" enum="MethodFlags" is_bitfield="true">
 			Flag for an editor method.
 		</constant>
-		<constant name="METHOD_FLAG_CONST" value="4" enum="MethodFlags">
+		<constant name="METHOD_FLAG_CONST" value="4" enum="MethodFlags" is_bitfield="true">
 			Flag for a constant method.
 		</constant>
-		<constant name="METHOD_FLAG_VIRTUAL" value="8" enum="MethodFlags">
+		<constant name="METHOD_FLAG_VIRTUAL" value="8" enum="MethodFlags" is_bitfield="true">
 			Flag for a virtual method.
 		</constant>
-		<constant name="METHOD_FLAG_VARARG" value="16" enum="MethodFlags">
+		<constant name="METHOD_FLAG_VARARG" value="16" enum="MethodFlags" is_bitfield="true">
 			Flag for a method with a variable number of arguments.
 		</constant>
-		<constant name="METHOD_FLAG_STATIC" value="32" enum="MethodFlags">
+		<constant name="METHOD_FLAG_STATIC" value="32" enum="MethodFlags" is_bitfield="true">
 			Flag for a static method.
 		</constant>
-		<constant name="METHOD_FLAG_OBJECT_CORE" value="64" enum="MethodFlags">
+		<constant name="METHOD_FLAG_OBJECT_CORE" value="64" enum="MethodFlags" is_bitfield="true">
 			Used internally. Allows to not dump core virtual methods (such as [method Object._notification]) to the JSON API.
 		</constant>
-		<constant name="METHOD_FLAGS_DEFAULT" value="1" enum="MethodFlags">
+		<constant name="METHOD_FLAGS_DEFAULT" value="1" enum="MethodFlags" is_bitfield="true">
 			Default method flags (normal).
 		</constant>
 		<constant name="TYPE_NIL" value="0" enum="Variant.Type">

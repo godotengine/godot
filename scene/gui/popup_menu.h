@@ -92,7 +92,7 @@ class PopupMenu : public Popup {
 	Timer *submenu_timer = nullptr;
 	List<Rect2> autohide_areas;
 	Vector<Item> items;
-	MouseButton initial_button_mask = MouseButton::NONE;
+	BitField<MouseButtonMask> initial_button_mask;
 	bool during_grabbed_click = false;
 	int mouse_over = -1;
 	int submenu_over = -1;

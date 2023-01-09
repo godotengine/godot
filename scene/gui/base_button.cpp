@@ -62,7 +62,7 @@ void BaseButton::gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mouse_button = p_event;
 	bool ui_accept = p_event->is_action("ui_accept", true) && !p_event->is_echo();
 
-	bool button_masked = mouse_button.is_valid() && (mouse_button_to_mask(mouse_button->get_button_index()) & button_mask) != MouseButton::NONE;
+	bool button_masked = mouse_button.is_valid() && button_mask.has_flag(mouse_button_to_mask(mouse_button->get_button_index()));
 	if (button_masked || ui_accept) {
 		was_mouse_pressed = button_masked;
 		on_action_event(p_event);
@@ -323,11 +323,11 @@ BaseButton::ActionMode BaseButton::get_action_mode() const {
 	return action_mode;
 }
 
-void BaseButton::set_button_mask(MouseButton p_mask) {
+void BaseButton::set_button_mask(BitField<MouseButtonMask> p_mask) {
 	button_mask = p_mask;
 }
 
-MouseButton BaseButton::get_button_mask() const {
+BitField<MouseButtonMask> BaseButton::get_button_mask() const {
 	return button_mask;
 }
 

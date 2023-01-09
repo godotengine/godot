@@ -207,7 +207,7 @@ public:
 	void notify_surface_changed(int p_width, int p_height);
 
 	virtual Point2i mouse_get_position() const override;
-	virtual MouseButton mouse_get_button_state() const override;
+	virtual BitField<MouseButtonMask> mouse_get_button_state() const override;
 
 	void reset_swap_buffers_flag();
 	bool should_swap_buffers() const;

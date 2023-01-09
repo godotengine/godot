@@ -119,59 +119,18 @@ enum class MouseButton {
 	WHEEL_RIGHT = 7,
 	MB_XBUTTON1 = 8, // "XBUTTON1" is a reserved word on Windows.
 	MB_XBUTTON2 = 9, // "XBUTTON2" is a reserved word on Windows.
-	MASK_LEFT = (1 << (LEFT - 1)),
-	MASK_RIGHT = (1 << (RIGHT - 1)),
-	MASK_MIDDLE = (1 << (MIDDLE - 1)),
-	MASK_XBUTTON1 = (1 << (MB_XBUTTON1 - 1)),
-	MASK_XBUTTON2 = (1 << (MB_XBUTTON2 - 1)),
 };
 
-inline MouseButton mouse_button_to_mask(MouseButton button) {
-	return MouseButton(1 << ((int)button - 1));
-}
+enum class MouseButtonMask {
+	LEFT = (1 << (int(MouseButton::LEFT) - 1)),
+	RIGHT = (1 << (int(MouseButton::RIGHT) - 1)),
+	MIDDLE = (1 << (int(MouseButton::MIDDLE) - 1)),
+	MB_XBUTTON1 = (1 << (int(MouseButton::MB_XBUTTON1) - 1)),
+	MB_XBUTTON2 = (1 << (int(MouseButton::MB_XBUTTON2) - 1)),
+};
 
-inline MouseButton operator&(MouseButton a, MouseButton b) {
-	return (MouseButton)((int)a & (int)b);
-}
-
-inline MouseButton operator|(MouseButton a, MouseButton b) {
-	return (MouseButton)((int)a | (int)b);
-}
-
-inline MouseButton operator^(MouseButton a, MouseButton b) {
-	return (MouseButton)((int)a ^ (int)b);
-}
-
-inline MouseButton &operator|=(MouseButton &a, MouseButton b) {
-	return (MouseButton &)((int &)a |= (int)b);
-}
-
-inline MouseButton &operator&=(MouseButton &a, MouseButton b) {
-	return (MouseButton &)((int &)a &= (int)b);
-}
-
-inline MouseButton operator~(MouseButton a) {
-	return (MouseButton)(~(int)a);
-}
-
-inline HatMask operator|(HatMask a, HatMask b) {
-	return (HatMask)((int)a | (int)b);
-}
-
-inline HatMask operator&(HatMask a, HatMask b) {
-	return (HatMask)((int)a & (int)b);
-}
-
-inline HatMask &operator&=(HatMask &a, HatMask b) {
-	return (HatMask &)((int &)a &= (int)b);
-}
-
-inline HatMask &operator|=(HatMask &a, HatMask b) {
-	return (HatMask &)((int &)a |= (int)b);
-}
-
-inline HatMask operator~(HatMask a) {
-	return (HatMask)(~(int)a);
+inline MouseButtonMask mouse_button_to_mask(MouseButton button) {
+	return MouseButtonMask(1 << ((int)button - 1));
 }
 
 #endif // INPUT_ENUMS_H
