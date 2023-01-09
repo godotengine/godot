@@ -1813,33 +1813,53 @@ bool Control::is_focus_owner_in_shortcut_context() const {
 
 // Drag and drop handling.
 
-void Control::set_drag_forwarding(Object *p_target) {
-	if (p_target) {
-		data.drag_owner = p_target->get_instance_id();
+void Control::set_drag_forwarding_compat(Object *p_base) {
+	if (p_base != nullptr) {
+		data.forward_drag = Callable(p_base, "_get_drag_data_fw").bind(this);
+		data.forward_can_drop = Callable(p_base, "_can_drop_data_fw").bind(this);
+		data.forward_drop = Callable(p_base, "_drop_data_fw").bind(this);
+
 	} else {
-		data.drag_owner = ObjectID();
+		data.forward_drag = Callable();
+		data.forward_can_drop = Callable();
+		data.forward_drop = Callable();
 	}
+}
+
+void Control::set_drag_forwarding(const Callable &p_drag, const Callable &p_can_drop, const Callable &p_drop) {
+	data.forward_drag = p_drag;
+	data.forward_can_drop = p_can_drop;
+	data.forward_drop = p_drop;
 }
 
 Variant Control::get_drag_data(const Point2 &p_point) {
-	if (data.drag_owner.is_valid()) {
-		Object *obj = ObjectDB::get_instance(data.drag_owner);
-		if (obj) {
-			return obj->call("_get_drag_data_fw", p_point, this);
+	Variant ret;
+	if (data.forward_drag.is_valid()) {
+		Variant p = p_point;
+		const Variant *vp[1] = { &p };
+		Callable::CallError ce;
+		data.forward_drag.callp((const Variant **)vp, 1, ret, ce);
+		if (ce.error != Callable::CallError::CALL_OK) {
+			ERR_FAIL_V_MSG(Variant(), "Error calling forwarded method from 'get_drag_data': " + Variant::get_callable_error_text(data.forward_drag, (const Variant **)vp, 1, ce) + ".");
 		}
+		return ret;
 	}
 
-	Variant dd;
-	GDVIRTUAL_CALL(_get_drag_data, p_point, dd);
-	return dd;
+	GDVIRTUAL_CALL(_get_drag_data, p_point, ret);
+	return ret;
 }
 
 bool Control::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
-	if (data.drag_owner.is_valid()) {
-		Object *obj = ObjectDB::get_instance(data.drag_owner);
-		if (obj) {
-			return obj->call("_can_drop_data_fw", p_point, p_data, this);
+	if (data.forward_can_drop.is_valid()) {
+		Variant ret;
+		Variant p = p_point;
+		const Variant *vp[2] = { &p, &p_data };
+		Callable::CallError ce;
+		data.forward_can_drop.callp((const Variant **)vp, 2, ret, ce);
+		if (ce.error != Callable::CallError::CALL_OK) {
+			ERR_FAIL_V_MSG(Variant(), "Error calling forwarded method from 'can_drop_data': " + Variant::get_callable_error_text(data.forward_can_drop, (const Variant **)vp, 2, ce) + ".");
 		}
+		return ret;
 	}
 
 	bool ret = false;
@@ -1848,12 +1868,16 @@ bool Control::can_drop_data(const Point2 &p_point, const Variant &p_data) const 
 }
 
 void Control::drop_data(const Point2 &p_point, const Variant &p_data) {
-	if (data.drag_owner.is_valid()) {
-		Object *obj = ObjectDB::get_instance(data.drag_owner);
-		if (obj) {
-			obj->call("_drop_data_fw", p_point, p_data, this);
-			return;
+	if (data.forward_drop.is_valid()) {
+		Variant ret;
+		Variant p = p_point;
+		const Variant *vp[2] = { &p, &p_data };
+		Callable::CallError ce;
+		data.forward_drop.callp((const Variant **)vp, 2, ret, ce);
+		if (ce.error != Callable::CallError::CALL_OK) {
+			ERR_FAIL_MSG("Error calling forwarded method from 'drop_data': " + Variant::get_callable_error_text(data.forward_drop, (const Variant **)vp, 2, ce) + ".");
 		}
+		return;
 	}
 
 	GDVIRTUAL_CALL(_drop_data, p_point, p_data);
@@ -3189,7 +3213,7 @@ void Control::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("grab_click_focus"), &Control::grab_click_focus);
 
-	ClassDB::bind_method(D_METHOD("set_drag_forwarding", "target"), &Control::set_drag_forwarding);
+	ClassDB::bind_method(D_METHOD("set_drag_forwarding", "drag_func", "can_drop_func", "drop_func"), &Control::set_drag_forwarding);
 	ClassDB::bind_method(D_METHOD("set_drag_preview", "control"), &Control::set_drag_preview);
 	ClassDB::bind_method(D_METHOD("is_drag_successful"), &Control::is_drag_successful);
 

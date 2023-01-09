@@ -1408,7 +1408,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	frame_list->set_max_columns(0);
 	frame_list->set_icon_mode(ItemList::ICON_MODE_TOP);
 	frame_list->set_max_text_lines(2);
-	frame_list->set_drag_forwarding(this);
+	frame_list->set_drag_forwarding_compat(this);
 	frame_list->connect("gui_input", callable_mp(this, &SpriteFramesEditor::_frame_list_gui_input));
 	frame_list->connect("item_selected", callable_mp(this, &SpriteFramesEditor::_frame_list_item_selected));
 

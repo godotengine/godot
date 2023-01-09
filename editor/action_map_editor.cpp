@@ -578,7 +578,7 @@ ActionMapEditor::ActionMapEditor() {
 	action_tree->connect("button_clicked", callable_mp(this, &ActionMapEditor::_tree_button_pressed));
 	main_vbox->add_child(action_tree);
 
-	action_tree->set_drag_forwarding(this);
+	action_tree->set_drag_forwarding_compat(this);
 
 	// Adding event dialog
 	event_config_dialog = memnew(InputEventConfigurationDialog);

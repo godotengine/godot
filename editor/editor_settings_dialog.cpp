@@ -793,7 +793,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	shortcuts->connect("item_activated", callable_mp(this, &EditorSettingsDialog::_shortcut_cell_double_clicked));
 	tab_shortcuts->add_child(shortcuts);
 
-	shortcuts->set_drag_forwarding(this);
+	shortcuts->set_drag_forwarding_compat(this);
 
 	// Adding event dialog
 	shortcut_editor = memnew(InputEventConfigurationDialog);

@@ -2167,7 +2167,7 @@ ScriptTextEditor::ScriptTextEditor() {
 
 	connection_info_dialog = memnew(ConnectionInfoDialog);
 
-	code_editor->get_text_editor()->set_drag_forwarding(this);
+	code_editor->get_text_editor()->set_drag_forwarding_compat(this);
 }
 
 ScriptTextEditor::~ScriptTextEditor() {
