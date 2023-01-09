@@ -309,6 +309,8 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 		}
 	}
 
+	Address get_call_target(const Address &p_target);
+
 	int address_of(const Address &p_address) {
 		switch (p_address.mode) {
 			case Address::SELF:
