@@ -105,7 +105,7 @@ void Control::_edit_set_state(const Dictionary &p_state) {
 	}
 
 	_set_layout_mode(_layout);
-	if (_layout == LayoutMode::LAYOUT_MODE_ANCHORS) {
+	if (_layout == LayoutMode::LAYOUT_MODE_ANCHORS || _layout == LayoutMode::LAYOUT_MODE_UNCONTROLLED) {
 		_set_anchors_layout_preset((int)state["anchors_layout_preset"]);
 	}
 
@@ -125,7 +125,7 @@ void Control::_edit_set_state(const Dictionary &p_state) {
 
 void Control::_edit_set_position(const Point2 &p_position) {
 	ERR_FAIL_COND_MSG(!Engine::get_singleton()->is_editor_hint(), "This function can only be used from editor plugins.");
-	set_position(p_position, ControlEditorToolbar::get_singleton()->is_anchors_mode_enabled() && Object::cast_to<Control>(data.parent));
+	set_position(p_position, ControlEditorToolbar::get_singleton()->is_anchors_mode_enabled() && get_parent_control());
 };
 
 Point2 Control::_edit_get_position() const {
@@ -553,7 +553,8 @@ void Control::_validate_property(PropertyInfo &p_property) const {
 		}
 
 		// Use the layout mode to display or hide advanced anchoring properties.
-		bool use_anchors = _get_layout_mode() == LayoutMode::LAYOUT_MODE_ANCHORS;
+		LayoutMode _layout = _get_layout_mode();
+		bool use_anchors = (_layout == LayoutMode::LAYOUT_MODE_ANCHORS || _layout == LayoutMode::LAYOUT_MODE_UNCONTROLLED);
 		if (!use_anchors && p_property.name == "anchors_preset") {
 			p_property.usage ^= PROPERTY_USAGE_EDITOR;
 		}
@@ -606,7 +607,7 @@ bool Control::is_top_level_control() const {
 }
 
 Control *Control::get_parent_control() const {
-	return data.parent;
+	return data.parent_control;
 }
 
 Window *Control::get_parent_window() const {
@@ -895,11 +896,9 @@ Control::LayoutMode Control::_get_default_layout_mode() const {
 }
 
 void Control::_set_anchors_layout_preset(int p_preset) {
-	bool list_changed = false;
-
-	if (data.stored_layout_mode != LayoutMode::LAYOUT_MODE_ANCHORS) {
-		list_changed = true;
-		data.stored_layout_mode = LayoutMode::LAYOUT_MODE_ANCHORS;
+	if (data.stored_layout_mode != LayoutMode::LAYOUT_MODE_UNCONTROLLED && data.stored_layout_mode != LayoutMode::LAYOUT_MODE_ANCHORS) {
+		// In other modes the anchor preset is non-operational and shouldn't be set to anything.
+		return;
 	}
 
 	if (p_preset == -1) {
@@ -909,6 +908,8 @@ void Control::_set_anchors_layout_preset(int p_preset) {
 		}
 		return; // Keep settings as is.
 	}
+
+	bool list_changed = false;
 
 	if (data.stored_use_custom_anchors) {
 		list_changed = true;
@@ -952,6 +953,11 @@ void Control::_set_anchors_layout_preset(int p_preset) {
 }
 
 int Control::_get_anchors_layout_preset() const {
+	// If this is a layout mode that doesn't rely on anchors, avoid excessive checks.
+	if (data.stored_layout_mode != LayoutMode::LAYOUT_MODE_UNCONTROLLED && data.stored_layout_mode != LayoutMode::LAYOUT_MODE_ANCHORS) {
+		return LayoutPreset::PRESET_TOP_LEFT;
+	}
+
 	// If the custom preset was selected by user, use it.
 	if (data.stored_use_custom_anchors) {
 		return -1;
@@ -1533,19 +1539,20 @@ void Control::update_minimum_size() {
 
 	Control *invalidate = this;
 
-	//invalidate cache upwards
+	// Invalidate cache upwards.
 	while (invalidate && invalidate->data.minimum_size_valid) {
 		invalidate->data.minimum_size_valid = false;
 		if (invalidate->is_set_as_top_level()) {
-			break; // do not go further up
+			break; // Do not go further up.
 		}
-		if (!invalidate->data.parent && get_parent()) {
-			Window *parent_window = Object::cast_to<Window>(get_parent());
-			if (parent_window && parent_window->is_wrapping_controls()) {
-				parent_window->child_controls_changed();
-			}
+
+		Window *parent_window = invalidate->get_parent_window();
+		if (parent_window && parent_window->is_wrapping_controls()) {
+			parent_window->child_controls_changed();
+			break; // Stop on a window as well.
 		}
-		invalidate = invalidate->data.parent;
+
+		invalidate = invalidate->get_parent_control();
 	}
 
 	if (!is_visible_in_tree()) {
@@ -2858,10 +2865,17 @@ void Control::_notification(int p_notification) {
 		} break;
 
 		case NOTIFICATION_PARENTED: {
+			Node *parent_node = get_parent();
+			data.parent_control = Object::cast_to<Control>(parent_node);
+			data.parent_window = Object::cast_to<Window>(parent_node);
+
 			data.theme_owner->assign_theme_on_parented(this);
 		} break;
 
 		case NOTIFICATION_UNPARENTED: {
+			data.parent_control = nullptr;
+			data.parent_window = nullptr;
+
 			data.theme_owner->clear_theme_on_unparented(this);
 		} break;
 
@@ -2887,8 +2901,6 @@ void Control::_notification(int p_notification) {
 		} break;
 
 		case NOTIFICATION_ENTER_CANVAS: {
-			data.parent = Object::cast_to<Control>(get_parent());
-			data.parent_window = Object::cast_to<Window>(get_parent());
 			data.is_rtl_dirty = true;
 
 			CanvasItem *node = this;
@@ -2946,17 +2958,16 @@ void Control::_notification(int p_notification) {
 				data.RI = nullptr;
 			}
 
-			data.parent = nullptr;
 			data.parent_canvas_item = nullptr;
-			data.parent_window = nullptr;
 			data.is_rtl_dirty = true;
 		} break;
 
 		case NOTIFICATION_MOVED_IN_PARENT: {
-			// some parents need to know the order of the children to draw (like TabContainer)
-			// update if necessary
-			if (data.parent) {
-				data.parent->queue_redraw();
+			// Some parents need to know the order of the children to draw (like TabContainer),
+			// so we update them just in case.
+			Control *parent_control = get_parent_control();
+			if (parent_control) {
+				parent_control->queue_redraw();
 			}
 			queue_redraw();
 

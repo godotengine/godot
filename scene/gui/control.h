@@ -165,7 +165,7 @@ private:
 
 		List<Control *>::Element *RI = nullptr;
 
-		Control *parent = nullptr;
+		Control *parent_control = nullptr;
 		Window *parent_window = nullptr;
 		CanvasItem *parent_canvas_item = nullptr;
 		ObjectID drag_owner;
