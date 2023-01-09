@@ -1183,6 +1183,10 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 
 					code += "(";
 
+					// if normal roughness texture is used, we will add logic to automatically switch between
+					// sampler2D and sampler2D array and vec2 UV and vec3 UV.
+					bool normal_roughness_texture_used = false;
+
 					for (int i = 1; i < onode->arguments.size(); i++) {
 						if (i > 1) {
 							code += ", ";
@@ -1282,11 +1286,24 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 									}
 								}
 
-								code += ShaderLanguage::get_datatype_name(onode->arguments[i]->get_datatype()) + "(" + node_code + ", " + sampler_name + ")";
+								String data_type_name = "";
+								if (texture_uniform == "NORMAL_ROUGHNESS_TEXTURE") {
+									data_type_name = "multiviewSampler";
+									normal_roughness_texture_used = true;
+								} else {
+									data_type_name = ShaderLanguage::get_datatype_name(onode->arguments[i]->get_datatype());
+								}
+
+								code += data_type_name + "(" + node_code + ", " + sampler_name + ")";
 							} else {
 								code += node_code;
 							}
 						} else {
+							if (normal_roughness_texture_used && i == 2) {
+								// UV coordinate after using normal roughness texture.
+								node_code = "normal_roughness_uv(" + node_code + ".xy)";
+							}
+
 							code += node_code;
 						}
 					}
