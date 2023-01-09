@@ -33,7 +33,7 @@
 
 #include "core/typedefs.h"
 
-#include "core/templates/safe_refcount.h"
+#include <atomic> // We'd normally use safe_refcount.h, but that would cause circular includes.
 
 class String;
 
@@ -737,10 +737,10 @@ void _err_flush_stdout();
  */
 #define WARN_DEPRECATED                                                                                                                                           \
 	if (true) {                                                                                                                                                   \
-		static SafeFlag warning_shown;                                                                                                                            \
-		if (!warning_shown.is_set()) {                                                                                                                            \
+		static std::atomic<bool> warning_shown;                                                                                                                   \
+		if (!warning_shown.load()) {                                                                                                                              \
 			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "This method has been deprecated and will be removed in the future.", false, ERR_HANDLER_WARNING); \
-			warning_shown.set();                                                                                                                                  \
+			warning_shown.store(true);                                                                                                                            \
 		}                                                                                                                                                         \
 	} else                                                                                                                                                        \
 		((void)0)
@@ -750,10 +750,10 @@ void _err_flush_stdout();
  */
 #define WARN_DEPRECATED_MSG(m_msg)                                                                                                                                       \
 	if (true) {                                                                                                                                                          \
-		static SafeFlag warning_shown;                                                                                                                                   \
-		if (!warning_shown.is_set()) {                                                                                                                                   \
+		static std::atomic<bool> warning_shown;                                                                                                                          \
+		if (!warning_shown.load()) {                                                                                                                                     \
 			_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "This method has been deprecated and will be removed in the future.", m_msg, false, ERR_HANDLER_WARNING); \
-			warning_shown.set();                                                                                                                                         \
+			warning_shown.store(true);                                                                                                                                   \
 		}                                                                                                                                                                \
 	} else                                                                                                                                                               \
 		((void)0)
