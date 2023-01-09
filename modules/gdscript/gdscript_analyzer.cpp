@@ -1957,7 +1957,7 @@ void GDScriptAnalyzer::reduce_expression(GDScriptParser::ExpressionNode *p_expre
 			reduce_subscript(static_cast<GDScriptParser::SubscriptNode *>(p_expression));
 			break;
 		case GDScriptParser::Node::TERNARY_OPERATOR:
-			reduce_ternary_op(static_cast<GDScriptParser::TernaryOpNode *>(p_expression));
+			reduce_ternary_op(static_cast<GDScriptParser::TernaryOpNode *>(p_expression), p_is_root);
 			break;
 		case GDScriptParser::Node::UNARY_OPERATOR:
 			reduce_unary_op(static_cast<GDScriptParser::UnaryOpNode *>(p_expression));
@@ -3656,10 +3656,10 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 	p_subscript->set_datatype(result_type);
 }
 
-void GDScriptAnalyzer::reduce_ternary_op(GDScriptParser::TernaryOpNode *p_ternary_op) {
+void GDScriptAnalyzer::reduce_ternary_op(GDScriptParser::TernaryOpNode *p_ternary_op, bool p_is_root) {
 	reduce_expression(p_ternary_op->condition);
-	reduce_expression(p_ternary_op->true_expr);
-	reduce_expression(p_ternary_op->false_expr);
+	reduce_expression(p_ternary_op->true_expr, p_is_root);
+	reduce_expression(p_ternary_op->false_expr, p_is_root);
 
 	GDScriptParser::DataType result;
 
