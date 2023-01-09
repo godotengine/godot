@@ -196,6 +196,12 @@ void OS_Web::update_pwa_state_callback() {
 	}
 }
 
+void OS_Web::force_fs_sync() {
+	if (is_userfs_persistent()) {
+		idb_needs_sync = true;
+	}
+}
+
 Error OS_Web::pwa_update() {
 	return godot_js_pwa_update() ? FAILED : OK;
 }
