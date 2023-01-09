@@ -1889,7 +1889,7 @@ void CodeEdit::request_code_completion(bool p_force) {
 	}
 }
 
-void CodeEdit::add_code_completion_option(CodeCompletionKind p_type, const String &p_display_text, const String &p_insert_text, const Color &p_text_color, const Ref<Resource> &p_icon, const Variant &p_value) {
+void CodeEdit::add_code_completion_option(CodeCompletionKind p_type, const String &p_display_text, const String &p_insert_text, const Color &p_text_color, const Ref<Resource> &p_icon, const Variant &p_value, CodeCompletionLocation p_location) {
 	ScriptLanguage::CodeCompletionOption completion_option;
 	completion_option.kind = (ScriptLanguage::CodeCompletionKind)p_type;
 	completion_option.display = p_display_text;
@@ -1897,6 +1897,7 @@ void CodeEdit::add_code_completion_option(CodeCompletionKind p_type, const Strin
 	completion_option.font_color = p_text_color;
 	completion_option.icon = p_icon;
 	completion_option.default_value = p_value;
+	completion_option.location = (ScriptLanguage::CodeCompletionLocation)p_location;
 	code_completion_option_submitted.push_back(completion_option);
 }
 
@@ -2279,9 +2280,13 @@ void CodeEdit::_bind_methods() {
 	BIND_ENUM_CONSTANT(KIND_FILE_PATH);
 	BIND_ENUM_CONSTANT(KIND_PLAIN_TEXT);
 
+	BIND_ENUM_CONSTANT(LOCATION_LOCAL);
+	BIND_ENUM_CONSTANT(LOCATION_BASE);
+	BIND_ENUM_CONSTANT(LOCATION_OTHER);
+
 	ClassDB::bind_method(D_METHOD("get_text_for_code_completion"), &CodeEdit::get_text_for_code_completion);
 	ClassDB::bind_method(D_METHOD("request_code_completion", "force"), &CodeEdit::request_code_completion, DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("add_code_completion_option", "type", "display_text", "insert_text", "text_color", "icon", "value"), &CodeEdit::add_code_completion_option, DEFVAL(Color(1, 1, 1)), DEFVAL(Ref<Resource>()), DEFVAL(Variant::NIL));
+	ClassDB::bind_method(D_METHOD("add_code_completion_option", "type", "display_text", "insert_text", "text_color", "icon", "value", "location"), &CodeEdit::add_code_completion_option, DEFVAL(Color(1, 1, 1)), DEFVAL(Ref<Resource>()), DEFVAL(Variant::NIL), DEFVAL(LOCATION_OTHER));
 	ClassDB::bind_method(D_METHOD("update_code_completion_options", "force"), &CodeEdit::update_code_completion_options);
 	ClassDB::bind_method(D_METHOD("get_code_completion_options"), &CodeEdit::get_code_completion_options);
 	ClassDB::bind_method(D_METHOD("get_code_completion_option", "index"), &CodeEdit::get_code_completion_option);
@@ -2957,9 +2962,9 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 			continue;
 		}
 
-		if (option.display.similarity(string_to_complete) < 0.1) {
-			continue;
-		}
+		// if (option.display.similarity(string_to_complete) < 0.1) {
+		// 	continue;
+		// }
 
 		String display_lower = option.display.to_lower();
 
@@ -3157,66 +3162,106 @@ CodeEdit::~CodeEdit() {
 
 String CodeCompletionOptionCompare::base;
 
+static Vector<int> _get_subseq_distances(const Vector<Pair<int, int>> p_matches) {
+	Vector<int> distances;
+	for (int i = 1; i < p_matches.size(); ++i) {
+		int current = p_matches[i].first;
+		int previous = p_matches[i - 1].first;
+
+		distances.push_back(current - previous);
+	}
+
+	return distances;
+}
+
+const int KIND_COUNT = 10;
+// The order in which to sort code completion options.
+const ScriptLanguage::CodeCompletionKind KIND_SORT_ORDER[KIND_COUNT] = {
+	ScriptLanguage::CODE_COMPLETION_KIND_VARIABLE,
+	ScriptLanguage::CODE_COMPLETION_KIND_MEMBER,
+	ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION,
+	ScriptLanguage::CODE_COMPLETION_KIND_SIGNAL,
+	ScriptLanguage::CODE_COMPLETION_KIND_ENUM,
+	ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT,
+	ScriptLanguage::CODE_COMPLETION_KIND_CLASS,
+	ScriptLanguage::CODE_COMPLETION_KIND_NODE_PATH,
+	ScriptLanguage::CODE_COMPLETION_KIND_FILE_PATH,
+	ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT,
+};
+
+// Return true if l should come before r
 bool CodeCompletionOptionCompare::operator()(const ScriptLanguage::CodeCompletionOption &l, const ScriptLanguage::CodeCompletionOption &r) const {
-	if (l.location == r.location) {
-		const int l_find_idx = l.display.findn(base);
-		const int r_find_idx = r.display.findn(base);
-		// Priority to exact results, especially if closer to the beginning.
-		// This is borked but kinda works. Experimentation time.
-		/*if (l_find_idx == -1 || l_find_idx < r_find_idx) {
-			return true;
-		}
-		if (r_find_idx == -1 || l_find_idx > r_find_idx) {
-			return false;
-		}*/
+	// Get position of exact match
+	int l_exact_idx = l.display.findn(base);
+	int r_exact_idx = r.display.findn(base);
 
-		if (l_find_idx != -1) {
-			if (l_find_idx < r_find_idx) {
-				return true;
+	// First, prioritise exact matches
+	// If both exact, the one which occurs first is prioritised unless location is different
+	bool l_exact = l_exact_idx != -1;
+	bool r_exact = r_exact_idx != -1;
+
+	if (l_exact || r_exact) {
+		if (l_exact && r_exact) {
+			if (l.location != r.location) {
+				return l.location < r.location;
 			}
-		}
-		if (r_find_idx != -1) {
-			if (l_find_idx > r_find_idx) {
-				return false;
+
+			if (l_exact_idx != r_exact_idx) {
+				return l_exact_idx < r_exact_idx;
 			}
 		}
 
-		/*if (l.display.begins_with(base)) {
-			return true;
+		if (l_exact != r_exact) {
+			return l_exact;
 		}
-		if (r.display.begins_with(base)) {
-			return false;
-		}*/
+	}
 
-		const float l_similarity = l.display.similarity(base);
-		const float r_similarity = r.display.similarity(base);
+	// If not exact, defer to sorting by location.
+	// This allows close matches of lesser priority locations to be pushed to the top.
+	if (l.location != r.location) {
+		return l.location < r.location;
+	}
 
-		if (l_similarity > 0.75f || r_similarity > 0.75f /*|| Math::abs(l_similarity - r_similarity) < 0.25f*/) {
-			return l_similarity > r_similarity;
+	// Then prioritise based on the position of the first matched character
+	if (!l.matches.is_empty() && (r.matches.is_empty() || l.matches[0].first < r.matches[0].first)) {
+		return true;
+	}
+	if (!r.matches.is_empty() && (l.matches.is_empty() || l.matches[0].first > r.matches[0].first)) {
+		return false;
+	}
+
+	// Then based on the successive distance between subseqence matches
+	const Vector<int> l_subseq_dist = _get_subseq_distances(l.matches);
+	const Vector<int> r_subseq_dist = _get_subseq_distances(r.matches);
+	const int dist_shared_size = MIN(l_subseq_dist.size(), r_subseq_dist.size());
+	for (int i = 0; i < dist_shared_size; ++i) {
+		if (l_subseq_dist[i] != r_subseq_dist[i]) {
+			return l_subseq_dist[i] < r_subseq_dist[i];
 		}
+	}
 
-		// Group variables, members, functions, signals together for the purpose of sorting.
-		if (l.is_basic_identifier() && r.is_basic_identifier()) {
-			return l_similarity > r_similarity;
-		}
+	// Then on similarity to the input string
+	const float l_similarity = l.display.to_lower().similarity(base.to_lower());
+	const float r_similarity = r.display.to_lower().similarity(base.to_lower());
 
-		if (l.kind != r.kind) {
-			// Sort kinds based on the const sorting array defined above. Lower index = higher priority.
-			int l_index = -1;
-			int r_index = -1;
-			for (int i = 0; i < KIND_COUNT; i++) {
-				const ScriptLanguage::CodeCompletionKind kind = KIND_SORT_ORDER[i];
-				l_index = kind == l.kind ? i : l_index;
-				r_index = kind == r.kind ? i : r_index;
-
-				if (l_index != -1 && r_index != -1) {
-					return l_index < r_index;
-				}
-			}
-		}
-
+	if (l_similarity > 0.75f || r_similarity > 0.75f) {
 		return l_similarity > r_similarity;
 	}
 
-	return l.location < r.location;
+	if (l.kind != r.kind) {
+		// Sort kinds based on the const sorting array defined above. Lower index = higher priority.
+		int l_index = -1;
+		int r_index = -1;
+		for (int i = 0; i < KIND_COUNT; i++) {
+			const ScriptLanguage::CodeCompletionKind kind = KIND_SORT_ORDER[i];
+			l_index = kind == l.kind ? i : l_index;
+			r_index = kind == r.kind ? i : r_index;
+
+			if (l_index != -1 && r_index != -1) {
+				return l_index < r_index;
+			}
+		}
+	}
+
+	return l_similarity > r_similarity;
 }

@@ -322,7 +322,8 @@ public:
 	};
 
 	enum CodeCompletionLocation {
-		LOCATION_LOCAL = 0,
+		LOCATION_LOCAL = 1 << 0,
+		LOCATION_BASE = 1 << 1,
 		//LOCATION_PARENT_MASK = 1 << 8,
 		//LOCATION_OTHER_USER_CODE = 1 << 9,
 		LOCATION_OTHER = 1 << 10,

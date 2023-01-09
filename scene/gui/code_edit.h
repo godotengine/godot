@@ -52,6 +52,13 @@ public:
 		KIND_PLAIN_TEXT,
 	};
 
+	/* /core/object/script_language.h - ScriptLanguage::CodeCompletionLocation */
+	enum CodeCompletionLocation {
+		LOCATION_LOCAL = 1 << 1,
+		LOCATION_BASE = 1 << 2,
+		LOCATION_OTHER = 1 << 10
+	};
+
 private:
 	/* Indent management */
 	int indent_size = 4;
@@ -404,7 +411,7 @@ public:
 
 	void request_code_completion(bool p_force = false);
 
-	void add_code_completion_option(CodeCompletionKind p_type, const String &p_display_text, const String &p_insert_text, const Color &p_text_color = Color(1, 1, 1), const Ref<Resource> &p_icon = Ref<Resource>(), const Variant &p_value = Variant::NIL);
+	void add_code_completion_option(CodeCompletionKind p_type, const String &p_display_text, const String &p_insert_text, const Color &p_text_color = Color(1, 1, 1), const Ref<Resource> &p_icon = Ref<Resource>(), const Variant &p_value = Variant::NIL, CodeCompletionLocation p_location = LOCATION_OTHER);
 	void update_code_completion_options(bool p_forced = false);
 
 	TypedArray<Dictionary> get_code_completion_options() const;
@@ -433,21 +440,7 @@ public:
 };
 
 VARIANT_ENUM_CAST(CodeEdit::CodeCompletionKind);
-
-const int KIND_COUNT = 10;
-// The order in which to sort code completion options.
-const ScriptLanguage::CodeCompletionKind KIND_SORT_ORDER[KIND_COUNT] = {
-	ScriptLanguage::CODE_COMPLETION_KIND_VARIABLE,
-	ScriptLanguage::CODE_COMPLETION_KIND_MEMBER,
-	ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION,
-	ScriptLanguage::CODE_COMPLETION_KIND_SIGNAL,
-	ScriptLanguage::CODE_COMPLETION_KIND_ENUM,
-	ScriptLanguage::CODE_COMPLETION_KIND_CLASS,
-	ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT,
-	ScriptLanguage::CODE_COMPLETION_KIND_NODE_PATH,
-	ScriptLanguage::CODE_COMPLETION_KIND_FILE_PATH,
-	ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT,
-};
+VARIANT_ENUM_CAST(CodeEdit::CodeCompletionLocation);
 
 // The custom comparer which will sort completion options.
 struct CodeCompletionOptionCompare {
