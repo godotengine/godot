@@ -46,7 +46,7 @@ public:
 	};
 
 private:
-	BitField<MouseButtonMask> button_mask;
+	BitField<MouseButtonMask> button_mask = MouseButtonMask::LEFT;
 	bool toggle_mode = false;
 	bool shortcut_in_tooltip = true;
 	bool was_mouse_pressed = false;
