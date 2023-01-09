@@ -145,7 +145,7 @@ namespace Godot.SourceGenerators
                     continue;
                 }
 
-                if (property.IsReadOnly || property.SetMethod!.IsInitOnly)
+                if (property.IsReadOnly || property.HasInitOnlySetMethod())
                 {
                     Common.ReportExportedMemberIsReadOnly(context, property);
                     continue;

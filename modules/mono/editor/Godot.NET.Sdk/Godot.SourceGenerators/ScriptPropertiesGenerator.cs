@@ -158,7 +158,7 @@ namespace Godot.SourceGenerators
                 // Generate SetGodotClassPropertyValue
 
                 bool allPropertiesAreReadOnly = godotClassFields.All(fi => fi.FieldSymbol.IsReadOnly) &&
-                                                godotClassProperties.All(pi => pi.PropertySymbol.IsReadOnly || pi.PropertySymbol.SetMethod!.IsInitOnly);
+                                                godotClassProperties.All(pi => pi.PropertySymbol.IsReadOnly || pi.PropertySymbol.HasInitOnlySetMethod());
 
                 if (!allPropertiesAreReadOnly)
                 {
@@ -168,7 +168,7 @@ namespace Godot.SourceGenerators
                     isFirstEntry = true;
                     foreach (var property in godotClassProperties)
                     {
-                        if (property.PropertySymbol.IsReadOnly || property.PropertySymbol.SetMethod!.IsInitOnly)
+                        if (property.PropertySymbol.IsReadOnly || property.PropertySymbol.HasInitOnlySetMethod())
                             continue;
 
                         GeneratePropertySetter(property.PropertySymbol.Name,
