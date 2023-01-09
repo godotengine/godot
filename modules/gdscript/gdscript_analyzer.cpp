@@ -1537,9 +1537,9 @@ void GDScriptAnalyzer::resolve_assignable(GDScriptParser::AssignableNode *p_assi
 
 		if (is_constant) {
 			if (p_assignable->initializer->type == GDScriptParser::Node::ARRAY) {
-				const_fold_array(static_cast<GDScriptParser::ArrayNode *>(p_assignable->initializer));
+				const_fold_array(static_cast<GDScriptParser::ArrayNode *>(p_assignable->initializer), true);
 			} else if (p_assignable->initializer->type == GDScriptParser::Node::DICTIONARY) {
-				const_fold_dictionary(static_cast<GDScriptParser::DictionaryNode *>(p_assignable->initializer));
+				const_fold_dictionary(static_cast<GDScriptParser::DictionaryNode *>(p_assignable->initializer), true);
 			}
 			if (!p_assignable->initializer->is_constant) {
 				push_error(vformat(R"(Assigned value for %s "%s" isn't a constant expression.)", p_kind, p_assignable->identifier->name), p_assignable->initializer);
@@ -2093,16 +2093,16 @@ void GDScriptAnalyzer::reduce_assignment(GDScriptParser::AssignmentNode *p_assig
 
 	GDScriptParser::DataType assignee_type = p_assignment->assignee->get_datatype();
 
+	if (assignee_type.is_constant || (p_assignment->assignee->type == GDScriptParser::Node::SUBSCRIPT && static_cast<GDScriptParser::SubscriptNode *>(p_assignment->assignee)->base->is_constant)) {
+		push_error("Cannot assign a new value to a constant.", p_assignment->assignee);
+	}
+
 	// Check if assigned value is an array literal, so we can make it a typed array too if appropriate.
 	if (assignee_type.has_container_element_type() && p_assignment->assigned_value->type == GDScriptParser::Node::ARRAY) {
 		update_array_literal_element_type(assignee_type, static_cast<GDScriptParser::ArrayNode *>(p_assignment->assigned_value));
 	}
 
 	GDScriptParser::DataType assigned_value_type = p_assignment->assigned_value->get_datatype();
-
-	if (assignee_type.is_constant) {
-		push_error("Cannot assign a new value to a constant.", p_assignment->assignee);
-	}
 
 	bool compatible = true;
 	GDScriptParser::DataType op_type = assigned_value_type;
@@ -3472,9 +3472,9 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 		reduce_expression(p_subscript->base);
 
 		if (p_subscript->base->type == GDScriptParser::Node::ARRAY) {
-			const_fold_array(static_cast<GDScriptParser::ArrayNode *>(p_subscript->base));
+			const_fold_array(static_cast<GDScriptParser::ArrayNode *>(p_subscript->base), false);
 		} else if (p_subscript->base->type == GDScriptParser::Node::DICTIONARY) {
-			const_fold_dictionary(static_cast<GDScriptParser::DictionaryNode *>(p_subscript->base));
+			const_fold_dictionary(static_cast<GDScriptParser::DictionaryNode *>(p_subscript->base), false);
 		}
 	}
 
@@ -3799,16 +3799,16 @@ void GDScriptAnalyzer::reduce_unary_op(GDScriptParser::UnaryOpNode *p_unary_op) 
 	p_unary_op->set_datatype(result);
 }
 
-void GDScriptAnalyzer::const_fold_array(GDScriptParser::ArrayNode *p_array) {
+void GDScriptAnalyzer::const_fold_array(GDScriptParser::ArrayNode *p_array, bool p_is_const) {
 	bool all_is_constant = true;
 
 	for (int i = 0; i < p_array->elements.size(); i++) {
 		GDScriptParser::ExpressionNode *element = p_array->elements[i];
 
 		if (element->type == GDScriptParser::Node::ARRAY) {
-			const_fold_array(static_cast<GDScriptParser::ArrayNode *>(element));
+			const_fold_array(static_cast<GDScriptParser::ArrayNode *>(element), p_is_const);
 		} else if (element->type == GDScriptParser::Node::DICTIONARY) {
-			const_fold_dictionary(static_cast<GDScriptParser::DictionaryNode *>(element));
+			const_fold_dictionary(static_cast<GDScriptParser::DictionaryNode *>(element), p_is_const);
 		}
 
 		all_is_constant = all_is_constant && element->is_constant;
@@ -3822,20 +3822,23 @@ void GDScriptAnalyzer::const_fold_array(GDScriptParser::ArrayNode *p_array) {
 	for (int i = 0; i < p_array->elements.size(); i++) {
 		array[i] = p_array->elements[i]->reduced_value;
 	}
+	if (p_is_const) {
+		array.set_read_only(true);
+	}
 	p_array->is_constant = true;
 	p_array->reduced_value = array;
 }
 
-void GDScriptAnalyzer::const_fold_dictionary(GDScriptParser::DictionaryNode *p_dictionary) {
+void GDScriptAnalyzer::const_fold_dictionary(GDScriptParser::DictionaryNode *p_dictionary, bool p_is_const) {
 	bool all_is_constant = true;
 
 	for (int i = 0; i < p_dictionary->elements.size(); i++) {
 		const GDScriptParser::DictionaryNode::Pair &element = p_dictionary->elements[i];
 
 		if (element.value->type == GDScriptParser::Node::ARRAY) {
-			const_fold_array(static_cast<GDScriptParser::ArrayNode *>(element.value));
+			const_fold_array(static_cast<GDScriptParser::ArrayNode *>(element.value), p_is_const);
 		} else if (element.value->type == GDScriptParser::Node::DICTIONARY) {
-			const_fold_dictionary(static_cast<GDScriptParser::DictionaryNode *>(element.value));
+			const_fold_dictionary(static_cast<GDScriptParser::DictionaryNode *>(element.value), p_is_const);
 		}
 
 		all_is_constant = all_is_constant && element.key->is_constant && element.value->is_constant;
@@ -3848,6 +3851,9 @@ void GDScriptAnalyzer::const_fold_dictionary(GDScriptParser::DictionaryNode *p_d
 	for (int i = 0; i < p_dictionary->elements.size(); i++) {
 		const GDScriptParser::DictionaryNode::Pair &element = p_dictionary->elements[i];
 		dict[element.key->reduced_value] = element.value->reduced_value;
+	}
+	if (p_is_const) {
+		dict.set_read_only(true);
 	}
 	p_dictionary->is_constant = true;
 	p_dictionary->reduced_value = dict;
