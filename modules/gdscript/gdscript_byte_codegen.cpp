@@ -1120,9 +1120,9 @@ void GDScriptByteCodeGenerator::write_call_method_bind(const Address &p_target, 
 }
 
 void GDScriptByteCodeGenerator::write_call_ptrcall(const Address &p_target, const Address &p_base, MethodBind *p_method, const Vector<Address> &p_arguments) {
-#define CASE_TYPE(m_type)                                                                                   \
-	case Variant::m_type:                                                                                   \
-		append_opcode_and_argcount(GDScriptFunction::OPCODE_CALL_PTRCALL_##m_type, 2 + p_arguments.size()); \
+#define CASE_TYPE(m_type)                                                                                                                                                               \
+	case Variant::m_type:                                                                                                                                                               \
+		append_opcode_and_argcount(p_target.mode == Address::NIL ? GDScriptFunction::OPCODE_CALL_METHOD_BIND : GDScriptFunction::OPCODE_CALL_PTRCALL_##m_type, 2 + p_arguments.size()); \
 		break
 
 	bool is_ptrcall = true;
