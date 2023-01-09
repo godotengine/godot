@@ -167,6 +167,16 @@ Copyright: 2018, Eric Lasota
  2018, Microsoft Corp.
 License: Expat
 
+Files: ./thirdparty/d3d12ma/
+Comment: D3D12 Memory Allocator
+Copyright: 2019-2022 Advanced Micro Devices, Inc.
+License: Expat
+
+Files: ./thirdparty/directx_headers/
+Comment: DirectX Headers
+Copyright: Microsoft Corporation
+License: Expat
+
 Files: ./thirdparty/doctest/
 Comment: doctest
 Copyright: 2016-2021, Viktor Kirilov
@@ -285,6 +295,11 @@ Files: ./thirdparty/mbedtls/
 Comment: Mbed TLS
 Copyright: The Mbed TLS Contributors
 License: Apache-2.0
+
+Files: ./thirdparty/mesa/
+Comment: The Mesa 3D Graphics Library
+Copyright: 1999-2007, Brian Paul
+License: Boost, MIT
 
 Files: ./thirdparty/meshoptimizer/
 Comment: meshoptimizer

@@ -1,0 +1,789 @@
+diff --git a/thirdparty/mesa/src/compiler/nir/nir_intrinsics.py b/thirdparty/mesa/src/compiler/nir/nir_intrinsics.py
+index 34b3d2bfd4..803ef4b150 100644
+--- a/thirdparty/mesa/src/compiler/nir/nir_intrinsics.py
++++ b/thirdparty/mesa/src/compiler/nir/nir_intrinsics.py
+@@ -1038,6 +1038,9 @@ load("push_constant", [1], [BASE, RANGE], [CAN_ELIMINATE, CAN_REORDER])
+ # src[] = { offset }.
+ load("constant", [1], [BASE, RANGE, ALIGN_MUL, ALIGN_OFFSET],
+      [CAN_ELIMINATE, CAN_REORDER])
++# src[] = { offset }.
++load("constant_non_opt", [1], [BASE, RANGE, ALIGN_MUL, ALIGN_OFFSET],
++     [CAN_ELIMINATE, CAN_REORDER])
+ # src[] = { address }.
+ load("global", [1], [ACCESS, ALIGN_MUL, ALIGN_OFFSET], [CAN_ELIMINATE])
+ # src[] = { address }.
+diff --git a/thirdparty/mesa/src/compiler/spirv/spirv_to_nir.c b/thirdparty/mesa/src/compiler/spirv/spirv_to_nir.c
+index 5a21f4d751..944dd0fd94 100644
+--- a/thirdparty/mesa/src/compiler/spirv/spirv_to_nir.c
++++ b/thirdparty/mesa/src/compiler/spirv/spirv_to_nir.c
+@@ -39,6 +39,8 @@
+ 
+ #include <stdio.h>
+ 
++#include "drivers/d3d12/d3d12_godot_nir_bridge.h"
++
+ #ifndef NDEBUG
+ uint32_t mesa_spirv_debug = 0;
+ 
+@@ -1120,6 +1122,7 @@ struct_member_decoration_cb(struct vtn_builder *b,
+    case SpvDecorationPerPrimitiveNV:
+    case SpvDecorationPerTaskNV:
+    case SpvDecorationPerViewNV:
++   case SpvDecorationInvariant: /* Silence this one to avoid warning spam. */
+       break;
+ 
+    case SpvDecorationSpecId:
+@@ -1128,7 +1131,6 @@ struct_member_decoration_cb(struct vtn_builder *b,
+    case SpvDecorationArrayStride:
+    case SpvDecorationGLSLShared:
+    case SpvDecorationGLSLPacked:
+-   case SpvDecorationInvariant:
+    case SpvDecorationAliased:
+    case SpvDecorationConstant:
+    case SpvDecorationIndex:
+@@ -1937,7 +1939,7 @@ vtn_null_constant(struct vtn_builder *b, struct vtn_type *type)
+ }
+ 
+ static void
+-spec_constant_decoration_cb(struct vtn_builder *b, UNUSED struct vtn_value *val,
++spec_constant_decoration_cb(struct vtn_builder *b, struct vtn_value *val,
+                             ASSERTED int member,
+                             const struct vtn_decoration *dec, void *data)
+ {
+@@ -1945,13 +1947,8 @@ spec_constant_decoration_cb(struct vtn_builder *b, UNUSED struct vtn_value *val,
+    if (dec->decoration != SpvDecorationSpecId)
+       return;
+ 
+-   nir_const_value *value = data;
+-   for (unsigned i = 0; i < b->num_specializations; i++) {
+-      if (b->specializations[i].id == dec->operands[0]) {
+-         *value = b->specializations[i].value;
+-         return;
+-      }
+-   }
++   val->is_sc = true;
++   val->sc_id = dec->operands[0];
+ }
+ 
+ static void
+@@ -1975,6 +1972,12 @@ vtn_handle_constant(struct vtn_builder *b, SpvOp opcode,
+                     const uint32_t *w, unsigned count)
+ {
+    struct vtn_value *val = vtn_push_value(b, w[2], vtn_value_type_constant);
++   if (opcode == SpvOpSpecConstantComposite || opcode == SpvOpSpecConstantOp) {
++      val->value_type = vtn_value_type_ssa;
++      val->ssa = NULL;
++      return;
++   }
++
+    val->constant = rzalloc(b, nir_constant);
+    switch (opcode) {
+    case SpvOpConstantTrue:
+@@ -1992,7 +1995,7 @@ vtn_handle_constant(struct vtn_builder *b, SpvOp opcode,
+ 
+       if (opcode == SpvOpSpecConstantTrue ||
+           opcode == SpvOpSpecConstantFalse)
+-         vtn_foreach_decoration(b, val, spec_constant_decoration_cb, &u32val);
++         vtn_foreach_decoration(b, val, spec_constant_decoration_cb, NULL);
+ 
+       val->constant->values[0].b = u32val.u32 != 0;
+       break;
+@@ -2023,11 +2026,10 @@ vtn_handle_constant(struct vtn_builder *b, SpvOp opcode,
+ 
+       if (opcode == SpvOpSpecConstant)
+          vtn_foreach_decoration(b, val, spec_constant_decoration_cb,
+-                                &val->constant->values[0]);
++                                NULL);
+       break;
+    }
+ 
+-   case SpvOpSpecConstantComposite:
+    case SpvOpConstantComposite: {
+       unsigned elem_count = count - 3;
+       vtn_fail_if(elem_count != val->type->length,
+@@ -2075,218 +2077,6 @@ vtn_handle_constant(struct vtn_builder *b, SpvOp opcode,
+       break;
+    }
+ 
+-   case SpvOpSpecConstantOp: {
+-      nir_const_value u32op = nir_const_value_for_uint(w[3], 32);
+-      vtn_foreach_decoration(b, val, spec_constant_decoration_cb, &u32op);
+-      SpvOp opcode = u32op.u32;
+-      switch (opcode) {
+-      case SpvOpVectorShuffle: {
+-         struct vtn_value *v0 = &b->values[w[4]];
+-         struct vtn_value *v1 = &b->values[w[5]];
+-
+-         vtn_assert(v0->value_type == vtn_value_type_constant ||
+-                    v0->value_type == vtn_value_type_undef);
+-         vtn_assert(v1->value_type == vtn_value_type_constant ||
+-                    v1->value_type == vtn_value_type_undef);
+-
+-         unsigned len0 = glsl_get_vector_elements(v0->type->type);
+-         unsigned len1 = glsl_get_vector_elements(v1->type->type);
+-
+-         vtn_assert(len0 + len1 < 16);
+-
+-         unsigned bit_size = glsl_get_bit_size(val->type->type);
+-         unsigned bit_size0 = glsl_get_bit_size(v0->type->type);
+-         unsigned bit_size1 = glsl_get_bit_size(v1->type->type);
+-
+-         vtn_assert(bit_size == bit_size0 && bit_size == bit_size1);
+-         (void)bit_size0; (void)bit_size1;
+-
+-         nir_const_value undef = { .u64 = 0xdeadbeefdeadbeef };
+-         nir_const_value combined[NIR_MAX_VEC_COMPONENTS * 2];
+-
+-         if (v0->value_type == vtn_value_type_constant) {
+-            for (unsigned i = 0; i < len0; i++)
+-               combined[i] = v0->constant->values[i];
+-         }
+-         if (v1->value_type == vtn_value_type_constant) {
+-            for (unsigned i = 0; i < len1; i++)
+-               combined[len0 + i] = v1->constant->values[i];
+-         }
+-
+-         for (unsigned i = 0, j = 0; i < count - 6; i++, j++) {
+-            uint32_t comp = w[i + 6];
+-            if (comp == (uint32_t)-1) {
+-               /* If component is not used, set the value to a known constant
+-                * to detect if it is wrongly used.
+-                */
+-               val->constant->values[j] = undef;
+-            } else {
+-               vtn_fail_if(comp >= len0 + len1,
+-                           "All Component literals must either be FFFFFFFF "
+-                           "or in [0, N - 1] (inclusive).");
+-               val->constant->values[j] = combined[comp];
+-            }
+-         }
+-         break;
+-      }
+-
+-      case SpvOpCompositeExtract:
+-      case SpvOpCompositeInsert: {
+-         struct vtn_value *comp;
+-         unsigned deref_start;
+-         struct nir_constant **c;
+-         if (opcode == SpvOpCompositeExtract) {
+-            comp = vtn_value(b, w[4], vtn_value_type_constant);
+-            deref_start = 5;
+-            c = &comp->constant;
+-         } else {
+-            comp = vtn_value(b, w[5], vtn_value_type_constant);
+-            deref_start = 6;
+-            val->constant = nir_constant_clone(comp->constant,
+-                                               (nir_variable *)b);
+-            c = &val->constant;
+-         }
+-
+-         int elem = -1;
+-         const struct vtn_type *type = comp->type;
+-         for (unsigned i = deref_start; i < count; i++) {
+-            vtn_fail_if(w[i] > type->length,
+-                        "%uth index of %s is %u but the type has only "
+-                        "%u elements", i - deref_start,
+-                        spirv_op_to_string(opcode), w[i], type->length);
+-
+-            switch (type->base_type) {
+-            case vtn_base_type_vector:
+-               elem = w[i];
+-               type = type->array_element;
+-               break;
+-
+-            case vtn_base_type_matrix:
+-            case vtn_base_type_array:
+-               c = &(*c)->elements[w[i]];
+-               type = type->array_element;
+-               break;
+-
+-            case vtn_base_type_struct:
+-               c = &(*c)->elements[w[i]];
+-               type = type->members[w[i]];
+-               break;
+-
+-            default:
+-               vtn_fail("%s must only index into composite types",
+-                        spirv_op_to_string(opcode));
+-            }
+-         }
+-
+-         if (opcode == SpvOpCompositeExtract) {
+-            if (elem == -1) {
+-               val->constant = *c;
+-            } else {
+-               unsigned num_components = type->length;
+-               for (unsigned i = 0; i < num_components; i++)
+-                  val->constant->values[i] = (*c)->values[elem + i];
+-            }
+-         } else {
+-            struct vtn_value *insert =
+-               vtn_value(b, w[4], vtn_value_type_constant);
+-            vtn_assert(insert->type == type);
+-            if (elem == -1) {
+-               *c = insert->constant;
+-            } else {
+-               unsigned num_components = type->length;
+-               for (unsigned i = 0; i < num_components; i++)
+-                  (*c)->values[elem + i] = insert->constant->values[i];
+-            }
+-         }
+-         break;
+-      }
+-
+-      default: {
+-         bool swap;
+-         nir_alu_type dst_alu_type = nir_get_nir_type_for_glsl_type(val->type->type);
+-         nir_alu_type src_alu_type = dst_alu_type;
+-         unsigned num_components = glsl_get_vector_elements(val->type->type);
+-         unsigned bit_size;
+-
+-         vtn_assert(count <= 7);
+-
+-         switch (opcode) {
+-         case SpvOpSConvert:
+-         case SpvOpFConvert:
+-         case SpvOpUConvert:
+-            /* We have a source in a conversion */
+-            src_alu_type =
+-               nir_get_nir_type_for_glsl_type(vtn_get_value_type(b, w[4])->type);
+-            /* We use the bitsize of the conversion source to evaluate the opcode later */
+-            bit_size = glsl_get_bit_size(vtn_get_value_type(b, w[4])->type);
+-            break;
+-         default:
+-            bit_size = glsl_get_bit_size(val->type->type);
+-         };
+-
+-         bool exact;
+-         nir_op op = vtn_nir_alu_op_for_spirv_opcode(b, opcode, &swap, &exact,
+-                                                     nir_alu_type_get_type_size(src_alu_type),
+-                                                     nir_alu_type_get_type_size(dst_alu_type));
+-
+-         /* No SPIR-V opcodes handled through this path should set exact.
+-          * Since it is ignored, assert on it.
+-          */
+-         assert(!exact);
+-
+-         nir_const_value src[3][NIR_MAX_VEC_COMPONENTS];
+-
+-         for (unsigned i = 0; i < count - 4; i++) {
+-            struct vtn_value *src_val =
+-               vtn_value(b, w[4 + i], vtn_value_type_constant);
+-
+-            /* If this is an unsized source, pull the bit size from the
+-             * source; otherwise, we'll use the bit size from the destination.
+-             */
+-            if (!nir_alu_type_get_type_size(nir_op_infos[op].input_types[i]))
+-               bit_size = glsl_get_bit_size(src_val->type->type);
+-
+-            unsigned src_comps = nir_op_infos[op].input_sizes[i] ?
+-                                 nir_op_infos[op].input_sizes[i] :
+-                                 num_components;
+-
+-            unsigned j = swap ? 1 - i : i;
+-            for (unsigned c = 0; c < src_comps; c++)
+-               src[j][c] = src_val->constant->values[c];
+-         }
+-
+-         /* fix up fixed size sources */
+-         switch (op) {
+-         case nir_op_ishl:
+-         case nir_op_ishr:
+-         case nir_op_ushr: {
+-            if (bit_size == 32)
+-               break;
+-            for (unsigned i = 0; i < num_components; ++i) {
+-               switch (bit_size) {
+-               case 64: src[1][i].u32 = src[1][i].u64; break;
+-               case 16: src[1][i].u32 = src[1][i].u16; break;
+-               case  8: src[1][i].u32 = src[1][i].u8;  break;
+-               }
+-            }
+-            break;
+-         }
+-         default:
+-            break;
+-         }
+-
+-         nir_const_value *srcs[3] = {
+-            src[0], src[1], src[2],
+-         };
+-         nir_eval_const_opcode(op, val->constant->values,
+-                               num_components, bit_size, srcs,
+-                               b->shader->info.float_controls_execution_mode);
+-         break;
+-      } /* default */
+-      }
+-      break;
+-   }
+-
+    case SpvOpConstantNull:
+       val->constant = vtn_null_constant(b, val->type);
+       val->is_null_constant = true;
+@@ -6357,6 +6147,96 @@ vtn_handle_body_instruction(struct vtn_builder *b, SpvOp opcode,
+    return true;
+ }
+ 
++static bool
++vtn_handle_spec_constant_instructions(struct vtn_builder* b, SpvOp opcode,
++                                      const uint32_t* w, unsigned count)
++{
++   switch (opcode) {
++   case SpvOpSpecConstantTrue:
++   case SpvOpSpecConstantFalse:
++   case SpvOpSpecConstant:
++   case SpvOpSpecConstantComposite:
++   case SpvOpSpecConstantOp:
++      break;
++   default:
++      return true;
++   }
++
++   struct vtn_value* val = vtn_untyped_value(b, w[2]);
++
++   switch (opcode) {
++   case SpvOpSpecConstantTrue:
++   case SpvOpSpecConstantFalse:
++   case SpvOpSpecConstant: {
++      vtn_assert(val->is_sc);
++      vtn_assert(val->value_type == vtn_value_type_constant || val->value_type == vtn_value_type_ssa);
++
++      val->value_type = vtn_value_type_ssa;
++      val->ssa = vtn_create_ssa_value(b, val->type->type);
++
++      nir_ssa_def *sc_imm = nir_imm_int(&b->nb, GODOT_NIR_SC_SENTINEL_MAGIC | val->sc_id);
++      nir_ssa_def *non_opt_const = nir_build_load_constant_non_opt(&b->nb, 1, 32, sc_imm);
++
++      vtn_assert(b->nb.cursor.option == nir_cursor_after_instr);
++      vtn_assert(b->nb.cursor.instr->type == nir_instr_type_intrinsic);
++
++      nir_ssa_def *temp = nir_build_alu(
++         &b->nb,
++         nir_op_iand,
++         non_opt_const,
++         nir_imm_int(&b->nb, 0xbfffffff),
++         NULL,
++         NULL);
++      val->ssa = vtn_create_ssa_value(b, val->type->type);
++      if (val->type->type == glsl_uint_type()) {
++         val->ssa->def = temp;
++      } else if (val->type->type == glsl_bool_type()) {
++         val->ssa->def = nir_build_alu(
++            &b->nb,
++            nir_op_ine,
++            temp,
++            nir_imm_int(&b->nb, 0),
++            NULL,
++            NULL);
++      } else if (val->type->type == glsl_float_type()) {
++         val->ssa->def = nir_build_alu(
++            &b->nb,
++            nir_op_ishl,
++            temp,
++            nir_imm_int(&b->nb, 1),
++            NULL,
++            NULL);
++      } else {
++         vtn_assert(false);
++      }
++   } break;
++
++   case SpvOpSpecConstantComposite:
++      abort(); // Unimplemented
++      break;
++
++   case SpvOpSpecConstantOp: {
++      vtn_assert(val->value_type == vtn_value_type_ssa);
++      val->value_type = vtn_value_type_invalid;
++
++      unsigned count = (w[0] >> SpvWordCountShift) - 1;
++      uint32_t* sub_w = (uint32_t*)alloca(4 * count);
++      sub_w[0] = 0; /* Doesn't really matter */
++      sub_w[1] = val->type->id;
++      sub_w[2] = w[2];
++      SpvOp sub_opcode = w[3];
++      for (unsigned i = 0; i < count - 3; ++i)
++         sub_w[3 + i] = w[4 + i];
++      vtn_handle_body_instruction(b, sub_opcode, sub_w, count);
++   } break;
++
++   default:
++      return false; /* End of preamble */
++   }
++
++   return true;
++}
++
+ static bool
+ is_glslang(const struct vtn_builder *b)
+ {
+@@ -6592,6 +6472,8 @@ spirv_to_nir(const uint32_t *words, size_t word_count,
+    b->shader->info.subgroup_size = options->subgroup_size;
+    b->shader->info.float_controls_execution_mode = options->float_controls_execution_mode;
+ 
++   const uint32_t *preamble_words = words;
++
+    /* Handle all the preamble instructions */
+    words = vtn_foreach_instruction(b, words, word_end,
+                                    vtn_handle_preamble_instruction);
+@@ -6673,7 +6555,7 @@ spirv_to_nir(const uint32_t *words, size_t word_count,
+          if ((options->create_library || func->referenced) && !func->emitted) {
+             b->const_table = _mesa_pointer_hash_table_create(b);
+ 
+-            vtn_function_emit(b, func, vtn_handle_body_instruction);
++            vtn_function_emit(b, func, vtn_handle_spec_constant_instructions, preamble_words, vtn_handle_body_instruction);
+             progress = true;
+          }
+       }
+diff --git a/thirdparty/mesa/src/compiler/spirv/vtn_cfg.c b/thirdparty/mesa/src/compiler/spirv/vtn_cfg.c
+index cdf3587ed9..27de83c34d 100644
+--- a/thirdparty/mesa/src/compiler/spirv/vtn_cfg.c
++++ b/thirdparty/mesa/src/compiler/spirv/vtn_cfg.c
+@@ -1447,6 +1447,8 @@ vtn_emit_cf_func_unstructured(struct vtn_builder *b, struct vtn_function *func,
+ 
+ void
+ vtn_function_emit(struct vtn_builder *b, struct vtn_function *func,
++                  vtn_instruction_handler preamble_instruction_handler,
++                  const uint32_t *preamble_words,
+                   vtn_instruction_handler instruction_handler)
+ {
+    static int force_unstructured = -1;
+@@ -1462,6 +1464,9 @@ vtn_function_emit(struct vtn_builder *b, struct vtn_function *func,
+    b->nb.exact = b->exact;
+    b->phi_table = _mesa_pointer_hash_table_create(b);
+ 
++   const uint32_t *word_end = b->spirv + b->spirv_word_count;
++   vtn_foreach_instruction(b, preamble_words, word_end, preamble_instruction_handler);
++
+    if (b->shader->info.stage == MESA_SHADER_KERNEL || force_unstructured) {
+       impl->structured = false;
+       vtn_emit_cf_func_unstructured(b, func, instruction_handler);
+diff --git a/thirdparty/mesa/src/compiler/spirv/vtn_private.h b/thirdparty/mesa/src/compiler/spirv/vtn_private.h
+index fb4cd12cd5..42fcf26ba1 100644
+--- a/thirdparty/mesa/src/compiler/spirv/vtn_private.h
++++ b/thirdparty/mesa/src/compiler/spirv/vtn_private.h
+@@ -311,6 +311,8 @@ typedef bool (*vtn_instruction_handler)(struct vtn_builder *, SpvOp,
+ void vtn_build_cfg(struct vtn_builder *b, const uint32_t *words,
+                    const uint32_t *end);
+ void vtn_function_emit(struct vtn_builder *b, struct vtn_function *func,
++                       vtn_instruction_handler preamble_instruction_handler,
++                       const uint32_t *preamble_words,
+                        vtn_instruction_handler instruction_handler);
+ void vtn_handle_function_call(struct vtn_builder *b, SpvOp opcode,
+                               const uint32_t *w, unsigned count);
+@@ -567,6 +569,8 @@ struct vtn_variable {
+    unsigned descriptor_set;
+    unsigned binding;
+    bool explicit_binding;
++   unsigned orig_descriptor_set;
++   unsigned orig_binding;
+    unsigned offset;
+    unsigned input_attachment_index;
+ 
+@@ -634,6 +638,9 @@ struct vtn_value {
+       struct vtn_ssa_value *ssa;
+       vtn_instruction_handler ext_handler;
+    };
++
++   bool is_sc;
++   uint32_t sc_id;
+ };
+ 
+ #define VTN_DEC_DECORATION -1
+diff --git a/thirdparty/mesa/src/compiler/spirv/vtn_variables.c b/thirdparty/mesa/src/compiler/spirv/vtn_variables.c
+index 9665d44fec..de24f1e745 100644
+--- a/thirdparty/mesa/src/compiler/spirv/vtn_variables.c
++++ b/thirdparty/mesa/src/compiler/spirv/vtn_variables.c
+@@ -30,6 +30,8 @@
+ #include "nir_deref.h"
+ #include <vulkan/vulkan_core.h>
+ 
++#include "drivers/d3d12/d3d12_godot_nir_bridge.h"
++
+ static struct vtn_pointer*
+ vtn_align_pointer(struct vtn_builder *b, struct vtn_pointer *ptr,
+                   unsigned alignment)
+@@ -1393,13 +1395,17 @@ var_decoration_cb(struct vtn_builder *b, struct vtn_value *val, int member,
+ 
+    /* Handle decorations that apply to a vtn_variable as a whole */
+    switch (dec->decoration) {
++   case SpvDecorationDescriptorSet:
+    case SpvDecorationBinding:
+-      vtn_var->binding = dec->operands[0];
++      if (dec->decoration == SpvDecorationDescriptorSet) {
++         vtn_var->orig_descriptor_set = dec->operands[0];
++      } else {
++         vtn_var->orig_binding = dec->operands[0];
++      }
++      vtn_var->descriptor_set = 0;
++	   vtn_var->binding = vtn_var->orig_descriptor_set * GODOT_NIR_DESCRIPTOR_SET_MULTIPLIER + vtn_var->orig_binding * GODOT_NIR_BINDING_MULTIPLIER;
+       vtn_var->explicit_binding = true;
+       return;
+-   case SpvDecorationDescriptorSet:
+-      vtn_var->descriptor_set = dec->operands[0];
+-      return;
+    case SpvDecorationInputAttachmentIndex:
+       vtn_var->input_attachment_index = dec->operands[0];
+       return;
+diff --git a/thirdparty/mesa/src/microsoft/compiler/dxil_container.c b/thirdparty/mesa/src/microsoft/compiler/dxil_container.c
+index 209973459d..5e1806fea8 100644
+--- a/thirdparty/mesa/src/microsoft/compiler/dxil_container.c
++++ b/thirdparty/mesa/src/microsoft/compiler/dxil_container.c
+@@ -338,7 +338,8 @@ dxil_container_add_state_validation(struct dxil_container *c,
+ 
+ bool
+ dxil_container_add_module(struct dxil_container *c,
+-                          const struct dxil_module *m)
++                          const struct dxil_module *m,
++                          uint64_t *extra_bit_offset)
+ {
+    assert(m->buf.buf_bits == 0); // make sure the module is fully flushed
+    uint32_t version = (m->shader_kind << 16) |
+@@ -352,18 +353,22 @@ dxil_container_add_module(struct dxil_container *c,
+    uint32_t bitcode_offset = 16;
+    uint32_t bitcode_size = m->buf.blob.size;
+ 
+-   return add_part_header(c, DXIL_DXIL, size) &&
++   if (!(add_part_header(c, DXIL_DXIL, size) &&
+           blob_write_bytes(&c->parts, &version, sizeof(version)) &&
+           blob_write_bytes(&c->parts, &uint32_size, sizeof(uint32_size)) &&
+           blob_write_bytes(&c->parts, &magic, sizeof(magic)) &&
+           blob_write_bytes(&c->parts, &dxil_version, sizeof(dxil_version)) &&
+           blob_write_bytes(&c->parts, &bitcode_offset, sizeof(bitcode_offset)) &&
+-          blob_write_bytes(&c->parts, &bitcode_size, sizeof(bitcode_size)) &&
+-          blob_write_bytes(&c->parts, m->buf.blob.data, m->buf.blob.size);
++          blob_write_bytes(&c->parts, &bitcode_size, sizeof(bitcode_size))))
++      return false;
++
++   *extra_bit_offset += c->parts.size * 8;
++
++   return blob_write_bytes(&c->parts, m->buf.blob.data, m->buf.blob.size);
+ }
+ 
+ bool
+-dxil_container_write(struct dxil_container *c, struct blob *blob)
++dxil_container_write(struct dxil_container *c, struct blob *blob, uint64_t *extra_bit_offset)
+ {
+    assert(blob->size == 0);
+    if (!blob_write_bytes(blob, &DXIL_DXBC, sizeof(DXIL_DXBC)))
+@@ -394,8 +399,12 @@ dxil_container_write(struct dxil_container *c, struct blob *blob)
+    }
+ 
+    if (!blob_write_bytes(blob, &c->num_parts, sizeof(c->num_parts)) ||
+-       !blob_write_bytes(blob, part_offsets, sizeof(uint32_t) * c->num_parts) ||
+-       !blob_write_bytes(blob, c->parts.data, c->parts.size))
++      !blob_write_bytes(blob, part_offsets, sizeof(uint32_t) * c->num_parts))
++      return false;
++
++   *extra_bit_offset += blob->size * 8;
++
++   if (!blob_write_bytes(blob, c->parts.data, c->parts.size))
+       return false;
+ 
+    return true;
+diff --git a/thirdparty/mesa/src/microsoft/compiler/dxil_container.h b/thirdparty/mesa/src/microsoft/compiler/dxil_container.h
+index b3279ee108..d3dfb03ba1 100644
+--- a/thirdparty/mesa/src/microsoft/compiler/dxil_container.h
++++ b/thirdparty/mesa/src/microsoft/compiler/dxil_container.h
+@@ -123,10 +123,11 @@ dxil_container_add_state_validation(struct dxil_container *c,
+ 
+ bool
+ dxil_container_add_module(struct dxil_container *c,
+-                          const struct dxil_module *m);
++                          const struct dxil_module *m,
++                          uint64_t *extra_bit_offset);
+ 
+ bool
+-dxil_container_write(struct dxil_container *c, struct blob *blob);
++dxil_container_write(struct dxil_container *c, struct blob *blob, uint64_t *extra_bit_offset);
+ 
+ #ifdef __cplusplus
+ }
+diff --git a/thirdparty/mesa/src/microsoft/compiler/dxil_module.c b/thirdparty/mesa/src/microsoft/compiler/dxil_module.c
+index cb44c99027..39f9c6e603 100644
+--- a/thirdparty/mesa/src/microsoft/compiler/dxil_module.c
++++ b/thirdparty/mesa/src/microsoft/compiler/dxil_module.c
+@@ -32,6 +32,8 @@
+ #include <assert.h>
+ #include <stdio.h>
+ 
++#include "drivers/d3d12/d3d12_godot_nir_bridge.h"
++
+ void
+ dxil_module_init(struct dxil_module *m, void *ralloc_ctx)
+ {
+@@ -2389,6 +2391,13 @@ emit_consts(struct dxil_module *m)
+          continue;
+       }
+ 
++      if ((c->int_value & GODOT_NIR_SC_SENTINEL_MAGIC_MASK) == GODOT_NIR_SC_SENTINEL_MAGIC) {
++         uint32_t sc_id = c->int_value & ~GODOT_NIR_SC_SENTINEL_MAGIC_MASK;
++         uint64_t sc_bit_offset = (uint64_t)m->buf.blob.size * 8 + m->buf.buf_bits + m->buf.abbrev_width;
++         m->godot_nir_callbacks->report_sc_bit_offset_fn(sc_id, sc_bit_offset, m->godot_nir_callbacks->data);
++         assert(curr_type->type == TYPE_INTEGER);
++      }
++
+       switch (curr_type->type) {
+       case TYPE_INTEGER:
+          if (!emit_int_value(m, c->int_value))
+diff --git a/thirdparty/mesa/src/microsoft/compiler/dxil_module.h b/thirdparty/mesa/src/microsoft/compiler/dxil_module.h
+index 8669a7cc6f..2a776fcd20 100644
+--- a/thirdparty/mesa/src/microsoft/compiler/dxil_module.h
++++ b/thirdparty/mesa/src/microsoft/compiler/dxil_module.h
+@@ -29,6 +29,8 @@
+ #ifndef DXIL_MODULE_H
+ #define DXIL_MODULE_H
+ 
++typedef struct GodotNirCallbacks GodotNirCallbacks;
++
+ #ifdef __cplusplus
+ extern "C" {
+ #endif
+@@ -247,6 +249,8 @@ struct dxil_module {
+    struct rb_tree *functions;
+ 
+    struct dxil_func_def *cur_emitting_func;
++
++   const GodotNirCallbacks *godot_nir_callbacks;
+ };
+ 
+ struct dxil_instr;
+diff --git a/thirdparty/mesa/src/microsoft/compiler/nir_to_dxil.c b/thirdparty/mesa/src/microsoft/compiler/nir_to_dxil.c
+index b2f2ebc51b..e04513321a 100644
+--- a/thirdparty/mesa/src/microsoft/compiler/nir_to_dxil.c
++++ b/thirdparty/mesa/src/microsoft/compiler/nir_to_dxil.c
+@@ -43,6 +43,8 @@
+ 
+ #include <stdint.h>
+ 
++#include "drivers/d3d12/d3d12_godot_nir_bridge.h"
++
+ int debug_dxil = 0;
+ 
+ static const struct debug_named_value
+@@ -1047,6 +1049,8 @@ add_resource(struct ntd_context *ctx, enum dxil_resource_type type,
+       /* No flags supported yet */
+       resource_v1->resource_flags = 0;
+    }
++
++   ctx->opts->godot_nir_callbacks->report_resource(layout->binding, layout->space, (uint32_t)type, ctx->opts->godot_nir_callbacks->data);
+ }
+ 
+ static const struct dxil_value *
+@@ -4629,6 +4633,11 @@ emit_intrinsic(struct ntd_context *ctx, nir_intrinsic_instr *intr)
+    case nir_intrinsic_read_first_invocation:
+       return emit_read_first_invocation(ctx, intr);
+ 
++   case nir_intrinsic_load_constant_non_opt:
++      const struct dxil_value* value = get_src(ctx, &intr->src[0], 0, nir_type_uint);
++      store_dest_value(ctx, &intr->dest, 0, value);
++      return true;
++
+    case nir_intrinsic_load_num_workgroups:
+    case nir_intrinsic_load_workgroup_size:
+    default:
+@@ -6190,6 +6199,7 @@ nir_to_dxil(struct nir_shader *s, const struct nir_to_dxil_options *opts,
+       MIN2(opts->shader_model_max & 0xffff, validator_version & 0xffff);
+    ctx->mod.major_validator = validator_version >> 16;
+    ctx->mod.minor_validator = validator_version & 0xffff;
++   ctx->mod.godot_nir_callbacks = opts->godot_nir_callbacks;
+ 
+    if (s->info.stage <= MESA_SHADER_FRAGMENT) {
+       uint64_t in_mask =
+@@ -6308,19 +6318,23 @@ nir_to_dxil(struct nir_shader *s, const struct nir_to_dxil_options *opts,
+       goto out;
+    }
+ 
+-   if (!dxil_container_add_module(&container, &ctx->mod)) {
++   uint64_t extra_bit_offset = 0;
++
++   if (!dxil_container_add_module(&container, &ctx->mod, &extra_bit_offset)) {
+       debug_printf("D3D12: failed to write module\n");
+       retval = false;
+       goto out;
+    }
+ 
+-   if (!dxil_container_write(&container, blob)) {
++   if (!dxil_container_write(&container, blob, &extra_bit_offset)) {
+       debug_printf("D3D12: dxil_container_write failed\n");
+       retval = false;
+       goto out;
+    }
+    dxil_container_finish(&container);
+ 
++   opts->godot_nir_callbacks->report_sc_extra_bit_offset_fn(extra_bit_offset, opts->godot_nir_callbacks->data);
++
+    if (debug_dxil & DXIL_DEBUG_DUMP_BLOB) {
+       static int shader_id = 0;
+       char buffer[64];
+diff --git a/thirdparty/mesa/src/microsoft/compiler/nir_to_dxil.h b/thirdparty/mesa/src/microsoft/compiler/nir_to_dxil.h
+index fceb87ef8c..dc51114b9d 100644
+--- a/thirdparty/mesa/src/microsoft/compiler/nir_to_dxil.h
++++ b/thirdparty/mesa/src/microsoft/compiler/nir_to_dxil.h
+@@ -29,6 +29,8 @@
+ #include "nir.h"
+ #include "dxil_versions.h"
+ 
++typedef struct GodotNirCallbacks GodotNirCallbacks;
++
+ #ifdef __cplusplus
+ extern "C" {
+ #endif
+@@ -84,6 +86,7 @@ struct nir_to_dxil_options {
+    enum dxil_environment environment;
+    enum dxil_shader_model shader_model_max;
+    enum dxil_validator_version validator_version_max;
++   const GodotNirCallbacks *godot_nir_callbacks;
+ };
+ 
+ typedef void (*dxil_msg_callback)(void *priv, const char *msg);
+diff --git a/thirdparty/mesa/src/microsoft/spirv_to_dxil/spirv_to_dxil.c b/thirdparty/mesa/src/microsoft/spirv_to_dxil/spirv_to_dxil.c
+index 9f0779cc46..b5a3ee9570 100644
+--- a/thirdparty/mesa/src/microsoft/spirv_to_dxil/spirv_to_dxil.c
++++ b/thirdparty/mesa/src/microsoft/spirv_to_dxil/spirv_to_dxil.c
+@@ -32,6 +32,8 @@
+ #include "git_sha1.h"
+ #include "vulkan/vulkan.h"
+ 
++#include "drivers/d3d12/d3d12_godot_nir_bridge.h"
++
+ static_assert(DXIL_SPIRV_SHADER_NONE == (int)MESA_SHADER_NONE, "must match");
+ static_assert(DXIL_SPIRV_SHADER_VERTEX == (int)MESA_SHADER_VERTEX, "must match");
+ static_assert(DXIL_SPIRV_SHADER_TESS_CTRL == (int)MESA_SHADER_TESS_CTRL, "must match");
+@@ -51,6 +53,7 @@ spirv_to_dxil(const uint32_t *words, size_t word_count,
+               const struct dxil_spirv_debug_options *dgb_opts,
+               const struct dxil_spirv_runtime_conf *conf,
+               const struct dxil_spirv_logger *logger,
++              const GodotNirCallbacks *godot_nir_callbacks,
+               struct dxil_spirv_object *out_dxil)
+ {
+    if (stage == DXIL_SPIRV_SHADER_NONE || stage == DXIL_SPIRV_SHADER_KERNEL)
+@@ -63,6 +66,7 @@ spirv_to_dxil(const uint32_t *words, size_t word_count,
+       .environment = DXIL_ENVIRONMENT_VULKAN,
+       .shader_model_max = shader_model_max,
+       .validator_version_max = validator_version_max,
++      .godot_nir_callbacks = godot_nir_callbacks,
+    };
+ 
+    const struct spirv_to_nir_options *spirv_opts = dxil_spirv_nir_get_spirv_options();
+diff --git a/thirdparty/mesa/src/microsoft/spirv_to_dxil/spirv_to_dxil.h b/thirdparty/mesa/src/microsoft/spirv_to_dxil/spirv_to_dxil.h
+index a95bffaaa4..0b23c76470 100644
+--- a/thirdparty/mesa/src/microsoft/spirv_to_dxil/spirv_to_dxil.h
++++ b/thirdparty/mesa/src/microsoft/spirv_to_dxil/spirv_to_dxil.h
+@@ -30,6 +30,8 @@
+ #include <stddef.h>
+ #include <stdint.h>
+ 
++typedef struct GodotNirCallbacks GodotNirCallbacks;
++
+ #ifdef __cplusplus
+ extern "C" {
+ #endif
+@@ -202,6 +204,7 @@ spirv_to_dxil(const uint32_t *words, size_t word_count,
+               const struct dxil_spirv_debug_options *debug_options,
+               const struct dxil_spirv_runtime_conf *conf,
+               const struct dxil_spirv_logger *logger,
++              const GodotNirCallbacks *godot_nir_callbacks,
+               struct dxil_spirv_object *out_dxil);
+ 
+ /**
