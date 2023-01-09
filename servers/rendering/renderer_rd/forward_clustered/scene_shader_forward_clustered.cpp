@@ -309,14 +309,6 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 						}
 
 						RD::PipelineDepthStencilState depth_stencil = depth_stencil_state;
-						if (depth_pre_pass_enabled && casts_shadows() && !uses_depth_prepass_alpha) {
-							// We already have a depth from the depth pre-pass, there is no need to write it again.
-							// In addition we can use COMPARE_OP_EQUAL instead of COMPARE_OP_LESS_OR_EQUAL.
-							// This way we can use the early depth test to discard transparent fragments before the fragment shader even starts.
-							// This cannot be used with depth_prepass_alpha as it uses a different threshold during the depth-prepass and regular drawing.
-							depth_stencil.depth_compare_operator = RD::COMPARE_OP_EQUAL;
-							depth_stencil.enable_depth_write = false;
-						}
 
 						RD::PipelineColorBlendState blend_state;
 						RD::PipelineMultisampleState multisample_state;
@@ -337,6 +329,14 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 							}
 						} else {
 							blend_state = blend_state_color_opaque;
+
+							if (depth_pre_pass_enabled) {
+								// We already have a depth from the depth pre-pass, there is no need to write it again.
+								// In addition we can use COMPARE_OP_EQUAL instead of COMPARE_OP_LESS_OR_EQUAL.
+								// This way we can use the early depth test to discard transparent fragments before the fragment shader even starts.
+								depth_stencil.depth_compare_operator = RD::COMPARE_OP_EQUAL;
+								depth_stencil.enable_depth_write = false;
+							}
 
 							if (l & PIPELINE_COLOR_PASS_FLAG_SEPARATE_SPECULAR) {
 								shader_flags |= SHADER_COLOR_PASS_FLAG_SEPARATE_SPECULAR;
