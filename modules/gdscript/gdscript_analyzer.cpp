@@ -42,6 +42,9 @@
 #include "gdscript_utility_functions.h"
 #include "scene/resources/packed_scene.h"
 
+#define UNNAMED_ENUM "<anonymous enum>"
+#define ENUM_SEPARATOR "::"
+
 static MethodInfo info_from_utility_func(const StringName &p_function) {
 	ERR_FAIL_COND_V(!Variant::has_utility_function(p_function), MethodInfo());
 
@@ -106,13 +109,26 @@ static GDScriptParser::DataType make_native_meta_type(const StringName &p_class_
 	return type;
 }
 
-static GDScriptParser::DataType make_native_enum_type(const StringName &p_native_class, const StringName &p_enum_name) {
+// In enum types, native_type is used to store the class (native or otherwise) that the enum belongs to.
+// This disambiguates between similarly named enums in base classes or outer classes
+static GDScriptParser::DataType make_enum_type(const StringName &p_enum_name, const String &p_base_name, const bool p_meta = false) {
 	GDScriptParser::DataType type;
 	type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
 	type.kind = GDScriptParser::DataType::ENUM;
-	type.builtin_type = Variant::INT;
+	type.builtin_type = p_meta ? Variant::DICTIONARY : Variant::INT;
+	type.enum_type = p_enum_name;
 	type.is_constant = true;
-	type.is_meta_type = true;
+	type.is_meta_type = p_meta;
+
+	// For enums, native_type is only used to check compatibility in is_type_compatible()
+	// We can set anything readable here for error messages, as long as it uniquely identifies the type of the enum
+	type.native_type = p_base_name + ENUM_SEPARATOR + p_enum_name;
+
+	return type;
+}
+
+static GDScriptParser::DataType make_native_enum_type(const StringName &p_enum_name, const StringName &p_native_class, const bool p_meta = true) {
+	GDScriptParser::DataType type = make_enum_type(p_enum_name, p_native_class, p_meta);
 
 	List<StringName> enum_values;
 	ClassDB::get_enum_constants(p_native_class, p_enum_name, &enum_values);
@@ -132,6 +148,19 @@ static GDScriptParser::DataType make_builtin_meta_type(Variant::Type p_type) {
 	type.is_constant = true;
 	type.is_meta_type = true;
 	return type;
+}
+
+static StringName enum_get_value_name(const GDScriptParser::DataType p_type, int64_t p_val) {
+	// Check that an enum has a given value, not key.
+	// Make sure that implicit conversion to int64_t is sensible before calling!
+	HashMap<StringName, int64_t>::ConstIterator i = p_type.enum_values.begin();
+	while (i) {
+		if (i->value == p_val) {
+			return i->key;
+		}
+		++i;
+	}
+	return StringName();
 }
 
 bool GDScriptAnalyzer::has_member_name_conflict_in_script_class(const StringName &p_member_name, const GDScriptParser::ClassNode *p_class, const GDScriptParser::Node *p_member) {
@@ -192,6 +221,7 @@ Error GDScriptAnalyzer::check_native_member_name_conflict(const StringName &p_me
 }
 
 Error GDScriptAnalyzer::check_class_member_name_conflict(const GDScriptParser::ClassNode *p_class_node, const StringName &p_member_name, const GDScriptParser::Node *p_member_node) {
+	// TODO check outer classes for static members only
 	const GDScriptParser::DataType *current_data_type = &p_class_node->base_type;
 	while (current_data_type && current_data_type->kind == GDScriptParser::DataType::Kind::CLASS) {
 		GDScriptParser::ClassNode *current_class_node = current_data_type->class_type;
@@ -591,12 +621,17 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 		result = ref->get_parser()->head->get_datatype();
 	} else if (ClassDB::has_enum(parser->current_class->base_type.native_type, first)) {
 		// Native enum in current class.
-		result = make_native_enum_type(parser->current_class->base_type.native_type, first);
+		result = make_native_enum_type(first, parser->current_class->base_type.native_type);
 	} else {
 		// Classes in current scope.
 		List<GDScriptParser::ClassNode *> script_classes;
+		bool found = false;
 		get_class_node_current_scope_classes(parser->current_class, &script_classes);
 		for (GDScriptParser::ClassNode *script_class : script_classes) {
+			if (found) {
+				break;
+			}
+
 			if (script_class->identifier && script_class->identifier->name == first) {
 				result = script_class->get_datatype();
 				break;
@@ -608,14 +643,17 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 				switch (member.type) {
 					case GDScriptParser::ClassNode::Member::CLASS:
 						result = member.get_datatype();
+						found = true;
 						break;
 					case GDScriptParser::ClassNode::Member::ENUM:
 						result = member.get_datatype();
+						found = true;
 						break;
 					case GDScriptParser::ClassNode::Member::CONSTANT:
 						if (member.get_datatype().is_meta_type) {
 							result = member.get_datatype();
 							result.is_meta_type = false;
+							found = true;
 							break;
 						} else if (Ref<Script>(member.constant->initializer->reduced_value).is_valid()) {
 							Ref<GDScript> gdscript = member.constant->initializer->reduced_value;
@@ -636,6 +674,7 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 								result.native_type = script->get_instance_base_type();
 								result.is_meta_type = false;
 							}
+							found = true;
 							break;
 						}
 						[[fallthrough]];
@@ -667,15 +706,17 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 			}
 		} else if (result.kind == GDScriptParser::DataType::NATIVE) {
 			// Only enums allowed for native.
-			if (!ClassDB::has_enum(result.native_type, p_type->type_chain[1]->name)) {
-				push_error(vformat(R"(Could not find nested type "%s" under base "%s".)", p_type->type_chain[1]->name, result.to_string()), p_type->type_chain[1]);
+			if (ClassDB::has_enum(result.native_type, p_type->type_chain[1]->name)) {
+				if (p_type->type_chain.size() > 2) {
+					push_error(R"(Enums cannot contain nested types.)", p_type->type_chain[2]);
+					return bad_type;
+				} else {
+					result = make_native_enum_type(p_type->type_chain[1]->name, result.native_type);
+				}
+			} else {
+				push_error(vformat(R"(Could not find type "%s" in "%s".)", p_type->type_chain[1]->name, first), p_type->type_chain[1]);
 				return bad_type;
 			}
-			if (p_type->type_chain.size() > 2) {
-				push_error(R"(Enums cannot contain nested types.)", p_type->type_chain[2]);
-				return bad_type;
-			}
-			result = make_native_enum_type(result.native_type, p_type->type_chain[1]->name);
 		} else {
 			push_error(vformat(R"(Could not find nested type "%s" under base "%s".)", p_type->type_chain[1]->name, result.to_string()), p_type->type_chain[1]);
 			return bad_type;
@@ -804,15 +845,7 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 				check_class_member_name_conflict(p_class, member.m_enum->identifier->name, member.m_enum);
 
 				member.m_enum->set_datatype(resolving_datatype);
-
-				GDScriptParser::DataType enum_type;
-				enum_type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
-				enum_type.kind = GDScriptParser::DataType::ENUM;
-				enum_type.builtin_type = Variant::DICTIONARY;
-				enum_type.enum_type = member.m_enum->identifier->name;
-				enum_type.native_type = p_class->fqcn + "." + member.m_enum->identifier->name;
-				enum_type.is_meta_type = true;
-				enum_type.is_constant = true;
+				GDScriptParser::DataType enum_type = make_enum_type(member.m_enum->identifier->name, p_class->fqcn, true);
 
 				const GDScriptParser::EnumNode *prev_enum = current_enum;
 				current_enum = member.m_enum;
@@ -846,6 +879,7 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 
 				current_enum = prev_enum;
 
+				dictionary.set_read_only(true);
 				member.m_enum->set_datatype(enum_type);
 				member.m_enum->dictionary = dictionary;
 
@@ -892,11 +926,7 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 				// Also update the original references.
 				member.enum_value.parent_enum->values.set(member.enum_value.index, member.enum_value);
 
-				GDScriptParser::DataType datatype;
-				datatype.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
-				datatype.kind = GDScriptParser::DataType::BUILTIN;
-				datatype.builtin_type = Variant::INT;
-				member.enum_value.identifier->set_datatype(datatype);
+				member.enum_value.identifier->set_datatype(make_enum_type(UNNAMED_ENUM, p_class->fqcn, false));
 			} break;
 			case GDScriptParser::ClassNode::Member::CLASS:
 				check_class_member_name_conflict(p_class, member.m_class->identifier->name, member.m_class);
@@ -1330,7 +1360,7 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 		}
 	} else {
 		if (p_function->return_type != nullptr) {
-			p_function->set_datatype(resolve_datatype(p_function->return_type));
+			p_function->set_datatype(type_from_metatype(resolve_datatype(p_function->return_type)));
 		} else {
 			// In case the function is not typed, we can safely assume it's a Variant, so it's okay to mark as "inferred" here.
 			// It's not "undetected" to not mix up with unknown functions.
@@ -1364,7 +1394,7 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 
 			if (!valid) {
 				// Compute parent signature as a string to show in the error message.
-				String parent_signature = function_name.operator String() + "(";
+				String parent_signature = String(function_name) + "(";
 				int j = 0;
 				for (const GDScriptParser::DataType &par_type : parameters_types) {
 					if (j > 0) {
@@ -2081,13 +2111,15 @@ void GDScriptAnalyzer::reduce_assignment(GDScriptParser::AssignmentNode *p_assig
 	}
 	p_assignment->set_datatype(op_type);
 
+	// If Assignee is a variant, then you can assign anything
+	// When the assigned value has a known type, further checks are possible.
 	if (assignee_type.is_hard_type() && !assignee_type.is_variant() && op_type.is_hard_type()) {
 		if (compatible) {
 			compatible = is_type_compatible(assignee_type, op_type, true, p_assignment->assigned_value);
 			if (!compatible) {
 				// Try reverse test since it can be a masked subtype.
 				if (!is_type_compatible(op_type, assignee_type, true)) {
-					push_error(vformat(R"(Cannot assign a value of type "%s" to a target of type "%s".)", assigned_value_type.to_string(), assignee_type.to_string()), p_assignment->assigned_value);
+					push_error(vformat(R"(Value of type "%s" cannot be assigned to a variable of type "%s".)", assigned_value_type.to_string(), assignee_type.to_string()), p_assignment->assigned_value);
 				} else {
 					// TODO: Add warning.
 					mark_node_unsafe(p_assignment);
@@ -2141,7 +2173,7 @@ void GDScriptAnalyzer::reduce_assignment(GDScriptParser::AssignmentNode *p_assig
 				if (!id_type.is_hard_type()) {
 					id_type.kind = GDScriptParser::DataType::VARIANT;
 					id_type.type_source = GDScriptParser::DataType::UNDETECTED;
-					identifier->variable_source->set_datatype(id_type);
+					identifier->bind_source->set_datatype(id_type);
 				}
 			} break;
 			default:
@@ -2368,7 +2400,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 
 				switch (err.error) {
 					case Callable::CallError::CALL_ERROR_INVALID_ARGUMENT:
-						push_error(vformat(R"(Invalid argument for %s constructor: argument %d should be %s but is %s.)", Variant::get_type_name(builtin_type), err.argument + 1,
+						push_error(vformat(R"(Invalid argument for %s constructor: argument %d should be "%s" but is "%s".)", Variant::get_type_name(builtin_type), err.argument + 1,
 										   Variant::get_type_name(Variant::Type(err.expected)), p_call->arguments[err.argument]->get_datatype().to_string()),
 								p_call->arguments[err.argument]);
 						break;
@@ -2484,7 +2516,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 				switch (err.error) {
 					case Callable::CallError::CALL_ERROR_INVALID_ARGUMENT: {
 						PropertyInfo wrong_arg = function_info.arguments[err.argument];
-						push_error(vformat(R"*(Invalid argument for "%s()" function: argument %d should be %s but is %s.)*", function_name, err.argument + 1,
+						push_error(vformat(R"*(Invalid argument for "%s()" function: argument %d should be "%s" but is "%s".)*", function_name, err.argument + 1,
 										   type_from_property(wrong_arg).to_string(), p_call->arguments[err.argument]->get_datatype().to_string()),
 								p_call->arguments[err.argument]);
 					} break;
@@ -2537,7 +2569,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 							expected_type_name = Variant::get_type_name((Variant::Type)err.expected);
 						}
 
-						push_error(vformat(R"*(Invalid argument for "%s()" function: argument %d should be %s but is %s.)*", function_name, err.argument + 1,
+						push_error(vformat(R"*(Invalid argument for "%s()" function: argument %d should be "%s" but is "%s".)*", function_name, err.argument + 1,
 										   expected_type_name, p_call->arguments[err.argument]->get_datatype().to_string()),
 								p_call->arguments[err.argument]);
 					} break;
@@ -2683,8 +2715,10 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 	} else {
 		bool found = false;
 
-		// Check if the name exists as something else.
-		if (!p_call->is_super && callee_type != GDScriptParser::Node::NONE) {
+		// Enums do not have functions other than the built-in dictionary ones.
+		if (base_type.kind == GDScriptParser::DataType::ENUM && base_type.is_meta_type) {
+			push_error(vformat(R"*(Enums only have Dictionary built-in methods. Function "%s()" does not exist for enum "%s".)*", p_call->function_name, base_type.enum_type), p_call->callee);
+		} else if (!p_call->is_super && callee_type != GDScriptParser::Node::NONE) { // Check if the name exists as something else.
 			GDScriptParser::IdentifierNode *callee_id;
 			if (callee_type == GDScriptParser::Node::IDENTIFIER) {
 				callee_id = static_cast<GDScriptParser::IdentifierNode *>(p_call->callee);
@@ -2714,7 +2748,7 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 			String base_name = is_self && !p_call->is_super ? "self" : base_type.to_string();
 			push_error(vformat(R"*(Function "%s()" not found in base %s.)*", p_call->function_name, base_name), p_call->is_super ? p_call : p_call->callee);
 		} else if (!found && (!p_call->is_super && base_type.is_hard_type() && base_type.kind == GDScriptParser::DataType::NATIVE && base_type.is_meta_type)) {
-			push_error(vformat(R"*(Static function "%s()" not found in base "%s".)*", p_call->function_name, base_type.native_type.operator String()), p_call);
+			push_error(vformat(R"*(Static function "%s()" not found in base "%s".)*", p_call->function_name, base_type.native_type), p_call);
 		}
 	}
 
@@ -2742,19 +2776,48 @@ void GDScriptAnalyzer::reduce_cast(GDScriptParser::CastNode *p_cast) {
 		GDScriptParser::DataType op_type = p_cast->operand->get_datatype();
 		if (!op_type.is_variant()) {
 			bool valid = false;
+			bool more_informative_error = false;
 			if (op_type.kind == GDScriptParser::DataType::ENUM && cast_type.kind == GDScriptParser::DataType::ENUM) {
-				// Enum types are compatible between each other, so it's a safe cast.
-				valid = true;
+				// Enum casts are compatible when value from operand exists in target enum
+				if (p_cast->operand->is_constant && p_cast->operand->reduced) {
+					if (enum_get_value_name(cast_type, p_cast->operand->reduced_value) != StringName()) {
+						valid = true;
+					} else {
+						valid = false;
+						more_informative_error = true;
+						push_error(vformat(R"(Invalid cast. Enum "%s" does not have value corresponding to "%s.%s" (%d).)",
+										   cast_type.to_string(), op_type.enum_type,
+										   enum_get_value_name(op_type, p_cast->operand->reduced_value), // Can never be null
+										   p_cast->operand->reduced_value.operator uint64_t()),
+								p_cast->cast_type);
+					}
+				} else {
+					// Can't statically tell whether int has a corresponding enum value. Valid but dangerous!
+					mark_node_unsafe(p_cast);
+					valid = true;
+				}
 			} else if (op_type.kind == GDScriptParser::DataType::BUILTIN && op_type.builtin_type == Variant::INT && cast_type.kind == GDScriptParser::DataType::ENUM) {
-				// Convertint int to enum is always valid.
-				valid = true;
+				// Int assignment to enum not valid when exact int assigned is known but is not an enum value
+				if (p_cast->operand->is_constant && p_cast->operand->reduced) {
+					if (enum_get_value_name(cast_type, p_cast->operand->reduced_value) != StringName()) {
+						valid = true;
+					} else {
+						valid = false;
+						more_informative_error = true;
+						push_error(vformat(R"(Invalid cast. Enum "%s" does not have enum value %d.)", cast_type.to_string(), p_cast->operand->reduced_value.operator uint64_t()), p_cast->cast_type);
+					}
+				} else {
+					// Can't statically tell whether int has a corresponding enum value. Valid but dangerous!
+					mark_node_unsafe(p_cast);
+					valid = true;
+				}
 			} else if (op_type.kind == GDScriptParser::DataType::BUILTIN && cast_type.kind == GDScriptParser::DataType::BUILTIN) {
 				valid = Variant::can_convert(op_type.builtin_type, cast_type.builtin_type);
 			} else if (op_type.kind != GDScriptParser::DataType::BUILTIN && cast_type.kind != GDScriptParser::DataType::BUILTIN) {
 				valid = is_type_compatible(cast_type, op_type) || is_type_compatible(op_type, cast_type);
 			}
 
-			if (!valid) {
+			if (!valid && !more_informative_error) {
 				push_error(vformat(R"(Invalid cast. Cannot convert from "%s" to "%s".)", op_type.to_string(), cast_type.to_string()), p_cast->cast_type);
 			}
 		}
@@ -2869,26 +2932,14 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 	if (base.kind == GDScriptParser::DataType::ENUM) {
 		if (base.is_meta_type) {
 			if (base.enum_values.has(name)) {
+				p_identifier->set_datatype(type_from_metatype(base));
 				p_identifier->is_constant = true;
 				p_identifier->reduced_value = base.enum_values[name];
-
-				GDScriptParser::DataType result;
-				result.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
-				result.kind = GDScriptParser::DataType::ENUM;
-				result.is_constant = true;
-				result.builtin_type = Variant::INT;
-				result.native_type = base.native_type;
-				result.enum_type = base.enum_type;
-				result.enum_values = base.enum_values;
-				p_identifier->set_datatype(result);
 				return;
-			} else {
-				// Consider as a Dictionary, so it can be anything.
-				// This will be evaluated in the next if block.
-				base.kind = GDScriptParser::DataType::BUILTIN;
-				base.builtin_type = Variant::DICTIONARY;
-				base.is_meta_type = false;
 			}
+
+			// Enum does not have this value, return.
+			return;
 		} else {
 			push_error(R"(Cannot get property from enum value.)", p_identifier);
 			return;
@@ -3000,12 +3051,18 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 			}
 			return;
 		}
+
 		// Check outer constants.
 		// TODO: Allow outer static functions.
 		if (base_class->outer != nullptr) {
 			List<GDScriptParser::ClassNode *> script_classes;
 			get_class_node_current_scope_classes(base_class->outer, &script_classes);
 			for (GDScriptParser::ClassNode *script_class : script_classes) {
+				if (script_class->identifier && script_class->identifier->name == name) {
+					p_identifier->set_datatype(script_class->get_datatype());
+					return;
+				}
+
 				if (script_class->has_member(name)) {
 					resolve_class_member(script_class, name, p_identifier);
 
@@ -3067,35 +3124,39 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 			return;
 		}
 		if (ClassDB::has_enum(native, name)) {
-			p_identifier->set_datatype(make_native_enum_type(native, name));
+			p_identifier->set_datatype(make_native_enum_type(name, native));
 			p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_CONSTANT;
 			return;
 		}
 		bool valid = false;
+
 		int64_t int_constant = ClassDB::get_integer_constant(native, name, &valid);
 		if (valid) {
 			p_identifier->is_constant = true;
 			p_identifier->reduced_value = int_constant;
-			p_identifier->set_datatype(type_from_variant(int_constant, p_identifier));
 			p_identifier->source = GDScriptParser::IdentifierNode::MEMBER_CONSTANT;
-			return;
+
+			// Check whether this constant, which exists, belongs to an enum
+			StringName enum_name = ClassDB::get_integer_constant_enum(native, name);
+			if (enum_name != StringName()) {
+				p_identifier->set_datatype(make_native_enum_type(enum_name, native, false));
+			} else {
+				p_identifier->set_datatype(type_from_variant(int_constant, p_identifier));
+			}
 		}
 	}
 }
 
 void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_identifier, bool can_be_builtin) {
-	// TODO: This is opportunity to further infer types.
+	// TODO: This is an opportunity to further infer types.
 
-	// Check if we are inside and enum. This allows enum values to access other elements of the same enum.
+	// Check if we are inside an enum. This allows enum values to access other elements of the same enum.
 	if (current_enum) {
 		for (int i = 0; i < current_enum->values.size(); i++) {
 			const GDScriptParser::EnumNode::Value &element = current_enum->values[i];
 			if (element.identifier->name == p_identifier->name) {
-				GDScriptParser::DataType type;
-				type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
-				type.kind = element.parent_enum->identifier ? GDScriptParser::DataType::ENUM : GDScriptParser::DataType::BUILTIN;
-				type.builtin_type = Variant::INT;
-				type.is_constant = true;
+				StringName enum_name = current_enum->identifier->name ? current_enum->identifier->name : UNNAMED_ENUM;
+				GDScriptParser::DataType type = make_enum_type(enum_name, parser->current_class->fqcn, false);
 				if (element.parent_enum->identifier) {
 					type.enum_type = element.parent_enum->identifier->name;
 				}
@@ -3865,12 +3926,13 @@ GDScriptParser::DataType GDScriptAnalyzer::type_from_variant(const Variant &p_va
 	return result;
 }
 
-GDScriptParser::DataType GDScriptAnalyzer::type_from_metatype(const GDScriptParser::DataType &p_meta_type) const {
+GDScriptParser::DataType GDScriptAnalyzer::type_from_metatype(const GDScriptParser::DataType &p_meta_type) {
 	GDScriptParser::DataType result = p_meta_type;
 	result.is_meta_type = false;
-	result.is_constant = false;
 	if (p_meta_type.kind == GDScriptParser::DataType::ENUM) {
 		result.builtin_type = Variant::INT;
+	} else {
+		result.is_constant = false;
 	}
 	return result;
 }
@@ -3928,11 +3990,12 @@ bool GDScriptAnalyzer::get_function_signature(GDScriptParser::Node *p_source, bo
 	r_default_arg_count = 0;
 	StringName function_name = p_function;
 
+	bool was_enum = false;
 	if (p_base_type.kind == GDScriptParser::DataType::ENUM) {
+		was_enum = true;
 		if (p_base_type.is_meta_type) {
 			// Enum type can be treated as a dictionary value.
 			p_base_type.kind = GDScriptParser::DataType::BUILTIN;
-			p_base_type.builtin_type = Variant::DICTIONARY;
 			p_base_type.is_meta_type = false;
 		} else {
 			push_error("Cannot call function on enum value.", p_source);
@@ -3955,6 +4018,10 @@ bool GDScriptAnalyzer::get_function_signature(GDScriptParser::Node *p_source, bo
 			if (E.name == p_function) {
 				function_signature_from_info(E, r_return_type, r_par_types, r_default_arg_count, r_static, r_vararg);
 				r_static = Variant::is_builtin_method_static(p_base_type.builtin_type, function_name);
+				// Cannot use non-const methods on enums.
+				if (!r_static && was_enum && !(E.flags & METHOD_FLAG_CONST)) {
+					push_error(vformat(R"*(Cannot call non-const Dictionary function "%s()" on enum "%s".)*", p_function, p_base_type.enum_type), p_source);
+				}
 				return true;
 			}
 		}
@@ -4102,7 +4169,7 @@ bool GDScriptAnalyzer::validate_call_arg(const List<GDScriptParser::DataType> &p
 			// Supertypes are acceptable for dynamic compliance, but it's unsafe.
 			mark_node_unsafe(p_call);
 			if (!is_type_compatible(arg_type, par_type)) {
-				push_error(vformat(R"*(Invalid argument for "%s()" function: argument %d should be %s but is %s.)*",
+				push_error(vformat(R"*(Invalid argument for "%s()" function: argument %d should be "%s" but is "%s".)*",
 								   p_call->function_name, i + 1, par_type.to_string(), arg_type.to_string()),
 						p_call->arguments[i]);
 				valid = false;
