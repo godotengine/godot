@@ -195,7 +195,15 @@ void CanvasItem::_top_level_raise_self() {
 }
 
 void CanvasItem::_enter_canvas() {
-	if ((!Object::cast_to<CanvasItem>(get_parent())) || top_level) {
+	// Resolves to nullptr if the node is toplevel.
+	CanvasItem *parent_item = get_parent_item();
+
+	if (parent_item) {
+		canvas_layer = parent_item->canvas_layer;
+		RenderingServer::get_singleton()->canvas_item_set_parent(canvas_item, parent_item->get_canvas_item());
+		RenderingServer::get_singleton()->canvas_item_set_draw_index(canvas_item, get_index());
+		RenderingServer::get_singleton()->canvas_item_set_visibility_layer(canvas_item, visibility_layer);
+	} else {
 		Node *n = this;
 
 		canvas_layer = nullptr;
@@ -231,13 +239,6 @@ void CanvasItem::_enter_canvas() {
 		}
 
 		get_tree()->call_group_flags(SceneTree::GROUP_CALL_UNIQUE | SceneTree::GROUP_CALL_DEFERRED, canvas_group, SNAME("_top_level_raise_self"));
-
-	} else {
-		CanvasItem *parent = get_parent_item();
-		canvas_layer = parent->canvas_layer;
-		RenderingServer::get_singleton()->canvas_item_set_parent(canvas_item, parent->get_canvas_item());
-		RenderingServer::get_singleton()->canvas_item_set_draw_index(canvas_item, get_index());
-		RenderingServer::get_singleton()->canvas_item_set_visibility_layer(canvas_item, visibility_layer);
 	}
 
 	pending_update = false;
@@ -320,8 +321,7 @@ void CanvasItem::_notification(int p_what) {
 			if (canvas_group != StringName()) {
 				get_tree()->call_group_flags(SceneTree::GROUP_CALL_UNIQUE | SceneTree::GROUP_CALL_DEFERRED, canvas_group, "_top_level_raise_self");
 			} else {
-				CanvasItem *p = get_parent_item();
-				ERR_FAIL_COND(!p);
+				ERR_FAIL_COND_MSG(!get_parent_item(), "Moved child is in incorrect state (no canvas group, no canvas item parent).");
 				RenderingServer::get_singleton()->canvas_item_set_draw_index(canvas_item, get_index());
 			}
 		} break;
