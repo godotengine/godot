@@ -87,6 +87,10 @@ const Callable *CallableCustomBind::get_base_comparator() const {
 	return &callable;
 }
 
+int CallableCustomBind::get_bound_arguments_count() const {
+	return callable.get_bound_arguments_count() + binds.size();
+}
+
 void CallableCustomBind::call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const {
 	const Variant **args = (const Variant **)alloca(sizeof(const Variant **) * (binds.size() + p_argcount));
 	for (int i = 0; i < p_argcount; i++) {
@@ -162,6 +166,10 @@ ObjectID CallableCustomUnbind::get_object() const {
 
 const Callable *CallableCustomUnbind::get_base_comparator() const {
 	return &callable;
+}
+
+int CallableCustomUnbind::get_bound_arguments_count() const {
+	return callable.get_bound_arguments_count() - argcount;
 }
 
 void CallableCustomUnbind::call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const {
