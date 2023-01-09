@@ -1107,6 +1107,11 @@ void DisplayServerWindows::delete_sub_window(WindowID p_window) {
 		context_vulkan->window_destroy(p_window);
 	}
 #endif
+#ifdef D3D12_ENABLED
+	if (context_d3d12) {
+		context_d3d12->window_destroy(p_window);
+	}
+#endif
 #ifdef GLES3_ENABLED
 	if (gl_manager_angle) {
 		gl_manager_angle->window_destroy(p_window);
@@ -1537,6 +1542,11 @@ void DisplayServerWindows::window_set_size(const Size2i p_size, WindowID p_windo
 #if defined(VULKAN_ENABLED)
 	if (context_vulkan) {
 		context_vulkan->window_resize(p_window, w, h);
+	}
+#endif
+#if defined(D3D12_ENABLED)
+	if (context_d3d12) {
+		context_d3d12->window_resize(p_window, w, h);
 	}
 #endif
 #if defined(GLES3_ENABLED)
@@ -2590,6 +2600,12 @@ void DisplayServerWindows::window_set_vsync_mode(DisplayServer::VSyncMode p_vsyn
 	}
 #endif
 
+#if defined(D3D12_ENABLED)
+	if (context_d3d12) {
+		context_d3d12->set_vsync_mode(p_window, p_vsync_mode);
+	}
+#endif
+
 #if defined(GLES3_ENABLED)
 	if (gl_manager_native) {
 		gl_manager_native->set_use_vsync(p_window, p_vsync_mode != DisplayServer::VSYNC_DISABLED);
@@ -2608,6 +2624,12 @@ DisplayServer::VSyncMode DisplayServerWindows::window_get_vsync_mode(WindowID p_
 	}
 #endif
 
+#if defined(D3D12_ENABLED)
+	if (context_d3d12) {
+		return context_d3d12->get_vsync_mode(p_window);
+	}
+#endif
+
 #if defined(GLES3_ENABLED)
 	if (gl_manager_native) {
 		return gl_manager_native->is_using_vsync(p_window) ? DisplayServer::VSYNC_ENABLED : DisplayServer::VSYNC_DISABLED;
@@ -2616,7 +2638,6 @@ DisplayServer::VSyncMode DisplayServerWindows::window_get_vsync_mode(WindowID p_
 		return gl_manager_angle->is_using_vsync() ? DisplayServer::VSYNC_ENABLED : DisplayServer::VSYNC_DISABLED;
 	}
 #endif
-
 	return DisplayServer::VSYNC_ENABLED;
 }
 
@@ -3767,12 +3788,19 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 					rect_changed = true;
 				}
+				// Note: Trigger resize event to update swapchains when window is minimized/restored, even if size is not changed.
+				if (window_created && window.context_created) {
 #if defined(VULKAN_ENABLED)
-				if (context_vulkan && window.context_created) {
-					// Note: Trigger resize event to update swapchains when window is minimized/restored, even if size is not changed.
-					context_vulkan->window_resize(window_id, window.width, window.height);
-				}
+					if (context_vulkan) {
+						context_vulkan->window_resize(window_id, window.width, window.height);
+					}
 #endif
+#if defined(D3D12_ENABLED)
+					if (context_d3d12) {
+						context_d3d12->window_resize(window_id, window.width, window.height);
+					}
+#endif
+				}
 			}
 
 			if (!window.minimized && (!(window_pos_params->flags & SWP_NOMOVE) || window_pos_params->flags & SWP_FRAMECHANGED)) {
@@ -4336,6 +4364,18 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 		}
 #endif
 
+#ifdef D3D12_ENABLED
+		if (context_d3d12) {
+			if (context_d3d12->window_create(id, p_vsync_mode, wd.hWnd, hInstance, WindowRect.right - WindowRect.left, WindowRect.bottom - WindowRect.top) != OK) {
+				memdelete(context_d3d12);
+				context_d3d12 = nullptr;
+				windows.erase(id);
+				ERR_FAIL_V_MSG(INVALID_WINDOW_ID, "Failed to create D3D12 Window.");
+			}
+			wd.context_created = true;
+		}
+#endif
+
 #ifdef GLES3_ENABLED
 		if (gl_manager_native) {
 			if (gl_manager_native->window_create(id, wd.hWnd, hInstance, WindowRect.right - WindowRect.left, WindowRect.bottom - WindowRect.top) != OK) {
@@ -4644,6 +4684,17 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		}
 	}
 #endif
+#if defined(D3D12_ENABLED)
+	if (rendering_driver == "d3d12") {
+		context_d3d12 = memnew(D3D12Context);
+		if (context_d3d12->initialize() != OK) {
+			memdelete(context_d3d12);
+			context_d3d12 = nullptr;
+			r_error = ERR_UNAVAILABLE;
+			return;
+		}
+	}
+#endif
 	// Init context and rendering device
 #if defined(GLES3_ENABLED)
 
@@ -4727,10 +4778,17 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	show_window(MAIN_WINDOW_ID);
 
 #if defined(VULKAN_ENABLED)
-
 	if (rendering_driver == "vulkan") {
 		rendering_device_vulkan = memnew(RenderingDeviceVulkan);
 		rendering_device_vulkan->initialize(context_vulkan);
+
+		RendererCompositorRD::make_current();
+	}
+#endif
+#if defined(D3D12_ENABLED)
+	if (rendering_driver == "d3d12") {
+		rendering_device_d3d12 = memnew(RenderingDeviceD3D12);
+		rendering_device_d3d12->initialize(context_d3d12);
 
 		RendererCompositorRD::make_current();
 	}
@@ -4768,6 +4826,9 @@ Vector<String> DisplayServerWindows::get_rendering_drivers_func() {
 
 #ifdef VULKAN_ENABLED
 	drivers.push_back("vulkan");
+#endif
+#ifdef D3D12_ENABLED
+	drivers.push_back("d3d12");
 #endif
 #ifdef GLES3_ENABLED
 	drivers.push_back("opengl3");
@@ -4833,6 +4894,11 @@ DisplayServerWindows::~DisplayServerWindows() {
 			context_vulkan->window_destroy(MAIN_WINDOW_ID);
 		}
 #endif
+#ifdef D3D12_ENABLED
+		if (context_d3d12) {
+			context_d3d12->window_destroy(MAIN_WINDOW_ID);
+		}
+#endif
 		if (wintab_available && windows[MAIN_WINDOW_ID].wtctx) {
 			wintab_WTClose(windows[MAIN_WINDOW_ID].wtctx);
 			windows[MAIN_WINDOW_ID].wtctx = 0;
@@ -4850,6 +4916,19 @@ DisplayServerWindows::~DisplayServerWindows() {
 	if (context_vulkan) {
 		memdelete(context_vulkan);
 		context_vulkan = nullptr;
+	}
+#endif
+
+#if defined(D3D12_ENABLED)
+	if (rendering_device_d3d12) {
+		rendering_device_d3d12->finalize();
+		memdelete(rendering_device_d3d12);
+		rendering_device_d3d12 = nullptr;
+	}
+
+	if (context_d3d12) {
+		memdelete(context_d3d12);
+		context_d3d12 = nullptr;
 	}
 #endif
 
