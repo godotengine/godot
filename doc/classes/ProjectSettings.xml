@@ -2616,6 +2616,18 @@
 		<member name="rendering/renderer/rendering_method.web" type="String" setter="" getter="" default="&quot;gl_compatibility&quot;">
 			Override for [member rendering/renderer/rendering_method] on web.
 		</member>
+		<member name="rendering/rendering_device/d3d12/max_misc_descriptors_per_frame" type="int" setter="" getter="" default="512">
+			The number of entries in the miscellaneous descriptors heap the Direct3D 12 rendering driver uses each frame, used for various operations like clearing a texture.
+			Depending on the complexity of scenes, this value may be lowered or may need to be raised.
+		</member>
+		<member name="rendering/rendering_device/d3d12/max_resource_descriptors_per_frame" type="int" setter="" getter="" default="16384">
+			The number of entries in the resource descriptors heap the Direct3D 12 rendering driver uses each frame, used for most rendering operations.
+			Depending on the complexity of scenes, this value may be lowered or may need to be raised.
+		</member>
+		<member name="rendering/rendering_device/d3d12/max_sampler_descriptors_per_frame" type="int" setter="" getter="" default="1024">
+			The number of entries in the sampler descriptors heap the Direct3D 12 rendering driver uses each frame, used for most rendering operations.
+			Depending on the complexity of scenes, this value may be lowered or may need to be raised.
+		</member>
 		<member name="rendering/rendering_device/driver" type="String" setter="" getter="">
 			Sets the driver to be used by the renderer when using a RenderingDevice-based renderer like the clustered renderer or the mobile renderer. This property can not be edited directly, instead, set the driver using the platform-specific overrides.
 		</member>

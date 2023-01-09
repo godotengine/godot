@@ -120,6 +120,31 @@ have been removed as they caused massive quality regressions. Apply the patches
 in the `patches/` folder when syncing on newer upstream commits.
 
 
+## d3d12ma
+
+- Upstream: https://github.com/GPUOpen-LibrariesAndSDKs/D3D12MemoryAllocator
+- Version: 2.1.0-development (4d16e802e0b9451c9d3c27cd308928c13b73acd6, 2023)
+- License: MIT
+
+Files extracted from upstream source:
+
+- `src/D3D12MemAlloc.cpp`, `src/D3D12MemAlloc.natvis`
+- `include/D3D12MemAlloc.h`
+- `LICENSE.txt`, `NOTICES.txt`
+
+
+## directx_headers
+
+- Upstream: https://github.com/microsoft/DirectX-Headers
+- Version: 1.606.3 (fd329244e62201bf959331d28514928fc1d45005, 2022)
+- License: MIT
+
+Files extracted from upstream source:
+
+- `include/directx/*.h`
+- `LICENSE`
+
+
 ## doctest
 
 - Upstream: https://github.com/onqtam/doctest

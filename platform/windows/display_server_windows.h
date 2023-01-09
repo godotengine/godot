@@ -58,6 +58,10 @@
 #include "drivers/vulkan/rendering_device_vulkan.h"
 #endif
 
+#if defined(D3D12_ENABLED)
+#include "drivers/d3d12/rendering_device_d3d12.h"
+#endif
+
 #if defined(GLES3_ENABLED)
 #include "gl_manager_windows_angle.h"
 #include "gl_manager_windows_native.h"
@@ -345,6 +349,11 @@ class DisplayServerWindows : public DisplayServer {
 #if defined(VULKAN_ENABLED)
 	VulkanContextWindows *context_vulkan = nullptr;
 	RenderingDeviceVulkan *rendering_device_vulkan = nullptr;
+#endif
+
+#if defined(D3D12_ENABLED)
+	D3D12Context *context_d3d12 = nullptr;
+	RenderingDeviceD3D12 *rendering_device_d3d12 = nullptr;
 #endif
 
 	RBMap<int, Vector2> touch_state;
