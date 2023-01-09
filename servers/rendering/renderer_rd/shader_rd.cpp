@@ -33,6 +33,7 @@
 #include "core/io/compression.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
+#include "core/version.h"
 #include "renderer_compositor_rd.h"
 #include "servers/rendering/rendering_device.h"
 #include "thirdparty/misc/smolv.h"
@@ -116,6 +117,10 @@ void ShaderRD::setup(const char *p_vertex_code, const char *p_fragment_code, con
 	}
 
 	StringBuilder tohash;
+	tohash.append("[GodotVersionNumber]");
+	tohash.append(VERSION_NUMBER);
+	tohash.append("[GodotVersionHash]");
+	tohash.append(VERSION_HASH);
 	tohash.append("[SpirvCacheKey]");
 	tohash.append(RenderingDevice::get_singleton()->shader_get_spirv_cache_key());
 	tohash.append("[BinaryCacheKey]");
