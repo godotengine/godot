@@ -1841,14 +1841,6 @@ void PopupMenu::set_parent_rect(const Rect2 &p_rect) {
 	parent_rect = p_rect;
 }
 
-void PopupMenu::get_translatable_strings(List<String> *p_strings) const {
-	for (int i = 0; i < items.size(); i++) {
-		if (!items[i].xl_text.is_empty()) {
-			p_strings->push_back(items[i].xl_text);
-		}
-	}
-}
-
 void PopupMenu::add_autohide_area(const Rect2 &p_area) {
 	autohide_areas.push_back(p_area);
 }

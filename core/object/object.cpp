@@ -1594,25 +1594,6 @@ bool Object::is_blocking_signals() const {
 	return _block_signals;
 }
 
-void Object::get_translatable_strings(List<String> *p_strings) const {
-	List<PropertyInfo> plist;
-	get_property_list(&plist);
-
-	for (const PropertyInfo &E : plist) {
-		if (!(E.usage & PROPERTY_USAGE_INTERNATIONALIZED)) {
-			continue;
-		}
-
-		String text = get(E.name);
-
-		if (text.is_empty()) {
-			continue;
-		}
-
-		p_strings->push_back(text);
-	}
-}
-
 Variant::Type Object::get_static_property_type(const StringName &p_property, bool *r_valid) const {
 	bool valid;
 	Variant::Type t = ClassDB::get_property_type(get_class_name(), p_property, &valid);

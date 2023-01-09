@@ -223,7 +223,6 @@ void ScriptEditorBase::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("request_open_script_at_line", PropertyInfo(Variant::OBJECT, "script"), PropertyInfo(Variant::INT, "line")));
 	ADD_SIGNAL(MethodInfo("request_save_history"));
 	ADD_SIGNAL(MethodInfo("go_to_help", PropertyInfo(Variant::STRING, "what")));
-	// TODO: This signal is no use for VisualScript.
 	ADD_SIGNAL(MethodInfo("search_in_files_requested", PropertyInfo(Variant::STRING, "text")));
 	ADD_SIGNAL(MethodInfo("replace_in_files_requested", PropertyInfo(Variant::STRING, "text")));
 	ADD_SIGNAL(MethodInfo("go_to_method", PropertyInfo(Variant::OBJECT, "script"), PropertyInfo(Variant::STRING, "method")));
@@ -2205,8 +2204,7 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 
 	if (use_external_editor &&
 			(EditorDebuggerNode::get_singleton()->get_dump_stack_script() != p_resource || EditorDebuggerNode::get_singleton()->get_debug_with_external_editor()) &&
-			p_resource->get_path().is_resource_file() &&
-			!p_resource->is_class("VisualScript")) {
+			p_resource->get_path().is_resource_file()) {
 		String path = EDITOR_GET("text_editor/external/exec_path");
 		String flags = EDITOR_GET("text_editor/external/exec_flags");
 
@@ -2305,21 +2303,20 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 
 	se->set_edited_resource(p_resource);
 
-	if (!p_resource->is_class("VisualScript")) {
-		bool highlighter_set = false;
-		for (int i = 0; i < syntax_highlighters.size(); i++) {
-			Ref<EditorSyntaxHighlighter> highlighter = syntax_highlighters[i]->_create();
-			if (highlighter.is_null()) {
-				continue;
-			}
-			se->add_syntax_highlighter(highlighter);
+	// Syntax highlighting.
+	bool highlighter_set = false;
+	for (int i = 0; i < syntax_highlighters.size(); i++) {
+		Ref<EditorSyntaxHighlighter> highlighter = syntax_highlighters[i]->_create();
+		if (highlighter.is_null()) {
+			continue;
+		}
+		se->add_syntax_highlighter(highlighter);
 
-			if (scr != nullptr && !highlighter_set) {
-				PackedStringArray languages = highlighter->_get_supported_languages();
-				if (languages.has(scr->get_language()->get_name())) {
-					se->set_syntax_highlighter(highlighter);
-					highlighter_set = true;
-				}
+		if (scr != nullptr && !highlighter_set) {
+			PackedStringArray languages = highlighter->_get_supported_languages();
+			if (languages.has(scr->get_language()->get_name())) {
+				se->set_syntax_highlighter(highlighter);
+				highlighter_set = true;
 			}
 		}
 	}

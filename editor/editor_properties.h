@@ -203,40 +203,6 @@ public:
 	EditorPropertyClassName();
 };
 
-class EditorPropertyMember : public EditorProperty {
-	GDCLASS(EditorPropertyMember, EditorProperty);
-
-public:
-	enum Type {
-		MEMBER_METHOD_OF_VARIANT_TYPE, ///< a method of a type
-		MEMBER_METHOD_OF_BASE_TYPE, ///< a method of a base type
-		MEMBER_METHOD_OF_INSTANCE, ///< a method of an instance
-		MEMBER_METHOD_OF_SCRIPT, ///< a method of a script & base
-		MEMBER_PROPERTY_OF_VARIANT_TYPE, ///< a property of a type
-		MEMBER_PROPERTY_OF_BASE_TYPE, ///< a property of a base type
-		MEMBER_PROPERTY_OF_INSTANCE, ///< a property of an instance
-		MEMBER_PROPERTY_OF_SCRIPT, ///< a property of a script & base
-	};
-
-private:
-	Type hint;
-	PropertySelector *selector = nullptr;
-	Button *property = nullptr;
-	String hint_text;
-
-	void _property_selected(const String &p_selected);
-	void _property_select();
-
-protected:
-	virtual void _set_read_only(bool p_read_only) override;
-	static void _bind_methods();
-
-public:
-	void setup(Type p_hint, const String &p_hint_text);
-	virtual void update_property() override;
-	EditorPropertyMember();
-};
-
 class EditorPropertyCheck : public EditorProperty {
 	GDCLASS(EditorPropertyCheck, EditorProperty);
 	CheckBox *checkbox = nullptr;

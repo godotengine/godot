@@ -2794,51 +2794,35 @@
 		</constant>
 		<constant name="PROPERTY_HINT_NODE_PATH_TO_EDITED_NODE" value="24" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_METHOD_OF_VARIANT_TYPE" value="25" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_OBJECT_TOO_BIG" value="25" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_METHOD_OF_BASE_TYPE" value="26" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_NODE_PATH_VALID_TYPES" value="26" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_METHOD_OF_INSTANCE" value="27" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_SAVE_FILE" value="27" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_METHOD_OF_SCRIPT" value="28" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_GLOBAL_SAVE_FILE" value="28" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_PROPERTY_OF_VARIANT_TYPE" value="29" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_INT_IS_OBJECTID" value="29" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_PROPERTY_OF_BASE_TYPE" value="30" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_INT_IS_POINTER" value="30" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_PROPERTY_OF_INSTANCE" value="31" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_ARRAY_TYPE" value="31" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_PROPERTY_OF_SCRIPT" value="32" enum="PropertyHint">
-		</constant>
-		<constant name="PROPERTY_HINT_OBJECT_TOO_BIG" value="33" enum="PropertyHint">
-		</constant>
-		<constant name="PROPERTY_HINT_NODE_PATH_VALID_TYPES" value="34" enum="PropertyHint">
-		</constant>
-		<constant name="PROPERTY_HINT_SAVE_FILE" value="35" enum="PropertyHint">
-		</constant>
-		<constant name="PROPERTY_HINT_GLOBAL_SAVE_FILE" value="36" enum="PropertyHint">
-		</constant>
-		<constant name="PROPERTY_HINT_INT_IS_OBJECTID" value="37" enum="PropertyHint">
-		</constant>
-		<constant name="PROPERTY_HINT_INT_IS_POINTER" value="38" enum="PropertyHint">
-		</constant>
-		<constant name="PROPERTY_HINT_ARRAY_TYPE" value="39" enum="PropertyHint">
-		</constant>
-		<constant name="PROPERTY_HINT_LOCALE_ID" value="40" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_LOCALE_ID" value="32" enum="PropertyHint">
 			Hints that a string property is a locale code. Editing it will show a locale dialog for picking language and country.
 		</constant>
-		<constant name="PROPERTY_HINT_LOCALIZABLE_STRING" value="41" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_LOCALIZABLE_STRING" value="33" enum="PropertyHint">
 			Hints that a dictionary property is string translation map. Dictionary keys are locale codes and, values are translated strings.
 		</constant>
-		<constant name="PROPERTY_HINT_NODE_TYPE" value="42" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_NODE_TYPE" value="34" enum="PropertyHint">
 		</constant>
-		<constant name="PROPERTY_HINT_HIDE_QUATERNION_EDIT" value="43" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_HIDE_QUATERNION_EDIT" value="35" enum="PropertyHint">
 			Hints that a quaternion property should disable the temporary euler editor.
 		</constant>
-		<constant name="PROPERTY_HINT_PASSWORD" value="44" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_PASSWORD" value="36" enum="PropertyHint">
 			Hints that a string property is a password, and every character is replaced with the secret character.
 		</constant>
-		<constant name="PROPERTY_HINT_MAX" value="45" enum="PropertyHint">
+		<constant name="PROPERTY_HINT_MAX" value="37" enum="PropertyHint">
 		</constant>
 		<constant name="PROPERTY_USAGE_NONE" value="0" enum="PropertyUsageFlags" is_bitfield="true">
 			The property is not stored, and does not display in the editor. This is the default for non-exported properties.
@@ -2849,14 +2833,13 @@
 		<constant name="PROPERTY_USAGE_EDITOR" value="4" enum="PropertyUsageFlags" is_bitfield="true">
 			The property is shown in the [EditorInspector] (default).
 		</constant>
-		<constant name="PROPERTY_USAGE_CHECKABLE" value="8" enum="PropertyUsageFlags" is_bitfield="true">
+		<constant name="PROPERTY_USAGE_INTERNAL" value="8" enum="PropertyUsageFlags" is_bitfield="true">
+		</constant>
+		<constant name="PROPERTY_USAGE_CHECKABLE" value="16" enum="PropertyUsageFlags" is_bitfield="true">
 			The property can be checked in the [EditorInspector].
 		</constant>
-		<constant name="PROPERTY_USAGE_CHECKED" value="16" enum="PropertyUsageFlags" is_bitfield="true">
+		<constant name="PROPERTY_USAGE_CHECKED" value="32" enum="PropertyUsageFlags" is_bitfield="true">
 			The property is checked in the [EditorInspector].
-		</constant>
-		<constant name="PROPERTY_USAGE_INTERNATIONALIZED" value="32" enum="PropertyUsageFlags" is_bitfield="true">
-			The property is a translatable string.
 		</constant>
 		<constant name="PROPERTY_USAGE_GROUP" value="64" enum="PropertyUsageFlags" is_bitfield="true">
 			Used to group properties together in the editor. See [EditorInspector].
@@ -2888,7 +2871,8 @@
 		</constant>
 		<constant name="PROPERTY_USAGE_NIL_IS_VARIANT" value="131072" enum="PropertyUsageFlags" is_bitfield="true">
 		</constant>
-		<constant name="PROPERTY_USAGE_INTERNAL" value="262144" enum="PropertyUsageFlags" is_bitfield="true">
+		<constant name="PROPERTY_USAGE_ARRAY" value="262144" enum="PropertyUsageFlags" is_bitfield="true">
+			The property is an array.
 		</constant>
 		<constant name="PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE" value="524288" enum="PropertyUsageFlags" is_bitfield="true">
 			If the property is a [Resource], a new copy of it is always created when calling [method Node.duplicate] or [method Resource.duplicate].
@@ -2911,14 +2895,8 @@
 		<constant name="PROPERTY_USAGE_READ_ONLY" value="134217728" enum="PropertyUsageFlags" is_bitfield="true">
 			The property is read-only in the [EditorInspector].
 		</constant>
-		<constant name="PROPERTY_USAGE_ARRAY" value="268435456" enum="PropertyUsageFlags" is_bitfield="true">
-			The property is an array.
-		</constant>
 		<constant name="PROPERTY_USAGE_DEFAULT" value="6" enum="PropertyUsageFlags" is_bitfield="true">
 			Default usage (storage, editor and network).
-		</constant>
-		<constant name="PROPERTY_USAGE_DEFAULT_INTL" value="38" enum="PropertyUsageFlags" is_bitfield="true">
-			Default usage for translatable strings (storage, editor, network and internationalized).
 		</constant>
 		<constant name="PROPERTY_USAGE_NO_EDITOR" value="2" enum="PropertyUsageFlags" is_bitfield="true">
 			Default usage but without showing the property in the editor (storage, network).
