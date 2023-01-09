@@ -664,7 +664,7 @@
 			<return type="void" />
 			<param index="0" name="callable" type="Callable" />
 			<description>
-				Removes a callback previsously added by [method add_undo_redo_inspector_hook_callback].
+				Removes a callback previously added by [method add_undo_redo_inspector_hook_callback].
 			</description>
 		</method>
 		<method name="set_force_draw_over_forwarding_enabled">

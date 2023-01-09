@@ -55,7 +55,7 @@ in the editor, don't hesitate to include screenshots.
 Making your bug report easy to reproduce will make it easier for contributors
 to fix the bug.
 
-### Provide a simple, example project
+### Provide a simple example project
 
 Sometimes, unexpected behavior can happen in your project. In such case,
 understand that:

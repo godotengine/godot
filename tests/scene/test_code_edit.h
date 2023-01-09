@@ -2894,7 +2894,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 		CHECK(code_edit->get_caret_column() == 6);
 		code_edit->undo();
 
-		// brace completion disbaled
+		// brace completion disabled
 		code_edit->set_auto_brace_completion_enabled(false);
 
 		// Full completion.
@@ -2934,7 +2934,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 		CHECK(code_edit->get_caret_column() == 7);
 		code_edit->undo();
 
-		// brace completion disbaled
+		// brace completion disabled
 		code_edit->set_auto_brace_completion_enabled(false);
 
 		// Full completion.
