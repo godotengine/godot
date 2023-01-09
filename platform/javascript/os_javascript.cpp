@@ -1145,6 +1145,12 @@ Error OS_JavaScript::pwa_update() {
 	return godot_js_pwa_update() ? FAILED : OK;
 }
 
+void OS_JavaScript::force_fs_sync() {
+	if (is_userfs_persistent()) {
+		idb_needs_sync = true;
+	}
+}
+
 bool OS_JavaScript::is_userfs_persistent() const {
 	return idb_available;
 }

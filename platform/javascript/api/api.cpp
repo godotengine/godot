@@ -73,6 +73,7 @@ void JavaScript::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("download_buffer", "buffer", "name", "mime"), &JavaScript::download_buffer, DEFVAL("application/octet-stream"));
 	ClassDB::bind_method(D_METHOD("pwa_needs_update"), &JavaScript::pwa_needs_update);
 	ClassDB::bind_method(D_METHOD("pwa_update"), &JavaScript::pwa_update);
+	ClassDB::bind_method(D_METHOD("force_fs_sync"), &JavaScript::force_fs_sync);
 	ADD_SIGNAL(MethodInfo("pwa_update_available"));
 }
 
@@ -110,6 +111,8 @@ bool JavaScript::pwa_needs_update() const {
 }
 Error JavaScript::pwa_update() {
 	return ERR_UNAVAILABLE;
+}
+void JavaScript::force_fs_sync() {
 }
 void JavaScript::download_buffer(Vector<uint8_t> p_arr, const String &p_name, const String &p_mime) {
 }

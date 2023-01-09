@@ -47,6 +47,13 @@
 				If [code]use_global_execution_context[/code] is [code]true[/code], the code will be evaluated in the global execution context. Otherwise, it is evaluated in the execution context of a function within the engine's runtime environment.
 			</description>
 		</method>
+		<method name="force_fs_sync">
+			<return type="void" />
+			<description>
+				Force synchronization of the persistent file system (when enabled).
+				[b]Note:[/b] This is only useful for modules or extensions that can't use [File] to write files.
+			</description>
+		</method>
 		<method name="get_interface">
 			<return type="JavaScriptObject" />
 			<argument index="0" name="interface" type="String" />

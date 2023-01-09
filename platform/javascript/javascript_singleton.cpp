@@ -351,6 +351,11 @@ void JavaScript::download_buffer(Vector<uint8_t> p_arr, const String &p_name, co
 bool JavaScript::pwa_needs_update() const {
 	return OS_JavaScript::get_singleton()->pwa_needs_update();
 }
+
+void JavaScript::force_fs_sync() {
+	OS_JavaScript::get_singleton()->force_fs_sync();
+}
+
 Error JavaScript::pwa_update() {
 	return OS_JavaScript::get_singleton()->pwa_update();
 }
