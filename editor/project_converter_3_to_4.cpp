@@ -122,9 +122,6 @@ static const char *enum_renames[][2] = {
 	{ "JOINT_SLIDER", "JOINT_TYPE_SLIDER" }, // PhysicsServer3D
 	{ "KEY_CONTROL", "KEY_CTRL" }, // Globals
 	{ "LOOP_PING_PONG", "LOOP_PINGPONG" }, // AudioStreamWAV
-	{ "MATH_RAND", "MATH_RANDF_RANGE" }, // VisualScriptBuiltinFunc
-	{ "MATH_RANDOM", "MATH_RANDI_RANGE" }, // VisualScriptBuiltinFunc
-	{ "MATH_STEPIFY", "MATH_STEP_DECIMALS" }, // VisualScriptBuiltinFunc
 	{ "MODE_KINEMATIC", "FREEZE_MODE_KINEMATIC" }, // RigidBody
 	{ "MODE_OPEN_ANY", "FILE_MODE_OPEN_ANY" }, // FileDialog
 	{ "MODE_OPEN_DIR", "FILE_MODE_OPEN_DIR" }, // FileDialog

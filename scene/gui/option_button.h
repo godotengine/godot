@@ -125,8 +125,6 @@ public:
 	PopupMenu *get_popup() const;
 	void show_popup();
 
-	virtual void get_translatable_strings(List<String> *p_strings) const override;
-
 	OptionButton(const String &p_text = String());
 	~OptionButton();
 };

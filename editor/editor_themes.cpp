@@ -133,25 +133,26 @@ void EditorColorMap::create() {
 	add_conversion_color_pair("#0e71fc", "#0350bd"); // New Autotile
 	add_conversion_color_pair("#c6ced4", "#828f9b"); // New Atlas
 
-	// Visual script
-	add_conversion_color_pair("#41ecad", "#25e3a0"); // VisualScript variant
-	add_conversion_color_pair("#6f91f0", "#6d8eeb"); // VisualScript bool
-	add_conversion_color_pair("#5abbef", "#4fb2e9"); // VisualScript int
-	add_conversion_color_pair("#35d4f4", "#27ccf0"); // VisualScript float
-	add_conversion_color_pair("#4593ec", "#4690e7"); // VisualScript String
-	add_conversion_color_pair("#ac73f1", "#ad76ee"); // VisualScript Vector2
-	add_conversion_color_pair("#f1738f", "#ee758e"); // VisualScript Rect2
-	add_conversion_color_pair("#de66f0", "#dc6aed"); // VisualScript Vector3
-	add_conversion_color_pair("#b9ec41", "#96ce1a"); // VisualScript Transform2D
-	add_conversion_color_pair("#f74949", "#f77070"); // VisualScript Plane
-	add_conversion_color_pair("#ec418e", "#ec69a3"); // VisualScript Quat
-	add_conversion_color_pair("#ee5677", "#ee7991"); // VisualScript AABB
-	add_conversion_color_pair("#e1ec41", "#b2bb19"); // VisualScript Basis
-	add_conversion_color_pair("#f68f45", "#f49047"); // VisualScript Transform
-	add_conversion_color_pair("#417aec", "#6993ec"); // VisualScript NodePath
-	add_conversion_color_pair("#41ec80", "#2ce573"); // VisualScript RID
-	add_conversion_color_pair("#55f3e3", "#12d5c3"); // VisualScript Object
-	add_conversion_color_pair("#54ed9e", "#57e99f"); // VisualScript Dictionary
+	// Variant types
+	add_conversion_color_pair("#41ecad", "#25e3a0"); // Variant
+	add_conversion_color_pair("#6f91f0", "#6d8eeb"); // bool
+	add_conversion_color_pair("#5abbef", "#4fb2e9"); // int
+	add_conversion_color_pair("#35d4f4", "#27ccf0"); // float
+	add_conversion_color_pair("#4593ec", "#4690e7"); // String
+	add_conversion_color_pair("#ac73f1", "#ad76ee"); // Vector2
+	add_conversion_color_pair("#f1738f", "#ee758e"); // Rect2
+	add_conversion_color_pair("#de66f0", "#dc6aed"); // Vector3
+	add_conversion_color_pair("#b9ec41", "#96ce1a"); // Transform2D
+	add_conversion_color_pair("#f74949", "#f77070"); // Plane
+	add_conversion_color_pair("#ec418e", "#ec69a3"); // Quaternion
+	add_conversion_color_pair("#ee5677", "#ee7991"); // AABB
+	add_conversion_color_pair("#e1ec41", "#b2bb19"); // Basis
+	add_conversion_color_pair("#f68f45", "#f49047"); // Transform3D
+	add_conversion_color_pair("#417aec", "#6993ec"); // NodePath
+	add_conversion_color_pair("#41ec80", "#2ce573"); // RID
+	add_conversion_color_pair("#55f3e3", "#12d5c3"); // Object
+	add_conversion_color_pair("#54ed9e", "#57e99f"); // Dictionary
+
 	// Visual shaders
 	add_conversion_color_pair("#77ce57", "#67c046"); // Vector funcs
 	add_conversion_color_pair("#ea686c", "#d95256"); // Vector transforms

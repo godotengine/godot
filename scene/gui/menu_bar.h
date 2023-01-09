@@ -170,7 +170,6 @@ public:
 
 	PopupMenu *get_menu_popup(int p_menu) const;
 
-	virtual void get_translatable_strings(List<String> *p_strings) const override;
 	virtual String get_tooltip(const Point2 &p_pos) const override;
 
 	MenuBar();

@@ -147,8 +147,6 @@ public:
 
 	virtual Size2 get_minimum_size() const override;
 
-	virtual void get_translatable_strings(List<String> *p_strings) const override;
-
 	void set_popup(Node *p_popup);
 	Popup *get_popup() const;
 

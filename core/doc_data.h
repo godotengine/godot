@@ -378,7 +378,6 @@ public:
 	struct ClassDoc {
 		String name;
 		String inherits;
-		String category; // FIXME: Wrongly used by VisualScriptPropertySelector, should be removed.
 		String brief_description;
 		String description;
 		Vector<TutorialDoc> tutorials;
@@ -407,10 +406,6 @@ public:
 
 			if (p_dict.has("inherits")) {
 				doc.inherits = p_dict["inherits"];
-			}
-
-			if (p_dict.has("category")) {
-				doc.category = p_dict["category"];
 			}
 
 			if (p_dict.has("brief_description")) {
