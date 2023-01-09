@@ -935,7 +935,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 	tree->set_select_mode(Tree::SELECT_MULTI);
 	tree->set_allow_reselect(true);
 
-	tree->set_drag_forwarding(this);
+	tree->set_drag_forwarding_compat(this);
 
 	tree->set_columns(4);
 	tree->set_column_titles_visible(true);

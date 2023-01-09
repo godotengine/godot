@@ -4921,7 +4921,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 
 	c->add_child(viewport);
 	surface = memnew(Control);
-	surface->set_drag_forwarding(this);
+	surface->set_drag_forwarding_compat(this);
 	add_child(surface);
 	surface->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	surface->set_clip_contents(true);

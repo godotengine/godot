@@ -250,7 +250,7 @@ ReplicationEditor::ReplicationEditor() {
 	tree->add_child(drop_label);
 	drop_label->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 
-	tree->set_drag_forwarding(this);
+	tree->set_drag_forwarding_compat(this);
 }
 
 void ReplicationEditor::_bind_methods() {

@@ -780,67 +780,13 @@
 		</method>
 		<method name="set_drag_forwarding">
 			<return type="void" />
-			<param index="0" name="target" type="Object" />
+			<param index="0" name="drag_func" type="Callable" />
+			<param index="1" name="can_drop_func" type="Callable" />
+			<param index="2" name="drop_func" type="Callable" />
 			<description>
-				Forwards the handling of this control's drag and drop to [param target] object.
-				Forwarding can be implemented in the target object similar to the methods [method _get_drag_data], [method _can_drop_data], and [method _drop_data] but with two differences:
-				1. The function name must be suffixed with [b]_fw[/b]
-				2. The function must take an extra argument that is the control doing the forwarding
-				[codeblocks]
-				[gdscript]
-				# ThisControl.gd
-				extends Control
-				export(Control) var target_control
-
-				func _ready():
-				    set_drag_forwarding(target_control)
-
-				# TargetControl.gd
-				extends Control
-
-				func _can_drop_data_fw(position, data, from_control):
-				    return true
-
-				func _drop_data_fw(position, data, from_control):
-				    my_handle_data(data) # Your handler method.
-
-				func _get_drag_data_fw(position, from_control):
-				    set_drag_preview(my_preview)
-				    return my_data()
-				[/gdscript]
-				[csharp]
-				// ThisControl.cs
-				public class ThisControl : Control
-				{
-				    [Export]
-				    public Control TargetControl { get; set; }
-				    public override void _Ready()
-				    {
-				        SetDragForwarding(TargetControl);
-				    }
-				}
-
-				// TargetControl.cs
-				public class TargetControl : Control
-				{
-				    public void CanDropDataFw(Vector2 position, object data, Control fromControl)
-				    {
-				        return true;
-				    }
-
-				    public void DropDataFw(Vector2 position, object data, Control fromControl)
-				    {
-				        MyHandleData(data); // Your handler method.
-				    }
-
-				    public void GetDragDataFw(Vector2 position, Control fromControl)
-				    {
-				        SetDragPreview(MyPreview);
-				        return MyData();
-				    }
-				}
-				[/csharp]
-				[/codeblocks]
+				Forwards the handling of this control's [method _get_drag_data],  [method _can_drop_data] and [method _drop_data] virtual functions to delegate callables.
+				For each argument, if not empty, the delegate callable is used, otherwise the local (virtual) function is used.
+				The function format for each callable should be exactly the same as the virtual functions described above.
 			</description>
 		</method>
 		<method name="set_drag_preview">

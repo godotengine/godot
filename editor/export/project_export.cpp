@@ -1023,7 +1023,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	mc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	presets = memnew(ItemList);
 	// TODO: Must reimplement drag forwarding.
-	//presets->set_drag_forwarding(this);
+	//presets->set_drag_forwarding_compat(this);
 	mc->add_child(presets);
 	presets->connect("item_selected", callable_mp(this, &ProjectExportDialog::_edit_preset));
 	duplicate_preset = memnew(Button);

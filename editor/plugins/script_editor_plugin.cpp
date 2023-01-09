@@ -3669,7 +3669,7 @@ ScriptEditor::ScriptEditor() {
 	_sort_list_on_update = true;
 	script_list->connect("item_clicked", callable_mp(this, &ScriptEditor::_script_list_clicked), CONNECT_DEFERRED);
 	script_list->set_allow_rmb_select(true);
-	script_list->set_drag_forwarding(this);
+	script_list->set_drag_forwarding_compat(this);
 
 	context_menu = memnew(PopupMenu);
 	add_child(context_menu);
