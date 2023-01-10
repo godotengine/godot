@@ -210,6 +210,11 @@ Vector2 GodotPhysicsDirectBodyState2D::get_contact_collider_velocity_at_position
 	return body->contacts[p_contact_idx].collider_velocity_at_pos;
 }
 
+Vector2 GodotPhysicsDirectBodyState2D::get_contact_impulse(int p_contact_idx) const {
+	ERR_FAIL_INDEX_V(p_contact_idx, body->contact_count, Vector2());
+	return body->contacts[p_contact_idx].impulse;
+}
+
 PhysicsDirectSpaceState2D *GodotPhysicsDirectBodyState2D::get_space_state() {
 	return body->get_space()->get_direct_state();
 }

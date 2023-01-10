@@ -130,6 +130,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="_get_contact_impulse" qualifiers="virtual const">
+			<return type="Vector2" />
+			<param index="0" name="contact_idx" type="int" />
+			<description>
+			</description>
+		</method>
 		<method name="_get_contact_local_normal" qualifiers="virtual const">
 			<return type="Vector2" />
 			<param index="0" name="contact_idx" type="int" />

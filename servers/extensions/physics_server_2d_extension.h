@@ -100,6 +100,7 @@ public:
 	EXBIND1RC(Object *, get_contact_collider_object, int)
 	EXBIND1RC(int, get_contact_collider_shape, int)
 	EXBIND1RC(Vector2, get_contact_collider_velocity_at_position, int)
+	EXBIND1RC(Vector2, get_contact_impulse, int)
 
 	EXBIND0RC(real_t, get_step)
 	EXBIND0(integrate_forces)

@@ -101,6 +101,7 @@ void PhysicsDirectBodyState2DExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_get_contact_collider_object, "contact_idx");
 	GDVIRTUAL_BIND(_get_contact_collider_shape, "contact_idx");
 	GDVIRTUAL_BIND(_get_contact_collider_velocity_at_position, "contact_idx");
+	GDVIRTUAL_BIND(_get_contact_impulse, "contact_idx");
 
 	GDVIRTUAL_BIND(_get_step);
 	GDVIRTUAL_BIND(_integrate_forces);

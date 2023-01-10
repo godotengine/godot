@@ -151,6 +151,13 @@
 				[b]Note:[/b] By default, this returns 0 unless bodies are configured to monitor contacts. See [member RigidBody2D.contact_monitor].
 			</description>
 		</method>
+		<method name="get_contact_impulse" qualifiers="const">
+			<return type="Vector2" />
+			<param index="0" name="contact_idx" type="int" />
+			<description>
+				Returns the impulse created by the contact.
+			</description>
+		</method>
 		<method name="get_contact_local_normal" qualifiers="const">
 			<return type="Vector2" />
 			<param index="0" name="contact_idx" type="int" />

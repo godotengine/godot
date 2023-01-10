@@ -59,6 +59,7 @@ class GodotBodyPair2D : public GodotConstraint2D {
 		Vector2 position;
 		Vector2 normal;
 		Vector2 local_A, local_B;
+		Vector2 acc_impulse; // accumulated impulse
 		real_t acc_normal_impulse = 0.0; // accumulated normal impulse (Pn)
 		real_t acc_tangent_impulse = 0.0; // accumulated tangent impulse (Pt)
 		real_t acc_bias_impulse = 0.0; // accumulated normal impulse for position bias (Pnb)
