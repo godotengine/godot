@@ -974,15 +974,6 @@ void DisplayServerWindows::window_set_current_screen(int p_screen, WindowID p_wi
 		wpos.y = CLAMP(wpos.y, srect.position.y, srect.position.y + srect.size.height - wsize.height / 3);
 		window_set_position(wpos, p_window);
 	}
-
-	// Don't let the mouse leave the window when resizing to a smaller resolution.
-	if (mouse_mode == MOUSE_MODE_CONFINED || mouse_mode == MOUSE_MODE_CONFINED_HIDDEN) {
-		RECT crect;
-		GetClientRect(wd.hWnd, &crect);
-		ClientToScreen(wd.hWnd, (POINT *)&crect.left);
-		ClientToScreen(wd.hWnd, (POINT *)&crect.right);
-		ClipCursor(&crect);
-	}
 }
 
 Point2i DisplayServerWindows::window_get_position(WindowID p_window) const {
@@ -1059,15 +1050,6 @@ void DisplayServerWindows::window_set_position(const Point2i &p_position, Window
 
 	AdjustWindowRectEx(&rc, style, false, exStyle);
 	MoveWindow(wd.hWnd, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, TRUE);
-
-	// Don't let the mouse leave the window when moved.
-	if (mouse_mode == MOUSE_MODE_CONFINED || mouse_mode == MOUSE_MODE_CONFINED_HIDDEN) {
-		RECT rect;
-		GetClientRect(wd.hWnd, &rect);
-		ClientToScreen(wd.hWnd, (POINT *)&rect.left);
-		ClientToScreen(wd.hWnd, (POINT *)&rect.right);
-		ClipCursor(&rect);
-	}
 
 	wd.last_pos = p_position;
 	_update_real_mouse_position(p_window);
@@ -1210,15 +1192,6 @@ void DisplayServerWindows::window_set_size(const Size2i p_size, WindowID p_windo
 	}
 
 	MoveWindow(wd.hWnd, rect.left, rect.top, w, h, TRUE);
-
-	// Don't let the mouse leave the window when resizing to a smaller resolution.
-	if (mouse_mode == MOUSE_MODE_CONFINED || mouse_mode == MOUSE_MODE_CONFINED_HIDDEN) {
-		RECT crect;
-		GetClientRect(wd.hWnd, &crect);
-		ClientToScreen(wd.hWnd, (POINT *)&crect.left);
-		ClientToScreen(wd.hWnd, (POINT *)&crect.right);
-		ClipCursor(&crect);
-	}
 }
 
 Size2i DisplayServerWindows::window_get_size(WindowID p_window) const {
@@ -1405,15 +1378,6 @@ void DisplayServerWindows::window_set_mode(WindowMode p_mode, WindowID p_window)
 		if (restore_mouse_trails > 1) {
 			SystemParametersInfoA(SPI_SETMOUSETRAILS, 0, 0, 0);
 		}
-	}
-
-	// Don't let the mouse leave the window when resizing to a smaller resolution.
-	if (mouse_mode == MOUSE_MODE_CONFINED || mouse_mode == MOUSE_MODE_CONFINED_HIDDEN) {
-		RECT crect;
-		GetClientRect(wd.hWnd, &crect);
-		ClientToScreen(wd.hWnd, (POINT *)&crect.left);
-		ClientToScreen(wd.hWnd, (POINT *)&crect.right);
-		ClipCursor(&crect);
 	}
 }
 
@@ -3277,6 +3241,15 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 					Variant ret;
 					Callable::CallError ce;
 					window.rect_changed_callback.callp(args, 1, ret, ce);
+				}
+
+				// Update cursor clip region after window rect has changed.
+				if (mouse_mode == MOUSE_MODE_CAPTURED || mouse_mode == MOUSE_MODE_CONFINED || mouse_mode == MOUSE_MODE_CONFINED_HIDDEN) {
+					RECT crect;
+					GetClientRect(window.hWnd, &crect);
+					ClientToScreen(window.hWnd, (POINT *)&crect.left);
+					ClientToScreen(window.hWnd, (POINT *)&crect.right);
+					ClipCursor(&crect);
 				}
 			}
 
