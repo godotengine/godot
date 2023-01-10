@@ -2168,6 +2168,14 @@ ScriptTextEditor::ScriptTextEditor() {
 	connection_info_dialog = memnew(ConnectionInfoDialog);
 
 	code_editor->get_text_editor()->set_drag_forwarding(this);
+
+	// Connect to signal text_changed to apply source code
+	code_editor->get_text_editor()->connect("text_changed", callable_mp(this, &ScriptTextEditor::_on_text_changed));
+}
+
+// Callback method for signal text_changed
+void ScriptTextEditor::_on_text_changed() {
+	apply_code();
 }
 
 ScriptTextEditor::~ScriptTextEditor() {

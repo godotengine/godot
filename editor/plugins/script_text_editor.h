@@ -153,7 +153,10 @@ class ScriptTextEditor : public ScriptEditorBase {
 	};
 
 	void _enable_code_editor();
-
+    
+    // On every change to the script editor, execute this connected method
+    virtual void _on_text_changed();
+    
 protected:
 	void _update_breakpoint_list();
 	void _breakpoint_item_pressed(int p_idx);
