@@ -1,0 +1,6 @@
+GDTEST_RUNTIME_ERROR
+>> SCRIPT ERROR
+>> on function: test()
+>> analyzer/errors/outer_class_instance_constants.gd
+>> 8
+>> Invalid get index 'OUTER_CONST' (on base: 'RefCounted (Inner)').
