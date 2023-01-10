@@ -993,6 +993,10 @@ void SceneTreeEditor::_renamed() {
 	}
 
 	if (new_name == n->get_name()) {
+		if (which->get_text(0).is_empty()) {
+			which->set_text(0, new_name);
+		}
+
 		return;
 	}
 
