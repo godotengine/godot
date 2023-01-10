@@ -2110,14 +2110,14 @@ void GDScriptAnalyzer::reduce_assignment(GDScriptParser::AssignmentNode *p_assig
 
 	bool compatible = true;
 	GDScriptParser::DataType op_type = assigned_value_type;
-	if (p_assignment->operation != GDScriptParser::AssignmentNode::OP_NONE) {
+	if (p_assignment->operation != GDScriptParser::AssignmentNode::OP_NONE && !op_type.is_variant()) {
 		op_type = get_operation_type(p_assignment->variant_op, assignee_type, assigned_value_type, compatible, p_assignment->assigned_value);
 	}
 	p_assignment->set_datatype(op_type);
 
 	// If Assignee is a variant, then you can assign anything
 	// When the assigned value has a known type, further checks are possible.
-	if (assignee_type.is_hard_type() && !assignee_type.is_variant() && op_type.is_hard_type()) {
+	if (assignee_type.is_hard_type() && !assignee_type.is_variant() && op_type.is_hard_type() && !op_type.is_variant()) {
 		if (compatible) {
 			compatible = is_type_compatible(assignee_type, op_type, true, p_assignment->assigned_value);
 			if (!compatible) {
