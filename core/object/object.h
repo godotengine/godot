@@ -109,7 +109,7 @@ enum PropertyUsageFlags {
 	PROPERTY_USAGE_CLASS_IS_ENUM = 1 << 16,
 	PROPERTY_USAGE_NIL_IS_VARIANT = 1 << 17,
 	PROPERTY_USAGE_ARRAY = 1 << 18, // Used in the inspector to group properties as elements of an array.
-	PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE = 1 << 19, // If the object is duplicated also this property will be duplicated.
+	PROPERTY_USAGE_ALWAYS_DUPLICATE = 1 << 19, // When duplicating a resource, always duplicate, even with subresource duplication disabled.
 	PROPERTY_USAGE_HIGH_END_GFX = 1 << 20,
 	PROPERTY_USAGE_NODE_PATH_FROM_SCENE_ROOT = 1 << 21,
 	PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT = 1 << 22,

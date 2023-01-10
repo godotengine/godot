@@ -111,7 +111,7 @@ namespace Godot.SourceGenerators
         ClassIsEnum = 65536,
         NilIsVariant = 131072,
         Array = 262144,
-        DoNotShareOnDuplicate = 524288,
+        AlwaysDuplicate = 524288,
         HighEndGfx = 1048576,
         NodePathFromSceneRoot = 2097152,
         ResourceNotPersistent = 4194304,
