@@ -92,8 +92,8 @@ public:
 	virtual Vector2 get_contact_collider_position(int p_contact_idx) const override;
 	virtual ObjectID get_contact_collider_id(int p_contact_idx) const override;
 	virtual int get_contact_collider_shape(int p_contact_idx) const override;
-
 	virtual Vector2 get_contact_collider_velocity_at_position(int p_contact_idx) const override;
+	virtual Vector2 get_contact_impulse(int p_contact_idx) const override;
 
 	virtual PhysicsDirectSpaceState2D *get_space_state() override;
 
