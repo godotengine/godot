@@ -601,14 +601,14 @@ Error ResourceLoaderText::load() {
 
 		resource_current++;
 
+		if (progress && resources_total > 0) {
+			*progress = resource_current / float(resources_total);
+		}
+
 		int_resources[id] = res; //always assign int resources
-		if (do_assign) {
-			if (cache_mode == ResourceFormatLoader::CACHE_MODE_IGNORE) {
-				res->set_path(path);
-			} else {
-				res->set_path(path, cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE);
-				res->set_scene_unique_id(id);
-			}
+		if (do_assign && cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE) {
+			res->set_path(path, cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE);
+			res->set_scene_unique_id(id);
 		}
 
 		Dictionary missing_resource_properties;
@@ -663,10 +663,6 @@ Error ResourceLoaderText::load() {
 		if (!missing_resource_properties.is_empty()) {
 			res->set_meta(META_MISSING_RESOURCES, missing_resource_properties);
 		}
-
-		if (progress && resources_total > 0) {
-			*progress = resource_current / float(resources_total);
-		}
 	}
 
 	while (true) {
@@ -715,8 +711,6 @@ Error ResourceLoaderText::load() {
 
 			resource = Ref<Resource>(r);
 		}
-
-		resource_current++;
 
 		Dictionary missing_resource_properties;
 
@@ -770,6 +764,12 @@ Error ResourceLoaderText::load() {
 			}
 		}
 
+		resource_current++;
+
+		if (progress && resources_total > 0) {
+			*progress = resource_current / float(resources_total);
+		}
+
 		if (missing_resource) {
 			missing_resource->set_recording_properties(false);
 		}
@@ -779,9 +779,6 @@ Error ResourceLoaderText::load() {
 		}
 
 		error = OK;
-		if (progress && resources_total > 0) {
-			*progress = resource_current / float(resources_total);
-		}
 
 		return error;
 	}
