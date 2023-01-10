@@ -37,6 +37,7 @@
 #include "scene/main/scene_tree.h"
 
 class Viewport;
+class Window;
 class SceneState;
 class Tween;
 class PropertyTweener;
@@ -320,6 +321,8 @@ public:
 	virtual void reparent(Node *p_parent, bool p_keep_global_transform = true);
 	Node *get_parent() const;
 	Node *find_parent(const String &p_pattern) const;
+
+	Window *get_window() const;
 
 	_FORCE_INLINE_ SceneTree *get_tree() const {
 		ERR_FAIL_COND_V(!data.tree, nullptr);

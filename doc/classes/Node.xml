@@ -421,6 +421,12 @@
 				Returns the node's [Viewport].
 			</description>
 		</method>
+		<method name="get_window" qualifiers="const">
+			<return type="Window" />
+			<description>
+				Returns the [Window] that contains this node. If the node is in the main window, this is equivalent to getting the root node ([code]get_tree().get_root()[/code]).
+			</description>
+		</method>
 		<method name="has_node" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="path" type="NodePath" />
