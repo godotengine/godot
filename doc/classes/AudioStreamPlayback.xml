@@ -56,4 +56,11 @@
 			</description>
 		</method>
 	</methods>
+	<signals>
+		<signal name="looped">
+			<description>
+				Emitted when the audio loops.
+			</description>
+		</signal>
+	</signals>
 </class>

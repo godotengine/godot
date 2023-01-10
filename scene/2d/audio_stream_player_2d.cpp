@@ -78,6 +78,7 @@ void AudioStreamPlayer2D::_notification(int p_what) {
 				ERR_FAIL_COND_MSG(new_playback.is_null(), "Failed to instantiate playback.");
 				AudioServer::get_singleton()->start_playback_stream(new_playback, _get_actual_bus(), volume_vector, setplay.get(), pitch_scale);
 				stream_playbacks.push_back(new_playback);
+				new_playback->connect(SNAME("looped"), callable_mp(this, &AudioStreamPlayer2D::_looped), CONNECT_REFERENCE_COUNTED);
 				setplay.set(-1);
 			}
 
@@ -92,6 +93,7 @@ void AudioStreamPlayer2D::_notification(int p_what) {
 				// Now go through and remove playbacks that have finished. Removing elements from a Vector in a range based for is asking for trouble.
 				for (Ref<AudioStreamPlayback> &playback : playbacks_to_remove) {
 					stream_playbacks.erase(playback);
+					playback->disconnect(SNAME("looped"), callable_mp(this, &AudioStreamPlayer2D::_looped));
 				}
 				if (!playbacks_to_remove.is_empty() && stream_playbacks.is_empty()) {
 					// This node is no longer actively playing audio.
@@ -350,6 +352,10 @@ void AudioStreamPlayer2D::_bus_layout_changed() {
 	notify_property_list_changed();
 }
 
+void AudioStreamPlayer2D::_looped() {
+	emit_signal(SNAME("looped"));
+}
+
 void AudioStreamPlayer2D::set_max_distance(float p_pixels) {
 	ERR_FAIL_COND(p_pixels <= 0.0);
 	max_distance = p_pixels;
@@ -476,6 +482,7 @@ void AudioStreamPlayer2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "area_mask", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_area_mask", "get_area_mask");
 
 	ADD_SIGNAL(MethodInfo("finished"));
+	ADD_SIGNAL(MethodInfo("looped"));
 }
 
 AudioStreamPlayer2D::AudioStreamPlayer2D() {

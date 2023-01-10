@@ -53,6 +53,7 @@ void AudioStreamPlayer::_notification(int p_what) {
 			// Now go through and remove playbacks that have finished. Removing elements from a Vector in a range based for is asking for trouble.
 			for (Ref<AudioStreamPlayback> &playback : playbacks_to_remove) {
 				stream_playbacks.erase(playback);
+				playback->disconnect(SNAME("looped"), callable_mp(this, &AudioStreamPlayer::_looped));
 			}
 			if (!playbacks_to_remove.is_empty() && stream_playbacks.is_empty()) {
 				// This node is no longer actively playing audio.
@@ -146,6 +147,7 @@ void AudioStreamPlayer::play(float p_from_pos) {
 
 	AudioServer::get_singleton()->start_playback_stream(stream_playback, bus, _get_volume_vector(), p_from_pos, pitch_scale);
 	stream_playbacks.push_back(stream_playback);
+	stream_playback->connect(SNAME("looped"), callable_mp(this, &AudioStreamPlayer::_looped), CONNECT_REFERENCE_COUNTED);
 	active.set();
 	set_process_internal(true);
 	while (stream_playbacks.size() > max_polyphony) {
@@ -307,6 +309,10 @@ void AudioStreamPlayer::_bus_layout_changed() {
 	notify_property_list_changed();
 }
 
+void AudioStreamPlayer::_looped() {
+	emit_signal(SNAME("looped"));
+}
+
 Ref<AudioStreamPlayback> AudioStreamPlayer::get_stream_playback() {
 	if (!stream_playbacks.is_empty()) {
 		return stream_playbacks[stream_playbacks.size() - 1];
@@ -362,6 +368,7 @@ void AudioStreamPlayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "bus", PROPERTY_HINT_ENUM, ""), "set_bus", "get_bus");
 
 	ADD_SIGNAL(MethodInfo("finished"));
+	ADD_SIGNAL(MethodInfo("looped"));
 
 	BIND_ENUM_CONSTANT(MIX_TARGET_STEREO);
 	BIND_ENUM_CONSTANT(MIX_TARGET_SURROUND);

@@ -239,6 +239,10 @@ float AudioStreamPlayer3D::_get_attenuation_db(float p_distance) const {
 	return att;
 }
 
+void AudioStreamPlayer3D::_looped() {
+	emit_signal(SNAME("looped"));
+}
+
 void AudioStreamPlayer3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
@@ -292,6 +296,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 				bus_map[_get_actual_bus()] = volume_vector;
 				AudioServer::get_singleton()->start_playback_stream(new_playback, bus_map, setplay.get(), actual_pitch_scale, linear_attenuation, attenuation_filter_cutoff_hz);
 				stream_playbacks.push_back(new_playback);
+				new_playback->connect(SNAME("looped"), callable_mp(this, &AudioStreamPlayer3D::_looped), CONNECT_REFERENCE_COUNTED);
 				setplay.set(-1);
 			}
 
@@ -306,6 +311,7 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 				// Now go through and remove playbacks that have finished. Removing elements from a Vector in a range based for is asking for trouble.
 				for (Ref<AudioStreamPlayback> &playback : playbacks_to_remove) {
 					stream_playbacks.erase(playback);
+					playback->disconnect(SNAME("looped"), callable_mp(this, &AudioStreamPlayer3D::_looped));
 				}
 				if (!playbacks_to_remove.is_empty() && stream_playbacks.is_empty()) {
 					// This node is no longer actively playing audio.
@@ -913,6 +919,7 @@ void AudioStreamPlayer3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(DOPPLER_TRACKING_PHYSICS_STEP);
 
 	ADD_SIGNAL(MethodInfo("finished"));
+	ADD_SIGNAL(MethodInfo("looped"));
 }
 
 AudioStreamPlayer3D::AudioStreamPlayer3D() {

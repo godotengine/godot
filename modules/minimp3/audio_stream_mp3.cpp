@@ -77,7 +77,9 @@ int AudioStreamPlaybackMP3::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 				}
 				loop_fade_remaining = 0;
 				seek(mp3_stream->loop_offset);
+
 				loops++;
+				emit_signal(SNAME("looped"));
 			}
 		}
 
@@ -85,7 +87,9 @@ int AudioStreamPlaybackMP3::_mix_internal(AudioFrame *p_buffer, int p_frames) {
 			//EOF
 			if (mp3_stream->loop) {
 				seek(mp3_stream->loop_offset);
+
 				loops++;
+				emit_signal(SNAME("looped"));
 			} else {
 				frames_mixed_this_step = p_frames - todo;
 				//fill remainder with silence
