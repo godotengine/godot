@@ -39,6 +39,7 @@
 #include "scene/animation/tween.h"
 #include "scene/debugger/scene_debugger.h"
 #include "scene/main/multiplayer_api.h"
+#include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/scene_string_names.h"
 #include "viewport.h"
@@ -1467,6 +1468,14 @@ Node *Node::find_parent(const String &p_pattern) const {
 	return nullptr;
 }
 
+Window *Node::get_window() const {
+	Viewport *vp = get_viewport();
+	if (vp) {
+		return vp->get_base_window();
+	}
+	return nullptr;
+}
+
 bool Node::is_ancestor_of(const Node *p_node) const {
 	ERR_FAIL_NULL_V(p_node, false);
 	Node *p = p_node->data.parent;
@@ -2858,6 +2867,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_physics_process_internal", "enable"), &Node::set_physics_process_internal);
 	ClassDB::bind_method(D_METHOD("is_physics_processing_internal"), &Node::is_physics_processing_internal);
 
+	ClassDB::bind_method(D_METHOD("get_window"), &Node::get_window);
 	ClassDB::bind_method(D_METHOD("get_tree"), &Node::get_tree);
 	ClassDB::bind_method(D_METHOD("create_tween"), &Node::create_tween);
 
