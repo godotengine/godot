@@ -159,7 +159,7 @@ void NavigationRegion3D::_notification(int p_what) {
 			}
 
 #ifdef DEBUG_ENABLED
-			if (NavigationServer3D::get_singleton()->get_debug_enabled()) {
+			if (NavigationServer3D::get_singleton()->get_debug_navigation_enabled()) {
 				_update_debug_mesh();
 			}
 #endif // DEBUG_ENABLED
@@ -210,7 +210,7 @@ void NavigationRegion3D::set_navigation_mesh(const Ref<NavigationMesh> &p_naviga
 	NavigationServer3D::get_singleton()->region_set_navigation_mesh(region, p_navigation_mesh);
 
 #ifdef DEBUG_ENABLED
-	if (is_inside_tree() && NavigationServer3D::get_singleton()->get_debug_enabled()) {
+	if (is_inside_tree() && NavigationServer3D::get_singleton()->get_debug_navigation_enabled()) {
 		if (navigation_mesh.is_valid()) {
 			_update_debug_mesh();
 			_update_debug_edge_connections_mesh();
@@ -413,7 +413,7 @@ void NavigationRegion3D::_update_debug_mesh() {
 		return;
 	}
 
-	if (!NavigationServer3D::get_singleton()->get_debug_enabled()) {
+	if (!NavigationServer3D::get_singleton()->get_debug_navigation_enabled()) {
 		if (debug_instance.is_valid()) {
 			RS::get_singleton()->instance_set_visible(debug_instance, false);
 		}
@@ -578,7 +578,7 @@ void NavigationRegion3D::_update_debug_mesh() {
 
 #ifdef DEBUG_ENABLED
 void NavigationRegion3D::_update_debug_edge_connections_mesh() {
-	if (!NavigationServer3D::get_singleton()->get_debug_enabled()) {
+	if (!NavigationServer3D::get_singleton()->get_debug_navigation_enabled()) {
 		if (debug_edge_connections_instance.is_valid()) {
 			RS::get_singleton()->instance_set_visible(debug_edge_connections_instance, false);
 		}

@@ -47,6 +47,9 @@ class NavigationAgent2D : public Node {
 	RID map_override;
 
 	bool avoidance_enabled = false;
+	uint32_t avoidance_layers = 1;
+	uint32_t avoidance_mask = 1;
+	real_t avoidance_priority = 1.0;
 	uint32_t navigation_layers = 1;
 	NavigationPathQueryParameters2D::PathfindingAlgorithm pathfinding_algorithm = NavigationPathQueryParameters2D::PathfindingAlgorithm::PATHFINDING_ALGORITHM_ASTAR;
 	NavigationPathQueryParameters2D::PathPostProcessing path_postprocessing = NavigationPathQueryParameters2D::PathPostProcessing::PATH_POSTPROCESSING_CORRIDORFUNNEL;
@@ -57,19 +60,33 @@ class NavigationAgent2D : public Node {
 	real_t radius = 10.0;
 	real_t neighbor_distance = 500.0;
 	int max_neighbors = 10;
-	real_t time_horizon = 1.0;
+	real_t time_horizon_agents = 1.0;
+	real_t time_horizon_obstacles = 0.0;
 	real_t max_speed = 100.0;
 	real_t path_max_distance = 100.0;
 
 	Vector2 target_position;
-	bool target_position_submitted = false;
+
 	Ref<NavigationPathQueryParameters2D> navigation_query;
 	Ref<NavigationPathQueryResult2D> navigation_result;
 	int navigation_path_index = 0;
+
+	// the velocity result of the avoidance simulation step
+	Vector2 safe_velocity;
+
+	/// The submitted target velocity, sets the "wanted" rvo agent velocity on the next update
+	// this velocity is not guaranteed, the simulation will try to fulfil it if possible
+	// if other agents or obstacles interfere it will be changed accordingly
+	Vector2 velocity;
 	bool velocity_submitted = false;
-	Vector2 prev_safe_velocity;
-	/// The submitted target velocity
-	Vector2 target_velocity;
+
+	/// The submitted forced velocity, overrides the rvo agent velocity on the next update
+	// should only be used very intentionally and not every frame as it interferes with the simulation stability
+	Vector2 velocity_forced;
+	bool velocity_forced_submitted = false;
+
+	bool target_position_submitted = false;
+
 	bool target_reached = false;
 	bool navigation_finished = true;
 	// No initialized on purpose
@@ -81,27 +98,27 @@ class NavigationAgent2D : public Node {
 	float debug_path_custom_line_width = -1.0;
 	bool debug_use_custom = false;
 	Color debug_path_custom_color = Color(1.0, 1.0, 1.0, 1.0);
+
 #ifdef DEBUG_ENABLED
 	// Debug properties internal only
 	bool debug_path_dirty = true;
 	RID debug_path_instance;
-
-private:
-	void _navigation_debug_changed();
-	void _update_debug_path();
 #endif // DEBUG_ENABLED
 
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
 
+#ifndef DISABLE_DEPRECATED
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+#endif // DISABLE_DEPRECATED
+
 public:
 	NavigationAgent2D();
 	virtual ~NavigationAgent2D();
 
-	RID get_rid() const {
-		return agent;
-	}
+	RID get_rid() const { return agent; }
 
 	void set_avoidance_enabled(bool p_enabled);
 	bool get_avoidance_enabled() const;
@@ -133,39 +150,28 @@ public:
 	RID get_navigation_map() const;
 
 	void set_path_desired_distance(real_t p_dd);
-	real_t get_path_desired_distance() const {
-		return path_desired_distance;
-	}
+	real_t get_path_desired_distance() const { return path_desired_distance; }
 
 	void set_target_desired_distance(real_t p_dd);
-	real_t get_target_desired_distance() const {
-		return target_desired_distance;
-	}
+	real_t get_target_desired_distance() const { return target_desired_distance; }
 
 	void set_radius(real_t p_radius);
-	real_t get_radius() const {
-		return radius;
-	}
+	real_t get_radius() const { return radius; }
 
 	void set_neighbor_distance(real_t p_distance);
-	real_t get_neighbor_distance() const {
-		return neighbor_distance;
-	}
+	real_t get_neighbor_distance() const { return neighbor_distance; }
 
 	void set_max_neighbors(int p_count);
-	int get_max_neighbors() const {
-		return max_neighbors;
-	}
+	int get_max_neighbors() const { return max_neighbors; }
 
-	void set_time_horizon(real_t p_time);
-	real_t get_time_horizon() const {
-		return time_horizon;
-	}
+	void set_time_horizon_agents(real_t p_time_horizon);
+	real_t get_time_horizon_agents() const { return time_horizon_agents; }
+
+	void set_time_horizon_obstacles(real_t p_time_horizon);
+	real_t get_time_horizon_obstacles() const { return time_horizon_obstacles; }
 
 	void set_max_speed(real_t p_max_speed);
-	real_t get_max_speed() const {
-		return max_speed;
-	}
+	real_t get_max_speed() const { return max_speed; }
 
 	void set_path_max_distance(real_t p_pmd);
 	real_t get_path_max_distance();
@@ -175,15 +181,11 @@ public:
 
 	Vector2 get_next_path_position();
 
-	Ref<NavigationPathQueryResult2D> get_current_navigation_result() const {
-		return navigation_result;
-	}
-	const Vector<Vector2> &get_current_navigation_path() const {
-		return navigation_result->get_path();
-	}
-	int get_current_navigation_path_index() const {
-		return navigation_path_index;
-	}
+	Ref<NavigationPathQueryResult2D> get_current_navigation_result() const { return navigation_result; }
+
+	const Vector<Vector2> &get_current_navigation_path() const { return navigation_result->get_path(); }
+
+	int get_current_navigation_path_index() const { return navigation_path_index; }
 
 	real_t distance_to_target() const;
 	bool is_target_reached() const;
@@ -191,10 +193,29 @@ public:
 	bool is_navigation_finished();
 	Vector2 get_final_position();
 
-	void set_velocity(Vector2 p_velocity);
+	void set_velocity(const Vector2 p_velocity);
+	Vector2 get_velocity() { return velocity; }
+
+	void set_velocity_forced(const Vector2 p_velocity);
+
 	void _avoidance_done(Vector3 p_new_velocity);
 
 	PackedStringArray get_configuration_warnings() const override;
+
+	void set_avoidance_layers(uint32_t p_layers);
+	uint32_t get_avoidance_layers() const;
+
+	void set_avoidance_mask(uint32_t p_mask);
+	uint32_t get_avoidance_mask() const;
+
+	void set_avoidance_layer_value(int p_layer_number, bool p_value);
+	bool get_avoidance_layer_value(int p_layer_number) const;
+
+	void set_avoidance_mask_value(int p_mask_number, bool p_value);
+	bool get_avoidance_mask_value(int p_mask_number) const;
+
+	void set_avoidance_priority(real_t p_priority);
+	real_t get_avoidance_priority() const;
 
 	void set_debug_enabled(bool p_enabled);
 	bool get_debug_enabled() const;
@@ -215,6 +236,11 @@ private:
 	void update_navigation();
 	void _request_repath();
 	void _check_distance_to_target();
+
+#ifdef DEBUG_ENABLED
+	void _navigation_debug_changed();
+	void _update_debug_path();
+#endif // DEBUG_ENABLED
 };
 
 #endif // NAVIGATION_AGENT_2D_H

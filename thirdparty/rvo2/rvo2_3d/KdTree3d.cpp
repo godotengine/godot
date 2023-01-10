@@ -30,19 +30,20 @@
  * <https://gamma.cs.unc.edu/RVO2/>
  */
 
-#include "KdTree.h"
+#include "KdTree3d.h"
 
 #include <algorithm>
 
-#include "Agent.h"
+#include "Agent3d.h"
 #include "Definitions.h"
+#include "RVOSimulator3d.h"
 
-namespace RVO {
+namespace RVO3D {
 	const size_t RVO3D_MAX_LEAF_SIZE = 10;
 
-	KdTree::KdTree() { }
+	KdTree3D::KdTree3D(RVOSimulator3D *sim) : sim_(sim) { }
 
-	void KdTree::buildAgentTree(std::vector<Agent *> agents)
+	void KdTree3D::buildAgentTree(std::vector<Agent3D *> agents)
 	{
 		agents_.swap(agents);
 
@@ -52,7 +53,7 @@ namespace RVO {
 		}
 	}
 
-	void KdTree::buildAgentTreeRecursive(size_t begin, size_t end, size_t node)
+	void KdTree3D::buildAgentTreeRecursive(size_t begin, size_t end, size_t node)
 	{
 		agentTree_[node].begin = begin;
 		agentTree_[node].end = end;
@@ -120,12 +121,12 @@ namespace RVO {
 		}
 	}
 
-	void KdTree::computeAgentNeighbors(Agent *agent, float rangeSq) const
+	void KdTree3D::computeAgentNeighbors(Agent3D *agent, float rangeSq) const
 	{
 		queryAgentTreeRecursive(agent, rangeSq, 0);
 	}
 
-	void KdTree::queryAgentTreeRecursive(Agent *agent, float &rangeSq, size_t node) const
+	void KdTree3D::queryAgentTreeRecursive(Agent3D *agent, float &rangeSq, size_t node) const
 	{
 		if (agentTree_[node].end - agentTree_[node].begin <= RVO3D_MAX_LEAF_SIZE) {
 			for (size_t i = agentTree_[node].begin; i < agentTree_[node].end; ++i) {

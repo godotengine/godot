@@ -1,42 +1,78 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NavigationObstacle3D" inherits="Node" is_experimental="true" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="NavigationObstacle3D" inherits="Node3D" is_experimental="true" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		3D Obstacle used in navigation for collision avoidance.
+		3D Obstacle used in navigation to constrain avoidance controlled agents outside or inside an area.
 	</brief_description>
 	<description>
-		3D Obstacle used in navigation for collision avoidance. The obstacle needs navigation data to work correctly. [NavigationObstacle3D] is physics safe.
-		Obstacles [b]don't[/b] change the resulting path from the pathfinding, they only affect the navigation agent movement in a radius. Therefore, using obstacles for the static walls in your level won't work because those walls don't exist in the pathfinding. The navigation agent will be pushed in a semi-random direction away while moving inside that radius. Obstacles are intended as a last resort option for constantly moving objects that cannot be (re)baked to a navigation mesh efficiently.
+		3D Obstacle used in navigation to constrain avoidance controlled agents outside or inside an area. The obstacle needs a navigation map and outline vertices defined to work correctly.
+		If the obstacle's vertices are winded in clockwise order, avoidance agents will be pushed in by the obstacle, otherwise, avoidance agents will be pushed out. Outlines must not cross or overlap.
+		Obstacles are [b]not[/b] a replacement for a (re)baked navigation mesh. Obstacles [b]don't[/b] change the resulting path from the pathfinding, obstacles only affect the navigation avoidance agent movement by altering the suggested velocity of the avoidance agent.
+		Obstacles using vertices can warp to a new position but should not moved every frame as each move requires a rebuild of the avoidance map.
 	</description>
 	<tutorials>
 		<link title="Using NavigationObstacles">$DOCS_URL/tutorials/navigation/navigation_using_navigationobstacles.html</link>
 	</tutorials>
 	<methods>
+		<method name="get_agent_rid" qualifiers="const">
+			<return type="RID" />
+			<description>
+				Returns the [RID] of this agent on the [NavigationServer3D]. This [RID] is used for the moving avoidance "obstacle" component (using a fake avoidance agent) which size is defined by [member radius] and velocity set by using [member velocity].
+			</description>
+		</method>
+		<method name="get_avoidance_layer_value" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="layer_number" type="int" />
+			<description>
+				Returns whether or not the specified layer of the [member avoidance_layers] bitmask is enabled, given a [param layer_number] between 1 and 32.
+			</description>
+		</method>
 		<method name="get_navigation_map" qualifiers="const">
 			<return type="RID" />
 			<description>
-				Returns the [RID] of the navigation map for this NavigationObstacle node. This function returns always the map set on the NavigationObstacle node and not the map of the abstract agent on the NavigationServer. If the agent map is changed directly with the NavigationServer API the NavigationObstacle node will not be aware of the map change. Use [method set_navigation_map] to change the navigation map for the NavigationObstacle and also update the agent on the NavigationServer.
+				Returns the [RID] of the navigation map for this NavigationObstacle node. This function returns always the map set on the NavigationObstacle node and not the map of the abstract obstacle on the NavigationServer. If the obstacle map is changed directly with the NavigationServer API the NavigationObstacle node will not be aware of the map change. Use [method set_navigation_map] to change the navigation map for the NavigationObstacle and also update the obstacle on the NavigationServer.
 			</description>
 		</method>
-		<method name="get_rid" qualifiers="const">
+		<method name="get_obstacle_rid" qualifiers="const">
 			<return type="RID" />
 			<description>
-				Returns the [RID] of this obstacle on the [NavigationServer3D].
+				Returns the [RID] of this obstacle on the [NavigationServer3D]. This [RID] is used for the static avoidance obstacle component which shape is defined by [member vertices].
+			</description>
+		</method>
+		<method name="set_avoidance_layer_value">
+			<return type="void" />
+			<param index="0" name="layer_number" type="int" />
+			<param index="1" name="value" type="bool" />
+			<description>
+				Based on [param value], enables or disables the specified layer in the [member avoidance_layers] bitmask, given a [param layer_number] between 1 and 32.
 			</description>
 		</method>
 		<method name="set_navigation_map">
 			<return type="void" />
 			<param index="0" name="navigation_map" type="RID" />
 			<description>
-				Sets the [RID] of the navigation map this NavigationObstacle node should use and also updates the [code]agent[/code] on the NavigationServer.
+				Sets the [RID] of the navigation map this NavigationObstacle node should use and also updates the [code]obstacle[/code] on the NavigationServer.
 			</description>
 		</method>
 	</methods>
 	<members>
-		<member name="estimate_radius" type="bool" setter="set_estimate_radius" getter="is_radius_estimated" default="true">
-			Enables radius estimation algorithm which uses parent's collision shapes to determine the obstacle radius.
+		<member name="avoidance_layers" type="int" setter="set_avoidance_layers" getter="get_avoidance_layers" default="1">
+			A bitfield determining the avoidance layers for this obstacle. Agent's with a matching bit on the their avoidance mask will avoid this obstacle.
 		</member>
-		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="1.0">
-			The radius of the agent. Used only if [member estimate_radius] is set to false.
+		<member name="height" type="float" setter="set_height" getter="get_height" default="1.0">
+			Sets the obstacle height used in 2D avoidance. 2D avoidance using agent's ignore obstacles that are below or above them.
+		</member>
+		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="0.0">
+			Sets the avoidance radius for the obstacle.
+		</member>
+		<member name="use_3d_avoidance" type="bool" setter="set_use_3d_avoidance" getter="get_use_3d_avoidance" default="false">
+			If [code]true[/code] the obstacle affects 3D avoidance using agent's with obstacle [member radius].
+			If [code]false[/code] the obstacle affects 2D avoidance using agent's with both obstacle [member vertices] as well as obstacle [member radius].
+		</member>
+		<member name="velocity" type="Vector3" setter="set_velocity" getter="get_velocity" default="Vector3(0, 0, 0)">
+			Sets the wanted velocity for the obstacle so other agent's can better predict the obstacle if it is moved with a velocity regularly (every frame) instead of warped to a new position. Does only affect avoidance for the obstacles [member radius]. Does nothing for the obstacles static vertices.
+		</member>
+		<member name="vertices" type="PackedVector3Array" setter="set_vertices" getter="get_vertices" default="PackedVector3Array()">
+			The outline vertices of the obstacle. If the vertices are winded in clockwise order agents will be pushed in by the obstacle, else they will be pushed out. Outlines can not be crossed or overlap. Should the vertices using obstacle be warped to a new position agent's can not predict this movement and may get trapped inside the obstacle.
 		</member>
 	</members>
 </class>

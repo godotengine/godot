@@ -41,22 +41,19 @@
 
 #include "Vector3.h"
 
-// Note: Slightly modified to work better with Godot.
-// - Removed `sim_`.
-// - KdTree things are public
-namespace RVO {
-	class Agent;
-	class RVOSimulator;
+namespace RVO3D {
+	class Agent3D;
+	class RVOSimulator3D;
 
 	/**
 	 * \brief   Defines <i>k</i>d-trees for agents in the simulation.
 	 */
-	class KdTree {
+	class KdTree3D {
 	public:
 		/**
 		 * \brief   Defines an agent <i>k</i>d-tree node.
 		 */
-		class AgentTreeNode {
+		class AgentTreeNode3D {
 		public:
 			/**
 			 * \brief   The beginning node number.
@@ -93,12 +90,12 @@ namespace RVO {
 		 * \brief   Constructs a <i>k</i>d-tree instance.
 		 * \param   sim  The simulator instance.
 		 */
-		explicit KdTree();
+		explicit KdTree3D(RVOSimulator3D *sim);
 
 		/**
 		 * \brief   Builds an agent <i>k</i>d-tree.
 		 */
-		void buildAgentTree(std::vector<Agent *> agents);
+		void buildAgentTree(std::vector<Agent3D *> agents);
 
 		void buildAgentTreeRecursive(size_t begin, size_t end, size_t node);
 
@@ -107,15 +104,16 @@ namespace RVO {
 		 * \param   agent    A pointer to the agent for which agent neighbors are to be computed.
 		 * \param   rangeSq  The squared range around the agent.
 		 */
-		void computeAgentNeighbors(Agent *agent, float rangeSq) const;
+		void computeAgentNeighbors(Agent3D *agent, float rangeSq) const;
 
-		void queryAgentTreeRecursive(Agent *agent, float &rangeSq, size_t node) const;
+		void queryAgentTreeRecursive(Agent3D *agent, float &rangeSq, size_t node) const;
 
-		std::vector<Agent *> agents_;
-		std::vector<AgentTreeNode> agentTree_;
+		std::vector<Agent3D *> agents_;
+		std::vector<AgentTreeNode3D> agentTree_;
+		RVOSimulator3D *sim_;
 
-		friend class Agent;
-		friend class RVOSimulator;
+		friend class Agent3D;
+		friend class RVOSimulator3D;
 	};
 }
 

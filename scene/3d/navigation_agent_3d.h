@@ -47,6 +47,10 @@ class NavigationAgent3D : public Node {
 	RID map_override;
 
 	bool avoidance_enabled = false;
+	bool use_3d_avoidance = false;
+	uint32_t avoidance_layers = 1;
+	uint32_t avoidance_mask = 1;
+	real_t avoidance_priority = 1.0;
 	uint32_t navigation_layers = 1;
 	NavigationPathQueryParameters3D::PathfindingAlgorithm pathfinding_algorithm = NavigationPathQueryParameters3D::PathfindingAlgorithm::PATHFINDING_ALGORITHM_ASTAR;
 	NavigationPathQueryParameters3D::PathPostProcessing path_postprocessing = NavigationPathQueryParameters3D::PathPostProcessing::PATH_POSTPROCESSING_CORRIDORFUNNEL;
@@ -54,24 +58,41 @@ class NavigationAgent3D : public Node {
 
 	real_t path_desired_distance = 1.0;
 	real_t target_desired_distance = 1.0;
+	real_t height = 1.0;
 	real_t radius = 0.5;
-	real_t navigation_height_offset = 0.0;
-	bool ignore_y = true;
+	real_t path_height_offset = 0.0;
 	real_t neighbor_distance = 50.0;
 	int max_neighbors = 10;
-	real_t time_horizon = 1.0;
+	real_t time_horizon_agents = 1.0;
+	real_t time_horizon_obstacles = 0.0;
 	real_t max_speed = 10.0;
 	real_t path_max_distance = 5.0;
 
 	Vector3 target_position;
-	bool target_position_submitted = false;
+
 	Ref<NavigationPathQueryParameters3D> navigation_query;
 	Ref<NavigationPathQueryResult3D> navigation_result;
 	int navigation_path_index = 0;
+
+	// the velocity result of the avoidance simulation step
+	Vector3 safe_velocity;
+
+	/// The submitted target velocity, sets the "wanted" rvo agent velocity on the next update
+	// this velocity is not guaranteed, the simulation will try to fulfil it if possible
+	// if other agents or obstacles interfere it will be changed accordingly
+	Vector3 velocity;
 	bool velocity_submitted = false;
-	Vector3 prev_safe_velocity;
-	/// The submitted target velocity
-	Vector3 target_velocity;
+
+	/// The submitted forced velocity, overrides the rvo agent velocity on the next update
+	// should only be used very intentionally and not every frame as it interferes with the simulation stability
+	Vector3 velocity_forced;
+	bool velocity_forced_submitted = false;
+
+	// 2D avoidance has no y-axis. This stores and reapplies the y-axis velocity to the agent before and after the avoidance step.
+	// While not perfect it at least looks way better than agent's that clip through everything that is not a flat surface
+	float stored_y_velocity = 0.0;
+
+	bool target_position_submitted = false;
 	bool target_reached = false;
 	bool navigation_finished = true;
 	// No initialized on purpose
@@ -89,23 +110,22 @@ class NavigationAgent3D : public Node {
 	Ref<ArrayMesh> debug_path_mesh;
 	Ref<StandardMaterial3D> debug_agent_path_line_custom_material;
 	Ref<StandardMaterial3D> debug_agent_path_point_custom_material;
-
-private:
-	void _navigation_debug_changed();
-	void _update_debug_path();
 #endif // DEBUG_ENABLED
 
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
 
+#ifndef DISABLE_DEPRECATED
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+#endif // DISABLE_DEPRECATED
+
 public:
 	NavigationAgent3D();
 	virtual ~NavigationAgent3D();
 
-	RID get_rid() const {
-		return agent;
-	}
+	RID get_rid() const { return agent; }
 
 	void set_avoidance_enabled(bool p_enabled);
 	bool get_avoidance_enabled() const;
@@ -137,49 +157,37 @@ public:
 	RID get_navigation_map() const;
 
 	void set_path_desired_distance(real_t p_dd);
-	real_t get_path_desired_distance() const {
-		return path_desired_distance;
-	}
+	real_t get_path_desired_distance() const { return path_desired_distance; }
 
 	void set_target_desired_distance(real_t p_dd);
-	real_t get_target_desired_distance() const {
-		return target_desired_distance;
-	}
+	real_t get_target_desired_distance() const { return target_desired_distance; }
 
 	void set_radius(real_t p_radius);
-	real_t get_radius() const {
-		return radius;
-	}
+	real_t get_radius() const { return radius; }
 
-	void set_agent_height_offset(real_t p_hh);
-	real_t get_agent_height_offset() const {
-		return navigation_height_offset;
-	}
+	void set_height(real_t p_height);
+	real_t get_height() const { return height; }
 
-	void set_ignore_y(bool p_ignore_y);
-	bool get_ignore_y() const {
-		return ignore_y;
-	}
+	void set_path_height_offset(real_t p_path_height_offset);
+	real_t get_path_height_offset() const { return path_height_offset; }
+
+	void set_use_3d_avoidance(bool p_use_3d_avoidance);
+	bool get_use_3d_avoidance() const { return use_3d_avoidance; }
 
 	void set_neighbor_distance(real_t p_distance);
-	real_t get_neighbor_distance() const {
-		return neighbor_distance;
-	}
+	real_t get_neighbor_distance() const { return neighbor_distance; }
 
 	void set_max_neighbors(int p_count);
-	int get_max_neighbors() const {
-		return max_neighbors;
-	}
+	int get_max_neighbors() const { return max_neighbors; }
 
-	void set_time_horizon(real_t p_time);
-	real_t get_time_horizon() const {
-		return time_horizon;
-	}
+	void set_time_horizon_agents(real_t p_time_horizon);
+	real_t get_time_horizon_agents() const { return time_horizon_agents; }
+
+	void set_time_horizon_obstacles(real_t p_time_horizon);
+	real_t get_time_horizon_obstacles() const { return time_horizon_obstacles; }
 
 	void set_max_speed(real_t p_max_speed);
-	real_t get_max_speed() const {
-		return max_speed;
-	}
+	real_t get_max_speed() const { return max_speed; }
 
 	void set_path_max_distance(real_t p_pmd);
 	real_t get_path_max_distance();
@@ -189,15 +197,11 @@ public:
 
 	Vector3 get_next_path_position();
 
-	Ref<NavigationPathQueryResult3D> get_current_navigation_result() const {
-		return navigation_result;
-	}
-	const Vector<Vector3> &get_current_navigation_path() const {
-		return navigation_result->get_path();
-	}
-	int get_current_navigation_path_index() const {
-		return navigation_path_index;
-	}
+	Ref<NavigationPathQueryResult3D> get_current_navigation_result() const { return navigation_result; }
+
+	const Vector<Vector3> &get_current_navigation_path() const { return navigation_result->get_path(); }
+
+	int get_current_navigation_path_index() const { return navigation_path_index; }
 
 	real_t distance_to_target() const;
 	bool is_target_reached() const;
@@ -205,10 +209,29 @@ public:
 	bool is_navigation_finished();
 	Vector3 get_final_position();
 
-	void set_velocity(Vector3 p_velocity);
+	void set_velocity(const Vector3 p_velocity);
+	Vector3 get_velocity() { return velocity; }
+
+	void set_velocity_forced(const Vector3 p_velocity);
+
 	void _avoidance_done(Vector3 p_new_velocity);
 
 	PackedStringArray get_configuration_warnings() const override;
+
+	void set_avoidance_layers(uint32_t p_layers);
+	uint32_t get_avoidance_layers() const;
+
+	void set_avoidance_mask(uint32_t p_mask);
+	uint32_t get_avoidance_mask() const;
+
+	void set_avoidance_layer_value(int p_layer_number, bool p_value);
+	bool get_avoidance_layer_value(int p_layer_number) const;
+
+	void set_avoidance_mask_value(int p_mask_number, bool p_value);
+	bool get_avoidance_mask_value(int p_mask_number) const;
+
+	void set_avoidance_priority(real_t p_priority);
+	real_t get_avoidance_priority() const;
 
 	void set_debug_enabled(bool p_enabled);
 	bool get_debug_enabled() const;
@@ -226,6 +249,11 @@ private:
 	void update_navigation();
 	void _request_repath();
 	void _check_distance_to_target();
+
+#ifdef DEBUG_ENABLED
+	void _navigation_debug_changed();
+	void _update_debug_path();
+#endif // DEBUG_ENABLED
 };
 
 #endif // NAVIGATION_AGENT_3D_H
