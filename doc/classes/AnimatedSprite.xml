@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		[AnimatedSprite] is similar to the [Sprite] node, except it carries multiple textures as animation frames. Animations are created using a [SpriteFrames] resource, which allows you to import image files (or a folder containing said files) to provide the animation frames for the sprite. The [SpriteFrames] resource can be configured in the editor via the SpriteFrames bottom panel.
-		[b]Note:[/b] You can associate a set of normal or specular maps by creating additional [SpriteFrames] resources with a [code]_normal[/code] or [code]_specular[/code] suffix. For example, having 3 [SpriteFrames] resources [code]run[/code], [code]run_normal[/code], and [code]run_specular[/code] will make it so the [code]run[/code] animation uses normal and specular maps.
+		[b]Note:[/b] You can associate a set of normal maps by creating additional animations with a [code]_normal[/code] suffix. For example, having 2 animations [code]run[/code] and [code]run_normal[/code] will make it so the [code]run[/code] animation uses the normal map.
 	</description>
 	<tutorials>
 		<link title="2D Sprite animation">$DOCS_URL/tutorials/2d/2d_sprite_animation.html</link>
