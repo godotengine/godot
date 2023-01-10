@@ -91,6 +91,43 @@ int CallableCustomBind::get_bound_arguments_count() const {
 	return callable.get_bound_arguments_count() + binds.size();
 }
 
+void CallableCustomBind::get_bound_arguments(Vector<Variant> &r_arguments, int &r_argcount) const {
+	Vector<Variant> sub_args;
+	int sub_count;
+	callable.get_bound_arguments_ref(sub_args, sub_count);
+
+	if (sub_count == 0) {
+		r_arguments = binds;
+		r_argcount = binds.size();
+		return;
+	}
+
+	int new_count = sub_count + binds.size();
+	r_argcount = new_count;
+
+	if (new_count <= 0) {
+		// Removed more arguments than it adds.
+		r_arguments = Vector<Variant>();
+		return;
+	}
+
+	r_arguments.resize(new_count);
+
+	if (sub_count > 0) {
+		for (int i = 0; i < sub_count; i++) {
+			r_arguments.write[i] = sub_args[i];
+		}
+		for (int i = 0; i < binds.size(); i++) {
+			r_arguments.write[i + sub_count] = binds[i];
+		}
+		r_argcount = new_count;
+	} else {
+		for (int i = 0; i < binds.size() + sub_count; i++) {
+			r_arguments.write[i] = binds[i - sub_count];
+		}
+	}
+}
+
 void CallableCustomBind::call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const {
 	const Variant **args = (const Variant **)alloca(sizeof(const Variant **) * (binds.size() + p_argcount));
 	for (int i = 0; i < p_argcount; i++) {
@@ -170,6 +207,21 @@ const Callable *CallableCustomUnbind::get_base_comparator() const {
 
 int CallableCustomUnbind::get_bound_arguments_count() const {
 	return callable.get_bound_arguments_count() - argcount;
+}
+
+void CallableCustomUnbind::get_bound_arguments(Vector<Variant> &r_arguments, int &r_argcount) const {
+	Vector<Variant> sub_args;
+	int sub_count;
+	callable.get_bound_arguments_ref(sub_args, sub_count);
+
+	r_argcount = sub_args.size() - argcount;
+
+	if (argcount >= sub_args.size()) {
+		r_arguments = Vector<Variant>();
+	} else {
+		sub_args.resize(sub_args.size() - argcount);
+		r_arguments = sub_args;
+	}
 }
 
 void CallableCustomUnbind::call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const {
