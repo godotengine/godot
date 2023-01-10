@@ -864,6 +864,14 @@ void Control::_set_layout_mode(LayoutMode p_mode) {
 	}
 }
 
+void Control::_update_layout_mode() {
+	LayoutMode computed_layout = _get_layout_mode();
+	if (data.stored_layout_mode != computed_layout) {
+		data.stored_layout_mode = computed_layout;
+		notify_property_list_changed();
+	}
+}
+
 Control::LayoutMode Control::_get_layout_mode() const {
 	Node *parent_node = get_parent_control();
 	// In these modes the property is read-only.
@@ -2870,6 +2878,8 @@ void Control::_notification(int p_notification) {
 			data.parent_window = Object::cast_to<Window>(parent_node);
 
 			data.theme_owner->assign_theme_on_parented(this);
+
+			_update_layout_mode();
 		} break;
 
 		case NOTIFICATION_UNPARENTED: {

@@ -280,6 +280,7 @@ private:
 	void _compute_anchors(Rect2 p_rect, const real_t p_offsets[4], real_t (&r_anchors)[4]);
 
 	void _set_layout_mode(LayoutMode p_mode);
+	void _update_layout_mode();
 	LayoutMode _get_layout_mode() const;
 	LayoutMode _get_default_layout_mode() const;
 	void _set_anchors_layout_preset(int p_preset);
