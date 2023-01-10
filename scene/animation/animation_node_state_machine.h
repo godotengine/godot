@@ -57,6 +57,7 @@ private:
 	StringName advance_condition_name;
 	float xfade_time = 0.0;
 	Ref<Curve> xfade_curve;
+	bool reset = true;
 	int priority = 1;
 	String advance_expression;
 
@@ -83,6 +84,9 @@ public:
 
 	void set_xfade_time(float p_xfade);
 	float get_xfade_time() const;
+
+	void set_reset(bool p_reset);
+	bool is_reset() const;
 
 	void set_xfade_curve(const Ref<Curve> &p_curve);
 	Ref<Curve> get_xfade_curve() const;
@@ -131,10 +135,15 @@ class AnimationNodeStateMachinePlayback : public Resource {
 	bool playing = false;
 
 	StringName start_request;
-	bool start_request_travel = false;
+	StringName travel_request;
+	bool reset_request = false;
+	bool reset_request_on_teleport = false;
+	bool next_request = false;
 	bool stop_request = false;
 
 	bool _travel(AnimationNodeStateMachine *p_state_machine, const StringName &p_travel);
+	void _start(const StringName &p_state);
+	double _process(AnimationNodeStateMachine *p_state_machine, double p_time, bool p_seek, bool p_is_external_seeking);
 
 	double process(AnimationNodeStateMachine *p_state_machine, double p_time, bool p_seek, bool p_is_external_seeking);
 
@@ -144,8 +153,9 @@ protected:
 	static void _bind_methods();
 
 public:
-	void travel(const StringName &p_state);
-	void start(const StringName &p_state);
+	void travel(const StringName &p_state, bool p_reset_on_teleport = true);
+	void start(const StringName &p_state, bool p_reset = true);
+	void next();
 	void stop();
 	bool is_playing() const;
 	StringName get_current_node() const;
