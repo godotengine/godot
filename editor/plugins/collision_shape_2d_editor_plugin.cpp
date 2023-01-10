@@ -356,6 +356,7 @@ bool CollisionShape2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_e
 					return false;
 				}
 
+				original_point = handles[edit_handle];
 				original = get_handle_value(edit_handle);
 				original_transform = node->get_global_transform();
 				last_point = original;
@@ -572,6 +573,11 @@ void CollisionShape2DEditor::edit(Node *p_node) {
 		_get_current_shape_type();
 
 	} else {
+		if (pressed) {
+			set_handle(edit_handle, original_point);
+			pressed = false;
+		}
+
 		edit_handle = -1;
 		shape_type = -1;
 
