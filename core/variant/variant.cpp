@@ -3654,7 +3654,22 @@ String Variant::get_call_error_text(Object *p_base, const StringName &p_method, 
 }
 
 String Variant::get_callable_error_text(const Callable &p_callable, const Variant **p_argptrs, int p_argcount, const Callable::CallError &ce) {
-	return get_call_error_text(p_callable.get_object(), p_callable.get_method(), p_argptrs, p_argcount, ce);
+	Vector<Variant> binds;
+	int args_bound;
+	p_callable.get_bound_arguments_ref(binds, args_bound);
+	if (args_bound <= 0) {
+		return get_call_error_text(p_callable.get_object(), p_callable.get_method(), p_argptrs, MAX(0, p_argcount + args_bound), ce);
+	} else {
+		Vector<const Variant *> argptrs;
+		argptrs.resize(p_argcount + binds.size());
+		for (int i = 0; i < p_argcount; i++) {
+			argptrs.write[i] = p_argptrs[i];
+		}
+		for (int i = 0; i < binds.size(); i++) {
+			argptrs.write[i + p_argcount] = &binds[i];
+		}
+		return get_call_error_text(p_callable.get_object(), p_callable.get_method(), (const Variant **)argptrs.ptr(), argptrs.size(), ce);
+	}
 }
 
 void Variant::register_types() {

@@ -107,6 +107,12 @@
 				Calls the method represented by this [Callable]. Unlike [method call], this method expects all arguments to be contained inside the [param arguments] [Array].
 			</description>
 		</method>
+		<method name="get_bound_arguments" qualifiers="const">
+			<return type="Array" />
+			<description>
+				Return the bound arguments (as long as [method get_bound_arguments_count] is greater than zero), or empty (if [method get_bound_arguments_count] is less than or equal to zero).
+			</description>
+		</method>
 		<method name="get_bound_arguments_count" qualifiers="const">
 			<return type="int" />
 			<description>

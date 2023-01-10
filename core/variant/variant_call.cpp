@@ -2017,6 +2017,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Callable, get_object_id, sarray(), varray());
 	bind_method(Callable, get_method, sarray(), varray());
 	bind_method(Callable, get_bound_arguments_count, sarray(), varray());
+	bind_method(Callable, get_bound_arguments, sarray(), varray());
 	bind_method(Callable, hash, sarray(), varray());
 	bind_method(Callable, bindv, sarray("arguments"), varray());
 	bind_method(Callable, unbind, sarray("argcount"), varray());
