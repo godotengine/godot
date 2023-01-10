@@ -515,6 +515,7 @@ Ref<InputEvent> InputEventConfigurationDialog::get_event() const {
 
 void InputEventConfigurationDialog::set_allowed_input_types(int p_type_masks) {
 	allowed_input_types = p_type_masks;
+	event_listener->set_allowed_input_types(p_type_masks);
 }
 
 InputEventConfigurationDialog::InputEventConfigurationDialog() {

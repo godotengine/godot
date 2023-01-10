@@ -67,7 +67,7 @@ public:
 	Ref<InputEvent> get_event() const;
 	void clear_event();
 
-	void set_allowed_input_types(int input_types);
+	void set_allowed_input_types(int p_type_masks);
 	int get_allowed_input_types() const;
 
 	void grab_focus();

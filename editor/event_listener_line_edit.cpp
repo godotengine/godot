@@ -168,8 +168,8 @@ void EventListenerLineEdit::clear_event() {
 	}
 }
 
-void EventListenerLineEdit::set_allowed_input_types(int input_types) {
-	allowed_input_types = input_types;
+void EventListenerLineEdit::set_allowed_input_types(int p_type_masks) {
+	allowed_input_types = p_type_masks;
 }
 
 int EventListenerLineEdit::get_allowed_input_types() const {
