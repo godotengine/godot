@@ -8,6 +8,7 @@
 		[b]Note:[/b] After setting [member target_location] it is required to use the [method get_next_location] function once every physics frame to update the internal path logic of the NavigationAgent. The returned vector position from this function should be used as the next movement position for the agent's parent Node.
 	</description>
 	<tutorials>
+		<link title="Using NavigationAgents">$DOCS_URL/tutorials/navigation/navigation_using_navigationagents.html</link>
 	</tutorials>
 	<methods>
 		<method name="distance_to_target" qualifiers="const">
