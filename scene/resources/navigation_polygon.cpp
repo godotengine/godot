@@ -252,6 +252,13 @@ void NavigationPolygon::make_polygons_from_outlines() {
 		}
 		const Vector2 *r = ol.ptr();
 
+		Vector2 r_point(-1e10, -1e10); //let's find an outline's point closest to outside_point
+		for (int j = 0; j < olsize; j++) {
+			r_point.x = MAX(r[j].x, r_point.x);
+			r_point.y = MAX(r[j].y, r_point.y);
+		}
+		r_point += Vector2(0.754425, 0.8272473); //avoid precision issues
+
 		int interscount = 0;
 		//test if this is an outer outline
 		for (int k = 0; k < outlines.size(); k++) {
@@ -267,7 +274,7 @@ void NavigationPolygon::make_polygons_from_outlines() {
 			const Vector2 *r2 = ol2.ptr();
 
 			for (int l = 0; l < olsize2; l++) {
-				if (Geometry2D::segment_intersects_segment(r[0], outside_point, r2[l], r2[(l + 1) % olsize2], nullptr)) {
+				if (Geometry2D::segment_intersects_segment(r_point, outside_point, r2[l] + Vector2(-0.74569847, 0.83168), r2[(l + 1) % olsize2] + Vector2(-0.71218, 0.8645674), nullptr)) {
 					interscount++;
 				}
 			}
