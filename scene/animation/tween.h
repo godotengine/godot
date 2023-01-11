@@ -123,7 +123,8 @@ private:
 	typedef real_t (*interpolater)(real_t t, real_t b, real_t c, real_t d);
 	static interpolater interpolaters[TRANS_MAX][EASE_MAX];
 
-	void start_tweeners();
+	void _start_tweeners();
+	void _stop_internal(bool p_reset);
 
 protected:
 	static void _bind_methods();
