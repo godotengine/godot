@@ -55,6 +55,7 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
 - nanosvg updated to 2022-11-21 git snapshot.
 - Recast updated to 2022-11-26 git snapshot.
 - stb_vorbis updated to version 1.22.
+- zlib/minizip updated to version 1.2.13.
 - CA root certificates updated to 2022-10-21 bundle from Mozilla.
 - SDL GameControllerDB updated to 2022-12-07 git snapshot.
 
@@ -80,6 +81,8 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
 - Fix potential crash loading invalid TGA images from buffer ([GH-68057](https://github.com/godotengine/godot/pull/68057)).
 - Fix Image `bump_map_to_normal_map()` incorrectly keeping mipmap flag ([GH-68115](https://github.com/godotengine/godot/pull/68115)).
 - Fix potential PCKPacker error spam ([GH-68735](https://github.com/godotengine/godot/pull/68735)).
+- Fix hashing bug for PoolArrays comparisons ([GH-71103](https://github.com/godotengine/godot/pull/71103)).
+- Fix `File.get_path()` not working for compressed files ([GH-70726](https://github.com/godotengine/godot/pull/70726)).
 - Revert "RID: Change comparison operators to use RID_Data id instead of address" ([GH-69946](https://github.com/godotengine/godot/pull/69946)).
 
 #### Editor
@@ -99,6 +102,7 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
 #### GDScript
 
 - Fix Script editor completion doesn't suggest members of a script for type hints ([GH-48037](https://github.com/godotengine/godot/pull/48037)).
+- Fix local variables not showing when breaking on final line ([GH-71093](https://github.com/godotengine/godot/pull/71093)).
 - LSP: Improve handling of file URI scheme ([GH-69960](https://github.com/godotengine/godot/pull/69960)).
 
 #### GUI
@@ -107,6 +111,8 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
 - Fix TreeItem `remove_child()` not updating Tree immediately ([GH-69569](https://github.com/godotengine/godot/pull/69569)).
 - Fix TextMesh auto-translation and ignore control chars ([GH-69585](https://github.com/godotengine/godot/pull/69585)).
 - Fix errors while deselecting all tree items ([GH-68546](https://github.com/godotengine/godot/pull/68546)).
+- Fix Tree overflow without scrolling being enabled ([GH-70906](https://github.com/godotengine/godot/pull/70906)).
+- Fix RichTextLabel discards appended BBCode text on window resize when using DynamicFont ([GH-70593](https://github.com/godotengine/godot/pull/70593)).
 
 #### Import
 
@@ -143,8 +149,10 @@ See the [release announcement](https://godotengine.org/article/maintenance-relea
 - Android: Fix exporting custom `APPLICATION_ATTRIBS` ([GH-69024](https://github.com/godotengine/godot/pull/69024)).
 - HTML5: Add missing `OS::get_cursor_shape()` implementation ([GH-66871](https://github.com/godotengine/godot/pull/66871)).
 - HTML5: Fix bug in setting custom cursor ([GH-67044](https://github.com/godotengine/godot/pull/67044)).
+- iOS: Add new model identifiers for DPI metrics ([GH-70022](https://github.com/godotengine/godot/pull/70022)).
 - Linux: Fix burning CPU with udev disabled on Flatpak ([GH-69563](https://github.com/godotengine/godot/pull/69563)).
 - macOS: Update activation hack to work on Ventura ([GH-68777](https://github.com/godotengine/godot/pull/68777)).
+- macoS: Fix stylus tilt Y direction ([GH-70498](https://github.com/godotengine/godot/pull/70498)).
 - Windows: Fix handling of some dead key combinations using Unicode char instead of Virtual key ([GH-66314](https://github.com/godotengine/godot/pull/66314)).
 - Windows: Fix Directory `make_dir()` choking on ".." ([GH-66467](https://github.com/godotengine/godot/pull/66467)).
 - Windows: Fix newlines not honored in Windows console subsystem ([GH-67236](https://github.com/godotengine/godot/pull/67236)).
