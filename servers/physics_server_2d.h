@@ -99,6 +99,7 @@ public:
 	virtual Object *get_contact_collider_object(int p_contact_idx) const;
 	virtual int get_contact_collider_shape(int p_contact_idx) const = 0;
 	virtual Vector2 get_contact_collider_velocity_at_position(int p_contact_idx) const = 0;
+	virtual Vector2 get_contact_impulse(int p_contact_idx) const = 0;
 
 	virtual real_t get_step() const = 0;
 	virtual void integrate_forces();
