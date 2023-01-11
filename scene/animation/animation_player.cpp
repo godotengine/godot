@@ -1731,18 +1731,12 @@ String AnimationPlayer::get_assigned_animation() const {
 	return playback.assigned;
 }
 
-void AnimationPlayer::stop(bool p_reset) {
-	_stop_playing_caches();
-	Playback &c = playback;
-	c.blend.clear();
-	if (p_reset) {
-		c.current.from = nullptr;
-		c.current.speed_scale = 1;
-		c.current.pos = 0;
-	}
-	_set_process(false);
-	queued.clear();
-	playing = false;
+void AnimationPlayer::pause() {
+	_stop_internal(false);
+}
+
+void AnimationPlayer::stop() {
+	_stop_internal(true);
 }
 
 void AnimationPlayer::set_speed_scale(float p_speed) {
@@ -1957,6 +1951,20 @@ void AnimationPlayer::_set_process(bool p_process, bool p_force) {
 	processing = p_process;
 }
 
+void AnimationPlayer::_stop_internal(bool p_reset) {
+	_stop_playing_caches();
+	Playback &c = playback;
+	c.blend.clear();
+	if (p_reset) {
+		c.current.from = nullptr;
+		c.current.speed_scale = 1;
+		c.current.pos = 0;
+	}
+	_set_process(false);
+	queued.clear();
+	playing = false;
+}
+
 void AnimationPlayer::animation_set_next(const StringName &p_animation, const StringName &p_next) {
 	ERR_FAIL_COND_MSG(!animation_set.has(p_animation), vformat("Animation not found: %s.", p_animation));
 	animation_set[p_animation].next = p_next;
@@ -2119,7 +2127,8 @@ void AnimationPlayer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("play", "name", "custom_blend", "custom_speed", "from_end"), &AnimationPlayer::play, DEFVAL(""), DEFVAL(-1), DEFVAL(1.0), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("play_backwards", "name", "custom_blend"), &AnimationPlayer::play_backwards, DEFVAL(""), DEFVAL(-1));
-	ClassDB::bind_method(D_METHOD("stop", "reset"), &AnimationPlayer::stop, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("pause"), &AnimationPlayer::pause);
+	ClassDB::bind_method(D_METHOD("stop"), &AnimationPlayer::stop);
 	ClassDB::bind_method(D_METHOD("is_playing"), &AnimationPlayer::is_playing);
 
 	ClassDB::bind_method(D_METHOD("set_current_animation", "anim"), &AnimationPlayer::set_current_animation);
