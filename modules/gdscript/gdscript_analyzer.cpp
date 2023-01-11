@@ -103,8 +103,21 @@ static GDScriptParser::DataType make_native_meta_type(const StringName &p_class_
 	type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
 	type.kind = GDScriptParser::DataType::NATIVE;
 	type.builtin_type = Variant::OBJECT;
-	type.is_constant = true;
 	type.native_type = p_class_name;
+	type.is_constant = true;
+	type.is_meta_type = true;
+	return type;
+}
+
+static GDScriptParser::DataType make_script_meta_type(const Ref<Script> &p_script) {
+	GDScriptParser::DataType type;
+	type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
+	type.kind = GDScriptParser::DataType::SCRIPT;
+	type.builtin_type = Variant::OBJECT;
+	type.native_type = p_script->get_instance_base_type();
+	type.script_type = p_script;
+	type.script_path = p_script->get_path();
+	type.is_constant = true;
 	type.is_meta_type = true;
 	return type;
 }
@@ -581,11 +594,8 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 		result.builtin_type = GDScriptParser::get_builtin_type(first);
 
 		if (result.builtin_type == Variant::ARRAY) {
-			GDScriptParser::DataType container_type = resolve_datatype(p_type->container_type);
-
+			GDScriptParser::DataType container_type = type_from_metatype(resolve_datatype(p_type->container_type));
 			if (container_type.kind != GDScriptParser::DataType::VARIANT) {
-				container_type.is_meta_type = false;
-				container_type.is_constant = false;
 				result.set_container_element_type(container_type);
 			}
 		}
@@ -607,12 +617,7 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 				}
 				result = ref->get_parser()->head->get_datatype();
 			} else {
-				result.kind = GDScriptParser::DataType::SCRIPT;
-				result.script_type = ResourceLoader::load(path, "Script");
-				result.native_type = result.script_type->get_instance_base_type();
-				result.script_path = path;
-				result.is_constant = true;
-				result.is_meta_type = false;
+				result = make_script_meta_type(ResourceLoader::load(path, "Script"));
 			}
 		}
 	} else if (ProjectSettings::get_singleton()->has_autoload(first) && ProjectSettings::get_singleton()->get_autoload(first).is_singleton) {
@@ -656,7 +661,6 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 					case GDScriptParser::ClassNode::Member::CONSTANT:
 						if (member.get_datatype().is_meta_type) {
 							result = member.get_datatype();
-							result.is_meta_type = false;
 							found = true;
 							break;
 						} else if (Ref<Script>(member.constant->initializer->reduced_value).is_valid()) {
@@ -668,15 +672,8 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 									return bad_type;
 								}
 								result = ref->get_parser()->head->get_datatype();
-								result.is_meta_type = false;
 							} else {
-								Ref<Script> script = member.constant->initializer->reduced_value;
-								result.kind = GDScriptParser::DataType::SCRIPT;
-								result.builtin_type = Variant::OBJECT;
-								result.script_type = script;
-								result.script_path = script->get_path();
-								result.native_type = script->get_instance_base_type();
-								result.is_meta_type = false;
+								result = make_script_meta_type(member.constant->initializer->reduced_value);
 							}
 							found = true;
 							break;
@@ -832,8 +829,7 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 
 				for (int j = 0; j < member.signal->parameters.size(); j++) {
 					GDScriptParser::ParameterNode *param = member.signal->parameters[j];
-					GDScriptParser::DataType param_type = resolve_datatype(param->datatype_specifier);
-					param_type.is_meta_type = false;
+					GDScriptParser::DataType param_type = type_from_metatype(resolve_datatype(param->datatype_specifier));
 					param->set_datatype(param_type);
 					mi.arguments.push_back(PropertyInfo(param_type.builtin_type, param->identifier->name));
 					// TODO: add signal parameter default values
@@ -1524,8 +1520,7 @@ void GDScriptAnalyzer::resolve_assignable(GDScriptParser::AssignableNode *p_assi
 	GDScriptParser::DataType specified_type;
 	bool has_specified_type = p_assignable->datatype_specifier != nullptr;
 	if (has_specified_type) {
-		specified_type = resolve_datatype(p_assignable->datatype_specifier);
-		specified_type.is_meta_type = false;
+		specified_type = type_from_metatype(resolve_datatype(p_assignable->datatype_specifier));
 		type = specified_type;
 	}
 
@@ -2766,14 +2761,13 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 void GDScriptAnalyzer::reduce_cast(GDScriptParser::CastNode *p_cast) {
 	reduce_expression(p_cast->operand);
 
-	GDScriptParser::DataType cast_type = resolve_datatype(p_cast->cast_type);
+	GDScriptParser::DataType cast_type = type_from_metatype(resolve_datatype(p_cast->cast_type));
 
 	if (!cast_type.is_set()) {
 		mark_node_unsafe(p_cast);
 		return;
 	}
 
-	cast_type = type_from_metatype(cast_type); // The casted value won't be a type name.
 	p_cast->set_datatype(cast_type);
 
 	if (!cast_type.is_variant()) {
@@ -2907,15 +2901,7 @@ GDScriptParser::DataType GDScriptAnalyzer::make_global_class_meta_type(const Str
 
 		return ref->get_parser()->head->get_datatype();
 	} else {
-		type.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
-		type.kind = GDScriptParser::DataType::SCRIPT;
-		type.builtin_type = Variant::OBJECT;
-		type.script_type = ResourceLoader::load(path, "Script");
-		type.native_type = type.script_type->get_instance_base_type();
-		type.script_path = path;
-		type.is_constant = true;
-		type.is_meta_type = true;
-		return type;
+		return make_script_meta_type(ResourceLoader::load(path, "Script"));
 	}
 }
 
