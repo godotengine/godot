@@ -52,6 +52,7 @@ public:
 	virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override;
 	virtual const Callable *get_base_comparator() const override;
 	virtual int get_bound_arguments_count() const override;
+	virtual void get_bound_arguments(Vector<Variant> &r_arguments, int &r_argcount) const override;
 	Callable get_callable() { return callable; }
 	Vector<Variant> get_binds() { return binds; }
 
@@ -77,6 +78,7 @@ public:
 	virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override;
 	virtual const Callable *get_base_comparator() const override;
 	virtual int get_bound_arguments_count() const override;
+	virtual void get_bound_arguments(Vector<Variant> &r_arguments, int &r_argcount) const override;
 
 	Callable get_callable() { return callable; }
 	int get_unbinds() { return argcount; }
