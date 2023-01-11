@@ -1799,7 +1799,10 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 		ERR_FAIL_COND_V(dylibs_dir.is_null(), ERR_CANT_OPEN);
 		CodesignData codesign_data(p_preset, p_debug);
 		err = _walk_dir_recursive(dylibs_dir, _codesign, &codesign_data);
-		ERR_FAIL_COND_V(err, err);
+		if (err != OK) {
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Code Signing"), TTR("Code signing failed, see editor log for details."));
+			return err;
+		}
 	}
 
 	if (ep.step("Making .xcarchive", 3)) {
@@ -1825,6 +1828,10 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	err = OS::get_singleton()->execute("xcodebuild", archive_args, &archive_str, nullptr, true);
 	ERR_FAIL_COND_V(err, err);
 	print_line("xcodebuild (.xcarchive):\n" + archive_str);
+	if (!archive_str.contains("** ARCHIVE SUCCEEDED **")) {
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Xcode Build"), TTR("Xcode project build failed, see editor log for details."));
+		return FAILED;
+	}
 
 	if (ep.step("Making .ipa", 4)) {
 		return ERR_SKIP;
@@ -1841,9 +1848,14 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	String export_str;
 	err = OS::get_singleton()->execute("xcodebuild", export_args, &export_str, nullptr, true);
 	ERR_FAIL_COND_V(err, err);
+
 	print_line("xcodebuild (.ipa):\n" + export_str);
+	if (!export_str.contains("** EXPORT SUCCEEDED **")) {
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Xcode Build"), TTR(".ipa export failed, see editor log for details."));
+		return FAILED;
+	}
 #else
-	print_line(".ipa can only be built on macOS. Leaving Xcode project without building the package.");
+	add_message(EXPORT_MESSAGE_WARNING, TTR("Xcode Build"), TTR(".ipa can only be built on macOS. Leaving Xcode project without building the package."));
 #endif
 
 	return OK;
