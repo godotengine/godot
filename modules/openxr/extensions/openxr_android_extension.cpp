@@ -51,18 +51,17 @@ OpenXRAndroidExtension::OpenXRAndroidExtension() {
 HashMap<String, bool *> OpenXRAndroidExtension::get_requested_extensions() {
 	HashMap<String, bool *> request_extensions;
 
-	request_extensions[XR_KHR_LOADER_INIT_ANDROID_EXTENSION_NAME] = &loader_init_extension_available;
 	request_extensions[XR_KHR_ANDROID_CREATE_INSTANCE_EXTENSION_NAME] = &create_instance_extension_available;
 
 	return request_extensions;
 }
 
 void OpenXRAndroidExtension::on_before_instance_created() {
-	if (!loader_init_extension_available) {
-		print_line("OpenXR: XR_KHR_loader_init_android is not reported as available - trying to initialize anyway...");
+	if (XR_FAILED(EXT_TRY_INIT_XR_FUNC(xrInitializeLoaderKHR))) {
+		// XR_KHR_loader_init not supported on this platform
+		return;
 	}
-
-	EXT_INIT_XR_FUNC(xrInitializeLoaderKHR);
+	loader_init_extension_available = true;
 
 	JNIEnv *env = get_jni_env();
 	JavaVM *vm;
@@ -85,6 +84,9 @@ static XrInstanceCreateInfoAndroidKHR instance_create_info;
 
 void *OpenXRAndroidExtension::set_instance_create_info_and_get_next_pointer(void *p_next_pointer) {
 	if (!create_instance_extension_available) {
+		if (!loader_init_extension_available) {
+			WARN_PRINT("No Android extensions available, couldn't pass JVM and Activity to OpenXR");
+		}
 		return nullptr;
 	}
 
