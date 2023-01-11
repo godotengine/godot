@@ -157,7 +157,6 @@ void *OpenXROpenGLExtension::set_session_create_and_get_next_pointer(void *p_nex
 }
 
 void OpenXROpenGLExtension::get_usable_swapchain_formats(Vector<int64_t> &p_usable_swap_chains) {
-	p_usable_swap_chains.push_back(GL_SRGB8_ALPHA8);
 	p_usable_swap_chains.push_back(GL_RGBA8);
 }
 
