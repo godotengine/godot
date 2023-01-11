@@ -1120,17 +1120,6 @@ bool ArrayMesh::_set(const StringName &p_name, const Variant &p_value) {
 		}
 		int idx = sname.substr(8, sl - 8).to_int();
 
-		// This is a bit of a hack to ensure compatibility with older material
-		// overrides that start indexing at 1.
-		// We assume that idx 0 is always read first, if its not, this won't work.
-		if (idx == 0) {
-			surface_index_0 = true;
-		}
-		if (!surface_index_0) {
-			// This means the file was created when the indexing started at 1, so decrease by one.
-			idx--;
-		}
-
 		String what = sname.get_slicec('/', 1);
 		if (what == "material") {
 			surface_set_material(idx, p_value);
