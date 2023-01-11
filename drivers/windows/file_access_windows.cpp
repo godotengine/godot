@@ -131,7 +131,7 @@ Error FileAccessWindows::_open(const String &p_path, int p_mode_flags) {
 	}
 }
 
-void FileAccessWindows::close() {
+void FileAccessWindows::_close() {
 	if (!f)
 		return;
 
@@ -191,7 +191,7 @@ bool FileAccessWindows::is_open() const {
 	return (f != NULL);
 }
 
-void FileAccessWindows::seek(uint64_t p_position) {
+void FileAccessWindows::_seek(uint64_t p_position) {
 	ERR_FAIL_COND(!f);
 
 	last_error = OK;
@@ -200,14 +200,14 @@ void FileAccessWindows::seek(uint64_t p_position) {
 	prev_op = 0;
 }
 
-void FileAccessWindows::seek_end(int64_t p_position) {
+void FileAccessWindows::_seek_end(int64_t p_position) {
 	ERR_FAIL_COND(!f);
 	if (_fseeki64(f, p_position, SEEK_END))
 		check_errors();
 	prev_op = 0;
 }
 
-uint64_t FileAccessWindows::get_position() const {
+uint64_t FileAccessWindows::_get_position() const {
 	int64_t aux_position = _ftelli64(f);
 	if (aux_position < 0) {
 		check_errors();
@@ -226,12 +226,12 @@ uint64_t FileAccessWindows::get_len() const {
 	return size;
 }
 
-bool FileAccessWindows::eof_reached() const {
+bool FileAccessWindows::_eof_reached() const {
 	check_errors();
 	return last_error == ERR_FILE_EOF;
 }
 
-uint8_t FileAccessWindows::get_8() const {
+uint8_t FileAccessWindows::_get_8() const {
 	ERR_FAIL_COND_V(!f, 0);
 	if (flags == READ_WRITE || flags == WRITE_READ) {
 		if (prev_op == WRITE) {
@@ -248,7 +248,7 @@ uint8_t FileAccessWindows::get_8() const {
 	return b;
 }
 
-uint64_t FileAccessWindows::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
+uint64_t FileAccessWindows::_get_buffer(uint8_t *p_dst, uint64_t p_length) const {
 	ERR_FAIL_COND_V(!p_dst && p_length > 0, -1);
 	ERR_FAIL_COND_V(!f, -1);
 

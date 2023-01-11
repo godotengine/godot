@@ -58,27 +58,27 @@ class FileAccessFilesystemJAndroid : public FileAccess {
 
 	void _set_eof(bool eof);
 
-public:
+protected:
 	virtual Error _open(const String &p_path, int p_mode_flags) override; ///< open a file
-	virtual void close() override; ///< close a file
+	virtual void _close() override; ///< close a file
+	virtual void _seek(uint64_t p_position) override; ///< seek to a given position
+	virtual void _seek_end(int64_t p_position = 0) override; ///< seek from the end of file
+	virtual uint64_t _get_position() const override; ///< get position in the file
+	virtual bool _eof_reached() const override; ///< reading passed EOF
+	virtual uint8_t _get_8() const override; ///< get a byte
+	virtual uint64_t _get_buffer(uint8_t *p_dst, uint64_t p_length) const override;
+
+public:
 	virtual bool is_open() const override; ///< true when file is open
 
 	/// returns the path for the current open file
 	virtual String get_path() const override;
+
 	/// returns the absolute path for the current open file
 	virtual String get_path_absolute() const override;
 
-	virtual void seek(uint64_t p_position) override; ///< seek to a given position
-	virtual void seek_end(int64_t p_position = 0) override; ///< seek from the end of file
-	virtual uint64_t get_position() const override; ///< get position in the file
 	virtual uint64_t get_len() const override; ///< get size of the file
-
-	virtual bool eof_reached() const override; ///< reading passed EOF
-
-	virtual uint8_t get_8() const override; ///< get a byte
 	virtual String get_line() const override; ///< get a line
-	virtual uint64_t get_buffer(uint8_t *p_dst, uint64_t p_length) const override;
-
 	virtual Error get_error() const override; ///< get last error
 
 	virtual void flush() override;

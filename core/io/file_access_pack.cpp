@@ -257,7 +257,7 @@ Error FileAccessPack::_open(const String &p_path, int p_mode_flags) {
 	return ERR_UNAVAILABLE;
 }
 
-void FileAccessPack::close() {
+void FileAccessPack::_close() {
 	f->close();
 }
 
@@ -265,7 +265,7 @@ bool FileAccessPack::is_open() const {
 	return f->is_open();
 }
 
-void FileAccessPack::seek(uint64_t p_position) {
+void FileAccessPack::_seek(uint64_t p_position) {
 	if (p_position > pf.size) {
 		eof = true;
 	} else {
@@ -276,11 +276,11 @@ void FileAccessPack::seek(uint64_t p_position) {
 	pos = p_position;
 }
 
-void FileAccessPack::seek_end(int64_t p_position) {
+void FileAccessPack::_seek_end(int64_t p_position) {
 	seek(pf.size + p_position);
 }
 
-uint64_t FileAccessPack::get_position() const {
+uint64_t FileAccessPack::_get_position() const {
 	return pos;
 }
 
@@ -288,11 +288,11 @@ uint64_t FileAccessPack::get_len() const {
 	return pf.size;
 }
 
-bool FileAccessPack::eof_reached() const {
+bool FileAccessPack::_eof_reached() const {
 	return eof;
 }
 
-uint8_t FileAccessPack::get_8() const {
+uint8_t FileAccessPack::_get_8() const {
 	if (pos >= pf.size) {
 		eof = true;
 		return 0;
@@ -302,7 +302,7 @@ uint8_t FileAccessPack::get_8() const {
 	return f->get_8();
 }
 
-uint64_t FileAccessPack::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
+uint64_t FileAccessPack::_get_buffer(uint8_t *p_dst, uint64_t p_length) const {
 	ERR_FAIL_COND_V(!p_dst && p_length > 0, -1);
 
 	if (eof) {
@@ -325,7 +325,7 @@ uint64_t FileAccessPack::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
 	return to_read;
 }
 
-void FileAccessPack::set_endian_swap(bool p_swap) {
+void FileAccessPack::_set_endian_swap(bool p_swap) {
 	FileAccess::set_endian_swap(p_swap);
 	f->set_endian_swap(p_swap);
 }

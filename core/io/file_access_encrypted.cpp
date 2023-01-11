@@ -112,7 +112,7 @@ Error FileAccessEncrypted::open_and_parse_password(FileAccess *p_base, const Str
 Error FileAccessEncrypted::_open(const String &p_path, int p_mode_flags) {
 	return OK;
 }
-void FileAccessEncrypted::close() {
+void FileAccessEncrypted::_close() {
 	if (!file) {
 		return;
 	}
@@ -180,7 +180,7 @@ String FileAccessEncrypted::get_path_absolute() const {
 	}
 }
 
-void FileAccessEncrypted::seek(uint64_t p_position) {
+void FileAccessEncrypted::_seek(uint64_t p_position) {
 	if (p_position > get_len()) {
 		p_position = get_len();
 	}
@@ -189,11 +189,11 @@ void FileAccessEncrypted::seek(uint64_t p_position) {
 	eofed = false;
 }
 
-void FileAccessEncrypted::seek_end(int64_t p_position) {
+void FileAccessEncrypted::_seek_end(int64_t p_position) {
 	seek(get_len() + p_position);
 }
 
-uint64_t FileAccessEncrypted::get_position() const {
+uint64_t FileAccessEncrypted::_get_position() const {
 	return pos;
 }
 
@@ -201,11 +201,11 @@ uint64_t FileAccessEncrypted::get_len() const {
 	return data.size();
 }
 
-bool FileAccessEncrypted::eof_reached() const {
+bool FileAccessEncrypted::_eof_reached() const {
 	return eofed;
 }
 
-uint8_t FileAccessEncrypted::get_8() const {
+uint8_t FileAccessEncrypted::_get_8() const {
 	ERR_FAIL_COND_V_MSG(writing, 0, "File has not been opened in read mode.");
 	if (pos >= get_len()) {
 		eofed = true;
@@ -217,7 +217,7 @@ uint8_t FileAccessEncrypted::get_8() const {
 	return b;
 }
 
-uint64_t FileAccessEncrypted::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
+uint64_t FileAccessEncrypted::_get_buffer(uint8_t *p_dst, uint64_t p_length) const {
 	ERR_FAIL_COND_V(!p_dst && p_length > 0, -1);
 	ERR_FAIL_COND_V_MSG(writing, -1, "File has not been opened in read mode.");
 

@@ -63,7 +63,7 @@ Error FileAccessAndroid::_open(const String &p_path, int p_mode_flags) {
 	return OK;
 }
 
-void FileAccessAndroid::close() {
+void FileAccessAndroid::_close() {
 	if (!asset) {
 		return;
 	}
@@ -75,7 +75,7 @@ bool FileAccessAndroid::is_open() const {
 	return asset != nullptr;
 }
 
-void FileAccessAndroid::seek(uint64_t p_position) {
+void FileAccessAndroid::_seek(uint64_t p_position) {
 	ERR_FAIL_NULL(asset);
 
 	AAsset_seek(asset, p_position, SEEK_SET);
@@ -88,13 +88,13 @@ void FileAccessAndroid::seek(uint64_t p_position) {
 	}
 }
 
-void FileAccessAndroid::seek_end(int64_t p_position) {
+void FileAccessAndroid::_seek_end(int64_t p_position) {
 	ERR_FAIL_NULL(asset);
 	AAsset_seek(asset, p_position, SEEK_END);
 	pos = len + p_position;
 }
 
-uint64_t FileAccessAndroid::get_position() const {
+uint64_t FileAccessAndroid::_get_position() const {
 	return pos;
 }
 
@@ -102,11 +102,11 @@ uint64_t FileAccessAndroid::get_len() const {
 	return len;
 }
 
-bool FileAccessAndroid::eof_reached() const {
+bool FileAccessAndroid::_eof_reached() const {
 	return eof;
 }
 
-uint8_t FileAccessAndroid::get_8() const {
+uint8_t FileAccessAndroid::_get_8() const {
 	if (pos >= len) {
 		eof = true;
 		return 0;
@@ -118,7 +118,7 @@ uint8_t FileAccessAndroid::get_8() const {
 	return byte;
 }
 
-uint64_t FileAccessAndroid::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
+uint64_t FileAccessAndroid::_get_buffer(uint8_t *p_dst, uint64_t p_length) const {
 	ERR_FAIL_COND_V(!p_dst && p_length > 0, -1);
 
 	int r = AAsset_read(asset, p_dst, p_length);

@@ -40,6 +40,8 @@
  * Multi-Platform abstraction for accessing to files.
  */
 
+struct FileAccessBuffer;
+
 class FileAccess {
 public:
 	enum AccessType {
@@ -67,6 +69,10 @@ protected:
 	static FileCloseFailNotify close_fail_notify;
 
 private:
+	mutable FileAccessBuffer *_buffer = nullptr;
+	bool _is_buffered() const { return _buffer != nullptr; }
+	bool _fill_buffer() const;
+
 	static bool backup_save;
 
 	AccessType _access_type;
@@ -75,6 +81,18 @@ private:
 	static FileAccess *_create_builtin() {
 		return memnew(T);
 	}
+
+protected:
+	// Override these in derived classes to get transparent buffering.
+	virtual void _close() = 0; ///< close a file
+	virtual void _seek(uint64_t p_position) = 0; ///< seek to a given position
+	virtual void _seek_end(int64_t p_position = 0) = 0; ///< seek from the end of file with negative offset
+	virtual uint64_t _get_position() const = 0; ///< get position in the file
+	virtual bool _eof_reached() const = 0; ///< reading passed EOF
+	virtual uint8_t _get_8() const = 0; ///< get a byte
+	virtual uint64_t _get_buffer(uint8_t *p_dst, uint64_t p_length) const; ///< get an array of bytes
+	virtual void _set_endian_swap(bool p_swap) { endian_swap = p_swap; }
+	void choose_buffering(int p_mode_flags);
 
 public:
 	static void set_file_close_fail_notify_callback(FileCloseFailNotify p_cbk) { close_fail_notify = p_cbk; }
@@ -89,40 +107,43 @@ public:
 		WRITE_READ = 7,
 	};
 
-	virtual void close() = 0; ///< close a file
-	virtual bool is_open() const = 0; ///< true when file is open
-
-	virtual String get_path() const { return ""; } /// returns the path for the current open file
-	virtual String get_path_absolute() const { return ""; } /// returns the absolute path for the current open file
-
-	virtual void seek(uint64_t p_position) = 0; ///< seek to a given position
-	virtual void seek_end(int64_t p_position = 0) = 0; ///< seek from the end of file with negative offset
-	virtual uint64_t get_position() const = 0; ///< get position in the file
-	virtual uint64_t get_len() const = 0; ///< get size of the file
-
-	virtual bool eof_reached() const = 0; ///< reading passed EOF
-
-	virtual uint8_t get_8() const = 0; ///< get a byte
-	virtual uint16_t get_16() const; ///< get 16 bits uint
-	virtual uint32_t get_32() const; ///< get 32 bits uint
-	virtual uint64_t get_64() const; ///< get 64 bits uint
-
-	virtual float get_float() const;
-	virtual double get_double() const;
-	virtual real_t get_real() const;
-
-	virtual uint64_t get_buffer(uint8_t *p_dst, uint64_t p_length) const; ///< get an array of bytes
-	virtual String get_line() const;
-	virtual String get_token() const;
-	virtual Vector<String> get_csv_line(const String &p_delim = ",") const;
-	virtual String get_as_utf8_string(bool p_skip_cr = true) const; // Skip CR by default for compat.
+	// Wrapped functions allow transparent file buffering,
+	// and call the underscored virtual functions internally.
+	void close();
+	void seek(uint64_t p_position);
+	void seek_end(int64_t p_position = 0);
+	uint64_t get_position() const;
+	bool eof_reached() const;
+	uint8_t get_8() const;
+	uint64_t get_buffer(uint8_t *p_dst, uint64_t p_length) const;
 
 	/**< use this for files WRITTEN in _big_ endian machines (ie, amiga/mac)
 	 * It's not about the current CPU type but file formats.
 	 * this flags get reset to false (little endian) on each open
 	 */
+	void set_endian_swap(bool p_swap);
+	//////////////////////////////////////////////////////
 
-	virtual void set_endian_swap(bool p_swap) { endian_swap = p_swap; }
+	virtual bool is_open() const = 0; ///< true when file is open
+
+	virtual String get_path() const { return ""; } /// returns the path for the current open file
+	virtual String get_path_absolute() const { return ""; } /// returns the absolute path for the current open file
+
+	virtual uint64_t get_len() const = 0; ///< get size of the file
+
+	uint16_t get_16() const; ///< get 16 bits uint
+	uint32_t get_32() const; ///< get 32 bits uint
+	uint64_t get_64() const; ///< get 64 bits uint
+
+	float get_float() const;
+	double get_double() const;
+	real_t get_real() const;
+
+	virtual String get_line() const;
+	String get_token() const;
+	Vector<String> get_csv_line(const String &p_delim = ",") const;
+	String get_as_utf8_string(bool p_skip_cr = true) const; // Skip CR by default for compat.
+
 	inline bool get_endian_swap() const { return endian_swap; }
 
 	virtual Error get_error() const = 0; ///< get last error
@@ -142,13 +163,14 @@ public:
 	virtual void store_csv_line(const Vector<String> &p_values, const String &p_delim = ",");
 
 	virtual void store_pascal_string(const String &p_string);
-	virtual String get_pascal_string();
+	String get_pascal_string();
 
 	virtual void store_buffer(const uint8_t *p_src, uint64_t p_length); ///< store an array of bytes
 
 	virtual bool file_exists(const String &p_name) = 0; ///< return true if a file exists
 
-	virtual Error reopen(const String &p_path, int p_mode_flags); ///< does not change the AccessType
+	Error reopen(const String &p_path, int p_mode_flags) { return _reopen(p_path, p_mode_flags); }
+	virtual Error _reopen(const String &p_path, int p_mode_flags); ///< does not change the AccessType
 
 	static FileAccess *create(AccessType p_access); /// Create a file access (for the current platform) this is the only portable way of accessing files.
 	static FileAccess *create_for_path(const String &p_path);
@@ -174,8 +196,10 @@ public:
 		create_func[p_access] = _create_builtin<T>;
 	}
 
+	void set_buffered(bool p_buffered);
+
 	FileAccess();
-	virtual ~FileAccess() {}
+	virtual ~FileAccess();
 };
 
 struct FileAccessRef {

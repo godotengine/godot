@@ -94,7 +94,7 @@ Error FileAccessFilesystemJAndroid::_open(const String &p_path, int p_mode_flags
 	}
 }
 
-void FileAccessFilesystemJAndroid::close() {
+void FileAccessFilesystemJAndroid::_close() {
 	if (!is_open()) {
 		return;
 	}
@@ -111,7 +111,7 @@ bool FileAccessFilesystemJAndroid::is_open() const {
 	return id != 0;
 }
 
-void FileAccessFilesystemJAndroid::seek(uint64_t p_position) {
+void FileAccessFilesystemJAndroid::_seek(uint64_t p_position) {
 	if (_file_seek) {
 		JNIEnv *env = get_jni_env();
 		ERR_FAIL_COND(env == nullptr);
@@ -120,7 +120,7 @@ void FileAccessFilesystemJAndroid::seek(uint64_t p_position) {
 	}
 }
 
-void FileAccessFilesystemJAndroid::seek_end(int64_t p_position) {
+void FileAccessFilesystemJAndroid::_seek_end(int64_t p_position) {
 	if (_file_seek_end) {
 		JNIEnv *env = get_jni_env();
 		ERR_FAIL_COND(env == nullptr);
@@ -129,7 +129,7 @@ void FileAccessFilesystemJAndroid::seek_end(int64_t p_position) {
 	}
 }
 
-uint64_t FileAccessFilesystemJAndroid::get_position() const {
+uint64_t FileAccessFilesystemJAndroid::_get_position() const {
 	if (_file_tell) {
 		JNIEnv *env = get_jni_env();
 		ERR_FAIL_COND_V(env == nullptr, 0);
@@ -151,7 +151,7 @@ uint64_t FileAccessFilesystemJAndroid::get_len() const {
 	}
 }
 
-bool FileAccessFilesystemJAndroid::eof_reached() const {
+bool FileAccessFilesystemJAndroid::_eof_reached() const {
 	if (_file_eof) {
 		JNIEnv *env = get_jni_env();
 		ERR_FAIL_COND_V(env == nullptr, false);
@@ -172,7 +172,7 @@ void FileAccessFilesystemJAndroid::_set_eof(bool eof) {
 	}
 }
 
-uint8_t FileAccessFilesystemJAndroid::get_8() const {
+uint8_t FileAccessFilesystemJAndroid::_get_8() const {
 	ERR_FAIL_COND_V_MSG(!is_open(), 0, "File must be opened before use.");
 	uint8_t byte;
 	get_buffer(&byte, 1);
@@ -225,7 +225,7 @@ String FileAccessFilesystemJAndroid::get_line() const {
 	return result;
 }
 
-uint64_t FileAccessFilesystemJAndroid::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
+uint64_t FileAccessFilesystemJAndroid::_get_buffer(uint8_t *p_dst, uint64_t p_length) const {
 	if (_file_read) {
 		ERR_FAIL_COND_V_MSG(!is_open(), 0, "File must be opened before use.");
 		if (p_length == 0) {

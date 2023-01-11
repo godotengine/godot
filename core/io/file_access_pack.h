@@ -148,30 +148,25 @@ class FileAccessPack : public FileAccess {
 	virtual uint32_t _get_unix_permissions(const String &p_file) { return 0; }
 	virtual Error _set_unix_permissions(const String &p_file, uint32_t p_permissions) { return FAILED; }
 
-public:
-	virtual void close();
-	virtual bool is_open() const;
+protected:
+	virtual void _close();
+	virtual void _seek(uint64_t p_position);
+	virtual void _seek_end(int64_t p_position = 0);
+	virtual uint64_t _get_position() const;
+	virtual bool _eof_reached() const;
+	virtual uint8_t _get_8() const;
+	virtual uint64_t _get_buffer(uint8_t *p_dst, uint64_t p_length) const;
+	virtual void _set_endian_swap(bool p_swap);
 
-	virtual void seek(uint64_t p_position);
-	virtual void seek_end(int64_t p_position = 0);
-	virtual uint64_t get_position() const;
+public:
+	virtual bool is_open() const;
 	virtual uint64_t get_len() const;
 
-	virtual bool eof_reached() const;
-
-	virtual uint8_t get_8() const;
-
-	virtual uint64_t get_buffer(uint8_t *p_dst, uint64_t p_length) const;
-
-	virtual void set_endian_swap(bool p_swap);
-
 	virtual Error get_error() const;
-
 	virtual void flush();
 	virtual void store_8(uint8_t p_dest);
 
 	virtual void store_buffer(const uint8_t *p_src, uint64_t p_length);
-
 	virtual bool file_exists(const String &p_name);
 
 	FileAccessPack(const String &p_path, const PackedData::PackedFile &p_file);

@@ -94,7 +94,7 @@ Error FileAccessMemory::_open(const String &p_path, int p_mode_flags) {
 	return OK;
 }
 
-void FileAccessMemory::close() {
+void FileAccessMemory::_close() {
 	data = nullptr;
 }
 
@@ -102,17 +102,17 @@ bool FileAccessMemory::is_open() const {
 	return data != nullptr;
 }
 
-void FileAccessMemory::seek(uint64_t p_position) {
+void FileAccessMemory::_seek(uint64_t p_position) {
 	ERR_FAIL_COND(!data);
 	pos = p_position;
 }
 
-void FileAccessMemory::seek_end(int64_t p_position) {
+void FileAccessMemory::_seek_end(int64_t p_position) {
 	ERR_FAIL_COND(!data);
 	pos = length + p_position;
 }
 
-uint64_t FileAccessMemory::get_position() const {
+uint64_t FileAccessMemory::_get_position() const {
 	ERR_FAIL_COND_V(!data, 0);
 	return pos;
 }
@@ -122,11 +122,11 @@ uint64_t FileAccessMemory::get_len() const {
 	return length;
 }
 
-bool FileAccessMemory::eof_reached() const {
+bool FileAccessMemory::_eof_reached() const {
 	return pos > length;
 }
 
-uint8_t FileAccessMemory::get_8() const {
+uint8_t FileAccessMemory::_get_8() const {
 	uint8_t ret = 0;
 	if (pos < length) {
 		ret = data[pos];
@@ -136,7 +136,7 @@ uint8_t FileAccessMemory::get_8() const {
 	return ret;
 }
 
-uint64_t FileAccessMemory::get_buffer(uint8_t *p_dst, uint64_t p_length) const {
+uint64_t FileAccessMemory::_get_buffer(uint8_t *p_dst, uint64_t p_length) const {
 	ERR_FAIL_COND_V(!p_dst && p_length > 0, -1);
 	ERR_FAIL_COND_V(!data, -1);
 
