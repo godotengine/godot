@@ -137,6 +137,13 @@
 				Returns [code]true[/code] if playing an animation.
 			</description>
 		</method>
+		<method name="pause">
+			<return type="void" />
+			<description>
+				Pauses the currently playing animation. The [member current_animation_position] will be kept and calling [method play] or [method play_backwards] without arguments or with the same animation name as [member assigned_animation] will resume the animation.
+				See also [method stop].
+			</description>
+		</method>
 		<method name="play">
 			<return type="void" />
 			<param index="0" name="name" type="StringName" default="&quot;&quot;" />
@@ -201,10 +208,9 @@
 		</method>
 		<method name="stop">
 			<return type="void" />
-			<param index="0" name="reset" type="bool" default="true" />
 			<description>
-				Stops or pauses the currently playing animation. If [param reset] is [code]true[/code], the animation position is reset to [code]0[/code] and the playback speed is reset to [code]1.0[/code].
-				If [param reset] is [code]false[/code], the [member current_animation_position] will be kept and calling [method play] or [method play_backwards] without arguments or with the same animation name as [member assigned_animation] will resume the animation.
+				Stops the currently playing animation. The animation position is reset to [code]0[/code] and the playback speed is reset to [code]1.0[/code].
+				See also [method pause].
 			</description>
 		</method>
 	</methods>

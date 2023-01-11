@@ -267,7 +267,7 @@ void AnimationPlayerEditor::_stop_pressed() {
 		return;
 	}
 
-	player->stop(false);
+	player->pause();
 	play->set_pressed(false);
 	stop->set_pressed(true);
 }
@@ -1155,7 +1155,7 @@ void AnimationPlayerEditor::_seek_value_changed(float p_value, bool p_set, bool 
 
 			player->seek_delta(pos, pos - cpos);
 		} else {
-			player->stop(true);
+			player->stop();
 			player->seek(pos, true);
 		}
 	}
