@@ -608,6 +608,9 @@ void EditorNode::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
+			if (progress_dialog) {
+				progress_dialog->queue_free();
+			}
 			editor_data.save_editor_external_data();
 			FileAccess::set_file_close_fail_notify_callback(nullptr);
 			log->deinit(); // Do not get messages anymore.
@@ -4308,7 +4311,7 @@ bool EditorNode::is_object_of_custom_type(const Object *p_object, const StringNa
 void EditorNode::progress_add_task(const String &p_task, const String &p_label, int p_steps, bool p_can_cancel) {
 	if (singleton->cmdline_export_mode) {
 		print_line(p_task + ": begin: " + p_label + " steps: " + itos(p_steps));
-	} else {
+	} else if (singleton->progress_dialog) {
 		singleton->progress_dialog->add_task(p_task, p_label, p_steps, p_can_cancel);
 	}
 }
@@ -4317,15 +4320,17 @@ bool EditorNode::progress_task_step(const String &p_task, const String &p_state,
 	if (singleton->cmdline_export_mode) {
 		print_line("\t" + p_task + ": step " + itos(p_step) + ": " + p_state);
 		return false;
-	} else {
+	} else if (singleton->progress_dialog) {
 		return singleton->progress_dialog->task_step(p_task, p_state, p_step, p_force_refresh);
+	} else {
+		return false;
 	}
 }
 
 void EditorNode::progress_end_task(const String &p_task) {
 	if (singleton->cmdline_export_mode) {
 		print_line(p_task + ": end");
-	} else {
+	} else if (singleton->progress_dialog) {
 		singleton->progress_dialog->end_task(p_task);
 	}
 }
@@ -6291,7 +6296,6 @@ EditorNode::EditorNode() {
 	resource_preview = memnew(EditorResourcePreview);
 	add_child(resource_preview);
 	progress_dialog = memnew(ProgressDialog);
-	gui_base->add_child(progress_dialog);
 
 	// Take up all screen.
 	gui_base->set_anchor(SIDE_RIGHT, Control::ANCHOR_END);
