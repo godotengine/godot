@@ -197,12 +197,6 @@
 				You can make the [Tween] parallel by default by using [method set_parallel].
 			</description>
 		</method>
-		<method name="pause">
-			<return type="void" />
-			<description>
-				Pauses the tweening. The animation can be resumed by using [method play].
-			</description>
-		</method>
 		<method name="play">
 			<return type="void" />
 			<description>
@@ -264,8 +258,10 @@
 		</method>
 		<method name="stop">
 			<return type="void" />
+			<param index="0" name="reset" type="bool" default="true" />
 			<description>
 				Stops the tweening and resets the [Tween] to its initial state. This will not remove any appended [Tweener]s.
+				If [param reset] is [code]false[/code], pauses the tweening. The animation can be resumed by using [method play].
 			</description>
 		</method>
 		<method name="tween_callback">

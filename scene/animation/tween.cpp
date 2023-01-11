@@ -134,15 +134,13 @@ void Tween::append(Ref<Tweener> p_tweener) {
 	tweeners.write[current_step].push_back(p_tweener);
 }
 
-void Tween::stop() {
-	started = false;
+void Tween::stop(bool p_reset) {
 	running = false;
 	dead = false;
-	total_time = 0;
-}
-
-void Tween::pause() {
-	running = false;
+	if (p_reset) {
+		started = false;
+		total_time = 0;
+	}
 }
 
 void Tween::play() {
@@ -394,8 +392,7 @@ void Tween::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("tween_method", "method", "from", "to", "duration"), &Tween::tween_method);
 
 	ClassDB::bind_method(D_METHOD("custom_step", "delta"), &Tween::custom_step);
-	ClassDB::bind_method(D_METHOD("stop"), &Tween::stop);
-	ClassDB::bind_method(D_METHOD("pause"), &Tween::pause);
+	ClassDB::bind_method(D_METHOD("stop", "reset"), &Tween::stop, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("play"), &Tween::play);
 	ClassDB::bind_method(D_METHOD("kill"), &Tween::kill);
 	ClassDB::bind_method(D_METHOD("get_total_elapsed_time"), &Tween::get_total_time);

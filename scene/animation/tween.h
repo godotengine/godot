@@ -136,8 +136,7 @@ public:
 	void append(Ref<Tweener> p_tweener);
 
 	bool custom_step(double p_delta);
-	void stop();
-	void pause();
+	void stop(bool p_reset = true);
 	void play();
 	void kill();
 
