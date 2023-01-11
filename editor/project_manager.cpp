@@ -2653,8 +2653,9 @@ ProjectManager::ProjectManager() {
 		AcceptDialog::set_swap_cancel_ok(swap_cancel_ok == 2);
 	}
 
-	set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
-	set_theme(create_custom_theme());
+	Ref<Theme> theme = create_custom_theme();
+	set_theme(theme);
+	DisplayServer::set_early_window_clear_color_override(true, theme->get_color(SNAME("background"), SNAME("Editor")));
 
 	set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 

@@ -1262,6 +1262,12 @@
 				Tries to free an object in the RenderingServer.
 			</description>
 		</method>
+		<method name="get_default_clear_color">
+			<return type="Color" />
+			<description>
+				Returns the default clear color which is used when a specific clear color has not been selected.
+			</description>
+		</method>
 		<method name="get_frame_setup_time_cpu" qualifiers="const">
 			<return type="float" />
 			<description>
