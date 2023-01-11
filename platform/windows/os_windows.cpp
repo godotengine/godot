@@ -210,6 +210,8 @@ void OS_Windows::initialize() {
 	} else if (!dwrite2_init) {
 		print_verbose("Unable to load IDWriteFactory2, automatic system font fallback is disabled.");
 	}
+
+	FileAccessWindows::initialize();
 }
 
 void OS_Windows::delete_main_loop() {
@@ -252,6 +254,8 @@ void OS_Windows::finalize() {
 }
 
 void OS_Windows::finalize_core() {
+	FileAccessWindows::finalize();
+
 	timeEndPeriod(1);
 
 	memdelete(process_map);
