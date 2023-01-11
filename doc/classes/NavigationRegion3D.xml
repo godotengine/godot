@@ -13,6 +13,7 @@
 		[b]Note:[/b] This node caches changes to its properties, so if you make changes to the underlying region [RID] in [NavigationServer3D], they will not be reflected in this node's properties.
 	</description>
 	<tutorials>
+		<link title="Using NavigationRegions">$DOCS_URL/tutorials/navigation/navigation_using_navigationregions.html</link>
 	</tutorials>
 	<methods>
 		<method name="bake_navigation_mesh">

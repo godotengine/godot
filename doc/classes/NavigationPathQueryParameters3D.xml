@@ -7,6 +7,7 @@
 		This class contains the start and target position and other parameters to be used with [method NavigationServer3D.query_path].
 	</description>
 	<tutorials>
+		<link title="Using NavigationPathQueryObjects">$DOCS_URL/tutorials/navigation/navigation_using_navigationpathqueryobjects.html</link>
 	</tutorials>
 	<members>
 		<member name="map" type="RID" setter="set_map" getter="get_map">
