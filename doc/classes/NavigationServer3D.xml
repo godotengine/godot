@@ -15,6 +15,7 @@
 	</description>
 	<tutorials>
 		<link title="3D Navmesh Demo">https://godotengine.org/asset-library/asset/124</link>
+		<link title="Using NavigationServer">$DOCS_URL/tutorials/navigation/navigation_using_navigationservers.html</link>
 	</tutorials>
 	<methods>
 		<method name="agent_create">
