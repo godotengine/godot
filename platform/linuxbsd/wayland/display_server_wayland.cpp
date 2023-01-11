@@ -2207,6 +2207,10 @@ void DisplayServerWayland::_show_window() {
 #ifdef LIBDECOR_ENABLED
 		if (!decorated && wls.libdecor_context) {
 			wd.libdecor_frame = libdecor_decorate(wls.libdecor_context, wd.wl_surface, (struct libdecor_frame_interface *)&libdecor_frame_interface, &wd);
+
+			libdecor_frame_set_max_content_size(wd.libdecor_frame, wd.max_size.width, wd.max_size.height);
+			libdecor_frame_set_min_content_size(wd.libdecor_frame, wd.min_size.width, wd.max_size.height);
+
 			libdecor_frame_map(wd.libdecor_frame);
 
 			decorated = true;
@@ -2215,12 +2219,16 @@ void DisplayServerWayland::_show_window() {
 
 		if (!decorated) {
 			// libdecor has failed loading or is disabled, we shall handle xdg_toplevel
-			// reation and decoration ourselves.
+			// creation and decoration ourselves (and by decorating for now I just mean
+			// asking for SSDs and hoping for the best).
 			wd.xdg_surface = xdg_wm_base_get_xdg_surface(wls.globals.xdg_wm_base, wd.wl_surface);
 			xdg_surface_add_listener(wd.xdg_surface, &xdg_surface_listener, &wd);
 
 			wd.xdg_toplevel = xdg_surface_get_toplevel(wd.xdg_surface);
 			xdg_toplevel_add_listener(wd.xdg_toplevel, &xdg_toplevel_listener, &wd);
+
+			xdg_toplevel_set_max_size(wd.xdg_toplevel, wd.max_size.width, wd.max_size.height);
+			xdg_toplevel_set_min_size(wd.xdg_toplevel, wd.min_size.width, wd.min_size.height);
 
 			if (!window_get_flag(WINDOW_FLAG_BORDERLESS) && wls.globals.xdg_decoration_manager) {
 				wd.xdg_toplevel_decoration = zxdg_decoration_manager_v1_get_toplevel_decoration(wls.globals.xdg_decoration_manager, wd.xdg_toplevel);
