@@ -1025,7 +1025,7 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 							string_table.write[attr_value] = "com.oculus.handtracking.version";
 						}
 
-						if (tname == "meta-data" && attrname == "name" && value == "xr_hand_tracking_version_value") {
+						if (tname == "meta-data" && attrname == "value" && value == "xr_hand_tracking_version_value") {
 							string_table.write[attr_value] = "V2.0";
 						}
 					}
