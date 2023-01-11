@@ -50,15 +50,15 @@ class NavigationAgent2D : public Node {
 	uint32_t navigation_layers = 1;
 	BitField<NavigationPathQueryParameters2D::PathMetadataFlags> path_metadata_flags = NavigationPathQueryParameters2D::PathMetadataFlags::PATH_METADATA_INCLUDE_ALL;
 
-	real_t path_desired_distance = 1.0;
-	real_t target_desired_distance = 1.0;
-	real_t radius = 0.0;
-	real_t neighbor_distance = 0.0;
-	int max_neighbors = 0;
-	real_t time_horizon = 0.0;
-	real_t max_speed = 0.0;
+	real_t path_desired_distance = 20.0;
+	real_t target_desired_distance = 10.0;
+	real_t radius = 10.0;
+	real_t neighbor_distance = 500.0;
+	int max_neighbors = 10;
+	real_t time_horizon = 1.0;
+	real_t max_speed = 100.0;
 
-	real_t path_max_distance = 3.0;
+	real_t path_max_distance = 100.0;
 
 	Vector2 target_location;
 	bool target_position_submitted = false;
