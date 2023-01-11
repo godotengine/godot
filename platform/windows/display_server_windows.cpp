@@ -2543,6 +2543,25 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				return 0;
 			}
 		} break;
+		case WM_ERASEBKGND: {
+			Color early_color;
+			if (!_get_window_early_clear_override(early_color)) {
+				break;
+			}
+			bool must_recreate_brush = !window_bkg_brush || window_bkg_brush_color != early_color.to_argb32();
+			if (must_recreate_brush) {
+				if (window_bkg_brush) {
+					DeleteObject(window_bkg_brush);
+				}
+				window_bkg_brush = CreateSolidBrush(RGB(early_color.get_r8(), early_color.get_g8(), early_color.get_b8()));
+			}
+			HDC hdc = (HDC)wParam;
+			RECT rect = {};
+			if (GetUpdateRect(hWnd, &rect, true)) {
+				FillRect(hdc, &rect, window_bkg_brush);
+			}
+			return 1;
+		} break;
 		case WM_PAINT: {
 			Main::force_redraw();
 		} break;
@@ -3982,7 +4001,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 
 	memset(&wc, 0, sizeof(WNDCLASSEXW));
 	wc.cbSize = sizeof(WNDCLASSEXW);
-	wc.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC | CS_DBLCLKS;
+	wc.style = CS_OWNDC | CS_DBLCLKS;
 	wc.lpfnWndProc = (WNDPROC)::WndProc;
 	wc.cbClsExtra = 0;
 	wc.cbWndExtra = 0;
