@@ -38,11 +38,15 @@ class SubViewportContainer : public Container {
 	bool stretch = false;
 	int shrink = 1;
 	bool mouse_target = false;
+	bool adjust_viewport_properties = true;
+	bool property_adjust_queued = false;
 
 	void _notify_viewports(int p_notification);
 	bool _is_propagated_in_gui_input(const Ref<InputEvent> &p_event);
 	void _send_event_to_viewports(const Ref<InputEvent> &p_event);
 	void _propagate_nonpositional_event(const Ref<InputEvent> &p_event);
+	void _adjust_viewport_properties();
+	void _queue_adjust_viewport_properties();
 
 protected:
 	void _notification(int p_what);
@@ -56,6 +60,9 @@ protected:
 public:
 	void set_stretch(bool p_enable);
 	bool is_stretch_enabled() const;
+
+	void set_adjust_viewport_properties(bool p_enable);
+	bool is_adjust_viewport_properties_enabled() const;
 
 	virtual void input(const Ref<InputEvent> &p_event) override;
 	virtual void unhandled_input(const Ref<InputEvent> &p_event) override;
