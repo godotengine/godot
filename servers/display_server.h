@@ -217,6 +217,16 @@ public:
 	virtual bool is_dark_mode() const { return false; };
 	virtual Color get_accent_color() const { return Color(0, 0, 0, 0); };
 
+private:
+	static bool window_early_clear_override_enabled;
+	static Color window_early_clear_override_color;
+
+protected:
+	static bool _get_window_early_clear_override(Color &r_color);
+
+public:
+	static void set_early_window_clear_color_override(bool p_enabled, Color p_color = Color(0, 0, 0, 0));
+
 	enum MouseMode {
 		MOUSE_MODE_VISIBLE,
 		MOUSE_MODE_HIDDEN,

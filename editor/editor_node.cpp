@@ -688,6 +688,7 @@ void EditorNode::_notification(int p_what) {
 
 			if (theme_changed) {
 				theme = create_custom_theme(theme_base->get_theme());
+				DisplayServer::set_early_window_clear_color_override(true, theme->get_color(SNAME("background"), SNAME("Editor")));
 
 				theme_base->set_theme(theme);
 				gui_base->set_theme(theme);
@@ -6235,6 +6236,7 @@ EditorNode::EditorNode() {
 	// Exporters might need the theme.
 	EditorColorMap::create();
 	theme = create_custom_theme();
+	DisplayServer::set_early_window_clear_color_override(true, theme->get_color(SNAME("background"), SNAME("Editor")));
 
 	register_exporters();
 

@@ -753,6 +753,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// Editor background
 	Color background_color_opaque = background_color;
 	background_color_opaque.a = 1.0;
+	theme->set_color("background", "Editor", background_color_opaque);
 	theme->set_stylebox("Background", "EditorStyles", make_flat_stylebox(background_color_opaque, default_margin_size, default_margin_size, default_margin_size, default_margin_size));
 
 	// Focus
