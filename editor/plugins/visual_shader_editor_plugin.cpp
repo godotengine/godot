@@ -4915,7 +4915,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	graph->set_h_size_flags(SIZE_EXPAND_FILL);
 	graph->set_show_zoom_label(true);
 	add_child(graph);
-	graph->set_drag_forwarding(this);
+	graph->set_drag_forwarding_compat(this);
 	float graph_minimap_opacity = EDITOR_GET("editors/visual_editors/minimap_opacity");
 	graph->set_minimap_opacity(graph_minimap_opacity);
 	float graph_lines_curvature = EDITOR_GET("editors/visual_editors/lines_curvature");
@@ -5146,7 +5146,7 @@ VisualShaderEditor::VisualShaderEditor() {
 
 	members = memnew(Tree);
 	members_vb->add_child(members);
-	members->set_drag_forwarding(this);
+	members->set_drag_forwarding_compat(this);
 	members->set_h_size_flags(SIZE_EXPAND_FILL);
 	members->set_v_size_flags(SIZE_EXPAND_FILL);
 	members->set_hide_root(true);

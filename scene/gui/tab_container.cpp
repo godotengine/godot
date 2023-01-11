@@ -975,7 +975,7 @@ void TabContainer::_bind_methods() {
 
 TabContainer::TabContainer() {
 	tab_bar = memnew(TabBar);
-	tab_bar->set_drag_forwarding(this);
+	tab_bar->set_drag_forwarding_compat(this);
 	add_child(tab_bar, false, INTERNAL_MODE_FRONT);
 	tab_bar->set_anchors_and_offsets_preset(Control::PRESET_TOP_WIDE);
 	tab_bar->connect("tab_changed", callable_mp(this, &TabContainer::_on_tab_changed));
