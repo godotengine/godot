@@ -1,4 +1,4 @@
 enum MyEnum {
-    WAITING,
-    GODOT
+	WAITING,
+	GODOT
 }
