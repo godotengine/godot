@@ -94,28 +94,6 @@ void RenderSceneBuffersRD::cleanup() {
 		free_named_texture(E.value);
 	}
 	named_textures.clear();
-
-	// old stuff, to be re-evaluated...
-
-	for (int i = 0; i < luminance.fb.size(); i++) {
-		RD::get_singleton()->free(luminance.fb[i]);
-	}
-	luminance.fb.clear();
-
-	for (int i = 0; i < luminance.reduce.size(); i++) {
-		RD::get_singleton()->free(luminance.reduce[i]);
-	}
-	luminance.reduce.clear();
-
-	if (luminance.current_fb.is_valid()) {
-		RD::get_singleton()->free(luminance.current_fb);
-		luminance.current_fb = RID();
-	}
-
-	if (luminance.current.is_valid()) {
-		RD::get_singleton()->free(luminance.current);
-		luminance.current = RID();
-	}
 }
 
 void RenderSceneBuffersRD::configure(RID p_render_target, const Size2i p_internal_size, const Size2i p_target_size, float p_fsr_sharpness, float p_texture_mipmap_bias, RS::ViewportMSAA p_msaa_3d, RenderingServer::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_taa, bool p_use_debanding, uint32_t p_view_count) {

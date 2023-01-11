@@ -33,8 +33,6 @@
 
 #include "core/math/projection.h"
 #include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
-#include "servers/rendering/renderer_rd/shaders/luminance_reduce.glsl.gen.h"
-#include "servers/rendering/renderer_rd/shaders/luminance_reduce_raster.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/roughness_limiter.glsl.gen.h"
 #include "servers/rendering/renderer_rd/shaders/sort.glsl.gen.h"
 #include "servers/rendering/renderer_scene_render.h"
@@ -44,51 +42,6 @@
 class EffectsRD {
 private:
 	bool prefer_raster_effects;
-
-	enum LuminanceReduceMode {
-		LUMINANCE_REDUCE_READ,
-		LUMINANCE_REDUCE,
-		LUMINANCE_REDUCE_WRITE,
-		LUMINANCE_REDUCE_MAX
-	};
-
-	struct LuminanceReducePushConstant {
-		int32_t source_size[2];
-		float max_luminance;
-		float min_luminance;
-		float exposure_adjust;
-		float pad[3];
-	};
-
-	struct LuminanceReduce {
-		LuminanceReducePushConstant push_constant;
-		LuminanceReduceShaderRD shader;
-		RID shader_version;
-		RID pipelines[LUMINANCE_REDUCE_MAX];
-	} luminance_reduce;
-
-	enum LuminanceReduceRasterMode {
-		LUMINANCE_REDUCE_FRAGMENT_FIRST,
-		LUMINANCE_REDUCE_FRAGMENT,
-		LUMINANCE_REDUCE_FRAGMENT_FINAL,
-		LUMINANCE_REDUCE_FRAGMENT_MAX
-	};
-
-	struct LuminanceReduceRasterPushConstant {
-		int32_t source_size[2];
-		int32_t dest_size[2];
-		float exposure_adjust;
-		float min_luminance;
-		float max_luminance;
-		uint32_t pad1;
-	};
-
-	struct LuminanceReduceFragment {
-		LuminanceReduceRasterPushConstant push_constant;
-		LuminanceReduceRasterShaderRD shader;
-		RID shader_version;
-		PipelineCacheRD pipelines[LUMINANCE_REDUCE_FRAGMENT_MAX];
-	} luminance_reduce_raster;
 
 	struct RoughnessLimiterPushConstant {
 		int32_t screen_size[2];
@@ -164,14 +117,10 @@ private:
 	RBMap<TextureSamplerPair, RID> texture_sampler_to_compute_uniform_set_cache;
 
 	RID _get_uniform_set_from_image(RID p_texture);
-	RID _get_uniform_set_from_texture(RID p_texture, bool p_use_mipmaps = false);
 	RID _get_compute_uniform_set_from_texture(RID p_texture, bool p_use_mipmaps = false);
 
 public:
 	bool get_prefer_raster_effects();
-
-	void luminance_reduction(RID p_source_texture, const Size2i p_source_size, const Vector<RID> p_reduce, RID p_prev_luminance, float p_min_luminance, float p_max_luminance, float p_adjust, bool p_set = false);
-	void luminance_reduction_raster(RID p_source_texture, const Size2i p_source_size, const Vector<RID> p_reduce, Vector<RID> p_fb, RID p_prev_luminance, float p_min_luminance, float p_max_luminance, float p_adjust, bool p_set = false);
 
 	void roughness_limit(RID p_source_normal, RID p_roughness, const Size2i &p_size, float p_curve);
 

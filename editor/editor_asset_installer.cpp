@@ -120,7 +120,6 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 			// Mark C# support as unavailable.
 			extension_guess["cs"] = tree->get_theme_icon(SNAME("ImportFail"), SNAME("EditorIcons"));
 		}
-		extension_guess["vs"] = tree->get_theme_icon(SNAME("VisualScript"), SNAME("EditorIcons"));
 
 		extension_guess["res"] = tree->get_theme_icon(SNAME("Resource"), SNAME("EditorIcons"));
 		extension_guess["tres"] = tree->get_theme_icon(SNAME("Resource"), SNAME("EditorIcons"));

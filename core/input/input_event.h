@@ -138,7 +138,7 @@ public:
 
 	void set_modifiers_from_event(const InputEventWithModifiers *event);
 
-	Key get_modifiers_mask() const;
+	BitField<KeyModifierMask> get_modifiers_mask() const;
 
 	virtual String as_text() const override;
 	virtual String to_string() override;
@@ -195,7 +195,7 @@ public:
 class InputEventMouse : public InputEventWithModifiers {
 	GDCLASS(InputEventMouse, InputEventWithModifiers);
 
-	MouseButton button_mask = MouseButton::NONE;
+	BitField<MouseButtonMask> button_mask;
 
 	Vector2 pos;
 	Vector2 global_pos;
@@ -204,8 +204,8 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_button_mask(MouseButton p_mask);
-	MouseButton get_button_mask() const;
+	void set_button_mask(BitField<MouseButtonMask> p_mask);
+	BitField<MouseButtonMask> get_button_mask() const;
 
 	void set_position(const Vector2 &p_pos);
 	Vector2 get_position() const;

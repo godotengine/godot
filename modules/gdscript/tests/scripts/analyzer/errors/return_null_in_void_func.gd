@@ -1,2 +1,2 @@
 func test() -> void:
-  return null
+	return null

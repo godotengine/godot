@@ -174,7 +174,7 @@ void GraphNode::_resort() {
 
 		stretch_min += size.height;
 		msc.min_size = size.height;
-		msc.will_stretch = c->get_v_size_flags() & SIZE_EXPAND;
+		msc.will_stretch = c->get_v_size_flags().has_flag(SIZE_EXPAND);
 
 		if (msc.will_stretch) {
 			stretch_avail += msc.min_size;

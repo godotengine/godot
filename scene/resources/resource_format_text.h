@@ -106,6 +106,7 @@ class ResourceLoaderText {
 	VariantParser::ResourceParser rp;
 
 	friend class ResourceFormatLoaderText;
+	friend class ResourceFormatSaverText;
 
 	Error error = OK;
 
@@ -117,6 +118,7 @@ public:
 	void set_local_path(const String &p_local_path);
 	Ref<Resource> get_resource();
 	Error load();
+	Error set_uid(Ref<FileAccess> p_f, ResourceUID::ID p_uid);
 	int get_stage() const;
 	int get_stage_count() const;
 	void set_translation_remapped(bool p_remapped);
@@ -195,6 +197,7 @@ class ResourceFormatSaverText : public ResourceFormatSaver {
 public:
 	static ResourceFormatSaverText *singleton;
 	virtual Error save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags = 0);
+	virtual Error set_uid(const String &p_path, ResourceUID::ID p_uid);
 	virtual bool recognize(const Ref<Resource> &p_resource) const;
 	virtual void get_recognized_extensions(const Ref<Resource> &p_resource, List<String> *p_extensions) const;
 

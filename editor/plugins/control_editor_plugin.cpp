@@ -727,6 +727,7 @@ void ControlEditorToolbar::_anchors_preset_selected(int p_preset) {
 	for (Node *E : selection) {
 		Control *control = Object::cast_to<Control>(E);
 		if (control) {
+			undo_redo->add_do_property(control, "layout_mode", LayoutMode::LAYOUT_MODE_ANCHORS);
 			undo_redo->add_do_property(control, "anchors_preset", preset);
 			undo_redo->add_undo_method(control, "_edit_set_state", control->_edit_get_state());
 		}

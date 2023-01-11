@@ -122,9 +122,6 @@ static const char *enum_renames[][2] = {
 	{ "JOINT_SLIDER", "JOINT_TYPE_SLIDER" }, // PhysicsServer3D
 	{ "KEY_CONTROL", "KEY_CTRL" }, // Globals
 	{ "LOOP_PING_PONG", "LOOP_PINGPONG" }, // AudioStreamWAV
-	{ "MATH_RAND", "MATH_RANDF_RANGE" }, // VisualScriptBuiltinFunc
-	{ "MATH_RANDOM", "MATH_RANDI_RANGE" }, // VisualScriptBuiltinFunc
-	{ "MATH_STEPIFY", "MATH_STEP_DECIMALS" }, // VisualScriptBuiltinFunc
 	{ "MODE_KINEMATIC", "FREEZE_MODE_KINEMATIC" }, // RigidBody
 	{ "MODE_OPEN_ANY", "FILE_MODE_OPEN_ANY" }, // FileDialog
 	{ "MODE_OPEN_DIR", "FILE_MODE_OPEN_DIR" }, // FileDialog
@@ -239,6 +236,7 @@ static const char *gdscript_function_renames[][2] = {
 	{ "body_add_torque", "body_apply_torque" }, // PhysicsServer2D
 	{ "bumpmap_to_normalmap", "bump_map_to_normal_map" }, // Image
 	{ "can_be_hidden", "_can_be_hidden" }, // EditorNode3DGizmoPlugin
+	{ "can_drop_data", "_can_drop_data" }, // Control
 	{ "can_drop_data_fw", "_can_drop_data_fw" }, // ScriptEditor
 	{ "can_generate_small_preview", "_can_generate_small_preview" }, // EditorResourcePreviewGenerator
 	{ "can_instance", "can_instantiate" }, // PackedScene, Script
@@ -265,6 +263,7 @@ static const char *gdscript_function_renames[][2] = {
 	{ "delete_char_at_cursor", "delete_char_at_caret" }, // LineEdit
 	{ "deselect_items", "deselect_all" }, // FileDialog
 	{ "disable_plugin", "_disable_plugin" }, // EditorPlugin
+	{ "drop_data", "_drop_data" }, // Control
 	{ "drop_data_fw", "_drop_data_fw" }, // ScriptEditor
 	{ "exclude_polygons_2d", "exclude_polygons" }, // Geometry2D
 	{ "find_node", "find_child" }, // Node
@@ -694,6 +693,7 @@ static const char *csharp_function_renames[][2] = {
 	{ "BindChildNodeToBone", "SetBoneChildren" }, // Skeleton3D
 	{ "BumpmapToNormalmap", "BumpMapToNormalMap" }, // Image
 	{ "CanBeHidden", "_CanBeHidden" }, // EditorNode3DGizmoPlugin
+	{ "CanDropData", "_CanDropData" }, // Control
 	{ "CanDropDataFw", "_CanDropDataFw" }, // ScriptEditor
 	{ "CanGenerateSmallPreview", "_CanGenerateSmallPreview" }, // EditorResourcePreviewGenerator
 	{ "CanInstance", "CanInstantiate" }, // PackedScene, Script
@@ -717,6 +717,7 @@ static const char *csharp_function_renames[][2] = {
 	{ "DampedStringJointSetParam", "DampedSpringJointSetParam" }, // PhysicsServer2D
 	{ "DeleteCharAtCursor", "DeleteCharAtCaret" }, // LineEdit
 	{ "DeselectItems", "DeselectAll" }, // FileDialog
+	{ "DropData", "_DropData" }, // Control
 	{ "DropDataFw", "_DropDataFw" }, // ScriptEditor
 	{ "ExcludePolygons2d", "ExcludePolygons" }, // Geometry2D
 	{ "FindScancodeFromString", "FindKeycodeFromString" }, // OS

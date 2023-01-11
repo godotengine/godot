@@ -213,15 +213,6 @@ public:
 
 	// 2 full size, 2 half size
 	WeightBuffers weight_buffers[4]; // Only used in raster
-
-	struct Luminance {
-		Vector<RID> reduce;
-		RID current;
-
-		// used only on mobile renderer
-		Vector<RID> fb;
-		RID current_fb;
-	} luminance;
 };
 
 #endif // RENDER_SCENE_BUFFERS_RD_H

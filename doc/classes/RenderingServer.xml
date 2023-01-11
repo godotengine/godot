@@ -1930,7 +1930,7 @@
 			<param index="2" name="arrays" type="Array" />
 			<param index="3" name="blend_shapes" type="Array" default="[]" />
 			<param index="4" name="lods" type="Dictionary" default="{}" />
-			<param index="5" name="compress_format" type="int" default="0" />
+			<param index="5" name="compress_format" type="int" enum="RenderingServer.ArrayFormat" default="0" />
 			<description>
 			</description>
 		</method>
@@ -2032,14 +2032,14 @@
 		</method>
 		<method name="mesh_surface_get_format_attribute_stride" qualifiers="const">
 			<return type="int" />
-			<param index="0" name="format" type="int" />
+			<param index="0" name="format" type="int" enum="RenderingServer.ArrayFormat" />
 			<param index="1" name="vertex_count" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="mesh_surface_get_format_offset" qualifiers="const">
 			<return type="int" />
-			<param index="0" name="format" type="int" />
+			<param index="0" name="format" type="int" enum="RenderingServer.ArrayFormat" />
 			<param index="1" name="vertex_count" type="int" />
 			<param index="2" name="array_index" type="int" />
 			<description>
@@ -2047,14 +2047,14 @@
 		</method>
 		<method name="mesh_surface_get_format_skin_stride" qualifiers="const">
 			<return type="int" />
-			<param index="0" name="format" type="int" />
+			<param index="0" name="format" type="int" enum="RenderingServer.ArrayFormat" />
 			<param index="1" name="vertex_count" type="int" />
 			<description>
 			</description>
 		</method>
 		<method name="mesh_surface_get_format_vertex_stride" qualifiers="const">
 			<return type="int" />
-			<param index="0" name="format" type="int" />
+			<param index="0" name="format" type="int" enum="RenderingServer.ArrayFormat" />
 			<param index="1" name="vertex_count" type="int" />
 			<description>
 			</description>
@@ -3745,65 +3745,65 @@
 		</constant>
 		<constant name="ARRAY_CUSTOM_MAX" value="8" enum="ArrayCustomFormat">
 		</constant>
-		<constant name="ARRAY_FORMAT_VERTEX" value="1" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_VERTEX" value="1" enum="ArrayFormat" is_bitfield="true">
 			Flag used to mark a vertex array.
 		</constant>
-		<constant name="ARRAY_FORMAT_NORMAL" value="2" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_NORMAL" value="2" enum="ArrayFormat" is_bitfield="true">
 			Flag used to mark a normal array.
 		</constant>
-		<constant name="ARRAY_FORMAT_TANGENT" value="4" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_TANGENT" value="4" enum="ArrayFormat" is_bitfield="true">
 			Flag used to mark a tangent array.
 		</constant>
-		<constant name="ARRAY_FORMAT_COLOR" value="8" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_COLOR" value="8" enum="ArrayFormat" is_bitfield="true">
 			Flag used to mark a color array.
 		</constant>
-		<constant name="ARRAY_FORMAT_TEX_UV" value="16" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_TEX_UV" value="16" enum="ArrayFormat" is_bitfield="true">
 			Flag used to mark an UV coordinates array.
 		</constant>
-		<constant name="ARRAY_FORMAT_TEX_UV2" value="32" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_TEX_UV2" value="32" enum="ArrayFormat" is_bitfield="true">
 			Flag used to mark an UV coordinates array for the second UV coordinates.
 		</constant>
-		<constant name="ARRAY_FORMAT_CUSTOM0" value="64" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_CUSTOM0" value="64" enum="ArrayFormat" is_bitfield="true">
 		</constant>
-		<constant name="ARRAY_FORMAT_CUSTOM1" value="128" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_CUSTOM1" value="128" enum="ArrayFormat" is_bitfield="true">
 		</constant>
-		<constant name="ARRAY_FORMAT_CUSTOM2" value="256" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_CUSTOM2" value="256" enum="ArrayFormat" is_bitfield="true">
 		</constant>
-		<constant name="ARRAY_FORMAT_CUSTOM3" value="512" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_CUSTOM3" value="512" enum="ArrayFormat" is_bitfield="true">
 		</constant>
-		<constant name="ARRAY_FORMAT_BONES" value="1024" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_BONES" value="1024" enum="ArrayFormat" is_bitfield="true">
 			Flag used to mark a bone information array.
 		</constant>
-		<constant name="ARRAY_FORMAT_WEIGHTS" value="2048" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_WEIGHTS" value="2048" enum="ArrayFormat" is_bitfield="true">
 			Flag used to mark a weights array.
 		</constant>
-		<constant name="ARRAY_FORMAT_INDEX" value="4096" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_INDEX" value="4096" enum="ArrayFormat" is_bitfield="true">
 			Flag used to mark an index array.
 		</constant>
-		<constant name="ARRAY_FORMAT_BLEND_SHAPE_MASK" value="7" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_BLEND_SHAPE_MASK" value="7" enum="ArrayFormat" is_bitfield="true">
 		</constant>
-		<constant name="ARRAY_FORMAT_CUSTOM_BASE" value="13" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_CUSTOM_BASE" value="13" enum="ArrayFormat" is_bitfield="true">
 		</constant>
-		<constant name="ARRAY_FORMAT_CUSTOM_BITS" value="3" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_CUSTOM_BITS" value="3" enum="ArrayFormat" is_bitfield="true">
 		</constant>
-		<constant name="ARRAY_FORMAT_CUSTOM0_SHIFT" value="13" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_CUSTOM0_SHIFT" value="13" enum="ArrayFormat" is_bitfield="true">
 		</constant>
-		<constant name="ARRAY_FORMAT_CUSTOM1_SHIFT" value="16" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_CUSTOM1_SHIFT" value="16" enum="ArrayFormat" is_bitfield="true">
 		</constant>
-		<constant name="ARRAY_FORMAT_CUSTOM2_SHIFT" value="19" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_CUSTOM2_SHIFT" value="19" enum="ArrayFormat" is_bitfield="true">
 		</constant>
-		<constant name="ARRAY_FORMAT_CUSTOM3_SHIFT" value="22" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_CUSTOM3_SHIFT" value="22" enum="ArrayFormat" is_bitfield="true">
 		</constant>
-		<constant name="ARRAY_FORMAT_CUSTOM_MASK" value="7" enum="ArrayFormat">
+		<constant name="ARRAY_FORMAT_CUSTOM_MASK" value="7" enum="ArrayFormat" is_bitfield="true">
 		</constant>
-		<constant name="ARRAY_COMPRESS_FLAGS_BASE" value="25" enum="ArrayFormat">
+		<constant name="ARRAY_COMPRESS_FLAGS_BASE" value="25" enum="ArrayFormat" is_bitfield="true">
 		</constant>
-		<constant name="ARRAY_FLAG_USE_2D_VERTICES" value="33554432" enum="ArrayFormat">
+		<constant name="ARRAY_FLAG_USE_2D_VERTICES" value="33554432" enum="ArrayFormat" is_bitfield="true">
 			Flag used to mark that the array contains 2D vertices.
 		</constant>
-		<constant name="ARRAY_FLAG_USE_DYNAMIC_UPDATE" value="67108864" enum="ArrayFormat">
+		<constant name="ARRAY_FLAG_USE_DYNAMIC_UPDATE" value="67108864" enum="ArrayFormat" is_bitfield="true">
 		</constant>
-		<constant name="ARRAY_FLAG_USE_8_BONE_WEIGHTS" value="134217728" enum="ArrayFormat">
+		<constant name="ARRAY_FLAG_USE_8_BONE_WEIGHTS" value="134217728" enum="ArrayFormat" is_bitfield="true">
 		</constant>
 		<constant name="PRIMITIVE_POINTS" value="0" enum="PrimitiveType">
 			Primitive to draw consists of points.

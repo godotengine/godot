@@ -2607,7 +2607,7 @@ bool Main::start() {
 		if (debug_navigation) {
 			sml->set_debug_navigation_hint(true);
 			NavigationServer3D::get_singleton()->set_active(true);
-			NavigationServer3D::get_singleton_mut()->set_debug_enabled(true);
+			NavigationServer3D::get_singleton()->set_debug_enabled(true);
 		}
 #endif
 
@@ -2768,10 +2768,6 @@ bool Main::start() {
 #else
 			DisplayServer::get_singleton()->window_set_title(appname);
 #endif
-
-			// Define a very small minimum window size to prevent bugs such as GH-37242.
-			// It can still be overridden by the user in a script.
-			DisplayServer::get_singleton()->window_set_min_size(Size2i(64, 64));
 
 			bool snap_controls = GLOBAL_GET("gui/common/snap_controls_to_pixels");
 			sml->get_root()->set_snap_controls_to_pixels(snap_controls);
@@ -3032,7 +3028,7 @@ bool Main::iteration() {
 			break;
 		}
 
-		NavigationServer3D::get_singleton_mut()->process(physics_step * time_scale);
+		NavigationServer3D::get_singleton()->process(physics_step * time_scale);
 
 		message_queue->flush();
 

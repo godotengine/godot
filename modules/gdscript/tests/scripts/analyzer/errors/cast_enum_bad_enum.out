@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+Invalid cast. Enum "cast_enum_bad_enum.gd::MyEnum" does not have value corresponding to "MyOtherEnum.OTHER_ENUM_VALUE_3" (2).

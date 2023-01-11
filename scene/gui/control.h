@@ -165,10 +165,12 @@ private:
 
 		List<Control *>::Element *RI = nullptr;
 
-		Control *parent = nullptr;
+		Control *parent_control = nullptr;
 		Window *parent_window = nullptr;
 		CanvasItem *parent_canvas_item = nullptr;
-		ObjectID drag_owner;
+		Callable forward_drag;
+		Callable forward_can_drop;
+		Callable forward_drop;
 
 		// Positioning and sizing.
 
@@ -198,8 +200,8 @@ private:
 
 		// Container sizing.
 
-		int h_size_flags = SIZE_FILL;
-		int v_size_flags = SIZE_FILL;
+		BitField<SizeFlags> h_size_flags = SIZE_FILL;
+		BitField<SizeFlags> v_size_flags = SIZE_FILL;
 		real_t expand = 1.0;
 		Point2 custom_minimum_size;
 
@@ -280,6 +282,7 @@ private:
 	void _compute_anchors(Rect2 p_rect, const real_t p_offsets[4], real_t (&r_anchors)[4]);
 
 	void _set_layout_mode(LayoutMode p_mode);
+	void _update_layout_mode();
 	LayoutMode _get_layout_mode() const;
 	LayoutMode _get_default_layout_mode() const;
 	void _set_anchors_layout_preset(int p_preset);
@@ -471,10 +474,10 @@ public:
 
 	// Container sizing.
 
-	void set_h_size_flags(int p_flags);
-	int get_h_size_flags() const;
-	void set_v_size_flags(int p_flags);
-	int get_v_size_flags() const;
+	void set_h_size_flags(BitField<SizeFlags> p_flags);
+	BitField<SizeFlags> get_h_size_flags() const;
+	void set_v_size_flags(BitField<SizeFlags> p_flags);
+	BitField<SizeFlags> get_v_size_flags() const;
 	void set_stretch_ratio(real_t p_ratio);
 	real_t get_stretch_ratio() const;
 
@@ -499,7 +502,8 @@ public:
 
 	// Drag and drop handling.
 
-	virtual void set_drag_forwarding(Object *p_target);
+	virtual void set_drag_forwarding(const Callable &p_drag, const Callable &p_can_drop, const Callable &p_drop);
+	virtual void set_drag_forwarding_compat(Object *p_base);
 	virtual Variant get_drag_data(const Point2 &p_point);
 	virtual bool can_drop_data(const Point2 &p_point, const Variant &p_data) const;
 	virtual void drop_data(const Point2 &p_point, const Variant &p_data);
@@ -619,7 +623,7 @@ public:
 };
 
 VARIANT_ENUM_CAST(Control::FocusMode);
-VARIANT_ENUM_CAST(Control::SizeFlags);
+VARIANT_BITFIELD_CAST(Control::SizeFlags);
 VARIANT_ENUM_CAST(Control::CursorShape);
 VARIANT_ENUM_CAST(Control::LayoutPreset);
 VARIANT_ENUM_CAST(Control::LayoutPresetMode);

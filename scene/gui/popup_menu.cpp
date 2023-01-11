@@ -395,10 +395,10 @@ void PopupMenu::gui_input(const Ref<InputEvent> &p_event) {
 			// Activate the item on release of either the left mouse button or
 			// any mouse button held down when the popup was opened.
 			// This allows for opening the popup and triggering an action in a single mouse click.
-			if (button_idx == MouseButton::LEFT || (initial_button_mask & mouse_button_to_mask(button_idx)) != MouseButton::NONE) {
+			if (button_idx == MouseButton::LEFT || initial_button_mask.has_flag(mouse_button_to_mask(button_idx))) {
 				bool was_during_grabbed_click = during_grabbed_click;
 				during_grabbed_click = false;
-				initial_button_mask = MouseButton::NONE;
+				initial_button_mask.clear();
 
 				// Disable clicks under a time threshold to avoid selection right when opening the popup.
 				uint64_t now = OS::get_singleton()->get_ticks_msec();
@@ -1839,14 +1839,6 @@ String PopupMenu::get_tooltip(const Point2 &p_pos) const {
 
 void PopupMenu::set_parent_rect(const Rect2 &p_rect) {
 	parent_rect = p_rect;
-}
-
-void PopupMenu::get_translatable_strings(List<String> *p_strings) const {
-	for (int i = 0; i < items.size(); i++) {
-		if (!items[i].xl_text.is_empty()) {
-			p_strings->push_back(items[i].xl_text);
-		}
-	}
 }
 
 void PopupMenu::add_autohide_area(const Rect2 &p_area) {

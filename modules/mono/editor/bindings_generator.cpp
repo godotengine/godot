@@ -3806,7 +3806,7 @@ void BindingsGenerator::_populate_global_constants() {
 
 			if (enum_name != StringName()) {
 				EnumInterface ienum(enum_name);
-				// TODO: ienum.is_flags is always false for core constants since they don't seem to support bitfield enums
+				ienum.is_flags = CoreConstants::is_global_constant_bitfield(i);
 				List<EnumInterface>::Element *enum_match = global_enums.find(ienum);
 				if (enum_match) {
 					enum_match->get().constants.push_back(iconstant);

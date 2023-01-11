@@ -2034,11 +2034,11 @@ Point2i DisplayServerMacOS::mouse_get_position() const {
 	return Vector2i();
 }
 
-void DisplayServerMacOS::mouse_set_button_state(MouseButton p_state) {
+void DisplayServerMacOS::mouse_set_button_state(BitField<MouseButtonMask> p_state) {
 	last_button_state = p_state;
 }
 
-MouseButton DisplayServerMacOS::mouse_get_button_state() const {
+BitField<MouseButtonMask> DisplayServerMacOS::mouse_get_button_state() const {
 	return last_button_state;
 }
 

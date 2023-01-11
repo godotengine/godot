@@ -53,6 +53,7 @@
 #include "extensions/openxr_htc_vive_tracker_extension.h"
 #include "extensions/openxr_huawei_controller_extension.h"
 #include "extensions/openxr_palm_pose_extension.h"
+#include "extensions/openxr_pico_controller_extension.h"
 #include "extensions/openxr_wmr_controller_extension.h"
 
 static OpenXRAPI *openxr_api = nullptr;
@@ -92,6 +93,7 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 
 			// register our other extensions
 			OpenXRAPI::register_extension_wrapper(memnew(OpenXRPalmPoseExtension));
+			OpenXRAPI::register_extension_wrapper(memnew(OpenXRPicoControllerExtension));
 			OpenXRAPI::register_extension_wrapper(memnew(OpenXRCompositionLayerDepthExtension));
 			OpenXRAPI::register_extension_wrapper(memnew(OpenXRHTCControllerExtension));
 			OpenXRAPI::register_extension_wrapper(memnew(OpenXRHTCViveTrackerExtension));

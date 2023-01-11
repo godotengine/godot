@@ -117,6 +117,7 @@ Callable Callable::bindv(const Array &p_arguments) {
 }
 
 Callable Callable::unbind(int p_argcount) const {
+	ERR_FAIL_COND_V_MSG(p_argcount <= 0, Callable(*this), "Amount of unbind() arguments must be 1 or greater.");
 	return Callable(memnew(CallableCustomUnbind(*this, p_argcount)));
 }
 
@@ -149,6 +150,35 @@ StringName Callable::get_method() const {
 		return get_custom()->get_method();
 	}
 	return method;
+}
+
+int Callable::get_bound_arguments_count() const {
+	if (!is_null() && is_custom()) {
+		return custom->get_bound_arguments_count();
+	} else {
+		return 0;
+	}
+}
+
+void Callable::get_bound_arguments_ref(Vector<Variant> &r_arguments, int &r_argcount) const {
+	if (!is_null() && is_custom()) {
+		custom->get_bound_arguments(r_arguments, r_argcount);
+	} else {
+		r_arguments.clear();
+		r_argcount = 0;
+	}
+}
+
+Array Callable::get_bound_arguments() const {
+	Vector<Variant> arr;
+	int ac;
+	get_bound_arguments_ref(arr, ac);
+	Array ret;
+	ret.resize(arr.size());
+	for (int i = 0; i < arr.size(); i++) {
+		ret[i] = arr[i];
+	}
+	return ret;
 }
 
 CallableCustom *Callable::get_custom() const {
@@ -356,6 +386,15 @@ Error CallableCustom::rpc(int p_peer_id, const Variant **p_arguments, int p_argc
 
 const Callable *CallableCustom::get_base_comparator() const {
 	return nullptr;
+}
+
+int CallableCustom::get_bound_arguments_count() const {
+	return 0;
+}
+
+void CallableCustom::get_bound_arguments(Vector<Variant> &r_arguments, int &r_argcount) const {
+	r_arguments = Vector<Variant>();
+	r_argcount = 0;
 }
 
 CallableCustom::CallableCustom() {
