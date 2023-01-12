@@ -34,7 +34,12 @@
 #include "godot_collision_solver_3d.h"
 #include "godot_shape_3d.h"
 
-bool gjk_epa_calculate_penetration(const GodotShape3D *p_shape_A, const Transform3D &p_transform_A, const GodotShape3D *p_shape_B, const Transform3D &p_transform_B, GodotCollisionSolver3D::CallbackResult p_result_callback, void *p_userdata, bool p_swap = false, real_t p_margin_A = 0.0, real_t p_margin_B = 0.0);
 bool gjk_epa_calculate_distance(const GodotShape3D *p_shape_A, const Transform3D &p_transform_A, const GodotShape3D *p_shape_B, const Transform3D &p_transform_B, Vector3 &r_result_A, Vector3 &r_result_B);
+Vector3 gjk_epa_calculate_penetration2(const GodotShape3D *p_shape_A, const Transform3D &p_transform_A, const GodotShape3D *p_shape_B, const Transform3D &p_transform_B, real_t p_margin_A, real_t p_margin_B);
+
+template <bool withMargin>
+static _FORCE_INLINE_ Vector3 gjk_epa_calculate_penetration(const GodotShape3D *p_shape_A, const Transform3D &p_transform_A, const GodotShape3D *p_shape_B, const Transform3D &p_transform_B, real_t p_margin_A, real_t p_margin_B) {
+	return gjk_epa_calculate_penetration2(p_shape_A, p_transform_A, p_shape_B, p_transform_B, p_margin_A, p_margin_B);
+}
 
 #endif // GJK_EPA_H

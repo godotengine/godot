@@ -1005,19 +1005,12 @@ bool gjk_epa_calculate_distance(const GodotShape3D *p_shape_A, const Transform3D
 	return false;
 }
 
-bool gjk_epa_calculate_penetration(const GodotShape3D *p_shape_A, const Transform3D &p_transform_A, const GodotShape3D *p_shape_B, const Transform3D &p_transform_B, GodotCollisionSolver3D::CallbackResult p_result_callback, void *p_userdata, bool p_swap, real_t p_margin_A, real_t p_margin_B) {
+Vector3 gjk_epa_calculate_penetration2(const GodotShape3D *p_shape_A, const Transform3D &p_transform_A, const GodotShape3D *p_shape_B, const Transform3D &p_transform_B, real_t p_margin_A, real_t p_margin_B) {
 	GjkEpa2::sResults res;
 
 	if (GjkEpa2::Penetration(p_shape_A, p_transform_A, p_margin_A, p_shape_B, p_transform_B, p_margin_B, p_transform_B.origin - p_transform_A.origin, res)) {
-		if (p_result_callback) {
-			if (p_swap) {
-				p_result_callback(res.witnesses[1], 0, res.witnesses[0], 0, p_userdata);
-			} else {
-				p_result_callback(res.witnesses[0], 0, res.witnesses[1], 0, p_userdata);
-			}
-		}
-		return true;
+		return res.normal;
 	}
 
-	return false;
+	return Vector3(0, 0, 0);
 }
