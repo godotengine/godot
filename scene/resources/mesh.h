@@ -213,8 +213,11 @@ public:
 
 	static ConvexDecompositionFunc convex_decomposition_function;
 
+	Vector<Vector<Vector3>> convex_decompose_points(const ConvexDecompositionSettings &p_settings) const;
 	Vector<Ref<Shape3D>> convex_decompose(const ConvexDecompositionSettings &p_settings) const;
+	Vector<Vector3> create_convex_points(bool p_clean, bool p_simplify) const;
 	Ref<ConvexPolygonShape3D> create_convex_shape(bool p_clean = true, bool p_simplify = false) const;
+	Vector<Vector3> create_trimesh_faces() const;
 	Ref<ConcavePolygonShape3D> create_trimesh_shape() const;
 
 	virtual int get_builtin_bind_pose_count() const;

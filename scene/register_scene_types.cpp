@@ -148,8 +148,10 @@
 #include "scene/resources/capsule_shape_2d.h"
 #include "scene/resources/capsule_shape_3d.h"
 #include "scene/resources/circle_shape_2d.h"
+#include "scene/resources/concave_mesh_shape_3d.h"
 #include "scene/resources/concave_polygon_shape_2d.h"
 #include "scene/resources/concave_polygon_shape_3d.h"
+#include "scene/resources/convex_mesh_shape_3d.h"
 #include "scene/resources/convex_polygon_shape_2d.h"
 #include "scene/resources/convex_polygon_shape_3d.h"
 #include "scene/resources/cylinder_shape_3d.h"
@@ -832,6 +834,8 @@ void register_scene_types() {
 	GDREGISTER_CLASS(WorldBoundaryShape3D);
 	GDREGISTER_CLASS(ConvexPolygonShape3D);
 	GDREGISTER_CLASS(ConcavePolygonShape3D);
+	GDREGISTER_CLASS(ConvexMeshShape3D);
+	GDREGISTER_CLASS(ConcaveMeshShape3D);
 
 	GDREGISTER_CLASS(SkeletonModificationStack3D);
 	GDREGISTER_CLASS(SkeletonModification3D);

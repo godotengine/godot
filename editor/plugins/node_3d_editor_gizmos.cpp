@@ -69,7 +69,9 @@
 #include "scene/3d/voxel_gi.h"
 #include "scene/resources/box_shape_3d.h"
 #include "scene/resources/capsule_shape_3d.h"
+#include "scene/resources/concave_mesh_shape_3d.h"
 #include "scene/resources/concave_polygon_shape_3d.h"
+#include "scene/resources/convex_mesh_shape_3d.h"
 #include "scene/resources/convex_polygon_shape_3d.h"
 #include "scene/resources/cylinder_shape_3d.h"
 #include "scene/resources/height_map_shape_3d.h"
@@ -4793,6 +4795,34 @@ void CollisionShape3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 	if (Object::cast_to<ConcavePolygonShape3D>(*s)) {
 		Ref<ConcavePolygonShape3D> cs2 = s;
+		Ref<ArrayMesh> mesh = cs2->get_debug_mesh();
+		p_gizmo->add_mesh(mesh, material);
+		p_gizmo->add_collision_segments(cs2->get_debug_mesh_lines());
+	}
+
+	if (Object::cast_to<ConvexMeshShape3D>(*s)) {
+		Vector<Vector3> points = Object::cast_to<ConvexMeshShape3D>(*s)->get_points();
+
+		if (points.size() > 3) {
+			Vector<Vector3> varr = Variant(points);
+			Geometry3D::MeshData md;
+			Error err = ConvexHullComputer::convex_hull(varr, md);
+			if (err == OK) {
+				Vector<Vector3> points2;
+				points2.resize(md.edges.size() * 2);
+				for (uint32_t i = 0; i < md.edges.size(); i++) {
+					points2.write[i * 2 + 0] = md.vertices[md.edges[i].vertex_a];
+					points2.write[i * 2 + 1] = md.vertices[md.edges[i].vertex_b];
+				}
+
+				p_gizmo->add_lines(points2, material);
+				p_gizmo->add_collision_segments(points2);
+			}
+		}
+	}
+
+	if (Object::cast_to<ConcaveMeshShape3D>(*s)) {
+		Ref<ConcaveMeshShape3D> cs2 = s;
 		Ref<ArrayMesh> mesh = cs2->get_debug_mesh();
 		p_gizmo->add_mesh(mesh, material);
 		p_gizmo->add_collision_segments(cs2->get_debug_mesh_lines());

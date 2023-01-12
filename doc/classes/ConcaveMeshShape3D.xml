@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ConcaveMeshShape3D" inherits="Shape3D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Concave mesh shape resource (also called "trimesh") for 3D physics.
+	</brief_description>
+	<description>
+		3D concave mesh shape resource (also called "trimesh") to be added as a [i]direct[/i] child of a [PhysicsBody3D] or [Area3D] using a [CollisionShape3D] node. This shape is created by feeding a mesh. Despite its name, [ConcaveMeshShape3D] can also store convex mesh shapes. However, unlike [ConvexMeshShape3D], [ConcaveMeshShape3D] is [i]not[/i] limited to storing convex shapes exclusively.
+		[b]Note:[/b] When used for collision, [ConcaveMeshShape3D] is intended to work with static [PhysicsBody3D] nodes like [StaticBody3D] and will not work with [CharacterBody3D] or [RigidBody3D] with a mode other than Static.
+		[b]Performance:[/b] Due to its complexity, [ConcaveMeshShape3D] is the slowest collision shape to check collisions against. Its use should generally be limited to level geometry. For convex geometry, using [ConvexMeshShape3D] will perform better. For dynamic physics bodies that need concave collision, several [ConvexMeshShape3D]s can be used to represent its collision by using convex decomposition; see [ConvexMeshShape3D]'s documentation for instructions. However, consider using primitive collision shapes such as [SphereShape3D] or [BoxShape3D] first.
+		[b]Warning:[/b] Using this shape for an [Area3D] may give unexpected results: the area will only detect collisions with the triangle faces in the [ConcaveMeshShape3D] (and not with any "inside" of the shape, for example); moreover it will only detect all such collisions if [member backface_collision] is [code]true[/code].
+	</description>
+	<tutorials>
+		<link title="3D Physics Tests Demo">https://godotengine.org/asset-library/asset/675</link>
+	</tutorials>
+	<methods>
+		<method name="get_faces" qualifiers="const">
+			<return type="PackedVector3Array" />
+			<description>
+				Returns the faces (an array of triangles).
+			</description>
+		</method>
+		<method name="set_faces">
+			<return type="void" />
+			<param index="0" name="faces" type="PackedVector3Array" />
+			<description>
+				Sets the faces (an array of triangles).
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="backface_collision" type="bool" setter="set_backface_collision_enabled" getter="is_backface_collision_enabled" default="false">
+			If set to [code]true[/code], collisions occur on both sides of the concave shape faces. Otherwise they occur only along the face normals.
+		</member>
+		<member name="mesh" type="Mesh" setter="set_mesh" getter="get_mesh">
+			The mesh used to create the concave polygon shape.
+		</member>
+	</members>
+</class>

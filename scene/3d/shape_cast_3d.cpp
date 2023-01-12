@@ -32,6 +32,7 @@
 
 #include "collision_object_3d.h"
 #include "mesh_instance_3d.h"
+#include "scene/resources/concave_mesh_shape_3d.h"
 #include "scene/resources/concave_polygon_shape_3d.h"
 
 void ShapeCast3D::_notification(int p_what) {
@@ -176,6 +177,9 @@ PackedStringArray ShapeCast3D::get_configuration_warnings() const {
 	}
 	if (shape.is_valid() && Object::cast_to<ConcavePolygonShape3D>(*shape)) {
 		warnings.push_back(RTR("ShapeCast3D does not support ConcavePolygonShape3Ds. Collisions will not be reported."));
+	}
+	if (shape.is_valid() && Object::cast_to<ConcaveMeshShape3D>(*shape)) {
+		warnings.push_back(RTR("ShapeCast3D does not support ConcaveMeshShape3Ds. Collisions will not be reported."));
 	}
 	return warnings;
 }

@@ -39,7 +39,9 @@
 #include "scene/3d/physics_body_3d.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/menu_button.h"
+#include "scene/resources/concave_mesh_shape_3d.h"
 #include "scene/resources/concave_polygon_shape_3d.h"
+#include "scene/resources/convex_mesh_shape_3d.h"
 #include "scene/resources/convex_polygon_shape_3d.h"
 #include "scene/scene_string_names.h"
 
@@ -134,14 +136,23 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 
 		} break;
 
-		case MENU_OPTION_CREATE_TRIMESH_COLLISION_SHAPE: {
+		case MENU_OPTION_CREATE_TRIMESH_COLLISION_SHAPE:
+		case MENU_OPTION_CREATE_TRIMESH_MESH_COLLISION_SHAPE: {
 			if (node == get_tree()->get_edited_scene_root()) {
 				err_dialog->set_text(TTR("This doesn't work on scene root!"));
 				err_dialog->popup_centered();
 				return;
 			}
 
-			Ref<ConcavePolygonShape3D> shape = mesh->create_trimesh_shape();
+			Ref<Shape3D> shape;
+
+			if (p_option == MENU_OPTION_CREATE_TRIMESH_MESH_COLLISION_SHAPE) {
+				Ref<Shape3D> meshShape = memnew(ConcaveMeshShape3D(mesh));
+				shape = meshShape;
+			} else {
+				shape = mesh->create_trimesh_shape();
+			}
+
 			if (shape.is_null()) {
 				return;
 			}
@@ -166,6 +177,7 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 		} break;
 
 		case MENU_OPTION_CREATE_SINGLE_CONVEX_COLLISION_SHAPE:
+		case MENU_OPTION_CREATE_CONVEX_MESH_COLLISION_SHAPE:
 		case MENU_OPTION_CREATE_SIMPLIFIED_CONVEX_COLLISION_SHAPE: {
 			if (node == get_tree()->get_edited_scene_root()) {
 				err_dialog->set_text(TTR("Can't create a single convex collision shape for the scene root."));
@@ -175,7 +187,14 @@ void MeshInstance3DEditor::_menu_option(int p_option) {
 
 			bool simplify = (p_option == MENU_OPTION_CREATE_SIMPLIFIED_CONVEX_COLLISION_SHAPE);
 
-			Ref<ConvexPolygonShape3D> shape = mesh->create_convex_shape(true, simplify);
+			Ref<Shape3D> shape;
+
+			if (p_option == MENU_OPTION_CREATE_CONVEX_MESH_COLLISION_SHAPE) {
+				Ref<Shape3D> meshShape = memnew(ConvexMeshShape3D(mesh));
+				shape = meshShape;
+			} else {
+				shape = mesh->create_convex_shape(true, simplify);
+			}
 
 			if (shape.is_null()) {
 				err_dialog->set_text(TTR("Couldn't create a single convex collision shape."));
@@ -522,8 +541,12 @@ MeshInstance3DEditor::MeshInstance3DEditor() {
 	options->get_popup()->add_separator();
 	options->get_popup()->add_item(TTR("Create Trimesh Collision Sibling"), MENU_OPTION_CREATE_TRIMESH_COLLISION_SHAPE);
 	options->get_popup()->set_item_tooltip(-1, TTR("Creates a polygon-based collision shape.\nThis is the most accurate (but slowest) option for collision detection."));
+	options->get_popup()->add_item(TTR("Create Concave Mesh Collision Sibling"), MENU_OPTION_CREATE_TRIMESH_MESH_COLLISION_SHAPE);
+	options->get_popup()->set_item_tooltip(-1, TTR("Creates a polygon-based mesh collision shape.\nThis is the most accurate (but slowest) option for collision detection."));
 	options->get_popup()->add_item(TTR("Create Single Convex Collision Sibling"), MENU_OPTION_CREATE_SINGLE_CONVEX_COLLISION_SHAPE);
 	options->get_popup()->set_item_tooltip(-1, TTR("Creates a single convex collision shape.\nThis is the fastest (but least accurate) option for collision detection."));
+	options->get_popup()->add_item(TTR("Create Convex Mesh Collision Sibling"), MENU_OPTION_CREATE_CONVEX_MESH_COLLISION_SHAPE);
+	options->get_popup()->set_item_tooltip(-1, TTR("Creates a single convex mesh collision shape.\nThis is the fastest (but least accurate) option for collision detection."));
 	options->get_popup()->add_item(TTR("Create Simplified Convex Collision Sibling"), MENU_OPTION_CREATE_SIMPLIFIED_CONVEX_COLLISION_SHAPE);
 	options->get_popup()->set_item_tooltip(-1, TTR("Creates a simplified convex collision shape.\nThis is similar to single collision shape, but can result in a simpler geometry in some cases, at the cost of accuracy."));
 	options->get_popup()->add_item(TTR("Create Multiple Convex Collision Siblings"), MENU_OPTION_CREATE_MULTIPLE_CONVEX_COLLISION_SHAPES);

@@ -32,6 +32,7 @@
 
 #include "mesh_instance_3d.h"
 #include "physics_body_3d.h"
+#include "scene/resources/concave_mesh_shape_3d.h"
 #include "scene/resources/concave_polygon_shape_3d.h"
 #include "scene/resources/convex_polygon_shape_3d.h"
 #include "scene/resources/world_boundary_shape_3d.h"
@@ -131,6 +132,8 @@ PackedStringArray CollisionShape3D::get_configuration_warnings() const {
 			warnings.push_back(RTR("ConcavePolygonShape3D doesn't support RigidBody3D in another mode than static."));
 		} else if (Object::cast_to<WorldBoundaryShape3D>(*shape)) {
 			warnings.push_back(RTR("WorldBoundaryShape3D doesn't support RigidBody3D in another mode than static."));
+		} else if (Object::cast_to<ConcaveMeshShape3D>(*shape)) {
+			warnings.push_back(RTR("ConcaveMeshShape3D doesn't support RigidBody3D in another mode than static."));
 		}
 	}
 

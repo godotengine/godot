@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ConvexMeshShape3D" inherits="Shape3D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Convex mesh shape resource for 3D physics.
+	</brief_description>
+	<description>
+		3D convex mesh shape resource to be added as a [i]direct[/i] child of a [PhysicsBody3D] or [Area3D] using a [CollisionShape3D] node. Unlike [ConcaveMeshShape3D], [ConvexMeshShape3D] cannot store concave polygon shapes.
+		[b]Convex decomposition:[/b] Concave objects' collisions can be represented accurately using [i]several[/i] [ConvexMeshShape3D]s. This allows dynamic physics bodies to have complex concave collisions (at a performance cost). This is available in the editor by selecting the [MeshInstance3D], going to the [b]Mesh[/b] menu and choosing [b]Create Multiple Convex Collision Siblings[/b]. Alternatively, [method MeshInstance3D.create_multiple_convex_collisions] can be called in a script to perform this decomposition at run-time.
+		[b]Performance:[/b] [ConvexMeshShape3D] is faster to check collisions against compared to [ConcaveMeshShape3D], but it is slower than primitive collision shapes such as [SphereShape3D] or [BoxShape3D]. Its use should generally be limited to medium-sized objects that cannot have their collision accurately represented by a primitive shape.
+	</description>
+	<tutorials>
+		<link title="3D Physics Tests Demo">https://godotengine.org/asset-library/asset/675</link>
+	</tutorials>
+	<members>
+		<member name="clean" type="bool" setter="set_clean" getter="is_clean" default="true">
+			If set to [code]true[/code], duplicate and interior vertices are removed automatically. You can set it to [code]false[/code] to make the process faster if not needed.
+		</member>
+		<member name="mesh" type="Mesh" setter="set_mesh" getter="get_mesh">
+			The mesh used to create the convex polygon shape.
+		</member>
+		<member name="simplify" type="bool" setter="set_simplify" getter="is_simplify" default="false">
+			If set to [code]true[/code], the geometry can be further simplified to reduce the number of vertices. Disabled by default.
+		</member>
+	</members>
+</class>
