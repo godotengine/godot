@@ -39,7 +39,6 @@ class MeshInstance2D : public Node2D {
 	Ref<Mesh> mesh;
 
 	Ref<Texture2D> texture;
-	Ref<Texture2D> normal_map;
 
 protected:
 	void _notification(int p_what);
@@ -56,9 +55,6 @@ public:
 
 	void set_texture(const Ref<Texture2D> &p_texture);
 	Ref<Texture2D> get_texture() const;
-
-	void set_normal_map(const Ref<Texture2D> &p_texture);
-	Ref<Texture2D> get_normal_map() const;
 
 	MeshInstance2D();
 };
