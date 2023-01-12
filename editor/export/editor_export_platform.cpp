@@ -444,8 +444,10 @@ HashSet<String> EditorExportPlatform::get_features(const Ref<EditorExportPreset>
 
 	result.insert("template");
 	if (p_debug) {
+		result.insert("debug");
 		result.insert("template_debug");
 	} else {
+		result.insert("release");
 		result.insert("template_release");
 	}
 
