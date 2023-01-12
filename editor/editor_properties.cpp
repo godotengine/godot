@@ -342,12 +342,17 @@ void EditorPropertyTextEnum::_notification(int p_what) {
 }
 
 EditorPropertyTextEnum::EditorPropertyTextEnum() {
+	HBoxContainer *hb = memnew(HBoxContainer);
+	add_child(hb);
+
 	default_layout = memnew(HBoxContainer);
-	add_child(default_layout);
+	default_layout->set_h_size_flags(SIZE_EXPAND_FILL);
+	hb->add_child(default_layout);
 
 	edit_custom_layout = memnew(HBoxContainer);
+	edit_custom_layout->set_h_size_flags(SIZE_EXPAND_FILL);
 	edit_custom_layout->hide();
-	add_child(edit_custom_layout);
+	hb->add_child(edit_custom_layout);
 
 	option_button = memnew(OptionButton);
 	option_button->set_h_size_flags(SIZE_EXPAND_FILL);

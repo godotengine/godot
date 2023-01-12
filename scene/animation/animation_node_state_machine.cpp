@@ -236,7 +236,7 @@ bool AnimationNodeStateMachinePlayback::_travel(AnimationNodeStateMachine *p_sta
 	path.clear(); //a new one will be needed
 
 	if (current == p_travel) {
-		return true; //nothing to do
+		return false; // Will teleport oneself (restart).
 	}
 
 	Vector2 current_pos = p_state_machine->states[current].position;

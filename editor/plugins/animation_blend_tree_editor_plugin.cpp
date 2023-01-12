@@ -187,7 +187,7 @@ void AnimationNodeBlendTreeEditor::update_graph() {
 			String base_path = AnimationTreeEditor::get_singleton()->get_base_path() + String(E) + "/" + F.name;
 			EditorProperty *prop = EditorInspector::instantiate_property_editor(tree, F.type, base_path, F.hint, F.hint_string, F.usage);
 			if (prop) {
-				prop->set_read_only(read_only);
+				prop->set_read_only(read_only || (F.usage & PROPERTY_USAGE_READ_ONLY));
 				prop->set_object_and_property(tree, base_path);
 				prop->update_property();
 				prop->set_name_split_ratio(0);
