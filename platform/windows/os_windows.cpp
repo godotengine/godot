@@ -718,15 +718,23 @@ Error OS_Windows::create_process(const String &p_path, const List<String> &p_arg
 }
 
 Error OS_Windows::kill(const ProcessID &p_pid) {
-	ERR_FAIL_COND_V(!process_map->has(p_pid), FAILED);
+	int ret = 0;
+	if (process_map->has(p_pid)) {
+		const PROCESS_INFORMATION pi = (*process_map)[p_pid].pi;
+		process_map->erase(p_pid);
 
-	const PROCESS_INFORMATION pi = (*process_map)[p_pid].pi;
-	process_map->erase(p_pid);
+		ret = TerminateProcess(pi.hProcess, 0);
 
-	const int ret = TerminateProcess(pi.hProcess, 0);
+		CloseHandle(pi.hProcess);
+		CloseHandle(pi.hThread);
+	} else {
+		HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, false, (DWORD)p_pid);
+		if (hProcess != NULL) {
+			ret = TerminateProcess(hProcess, 0);
 
-	CloseHandle(pi.hProcess);
-	CloseHandle(pi.hThread);
+			CloseHandle(hProcess);
+		}
+	}
 
 	return ret != 0 ? OK : FAILED;
 }
