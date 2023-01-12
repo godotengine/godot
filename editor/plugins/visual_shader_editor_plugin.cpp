@@ -177,8 +177,8 @@ void VisualShaderGraphPlugin::update_node(VisualShader::Type p_type, int p_node_
 	if (p_type != visual_shader->get_shader_type() || !links.has(p_node_id)) {
 		return;
 	}
-	remove_node(p_type, p_node_id);
-	add_node(p_type, p_node_id);
+	remove_node(p_type, p_node_id, true);
+	add_node(p_type, p_node_id, true);
 }
 
 void VisualShaderGraphPlugin::set_input_port_default_value(VisualShader::Type p_type, int p_node_id, int p_port_id, Variant p_value) {
@@ -305,8 +305,8 @@ void VisualShaderGraphPlugin::update_parameter_refs() {
 	for (KeyValue<int, Link> &E : links) {
 		VisualShaderNodeParameterRef *ref = Object::cast_to<VisualShaderNodeParameterRef>(E.value.visual_node);
 		if (ref) {
-			remove_node(E.value.type, E.key);
-			add_node(E.value.type, E.key);
+			remove_node(E.value.type, E.key, true);
+			add_node(E.value.type, E.key, true);
 		}
 	}
 }
@@ -356,7 +356,7 @@ void VisualShaderGraphPlugin::update_theme() {
 	vector_expanded_color[3] = editor->get_theme_color(SNAME("axis_w_color"), SNAME("Editor")); // alpha
 }
 
-void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
+void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool p_just_update) {
 	if (!visual_shader.is_valid() || p_type != visual_shader->get_shader_type()) {
 		return;
 	}
@@ -424,7 +424,12 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 	graph->add_child(node);
 	node->set_theme(vstheme);
 	editor->_update_created_node(node);
-	register_link(p_type, p_id, vsnode.ptr(), node);
+
+	if (p_just_update) {
+		links[p_id].graph_node = node;
+	} else {
+		register_link(p_type, p_id, vsnode.ptr(), node);
+	}
 
 	if (is_resizable) {
 		size = resizable_node->get_size();
@@ -1038,11 +1043,13 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 	}
 }
 
-void VisualShaderGraphPlugin::remove_node(VisualShader::Type p_type, int p_id) {
+void VisualShaderGraphPlugin::remove_node(VisualShader::Type p_type, int p_id, bool p_just_update) {
 	if (visual_shader->get_shader_type() == p_type && links.has(p_id)) {
 		links[p_id].graph_node->get_parent()->remove_child(links[p_id].graph_node);
 		memdelete(links[p_id].graph_node);
-		links.erase(p_id);
+		if (!p_just_update) {
+			links.erase(p_id);
+		}
 	}
 }
 
@@ -1913,7 +1920,7 @@ void VisualShaderEditor::_update_graph() {
 	graph_plugin->update_theme();
 
 	for (int n_i = 0; n_i < nodes.size(); n_i++) {
-		graph_plugin->add_node(type, nodes[n_i]);
+		graph_plugin->add_node(type, nodes[n_i], false);
 	}
 
 	graph_plugin->make_dirty(false);
@@ -2967,8 +2974,8 @@ void VisualShaderEditor::_add_node(int p_idx, const Vector<Variant> &p_ops, Stri
 	}
 	undo_redo->add_do_method(visual_shader.ptr(), "add_node", type, vsnode, position, id_to_use);
 	undo_redo->add_undo_method(visual_shader.ptr(), "remove_node", type, id_to_use);
-	undo_redo->add_do_method(graph_plugin.ptr(), "add_node", type, id_to_use);
-	undo_redo->add_undo_method(graph_plugin.ptr(), "remove_node", type, id_to_use);
+	undo_redo->add_do_method(graph_plugin.ptr(), "add_node", type, id_to_use, false);
+	undo_redo->add_undo_method(graph_plugin.ptr(), "remove_node", type, id_to_use, false);
 
 	VisualShaderNodeExpression *expr = Object::cast_to<VisualShaderNodeExpression>(vsnode.ptr());
 	if (expr) {
@@ -3361,7 +3368,7 @@ void VisualShaderEditor::_delete_nodes(int p_type, const List<int> &p_nodes) {
 
 		undo_redo->add_do_method(visual_shader.ptr(), "remove_node", type, F);
 		undo_redo->add_undo_method(visual_shader.ptr(), "add_node", type, node, visual_shader->get_node_position(type, F), F);
-		undo_redo->add_undo_method(graph_plugin.ptr(), "add_node", type, F);
+		undo_redo->add_undo_method(graph_plugin.ptr(), "add_node", type, F, false);
 
 		VisualShaderNodeParameter *parameter = Object::cast_to<VisualShaderNodeParameter>(node.ptr());
 		if (parameter) {
@@ -3391,7 +3398,7 @@ void VisualShaderEditor::_delete_nodes(int p_type, const List<int> &p_nodes) {
 
 	// delete nodes from the graph
 	for (const int &F : p_nodes) {
-		undo_redo->add_do_method(graph_plugin.ptr(), "remove_node", type, F);
+		undo_redo->add_do_method(graph_plugin.ptr(), "remove_node", type, F, false);
 	}
 
 	// update parameter refs if any parameter has been deleted
@@ -4131,7 +4138,7 @@ void VisualShaderEditor::_dup_paste_nodes(int p_type, List<CopyItem> &r_items, c
 		}
 
 		undo_redo->add_do_method(visual_shader.ptr(), "add_node", type, node, item.position + p_offset, id_from);
-		undo_redo->add_do_method(graph_plugin.ptr(), "add_node", type, id_from);
+		undo_redo->add_do_method(graph_plugin.ptr(), "add_node", type, id_from, false);
 
 		added_set.insert(id_from);
 		id_from++;
@@ -4153,7 +4160,7 @@ void VisualShaderEditor::_dup_paste_nodes(int p_type, List<CopyItem> &r_items, c
 			continue;
 		}
 		undo_redo->add_undo_method(visual_shader.ptr(), "remove_node", type, id_from);
-		undo_redo->add_undo_method(graph_plugin.ptr(), "remove_node", type, id_from);
+		undo_redo->add_undo_method(graph_plugin.ptr(), "remove_node", type, id_from, false);
 		id_from++;
 	}
 
