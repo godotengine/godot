@@ -452,6 +452,8 @@ class DisplayServerWindows : public DisplayServer {
 	bool in_dispatch_input_event = false;
 
 	WNDCLASSEXW wc;
+	HBRUSH window_bkg_brush = nullptr;
+	uint32_t window_bkg_brush_color = 0;
 
 	HCURSOR cursors[CURSOR_MAX] = { nullptr };
 	CursorShape cursor_shape = CursorShape::CURSOR_ARROW;

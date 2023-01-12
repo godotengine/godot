@@ -2763,6 +2763,7 @@ void RenderingServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_white_texture"), &RenderingServer::get_white_texture);
 
 	ClassDB::bind_method(D_METHOD("set_boot_image", "image", "color", "scale", "use_filter"), &RenderingServer::set_boot_image, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("get_default_clear_color"), &RenderingServer::get_default_clear_color);
 	ClassDB::bind_method(D_METHOD("set_default_clear_color", "color"), &RenderingServer::set_default_clear_color);
 
 	ClassDB::bind_method(D_METHOD("has_feature", "feature"), &RenderingServer::has_feature);

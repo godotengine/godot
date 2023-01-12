@@ -1920,6 +1920,9 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 			window_position = &position;
 		}
 
+		Color boot_bg_color = GLOBAL_DEF_BASIC("application/boot_splash/bg_color", boot_splash_bg_color);
+		DisplayServer::set_early_window_clear_color_override(true, boot_bg_color);
+
 		// rendering_driver now held in static global String in main and initialized in setup()
 		Error err;
 		display_server = DisplayServer::create(display_driver_idx, rendering_driver, window_mode, window_vsync_mode, window_flags, window_position, window_size, init_screen, err);
@@ -2085,7 +2088,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 			boot_logo->set_pixel(0, 0, Color(0, 0, 0, 0));
 		}
 
-		Color boot_bg_color = GLOBAL_DEF_BASIC("application/boot_splash/bg_color", boot_splash_bg_color);
+		Color boot_bg_color = GLOBAL_GET("application/boot_splash/bg_color");
 
 #if defined(TOOLS_ENABLED) && !defined(NO_EDITOR_SPLASH)
 		boot_bg_color =
@@ -2119,6 +2122,8 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		}
 #endif
 	}
+
+	DisplayServer::set_early_window_clear_color_override(false);
 
 	MAIN_PRINT("Main: DCC");
 	RenderingServer::get_singleton()->set_default_clear_color(

@@ -38,6 +38,9 @@ DisplayServer *DisplayServer::singleton = nullptr;
 
 bool DisplayServer::hidpi_allowed = false;
 
+bool DisplayServer::window_early_clear_override_enabled = false;
+Color DisplayServer::window_early_clear_override_color = Color(0, 0, 0, 0);
+
 DisplayServer::DisplayServerCreate DisplayServer::server_create_functions[DisplayServer::MAX_SERVERS] = {
 	{ "headless", &DisplayServerHeadless::create_func, &DisplayServerHeadless::get_rendering_drivers_func }
 };
@@ -313,6 +316,23 @@ void DisplayServer::tts_post_utterance_event(TTSUtteranceEvent p_event, int p_id
 		default:
 			break;
 	}
+}
+
+bool DisplayServer::_get_window_early_clear_override(Color &r_color) {
+	if (window_early_clear_override_enabled) {
+		r_color = window_early_clear_override_color;
+		return true;
+	} else if (RenderingServer::get_singleton()) {
+		r_color = RenderingServer::get_singleton()->get_default_clear_color();
+		return true;
+	} else {
+		return false;
+	}
+}
+
+void DisplayServer::set_early_window_clear_color_override(bool p_enabled, Color p_color) {
+	window_early_clear_override_enabled = p_enabled;
+	window_early_clear_override_color = p_color;
 }
 
 void DisplayServer::mouse_set_mode(MouseMode p_mode) {
