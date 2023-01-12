@@ -1037,7 +1037,7 @@ String GDScript::get_script_path() const {
 }
 
 Error GDScript::load_source_code(const String &p_path) {
-	if (p_path.is_empty() || ResourceLoader::get_resource_type(p_path.get_slice("::", 0)) == "PackedScene") {
+	if (p_path.is_empty() || p_path.begins_with("gdscript://") || ResourceLoader::get_resource_type(p_path.get_slice("::", 0)) == "PackedScene") {
 		return OK;
 	}
 
@@ -1363,6 +1363,8 @@ GDScript::GDScript() :
 
 		GDScriptLanguage::get_singleton()->script_list.add(&script_list);
 	}
+
+	path = vformat("gdscript://%d.gd", get_instance_id());
 }
 
 void GDScript::_save_orphaned_subclasses(GDScript::ClearData *p_clear_data) {
