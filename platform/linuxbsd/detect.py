@@ -43,10 +43,11 @@ def get_opts():
         BoolVariable("use_lsan", "Use LLVM/GCC compiler leak sanitizer (LSAN)", False),
         BoolVariable("use_tsan", "Use LLVM/GCC compiler thread sanitizer (TSAN)", False),
         BoolVariable("use_msan", "Use LLVM compiler memory sanitizer (MSAN)", False),
-        BoolVariable("pulseaudio", "Detect and use PulseAudio", True),
-        BoolVariable("dbus", "Detect and use D-Bus to handle screensaver and portal desktop settings", True),
-        BoolVariable("speechd", "Detect and use Speech Dispatcher for Text-to-Speech support", True),
-        BoolVariable("fontconfig", "Detect and use fontconfig for system fonts support", True),
+        BoolVariable("alsa", "Use ALSA", True),
+        BoolVariable("pulseaudio", "Use PulseAudio", True),
+        BoolVariable("dbus", "Use D-Bus to handle screensaver and portal desktop settings", True),
+        BoolVariable("speechd", "Use Speech Dispatcher for Text-to-Speech support", True),
+        BoolVariable("fontconfig", "Use fontconfig for system fonts support", True),
         BoolVariable("udev", "Use udev for gamepad connection callbacks", True),
         BoolVariable("x11", "Enable X11 display", True),
         BoolVariable("touch", "Enable touch events", True),
@@ -183,17 +184,6 @@ def configure(env: "Environment"):
 
     ## Dependencies
 
-    if env["x11"]:
-        # Only cflags, we dlopen the libraries.
-        env.ParseConfig("pkg-config x11 --cflags")
-        env.ParseConfig("pkg-config xcursor --cflags")
-        env.ParseConfig("pkg-config xinerama --cflags")
-        env.ParseConfig("pkg-config xext --cflags")
-        env.ParseConfig("pkg-config xrandr --cflags")
-        env.ParseConfig("pkg-config xrender --cflags")
-        env.ParseConfig("pkg-config xi --cflags")
-        env.ParseConfig("pkg-config xkbcommon --cflags")
-
     if env["touch"]:
         env.Append(CPPDEFINES=["TOUCH_ENABLED"])
 
@@ -283,53 +273,24 @@ def configure(env: "Environment"):
     ## Flags
 
     if env["fontconfig"]:
-        if os.system("pkg-config --exists fontconfig") == 0:  # 0 means found
-            env.Append(CPPDEFINES=["FONTCONFIG_ENABLED"])
-            env.ParseConfig("pkg-config fontconfig --cflags")  # Only cflags, we dlopen the library.
-        else:
-            env["fontconfig"] = False
-            print("Warning: fontconfig libraries not found. Disabling the system fonts support.")
+        env.Append(CPPDEFINES=["FONTCONFIG_ENABLED"])
 
-    if os.system("pkg-config --exists alsa") == 0:  # 0 means found
-        env["alsa"] = True
+    if env["alsa"]:
         env.Append(CPPDEFINES=["ALSA_ENABLED", "ALSAMIDI_ENABLED"])
-        env.ParseConfig("pkg-config alsa --cflags")  # Only cflags, we dlopen the library.
-    else:
-        print("Warning: ALSA libraries not found. Disabling the ALSA audio driver.")
 
     if env["pulseaudio"]:
-        if os.system("pkg-config --exists libpulse") == 0:  # 0 means found
-            env.Append(CPPDEFINES=["PULSEAUDIO_ENABLED"])
-            env.ParseConfig("pkg-config libpulse --cflags")  # Only cflags, we dlopen the library.
-        else:
-            env["pulseaudio"] = False
-            print("Warning: PulseAudio development libraries not found. Disabling the PulseAudio audio driver.")
+        env.Append(CPPDEFINES=["PULSEAUDIO_ENABLED", "_REENTRANT"])
 
     if env["dbus"]:
-        if os.system("pkg-config --exists dbus-1") == 0:  # 0 means found
-            env.Append(CPPDEFINES=["DBUS_ENABLED"])
-            env.ParseConfig("pkg-config dbus-1 --cflags")  # Only cflags, we dlopen the library.
-        else:
-            env["dbus"] = False
-            print("Warning: D-Bus development libraries not found. Disabling screensaver prevention.")
+        env.Append(CPPDEFINES=["DBUS_ENABLED"])
 
     if env["speechd"]:
-        if os.system("pkg-config --exists speech-dispatcher") == 0:  # 0 means found
-            env.Append(CPPDEFINES=["SPEECHD_ENABLED"])
-            env.ParseConfig("pkg-config speech-dispatcher --cflags")  # Only cflags, we dlopen the library.
-        else:
-            env["speechd"] = False
-            print("Warning: Speech Dispatcher development libraries not found. Disabling Text-to-Speech support.")
+        env.Append(CPPDEFINES=["SPEECHD_ENABLED"])
 
     if platform.system() == "Linux":
         env.Append(CPPDEFINES=["JOYDEV_ENABLED"])
         if env["udev"]:
-            if os.system("pkg-config --exists libudev") == 0:  # 0 means found
-                env.Append(CPPDEFINES=["UDEV_ENABLED"])
-                env.ParseConfig("pkg-config libudev --cflags")  # Only cflags, we dlopen the library.
-            else:
-                env["udev"] = False
-                print("Warning: libudev development libraries not found. Disabling controller hotplugging support.")
+            env.Append(CPPDEFINES=["UDEV_ENABLED"])
     else:
         env["udev"] = False  # Linux specific
 
@@ -337,7 +298,7 @@ def configure(env: "Environment"):
     if not env["builtin_zlib"]:
         env.ParseConfig("pkg-config zlib --cflags --libs")
 
-    env.Prepend(CPPPATH=["#platform/linuxbsd"])
+    env.Prepend(CPPPATH=["#platform/linuxbsd", "#thirdparty/linuxbsd_headers"])
 
     env.Append(
         CPPDEFINES=[
