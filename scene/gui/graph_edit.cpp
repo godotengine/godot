@@ -404,8 +404,8 @@ void GraphEdit::add_child_notify(Node *p_child) {
 	if (gn) {
 		gn->set_scale(Vector2(zoom, zoom));
 		gn->connect("position_offset_changed", callable_mp(this, &GraphEdit::_graph_node_moved).bind(gn));
-		gn->connect("selected", callable_mp(this, &GraphEdit::_graph_node_selected).bind(gn));
-		gn->connect("deselected", callable_mp(this, &GraphEdit::_graph_node_deselected).bind(gn));
+		gn->connect("node_selected", callable_mp(this, &GraphEdit::_graph_node_selected).bind(gn));
+		gn->connect("node_deselected", callable_mp(this, &GraphEdit::_graph_node_deselected).bind(gn));
 		gn->connect("slot_updated", callable_mp(this, &GraphEdit::_graph_node_slot_updated).bind(gn));
 		gn->connect("raise_request", callable_mp(this, &GraphEdit::_graph_node_raised).bind(gn));
 		gn->connect("item_rect_changed", callable_mp((CanvasItem *)connections_layer, &CanvasItem::queue_redraw));
@@ -432,8 +432,8 @@ void GraphEdit::remove_child_notify(Node *p_child) {
 	GraphNode *gn = Object::cast_to<GraphNode>(p_child);
 	if (gn) {
 		gn->disconnect("position_offset_changed", callable_mp(this, &GraphEdit::_graph_node_moved));
-		gn->disconnect("selected", callable_mp(this, &GraphEdit::_graph_node_selected));
-		gn->disconnect("deselected", callable_mp(this, &GraphEdit::_graph_node_deselected));
+		gn->disconnect("node_selected", callable_mp(this, &GraphEdit::_graph_node_selected));
+		gn->disconnect("node_deselected", callable_mp(this, &GraphEdit::_graph_node_deselected));
 		gn->disconnect("slot_updated", callable_mp(this, &GraphEdit::_graph_node_slot_updated));
 		gn->disconnect("raise_request", callable_mp(this, &GraphEdit::_graph_node_raised));
 
