@@ -164,6 +164,7 @@ bool GDScriptTokenizer::Token::is_identifier() const {
 	switch (type) {
 		case IDENTIFIER:
 		case MATCH: // Used in String.match().
+		case CONST_INF: // Used in Vector{2,3,4}.INF
 			return true;
 		default:
 			return false;
