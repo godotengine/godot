@@ -1937,6 +1937,10 @@ bool EditorExportPlatformMacOS::has_valid_project_configuration(const Ref<Editor
 					}
 				}
 			}
+			if (notary_tool == 2 && p_preset->get("notarization/apple_team_id") == "") {
+				err += TTR("Notarization: Apple Team ID not specified.") + "\n";
+				valid = false;
+			}
 		} else if (notary_tool == 1) {
 			if (p_preset->get("notarization/api_uuid") == "") {
 				err += TTR("Notarization: App Store Connect issuer ID name not specified.") + "\n";
