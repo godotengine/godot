@@ -119,8 +119,8 @@ public:
 	void make_dirty(bool p_enabled);
 	void update_node(VisualShader::Type p_type, int p_id);
 	void update_node_deferred(VisualShader::Type p_type, int p_node_id);
-	void add_node(VisualShader::Type p_type, int p_id);
-	void remove_node(VisualShader::Type p_type, int p_id);
+	void add_node(VisualShader::Type p_type, int p_id, bool p_just_update);
+	void remove_node(VisualShader::Type p_type, int p_id, bool p_just_update);
 	void connect_nodes(VisualShader::Type p_type, int p_from_node, int p_from_port, int p_to_node, int p_to_port);
 	void disconnect_nodes(VisualShader::Type p_type, int p_from_node, int p_from_port, int p_to_node, int p_to_port);
 	void show_port_preview(VisualShader::Type p_type, int p_node_id, int p_port_id);
