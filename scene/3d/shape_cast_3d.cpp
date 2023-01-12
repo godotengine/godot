@@ -31,8 +31,8 @@
 #include "shape_cast_3d.h"
 
 #include "core/core_string_names.h"
-#include "collision_object_3d.h"
-#include "mesh_instance_3d.h"
+#include "scene/3d/collision_object_3d.h"
+#include "scene/3d/mesh_instance_3d.h"
 #include "scene/resources/concave_polygon_shape_3d.h"
 
 void ShapeCast3D::_notification(int p_what) {
