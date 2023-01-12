@@ -208,7 +208,7 @@ Error ConfigFile::_internal_save(Ref<FileAccess> file) {
 			file->store_string("\n");
 		}
 		if (!E.key.is_empty()) {
-			file->store_string("[" + E.key + "]\n\n");
+			file->store_string("[" + E.key.replace("]", "\\]") + "]\n\n");
 		}
 
 		for (const KeyValue<String, Variant> &F : E.value) {
@@ -308,7 +308,7 @@ Error ConfigFile::_parse(const String &p_path, VariantParser::Stream *p_stream) 
 		if (!assign.is_empty()) {
 			set_value(section, assign, value);
 		} else if (!next_tag.name.is_empty()) {
-			section = next_tag.name;
+			section = next_tag.name.replace("\\]", "]");
 		}
 	}
 
