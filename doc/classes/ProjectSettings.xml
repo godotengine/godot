@@ -659,10 +659,16 @@
 		<member name="editor/movie_writer/speaker_mode" type="int" setter="" getter="" default="0">
 			The speaker mode to use in the recorded audio when writing a movie. See [enum AudioServer.SpeakerMode] for possible values.
 		</member>
-		<member name="editor/node_naming/name_casing" type="int" setter="" getter="" default="0">
+		<member name="editor/naming/default_signal_callback_name" type="String" setter="" getter="" default="&quot;_on_{node_name}_{signal_name}&quot;">
+			The format of the default signal callback name (in the Signal Connection Dialog). The following substitutions are available: [code]{NodeName}[/code], [code]{nodeName}[/code], [code]{node_name}[/code], [code]{SignalName}[/code], [code]{signalName}[/code], and [code]{signal_name}[/code].
+		</member>
+		<member name="editor/naming/default_signal_callback_to_self_name" type="String" setter="" getter="" default="&quot;_on_{signal_name}&quot;">
+			The format of the default signal callback name when a signal connects to the same node that emits it (in the Signal Connection Dialog). The following substitutions are available: [code]{NodeName}[/code], [code]{nodeName}[/code], [code]{node_name}[/code], [code]{SignalName}[/code], [code]{signalName}[/code], and [code]{signal_name}[/code].
+		</member>
+		<member name="editor/naming/node_name_casing" type="int" setter="" getter="" default="0">
 			When creating node names automatically, set the type of casing in this project. This is mostly an editor setting.
 		</member>
-		<member name="editor/node_naming/name_num_separator" type="int" setter="" getter="" default="0">
+		<member name="editor/naming/node_name_num_separator" type="int" setter="" getter="" default="0">
 			What to use to separate node name from number. This is mostly an editor setting.
 		</member>
 		<member name="editor/run/main_run_args" type="String" setter="" getter="" default="&quot;&quot;">

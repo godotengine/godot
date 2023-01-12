@@ -3046,7 +3046,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 }
 
 String EditorNode::adjust_scene_name_casing(const String &root_name) {
-	switch (GLOBAL_GET("editor/scene/scene_naming").operator int()) {
+	switch (GLOBAL_GET("editor/naming/scene_name_casing").operator int()) {
 		case SCENE_NAME_CASING_AUTO:
 			// Use casing of the root node.
 			break;
@@ -5900,7 +5900,7 @@ void EditorNode::_feature_profile_changed() {
 }
 
 void EditorNode::_bind_methods() {
-	GLOBAL_DEF(PropertyInfo(Variant::INT, "editor/scene/scene_naming", PROPERTY_HINT_ENUM, "Auto,PascalCase,snake_case"), SCENE_NAME_CASING_SNAKE_CASE);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "editor/naming/scene_name_casing", PROPERTY_HINT_ENUM, "Auto,PascalCase,snake_case"), SCENE_NAME_CASING_SNAKE_CASE);
 	ClassDB::bind_method("edit_current", &EditorNode::edit_current);
 	ClassDB::bind_method("edit_node", &EditorNode::edit_node);
 

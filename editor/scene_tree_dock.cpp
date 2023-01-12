@@ -2188,7 +2188,7 @@ void SceneTreeDock::_do_create(Node *p_parent) {
 	ERR_FAIL_COND(!child);
 
 	String new_name = p_parent->validate_child_name(child);
-	if (GLOBAL_GET("editor/node_naming/name_casing").operator int() != NAME_CASING_PASCAL_CASE) {
+	if (GLOBAL_GET("editor/naming/node_name_casing").operator int() != NAME_CASING_PASCAL_CASE) {
 		new_name = adjust_name_casing(new_name);
 	}
 	child->set_name(new_name);
