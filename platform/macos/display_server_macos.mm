@@ -166,6 +166,17 @@ DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mod
 			layer.contentsScale = scale;
 		}
 
+		NSColor *bg_color = [NSColor windowBackgroundColor];
+		Color _bg_color;
+		if (_get_window_early_clear_override(_bg_color)) {
+			bg_color = [NSColor colorWithCalibratedRed:_bg_color.r green:_bg_color.g blue:_bg_color.b alpha:1.f];
+		}
+
+		[wd.window_object setBackgroundColor:bg_color];
+		if (layer) {
+			[layer setBackgroundColor:bg_color.CGColor];
+		}
+
 #if defined(VULKAN_ENABLED)
 		if (context_vulkan) {
 			Error err = context_vulkan->window_create(window_id_counter, p_vsync_mode, wd.window_view, p_rect.size.width, p_rect.size.height);
@@ -273,12 +284,17 @@ void DisplayServerMacOS::_set_window_per_pixel_transparency_enabled(bool p_enabl
 #endif
 			wd.layered_window = true;
 		} else {
-			[wd.window_object setBackgroundColor:[NSColor colorWithCalibratedWhite:1 alpha:1]];
+			NSColor *bg_color = [NSColor windowBackgroundColor];
+			Color _bg_color;
+			if (_get_window_early_clear_override(_bg_color)) {
+				bg_color = [NSColor colorWithCalibratedRed:_bg_color.r green:_bg_color.g blue:_bg_color.b alpha:1.f];
+			}
+			[wd.window_object setBackgroundColor:bg_color];
 			[wd.window_object setOpaque:YES];
 			[wd.window_object setHasShadow:YES];
 			CALayer *layer = [(NSView *)wd.window_view layer];
 			if (layer) {
-				[layer setBackgroundColor:[NSColor colorWithCalibratedWhite:1 alpha:1].CGColor];
+				[layer setBackgroundColor:bg_color.CGColor];
 				[layer setOpaque:YES];
 			}
 #if defined(GLES3_ENABLED)
