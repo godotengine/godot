@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  xr_nodes.cpp                                                         */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  xr_nodes.cpp                                                          */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "xr_nodes.h"
 
@@ -627,7 +627,9 @@ void XROrigin3D::set_world_scale(real_t p_world_scale) {
 	xr_server->set_world_scale(p_world_scale);
 }
 
-void XROrigin3D::set_current(bool p_enabled) {
+void XROrigin3D::_set_current(bool p_enabled, bool p_update_others) {
+	// We run this logic even if current already equals p_enabled as we may have set this previously before we entered our tree.
+	// This is then called a second time on NOTIFICATION_ENTER_TREE where we actually process activating this origin node.
 	current = p_enabled;
 
 	if (!is_inside_tree() || Engine::get_singleton()->is_editor_hint()) {
@@ -638,22 +640,36 @@ void XROrigin3D::set_current(bool p_enabled) {
 	set_notify_local_transform(current);
 	set_notify_transform(current);
 
+	// update XRServer with our current position
 	if (current) {
-		for (int i = 0; i < origin_nodes.size(); i++) {
-			if (origin_nodes[i] != this) {
-				origin_nodes[i]->set_current(false);
+		XRServer *xr_server = XRServer::get_singleton();
+		ERR_FAIL_NULL(xr_server);
+
+		xr_server->set_world_origin(get_global_transform());
+	}
+
+	// Check if we need to update our other origin nodes accordingly
+	if (p_update_others) {
+		if (current) {
+			for (int i = 0; i < origin_nodes.size(); i++) {
+				if (origin_nodes[i] != this && origin_nodes[i]->current) {
+					origin_nodes[i]->_set_current(false, false);
+				}
 			}
-		}
-	} else {
-		bool found = false;
-		// We no longer have a current origin so find the first one we can make current
-		for (int i = 0; !found && i < origin_nodes.size(); i++) {
-			if (origin_nodes[i] != this) {
-				origin_nodes[i]->set_current(true);
-				found = true;
+		} else {
+			// We no longer have a current origin so find the first one we can make current
+			for (int i = 0; i < origin_nodes.size(); i++) {
+				if (origin_nodes[i] != this) {
+					origin_nodes[i]->_set_current(true, false);
+					return; // we are done.
+				}
 			}
 		}
 	}
+}
+
+void XROrigin3D::set_current(bool p_enabled) {
+	_set_current(p_enabled, true);
 }
 
 bool XROrigin3D::is_current() const {

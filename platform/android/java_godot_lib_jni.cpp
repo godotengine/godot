@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  java_godot_lib_jni.cpp                                               */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  java_godot_lib_jni.cpp                                                */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "java_godot_lib_jni.h"
 
@@ -71,6 +71,39 @@ static Vector3 gravity;
 static Vector3 magnetometer;
 static Vector3 gyroscope;
 
+static void _terminate(JNIEnv *env, bool p_restart = false) {
+	step.set(-1); // Ensure no further steps are attempted and no further events are sent
+
+	// lets cleanup
+	if (java_class_wrapper) {
+		memdelete(java_class_wrapper);
+	}
+	if (input_handler) {
+		delete input_handler;
+	}
+	// Whether restarting is handled by 'Main::cleanup()'
+	bool restart_on_cleanup = false;
+	if (os_android) {
+		restart_on_cleanup = os_android->is_restart_on_exit_set();
+		os_android->main_loop_end();
+		Main::cleanup();
+		delete os_android;
+	}
+	if (godot_io_java) {
+		delete godot_io_java;
+	}
+	if (godot_java) {
+		if (!restart_on_cleanup) {
+			if (p_restart) {
+				godot_java->restart(env);
+			} else {
+				godot_java->force_quit(env);
+			}
+		}
+		delete godot_java;
+	}
+}
+
 extern "C" {
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_setVirtualKeyboardHeight(JNIEnv *env, jclass clazz, jint p_height) {
@@ -104,23 +137,7 @@ JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv
 }
 
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_ondestroy(JNIEnv *env, jclass clazz) {
-	// lets cleanup
-	if (java_class_wrapper) {
-		memdelete(java_class_wrapper);
-	}
-	if (godot_io_java) {
-		delete godot_io_java;
-	}
-	if (godot_java) {
-		delete godot_java;
-	}
-	if (input_handler) {
-		delete input_handler;
-	}
-	if (os_android) {
-		os_android->main_loop_end();
-		delete os_android;
-	}
+	_terminate(env, false);
 }
 
 JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_setup(JNIEnv *env, jclass clazz, jobjectArray p_cmdline) {
@@ -196,9 +213,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_newcontext(JNIEnv *en
 			}
 		} else {
 			// Rendering context recreated because it was lost; restart app to let it reload everything
-			step.set(-1); // Ensure no further steps are attempted and no further events are sent
-			os_android->main_loop_end();
-			godot_java->restart(env);
+			_terminate(env, true);
 		}
 	}
 }
@@ -249,7 +264,7 @@ JNIEXPORT jboolean JNICALL Java_org_godotengine_godot_GodotLib_step(JNIEnv *env,
 
 	bool should_swap_buffers = false;
 	if (os_android->main_loop_iterate(&should_swap_buffers)) {
-		godot_java->force_quit(env);
+		_terminate(env, false);
 	}
 
 	return should_swap_buffers;
@@ -338,19 +353,19 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_joyhat(JNIEnv *env, j
 	AndroidInputHandler::JoypadEvent jevent;
 	jevent.device = p_device;
 	jevent.type = AndroidInputHandler::JOY_EVENT_HAT;
-	HatMask hat = HatMask::CENTER;
+	BitField<HatMask> hat;
 	if (p_hat_x != 0) {
 		if (p_hat_x < 0) {
-			hat |= HatMask::LEFT;
+			hat.set_flag(HatMask::LEFT);
 		} else {
-			hat |= HatMask::RIGHT;
+			hat.set_flag(HatMask::RIGHT);
 		}
 	}
 	if (p_hat_y != 0) {
 		if (p_hat_y < 0) {
-			hat |= HatMask::UP;
+			hat.set_flag(HatMask::UP);
 		} else {
-			hat |= HatMask::DOWN;
+			hat.set_flag(HatMask::DOWN);
 		}
 	}
 	jevent.hat = hat;

@@ -1,38 +1,39 @@
-/*************************************************************************/
-/*  mesh_storage.h                                                       */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  mesh_storage.h                                                        */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef MESH_STORAGE_GLES3_H
 #define MESH_STORAGE_GLES3_H
 
 #ifdef GLES3_ENABLED
 
+#include "../shaders/skeleton.glsl.gen.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/rid_owner.h"
 #include "core/templates/self_list.h"
@@ -102,7 +103,13 @@ struct Mesh {
 
 		Vector<AABB> bone_aabbs;
 
-		GLuint blend_shape_buffer = 0;
+		struct BlendShape {
+			GLuint vertex_buffer = 0;
+			GLuint vertex_array = 0;
+		};
+
+		BlendShape *blend_shapes = nullptr;
+		GLuint skeleton_vertex_array = 0;
 
 		RID material;
 	};
@@ -113,12 +120,11 @@ struct Mesh {
 	Surface **surfaces = nullptr;
 	uint32_t surface_count = 0;
 
-	Vector<AABB> bone_aabbs;
-
 	bool has_bone_weights = false;
 
 	AABB aabb;
 	AABB custom_aabb;
+	uint64_t skeleton_aabb_version = 0;
 
 	Vector<RID> material_cache;
 
@@ -136,7 +142,14 @@ struct MeshInstance {
 	Mesh *mesh = nullptr;
 	RID skeleton;
 	struct Surface {
+		GLuint vertex_buffers[2] = { 0, 0 };
+		GLuint vertex_arrays[2] = { 0, 0 };
 		GLuint vertex_buffer = 0;
+		int vertex_stride_cache = 0;
+		int vertex_size_cache = 0;
+		int vertex_normal_offset_cache = 0;
+		int vertex_tangent_offset_cache = 0;
+		uint32_t format_cache = 0;
 
 		Mesh::Surface::Version *versions = nullptr; //allocated on demand
 		uint32_t version_count = 0;
@@ -144,7 +157,6 @@ struct MeshInstance {
 	LocalVector<Surface> surfaces;
 	LocalVector<float> blend_weights;
 
-	GLuint blend_weights_buffer = 0;
 	List<MeshInstance *>::Element *I = nullptr; //used to erase itself
 	uint64_t skeleton_version = 0;
 	bool dirty = false;
@@ -186,12 +198,14 @@ struct MultiMesh {
 struct Skeleton {
 	bool use_2d = false;
 	int size = 0;
+	int height = 0;
 	Vector<float> data;
-	GLuint buffer = 0;
 
 	bool dirty = false;
 	Skeleton *dirty_list = nullptr;
 	Transform2D base_transform_2d;
+
+	GLuint transforms_texture = 0;
 
 	uint64_t version = 1;
 
@@ -201,6 +215,11 @@ struct Skeleton {
 class MeshStorage : public RendererMeshStorage {
 private:
 	static MeshStorage *singleton;
+
+	struct {
+		SkeletonShaderGLES3 shader;
+		RID shader_version;
+	} skeleton_shader;
 
 	/* Mesh */
 
@@ -214,6 +233,7 @@ private:
 
 	void _mesh_instance_clear(MeshInstance *mi);
 	void _mesh_instance_add_surface(MeshInstance *mi, Mesh *mesh, uint32_t p_surface);
+	void _blend_shape_bind_mesh_instance_buffer(MeshInstance *p_mi, uint32_t p_surface);
 	SelfList<MeshInstance>::List dirty_mesh_instance_weights;
 	SelfList<MeshInstance>::List dirty_mesh_instance_arrays;
 
@@ -232,9 +252,10 @@ private:
 
 	mutable RID_Owner<Skeleton, true> skeleton_owner;
 
-	Skeleton *skeleton_dirty_list = nullptr;
-
 	_FORCE_INLINE_ void _skeleton_make_dirty(Skeleton *skeleton);
+	void _compute_skeleton(MeshInstance *p_mi, Skeleton *p_sk, uint32_t p_surface);
+
+	Skeleton *skeleton_dirty_list = nullptr;
 
 public:
 	static MeshStorage *get_singleton();
@@ -327,6 +348,7 @@ public:
 
 	_FORCE_INLINE_ uint32_t mesh_surface_get_lod(void *p_surface, float p_model_scale, float p_distance_threshold, float p_mesh_lod_threshold, uint32_t &r_index_count) const {
 		Mesh::Surface *s = reinterpret_cast<Mesh::Surface *>(p_surface);
+		ERR_FAIL_COND_V(!s, 0);
 
 		int32_t current_lod = -1;
 		r_index_count = s->index_count;
@@ -403,6 +425,8 @@ public:
 	virtual void mesh_instance_check_for_update(RID p_mesh_instance) override;
 	virtual void update_mesh_instances() override;
 
+	// TODO: considering hashing versions with multimesh buffer RID.
+	// Doing so would allow us to avoid specifying multimesh buffer pointers every frame and may improve performance.
 	_FORCE_INLINE_ void mesh_instance_surface_get_vertex_arrays_and_format(RID p_mesh_instance, uint32_t p_surface_index, uint32_t p_input_mask, GLuint &r_vertex_array_gl) {
 		MeshInstance *mi = mesh_instance_owner.get_or_null(p_mesh_instance);
 		ERR_FAIL_COND(!mi);
@@ -531,9 +555,11 @@ public:
 
 	virtual void skeleton_update_dependency(RID p_base, DependencyTracker *p_instance) override;
 
-	/* OCCLUDER */
+	void _update_dirty_skeletons();
 
-	void occluder_set_mesh(RID p_occluder, const PackedVector3Array &p_vertices, const PackedInt32Array &p_indices);
+	_FORCE_INLINE_ bool skeleton_is_valid(RID p_skeleton) {
+		return skeleton_owner.get_or_null(p_skeleton) != nullptr;
+	}
 };
 
 } // namespace GLES3

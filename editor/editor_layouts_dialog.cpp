@@ -1,38 +1,39 @@
-/*************************************************************************/
-/*  editor_layouts_dialog.cpp                                            */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  editor_layouts_dialog.cpp                                             */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "editor_layouts_dialog.h"
 
 #include "core/io/config_file.h"
 #include "core/object/class_db.h"
 #include "core/os/keyboard.h"
+#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/line_edit.h"
@@ -97,6 +98,11 @@ void EditorLayoutsDialog::_post_popup() {
 	for (const String &E : layouts) {
 		layout_names->add_item(E);
 	}
+	if (name->is_visible()) {
+		name->grab_focus();
+	} else {
+		layout_names->grab_focus();
+	}
 }
 
 EditorLayoutsDialog::EditorLayoutsDialog() {
@@ -106,7 +112,9 @@ EditorLayoutsDialog::EditorLayoutsDialog() {
 	makevb->set_anchor_and_offset(SIDE_RIGHT, Control::ANCHOR_END, -5);
 
 	layout_names = memnew(ItemList);
-	makevb->add_child(layout_names);
+	layout_names->set_auto_height(true);
+	makevb->add_margin_child(TTR("Select existing layout:"), layout_names);
+	layout_names->set_custom_minimum_size(Size2(300 * EDSCALE, 1));
 	layout_names->set_visible(true);
 	layout_names->set_offset(SIDE_TOP, 5);
 	layout_names->set_anchor_and_offset(SIDE_LEFT, Control::ANCHOR_BEGIN, 5);
@@ -116,8 +124,10 @@ EditorLayoutsDialog::EditorLayoutsDialog() {
 	layout_names->set_allow_rmb_select(true);
 
 	name = memnew(LineEdit);
+	name->set_placeholder("Or enter new layout name");
 	makevb->add_child(name);
 	name->set_offset(SIDE_TOP, 5);
+	name->set_custom_minimum_size(Size2(300 * EDSCALE, 1));
 	name->set_anchor_and_offset(SIDE_LEFT, Control::ANCHOR_BEGIN, 5);
 	name->set_anchor_and_offset(SIDE_RIGHT, Control::ANCHOR_END, -5);
 	name->connect("gui_input", callable_mp(this, &EditorLayoutsDialog::_line_gui_input));

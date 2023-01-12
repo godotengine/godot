@@ -1,34 +1,36 @@
-/*************************************************************************/
-/*  node_2d.cpp                                                          */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  node_2d.cpp                                                           */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "node_2d.h"
+
+#include "scene/main/viewport.h"
 
 #ifdef TOOLS_ENABLED
 Dictionary Node2D::_edit_get_state() const {
@@ -131,6 +133,14 @@ void Node2D::_update_transform() {
 	_notify_transform();
 }
 
+void Node2D::reparent(Node *p_parent, bool p_keep_global_transform) {
+	Transform2D temp = get_global_transform();
+	Node::reparent(p_parent);
+	if (p_keep_global_transform) {
+		set_global_transform(temp);
+	}
+}
+
 void Node2D::set_position(const Point2 &p_pos) {
 	if (_xform_dirty) {
 		const_cast<Node2D *>(this)->_update_xform_values();
@@ -145,6 +155,10 @@ void Node2D::set_rotation(real_t p_radians) {
 	}
 	rotation = p_radians;
 	_update_transform();
+}
+
+void Node2D::set_rotation_degrees(real_t p_degrees) {
+	set_rotation(Math::deg_to_rad(p_degrees));
 }
 
 void Node2D::set_skew(real_t p_radians) {
@@ -183,6 +197,10 @@ real_t Node2D::get_rotation() const {
 	}
 
 	return rotation;
+}
+
+real_t Node2D::get_rotation_degrees() const {
+	return Math::rad_to_deg(get_rotation());
 }
 
 real_t Node2D::get_skew() const {
@@ -257,6 +275,10 @@ real_t Node2D::get_global_rotation() const {
 	return get_global_transform().get_rotation();
 }
 
+real_t Node2D::get_global_rotation_degrees() const {
+	return Math::rad_to_deg(get_global_rotation());
+}
+
 real_t Node2D::get_global_skew() const {
 	return get_global_transform().get_skew();
 }
@@ -272,6 +294,10 @@ void Node2D::set_global_rotation(const real_t p_radians) {
 	} else {
 		set_rotation(p_radians);
 	}
+}
+
+void Node2D::set_global_rotation_degrees(const real_t p_degrees) {
+	set_global_rotation(Math::deg_to_rad(p_degrees));
 }
 
 void Node2D::set_global_skew(const real_t p_radians) {
@@ -326,29 +352,6 @@ void Node2D::set_global_transform(const Transform2D &p_transform) {
 	}
 }
 
-void Node2D::set_z_index(int p_z) {
-	ERR_FAIL_COND(p_z < RS::CANVAS_ITEM_Z_MIN);
-	ERR_FAIL_COND(p_z > RS::CANVAS_ITEM_Z_MAX);
-	z_index = p_z;
-	RS::get_singleton()->canvas_item_set_z_index(get_canvas_item(), z_index);
-}
-
-void Node2D::set_z_as_relative(bool p_enabled) {
-	if (z_relative == p_enabled) {
-		return;
-	}
-	z_relative = p_enabled;
-	RS::get_singleton()->canvas_item_set_z_as_relative_to_parent(get_canvas_item(), p_enabled);
-}
-
-bool Node2D::is_z_relative() const {
-	return z_relative;
-}
-
-int Node2D::get_z_index() const {
-	return z_index;
-}
-
 Transform2D Node2D::get_relative_transform_to_parent(const Node *p_parent) const {
 	if (p_parent == this) {
 		return Transform2D();
@@ -380,23 +383,26 @@ Point2 Node2D::to_global(Point2 p_local) const {
 	return get_global_transform().xform(p_local);
 }
 
-void Node2D::set_y_sort_enabled(bool p_enabled) {
-	y_sort_enabled = p_enabled;
-	RS::get_singleton()->canvas_item_set_sort_children_by_y(get_canvas_item(), y_sort_enabled);
-}
-
-bool Node2D::is_y_sort_enabled() const {
-	return y_sort_enabled;
+void Node2D::_notification(int p_notification) {
+	switch (p_notification) {
+		case NOTIFICATION_MOVED_IN_PARENT: {
+			if (get_viewport()) {
+				get_viewport()->gui_set_root_order_dirty();
+			}
+		} break;
+	}
 }
 
 void Node2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_position", "position"), &Node2D::set_position);
 	ClassDB::bind_method(D_METHOD("set_rotation", "radians"), &Node2D::set_rotation);
+	ClassDB::bind_method(D_METHOD("set_rotation_degrees", "degrees"), &Node2D::set_rotation_degrees);
 	ClassDB::bind_method(D_METHOD("set_skew", "radians"), &Node2D::set_skew);
 	ClassDB::bind_method(D_METHOD("set_scale", "scale"), &Node2D::set_scale);
 
 	ClassDB::bind_method(D_METHOD("get_position"), &Node2D::get_position);
 	ClassDB::bind_method(D_METHOD("get_rotation"), &Node2D::get_rotation);
+	ClassDB::bind_method(D_METHOD("get_rotation_degrees"), &Node2D::get_rotation_degrees);
 	ClassDB::bind_method(D_METHOD("get_skew"), &Node2D::get_skew);
 	ClassDB::bind_method(D_METHOD("get_scale"), &Node2D::get_scale);
 
@@ -410,7 +416,9 @@ void Node2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_global_position", "position"), &Node2D::set_global_position);
 	ClassDB::bind_method(D_METHOD("get_global_position"), &Node2D::get_global_position);
 	ClassDB::bind_method(D_METHOD("set_global_rotation", "radians"), &Node2D::set_global_rotation);
+	ClassDB::bind_method(D_METHOD("set_global_rotation_degrees", "degrees"), &Node2D::set_global_rotation_degrees);
 	ClassDB::bind_method(D_METHOD("get_global_rotation"), &Node2D::get_global_rotation);
+	ClassDB::bind_method(D_METHOD("get_global_rotation_degrees"), &Node2D::get_global_rotation_degrees);
 	ClassDB::bind_method(D_METHOD("set_global_skew", "radians"), &Node2D::set_global_skew);
 	ClassDB::bind_method(D_METHOD("get_global_skew"), &Node2D::get_global_skew);
 	ClassDB::bind_method(D_METHOD("set_global_scale", "scale"), &Node2D::set_global_scale);
@@ -425,32 +433,20 @@ void Node2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("to_local", "global_point"), &Node2D::to_local);
 	ClassDB::bind_method(D_METHOD("to_global", "local_point"), &Node2D::to_global);
 
-	ClassDB::bind_method(D_METHOD("set_z_index", "z_index"), &Node2D::set_z_index);
-	ClassDB::bind_method(D_METHOD("get_z_index"), &Node2D::get_z_index);
-
-	ClassDB::bind_method(D_METHOD("set_z_as_relative", "enable"), &Node2D::set_z_as_relative);
-	ClassDB::bind_method(D_METHOD("is_z_relative"), &Node2D::is_z_relative);
-
-	ClassDB::bind_method(D_METHOD("set_y_sort_enabled", "enabled"), &Node2D::set_y_sort_enabled);
-	ClassDB::bind_method(D_METHOD("is_y_sort_enabled"), &Node2D::is_y_sort_enabled);
-
 	ClassDB::bind_method(D_METHOD("get_relative_transform_to_parent", "parent"), &Node2D::get_relative_transform_to_parent);
 
 	ADD_GROUP("Transform", "");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "position", PROPERTY_HINT_RANGE, "-99999,99999,0.001,or_less,or_greater,hide_slider,suffix:px"), "set_position", "get_position");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rotation", PROPERTY_HINT_RANGE, "-360,360,0.1,or_less,or_greater,radians"), "set_rotation", "get_rotation");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "rotation_degrees", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_rotation_degrees", "get_rotation_degrees");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "scale", PROPERTY_HINT_LINK), "set_scale", "get_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "skew", PROPERTY_HINT_RANGE, "-89.9,89.9,0.1,radians"), "set_skew", "get_skew");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "transform", PROPERTY_HINT_NONE, "suffix:px", PROPERTY_USAGE_NONE), "set_transform", "get_transform");
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "global_position", PROPERTY_HINT_NONE, "suffix:px", PROPERTY_USAGE_NONE), "set_global_position", "get_global_position");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "global_rotation", PROPERTY_HINT_NONE, "radians", PROPERTY_USAGE_NONE), "set_global_rotation", "get_global_rotation");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "global_rotation_degrees", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_global_rotation_degrees", "get_global_rotation_degrees");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "global_scale", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_global_scale", "get_global_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "global_skew", PROPERTY_HINT_NONE, "radians", PROPERTY_USAGE_NONE), "set_global_skew", "get_global_skew");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM2D, "global_transform", PROPERTY_HINT_NONE, "suffix:px", PROPERTY_USAGE_NONE), "set_global_transform", "get_global_transform");
-
-	ADD_GROUP("Ordering", "");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "z_index", PROPERTY_HINT_RANGE, itos(RS::CANVAS_ITEM_Z_MIN) + "," + itos(RS::CANVAS_ITEM_Z_MAX) + ",1"), "set_z_index", "get_z_index");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "z_as_relative"), "set_z_as_relative", "is_z_relative");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "y_sort_enabled"), "set_y_sort_enabled", "is_y_sort_enabled");
 }

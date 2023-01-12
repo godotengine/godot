@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  test_basis.h                                                         */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  test_basis.h                                                          */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef TEST_BASIS_H
 #define TEST_BASIS_H
@@ -223,7 +223,7 @@ TEST_CASE("[Basis] Set axis angle") {
 	// Testing the singularity when the angle is 180°.
 	Basis singularityPi(-1, 0, 0, 0, 1, 0, 0, 0, -1);
 	singularityPi.get_axis_angle(axis, angle);
-	CHECK(Math::is_equal_approx(angle, pi));
+	CHECK(angle == doctest::Approx(pi));
 
 	// Testing reversing the an axis (of an 30° angle).
 	float cos30deg = Math::cos(Math::deg_to_rad((real_t)30.0));
@@ -231,17 +231,17 @@ TEST_CASE("[Basis] Set axis angle") {
 	Basis z_negative(cos30deg, 0.5, 0, -0.5, cos30deg, 0, 0, 0, 1);
 
 	z_positive.get_axis_angle(axis, angle);
-	CHECK(Math::is_equal_approx(angle, Math::deg_to_rad((real_t)30.0)));
+	CHECK(angle == doctest::Approx(Math::deg_to_rad((real_t)30.0)));
 	CHECK(axis == Vector3(0, 0, 1));
 
 	z_negative.get_axis_angle(axis, angle);
-	CHECK(Math::is_equal_approx(angle, Math::deg_to_rad((real_t)30.0)));
+	CHECK(angle == doctest::Approx(Math::deg_to_rad((real_t)30.0)));
 	CHECK(axis == Vector3(0, 0, -1));
 
 	// Testing a rotation of 90° on x-y-z.
 	Basis x90deg(1, 0, 0, 0, 0, -1, 0, 1, 0);
 	x90deg.get_axis_angle(axis, angle);
-	CHECK(Math::is_equal_approx(angle, pi / (real_t)2));
+	CHECK(angle == doctest::Approx(pi / (real_t)2));
 	CHECK(axis == Vector3(1, 0, 0));
 
 	Basis y90deg(0, 0, 1, 0, 1, 0, -1, 0, 0);
@@ -255,7 +255,7 @@ TEST_CASE("[Basis] Set axis angle") {
 	// Regression test: checks that the method returns a small angle (not 0).
 	Basis tiny(1, 0, 0, 0, 0.9999995, -0.001, 0, 001, 0.9999995); // The min angle possible with float is 0.001rad.
 	tiny.get_axis_angle(axis, angle);
-	CHECK(Math::is_equal_approx(angle, (real_t)0.001, (real_t)0.0001));
+	CHECK(angle == doctest::Approx(0.001).epsilon(0.0001));
 
 	// Regression test: checks that the method returns an angle which is a number (not NaN)
 	Basis bugNan(1.00000024, 0, 0.000100001693, 0, 1, 0, -0.000100009143, 0, 1.00000024);

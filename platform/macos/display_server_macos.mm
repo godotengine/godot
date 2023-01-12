@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  display_server_macos.mm                                              */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  display_server_macos.mm                                               */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "display_server_macos.h"
 
@@ -119,15 +119,26 @@ DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mod
 		ERR_FAIL_COND_V_MSG(wd.window_delegate == nil, INVALID_WINDOW_ID, "Can't create a window delegate");
 		[wd.window_delegate setWindowID:window_id_counter];
 
-		Point2i position = p_rect.position;
+		int rq_screen = get_screen_from_rect(p_rect);
+		if (rq_screen < 0) {
+			rq_screen = get_primary_screen(); // Requested window rect is outside any screen bounds.
+		}
+
+		Rect2i srect = screen_get_usable_rect(rq_screen);
+		Point2i wpos = p_rect.position;
+		if (srect != Rect2i()) {
+			wpos.x = CLAMP(wpos.x, srect.position.x, srect.position.x + srect.size.width - p_rect.size.width / 3);
+			wpos.y = CLAMP(wpos.y, srect.position.y, srect.position.y + srect.size.height - p_rect.size.height / 3);
+		}
 		// OS X native y-coordinate relative to _get_screens_origin() is negative,
 		// Godot passes a positive value.
-		position.y *= -1;
-		position += _get_screens_origin();
+		wpos.y *= -1;
+		wpos += _get_screens_origin();
+		wpos /= scale;
 
 		// initWithContentRect uses bottom-left corner of the window’s frame as origin.
 		wd.window_object = [[GodotWindow alloc]
-				initWithContentRect:NSMakeRect(position.x / scale, (position.y - p_rect.size.height) / scale, p_rect.size.width / scale, p_rect.size.height / scale)
+				initWithContentRect:NSMakeRect(100, 100, p_rect.size.width / scale, p_rect.size.height / scale)
 						  styleMask:NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable | NSWindowStyleMaskResizable
 							backing:NSBackingStoreBuffered
 							  defer:NO];
@@ -166,8 +177,19 @@ DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mod
 			Error err = gl_manager->window_create(window_id_counter, wd.window_view, p_rect.size.width, p_rect.size.height);
 			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't create an OpenGL context");
 		}
+		window_set_vsync_mode(p_vsync_mode, window_id_counter);
 #endif
 		[wd.window_view updateLayerDelegate];
+
+		const NSRect contentRect = [wd.window_view frame];
+		const NSRect windowRect = [wd.window_object frame];
+		const NSRect nsrect = [wd.window_object convertRectToScreen:contentRect];
+		Point2i offset;
+		offset.x = (nsrect.origin.x - windowRect.origin.x);
+		offset.y = (nsrect.origin.y + nsrect.size.height);
+		offset.y -= (windowRect.origin.y + windowRect.size.height);
+		[wd.window_object setFrameTopLeftPoint:NSMakePoint(wpos.x - offset.x, wpos.y - offset.y)];
+
 		id = window_id_counter++;
 		windows[id] = wd;
 	}
@@ -1843,11 +1865,22 @@ void DisplayServerMacOS::mouse_set_mode(MouseMode p_mode) {
 		window_id = MAIN_WINDOW_ID;
 	}
 	WindowData &wd = windows[window_id];
+
+	bool show_cursor = (p_mode == MOUSE_MODE_VISIBLE || p_mode == MOUSE_MODE_CONFINED);
+	bool previously_shown = (mouse_mode == MOUSE_MODE_VISIBLE || mouse_mode == MOUSE_MODE_CONFINED);
+
+	if (show_cursor && !previously_shown) {
+		WindowID window_id = get_window_at_screen_position(mouse_get_position());
+		if (window_id != INVALID_WINDOW_ID) {
+			send_window_event(windows[window_id], WINDOW_EVENT_MOUSE_ENTER);
+		}
+	}
+
 	if (p_mode == MOUSE_MODE_CAPTURED) {
 		// Apple Docs state that the display parameter is not used.
 		// "This parameter is not used. By default, you may pass kCGDirectMainDisplay."
 		// https://developer.apple.com/library/mac/documentation/graphicsimaging/reference/Quartz_Services_Ref/Reference/reference.html
-		if (mouse_mode == MOUSE_MODE_VISIBLE || mouse_mode == MOUSE_MODE_CONFINED) {
+		if (previously_shown) {
 			CGDisplayHideCursor(kCGDirectMainDisplay);
 		}
 		CGAssociateMouseAndMouseCursorPosition(false);
@@ -1858,7 +1891,7 @@ void DisplayServerMacOS::mouse_set_mode(MouseMode p_mode) {
 		CGPoint lMouseWarpPos = { pointOnScreen.x, CGDisplayBounds(CGMainDisplayID()).size.height - pointOnScreen.y };
 		CGWarpMouseCursorPosition(lMouseWarpPos);
 	} else if (p_mode == MOUSE_MODE_HIDDEN) {
-		if (mouse_mode == MOUSE_MODE_VISIBLE || mouse_mode == MOUSE_MODE_CONFINED) {
+		if (previously_shown) {
 			CGDisplayHideCursor(kCGDirectMainDisplay);
 		}
 		[wd.window_object setMovable:YES];
@@ -1868,7 +1901,7 @@ void DisplayServerMacOS::mouse_set_mode(MouseMode p_mode) {
 		[wd.window_object setMovable:NO];
 		CGAssociateMouseAndMouseCursorPosition(false);
 	} else if (p_mode == MOUSE_MODE_CONFINED_HIDDEN) {
-		if (mouse_mode == MOUSE_MODE_VISIBLE || mouse_mode == MOUSE_MODE_CONFINED) {
+		if (previously_shown) {
 			CGDisplayHideCursor(kCGDirectMainDisplay);
 		}
 		[wd.window_object setMovable:NO];
@@ -1884,7 +1917,7 @@ void DisplayServerMacOS::mouse_set_mode(MouseMode p_mode) {
 	warp_events.clear();
 	mouse_mode = p_mode;
 
-	if (mouse_mode == MOUSE_MODE_VISIBLE || mouse_mode == MOUSE_MODE_CONFINED) {
+	if (show_cursor) {
 		cursor_update_shape();
 	}
 }
@@ -2001,11 +2034,11 @@ Point2i DisplayServerMacOS::mouse_get_position() const {
 	return Vector2i();
 }
 
-void DisplayServerMacOS::mouse_set_button_state(MouseButton p_state) {
+void DisplayServerMacOS::mouse_set_button_state(BitField<MouseButtonMask> p_state) {
 	last_button_state = p_state;
 }
 
-MouseButton DisplayServerMacOS::mouse_get_button_state() const {
+BitField<MouseButtonMask> DisplayServerMacOS::mouse_get_button_state() const {
 	return last_button_state;
 }
 
@@ -2048,11 +2081,22 @@ int DisplayServerMacOS::get_screen_count() const {
 	return [screenArray count];
 }
 
+int DisplayServerMacOS::get_primary_screen() const {
+	return 0;
+}
+
 Point2i DisplayServerMacOS::screen_get_position(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
-	if (p_screen == SCREEN_OF_MAIN_WINDOW) {
-		p_screen = window_get_current_screen();
+	switch (p_screen) {
+		case SCREEN_PRIMARY: {
+			p_screen = get_primary_screen();
+		} break;
+		case SCREEN_OF_MAIN_WINDOW: {
+			p_screen = window_get_current_screen(MAIN_WINDOW_ID);
+		} break;
+		default:
+			break;
 	}
 
 	Point2i position = _get_native_screen_position(p_screen) - _get_screens_origin();
@@ -2065,8 +2109,15 @@ Point2i DisplayServerMacOS::screen_get_position(int p_screen) const {
 Size2i DisplayServerMacOS::screen_get_size(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
-	if (p_screen == SCREEN_OF_MAIN_WINDOW) {
-		p_screen = window_get_current_screen();
+	switch (p_screen) {
+		case SCREEN_PRIMARY: {
+			p_screen = get_primary_screen();
+		} break;
+		case SCREEN_OF_MAIN_WINDOW: {
+			p_screen = window_get_current_screen(MAIN_WINDOW_ID);
+		} break;
+		default:
+			break;
 	}
 
 	NSArray *screenArray = [NSScreen screens];
@@ -2082,8 +2133,15 @@ Size2i DisplayServerMacOS::screen_get_size(int p_screen) const {
 int DisplayServerMacOS::screen_get_dpi(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
-	if (p_screen == SCREEN_OF_MAIN_WINDOW) {
-		p_screen = window_get_current_screen();
+	switch (p_screen) {
+		case SCREEN_PRIMARY: {
+			p_screen = get_primary_screen();
+		} break;
+		case SCREEN_OF_MAIN_WINDOW: {
+			p_screen = window_get_current_screen(MAIN_WINDOW_ID);
+		} break;
+		default:
+			break;
 	}
 
 	NSArray *screenArray = [NSScreen screens];
@@ -2106,9 +2164,17 @@ int DisplayServerMacOS::screen_get_dpi(int p_screen) const {
 float DisplayServerMacOS::screen_get_scale(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
-	if (p_screen == SCREEN_OF_MAIN_WINDOW) {
-		p_screen = window_get_current_screen();
+	switch (p_screen) {
+		case SCREEN_PRIMARY: {
+			p_screen = get_primary_screen();
+		} break;
+		case SCREEN_OF_MAIN_WINDOW: {
+			p_screen = window_get_current_screen(MAIN_WINDOW_ID);
+		} break;
+		default:
+			break;
 	}
+
 	if (OS::get_singleton()->is_hidpi_allowed()) {
 		NSArray *screenArray = [NSScreen screens];
 		if ((NSUInteger)p_screen < [screenArray count]) {
@@ -2131,8 +2197,15 @@ float DisplayServerMacOS::screen_get_max_scale() const {
 Rect2i DisplayServerMacOS::screen_get_usable_rect(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
-	if (p_screen == SCREEN_OF_MAIN_WINDOW) {
-		p_screen = window_get_current_screen();
+	switch (p_screen) {
+		case SCREEN_PRIMARY: {
+			p_screen = get_primary_screen();
+		} break;
+		case SCREEN_OF_MAIN_WINDOW: {
+			p_screen = window_get_current_screen(MAIN_WINDOW_ID);
+		} break;
+		default:
+			break;
 	}
 
 	NSArray *screenArray = [NSScreen screens];
@@ -2153,8 +2226,15 @@ Rect2i DisplayServerMacOS::screen_get_usable_rect(int p_screen) const {
 float DisplayServerMacOS::screen_get_refresh_rate(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
-	if (p_screen == SCREEN_OF_MAIN_WINDOW) {
-		p_screen = window_get_current_screen();
+	switch (p_screen) {
+		case SCREEN_PRIMARY: {
+			p_screen = get_primary_screen();
+		} break;
+		case SCREEN_OF_MAIN_WINDOW: {
+			p_screen = window_get_current_screen(MAIN_WINDOW_ID);
+		} break;
+		default:
+			break;
 	}
 
 	NSArray *screenArray = [NSScreen screens];
@@ -2316,12 +2396,62 @@ void DisplayServerMacOS::window_set_current_screen(int p_screen, WindowID p_wind
 		was_fullscreen = true;
 	}
 
+	Rect2i srect = screen_get_usable_rect(p_screen);
 	Point2i wpos = window_get_position(p_window) - screen_get_position(window_get_current_screen(p_window));
-	window_set_position(wpos + screen_get_position(p_screen), p_window);
+	Size2i wsize = window_get_size(p_window);
+	wpos += srect.position;
+
+	wpos.x = CLAMP(wpos.x, srect.position.x, srect.position.x + srect.size.width - wsize.width / 3);
+	wpos.y = CLAMP(wpos.y, srect.position.y, srect.position.y + srect.size.height - wsize.height / 3);
+	window_set_position(wpos, p_window);
 
 	if (was_fullscreen) {
 		// Re-enter fullscreen mode.
 		[wd.window_object toggleFullScreen:nil];
+	}
+}
+
+void DisplayServerMacOS::reparent_check(WindowID p_window) {
+	ERR_FAIL_COND(!windows.has(p_window));
+	WindowData &wd = windows[p_window];
+	NSScreen *screen = [wd.window_object screen];
+
+	if (wd.transient_parent != INVALID_WINDOW_ID) {
+		WindowData &wd_parent = windows[wd.transient_parent];
+		NSScreen *parent_screen = [wd_parent.window_object screen];
+
+		if (parent_screen == screen) {
+			if (![[wd_parent.window_object childWindows] containsObject:wd.window_object]) {
+				[wd.window_object setCollectionBehavior:NSWindowCollectionBehaviorFullScreenAuxiliary];
+				[wd_parent.window_object addChildWindow:wd.window_object ordered:NSWindowAbove];
+			}
+		} else {
+			if ([[wd_parent.window_object childWindows] containsObject:wd.window_object]) {
+				[wd_parent.window_object removeChildWindow:wd.window_object];
+				[wd.window_object setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
+				[wd.window_object orderFront:nil];
+			}
+		}
+	}
+
+	for (const WindowID &child : wd.transient_children) {
+		WindowData &wd_child = windows[child];
+		NSScreen *child_screen = [wd_child.window_object screen];
+
+		if (child_screen == screen) {
+			if (![[wd.window_object childWindows] containsObject:wd_child.window_object]) {
+				if (wd_child.fullscreen) {
+					[wd_child.window_object toggleFullScreen:nil];
+				}
+				[wd_child.window_object setCollectionBehavior:NSWindowCollectionBehaviorFullScreenAuxiliary];
+				[wd.window_object addChildWindow:wd_child.window_object ordered:NSWindowAbove];
+			}
+		} else {
+			if ([[wd.window_object childWindows] containsObject:wd_child.window_object]) {
+				[wd.window_object removeChildWindow:wd_child.window_object];
+				[wd_child.window_object setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
+			}
+		}
 	}
 }
 
@@ -2331,15 +2461,7 @@ void DisplayServerMacOS::window_set_exclusive(WindowID p_window, bool p_exclusiv
 	WindowData &wd = windows[p_window];
 	if (wd.exclusive != p_exclusive) {
 		wd.exclusive = p_exclusive;
-		if (wd.transient_parent != INVALID_WINDOW_ID) {
-			WindowData &wd_parent = windows[wd.transient_parent];
-			if (wd.exclusive) {
-				ERR_FAIL_COND_MSG([[wd_parent.window_object childWindows] count] > 0, "Transient parent has another exclusive child.");
-				[wd_parent.window_object addChildWindow:wd.window_object ordered:NSWindowAbove];
-			} else {
-				[wd_parent.window_object removeChildWindow:wd.window_object];
-			}
-		}
+		reparent_check(p_window);
 	}
 }
 
@@ -2366,13 +2488,34 @@ Point2i DisplayServerMacOS::window_get_position(WindowID p_window) const {
 	return pos;
 }
 
+Point2i DisplayServerMacOS::window_get_position_with_decorations(WindowID p_window) const {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND_V(!windows.has(p_window), Point2i());
+	const WindowData &wd = windows[p_window];
+
+	const NSRect nsrect = [wd.window_object frame];
+	Point2i pos;
+
+	// Return the position of the top-left corner, for OS X the y starts at the bottom.
+	const float scale = screen_get_max_scale();
+	pos.x = nsrect.origin.x;
+	pos.y = (nsrect.origin.y + nsrect.size.height);
+	pos *= scale;
+	pos -= _get_screens_origin();
+	// OS X native y-coordinate relative to _get_screens_origin() is negative,
+	// Godot expects a positive value.
+	pos.y *= -1;
+	return pos;
+}
+
 void DisplayServerMacOS::window_set_position(const Point2i &p_position, WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
-	if ([wd.window_object isZoomed]) {
+	if (NSEqualRects([wd.window_object frame], [[wd.window_object screen] visibleFrame])) {
 		return;
 	}
 
@@ -2417,11 +2560,10 @@ void DisplayServerMacOS::window_set_transient(WindowID p_window, WindowID p_pare
 
 		wd_window.transient_parent = INVALID_WINDOW_ID;
 		wd_parent.transient_children.erase(p_window);
-		[wd_window.window_object setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
-
-		if (wd_window.exclusive) {
+		if ([[wd_parent.window_object childWindows] containsObject:wd_window.window_object]) {
 			[wd_parent.window_object removeChildWindow:wd_window.window_object];
 		}
+		[wd_window.window_object setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
 	} else {
 		ERR_FAIL_COND(!windows.has(p_parent));
 		ERR_FAIL_COND_MSG(wd_window.transient_parent != INVALID_WINDOW_ID, "Window already has a transient parent");
@@ -2429,11 +2571,7 @@ void DisplayServerMacOS::window_set_transient(WindowID p_window, WindowID p_pare
 
 		wd_window.transient_parent = p_parent;
 		wd_parent.transient_children.insert(p_window);
-		[wd_window.window_object setCollectionBehavior:NSWindowCollectionBehaviorFullScreenAuxiliary];
-
-		if (wd_window.exclusive) {
-			[wd_parent.window_object addChildWindow:wd_window.window_object ordered:NSWindowAbove];
-		}
+		reparent_check(p_window);
 	}
 }
 
@@ -2500,7 +2638,7 @@ void DisplayServerMacOS::window_set_size(const Size2i p_size, WindowID p_window)
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
-	if ([wd.window_object isZoomed]) {
+	if (NSEqualRects([wd.window_object frame], [[wd.window_object screen] visibleFrame])) {
 		return;
 	}
 
@@ -2530,7 +2668,7 @@ Size2i DisplayServerMacOS::window_get_size(WindowID p_window) const {
 	return wd.size;
 }
 
-Size2i DisplayServerMacOS::window_get_real_size(WindowID p_window) const {
+Size2i DisplayServerMacOS::window_get_size_with_decorations(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(!windows.has(p_window), Size2i());
@@ -2573,10 +2711,16 @@ void DisplayServerMacOS::window_set_mode(WindowMode p_mode, WindowID p_window) {
 				[wd.window_object setContentMaxSize:NSMakeSize(size.x, size.y)];
 			}
 			[wd.window_object toggleFullScreen:nil];
+
+			if (old_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
+				[NSApp setPresentationOptions:NSApplicationPresentationDefault];
+			}
+
 			wd.fullscreen = false;
+			wd.exclusive_fullscreen = false;
 		} break;
 		case WINDOW_MODE_MAXIMIZED: {
-			if ([wd.window_object isZoomed]) {
+			if (NSEqualRects([wd.window_object frame], [[wd.window_object screen] visibleFrame])) {
 				[wd.window_object zoom:nil];
 			}
 		} break;
@@ -2598,10 +2742,18 @@ void DisplayServerMacOS::window_set_mode(WindowMode p_mode, WindowID p_window) {
 			[wd.window_object setContentMinSize:NSMakeSize(0, 0)];
 			[wd.window_object setContentMaxSize:NSMakeSize(FLT_MAX, FLT_MAX)];
 			[wd.window_object toggleFullScreen:nil];
+
 			wd.fullscreen = true;
+			if (p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
+				const NSUInteger presentationOptions = NSApplicationPresentationHideDock | NSApplicationPresentationHideMenuBar;
+				[NSApp setPresentationOptions:presentationOptions];
+				wd.exclusive_fullscreen = true;
+			} else {
+				wd.exclusive_fullscreen = false;
+			}
 		} break;
 		case WINDOW_MODE_MAXIMIZED: {
-			if (![wd.window_object isZoomed]) {
+			if (!NSEqualRects([wd.window_object frame], [[wd.window_object screen] visibleFrame])) {
 				[wd.window_object zoom:nil];
 			}
 		} break;
@@ -2615,9 +2767,13 @@ DisplayServer::WindowMode DisplayServerMacOS::window_get_mode(WindowID p_window)
 	const WindowData &wd = windows[p_window];
 
 	if (wd.fullscreen) { // If fullscreen, it's not in another mode.
-		return WINDOW_MODE_FULLSCREEN;
+		if (wd.exclusive_fullscreen) {
+			return WINDOW_MODE_EXCLUSIVE_FULLSCREEN;
+		} else {
+			return WINDOW_MODE_FULLSCREEN;
+		}
 	}
-	if ([wd.window_object isZoomed] && !wd.resize_disabled) {
+	if (NSEqualRects([wd.window_object frame], [[wd.window_object screen] visibleFrame])) {
 		return WINDOW_MODE_MAXIMIZED;
 	}
 	if ([wd.window_object respondsToSelector:@selector(isMiniaturized)]) {
@@ -2727,8 +2883,10 @@ void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, Win
 			}
 			if (p_enabled) {
 				[wd.window_object setStyleMask:[wd.window_object styleMask] & ~NSWindowStyleMaskResizable];
+				[[wd.window_object standardWindowButton:NSWindowZoomButton] setEnabled:NO];
 			} else {
 				[wd.window_object setStyleMask:[wd.window_object styleMask] | NSWindowStyleMaskResizable];
+				[[wd.window_object standardWindowButton:NSWindowZoomButton] setEnabled:YES];
 			}
 		} break;
 		case WINDOW_FLAG_EXTEND_TO_TITLE: {
@@ -2932,6 +3090,14 @@ int64_t DisplayServerMacOS::window_get_native_handle(HandleType p_handle_type, W
 		case WINDOW_VIEW: {
 			return (int64_t)windows[p_window].window_view;
 		}
+#ifdef GLES3_ENABLED
+		case OPENGL_CONTEXT: {
+			if (gl_manager) {
+				return (int64_t)gl_manager->get_context(p_window);
+			}
+			return 0;
+		}
+#endif
 		default: {
 			return 0;
 		}
@@ -2962,7 +3128,7 @@ void DisplayServerMacOS::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_
 	_THREAD_SAFE_METHOD_
 #if defined(GLES3_ENABLED)
 	if (gl_manager) {
-		gl_manager->set_use_vsync(p_vsync_mode);
+		gl_manager->set_use_vsync(p_vsync_mode != DisplayServer::VSYNC_DISABLED);
 	}
 #endif
 #if defined(VULKAN_ENABLED)
@@ -3405,8 +3571,8 @@ void DisplayServerMacOS::set_icon(const Ref<Image> &p_icon) {
 	[NSApp setApplicationIconImage:nsimg];
 }
 
-DisplayServer *DisplayServerMacOS::create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, Error &r_error) {
-	DisplayServer *ds = memnew(DisplayServerMacOS(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, r_error));
+DisplayServer *DisplayServerMacOS::create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error) {
+	DisplayServer *ds = memnew(DisplayServerMacOS(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, r_error));
 	if (r_error != OK) {
 		if (p_rendering_driver == "vulkan") {
 			String executable_command;
@@ -3575,7 +3741,7 @@ bool DisplayServerMacOS::mouse_process_popups(bool p_close) {
 	return closed;
 }
 
-DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, Error &r_error) {
+DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error) {
 	Input::get_singleton()->set_event_dispatch_function(_dispatch_input_events);
 
 	r_error = OK;
@@ -3681,12 +3847,14 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 	}
 #endif
 
-	Point2i window_position(
-			screen_get_position(0).x + (screen_get_size(0).width - p_resolution.width) / 2,
-			screen_get_position(0).y + (screen_get_size(0).height - p_resolution.height) / 2);
-
+	Point2i window_position;
 	if (p_position != nullptr) {
 		window_position = *p_position;
+	} else {
+		if (p_screen == SCREEN_OF_MAIN_WINDOW) {
+			p_screen = SCREEN_PRIMARY;
+		}
+		window_position = screen_get_position(p_screen) + (screen_get_size(p_screen) - p_resolution) / 2;
 	}
 
 	WindowID main_window = _create_window(p_mode, p_vsync_mode, Rect2i(window_position, p_resolution));

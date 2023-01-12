@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  animation_tree_editor_plugin.cpp                                     */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  animation_tree_editor_plugin.cpp                                      */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "animation_tree_editor_plugin.h"
 
@@ -72,6 +72,13 @@ void AnimationTreeEditor::edit(AnimationTree *p_tree) {
 	}
 
 	edit_path(path);
+}
+
+void AnimationTreeEditor::_node_removed(Node *p_node) {
+	if (p_node == tree) {
+		tree = nullptr;
+		_clear_editors();
+	}
 }
 
 void AnimationTreeEditor::_path_button_pressed(int p_path) {
@@ -145,13 +152,23 @@ void AnimationTreeEditor::edit_path(const Vector<String> &p_path) {
 	} else {
 		current_root = ObjectID();
 		edited_path = button_path;
-
 		for (int i = 0; i < editors.size(); i++) {
 			editors[i]->edit(Ref<AnimationNode>());
 			editors[i]->hide();
 		}
 	}
 
+	_update_path();
+}
+
+void AnimationTreeEditor::_clear_editors() {
+	button_path.clear();
+	current_root = ObjectID();
+	edited_path = button_path;
+	for (int i = 0; i < editors.size(); i++) {
+		editors[i]->edit(Ref<AnimationNode>());
+		editors[i]->hide();
+	}
 	_update_path();
 }
 
@@ -167,6 +184,9 @@ void AnimationTreeEditor::enter_editor(const String &p_path) {
 
 void AnimationTreeEditor::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE: {
+			get_tree()->connect("node_removed", callable_mp(this, &AnimationTreeEditor::_node_removed));
+		} break;
 		case NOTIFICATION_PROCESS: {
 			ObjectID root;
 			if (tree && tree->get_tree_root().is_valid()) {
@@ -180,6 +200,9 @@ void AnimationTreeEditor::_notification(int p_what) {
 			if (button_path.size() != edited_path.size()) {
 				edit_path(edited_path);
 			}
+		} break;
+		case NOTIFICATION_EXIT_TREE: {
+			get_tree()->disconnect("node_removed", callable_mp(this, &AnimationTreeEditor::_node_removed));
 		} break;
 	}
 }

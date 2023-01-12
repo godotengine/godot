@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  image.cpp                                                            */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  image.cpp                                                             */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "image.h"
 
@@ -173,6 +173,14 @@ int Image::get_format_pixel_size(Format p_format) {
 			return 1;
 		case FORMAT_DXT5_RA_AS_RG:
 			return 1;
+		case FORMAT_ASTC_4x4:
+			return 1;
+		case FORMAT_ASTC_4x4_HDR:
+			return 1;
+		case FORMAT_ASTC_8x8:
+			return 1;
+		case FORMAT_ASTC_8x8_HDR:
+			return 1;
 		case FORMAT_MAX: {
 		}
 	}
@@ -213,7 +221,18 @@ void Image::get_format_min_pixel_size(Format p_format, int &r_w, int &r_h) {
 			r_h = 4;
 
 		} break;
+		case FORMAT_ASTC_4x4:
+		case FORMAT_ASTC_4x4_HDR: {
+			r_w = 4;
+			r_h = 4;
 
+		} break;
+		case FORMAT_ASTC_8x8:
+		case FORMAT_ASTC_8x8_HDR: {
+			r_w = 8;
+			r_h = 8;
+
+		} break;
 		default: {
 			r_w = 1;
 			r_h = 1;
@@ -222,7 +241,9 @@ void Image::get_format_min_pixel_size(Format p_format, int &r_w, int &r_h) {
 }
 
 int Image::get_format_pixel_rshift(Format p_format) {
-	if (p_format == FORMAT_DXT1 || p_format == FORMAT_RGTC_R || p_format == FORMAT_ETC || p_format == FORMAT_ETC2_R11 || p_format == FORMAT_ETC2_R11S || p_format == FORMAT_ETC2_RGB8 || p_format == FORMAT_ETC2_RGB8A1) {
+	if (p_format == FORMAT_ASTC_8x8) {
+		return 2;
+	} else if (p_format == FORMAT_DXT1 || p_format == FORMAT_RGTC_R || p_format == FORMAT_ETC || p_format == FORMAT_ETC2_R11 || p_format == FORMAT_ETC2_R11S || p_format == FORMAT_ETC2_RGB8 || p_format == FORMAT_ETC2_RGB8A1) {
 		return 1;
 	} else {
 		return 0;
@@ -259,6 +280,14 @@ int Image::get_format_block_size(Format p_format) {
 
 		{
 			return 4;
+		}
+		case FORMAT_ASTC_4x4:
+		case FORMAT_ASTC_4x4_HDR: {
+			return 4;
+		}
+		case FORMAT_ASTC_8x8:
+		case FORMAT_ASTC_8x8_HDR: {
+			return 8;
 		}
 		default: {
 		}
@@ -1341,78 +1370,126 @@ void Image::crop(int p_width, int p_height) {
 
 void Image::rotate_90(ClockDirection p_direction) {
 	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot rotate in compressed or custom image formats.");
-	ERR_FAIL_COND_MSG(width <= 1, "The Image width specified (" + itos(width) + " pixels) must be greater than 1 pixels.");
-	ERR_FAIL_COND_MSG(height <= 1, "The Image height specified (" + itos(height) + " pixels) must be greater than 1 pixels.");
-
-	int saved_width = height;
-	int saved_height = width;
-
-	if (width != height) {
-		int n = MAX(width, height);
-		resize(n, n, INTERPOLATE_NEAREST);
-	}
+	ERR_FAIL_COND_MSG(width <= 0, "The Image width specified (" + itos(width) + " pixels) must be greater than 0 pixels.");
+	ERR_FAIL_COND_MSG(height <= 0, "The Image height specified (" + itos(height) + " pixels) must be greater than 0 pixels.");
 
 	bool used_mipmaps = has_mipmaps();
 	if (used_mipmaps) {
 		clear_mipmaps();
 	}
 
+	// In-place 90 degrees rotation by following the permutation cycles.
 	{
-		uint8_t *w = data.ptrw();
-		uint8_t src[16];
-		uint8_t dst[16];
+		// Explanation by example (clockwise):
+		//
+		//  abc      da
+		//  def  ->  eb
+		//           fc
+		//
+		// In memory:
+		//  012345    012345
+		//  abcdef -> daebfc
+		//
+		// Permutation cycles:
+		//  (0  --a-->  1  --b-->  3  --d-->  0)
+		//  (2  --c-->  5  --f-->  4  --e-->  2)
+		//
+		// Applying cycles (backwards):
+		//  0->s  s=a (store)
+		//  3->0  abcdef -> dbcdef
+		//  1->3  dbcdef -> dbcbef
+		//  s->1  dbcbef -> dacbef
+		//
+		//  2->s  s=c
+		//  4->2  dacbef -> daebef
+		//  5->4  daebef -> daebff
+		//  s->5  daebff -> daebfc
+
+		const int w = width;
+		const int h = height;
+		const int size = w * h;
+
+		uint8_t *data_ptr = data.ptrw();
 		uint32_t pixel_size = get_format_pixel_size(format);
 
-		// Flip.
+		uint8_t single_pixel_buffer[16];
 
-		if (p_direction == CLOCKWISE) {
-			for (int y = 0; y < height / 2; y++) {
-				for (int x = 0; x < width; x++) {
-					_get_pixelb(x, y, pixel_size, w, src);
-					_get_pixelb(x, height - y - 1, pixel_size, w, dst);
+#define PREV_INDEX_IN_CYCLE(index) (p_direction == CLOCKWISE) ? ((h - 1 - (index % h)) * w + (index / h)) : ((index % h) * w + (w - 1 - (index / h)))
 
-					_put_pixelb(x, height - y - 1, pixel_size, w, src);
-					_put_pixelb(x, y, pixel_size, w, dst);
+		if (w == h) { // Square case, 4-length cycles only (plus irrelevant thus skipped 1-length cycle in the middle for odd-sized squares).
+			for (int y = 0; y < h / 2; y++) {
+				for (int x = 0; x < (w + 1) / 2; x++) {
+					int current = y * w + x;
+					memcpy(single_pixel_buffer, data_ptr + current * pixel_size, pixel_size);
+					for (int i = 0; i < 3; i++) {
+						int prev = PREV_INDEX_IN_CYCLE(current);
+						memcpy(data_ptr + current * pixel_size, data_ptr + prev * pixel_size, pixel_size);
+						current = prev;
+					}
+					memcpy(data_ptr + current * pixel_size, single_pixel_buffer, pixel_size);
 				}
 			}
-		} else {
-			for (int y = 0; y < height; y++) {
-				for (int x = 0; x < width / 2; x++) {
-					_get_pixelb(x, y, pixel_size, w, src);
-					_get_pixelb(width - x - 1, y, pixel_size, w, dst);
+		} else { // Rectangular case (w != h), kinda unpredictable cycles.
+			int permuted_pixels_count = 0;
 
-					_put_pixelb(width - x - 1, y, pixel_size, w, src);
-					_put_pixelb(x, y, pixel_size, w, dst);
+			for (int i = 0; i < size; i++) {
+				int prev = PREV_INDEX_IN_CYCLE(i);
+				if (prev == i) {
+					// 1-length cycle, pixel remains at the same index.
+					permuted_pixels_count++;
+					continue;
+				}
+
+				// Check whether we already processed this cycle.
+				// We iterate over it and if we'll find an index smaller than `i` then we already
+				// processed this cycle because we always start at the smallest index in the cycle.
+				// TODO: Improve this naive approach, can be done better.
+				while (prev > i) {
+					prev = PREV_INDEX_IN_CYCLE(prev);
+				}
+				if (prev < i) {
+					continue;
+				}
+
+				// Save the in-cycle pixel with the smallest index (`i`).
+				memcpy(single_pixel_buffer, data_ptr + i * pixel_size, pixel_size);
+
+				// Overwrite pixels one by one by the preceding pixel in the cycle.
+				int current = i;
+				prev = PREV_INDEX_IN_CYCLE(current);
+				while (prev != i) {
+					memcpy(data_ptr + current * pixel_size, data_ptr + prev * pixel_size, pixel_size);
+					permuted_pixels_count++;
+
+					current = prev;
+					prev = PREV_INDEX_IN_CYCLE(current);
+				};
+
+				// Overwrite the remaining pixel in the cycle by the saved pixel with the smallest index.
+				memcpy(data_ptr + current * pixel_size, single_pixel_buffer, pixel_size);
+				permuted_pixels_count++;
+
+				if (permuted_pixels_count == size) {
+					break;
 				}
 			}
+
+			width = h;
+			height = w;
 		}
 
-		// Transpose.
-
-		for (int y = 0; y < height; y++) {
-			for (int x = 0; x < width; x++) {
-				if (x < y) {
-					_get_pixelb(x, y, pixel_size, w, src);
-					_get_pixelb(y, x, pixel_size, w, dst);
-
-					_put_pixelb(y, x, pixel_size, w, src);
-					_put_pixelb(x, y, pixel_size, w, dst);
-				}
-			}
-		}
+#undef PREV_INDEX_IN_CYCLE
 	}
 
-	if (saved_width != saved_height) {
-		resize(saved_width, saved_height, INTERPOLATE_NEAREST);
-	} else if (used_mipmaps) {
+	if (used_mipmaps) {
 		generate_mipmaps();
 	}
 }
 
 void Image::rotate_180() {
 	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot rotate in compressed or custom image formats.");
-	ERR_FAIL_COND_MSG(width <= 1, "The Image width specified (" + itos(width) + " pixels) must be greater than 1 pixels.");
-	ERR_FAIL_COND_MSG(height <= 1, "The Image height specified (" + itos(height) + " pixels) must be greater than 1 pixels.");
+	ERR_FAIL_COND_MSG(width <= 0, "The Image width specified (" + itos(width) + " pixels) must be greater than 0 pixels.");
+	ERR_FAIL_COND_MSG(height <= 0, "The Image height specified (" + itos(height) + " pixels) must be greater than 0 pixels.");
 
 	bool used_mipmaps = has_mipmaps();
 	if (used_mipmaps) {
@@ -1420,19 +1497,21 @@ void Image::rotate_180() {
 	}
 
 	{
-		uint8_t *w = data.ptrw();
-		uint8_t src[16];
-		uint8_t dst[16];
+		uint8_t *data_ptr = data.ptrw();
 		uint32_t pixel_size = get_format_pixel_size(format);
 
-		for (int y = 0; y < height / 2; y++) {
-			for (int x = 0; x < width; x++) {
-				_get_pixelb(x, y, pixel_size, w, src);
-				_get_pixelb(width - x - 1, height - y - 1, pixel_size, w, dst);
+		uint8_t single_pixel_buffer[16];
 
-				_put_pixelb(width - x - 1, height - y - 1, pixel_size, w, src);
-				_put_pixelb(x, y, pixel_size, w, dst);
-			}
+		uint8_t *from_begin_ptr = data_ptr;
+		uint8_t *from_end_ptr = data_ptr + (width * height - 1) * pixel_size;
+
+		while (from_begin_ptr < from_end_ptr) {
+			memcpy(single_pixel_buffer, from_begin_ptr, pixel_size);
+			memcpy(from_begin_ptr, from_end_ptr, pixel_size);
+			memcpy(from_end_ptr, single_pixel_buffer, pixel_size);
+
+			from_begin_ptr += pixel_size;
+			from_end_ptr -= pixel_size;
 		}
 	}
 
@@ -2531,19 +2610,23 @@ Error Image::decompress() {
 		_image_decompress_etc1(this);
 	} else if (format >= FORMAT_ETC2_R11 && format <= FORMAT_ETC2_RA_AS_RG && _image_decompress_etc2) {
 		_image_decompress_etc2(this);
+	} else if (format >= FORMAT_ASTC_4x4 && format <= FORMAT_ASTC_8x8_HDR && _image_decompress_astc) {
+		_image_decompress_astc(this);
 	} else {
 		return ERR_UNAVAILABLE;
 	}
 	return OK;
 }
 
-Error Image::compress(CompressMode p_mode, CompressSource p_source, float p_lossy_quality) {
+Error Image::compress(CompressMode p_mode, CompressSource p_source, float p_lossy_quality, ASTCFormat p_astc_format) {
 	ERR_FAIL_INDEX_V_MSG(p_mode, COMPRESS_MAX, ERR_INVALID_PARAMETER, "Invalid compress mode.");
 	ERR_FAIL_INDEX_V_MSG(p_source, COMPRESS_SOURCE_MAX, ERR_INVALID_PARAMETER, "Invalid compress source.");
-	return compress_from_channels(p_mode, detect_used_channels(p_source), p_lossy_quality);
+	return compress_from_channels(p_mode, detect_used_channels(p_source), p_lossy_quality, p_astc_format);
 }
 
-Error Image::compress_from_channels(CompressMode p_mode, UsedChannels p_channels, float p_lossy_quality) {
+Error Image::compress_from_channels(CompressMode p_mode, UsedChannels p_channels, float p_lossy_quality, ASTCFormat p_astc_format) {
+	ERR_FAIL_COND_V(data.is_empty(), ERR_INVALID_DATA);
+
 	switch (p_mode) {
 		case COMPRESS_S3TC: {
 			ERR_FAIL_COND_V(!_image_compress_bc_func, ERR_UNAVAILABLE);
@@ -2560,6 +2643,10 @@ Error Image::compress_from_channels(CompressMode p_mode, UsedChannels p_channels
 		case COMPRESS_BPTC: {
 			ERR_FAIL_COND_V(!_image_compress_bptc_func, ERR_UNAVAILABLE);
 			_image_compress_bptc_func(this, p_lossy_quality, p_channels);
+		} break;
+		case COMPRESS_ASTC: {
+			ERR_FAIL_COND_V(!_image_compress_bptc_func, ERR_UNAVAILABLE);
+			_image_compress_astc_func(this, p_lossy_quality, p_astc_format);
 		} break;
 		case COMPRESS_MAX: {
 			ERR_FAIL_V(ERR_INVALID_PARAMETER);
@@ -2917,10 +3004,12 @@ void (*Image::_image_compress_bc_func)(Image *, float, Image::UsedChannels) = nu
 void (*Image::_image_compress_bptc_func)(Image *, float, Image::UsedChannels) = nullptr;
 void (*Image::_image_compress_etc1_func)(Image *, float) = nullptr;
 void (*Image::_image_compress_etc2_func)(Image *, float, Image::UsedChannels) = nullptr;
+void (*Image::_image_compress_astc_func)(Image *, float, Image::ASTCFormat) = nullptr;
 void (*Image::_image_decompress_bc)(Image *) = nullptr;
 void (*Image::_image_decompress_bptc)(Image *) = nullptr;
 void (*Image::_image_decompress_etc1)(Image *) = nullptr;
 void (*Image::_image_decompress_etc2)(Image *) = nullptr;
+void (*Image::_image_decompress_astc)(Image *) = nullptr;
 
 Vector<uint8_t> (*Image::webp_lossy_packer)(const Ref<Image> &, float) = nullptr;
 Vector<uint8_t> (*Image::webp_lossless_packer)(const Ref<Image> &) = nullptr;
@@ -3337,8 +3426,8 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_invisible"), &Image::is_invisible);
 
 	ClassDB::bind_method(D_METHOD("detect_used_channels", "source"), &Image::detect_used_channels, DEFVAL(COMPRESS_SOURCE_GENERIC));
-	ClassDB::bind_method(D_METHOD("compress", "mode", "source", "lossy_quality"), &Image::compress, DEFVAL(COMPRESS_SOURCE_GENERIC), DEFVAL(0.7));
-	ClassDB::bind_method(D_METHOD("compress_from_channels", "mode", "channels", "lossy_quality"), &Image::compress_from_channels, DEFVAL(0.7));
+	ClassDB::bind_method(D_METHOD("compress", "mode", "source", "lossy_quality", "astc_format"), &Image::compress, DEFVAL(COMPRESS_SOURCE_GENERIC), DEFVAL(0.7), DEFVAL(ASTC_FORMAT_4x4));
+	ClassDB::bind_method(D_METHOD("compress_from_channels", "mode", "channels", "lossy_quality", "astc_format"), &Image::compress_from_channels, DEFVAL(0.7), DEFVAL(ASTC_FORMAT_4x4));
 	ClassDB::bind_method(D_METHOD("decompress"), &Image::decompress);
 	ClassDB::bind_method(D_METHOD("is_compressed"), &Image::is_compressed);
 
@@ -3422,6 +3511,10 @@ void Image::_bind_methods() {
 	BIND_ENUM_CONSTANT(FORMAT_ETC2_RGB8A1);
 	BIND_ENUM_CONSTANT(FORMAT_ETC2_RA_AS_RG);
 	BIND_ENUM_CONSTANT(FORMAT_DXT5_RA_AS_RG);
+	BIND_ENUM_CONSTANT(FORMAT_ASTC_4x4);
+	BIND_ENUM_CONSTANT(FORMAT_ASTC_4x4_HDR);
+	BIND_ENUM_CONSTANT(FORMAT_ASTC_8x8);
+	BIND_ENUM_CONSTANT(FORMAT_ASTC_8x8_HDR);
 	BIND_ENUM_CONSTANT(FORMAT_MAX);
 
 	BIND_ENUM_CONSTANT(INTERPOLATE_NEAREST);
@@ -3449,6 +3542,9 @@ void Image::_bind_methods() {
 	BIND_ENUM_CONSTANT(COMPRESS_SOURCE_GENERIC);
 	BIND_ENUM_CONSTANT(COMPRESS_SOURCE_SRGB);
 	BIND_ENUM_CONSTANT(COMPRESS_SOURCE_NORMAL);
+
+	BIND_ENUM_CONSTANT(ASTC_FORMAT_4x4);
+	BIND_ENUM_CONSTANT(ASTC_FORMAT_8x8);
 }
 
 void Image::set_compress_bc_func(void (*p_compress_func)(Image *, float, UsedChannels)) {
@@ -3745,6 +3841,19 @@ void Image::convert_ra_rgba8_to_rg() {
 		w[i + 1] = w[i + 3];
 		w[i + 2] = 0;
 		w[i + 3] = 255;
+	}
+}
+
+void Image::convert_rgba8_to_bgra8() {
+	ERR_FAIL_COND(format != FORMAT_RGBA8);
+	ERR_FAIL_COND(!data.size());
+
+	int s = data.size();
+	uint8_t *w = data.ptrw();
+	for (int i = 0; i < s; i += 4) {
+		uint8_t r = w[i];
+		w[i] = w[i + 2]; // Swap R to B
+		w[i + 2] = r; // Swap B to R
 	}
 }
 

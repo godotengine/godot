@@ -1,46 +1,50 @@
-/*************************************************************************/
-/*  bone_map_editor_plugin.cpp                                           */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  bone_map_editor_plugin.cpp                                            */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "bone_map_editor_plugin.h"
 
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 #include "editor/import/post_import_plugin_skeleton_renamer.h"
 #include "editor/import/post_import_plugin_skeleton_rest_fixer.h"
 #include "editor/import/post_import_plugin_skeleton_track_organizer.h"
 #include "editor/import/scene_import_settings.h"
+#include "scene/gui/aspect_ratio_container.h"
+#include "scene/gui/separator.h"
+#include "scene/gui/texture_rect.h"
 
 void BoneMapperButton::fetch_textures() {
 	if (selected) {
-		set_normal_texture(get_theme_icon(SNAME("BoneMapperHandleSelected"), SNAME("EditorIcons")));
+		set_texture_normal(get_theme_icon(SNAME("BoneMapperHandleSelected"), SNAME("EditorIcons")));
 	} else {
-		set_normal_texture(get_theme_icon(SNAME("BoneMapperHandle"), SNAME("EditorIcons")));
+		set_texture_normal(get_theme_icon(SNAME("BoneMapperHandle"), SNAME("EditorIcons")));
 	}
 	set_offset(SIDE_LEFT, 0);
 	set_offset(SIDE_RIGHT, 0);
@@ -742,7 +746,6 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 		} else {
 			p_bone_map->_set_skeleton_bone_name("LeftEye", skeleton->get_bone_name(bone_idx));
 		}
-		bone_idx = -1;
 
 		bone_idx = search_bone_by_name(skeleton, picklist, BONE_SEGREGATION_RIGHT, neck_or_head);
 		if (bone_idx == -1) {
@@ -750,7 +753,6 @@ void BoneMapper::auto_mapping_process(Ref<BoneMap> &p_bone_map) {
 		} else {
 			p_bone_map->_set_skeleton_bone_name("RightEye", skeleton->get_bone_name(bone_idx));
 		}
-		bone_idx = -1;
 		picklist.clear();
 
 		// 4-2. Guess Jaw

@@ -1,63 +1,65 @@
-/*************************************************************************/
-/*  editor_plugin.h                                                      */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  editor_plugin.h                                                       */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef EDITOR_PLUGIN_H
 #define EDITOR_PLUGIN_H
 
 #include "core/io/config_file.h"
-#include "editor/debugger/editor_debugger_node.h"
-#include "editor/editor_inspector.h"
-#include "editor/editor_translation_parser.h"
-#include "editor/import/editor_import_plugin.h"
-#include "editor/import/resource_importer_scene.h"
-#include "editor/script_create_dialog.h"
 #include "scene/3d/camera_3d.h"
-#include "scene/main/node.h"
-#include "scene/resources/texture.h"
+#include "scene/gui/control.h"
 
 class Node3D;
-class Camera3D;
+class Button;
+class PopupMenu;
 class EditorCommandPalette;
-class EditorSelection;
+class EditorDebuggerPlugin;
 class EditorExport;
-class EditorSettings;
-class EditorImportPlugin;
 class EditorExportPlugin;
-class EditorNode3DGizmoPlugin;
-class EditorResourcePreview;
-class EditorUndoRedoManager;
 class EditorFileSystem;
-class EditorToolAddons;
+class EditorImportPlugin;
+class EditorInspector;
+class EditorInspectorPlugin;
+class EditorNode3DGizmoPlugin;
 class EditorPaths;
+class EditorResourcePreview;
+class EditorSceneFormatImporter;
+class EditorScenePostImportPlugin;
+class EditorSelection;
+class EditorSettings;
+class EditorToolAddons;
+class EditorTranslationParserPlugin;
+class EditorUndoRedoManager;
 class FileSystemDock;
+class ScriptCreateDialog;
 class ScriptEditor;
+class VBoxContainer;
 
 class EditorInterface : public Node {
 	GDCLASS(EditorInterface, Node);
@@ -92,8 +94,9 @@ public:
 	EditorCommandPalette *get_command_palette() const;
 
 	void select_file(const String &p_file);
-	String get_selected_path() const;
+	Vector<String> get_selected_paths() const;
 	String get_current_path() const;
+	String get_current_directory() const;
 
 	void inspect_object(Object *p_obj, const String &p_for_property = String(), bool p_inspector_only = false);
 
@@ -301,8 +304,8 @@ public:
 	void add_autoload_singleton(const String &p_name, const String &p_path);
 	void remove_autoload_singleton(const String &p_name);
 
-	void add_debugger_plugin(const Ref<Script> &p_script);
-	void remove_debugger_plugin(const Ref<Script> &p_script);
+	void add_debugger_plugin(const Ref<EditorDebuggerPlugin> &p_plugin);
+	void remove_debugger_plugin(const Ref<EditorDebuggerPlugin> &p_plugin);
 
 	void enable_plugin();
 	void disable_plugin();
@@ -319,7 +322,7 @@ typedef EditorPlugin *(*EditorPluginCreateFunc)();
 
 class EditorPlugins {
 	enum {
-		MAX_CREATE_FUNCS = 64
+		MAX_CREATE_FUNCS = 128
 	};
 
 	static EditorPluginCreateFunc creation_funcs[MAX_CREATE_FUNCS];

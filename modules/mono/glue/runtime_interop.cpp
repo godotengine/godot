@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  runtime_interop.cpp                                                  */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  runtime_interop.cpp                                                   */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "runtime_interop.h"
 
@@ -512,6 +512,13 @@ godot_variant godotsharp_callable_call(Callable *p_callable, const Variant **p_a
 
 void godotsharp_callable_call_deferred(Callable *p_callable, const Variant **p_args, const int32_t p_arg_count) {
 	p_callable->call_deferredp(p_args, p_arg_count);
+}
+
+godot_color godotsharp_color_from_ok_hsl(float p_h, float p_s, float p_l, float p_alpha) {
+	godot_color ret;
+	Color *dest = (Color *)&ret;
+	memnew_placement(dest, Color(Color::from_ok_hsl(p_h, p_s, p_l, p_alpha)));
+	return ret;
 }
 
 // GDNative functions
@@ -1067,30 +1074,6 @@ void godotsharp_dictionary_to_string(const Dictionary *p_self, String *r_str) {
 	*r_str = Variant(*p_self).operator String();
 }
 
-void godotsharp_string_md5_buffer(const String *p_self, PackedByteArray *r_md5_buffer) {
-	memnew_placement(r_md5_buffer, PackedByteArray(p_self->md5_buffer()));
-}
-
-void godotsharp_string_md5_text(const String *p_self, String *r_md5_text) {
-	memnew_placement(r_md5_text, String(p_self->md5_text()));
-}
-
-int32_t godotsharp_string_rfind(const String *p_self, const String *p_what, int32_t p_from) {
-	return p_self->rfind(*p_what, p_from);
-}
-
-int32_t godotsharp_string_rfindn(const String *p_self, const String *p_what, int32_t p_from) {
-	return p_self->rfindn(*p_what, p_from);
-}
-
-void godotsharp_string_sha256_buffer(const String *p_self, PackedByteArray *r_sha256_buffer) {
-	memnew_placement(r_sha256_buffer, PackedByteArray(p_self->sha256_buffer()));
-}
-
-void godotsharp_string_sha256_text(const String *p_self, String *r_sha256_text) {
-	memnew_placement(r_sha256_text, String(p_self->sha256_text()));
-}
-
 void godotsharp_string_simplify_path(const String *p_self, String *r_simplified_path) {
 	memnew_placement(r_simplified_path, String(p_self->simplify_path()));
 }
@@ -1369,6 +1352,7 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_callable_get_data_for_marshalling,
 	(void *)godotsharp_callable_call,
 	(void *)godotsharp_callable_call_deferred,
+	(void *)godotsharp_color_from_ok_hsl,
 	(void *)godotsharp_method_bind_ptrcall,
 	(void *)godotsharp_method_bind_call,
 	(void *)godotsharp_variant_new_string_name,
@@ -1473,12 +1457,6 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_dictionary_duplicate,
 	(void *)godotsharp_dictionary_remove_key,
 	(void *)godotsharp_dictionary_to_string,
-	(void *)godotsharp_string_md5_buffer,
-	(void *)godotsharp_string_md5_text,
-	(void *)godotsharp_string_rfind,
-	(void *)godotsharp_string_rfindn,
-	(void *)godotsharp_string_sha256_buffer,
-	(void *)godotsharp_string_sha256_text,
 	(void *)godotsharp_string_simplify_path,
 	(void *)godotsharp_string_to_camel_case,
 	(void *)godotsharp_string_to_pascal_case,

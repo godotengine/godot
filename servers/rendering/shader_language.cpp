@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  shader_language.cpp                                                  */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  shader_language.cpp                                                   */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "shader_language.h"
 
@@ -983,6 +983,18 @@ String ShaderLanguage::get_precision_name(DataPrecision p_type) {
 			return "mediump";
 		case PRECISION_HIGHP:
 			return "highp";
+		default:
+			break;
+	}
+	return "";
+}
+
+String ShaderLanguage::get_interpolation_name(DataInterpolation p_interpolation) {
+	switch (p_interpolation) {
+		case INTERPOLATION_FLAT:
+			return "flat";
+		case INTERPOLATION_SMOOTH:
+			return "smooth";
 		default:
 			break;
 	}
@@ -3645,7 +3657,7 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 		switch (p_type) {
 			case ShaderLanguage::TYPE_BOOL:
 				if (array_size > 0) {
-					PackedInt32Array array = PackedInt32Array();
+					PackedInt32Array array;
 					for (int i = 0; i < array_size; i++) {
 						array.push_back(p_value[i].boolean);
 					}
@@ -3658,7 +3670,7 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 				array_size *= 2;
 
 				if (array_size > 0) {
-					PackedInt32Array array = PackedInt32Array();
+					PackedInt32Array array;
 					for (int i = 0; i < array_size; i++) {
 						array.push_back(p_value[i].boolean);
 					}
@@ -3671,7 +3683,7 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 				array_size *= 3;
 
 				if (array_size > 0) {
-					PackedInt32Array array = PackedInt32Array();
+					PackedInt32Array array;
 					for (int i = 0; i < array_size; i++) {
 						array.push_back(p_value[i].boolean);
 					}
@@ -3684,7 +3696,7 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 				array_size *= 4;
 
 				if (array_size > 0) {
-					PackedInt32Array array = PackedInt32Array();
+					PackedInt32Array array;
 					for (int i = 0; i < array_size; i++) {
 						array.push_back(p_value[i].boolean);
 					}
@@ -3695,7 +3707,7 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 				break;
 			case ShaderLanguage::TYPE_INT:
 				if (array_size > 0) {
-					PackedInt32Array array = PackedInt32Array();
+					PackedInt32Array array;
 					for (int i = 0; i < array_size; i++) {
 						array.push_back(p_value[i].sint);
 					}
@@ -3708,7 +3720,7 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 				if (array_size > 0) {
 					array_size *= 2;
 
-					PackedInt32Array array = PackedInt32Array();
+					PackedInt32Array array;
 					for (int i = 0; i < array_size; i++) {
 						array.push_back(p_value[i].sint);
 					}
@@ -3721,7 +3733,7 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 				if (array_size > 0) {
 					array_size *= 3;
 
-					PackedInt32Array array = PackedInt32Array();
+					PackedInt32Array array;
 					for (int i = 0; i < array_size; i++) {
 						array.push_back(p_value[i].sint);
 					}
@@ -3734,7 +3746,7 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 				if (array_size > 0) {
 					array_size *= 4;
 
-					PackedInt32Array array = PackedInt32Array();
+					PackedInt32Array array;
 					for (int i = 0; i < array_size; i++) {
 						array.push_back(p_value[i].sint);
 					}
@@ -3745,7 +3757,7 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 				break;
 			case ShaderLanguage::TYPE_UINT:
 				if (array_size > 0) {
-					PackedInt32Array array = PackedInt32Array();
+					PackedInt32Array array;
 					for (int i = 0; i < array_size; i++) {
 						array.push_back(p_value[i].uint);
 					}
@@ -3758,7 +3770,7 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 				if (array_size > 0) {
 					array_size *= 2;
 
-					PackedInt32Array array = PackedInt32Array();
+					PackedInt32Array array;
 					for (int i = 0; i < array_size; i++) {
 						array.push_back(p_value[i].uint);
 					}
@@ -3771,7 +3783,7 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 				if (array_size > 0) {
 					array_size *= 3;
 
-					PackedInt32Array array = PackedInt32Array();
+					PackedInt32Array array;
 					for (int i = 0; i < array_size; i++) {
 						array.push_back(p_value[i].uint);
 					}
@@ -3784,7 +3796,7 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 				if (array_size > 0) {
 					array_size *= 4;
 
-					PackedInt32Array array = PackedInt32Array();
+					PackedInt32Array array;
 					for (int i = 0; i < array_size; i++) {
 						array.push_back(p_value[i].uint);
 					}
@@ -3795,7 +3807,7 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 				break;
 			case ShaderLanguage::TYPE_FLOAT:
 				if (array_size > 0) {
-					PackedFloat32Array array = PackedFloat32Array();
+					PackedFloat32Array array;
 					for (int i = 0; i < array_size; i++) {
 						array.push_back(p_value[i].real);
 					}
@@ -3808,7 +3820,7 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 				if (array_size > 0) {
 					array_size *= 2;
 
-					PackedVector2Array array = PackedVector2Array();
+					PackedVector2Array array;
 					for (int i = 0; i < array_size; i += 2) {
 						array.push_back(Vector2(p_value[i].real, p_value[i + 1].real));
 					}
@@ -3822,13 +3834,13 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 					array_size *= 3;
 
 					if (p_hint == ShaderLanguage::ShaderNode::Uniform::HINT_SOURCE_COLOR) {
-						PackedColorArray array = PackedColorArray();
+						PackedColorArray array;
 						for (int i = 0; i < array_size; i += 3) {
 							array.push_back(Color(p_value[i].real, p_value[i + 1].real, p_value[i + 2].real));
 						}
 						value = Variant(array);
 					} else {
-						PackedVector3Array array = PackedVector3Array();
+						PackedVector3Array array;
 						for (int i = 0; i < array_size; i += 3) {
 							array.push_back(Vector3(p_value[i].real, p_value[i + 1].real, p_value[i + 2].real));
 						}
@@ -3847,13 +3859,13 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 					array_size *= 4;
 
 					if (p_hint == ShaderLanguage::ShaderNode::Uniform::HINT_SOURCE_COLOR) {
-						PackedColorArray array = PackedColorArray();
+						PackedColorArray array;
 						for (int i = 0; i < array_size; i += 4) {
 							array.push_back(Color(p_value[i].real, p_value[i + 1].real, p_value[i + 2].real, p_value[i + 3].real));
 						}
 						value = Variant(array);
 					} else {
-						PackedFloat32Array array = PackedFloat32Array();
+						PackedFloat32Array array;
 						for (int i = 0; i < array_size; i += 4) {
 							array.push_back(p_value[i].real);
 							array.push_back(p_value[i + 1].real);
@@ -3874,7 +3886,7 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 				if (array_size > 0) {
 					array_size *= 4;
 
-					PackedFloat32Array array = PackedFloat32Array();
+					PackedFloat32Array array;
 					for (int i = 0; i < array_size; i += 4) {
 						array.push_back(p_value[i].real);
 						array.push_back(p_value[i + 1].real);
@@ -3890,7 +3902,7 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 				if (array_size > 0) {
 					array_size *= 9;
 
-					PackedFloat32Array array = PackedFloat32Array();
+					PackedFloat32Array array;
 					for (int i = 0; i < array_size; i += 9) {
 						for (int j = 0; j < 9; j++) {
 							array.push_back(p_value[i + j].real);
@@ -3916,7 +3928,7 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 				if (array_size > 0) {
 					array_size *= 16;
 
-					PackedFloat32Array array = PackedFloat32Array();
+					PackedFloat32Array array;
 					for (int i = 0; i < array_size; i += 16) {
 						for (int j = 0; j < 16; j++) {
 							array.push_back(p_value[i + j].real);
@@ -4110,43 +4122,41 @@ PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform 
 		case ShaderLanguage::TYPE_USAMPLER2D: {
 			if (p_uniform.array_size > 0) {
 				pi.type = Variant::ARRAY;
+				pi.hint = PROPERTY_HINT_ARRAY_TYPE;
+				pi.hint_string = MAKE_RESOURCE_TYPE_HINT("Texture2D");
 			} else {
 				pi.type = Variant::OBJECT;
+				pi.hint = PROPERTY_HINT_RESOURCE_TYPE;
+				pi.hint_string = "Texture2D";
 			}
-			pi.hint = PROPERTY_HINT_RESOURCE_TYPE;
-			pi.hint_string = "Texture2D";
 		} break;
 		case ShaderLanguage::TYPE_SAMPLER2DARRAY:
 		case ShaderLanguage::TYPE_ISAMPLER2DARRAY:
-		case ShaderLanguage::TYPE_USAMPLER2DARRAY: {
+		case ShaderLanguage::TYPE_USAMPLER2DARRAY:
+		case ShaderLanguage::TYPE_SAMPLERCUBE:
+		case ShaderLanguage::TYPE_SAMPLERCUBEARRAY: {
 			if (p_uniform.array_size > 0) {
 				pi.type = Variant::ARRAY;
+				pi.hint = PROPERTY_HINT_ARRAY_TYPE;
+				pi.hint_string = MAKE_RESOURCE_TYPE_HINT("TextureLayered");
 			} else {
 				pi.type = Variant::OBJECT;
+				pi.hint = PROPERTY_HINT_RESOURCE_TYPE;
+				pi.hint_string = "TextureLayered";
 			}
-			pi.hint = PROPERTY_HINT_RESOURCE_TYPE;
-			pi.hint_string = "TextureLayered";
 		} break;
 		case ShaderLanguage::TYPE_SAMPLER3D:
 		case ShaderLanguage::TYPE_ISAMPLER3D:
 		case ShaderLanguage::TYPE_USAMPLER3D: {
 			if (p_uniform.array_size > 0) {
 				pi.type = Variant::ARRAY;
+				pi.hint = PROPERTY_HINT_ARRAY_TYPE;
+				pi.hint_string = MAKE_RESOURCE_TYPE_HINT("Texture3D");
 			} else {
 				pi.type = Variant::OBJECT;
+				pi.hint = PROPERTY_HINT_RESOURCE_TYPE;
+				pi.hint_string = "Texture3D";
 			}
-			pi.hint = PROPERTY_HINT_RESOURCE_TYPE;
-			pi.hint_string = "Texture3D";
-		} break;
-		case ShaderLanguage::TYPE_SAMPLERCUBE:
-		case ShaderLanguage::TYPE_SAMPLERCUBEARRAY: {
-			if (p_uniform.array_size > 0) {
-				pi.type = Variant::ARRAY;
-			} else {
-				pi.type = Variant::OBJECT;
-			}
-			pi.hint = PROPERTY_HINT_RESOURCE_TYPE;
-			pi.hint_string = "TextureLayered";
 		} break;
 		case ShaderLanguage::TYPE_STRUCT: {
 			// FIXME: Implement this.
@@ -4309,7 +4319,17 @@ ShaderLanguage::DataType ShaderLanguage::get_scalar_type(DataType p_type) {
 		TYPE_INT,
 		TYPE_UINT,
 		TYPE_FLOAT,
+		TYPE_INT,
+		TYPE_UINT,
+		TYPE_FLOAT,
+		TYPE_INT,
+		TYPE_UINT,
+		TYPE_FLOAT,
+		TYPE_FLOAT,
+		TYPE_VOID,
 	};
+
+	static_assert(sizeof(scalar_types) / sizeof(*scalar_types) == TYPE_MAX);
 
 	return scalar_types[p_type];
 }
@@ -4340,7 +4360,17 @@ int ShaderLanguage::get_cardinality(DataType p_type) {
 		1,
 		1,
 		1,
+		1,
+		1,
+		1,
+		1,
+		1,
+		1,
+		1,
+		1,
 	};
+
+	static_assert(sizeof(cardinality_table) / sizeof(*cardinality_table) == TYPE_MAX);
 
 	return cardinality_table[p_type];
 }
@@ -4399,13 +4429,17 @@ bool ShaderLanguage::_is_operator_assign(Operator p_op) const {
 }
 
 bool ShaderLanguage::_validate_varying_assign(ShaderNode::Varying &p_varying, String *r_message) {
-	if (current_function != String("vertex") && current_function != String("fragment")) {
+	if (current_function != "vertex" && current_function != "fragment") {
 		*r_message = vformat(RTR("Varying may not be assigned in the '%s' function."), current_function);
 		return false;
 	}
 	switch (p_varying.stage) {
 		case ShaderNode::Varying::STAGE_UNKNOWN: // first assign
 			if (current_function == varying_function_names.vertex) {
+				if (p_varying.type < TYPE_INT) {
+					*r_message = vformat(RTR("Varying with '%s' data type may only be assigned in the 'fragment' function."), get_datatype_name(p_varying.type));
+					return false;
+				}
 				p_varying.stage = ShaderNode::Varying::STAGE_VERTEX;
 			} else if (current_function == varying_function_names.fragment) {
 				p_varying.stage = ShaderNode::Varying::STAGE_FRAGMENT;
@@ -5205,7 +5239,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 										if (shader->varyings.has(varname)) {
 											switch (shader->varyings[varname].stage) {
 												case ShaderNode::Varying::STAGE_UNKNOWN: {
-													_set_error(vformat(RTR("Varying '%s' must be assigned in the vertex or fragment function first."), varname));
+													_set_error(vformat(RTR("Varying '%s' must be assigned in the 'vertex' or 'fragment' function first."), varname));
 													return nullptr;
 												}
 												case ShaderNode::Varying::STAGE_VERTEX_TO_FRAGMENT_LIGHT:
@@ -5389,6 +5423,16 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 							}
 						} else {
 							switch (var.stage) {
+								case ShaderNode::Varying::STAGE_UNKNOWN: {
+									if (var.type < TYPE_INT) {
+										if (current_function == varying_function_names.vertex) {
+											_set_error(vformat(RTR("Varying with '%s' data type may only be used in the 'fragment' function."), get_datatype_name(var.type)));
+										} else {
+											_set_error(vformat(RTR("Varying '%s' must be assigned in the 'fragment' function first."), identifier));
+										}
+										return nullptr;
+									}
+								} break;
 								case ShaderNode::Varying::STAGE_VERTEX:
 									if (current_function == varying_function_names.fragment || current_function == varying_function_names.light) {
 										var.stage = ShaderNode::Varying::STAGE_VERTEX_TO_FRAGMENT_LIGHT;
@@ -7570,7 +7614,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 				return ERR_BUG;
 			}
 
-			if (b && b->parent_function && p_function_info.main_function) {
+			if (b->parent_function && p_function_info.main_function) {
 				_set_error(vformat(RTR("Using '%s' in the '%s' processor function is incorrect."), "return", b->parent_function->name));
 				return ERR_PARSE_ERROR;
 			}
@@ -8170,21 +8214,27 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 			};
 				[[fallthrough]];
 			case TK_INSTANCE: {
+				if (tk.type == TK_INSTANCE) {
 #ifdef DEBUG_ENABLED
-				keyword_completion_context = CF_UNIFORM_KEYWORD;
-				if (_lookup_next(next)) {
-					if (next.type == TK_UNIFORM) {
-						keyword_completion_context ^= CF_UNIFORM_KEYWORD;
+					keyword_completion_context = CF_UNIFORM_KEYWORD;
+					if (_lookup_next(next)) {
+						if (next.type == TK_UNIFORM) {
+							keyword_completion_context ^= CF_UNIFORM_KEYWORD;
+						}
 					}
-				}
 #endif // DEBUG_ENABLED
-				if (uniform_scope == ShaderNode::Uniform::SCOPE_LOCAL) {
-					tk = _get_token();
-					if (tk.type != TK_UNIFORM) {
-						_set_expected_after_error("uniform", "instance");
+					if (String(shader_type_identifier) != "spatial") {
+						_set_error(vformat(RTR("Uniform instances are not yet implemented for '%s' shaders."), shader_type_identifier));
 						return ERR_PARSE_ERROR;
 					}
-					uniform_scope = ShaderNode::Uniform::SCOPE_INSTANCE;
+					if (uniform_scope == ShaderNode::Uniform::SCOPE_LOCAL) {
+						tk = _get_token();
+						if (tk.type != TK_UNIFORM) {
+							_set_expected_after_error("uniform", "instance");
+							return ERR_PARSE_ERROR;
+						}
+						uniform_scope = ShaderNode::Uniform::SCOPE_INSTANCE;
+					}
 				}
 			};
 				[[fallthrough]];
@@ -8201,7 +8251,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 					}
 				}
 				DataPrecision precision = PRECISION_DEFAULT;
-				DataInterpolation interpolation = INTERPOLATION_SMOOTH;
+				DataInterpolation interpolation = INTERPOLATION_DEFAULT;
 				DataType type;
 				StringName name;
 				int array_size = 0;
@@ -8307,6 +8357,11 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 
 				if (type == TYPE_VOID) {
 					_set_error(vformat(RTR("The '%s' data type is not allowed here."), "void"));
+					return ERR_PARSE_ERROR;
+				}
+
+				if (!is_uniform && interpolation != INTERPOLATION_DEFAULT && type < TYPE_INT) {
+					_set_error(vformat(RTR("Interpolation modifier '%s' cannot be used with boolean types."), get_interpolation_name(interpolation)));
 					return ERR_PARSE_ERROR;
 				}
 
@@ -8854,7 +8909,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 							_set_error(RTR("Expected an uniform group identifier or `;`."));
 						}
 						return ERR_PARSE_ERROR;
-					} else if (tk.type == TK_SEMICOLON && current_uniform_group_name.is_empty()) {
+					} else if (current_uniform_group_name.is_empty()) {
 						_set_error(RTR("Group needs to be opened before."));
 						return ERR_PARSE_ERROR;
 					} else {
@@ -9711,6 +9766,25 @@ String ShaderLanguage::get_shader_type(const String &p_code) {
 	}
 
 	return String();
+}
+
+bool ShaderLanguage::is_builtin_func_out_parameter(const String &p_name, int p_param) {
+	int i = 0;
+	while (builtin_func_out_args[i].name) {
+		if (p_name == builtin_func_out_args[i].name) {
+			for (int j = 0; j < BuiltinFuncOutArgs::MAX_ARGS; j++) {
+				int arg = builtin_func_out_args[i].arguments[j];
+				if (arg == p_param) {
+					return true;
+				}
+				if (arg < 0) {
+					return false;
+				}
+			}
+		}
+		i++;
+	}
+	return false;
 }
 
 #ifdef DEBUG_ENABLED

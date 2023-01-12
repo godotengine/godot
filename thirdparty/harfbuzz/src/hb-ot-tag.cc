@@ -577,7 +577,7 @@ hb_ot_tags_to_script_and_language (hb_tag_t       script_tag,
       else
       {
 	int shift;
-	memcpy (buf, lang_str, len);
+	hb_memcpy (buf, lang_str, len);
 	if (lang_str[0] != 'x' || lang_str[1] != '-') {
 	  buf[len++] = '-';
 	  buf[len++] = 'x';

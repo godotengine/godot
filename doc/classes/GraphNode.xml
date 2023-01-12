@@ -280,16 +280,21 @@
 				Emitted when the GraphNode is requested to be closed. Happens on clicking the close button (see [member show_close]).
 			</description>
 		</signal>
-		<signal name="deselected">
-			<description>
-				Emitted when the GraphNode is deselected.
-			</description>
-		</signal>
 		<signal name="dragged">
 			<param index="0" name="from" type="Vector2" />
 			<param index="1" name="to" type="Vector2" />
 			<description>
 				Emitted when the GraphNode is dragged.
+			</description>
+		</signal>
+		<signal name="node_deselected">
+			<description>
+				Emitted when the GraphNode is deselected.
+			</description>
+		</signal>
+		<signal name="node_selected">
+			<description>
+				Emitted when the GraphNode is selected.
 			</description>
 		</signal>
 		<signal name="position_offset_changed">
@@ -306,11 +311,6 @@
 			<param index="0" name="new_minsize" type="Vector2" />
 			<description>
 				Emitted when the GraphNode is requested to be resized. Happens on dragging the resizer handle (see [member resizable]).
-			</description>
-		</signal>
-		<signal name="selected">
-			<description>
-				Emitted when the GraphNode is selected.
 			</description>
 		</signal>
 		<signal name="slot_updated">

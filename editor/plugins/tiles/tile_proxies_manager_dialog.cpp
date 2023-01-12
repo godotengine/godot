@@ -1,40 +1,42 @@
-/*************************************************************************/
-/*  tile_proxies_manager_dialog.cpp                                      */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  tile_proxies_manager_dialog.cpp                                       */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "tile_proxies_manager_dialog.h"
 
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "scene/gui/separator.h"
 
-void TileProxiesManagerDialog::_right_clicked(int p_item, Vector2 p_local_mouse_pos, Object *p_item_list, MouseButton p_mouse_button_index) {
+void TileProxiesManagerDialog::_right_clicked(int p_item, Vector2 p_local_mouse_pos, MouseButton p_mouse_button_index, Object *p_item_list) {
 	if (p_mouse_button_index != MouseButton::RIGHT) {
 		return;
 	}
@@ -53,6 +55,7 @@ void TileProxiesManagerDialog::_menu_id_pressed(int p_id) {
 }
 
 void TileProxiesManagerDialog::_delete_selected_bindings() {
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("Remove Tile Proxies"));
 
 	Vector<int> source_level_selected = source_level_list->get_selected_items();
@@ -74,7 +77,7 @@ void TileProxiesManagerDialog::_delete_selected_bindings() {
 	Vector<int> alternative_level_selected = alternative_level_list->get_selected_items();
 	for (int i = 0; i < alternative_level_selected.size(); i++) {
 		Array key = alternative_level_list->get_item_metadata(alternative_level_selected[i]);
-		Array val = tile_set->get_coords_level_tile_proxy(key[0], key[1]);
+		Array val = tile_set->get_alternative_level_tile_proxy(key[0], key[1], key[2]);
 		undo_redo->add_do_method(*tile_set, "remove_alternative_level_tile_proxy", key[0], key[1], key[2]);
 		undo_redo->add_undo_method(*tile_set, "set_alternative_level_tile_proxy", key[0], key[1], key[2], val[0], val[1], val[2]);
 	}
@@ -152,6 +155,7 @@ void TileProxiesManagerDialog::_property_changed(const String &p_path, const Var
 }
 
 void TileProxiesManagerDialog::_add_button_pressed() {
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	if (from.source_id != TileSet::INVALID_SOURCE && to.source_id != TileSet::INVALID_SOURCE) {
 		Vector2i from_coords = from.get_atlas_coords();
 		Vector2i to_coords = to.get_atlas_coords();
@@ -192,6 +196,7 @@ void TileProxiesManagerDialog::_add_button_pressed() {
 }
 
 void TileProxiesManagerDialog::_clear_invalid_button_pressed() {
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("Delete All Invalid Tile Proxies"));
 
 	undo_redo->add_do_method(*tile_set, "cleanup_invalid_tile_proxies");
@@ -219,6 +224,7 @@ void TileProxiesManagerDialog::_clear_invalid_button_pressed() {
 }
 
 void TileProxiesManagerDialog::_clear_all_button_pressed() {
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("Delete All Tile Proxies"));
 
 	undo_redo->add_do_method(*tile_set, "clear_tile_proxies");
@@ -299,6 +305,7 @@ void TileProxiesManagerDialog::_unhandled_key_input(Ref<InputEvent> p_event) {
 }
 
 void TileProxiesManagerDialog::cancel_pressed() {
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	for (int i = 0; i < commited_actions_count; i++) {
 		undo_redo->undo();
 	}
@@ -318,8 +325,6 @@ void TileProxiesManagerDialog::update_tile_set(Ref<TileSet> p_tile_set) {
 }
 
 TileProxiesManagerDialog::TileProxiesManagerDialog() {
-	undo_redo = EditorNode::get_singleton()->get_undo_redo();
-
 	// Tile proxy management window.
 	set_title(TTR("Tile Proxies Management"));
 	set_process_unhandled_key_input(true);
@@ -393,7 +398,7 @@ TileProxiesManagerDialog::TileProxiesManagerDialog() {
 	source_from_property_editor->connect("property_changed", callable_mp(this, &TileProxiesManagerDialog::_property_changed));
 	source_from_property_editor->set_selectable(false);
 	source_from_property_editor->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	source_from_property_editor->setup(-1, 99999, 1, true, false);
+	source_from_property_editor->setup(-1, 99999, 1, false, true, false);
 	vboxcontainer_from->add_child(source_from_property_editor);
 
 	coords_from_property_editor = memnew(EditorPropertyVector2i);
@@ -412,7 +417,7 @@ TileProxiesManagerDialog::TileProxiesManagerDialog() {
 	alternative_from_property_editor->connect("property_changed", callable_mp(this, &TileProxiesManagerDialog::_property_changed));
 	alternative_from_property_editor->set_selectable(false);
 	alternative_from_property_editor->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	alternative_from_property_editor->setup(-1, 99999, 1, true, false);
+	alternative_from_property_editor->setup(-1, 99999, 1, false, true, false);
 	alternative_from_property_editor->hide();
 	vboxcontainer_from->add_child(alternative_from_property_editor);
 
@@ -427,7 +432,7 @@ TileProxiesManagerDialog::TileProxiesManagerDialog() {
 	source_to_property_editor->connect("property_changed", callable_mp(this, &TileProxiesManagerDialog::_property_changed));
 	source_to_property_editor->set_selectable(false);
 	source_to_property_editor->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	source_to_property_editor->setup(-1, 99999, 1, true, false);
+	source_to_property_editor->setup(-1, 99999, 1, false, true, false);
 	vboxcontainer_to->add_child(source_to_property_editor);
 
 	coords_to_property_editor = memnew(EditorPropertyVector2i);
@@ -446,7 +451,7 @@ TileProxiesManagerDialog::TileProxiesManagerDialog() {
 	alternative_to_property_editor->connect("property_changed", callable_mp(this, &TileProxiesManagerDialog::_property_changed));
 	alternative_to_property_editor->set_selectable(false);
 	alternative_to_property_editor->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	alternative_to_property_editor->setup(-1, 99999, 1, true, false);
+	alternative_to_property_editor->setup(-1, 99999, 1, false, true, false);
 	alternative_to_property_editor->hide();
 	vboxcontainer_to->add_child(alternative_to_property_editor);
 

@@ -1,37 +1,38 @@
-/*************************************************************************/
-/*  scene_replication_interface.cpp                                      */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  scene_replication_interface.cpp                                       */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "scene_replication_interface.h"
 
 #include "scene_multiplayer.h"
 
+#include "core/debugger/engine_debugger.h"
 #include "core/io/marshalls.h"
 #include "scene/main/node.h"
 #include "scene/scene_string_names.h"
@@ -39,6 +40,18 @@
 #define MAKE_ROOM(m_amount)             \
 	if (packet_cache.size() < m_amount) \
 		packet_cache.resize(m_amount);
+
+#ifdef DEBUG_ENABLED
+_FORCE_INLINE_ void SceneReplicationInterface::_profile_node_data(const String &p_what, ObjectID p_id, int p_size) {
+	if (EngineDebugger::is_profiling("multiplayer:replication")) {
+		Array values;
+		values.push_back(p_what);
+		values.push_back(p_id);
+		values.push_back(p_size);
+		EngineDebugger::profiler_add_frame_data("multiplayer:replication", values);
+	}
+}
+#endif
 
 SceneReplicationInterface::TrackedNode &SceneReplicationInterface::_track(const ObjectID &p_id) {
 	if (!tracked_nodes.has(p_id)) {
@@ -244,15 +257,54 @@ void SceneReplicationInterface::_visibility_changed(int p_peer, ObjectID p_sid) 
 	Node *node = sync->get_root_node();
 	ERR_FAIL_COND(!node); // Bug.
 	const ObjectID oid = node->get_instance_id();
-	if (spawned_nodes.has(oid)) {
+	if (spawned_nodes.has(oid) && p_peer != multiplayer->get_unique_id()) {
 		_update_spawn_visibility(p_peer, oid);
 	}
 	_update_sync_visibility(p_peer, sync);
 }
 
+bool SceneReplicationInterface::is_rpc_visible(const ObjectID &p_oid, int p_peer) const {
+	if (!tracked_nodes.has(p_oid)) {
+		return true; // Untracked nodes are always visible to RPCs.
+	}
+	ERR_FAIL_COND_V(p_peer < 0, false);
+	const TrackedNode &tnode = tracked_nodes[p_oid];
+	if (tnode.synchronizers.is_empty()) {
+		return true; // No synchronizers means no visibility restrictions.
+	}
+	if (tnode.remote_peer && uint32_t(p_peer) == tnode.remote_peer) {
+		return true; // RPCs on spawned nodes are always visible to spawner.
+	} else if (spawned_nodes.has(p_oid)) {
+		// It's a spwaned node we control, this can be fast
+		if (p_peer) {
+			return peers_info.has(p_peer) && peers_info[p_peer].spawn_nodes.has(p_oid);
+		} else {
+			for (const KeyValue<int, PeerInfo> &E : peers_info) {
+				if (!E.value.spawn_nodes.has(p_oid)) {
+					return false; // Not public.
+				}
+			}
+			return true; // All peers have this node.
+		}
+	} else {
+		// Cycle object synchronizers to check visibility.
+		for (const ObjectID &sid : tnode.synchronizers) {
+			MultiplayerSynchronizer *sync = get_id_as<MultiplayerSynchronizer>(sid);
+			ERR_CONTINUE(!sync);
+			// RPC visibility is composed using OR when multiple synchronizers are present.
+			// Note that we don't really care about authority here which may lead to unexpected
+			// results when using multiple synchronizers to control the same node.
+			if (sync->is_visible_to(p_peer)) {
+				return true;
+			}
+		}
+		return false; // Not visible.
+	}
+}
+
 Error SceneReplicationInterface::_update_sync_visibility(int p_peer, MultiplayerSynchronizer *p_sync) {
 	ERR_FAIL_COND_V(!p_sync, ERR_BUG);
-	if (!multiplayer->has_multiplayer_peer() || !p_sync->is_multiplayer_authority()) {
+	if (!multiplayer->has_multiplayer_peer() || !p_sync->is_multiplayer_authority() || p_peer == multiplayer->get_unique_id()) {
 		return OK;
 	}
 
@@ -362,12 +414,7 @@ Error SceneReplicationInterface::_update_spawn_visibility(int p_peer, const Obje
 
 Error SceneReplicationInterface::_send_raw(const uint8_t *p_buffer, int p_size, int p_peer, bool p_reliable) {
 	ERR_FAIL_COND_V(!p_buffer || p_size < 1, ERR_INVALID_PARAMETER);
-	ERR_FAIL_COND_V(!multiplayer, ERR_UNCONFIGURED);
 	ERR_FAIL_COND_V(!multiplayer->has_multiplayer_peer(), ERR_UNCONFIGURED);
-
-#ifdef DEBUG_ENABLED
-	multiplayer->profile_bandwidth("out", p_size);
-#endif
 
 	Ref<MultiplayerPeer> peer = multiplayer->get_multiplayer_peer();
 	peer->set_transfer_channel(0);
@@ -640,6 +687,9 @@ void SceneReplicationInterface::_send_sync(int p_peer, const HashSet<ObjectID> p
 			MultiplayerAPI::encode_and_compress_variants(varp.ptrw(), varp.size(), &ptr[ofs], size);
 			ofs += size;
 		}
+#ifdef DEBUG_ENABLED
+		_profile_node_data("sync_out", oid, size);
+#endif
 	}
 	if (ofs > 3) {
 		// Got some left over to send.
@@ -687,6 +737,9 @@ Error SceneReplicationInterface::on_sync_receive(int p_from, const uint8_t *p_bu
 		err = MultiplayerSynchronizer::set_state(props, node, vars);
 		ERR_FAIL_COND_V(err, err);
 		ofs += size;
+#ifdef DEBUG_ENABLED
+		_profile_node_data("sync_in", sync->get_instance_id(), size);
+#endif
 	}
 	return OK;
 }

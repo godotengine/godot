@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  editor_themes.cpp                                                    */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  editor_themes.cpp                                                     */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "editor_themes.h"
 
@@ -133,25 +133,26 @@ void EditorColorMap::create() {
 	add_conversion_color_pair("#0e71fc", "#0350bd"); // New Autotile
 	add_conversion_color_pair("#c6ced4", "#828f9b"); // New Atlas
 
-	// Visual script
-	add_conversion_color_pair("#41ecad", "#25e3a0"); // VisualScript variant
-	add_conversion_color_pair("#6f91f0", "#6d8eeb"); // VisualScript bool
-	add_conversion_color_pair("#5abbef", "#4fb2e9"); // VisualScript int
-	add_conversion_color_pair("#35d4f4", "#27ccf0"); // VisualScript float
-	add_conversion_color_pair("#4593ec", "#4690e7"); // VisualScript String
-	add_conversion_color_pair("#ac73f1", "#ad76ee"); // VisualScript Vector2
-	add_conversion_color_pair("#f1738f", "#ee758e"); // VisualScript Rect2
-	add_conversion_color_pair("#de66f0", "#dc6aed"); // VisualScript Vector3
-	add_conversion_color_pair("#b9ec41", "#96ce1a"); // VisualScript Transform2D
-	add_conversion_color_pair("#f74949", "#f77070"); // VisualScript Plane
-	add_conversion_color_pair("#ec418e", "#ec69a3"); // VisualScript Quat
-	add_conversion_color_pair("#ee5677", "#ee7991"); // VisualScript AABB
-	add_conversion_color_pair("#e1ec41", "#b2bb19"); // VisualScript Basis
-	add_conversion_color_pair("#f68f45", "#f49047"); // VisualScript Transform
-	add_conversion_color_pair("#417aec", "#6993ec"); // VisualScript NodePath
-	add_conversion_color_pair("#41ec80", "#2ce573"); // VisualScript RID
-	add_conversion_color_pair("#55f3e3", "#12d5c3"); // VisualScript Object
-	add_conversion_color_pair("#54ed9e", "#57e99f"); // VisualScript Dictionary
+	// Variant types
+	add_conversion_color_pair("#41ecad", "#25e3a0"); // Variant
+	add_conversion_color_pair("#6f91f0", "#6d8eeb"); // bool
+	add_conversion_color_pair("#5abbef", "#4fb2e9"); // int
+	add_conversion_color_pair("#35d4f4", "#27ccf0"); // float
+	add_conversion_color_pair("#4593ec", "#4690e7"); // String
+	add_conversion_color_pair("#ac73f1", "#ad76ee"); // Vector2
+	add_conversion_color_pair("#f1738f", "#ee758e"); // Rect2
+	add_conversion_color_pair("#de66f0", "#dc6aed"); // Vector3
+	add_conversion_color_pair("#b9ec41", "#96ce1a"); // Transform2D
+	add_conversion_color_pair("#f74949", "#f77070"); // Plane
+	add_conversion_color_pair("#ec418e", "#ec69a3"); // Quaternion
+	add_conversion_color_pair("#ee5677", "#ee7991"); // AABB
+	add_conversion_color_pair("#e1ec41", "#b2bb19"); // Basis
+	add_conversion_color_pair("#f68f45", "#f49047"); // Transform3D
+	add_conversion_color_pair("#417aec", "#6993ec"); // NodePath
+	add_conversion_color_pair("#41ec80", "#2ce573"); // RID
+	add_conversion_color_pair("#55f3e3", "#12d5c3"); // Object
+	add_conversion_color_pair("#54ed9e", "#57e99f"); // Dictionary
+
 	// Visual shaders
 	add_conversion_color_pair("#77ce57", "#67c046"); // Vector funcs
 	add_conversion_color_pair("#ea686c", "#d95256"); // Vector transforms
@@ -240,7 +241,8 @@ static Ref<ImageTexture> editor_generate_icon(int p_index, float p_scale, float 
 	// with integer editor scales.
 	const bool upsample = !Math::is_equal_approx(Math::round(p_scale), p_scale);
 	ImageLoaderSVG img_loader;
-	img_loader.create_image_from_string(img, editor_icons_sources[p_index], p_scale, upsample, p_convert_colors);
+	Error err = img_loader.create_image_from_string(img, editor_icons_sources[p_index], p_scale, upsample, p_convert_colors);
+	ERR_FAIL_COND_V_MSG(err != OK, Ref<ImageTexture>(), "Failed generating icon, unsupported or invalid SVG data in editor theme.");
 	if (p_saturation != 1.0) {
 		img->adjust_bcs(1.0, 1.0, p_saturation);
 	}
@@ -392,6 +394,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	Color accent_color = EDITOR_GET("interface/theme/accent_color");
 	Color base_color = EDITOR_GET("interface/theme/base_color");
 	float contrast = EDITOR_GET("interface/theme/contrast");
+	bool draw_extra_borders = EDITOR_GET("interface/theme/draw_extra_borders");
 	float icon_saturation = EDITOR_GET("interface/theme/icon_saturation");
 	float relationship_line_opacity = EDITOR_GET("interface/theme/relationship_line_opacity");
 
@@ -403,6 +406,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	Color preset_accent_color;
 	Color preset_base_color;
 	float preset_contrast = 0;
+	bool preset_draw_extra_borders = false;
 
 	const float default_contrast = 0.3;
 
@@ -439,6 +443,12 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 		preset_base_color = Color(0.89, 0.86, 0.79);
 		// A negative contrast rate looks better for light themes, since it better follows the natural order of UI "elevation".
 		preset_contrast = -0.08;
+	} else if (preset == "Black (OLED)") {
+		preset_accent_color = Color(0.45, 0.75, 1.0);
+		preset_base_color = Color(0, 0, 0);
+		// The contrast rate value is irrelevant on a fully black theme.
+		preset_contrast = 0.0;
+		preset_draw_extra_borders = true;
 	} else { // Default
 		preset_accent_color = Color(0.44, 0.73, 0.98);
 		preset_base_color = Color(0.21, 0.24, 0.29);
@@ -449,15 +459,18 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 		accent_color = preset_accent_color;
 		base_color = preset_base_color;
 		contrast = preset_contrast;
+		draw_extra_borders = preset_draw_extra_borders;
 		EditorSettings::get_singleton()->set_initial_value("interface/theme/accent_color", accent_color);
 		EditorSettings::get_singleton()->set_initial_value("interface/theme/base_color", base_color);
 		EditorSettings::get_singleton()->set_initial_value("interface/theme/contrast", contrast);
+		EditorSettings::get_singleton()->set_initial_value("interface/theme/draw_extra_borders", draw_extra_borders);
 	}
 
 	EditorSettings::get_singleton()->set_manually("interface/theme/preset", preset);
 	EditorSettings::get_singleton()->set_manually("interface/theme/accent_color", accent_color);
 	EditorSettings::get_singleton()->set_manually("interface/theme/base_color", base_color);
 	EditorSettings::get_singleton()->set_manually("interface/theme/contrast", contrast);
+	EditorSettings::get_singleton()->set_manually("interface/theme/draw_extra_borders", draw_extra_borders);
 
 	// Colors
 	bool dark_theme = EditorSettings::get_singleton()->is_dark_theme();
@@ -476,6 +489,10 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const Color dark_color_2 = base_color.lerp(Color(0, 0, 0, 1), contrast * 1.5).clamp();
 	const Color dark_color_3 = base_color.lerp(Color(0, 0, 0, 1), contrast * 2).clamp();
 
+	// Only used when the Draw Extra Borders editor setting is enabled.
+	const Color extra_border_color_1 = Color(0.5, 0.5, 0.5);
+	const Color extra_border_color_2 = dark_theme ? Color(0.3, 0.3, 0.3) : Color(0.7, 0.7, 0.7);
+
 	const Color background_color = dark_color_2;
 
 	// White (dark theme) or black (light theme), will be used to generate the rest of the colors
@@ -488,7 +505,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const Color font_hover_color = mono_color.lerp(base_color, 0.125);
 	const Color font_focus_color = mono_color.lerp(base_color, 0.125);
 	const Color font_hover_pressed_color = font_hover_color.lerp(accent_color, 0.74);
-	const Color font_disabled_color = Color(mono_color.r, mono_color.g, mono_color.b, 0.3);
+	const Color font_disabled_color = Color(mono_color.r, mono_color.g, mono_color.b, 0.35);
 	const Color font_readonly_color = Color(mono_color.r, mono_color.g, mono_color.b, 0.65);
 	const Color font_placeholder_color = Color(mono_color.r, mono_color.g, mono_color.b, 0.6);
 	const Color selection_color = accent_color * Color(1, 1, 1, 0.4);
@@ -633,10 +650,19 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	Ref<StyleBoxFlat> style_widget = style_default->duplicate();
 	style_widget->set_default_margin_individual(widget_default_margin.x, widget_default_margin.y, widget_default_margin.x, widget_default_margin.y);
 	style_widget->set_bg_color(dark_color_1);
-	style_widget->set_border_color(dark_color_2);
+	if (draw_extra_borders) {
+		style_widget->set_border_width_all(Math::round(EDSCALE));
+		style_widget->set_border_color(extra_border_color_1);
+	} else {
+		style_widget->set_border_color(dark_color_2);
+	}
 
 	Ref<StyleBoxFlat> style_widget_disabled = style_widget->duplicate();
-	style_widget_disabled->set_border_color(disabled_color);
+	if (draw_extra_borders) {
+		style_widget_disabled->set_border_color(extra_border_color_2);
+	} else {
+		style_widget_disabled->set_border_color(disabled_color);
+	}
 	style_widget_disabled->set_bg_color(disabled_bg_color);
 
 	Ref<StyleBoxFlat> style_widget_focus = style_widget->duplicate();
@@ -649,7 +675,11 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	Ref<StyleBoxFlat> style_widget_hover = style_widget->duplicate();
 	style_widget_hover->set_bg_color(mono_color * Color(1, 1, 1, 0.11));
-	style_widget_hover->set_border_color(mono_color * Color(1, 1, 1, 0.05));
+	if (draw_extra_borders) {
+		style_widget_hover->set_border_color(extra_border_color_1);
+	} else {
+		style_widget_hover->set_border_color(mono_color * Color(1, 1, 1, 0.05));
+	}
 
 	// Style for windows, popups, etc..
 	Ref<StyleBoxFlat> style_popup = style_default->duplicate();
@@ -990,7 +1020,11 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_popup_menu->set_default_margin_individual(EDSCALE, 2 * EDSCALE, EDSCALE, 2 * EDSCALE);
 	// Always display a border for PopupMenus so they can be distinguished from their background.
 	style_popup_menu->set_border_width_all(EDSCALE);
-	style_popup_menu->set_border_color(dark_color_2);
+	if (draw_extra_borders) {
+		style_popup_menu->set_border_color(extra_border_color_2);
+	} else {
+		style_popup_menu->set_border_color(dark_color_2);
+	}
 	theme->set_stylebox("panel", "PopupMenu", style_popup_menu);
 
 	Ref<StyleBoxFlat> style_menu_hover = style_widget_hover->duplicate();
@@ -1110,7 +1144,13 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	Ref<StyleBoxFlat> style_tree_bg = style_default->duplicate();
 	// Make Trees easier to distinguish from other controls by using a darker background color.
 	style_tree_bg->set_bg_color(dark_color_1.lerp(dark_color_2, 0.5));
-	style_tree_bg->set_border_color(dark_color_3);
+	if (draw_extra_borders) {
+		style_tree_bg->set_border_width_all(Math::round(EDSCALE));
+		style_tree_bg->set_border_color(extra_border_color_2);
+	} else {
+		style_tree_bg->set_border_color(dark_color_3);
+	}
+
 	theme->set_stylebox("panel", "Tree", style_tree_bg);
 
 	// Tree
@@ -1206,8 +1246,14 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// ItemList
 	Ref<StyleBoxFlat> style_itemlist_bg = style_default->duplicate();
 	style_itemlist_bg->set_bg_color(dark_color_1);
-	style_itemlist_bg->set_border_width_all(border_width);
-	style_itemlist_bg->set_border_color(dark_color_3);
+
+	if (draw_extra_borders) {
+		style_itemlist_bg->set_border_width_all(Math::round(EDSCALE));
+		style_itemlist_bg->set_border_color(extra_border_color_2);
+	} else {
+		style_itemlist_bg->set_border_width_all(border_width);
+		style_itemlist_bg->set_border_color(dark_color_3);
+	}
 
 	Ref<StyleBoxFlat> style_itemlist_cursor = style_default->duplicate();
 	style_itemlist_cursor->set_draw_center(false);
@@ -1325,13 +1371,20 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// The original style_widget style has an extra 1 pixel offset that makes LineEdits not align with Buttons,
 	// so this compensates for that.
 	style_line_edit->set_default_margin(SIDE_TOP, style_line_edit->get_default_margin(SIDE_TOP) - 1 * EDSCALE);
-	// Add a bottom line to make LineEdits more visible, especially in sectioned inspectors
-	// such as the Project Settings.
-	style_line_edit->set_border_width(SIDE_BOTTOM, Math::round(2 * EDSCALE));
-	style_line_edit->set_border_color(dark_color_2);
+
 	// Don't round the bottom corner to make the line look sharper.
 	style_tab_selected->set_corner_radius(CORNER_BOTTOM_LEFT, 0);
 	style_tab_selected->set_corner_radius(CORNER_BOTTOM_RIGHT, 0);
+
+	if (draw_extra_borders) {
+		style_line_edit->set_border_width_all(Math::round(EDSCALE));
+		style_line_edit->set_border_color(extra_border_color_1);
+	} else {
+		// Add a bottom line to make LineEdits more visible, especially in sectioned inspectors
+		// such as the Project Settings.
+		style_line_edit->set_border_width(SIDE_BOTTOM, Math::round(2 * EDSCALE));
+		style_line_edit->set_border_color(dark_color_2);
+	}
 
 	Ref<StyleBoxFlat> style_line_edit_disabled = style_line_edit->duplicate();
 	style_line_edit_disabled->set_border_color(disabled_color);
@@ -1491,6 +1544,11 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_stylebox("normal", "RichTextLabel", style_tree_bg);
 
 	// Editor help.
+	Ref<StyleBoxFlat> style_editor_help = style_default->duplicate();
+	style_editor_help->set_bg_color(dark_color_2);
+	style_editor_help->set_border_color(dark_color_3);
+	theme->set_stylebox("background", "EditorHelp", style_editor_help);
+
 	theme->set_color("title_color", "EditorHelp", accent_color);
 	theme->set_color("headline_color", "EditorHelp", mono_color);
 	theme->set_color("text_color", "EditorHelp", font_color);
@@ -1503,9 +1561,14 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("link_color", "EditorHelp", accent_color.lerp(mono_color, 0.8));
 	theme->set_color("code_color", "EditorHelp", accent_color.lerp(mono_color, 0.6));
 	theme->set_color("kbd_color", "EditorHelp", accent_color.lerp(property_color, 0.6));
+	theme->set_color("code_bg_color", "EditorHelp", dark_color_3);
+	theme->set_color("kbd_bg_color", "EditorHelp", dark_color_1);
+	theme->set_color("param_bg_color", "EditorHelp", dark_color_1);
 	theme->set_constant("line_separation", "EditorHelp", Math::round(6 * EDSCALE));
 	theme->set_constant("table_h_separation", "EditorHelp", 16 * EDSCALE);
 	theme->set_constant("table_v_separation", "EditorHelp", 6 * EDSCALE);
+	theme->set_constant("text_highlight_h_padding", "EditorHelp", 1 * EDSCALE);
+	theme->set_constant("text_highlight_v_padding", "EditorHelp", 2 * EDSCALE);
 
 	// Panel
 	theme->set_stylebox("panel", "Panel", make_flat_stylebox(dark_color_1, 6, 4, 6, 4, corner_width));

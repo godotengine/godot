@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  shader_gles3.cpp                                                     */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  shader_gles3.cpp                                                      */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "shader_gles3.h"
 
@@ -35,6 +35,11 @@
 #include "core/io/compression.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
+
+static String _mkid(const String &p_id) {
+	String id = "m_" + p_id.replace("__", "_dus_");
+	return id.replace("__", "_dus_"); //doubleunderscore is reserved in glsl
+}
 
 void ShaderGLES3::_add_stage(const char *p_code, StageType p_stage_type) {
 	Vector<String> lines = String(p_code).split("\n");
@@ -92,7 +97,7 @@ void ShaderGLES3::_add_stage(const char *p_code, StageType p_stage_type) {
 	}
 }
 
-void ShaderGLES3::_setup(const char *p_vertex_code, const char *p_fragment_code, const char *p_name, int p_uniform_count, const char **p_uniform_names, int p_ubo_count, const UBOPair *p_ubos, int p_texture_count, const TexUnitPair *p_tex_units, int p_specialization_count, const Specialization *p_specializations, int p_variant_count, const char **p_variants) {
+void ShaderGLES3::_setup(const char *p_vertex_code, const char *p_fragment_code, const char *p_name, int p_uniform_count, const char **p_uniform_names, int p_ubo_count, const UBOPair *p_ubos, int p_feedback_count, const Feedback *p_feedback, int p_texture_count, const TexUnitPair *p_tex_units, int p_specialization_count, const Specialization *p_specializations, int p_variant_count, const char **p_variants) {
 	name = p_name;
 
 	if (p_vertex_code) {
@@ -118,6 +123,8 @@ void ShaderGLES3::_setup(const char *p_vertex_code, const char *p_fragment_code,
 	}
 	variant_defines = p_variants;
 	variant_count = p_variant_count;
+	feedbacks = p_feedback;
+	feedback_count = p_feedback_count;
 
 	StringBuilder tohash;
 	/*
@@ -339,9 +346,21 @@ void ShaderGLES3::_compile_specialization(Version::Specialization &spec, uint32_
 	glAttachShader(spec.id, spec.frag_id);
 	glAttachShader(spec.id, spec.vert_id);
 
-	//for (int i = 0; i < attribute_pair_count; i++) {
-	//	glBindAttribLocation(v.id, attribute_pairs[i].index, attribute_pairs[i].name);
-	//}
+	// If feedback exists, set it up.
+
+	if (feedback_count) {
+		Vector<const char *> feedback;
+		for (int i = 0; i < feedback_count; i++) {
+			if (feedbacks[i].specialization == 0 || (feedbacks[i].specialization & p_specialization)) {
+				// Specialization for this feedback is enabled
+				feedback.push_back(feedbacks[i].name);
+			}
+		}
+
+		if (feedback.size()) {
+			glTransformFeedbackVaryings(spec.id, feedback.size(), feedback.ptr(), GL_INTERLEAVED_ATTRIBS);
+		}
+	}
 
 	glLinkProgram(spec.id);
 
@@ -411,7 +430,7 @@ void ShaderGLES3::_compile_specialization(Version::Specialization &spec, uint32_
 	}
 	// textures
 	for (int i = 0; i < p_version->texture_uniforms.size(); i++) {
-		String native_uniform_name = p_version->texture_uniforms[i];
+		String native_uniform_name = _mkid(p_version->texture_uniforms[i]);
 		GLint location = glGetUniformLocation(spec.id, (native_uniform_name).ascii().get_data());
 		glUniform1i(location, i + base_texture_index);
 	}

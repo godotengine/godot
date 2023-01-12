@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  node.cpp                                                             */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  node.cpp                                                              */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "node.h"
 
@@ -39,6 +39,7 @@
 #include "scene/animation/tween.h"
 #include "scene/debugger/scene_debugger.h"
 #include "scene/main/multiplayer_api.h"
+#include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/scene_string_names.h"
 #include "viewport.h"
@@ -349,7 +350,7 @@ void Node::move_child(Node *p_child, int p_index) {
 }
 
 void Node::_move_child(Node *p_child, int p_index, bool p_ignore_end) {
-	ERR_FAIL_COND_MSG(data.blocked > 0, "Parent node is busy setting up children, move_child() failed. Consider using call_deferred(\"move_child\") instead (or \"popup\" if this is from a popup).");
+	ERR_FAIL_COND_MSG(data.blocked > 0, "Parent node is busy setting up children, `move_child()` failed. Consider using `move_child.call_deferred(child, index)` instead (or `popup.call_deferred()` if this is from a popup).");
 
 	// Specifying one place beyond the end
 	// means the same as moving to the last index
@@ -1130,7 +1131,7 @@ void Node::add_child(Node *p_child, bool p_force_readable_name, InternalMode p_i
 #ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_MSG(p_child->is_ancestor_of(this), vformat("Can't add child '%s' to '%s' as it would result in a cyclic dependency since '%s' is already a parent of '%s'.", p_child->get_name(), get_name(), p_child->get_name(), get_name()));
 #endif
-	ERR_FAIL_COND_MSG(data.blocked > 0, "Parent node is busy setting up children, add_node() failed. Consider using call_deferred(\"add_child\", child) instead.");
+	ERR_FAIL_COND_MSG(data.blocked > 0, "Parent node is busy setting up children, `add_child()` failed. Consider using `add_child.call_deferred(child)` instead.");
 
 	_validate_child_name(p_child, p_force_readable_name);
 	_add_child_nocheck(p_child, p_child->data.name);
@@ -1150,7 +1151,7 @@ void Node::add_sibling(Node *p_sibling, bool p_force_readable_name) {
 	ERR_FAIL_NULL(p_sibling);
 	ERR_FAIL_NULL(data.parent);
 	ERR_FAIL_COND_MSG(p_sibling == this, vformat("Can't add sibling '%s' to itself.", p_sibling->get_name())); // adding to itself!
-	ERR_FAIL_COND_MSG(data.blocked > 0, "Parent node is busy setting up children, add_sibling() failed. Consider using call_deferred(\"add_sibling\", sibling) instead.");
+	ERR_FAIL_COND_MSG(data.blocked > 0, "Parent node is busy setting up children, `add_sibling()` failed. Consider using `add_sibling.call_deferred(sibling)` instead.");
 
 	InternalMode internal = INTERNAL_MODE_DISABLED;
 	if (_is_internal_front()) { // The sibling will have the same internal status.
@@ -1165,7 +1166,7 @@ void Node::add_sibling(Node *p_sibling, bool p_force_readable_name) {
 
 void Node::remove_child(Node *p_child) {
 	ERR_FAIL_NULL(p_child);
-	ERR_FAIL_COND_MSG(data.blocked > 0, "Parent node is busy setting up children, remove_node() failed. Consider using call_deferred(\"remove_child\", child) instead.");
+	ERR_FAIL_COND_MSG(data.blocked > 0, "Parent node is busy setting up children, `remove_child()` failed. Consider using `remove_child.call_deferred(child)` instead.");
 
 	int child_count = data.children.size();
 	Node **children = data.children.ptrw();
@@ -1439,6 +1440,18 @@ TypedArray<Node> Node::find_children(const String &p_pattern, const String &p_ty
 	return ret;
 }
 
+void Node::reparent(Node *p_parent, bool p_keep_global_transform) {
+	ERR_FAIL_NULL(p_parent);
+	ERR_FAIL_NULL_MSG(data.parent, "Node needs a parent to be reparented.");
+
+	if (p_parent == data.parent) {
+		return;
+	}
+
+	data.parent->remove_child(this);
+	p_parent->add_child(this);
+}
+
 Node *Node::get_parent() const {
 	return data.parent;
 }
@@ -1452,6 +1465,14 @@ Node *Node::find_parent(const String &p_pattern) const {
 		p = p->data.parent;
 	}
 
+	return nullptr;
+}
+
+Window *Node::get_window() const {
+	Viewport *vp = get_viewport();
+	if (vp) {
+		return vp->get_base_window();
+	}
 	return nullptr;
 }
 
@@ -1660,7 +1681,7 @@ Node *Node::find_common_parent_with(const Node *p_node) const {
 	return const_cast<Node *>(common_parent);
 }
 
-NodePath Node::get_path_to(const Node *p_node) const {
+NodePath Node::get_path_to(const Node *p_node, bool p_use_unique_path) const {
 	ERR_FAIL_NULL_V(p_node, NodePath());
 
 	if (this == p_node) {
@@ -1690,20 +1711,58 @@ NodePath Node::get_path_to(const Node *p_node) const {
 	visited.clear();
 
 	Vector<StringName> path;
-
-	n = p_node;
-
-	while (n != common_parent) {
-		path.push_back(n->get_name());
-		n = n->data.parent;
-	}
-
-	n = this;
 	StringName up = String("..");
 
-	while (n != common_parent) {
-		path.push_back(up);
-		n = n->data.parent;
+	if (p_use_unique_path) {
+		n = p_node;
+
+		bool is_detected = false;
+		while (n != common_parent) {
+			if (n->is_unique_name_in_owner() && n->get_owner() == get_owner()) {
+				path.push_back(UNIQUE_NODE_PREFIX + String(n->get_name()));
+				is_detected = true;
+				break;
+			}
+			path.push_back(n->get_name());
+			n = n->data.parent;
+		}
+
+		if (!is_detected) {
+			n = this;
+
+			String detected_name;
+			int up_count = 0;
+			while (n != common_parent) {
+				if (n->is_unique_name_in_owner() && n->get_owner() == get_owner()) {
+					detected_name = n->get_name();
+					up_count = 0;
+				}
+				up_count++;
+				n = n->data.parent;
+			}
+
+			for (int i = 0; i < up_count; i++) {
+				path.push_back(up);
+			}
+
+			if (!detected_name.is_empty()) {
+				path.push_back(UNIQUE_NODE_PREFIX + detected_name);
+			}
+		}
+	} else {
+		n = p_node;
+
+		while (n != common_parent) {
+			path.push_back(n->get_name());
+			n = n->data.parent;
+		}
+
+		n = this;
+
+		while (n != common_parent) {
+			path.push_back(up);
+			n = n->data.parent;
+		}
 	}
 
 	path.reverse();
@@ -1759,11 +1818,11 @@ void Node::add_to_group(const StringName &p_identifier, bool p_persistent) {
 }
 
 void Node::remove_from_group(const StringName &p_identifier) {
-	ERR_FAIL_COND(!data.grouped.has(p_identifier));
-
 	HashMap<StringName, GroupData>::Iterator E = data.grouped.find(p_identifier);
 
-	ERR_FAIL_COND(!E);
+	if (!E) {
+		return;
+	}
 
 	if (data.tree) {
 		data.tree->remove_from_group(E->key, this);
@@ -2060,7 +2119,7 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 		nip->set_instance_path(ip->get_instance_path());
 		node = nip;
 
-	} else if ((p_flags & DUPLICATE_USE_INSTANCING) && !get_scene_file_path().is_empty()) {
+	} else if ((p_flags & DUPLICATE_USE_INSTANTIATION) && !get_scene_file_path().is_empty()) {
 		Ref<PackedScene> res = ResourceLoader::load(get_scene_file_path());
 		ERR_FAIL_COND_V(res.is_null(), nullptr);
 		PackedScene::GenEditState ges = PackedScene::GEN_EDIT_STATE_DISABLED;
@@ -2246,7 +2305,7 @@ Node *Node::duplicate_from_editor(HashMap<const Node *, Node *> &r_duplimap) con
 }
 
 Node *Node::duplicate_from_editor(HashMap<const Node *, Node *> &r_duplimap, const HashMap<Ref<Resource>, Ref<Resource>> &p_resource_remap) const {
-	Node *dupe = _duplicate(DUPLICATE_SIGNALS | DUPLICATE_GROUPS | DUPLICATE_SCRIPTS | DUPLICATE_USE_INSTANCING | DUPLICATE_FROM_EDITOR, &r_duplimap);
+	Node *dupe = _duplicate(DUPLICATE_SIGNALS | DUPLICATE_GROUPS | DUPLICATE_SCRIPTS | DUPLICATE_USE_INSTANTIATION | DUPLICATE_FROM_EDITOR, &r_duplimap);
 
 	// This is used by SceneTreeDock's paste functionality. When pasting to foreign scene, resources are duplicated.
 	if (!p_resource_remap.is_empty()) {
@@ -2570,10 +2629,6 @@ static void _Node_debug_sn(Object *p_obj) {
 }
 #endif // DEBUG_ENABLED
 
-void Node::_print_orphan_nodes() {
-	print_orphan_nodes();
-}
-
 void Node::print_orphan_nodes() {
 #ifdef DEBUG_ENABLED
 	ObjectDB::debug_objects(_Node_debug_sn);
@@ -2581,10 +2636,14 @@ void Node::print_orphan_nodes() {
 }
 
 void Node::queue_free() {
+	// There are users which instantiate multiple scene trees for their games.
+	// Use the node's own tree to handle its deletion when relevant.
 	if (is_inside_tree()) {
 		get_tree()->queue_delete(this);
 	} else {
-		SceneTree::get_singleton()->queue_delete(this);
+		SceneTree *tree = SceneTree::get_singleton();
+		ERR_FAIL_NULL_MSG(tree, "Can't queue free a node when no SceneTree is available.");
+		tree->queue_delete(this);
 	}
 }
 
@@ -2652,7 +2711,7 @@ PackedStringArray Node::get_configuration_warnings() const {
 
 String Node::get_configuration_warnings_as_string() const {
 	PackedStringArray warnings = get_configuration_warnings();
-	String all_warnings = String();
+	String all_warnings;
 	for (int i = 0; i < warnings.size(); i++) {
 		if (i > 0) {
 			all_warnings += "\n\n";
@@ -2736,17 +2795,17 @@ void Node::unhandled_key_input(const Ref<InputEvent> &p_key_event) {
 }
 
 void Node::_bind_methods() {
-	GLOBAL_DEF("editor/node_naming/name_num_separator", 0);
-	ProjectSettings::get_singleton()->set_custom_property_info("editor/node_naming/name_num_separator", PropertyInfo(Variant::INT, "editor/node_naming/name_num_separator", PROPERTY_HINT_ENUM, "None,Space,Underscore,Dash"));
-	GLOBAL_DEF("editor/node_naming/name_casing", NAME_CASING_PASCAL_CASE);
-	ProjectSettings::get_singleton()->set_custom_property_info("editor/node_naming/name_casing", PropertyInfo(Variant::INT, "editor/node_naming/name_casing", PROPERTY_HINT_ENUM, "PascalCase,camelCase,snake_case"));
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "editor/node_naming/name_num_separator", PROPERTY_HINT_ENUM, "None,Space,Underscore,Dash"), 0);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "editor/node_naming/name_casing", PROPERTY_HINT_ENUM, "PascalCase,camelCase,snake_case"), NAME_CASING_PASCAL_CASE);
 
+	ClassDB::bind_static_method("Node", D_METHOD("print_orphan_nodes"), &Node::print_orphan_nodes);
 	ClassDB::bind_method(D_METHOD("add_sibling", "sibling", "force_readable_name"), &Node::add_sibling, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("set_name", "name"), &Node::set_name);
 	ClassDB::bind_method(D_METHOD("get_name"), &Node::get_name);
 	ClassDB::bind_method(D_METHOD("add_child", "node", "force_readable_name", "internal"), &Node::add_child, DEFVAL(false), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("remove_child", "node"), &Node::remove_child);
+	ClassDB::bind_method(D_METHOD("reparent", "new_parent", "keep_global_transform"), &Node::reparent, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("get_child_count", "include_internal"), &Node::get_child_count, DEFVAL(false)); // Note that the default value bound for include_internal is false, while the method is declared with true. This is because internal nodes are irrelevant for GDSCript.
 	ClassDB::bind_method(D_METHOD("get_children", "include_internal"), &Node::_get_children, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_child", "idx", "include_internal"), &Node::get_child, DEFVAL(false));
@@ -2764,7 +2823,7 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_ancestor_of", "node"), &Node::is_ancestor_of);
 	ClassDB::bind_method(D_METHOD("is_greater_than", "node"), &Node::is_greater_than);
 	ClassDB::bind_method(D_METHOD("get_path"), &Node::get_path);
-	ClassDB::bind_method(D_METHOD("get_path_to", "node"), &Node::get_path_to);
+	ClassDB::bind_method(D_METHOD("get_path_to", "node", "use_unique_path"), &Node::get_path_to, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("add_to_group", "group", "persistent"), &Node::add_to_group, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("remove_from_group", "group"), &Node::remove_from_group);
 	ClassDB::bind_method(D_METHOD("is_in_group", "group"), &Node::is_in_group);
@@ -2798,7 +2857,6 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_process_mode", "mode"), &Node::set_process_mode);
 	ClassDB::bind_method(D_METHOD("get_process_mode"), &Node::get_process_mode);
 	ClassDB::bind_method(D_METHOD("can_process"), &Node::can_process);
-	ClassDB::bind_method(D_METHOD("print_orphan_nodes"), &Node::_print_orphan_nodes);
 
 	ClassDB::bind_method(D_METHOD("set_display_folded", "fold"), &Node::set_display_folded);
 	ClassDB::bind_method(D_METHOD("is_displayed_folded"), &Node::is_displayed_folded);
@@ -2809,10 +2867,11 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_physics_process_internal", "enable"), &Node::set_physics_process_internal);
 	ClassDB::bind_method(D_METHOD("is_physics_processing_internal"), &Node::is_physics_processing_internal);
 
+	ClassDB::bind_method(D_METHOD("get_window"), &Node::get_window);
 	ClassDB::bind_method(D_METHOD("get_tree"), &Node::get_tree);
 	ClassDB::bind_method(D_METHOD("create_tween"), &Node::create_tween);
 
-	ClassDB::bind_method(D_METHOD("duplicate", "flags"), &Node::duplicate, DEFVAL(DUPLICATE_USE_INSTANCING | DUPLICATE_SIGNALS | DUPLICATE_GROUPS | DUPLICATE_SCRIPTS));
+	ClassDB::bind_method(D_METHOD("duplicate", "flags"), &Node::duplicate, DEFVAL(DUPLICATE_USE_INSTANTIATION | DUPLICATE_SIGNALS | DUPLICATE_GROUPS | DUPLICATE_SCRIPTS));
 	ClassDB::bind_method(D_METHOD("replace_by", "node", "keep_groups"), &Node::replace_by, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("set_scene_instance_load_placeholder", "load_placeholder"), &Node::set_scene_instance_load_placeholder);
@@ -2918,7 +2977,7 @@ void Node::_bind_methods() {
 	BIND_ENUM_CONSTANT(DUPLICATE_SIGNALS);
 	BIND_ENUM_CONSTANT(DUPLICATE_GROUPS);
 	BIND_ENUM_CONSTANT(DUPLICATE_SCRIPTS);
-	BIND_ENUM_CONSTANT(DUPLICATE_USE_INSTANCING);
+	BIND_ENUM_CONSTANT(DUPLICATE_USE_INSTANTIATION);
 
 	BIND_ENUM_CONSTANT(INTERNAL_MODE_DISABLED);
 	BIND_ENUM_CONSTANT(INTERNAL_MODE_FRONT);

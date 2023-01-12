@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  tab_bar.cpp                                                          */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  tab_bar.cpp                                                           */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "tab_bar.h"
 
@@ -154,7 +154,9 @@ void TabBar::gui_input(const Ref<InputEvent> &p_event) {
 			queue_redraw();
 		}
 
-		_update_hover();
+		if (!tabs.is_empty()) {
+			_update_hover();
+		}
 
 		return;
 	}
@@ -362,12 +364,19 @@ void TabBar::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_DRAW: {
+			bool rtl = is_layout_rtl();
+			Vector2 size = get_size();
+
 			if (tabs.is_empty()) {
+				// Draw the drop indicator where the first tab would be if there are no tabs.
+				if (dragging_valid_tab) {
+					int x = rtl ? size.x : 0;
+					theme_cache.drop_mark_icon->draw(get_canvas_item(), Point2(x - (theme_cache.drop_mark_icon->get_width() / 2), (size.height - theme_cache.drop_mark_icon->get_height()) / 2), theme_cache.drop_mark_color);
+				}
+
 				return;
 			}
 
-			bool rtl = is_layout_rtl();
-			Vector2 size = get_size();
 			int limit_minus_buttons = size.width - theme_cache.increment_icon->get_width() - theme_cache.decrement_icon->get_width();
 
 			int ofs = tabs[offset].ofs_cache;
@@ -385,9 +394,6 @@ void TabBar::_notification(int p_what) {
 					if (tabs[i].disabled) {
 						sb = theme_cache.tab_disabled_style;
 						col = theme_cache.font_disabled_color;
-					} else if (i == current) {
-						sb = theme_cache.tab_selected_style;
-						col = theme_cache.font_selected_color;
 					} else {
 						sb = theme_cache.tab_unselected_style;
 						col = theme_cache.font_unselected_color;
@@ -1095,7 +1101,8 @@ void TabBar::drop_data(const Point2 &p_point, const Variant &p_data) {
 					hover_now += 1;
 				}
 			} else {
-				hover_now = is_layout_rtl() ^ (p_point.x < get_tab_rect(0).position.x) ? 0 : get_tab_count() - 1;
+				int x = tabs.is_empty() ? 0 : get_tab_rect(0).position.x;
+				hover_now = is_layout_rtl() ^ (p_point.x < x) ? 0 : get_tab_count() - 1;
 			}
 
 			move_tab(tab_from_id, hover_now);
@@ -1121,7 +1128,7 @@ void TabBar::drop_data(const Point2 &p_point, const Variant &p_data) {
 						hover_now += 1;
 					}
 				} else {
-					hover_now = is_layout_rtl() ^ (p_point.x < get_tab_rect(0).position.x) ? 0 : get_tab_count();
+					hover_now = tabs.is_empty() || (is_layout_rtl() ^ (p_point.x < get_tab_rect(0).position.x)) ? 0 : get_tab_count();
 				}
 
 				Tab moving_tab = from_tabs->tabs[tab_from_id];
@@ -1157,10 +1164,13 @@ void TabBar::drop_data(const Point2 &p_point, const Variant &p_data) {
 
 int TabBar::get_tab_idx_at_point(const Point2 &p_point) const {
 	int hover_now = -1;
-	for (int i = offset; i <= max_drawn_tab; i++) {
-		Rect2 rect = get_tab_rect(i);
-		if (rect.has_point(p_point)) {
-			hover_now = i;
+
+	if (!tabs.is_empty()) {
+		for (int i = offset; i <= max_drawn_tab; i++) {
+			Rect2 rect = get_tab_rect(i);
+			if (rect.has_point(p_point)) {
+				hover_now = i;
+			}
 		}
 	}
 
@@ -1567,6 +1577,7 @@ void TabBar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_scroll_to_selected"), &TabBar::get_scroll_to_selected);
 	ClassDB::bind_method(D_METHOD("set_select_with_rmb", "enabled"), &TabBar::set_select_with_rmb);
 	ClassDB::bind_method(D_METHOD("get_select_with_rmb"), &TabBar::get_select_with_rmb);
+	ClassDB::bind_method(D_METHOD("clear_tabs"), &TabBar::clear_tabs);
 
 	ADD_SIGNAL(MethodInfo("tab_selected", PropertyInfo(Variant::INT, "tab")));
 	ADD_SIGNAL(MethodInfo("tab_changed", PropertyInfo(Variant::INT, "tab")));

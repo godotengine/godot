@@ -36,7 +36,6 @@ public:
     float vw = 0;
     float vh = 0;
     float w = 0, h = 0;         //default image size
-    bool preserveAspect = true; //keep aspect ratio by default.
 
     virtual ~LoadModule() {}
 

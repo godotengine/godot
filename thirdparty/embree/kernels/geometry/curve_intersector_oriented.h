@@ -225,7 +225,7 @@ namespace embree
           /* exit if convergence cannot get proven, but terminate if we are very small */
           if (unlikely(!subset(K,x) && !very_small)) return false;
 
-          /* solve using newton raphson iteration of convergence is guarenteed */
+          /* solve using newton raphson iteration of convergence is guaranteed */
           solve_newton_raphson_loop(cu,cv,c1,dfdu,dfdv,rcp_J);
           return true;
         }

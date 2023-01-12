@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  script_editor_plugin.cpp                                             */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  script_editor_plugin.cpp                                              */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "script_editor_plugin.h"
 
@@ -40,6 +40,7 @@
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/debugger/script_editor_debugger.h"
 #include "editor/editor_file_dialog.h"
+#include "editor/editor_help_search.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_run_script.h"
@@ -47,6 +48,7 @@
 #include "editor/editor_settings.h"
 #include "editor/filesystem_dock.h"
 #include "editor/find_in_files.h"
+#include "editor/inspector_dock.h"
 #include "editor/node_dock.h"
 #include "editor/plugins/shader_editor_plugin.h"
 #include "editor/plugins/text_shader_editor.h"
@@ -221,7 +223,6 @@ void ScriptEditorBase::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("request_open_script_at_line", PropertyInfo(Variant::OBJECT, "script"), PropertyInfo(Variant::INT, "line")));
 	ADD_SIGNAL(MethodInfo("request_save_history"));
 	ADD_SIGNAL(MethodInfo("go_to_help", PropertyInfo(Variant::STRING, "what")));
-	// TODO: This signal is no use for VisualScript.
 	ADD_SIGNAL(MethodInfo("search_in_files_requested", PropertyInfo(Variant::STRING, "text")));
 	ADD_SIGNAL(MethodInfo("replace_in_files_requested", PropertyInfo(Variant::STRING, "text")));
 	ADD_SIGNAL(MethodInfo("go_to_method", PropertyInfo(Variant::OBJECT, "script"), PropertyInfo(Variant::STRING, "method")));
@@ -2203,8 +2204,7 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 
 	if (use_external_editor &&
 			(EditorDebuggerNode::get_singleton()->get_dump_stack_script() != p_resource || EditorDebuggerNode::get_singleton()->get_debug_with_external_editor()) &&
-			p_resource->get_path().is_resource_file() &&
-			!p_resource->is_class("VisualScript")) {
+			p_resource->get_path().is_resource_file()) {
 		String path = EDITOR_GET("text_editor/external/exec_path");
 		String flags = EDITOR_GET("text_editor/external/exec_flags");
 
@@ -2303,21 +2303,20 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 
 	se->set_edited_resource(p_resource);
 
-	if (!p_resource->is_class("VisualScript")) {
-		bool highlighter_set = false;
-		for (int i = 0; i < syntax_highlighters.size(); i++) {
-			Ref<EditorSyntaxHighlighter> highlighter = syntax_highlighters[i]->_create();
-			if (highlighter.is_null()) {
-				continue;
-			}
-			se->add_syntax_highlighter(highlighter);
+	// Syntax highlighting.
+	bool highlighter_set = false;
+	for (int i = 0; i < syntax_highlighters.size(); i++) {
+		Ref<EditorSyntaxHighlighter> highlighter = syntax_highlighters[i]->_create();
+		if (highlighter.is_null()) {
+			continue;
+		}
+		se->add_syntax_highlighter(highlighter);
 
-			if (scr != nullptr && !highlighter_set) {
-				PackedStringArray languages = highlighter->_get_supported_languages();
-				if (languages.has(scr->get_language()->get_name())) {
-					se->set_syntax_highlighter(highlighter);
-					highlighter_set = true;
-				}
+		if (scr != nullptr && !highlighter_set) {
+			PackedStringArray languages = highlighter->_get_supported_languages();
+			if (languages.has(scr->get_language()->get_name())) {
+				se->set_syntax_highlighter(highlighter);
+				highlighter_set = true;
 			}
 		}
 	}
@@ -2952,15 +2951,18 @@ void ScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Co
 
 			Ref<Resource> res = open_file(file);
 			if (res.is_valid()) {
-				if (tab_container->get_tab_count() > num_tabs_before) {
+				const int num_tabs = tab_container->get_tab_count();
+				if (num_tabs > num_tabs_before) {
 					tab_container->move_child(tab_container->get_tab_control(tab_container->get_tab_count() - 1), new_index);
-					num_tabs_before = tab_container->get_tab_count();
-				} else { /* Maybe script was already open */
+					num_tabs_before = num_tabs;
+				} else if (num_tabs > 0) { /* Maybe script was already open */
 					tab_container->move_child(tab_container->get_tab_control(tab_container->get_current_tab()), new_index);
 				}
 			}
 		}
-		tab_container->set_current_tab(new_index);
+		if (tab_container->get_tab_count() > 0) {
+			tab_container->set_current_tab(new_index);
+		}
 		_update_script_names();
 	}
 }
@@ -3001,6 +3003,7 @@ void ScriptEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 			_go_to_tab(script_list->get_item_metadata(next_tab));
 			_update_script_names();
 		}
+		accept_event();
 	}
 	if (ED_IS_SHORTCUT("script_editor/prev_script", p_event)) {
 		if (script_list->get_item_count() > 1) {
@@ -3009,12 +3012,15 @@ void ScriptEditor::shortcut_input(const Ref<InputEvent> &p_event) {
 			_go_to_tab(script_list->get_item_metadata(next_tab));
 			_update_script_names();
 		}
+		accept_event();
 	}
 	if (ED_IS_SHORTCUT("script_editor/window_move_up", p_event)) {
 		_menu_option(WINDOW_MOVE_UP);
+		accept_event();
 	}
 	if (ED_IS_SHORTCUT("script_editor/window_move_down", p_event)) {
 		_menu_option(WINDOW_MOVE_DOWN);
+		accept_event();
 	}
 }
 
@@ -3663,7 +3669,7 @@ ScriptEditor::ScriptEditor() {
 	_sort_list_on_update = true;
 	script_list->connect("item_clicked", callable_mp(this, &ScriptEditor::_script_list_clicked), CONNECT_DEFERRED);
 	script_list->set_allow_rmb_select(true);
-	script_list->set_drag_forwarding(this);
+	script_list->set_drag_forwarding_compat(this);
 
 	context_menu = memnew(PopupMenu);
 	add_child(context_menu);

@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  resource_format_text.cpp                                             */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  resource_format_text.cpp                                              */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "resource_format_text.h"
 
@@ -144,6 +144,7 @@ Error ResourceLoaderText::_parse_ext_resource(VariantParser::Stream *p_stream, R
 	}
 
 	String id = token.value;
+	Error err = OK;
 
 	if (!ignore_resource_parsing) {
 		if (!ext_resources.has(id)) {
@@ -163,7 +164,7 @@ Error ResourceLoaderText::_parse_ext_resource(VariantParser::Stream *p_stream, R
 					error = ERR_FILE_MISSING_DEPENDENCIES;
 					error_text = "[ext_resource] referenced nonexistent resource at: " + path;
 					_printerr();
-					return error;
+					err = error;
 				} else {
 					ResourceLoader::notify_dependency_error(local_path, path, type);
 				}
@@ -175,7 +176,7 @@ Error ResourceLoaderText::_parse_ext_resource(VariantParser::Stream *p_stream, R
 			error = ERR_FILE_MISSING_DEPENDENCIES;
 			error_text = "[ext_resource] referenced non-loaded resource at: " + path;
 			_printerr();
-			return error;
+			err = error;
 		}
 	} else {
 		r_res = Ref<Resource>();
@@ -187,7 +188,7 @@ Error ResourceLoaderText::_parse_ext_resource(VariantParser::Stream *p_stream, R
 		return ERR_PARSE_ERROR;
 	}
 
-	return OK;
+	return err;
 }
 
 Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourceParser &parser) {
@@ -217,7 +218,7 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 			if (next_tag.fields.has("type")) {
 				type = packed_scene->get_state()->add_name(next_tag.fields["type"]);
 			} else {
-				type = SceneState::TYPE_INSTANCED; //no type? assume this was instantiated
+				type = SceneState::TYPE_INSTANTIATED; //no type? assume this was instantiated
 			}
 
 			HashSet<StringName> path_properties;
@@ -256,7 +257,7 @@ Ref<PackedScene> ResourceLoaderText::_parse_node_tag(VariantParser::ResourcePars
 			if (next_tag.fields.has("owner")) {
 				owner = packed_scene->get_state()->add_node_path(next_tag.fields["owner"]);
 			} else {
-				if (parent != -1 && !(type == SceneState::TYPE_INSTANCED && instance == -1)) {
+				if (parent != -1 && !(type == SceneState::TYPE_INSTANTIATED && instance == -1)) {
 					owner = 0; //if no owner, owner is root
 				}
 			}
@@ -448,10 +449,10 @@ Error ResourceLoaderText::load() {
 #ifdef TOOLS_ENABLED
 				// Silence a warning that can happen during the initial filesystem scan due to cache being regenerated.
 				if (ResourceLoader::get_resource_uid(path) != uid) {
-					WARN_PRINT(String(res_path + ":" + itos(lines) + " - ext_resource, invalid UUID: " + uidt + " - using text path instead: " + path).utf8().get_data());
+					WARN_PRINT(String(res_path + ":" + itos(lines) + " - ext_resource, invalid UID: " + uidt + " - using text path instead: " + path).utf8().get_data());
 				}
 #else
-				WARN_PRINT(String(res_path + ":" + itos(lines) + " - ext_resource, invalid UUID: " + uidt + " - using text path instead: " + path).utf8().get_data());
+				WARN_PRINT(String(res_path + ":" + itos(lines) + " - ext_resource, invalid UID: " + uidt + " - using text path instead: " + path).utf8().get_data());
 #endif
 			}
 		}
@@ -511,6 +512,7 @@ Error ResourceLoaderText::load() {
 
 		if (error) {
 			_printerr();
+			return error;
 		}
 
 		resource_current++;
@@ -599,6 +601,10 @@ Error ResourceLoaderText::load() {
 
 		resource_current++;
 
+		if (progress && resources_total > 0) {
+			*progress = resource_current / float(resources_total);
+		}
+
 		int_resources[id] = res; //always assign int resources
 		if (do_assign && cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE) {
 			res->set_path(path, cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE);
@@ -657,10 +663,6 @@ Error ResourceLoaderText::load() {
 		if (!missing_resource_properties.is_empty()) {
 			res->set_meta(META_MISSING_RESOURCES, missing_resource_properties);
 		}
-
-		if (progress && resources_total > 0) {
-			*progress = resource_current / float(resources_total);
-		}
 	}
 
 	while (true) {
@@ -709,8 +711,6 @@ Error ResourceLoaderText::load() {
 
 			resource = Ref<Resource>(r);
 		}
-
-		resource_current++;
 
 		Dictionary missing_resource_properties;
 
@@ -764,6 +764,12 @@ Error ResourceLoaderText::load() {
 			}
 		}
 
+		resource_current++;
+
+		if (progress && resources_total > 0) {
+			*progress = resource_current / float(resources_total);
+		}
+
 		if (missing_resource) {
 			missing_resource->set_recording_properties(false);
 		}
@@ -773,9 +779,6 @@ Error ResourceLoaderText::load() {
 		}
 
 		error = OK;
-		if (progress && resources_total > 0) {
-			*progress = resource_current / float(resources_total);
-		}
 
 		return error;
 	}
@@ -830,7 +833,8 @@ void ResourceLoaderText::set_translation_remapped(bool p_remapped) {
 	translation_remapped = p_remapped;
 }
 
-ResourceLoaderText::ResourceLoaderText() {}
+ResourceLoaderText::ResourceLoaderText() :
+		stream(false) {}
 
 void ResourceLoaderText::get_dependencies(Ref<FileAccess> p_f, List<String> *p_dependencies, bool p_add_types) {
 	open(p_f);
@@ -884,6 +888,7 @@ void ResourceLoaderText::get_dependencies(Ref<FileAccess> p_f, List<String> *p_d
 			error_text = "Unexpected end of file";
 			_printerr();
 			error = ERR_FILE_CORRUPT;
+			return;
 		}
 	}
 }
@@ -974,15 +979,26 @@ Error ResourceLoaderText::rename_dependencies(Ref<FileAccess> p_f, const String 
 
 	f->seek(tag_end);
 
-	uint8_t c = f->get_8();
-	if (c == '\n' && !f->eof_reached()) {
-		// Skip first newline character since we added one
-		c = f->get_8();
+	const uint32_t buffer_size = 2048;
+	uint8_t *buffer = (uint8_t *)alloca(buffer_size);
+	uint32_t num_read;
+
+	num_read = f->get_buffer(buffer, buffer_size);
+	ERR_FAIL_COND_V_MSG(num_read == UINT32_MAX, ERR_CANT_CREATE, "Failed to allocate memory for buffer.");
+	ERR_FAIL_COND_V(num_read == 0, ERR_FILE_CORRUPT);
+
+	if (*buffer == '\n') {
+		// Skip first newline character since we added one.
+		if (num_read > 1) {
+			fw->store_buffer(buffer + 1, num_read - 1);
+		}
+	} else {
+		fw->store_buffer(buffer, num_read);
 	}
 
 	while (!f->eof_reached()) {
-		fw->store_8(c);
-		c = f->get_8();
+		num_read = f->get_buffer(buffer, buffer_size);
+		fw->store_buffer(buffer, num_read);
 	}
 
 	bool all_ok = fw->get_error() == OK;
@@ -1349,7 +1365,7 @@ Error ResourceLoaderText::save_as_binary(const String &p_path) {
 
 	wf->seek_end();
 
-	Vector<uint8_t> data = FileAccess::get_file_as_array(temp_file);
+	Vector<uint8_t> data = FileAccess::get_file_as_bytes(temp_file);
 	wf->store_buffer(data.ptr(), data.size());
 	{
 		Ref<DirAccess> dar = DirAccess::open(temp_file.get_base_dir());
@@ -2218,6 +2234,35 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 	return OK;
 }
 
+Error ResourceLoaderText::set_uid(Ref<FileAccess> p_f, ResourceUID::ID p_uid) {
+	open(p_f, true);
+	ERR_FAIL_COND_V(error != OK, error);
+	ignore_resource_parsing = true;
+
+	Ref<FileAccess> fw;
+
+	fw = FileAccess::open(local_path + ".uidren", FileAccess::WRITE);
+	if (is_scene) {
+		fw->store_string("[gd_scene load_steps=" + itos(resources_total) + " format=" + itos(FORMAT_VERSION) + " uid=\"" + ResourceUID::get_singleton()->id_to_text(p_uid) + "\"]");
+	} else {
+		fw->store_string("[gd_resource type=\"" + res_type + "\" load_steps=" + itos(resources_total) + " format=" + itos(FORMAT_VERSION) + " uid=\"" + ResourceUID::get_singleton()->id_to_text(p_uid) + "\"]");
+	}
+
+	uint8_t c = f->get_8();
+	while (!f->eof_reached()) {
+		fw->store_8(c);
+		c = f->get_8();
+	}
+
+	bool all_ok = fw->get_error() == OK;
+
+	if (!all_ok) {
+		return ERR_CANT_CREATE;
+	}
+
+	return OK;
+}
+
 Error ResourceFormatSaverText::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags) {
 	if (p_path.ends_with(".tscn") && !Ref<PackedScene>(p_resource).is_valid()) {
 		return ERR_FILE_UNRECOGNIZED;
@@ -2225,6 +2270,35 @@ Error ResourceFormatSaverText::save(const Ref<Resource> &p_resource, const Strin
 
 	ResourceFormatSaverTextInstance saver;
 	return saver.save(p_path, p_resource, p_flags);
+}
+
+Error ResourceFormatSaverText::set_uid(const String &p_path, ResourceUID::ID p_uid) {
+	String lc = p_path.to_lower();
+	if (!lc.ends_with(".tscn") && !lc.ends_with(".tres")) {
+		return ERR_FILE_UNRECOGNIZED;
+	}
+
+	String local_path = ProjectSettings::get_singleton()->localize_path(p_path);
+	Error err = OK;
+	{
+		Ref<FileAccess> fo = FileAccess::open(p_path, FileAccess::READ);
+		if (fo.is_null()) {
+			ERR_FAIL_V(ERR_CANT_OPEN);
+		}
+
+		ResourceLoaderText loader;
+		loader.local_path = local_path;
+		loader.res_path = loader.local_path;
+		err = loader.set_uid(fo, p_uid);
+	}
+
+	if (err == OK) {
+		Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		da->remove(local_path);
+		da->rename(local_path + ".uidren", local_path);
+	}
+
+	return err;
 }
 
 bool ResourceFormatSaverText::recognize(const Ref<Resource> &p_resource) const {

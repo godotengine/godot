@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  display_server_web.cpp                                               */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  display_server_web.cpp                                                */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "display_server_web.h"
 
@@ -54,7 +54,15 @@ DisplayServerWeb *DisplayServerWeb::get_singleton() {
 
 // Window (canvas)
 bool DisplayServerWeb::check_size_force_redraw() {
-	return godot_js_display_size_update() != 0;
+	bool size_changed = godot_js_display_size_update() != 0;
+	if (size_changed && !rect_changed_callback.is_null()) {
+		Variant size = Rect2i(Point2i(), window_get_size()); // TODO use window_get_position if implemented.
+		Variant *vp = &size;
+		Variant ret;
+		Callable::CallError ce;
+		rect_changed_callback.callp((const Variant **)&vp, 1, ret, ce);
+	}
+	return size_changed;
 }
 
 void DisplayServerWeb::fullscreen_change_callback(int p_fullscreen) {
@@ -185,12 +193,12 @@ int DisplayServerWeb::mouse_button_callback(int p_pressed, int p_button, double 
 		}
 	}
 
-	MouseButton mask = Input::get_singleton()->get_mouse_button_mask();
-	MouseButton button_flag = mouse_button_to_mask(ev->get_button_index());
+	BitField<MouseButtonMask> mask = Input::get_singleton()->get_mouse_button_mask();
+	MouseButtonMask button_flag = mouse_button_to_mask(ev->get_button_index());
 	if (ev->is_pressed()) {
-		mask |= button_flag;
-	} else if ((mask & button_flag) != MouseButton::NONE) {
-		mask &= ~button_flag;
+		mask.set_flag(button_flag);
+	} else if (mask.has_flag(button_flag)) {
+		mask.clear_flag(button_flag);
 	} else {
 		// Received release event, but press was outside the canvas, so ignore.
 		return false;
@@ -210,10 +218,10 @@ int DisplayServerWeb::mouse_button_callback(int p_pressed, int p_button, double 
 }
 
 void DisplayServerWeb::mouse_move_callback(double p_x, double p_y, double p_rel_x, double p_rel_y, int p_modifiers) {
-	MouseButton input_mask = Input::get_singleton()->get_mouse_button_mask();
+	BitField<MouseButtonMask> input_mask = Input::get_singleton()->get_mouse_button_mask();
 	// For motion outside the canvas, only read mouse movement if dragging
 	// started inside the canvas; imitating desktop app behavior.
-	if (!get_singleton()->cursor_inside_canvas && input_mask == MouseButton::NONE) {
+	if (!get_singleton()->cursor_inside_canvas && input_mask.is_empty()) {
 		return;
 	}
 
@@ -517,15 +525,17 @@ int DisplayServerWeb::mouse_wheel_callback(double p_delta_x, double p_delta_y) {
 	// Different browsers give wildly different delta values, and we can't
 	// interpret deltaMode, so use default value for wheel events' factor.
 
-	MouseButton button_flag = mouse_button_to_mask(ev->get_button_index());
+	MouseButtonMask button_flag = mouse_button_to_mask(ev->get_button_index());
+	BitField<MouseButtonMask> button_mask = input->get_mouse_button_mask();
+	button_mask.set_flag(button_flag);
 
 	ev->set_pressed(true);
-	ev->set_button_mask(input->get_mouse_button_mask() | button_flag);
+	ev->set_button_mask(button_mask);
 	input->parse_input_event(ev);
 
 	Ref<InputEventMouseButton> release = ev->duplicate();
 	release->set_pressed(false);
-	release->set_button_mask(MouseButton(input->get_mouse_button_mask() & ~button_flag));
+	release->set_button_mask(input->get_mouse_button_mask());
 	input->parse_input_event(release);
 
 	return true;
@@ -571,8 +581,8 @@ void DisplayServerWeb::touch_callback(int p_type, int p_count) {
 	}
 }
 
-bool DisplayServerWeb::screen_is_touchscreen(int p_screen) const {
-	return godot_js_display_touchscreen_is_available();
+bool DisplayServerWeb::is_touchscreen_available() const {
+	return godot_js_display_touchscreen_is_available() || (Input::get_singleton() && Input::get_singleton()->is_emulating_touch_from_mouse());
 }
 
 // Virtual Keyboard
@@ -738,11 +748,11 @@ void DisplayServerWeb::_dispatch_input_event(const Ref<InputEvent> &p_event) {
 	}
 }
 
-DisplayServer *DisplayServerWeb::create_func(const String &p_rendering_driver, WindowMode p_window_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Point2i *p_position, const Size2i &p_resolution, Error &r_error) {
-	return memnew(DisplayServerWeb(p_rendering_driver, p_window_mode, p_vsync_mode, p_flags, p_position, p_resolution, r_error));
+DisplayServer *DisplayServerWeb::create_func(const String &p_rendering_driver, WindowMode p_window_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Point2i *p_position, const Size2i &p_resolution, int p_screen, Error &r_error) {
+	return memnew(DisplayServerWeb(p_rendering_driver, p_window_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, r_error));
 }
 
-DisplayServerWeb::DisplayServerWeb(const String &p_rendering_driver, WindowMode p_window_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Point2i *p_position, const Size2i &p_resolution, Error &r_error) {
+DisplayServerWeb::DisplayServerWeb(const String &p_rendering_driver, WindowMode p_window_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Point2i *p_position, const Size2i &p_resolution, int p_screen, Error &r_error) {
 	r_error = OK; // Always succeeds for now.
 
 	// Ensure the canvas ID.
@@ -758,10 +768,8 @@ DisplayServerWeb::DisplayServerWeb(const String &p_rendering_driver, WindowMode 
 	godot_js_os_request_quit_cb(request_quit_callback);
 
 #ifdef GLES3_ENABLED
-	// TODO "vulkan" defaults to webgl2 for now.
-	bool wants_webgl2 = p_rendering_driver == "opengl3" || p_rendering_driver == "vulkan";
-	bool webgl2_init_failed = wants_webgl2 && !godot_js_display_has_webgl(2);
-	if (wants_webgl2 && !webgl2_init_failed) {
+	bool webgl2_inited = false;
+	if (godot_js_display_has_webgl(2)) {
 		EmscriptenWebGLContextAttributes attributes;
 		emscripten_webgl_init_context_attributes(&attributes);
 		attributes.alpha = OS::get_singleton()->is_layered_allowed();
@@ -770,20 +778,17 @@ DisplayServerWeb::DisplayServerWeb(const String &p_rendering_driver, WindowMode 
 		attributes.explicitSwapControl = true;
 
 		webgl_ctx = emscripten_webgl_create_context(canvas_id, &attributes);
-		if (emscripten_webgl_make_context_current(webgl_ctx) != EMSCRIPTEN_RESULT_SUCCESS) {
-			webgl2_init_failed = true;
-		} else {
-			if (!emscripten_webgl_enable_extension(webgl_ctx, "OVR_multiview2")) {
-				// @todo Should we log this?
-			}
-			RasterizerGLES3::make_current();
-		}
+		webgl2_inited = webgl_ctx && emscripten_webgl_make_context_current(webgl_ctx) == EMSCRIPTEN_RESULT_SUCCESS;
 	}
-	if (webgl2_init_failed) {
+	if (webgl2_inited) {
+		if (!emscripten_webgl_enable_extension(webgl_ctx, "OVR_multiview2")) {
+			print_verbose("Failed to enable WebXR extension.");
+		}
+		RasterizerGLES3::make_current();
+
+	} else {
 		OS::get_singleton()->alert("Your browser does not seem to support WebGL2. Please update your browser version.",
 				"Unable to initialize video driver");
-	}
-	if (!wants_webgl2 || webgl2_init_failed) {
 		RasterizerDummy::make_current();
 	}
 #else
@@ -861,6 +866,10 @@ int DisplayServerWeb::get_screen_count() const {
 	return 1;
 }
 
+int DisplayServerWeb::get_primary_screen() const {
+	return 0;
+}
+
 Point2i DisplayServerWeb::screen_get_position(int p_screen) const {
 	return Point2i(); // TODO offsetX/Y?
 }
@@ -908,7 +917,7 @@ ObjectID DisplayServerWeb::window_get_attached_instance_id(WindowID p_window) co
 }
 
 void DisplayServerWeb::window_set_rect_changed_callback(const Callable &p_callable, WindowID p_window) {
-	// Not supported.
+	rect_changed_callback = p_callable;
 }
 
 void DisplayServerWeb::window_set_window_event_callback(const Callable &p_callable, WindowID p_window) {
@@ -940,7 +949,11 @@ void DisplayServerWeb::window_set_current_screen(int p_screen, WindowID p_window
 }
 
 Point2i DisplayServerWeb::window_get_position(WindowID p_window) const {
-	return Point2i(); // TODO Does this need implementation?
+	return Point2i();
+}
+
+Point2i DisplayServerWeb::window_get_position_with_decorations(WindowID p_window) const {
+	return Point2i();
 }
 
 void DisplayServerWeb::window_set_position(const Point2i &p_position, WindowID p_window) {
@@ -977,7 +990,7 @@ Size2i DisplayServerWeb::window_get_size(WindowID p_window) const {
 	return Size2i(size[0], size[1]);
 }
 
-Size2i DisplayServerWeb::window_get_real_size(WindowID p_window) const {
+Size2i DisplayServerWeb::window_get_size_with_decorations(WindowID p_window) const {
 	return window_get_size(p_window);
 }
 

@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  container.cpp                                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  container.cpp                                                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "container.h"
 
@@ -104,22 +104,22 @@ void Container::fit_child_in_rect(Control *p_child, const Rect2 &p_rect) {
 	Size2 minsize = p_child->get_combined_minimum_size();
 	Rect2 r = p_rect;
 
-	if (!(p_child->get_h_size_flags() & SIZE_FILL)) {
+	if (!(p_child->get_h_size_flags().has_flag(SIZE_FILL))) {
 		r.size.x = minsize.width;
-		if (p_child->get_h_size_flags() & SIZE_SHRINK_END) {
+		if (p_child->get_h_size_flags().has_flag(SIZE_SHRINK_END)) {
 			r.position.x += rtl ? 0 : (p_rect.size.width - minsize.width);
-		} else if (p_child->get_h_size_flags() & SIZE_SHRINK_CENTER) {
+		} else if (p_child->get_h_size_flags().has_flag(SIZE_SHRINK_CENTER)) {
 			r.position.x += Math::floor((p_rect.size.x - minsize.width) / 2);
 		} else {
 			r.position.x += rtl ? (p_rect.size.width - minsize.width) : 0;
 		}
 	}
 
-	if (!(p_child->get_v_size_flags() & SIZE_FILL)) {
+	if (!(p_child->get_v_size_flags().has_flag(SIZE_FILL))) {
 		r.size.y = minsize.y;
-		if (p_child->get_v_size_flags() & SIZE_SHRINK_END) {
+		if (p_child->get_v_size_flags().has_flag(SIZE_SHRINK_END)) {
 			r.position.y += p_rect.size.height - minsize.height;
-		} else if (p_child->get_v_size_flags() & SIZE_SHRINK_CENTER) {
+		} else if (p_child->get_v_size_flags().has_flag(SIZE_SHRINK_CENTER)) {
 			r.position.y += Math::floor((p_rect.size.y - minsize.height) / 2);
 		} else {
 			r.position.y += 0;

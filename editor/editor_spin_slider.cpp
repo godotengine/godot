@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  editor_spin_slider.cpp                                               */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  editor_spin_slider.cpp                                                */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "editor_spin_slider.h"
 
@@ -76,6 +76,7 @@ void EditorSpinSlider::gui_input(const Ref<InputEvent> &p_event) {
 					pre_grab_value = get_value();
 					grabbing_spinner = false;
 					grabbing_spinner_mouse_pos = get_global_mouse_position();
+					emit_signal("grabbed");
 				}
 			} else {
 				if (grabbing_spinner_attempt) {
@@ -83,6 +84,7 @@ void EditorSpinSlider::gui_input(const Ref<InputEvent> &p_event) {
 						Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
 						Input::get_singleton()->warp_mouse(grabbing_spinner_mouse_pos);
 						queue_redraw();
+						emit_signal("ungrabbed");
 					} else {
 						_focus_entered();
 					}
@@ -178,9 +180,11 @@ void EditorSpinSlider::_grabber_gui_input(const Ref<InputEvent> &p_event) {
 				grabbing_ratio = get_as_ratio();
 				grabbing_from = grabber->get_transform().xform(mb->get_position()).x;
 			}
+			emit_signal("grabbed");
 		} else {
 			grabbing_grabber = false;
 			mousewheel_over_grabber = false;
+			emit_signal("ungrabbed");
 		}
 	}
 
@@ -249,6 +253,12 @@ void EditorSpinSlider::_value_input_gui_input(const Ref<InputEvent> &p_event) {
 				value_input_dirty = true;
 				set_process_internal(true);
 			} break;
+			case Key::ESCAPE: {
+				value_input_closed_frame = Engine::get_singleton()->get_frames_drawn();
+				if (value_input_popup) {
+					value_input_popup->hide();
+				}
+			} break;
 			default:
 				break;
 		}
@@ -298,10 +308,6 @@ void EditorSpinSlider::_draw_spin_slider() {
 	int number_width = size.width - sb->get_minimum_size().width - label_width - sep;
 
 	Ref<Texture2D> updown = get_theme_icon(is_read_only() ? SNAME("updown_disabled") : SNAME("updown"), SNAME("SpinBox"));
-
-	if (get_step() == 1) {
-		number_width -= updown->get_width();
-	}
 
 	String numstr = get_text_value();
 
@@ -359,76 +365,79 @@ void EditorSpinSlider::_draw_spin_slider() {
 	}
 	TS->free_rid(num_rid);
 
-	if (get_step() == 1) {
-		Ref<Texture2D> updown2 = get_theme_icon(is_read_only() ? SNAME("updown_disabled") : SNAME("updown"), SNAME("SpinBox"));
-		int updown_vofs = (size.height - updown2->get_height()) / 2;
-		if (rtl) {
-			updown_offset = sb->get_margin(SIDE_LEFT);
-		} else {
-			updown_offset = size.width - sb->get_margin(SIDE_RIGHT) - updown2->get_width();
-		}
-		Color c(1, 1, 1);
-		if (hover_updown) {
-			c *= Color(1.2, 1.2, 1.2);
-		}
-		draw_texture(updown2, Vector2(updown_offset, updown_vofs), c);
-		if (grabber->is_visible()) {
-			grabber->hide();
-		}
-	} else if (!hide_slider) {
-		const int grabber_w = 4 * EDSCALE;
-		const int width = size.width - sb->get_minimum_size().width - grabber_w;
-		const int ofs = sb->get_offset().x;
-		const int svofs = (size.height + vofs) / 2 - 1;
-		Color c = fc;
-
-		// Draw the horizontal slider's background.
-		c.a = 0.2;
-		draw_rect(Rect2(ofs, svofs + 1, width, 2 * EDSCALE), c);
-
-		// Draw the horizontal slider's filled part on the left.
-		const int gofs = get_as_ratio() * width;
-		c.a = 0.45;
-		draw_rect(Rect2(ofs, svofs + 1, gofs, 2 * EDSCALE), c);
-
-		// Draw the horizontal slider's grabber.
-		c.a = 0.9;
-		const Rect2 grabber_rect = Rect2(ofs + gofs, svofs, grabber_w, 4 * EDSCALE);
-		draw_rect(grabber_rect, c);
-
-		grabbing_spinner_mouse_pos = get_global_position() + grabber_rect.get_center();
-
-		bool display_grabber = (grabbing_grabber || mouse_over_spin || mouse_over_grabber) && !grabbing_spinner && !(value_input_popup && value_input_popup->is_visible());
-		if (grabber->is_visible() != display_grabber) {
-			if (display_grabber) {
-				grabber->show();
+	if (!hide_slider) {
+		if (get_step() == 1) {
+			number_width -= updown->get_width();
+			Ref<Texture2D> updown2 = get_theme_icon(is_read_only() ? SNAME("updown_disabled") : SNAME("updown"), SNAME("SpinBox"));
+			int updown_vofs = (size.height - updown2->get_height()) / 2;
+			if (rtl) {
+				updown_offset = sb->get_margin(SIDE_LEFT);
 			} else {
+				updown_offset = size.width - sb->get_margin(SIDE_RIGHT) - updown2->get_width();
+			}
+			Color c(1, 1, 1);
+			if (hover_updown) {
+				c *= Color(1.2, 1.2, 1.2);
+			}
+			draw_texture(updown2, Vector2(updown_offset, updown_vofs), c);
+			if (grabber->is_visible()) {
 				grabber->hide();
 			}
-		}
+		} else {
+			const int grabber_w = 4 * EDSCALE;
+			const int width = size.width - sb->get_minimum_size().width - grabber_w;
+			const int ofs = sb->get_offset().x;
+			const int svofs = (size.height + vofs) / 2 - 1;
+			Color c = fc;
 
-		if (display_grabber) {
-			Ref<Texture2D> grabber_tex;
-			if (mouse_over_grabber) {
-				grabber_tex = get_theme_icon(SNAME("grabber_highlight"), SNAME("HSlider"));
-			} else {
-				grabber_tex = get_theme_icon(SNAME("grabber"), SNAME("HSlider"));
+			// Draw the horizontal slider's background.
+			c.a = 0.2;
+			draw_rect(Rect2(ofs, svofs + 1, width, 2 * EDSCALE), c);
+
+			// Draw the horizontal slider's filled part on the left.
+			const int gofs = get_as_ratio() * width;
+			c.a = 0.45;
+			draw_rect(Rect2(ofs, svofs + 1, gofs, 2 * EDSCALE), c);
+
+			// Draw the horizontal slider's grabber.
+			c.a = 0.9;
+			const Rect2 grabber_rect = Rect2(ofs + gofs, svofs, grabber_w, 4 * EDSCALE);
+			draw_rect(grabber_rect, c);
+
+			grabbing_spinner_mouse_pos = get_global_position() + grabber_rect.get_center();
+
+			bool display_grabber = (grabbing_grabber || mouse_over_spin || mouse_over_grabber) && !grabbing_spinner && !(value_input_popup && value_input_popup->is_visible());
+			if (grabber->is_visible() != display_grabber) {
+				if (display_grabber) {
+					grabber->show();
+				} else {
+					grabber->hide();
+				}
 			}
 
-			if (grabber->get_texture() != grabber_tex) {
-				grabber->set_texture(grabber_tex);
+			if (display_grabber) {
+				Ref<Texture2D> grabber_tex;
+				if (mouse_over_grabber) {
+					grabber_tex = get_theme_icon(SNAME("grabber_highlight"), SNAME("HSlider"));
+				} else {
+					grabber_tex = get_theme_icon(SNAME("grabber"), SNAME("HSlider"));
+				}
+
+				if (grabber->get_texture() != grabber_tex) {
+					grabber->set_texture(grabber_tex);
+				}
+
+				Vector2 scale = get_global_transform_with_canvas().get_scale();
+				grabber->set_scale(scale);
+				grabber->reset_size();
+				grabber->set_position(get_global_position() + (grabber_rect.get_center() - grabber->get_size() * 0.5) * scale);
+
+				if (mousewheel_over_grabber) {
+					Input::get_singleton()->warp_mouse(grabber->get_position() + grabber_rect.size);
+				}
+
+				grabber_range = width;
 			}
-
-			Vector2 scale = get_global_transform_with_canvas().get_scale();
-			grabber->set_scale(scale);
-			grabber->reset_size();
-			grabber->set_position(get_global_position() + (grabber_rect.get_center() - grabber->get_size() * 0.5) * scale);
-
-			if (mousewheel_over_grabber) {
-				Input::get_singleton()->warp_mouse(grabber->get_position() + grabber_rect.size);
-			}
-
-			grabber_range = width;
 		}
 	}
 }
@@ -476,10 +485,10 @@ void EditorSpinSlider::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_FOCUS_ENTER: {
-			if ((Input::get_singleton()->is_action_pressed("ui_focus_next") || Input::get_singleton()->is_action_pressed("ui_focus_prev")) && !value_input_just_closed) {
+			if ((Input::get_singleton()->is_action_pressed("ui_focus_next") || Input::get_singleton()->is_action_pressed("ui_focus_prev")) && value_input_closed_frame != Engine::get_singleton()->get_frames_drawn()) {
 				_focus_entered();
 			}
-			value_input_just_closed = false;
+			value_input_closed_frame = 0;
 		} break;
 	}
 }
@@ -550,7 +559,7 @@ void EditorSpinSlider::_evaluate_input_text() {
 
 //text_submitted signal
 void EditorSpinSlider::_value_input_submitted(const String &p_text) {
-	value_input_just_closed = true;
+	value_input_closed_frame = Engine::get_singleton()->get_frames_drawn();
 	if (value_input_popup) {
 		value_input_popup->hide();
 	}
@@ -559,7 +568,7 @@ void EditorSpinSlider::_value_input_submitted(const String &p_text) {
 //modal_closed signal
 void EditorSpinSlider::_value_input_closed() {
 	_evaluate_input_text();
-	value_input_just_closed = true;
+	value_input_closed_frame = Engine::get_singleton()->get_frames_drawn();
 }
 
 //focus_exited signal
@@ -575,14 +584,17 @@ void EditorSpinSlider::_value_focus_exited() {
 	// -> TAB was pressed
 	// -> modal_close was not called
 	// -> need to close/hide manually
-	if (!value_input_just_closed) { //value_input_just_closed should do the same
+	if (value_input_closed_frame != Engine::get_singleton()->get_frames_drawn()) {
 		if (value_input_popup) {
 			value_input_popup->hide();
 		}
 		//tab was pressed
 	} else {
 		//enter, click, esc
+		grab_focus();
 	}
+
+	emit_signal("value_focus_exited");
 }
 
 void EditorSpinSlider::_grabber_mouse_entered() {
@@ -619,15 +631,14 @@ bool EditorSpinSlider::is_grabbing() const {
 
 void EditorSpinSlider::_focus_entered() {
 	_ensure_input_popup();
-	Rect2 gr = get_screen_rect();
 	value_input->set_text(get_text_value());
-	value_input_popup->set_position(gr.position);
-	value_input_popup->set_size(gr.size);
-	value_input_popup->call_deferred(SNAME("popup"));
+	value_input_popup->set_size(get_size());
+	value_input_popup->call_deferred(SNAME("show"));
 	value_input->call_deferred(SNAME("grab_focus"));
 	value_input->call_deferred(SNAME("select_all"));
 	value_input->set_focus_next(find_next_valid_focus()->get_path());
 	value_input->set_focus_previous(find_prev_valid_focus()->get_path());
+	emit_signal("value_focus_entered");
 }
 
 void EditorSpinSlider::_bind_methods() {
@@ -651,6 +662,11 @@ void EditorSpinSlider::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "read_only"), "set_read_only", "is_read_only");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flat"), "set_flat", "is_flat");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hide_slider"), "set_hide_slider", "is_hiding_slider");
+
+	ADD_SIGNAL(MethodInfo("grabbed"));
+	ADD_SIGNAL(MethodInfo("ungrabbed"));
+	ADD_SIGNAL(MethodInfo("value_focus_entered"));
+	ADD_SIGNAL(MethodInfo("value_focus_exited"));
 }
 
 void EditorSpinSlider::_ensure_input_popup() {
@@ -658,14 +674,14 @@ void EditorSpinSlider::_ensure_input_popup() {
 		return;
 	}
 
-	value_input_popup = memnew(Popup);
+	value_input_popup = memnew(Control);
 	add_child(value_input_popup);
 
 	value_input = memnew(LineEdit);
+	value_input->set_focus_mode(FOCUS_CLICK);
 	value_input_popup->add_child(value_input);
-	value_input_popup->set_wrap_controls(true);
 	value_input->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
-	value_input_popup->connect("popup_hide", callable_mp(this, &EditorSpinSlider::_value_input_closed));
+	value_input_popup->connect("hidden", callable_mp(this, &EditorSpinSlider::_value_input_closed));
 	value_input->connect("text_submitted", callable_mp(this, &EditorSpinSlider::_value_input_submitted));
 	value_input->connect("focus_exited", callable_mp(this, &EditorSpinSlider::_value_focus_exited));
 	value_input->connect("gui_input", callable_mp(this, &EditorSpinSlider::_value_input_gui_input));

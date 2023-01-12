@@ -1,38 +1,36 @@
-/*************************************************************************/
-/*  editor_inspector.cpp                                                 */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  editor_inspector.cpp                                                  */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "editor_inspector.h"
 
-#include "array_property_edit.h"
 #include "core/os/keyboard.h"
-#include "dictionary_property_edit.h"
 #include "editor/doc_tools.h"
 #include "editor/editor_feature_profile.h"
 #include "editor/editor_node.h"
@@ -40,9 +38,11 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/inspector_dock.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "multi_node_edit.h"
-#include "scene/gui/center_container.h"
+#include "scene/gui/spin_box.h"
+#include "scene/gui/texture_rect.h"
 #include "scene/property_utils.h"
 #include "scene/resources/packed_scene.h"
 
@@ -618,7 +618,7 @@ void EditorProperty::gui_input(const Ref<InputEvent> &p_event) {
 		if (is_layout_rtl()) {
 			mpos.x = get_size().x - mpos.x;
 		}
-		bool button_left = (me->get_button_mask() & MouseButton::MASK_LEFT) != MouseButton::NONE;
+		bool button_left = me->get_button_mask().has_flag(MouseButtonMask::LEFT);
 
 		bool new_keying_hover = keying_rect.has_point(mpos) && !button_left;
 		if (new_keying_hover != keying_hover) {
@@ -660,6 +660,7 @@ void EditorProperty::gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		if (keying_rect.has_point(mpos)) {
+			accept_event();
 			emit_signal(SNAME("property_keyed"), property, use_keying_next());
 
 			if (use_keying_next()) {
@@ -683,10 +684,12 @@ void EditorProperty::gui_input(const Ref<InputEvent> &p_event) {
 			}
 		}
 		if (delete_rect.has_point(mpos)) {
+			accept_event();
 			emit_signal(SNAME("property_deleted"), property);
 		}
 
 		if (revert_rect.has_point(mpos)) {
+			accept_event();
 			bool is_valid_revert = false;
 			Variant revert_value = EditorPropertyRevert::get_property_revert_value(object, property, &is_valid_revert);
 			ERR_FAIL_COND(!is_valid_revert);
@@ -695,11 +698,13 @@ void EditorProperty::gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		if (check_rect.has_point(mpos)) {
+			accept_event();
 			checked = !checked;
 			queue_redraw();
 			emit_signal(SNAME("property_checked"), property, checked);
 		}
 	} else if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::RIGHT) {
+		accept_event();
 		_update_popup();
 		menu->set_position(get_screen_position() + get_local_mouse_position());
 		menu->reset_size();
@@ -1167,6 +1172,36 @@ void EditorInspectorSection::_test_unfold() {
 	}
 }
 
+Ref<Texture2D> EditorInspectorSection::_get_arrow() {
+	Ref<Texture2D> arrow;
+	if (foldable) {
+		if (object->editor_is_section_unfolded(section)) {
+			arrow = get_theme_icon(SNAME("arrow"), SNAME("Tree"));
+		} else {
+			if (is_layout_rtl()) {
+				arrow = get_theme_icon(SNAME("arrow_collapsed_mirrored"), SNAME("Tree"));
+			} else {
+				arrow = get_theme_icon(SNAME("arrow_collapsed"), SNAME("Tree"));
+			}
+		}
+	}
+	return arrow;
+}
+
+int EditorInspectorSection::_get_header_height() {
+	Ref<Font> font = get_theme_font(SNAME("bold"), SNAME("EditorFonts"));
+	int font_size = get_theme_font_size(SNAME("bold_size"), SNAME("EditorFonts"));
+
+	int header_height = font->get_height(font_size);
+	Ref<Texture2D> arrow = _get_arrow();
+	if (arrow.is_valid()) {
+		header_height = MAX(header_height, arrow->get_height());
+	}
+	header_height += get_theme_constant(SNAME("v_separation"), SNAME("Tree"));
+
+	return header_height;
+}
+
 void EditorInspectorSection::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
@@ -1177,30 +1212,6 @@ void EditorInspectorSection::_notification(int p_what) {
 			if (!vbox_added) {
 				return;
 			}
-			// Get the section header font.
-			Ref<Font> font = get_theme_font(SNAME("bold"), SNAME("EditorFonts"));
-			int font_size = get_theme_font_size(SNAME("bold_size"), SNAME("EditorFonts"));
-
-			// Get the right direction arrow texture, if the section is foldable.
-			Ref<Texture2D> arrow;
-			if (foldable) {
-				if (object->editor_is_section_unfolded(section)) {
-					arrow = get_theme_icon(SNAME("arrow"), SNAME("Tree"));
-				} else {
-					if (is_layout_rtl()) {
-						arrow = get_theme_icon(SNAME("arrow_collapsed_mirrored"), SNAME("Tree"));
-					} else {
-						arrow = get_theme_icon(SNAME("arrow_collapsed"), SNAME("Tree"));
-					}
-				}
-			}
-
-			// Compute the height of the section header.
-			int header_height = font->get_height(font_size);
-			if (arrow.is_valid()) {
-				header_height = MAX(header_height, arrow->get_height());
-			}
-			header_height += get_theme_constant(SNAME("v_separation"), SNAME("Tree"));
 
 			int inspector_margin = get_theme_constant(SNAME("inspector_margin"), SNAME("Editor"));
 			int section_indent_size = get_theme_constant(SNAME("indent_size"), SNAME("EditorInspectorSection"));
@@ -1213,6 +1224,7 @@ void EditorInspectorSection::_notification(int p_what) {
 			}
 
 			Size2 size = get_size() - Vector2(inspector_margin, 0);
+			int header_height = _get_header_height();
 			Vector2 offset = Vector2(is_layout_rtl() ? 0 : inspector_margin, header_height);
 			for (int i = 0; i < get_child_count(); i++) {
 				Control *c = Object::cast_to<Control>(get_child(i));
@@ -1228,36 +1240,6 @@ void EditorInspectorSection::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_DRAW: {
-			// Get the section header font.
-			Ref<Font> font = get_theme_font(SNAME("bold"), SNAME("EditorFonts"));
-			int font_size = get_theme_font_size(SNAME("bold_size"), SNAME("EditorFonts"));
-			Color font_color = get_theme_color(SNAME("font_color"), SNAME("Editor"));
-
-			// Get the right direction arrow texture, if the section is foldable.
-			Ref<Texture2D> arrow;
-			bool folded = foldable;
-			if (foldable) {
-				if (object->editor_is_section_unfolded(section)) {
-					arrow = get_theme_icon(SNAME("arrow"), SNAME("Tree"));
-					folded = false;
-				} else {
-					if (is_layout_rtl()) {
-						arrow = get_theme_icon(SNAME("arrow_collapsed_mirrored"), SNAME("Tree"));
-					} else {
-						arrow = get_theme_icon(SNAME("arrow_collapsed"), SNAME("Tree"));
-					}
-				}
-			}
-
-			bool rtl = is_layout_rtl();
-
-			// Compute the height and width of the section header.
-			int header_height = font->get_height(font_size);
-			if (arrow.is_valid()) {
-				header_height = MAX(header_height, arrow->get_height());
-			}
-			header_height += get_theme_constant(SNAME("v_separation"), SNAME("Tree"));
-
 			int section_indent = 0;
 			int section_indent_size = get_theme_constant(SNAME("indent_size"), SNAME("EditorInspectorSection"));
 			if (indent_depth > 0 && section_indent_size > 0) {
@@ -1270,11 +1252,13 @@ void EditorInspectorSection::_notification(int p_what) {
 
 			int header_width = get_size().width - section_indent;
 			int header_offset_x = 0.0;
+			bool rtl = is_layout_rtl();
 			if (!rtl) {
 				header_offset_x += section_indent;
 			}
 
 			// Draw header area.
+			int header_height = _get_header_height();
 			Rect2 header_rect = Rect2(Vector2(header_offset_x, 0.0), Vector2(header_width, header_height));
 			Color c = bg_color;
 			c.a *= 0.4;
@@ -1283,7 +1267,7 @@ void EditorInspectorSection::_notification(int p_what) {
 			}
 			draw_rect(header_rect, c);
 
-			// Draw header title, folding arrow and coutn of revertable properties.
+			// Draw header title, folding arrow and count of revertable properties.
 			{
 				int separation = Math::round(2 * EDSCALE);
 
@@ -1291,6 +1275,7 @@ void EditorInspectorSection::_notification(int p_what) {
 				int margin_end = separation;
 
 				// - Arrow.
+				Ref<Texture2D> arrow = _get_arrow();
 				if (arrow.is_valid()) {
 					Point2 arrow_position;
 					if (rtl) {
@@ -1308,6 +1293,13 @@ void EditorInspectorSection::_notification(int p_what) {
 				// - Count of revertable properties.
 				String num_revertable_str;
 				int num_revertable_width = 0;
+
+				bool folded = foldable && !object->editor_is_section_unfolded(section);
+
+				Ref<Font> font = get_theme_font(SNAME("bold"), SNAME("EditorFonts"));
+				int font_size = get_theme_font_size(SNAME("bold_size"), SNAME("EditorFonts"));
+				Color font_color = get_theme_color(SNAME("font_color"), SNAME("Editor"));
+
 				if (folded && revertable_properties.size()) {
 					int label_width = font->get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, available, font_size, TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_CONSTRAIN_ELLIPSIS).x;
 
@@ -1476,11 +1468,15 @@ void EditorInspectorSection::gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
-		Ref<Font> font = get_theme_font(SNAME("font"), SNAME("Tree"));
-		int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Tree"));
-		if (mb->get_position().y > font->get_height(font_size)) { //clicked outside
-			return;
+		if (object->editor_is_section_unfolded(section)) {
+			int header_height = _get_header_height();
+
+			if (mb->get_position().y >= header_height) {
+				return;
+			}
 		}
+
+		accept_event();
 
 		bool should_unfold = !object->editor_is_section_unfolded(section);
 		if (should_unfold) {
@@ -1680,6 +1676,7 @@ void EditorInspectorArray::_panel_gui_input(Ref<InputEvent> p_event, int p_index
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid()) {
 		if (movable && mb->get_button_index() == MouseButton::RIGHT) {
+			array_elements[p_index].panel->accept_event();
 			popup_array_index_pressed = begin_array_index + p_index;
 			rmb_popup->set_item_disabled(OPTION_MOVE_UP, popup_array_index_pressed == 0);
 			rmb_popup->set_item_disabled(OPTION_MOVE_DOWN, popup_array_index_pressed == count - 1);
@@ -2068,7 +2065,7 @@ void EditorInspectorArray::_setup() {
 		ae.panel = memnew(PanelContainer);
 		ae.panel->set_focus_mode(FOCUS_ALL);
 		ae.panel->set_mouse_filter(MOUSE_FILTER_PASS);
-		ae.panel->set_drag_forwarding(this);
+		ae.panel->set_drag_forwarding_compat(this);
 		ae.panel->set_meta("index", begin_array_index + i);
 		ae.panel->set_tooltip_text(vformat(TTR("Element %d: %s%d*"), i, array_element_prefix, i));
 		ae.panel->connect("focus_entered", callable_mp((CanvasItem *)ae.panel, &PanelContainer::queue_redraw));
@@ -3114,11 +3111,24 @@ void EditorInspector::update_tree() {
 			// Build the doc hint, to use as tooltip.
 
 			// Get the class name.
-			StringName classname = doc_name == "" ? object->get_class_name() : doc_name;
+			StringName classname = doc_name;
 			if (!object_class.is_empty()) {
 				classname = object_class;
 			} else if (Object::cast_to<MultiNodeEdit>(object)) {
 				classname = Object::cast_to<MultiNodeEdit>(object)->get_edited_class_name();
+			} else if (classname == "") {
+				classname = object->get_class_name();
+				Resource *res = Object::cast_to<Resource>(object);
+				if (res && !res->get_script().is_null()) {
+					// Grab the script of this resource to get the evaluated script class.
+					Ref<Script> scr = res->get_script();
+					if (scr.is_valid()) {
+						Vector<DocData::ClassDoc> docs = scr->get_documentation();
+						if (!docs.is_empty()) {
+							classname = docs[0].name;
+						}
+					}
+				}
 			}
 
 			StringName propname = property_prefix + p.name;

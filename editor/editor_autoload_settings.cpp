@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  editor_autoload_settings.cpp                                         */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  editor_autoload_settings.cpp                                          */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "editor_autoload_settings.h"
 
@@ -400,27 +400,38 @@ void EditorAutoloadSettings::_autoload_text_changed(const String p_name) {
 }
 
 Node *EditorAutoloadSettings::_create_autoload(const String &p_path) {
-	Ref<Resource> res = ResourceLoader::load(p_path);
-	ERR_FAIL_COND_V_MSG(res.is_null(), nullptr, "Can't autoload: " + p_path + ".");
 	Node *n = nullptr;
-	Ref<PackedScene> scn = res;
-	Ref<Script> scr = res;
-	if (scn.is_valid()) {
-		n = scn->instantiate();
-	} else if (scr.is_valid()) {
-		StringName ibt = scr->get_instance_base_type();
-		bool valid_type = ClassDB::is_parent_class(ibt, "Node");
-		ERR_FAIL_COND_V_MSG(!valid_type, nullptr, "Script does not inherit from Node: " + p_path + ".");
+	if (ResourceLoader::get_resource_type(p_path) == "PackedScene") {
+		// Cache the scene reference before loading it (for cyclic references)
+		Ref<PackedScene> scn;
+		scn.instantiate();
+		scn->set_path(p_path);
+		scn->reload_from_file();
+		ERR_FAIL_COND_V_MSG(!scn.is_valid(), nullptr, vformat("Can't autoload: %s.", p_path));
 
-		Object *obj = ClassDB::instantiate(ibt);
+		if (scn.is_valid()) {
+			n = scn->instantiate();
+		}
+	} else {
+		Ref<Resource> res = ResourceLoader::load(p_path);
+		ERR_FAIL_COND_V_MSG(res.is_null(), nullptr, vformat("Can't autoload: %s.", p_path));
 
-		ERR_FAIL_COND_V_MSG(!obj, nullptr, "Cannot instance script for Autoload, expected 'Node' inheritance, got: " + String(ibt) + ".");
+		Ref<Script> scr = res;
+		if (scr.is_valid()) {
+			StringName ibt = scr->get_instance_base_type();
+			bool valid_type = ClassDB::is_parent_class(ibt, "Node");
+			ERR_FAIL_COND_V_MSG(!valid_type, nullptr, vformat("Script does not inherit from Node: %s.", p_path));
 
-		n = Object::cast_to<Node>(obj);
-		n->set_script(scr);
+			Object *obj = ClassDB::instantiate(ibt);
+
+			ERR_FAIL_COND_V_MSG(!obj, nullptr, vformat("Cannot instance script for Autoload, expected 'Node' inheritance, got: %s.", ibt));
+
+			n = Object::cast_to<Node>(obj);
+			n->set_script(scr);
+		}
 	}
 
-	ERR_FAIL_COND_V_MSG(!n, nullptr, "Path in Autoload not a node or script: " + p_path + ".");
+	ERR_FAIL_COND_V_MSG(!n, nullptr, vformat("Path in Autoload not a node or script: %s.", p_path));
 
 	return n;
 }
@@ -530,8 +541,6 @@ void EditorAutoloadSettings::update_autoload() {
 			info.node->queue_free();
 			info.node = nullptr;
 		}
-
-		ProjectSettings::get_singleton()->remove_autoload(info.name);
 	}
 
 	// Load new/changed autoloads
@@ -555,12 +564,6 @@ void EditorAutoloadSettings::update_autoload() {
 				ScriptServer::get_language(i)->add_named_global_constant(info->name, info->node);
 			}
 		}
-
-		ProjectSettings::AutoloadInfo prop_info;
-		prop_info.name = info->name;
-		prop_info.path = info->path;
-		prop_info.is_singleton = info->is_singleton;
-		ProjectSettings::get_singleton()->add_autoload(prop_info);
 
 		if (!info->in_editor && !info->is_singleton) {
 			// No reason to keep this node
@@ -932,7 +935,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 	tree->set_select_mode(Tree::SELECT_MULTI);
 	tree->set_allow_reselect(true);
 
-	tree->set_drag_forwarding(this);
+	tree->set_drag_forwarding_compat(this);
 
 	tree->set_columns(4);
 	tree->set_column_titles_visible(true);

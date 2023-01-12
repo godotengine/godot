@@ -25,10 +25,12 @@
 		m.mesh = arr_mesh
 		[/gdscript]
 		[csharp]
-		var vertices = new Godot.Collections.Array&lt;Vector3&gt;();
-		vertices.Add(new Vector3(0, 1, 0));
-		vertices.Add(new Vector3(1, 0, 0));
-		vertices.Add(new Vector3(0, 0, 1));
+		var vertices = new Vector3[]
+		{
+		    new Vector3(0, 1, 0),
+		    new Vector3(1, 0, 0),
+		    new Vector3(0, 0, 1),
+		};
 
 		// Initialize the ArrayMesh.
 		var arrMesh = new ArrayMesh();
@@ -38,7 +40,7 @@
 
 		// Create the Mesh.
 		arrMesh.AddSurfaceFromArrays(Mesh.PrimitiveType.Triangles, arrays);
-		var m = new MeshInstance();
+		var m = new MeshInstance3D();
 		m.Mesh = arrMesh;
 		[/csharp]
 		[/codeblocks]
@@ -63,7 +65,7 @@
 			<param index="1" name="arrays" type="Array" />
 			<param index="2" name="blend_shapes" type="Array[]" default="[]" />
 			<param index="3" name="lods" type="Dictionary" default="{}" />
-			<param index="4" name="compress_flags" type="int" default="0" />
+			<param index="4" name="compress_flags" type="int" enum="Mesh.ArrayFormat" default="0" />
 			<description>
 				Creates a new surface.
 				Surfaces are created to be rendered using a [param primitive], which may be any of the types defined in [enum Mesh.PrimitiveType]. (As a note, when using indices, it is recommended to only use points, lines, or triangles.) [method Mesh.get_surface_count] will become the [code]surf_idx[/code] for this new surface.
@@ -100,13 +102,13 @@
 			<param index="0" name="transform" type="Transform3D" />
 			<param index="1" name="texel_size" type="float" />
 			<description>
-				Will perform a UV unwrap on the [ArrayMesh] to prepare the mesh for lightmapping.
+				Performs a UV unwrap on the [ArrayMesh] to prepare the mesh for lightmapping.
 			</description>
 		</method>
 		<method name="regen_normal_maps">
 			<return type="void" />
 			<description>
-				Will regenerate normal maps for the [ArrayMesh].
+				Regenerates tangents for each of the [ArrayMesh]'s surfaces.
 			</description>
 		</method>
 		<method name="set_blend_shape_name">
@@ -139,7 +141,7 @@
 			</description>
 		</method>
 		<method name="surface_get_format" qualifiers="const">
-			<return type="int" />
+			<return type="int" enum="Mesh.ArrayFormat" />
 			<param index="0" name="surf_idx" type="int" />
 			<description>
 				Returns the format mask of the requested surface (see [method add_surface_from_arrays]).

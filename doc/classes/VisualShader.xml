@@ -26,6 +26,7 @@
 			<param index="1" name="mode" type="int" enum="VisualShader.VaryingMode" />
 			<param index="2" name="type" type="int" enum="VisualShader.VaryingType" />
 			<description>
+				Adds a new varying value node to the shader.
 			</description>
 		</method>
 		<method name="can_connect_nodes" qualifiers="const">
@@ -106,12 +107,14 @@
 			<return type="int" />
 			<param index="0" name="type" type="int" enum="VisualShader.Type" />
 			<description>
+				Returns next valid node ID that can be added to the shader graph.
 			</description>
 		</method>
 		<method name="has_varying" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="name" type="String" />
 			<description>
+				Returns [code]true[/code] if the shader has a varying with the given [param name].
 			</description>
 		</method>
 		<method name="is_node_connection" qualifiers="const">
@@ -137,6 +140,7 @@
 			<return type="void" />
 			<param index="0" name="name" type="String" />
 			<description>
+				Removes a varying value node with the given [param name]. Prints an error if a node with this name is not found.
 			</description>
 		</method>
 		<method name="replace_node">
@@ -181,16 +185,22 @@
 			A shader for light calculations.
 		</constant>
 		<constant name="TYPE_START" value="3" enum="Type">
+			A function for the "start" stage of particle shader.
 		</constant>
 		<constant name="TYPE_PROCESS" value="4" enum="Type">
+			A function for the "process" stage of particle shader.
 		</constant>
 		<constant name="TYPE_COLLIDE" value="5" enum="Type">
+			A function for the "collide" stage (particle collision handler) of particle shader.
 		</constant>
 		<constant name="TYPE_START_CUSTOM" value="6" enum="Type">
+			A function for the "start" stage of particle shader, with customized output.
 		</constant>
 		<constant name="TYPE_PROCESS_CUSTOM" value="7" enum="Type">
+			A function for the "process" stage of particle shader, with customized output.
 		</constant>
 		<constant name="TYPE_SKY" value="8" enum="Type">
+			A shader for 3D environment's sky.
 		</constant>
 		<constant name="TYPE_FOG" value="9" enum="Type">
 			A compute shader that runs for each froxel of the volumetric fog map.
@@ -199,30 +209,46 @@
 			Represents the size of the [enum Type] enum.
 		</constant>
 		<constant name="VARYING_MODE_VERTEX_TO_FRAG_LIGHT" value="0" enum="VaryingMode">
+			Varying is passed from [code]Vertex[/code] function to [code]Fragment[/code] and [code]Light[/code] functions.
 		</constant>
 		<constant name="VARYING_MODE_FRAG_TO_LIGHT" value="1" enum="VaryingMode">
+			Varying is passed from [code]Fragment[/code] function to [code]Light[/code] function.
 		</constant>
 		<constant name="VARYING_MODE_MAX" value="2" enum="VaryingMode">
+			Represents the size of the [enum VaryingMode] enum.
 		</constant>
 		<constant name="VARYING_TYPE_FLOAT" value="0" enum="VaryingType">
+			Varying is of type [float].
 		</constant>
 		<constant name="VARYING_TYPE_INT" value="1" enum="VaryingType">
+			Varying is of type [int].
 		</constant>
-		<constant name="VARYING_TYPE_VECTOR_2D" value="2" enum="VaryingType">
+		<constant name="VARYING_TYPE_UINT" value="2" enum="VaryingType">
+			Varying is of type unsigned [int].
 		</constant>
-		<constant name="VARYING_TYPE_VECTOR_3D" value="3" enum="VaryingType">
+		<constant name="VARYING_TYPE_VECTOR_2D" value="3" enum="VaryingType">
+			Varying is of type [Vector2].
 		</constant>
-		<constant name="VARYING_TYPE_VECTOR_4D" value="4" enum="VaryingType">
+		<constant name="VARYING_TYPE_VECTOR_3D" value="4" enum="VaryingType">
+			Varying is of type [Vector3].
 		</constant>
-		<constant name="VARYING_TYPE_BOOLEAN" value="5" enum="VaryingType">
+		<constant name="VARYING_TYPE_VECTOR_4D" value="5" enum="VaryingType">
+			Varying is of type [Vector4].
 		</constant>
-		<constant name="VARYING_TYPE_TRANSFORM" value="6" enum="VaryingType">
+		<constant name="VARYING_TYPE_BOOLEAN" value="6" enum="VaryingType">
+			Varying is of type [bool].
 		</constant>
-		<constant name="VARYING_TYPE_MAX" value="7" enum="VaryingType">
+		<constant name="VARYING_TYPE_TRANSFORM" value="7" enum="VaryingType">
+			Varying is of type [Transform3D].
+		</constant>
+		<constant name="VARYING_TYPE_MAX" value="8" enum="VaryingType">
+			Represents the size of the [enum VaryingType] enum.
 		</constant>
 		<constant name="NODE_ID_INVALID" value="-1">
+			Denotes invalid [VisualShader] node.
 		</constant>
 		<constant name="NODE_ID_OUTPUT" value="0">
+			Denotes output node of [VisualShader].
 		</constant>
 	</constants>
 </class>

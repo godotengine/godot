@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  renderer_scene_render_rd.cpp                                         */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  renderer_scene_render_rd.cpp                                          */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "renderer_scene_render_rd.h"
 
@@ -49,99 +49,6 @@ void get_vogel_disk(float *r_kernel, int p_sample_count) {
 		r_kernel[i * 4] = Math::cos(theta) * r;
 		r_kernel[i * 4 + 1] = Math::sin(theta) * r;
 	}
-}
-
-void RendererSceneRenderRD::sdfgi_update(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_environment, const Vector3 &p_world_position) {
-	Ref<RenderSceneBuffersRD> rb = p_render_buffers;
-	ERR_FAIL_COND(rb.is_null());
-	Ref<RendererRD::GI::SDFGI> sdfgi;
-	if (rb->has_custom_data(RB_SCOPE_SDFGI)) {
-		sdfgi = rb->get_custom_data(RB_SCOPE_SDFGI);
-	}
-
-	bool needs_sdfgi = p_environment.is_valid() && environment_get_sdfgi_enabled(p_environment);
-
-	if (!needs_sdfgi) {
-		if (sdfgi.is_valid()) {
-			// delete it
-			sdfgi.unref();
-			rb->set_custom_data(RB_SCOPE_SDFGI, sdfgi);
-		}
-		return;
-	}
-
-	static const uint32_t history_frames_to_converge[RS::ENV_SDFGI_CONVERGE_MAX] = { 5, 10, 15, 20, 25, 30 };
-	uint32_t requested_history_size = history_frames_to_converge[gi.sdfgi_frames_to_converge];
-
-	if (sdfgi.is_valid() && (sdfgi->num_cascades != environment_get_sdfgi_cascades(p_environment) || sdfgi->min_cell_size != environment_get_sdfgi_min_cell_size(p_environment) || requested_history_size != sdfgi->history_size || sdfgi->uses_occlusion != environment_get_sdfgi_use_occlusion(p_environment) || sdfgi->y_scale_mode != environment_get_sdfgi_y_scale(p_environment))) {
-		//configuration changed, erase
-		sdfgi.unref();
-		rb->set_custom_data(RB_SCOPE_SDFGI, sdfgi);
-	}
-
-	if (sdfgi.is_null()) {
-		// re-create
-		sdfgi = gi.create_sdfgi(p_environment, p_world_position, requested_history_size);
-		rb->set_custom_data(RB_SCOPE_SDFGI, sdfgi);
-	} else {
-		//check for updates
-		sdfgi->update(p_environment, p_world_position);
-	}
-}
-
-int RendererSceneRenderRD::sdfgi_get_pending_region_count(const Ref<RenderSceneBuffers> &p_render_buffers) const {
-	Ref<RenderSceneBuffersRD> rb = p_render_buffers;
-	ERR_FAIL_COND_V(rb.is_null(), 0);
-
-	if (!rb->has_custom_data(RB_SCOPE_SDFGI)) {
-		return 0;
-	}
-	Ref<RendererRD::GI::SDFGI> sdfgi = rb->get_custom_data(RB_SCOPE_SDFGI);
-
-	int dirty_count = 0;
-	for (uint32_t i = 0; i < sdfgi->cascades.size(); i++) {
-		const RendererRD::GI::SDFGI::Cascade &c = sdfgi->cascades[i];
-
-		if (c.dirty_regions == RendererRD::GI::SDFGI::Cascade::DIRTY_ALL) {
-			dirty_count++;
-		} else {
-			for (int j = 0; j < 3; j++) {
-				if (c.dirty_regions[j] != 0) {
-					dirty_count++;
-				}
-			}
-		}
-	}
-
-	return dirty_count;
-}
-
-AABB RendererSceneRenderRD::sdfgi_get_pending_region_bounds(const Ref<RenderSceneBuffers> &p_render_buffers, int p_region) const {
-	AABB bounds;
-	Vector3i from;
-	Vector3i size;
-
-	Ref<RenderSceneBuffersRD> rb = p_render_buffers;
-	ERR_FAIL_COND_V(rb.is_null(), AABB());
-	Ref<RendererRD::GI::SDFGI> sdfgi = rb->get_custom_data(RB_SCOPE_SDFGI);
-	ERR_FAIL_COND_V(sdfgi.is_null(), AABB());
-
-	int c = sdfgi->get_pending_region_data(p_region, from, size, bounds);
-	ERR_FAIL_COND_V(c == -1, AABB());
-	return bounds;
-}
-
-uint32_t RendererSceneRenderRD::sdfgi_get_pending_region_cascade(const Ref<RenderSceneBuffers> &p_render_buffers, int p_region) const {
-	AABB bounds;
-	Vector3i from;
-	Vector3i size;
-
-	Ref<RenderSceneBuffersRD> rb = p_render_buffers;
-	ERR_FAIL_COND_V(rb.is_null(), -1);
-	Ref<RendererRD::GI::SDFGI> sdfgi = rb->get_custom_data(RB_SCOPE_SDFGI);
-	ERR_FAIL_COND_V(sdfgi.is_null(), -1);
-
-	return sdfgi->get_pending_region_data(p_region, from, size, bounds);
 }
 
 RID RendererSceneRenderRD::sky_allocate() {
@@ -169,10 +76,6 @@ Ref<Image> RendererSceneRenderRD::sky_bake_panorama(RID p_sky, float p_energy, b
 
 void RendererSceneRenderRD::environment_glow_set_use_bicubic_upscale(bool p_enable) {
 	glow_bicubic_upscale = p_enable;
-}
-
-void RendererSceneRenderRD::environment_glow_set_use_high_quality(bool p_enable) {
-	glow_high_quality = p_enable;
 }
 
 void RendererSceneRenderRD::environment_set_volumetric_fog_volume_size(int p_size, int p_depth) {
@@ -346,57 +249,6 @@ Ref<RenderSceneBuffers> RendererSceneRenderRD::render_buffers_create() {
 	return rb;
 }
 
-void RendererSceneRenderRD::_allocate_luminance_textures(Ref<RenderSceneBuffersRD> rb) {
-	ERR_FAIL_COND(!rb->luminance.current.is_null());
-
-	Size2i internal_size = rb->get_internal_size();
-	int w = internal_size.x;
-	int h = internal_size.y;
-
-	while (true) {
-		w = MAX(w / 8, 1);
-		h = MAX(h / 8, 1);
-
-		RD::TextureFormat tf;
-		tf.format = RD::DATA_FORMAT_R32_SFLOAT;
-		tf.width = w;
-		tf.height = h;
-
-		bool final = w == 1 && h == 1;
-
-		if (_render_buffers_can_be_storage()) {
-			tf.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT;
-			if (final) {
-				tf.usage_bits |= RD::TEXTURE_USAGE_SAMPLING_BIT;
-			}
-		} else {
-			tf.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT;
-		}
-
-		RID texture = RD::get_singleton()->texture_create(tf, RD::TextureView());
-
-		rb->luminance.reduce.push_back(texture);
-		if (!_render_buffers_can_be_storage()) {
-			Vector<RID> fb;
-			fb.push_back(texture);
-
-			rb->luminance.fb.push_back(RD::get_singleton()->framebuffer_create(fb));
-		}
-
-		if (final) {
-			rb->luminance.current = RD::get_singleton()->texture_create(tf, RD::TextureView());
-
-			if (!_render_buffers_can_be_storage()) {
-				Vector<RID> fb;
-				fb.push_back(rb->luminance.current);
-
-				rb->luminance.current_fb = RD::get_singleton()->framebuffer_create(fb);
-			}
-			break;
-		}
-	}
-}
-
 void RendererSceneRenderRD::_render_buffers_copy_screen_texture(const RenderDataRD *p_render_data) {
 	Ref<RenderSceneBuffersRD> rb = p_render_data->render_buffers;
 	ERR_FAIL_COND(rb.is_null());
@@ -540,9 +392,9 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		RENDER_TIMESTAMP("Auto exposure");
 
 		RD::get_singleton()->draw_command_begin_label("Auto exposure");
-		if (rb->luminance.current.is_null()) {
-			_allocate_luminance_textures(rb);
-		}
+
+		Ref<RendererRD::Luminance::LuminanceBuffers> luminance_buffers = luminance->get_luminance_buffers(rb);
+
 		uint64_t auto_exposure_version = RSG::camera_attributes->camera_attributes_get_auto_exposure_version(p_render_data->camera_attributes);
 		bool set_immediate = auto_exposure_version != rb->get_auto_exposure_version();
 		rb->set_auto_exposure_version(auto_exposure_version);
@@ -550,16 +402,9 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		double step = RSG::camera_attributes->camera_attributes_get_auto_exposure_adjust_speed(p_render_data->camera_attributes) * time_step;
 		float auto_exposure_min_sensitivity = RSG::camera_attributes->camera_attributes_get_auto_exposure_min_sensitivity(p_render_data->camera_attributes);
 		float auto_exposure_max_sensitivity = RSG::camera_attributes->camera_attributes_get_auto_exposure_max_sensitivity(p_render_data->camera_attributes);
-		if (can_use_storage) {
-			RendererCompositorRD::singleton->get_effects()->luminance_reduction(internal_texture, internal_size, rb->luminance.reduce, rb->luminance.current, auto_exposure_min_sensitivity, auto_exposure_max_sensitivity, step, set_immediate);
-		} else {
-			RendererCompositorRD::singleton->get_effects()->luminance_reduction_raster(internal_texture, internal_size, rb->luminance.reduce, rb->luminance.fb, rb->luminance.current, auto_exposure_min_sensitivity, auto_exposure_max_sensitivity, step, set_immediate);
-		}
+		luminance->luminance_reduction(internal_texture, internal_size, luminance_buffers, auto_exposure_min_sensitivity, auto_exposure_max_sensitivity, step, set_immediate);
+
 		// Swap final reduce with prev luminance.
-		SWAP(rb->luminance.current, rb->luminance.reduce.write[rb->luminance.reduce.size() - 1]);
-		if (!can_use_storage) {
-			SWAP(rb->luminance.current_fb, rb->luminance.fb.write[rb->luminance.fb.size() - 1]);
-		}
 
 		auto_exposure_scale = RSG::camera_attributes->camera_attributes_get_auto_exposure_scale(p_render_data->camera_attributes);
 
@@ -593,26 +438,26 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 
 				if (i == 0) {
 					RID luminance_texture;
-					if (RSG::camera_attributes->camera_attributes_uses_auto_exposure(p_render_data->camera_attributes) && rb->luminance.current.is_valid()) {
-						luminance_texture = rb->luminance.current;
+					if (RSG::camera_attributes->camera_attributes_uses_auto_exposure(p_render_data->camera_attributes)) {
+						luminance_texture = luminance->get_current_luminance_buffer(rb); // this will return and empty RID if we don't have an auto exposure buffer
 					}
 					RID source = rb->get_internal_texture(l);
 					RID dest = rb->get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_BLUR_1, l, i);
 					if (can_use_storage) {
-						copy_effects->gaussian_glow(source, dest, vp_size, environment_get_glow_strength(p_render_data->environment), glow_high_quality, true, environment_get_glow_hdr_luminance_cap(p_render_data->environment), environment_get_exposure(p_render_data->environment), environment_get_glow_bloom(p_render_data->environment), environment_get_glow_hdr_bleed_threshold(p_render_data->environment), environment_get_glow_hdr_bleed_scale(p_render_data->environment), luminance_texture, auto_exposure_scale);
+						copy_effects->gaussian_glow(source, dest, vp_size, environment_get_glow_strength(p_render_data->environment), true, environment_get_glow_hdr_luminance_cap(p_render_data->environment), environment_get_exposure(p_render_data->environment), environment_get_glow_bloom(p_render_data->environment), environment_get_glow_hdr_bleed_threshold(p_render_data->environment), environment_get_glow_hdr_bleed_scale(p_render_data->environment), luminance_texture, auto_exposure_scale);
 					} else {
 						RID half = rb->get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_HALF_BLUR, 0, i); // we can reuse this for each view
-						copy_effects->gaussian_glow_raster(source, half, dest, luminance_multiplier, vp_size, environment_get_glow_strength(p_render_data->environment), glow_high_quality, true, environment_get_glow_hdr_luminance_cap(p_render_data->environment), environment_get_exposure(p_render_data->environment), environment_get_glow_bloom(p_render_data->environment), environment_get_glow_hdr_bleed_threshold(p_render_data->environment), environment_get_glow_hdr_bleed_scale(p_render_data->environment), luminance_texture, auto_exposure_scale);
+						copy_effects->gaussian_glow_raster(source, half, dest, luminance_multiplier, vp_size, environment_get_glow_strength(p_render_data->environment), true, environment_get_glow_hdr_luminance_cap(p_render_data->environment), environment_get_exposure(p_render_data->environment), environment_get_glow_bloom(p_render_data->environment), environment_get_glow_hdr_bleed_threshold(p_render_data->environment), environment_get_glow_hdr_bleed_scale(p_render_data->environment), luminance_texture, auto_exposure_scale);
 					}
 				} else {
 					RID source = rb->get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_BLUR_1, l, i - 1);
 					RID dest = rb->get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_BLUR_1, l, i);
 
 					if (can_use_storage) {
-						copy_effects->gaussian_glow(source, dest, vp_size, environment_get_glow_strength(p_render_data->environment), glow_high_quality);
+						copy_effects->gaussian_glow(source, dest, vp_size, environment_get_glow_strength(p_render_data->environment));
 					} else {
 						RID half = rb->get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_HALF_BLUR, 0, i); // we can reuse this for each view
-						copy_effects->gaussian_glow_raster(source, half, dest, luminance_multiplier, vp_size, environment_get_glow_strength(p_render_data->environment), glow_high_quality);
+						copy_effects->gaussian_glow_raster(source, half, dest, luminance_multiplier, vp_size, environment_get_glow_strength(p_render_data->environment));
 					}
 				}
 			}
@@ -627,9 +472,9 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 
 		RendererRD::ToneMapper::TonemapSettings tonemap;
 
-		if (can_use_effects && RSG::camera_attributes->camera_attributes_uses_auto_exposure(p_render_data->camera_attributes) && rb->luminance.current.is_valid()) {
+		tonemap.exposure_texture = luminance->get_current_luminance_buffer(rb);
+		if (can_use_effects && RSG::camera_attributes->camera_attributes_uses_auto_exposure(p_render_data->camera_attributes) && tonemap.exposure_texture.is_valid()) {
 			tonemap.use_auto_exposure = true;
-			tonemap.exposure_texture = rb->luminance.current;
 			tonemap.auto_exposure_scale = auto_exposure_scale;
 		} else {
 			tonemap.exposure_texture = texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_WHITE);
@@ -843,10 +688,11 @@ void RendererSceneRenderRD::_render_buffers_debug_draw(Ref<RenderSceneBuffersRD>
 	}
 
 	if (debug_draw == RS::VIEWPORT_DEBUG_DRAW_SCENE_LUMINANCE) {
-		if (p_render_buffers->luminance.current.is_valid()) {
+		RID luminance_texture = luminance->get_current_luminance_buffer(p_render_buffers);
+		if (luminance_texture.is_valid()) {
 			Size2i rtsize = texture_storage->render_target_get_size(render_target);
 
-			copy_effects->copy_to_fb_rect(p_render_buffers->luminance.current, texture_storage->render_target_get_rd_framebuffer(render_target), Rect2(Vector2(), rtsize / 8), false, true);
+			copy_effects->copy_to_fb_rect(luminance_texture, texture_storage->render_target_get_rd_framebuffer(render_target), Rect2(Vector2(), rtsize / 8), false, true);
 		}
 	}
 
@@ -1006,10 +852,20 @@ bool RendererSceneRenderRD::is_using_radiance_cubemap_array() const {
 }
 
 void RendererSceneRenderRD::_update_vrs(Ref<RenderSceneBuffersRD> p_render_buffers) {
-	if (p_render_buffers.is_valid() && vrs) {
+	if (p_render_buffers.is_null()) {
+		return;
+	}
+
+	RID render_target = p_render_buffers->get_render_target();
+	if (render_target.is_null()) {
+		// must be rendering reflection probes
+		return;
+	}
+
+	if (vrs) {
 		RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 
-		RS::ViewportVRSMode vrs_mode = texture_storage->render_target_get_vrs_mode(p_render_buffers->get_render_target());
+		RS::ViewportVRSMode vrs_mode = texture_storage->render_target_get_vrs_mode(render_target);
 		if (vrs_mode != RS::VIEWPORT_VRS_DISABLED) {
 			RID vrs_texture = p_render_buffers->get_texture(RB_SCOPE_VRS, RB_TEXTURE);
 
@@ -1078,6 +934,7 @@ void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render
 		scene_data.cam_transform = p_camera_data->main_transform;
 		scene_data.cam_projection = p_camera_data->main_projection;
 		scene_data.cam_orthogonal = p_camera_data->is_orthogonal;
+		scene_data.camera_visible_layers = p_camera_data->visible_layers;
 		scene_data.taa_jitter = p_camera_data->taa_jitter;
 
 		scene_data.view_count = p_camera_data->view_count;
@@ -1160,7 +1017,7 @@ void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render
 	}
 
 	Color clear_color;
-	if (p_render_buffers.is_valid()) {
+	if (p_render_buffers.is_valid() && p_reflection_probe.is_null()) {
 		clear_color = texture_storage->render_target_get_clear_request_color(rb->get_render_target());
 	} else {
 		clear_color = RSG::texture_storage->get_default_clear_color();
@@ -1400,7 +1257,6 @@ void RendererSceneRenderRD::init() {
 	screen_space_roughness_limiter_amount = GLOBAL_GET("rendering/anti_aliasing/screen_space_roughness_limiter/amount");
 	screen_space_roughness_limiter_limit = GLOBAL_GET("rendering/anti_aliasing/screen_space_roughness_limiter/limit");
 	glow_bicubic_upscale = int(GLOBAL_GET("rendering/environment/glow/upscale_mode")) > 0;
-	glow_high_quality = GLOBAL_GET("rendering/environment/glow/use_high_quality");
 
 	directional_penumbra_shadow_kernel = memnew_arr(float, 128);
 	directional_soft_shadow_kernel = memnew_arr(float, 128);
@@ -1418,10 +1274,14 @@ void RendererSceneRenderRD::init() {
 	cull_argument.set_page_pool(&cull_argument_pool);
 
 	bool can_use_storage = _render_buffers_can_be_storage();
+	bool can_use_vrs = is_vrs_supported();
 	bokeh_dof = memnew(RendererRD::BokehDOF(!can_use_storage));
 	copy_effects = memnew(RendererRD::CopyEffects(!can_use_storage));
+	luminance = memnew(RendererRD::Luminance(!can_use_storage));
 	tone_mapper = memnew(RendererRD::ToneMapper);
-	vrs = memnew(RendererRD::VRS);
+	if (can_use_vrs) {
+		vrs = memnew(RendererRD::VRS);
+	}
 	if (can_use_storage) {
 		fsr = memnew(RendererRD::FSR);
 	}
@@ -1437,6 +1297,9 @@ RendererSceneRenderRD::~RendererSceneRenderRD() {
 	}
 	if (copy_effects) {
 		memdelete(copy_effects);
+	}
+	if (luminance) {
+		memdelete(luminance);
 	}
 	if (tone_mapper) {
 		memdelete(tone_mapper);

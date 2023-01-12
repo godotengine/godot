@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  range.cpp                                                            */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  range.cpp                                                             */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "range.h"
 
@@ -64,11 +64,6 @@ void Range::_changed_notify(const char *p_what) {
 	queue_redraw();
 }
 
-void Range::_validate_values() {
-	shared->max = MAX(shared->max, shared->min);
-	shared->page = CLAMP(shared->page, 0, shared->max - shared->min);
-}
-
 void Range::Shared::emit_changed(const char *p_what) {
 	for (Range *E : owners) {
 		Range *r = E;
@@ -90,7 +85,7 @@ void Range::set_value(double p_val) {
 
 void Range::set_value_no_signal(double p_val) {
 	if (shared->step > 0) {
-		p_val = Math::round(p_val / shared->step) * shared->step;
+		p_val = Math::round((p_val - shared->min) / shared->step) * shared->step + shared->min;
 	}
 
 	if (_rounded_values) {
@@ -118,8 +113,9 @@ void Range::set_min(double p_min) {
 	}
 
 	shared->min = p_min;
+	shared->max = MAX(shared->max, shared->min);
+	shared->page = CLAMP(shared->page, 0, shared->max - shared->min);
 	set_value(shared->val);
-	_validate_values();
 
 	shared->emit_changed("min");
 
@@ -127,13 +123,14 @@ void Range::set_min(double p_min) {
 }
 
 void Range::set_max(double p_max) {
-	if (shared->max == p_max) {
+	double max_validated = MAX(p_max, shared->min);
+	if (shared->max == max_validated) {
 		return;
 	}
 
-	shared->max = p_max;
+	shared->max = max_validated;
+	shared->page = CLAMP(shared->page, 0, shared->max - shared->min);
 	set_value(shared->val);
-	_validate_values();
 
 	shared->emit_changed("max");
 }
@@ -148,13 +145,13 @@ void Range::set_step(double p_step) {
 }
 
 void Range::set_page(double p_page) {
-	if (shared->page == p_page) {
+	double page_validated = CLAMP(p_page, 0, shared->max - shared->min);
+	if (shared->page == page_validated) {
 		return;
 	}
 
-	shared->page = p_page;
+	shared->page = page_validated;
 	set_value(shared->val);
-	_validate_values();
 
 	shared->emit_changed("page");
 }

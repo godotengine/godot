@@ -59,14 +59,21 @@
 				Returns the item's name.
 			</description>
 		</method>
-		<method name="get_item_navmesh" qualifiers="const">
+		<method name="get_item_navigation_layers" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="id" type="int" />
+			<description>
+				Returns the item's navigation layers bitmask.
+			</description>
+		</method>
+		<method name="get_item_navigation_mesh" qualifiers="const">
 			<return type="NavigationMesh" />
 			<param index="0" name="id" type="int" />
 			<description>
 				Returns the item's navigation mesh.
 			</description>
 		</method>
-		<method name="get_item_navmesh_transform" qualifiers="const">
+		<method name="get_item_navigation_mesh_transform" qualifiers="const">
 			<return type="Transform3D" />
 			<param index="0" name="id" type="int" />
 			<description>
@@ -126,18 +133,26 @@
 				This name is shown in the editor. It can also be used to look up the item later using [method find_item_by_name].
 			</description>
 		</method>
-		<method name="set_item_navmesh">
+		<method name="set_item_navigation_layers">
 			<return type="void" />
 			<param index="0" name="id" type="int" />
-			<param index="1" name="navmesh" type="NavigationMesh" />
+			<param index="1" name="navigation_layers" type="int" />
+			<description>
+				Sets the item's navigation layers bitmask.
+			</description>
+		</method>
+		<method name="set_item_navigation_mesh">
+			<return type="void" />
+			<param index="0" name="id" type="int" />
+			<param index="1" name="navigation_mesh" type="NavigationMesh" />
 			<description>
 				Sets the item's navigation mesh.
 			</description>
 		</method>
-		<method name="set_item_navmesh_transform">
+		<method name="set_item_navigation_mesh_transform">
 			<return type="void" />
 			<param index="0" name="id" type="int" />
-			<param index="1" name="navmesh" type="Transform3D" />
+			<param index="1" name="navigation_mesh" type="Transform3D" />
 			<description>
 				Sets the transform to apply to the item's navigation mesh.
 			</description>

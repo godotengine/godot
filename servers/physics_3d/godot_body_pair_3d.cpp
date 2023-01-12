@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  godot_body_pair_3d.cpp                                               */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  godot_body_pair_3d.cpp                                                */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "godot_body_pair_3d.h"
 
@@ -161,6 +161,11 @@ void GodotBodyPair3D::validate_contacts() {
 	}
 }
 
+// _test_ccd prevents tunneling by slowing down a high velocity body that is about to collide so that next frame it will be at an appropriate location to collide (i.e. slight overlap)
+// Warning: the way velocity is adjusted down to cause a collision means the momentum will be weaker than it should for a bounce!
+// Process: only proceed if body A's motion is high relative to its size.
+// cast forward along motion vector to see if A is going to enter/pass B's collider next frame, only proceed if it does.
+// adjust the velocity of A down so that it will just slightly intersect the collider instead of blowing right past it.
 bool GodotBodyPair3D::_test_ccd(real_t p_step, GodotBody3D *p_A, int p_shape_A, const Transform3D &p_xform_A, GodotBody3D *p_B, int p_shape_B, const Transform3D &p_xform_B) {
 	Vector3 motion = p_A->get_linear_velocity() * p_step;
 	real_t mlen = motion.length();
@@ -177,33 +182,39 @@ bool GodotBodyPair3D::_test_ccd(real_t p_step, GodotBody3D *p_A, int p_shape_A, 
 	// Let's say it should move more than 1/3 the size of the object in that axis.
 	bool fast_object = mlen > (max - min) * 0.3;
 	if (!fast_object) {
-		return false;
+		return false; // moving slow enough that there's no chance of tunneling.
 	}
 
-	// Going too fast in that direction.
+	// A is moving fast enough that tunneling might occur. See if it's really about to collide.
 
 	// Cast a segment from support in motion normal, in the same direction of motion by motion length.
-	// Support is the worst case collision point, so real collision happened before.
-	Vector3 s = p_A->get_shape(p_shape_A)->get_support(p_xform_A.basis.xform(mnormal).normalized());
+	// Support point will the farthest forward collision point along the movement vector.
+	// i.e. the point that should hit B first if any collision does occur.
+
+	// convert mnormal into body A's local xform because get_support requires (and returns) local coordinates.
+	Vector3 s = p_A->get_shape(p_shape_A)->get_support(p_xform_A.basis.xform_inv(mnormal).normalized());
 	Vector3 from = p_xform_A.xform(s);
 	Vector3 to = from + motion;
 
 	Transform3D from_inv = p_xform_B.affine_inverse();
 
-	// Start from a little inside the bounding box.
-	Vector3 local_from = from_inv.xform(from - mnormal * mlen * 0.1);
+	// Back up 10% of the per-frame motion behind the support point and use that as the beginning of our cast.
+	// At high speeds, this may mean we're actually casting from well behind the body instead of inside it, which is odd. But it still works out.
+	Vector3 local_from = from_inv.xform(from - motion * 0.1);
 	Vector3 local_to = from_inv.xform(to);
 
 	Vector3 rpos, rnorm;
 	if (!p_B->get_shape(p_shape_B)->intersect_segment(local_from, local_to, rpos, rnorm, true)) {
+		// there was no hit. Since the segment is the length of per-frame motion, this means the bodies will not
+		// actually collide yet on next frame. We'll probably check again next frame once they're closer.
 		return false;
 	}
 
-	// Shorten the linear velocity so it does not hit, but gets close enough,
-	// next frame will hit softly or soft enough.
+	// Shorten the linear velocity so it will collide next frame.
 	Vector3 hitpos = p_xform_B.xform(rpos);
 
-	real_t newlen = hitpos.distance_to(from) - (max - min) * 0.01;
+	real_t newlen = hitpos.distance_to(from) + (max - min) * 0.01; // adding 1% of body length to the distance between collision and support point should cause body A's support point to arrive just within B's collider next frame.
+
 	p_A->set_linear_velocity((mnormal * newlen) / p_step);
 
 	return true;
@@ -353,26 +364,6 @@ bool GodotBodyPair3D::pre_solve(real_t p_step) {
 		c.rA = global_A - A->get_center_of_mass();
 		c.rB = global_B - B->get_center_of_mass() - offset_B;
 
-		// contact query reporting...
-
-		if (A->can_report_contacts()) {
-			Vector3 crA = A->get_angular_velocity().cross(c.rA) + A->get_linear_velocity();
-			A->add_contact(global_A, -c.normal, depth, shape_A, global_B, shape_B, B->get_instance_id(), B->get_self(), crA);
-		}
-
-		if (B->can_report_contacts()) {
-			Vector3 crB = B->get_angular_velocity().cross(c.rB) + B->get_linear_velocity();
-			B->add_contact(global_B, c.normal, depth, shape_B, global_A, shape_A, A->get_instance_id(), A->get_self(), crB);
-		}
-
-		if (report_contacts_only) {
-			collided = false;
-			continue;
-		}
-
-		c.active = true;
-		do_process = true;
-
 		// Precompute normal mass, tangent mass, and bias.
 		Vector3 inertia_A = inv_inertia_tensor_A.xform(c.rA.cross(c.normal));
 		Vector3 inertia_B = inv_inertia_tensor_B.xform(c.rB.cross(c.normal));
@@ -384,6 +375,29 @@ bool GodotBodyPair3D::pre_solve(real_t p_step) {
 		c.depth = depth;
 
 		Vector3 j_vec = c.normal * c.acc_normal_impulse + c.acc_tangent_impulse;
+
+		c.acc_impulse -= j_vec;
+
+		// contact query reporting...
+
+		if (A->can_report_contacts()) {
+			Vector3 crA = A->get_angular_velocity().cross(c.rA) + A->get_linear_velocity();
+			A->add_contact(global_A, -c.normal, depth, shape_A, global_B, shape_B, B->get_instance_id(), B->get_self(), crA, c.acc_impulse);
+		}
+
+		if (B->can_report_contacts()) {
+			Vector3 crB = B->get_angular_velocity().cross(c.rB) + B->get_linear_velocity();
+			B->add_contact(global_B, c.normal, depth, shape_B, global_A, shape_A, A->get_instance_id(), A->get_self(), crB, -c.acc_impulse);
+		}
+
+		if (report_contacts_only) {
+			collided = false;
+			continue;
+		}
+
+		c.active = true;
+		do_process = true;
+
 		if (collide_A) {
 			A->apply_impulse(-j_vec, c.rA + A->get_center_of_mass());
 		}
@@ -493,6 +507,7 @@ void GodotBodyPair3D::solve(real_t p_step) {
 			if (collide_B) {
 				B->apply_impulse(j, c.rB + B->get_center_of_mass());
 			}
+			c.acc_impulse -= j;
 
 			c.active = true;
 		}
@@ -539,6 +554,7 @@ void GodotBodyPair3D::solve(real_t p_step) {
 			if (collide_B) {
 				B->apply_impulse(jt, c.rB + B->get_center_of_mass());
 			}
+			c.acc_impulse -= jt;
 
 			c.active = true;
 		}
@@ -734,23 +750,6 @@ bool GodotBodySoftBodyPair3D::pre_solve(real_t p_step) {
 		c.rA = global_A - transform_A.origin - body->get_center_of_mass();
 		c.rB = global_B;
 
-		if (body->can_report_contacts()) {
-			Vector3 crA = body->get_angular_velocity().cross(c.rA) + body->get_linear_velocity();
-			body->add_contact(global_A, -c.normal, depth, body_shape, global_B, 0, soft_body->get_instance_id(), soft_body->get_self(), crA);
-		}
-
-		if (report_contacts_only) {
-			collided = false;
-			continue;
-		}
-
-		c.active = true;
-		do_process = true;
-
-		if (body_collides) {
-			body->set_active(true);
-		}
-
 		// Precompute normal mass, tangent mass, and bias.
 		Vector3 inertia_A = body_inv_inertia_tensor.xform(c.rA.cross(c.normal));
 		real_t kNormal = body_inv_mass + node_inv_mass;
@@ -766,6 +765,24 @@ bool GodotBodySoftBodyPair3D::pre_solve(real_t p_step) {
 		}
 		if (soft_body_collides) {
 			soft_body->apply_node_impulse(c.index_B, j_vec);
+		}
+		c.acc_impulse -= j_vec;
+
+		if (body->can_report_contacts()) {
+			Vector3 crA = body->get_angular_velocity().cross(c.rA) + body->get_linear_velocity();
+			body->add_contact(global_A, -c.normal, depth, body_shape, global_B, 0, soft_body->get_instance_id(), soft_body->get_self(), crA, c.acc_impulse);
+		}
+
+		if (report_contacts_only) {
+			collided = false;
+			continue;
+		}
+
+		c.active = true;
+		do_process = true;
+
+		if (body_collides) {
+			body->set_active(true);
 		}
 
 		c.bounce = body->get_bounce();
@@ -869,6 +886,7 @@ void GodotBodySoftBodyPair3D::solve(real_t p_step) {
 			if (soft_body_collides) {
 				soft_body->apply_node_impulse(c.index_B, j);
 			}
+			c.acc_impulse -= j;
 
 			c.active = true;
 		}
@@ -913,6 +931,7 @@ void GodotBodySoftBodyPair3D::solve(real_t p_step) {
 			if (soft_body_collides) {
 				soft_body->apply_node_impulse(c.index_B, jt);
 			}
+			c.acc_impulse -= jt;
 
 			c.active = true;
 		}

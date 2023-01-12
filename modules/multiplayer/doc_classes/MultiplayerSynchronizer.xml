@@ -17,7 +17,7 @@
 			<param index="0" name="filter" type="Callable" />
 			<description>
 				Adds a peer visibility filter for this synchronizer.
-				[code]filter[/code] should take a peer id [int] and return a [bool].
+				[code]filter[/code] should take a peer ID [int] and return a [bool].
 			</description>
 		</method>
 		<method name="get_visibility_for" qualifiers="const">

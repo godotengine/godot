@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="NavigationLink3D" inherits="Node3D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="NavigationLink3D" inherits="Node3D" is_experimental="true" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Creates a link between two locations that [NavigationServer3D] can route agents through.
 	</brief_description>
@@ -7,6 +7,7 @@
 		Creates a link between two locations that [NavigationServer3D] can route agents through.  Links can be used to express navigation methods that aren't just traveling along the surface of the navigation mesh, like zip-lines, teleporters, or jumping across gaps.
 	</description>
 	<tutorials>
+		<link title="Using NavigationLinks">$DOCS_URL/tutorials/navigation/navigation_using_navigationlinks.html</link>
 	</tutorials>
 	<methods>
 		<method name="get_navigation_layer_value" qualifiers="const">
@@ -38,7 +39,7 @@
 			The distance the link will search is controlled by [method NavigationServer3D.map_set_link_connection_radius].
 		</member>
 		<member name="enter_cost" type="float" setter="set_enter_cost" getter="get_enter_cost" default="0.0">
-			When pathfinding enters this link from another regions navmesh the [code]enter_cost[/code] value is added to the path distance for determining the shortest path.
+			When pathfinding enters this link from another regions navigation mesh the [code]enter_cost[/code] value is added to the path distance for determining the shortest path.
 		</member>
 		<member name="navigation_layers" type="int" setter="set_navigation_layers" getter="get_navigation_layers" default="1">
 			A bitfield determining all navigation layers the link belongs to. These navigation layers will be checked when requesting a path with [method NavigationServer3D.map_get_path].

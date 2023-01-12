@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  visual_shader_particle_nodes.cpp                                     */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  visual_shader_particle_nodes.cpp                                      */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "visual_shader_particle_nodes.h"
 
@@ -374,13 +374,13 @@ String VisualShaderNodeParticleMeshEmitter::_generate_code(VisualShader::Type p_
 	if (is_output_port_connected(p_index)) {
 		switch (p_port_type) {
 			case PORT_TYPE_VECTOR_2D: {
-				code += vformat("	%s = texelFetch(%s, ivec2(__scalar_ibuff, 0), 0).xy;\n", p_output_vars[p_index], make_unique_id(p_type, p_id, p_texture_name));
+				code += vformat("		%s = texelFetch(%s, ivec2(__scalar_ibuff, 0), 0).xy;\n", p_output_vars[p_index], make_unique_id(p_type, p_id, p_texture_name));
 			} break;
 			case PORT_TYPE_VECTOR_3D: {
 				if (mode_2d) {
-					code += vformat("	%s = texelFetch(%s, ivec2(__scalar_ibuff, 0), 0).xy;\n", p_output_vars[p_index], make_unique_id(p_type, p_id, p_texture_name));
+					code += vformat("		%s = texelFetch(%s, ivec2(__scalar_ibuff, 0), 0).xy;\n", p_output_vars[p_index], make_unique_id(p_type, p_id, p_texture_name));
 				} else {
-					code += vformat("	%s = texelFetch(%s, ivec2(__scalar_ibuff, 0), 0).xyz;\n", p_output_vars[p_index], make_unique_id(p_type, p_id, p_texture_name));
+					code += vformat("		%s = texelFetch(%s, ivec2(__scalar_ibuff, 0), 0).xyz;\n", p_output_vars[p_index], make_unique_id(p_type, p_id, p_texture_name));
 				}
 			} break;
 			default:
@@ -392,25 +392,27 @@ String VisualShaderNodeParticleMeshEmitter::_generate_code(VisualShader::Type p_
 
 String VisualShaderNodeParticleMeshEmitter::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
 	String code;
-	code += "	__scalar_ibuff = int(__rand_from_seed(__seed) * 65535.0) % " + itos(position_texture->get_width()) + ";\n";
+	code += "	{\n";
+	code += "		int __scalar_ibuff = int(__rand_from_seed(__seed) * 65535.0) % " + itos(position_texture->get_width()) + ";\n";
 
 	code += _generate_code(p_type, p_id, p_output_vars, 0, "mesh_vx", VisualShaderNode::PORT_TYPE_VECTOR_3D);
 	code += _generate_code(p_type, p_id, p_output_vars, 1, "mesh_nm", VisualShaderNode::PORT_TYPE_VECTOR_3D);
 
 	if (is_output_port_connected(2) || is_output_port_connected(3)) {
-		code += vformat("	__vec4_buff = texelFetch(%s, ivec2(__scalar_ibuff, 0), 0);\n", make_unique_id(p_type, p_id, "mesh_col"));
+		code += vformat("		vec4 __vec4_buff = texelFetch(%s, ivec2(__scalar_ibuff, 0), 0);\n", make_unique_id(p_type, p_id, "mesh_col"));
 
 		if (is_output_port_connected(2)) {
-			code += "	" + p_output_vars[2] + " = __vec4_buff.rgb;\n";
+			code += "		" + p_output_vars[2] + " = __vec4_buff.rgb;\n";
 		}
 		if (is_output_port_connected(3)) {
-			code += "	" + p_output_vars[3] + " = __vec4_buff.a;\n";
+			code += "		" + p_output_vars[3] + " = __vec4_buff.a;\n";
 		}
 	}
 
 	code += _generate_code(p_type, p_id, p_output_vars, 4, "mesh_uv", VisualShaderNode::PORT_TYPE_VECTOR_2D);
 	code += _generate_code(p_type, p_id, p_output_vars, 5, "mesh_uv2", VisualShaderNode::PORT_TYPE_VECTOR_2D);
 
+	code += "	}\n";
 	return code;
 }
 
@@ -737,6 +739,8 @@ VisualShaderNodeParticleMeshEmitter::VisualShaderNodeParticleMeshEmitter() {
 	color_texture.instantiate();
 	uv_texture.instantiate();
 	uv2_texture.instantiate();
+
+	simple_decl = false;
 }
 
 // VisualShaderNodeParticleMultiplyByAxisAngle
@@ -879,22 +883,26 @@ bool VisualShaderNodeParticleConeVelocity::has_output_port_preview(int p_port) c
 
 String VisualShaderNodeParticleConeVelocity::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
 	String code;
-	code += "	__radians = radians(" + (p_input_vars[1].is_empty() ? (String)get_input_port_default_value(1) : p_input_vars[1]) + ");\n";
-	code += "	__scalar_buff1 = __rand_from_seed_m1_p1(__seed) * __radians;\n";
-	code += "	__scalar_buff2 = __rand_from_seed_m1_p1(__seed) * __radians;\n";
-	code += "	__vec3_buff1 = " + (p_input_vars[0].is_empty() ? "vec3" + (String)get_input_port_default_value(0) : p_input_vars[0]) + ";\n";
-	code += "	__scalar_buff1 += __vec3_buff1.z != 0.0 ? atan(__vec3_buff1.x, __vec3_buff1.z) : sign(__vec3_buff1.x) * (PI / 2.0);\n";
-	code += "	__scalar_buff2 += __vec3_buff1.z != 0.0 ? atan(__vec3_buff1.y, abs(__vec3_buff1.z)) : (__vec3_buff1.x != 0.0 ? atan(__vec3_buff1.y, abs(__vec3_buff1.x)) : sign(__vec3_buff1.y) * (PI / 2.0));\n";
-	code += "	__vec3_buff1 = vec3(sin(__scalar_buff1), 0.0, cos(__scalar_buff1));\n";
-	code += "	__vec3_buff2 = vec3(0.0, sin(__scalar_buff2), cos(__scalar_buff2));\n";
-	code += "	__vec3_buff2.z = __vec3_buff2.z / max(0.0001, sqrt(abs(__vec3_buff2.z)));\n";
-	code += "	" + p_output_vars[0] + " = normalize(vec3(__vec3_buff1.x * __vec3_buff2.z, __vec3_buff2.y, __vec3_buff1.z * __vec3_buff2.z));\n";
+	code += "	{\n";
+	code += "		float __radians = radians(" + (p_input_vars[1].is_empty() ? (String)get_input_port_default_value(1) : p_input_vars[1]) + ");\n";
+	code += "		float __scalar_buff1 = __rand_from_seed_m1_p1(__seed) * __radians;\n";
+	code += "		float __scalar_buff2 = __rand_from_seed_m1_p1(__seed) * __radians;\n";
+	code += "		vec3 __vec3_buff1 = " + (p_input_vars[0].is_empty() ? "vec3" + (String)get_input_port_default_value(0) : p_input_vars[0]) + ";\n";
+	code += "		__scalar_buff1 += __vec3_buff1.z != 0.0 ? atan(__vec3_buff1.x, __vec3_buff1.z) : sign(__vec3_buff1.x) * (PI / 2.0);\n";
+	code += "		__scalar_buff2 += __vec3_buff1.z != 0.0 ? atan(__vec3_buff1.y, abs(__vec3_buff1.z)) : (__vec3_buff1.x != 0.0 ? atan(__vec3_buff1.y, abs(__vec3_buff1.x)) : sign(__vec3_buff1.y) * (PI / 2.0));\n";
+	code += "		__vec3_buff1 = vec3(sin(__scalar_buff1), 0.0, cos(__scalar_buff1));\n";
+	code += "		vec3 __vec3_buff2 = vec3(0.0, sin(__scalar_buff2), cos(__scalar_buff2));\n";
+	code += "		__vec3_buff2.z = __vec3_buff2.z / max(0.0001, sqrt(abs(__vec3_buff2.z)));\n";
+	code += "		" + p_output_vars[0] + " = normalize(vec3(__vec3_buff1.x * __vec3_buff2.z, __vec3_buff2.y, __vec3_buff1.z * __vec3_buff2.z));\n";
+	code += "	}\n";
 	return code;
 }
 
 VisualShaderNodeParticleConeVelocity::VisualShaderNodeParticleConeVelocity() {
 	set_input_port_default_value(0, Vector3(1, 0, 0));
 	set_input_port_default_value(1, 45.0);
+
+	simple_decl = false;
 }
 
 // VisualShaderNodeParticleRandomness
@@ -903,11 +911,12 @@ void VisualShaderNodeParticleRandomness::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_op_type", "type"), &VisualShaderNodeParticleRandomness::set_op_type);
 	ClassDB::bind_method(D_METHOD("get_op_type"), &VisualShaderNodeParticleRandomness::get_op_type);
 
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "op_type", PROPERTY_HINT_ENUM, "Scalar,Vector2,Vector3"), "set_op_type", "get_op_type");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "op_type", PROPERTY_HINT_ENUM, "Scalar,Vector2,Vector3,Vector4"), "set_op_type", "get_op_type");
 
 	BIND_ENUM_CONSTANT(OP_TYPE_SCALAR);
 	BIND_ENUM_CONSTANT(OP_TYPE_VECTOR_2D);
 	BIND_ENUM_CONSTANT(OP_TYPE_VECTOR_3D);
+	BIND_ENUM_CONSTANT(OP_TYPE_VECTOR_4D);
 	BIND_ENUM_CONSTANT(OP_TYPE_MAX);
 }
 
@@ -931,6 +940,8 @@ VisualShaderNodeParticleRandomness::PortType VisualShaderNodeParticleRandomness:
 			return PORT_TYPE_VECTOR_2D;
 		case OP_TYPE_VECTOR_3D:
 			return PORT_TYPE_VECTOR_3D;
+		case OP_TYPE_VECTOR_4D:
+			return PORT_TYPE_VECTOR_4D;
 		default:
 			break;
 	}
@@ -942,46 +953,67 @@ String VisualShaderNodeParticleRandomness::get_output_port_name(int p_port) cons
 }
 
 int VisualShaderNodeParticleRandomness::get_input_port_count() const {
-	return 2;
+	return 3;
 }
 
 VisualShaderNodeParticleRandomness::PortType VisualShaderNodeParticleRandomness::get_input_port_type(int p_port) const {
-	switch (op_type) {
-		case OP_TYPE_VECTOR_2D:
-			return PORT_TYPE_VECTOR_2D;
-		case OP_TYPE_VECTOR_3D:
-			return PORT_TYPE_VECTOR_3D;
-		default:
+	switch (p_port) {
+		case 0:
+			return PORT_TYPE_SCALAR_UINT;
+		case 1:
+		case 2:
+			switch (op_type) {
+				case OP_TYPE_VECTOR_2D:
+					return PORT_TYPE_VECTOR_2D;
+				case OP_TYPE_VECTOR_3D:
+					return PORT_TYPE_VECTOR_3D;
+				case OP_TYPE_VECTOR_4D:
+					return PORT_TYPE_VECTOR_4D;
+				default:
+					break;
+			}
 			break;
 	}
 	return PORT_TYPE_SCALAR;
 }
 
 String VisualShaderNodeParticleRandomness::get_input_port_name(int p_port) const {
-	if (p_port == 0) {
-		return "min";
-	} else if (p_port == 1) {
-		return "max";
+	switch (p_port) {
+		case 0:
+			return "seed";
+		case 1:
+			return "min";
+		case 2:
+			return "max";
 	}
 	return String();
 }
 
-String VisualShaderNodeParticleRandomness::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
+bool VisualShaderNodeParticleRandomness::is_input_port_default(int p_port, Shader::Mode p_mode) const {
+	return p_port == 0; // seed
+}
+
+String VisualShaderNodeParticleRandomness::generate_global_per_node(Shader::Mode p_mode, int p_id) const {
 	String code;
-	switch (op_type) {
-		case OP_TYPE_SCALAR: {
-			code += vformat("	%s = __randf_range(__seed, %s, %s);\n", p_output_vars[0], p_input_vars[0].is_empty() ? (String)get_input_port_default_value(0) : p_input_vars[0], p_input_vars[1].is_empty() ? (String)get_input_port_default_value(1) : p_input_vars[1]);
-		} break;
-		case OP_TYPE_VECTOR_2D: {
-			code += vformat("	%s = __randv2_range(__seed, %s, %s);\n", p_output_vars[0], p_input_vars[0].is_empty() ? (String)get_input_port_default_value(0) : p_input_vars[0], p_input_vars[1].is_empty() ? (String)get_input_port_default_value(1) : p_input_vars[1]);
-		} break;
-		case OP_TYPE_VECTOR_3D: {
-			code += vformat("	%s = __randv3_range(__seed, %s, %s);\n", p_output_vars[0], p_input_vars[0].is_empty() ? (String)get_input_port_default_value(0) : p_input_vars[0], p_input_vars[1].is_empty() ? (String)get_input_port_default_value(1) : p_input_vars[1]);
-		} break;
-		default:
-			break;
-	}
+
+	code += "vec2 __randv2_range(inout uint seed, vec2 from, vec2 to) {\n";
+	code += "	return vec2(__randf_range(seed, from.x, to.x), __randf_range(seed, from.y, to.y));\n";
+	code += "}\n\n";
+
+	code += "vec3 __randv3_range(inout uint seed, vec3 from, vec3 to) {\n";
+	code += "	return vec3(__randf_range(seed, from.x, to.x), __randf_range(seed, from.y, to.y), __randf_range(seed, from.z, to.z));\n";
+	code += "}\n\n";
+
+	code += "vec4 __randv4_range(inout uint seed, vec4 from, vec4 to) {\n";
+	code += "	return vec4(__randf_range(seed, from.x, to.x), __randf_range(seed, from.y, to.y), __randf_range(seed, from.z, to.z), __randf_range(seed, from.w, to.w));\n";
+	code += "}\n\n";
+
 	return code;
+}
+
+String VisualShaderNodeParticleRandomness::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
+	static const char *func[(int)OP_TYPE_MAX] = { "__randf_range", "__randv2_range", "__randv3_range", "__randv4_range" };
+	return vformat("	%s = %s(%s, %s, %s);\n", p_output_vars[0], func[op_type], p_input_vars[0].is_empty() ? "__seed" : p_input_vars[0], p_input_vars[1].is_empty() ? (String)get_input_port_default_value(1) : p_input_vars[1], p_input_vars[2].is_empty() ? (String)get_input_port_default_value(2) : p_input_vars[2]);
 }
 
 void VisualShaderNodeParticleRandomness::set_op_type(OpType p_op_type) {
@@ -991,16 +1023,20 @@ void VisualShaderNodeParticleRandomness::set_op_type(OpType p_op_type) {
 	}
 	switch (p_op_type) {
 		case OP_TYPE_SCALAR: {
-			set_input_port_default_value(0, 0.0, get_input_port_default_value(0));
 			set_input_port_default_value(1, 0.0, get_input_port_default_value(1));
+			set_input_port_default_value(2, 0.0, get_input_port_default_value(2));
 		} break;
 		case OP_TYPE_VECTOR_2D: {
-			set_input_port_default_value(0, Vector2(), get_input_port_default_value(0));
 			set_input_port_default_value(1, Vector2(), get_input_port_default_value(1));
+			set_input_port_default_value(2, Vector2(), get_input_port_default_value(2));
 		} break;
 		case OP_TYPE_VECTOR_3D: {
-			set_input_port_default_value(0, Vector3(), get_input_port_default_value(0));
 			set_input_port_default_value(1, Vector3(), get_input_port_default_value(1));
+			set_input_port_default_value(2, Vector3(), get_input_port_default_value(2));
+		} break;
+		case OP_TYPE_VECTOR_4D: {
+			set_input_port_default_value(1, Quaternion(), get_input_port_default_value(1));
+			set_input_port_default_value(2, Quaternion(), get_input_port_default_value(2));
 		} break;
 		default:
 			break;
@@ -1018,8 +1054,8 @@ bool VisualShaderNodeParticleRandomness::has_output_port_preview(int p_port) con
 }
 
 VisualShaderNodeParticleRandomness::VisualShaderNodeParticleRandomness() {
-	set_input_port_default_value(0, -1.0);
-	set_input_port_default_value(1, 1.0);
+	set_input_port_default_value(1, -1.0);
+	set_input_port_default_value(2, 1.0);
 }
 
 // VisualShaderNodeParticleAccelerator
@@ -1086,21 +1122,26 @@ String VisualShaderNodeParticleAccelerator::get_input_port_name(int p_port) cons
 
 String VisualShaderNodeParticleAccelerator::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
 	String code;
+	code += "	{\n";
 	switch (mode) {
 		case MODE_LINEAR:
-			code += "	" + p_output_vars[0] + " = length(VELOCITY) > 0.0 ? " + "normalize(VELOCITY) * " + (p_input_vars[0].is_empty() ? "vec3" + (String)get_input_port_default_value(0) : p_input_vars[0]) + " * mix(1.0, __rand_from_seed(__seed), " + (p_input_vars[1].is_empty() ? (String)get_input_port_default_value(1) : p_input_vars[1]) + ") : vec3(0.0);\n";
+			code += "		" + p_output_vars[0] + " = length(VELOCITY) > 0.0 ? " + "normalize(VELOCITY) * " + (p_input_vars[0].is_empty() ? "vec3" + (String)get_input_port_default_value(0) : p_input_vars[0]) + " * mix(1.0, __rand_from_seed(__seed), " + (p_input_vars[1].is_empty() ? (String)get_input_port_default_value(1) : p_input_vars[1]) + ") : vec3(0.0);\n";
 			break;
 		case MODE_RADIAL:
-			code += "	" + p_output_vars[0] + " = length(__diff) > 0.0 ? __ndiff * " + (p_input_vars[0].is_empty() ? "vec3" + (String)get_input_port_default_value(0) : p_input_vars[0]) + " * mix(1.0, __rand_from_seed(__seed), " + (p_input_vars[1].is_empty() ? (String)get_input_port_default_value(1) : p_input_vars[1]) + ") : vec3(0.0);\n";
+			code += "		vec3 __diff = TRANSFORM[3].xyz - EMISSION_TRANSFORM[3].xyz;\n";
+			code += "		vec3 __ndiff = normalize(__diff);\n\n";
+			code += "		" + p_output_vars[0] + " = length(__diff) > 0.0 ? __ndiff * " + (p_input_vars[0].is_empty() ? "vec3" + (String)get_input_port_default_value(0) : p_input_vars[0]) + " * mix(1.0, __rand_from_seed(__seed), " + (p_input_vars[1].is_empty() ? (String)get_input_port_default_value(1) : p_input_vars[1]) + ") : vec3(0.0);\n";
 			break;
 		case MODE_TANGENTIAL:
-			code += "	__vec3_buff1 = cross(__ndiff, normalize(" + (p_input_vars[2].is_empty() ? "vec3" + (String)get_input_port_default_value(2) : p_input_vars[2]) + "));\n";
-			code += "	" + p_output_vars[0] + " = length(__vec3_buff1) > 0.0 ? normalize(__vec3_buff1) * (" + (p_input_vars[0].is_empty() ? "vec3" + (String)get_input_port_default_value(0) : p_input_vars[0]) + " * mix(1.0, __rand_from_seed(__seed), " + (p_input_vars[1].is_empty() ? (String)get_input_port_default_value(1) : p_input_vars[1]) + ")) : vec3(0.0);\n";
+			code += "		vec3 __diff = TRANSFORM[3].xyz - EMISSION_TRANSFORM[3].xyz;\n";
+			code += "		vec3 __ndiff = normalize(__diff);\n\n";
+			code += "		vec3 __vec3_buff1 = cross(__ndiff, normalize(" + (p_input_vars[2].is_empty() ? "vec3" + (String)get_input_port_default_value(2) : p_input_vars[2]) + "));\n";
+			code += "		" + p_output_vars[0] + " = length(__vec3_buff1) > 0.0 ? normalize(__vec3_buff1) * (" + (p_input_vars[0].is_empty() ? "vec3" + (String)get_input_port_default_value(0) : p_input_vars[0]) + " * mix(1.0, __rand_from_seed(__seed), " + (p_input_vars[1].is_empty() ? (String)get_input_port_default_value(1) : p_input_vars[1]) + ")) : vec3(0.0);\n";
 			break;
 		default:
 			break;
 	}
-
+	code += "	}\n";
 	return code;
 }
 
@@ -1125,6 +1166,8 @@ VisualShaderNodeParticleAccelerator::VisualShaderNodeParticleAccelerator() {
 	set_input_port_default_value(0, Vector3(1, 1, 1));
 	set_input_port_default_value(1, 0.0);
 	set_input_port_default_value(2, Vector3(0, -9.8, 0));
+
+	simple_decl = false;
 }
 
 // VisualShaderNodeParticleOutput

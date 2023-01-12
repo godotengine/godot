@@ -1,2 +1,2 @@
 GDTEST_ANALYZER_ERROR
-Cannot assign a value of type "MyOtherEnum (enum)" to a target of type "MyEnum (enum)".
+Value of type "enum_class_var_assign_with_wrong_enum_type.gd::MyOtherEnum" cannot be assigned to a variable of type "enum_class_var_assign_with_wrong_enum_type.gd::MyEnum".

@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  project_settings.cpp                                                 */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  project_settings.cpp                                                  */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "project_settings.h"
 
@@ -82,7 +82,7 @@ String ProjectSettings::get_imported_files_path() const {
 // Returns the features that a project must have when opened with this build of Godot.
 // This is used by the project manager to provide the initial_settings for config/features.
 const PackedStringArray ProjectSettings::get_required_features() {
-	PackedStringArray features = PackedStringArray();
+	PackedStringArray features;
 	features.append(VERSION_BRANCH);
 #ifdef REAL_T_IS_DOUBLE
 	features.append("Double Precision");
@@ -115,7 +115,7 @@ const PackedStringArray ProjectSettings::_get_supported_features() {
 
 // Returns the features that this project needs but this build of Godot lacks.
 const PackedStringArray ProjectSettings::get_unsupported_features(const PackedStringArray &p_project_features) {
-	PackedStringArray unsupported_features = PackedStringArray();
+	PackedStringArray unsupported_features;
 	PackedStringArray supported_features = singleton->_get_supported_features();
 	for (int i = 0; i < p_project_features.size(); i++) {
 		if (!supported_features.has(p_project_features[i])) {
@@ -619,7 +619,7 @@ Error ProjectSettings::_setup(const String &p_path, const String &p_main_pack, b
 Error ProjectSettings::setup(const String &p_path, const String &p_main_pack, bool p_upwards, bool p_ignore_override) {
 	Error err = _setup(p_path, p_main_pack, p_upwards, p_ignore_override);
 	if (err == OK) {
-		String custom_settings = GLOBAL_DEF("application/config/project_settings_override", "");
+		String custom_settings = GLOBAL_GET("application/config/project_settings_override");
 		if (!custom_settings.is_empty()) {
 			_load_settings_text(custom_settings);
 		}
@@ -1048,6 +1048,12 @@ Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default, bool p_restar
 	return ret;
 }
 
+Variant _GLOBAL_DEF(const PropertyInfo &p_info, const Variant &p_default, bool p_restart_if_changed, bool p_ignore_value_in_docs, bool p_basic, bool p_internal) {
+	Variant ret = _GLOBAL_DEF(p_info.name, p_default, p_restart_if_changed, p_ignore_value_in_docs, p_basic, p_internal);
+	ProjectSettings::get_singleton()->set_custom_property_info(p_info);
+	return ret;
+}
+
 Vector<String> ProjectSettings::get_optimizer_presets() const {
 	List<PropertyInfo> pi;
 	ProjectSettings::get_singleton()->get_property_list(&pi);
@@ -1082,13 +1088,13 @@ void ProjectSettings::_add_property_info_bind(const Dictionary &p_info) {
 		pinfo.hint_string = p_info["hint_string"];
 	}
 
-	set_custom_property_info(pinfo.name, pinfo);
+	set_custom_property_info(pinfo);
 }
 
-void ProjectSettings::set_custom_property_info(const String &p_prop, const PropertyInfo &p_info) {
-	ERR_FAIL_COND(!props.has(p_prop));
-	custom_prop_info[p_prop] = p_info;
-	custom_prop_info[p_prop].name = p_prop;
+void ProjectSettings::set_custom_property_info(const PropertyInfo &p_info) {
+	const String &prop_name = p_info.name;
+	ERR_FAIL_COND(!props.has(prop_name));
+	custom_prop_info[prop_name] = p_info;
 }
 
 const HashMap<StringName, PropertyInfo> &ProjectSettings::get_custom_property_info() const {
@@ -1124,8 +1130,12 @@ void ProjectSettings::set_setting(const String &p_setting, const Variant &p_valu
 	set(p_setting, p_value);
 }
 
-Variant ProjectSettings::get_setting(const String &p_setting) const {
-	return get(p_setting);
+Variant ProjectSettings::get_setting(const String &p_setting, const Variant &p_default_value) const {
+	if (has_setting(p_setting)) {
+		return get(p_setting);
+	} else {
+		return p_default_value;
+	}
 }
 
 bool ProjectSettings::has_custom_feature(const String &p_feature) const {
@@ -1158,7 +1168,7 @@ ProjectSettings::AutoloadInfo ProjectSettings::get_autoload(const StringName &p_
 void ProjectSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_setting", "name"), &ProjectSettings::has_setting);
 	ClassDB::bind_method(D_METHOD("set_setting", "name", "value"), &ProjectSettings::set_setting);
-	ClassDB::bind_method(D_METHOD("get_setting", "name"), &ProjectSettings::get_setting);
+	ClassDB::bind_method(D_METHOD("get_setting", "name", "default_value"), &ProjectSettings::get_setting, DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("set_order", "name", "position"), &ProjectSettings::set_order);
 	ClassDB::bind_method(D_METHOD("get_order", "name"), &ProjectSettings::get_order);
 	ClassDB::bind_method(D_METHOD("set_initial_value", "name", "value"), &ProjectSettings::set_initial_value);
@@ -1200,6 +1210,7 @@ ProjectSettings::ProjectSettings() {
 	// Initialization of engine variables should be done in the setup() method,
 	// so that the values can be overridden from project.godot or project.binary.
 
+	CRASH_COND_MSG(singleton != nullptr, "Instantiating a new ProjectSettings singleton is not supported.");
 	singleton = this;
 
 	GLOBAL_DEF_BASIC("application/config/name", "");
@@ -1229,6 +1240,14 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF_BASIC("display/window/size/mode", 0);
 	custom_prop_info["display/window/size/mode"] = PropertyInfo(Variant::INT, "display/window/size/mode", PROPERTY_HINT_ENUM, "Windowed,Minimized,Maximized,Fullscreen,Exclusive Fullscreen");
 
+	// Keep the enum values in sync with the `DisplayServer::SCREEN_` enum.
+	GLOBAL_DEF_BASIC("display/window/size/initial_screen", -2);
+	String screen_hints = "Primary Monitor:-2"; // Note: Main Window Monitor:-1 is not used for the main window, skip it.
+	for (int i = 0; i < 64; i++) {
+		screen_hints += ",Monitor " + itos(i + 1) + ":" + itos(i);
+	}
+	custom_prop_info["display/window/size/initial_screen"] = PropertyInfo(Variant::INT, "display/window/size/initial_screen", PROPERTY_HINT_ENUM, screen_hints);
+
 	GLOBAL_DEF_BASIC("display/window/size/resizable", true);
 	GLOBAL_DEF_BASIC("display/window/size/borderless", false);
 	GLOBAL_DEF("display/window/size/always_on_top", false);
@@ -1246,12 +1265,12 @@ ProjectSettings::ProjectSettings() {
 
 	GLOBAL_DEF_BASIC("audio/buses/default_bus_layout", "res://default_bus_layout.tres");
 	custom_prop_info["audio/buses/default_bus_layout"] = PropertyInfo(Variant::STRING, "audio/buses/default_bus_layout", PROPERTY_HINT_FILE, "*.tres");
-	GLOBAL_DEF_RST("audio/general/2d_panning_strength", 1.0f);
-	custom_prop_info["audio/general/2d_panning_strength"] = PropertyInfo(Variant::FLOAT, "audio/general/2d_panning_strength", PROPERTY_HINT_RANGE, "0,4,0.01");
-	GLOBAL_DEF_RST("audio/general/3d_panning_strength", 1.0f);
-	custom_prop_info["audio/general/3d_panning_strength"] = PropertyInfo(Variant::FLOAT, "audio/general/3d_panning_strength", PROPERTY_HINT_RANGE, "0,4,0.01");
+	GLOBAL_DEF_RST("audio/general/2d_panning_strength", 0.5f);
+	custom_prop_info["audio/general/2d_panning_strength"] = PropertyInfo(Variant::FLOAT, "audio/general/2d_panning_strength", PROPERTY_HINT_RANGE, "0,2,0.01");
+	GLOBAL_DEF_RST("audio/general/3d_panning_strength", 0.5f);
+	custom_prop_info["audio/general/3d_panning_strength"] = PropertyInfo(Variant::FLOAT, "audio/general/3d_panning_strength", PROPERTY_HINT_RANGE, "0,2,0.01");
 
-	PackedStringArray extensions = PackedStringArray();
+	PackedStringArray extensions;
 	extensions.push_back("gd");
 	if (Engine::get_singleton()->has_singleton("GodotSharp")) {
 		extensions.push_back("cs");
@@ -1291,6 +1310,21 @@ ProjectSettings::ProjectSettings() {
 
 	GLOBAL_DEF("compression/formats/gzip/compression_level", Compression::gzip_level);
 	custom_prop_info["compression/formats/gzip/compression_level"] = PropertyInfo(Variant::INT, "compression/formats/gzip/compression_level", PROPERTY_HINT_RANGE, "-1,9,1");
+
+	GLOBAL_DEF("debug/settings/crash_handler/message",
+			String("Please include this when reporting the bug to the project developer."));
+	GLOBAL_DEF("debug/settings/crash_handler/message.editor",
+			String("Please include this when reporting the bug on: https://github.com/godotengine/godot/issues"));
+	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/occlusion_culling/bvh_build_quality", PROPERTY_HINT_ENUM, "Low,Medium,High"), 2);
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "memory/limits/multithreaded_server/rid_pool_prealloc", PROPERTY_HINT_RANGE, "0,500,1"), 60); // No negative and limit to 500 due to crashes.
+	GLOBAL_DEF_RST("internationalization/rendering/force_right_to_left_layout_direction", false);
+
+	GLOBAL_DEF(PropertyInfo(Variant::INT, "gui/timers/incremental_search_max_interval_msec", PROPERTY_HINT_RANGE, "0,10000,1,or_greater"), 2000);
+
+	GLOBAL_DEF("rendering/rendering_device/staging_buffer/block_size_kb", 256);
+	GLOBAL_DEF("rendering/rendering_device/staging_buffer/max_size_mb", 128);
+	GLOBAL_DEF("rendering/rendering_device/staging_buffer/texture_upload_region_size_px", 64);
+	GLOBAL_DEF("rendering/rendering_device/vulkan/max_descriptors_per_pool", 64);
 
 	// These properties will not show up in the dialog nor in the documentation. If you want to exclude whole groups, see _get_property_list() method.
 	GLOBAL_DEF_INTERNAL("application/config/features", PackedStringArray());

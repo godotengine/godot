@@ -1,37 +1,38 @@
-/*************************************************************************/
-/*  animation_bezier_editor.cpp                                          */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  animation_bezier_editor.cpp                                           */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "animation_bezier_editor.h"
 
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
 #include "scene/gui/view_panner.h"
 #include "scene/resources/text_line.h"
@@ -574,7 +575,7 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 							ep.point_rect.size = bezier_icon->get_size();
 							if (selection.has(IntPair(i, j))) {
 								draw_texture(selected_icon, ep.point_rect.position);
-								draw_string(font, ep.point_rect.position + Vector2(8, -font->get_height(font_size) - 8), TTR("Time:") + " " + TS->format_number(rtos(Math::snapped(offset, 0.001))), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, accent);
+								draw_string(font, ep.point_rect.position + Vector2(8, -font->get_height(font_size) - 8), TTR("Time:") + " " + TS->format_number(rtos(Math::snapped(offset, 0.0001))), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, accent);
 								draw_string(font, ep.point_rect.position + Vector2(8, -8), TTR("Value:") + " " + TS->format_number(rtos(Math::snapped(value, 0.001))), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size, accent);
 							} else {
 								Color track_color = Color(1, 1, 1, 1);
@@ -653,10 +654,6 @@ void AnimationBezierTrackEdit::set_animation_and_track(const Ref<Animation> &p_a
 
 Size2 AnimationBezierTrackEdit::get_minimum_size() const {
 	return Vector2(1, 1);
-}
-
-void AnimationBezierTrackEdit::set_undo_redo(Ref<EditorUndoRedoManager> p_undo_redo) {
-	undo_redo = p_undo_redo;
 }
 
 void AnimationBezierTrackEdit::set_timeline(AnimationTimelineEdit *p_timeline) {
@@ -791,6 +788,7 @@ void AnimationBezierTrackEdit::_clear_selection() {
 }
 
 void AnimationBezierTrackEdit::_change_selected_keys_handle_mode(Animation::HandleMode p_mode, bool p_auto) {
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("Update Selected Key Handles"));
 	for (SelectionSet::Element *E = selection.back(); E; E = E->prev()) {
 		const IntPair track_key_pair = E->get();
@@ -814,7 +812,7 @@ void AnimationBezierTrackEdit::_select_at_anim(const Ref<Animation> &p_anim, int
 		return;
 	}
 
-	int idx = animation->track_find_key(p_track, p_pos, true);
+	int idx = animation->track_find_key(p_track, p_pos, Animation::FIND_MODE_APPROX);
 	ERR_FAIL_COND(idx < 0);
 
 	selection.insert(IntPair(p_track, idx));
@@ -903,11 +901,17 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			}
 			float zoom_value = timeline->get_zoom()->get_max() - zv;
 
-			timeline->get_zoom()->set_value(zoom_value);
-			timeline->call_deferred("set_value", minimum_time);
+			if (Math::is_finite(minimum_time) && Math::is_finite(maximum_time) && maximum_time - minimum_time > CMP_EPSILON) {
+				timeline->get_zoom()->set_value(zoom_value);
+				timeline->call_deferred("set_value", minimum_time);
+			}
 
-			v_scroll = (maximum_value + minimum_value) / 2.0;
-			v_zoom = (maximum_value - minimum_value) / ((get_size().height - timeline->get_size().height) * 0.9);
+			if (Math::is_finite(minimum_value) && Math::is_finite(maximum_value)) {
+				v_scroll = (maximum_value + minimum_value) / 2.0;
+				if (maximum_value - minimum_value > CMP_EPSILON) {
+					v_zoom = (maximum_value - minimum_value) / ((get_size().height - timeline->get_size().height) * 0.9);
+				}
+			}
 
 			queue_redraw();
 			accept_event();
@@ -938,9 +942,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				Vector2 popup_pos = get_screen_position() + mb->get_position();
 
 				menu->clear();
-				if (!locked_tracks.has(selected_track) || locked_tracks.has(selected_track)) {
-					menu->add_icon_item(bezier_icon, TTR("Insert Key Here"), MENU_KEY_INSERT);
-				}
+				menu->add_icon_item(bezier_icon, TTR("Insert Key Here"), MENU_KEY_INSERT);
 				if (selection.size()) {
 					menu->add_separator();
 					menu->add_icon_item(get_theme_icon(SNAME("Duplicate"), SNAME("EditorIcons")), TTR("Duplicate Selected Key(s)"), MENU_KEY_DUPLICATE);
@@ -983,6 +985,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				if (I.value.has_point(mb->get_position())) {
 					if (I.key == REMOVE_ICON) {
 						if (!read_only) {
+							Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 							undo_redo->create_action("Remove Bezier Track");
 
 							undo_redo->add_do_method(this, "_update_locked_tracks_after", track);
@@ -1165,17 +1168,18 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			new_point[4] = 0;
 
 			real_t time = ((mb->get_position().x - limit) / timeline->get_zoom_scale()) + timeline->get_value();
-			while (animation->track_find_key(selected_track, time, true) != -1) {
-				time += 0.001;
+			while (animation->track_find_key(selected_track, time, Animation::FIND_MODE_APPROX) != -1) {
+				time += 0.0001;
 			}
 
+			Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 			undo_redo->create_action(TTR("Add Bezier Point"));
 			undo_redo->add_do_method(animation.ptr(), "bezier_track_insert_key", selected_track, time, new_point);
 			undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_time", selected_track, time);
 			undo_redo->commit_action();
 
 			//then attempt to move
-			int index = animation->track_find_key(selected_track, time, true);
+			int index = animation->track_find_key(selected_track, time, Animation::FIND_MODE_APPROX);
 			ERR_FAIL_COND(index == -1);
 			_clear_selection();
 			selection.insert(IntPair(selected_track, index));
@@ -1266,6 +1270,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 			if (moving_selection) {
 				//combit it
 
+				Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 				undo_redo->create_action(TTR("Move Bezier Points"));
 
 				List<AnimMoveRestore> to_restore;
@@ -1278,7 +1283,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 				for (SelectionSet::Element *E = selection.back(); E; E = E->prev()) {
 					real_t newtime = editor->snap_time(animation->track_get_key_time(E->get().first, E->get().second) + moving_selection_offset.x);
 
-					int idx = animation->track_find_key(E->get().first, newtime, true);
+					int idx = animation->track_find_key(E->get().first, newtime, Animation::FIND_MODE_APPROX);
 					if (idx == -1) {
 						continue;
 					}
@@ -1466,6 +1471,7 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 
 	if ((moving_handle == -1 || moving_handle == 1) && mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 		if (!read_only) {
+			Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 			undo_redo->create_action(TTR("Move Bezier Points"));
 			if (moving_handle == -1) {
 				real_t ratio = timeline->get_zoom_scale() * v_zoom;
@@ -1533,10 +1539,11 @@ void AnimationBezierTrackEdit::_menu_selected(int p_index) {
 
 				real_t time = ((menu_insert_key.x - limit) / timeline->get_zoom_scale()) + timeline->get_value();
 
-				while (animation->track_find_key(selected_track, time, true) != -1) {
+				while (animation->track_find_key(selected_track, time, Animation::FIND_MODE_APPROX) != -1) {
 					time += 0.001;
 				}
 
+				Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 				undo_redo->create_action(TTR("Add Bezier Point"));
 				undo_redo->add_do_method(animation.ptr(), "track_insert_key", selected_track, time, new_point);
 				undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_time", selected_track, time);
@@ -1584,14 +1591,15 @@ void AnimationBezierTrackEdit::duplicate_selection() {
 		}
 	}
 
-	undo_redo->create_action(TTR("Anim Duplicate Keys"));
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	undo_redo->create_action(TTR("Animation Duplicate Keys"));
 
 	List<Pair<int, real_t>> new_selection_values;
 
 	for (SelectionSet::Element *E = selection.back(); E; E = E->prev()) {
 		real_t t = animation->track_get_key_time(E->get().first, E->get().second);
 		real_t dst_time = t + (timeline->get_play_position() - top_time);
-		int existing_idx = animation->track_find_key(E->get().first, dst_time, true);
+		int existing_idx = animation->track_find_key(E->get().first, dst_time, Animation::FIND_MODE_APPROX);
 
 		undo_redo->add_do_method(animation.ptr(), "track_insert_key", E->get().first, dst_time, animation->track_get_key_value(E->get().first, E->get().second), animation->track_get_key_transition(E->get().first, E->get().second));
 		undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_time", E->get().first, dst_time);
@@ -1615,7 +1623,7 @@ void AnimationBezierTrackEdit::duplicate_selection() {
 		int track = E.first;
 		real_t time = E.second;
 
-		int existing_idx = animation->track_find_key(track, time, true);
+		int existing_idx = animation->track_find_key(track, time, Animation::FIND_MODE_APPROX);
 
 		if (existing_idx == -1) {
 			continue;
@@ -1629,7 +1637,8 @@ void AnimationBezierTrackEdit::duplicate_selection() {
 
 void AnimationBezierTrackEdit::delete_selection() {
 	if (selection.size()) {
-		undo_redo->create_action(TTR("Anim Delete Keys"));
+		Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+		undo_redo->create_action(TTR("Animation Delete Keys"));
 
 		for (SelectionSet::Element *E = selection.back(); E; E = E->prev()) {
 			undo_redo->add_do_method(animation.ptr(), "track_remove_key", E->get().first, E->get().second);

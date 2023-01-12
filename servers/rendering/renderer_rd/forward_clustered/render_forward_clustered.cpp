@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  render_forward_clustered.cpp                                         */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  render_forward_clustered.cpp                                          */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "render_forward_clustered.h"
 #include "core/config/project_settings.h"
@@ -348,6 +348,7 @@ void RenderForwardClustered::_render_list_template(RenderingDevice::DrawListID p
 #endif
 				material_uniform_set = surf->material_uniform_set;
 				shader = surf->shader;
+				surf->material->set_as_used();
 #ifdef DEBUG_ENABLED
 			}
 #endif
@@ -830,8 +831,18 @@ void RenderForwardClustered::_fill_render_list(RenderListType p_render_list, con
 	for (int i = 0; i < (int)p_render_data->instances->size(); i++) {
 		GeometryInstanceForwardClustered *inst = static_cast<GeometryInstanceForwardClustered *>((*p_render_data->instances)[i]);
 
-		Vector3 support_min = inst->transformed_aabb.get_support(-near_plane.normal);
-		inst->depth = near_plane.distance_to(support_min);
+		Vector3 center = inst->transform.origin;
+		if (p_render_data->scene_data->cam_orthogonal) {
+			if (inst->use_aabb_center) {
+				center = inst->transformed_aabb.get_support(-near_plane.normal);
+			}
+			inst->depth = near_plane.distance_to(center) - inst->sorting_offset;
+		} else {
+			if (inst->use_aabb_center) {
+				center = inst->transformed_aabb.position + (inst->transformed_aabb.size * 0.5);
+			}
+			inst->depth = p_render_data->scene_data->cam_transform.origin.distance_to(center) - inst->sorting_offset;
+		}
 		uint32_t depth_layer = CLAMP(int(inst->depth * 16 / z_max), 0, 15);
 
 		uint32_t flags = inst->base_flags; //fill flags if appropriate
@@ -1151,6 +1162,7 @@ void RenderForwardClustered::_update_volumetric_fog(Ref<RenderSceneBuffersRD> p_
 	ERR_FAIL_COND(p_render_buffers.is_null());
 
 	Ref<RenderBufferDataForwardClustered> rb_data = p_render_buffers->get_custom_data(RB_SCOPE_FORWARD_CLUSTERED);
+	ERR_FAIL_COND(rb_data.is_null());
 
 	ERR_FAIL_COND(!p_render_buffers->has_custom_data(RB_SCOPE_GI));
 	Ref<RendererRD::GI::RenderBuffersGI> rbgi = p_render_buffers->get_custom_data(RB_SCOPE_GI);
@@ -1321,7 +1333,9 @@ void RenderForwardClustered::_pre_opaque_render(RenderDataRD *p_render_data, boo
 
 	Ref<RenderSceneBuffersRD> rb = p_render_data->render_buffers;
 	Ref<RenderBufferDataForwardClustered> rb_data;
-	if (rb.is_valid()) {
+	if (rb.is_valid() && rb->has_custom_data(RB_SCOPE_FORWARD_CLUSTERED)) {
+		// Our forward clustered custom data buffer will only be available when we're rendering our normal view.
+		// This will not be available when rendering reflection probes.
 		rb_data = rb->get_custom_data(RB_SCOPE_FORWARD_CLUSTERED);
 	}
 
@@ -1446,7 +1460,7 @@ void RenderForwardClustered::_pre_opaque_render(RenderDataRD *p_render_data, boo
 	}
 
 	//full barrier here, we need raster, transfer and compute and it depends from the previous work
-	RD::get_singleton()->barrier(RD::BARRIER_MASK_ALL, RD::BARRIER_MASK_ALL);
+	RD::get_singleton()->barrier(RD::BARRIER_MASK_ALL_BARRIERS, RD::BARRIER_MASK_ALL_BARRIERS);
 
 	if (current_cluster_builder) {
 		current_cluster_builder->begin(p_render_data->scene_data->cam_transform, p_render_data->scene_data->cam_projection, !p_render_data->reflection_probe.is_valid());
@@ -1474,7 +1488,7 @@ void RenderForwardClustered::_pre_opaque_render(RenderDataRD *p_render_data, boo
 		current_cluster_builder->bake_cluster();
 	}
 
-	if (rb.is_valid()) {
+	if (rb_data.is_valid()) {
 		bool directional_shadows = RendererRD::LightStorage::get_singleton()->has_directional_shadows(directional_light_count);
 		_update_volumetric_fog(rb, p_render_data->environment, p_render_data->scene_data->cam_projection, p_render_data->scene_data->cam_transform, p_render_data->scene_data->prev_cam_transform.affine_inverse(), p_render_data->shadow_atlas, directional_light_count, directional_shadows, positional_light_count, p_render_data->voxel_gi_count, *p_render_data->fog_volumes);
 	}
@@ -1540,7 +1554,11 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	Ref<RenderBufferDataForwardClustered> rb_data;
 	if (p_render_data && p_render_data->render_buffers.is_valid()) {
 		rb = p_render_data->render_buffers;
-		rb_data = rb->get_custom_data(RB_SCOPE_FORWARD_CLUSTERED);
+		if (rb->has_custom_data(RB_SCOPE_FORWARD_CLUSTERED)) {
+			// Our forward clustered custom data buffer will only be available when we're rendering our normal view.
+			// This will not be available when rendering reflection probes.
+			rb_data = rb->get_custom_data(RB_SCOPE_FORWARD_CLUSTERED);
+		}
 	}
 	static const int texture_multisamples[RS::VIEWPORT_MSAA_MAX] = { 1, 2, 4, 8 };
 
@@ -1559,32 +1577,32 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	}
 
 	// obtain cluster builder
-	if (rb_data.is_valid()) {
-		current_cluster_builder = rb_data->cluster_builder;
-	} else if (light_storage->owns_reflection_probe_instance(p_render_data->reflection_probe)) {
+	if (light_storage->owns_reflection_probe_instance(p_render_data->reflection_probe)) {
 		current_cluster_builder = light_storage->reflection_probe_instance_get_cluster_builder(p_render_data->reflection_probe, &cluster_builder_shared);
 
 		if (p_render_data->camera_attributes.is_valid()) {
 			light_storage->reflection_probe_set_baked_exposure(light_storage->reflection_probe_instance_get_probe(p_render_data->reflection_probe), RSG::camera_attributes->camera_attributes_get_exposure_normalization_factor(p_render_data->camera_attributes));
 		}
+	} else if (rb_data.is_valid()) {
+		current_cluster_builder = rb_data->cluster_builder;
+
+		p_render_data->voxel_gi_count = 0;
+
+		if (rb.is_valid()) {
+			if (rb->has_custom_data(RB_SCOPE_SDFGI)) {
+				Ref<RendererRD::GI::SDFGI> sdfgi = rb->get_custom_data(RB_SCOPE_SDFGI);
+				if (sdfgi.is_valid()) {
+					sdfgi->update_cascades();
+					sdfgi->pre_process_gi(p_render_data->scene_data->cam_transform, p_render_data);
+					sdfgi->update_light();
+				}
+			}
+
+			gi.setup_voxel_gi_instances(p_render_data, p_render_data->render_buffers, p_render_data->scene_data->cam_transform, *p_render_data->voxel_gi_instances, p_render_data->voxel_gi_count);
+		}
 	} else {
 		ERR_PRINT("No render buffer nor reflection atlas, bug"); //should never happen, will crash
 		current_cluster_builder = nullptr;
-	}
-
-	p_render_data->voxel_gi_count = 0;
-
-	if (rb.is_valid()) {
-		if (rb->has_custom_data(RB_SCOPE_SDFGI)) {
-			Ref<RendererRD::GI::SDFGI> sdfgi = rb->get_custom_data(RB_SCOPE_SDFGI);
-			if (sdfgi.is_valid()) {
-				sdfgi->update_cascades();
-				sdfgi->pre_process_gi(p_render_data->scene_data->cam_transform, p_render_data);
-				sdfgi->update_light();
-			}
-		}
-
-		gi.setup_voxel_gi_instances(p_render_data, p_render_data->render_buffers, p_render_data->scene_data->cam_transform, *p_render_data->voxel_gi_instances, p_render_data->voxel_gi_count);
 	}
 
 	if (current_cluster_builder != nullptr) {
@@ -1622,62 +1640,10 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	bool using_ssr = false;
 	bool using_sdfgi = false;
 	bool using_voxelgi = false;
-	bool reverse_cull = false;
+	bool reverse_cull = p_render_data->scene_data->cam_transform.basis.determinant() < 0;
 	bool using_ssil = p_render_data->environment.is_valid() && environment_get_ssil_enabled(p_render_data->environment);
 
-	if (rb.is_valid()) {
-		screen_size = rb->get_internal_size();
-
-		if (rb->get_use_taa() || get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_MOTION_VECTORS) {
-			color_pass_flags |= COLOR_PASS_FLAG_MOTION_VECTORS;
-		}
-
-		if (p_render_data->voxel_gi_instances->size() > 0) {
-			using_voxelgi = true;
-		}
-
-		if (p_render_data->environment.is_null() && using_voxelgi) {
-			depth_pass_mode = PASS_MODE_DEPTH_NORMAL_ROUGHNESS_VOXEL_GI;
-		} else if (p_render_data->environment.is_valid() && (environment_get_ssr_enabled(p_render_data->environment) || environment_get_sdfgi_enabled(p_render_data->environment) || using_voxelgi)) {
-			if (environment_get_sdfgi_enabled(p_render_data->environment)) {
-				depth_pass_mode = using_voxelgi ? PASS_MODE_DEPTH_NORMAL_ROUGHNESS_VOXEL_GI : PASS_MODE_DEPTH_NORMAL_ROUGHNESS; // also voxelgi
-				using_sdfgi = true;
-			} else {
-				depth_pass_mode = using_voxelgi ? PASS_MODE_DEPTH_NORMAL_ROUGHNESS_VOXEL_GI : PASS_MODE_DEPTH_NORMAL_ROUGHNESS;
-			}
-			if (environment_get_ssr_enabled(p_render_data->environment)) {
-				using_separate_specular = true;
-				using_ssr = true;
-				color_pass_flags |= COLOR_PASS_FLAG_SEPARATE_SPECULAR;
-			}
-		} else if (p_render_data->environment.is_valid() && (environment_get_ssao_enabled(p_render_data->environment) || using_ssil || get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_NORMAL_BUFFER)) {
-			depth_pass_mode = PASS_MODE_DEPTH_NORMAL_ROUGHNESS;
-		}
-
-		switch (depth_pass_mode) {
-			case PASS_MODE_DEPTH: {
-				depth_framebuffer = rb_data->get_depth_fb();
-			} break;
-			case PASS_MODE_DEPTH_NORMAL_ROUGHNESS: {
-				depth_framebuffer = rb_data->get_depth_fb(RenderBufferDataForwardClustered::DEPTH_FB_ROUGHNESS);
-				depth_pass_clear.push_back(Color(0.5, 0.5, 0.5, 0));
-			} break;
-			case PASS_MODE_DEPTH_NORMAL_ROUGHNESS_VOXEL_GI: {
-				depth_framebuffer = rb_data->get_depth_fb(RenderBufferDataForwardClustered::DEPTH_FB_ROUGHNESS_VOXELGI);
-				depth_pass_clear.push_back(Color(0.5, 0.5, 0.5, 0));
-				depth_pass_clear.push_back(Color(0, 0, 0, 0));
-			} break;
-			default: {
-			};
-		}
-
-		if (p_render_data->scene_data->view_count > 1) {
-			color_pass_flags |= COLOR_PASS_FLAG_MULTIVIEW;
-		}
-
-		color_framebuffer = rb_data->get_color_pass_fb(color_pass_flags);
-		color_only_framebuffer = rb_data->get_color_only_fb();
-	} else if (p_render_data->reflection_probe.is_valid()) {
+	if (p_render_data->reflection_probe.is_valid()) {
 		uint32_t resolution = light_storage->reflection_probe_instance_get_resolution(p_render_data->reflection_probe);
 		screen_size.x = resolution;
 		screen_size.y = resolution;
@@ -1691,6 +1657,34 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 		}
 
 		reverse_cull = true; // for some reason our views are inverted
+	} else if (rb.is_valid()) {
+		screen_size = rb->get_internal_size();
+
+		if (rb->get_use_taa() || get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_MOTION_VECTORS) {
+			color_pass_flags |= COLOR_PASS_FLAG_MOTION_VECTORS;
+		}
+
+		if (p_render_data->voxel_gi_instances->size() > 0) {
+			using_voxelgi = true;
+		}
+
+		if (p_render_data->environment.is_valid()) {
+			if (environment_get_sdfgi_enabled(p_render_data->environment)) {
+				using_sdfgi = true;
+			}
+			if (environment_get_ssr_enabled(p_render_data->environment)) {
+				using_separate_specular = true;
+				using_ssr = true;
+				color_pass_flags |= COLOR_PASS_FLAG_SEPARATE_SPECULAR;
+			}
+		}
+
+		if (p_render_data->scene_data->view_count > 1) {
+			color_pass_flags |= COLOR_PASS_FLAG_MULTIVIEW;
+		}
+
+		color_framebuffer = rb_data->get_color_pass_fb(color_pass_flags);
+		color_only_framebuffer = rb_data->get_color_only_fb();
 	} else {
 		ERR_FAIL(); //bug?
 	}
@@ -1712,6 +1706,38 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	_fill_instance_data(RENDER_LIST_ALPHA);
 
 	RD::get_singleton()->draw_command_end_label();
+
+	if (rb.is_valid()) {
+		if (using_voxelgi) {
+			depth_pass_mode = PASS_MODE_DEPTH_NORMAL_ROUGHNESS_VOXEL_GI;
+		} else if (p_render_data->environment.is_valid()) {
+			if (environment_get_ssr_enabled(p_render_data->environment) ||
+					environment_get_sdfgi_enabled(p_render_data->environment) ||
+					environment_get_ssao_enabled(p_render_data->environment) ||
+					using_ssil ||
+					get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_NORMAL_BUFFER ||
+					scene_state.used_normal_texture) {
+				depth_pass_mode = PASS_MODE_DEPTH_NORMAL_ROUGHNESS;
+			}
+		}
+
+		switch (depth_pass_mode) {
+			case PASS_MODE_DEPTH: {
+				depth_framebuffer = rb_data->get_depth_fb();
+			} break;
+			case PASS_MODE_DEPTH_NORMAL_ROUGHNESS: {
+				depth_framebuffer = rb_data->get_depth_fb(RenderBufferDataForwardClustered::DEPTH_FB_ROUGHNESS);
+				depth_pass_clear.push_back(Color(0.5, 0.5, 0.5, 0));
+			} break;
+			case PASS_MODE_DEPTH_NORMAL_ROUGHNESS_VOXEL_GI: {
+				depth_framebuffer = rb_data->get_depth_fb(RenderBufferDataForwardClustered::DEPTH_FB_ROUGHNESS_VOXELGI);
+				depth_pass_clear.push_back(Color(0.5, 0.5, 0.5, 0));
+				depth_pass_clear.push_back(Color(0, 0, 0, 0));
+			} break;
+			default: {
+			};
+		}
+	}
 
 	bool using_sss = rb_data.is_valid() && scene_state.used_sss && ss_effects->sss_get_quality() != RS::SUB_SURFACE_SCATTERING_QUALITY_DISABLED;
 
@@ -1765,6 +1791,10 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 				draw_sky = true;
 			} break;
 			case RS::ENV_BG_CANVAS: {
+				if (rb.is_valid()) {
+					RID texture = RendererRD::TextureStorage::get_singleton()->render_target_get_rd_texture(rb->get_render_target());
+					copy_effects->copy_to_fb_rect(texture, color_only_framebuffer, Rect2i(), false, false, false, false, RID(), false, false, true);
+				}
 				keep_color = true;
 			} break;
 			case RS::ENV_BG_KEEP: {
@@ -1775,29 +1805,40 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 			default: {
 			}
 		}
+
 		// setup sky if used for ambient, reflections, or background
 		if (draw_sky || draw_sky_fog_only || environment_get_reflection_source(p_render_data->environment) == RS::ENV_REFLECTION_SOURCE_SKY || environment_get_ambient_source(p_render_data->environment) == RS::ENV_AMBIENT_SOURCE_SKY) {
 			RENDER_TIMESTAMP("Setup Sky");
 			RD::get_singleton()->draw_command_begin_label("Setup Sky");
-			Projection projection = p_render_data->scene_data->cam_projection;
+
+			// Setup our sky render information for this frame/viewport
 			if (p_render_data->reflection_probe.is_valid()) {
+				Vector3 eye_offset;
 				Projection correction;
 				correction.set_depth_correction(true);
-				projection = correction * p_render_data->scene_data->cam_projection;
-			}
+				Projection projection = correction * p_render_data->scene_data->cam_projection;
 
-			sky.setup(p_render_data->environment, rb, *p_render_data->lights, p_render_data->camera_attributes, projection, p_render_data->scene_data->cam_transform, screen_size, this);
+				sky.setup_sky(p_render_data->environment, rb, *p_render_data->lights, p_render_data->camera_attributes, 1, &projection, &eye_offset, p_render_data->scene_data->cam_transform, screen_size, this);
+			} else {
+				sky.setup_sky(p_render_data->environment, rb, *p_render_data->lights, p_render_data->camera_attributes, p_render_data->scene_data->view_count, p_render_data->scene_data->view_projection, p_render_data->scene_data->view_eye_offset, p_render_data->scene_data->cam_transform, screen_size, this);
+			}
 
 			sky_energy_multiplier *= bg_energy_multiplier;
 
 			RID sky_rid = environment_get_sky(p_render_data->environment);
 			if (sky_rid.is_valid()) {
-				sky.update(p_render_data->environment, projection, p_render_data->scene_data->cam_transform, time, sky_energy_multiplier);
+				sky.update_radiance_buffers(rb, p_render_data->environment, p_render_data->scene_data->cam_transform.origin, time, sky_energy_multiplier);
 				radiance_texture = sky.sky_get_radiance_texture_rd(sky_rid);
 			} else {
 				// do not try to draw sky if invalid
 				draw_sky = false;
 			}
+
+			if (draw_sky || draw_sky_fog_only) {
+				// update sky half/quarter res buffers (if required)
+				sky.update_res_buffers(rb, p_render_data->environment, time, sky_energy_multiplier);
+			}
+
 			RD::get_singleton()->draw_command_end_label();
 		}
 	} else {
@@ -1881,7 +1922,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	RID rp_uniform_set = _setup_render_pass_uniform_set(RENDER_LIST_OPAQUE, p_render_data, radiance_texture, true);
 
 	bool can_continue_color = !scene_state.used_screen_texture && !using_ssr && !using_sss;
-	bool can_continue_depth = !scene_state.used_depth_texture && !using_ssr && !using_sss;
+	bool can_continue_depth = !(scene_state.used_depth_texture || scene_state.used_normal_texture) && !using_ssr && !using_sss;
 
 	{
 		bool will_continue_color = (can_continue_color || draw_sky || draw_sky_fog_only || debug_voxelgis || debug_sdfgi_probes);
@@ -1947,15 +1988,11 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 		RENDER_TIMESTAMP("Render Sky");
 
 		RD::get_singleton()->draw_command_begin_label("Draw Sky");
+		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(color_only_framebuffer, RD::INITIAL_ACTION_CONTINUE, can_continue_color ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CONTINUE, can_continue_depth ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ);
 
-		if (p_render_data->reflection_probe.is_valid()) {
-			Projection correction;
-			correction.set_depth_correction(true);
-			Projection projection = correction * p_render_data->scene_data->cam_projection;
-			sky.draw(p_render_data->environment, can_continue_color, can_continue_depth, color_only_framebuffer, 1, &projection, p_render_data->scene_data->cam_transform, time, sky_energy_multiplier);
-		} else {
-			sky.draw(p_render_data->environment, can_continue_color, can_continue_depth, color_only_framebuffer, p_render_data->scene_data->view_count, p_render_data->scene_data->view_projection, p_render_data->scene_data->cam_transform, time, sky_energy_multiplier);
-		}
+		sky.draw_sky(draw_list, rb, p_render_data->environment, color_only_framebuffer, time, sky_energy_multiplier);
+
+		RD::get_singleton()->draw_list_end();
 		RD::get_singleton()->draw_command_end_label();
 	}
 
@@ -2032,7 +2069,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 
 	RD::get_singleton()->draw_command_begin_label("Resolve");
 
-	if (rb.is_valid() && rb->get_msaa_3d() != RS::VIEWPORT_MSAA_DISABLED) {
+	if (rb_data.is_valid() && rb->get_msaa_3d() != RS::VIEWPORT_MSAA_DISABLED) {
 		for (uint32_t v = 0; v < rb->get_view_count(); v++) {
 			RD::get_singleton()->texture_resolve_multisample(rb_data->get_color_msaa(v), rb->get_internal_texture(v));
 			resolve_effects->resolve_depth(rb_data->get_depth_msaa(v), rb->get_depth_texture(v), rb->get_internal_size(), texture_multisamples[rb->get_msaa_3d()]);
@@ -2051,12 +2088,12 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 	}
 	RD::get_singleton()->draw_command_end_label();
 
-	if (rb.is_valid() && taa && rb->get_use_taa()) {
+	if (rb_data.is_valid() && taa && rb->get_use_taa()) {
 		RENDER_TIMESTAMP("TAA")
 		taa->process(rb, _render_buffers_get_color_format(), p_render_data->scene_data->z_near, p_render_data->scene_data->z_far);
 	}
 
-	if (rb.is_valid()) {
+	if (rb_data.is_valid()) {
 		_debug_draw_cluster(rb);
 
 		RENDER_TIMESTAMP("Tonemap");
@@ -2064,7 +2101,7 @@ void RenderForwardClustered::_render_scene(RenderDataRD *p_render_data, const Co
 		_render_buffers_post_process_and_tonemap(p_render_data);
 	}
 
-	if (rb.is_valid()) {
+	if (rb_data.is_valid()) {
 		_render_buffers_debug_draw(rb, p_render_data->shadow_atlas, p_render_data->occluder_debug_tex);
 
 		if (get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_SDFGI && rb->has_custom_data(RB_SCOPE_SDFGI)) {
@@ -2311,6 +2348,8 @@ void RenderForwardClustered::_render_shadow_append(RID p_framebuffer, const Page
 	scene_data.lod_distance_multiplier = p_lod_distance_multiplier;
 	scene_data.dual_paraboloid_side = p_use_dp_flip ? -1 : 1;
 	scene_data.opaque_prepass_threshold = 0.1f;
+	scene_data.time = time;
+	scene_data.time_step = time_step;
 
 	RenderDataRD render_data;
 	render_data.scene_data = &scene_data;
@@ -2401,6 +2440,8 @@ void RenderForwardClustered::_render_particle_collider_heightfield(RID p_fb, con
 	scene_data.z_far = p_cam_projection.get_z_far();
 	scene_data.dual_paraboloid_side = 0;
 	scene_data.opaque_prepass_threshold = 0.0;
+	scene_data.time = time;
+	scene_data.time_step = time_step;
 
 	RenderDataRD render_data;
 	render_data.scene_data = &scene_data;
@@ -2443,6 +2484,8 @@ void RenderForwardClustered::_render_material(const Transform3D &p_cam_transform
 	scene_data.material_uv2_mode = false;
 	scene_data.opaque_prepass_threshold = 0.0f;
 	scene_data.emissive_exposure_normalization = p_exposure_normalization;
+	scene_data.time = time;
+	scene_data.time_step = time_step;
 
 	RenderDataRD render_data;
 	render_data.scene_data = &scene_data;
@@ -2848,7 +2891,11 @@ RID RenderForwardClustered::_setup_render_pass_uniform_set(RenderListType p_rend
 	Ref<RenderBufferDataForwardClustered> rb_data;
 	if (p_render_data && p_render_data->render_buffers.is_valid()) {
 		rb = p_render_data->render_buffers;
-		rb_data = rb->get_custom_data(RB_SCOPE_FORWARD_CLUSTERED);
+		if (rb->has_custom_data(RB_SCOPE_FORWARD_CLUSTERED)) {
+			// Our forward clustered custom data buffer will only be available when we're rendering our normal view.
+			// This will not be available when rendering reflection probes.
+			rb_data = rb->get_custom_data(RB_SCOPE_FORWARD_CLUSTERED);
+		}
 	}
 
 	//default render buffer and scene state uniform set
@@ -3083,7 +3130,7 @@ RID RenderForwardClustered::_setup_render_pass_uniform_set(RenderListType p_rend
 		RD::Uniform u;
 		u.binding = 19;
 		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
-		RID vfog = RID();
+		RID vfog;
 		if (rb_data.is_valid() && rb->has_custom_data(RB_SCOPE_FOG)) {
 			Ref<RendererRD::Fog::VolumetricFog> fog = rb->get_custom_data(RB_SCOPE_FOG);
 			vfog = fog->fog_map;
@@ -3281,6 +3328,99 @@ void RenderForwardClustered::sub_surface_scattering_set_scale(float p_scale, flo
 
 RenderForwardClustered *RenderForwardClustered::singleton = nullptr;
 
+void RenderForwardClustered::sdfgi_update(const Ref<RenderSceneBuffers> &p_render_buffers, RID p_environment, const Vector3 &p_world_position) {
+	Ref<RenderSceneBuffersRD> rb = p_render_buffers;
+	ERR_FAIL_COND(rb.is_null());
+	Ref<RendererRD::GI::SDFGI> sdfgi;
+	if (rb->has_custom_data(RB_SCOPE_SDFGI)) {
+		sdfgi = rb->get_custom_data(RB_SCOPE_SDFGI);
+	}
+
+	bool needs_sdfgi = p_environment.is_valid() && environment_get_sdfgi_enabled(p_environment);
+
+	if (!needs_sdfgi) {
+		if (sdfgi.is_valid()) {
+			// delete it
+			sdfgi.unref();
+			rb->set_custom_data(RB_SCOPE_SDFGI, sdfgi);
+		}
+		return;
+	}
+
+	static const uint32_t history_frames_to_converge[RS::ENV_SDFGI_CONVERGE_MAX] = { 5, 10, 15, 20, 25, 30 };
+	uint32_t requested_history_size = history_frames_to_converge[gi.sdfgi_frames_to_converge];
+
+	if (sdfgi.is_valid() && (sdfgi->num_cascades != environment_get_sdfgi_cascades(p_environment) || sdfgi->min_cell_size != environment_get_sdfgi_min_cell_size(p_environment) || requested_history_size != sdfgi->history_size || sdfgi->uses_occlusion != environment_get_sdfgi_use_occlusion(p_environment) || sdfgi->y_scale_mode != environment_get_sdfgi_y_scale(p_environment))) {
+		//configuration changed, erase
+		sdfgi.unref();
+		rb->set_custom_data(RB_SCOPE_SDFGI, sdfgi);
+	}
+
+	if (sdfgi.is_null()) {
+		// re-create
+		sdfgi = gi.create_sdfgi(p_environment, p_world_position, requested_history_size);
+		rb->set_custom_data(RB_SCOPE_SDFGI, sdfgi);
+	} else {
+		//check for updates
+		sdfgi->update(p_environment, p_world_position);
+	}
+}
+
+int RenderForwardClustered::sdfgi_get_pending_region_count(const Ref<RenderSceneBuffers> &p_render_buffers) const {
+	Ref<RenderSceneBuffersRD> rb = p_render_buffers;
+	ERR_FAIL_COND_V(rb.is_null(), 0);
+
+	if (!rb->has_custom_data(RB_SCOPE_SDFGI)) {
+		return 0;
+	}
+	Ref<RendererRD::GI::SDFGI> sdfgi = rb->get_custom_data(RB_SCOPE_SDFGI);
+
+	int dirty_count = 0;
+	for (uint32_t i = 0; i < sdfgi->cascades.size(); i++) {
+		const RendererRD::GI::SDFGI::Cascade &c = sdfgi->cascades[i];
+
+		if (c.dirty_regions == RendererRD::GI::SDFGI::Cascade::DIRTY_ALL) {
+			dirty_count++;
+		} else {
+			for (int j = 0; j < 3; j++) {
+				if (c.dirty_regions[j] != 0) {
+					dirty_count++;
+				}
+			}
+		}
+	}
+
+	return dirty_count;
+}
+
+AABB RenderForwardClustered::sdfgi_get_pending_region_bounds(const Ref<RenderSceneBuffers> &p_render_buffers, int p_region) const {
+	AABB bounds;
+	Vector3i from;
+	Vector3i size;
+
+	Ref<RenderSceneBuffersRD> rb = p_render_buffers;
+	ERR_FAIL_COND_V(rb.is_null(), AABB());
+	Ref<RendererRD::GI::SDFGI> sdfgi = rb->get_custom_data(RB_SCOPE_SDFGI);
+	ERR_FAIL_COND_V(sdfgi.is_null(), AABB());
+
+	int c = sdfgi->get_pending_region_data(p_region, from, size, bounds);
+	ERR_FAIL_COND_V(c == -1, AABB());
+	return bounds;
+}
+
+uint32_t RenderForwardClustered::sdfgi_get_pending_region_cascade(const Ref<RenderSceneBuffers> &p_render_buffers, int p_region) const {
+	AABB bounds;
+	Vector3i from;
+	Vector3i size;
+
+	Ref<RenderSceneBuffersRD> rb = p_render_buffers;
+	ERR_FAIL_COND_V(rb.is_null(), -1);
+	Ref<RendererRD::GI::SDFGI> sdfgi = rb->get_custom_data(RB_SCOPE_SDFGI);
+	ERR_FAIL_COND_V(sdfgi.is_null(), -1);
+
+	return sdfgi->get_pending_region_data(p_region, from, size, bounds);
+}
+
 void RenderForwardClustered::GeometryInstanceForwardClustered::_mark_dirty() {
 	if (dirty_list_element.in_list()) {
 		return;
@@ -3304,7 +3444,7 @@ void RenderForwardClustered::_geometry_instance_add_surface_with_material(Geomet
 	RendererRD::MeshStorage *mesh_storage = RendererRD::MeshStorage::get_singleton();
 
 	bool has_read_screen_alpha = p_material->shader_data->uses_screen_texture || p_material->shader_data->uses_depth_texture || p_material->shader_data->uses_normal_texture;
-	bool has_base_alpha = (p_material->shader_data->uses_alpha && !p_material->shader_data->uses_alpha_clip) || has_read_screen_alpha;
+	bool has_base_alpha = (p_material->shader_data->uses_alpha && (!p_material->shader_data->uses_alpha_clip || p_material->shader_data->uses_alpha_antialiasing)) || has_read_screen_alpha;
 	bool has_blend_alpha = p_material->shader_data->uses_blend_alpha;
 	bool has_alpha = has_base_alpha || has_blend_alpha;
 
@@ -3333,7 +3473,7 @@ void RenderForwardClustered::_geometry_instance_add_surface_with_material(Geomet
 	if (has_alpha || has_read_screen_alpha || p_material->shader_data->depth_draw == SceneShaderForwardClustered::ShaderData::DEPTH_DRAW_DISABLED || p_material->shader_data->depth_test == SceneShaderForwardClustered::ShaderData::DEPTH_TEST_DISABLED) {
 		//material is only meant for alpha pass
 		flags |= GeometryInstanceSurfaceDataCache::FLAG_PASS_ALPHA;
-		if (p_material->shader_data->uses_depth_pre_pass && !(p_material->shader_data->depth_draw == SceneShaderForwardClustered::ShaderData::DEPTH_DRAW_DISABLED || p_material->shader_data->depth_test == SceneShaderForwardClustered::ShaderData::DEPTH_TEST_DISABLED)) {
+		if ((p_material->shader_data->uses_depth_prepass_alpha || p_material->shader_data->uses_alpha_antialiasing) && !(p_material->shader_data->depth_draw == SceneShaderForwardClustered::ShaderData::DEPTH_DRAW_DISABLED || p_material->shader_data->depth_test == SceneShaderForwardClustered::ShaderData::DEPTH_TEST_DISABLED)) {
 			flags |= GeometryInstanceSurfaceDataCache::FLAG_PASS_DEPTH;
 			flags |= GeometryInstanceSurfaceDataCache::FLAG_PASS_SHADOW;
 		}
@@ -3349,7 +3489,7 @@ void RenderForwardClustered::_geometry_instance_add_surface_with_material(Geomet
 
 	SceneShaderForwardClustered::MaterialData *material_shadow = nullptr;
 	void *surface_shadow = nullptr;
-	if (!p_material->shader_data->uses_particle_trails && !p_material->shader_data->writes_modelview_or_projection && !p_material->shader_data->uses_vertex && !p_material->shader_data->uses_position && !p_material->shader_data->uses_discard && !p_material->shader_data->uses_depth_pre_pass && !p_material->shader_data->uses_alpha_clip && p_material->shader_data->cull_mode == SceneShaderForwardClustered::ShaderData::CULL_BACK) {
+	if (!p_material->shader_data->uses_particle_trails && !p_material->shader_data->writes_modelview_or_projection && !p_material->shader_data->uses_vertex && !p_material->shader_data->uses_position && !p_material->shader_data->uses_discard && !p_material->shader_data->uses_depth_prepass_alpha && !p_material->shader_data->uses_alpha_clip && !p_material->shader_data->uses_alpha_antialiasing && p_material->shader_data->cull_mode == SceneShaderForwardClustered::ShaderData::CULL_BACK && !p_material->shader_data->uses_point_size) {
 		flags |= GeometryInstanceSurfaceDataCache::FLAG_USES_SHARED_SHADOW_MATERIAL;
 		material_shadow = static_cast<SceneShaderForwardClustered::MaterialData *>(RendererRD::MaterialStorage::get_singleton()->material_get_data(scene_shader.default_material, RendererRD::MaterialStorage::SHADER_TYPE_3D));
 
@@ -3368,6 +3508,7 @@ void RenderForwardClustered::_geometry_instance_add_surface_with_material(Geomet
 	sdcache->flags = flags;
 
 	sdcache->shader = p_material->shader_data;
+	sdcache->material = p_material;
 	sdcache->material_uniform_set = p_material->uniform_set;
 	sdcache->surface = mesh_storage->mesh_get_surface(p_mesh, p_surface);
 	sdcache->primitive = mesh_storage->mesh_surface_get_primitive(sdcache->surface);
@@ -3586,6 +3727,10 @@ void RenderForwardClustered::_geometry_instance_update(RenderGeometryInstance *p
 		}
 		ginstance->transforms_uniform_set = particles_storage->particles_get_instance_buffer_uniform_set(ginstance->data->base, scene_shader.default_shader_rd, TRANSFORMS_UNIFORM_SET);
 
+		if (particles_storage->particles_get_frame_counter(ginstance->data->base) == 0) {
+			// Particles haven't been cleared or updated, update once now to ensure they are ready to render.
+			particles_storage->update_particles();
+		}
 	} else if (ginstance->data->base_type == RS::INSTANCE_MESH) {
 		if (mesh_storage->skeleton_is_valid(ginstance->data->skeleton)) {
 			ginstance->transforms_uniform_set = mesh_storage->skeleton_get_3d_uniform_set(ginstance->data->skeleton, scene_shader.default_shader_rd, TRANSFORMS_UNIFORM_SET);

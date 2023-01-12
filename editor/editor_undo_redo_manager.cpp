@@ -1,38 +1,40 @@
-/*************************************************************************/
-/*  editor_undo_redo_manager.cpp                                         */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  editor_undo_redo_manager.cpp                                          */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "editor_undo_redo_manager.h"
 
 #include "core/io/resource.h"
 #include "core/os/os.h"
 #include "core/templates/local_vector.h"
+#include "editor/debugger/editor_debugger_inspector.h"
+#include "editor/debugger/editor_debugger_node.h"
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
 #include "scene/main/node.h"
@@ -57,6 +59,10 @@ UndoRedo *EditorUndoRedoManager::get_history_undo_redo(int p_idx) const {
 
 int EditorUndoRedoManager::get_history_id_for_object(Object *p_object) const {
 	int history_id = INVALID_HISTORY;
+
+	if (Object::cast_to<EditorDebuggerRemoteObject>(p_object)) {
+		return REMOTE_HISTORY;
+	}
 
 	if (Node *node = Object::cast_to<Node>(p_object)) {
 		Node *edited_scene = EditorNode::get_singleton()->get_edited_scene();
@@ -109,9 +115,14 @@ EditorUndoRedoManager::History &EditorUndoRedoManager::get_history_for_object(Ob
 }
 
 void EditorUndoRedoManager::create_action_for_history(const String &p_name, int p_history_id, UndoRedo::MergeMode p_mode) {
-	pending_action.action_name = p_name;
-	pending_action.timestamp = OS::get_singleton()->get_unix_time();
-	pending_action.merge_mode = p_mode;
+	if (pending_action.history_id != INVALID_HISTORY) {
+		// Nested action.
+		p_history_id = pending_action.history_id;
+	} else {
+		pending_action.action_name = p_name;
+		pending_action.timestamp = OS::get_singleton()->get_unix_time();
+		pending_action.merge_mode = p_mode;
+	}
 
 	if (p_history_id != INVALID_HISTORY) {
 		pending_action.history_id = p_history_id;
@@ -228,6 +239,12 @@ void EditorUndoRedoManager::commit_action(bool p_execute) {
 	history.undo_redo->commit_action(p_execute);
 	history.redo_stack.clear();
 
+	if (history.undo_redo->get_action_level() > 0) {
+		// Nested action.
+		is_committing = false;
+		return;
+	}
+
 	if (!history.undo_stack.is_empty()) {
 		const Action &prev_action = history.undo_stack.back()->get();
 		if (pending_action.merge_mode != UndoRedo::MERGE_DISABLE && pending_action.merge_mode == prev_action.merge_mode && pending_action.action_name == prev_action.action_name) {
@@ -253,27 +270,9 @@ bool EditorUndoRedoManager::undo() {
 		return false;
 	}
 
-	int selected_history = INVALID_HISTORY;
-	double global_timestamp = 0;
-
-	// Pick the history with greatest last action timestamp (either global or current scene).
-	{
-		History &history = get_or_create_history(GLOBAL_HISTORY);
-		if (!history.undo_stack.is_empty()) {
-			selected_history = history.id;
-			global_timestamp = history.undo_stack.back()->get().timestamp;
-		}
-	}
-
-	{
-		History &history = get_or_create_history(EditorNode::get_editor_data().get_current_edited_scene_history_id());
-		if (!history.undo_stack.is_empty() && history.undo_stack.back()->get().timestamp > global_timestamp) {
-			selected_history = history.id;
-		}
-	}
-
-	if (selected_history != INVALID_HISTORY) {
-		return undo_history(selected_history);
+	History *selected_history = _get_newest_undo();
+	if (selected_history) {
+		return undo_history(selected_history->id);
 	}
 	return false;
 }
@@ -305,6 +304,14 @@ bool EditorUndoRedoManager::redo() {
 	{
 		History &history = get_or_create_history(GLOBAL_HISTORY);
 		if (!history.redo_stack.is_empty()) {
+			selected_history = history.id;
+			global_timestamp = history.redo_stack.back()->get().timestamp;
+		}
+	}
+
+	{
+		History &history = get_or_create_history(REMOTE_HISTORY);
+		if (!history.redo_stack.is_empty() && history.redo_stack.back()->get().timestamp < global_timestamp) {
 			selected_history = history.id;
 			global_timestamp = history.redo_stack.back()->get().timestamp;
 		}
@@ -355,7 +362,7 @@ bool EditorUndoRedoManager::is_history_unsaved(int p_id) {
 
 bool EditorUndoRedoManager::has_undo() {
 	for (const KeyValue<int, History> &E : history_map) {
-		if ((E.key == GLOBAL_HISTORY || E.key == EditorNode::get_editor_data().get_current_edited_scene_history_id()) && !E.value.undo_stack.is_empty()) {
+		if ((E.key == GLOBAL_HISTORY || E.key == REMOTE_HISTORY || E.key == EditorNode::get_editor_data().get_current_edited_scene_history_id()) && !E.value.undo_stack.is_empty()) {
 			return true;
 		}
 	}
@@ -364,7 +371,7 @@ bool EditorUndoRedoManager::has_undo() {
 
 bool EditorUndoRedoManager::has_redo() {
 	for (const KeyValue<int, History> &E : history_map) {
-		if ((E.key == GLOBAL_HISTORY || E.key == EditorNode::get_editor_data().get_current_edited_scene_history_id()) && !E.value.redo_stack.is_empty()) {
+		if ((E.key == GLOBAL_HISTORY || E.key == REMOTE_HISTORY || E.key == EditorNode::get_editor_data().get_current_edited_scene_history_id()) && !E.value.redo_stack.is_empty()) {
 			return true;
 		}
 	}
@@ -373,7 +380,11 @@ bool EditorUndoRedoManager::has_redo() {
 
 void EditorUndoRedoManager::clear_history(bool p_increase_version, int p_idx) {
 	if (p_idx != INVALID_HISTORY) {
-		get_or_create_history(p_idx).undo_redo->clear_history(p_increase_version);
+		History &history = get_or_create_history(p_idx);
+		history.undo_redo->clear_history(p_increase_version);
+		history.undo_stack.clear();
+		history.redo_stack.clear();
+
 		if (!p_increase_version) {
 			set_history_as_saved(p_idx);
 		}
@@ -390,30 +401,22 @@ void EditorUndoRedoManager::clear_history(bool p_increase_version, int p_idx) {
 
 String EditorUndoRedoManager::get_current_action_name() {
 	if (has_undo()) {
-		History *selected_history = nullptr;
-		double global_timestamp = 0;
-
-		// Pick the history with greatest last action timestamp (either global or current scene).
-		{
-			History &history = get_or_create_history(GLOBAL_HISTORY);
-			if (!history.undo_stack.is_empty()) {
-				selected_history = &history;
-				global_timestamp = history.undo_stack.back()->get().timestamp;
-			}
-		}
-
-		{
-			History &history = get_or_create_history(EditorNode::get_editor_data().get_current_edited_scene_history_id());
-			if (!history.undo_stack.is_empty() && history.undo_stack.back()->get().timestamp > global_timestamp) {
-				selected_history = &history;
-			}
-		}
-
+		History *selected_history = _get_newest_undo();
 		if (selected_history) {
 			return selected_history->undo_redo->get_current_action_name();
 		}
 	}
 	return "";
+}
+
+int EditorUndoRedoManager::get_current_action_history_id() {
+	if (has_undo()) {
+		History *selected_history = _get_newest_undo();
+		if (selected_history) {
+			return selected_history->id;
+		}
+	}
+	return INVALID_HISTORY;
 }
 
 void EditorUndoRedoManager::discard_history(int p_idx, bool p_erase_from_map) {
@@ -428,6 +431,37 @@ void EditorUndoRedoManager::discard_history(int p_idx, bool p_erase_from_map) {
 	if (p_erase_from_map) {
 		history_map.erase(p_idx);
 	}
+}
+
+EditorUndoRedoManager::History *EditorUndoRedoManager::_get_newest_undo() {
+	History *selected_history = nullptr;
+	double global_timestamp = 0;
+
+	// Pick the history with greatest last action timestamp (either global or current scene).
+	{
+		History &history = get_or_create_history(GLOBAL_HISTORY);
+		if (!history.undo_stack.is_empty()) {
+			selected_history = &history;
+			global_timestamp = history.undo_stack.back()->get().timestamp;
+		}
+	}
+
+	{
+		History &history = get_or_create_history(REMOTE_HISTORY);
+		if (!history.undo_stack.is_empty() && history.undo_stack.back()->get().timestamp > global_timestamp) {
+			selected_history = &history;
+			global_timestamp = history.undo_stack.back()->get().timestamp;
+		}
+	}
+
+	{
+		History &history = get_or_create_history(EditorNode::get_editor_data().get_current_edited_scene_history_id());
+		if (!history.undo_stack.is_empty() && history.undo_stack.back()->get().timestamp > global_timestamp) {
+			selected_history = &history;
+		}
+	}
+
+	return selected_history;
 }
 
 void EditorUndoRedoManager::_bind_methods() {
@@ -465,6 +499,7 @@ void EditorUndoRedoManager::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("version_changed"));
 
 	BIND_ENUM_CONSTANT(GLOBAL_HISTORY);
+	BIND_ENUM_CONSTANT(REMOTE_HISTORY);
 	BIND_ENUM_CONSTANT(INVALID_HISTORY);
 }
 

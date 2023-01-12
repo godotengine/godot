@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  projection.cpp                                                       */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  projection.cpp                                                        */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "projection.h"
 
@@ -134,7 +134,7 @@ Projection Projection::create_for_hmd(int p_eye, real_t p_aspect, real_t p_intra
 
 Projection Projection::create_orthogonal(real_t p_left, real_t p_right, real_t p_bottom, real_t p_top, real_t p_znear, real_t p_zfar) {
 	Projection proj;
-	proj.set_orthogonal(p_left, p_right, p_bottom, p_top, p_zfar, p_zfar);
+	proj.set_orthogonal(p_left, p_right, p_bottom, p_top, p_znear, p_zfar);
 	return proj;
 }
 
@@ -181,7 +181,7 @@ Plane Projection::get_projection_plane(Planes p_plane) const {
 			new_plane.normal = -new_plane.normal;
 			new_plane.normalize();
 			return new_plane;
-		} break;
+		}
 		case PLANE_FAR: {
 			Plane new_plane = Plane(matrix[3] - matrix[2],
 					matrix[7] - matrix[6],
@@ -191,7 +191,7 @@ Plane Projection::get_projection_plane(Planes p_plane) const {
 			new_plane.normal = -new_plane.normal;
 			new_plane.normalize();
 			return new_plane;
-		} break;
+		}
 		case PLANE_LEFT: {
 			Plane new_plane = Plane(matrix[3] + matrix[0],
 					matrix[7] + matrix[4],
@@ -201,7 +201,7 @@ Plane Projection::get_projection_plane(Planes p_plane) const {
 			new_plane.normal = -new_plane.normal;
 			new_plane.normalize();
 			return new_plane;
-		} break;
+		}
 		case PLANE_TOP: {
 			Plane new_plane = Plane(matrix[3] - matrix[1],
 					matrix[7] - matrix[5],
@@ -211,7 +211,7 @@ Plane Projection::get_projection_plane(Planes p_plane) const {
 			new_plane.normal = -new_plane.normal;
 			new_plane.normalize();
 			return new_plane;
-		} break;
+		}
 		case PLANE_RIGHT: {
 			Plane new_plane = Plane(matrix[3] - matrix[0],
 					matrix[7] - matrix[4],
@@ -221,7 +221,7 @@ Plane Projection::get_projection_plane(Planes p_plane) const {
 			new_plane.normal = -new_plane.normal;
 			new_plane.normalize();
 			return new_plane;
-		} break;
+		}
 		case PLANE_BOTTOM: {
 			Plane new_plane = Plane(matrix[3] + matrix[1],
 					matrix[7] + matrix[5],
@@ -231,7 +231,7 @@ Plane Projection::get_projection_plane(Planes p_plane) const {
 			new_plane.normal = -new_plane.normal;
 			new_plane.normalize();
 			return new_plane;
-		} break;
+		}
 	}
 
 	return Plane();

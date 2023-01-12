@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  path_2d.cpp                                                          */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  path_2d.cpp                                                           */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "path_2d.h"
 
@@ -106,18 +106,57 @@ void Path2D::_notification(int p_what) {
 #else
 			const real_t line_width = get_tree()->get_debug_paths_width();
 #endif
-			_cached_draw_pts.resize(curve->get_point_count() * 8);
-			int count = 0;
+			real_t interval = 10;
+			const real_t length = curve->get_baked_length();
 
-			for (int i = 0; i < curve->get_point_count(); i++) {
-				for (int j = 0; j < 8; j++) {
-					real_t frac = j * (1.0 / 8.0);
-					Vector2 p = curve->sample(i, frac);
-					_cached_draw_pts.set(count++, p);
+			if (length > CMP_EPSILON) {
+				const int sample_count = int(length / interval) + 2;
+				interval = length / (sample_count - 1); // Recalculate real interval length.
+
+				Vector<Transform2D> frames;
+				frames.resize(sample_count);
+
+				{
+					Transform2D *w = frames.ptrw();
+
+					for (int i = 0; i < sample_count; i++) {
+						w[i] = curve->sample_baked_with_rotation(i * interval, false);
+					}
+				}
+
+				const Transform2D *r = frames.ptr();
+				// Draw curve segments
+				{
+					PackedVector2Array v2p;
+					v2p.resize(sample_count);
+					Vector2 *w = v2p.ptrw();
+
+					for (int i = 0; i < sample_count; i++) {
+						w[i] = r[i].get_origin();
+					}
+					draw_polyline(v2p, get_tree()->get_debug_paths_color(), line_width, false);
+				}
+
+				// Draw fish bones
+				{
+					PackedVector2Array v2p;
+					v2p.resize(3);
+					Vector2 *w = v2p.ptrw();
+
+					for (int i = 0; i < sample_count; i++) {
+						const Vector2 p = r[i].get_origin();
+						const Vector2 side = r[i].columns[0];
+						const Vector2 forward = r[i].columns[1];
+
+						// Fish Bone.
+						w[0] = p + (side - forward) * 5;
+						w[1] = p;
+						w[2] = p + (-side - forward) * 5;
+
+						draw_polyline(v2p, get_tree()->get_debug_paths_color(), line_width * 0.5, false);
+					}
 				}
 			}
-
-			draw_polyline(_cached_draw_pts, get_tree()->get_debug_paths_color(), line_width, true);
 		} break;
 	}
 }
@@ -177,7 +216,7 @@ void PathFollow2D::_update_transform() {
 	}
 
 	if (rotates) {
-		Transform2D xform = c->sample_baked_with_rotation(progress, cubic, loop, lookahead);
+		Transform2D xform = c->sample_baked_with_rotation(progress, cubic);
 		xform.translate_local(v_offset, h_offset);
 		set_rotation(xform[1].angle());
 		set_position(xform[2]);

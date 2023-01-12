@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  display_server_ios.mm                                                */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  display_server_ios.mm                                                 */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "display_server_ios.h"
 
@@ -49,7 +49,7 @@ DisplayServerIOS *DisplayServerIOS::get_singleton() {
 	return (DisplayServerIOS *)DisplayServer::get_singleton();
 }
 
-DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, Error &r_error) {
+DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error) {
 	rendering_driver = p_rendering_driver;
 
 	// Init TTS
@@ -151,8 +151,8 @@ DisplayServerIOS::~DisplayServerIOS() {
 #endif
 }
 
-DisplayServer *DisplayServerIOS::create_func(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, Error &r_error) {
-	return memnew(DisplayServerIOS(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, r_error));
+DisplayServer *DisplayServerIOS::create_func(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error) {
+	return memnew(DisplayServerIOS(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, r_error));
 }
 
 Vector<String> DisplayServerIOS::get_rendering_drivers_func() {
@@ -227,27 +227,25 @@ void DisplayServerIOS::_window_callback(const Callable &p_callable, const Varian
 // MARK: Touches
 
 void DisplayServerIOS::touch_press(int p_idx, int p_x, int p_y, bool p_pressed, bool p_double_click) {
-	if (!GLOBAL_DEF("debug/disable_touch", false)) {
-		Ref<InputEventScreenTouch> ev;
-		ev.instantiate();
+	Ref<InputEventScreenTouch> ev;
+	ev.instantiate();
 
-		ev->set_index(p_idx);
-		ev->set_pressed(p_pressed);
-		ev->set_position(Vector2(p_x, p_y));
-		ev->set_double_tap(p_double_click);
-		perform_event(ev);
-	}
+	ev->set_index(p_idx);
+	ev->set_pressed(p_pressed);
+	ev->set_position(Vector2(p_x, p_y));
+	ev->set_double_tap(p_double_click);
+	perform_event(ev);
 }
 
-void DisplayServerIOS::touch_drag(int p_idx, int p_prev_x, int p_prev_y, int p_x, int p_y) {
-	if (!GLOBAL_DEF("debug/disable_touch", false)) {
-		Ref<InputEventScreenDrag> ev;
-		ev.instantiate();
-		ev->set_index(p_idx);
-		ev->set_position(Vector2(p_x, p_y));
-		ev->set_relative(Vector2(p_x - p_prev_x, p_y - p_prev_y));
-		perform_event(ev);
-	}
+void DisplayServerIOS::touch_drag(int p_idx, int p_prev_x, int p_prev_y, int p_x, int p_y, float p_pressure, Vector2 p_tilt) {
+	Ref<InputEventScreenDrag> ev;
+	ev.instantiate();
+	ev->set_index(p_idx);
+	ev->set_pressure(p_pressure);
+	ev->set_tilt(p_tilt);
+	ev->set_position(Vector2(p_x, p_y));
+	ev->set_relative(Vector2(p_x - p_prev_x, p_y - p_prev_y));
+	perform_event(ev);
 }
 
 void DisplayServerIOS::perform_event(const Ref<InputEvent> &p_event) {
@@ -260,14 +258,14 @@ void DisplayServerIOS::touches_cancelled(int p_idx) {
 
 // MARK: Keyboard
 
-void DisplayServerIOS::key(Key p_key, bool p_pressed) {
+void DisplayServerIOS::key(Key p_key, char32_t p_char, bool p_pressed) {
 	Ref<InputEventKey> ev;
 	ev.instantiate();
 	ev->set_echo(false);
 	ev->set_pressed(p_pressed);
 	ev->set_keycode(p_key);
 	ev->set_physical_keycode(p_key);
-	ev->set_unicode((char32_t)p_key);
+	ev->set_unicode(p_char);
 	perform_event(ev);
 }
 
@@ -381,6 +379,10 @@ int DisplayServerIOS::get_screen_count() const {
 	return 1;
 }
 
+int DisplayServerIOS::get_primary_screen() const {
+	return 0;
+}
+
 Point2i DisplayServerIOS::screen_get_position(int p_screen) const {
 	return Size2i();
 }
@@ -441,7 +443,7 @@ float DisplayServerIOS::screen_get_refresh_rate(int p_screen) const {
 }
 
 float DisplayServerIOS::screen_get_scale(int p_screen) const {
-	return [UIScreen mainScreen].nativeScale;
+	return [UIScreen mainScreen].scale;
 }
 
 Vector<DisplayServer::WindowID> DisplayServerIOS::get_window_list() const {
@@ -496,6 +498,10 @@ Point2i DisplayServerIOS::window_get_position(WindowID p_window) const {
 	return Point2i();
 }
 
+Point2i DisplayServerIOS::window_get_position_with_decorations(WindowID p_window) const {
+	return Point2i();
+}
+
 void DisplayServerIOS::window_set_position(const Point2i &p_position, WindowID p_window) {
 	// Probably not supported for single window iOS app
 }
@@ -529,7 +535,7 @@ Size2i DisplayServerIOS::window_get_size(WindowID p_window) const {
 	return Size2i(screenBounds.size.width, screenBounds.size.height) * screen_get_max_scale();
 }
 
-Size2i DisplayServerIOS::window_get_real_size(WindowID p_window) const {
+Size2i DisplayServerIOS::window_get_size_with_decorations(WindowID p_window) const {
 	return window_get_size(p_window);
 }
 
@@ -581,8 +587,18 @@ bool DisplayServerIOS::can_any_window_draw() const {
 	return true;
 }
 
-bool DisplayServerIOS::screen_is_touchscreen(int p_screen) const {
+bool DisplayServerIOS::is_touchscreen_available() const {
 	return true;
+}
+
+_FORCE_INLINE_ int _convert_utf32_offset_to_utf16(const String &p_existing_text, int p_pos) {
+	int limit = p_pos;
+	for (int i = 0; i < MIN(p_existing_text.length(), p_pos); i++) {
+		if (p_existing_text[i] > 0xffff) {
+			limit++;
+		}
+	}
+	return limit;
 }
 
 void DisplayServerIOS::virtual_keyboard_show(const String &p_existing_text, const Rect2 &p_screen_rect, VirtualKeyboardType p_type, int p_max_length, int p_cursor_start, int p_cursor_end) {
@@ -623,8 +639,8 @@ void DisplayServerIOS::virtual_keyboard_show(const String &p_existing_text, cons
 
 	[AppDelegate.viewController.keyboardView
 			becomeFirstResponderWithString:existingString
-							   cursorStart:p_cursor_start
-								 cursorEnd:p_cursor_end];
+							   cursorStart:_convert_utf32_offset_to_utf16(p_existing_text, p_cursor_start)
+								 cursorEnd:_convert_utf32_offset_to_utf16(p_existing_text, p_cursor_end)];
 }
 
 void DisplayServerIOS::virtual_keyboard_hide() {

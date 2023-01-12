@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  test_macros.h                                                        */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  test_macros.h                                                         */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef TEST_MACROS_H
 #define TEST_MACROS_H
@@ -136,7 +136,7 @@ int register_test_command(String p_command, TestFunc p_function);
 // SEND_GUI_KEY_EVENT - takes an object and a keycode set.   e.g SEND_GUI_KEY_EVENT(code_edit, Key::A | KeyModifierMask::META).
 // SEND_GUI_MOUSE_BUTTON_EVENT - takes an object, position, mouse button, mouse mask and modifiers e.g SEND_GUI_MOUSE_BUTTON_EVENT(code_edit, Vector2(50, 50), MOUSE_BUTTON_NONE, MOUSE_BUTTON_NONE, Key::None);
 // SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT - takes an object, position, mouse button, mouse mask and modifiers e.g SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(code_edit, Vector2(50, 50), MOUSE_BUTTON_NONE, MOUSE_BUTTON_NONE, Key::None);
-// SEND_GUI_MOUSE_MOTION_EVENT - takes an object, position, mouse mask and modifiers e.g SEND_GUI_MOUSE_MOTION_EVENT(code_edit, Vector2(50, 50), MouseButton::MASK_LEFT, KeyModifierMask::META);
+// SEND_GUI_MOUSE_MOTION_EVENT - takes an object, position, mouse mask and modifiers e.g SEND_GUI_MOUSE_MOTION_EVENT(code_edit, Vector2(50, 50), MouseButtonMask::LEFT, KeyModifierMask::META);
 // SEND_GUI_DOUBLE_CLICK - takes an object, position and modifiers. e.g SEND_GUI_DOUBLE_CLICK(code_edit, Vector2(50, 50), KeyModifierMask::META);
 
 #define SEND_GUI_ACTION(m_object, m_action)                                                           \
@@ -188,12 +188,12 @@ int register_test_command(String p_command, TestFunc p_function);
 		MessageQueue::get_singleton()->flush();                                                  \
 	}
 
-#define SEND_GUI_DOUBLE_CLICK(m_object, m_local_pos, m_modifers)                                          \
-	{                                                                                                     \
-		_CREATE_GUI_MOUSE_EVENT(m_object, m_local_pos, MouseButton::LEFT, MouseButton::LEFT, m_modifers); \
-		event->set_double_click(true);                                                                    \
-		m_object->get_viewport()->push_input(event);                                                      \
-		MessageQueue::get_singleton()->flush();                                                           \
+#define SEND_GUI_DOUBLE_CLICK(m_object, m_local_pos, m_modifers)                          \
+	{                                                                                     \
+		_CREATE_GUI_MOUSE_EVENT(m_object, m_local_pos, MouseButton::LEFT, 0, m_modifers); \
+		event->set_double_click(true);                                                    \
+		m_object->get_viewport()->push_input(event);                                      \
+		MessageQueue::get_singleton()->flush();                                           \
 	}
 
 // We toggle _print_error_enabled to prevent display server not supported warnings.

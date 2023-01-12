@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  gradient_texture_2d_editor_plugin.cpp                                */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  gradient_texture_2d_editor_plugin.cpp                                 */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "gradient_texture_2d_editor_plugin.h"
 
@@ -55,6 +55,7 @@ void GradientTexture2DEditorRect::_update_fill_position() {
 
 	String property_name = handle == HANDLE_FILL_FROM ? "fill_from" : "fill_to";
 
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(vformat(TTR("Set %s"), property_name), UndoRedo::MERGE_ENDS);
 	undo_redo->add_do_property(texture.ptr(), property_name, percent);
 	undo_redo->add_undo_property(texture.ptr(), property_name, handle == HANDLE_FILL_FROM ? texture->get_fill_from() : texture->get_fill_to());
@@ -121,13 +122,12 @@ void GradientTexture2DEditorRect::_notification(int p_what) {
 			Size2 rect_size = get_size();
 
 			// Get the size and position to draw the texture and handles at.
-			size = Size2(texture->get_width() * rect_size.height / texture->get_height(), rect_size.height);
-			if (size.width > rect_size.width) {
-				size.width = rect_size.width;
-				size.height = texture->get_height() * size.width / texture->get_width();
-			}
-			offset = ((rect_size - size + handle_size) / 2).round();
-			size -= handle_size;
+			// Subtract handle sizes so they stay inside the preview, but keep the texture's aspect ratio.
+			Size2 available_size = rect_size - handle_size;
+			Size2 ratio = available_size / texture->get_size();
+			size = MIN(ratio.x, ratio.y) * texture->get_size();
+			offset = ((rect_size - size) / 2).round();
+
 			checkerboard->set_rect(Rect2(offset, size));
 
 			draw_set_transform(offset);
@@ -176,12 +176,11 @@ void GradientTexture2DEditorRect::_notification(int p_what) {
 }
 
 GradientTexture2DEditorRect::GradientTexture2DEditorRect() {
-	undo_redo = EditorNode::get_undo_redo();
-
 	checkerboard = memnew(TextureRect);
 	checkerboard->set_stretch_mode(TextureRect::STRETCH_TILE);
+	checkerboard->set_ignore_texture_size(true);
 	checkerboard->set_draw_behind_parent(true);
-	add_child(checkerboard);
+	add_child(checkerboard, false, INTERNAL_MODE_FRONT);
 
 	set_custom_minimum_size(Size2(0, 250 * EDSCALE));
 }
@@ -189,6 +188,7 @@ GradientTexture2DEditorRect::GradientTexture2DEditorRect() {
 ///////////////////////
 
 void GradientTexture2DEditor::_reverse_button_pressed() {
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
 	undo_redo->create_action(TTR("Swap GradientTexture2D Fill Points"));
 	undo_redo->add_do_property(texture.ptr(), "fill_from", texture->get_fill_to());
 	undo_redo->add_do_property(texture.ptr(), "fill_to", texture->get_fill_from());
@@ -223,8 +223,6 @@ void GradientTexture2DEditor::_notification(int p_what) {
 }
 
 GradientTexture2DEditor::GradientTexture2DEditor() {
-	undo_redo = EditorNode::get_undo_redo();
-
 	HFlowContainer *toolbar = memnew(HFlowContainer);
 	add_child(toolbar);
 

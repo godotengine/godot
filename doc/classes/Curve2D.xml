@@ -51,7 +51,7 @@
 			<return type="Vector2" />
 			<param index="0" name="to_point" type="Vector2" />
 			<description>
-				Returns the closest baked point (in curve's local space) to [param to_point].
+				Returns the closest point on baked segments (in curve's local space) to [param to_point].
 				[param to_point] must be in this curve's local space.
 			</description>
 		</method>
@@ -94,7 +94,7 @@
 		</method>
 		<method name="sample_baked" qualifiers="const">
 			<return type="Vector2" />
-			<param index="0" name="offset" type="float" />
+			<param index="0" name="offset" type="float" default="0.0" />
 			<param index="1" name="cubic" type="bool" default="false" />
 			<description>
 				Returns a point within the curve at position [param offset], where [param offset] is measured as a pixel distance along the curve.
@@ -104,13 +104,10 @@
 		</method>
 		<method name="sample_baked_with_rotation" qualifiers="const">
 			<return type="Transform2D" />
-			<param index="0" name="offset" type="float" />
+			<param index="0" name="offset" type="float" default="0.0" />
 			<param index="1" name="cubic" type="bool" default="false" />
-			<param index="2" name="loop" type="bool" default="true" />
-			<param index="3" name="lookahead" type="float" default="4.0" />
 			<description>
 				Similar to [method sample_baked], but returns [Transform2D] that includes a rotation along the curve. Returns empty transform if length of the curve is [code]0[/code].
-				Use [param loop] to smooth the tangent at the end of the curve. [param lookahead] defines the distance to a nearby point for calculating the tangent vector.
 				[codeblock]
 				var transform = curve.sample_baked_with_rotation(offset)
 				position = transform.get_origin()
@@ -158,6 +155,13 @@
 				This approximation makes straight segments between each point, then subdivides those segments until the resulting shape is similar enough.
 				[param max_stages] controls how many subdivisions a curve segment may face before it is considered approximate enough. Each subdivision splits the segment in half, so the default 5 stages may mean up to 32 subdivisions per curve segment. Increase with care!
 				[param tolerance_degrees] controls how many degrees the midpoint of a segment may deviate from the real curve, before the segment has to be subdivided.
+			</description>
+		</method>
+		<method name="tessellate_even_length" qualifiers="const">
+			<return type="PackedVector2Array" />
+			<param index="0" name="max_stages" type="int" default="5" />
+			<param index="1" name="tolerance_length" type="float" default="20.0" />
+			<description>
 			</description>
 		</method>
 	</methods>

@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  curve.h                                                              */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  curve.h                                                               */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef CURVE_H
 #define CURVE_H
@@ -172,16 +172,27 @@ class Curve2D : public Resource {
 
 	mutable bool baked_cache_dirty = false;
 	mutable PackedVector2Array baked_point_cache;
+	mutable PackedVector2Array baked_forward_vector_cache;
 	mutable Vector<real_t> baked_dist_cache;
 	mutable real_t baked_max_ofs = 0.0;
 
 	void mark_dirty();
 
+	static Vector2 _calculate_tangent(const Vector2 &p_begin, const Vector2 &p_control_1, const Vector2 &p_control_2, const Vector2 &p_end, const real_t p_t);
 	void _bake() const;
 
 	real_t bake_interval = 5.0;
 
+	struct Interval {
+		int idx;
+		real_t frac;
+	};
+	Interval _find_interval(real_t p_offset) const;
+	Vector2 _sample_baked(Interval p_interval, bool p_cubic) const;
+	Transform2D _sample_posture(Interval p_interval) const;
+
 	void _bake_segment2d(RBMap<real_t, Vector2> &r_bake, real_t p_begin, real_t p_end, const Vector2 &p_a, const Vector2 &p_out, const Vector2 &p_b, const Vector2 &p_in, int p_depth, int p_max_depth, real_t p_tol) const;
+	void _bake_segment2d_even_length(RBMap<real_t, Vector2> &r_bake, real_t p_begin, real_t p_end, const Vector2 &p_a, const Vector2 &p_out, const Vector2 &p_b, const Vector2 &p_in, int p_depth, int p_max_depth, real_t p_length) const;
 	Dictionary _get_data() const;
 	void _set_data(const Dictionary &p_data);
 
@@ -191,6 +202,8 @@ class Curve2D : public Resource {
 
 	void _add_point(const Vector2 &p_position, const Vector2 &p_in = Vector2(), const Vector2 &p_out = Vector2(), int p_atpos = -1);
 	void _remove_point(int p_index);
+
+	Vector<RBMap<real_t, Vector2>> _tessellate_even_length(int p_max_stages = 5, real_t p_length = 0.2) const;
 
 protected:
 	static void _bind_methods();
@@ -216,12 +229,13 @@ public:
 
 	real_t get_baked_length() const;
 	Vector2 sample_baked(real_t p_offset, bool p_cubic = false) const;
-	Transform2D sample_baked_with_rotation(real_t p_offset, bool p_cubic = false, bool p_loop = true, real_t p_lookahead = 4.0) const;
+	Transform2D sample_baked_with_rotation(real_t p_offset, bool p_cubic = false) const;
 	PackedVector2Array get_baked_points() const; //useful for going through
 	Vector2 get_closest_point(const Vector2 &p_to_point) const;
 	real_t get_closest_offset(const Vector2 &p_to_point) const;
 
 	PackedVector2Array tessellate(int p_max_stages = 5, real_t p_tolerance = 4) const; //useful for display
+	PackedVector2Array tessellate_even_length(int p_max_stages = 5, real_t p_length = 20.0) const; // Useful for baking.
 
 	Curve2D();
 };
@@ -238,26 +252,33 @@ class Curve3D : public Resource {
 
 	Vector<Point> points;
 
-	struct BakedPoint {
-		real_t ofs = 0.0;
-		Vector3 point;
-	};
-
 	mutable bool baked_cache_dirty = false;
 	mutable PackedVector3Array baked_point_cache;
 	mutable Vector<real_t> baked_tilt_cache;
 	mutable PackedVector3Array baked_up_vector_cache;
+	mutable PackedVector3Array baked_forward_vector_cache;
 	mutable Vector<real_t> baked_dist_cache;
 	mutable real_t baked_max_ofs = 0.0;
 
 	void mark_dirty();
 
+	static Vector3 _calculate_tangent(const Vector3 &p_begin, const Vector3 &p_control_1, const Vector3 &p_control_2, const Vector3 &p_end, const real_t p_t);
 	void _bake() const;
+
+	struct Interval {
+		int idx;
+		real_t frac;
+	};
+	Interval _find_interval(real_t p_offset) const;
+	Vector3 _sample_baked(Interval p_interval, bool p_cubic) const;
+	real_t _sample_baked_tilt(Interval p_interval) const;
+	Basis _sample_posture(Interval p_interval, bool p_apply_tilt = false) const;
 
 	real_t bake_interval = 0.2;
 	bool up_vector_enabled = true;
 
 	void _bake_segment3d(RBMap<real_t, Vector3> &r_bake, real_t p_begin, real_t p_end, const Vector3 &p_a, const Vector3 &p_out, const Vector3 &p_b, const Vector3 &p_in, int p_depth, int p_max_depth, real_t p_tol) const;
+	void _bake_segment3d_even_length(RBMap<real_t, Vector3> &r_bake, real_t p_begin, real_t p_end, const Vector3 &p_a, const Vector3 &p_out, const Vector3 &p_b, const Vector3 &p_in, int p_depth, int p_max_depth, real_t p_length) const;
 	Dictionary _get_data() const;
 	void _set_data(const Dictionary &p_data);
 
@@ -267,6 +288,8 @@ class Curve3D : public Resource {
 
 	void _add_point(const Vector3 &p_position, const Vector3 &p_in = Vector3(), const Vector3 &p_out = Vector3(), int p_atpos = -1);
 	void _remove_point(int p_index);
+
+	Vector<RBMap<real_t, Vector3>> _tessellate_even_length(int p_max_stages = 5, real_t p_length = 0.2) const;
 
 protected:
 	static void _bind_methods();
@@ -296,15 +319,17 @@ public:
 
 	real_t get_baked_length() const;
 	Vector3 sample_baked(real_t p_offset, bool p_cubic = false) const;
+	Transform3D sample_baked_with_rotation(real_t p_offset, bool p_cubic = false, bool p_apply_tilt = false) const;
 	real_t sample_baked_tilt(real_t p_offset) const;
 	Vector3 sample_baked_up_vector(real_t p_offset, bool p_apply_tilt = false) const;
-	PackedVector3Array get_baked_points() const; //useful for going through
+	PackedVector3Array get_baked_points() const; // Useful for going through.
 	Vector<real_t> get_baked_tilts() const; //useful for going through
 	PackedVector3Array get_baked_up_vectors() const;
 	Vector3 get_closest_point(const Vector3 &p_to_point) const;
 	real_t get_closest_offset(const Vector3 &p_to_point) const;
 
-	PackedVector3Array tessellate(int p_max_stages = 5, real_t p_tolerance = 4) const; //useful for display
+	PackedVector3Array tessellate(int p_max_stages = 5, real_t p_tolerance = 4) const; // Useful for display.
+	PackedVector3Array tessellate_even_length(int p_max_stages = 5, real_t p_length = 0.2) const; // Useful for baking.
 
 	Curve3D();
 };

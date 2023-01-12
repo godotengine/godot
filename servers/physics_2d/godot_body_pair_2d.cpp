@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  godot_body_pair_2d.cpp                                               */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  godot_body_pair_2d.cpp                                                */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "godot_body_pair_2d.h"
 
@@ -161,6 +161,11 @@ void GodotBodyPair2D::_validate_contacts() {
 	}
 }
 
+// _test_ccd prevents tunneling by slowing down a high velocity body that is about to collide so that next frame it will be at an appropriate location to collide (i.e. slight overlap)
+// Warning: the way velocity is adjusted down to cause a collision means the momentum will be weaker than it should for a bounce!
+// Process: only proceed if body A's motion is high relative to its size.
+// cast forward along motion vector to see if A is going to enter/pass B's collider next frame, only proceed if it does.
+// adjust the velocity of A down so that it will just slightly intersect the collider instead of blowing right past it.
 bool GodotBodyPair2D::_test_ccd(real_t p_step, GodotBody2D *p_A, int p_shape_A, const Transform2D &p_xform_A, GodotBody2D *p_B, int p_shape_B, const Transform2D &p_xform_B) {
 	Vector2 motion = p_A->get_linear_velocity() * p_step;
 	real_t mlen = motion.length();
@@ -180,24 +185,32 @@ bool GodotBodyPair2D::_test_ccd(real_t p_step, GodotBody2D *p_A, int p_shape_A, 
 		return false;
 	}
 
-	// Going too fast in that direction.
+	// A is moving fast enough that tunneling might occur. See if it's really about to collide.
 
 	// Cast a segment from support in motion normal, in the same direction of motion by motion length.
-	// Support is the worst case collision point, so real collision happened before.
+	// Support point will the farthest forward collision point along the movement vector.
+	// i.e. the point that should hit B first if any collision does occur.
+
+	// convert mnormal into body A's local xform because get_support requires (and returns) local coordinates.
 	int a;
 	Vector2 s[2];
-	p_A->get_shape(p_shape_A)->get_supports(p_xform_A.basis_xform(mnormal).normalized(), s, a);
+	p_A->get_shape(p_shape_A)->get_supports(p_xform_A.basis_xform_inv(mnormal).normalized(), s, a);
 	Vector2 from = p_xform_A.xform(s[0]);
+	// Back up 10% of the per-frame motion behind the support point and use that as the beginning of our cast.
+	// This should ensure the calculated new velocity will really cause a bit of overlap instead of just getting us very close.
 	Vector2 to = from + motion;
 
 	Transform2D from_inv = p_xform_B.affine_inverse();
 
-	// Start from a little inside the bounding box.
-	Vector2 local_from = from_inv.xform(from - mnormal * mlen * 0.1);
+	// Back up 10% of the per-frame motion behind the support point and use that as the beginning of our cast.
+	// At high speeds, this may mean we're actually casting from well behind the body instead of inside it, which is odd. But it still works out.
+	Vector2 local_from = from_inv.xform(from - motion * 0.1);
 	Vector2 local_to = from_inv.xform(to);
 
 	Vector2 rpos, rnorm;
 	if (!p_B->get_shape(p_shape_B)->intersect_segment(local_from, local_to, rpos, rnorm)) {
+		// there was no hit. Since the segment is the length of per-frame motion, this means the bodies will not
+		// actually collide yet on next frame. We'll probably check again next frame once they're closer.
 		return false;
 	}
 
@@ -215,7 +228,7 @@ bool GodotBodyPair2D::_test_ccd(real_t p_step, GodotBody2D *p_A, int p_shape_A, 
 	// next frame will hit softly or soft enough.
 	Vector2 hitpos = p_xform_B.xform(rpos);
 
-	real_t newlen = hitpos.distance_to(from) - (max - min) * 0.01;
+	real_t newlen = hitpos.distance_to(from) + (max - min) * 0.01; // adding 1% of body length to the distance between collision and support point should cause body A's support point to arrive just within B's collider next frame.
 	p_A->set_linear_velocity(mnormal * (newlen / p_step));
 
 	return true;
@@ -421,21 +434,6 @@ bool GodotBodyPair2D::pre_solve(real_t p_step) {
 		c.rA = global_A - A->get_center_of_mass();
 		c.rB = global_B - B->get_center_of_mass() - offset_B;
 
-		if (A->can_report_contacts()) {
-			Vector2 crB(-B->get_angular_velocity() * c.rB.y, B->get_angular_velocity() * c.rB.x);
-			A->add_contact(global_A + offset_A, -c.normal, depth, shape_A, global_B + offset_A, shape_B, B->get_instance_id(), B->get_self(), crB + B->get_linear_velocity());
-		}
-
-		if (B->can_report_contacts()) {
-			Vector2 crA(-A->get_angular_velocity() * c.rA.y, A->get_angular_velocity() * c.rA.x);
-			B->add_contact(global_B + offset_A, c.normal, depth, shape_B, global_A + offset_A, shape_A, A->get_instance_id(), A->get_self(), crA + A->get_linear_velocity());
-		}
-
-		if (report_contacts_only) {
-			collided = false;
-			continue;
-		}
-
 		// Precompute normal mass, tangent mass, and bias.
 		real_t rnA = c.rA.dot(c.normal);
 		real_t rnB = c.rB.dot(c.normal);
@@ -453,11 +451,28 @@ bool GodotBodyPair2D::pre_solve(real_t p_step) {
 		c.bias = -bias * inv_dt * MIN(0.0f, -depth + max_penetration);
 		c.depth = depth;
 
+		Vector2 P = c.acc_normal_impulse * c.normal + c.acc_tangent_impulse * tangent;
+
+		c.acc_impulse -= P;
+
+		if (A->can_report_contacts()) {
+			Vector2 crB(-B->get_angular_velocity() * c.rB.y, B->get_angular_velocity() * c.rB.x);
+			A->add_contact(global_A + offset_A, -c.normal, depth, shape_A, global_B + offset_A, shape_B, B->get_instance_id(), B->get_self(), crB + B->get_linear_velocity(), c.acc_impulse);
+		}
+
+		if (B->can_report_contacts()) {
+			Vector2 crA(-A->get_angular_velocity() * c.rA.y, A->get_angular_velocity() * c.rA.x);
+			B->add_contact(global_B + offset_A, c.normal, depth, shape_B, global_A + offset_A, shape_A, A->get_instance_id(), A->get_self(), crA + A->get_linear_velocity(), c.acc_impulse);
+		}
+
+		if (report_contacts_only) {
+			collided = false;
+			continue;
+		}
+
 #ifdef ACCUMULATE_IMPULSES
 		{
 			// Apply normal + friction impulse
-			Vector2 P = c.acc_normal_impulse * c.normal + c.acc_tangent_impulse * tangent;
-
 			if (collide_A) {
 				A->apply_impulse(-P, c.rA + A->get_center_of_mass());
 			}
@@ -568,6 +583,7 @@ void GodotBodyPair2D::solve(real_t p_step) {
 		if (collide_B) {
 			B->apply_impulse(j, c.rB + B->get_center_of_mass());
 		}
+		c.acc_impulse -= j;
 	}
 }
 

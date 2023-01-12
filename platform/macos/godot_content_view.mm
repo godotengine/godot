@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  godot_content_view.mm                                                */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  godot_content_view.mm                                                 */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "godot_content_view.h"
 
@@ -65,16 +65,28 @@
 	if (ds && ds->has_window(window_id)) {
 		DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
 		NSRect frameRect = [wd.window_object frame];
-		bool left = (wd.last_frame_rect.origin.x != frameRect.origin.x);
-		bool top = (wd.last_frame_rect.origin.y == frameRect.origin.y);
-		if (left && top) {
-			self.layerContentsPlacement = NSViewLayerContentsPlacementBottomRight;
-		} else if (left && !top) {
-			self.layerContentsPlacement = NSViewLayerContentsPlacementTopRight;
-		} else if (!left && top) {
-			self.layerContentsPlacement = NSViewLayerContentsPlacementBottomLeft;
+		if (wd.fs_transition || wd.initial_size) {
+			self.layerContentsPlacement = NSViewLayerContentsPlacementScaleAxesIndependently;
+			wd.initial_size = false;
 		} else {
-			self.layerContentsPlacement = NSViewLayerContentsPlacementTopLeft;
+			bool left = (wd.last_frame_rect.origin.x != frameRect.origin.x);
+			bool bottom = (wd.last_frame_rect.origin.y != frameRect.origin.y);
+			bool right = (wd.last_frame_rect.origin.x + wd.last_frame_rect.size.width != frameRect.origin.x + frameRect.size.width);
+			bool top = (wd.last_frame_rect.origin.y + wd.last_frame_rect.size.height != frameRect.origin.y + frameRect.size.height);
+
+			if (left && top) {
+				self.layerContentsPlacement = NSViewLayerContentsPlacementBottomRight;
+			} else if (left && bottom) {
+				self.layerContentsPlacement = NSViewLayerContentsPlacementTopRight;
+			} else if (left) {
+				self.layerContentsPlacement = NSViewLayerContentsPlacementRight;
+			} else if (right && top) {
+				self.layerContentsPlacement = NSViewLayerContentsPlacementBottomLeft;
+			} else if (right && bottom) {
+				self.layerContentsPlacement = NSViewLayerContentsPlacementTopLeft;
+			} else if (right) {
+				self.layerContentsPlacement = NSViewLayerContentsPlacementLeft;
+			}
 		}
 		wd.last_frame_rect = frameRect;
 	}
@@ -359,19 +371,21 @@
 	ds->cursor_update_shape();
 }
 
-- (void)processMouseEvent:(NSEvent *)event index:(MouseButton)index mask:(MouseButton)mask pressed:(bool)pressed {
+- (void)processMouseEvent:(NSEvent *)event index:(MouseButton)index pressed:(bool)pressed {
 	DisplayServerMacOS *ds = (DisplayServerMacOS *)DisplayServer::get_singleton();
 	if (!ds || !ds->has_window(window_id)) {
 		return;
 	}
 
 	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
-	MouseButton last_button_state = ds->mouse_get_button_state();
+	BitField<MouseButtonMask> last_button_state = ds->mouse_get_button_state();
+
+	MouseButtonMask mask = mouse_button_to_mask(index);
 
 	if (pressed) {
-		last_button_state |= mask;
+		last_button_state.set_flag(mask);
 	} else {
-		last_button_state &= (MouseButton)~mask;
+		last_button_state.clear_flag(mask);
 	}
 	ds->mouse_set_button_state(last_button_state);
 
@@ -395,10 +409,10 @@
 - (void)mouseDown:(NSEvent *)event {
 	if (([event modifierFlags] & NSEventModifierFlagControl)) {
 		mouse_down_control = true;
-		[self processMouseEvent:event index:MouseButton::RIGHT mask:MouseButton::MASK_RIGHT pressed:true];
+		[self processMouseEvent:event index:MouseButton::RIGHT pressed:true];
 	} else {
 		mouse_down_control = false;
-		[self processMouseEvent:event index:MouseButton::LEFT mask:MouseButton::MASK_LEFT pressed:true];
+		[self processMouseEvent:event index:MouseButton::LEFT pressed:true];
 	}
 }
 
@@ -408,9 +422,9 @@
 
 - (void)mouseUp:(NSEvent *)event {
 	if (mouse_down_control) {
-		[self processMouseEvent:event index:MouseButton::RIGHT mask:MouseButton::MASK_RIGHT pressed:false];
+		[self processMouseEvent:event index:MouseButton::RIGHT pressed:false];
 	} else {
-		[self processMouseEvent:event index:MouseButton::LEFT mask:MouseButton::MASK_LEFT pressed:false];
+		[self processMouseEvent:event index:MouseButton::LEFT pressed:false];
 	}
 }
 
@@ -440,7 +454,7 @@
 	NSEventSubtype subtype = [event subtype];
 	if (subtype == NSEventSubtypeTabletPoint) {
 		const NSPoint p = [event tilt];
-		mm->set_tilt(Vector2(p.x, p.y));
+		mm->set_tilt(Vector2(p.x, -p.y));
 		mm->set_pen_inverted(last_pen_inverted);
 	} else if (subtype == NSEventSubtypeTabletProximity) {
 		// Check if using the eraser end of pen only on proximity event.
@@ -457,7 +471,7 @@
 }
 
 - (void)rightMouseDown:(NSEvent *)event {
-	[self processMouseEvent:event index:MouseButton::RIGHT mask:MouseButton::MASK_RIGHT pressed:true];
+	[self processMouseEvent:event index:MouseButton::RIGHT pressed:true];
 }
 
 - (void)rightMouseDragged:(NSEvent *)event {
@@ -465,16 +479,16 @@
 }
 
 - (void)rightMouseUp:(NSEvent *)event {
-	[self processMouseEvent:event index:MouseButton::RIGHT mask:MouseButton::MASK_RIGHT pressed:false];
+	[self processMouseEvent:event index:MouseButton::RIGHT pressed:false];
 }
 
 - (void)otherMouseDown:(NSEvent *)event {
 	if ((int)[event buttonNumber] == 2) {
-		[self processMouseEvent:event index:MouseButton::MIDDLE mask:MouseButton::MASK_MIDDLE pressed:true];
+		[self processMouseEvent:event index:MouseButton::MIDDLE pressed:true];
 	} else if ((int)[event buttonNumber] == 3) {
-		[self processMouseEvent:event index:MouseButton::MB_XBUTTON1 mask:MouseButton::MASK_XBUTTON1 pressed:true];
+		[self processMouseEvent:event index:MouseButton::MB_XBUTTON1 pressed:true];
 	} else if ((int)[event buttonNumber] == 4) {
-		[self processMouseEvent:event index:MouseButton::MB_XBUTTON2 mask:MouseButton::MASK_XBUTTON2 pressed:true];
+		[self processMouseEvent:event index:MouseButton::MB_XBUTTON2 pressed:true];
 	} else {
 		return;
 	}
@@ -486,11 +500,11 @@
 
 - (void)otherMouseUp:(NSEvent *)event {
 	if ((int)[event buttonNumber] == 2) {
-		[self processMouseEvent:event index:MouseButton::MIDDLE mask:MouseButton::MASK_MIDDLE pressed:false];
+		[self processMouseEvent:event index:MouseButton::MIDDLE pressed:false];
 	} else if ((int)[event buttonNumber] == 3) {
-		[self processMouseEvent:event index:MouseButton::MB_XBUTTON1 mask:MouseButton::MASK_XBUTTON1 pressed:false];
+		[self processMouseEvent:event index:MouseButton::MB_XBUTTON1 pressed:false];
 	} else if ((int)[event buttonNumber] == 4) {
-		[self processMouseEvent:event index:MouseButton::MB_XBUTTON2 mask:MouseButton::MASK_XBUTTON2 pressed:false];
+		[self processMouseEvent:event index:MouseButton::MB_XBUTTON2 pressed:false];
 	} else {
 		return;
 	}
@@ -739,7 +753,8 @@
 	}
 
 	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
-	MouseButton mask = mouse_button_to_mask(button);
+	MouseButtonMask mask = mouse_button_to_mask(button);
+	BitField<MouseButtonMask> last_button_state = ds->mouse_get_button_state();
 
 	Ref<InputEventMouseButton> sc;
 	sc.instantiate();
@@ -751,7 +766,7 @@
 	sc->set_pressed(true);
 	sc->set_position(wd.mouse_pos);
 	sc->set_global_position(wd.mouse_pos);
-	MouseButton last_button_state = ds->mouse_get_button_state() | (MouseButton)mask;
+	last_button_state.set_flag(mask);
 	sc->set_button_mask(last_button_state);
 	ds->mouse_set_button_state(last_button_state);
 
@@ -764,7 +779,7 @@
 	sc->set_pressed(false);
 	sc->set_position(wd.mouse_pos);
 	sc->set_global_position(wd.mouse_pos);
-	last_button_state &= (MouseButton)~mask;
+	last_button_state.clear_flag(mask);
 	sc->set_button_mask(last_button_state);
 	ds->mouse_set_button_state(last_button_state);
 

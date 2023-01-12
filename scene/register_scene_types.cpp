@@ -1,37 +1,37 @@
-/*************************************************************************/
-/*  register_scene_types.cpp                                             */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  register_scene_types.cpp                                              */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "register_scene_types.h"
 
 #include "core/config/project_settings.h"
-#include "core/extension/native_extension_manager.h"
+#include "core/extension/gdextension_manager.h"
 #include "core/object/class_db.h"
 #include "core/os/os.h"
 #include "scene/2d/animated_sprite_2d.h"
@@ -56,6 +56,7 @@
 #include "scene/2d/navigation_agent_2d.h"
 #include "scene/2d/navigation_link_2d.h"
 #include "scene/2d/navigation_obstacle_2d.h"
+#include "scene/2d/navigation_region_2d.h"
 #include "scene/2d/parallax_background.h"
 #include "scene/2d/parallax_layer.h"
 #include "scene/2d/path_2d.h"
@@ -163,6 +164,7 @@
 #include "scene/resources/mesh_data_tool.h"
 #include "scene/resources/multimesh.h"
 #include "scene/resources/navigation_mesh.h"
+#include "scene/resources/navigation_polygon.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/resources/particle_process_material.h"
 #include "scene/resources/physics_material.h"
@@ -600,6 +602,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(VisualShaderNodeComment);
 	GDREGISTER_CLASS(VisualShaderNodeFloatConstant);
 	GDREGISTER_CLASS(VisualShaderNodeIntConstant);
+	GDREGISTER_CLASS(VisualShaderNodeUIntConstant);
 	GDREGISTER_CLASS(VisualShaderNodeBooleanConstant);
 	GDREGISTER_CLASS(VisualShaderNodeColorConstant);
 	GDREGISTER_CLASS(VisualShaderNodeVec2Constant);
@@ -608,12 +611,14 @@ void register_scene_types() {
 	GDREGISTER_CLASS(VisualShaderNodeTransformConstant);
 	GDREGISTER_CLASS(VisualShaderNodeFloatOp);
 	GDREGISTER_CLASS(VisualShaderNodeIntOp);
+	GDREGISTER_CLASS(VisualShaderNodeUIntOp);
 	GDREGISTER_CLASS(VisualShaderNodeVectorOp);
 	GDREGISTER_CLASS(VisualShaderNodeColorOp);
 	GDREGISTER_CLASS(VisualShaderNodeTransformOp);
 	GDREGISTER_CLASS(VisualShaderNodeTransformVecMult);
 	GDREGISTER_CLASS(VisualShaderNodeFloatFunc);
 	GDREGISTER_CLASS(VisualShaderNodeIntFunc);
+	GDREGISTER_CLASS(VisualShaderNodeUIntFunc);
 	GDREGISTER_CLASS(VisualShaderNodeVectorFunc);
 	GDREGISTER_CLASS(VisualShaderNodeColorFunc);
 	GDREGISTER_CLASS(VisualShaderNodeTransformFunc);
@@ -646,6 +651,7 @@ void register_scene_types() {
 	GDREGISTER_CLASS(VisualShaderNodeParameterRef);
 	GDREGISTER_CLASS(VisualShaderNodeFloatParameter);
 	GDREGISTER_CLASS(VisualShaderNodeIntParameter);
+	GDREGISTER_CLASS(VisualShaderNodeUIntParameter);
 	GDREGISTER_CLASS(VisualShaderNodeBooleanParameter);
 	GDREGISTER_CLASS(VisualShaderNodeColorParameter);
 	GDREGISTER_CLASS(VisualShaderNodeVec2Parameter);
@@ -827,14 +833,14 @@ void register_scene_types() {
 	GDREGISTER_CLASS(ConvexPolygonShape3D);
 	GDREGISTER_CLASS(ConcavePolygonShape3D);
 
-	ClassDB::register_class<SkeletonModificationStack3D>();
-	ClassDB::register_class<SkeletonModification3D>();
-	ClassDB::register_class<SkeletonModification3DLookAt>();
-	ClassDB::register_class<SkeletonModification3DCCDIK>();
-	ClassDB::register_class<SkeletonModification3DFABRIK>();
-	ClassDB::register_class<SkeletonModification3DJiggle>();
-	ClassDB::register_class<SkeletonModification3DTwoBoneIK>();
-	ClassDB::register_class<SkeletonModification3DStackHolder>();
+	GDREGISTER_CLASS(SkeletonModificationStack3D);
+	GDREGISTER_CLASS(SkeletonModification3D);
+	GDREGISTER_CLASS(SkeletonModification3DLookAt);
+	GDREGISTER_CLASS(SkeletonModification3DCCDIK);
+	GDREGISTER_CLASS(SkeletonModification3DFABRIK);
+	GDREGISTER_CLASS(SkeletonModification3DJiggle);
+	GDREGISTER_CLASS(SkeletonModification3DTwoBoneIK);
+	GDREGISTER_CLASS(SkeletonModification3DStackHolder);
 
 	OS::get_singleton()->yield(); // may take time to init
 #endif // _3D_DISABLED
@@ -960,6 +966,7 @@ void register_scene_types() {
 	ClassDB::add_compatibility_class("Navigation3D", "Node3D");
 	ClassDB::add_compatibility_class("Navigation2D", "Node2D");
 	ClassDB::add_compatibility_class("OpenSimplexNoise", "FastNoiseLite");
+	ClassDB::add_compatibility_class("ProximityGroup", "Node3D");
 	ClassDB::add_compatibility_class("ToolButton", "Button");
 	ClassDB::add_compatibility_class("YSort", "Node2D");
 	// Portal and room occlusion was replaced by raster occlusion (OccluderInstance3D node).

@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  variant_parser.h                                                     */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  variant_parser.h                                                      */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef VARIANT_PARSER_H
 #define VARIANT_PARSER_H
@@ -38,35 +38,55 @@
 class VariantParser {
 public:
 	struct Stream {
-		virtual char32_t get_char() = 0;
-		virtual bool is_utf8() const = 0;
-		virtual bool is_eof() const = 0;
+	private:
+		enum { READAHEAD_SIZE = 2048 };
+		char32_t readahead_buffer[READAHEAD_SIZE];
+		uint32_t readahead_pointer = 0;
+		uint32_t readahead_filled = 0;
+		bool eof = false;
 
+	protected:
+		bool readahead_enabled = true;
+		virtual uint32_t _read_buffer(char32_t *p_buffer, uint32_t p_num_chars) = 0;
+		virtual bool _is_eof() const = 0;
+
+	public:
 		char32_t saved = 0;
+
+		char32_t get_char();
+		virtual bool is_utf8() const = 0;
+		bool is_eof() const;
 
 		Stream() {}
 		virtual ~Stream() {}
 	};
 
 	struct StreamFile : public Stream {
+	protected:
+		virtual uint32_t _read_buffer(char32_t *p_buffer, uint32_t p_num_chars) override;
+		virtual bool _is_eof() const override;
+
+	public:
 		Ref<FileAccess> f;
 
-		virtual char32_t get_char() override;
 		virtual bool is_utf8() const override;
-		virtual bool is_eof() const override;
 
-		StreamFile() {}
+		StreamFile(bool p_readahead_enabled = true) { readahead_enabled = p_readahead_enabled; }
 	};
 
 	struct StreamString : public Stream {
 		String s;
+
+	private:
 		int pos = 0;
 
-		virtual char32_t get_char() override;
-		virtual bool is_utf8() const override;
-		virtual bool is_eof() const override;
+	protected:
+		virtual uint32_t _read_buffer(char32_t *p_buffer, uint32_t p_num_chars) override;
+		virtual bool _is_eof() const override;
 
-		StreamString() {}
+	public:
+		virtual bool is_utf8() const override;
+		StreamString(bool p_readahead_enabled = true) { readahead_enabled = p_readahead_enabled; }
 	};
 
 	typedef Error (*ParseResourceFunc)(void *p_self, Stream *p_stream, Ref<Resource> &r_res, int &line, String &r_err_str);

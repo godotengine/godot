@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  graph_node.cpp                                                       */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  graph_node.cpp                                                        */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "graph_node.h"
 
@@ -174,7 +174,7 @@ void GraphNode::_resort() {
 
 		stretch_min += size.height;
 		msc.min_size = size.height;
-		msc.will_stretch = c->get_v_size_flags() & SIZE_EXPAND;
+		msc.will_stretch = c->get_v_size_flags().has_flag(SIZE_EXPAND);
 
 		if (msc.will_stretch) {
 			stretch_avail += msc.min_size;
@@ -366,38 +366,46 @@ void GraphNode::_notification(int p_what) {
 				close_rect = Rect2();
 			}
 
-			for (const KeyValue<int, Slot> &E : slot_info) {
-				if (E.key < 0 || E.key >= cache_y.size()) {
-					continue;
-				}
-				if (!slot_info.has(E.key)) {
-					continue;
-				}
-				const Slot &s = slot_info[E.key];
-				// Left port.
-				if (s.enable_left) {
-					Ref<Texture2D> p = port;
-					if (s.custom_slot_left.is_valid()) {
-						p = s.custom_slot_left;
+			if (get_child_count() > 0) {
+				for (const KeyValue<int, Slot> &E : slot_info) {
+					if (E.key < 0 || E.key >= cache_y.size()) {
+						continue;
 					}
-					p->draw(get_canvas_item(), icofs + Point2(edgeofs, cache_y[E.key]), s.color_left);
-				}
-				// Right port.
-				if (s.enable_right) {
-					Ref<Texture2D> p = port;
-					if (s.custom_slot_right.is_valid()) {
-						p = s.custom_slot_right;
+					if (!slot_info.has(E.key)) {
+						continue;
 					}
-					p->draw(get_canvas_item(), icofs + Point2(get_size().x - edgeofs, cache_y[E.key]), s.color_right);
-				}
+					const Slot &s = slot_info[E.key];
+					// Left port.
+					if (s.enable_left) {
+						Ref<Texture2D> p = port;
+						if (s.custom_slot_left.is_valid()) {
+							p = s.custom_slot_left;
+						}
+						p->draw(get_canvas_item(), icofs + Point2(edgeofs, cache_y[E.key]), s.color_left);
+					}
+					// Right port.
+					if (s.enable_right) {
+						Ref<Texture2D> p = port;
+						if (s.custom_slot_right.is_valid()) {
+							p = s.custom_slot_right;
+						}
+						p->draw(get_canvas_item(), icofs + Point2(get_size().x - edgeofs, cache_y[E.key]), s.color_right);
+					}
 
-				// Draw slot stylebox.
-				if (s.draw_stylebox) {
-					Control *c = Object::cast_to<Control>(get_child(E.key));
-					Rect2 c_rect = c->get_rect();
-					c_rect.position.x = sb->get_margin(SIDE_LEFT);
-					c_rect.size.width = w;
-					draw_style_box(sb_slot, c_rect);
+					// Draw slot stylebox.
+					if (s.draw_stylebox) {
+						Control *c = Object::cast_to<Control>(get_child(E.key));
+						if (!c || !c->is_visible_in_tree()) {
+							continue;
+						}
+						if (c->is_set_as_top_level()) {
+							continue;
+						}
+						Rect2 c_rect = c->get_rect();
+						c_rect.position.x = sb->get_margin(SIDE_LEFT);
+						c_rect.size.width = w;
+						draw_style_box(sb_slot, c_rect);
+					}
 				}
 			}
 
@@ -741,7 +749,7 @@ void GraphNode::set_selected(bool p_selected) {
 	}
 
 	selected = p_selected;
-	emit_signal(p_selected ? SNAME("selected") : SNAME("deselected"));
+	emit_signal(p_selected ? SNAME("node_selected") : SNAME("node_deselected"));
 	queue_redraw();
 }
 
@@ -1153,8 +1161,8 @@ void GraphNode::_bind_methods() {
 	ADD_GROUP("", "");
 
 	ADD_SIGNAL(MethodInfo("position_offset_changed"));
-	ADD_SIGNAL(MethodInfo("selected"));
-	ADD_SIGNAL(MethodInfo("deselected"));
+	ADD_SIGNAL(MethodInfo("node_selected"));
+	ADD_SIGNAL(MethodInfo("node_deselected"));
 	ADD_SIGNAL(MethodInfo("slot_updated", PropertyInfo(Variant::INT, "idx")));
 	ADD_SIGNAL(MethodInfo("dragged", PropertyInfo(Variant::VECTOR2, "from"), PropertyInfo(Variant::VECTOR2, "to")));
 	ADD_SIGNAL(MethodInfo("raise_request"));

@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  shader_compiler.cpp                                                  */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  shader_compiler.cpp                                                   */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "shader_compiler.h"
 
@@ -133,6 +133,8 @@ static String _interpstr(SL::DataInterpolation p_interp) {
 		case SL::INTERPOLATION_FLAT:
 			return "flat ";
 		case SL::INTERPOLATION_SMOOTH:
+			return "";
+		case SL::INTERPOLATION_DEFAULT:
 			return "";
 	}
 	return "";
@@ -667,6 +669,9 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 					fragment_varyings.insert(varying_name);
 					continue;
 				}
+				if (varying.type < SL::TYPE_INT) {
+					continue; // Ignore boolean types to prevent crashing (if varying is just declared).
+				}
 
 				String vcode;
 				String interp_mode = _interpstr(varying.interpolation);
@@ -1141,8 +1146,18 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 				case SL::OP_STRUCT:
 				case SL::OP_CONSTRUCT: {
 					ERR_FAIL_COND_V(onode->arguments[0]->type != SL::Node::TYPE_VARIABLE, String());
+					const SL::VariableNode *vnode = static_cast<const SL::VariableNode *>(onode->arguments[0]);
+					const SL::FunctionNode *func = nullptr;
+					const bool is_internal_func = internal_functions.has(vnode->name);
 
-					SL::VariableNode *vnode = (SL::VariableNode *)onode->arguments[0];
+					if (!is_internal_func) {
+						for (int i = 0; i < shader->functions.size(); i++) {
+							if (shader->functions[i].name == vnode->name) {
+								func = shader->functions[i].function;
+								break;
+							}
+						}
+					}
 
 					bool is_texture_func = false;
 					bool is_screen_texture = false;
@@ -1156,7 +1171,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 							used_flag_pointers.insert(vnode->name);
 						}
 
-						if (internal_functions.has(vnode->name)) {
+						if (is_internal_func) {
 							code += vnode->name;
 							is_texture_func = texture_functions.has(vnode->name);
 						} else if (p_default_actions.renames.has(vnode->name)) {
@@ -1168,10 +1183,52 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 
 					code += "(";
 
+					// if normal roughness texture is used, we will add logic to automatically switch between
+					// sampler2D and sampler2D array and vec2 UV and vec3 UV.
+					bool normal_roughness_texture_used = false;
+
 					for (int i = 1; i < onode->arguments.size(); i++) {
 						if (i > 1) {
 							code += ", ";
 						}
+
+						bool is_out_qualifier = false;
+						if (is_internal_func) {
+							is_out_qualifier = SL::is_builtin_func_out_parameter(vnode->name, i - 1);
+						} else if (func != nullptr) {
+							const SL::ArgumentQualifier qualifier = func->arguments[i - 1].qualifier;
+							is_out_qualifier = qualifier == SL::ARGUMENT_QUALIFIER_OUT || qualifier == SL::ARGUMENT_QUALIFIER_INOUT;
+						}
+
+						if (is_out_qualifier) {
+							StringName name;
+							bool found = false;
+							{
+								const SL::Node *node = onode->arguments[i];
+
+								bool done = false;
+								do {
+									switch (node->type) {
+										case SL::Node::TYPE_VARIABLE: {
+											name = static_cast<const SL::VariableNode *>(node)->name;
+											done = true;
+											found = true;
+										} break;
+										case SL::Node::TYPE_MEMBER: {
+											node = static_cast<const SL::MemberNode *>(node)->owner;
+										} break;
+										default: {
+											done = true;
+										} break;
+									}
+								} while (!done);
+							}
+
+							if (found && p_actions.write_flag_pointers.has(name)) {
+								*p_actions.write_flag_pointers[name] = true;
+							}
+						}
+
 						String node_code = _dump_node_code(onode->arguments[i], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
 						if (!RS::get_singleton()->is_low_end() && is_texture_func && i == 1) {
 							//need to map from texture to sampler in order to sample when using Vulkan GLSL
@@ -1229,17 +1286,30 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 									}
 								}
 
-								code += ShaderLanguage::get_datatype_name(onode->arguments[i]->get_datatype()) + "(" + node_code + ", " + sampler_name + ")";
+								String data_type_name = "";
+								if (texture_uniform == "NORMAL_ROUGHNESS_TEXTURE") {
+									data_type_name = "multiviewSampler";
+									normal_roughness_texture_used = true;
+								} else {
+									data_type_name = ShaderLanguage::get_datatype_name(onode->arguments[i]->get_datatype());
+								}
+
+								code += data_type_name + "(" + node_code + ", " + sampler_name + ")";
 							} else {
 								code += node_code;
 							}
 						} else {
+							if (normal_roughness_texture_used && i == 2) {
+								// UV coordinate after using normal roughness texture.
+								node_code = "normal_roughness_uv(" + node_code + ".xy)";
+							}
+
 							code += node_code;
 						}
 					}
 					code += ")";
 					if (is_screen_texture && actions.apply_luminance_multiplier) {
-						code = "(" + code + " / vec4(vec3(sc_luminance_multiplier), 1.0))";
+						code = "(" + code + " * vec4(vec3(sc_luminance_multiplier), 1.0))";
 					}
 				} break;
 				case SL::OP_INDEX: {

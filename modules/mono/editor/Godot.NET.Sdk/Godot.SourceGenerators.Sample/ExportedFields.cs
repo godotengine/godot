@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 #pragma warning disable CS0169
@@ -44,7 +45,7 @@ namespace Godot.SourceGenerators.Sample
         [Export] private Color field_Color = Colors.Aquamarine;
         [Export] private Plane field_Plane = Plane.PlaneXZ;
         [Export] private Callable field_Callable = new Callable(Engine.GetMainLoop(), "_process");
-        [Export] private SignalInfo field_SignalInfo = new SignalInfo(Engine.GetMainLoop(), "property_list_changed");
+        [Export] private Signal field_Signal = new Signal(Engine.GetMainLoop(), "property_list_changed");
 
         // Enums
         [SuppressMessage("ReSharper", "UnusedMember.Local")]
@@ -83,6 +84,10 @@ namespace Godot.SourceGenerators.Sample
         [Export] private StringName[] field_StringNameArray = { "foo", "bar" };
         [Export] private NodePath[] field_NodePathArray = { "foo", "bar" };
         [Export] private RID[] field_RIDArray = { default, default, default };
+        // Note we use Array and not System.Array. This tests the generated namespace qualification.
+        [Export] private Int32[] field_empty_Int32Array = Array.Empty<Int32>();
+        // Note we use List and not System.Collections.Generic.
+        [Export] private int[] field_array_from_list = new List<int>(Array.Empty<int>()).ToArray();
 
         // Variant
         [Export] private Variant field_Variant = "foo";

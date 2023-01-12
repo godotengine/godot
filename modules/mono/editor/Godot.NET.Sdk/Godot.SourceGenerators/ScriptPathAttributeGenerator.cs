@@ -45,8 +45,11 @@ namespace Godot.SourceGenerators
                             return false;
                         })
                 )
-                // Ignore classes whose name is not the same as the file name
-                .Where(x => Path.GetFileNameWithoutExtension(x.cds.SyntaxTree.FilePath) == x.symbol.Name)
+                .Where(x =>
+                    // Ignore classes whose name is not the same as the file name
+                    Path.GetFileNameWithoutExtension(x.cds.SyntaxTree.FilePath) == x.symbol.Name &&
+                    // Ignore generic classes
+                    !x.symbol.IsGenericType)
                 .GroupBy(x => x.symbol)
                 .ToDictionary(g => g.Key, g => g.Select(x => x.cds));
 
@@ -92,11 +95,11 @@ namespace Godot.SourceGenerators
 
             INamespaceSymbol namespaceSymbol = symbol.ContainingNamespace;
             string classNs = namespaceSymbol != null && !namespaceSymbol.IsGlobalNamespace ?
-                namespaceSymbol.FullQualifiedName() :
+                namespaceSymbol.FullQualifiedNameOmitGlobal() :
                 string.Empty;
             bool hasNamespace = classNs.Length != 0;
 
-            string uniqueHint = symbol.FullQualifiedName().SanitizeQualifiedNameForUniqueHint()
+            string uniqueHint = symbol.FullQualifiedNameOmitGlobal().SanitizeQualifiedNameForUniqueHint()
                              + "_ScriptPath.generated";
 
             var source = new StringBuilder();
@@ -150,8 +153,6 @@ namespace Godot.SourceGenerators
                 first = false;
                 sourceBuilder.Append("typeof(");
                 sourceBuilder.Append(qualifiedName);
-                if (godotClass.Key.IsGenericType)
-                    sourceBuilder.Append($"<{new string(',', godotClass.Key.TypeParameters.Count() - 1)}>");
                 sourceBuilder.Append(")");
             }
 

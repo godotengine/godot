@@ -4,7 +4,8 @@
 		Handle for a [Resource]'s unique ID.
 	</brief_description>
 	<description>
-		The RID type is used to access the unique integer ID of a resource. They are opaque, which means they do not grant access to the associated resource by themselves. They are used by and with the low-level Server classes such as [RenderingServer].
+		The RID [Variant] type is used to access a low-level resource by its unique ID. RIDs are opaque, which means they do not grant access to the resource by themselves. They are used by the low-level server classes, such as [DisplayServer], [RenderingServer], [TextServer], etc.
+		A low-level resource may correspond to a high-level [Resource], such as [Texture] or [Mesh].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -27,13 +28,13 @@
 		<method name="get_id" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the ID of the referenced resource.
+				Returns the ID of the referenced low-level resource.
 			</description>
 		</method>
 		<method name="is_valid" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if [RID] is valid.
+				Returns [code]true[/code] if the [RID] is not [code]0[/code].
 			</description>
 		</method>
 	</methods>
@@ -42,36 +43,42 @@
 			<return type="bool" />
 			<param index="0" name="right" type="RID" />
 			<description>
+				Returns [code]true[/code] if the [RID]s are not equal.
 			</description>
 		</operator>
 		<operator name="operator &lt;">
 			<return type="bool" />
 			<param index="0" name="right" type="RID" />
 			<description>
+				Returns [code]true[/code] if the [RID]'s ID is less than [param right]'s ID.
 			</description>
 		</operator>
 		<operator name="operator &lt;=">
 			<return type="bool" />
 			<param index="0" name="right" type="RID" />
 			<description>
+				Returns [code]true[/code] if the [RID]'s ID is less than or equal to [param right]'s ID.
 			</description>
 		</operator>
 		<operator name="operator ==">
 			<return type="bool" />
 			<param index="0" name="right" type="RID" />
 			<description>
+				Returns [code]true[/code] if both [RID]s are equal, which means they both refer to the same low-level resource.
 			</description>
 		</operator>
 		<operator name="operator &gt;">
 			<return type="bool" />
 			<param index="0" name="right" type="RID" />
 			<description>
+				Returns [code]true[/code] if the [RID]'s ID is greater than [param right]'s ID.
 			</description>
 		</operator>
 		<operator name="operator &gt;=">
 			<return type="bool" />
 			<param index="0" name="right" type="RID" />
 			<description>
+				Returns [code]true[/code] if the [RID]'s ID is greater than or equal to [param right]'s ID.
 			</description>
 		</operator>
 	</operators>

@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  editor_debugger_node.h                                               */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  editor_debugger_node.h                                                */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef EDITOR_DEBUGGER_NODE_H
 #define EDITOR_DEBUGGER_NODE_H
@@ -36,6 +36,7 @@
 
 class Button;
 class DebugAdapterParser;
+class EditorDebuggerPlugin;
 class EditorDebuggerTree;
 class EditorDebuggerRemoteObject;
 class MenuButton;
@@ -62,7 +63,6 @@ private:
 		DEBUG_STEP,
 		DEBUG_BREAK,
 		DEBUG_CONTINUE,
-		DEBUG_KEEP_DEBUGGER_OPEN,
 		DEBUG_WITH_EXTERNAL_EDITOR,
 	};
 
@@ -109,11 +109,13 @@ private:
 	float remote_scene_tree_timeout = 0.0;
 	bool auto_switch_remote_scene_tree = false;
 	bool debug_with_external_editor = false;
-	bool hide_on_stop = true;
+	bool keep_open = false;
+	String current_uri;
+
 	CameraOverride camera_override = OVERRIDE_NONE;
 	HashMap<Breakpoint, bool, Breakpoint> breakpoints;
 
-	HashSet<Ref<Script>> debugger_plugins;
+	HashSet<Ref<EditorDebuggerPlugin>> debugger_plugins;
 
 	ScriptEditorDebugger *_add_debugger();
 	EditorDebuggerRemoteObject *get_inspected_remote_object();
@@ -190,7 +192,7 @@ public:
 	void set_live_debugging(bool p_enabled);
 	void update_live_edit_root();
 	void live_debug_create_node(const NodePath &p_parent, const String &p_type, const String &p_name);
-	void live_debug_instance_node(const NodePath &p_parent, const String &p_path, const String &p_name);
+	void live_debug_instantiate_node(const NodePath &p_parent, const String &p_path, const String &p_name);
 	void live_debug_remove_node(const NodePath &p_at);
 	void live_debug_remove_and_keep_node(const NodePath &p_at, ObjectID p_keep_id);
 	void live_debug_restore_node(ObjectID p_id, const NodePath &p_at, int p_at_pos);
@@ -202,11 +204,13 @@ public:
 
 	String get_server_uri() const;
 
+	void set_keep_open(bool p_keep_open);
 	Error start(const String &p_uri = "tcp://");
-	void stop();
+	void stop(bool p_force = false);
 
-	void add_debugger_plugin(const Ref<Script> &p_script);
-	void remove_debugger_plugin(const Ref<Script> &p_script);
+	bool plugins_capture(ScriptEditorDebugger *p_debugger, const String &p_message, const Array &p_data);
+	void add_debugger_plugin(const Ref<EditorDebuggerPlugin> &p_plugin);
+	void remove_debugger_plugin(const Ref<EditorDebuggerPlugin> &p_plugin);
 };
 
 #endif // EDITOR_DEBUGGER_NODE_H

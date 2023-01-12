@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  openxr_action.cpp                                                    */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  openxr_action.cpp                                                     */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "openxr_action.h"
 #include "openxr_action_set.h"
@@ -42,7 +42,7 @@ void OpenXRAction::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_toplevel_paths", "toplevel_paths"), &OpenXRAction::set_toplevel_paths);
 	ClassDB::bind_method(D_METHOD("get_toplevel_paths"), &OpenXRAction::get_toplevel_paths);
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "toplevel_paths", PROPERTY_HINT_ARRAY_TYPE, "STRING"), "set_toplevel_paths", "get_toplevel_paths");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "toplevel_paths"), "set_toplevel_paths", "get_toplevel_paths");
 
 	BIND_ENUM_CONSTANT(OPENXR_ACTION_BOOL);
 	BIND_ENUM_CONSTANT(OPENXR_ACTION_FLOAT);
@@ -75,6 +75,7 @@ String OpenXRAction::get_name_with_set() const {
 
 void OpenXRAction::set_localized_name(const String p_localized_name) {
 	localized_name = p_localized_name;
+	emit_changed();
 }
 
 String OpenXRAction::get_localized_name() const {
@@ -83,6 +84,7 @@ String OpenXRAction::get_localized_name() const {
 
 void OpenXRAction::set_action_type(const OpenXRAction::ActionType p_action_type) {
 	action_type = p_action_type;
+	emit_changed();
 }
 
 OpenXRAction::ActionType OpenXRAction::get_action_type() const {
@@ -91,6 +93,7 @@ OpenXRAction::ActionType OpenXRAction::get_action_type() const {
 
 void OpenXRAction::set_toplevel_paths(const PackedStringArray p_toplevel_paths) {
 	toplevel_paths = p_toplevel_paths;
+	emit_changed();
 }
 
 PackedStringArray OpenXRAction::get_toplevel_paths() const {
@@ -100,15 +103,18 @@ PackedStringArray OpenXRAction::get_toplevel_paths() const {
 void OpenXRAction::add_toplevel_path(const String p_toplevel_path) {
 	if (!toplevel_paths.has(p_toplevel_path)) {
 		toplevel_paths.push_back(p_toplevel_path);
+		emit_changed();
 	}
 }
 
 void OpenXRAction::rem_toplevel_path(const String p_toplevel_path) {
 	if (toplevel_paths.has(p_toplevel_path)) {
 		toplevel_paths.erase(p_toplevel_path);
+		emit_changed();
 	}
 }
 
 void OpenXRAction::parse_toplevel_paths(const String p_toplevel_paths) {
 	toplevel_paths = p_toplevel_paths.split(",", false);
+	emit_changed();
 }

@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  openxr_action_map.cpp                                                */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  openxr_action_map.cpp                                                 */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "openxr_action_map.h"
 
@@ -95,6 +95,7 @@ void OpenXRActionMap::add_action_set(Ref<OpenXRActionSet> p_action_set) {
 
 	if (action_sets.find(p_action_set) == -1) {
 		action_sets.push_back(p_action_set);
+		emit_changed();
 	}
 }
 
@@ -102,6 +103,7 @@ void OpenXRActionMap::remove_action_set(Ref<OpenXRActionSet> p_action_set) {
 	int idx = action_sets.find(p_action_set);
 	if (idx != -1) {
 		action_sets.remove_at(idx);
+		emit_changed();
 	}
 }
 
@@ -146,6 +148,7 @@ void OpenXRActionMap::add_interaction_profile(Ref<OpenXRInteractionProfile> p_in
 
 	if (interaction_profiles.find(p_interaction_profile) == -1) {
 		interaction_profiles.push_back(p_interaction_profile);
+		emit_changed();
 	}
 }
 
@@ -153,6 +156,7 @@ void OpenXRActionMap::remove_interaction_profile(Ref<OpenXRInteractionProfile> p
 	int idx = interaction_profiles.find(p_interaction_profile);
 	if (idx != -1) {
 		interaction_profiles.remove_at(idx);
+		emit_changed();
 	}
 }
 
@@ -300,6 +304,31 @@ void OpenXRActionMap::create_default_action_sets() {
 	profile->add_new_binding(primary_click, "/user/hand/left/input/thumbstick/click,/user/hand/right/input/thumbstick/click");
 	profile->add_new_binding(primary_touch, "/user/hand/left/input/thumbstick/touch,/user/hand/right/input/thumbstick/touch");
 	// touch controller has no secondary input
+	profile->add_new_binding(haptic, "/user/hand/left/output/haptic,/user/hand/right/output/haptic");
+	add_interaction_profile(profile);
+
+	// Create our Pico 4 / Neo 3 controller profile
+	profile = OpenXRInteractionProfile::new_profile("/interaction_profiles/pico/neo3_controller");
+	profile->add_new_binding(default_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
+	profile->add_new_binding(aim_pose, "/user/hand/left/input/aim/pose,/user/hand/right/input/aim/pose");
+	profile->add_new_binding(grip_pose, "/user/hand/left/input/grip/pose,/user/hand/right/input/grip/pose");
+	profile->add_new_binding(palm_pose, "/user/hand/left/input/palm_ext/pose,/user/hand/right/input/palm_ext/pose");
+	profile->add_new_binding(select_button, "/user/hand/left/input/system/click,/user/hand/right/input/system/click"); // system click may not be available
+	profile->add_new_binding(menu_button, "/user/hand/left/input/back/click,/user/hand/right/input/back/click"); // right hand back click may not be available
+	profile->add_new_binding(ax_button, "/user/hand/left/input/x/click,/user/hand/right/input/a/click"); // x on left hand, a on right hand
+	profile->add_new_binding(ax_touch, "/user/hand/left/input/x/touch,/user/hand/right/input/a/touch");
+	profile->add_new_binding(by_button, "/user/hand/left/input/y/click,/user/hand/right/input/b/click"); // y on left hand, b on right hand
+	profile->add_new_binding(by_touch, "/user/hand/left/input/y/touch,/user/hand/right/input/b/touch");
+	profile->add_new_binding(trigger, "/user/hand/left/input/trigger/value,/user/hand/right/input/trigger/value");
+	profile->add_new_binding(trigger_click, "/user/hand/left/input/trigger/value,/user/hand/right/input/trigger/value"); // should be converted to boolean
+	profile->add_new_binding(trigger_touch, "/user/hand/left/input/trigger/touch,/user/hand/right/input/trigger/touch");
+	profile->add_new_binding(grip, "/user/hand/left/input/squeeze/value,/user/hand/right/input/squeeze/value"); // should be converted to boolean
+	profile->add_new_binding(grip_click, "/user/hand/left/input/squeeze/value,/user/hand/right/input/squeeze/value");
+	// primary on our pico controller is our thumbstick
+	profile->add_new_binding(primary, "/user/hand/left/input/thumbstick,/user/hand/right/input/thumbstick");
+	profile->add_new_binding(primary_click, "/user/hand/left/input/thumbstick/click,/user/hand/right/input/thumbstick/click");
+	profile->add_new_binding(primary_touch, "/user/hand/left/input/thumbstick/touch,/user/hand/right/input/thumbstick/touch");
+	// pico controller has no secondary input
 	profile->add_new_binding(haptic, "/user/hand/left/output/haptic,/user/hand/right/output/haptic");
 	add_interaction_profile(profile);
 
@@ -489,30 +518,34 @@ Ref<OpenXRAction> OpenXRActionMap::get_action(const String p_path) const {
 	return Ref<OpenXRAction>();
 }
 
-void OpenXRActionMap::remove_action(const String p_path) {
+void OpenXRActionMap::remove_action(const String p_path, bool p_remove_interaction_profiles) {
 	Ref<OpenXRAction> action = get_action(p_path);
 	if (action.is_valid()) {
+		for (int i = 0; i < interaction_profiles.size(); i++) {
+			Ref<OpenXRInteractionProfile> interaction_profile = interaction_profiles[i];
+
+			if (p_remove_interaction_profiles) {
+				// Remove any bindings for this action
+				interaction_profile->remove_binding_for_action(action);
+			} else {
+				ERR_FAIL_COND(interaction_profile->has_binding_for_action(action));
+			}
+		}
+
 		OpenXRActionSet *action_set = action->get_action_set();
 		if (action_set != nullptr) {
 			// Remove the action from this action set
 			action_set->remove_action(action);
 		}
-
-		for (int i = 0; i < interaction_profiles.size(); i++) {
-			Ref<OpenXRInteractionProfile> interaction_profile = interaction_profiles[i];
-
-			// Remove any bindings for this action
-			interaction_profile->remove_binding_for_action(action);
-		}
 	}
 }
 
-PackedStringArray OpenXRActionMap::get_top_level_paths(Ref<OpenXRAction> p_action) {
+PackedStringArray OpenXRActionMap::get_top_level_paths(const Ref<OpenXRAction> p_action) {
 	PackedStringArray arr;
 
 	for (int i = 0; i < interaction_profiles.size(); i++) {
 		Ref<OpenXRInteractionProfile> ip = interaction_profiles[i];
-		const OpenXRDefs::InteractionProfile *profile = OpenXRDefs::get_profile(ip->get_interaction_profile_path());
+		const OpenXRInteractionProfileMetaData::InteractionProfile *profile = OpenXRInteractionProfileMetaData::get_singleton()->get_profile(ip->get_interaction_profile_path());
 
 		if (profile != nullptr) {
 			for (int j = 0; j < ip->get_binding_count(); j++) {
@@ -521,9 +554,9 @@ PackedStringArray OpenXRActionMap::get_top_level_paths(Ref<OpenXRAction> p_actio
 					PackedStringArray paths = binding->get_paths();
 
 					for (int k = 0; k < paths.size(); k++) {
-						const OpenXRDefs::IOPath *io_path = profile->get_io_path(paths[k]);
+						const OpenXRInteractionProfileMetaData::IOPath *io_path = profile->get_io_path(paths[k]);
 						if (io_path != nullptr) {
-							String top_path = String(io_path->top_level_path->openxr_path);
+							String top_path = io_path->top_level_path;
 
 							if (!arr.has(top_path)) {
 								arr.push_back(top_path);
@@ -535,7 +568,7 @@ PackedStringArray OpenXRActionMap::get_top_level_paths(Ref<OpenXRAction> p_actio
 		}
 	}
 
-	print_line("Toplevel paths for", p_action->get_name_with_set(), "are", arr);
+	// print_line("Toplevel paths for", p_action->get_name_with_set(), "are", arr);
 
 	return arr;
 }

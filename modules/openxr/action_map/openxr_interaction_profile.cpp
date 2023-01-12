@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  openxr_interaction_profile.cpp                                       */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  openxr_interaction_profile.cpp                                        */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "openxr_interaction_profile.h"
 
@@ -38,7 +38,7 @@ void OpenXRIPBinding::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_path_count"), &OpenXRIPBinding::get_path_count);
 	ClassDB::bind_method(D_METHOD("set_paths", "paths"), &OpenXRIPBinding::set_paths);
 	ClassDB::bind_method(D_METHOD("get_paths"), &OpenXRIPBinding::get_paths);
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "paths", PROPERTY_HINT_ARRAY_TYPE, "STRING"), "set_paths", "get_paths");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "paths"), "set_paths", "get_paths");
 
 	ClassDB::bind_method(D_METHOD("has_path", "path"), &OpenXRIPBinding::has_path);
 	ClassDB::bind_method(D_METHOD("add_path", "path"), &OpenXRIPBinding::add_path);
@@ -58,6 +58,7 @@ Ref<OpenXRIPBinding> OpenXRIPBinding::new_binding(const Ref<OpenXRAction> p_acti
 
 void OpenXRIPBinding::set_action(const Ref<OpenXRAction> p_action) {
 	action = p_action;
+	emit_changed();
 }
 
 Ref<OpenXRAction> OpenXRIPBinding::get_action() const {
@@ -70,6 +71,7 @@ int OpenXRIPBinding::get_path_count() const {
 
 void OpenXRIPBinding::set_paths(const PackedStringArray p_paths) {
 	paths = p_paths;
+	emit_changed();
 }
 
 PackedStringArray OpenXRIPBinding::get_paths() const {
@@ -78,6 +80,7 @@ PackedStringArray OpenXRIPBinding::get_paths() const {
 
 void OpenXRIPBinding::parse_paths(const String p_paths) {
 	paths = p_paths.split(",", false);
+	emit_changed();
 }
 
 bool OpenXRIPBinding::has_path(const String p_path) const {
@@ -87,12 +90,14 @@ bool OpenXRIPBinding::has_path(const String p_path) const {
 void OpenXRIPBinding::add_path(const String p_path) {
 	if (!paths.has(p_path)) {
 		paths.push_back(p_path);
+		emit_changed();
 	}
 }
 
 void OpenXRIPBinding::remove_path(const String p_path) {
 	if (paths.has(p_path)) {
 		paths.erase(p_path);
+		emit_changed();
 	}
 }
 
@@ -122,6 +127,7 @@ Ref<OpenXRInteractionProfile> OpenXRInteractionProfile::new_profile(const char *
 
 void OpenXRInteractionProfile::set_interaction_profile_path(const String p_input_profile_path) {
 	interaction_profile_path = p_input_profile_path;
+	emit_changed();
 }
 
 String OpenXRInteractionProfile::get_interaction_profile_path() const {
@@ -139,9 +145,10 @@ Ref<OpenXRIPBinding> OpenXRInteractionProfile::get_binding(int p_index) const {
 }
 
 void OpenXRInteractionProfile::set_bindings(Array p_bindings) {
-	bindings = p_bindings;
-
 	// TODO add check here that our bindings don't contain duplicate actions
+
+	bindings = p_bindings;
+	emit_changed();
 }
 
 Array OpenXRInteractionProfile::get_bindings() const {
@@ -166,6 +173,7 @@ void OpenXRInteractionProfile::add_binding(Ref<OpenXRIPBinding> p_binding) {
 		ERR_FAIL_COND_MSG(get_binding_for_action(p_binding->get_action()).is_valid(), "There is already a binding for this action in this interaction profile");
 
 		bindings.push_back(p_binding);
+		emit_changed();
 	}
 }
 
@@ -173,6 +181,7 @@ void OpenXRInteractionProfile::remove_binding(Ref<OpenXRIPBinding> p_binding) {
 	int idx = bindings.find(p_binding);
 	if (idx != -1) {
 		bindings.remove_at(idx);
+		emit_changed();
 	}
 }
 
@@ -190,6 +199,17 @@ void OpenXRInteractionProfile::remove_binding_for_action(const Ref<OpenXRAction>
 			remove_binding(binding);
 		}
 	}
+}
+
+bool OpenXRInteractionProfile::has_binding_for_action(const Ref<OpenXRAction> p_action) {
+	for (int i = bindings.size() - 1; i >= 0; i--) {
+		Ref<OpenXRIPBinding> binding = bindings[i];
+		if (binding->get_action() == p_action) {
+			return true;
+		}
+	}
+
+	return false;
 }
 
 OpenXRInteractionProfile::~OpenXRInteractionProfile() {

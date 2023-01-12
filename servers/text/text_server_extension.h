@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  text_server_extension.h                                              */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  text_server_extension.h                                               */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef TEXT_SERVER_EXTENSION_H
 #define TEXT_SERVER_EXTENSION_H
@@ -84,7 +84,7 @@ public:
 	virtual void font_set_data(const RID &p_font_rid, const PackedByteArray &p_data) override;
 	virtual void font_set_data_ptr(const RID &p_font_rid, const uint8_t *p_data_ptr, int64_t p_data_size) override;
 	GDVIRTUAL2(_font_set_data, RID, const PackedByteArray &);
-	GDVIRTUAL3(_font_set_data_ptr, RID, GDNativeConstPtr<const uint8_t>, int64_t);
+	GDVIRTUAL3(_font_set_data_ptr, RID, GDExtensionConstPtr<const uint8_t>, int64_t);
 
 	virtual void font_set_face_index(const RID &p_font_rid, int64_t p_index) override;
 	virtual int64_t font_get_face_index(const RID &p_font_rid) const override;
@@ -108,6 +108,16 @@ public:
 	virtual String font_get_style_name(const RID &p_font_rid) const override;
 	GDVIRTUAL2(_font_set_style_name, RID, const String &);
 	GDVIRTUAL1RC(String, _font_get_style_name, RID);
+
+	virtual void font_set_weight(const RID &p_font_rid, int64_t p_weight) override;
+	virtual int64_t font_get_weight(const RID &p_font_rid) const override;
+	GDVIRTUAL2(_font_set_weight, RID, int);
+	GDVIRTUAL1RC(int64_t, _font_get_weight, RID);
+
+	virtual void font_set_stretch(const RID &p_font_rid, int64_t p_stretch) override;
+	virtual int64_t font_get_stretch(const RID &p_font_rid) const override;
+	GDVIRTUAL2(_font_set_stretch, RID, int);
+	GDVIRTUAL1RC(int64_t, _font_get_stretch, RID);
 
 	virtual void font_set_antialiasing(const RID &p_font_rid, TextServer::FontAntialiasing p_antialiasing) override;
 	virtual TextServer::FontAntialiasing font_get_antialiasing(const RID &p_font_rid) const override;
@@ -153,6 +163,11 @@ public:
 	virtual Transform2D font_get_transform(const RID &p_font_rid) const override;
 	GDVIRTUAL2(_font_set_transform, RID, Transform2D);
 	GDVIRTUAL1RC(Transform2D, _font_get_transform, RID);
+
+	virtual void font_set_allow_system_fallback(const RID &p_font_rid, bool p_allow_system_fallback) override;
+	virtual bool font_is_allow_system_fallback(const RID &p_font_rid) const override;
+	GDVIRTUAL2(_font_set_allow_system_fallback, RID, bool);
+	GDVIRTUAL1RC(bool, _font_is_allow_system_fallback, RID);
 
 	virtual void font_set_force_autohinter(const RID &p_font_rid, bool p_force_autohinter) override;
 	virtual bool font_is_force_autohinter(const RID &p_font_rid) const override;
@@ -380,11 +395,11 @@ public:
 	GDVIRTUAL2RC(int64_t, _shaped_text_get_spacing, RID, SpacingType);
 
 	virtual bool shaped_text_add_string(const RID &p_shaped, const String &p_text, const TypedArray<RID> &p_fonts, int64_t p_size, const Dictionary &p_opentype_features = Dictionary(), const String &p_language = "", const Variant &p_meta = Variant()) override;
-	virtual bool shaped_text_add_object(const RID &p_shaped, const Variant &p_key, const Size2 &p_size, InlineAlignment p_inline_align = INLINE_ALIGNMENT_CENTER, int64_t p_length = 1) override;
-	virtual bool shaped_text_resize_object(const RID &p_shaped, const Variant &p_key, const Size2 &p_size, InlineAlignment p_inline_align = INLINE_ALIGNMENT_CENTER) override;
+	virtual bool shaped_text_add_object(const RID &p_shaped, const Variant &p_key, const Size2 &p_size, InlineAlignment p_inline_align = INLINE_ALIGNMENT_CENTER, int64_t p_length = 1, float p_baseline = 0.0) override;
+	virtual bool shaped_text_resize_object(const RID &p_shaped, const Variant &p_key, const Size2 &p_size, InlineAlignment p_inline_align = INLINE_ALIGNMENT_CENTER, float p_baseline = 0.0) override;
 	GDVIRTUAL7R(bool, _shaped_text_add_string, RID, const String &, const TypedArray<RID> &, int64_t, const Dictionary &, const String &, const Variant &);
-	GDVIRTUAL5R(bool, _shaped_text_add_object, RID, const Variant &, const Size2 &, InlineAlignment, int64_t);
-	GDVIRTUAL4R(bool, _shaped_text_resize_object, RID, const Variant &, const Size2 &, InlineAlignment);
+	GDVIRTUAL6R(bool, _shaped_text_add_object, RID, const Variant &, const Size2 &, InlineAlignment, int64_t, float);
+	GDVIRTUAL5R(bool, _shaped_text_resize_object, RID, const Variant &, const Size2 &, InlineAlignment, float);
 
 	virtual int64_t shaped_get_span_count(const RID &p_shaped) const override;
 	virtual Variant shaped_get_span_meta(const RID &p_shaped, int64_t p_index) const override;
@@ -416,8 +431,8 @@ public:
 	virtual const Glyph *shaped_text_get_glyphs(const RID &p_shaped) const override;
 	virtual const Glyph *shaped_text_sort_logical(const RID &p_shaped) override;
 	virtual int64_t shaped_text_get_glyph_count(const RID &p_shaped) const override;
-	GDVIRTUAL1RC(GDNativeConstPtr<const Glyph>, _shaped_text_get_glyphs, RID);
-	GDVIRTUAL1R(GDNativeConstPtr<const Glyph>, _shaped_text_sort_logical, RID);
+	GDVIRTUAL1RC(GDExtensionConstPtr<const Glyph>, _shaped_text_get_glyphs, RID);
+	GDVIRTUAL1R(GDExtensionConstPtr<const Glyph>, _shaped_text_sort_logical, RID);
 	GDVIRTUAL1RC(int64_t, _shaped_text_get_glyph_count, RID);
 
 	virtual Vector2i shaped_text_get_range(const RID &p_shaped) const override;
@@ -436,7 +451,7 @@ public:
 	virtual int64_t shaped_text_get_ellipsis_glyph_count(const RID &p_shaped) const override;
 	GDVIRTUAL1RC(int64_t, _shaped_text_get_trim_pos, RID);
 	GDVIRTUAL1RC(int64_t, _shaped_text_get_ellipsis_pos, RID);
-	GDVIRTUAL1RC(GDNativeConstPtr<const Glyph>, _shaped_text_get_ellipsis_glyphs, RID);
+	GDVIRTUAL1RC(GDExtensionConstPtr<const Glyph>, _shaped_text_get_ellipsis_glyphs, RID);
 	GDVIRTUAL1RC(int64_t, _shaped_text_get_ellipsis_glyph_count, RID);
 
 	virtual void shaped_text_overrun_trim_to_width(const RID &p_shaped, double p_width, BitField<TextServer::TextOverrunFlag> p_trim_flags) override;
@@ -465,7 +480,7 @@ public:
 
 	virtual CaretInfo shaped_text_get_carets(const RID &p_shaped, int64_t p_position) const override;
 	virtual Vector<Vector2> shaped_text_get_selection(const RID &p_shaped, int64_t p_start, int64_t p_end) const override;
-	GDVIRTUAL3C(_shaped_text_get_carets, RID, int64_t, GDNativePtr<CaretInfo>);
+	GDVIRTUAL3C(_shaped_text_get_carets, RID, int64_t, GDExtensionPtr<CaretInfo>);
 	GDVIRTUAL3RC(Vector<Vector2>, _shaped_text_get_selection, RID, int64_t, int64_t);
 
 	virtual int64_t shaped_text_hit_test_grapheme(const RID &p_shaped, double p_coords) const override;
@@ -495,8 +510,8 @@ public:
 	virtual String strip_diacritics(const String &p_string) const override;
 	GDVIRTUAL1RC(String, _strip_diacritics, const String &);
 
-	virtual PackedInt32Array string_get_word_breaks(const String &p_string, const String &p_language = "") const override;
-	GDVIRTUAL2RC(PackedInt32Array, _string_get_word_breaks, const String &, const String &);
+	virtual PackedInt32Array string_get_word_breaks(const String &p_string, const String &p_language = "", int p_chars_per_line = 0) const override;
+	GDVIRTUAL3RC(PackedInt32Array, _string_get_word_breaks, const String &, const String &, int);
 
 	virtual bool is_valid_identifier(const String &p_string) const override;
 	GDVIRTUAL1RC(bool, _is_valid_identifier, const String &);
@@ -513,6 +528,9 @@ public:
 	virtual bool spoof_check(const String &p_string) const override;
 	GDVIRTUAL2RC(int64_t, _is_confusable, const String &, const PackedStringArray &);
 	GDVIRTUAL1RC(bool, _spoof_check, const String &);
+
+	virtual void cleanup() override;
+	GDVIRTUAL0(_cleanup);
 
 	TextServerExtension();
 	~TextServerExtension();

@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  gl_manager_x11.cpp                                                   */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  gl_manager_x11.cpp                                                    */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "gl_manager_x11.h"
 
@@ -37,9 +37,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#define GLX_GLXEXT_PROTOTYPES
-#include <GL/glx.h>
-#include <GL/glxext.h>
+#include "thirdparty/glad/glad/glx.h"
 
 #define GLX_CONTEXT_MAJOR_VERSION_ARB 0x2091
 #define GLX_CONTEXT_MINOR_VERSION_ARB 0x2092
@@ -323,16 +321,15 @@ void GLManager_X11::swap_buffers() {
 	glXSwapBuffers(_x_windisp.x11_display, _x_windisp.x11_window);
 }
 
-Error GLManager_X11::initialize() {
+Error GLManager_X11::initialize(Display *p_display) {
+	if (!gladLoaderLoadGLX(p_display, XScreenNumberOfScreen(XDefaultScreenOfDisplay(p_display)))) {
+		return ERR_CANT_CREATE;
+	}
+
 	return OK;
 }
 
 void GLManager_X11::set_use_vsync(bool p_use) {
-	static bool setup = false;
-	static PFNGLXSWAPINTERVALEXTPROC glXSwapIntervalEXT = nullptr;
-	static PFNGLXSWAPINTERVALSGIPROC glXSwapIntervalMESA = nullptr;
-	static PFNGLXSWAPINTERVALSGIPROC glXSwapIntervalSGI = nullptr;
-
 	// force vsync in the editor for now, as a safety measure
 	bool is_editor = Engine::get_singleton()->is_editor_hint();
 	if (is_editor) {
@@ -345,25 +342,12 @@ void GLManager_X11::set_use_vsync(bool p_use) {
 	}
 	const GLDisplay &disp = get_current_display();
 
-	if (!setup) {
-		setup = true;
-		String extensions = glXQueryExtensionsString(disp.x11_display, DefaultScreen(disp.x11_display));
-		if (extensions.find("GLX_EXT_swap_control") != -1) {
-			glXSwapIntervalEXT = (PFNGLXSWAPINTERVALEXTPROC)glXGetProcAddressARB((const GLubyte *)"glXSwapIntervalEXT");
-		}
-		if (extensions.find("GLX_MESA_swap_control") != -1) {
-			glXSwapIntervalMESA = (PFNGLXSWAPINTERVALSGIPROC)glXGetProcAddressARB((const GLubyte *)"glXSwapIntervalMESA");
-		}
-		if (extensions.find("GLX_SGI_swap_control") != -1) {
-			glXSwapIntervalSGI = (PFNGLXSWAPINTERVALSGIPROC)glXGetProcAddressARB((const GLubyte *)"glXSwapIntervalSGI");
-		}
-	}
 	int val = p_use ? 1 : 0;
-	if (glXSwapIntervalMESA) {
+	if (GLAD_GLX_MESA_swap_control) {
 		glXSwapIntervalMESA(val);
-	} else if (glXSwapIntervalSGI) {
+	} else if (GLAD_GLX_SGI_swap_control) {
 		glXSwapIntervalSGI(val);
-	} else if (glXSwapIntervalEXT) {
+	} else if (GLAD_GLX_EXT_swap_control) {
 		GLXDrawable drawable = glXGetCurrentDrawable();
 		glXSwapIntervalEXT(disp.x11_display, drawable, val);
 	} else {
@@ -374,6 +358,17 @@ void GLManager_X11::set_use_vsync(bool p_use) {
 
 bool GLManager_X11::is_using_vsync() const {
 	return use_vsync;
+}
+
+void *GLManager_X11::get_glx_context(DisplayServer::WindowID p_window_id) {
+	if (p_window_id == -1) {
+		return nullptr;
+	}
+
+	const GLWindow &win = _windows[p_window_id];
+	const GLDisplay &disp = get_display(win.gldisplay_id);
+
+	return (void *)disp.context->glx_context;
 }
 
 GLManager_X11::GLManager_X11(const Vector2i &p_size, ContextType p_context_type) {

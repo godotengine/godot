@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  openxr_api.h                                                         */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  openxr_api.h                                                          */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef OPENXR_API_H
 #define OPENXR_API_H
@@ -65,6 +65,9 @@ private:
 	// our singleton
 	static OpenXRAPI *singleton;
 
+	// Registered extension wrappers
+	static Vector<OpenXRExtensionWrapper *> registered_extension_wrappers;
+
 	// linked XR interface
 	OpenXRInterface *xr_interface = nullptr;
 
@@ -75,14 +78,7 @@ private:
 	// extensions
 	uint32_t num_supported_extensions = 0;
 	XrExtensionProperties *supported_extensions = nullptr;
-	Vector<OpenXRExtensionWrapper *> registered_extension_wrappers;
 	Vector<CharString> enabled_extensions;
-
-	bool ext_hp_mixed_reality_available = false;
-	bool ext_samsung_odyssey_available = false;
-	bool ext_vive_cosmos_available = false;
-	bool ext_vive_focus3_available = false;
-	bool ext_huawei_controller_available = false;
 
 	// composition layer providers
 	Vector<OpenXRCompositionLayerProvider *> composition_layer_providers;
@@ -104,6 +100,7 @@ private:
 	XrViewConfigurationType view_configuration = XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO;
 	XrReferenceSpaceType reference_space = XR_REFERENCE_SPACE_TYPE_STAGE;
 	// XrEnvironmentBlendMode environment_blend_mode = XR_ENVIRONMENT_BLEND_MODE_OPAQUE;
+	bool submit_depth_buffer = false; // if set to true we submit depth buffers to OpenXR if a suitable extension is enabled.
 
 	// state
 	XrInstance instance = XR_NULL_HANDLE;
@@ -149,6 +146,7 @@ private:
 	bool load_layer_properties();
 	bool load_supported_extensions();
 	bool is_extension_supported(const String &p_extension) const;
+	bool is_extension_enabled(const String &p_extension) const;
 
 	bool openxr_loader_init();
 	bool resolve_instance_openxr_symbols();
@@ -300,17 +298,34 @@ public:
 	void parse_velocities(const XrSpaceVelocity &p_velocity, Vector3 &r_linear_velocity, Vector3 &r_angular_velocity);
 
 	bool xr_result(XrResult result, const char *format, Array args = Array()) const;
-	bool is_path_supported(const String &p_path);
+	bool is_top_level_path_supported(const String &p_toplevel_path);
+	bool is_interaction_profile_supported(const String &p_ip_path);
+	bool interaction_profile_supports_io_path(const String &p_ip_path, const String &p_io_path);
 
 	static bool openxr_is_enabled(bool p_check_run_in_editor = true);
-	static OpenXRAPI *get_singleton();
+	_FORCE_INLINE_ static OpenXRAPI *get_singleton() { return singleton; }
 
+	XrResult try_get_instance_proc_addr(const char *p_name, PFN_xrVoidFunction *p_addr);
 	XrResult get_instance_proc_addr(const char *p_name, PFN_xrVoidFunction *p_addr);
 	String get_error_string(XrResult result);
 	String get_swapchain_format_name(int64_t p_swapchain_format) const;
 
 	void set_xr_interface(OpenXRInterface *p_xr_interface);
-	void register_extension_wrapper(OpenXRExtensionWrapper *p_extension_wrapper);
+	static void register_extension_wrapper(OpenXRExtensionWrapper *p_extension_wrapper);
+	static void register_extension_metadata();
+	static void cleanup_extension_wrappers();
+
+	void set_form_factor(XrFormFactor p_form_factor);
+	XrFormFactor get_form_factor() const { return form_factor; }
+
+	void set_view_configuration(XrViewConfigurationType p_view_configuration);
+	XrViewConfigurationType get_view_configuration() const { return view_configuration; }
+
+	void set_reference_space(XrReferenceSpaceType p_reference_space);
+	XrReferenceSpaceType get_reference_space() const { return reference_space; }
+
+	void set_submit_depth_buffer(bool p_submit_depth_buffer);
+	bool get_submit_depth_buffer() const { return submit_depth_buffer; }
 
 	bool is_initialized();
 	bool is_running();

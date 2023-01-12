@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  a_star_grid_2d.h                                                     */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  a_star_grid_2d.h                                                      */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef A_STAR_GRID_2D_H
 #define A_STAR_GRID_2D_H
@@ -65,13 +65,15 @@ private:
 
 	bool jumping_enabled = false;
 	DiagonalMode diagonal_mode = DIAGONAL_MODE_ALWAYS;
-	Heuristic default_heuristic = HEURISTIC_EUCLIDEAN;
+	Heuristic default_compute_heuristic = HEURISTIC_EUCLIDEAN;
+	Heuristic default_estimate_heuristic = HEURISTIC_EUCLIDEAN;
 
 	struct Point {
 		Vector2i id;
 
 		bool solid = false;
 		Vector2 pos;
+		real_t weight_scale = 1.0;
 
 		// Used for pathfinding.
 		Point *prev_point = nullptr;
@@ -160,14 +162,21 @@ public:
 	void set_diagonal_mode(DiagonalMode p_diagonal_mode);
 	DiagonalMode get_diagonal_mode() const;
 
-	void set_default_heuristic(Heuristic p_heuristic);
-	Heuristic get_default_heuristic() const;
+	void set_default_compute_heuristic(Heuristic p_heuristic);
+	Heuristic get_default_compute_heuristic() const;
+
+	void set_default_estimate_heuristic(Heuristic p_heuristic);
+	Heuristic get_default_estimate_heuristic() const;
 
 	void set_point_solid(const Vector2i &p_id, bool p_solid = true);
 	bool is_point_solid(const Vector2i &p_id) const;
 
+	void set_point_weight_scale(const Vector2i &p_id, real_t p_weight_scale);
+	real_t get_point_weight_scale(const Vector2i &p_id) const;
+
 	void clear();
 
+	Vector2 get_point_position(const Vector2i &p_id) const;
 	Vector<Vector2> get_point_path(const Vector2i &p_from, const Vector2i &p_to);
 	TypedArray<Vector2i> get_id_path(const Vector2i &p_from, const Vector2i &p_to);
 };

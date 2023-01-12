@@ -12,6 +12,7 @@
 	</tutorials>
 	<members>
 		<member name="shadow_bias" type="float" setter="set_param" getter="get_param" overrides="Light3D" default="0.03" />
+		<member name="shadow_normal_bias" type="float" setter="set_param" getter="get_param" overrides="Light3D" default="1.0" />
 		<member name="spot_angle" type="float" setter="set_param" getter="get_param" default="45.0">
 			The spotlight's angle in degrees.
 			[b]Note:[/b] [member spot_angle] is not affected by [member Node3D.scale] (the light's scale or its parent's scale).

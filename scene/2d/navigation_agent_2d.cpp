@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  navigation_agent_2d.cpp                                              */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  navigation_agent_2d.cpp                                               */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "navigation_agent_2d.h"
 
@@ -70,6 +70,9 @@ void NavigationAgent2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_navigation_layer_value", "layer_number", "value"), &NavigationAgent2D::set_navigation_layer_value);
 	ClassDB::bind_method(D_METHOD("get_navigation_layer_value", "layer_number"), &NavigationAgent2D::get_navigation_layer_value);
 
+	ClassDB::bind_method(D_METHOD("set_path_metadata_flags", "flags"), &NavigationAgent2D::set_path_metadata_flags);
+	ClassDB::bind_method(D_METHOD("get_path_metadata_flags"), &NavigationAgent2D::get_path_metadata_flags);
+
 	ClassDB::bind_method(D_METHOD("set_navigation_map", "navigation_map"), &NavigationAgent2D::set_navigation_map);
 	ClassDB::bind_method(D_METHOD("get_navigation_map"), &NavigationAgent2D::get_navigation_map);
 
@@ -79,8 +82,9 @@ void NavigationAgent2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_next_location"), &NavigationAgent2D::get_next_location);
 	ClassDB::bind_method(D_METHOD("distance_to_target"), &NavigationAgent2D::distance_to_target);
 	ClassDB::bind_method(D_METHOD("set_velocity", "velocity"), &NavigationAgent2D::set_velocity);
-	ClassDB::bind_method(D_METHOD("get_nav_path"), &NavigationAgent2D::get_nav_path);
-	ClassDB::bind_method(D_METHOD("get_nav_path_index"), &NavigationAgent2D::get_nav_path_index);
+	ClassDB::bind_method(D_METHOD("get_current_navigation_result"), &NavigationAgent2D::get_current_navigation_result);
+	ClassDB::bind_method(D_METHOD("get_current_navigation_path"), &NavigationAgent2D::get_current_navigation_path);
+	ClassDB::bind_method(D_METHOD("get_current_navigation_path_index"), &NavigationAgent2D::get_current_navigation_path_index);
 	ClassDB::bind_method(D_METHOD("is_target_reached"), &NavigationAgent2D::is_target_reached);
 	ClassDB::bind_method(D_METHOD("is_target_reachable"), &NavigationAgent2D::is_target_reachable);
 	ClassDB::bind_method(D_METHOD("is_navigation_finished"), &NavigationAgent2D::is_navigation_finished);
@@ -90,21 +94,24 @@ void NavigationAgent2D::_bind_methods() {
 
 	ADD_GROUP("Pathfinding", "");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "target_location", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_target_location", "get_target_location");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "path_desired_distance", PROPERTY_HINT_RANGE, "0.1,100,0.01,suffix:px"), "set_path_desired_distance", "get_path_desired_distance");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "target_desired_distance", PROPERTY_HINT_RANGE, "0.1,100,0.01,suffix:px"), "set_target_desired_distance", "get_target_desired_distance");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "path_max_distance", PROPERTY_HINT_RANGE, "10,100,1,suffix:px"), "set_path_max_distance", "get_path_max_distance");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "path_desired_distance", PROPERTY_HINT_RANGE, "0.1,1000,0.01,suffix:px"), "set_path_desired_distance", "get_path_desired_distance");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "target_desired_distance", PROPERTY_HINT_RANGE, "0.1,1000,0.01,suffix:px"), "set_target_desired_distance", "get_target_desired_distance");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "path_max_distance", PROPERTY_HINT_RANGE, "10,1000,1,suffix:px"), "set_path_max_distance", "get_path_max_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_layers", PROPERTY_HINT_LAYERS_2D_NAVIGATION), "set_navigation_layers", "get_navigation_layers");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "path_metadata_flags", PROPERTY_HINT_FLAGS, "Include Types,Include RIDs,Include Owners"), "set_path_metadata_flags", "get_path_metadata_flags");
 
 	ADD_GROUP("Avoidance", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "avoidance_enabled"), "set_avoidance_enabled", "get_avoidance_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_RANGE, "0.1,500,0.01,suffix:px"), "set_radius", "get_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "neighbor_distance", PROPERTY_HINT_RANGE, "0.1,100000,0.01,suffix:px"), "set_neighbor_distance", "get_neighbor_distance");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_neighbors", PROPERTY_HINT_RANGE, "1,10000,1"), "set_max_neighbors", "get_max_neighbors");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "time_horizon", PROPERTY_HINT_RANGE, "0.1,10000,0.01,suffix:s"), "set_time_horizon", "get_time_horizon");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_speed", PROPERTY_HINT_RANGE, "0.1,100000,0.01,suffix:px/s"), "set_max_speed", "get_max_speed");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "time_horizon", PROPERTY_HINT_RANGE, "0.1,10,0.01,suffix:s"), "set_time_horizon", "get_time_horizon");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_speed", PROPERTY_HINT_RANGE, "0.1,10000,0.01,suffix:px/s"), "set_max_speed", "get_max_speed");
 
 	ADD_SIGNAL(MethodInfo("path_changed"));
 	ADD_SIGNAL(MethodInfo("target_reached"));
+	ADD_SIGNAL(MethodInfo("waypoint_reached", PropertyInfo(Variant::DICTIONARY, "details")));
+	ADD_SIGNAL(MethodInfo("link_reached", PropertyInfo(Variant::DICTIONARY, "details")));
 	ADD_SIGNAL(MethodInfo("navigation_finished"));
 	ADD_SIGNAL(MethodInfo("velocity_computed", PropertyInfo(Variant::VECTOR2, "safe_velocity")));
 }
@@ -161,7 +168,7 @@ void NavigationAgent2D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
-			if (agent_parent) {
+			if (agent_parent && target_position_submitted) {
 				if (avoidance_enabled) {
 					// agent_position on NavigationServer is avoidance only and has nothing to do with pathfinding
 					// no point in flooding NavigationServer queue with agent position updates that get send to the void if avoidance is not used
@@ -175,11 +182,11 @@ void NavigationAgent2D::_notification(int p_what) {
 
 NavigationAgent2D::NavigationAgent2D() {
 	agent = NavigationServer2D::get_singleton()->agent_create();
-	set_neighbor_distance(500.0);
-	set_max_neighbors(10);
-	set_time_horizon(20.0);
-	set_radius(10.0);
-	set_max_speed(200.0);
+	set_neighbor_distance(neighbor_distance);
+	set_max_neighbors(max_neighbors);
+	set_time_horizon(time_horizon);
+	set_radius(radius);
+	set_max_speed(max_speed);
 
 	// Preallocate query and result objects to improve performance.
 	navigation_query = Ref<NavigationPathQueryParameters2D>();
@@ -190,6 +197,7 @@ NavigationAgent2D::NavigationAgent2D() {
 }
 
 NavigationAgent2D::~NavigationAgent2D() {
+	ERR_FAIL_NULL(NavigationServer2D::get_singleton());
 	NavigationServer2D::get_singleton()->free(agent);
 	agent = RID(); // Pointless
 }
@@ -197,9 +205,9 @@ NavigationAgent2D::~NavigationAgent2D() {
 void NavigationAgent2D::set_avoidance_enabled(bool p_enabled) {
 	avoidance_enabled = p_enabled;
 	if (avoidance_enabled) {
-		NavigationServer2D::get_singleton()->agent_set_callback(agent, this, "_avoidance_done");
+		NavigationServer2D::get_singleton()->agent_set_callback(agent, get_instance_id(), "_avoidance_done");
 	} else {
-		NavigationServer2D::get_singleton()->agent_set_callback(agent, nullptr, "_avoidance_done");
+		NavigationServer2D::get_singleton()->agent_set_callback(agent, ObjectID(), "_avoidance_done");
 	}
 }
 
@@ -209,7 +217,7 @@ bool NavigationAgent2D::get_avoidance_enabled() const {
 
 void NavigationAgent2D::set_agent_parent(Node *p_agent_parent) {
 	// remove agent from any avoidance map before changing parent or there will be leftovers on the RVO map
-	NavigationServer2D::get_singleton()->agent_set_callback(agent, nullptr, "_avoidance_done");
+	NavigationServer2D::get_singleton()->agent_set_callback(agent, ObjectID(), "_avoidance_done");
 	if (Object::cast_to<Node2D>(p_agent_parent) != nullptr) {
 		// place agent on navigation map first or else the RVO agent callback creation fails silently later
 		agent_parent = Object::cast_to<Node2D>(p_agent_parent);
@@ -254,6 +262,14 @@ bool NavigationAgent2D::get_navigation_layer_value(int p_layer_number) const {
 	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Navigation layer number must be between 1 and 32 inclusive.");
 	ERR_FAIL_COND_V_MSG(p_layer_number > 32, false, "Navigation layer number must be between 1 and 32 inclusive.");
 	return get_navigation_layers() & (1 << (p_layer_number - 1));
+}
+
+void NavigationAgent2D::set_path_metadata_flags(BitField<NavigationPathQueryParameters2D::PathMetadataFlags> p_path_metadata_flags) {
+	if (path_metadata_flags == p_path_metadata_flags) {
+		return;
+	}
+
+	path_metadata_flags = p_path_metadata_flags;
 }
 
 void NavigationAgent2D::set_navigation_map(RID p_navigation_map) {
@@ -314,6 +330,7 @@ real_t NavigationAgent2D::get_path_max_distance() {
 
 void NavigationAgent2D::set_target_location(Vector2 p_location) {
 	target_location = p_location;
+	target_position_submitted = true;
 	_request_repath();
 }
 
@@ -329,12 +346,8 @@ Vector2 NavigationAgent2D::get_next_location() {
 		ERR_FAIL_COND_V_MSG(agent_parent == nullptr, Vector2(), "The agent has no parent.");
 		return agent_parent->get_global_position();
 	} else {
-		return navigation_path[nav_path_index];
+		return navigation_path[navigation_path_index];
 	}
-}
-
-const Vector<Vector2> &NavigationAgent2D::get_nav_path() const {
-	return navigation_result->get_path();
 }
 
 real_t NavigationAgent2D::distance_to_target() const {
@@ -402,6 +415,9 @@ void NavigationAgent2D::update_navigation() {
 	if (!agent_parent->is_inside_tree()) {
 		return;
 	}
+	if (!target_position_submitted) {
+		return;
+	}
 	if (update_frame_id == Engine::get_singleton()->get_physics_frames()) {
 		return;
 	}
@@ -418,12 +434,12 @@ void NavigationAgent2D::update_navigation() {
 		reload_path = true;
 	} else {
 		// Check if too far from the navigation path
-		if (nav_path_index > 0) {
+		if (navigation_path_index > 0) {
 			const Vector<Vector2> &navigation_path = navigation_result->get_path();
 
 			Vector2 segment[2];
-			segment[0] = navigation_path[nav_path_index - 1];
-			segment[1] = navigation_path[nav_path_index];
+			segment[0] = navigation_path[navigation_path_index - 1];
+			segment[1] = navigation_path[navigation_path_index];
 			Vector2 p = Geometry2D::get_closest_point_to_segment(origin, segment);
 			if (origin.distance_to(p) >= path_max_distance) {
 				// To faraway, reload path
@@ -436,6 +452,7 @@ void NavigationAgent2D::update_navigation() {
 		navigation_query->set_start_position(origin);
 		navigation_query->set_target_position(target_location);
 		navigation_query->set_navigation_layers(navigation_layers);
+		navigation_query->set_metadata_flags(path_metadata_flags);
 
 		if (map_override.is_valid()) {
 			navigation_query->set_map(map_override);
@@ -445,7 +462,7 @@ void NavigationAgent2D::update_navigation() {
 
 		NavigationServer2D::get_singleton()->query_path(navigation_query, navigation_result);
 		navigation_finished = false;
-		nav_path_index = 0;
+		navigation_path_index = 0;
 		emit_signal(SNAME("path_changed"));
 	}
 
@@ -457,12 +474,57 @@ void NavigationAgent2D::update_navigation() {
 	if (navigation_finished == false) {
 		// Advances to the next far away location.
 		const Vector<Vector2> &navigation_path = navigation_result->get_path();
-		while (origin.distance_to(navigation_path[nav_path_index]) < path_desired_distance) {
-			nav_path_index += 1;
-			if (nav_path_index == navigation_path.size()) {
+		const Vector<int32_t> &navigation_path_types = navigation_result->get_path_types();
+		const TypedArray<RID> &navigation_path_rids = navigation_result->get_path_rids();
+		const Vector<int64_t> &navigation_path_owners = navigation_result->get_path_owner_ids();
+
+		while (origin.distance_to(navigation_path[navigation_path_index]) < path_desired_distance) {
+			Dictionary details;
+
+			const Vector2 waypoint = navigation_path[navigation_path_index];
+			details[SNAME("location")] = waypoint;
+
+			int waypoint_type = -1;
+			if (path_metadata_flags.has_flag(NavigationPathQueryParameters2D::PathMetadataFlags::PATH_METADATA_INCLUDE_TYPES)) {
+				const NavigationPathQueryResult2D::PathSegmentType type = NavigationPathQueryResult2D::PathSegmentType(navigation_path_types[navigation_path_index]);
+
+				details[SNAME("type")] = type;
+				waypoint_type = type;
+			}
+
+			if (path_metadata_flags.has_flag(NavigationPathQueryParameters2D::PathMetadataFlags::PATH_METADATA_INCLUDE_RIDS)) {
+				details[SNAME("rid")] = navigation_path_rids[navigation_path_index];
+			}
+
+			if (path_metadata_flags.has_flag(NavigationPathQueryParameters2D::PathMetadataFlags::PATH_METADATA_INCLUDE_OWNERS)) {
+				const ObjectID waypoint_owner_id = ObjectID(navigation_path_owners[navigation_path_index]);
+
+				// Get a reference to the owning object.
+				Object *owner = nullptr;
+				if (waypoint_owner_id.is_valid()) {
+					owner = ObjectDB::get_instance(waypoint_owner_id);
+				}
+
+				details[SNAME("owner")] = owner;
+			}
+
+			// Emit a signal for the waypoint
+			emit_signal(SNAME("waypoint_reached"), details);
+
+			// Emit a signal if we've reached a navigation link
+			if (waypoint_type == NavigationPathQueryResult2D::PATH_SEGMENT_TYPE_LINK) {
+				emit_signal(SNAME("link_reached"), details);
+			}
+
+			// Move to the next waypoint on the list
+			navigation_path_index += 1;
+
+			// Check to see if we've finished our route
+			if (navigation_path_index == navigation_path.size()) {
 				_check_distance_to_target();
-				nav_path_index -= 1;
+				navigation_path_index -= 1;
 				navigation_finished = true;
+				target_position_submitted = false;
 				emit_signal(SNAME("navigation_finished"));
 				break;
 			}

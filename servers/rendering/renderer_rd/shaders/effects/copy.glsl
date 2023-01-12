@@ -14,8 +14,7 @@ layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 #define FLAG_FLIP_Y (1 << 5)
 #define FLAG_FORCE_LUMINANCE (1 << 6)
 #define FLAG_COPY_ALL_SOURCE (1 << 7)
-#define FLAG_HIGH_QUALITY_GLOW (1 << 8)
-#define FLAG_ALPHA_TO_ONE (1 << 9)
+#define FLAG_ALPHA_TO_ONE (1 << 8)
 
 layout(push_constant, std430) uniform Params {
 	ivec4 section;
@@ -93,25 +92,14 @@ void main() {
 #ifdef MODE_GAUSSIAN_BLUR
 
 	// First pass copy texture into 16x16 local memory for every 8x8 thread block
-	vec2 quad_center_uv = clamp(vec2(gl_GlobalInvocationID.xy + gl_LocalInvocationID.xy - 3.5) / params.section.zw, vec2(0.5 / params.section.zw), vec2(1.0 - 1.5 / params.section.zw));
+	vec2 quad_center_uv = clamp(vec2(params.section.xy + gl_GlobalInvocationID.xy + gl_LocalInvocationID.xy - 3.5) / params.section.zw, vec2(0.5 / params.section.zw), vec2(1.0 - 1.5 / params.section.zw));
 	uint dest_index = gl_LocalInvocationID.x * 2 + gl_LocalInvocationID.y * 2 * 16;
 
-#ifdef MODE_GLOW
-	if (bool(params.flags & FLAG_HIGH_QUALITY_GLOW)) {
-		vec2 quad_offset_uv = clamp((vec2(gl_GlobalInvocationID.xy + gl_LocalInvocationID.xy - 3.0)) / params.section.zw, vec2(0.5 / params.section.zw), vec2(1.0 - 1.5 / params.section.zw));
+	local_cache[dest_index] = textureLod(source_color, quad_center_uv, 0);
+	local_cache[dest_index + 1] = textureLod(source_color, quad_center_uv + vec2(1.0 / params.section.z, 0.0), 0);
+	local_cache[dest_index + 16] = textureLod(source_color, quad_center_uv + vec2(0.0, 1.0 / params.section.w), 0);
+	local_cache[dest_index + 16 + 1] = textureLod(source_color, quad_center_uv + vec2(1.0 / params.section.zw), 0);
 
-		local_cache[dest_index] = (textureLod(source_color, quad_center_uv, 0) + textureLod(source_color, quad_offset_uv, 0)) * 0.5;
-		local_cache[dest_index + 1] = (textureLod(source_color, quad_center_uv + vec2(1.0 / params.section.z, 0.0), 0) + textureLod(source_color, quad_offset_uv + vec2(1.0 / params.section.z, 0.0), 0)) * 0.5;
-		local_cache[dest_index + 16] = (textureLod(source_color, quad_center_uv + vec2(0.0, 1.0 / params.section.w), 0) + textureLod(source_color, quad_offset_uv + vec2(0.0, 1.0 / params.section.w), 0)) * 0.5;
-		local_cache[dest_index + 16 + 1] = (textureLod(source_color, quad_center_uv + vec2(1.0 / params.section.zw), 0) + textureLod(source_color, quad_offset_uv + vec2(1.0 / params.section.zw), 0)) * 0.5;
-	} else
-#endif
-	{
-		local_cache[dest_index] = textureLod(source_color, quad_center_uv, 0);
-		local_cache[dest_index + 1] = textureLod(source_color, quad_center_uv + vec2(1.0 / params.section.z, 0.0), 0);
-		local_cache[dest_index + 16] = textureLod(source_color, quad_center_uv + vec2(0.0, 1.0 / params.section.w), 0);
-		local_cache[dest_index + 16 + 1] = textureLod(source_color, quad_center_uv + vec2(1.0 / params.section.zw), 0);
-	}
 #ifdef MODE_GLOW
 	if (bool(params.flags & FLAG_GLOW_FIRST_PASS)) {
 		// Tonemap initial samples to reduce weight of fireflies: https://graphicrants.blogspot.com/2013/12/tone-mapping.html
@@ -194,10 +182,10 @@ void main() {
 
 		color = min(color * feedback, vec4(params.glow_luminance_cap));
 	}
-#endif
+#endif // MODE_GLOW
 	imageStore(dest_buffer, pos + params.target, color);
 
-#endif
+#endif // MODE_GAUSSIAN_BLUR
 
 #ifdef MODE_SIMPLE_COPY
 
@@ -227,7 +215,7 @@ void main() {
 
 	imageStore(dest_buffer, pos + params.target, color);
 
-#endif
+#endif // MODE_SIMPLE_COPY
 
 #ifdef MODE_SIMPLE_COPY_DEPTH
 
@@ -239,7 +227,7 @@ void main() {
 
 	imageStore(dest_buffer, pos + params.target, vec4(color.r));
 
-#endif
+#endif // MODE_SIMPLE_COPY_DEPTH
 
 #ifdef MODE_LINEARIZE_DEPTH_COPY
 
@@ -253,7 +241,7 @@ void main() {
 	}
 
 	imageStore(dest_buffer, pos + params.target, color);
-#endif
+#endif // MODE_LINEARIZE_DEPTH_COPY
 
 #if defined(MODE_CUBEMAP_TO_PANORAMA) || defined(MODE_CUBEMAP_ARRAY_TO_PANORAMA)
 
@@ -276,7 +264,7 @@ void main() {
 	vec4 color = textureLod(source_color, vec4(normal, params.camera_z_far), 0.0); //the biggest the lod the least the acne
 #endif
 	imageStore(dest_buffer, pos + params.target, color);
-#endif
+#endif // defined(MODE_CUBEMAP_TO_PANORAMA) || defined(MODE_CUBEMAP_ARRAY_TO_PANORAMA)
 
 #ifdef MODE_SET_COLOR
 	imageStore(dest_buffer, pos + params.target, params.set_color);

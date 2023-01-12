@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  texture.cpp                                                          */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  texture.cpp                                                           */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "texture.h"
 
@@ -40,19 +40,15 @@
 #include "servers/camera/camera_feed.h"
 
 int Texture2D::get_width() const {
-	int ret;
-	if (GDVIRTUAL_REQUIRED_CALL(_get_width, ret)) {
-		return ret;
-	}
-	return 0;
+	int ret = 0;
+	GDVIRTUAL_REQUIRED_CALL(_get_width, ret);
+	return ret;
 }
 
 int Texture2D::get_height() const {
-	int ret;
-	if (GDVIRTUAL_REQUIRED_CALL(_get_height, ret)) {
-		return ret;
-	}
-	return 0;
+	int ret = 0;
+	GDVIRTUAL_REQUIRED_CALL(_get_height, ret);
+	return ret;
 }
 
 Size2 Texture2D::get_size() const {
@@ -64,6 +60,7 @@ bool Texture2D::is_pixel_opaque(int p_x, int p_y) const {
 	GDVIRTUAL_CALL(_is_pixel_opaque, p_x, p_y, ret);
 	return ret;
 }
+
 bool Texture2D::has_alpha() const {
 	bool ret = true;
 	GDVIRTUAL_CALL(_has_alpha, ret);
@@ -327,6 +324,7 @@ ImageTexture::ImageTexture() {}
 
 ImageTexture::~ImageTexture() {
 	if (texture.is_valid()) {
+		ERR_FAIL_NULL(RenderingServer::get_singleton());
 		RenderingServer::get_singleton()->free(texture);
 	}
 }
@@ -633,6 +631,7 @@ PortableCompressedTexture2D::PortableCompressedTexture2D() {}
 
 PortableCompressedTexture2D::~PortableCompressedTexture2D() {
 	if (texture.is_valid()) {
+		ERR_FAIL_NULL(RenderingServer::get_singleton());
 		RenderingServer::get_singleton()->free(texture);
 	}
 }
@@ -1044,6 +1043,7 @@ CompressedTexture2D::CompressedTexture2D() {}
 
 CompressedTexture2D::~CompressedTexture2D() {
 	if (texture.is_valid()) {
+		ERR_FAIL_NULL(RenderingServer::get_singleton());
 		RS::get_singleton()->free(texture);
 	}
 }
@@ -1091,57 +1091,44 @@ TypedArray<Image> Texture3D::_get_datai() const {
 }
 
 Image::Format Texture3D::get_format() const {
-	Image::Format ret;
-	if (GDVIRTUAL_REQUIRED_CALL(_get_format, ret)) {
-		return ret;
-	}
-	return Image::FORMAT_MAX;
+	Image::Format ret = Image::FORMAT_MAX;
+	GDVIRTUAL_REQUIRED_CALL(_get_format, ret);
+	return ret;
 }
 
 int Texture3D::get_width() const {
-	int ret;
-	if (GDVIRTUAL_REQUIRED_CALL(_get_width, ret)) {
-		return ret;
-	}
-	return 0;
+	int ret = 0;
+	GDVIRTUAL_REQUIRED_CALL(_get_width, ret);
+	return ret;
 }
 
 int Texture3D::get_height() const {
-	int ret;
-	if (GDVIRTUAL_REQUIRED_CALL(_get_height, ret)) {
-		return ret;
-	}
-	return 0;
+	int ret = 0;
+	GDVIRTUAL_REQUIRED_CALL(_get_height, ret);
+	return ret;
 }
 
 int Texture3D::get_depth() const {
-	int ret;
-	if (GDVIRTUAL_REQUIRED_CALL(_get_depth, ret)) {
-		return ret;
-	}
-
-	return 0;
+	int ret = 0;
+	GDVIRTUAL_REQUIRED_CALL(_get_depth, ret);
+	return ret;
 }
 
 bool Texture3D::has_mipmaps() const {
-	bool ret;
-	if (GDVIRTUAL_REQUIRED_CALL(_has_mipmaps, ret)) {
-		return ret;
-	}
-	return false;
+	bool ret = false;
+	GDVIRTUAL_REQUIRED_CALL(_has_mipmaps, ret);
+	return ret;
 }
 
 Vector<Ref<Image>> Texture3D::get_data() const {
 	TypedArray<Image> ret;
-	if (GDVIRTUAL_REQUIRED_CALL(_get_data, ret)) {
-		Vector<Ref<Image>> data;
-		data.resize(ret.size());
-		for (int i = 0; i < data.size(); i++) {
-			data.write[i] = ret[i];
-		}
-		return data;
+	GDVIRTUAL_REQUIRED_CALL(_get_data, ret);
+	Vector<Ref<Image>> data;
+	data.resize(ret.size());
+	for (int i = 0; i < data.size(); i++) {
+		data.write[i] = ret[i];
 	}
-	return Vector<Ref<Image>>();
+	return data;
 }
 void Texture3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_format"), &Texture3D::get_format);
@@ -1241,6 +1228,7 @@ ImageTexture3D::ImageTexture3D() {
 
 ImageTexture3D::~ImageTexture3D() {
 	if (texture.is_valid()) {
+		ERR_FAIL_NULL(RenderingServer::get_singleton());
 		RS::get_singleton()->free(texture);
 	}
 }
@@ -1402,6 +1390,7 @@ CompressedTexture3D::CompressedTexture3D() {}
 
 CompressedTexture3D::~CompressedTexture3D() {
 	if (texture.is_valid()) {
+		ERR_FAIL_NULL(RenderingServer::get_singleton());
 		RS::get_singleton()->free(texture);
 	}
 }
@@ -1607,35 +1596,28 @@ bool AtlasTexture::get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect,
 		return false;
 	}
 
-	Rect2 rc = region;
-
 	Rect2 src = p_src_rect;
 	if (src.size == Size2()) {
-		src.size = rc.size;
+		src.size = region.size;
 	}
 	Vector2 scale = p_rect.size / src.size;
 
-	src.position += (rc.position - margin.position);
-	Rect2 src_c = rc.intersection(src);
-	if (src_c.size == Size2()) {
+	src.position += (region.position - margin.position);
+	Rect2 src_clipped = region.intersection(src);
+	if (src_clipped.size == Size2()) {
 		return false;
 	}
-	Vector2 ofs = (src_c.position - src.position);
 
+	Vector2 ofs = (src_clipped.position - src.position);
 	if (scale.x < 0) {
-		float mx = (margin.size.width - margin.position.x);
-		mx -= margin.position.x;
-		ofs.x = -(ofs.x + mx);
+		ofs.x += (src_clipped.size.x - src.size.x);
 	}
 	if (scale.y < 0) {
-		float my = margin.size.height - margin.position.y;
-		my -= margin.position.y;
-		ofs.y = -(ofs.y + my);
+		ofs.y += (src_clipped.size.y - src.size.y);
 	}
-	Rect2 dr(p_rect.position + ofs * scale, src_c.size * scale);
 
-	r_rect = dr;
-	r_src_rect = src_c;
+	r_rect = Rect2(p_rect.position + ofs * scale, src_clipped.size * scale);
+	r_src_rect = src_clipped;
 	return true;
 }
 
@@ -1934,6 +1916,7 @@ CurveTexture::CurveTexture() {}
 
 CurveTexture::~CurveTexture() {
 	if (_texture.is_valid()) {
+		ERR_FAIL_NULL(RenderingServer::get_singleton());
 		RS::get_singleton()->free(_texture);
 	}
 }
@@ -2132,6 +2115,7 @@ CurveXYZTexture::CurveXYZTexture() {}
 
 CurveXYZTexture::~CurveXYZTexture() {
 	if (_texture.is_valid()) {
+		ERR_FAIL_NULL(RenderingServer::get_singleton());
 		RS::get_singleton()->free(_texture);
 	}
 }
@@ -2144,6 +2128,7 @@ GradientTexture1D::GradientTexture1D() {
 
 GradientTexture1D::~GradientTexture1D() {
 	if (texture.is_valid()) {
+		ERR_FAIL_NULL(RenderingServer::get_singleton());
 		RS::get_singleton()->free(texture);
 	}
 }
@@ -2286,6 +2271,7 @@ GradientTexture2D::GradientTexture2D() {
 
 GradientTexture2D::~GradientTexture2D() {
 	if (texture.is_valid()) {
+		ERR_FAIL_NULL(RenderingServer::get_singleton());
 		RS::get_singleton()->free(texture);
 	}
 }
@@ -2326,9 +2312,9 @@ void GradientTexture2D::_update() {
 	Ref<Image> image;
 	image.instantiate();
 
-	if (gradient->get_points_count() <= 1) { // No need to interpolate.
+	if (gradient->get_point_count() <= 1) { // No need to interpolate.
 		image->initialize_data(width, height, false, (use_hdr) ? Image::FORMAT_RGBAF : Image::FORMAT_RGBA8);
-		image->fill((gradient->get_points_count() == 1) ? gradient->get_color(0) : Color(0, 0, 0, 1));
+		image->fill((gradient->get_point_count() == 1) ? gradient->get_color(0) : Color(0, 0, 0, 1));
 	} else {
 		if (use_hdr) {
 			image->initialize_data(width, height, false, Image::FORMAT_RGBAF);
@@ -2544,6 +2530,7 @@ void ProxyTexture::set_base(const Ref<Texture2D> &p_texture) {
 
 	base = p_texture;
 	if (base.is_valid()) {
+		ERR_FAIL_NULL(RenderingServer::get_singleton());
 		if (proxy_ph.is_valid()) {
 			RS::get_singleton()->texture_proxy_update(proxy, base->get_rid());
 			RS::get_singleton()->free(proxy_ph);
@@ -2594,6 +2581,7 @@ ProxyTexture::ProxyTexture() {
 }
 
 ProxyTexture::~ProxyTexture() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	if (proxy_ph.is_valid()) {
 		RS::get_singleton()->free(proxy_ph);
 	}
@@ -2851,6 +2839,7 @@ AnimatedTexture::AnimatedTexture() {
 }
 
 AnimatedTexture::~AnimatedTexture() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RS::get_singleton()->free(proxy);
 	RS::get_singleton()->free(proxy_ph);
 }
@@ -2858,60 +2847,45 @@ AnimatedTexture::~AnimatedTexture() {
 ///////////////////////////////
 
 Image::Format TextureLayered::get_format() const {
-	Image::Format ret;
-	if (GDVIRTUAL_REQUIRED_CALL(_get_format, ret)) {
-		return ret;
-	}
-	return Image::FORMAT_MAX;
+	Image::Format ret = Image::FORMAT_MAX;
+	GDVIRTUAL_REQUIRED_CALL(_get_format, ret);
+	return ret;
 }
 
 TextureLayered::LayeredType TextureLayered::get_layered_type() const {
-	uint32_t ret;
-	if (GDVIRTUAL_REQUIRED_CALL(_get_layered_type, ret)) {
-		return (LayeredType)ret;
-	}
-	return LAYERED_TYPE_2D_ARRAY;
+	uint32_t ret = LAYERED_TYPE_2D_ARRAY;
+	GDVIRTUAL_REQUIRED_CALL(_get_layered_type, ret);
+	return (LayeredType)ret;
 }
 
 int TextureLayered::get_width() const {
-	int ret;
-	if (GDVIRTUAL_REQUIRED_CALL(_get_width, ret)) {
-		return ret;
-	}
-	return 0;
+	int ret = 0;
+	GDVIRTUAL_REQUIRED_CALL(_get_width, ret);
+	return ret;
 }
 
 int TextureLayered::get_height() const {
-	int ret;
-	if (GDVIRTUAL_REQUIRED_CALL(_get_height, ret)) {
-		return ret;
-	}
-	return 0;
+	int ret = 0;
+	GDVIRTUAL_REQUIRED_CALL(_get_height, ret);
+	return ret;
 }
 
 int TextureLayered::get_layers() const {
-	int ret;
-	if (GDVIRTUAL_REQUIRED_CALL(_get_layers, ret)) {
-		return ret;
-	}
-
-	return 0;
+	int ret = 0;
+	GDVIRTUAL_REQUIRED_CALL(_get_layers, ret);
+	return ret;
 }
 
 bool TextureLayered::has_mipmaps() const {
-	bool ret;
-	if (GDVIRTUAL_REQUIRED_CALL(_has_mipmaps, ret)) {
-		return ret;
-	}
-	return false;
+	bool ret = false;
+	GDVIRTUAL_REQUIRED_CALL(_has_mipmaps, ret);
+	return ret;
 }
 
 Ref<Image> TextureLayered::get_layer_data(int p_layer) const {
 	Ref<Image> ret;
-	if (GDVIRTUAL_REQUIRED_CALL(_get_layer_data, p_layer, ret)) {
-		return ret;
-	}
-	return Ref<Image>();
+	GDVIRTUAL_REQUIRED_CALL(_get_layer_data, p_layer, ret);
+	return ret;
 }
 
 void TextureLayered::_bind_methods() {
@@ -3069,6 +3043,7 @@ ImageTextureLayered::ImageTextureLayered(LayeredType p_layered_type) {
 
 ImageTextureLayered::~ImageTextureLayered() {
 	if (texture.is_valid()) {
+		ERR_FAIL_NULL(RenderingServer::get_singleton());
 		RS::get_singleton()->free(texture);
 	}
 }
@@ -3236,6 +3211,7 @@ CompressedTextureLayered::CompressedTextureLayered(LayeredType p_type) {
 
 CompressedTextureLayered::~CompressedTextureLayered() {
 	if (texture.is_valid()) {
+		ERR_FAIL_NULL(RenderingServer::get_singleton());
 		RS::get_singleton()->free(texture);
 	}
 }
@@ -3391,6 +3367,7 @@ CameraTexture::CameraTexture() {}
 
 CameraTexture::~CameraTexture() {
 	if (_texture.is_valid()) {
+		ERR_FAIL_NULL(RenderingServer::get_singleton());
 		RenderingServer::get_singleton()->free(_texture);
 	}
 }
@@ -3424,7 +3401,7 @@ RID PlaceholderTexture2D::get_rid() const {
 void PlaceholderTexture2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_size", "size"), &PlaceholderTexture2D::set_size);
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "size", PROPERTY_HINT_NONE, "suffix:px"), "set_size", "get_size");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "size", PROPERTY_HINT_NONE, "suffix:px"), "set_size", "get_size");
 }
 
 PlaceholderTexture2D::PlaceholderTexture2D() {
@@ -3432,6 +3409,7 @@ PlaceholderTexture2D::PlaceholderTexture2D() {
 }
 
 PlaceholderTexture2D::~PlaceholderTexture2D() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RS::get_singleton()->free(rid);
 }
 
@@ -3479,6 +3457,7 @@ PlaceholderTexture3D::PlaceholderTexture3D() {
 	rid = RS::get_singleton()->texture_3d_placeholder_create();
 }
 PlaceholderTexture3D::~PlaceholderTexture3D() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RS::get_singleton()->free(rid);
 }
 
@@ -3537,5 +3516,6 @@ PlaceholderTextureLayered::PlaceholderTextureLayered(LayeredType p_type) {
 	rid = RS::get_singleton()->texture_2d_layered_placeholder_create(RS::TextureLayeredType(layered_type));
 }
 PlaceholderTextureLayered::~PlaceholderTextureLayered() {
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	RS::get_singleton()->free(rid);
 }

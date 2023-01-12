@@ -41,7 +41,7 @@ Official binaries for the Godot editor and the export templates can be found
 
 ### Compiling from source
 
-[See the official docs](https://docs.godotengine.org/en/latest/development/compiling/)
+[See the official docs](https://docs.godotengine.org/en/latest/contributing/development/compiling)
 for compilation instructions for every supported platform.
 
 ## Community and contributing

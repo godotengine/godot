@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+Value of type "enum_from_outer.gd::Named" cannot be assigned to a variable of type "preload_enum_error.gd::LocalNamed".

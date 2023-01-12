@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  primitive_meshes.h                                                   */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  primitive_meshes.h                                                    */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef PRIMITIVE_MESHES_H
 #define PRIMITIVE_MESHES_H
@@ -56,6 +56,9 @@ private:
 	Ref<Material> material;
 	bool flip_faces = false;
 
+	bool add_uv2 = false;
+	float uv2_padding = 2.0;
+
 	// make sure we do an update after we've finished constructing our object
 	mutable bool pending_request = true;
 	void _update() const;
@@ -70,6 +73,10 @@ protected:
 	void _request_update();
 	GDVIRTUAL0RC(Array, _create_mesh_array)
 
+	Vector2 get_uv2_scale(Vector2 p_margin_scale = Vector2(1.0, 1.0)) const;
+	float get_lightmap_texel_size() const;
+	virtual void _update_lightmap_size(){};
+
 public:
 	virtual int get_surface_count() const override;
 	virtual int surface_get_array_len(int p_idx) const override;
@@ -77,7 +84,7 @@ public:
 	virtual Array surface_get_arrays(int p_surface) const override;
 	virtual TypedArray<Array> surface_get_blend_shape_arrays(int p_surface) const override;
 	virtual Dictionary surface_get_lods(int p_surface) const override;
-	virtual uint32_t surface_get_format(int p_idx) const override;
+	virtual BitField<ArrayFormat> surface_get_format(int p_idx) const override;
 	virtual Mesh::PrimitiveType surface_get_primitive_type(int p_idx) const override;
 	virtual void surface_set_material(int p_idx, const Ref<Material> &p_material) override;
 	virtual Ref<Material> surface_get_material(int p_idx) const override;
@@ -97,6 +104,12 @@ public:
 
 	void set_flip_faces(bool p_enable);
 	bool get_flip_faces() const;
+
+	void set_add_uv2(bool p_enable);
+	bool get_add_uv2() const { return add_uv2; }
+
+	void set_uv2_padding(float p_padding);
+	float get_uv2_padding() const { return uv2_padding; }
 
 	PrimitiveMesh();
 	~PrimitiveMesh();
@@ -118,8 +131,10 @@ protected:
 	static void _bind_methods();
 	virtual void _create_mesh_array(Array &p_arr) const override;
 
+	virtual void _update_lightmap_size() override;
+
 public:
-	static void create_mesh_array(Array &p_arr, float radius, float height, int radial_segments = 64, int rings = 8);
+	static void create_mesh_array(Array &p_arr, float radius, float height, int radial_segments = 64, int rings = 8, bool p_add_uv2 = false, const float p_uv2_padding = 1.0);
 
 	void set_radius(const float p_radius);
 	float get_radius() const;
@@ -152,8 +167,10 @@ protected:
 	static void _bind_methods();
 	virtual void _create_mesh_array(Array &p_arr) const override;
 
+	virtual void _update_lightmap_size() override;
+
 public:
-	static void create_mesh_array(Array &p_arr, Vector3 size, int subdivide_w = 0, int subdivide_h = 0, int subdivide_d = 0);
+	static void create_mesh_array(Array &p_arr, Vector3 size, int subdivide_w = 0, int subdivide_h = 0, int subdivide_d = 0, bool p_add_uv2 = false, const float p_uv2_padding = 1.0);
 
 	void set_size(const Vector3 &p_size);
 	Vector3 get_size() const;
@@ -190,8 +207,10 @@ protected:
 	static void _bind_methods();
 	virtual void _create_mesh_array(Array &p_arr) const override;
 
+	virtual void _update_lightmap_size() override;
+
 public:
-	static void create_mesh_array(Array &p_arr, float top_radius, float bottom_radius, float height, int radial_segments = 64, int rings = 4, bool cap_top = true, bool cap_bottom = true);
+	static void create_mesh_array(Array &p_arr, float top_radius, float bottom_radius, float height, int radial_segments = 64, int rings = 4, bool cap_top = true, bool cap_bottom = true, bool p_add_uv2 = false, const float p_uv2_padding = 1.0);
 
 	void set_top_radius(const float p_radius);
 	float get_top_radius() const;
@@ -240,6 +259,8 @@ private:
 protected:
 	static void _bind_methods();
 	virtual void _create_mesh_array(Array &p_arr) const override;
+
+	virtual void _update_lightmap_size() override;
 
 public:
 	void set_size(const Size2 &p_size);
@@ -292,6 +313,8 @@ protected:
 	static void _bind_methods();
 	virtual void _create_mesh_array(Array &p_arr) const override;
 
+	virtual void _update_lightmap_size() override;
+
 public:
 	void set_left_to_right(const float p_left_to_right);
 	float get_left_to_right() const;
@@ -328,8 +351,10 @@ protected:
 	static void _bind_methods();
 	virtual void _create_mesh_array(Array &p_arr) const override;
 
+	virtual void _update_lightmap_size() override;
+
 public:
-	static void create_mesh_array(Array &p_arr, float radius, float height, int radial_segments = 64, int rings = 32, bool is_hemisphere = false);
+	static void create_mesh_array(Array &p_arr, float radius, float height, int radial_segments = 64, int rings = 32, bool is_hemisphere = false, bool p_add_uv2 = false, const float p_uv2_padding = 1.0);
 
 	void set_radius(const float p_radius);
 	float get_radius() const;
@@ -364,6 +389,8 @@ private:
 protected:
 	static void _bind_methods();
 	virtual void _create_mesh_array(Array &p_arr) const override;
+
+	virtual void _update_lightmap_size() override;
 
 public:
 	void set_inner_radius(const float p_inner_radius);
@@ -404,6 +431,8 @@ private:
 	int sections = 5;
 	float section_length = 0.2;
 	int section_rings = 3;
+	bool cap_top = true;
+	bool cap_bottom = true;
 
 	Ref<Curve> curve;
 
@@ -428,6 +457,12 @@ public:
 
 	void set_section_rings(const int p_section_rings);
 	int get_section_rings() const;
+
+	void set_cap_top(bool p_cap_top);
+	bool is_cap_top() const;
+
+	void set_cap_bottom(bool p_cap_bottom);
+	bool is_cap_bottom() const;
 
 	void set_curve(const Ref<Curve> &p_curve);
 	Ref<Curve> get_curve() const;

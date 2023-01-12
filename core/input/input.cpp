@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  input.cpp                                                            */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  input.cpp                                                             */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "input.h"
 
@@ -237,7 +237,7 @@ bool Input::is_anything_pressed() const {
 	}
 	return !keys_pressed.is_empty() ||
 			!joy_buttons_pressed.is_empty() ||
-			mouse_button_mask > MouseButton::NONE;
+			!mouse_button_mask.is_empty();
 }
 
 bool Input::is_key_pressed(Key p_keycode) const {
@@ -252,7 +252,7 @@ bool Input::is_physical_key_pressed(Key p_keycode) const {
 
 bool Input::is_mouse_button_pressed(MouseButton p_button) const {
 	_THREAD_SAFE_METHOD_
-	return (mouse_button_mask & mouse_button_to_mask(p_button)) != MouseButton::NONE;
+	return mouse_button_mask.has_flag(mouse_button_to_mask(p_button));
 }
 
 static JoyAxis _combine_device(JoyAxis p_value, int p_device) {
@@ -504,9 +504,9 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 
 	if (mb.is_valid()) {
 		if (mb->is_pressed()) {
-			mouse_button_mask |= mouse_button_to_mask(mb->get_button_index());
+			mouse_button_mask.set_flag(mouse_button_to_mask(mb->get_button_index()));
 		} else {
-			mouse_button_mask &= ~mouse_button_to_mask(mb->get_button_index());
+			mouse_button_mask.clear_flag(mouse_button_to_mask(mb->get_button_index()));
 		}
 
 		Point2 pos = mb->get_global_position();
@@ -534,12 +534,15 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 		Vector2 relative = mm->get_relative();
 		mouse_velocity_track.update(relative);
 
-		if (event_dispatch_function && emulate_touch_from_mouse && !p_is_emulated && (mm->get_button_mask() & MouseButton::LEFT) != MouseButton::NONE) {
+		if (event_dispatch_function && emulate_touch_from_mouse && !p_is_emulated && mm->get_button_mask().has_flag(MouseButtonMask::LEFT)) {
 			Ref<InputEventScreenDrag> drag_event;
 			drag_event.instantiate();
 
 			drag_event->set_position(position);
 			drag_event->set_relative(relative);
+			drag_event->set_tilt(mm->get_tilt());
+			drag_event->set_pen_inverted(mm->get_pen_inverted());
+			drag_event->set_pressure(mm->get_pressure());
 			drag_event->set_velocity(get_last_mouse_velocity());
 
 			event_dispatch_function(drag_event);
@@ -582,11 +585,14 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 				button_event->set_pressed(st->is_pressed());
 				button_event->set_button_index(MouseButton::LEFT);
 				button_event->set_double_click(st->is_double_tap());
+
+				BitField<MouseButtonMask> ev_bm = mouse_button_mask;
 				if (st->is_pressed()) {
-					button_event->set_button_mask(MouseButton(mouse_button_mask | MouseButton::MASK_LEFT));
+					ev_bm.set_flag(MouseButtonMask::LEFT);
 				} else {
-					button_event->set_button_mask(MouseButton(mouse_button_mask & ~MouseButton::MASK_LEFT));
+					ev_bm.clear_flag(MouseButtonMask::LEFT);
 				}
+				button_event->set_button_mask(ev_bm);
 
 				_parse_input_event_impl(button_event, true);
 			}
@@ -605,6 +611,9 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 			motion_event.instantiate();
 
 			motion_event->set_device(InputEvent::DEVICE_ID_TOUCH_MOUSE);
+			motion_event->set_tilt(sd->get_tilt());
+			motion_event->set_pen_inverted(sd->get_pen_inverted());
+			motion_event->set_pressure(sd->get_pressure());
 			motion_event->set_position(sd->get_position());
 			motion_event->set_global_position(sd->get_position());
 			motion_event->set_relative(sd->get_relative());
@@ -734,7 +743,7 @@ Point2 Input::get_last_mouse_velocity() {
 	return mouse_velocity_track.velocity;
 }
 
-MouseButton Input::get_mouse_button_mask() const {
+BitField<MouseButtonMask> Input::get_mouse_button_mask() const {
 	return mouse_button_mask; // do not trust OS implementation, should remove it - OS::get_singleton()->get_mouse_button_state();
 }
 
@@ -815,7 +824,9 @@ void Input::ensure_touch_mouse_raised() {
 		button_event->set_global_position(mouse_pos);
 		button_event->set_pressed(false);
 		button_event->set_button_index(MouseButton::LEFT);
-		button_event->set_button_mask(MouseButton(mouse_button_mask & ~MouseButton::MASK_LEFT));
+		BitField<MouseButtonMask> ev_bm = mouse_button_mask;
+		ev_bm.clear_flag(MouseButtonMask::LEFT);
+		button_event->set_button_mask(ev_bm);
 
 		_parse_input_event_impl(button_event, true);
 	}
@@ -1016,7 +1027,7 @@ void Input::joy_axis(int p_device, JoyAxis p_axis, float p_value) {
 	}
 }
 
-void Input::joy_hat(int p_device, HatMask p_val) {
+void Input::joy_hat(int p_device, BitField<HatMask> p_val) {
 	_THREAD_SAFE_METHOD_;
 	const Joypad &joy = joy_names[p_device];
 

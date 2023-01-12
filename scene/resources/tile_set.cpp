@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  tile_set.cpp                                                         */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  tile_set.cpp                                                          */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "tile_set.h"
 
@@ -35,7 +35,6 @@
 #include "core/math/geometry_2d.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/rb_set.h"
-#include "scene/2d/navigation_region_2d.h"
 #include "scene/gui/control.h"
 #include "scene/resources/convex_polygon_shape_2d.h"
 #include "servers/navigation_server_2d.h"
@@ -477,7 +476,7 @@ int TileSet::add_source(Ref<TileSetSource> p_tile_set_source, int p_atlas_source
 
 	int new_source_id = p_atlas_source_id_override >= 0 ? p_atlas_source_id_override : next_source_id;
 	sources[new_source_id] = p_tile_set_source;
-	source_ids.append(new_source_id);
+	source_ids.push_back(new_source_id);
 	source_ids.sort();
 	p_tile_set_source->set_tile_set(this);
 	_compute_next_source_id();
@@ -517,7 +516,7 @@ void TileSet::set_source_id(int p_source_id, int p_new_source_id) {
 	sources.erase(p_source_id);
 
 	source_ids.erase(p_source_id);
-	source_ids.append(p_new_source_id);
+	source_ids.push_back(p_new_source_id);
 	source_ids.sort();
 
 	_compute_next_source_id();
@@ -1297,7 +1296,7 @@ void TileSet::cleanup_invalid_tile_proxies() {
 	Vector<int> source_to_remove;
 	for (const KeyValue<int, int> &E : source_level_proxies) {
 		if (has_source(E.key)) {
-			source_to_remove.append(E.key);
+			source_to_remove.push_back(E.key);
 		}
 	}
 	for (int i = 0; i < source_to_remove.size(); i++) {
@@ -1309,7 +1308,7 @@ void TileSet::cleanup_invalid_tile_proxies() {
 	for (const KeyValue<Array, Array> &E : coords_level_proxies) {
 		Array a = E.key;
 		if (has_source(a[0]) && get_source(a[0])->has_tile(a[1])) {
-			coords_to_remove.append(a);
+			coords_to_remove.push_back(a);
 		}
 	}
 	for (int i = 0; i < coords_to_remove.size(); i++) {
@@ -1322,7 +1321,7 @@ void TileSet::cleanup_invalid_tile_proxies() {
 	for (const KeyValue<Array, Array> &E : alternative_level_proxies) {
 		Array a = E.key;
 		if (has_source(a[0]) && get_source(a[0])->has_tile(a[1]) && get_source(a[0])->has_alternative_tile(a[1], a[2])) {
-			alternative_to_remove.append(a);
+			alternative_to_remove.push_back(a);
 		}
 	}
 	for (int i = 0; i < alternative_to_remove.size(); i++) {
@@ -1439,16 +1438,18 @@ TileMapCell TileSet::get_random_tile_from_terrains_pattern(int p_terrain_set, Ti
 Vector<Vector2> TileSet::get_tile_shape_polygon() {
 	Vector<Vector2> points;
 	if (tile_shape == TileSet::TILE_SHAPE_SQUARE) {
-		points.append(Vector2(-0.5, -0.5));
-		points.append(Vector2(0.5, -0.5));
-		points.append(Vector2(0.5, 0.5));
-		points.append(Vector2(-0.5, 0.5));
+		points.push_back(Vector2(-0.5, -0.5));
+		points.push_back(Vector2(0.5, -0.5));
+		points.push_back(Vector2(0.5, 0.5));
+		points.push_back(Vector2(-0.5, 0.5));
+	} else if (tile_shape == TileSet::TILE_SHAPE_ISOMETRIC) {
+		points.push_back(Vector2(0.0, -0.5));
+		points.push_back(Vector2(-0.5, 0.0));
+		points.push_back(Vector2(0.0, 0.5));
+		points.push_back(Vector2(0.5, 0.0));
 	} else {
 		float overlap = 0.0;
 		switch (tile_shape) {
-			case TileSet::TILE_SHAPE_ISOMETRIC:
-				overlap = 0.5;
-				break;
 			case TileSet::TILE_SHAPE_HEXAGON:
 				overlap = 0.25;
 				break;
@@ -1459,12 +1460,13 @@ Vector<Vector2> TileSet::get_tile_shape_polygon() {
 				break;
 		}
 
-		points.append(Vector2(0.0, -0.5));
-		points.append(Vector2(-0.5, overlap - 0.5));
-		points.append(Vector2(-0.5, 0.5 - overlap));
-		points.append(Vector2(0.0, 0.5));
-		points.append(Vector2(0.5, 0.5 - overlap));
-		points.append(Vector2(0.5, overlap - 0.5));
+		points.push_back(Vector2(0.0, -0.5));
+		points.push_back(Vector2(-0.5, overlap - 0.5));
+		points.push_back(Vector2(-0.5, 0.5 - overlap));
+		points.push_back(Vector2(0.0, 0.5));
+		points.push_back(Vector2(0.5, 0.5 - overlap));
+		points.push_back(Vector2(0.5, overlap - 0.5));
+
 		if (get_tile_offset_axis() == TileSet::TILE_OFFSET_AXIS_VERTICAL) {
 			for (int i = 0; i < points.size(); i++) {
 				points.write[i] = Vector2(points[i].y, points[i].x);
@@ -3789,7 +3791,7 @@ Vector2i TileSetAtlasSource::get_atlas_grid_size() const {
 	Size2i valid_area = txt->get_size() - margins;
 
 	// Compute the number of valid tiles in the tiles atlas
-	Size2i grid_size = Size2i();
+	Size2i grid_size;
 	if (valid_area.x >= texture_region_size.x && valid_area.y >= texture_region_size.y) {
 		valid_area -= texture_region_size;
 		grid_size = Size2i(1, 1) + valid_area / (texture_region_size + separation);
@@ -3854,7 +3856,7 @@ bool TileSetAtlasSource::_set(const StringName &p_name, const Variant &p_value) 
 						tiles[coords].alternatives[alternative_id] = memnew(TileData);
 						tiles[coords].alternatives[alternative_id]->set_tile_set(tile_set);
 						tiles[coords].alternatives[alternative_id]->set_allow_transform(alternative_id > 0);
-						tiles[coords].alternatives_ids.append(alternative_id);
+						tiles[coords].alternatives_ids.push_back(alternative_id);
 					}
 					if (components.size() >= 3) {
 						bool valid;
@@ -4028,11 +4030,11 @@ void TileSetAtlasSource::create_tile(const Vector2i p_atlas_coords, const Vector
 	tad.alternatives[0]->set_allow_transform(false);
 	tad.alternatives[0]->connect("changed", callable_mp((Resource *)this, &TileSetAtlasSource::emit_changed));
 	tad.alternatives[0]->notify_property_list_changed();
-	tad.alternatives_ids.append(0);
+	tad.alternatives_ids.push_back(0);
 
 	// Create and resize the tile.
 	tiles.insert(p_atlas_coords, tad);
-	tiles_ids.append(p_atlas_coords);
+	tiles_ids.push_back(p_atlas_coords);
 	tiles_ids.sort();
 
 	_create_coords_mapping_cache(p_atlas_coords);
@@ -4343,7 +4345,7 @@ void TileSetAtlasSource::move_tile_in_atlas(Vector2i p_atlas_coords, Vector2i p_
 		tiles.erase(p_atlas_coords);
 
 		tiles_ids.erase(p_atlas_coords);
-		tiles_ids.append(new_atlas_coords);
+		tiles_ids.push_back(new_atlas_coords);
 		tiles_ids.sort();
 	}
 	tiles[new_atlas_coords].size_in_atlas = new_size;
@@ -4363,8 +4365,9 @@ int TileSetAtlasSource::create_alternative_tile(const Vector2i p_atlas_coords, i
 	tiles[p_atlas_coords].alternatives[new_alternative_id] = memnew(TileData);
 	tiles[p_atlas_coords].alternatives[new_alternative_id]->set_tile_set(tile_set);
 	tiles[p_atlas_coords].alternatives[new_alternative_id]->set_allow_transform(true);
+	tiles[p_atlas_coords].alternatives[new_alternative_id]->connect("changed", callable_mp((Resource *)this, &TileSetAtlasSource::emit_changed));
 	tiles[p_atlas_coords].alternatives[new_alternative_id]->notify_property_list_changed();
-	tiles[p_atlas_coords].alternatives_ids.append(new_alternative_id);
+	tiles[p_atlas_coords].alternatives_ids.push_back(new_alternative_id);
 	tiles[p_atlas_coords].alternatives_ids.sort();
 	_compute_next_alternative_id(p_atlas_coords);
 
@@ -4394,7 +4397,7 @@ void TileSetAtlasSource::set_alternative_tile_id(const Vector2i p_atlas_coords, 
 	ERR_FAIL_COND_MSG(tiles[p_atlas_coords].alternatives.has(p_new_id), vformat("TileSetAtlasSource has already an alternative with id %d at %s.", p_new_id, String(p_atlas_coords)));
 
 	tiles[p_atlas_coords].alternatives[p_new_id] = tiles[p_atlas_coords].alternatives[p_alternative_tile];
-	tiles[p_atlas_coords].alternatives_ids.append(p_new_id);
+	tiles[p_atlas_coords].alternatives_ids.push_back(p_new_id);
 
 	tiles[p_atlas_coords].alternatives.erase(p_alternative_tile);
 	tiles[p_atlas_coords].alternatives_ids.erase(p_alternative_tile);
@@ -4682,7 +4685,7 @@ int TileSetScenesCollectionSource::create_scene_tile(Ref<PackedScene> p_packed_s
 	int new_scene_id = p_id_override >= 0 ? p_id_override : next_scene_id;
 
 	scenes[new_scene_id] = SceneData();
-	scenes_ids.append(new_scene_id);
+	scenes_ids.push_back(new_scene_id);
 	scenes_ids.sort();
 	set_scene_tile_scene(new_scene_id, p_packed_scene);
 	_compute_next_alternative_id();
@@ -4699,7 +4702,7 @@ void TileSetScenesCollectionSource::set_scene_tile_id(int p_id, int p_new_id) {
 
 	scenes[p_new_id] = SceneData();
 	scenes[p_new_id] = scenes[p_id];
-	scenes_ids.append(p_new_id);
+	scenes_ids.push_back(p_new_id);
 	scenes_ids.sort();
 
 	_compute_next_alternative_id();

@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  nav_map.cpp                                                          */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  nav_map.cpp                                                           */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "nav_map.h"
 
@@ -37,6 +37,18 @@
 #include <algorithm>
 
 #define THREE_POINTS_CROSS_PRODUCT(m_a, m_b, m_c) (((m_c) - (m_a)).cross((m_b) - (m_a)))
+
+// Helper macro
+#define APPEND_METADATA(poly)                                  \
+	if (r_path_types) {                                        \
+		r_path_types->push_back(poly->owner->get_type());      \
+	}                                                          \
+	if (r_path_rids) {                                         \
+		r_path_rids->push_back(poly->owner->get_self());       \
+	}                                                          \
+	if (r_path_owners) {                                       \
+		r_path_owners->push_back(poly->owner->get_owner_id()); \
+	}
 
 void NavMap::set_up(Vector3 p_up) {
 	up = p_up;
@@ -71,7 +83,18 @@ gd::PointKey NavMap::get_point_key(const Vector3 &p_pos) const {
 	return p;
 }
 
-Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p_optimize, uint32_t p_navigation_layers) const {
+Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p_optimize, uint32_t p_navigation_layers, Vector<int32_t> *r_path_types, TypedArray<RID> *r_path_rids, Vector<int64_t> *r_path_owners) const {
+	// Clear metadata outputs.
+	if (r_path_types) {
+		r_path_types->clear();
+	}
+	if (r_path_rids) {
+		r_path_rids->clear();
+	}
+	if (r_path_owners) {
+		r_path_owners->clear();
+	}
+
 	// Find the start poly and the end poly on this map.
 	const gd::Polygon *begin_poly = nullptr;
 	const gd::Polygon *end_poly = nullptr;
@@ -115,6 +138,24 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 		return Vector<Vector3>();
 	}
 	if (begin_poly == end_poly) {
+		if (r_path_types) {
+			r_path_types->resize(2);
+			r_path_types->write[0] = begin_poly->owner->get_type();
+			r_path_types->write[1] = end_poly->owner->get_type();
+		}
+
+		if (r_path_rids) {
+			r_path_rids->resize(2);
+			(*r_path_rids)[0] = begin_poly->owner->get_self();
+			(*r_path_rids)[1] = end_poly->owner->get_self();
+		}
+
+		if (r_path_owners) {
+			r_path_owners->resize(2);
+			r_path_owners->write[0] = begin_poly->owner->get_owner_id();
+			r_path_owners->write[1] = end_poly->owner->get_owner_id();
+		}
+
 		Vector<Vector3> path;
 		path.resize(2);
 		path.write[0] = begin_point;
@@ -296,6 +337,7 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 		gd::NavigationPoly *p = apex_poly;
 
 		path.push_back(end_point);
+		APPEND_METADATA(end_poly);
 
 		while (p) {
 			// Set left and right points of the pathway between polygons.
@@ -312,7 +354,7 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 					left_poly = p;
 					left_portal = left;
 				} else {
-					clip_path(navigation_polys, path, apex_poly, right_portal, right_poly);
+					clip_path(navigation_polys, path, apex_poly, right_portal, right_poly, r_path_types, r_path_rids, r_path_owners);
 
 					apex_point = right_portal;
 					p = right_poly;
@@ -320,7 +362,9 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 					apex_poly = p;
 					left_portal = apex_point;
 					right_portal = apex_point;
+
 					path.push_back(apex_point);
+					APPEND_METADATA(apex_poly->poly);
 					skip = true;
 				}
 			}
@@ -331,7 +375,7 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 					right_poly = p;
 					right_portal = right;
 				} else {
-					clip_path(navigation_polys, path, apex_poly, left_portal, left_poly);
+					clip_path(navigation_polys, path, apex_poly, left_portal, left_poly, r_path_types, r_path_rids, r_path_owners);
 
 					apex_point = left_portal;
 					p = left_poly;
@@ -339,7 +383,9 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 					apex_poly = p;
 					right_portal = apex_point;
 					left_portal = apex_point;
+
 					path.push_back(apex_point);
+					APPEND_METADATA(apex_poly->poly);
 				}
 			}
 
@@ -355,12 +401,23 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 		// If the last point is not the begin point, add it to the list.
 		if (path[path.size() - 1] != begin_point) {
 			path.push_back(begin_point);
+			APPEND_METADATA(begin_poly);
 		}
 
 		path.reverse();
+		if (r_path_types) {
+			r_path_types->reverse();
+		}
+		if (r_path_rids) {
+			r_path_rids->reverse();
+		}
+		if (r_path_owners) {
+			r_path_owners->reverse();
+		}
 
 	} else {
 		path.push_back(end_point);
+		APPEND_METADATA(end_poly);
 
 		// Add mid points
 		int np_id = least_cost_id;
@@ -369,17 +426,36 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 				int prev = navigation_polys[np_id].back_navigation_edge;
 				int prev_n = (navigation_polys[np_id].back_navigation_edge + 1) % navigation_polys[np_id].poly->points.size();
 				Vector3 point = (navigation_polys[np_id].poly->points[prev].pos + navigation_polys[np_id].poly->points[prev_n].pos) * 0.5;
+
 				path.push_back(point);
+				APPEND_METADATA(navigation_polys[np_id].poly);
 			} else {
 				path.push_back(navigation_polys[np_id].entry);
+				APPEND_METADATA(navigation_polys[np_id].poly);
 			}
 
 			np_id = navigation_polys[np_id].back_navigation_poly_id;
 		}
 
 		path.push_back(begin_point);
+		APPEND_METADATA(begin_poly);
+
 		path.reverse();
+		if (r_path_types) {
+			r_path_types->reverse();
+		}
+		if (r_path_rids) {
+			r_path_rids->reverse();
+		}
+		if (r_path_owners) {
+			r_path_owners->reverse();
+		}
 	}
+
+	// Ensure post conditions (path arrays MUST match in size).
+	CRASH_COND(r_path_types && path.size() != r_path_types->size());
+	CRASH_COND(r_path_rids && path.size() != r_path_rids->size());
+	CRASH_COND(r_path_owners && path.size() != r_path_owners->size());
 
 	return path;
 }
@@ -535,6 +611,16 @@ void NavMap::remove_agent_as_controlled(RvoAgent *agent) {
 }
 
 void NavMap::sync() {
+	// Performance Monitor
+	int _new_pm_region_count = regions.size();
+	int _new_pm_agent_count = agents.size();
+	int _new_pm_link_count = links.size();
+	int _new_pm_polygon_count = pm_polygon_count;
+	int _new_pm_edge_count = pm_edge_count;
+	int _new_pm_edge_merge_count = pm_edge_merge_count;
+	int _new_pm_edge_connection_count = pm_edge_connection_count;
+	int _new_pm_edge_free_count = pm_edge_free_count;
+
 	// Check if we need to update the links.
 	if (regenerate_polygons) {
 		for (uint32_t r = 0; r < regions.size(); r++) {
@@ -556,6 +642,12 @@ void NavMap::sync() {
 	}
 
 	if (regenerate_links) {
+		_new_pm_polygon_count = 0;
+		_new_pm_edge_count = 0;
+		_new_pm_edge_merge_count = 0;
+		_new_pm_edge_connection_count = 0;
+		_new_pm_edge_free_count = 0;
+
 		// Remove regions connections.
 		for (uint32_t r = 0; r < regions.size(); r++) {
 			regions[r]->get_connections().clear();
@@ -578,6 +670,8 @@ void NavMap::sync() {
 			count += regions[r]->get_polygons().size();
 		}
 
+		_new_pm_polygon_count = polygons.size();
+
 		// Group all edges per key.
 		HashMap<gd::EdgeKey, Vector<gd::Edge::Connection>, gd::EdgeKey> connections;
 		for (uint32_t poly_id = 0; poly_id < polygons.size(); poly_id++) {
@@ -590,6 +684,7 @@ void NavMap::sync() {
 				HashMap<gd::EdgeKey, Vector<gd::Edge::Connection>, gd::EdgeKey>::Iterator connection = connections.find(ek);
 				if (!connection) {
 					connections[ek] = Vector<gd::Edge::Connection>();
+					_new_pm_edge_count += 1;
 				}
 				if (connections[ek].size() <= 1) {
 					// Add the polygon/edge tuple to this key.
@@ -615,6 +710,7 @@ void NavMap::sync() {
 				c1.polygon->edges[c1.edge].connections.push_back(c2);
 				c2.polygon->edges[c2.edge].connections.push_back(c1);
 				// Note: The pathway_start/end are full for those connection and do not need to be modified.
+				_new_pm_edge_merge_count += 1;
 			} else {
 				CRASH_COND_MSG(E.value.size() != 1, vformat("Number of connection != 1. Found: %d", E.value.size()));
 				free_edges.push_back(E.value[0]);
@@ -628,6 +724,8 @@ void NavMap::sync() {
 		// to be connected, create new polygons to remove that small gap is
 		// not really useful and would result in wasteful computation during
 		// connection, integration and path finding.
+		_new_pm_edge_free_count = free_edges.size();
+
 		for (int i = 0; i < free_edges.size(); i++) {
 			const gd::Edge::Connection &free_edge = free_edges[i];
 			Vector3 edge_p1 = free_edge.polygon->points[free_edge.edge].pos;
@@ -681,6 +779,7 @@ void NavMap::sync() {
 
 				// Add the connection to the region_connection map.
 				((NavRegion *)free_edge.polygon->owner)->get_connections().push_back(new_connection);
+				_new_pm_edge_connection_count += 1;
 			}
 		}
 
@@ -816,6 +915,16 @@ void NavMap::sync() {
 	regenerate_polygons = false;
 	regenerate_links = false;
 	agents_dirty = false;
+
+	// Performance Monitor
+	pm_region_count = _new_pm_region_count;
+	pm_agent_count = _new_pm_agent_count;
+	pm_link_count = _new_pm_link_count;
+	pm_polygon_count = _new_pm_polygon_count;
+	pm_edge_count = _new_pm_edge_count;
+	pm_edge_merge_count = _new_pm_edge_merge_count;
+	pm_edge_connection_count = _new_pm_edge_connection_count;
+	pm_edge_free_count = _new_pm_edge_free_count;
 }
 
 void NavMap::compute_single_step(uint32_t index, RvoAgent **agent) {
@@ -837,7 +946,7 @@ void NavMap::dispatch_callbacks() {
 	}
 }
 
-void NavMap::clip_path(const LocalVector<gd::NavigationPoly> &p_navigation_polys, Vector<Vector3> &path, const gd::NavigationPoly *from_poly, const Vector3 &p_to_point, const gd::NavigationPoly *p_to_poly) const {
+void NavMap::clip_path(const LocalVector<gd::NavigationPoly> &p_navigation_polys, Vector<Vector3> &path, const gd::NavigationPoly *from_poly, const Vector3 &p_to_point, const gd::NavigationPoly *p_to_poly, Vector<int32_t> *r_path_types, TypedArray<RID> *r_path_rids, Vector<int64_t> *r_path_owners) const {
 	Vector3 from = path[path.size() - 1];
 
 	if (from.is_equal_approx(p_to_point)) {
@@ -863,6 +972,7 @@ void NavMap::clip_path(const LocalVector<gd::NavigationPoly> &p_navigation_polys
 			if (cut_plane.intersects_segment(pathway_start, pathway_end, &inters)) {
 				if (!inters.is_equal_approx(p_to_point) && !inters.is_equal_approx(path[path.size() - 1])) {
 					path.push_back(inters);
+					APPEND_METADATA(from_poly->poly);
 				}
 			}
 		}

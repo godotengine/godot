@@ -37,7 +37,7 @@ namespace Godot.SourceGenerators
         Color,
         Plane,
         Callable,
-        SignalInfo,
+        Signal,
 
         // Enums
         Enum,

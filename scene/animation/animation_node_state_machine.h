@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  animation_node_state_machine.h                                       */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  animation_node_state_machine.h                                        */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef ANIMATION_NODE_STATE_MACHINE_H
 #define ANIMATION_NODE_STATE_MACHINE_H
@@ -44,14 +44,19 @@ public:
 		SWITCH_MODE_AT_END,
 	};
 
+	enum AdvanceMode {
+		ADVANCE_MODE_DISABLED,
+		ADVANCE_MODE_ENABLED,
+		ADVANCE_MODE_AUTO,
+	};
+
 private:
 	SwitchMode switch_mode = SWITCH_MODE_IMMEDIATE;
-	bool auto_advance = false;
+	AdvanceMode advance_mode = ADVANCE_MODE_ENABLED;
 	StringName advance_condition;
 	StringName advance_condition_name;
 	float xfade_time = 0.0;
 	Ref<Curve> xfade_curve;
-	bool disabled = false;
 	int priority = 1;
 	String advance_expression;
 
@@ -65,8 +70,8 @@ public:
 	void set_switch_mode(SwitchMode p_mode);
 	SwitchMode get_switch_mode() const;
 
-	void set_auto_advance(bool p_enable);
-	bool has_auto_advance() const;
+	void set_advance_mode(AdvanceMode p_mode);
+	AdvanceMode get_advance_mode() const;
 
 	void set_advance_condition(const StringName &p_condition);
 	StringName get_advance_condition() const;
@@ -82,9 +87,6 @@ public:
 	void set_xfade_curve(const Ref<Curve> &p_curve);
 	Ref<Curve> get_xfade_curve() const;
 
-	void set_disabled(bool p_disabled);
-	bool is_disabled() const;
-
 	void set_priority(int p_priority);
 	int get_priority() const;
 
@@ -92,6 +94,7 @@ public:
 };
 
 VARIANT_ENUM_CAST(AnimationNodeStateMachineTransition::SwitchMode)
+VARIANT_ENUM_CAST(AnimationNodeStateMachineTransition::AdvanceMode)
 
 class AnimationNodeStateMachine;
 
@@ -111,8 +114,8 @@ class AnimationNodeStateMachinePlayback : public Resource {
 		StringName next;
 	};
 
-	float len_current = 0.0;
-	float pos_current = 0.0;
+	double len_current = 0.0;
+	double pos_current = 0.0;
 	bool end_loop = false;
 
 	StringName current;
@@ -133,7 +136,7 @@ class AnimationNodeStateMachinePlayback : public Resource {
 
 	bool _travel(AnimationNodeStateMachine *p_state_machine, const StringName &p_travel);
 
-	double process(AnimationNodeStateMachine *p_state_machine, double p_time, bool p_seek, bool p_seek_root);
+	double process(AnimationNodeStateMachine *p_state_machine, double p_time, bool p_seek, bool p_is_external_seeking);
 
 	bool _check_advance_condition(const Ref<AnimationNodeStateMachine> p_state_machine, const Ref<AnimationNodeStateMachineTransition> p_transition) const;
 
@@ -239,7 +242,7 @@ public:
 	void set_graph_offset(const Vector2 &p_offset);
 	Vector2 get_graph_offset() const;
 
-	virtual double process(double p_time, bool p_seek, bool p_seek_root) override;
+	virtual double process(double p_time, bool p_seek, bool p_is_external_seeking) override;
 	virtual String get_caption() const override;
 
 	virtual Ref<AnimationNode> get_child_by_name(const StringName &p_name) override;

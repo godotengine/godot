@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  navigation_link_3d.cpp                                               */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  navigation_link_3d.cpp                                                */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "navigation_link_3d.h"
 
@@ -133,8 +133,8 @@ void NavigationLink3D::_update_debug_mesh() {
 	RS::get_singleton()->instance_set_scenario(debug_instance, get_world_3d()->get_scenario());
 	RS::get_singleton()->instance_set_visible(debug_instance, is_visible_in_tree());
 
-	Ref<StandardMaterial3D> link_material = NavigationServer3D::get_singleton_mut()->get_debug_navigation_link_connections_material();
-	Ref<StandardMaterial3D> disabled_link_material = NavigationServer3D::get_singleton_mut()->get_debug_navigation_link_connections_disabled_material();
+	Ref<StandardMaterial3D> link_material = NavigationServer3D::get_singleton()->get_debug_navigation_link_connections_material();
+	Ref<StandardMaterial3D> disabled_link_material = NavigationServer3D::get_singleton()->get_debug_navigation_link_connections_disabled_material();
 
 	if (enabled) {
 		RS::get_singleton()->instance_set_surface_override_material(debug_instance, 0, link_material->get_rid());
@@ -221,14 +221,18 @@ void NavigationLink3D::_notification(int p_what) {
 
 NavigationLink3D::NavigationLink3D() {
 	link = NavigationServer3D::get_singleton()->link_create();
+	NavigationServer3D::get_singleton()->link_set_owner_id(link, get_instance_id());
+
 	set_notify_transform(true);
 }
 
 NavigationLink3D::~NavigationLink3D() {
+	ERR_FAIL_NULL(NavigationServer3D::get_singleton());
 	NavigationServer3D::get_singleton()->free(link);
 	link = RID();
 
 #ifdef DEBUG_ENABLED
+	ERR_FAIL_NULL(RenderingServer::get_singleton());
 	if (debug_instance.is_valid()) {
 		RenderingServer::get_singleton()->free(debug_instance);
 	}
@@ -258,10 +262,10 @@ void NavigationLink3D::set_enabled(bool p_enabled) {
 #ifdef DEBUG_ENABLED
 	if (debug_instance.is_valid() && debug_mesh.is_valid()) {
 		if (enabled) {
-			Ref<StandardMaterial3D> link_material = NavigationServer3D::get_singleton_mut()->get_debug_navigation_link_connections_material();
+			Ref<StandardMaterial3D> link_material = NavigationServer3D::get_singleton()->get_debug_navigation_link_connections_material();
 			RS::get_singleton()->instance_set_surface_override_material(debug_instance, 0, link_material->get_rid());
 		} else {
-			Ref<StandardMaterial3D> disabled_link_material = NavigationServer3D::get_singleton_mut()->get_debug_navigation_link_connections_disabled_material();
+			Ref<StandardMaterial3D> disabled_link_material = NavigationServer3D::get_singleton()->get_debug_navigation_link_connections_disabled_material();
 			RS::get_singleton()->instance_set_surface_override_material(debug_instance, 0, disabled_link_material->get_rid());
 		}
 	}

@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  animation_blend_tree.h                                               */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  animation_blend_tree.h                                                */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef ANIMATION_BLEND_TREE_H
 #define ANIMATION_BLEND_TREE_H
@@ -53,7 +53,7 @@ public:
 	static Vector<String> (*get_editable_animation_list)();
 
 	virtual String get_caption() const override;
-	virtual double process(double p_time, bool p_seek, bool p_seek_root) override;
+	virtual double process(double p_time, bool p_seek, bool p_is_external_seeking) override;
 
 	void set_animation(const StringName &p_name);
 	StringName get_animation() const;
@@ -72,7 +72,7 @@ protected:
 
 private:
 	PlayMode play_mode = PLAY_MODE_FORWARD;
-	bool backward = false;
+	bool backward = false; // Only used by pingpong animation.
 };
 
 VARIANT_ENUM_CAST(AnimationNodeAnimation::PlayMode)
@@ -148,7 +148,7 @@ public:
 	MixMode get_mix_mode() const;
 
 	virtual bool has_filter() const override;
-	virtual double process(double p_time, bool p_seek, bool p_seek_root) override;
+	virtual double process(double p_time, bool p_seek, bool p_is_external_seeking) override;
 
 	AnimationNodeOneShot();
 };
@@ -170,7 +170,7 @@ public:
 	virtual String get_caption() const override;
 
 	virtual bool has_filter() const override;
-	virtual double process(double p_time, bool p_seek, bool p_seek_root) override;
+	virtual double process(double p_time, bool p_seek, bool p_is_external_seeking) override;
 
 	AnimationNodeAdd2();
 };
@@ -190,7 +190,7 @@ public:
 	virtual String get_caption() const override;
 
 	virtual bool has_filter() const override;
-	virtual double process(double p_time, bool p_seek, bool p_seek_root) override;
+	virtual double process(double p_time, bool p_seek, bool p_is_external_seeking) override;
 
 	AnimationNodeAdd3();
 };
@@ -208,7 +208,7 @@ public:
 	virtual Variant get_parameter_default_value(const StringName &p_parameter) const override;
 
 	virtual String get_caption() const override;
-	virtual double process(double p_time, bool p_seek, bool p_seek_root) override;
+	virtual double process(double p_time, bool p_seek, bool p_is_external_seeking) override;
 
 	virtual bool has_filter() const override;
 	AnimationNodeBlend2();
@@ -228,7 +228,7 @@ public:
 
 	virtual String get_caption() const override;
 
-	double process(double p_time, bool p_seek, bool p_seek_root) override;
+	double process(double p_time, bool p_seek, bool p_is_external_seeking) override;
 	AnimationNodeBlend3();
 };
 
@@ -246,7 +246,7 @@ public:
 
 	virtual String get_caption() const override;
 
-	double process(double p_time, bool p_seek, bool p_seek_root) override;
+	double process(double p_time, bool p_seek, bool p_is_external_seeking) override;
 
 	AnimationNodeTimeScale();
 };
@@ -265,7 +265,7 @@ public:
 
 	virtual String get_caption() const override;
 
-	double process(double p_time, bool p_seek, bool p_seek_root) override;
+	double process(double p_time, bool p_seek, bool p_is_external_seeking) override;
 
 	AnimationNodeTimeSeek();
 };
@@ -331,7 +331,7 @@ public:
 	void set_from_start(bool p_from_start);
 	bool is_from_start() const;
 
-	double process(double p_time, bool p_seek, bool p_seek_root) override;
+	double process(double p_time, bool p_seek, bool p_is_external_seeking) override;
 
 	AnimationNodeTransition();
 };
@@ -341,7 +341,7 @@ class AnimationNodeOutput : public AnimationNode {
 
 public:
 	virtual String get_caption() const override;
-	virtual double process(double p_time, bool p_seek, bool p_seek_root) override;
+	virtual double process(double p_time, bool p_seek, bool p_is_external_seeking) override;
 	AnimationNodeOutput();
 };
 
@@ -410,7 +410,7 @@ public:
 	void get_node_connections(List<NodeConnection> *r_connections) const;
 
 	virtual String get_caption() const override;
-	virtual double process(double p_time, bool p_seek, bool p_seek_root) override;
+	virtual double process(double p_time, bool p_seek, bool p_is_external_seeking) override;
 
 	void get_node_list(List<StringName> *r_list);
 

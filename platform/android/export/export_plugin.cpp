@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  export_plugin.cpp                                                    */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  export_plugin.cpp                                                     */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "export_plugin.h"
 
@@ -205,7 +205,7 @@ static const char *LEGACY_BUILD_SPLASH_IMAGE_EXPORT_PATH = "res/drawable-nodpi-v
 static const char *SPLASH_BG_COLOR_PATH = "res/drawable-nodpi/splash_bg_color.png";
 static const char *LEGACY_BUILD_SPLASH_BG_COLOR_PATH = "res/drawable-nodpi-v4/splash_bg_color.png";
 static const char *SPLASH_CONFIG_PATH = "res://android/build/res/drawable/splash_drawable.xml";
-static const char *GDNATIVE_LIBS_PATH = "res://android/build/libs/gdnativelibs.json";
+static const char *GDEXTENSION_LIBS_PATH = "res://android/build/libs/gdextensionlibs.json";
 
 static const int icon_densities_count = 6;
 static const char *launcher_icon_option = PNAME("launcher_icons/main_192x192");
@@ -245,7 +245,7 @@ static const int EXPORT_FORMAT_AAB = 1;
 static const char *APK_ASSETS_DIRECTORY = "res://android/build/assets";
 static const char *AAB_ASSETS_DIRECTORY = "res://android/build/assetPacks/installTime/src/main/assets";
 
-static const int DEFAULT_MIN_SDK_VERSION = 19; // Should match the value in 'platform/android/java/app/config.gradle#minSdk'
+static const int DEFAULT_MIN_SDK_VERSION = 21; // Should match the value in 'platform/android/java/app/config.gradle#minSdk'
 static const int DEFAULT_TARGET_SDK_VERSION = 32; // Should match the value in 'platform/android/java/app/config.gradle#targetSdk'
 
 #ifndef ANDROID_ENABLED
@@ -585,12 +585,13 @@ zip_fileinfo EditorExportPlatformAndroid::get_zip_fileinfo() {
 	return zipfi;
 }
 
-Vector<String> EditorExportPlatformAndroid::get_abis() {
-	Vector<String> abis;
-	abis.push_back("armeabi-v7a");
-	abis.push_back("arm64-v8a");
-	abis.push_back("x86");
-	abis.push_back("x86_64");
+Vector<EditorExportPlatformAndroid::ABI> EditorExportPlatformAndroid::get_abis() {
+	// Should have the same order and size as get_archs.
+	Vector<ABI> abis;
+	abis.push_back(ABI("armeabi-v7a", "arm32"));
+	abis.push_back(ABI("arm64-v8a", "arm64"));
+	abis.push_back(ABI("x86", "x86_32"));
+	abis.push_back(ABI("x86_64", "x86_64"));
 	return abis;
 }
 
@@ -687,24 +688,28 @@ Error EditorExportPlatformAndroid::save_apk_so(void *p_userdata, const SharedObj
 		return FAILED;
 	}
 	APKExportData *ed = static_cast<APKExportData *>(p_userdata);
-	Vector<String> abis = get_abis();
+	Vector<ABI> abis = get_abis();
 	bool exported = false;
 	for (int i = 0; i < p_so.tags.size(); ++i) {
 		// shared objects can be fat (compatible with multiple ABIs)
-		int abi_index = abis.find(p_so.tags[i]);
+		int abi_index = -1;
+		for (int j = 0; j < abis.size(); ++j) {
+			if (abis[j].abi == p_so.tags[i] || abis[j].arch == p_so.tags[i]) {
+				abi_index = j;
+				break;
+			}
+		}
 		if (abi_index != -1) {
 			exported = true;
-			String abi = abis[abi_index];
+			String abi = abis[abi_index].abi;
 			String dst_path = String("lib").path_join(abi).path_join(p_so.path.get_file());
-			Vector<uint8_t> array = FileAccess::get_file_as_array(p_so.path);
+			Vector<uint8_t> array = FileAccess::get_file_as_bytes(p_so.path);
 			Error store_err = store_in_apk(ed, dst_path, array);
 			ERR_FAIL_COND_V_MSG(store_err, store_err, "Cannot store in apk file '" + dst_path + "'.");
 		}
 	}
 	if (!exported) {
-		String abis_string = String(" ").join(abis);
-		String err = "Cannot determine ABI for library \"" + p_so.path + "\". One of the supported ABIs must be used as a tag: " + abis_string;
-		ERR_PRINT(err);
+		ERR_PRINT("Cannot determine architecture for library \"" + p_so.path + "\". One of the supported architectures must be used as a tag: " + join_abis(abis, " ", true));
 		return FAILED;
 	}
 	return OK;
@@ -725,19 +730,25 @@ Error EditorExportPlatformAndroid::ignore_apk_file(void *p_userdata, const Strin
 Error EditorExportPlatformAndroid::copy_gradle_so(void *p_userdata, const SharedObject &p_so) {
 	ERR_FAIL_COND_V_MSG(!p_so.path.get_file().begins_with("lib"), FAILED,
 			"Android .so file names must start with \"lib\", but got: " + p_so.path);
-	Vector<String> abis = get_abis();
+	Vector<ABI> abis = get_abis();
 	CustomExportData *export_data = static_cast<CustomExportData *>(p_userdata);
 	bool exported = false;
 	for (int i = 0; i < p_so.tags.size(); ++i) {
-		int abi_index = abis.find(p_so.tags[i]);
+		int abi_index = -1;
+		for (int j = 0; j < abis.size(); ++j) {
+			if (abis[j].abi == p_so.tags[i] || abis[j].arch == p_so.tags[i]) {
+				abi_index = j;
+				break;
+			}
+		}
 		if (abi_index != -1) {
 			exported = true;
 			String base = "res://android/build/libs";
 			String type = export_data->debug ? "debug" : "release";
-			String abi = abis[abi_index];
+			String abi = abis[abi_index].abi;
 			String filename = p_so.path.get_file();
 			String dst_path = base.path_join(type).path_join(abi).path_join(filename);
-			Vector<uint8_t> data = FileAccess::get_file_as_array(p_so.path);
+			Vector<uint8_t> data = FileAccess::get_file_as_bytes(p_so.path);
 			print_verbose("Copying .so file from " + p_so.path + " to " + dst_path);
 			Error err = store_file_at_path(dst_path, data);
 			ERR_FAIL_COND_V_MSG(err, err, "Failed to copy .so file from " + p_so.path + " to " + dst_path);
@@ -745,7 +756,7 @@ Error EditorExportPlatformAndroid::copy_gradle_so(void *p_userdata, const Shared
 		}
 	}
 	ERR_FAIL_COND_V_MSG(!exported, FAILED,
-			"Cannot determine ABI for library \"" + p_so.path + "\". One of the supported ABIs must be used as a tag: " + String(" ").join(abis));
+			"Cannot determine architecture for library \"" + p_so.path + "\". One of the supported architectures must be used as a tag:" + join_abis(abis, " ", true));
 	return OK;
 }
 
@@ -791,7 +802,7 @@ void EditorExportPlatformAndroid::_get_permissions(const Ref<EditorExportPreset>
 }
 
 void EditorExportPlatformAndroid::_write_tmp_manifest(const Ref<EditorExportPreset> &p_preset, bool p_give_internet, bool p_debug) {
-	print_verbose("Building temporary manifest..");
+	print_verbose("Building temporary manifest...");
 	String manifest_text =
 			"<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
 			"<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"\n"
@@ -862,7 +873,7 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 	int hand_tracking_frequency_index = p_preset->get("xr_features/hand_tracking_frequency");
 
 	bool backup_allowed = p_preset->get("user_data_backup/allow");
-	bool classify_as_game = p_preset->get("package/classify_as_game");
+	int app_category = p_preset->get("package/app_category");
 	bool retain_data_on_uninstall = p_preset->get("package/retain_data_on_uninstall");
 	bool exclude_from_recents = p_preset->get("package/exclude_from_recents");
 	bool is_resizeable = bool(GLOBAL_GET("display/window/size/resizable"));
@@ -961,8 +972,12 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 						encode_uint32(backup_allowed, &p_manifest.write[iofs + 16]);
 					}
 
+					if (tname == "application" && attrname == "appCategory") {
+						encode_uint32(_get_app_category_value(app_category), &p_manifest.write[iofs + 16]);
+					}
+
 					if (tname == "application" && attrname == "isGame") {
-						encode_uint32(classify_as_game, &p_manifest.write[iofs + 16]);
+						encode_uint32(app_category == APP_CATEGORY_GAME, &p_manifest.write[iofs + 16]);
 					}
 
 					if (tname == "application" && attrname == "hasFragileUserData") {
@@ -1010,7 +1025,7 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 							string_table.write[attr_value] = "com.oculus.handtracking.version";
 						}
 
-						if (tname == "meta-data" && attrname == "name" && value == "xr_hand_tracking_version_value") {
+						if (tname == "meta-data" && attrname == "value" && value == "xr_hand_tracking_version_value") {
 							string_table.write[attr_value] = "V2.0";
 						}
 					}
@@ -1656,11 +1671,11 @@ void EditorExportPlatformAndroid::_copy_icons_to_gradle_project(const Ref<Editor
 	}
 }
 
-Vector<String> EditorExportPlatformAndroid::get_enabled_abis(const Ref<EditorExportPreset> &p_preset) {
-	Vector<String> abis = get_abis();
-	Vector<String> enabled_abis;
+Vector<EditorExportPlatformAndroid::ABI> EditorExportPlatformAndroid::get_enabled_abis(const Ref<EditorExportPreset> &p_preset) {
+	Vector<ABI> abis = get_abis();
+	Vector<ABI> enabled_abis;
 	for (int i = 0; i < abis.size(); ++i) {
-		bool is_enabled = p_preset->get("architectures/" + abis[i]);
+		bool is_enabled = p_preset->get("architectures/" + abis[i].abi);
 		if (is_enabled) {
 			enabled_abis.push_back(abis[i]);
 		}
@@ -1671,9 +1686,10 @@ Vector<String> EditorExportPlatformAndroid::get_enabled_abis(const Ref<EditorExp
 void EditorExportPlatformAndroid::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const {
 	r_features->push_back("etc2");
 
-	Vector<String> abis = get_enabled_abis(p_preset);
+	Vector<ABI> abis = get_enabled_abis(p_preset);
 	for (int i = 0; i < abis.size(); ++i) {
-		r_features->push_back(abis[i]);
+		r_features->push_back(abis[i].arch);
+		r_features->push_back(abis[i].abi);
 	}
 }
 
@@ -1697,9 +1713,9 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 
 	// Android supports multiple architectures in an app bundle, so
 	// we expose each option as a checkbox in the export dialog.
-	const Vector<String> abis = get_abis();
+	const Vector<ABI> abis = get_abis();
 	for (int i = 0; i < abis.size(); ++i) {
-		const String abi = abis[i];
+		const String abi = abis[i].abi;
 		// All Android devices supporting Vulkan run 64-bit Android,
 		// so there is usually no point in exporting for 32-bit Android.
 		const bool is_default = abi == "arm64-v8a";
@@ -1719,7 +1735,7 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "package/unique_name", PROPERTY_HINT_PLACEHOLDER_TEXT, "ext.domain.name"), "org.godotengine.$genname"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "package/name", PROPERTY_HINT_PLACEHOLDER_TEXT, "Game Name [default if blank]"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "package/signed"), true));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "package/classify_as_game"), true));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "package/app_category", PROPERTY_HINT_ENUM, "Accessibility,Audio,Game,Image,Maps,News,Productivity,Social,Video"), APP_CATEGORY_GAME));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "package/retain_data_on_uninstall"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "package/exclude_from_recents"), false));
 
@@ -1999,7 +2015,10 @@ String EditorExportPlatformAndroid::get_adb_path() {
 	return sdk_path.path_join("platform-tools/adb" + exe_ext);
 }
 
-String EditorExportPlatformAndroid::get_apksigner_path() {
+String EditorExportPlatformAndroid::get_apksigner_path(int p_target_sdk, bool p_check_executes) {
+	if (p_target_sdk == -1) {
+		p_target_sdk = DEFAULT_TARGET_SDK_VERSION;
+	}
 	String exe_ext = "";
 	if (OS::get_singleton()->get_name() == "Windows") {
 		exe_ext = ".bat";
@@ -2017,23 +2036,89 @@ String EditorExportPlatformAndroid::get_apksigner_path() {
 	}
 
 	// There are additional versions directories we need to go through.
-	da->list_dir_begin();
-	String sub_dir = da->get_next();
-	while (!sub_dir.is_empty()) {
-		if (!sub_dir.begins_with(".") && da->current_is_dir()) {
-			// Check if the tool is here.
-			String tool_path = build_tools_dir.path_join(sub_dir).path_join(apksigner_command_name);
-			if (FileAccess::exists(tool_path)) {
-				apksigner_path = tool_path;
+	Vector<String> dir_list = da->get_directories();
+
+	// We need to use the version of build_tools that matches the Target SDK
+	// If somehow we can't find that, we see if a version between 28 and the default target SDK exists.
+	// We need to avoid versions <= 27 because they fail on Java versions >9
+	// If we can't find that, we just use the first valid version.
+	Vector<String> ideal_versions;
+	Vector<String> other_versions;
+	Vector<String> versions;
+	bool found_target_sdk = false;
+	// We only allow for versions <= 27 if specifically set
+	int min_version = p_target_sdk <= 27 ? p_target_sdk : 28;
+	for (String sub_dir : dir_list) {
+		if (!sub_dir.begins_with(".")) {
+			Vector<String> ver_numbers = sub_dir.split(".");
+			// Dir not a version number, will use as last resort
+			if (!ver_numbers.size() || !ver_numbers[0].is_valid_int()) {
+				other_versions.push_back(sub_dir);
+				continue;
+			}
+			int ver_number = ver_numbers[0].to_int();
+			if (ver_number == p_target_sdk) {
+				found_target_sdk = true;
+				//ensure this is in front of the ones we check
+				versions.push_back(sub_dir);
+			} else {
+				if (ver_number >= min_version && ver_number <= DEFAULT_TARGET_SDK_VERSION) {
+					ideal_versions.push_back(sub_dir);
+				} else {
+					other_versions.push_back(sub_dir);
+				}
+			}
+		}
+	}
+	// we will check ideal versions first, then other versions.
+	versions.append_array(ideal_versions);
+	versions.append_array(other_versions);
+
+	if (!versions.size()) {
+		print_error("Unable to find the 'apksigner' tool.");
+		return apksigner_path;
+	}
+
+	int i;
+	bool failed = false;
+	String version_to_use;
+
+	List<String> args;
+	args.push_back("--version");
+	String output;
+	int retval;
+	Error err;
+	for (i = 0; i < versions.size(); i++) {
+		// Check if the tool is here.
+		apksigner_path = build_tools_dir.path_join(versions[i]).path_join(apksigner_command_name);
+		if (FileAccess::exists(apksigner_path)) {
+			version_to_use = versions[i];
+			// If we aren't exporting, just break here.
+			if (!p_check_executes) {
+				break;
+			}
+			// we only check to see if it executes on export because it is slow to load
+			err = OS::get_singleton()->execute(apksigner_path, args, &output, &retval, false);
+			if (err || retval) {
+				failed = true;
+			} else {
 				break;
 			}
 		}
-		sub_dir = da->get_next();
 	}
-	da->list_dir_end();
-
-	if (apksigner_path.is_empty()) {
-		print_error("Unable to find the 'apksigner' tool.");
+	if (i == versions.size()) {
+		if (failed) {
+			print_error("All located 'apksigner' tools in " + build_tools_dir + " failed to execute");
+			return "<FAILED>";
+		} else {
+			print_error("Unable to find the 'apksigner' tool.");
+			return "";
+		}
+	}
+	if (!found_target_sdk) {
+		print_line("Could not find version of build tools that matches Target SDK, using " + version_to_use);
+	} else if (failed && found_target_sdk) {
+		print_line("Version of build tools that matches Target SDK failed to execute, using " + version_to_use);
 	}
 
 	return apksigner_path;
@@ -2153,8 +2238,12 @@ bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<Edito
 			valid = false;
 		}
 
+		String target_sdk_version = p_preset->get("custom_build/target_sdk");
+		if (!target_sdk_version.is_valid_int()) {
+			target_sdk_version = itos(DEFAULT_TARGET_SDK_VERSION);
+		}
 		// Validate that apksigner is available
-		String apksigner_path = get_apksigner_path();
+		String apksigner_path = get_apksigner_path(target_sdk_version.to_int());
 		if (!FileAccess::exists(apksigner_path)) {
 			err += TTR("Unable to find Android SDK build-tools' apksigner command.");
 			err += TTR("Please check in the Android SDK directory specified in Editor Settings.");
@@ -2377,9 +2466,16 @@ Error EditorExportPlatformAndroid::sign_apk(const Ref<EditorExportPreset> &p_pre
 	String release_keystore = p_preset->get("keystore/release");
 	String release_username = p_preset->get("keystore/release_user");
 	String release_password = p_preset->get("keystore/release_password");
-
-	String apksigner = get_apksigner_path();
+	String target_sdk_version = p_preset->get("custom_build/target_sdk");
+	if (!target_sdk_version.is_valid_int()) {
+		target_sdk_version = itos(DEFAULT_TARGET_SDK_VERSION);
+	}
+	String apksigner = get_apksigner_path(target_sdk_version.to_int(), true);
 	print_verbose("Starting signing of the " + export_label + " binary using " + apksigner);
+	if (apksigner == "<FAILED>") {
+		add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), vformat(TTR("All 'apksigner' tools located in Android SDK 'build-tools' directory failed to execute. Please check that you have the correct version installed for your target sdk version. The resulting %s is unsigned."), export_label));
+		return OK;
+	}
 	if (!FileAccess::exists(apksigner)) {
 		add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), vformat(TTR("'apksigner' could not be found. Please check that the command is available in the Android SDK build-tools directory. The resulting %s is unsigned."), export_label));
 		return OK;
@@ -2429,20 +2525,27 @@ Error EditorExportPlatformAndroid::sign_apk(const Ref<EditorExportPreset> &p_pre
 	args.push_back("--ks-key-alias");
 	args.push_back(user);
 	args.push_back(export_path);
-	if (p_debug) {
-		// We only print verbose logs for debug builds to avoid leaking release keystore credentials.
+	if (OS::get_singleton()->is_stdout_verbose() && p_debug) {
+		// We only print verbose logs with credentials for debug builds to avoid leaking release keystore credentials.
 		print_verbose("Signing debug binary using: " + String("\n") + apksigner + " " + join_list(args, String(" ")));
+	} else {
+		List<String> redacted_args = List<String>(args);
+		redacted_args.find(keystore)->set("<REDACTED>");
+		redacted_args.find("pass:" + password)->set("pass:<REDACTED>");
+		redacted_args.find(user)->set("<REDACTED>");
+		print_line("Signing binary using: " + String("\n") + apksigner + " " + join_list(redacted_args, String(" ")));
 	}
 	int retval;
-	output.clear();
 	Error err = OS::get_singleton()->execute(apksigner, args, &output, &retval, true);
 	if (err != OK) {
 		add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), TTR("Could not start apksigner executable."));
 		return err;
 	}
-	print_verbose(output);
+	// By design, apksigner does not output credentials in its output unless --verbose is used
+	print_line(output);
 	if (retval) {
 		add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), vformat(TTR("'apksigner' returned with error #%d"), retval));
+		add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), vformat(TTR("output: \n%s"), output));
 		return ERR_CANT_CREATE;
 	}
 
@@ -2467,6 +2570,7 @@ Error EditorExportPlatformAndroid::sign_apk(const Ref<EditorExportPreset> &p_pre
 	print_verbose(output);
 	if (retval) {
 		add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), vformat(TTR("'apksigner' verification of %s failed."), export_label));
+		add_message(EXPORT_MESSAGE_WARNING, TTR("Code Signing"), vformat(TTR("output: \n%s"), output));
 		return ERR_CANT_CREATE;
 	}
 
@@ -2479,7 +2583,7 @@ void EditorExportPlatformAndroid::_clear_assets_directory() {
 
 	// Clear the APK assets directory
 	if (da_res->dir_exists(APK_ASSETS_DIRECTORY)) {
-		print_verbose("Clearing APK assets directory..");
+		print_verbose("Clearing APK assets directory...");
 		Ref<DirAccess> da_assets = DirAccess::open(APK_ASSETS_DIRECTORY);
 		da_assets->erase_contents_recursive();
 		da_res->remove(APK_ASSETS_DIRECTORY);
@@ -2487,7 +2591,7 @@ void EditorExportPlatformAndroid::_clear_assets_directory() {
 
 	// Clear the AAB assets directory
 	if (da_res->dir_exists(AAB_ASSETS_DIRECTORY)) {
-		print_verbose("Clearing AAB assets directory..");
+		print_verbose("Clearing AAB assets directory...");
 		Ref<DirAccess> da_assets = DirAccess::open(AAB_ASSETS_DIRECTORY);
 		da_assets->erase_contents_recursive();
 		da_res->remove(AAB_ASSETS_DIRECTORY);
@@ -2497,7 +2601,7 @@ void EditorExportPlatformAndroid::_clear_assets_directory() {
 void EditorExportPlatformAndroid::_remove_copied_libs() {
 	print_verbose("Removing previously installed libraries...");
 	Error error;
-	String libs_json = FileAccess::get_file_as_string(GDNATIVE_LIBS_PATH, &error);
+	String libs_json = FileAccess::get_file_as_string(GDEXTENSION_LIBS_PATH, &error);
 	if (error || libs_json.is_empty()) {
 		print_verbose("No previously installed libraries found");
 		return;
@@ -2513,16 +2617,27 @@ void EditorExportPlatformAndroid::_remove_copied_libs() {
 		print_verbose("Removing previously installed library " + libs[i]);
 		da->remove(libs[i]);
 	}
-	da->remove(GDNATIVE_LIBS_PATH);
+	da->remove(GDEXTENSION_LIBS_PATH);
 }
 
-String EditorExportPlatformAndroid::join_list(List<String> parts, const String &separator) const {
+String EditorExportPlatformAndroid::join_list(const List<String> &p_parts, const String &p_separator) {
 	String ret;
-	for (int i = 0; i < parts.size(); ++i) {
+	for (int i = 0; i < p_parts.size(); ++i) {
 		if (i > 0) {
-			ret += separator;
+			ret += p_separator;
 		}
-		ret += parts[i];
+		ret += p_parts[i];
+	}
+	return ret;
+}
+
+String EditorExportPlatformAndroid::join_abis(const Vector<EditorExportPlatformAndroid::ABI> &p_parts, const String &p_separator, bool p_use_arch) {
+	String ret;
+	for (int i = 0; i < p_parts.size(); ++i) {
+		if (i > 0) {
+			ret += p_separator;
+		}
+		ret += (p_use_arch) ? p_parts[i].arch : p_parts[i].abi;
 	}
 	return ret;
 }
@@ -2544,7 +2659,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 	bool use_custom_build = bool(p_preset->get("custom_build/use_custom_build"));
 	bool p_give_internet = p_flags & (DEBUG_FLAG_DUMB_CLIENT | DEBUG_FLAG_REMOTE_DEBUG);
 	bool apk_expansion = p_preset->get("apk_expansion/enable");
-	Vector<String> enabled_abis = get_enabled_abis(p_preset);
+	Vector<ABI> enabled_abis = get_enabled_abis(p_preset);
 
 	print_verbose("Exporting for Android...");
 	print_verbose("- debug build: " + bool_to_string(p_debug));
@@ -2553,7 +2668,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 	print_verbose("- sign build: " + bool_to_string(should_sign));
 	print_verbose("- custom build enabled: " + bool_to_string(use_custom_build));
 	print_verbose("- apk expansion enabled: " + bool_to_string(apk_expansion));
-	print_verbose("- enabled abis: " + String(",").join(enabled_abis));
+	print_verbose("- enabled abis: " + join_abis(enabled_abis, ",", false));
 	print_verbose("- export filter: " + itos(p_preset->get_export_filter()));
 	print_verbose("- include filter: " + p_preset->get_include_filter());
 	print_verbose("- exclude filter: " + p_preset->get_exclude_filter());
@@ -2592,10 +2707,10 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 	}
 
 	if (use_custom_build) {
-		print_verbose("Starting custom build..");
+		print_verbose("Starting custom build...");
 		//test that installed build version is alright
 		{
-			print_verbose("Checking build version..");
+			print_verbose("Checking build version...");
 			Ref<FileAccess> f = FileAccess::open("res://android/.build_version", FileAccess::READ);
 			if (f.is_null()) {
 				add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Trying to build from a custom built template, but no version info for it exists. Please reinstall from the 'Project' menu."));
@@ -2628,7 +2743,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		_clear_assets_directory();
 		_remove_copied_libs();
 		if (!apk_expansion) {
-			print_verbose("Exporting project files..");
+			print_verbose("Exporting project files...");
 			CustomExportData user_data;
 			user_data.assets_directory = assets_directory;
 			user_data.debug = p_debug;
@@ -2638,18 +2753,18 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 				return err;
 			}
 			if (user_data.libs.size() > 0) {
-				Ref<FileAccess> fa = FileAccess::open(GDNATIVE_LIBS_PATH, FileAccess::WRITE);
+				Ref<FileAccess> fa = FileAccess::open(GDEXTENSION_LIBS_PATH, FileAccess::WRITE);
 				fa->store_string(JSON::stringify(user_data.libs, "\t"));
 			}
 		} else {
-			print_verbose("Saving apk expansion file..");
+			print_verbose("Saving apk expansion file...");
 			err = save_apk_expansion_file(p_preset, p_debug, p_path);
 			if (err != OK) {
 				add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Could not write expansion package file!"));
 				return err;
 			}
 		}
-		print_verbose("Storing command line flags..");
+		print_verbose("Storing command line flags...");
 		store_file_at_path(assets_directory + "/_cl_", command_line_flags);
 
 		print_verbose("Updating ANDROID_HOME environment to " + sdk_path);
@@ -2676,7 +2791,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		if (!target_sdk_version.is_valid_int()) {
 			target_sdk_version = itos(DEFAULT_TARGET_SDK_VERSION);
 		}
-		String enabled_abi_string = String("|").join(enabled_abis);
+		String enabled_abi_string = join_abis(enabled_abis, "|", false);
 		String sign_flag = should_sign ? "true" : "false";
 		String zipalign_flag = "true";
 
@@ -2802,7 +2917,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		return OK;
 	}
 	// This is the start of the Legacy build system
-	print_verbose("Starting legacy build system..");
+	print_verbose("Starting legacy build system...");
 	if (p_debug) {
 		src_apk = p_preset->get("custom_template/debug");
 	} else {
@@ -2861,7 +2976,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 
 	String apk_expansion_pkey = p_preset->get("apk_expansion/public_key");
 
-	Vector<String> invalid_abis(enabled_abis);
+	Vector<ABI> invalid_abis(enabled_abis);
 	while (ret == UNZ_OK) {
 		//get filename
 		unz_file_info info;
@@ -2924,7 +3039,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		if (file.ends_with(".so")) {
 			bool enabled = false;
 			for (int i = 0; i < enabled_abis.size(); ++i) {
-				if (file.begins_with("lib/" + enabled_abis[i] + "/")) {
+				if (file.begins_with("lib/" + enabled_abis[i].abi + "/")) {
 					invalid_abis.erase(enabled_abis[i]);
 					enabled = true;
 					break;
@@ -2966,8 +3081,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 	}
 
 	if (!invalid_abis.is_empty()) {
-		String unsupported_arch = String(", ").join(invalid_abis);
-		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Missing libraries in the export template for the selected architectures: %s. Please build a template with all required libraries, or uncheck the missing architectures in the export preset."), unsupported_arch));
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), vformat(TTR("Missing libraries in the export template for the selected architectures: %s. Please build a template with all required libraries, or uncheck the missing architectures in the export preset."), join_abis(invalid_abis, ", ", false)));
 		CLEANUP_AND_RETURN(ERR_FILE_NOT_FOUND);
 	}
 

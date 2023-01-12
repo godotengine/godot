@@ -1,37 +1,38 @@
-/*************************************************************************/
-/*  animation_library_editor.cpp                                         */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  animation_library_editor.cpp                                          */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "animation_library_editor.h"
 #include "editor/editor_file_dialog.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
 
 void AnimationLibraryEditor::set_animation_player(Object *p_player) {
@@ -93,7 +94,7 @@ void AnimationLibraryEditor::_add_library_validate(const String &p_name) {
 void AnimationLibraryEditor::_add_library_confirm() {
 	if (adding_animation) {
 		String anim_name = add_library_name->get_text();
-		Ref<EditorUndoRedoManager> undo_redo = EditorNode::get_singleton()->get_undo_redo();
+		Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_singleton()->get_undo_redo();
 
 		Ref<AnimationLibrary> al = player->call("get_animation_library", adding_animation_to_library);
 		ERR_FAIL_COND(!al.is_valid());
@@ -110,7 +111,7 @@ void AnimationLibraryEditor::_add_library_confirm() {
 
 	} else {
 		String lib_name = add_library_name->get_text();
-		Ref<EditorUndoRedoManager> undo_redo = EditorNode::get_singleton()->get_undo_redo();
+		Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_singleton()->get_undo_redo();
 
 		Ref<AnimationLibrary> al;
 		al.instantiate();
@@ -210,7 +211,7 @@ void AnimationLibraryEditor::_file_popup_selected(int p_id) {
 				ald->add_animation(animation_name, animation);
 			}
 
-			Ref<EditorUndoRedoManager> undo_redo = EditorNode::get_singleton()->get_undo_redo();
+			Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_singleton()->get_undo_redo();
 			undo_redo->create_action(vformat(TTR("Make Animation Library Unique: %s"), lib_name));
 			undo_redo->add_do_method(player, "remove_animation_library", lib_name);
 			undo_redo->add_do_method(player, "add_animation_library", lib_name, ald);
@@ -279,7 +280,7 @@ void AnimationLibraryEditor::_file_popup_selected(int p_id) {
 
 			Ref<Animation> animd = anim->duplicate();
 
-			Ref<EditorUndoRedoManager> undo_redo = EditorNode::get_singleton()->get_undo_redo();
+			Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_singleton()->get_undo_redo();
 			undo_redo->create_action(vformat(TTR("Make Animation Unique: %s"), anim_name));
 			undo_redo->add_do_method(al.ptr(), "remove_animation", anim_name);
 			undo_redo->add_do_method(al.ptr(), "add_animation", anim_name, animd);
@@ -327,7 +328,7 @@ void AnimationLibraryEditor::_load_file(String p_path) {
 				name = p_path.get_file().get_basename() + " " + itos(attempt);
 			}
 
-			Ref<EditorUndoRedoManager> undo_redo = EditorNode::get_singleton()->get_undo_redo();
+			Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_singleton()->get_undo_redo();
 
 			undo_redo->create_action(vformat(TTR("Add Animation Library: %s"), name));
 			undo_redo->add_do_method(player, "add_animation_library", name, al);
@@ -365,7 +366,7 @@ void AnimationLibraryEditor::_load_file(String p_path) {
 				name = p_path.get_file().get_basename() + " " + itos(attempt);
 			}
 
-			Ref<EditorUndoRedoManager> undo_redo = EditorNode::get_singleton()->get_undo_redo();
+			Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_singleton()->get_undo_redo();
 
 			undo_redo->create_action(vformat(TTR("Load Animation into Library: %s"), name));
 			undo_redo->add_do_method(al.ptr(), "add_animation", name, anim);
@@ -381,7 +382,7 @@ void AnimationLibraryEditor::_load_file(String p_path) {
 			EditorNode::get_singleton()->save_resource_in_path(al, p_path);
 
 			if (al->get_path() != prev_path) { // Save successful.
-				Ref<EditorUndoRedoManager> undo_redo = EditorNode::get_singleton()->get_undo_redo();
+				Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_singleton()->get_undo_redo();
 
 				undo_redo->create_action(vformat(TTR("Save Animation library to File: %s"), file_dialog_library));
 				undo_redo->add_do_method(al.ptr(), "set_path", al->get_path());
@@ -402,7 +403,7 @@ void AnimationLibraryEditor::_load_file(String p_path) {
 			String prev_path = anim->get_path();
 			EditorNode::get_singleton()->save_resource_in_path(anim, p_path);
 			if (anim->get_path() != prev_path) { // Save successful.
-				Ref<EditorUndoRedoManager> undo_redo = EditorNode::get_singleton()->get_undo_redo();
+				Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_singleton()->get_undo_redo();
 
 				undo_redo->create_action(vformat(TTR("Save Animation to File: %s"), file_dialog_animation));
 				undo_redo->add_do_method(anim.ptr(), "set_path", anim->get_path());
@@ -420,7 +421,7 @@ void AnimationLibraryEditor::_item_renamed() {
 	String text = ti->get_text(0);
 	String old_text = ti->get_metadata(0);
 	bool restore_text = false;
-	Ref<EditorUndoRedoManager> undo_redo = EditorNode::get_singleton()->get_undo_redo();
+	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_singleton()->get_undo_redo();
 
 	if (String(text).contains("/") || String(text).contains(":") || String(text).contains(",") || String(text).contains("[")) {
 		restore_text = true;
@@ -534,7 +535,7 @@ void AnimationLibraryEditor::_button_pressed(TreeItem *p_item, int p_column, int
 					name = base_name + " (" + itos(attempt) + ")";
 				}
 
-				Ref<EditorUndoRedoManager> undo_redo = EditorNode::get_singleton()->get_undo_redo();
+				Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_singleton()->get_undo_redo();
 
 				undo_redo->create_action(vformat(TTR("Add Animation to Library: %s"), name));
 				undo_redo->add_do_method(al.ptr(), "add_animation", name, anim);
@@ -560,7 +561,7 @@ void AnimationLibraryEditor::_button_pressed(TreeItem *p_item, int p_column, int
 				file_dialog_library = lib_name;
 			} break;
 			case LIB_BUTTON_DELETE: {
-				Ref<EditorUndoRedoManager> undo_redo = EditorNode::get_singleton()->get_undo_redo();
+				Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_singleton()->get_undo_redo();
 				undo_redo->create_action(vformat(TTR("Remove Animation Library: %s"), lib_name));
 				undo_redo->add_do_method(player, "remove_animation_library", lib_name);
 				undo_redo->add_undo_method(player, "add_animation_library", lib_name, al);
@@ -601,7 +602,7 @@ void AnimationLibraryEditor::_button_pressed(TreeItem *p_item, int p_column, int
 
 			} break;
 			case ANIM_BUTTON_DELETE: {
-				Ref<EditorUndoRedoManager> undo_redo = EditorNode::get_singleton()->get_undo_redo();
+				Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_singleton()->get_undo_redo();
 				undo_redo->create_action(vformat(TTR("Remove Animation from Library: %s"), anim_name));
 				undo_redo->add_do_method(al.ptr(), "remove_animation", anim_name);
 				undo_redo->add_undo_method(al.ptr(), "add_animation", anim_name, anim);

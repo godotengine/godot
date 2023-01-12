@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  http_request.cpp                                                     */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  http_request.cpp                                                      */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "http_request.h"
 #include "core/io/compression.h"
@@ -276,10 +276,10 @@ bool HTTPRequest::_handle_response(bool *ret_value) {
 	}
 	if (content_encoding == "gzip") {
 		decompressor.instantiate();
-		decompressor->start_decompression(false, get_download_chunk_size() * 2);
+		decompressor->start_decompression(false, get_download_chunk_size());
 	} else if (content_encoding == "deflate") {
 		decompressor.instantiate();
-		decompressor->start_decompression(true, get_download_chunk_size() * 2);
+		decompressor->start_decompression(true, get_download_chunk_size());
 	}
 
 	return false;
@@ -390,19 +390,38 @@ bool HTTPRequest::_update_connection() {
 				return false;
 			}
 
-			PackedByteArray chunk = client->read_response_body_chunk();
-			downloaded.add(chunk.size());
+			PackedByteArray chunk;
+			if (decompressor.is_null()) {
+				// Chunk can be read directly.
+				chunk = client->read_response_body_chunk();
+				downloaded.add(chunk.size());
+			} else {
+				// Chunk is the result of decompression.
+				PackedByteArray compressed = client->read_response_body_chunk();
+				downloaded.add(compressed.size());
 
-			// Decompress chunk if needed.
-			if (decompressor.is_valid()) {
-				Error err = decompressor->put_data(chunk.ptr(), chunk.size());
-				if (err == OK) {
-					chunk.resize(decompressor->get_available_bytes());
-					err = decompressor->get_data(chunk.ptrw(), chunk.size());
-				}
-				if (err != OK) {
-					_defer_done(RESULT_BODY_DECOMPRESS_FAILED, response_code, response_headers, PackedByteArray());
-					return true;
+				int pos = 0;
+				int left = compressed.size();
+				while (left) {
+					int w = 0;
+					Error err = decompressor->put_partial_data(compressed.ptr() + pos, left, w);
+					if (err == OK) {
+						PackedByteArray dc;
+						dc.resize(decompressor->get_available_bytes());
+						err = decompressor->get_data(dc.ptrw(), dc.size());
+						chunk.append_array(dc);
+					}
+					if (err != OK) {
+						_defer_done(RESULT_BODY_DECOMPRESS_FAILED, response_code, response_headers, PackedByteArray());
+						return true;
+					}
+					// We need this check here because a "zip bomb" could result in a chunk of few kilos decompressing into gigabytes of data.
+					if (body_size_limit >= 0 && final_body_size.get() + chunk.size() > body_size_limit) {
+						_defer_done(RESULT_BODY_SIZE_LIMIT_EXCEEDED, response_code, response_headers, PackedByteArray());
+						return true;
+					}
+					pos += w;
+					left -= w;
 				}
 			}
 			final_body_size.add(chunk.size());

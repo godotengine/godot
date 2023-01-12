@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  web_main.cpp                                                         */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  web_main.cpp                                                          */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "core/config/engine.h"
 #include "core/io/resource_loader.h"
@@ -41,30 +41,25 @@
 
 static OS_Web *os = nullptr;
 static uint64_t target_ticks = 0;
+static bool main_started = false;
+static bool shutdown_complete = false;
 
 void exit_callback() {
-	emscripten_cancel_main_loop(); // After this, we can exit!
-	Main::cleanup();
+	if (!shutdown_complete) {
+		return; // Still waiting.
+	}
+	if (main_started) {
+		Main::cleanup();
+		main_started = false;
+	}
 	int exit_code = OS_Web::get_singleton()->get_exit_code();
 	memdelete(os);
 	os = nullptr;
-	emscripten_force_exit(exit_code); // No matter that we call cancel_main_loop, regular "exit" will not work, forcing.
+	emscripten_force_exit(exit_code); // Exit runtime.
 }
 
 void cleanup_after_sync() {
-	emscripten_set_main_loop(exit_callback, -1, false);
-}
-
-void early_cleanup() {
-	emscripten_cancel_main_loop(); // After this, we can exit!
-	int exit_code = OS_Web::get_singleton()->get_exit_code();
-	memdelete(os);
-	os = nullptr;
-	emscripten_force_exit(exit_code); // No matter that we call cancel_main_loop, regular "exit" will not work, forcing.
-}
-
-void early_cleanup_sync() {
-	emscripten_set_main_loop(early_cleanup, -1, false);
+	shutdown_complete = true;
 }
 
 void main_loop_callback() {
@@ -87,7 +82,8 @@ void main_loop_callback() {
 		target_ticks += (uint64_t)(1000000 / max_fps);
 	}
 	if (os->main_loop_iterate()) {
-		emscripten_cancel_main_loop(); // Cancel current loop and wait for cleanup_after_sync.
+		emscripten_cancel_main_loop(); // Cancel current loop and set the cleanup one.
+		emscripten_set_main_loop(exit_callback, -1, false);
 		godot_js_os_finish_async(cleanup_after_sync);
 	}
 }
@@ -109,9 +105,13 @@ extern EMSCRIPTEN_KEEPALIVE int godot_web_main(int argc, char *argv[]) {
 		}
 		os->set_exit_code(exit_code);
 		// Will only exit after sync.
-		godot_js_os_finish_async(early_cleanup_sync);
+		emscripten_set_main_loop(exit_callback, -1, false);
+		godot_js_os_finish_async(cleanup_after_sync);
 		return exit_code;
 	}
+
+	os->set_exit_code(0);
+	main_started = true;
 
 	// Ease up compatibility.
 	ResourceLoader::set_abort_on_missing_resources(false);

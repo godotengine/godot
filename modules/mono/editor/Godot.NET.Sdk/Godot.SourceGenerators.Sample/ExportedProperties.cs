@@ -12,6 +12,95 @@ namespace Godot.SourceGenerators.Sample
     [SuppressMessage("ReSharper", "InconsistentNaming")]
     public partial class ExportedProperties : Godot.Object
     {
+        // Do not generate default value
+        private String _notGenerate_Property_String = new string("not generate");
+        [Export]
+        public String NotGenerate_Complex_Lamda_Property
+        {
+            get => _notGenerate_Property_String + Convert.ToInt32("1");
+            set => _notGenerate_Property_String = value;
+        }
+
+        [Export]
+        public String NotGenerate_Lamda_NoField_Property
+        {
+            get => new string("not generate");
+            set => _notGenerate_Property_String = value;
+        }
+
+        [Export]
+        public String NotGenerate_Complex_Return_Property
+        {
+            get
+            {
+                return _notGenerate_Property_String + Convert.ToInt32("1");
+            }
+            set
+            {
+                _notGenerate_Property_String = value;
+            }
+        }
+
+        private int _notGenerate_Property_Int = 1;
+        [Export]
+        public string NotGenerate_Returns_Property
+        {
+            get
+            {
+                if (_notGenerate_Property_Int == 1)
+                {
+                    return "a";
+                }
+                else
+                {
+                    return "b";
+                }
+            }
+            set
+            {
+                _notGenerate_Property_Int = value == "a" ? 1 : 2;
+            }
+        }
+
+        // Full Property
+        private String _fullProperty_String = "FullProperty_String";
+        [Export]
+        public String FullProperty_String
+        {
+            get
+            {
+                return _fullProperty_String;
+            }
+            set
+            {
+                _fullProperty_String = value;
+            }
+        }
+
+        private String _fullProperty_String_Complex = new string("FullProperty_String_Complex") + Convert.ToInt32("1");
+        [Export]
+        public String FullProperty_String_Complex
+        {
+            get
+            {
+                return _fullProperty_String_Complex;
+            }
+            set
+            {
+                _fullProperty_String_Complex = value;
+            }
+        }
+
+        // Lambda Property
+        private String _lamdaProperty_String = "LamdaProperty_String";
+        [Export]
+        public String LamdaProperty_String
+        {
+            get => _lamdaProperty_String;
+            set => _lamdaProperty_String = value;
+        }
+
+        // Auto Property
         [Export] private Boolean property_Boolean { get; set; } = true;
         [Export] private Char property_Char { get; set; } = 'f';
         [Export] private SByte property_SByte { get; set; } = 10;
@@ -44,7 +133,7 @@ namespace Godot.SourceGenerators.Sample
         [Export] private Color property_Color { get; set; } = Colors.Aquamarine;
         [Export] private Plane property_Plane { get; set; } = Plane.PlaneXZ;
         [Export] private Callable property_Callable { get; set; } = new Callable(Engine.GetMainLoop(), "_process");
-        [Export] private SignalInfo property_SignalInfo { get; set; } = new SignalInfo(Engine.GetMainLoop(), "property_list_changed");
+        [Export] private Signal property_Signal { get; set; } = new Signal(Engine.GetMainLoop(), "property_list_changed");
 
         // Enums
         [SuppressMessage("ReSharper", "UnusedMember.Local")]

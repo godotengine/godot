@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  texture_storage.cpp                                                  */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  texture_storage.cpp                                                   */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "texture_storage.h"
 
@@ -419,11 +419,12 @@ TextureStorage::TextureStorage() {
 		tformat.format = RD::DATA_FORMAT_R8_UINT;
 		tformat.width = 4;
 		tformat.height = 4;
-		tformat.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
-		if (RD::get_singleton()->has_feature(RD::SUPPORTS_ATTACHMENT_VRS)) {
-			tformat.usage_bits |= RD::TEXTURE_USAGE_VRS_ATTACHMENT_BIT;
-		}
+		tformat.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT | RD::TEXTURE_USAGE_VRS_ATTACHMENT_BIT;
 		tformat.texture_type = RD::TEXTURE_TYPE_2D;
+		if (!RD::get_singleton()->has_feature(RD::SUPPORTS_ATTACHMENT_VRS)) {
+			tformat.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
+			tformat.format = RD::DATA_FORMAT_R8_UNORM;
+		}
 
 		Vector<uint8_t> pv;
 		pv.resize(4 * 4);
@@ -560,6 +561,7 @@ void TextureStorage::canvas_texture_set_texture_filter(RID p_canvas_texture, RS:
 void TextureStorage::canvas_texture_set_texture_repeat(RID p_canvas_texture, RS::CanvasItemTextureRepeat p_repeat) {
 	CanvasTexture *ct = canvas_texture_owner.get_or_null(p_canvas_texture);
 	ERR_FAIL_NULL(ct);
+
 	ct->texture_repeat = p_repeat;
 	ct->clear_sets();
 }
@@ -580,6 +582,9 @@ bool TextureStorage::canvas_texture_get_uniform_set(RID p_texture, RS::CanvasIte
 		}
 
 		ct = t->canvas_texture;
+		if (t->render_target) {
+			t->render_target->was_used = true;
+		}
 	} else {
 		ct = canvas_texture_owner.get_or_null(p_texture);
 	}
@@ -610,6 +615,9 @@ bool TextureStorage::canvas_texture_get_uniform_set(RID p_texture, RS::CanvasIte
 			} else {
 				u.append_id(t->rd_texture);
 				ct->size_cache = Size2i(t->width_2d, t->height_2d);
+				if (t->render_target) {
+					t->render_target->was_used = true;
+				}
 			}
 			uniforms.push_back(u);
 		}
@@ -625,6 +633,9 @@ bool TextureStorage::canvas_texture_get_uniform_set(RID p_texture, RS::CanvasIte
 			} else {
 				u.append_id(t->rd_texture);
 				ct->use_normal_cache = true;
+				if (t->render_target) {
+					t->render_target->was_used = true;
+				}
 			}
 			uniforms.push_back(u);
 		}
@@ -640,6 +651,9 @@ bool TextureStorage::canvas_texture_get_uniform_set(RID p_texture, RS::CanvasIte
 			} else {
 				u.append_id(t->rd_texture);
 				ct->use_specular_cache = true;
+				if (t->render_target) {
+					t->render_target->was_used = true;
+				}
 			}
 			uniforms.push_back(u);
 		}
@@ -1336,6 +1350,13 @@ Size2 TextureStorage::texture_size_with_proxy(RID p_proxy) {
 	return texture_2d_get_size(p_proxy);
 }
 
+RID TextureStorage::texture_get_rd_texture_rid(RID p_texture, bool p_srgb) const {
+	Texture *tex = texture_owner.get_or_null(p_texture);
+	ERR_FAIL_COND_V(!tex, RID());
+
+	return (p_srgb && tex->rd_texture_srgb.is_valid()) ? tex->rd_texture_srgb : tex->rd_texture;
+}
+
 Ref<Image> TextureStorage::_validate_texture_format(const Ref<Image> &p_image, TextureToRDFormat &r_format) {
 	Ref<Image> image = p_image->duplicate();
 
@@ -1756,6 +1777,46 @@ Ref<Image> TextureStorage::_validate_texture_format(const Ref<Image> &p_image, T
 			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_ZERO;
 			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
 		} break;
+		case Image::FORMAT_ASTC_4x4:
+		case Image::FORMAT_ASTC_4x4_HDR: {
+			if (RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_ASTC_4x4_UNORM_BLOCK, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT)) {
+				r_format.format = RD::DATA_FORMAT_ASTC_4x4_UNORM_BLOCK;
+				if (p_image->get_format() == Image::FORMAT_ASTC_4x4) {
+					r_format.format_srgb = RD::DATA_FORMAT_ASTC_4x4_SRGB_BLOCK;
+				}
+			} else {
+				//not supported, reconvert
+				r_format.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
+				r_format.format_srgb = RD::DATA_FORMAT_R8G8B8A8_SRGB;
+				image->decompress();
+				image->convert(Image::FORMAT_RGBA8);
+			}
+			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
+			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
+			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
+			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_A;
+
+		} break; // astc 4x4
+		case Image::FORMAT_ASTC_8x8:
+		case Image::FORMAT_ASTC_8x8_HDR: {
+			if (RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_ASTC_8x8_UNORM_BLOCK, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT)) {
+				r_format.format = RD::DATA_FORMAT_ASTC_8x8_UNORM_BLOCK;
+				if (p_image->get_format() == Image::FORMAT_ASTC_8x8) {
+					r_format.format_srgb = RD::DATA_FORMAT_ASTC_8x8_SRGB_BLOCK;
+				}
+			} else {
+				//not supported, reconvert
+				r_format.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
+				r_format.format_srgb = RD::DATA_FORMAT_R8G8B8A8_SRGB;
+				image->decompress();
+				image->convert(Image::FORMAT_RGBA8);
+			}
+			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
+			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
+			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
+			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_A;
+
+		} break; // astc 8x8
 
 		default: {
 		}
@@ -2390,6 +2451,10 @@ void TextureStorage::_clear_render_target(RenderTarget *rt) {
 
 	rt->color = RID();
 	rt->color_multisample = RID();
+	if (rt->texture.is_valid()) {
+		Texture *tex = get_texture(rt->texture);
+		tex->render_target = nullptr;
+	}
 }
 
 void TextureStorage::_update_render_target(RenderTarget *rt) {
@@ -2470,6 +2535,7 @@ void TextureStorage::_update_render_target(RenderTarget *rt) {
 
 		tex->rd_texture = RID();
 		tex->rd_texture_srgb = RID();
+		tex->render_target = rt;
 
 		//create shared textures to the color buffer,
 		//so transparent can be supported
@@ -3112,9 +3178,11 @@ void TextureStorage::render_target_copy_to_back_buffer(RID p_render_target, cons
 
 	// TODO figure out stereo support here
 
-	//single texture copy for backbuffer
-	//RD::get_singleton()->texture_copy(rt->color, rt->backbuffer_mipmap0, Vector3(region.position.x, region.position.y, 0), Vector3(region.position.x, region.position.y, 0), Vector3(region.size.x, region.size.y, 1), 0, 0, 0, 0, true);
-	copy_effects->copy_to_rect(rt->color, rt->backbuffer_mipmap0, region, false, false, false, true, true);
+	if (RendererSceneRenderRD::get_singleton()->_render_buffers_can_be_storage()) {
+		copy_effects->copy_to_rect(rt->color, rt->backbuffer_mipmap0, region, false, false, false, true, true);
+	} else {
+		copy_effects->copy_to_fb_rect(rt->color, rt->backbuffer_fb, region, false, false, false, false, RID(), false, true);
+	}
 
 	if (!p_gen_mipmaps) {
 		return;
@@ -3123,14 +3191,22 @@ void TextureStorage::render_target_copy_to_back_buffer(RID p_render_target, cons
 	//then mipmap blur
 	RID prev_texture = rt->color; //use color, not backbuffer, as bb has mipmaps.
 
+	Size2i texture_size = rt->size;
+
 	for (int i = 0; i < rt->backbuffer_mipmaps.size(); i++) {
 		region.position.x >>= 1;
 		region.position.y >>= 1;
 		region.size.x = MAX(1, region.size.x >> 1);
 		region.size.y = MAX(1, region.size.y >> 1);
+		texture_size.x = MAX(1, texture_size.x >> 1);
+		texture_size.y = MAX(1, texture_size.y >> 1);
 
 		RID mipmap = rt->backbuffer_mipmaps[i];
-		copy_effects->gaussian_blur(prev_texture, mipmap, region, true);
+		if (RendererSceneRenderRD::get_singleton()->_render_buffers_can_be_storage()) {
+			copy_effects->gaussian_blur(prev_texture, mipmap, region, texture_size, true);
+		} else {
+			copy_effects->gaussian_blur_raster(prev_texture, mipmap, region, texture_size);
+		}
 		prev_texture = mipmap;
 	}
 	RD::get_singleton()->draw_command_end_label();
@@ -3158,7 +3234,11 @@ void TextureStorage::render_target_clear_back_buffer(RID p_render_target, const 
 	}
 
 	//single texture copy for backbuffer
-	copy_effects->set_color(rt->backbuffer_mipmap0, p_color, region, true);
+	if (RendererSceneRenderRD::get_singleton()->_render_buffers_can_be_storage()) {
+		copy_effects->set_color(rt->backbuffer_mipmap0, p_color, region, true);
+	} else {
+		copy_effects->set_color_raster(rt->backbuffer_mipmap0, p_color, region);
+	}
 }
 
 void TextureStorage::render_target_gen_back_buffer_mipmaps(RID p_render_target, const Rect2i &p_region) {
@@ -3184,15 +3264,23 @@ void TextureStorage::render_target_gen_back_buffer_mipmaps(RID p_render_target, 
 	RD::get_singleton()->draw_command_begin_label("Gaussian Blur Mipmaps2");
 	//then mipmap blur
 	RID prev_texture = rt->backbuffer_mipmap0;
+	Size2i texture_size = rt->size;
 
 	for (int i = 0; i < rt->backbuffer_mipmaps.size(); i++) {
 		region.position.x >>= 1;
 		region.position.y >>= 1;
 		region.size.x = MAX(1, region.size.x >> 1);
 		region.size.y = MAX(1, region.size.y >> 1);
+		texture_size.x = MAX(1, texture_size.x >> 1);
+		texture_size.y = MAX(1, texture_size.y >> 1);
 
 		RID mipmap = rt->backbuffer_mipmaps[i];
-		copy_effects->gaussian_blur(prev_texture, mipmap, region, true);
+
+		if (RendererSceneRenderRD::get_singleton()->_render_buffers_can_be_storage()) {
+			copy_effects->gaussian_blur(prev_texture, mipmap, region, texture_size, true);
+		} else {
+			copy_effects->gaussian_blur_raster(prev_texture, mipmap, region, texture_size);
+		}
 		prev_texture = mipmap;
 	}
 	RD::get_singleton()->draw_command_end_label();

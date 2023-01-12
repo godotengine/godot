@@ -341,7 +341,7 @@ _hb_ot_shape_normalize (const hb_ot_shape_plan_t *plan,
     {
       unsigned int end;
       for (end = buffer->idx + 1; end < count; end++)
-	if (unlikely (_hb_glyph_info_is_unicode_mark (&buffer->info[end])))
+	if (_hb_glyph_info_is_unicode_mark (&buffer->info[end]))
 	  break;
 
       if (end < count)

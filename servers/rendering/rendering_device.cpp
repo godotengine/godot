@@ -1,38 +1,48 @@
-/*************************************************************************/
-/*  rendering_device.cpp                                                 */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  rendering_device.cpp                                                  */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "rendering_device.h"
 
 #include "rendering_device_binds.h"
 
+#include "thirdparty/spirv-reflect/spirv_reflect.h"
+
 RenderingDevice *RenderingDevice::singleton = nullptr;
+
+const char *RenderingDevice::shader_stage_names[RenderingDevice::SHADER_STAGE_MAX] = {
+	"Vertex",
+	"Fragment",
+	"TesselationControl",
+	"TesselationEvaluation",
+	"Compute",
+};
 
 RenderingDevice *RenderingDevice::get_singleton() {
 	return singleton;
@@ -170,10 +180,16 @@ RenderingDevice::VertexFormatID RenderingDevice::_vertex_format_create(const Typ
 	return vertex_format_create(descriptions);
 }
 
-RID RenderingDevice::_vertex_array_create(uint32_t p_vertex_count, VertexFormatID p_vertex_format, const TypedArray<RID> &p_src_buffers) {
+RID RenderingDevice::_vertex_array_create(uint32_t p_vertex_count, VertexFormatID p_vertex_format, const TypedArray<RID> &p_src_buffers, const Vector<int64_t> &p_offsets) {
 	Vector<RID> buffers = Variant(p_src_buffers);
 
-	return vertex_array_create(p_vertex_count, p_vertex_format, buffers);
+	Vector<uint64_t> offsets;
+	offsets.resize(p_offsets.size());
+	for (int i = 0; i < p_offsets.size(); i++) {
+		offsets.write[i] = p_offsets[i];
+	}
+
+	return vertex_array_create(p_vertex_count, p_vertex_format, buffers, offsets);
 }
 
 Ref<RDShaderSPIRV> RenderingDevice::_shader_compile_spirv_from_source(const Ref<RDShaderSource> &p_source, bool p_allow_cache) {
@@ -246,7 +262,7 @@ RID RenderingDevice::_uniform_set_create(const TypedArray<RDUniform> &p_uniforms
 	return uniform_set_create(uniforms, p_shader, p_shader_set);
 }
 
-Error RenderingDevice::_buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const Vector<uint8_t> &p_data, uint32_t p_post_barrier) {
+Error RenderingDevice::_buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const Vector<uint8_t> &p_data, BitField<BarrierMask> p_post_barrier) {
 	return buffer_update(p_buffer, p_offset, p_size, p_data.ptr(), p_post_barrier);
 }
 
@@ -280,7 +296,7 @@ static Vector<RenderingDevice::PipelineSpecializationConstant> _get_spec_constan
 	return ret;
 }
 
-RID RenderingDevice::_render_pipeline_create(RID p_shader, FramebufferFormatID p_framebuffer_format, VertexFormatID p_vertex_format, RenderPrimitive p_render_primitive, const Ref<RDPipelineRasterizationState> &p_rasterization_state, const Ref<RDPipelineMultisampleState> &p_multisample_state, const Ref<RDPipelineDepthStencilState> &p_depth_stencil_state, const Ref<RDPipelineColorBlendState> &p_blend_state, int p_dynamic_state_flags, uint32_t p_for_render_pass, const TypedArray<RDPipelineSpecializationConstant> &p_specialization_constants) {
+RID RenderingDevice::_render_pipeline_create(RID p_shader, FramebufferFormatID p_framebuffer_format, VertexFormatID p_vertex_format, RenderPrimitive p_render_primitive, const Ref<RDPipelineRasterizationState> &p_rasterization_state, const Ref<RDPipelineMultisampleState> &p_multisample_state, const Ref<RDPipelineDepthStencilState> &p_depth_stencil_state, const Ref<RDPipelineColorBlendState> &p_blend_state, BitField<PipelineDynamicStateFlags> p_dynamic_state_flags, uint32_t p_for_render_pass, const TypedArray<RDPipelineSpecializationConstant> &p_specialization_constants) {
 	PipelineRasterizationState rasterization_state;
 	if (p_rasterization_state.is_valid()) {
 		rasterization_state = p_rasterization_state->base;
@@ -362,12 +378,329 @@ void RenderingDevice::_compute_list_set_push_constant(ComputeListID p_list, cons
 	compute_list_set_push_constant(p_list, p_data.ptr(), p_data_size);
 }
 
+Error RenderingDevice::_reflect_spirv(const Vector<ShaderStageSPIRVData> &p_spirv, SpirvReflectionData &r_reflection_data) {
+	r_reflection_data = {};
+
+	for (int i = 0; i < p_spirv.size(); i++) {
+		ShaderStage stage = p_spirv[i].shader_stage;
+		ShaderStage stage_flag = (ShaderStage)(1 << p_spirv[i].shader_stage);
+
+		if (p_spirv[i].shader_stage == SHADER_STAGE_COMPUTE) {
+			r_reflection_data.is_compute = true;
+			ERR_FAIL_COND_V_MSG(p_spirv.size() != 1, FAILED,
+					"Compute shaders can only receive one stage, dedicated to compute.");
+		}
+		ERR_FAIL_COND_V_MSG(r_reflection_data.stages_mask.has_flag(stage_flag), FAILED,
+				"Stage " + String(shader_stage_names[p_spirv[i].shader_stage]) + " submitted more than once.");
+
+		{
+			SpvReflectShaderModule module;
+			const uint8_t *spirv = p_spirv[i].spir_v.ptr();
+			SpvReflectResult result = spvReflectCreateShaderModule(p_spirv[i].spir_v.size(), spirv, &module);
+			ERR_FAIL_COND_V_MSG(result != SPV_REFLECT_RESULT_SUCCESS, FAILED,
+					"Reflection of SPIR-V shader stage '" + String(shader_stage_names[p_spirv[i].shader_stage]) + "' failed parsing shader.");
+
+			if (r_reflection_data.is_compute) {
+				r_reflection_data.compute_local_size[0] = module.entry_points->local_size.x;
+				r_reflection_data.compute_local_size[1] = module.entry_points->local_size.y;
+				r_reflection_data.compute_local_size[2] = module.entry_points->local_size.z;
+			}
+			uint32_t binding_count = 0;
+			result = spvReflectEnumerateDescriptorBindings(&module, &binding_count, nullptr);
+			ERR_FAIL_COND_V_MSG(result != SPV_REFLECT_RESULT_SUCCESS, FAILED,
+					"Reflection of SPIR-V shader stage '" + String(shader_stage_names[p_spirv[i].shader_stage]) + "' failed enumerating descriptor bindings.");
+
+			if (binding_count > 0) {
+				// Parse bindings.
+
+				Vector<SpvReflectDescriptorBinding *> bindings;
+				bindings.resize(binding_count);
+				result = spvReflectEnumerateDescriptorBindings(&module, &binding_count, bindings.ptrw());
+
+				ERR_FAIL_COND_V_MSG(result != SPV_REFLECT_RESULT_SUCCESS, FAILED,
+						"Reflection of SPIR-V shader stage '" + String(shader_stage_names[p_spirv[i].shader_stage]) + "' failed getting descriptor bindings.");
+
+				for (uint32_t j = 0; j < binding_count; j++) {
+					const SpvReflectDescriptorBinding &binding = *bindings[j];
+
+					SpirvReflectionData::Uniform info{};
+
+					bool need_array_dimensions = false;
+					bool need_block_size = false;
+					bool may_be_writable = false;
+
+					switch (binding.descriptor_type) {
+						case SPV_REFLECT_DESCRIPTOR_TYPE_SAMPLER: {
+							info.type = UNIFORM_TYPE_SAMPLER;
+							need_array_dimensions = true;
+						} break;
+						case SPV_REFLECT_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER: {
+							info.type = UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
+							need_array_dimensions = true;
+						} break;
+						case SPV_REFLECT_DESCRIPTOR_TYPE_SAMPLED_IMAGE: {
+							info.type = UNIFORM_TYPE_TEXTURE;
+							need_array_dimensions = true;
+						} break;
+						case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_IMAGE: {
+							info.type = UNIFORM_TYPE_IMAGE;
+							need_array_dimensions = true;
+							may_be_writable = true;
+						} break;
+						case SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER: {
+							info.type = UNIFORM_TYPE_TEXTURE_BUFFER;
+							need_array_dimensions = true;
+						} break;
+						case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER: {
+							info.type = UNIFORM_TYPE_IMAGE_BUFFER;
+							need_array_dimensions = true;
+							may_be_writable = true;
+						} break;
+						case SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_BUFFER: {
+							info.type = UNIFORM_TYPE_UNIFORM_BUFFER;
+							need_block_size = true;
+						} break;
+						case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_BUFFER: {
+							info.type = UNIFORM_TYPE_STORAGE_BUFFER;
+							need_block_size = true;
+							may_be_writable = true;
+						} break;
+						case SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC: {
+							ERR_PRINT("Dynamic uniform buffer not supported.");
+							continue;
+						} break;
+						case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC: {
+							ERR_PRINT("Dynamic storage buffer not supported.");
+							continue;
+						} break;
+						case SPV_REFLECT_DESCRIPTOR_TYPE_INPUT_ATTACHMENT: {
+							info.type = UNIFORM_TYPE_INPUT_ATTACHMENT;
+							need_array_dimensions = true;
+						} break;
+						case SPV_REFLECT_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR: {
+							ERR_PRINT("Acceleration structure not supported.");
+							continue;
+						} break;
+					}
+
+					if (need_array_dimensions) {
+						if (binding.array.dims_count == 0) {
+							info.length = 1;
+						} else {
+							for (uint32_t k = 0; k < binding.array.dims_count; k++) {
+								if (k == 0) {
+									info.length = binding.array.dims[0];
+								} else {
+									info.length *= binding.array.dims[k];
+								}
+							}
+						}
+
+					} else if (need_block_size) {
+						info.length = binding.block.size;
+					} else {
+						info.length = 0;
+					}
+
+					if (may_be_writable) {
+						info.writable = !(binding.type_description->decoration_flags & SPV_REFLECT_DECORATION_NON_WRITABLE) && !(binding.block.decoration_flags & SPV_REFLECT_DECORATION_NON_WRITABLE);
+					} else {
+						info.writable = false;
+					}
+
+					info.binding = binding.binding;
+					uint32_t set = binding.set;
+
+					ERR_FAIL_COND_V_MSG(set >= MAX_UNIFORM_SETS, FAILED,
+							"On shader stage '" + String(shader_stage_names[stage]) + "', uniform '" + binding.name + "' uses a set (" + itos(set) + ") index larger than what is supported (" + itos(MAX_UNIFORM_SETS) + ").");
+
+					if (set < (uint32_t)r_reflection_data.uniforms.size()) {
+						// Check if this already exists.
+						bool exists = false;
+						for (int k = 0; k < r_reflection_data.uniforms[set].size(); k++) {
+							if (r_reflection_data.uniforms[set][k].binding == (uint32_t)info.binding) {
+								// Already exists, verify that it's the same type.
+								ERR_FAIL_COND_V_MSG(r_reflection_data.uniforms[set][k].type != info.type, FAILED,
+										"On shader stage '" + String(shader_stage_names[stage]) + "', uniform '" + binding.name + "' trying to re-use location for set=" + itos(set) + ", binding=" + itos(info.binding) + " with different uniform type.");
+
+								// Also, verify that it's the same size.
+								ERR_FAIL_COND_V_MSG(r_reflection_data.uniforms[set][k].length != info.length, FAILED,
+										"On shader stage '" + String(shader_stage_names[stage]) + "', uniform '" + binding.name + "' trying to re-use location for set=" + itos(set) + ", binding=" + itos(info.binding) + " with different uniform size.");
+
+								// Also, verify that it has the same writability.
+								ERR_FAIL_COND_V_MSG(r_reflection_data.uniforms[set][k].writable != info.writable, FAILED,
+										"On shader stage '" + String(shader_stage_names[stage]) + "', uniform '" + binding.name + "' trying to re-use location for set=" + itos(set) + ", binding=" + itos(info.binding) + " with different writability.");
+
+								// Just append stage mask and return.
+								r_reflection_data.uniforms.write[set].write[k].stages_mask.set_flag(stage_flag);
+								exists = true;
+								break;
+							}
+						}
+
+						if (exists) {
+							continue; // Merged.
+						}
+					}
+
+					info.stages_mask.set_flag(stage_flag);
+
+					if (set >= (uint32_t)r_reflection_data.uniforms.size()) {
+						r_reflection_data.uniforms.resize(set + 1);
+					}
+
+					r_reflection_data.uniforms.write[set].push_back(info);
+				}
+			}
+
+			{
+				// Specialization constants.
+
+				uint32_t sc_count = 0;
+				result = spvReflectEnumerateSpecializationConstants(&module, &sc_count, nullptr);
+				ERR_FAIL_COND_V_MSG(result != SPV_REFLECT_RESULT_SUCCESS, FAILED,
+						"Reflection of SPIR-V shader stage '" + String(shader_stage_names[p_spirv[i].shader_stage]) + "' failed enumerating specialization constants.");
+
+				if (sc_count) {
+					Vector<SpvReflectSpecializationConstant *> spec_constants;
+					spec_constants.resize(sc_count);
+
+					result = spvReflectEnumerateSpecializationConstants(&module, &sc_count, spec_constants.ptrw());
+					ERR_FAIL_COND_V_MSG(result != SPV_REFLECT_RESULT_SUCCESS, FAILED,
+							"Reflection of SPIR-V shader stage '" + String(shader_stage_names[p_spirv[i].shader_stage]) + "' failed obtaining specialization constants.");
+
+					for (uint32_t j = 0; j < sc_count; j++) {
+						int32_t existing = -1;
+						SpirvReflectionData::SpecializationConstant sconst{};
+						SpvReflectSpecializationConstant *spc = spec_constants[j];
+
+						sconst.constant_id = spc->constant_id;
+						sconst.int_value = 0; // Clear previous value JIC.
+						switch (spc->constant_type) {
+							case SPV_REFLECT_SPECIALIZATION_CONSTANT_BOOL: {
+								sconst.type = PIPELINE_SPECIALIZATION_CONSTANT_TYPE_BOOL;
+								sconst.bool_value = spc->default_value.int_bool_value != 0;
+							} break;
+							case SPV_REFLECT_SPECIALIZATION_CONSTANT_INT: {
+								sconst.type = PIPELINE_SPECIALIZATION_CONSTANT_TYPE_INT;
+								sconst.int_value = spc->default_value.int_bool_value;
+							} break;
+							case SPV_REFLECT_SPECIALIZATION_CONSTANT_FLOAT: {
+								sconst.type = PIPELINE_SPECIALIZATION_CONSTANT_TYPE_FLOAT;
+								sconst.float_value = spc->default_value.float_value;
+							} break;
+						}
+						sconst.stages_mask.set_flag(stage_flag);
+
+						for (int k = 0; k < r_reflection_data.specialization_constants.size(); k++) {
+							if (r_reflection_data.specialization_constants[k].constant_id == sconst.constant_id) {
+								ERR_FAIL_COND_V_MSG(r_reflection_data.specialization_constants[k].type != sconst.type, FAILED, "More than one specialization constant used for id (" + itos(sconst.constant_id) + "), but their types differ.");
+								ERR_FAIL_COND_V_MSG(r_reflection_data.specialization_constants[k].int_value != sconst.int_value, FAILED, "More than one specialization constant used for id (" + itos(sconst.constant_id) + "), but their default values differ.");
+								existing = k;
+								break;
+							}
+						}
+
+						if (existing > 0) {
+							r_reflection_data.specialization_constants.write[existing].stages_mask.set_flag(stage_flag);
+						} else {
+							r_reflection_data.specialization_constants.push_back(sconst);
+						}
+					}
+				}
+			}
+
+			if (stage == SHADER_STAGE_VERTEX) {
+				uint32_t iv_count = 0;
+				result = spvReflectEnumerateInputVariables(&module, &iv_count, nullptr);
+				ERR_FAIL_COND_V_MSG(result != SPV_REFLECT_RESULT_SUCCESS, FAILED,
+						"Reflection of SPIR-V shader stage '" + String(shader_stage_names[p_spirv[i].shader_stage]) + "' failed enumerating input variables.");
+
+				if (iv_count) {
+					Vector<SpvReflectInterfaceVariable *> input_vars;
+					input_vars.resize(iv_count);
+
+					result = spvReflectEnumerateInputVariables(&module, &iv_count, input_vars.ptrw());
+					ERR_FAIL_COND_V_MSG(result != SPV_REFLECT_RESULT_SUCCESS, FAILED,
+							"Reflection of SPIR-V shader stage '" + String(shader_stage_names[p_spirv[i].shader_stage]) + "' failed obtaining input variables.");
+
+					for (uint32_t j = 0; j < iv_count; j++) {
+						if (input_vars[j] && input_vars[j]->decoration_flags == 0) { // Regular input.
+							r_reflection_data.vertex_input_mask |= (1 << uint32_t(input_vars[j]->location));
+						}
+					}
+				}
+			}
+
+			if (stage == SHADER_STAGE_FRAGMENT) {
+				uint32_t ov_count = 0;
+				result = spvReflectEnumerateOutputVariables(&module, &ov_count, nullptr);
+				ERR_FAIL_COND_V_MSG(result != SPV_REFLECT_RESULT_SUCCESS, FAILED,
+						"Reflection of SPIR-V shader stage '" + String(shader_stage_names[p_spirv[i].shader_stage]) + "' failed enumerating output variables.");
+
+				if (ov_count) {
+					Vector<SpvReflectInterfaceVariable *> output_vars;
+					output_vars.resize(ov_count);
+
+					result = spvReflectEnumerateOutputVariables(&module, &ov_count, output_vars.ptrw());
+					ERR_FAIL_COND_V_MSG(result != SPV_REFLECT_RESULT_SUCCESS, FAILED,
+							"Reflection of SPIR-V shader stage '" + String(shader_stage_names[p_spirv[i].shader_stage]) + "' failed obtaining output variables.");
+
+					for (uint32_t j = 0; j < ov_count; j++) {
+						const SpvReflectInterfaceVariable *refvar = output_vars[j];
+						if (refvar != nullptr && refvar->built_in != SpvBuiltInFragDepth) {
+							r_reflection_data.fragment_output_mask |= 1 << refvar->location;
+						}
+					}
+				}
+			}
+
+			uint32_t pc_count = 0;
+			result = spvReflectEnumeratePushConstantBlocks(&module, &pc_count, nullptr);
+			ERR_FAIL_COND_V_MSG(result != SPV_REFLECT_RESULT_SUCCESS, FAILED,
+					"Reflection of SPIR-V shader stage '" + String(shader_stage_names[p_spirv[i].shader_stage]) + "' failed enumerating push constants.");
+
+			if (pc_count) {
+				ERR_FAIL_COND_V_MSG(pc_count > 1, FAILED,
+						"Reflection of SPIR-V shader stage '" + String(shader_stage_names[p_spirv[i].shader_stage]) + "': Only one push constant is supported, which should be the same across shader stages.");
+
+				Vector<SpvReflectBlockVariable *> pconstants;
+				pconstants.resize(pc_count);
+				result = spvReflectEnumeratePushConstantBlocks(&module, &pc_count, pconstants.ptrw());
+				ERR_FAIL_COND_V_MSG(result != SPV_REFLECT_RESULT_SUCCESS, FAILED,
+						"Reflection of SPIR-V shader stage '" + String(shader_stage_names[p_spirv[i].shader_stage]) + "' failed obtaining push constants.");
+#if 0
+				if (pconstants[0] == nullptr) {
+					Ref<FileAccess> f = FileAccess::open("res://popo.spv", FileAccess::WRITE);
+					f->store_buffer((const uint8_t *)&SpirV[0], SpirV.size() * sizeof(uint32_t));
+				}
+#endif
+
+				ERR_FAIL_COND_V_MSG(r_reflection_data.push_constant_size && r_reflection_data.push_constant_size != pconstants[0]->size, FAILED,
+						"Reflection of SPIR-V shader stage '" + String(shader_stage_names[p_spirv[i].shader_stage]) + "': Push constant block must be the same across shader stages.");
+
+				r_reflection_data.push_constant_size = pconstants[0]->size;
+				r_reflection_data.push_constant_stages_mask.set_flag(stage_flag);
+
+				//print_line("Stage: " + String(shader_stage_names[stage]) + " push constant of size=" + itos(push_constant.push_constant_size));
+			}
+
+			// Destroy the reflection data when no longer required.
+			spvReflectDestroyShaderModule(&module);
+		}
+
+		r_reflection_data.stages_mask.set_flag(stage_flag);
+	}
+
+	return OK;
+}
+
 void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("texture_create", "format", "view", "data"), &RenderingDevice::_texture_create, DEFVAL(Array()));
 	ClassDB::bind_method(D_METHOD("texture_create_shared", "view", "with_texture"), &RenderingDevice::_texture_create_shared);
 	ClassDB::bind_method(D_METHOD("texture_create_shared_from_slice", "view", "with_texture", "layer", "mipmap", "mipmaps", "slice_type"), &RenderingDevice::_texture_create_shared_from_slice, DEFVAL(1), DEFVAL(TEXTURE_SLICE_2D));
 
-	ClassDB::bind_method(D_METHOD("texture_update", "texture", "layer", "data", "post_barrier"), &RenderingDevice::texture_update, DEFVAL(BARRIER_MASK_ALL));
+	ClassDB::bind_method(D_METHOD("texture_update", "texture", "layer", "data", "post_barrier"), &RenderingDevice::texture_update, DEFVAL(BARRIER_MASK_ALL_BARRIERS));
 	ClassDB::bind_method(D_METHOD("texture_get_data", "texture", "layer"), &RenderingDevice::texture_get_data);
 
 	ClassDB::bind_method(D_METHOD("texture_is_format_supported_for_usage", "format", "usage_flags"), &RenderingDevice::texture_is_format_supported_for_usage);
@@ -375,9 +708,9 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("texture_is_shared", "texture"), &RenderingDevice::texture_is_shared);
 	ClassDB::bind_method(D_METHOD("texture_is_valid", "texture"), &RenderingDevice::texture_is_valid);
 
-	ClassDB::bind_method(D_METHOD("texture_copy", "from_texture", "to_texture", "from_pos", "to_pos", "size", "src_mipmap", "dst_mipmap", "src_layer", "dst_layer", "post_barrier"), &RenderingDevice::texture_copy, DEFVAL(BARRIER_MASK_ALL));
-	ClassDB::bind_method(D_METHOD("texture_clear", "texture", "color", "base_mipmap", "mipmap_count", "base_layer", "layer_count", "post_barrier"), &RenderingDevice::texture_clear, DEFVAL(BARRIER_MASK_ALL));
-	ClassDB::bind_method(D_METHOD("texture_resolve_multisample", "from_texture", "to_texture", "post_barrier"), &RenderingDevice::texture_resolve_multisample, DEFVAL(BARRIER_MASK_ALL));
+	ClassDB::bind_method(D_METHOD("texture_copy", "from_texture", "to_texture", "from_pos", "to_pos", "size", "src_mipmap", "dst_mipmap", "src_layer", "dst_layer", "post_barrier"), &RenderingDevice::texture_copy, DEFVAL(BARRIER_MASK_ALL_BARRIERS));
+	ClassDB::bind_method(D_METHOD("texture_clear", "texture", "color", "base_mipmap", "mipmap_count", "base_layer", "layer_count", "post_barrier"), &RenderingDevice::texture_clear, DEFVAL(BARRIER_MASK_ALL_BARRIERS));
+	ClassDB::bind_method(D_METHOD("texture_resolve_multisample", "from_texture", "to_texture", "post_barrier"), &RenderingDevice::texture_resolve_multisample, DEFVAL(BARRIER_MASK_ALL_BARRIERS));
 
 	ClassDB::bind_method(D_METHOD("framebuffer_format_create", "attachments", "view_count"), &RenderingDevice::_framebuffer_format_create, DEFVAL(1));
 	ClassDB::bind_method(D_METHOD("framebuffer_format_create_multipass", "attachments", "passes", "view_count"), &RenderingDevice::_framebuffer_format_create_multipass, DEFVAL(1));
@@ -393,6 +726,7 @@ void RenderingDevice::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("vertex_buffer_create", "size_bytes", "data", "use_as_storage"), &RenderingDevice::vertex_buffer_create, DEFVAL(Vector<uint8_t>()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("vertex_format_create", "vertex_descriptions"), &RenderingDevice::_vertex_format_create);
+	ClassDB::bind_method(D_METHOD("vertex_array_create", "vertex_count", "vertex_format", "src_buffers", "offsets"), &RenderingDevice::_vertex_array_create, DEFVAL(Vector<int64_t>()));
 
 	ClassDB::bind_method(D_METHOD("index_buffer_create", "size_indices", "format", "data", "use_restart_indices"), &RenderingDevice::index_buffer_create, DEFVAL(Vector<uint8_t>()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("index_array_create", "index_buffer", "index_offset", "index_count"), &RenderingDevice::index_array_create);
@@ -410,8 +744,8 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("uniform_set_create", "uniforms", "shader", "shader_set"), &RenderingDevice::_uniform_set_create);
 	ClassDB::bind_method(D_METHOD("uniform_set_is_valid", "uniform_set"), &RenderingDevice::uniform_set_is_valid);
 
-	ClassDB::bind_method(D_METHOD("buffer_update", "buffer", "offset", "size_bytes", "data", "post_barrier"), &RenderingDevice::_buffer_update, DEFVAL(BARRIER_MASK_ALL));
-	ClassDB::bind_method(D_METHOD("buffer_clear", "buffer", "offset", "size_bytes", "post_barrier"), &RenderingDevice::buffer_clear, DEFVAL(BARRIER_MASK_ALL));
+	ClassDB::bind_method(D_METHOD("buffer_update", "buffer", "offset", "size_bytes", "data", "post_barrier"), &RenderingDevice::_buffer_update, DEFVAL(BARRIER_MASK_ALL_BARRIERS));
+	ClassDB::bind_method(D_METHOD("buffer_clear", "buffer", "offset", "size_bytes", "post_barrier"), &RenderingDevice::buffer_clear, DEFVAL(BARRIER_MASK_ALL_BARRIERS));
 	ClassDB::bind_method(D_METHOD("buffer_get_data", "buffer"), &RenderingDevice::buffer_get_data);
 
 	ClassDB::bind_method(D_METHOD("render_pipeline_create", "shader", "framebuffer_format", "vertex_format", "primitive", "rasterization_state", "multisample_state", "stencil_state", "color_blend_state", "dynamic_state_flags", "for_render_pass", "specialization_constants"), &RenderingDevice::_render_pipeline_create, DEFVAL(0), DEFVAL(0), DEFVAL(TypedArray<RDPipelineSpecializationConstant>()));
@@ -444,7 +778,7 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("draw_list_switch_to_next_pass"), &RenderingDevice::draw_list_switch_to_next_pass);
 	ClassDB::bind_method(D_METHOD("draw_list_switch_to_next_pass_split", "splits"), &RenderingDevice::_draw_list_switch_to_next_pass_split);
 
-	ClassDB::bind_method(D_METHOD("draw_list_end", "post_barrier"), &RenderingDevice::draw_list_end, DEFVAL(BARRIER_MASK_ALL));
+	ClassDB::bind_method(D_METHOD("draw_list_end", "post_barrier"), &RenderingDevice::draw_list_end, DEFVAL(BARRIER_MASK_ALL_BARRIERS));
 
 	ClassDB::bind_method(D_METHOD("compute_list_begin", "allow_draw_overlap"), &RenderingDevice::compute_list_begin, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("compute_list_bind_compute_pipeline", "compute_list", "compute_pipeline"), &RenderingDevice::compute_list_bind_compute_pipeline);
@@ -452,7 +786,7 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("compute_list_bind_uniform_set", "compute_list", "uniform_set", "set_index"), &RenderingDevice::compute_list_bind_uniform_set);
 	ClassDB::bind_method(D_METHOD("compute_list_dispatch", "compute_list", "x_groups", "y_groups", "z_groups"), &RenderingDevice::compute_list_dispatch);
 	ClassDB::bind_method(D_METHOD("compute_list_add_barrier", "compute_list"), &RenderingDevice::compute_list_add_barrier);
-	ClassDB::bind_method(D_METHOD("compute_list_end", "post_barrier"), &RenderingDevice::compute_list_end, DEFVAL(BARRIER_MASK_ALL));
+	ClassDB::bind_method(D_METHOD("compute_list_end", "post_barrier"), &RenderingDevice::compute_list_end, DEFVAL(BARRIER_MASK_ALL_BARRIERS));
 
 	ClassDB::bind_method(D_METHOD("free_rid", "rid"), &RenderingDevice::free);
 
@@ -468,7 +802,7 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("submit"), &RenderingDevice::submit);
 	ClassDB::bind_method(D_METHOD("sync"), &RenderingDevice::sync);
 
-	ClassDB::bind_method(D_METHOD("barrier", "from", "to"), &RenderingDevice::barrier, DEFVAL(BARRIER_MASK_ALL), DEFVAL(BARRIER_MASK_ALL));
+	ClassDB::bind_method(D_METHOD("barrier", "from", "to"), &RenderingDevice::barrier, DEFVAL(BARRIER_MASK_ALL_BARRIERS), DEFVAL(BARRIER_MASK_ALL_BARRIERS));
 	ClassDB::bind_method(D_METHOD("full_barrier"), &RenderingDevice::full_barrier);
 
 	ClassDB::bind_method(D_METHOD("create_local_device"), &RenderingDevice::create_local_device);
@@ -486,12 +820,6 @@ void RenderingDevice::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_memory_usage", "type"), &RenderingDevice::get_memory_usage);
 
 	ClassDB::bind_method(D_METHOD("get_driver_resource", "resource", "rid", "index"), &RenderingDevice::get_driver_resource);
-
-	BIND_CONSTANT(BARRIER_MASK_RASTER);
-	BIND_CONSTANT(BARRIER_MASK_COMPUTE);
-	BIND_CONSTANT(BARRIER_MASK_TRANSFER);
-	BIND_CONSTANT(BARRIER_MASK_ALL);
-	BIND_CONSTANT(BARRIER_MASK_NO_BARRIER);
 
 	BIND_ENUM_CONSTANT(DEVICE_TYPE_OTHER);
 	BIND_ENUM_CONSTANT(DEVICE_TYPE_INTEGRATED_GPU);
@@ -734,6 +1062,12 @@ void RenderingDevice::_bind_methods() {
 	BIND_ENUM_CONSTANT(DATA_FORMAT_G16_B16_R16_3PLANE_444_UNORM);
 	BIND_ENUM_CONSTANT(DATA_FORMAT_MAX);
 
+	BIND_BITFIELD_FLAG(BARRIER_MASK_RASTER);
+	BIND_BITFIELD_FLAG(BARRIER_MASK_COMPUTE);
+	BIND_BITFIELD_FLAG(BARRIER_MASK_TRANSFER);
+	BIND_BITFIELD_FLAG(BARRIER_MASK_ALL_BARRIERS);
+	BIND_BITFIELD_FLAG(BARRIER_MASK_NO_BARRIER);
+
 	BIND_ENUM_CONSTANT(TEXTURE_TYPE_1D);
 	BIND_ENUM_CONSTANT(TEXTURE_TYPE_2D);
 	BIND_ENUM_CONSTANT(TEXTURE_TYPE_3D);
@@ -752,16 +1086,16 @@ void RenderingDevice::_bind_methods() {
 	BIND_ENUM_CONSTANT(TEXTURE_SAMPLES_64);
 	BIND_ENUM_CONSTANT(TEXTURE_SAMPLES_MAX);
 
-	BIND_ENUM_CONSTANT(TEXTURE_USAGE_SAMPLING_BIT);
-	BIND_ENUM_CONSTANT(TEXTURE_USAGE_COLOR_ATTACHMENT_BIT);
-	BIND_ENUM_CONSTANT(TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
-	BIND_ENUM_CONSTANT(TEXTURE_USAGE_STORAGE_BIT);
-	BIND_ENUM_CONSTANT(TEXTURE_USAGE_STORAGE_ATOMIC_BIT);
-	BIND_ENUM_CONSTANT(TEXTURE_USAGE_CPU_READ_BIT);
-	BIND_ENUM_CONSTANT(TEXTURE_USAGE_CAN_UPDATE_BIT);
-	BIND_ENUM_CONSTANT(TEXTURE_USAGE_CAN_COPY_FROM_BIT);
-	BIND_ENUM_CONSTANT(TEXTURE_USAGE_CAN_COPY_TO_BIT);
-	BIND_ENUM_CONSTANT(TEXTURE_USAGE_INPUT_ATTACHMENT_BIT);
+	BIND_BITFIELD_FLAG(TEXTURE_USAGE_SAMPLING_BIT);
+	BIND_BITFIELD_FLAG(TEXTURE_USAGE_COLOR_ATTACHMENT_BIT);
+	BIND_BITFIELD_FLAG(TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT);
+	BIND_BITFIELD_FLAG(TEXTURE_USAGE_STORAGE_BIT);
+	BIND_BITFIELD_FLAG(TEXTURE_USAGE_STORAGE_ATOMIC_BIT);
+	BIND_BITFIELD_FLAG(TEXTURE_USAGE_CPU_READ_BIT);
+	BIND_BITFIELD_FLAG(TEXTURE_USAGE_CAN_UPDATE_BIT);
+	BIND_BITFIELD_FLAG(TEXTURE_USAGE_CAN_COPY_FROM_BIT);
+	BIND_BITFIELD_FLAG(TEXTURE_USAGE_CAN_COPY_TO_BIT);
+	BIND_BITFIELD_FLAG(TEXTURE_USAGE_INPUT_ATTACHMENT_BIT);
 
 	BIND_ENUM_CONSTANT(TEXTURE_SWIZZLE_IDENTITY);
 	BIND_ENUM_CONSTANT(TEXTURE_SWIZZLE_ZERO);
@@ -799,7 +1133,7 @@ void RenderingDevice::_bind_methods() {
 	BIND_ENUM_CONSTANT(INDEX_BUFFER_FORMAT_UINT16);
 	BIND_ENUM_CONSTANT(INDEX_BUFFER_FORMAT_UINT32);
 
-	BIND_ENUM_CONSTANT(STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT);
+	BIND_BITFIELD_FLAG(STORAGE_BUFFER_USAGE_DISPATCH_INDIRECT);
 
 	BIND_ENUM_CONSTANT(UNIFORM_TYPE_SAMPLER); //for sampling only (sampler GLSL type)
 	BIND_ENUM_CONSTANT(UNIFORM_TYPE_SAMPLER_WITH_TEXTURE); // for sampling only); but includes a texture); (samplerXX GLSL type)); first a sampler then a texture
@@ -899,13 +1233,13 @@ void RenderingDevice::_bind_methods() {
 	BIND_ENUM_CONSTANT(BLEND_OP_MAXIMUM);
 	BIND_ENUM_CONSTANT(BLEND_OP_MAX);
 
-	BIND_ENUM_CONSTANT(DYNAMIC_STATE_LINE_WIDTH);
-	BIND_ENUM_CONSTANT(DYNAMIC_STATE_DEPTH_BIAS);
-	BIND_ENUM_CONSTANT(DYNAMIC_STATE_BLEND_CONSTANTS);
-	BIND_ENUM_CONSTANT(DYNAMIC_STATE_DEPTH_BOUNDS);
-	BIND_ENUM_CONSTANT(DYNAMIC_STATE_STENCIL_COMPARE_MASK);
-	BIND_ENUM_CONSTANT(DYNAMIC_STATE_STENCIL_WRITE_MASK);
-	BIND_ENUM_CONSTANT(DYNAMIC_STATE_STENCIL_REFERENCE);
+	BIND_BITFIELD_FLAG(DYNAMIC_STATE_LINE_WIDTH);
+	BIND_BITFIELD_FLAG(DYNAMIC_STATE_DEPTH_BIAS);
+	BIND_BITFIELD_FLAG(DYNAMIC_STATE_BLEND_CONSTANTS);
+	BIND_BITFIELD_FLAG(DYNAMIC_STATE_DEPTH_BOUNDS);
+	BIND_BITFIELD_FLAG(DYNAMIC_STATE_STENCIL_COMPARE_MASK);
+	BIND_BITFIELD_FLAG(DYNAMIC_STATE_STENCIL_WRITE_MASK);
+	BIND_BITFIELD_FLAG(DYNAMIC_STATE_STENCIL_REFERENCE);
 
 	BIND_ENUM_CONSTANT(INITIAL_ACTION_CLEAR); //start rendering and clear the framebuffer (supply params)
 	BIND_ENUM_CONSTANT(INITIAL_ACTION_CLEAR_REGION); //start rendering and clear the framebuffer (supply params)

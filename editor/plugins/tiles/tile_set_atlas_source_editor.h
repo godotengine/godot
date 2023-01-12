@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  tile_set_atlas_source_editor.h                                       */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  tile_set_atlas_source_editor.h                                        */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef TILE_SET_ATLAS_SOURCE_EDITOR_H
 #define TILE_SET_ATLAS_SOURCE_EDITOR_H
@@ -37,10 +37,13 @@
 #include "scene/gui/split_container.h"
 #include "scene/resources/tile_set.h"
 
+class Popup;
 class TileSet;
+class Tree;
+class VSeparator;
 
-class TileSetAtlasSourceEditor : public HBoxContainer {
-	GDCLASS(TileSetAtlasSourceEditor, HBoxContainer);
+class TileSetAtlasSourceEditor : public HSplitContainer {
+	GDCLASS(TileSetAtlasSourceEditor, HSplitContainer);
 
 public:
 	// A class to store which tiles are selected.
@@ -74,7 +77,7 @@ public:
 
 	public:
 		void set_id(int p_id);
-		int get_id();
+		int get_id() const;
 
 		void edit(Ref<TileSet> p_tile_set, TileSetAtlasSource *p_tile_set_atlas_source, int p_source_id);
 		TileSetAtlasSource *get_edited() { return tile_set_atlas_source; };
@@ -117,6 +120,7 @@ private:
 	bool tile_set_changed_needs_update = false;
 
 	// -- Properties painting --
+	ScrollContainer *tile_data_editors_scroll = nullptr;
 	VBoxContainer *tile_data_painting_editor_container = nullptr;
 	Label *tile_data_editors_label = nullptr;
 	Button *tile_data_editor_dropdown_button = nullptr;
@@ -134,19 +138,15 @@ private:
 
 	// -- Inspector --
 	AtlasTileProxyObject *tile_proxy_object = nullptr;
-	Label *tile_inspector_label = nullptr;
 	EditorInspector *tile_inspector = nullptr;
 	Label *tile_inspector_no_tile_selected_label = nullptr;
 	String selected_property;
 	void _inspector_property_selected(String p_property);
 
 	TileSetAtlasSourceProxyObject *atlas_source_proxy_object = nullptr;
-	Label *atlas_source_inspector_label = nullptr;
 	EditorInspector *atlas_source_inspector = nullptr;
 
 	// -- Atlas view --
-	HBoxContainer *toolbox = nullptr;
-	Label *tile_atlas_view_missing_source_label = nullptr;
 	TileAtlasView *tile_atlas_view = nullptr;
 
 	// Dragging
@@ -207,7 +207,6 @@ private:
 
 	// Tool settings.
 	HBoxContainer *tool_settings = nullptr;
-	VSeparator *tool_settings_vsep = nullptr;
 	HBoxContainer *tool_settings_tile_data_toolbar_container = nullptr;
 	Button *tools_settings_erase_button = nullptr;
 	MenuButton *tool_advanced_menu_buttom = nullptr;

@@ -1,39 +1,41 @@
-/*************************************************************************/
-/*  action_map_editor.cpp                                                */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  action_map_editor.cpp                                                 */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "editor/action_map_editor.h"
+
 #include "editor/editor_scale.h"
 #include "editor/event_listener_line_edit.h"
 #include "editor/input_event_configuration_dialog.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/tree.h"
+#include "scene/scene_string_names.h"
 
 static bool _is_action_name_valid(const String &p_name) {
 	const char32_t *cstr = p_name.get_data();
@@ -361,6 +363,8 @@ void ActionMapEditor::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("action_removed", PropertyInfo(Variant::STRING, "name")));
 	ADD_SIGNAL(MethodInfo("action_renamed", PropertyInfo(Variant::STRING, "old_name"), PropertyInfo(Variant::STRING, "new_name")));
 	ADD_SIGNAL(MethodInfo("action_reordered", PropertyInfo(Variant::STRING, "action_name"), PropertyInfo(Variant::STRING, "relative_to"), PropertyInfo(Variant::BOOL, "before")));
+	ADD_SIGNAL(MethodInfo(SNAME("filter_focused")));
+	ADD_SIGNAL(MethodInfo(SNAME("filter_unfocused")));
 }
 
 LineEdit *ActionMapEditor::get_search_box() const {
@@ -395,14 +399,8 @@ void ActionMapEditor::update_action_list(const Vector<ActionInfo> &p_action_info
 	action_tree->clear();
 	TreeItem *root = action_tree->create_item();
 
-	int uneditable_count = 0;
-
 	for (int i = 0; i < actions_cache.size(); i++) {
 		ActionInfo action_info = actions_cache[i];
-
-		if (!action_info.editable) {
-			uneditable_count++;
-		}
 
 		const Array events = action_info.action["events"];
 		if (!_should_display_action(action_info.name, events)) {
@@ -448,7 +446,7 @@ void ActionMapEditor::update_action_list(const Vector<ActionInfo> &p_action_info
 			TreeItem *event_item = action_tree->create_item(action_item);
 
 			// First Column - Text
-			event_item->set_text(0, event_config_dialog->get_event_text(event, true));
+			event_item->set_text(0, EventListenerLineEdit::get_event_text(event, true));
 			event_item->set_meta("__event", event);
 			event_item->set_meta("__index", evnt_idx);
 
@@ -497,6 +495,14 @@ void ActionMapEditor::use_external_search_box(LineEdit *p_searchbox) {
 	action_list_search->connect("text_changed", callable_mp(this, &ActionMapEditor::_search_term_updated));
 }
 
+void ActionMapEditor::_on_filter_focused() {
+	emit_signal(SNAME("filter_focused"));
+}
+
+void ActionMapEditor::_on_filter_unfocused() {
+	emit_signal(SNAME("filter_unfocused"));
+}
+
 ActionMapEditor::ActionMapEditor() {
 	// Main Vbox Container
 	VBoxContainer *main_vbox = memnew(VBoxContainer);
@@ -517,6 +523,8 @@ ActionMapEditor::ActionMapEditor() {
 	action_list_search_by_event->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	action_list_search_by_event->set_stretch_ratio(0.75);
 	action_list_search_by_event->connect("event_changed", callable_mp(this, &ActionMapEditor::_search_by_event));
+	action_list_search_by_event->connect(SceneStringNames::get_singleton()->focus_entered, callable_mp(this, &ActionMapEditor::_on_filter_focused));
+	action_list_search_by_event->connect(SceneStringNames::get_singleton()->focus_exited, callable_mp(this, &ActionMapEditor::_on_filter_unfocused));
 	top_hbox->add_child(action_list_search_by_event);
 
 	Button *clear_all_search = memnew(Button);
@@ -570,7 +578,7 @@ ActionMapEditor::ActionMapEditor() {
 	action_tree->connect("button_clicked", callable_mp(this, &ActionMapEditor::_tree_button_pressed));
 	main_vbox->add_child(action_tree);
 
-	action_tree->set_drag_forwarding(this);
+	action_tree->set_drag_forwarding_compat(this);
 
 	// Adding event dialog
 	event_config_dialog = memnew(InputEventConfigurationDialog);

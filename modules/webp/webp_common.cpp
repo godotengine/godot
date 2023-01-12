@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  webp_common.cpp                                                      */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  webp_common.cpp                                                       */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "webp_common.h"
 
@@ -41,40 +41,21 @@ namespace WebPCommon {
 Vector<uint8_t> _webp_lossy_pack(const Ref<Image> &p_image, float p_quality) {
 	ERR_FAIL_COND_V(p_image.is_null() || p_image->is_empty(), Vector<uint8_t>());
 
-	Ref<Image> img = p_image->duplicate();
-	if (img->detect_alpha()) {
-		img->convert(Image::FORMAT_RGBA8);
-	} else {
-		img->convert(Image::FORMAT_RGB8);
-	}
-
-	Size2 s(img->get_width(), img->get_height());
-	Vector<uint8_t> data = img->get_data();
-	const uint8_t *r = data.ptr();
-
-	uint8_t *dst_buff = nullptr;
-	size_t dst_size = 0;
-	if (img->get_format() == Image::FORMAT_RGB8) {
-		dst_size = WebPEncodeRGB(r, s.width, s.height, 3 * s.width, CLAMP(p_quality * 100.0f, 0.0f, 100.0f), &dst_buff);
-	} else {
-		dst_size = WebPEncodeRGBA(r, s.width, s.height, 4 * s.width, CLAMP(p_quality * 100.0f, 0.0f, 100.0f), &dst_buff);
-	}
-
-	ERR_FAIL_COND_V(dst_size == 0, Vector<uint8_t>());
-	Vector<uint8_t> dst;
-	dst.resize(dst_size);
-	uint8_t *w = dst.ptrw();
-	memcpy(w, dst_buff, dst_size);
-	WebPFree(dst_buff);
-
-	return dst;
+	return _webp_packer(p_image, CLAMP(p_quality * 100.0f, 0.0f, 100.0f), false);
 }
 
 Vector<uint8_t> _webp_lossless_pack(const Ref<Image> &p_image) {
 	ERR_FAIL_COND_V(p_image.is_null() || p_image->is_empty(), Vector<uint8_t>());
 
-	int compression_level = GLOBAL_GET("rendering/textures/lossless_compression/webp_compression_level");
-	compression_level = CLAMP(compression_level, 0, 9);
+	float compression_factor = GLOBAL_GET("rendering/textures/webp_compression/lossless_compression_factor");
+	compression_factor = CLAMP(compression_factor, 0.0f, 100.0f);
+
+	return _webp_packer(p_image, compression_factor, true);
+}
+
+Vector<uint8_t> _webp_packer(const Ref<Image> &p_image, float p_quality, bool p_lossless) {
+	int compression_method = GLOBAL_GET("rendering/textures/webp_compression/compression_method");
+	compression_method = CLAMP(compression_method, 0, 6);
 
 	Ref<Image> img = p_image->duplicate();
 	if (img->detect_alpha()) {
@@ -87,16 +68,21 @@ Vector<uint8_t> _webp_lossless_pack(const Ref<Image> &p_image) {
 	Vector<uint8_t> data = img->get_data();
 	const uint8_t *r = data.ptr();
 
-	// we need to use the more complex API in order to access the 'exact' flag...
+	// we need to use the more complex API in order to access specific flags...
 
 	WebPConfig config;
 	WebPPicture pic;
-	if (!WebPConfigInit(&config) || !WebPConfigLosslessPreset(&config, compression_level) || !WebPPictureInit(&pic)) {
+	if (!WebPConfigInit(&config) || !WebPPictureInit(&pic)) {
 		ERR_FAIL_V(Vector<uint8_t>());
 	}
 
 	WebPMemoryWriter wrt;
-	config.exact = 1;
+	if (p_lossless) {
+		config.lossless = 1;
+		config.exact = 1;
+	}
+	config.method = compression_method;
+	config.quality = p_quality;
 	pic.use_argb = 1;
 	pic.width = s.width;
 	pic.height = s.height;

@@ -43,8 +43,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-09-27 21:37+0000\n"
-"Last-Translator: nitenook <admin@alterbaum.net>\n"
+"PO-Revision-Date: 2022-10-16 07:25+0000\n"
+"Last-Translator: BinotaLIU <me@binota.org>\n"
 "Language-Team: Chinese (Traditional) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hant/>\n"
 "Language: zh_TW\n"
@@ -52,7 +52,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.14.1\n"
+"X-Generator: Weblate 4.15-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -4148,7 +4148,7 @@ msgstr "刪除配置"
 #: editor/editor_node.cpp editor/import_dock.cpp
 #: editor/script_create_dialog.cpp
 msgid "Default"
-msgstr "默認"
+msgstr "預設"
 
 #: editor/editor_node.cpp editor/editor_resource_picker.cpp
 #: editor/plugins/script_editor_plugin.cpp editor/property_editor.cpp
@@ -12591,9 +12591,10 @@ msgstr "吸附選項"
 #: scene/2d/path_2d.cpp scene/2d/polygon_2d.cpp scene/2d/sprite.cpp
 #: scene/3d/cpu_particles.cpp scene/3d/label_3d.cpp scene/3d/path.cpp
 #: scene/3d/physics_body.cpp scene/3d/soft_body.cpp scene/3d/sprite_3d.cpp
-#: scene/gui/graph_node.cpp scene/gui/rich_text_effect.cpp
-#: scene/main/canvas_layer.cpp scene/resources/material.cpp
-#: scene/resources/particles_material.cpp scene/resources/style_box.cpp
+#: scene/3d/visual_instance.cpp scene/gui/graph_node.cpp
+#: scene/gui/rich_text_effect.cpp scene/main/canvas_layer.cpp
+#: scene/resources/material.cpp scene/resources/particles_material.cpp
+#: scene/resources/style_box.cpp
 msgid "Offset"
 msgstr "偏移"
 
@@ -13962,14 +13963,15 @@ msgid "Invalid project path (changed anything?)."
 msgstr "不正確的專案路徑（有修改了什麼嗎？）。"
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid ""
-"Couldn't load project.godot in project path (error %d). It may be missing or "
-"corrupted."
+"Couldn't load project at '%s' (error %d). It may be missing or corrupted."
 msgstr "無法自專案路徑內載入 project.godot（錯誤 %d）。檔案可能遺失或損毀。"
 
 #: editor/project_manager.cpp
-msgid "Couldn't edit project.godot in project path."
-msgstr "無法在專案路徑中編輯 project.godot。"
+#, fuzzy
+msgid "Couldn't save project at '%s' (error %d)."
+msgstr "無法於「%s」打開專案。"
 
 #: editor/project_manager.cpp
 msgid "Couldn't create project.godot in project path."
@@ -17240,7 +17242,7 @@ msgstr "發現本地通訊埠"
 
 #: modules/upnp/upnp.cpp
 msgid "Discover IPv6"
-msgstr "DiscoverIPv6"
+msgstr "Discover IPv6"
 
 #: modules/upnp/upnp_device.cpp
 #, fuzzy
@@ -18168,7 +18170,7 @@ msgstr "自適應前景 432 X 432"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Adaptive Background 432 X 432"
-msgstr ""
+msgstr "自適應背景 432 X 432"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Package name is missing."
@@ -18201,7 +18203,7 @@ msgstr "剪下節點"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Use Custom Build"
-msgstr ""
+msgstr "使用自定義建構"
 
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
@@ -18234,7 +18236,7 @@ msgstr "除錯工具"
 
 #: platform/android/export/export_plugin.cpp platform/uwp/export/export.cpp
 msgid "Debug Password"
-msgstr ""
+msgstr "偵錯密碼"
 
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
@@ -18248,7 +18250,7 @@ msgstr "發行"
 
 #: platform/android/export/export_plugin.cpp
 msgid "One Click Deploy"
-msgstr ""
+msgstr "一鍵部署"
 
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
@@ -18257,7 +18259,7 @@ msgstr "偵查前一個實體"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Code"
-msgstr ""
+msgstr "程式碼"
 
 #: platform/android/export/export_plugin.cpp platform/uwp/export/export.cpp
 #, fuzzy
@@ -18279,7 +18281,7 @@ msgstr "分類為遊戲"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Retain Data On Uninstall"
-msgstr ""
+msgstr "取消安裝時保留資料"
 
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
@@ -18312,11 +18314,11 @@ msgstr "正在打包"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Hand Tracking Frequency"
-msgstr ""
+msgstr "手勢追蹤頻率"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Passthrough"
-msgstr ""
+msgstr "穿透"
 
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
@@ -18350,7 +18352,7 @@ msgstr "使用者界面"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Allow"
-msgstr ""
+msgstr "允許"
 
 #: platform/android/export/export_plugin.cpp platform/uwp/export/export.cpp
 #, fuzzy
@@ -18368,7 +18370,7 @@ msgstr "設定表示式"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Salt"
-msgstr ""
+msgstr "Salt"
 
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
@@ -18488,6 +18490,10 @@ msgid ""
 "Note that the singleton was also renamed from \"GodotPayments\" to "
 "\"GodotGooglePlayBilling\"."
 msgstr ""
+"「android/modules」專案設定中包含了無效的「GodotPaymentV3」（在 Godot 3.2.2 "
+"中已更改）。\n"
+"請將其更換為第一方的「GodotGooglePlayBilling」外掛。\n"
+"請注意，該單例已從「GodotPayments」更改為「GodotGooglePlayBilling」。"
 
 #: platform/android/export/export_plugin.cpp
 msgid "\"Use Custom Build\" must be enabled to use the plugins."
@@ -18519,13 +18525,13 @@ msgstr "對「Min Sdk」的修改僅在「Use Custom Build」啟用時有效。"
 
 #: platform/android/export/export_plugin.cpp
 msgid "\"Min SDK\" should be a valid integer, but got \"%s\" which is invalid."
-msgstr ""
+msgstr "「最小 SDK」應為有效整數，但目前值為無效的「%s」。"
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
 "\"Min SDK\" cannot be lower than %d, which is the version needed by the "
 "Godot library."
-msgstr ""
+msgstr "「最小 SDK」不可低於 %d，因 Godot 函式庫需要該最小版本。"
 
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
@@ -23174,6 +23180,16 @@ msgstr "錯誤"
 #: scene/3d/visibility_notifier.cpp
 msgid "AABB"
 msgstr ""
+
+#: scene/3d/visual_instance.cpp
+#, fuzzy
+msgid "Sorting"
+msgstr "排序"
+
+#: scene/3d/visual_instance.cpp
+#, fuzzy
+msgid "Use AABB Center"
+msgstr "使用環境通道"
 
 #: scene/3d/visual_instance.cpp scene/resources/navigation_mesh.cpp
 #, fuzzy

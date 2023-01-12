@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  material_storage.h                                                   */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  material_storage.h                                                    */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #ifndef MATERIAL_STORAGE_GLES3_H
 #define MATERIAL_STORAGE_GLES3_H
@@ -44,6 +44,7 @@
 
 #include "../shaders/canvas.glsl.gen.h"
 #include "../shaders/cubemap_filter.glsl.gen.h"
+#include "../shaders/particles.glsl.gen.h"
 #include "../shaders/scene.glsl.gen.h"
 #include "../shaders/sky.glsl.gen.h"
 
@@ -52,15 +53,20 @@ namespace GLES3 {
 /* Shader Structs */
 
 struct ShaderData {
-	virtual void set_code(const String &p_Code) = 0;
-	virtual void set_default_texture_parameter(const StringName &p_name, RID p_texture, int p_index) = 0;
-	virtual void get_shader_uniform_list(List<PropertyInfo> *p_param_list) const = 0;
+	String path;
+	HashMap<StringName, ShaderLanguage::ShaderNode::Uniform> uniforms;
+	HashMap<StringName, HashMap<int, RID>> default_texture_params;
 
-	virtual void get_instance_param_list(List<RendererMaterialStorage::InstanceShaderParam> *p_param_list) const = 0;
-	virtual bool is_parameter_texture(const StringName &p_param) const = 0;
+	virtual void set_path_hint(const String &p_hint);
+	virtual void set_default_texture_parameter(const StringName &p_name, RID p_texture, int p_index);
+	virtual Variant get_default_parameter(const StringName &p_parameter) const;
+	virtual void get_shader_uniform_list(List<PropertyInfo> *p_param_list) const;
+	virtual void get_instance_param_list(List<RendererMaterialStorage::InstanceShaderParam> *p_param_list) const;
+	virtual bool is_parameter_texture(const StringName &p_param) const;
+
+	virtual void set_code(const String &p_Code) = 0;
 	virtual bool is_animated() const = 0;
 	virtual bool casts_shadows() const = 0;
-	virtual Variant get_default_parameter(const StringName &p_parameter) const = 0;
 	virtual RS::ShaderNativeSourceCode get_native_source_code() const { return RS::ShaderNativeSourceCode(); }
 
 	virtual ~ShaderData() {}
@@ -147,17 +153,14 @@ struct CanvasShaderData : public ShaderData {
 
 	bool valid;
 	RID version;
-	String path;
 	BlendMode blend_mode = BLEND_MODE_MIX;
 
-	HashMap<StringName, ShaderLanguage::ShaderNode::Uniform> uniforms;
 	Vector<ShaderCompiler::GeneratedCode::Texture> texture_uniforms;
 
 	Vector<uint32_t> ubo_offsets;
 	uint32_t ubo_size;
 
 	String code;
-	HashMap<StringName, HashMap<int, RID>> default_texture_params;
 
 	bool uses_screen_texture = false;
 	bool uses_screen_texture_mipmaps = false;
@@ -165,14 +168,8 @@ struct CanvasShaderData : public ShaderData {
 	bool uses_time = false;
 
 	virtual void set_code(const String &p_Code);
-	virtual void set_default_texture_parameter(const StringName &p_name, RID p_texture, int p_index);
-	virtual void get_shader_uniform_list(List<PropertyInfo> *p_param_list) const;
-	virtual void get_instance_param_list(List<RendererMaterialStorage::InstanceShaderParam> *p_param_list) const;
-
-	virtual bool is_parameter_texture(const StringName &p_param) const;
 	virtual bool is_animated() const;
 	virtual bool casts_shadows() const;
-	virtual Variant get_default_parameter(const StringName &p_parameter) const;
 	virtual RS::ShaderNativeSourceCode get_native_source_code() const;
 
 	CanvasShaderData();
@@ -199,15 +196,12 @@ struct SkyShaderData : public ShaderData {
 	bool valid;
 	RID version;
 
-	HashMap<StringName, ShaderLanguage::ShaderNode::Uniform> uniforms;
 	Vector<ShaderCompiler::GeneratedCode::Texture> texture_uniforms;
 
 	Vector<uint32_t> ubo_offsets;
 	uint32_t ubo_size;
 
-	String path;
 	String code;
-	HashMap<StringName, HashMap<int, RID>> default_texture_params;
 
 	bool uses_time;
 	bool uses_position;
@@ -216,13 +210,8 @@ struct SkyShaderData : public ShaderData {
 	bool uses_light;
 
 	virtual void set_code(const String &p_Code);
-	virtual void set_default_texture_parameter(const StringName &p_name, RID p_texture, int p_index);
-	virtual void get_shader_uniform_list(List<PropertyInfo> *p_param_list) const;
-	virtual void get_instance_param_list(List<RendererMaterialStorage::InstanceShaderParam> *p_param_list) const;
-	virtual bool is_parameter_texture(const StringName &p_param) const;
 	virtual bool is_animated() const;
 	virtual bool casts_shadows() const;
-	virtual Variant get_default_parameter(const StringName &p_parameter) const;
 	virtual RS::ShaderNativeSourceCode get_native_source_code() const;
 	SkyShaderData();
 	virtual ~SkyShaderData();
@@ -280,16 +269,12 @@ struct SceneShaderData : public ShaderData {
 	bool valid;
 	RID version;
 
-	String path;
-
-	HashMap<StringName, ShaderLanguage::ShaderNode::Uniform> uniforms;
 	Vector<ShaderCompiler::GeneratedCode::Texture> texture_uniforms;
 
 	Vector<uint32_t> ubo_offsets;
 	uint32_t ubo_size;
 
 	String code;
-	HashMap<StringName, HashMap<int, RID>> default_texture_params;
 
 	BlendMode blend_mode;
 	AlphaAntiAliasing alpha_antialiasing_mode;
@@ -301,7 +286,7 @@ struct SceneShaderData : public ShaderData {
 	bool uses_alpha;
 	bool uses_blend_alpha;
 	bool uses_alpha_clip;
-	bool uses_depth_pre_pass;
+	bool uses_depth_prepass_alpha;
 	bool uses_discard;
 	bool uses_roughness;
 	bool uses_normal;
@@ -318,6 +303,8 @@ struct SceneShaderData : public ShaderData {
 	bool uses_depth_texture;
 	bool uses_normal_texture;
 	bool uses_time;
+	bool uses_vertex_time;
+	bool uses_fragment_time;
 	bool writes_modelview_or_projection;
 	bool uses_world_coordinates;
 	bool uses_tangent;
@@ -337,14 +324,8 @@ struct SceneShaderData : public ShaderData {
 	uint32_t index = 0;
 
 	virtual void set_code(const String &p_Code);
-	virtual void set_default_texture_parameter(const StringName &p_name, RID p_texture, int p_index);
-	virtual void get_shader_uniform_list(List<PropertyInfo> *p_param_list) const;
-	virtual void get_instance_param_list(List<RendererMaterialStorage::InstanceShaderParam> *p_param_list) const;
-
-	virtual bool is_parameter_texture(const StringName &p_param) const;
 	virtual bool is_animated() const;
 	virtual bool casts_shadows() const;
-	virtual Variant get_default_parameter(const StringName &p_parameter) const;
 	virtual RS::ShaderNativeSourceCode get_native_source_code() const;
 
 	SceneShaderData();
@@ -367,6 +348,53 @@ struct SceneMaterialData : public MaterialData {
 };
 
 MaterialData *_create_scene_material_func(ShaderData *p_shader);
+
+/* Particle Shader */
+
+enum {
+	PARTICLES_MAX_USERDATAS = 6
+};
+
+struct ParticlesShaderData : public ShaderData {
+	bool valid = false;
+	RID version;
+	bool uses_collision = false;
+
+	Vector<ShaderCompiler::GeneratedCode::Texture> texture_uniforms;
+
+	Vector<uint32_t> ubo_offsets;
+	uint32_t ubo_size = 0;
+
+	String code;
+
+	bool uses_time = false;
+
+	bool userdatas_used[PARTICLES_MAX_USERDATAS] = {};
+	uint32_t userdata_count = 0;
+
+	virtual void set_code(const String &p_Code);
+	virtual bool is_animated() const;
+	virtual bool casts_shadows() const;
+	virtual RS::ShaderNativeSourceCode get_native_source_code() const;
+
+	ParticlesShaderData() {}
+	virtual ~ParticlesShaderData();
+};
+
+ShaderData *_create_particles_shader_func();
+
+struct ParticleProcessMaterialData : public MaterialData {
+	ParticlesShaderData *shader_data = nullptr;
+	RID uniform_set;
+
+	virtual void set_render_priority(int p_priority) {}
+	virtual void set_next_pass(RID p_pass) {}
+	virtual void update_parameters(const HashMap<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty);
+	virtual void bind_uniforms();
+	virtual ~ParticleProcessMaterialData();
+};
+
+MaterialData *_create_particles_material_func(ShaderData *p_shader);
 
 /* Global shader uniform structs */
 struct GlobalShaderUniforms {
@@ -504,6 +532,7 @@ public:
 		SkyShaderGLES3 sky_shader;
 		SceneShaderGLES3 scene_shader;
 		CubemapFilterShaderGLES3 cubemap_filter_shader;
+		ParticlesShaderGLES3 particles_process_shader;
 
 		ShaderCompiler compiler_canvas;
 		ShaderCompiler compiler_scene;

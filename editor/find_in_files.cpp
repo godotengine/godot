@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  find_in_files.cpp                                                    */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  find_in_files.cpp                                                     */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "find_in_files.h"
 
@@ -422,8 +422,7 @@ void FindInFilesDialog::set_find_in_files_mode(FindInFilesMode p_mode) {
 }
 
 String FindInFilesDialog::get_search_text() const {
-	String text = _search_text_line_edit->get_text();
-	return text.strip_edges();
+	return _search_text_line_edit->get_text();
 }
 
 String FindInFilesDialog::get_replace_text() const {
@@ -570,8 +569,6 @@ FindInFilesPanel::FindInFilesPanel() {
 		hbc->add_child(find_label);
 
 		_search_text_label = memnew(Label);
-		_search_text_label->add_theme_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_theme_font(SNAME("source"), SNAME("EditorFonts")));
-		_search_text_label->add_theme_font_size_override("font_size", EditorNode::get_singleton()->get_gui_base()->get_theme_font_size(SNAME("source_size"), SNAME("EditorFonts")));
 		hbc->add_child(_search_text_label);
 
 		_progress_bar = memnew(ProgressBar);
@@ -599,14 +596,13 @@ FindInFilesPanel::FindInFilesPanel() {
 	}
 
 	_results_display = memnew(Tree);
-	_results_display->add_theme_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_theme_font(SNAME("source"), SNAME("EditorFonts")));
-	_results_display->add_theme_font_size_override("font_size", EditorNode::get_singleton()->get_gui_base()->get_theme_font_size(SNAME("source_size"), SNAME("EditorFonts")));
 	_results_display->set_v_size_flags(SIZE_EXPAND_FILL);
 	_results_display->connect("item_selected", callable_mp(this, &FindInFilesPanel::_on_result_selected));
 	_results_display->connect("item_edited", callable_mp(this, &FindInFilesPanel::_on_item_edited));
 	_results_display->set_hide_root(true);
 	_results_display->set_select_mode(Tree::SELECT_ROW);
 	_results_display->set_allow_rmb_select(true);
+	_results_display->set_allow_reselect(true);
 	_results_display->create_item(); // Root
 	vbc->add_child(_results_display);
 
@@ -688,13 +684,20 @@ void FindInFilesPanel::stop_search() {
 
 void FindInFilesPanel::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_PROCESS: {
-			_progress_bar->set_as_ratio(_finder->get_progress());
-		} break;
-
 		case NOTIFICATION_THEME_CHANGED: {
 			_search_text_label->add_theme_font_override("font", get_theme_font(SNAME("source"), SNAME("EditorFonts")));
+			_search_text_label->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("source_size"), SNAME("EditorFonts")));
 			_results_display->add_theme_font_override("font", get_theme_font(SNAME("source"), SNAME("EditorFonts")));
+			_results_display->add_theme_font_size_override("font_size", get_theme_font_size(SNAME("source_size"), SNAME("EditorFonts")));
+
+			// Rebuild search tree.
+			if (!_finder->get_search_text().is_empty()) {
+				start_search();
+			}
+		} break;
+
+		case NOTIFICATION_PROCESS: {
+			_progress_bar->set_as_ratio(_finder->get_progress());
 		} break;
 	}
 }
@@ -717,6 +720,10 @@ void FindInFilesPanel::_on_result_found(String fpath, int line_number, int begin
 	} else {
 		file_item = E->value;
 	}
+
+	Color file_item_color = _results_display->get_theme_color(SNAME("font_color")) * Color(1, 1, 1, 0.67);
+	file_item->set_custom_color(0, file_item_color);
+	file_item->set_selectable(0, false);
 
 	int text_index = _with_replace ? 1 : 0;
 
@@ -764,13 +771,13 @@ void FindInFilesPanel::draw_result_text(Object *item_obj, Rect2 rect) {
 	int font_size = _results_display->get_theme_font_size(SNAME("font_size"));
 
 	Rect2 match_rect = rect;
-	match_rect.position.x += font->get_string_size(item_text.left(r.begin_trimmed), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x;
-	match_rect.size.x = font->get_string_size(_search_text_label->get_text(), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x;
+	match_rect.position.x += font->get_string_size(item_text.left(r.begin_trimmed), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x - 1;
+	match_rect.size.x = font->get_string_size(_search_text_label->get_text(), HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).x + 1;
 	match_rect.position.y += 1 * EDSCALE;
 	match_rect.size.y -= 2 * EDSCALE;
 
-	// Use the inverted accent color to help match rectangles stand out even on the currently selected line.
-	_results_display->draw_rect(match_rect, get_theme_color(SNAME("accent_color"), SNAME("Editor")).inverted() * Color(1, 1, 1, 0.5));
+	_results_display->draw_rect(match_rect, get_theme_color(SNAME("accent_color"), SNAME("Editor")) * Color(1, 1, 1, 0.33), false, 2.0);
+	_results_display->draw_rect(match_rect, get_theme_color(SNAME("accent_color"), SNAME("Editor")) * Color(1, 1, 1, 0.17), true);
 
 	// Text is drawn by Tree already.
 }
@@ -778,14 +785,12 @@ void FindInFilesPanel::draw_result_text(Object *item_obj, Rect2 rect) {
 void FindInFilesPanel::_on_item_edited() {
 	TreeItem *item = _results_display->get_selected();
 
-	if (item->is_checked(0)) {
-		item->set_custom_color(1, _results_display->get_theme_color(SNAME("font_color")));
-	} else {
-		// Grey out.
-		Color color = _results_display->get_theme_color(SNAME("font_color"));
-		color.a /= 2.0;
-		item->set_custom_color(1, color);
+	// Change opacity to half if checkbox is checked, otherwise full.
+	Color use_color = _results_display->get_theme_color(SNAME("font_color"));
+	if (!item->is_checked(0)) {
+		use_color.a *= 0.5;
 	}
+	item->set_custom_color(1, use_color);
 }
 
 void FindInFilesPanel::_on_finished() {
@@ -794,11 +799,11 @@ void FindInFilesPanel::_on_finished() {
 	int file_count = _file_items.size();
 
 	if (result_count == 1 && file_count == 1) {
-		results_text = vformat(TTR("%d match in %d file."), result_count, file_count);
+		results_text = vformat(TTR("%d match in %d file"), result_count, file_count);
 	} else if (result_count != 1 && file_count == 1) {
-		results_text = vformat(TTR("%d matches in %d file."), result_count, file_count);
+		results_text = vformat(TTR("%d matches in %d file"), result_count, file_count);
 	} else {
-		results_text = vformat(TTR("%d matches in %d files."), result_count, file_count);
+		results_text = vformat(TTR("%d matches in %d files"), result_count, file_count);
 	}
 
 	_status_label->set_text(results_text);

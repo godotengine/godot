@@ -28,17 +28,24 @@ namespace GodotPlugins
                 get => _pluginLoadContext?.AssemblyLoadedPath;
             }
 
+            public bool IsCollectible
+            {
+                [MethodImpl(MethodImplOptions.NoInlining)]
+                get => _pluginLoadContext?.IsCollectible ?? false;
+            }
+
             [MethodImpl(MethodImplOptions.NoInlining)]
             public static (Assembly, PluginLoadContextWrapper) CreateAndLoadFromAssemblyName(
                 AssemblyName assemblyName,
                 string pluginPath,
                 ICollection<string> sharedAssemblies,
-                AssemblyLoadContext mainLoadContext
+                AssemblyLoadContext mainLoadContext,
+                bool isCollectible
             )
             {
                 var wrapper = new PluginLoadContextWrapper();
                 wrapper._pluginLoadContext = new PluginLoadContext(
-                    pluginPath, sharedAssemblies, mainLoadContext);
+                    pluginPath, sharedAssemblies, mainLoadContext, isCollectible);
                 var assembly = wrapper._pluginLoadContext.LoadFromAssemblyName(assemblyName);
                 return (assembly, wrapper);
             }
@@ -61,6 +68,7 @@ namespace GodotPlugins
         private static readonly Assembly CoreApiAssembly = typeof(Godot.Object).Assembly;
         private static Assembly? _editorApiAssembly;
         private static PluginLoadContextWrapper? _projectLoadContext;
+        private static bool _editorHint = false;
 
         private static readonly AssemblyLoadContext MainLoadContext =
             AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly()) ??
@@ -77,15 +85,17 @@ namespace GodotPlugins
         {
             try
             {
+                _editorHint = editorHint.ToBool();
+
                 _dllImportResolver = new GodotDllImportResolver(godotDllHandle).OnResolveDllImport;
 
                 SharedAssemblies.Add(CoreApiAssembly.GetName());
                 NativeLibrary.SetDllImportResolver(CoreApiAssembly, _dllImportResolver);
 
-                AlcReloadCfg.Configure(alcReloadEnabled: editorHint.ToBool());
+                AlcReloadCfg.Configure(alcReloadEnabled: _editorHint);
                 NativeFuncs.Initialize(unmanagedCallbacks, unmanagedCallbacksSize);
 
-                if (editorHint.ToBool())
+                if (_editorHint)
                 {
                     _editorApiAssembly = Assembly.Load("GodotSharpEditor");
                     SharedAssemblies.Add(_editorApiAssembly.GetName());
@@ -128,7 +138,7 @@ namespace GodotPlugins
 
                 string assemblyPath = new(nAssemblyPath);
 
-                (var projectAssembly, _projectLoadContext) = LoadPlugin(assemblyPath);
+                (var projectAssembly, _projectLoadContext) = LoadPlugin(assemblyPath, isCollectible: _editorHint);
 
                 string loadedAssemblyPath = _projectLoadContext.AssemblyLoadedPath ?? assemblyPath;
                 *outLoadedAssemblyPath = Marshaling.ConvertStringToNative(loadedAssemblyPath);
@@ -155,7 +165,7 @@ namespace GodotPlugins
                 if (_editorApiAssembly == null)
                     throw new InvalidOperationException("The Godot editor API assembly is not loaded.");
 
-                var (assembly, _) = LoadPlugin(assemblyPath);
+                var (assembly, _) = LoadPlugin(assemblyPath, isCollectible: _editorHint);
 
                 NativeLibrary.SetDllImportResolver(assembly, _dllImportResolver!);
 
@@ -180,7 +190,7 @@ namespace GodotPlugins
             }
         }
 
-        private static (Assembly, PluginLoadContextWrapper) LoadPlugin(string assemblyPath)
+        private static (Assembly, PluginLoadContextWrapper) LoadPlugin(string assemblyPath, bool isCollectible)
         {
             string assemblyName = Path.GetFileNameWithoutExtension(assemblyPath);
 
@@ -194,7 +204,7 @@ namespace GodotPlugins
             }
 
             return PluginLoadContextWrapper.CreateAndLoadFromAssemblyName(
-                new AssemblyName(assemblyName), assemblyPath, sharedAssemblies, MainLoadContext);
+                new AssemblyName(assemblyName), assemblyPath, sharedAssemblies, MainLoadContext, isCollectible);
         }
 
         [UnmanagedCallersOnly]
@@ -217,6 +227,12 @@ namespace GodotPlugins
             {
                 if (pluginLoadContext == null)
                     return true;
+
+                if (!pluginLoadContext.IsCollectible)
+                {
+                    Console.Error.WriteLine("Cannot unload a non-collectible assembly load context.");
+                    return false;
+                }
 
                 Console.WriteLine("Unloading assembly load context...");
 

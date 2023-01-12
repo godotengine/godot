@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  physics_server_3d.cpp                                                */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  physics_server_3d.cpp                                                 */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "physics_server_3d.h"
 
@@ -169,25 +169,25 @@ PhysicsDirectBodyState3D::PhysicsDirectBodyState3D() {}
 
 ///////////////////////////////////////////////////////
 
-void PhysicsRayQueryParameters3D::set_exclude(const Vector<RID> &p_exclude) {
+void PhysicsRayQueryParameters3D::set_exclude(const TypedArray<RID> &p_exclude) {
 	parameters.exclude.clear();
 	for (int i = 0; i < p_exclude.size(); i++) {
 		parameters.exclude.insert(p_exclude[i]);
 	}
 }
 
-Vector<RID> PhysicsRayQueryParameters3D::get_exclude() const {
-	Vector<RID> ret;
+TypedArray<RID> PhysicsRayQueryParameters3D::get_exclude() const {
+	TypedArray<RID> ret;
 	ret.resize(parameters.exclude.size());
 	int idx = 0;
 	for (const RID &E : parameters.exclude) {
-		ret.write[idx++] = E;
+		ret[idx++] = E;
 	}
 	return ret;
 }
 
 void PhysicsRayQueryParameters3D::_bind_methods() {
-	ClassDB::bind_static_method("PhysicsRayQueryParameters3D", D_METHOD("create", "from", "to", "collision_mask", "exclude"), &PhysicsRayQueryParameters3D::create, DEFVAL(UINT32_MAX), DEFVAL(Vector<RID>()));
+	ClassDB::bind_static_method("PhysicsRayQueryParameters3D", D_METHOD("create", "from", "to", "collision_mask", "exclude"), &PhysicsRayQueryParameters3D::create, DEFVAL(UINT32_MAX), DEFVAL(TypedArray<RID>()));
 
 	ClassDB::bind_method(D_METHOD("set_from", "from"), &PhysicsRayQueryParameters3D::set_from);
 	ClassDB::bind_method(D_METHOD("get_from"), &PhysicsRayQueryParameters3D::get_from);
@@ -225,7 +225,7 @@ void PhysicsRayQueryParameters3D::_bind_methods() {
 
 ///////////////////////////////////////////////////////
 
-Ref<PhysicsRayQueryParameters3D> PhysicsRayQueryParameters3D::create(Vector3 p_from, Vector3 p_to, uint32_t p_mask, const Vector<RID> &p_exclude) {
+Ref<PhysicsRayQueryParameters3D> PhysicsRayQueryParameters3D::create(Vector3 p_from, Vector3 p_to, uint32_t p_mask, const TypedArray<RID> &p_exclude) {
 	Ref<PhysicsRayQueryParameters3D> params;
 	params.instantiate();
 	params->set_from(p_from);
@@ -235,19 +235,19 @@ Ref<PhysicsRayQueryParameters3D> PhysicsRayQueryParameters3D::create(Vector3 p_f
 	return params;
 }
 
-void PhysicsPointQueryParameters3D::set_exclude(const Vector<RID> &p_exclude) {
+void PhysicsPointQueryParameters3D::set_exclude(const TypedArray<RID> &p_exclude) {
 	parameters.exclude.clear();
 	for (int i = 0; i < p_exclude.size(); i++) {
 		parameters.exclude.insert(p_exclude[i]);
 	}
 }
 
-Vector<RID> PhysicsPointQueryParameters3D::get_exclude() const {
-	Vector<RID> ret;
+TypedArray<RID> PhysicsPointQueryParameters3D::get_exclude() const {
+	TypedArray<RID> ret;
 	ret.resize(parameters.exclude.size());
 	int idx = 0;
 	for (const RID &E : parameters.exclude) {
-		ret.write[idx++] = E;
+		ret[idx++] = E;
 	}
 	return ret;
 }
@@ -290,19 +290,19 @@ void PhysicsShapeQueryParameters3D::set_shape_rid(const RID &p_shape) {
 	}
 }
 
-void PhysicsShapeQueryParameters3D::set_exclude(const Vector<RID> &p_exclude) {
+void PhysicsShapeQueryParameters3D::set_exclude(const TypedArray<RID> &p_exclude) {
 	parameters.exclude.clear();
 	for (int i = 0; i < p_exclude.size(); i++) {
 		parameters.exclude.insert(p_exclude[i]);
 	}
 }
 
-Vector<RID> PhysicsShapeQueryParameters3D::get_exclude() const {
-	Vector<RID> ret;
+TypedArray<RID> PhysicsShapeQueryParameters3D::get_exclude() const {
+	TypedArray<RID> ret;
 	ret.resize(parameters.exclude.size());
 	int idx = 0;
 	for (const RID &E : parameters.exclude) {
-		ret.write[idx++] = E;
+		ret[idx++] = E;
 	}
 	return ret;
 }
@@ -482,37 +482,37 @@ void PhysicsDirectSpaceState3D::_bind_methods() {
 
 ///////////////////////////////
 
-Vector<RID> PhysicsTestMotionParameters3D::get_exclude_bodies() const {
-	Vector<RID> exclude;
+TypedArray<RID> PhysicsTestMotionParameters3D::get_exclude_bodies() const {
+	TypedArray<RID> exclude;
 	exclude.resize(parameters.exclude_bodies.size());
 
 	int body_index = 0;
-	for (RID body : parameters.exclude_bodies) {
-		exclude.write[body_index++] = body;
+	for (const RID &body : parameters.exclude_bodies) {
+		exclude[body_index++] = body;
 	}
 
 	return exclude;
 }
 
-void PhysicsTestMotionParameters3D::set_exclude_bodies(const Vector<RID> &p_exclude) {
-	for (RID body : p_exclude) {
-		parameters.exclude_bodies.insert(body);
+void PhysicsTestMotionParameters3D::set_exclude_bodies(const TypedArray<RID> &p_exclude) {
+	for (int i = 0; i < p_exclude.size(); i++) {
+		parameters.exclude_bodies.insert(p_exclude[i]);
 	}
 }
 
-Array PhysicsTestMotionParameters3D::get_exclude_objects() const {
-	Array exclude;
+TypedArray<uint64_t> PhysicsTestMotionParameters3D::get_exclude_objects() const {
+	TypedArray<uint64_t> exclude;
 	exclude.resize(parameters.exclude_objects.size());
 
 	int object_index = 0;
-	for (ObjectID object_id : parameters.exclude_objects) {
+	for (const ObjectID &object_id : parameters.exclude_objects) {
 		exclude[object_index++] = object_id;
 	}
 
 	return exclude;
 }
 
-void PhysicsTestMotionParameters3D::set_exclude_objects(const Array &p_exclude) {
+void PhysicsTestMotionParameters3D::set_exclude_objects(const TypedArray<uint64_t> &p_exclude) {
 	for (int i = 0; i < p_exclude.size(); ++i) {
 		ObjectID object_id = p_exclude[i];
 		ERR_CONTINUE(object_id.is_null());
@@ -943,6 +943,9 @@ void PhysicsServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("joint_set_solver_priority", "joint", "priority"), &PhysicsServer3D::joint_set_solver_priority);
 	ClassDB::bind_method(D_METHOD("joint_get_solver_priority", "joint"), &PhysicsServer3D::joint_get_solver_priority);
 
+	ClassDB::bind_method(D_METHOD("joint_disable_collisions_between_bodies", "joint", "disable"), &PhysicsServer3D::joint_disable_collisions_between_bodies);
+	ClassDB::bind_method(D_METHOD("joint_is_disabled_collisions_between_bodies", "joint"), &PhysicsServer3D::joint_is_disabled_collisions_between_bodies);
+
 	ClassDB::bind_method(D_METHOD("joint_make_generic_6dof", "joint", "body_A", "local_ref_A", "body_B", "local_ref_B"), &PhysicsServer3D::joint_make_generic_6dof);
 
 	ClassDB::bind_method(D_METHOD("generic_6dof_joint_set_param", "joint", "axis", "param", "value"), &PhysicsServer3D::generic_6dof_joint_set_param);
@@ -1059,7 +1062,7 @@ void PhysicsServer3DManager::on_servers_changed() {
 	for (int i = get_servers_count() - 1; 0 <= i; --i) {
 		physics_servers2 += "," + get_server_name(i);
 	}
-	ProjectSettings::get_singleton()->set_custom_property_info(setting_property_name, PropertyInfo(Variant::STRING, setting_property_name, PROPERTY_HINT_ENUM, physics_servers2));
+	ProjectSettings::get_singleton()->set_custom_property_info(PropertyInfo(Variant::STRING, setting_property_name, PROPERTY_HINT_ENUM, physics_servers2));
 }
 
 void PhysicsServer3DManager::_bind_methods() {

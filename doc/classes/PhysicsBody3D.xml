@@ -32,13 +32,13 @@
 		</method>
 		<method name="move_and_collide">
 			<return type="KinematicCollision3D" />
-			<param index="0" name="distance" type="Vector3" />
+			<param index="0" name="motion" type="Vector3" />
 			<param index="1" name="test_only" type="bool" default="false" />
 			<param index="2" name="safe_margin" type="float" default="0.001" />
 			<param index="3" name="recovery_as_collision" type="bool" default="false" />
 			<param index="4" name="max_collisions" type="int" default="1" />
 			<description>
-				Moves the body along the vector [param distance]. In order to be frame rate independent in [method Node._physics_process] or [method Node._process], [param distance] should be computed using [code]delta[/code].
+				Moves the body along the vector [param motion]. In order to be frame rate independent in [method Node._physics_process] or [method Node._process], [param motion] should be computed using [code]delta[/code].
 				The body will stop if it collides. Returns a [KinematicCollision3D], which contains information about the collision when stopped, or when touching another body along the motion.
 				If [param test_only] is [code]true[/code], the body does not move but the would-be collision information is given.
 				[param safe_margin] is the extra margin used for collision recovery (see [member CharacterBody3D.safe_margin] for more details).
@@ -64,14 +64,14 @@
 		<method name="test_move">
 			<return type="bool" />
 			<param index="0" name="from" type="Transform3D" />
-			<param index="1" name="distance" type="Vector3" />
+			<param index="1" name="motion" type="Vector3" />
 			<param index="2" name="collision" type="KinematicCollision3D" default="null" />
 			<param index="3" name="safe_margin" type="float" default="0.001" />
 			<param index="4" name="recovery_as_collision" type="bool" default="false" />
 			<param index="5" name="max_collisions" type="int" default="1" />
 			<description>
-				Checks for collisions without moving the body. In order to be frame rate independent in [method Node._physics_process] or [method Node._process], [param distance] should be computed using [code]delta[/code].
-				Virtually sets the node's position, scale and rotation to that of the given [Transform3D], then tries to move the body along the vector [param distance]. Returns [code]true[/code] if a collision would stop the body from moving along the whole path.
+				Checks for collisions without moving the body. In order to be frame rate independent in [method Node._physics_process] or [method Node._process], [param motion] should be computed using [code]delta[/code].
+				Virtually sets the node's position, scale and rotation to that of the given [Transform3D], then tries to move the body along the vector [param motion]. Returns [code]true[/code] if a collision would stop the body from moving along the whole path.
 				[param collision] is an optional object of type [KinematicCollision3D], which contains additional information about the collision when stopped, or when touching another body along the motion.
 				[param safe_margin] is the extra margin used for collision recovery (see [member CharacterBody3D.safe_margin] for more details).
 				If [param recovery_as_collision] is [code]true[/code], any depenetration from the recovery phase is also reported as a collision; this is useful for checking whether the body would [i]touch[/i] any other bodies.

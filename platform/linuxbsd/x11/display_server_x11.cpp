@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  display_server_x11.cpp                                               */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  display_server_x11.cpp                                                */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "display_server_x11.h"
 
@@ -57,11 +57,6 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
-
-#include <X11/Xatom.h>
-#include <X11/Xutil.h>
-#include <X11/extensions/Xinerama.h>
-#include <X11/extensions/shape.h>
 
 // ICCCM
 #define WM_NormalState 1L // window normal state
@@ -376,10 +371,18 @@ void DisplayServerX11::mouse_set_mode(MouseMode p_mode) {
 	}
 
 	// The only modes that show a cursor are VISIBLE and CONFINED
-	bool showCursor = (p_mode == MOUSE_MODE_VISIBLE || p_mode == MOUSE_MODE_CONFINED);
+	bool show_cursor = (p_mode == MOUSE_MODE_VISIBLE || p_mode == MOUSE_MODE_CONFINED);
+	bool previously_shown = (mouse_mode == MOUSE_MODE_VISIBLE || mouse_mode == MOUSE_MODE_CONFINED);
+
+	if (show_cursor && !previously_shown) {
+		WindowID window_id = get_window_at_screen_position(mouse_get_position());
+		if (window_id != INVALID_WINDOW_ID) {
+			_send_window_event(windows[window_id], WINDOW_EVENT_MOUSE_ENTER);
+		}
+	}
 
 	for (const KeyValue<WindowID, WindowData> &E : windows) {
-		if (showCursor) {
+		if (show_cursor) {
 			XDefineCursor(x11_display, E.value.x11_window, cursors[current_cursor]); // show cursor
 		} else {
 			XDefineCursor(x11_display, E.value.x11_window, null_cursor); // hide cursor
@@ -455,7 +458,7 @@ Point2i DisplayServerX11::mouse_get_position() const {
 	return Vector2i();
 }
 
-MouseButton DisplayServerX11::mouse_get_button_state() const {
+BitField<MouseButtonMask> DisplayServerX11::mouse_get_button_state() const {
 	return last_button_state;
 }
 
@@ -748,11 +751,22 @@ int DisplayServerX11::get_screen_count() const {
 	return count;
 }
 
+int DisplayServerX11::get_primary_screen() const {
+	return XDefaultScreen(x11_display);
+}
+
 Rect2i DisplayServerX11::_screen_get_rect(int p_screen) const {
 	Rect2i rect(0, 0, 0, 0);
 
-	if (p_screen == SCREEN_OF_MAIN_WINDOW) {
-		p_screen = window_get_current_screen();
+	switch (p_screen) {
+		case SCREEN_PRIMARY: {
+			p_screen = get_primary_screen();
+		} break;
+		case SCREEN_OF_MAIN_WINDOW: {
+			p_screen = window_get_current_screen(MAIN_WINDOW_ID);
+		} break;
+		default:
+			break;
 	}
 
 	ERR_FAIL_COND_V(p_screen < 0, rect);
@@ -819,8 +833,15 @@ int bad_window_error_handler(Display *display, XErrorEvent *error) {
 Rect2i DisplayServerX11::screen_get_usable_rect(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
-	if (p_screen == SCREEN_OF_MAIN_WINDOW) {
-		p_screen = window_get_current_screen();
+	switch (p_screen) {
+		case SCREEN_PRIMARY: {
+			p_screen = get_primary_screen();
+		} break;
+		case SCREEN_OF_MAIN_WINDOW: {
+			p_screen = window_get_current_screen(MAIN_WINDOW_ID);
+		} break;
+		default:
+			break;
 	}
 
 	int screen_count = get_screen_count();
@@ -1099,8 +1120,15 @@ Rect2i DisplayServerX11::screen_get_usable_rect(int p_screen) const {
 int DisplayServerX11::screen_get_dpi(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
-	if (p_screen == SCREEN_OF_MAIN_WINDOW) {
-		p_screen = window_get_current_screen();
+	switch (p_screen) {
+		case SCREEN_PRIMARY: {
+			p_screen = get_primary_screen();
+		} break;
+		case SCREEN_OF_MAIN_WINDOW: {
+			p_screen = window_get_current_screen(MAIN_WINDOW_ID);
+		} break;
+		default:
+			break;
 	}
 
 	//invalid screen?
@@ -1144,8 +1172,15 @@ int DisplayServerX11::screen_get_dpi(int p_screen) const {
 float DisplayServerX11::screen_get_refresh_rate(int p_screen) const {
 	_THREAD_SAFE_METHOD_
 
-	if (p_screen == SCREEN_OF_MAIN_WINDOW) {
-		p_screen = window_get_current_screen();
+	switch (p_screen) {
+		case SCREEN_PRIMARY: {
+			p_screen = get_primary_screen();
+		} break;
+		case SCREEN_OF_MAIN_WINDOW: {
+			p_screen = window_get_current_screen(MAIN_WINDOW_ID);
+		} break;
+		default:
+			break;
 	}
 
 	//invalid screen?
@@ -1254,6 +1289,8 @@ void DisplayServerX11::show_window(WindowID p_id) {
 	DEBUG_LOG_X11("show_window: %lu (%u) \n", wd.x11_window, p_id);
 
 	XMapWindow(x11_display, wd.x11_window);
+	XSync(x11_display, False);
+	_validate_mode_on_map(p_id);
 }
 
 void DisplayServerX11::delete_sub_window(WindowID p_id) {
@@ -1309,6 +1346,14 @@ int64_t DisplayServerX11::window_get_native_handle(HandleType p_handle_type, Win
 		case WINDOW_VIEW: {
 			return 0; // Not supported.
 		}
+#ifdef GLES3_ENABLED
+		case OPENGL_CONTEXT: {
+			if (gl_manager) {
+				return (int64_t)gl_manager->get_glx_context(p_window);
+			}
+			return 0;
+		}
+#endif
 		default: {
 			return 0;
 		}
@@ -1386,8 +1431,8 @@ void DisplayServerX11::window_set_mouse_passthrough(const Vector<Vector2> &p_reg
 			XRectangle rect;
 			rect.x = 0;
 			rect.y = 0;
-			rect.width = window_get_real_size(p_window).x;
-			rect.height = window_get_real_size(p_window).y;
+			rect.width = window_get_size_with_decorations(p_window).x;
+			rect.height = window_get_size_with_decorations(p_window).y;
 			XUnionRectWithRegion(&rect, region, region);
 		} else {
 			XPoint *points = (XPoint *)memalloc(sizeof(XPoint) * p_region.size());
@@ -1487,12 +1532,23 @@ void DisplayServerX11::window_set_current_screen(int p_screen, WindowID p_window
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
-	if (p_screen == SCREEN_OF_MAIN_WINDOW) {
-		p_screen = window_get_current_screen();
+	switch (p_screen) {
+		case SCREEN_PRIMARY: {
+			p_screen = get_primary_screen();
+		} break;
+		case SCREEN_OF_MAIN_WINDOW: {
+			p_screen = window_get_current_screen(MAIN_WINDOW_ID);
+		} break;
+		default:
+			break;
 	}
 
 	// Check if screen is valid
 	ERR_FAIL_INDEX(p_screen, get_screen_count());
+
+	if (window_get_current_screen(p_window) == p_screen) {
+		return;
+	}
 
 	if (window_get_mode(p_window) == WINDOW_MODE_FULLSCREEN) {
 		Point2i position = screen_get_position(p_screen);
@@ -1500,10 +1556,15 @@ void DisplayServerX11::window_set_current_screen(int p_screen, WindowID p_window
 
 		XMoveResizeWindow(x11_display, wd.x11_window, position.x, position.y, size.x, size.y);
 	} else {
-		if (p_screen != window_get_current_screen(p_window)) {
-			Vector2 ofs = window_get_position(p_window) - screen_get_position(window_get_current_screen(p_window));
-			window_set_position(ofs + screen_get_position(p_screen), p_window);
+		Rect2i srect = screen_get_usable_rect(p_screen);
+		Point2i wpos = window_get_position(p_window) - screen_get_position(window_get_current_screen(p_window));
+		Size2i wsize = window_get_size(p_window);
+		wpos += srect.position;
+		if (srect != Rect2i()) {
+			wpos.x = CLAMP(wpos.x, srect.position.x, srect.position.x + srect.size.width - wsize.width / 3);
+			wpos.y = CLAMP(wpos.y, srect.position.y, srect.position.y + srect.size.height - wsize.height / 3);
 		}
+		window_set_position(wpos, p_window);
 	}
 }
 
@@ -1571,7 +1632,7 @@ void DisplayServerX11::_update_size_hints(WindowID p_window) {
 	xsh->width = wd.size.width;
 	xsh->height = wd.size.height;
 
-	if (window_mode == WINDOW_MODE_FULLSCREEN) {
+	if (window_mode == WINDOW_MODE_FULLSCREEN || window_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
 		// Do not set any other hints to prevent the window manager from ignoring the fullscreen flags
 	} else if (window_get_flag(WINDOW_FLAG_RESIZE_DISABLED, p_window)) {
 		// If resizing is disabled, use the forced size
@@ -1605,6 +1666,40 @@ Point2i DisplayServerX11::window_get_position(WindowID p_window) const {
 	const WindowData &wd = windows[p_window];
 
 	return wd.position;
+}
+
+Point2i DisplayServerX11::window_get_position_with_decorations(WindowID p_window) const {
+	_THREAD_SAFE_METHOD_
+
+	ERR_FAIL_COND_V(!windows.has(p_window), Size2i());
+	const WindowData &wd = windows[p_window];
+
+	if (wd.fullscreen) {
+		return wd.position;
+	}
+
+	XWindowAttributes xwa;
+	XSync(x11_display, False);
+	XGetWindowAttributes(x11_display, wd.x11_window, &xwa);
+	int x = wd.position.x;
+	int y = wd.position.y;
+	Atom prop = XInternAtom(x11_display, "_NET_FRAME_EXTENTS", True);
+	if (prop != None) {
+		Atom type;
+		int format;
+		unsigned long len;
+		unsigned long remaining;
+		unsigned char *data = nullptr;
+		if (XGetWindowProperty(x11_display, wd.x11_window, prop, 0, 4, False, AnyPropertyType, &type, &format, &len, &remaining, &data) == Success) {
+			if (format == 32 && len == 4 && data) {
+				long *extents = (long *)data;
+				x -= extents[0]; // left
+				y -= extents[2]; // top
+			}
+			XFree(data);
+		}
+	}
+	return Size2i(x, y);
 }
 
 void DisplayServerX11::window_set_position(const Point2i &p_position, WindowID p_window) {
@@ -1751,11 +1846,15 @@ Size2i DisplayServerX11::window_get_size(WindowID p_window) const {
 	return wd.size;
 }
 
-Size2i DisplayServerX11::window_get_real_size(WindowID p_window) const {
+Size2i DisplayServerX11::window_get_size_with_decorations(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND_V(!windows.has(p_window), Size2i());
 	const WindowData &wd = windows[p_window];
+
+	if (wd.fullscreen) {
+		return wd.size;
+	}
 
 	XWindowAttributes xwa;
 	XSync(x11_display, False);
@@ -1938,7 +2037,7 @@ void DisplayServerX11::_validate_mode_on_map(WindowID p_window) {
 	// Check if we applied any window modes that didn't take effect while unmapped
 	const WindowData &wd = windows[p_window];
 	if (wd.fullscreen && !_window_fullscreen_check(p_window)) {
-		_set_wm_fullscreen(p_window, true);
+		_set_wm_fullscreen(p_window, true, wd.exclusive_fullscreen);
 	} else if (wd.maximized && !_window_maximize_check(p_window, "_NET_WM_STATE")) {
 		_set_wm_maximized(p_window, true);
 	} else if (wd.minimized && !_window_minimize_check(p_window)) {
@@ -2013,7 +2112,7 @@ void DisplayServerX11::_set_wm_minimized(WindowID p_window, bool p_enabled) {
 	wd.minimized = p_enabled;
 }
 
-void DisplayServerX11::_set_wm_fullscreen(WindowID p_window, bool p_enabled) {
+void DisplayServerX11::_set_wm_fullscreen(WindowID p_window, bool p_enabled, bool p_exclusive) {
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
@@ -2052,7 +2151,14 @@ void DisplayServerX11::_set_wm_fullscreen(WindowID p_window, bool p_enabled) {
 
 	// set bypass compositor hint
 	Atom bypass_compositor = XInternAtom(x11_display, "_NET_WM_BYPASS_COMPOSITOR", False);
-	unsigned long compositing_disable_on = p_enabled ? 1 : 0;
+	unsigned long compositing_disable_on = 0; // Use default.
+	if (p_enabled) {
+		if (p_exclusive) {
+			compositing_disable_on = 1; // Force composition OFF to reduce overhead.
+		} else {
+			compositing_disable_on = 2; // Force composition ON to allow popup windows.
+		}
+	}
 	if (bypass_compositor != None) {
 		XChangeProperty(x11_display, wd.x11_window, bypass_compositor, XA_CARDINAL, 32, PropModeReplace, (unsigned char *)&compositing_disable_on, 1);
 	}
@@ -2098,8 +2204,9 @@ void DisplayServerX11::window_set_mode(WindowMode p_mode, WindowID p_window) {
 		case WINDOW_MODE_FULLSCREEN: {
 			//Remove full-screen
 			wd.fullscreen = false;
+			wd.exclusive_fullscreen = false;
 
-			_set_wm_fullscreen(p_window, false);
+			_set_wm_fullscreen(p_window, false, false);
 
 			//un-maximize required for always on top
 			bool on_top = window_get_flag(WINDOW_FLAG_ALWAYS_ON_TOP, p_window);
@@ -2132,7 +2239,13 @@ void DisplayServerX11::window_set_mode(WindowMode p_mode, WindowID p_window) {
 			}
 
 			wd.fullscreen = true;
-			_set_wm_fullscreen(p_window, true);
+			if (p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
+				wd.exclusive_fullscreen = true;
+				_set_wm_fullscreen(p_window, true, true);
+			} else {
+				wd.exclusive_fullscreen = false;
+				_set_wm_fullscreen(p_window, true, false);
+			}
 		} break;
 		case WINDOW_MODE_MAXIMIZED: {
 			_set_wm_maximized(p_window, true);
@@ -2147,7 +2260,11 @@ DisplayServer::WindowMode DisplayServerX11::window_get_mode(WindowID p_window) c
 	const WindowData &wd = windows[p_window];
 
 	if (wd.fullscreen) { //if fullscreen, it's not in another mode
-		return WINDOW_MODE_FULLSCREEN;
+		if (wd.exclusive_fullscreen) {
+			return WINDOW_MODE_EXCLUSIVE_FULLSCREEN;
+		} else {
+			return WINDOW_MODE_FULLSCREEN;
+		}
 	}
 
 	// Test maximized.
@@ -2726,13 +2843,13 @@ void DisplayServerX11::_get_key_modifier_state(unsigned int p_x11_state, Ref<Inp
 	state->set_meta_pressed((p_x11_state & Mod4Mask));
 }
 
-MouseButton DisplayServerX11::_get_mouse_button_state(MouseButton p_x11_button, int p_x11_type) {
-	MouseButton mask = mouse_button_to_mask(p_x11_button);
+BitField<MouseButtonMask> DisplayServerX11::_get_mouse_button_state(MouseButton p_x11_button, int p_x11_type) {
+	MouseButtonMask mask = mouse_button_to_mask(p_x11_button);
 
 	if (p_x11_type == ButtonPress) {
-		last_button_state |= mask;
+		last_button_state.set_flag(mask);
 	} else {
-		last_button_state &= ~mask;
+		last_button_state.clear_flag(mask);
 	}
 
 	return last_button_state;
@@ -3918,29 +4035,40 @@ void DisplayServerX11::process_events() {
 				} else {
 					DEBUG_LOG_X11("[%u] ButtonRelease window=%lu (%u), button_index=%u \n", frame, event.xbutton.window, window_id, mb->get_button_index());
 
-					if (!wd.focused) {
+					WindowID window_id_other = INVALID_WINDOW_ID;
+					Window wd_other_x11_window;
+					if (wd.focused) {
+						// Handle cases where an unfocused popup is open that needs to receive button-up events.
+						WindowID popup_id = _get_focused_window_or_popup();
+						if (popup_id != INVALID_WINDOW_ID && popup_id != window_id) {
+							window_id_other = popup_id;
+							wd_other_x11_window = windows[popup_id].x11_window;
+						}
+					} else {
 						// Propagate the event to the focused window,
 						// because it's received only on the topmost window.
 						// Note: This is needed for drag & drop to work between windows,
 						// because the engine expects events to keep being processed
 						// on the same window dragging started.
 						for (const KeyValue<WindowID, WindowData> &E : windows) {
-							const WindowData &wd_other = E.value;
-							WindowID window_id_other = E.key;
-							if (wd_other.focused) {
-								if (window_id_other != window_id) {
-									int x, y;
-									Window child;
-									XTranslateCoordinates(x11_display, wd.x11_window, wd_other.x11_window, event.xbutton.x, event.xbutton.y, &x, &y, &child);
-
-									mb->set_window_id(window_id_other);
-									mb->set_position(Vector2(x, y));
-									mb->set_global_position(mb->get_position());
-									Input::get_singleton()->parse_input_event(mb);
+							if (E.value.focused) {
+								if (E.key != window_id) {
+									window_id_other = E.key;
+									wd_other_x11_window = E.value.x11_window;
 								}
 								break;
 							}
 						}
+					}
+
+					if (window_id_other != INVALID_WINDOW_ID) {
+						int x, y;
+						Window child;
+						XTranslateCoordinates(x11_display, wd.x11_window, wd_other_x11_window, event.xbutton.x, event.xbutton.y, &x, &y, &child);
+
+						mb->set_window_id(window_id_other);
+						mb->set_position(Vector2(x, y));
+						mb->set_global_position(mb->get_position());
 					}
 				}
 
@@ -4043,13 +4171,13 @@ void DisplayServerX11::process_events() {
 				if (xi.pressure_supported) {
 					mm->set_pressure(xi.pressure);
 				} else {
-					mm->set_pressure(bool(mouse_get_button_state() & MouseButton::MASK_LEFT) ? 1.0f : 0.0f);
+					mm->set_pressure(bool(mouse_get_button_state().has_flag(MouseButtonMask::LEFT)) ? 1.0f : 0.0f);
 				}
 				mm->set_tilt(xi.tilt);
 				mm->set_pen_inverted(xi.pen_inverted);
 
 				_get_key_modifier_state(event.xmotion.state, mm);
-				mm->set_button_mask((MouseButton)mouse_get_button_state());
+				mm->set_button_mask(mouse_get_button_state());
 				mm->set_position(pos);
 				mm->set_global_position(pos);
 				mm->set_velocity(Input::get_singleton()->get_last_mouse_velocity());
@@ -4398,7 +4526,7 @@ void DisplayServerX11::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mo
 
 #if defined(GLES3_ENABLED)
 	if (gl_manager) {
-		gl_manager->set_use_vsync(p_vsync_mode == DisplayServer::VSYNC_ENABLED);
+		gl_manager->set_use_vsync(p_vsync_mode != DisplayServer::VSYNC_DISABLED);
 	}
 #endif
 }
@@ -4431,8 +4559,8 @@ Vector<String> DisplayServerX11::get_rendering_drivers_func() {
 	return drivers;
 }
 
-DisplayServer *DisplayServerX11::create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, Error &r_error) {
-	DisplayServer *ds = memnew(DisplayServerX11(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, r_error));
+DisplayServer *DisplayServerX11::create_func(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error) {
+	DisplayServer *ds = memnew(DisplayServerX11(p_rendering_driver, p_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, r_error));
 	if (r_error != OK) {
 		if (p_rendering_driver == "vulkan") {
 			String executable_name = OS::get_singleton()->get_executable_path().get_file();
@@ -4529,8 +4657,27 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 		valuemask |= CWOverrideRedirect | CWSaveUnder;
 	}
 
+	int rq_screen = get_screen_from_rect(p_rect);
+	if (rq_screen < 0) {
+		rq_screen = get_primary_screen(); // Requested window rect is outside any screen bounds.
+	}
+
+	Rect2i win_rect = p_rect;
+	if (p_mode == WINDOW_MODE_FULLSCREEN || p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN) {
+		Rect2i screen_rect = Rect2i(screen_get_position(rq_screen), screen_get_size(rq_screen));
+
+		win_rect = screen_rect;
+	} else {
+		Rect2i srect = screen_get_usable_rect(rq_screen);
+		Point2i wpos = p_rect.position;
+		wpos.x = CLAMP(wpos.x, srect.position.x, srect.position.x + srect.size.width - p_rect.size.width / 3);
+		wpos.y = CLAMP(wpos.y, srect.position.y, srect.position.y + srect.size.height - p_rect.size.height / 3);
+
+		win_rect.position = wpos;
+	}
+
 	{
-		wd.x11_window = XCreateWindow(x11_display, RootWindow(x11_display, visualInfo.screen), p_rect.position.x, p_rect.position.y, p_rect.size.width > 0 ? p_rect.size.width : 1, p_rect.size.height > 0 ? p_rect.size.height : 1, 0, visualInfo.depth, InputOutput, visualInfo.visual, valuemask, &windowAttributes);
+		wd.x11_window = XCreateWindow(x11_display, RootWindow(x11_display, visualInfo.screen), win_rect.position.x, win_rect.position.y, win_rect.size.width > 0 ? win_rect.size.width : 1, win_rect.size.height > 0 ? win_rect.size.height : 1, 0, visualInfo.depth, InputOutput, visualInfo.visual, valuemask, &windowAttributes);
 
 		// Enable receiving notification when the window is initialized (MapNotify)
 		// so the focus can be set at the right time.
@@ -4651,14 +4798,15 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 
 #if defined(VULKAN_ENABLED)
 		if (context_vulkan) {
-			Error err = context_vulkan->window_create(id, p_vsync_mode, wd.x11_window, x11_display, p_rect.size.width, p_rect.size.height);
+			Error err = context_vulkan->window_create(id, p_vsync_mode, wd.x11_window, x11_display, win_rect.size.width, win_rect.size.height);
 			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't create a Vulkan window");
 		}
 #endif
 #ifdef GLES3_ENABLED
 		if (gl_manager) {
-			Error err = gl_manager->window_create(id, wd.x11_window, x11_display, p_rect.size.width, p_rect.size.height);
+			Error err = gl_manager->window_create(id, wd.x11_window, x11_display, win_rect.size.width, win_rect.size.height);
 			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't create an OpenGL window");
+			window_set_vsync_mode(p_vsync_mode, id);
 		}
 #endif
 
@@ -4692,7 +4840,47 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 	return id;
 }
 
-DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, Error &r_error) {
+DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error) {
+#ifdef DEBUG_ENABLED
+	int dylibloader_verbose = 1;
+#else
+	int dylibloader_verbose = 0;
+#endif
+	if (initialize_xlib(dylibloader_verbose) != 0) {
+		r_error = ERR_UNAVAILABLE;
+		ERR_FAIL_MSG("Can't load Xlib dynamically.");
+	}
+
+	if (initialize_xcursor(dylibloader_verbose) != 0) {
+		r_error = ERR_UNAVAILABLE;
+		ERR_FAIL_MSG("Can't load XCursor dynamically.");
+	}
+
+	if (initialize_xext(dylibloader_verbose) != 0) {
+		r_error = ERR_UNAVAILABLE;
+		ERR_FAIL_MSG("Can't load Xext dynamically.");
+	}
+
+	if (initialize_xinerama(dylibloader_verbose) != 0) {
+		r_error = ERR_UNAVAILABLE;
+		ERR_FAIL_MSG("Can't load Xinerama dynamically.");
+	}
+
+	if (initialize_xrandr(dylibloader_verbose) != 0) {
+		r_error = ERR_UNAVAILABLE;
+		ERR_FAIL_MSG("Can't load Xrandr dynamically.");
+	}
+
+	if (initialize_xrender(dylibloader_verbose) != 0) {
+		r_error = ERR_UNAVAILABLE;
+		ERR_FAIL_MSG("Can't load Xrender dynamically.");
+	}
+
+	if (initialize_xinput2(dylibloader_verbose) != 0) {
+		r_error = ERR_UNAVAILABLE;
+		ERR_FAIL_MSG("Can't load Xinput2 dynamically.");
+	}
+
 	Input::get_singleton()->set_event_dispatch_function(_dispatch_input_events);
 
 	r_error = OK;
@@ -4893,7 +5081,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 
 		gl_manager = memnew(GLManager_X11(p_resolution, opengl_api_type));
 
-		if (gl_manager->initialize() != OK) {
+		if (gl_manager->initialize(x11_display) != OK) {
 			memdelete(gl_manager);
 			gl_manager = nullptr;
 			r_error = ERR_UNAVAILABLE;
@@ -4916,12 +5104,14 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 		ERR_FAIL_MSG("Video driver not found");
 	}
 
-	Point2i window_position(
-			(screen_get_size(0).width - p_resolution.width) / 2,
-			(screen_get_size(0).height - p_resolution.height) / 2);
-
+	Point2i window_position;
 	if (p_position != nullptr) {
 		window_position = *p_position;
+	} else {
+		if (p_screen == SCREEN_OF_MAIN_WINDOW) {
+			p_screen = SCREEN_PRIMARY;
+		}
+		window_position = screen_get_position(p_screen) + (screen_get_size(p_screen) - p_resolution) / 2;
 	}
 
 	WindowID main_window = _create_window(p_mode, p_vsync_mode, p_flags, Rect2i(window_position, p_resolution));
@@ -4935,8 +5125,6 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 		}
 	}
 	show_window(main_window);
-	XSync(x11_display, False);
-	_validate_mode_on_map(main_window);
 
 #if defined(VULKAN_ENABLED)
 	if (rendering_driver == "vulkan") {

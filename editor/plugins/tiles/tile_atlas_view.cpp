@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  tile_atlas_view.cpp                                                  */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  tile_atlas_view.cpp                                                   */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "tile_atlas_view.h"
 
@@ -53,14 +53,14 @@ void TileAtlasView::_scroll_callback(Vector2 p_scroll_vec, bool p_alt) {
 
 void TileAtlasView::_pan_callback(Vector2 p_scroll_vec) {
 	panning += p_scroll_vec;
-	emit_signal(SNAME("transform_changed"), zoom_widget->get_zoom(), panning);
 	_update_zoom_and_panning(true);
+	emit_signal(SNAME("transform_changed"), zoom_widget->get_zoom(), panning);
 }
 
 void TileAtlasView::_zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin, bool p_alt) {
 	zoom_widget->set_zoom_by_increments(-p_scroll_vec.y * 2);
-	emit_signal(SNAME("transform_changed"), zoom_widget->get_zoom(), panning);
 	_update_zoom_and_panning(true);
+	emit_signal(SNAME("transform_changed"), zoom_widget->get_zoom(), panning);
 }
 
 Size2i TileAtlasView::_compute_base_tiles_control_size() {
@@ -192,6 +192,19 @@ void TileAtlasView::_draw_base_tiles() {
 					rect = rect.intersection(Rect2i(Vector2(), texture->get_size()));
 					if (rect.size.x > 0 && rect.size.y > 0) {
 						base_tiles_draw->draw_texture_rect_region(texture, rect, rect);
+					}
+				}
+			}
+		}
+
+		// Draw dark overlay after for performance reasons.
+		for (int x = 0; x < grid_size.x; x++) {
+			for (int y = 0; y < grid_size.y; y++) {
+				Vector2i coords = Vector2i(x, y);
+				if (tile_set_atlas_source->get_tile_at_coords(coords) == TileSetSource::INVALID_ATLAS_COORDS) {
+					Rect2i rect = Rect2i((texture_region_size + separation) * coords + margins, texture_region_size + separation);
+					rect = rect.intersection(Rect2i(Vector2(), texture->get_size()));
+					if (rect.size.x > 0 && rect.size.y > 0) {
 						base_tiles_draw->draw_rect(rect, Color(0.0, 0.0, 0.0, 0.5));
 					}
 				}
@@ -242,23 +255,34 @@ void TileAtlasView::_draw_base_tiles() {
 
 				// Draw the tile.
 				TileMap::draw_tile(base_tiles_draw->get_canvas_item(), offset_pos, tile_set, source_id, atlas_coords, 0, frame);
+			}
+		}
 
-				// Draw, the texture in the separation areas
-				if (separation.x > 0) {
-					Rect2i right_sep_rect = Rect2i(base_frame_rect.get_position() + Vector2i(base_frame_rect.size.x, 0), Vector2i(separation.x, base_frame_rect.size.y));
-					right_sep_rect = right_sep_rect.intersection(Rect2i(Vector2(), texture->get_size()));
-					if (right_sep_rect.size.x > 0 && right_sep_rect.size.y > 0) {
-						base_tiles_draw->draw_texture_rect_region(texture, right_sep_rect, right_sep_rect);
-						base_tiles_draw->draw_rect(right_sep_rect, Color(0.0, 0.0, 0.0, 0.5));
+		// Draw Dark overlay on separation in its own pass.
+		if (separation.x > 0 || separation.y > 0) {
+			for (int i = 0; i < tile_set_atlas_source->get_tiles_count(); i++) {
+				Vector2i atlas_coords = tile_set_atlas_source->get_tile_id(i);
+
+				for (int frame = 0; frame < tile_set_atlas_source->get_tile_animation_frames_count(atlas_coords); frame++) {
+					// Update the y to max value.
+					Rect2i base_frame_rect = tile_set_atlas_source->get_tile_texture_region(atlas_coords, frame);
+
+					if (separation.x > 0) {
+						Rect2i right_sep_rect = Rect2i(base_frame_rect.get_position() + Vector2i(base_frame_rect.size.x, 0), Vector2i(separation.x, base_frame_rect.size.y));
+						right_sep_rect = right_sep_rect.intersection(Rect2i(Vector2(), texture->get_size()));
+						if (right_sep_rect.size.x > 0 && right_sep_rect.size.y > 0) {
+							//base_tiles_draw->draw_texture_rect_region(texture, right_sep_rect, right_sep_rect);
+							base_tiles_draw->draw_rect(right_sep_rect, Color(0.0, 0.0, 0.0, 0.5));
+						}
 					}
-				}
 
-				if (separation.y > 0) {
-					Rect2i bottom_sep_rect = Rect2i(base_frame_rect.get_position() + Vector2i(0, base_frame_rect.size.y), Vector2i(base_frame_rect.size.x + separation.x, separation.y));
-					bottom_sep_rect = bottom_sep_rect.intersection(Rect2i(Vector2(), texture->get_size()));
-					if (bottom_sep_rect.size.x > 0 && bottom_sep_rect.size.y > 0) {
-						base_tiles_draw->draw_texture_rect_region(texture, bottom_sep_rect, bottom_sep_rect);
-						base_tiles_draw->draw_rect(bottom_sep_rect, Color(0.0, 0.0, 0.0, 0.5));
+					if (separation.y > 0) {
+						Rect2i bottom_sep_rect = Rect2i(base_frame_rect.get_position() + Vector2i(0, base_frame_rect.size.y), Vector2i(base_frame_rect.size.x + separation.x, separation.y));
+						bottom_sep_rect = bottom_sep_rect.intersection(Rect2i(Vector2(), texture->get_size()));
+						if (bottom_sep_rect.size.x > 0 && bottom_sep_rect.size.y > 0) {
+							//base_tiles_draw->draw_texture_rect_region(texture, bottom_sep_rect, bottom_sep_rect);
+							base_tiles_draw->draw_rect(bottom_sep_rect, Color(0.0, 0.0, 0.0, 0.5));
+						}
 					}
 				}
 			}

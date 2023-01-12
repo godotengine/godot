@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  godot_navigation_server.cpp                                          */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  godot_navigation_server.cpp                                           */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "godot_navigation_server.h"
 
@@ -35,6 +35,8 @@
 #ifndef _3D_DISABLED
 #include "navigation_mesh_generator.h"
 #endif
+
+using namespace NavigationUtilities;
 
 /// Creates a struct for each function and a function that once called creates
 /// an instance of that struct with the submitted parameters.
@@ -50,7 +52,7 @@
 			server->MERGE(_cmd_, F_NAME)(d_0);                      \
 		}                                                           \
 	};                                                              \
-	void GodotNavigationServer::F_NAME(T_0 D_0) const {             \
+	void GodotNavigationServer::F_NAME(T_0 D_0) {                   \
 		auto cmd = memnew(MERGE(F_NAME, _command)(                  \
 				D_0));                                              \
 		add_command(cmd);                                           \
@@ -71,7 +73,7 @@
 			server->MERGE(_cmd_, F_NAME)(d_0, d_1);                 \
 		}                                                           \
 	};                                                              \
-	void GodotNavigationServer::F_NAME(T_0 D_0, T_1 D_1) const {    \
+	void GodotNavigationServer::F_NAME(T_0 D_0, T_1 D_1) {          \
 		auto cmd = memnew(MERGE(F_NAME, _command)(                  \
 				D_0,                                                \
 				D_1));                                              \
@@ -79,34 +81,34 @@
 	}                                                               \
 	void GodotNavigationServer::MERGE(_cmd_, F_NAME)(T_0 D_0, T_1 D_1)
 
-#define COMMAND_4(F_NAME, T_0, D_0, T_1, D_1, T_2, D_2, T_3, D_3)                  \
-	struct MERGE(F_NAME, _command) : public SetCommand {                           \
-		T_0 d_0;                                                                   \
-		T_1 d_1;                                                                   \
-		T_2 d_2;                                                                   \
-		T_3 d_3;                                                                   \
-		MERGE(F_NAME, _command)                                                    \
-		(                                                                          \
-				T_0 p_d_0,                                                         \
-				T_1 p_d_1,                                                         \
-				T_2 p_d_2,                                                         \
-				T_3 p_d_3) :                                                       \
-				d_0(p_d_0),                                                        \
-				d_1(p_d_1),                                                        \
-				d_2(p_d_2),                                                        \
-				d_3(p_d_3) {}                                                      \
-		virtual void exec(GodotNavigationServer *server) override {                \
-			server->MERGE(_cmd_, F_NAME)(d_0, d_1, d_2, d_3);                      \
-		}                                                                          \
-	};                                                                             \
-	void GodotNavigationServer::F_NAME(T_0 D_0, T_1 D_1, T_2 D_2, T_3 D_3) const { \
-		auto cmd = memnew(MERGE(F_NAME, _command)(                                 \
-				D_0,                                                               \
-				D_1,                                                               \
-				D_2,                                                               \
-				D_3));                                                             \
-		add_command(cmd);                                                          \
-	}                                                                              \
+#define COMMAND_4(F_NAME, T_0, D_0, T_1, D_1, T_2, D_2, T_3, D_3)            \
+	struct MERGE(F_NAME, _command) : public SetCommand {                     \
+		T_0 d_0;                                                             \
+		T_1 d_1;                                                             \
+		T_2 d_2;                                                             \
+		T_3 d_3;                                                             \
+		MERGE(F_NAME, _command)                                              \
+		(                                                                    \
+				T_0 p_d_0,                                                   \
+				T_1 p_d_1,                                                   \
+				T_2 p_d_2,                                                   \
+				T_3 p_d_3) :                                                 \
+				d_0(p_d_0),                                                  \
+				d_1(p_d_1),                                                  \
+				d_2(p_d_2),                                                  \
+				d_3(p_d_3) {}                                                \
+		virtual void exec(GodotNavigationServer *server) override {          \
+			server->MERGE(_cmd_, F_NAME)(d_0, d_1, d_2, d_3);                \
+		}                                                                    \
+	};                                                                       \
+	void GodotNavigationServer::F_NAME(T_0 D_0, T_1 D_1, T_2 D_2, T_3 D_3) { \
+		auto cmd = memnew(MERGE(F_NAME, _command)(                           \
+				D_0,                                                         \
+				D_1,                                                         \
+				D_2,                                                         \
+				D_3));                                                       \
+		add_command(cmd);                                                    \
+	}                                                                        \
 	void GodotNavigationServer::MERGE(_cmd_, F_NAME)(T_0 D_0, T_1 D_1, T_2 D_2, T_3 D_3)
 
 GodotNavigationServer::GodotNavigationServer() {}
@@ -115,12 +117,10 @@ GodotNavigationServer::~GodotNavigationServer() {
 	flush_queries();
 }
 
-void GodotNavigationServer::add_command(SetCommand *command) const {
-	GodotNavigationServer *mut_this = const_cast<GodotNavigationServer *>(this);
-	{
-		MutexLock lock(commands_mutex);
-		mut_this->commands.push_back(command);
-	}
+void GodotNavigationServer::add_command(SetCommand *command) {
+	MutexLock lock(commands_mutex);
+
+	commands.push_back(command);
 }
 
 TypedArray<RID> GodotNavigationServer::get_maps() const {
@@ -135,12 +135,12 @@ TypedArray<RID> GodotNavigationServer::get_maps() const {
 	return all_map_rids;
 }
 
-RID GodotNavigationServer::map_create() const {
-	GodotNavigationServer *mut_this = const_cast<GodotNavigationServer *>(this);
-	MutexLock lock(mut_this->operations_mutex);
+RID GodotNavigationServer::map_create() {
+	MutexLock lock(operations_mutex);
+
 	RID rid = map_owner.make_rid();
-	NavMap *space = map_owner.get_or_null(rid);
-	space->set_self(rid);
+	NavMap *map = map_owner.get_or_null(rid);
+	map->set_self(rid);
 	return rid;
 }
 
@@ -228,7 +228,7 @@ Vector<Vector3> GodotNavigationServer::map_get_path(RID p_map, Vector3 p_origin,
 	const NavMap *map = map_owner.get_or_null(p_map);
 	ERR_FAIL_COND_V(map == nullptr, Vector<Vector3>());
 
-	return map->get_path(p_origin, p_destination, p_optimize, p_navigation_layers);
+	return map->get_path(p_origin, p_destination, p_optimize, p_navigation_layers, nullptr, nullptr, nullptr);
 }
 
 Vector3 GodotNavigationServer::map_get_closest_point_to_segment(RID p_map, const Vector3 &p_from, const Vector3 &p_to, const bool p_use_collision) const {
@@ -277,8 +277,10 @@ TypedArray<RID> GodotNavigationServer::map_get_regions(RID p_map) const {
 	TypedArray<RID> regions_rids;
 	const NavMap *map = map_owner.get_or_null(p_map);
 	ERR_FAIL_COND_V(map == nullptr, regions_rids);
+
 	const LocalVector<NavRegion *> regions = map->get_regions();
 	regions_rids.resize(regions.size());
+
 	for (uint32_t i = 0; i < regions.size(); i++) {
 		regions_rids[i] = regions[i]->get_self();
 	}
@@ -289,8 +291,10 @@ TypedArray<RID> GodotNavigationServer::map_get_agents(RID p_map) const {
 	TypedArray<RID> agents_rids;
 	const NavMap *map = map_owner.get_or_null(p_map);
 	ERR_FAIL_COND_V(map == nullptr, agents_rids);
+
 	const LocalVector<RvoAgent *> agents = map->get_agents();
 	agents_rids.resize(agents.size());
+
 	for (uint32_t i = 0; i < agents.size(); i++) {
 		agents_rids[i] = agents[i]->get_self();
 	}
@@ -300,6 +304,7 @@ TypedArray<RID> GodotNavigationServer::map_get_agents(RID p_map) const {
 RID GodotNavigationServer::region_get_map(RID p_region) const {
 	NavRegion *region = region_owner.get_or_null(p_region);
 	ERR_FAIL_COND_V(region == nullptr, RID());
+
 	if (region->get_map()) {
 		return region->get_map()->get_self();
 	}
@@ -309,15 +314,16 @@ RID GodotNavigationServer::region_get_map(RID p_region) const {
 RID GodotNavigationServer::agent_get_map(RID p_agent) const {
 	RvoAgent *agent = agent_owner.get_or_null(p_agent);
 	ERR_FAIL_COND_V(agent == nullptr, RID());
+
 	if (agent->get_map()) {
 		return agent->get_map()->get_self();
 	}
 	return RID();
 }
 
-RID GodotNavigationServer::region_create() const {
-	GodotNavigationServer *mut_this = const_cast<GodotNavigationServer *>(this);
-	MutexLock lock(mut_this->operations_mutex);
+RID GodotNavigationServer::region_create() {
+	MutexLock lock(operations_mutex);
+
 	RID rid = region_owner.make_rid();
 	NavRegion *reg = region_owner.get_or_null(rid);
 	reg->set_self(rid);
@@ -383,9 +389,24 @@ real_t GodotNavigationServer::region_get_travel_cost(RID p_region) const {
 	return region->get_travel_cost();
 }
 
+COMMAND_2(region_set_owner_id, RID, p_region, ObjectID, p_owner_id) {
+	NavRegion *region = region_owner.get_or_null(p_region);
+	ERR_FAIL_COND(region == nullptr);
+
+	region->set_owner_id(p_owner_id);
+}
+
+ObjectID GodotNavigationServer::region_get_owner_id(RID p_region) const {
+	const NavRegion *region = region_owner.get_or_null(p_region);
+	ERR_FAIL_COND_V(region == nullptr, ObjectID());
+
+	return region->get_owner_id();
+}
+
 bool GodotNavigationServer::region_owns_point(RID p_region, const Vector3 &p_point) const {
 	const NavRegion *region = region_owner.get_or_null(p_region);
 	ERR_FAIL_COND_V(region == nullptr, false);
+
 	if (region->get_map()) {
 		RID closest_point_owner = map_get_closest_point_owner(region->get_map()->get_self(), p_point);
 		return closest_point_owner == region->get_self();
@@ -407,20 +428,20 @@ uint32_t GodotNavigationServer::region_get_navigation_layers(RID p_region) const
 	return region->get_navigation_layers();
 }
 
-COMMAND_2(region_set_navmesh, RID, p_region, Ref<NavigationMesh>, p_nav_mesh) {
+COMMAND_2(region_set_navigation_mesh, RID, p_region, Ref<NavigationMesh>, p_navigation_mesh) {
 	NavRegion *region = region_owner.get_or_null(p_region);
 	ERR_FAIL_COND(region == nullptr);
 
-	region->set_mesh(p_nav_mesh);
+	region->set_mesh(p_navigation_mesh);
 }
 
-void GodotNavigationServer::region_bake_navmesh(Ref<NavigationMesh> r_mesh, Node *p_node) const {
-	ERR_FAIL_COND(r_mesh.is_null());
-	ERR_FAIL_COND(p_node == nullptr);
+void GodotNavigationServer::region_bake_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh, Node *p_root_node) {
+	ERR_FAIL_COND(p_navigation_mesh.is_null());
+	ERR_FAIL_COND(p_root_node == nullptr);
 
 #ifndef _3D_DISABLED
-	NavigationMeshGenerator::get_singleton()->clear(r_mesh);
-	NavigationMeshGenerator::get_singleton()->bake(r_mesh, p_node);
+	NavigationMeshGenerator::get_singleton()->clear(p_navigation_mesh);
+	NavigationMeshGenerator::get_singleton()->bake(p_navigation_mesh, p_root_node);
 #endif
 }
 
@@ -445,9 +466,9 @@ Vector3 GodotNavigationServer::region_get_connection_pathway_end(RID p_region, i
 	return region->get_connection_pathway_end(p_connection_id);
 }
 
-RID GodotNavigationServer::link_create() const {
-	GodotNavigationServer *mut_this = const_cast<GodotNavigationServer *>(this);
-	MutexLock lock(mut_this->operations_mutex);
+RID GodotNavigationServer::link_create() {
+	MutexLock lock(operations_mutex);
+
 	RID rid = link_owner.make_rid();
 	NavLink *link = link_owner.get_or_null(rid);
 	link->set_self(rid);
@@ -570,9 +591,23 @@ real_t GodotNavigationServer::link_get_travel_cost(const RID p_link) const {
 	return link->get_travel_cost();
 }
 
-RID GodotNavigationServer::agent_create() const {
-	GodotNavigationServer *mut_this = const_cast<GodotNavigationServer *>(this);
-	MutexLock lock(mut_this->operations_mutex);
+COMMAND_2(link_set_owner_id, RID, p_link, ObjectID, p_owner_id) {
+	NavLink *link = link_owner.get_or_null(p_link);
+	ERR_FAIL_COND(link == nullptr);
+
+	link->set_owner_id(p_owner_id);
+}
+
+ObjectID GodotNavigationServer::link_get_owner_id(RID p_link) const {
+	const NavLink *link = link_owner.get_or_null(p_link);
+	ERR_FAIL_COND_V(link == nullptr, ObjectID());
+
+	return link->get_owner_id();
+}
+
+RID GodotNavigationServer::agent_create() {
+	MutexLock lock(operations_mutex);
+
 	RID rid = agent_owner.make_rid();
 	RvoAgent *agent = agent_owner.get_or_null(rid);
 	agent->set_self(rid);
@@ -676,14 +711,14 @@ bool GodotNavigationServer::agent_is_map_changed(RID p_agent) const {
 	return agent->is_map_changed();
 }
 
-COMMAND_4(agent_set_callback, RID, p_agent, Object *, p_receiver, StringName, p_method, Variant, p_udata) {
+COMMAND_4(agent_set_callback, RID, p_agent, ObjectID, p_object_id, StringName, p_method, Variant, p_udata) {
 	RvoAgent *agent = agent_owner.get_or_null(p_agent);
 	ERR_FAIL_COND(agent == nullptr);
 
-	agent->set_callback(p_receiver == nullptr ? ObjectID() : p_receiver->get_instance_id(), p_method, p_udata);
+	agent->set_callback(p_object_id, p_method, p_udata);
 
 	if (agent->get_map()) {
-		if (p_receiver == nullptr) {
+		if (p_object_id == ObjectID()) {
 			agent->get_map()->remove_agent_as_controlled(agent);
 		} else {
 			agent->get_map()->set_agent_as_controlled(agent);
@@ -759,10 +794,10 @@ COMMAND_1(free, RID, p_object) {
 	}
 }
 
-void GodotNavigationServer::set_active(bool p_active) const {
-	GodotNavigationServer *mut_this = const_cast<GodotNavigationServer *>(this);
-	MutexLock lock(mut_this->operations_mutex);
-	mut_this->active = p_active;
+void GodotNavigationServer::set_active(bool p_active) {
+	MutexLock lock(operations_mutex);
+
+	active = p_active;
 }
 
 void GodotNavigationServer::flush_queries() {
@@ -770,6 +805,7 @@ void GodotNavigationServer::flush_queries() {
 	// even with mutable functions.
 	MutexLock lock(commands_mutex);
 	MutexLock lock2(operations_mutex);
+
 	for (size_t i(0); i < commands.size(); i++) {
 		commands[i]->exec(this);
 		memdelete(commands[i]);
@@ -793,6 +829,15 @@ void GodotNavigationServer::process(real_t p_delta_time) {
 		return;
 	}
 
+	int _new_pm_region_count = 0;
+	int _new_pm_agent_count = 0;
+	int _new_pm_link_count = 0;
+	int _new_pm_polygon_count = 0;
+	int _new_pm_edge_count = 0;
+	int _new_pm_edge_merge_count = 0;
+	int _new_pm_edge_connection_count = 0;
+	int _new_pm_edge_free_count = 0;
+
 	// In c++ we can't be sure that this is performed in the main thread
 	// even with mutable functions.
 	MutexLock lock(operations_mutex);
@@ -801,6 +846,15 @@ void GodotNavigationServer::process(real_t p_delta_time) {
 		active_maps[i]->step(p_delta_time);
 		active_maps[i]->dispatch_callbacks();
 
+		_new_pm_region_count += active_maps[i]->get_pm_region_count();
+		_new_pm_agent_count += active_maps[i]->get_pm_agent_count();
+		_new_pm_link_count += active_maps[i]->get_pm_link_count();
+		_new_pm_polygon_count += active_maps[i]->get_pm_polygon_count();
+		_new_pm_edge_count += active_maps[i]->get_pm_edge_count();
+		_new_pm_edge_merge_count += active_maps[i]->get_pm_edge_merge_count();
+		_new_pm_edge_connection_count += active_maps[i]->get_pm_edge_connection_count();
+		_new_pm_edge_free_count += active_maps[i]->get_pm_edge_free_count();
+
 		// Emit a signal if a map changed.
 		const uint32_t new_map_update_id = active_maps[i]->get_map_update_id();
 		if (new_map_update_id != active_maps_update_id[i]) {
@@ -808,22 +862,45 @@ void GodotNavigationServer::process(real_t p_delta_time) {
 			active_maps_update_id[i] = new_map_update_id;
 		}
 	}
+
+	pm_region_count = _new_pm_region_count;
+	pm_agent_count = _new_pm_agent_count;
+	pm_link_count = _new_pm_link_count;
+	pm_polygon_count = _new_pm_polygon_count;
+	pm_edge_count = _new_pm_edge_count;
+	pm_edge_merge_count = _new_pm_edge_merge_count;
+	pm_edge_connection_count = _new_pm_edge_connection_count;
+	pm_edge_free_count = _new_pm_edge_free_count;
 }
 
-NavigationUtilities::PathQueryResult GodotNavigationServer::_query_path(const NavigationUtilities::PathQueryParameters &p_parameters) const {
-	NavigationUtilities::PathQueryResult r_query_result;
+PathQueryResult GodotNavigationServer::_query_path(const PathQueryParameters &p_parameters) const {
+	PathQueryResult r_query_result;
 
 	const NavMap *map = map_owner.get_or_null(p_parameters.map);
 	ERR_FAIL_COND_V(map == nullptr, r_query_result);
 
 	// run the pathfinding
 
-	if (p_parameters.pathfinding_algorithm == NavigationUtilities::PathfindingAlgorithm::PATHFINDING_ALGORITHM_ASTAR) {
+	if (p_parameters.pathfinding_algorithm == PathfindingAlgorithm::PATHFINDING_ALGORITHM_ASTAR) {
 		// while postprocessing is still part of map.get_path() need to check and route it here for the correct "optimize" post-processing
-		if (p_parameters.path_postprocessing == NavigationUtilities::PathPostProcessing::PATH_POSTPROCESSING_CORRIDORFUNNEL) {
-			r_query_result.path = map->get_path(p_parameters.start_position, p_parameters.target_position, true, p_parameters.navigation_layers);
-		} else if (p_parameters.path_postprocessing == NavigationUtilities::PathPostProcessing::PATH_POSTPROCESSING_EDGECENTERED) {
-			r_query_result.path = map->get_path(p_parameters.start_position, p_parameters.target_position, false, p_parameters.navigation_layers);
+		if (p_parameters.path_postprocessing == PathPostProcessing::PATH_POSTPROCESSING_CORRIDORFUNNEL) {
+			r_query_result.path = map->get_path(
+					p_parameters.start_position,
+					p_parameters.target_position,
+					true,
+					p_parameters.navigation_layers,
+					p_parameters.metadata_flags.has_flag(PathMetadataFlags::PATH_INCLUDE_TYPES) ? &r_query_result.path_types : nullptr,
+					p_parameters.metadata_flags.has_flag(PathMetadataFlags::PATH_INCLUDE_RIDS) ? &r_query_result.path_rids : nullptr,
+					p_parameters.metadata_flags.has_flag(PathMetadataFlags::PATH_INCLUDE_OWNERS) ? &r_query_result.path_owner_ids : nullptr);
+		} else if (p_parameters.path_postprocessing == PathPostProcessing::PATH_POSTPROCESSING_EDGECENTERED) {
+			r_query_result.path = map->get_path(
+					p_parameters.start_position,
+					p_parameters.target_position,
+					false,
+					p_parameters.navigation_layers,
+					p_parameters.metadata_flags.has_flag(PathMetadataFlags::PATH_INCLUDE_TYPES) ? &r_query_result.path_types : nullptr,
+					p_parameters.metadata_flags.has_flag(PathMetadataFlags::PATH_INCLUDE_RIDS) ? &r_query_result.path_rids : nullptr,
+					p_parameters.metadata_flags.has_flag(PathMetadataFlags::PATH_INCLUDE_OWNERS) ? &r_query_result.path_owner_ids : nullptr);
 		}
 	} else {
 		return r_query_result;
@@ -834,6 +911,40 @@ NavigationUtilities::PathQueryResult GodotNavigationServer::_query_path(const Na
 	// add path stats
 
 	return r_query_result;
+}
+
+int GodotNavigationServer::get_process_info(ProcessInfo p_info) const {
+	switch (p_info) {
+		case INFO_ACTIVE_MAPS: {
+			return active_maps.size();
+		} break;
+		case INFO_REGION_COUNT: {
+			return pm_region_count;
+		} break;
+		case INFO_AGENT_COUNT: {
+			return pm_agent_count;
+		} break;
+		case INFO_LINK_COUNT: {
+			return pm_link_count;
+		} break;
+		case INFO_POLYGON_COUNT: {
+			return pm_polygon_count;
+		} break;
+		case INFO_EDGE_COUNT: {
+			return pm_edge_count;
+		} break;
+		case INFO_EDGE_MERGE_COUNT: {
+			return pm_edge_merge_count;
+		} break;
+		case INFO_EDGE_CONNECTION_COUNT: {
+			return pm_edge_connection_count;
+		} break;
+		case INFO_EDGE_FREE_COUNT: {
+			return pm_edge_free_count;
+		} break;
+	}
+
+	return 0;
 }
 
 #undef COMMAND_1

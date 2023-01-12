@@ -1,32 +1,32 @@
-/*************************************************************************/
-/*  animation_node_state_machine.cpp                                     */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
+/**************************************************************************/
+/*  animation_node_state_machine.cpp                                      */
+/**************************************************************************/
+/*                         This file is part of:                          */
+/*                             GODOT ENGINE                               */
+/*                        https://godotengine.org                         */
+/**************************************************************************/
+/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
+/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
+/*                                                                        */
+/* Permission is hereby granted, free of charge, to any person obtaining  */
+/* a copy of this software and associated documentation files (the        */
+/* "Software"), to deal in the Software without restriction, including    */
+/* without limitation the rights to use, copy, modify, merge, publish,    */
+/* distribute, sublicense, and/or sell copies of the Software, and to     */
+/* permit persons to whom the Software is furnished to do so, subject to  */
+/* the following conditions:                                              */
+/*                                                                        */
+/* The above copyright notice and this permission notice shall be         */
+/* included in all copies or substantial portions of the Software.        */
+/*                                                                        */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
+/**************************************************************************/
 
 #include "animation_node_state_machine.h"
 #include "scene/main/window.h"
@@ -41,12 +41,12 @@ AnimationNodeStateMachineTransition::SwitchMode AnimationNodeStateMachineTransit
 	return switch_mode;
 }
 
-void AnimationNodeStateMachineTransition::set_auto_advance(bool p_enable) {
-	auto_advance = p_enable;
+void AnimationNodeStateMachineTransition::set_advance_mode(AdvanceMode p_mode) {
+	advance_mode = p_mode;
 }
 
-bool AnimationNodeStateMachineTransition::has_auto_advance() const {
-	return auto_advance;
+AnimationNodeStateMachineTransition::AdvanceMode AnimationNodeStateMachineTransition::get_advance_mode() const {
+	return advance_mode;
 }
 
 void AnimationNodeStateMachineTransition::set_advance_condition(const StringName &p_condition) {
@@ -107,15 +107,6 @@ Ref<Curve> AnimationNodeStateMachineTransition::get_xfade_curve() const {
 	return xfade_curve;
 }
 
-void AnimationNodeStateMachineTransition::set_disabled(bool p_disabled) {
-	disabled = p_disabled;
-	emit_changed();
-}
-
-bool AnimationNodeStateMachineTransition::is_disabled() const {
-	return disabled;
-}
-
 void AnimationNodeStateMachineTransition::set_priority(int p_priority) {
 	priority = p_priority;
 	emit_changed();
@@ -129,8 +120,8 @@ void AnimationNodeStateMachineTransition::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_switch_mode", "mode"), &AnimationNodeStateMachineTransition::set_switch_mode);
 	ClassDB::bind_method(D_METHOD("get_switch_mode"), &AnimationNodeStateMachineTransition::get_switch_mode);
 
-	ClassDB::bind_method(D_METHOD("set_auto_advance", "auto_advance"), &AnimationNodeStateMachineTransition::set_auto_advance);
-	ClassDB::bind_method(D_METHOD("has_auto_advance"), &AnimationNodeStateMachineTransition::has_auto_advance);
+	ClassDB::bind_method(D_METHOD("set_advance_mode", "mode"), &AnimationNodeStateMachineTransition::set_advance_mode);
+	ClassDB::bind_method(D_METHOD("get_advance_mode"), &AnimationNodeStateMachineTransition::get_advance_mode);
 
 	ClassDB::bind_method(D_METHOD("set_advance_condition", "name"), &AnimationNodeStateMachineTransition::set_advance_condition);
 	ClassDB::bind_method(D_METHOD("get_advance_condition"), &AnimationNodeStateMachineTransition::get_advance_condition);
@@ -140,9 +131,6 @@ void AnimationNodeStateMachineTransition::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_xfade_curve", "curve"), &AnimationNodeStateMachineTransition::set_xfade_curve);
 	ClassDB::bind_method(D_METHOD("get_xfade_curve"), &AnimationNodeStateMachineTransition::get_xfade_curve);
-
-	ClassDB::bind_method(D_METHOD("set_disabled", "disabled"), &AnimationNodeStateMachineTransition::set_disabled);
-	ClassDB::bind_method(D_METHOD("is_disabled"), &AnimationNodeStateMachineTransition::is_disabled);
 
 	ClassDB::bind_method(D_METHOD("set_priority", "priority"), &AnimationNodeStateMachineTransition::set_priority);
 	ClassDB::bind_method(D_METHOD("get_priority"), &AnimationNodeStateMachineTransition::get_priority);
@@ -155,16 +143,18 @@ void AnimationNodeStateMachineTransition::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "priority", PROPERTY_HINT_RANGE, "0,32,1"), "set_priority", "get_priority");
 	ADD_GROUP("Switch", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "switch_mode", PROPERTY_HINT_ENUM, "Immediate,Sync,At End"), "set_switch_mode", "get_switch_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_advance"), "set_auto_advance", "has_auto_advance");
 	ADD_GROUP("Advance", "advance_");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "advance_mode", PROPERTY_HINT_ENUM, "Disabled,Enabled,Auto"), "set_advance_mode", "get_advance_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "advance_condition"), "set_advance_condition", "get_advance_condition");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "advance_expression", PROPERTY_HINT_EXPRESSION, ""), "set_advance_expression", "get_advance_expression");
-	ADD_GROUP("Disabling", "");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disabled"), "set_disabled", "is_disabled");
 
 	BIND_ENUM_CONSTANT(SWITCH_MODE_IMMEDIATE);
 	BIND_ENUM_CONSTANT(SWITCH_MODE_SYNC);
 	BIND_ENUM_CONSTANT(SWITCH_MODE_AT_END);
+
+	BIND_ENUM_CONSTANT(ADVANCE_MODE_DISABLED);
+	BIND_ENUM_CONSTANT(ADVANCE_MODE_ENABLED);
+	BIND_ENUM_CONSTANT(ADVANCE_MODE_AUTO);
 
 	ADD_SIGNAL(MethodInfo("advance_condition_changed"));
 }
@@ -234,7 +224,7 @@ bool AnimationNodeStateMachinePlayback::_travel(AnimationNodeStateMachine *p_sta
 
 	//build open list
 	for (int i = 0; i < p_state_machine->transitions.size(); i++) {
-		if (p_state_machine->transitions[i].transition->is_disabled()) {
+		if (p_state_machine->transitions[i].transition->get_advance_mode() == AnimationNodeStateMachineTransition::ADVANCE_MODE_DISABLED) {
 			continue;
 		}
 
@@ -279,7 +269,7 @@ bool AnimationNodeStateMachinePlayback::_travel(AnimationNodeStateMachine *p_sta
 		StringName transition = p_state_machine->transitions[least_cost_transition->get()].local_to;
 
 		for (int i = 0; i < p_state_machine->transitions.size(); i++) {
-			if (p_state_machine->transitions[i].transition->is_disabled()) {
+			if (p_state_machine->transitions[i].transition->get_advance_mode() == AnimationNodeStateMachineTransition::ADVANCE_MODE_DISABLED) {
 				continue;
 			}
 
@@ -332,11 +322,11 @@ bool AnimationNodeStateMachinePlayback::_travel(AnimationNodeStateMachine *p_sta
 	return true;
 }
 
-double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_state_machine, double p_time, bool p_seek, bool p_seek_root) {
+double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_state_machine, double p_time, bool p_seek, bool p_is_external_seeking) {
 	if (p_time == -1) {
 		Ref<AnimationNodeStateMachine> anodesm = p_state_machine->states[current].node;
 		if (anodesm.is_valid()) {
-			p_state_machine->blend_node(current, p_state_machine->states[current].node, -1, p_seek, p_seek_root, 0, AnimationNode::FILTER_IGNORE, true);
+			p_state_machine->blend_node(current, p_state_machine->states[current].node, -1, p_seek, p_is_external_seeking, 0, AnimationNode::FILTER_IGNORE, true);
 		}
 		playing = false;
 		return 0;
@@ -379,6 +369,7 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 					// can't travel, then teleport
 					path.clear();
 					current = start_request;
+					play_start = true;
 				}
 				start_request = StringName(); //clear start request
 			}
@@ -405,7 +396,7 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 			current = p_state_machine->start_node;
 		}
 
-		len_current = p_state_machine->blend_node(current, p_state_machine->states[current].node, 0, true, p_seek_root, 1.0, AnimationNode::FILTER_IGNORE, true);
+		len_current = p_state_machine->blend_node(current, p_state_machine->states[current].node, 0, true, p_is_external_seeking, 1.0, AnimationNode::FILTER_IGNORE, true);
 		pos_current = 0;
 	}
 
@@ -424,19 +415,20 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 				fading_pos += p_time;
 			}
 			fade_blend = MIN(1.0, fading_pos / fading_time);
-			if (fade_blend >= 1.0) {
-				fading_from = StringName();
-			}
 		}
 	}
 
 	if (current_curve.is_valid()) {
 		fade_blend = current_curve->sample(fade_blend);
 	}
-	float rem = p_state_machine->blend_node(current, p_state_machine->states[current].node, p_time, p_seek, p_seek_root, fade_blend, AnimationNode::FILTER_IGNORE, true);
+	double rem = p_state_machine->blend_node(current, p_state_machine->states[current].node, p_time, p_seek, p_is_external_seeking, Math::is_zero_approx(fade_blend) ? CMP_EPSILON : fade_blend, AnimationNode::FILTER_IGNORE, true); // Blend values must be more than CMP_EPSILON to process discrete keys in edge.
 
 	if (fading_from != StringName()) {
-		p_state_machine->blend_node(fading_from, p_state_machine->states[fading_from].node, p_time, p_seek, p_seek_root, 1.0 - fade_blend, AnimationNode::FILTER_IGNORE, true);
+		double fade_blend_inv = 1.0 - fade_blend;
+		p_state_machine->blend_node(fading_from, p_state_machine->states[fading_from].node, p_time, p_seek, p_is_external_seeking, Math::is_zero_approx(fade_blend_inv) ? CMP_EPSILON : fade_blend_inv, AnimationNode::FILTER_IGNORE, true); // Blend values must be more than CMP_EPSILON to process discrete keys in edge.
+		if (fade_blend >= 1.0) {
+			fading_from = StringName();
+		}
 	}
 
 	//guess playback position
@@ -445,19 +437,19 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 	}
 
 	{ //advance and loop check
-		float next_pos = len_current - rem;
+		double next_pos = len_current - rem;
 		end_loop = next_pos < pos_current;
 		pos_current = next_pos; //looped
 	}
 
 	//find next
 	StringName next;
-	float next_xfade = 0.0;
+	double next_xfade = 0.0;
 	AnimationNodeStateMachineTransition::SwitchMode switch_mode = AnimationNodeStateMachineTransition::SWITCH_MODE_IMMEDIATE;
 
 	if (path.size()) {
 		for (int i = 0; i < p_state_machine->transitions.size(); i++) {
-			if (p_state_machine->transitions[i].transition->is_disabled()) {
+			if (p_state_machine->transitions[i].transition->get_advance_mode() == AnimationNodeStateMachineTransition::ADVANCE_MODE_DISABLED) {
 				continue;
 			}
 
@@ -473,7 +465,7 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 		int auto_advance_to = -1;
 
 		for (int i = 0; i < p_state_machine->transitions.size(); i++) {
-			if (p_state_machine->transitions[i].transition->is_disabled()) {
+			if (p_state_machine->transitions[i].transition->get_advance_mode() == AnimationNodeStateMachineTransition::ADVANCE_MODE_DISABLED) {
 				continue;
 			}
 
@@ -541,7 +533,7 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 				int auto_advance_to = -1;
 
 				for (int i = 0; i < prev_state_machine->transitions.size(); i++) {
-					if (prev_state_machine->transitions[i].transition->is_disabled()) {
+					if (prev_state_machine->transitions[i].transition->get_advance_mode() == AnimationNodeStateMachineTransition::ADVANCE_MODE_DISABLED) {
 						continue;
 					}
 
@@ -593,19 +585,17 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 			{ // if the current node is a state machine, update the "playing" variable to false by passing -1 in p_time
 				Ref<AnimationNodeStateMachine> anodesm = p_state_machine->states[current].node;
 				if (anodesm.is_valid()) {
-					p_state_machine->blend_node(current, p_state_machine->states[current].node, -1, p_seek, p_seek_root, 0, AnimationNode::FILTER_IGNORE, true);
+					p_state_machine->blend_node(current, p_state_machine->states[current].node, -1, p_seek, p_is_external_seeking, 0, AnimationNode::FILTER_IGNORE, true);
 				}
 			}
 
 			current = next;
 
+			len_current = p_state_machine->blend_node(current, p_state_machine->states[current].node, 0, true, p_is_external_seeking, CMP_EPSILON, AnimationNode::FILTER_IGNORE, true); // Process next node's first key in here.
 			if (switch_mode == AnimationNodeStateMachineTransition::SWITCH_MODE_SYNC) {
-				len_current = p_state_machine->blend_node(current, p_state_machine->states[current].node, 0, true, p_seek_root, 0, AnimationNode::FILTER_IGNORE, true);
 				pos_current = MIN(pos_current, len_current);
-				p_state_machine->blend_node(current, p_state_machine->states[current].node, pos_current, true, p_seek_root, 0, AnimationNode::FILTER_IGNORE, true);
-
+				p_state_machine->blend_node(current, p_state_machine->states[current].node, pos_current, true, p_is_external_seeking, 0, AnimationNode::FILTER_IGNORE, true);
 			} else {
-				len_current = p_state_machine->blend_node(current, p_state_machine->states[current].node, 0, true, p_seek_root, 0, AnimationNode::FILTER_IGNORE, true);
 				pos_current = 0;
 			}
 
@@ -630,14 +620,14 @@ double AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_s
 }
 
 bool AnimationNodeStateMachinePlayback::_check_advance_condition(const Ref<AnimationNodeStateMachine> state_machine, const Ref<AnimationNodeStateMachineTransition> transition) const {
-	if (transition->has_auto_advance()) {
-		return true;
+	if (transition->get_advance_mode() != AnimationNodeStateMachineTransition::ADVANCE_MODE_AUTO) {
+		return false;
 	}
 
 	StringName advance_condition_name = transition->get_advance_condition_name();
 
-	if (advance_condition_name != StringName() && bool(state_machine->get_parameter(advance_condition_name))) {
-		return true;
+	if (advance_condition_name != StringName() && !bool(state_machine->get_parameter(advance_condition_name))) {
+		return false;
 	}
 
 	if (transition->expression.is_valid()) {
@@ -647,20 +637,18 @@ bool AnimationNodeStateMachinePlayback::_check_advance_condition(const Ref<Anima
 		NodePath advance_expression_base_node_path = tree_base->get_advance_expression_base_node();
 		Node *expression_base = tree_base->get_node_or_null(advance_expression_base_node_path);
 
-		WARN_PRINT_ONCE("Animation transition has a valid expression, but no expression base node was set on its AnimationTree.");
-
 		if (expression_base) {
 			Ref<Expression> exp = transition->expression;
 			bool ret = exp->execute(Array(), expression_base, false, Engine::get_singleton()->is_editor_hint()); // Avoids allowing the user to crash the system with an expression by only allowing const calls.
-			if (!exp->has_execute_failed()) {
-				if (ret) {
-					return true;
-				}
+			if (exp->has_execute_failed() || !ret) {
+				return false;
 			}
+		} else {
+			WARN_PRINT_ONCE("Animation transition has a valid expression, but no expression base node was set on its AnimationTree.");
 		}
 	}
 
-	return false;
+	return true;
 }
 
 void AnimationNodeStateMachinePlayback::_bind_methods() {
@@ -836,7 +824,8 @@ void AnimationNodeStateMachine::rename_node(const StringName &p_name, const Stri
 
 	_rename_transitions(p_name, p_new_name);
 
-	emit_signal("tree_changed");
+	emit_changed();
+	emit_signal(SNAME("tree_changed"));
 }
 
 void AnimationNodeStateMachine::_rename_transitions(const StringName &p_name, const StringName &p_new_name) {
@@ -879,9 +868,8 @@ void AnimationNodeStateMachine::_rename_transitions(const StringName &p_name, co
 
 			transitions.write[i].to = p_new_name;
 		}
-
-		updating_transitions = false;
 	}
+	updating_transitions = false;
 }
 
 void AnimationNodeStateMachine::get_node_list(List<StringName> *r_nodes) const {
@@ -1133,11 +1121,11 @@ Vector2 AnimationNodeStateMachine::get_graph_offset() const {
 	return graph_offset;
 }
 
-double AnimationNodeStateMachine::process(double p_time, bool p_seek, bool p_seek_root) {
+double AnimationNodeStateMachine::process(double p_time, bool p_seek, bool p_is_external_seeking) {
 	Ref<AnimationNodeStateMachinePlayback> playback_new = get_parameter(playback);
 	ERR_FAIL_COND_V(playback_new.is_null(), 0.0);
 
-	return playback_new->process(this, p_time, p_seek, p_seek_root);
+	return playback_new->process(this, p_time, p_seek, p_is_external_seeking);
 }
 
 String AnimationNodeStateMachine::get_caption() const {
@@ -1293,6 +1281,7 @@ Vector2 AnimationNodeStateMachine::get_node_position(const StringName &p_name) c
 }
 
 void AnimationNodeStateMachine::_tree_changed() {
+	emit_changed();
 	emit_signal(SNAME("tree_changed"));
 }
 
