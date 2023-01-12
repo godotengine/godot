@@ -4370,8 +4370,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 			show_rulers = !show_rulers;
 			int idx = view_menu->get_popup()->get_item_index(SHOW_RULERS);
 			view_menu->get_popup()->set_item_checked(idx, show_rulers);
-			_update_scrollbars();
-			viewport->queue_redraw();
+			update_viewport();
 		} break;
 		case SHOW_GUIDES: {
 			show_guides = !show_guides;
@@ -4683,25 +4682,18 @@ void CanvasItemEditor::_focus_selection(int p_op) {
 		} else {
 			rect = rect.merge(canvas_item_rect);
 		}
-	};
+	}
 
-	if (p_op == VIEW_CENTER_TO_SELECTION) {
-		center = rect.get_center();
-		Vector2 offset = viewport->get_size() / 2 - EditorNode::get_singleton()->get_scene_root()->get_global_canvas_transform().xform(center);
-		view_offset -= (offset / zoom).round();
-		update_viewport();
-
-	} else { // VIEW_FRAME_TO_SELECTION
-
-		if (rect.size.x > CMP_EPSILON && rect.size.y > CMP_EPSILON) {
-			real_t scale_x = viewport->get_size().x / rect.size.x;
-			real_t scale_y = viewport->get_size().y / rect.size.y;
-			zoom = scale_x < scale_y ? scale_x : scale_y;
-			zoom *= 0.90;
-			viewport->queue_redraw();
-			zoom_widget->set_zoom(zoom);
-			call_deferred(SNAME("_popup_callback"), VIEW_CENTER_TO_SELECTION);
-		}
+	if (p_op == VIEW_FRAME_TO_SELECTION && rect.size.x > CMP_EPSILON && rect.size.y > CMP_EPSILON) {
+		real_t scale_x = viewport->get_size().x / rect.size.x;
+		real_t scale_y = viewport->get_size().y / rect.size.y;
+		zoom = scale_x < scale_y ? scale_x : scale_y;
+		zoom *= 0.90;
+		zoom_widget->set_zoom(zoom);
+		viewport->queue_redraw(); // Redraw to update the global canvas transform after zoom changes.
+		call_deferred(SNAME("center_at"), rect.get_center()); // Defer because the updated transform is needed.
+	} else {
+		center_at(rect.get_center());
 	}
 }
 
@@ -4715,6 +4707,7 @@ void CanvasItemEditor::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_state"), &CanvasItemEditor::set_state);
 	ClassDB::bind_method(D_METHOD("update_viewport"), &CanvasItemEditor::update_viewport);
+	ClassDB::bind_method(D_METHOD("center_at", "position"), &CanvasItemEditor::center_at);
 
 	ClassDB::bind_method("_set_owner_for_node_and_children", &CanvasItemEditor::_set_owner_for_node_and_children);
 
@@ -4959,6 +4952,12 @@ VSplitContainer *CanvasItemEditor::get_bottom_split() {
 
 void CanvasItemEditor::focus_selection() {
 	_focus_selection(VIEW_CENTER_TO_SELECTION);
+}
+
+void CanvasItemEditor::center_at(const Point2 &p_pos) {
+	Vector2 offset = viewport->get_size() / 2 - EditorNode::get_singleton()->get_scene_root()->get_global_canvas_transform().xform(p_pos);
+	view_offset -= (offset / zoom).round();
+	update_viewport();
 }
 
 CanvasItemEditor::CanvasItemEditor() {
