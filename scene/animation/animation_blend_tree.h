@@ -96,6 +96,12 @@ class AnimationNodeOneShot : public AnimationNodeSync {
 	GDCLASS(AnimationNodeOneShot, AnimationNodeSync);
 
 public:
+	enum OneShotRequest {
+		ONE_SHOT_REQUEST_NONE,
+		ONE_SHOT_REQUEST_FIRE,
+		ONE_SHOT_REQUEST_ABORT,
+	};
+
 	enum MixMode {
 		MIX_MODE_BLEND,
 		MIX_MODE_ADD
@@ -110,13 +116,8 @@ private:
 	double autorestart_random_delay = 0.0;
 	MixMode mix = MIX_MODE_BLEND;
 
-	/*	bool active;
-	bool do_start;
-	double time;
-	double remaining;*/
-
+	StringName request = PNAME("request");
 	StringName active = PNAME("active");
-	StringName prev_active = "prev_active";
 	StringName time = "time";
 	StringName remaining = "remaining";
 	StringName time_to_restart = "time_to_restart";
@@ -127,6 +128,7 @@ protected:
 public:
 	virtual void get_parameter_list(List<PropertyInfo> *r_list) const override;
 	virtual Variant get_parameter_default_value(const StringName &p_parameter) const override;
+	virtual bool is_parameter_read_only(const StringName &p_parameter) const override;
 
 	virtual String get_caption() const override;
 
@@ -153,6 +155,7 @@ public:
 	AnimationNodeOneShot();
 };
 
+VARIANT_ENUM_CAST(AnimationNodeOneShot::OneShotRequest)
 VARIANT_ENUM_CAST(AnimationNodeOneShot::MixMode)
 
 class AnimationNodeAdd2 : public AnimationNodeSync {
@@ -284,18 +287,15 @@ class AnimationNodeTransition : public AnimationNodeSync {
 	InputData inputs[MAX_INPUTS];
 	int enabled_inputs = 0;
 
-	/*
-	double prev_xfading;
-	int prev;
-	double time;
-	int current;
-	int prev_current; */
-
-	StringName prev_xfading = "prev_xfading";
-	StringName prev = "prev";
 	StringName time = "time";
-	StringName current = PNAME("current");
-	StringName prev_current = "prev_current";
+	StringName prev_xfading = "prev_xfading";
+	StringName prev_index = "prev_index";
+	StringName current_index = PNAME("current_index");
+	StringName current_state = PNAME("current_state");
+	StringName transition_request = PNAME("transition_request");
+
+	StringName prev_frame_current = "pf_current";
+	StringName prev_frame_current_idx = "pf_current_idx";
 
 	double xfade_time = 0.0;
 	Ref<Curve> xfade_curve;
@@ -310,6 +310,7 @@ protected:
 public:
 	virtual void get_parameter_list(List<PropertyInfo> *r_list) const override;
 	virtual Variant get_parameter_default_value(const StringName &p_parameter) const override;
+	virtual bool is_parameter_read_only(const StringName &p_parameter) const override;
 
 	virtual String get_caption() const override;
 
@@ -321,6 +322,7 @@ public:
 
 	void set_input_caption(int p_input, const String &p_name);
 	String get_input_caption(int p_input) const;
+	int find_input_caption(const String &p_name) const;
 
 	void set_xfade_time(double p_fade);
 	double get_xfade_time() const;
