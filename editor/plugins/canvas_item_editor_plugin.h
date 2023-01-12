@@ -550,6 +550,7 @@ public:
 	void edit(CanvasItem *p_canvas_item);
 
 	void focus_selection();
+	void center_at(const Point2 &p_pos);
 
 	EditorSelection *editor_selection = nullptr;
 
