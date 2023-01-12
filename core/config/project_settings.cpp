@@ -1286,6 +1286,10 @@ ProjectSettings::ProjectSettings() {
 
 	GLOBAL_DEF(PropertyInfo(Variant::STRING, "editor/script/templates_search_path", PROPERTY_HINT_DIR), "res://script_templates");
 
+	// For correct doc generation.
+	GLOBAL_DEF("editor/naming/default_signal_callback_name", "_on_{node_name}_{signal_name}");
+	GLOBAL_DEF("editor/naming/default_signal_callback_to_self_name", "_on_{signal_name}");
+
 	_add_builtin_input_map();
 
 	// Keep the enum values in sync with the `DisplayServer::ScreenOrientation` enum.
