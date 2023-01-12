@@ -1722,21 +1722,52 @@ void GDScriptAnalyzer::resolve_for(GDScriptParser::ForNode *p_for) {
 	if (list_resolved) {
 		variable_type.type_source = GDScriptParser::DataType::ANNOTATED_INFERRED;
 		variable_type.kind = GDScriptParser::DataType::BUILTIN;
-		variable_type.builtin_type = Variant::INT; // Can this ever be a float or something else?
-		p_for->variable->set_datatype(variable_type);
+		variable_type.builtin_type = Variant::INT;
 	} else if (p_for->list) {
 		resolve_node(p_for->list, false);
-		if (p_for->list->datatype.has_container_element_type()) {
-			variable_type = p_for->list->datatype.get_container_element_type();
-			variable_type.type_source = GDScriptParser::DataType::ANNOTATED_INFERRED;
-		} else if (p_for->list->datatype.is_typed_container_type()) {
-			variable_type = p_for->list->datatype.get_typed_container_type();
-			variable_type.type_source = GDScriptParser::DataType::ANNOTATED_INFERRED;
-		} else {
-			// Last resort
-			// TODO: Must other cases be handled? Must we mark as unsafe?
-			variable_type.type_source = GDScriptParser::DataType::UNDETECTED;
+		GDScriptParser::DataType list_type = p_for->list->get_datatype();
+		if (!list_type.is_hard_type()) {
+			mark_node_unsafe(p_for->list);
+		}
+		if (list_type.is_variant()) {
 			variable_type.kind = GDScriptParser::DataType::VARIANT;
+			mark_node_unsafe(p_for->list);
+		} else if (list_type.has_container_element_type()) {
+			variable_type = list_type.get_container_element_type();
+			variable_type.type_source = list_type.type_source;
+		} else if (list_type.is_typed_container_type()) {
+			variable_type = list_type.get_typed_container_type();
+			variable_type.type_source = list_type.type_source;
+		} else if (list_type.builtin_type == Variant::INT || list_type.builtin_type == Variant::FLOAT || list_type.builtin_type == Variant::STRING) {
+			variable_type.type_source = list_type.type_source;
+			variable_type.kind = GDScriptParser::DataType::BUILTIN;
+			variable_type.builtin_type = list_type.builtin_type;
+		} else if (list_type.builtin_type == Variant::VECTOR2I || list_type.builtin_type == Variant::VECTOR3I) {
+			variable_type.type_source = list_type.type_source;
+			variable_type.kind = GDScriptParser::DataType::BUILTIN;
+			variable_type.builtin_type = Variant::INT;
+		} else if (list_type.builtin_type == Variant::VECTOR2 || list_type.builtin_type == Variant::VECTOR3) {
+			variable_type.type_source = list_type.type_source;
+			variable_type.kind = GDScriptParser::DataType::BUILTIN;
+			variable_type.builtin_type = Variant::FLOAT;
+		} else if (list_type.builtin_type == Variant::OBJECT) {
+			GDScriptParser::DataType return_type;
+			List<GDScriptParser::DataType> par_types;
+			int default_arg_count = 0;
+			bool is_static = false;
+			bool is_vararg = false;
+			if (get_function_signature(p_for->list, false, list_type, CoreStringNames::get_singleton()->_iter_get, return_type, par_types, default_arg_count, is_static, is_vararg)) {
+				variable_type = return_type;
+				variable_type.type_source = list_type.type_source;
+			} else if (!list_type.is_hard_type()) {
+				variable_type.kind = GDScriptParser::DataType::VARIANT;
+			} else {
+				push_error(vformat(R"(Unable to iterate on object of type "%s".)", list_type.to_string()), p_for->list);
+			}
+		} else if (list_type.builtin_type == Variant::ARRAY || list_type.builtin_type == Variant::DICTIONARY || !list_type.is_hard_type()) {
+			variable_type.kind = GDScriptParser::DataType::VARIANT;
+		} else {
+			push_error(vformat(R"(Unable to iterate on value of type "%s".)", list_type.to_string()), p_for->list);
 		}
 	}
 	if (p_for->variable) {
