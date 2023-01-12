@@ -252,7 +252,7 @@ class DisplayServerWayland : public DisplayServer {
 		Vector2 relative_motion;
 		uint32_t relative_motion_time = 0;
 
-		MouseButton pressed_button_mask = MouseButton::NONE;
+		BitField<MouseButtonMask> pressed_button_mask;
 
 		MouseButton last_button_pressed = MouseButton::NONE;
 		uint32_t button_time = 0;
@@ -706,7 +706,7 @@ public:
 
 	virtual void warp_mouse(const Point2i &p_to) override;
 	virtual Point2i mouse_get_position() const override;
-	virtual MouseButton mouse_get_button_state() const override;
+	virtual BitField<MouseButtonMask> mouse_get_button_state() const override;
 
 	virtual void clipboard_set(const String &p_text) override;
 	virtual String clipboard_get() const override;

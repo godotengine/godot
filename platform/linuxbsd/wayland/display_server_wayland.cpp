@@ -928,11 +928,13 @@ void DisplayServerWayland::_wl_pointer_on_button(void *data, struct wl_pointer *
 		}
 	}
 
+	MouseButtonMask mask = mouse_button_to_mask(button_pressed);
+
 	if (state & WL_POINTER_BUTTON_STATE_PRESSED) {
-		pd.pressed_button_mask |= mouse_button_to_mask(button_pressed);
+		pd.pressed_button_mask.set_flag(mask);
 		pd.last_button_pressed = button_pressed;
 	} else {
-		pd.pressed_button_mask &= ~mouse_button_to_mask(button_pressed);
+		pd.pressed_button_mask.clear_flag(mask);
 	}
 
 	pd.button_time = time;
@@ -1015,12 +1017,12 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 		// scroll wheel buttons.
 		if (pd.scroll_vector.y != 0) {
 			MouseButton button = pd.scroll_vector.y > 0 ? MouseButton::WHEEL_DOWN : MouseButton::WHEEL_UP;
-			pd.pressed_button_mask |= mouse_button_to_mask(button);
+			pd.pressed_button_mask.set_flag(mouse_button_to_mask(button));
 		}
 
 		if (pd.scroll_vector.x != 0) {
 			MouseButton button = pd.scroll_vector.x > 0 ? MouseButton::WHEEL_RIGHT : MouseButton::WHEEL_LEFT;
-			pd.pressed_button_mask |= mouse_button_to_mask(button);
+			pd.pressed_button_mask.set_flag(mouse_button_to_mask(button));
 		}
 	} else {
 		if (pd.scroll_vector - old_pd.scroll_vector != Vector2()) {
@@ -1050,7 +1052,7 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 	}
 
 	if (old_pd.pressed_button_mask != pd.pressed_button_mask) {
-		MouseButton pressed_mask_delta = old_pd.pressed_button_mask ^ pd.pressed_button_mask;
+		BitField<MouseButtonMask> pressed_mask_delta = BitField<MouseButtonMask>((uint32_t)old_pd.pressed_button_mask ^ (uint32_t)pd.pressed_button_mask);
 
 		const MouseButton buttons_to_test[] = {
 			MouseButton::LEFT,
@@ -1065,8 +1067,8 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 		};
 
 		for (MouseButton test_button : buttons_to_test) {
-			MouseButton test_button_mask = mouse_button_to_mask(test_button);
-			if ((pressed_mask_delta & test_button_mask) != MouseButton::NONE) {
+			MouseButtonMask test_button_mask = mouse_button_to_mask(test_button);
+			if (pressed_mask_delta.has_flag(test_button_mask)) {
 				Ref<InputEventMouseButton> mb;
 				mb.instantiate();
 
@@ -1095,7 +1097,7 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 				mb->set_button_mask(pd.pressed_button_mask);
 
 				mb->set_button_index(test_button);
-				mb->set_pressed((pd.pressed_button_mask & test_button_mask) != MouseButton::NONE);
+				mb->set_pressed(pd.pressed_button_mask.has_flag(test_button_mask));
 
 				if (mb->is_pressed() && pd.last_button_pressed == old_pd.last_button_pressed && (pd.button_time - old_pd.button_time) < 400 && Vector2(pd.position).distance_to(Vector2(old_pd.position)) < 5) {
 					mb->set_double_click(true);
@@ -1123,7 +1125,7 @@ void DisplayServerWayland::_wl_pointer_on_frame(void *data, struct wl_pointer *w
 					wh_up->set_global_position(pd.position);
 
 					// We have to unset the button to avoid it getting stuck.
-					pd.pressed_button_mask &= ~test_button_mask;
+					pd.pressed_button_mask.clear_flag(test_button_mask);
 					wh_up->set_button_mask(pd.pressed_button_mask);
 
 					wh_up->set_button_index(test_button);
@@ -1976,11 +1978,11 @@ Point2i DisplayServerWayland::mouse_get_position() const {
 	return Point2i();
 }
 
-MouseButton DisplayServerWayland::mouse_get_button_state() const {
+BitField<MouseButtonMask> DisplayServerWayland::mouse_get_button_state() const {
 	MutexLock mutex_lock(wls.mutex);
 
 	if (!wls.current_seat) {
-		return MouseButton::NONE;
+		return BitField<MouseButtonMask>();
 	}
 
 	return wls.current_seat->pointer_data.pressed_button_mask;
