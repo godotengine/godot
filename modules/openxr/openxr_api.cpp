@@ -1224,8 +1224,12 @@ bool OpenXRAPI::resolve_instance_openxr_symbols() {
 	return true;
 }
 
+XrResult OpenXRAPI::try_get_instance_proc_addr(const char *p_name, PFN_xrVoidFunction *p_addr) {
+	return xrGetInstanceProcAddr(instance, p_name, p_addr);
+}
+
 XrResult OpenXRAPI::get_instance_proc_addr(const char *p_name, PFN_xrVoidFunction *p_addr) {
-	XrResult result = xrGetInstanceProcAddr(instance, p_name, p_addr);
+	XrResult result = try_get_instance_proc_addr(p_name, p_addr);
 
 	if (result != XR_SUCCESS) {
 		String error_message = String("Symbol ") + p_name + " not found in OpenXR instance.";

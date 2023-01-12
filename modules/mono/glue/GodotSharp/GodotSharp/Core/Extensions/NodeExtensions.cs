@@ -48,13 +48,8 @@ namespace Godot
         }
 
         /// <summary>
-        /// Fetches a node. The <see cref="NodePath"/> can be either a relative path (from
-        /// the current node) or an absolute path (in the scene tree) to a node. If the path
-        /// does not exist, a <see langword="null"/> instance is returned and an error
-        /// is logged. Attempts to access methods on the return value will result in an
-        /// "Attempt to call &lt;method&gt; on a null instance." error.
-        /// Note: Fetching absolute paths only works when the node is inside the scene tree
-        /// (see <see cref="IsInsideTree"/>).
+        /// Similar to <see cref="GetNode"/>, but does not log an error if <paramref name="path"/>
+        /// does not point to a valid <see cref="Node"/>.
         /// </summary>
         /// <example>
         /// Example: Assume your current node is Character and the following tree:
