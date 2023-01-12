@@ -1233,7 +1233,7 @@ void ProjectList::load_project_icon(int p_index) {
 
 	// The default project icon is 128×128 to look crisp on hiDPI displays,
 	// but we want the actual displayed size to be 64×64 on loDPI displays.
-	item.control->icon->set_ignore_texture_size(true);
+	item.control->icon->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
 	item.control->icon->set_custom_minimum_size(Size2(64, 64) * EDSCALE);
 	item.control->icon->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
 
