@@ -3315,6 +3315,38 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 						break;
 				}
 			} else {
+				// TODO: Check constructors without constants.
+
+				GDScriptParser::DataType typed_array_constructor_datatype;
+				if (p_call->typed_array_conversion_type != nullptr) {
+					if (builtin_type != Variant::Type::ARRAY) {
+						push_error(R"(Typed container conversion syntax can only be applied to the 'Array' constructor.)", p_call);
+					} else {
+						typed_array_constructor_datatype = resolve_datatype(p_call->typed_array_conversion_type);
+						GDScriptParser::LiteralNode *type = parser->alloc_node<GDScriptParser::LiteralNode>();
+						GDScriptParser::LiteralNode *class_name = parser->alloc_node<GDScriptParser::LiteralNode>();
+						GDScriptParser::LiteralNode *script = parser->alloc_node<GDScriptParser::LiteralNode>();
+						type->value = typed_array_constructor_datatype.builtin_type;
+						class_name->value = typed_array_constructor_datatype.native_type;
+						if (typed_array_constructor_datatype.kind == GDScriptParser::DataType::Kind::CLASS || typed_array_constructor_datatype.kind == GDScriptParser::DataType::Kind::SCRIPT) {
+							script->reduced_value = typed_array_constructor_datatype.script_type;
+							script->reduced = true;
+							script->set_datatype(typed_array_constructor_datatype);
+						} else {
+							GDScriptParser::DataType empty_type;
+							empty_type.kind = GDScriptParser::DataType::VARIANT;
+							empty_type.type_source = GDScriptParser::DataType::INFERRED;
+							script->reduced_value = Variant();
+							script->reduced = true;
+							script->set_datatype(empty_type);
+						}
+						reduce_literal(type);
+						reduce_literal(class_name);
+						p_call->arguments.append(type);
+						p_call->arguments.append(class_name);
+						p_call->arguments.append(script);
+					}
+				}
 				// If there's one argument, try to use copy constructor (those aren't explicitly defined).
 				if (p_call->arguments.size() == 1) {
 					GDScriptParser::DataType arg_type = p_call->arguments[0]->get_datatype();
@@ -3397,6 +3429,27 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 						}
 						match = true;
 						call_type = type_from_property(info.return_val);
+						if (typed_array_constructor_datatype.is_set()) {
+							call_type.set_container_element_type(0, typed_array_constructor_datatype);
+							GDScriptParser::DataType base = p_call->arguments[0]->get_datatype();
+							if (!base.is_hard_type()) {
+								break;
+							}
+							if (!base.has_container_element_type(0)) {
+								break;
+							}
+							GDScriptParser::DataType base_array_container_type = base.get_container_element_type(0);
+							if (is_type_compatible(typed_array_constructor_datatype, base_array_container_type, true, p_call)) {
+#ifdef DEBUG_ENABLED
+								if (typed_array_constructor_datatype.builtin_type == Variant::INT && base_array_container_type.builtin_type == Variant::FLOAT) {
+									parser->push_warning(p_call, GDScriptWarning::NARROWING_CONVERSION, p_call->function_name);
+								}
+#endif
+								break;
+							}
+							push_error(vformat(R"(Cannot construct Array of type %s from a non-compatible type %s.)", typed_array_constructor_datatype.to_string(), base_array_container_type.to_string()), p_call);
+							break;
+						}
 						break;
 					}
 				}

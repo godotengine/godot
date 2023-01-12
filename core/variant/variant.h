@@ -678,6 +678,7 @@ public:
 	static ValidatedConstructor get_validated_constructor(Variant::Type p_type, int p_constructor);
 	static PTRConstructor get_ptr_constructor(Variant::Type p_type, int p_constructor);
 	static int get_constructor_argument_count(Variant::Type p_type, int p_constructor);
+	static bool is_typed_constructor(Variant::Type p_type, int p_constructor);
 	static Variant::Type get_constructor_argument_type(Variant::Type p_type, int p_constructor, int p_argument);
 	static String get_constructor_argument_name(Variant::Type p_type, int p_constructor, int p_argument);
 	static void construct(Variant::Type, Variant &base, const Variant **p_args, int p_argcount, Callable::CallError &r_error);

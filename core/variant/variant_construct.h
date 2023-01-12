@@ -147,6 +147,10 @@ public:
 	static Variant::Type get_base_type() {
 		return GetTypeInfo<T>::VARIANT_TYPE;
 	}
+
+	static bool is_typed_constructor() {
+		return false;
+	}
 };
 
 class VariantConstructorObject {
@@ -188,6 +192,10 @@ public:
 	static Variant::Type get_base_type() {
 		return Variant::OBJECT;
 	}
+
+	static bool is_typed_constructor() {
+		return false;
+	}
 };
 
 class VariantConstructorNilObject {
@@ -223,6 +231,10 @@ public:
 
 	static Variant::Type get_base_type() {
 		return Variant::OBJECT;
+	}
+
+	static bool is_typed_constructor() {
+		return false;
 	}
 };
 
@@ -282,6 +294,10 @@ public:
 	static Variant::Type get_base_type() {
 		return GetTypeInfo<T>::VARIANT_TYPE;
 	}
+
+	static bool is_typed_constructor() {
+		return false;
+	}
 };
 
 class VariantConstructorCallableArgs {
@@ -339,6 +355,10 @@ public:
 	static Variant::Type get_base_type() {
 		return Variant::CALLABLE;
 	}
+
+	static bool is_typed_constructor() {
+		return false;
+	}
 };
 
 class VariantConstructorSignalArgs {
@@ -395,6 +415,10 @@ public:
 
 	static Variant::Type get_base_type() {
 		return Variant::SIGNAL;
+	}
+
+	static bool is_typed_constructor() {
+		return false;
 	}
 };
 
@@ -502,6 +526,10 @@ public:
 	static Variant::Type get_base_type() {
 		return Variant::DICTIONARY;
 	}
+
+	static bool is_typed_constructor() {
+		return true;
+	}
 };
 
 class VariantConstructorTypedArray {
@@ -577,6 +605,10 @@ public:
 	static Variant::Type get_base_type() {
 		return Variant::ARRAY;
 	}
+
+	static bool is_typed_constructor() {
+		return true;
+	}
 };
 
 template <typename T>
@@ -635,6 +667,10 @@ public:
 
 	static Variant::Type get_base_type() {
 		return Variant::ARRAY;
+	}
+
+	static bool is_typed_constructor() {
+		return false;
 	}
 };
 
@@ -695,6 +731,10 @@ public:
 	static Variant::Type get_base_type() {
 		return GetTypeInfo<T>::VARIANT_TYPE;
 	}
+
+	static bool is_typed_constructor() {
+		return false;
+	}
 };
 
 class VariantConstructorNil {
@@ -729,6 +769,10 @@ public:
 	static Variant::Type get_base_type() {
 		return Variant::NIL;
 	}
+
+	static bool is_typed_constructor() {
+		return false;
+	}
 };
 
 template <typename T>
@@ -757,6 +801,10 @@ public:
 	static Variant::Type get_base_type() {
 		return GetTypeInfo<T>::VARIANT_TYPE;
 	}
+
+	static bool is_typed_constructor() {
+		return false;
+	}
 };
 
 class VariantConstructNoArgsNil {
@@ -784,6 +832,10 @@ public:
 	static Variant::Type get_base_type() {
 		return Variant::NIL;
 	}
+
+	static bool is_typed_constructor() {
+		return false;
+	}
 };
 
 class VariantConstructNoArgsObject {
@@ -810,5 +862,9 @@ public:
 
 	static Variant::Type get_base_type() {
 		return Variant::OBJECT;
+	}
+
+	static bool is_typed_constructor() {
+		return false;
 	}
 };

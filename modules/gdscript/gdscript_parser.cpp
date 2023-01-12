@@ -3404,7 +3404,6 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 		}
 	} else {
 		call->callee = p_previous_operand;
-
 		if (call->callee == nullptr) {
 			push_error(R"*(Cannot call on an expression. Use ".call()" if it's a Callable.)*");
 		} else if (call->callee->type == Node::IDENTIFIER) {
@@ -3418,8 +3417,34 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 				}
 				make_completion_context(COMPLETION_ATTRIBUTE_METHOD, call->callee);
 			} else {
-				// TODO: The analyzer can see if this is actually a Callable and give better error message.
-				push_error(R"*(Cannot call on an expression. Use ".call()" if it's a Callable.)*");
+				if (attribute->index->type == Node::IDENTIFIER) {
+					IdentifierNode *func_name = static_cast<IdentifierNode *>(attribute->base);
+					Variant::Type type_from_func_name = GDScriptParser::get_builtin_type(func_name->name);
+					if (type_from_func_name < Variant::Type::VARIANT_MAX) {
+						if (type_from_func_name == Variant::Type::ARRAY) {
+							IdentifierNode *index = static_cast<IdentifierNode *>(attribute->index);
+							// Type names will have an undefined source
+							if (index->source == IdentifierNode::UNDEFINED_SOURCE) {
+								call->callee = func_name;
+								call->function_name = func_name->name;
+								TypeNode *type = alloc_node<TypeNode>();
+								type->type_chain.push_back(index);
+								reset_extents(type, index);
+								complete_extents(type);
+								call->typed_array_conversion_type = type;
+							} else {
+								push_error(R"*(Expected a Type for Array[Type] constructor.)*", index);
+							}
+						} else {
+							push_error(R"*(Typed container constructor can only be used for Arrays.)*");
+						}
+					} else {
+						push_error(R"*(Cannot call on an expression. Use ".call()" if it's a Callable.)*");
+					}
+				} else {
+					// TODO: The analyzer can see if this is actually a Callable and give better error message.
+					push_error(R"*(Cannot call on an expression. Use ".call()" if it's a Callable.)*");
+				}
 			}
 		} else {
 			push_error(R"*(Cannot call on an expression. Use ".call()" if it's a Callable.)*");
