@@ -32,6 +32,7 @@
 
 #include "core/object/message_queue.h"
 #include "core/os/os.h"
+#include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "main/main.h"
 #include "servers/display_server.h"
@@ -133,6 +134,14 @@ void BackgroundProgress::end_task(const String &p_task) {
 ProgressDialog *ProgressDialog::singleton = nullptr;
 
 void ProgressDialog::_notification(int p_what) {
+	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
+		if (!is_visible()) {
+			Node *p = get_parent();
+			if (p) {
+				p->remove_child(this);
+			}
+		}
+	}
 }
 
 void ProgressDialog::_popup() {
@@ -146,8 +155,17 @@ void ProgressDialog::_popup() {
 	main->set_offset(SIDE_TOP, style->get_margin(SIDE_TOP));
 	main->set_offset(SIDE_BOTTOM, -style->get_margin(SIDE_BOTTOM));
 
-	//raise();
-	popup_centered(ms);
+	EditorNode *ed = EditorNode::get_singleton();
+	if (ed && !is_inside_tree()) {
+		Window *w = ed->get_window();
+		while (w && w->get_exclusive_child()) {
+			w = w->get_exclusive_child();
+		}
+		if (w && w != this) {
+			w->add_child(this);
+			popup_centered(ms);
+		}
+	}
 }
 
 void ProgressDialog::add_task(const String &p_task, const String &p_label, int p_steps, bool p_can_cancel) {
