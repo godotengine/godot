@@ -1544,10 +1544,8 @@ void GDScriptAnalyzer::resolve_assignable(GDScriptParser::AssignableNode *p_assi
 		GDScriptParser::DataType initializer_type = p_assignable->initializer->get_datatype();
 
 		if (p_assignable->infer_datatype) {
-			if (!initializer_type.is_set() || initializer_type.has_no_type()) {
+			if (!initializer_type.is_set() || initializer_type.has_no_type() || !initializer_type.is_hard_type()) {
 				push_error(vformat(R"(Cannot infer the type of "%s" %s because the value doesn't have a set type.)", p_assignable->identifier->name, p_kind), p_assignable->initializer);
-			} else if (initializer_type.is_variant() && !initializer_type.is_hard_type()) {
-				push_error(vformat(R"(Cannot infer the type of "%s" %s because the value is Variant. Use explicit "Variant" type if this is intended.)", p_assignable->identifier->name, p_kind), p_assignable->initializer);
 			} else if (initializer_type.kind == GDScriptParser::DataType::BUILTIN && initializer_type.builtin_type == Variant::NIL && !is_constant) {
 				push_error(vformat(R"(Cannot infer the type of "%s" %s because the value is "null".)", p_assignable->identifier->name, p_kind), p_assignable->initializer);
 			}
