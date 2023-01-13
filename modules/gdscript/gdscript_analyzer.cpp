@@ -1576,17 +1576,52 @@ void GDScriptAnalyzer::resolve_assignable(GDScriptParser::AssignableNode *p_assi
 				if (!initializer_type.is_variant() && !is_type_compatible(specified_type, initializer_type, true, p_assignable->initializer)) {
 					downgrade_node_type_source(p_assignable->initializer);
 				}
-			} else if (!is_type_compatible(specified_type, initializer_type, true, p_assignable->initializer)) {
-				if (!is_constant && is_type_compatible(initializer_type, specified_type, true, p_assignable->initializer)) {
-					mark_node_unsafe(p_assignable->initializer);
-					p_assignable->use_conversion_assign = true;
+			} else {
+				Variant::Type specified_builtin_type = type_from_metatype(specified_type).builtin_type;
+				Variant::Type initializer_builtin_type = type_from_metatype(initializer_type).builtin_type;
+
+				enum Compatible {
+					SAFE,
+					UNSAFE,
+					ERROR,
+				};
+				Compatible compatible;
+
+				if (is_type_compatible(specified_type, initializer_type, true, p_assignable->initializer)) {
+					compatible = SAFE;
+				} else if (p_assignable->initializer->is_constant) {
+					compatible = ERROR;
+				} else if (specified_builtin_type == Variant::OBJECT && initializer_builtin_type == Variant::OBJECT && is_type_compatible(initializer_type, specified_type)) {
+					// For example: `var label: Label = $Node`. It's unsafe, but allowed.
+					compatible = UNSAFE;
 				} else {
-					push_error(vformat(R"(Cannot assign a value of type %s to %s "%s" with specified type %s.)", initializer_type.to_string(), p_kind, p_assignable->identifier->name, specified_type.to_string()), p_assignable->initializer);
+					compatible = ERROR;
 				}
+
+				if (compatible == ERROR) {
+					push_error(vformat(R"(Cannot assign a value of type %s to %s "%s" with specified type %s.)", initializer_type.to_string(), p_kind, p_assignable->identifier->name, specified_type.to_string()), p_assignable->initializer);
+				} else {
 #ifdef DEBUG_ENABLED
-			} else if (specified_type.builtin_type == Variant::INT && initializer_type.builtin_type == Variant::FLOAT) {
-				parser->push_warning(p_assignable->initializer, GDScriptWarning::NARROWING_CONVERSION);
+					if (specified_builtin_type == Variant::INT && initializer_builtin_type == Variant::FLOAT) {
+						parser->push_warning(p_assignable->initializer, GDScriptWarning::NARROWING_CONVERSION);
+					}
 #endif
+
+					if (p_assignable->initializer->is_constant && initializer_builtin_type != specified_builtin_type) {
+						Variant converted_to;
+						const Variant *converted_from = &p_assignable->initializer->reduced_value;
+						Callable::CallError call_error;
+						Variant::construct(specified_builtin_type, converted_to, &converted_from, 1, call_error);
+
+						// This should not happen.
+						ERR_FAIL_COND_MSG(call_error.error != Callable::CallError::CALL_OK, vformat(R"(Cannot convert %s "%s" initializer value of type %s to the specified type %s.)", p_kind, p_assignable->identifier->name, initializer_type.to_string(), specified_type.to_string()));
+
+						p_assignable->initializer->reduced_value = converted_to;
+					} else if (compatible == UNSAFE) {
+						mark_node_unsafe(p_assignable->initializer);
+						p_assignable->use_conversion_assign = true;
+					}
+				}
 			}
 		}
 	}
