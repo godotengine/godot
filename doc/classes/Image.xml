@@ -489,7 +489,7 @@
 				var img = Image.new()
 				img.create(img_width, img_height, false, Image.FORMAT_RGBA8)
 
-				img.set_pixel(1, 2, Color.red) # Sets the color at (1, 2) to red.
+				img.set_pixel(1, 2, Color.RED) # Sets the color at (1, 2) to red.
 				[/gdscript]
 				[csharp]
 				int imgWidth = 10;
@@ -517,7 +517,7 @@
 				var img = Image.new()
 				img.create(img_width, img_height, false, Image.FORMAT_RGBA8)
 
-				img.set_pixelv(Vector2i(1, 2), Color.red) # Sets the color at (1, 2) to red.
+				img.set_pixelv(Vector2i(1, 2), Color.RED) # Sets the color at (1, 2) to red.
 				[/gdscript]
 				[csharp]
 				int imgWidth = 10;
