@@ -291,31 +291,26 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 			return true;
 		}
 
-		if (!disable_feature_overrides) {
+		{ // Feature overrides.
 			int dot = p_name.operator String().find(".");
 			if (dot != -1) {
 				Vector<String> s = p_name.operator String().split(".");
 
-				bool override_valid = false;
 				for (int i = 1; i < s.size(); i++) {
 					String feature = s[i].strip_edges();
-					if (OS::get_singleton()->has_feature(feature) || custom_features.has(feature)) {
-						override_valid = true;
-						break;
-					}
-				}
+					Pair<StringName, StringName> fo(feature, p_name);
 
-				if (override_valid) {
-					feature_overrides[s[0]] = p_name;
+					if (!feature_overrides.has(s[0])) {
+						feature_overrides[s[0]] = LocalVector<Pair<StringName, StringName>>();
+					}
+
+					feature_overrides[s[0]].push_back(fo);
 				}
 			}
 		}
 
 		if (props.has(p_name)) {
-			if (!props[p_name].overridden) {
-				props[p_name].variant = p_value;
-			}
-
+			props[p_name].variant = p_value;
 		} else {
 			props[p_name] = VariantContainer(p_value, last_order++);
 		}
@@ -340,16 +335,35 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 bool ProjectSettings::_get(const StringName &p_name, Variant &r_ret) const {
 	_THREAD_SAFE_METHOD_
 
-	StringName name = p_name;
-	if (!disable_feature_overrides && feature_overrides.has(name)) {
-		name = feature_overrides[name];
-	}
-	if (!props.has(name)) {
-		WARN_PRINT("Property not found: " + String(name));
+	if (!props.has(p_name)) {
+		WARN_PRINT("Property not found: " + String(p_name));
 		return false;
 	}
-	r_ret = props[name].variant;
+	r_ret = props[p_name].variant;
 	return true;
+}
+
+Variant ProjectSettings::get_setting_with_override(const StringName &p_name) const {
+	_THREAD_SAFE_METHOD_
+
+	StringName name = p_name;
+	if (feature_overrides.has(name)) {
+		const LocalVector<Pair<StringName, StringName>> &overrides = feature_overrides[name];
+		for (uint32_t i = 0; i < overrides.size(); i++) {
+			if (OS::get_singleton()->has_feature(overrides[i].first)) { // Custom features are checked in OS.has_feature() already. No need to check twice.
+				if (props.has(overrides[i].second)) {
+					name = overrides[i].second;
+					break;
+				}
+			}
+		}
+	}
+
+	if (!props.has(name)) {
+		WARN_PRINT("Property not found: " + String(name));
+		return Variant();
+	}
+	return props[name].variant;
 }
 
 struct _VCSort {
@@ -1101,10 +1115,6 @@ const HashMap<StringName, PropertyInfo> &ProjectSettings::get_custom_property_in
 	return custom_prop_info;
 }
 
-void ProjectSettings::set_disable_feature_overrides(bool p_disable) {
-	disable_feature_overrides = p_disable;
-}
-
 bool ProjectSettings::is_using_datapack() const {
 	return using_datapack;
 }
@@ -1169,6 +1179,7 @@ void ProjectSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_setting", "name"), &ProjectSettings::has_setting);
 	ClassDB::bind_method(D_METHOD("set_setting", "name", "value"), &ProjectSettings::set_setting);
 	ClassDB::bind_method(D_METHOD("get_setting", "name", "default_value"), &ProjectSettings::get_setting, DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("get_setting_with_override", "name"), &ProjectSettings::get_setting_with_override);
 	ClassDB::bind_method(D_METHOD("set_order", "name", "position"), &ProjectSettings::set_order);
 	ClassDB::bind_method(D_METHOD("get_order", "name"), &ProjectSettings::get_order);
 	ClassDB::bind_method(D_METHOD("set_initial_value", "name", "value"), &ProjectSettings::set_initial_value);
