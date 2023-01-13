@@ -141,6 +141,18 @@ String CollisionShape::get_configuration_warning() const {
 	return warning;
 }
 
+#ifdef TOOLS_ENABLED
+AABB CollisionShape::get_fallback_gizmo_aabb() const {
+	if (shape.is_null()) {
+		return Spatial::get_fallback_gizmo_aabb();
+	}
+
+	// get_debug_mesh() is not const because the mesh is lazy initialized and cached.
+	// It would be better if we can mark the cache mutable and make get_debug_mesh() const.
+	return const_cast<CollisionShape *>(this)->shape->get_debug_mesh()->get_aabb();
+}
+#endif
+
 void CollisionShape::_bind_methods() {
 	//not sure if this should do anything
 	ClassDB::bind_method(D_METHOD("resource_changed", "resource"), &CollisionShape::resource_changed);
