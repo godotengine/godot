@@ -93,10 +93,10 @@ void SceneDistributionInterface::distribute_glb(const String& p_path, int id)
 	multiplayer->get_multiplayer_peer()->set_transfer_mode(MultiplayerPeer::TRANSFER_MODE_RELIABLE);
 	encode_uint32(multiplayer->get_unique_id(), &buf[2]);
 
-	encode_uint16(glb_file_PBA, &buf[6]);
+	//encode_uint16(glb_file_PBA, &buf[6]);
 
-	err = encode_variant(p_custom_features, &buf[0], glb_file_PBA.size(), false);
-	ERR_FAIL_COND_V(err != OK, err);
+	//err = encode_variant(p_custom_features, &buf[0], glb_file_PBA.size(), false);
+	//ERR_FAIL_COND_V(err != OK, err);
 	
 	
 
@@ -180,7 +180,7 @@ void SceneDistributionInterface::check_if_externally_created_glb_was_created()
 	printf("SceneDistributionInterface::check_if_externally_created_glb_was_created");
 
 	HashSet<String>::Iterator it;
-	for (it = requested_glb_files.begin(); it != requested_glb_files.end(); it++) {
+	for (it = requested_glb_files.begin(); it != requested_glb_files.end(); it.operator++()) {
 		printf("it is:%s", *it->ascii().get_data());
 	
 		//check in a pre-specified directory, if there is a file with a name, we got in
