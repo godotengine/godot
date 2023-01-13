@@ -205,6 +205,16 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns <see langword="true"/> if this plane is finite, by calling
+        /// <see cref="Mathf.IsFinite"/> on each component.
+        /// </summary>
+        /// <returns>Whether this vector is finite or not.</returns>
+        public readonly bool IsFinite()
+        {
+            return _normal.IsFinite() && Mathf.IsFinite(D);
+        }
+
+        /// <summary>
         /// Returns <see langword="true"/> if <paramref name="point"/> is located above the plane.
         /// </summary>
         /// <param name="point">The point to check.</param>

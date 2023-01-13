@@ -340,6 +340,16 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns <see langword="true"/> if this quaternion is finite, by calling
+        /// <see cref="Mathf.IsFinite"/> on each component.
+        /// </summary>
+        /// <returns>Whether this vector is finite or not.</returns>
+        public readonly bool IsFinite()
+        {
+            return Mathf.IsFinite(x) && Mathf.IsFinite(y) && Mathf.IsFinite(z) && Mathf.IsFinite(w);
+        }
+
+        /// <summary>
         /// Returns whether the quaternion is normalized or not.
         /// </summary>
         /// <returns>A <see langword="bool"/> for whether the quaternion is normalized or not.</returns>

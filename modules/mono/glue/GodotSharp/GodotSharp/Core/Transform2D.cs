@@ -271,6 +271,16 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns <see langword="true"/> if this transform is finite, by calling
+        /// <see cref="Mathf.IsFinite"/> on each component.
+        /// </summary>
+        /// <returns>Whether this vector is finite or not.</returns>
+        public readonly bool IsFinite()
+        {
+            return x.IsFinite() && y.IsFinite() && origin.IsFinite();
+        }
+
+        /// <summary>
         /// Returns the transform with the basis orthogonal (90 degrees),
         /// and normalized axis vectors (scale of 1 or -1).
         /// </summary>
