@@ -115,9 +115,8 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 		if (p_viewport->size.width == 0 || p_viewport->size.height == 0) {
 			p_viewport->render_buffers.unref();
 		} else {
-			const float scaling_3d_scale = p_viewport->scaling_3d_scale;
+			float scaling_3d_scale = p_viewport->scaling_3d_scale;
 			RS::ViewportScaling3DMode scaling_3d_mode = p_viewport->scaling_3d_mode;
-			bool scaling_enabled = true;
 
 			if ((scaling_3d_mode == RS::VIEWPORT_SCALING_3D_MODE_FSR) && (scaling_3d_scale > 1.0)) {
 				// FSR is not designed for downsampling.
@@ -133,7 +132,7 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 			}
 
 			if (scaling_3d_scale == 1.0) {
-				scaling_enabled = false;
+				scaling_3d_mode = RS::VIEWPORT_SCALING_3D_MODE_OFF;
 			}
 
 			int width;
@@ -141,36 +140,37 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 			int render_width;
 			int render_height;
 
-			if (scaling_enabled) {
-				switch (scaling_3d_mode) {
-					case RS::VIEWPORT_SCALING_3D_MODE_BILINEAR:
-						// Clamp 3D rendering resolution to reasonable values supported on most hardware.
-						// This prevents freezing the engine or outright crashing on lower-end GPUs.
-						width = CLAMP(p_viewport->size.width * scaling_3d_scale, 1, 16384);
-						height = CLAMP(p_viewport->size.height * scaling_3d_scale, 1, 16384);
-						render_width = width;
-						render_height = height;
-						break;
-					case RS::VIEWPORT_SCALING_3D_MODE_FSR:
-						width = p_viewport->size.width;
-						height = p_viewport->size.height;
-						render_width = MAX(width * scaling_3d_scale, 1.0); // width / (width * scaling)
-						render_height = MAX(height * scaling_3d_scale, 1.0);
-						break;
-					default:
-						// This is an unknown mode.
-						WARN_PRINT_ONCE(vformat("Unknown scaling mode: %d. Disabling 3D resolution scaling.", scaling_3d_mode));
-						width = p_viewport->size.width;
-						height = p_viewport->size.height;
-						render_width = width;
-						render_height = height;
-						break;
-				}
-			} else {
-				width = p_viewport->size.width;
-				height = p_viewport->size.height;
-				render_width = width;
-				render_height = height;
+			switch (scaling_3d_mode) {
+				case RS::VIEWPORT_SCALING_3D_MODE_BILINEAR:
+					// Clamp 3D rendering resolution to reasonable values supported on most hardware.
+					// This prevents freezing the engine or outright crashing on lower-end GPUs.
+					width = CLAMP(p_viewport->size.width * scaling_3d_scale, 1, 16384);
+					height = CLAMP(p_viewport->size.height * scaling_3d_scale, 1, 16384);
+					render_width = width;
+					render_height = height;
+					break;
+				case RS::VIEWPORT_SCALING_3D_MODE_FSR:
+					width = p_viewport->size.width;
+					height = p_viewport->size.height;
+					render_width = MAX(width * scaling_3d_scale, 1.0); // width / (width * scaling)
+					render_height = MAX(height * scaling_3d_scale, 1.0);
+					break;
+				case RS::VIEWPORT_SCALING_3D_MODE_OFF:
+					width = p_viewport->size.width;
+					height = p_viewport->size.height;
+					render_width = width;
+					render_height = height;
+					break;
+				default:
+					// This is an unknown mode.
+					WARN_PRINT_ONCE(vformat("Unknown scaling mode: %d. Disabling 3D resolution scaling.", scaling_3d_mode));
+					scaling_3d_mode = RS::VIEWPORT_SCALING_3D_MODE_OFF;
+					scaling_3d_scale = 1.0;
+					width = p_viewport->size.width;
+					height = p_viewport->size.height;
+					render_width = width;
+					render_height = height;
+					break;
 			}
 
 			p_viewport->internal_size = Size2(render_width, render_height);
@@ -179,7 +179,7 @@ void RendererViewport::_configure_3d_render_buffers(Viewport *p_viewport) {
 			// to compensate for the loss of sharpness.
 			const float texture_mipmap_bias = log2f(MIN(scaling_3d_scale, 1.0)) + p_viewport->texture_mipmap_bias;
 
-			p_viewport->render_buffers->configure(p_viewport->render_target, Size2i(render_width, render_height), Size2(width, height), p_viewport->fsr_sharpness, texture_mipmap_bias, p_viewport->msaa_3d, p_viewport->screen_space_aa, p_viewport->use_taa, p_viewport->use_debanding, p_viewport->view_count);
+			p_viewport->render_buffers->configure(p_viewport->render_target, Size2i(render_width, render_height), Size2(width, height), scaling_3d_mode, p_viewport->fsr_sharpness, texture_mipmap_bias, p_viewport->msaa_3d, p_viewport->screen_space_aa, p_viewport->use_taa, p_viewport->use_debanding, p_viewport->view_count);
 		}
 	}
 }

@@ -802,7 +802,8 @@ public:
 	enum ViewportScaling3DMode {
 		VIEWPORT_SCALING_3D_MODE_BILINEAR,
 		VIEWPORT_SCALING_3D_MODE_FSR,
-		VIEWPORT_SCALING_3D_MODE_MAX
+		VIEWPORT_SCALING_3D_MODE_MAX,
+		VIEWPORT_SCALING_3D_MODE_OFF = 255, // for internal use only
 	};
 
 	virtual void viewport_set_use_xr(RID p_viewport, bool p_use_xr) = 0;

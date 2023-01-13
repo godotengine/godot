@@ -539,7 +539,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		tonemap.view_count = rb->get_view_count();
 
 		RID dest_fb;
-		if (fsr && can_use_effects && (internal_size.x != target_size.x || internal_size.y != target_size.y)) {
+		if (fsr && can_use_effects && rb->get_scaling_3d_mode() == RS::VIEWPORT_SCALING_3D_MODE_FSR) {
 			// If we use FSR to upscale we need to write our result into an intermediate buffer.
 			// Note that this is cached so we only create the texture the first time.
 			RID dest_texture = rb->create_texture(SNAME("Tonemapper"), SNAME("destination"), _render_buffers_get_color_format(), RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT);
@@ -556,10 +556,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		RD::get_singleton()->draw_command_end_label();
 	}
 
-	if (fsr && can_use_effects && (internal_size.x != target_size.x || internal_size.y != target_size.y)) {
-		// TODO Investigate? Does this work? We never write into our render target and we've already done so up above in our tonemapper.
-		// I think FSR should either work before our tonemapper or as an alternative of our tonemapper.
-
+	if (fsr && can_use_effects && rb->get_scaling_3d_mode() == RS::VIEWPORT_SCALING_3D_MODE_FSR) {
 		RD::get_singleton()->draw_command_begin_label("FSR 1.0 Upscale");
 
 		for (uint32_t v = 0; v < rb->get_view_count(); v++) {
