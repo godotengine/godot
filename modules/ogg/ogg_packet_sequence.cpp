@@ -136,6 +136,8 @@ bool OggPacketSequencePlayback::next_ogg_packet(ogg_packet **p_packet) const {
 	ERR_FAIL_COND_V(data_version != ogg_packet_sequence->data_version, false);
 	ERR_FAIL_COND_V(ogg_packet_sequence->page_data.is_empty(), false);
 	ERR_FAIL_COND_V(ogg_packet_sequence->page_granule_positions.is_empty(), false);
+	ERR_FAIL_COND_V(page_cursor >= ogg_packet_sequence->page_data.size(), false);
+
 	// Move on to the next page if need be. This happens first to help simplify seek logic.
 	while (packet_cursor >= ogg_packet_sequence->page_data[page_cursor].size()) {
 		packet_cursor = 0;
