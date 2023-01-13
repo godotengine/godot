@@ -84,10 +84,12 @@ StringBuilder &operator<<(StringBuilder &r_sb, const char *p_cstring) {
 #define CS_PROPERTY_SINGLETON "Singleton"
 #define CS_METHOD_INVOKE_GODOT_CLASS_METHOD "InvokeGodotClassMethod"
 #define CS_METHOD_HAS_GODOT_CLASS_METHOD "HasGodotClassMethod"
+#define CS_METHOD_HAS_GODOT_CLASS_SIGNAL "HasGodotClassSignal"
 
 #define CS_STATIC_FIELD_NATIVE_CTOR "NativeCtor"
 #define CS_STATIC_FIELD_METHOD_BIND_PREFIX "MethodBind"
 #define CS_STATIC_FIELD_METHOD_PROXY_NAME_PREFIX "MethodProxyName_"
+#define CS_STATIC_FIELD_SIGNAL_PROXY_NAME_PREFIX "SignalProxyName_"
 
 #define ICALL_PREFIX "godot_icall_"
 #define ICALL_CLASSDB_GET_METHOD "ClassDB_get_method"
@@ -1608,6 +1610,16 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 				   << " = \"" << imethod.proxy_name << "\";\n";
 		}
 
+		// Generate signal names cache fields
+
+		for (const SignalInterface &isignal : itype.signals_) {
+			output << MEMBER_BEGIN "// ReSharper disable once InconsistentNaming\n"
+				   << INDENT1 "[DebuggerBrowsable(DebuggerBrowsableState.Never)]\n"
+				   << INDENT1 "private static readonly StringName "
+				   << CS_STATIC_FIELD_SIGNAL_PROXY_NAME_PREFIX << isignal.name
+				   << " = \"" << isignal.proxy_name << "\";\n";
+		}
+
 		// TODO: Only generate HasGodotClassMethod and InvokeGodotClassMethod if there's any method
 
 		// Generate InvokeGodotClassMethod
@@ -1716,6 +1728,34 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 
 		if (is_derived_type) {
 			output << INDENT2 "return base." CS_METHOD_HAS_GODOT_CLASS_METHOD "(method);\n";
+		} else {
+			output << INDENT2 "return false;\n";
+		}
+
+		output << INDENT1 "}\n";
+
+		// Generate HasGodotClassSignal
+
+		output << MEMBER_BEGIN "protected internal " << (is_derived_type ? "override" : "virtual")
+			   << " bool " CS_METHOD_HAS_GODOT_CLASS_SIGNAL "(in godot_string_name signal)\n"
+			   << INDENT1 "{\n";
+
+		for (const SignalInterface &isignal : itype.signals_) {
+			// We check for native names (snake_case). If we detect one, we call HasGodotClassSignal
+			// again, but this time with the respective proxy name (PascalCase). It's the job of
+			// user derived classes to override the method and check for those. Our C# source
+			// generators take care of generating those override methods.
+			output << INDENT2 "if (signal == SignalName." << isignal.proxy_name
+				   << ")\n" INDENT2 "{\n"
+				   << INDENT3 "if (" CS_METHOD_HAS_GODOT_CLASS_SIGNAL "("
+				   << CS_STATIC_FIELD_SIGNAL_PROXY_NAME_PREFIX << isignal.name
+				   << ".NativeValue.DangerousSelfRef))\n" INDENT3 "{\n"
+				   << INDENT4 "return true;\n"
+				   << INDENT3 "}\n" INDENT2 "}\n";
+		}
+
+		if (is_derived_type) {
+			output << INDENT2 "return base." CS_METHOD_HAS_GODOT_CLASS_SIGNAL "(signal);\n";
 		} else {
 			output << INDENT2 "return false;\n";
 		}
