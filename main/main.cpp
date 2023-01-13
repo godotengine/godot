@@ -3035,7 +3035,6 @@ bool Main::iteration() {
 			break;
 		}
 
-		NavigationServer3D::get_singleton()->process(physics_step * time_scale);
 		uint64_t navigation_begin = OS::get_singleton()->get_ticks_usec();
 
 		NavigationServer3D::get_singleton()->process(physics_step * time_scale);
