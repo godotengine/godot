@@ -1,32 +1,32 @@
-/**************************************************************************/
-/*  scene_multiplayer.cpp                                                 */
-/**************************************************************************/
-/*                         This file is part of:                          */
-/*                             GODOT ENGINE                               */
-/*                        https://godotengine.org                         */
-/**************************************************************************/
-/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
-/*                                                                        */
-/* Permission is hereby granted, free of charge, to any person obtaining  */
-/* a copy of this software and associated documentation files (the        */
-/* "Software"), to deal in the Software without restriction, including    */
-/* without limitation the rights to use, copy, modify, merge, publish,    */
-/* distribute, sublicense, and/or sell copies of the Software, and to     */
-/* permit persons to whom the Software is furnished to do so, subject to  */
-/* the following conditions:                                              */
-/*                                                                        */
-/* The above copyright notice and this permission notice shall be         */
-/* included in all copies or substantial portions of the Software.        */
-/*                                                                        */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
-/**************************************************************************/
+/*************************************************************************/
+/*  scene_multiplayer.cpp                                                */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                      https://godotengine.org                          */
+/*************************************************************************/
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
 
 #include "scene_multiplayer.h"
 
@@ -34,6 +34,7 @@
 #include "core/io/marshalls.h"
 
 #include <stdint.h>
+#include <vector>
 
 #ifdef DEBUG_ENABLED
 #include "core/os/os.h"
@@ -64,6 +65,83 @@ void SceneMultiplayer::_update_status() {
 		}
 		last_connection_status = status;
 	}
+}
+
+void SceneMultiplayer::_check_glb_existence(const String& p_path, int id)
+{
+	printf("SceneMultiplayer::_check_glb_existence\n");
+
+	int packet_len = SYS_CMD_SIZE + (p_path.size() * 4) + 4;
+	printf("packet_len:%d", packet_len);
+
+	if (get_unique_id() == 1) {
+		printf("SceneMultiplayer::_check_glb_existence->we are server\n");
+
+		// ask other if they know the glb
+		std::vector<uint8_t> buf(packet_len, 0);
+		//uint8_t buf[sizeConstant];
+		buf[0] = NETWORK_COMMAND_SYS;
+		buf[1] = SYS_COMMAND_CHECK_GLB_EXISTENCE;
+		multiplayer_peer->set_transfer_channel(0);
+		multiplayer_peer->set_transfer_mode(MultiplayerPeer::TRANSFER_MODE_RELIABLE);
+		encode_uint32(id, &buf[2]);
+
+		encode_uint32(p_path.size()*4, &buf[6]);
+		printf("sizeof -> p_path ->4bytes->:%i\n", p_path.size());
+		printf("p_path=%s\n", p_path.ascii().get_data());
+
+		int startIndex = 10;
+		encode_cstring(p_path.utf8().get_data(),  &buf[startIndex]);
+		//for (int i = 0; i < p_path.size(); i++) {
+		//	char32_t oneChar = p_path.get(i);
+		//	encode_uint32(oneChar, &buf[startIndex + i]);
+		//	
+		//	startIndex += 4;
+		//}
+			
+
+		for (const int& P : connected_peers) {
+		/*	if (P == 1) {
+				continue;
+			}*/
+
+			//tell distributor to which peer we send, which file_name we want to distribute
+			
+
+			multiplayer_peer->set_target_peer(P);
+			_send(buf.data(), packet_len);
+		}
+	}
+}
+
+void SceneMultiplayer::_set_glb_creator_peer(int peer)
+{
+	printf("SceneMultiplayer::_set_glb_creator_peer %d\n", peer);
+
+	int packet_len = SYS_CMD_SIZE + 4;
+	printf("packet_len:%d", packet_len);
+
+	//if (get_unique_id() == 1) {
+	printf("SceneMultiplayer::_set_glb_creator_peer->we are %d \n", get_unique_id());
+
+	// tell others the glb creator peer
+	std::vector<uint8_t> buf(packet_len, 0);
+	//uint8_t buf[sizeConstant];
+	buf[0] = NETWORK_COMMAND_SYS;
+	buf[1] = SYS_COMMAND_SET_GLB_PEER;
+	multiplayer_peer->set_transfer_channel(0);
+	multiplayer_peer->set_transfer_mode(MultiplayerPeer::TRANSFER_MODE_RELIABLE);
+	encode_uint32(peer, &buf[2]);
+
+	//add peer into buf
+	encode_uint32(peer, &buf[6]);
+	
+
+	for (const int& P : connected_peers) {
+		multiplayer_peer->set_target_peer(P);
+		_send(buf.data(), packet_len);
+	}
+	//}
 }
 
 Error SceneMultiplayer::poll() {
@@ -171,6 +249,8 @@ Error SceneMultiplayer::poll() {
 	}
 
 	replicator->on_network_process();
+	if( !distributor->get_requested_glb_files().is_empty() )
+		distributor->check_if_externally_created_glb_was_created();
 	return OK;
 }
 
@@ -350,6 +430,127 @@ void SceneMultiplayer::_process_sys(int p_from, const uint8_t *p_packet, int p_p
 				_process_packet(peer, packet, len);
 				remote_sender_id = 0;
 			}
+		} break;
+		case SYS_COMMAND_CHECK_GLB_EXISTENCE: {
+			printf("SYS_COMMAND_CHECK_GLB_EXISTENCE\n");
+
+			//get path from packet
+			const uint8_t* packet = p_packet + SYS_CMD_SIZE;
+			//int len = p_packet_len - SYS_CMD_SIZE;
+			//printf("SYS_CMD: len:%i\n", len);
+
+			//read paket_len from packet, 4bytes
+			uint32_t path_len = decode_uint32(packet);
+			printf("packet-len-from-packet:%u\n", path_len);
+			packet += 4;
+
+			String glb_path;
+			glb_path.parse_utf8((const char*)(packet), (path_len / 4));
+
+			printf("glb-path is:");
+			printf(glb_path.ascii().get_data());
+			printf("\n");
+
+			//check in path user://distribute_glb if there is a e.g. Fox.glb
+			String user_glb_path_prefix("user://distribute_glb/");
+			String user_glb_path(user_glb_path_prefix + glb_path);
+
+			int glb_file_exists = 0;
+			if (ResourceLoader::exists(user_glb_path)) {
+				printf("path %s exists\n", user_glb_path.ascii().get_data());
+				glb_file_exists = 1;
+			}
+			else {
+				printf("path %s NOT exists\n", user_glb_path.ascii().get_data());
+				glb_file_exists = 0;
+			}
+
+			int packet_len = SYS_CMD_SIZE + 4 + glb_path.size();
+			printf("packet_len to send:%d", packet_len);
+
+			// ask other if they know the glb
+			std::vector<uint8_t> buf(packet_len, 0);
+			//uint8_t buf[sizeConstant];
+			buf[0] = NETWORK_COMMAND_SYS;
+			buf[1] = SYS_COMMAND_COLLECT_CHECK_GLB_EXISTENCE;
+			multiplayer_peer->set_transfer_channel(0);
+			multiplayer_peer->set_transfer_mode(MultiplayerPeer::TRANSFER_MODE_RELIABLE);
+			encode_uint32(1, &buf[2]);  //we send answer to server
+
+			encode_uint32(glb_file_exists, &buf[6]); //we send 0/1 as result
+
+			encode_cstring(glb_path.ascii().get_data(), &buf[10]),  //we send the file-name back
+
+			multiplayer_peer->set_target_peer(1);
+			_send(buf.data(), packet_len);
+			
+
+		} break;
+		case SYS_COMMAND_COLLECT_CHECK_GLB_EXISTENCE: {
+			printf("SYS_COMMAND_COLLECT_CHECK_GLB_EXISTENCE\n");
+
+			//set packet to start of payload
+			const uint8_t* packet = p_packet + SYS_CMD_SIZE;
+
+			//read true/false from packet, 4bytes
+			uint32_t result = decode_uint32(packet);
+			printf("result-from-id:%d result:%u\n",p_from, result);
+			packet += 4;
+
+			//read file-name from packet, packet_len - 10
+			String file_name;
+			printf("result-packet len:%d", p_packet_len);
+			file_name.parse_utf8((const char*)(packet), (p_packet_len-10));
+
+			printf("file_name is:");
+			printf(file_name.ascii().get_data());
+			printf("\n");
+
+			distributor->set_glb_existence_info(p_from, result, file_name.ascii().get_data());
+
+		} break;
+		case SYS_COMMAND_REQUEST_GLB: {
+			printf("SYS_COMMAND_REQUEST_GLB\n");
+
+			//set packet to start of payload
+			const uint8_t* packet = p_packet + SYS_CMD_SIZE;
+
+			//read glb-name from packet, packet_len - 6
+			String glb_name;
+			glb_name.parse_utf8((const char*)(packet), (p_packet_len - 6));
+
+			printf("glb_name is:%s from:%d myself:%d\n", glb_name.ascii().get_data(), p_from, get_unique_id() );
+
+			//check if glb_name was already requested
+			if (distributor->get_requested_glb_files().has(glb_name.ascii().get_data())) {
+				printf("glb file already requested, doing nothing ?\n");
+			}
+			else {
+				printf("glb file NOT already requested, will create and distribute it\n");
+				//set in requested HashSet
+				get_distributor()->set_glb_as_requested(glb_name.ascii().get_data());
+				//request a create of the glb
+				distributor->request_to_externally_create_glb(glb_name.ascii().get_data());
+			}
+
+			
+
+			//ask others if they already know about glb_name
+			//_check_glb_existence(glb_name.ascii().get_data(), p_from);
+
+		} break;
+		case SYS_COMMAND_SET_GLB_PEER: {
+			printf("SYS_COMMAND_SET_GLB_PEER we-are:%d\n", get_unique_id());
+
+			//set packet to start of payload
+			const uint8_t* packet = p_packet + SYS_CMD_SIZE;
+
+			//read glb-creator-peer from packet, packet_len - 6
+			uint32_t glb_creator_peer = decode_uint32(packet);
+			
+			printf("glb_creator_peer is:%u from:%d myself:%d\n", glb_creator_peer, p_from, get_unique_id());
+
+			distributor->glb_creator_peer = glb_creator_peer;
 		} break;
 		default: {
 			ERR_FAIL();
@@ -610,6 +811,7 @@ Error SceneMultiplayer::object_configuration_remove(Object *p_obj, Variant p_con
 }
 
 void SceneMultiplayer::set_server_relay_enabled(bool p_enabled) {
+	ERR_FAIL_COND_MSG(multiplayer_peer.is_valid() && multiplayer_peer->get_connection_status() != MultiplayerPeer::CONNECTION_DISCONNECTED, "Cannot change the server relay option while the multiplayer peer is active.");
 	server_relay = p_enabled;
 }
 
@@ -618,6 +820,8 @@ bool SceneMultiplayer::is_server_relay_enabled() const {
 }
 
 void SceneMultiplayer::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_distributor"), &SceneMultiplayer::get_distributor);
+
 	ClassDB::bind_method(D_METHOD("set_root_path", "path"), &SceneMultiplayer::set_root_path);
 	ClassDB::bind_method(D_METHOD("get_root_path"), &SceneMultiplayer::get_root_path);
 	ClassDB::bind_method(D_METHOD("clear"), &SceneMultiplayer::clear);
@@ -660,6 +864,13 @@ SceneMultiplayer::SceneMultiplayer() {
 	replicator = Ref<SceneReplicationInterface>(memnew(SceneReplicationInterface(this)));
 	rpc = Ref<SceneRPCInterface>(memnew(SceneRPCInterface(this)));
 	cache = Ref<SceneCacheInterface>(memnew(SceneCacheInterface(this)));
+
+	distributor = Ref<SceneDistributionInterface>(memnew(SceneDistributionInterface(this)));
+	distributor->connect("_check_glb_existence", callable_mp(this, &SceneMultiplayer::_check_glb_existence));
+	distributor->connect("_set_glb_creator_peer", callable_mp(this, &SceneMultiplayer::_set_glb_creator_peer));
+
+	
+
 	set_multiplayer_peer(Ref<OfflineMultiplayerPeer>(memnew(OfflineMultiplayerPeer)));
 }
 

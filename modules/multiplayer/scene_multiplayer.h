@@ -1,32 +1,32 @@
-/**************************************************************************/
-/*  scene_multiplayer.h                                                   */
-/**************************************************************************/
-/*                         This file is part of:                          */
-/*                             GODOT ENGINE                               */
-/*                        https://godotengine.org                         */
-/**************************************************************************/
-/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
-/*                                                                        */
-/* Permission is hereby granted, free of charge, to any person obtaining  */
-/* a copy of this software and associated documentation files (the        */
-/* "Software"), to deal in the Software without restriction, including    */
-/* without limitation the rights to use, copy, modify, merge, publish,    */
-/* distribute, sublicense, and/or sell copies of the Software, and to     */
-/* permit persons to whom the Software is furnished to do so, subject to  */
-/* the following conditions:                                              */
-/*                                                                        */
-/* The above copyright notice and this permission notice shall be         */
-/* included in all copies or substantial portions of the Software.        */
-/*                                                                        */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
-/**************************************************************************/
+/*************************************************************************/
+/*  scene_multiplayer.h                                                  */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                      https://godotengine.org                          */
+/*************************************************************************/
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
 
 #ifndef SCENE_MULTIPLAYER_H
 #define SCENE_MULTIPLAYER_H
@@ -36,6 +36,7 @@
 #include "scene_cache_interface.h"
 #include "scene_replication_interface.h"
 #include "scene_rpc_interface.h"
+#include "scene_distribution_interface.h"
 
 class OfflineMultiplayerPeer : public MultiplayerPeer {
 	GDCLASS(OfflineMultiplayerPeer, MultiplayerPeer);
@@ -82,6 +83,10 @@ public:
 		SYS_COMMAND_ADD_PEER,
 		SYS_COMMAND_DEL_PEER,
 		SYS_COMMAND_RELAY,
+		SYS_COMMAND_REQUEST_GLB,
+		SYS_COMMAND_SET_GLB_PEER,
+		SYS_COMMAND_CHECK_GLB_EXISTENCE,
+		SYS_COMMAND_COLLECT_CHECK_GLB_EXISTENCE,
 	};
 
 	enum {
@@ -127,12 +132,14 @@ private:
 	Ref<SceneCacheInterface> cache;
 	Ref<SceneReplicationInterface> replicator;
 	Ref<SceneRPCInterface> rpc;
+	Ref<SceneDistributionInterface> distributor;
+
 
 #ifdef DEBUG_ENABLED
-	_FORCE_INLINE_ void _profile_bandwidth(const String &p_what, int p_value);
-	_FORCE_INLINE_ Error _send(const uint8_t *p_packet, int p_packet_len); // Also profiles.
+	_FORCE_INLINE_ void _profile_bandwidth(const String& p_what, int p_value);
+	_FORCE_INLINE_ Error _send(const uint8_t* p_packet, int p_packet_len); // Also profiles.
 #else
-	_FORCE_INLINE_ Error _send(const uint8_t *p_packet, int p_packet_len) {
+	_FORCE_INLINE_ Error _send(const uint8_t* p_packet, int p_packet_len) {
 		return multiplayer_peer->put_packet(p_packet, p_packet_len);
 	}
 #endif
@@ -140,17 +147,20 @@ private:
 protected:
 	static void _bind_methods();
 
-	void _process_packet(int p_from, const uint8_t *p_packet, int p_packet_len);
-	void _process_raw(int p_from, const uint8_t *p_packet, int p_packet_len);
-	void _process_sys(int p_from, const uint8_t *p_packet, int p_packet_len, MultiplayerPeer::TransferMode p_mode, int p_channel);
+	void _process_packet(int p_from, const uint8_t* p_packet, int p_packet_len);
+	void _process_raw(int p_from, const uint8_t* p_packet, int p_packet_len);
+	void _process_sys(int p_from, const uint8_t* p_packet, int p_packet_len, MultiplayerPeer::TransferMode p_mode, int p_channel);
 
 	void _add_peer(int p_id);
 	void _admit_peer(int p_id);
 	void _del_peer(int p_id);
 	void _update_status();
 
+	void _check_glb_existence(const String& p_path, int id);
+	void _set_glb_creator_peer(int peer);
+
 public:
-	virtual void set_multiplayer_peer(const Ref<MultiplayerPeer> &p_peer) override;
+	virtual void set_multiplayer_peer(const Ref<MultiplayerPeer>& p_peer) override;
 	virtual Ref<MultiplayerPeer> get_multiplayer_peer() override;
 
 	virtual Error poll() override;
@@ -158,15 +168,15 @@ public:
 	virtual Vector<int> get_peer_ids() override;
 	virtual int get_remote_sender_id() override { return remote_sender_override ? remote_sender_override : remote_sender_id; }
 
-	virtual Error rpcp(Object *p_obj, int p_peer_id, const StringName &p_method, const Variant **p_arg, int p_argcount) override;
+	virtual Error rpcp(Object* p_obj, int p_peer_id, const StringName& p_method, const Variant** p_arg, int p_argcount) override;
 
-	virtual Error object_configuration_add(Object *p_obj, Variant p_config) override;
-	virtual Error object_configuration_remove(Object *p_obj, Variant p_config) override;
+	virtual Error object_configuration_add(Object* p_obj, Variant p_config) override;
+	virtual Error object_configuration_remove(Object* p_obj, Variant p_config) override;
 
 	void clear();
 
 	// Usually from object_configuration_add/remove
-	void set_root_path(const NodePath &p_path);
+	void set_root_path(const NodePath& p_path);
 	NodePath get_root_path() const;
 
 	void disconnect_peer(int p_id);
@@ -179,9 +189,9 @@ public:
 	double get_auth_timeout() const;
 	Vector<int> get_authenticating_peer_ids();
 
-	Error send_command(int p_to, const uint8_t *p_packet, int p_packet_len); // Used internally to relay packets when needed.
+	Error send_command(int p_to, const uint8_t* p_packet, int p_packet_len); // Used internally to relay packets when needed.
 	Error send_bytes(Vector<uint8_t> p_data, int p_to = MultiplayerPeer::TARGET_PEER_BROADCAST, MultiplayerPeer::TransferMode p_mode = MultiplayerPeer::TRANSFER_MODE_RELIABLE, int p_channel = 0);
-	String get_rpc_md5(const Object *p_obj);
+	String get_rpc_md5(const Object* p_obj);
 
 	const HashSet<int> get_connected_peers() const { return connected_peers; }
 
@@ -197,6 +207,7 @@ public:
 
 	Ref<SceneCacheInterface> get_path_cache() { return cache; }
 	Ref<SceneReplicationInterface> get_replicator() { return replicator; }
+	Ref<SceneDistributionInterface> get_distributor() { return distributor; }
 
 	SceneMultiplayer();
 	~SceneMultiplayer();
