@@ -824,10 +824,18 @@ void TextureRegionEditor::_update_autoslice() {
 
 void TextureRegionEditor::_notification(int p_what) {
 	switch (p_what) {
-		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_EXIT_TREE: {
+			get_tree()->disconnect("node_removed", callable_mp(this, &TextureRegionEditor::_node_removed));
+		} break;
+
+		case NOTIFICATION_ENTER_TREE: {
+			get_tree()->connect("node_removed", callable_mp(this, &TextureRegionEditor::_node_removed));
+			[[fallthrough]];
+		}
 		case NOTIFICATION_THEME_CHANGED: {
 			edit_draw->add_theme_style_override("panel", get_theme_stylebox(SNAME("panel"), SNAME("Tree")));
 		} break;
+
 		case NOTIFICATION_READY: {
 			zoom_out->set_icon(get_theme_icon(SNAME("ZoomLess"), SNAME("EditorIcons")));
 			zoom_reset->set_icon(get_theme_icon(SNAME("ZoomReset"), SNAME("EditorIcons")));
@@ -840,11 +848,13 @@ void TextureRegionEditor::_notification(int p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/sub_editors_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
 		} break;
+
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 			if (snap_mode == SNAP_AUTOSLICE && is_visible() && autoslice_is_dirty) {
 				_update_autoslice();
 			}
 		} break;
+
 		case NOTIFICATION_WM_WINDOW_FOCUS_IN: {
 			// This happens when the user leaves the Editor and returns,
 			// they could have changed the textures, so the cache is cleared.
@@ -867,7 +877,6 @@ void TextureRegionEditor::_node_removed(Object *p_obj) {
 
 void TextureRegionEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_edit_region"), &TextureRegionEditor::_edit_region);
-	ClassDB::bind_method(D_METHOD("_node_removed"), &TextureRegionEditor::_node_removed);
 	ClassDB::bind_method(D_METHOD("_zoom_on_position"), &TextureRegionEditor::_zoom_on_position);
 	ClassDB::bind_method(D_METHOD("_update_rect"), &TextureRegionEditor::_update_rect);
 }
