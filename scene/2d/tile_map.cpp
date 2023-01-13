@@ -3738,6 +3738,34 @@ TypedArray<Vector2i> TileMap::get_used_cells(int p_layer) const {
 	return a;
 }
 
+TypedArray<Vector2i> TileMap::get_used_cells_by_source_id(int p_layer, int p_source_id) const {
+	ERR_FAIL_INDEX_V(p_layer, (int)layers.size(), TypedArray<Vector2i>());
+
+	TypedArray<Vector2i> a;
+	for (const KeyValue<Vector2i, TileMapCell> &E : layers[p_layer].tile_map) {
+		if (E.value.source_id == p_source_id) {
+			Vector2i p(E.key.x, E.key.y);
+			a.push_back(p);
+		}
+	}
+
+	return a;
+}
+
+TypedArray<Vector2i> TileMap::get_used_cells_by_alternative_tile(int p_layer, int p_alternative_tile) const {
+	ERR_FAIL_INDEX_V(p_layer, (int)layers.size(), TypedArray<Vector2i>());
+
+	TypedArray<Vector2i> a;
+	for (const KeyValue<Vector2i, TileMapCell> &E : layers[p_layer].tile_map) {
+		if (E.value.alternative_tile == p_alternative_tile) {
+			Vector2i p(E.key.x, E.key.y);
+			a.push_back(p);
+		}
+	}
+
+	return a;
+}
+
 Rect2i TileMap::get_used_rect() { // Not const because of cache
 	// Return the rect of the currently used area
 	if (used_rect_cache_dirty) {
@@ -4030,6 +4058,8 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_surrounding_cells", "coords"), &TileMap::get_surrounding_cells);
 
 	ClassDB::bind_method(D_METHOD("get_used_cells", "layer"), &TileMap::get_used_cells);
+	ClassDB::bind_method(D_METHOD("get_used_cells_by_source_id", "layer", "source_id"), &TileMap::get_used_cells_by_source_id);
+	ClassDB::bind_method(D_METHOD("get_used_cells_by_alternative_tile", "layer", "alternative_tile"), &TileMap::get_used_cells_by_alternative_tile);
 	ClassDB::bind_method(D_METHOD("get_used_rect"), &TileMap::get_used_rect);
 
 	ClassDB::bind_method(D_METHOD("map_to_local", "map_position"), &TileMap::map_to_local);

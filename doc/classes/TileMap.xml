@@ -188,6 +188,22 @@
 				Returns a [Vector2] array with the positions of all cells containing a tile in the given layer. A cell is considered empty if its source identifier equals -1, its atlas coordinates identifiers is [code]Vector2(-1, -1)[/code] and its alternative identifier is -1.
 			</description>
 		</method>
+		<method name="get_used_cells_by_alternative_tile" qualifiers="const">
+			<return type="Vector2i[]" />
+			<param index="0" name="layer" type="int" />
+			<param index="1" name="alternative_tile" type="int" />
+			<description>
+				Returns an array of all cells from the given layer with the given alternative tile index specified in [param alternative_tile].
+			</description>
+		</method>
+		<method name="get_used_cells_by_source_id" qualifiers="const">
+			<return type="Vector2i[]" />
+			<param index="0" name="layer" type="int" />
+			<param index="1" name="source_id" type="int" />
+			<description>
+				Returns an array of all cells from the given layer with the given source index specified in [param source_id].
+			</description>
+		</method>
 		<method name="get_used_rect">
 			<return type="Rect2i" />
 			<description>

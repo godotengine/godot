@@ -377,6 +377,8 @@ public:
 	Vector2i get_neighbor_cell(const Vector2i &p_coords, TileSet::CellNeighbor p_cell_neighbor) const;
 
 	TypedArray<Vector2i> get_used_cells(int p_layer) const;
+	TypedArray<Vector2i> get_used_cells_by_source_id(int p_layer, int p_source_id) const;
+	TypedArray<Vector2i> get_used_cells_by_alternative_tile(int p_layer, int p_alternative_tile) const;
 	Rect2i get_used_rect(); // Not const because of cache
 
 	// Override some methods of the CanvasItem class to pass the changes to the quadrants CanvasItems
