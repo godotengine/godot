@@ -460,10 +460,11 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns <see langword="true"/> if <paramref name="s"/> is approximately zero.
+        /// Returns <see langword="true"/> if <paramref name="s"/> is zero or almost zero.
         /// The comparison is done using a tolerance calculation with <see cref="Epsilon"/>.
         ///
-        /// This method is faster than using <see cref="IsEqualApprox(real_t, real_t)"/> with one value as zero.
+        /// This method is faster than using <see cref="IsEqualApprox(real_t, real_t)"/> with
+        /// one value as zero.
         /// </summary>
         /// <param name="s">The value to check.</param>
         /// <returns>A <see langword="bool"/> for whether or not the value is nearly zero.</returns>
