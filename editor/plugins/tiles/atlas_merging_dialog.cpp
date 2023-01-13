@@ -56,7 +56,7 @@ void AtlasMergingDialog::_generate_merged(Vector<Ref<TileSetAtlasSource>> p_atla
 			new_texture_region_size = new_texture_region_size.max(atlas_source->get_texture_region_size());
 		}
 
-		// Generate the merged TileSetAtlasSource.
+		// Generate the new texture.
 		Vector2i atlas_offset;
 		int line_height = 0;
 		for (int source_index = 0; source_index < p_atlas_sources.size(); source_index++) {
@@ -72,28 +72,6 @@ void AtlasMergingDialog::_generate_merged(Vector<Ref<TileSetAtlasSource>> p_atla
 
 				Rect2i new_tile_rect_in_altas = Rect2i(atlas_offset + tile_id, atlas_source->get_tile_size_in_atlas(tile_id));
 
-				// Create tiles and alternatives, then copy their properties.
-				for (int alternative_index = 0; alternative_index < atlas_source->get_alternative_tiles_count(tile_id); alternative_index++) {
-					int alternative_id = atlas_source->get_alternative_tile_id(tile_id, alternative_index);
-					if (alternative_id == 0) {
-						merged->create_tile(new_tile_rect_in_altas.position, new_tile_rect_in_altas.size);
-					} else {
-						merged->create_alternative_tile(new_tile_rect_in_altas.position, alternative_index);
-					}
-
-					// Copy the properties.
-					TileData *original_tile_data = atlas_source->get_tile_data(tile_id, alternative_id);
-					List<PropertyInfo> properties;
-					original_tile_data->get_property_list(&properties);
-					for (List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
-						const StringName &property_name = E->get().name;
-						merged->set(property_name, original_tile_data->get(property_name));
-					}
-
-					// Add to the mapping.
-					merged_mapping[source_index][tile_id] = new_tile_rect_in_altas.position;
-				}
-
 				// Copy the texture.
 				for (int frame = 0; frame < atlas_source->get_tile_animation_frames_count(tile_id); frame++) {
 					Rect2i src_rect = atlas_source->get_tile_texture_region(tile_id, frame);
@@ -103,6 +81,9 @@ void AtlasMergingDialog::_generate_merged(Vector<Ref<TileSetAtlasSource>> p_atla
 					}
 					output_image->blit_rect(atlas_source->get_texture()->get_image(), src_rect, dst_rect_wide.get_center() - src_rect.size / 2);
 				}
+
+				// Add to the mapping.
+				merged_mapping[source_index][tile_id] = new_tile_rect_in_altas.position;
 			}
 
 			// Compute the atlas offset.
@@ -115,8 +96,43 @@ void AtlasMergingDialog::_generate_merged(Vector<Ref<TileSetAtlasSource>> p_atla
 			}
 		}
 
-		merged->set_name(p_atlas_sources[0]->get_name());
 		merged->set_texture(ImageTexture::create_from_image(output_image));
+
+		// Copy the tiles to the merged TileSetAtlasSource.
+		for (int source_index = 0; source_index < p_atlas_sources.size(); source_index++) {
+			Ref<TileSetAtlasSource> atlas_source = p_atlas_sources[source_index];
+			for (KeyValue<Vector2i, Vector2i> tile_mapping : merged_mapping[source_index]) {
+				// Create tiles and alternatives, then copy their properties.
+				for (int alternative_index = 0; alternative_index < atlas_source->get_alternative_tiles_count(tile_mapping.key); alternative_index++) {
+					int alternative_id = atlas_source->get_alternative_tile_id(tile_mapping.key, alternative_index);
+					if (alternative_id == 0) {
+						merged->create_tile(tile_mapping.value, atlas_source->get_tile_size_in_atlas(tile_mapping.key));
+					} else {
+						merged->create_alternative_tile(tile_mapping.value, alternative_index);
+					}
+
+					// Copy the properties.
+					TileData *src_tile_data = atlas_source->get_tile_data(tile_mapping.key, alternative_id);
+					List<PropertyInfo> properties;
+					src_tile_data->get_property_list(&properties);
+
+					TileData *dst_tile_data = merged->get_tile_data(tile_mapping.value, alternative_id);
+					for (PropertyInfo property : properties) {
+						if (!(property.usage & PROPERTY_USAGE_STORAGE)) {
+							continue;
+						}
+						Variant value = src_tile_data->get(property.name);
+						Variant default_value = ClassDB::class_get_default_property_value("TileData", property.name);
+						if (default_value.get_type() != Variant::NIL && bool(Variant::evaluate(Variant::OP_EQUAL, value, default_value))) {
+							continue;
+						}
+						dst_tile_data->set(property.name, value);
+					}
+				}
+			}
+		}
+
+		merged->set_name(p_atlas_sources[0]->get_name());
 		merged->set_texture_region_size(new_texture_region_size);
 	}
 }
@@ -150,6 +166,8 @@ void AtlasMergingDialog::_merge_confirmed(String p_path) {
 
 	Ref<ImageTexture> output_image_texture = merged->get_texture();
 	output_image_texture->get_image()->save_png(p_path);
+
+	ResourceLoader::import(p_path);
 
 	Ref<Texture2D> new_texture_resource = ResourceLoader::load(p_path, "Texture2D");
 	merged->set_texture(new_texture_resource);
@@ -223,6 +241,14 @@ bool AtlasMergingDialog::_get(const StringName &p_name, Variant &r_ret) const {
 		return true;
 	}
 	return false;
+}
+
+void AtlasMergingDialog::_notification(int p_what) {
+	switch (p_what) {
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			_update_texture();
+		} break;
+	}
 }
 
 void AtlasMergingDialog::update_tile_set(Ref<TileSet> p_tile_set) {
