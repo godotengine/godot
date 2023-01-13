@@ -154,6 +154,7 @@ class EditorPropertyDictionary : public EditorProperty {
 	EditorSpinSlider *size_sliderv = nullptr;
 	Button *button_add_item = nullptr;
 	EditorPaginator *paginator = nullptr;
+	PropertyHint property_hint;
 
 	void _page_changed(int p_page);
 	void _edit_pressed();
@@ -169,6 +170,7 @@ protected:
 	void _notification(int p_what);
 
 public:
+	void setup(PropertyHint p_hint);
 	virtual void update_property() override;
 	EditorPropertyDictionary();
 };
