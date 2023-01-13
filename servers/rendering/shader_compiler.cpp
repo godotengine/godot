@@ -1311,6 +1311,9 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 					if (is_screen_texture && actions.apply_luminance_multiplier) {
 						code = "(" + code + " * vec4(vec3(sc_luminance_multiplier), 1.0))";
 					}
+					if (is_screen_texture && GLOBAL_GET("rendering/lights_and_shadows/use_physical_light_units")) {
+						code = "(" + code + " / vec4(vec3(scene_data.emissive_exposure_normalization), 1.0))";
+					}
 				} break;
 				case SL::OP_INDEX: {
 					code += _dump_node_code(onode->arguments[0], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
