@@ -143,7 +143,7 @@
 				[gdscript]
 				func _forward_canvas_draw_over_viewport(overlay):
 				    # Draw a circle at cursor position.
-				    overlay.draw_circle(overlay.get_local_mouse_position(), 64, Color.white)
+				    overlay.draw_circle(overlay.get_local_mouse_position(), 64, Color.WHITE)
 
 				func _forward_canvas_gui_input(event):
 				    if event is InputEventMouseMotion:
@@ -347,7 +347,7 @@
 				[codeblock]
 				func _set_state(data):
 				    zoom = data.get("zoom", 1.0)
-				    preferred_color = data.get("my_color", Color.white)
+				    preferred_color = data.get("my_color", Color.WHITE)
 				[/codeblock]
 			</description>
 		</method>
@@ -359,7 +359,7 @@
 				[codeblock]
 				func _set_window_layout(configuration):
 				    $Window.position = configuration.get_value("MyPlugin", "window_position", Vector2())
-				    $Icon.modulate = configuration.get_value("MyPlugin", "icon_color", Color.white)
+				    $Icon.modulate = configuration.get_value("MyPlugin", "icon_color", Color.WHITE)
 				[/codeblock]
 			</description>
 		</method>
