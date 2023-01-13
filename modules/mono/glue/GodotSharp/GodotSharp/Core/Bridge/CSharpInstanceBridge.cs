@@ -84,9 +84,26 @@ namespace Godot.Bridge
                 if (godotObject == null)
                     throw new InvalidOperationException();
 
+                // Properties
                 if (godotObject.GetGodotClassPropertyValue(CustomUnsafe.AsRef(name), out godot_variant outRetValue))
                 {
                     *outRet = outRetValue;
+                    return godot_bool.True;
+                }
+
+                // Signals
+                if (godotObject.HasGodotClassSignal(CustomUnsafe.AsRef(name)))
+                {
+                    godot_signal signal = new godot_signal(*name, godotObject.GetInstanceId());
+                    *outRet = VariantUtils.CreateFromSignalTakingOwnershipOfDisposableValue(signal);
+                    return godot_bool.True;
+                }
+
+                // Methods
+                if (godotObject.HasGodotClassMethod(CustomUnsafe.AsRef(name)))
+                {
+                    godot_callable method = new godot_callable(*name, godotObject.GetInstanceId());
+                    *outRet = VariantUtils.CreateFromCallableTakingOwnershipOfDisposableValue(method);
                     return godot_bool.True;
                 }
 

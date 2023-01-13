@@ -272,6 +272,25 @@ namespace Godot.SourceGenerators
                 source.Append("    }\n");
             }
 
+            // Generate HasGodotClassSignal
+
+            if (godotSignalDelegates.Count > 0)
+            {
+                source.Append(
+                    "    protected override bool HasGodotClassSignal(in godot_string_name signal)\n    {\n");
+
+                bool isFirstEntry = true;
+                foreach (var signal in godotSignalDelegates)
+                {
+                    GenerateHasSignalEntry(signal.Name, source, isFirstEntry);
+                    isFirstEntry = false;
+                }
+
+                source.Append("        return base.HasGodotClassSignal(signal);\n");
+
+                source.Append("    }\n");
+            }
+
             source.Append("}\n"); // partial class
 
             if (isInnerClass)
@@ -395,6 +414,20 @@ namespace Godot.SourceGenerators
 
             return new PropertyInfo(memberVariantType, name,
                 PropertyHint.None, string.Empty, propUsage, exported: false);
+        }
+
+        private static void GenerateHasSignalEntry(
+            string signalName,
+            StringBuilder source,
+            bool isFirstEntry
+        )
+        {
+            source.Append("        ");
+            if (!isFirstEntry)
+                source.Append("else ");
+            source.Append("if (signal == SignalName.");
+            source.Append(signalName);
+            source.Append(") {\n           return true;\n        }\n");
         }
 
         private static void GenerateSignalEventInvoker(
