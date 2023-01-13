@@ -440,6 +440,17 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns whether <paramref name="s"/> is a finite value, i.e. it is not
+        /// <see cref="NaN"/>, positive infinite, or negative infinity.
+        /// </summary>
+        /// <param name="s">The value to check.</param>
+        /// <returns>A <see langword="bool"/> for whether or not the value is a finite value.</returns>
+        public static bool IsFinite(real_t s)
+        {
+            return real_t.IsFinite(s);
+        }
+
+        /// <summary>
         /// Returns whether <paramref name="s"/> is an infinity value (either positive infinity or negative infinity).
         /// </summary>
         /// <param name="s">The value to check.</param>

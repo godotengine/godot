@@ -586,6 +586,16 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns <see langword="true"/> if this <see cref="AABB"/> is finite, by calling
+        /// <see cref="Mathf.IsFinite"/> on each component.
+        /// </summary>
+        /// <returns>Whether this vector is finite or not.</returns>
+        public readonly bool IsFinite()
+        {
+            return _position.IsFinite() && _size.IsFinite();
+        }
+
+        /// <summary>
         /// Returns a larger <see cref="AABB"/> that contains this <see cref="AABB"/> and <paramref name="with"/>.
         /// </summary>
         /// <param name="with">The other <see cref="AABB"/>.</param>

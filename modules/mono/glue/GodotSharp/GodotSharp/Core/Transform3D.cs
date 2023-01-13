@@ -140,6 +140,16 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns <see langword="true"/> if this transform is finite, by calling
+        /// <see cref="Mathf.IsFinite"/> on each component.
+        /// </summary>
+        /// <returns>Whether this vector is finite or not.</returns>
+        public readonly bool IsFinite()
+        {
+            return basis.IsFinite() && origin.IsFinite();
+        }
+
+        /// <summary>
         /// Returns a copy of the transform rotated such that its
         /// -Z axis (forward) points towards the <paramref name="target"/> position.
         ///
