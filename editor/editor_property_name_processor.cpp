@@ -211,6 +211,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["rmb"] = "RMB";
 	capitalize_string_remaps["rpc"] = "RPC";
 	capitalize_string_remaps["s3tc"] = "S3TC";
+	capitalize_string_remaps["scp"] = "SCP";
 	capitalize_string_remaps["sdf"] = "SDF";
 	capitalize_string_remaps["sdfgi"] = "SDFGI";
 	capitalize_string_remaps["sdk"] = "SDK";

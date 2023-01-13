@@ -170,6 +170,12 @@ void EditorExport::_notification(int p_what) {
 		case NOTIFICATION_PROCESS: {
 			update_export_presets();
 		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			for (int i = 0; i < export_platforms.size(); i++) {
+				export_platforms.write[i]->cleanup();
+			}
+		} break;
 	}
 }
 

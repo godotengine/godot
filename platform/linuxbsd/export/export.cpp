@@ -36,7 +36,6 @@
 void register_linuxbsd_exporter() {
 	Ref<EditorExportPlatformLinuxBSD> platform;
 	platform.instantiate();
-	platform->set_logo(ImageTexture::create_from_image(memnew(Image(_linuxbsd_logo))));
 	platform->set_name("Linux/X11");
 	platform->set_os_name("Linux");
 	platform->set_chmod_flags(0755);

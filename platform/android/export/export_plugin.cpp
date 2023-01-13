@@ -43,10 +43,16 @@
 #include "editor/editor_log.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
+#include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "main/splash.gen.h"
-#include "platform/android/logo.gen.h"
-#include "platform/android/run_icon.gen.h"
+#include "platform/android/logo_svg.gen.h"
+#include "platform/android/run_icon_svg.gen.h"
+
+#include "modules/modules_enabled.gen.h" // For svg.
+#ifdef MODULE_SVG_ENABLED
+#include "modules/svg/image_loader_svg.h"
+#endif
 
 #include <string.h>
 
@@ -3238,8 +3244,17 @@ void EditorExportPlatformAndroid::resolve_platform_feature_priorities(const Ref<
 }
 
 EditorExportPlatformAndroid::EditorExportPlatformAndroid() {
-	logo = ImageTexture::create_from_image(memnew(Image(_android_logo)));
-	run_icon = ImageTexture::create_from_image(memnew(Image(_android_run_icon)));
+#ifdef MODULE_SVG_ENABLED
+	Ref<Image> img = memnew(Image);
+	const bool upsample = !Math::is_equal_approx(Math::round(EDSCALE), EDSCALE);
+
+	ImageLoaderSVG img_loader;
+	img_loader.create_image_from_string(img, _android_logo_svg, EDSCALE, upsample, false);
+	logo = ImageTexture::create_from_image(img);
+
+	img_loader.create_image_from_string(img, _android_run_icon_svg, EDSCALE, upsample, false);
+	run_icon = ImageTexture::create_from_image(img);
+#endif
 
 	devices_changed.set();
 	plugins_changed.set();
