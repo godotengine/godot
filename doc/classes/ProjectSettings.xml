@@ -760,6 +760,9 @@
 		<member name="gui/theme/lcd_subpixel_layout" type="int" setter="" getter="" default="1">
 			LCD subpixel layout used for font anti-aliasing. See [enum TextServer.FontLCDSubpixelLayout].
 		</member>
+		<member name="gui/timers/button_shortcut_feedback_highlight_time" type="float" setter="" getter="" default="0.2">
+			When [member BaseButton.shortcut_feedback] is enabled, this is the time the [BaseButton] will remain highlighted after a shortcut.
+		</member>
 		<member name="gui/timers/incremental_search_max_interval_msec" type="int" setter="" getter="" default="2000">
 			Timer setting for incremental search in [Tree], [ItemList], etc. controls (in milliseconds).
 		</member>

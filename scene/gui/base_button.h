@@ -51,9 +51,9 @@ private:
 	bool shortcut_in_tooltip = true;
 	bool was_mouse_pressed = false;
 	bool keep_pressed_outside = false;
+	bool shortcut_feedback = true;
 	Ref<Shortcut> shortcut;
 	ObjectID shortcut_context;
-	bool shortcut_feedback = true;
 
 	ActionMode action_mode = ACTION_MODE_BUTTON_RELEASE;
 	struct Status {
@@ -61,7 +61,6 @@ private:
 		bool hovering = false;
 		bool press_attempt = false;
 		bool pressing_inside = false;
-		bool shortcut_press = false;
 
 		bool disabled = false;
 
@@ -74,6 +73,10 @@ private:
 	void _toggled(bool p_pressed);
 
 	void on_action_event(Ref<InputEvent> p_event);
+
+	Timer *shortcut_feedback_timer = nullptr;
+	bool in_shortcut_feedback = false;
+	void _shortcut_feedback_timeout();
 
 protected:
 	virtual void pressed();
@@ -122,6 +125,9 @@ public:
 	void set_keep_pressed_outside(bool p_on);
 	bool is_keep_pressed_outside() const;
 
+	void set_shortcut_feedback(bool p_enable);
+	bool is_shortcut_feedback() const;
+
 	void set_button_mask(BitField<MouseButtonMask> p_mask);
 	BitField<MouseButtonMask> get_button_mask() const;
 
@@ -132,9 +138,6 @@ public:
 
 	void set_button_group(const Ref<ButtonGroup> &p_group);
 	Ref<ButtonGroup> get_button_group() const;
-
-	void set_shortcut_feedback(bool p_feedback);
-	bool is_shortcut_feedback() const;
 
 	PackedStringArray get_configuration_warnings() const override;
 
