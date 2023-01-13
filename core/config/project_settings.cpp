@@ -220,7 +220,9 @@ String ProjectSettings::localize_path(const String &p_path) const {
 
 void ProjectSettings::set_initial_value(const String &p_name, const Variant &p_value) {
 	ERR_FAIL_COND_MSG(!props.has(p_name), "Request for nonexistent project setting: " + p_name + ".");
-	props[p_name].initial = p_value;
+
+	// Duplicate so that if value is array or dictionary, changing the setting will not change the stored initial value.
+	props[p_name].initial = p_value.duplicate();
 }
 
 void ProjectSettings::set_restart_if_changed(const String &p_name, bool p_restart) {
@@ -1122,7 +1124,9 @@ bool ProjectSettings::_property_get_revert(const StringName &p_name, Variant &r_
 		return false;
 	}
 
-	r_property = props[p_name].initial;
+	// Duplicate so that if value is array or dictionary, changing the setting will not change the stored initial value.
+	r_property = props[p_name].initial.duplicate();
+
 	return true;
 }
 
