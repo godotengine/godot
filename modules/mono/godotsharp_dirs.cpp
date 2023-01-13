@@ -145,9 +145,9 @@ private:
 		mono_solutions_dir = mono_user_dir.plus_file("solutions");
 		build_logs_dir = mono_user_dir.plus_file("build_logs");
 
-		GLOBAL_DEF("mono/project/assembly_name", "");
-		GLOBAL_DEF("mono/project/solution_directory", "");
-		GLOBAL_DEF("mono/project/c#_project_directory", "");
+		GLOBAL_DEF_RST("mono/project/assembly_name", "");
+		GLOBAL_DEF_RST("mono/project/solution_directory", "");
+		GLOBAL_DEF_RST("mono/project/c#_project_directory", "");
 
 		String appname = ProjectSettings::get_singleton()->get("application/config/name");
 		String appname_safe = OS::get_singleton()->get_safe_dir_name(appname);
