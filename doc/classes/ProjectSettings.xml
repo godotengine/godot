@@ -84,6 +84,25 @@
 				GD.Print(ProjectSettings.GetSetting("application/config/custom_description", "No description specified."));
 				[/csharp]
 				[/codeblocks]
+				[b]Note:[/b] This method doesn't take potential feature overrides into account automatically. Use [method get_setting_with_override] to handle seamlessly.
+			</description>
+		</method>
+		<method name="get_setting_with_override" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Similar to [method get_setting], but applies feature tag overrides if any exists and is valid.
+				[b]Example:[/b]
+				If the following setting override exists "application/config/name.windows", and the following code is executed:
+				[codeblocks]
+				[gdscript]
+				print(ProjectSettings.get_setting_with_override("application/config/name"))
+				[/gdscript]
+				[csharp]
+				GD.Print(ProjectSettings.GetSettingWithOverride("application/config/name"));
+				[/csharp]
+				[/codeblocks]
+				Then the overridden setting will be returned instead if the project is running on the [i]Windows[/i] operating system.
 			</description>
 		</method>
 		<method name="globalize_path" qualifiers="const">
