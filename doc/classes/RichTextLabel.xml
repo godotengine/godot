@@ -8,7 +8,7 @@
 		[b]Note:[/b] Assignments to [member text] clear the tag stack and reconstruct it from the property's contents. Any edits made to [member text] will erase previous edits made from other manual sources such as [method append_text] and the [code]push_*[/code] / [method pop] methods.
 		[b]Note:[/b] RichTextLabel doesn't support entangled BBCode tags. For example, instead of using [code][b]bold[i]bold italic[/b]italic[/i][/code], use [code][b]bold[i]bold italic[/i][/b][i]italic[/i][/code].
 		[b]Note:[/b] [code]push_*/pop[/code] functions won't affect BBCode.
-		[b]Note:[/b] Unlike [Label], RichTextLabel doesn't have a [i]property[/i] to horizontally align text to the center. Instead, enable [member bbcode_enabled] and surround the text in a [code][center][/code] tag as follows: [code][center]Example[/center][/code]. There is currently no built-in way to vertically align text either, but this can be emulated by relying on anchors/containers and the [member fit_content_height] property.
+		[b]Note:[/b] Unlike [Label], RichTextLabel doesn't have a [i]property[/i] to horizontally align text to the center. Instead, enable [member bbcode_enabled] and surround the text in a [code][center][/code] tag as follows: [code][center]Example[/center][/code]. There is currently no built-in way to vertically align text either, but this can be emulated by relying on anchors/containers and the [member fit_content] property.
 	</description>
 	<tutorials>
 		<link title="BBCode in RichTextLabel">$DOCS_URL/tutorials/ui/bbcode_in_richtextlabel.html</link>
@@ -473,9 +473,8 @@
 		<member name="deselect_on_focus_loss_enabled" type="bool" setter="set_deselect_on_focus_loss_enabled" getter="is_deselect_on_focus_loss_enabled" default="true">
 			If [code]true[/code], the selected text will be deselected when focus is lost.
 		</member>
-		<member name="fit_content_height" type="bool" setter="set_fit_content_height" getter="is_fit_content_height_enabled" default="false">
-			If [code]true[/code], the label's height will be automatically updated to fit its content.
-			[b]Note:[/b] This property is used as a workaround to fix issues with [RichTextLabel] in [Container]s, but it's unreliable in some cases and will be removed in future versions.
+		<member name="fit_content" type="bool" setter="set_fit_content" getter="is_fit_content_enabled" default="false">
+			If [code]true[/code], the label's minimum size will be automatically updated to fit its content, matching the behavior of [Label].
 		</member>
 		<member name="hint_underlined" type="bool" setter="set_hint_underline" getter="is_hint_underlined" default="true">
 			If [code]true[/code], the label underlines hint tags such as [code][hint=description]{text}[/hint][/code].

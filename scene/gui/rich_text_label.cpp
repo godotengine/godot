@@ -2778,7 +2778,7 @@ bool RichTextLabel::_validate_line_caches() {
 
 		main->first_resized_line.store(main->lines.size());
 
-		if (fit_content_height) {
+		if (fit_content) {
 			update_minimum_size();
 		}
 		return true;
@@ -2862,7 +2862,7 @@ void RichTextLabel::_process_line_caches() {
 	main->first_resized_line.store(main->lines.size());
 	main->first_invalid_font_line.store(main->lines.size());
 
-	if (fit_content_height) {
+	if (fit_content) {
 		update_minimum_size();
 	}
 	emit_signal(SNAME("finished"));
@@ -2963,7 +2963,7 @@ void RichTextLabel::_add_item(Item *p_item, bool p_enter, bool p_ensure_newline)
 
 	_invalidate_current_line(current_frame);
 
-	if (fixed_width != -1) {
+	if (fit_content) {
 		update_minimum_size();
 	}
 	queue_redraw();
@@ -3551,7 +3551,7 @@ void RichTextLabel::clear() {
 		scroll_following = true;
 	}
 
-	if (fixed_width != -1) {
+	if (fit_content) {
 		update_minimum_size();
 	}
 }
@@ -3572,15 +3572,17 @@ int RichTextLabel::get_tab_size() const {
 	return tab_size;
 }
 
-void RichTextLabel::set_fit_content_height(bool p_enabled) {
-	if (p_enabled != fit_content_height) {
-		fit_content_height = p_enabled;
-		update_minimum_size();
+void RichTextLabel::set_fit_content(bool p_enabled) {
+	if (p_enabled == fit_content) {
+		return;
 	}
+
+	fit_content = p_enabled;
+	update_minimum_size();
 }
 
-bool RichTextLabel::is_fit_content_height_enabled() const {
-	return fit_content_height;
+bool RichTextLabel::is_fit_content_enabled() const {
+	return fit_content;
 }
 
 void RichTextLabel::set_meta_underline(bool p_underline) {
@@ -5381,8 +5383,8 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_tab_size", "spaces"), &RichTextLabel::set_tab_size);
 	ClassDB::bind_method(D_METHOD("get_tab_size"), &RichTextLabel::get_tab_size);
 
-	ClassDB::bind_method(D_METHOD("set_fit_content_height", "enabled"), &RichTextLabel::set_fit_content_height);
-	ClassDB::bind_method(D_METHOD("is_fit_content_height_enabled"), &RichTextLabel::is_fit_content_height_enabled);
+	ClassDB::bind_method(D_METHOD("set_fit_content", "enabled"), &RichTextLabel::set_fit_content);
+	ClassDB::bind_method(D_METHOD("is_fit_content_enabled"), &RichTextLabel::is_fit_content_enabled);
 
 	ClassDB::bind_method(D_METHOD("set_selection_enabled", "enabled"), &RichTextLabel::set_selection_enabled);
 	ClassDB::bind_method(D_METHOD("is_selection_enabled"), &RichTextLabel::is_selection_enabled);
@@ -5457,7 +5459,7 @@ void RichTextLabel::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "bbcode_enabled"), "set_use_bbcode", "is_using_bbcode");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_MULTILINE_TEXT), "set_text", "get_text");
 
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fit_content_height"), "set_fit_content_height", "is_fit_content_height_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fit_content"), "set_fit_content", "is_fit_content_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_active"), "set_scroll_active", "is_scroll_active");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scroll_following"), "set_scroll_follow", "is_scroll_following");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "autowrap_mode", PROPERTY_HINT_ENUM, "Off,Arbitrary,Word,Word (Smart)"), "set_autowrap_mode", "get_autowrap_mode");
@@ -5644,27 +5646,17 @@ int RichTextLabel::get_total_glyph_count() const {
 	return tg;
 }
 
-void RichTextLabel::set_fixed_size_to_width(int p_width) {
-	if (fixed_width == p_width) {
-		return;
-	}
-
-	fixed_width = p_width;
-	update_minimum_size();
-}
-
 Size2 RichTextLabel::get_minimum_size() const {
-	Size2 size = theme_cache.normal_style->get_minimum_size();
+	Size2 sb_min_size = theme_cache.normal_style->get_minimum_size();
+	Size2 min_size;
 
-	if (fixed_width != -1) {
-		size.x += fixed_width;
+	if (fit_content) {
+		min_size.x = get_content_width();
+		min_size.y = get_content_height();
 	}
 
-	if (fit_content_height) {
-		size.y += get_content_height();
-	}
-
-	return size;
+	return sb_min_size +
+			((autowrap_mode != TextServer::AUTOWRAP_OFF) ? Size2(1, min_size.height) : min_size);
 }
 
 // Context menu.
