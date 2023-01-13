@@ -688,7 +688,7 @@ bool CSharpLanguage::is_assembly_reloading_needed() {
 			return false; // Already up to date
 		}
 	} else {
-		String assembly_name = ProjectSettings::get_singleton()->get_setting("dotnet/project/assembly_name");
+		String assembly_name = GLOBAL_GET("dotnet/project/assembly_name");
 
 		if (assembly_name.is_empty()) {
 			assembly_name = ProjectSettings::get_singleton()->get_safe_project_name();

@@ -289,7 +289,7 @@ godot_plugins_initialize_fn initialize_hostfxr_and_godot_plugins(bool &r_runtime
 }
 #else
 static String get_assembly_name() {
-	String assembly_name = ProjectSettings::get_singleton()->get_setting("dotnet/project/assembly_name");
+	String assembly_name = GLOBAL_GET("dotnet/project/assembly_name");
 
 	if (assembly_name.is_empty()) {
 		assembly_name = ProjectSettings::get_singleton()->get_safe_project_name();
@@ -466,7 +466,7 @@ void GDMono::_init_godot_api_hashes() {
 
 #ifdef TOOLS_ENABLED
 bool GDMono::_load_project_assembly() {
-	String assembly_name = ProjectSettings::get_singleton()->get_setting("dotnet/project/assembly_name");
+	String assembly_name = GLOBAL_GET("dotnet/project/assembly_name");
 
 	if (assembly_name.is_empty()) {
 		assembly_name = ProjectSettings::get_singleton()->get_safe_project_name();

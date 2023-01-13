@@ -42,7 +42,7 @@
 
 using namespace godot;
 
-#define GLOBAL_GET(m_var) ProjectSettings::get_singleton()->get(m_var)
+#define GLOBAL_GET(m_var) ProjectSettings::get_singleton()->get_setting_with_override(m_var)
 
 #else
 // Headers for building as built-in module.

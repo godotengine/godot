@@ -34,6 +34,7 @@
 #include "core/object/class_db.h"
 #include "core/os/thread_safe.h"
 #include "core/templates/hash_map.h"
+#include "core/templates/local_vector.h"
 #include "core/templates/rb_set.h"
 
 class ProjectSettings : public Object {
@@ -69,7 +70,6 @@ protected:
 		Variant variant;
 		Variant initial;
 		bool hide_from_editor = false;
-		bool overridden = false;
 		bool restart_if_changed = false;
 #ifdef DEBUG_METHODS_ENABLED
 		bool ignore_value_in_docs = false;
@@ -91,12 +91,11 @@ protected:
 	RBMap<StringName, VariantContainer> props; // NOTE: Key order is used e.g. in the save_custom method.
 	String resource_path;
 	HashMap<StringName, PropertyInfo> custom_prop_info;
-	bool disable_feature_overrides = false;
 	bool using_datapack = false;
 	List<String> input_presets;
 
 	HashSet<String> custom_features;
-	HashMap<StringName, StringName> feature_overrides;
+	HashMap<StringName, LocalVector<Pair<StringName, StringName>>> feature_overrides;
 
 	HashMap<StringName, AutoloadInfo> autoloads;
 
@@ -181,7 +180,7 @@ public:
 
 	List<String> get_input_presets() const { return input_presets; }
 
-	void set_disable_feature_overrides(bool p_disable);
+	Variant get_setting_with_override(const StringName &p_name) const;
 
 	bool is_using_datapack() const;
 
@@ -205,7 +204,7 @@ Variant _GLOBAL_DEF(const PropertyInfo &p_info, const Variant &p_default, bool p
 #define GLOBAL_DEF_RST(m_var, m_value) _GLOBAL_DEF(m_var, m_value, true)
 #define GLOBAL_DEF_NOVAL(m_var, m_value) _GLOBAL_DEF(m_var, m_value, false, true)
 #define GLOBAL_DEF_RST_NOVAL(m_var, m_value) _GLOBAL_DEF(m_var, m_value, true, true)
-#define GLOBAL_GET(m_var) ProjectSettings::get_singleton()->get(m_var)
+#define GLOBAL_GET(m_var) ProjectSettings::get_singleton()->get_setting_with_override(m_var)
 
 #define GLOBAL_DEF_BASIC(m_var, m_value) _GLOBAL_DEF(m_var, m_value, false, false, true)
 #define GLOBAL_DEF_RST_BASIC(m_var, m_value) _GLOBAL_DEF(m_var, m_value, true, false, true)
