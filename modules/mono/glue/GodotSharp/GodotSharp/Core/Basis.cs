@@ -709,6 +709,16 @@ namespace Godot
             );
         }
 
+        /// <summary>
+        /// Returns <see langword="true"/> if this basis is finite, by calling
+        /// <see cref="Mathf.IsFinite"/> on each component.
+        /// </summary>
+        /// <returns>Whether this vector is finite or not.</returns>
+        public readonly bool IsFinite()
+        {
+            return Row0.IsFinite() && Row1.IsFinite() && Row2.IsFinite();
+        }
+
         internal readonly Basis Lerp(Basis to, real_t weight)
         {
             Basis b = this;

@@ -101,6 +101,16 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns <see langword="true"/> if this <see cref="Rect2"/> is finite, by calling
+        /// <see cref="Mathf.IsFinite"/> on each component.
+        /// </summary>
+        /// <returns>Whether this vector is finite or not.</returns>
+        public bool IsFinite()
+        {
+            return _position.IsFinite() && _size.IsFinite();
+        }
+
+        /// <summary>
         /// Returns <see langword="true"/> if this <see cref="Rect2"/> completely encloses another one.
         /// </summary>
         /// <param name="b">The other <see cref="Rect2"/> that may be enclosed.</param>

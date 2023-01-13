@@ -494,7 +494,7 @@
 			<return type="bool" />
 			<param index="0" name="x" type="float" />
 			<description>
-				Returns whether [code]x[/code] is a finite value, i.e. it is not [constant @GDScript.NAN], positive infinity, or negative infinity.
+				Returns whether [param x] is a finite value, i.e. it is not [constant @GDScript.NAN], positive infinity, or negative infinity.
 			</description>
 		</method>
 		<method name="is_inf">
