@@ -59,6 +59,7 @@ ShaderTypes::ShaderTypes() {
 	/*************** SPATIAL ***********************/
 
 	shader_modes[RS::SHADER_SPATIAL].functions["global"].built_ins["TIME"] = constt(ShaderLanguage::TYPE_FLOAT);
+	shader_modes[RS::SHADER_SPATIAL].functions["global"].built_ins["EXPOSURE"] = constt(ShaderLanguage::TYPE_FLOAT);
 	shader_modes[RS::SHADER_SPATIAL].functions["constants"].built_ins["PI"] = constt(ShaderLanguage::TYPE_FLOAT);
 	shader_modes[RS::SHADER_SPATIAL].functions["constants"].built_ins["TAU"] = constt(ShaderLanguage::TYPE_FLOAT);
 	shader_modes[RS::SHADER_SPATIAL].functions["constants"].built_ins["E"] = constt(ShaderLanguage::TYPE_FLOAT);
