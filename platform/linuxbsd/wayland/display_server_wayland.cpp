@@ -523,6 +523,12 @@ void DisplayServerWayland::_wl_registry_on_global(void *data, struct wl_registry
 			zwp_primary_selection_device_v1_add_listener(ss->wp_primary_selection_device, &wp_primary_selection_device_listener, ss);
 		}
 
+		if (!ss->wp_tablet_seat && globals.wp_tablet_manager) {
+			// Get this own seat's tablet handle.
+			ss->wp_tablet_seat = zwp_tablet_manager_v2_get_tablet_seat(globals.wp_tablet_manager, ss->wl_seat);
+			zwp_tablet_seat_v2_add_listener(ss->wp_tablet_seat, &wp_tablet_seat_listener, ss);
+		}
+
 		wl_seat_add_listener(ss->wl_seat, &wl_seat_listener, ss);
 		return;
 	}
@@ -566,6 +572,20 @@ void DisplayServerWayland::_wl_registry_on_global(void *data, struct wl_registry
 	if (strcmp(interface, zwp_idle_inhibit_manager_v1_interface.name) == 0) {
 		globals.wp_idle_inhibit_manager = (struct zwp_idle_inhibit_manager_v1 *)wl_registry_bind(wl_registry, name, &zwp_idle_inhibit_manager_v1_interface, 1);
 		globals.wp_idle_inhibit_manager_name = name;
+		return;
+	}
+
+	if (strcmp(interface, zwp_tablet_manager_v2_interface.name) == 0) {
+		globals.wp_tablet_manager = (struct zwp_tablet_manager_v2 *)wl_registry_bind(wl_registry, name, &zwp_tablet_manager_v2_interface, 1);
+		globals.wp_tablet_manager_name = name;
+
+		for (SeatState &ss : wls->seats) {
+			if (ss.wl_seat) {
+				ss.wp_tablet_seat = zwp_tablet_manager_v2_get_tablet_seat(globals.wp_tablet_manager, ss.wl_seat);
+				zwp_tablet_seat_v2_add_listener(ss.wp_tablet_seat, &wp_tablet_seat_listener, &ss);
+			}
+		}
+
 		return;
 	}
 }
@@ -681,6 +701,22 @@ void DisplayServerWayland::_wl_registry_on_global_remove(void *data, struct wl_r
 		return;
 	}
 
+	if (name == globals.wp_tablet_manager_name) {
+		zwp_tablet_manager_v2_destroy(globals.wp_tablet_manager);
+
+		for (SeatState &ss : wls->seats) {
+			{
+				// Let's destroy all tablet tools.
+				List<struct zwp_tablet_tool_v2 *>::Element *it = ss.tablet_tools.front();
+
+				while (it) {
+					zwp_tablet_tool_v2_destroy(it->get());
+					it = it->next();
+				}
+			}
+		}
+	}
+
 	{
 		// FIXME: This is a very bruteforce approach.
 		List<ScreenData>::Element *it = wls->screens.front();
@@ -714,6 +750,21 @@ void DisplayServerWayland::_wl_registry_on_global_remove(void *data, struct wl_r
 
 				if (ss.wl_seat) {
 					wl_seat_destroy(ss.wl_seat);
+				}
+
+				if (ss.wp_tablet_seat) {
+					zwp_tablet_seat_v2_destroy(ss.wp_tablet_seat);
+
+					for (struct zwp_tablet_tool_v2 *tool : ss.tablet_tools) {
+						zwp_tablet_tool_v2_destroy(tool);
+					}
+				}
+
+				{
+					// Let's destroy all tools.
+					for (struct zwp_tablet_tool_v2 *tool : ss.tablet_tools) {
+						zwp_tablet_tool_v2_destroy(tool);
+					}
 				}
 
 				wls->seats.erase(it);
@@ -1754,6 +1805,302 @@ void DisplayServerWayland::_wp_primary_selection_source_on_cancelled(void *data,
 	}
 }
 
+void DisplayServerWayland::_wp_tablet_seat_on_tablet_added(void *data, struct zwp_tablet_seat_v2 *zwp_tablet_seat_v2, struct zwp_tablet_v2 *id) {
+	DEBUG_LOG_WAYLAND(vformat("wp tablet seat %x on tablet %x added", (size_t)zwp_tablet_seat_v2, (size_t)id));
+}
+
+void DisplayServerWayland::_wp_tablet_seat_on_tool_added(void *data, struct zwp_tablet_seat_v2 *zwp_tablet_seat_v2, struct zwp_tablet_tool_v2 *id) {
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
+
+	ss->tablet_tools.push_back(id);
+
+	zwp_tablet_tool_v2_add_listener(id, &wp_tablet_tool_listener, ss);
+
+	DEBUG_LOG_WAYLAND(vformat("wp tablet seat %x on tool %x added", (size_t)zwp_tablet_seat_v2, (size_t)id));
+}
+
+void DisplayServerWayland::_wp_tablet_seat_on_pad_added(void *data, struct zwp_tablet_seat_v2 *zwp_tablet_seat_v2, struct zwp_tablet_pad_v2 *id) {
+	DEBUG_LOG_WAYLAND(vformat("wp tablet seat %x on pad %x added", (size_t)zwp_tablet_seat_v2, (size_t)id));
+}
+
+void DisplayServerWayland::_wp_tablet_tool_on_type(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, uint32_t tool_type) {
+	DEBUG_LOG_WAYLAND(vformat("wp tablet tool %x on type %d", (size_t)zwp_tablet_tool_v2, tool_type));
+}
+
+void DisplayServerWayland::_wp_tablet_tool_on_hardware_serial(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, uint32_t hardware_serial_hi, uint32_t hardware_serial_lo) {
+	DEBUG_LOG_WAYLAND(vformat("wp tablet tool %x on hardware serial %x%x", (size_t)zwp_tablet_tool_v2, hardware_serial_hi, hardware_serial_lo));
+}
+
+void DisplayServerWayland::_wp_tablet_tool_on_hardware_id_wacom(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, uint32_t hardware_id_hi, uint32_t hardware_id_lo) {
+	DEBUG_LOG_WAYLAND(vformat("wp tablet tool %x on hardware id wacom hardware id %x%x", (size_t)zwp_tablet_tool_v2, hardware_id_hi, hardware_id_lo));
+}
+
+void DisplayServerWayland::_wp_tablet_tool_on_capability(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, uint32_t capability) {
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
+
+	if (capability == ZWP_TABLET_TOOL_V2_TYPE_ERASER) {
+		ss->tablet_tool_data_buffer.is_eraser = true;
+	}
+
+	DEBUG_LOG_WAYLAND(vformat("wp tablet tool %x on capability %d", (size_t)zwp_tablet_tool_v2, capability));
+}
+
+void DisplayServerWayland::_wp_tablet_tool_on_done(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2) {
+	DEBUG_LOG_WAYLAND(vformat("wp tablet tool %x on done", (size_t)zwp_tablet_tool_v2));
+}
+
+void DisplayServerWayland::_wp_tablet_tool_on_removed(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2) {
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
+
+	List<struct zwp_tablet_tool_v2 *>::Element *it = ss->tablet_tools.front();
+
+	while (it) {
+		struct zwp_tablet_tool_v2 *tool = it->get();
+
+		if (tool == zwp_tablet_tool_v2) {
+			zwp_tablet_tool_v2_destroy(tool);
+			ss->tablet_tools.erase(it);
+			break;
+		}
+	}
+
+	print_verbose(vformat("wp tablet tool %x on removed", (size_t)zwp_tablet_tool_v2));
+}
+
+void DisplayServerWayland::_wp_tablet_tool_on_proximity_in(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, uint32_t serial, struct zwp_tablet_v2 *tablet, struct wl_surface *surface) {
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
+
+	WaylandState *wls = ss->wls;
+	ERR_FAIL_NULL(wls);
+
+	ss->tablet_tool_data_buffer.in_proximity = true;
+	ss->pointer_enter_serial = serial;
+
+	DEBUG_LOG_WAYLAND("Tablet tool entered window.");
+
+	if (!ss->window_pointed) {
+		Ref<WaylandWindowEventMessage> msg;
+		msg.instantiate();
+		msg->event = WINDOW_EVENT_MOUSE_ENTER;
+
+		wls->message_queue.push_back(msg);
+	}
+
+	print_verbose(vformat("wp tablet tool %x on proximity in serial %d tablet %x surface %x", (size_t)zwp_tablet_tool_v2, serial, (size_t)tablet, (size_t)surface));
+}
+
+void DisplayServerWayland::_wp_tablet_tool_on_proximity_out(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2) {
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
+
+	WaylandState *wls = ss->wls;
+	ERR_FAIL_NULL(wls);
+
+	ss->tablet_tool_data_buffer.in_proximity = false;
+
+	DEBUG_LOG_WAYLAND("Tablet tool left window.");
+
+	if (!ss->window_pointed) {
+		Ref<WaylandWindowEventMessage> msg;
+		msg.instantiate();
+		msg->event = WINDOW_EVENT_MOUSE_EXIT;
+
+		wls->message_queue.push_back(msg);
+	}
+	print_verbose(vformat("wp tablet tool %x on proximity out", (size_t)zwp_tablet_tool_v2));
+}
+
+void DisplayServerWayland::_wp_tablet_tool_on_down(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, uint32_t serial) {
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
+
+	ss->tablet_tool_data_buffer.touching = true;
+	ss->tablet_tool_data_buffer.pressed_button_mask.set_flag(mouse_button_to_mask(MouseButton::LEFT));
+	ss->tablet_tool_data_buffer.last_button_pressed = MouseButton::LEFT;
+
+	// The protocol doesn't cover this, but we can use this funky hack to make
+	// double clicking work.
+	ss->tablet_tool_data_buffer.button_time = OS::get_singleton()->get_ticks_msec();
+
+	print_verbose(vformat("wp tablet tool %x on down serial %x", (size_t)zwp_tablet_tool_v2, serial));
+}
+
+void DisplayServerWayland::_wp_tablet_tool_on_up(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2) {
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
+
+	ss->tablet_tool_data_buffer.touching = false;
+	ss->tablet_tool_data_buffer.pressed_button_mask.clear_flag(mouse_button_to_mask(MouseButton::LEFT));
+
+	// The protocol doesn't cover this, but we can use this funky hack to make
+	// double clicking work.
+	ss->tablet_tool_data_buffer.button_time = OS::get_singleton()->get_ticks_msec();
+
+	print_verbose(vformat("wp tablet tool %x on up", (size_t)zwp_tablet_tool_v2));
+}
+
+void DisplayServerWayland::_wp_tablet_tool_on_motion(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, wl_fixed_t x, wl_fixed_t y) {
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
+
+	ss->tablet_tool_data_buffer.position.x = wl_fixed_to_double(x);
+	ss->tablet_tool_data_buffer.position.y = wl_fixed_to_double(y);
+}
+
+void DisplayServerWayland::_wp_tablet_tool_on_pressure(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, uint32_t pressure) {
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
+
+	ss->tablet_tool_data_buffer.pressure = pressure;
+}
+
+void DisplayServerWayland::_wp_tablet_tool_on_distance(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, uint32_t distance) {
+	// Unsupported
+}
+
+void DisplayServerWayland::_wp_tablet_tool_on_tilt(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, wl_fixed_t tilt_x, wl_fixed_t tilt_y) {
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
+
+	ss->tablet_tool_data_buffer.tilt.x = wl_fixed_to_double(tilt_x);
+	ss->tablet_tool_data_buffer.tilt.y = wl_fixed_to_double(tilt_y);
+}
+
+void DisplayServerWayland::_wp_tablet_tool_on_rotation(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, wl_fixed_t degrees) {
+	// Unsupported.
+}
+
+void DisplayServerWayland::_wp_tablet_tool_on_slider(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, int32_t position) {
+	// Unsupported.
+}
+
+void DisplayServerWayland::_wp_tablet_tool_on_wheel(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, wl_fixed_t degrees, int32_t clicks) {
+	// TODO
+}
+
+void DisplayServerWayland::_wp_tablet_tool_on_button(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, uint32_t serial, uint32_t button, uint32_t state) {
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
+
+	MouseButton mouse_button = MouseButton::NONE;
+
+	if (button == BTN_STYLUS) {
+		mouse_button = MouseButton::LEFT;
+	}
+
+	if (button == BTN_STYLUS2) {
+		mouse_button = MouseButton::RIGHT;
+	}
+
+	if (mouse_button != MouseButton::NONE) {
+		MouseButtonMask mask = mouse_button_to_mask(mouse_button);
+
+		if (state == ZWP_TABLET_TOOL_V2_BUTTON_STATE_PRESSED) {
+			ss->tablet_tool_data_buffer.pressed_button_mask.set_flag(mask);
+			ss->tablet_tool_data_buffer.last_button_pressed = mouse_button;
+		} else {
+			ss->tablet_tool_data_buffer.pressed_button_mask.clear_flag(mask);
+		}
+
+		// The protocol doesn't cover this, but we can use this funky hack to make
+		// double clicking work.
+		ss->tablet_tool_data_buffer.button_time = OS::get_singleton()->get_ticks_msec();
+	}
+}
+
+void DisplayServerWayland::_wp_tablet_tool_on_frame(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, uint32_t time) {
+	SeatState *ss = (SeatState *)data;
+	ERR_FAIL_NULL(ss);
+
+	WaylandState *wls = ss->wls;
+	ERR_FAIL_NULL(wls);
+
+	_seat_state_set_current(*ss);
+
+	TabletToolData &old_td = ss->tablet_tool_data;
+	TabletToolData &td = ss->tablet_tool_data_buffer;
+
+	if (old_td.position != td.position || old_td.tilt != td.tilt || old_td.pressure != td.pressure) {
+		Ref<InputEventMouseMotion> mm;
+		mm.instantiate();
+
+		mm->set_window_id(MAIN_WINDOW_ID);
+
+		// Set all pressed modifiers.
+		mm->set_shift_pressed(ss->shift_pressed);
+		mm->set_ctrl_pressed(ss->ctrl_pressed);
+		mm->set_alt_pressed(ss->alt_pressed);
+		mm->set_meta_pressed(ss->meta_pressed);
+
+		mm->set_button_mask(td.pressed_button_mask);
+
+		mm->set_position(td.position);
+		mm->set_global_position(td.position);
+
+		mm->set_tilt(td.tilt);
+		mm->set_pressure(td.pressure / (float)65535);
+		mm->set_pen_inverted(td.is_eraser);
+
+		mm->set_relative(td.position - old_td.position);
+
+		// FIXME: I'm not sure whether accessing the Input singleton like this might
+		// give problems.
+		Input::get_singleton()->set_mouse_position(td.position);
+		mm->set_velocity(Input::get_singleton()->get_last_mouse_velocity());
+
+		Ref<WaylandInputEventMessage> inputev_msg;
+		inputev_msg.instantiate();
+
+		inputev_msg->event = mm;
+
+		wls->message_queue.push_back(inputev_msg);
+	}
+
+	if (old_td.pressed_button_mask != td.pressed_button_mask) {
+		BitField<MouseButtonMask> pressed_mask_delta = BitField<MouseButtonMask>((int64_t)old_td.pressed_button_mask ^ (int64_t)td.pressed_button_mask);
+
+		for (MouseButton test_button : { MouseButton::LEFT, MouseButton::RIGHT }) {
+			MouseButtonMask test_button_mask = mouse_button_to_mask(test_button);
+
+			if (pressed_mask_delta.has_flag(test_button_mask)) {
+				Ref<InputEventMouseButton> mb;
+				mb.instantiate();
+
+				// Set all pressed modifiers.
+				mb->set_shift_pressed(ss->shift_pressed);
+				mb->set_ctrl_pressed(ss->ctrl_pressed);
+				mb->set_alt_pressed(ss->alt_pressed);
+				mb->set_meta_pressed(ss->meta_pressed);
+
+				mb->set_window_id(MAIN_WINDOW_ID);
+				mb->set_position(td.position);
+				mb->set_global_position(td.position);
+
+				mb->set_button_mask(td.pressed_button_mask);
+				mb->set_button_index(test_button);
+				mb->set_pressed(td.pressed_button_mask.has_flag(test_button_mask));
+
+				if (mb->is_pressed() && td.last_button_pressed == old_td.last_button_pressed && (td.button_time - old_td.button_time) < 400 && Vector2(td.position).distance_to(Vector2(old_td.position)) < 5) {
+					mb->set_double_click(true);
+				}
+
+				Ref<WaylandInputEventMessage> msg;
+				msg.instantiate();
+
+				msg->event = mb;
+
+				wls->message_queue.push_back(msg);
+			}
+		}
+	}
+
+	old_td = td;
+}
+
 #ifdef LIBDECOR_ENABLED
 void DisplayServerWayland::libdecor_on_error(struct libdecor *context, enum libdecor_error error, const char *message) {
 	ERR_PRINT(vformat("libdecor error %d: %s", error, message));
@@ -1996,7 +2343,13 @@ BitField<MouseButtonMask> DisplayServerWayland::mouse_get_button_state() const {
 		return BitField<MouseButtonMask>();
 	}
 
-	return wls.current_seat->pointer_data.pressed_button_mask;
+	BitField<MouseButtonMask> mouse_button_mask;
+
+	// Are we sure this is the only way? This seems sus.
+	mouse_button_mask.set_flag(MouseButtonMask((int64_t)wls.current_seat->pointer_data.pressed_button_mask));
+	mouse_button_mask.set_flag(MouseButtonMask((int64_t)wls.current_seat->tablet_tool_data.pressed_button_mask));
+
+	return mouse_button_mask;
 }
 
 // NOTE: According to the Wayland specification, this method will only do
@@ -3477,6 +3830,14 @@ DisplayServerWayland::~DisplayServerWayland() {
 
 		if (seat.wp_confined_pointer) {
 			zwp_confined_pointer_v1_destroy(seat.wp_confined_pointer);
+		}
+
+		if (seat.wp_tablet_seat) {
+			zwp_tablet_seat_v2_destroy(seat.wp_tablet_seat);
+		}
+
+		for (struct zwp_tablet_tool_v2 *tool : seat.tablet_tools) {
+			zwp_tablet_tool_v2_destroy(tool);
 		}
 	}
 

@@ -771,6 +771,8 @@ Files extracted from upstream source:
 - `unstable/xdg-decoration/README`
 - `unstable/pointer-gestures/pointer-gestures-unstable-v1.xml`
 - `unstable/pointer-gestures/README`
+- `unstable/tablet/tablet-unstable-v2.xml`
+- `unstable/tablet/README`
 - `COPYING`
 
 

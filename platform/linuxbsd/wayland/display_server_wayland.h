@@ -58,6 +58,7 @@
 #include "protocol/pointer_gestures.gen.h"
 #include "protocol/primary_selection.gen.h"
 #include "protocol/relative_pointer.gen.h"
+#include "protocol/tablet.gen.h"
 #include "protocol/wayland.gen.h"
 #include "protocol/xdg_activation.gen.h"
 #include "protocol/xdg_decoration.gen.h"
@@ -170,6 +171,9 @@ class DisplayServerWayland : public DisplayServer {
 
 		struct zwp_idle_inhibit_manager_v1 *wp_idle_inhibit_manager = nullptr;
 		uint32_t wp_idle_inhibit_manager_name = 0;
+
+		struct zwp_tablet_manager_v2 *wp_tablet_manager = nullptr;
+		uint32_t wp_tablet_manager_name = 0;
 	};
 
 	// This forward declaration is needed due to some circular dependencies.
@@ -270,6 +274,25 @@ class DisplayServerWayland : public DisplayServer {
 		uint32_t pinch_scale = 1;
 	};
 
+	struct TabletToolData {
+		Point2i position;
+		Vector2i tilt;
+		uint32_t pressure = 0;
+
+		BitField<MouseButtonMask> pressed_button_mask;
+
+		MouseButton last_button_pressed = MouseButton::NONE;
+
+		// Note: the protocol doesn't have it (I guess that this isn't really meant to
+		// be used as a mouse...), but we'll hack one in with the current ticks.
+		uint64_t button_time = 0;
+
+		bool is_eraser = false;
+
+		bool in_proximity = false;
+		bool touching = false;
+	};
+
 	struct SeatState {
 		WaylandState *wls = nullptr;
 
@@ -353,6 +376,14 @@ class DisplayServerWayland : public DisplayServer {
 		struct zwp_primary_selection_offer_v1 *wp_primary_selection_offer = nullptr;
 
 		Vector<uint8_t> primary_data;
+
+		// Tablet.
+		struct zwp_tablet_seat_v2 *wp_tablet_seat = nullptr;
+
+		List<struct zwp_tablet_tool_v2 *> tablet_tools;
+
+		TabletToolData tablet_tool_data_buffer;
+		TabletToolData tablet_tool_data;
 	};
 
 	struct CustomWaylandCursor {
@@ -520,6 +551,30 @@ class DisplayServerWayland : public DisplayServer {
 	static void _wp_primary_selection_source_on_send(void *data, struct zwp_primary_selection_source_v1 *wp_primary_selection_source_v1, const char *mime_type, int32_t fd);
 	static void _wp_primary_selection_source_on_cancelled(void *data, struct zwp_primary_selection_source_v1 *wp_primary_selection_source_v1);
 
+	static void _wp_tablet_seat_on_tablet_added(void *data, struct zwp_tablet_seat_v2 *zwp_tablet_seat_v2, struct zwp_tablet_v2 *id);
+	static void _wp_tablet_seat_on_tool_added(void *data, struct zwp_tablet_seat_v2 *zwp_tablet_seat_v2, struct zwp_tablet_tool_v2 *id);
+	static void _wp_tablet_seat_on_pad_added(void *data, struct zwp_tablet_seat_v2 *zwp_tablet_seat_v2, struct zwp_tablet_pad_v2 *id);
+
+	static void _wp_tablet_tool_on_type(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, uint32_t tool_type);
+	static void _wp_tablet_tool_on_hardware_serial(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, uint32_t hardware_serial_hi, uint32_t hardware_serial_lo);
+	static void _wp_tablet_tool_on_hardware_id_wacom(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, uint32_t hardware_id_hi, uint32_t hardware_id_lo);
+	static void _wp_tablet_tool_on_capability(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, uint32_t capability);
+	static void _wp_tablet_tool_on_done(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2);
+	static void _wp_tablet_tool_on_removed(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2);
+	static void _wp_tablet_tool_on_proximity_in(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, uint32_t serial, struct zwp_tablet_v2 *tablet, struct wl_surface *surface);
+	static void _wp_tablet_tool_on_proximity_out(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2);
+	static void _wp_tablet_tool_on_down(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, uint32_t serial);
+	static void _wp_tablet_tool_on_up(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2);
+	static void _wp_tablet_tool_on_motion(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, wl_fixed_t x, wl_fixed_t y);
+	static void _wp_tablet_tool_on_pressure(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, uint32_t pressure);
+	static void _wp_tablet_tool_on_distance(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, uint32_t distance);
+	static void _wp_tablet_tool_on_tilt(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, wl_fixed_t tilt_x, wl_fixed_t tilt_y);
+	static void _wp_tablet_tool_on_rotation(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, wl_fixed_t degrees);
+	static void _wp_tablet_tool_on_slider(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, int32_t position);
+	static void _wp_tablet_tool_on_wheel(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, wl_fixed_t degrees, int32_t clicks);
+	static void _wp_tablet_tool_on_button(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, uint32_t serial, uint32_t button, uint32_t state);
+	static void _wp_tablet_tool_on_frame(void *data, struct zwp_tablet_tool_v2 *zwp_tablet_tool_v2, uint32_t time);
+
 	// Wayland event listeners.
 	static constexpr struct wl_registry_listener wl_registry_listener = {
 		.global = _wl_registry_on_global,
@@ -634,6 +689,34 @@ class DisplayServerWayland : public DisplayServer {
 	static constexpr struct zwp_primary_selection_source_v1_listener wp_primary_selection_source_listener = {
 		.send = _wp_primary_selection_source_on_send,
 		.cancelled = _wp_primary_selection_source_on_cancelled,
+	};
+
+	static constexpr struct zwp_tablet_seat_v2_listener wp_tablet_seat_listener = {
+		.tablet_added = _wp_tablet_seat_on_tablet_added,
+		.tool_added = _wp_tablet_seat_on_tool_added,
+		.pad_added = _wp_tablet_seat_on_pad_added,
+	};
+
+	static constexpr struct zwp_tablet_tool_v2_listener wp_tablet_tool_listener = {
+		.type = _wp_tablet_tool_on_type,
+		.hardware_serial = _wp_tablet_tool_on_hardware_serial,
+		.hardware_id_wacom = _wp_tablet_tool_on_hardware_id_wacom,
+		.capability = _wp_tablet_tool_on_capability,
+		.done = _wp_tablet_tool_on_done,
+		.removed = _wp_tablet_tool_on_removed,
+		.proximity_in = _wp_tablet_tool_on_proximity_in,
+		.proximity_out = _wp_tablet_tool_on_proximity_out,
+		.down = _wp_tablet_tool_on_down,
+		.up = _wp_tablet_tool_on_up,
+		.motion = _wp_tablet_tool_on_motion,
+		.pressure = _wp_tablet_tool_on_pressure,
+		.distance = _wp_tablet_tool_on_distance,
+		.tilt = _wp_tablet_tool_on_tilt,
+		.rotation = _wp_tablet_tool_on_rotation,
+		.slider = _wp_tablet_tool_on_slider,
+		.wheel = _wp_tablet_tool_on_wheel,
+		.button = _wp_tablet_tool_on_button,
+		.frame = _wp_tablet_tool_on_frame,
 	};
 
 #ifdef LIBDECOR_ENABLED

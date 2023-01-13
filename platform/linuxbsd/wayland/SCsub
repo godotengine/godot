@@ -104,6 +104,16 @@ env.WAYLAND_API_CODE(
     source="#thirdparty/wayland-protocols/unstable/idle-inhibit/idle-inhibit-unstable-v1.xml",
 )
 
+env.WAYLAND_API_HEADER(
+    target="protocol/tablet.gen.h",
+    source="#thirdparty/wayland-protocols/unstable/tablet/tablet-unstable-v2.xml",
+)
+
+env.WAYLAND_API_CODE(
+    target="protocol/tablet.gen.c",
+    source="#thirdparty/wayland-protocols/unstable/tablet/tablet-unstable-v2.xml",
+)
+
 source_files = [
     "dynwrappers/wayland-cursor-so_wrap.c",
     "dynwrappers/wayland-client-core-so_wrap.c",
@@ -117,6 +127,7 @@ source_files = [
     "protocol/pointer_gestures.gen.c",
     "protocol/primary_selection.gen.c",
     "protocol/idle_inhibit.gen.c",
+    "protocol/tablet.gen.c",
     "display_server_wayland.cpp",
     "key_mapping_xkb.cpp",
 ]
