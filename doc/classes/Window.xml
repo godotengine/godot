@@ -342,6 +342,7 @@
 			<return type="void" />
 			<description>
 				Moves the [Window] on top of other windows and focuses it.
+				[b]Note:[/b] On Windows if application is in background it will only notify.
 			</description>
 		</method>
 		<method name="popup">
