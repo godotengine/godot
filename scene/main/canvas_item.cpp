@@ -483,7 +483,7 @@ bool CanvasItem::is_y_sort_enabled() const {
 	return y_sort_enabled;
 }
 
-void CanvasItem::draw_dashed_line(const Point2 &p_from, const Point2 &p_to, const Color &p_color, real_t p_width, real_t p_dash) {
+void CanvasItem::draw_dashed_line(const Point2 &p_from, const Point2 &p_to, const Color &p_color, real_t p_width, real_t p_dash, bool p_aligned) {
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
 	float length = (p_to - p_from).length();
@@ -492,14 +492,20 @@ void CanvasItem::draw_dashed_line(const Point2 &p_from, const Point2 &p_to, cons
 		return;
 	}
 
-	Point2 off = p_from;
 	Vector2 step = p_dash * (p_to - p_from).normalized();
-	int steps = length / p_dash / 2;
-	for (int i = 0; i < steps; i++) {
-		RenderingServer::get_singleton()->canvas_item_add_line(canvas_item, off, (off + step), p_color, p_width);
-		off += 2 * step;
+	int steps = (p_aligned) ? Math::ceil(length / p_dash) : Math::floor(length / p_dash);
+	if (steps % 2 == 0) {
+		steps--;
 	}
-	RenderingServer::get_singleton()->canvas_item_add_line(canvas_item, off, p_to, p_color, p_width);
+
+	Point2 off = p_from;
+	if (p_aligned) {
+		off += (p_to - p_from).normalized() * (length - steps * p_dash) / 2.0;
+	}
+	for (int i = 0; i < steps; i += 2) {
+		RenderingServer::get_singleton()->canvas_item_add_line(canvas_item, (i == 0) ? p_from : off, (p_aligned && i == steps - 1) ? p_to : (off + step), p_color, p_width);
+		off += step * 2;
+	}
 }
 
 void CanvasItem::draw_line(const Point2 &p_from, const Point2 &p_to, const Color &p_color, real_t p_width, bool p_antialiased) {
@@ -963,7 +969,7 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_draw_behind_parent_enabled"), &CanvasItem::is_draw_behind_parent_enabled);
 
 	ClassDB::bind_method(D_METHOD("draw_line", "from", "to", "color", "width", "antialiased"), &CanvasItem::draw_line, DEFVAL(1.0), DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("draw_dashed_line", "from", "to", "color", "width", "dash"), &CanvasItem::draw_dashed_line, DEFVAL(1.0), DEFVAL(2.0));
+	ClassDB::bind_method(D_METHOD("draw_dashed_line", "from", "to", "color", "width", "dash", "aligned"), &CanvasItem::draw_dashed_line, DEFVAL(1.0), DEFVAL(2.0), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("draw_polyline", "points", "color", "width", "antialiased"), &CanvasItem::draw_polyline, DEFVAL(1.0), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_polyline_colors", "points", "colors", "width", "antialiased"), &CanvasItem::draw_polyline_colors, DEFVAL(1.0), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_arc", "center", "radius", "start_angle", "end_angle", "point_count", "color", "width", "antialiased"), &CanvasItem::draw_arc, DEFVAL(1.0), DEFVAL(false));
