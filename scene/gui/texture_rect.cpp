@@ -178,6 +178,16 @@ void TextureRect::_bind_methods() {
 	BIND_ENUM_CONSTANT(STRETCH_KEEP_ASPECT_COVERED);
 }
 
+#ifndef DISABLE_DEPRECATED
+bool TextureRect::_set(const StringName &p_name, const Variant &p_value) {
+	if ((p_name == SNAME("expand") || p_name == SNAME("ignore_texture_size")) && p_value.operator bool()) {
+		expand_mode = EXPAND_IGNORE_SIZE;
+		return true;
+	}
+	return false;
+}
+#endif
+
 void TextureRect::_texture_changed() {
 	if (texture.is_valid()) {
 		queue_redraw();
