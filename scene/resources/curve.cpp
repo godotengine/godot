@@ -621,7 +621,7 @@ void Curve::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_value", PROPERTY_HINT_RANGE, "-1024,1024,0.01"), "set_max_value", "get_max_value");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bake_resolution", PROPERTY_HINT_RANGE, "1,1000,1"), "set_bake_resolution", "get_bake_resolution");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
-	ADD_ARRAY_COUNT("Points", "point_count", "set_point_count", "get_point_count", "point_");
+	ADD_ARRAY_COUNT("Points", "point_count", "set_point_count", "get_point_count", "point_", "add_button_text=" + String(TTRGET("Add Point")));
 
 	ADD_SIGNAL(MethodInfo(SIGNAL_RANGE_CHANGED));
 
@@ -1312,7 +1312,7 @@ void Curve2D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bake_interval", PROPERTY_HINT_RANGE, "0.01,512,0.01"), "set_bake_interval", "get_bake_interval");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
-	ADD_ARRAY_COUNT("Points", "point_count", "set_point_count", "get_point_count", "point_");
+	ADD_ARRAY_COUNT("Points", "point_count", "set_point_count", "get_point_count", "point_", "add_button_text=" + String(TTRGET("Add Point")));
 }
 
 Curve2D::Curve2D() {}
@@ -2238,7 +2238,7 @@ void Curve3D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "bake_interval", PROPERTY_HINT_RANGE, "0.01,512,0.01"), "set_bake_interval", "get_bake_interval");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_data", "_get_data");
-	ADD_ARRAY_COUNT("Points", "point_count", "set_point_count", "get_point_count", "point_");
+	ADD_ARRAY_COUNT("Points", "point_count", "set_point_count", "get_point_count", "point_", "add_button_text=" + String(TTRGET("Add Point")));
 
 	ADD_GROUP("Up Vector", "up_vector_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "up_vector_enabled"), "set_up_vector_enabled", "is_up_vector_enabled");

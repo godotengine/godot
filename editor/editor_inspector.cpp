@@ -2236,6 +2236,9 @@ void EditorInspectorArray::setup_with_move_element_function(Object *p_object, St
 	page_length = p_page_length;
 	numbered = p_numbered;
 
+	if (!p_add_item_text.is_empty()) {
+		add_button->set_text(p_add_item_text);
+	}
 	EditorInspectorSection::setup(String(p_array_element_prefix) + "_array", p_label, p_object, p_bg_color, p_foldable, 0);
 
 	_setup();
@@ -2251,7 +2254,9 @@ void EditorInspectorArray::setup_with_count_property(Object *p_object, String p_
 	numbered = p_numbered;
 	swap_method = p_swap_method;
 
-	add_button->set_text(p_add_item_text);
+	if (!p_add_item_text.is_empty()) {
+		add_button->set_text(p_add_item_text);
+	}
 	EditorInspectorSection::setup(String(count_property) + "_array", p_label, p_object, p_bg_color, p_foldable, 0);
 
 	_setup();
@@ -3029,18 +3034,20 @@ void EditorInspector::update_tree() {
 			String add_button_text = TTR("Add Element");
 			String swap_method;
 			for (int i = (p.type == Variant::NIL ? 1 : 2); i < class_name_components.size(); i++) {
-				if (class_name_components[i].begins_with("page_size") && class_name_components[i].get_slice_count("=") == 2) {
-					page_size = class_name_components[i].get_slice("=", 1).to_int();
-				} else if (class_name_components[i].begins_with("add_button_text") && class_name_components[i].get_slice_count("=") == 2) {
-					add_button_text = class_name_components[i].get_slice("=", 1).strip_edges();
-				} else if (class_name_components[i] == "static") {
+				String component = class_name_components[i];
+
+				if (component.begins_with("page_size") && component.get_slice_count("=") == 2) {
+					page_size = component.get_slice("=", 1).to_int();
+				} else if (component.begins_with("add_button_text") && component.get_slice_count("=") == 2) {
+					add_button_text = component.get_slice("=", 1).strip_edges();
+				} else if (component == "static") {
 					movable = false;
-				} else if (class_name_components[i] == "numbered") {
+				} else if (component == "numbered") {
 					numbered = true;
-				} else if (class_name_components[i] == "unfoldable") {
+				} else if (component == "unfoldable") {
 					foldable = false;
-				} else if (class_name_components[i].begins_with("swap_method") && class_name_components[i].get_slice_count("=") == 2) {
-					swap_method = class_name_components[i].get_slice("=", 1).strip_edges();
+				} else if (component.begins_with("swap_method") && component.get_slice_count("=") == 2) {
+					swap_method = component.get_slice("=", 1).strip_edges();
 				}
 			}
 

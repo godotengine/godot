@@ -562,7 +562,7 @@ void OptionButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_fit_to_longest_item"), &OptionButton::is_fit_to_longest_item);
 
 	// "selected" property must come after "item_count", otherwise GH-10213 occurs.
-	ADD_ARRAY_COUNT("Items", "item_count", "set_item_count", "get_item_count", "popup/item_");
+	ADD_ARRAY_COUNT("Items", "item_count", "set_item_count", "get_item_count", "popup/item_", "add_button_text=" + String(TTRGET("Add Item")));
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "selected"), "_select_int", "get_selected");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fit_to_longest_item"), "set_fit_to_longest_item", "is_fit_to_longest_item");
 	ADD_SIGNAL(MethodInfo("item_selected", PropertyInfo(Variant::INT, "index")));

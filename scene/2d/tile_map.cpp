@@ -4050,7 +4050,7 @@ void TileMap::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_visibility_mode", PROPERTY_HINT_ENUM, "Default,Force Show,Force Hide"), "set_collision_visibility_mode", "get_collision_visibility_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_visibility_mode", PROPERTY_HINT_ENUM, "Default,Force Show,Force Hide"), "set_navigation_visibility_mode", "get_navigation_visibility_mode");
 
-	ADD_ARRAY("layers", "layer_");
+	ADD_ARRAY("layers", "layer_", "add_button_text=" + String(TTRGET("Add Layer")));
 
 	ADD_PROPERTY_DEFAULT("format", FORMAT_1);
 

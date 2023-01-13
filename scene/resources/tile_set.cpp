@@ -3260,7 +3260,7 @@ void TileSet::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->push_back(PropertyInfo(Variant::NIL, "Terrains", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
 	for (int terrain_set_index = 0; terrain_set_index < terrain_sets.size(); terrain_set_index++) {
 		p_list->push_back(PropertyInfo(Variant::INT, vformat("terrain_set_%d/mode", terrain_set_index), PROPERTY_HINT_ENUM, "Match Corners and Sides,Match Corners,Match Sides"));
-		p_list->push_back(PropertyInfo(Variant::NIL, vformat("terrain_set_%d/terrains", terrain_set_index), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_ARRAY, vformat("terrain_set_%d/terrain_", terrain_set_index)));
+		p_list->push_back(PropertyInfo(Variant::NIL, vformat("terrain_set_%d/terrains", terrain_set_index), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_ARRAY, vformat("terrain_set_%d/terrain_,add_button_text=%s", terrain_set_index, TTRGET("Add Set"))));
 		for (int terrain_index = 0; terrain_index < terrain_sets[terrain_set_index].terrains.size(); terrain_index++) {
 			p_list->push_back(PropertyInfo(Variant::STRING, vformat("terrain_set_%d/terrain_%d/name", terrain_set_index, terrain_index)));
 			p_list->push_back(PropertyInfo(Variant::COLOR, vformat("terrain_set_%d/terrain_%d/color", terrain_set_index, terrain_index)));
@@ -3427,13 +3427,13 @@ void TileSet::_bind_methods() {
 
 	ADD_GROUP("Rendering", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "uv_clipping"), "set_uv_clipping", "is_uv_clipping");
-	ADD_ARRAY("occlusion_layers", "occlusion_layer_");
+	ADD_ARRAY("occlusion_layers", "occlusion_layer_", "add_button_text=" + String(TTRGET("Add Layer")));
 
 	ADD_GROUP("", "");
-	ADD_ARRAY("physics_layers", "physics_layer_");
-	ADD_ARRAY("terrain_sets", "terrain_set_");
-	ADD_ARRAY("navigation_layers", "navigation_layer_");
-	ADD_ARRAY("custom_data_layers", "custom_data_layer_");
+	ADD_ARRAY("physics_layers", "physics_layer_", "add_button_text=" + String(TTRGET("Add Layer")));
+	ADD_ARRAY("terrain_sets", "terrain_set_", "add_button_text=" + String(TTRGET("Add Set")));
+	ADD_ARRAY("navigation_layers", "navigation_layer_", "add_button_text=" + String(TTRGET("Add Layer")));
+	ADD_ARRAY("custom_data_layers", "custom_data_layer_", "add_button_text=" + String(TTRGET("Add Layer")));
 
 	// -- Enum binding --
 	BIND_ENUM_CONSTANT(TILE_SHAPE_SQUARE);

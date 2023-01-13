@@ -165,7 +165,7 @@ void BoneMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("find_profile_bone_name", "skeleton_bone_name"), &BoneMap::find_profile_bone_name);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "profile", PROPERTY_HINT_RESOURCE_TYPE, "SkeletonProfile"), "set_profile", "get_profile");
-	ADD_ARRAY("bonemap", "bonemap");
+	ADD_ARRAY("bonemap", "bonemap", "add_button_text=" + String(TTRGET("Add Bone")));
 
 	ADD_SIGNAL(MethodInfo("bone_map_updated"));
 	ADD_SIGNAL(MethodInfo("profile_updated"));
