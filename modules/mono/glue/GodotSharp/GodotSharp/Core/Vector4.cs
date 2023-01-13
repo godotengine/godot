@@ -857,6 +857,18 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns <see langword="true"/> if this vector's values are approximately zero,
+        /// by running <see cref="Mathf.IsZeroApprox(real_t)"/> on each component.
+        /// This method is faster than using <see cref="IsEqualApprox"/> with one value
+        /// as a zero vector.
+        /// </summary>
+        /// <returns>Whether or not the vector is approximately zero.</returns>
+        public readonly bool IsZeroApprox()
+        {
+            return Mathf.IsZeroApprox(x) && Mathf.IsZeroApprox(y) && Mathf.IsZeroApprox(z) && Mathf.IsZeroApprox(w);
+        }
+
+        /// <summary>
         /// Serves as the hash function for <see cref="Vector4"/>.
         /// </summary>
         /// <returns>A hash code for this vector.</returns>

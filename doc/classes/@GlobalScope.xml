@@ -529,7 +529,7 @@
 			<return type="bool" />
 			<param index="0" name="x" type="float" />
 			<description>
-				Returns [code]true[/code] if [param x] is zero or almost zero.
+				Returns [code]true[/code] if [param x] is zero or almost zero. The comparison is done using a tolerance calculation with a small internal epsilon.
 				This function is faster than using [method is_equal_approx] with one value as zero.
 			</description>
 		</method>
