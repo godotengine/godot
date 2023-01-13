@@ -97,6 +97,7 @@
 			<param index="2" name="color" type="Color" />
 			<param index="3" name="width" type="float" default="1.0" />
 			<param index="4" name="dash" type="float" default="2.0" />
+			<param index="5" name="aligned" type="bool" default="true" />
 			<description>
 				Draws a dashed line from a 2D point to another, with a given color and width. See also [method draw_multiline] and [method draw_polyline].
 			</description>
