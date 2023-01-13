@@ -16,19 +16,6 @@
 				Returns the [NodePath] to the external [Skeleton3D] node, if one has been set.
 			</description>
 		</method>
-		<method name="get_override_mode" qualifiers="const" is_deprecated="true">
-			<return type="int" />
-			<description>
-				Deprecated. Local pose overrides will be removed.
-				Returns the override mode for the BoneAttachment3D node (0=global / 1=local).
-			</description>
-		</method>
-		<method name="get_override_pose" qualifiers="const">
-			<return type="bool" />
-			<description>
-				Returns whether the BoneAttachment3D node is overriding the bone pose of the bone it's attached to.
-			</description>
-		</method>
 		<method name="get_use_external_skeleton" qualifiers="const">
 			<return type="bool" />
 			<description>
@@ -49,21 +36,6 @@
 				Sets the [NodePath] to the external skeleton that the BoneAttachment3D node should use. The external [Skeleton3D] node is only used when [code]use_external_skeleton[/code] is set to [code]true[/code].
 			</description>
 		</method>
-		<method name="set_override_mode" is_deprecated="true">
-			<return type="void" />
-			<param index="0" name="override_mode" type="int" />
-			<description>
-				Deprecated. Local pose overrides will be removed.
-				Sets the override mode for the BoneAttachment3D node (0=global / 1=local). The override mode defines which of the bone poses the BoneAttachment3D node will override.
-			</description>
-		</method>
-		<method name="set_override_pose">
-			<return type="void" />
-			<param index="0" name="override_pose" type="bool" />
-			<description>
-				Sets whether the BoneAttachment3D node will override the bone pose of the bone it is attached to. When set to [code]true[/code], the BoneAttachment3D node can change the pose of the bone.
-			</description>
-		</method>
 		<method name="set_use_external_skeleton">
 			<return type="void" />
 			<param index="0" name="use_external_skeleton" type="bool" />
@@ -78,6 +50,9 @@
 		</member>
 		<member name="bone_name" type="String" setter="set_bone_name" getter="get_bone_name" default="&quot;&quot;">
 			The name of the attached bone.
+		</member>
+		<member name="override_pose" type="bool" setter="set_override_pose" getter="get_override_pose" default="false">
+			Whether the BoneAttachment3D node will override the bone pose of the bone it is attached to. When set to [code]true[/code], the BoneAttachment3D node can change the pose of the bone. When set to [code]false[/code], the BoneAttachment3D will always be set to the bone's transform.
 		</member>
 	</members>
 </class>

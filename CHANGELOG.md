@@ -37,11 +37,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - [New and improved IK in Skeleton2D](https://github.com/godotengine/godot/pull/40347).
   - New classes: SkeletonModifier2D, SkeletonModifierStack2D, SkeletonModification2DLookAt, SkeletonModification2DCCDIK, SkeletonModification2DFABRIK, SkeletonModification2DJiggle, SkeletonModification2DTwoBoneIK, PhysicalBone2D, SkeletonModification2DPhysicalBones, SkeletonModification2DStackHolder.
   - New `Transform2D.looking_at()` function.
-- [New and improved IK in Skeleton3D](https://github.com/godotengine/godot/pull/39353).
-  - New classes: SkeletonModifier3D, SkeletonModifierStack3D, SkeletonModifier3DLookAt, SkeletonModification3DCCDIK, SkeletonModification3DFABRIK, SkeletonModification3DJiggle, SkeletonModification3DTwoBoneIK, SkeletonModification3DStackHolder.
-  - The Bone struct now includes a local_pose_override.
+- [Improvements to Skeleton3D](https://github.com/godotengine/godot/pull/39353).
   - The Bone struct now keeps track of its children bones, if it has any.
-  - Added functions to Skeleton3D for getting the forward vector using the information stored in the rest pose for the bones.
   - New `Basis.rotate_to_align()` function.
   - Refactored the BoneAttachment3D node.
   - Removed the `process_list` functions.
