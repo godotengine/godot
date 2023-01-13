@@ -524,9 +524,7 @@ private:
 	bool use_bbcode = false;
 	String text;
 
-	int fixed_width = -1;
-
-	bool fit_content_height = false;
+	bool fit_content = false;
 
 	struct ThemeCache {
 		Ref<StyleBox> normal_style;
@@ -640,8 +638,8 @@ public:
 	void set_shortcut_keys_enabled(bool p_enabled);
 	bool is_shortcut_keys_enabled() const;
 
-	void set_fit_content_height(bool p_enabled);
-	bool is_fit_content_height_enabled() const;
+	void set_fit_content(bool p_enabled);
+	bool is_fit_content_enabled() const;
 
 	bool search(const String &p_string, bool p_from_selection = false, bool p_search_previous = false);
 
@@ -731,7 +729,6 @@ public:
 
 	void install_effect(const Variant effect);
 
-	void set_fixed_size_to_width(int p_width);
 	virtual Size2 get_minimum_size() const override;
 
 	RichTextLabel(const String &p_text = String());

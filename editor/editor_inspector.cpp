@@ -886,7 +886,7 @@ void EditorProperty::_update_pin_flags() {
 
 static Control *make_help_bit(const String &p_text, bool p_property) {
 	EditorHelpBit *help_bit = memnew(EditorHelpBit);
-	help_bit->get_rich_text()->set_fixed_size_to_width(360 * EDSCALE);
+	help_bit->get_rich_text()->set_custom_minimum_size(Size2(360 * EDSCALE, 1));
 
 	PackedStringArray slices = p_text.split("::", false);
 	if (slices.is_empty()) {
