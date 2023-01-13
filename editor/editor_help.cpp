@@ -2297,6 +2297,7 @@ void EditorHelp::_gen_doc_thread(void *p_udata) {
 static bool doc_gen_use_threads = true;
 
 void EditorHelp::generate_doc(bool p_use_cache) {
+	OS::get_singleton()->benchmark_begin_measure("EditorHelp::generate_doc");
 	if (doc_gen_use_threads) {
 		// In case not the first attempt.
 		_wait_for_thread();
@@ -2327,6 +2328,7 @@ void EditorHelp::generate_doc(bool p_use_cache) {
 			_gen_doc_thread(nullptr);
 		}
 	}
+	OS::get_singleton()->benchmark_end_measure("EditorHelp::generate_doc");
 }
 
 void EditorHelp::_toggle_scripts_pressed() {

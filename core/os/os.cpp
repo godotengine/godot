@@ -34,6 +34,7 @@
 #include "core/input/input.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
+#include "core/io/json.h"
 #include "core/os/midi_driver.h"
 #include "core/version_generated.gen.h"
 
@@ -586,6 +587,59 @@ OS::PreferredTextureFormat OS::get_preferred_texture_format() const {
 	return PREFERRED_TEXTURE_FORMAT_S3TC_BPTC; // By rule, X86 hardware prefers S3TC and derivatives.
 #else
 	return PREFERRED_TEXTURE_FORMAT_S3TC_BPTC; // Override in platform if needed.
+#endif
+}
+
+void OS::set_use_benchmark(bool p_use_benchmark) {
+	use_benchmark = p_use_benchmark;
+}
+
+bool OS::is_use_benchmark_set() {
+	return use_benchmark;
+}
+
+void OS::set_benchmark_file(const String &p_benchmark_file) {
+	benchmark_file = p_benchmark_file;
+}
+
+String OS::get_benchmark_file() {
+	return benchmark_file;
+}
+
+void OS::benchmark_begin_measure(const String &p_what) {
+#ifdef TOOLS_ENABLED
+	start_benchmark_from[p_what] = OS::get_singleton()->get_ticks_usec();
+#endif
+}
+void OS::benchmark_end_measure(const String &p_what) {
+#ifdef TOOLS_ENABLED
+	uint64_t total = OS::get_singleton()->get_ticks_usec() - start_benchmark_from[p_what];
+	double total_f = double(total) / double(1000000);
+
+	startup_benchmark_json[p_what] = total_f;
+#endif
+}
+
+void OS::benchmark_dump() {
+#ifdef TOOLS_ENABLED
+	if (!use_benchmark) {
+		return;
+	}
+	if (!benchmark_file.is_empty()) {
+		Ref<FileAccess> f = FileAccess::open(benchmark_file, FileAccess::WRITE);
+		if (f.is_valid()) {
+			Ref<JSON> json;
+			json.instantiate();
+			f->store_string(json->stringify(startup_benchmark_json, "\t", false, true));
+		}
+	} else {
+		List<Variant> keys;
+		startup_benchmark_json.get_key_list(&keys);
+		print_line("BENCHMARK:");
+		for (const Variant &K : keys) {
+			print_line("\t-", K, ": ", startup_benchmark_json[K], +" sec.");
+		}
+	}
 #endif
 }
 

@@ -694,8 +694,6 @@ private:
 	void _bottom_panel_raise_toggled(bool);
 
 	void _begin_first_scan();
-	bool use_startup_benchmark = false;
-	String startup_benchmark_file;
 
 protected:
 	friend class FileSystemDock;
@@ -871,7 +869,6 @@ public:
 
 	void _copy_warning(const String &p_str);
 
-	void set_use_startup_benchmark(bool p_use_startup_benchmark, const String &p_startup_benchmark_file);
 	Error export_preset(const String &p_preset, const String &p_path, bool p_debug, bool p_pack_only);
 
 	Control *get_gui_base() { return gui_base; }

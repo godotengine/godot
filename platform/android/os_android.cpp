@@ -675,6 +675,27 @@ String OS_Android::get_config_path() const {
 	return get_user_data_dir().path_join("config");
 }
 
+void OS_Android::benchmark_begin_measure(const String &p_what) {
+#ifdef TOOLS_ENABLED
+	godot_java->begin_benchmark_measure(p_what);
+#endif
+}
+
+void OS_Android::benchmark_end_measure(const String &p_what) {
+#ifdef TOOLS_ENABLED
+	godot_java->end_benchmark_measure(p_what);
+#endif
+}
+
+void OS_Android::benchmark_dump() {
+#ifdef TOOLS_ENABLED
+	if (!is_use_benchmark_set()) {
+		return;
+	}
+	godot_java->dump_benchmark(get_benchmark_file());
+#endif
+}
+
 bool OS_Android::_check_internal_feature_support(const String &p_feature) {
 	if (p_feature == "system_fonts") {
 		return true;

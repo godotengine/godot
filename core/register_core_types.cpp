@@ -120,6 +120,7 @@ static ResourceUID *resource_uid = nullptr;
 static bool _is_core_extensions_registered = false;
 
 void register_core_types() {
+	OS::get_singleton()->benchmark_begin_measure("register_core_types");
 	//consistency check
 	static_assert(sizeof(Callable) <= 16);
 
@@ -294,6 +295,8 @@ void register_core_types() {
 	GDREGISTER_NATIVE_STRUCT(ScriptLanguageExtensionProfilingInfo, "StringName signature;uint64_t call_count;uint64_t total_time;uint64_t self_time");
 
 	worker_thread_pool = memnew(WorkerThreadPool);
+
+	OS::get_singleton()->benchmark_end_measure("register_core_types");
 }
 
 void register_core_settings() {
@@ -360,6 +363,8 @@ void unregister_core_extensions() {
 }
 
 void unregister_core_types() {
+	OS::get_singleton()->benchmark_begin_measure("unregister_core_types");
+
 	memdelete(gdextension_manager);
 
 	memdelete(resource_uid);
@@ -425,4 +430,6 @@ void unregister_core_types() {
 	ResourceCache::clear();
 	CoreStringNames::free();
 	StringName::cleanup();
+
+	OS::get_singleton()->benchmark_end_measure("unregister_core_types");
 }
