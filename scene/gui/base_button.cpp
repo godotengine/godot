@@ -152,12 +152,21 @@ void BaseButton::on_action_event(Ref<InputEvent> p_event) {
 	}
 
 	if (status.press_attempt && status.pressing_inside) {
-		if (toggle_mode) {
-			bool is_pressed = p_event->is_pressed();
-			if (Object::cast_to<InputEventShortcut>(*p_event)) {
-				is_pressed = false;
+		bool is_pressed = p_event->is_pressed();
+		if (toggle_mode && Object::cast_to<InputEventShortcut>(*p_event)) {
+			is_pressed = false;
+		}
+		bool activate = is_pressed == (action_mode == ACTION_MODE_BUTTON_PRESS);
+		if (action_mode == ACTION_MODE_HYBRID) {
+			Ref<InputEventMouseButton> mouse_button = p_event;
+			if (mouse_button.is_valid()) {
+				activate = !is_pressed;
+			} else {
+				activate = is_pressed;
 			}
-			if ((is_pressed && action_mode == ACTION_MODE_BUTTON_PRESS) || (!is_pressed && action_mode == ACTION_MODE_BUTTON_RELEASE)) {
+		}
+		if (toggle_mode) {
+			if (activate) {
 				if (action_mode == ACTION_MODE_BUTTON_PRESS) {
 					status.press_attempt = false;
 					status.pressing_inside = false;
@@ -172,7 +181,7 @@ void BaseButton::on_action_event(Ref<InputEvent> p_event) {
 				_pressed();
 			}
 		} else {
-			if ((p_event->is_pressed() && action_mode == ACTION_MODE_BUTTON_PRESS) || (!p_event->is_pressed() && action_mode == ACTION_MODE_BUTTON_RELEASE)) {
+			if (activate) {
 				_pressed();
 			}
 		}
@@ -451,7 +460,7 @@ void BaseButton::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "toggle_mode"), "set_toggle_mode", "is_toggle_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shortcut_in_tooltip"), "set_shortcut_in_tooltip", "is_shortcut_in_tooltip_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "button_pressed"), "set_pressed", "is_pressed");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "action_mode", PROPERTY_HINT_ENUM, "Button Press,Button Release"), "set_action_mode", "get_action_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "action_mode", PROPERTY_HINT_ENUM, "Button Press, Button Release, Hybrid"), "set_action_mode", "get_action_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "button_mask", PROPERTY_HINT_FLAGS, "Mouse Left, Mouse Right, Mouse Middle"), "set_button_mask", "get_button_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "keep_pressed_outside"), "set_keep_pressed_outside", "is_keep_pressed_outside");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "shortcut", PROPERTY_HINT_RESOURCE_TYPE, "Shortcut"), "set_shortcut", "get_shortcut");
@@ -466,6 +475,7 @@ void BaseButton::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(ACTION_MODE_BUTTON_PRESS);
 	BIND_ENUM_CONSTANT(ACTION_MODE_BUTTON_RELEASE);
+	BIND_ENUM_CONSTANT(ACTION_MODE_HYBRID);
 }
 
 BaseButton::BaseButton() {
