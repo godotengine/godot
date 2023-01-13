@@ -30,6 +30,7 @@
 
 #include "base_button.h"
 
+#include "core/config/project_settings.h"
 #include "core/os/keyboard.h"
 #include "scene/main/window.h"
 #include "scene/scene_string_names.h"
@@ -127,7 +128,6 @@ void BaseButton::_notification(int p_what) {
 			status.hovering = false;
 			status.press_attempt = false;
 			status.pressing_inside = false;
-			status.shortcut_press = false;
 		} break;
 	}
 }
@@ -154,14 +154,10 @@ void BaseButton::on_action_event(Ref<InputEvent> p_event) {
 	if (status.press_attempt && status.pressing_inside) {
 		if (toggle_mode) {
 			bool is_pressed = p_event->is_pressed();
-			if (Object::cast_to<InputEventShortcut>(*p_event)) {
-				is_pressed = false;
-			}
 			if ((is_pressed && action_mode == ACTION_MODE_BUTTON_PRESS) || (!is_pressed && action_mode == ACTION_MODE_BUTTON_RELEASE)) {
 				if (action_mode == ACTION_MODE_BUTTON_PRESS) {
 					status.press_attempt = false;
 					status.pressing_inside = false;
-					status.shortcut_press = false;
 				}
 				status.pressed = !status.pressed;
 				_unpress_group();
@@ -187,7 +183,6 @@ void BaseButton::on_action_event(Ref<InputEvent> p_event) {
 		}
 		status.press_attempt = false;
 		status.pressing_inside = false;
-		status.shortcut_press = false;
 		emit_signal(SNAME("button_up"));
 	}
 
@@ -212,7 +207,6 @@ void BaseButton::set_disabled(bool p_disabled) {
 		}
 		status.press_attempt = false;
 		status.pressing_inside = false;
-		status.shortcut_press = false;
 	}
 	queue_redraw();
 }
@@ -267,6 +261,10 @@ BaseButton::DrawMode BaseButton::get_draw_mode() const {
 		return DRAW_DISABLED;
 	}
 
+	if (in_shortcut_feedback) {
+		return DRAW_HOVER_PRESSED;
+	}
+
 	if (!status.press_attempt && status.hovering) {
 		if (status.pressed) {
 			return DRAW_HOVER_PRESSED;
@@ -285,7 +283,7 @@ BaseButton::DrawMode BaseButton::get_draw_mode() const {
 			pressing = status.pressed;
 		}
 
-		if ((shortcut_feedback || !status.shortcut_press) && pressing) {
+		if (pressing) {
 			return DRAW_PRESSED;
 		} else {
 			return DRAW_NORMAL;
@@ -339,6 +337,14 @@ bool BaseButton::is_keep_pressed_outside() const {
 	return keep_pressed_outside;
 }
 
+void BaseButton::set_shortcut_feedback(bool p_enable) {
+	shortcut_feedback = p_enable;
+}
+
+bool BaseButton::is_shortcut_feedback() const {
+	return shortcut_feedback;
+}
+
 void BaseButton::set_shortcut(const Ref<Shortcut> &p_shortcut) {
 	shortcut = p_shortcut;
 	set_process_shortcut_input(shortcut.is_valid());
@@ -348,13 +354,45 @@ Ref<Shortcut> BaseButton::get_shortcut() const {
 	return shortcut;
 }
 
+void BaseButton::_shortcut_feedback_timeout() {
+	in_shortcut_feedback = false;
+	queue_redraw();
+}
+
 void BaseButton::shortcut_input(const Ref<InputEvent> &p_event) {
 	ERR_FAIL_COND(p_event.is_null());
 
-	if (!is_disabled() && is_visible_in_tree() && !p_event->is_echo() && shortcut.is_valid() && shortcut->matches_event(p_event)) {
-		status.shortcut_press = true;
-		on_action_event(p_event);
+	if (!is_disabled() && p_event->is_pressed() && is_visible_in_tree() && !p_event->is_echo() && shortcut.is_valid() && shortcut->matches_event(p_event)) {
+		if (toggle_mode) {
+			status.pressed = !status.pressed;
+
+			if (status.pressed) {
+				_unpress_group();
+				if (button_group.is_valid()) {
+					button_group->emit_signal(SNAME("pressed"), this);
+				}
+			}
+
+			_toggled(status.pressed);
+			_pressed();
+
+		} else {
+			_pressed();
+		}
+		queue_redraw();
 		accept_event();
+
+		if (shortcut_feedback) {
+			if (shortcut_feedback_timer == nullptr) {
+				shortcut_feedback_timer = memnew(Timer);
+				add_child(shortcut_feedback_timer);
+				shortcut_feedback_timer->set_wait_time(GLOBAL_GET("gui/timers/button_shortcut_feedback_highlight_time"));
+				shortcut_feedback_timer->connect("timeout", callable_mp(this, &BaseButton::_shortcut_feedback_timeout));
+			}
+
+			in_shortcut_feedback = true;
+			shortcut_feedback_timer->start();
+		}
 	}
 }
 
@@ -393,14 +431,6 @@ bool BaseButton::_was_pressed_by_mouse() const {
 	return was_mouse_pressed;
 }
 
-void BaseButton::set_shortcut_feedback(bool p_feedback) {
-	shortcut_feedback = p_feedback;
-}
-
-bool BaseButton::is_shortcut_feedback() const {
-	return shortcut_feedback;
-}
-
 PackedStringArray BaseButton::get_configuration_warnings() const {
 	PackedStringArray warnings = Control::get_configuration_warnings();
 
@@ -429,15 +459,14 @@ void BaseButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_draw_mode"), &BaseButton::get_draw_mode);
 	ClassDB::bind_method(D_METHOD("set_keep_pressed_outside", "enabled"), &BaseButton::set_keep_pressed_outside);
 	ClassDB::bind_method(D_METHOD("is_keep_pressed_outside"), &BaseButton::is_keep_pressed_outside);
+	ClassDB::bind_method(D_METHOD("set_shortcut_feedback", "enabled"), &BaseButton::set_shortcut_feedback);
+	ClassDB::bind_method(D_METHOD("is_shortcut_feedback"), &BaseButton::is_shortcut_feedback);
 
 	ClassDB::bind_method(D_METHOD("set_shortcut", "shortcut"), &BaseButton::set_shortcut);
 	ClassDB::bind_method(D_METHOD("get_shortcut"), &BaseButton::get_shortcut);
 
 	ClassDB::bind_method(D_METHOD("set_button_group", "button_group"), &BaseButton::set_button_group);
 	ClassDB::bind_method(D_METHOD("get_button_group"), &BaseButton::get_button_group);
-
-	ClassDB::bind_method(D_METHOD("set_shortcut_feedback", "enabled"), &BaseButton::set_shortcut_feedback);
-	ClassDB::bind_method(D_METHOD("is_shortcut_feedback"), &BaseButton::is_shortcut_feedback);
 
 	GDVIRTUAL_BIND(_pressed);
 	GDVIRTUAL_BIND(_toggled, "button_pressed");
@@ -466,6 +495,8 @@ void BaseButton::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(ACTION_MODE_BUTTON_PRESS);
 	BIND_ENUM_CONSTANT(ACTION_MODE_BUTTON_RELEASE);
+
+	GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "gui/timers/button_shortcut_feedback_highlight_time", PROPERTY_HINT_RANGE, "0.01,10,0.01,suffix:s"), 0.2);
 }
 
 BaseButton::BaseButton() {
