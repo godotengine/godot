@@ -101,6 +101,8 @@ class AnimationPlayerEditor : public VBoxContainer {
 	OptionButton *library = nullptr;
 	Label *name_title = nullptr;
 
+	Ref<Texture2D> stop_icon;
+	Ref<Texture2D> pause_icon;
 	Ref<Texture2D> autoplay_icon;
 	Ref<Texture2D> reset_icon;
 	Ref<ImageTexture> autoplay_reset_icon;
