@@ -26,10 +26,10 @@ void SceneDistributionInterface::request_glb(const String& glb_name)
 
 	//check if we got a glb_creator_peer
 	if (multiplayer->get_distributor()->glb_creator_peer > 0) {
-		printf("we got a glb_creator_peer %d", glb_creator_peer);
+		printf("we got a glb_creator_peer, it is %d\n", glb_creator_peer);
 
 		int packet_len = SceneMultiplayer::SYS_CMD_SIZE + (glb_name.size() * 4);
-		printf("packet_len:%d", packet_len);
+		printf("packet_len:%d\n", packet_len);
 
 		std::vector<uint8_t> buf(packet_len, 0);
 		buf[0] = SceneMultiplayer::NETWORK_COMMAND_SYS;
@@ -45,7 +45,7 @@ void SceneDistributionInterface::request_glb(const String& glb_name)
 		multiplayer->get_multiplayer_peer()->put_packet(buf.data(), packet_len);
 	}
 	else
-		printf("we got NO glb_creator_peer");
+		printf("we got NO glb_creator_peer\n");
 
 }
 
@@ -60,40 +60,59 @@ void SceneDistributionInterface::distribute_glb(const String& p_path, int id)
 	gltf.instantiate();
 	Ref<GLTFState> gltf_state;
 	gltf_state.instantiate();
-	//var gltf : = GLTFDocument.new()
-	//var gltf_state : = GLTFState.new()
 
 	String externally_created_glb_storage_path_file = externally_created_glb_storage_path + p_path;
-	//var path = "C:/Users/inflo/Documents/godot-workspace/godot-data/Fox.glb"
-	//var snd_file = FileAccess.open(externally_created_glb_storage_path_file, FileAccess.READ)
 	Error err;
 	PackedByteArray glb_file_PBA;
 	Ref<FileAccess> f = FileAccess::open(externally_created_glb_storage_path_file, FileAccess::READ, &err);
+
+	Vector<uint8_t> data;
+
 	if (err != OK) {
 		printf("open external glb error\n");
 	}
 	else if (f.is_valid()) {
-		f->get_buffer(glb_file_PBA.ptrw(), f->get_length() );
+		
+		data.resize(f->get_length());
+		printf("glb file length:%lld\n", f->get_length());
+		f->get_buffer(data.ptrw(), f->get_length());
+
+		glb_file_PBA.resize(f->get_length());
+		//f->get_buffer(glb_file_PBA.ptrw(), f->get_length());  //does not work
+		
+		for (int i = 0; i < f->get_length(); i++) {
+			glb_file_PBA.set(i,data[i]);
+		}
 	}
 
 	//write it to own user://
 	String save_path = "user://" + p_path.replace(".glb", ".gltf");
+
 	
 	gltf->append_from_buffer(glb_file_PBA, "base_path?", gltf_state);
 	gltf->write_to_filesystem(gltf_state, save_path);
 
 	//send it to the clients and MultiplayerSpawner.add_spawnable_scene
 	int packet_len = SceneMultiplayer::SYS_CMD_SIZE + (glb_file_PBA.size());
-	printf("packet_len:%d", packet_len);
+	printf("packet_len:%d\n", packet_len);
 
 	std::vector<uint8_t> buf(packet_len, 0);
 	buf[0] = SceneMultiplayer::NETWORK_COMMAND_SYS;
-	buf[1] = SceneMultiplayer::SYS_COMMAND_REQUEST_GLB;
+	buf[1] = SceneMultiplayer::SYS_COMMAND_DISTRIBUTE_GLB;
 	multiplayer->get_multiplayer_peer()->set_transfer_channel(0);
 	multiplayer->get_multiplayer_peer()->set_transfer_mode(MultiplayerPeer::TRANSFER_MODE_RELIABLE);
 	encode_uint32(multiplayer->get_unique_id(), &buf[2]);
 
 	//encode_uint16(glb_file_PBA, &buf[6]);
+	//int s = glb_file_PBA.size();
+	//encode_variant(glb_file_PBA, &buf[6], s);
+
+	for (int i = 0; i < glb_file_PBA.size(); i++) {
+		buf[6 + i] = glb_file_PBA[i];
+	}
+
+	for (int j = 0; j < 10; j += 4)
+		printf("buf-out: %x", decode_uint32( &buf[j+6]) );
 
 	//err = encode_variant(p_custom_features, &buf[0], glb_file_PBA.size(), false);
 	//ERR_FAIL_COND_V(err != OK, err);
@@ -154,7 +173,7 @@ void SceneDistributionInterface::request_to_externally_create_glb(const String& 
 	char path[200];
 
 
-	fp = _popen("C:/Users/inflo/Documents/godot-workspace/godot-data/scripts/create_glb.bat", "r");
+	fp = _popen(externally_create_glb_script.ascii().get_data(), "r");
 	if (fp == NULL)
 		printf("_popen-open error\n");
 
@@ -177,15 +196,17 @@ void SceneDistributionInterface::request_to_externally_create_glb(const String& 
 
 void SceneDistributionInterface::check_if_externally_created_glb_was_created()
 {
-	printf("SceneDistributionInterface::check_if_externally_created_glb_was_created");
+	//printf("SceneDistributionInterface::check_if_externally_created_glb_was_created");
 
 	HashSet<String>::Iterator it;
-	for (it = requested_glb_files.begin(); it != requested_glb_files.end(); it.operator++()) {
-		printf("it is:%s", *it->ascii().get_data());
+	for (it = requested_glb_files.begin(); it; ++it) {
+		//printf("it is:%s\n", it->ascii().get_data() );
 	
 		//check in a pre-specified directory, if there is a file with a name, we got in
 		//our requested_glb_files hashset
-		std::ifstream f("C:/Users/inflo/Documents/godot-workspace/godot-data/requested_glb/" + *it->ascii().get_data());
+		String s = externally_created_glb_storage_path + *it;
+		//printf("s is:%s\n", s.ascii().get_data() );
+		std::ifstream f(s.ascii().get_data());
 		if (f.good()) {
 			printf("Found requested glb\n");
 

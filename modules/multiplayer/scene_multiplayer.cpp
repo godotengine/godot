@@ -36,6 +36,8 @@
 #include <stdint.h>
 #include <vector>
 
+#include "modules/gltf/gltf_document.h"
+
 #ifdef DEBUG_ENABLED
 #include "core/os/os.h"
 #endif
@@ -551,6 +553,33 @@ void SceneMultiplayer::_process_sys(int p_from, const uint8_t *p_packet, int p_p
 			printf("glb_creator_peer is:%u from:%d myself:%d\n", glb_creator_peer, p_from, get_unique_id());
 
 			distributor->glb_creator_peer = glb_creator_peer;
+		} break;
+		case SYS_COMMAND_DISTRIBUTE_GLB: {
+			printf("SYS_COMMAND_DISTRIBUTE_GLB we-are:%d\n", get_unique_id());
+
+			//set packet to start of payload
+			const uint8_t* packet = p_packet + SYS_CMD_SIZE;
+
+			//read glb packedByteArray from packet, packet_len - 6
+			uint32_t glb_creator_peer = decode_uint32(packet-4);
+			PackedByteArray distributed_glb;
+			distributed_glb.resize(p_packet_len - 6);
+
+			printf("distribute-glb-sys p_packet_len:%d\n", p_packet_len);
+			//err = decode_variant(&distributed_glb, packet, p_packet_len - 6);
+			for (int i = 0; i < (p_packet_len - 6); i++) {
+				distributed_glb.set(i, *packet++);
+			}
+
+			//Ref<GLTFDocument> gltf;
+			//gltf.instantiate();
+			//Ref<GLTFState> gltf_state;
+			//gltf_state.instantiate();
+			//String save_path = "user://" + p_path.replace(".glb", ".gltf");
+
+			//gltf->append_from_buffer(distributed_glb, "base_path?", gltf_state);
+			//gltf->write_to_filesystem(gltf_state, save_path);
+
 		} break;
 		default: {
 			ERR_FAIL();
