@@ -32,45 +32,6 @@ namespace Godot
         public Vector2 origin;
 
         /// <summary>
-        /// The rotation of this transformation matrix.
-        /// </summary>
-        /// <value>Getting is equivalent to calling <see cref="Mathf.Atan2(real_t, real_t)"/> with the values of <see cref="x"/>.</value>
-        public real_t Rotation
-        {
-            readonly get
-            {
-                return Mathf.Atan2(x.y, x.x);
-            }
-            set
-            {
-                Vector2 scale = Scale;
-                x.x = y.y = Mathf.Cos(value);
-                x.y = y.x = Mathf.Sin(value);
-                y.x *= -1;
-                Scale = scale;
-            }
-        }
-
-        /// <summary>
-        /// The scale of this transformation matrix.
-        /// </summary>
-        /// <value>Equivalent to the lengths of each column vector, but Y is negative if the determinant is negative.</value>
-        public Vector2 Scale
-        {
-            readonly get
-            {
-                real_t detSign = Mathf.Sign(BasisDeterminant());
-                return new Vector2(x.Length(), detSign * y.Length());
-            }
-            set
-            {
-                value /= Scale; // Value becomes what's called "delta_scale" in core.
-                x *= value.x;
-                y *= value.y;
-            }
-        }
-
-        /// <summary>
         /// Access whole columns in the form of <see cref="Vector2"/>.
         /// The third column is the <see cref="origin"/> vector.
         /// </summary>
@@ -203,6 +164,23 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns the transform's rotation (in radians).
+        /// </summary>
+        public readonly real_t GetRotation()
+        {
+            return Mathf.Atan2(x.y, x.x);
+        }
+
+        /// <summary>
+        /// Returns the scale.
+        /// </summary>
+        public readonly Vector2 GetScale()
+        {
+            real_t detSign = Mathf.Sign(BasisDeterminant());
+            return new Vector2(x.Length(), detSign * y.Length());
+        }
+
+        /// <summary>
         /// Interpolates this transform to the other <paramref name="transform"/> by <paramref name="weight"/>.
         /// </summary>
         /// <param name="transform">The other transform.</param>
@@ -210,11 +188,11 @@ namespace Godot
         /// <returns>The interpolated transform.</returns>
         public readonly Transform2D InterpolateWith(Transform2D transform, real_t weight)
         {
-            real_t r1 = Rotation;
-            real_t r2 = transform.Rotation;
+            real_t r1 = GetRotation();
+            real_t r2 = transform.GetRotation();
 
-            Vector2 s1 = Scale;
-            Vector2 s2 = transform.Scale;
+            Vector2 s1 = GetScale();
+            Vector2 s2 = transform.GetScale();
 
             // Slerp rotation
             var v1 = new Vector2(Mathf.Cos(r1), Mathf.Sin(r1));
