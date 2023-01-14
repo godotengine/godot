@@ -95,7 +95,6 @@ private:
 	Ref<VisualShader> visual_shader;
 	HashMap<int, Link> links;
 	List<VisualShader::Connection> connections;
-	bool dirty = false;
 
 	Color vector_expanded_color[4];
 
@@ -115,8 +114,6 @@ public:
 	void clear_links();
 	void set_shader_type(VisualShader::Type p_type);
 	bool is_preview_visible(int p_id) const;
-	bool is_dirty() const;
-	void make_dirty(bool p_enabled);
 	void update_node(VisualShader::Type p_type, int p_id);
 	void update_node_deferred(VisualShader::Type p_type, int p_node_id);
 	void add_node(VisualShader::Type p_type, int p_id, bool p_just_update);
