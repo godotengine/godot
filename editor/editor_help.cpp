@@ -41,7 +41,7 @@
 #include "editor/plugins/script_editor_plugin.h"
 #include "scene/gui/line_edit.h"
 
-#define CONTRIBUTE_URL vformat("%s/community/contributing/updating_the_class_reference.html", VERSION_DOCS_URL)
+#define CONTRIBUTE_URL vformat("%s/contributing/documentation/updating_the_class_reference.html", VERSION_DOCS_URL)
 
 DocTools *EditorHelp::doc = nullptr;
 

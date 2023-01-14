@@ -499,7 +499,7 @@
 		</member>
 		<member name="interface/editor/editor_language" type="String" setter="" getter="">
 			The language to use for the editor interface.
-			Translations are provided by the community. If you spot a mistake, [url=https://docs.godotengine.org/en/latest/community/contributing/editor_and_docs_localization.html]contribute to editor translations on Weblate![/url]
+			Translations are provided by the community. If you spot a mistake, [url=$DOCS_URL/contributing/documentation/editor_and_docs_localization.html]contribute to editor translations on Weblate![/url]
 		</member>
 		<member name="interface/editor/expand_to_title" type="bool" setter="" getter="">
 			Expanding main editor window content to the title, if supported by [DisplayServer]. See [constant DisplayServer.WINDOW_FLAG_EXTEND_TO_TITLE].
@@ -741,7 +741,7 @@
 		</member>
 		<member name="text_editor/behavior/indent/type" type="int" setter="" getter="">
 			The indentation style to use (tabs or spaces).
-			[b]Note:[/b] The [url=https://docs.godotengine.org/en/latest/getting_started/scripting/gdscript/gdscript_styleguide.html]GDScript style guide[/url] recommends using tabs for indentation. It is advised to change this setting only if you need to work on a project that currently uses spaces for indentation.
+			[b]Note:[/b] The [url=$DOCS_URL/getting_started/scripting/gdscript/gdscript_styleguide.html]GDScript style guide[/url] recommends using tabs for indentation. It is advised to change this setting only if you need to work on a project that currently uses spaces for indentation.
 		</member>
 		<member name="text_editor/behavior/navigation/drag_and_drop_selection" type="bool" setter="" getter="">
 			If [code]true[/code], allows drag-and-dropping text in the script editor to move text. Disable this if you find yourself accidentally drag-and-dropping text in the script editor.
@@ -782,7 +782,7 @@
 			If [code]true[/code], the code completion tooltip will appear below the current line unless there is no space on screen below the current line. If [code]false[/code], the code completion tooltip will appear above the current line.
 		</member>
 		<member name="text_editor/completion/use_single_quotes" type="bool" setter="" getter="">
-			If [code]true[/code], performs string autocompletion with single quotes. If [code]false[/code], performs string autocompletion with double quotes (which matches the [url=https://docs.godotengine.org/en/latest/tutorials/scripting/gdscript/gdscript_styleguide.html]GDScript style guide[/url]).
+			If [code]true[/code], performs string autocompletion with single quotes. If [code]false[/code], performs string autocompletion with double quotes (which matches the [url=$DOCS_URL/tutorials/scripting/gdscript/gdscript_styleguide.html]GDScript style guide[/url]).
 		</member>
 		<member name="text_editor/help/class_reference_examples" type="int" setter="" getter="">
 			Controls which multi-line code blocks should be displayed in the editor help. This setting does not affect single-line code literals in the editor help.
