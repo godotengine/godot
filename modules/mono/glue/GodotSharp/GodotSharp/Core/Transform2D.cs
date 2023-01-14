@@ -433,7 +433,7 @@ namespace Godot
 
         /// <summary>
         /// Constructs a transformation matrix from the given components.
-        /// Arguments are named such that xy is equal to calling x.y
+        /// Arguments are named such that xy is equal to calling <c>x.y</c>.
         /// </summary>
         /// <param name="xx">The X component of the X column vector, accessed via <c>t.x.x</c> or <c>[0][0]</c>.</param>
         /// <param name="xy">The Y component of the X column vector, accessed via <c>t.x.y</c> or <c>[0][1]</c>.</param>
@@ -459,6 +459,24 @@ namespace Godot
             x.x = y.y = Mathf.Cos(rotation);
             x.y = y.x = Mathf.Sin(rotation);
             y.x *= -1;
+            this.origin = origin;
+        }
+
+        /// <summary>
+        /// Constructs a transformation matrix from a <paramref name="rotation"/> value,
+        /// <paramref name="scale"/> vector, <paramref name="skew"/> value, and
+        /// <paramref name="origin"/> vector.
+        /// </summary>
+        /// <param name="rotation">The rotation of the new transform, in radians.</param>
+        /// <param name="scale">The scale of the new transform.</param>
+        /// <param name="skew">The skew of the new transform, in radians.</param>
+        /// <param name="origin">The origin vector, or column index 2.</param>
+        public Transform2D(real_t rotation, Vector2 scale, real_t skew, Vector2 origin)
+        {
+            x.x = Mathf.Cos(rotation) * scale.x;
+            y.y = Mathf.Cos(rotation + skew) * scale.y;
+            y.x = -Mathf.Sin(rotation + skew) * scale.y;
+            x.y = Mathf.Sin(rotation) * scale.x;
             this.origin = origin;
         }
 

@@ -977,8 +977,20 @@ namespace Godot
             // We need to assign the struct fields here first so we can't do it that way...
         }
 
-        // Arguments are named such that xy is equal to calling x.y
-        internal Basis(real_t xx, real_t yx, real_t zx, real_t xy, real_t yy, real_t zy, real_t xz, real_t yz, real_t zz)
+        /// <summary>
+        /// Constructs a transformation matrix from the given components.
+        /// Arguments are named such that xy is equal to calling <c>x.y</c>.
+        /// </summary>
+        /// <param name="xx">The X component of the X column vector, accessed via <c>b.x.x</c> or <c>[0][0]</c>.</param>
+        /// <param name="yx">The X component of the Y column vector, accessed via <c>b.y.x</c> or <c>[1][0]</c>.</param>
+        /// <param name="zx">The X component of the Z column vector, accessed via <c>b.z.x</c> or <c>[2][0]</c>.</param>
+        /// <param name="xy">The Y component of the X column vector, accessed via <c>b.x.y</c> or <c>[0][1]</c>.</param>
+        /// <param name="yy">The Y component of the Y column vector, accessed via <c>b.y.y</c> or <c>[1][1]</c>.</param>
+        /// <param name="zy">The Y component of the Z column vector, accessed via <c>b.y.y</c> or <c>[2][1]</c>.</param>
+        /// <param name="xz">The Z component of the X column vector, accessed via <c>b.x.y</c> or <c>[0][2]</c>.</param>
+        /// <param name="yz">The Z component of the Y column vector, accessed via <c>b.y.y</c> or <c>[1][2]</c>.</param>
+        /// <param name="zz">The Z component of the Z column vector, accessed via <c>b.y.y</c> or <c>[2][2]</c>.</param>
+        public Basis(real_t xx, real_t yx, real_t zx, real_t xy, real_t yy, real_t zy, real_t xz, real_t yz, real_t zz)
         {
             Row0 = new Vector3(xx, yx, zx);
             Row1 = new Vector3(xy, yy, zy);
