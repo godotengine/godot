@@ -60,6 +60,7 @@ class MovieWriter : public Object {
 	static uint32_t writer_count;
 
 protected:
+	String output_path;
 	virtual uint32_t get_audio_mix_rate() const;
 	virtual AudioServer::SpeakerMode get_audio_speaker_mode() const;
 

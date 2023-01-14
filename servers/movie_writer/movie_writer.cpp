@@ -108,8 +108,10 @@ void MovieWriter::begin(const Size2i &p_movie_size, uint32_t p_fps, const String
 	// Check for available disk space and warn the user if needed.
 	Ref<DirAccess> dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	String path = p_base_path.get_base_dir();
+	output_path = p_base_path;
 	if (path.is_relative_path()) {
 		path = "res://" + path;
+		output_path = "res://" + output_path;
 	}
 	dir->open(path);
 	if (dir->get_space_left() < 10 * Math::pow(1024.0, 3.0)) {
@@ -159,6 +161,7 @@ void MovieWriter::_bind_methods() {
 	// Used by the editor.
 	GLOBAL_DEF_BASIC("editor/movie_writer/movie_file", "");
 	GLOBAL_DEF_BASIC("editor/movie_writer/disable_vsync", false);
+	GLOBAL_DEF_BASIC("editor/movie_writer/create_new_file_if_existing", true);
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "editor/movie_writer/fps", PROPERTY_HINT_RANGE, "1,300,1,suffix:FPS"), 60);
 }
 
@@ -257,7 +260,7 @@ void MovieWriter::end() {
 
 	// Print a report with various statistics.
 	print_line("--------------------------------------------------------------------------------");
-	String movie_path = Engine::get_singleton()->get_write_movie_path();
+	String movie_path = output_path;
 	if (movie_path.is_relative_path()) {
 		// Print absolute path to make finding the file easier,
 		// and to make it clickable in terminal emulators that support this.
