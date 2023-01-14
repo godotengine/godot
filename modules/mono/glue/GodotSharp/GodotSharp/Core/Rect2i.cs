@@ -50,15 +50,6 @@ namespace Godot
         }
 
         /// <summary>
-        /// The area of this <see cref="Rect2i"/>.
-        /// </summary>
-        /// <value>Equivalent to <see cref="GetArea()"/>.</value>
-        public readonly int Area
-        {
-            get { return GetArea(); }
-        }
-
-        /// <summary>
         /// Returns a <see cref="Rect2i"/> with equivalent position and size, modified so that
         /// the top-left corner is the origin and width and height are positive.
         /// </summary>
@@ -152,6 +143,7 @@ namespace Godot
 
         /// <summary>
         /// Returns the area of the <see cref="Rect2i"/>.
+        /// See also <see cref="HasArea"/>.
         /// </summary>
         /// <returns>The area.</returns>
         public readonly int GetArea()
