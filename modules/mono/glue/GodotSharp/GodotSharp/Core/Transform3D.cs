@@ -115,16 +115,30 @@ namespace Godot
         }
 
         /// <summary>
-        /// Interpolates this transform to the other <paramref name="transform"/> by <paramref name="weight"/>.
+        /// Returns a transform interpolated between this transform and another
+        /// <paramref name="transform"/> by a given <paramref name="weight"/>
+        /// (on the range of 0.0 to 1.0).
         /// </summary>
         /// <param name="transform">The other transform.</param>
         /// <param name="weight">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
         /// <returns>The interpolated transform.</returns>
         public readonly Transform3D InterpolateWith(Transform3D transform, real_t weight)
         {
-            Basis retBasis = basis.Lerp(transform.basis, weight);
-            Vector3 retOrigin = origin.Lerp(transform.origin, weight);
-            return new Transform3D(retBasis, retOrigin);
+            Vector3 sourceScale = basis.Scale;
+            Quaternion sourceRotation = basis.GetRotationQuaternion();
+            Vector3 sourceLocation = origin;
+
+            Vector3 destinationScale = transform.basis.Scale;
+            Quaternion destinationRotation = transform.basis.GetRotationQuaternion();
+            Vector3 destinationLocation = transform.origin;
+
+            var interpolated = new Transform3D();
+            Quaternion quaternion = sourceRotation.Slerp(destinationRotation, weight).Normalized();
+            Vector3 scale = sourceScale.Lerp(destinationScale, weight);
+            interpolated.basis.SetQuaternionScale(quaternion, scale);
+            interpolated.origin = sourceLocation.Lerp(destinationLocation, weight);
+
+            return interpolated;
         }
 
         /// <summary>
@@ -231,34 +245,6 @@ namespace Godot
         {
             Basis tmpBasis = Basis.FromScale(scale);
             return new Transform3D(basis * tmpBasis, origin);
-        }
-
-        /// <summary>
-        /// Returns a transform spherically interpolated between this transform and
-        /// another <paramref name="transform"/> by <paramref name="weight"/>.
-        /// </summary>
-        /// <param name="transform">The other transform.</param>
-        /// <param name="weight">A value on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
-        /// <returns>The interpolated transform.</returns>
-        public readonly Transform3D SphericalInterpolateWith(Transform3D transform, real_t weight)
-        {
-            /* not sure if very "efficient" but good enough? */
-
-            Vector3 sourceScale = basis.Scale;
-            Quaternion sourceRotation = basis.GetRotationQuaternion();
-            Vector3 sourceLocation = origin;
-
-            Vector3 destinationScale = transform.basis.Scale;
-            Quaternion destinationRotation = transform.basis.GetRotationQuaternion();
-            Vector3 destinationLocation = transform.origin;
-
-            var interpolated = new Transform3D();
-            Quaternion quaternion = sourceRotation.Slerp(destinationRotation, weight).Normalized();
-            Vector3 scale = sourceScale.Lerp(destinationScale, weight);
-            interpolated.basis.SetQuaternionScale(quaternion, scale);
-            interpolated.origin = sourceLocation.Lerp(destinationLocation, weight);
-
-            return interpolated;
         }
 
         private void SetLookAt(Vector3 eye, Vector3 target, Vector3 up)
