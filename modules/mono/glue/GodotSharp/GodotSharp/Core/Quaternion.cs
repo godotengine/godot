@@ -97,27 +97,6 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the length (magnitude) of the quaternion.
-        /// </summary>
-        /// <seealso cref="LengthSquared"/>
-        /// <value>Equivalent to <c>Mathf.Sqrt(LengthSquared)</c>.</value>
-        public readonly real_t Length
-        {
-            get { return Mathf.Sqrt(LengthSquared); }
-        }
-
-        /// <summary>
-        /// Returns the squared length (squared magnitude) of the quaternion.
-        /// This method runs faster than <see cref="Length"/>, so prefer it if
-        /// you need to compare quaternions or need the squared length for some formula.
-        /// </summary>
-        /// <value>Equivalent to <c>Dot(this)</c>.</value>
-        public readonly real_t LengthSquared
-        {
-            get { return Dot(this); }
-        }
-
-        /// <summary>
         /// Returns the angle between this quaternion and <paramref name="to"/>.
         /// This is the magnitude of the angle you would need to rotate
         /// by to get from one to the other.
@@ -355,7 +334,7 @@ namespace Godot
         /// <returns>A <see langword="bool"/> for whether the quaternion is normalized or not.</returns>
         public readonly bool IsNormalized()
         {
-            return Mathf.Abs(LengthSquared - 1) <= Mathf.Epsilon;
+            return Mathf.Abs(LengthSquared() - 1) <= Mathf.Epsilon;
         }
 
         public readonly Quaternion Log()
@@ -365,12 +344,33 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns the length (magnitude) of the quaternion.
+        /// </summary>
+        /// <seealso cref="LengthSquared"/>
+        /// <value>Equivalent to <c>Mathf.Sqrt(LengthSquared)</c>.</value>
+        public readonly real_t Length()
+        {
+            return Mathf.Sqrt(LengthSquared());
+        }
+
+        /// <summary>
+        /// Returns the squared length (squared magnitude) of the quaternion.
+        /// This method runs faster than <see cref="Length"/>, so prefer it if
+        /// you need to compare quaternions or need the squared length for some formula.
+        /// </summary>
+        /// <value>Equivalent to <c>Dot(this)</c>.</value>
+        public readonly real_t LengthSquared()
+        {
+            return Dot(this);
+        }
+
+        /// <summary>
         /// Returns a copy of the quaternion, normalized to unit length.
         /// </summary>
         /// <returns>The normalized quaternion.</returns>
         public readonly Quaternion Normalized()
         {
-            return this / Length;
+            return this / Length();
         }
 
         /// <summary>
