@@ -540,6 +540,9 @@ if selected_platform in platform_list:
             env.Append(CCFLAGS=["/Od"])
     else:
         if env["debug_symbols"]:
+            # Adding dwarf-4 explicitly makes stacktraces work with clang builds,
+            # otherwise addr2line doesn't understand them
+            env.Append(CCFLAGS=["-gdwarf-4"])
             if env.dev_build:
                 env.Append(CCFLAGS=["-g3"])
             else:
