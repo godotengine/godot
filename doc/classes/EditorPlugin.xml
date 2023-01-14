@@ -467,6 +467,14 @@
 				See [method add_inspector_plugin] for an example of how to register a plugin.
 			</description>
 		</method>
+		<method name="add_resource_conversion_plugin">
+			<return type="void" />
+			<param index="0" name="plugin" type="EditorResourceConversionPlugin" />
+			<description>
+				Registers a new [EditorResourceConversionPlugin]. Resource conversion plugins are used to add custom resource converters to the editor inspector.
+				See [EditorResourceConversionPlugin] for an example of how to create a resource conversion plugin.
+			</description>
+		</method>
 		<method name="add_scene_format_importer_plugin">
 			<return type="void" />
 			<param index="0" name="scene_format_importer" type="EditorSceneFormatImporter" />
@@ -630,6 +638,13 @@
 			<param index="0" name="plugin" type="EditorNode3DGizmoPlugin" />
 			<description>
 				Removes a gizmo plugin registered by [method add_node_3d_gizmo_plugin].
+			</description>
+		</method>
+		<method name="remove_resource_conversion_plugin">
+			<return type="void" />
+			<param index="0" name="plugin" type="EditorResourceConversionPlugin" />
+			<description>
+				Removes a resource conversion plugin registered by [method add_resource_conversion_plugin].
 			</description>
 		</method>
 		<method name="remove_scene_format_importer_plugin">
