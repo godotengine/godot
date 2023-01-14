@@ -90,7 +90,10 @@ static String _include_function(const String &p_path, void *userpointer) {
 }
 
 Error ResourceImporterShaderFile::import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
-	/* STEP 1, Read shader code */
+	if (!RenderingDevice::get_singleton()) {
+		EditorNode::get_singleton()->add_io_error(vformat(TTR("Error importing GLSL shader file: '%s'. Feature requires the project to use Mobile or Forward+ renderers."), p_source_file));
+		return ERR_UNAVAILABLE;
+	}
 
 	Error err;
 	Ref<FileAccess> file = FileAccess::open(p_source_file, FileAccess::READ, &err);
