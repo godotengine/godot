@@ -213,7 +213,7 @@ private:
 	void _file_multi_selected(int p_index, bool p_selected);
 	void _tree_multi_selected(Object *p_item, int p_column, bool p_selected);
 
-	void _get_imported_files(const String &p_path, Vector<String> &r_files) const;
+	bool _get_imported_files(const String &p_path, String &r_extension, Vector<String> &r_files) const;
 	void _update_import_dock();
 
 	void _get_all_items_in_dir(EditorFileSystemDirectory *p_efsd, Vector<String> &r_files, Vector<String> &r_folders) const;
