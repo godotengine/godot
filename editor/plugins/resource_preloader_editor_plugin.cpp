@@ -342,10 +342,6 @@ void ResourcePreloaderEditor::drop_data_fw(const Point2 &p_point, const Variant 
 void ResourcePreloaderEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_library"), &ResourcePreloaderEditor::_update_library);
 	ClassDB::bind_method(D_METHOD("_remove_resource", "to_remove"), &ResourcePreloaderEditor::_remove_resource);
-
-	ClassDB::bind_method(D_METHOD("_get_drag_data_fw"), &ResourcePreloaderEditor::get_drag_data_fw);
-	ClassDB::bind_method(D_METHOD("_can_drop_data_fw"), &ResourcePreloaderEditor::can_drop_data_fw);
-	ClassDB::bind_method(D_METHOD("_drop_data_fw"), &ResourcePreloaderEditor::drop_data_fw);
 }
 
 ResourcePreloaderEditor::ResourcePreloaderEditor() {
@@ -379,7 +375,7 @@ ResourcePreloaderEditor::ResourcePreloaderEditor() {
 	tree->set_column_expand(1, true);
 	tree->set_v_size_flags(SIZE_EXPAND_FILL);
 
-	tree->set_drag_forwarding_compat(this);
+	SET_DRAG_FORWARDING_GCD(tree, ResourcePreloaderEditor);
 	vbc->add_child(tree);
 
 	dialog = memnew(AcceptDialog);

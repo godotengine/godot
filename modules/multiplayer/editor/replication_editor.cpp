@@ -250,14 +250,12 @@ ReplicationEditor::ReplicationEditor() {
 	tree->add_child(drop_label);
 	drop_label->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 
-	tree->set_drag_forwarding_compat(this);
+	SET_DRAG_FORWARDING_CDU(tree, ReplicationEditor);
 }
 
 void ReplicationEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_config"), &ReplicationEditor::_update_config);
 	ClassDB::bind_method(D_METHOD("_update_checked", "property", "column", "checked"), &ReplicationEditor::_update_checked);
-	ClassDB::bind_method("_can_drop_data_fw", &ReplicationEditor::_can_drop_data_fw);
-	ClassDB::bind_method("_drop_data_fw", &ReplicationEditor::_drop_data_fw);
 }
 
 bool ReplicationEditor::_can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
