@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="SkeletonProfileHumanoid" inherits="SkeletonProfile" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
+		A humanoid [SkeletonProfile] preset.
 	</brief_description>
 	<description>
 		A [SkeletonProfile] as a preset that is optimized for the human form. This exists for standardization, so all parameters are read-only.
