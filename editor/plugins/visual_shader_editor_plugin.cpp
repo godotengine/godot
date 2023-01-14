@@ -129,30 +129,32 @@ void VisualShaderGraphPlugin::set_connections(const List<VisualShader::Connectio
 
 void VisualShaderGraphPlugin::show_port_preview(VisualShader::Type p_type, int p_node_id, int p_port_id) {
 	if (visual_shader->get_shader_type() == p_type && links.has(p_node_id) && links[p_node_id].output_ports.has(p_port_id)) {
-		for (const KeyValue<int, Port> &E : links[p_node_id].output_ports) {
+		Link &link = links[p_node_id];
+
+		for (const KeyValue<int, Port> &E : link.output_ports) {
 			if (E.value.preview_button != nullptr) {
 				E.value.preview_button->set_pressed(false);
 			}
 		}
+		bool is_dirty = link.preview_pos < 0;
 
-		if (links[p_node_id].preview_visible && !is_dirty() && links[p_node_id].preview_box != nullptr) {
-			links[p_node_id].graph_node->remove_child(links[p_node_id].preview_box);
-			memdelete(links[p_node_id].preview_box);
-			links[p_node_id].graph_node->reset_size();
-			links[p_node_id].preview_visible = false;
+		if (!is_dirty && link.preview_visible && link.preview_box != nullptr) {
+			link.graph_node->remove_child(link.preview_box);
+			memdelete(link.preview_box);
+			link.preview_box = nullptr;
+			link.graph_node->reset_size();
+			link.preview_visible = false;
 		}
 
-		if (p_port_id != -1 && links[p_node_id].output_ports[p_port_id].preview_button != nullptr) {
-			if (is_dirty()) {
-				links[p_node_id].preview_pos = links[p_node_id].graph_node->get_child_count();
+		if (p_port_id != -1 && link.output_ports[p_port_id].preview_button != nullptr) {
+			if (is_dirty) {
+				link.preview_pos = link.graph_node->get_child_count();
 			}
 
 			VBoxContainer *vbox = memnew(VBoxContainer);
-			links[p_node_id].graph_node->add_child(vbox);
-			if (links[p_node_id].preview_pos != -1) {
-				links[p_node_id].graph_node->move_child(vbox, links[p_node_id].preview_pos);
-			}
-			links[p_node_id].graph_node->set_slot_draw_stylebox(vbox->get_index(), false);
+			link.graph_node->add_child(vbox);
+			link.graph_node->move_child(vbox, link.preview_pos);
+			link.graph_node->set_slot_draw_stylebox(vbox->get_index(), false);
 
 			Control *offset = memnew(Control);
 			offset->set_custom_minimum_size(Size2(0, 5 * EDSCALE));
@@ -162,9 +164,9 @@ void VisualShaderGraphPlugin::show_port_preview(VisualShader::Type p_type, int p
 			port_preview->setup(visual_shader, visual_shader->get_shader_type(), p_node_id, p_port_id);
 			port_preview->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
 			vbox->add_child(port_preview);
-			links[p_node_id].preview_visible = true;
-			links[p_node_id].preview_box = vbox;
-			links[p_node_id].output_ports[p_port_id].preview_button->set_pressed(true);
+			link.preview_visible = true;
+			link.preview_box = vbox;
+			link.output_ports[p_port_id].preview_button->set_pressed(true);
 		}
 	}
 }
@@ -329,14 +331,6 @@ void VisualShaderGraphPlugin::clear_links() {
 	links.clear();
 }
 
-bool VisualShaderGraphPlugin::is_dirty() const {
-	return dirty;
-}
-
-void VisualShaderGraphPlugin::make_dirty(bool p_enabled) {
-	dirty = p_enabled;
-}
-
 void VisualShaderGraphPlugin::register_link(VisualShader::Type p_type, int p_id, VisualShaderNode *p_visual_node, GraphNode *p_graph_node) {
 	links.insert(p_id, { p_type, p_visual_node, p_graph_node, p_visual_node->get_output_port_for_preview() != -1, -1, HashMap<int, InputPort>(), HashMap<int, Port>(), nullptr, nullptr, nullptr, { nullptr, nullptr, nullptr } });
 }
@@ -426,7 +420,13 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 	editor->_update_created_node(node);
 
 	if (p_just_update) {
-		links[p_id].graph_node = node;
+		Link &link = links[p_id];
+
+		link.graph_node = node;
+		link.preview_box = nullptr;
+		link.preview_pos = -1;
+		link.output_ports.clear();
+		link.input_ports.clear();
 	} else {
 		register_link(p_type, p_id, vsnode.ptr(), node);
 	}
@@ -1916,14 +1916,11 @@ void VisualShaderEditor::_update_graph() {
 	_update_varyings();
 
 	graph_plugin->clear_links();
-	graph_plugin->make_dirty(true);
 	graph_plugin->update_theme();
 
 	for (int n_i = 0; n_i < nodes.size(); n_i++) {
 		graph_plugin->add_node(type, nodes[n_i], false);
 	}
-
-	graph_plugin->make_dirty(false);
 
 	for (const VisualShader::Connection &E : node_connections) {
 		int from = E.from_node;
