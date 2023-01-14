@@ -41,6 +41,7 @@
 			<return type="Transform3D" />
 			<param index="0" name="from" type="Projection" />
 			<description>
+				Constructs a Transform3D from a [Projection] by trimming the last row of the projection matrix ([code]from.x.w[/code], [code]from.y.w[/code], [code]from.z.w[/code], and [code]from.w.w[/code] are not copied over).
 			</description>
 		</constructor>
 		<constructor name="Transform3D">
