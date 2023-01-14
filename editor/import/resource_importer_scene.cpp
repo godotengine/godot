@@ -2614,8 +2614,58 @@ Node *EditorSceneFormatImporterESCN::import_scene(const String &p_path, uint32_t
 	Error error;
 	Ref<PackedScene> ps = ResourceFormatLoaderText::singleton->load(p_path, p_path, &error);
 	ERR_FAIL_COND_V_MSG(!ps.is_valid(), nullptr, "Cannot load scene as text resource from path '" + p_path + "'.");
-
 	Node *scene = ps->instantiate();
+	TypedArray<Node> nodes = scene->find_children("*", "MeshInstance3D");
+	for (int32_t node_i = 0; node_i < nodes.size(); node_i++) {
+		MeshInstance3D *mesh_3d = cast_to<MeshInstance3D>(nodes[node_i]);
+		Ref<ImporterMesh> mesh;
+		mesh.instantiate();
+		// Ignore the aabb, it will be recomputed.
+		ImporterMeshInstance3D *importer_mesh_3d = memnew(ImporterMeshInstance3D);
+		importer_mesh_3d->set_name(mesh_3d->get_name());
+		importer_mesh_3d->set_transform(mesh_3d->get_relative_transform(mesh_3d->get_parent()));
+		importer_mesh_3d->set_skin(mesh_3d->get_skin());
+		importer_mesh_3d->set_skeleton_path(mesh_3d->get_skeleton_path());
+		Ref<ArrayMesh> array_mesh_3d_mesh = mesh_3d->get_mesh();
+		if (array_mesh_3d_mesh.is_valid()) {
+			// For the MeshInstance3D nodes, we need to convert the ArrayMesh to an ImporterMesh specially.
+			mesh->set_name(array_mesh_3d_mesh->get_name());
+			for (int32_t blend_i = 0; blend_i < array_mesh_3d_mesh->get_blend_shape_count(); blend_i++) {
+				mesh->add_blend_shape(array_mesh_3d_mesh->get_blend_shape_name(blend_i));
+			}
+			for (int32_t surface_i = 0; surface_i < array_mesh_3d_mesh->get_surface_count(); surface_i++) {
+				mesh->add_surface(array_mesh_3d_mesh->surface_get_primitive_type(surface_i),
+						array_mesh_3d_mesh->surface_get_arrays(surface_i),
+						array_mesh_3d_mesh->surface_get_blend_shape_arrays(surface_i),
+						array_mesh_3d_mesh->surface_get_lods(surface_i),
+						array_mesh_3d_mesh->surface_get_material(surface_i),
+						array_mesh_3d_mesh->surface_get_name(surface_i),
+						array_mesh_3d_mesh->surface_get_format(surface_i));
+			}
+			mesh->set_blend_shape_mode(array_mesh_3d_mesh->get_blend_shape_mode());
+			importer_mesh_3d->set_mesh(mesh);
+			mesh_3d->replace_by(importer_mesh_3d);
+			continue;
+		}
+		Ref<Mesh> mesh_3d_mesh = mesh_3d->get_mesh();
+		if (mesh_3d_mesh.is_valid()) {
+			// For the MeshInstance3D nodes, we need to convert the Mesh to an ImporterMesh specially.
+			mesh->set_name(mesh_3d_mesh->get_name());
+			for (int32_t surface_i = 0; surface_i < mesh_3d_mesh->get_surface_count(); surface_i++) {
+				mesh->add_surface(mesh_3d_mesh->surface_get_primitive_type(surface_i),
+						mesh_3d_mesh->surface_get_arrays(surface_i),
+						Array(),
+						mesh_3d_mesh->surface_get_lods(surface_i),
+						mesh_3d_mesh->surface_get_material(surface_i),
+						mesh_3d_mesh->surface_get_material(surface_i).is_valid() ? mesh_3d_mesh->surface_get_material(surface_i)->get_name() : String(),
+						mesh_3d_mesh->surface_get_format(surface_i));
+			}
+			importer_mesh_3d->set_mesh(mesh);
+			mesh_3d->replace_by(importer_mesh_3d);
+			continue;
+		}
+	}
+
 	ERR_FAIL_COND_V(!scene, nullptr);
 
 	return scene;
