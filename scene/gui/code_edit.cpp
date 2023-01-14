@@ -2086,9 +2086,11 @@ void CodeEdit::confirm_code_completion(bool p_replace) {
 		int post_brace_pair = get_caret_column(i) < get_line(caret_line).length() ? _get_auto_brace_pair_close_at_pos(caret_line, get_caret_column(i)) : -1;
 
 		// Strings do not nest like brackets, so ensure we don't add an additional closing pair.
-		if (has_string_delimiter(String::chr(last_completion_char)) && post_brace_pair != -1 && last_char_matches) {
-			remove_text(caret_line, get_caret_column(i), caret_line, get_caret_column(i) + 1);
-			adjust_carets_after_edit(i, caret_line, get_caret_column(i), caret_line, get_caret_column(i) + 1);
+		if (has_string_delimiter(String::chr(last_completion_char))) {
+			if (post_brace_pair != -1 && last_char_matches) {
+				remove_text(caret_line, get_caret_column(i), caret_line, get_caret_column(i) + 1);
+				adjust_carets_after_edit(i, caret_line, get_caret_column(i), caret_line, get_caret_column(i) + 1);
+			}
 		} else {
 			if (pre_brace_pair != -1 && pre_brace_pair != post_brace_pair && last_char_matches) {
 				remove_text(caret_line, get_caret_column(i), caret_line, get_caret_column(i) + 1);
