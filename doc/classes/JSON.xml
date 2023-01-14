@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="JSON" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="JSON" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Helper class for creating and parsing JSON data.
 	</brief_description>
@@ -49,13 +49,21 @@
 				Returns an empty string if the last call to [method parse] was successful, or the error message if it failed.
 			</description>
 		</method>
+		<method name="get_parsed_text" qualifiers="const">
+			<return type="String" />
+			<description>
+				Return the text parsed by [method parse] as long as the function is instructed to keep it.
+			</description>
+		</method>
 		<method name="parse">
 			<return type="int" enum="Error" />
-			<param index="0" name="json_string" type="String" />
+			<param index="0" name="json_text" type="String" />
+			<param index="1" name="keep_text" type="bool" default="false" />
 			<description>
-				Attempts to parse the [param json_string] provided.
+				Attempts to parse the [param json_text] provided.
 				Returns an [enum Error]. If the parse was successful, it returns [constant OK] and the result can be retrieved using [member data]. If unsuccessful, use [method get_error_line] and [method get_error_message] for identifying the source of the failure.
 				Non-static variant of [method parse_string], if you want custom error handling.
+				The optional [param keep_text] argument instructs the parser to keep a copy of the original text. This text can be obtained later by using the [method get_parsed_text] function and is used when saving the resource (instead of generating new text from [member data]).
 			</description>
 		</method>
 		<method name="parse_string" qualifiers="static">
