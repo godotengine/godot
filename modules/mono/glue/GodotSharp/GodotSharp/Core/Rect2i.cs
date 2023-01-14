@@ -275,38 +275,19 @@ namespace Godot
         /// <summary>
         /// Returns <see langword="true"/> if the <see cref="Rect2i"/> overlaps with <paramref name="b"/>
         /// (i.e. they have at least one point in common).
-        ///
-        /// If <paramref name="includeBorders"/> is <see langword="true"/>,
-        /// they will also be considered overlapping if their borders touch,
-        /// even without intersection.
         /// </summary>
         /// <param name="b">The other <see cref="Rect2i"/> to check for intersections with.</param>
-        /// <param name="includeBorders">Whether or not to consider borders.</param>
         /// <returns>A <see langword="bool"/> for whether or not they are intersecting.</returns>
-        public readonly bool Intersects(Rect2i b, bool includeBorders = false)
+        public readonly bool Intersects(Rect2i b)
         {
-            if (includeBorders)
-            {
-                if (_position.x > b._position.x + b._size.x)
-                    return false;
-                if (_position.x + _size.x < b._position.x)
-                    return false;
-                if (_position.y > b._position.y + b._size.y)
-                    return false;
-                if (_position.y + _size.y < b._position.y)
-                    return false;
-            }
-            else
-            {
-                if (_position.x >= b._position.x + b._size.x)
-                    return false;
-                if (_position.x + _size.x <= b._position.x)
-                    return false;
-                if (_position.y >= b._position.y + b._size.y)
-                    return false;
-                if (_position.y + _size.y <= b._position.y)
-                    return false;
-            }
+            if (_position.x >= b._position.x + b._size.x)
+                return false;
+            if (_position.x + _size.x <= b._position.x)
+                return false;
+            if (_position.y >= b._position.y + b._size.y)
+                return false;
+            if (_position.y + _size.y <= b._position.y)
+                return false;
 
             return true;
         }

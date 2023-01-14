@@ -437,48 +437,25 @@ namespace Godot
         /// <summary>
         /// Returns <see langword="true"/> if the <see cref="AABB"/> overlaps with <paramref name="with"/>
         /// (i.e. they have at least one point in common).
-        ///
-        /// If <paramref name="includeBorders"/> is <see langword="true"/>,
-        /// they will also be considered overlapping if their borders touch,
-        /// even without intersection.
         /// </summary>
         /// <param name="with">The other <see cref="AABB"/> to check for intersections with.</param>
-        /// <param name="includeBorders">Whether or not to consider borders.</param>
         /// <returns>
         /// A <see langword="bool"/> for whether or not they are intersecting.
         /// </returns>
-        public readonly bool Intersects(AABB with, bool includeBorders = false)
+        public readonly bool Intersects(AABB with)
         {
-            if (includeBorders)
-            {
-                if (_position.x > with._position.x + with._size.x)
-                    return false;
-                if (_position.x + _size.x < with._position.x)
-                    return false;
-                if (_position.y > with._position.y + with._size.y)
-                    return false;
-                if (_position.y + _size.y < with._position.y)
-                    return false;
-                if (_position.z > with._position.z + with._size.z)
-                    return false;
-                if (_position.z + _size.z < with._position.z)
-                    return false;
-            }
-            else
-            {
-                if (_position.x >= with._position.x + with._size.x)
-                    return false;
-                if (_position.x + _size.x <= with._position.x)
-                    return false;
-                if (_position.y >= with._position.y + with._size.y)
-                    return false;
-                if (_position.y + _size.y <= with._position.y)
-                    return false;
-                if (_position.z >= with._position.z + with._size.z)
-                    return false;
-                if (_position.z + _size.z <= with._position.z)
-                    return false;
-            }
+            if (_position.x >= with._position.x + with._size.x)
+                return false;
+            if (_position.x + _size.x <= with._position.x)
+                return false;
+            if (_position.y >= with._position.y + with._size.y)
+                return false;
+            if (_position.y + _size.y <= with._position.y)
+                return false;
+            if (_position.z >= with._position.z + with._size.z)
+                return false;
+            if (_position.z + _size.z <= with._position.z)
+                return false;
 
             return true;
         }
