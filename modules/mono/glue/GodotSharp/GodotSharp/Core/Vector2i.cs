@@ -95,38 +95,6 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns this vector's angle with respect to the X axis, or (1, 0) vector, in radians.
-        ///
-        /// Equivalent to the result of <see cref="Mathf.Atan2(real_t, real_t)"/> when
-        /// called with the vector's <see cref="y"/> and <see cref="x"/> as parameters: <c>Mathf.Atan2(v.y, v.x)</c>.
-        /// </summary>
-        /// <returns>The angle of this vector, in radians.</returns>
-        public readonly real_t Angle()
-        {
-            return Mathf.Atan2(y, x);
-        }
-
-        /// <summary>
-        /// Returns the angle to the given vector, in radians.
-        /// </summary>
-        /// <param name="to">The other vector to compare this vector to.</param>
-        /// <returns>The angle between the two vectors, in radians.</returns>
-        public readonly real_t AngleTo(Vector2i to)
-        {
-            return Mathf.Atan2(Cross(to), Dot(to));
-        }
-
-        /// <summary>
-        /// Returns the angle between the line connecting the two points and the X axis, in radians.
-        /// </summary>
-        /// <param name="to">The other vector to compare this vector to.</param>
-        /// <returns>The angle between the two vectors, in radians.</returns>
-        public readonly real_t AngleToPoint(Vector2i to)
-        {
-            return Mathf.Atan2(to.y - y, to.x - x);
-        }
-
-        /// <summary>
         /// Returns the aspect ratio of this vector, the ratio of <see cref="x"/> to <see cref="y"/>.
         /// </summary>
         /// <returns>The <see cref="x"/> component divided by the <see cref="y"/> component.</returns>
@@ -150,48 +118,6 @@ namespace Godot
                 Mathf.Clamp(x, min.x, max.x),
                 Mathf.Clamp(y, min.y, max.y)
             );
-        }
-
-        /// <summary>
-        /// Returns the cross product of this vector and <paramref name="with"/>.
-        /// </summary>
-        /// <param name="with">The other vector.</param>
-        /// <returns>The cross product vector.</returns>
-        public readonly int Cross(Vector2i with)
-        {
-            return x * with.y - y * with.x;
-        }
-
-        /// <summary>
-        /// Returns the squared distance between this vector and <paramref name="to"/>.
-        /// This method runs faster than <see cref="DistanceTo"/>, so prefer it if
-        /// you need to compare vectors or need the squared distance for some formula.
-        /// </summary>
-        /// <param name="to">The other vector to use.</param>
-        /// <returns>The squared distance between the two vectors.</returns>
-        public readonly int DistanceSquaredTo(Vector2i to)
-        {
-            return (to - this).LengthSquared();
-        }
-
-        /// <summary>
-        /// Returns the distance between this vector and <paramref name="to"/>.
-        /// </summary>
-        /// <param name="to">The other vector to use.</param>
-        /// <returns>The distance between the two vectors.</returns>
-        public readonly real_t DistanceTo(Vector2i to)
-        {
-            return (to - this).Length();
-        }
-
-        /// <summary>
-        /// Returns the dot product of this vector and <paramref name="with"/>.
-        /// </summary>
-        /// <param name="with">The other vector to use.</param>
-        /// <returns>The dot product of the two vectors.</returns>
-        public readonly int Dot(Vector2i with)
-        {
-            return x * with.x + y * with.y;
         }
 
         /// <summary>
@@ -242,38 +168,6 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a vector composed of the <see cref="Mathf.PosMod(int, int)"/> of this vector's components
-        /// and <paramref name="mod"/>.
-        /// </summary>
-        /// <param name="mod">A value representing the divisor of the operation.</param>
-        /// <returns>
-        /// A vector with each component <see cref="Mathf.PosMod(int, int)"/> by <paramref name="mod"/>.
-        /// </returns>
-        public readonly Vector2i PosMod(int mod)
-        {
-            Vector2i v = this;
-            v.x = Mathf.PosMod(v.x, mod);
-            v.y = Mathf.PosMod(v.y, mod);
-            return v;
-        }
-
-        /// <summary>
-        /// Returns a vector composed of the <see cref="Mathf.PosMod(int, int)"/> of this vector's components
-        /// and <paramref name="modv"/>'s components.
-        /// </summary>
-        /// <param name="modv">A vector representing the divisors of the operation.</param>
-        /// <returns>
-        /// A vector with each component <see cref="Mathf.PosMod(int, int)"/> by <paramref name="modv"/>'s components.
-        /// </returns>
-        public readonly Vector2i PosMod(Vector2i modv)
-        {
-            Vector2i v = this;
-            v.x = Mathf.PosMod(v.x, modv.x);
-            v.y = Mathf.PosMod(v.y, modv.y);
-            return v;
-        }
-
-        /// <summary>
         /// Returns a vector with each component set to one or negative one, depending
         /// on the signs of this vector's components, or zero if the component is zero,
         /// by calling <see cref="Mathf.Sign(int)"/> on each component.
@@ -285,16 +179,6 @@ namespace Godot
             v.x = Mathf.Sign(v.x);
             v.y = Mathf.Sign(v.y);
             return v;
-        }
-
-        /// <summary>
-        /// Returns a perpendicular vector rotated 90 degrees counter-clockwise
-        /// compared to the original, with the same length.
-        /// </summary>
-        /// <returns>The perpendicular vector.</returns>
-        public readonly Vector2i Orthogonal()
-        {
-            return new Vector2i(y, -x);
         }
 
         // Constants
@@ -467,7 +351,7 @@ namespace Godot
         /// with the components of the given <see langword="int"/>.
         /// This operation uses truncated division, which is often not desired
         /// as it does not work well with negative numbers.
-        /// Consider using <see cref="PosMod(int)"/> instead
+        /// Consider using <see cref="Mathf.PosMod(int, int)"/> instead
         /// if you want to handle negative numbers.
         /// </summary>
         /// <example>
@@ -490,7 +374,7 @@ namespace Godot
         /// with the components of the given <see cref="Vector2i"/>.
         /// This operation uses truncated division, which is often not desired
         /// as it does not work well with negative numbers.
-        /// Consider using <see cref="PosMod(Vector2i)"/> instead
+        /// Consider using <see cref="Mathf.PosMod(int, int)"/> instead
         /// if you want to handle negative numbers.
         /// </summary>
         /// <example>
@@ -505,34 +389,6 @@ namespace Godot
         {
             vec.x %= divisorv.x;
             vec.y %= divisorv.y;
-            return vec;
-        }
-
-        /// <summary>
-        /// Performs a bitwise AND operation with this <see cref="Vector2i"/>
-        /// and the given <see langword="int"/>.
-        /// </summary>
-        /// <param name="vec">The vector to AND with.</param>
-        /// <param name="and">The integer to AND with.</param>
-        /// <returns>The result of the bitwise AND.</returns>
-        public static Vector2i operator &(Vector2i vec, int and)
-        {
-            vec.x &= and;
-            vec.y &= and;
-            return vec;
-        }
-
-        /// <summary>
-        /// Performs a bitwise AND operation with this <see cref="Vector2i"/>
-        /// and the given <see cref="Vector2i"/>.
-        /// </summary>
-        /// <param name="vec">The left vector to AND with.</param>
-        /// <param name="andv">The right vector to AND with.</param>
-        /// <returns>The result of the bitwise AND.</returns>
-        public static Vector2i operator &(Vector2i vec, Vector2i andv)
-        {
-            vec.x &= andv.x;
-            vec.y &= andv.y;
             return vec;
         }
 
