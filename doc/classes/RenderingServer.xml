@@ -217,7 +217,7 @@
 			<param index="1" name="from" type="Vector2" />
 			<param index="2" name="to" type="Vector2" />
 			<param index="3" name="color" type="Color" />
-			<param index="4" name="width" type="float" default="1.0" />
+			<param index="4" name="width" type="float" default="-1.0" />
 			<param index="5" name="antialiased" type="bool" default="false" />
 			<description>
 			</description>
@@ -303,7 +303,6 @@
 			<param index="2" name="colors" type="PackedColorArray" />
 			<param index="3" name="uvs" type="PackedVector2Array" />
 			<param index="4" name="texture" type="RID" />
-			<param index="5" name="width" type="float" default="1.0" />
 			<description>
 			</description>
 		</method>

@@ -621,8 +621,8 @@ struct CanvasItemPlotCurve {
 			color2(p_color2) {}
 
 	void operator()(Vector2 pos0, Vector2 pos1, bool in_definition) {
-		// FIXME: Using a line width greater than 1 breaks curve rendering
-		ci.draw_line(pos0, pos1, in_definition ? color1 : color2, 1);
+		// FIXME: Using a quad line breaks curve rendering.
+		ci.draw_line(pos0, pos1, in_definition ? color1 : color2, -1);
 	}
 };
 

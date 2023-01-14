@@ -95,11 +95,12 @@
 			<param index="0" name="from" type="Vector2" />
 			<param index="1" name="to" type="Vector2" />
 			<param index="2" name="color" type="Color" />
-			<param index="3" name="width" type="float" default="1.0" />
+			<param index="3" name="width" type="float" default="-1.0" />
 			<param index="4" name="dash" type="float" default="2.0" />
 			<param index="5" name="aligned" type="bool" default="true" />
 			<description>
 				Draws a dashed line from a 2D point to another, with a given color and width. See also [method draw_multiline] and [method draw_polyline].
+				If [param width] is negative, then a two-point primitives will be drawn instead of a four-point ones. This means that when the CanvasItem is scaled, the line parts will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
 			</description>
 		</method>
 		<method name="draw_end_animation">
@@ -130,10 +131,11 @@
 			<param index="0" name="from" type="Vector2" />
 			<param index="1" name="to" type="Vector2" />
 			<param index="2" name="color" type="Color" />
-			<param index="3" name="width" type="float" default="1.0" />
+			<param index="3" name="width" type="float" default="-1.0" />
 			<param index="4" name="antialiased" type="bool" default="false" />
 			<description>
 				Draws a line from a 2D point to another, with a given color and width. It can be optionally antialiased. See also [method draw_multiline] and [method draw_polyline].
+				If [param width] is negative, then a two-point primitive will be drawn instead of a four-point one. This means that when the CanvasItem is scaled, the line will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
 			</description>
 		</method>
 		<method name="draw_mesh">
@@ -165,18 +167,20 @@
 			<return type="void" />
 			<param index="0" name="points" type="PackedVector2Array" />
 			<param index="1" name="color" type="Color" />
-			<param index="2" name="width" type="float" default="1.0" />
+			<param index="2" name="width" type="float" default="-1.0" />
 			<description>
 				Draws multiple disconnected lines with a uniform [param color]. When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw interconnected lines, use [method draw_polyline] instead.
+				If [param width] is negative, then two-point primitives will be drawn instead of a four-point ones. This means that when the CanvasItem is scaled, the lines will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
 			</description>
 		</method>
 		<method name="draw_multiline_colors">
 			<return type="void" />
 			<param index="0" name="points" type="PackedVector2Array" />
 			<param index="1" name="colors" type="PackedColorArray" />
-			<param index="2" name="width" type="float" default="1.0" />
+			<param index="2" name="width" type="float" default="-1.0" />
 			<description>
 				Draws multiple disconnected lines with a uniform [param width] and segment-by-segment coloring. Colors assigned to line segments match by index between [param points] and [param colors]. When drawing large amounts of lines, this is faster than using individual [method draw_line] calls. To draw interconnected lines, use [method draw_polyline_colors] instead.
+				If [param width] is negative, then two-point primitives will be drawn instead of a four-point ones. This means that when the CanvasItem is scaled, the lines will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
 			</description>
 		</method>
 		<method name="draw_multiline_string" qualifiers="const">
@@ -260,7 +264,6 @@
 			<param index="1" name="colors" type="PackedColorArray" />
 			<param index="2" name="uvs" type="PackedVector2Array" />
 			<param index="3" name="texture" type="Texture2D" default="null" />
-			<param index="4" name="width" type="float" default="1.0" />
 			<description>
 				Draws a custom primitive. 1 point for a point, 2 points for a line, 3 points for a triangle, and 4 points for a quad. If 0 points or more than 4 points are specified, nothing will be drawn and an error message will be printed. See also [method draw_line], [method draw_polyline], [method draw_polygon], and [method draw_rect].
 			</description>
@@ -270,10 +273,12 @@
 			<param index="0" name="rect" type="Rect2" />
 			<param index="1" name="color" type="Color" />
 			<param index="2" name="filled" type="bool" default="true" />
-			<param index="3" name="width" type="float" default="1.0" />
+			<param index="3" name="width" type="float" default="-1.0" />
 			<description>
 				Draws a rectangle. If [param filled] is [code]true[/code], the rectangle will be filled with the [param color] specified. If [param filled] is [code]false[/code], the rectangle will be drawn as a stroke with the [param color] and [param width] specified.
+				If [param width] is negative, then two-point primitives will be drawn instead of a four-point ones. This means that when the CanvasItem is scaled, the lines will remain thin. If this behavior is not desired, then pass a positive [param width] like [code]1.0[/code].
 				[b]Note:[/b] [param width] is only effective if [param filled] is [code]false[/code].
+				[b]Note:[/b] Unfilled rectangles drawn with a negative [param width] may not display perfectly. For example, corners may be missing or brighter due to overlapping lines (for a translucent [param color]).
 			</description>
 		</method>
 		<method name="draw_set_transform">
