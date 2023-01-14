@@ -458,6 +458,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 		// Global enums and constants.
 		Array constants;
 		HashMap<String, List<Pair<String, int64_t>>> enum_list;
+		HashMap<String, bool> enum_is_bitfield;
 
 		for (int i = 0; i < CoreConstants::get_global_constant_count(); i++) {
 			int64_t value = CoreConstants::get_global_constant_value(i);
@@ -466,6 +467,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 			bool bitfield = CoreConstants::is_global_constant_bitfield(i);
 			if (!enum_name.is_empty()) {
 				enum_list[enum_name].push_back(Pair<String, int64_t>(name, value));
+				enum_is_bitfield[enum_name] = bitfield;
 			} else {
 				Dictionary d;
 				d["name"] = name;
@@ -481,6 +483,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 		for (const KeyValue<String, List<Pair<String, int64_t>>> &E : enum_list) {
 			Dictionary d1;
 			d1["name"] = E.key;
+			d1["is_bitfield"] = enum_is_bitfield[E.key];
 			Array values;
 			for (const Pair<String, int64_t> &F : E.value) {
 				Dictionary d2;
