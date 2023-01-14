@@ -48,6 +48,7 @@ class EditorInspector;
 class EditorInspectorPlugin;
 class EditorNode3DGizmoPlugin;
 class EditorPaths;
+class EditorResourceConversionPlugin;
 class EditorResourcePreview;
 class EditorSceneFormatImporter;
 class EditorScenePostImportPlugin;
@@ -306,6 +307,9 @@ public:
 
 	void add_debugger_plugin(const Ref<EditorDebuggerPlugin> &p_plugin);
 	void remove_debugger_plugin(const Ref<EditorDebuggerPlugin> &p_plugin);
+
+	void add_resource_conversion_plugin(const Ref<EditorResourceConversionPlugin> &p_plugin);
+	void remove_resource_conversion_plugin(const Ref<EditorResourceConversionPlugin> &p_plugin);
 
 	void enable_plugin();
 	void disable_plugin();
