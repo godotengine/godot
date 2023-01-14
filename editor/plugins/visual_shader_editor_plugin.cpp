@@ -4902,10 +4902,6 @@ void VisualShaderEditor::_bind_methods() {
 	ClassDB::bind_method("_update_options_menu_deferred", &VisualShaderEditor::_update_options_menu_deferred);
 	ClassDB::bind_method("_rebuild_shader_deferred", &VisualShaderEditor::_rebuild_shader_deferred);
 
-	ClassDB::bind_method(D_METHOD("_get_drag_data_fw"), &VisualShaderEditor::get_drag_data_fw);
-	ClassDB::bind_method(D_METHOD("_can_drop_data_fw"), &VisualShaderEditor::can_drop_data_fw);
-	ClassDB::bind_method(D_METHOD("_drop_data_fw"), &VisualShaderEditor::drop_data_fw);
-
 	ClassDB::bind_method("_is_available", &VisualShaderEditor::_is_available);
 }
 
@@ -4919,7 +4915,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	graph->set_h_size_flags(SIZE_EXPAND_FILL);
 	graph->set_show_zoom_label(true);
 	add_child(graph);
-	graph->set_drag_forwarding_compat(this);
+	SET_DRAG_FORWARDING_GCD(graph, VisualShaderEditor);
 	float graph_minimap_opacity = EDITOR_GET("editors/visual_editors/minimap_opacity");
 	graph->set_minimap_opacity(graph_minimap_opacity);
 	float graph_lines_curvature = EDITOR_GET("editors/visual_editors/lines_curvature");
@@ -5150,7 +5146,7 @@ VisualShaderEditor::VisualShaderEditor() {
 
 	members = memnew(Tree);
 	members_vb->add_child(members);
-	members->set_drag_forwarding_compat(this);
+	SET_DRAG_FORWARDING_GCD(members, VisualShaderEditor);
 	members->set_h_size_flags(SIZE_EXPAND_FILL);
 	members->set_v_size_flags(SIZE_EXPAND_FILL);
 	members->set_hide_root(true);

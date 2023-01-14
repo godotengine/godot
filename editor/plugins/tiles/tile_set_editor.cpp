@@ -637,11 +637,6 @@ void TileSetEditor::_undo_redo_inspector_callback(Object *p_undo_redo, Object *p
 #undef ADD_UNDO
 }
 
-void TileSetEditor::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_can_drop_data_fw"), &TileSetEditor::_can_drop_data_fw);
-	ClassDB::bind_method(D_METHOD("_drop_data_fw"), &TileSetEditor::_drop_data_fw);
-}
-
 void TileSetEditor::edit(Ref<TileSet> p_tile_set) {
 	if (p_tile_set == tile_set) {
 		return;
@@ -728,7 +723,7 @@ TileSetEditor::TileSetEditor() {
 	sources_list->add_user_signal(MethodInfo("sort_request"));
 	sources_list->connect("sort_request", callable_mp(this, &TileSetEditor::_update_sources_list).bind(-1));
 	sources_list->set_texture_filter(CanvasItem::TEXTURE_FILTER_NEAREST);
-	sources_list->set_drag_forwarding_compat(this);
+	SET_DRAG_FORWARDING_CDU(sources_list, TileSetEditor);
 	split_container_left_side->add_child(sources_list);
 
 	HBoxContainer *sources_bottom_actions = memnew(HBoxContainer);

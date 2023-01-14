@@ -694,10 +694,6 @@ void EditorSettingsDialog::_editor_restart_close() {
 void EditorSettingsDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_shortcuts"), &EditorSettingsDialog::_update_shortcuts);
 	ClassDB::bind_method(D_METHOD("_settings_changed"), &EditorSettingsDialog::_settings_changed);
-
-	ClassDB::bind_method(D_METHOD("_get_drag_data_fw"), &EditorSettingsDialog::get_drag_data_fw);
-	ClassDB::bind_method(D_METHOD("_can_drop_data_fw"), &EditorSettingsDialog::can_drop_data_fw);
-	ClassDB::bind_method(D_METHOD("_drop_data_fw"), &EditorSettingsDialog::drop_data_fw);
 }
 
 EditorSettingsDialog::EditorSettingsDialog() {
@@ -793,7 +789,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	shortcuts->connect("item_activated", callable_mp(this, &EditorSettingsDialog::_shortcut_cell_double_clicked));
 	tab_shortcuts->add_child(shortcuts);
 
-	shortcuts->set_drag_forwarding_compat(this);
+	SET_DRAG_FORWARDING_GCD(shortcuts, EditorSettingsDialog);
 
 	// Adding event dialog
 	shortcut_editor = memnew(InputEventConfigurationDialog);

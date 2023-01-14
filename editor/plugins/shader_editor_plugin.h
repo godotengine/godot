@@ -92,9 +92,6 @@ class ShaderEditorPlugin : public EditorPlugin {
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
-protected:
-	static void _bind_methods();
-
 public:
 	virtual String get_name() const override { return "Shader"; }
 	virtual void edit(Object *p_object) override;
