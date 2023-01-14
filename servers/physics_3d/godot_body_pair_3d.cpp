@@ -47,6 +47,16 @@ void GodotBodyPair3D::contact_added_callback(const Vector3 &p_point_A, int p_ind
 	Vector3 local_A = A->get_inv_transform().basis.xform(p_point_A);
 	Vector3 local_B = B->get_inv_transform().basis.xform(p_point_B - offset_B);
 
+	// Collision solver may attempt to add the same contact twice when testing collisions with faces, we ignore the duplicate collisions.
+	real_t contact_recycle_radius_sq = space->get_contact_recycle_radius() * space->get_contact_recycle_radius();
+	for (int i = 0; i < contact_count; i++) {
+		Contact &c = contacts[i];
+		if (c.local_A.distance_squared_to(local_A) < contact_recycle_radius_sq &&
+				c.local_B.distance_squared_to(local_B) < contact_recycle_radius_sq) {
+			return;
+		}
+	}
+
 	int new_index = contact_count;
 
 	ERR_FAIL_COND(new_index >= (MAX_CONTACTS + 1));
@@ -57,21 +67,25 @@ void GodotBodyPair3D::contact_added_callback(const Vector3 &p_point_A, int p_ind
 	contact.local_A = local_A;
 	contact.local_B = local_B;
 	contact.normal = (p_point_A - p_point_B).normalized();
-	contact.used = true;
 
-	// Attempt to determine if the contact will be reused.
-	real_t contact_recycle_radius = space->get_contact_recycle_radius();
+	// see if this contact matches one from prior iteration. If so, copy the accumulated impulses to allow warm start.
 
-	for (int i = 0; i < contact_count; i++) {
-		Contact &c = contacts[i];
-		if (c.local_A.distance_squared_to(local_A) < (contact_recycle_radius * contact_recycle_radius) &&
-				c.local_B.distance_squared_to(local_B) < (contact_recycle_radius * contact_recycle_radius)) {
+	real_t max_separation_sq = space->get_contact_max_separation() * space->get_contact_max_separation();
+
+	for (int i = 0; i < prior_contact_count; i++) {
+		Contact &c = prior_contacts[i];
+		if (!c.used && // c.used prevents us from matching the same cached contact to > 1 new contact.
+				c.local_A.distance_squared_to(local_A) < max_separation_sq &&
+				c.local_B.distance_squared_to(local_B) < max_separation_sq) {
 			contact.acc_normal_impulse = c.acc_normal_impulse;
 			contact.acc_bias_impulse = c.acc_bias_impulse;
 			contact.acc_bias_impulse_center_of_mass = c.acc_bias_impulse_center_of_mass;
-			contact.acc_tangent_impulse = c.acc_tangent_impulse;
-			c = contact;
-			return;
+			contact.friction_tangents[0].acc_impulse = c.friction_tangents[0].acc_impulse;
+			contact.friction_tangents[1].acc_impulse = c.friction_tangents[1].acc_impulse;
+			contact.friction_tangents[0].prior_tangent = c.friction_tangents[0].tangent;
+			contact.friction_tangents[1].prior_tangent = c.friction_tangents[1].tangent;
+			c.used = true; // prevents the cached contact from being used twice.
+			break;
 		}
 	}
 
@@ -118,47 +132,6 @@ void GodotBodyPair3D::contact_added_callback(const Vector3 &p_point_A, int p_ind
 
 	contacts[new_index] = contact;
 	contact_count++;
-}
-
-void GodotBodyPair3D::validate_contacts() {
-	// Make sure to erase contacts that are no longer valid.
-	real_t max_separation = space->get_contact_max_separation();
-	real_t max_separation2 = max_separation * max_separation;
-
-	const Basis &basis_A = A->get_transform().basis;
-	const Basis &basis_B = B->get_transform().basis;
-
-	for (int i = 0; i < contact_count; i++) {
-		Contact &c = contacts[i];
-
-		bool erase = false;
-		if (!c.used) {
-			// Was left behind in previous frame.
-			erase = true;
-		} else {
-			c.used = false;
-
-			Vector3 global_A = basis_A.xform(c.local_A);
-			Vector3 global_B = basis_B.xform(c.local_B) + offset_B;
-			Vector3 axis = global_A - global_B;
-			real_t depth = axis.dot(c.normal);
-
-			if (depth < -max_separation || (global_B + c.normal * depth - global_A).length_squared() > max_separation2) {
-				erase = true;
-			}
-		}
-
-		if (erase) {
-			// Contact no longer needed, remove.
-			if ((i + 1) < contact_count) {
-				// Swap with the last one.
-				SWAP(contacts[i], contacts[contact_count - 1]);
-			}
-
-			i--;
-			contact_count--;
-		}
-	}
 }
 
 // _test_ccd prevents tunneling by slowing down a high velocity body that is about to collide so that next frame it will be at an appropriate location to collide (i.e. slight overlap)
@@ -228,7 +201,23 @@ real_t combine_friction(GodotBody3D *A, GodotBody3D *B) {
 	return ABS(MIN(A->get_friction(), B->get_friction()));
 }
 
+void get_tangents(Vector3 &normal, Vector3 &outT1, Vector3 &outT2) {
+	// tangent 1 is perpendicular
+	if (abs(normal.x) > abs(normal.y)) {
+		outT1 = Vector3(normal.z, 0.0f, -normal.x);
+	} else {
+		outT1 = Vector3(0.0f, normal.z, -normal.y);
+	}
+	outT1.normalize();
+	outT2 = normal.cross(outT1);
+}
+
 bool GodotBodyPair3D::setup(real_t p_step) {
+#ifdef PHYS_SOLVER_LOG
+	frame_count++;
+	iteration_count = 0;
+#endif
+
 	check_ccd = false;
 
 	if (!A->interacts_with(B) || A->has_exception(B->get_self()) || B->has_exception(A->get_self())) {
@@ -251,7 +240,10 @@ bool GodotBodyPair3D::setup(real_t p_step) {
 
 	offset_B = B->get_transform().get_origin() - A->get_transform().get_origin();
 
-	validate_contacts();
+	// reset contacts, keep prior frame's contacts as cache for warm start.
+	std::swap(prior_contacts, contacts);
+	prior_contact_count = contact_count;
+	contact_count = 0;
 
 	const Vector3 &offset_A = A->get_transform().get_origin();
 	Transform3D xform_Au = Transform3D(A->get_transform().basis, Vector3());
@@ -306,9 +298,9 @@ bool GodotBodyPair3D::pre_solve(real_t p_step) {
 		return false;
 	}
 
-	real_t max_penetration = space->get_contact_max_allowed_penetration();
+	real_t max_penetration = space->get_contact_max_allowed_penetration(); // AKA slop. bias impulse will allow this much penetration without correction.
 
-	real_t bias = 0.8;
+	real_t bias = space->get_contact_bias(); // to avoid overshoot, bias impulse will only attempt to correct for 80% of the penetration error per frame (unless overridden below)
 
 	GodotShape3D *shape_A_ptr = A->get_shape(shape_A);
 	GodotShape3D *shape_B_ptr = B->get_shape(shape_B);
@@ -336,8 +328,13 @@ bool GodotBodyPair3D::pre_solve(real_t p_step) {
 	const Basis &inv_inertia_tensor_A = collide_A ? A->get_inv_inertia_tensor() : zero_basis;
 	const Basis &inv_inertia_tensor_B = collide_B ? B->get_inv_inertia_tensor() : zero_basis;
 
-	real_t inv_mass_A = collide_A ? A->get_inv_mass() : 0.0;
-	real_t inv_mass_B = collide_B ? B->get_inv_mass() : 0.0;
+	// usually inv_mass will not change, but recalculate every frame just in case kinematic mode or mass of the bodies has changed:
+	inv_mass_combined = collide_A ? A->get_inv_mass() : 0.0;
+	inv_mass_combined += collide_B ? B->get_inv_mass() : 0.0;
+
+#ifdef PHYS_SOLVER_LOG
+	print_line(vformat("Frame: %d | pre_solve | contact_count | %d | lin vel | %s | ang vel | %s", frame_count, contact_count, String(B->get_linear_velocity()), String(B->get_angular_velocity())));
+#endif
 
 	for (int i = 0; i < contact_count; i++) {
 		Contact &c = contacts[i];
@@ -348,6 +345,10 @@ bool GodotBodyPair3D::pre_solve(real_t p_step) {
 
 		Vector3 axis = global_A - global_B;
 		real_t depth = axis.dot(c.normal);
+
+#ifdef PHYS_SOLVER_LOG
+		print_line(vformat("Frame: %d | pre_solve | contact | %d | local_b | %s | depth | %f", frame_count, i, String(c.local_B), depth));
+#endif
 
 		if (depth <= 0.0) {
 			continue;
@@ -364,17 +365,33 @@ bool GodotBodyPair3D::pre_solve(real_t p_step) {
 		c.rA = global_A - A->get_center_of_mass();
 		c.rB = global_B - B->get_center_of_mass() - offset_B;
 
+		get_tangents(c.normal, c.friction_tangents[0].tangent, c.friction_tangents[1].tangent);
+#ifdef PHYS_SOLVER_VERBOSE
+		print_line(vformat("Frame: %d | get_tangents | normal | %s | tan 1 | %s | tan 2 | %s", frame_count, String(c.normal), String(c.friction_tangents[0].tangent), String(c.friction_tangents[1].tangent)));
+#endif
+
 		// Precompute normal mass, tangent mass, and bias.
 		Vector3 inertia_A = inv_inertia_tensor_A.xform(c.rA.cross(c.normal));
 		Vector3 inertia_B = inv_inertia_tensor_B.xform(c.rB.cross(c.normal));
-		real_t kNormal = inv_mass_A + inv_mass_B;
-		kNormal += c.normal.dot(inertia_A.cross(c.rA)) + c.normal.dot(inertia_B.cross(c.rB));
+		real_t kNormal = inv_mass_combined + c.normal.dot(inertia_A.cross(c.rA)) + c.normal.dot(inertia_B.cross(c.rB));
 		c.mass_normal = 1.0f / kNormal;
 
 		c.bias = -bias * inv_dt * MIN(0.0f, -depth + max_penetration);
 		c.depth = depth;
 
-		Vector3 j_vec = c.normal * c.acc_normal_impulse + c.acc_tangent_impulse;
+		// Create and apply the "warm start" impulse from prior frame's accumulated impulses. Benefits of warm start:
+		// 1) if situation is very similar to last frame, the first solver iteration will find no adjustment necessary because this warm start impulse already did exactly what the solver would eventually have found.
+		// 2) if the situation is so complex we couldn't reach a good solution in the iteration limit last frame, this allows us to continue where we left off instead of starting over and never getting a good solution.
+
+		Vector3 j_vec = c.normal * c.acc_normal_impulse;
+
+		// reproject prior friction lambdas onto the new friction tangents:
+		Vector3 old_friction = c.friction_tangents[0].acc_impulse * c.friction_tangents[0].prior_tangent;
+		c.friction_tangents[0].acc_impulse = old_friction.dot(c.friction_tangents[0].tangent);
+		j_vec += c.friction_tangents[0].tangent * c.friction_tangents[0].acc_impulse;
+		old_friction = c.friction_tangents[1].acc_impulse * c.friction_tangents[1].prior_tangent;
+		c.friction_tangents[1].acc_impulse = old_friction.dot(c.friction_tangents[1].tangent);
+		j_vec += c.friction_tangents[1].tangent * c.friction_tangents[1].acc_impulse;
 
 		c.acc_impulse -= j_vec;
 
@@ -395,6 +412,7 @@ bool GodotBodyPair3D::pre_solve(real_t p_step) {
 			continue;
 		}
 
+		// Each contact starts active so it gets at least 1 solver iteration. On each iteration contacts may go inactive and will not be evaluated on any more iterations that frame.
 		c.active = true;
 		do_process = true;
 
@@ -402,8 +420,12 @@ bool GodotBodyPair3D::pre_solve(real_t p_step) {
 			A->apply_impulse(-j_vec, c.rA + A->get_center_of_mass());
 		}
 		if (collide_B) {
+#ifdef PHYS_SOLVER_VERBOSE
+			print_line(vformat("Frame: %d.%d | warm | %s | %s", frame_count, iteration_count, String(j_vec), String(c.local_B)));
+#endif
 			B->apply_impulse(j_vec, c.rB + B->get_center_of_mass());
 		}
+		// end of warm start.
 
 		c.bounce = combine_bounce(A, B);
 		if (c.bounce) {
@@ -417,21 +439,25 @@ bool GodotBodyPair3D::pre_solve(real_t p_step) {
 	return do_process;
 }
 
+/*	The solver uses the sequential impulses approach. Key concepts:
+ *	 - will perform several iterations each frame trying to find a balance of impulses between all contact points.
+ *	 - in a very simple collision only 1 iteration should be needed, but when rigidbodies are stacked we might get so many interacting contacts that we can't fully solve it within 1 frame's iterations.
+ *	 - there are 3 types of impulses: bias (to correct for penetration), normal (to eliminate velocity), & tangent (to apply friction)
+ *	 - since very often each frame's solution will be similar to the prior one, the accumulated impulses are cached and used to "warm start" the next frame
+ *
+ *	For further information, see GDC talks by Erin Catto, and many useful posts in various forums by Dirk Gregorius.
+ */
+
 void GodotBodyPair3D::solve(real_t p_step) {
 	if (!collided) {
 		return;
 	}
 
+#ifdef PHYS_SOLVER_LOG
+	iteration_count++;
+#endif
+
 	const real_t max_bias_av = MAX_BIAS_ROTATION / p_step;
-
-	Basis zero_basis;
-	zero_basis.set_zero();
-
-	const Basis &inv_inertia_tensor_A = collide_A ? A->get_inv_inertia_tensor() : zero_basis;
-	const Basis &inv_inertia_tensor_B = collide_B ? B->get_inv_inertia_tensor() : zero_basis;
-
-	real_t inv_mass_A = collide_A ? A->get_inv_mass() : 0.0;
-	real_t inv_mass_B = collide_B ? B->get_inv_mass() : 0.0;
 
 	for (int i = 0; i < contact_count; i++) {
 		Contact &c = contacts[i];
@@ -439,9 +465,9 @@ void GodotBodyPair3D::solve(real_t p_step) {
 			continue;
 		}
 
-		c.active = false; //try to deactivate, will activate itself if still needed
+		c.active = false; //try to deactivate, will reactivate if any impulse gets applied this solver iteration
 
-		//bias impulse
+		//bias impulse (fixes penetration)
 
 		Vector3 crbA = A->get_biased_angular_velocity().cross(c.rA);
 		Vector3 crbB = B->get_biased_angular_velocity().cross(c.rB);
@@ -456,11 +482,17 @@ void GodotBodyPair3D::solve(real_t p_step) {
 
 			Vector3 jb = c.normal * (c.acc_bias_impulse - jbnOld);
 
-			if (collide_A) {
-				A->apply_bias_impulse(-jb, c.rA + A->get_center_of_mass(), max_bias_av);
-			}
-			if (collide_B) {
-				B->apply_bias_impulse(jb, c.rB + B->get_center_of_mass(), max_bias_av);
+			if (!jb.is_zero_approx()) {
+				if (collide_A) {
+					A->apply_bias_impulse(-jb, c.rA + A->get_center_of_mass(), max_bias_av);
+				}
+				if (collide_B) {
+#ifdef PHYS_SOLVER_VERBOSE
+					print_line(vformat("Frame: %d.%d | bias | %s | %s | %f", frame_count, iteration_count, String(jb), String(c.local_B), max_bias_av));
+#endif
+					B->apply_bias_impulse(jb, c.rB + B->get_center_of_mass(), max_bias_av);
+				}
+				c.active = true;
 			}
 
 			crbA = A->get_biased_angular_velocity().cross(c.rA);
@@ -470,30 +502,36 @@ void GodotBodyPair3D::solve(real_t p_step) {
 			vbn = dbv.dot(c.normal);
 
 			if (Math::abs(-vbn + c.bias) > MIN_VELOCITY) {
-				real_t jbn_com = (-vbn + c.bias) / (inv_mass_A + inv_mass_B);
+				real_t jbn_com = (-vbn + c.bias) / inv_mass_combined;
 				real_t jbnOld_com = c.acc_bias_impulse_center_of_mass;
 				c.acc_bias_impulse_center_of_mass = MAX(jbnOld_com + jbn_com, 0.0f);
 
 				Vector3 jb_com = c.normal * (c.acc_bias_impulse_center_of_mass - jbnOld_com);
 
-				if (collide_A) {
-					A->apply_bias_impulse(-jb_com, A->get_center_of_mass(), 0.0f);
-				}
-				if (collide_B) {
-					B->apply_bias_impulse(jb_com, B->get_center_of_mass(), 0.0f);
+				if (!jb_com.is_zero_approx()) {
+					if (collide_A) {
+						A->apply_bias_impulse(-jb_com, A->get_center_of_mass(), 0.0f);
+					}
+					if (collide_B) {
+#ifdef PHYS_SOLVER_VERBOSE
+						print_line(vformat("Frame: %d.%d | bias_com | %s | centerOfMass", frame_count, iteration_count, String(jb_com)));
+#endif
+						B->apply_bias_impulse(jb_com, B->get_center_of_mass(), 0.0f);
+					}
+					c.active = true;
 				}
 			}
-
-			c.active = true;
 		}
 
 		Vector3 crA = A->get_angular_velocity().cross(c.rA);
 		Vector3 crB = B->get_angular_velocity().cross(c.rB);
 		Vector3 dv = B->get_linear_velocity() + crB - A->get_linear_velocity() - crA;
 
-		//normal impulse
+		//normal impulse (eliminates velocity)
 		real_t vn = dv.dot(c.normal);
 
+		// warning: comparing to MIN_VELOCITY can cause slight difference between accumulated normal impulse and gravity to persist frame-over frame,
+		// causing linear velocity to grow, causing more and more bias corrections over time. But if we go lower than MIN_VELOCITY, it takes a lot more iterations to settle.
 		if (Math::abs(vn) > MIN_VELOCITY) {
 			real_t jn = -(c.bounce + vn) * c.mass_normal;
 			real_t jnOld = c.acc_normal_impulse;
@@ -505,59 +543,100 @@ void GodotBodyPair3D::solve(real_t p_step) {
 				A->apply_impulse(-j, c.rA + A->get_center_of_mass());
 			}
 			if (collide_B) {
+#ifdef PHYS_SOLVER_VERBOSE
+				print_line(vformat("Frame: %d.%d | normal_impulse | %s | %s", frame_count, iteration_count, String(j), String(c.local_B)));
+#endif
 				B->apply_impulse(j, c.rB + B->get_center_of_mass());
 			}
 			c.acc_impulse -= j;
 
 			c.active = true;
 		}
+	}
 
-		//friction impulse
+	// tangent impulses (friction)
+	// By doing friction after all contacts have calculated normal impulses we prevent friction impulses from causing an imbalance between the normal impulses.
+
+	for (int i = 0; i < contact_count; i++) {
+		Contact &c = contacts[i];
+		if (!c.active) {
+			continue;
+		}
 
 		real_t friction = combine_friction(A, B);
+		real_t jtMax = c.acc_normal_impulse * friction; // friction is greater the higher the normal impulse. e.g. the bottom box in a stack is harder to shift than the top.
 
-		Vector3 lvA = A->get_linear_velocity() + A->get_angular_velocity().cross(c.rA);
-		Vector3 lvB = B->get_linear_velocity() + B->get_angular_velocity().cross(c.rB);
+		_solve_tangent(p_step, c, 0, jtMax);
+		_solve_tangent(p_step, c, 1, jtMax);
+	}
 
-		Vector3 dtv = lvB - lvA;
-		real_t tn = c.normal.dot(dtv);
-
-		// tangential velocity
-		Vector3 tv = dtv - c.normal * tn;
-		real_t tvl = tv.length();
-
-		if (tvl > MIN_VELOCITY) {
-			tv /= tvl;
-
-			Vector3 temp1 = inv_inertia_tensor_A.xform(c.rA.cross(tv));
-			Vector3 temp2 = inv_inertia_tensor_B.xform(c.rB.cross(tv));
-
-			real_t t = -tvl / (inv_mass_A + inv_mass_B + tv.dot(temp1.cross(c.rA) + temp2.cross(c.rB)));
-
-			Vector3 jt = t * tv;
-
-			Vector3 jtOld = c.acc_tangent_impulse;
-			c.acc_tangent_impulse += jt;
-
-			real_t fi_len = c.acc_tangent_impulse.length();
-			real_t jtMax = c.acc_normal_impulse * friction;
-
-			if (fi_len > CMP_EPSILON && fi_len > jtMax) {
-				c.acc_tangent_impulse *= jtMax / fi_len;
-			}
-
-			jt = c.acc_tangent_impulse - jtOld;
-
-			if (collide_A) {
-				A->apply_impulse(-jt, c.rA + A->get_center_of_mass());
-			}
-			if (collide_B) {
-				B->apply_impulse(jt, c.rB + B->get_center_of_mass());
-			}
-			c.acc_impulse -= jt;
-
-			c.active = true;
+#ifdef PHYS_SOLVER_LOG
+	for (int i = 0; i < contact_count; i++) {
+		Contact &c = contacts[i];
+		if (c.active) {
+			c.impulse_iterations++;
 		}
+	}
+#endif
+}
+
+void GodotBodyPair3D::post_solve() {
+#ifdef PHYS_SOLVER_LOG
+	int max_iter = 0;
+	for (int i = 0; i < contact_count; i++) {
+		Contact &c = contacts[i];
+		print_line(vformat("Frame: %d | post_solve | contact | %d | iterations | %d | accum norm | %f | accum tan 1 | %f | accum tan 2 | %f", frame_count, i, c.impulse_iterations, c.acc_normal_impulse, c.friction_tangents[0].acc_impulse, c.friction_tangents[1].acc_impulse));
+		max_iter = MAX(max_iter, c.impulse_iterations);
+	}
+	print_line(vformat("Frame: %d | post_solve | iterations | %d", frame_count, max_iter));
+#endif
+}
+
+void GodotBodyPair3D::_solve_tangent(real_t p_step, Contact &c, int tangent_index, real_t jtMax) {
+	// these tensors could be calculated in pre_solve instead of each solve_tangent. Worth it?
+	Basis zero_basis;
+	zero_basis.set_zero();
+	const Basis &inv_inertia_tensor_A = collide_A ? A->get_inv_inertia_tensor() : zero_basis;
+	const Basis &inv_inertia_tensor_B = collide_B ? B->get_inv_inertia_tensor() : zero_basis;
+
+	FrictionTangent &tan = c.friction_tangents[tangent_index];
+	Vector3 tv = tan.tangent;
+	Vector3 ra_cross_tan = c.rA.cross(tv);
+	Vector3 rb_cross_tan = c.rB.cross(tv);
+	real_t jv = tv.dot(A->get_linear_velocity() - B->get_linear_velocity());
+	// angular velocity:
+	if (collide_A) {
+		jv += ra_cross_tan.dot(A->get_angular_velocity());
+	}
+	if (collide_B) {
+		jv -= rb_cross_tan.dot(B->get_angular_velocity());
+	}
+
+	Vector3 temp1 = inv_inertia_tensor_A.xform(ra_cross_tan);
+	Vector3 temp2 = inv_inertia_tensor_B.xform(rb_cross_tan);
+	real_t inv_eff_mass = (inv_mass_combined + tv.dot(temp1.cross(c.rA) + temp2.cross(c.rB)));
+
+	real_t lambda = jv / inv_eff_mass;
+
+	if (abs(lambda) > MIN_VELOCITY) {
+		real_t jtOld = tan.acc_impulse;
+		tan.acc_impulse = CLAMP(jtOld + lambda, -jtMax, jtMax);
+
+		lambda = tan.acc_impulse - jtOld;
+		Vector3 jt = lambda * tv;
+
+		if (collide_A) {
+			A->apply_impulse(-jt, c.rA + A->get_center_of_mass());
+		}
+		if (collide_B) {
+#ifdef PHYS_SOLVER_VERBOSE
+			print_line(vformat("Frame: %d.%d | tangent_impulse_%d | %s | %s", frame_count, iteration_count, tangent_index, String(jt), String(c.local_B)));
+#endif
+			B->apply_impulse(jt, c.rB + B->get_center_of_mass());
+		}
+		c.acc_impulse -= jt;
+
+		c.active = true;
 	}
 }
 
@@ -586,77 +665,47 @@ void GodotBodySoftBodyPair3D::contact_added_callback(const Vector3 &p_point_A, i
 	Vector3 local_A = body->get_inv_transform().xform(p_point_A);
 	Vector3 local_B = p_point_B - soft_body->get_node_position(p_index_B);
 
+	// Collision solver may attempt to add the same contact twice when testing collisions with faces, we ignore the duplicate collisions.
+	real_t contact_recycle_radius_sq = space->get_contact_recycle_radius() * space->get_contact_recycle_radius();
+	uint32_t contact_count = contacts.size();
+	for (uint32_t contact_index = 0; contact_index < contact_count; ++contact_index) {
+		Contact &c = contacts[contact_index];
+		if (c.local_A.distance_squared_to(local_A) < contact_recycle_radius_sq &&
+				c.local_B.distance_squared_to(local_B) < contact_recycle_radius_sq) {
+			return;
+		}
+	}
+
 	Contact contact;
 	contact.index_A = p_index_A;
 	contact.index_B = p_index_B;
 	contact.local_A = local_A;
 	contact.local_B = local_B;
 	contact.normal = (p_point_A - p_point_B).normalized();
-	contact.used = true;
 
-	// Attempt to determine if the contact will be reused.
-	real_t contact_recycle_radius = space->get_contact_recycle_radius();
+	// see if this contact matches one from prior iteration. If so, copy the accumulated impulses to allow warm start.
+	real_t max_separation_sq = space->get_contact_max_separation() * space->get_contact_max_separation();
 
-	uint32_t contact_count = contacts.size();
 	for (uint32_t contact_index = 0; contact_index < contact_count; ++contact_index) {
 		Contact &c = contacts[contact_index];
 		if (c.index_B == p_index_B) {
-			if (c.local_A.distance_squared_to(local_A) < (contact_recycle_radius * contact_recycle_radius) &&
-					c.local_B.distance_squared_to(local_B) < (contact_recycle_radius * contact_recycle_radius)) {
+			if (!c.used && // c.used prevents us from matching the same cached contact to > 1 new contact.
+					c.local_A.distance_squared_to(local_A) < max_separation_sq &&
+					c.local_B.distance_squared_to(local_B) < max_separation_sq) {
 				contact.acc_normal_impulse = c.acc_normal_impulse;
 				contact.acc_bias_impulse = c.acc_bias_impulse;
 				contact.acc_bias_impulse_center_of_mass = c.acc_bias_impulse_center_of_mass;
-				contact.acc_tangent_impulse = c.acc_tangent_impulse;
+				contact.friction_tangents[0].acc_impulse = c.friction_tangents[0].acc_impulse;
+				contact.friction_tangents[1].acc_impulse = c.friction_tangents[1].acc_impulse;
+				contact.friction_tangents[0].prior_tangent = c.friction_tangents[0].tangent;
+				contact.friction_tangents[1].prior_tangent = c.friction_tangents[1].tangent;
+				c.used = true; // prevents the cached contact from being used twice.
+				break;
 			}
-			c = contact;
-			return;
 		}
 	}
 
 	contacts.push_back(contact);
-}
-
-void GodotBodySoftBodyPair3D::validate_contacts() {
-	// Make sure to erase contacts that are no longer valid.
-	real_t max_separation = space->get_contact_max_separation();
-	real_t max_separation2 = max_separation * max_separation;
-
-	const Transform3D &transform_A = body->get_transform();
-
-	uint32_t contact_count = contacts.size();
-	for (uint32_t contact_index = 0; contact_index < contact_count; ++contact_index) {
-		Contact &c = contacts[contact_index];
-
-		bool erase = false;
-		if (!c.used) {
-			// Was left behind in previous frame.
-			erase = true;
-		} else {
-			c.used = false;
-
-			Vector3 global_A = transform_A.xform(c.local_A);
-			Vector3 global_B = soft_body->get_node_position(c.index_B) + c.local_B;
-			Vector3 axis = global_A - global_B;
-			real_t depth = axis.dot(c.normal);
-
-			if (depth < -max_separation || (global_B + c.normal * depth - global_A).length_squared() > max_separation2) {
-				erase = true;
-			}
-		}
-
-		if (erase) {
-			// Contact no longer needed, remove.
-			if ((contact_index + 1) < contact_count) {
-				// Swap with the last one.
-				SWAP(c, contacts[contact_count - 1]);
-			}
-
-			contact_index--;
-			contact_count--;
-		}
-	}
-
-	contacts.resize(contact_count);
 }
 
 bool GodotBodySoftBodyPair3D::setup(real_t p_step) {
@@ -683,7 +732,9 @@ bool GodotBodySoftBodyPair3D::setup(real_t p_step) {
 	Transform3D xform_Bu = soft_body->get_transform();
 	Transform3D xform_B = xform_Bu * soft_body->get_shape_transform(0);
 
-	validate_contacts();
+	// reset contacts, keep prior frame's contacts as cache for warm start.
+	SWAP(prior_contacts, contacts);
+	contacts.reset();
 
 	GodotShape3D *shape_A_ptr = body->get_shape(body_shape);
 	GodotShape3D *shape_B_ptr = soft_body->get_shape(0);
@@ -698,9 +749,9 @@ bool GodotBodySoftBodyPair3D::pre_solve(real_t p_step) {
 		return false;
 	}
 
-	real_t max_penetration = space->get_contact_max_allowed_penetration();
+	real_t max_penetration = space->get_contact_max_allowed_penetration(); // AKA slop. bias impulse will allow this much penetration without correction.
 
-	real_t bias = space->get_contact_bias();
+	real_t bias = space->get_contact_bias(); // to avoid overshoot, bias impulse will only attempt to correct for 80% of the penetration error per frame (unless overridden below)
 
 	GodotShape3D *shape_A_ptr = body->get_shape(body_shape);
 
@@ -750,6 +801,8 @@ bool GodotBodySoftBodyPair3D::pre_solve(real_t p_step) {
 		c.rA = global_A - transform_A.origin - body->get_center_of_mass();
 		c.rB = global_B;
 
+		get_tangents(c.normal, c.friction_tangents[0].tangent, c.friction_tangents[1].tangent);
+
 		// Precompute normal mass, tangent mass, and bias.
 		Vector3 inertia_A = body_inv_inertia_tensor.xform(c.rA.cross(c.normal));
 		real_t kNormal = body_inv_mass + node_inv_mass;
@@ -759,7 +812,20 @@ bool GodotBodySoftBodyPair3D::pre_solve(real_t p_step) {
 		c.bias = -bias * inv_dt * MIN(0.0f, -depth + max_penetration);
 		c.depth = depth;
 
-		Vector3 j_vec = c.normal * c.acc_normal_impulse + c.acc_tangent_impulse;
+		// Create and apply the "warm start" impulse from prior frame's accumulated impulses. Benefits of warm start:
+		// 1) if situation is very similar to last frame, the first solver iteration will find no adjustment necessary because this warm start impulse already did exactly what the solver would eventually have found.
+		// 2) if the situation is so complex we couldn't reach a good solution in the iteration limit last frame, this allows us to continue where we left off instead of starting over and never getting a good solution.
+
+		Vector3 j_vec = c.normal * c.acc_normal_impulse;
+
+		// reproject prior friction lambdas onto the new friction tangents:
+		Vector3 old_friction = c.friction_tangents[0].acc_impulse * c.friction_tangents[0].prior_tangent;
+		c.friction_tangents[0].acc_impulse = old_friction.dot(c.friction_tangents[0].tangent);
+		j_vec += c.friction_tangents[0].tangent * c.friction_tangents[0].acc_impulse;
+		old_friction = c.friction_tangents[1].acc_impulse * c.friction_tangents[1].prior_tangent;
+		c.friction_tangents[1].acc_impulse = old_friction.dot(c.friction_tangents[1].tangent);
+		j_vec += c.friction_tangents[1].tangent * c.friction_tangents[1].acc_impulse;
+
 		if (body_collides) {
 			body->apply_impulse(-j_vec, c.rA + body->get_center_of_mass());
 		}
@@ -778,6 +844,7 @@ bool GodotBodySoftBodyPair3D::pre_solve(real_t p_step) {
 			continue;
 		}
 
+		// Each contact starts active so it gets at least 1 solver iteration. On each iteration contacts may go inactive and will not be evaluated on any more iterations that frame.
 		c.active = true;
 		do_process = true;
 
@@ -806,11 +873,6 @@ void GodotBodySoftBodyPair3D::solve(real_t p_step) {
 
 	const real_t max_bias_av = MAX_BIAS_ROTATION / p_step;
 
-	Basis zero_basis;
-	zero_basis.set_zero();
-
-	const Basis &body_inv_inertia_tensor = body_collides ? body->get_inv_inertia_tensor() : zero_basis;
-
 	real_t body_inv_mass = body_collides ? body->get_inv_mass() : 0.0;
 
 	uint32_t contact_count = contacts.size();
@@ -820,11 +882,11 @@ void GodotBodySoftBodyPair3D::solve(real_t p_step) {
 			continue;
 		}
 
-		c.active = false;
+		c.active = false; //try to deactivate, will reactivate if any impulse gets applied this solver iteration
 
 		real_t node_inv_mass = soft_body_collides ? soft_body->get_node_inv_mass(c.index_B) : 0.0;
 
-		// Bias impulse.
+		// Bias impulse (fixes penetration)
 		Vector3 crbA = body->get_biased_angular_velocity().cross(c.rA);
 		Vector3 dbv = soft_body->get_node_biased_velocity(c.index_B) - body->get_biased_linear_velocity() - crbA;
 
@@ -837,11 +899,14 @@ void GodotBodySoftBodyPair3D::solve(real_t p_step) {
 
 			Vector3 jb = c.normal * (c.acc_bias_impulse - jbnOld);
 
-			if (body_collides) {
-				body->apply_bias_impulse(-jb, c.rA + body->get_center_of_mass(), max_bias_av);
-			}
-			if (soft_body_collides) {
-				soft_body->apply_node_bias_impulse(c.index_B, jb);
+			if (!jb.is_zero_approx()) {
+				if (body_collides) {
+					body->apply_bias_impulse(-jb, c.rA + body->get_center_of_mass(), max_bias_av);
+				}
+				if (soft_body_collides) {
+					soft_body->apply_node_bias_impulse(c.index_B, jb);
+				}
+				c.active = true;
 			}
 
 			crbA = body->get_biased_angular_velocity().cross(c.rA);
@@ -856,21 +921,22 @@ void GodotBodySoftBodyPair3D::solve(real_t p_step) {
 
 				Vector3 jb_com = c.normal * (c.acc_bias_impulse_center_of_mass - jbnOld_com);
 
-				if (body_collides) {
-					body->apply_bias_impulse(-jb_com, body->get_center_of_mass(), 0.0f);
-				}
-				if (soft_body_collides) {
-					soft_body->apply_node_bias_impulse(c.index_B, jb_com);
+				if (!jb_com.is_zero_approx()) {
+					if (body_collides) {
+						body->apply_bias_impulse(-jb_com, body->get_center_of_mass(), 0.0f);
+					}
+					if (soft_body_collides) {
+						soft_body->apply_node_bias_impulse(c.index_B, jb_com);
+					}
+					c.active = true;
 				}
 			}
-
-			c.active = true;
 		}
 
 		Vector3 crA = body->get_angular_velocity().cross(c.rA);
 		Vector3 dv = soft_body->get_node_velocity(c.index_B) - body->get_linear_velocity() - crA;
 
-		// Normal impulse.
+		// Normal impulse (eliminates velocity)
 		real_t vn = dv.dot(c.normal);
 
 		if (Math::abs(vn) > MIN_VELOCITY) {
@@ -890,51 +956,61 @@ void GodotBodySoftBodyPair3D::solve(real_t p_step) {
 
 			c.active = true;
 		}
+	}
 
-		// Friction impulse.
-		real_t friction = body->get_friction();
-
-		Vector3 lvA = body->get_linear_velocity() + body->get_angular_velocity().cross(c.rA);
-		Vector3 lvB = soft_body->get_node_velocity(c.index_B);
-		Vector3 dtv = lvB - lvA;
-
-		real_t tn = c.normal.dot(dtv);
-
-		// Tangential velocity.
-		Vector3 tv = dtv - c.normal * tn;
-		real_t tvl = tv.length();
-
-		if (tvl > MIN_VELOCITY) {
-			tv /= tvl;
-
-			Vector3 temp1 = body_inv_inertia_tensor.xform(c.rA.cross(tv));
-
-			real_t t = -tvl / (body_inv_mass + node_inv_mass + tv.dot(temp1.cross(c.rA)));
-
-			Vector3 jt = t * tv;
-
-			Vector3 jtOld = c.acc_tangent_impulse;
-			c.acc_tangent_impulse += jt;
-
-			real_t fi_len = c.acc_tangent_impulse.length();
-			real_t jtMax = c.acc_normal_impulse * friction;
-
-			if (fi_len > CMP_EPSILON && fi_len > jtMax) {
-				c.acc_tangent_impulse *= jtMax / fi_len;
-			}
-
-			jt = c.acc_tangent_impulse - jtOld;
-
-			if (body_collides) {
-				body->apply_impulse(-jt, c.rA + body->get_center_of_mass());
-			}
-			if (soft_body_collides) {
-				soft_body->apply_node_impulse(c.index_B, jt);
-			}
-			c.acc_impulse -= jt;
-
-			c.active = true;
+	// tangent impulses (friction)
+	for (uint32_t contact_index = 0; contact_index < contact_count; ++contact_index) {
+		Contact &c = contacts[contact_index];
+		if (!c.active) {
+			continue;
 		}
+
+		real_t node_inv_mass = soft_body_collides ? soft_body->get_node_inv_mass(c.index_B) : 0.0;
+		real_t friction = body->get_friction();
+		real_t jtMax = c.acc_normal_impulse * friction; // friction is greater the higher the normal impulse. e.g. the bottom box in a stack is harder to shift than the top.
+
+		_solve_tangent(p_step, c, 0, jtMax, node_inv_mass + body_inv_mass);
+		_solve_tangent(p_step, c, 1, jtMax, node_inv_mass + body_inv_mass);
+	}
+}
+
+void GodotBodySoftBodyPair3D::_solve_tangent(real_t p_step, Contact &c, int tangent_index, real_t jtMax, real_t inv_mass_combined) {
+	// these tensors could be calculated in pre_solve instead of each solve_tangent. Worth it?
+	Basis zero_basis;
+	zero_basis.set_zero();
+	const Basis &body_inv_inertia_tensor = body_collides ? body->get_inv_inertia_tensor() : zero_basis;
+
+	FrictionTangent &tan = c.friction_tangents[tangent_index];
+	Vector3 tv = tan.tangent;
+	Vector3 ra_cross_tan = c.rA.cross(tv);
+	real_t jv = tv.dot(body->get_linear_velocity() - soft_body->get_node_velocity(c.index_B));
+	// angular velocity:
+	if (body_collides) {
+		jv += ra_cross_tan.dot(body->get_angular_velocity());
+	}
+	// soft body doesn't add any angular velocity
+
+	Vector3 temp1 = body_inv_inertia_tensor.xform(ra_cross_tan);
+	real_t inv_eff_mass = (inv_mass_combined + tv.dot(temp1.cross(c.rA)));
+
+	real_t lambda = jv / inv_eff_mass;
+
+	if (abs(lambda) > MIN_VELOCITY) {
+		real_t jtOld = tan.acc_impulse;
+		tan.acc_impulse = CLAMP(jtOld + lambda, -jtMax, jtMax);
+
+		lambda = tan.acc_impulse - jtOld;
+		Vector3 jt = lambda * tv;
+
+		if (body_collides) {
+			body->apply_impulse(-jt, c.rA + body->get_center_of_mass());
+		}
+		if (soft_body_collides) {
+			soft_body->apply_node_impulse(c.index_B, jt);
+		}
+		c.acc_impulse -= jt;
+
+		c.active = true;
 	}
 }
 
