@@ -827,11 +827,19 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 
 void ScriptEditor::_close_current_tab(bool p_save) {
 	_close_tab(tab_container->get_current_tab(), p_save);
+
+	if (!script_close_queue.is_empty()) {
+		_queue_close_tabs();
+	}
 }
 
 void ScriptEditor::_close_discard_current_tab(const String &p_str) {
 	_close_tab(tab_container->get_current_tab(), false);
 	erase_tab_confirm->hide();
+
+	if (!script_close_queue.is_empty()) {
+		_queue_close_tabs();
+	}
 }
 
 void ScriptEditor::_close_docs_tab() {
@@ -871,24 +879,29 @@ void ScriptEditor::_close_all_tabs() {
 }
 
 void ScriptEditor::_queue_close_tabs() {
-	while (!script_close_queue.is_empty()) {
+	if (!script_close_queue.is_empty()) {
 		int idx = script_close_queue.front()->get();
 		script_close_queue.pop_front();
 
 		tab_container->set_current_tab(idx);
-		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(idx));
-		if (se) {
-			// Maybe there are unsaved changes.
-			if (se->is_unsaved()) {
-				_ask_close_current_unsaved_tab(se);
-				erase_tab_confirm->connect(SceneStringNames::get_singleton()->visibility_changed, callable_mp(this, &ScriptEditor::_queue_close_tabs), CONNECT_ONE_SHOT);
-				break;
-			}
-		}
 
-		_close_current_tab(false);
+		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(tab_container->get_tab_control(idx));
+
+		// Maybe there are unsaved changes.
+		if (se && se->is_unsaved()) {
+			_ask_close_current_unsaved_tab(se);
+		} else {
+			_close_current_tab(false);
+		}
 	}
-	_update_find_replace_bar();
+
+	if (script_close_queue.is_empty()) {
+		_update_find_replace_bar();
+	}
+}
+
+void ScriptEditor::_clear_close_queue() {
+	script_close_queue.clear();
 }
 
 void ScriptEditor::_ask_close_current_unsaved_tab(ScriptEditorBase *current) {
@@ -3869,6 +3882,7 @@ ScriptEditor::ScriptEditor() {
 	erase_tab_confirm->set_ok_button_text(TTR("Save"));
 	erase_tab_confirm->add_button(TTR("Discard"), DisplayServer::get_singleton()->get_swap_cancel_ok(), "discard");
 	erase_tab_confirm->connect("confirmed", callable_mp(this, &ScriptEditor::_close_current_tab).bind(true));
+	erase_tab_confirm->connect("cancelled", callable_mp(this, &ScriptEditor::_clear_close_queue));
 	erase_tab_confirm->connect("custom_action", callable_mp(this, &ScriptEditor::_close_discard_current_tab));
 	add_child(erase_tab_confirm);
 
