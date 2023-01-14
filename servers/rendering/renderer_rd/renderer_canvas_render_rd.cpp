@@ -525,10 +525,12 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 
 					if (rect->flags & CANVAS_RECT_FLIP_H) {
 						src_rect.size.x *= -1;
+						push_constant.flags |= FLAGS_FLIP_H;
 					}
 
 					if (rect->flags & CANVAS_RECT_FLIP_V) {
 						src_rect.size.y *= -1;
+						push_constant.flags |= FLAGS_FLIP_V;
 					}
 
 					if (rect->flags & CANVAS_RECT_TRANSPOSE) {

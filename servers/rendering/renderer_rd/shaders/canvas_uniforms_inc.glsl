@@ -27,6 +27,9 @@
 #define FLAGS_USE_MSDF (1 << 28)
 #define FLAGS_USE_LCD (1 << 29)
 
+#define FLAGS_FLIP_H (1 << 30)
+#define FLAGS_FLIP_V (1 << 31)
+
 #define SAMPLER_NEAREST_CLAMP 0
 #define SAMPLER_LINEAR_CLAMP 1
 #define SAMPLER_NEAREST_WITH_MIPMAPS_CLAMP 2

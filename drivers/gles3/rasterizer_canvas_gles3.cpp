@@ -905,10 +905,12 @@ void RasterizerCanvasGLES3::_record_item_commands(const Item *p_item, RID p_rend
 
 					if (rect->flags & CANVAS_RECT_FLIP_H) {
 						src_rect.size.x *= -1;
+						state.instance_data_array[r_index].flags |= FLAGS_FLIP_H;
 					}
 
 					if (rect->flags & CANVAS_RECT_FLIP_V) {
 						src_rect.size.y *= -1;
+						state.instance_data_array[r_index].flags |= FLAGS_FLIP_V;
 					}
 
 					if (rect->flags & CANVAS_RECT_TRANSPOSE) {
