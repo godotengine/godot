@@ -2553,9 +2553,9 @@ void ScriptEditor::open_script_create_dialog(const String &p_base_name, const St
 }
 
 void ScriptEditor::open_text_file_create_dialog(const String &p_base_path, const String &p_base_name) {
-	file_dialog->set_current_file(p_base_name);
-	file_dialog->set_current_dir(p_base_path);
 	_menu_option(FILE_NEW_TEXTFILE);
+	file_dialog->set_current_dir(p_base_path);
+	file_dialog->set_current_file(p_base_name);
 	open_textfile_after_create = false;
 }
 
