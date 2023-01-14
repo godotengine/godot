@@ -251,7 +251,7 @@ RID RenderForwardMobile::RenderBufferDataForwardMobile::get_color_fbs(Framebuffe
 			Size2i target_size = render_buffers->get_target_size();
 			Size2i internal_size = render_buffers->get_internal_size();
 
-			// can't do our blit pass if resolutions don't match
+			// can't do our blit pass if resolutions don't match, this should already have been checked.
 			ERR_FAIL_COND_V(target_size != internal_size, RID());
 
 			// - opaque pass
@@ -715,17 +715,23 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 		// setup rendering to render buffer
 		screen_size = p_render_data->render_buffers->get_internal_size();
 
-		if (rb_data->get_color_fbs(RenderBufferDataForwardMobile::FB_CONFIG_FOUR_SUBPASSES).is_null()) {
-			// can't do blit subpass
+		if (rb->get_scaling_3d_mode() != RS::VIEWPORT_SCALING_3D_MODE_OFF) {
+			// can't do blit subpass because we're scaling
 			using_subpass_post_process = false;
 		} else if (p_render_data->environment.is_valid() && (environment_get_glow_enabled(p_render_data->environment) || RSG::camera_attributes->camera_attributes_uses_auto_exposure(p_render_data->camera_attributes) || RSG::camera_attributes->camera_attributes_uses_dof(p_render_data->camera_attributes))) {
-			// can't do blit subpass
+			// can't do blit subpass because we're using post processes
 			using_subpass_post_process = false;
 		}
 
 		if (scene_state.used_screen_texture || scene_state.used_depth_texture) {
-			// can't use our last two subpasses
+			// can't use our last two subpasses because we're reading from screen texture or depth texture
 			using_subpass_transparent = false;
+			using_subpass_post_process = false;
+		}
+
+		// We do this last because our get_color_fbs creates and caches the framebuffer if we need it.
+		if (using_subpass_post_process && rb_data->get_color_fbs(RenderBufferDataForwardMobile::FB_CONFIG_FOUR_SUBPASSES).is_null()) {
+			// can't do blit subpass because we don't have all subpasses
 			using_subpass_post_process = false;
 		}
 

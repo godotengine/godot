@@ -96,7 +96,7 @@ void RenderSceneBuffersRD::cleanup() {
 	named_textures.clear();
 }
 
-void RenderSceneBuffersRD::configure(RID p_render_target, const Size2i p_internal_size, const Size2i p_target_size, float p_fsr_sharpness, float p_texture_mipmap_bias, RS::ViewportMSAA p_msaa_3d, RenderingServer::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_taa, bool p_use_debanding, uint32_t p_view_count) {
+void RenderSceneBuffersRD::configure(RID p_render_target, const Size2i p_internal_size, const Size2i p_target_size, RS::ViewportScaling3DMode p_scaling_3d_mode, float p_fsr_sharpness, float p_texture_mipmap_bias, RS::ViewportMSAA p_msaa_3d, RenderingServer::ViewportScreenSpaceAA p_screen_space_aa, bool p_use_taa, bool p_use_debanding, uint32_t p_view_count) {
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 	RendererRD::MaterialStorage *material_storage = RendererRD::MaterialStorage::get_singleton();
 
@@ -104,12 +104,7 @@ void RenderSceneBuffersRD::configure(RID p_render_target, const Size2i p_interna
 
 	target_size = p_target_size;
 	internal_size = p_internal_size;
-
-	// FIXME, right now we do this because only our clustered renderer supports FSR upscale
-	// this does mean that with linear upscale if we use subpasses, we could get into trouble.
-	if (!can_be_storage) {
-		internal_size = target_size;
-	}
+	scaling_3d_mode = p_scaling_3d_mode;
 
 	if (p_use_taa) {
 		// Use negative mipmap LOD bias when TAA is enabled to compensate for loss of sharpness.
@@ -193,6 +188,7 @@ void RenderSceneBuffersRD::configure_for_reflections(const Size2i p_reflection_s
 	target_size = p_reflection_size;
 	internal_size = p_reflection_size;
 	render_target = RID();
+	scaling_3d_mode = RS::VIEWPORT_SCALING_3D_MODE_OFF;
 	fsr_sharpness = 0.0;
 	msaa_3d = RS::VIEWPORT_MSAA_DISABLED;
 	screen_space_aa = RS::VIEWPORT_SCREEN_SPACE_AA_DISABLED;
