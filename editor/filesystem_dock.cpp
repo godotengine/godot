@@ -2051,7 +2051,8 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			if (!fpath.ends_with("/")) {
 				fpath = fpath.get_base_dir();
 			}
-			ScriptEditor::get_singleton()->open_text_file_create_dialog(fpath);
+			String dir = ProjectSettings::get_singleton()->globalize_path(fpath);
+			ScriptEditor::get_singleton()->open_text_file_create_dialog(dir);
 		} break;
 	}
 }
