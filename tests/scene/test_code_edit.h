@@ -2930,7 +2930,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 		code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_NODE_PATH, "\"test", "\"test");
 		code_edit->update_code_completion_options();
 		code_edit->confirm_code_completion();
-		CHECK(code_edit->get_line(0) == "\"\"test\"\"");
+		CHECK(code_edit->get_line(0) == "\"\"test\"");
 		CHECK(code_edit->get_caret_column() == 7);
 		code_edit->undo();
 
