@@ -363,10 +363,11 @@ namespace Godot.SourceGenerators
         {
             string methodName = method.Method.Name;
 
-            source.Append("        if (method == MethodName.");
-            source.Append(methodName);
-            source.Append(" && args.Count == ");
+            source.Append("        if (args.Count == ");
             source.Append(method.ParamTypes.Length);
+            source.Append(" && method == MethodName.");
+            source.Append(methodName);
+
             source.Append(") {\n");
 
             if (method.RetType != null)
