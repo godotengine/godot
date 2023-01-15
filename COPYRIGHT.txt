@@ -397,6 +397,11 @@ Comment: Multi-channel signed distance field generator
 Copyright: 2016-2022, Viktor Chlumsky
 License: MIT
 
+Files: ./thirdparty/nvapi/nvapi_minimal.h
+Comment: Stripped down version of "nvapi.h" from the NVIDIA NVAPI SDK
+Copyright: 2019-2022, NVIDIA Corporation
+License: Expat
+
 Files: ./thirdparty/oidn/
 Comment: Intel Open Image Denoise
 Copyright: 2009-2019, Intel Corporation
