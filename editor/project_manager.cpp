@@ -1503,8 +1503,13 @@ void ProjectList::create_project_item_control(int p_index) {
 		path_hb->add_child(show);
 
 		if (!item.missing) {
+#if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
 			show->connect("pressed", callable_mp(this, &ProjectList::_show_project).bind(item.path));
 			show->set_tooltip_text(TTR("Show in File Manager"));
+#else
+			// Opening the system file manager is not supported on the Android and web editors.
+			show->hide();
+#endif
 		} else {
 			show->set_tooltip_text(TTR("Error: Project is missing on the filesystem."));
 		}
