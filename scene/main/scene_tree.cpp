@@ -1134,7 +1134,6 @@ Error SceneTree::change_scene_to_packed(const Ref<PackedScene> &p_scene) {
 	ERR_FAIL_COND_V_MSG(p_scene.is_null(), ERR_INVALID_PARAMETER, "Can't change to a null scene. Use unload_current_scene() if you wish to unload it.");
 
 	Node *new_scene = p_scene->instantiate();
-	new_scene = p_scene->instantiate();
 	ERR_FAIL_COND_V(!new_scene, ERR_CANT_CREATE);
 
 	call_deferred(SNAME("_change_scene"), new_scene);
