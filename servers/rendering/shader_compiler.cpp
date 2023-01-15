@@ -1173,9 +1173,10 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 
 					code += "(";
 
-					// if normal roughness texture is used, we will add logic to automatically switch between
+					// if color backbuffer, depth backbuffer or normal roughness texture is used,
+					// we will add logic to automatically switch between
 					// sampler2D and sampler2D array and vec2 UV and vec3 UV.
-					bool normal_roughness_texture_used = false;
+					bool multiview_uv_needed = false;
 
 					for (int i = 1; i < onode->arguments.size(); i++) {
 						if (i > 1) {
@@ -1220,8 +1221,8 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 						}
 
 						String node_code = _dump_node_code(onode->arguments[i], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
-						if (!RS::get_singleton()->is_low_end() && is_texture_func && i == 1) {
-							//need to map from texture to sampler in order to sample when using Vulkan GLSL
+						if (is_texture_func && i == 1) {
+							// If we're doing a texture lookup we need to check our texture argument
 							StringName texture_uniform;
 							bool correct_texture_uniform = false;
 
@@ -1240,8 +1241,10 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 									break;
 							}
 
-							if (correct_texture_uniform) {
+							if (correct_texture_uniform && !RS::get_singleton()->is_low_end()) {
+								// Need to map from texture to sampler in order to sample when using Vulkan GLSL.
 								String sampler_name;
+								bool is_depth_texture = false;
 								bool is_normal_roughness_texture = false;
 
 								if (actions.custom_samplers.has(texture_uniform)) {
@@ -1251,6 +1254,8 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 										const ShaderLanguage::ShaderNode::Uniform &u = shader->uniforms[texture_uniform];
 										if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_SCREEN_TEXTURE) {
 											is_screen_texture = true;
+										} else if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_DEPTH_TEXTURE) {
+											is_depth_texture = true;
 										} else if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_NORMAL_ROUGHNESS_TEXTURE) {
 											is_normal_roughness_texture = true;
 										}
@@ -1281,23 +1286,39 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 								}
 
 								String data_type_name = "";
-								if (is_normal_roughness_texture) {
+								if (actions.check_multiview_samplers && (is_screen_texture || is_depth_texture || is_normal_roughness_texture)) {
 									data_type_name = "multiviewSampler";
-									normal_roughness_texture_used = true;
+									multiview_uv_needed = true;
 								} else {
 									data_type_name = ShaderLanguage::get_datatype_name(onode->arguments[i]->get_datatype());
 								}
 
 								code += data_type_name + "(" + node_code + ", " + sampler_name + ")";
+							} else if (actions.check_multiview_samplers && correct_texture_uniform && RS::get_singleton()->is_low_end()) {
+								// Texture function on low end hardware (i.e. OpenGL).
+								// We just need to know if the texture supports multiview.
+
+								if (shader->uniforms.has(texture_uniform)) {
+									const ShaderLanguage::ShaderNode::Uniform &u = shader->uniforms[texture_uniform];
+									if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_SCREEN_TEXTURE) {
+										multiview_uv_needed = true;
+									} else if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_DEPTH_TEXTURE) {
+										multiview_uv_needed = true;
+									} else if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_NORMAL_ROUGHNESS_TEXTURE) {
+										multiview_uv_needed = true;
+									}
+								}
+
+								code += node_code;
 							} else {
 								code += node_code;
 							}
-						} else {
-							if (normal_roughness_texture_used && i == 2) {
-								// UV coordinate after using normal roughness texture.
-								node_code = "normal_roughness_uv(" + node_code + ".xy)";
-							}
+						} else if (multiview_uv_needed && i == 2) {
+							// UV coordinate after using color, depth or normal roughness texture.
+							node_code = "multiview_uv(" + node_code + ".xy)";
 
+							code += node_code;
+						} else {
 							code += node_code;
 						}
 					}

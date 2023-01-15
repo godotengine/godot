@@ -253,6 +253,11 @@ void RendererSceneRenderRD::_render_buffers_copy_screen_texture(const RenderData
 	Ref<RenderSceneBuffersRD> rb = p_render_data->render_buffers;
 	ERR_FAIL_COND(rb.is_null());
 
+	if (!rb->has_internal_texture()) {
+		// We're likely rendering reflection probes where we can't use our backbuffers.
+		return;
+	}
+
 	RD::get_singleton()->draw_command_begin_label("Copy screen texture");
 
 	rb->allocate_blur_textures();
@@ -291,6 +296,11 @@ void RendererSceneRenderRD::_render_buffers_copy_screen_texture(const RenderData
 void RendererSceneRenderRD::_render_buffers_copy_depth_texture(const RenderDataRD *p_render_data) {
 	Ref<RenderSceneBuffersRD> rb = p_render_data->render_buffers;
 	ERR_FAIL_COND(rb.is_null());
+
+	if (!rb->has_depth_texture()) {
+		// We're likely rendering reflection probes where we can't use our backbuffers.
+		return;
+	}
 
 	RD::get_singleton()->draw_command_begin_label("Copy depth texture");
 
