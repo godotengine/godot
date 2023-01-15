@@ -50,7 +50,7 @@ void GDScriptLanguage::get_string_delimiters(List<String> *p_delimiters) const {
 	p_delimiters->push_back("' '");
 }
 
-String GDScriptLanguage::_get_processed_template(const String &p_template, const String &p_base_class_name) const {
+String GDScriptLanguage::_get_processed_template(const String &p_template, const String &p_base_class_name, const String &p_class_name = "") const {
 	String processed_template = p_template;
 
 #ifdef TOOLS_ENABLED
@@ -73,6 +73,7 @@ String GDScriptLanguage::_get_processed_template(const String &p_template, const
 #endif
 
 	processed_template = processed_template.replace("%BASE%", p_base_class_name);
+	processed_template = processed_template.replace("%CLASS%", p_class_name);
 	processed_template = processed_template.replace("%TS%", _get_indentation());
 
 	return processed_template;
@@ -110,7 +111,7 @@ bool GDScriptLanguage::is_using_templates() {
 }
 
 void GDScriptLanguage::make_template(const String &p_class_name, const String &p_base_class_name, Ref<Script> &p_script) {
-	String _template = _get_processed_template(p_script->get_source_code(), p_base_class_name);
+	String _template = _get_processed_template(p_script->get_source_code(), p_base_class_name, p_class_name);
 	p_script->set_source_code(_template);
 }
 
