@@ -93,7 +93,7 @@ void SceneDistributionInterface::distribute_glb(const String& p_path, int id)
 	gltf->write_to_filesystem(gltf_state, save_path);
 
 	//send it to the clients and MultiplayerSpawner.add_spawnable_scene
-	int packet_len = SceneMultiplayer::SYS_CMD_SIZE + (glb_file_PBA.size());
+	int packet_len = SceneMultiplayer::SYS_CMD_SIZE + 4 + 4 + p_path.size() + glb_file_PBA.size() ;
 	printf("packet_len:%d\n", packet_len);
 
 	std::vector<uint8_t> buf(packet_len, 0);
@@ -103,16 +103,19 @@ void SceneDistributionInterface::distribute_glb(const String& p_path, int id)
 	multiplayer->get_multiplayer_peer()->set_transfer_mode(MultiplayerPeer::TRANSFER_MODE_RELIABLE);
 	encode_uint32(multiplayer->get_unique_id(), &buf[2]);
 
-	//encode_uint16(glb_file_PBA, &buf[6]);
-	//int s = glb_file_PBA.size();
-	//encode_variant(glb_file_PBA, &buf[6], s);
+	//encode length of glb file name
+	encode_uint32(p_path.length(), &buf[6]);
+	//encode size of glb_file_PBA
+	encode_uint32(glb_file_PBA.size(), &buf[10]);
+	//encode glb file name
+	encode_cstring(p_path.ascii().get_data(), &buf[14]);
 
 	for (int i = 0; i < glb_file_PBA.size(); i++) {
-		buf[6 + i] = glb_file_PBA[i];
+		buf[p_path.length() + SceneMultiplayer::SYS_CMD_SIZE + 4 + 4 + i] = glb_file_PBA[i];
 	}
 
-	for (int j = 0; j < 10; j += 4)
-		printf("buf-out: %x", decode_uint32( &buf[j+6]) );
+
+	printf("buf-out: %x", decode_uint32( &buf[p_path.length() + SceneMultiplayer::SYS_CMD_SIZE + 4 + 4]) );
 
 	//err = encode_variant(p_custom_features, &buf[0], glb_file_PBA.size(), false);
 	//ERR_FAIL_COND_V(err != OK, err);

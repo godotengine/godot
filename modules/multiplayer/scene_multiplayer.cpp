@@ -562,23 +562,38 @@ void SceneMultiplayer::_process_sys(int p_from, const uint8_t *p_packet, int p_p
 
 			//read glb packedByteArray from packet, packet_len - 6
 			uint32_t glb_creator_peer = decode_uint32(packet-4);
+			//decode glb name length
+			uint32_t glb_name_length = decode_uint32(packet);
+			printf("glb_name_length:%u", glb_name_length);
+			//decode glb_file_PBA length
+			uint32_t glb_file_PBA_length = decode_uint32(packet + 4);
+			printf("glb_file_PBA_length:%u", glb_file_PBA_length);
+			//decode glb file name
+			String glb_name;
+			glb_name.parse_utf8((const char*)(packet+8), glb_name_length);
+			printf("glb_name is:%s from:%d myself:%d\n", glb_name.ascii().get_data(), p_from, get_unique_id());
+			//read glb_file_PBA
 			PackedByteArray distributed_glb;
-			distributed_glb.resize(p_packet_len - 6);
+			distributed_glb.resize(glb_file_PBA_length);
 
 			printf("distribute-glb-sys p_packet_len:%d\n", p_packet_len);
 			//err = decode_variant(&distributed_glb, packet, p_packet_len - 6);
-			for (int i = 0; i < (p_packet_len - 6); i++) {
+			packet = packet + 8 + glb_name_length;
+			for (uint32_t i = 0; i < glb_file_PBA_length; i++) {
 				distributed_glb.set(i, *packet++);
 			}
 
-			//Ref<GLTFDocument> gltf;
-			//gltf.instantiate();
-			//Ref<GLTFState> gltf_state;
-			//gltf_state.instantiate();
-			//String save_path = "user://" + p_path.replace(".glb", ".gltf");
+			Ref<GLTFDocument> gltf;
+			gltf.instantiate();
+			Ref<GLTFState> gltf_state;
+			gltf_state.instantiate();
+			String save_path = "user://" + glb_name.replace(".glb", ".gltf");
 
-			//gltf->append_from_buffer(distributed_glb, "base_path?", gltf_state);
-			//gltf->write_to_filesystem(gltf_state, save_path);
+			gltf->append_from_buffer(distributed_glb, "base_path?", gltf_state);
+			gltf->write_to_filesystem(gltf_state, save_path);
+
+			//add to add_spawnable_scene
+			
 
 		} break;
 		default: {
