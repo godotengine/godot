@@ -195,8 +195,10 @@ namespace Godot
             Vector2 s2 = transform.GetScale();
 
             // Slerp rotation
-            var v1 = new Vector2(Mathf.Cos(r1), Mathf.Sin(r1));
-            var v2 = new Vector2(Mathf.Cos(r2), Mathf.Sin(r2));
+            (real_t sin1, real_t cos1) = Mathf.SinCos(r1);
+            (real_t sin2, real_t cos2) = Mathf.SinCos(r2);
+            var v1 = new Vector2(cos1, sin1);
+            var v2 = new Vector2(cos2, sin2);
 
             real_t dot = v1.Dot(v2);
 
@@ -213,7 +215,8 @@ namespace Godot
             {
                 real_t angle = weight * Mathf.Acos(dot);
                 Vector2 v3 = (v2 - (v1 * dot)).Normalized();
-                v = (v1 * Mathf.Cos(angle)) + (v3 * Mathf.Sin(angle));
+                (real_t sine, real_t cos) = Mathf.SinCos(angle);
+                v = (v1 * sine) + (v3 * cos);
             }
 
             // Extract parameters
@@ -434,8 +437,9 @@ namespace Godot
         /// <param name="origin">The origin vector, or column index 2.</param>
         public Transform2D(real_t rotation, Vector2 origin)
         {
-            x.x = y.y = Mathf.Cos(rotation);
-            x.y = y.x = Mathf.Sin(rotation);
+            (real_t sin, real_t cos) = Mathf.SinCos(rotation);
+            x.x = y.y = cos;
+            x.y = y.x = sin;
             y.x *= -1;
             this.origin = origin;
         }
@@ -451,10 +455,12 @@ namespace Godot
         /// <param name="origin">The origin vector, or column index 2.</param>
         public Transform2D(real_t rotation, Vector2 scale, real_t skew, Vector2 origin)
         {
-            x.x = Mathf.Cos(rotation) * scale.x;
-            y.y = Mathf.Cos(rotation + skew) * scale.y;
-            y.x = -Mathf.Sin(rotation + skew) * scale.y;
-            x.y = Mathf.Sin(rotation) * scale.x;
+            (real_t rotationSin, real_t rotationCos) = Mathf.SinCos(rotation);
+            (real_t rotationSkewSin, real_t rotationSkewCos) = Mathf.SinCos(rotation + skew);
+            x.x = rotationCos * scale.x;
+            y.y = rotationSkewCos * scale.y;
+            y.x = -rotationSkewSin * scale.y;
+            x.y = rotationSin * scale.x;
             this.origin = origin;
         }
 
