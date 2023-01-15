@@ -3805,6 +3805,8 @@ static bool _find_recursive_resources(const Variant &v, HashSet<Resource *> &res
 					return true;
 				}
 			}
+
+			resources_found.erase(r.ptr());
 		} break;
 		default: {
 		}
