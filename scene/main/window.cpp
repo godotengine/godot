@@ -659,17 +659,17 @@ void Window::set_visible(bool p_visible) {
 		return;
 	}
 
-	visible = p_visible;
-
 	if (!is_inside_tree()) {
+		visible = p_visible;
 		return;
 	}
 
-	if (updating_child_controls) {
-		_update_child_controls();
-	}
-
 	ERR_FAIL_COND_MSG(get_parent() == nullptr, "Can't change visibility of main window.");
+
+	visible = p_visible;
+
+	// Stop any queued resizing, as the window will be resized right now.
+	updating_child_controls = false;
 
 	Viewport *embedder_vp = _get_embedder();
 
@@ -829,7 +829,7 @@ bool Window::is_visible() const {
 }
 
 void Window::_update_window_size() {
-	// Force window to respect size limitations of rendering server
+	// Force window to respect size limitations of rendering server.
 	RenderingServer *rendering_server = RenderingServer::get_singleton();
 	if (rendering_server) {
 		Size2i max_window_size = rendering_server->get_maximum_viewport_size();
@@ -1126,6 +1126,7 @@ void Window::_notification(int p_what) {
 
 		case NOTIFICATION_READY: {
 			if (wrap_controls) {
+				// Finish any resizing immediately so it doesn't interfere on stuff overriding _ready().
 				_update_child_controls();
 			}
 		} break;
@@ -1134,9 +1135,7 @@ void Window::_notification(int p_what) {
 			_invalidate_theme_cache();
 			_update_theme_item_cache();
 
-			if (embedder) {
-				embedder->_sub_window_update(this);
-			} else if (window_id != DisplayServer::INVALID_WINDOW_ID) {
+			if (!embedder && window_id != DisplayServer::INVALID_WINDOW_ID) {
 				String tr_title = atr(title);
 #ifdef DEBUG_ENABLED
 				if (window_id == DisplayServer::MAIN_WINDOW_ID) {
@@ -1148,8 +1147,6 @@ void Window::_notification(int p_what) {
 #endif
 				DisplayServer::get_singleton()->window_set_title(tr_title, window_id);
 			}
-
-			child_controls_changed();
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -1250,8 +1247,13 @@ Vector<Vector2> Window::get_mouse_passthrough_polygon() const {
 
 void Window::set_wrap_controls(bool p_enable) {
 	wrap_controls = p_enable;
-	if (wrap_controls) {
-		child_controls_changed();
+
+	if (!is_inside_tree()) {
+		return;
+	}
+
+	if (updating_child_controls) {
+		_update_child_controls();
 	} else {
 		_update_window_size();
 	}
@@ -1278,6 +1280,15 @@ Size2 Window::_get_contents_minimum_size() const {
 	return max;
 }
 
+void Window::child_controls_changed() {
+	if (!is_inside_tree() || !visible || updating_child_controls) {
+		return;
+	}
+
+	updating_child_controls = true;
+	call_deferred(SNAME("_update_child_controls"));
+}
+
 void Window::_update_child_controls() {
 	if (!updating_child_controls) {
 		return;
@@ -1286,15 +1297,6 @@ void Window::_update_child_controls() {
 	_update_window_size();
 
 	updating_child_controls = false;
-}
-
-void Window::child_controls_changed() {
-	if (!is_inside_tree() || !visible || updating_child_controls) {
-		return;
-	}
-
-	updating_child_controls = true;
-	call_deferred(SNAME("_update_child_controls"));
 }
 
 bool Window::_can_consume_input_events() const {
@@ -1643,7 +1645,24 @@ void Window::_invalidate_theme_cache() {
 void Window::_update_theme_item_cache() {
 	// Request an update on the next frame to reflect theme changes.
 	// Updating without a delay can cause a lot of lag.
-	child_controls_changed();
+	if (!wrap_controls) {
+		updating_embedded_window = true;
+		call_deferred(SNAME("_update_embedded_window"));
+	} else {
+		child_controls_changed();
+	}
+}
+
+void Window::_update_embedded_window() {
+	if (!updating_embedded_window) {
+		return;
+	}
+
+	if (embedder) {
+		embedder->_sub_window_update(this);
+	};
+
+	updating_embedded_window = false;
 }
 
 void Window::set_theme_type_variation(const StringName &p_theme_type) {
@@ -2184,6 +2203,7 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("child_controls_changed"), &Window::child_controls_changed);
 
 	ClassDB::bind_method(D_METHOD("_update_child_controls"), &Window::_update_child_controls);
+	ClassDB::bind_method(D_METHOD("_update_embedded_window"), &Window::_update_embedded_window);
 
 	ClassDB::bind_method(D_METHOD("set_theme", "theme"), &Window::set_theme);
 	ClassDB::bind_method(D_METHOD("get_theme"), &Window::get_theme);

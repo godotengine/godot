@@ -114,6 +114,7 @@ private:
 	bool exclusive = false;
 	bool wrap_controls = false;
 	bool updating_child_controls = false;
+	bool updating_embedded_window = false;
 	bool clamp_to_embedder = false;
 
 	LayoutDirection layout_dir = LAYOUT_DIRECTION_INHERITED;
@@ -121,6 +122,7 @@ private:
 	bool auto_translate = true;
 
 	void _update_child_controls();
+	void _update_embedded_window();
 
 	Size2i content_scale_size;
 	ContentScaleMode content_scale_mode = CONTENT_SCALE_MODE_DISABLED;
