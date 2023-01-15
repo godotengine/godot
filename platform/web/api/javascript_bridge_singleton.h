@@ -61,6 +61,7 @@ public:
 	void download_buffer(Vector<uint8_t> p_arr, const String &p_name, const String &p_mime = "application/octet-stream");
 	bool pwa_needs_update() const;
 	Error pwa_update();
+	void force_fs_sync();
 
 	static JavaScriptBridge *get_singleton();
 	JavaScriptBridge();

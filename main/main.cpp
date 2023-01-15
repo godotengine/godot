@@ -179,7 +179,7 @@ static DisplayServer::VSyncMode window_vsync_mode = DisplayServer::VSYNC_ENABLED
 static uint32_t window_flags = 0;
 static Size2i window_size = Size2i(1152, 648);
 
-static int init_screen = -1;
+static int init_screen = DisplayServer::SCREEN_PRIMARY;
 static bool init_fullscreen = false;
 static bool init_maximized = false;
 static bool init_windowed = false;
@@ -377,7 +377,8 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  -w, --windowed                    Request windowed mode.\n");
 	OS::get_singleton()->print("  -t, --always-on-top               Request an always-on-top window.\n");
 	OS::get_singleton()->print("  --resolution <W>x<H>              Request window resolution.\n");
-	OS::get_singleton()->print("  --position <X>,<Y>                Request window position.\n");
+	OS::get_singleton()->print("  --position <X>,<Y>                Request window position (if set, screen argument is ignored).\n");
+	OS::get_singleton()->print("  --screen <N>                      Request window screen.\n");
 	OS::get_singleton()->print("  --single-window                   Use a single window (no separate subwindows).\n");
 	OS::get_singleton()->print("  --xr-mode <mode>                  Select XR (Extended Reality) mode ['default', 'off', 'on'].\n");
 	OS::get_singleton()->print("\n");
@@ -959,6 +960,17 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				goto error;
 			}
 
+		} else if (I->get() == "--screen") { // set window screen
+
+			if (I->next()) {
+				init_screen = I->next()->get().to_int();
+
+				N = I->next()->next();
+			} else {
+				OS::get_singleton()->print("Missing screen argument, aborting.\n");
+				goto error;
+			}
+
 		} else if (I->get() == "--position") { // set window position
 
 			if (I->next()) {
@@ -1373,7 +1385,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #ifdef TOOLS_ENABLED
 	if (editor) {
 		packed_data->set_disabled(true);
-		globals->set_disable_feature_overrides(true);
 		Engine::get_singleton()->set_editor_hint(true);
 		main_args.push_back("--editor");
 		if (!init_windowed) {
@@ -1658,6 +1669,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			window_flags |= DisplayServer::WINDOW_FLAG_NO_FOCUS_BIT;
 		}
 		window_mode = (DisplayServer::WindowMode)(GLOBAL_GET("display/window/size/mode").operator int());
+		init_screen = GLOBAL_GET("display/window/size/initial_screen").operator int();
 	}
 
 	GLOBAL_DEF("internationalization/locale/include_text_server_data", false);
@@ -1907,9 +1919,12 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 			window_position = &position;
 		}
 
+		Color boot_bg_color = GLOBAL_DEF_BASIC("application/boot_splash/bg_color", boot_splash_bg_color);
+		DisplayServer::set_early_window_clear_color_override(true, boot_bg_color);
+
 		// rendering_driver now held in static global String in main and initialized in setup()
 		Error err;
-		display_server = DisplayServer::create(display_driver_idx, rendering_driver, window_mode, window_vsync_mode, window_flags, window_position, window_size, err);
+		display_server = DisplayServer::create(display_driver_idx, rendering_driver, window_mode, window_vsync_mode, window_flags, window_position, window_size, init_screen, err);
 		if (err != OK || display_server == nullptr) {
 			// We can't use this display server, try other ones as fallback.
 			// Skip headless (always last registered) because that's not what users
@@ -1918,7 +1933,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 				if (i == display_driver_idx) {
 					continue; // Don't try the same twice.
 				}
-				display_server = DisplayServer::create(i, rendering_driver, window_mode, window_vsync_mode, window_flags, window_position, window_size, err);
+				display_server = DisplayServer::create(i, rendering_driver, window_mode, window_vsync_mode, window_flags, window_position, window_size, init_screen, err);
 				if (err == OK && display_server != nullptr) {
 					break;
 				}
@@ -2015,10 +2030,6 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 	print_line(" "); //add a blank line for readability
 
-	if (init_use_custom_pos) {
-		display_server->window_set_position(init_custom_pos);
-	}
-
 	// right moment to create and initialize the audio server
 
 	audio_server = memnew(AudioServer);
@@ -2037,9 +2048,6 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	bool show_logo = true;
 #endif
 
-	if (init_screen != -1) {
-		DisplayServer::get_singleton()->window_set_current_screen(init_screen);
-	}
 	if (init_windowed) {
 		//do none..
 	} else if (init_maximized) {
@@ -2079,7 +2087,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 			boot_logo->set_pixel(0, 0, Color(0, 0, 0, 0));
 		}
 
-		Color boot_bg_color = GLOBAL_DEF_BASIC("application/boot_splash/bg_color", boot_splash_bg_color);
+		Color boot_bg_color = GLOBAL_GET("application/boot_splash/bg_color");
 
 #if defined(TOOLS_ENABLED) && !defined(NO_EDITOR_SPLASH)
 		boot_bg_color =
@@ -2113,6 +2121,8 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		}
 #endif
 	}
+
+	DisplayServer::set_early_window_clear_color_override(false);
 
 	MAIN_PRINT("Main: DCC");
 	RenderingServer::get_singleton()->set_default_clear_color(
@@ -2601,7 +2611,7 @@ bool Main::start() {
 		if (debug_navigation) {
 			sml->set_debug_navigation_hint(true);
 			NavigationServer3D::get_singleton()->set_active(true);
-			NavigationServer3D::get_singleton_mut()->set_debug_enabled(true);
+			NavigationServer3D::get_singleton()->set_debug_enabled(true);
 		}
 #endif
 
@@ -2762,10 +2772,6 @@ bool Main::start() {
 #else
 			DisplayServer::get_singleton()->window_set_title(appname);
 #endif
-
-			// Define a very small minimum window size to prevent bugs such as GH-37242.
-			// It can still be overridden by the user in a script.
-			DisplayServer::get_singleton()->window_set_min_size(Size2i(64, 64));
 
 			bool snap_controls = GLOBAL_GET("gui/common/snap_controls_to_pixels");
 			sml->get_root()->set_snap_controls_to_pixels(snap_controls);
@@ -2962,6 +2968,7 @@ bool Main::is_iterating() {
 // For performance metrics.
 static uint64_t physics_process_max = 0;
 static uint64_t process_max = 0;
+static uint64_t navigation_process_max = 0;
 
 bool Main::iteration() {
 	//for now do not error on this
@@ -2990,6 +2997,7 @@ bool Main::iteration() {
 
 	uint64_t physics_process_ticks = 0;
 	uint64_t process_ticks = 0;
+	uint64_t navigation_process_ticks = 0;
 
 	frame += ticks_elapsed;
 
@@ -3026,7 +3034,12 @@ bool Main::iteration() {
 			break;
 		}
 
-		NavigationServer3D::get_singleton_mut()->process(physics_step * time_scale);
+		uint64_t navigation_begin = OS::get_singleton()->get_ticks_usec();
+
+		NavigationServer3D::get_singleton()->process(physics_step * time_scale);
+
+		navigation_process_ticks = MAX(navigation_process_ticks, OS::get_singleton()->get_ticks_usec() - navigation_begin); // keep the largest one for reference
+		navigation_process_max = MAX(OS::get_singleton()->get_ticks_usec() - navigation_begin, navigation_process_max);
 
 		message_queue->flush();
 
@@ -3106,8 +3119,10 @@ bool Main::iteration() {
 		Engine::get_singleton()->_fps = frames;
 		performance->set_process_time(USEC_TO_SEC(process_max));
 		performance->set_physics_process_time(USEC_TO_SEC(physics_process_max));
+		performance->set_navigation_process_time(USEC_TO_SEC(navigation_process_max));
 		process_max = 0;
 		physics_process_max = 0;
+		navigation_process_max = 0;
 
 		frame %= 1000000;
 		frames = 0;

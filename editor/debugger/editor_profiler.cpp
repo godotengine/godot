@@ -468,7 +468,7 @@ void EditorProfiler::_graph_tex_input(const Ref<InputEvent> &p_ev) {
 			x = frame_metrics.size() - 1;
 		}
 
-		if (mb.is_valid() || (mm->get_button_mask() & MouseButton::MASK_LEFT) != MouseButton::NONE) {
+		if (mb.is_valid() || (mm->get_button_mask().has_flag(MouseButtonMask::LEFT))) {
 			updating_frame = true;
 
 			if (x < total_metrics) {
@@ -670,7 +670,7 @@ EditorProfiler::EditorProfiler() {
 	variables->connect("item_edited", callable_mp(this, &EditorProfiler::_item_edited));
 
 	graph = memnew(TextureRect);
-	graph->set_ignore_texture_size(true);
+	graph->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
 	graph->set_mouse_filter(MOUSE_FILTER_STOP);
 	graph->connect("draw", callable_mp(this, &EditorProfiler::_graph_tex_draw));
 	graph->connect("gui_input", callable_mp(this, &EditorProfiler::_graph_tex_input));

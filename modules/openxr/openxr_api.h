@@ -305,6 +305,7 @@ public:
 	static bool openxr_is_enabled(bool p_check_run_in_editor = true);
 	_FORCE_INLINE_ static OpenXRAPI *get_singleton() { return singleton; }
 
+	XrResult try_get_instance_proc_addr(const char *p_name, PFN_xrVoidFunction *p_addr);
 	XrResult get_instance_proc_addr(const char *p_name, PFN_xrVoidFunction *p_addr);
 	String get_error_string(XrResult result);
 	String get_swapchain_format_name(int64_t p_swapchain_format) const;

@@ -17,6 +17,12 @@
 				Adds a new tab.
 			</description>
 		</method>
+		<method name="clear_tabs">
+			<return type="void" />
+			<description>
+				Clears all tabs.
+			</description>
+		</method>
 		<method name="ensure_tab_visible">
 			<return type="void" />
 			<param index="0" name="idx" type="int" />

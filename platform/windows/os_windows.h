@@ -140,7 +140,7 @@ protected:
 
 	virtual void finalize() override;
 	virtual void finalize_core() override;
-	virtual String get_stdin_string(bool p_block) override;
+	virtual String get_stdin_string() override;
 
 	String _quote_command_line_argument(const String &p_text) const;
 

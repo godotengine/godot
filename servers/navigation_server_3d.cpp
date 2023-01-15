@@ -123,13 +123,21 @@ void NavigationServer3D::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("map_changed", PropertyInfo(Variant::RID, "map")));
 
 	ADD_SIGNAL(MethodInfo("navigation_debug_changed"));
+
+	ClassDB::bind_method(D_METHOD("get_process_info", "process_info"), &NavigationServer3D::get_process_info);
+
+	BIND_ENUM_CONSTANT(INFO_ACTIVE_MAPS);
+	BIND_ENUM_CONSTANT(INFO_REGION_COUNT);
+	BIND_ENUM_CONSTANT(INFO_AGENT_COUNT);
+	BIND_ENUM_CONSTANT(INFO_LINK_COUNT);
+	BIND_ENUM_CONSTANT(INFO_POLYGON_COUNT);
+	BIND_ENUM_CONSTANT(INFO_EDGE_COUNT);
+	BIND_ENUM_CONSTANT(INFO_EDGE_MERGE_COUNT);
+	BIND_ENUM_CONSTANT(INFO_EDGE_CONNECTION_COUNT);
+	BIND_ENUM_CONSTANT(INFO_EDGE_FREE_COUNT);
 }
 
-const NavigationServer3D *NavigationServer3D::get_singleton() {
-	return singleton;
-}
-
-NavigationServer3D *NavigationServer3D::get_singleton_mut() {
+NavigationServer3D *NavigationServer3D::get_singleton() {
 	return singleton;
 }
 

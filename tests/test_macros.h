@@ -136,7 +136,7 @@ int register_test_command(String p_command, TestFunc p_function);
 // SEND_GUI_KEY_EVENT - takes an object and a keycode set.   e.g SEND_GUI_KEY_EVENT(code_edit, Key::A | KeyModifierMask::META).
 // SEND_GUI_MOUSE_BUTTON_EVENT - takes an object, position, mouse button, mouse mask and modifiers e.g SEND_GUI_MOUSE_BUTTON_EVENT(code_edit, Vector2(50, 50), MOUSE_BUTTON_NONE, MOUSE_BUTTON_NONE, Key::None);
 // SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT - takes an object, position, mouse button, mouse mask and modifiers e.g SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(code_edit, Vector2(50, 50), MOUSE_BUTTON_NONE, MOUSE_BUTTON_NONE, Key::None);
-// SEND_GUI_MOUSE_MOTION_EVENT - takes an object, position, mouse mask and modifiers e.g SEND_GUI_MOUSE_MOTION_EVENT(code_edit, Vector2(50, 50), MouseButton::MASK_LEFT, KeyModifierMask::META);
+// SEND_GUI_MOUSE_MOTION_EVENT - takes an object, position, mouse mask and modifiers e.g SEND_GUI_MOUSE_MOTION_EVENT(code_edit, Vector2(50, 50), MouseButtonMask::LEFT, KeyModifierMask::META);
 // SEND_GUI_DOUBLE_CLICK - takes an object, position and modifiers. e.g SEND_GUI_DOUBLE_CLICK(code_edit, Vector2(50, 50), KeyModifierMask::META);
 
 #define SEND_GUI_ACTION(m_object, m_action)                                                           \
@@ -188,12 +188,12 @@ int register_test_command(String p_command, TestFunc p_function);
 		MessageQueue::get_singleton()->flush();                                                  \
 	}
 
-#define SEND_GUI_DOUBLE_CLICK(m_object, m_local_pos, m_modifers)                                          \
-	{                                                                                                     \
-		_CREATE_GUI_MOUSE_EVENT(m_object, m_local_pos, MouseButton::LEFT, MouseButton::LEFT, m_modifers); \
-		event->set_double_click(true);                                                                    \
-		m_object->get_viewport()->push_input(event);                                                      \
-		MessageQueue::get_singleton()->flush();                                                           \
+#define SEND_GUI_DOUBLE_CLICK(m_object, m_local_pos, m_modifers)                          \
+	{                                                                                     \
+		_CREATE_GUI_MOUSE_EVENT(m_object, m_local_pos, MouseButton::LEFT, 0, m_modifers); \
+		event->set_double_click(true);                                                    \
+		m_object->get_viewport()->push_input(event);                                      \
+		MessageQueue::get_singleton()->flush();                                           \
 	}
 
 // We toggle _print_error_enabled to prevent display server not supported warnings.

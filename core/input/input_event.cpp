@@ -216,25 +216,25 @@ void InputEventWithModifiers::set_modifiers_from_event(const InputEventWithModif
 	set_meta_pressed(event->is_meta_pressed());
 }
 
-Key InputEventWithModifiers::get_modifiers_mask() const {
-	Key mask = Key::NONE;
+BitField<KeyModifierMask> InputEventWithModifiers::get_modifiers_mask() const {
+	BitField<KeyModifierMask> mask;
 	if (is_ctrl_pressed()) {
-		mask |= KeyModifierMask::CTRL;
+		mask.set_flag(KeyModifierMask::CTRL);
 	}
 	if (is_shift_pressed()) {
-		mask |= KeyModifierMask::SHIFT;
+		mask.set_flag(KeyModifierMask::SHIFT);
 	}
 	if (is_alt_pressed()) {
-		mask |= KeyModifierMask::ALT;
+		mask.set_flag(KeyModifierMask::ALT);
 	}
 	if (is_meta_pressed()) {
-		mask |= KeyModifierMask::META;
+		mask.set_flag(KeyModifierMask::META);
 	}
 	if (is_command_or_control_autoremap()) {
 #ifdef MACOS_ENABLED
-		mask |= KeyModifierMask::META;
+		mask.set_flag(KeyModifierMask::META);
 #else
-		mask |= KeyModifierMask::CTRL;
+		mask.set_flag(KeyModifierMask::CTRL);
 #endif
 	}
 	return mask;
@@ -356,11 +356,11 @@ bool InputEventKey::is_echo() const {
 }
 
 Key InputEventKey::get_keycode_with_modifiers() const {
-	return keycode | get_modifiers_mask();
+	return keycode | (int64_t)get_modifiers_mask();
 }
 
 Key InputEventKey::get_physical_keycode_with_modifiers() const {
-	return physical_keycode | get_modifiers_mask();
+	return physical_keycode | (int64_t)get_modifiers_mask();
 }
 
 String InputEventKey::as_text() const {
@@ -440,8 +440,8 @@ bool InputEventKey::action_match(const Ref<InputEvent> &p_event, bool p_exact_ma
 	} else {
 		match = get_physical_keycode() == key->get_physical_keycode();
 	}
-	Key action_mask = get_modifiers_mask();
-	Key key_mask = key->get_modifiers_mask();
+	Key action_mask = (Key)(int64_t)get_modifiers_mask();
+	Key key_mask = (Key)(int64_t)key->get_modifiers_mask();
 	if (key->is_pressed()) {
 		match &= (action_mask & key_mask) == action_mask;
 	}
@@ -505,12 +505,12 @@ void InputEventKey::_bind_methods() {
 
 ///////////////////////////////////
 
-void InputEventMouse::set_button_mask(MouseButton p_mask) {
+void InputEventMouse::set_button_mask(BitField<MouseButtonMask> p_mask) {
 	button_mask = p_mask;
 	emit_changed();
 }
 
-MouseButton InputEventMouse::get_button_mask() const {
+BitField<MouseButtonMask> InputEventMouse::get_button_mask() const {
 	return button_mask;
 }
 
@@ -610,8 +610,8 @@ bool InputEventMouseButton::action_match(const Ref<InputEvent> &p_event, bool p_
 	}
 
 	bool match = button_index == mb->button_index;
-	Key action_modifiers_mask = get_modifiers_mask();
-	Key button_modifiers_mask = mb->get_modifiers_mask();
+	Key action_modifiers_mask = (Key)(int64_t)get_modifiers_mask();
+	Key button_modifiers_mask = (Key)(int64_t)mb->get_modifiers_mask();
 	if (mb->is_pressed()) {
 		match &= (action_modifiers_mask & button_modifiers_mask) == action_modifiers_mask;
 	}
@@ -808,26 +808,23 @@ String InputEventMouseMotion::as_text() const {
 }
 
 String InputEventMouseMotion::to_string() {
-	MouseButton mouse_button_mask = get_button_mask();
+	BitField<MouseButtonMask> mouse_button_mask = get_button_mask();
 	String button_mask_string = itos((int64_t)mouse_button_mask);
-	switch (mouse_button_mask) {
-		case MouseButton::MASK_LEFT:
-			button_mask_string += vformat(" (%s)", TTRGET(_mouse_button_descriptions[(size_t)MouseButton::LEFT - 1]));
-			break;
-		case MouseButton::MASK_MIDDLE:
-			button_mask_string += vformat(" (%s)", TTRGET(_mouse_button_descriptions[(size_t)MouseButton::MIDDLE - 1]));
-			break;
-		case MouseButton::MASK_RIGHT:
-			button_mask_string += vformat(" (%s)", TTRGET(_mouse_button_descriptions[(size_t)MouseButton::RIGHT - 1]));
-			break;
-		case MouseButton::MASK_XBUTTON1:
-			button_mask_string += vformat(" (%s)", TTRGET(_mouse_button_descriptions[(size_t)MouseButton::MB_XBUTTON1 - 1]));
-			break;
-		case MouseButton::MASK_XBUTTON2:
-			button_mask_string += vformat(" (%s)", TTRGET(_mouse_button_descriptions[(size_t)MouseButton::MB_XBUTTON2 - 1]));
-			break;
-		default:
-			break;
+
+	if (mouse_button_mask.has_flag(MouseButtonMask::LEFT)) {
+		button_mask_string += vformat(" (%s)", TTRGET(_mouse_button_descriptions[(size_t)MouseButton::LEFT - 1]));
+	}
+	if (mouse_button_mask.has_flag(MouseButtonMask::MIDDLE)) {
+		button_mask_string += vformat(" (%s)", TTRGET(_mouse_button_descriptions[(size_t)MouseButton::MIDDLE - 1]));
+	}
+	if (mouse_button_mask.has_flag(MouseButtonMask::RIGHT)) {
+		button_mask_string += vformat(" (%s)", TTRGET(_mouse_button_descriptions[(size_t)MouseButton::RIGHT - 1]));
+	}
+	if (mouse_button_mask.has_flag(MouseButtonMask::MB_XBUTTON1)) {
+		button_mask_string += vformat(" (%s)", TTRGET(_mouse_button_descriptions[(size_t)MouseButton::MB_XBUTTON1 - 1]));
+	}
+	if (mouse_button_mask.has_flag(MouseButtonMask::MB_XBUTTON2)) {
+		button_mask_string += vformat(" (%s)", TTRGET(_mouse_button_descriptions[(size_t)MouseButton::MB_XBUTTON2 - 1]));
 	}
 
 	// Work around the fact vformat can only take 5 substitutions but 7 need to be passed.

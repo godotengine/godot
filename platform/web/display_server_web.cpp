@@ -193,12 +193,12 @@ int DisplayServerWeb::mouse_button_callback(int p_pressed, int p_button, double 
 		}
 	}
 
-	MouseButton mask = Input::get_singleton()->get_mouse_button_mask();
-	MouseButton button_flag = mouse_button_to_mask(ev->get_button_index());
+	BitField<MouseButtonMask> mask = Input::get_singleton()->get_mouse_button_mask();
+	MouseButtonMask button_flag = mouse_button_to_mask(ev->get_button_index());
 	if (ev->is_pressed()) {
-		mask |= button_flag;
-	} else if ((mask & button_flag) != MouseButton::NONE) {
-		mask &= ~button_flag;
+		mask.set_flag(button_flag);
+	} else if (mask.has_flag(button_flag)) {
+		mask.clear_flag(button_flag);
 	} else {
 		// Received release event, but press was outside the canvas, so ignore.
 		return false;
@@ -218,10 +218,10 @@ int DisplayServerWeb::mouse_button_callback(int p_pressed, int p_button, double 
 }
 
 void DisplayServerWeb::mouse_move_callback(double p_x, double p_y, double p_rel_x, double p_rel_y, int p_modifiers) {
-	MouseButton input_mask = Input::get_singleton()->get_mouse_button_mask();
+	BitField<MouseButtonMask> input_mask = Input::get_singleton()->get_mouse_button_mask();
 	// For motion outside the canvas, only read mouse movement if dragging
 	// started inside the canvas; imitating desktop app behavior.
-	if (!get_singleton()->cursor_inside_canvas && input_mask == MouseButton::NONE) {
+	if (!get_singleton()->cursor_inside_canvas && input_mask.is_empty()) {
 		return;
 	}
 
@@ -525,15 +525,17 @@ int DisplayServerWeb::mouse_wheel_callback(double p_delta_x, double p_delta_y) {
 	// Different browsers give wildly different delta values, and we can't
 	// interpret deltaMode, so use default value for wheel events' factor.
 
-	MouseButton button_flag = mouse_button_to_mask(ev->get_button_index());
+	MouseButtonMask button_flag = mouse_button_to_mask(ev->get_button_index());
+	BitField<MouseButtonMask> button_mask = input->get_mouse_button_mask();
+	button_mask.set_flag(button_flag);
 
 	ev->set_pressed(true);
-	ev->set_button_mask(input->get_mouse_button_mask() | button_flag);
+	ev->set_button_mask(button_mask);
 	input->parse_input_event(ev);
 
 	Ref<InputEventMouseButton> release = ev->duplicate();
 	release->set_pressed(false);
-	release->set_button_mask(MouseButton(input->get_mouse_button_mask() & ~button_flag));
+	release->set_button_mask(input->get_mouse_button_mask());
 	input->parse_input_event(release);
 
 	return true;
@@ -746,11 +748,11 @@ void DisplayServerWeb::_dispatch_input_event(const Ref<InputEvent> &p_event) {
 	}
 }
 
-DisplayServer *DisplayServerWeb::create_func(const String &p_rendering_driver, WindowMode p_window_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Point2i *p_position, const Size2i &p_resolution, Error &r_error) {
-	return memnew(DisplayServerWeb(p_rendering_driver, p_window_mode, p_vsync_mode, p_flags, p_position, p_resolution, r_error));
+DisplayServer *DisplayServerWeb::create_func(const String &p_rendering_driver, WindowMode p_window_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Point2i *p_position, const Size2i &p_resolution, int p_screen, Error &r_error) {
+	return memnew(DisplayServerWeb(p_rendering_driver, p_window_mode, p_vsync_mode, p_flags, p_position, p_resolution, p_screen, r_error));
 }
 
-DisplayServerWeb::DisplayServerWeb(const String &p_rendering_driver, WindowMode p_window_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Point2i *p_position, const Size2i &p_resolution, Error &r_error) {
+DisplayServerWeb::DisplayServerWeb(const String &p_rendering_driver, WindowMode p_window_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Point2i *p_position, const Size2i &p_resolution, int p_screen, Error &r_error) {
 	r_error = OK; // Always succeeds for now.
 
 	// Ensure the canvas ID.
@@ -862,6 +864,10 @@ String DisplayServerWeb::get_name() const {
 
 int DisplayServerWeb::get_screen_count() const {
 	return 1;
+}
+
+int DisplayServerWeb::get_primary_screen() const {
+	return 0;
 }
 
 Point2i DisplayServerWeb::screen_get_position(int p_screen) const {

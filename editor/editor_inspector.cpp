@@ -618,7 +618,7 @@ void EditorProperty::gui_input(const Ref<InputEvent> &p_event) {
 		if (is_layout_rtl()) {
 			mpos.x = get_size().x - mpos.x;
 		}
-		bool button_left = (me->get_button_mask() & MouseButton::MASK_LEFT) != MouseButton::NONE;
+		bool button_left = me->get_button_mask().has_flag(MouseButtonMask::LEFT);
 
 		bool new_keying_hover = keying_rect.has_point(mpos) && !button_left;
 		if (new_keying_hover != keying_hover) {
@@ -1361,38 +1361,22 @@ void EditorInspectorSection::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_DRAG_BEGIN: {
-			Dictionary dd = get_viewport()->gui_get_drag_data();
-
-			// Only allow dropping if the section contains properties which can take the dragged data.
-			bool children_can_drop = false;
-			for (int child_idx = 0; child_idx < vbox->get_child_count(); child_idx++) {
-				Control *editor_property = Object::cast_to<Control>(vbox->get_child(child_idx));
-
-				// Test can_drop_data and can_drop_data_fw, since can_drop_data only works if set up with forwarding or if script attached.
-				if (editor_property && (editor_property->can_drop_data(Point2(), dd) || editor_property->call("_can_drop_data_fw", Point2(), dd, this))) {
-					children_can_drop = true;
-					break;
-				}
-			}
-
-			dropping = children_can_drop;
-			queue_redraw();
+			dropping_for_unfold = true;
 		} break;
 
 		case NOTIFICATION_DRAG_END: {
-			dropping = false;
-			queue_redraw();
+			dropping_for_unfold = false;
 		} break;
 
 		case NOTIFICATION_MOUSE_ENTER: {
-			if (dropping) {
+			if (dropping || dropping_for_unfold) {
 				dropping_unfold_timer->start();
 			}
 			queue_redraw();
 		} break;
 
 		case NOTIFICATION_MOUSE_EXIT: {
-			if (dropping) {
+			if (dropping || dropping_for_unfold) {
 				dropping_unfold_timer->stop();
 			}
 			queue_redraw();
@@ -2065,7 +2049,7 @@ void EditorInspectorArray::_setup() {
 		ae.panel = memnew(PanelContainer);
 		ae.panel->set_focus_mode(FOCUS_ALL);
 		ae.panel->set_mouse_filter(MOUSE_FILTER_PASS);
-		ae.panel->set_drag_forwarding(this);
+		ae.panel->set_drag_forwarding_compat(this);
 		ae.panel->set_meta("index", begin_array_index + i);
 		ae.panel->set_tooltip_text(vformat(TTR("Element %d: %s%d*"), i, array_element_prefix, i));
 		ae.panel->connect("focus_entered", callable_mp((CanvasItem *)ae.panel, &PanelContainer::queue_redraw));

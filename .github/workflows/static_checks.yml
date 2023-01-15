@@ -19,14 +19,14 @@ jobs:
           sudo rm -f /etc/apt/sources.list.d/*
           sudo cp -f misc/ci/sources.list /etc/apt/sources.list
           wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
-          sudo apt-add-repository "deb http://apt.llvm.org/focal/ llvm-toolchain-focal-13 main"
+          sudo apt-add-repository "deb http://apt.llvm.org/focal/ llvm-toolchain-focal-15 main"
           sudo apt-get update
 
       - name: Install dependencies
         run: |
-          sudo apt-get install -qq dos2unix recode clang-format-13 libxml2-utils python3-pip moreutils
+          sudo apt-get install -qq dos2unix clang-format-15 libxml2-utils python3-pip moreutils
           sudo update-alternatives --remove-all clang-format || true
-          sudo update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-13 100
+          sudo update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-15 100
           sudo pip3 install black==22.3.0 pygments pytest==7.1.2 mypy==0.971
 
       - name: File formatting checks (file_format.sh)

@@ -2236,7 +2236,7 @@ TileMapEditorTilesPlugin::TileMapEditorTilesPlugin() {
 	scene_tiles_list = memnew(ItemList);
 	scene_tiles_list->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	scene_tiles_list->set_v_size_flags(Control::SIZE_EXPAND_FILL);
-	scene_tiles_list->set_drag_forwarding(this);
+	scene_tiles_list->set_drag_forwarding_compat(this);
 	scene_tiles_list->set_select_mode(ItemList::SELECT_MULTI);
 	scene_tiles_list->connect("multi_selected", callable_mp(this, &TileMapEditorTilesPlugin::_scenes_list_multi_selected));
 	scene_tiles_list->connect("empty_clicked", callable_mp(this, &TileMapEditorTilesPlugin::_scenes_list_lmb_empty_clicked));
@@ -3303,12 +3303,16 @@ void TileMapEditorTerrainsPlugin::_update_theme() {
 void TileMapEditorTerrainsPlugin::edit(ObjectID p_tile_map_id, int p_tile_map_layer) {
 	_stop_dragging(); // Avoids staying in a wrong drag state.
 
-	tile_map_id = p_tile_map_id;
-	tile_map_layer = p_tile_map_layer;
+	if (tile_map_id != p_tile_map_id) {
+		tile_map_id = p_tile_map_id;
 
-	_update_terrains_cache();
-	_update_terrains_tree();
-	_update_tiles_list();
+		// Clear the selection.
+		_update_terrains_cache();
+		_update_terrains_tree();
+		_update_tiles_list();
+	}
+
+	tile_map_layer = p_tile_map_layer;
 }
 
 TileMapEditorTerrainsPlugin::TileMapEditorTerrainsPlugin() {

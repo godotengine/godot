@@ -46,16 +46,16 @@
 #define MERGE_INTERNAL(A, B) A##B
 #define MERGE(A, B) MERGE_INTERNAL(A, B)
 
-#define COMMAND_1(F_NAME, T_0, D_0)              \
-	virtual void F_NAME(T_0 D_0) const override; \
+#define COMMAND_1(F_NAME, T_0, D_0)        \
+	virtual void F_NAME(T_0 D_0) override; \
 	void MERGE(_cmd_, F_NAME)(T_0 D_0)
 
-#define COMMAND_2(F_NAME, T_0, D_0, T_1, D_1)             \
-	virtual void F_NAME(T_0 D_0, T_1 D_1) const override; \
+#define COMMAND_2(F_NAME, T_0, D_0, T_1, D_1)       \
+	virtual void F_NAME(T_0 D_0, T_1 D_1) override; \
 	void MERGE(_cmd_, F_NAME)(T_0 D_0, T_1 D_1)
 
-#define COMMAND_4_DEF(F_NAME, T_0, D_0, T_1, D_1, T_2, D_2, T_3, D_3, D_3_DEF)        \
-	virtual void F_NAME(T_0 D_0, T_1 D_1, T_2 D_2, T_3 D_3 = D_3_DEF) const override; \
+#define COMMAND_4_DEF(F_NAME, T_0, D_0, T_1, D_1, T_2, D_2, T_3, D_3, D_3_DEF)  \
+	virtual void F_NAME(T_0 D_0, T_1 D_1, T_2 D_2, T_3 D_3 = D_3_DEF) override; \
 	void MERGE(_cmd_, F_NAME)(T_0 D_0, T_1 D_1, T_2 D_2, T_3 D_3)
 
 class GodotNavigationServer;
@@ -81,15 +81,25 @@ class GodotNavigationServer : public NavigationServer3D {
 	LocalVector<NavMap *> active_maps;
 	LocalVector<uint32_t> active_maps_update_id;
 
+	// Performance Monitor
+	int pm_region_count = 0;
+	int pm_agent_count = 0;
+	int pm_link_count = 0;
+	int pm_polygon_count = 0;
+	int pm_edge_count = 0;
+	int pm_edge_merge_count = 0;
+	int pm_edge_connection_count = 0;
+	int pm_edge_free_count = 0;
+
 public:
 	GodotNavigationServer();
 	virtual ~GodotNavigationServer();
 
-	void add_command(SetCommand *command) const;
+	void add_command(SetCommand *command);
 
 	virtual TypedArray<RID> get_maps() const override;
 
-	virtual RID map_create() const override;
+	virtual RID map_create() override;
 	COMMAND_2(map_set_active, RID, p_map, bool, p_active);
 	virtual bool map_is_active(RID p_map) const override;
 
@@ -118,7 +128,7 @@ public:
 
 	virtual void map_force_update(RID p_map) override;
 
-	virtual RID region_create() const override;
+	virtual RID region_create() override;
 
 	COMMAND_2(region_set_enter_cost, RID, p_region, real_t, p_enter_cost);
 	virtual real_t region_get_enter_cost(RID p_region) const override;
@@ -136,12 +146,12 @@ public:
 	virtual uint32_t region_get_navigation_layers(RID p_region) const override;
 	COMMAND_2(region_set_transform, RID, p_region, Transform3D, p_transform);
 	COMMAND_2(region_set_navigation_mesh, RID, p_region, Ref<NavigationMesh>, p_navigation_mesh);
-	virtual void region_bake_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh, Node *p_root_node) const override;
+	virtual void region_bake_navigation_mesh(Ref<NavigationMesh> p_navigation_mesh, Node *p_root_node) override;
 	virtual int region_get_connections_count(RID p_region) const override;
 	virtual Vector3 region_get_connection_pathway_start(RID p_region, int p_connection_id) const override;
 	virtual Vector3 region_get_connection_pathway_end(RID p_region, int p_connection_id) const override;
 
-	virtual RID link_create() const override;
+	virtual RID link_create() override;
 	COMMAND_2(link_set_map, RID, p_link, RID, p_map);
 	virtual RID link_get_map(RID p_link) const override;
 	COMMAND_2(link_set_bidirectional, RID, p_link, bool, p_bidirectional);
@@ -159,7 +169,7 @@ public:
 	COMMAND_2(link_set_owner_id, RID, p_link, ObjectID, p_owner_id);
 	virtual ObjectID link_get_owner_id(RID p_link) const override;
 
-	virtual RID agent_create() const override;
+	virtual RID agent_create() override;
 	COMMAND_2(agent_set_map, RID, p_agent, RID, p_map);
 	virtual RID agent_get_map(RID p_agent) const override;
 	COMMAND_2(agent_set_neighbor_distance, RID, p_agent, real_t, p_distance);
@@ -176,12 +186,14 @@ public:
 
 	COMMAND_1(free, RID, p_object);
 
-	virtual void set_active(bool p_active) const override;
+	virtual void set_active(bool p_active) override;
 
 	void flush_queries();
 	virtual void process(real_t p_delta_time) override;
 
 	virtual NavigationUtilities::PathQueryResult _query_path(const NavigationUtilities::PathQueryParameters &p_parameters) const override;
+
+	int get_process_info(ProcessInfo p_info) const override;
 };
 
 #undef COMMAND_1

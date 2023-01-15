@@ -148,6 +148,11 @@ bool CreateDialog::_should_hide_type(const String &p_type) const {
 			return true;
 		}
 
+		StringName native_type = ScriptServer::get_global_class_native_base(p_type);
+		if (ClassDB::class_exists(native_type) && !ClassDB::can_instantiate(native_type)) {
+			return true;
+		}
+
 		String script_path = ScriptServer::get_global_class_path(p_type);
 		if (script_path.begins_with("res://addons/")) {
 			if (!EditorNode::get_singleton()->is_addon_plugin_enabled(script_path.get_slicec('/', 3))) {
@@ -754,7 +759,7 @@ CreateDialog::CreateDialog() {
 	favorites->connect("cell_selected", callable_mp(this, &CreateDialog::_favorite_selected));
 	favorites->connect("item_activated", callable_mp(this, &CreateDialog::_favorite_activated));
 	favorites->add_theme_constant_override("draw_guides", 1);
-	favorites->set_drag_forwarding(this);
+	favorites->set_drag_forwarding_compat(this);
 	fav_vb->add_margin_child(TTR("Favorites:"), favorites, true);
 
 	VBoxContainer *rec_vb = memnew(VBoxContainer);

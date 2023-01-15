@@ -394,7 +394,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 			}
 		}
 
-		if ((m->get_button_mask() & MouseButton::MASK_LEFT) != MouseButton::NONE) {
+		if (m->get_button_mask().has_flag(MouseButtonMask::LEFT)) {
 			if (selection.creating) {
 				set_caret_at_pixel_pos(m->get_position().x);
 				selection_fill_at_caret();

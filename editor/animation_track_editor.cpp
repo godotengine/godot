@@ -1253,7 +1253,7 @@ void AnimationTimelineEdit::_anim_length_changed(double p_new_len) {
 
 	editing = true;
 	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
-	undo_redo->create_action(TTR("Change Animation Length"));
+	undo_redo->create_action(TTR("Change Animation Length"), UndoRedo::MERGE_ENDS);
 	undo_redo->add_do_method(animation.ptr(), "set_length", p_new_len);
 	undo_redo->add_undo_method(animation.ptr(), "set_length", animation->get_length());
 	undo_redo->commit_action();
@@ -2919,7 +2919,7 @@ void AnimationTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 		}
 	}
 
-	if (mm.is_valid() && (mm->get_button_mask() & MouseButton::MASK_LEFT) != MouseButton::NONE && moving_selection_attempt) {
+	if (mm.is_valid() && mm->get_button_mask().has_flag(MouseButtonMask::LEFT) && moving_selection_attempt) {
 		if (!moving_selection) {
 			moving_selection = true;
 			emit_signal(SNAME("move_selection_begin"));
@@ -5309,7 +5309,7 @@ void AnimationTrackEditor::_scroll_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseMotion> mm = p_event;
 
 	if (mm.is_valid() && box_selecting) {
-		if ((mm->get_button_mask() & MouseButton::MASK_LEFT) == MouseButton::NONE) {
+		if (!mm->get_button_mask().has_flag(MouseButtonMask::LEFT)) {
 			// No longer.
 			box_selection->hide();
 			box_selecting = false;

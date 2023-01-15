@@ -328,7 +328,11 @@
 					"$(PROJECT_DIR)/**",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = $bundle_identifier;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				INFOPLIST_KEY_CFBundleDisplayName = "$name";
+				PRODUCT_NAME = "$binary";
+				EXECUTABLE_NAME = "$binary";
+				MARKETING_VERSION = $short_version;
+				CURRENT_PROJECT_VERSION = $version;
 				PROVISIONING_PROFILE = "$provisioning_profile_uuid_debug";
 				TARGETED_DEVICE_FAMILY = "$targeted_device_family";
 				VALID_ARCHS = "arm64 x86_64";
@@ -360,7 +364,11 @@
 					"$(PROJECT_DIR)/**",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = $bundle_identifier;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				INFOPLIST_KEY_CFBundleDisplayName = "$name";
+				PRODUCT_NAME = "$binary";
+				EXECUTABLE_NAME = "$binary";
+				MARKETING_VERSION = $short_version;
+				CURRENT_PROJECT_VERSION = $version;
 				PROVISIONING_PROFILE = "$provisioning_profile_uuid_release";
 				TARGETED_DEVICE_FAMILY = "$targeted_device_family";
 				VALID_ARCHS = "arm64 x86_64";

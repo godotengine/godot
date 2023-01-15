@@ -105,7 +105,7 @@ void Control::_edit_set_state(const Dictionary &p_state) {
 	}
 
 	_set_layout_mode(_layout);
-	if (_layout == LayoutMode::LAYOUT_MODE_ANCHORS) {
+	if (_layout == LayoutMode::LAYOUT_MODE_ANCHORS || _layout == LayoutMode::LAYOUT_MODE_UNCONTROLLED) {
 		_set_anchors_layout_preset((int)state["anchors_layout_preset"]);
 	}
 
@@ -125,7 +125,7 @@ void Control::_edit_set_state(const Dictionary &p_state) {
 
 void Control::_edit_set_position(const Point2 &p_position) {
 	ERR_FAIL_COND_MSG(!Engine::get_singleton()->is_editor_hint(), "This function can only be used from editor plugins.");
-	set_position(p_position, ControlEditorToolbar::get_singleton()->is_anchors_mode_enabled() && Object::cast_to<Control>(data.parent));
+	set_position(p_position, ControlEditorToolbar::get_singleton()->is_anchors_mode_enabled() && get_parent_control());
 };
 
 Point2 Control::_edit_get_position() const {
@@ -185,6 +185,14 @@ Size2 Control::_edit_get_minimum_size() const {
 	return get_combined_minimum_size();
 }
 #endif
+
+void Control::reparent(Node *p_parent, bool p_keep_global_transform) {
+	Transform2D temp = get_global_transform();
+	Node::reparent(p_parent);
+	if (p_keep_global_transform) {
+		set_global_position(temp.get_origin());
+	}
+}
 
 // Editor integration.
 
@@ -545,7 +553,8 @@ void Control::_validate_property(PropertyInfo &p_property) const {
 		}
 
 		// Use the layout mode to display or hide advanced anchoring properties.
-		bool use_anchors = _get_layout_mode() == LayoutMode::LAYOUT_MODE_ANCHORS;
+		LayoutMode _layout = _get_layout_mode();
+		bool use_anchors = (_layout == LayoutMode::LAYOUT_MODE_ANCHORS || _layout == LayoutMode::LAYOUT_MODE_UNCONTROLLED);
 		if (!use_anchors && p_property.name == "anchors_preset") {
 			p_property.usage ^= PROPERTY_USAGE_EDITOR;
 		}
@@ -598,7 +607,7 @@ bool Control::is_top_level_control() const {
 }
 
 Control *Control::get_parent_control() const {
-	return data.parent;
+	return data.parent_control;
 }
 
 Window *Control::get_parent_window() const {
@@ -855,6 +864,14 @@ void Control::_set_layout_mode(LayoutMode p_mode) {
 	}
 }
 
+void Control::_update_layout_mode() {
+	LayoutMode computed_layout = _get_layout_mode();
+	if (data.stored_layout_mode != computed_layout) {
+		data.stored_layout_mode = computed_layout;
+		notify_property_list_changed();
+	}
+}
+
 Control::LayoutMode Control::_get_layout_mode() const {
 	Node *parent_node = get_parent_control();
 	// In these modes the property is read-only.
@@ -887,11 +904,9 @@ Control::LayoutMode Control::_get_default_layout_mode() const {
 }
 
 void Control::_set_anchors_layout_preset(int p_preset) {
-	bool list_changed = false;
-
-	if (data.stored_layout_mode != LayoutMode::LAYOUT_MODE_ANCHORS) {
-		list_changed = true;
-		data.stored_layout_mode = LayoutMode::LAYOUT_MODE_ANCHORS;
+	if (data.stored_layout_mode != LayoutMode::LAYOUT_MODE_UNCONTROLLED && data.stored_layout_mode != LayoutMode::LAYOUT_MODE_ANCHORS) {
+		// In other modes the anchor preset is non-operational and shouldn't be set to anything.
+		return;
 	}
 
 	if (p_preset == -1) {
@@ -901,6 +916,8 @@ void Control::_set_anchors_layout_preset(int p_preset) {
 		}
 		return; // Keep settings as is.
 	}
+
+	bool list_changed = false;
 
 	if (data.stored_use_custom_anchors) {
 		list_changed = true;
@@ -944,6 +961,11 @@ void Control::_set_anchors_layout_preset(int p_preset) {
 }
 
 int Control::_get_anchors_layout_preset() const {
+	// If this is a layout mode that doesn't rely on anchors, avoid excessive checks.
+	if (data.stored_layout_mode != LayoutMode::LAYOUT_MODE_UNCONTROLLED && data.stored_layout_mode != LayoutMode::LAYOUT_MODE_ANCHORS) {
+		return LayoutPreset::PRESET_TOP_LEFT;
+	}
+
 	// If the custom preset was selected by user, use it.
 	if (data.stored_use_custom_anchors) {
 		return -1;
@@ -1525,19 +1547,20 @@ void Control::update_minimum_size() {
 
 	Control *invalidate = this;
 
-	//invalidate cache upwards
+	// Invalidate cache upwards.
 	while (invalidate && invalidate->data.minimum_size_valid) {
 		invalidate->data.minimum_size_valid = false;
 		if (invalidate->is_set_as_top_level()) {
-			break; // do not go further up
+			break; // Do not go further up.
 		}
-		if (!invalidate->data.parent && get_parent()) {
-			Window *parent_window = Object::cast_to<Window>(get_parent());
-			if (parent_window && parent_window->is_wrapping_controls()) {
-				parent_window->child_controls_changed();
-			}
+
+		Window *parent_window = invalidate->get_parent_window();
+		if (parent_window && parent_window->is_wrapping_controls()) {
+			parent_window->child_controls_changed();
+			break; // Stop on a window as well.
 		}
-		invalidate = invalidate->data.parent;
+
+		invalidate = invalidate->get_parent_control();
 	}
 
 	if (!is_visible_in_tree()) {
@@ -1676,27 +1699,27 @@ void Control::_clear_size_warning() {
 
 // Container sizing.
 
-void Control::set_h_size_flags(int p_flags) {
-	if (data.h_size_flags == p_flags) {
+void Control::set_h_size_flags(BitField<SizeFlags> p_flags) {
+	if ((int)data.h_size_flags == (int)p_flags) {
 		return;
 	}
 	data.h_size_flags = p_flags;
 	emit_signal(SceneStringNames::get_singleton()->size_flags_changed);
 }
 
-int Control::get_h_size_flags() const {
+BitField<Control::SizeFlags> Control::get_h_size_flags() const {
 	return data.h_size_flags;
 }
 
-void Control::set_v_size_flags(int p_flags) {
-	if (data.v_size_flags == p_flags) {
+void Control::set_v_size_flags(BitField<SizeFlags> p_flags) {
+	if ((int)data.v_size_flags == (int)p_flags) {
 		return;
 	}
 	data.v_size_flags = p_flags;
 	emit_signal(SceneStringNames::get_singleton()->size_flags_changed);
 }
 
-int Control::get_v_size_flags() const {
+BitField<Control::SizeFlags> Control::get_v_size_flags() const {
 	return data.v_size_flags;
 }
 
@@ -1798,33 +1821,53 @@ bool Control::is_focus_owner_in_shortcut_context() const {
 
 // Drag and drop handling.
 
-void Control::set_drag_forwarding(Object *p_target) {
-	if (p_target) {
-		data.drag_owner = p_target->get_instance_id();
+void Control::set_drag_forwarding_compat(Object *p_base) {
+	if (p_base != nullptr) {
+		data.forward_drag = Callable(p_base, "_get_drag_data_fw").bind(this);
+		data.forward_can_drop = Callable(p_base, "_can_drop_data_fw").bind(this);
+		data.forward_drop = Callable(p_base, "_drop_data_fw").bind(this);
+
 	} else {
-		data.drag_owner = ObjectID();
+		data.forward_drag = Callable();
+		data.forward_can_drop = Callable();
+		data.forward_drop = Callable();
 	}
+}
+
+void Control::set_drag_forwarding(const Callable &p_drag, const Callable &p_can_drop, const Callable &p_drop) {
+	data.forward_drag = p_drag;
+	data.forward_can_drop = p_can_drop;
+	data.forward_drop = p_drop;
 }
 
 Variant Control::get_drag_data(const Point2 &p_point) {
-	if (data.drag_owner.is_valid()) {
-		Object *obj = ObjectDB::get_instance(data.drag_owner);
-		if (obj) {
-			return obj->call("_get_drag_data_fw", p_point, this);
+	Variant ret;
+	if (data.forward_drag.is_valid()) {
+		Variant p = p_point;
+		const Variant *vp[1] = { &p };
+		Callable::CallError ce;
+		data.forward_drag.callp((const Variant **)vp, 1, ret, ce);
+		if (ce.error != Callable::CallError::CALL_OK) {
+			ERR_FAIL_V_MSG(Variant(), "Error calling forwarded method from 'get_drag_data': " + Variant::get_callable_error_text(data.forward_drag, (const Variant **)vp, 1, ce) + ".");
 		}
+		return ret;
 	}
 
-	Variant dd;
-	GDVIRTUAL_CALL(_get_drag_data, p_point, dd);
-	return dd;
+	GDVIRTUAL_CALL(_get_drag_data, p_point, ret);
+	return ret;
 }
 
 bool Control::can_drop_data(const Point2 &p_point, const Variant &p_data) const {
-	if (data.drag_owner.is_valid()) {
-		Object *obj = ObjectDB::get_instance(data.drag_owner);
-		if (obj) {
-			return obj->call("_can_drop_data_fw", p_point, p_data, this);
+	if (data.forward_can_drop.is_valid()) {
+		Variant ret;
+		Variant p = p_point;
+		const Variant *vp[2] = { &p, &p_data };
+		Callable::CallError ce;
+		data.forward_can_drop.callp((const Variant **)vp, 2, ret, ce);
+		if (ce.error != Callable::CallError::CALL_OK) {
+			ERR_FAIL_V_MSG(Variant(), "Error calling forwarded method from 'can_drop_data': " + Variant::get_callable_error_text(data.forward_can_drop, (const Variant **)vp, 2, ce) + ".");
 		}
+		return ret;
 	}
 
 	bool ret = false;
@@ -1833,12 +1876,16 @@ bool Control::can_drop_data(const Point2 &p_point, const Variant &p_data) const 
 }
 
 void Control::drop_data(const Point2 &p_point, const Variant &p_data) {
-	if (data.drag_owner.is_valid()) {
-		Object *obj = ObjectDB::get_instance(data.drag_owner);
-		if (obj) {
-			obj->call("_drop_data_fw", p_point, p_data, this);
-			return;
+	if (data.forward_drop.is_valid()) {
+		Variant ret;
+		Variant p = p_point;
+		const Variant *vp[2] = { &p, &p_data };
+		Callable::CallError ce;
+		data.forward_drop.callp((const Variant **)vp, 2, ret, ce);
+		if (ce.error != Callable::CallError::CALL_OK) {
+			ERR_FAIL_MSG("Error calling forwarded method from 'drop_data': " + Variant::get_callable_error_text(data.forward_drop, (const Variant **)vp, 2, ce) + ".");
 		}
+		return;
 	}
 
 	GDVIRTUAL_CALL(_drop_data, p_point, p_data);
@@ -2850,10 +2897,19 @@ void Control::_notification(int p_notification) {
 		} break;
 
 		case NOTIFICATION_PARENTED: {
+			Node *parent_node = get_parent();
+			data.parent_control = Object::cast_to<Control>(parent_node);
+			data.parent_window = Object::cast_to<Window>(parent_node);
+
 			data.theme_owner->assign_theme_on_parented(this);
+
+			_update_layout_mode();
 		} break;
 
 		case NOTIFICATION_UNPARENTED: {
+			data.parent_control = nullptr;
+			data.parent_window = nullptr;
+
 			data.theme_owner->clear_theme_on_unparented(this);
 		} break;
 
@@ -2879,8 +2935,6 @@ void Control::_notification(int p_notification) {
 		} break;
 
 		case NOTIFICATION_ENTER_CANVAS: {
-			data.parent = Object::cast_to<Control>(get_parent());
-			data.parent_window = Object::cast_to<Window>(get_parent());
 			data.is_rtl_dirty = true;
 
 			CanvasItem *node = this;
@@ -2938,17 +2992,16 @@ void Control::_notification(int p_notification) {
 				data.RI = nullptr;
 			}
 
-			data.parent = nullptr;
 			data.parent_canvas_item = nullptr;
-			data.parent_window = nullptr;
 			data.is_rtl_dirty = true;
 		} break;
 
 		case NOTIFICATION_MOVED_IN_PARENT: {
-			// some parents need to know the order of the children to draw (like TabContainer)
-			// update if necessary
-			if (data.parent) {
-				data.parent->queue_redraw();
+			// Some parents need to know the order of the children to draw (like TabContainer),
+			// so we update them just in case.
+			Control *parent_control = get_parent_control();
+			if (parent_control) {
+				parent_control->queue_redraw();
 			}
 			queue_redraw();
 
@@ -3170,7 +3223,7 @@ void Control::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("grab_click_focus"), &Control::grab_click_focus);
 
-	ClassDB::bind_method(D_METHOD("set_drag_forwarding", "target"), &Control::set_drag_forwarding);
+	ClassDB::bind_method(D_METHOD("set_drag_forwarding", "drag_func", "can_drop_func", "drop_func"), &Control::set_drag_forwarding);
 	ClassDB::bind_method(D_METHOD("set_drag_preview", "control"), &Control::set_drag_preview);
 	ClassDB::bind_method(D_METHOD("is_drag_successful"), &Control::is_drag_successful);
 
@@ -3318,12 +3371,12 @@ void Control::_bind_methods() {
 	BIND_ENUM_CONSTANT(PRESET_MODE_KEEP_HEIGHT);
 	BIND_ENUM_CONSTANT(PRESET_MODE_KEEP_SIZE);
 
-	BIND_ENUM_CONSTANT(SIZE_SHRINK_BEGIN);
-	BIND_ENUM_CONSTANT(SIZE_FILL);
-	BIND_ENUM_CONSTANT(SIZE_EXPAND);
-	BIND_ENUM_CONSTANT(SIZE_EXPAND_FILL);
-	BIND_ENUM_CONSTANT(SIZE_SHRINK_CENTER);
-	BIND_ENUM_CONSTANT(SIZE_SHRINK_END);
+	BIND_BITFIELD_FLAG(SIZE_SHRINK_BEGIN);
+	BIND_BITFIELD_FLAG(SIZE_FILL);
+	BIND_BITFIELD_FLAG(SIZE_EXPAND);
+	BIND_BITFIELD_FLAG(SIZE_EXPAND_FILL);
+	BIND_BITFIELD_FLAG(SIZE_SHRINK_CENTER);
+	BIND_BITFIELD_FLAG(SIZE_SHRINK_END);
 
 	BIND_ENUM_CONSTANT(MOUSE_FILTER_STOP);
 	BIND_ENUM_CONSTANT(MOUSE_FILTER_PASS);

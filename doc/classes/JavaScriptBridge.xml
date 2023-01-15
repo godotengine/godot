@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		The JavaScriptBridge singleton is implemented only in the Web export. It's used to access the browser's JavaScript context. This allows interaction with embedding pages or calling third-party JavaScript APIs.
-		[b]Note:[/b] This singleton can be disabled at build-time to improve security. By default, the JavaScriptBridge singleton is enabled. Official export templates also have the JavaScriptBridge singleton enabled. See [url=$DOCS_URL/development/compiling/compiling_for_web.html]Compiling for the Web[/url] in the documentation for more information.
+		[b]Note:[/b] This singleton can be disabled at build-time to improve security. By default, the JavaScriptBridge singleton is enabled. Official export templates also have the JavaScriptBridge singleton enabled. See [url=$DOCS_URL/contributing/development/compiling/compiling_for_web.html]Compiling for the Web[/url] in the documentation for more information.
 	</description>
 	<tutorials>
 		<link title="Exporting for the Web: Calling JavaScript from script">$DOCS_URL/tutorials/export/exporting_for_web.html#calling-javascript-from-script</link>
@@ -44,6 +44,13 @@
 			<description>
 				Execute the string [param code] as JavaScript code within the browser window. This is a call to the actual global JavaScript function [code]eval()[/code].
 				If [param use_global_execution_context] is [code]true[/code], the code will be evaluated in the global execution context. Otherwise, it is evaluated in the execution context of a function within the engine's runtime environment.
+			</description>
+		</method>
+		<method name="force_fs_sync">
+			<return type="void" />
+			<description>
+				Force synchronization of the persistent file system (when enabled).
+				[b]Note:[/b] This is only useful for modules or extensions that can't use [FileAccess] to write files.
 			</description>
 		</method>
 		<method name="get_interface">

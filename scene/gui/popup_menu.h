@@ -92,7 +92,7 @@ class PopupMenu : public Popup {
 	Timer *submenu_timer = nullptr;
 	List<Rect2> autohide_areas;
 	Vector<Item> items;
-	MouseButton initial_button_mask = MouseButton::NONE;
+	BitField<MouseButtonMask> initial_button_mask;
 	bool during_grabbed_click = false;
 	int mouse_over = -1;
 	int submenu_over = -1;
@@ -283,8 +283,6 @@ public:
 	void set_parent_rect(const Rect2 &p_rect);
 
 	virtual String get_tooltip(const Point2 &p_pos) const;
-
-	virtual void get_translatable_strings(List<String> *p_strings) const override;
 
 	void add_autohide_area(const Rect2 &p_area);
 	void clear_autohide_areas();

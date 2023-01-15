@@ -50,7 +50,7 @@
 		<member name="button_group" type="ButtonGroup" setter="set_button_group" getter="get_button_group">
 			The [ButtonGroup] associated with the button. Not to be confused with node groups.
 		</member>
-		<member name="button_mask" type="int" setter="set_button_mask" getter="get_button_mask" enum="MouseButton" default="1">
+		<member name="button_mask" type="int" setter="set_button_mask" getter="get_button_mask" enum="MouseButtonMask" default="1">
 			Binary mask to choose which mouse buttons this button will respond to.
 			To allow both left-click and right-click, use [code]MOUSE_BUTTON_MASK_LEFT | MOUSE_BUTTON_MASK_RIGHT[/code].
 		</member>
@@ -70,7 +70,7 @@
 			[Shortcut] associated to the button.
 		</member>
 		<member name="shortcut_feedback" type="bool" setter="set_shortcut_feedback" getter="is_shortcut_feedback" default="true">
-			If [code]true[/code], the button will appear pressed when its shortcut is activated. If [code]false[/code] and [member toggle_mode] is [code]false[/code], the shortcut will activate the button without appearing to press the button.
+			If [code]true[/code], the button will highlight for a short amount of time when its shortcut is activated. If [code]false[/code] and [member toggle_mode] is [code]false[/code], the shortcut will activate without any visual feedback.
 		</member>
 		<member name="shortcut_in_tooltip" type="bool" setter="set_shortcut_in_tooltip" getter="is_shortcut_in_tooltip_enabled" default="true">
 			If [code]true[/code], the button will add information about its shortcut in the tooltip.

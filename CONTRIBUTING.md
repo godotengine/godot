@@ -55,7 +55,7 @@ in the editor, don't hesitate to include screenshots.
 Making your bug report easy to reproduce will make it easier for contributors
 to fix the bug.
 
-### Provide a simple, example project
+### Provide a simple example project
 
 Sometimes, unexpected behavior can happen in your project. In such case,
 understand that:
@@ -122,11 +122,12 @@ recommend that you have a look at it to know what's important to take into
 account for a PR to be considered for merging.
 
 In addition to the following tips, also take a look at the
-[Engine development guide](https://docs.godotengine.org/en/latest/development/cpp/)
+[Engine development guide](https://docs.godotengine.org/en/latest/contributing/development/index.html)
 for an introduction to developing on Godot.
 
-The [Contributing docs](https://docs.godotengine.org/en/latest/community/contributing/index.html)
-also have important information on the PR workflow and the code style we use.
+The [Contributing docs](https://docs.godotengine.org/en/latest/contributing/ways_to_contribute.html)
+also have important information on the [PR workflow](https://docs.godotengine.org/en/latest/contributing/workflow/pr_workflow.html)
+and the [code style](https://docs.godotengine.org/en/latest/contributing/development/code_style_guidelines.html) we use.
 
 ### Document your changes
 
@@ -135,10 +136,10 @@ scripting APIs, you **must** update the class reference to document those.
 This is to ensure the documentation coverage doesn't decrease as contributions
 are merged.
 
-[Update the documentation template](https://docs.godotengine.org/en/latest/community/contributing/updating_the_class_reference.html#updating-the-documentation-template)
+[Update documentation XML files](https://docs.godotengine.org/en/latest/contributing/documentation/updating_the_class_reference.html#updating-class-reference-when-working-on-the-engine)
 using your compiled binary, then fill in the descriptions.
 Follow the style guide described in the
-[Docs writing guidelines](https://docs.godotengine.org/en/latest/community/contributing/docs_writing_guidelines.html).
+[Writing guidelines](https://docs.godotengine.org/en/latest/contributing/documentation/docs_writing_guidelines.html).
 
 If your pull request modifies parts of the code in a non-obvious way, make sure
 to add comments in the code as well. This helps other people understand the
@@ -164,7 +165,7 @@ applicable.
 Feel free to contribute standalone pull requests to add new tests or improve
 existing tests as well.
 
-See [Unit testing](https://docs.godotengine.org/en/latest/development/cpp/unit_testing.html)
+See [Unit testing](https://docs.godotengine.org/en/latest/contributing/development/core_and_modules/unit_testing.html)
 for information on writing tests in Godot's C++ codebase.
 
 ### Be nice to the Git history
@@ -186,7 +187,7 @@ Internet).
 This [Git style guide](https://github.com/agis-/git-style-guide) has some
 good practices to have in mind.
 
-See our [PR workflow](https://docs.godotengine.org/en/latest/community/contributing/pr_workflow.html)
+See our [PR workflow](https://docs.godotengine.org/en/latest/contributing/workflow/pr_workflow.html)
 documentation for tips on using Git, amending commits and rebasing branches.
 
 ### Format your commit messages with readability in mind

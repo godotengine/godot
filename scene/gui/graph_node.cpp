@@ -174,7 +174,7 @@ void GraphNode::_resort() {
 
 		stretch_min += size.height;
 		msc.min_size = size.height;
-		msc.will_stretch = c->get_v_size_flags() & SIZE_EXPAND;
+		msc.will_stretch = c->get_v_size_flags().has_flag(SIZE_EXPAND);
 
 		if (msc.will_stretch) {
 			stretch_avail += msc.min_size;
@@ -749,7 +749,7 @@ void GraphNode::set_selected(bool p_selected) {
 	}
 
 	selected = p_selected;
-	emit_signal(p_selected ? SNAME("selected") : SNAME("deselected"));
+	emit_signal(p_selected ? SNAME("node_selected") : SNAME("node_deselected"));
 	queue_redraw();
 }
 
@@ -1161,8 +1161,8 @@ void GraphNode::_bind_methods() {
 	ADD_GROUP("", "");
 
 	ADD_SIGNAL(MethodInfo("position_offset_changed"));
-	ADD_SIGNAL(MethodInfo("selected"));
-	ADD_SIGNAL(MethodInfo("deselected"));
+	ADD_SIGNAL(MethodInfo("node_selected"));
+	ADD_SIGNAL(MethodInfo("node_deselected"));
 	ADD_SIGNAL(MethodInfo("slot_updated", PropertyInfo(Variant::INT, "idx")));
 	ADD_SIGNAL(MethodInfo("dragged", PropertyInfo(Variant::VECTOR2, "from"), PropertyInfo(Variant::VECTOR2, "to")));
 	ADD_SIGNAL(MethodInfo("raise_request"));

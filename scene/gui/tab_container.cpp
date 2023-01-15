@@ -803,22 +803,6 @@ Ref<Texture2D> TabContainer::get_tab_button_icon(int p_tab) const {
 	return tab_bar->get_tab_button_icon(p_tab);
 }
 
-void TabContainer::get_translatable_strings(List<String> *p_strings) const {
-	Vector<Control *> controls = _get_tab_controls();
-	for (int i = 0; i < controls.size(); i++) {
-		Control *c = controls[i];
-
-		if (!c->has_meta("_tab_name")) {
-			continue;
-		}
-
-		String name = c->get_meta("_tab_name");
-		if (!name.is_empty()) {
-			p_strings->push_back(name);
-		}
-	}
-}
-
 Size2 TabContainer::get_minimum_size() const {
 	Size2 ms;
 
@@ -991,7 +975,7 @@ void TabContainer::_bind_methods() {
 
 TabContainer::TabContainer() {
 	tab_bar = memnew(TabBar);
-	tab_bar->set_drag_forwarding(this);
+	tab_bar->set_drag_forwarding_compat(this);
 	add_child(tab_bar, false, INTERNAL_MODE_FRONT);
 	tab_bar->set_anchors_and_offsets_preset(Control::PRESET_TOP_WIDE);
 	tab_bar->connect("tab_changed", callable_mp(this, &TabContainer::_on_tab_changed));

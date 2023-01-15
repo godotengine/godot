@@ -32,6 +32,13 @@
 
 #include "core/string/translation.h"
 #include "editor/editor_node.h"
+#include "editor/editor_scale.h"
+#include "platform/ios/logo_svg.gen.h"
+
+#include "modules/modules_enabled.gen.h" // For svg.
+#ifdef MODULE_SVG_ENABLED
+#include "modules/svg/image_loader_svg.h"
+#endif
 
 void EditorExportPlatformIOS::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const {
 	// Vulkan and OpenGL ES 3.0 both mandate ETC2 support.
@@ -1799,7 +1806,10 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 		ERR_FAIL_COND_V(dylibs_dir.is_null(), ERR_CANT_OPEN);
 		CodesignData codesign_data(p_preset, p_debug);
 		err = _walk_dir_recursive(dylibs_dir, _codesign, &codesign_data);
-		ERR_FAIL_COND_V(err, err);
+		if (err != OK) {
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Code Signing"), TTR("Code signing failed, see editor log for details."));
+			return err;
+		}
 	}
 
 	if (ep.step("Making .xcarchive", 3)) {
@@ -1825,6 +1835,10 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	err = OS::get_singleton()->execute("xcodebuild", archive_args, &archive_str, nullptr, true);
 	ERR_FAIL_COND_V(err, err);
 	print_line("xcodebuild (.xcarchive):\n" + archive_str);
+	if (!archive_str.contains("** ARCHIVE SUCCEEDED **")) {
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Xcode Build"), TTR("Xcode project build failed, see editor log for details."));
+		return FAILED;
+	}
 
 	if (ep.step("Making .ipa", 4)) {
 		return ERR_SKIP;
@@ -1841,9 +1855,14 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	String export_str;
 	err = OS::get_singleton()->execute("xcodebuild", export_args, &export_str, nullptr, true);
 	ERR_FAIL_COND_V(err, err);
+
 	print_line("xcodebuild (.ipa):\n" + export_str);
+	if (!export_str.contains("** EXPORT SUCCEEDED **")) {
+		add_message(EXPORT_MESSAGE_ERROR, TTR("Xcode Build"), TTR(".ipa export failed, see editor log for details."));
+		return FAILED;
+	}
 #else
-	print_line(".ipa can only be built on macOS. Leaving Xcode project without building the package.");
+	add_message(EXPORT_MESSAGE_WARNING, TTR("Xcode Build"), TTR(".ipa can only be built on macOS. Leaving Xcode project without building the package."));
 #endif
 
 	return OK;
@@ -1914,7 +1933,15 @@ bool EditorExportPlatformIOS::has_valid_project_configuration(const Ref<EditorEx
 }
 
 EditorExportPlatformIOS::EditorExportPlatformIOS() {
-	logo = ImageTexture::create_from_image(memnew(Image(_ios_logo)));
+#ifdef MODULE_SVG_ENABLED
+	Ref<Image> img = memnew(Image);
+	const bool upsample = !Math::is_equal_approx(Math::round(EDSCALE), EDSCALE);
+
+	ImageLoaderSVG img_loader;
+	img_loader.create_image_from_string(img, _ios_logo_svg, EDSCALE, upsample, false);
+	logo = ImageTexture::create_from_image(img);
+#endif
+
 	plugins_changed.set();
 #ifndef ANDROID_ENABLED
 	check_for_changes_thread.start(_check_for_changes_poll_thread, this);

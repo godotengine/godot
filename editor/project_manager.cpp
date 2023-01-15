@@ -1233,7 +1233,7 @@ void ProjectList::load_project_icon(int p_index) {
 
 	// The default project icon is 128×128 to look crisp on hiDPI displays,
 	// but we want the actual displayed size to be 64×64 on loDPI displays.
-	item.control->icon->set_ignore_texture_size(true);
+	item.control->icon->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
 	item.control->icon->set_custom_minimum_size(Size2(64, 64) * EDSCALE);
 	item.control->icon->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
 
@@ -1273,7 +1273,7 @@ ProjectList::Item ProjectList::load_project_data(const String &p_path, bool p_fa
 	PackedStringArray unsupported_features = ProjectSettings::get_unsupported_features(project_features);
 
 	uint64_t last_edited = 0;
-	if (FileAccess::exists(conf)) {
+	if (cf_err == OK) {
 		// The modification date marks the date the project was last edited.
 		// This is because the `project.godot` file will always be modified
 		// when editing a project (but not when running it).
@@ -2653,8 +2653,9 @@ ProjectManager::ProjectManager() {
 		AcceptDialog::set_swap_cancel_ok(swap_cancel_ok == 2);
 	}
 
-	set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
-	set_theme(create_custom_theme());
+	Ref<Theme> theme = create_custom_theme();
+	set_theme(theme);
+	DisplayServer::set_early_window_clear_color_override(true, theme->get_color(SNAME("background"), SNAME("Editor")));
 
 	set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 
@@ -3008,22 +3009,24 @@ ProjectManager::ProjectManager() {
 	SceneTree::get_singleton()->get_root()->connect("files_dropped", callable_mp(this, &ProjectManager::_files_dropped));
 
 	// Define a minimum window size to prevent UI elements from overlapping or being cut off.
-	DisplayServer::get_singleton()->window_set_min_size(Size2(520, 350) * EDSCALE);
+	Window *w = Object::cast_to<Window>(SceneTree::get_singleton()->get_root());
+	if (w) {
+		w->set_min_size(Size2(520, 350) * EDSCALE);
+	}
 
 	// Resize the bootsplash window based on Editor display scale EDSCALE.
 	float scale_factor = MAX(1, EDSCALE);
 	if (scale_factor > 1.0) {
 		Vector2i window_size = DisplayServer::get_singleton()->window_get_size();
-		Vector2i screen_size = DisplayServer::get_singleton()->screen_get_size();
-		Vector2i screen_position = DisplayServer::get_singleton()->screen_get_position();
+		Rect2i screen_rect = DisplayServer::get_singleton()->screen_get_usable_rect(DisplayServer::get_singleton()->window_get_current_screen());
 
 		window_size *= scale_factor;
 
 		DisplayServer::get_singleton()->window_set_size(window_size);
-		if (screen_size != Vector2i()) {
+		if (screen_rect.size != Vector2i()) {
 			Vector2i window_position;
-			window_position.x = screen_position.x + (screen_size.x - window_size.x) / 2;
-			window_position.y = screen_position.y + (screen_size.y - window_size.y) / 2;
+			window_position.x = screen_rect.position.x + (screen_rect.size.x - window_size.x) / 2;
+			window_position.y = screen_rect.position.y + (screen_rect.size.y - window_size.y) / 2;
 			DisplayServer::get_singleton()->window_set_position(window_position);
 		}
 	}

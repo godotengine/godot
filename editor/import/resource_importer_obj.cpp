@@ -217,6 +217,7 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 	Vector<Vector3> vertices;
 	Vector<Vector3> normals;
 	Vector<Vector2> uvs;
+	Vector<Color> colors;
 	String name;
 
 	HashMap<String, HashMap<String, Ref<StandardMaterial3D>>> material_map;
@@ -249,6 +250,19 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 			vtx.y = v[2].to_float() * scale_mesh.y + offset_mesh.y;
 			vtx.z = v[3].to_float() * scale_mesh.z + offset_mesh.z;
 			vertices.push_back(vtx);
+			//vertex color
+			if (v.size() == 7) {
+				while (colors.size() < vertices.size() - 1) {
+					colors.push_back(Color(1.0, 1.0, 1.0));
+				}
+				Color c;
+				c.r = v[4].to_float();
+				c.g = v[5].to_float();
+				c.b = v[6].to_float();
+				colors.push_back(c);
+			} else if (!colors.is_empty()) {
+				colors.push_back(Color(1.0, 1.0, 1.0));
+			}
 		} else if (l.begins_with("vt ")) {
 			//uv
 			Vector<String> v = l.split(" ", false);
@@ -317,6 +331,9 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 					ERR_FAIL_INDEX_V(vtx, vertices.size(), ERR_FILE_CORRUPT);
 
 					Vector3 vertex = vertices[vtx];
+					if (!colors.is_empty()) {
+						surf_tool->set_color(colors[vtx]);
+					}
 					if (!smoothing) {
 						smooth_group++;
 					}
@@ -356,7 +373,11 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 				print_verbose("OBJ: Current material " + current_material + " has " + itos(material_map.has(current_material_library) && material_map[current_material_library].has(current_material)));
 
 				if (material_map.has(current_material_library) && material_map[current_material_library].has(current_material)) {
-					surf_tool->set_material(material_map[current_material_library][current_material]);
+					Ref<StandardMaterial3D> &material = material_map[current_material_library][current_material];
+					if (!colors.is_empty()) {
+						material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
+					}
+					surf_tool->set_material(material);
 				}
 
 				mesh = surf_tool->commit(mesh, mesh_flags);

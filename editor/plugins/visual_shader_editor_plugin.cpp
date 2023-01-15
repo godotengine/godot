@@ -129,30 +129,32 @@ void VisualShaderGraphPlugin::set_connections(const List<VisualShader::Connectio
 
 void VisualShaderGraphPlugin::show_port_preview(VisualShader::Type p_type, int p_node_id, int p_port_id) {
 	if (visual_shader->get_shader_type() == p_type && links.has(p_node_id) && links[p_node_id].output_ports.has(p_port_id)) {
-		for (const KeyValue<int, Port> &E : links[p_node_id].output_ports) {
+		Link &link = links[p_node_id];
+
+		for (const KeyValue<int, Port> &E : link.output_ports) {
 			if (E.value.preview_button != nullptr) {
 				E.value.preview_button->set_pressed(false);
 			}
 		}
+		bool is_dirty = link.preview_pos < 0;
 
-		if (links[p_node_id].preview_visible && !is_dirty() && links[p_node_id].preview_box != nullptr) {
-			links[p_node_id].graph_node->remove_child(links[p_node_id].preview_box);
-			memdelete(links[p_node_id].preview_box);
-			links[p_node_id].graph_node->reset_size();
-			links[p_node_id].preview_visible = false;
+		if (!is_dirty && link.preview_visible && link.preview_box != nullptr) {
+			link.graph_node->remove_child(link.preview_box);
+			memdelete(link.preview_box);
+			link.preview_box = nullptr;
+			link.graph_node->reset_size();
+			link.preview_visible = false;
 		}
 
-		if (p_port_id != -1 && links[p_node_id].output_ports[p_port_id].preview_button != nullptr) {
-			if (is_dirty()) {
-				links[p_node_id].preview_pos = links[p_node_id].graph_node->get_child_count();
+		if (p_port_id != -1 && link.output_ports[p_port_id].preview_button != nullptr) {
+			if (is_dirty) {
+				link.preview_pos = link.graph_node->get_child_count();
 			}
 
 			VBoxContainer *vbox = memnew(VBoxContainer);
-			links[p_node_id].graph_node->add_child(vbox);
-			if (links[p_node_id].preview_pos != -1) {
-				links[p_node_id].graph_node->move_child(vbox, links[p_node_id].preview_pos);
-			}
-			links[p_node_id].graph_node->set_slot_draw_stylebox(vbox->get_index(), false);
+			link.graph_node->add_child(vbox);
+			link.graph_node->move_child(vbox, link.preview_pos);
+			link.graph_node->set_slot_draw_stylebox(vbox->get_index(), false);
 
 			Control *offset = memnew(Control);
 			offset->set_custom_minimum_size(Size2(0, 5 * EDSCALE));
@@ -162,9 +164,9 @@ void VisualShaderGraphPlugin::show_port_preview(VisualShader::Type p_type, int p
 			port_preview->setup(visual_shader, visual_shader->get_shader_type(), p_node_id, p_port_id);
 			port_preview->set_h_size_flags(Control::SIZE_SHRINK_CENTER);
 			vbox->add_child(port_preview);
-			links[p_node_id].preview_visible = true;
-			links[p_node_id].preview_box = vbox;
-			links[p_node_id].output_ports[p_port_id].preview_button->set_pressed(true);
+			link.preview_visible = true;
+			link.preview_box = vbox;
+			link.output_ports[p_port_id].preview_button->set_pressed(true);
 		}
 	}
 }
@@ -177,8 +179,8 @@ void VisualShaderGraphPlugin::update_node(VisualShader::Type p_type, int p_node_
 	if (p_type != visual_shader->get_shader_type() || !links.has(p_node_id)) {
 		return;
 	}
-	remove_node(p_type, p_node_id);
-	add_node(p_type, p_node_id);
+	remove_node(p_type, p_node_id, true);
+	add_node(p_type, p_node_id, true);
 }
 
 void VisualShaderGraphPlugin::set_input_port_default_value(VisualShader::Type p_type, int p_node_id, int p_port_id, Variant p_value) {
@@ -305,8 +307,8 @@ void VisualShaderGraphPlugin::update_parameter_refs() {
 	for (KeyValue<int, Link> &E : links) {
 		VisualShaderNodeParameterRef *ref = Object::cast_to<VisualShaderNodeParameterRef>(E.value.visual_node);
 		if (ref) {
-			remove_node(E.value.type, E.key);
-			add_node(E.value.type, E.key);
+			remove_node(E.value.type, E.key, true);
+			add_node(E.value.type, E.key, true);
 		}
 	}
 }
@@ -329,14 +331,6 @@ void VisualShaderGraphPlugin::clear_links() {
 	links.clear();
 }
 
-bool VisualShaderGraphPlugin::is_dirty() const {
-	return dirty;
-}
-
-void VisualShaderGraphPlugin::make_dirty(bool p_enabled) {
-	dirty = p_enabled;
-}
-
 void VisualShaderGraphPlugin::register_link(VisualShader::Type p_type, int p_id, VisualShaderNode *p_visual_node, GraphNode *p_graph_node) {
 	links.insert(p_id, { p_type, p_visual_node, p_graph_node, p_visual_node->get_output_port_for_preview() != -1, -1, HashMap<int, InputPort>(), HashMap<int, Port>(), nullptr, nullptr, nullptr, { nullptr, nullptr, nullptr } });
 }
@@ -356,7 +350,7 @@ void VisualShaderGraphPlugin::update_theme() {
 	vector_expanded_color[3] = editor->get_theme_color(SNAME("axis_w_color"), SNAME("Editor")); // alpha
 }
 
-void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
+void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool p_just_update) {
 	if (!visual_shader.is_valid() || p_type != visual_shader->get_shader_type()) {
 		return;
 	}
@@ -424,7 +418,18 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 	graph->add_child(node);
 	node->set_theme(vstheme);
 	editor->_update_created_node(node);
-	register_link(p_type, p_id, vsnode.ptr(), node);
+
+	if (p_just_update) {
+		Link &link = links[p_id];
+
+		link.graph_node = node;
+		link.preview_box = nullptr;
+		link.preview_pos = -1;
+		link.output_ports.clear();
+		link.input_ports.clear();
+	} else {
+		register_link(p_type, p_id, vsnode.ptr(), node);
+	}
 
 	if (is_resizable) {
 		size = resizable_node->get_size();
@@ -1038,11 +1043,13 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id) {
 	}
 }
 
-void VisualShaderGraphPlugin::remove_node(VisualShader::Type p_type, int p_id) {
+void VisualShaderGraphPlugin::remove_node(VisualShader::Type p_type, int p_id, bool p_just_update) {
 	if (visual_shader->get_shader_type() == p_type && links.has(p_id)) {
 		links[p_id].graph_node->get_parent()->remove_child(links[p_id].graph_node);
 		memdelete(links[p_id].graph_node);
-		links.erase(p_id);
+		if (!p_just_update) {
+			links.erase(p_id);
+		}
 	}
 }
 
@@ -1909,14 +1916,11 @@ void VisualShaderEditor::_update_graph() {
 	_update_varyings();
 
 	graph_plugin->clear_links();
-	graph_plugin->make_dirty(true);
 	graph_plugin->update_theme();
 
 	for (int n_i = 0; n_i < nodes.size(); n_i++) {
-		graph_plugin->add_node(type, nodes[n_i]);
+		graph_plugin->add_node(type, nodes[n_i], false);
 	}
-
-	graph_plugin->make_dirty(false);
 
 	for (const VisualShader::Connection &E : node_connections) {
 		int from = E.from_node;
@@ -2967,8 +2971,8 @@ void VisualShaderEditor::_add_node(int p_idx, const Vector<Variant> &p_ops, Stri
 	}
 	undo_redo->add_do_method(visual_shader.ptr(), "add_node", type, vsnode, position, id_to_use);
 	undo_redo->add_undo_method(visual_shader.ptr(), "remove_node", type, id_to_use);
-	undo_redo->add_do_method(graph_plugin.ptr(), "add_node", type, id_to_use);
-	undo_redo->add_undo_method(graph_plugin.ptr(), "remove_node", type, id_to_use);
+	undo_redo->add_do_method(graph_plugin.ptr(), "add_node", type, id_to_use, false);
+	undo_redo->add_undo_method(graph_plugin.ptr(), "remove_node", type, id_to_use, false);
 
 	VisualShaderNodeExpression *expr = Object::cast_to<VisualShaderNodeExpression>(vsnode.ptr());
 	if (expr) {
@@ -3361,7 +3365,7 @@ void VisualShaderEditor::_delete_nodes(int p_type, const List<int> &p_nodes) {
 
 		undo_redo->add_do_method(visual_shader.ptr(), "remove_node", type, F);
 		undo_redo->add_undo_method(visual_shader.ptr(), "add_node", type, node, visual_shader->get_node_position(type, F), F);
-		undo_redo->add_undo_method(graph_plugin.ptr(), "add_node", type, F);
+		undo_redo->add_undo_method(graph_plugin.ptr(), "add_node", type, F, false);
 
 		VisualShaderNodeParameter *parameter = Object::cast_to<VisualShaderNodeParameter>(node.ptr());
 		if (parameter) {
@@ -3391,7 +3395,7 @@ void VisualShaderEditor::_delete_nodes(int p_type, const List<int> &p_nodes) {
 
 	// delete nodes from the graph
 	for (const int &F : p_nodes) {
-		undo_redo->add_do_method(graph_plugin.ptr(), "remove_node", type, F);
+		undo_redo->add_do_method(graph_plugin.ptr(), "remove_node", type, F, false);
 	}
 
 	// update parameter refs if any parameter has been deleted
@@ -4131,7 +4135,7 @@ void VisualShaderEditor::_dup_paste_nodes(int p_type, List<CopyItem> &r_items, c
 		}
 
 		undo_redo->add_do_method(visual_shader.ptr(), "add_node", type, node, item.position + p_offset, id_from);
-		undo_redo->add_do_method(graph_plugin.ptr(), "add_node", type, id_from);
+		undo_redo->add_do_method(graph_plugin.ptr(), "add_node", type, id_from, false);
 
 		added_set.insert(id_from);
 		id_from++;
@@ -4153,7 +4157,7 @@ void VisualShaderEditor::_dup_paste_nodes(int p_type, List<CopyItem> &r_items, c
 			continue;
 		}
 		undo_redo->add_undo_method(visual_shader.ptr(), "remove_node", type, id_from);
-		undo_redo->add_undo_method(graph_plugin.ptr(), "remove_node", type, id_from);
+		undo_redo->add_undo_method(graph_plugin.ptr(), "remove_node", type, id_from, false);
 		id_from++;
 	}
 
@@ -4915,7 +4919,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	graph->set_h_size_flags(SIZE_EXPAND_FILL);
 	graph->set_show_zoom_label(true);
 	add_child(graph);
-	graph->set_drag_forwarding(this);
+	graph->set_drag_forwarding_compat(this);
 	float graph_minimap_opacity = EDITOR_GET("editors/visual_editors/minimap_opacity");
 	graph->set_minimap_opacity(graph_minimap_opacity);
 	float graph_lines_curvature = EDITOR_GET("editors/visual_editors/lines_curvature");
@@ -5146,7 +5150,7 @@ VisualShaderEditor::VisualShaderEditor() {
 
 	members = memnew(Tree);
 	members_vb->add_child(members);
-	members->set_drag_forwarding(this);
+	members->set_drag_forwarding_compat(this);
 	members->set_h_size_flags(SIZE_EXPAND_FILL);
 	members->set_v_size_flags(SIZE_EXPAND_FILL);
 	members->set_hide_root(true);

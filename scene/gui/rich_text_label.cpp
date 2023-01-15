@@ -3336,6 +3336,7 @@ void RichTextLabel::push_table(int p_columns, InlineAlignment p_alignment, int p
 	_stop_thread();
 	MutexLock data_lock(data_mutex);
 
+	ERR_FAIL_COND(current->type == ITEM_TABLE);
 	ERR_FAIL_COND(p_columns < 1);
 	ItemTable *item = memnew(ItemTable);
 

@@ -53,6 +53,12 @@
 #define EXT_INIT_XR_FUNC(name) INIT_XR_FUNC(OpenXRAPI::get_singleton(), name)
 #define OPENXR_API_INIT_XR_FUNC(name) INIT_XR_FUNC(this, name)
 
+#define TRY_INIT_XR_FUNC(openxr_api, name) \
+	openxr_api->try_get_instance_proc_addr(#name, (PFN_xrVoidFunction *)&name##_ptr)
+
+#define EXT_TRY_INIT_XR_FUNC(name) TRY_INIT_XR_FUNC(OpenXRAPI::get_singleton(), name)
+#define OPENXR_TRY_API_INIT_XR_FUNC(name) TRY_INIT_XR_FUNC(this, name)
+
 #define EXT_PROTO_XRRESULT_FUNC1(func_name, arg1_type, arg1)                    \
 	PFN_##func_name func_name##_ptr = nullptr;                                  \
 	XRAPI_ATTR XrResult XRAPI_CALL func_name(UNPACK arg1_type p_##arg1) const { \

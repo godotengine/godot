@@ -237,7 +237,7 @@ bool Input::is_anything_pressed() const {
 	}
 	return !keys_pressed.is_empty() ||
 			!joy_buttons_pressed.is_empty() ||
-			mouse_button_mask > MouseButton::NONE;
+			!mouse_button_mask.is_empty();
 }
 
 bool Input::is_key_pressed(Key p_keycode) const {
@@ -252,7 +252,7 @@ bool Input::is_physical_key_pressed(Key p_keycode) const {
 
 bool Input::is_mouse_button_pressed(MouseButton p_button) const {
 	_THREAD_SAFE_METHOD_
-	return (mouse_button_mask & mouse_button_to_mask(p_button)) != MouseButton::NONE;
+	return mouse_button_mask.has_flag(mouse_button_to_mask(p_button));
 }
 
 static JoyAxis _combine_device(JoyAxis p_value, int p_device) {
@@ -504,9 +504,9 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 
 	if (mb.is_valid()) {
 		if (mb->is_pressed()) {
-			mouse_button_mask |= mouse_button_to_mask(mb->get_button_index());
+			mouse_button_mask.set_flag(mouse_button_to_mask(mb->get_button_index()));
 		} else {
-			mouse_button_mask &= ~mouse_button_to_mask(mb->get_button_index());
+			mouse_button_mask.clear_flag(mouse_button_to_mask(mb->get_button_index()));
 		}
 
 		Point2 pos = mb->get_global_position();
@@ -534,7 +534,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 		Vector2 relative = mm->get_relative();
 		mouse_velocity_track.update(relative);
 
-		if (event_dispatch_function && emulate_touch_from_mouse && !p_is_emulated && (mm->get_button_mask() & MouseButton::LEFT) != MouseButton::NONE) {
+		if (event_dispatch_function && emulate_touch_from_mouse && !p_is_emulated && mm->get_button_mask().has_flag(MouseButtonMask::LEFT)) {
 			Ref<InputEventScreenDrag> drag_event;
 			drag_event.instantiate();
 
@@ -585,11 +585,14 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 				button_event->set_pressed(st->is_pressed());
 				button_event->set_button_index(MouseButton::LEFT);
 				button_event->set_double_click(st->is_double_tap());
+
+				BitField<MouseButtonMask> ev_bm = mouse_button_mask;
 				if (st->is_pressed()) {
-					button_event->set_button_mask(MouseButton(mouse_button_mask | MouseButton::MASK_LEFT));
+					ev_bm.set_flag(MouseButtonMask::LEFT);
 				} else {
-					button_event->set_button_mask(MouseButton(mouse_button_mask & ~MouseButton::MASK_LEFT));
+					ev_bm.clear_flag(MouseButtonMask::LEFT);
 				}
+				button_event->set_button_mask(ev_bm);
 
 				_parse_input_event_impl(button_event, true);
 			}
@@ -740,7 +743,7 @@ Point2 Input::get_last_mouse_velocity() {
 	return mouse_velocity_track.velocity;
 }
 
-MouseButton Input::get_mouse_button_mask() const {
+BitField<MouseButtonMask> Input::get_mouse_button_mask() const {
 	return mouse_button_mask; // do not trust OS implementation, should remove it - OS::get_singleton()->get_mouse_button_state();
 }
 
@@ -821,7 +824,9 @@ void Input::ensure_touch_mouse_raised() {
 		button_event->set_global_position(mouse_pos);
 		button_event->set_pressed(false);
 		button_event->set_button_index(MouseButton::LEFT);
-		button_event->set_button_mask(MouseButton(mouse_button_mask & ~MouseButton::MASK_LEFT));
+		BitField<MouseButtonMask> ev_bm = mouse_button_mask;
+		ev_bm.clear_flag(MouseButtonMask::LEFT);
+		button_event->set_button_mask(ev_bm);
 
 		_parse_input_event_impl(button_event, true);
 	}
@@ -1022,7 +1027,7 @@ void Input::joy_axis(int p_device, JoyAxis p_axis, float p_value) {
 	}
 }
 
-void Input::joy_hat(int p_device, HatMask p_val) {
+void Input::joy_hat(int p_device, BitField<HatMask> p_val) {
 	_THREAD_SAFE_METHOD_;
 	const Joypad &joy = joy_names[p_device];
 

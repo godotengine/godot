@@ -434,21 +434,6 @@ bool GodotBodyPair2D::pre_solve(real_t p_step) {
 		c.rA = global_A - A->get_center_of_mass();
 		c.rB = global_B - B->get_center_of_mass() - offset_B;
 
-		if (A->can_report_contacts()) {
-			Vector2 crB(-B->get_angular_velocity() * c.rB.y, B->get_angular_velocity() * c.rB.x);
-			A->add_contact(global_A + offset_A, -c.normal, depth, shape_A, global_B + offset_A, shape_B, B->get_instance_id(), B->get_self(), crB + B->get_linear_velocity());
-		}
-
-		if (B->can_report_contacts()) {
-			Vector2 crA(-A->get_angular_velocity() * c.rA.y, A->get_angular_velocity() * c.rA.x);
-			B->add_contact(global_B + offset_A, c.normal, depth, shape_B, global_A + offset_A, shape_A, A->get_instance_id(), A->get_self(), crA + A->get_linear_velocity());
-		}
-
-		if (report_contacts_only) {
-			collided = false;
-			continue;
-		}
-
 		// Precompute normal mass, tangent mass, and bias.
 		real_t rnA = c.rA.dot(c.normal);
 		real_t rnB = c.rB.dot(c.normal);
@@ -466,11 +451,28 @@ bool GodotBodyPair2D::pre_solve(real_t p_step) {
 		c.bias = -bias * inv_dt * MIN(0.0f, -depth + max_penetration);
 		c.depth = depth;
 
+		Vector2 P = c.acc_normal_impulse * c.normal + c.acc_tangent_impulse * tangent;
+
+		c.acc_impulse -= P;
+
+		if (A->can_report_contacts()) {
+			Vector2 crB(-B->get_angular_velocity() * c.rB.y, B->get_angular_velocity() * c.rB.x);
+			A->add_contact(global_A + offset_A, -c.normal, depth, shape_A, global_B + offset_A, shape_B, B->get_instance_id(), B->get_self(), crB + B->get_linear_velocity(), c.acc_impulse);
+		}
+
+		if (B->can_report_contacts()) {
+			Vector2 crA(-A->get_angular_velocity() * c.rA.y, A->get_angular_velocity() * c.rA.x);
+			B->add_contact(global_B + offset_A, c.normal, depth, shape_B, global_A + offset_A, shape_A, A->get_instance_id(), A->get_self(), crA + A->get_linear_velocity(), c.acc_impulse);
+		}
+
+		if (report_contacts_only) {
+			collided = false;
+			continue;
+		}
+
 #ifdef ACCUMULATE_IMPULSES
 		{
 			// Apply normal + friction impulse
-			Vector2 P = c.acc_normal_impulse * c.normal + c.acc_tangent_impulse * tangent;
-
 			if (collide_A) {
 				A->apply_impulse(-P, c.rA + A->get_center_of_mass());
 			}
@@ -581,6 +583,7 @@ void GodotBodyPair2D::solve(real_t p_step) {
 		if (collide_B) {
 			B->apply_impulse(j, c.rB + B->get_center_of_mass());
 		}
+		c.acc_impulse -= j;
 	}
 }
 

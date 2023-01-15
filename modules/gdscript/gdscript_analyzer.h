@@ -102,13 +102,13 @@ class GDScriptAnalyzer {
 	void reduce_ternary_op(GDScriptParser::TernaryOpNode *p_ternary_op);
 	void reduce_unary_op(GDScriptParser::UnaryOpNode *p_unary_op);
 
-	void const_fold_array(GDScriptParser::ArrayNode *p_array);
-	void const_fold_dictionary(GDScriptParser::DictionaryNode *p_dictionary);
+	void const_fold_array(GDScriptParser::ArrayNode *p_array, bool p_is_const);
+	void const_fold_dictionary(GDScriptParser::DictionaryNode *p_dictionary, bool p_is_const);
 
 	// Helpers.
 	GDScriptParser::DataType type_from_variant(const Variant &p_value, const GDScriptParser::Node *p_source);
-	GDScriptParser::DataType type_from_metatype(const GDScriptParser::DataType &p_meta_type) const;
-	GDScriptParser::DataType type_from_property(const PropertyInfo &p_property) const;
+	static GDScriptParser::DataType type_from_metatype(const GDScriptParser::DataType &p_meta_type);
+	GDScriptParser::DataType type_from_property(const PropertyInfo &p_property, bool p_is_arg = false) const;
 	GDScriptParser::DataType make_global_class_meta_type(const StringName &p_class_name, const GDScriptParser::Node *p_source);
 	bool get_function_signature(GDScriptParser::Node *p_source, bool p_is_constructor, GDScriptParser::DataType base_type, const StringName &p_function, GDScriptParser::DataType &r_return_type, List<GDScriptParser::DataType> &r_par_types, int &r_default_arg_count, bool &r_static, bool &r_vararg);
 	bool function_signature_from_info(const MethodInfo &p_info, GDScriptParser::DataType &r_return_type, List<GDScriptParser::DataType> &r_par_types, int &r_default_arg_count, bool &r_static, bool &r_vararg);
@@ -120,9 +120,11 @@ class GDScriptAnalyzer {
 	bool is_type_compatible(const GDScriptParser::DataType &p_target, const GDScriptParser::DataType &p_source, bool p_allow_implicit_conversion = false, const GDScriptParser::Node *p_source_node = nullptr);
 	void push_error(const String &p_message, const GDScriptParser::Node *p_origin = nullptr);
 	void mark_node_unsafe(const GDScriptParser::Node *p_node);
+	void downgrade_node_type_source(GDScriptParser::Node *p_node);
 	void mark_lambda_use_self();
 	bool class_exists(const StringName &p_class) const;
 	Ref<GDScriptParserRef> get_parser_for(const String &p_path);
+	static void reduce_identifier_from_base_set_class(GDScriptParser::IdentifierNode *p_identifier, GDScriptParser::DataType p_identifier_datatype);
 #ifdef DEBUG_ENABLED
 	bool is_shadowing(GDScriptParser::IdentifierNode *p_local, const String &p_context);
 #endif

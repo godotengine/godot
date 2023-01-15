@@ -75,6 +75,8 @@ protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 
+	void _notification(int p_what);
+
 public:
 	void update_tile_set(Ref<TileSet> p_tile_set);
 

@@ -217,7 +217,7 @@ bool OpenXRAPI::is_top_level_path_supported(const String &p_toplevel_path) {
 	String required_extension = OpenXRInteractionProfileMetaData::get_singleton()->get_top_level_extension(p_toplevel_path);
 
 	// If unsupported is returned we likely have a misspelled interaction profile path in our action map. Always output that as an error.
-	ERR_FAIL_COND_V_MSG(required_extension == XR_PATH_UNSUPPORTED_NAME, false, "OpenXR: Unsupported interaction profile " + p_toplevel_path);
+	ERR_FAIL_COND_V_MSG(required_extension == XR_PATH_UNSUPPORTED_NAME, false, "OpenXR: Unsupported toplevel path " + p_toplevel_path);
 
 	if (required_extension == "") {
 		// no extension needed, core top level are always "supported", they just won't be used if not really supported
@@ -1224,8 +1224,12 @@ bool OpenXRAPI::resolve_instance_openxr_symbols() {
 	return true;
 }
 
+XrResult OpenXRAPI::try_get_instance_proc_addr(const char *p_name, PFN_xrVoidFunction *p_addr) {
+	return xrGetInstanceProcAddr(instance, p_name, p_addr);
+}
+
 XrResult OpenXRAPI::get_instance_proc_addr(const char *p_name, PFN_xrVoidFunction *p_addr) {
-	XrResult result = xrGetInstanceProcAddr(instance, p_name, p_addr);
+	XrResult result = try_get_instance_proc_addr(p_name, p_addr);
 
 	if (result != XR_SUCCESS) {
 		String error_message = String("Symbol ") + p_name + " not found in OpenXR instance.";

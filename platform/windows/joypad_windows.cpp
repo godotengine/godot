@@ -420,38 +420,43 @@ void JoypadWindows::process_joypads() {
 }
 
 void JoypadWindows::post_hat(int p_device, DWORD p_dpad) {
-	HatMask dpad_val = (HatMask)0;
+	BitField<HatMask> dpad_val;
 
 	// Should be -1 when centered, but according to docs:
 	// "Some drivers report the centered position of the POV indicator as 65,535. Determine whether the indicator is centered as follows:
 	//  BOOL POVCentered = (LOWORD(dwPOV) == 0xFFFF);"
 	// https://docs.microsoft.com/en-us/previous-versions/windows/desktop/ee416628(v%3Dvs.85)#remarks
 	if (LOWORD(p_dpad) == 0xFFFF) {
-		dpad_val = (HatMask)HatMask::CENTER;
+		// Do nothing.
+		// dpad_val.set_flag(HatMask::CENTER);
 	}
 	if (p_dpad == 0) {
-		dpad_val = (HatMask)HatMask::UP;
+		dpad_val.set_flag(HatMask::UP);
 
 	} else if (p_dpad == 4500) {
-		dpad_val = (HatMask)(HatMask::UP | HatMask::RIGHT);
+		dpad_val.set_flag(HatMask::UP);
+		dpad_val.set_flag(HatMask::RIGHT);
 
 	} else if (p_dpad == 9000) {
-		dpad_val = (HatMask)HatMask::RIGHT;
+		dpad_val.set_flag(HatMask::RIGHT);
 
 	} else if (p_dpad == 13500) {
-		dpad_val = (HatMask)(HatMask::RIGHT | HatMask::DOWN);
+		dpad_val.set_flag(HatMask::RIGHT);
+		dpad_val.set_flag(HatMask::DOWN);
 
 	} else if (p_dpad == 18000) {
-		dpad_val = (HatMask)HatMask::DOWN;
+		dpad_val.set_flag(HatMask::DOWN);
 
 	} else if (p_dpad == 22500) {
-		dpad_val = (HatMask)(HatMask::DOWN | HatMask::LEFT);
+		dpad_val.set_flag(HatMask::DOWN);
+		dpad_val.set_flag(HatMask::LEFT);
 
 	} else if (p_dpad == 27000) {
-		dpad_val = (HatMask)HatMask::LEFT;
+		dpad_val.set_flag(HatMask::LEFT);
 
 	} else if (p_dpad == 31500) {
-		dpad_val = (HatMask)(HatMask::LEFT | HatMask::UP);
+		dpad_val.set_flag(HatMask::LEFT);
+		dpad_val.set_flag(HatMask::UP);
 	}
 	input->joy_hat(p_device, dpad_val);
 }

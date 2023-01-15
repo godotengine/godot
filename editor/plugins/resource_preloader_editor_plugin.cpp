@@ -379,7 +379,7 @@ ResourcePreloaderEditor::ResourcePreloaderEditor() {
 	tree->set_column_expand(1, true);
 	tree->set_v_size_flags(SIZE_EXPAND_FILL);
 
-	tree->set_drag_forwarding(this);
+	tree->set_drag_forwarding_compat(this);
 	vbc->add_child(tree);
 
 	dialog = memnew(AcceptDialog);

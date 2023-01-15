@@ -211,16 +211,6 @@ bool Dictionary::recursive_equal(const Dictionary &p_dictionary, int recursion_c
 }
 
 void Dictionary::_ref(const Dictionary &p_from) const {
-	if (unlikely(p_from._p->read_only != nullptr)) {
-		// If p_from is a read-only dictionary, just copy the contents to avoid further modification.
-		if (_p) {
-			_unref();
-		}
-		_p = memnew(DictionaryPrivate);
-		_p->refcount.init();
-		_p->variant_map = p_from._p->variant_map;
-		return;
-	}
 	//make a copy first (thread safe)
 	if (!p_from._p->refcount.ref()) {
 		return; // couldn't copy

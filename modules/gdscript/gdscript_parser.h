@@ -185,8 +185,8 @@ public:
 				case BUILTIN:
 					return builtin_type == p_other.builtin_type;
 				case NATIVE:
-				case ENUM:
-					return native_type == p_other.native_type && enum_type == p_other.enum_type;
+				case ENUM: // Enums use native_type to identify the enum and its base class.
+					return native_type == p_other.native_type;
 				case SCRIPT:
 					return script_type == p_other.script_type;
 				case CLASS:
@@ -360,6 +360,7 @@ public:
 		ExpressionNode *initializer = nullptr;
 		TypeNode *datatype_specifier = nullptr;
 		bool infer_datatype = false;
+		bool use_conversion_assign = false;
 		int usages = 0;
 
 		virtual ~AssignableNode() {}
@@ -1182,7 +1183,6 @@ public:
 		bool onready = false;
 		PropertyInfo export_info;
 		int assignments = 0;
-		bool use_conversion_assign = false;
 #ifdef TOOLS_ENABLED
 		String doc_description;
 #endif // TOOLS_ENABLED

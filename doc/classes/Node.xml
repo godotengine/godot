@@ -421,6 +421,12 @@
 				Returns the node's [Viewport].
 			</description>
 		</method>
+		<method name="get_window" qualifiers="const">
+			<return type="Window" />
+			<description>
+				Returns the [Window] that contains this node. If the node is in the main window, this is equivalent to getting the root node ([code]get_tree().get_root()[/code]).
+			</description>
+		</method>
 		<method name="has_node" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="path" type="NodePath" />
@@ -610,6 +616,15 @@
 			<param index="0" name="group" type="StringName" />
 			<description>
 				Removes a node from the [param group]. Does nothing if the node is not in the [param group]. See notes in the description, and the group methods in [SceneTree].
+			</description>
+		</method>
+		<method name="reparent">
+			<return type="void" />
+			<param index="0" name="new_parent" type="Node" />
+			<param index="1" name="keep_global_transform" type="bool" default="true" />
+			<description>
+				Changes the parent of this [Node] to the [param new_parent]. The node needs to already have a parent.
+				If [param keep_global_transform] is [code]true[/code], the node's global transform will be preserved if supported. [Node2D], [Node3D] and [Control] support this argument (but [Control] keeps only position).
 			</description>
 		</method>
 		<method name="replace_by">

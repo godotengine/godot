@@ -146,21 +146,52 @@ VARIANT_ENUM_CAST(Side);
 VARIANT_ENUM_CAST(ClockDirection);
 VARIANT_ENUM_CAST(Corner);
 VARIANT_ENUM_CAST(HatDir);
-VARIANT_ENUM_CAST(HatMask);
+VARIANT_BITFIELD_CAST(HatMask);
 VARIANT_ENUM_CAST(JoyAxis);
 VARIANT_ENUM_CAST(JoyButton);
-VARIANT_ENUM_CAST(Key);
-VARIANT_ENUM_CAST(KeyModifierMask);
+
 VARIANT_ENUM_CAST(MIDIMessage);
 VARIANT_ENUM_CAST(MouseButton);
+VARIANT_BITFIELD_CAST(MouseButtonMask);
 VARIANT_ENUM_CAST(Orientation);
 VARIANT_ENUM_CAST(HorizontalAlignment);
 VARIANT_ENUM_CAST(VerticalAlignment);
 VARIANT_ENUM_CAST(InlineAlignment);
 VARIANT_ENUM_CAST(PropertyHint);
-VARIANT_ENUM_CAST(PropertyUsageFlags);
+VARIANT_BITFIELD_CAST(PropertyUsageFlags);
 VARIANT_ENUM_CAST(Variant::Type);
 VARIANT_ENUM_CAST(Variant::Operator);
+
+// Key
+
+VARIANT_ENUM_CAST(Key);
+VARIANT_BITFIELD_CAST(KeyModifierMask);
+
+static inline Key &operator|=(Key &a, BitField<KeyModifierMask> b) {
+	a = static_cast<Key>(static_cast<int>(a) | static_cast<int>(b.operator int64_t()));
+	return a;
+}
+
+static inline Key &operator&=(Key &a, BitField<KeyModifierMask> b) {
+	a = static_cast<Key>(static_cast<int>(a) & static_cast<int>(b.operator int64_t()));
+	return a;
+}
+
+static inline Key operator|(Key a, BitField<KeyModifierMask> b) {
+	return (Key)((int)a | (int)b.operator int64_t());
+}
+
+static inline Key operator&(Key a, BitField<KeyModifierMask> b) {
+	return (Key)((int)a & (int)b.operator int64_t());
+}
+
+static inline Key operator+(BitField<KeyModifierMask> a, Key b) {
+	return (Key)((int)a.operator int64_t() + (int)b);
+}
+
+static inline Key operator|(BitField<KeyModifierMask> a, Key b) {
+	return (Key)((int)a.operator int64_t() | (int)b);
+}
 
 template <>
 struct VariantCaster<char32_t> {

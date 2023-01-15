@@ -60,7 +60,7 @@ void Tweener::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("finished"));
 }
 
-void Tween::start_tweeners() {
+void Tween::_start_tweeners() {
 	if (tweeners.is_empty()) {
 		dead = true;
 		ERR_FAIL_MSG("Tween without commands, aborting.");
@@ -68,6 +68,15 @@ void Tween::start_tweeners() {
 
 	for (Ref<Tweener> &tweener : tweeners.write[current_step]) {
 		tweener->start();
+	}
+}
+
+void Tween::_stop_internal(bool p_reset) {
+	running = false;
+	if (p_reset) {
+		started = false;
+		dead = false;
+		total_time = 0;
 	}
 }
 
@@ -135,14 +144,11 @@ void Tween::append(Ref<Tweener> p_tweener) {
 }
 
 void Tween::stop() {
-	started = false;
-	running = false;
-	dead = false;
-	total_time = 0;
+	_stop_internal(true);
 }
 
 void Tween::pause() {
-	running = false;
+	_stop_internal(false);
 }
 
 void Tween::play() {
@@ -278,7 +284,7 @@ bool Tween::step(double p_delta) {
 		current_step = 0;
 		loops_done = 0;
 		total_time = 0;
-		start_tweeners();
+		_start_tweeners();
 		started = true;
 	}
 
@@ -319,7 +325,7 @@ bool Tween::step(double p_delta) {
 				} else {
 					emit_signal(SNAME("loop_finished"), loops_done);
 					current_step = 0;
-					start_tweeners();
+					_start_tweeners();
 #ifdef DEBUG_ENABLED
 					if (loops <= 0 && Math::is_equal_approx(rem_delta, initial_delta)) {
 						if (!potential_infinite) {
@@ -332,7 +338,7 @@ bool Tween::step(double p_delta) {
 #endif
 				}
 			} else {
-				start_tweeners();
+				_start_tweeners();
 			}
 		}
 	}

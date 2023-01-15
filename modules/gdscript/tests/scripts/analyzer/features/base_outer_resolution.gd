@@ -11,4 +11,3 @@ func test() -> void:
 	Extend.InnerClass.InnerInnerClass.test_a_b_c(A.new(), B.new(), C.new())
 	Extend.InnerClass.InnerInnerClass.test_enum(C.TestEnum.HELLO_WORLD)
 	Extend.InnerClass.InnerInnerClass.test_a_prime(A.APrime.new())
-
