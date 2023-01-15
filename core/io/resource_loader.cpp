@@ -135,6 +135,11 @@ void ResourceFormatLoader::get_recognized_extensions(List<String> *p_extensions)
 	}
 }
 
+Ref<Resource> ResourceFormatLoader::load_cyclic(const String &p_path, Error *r_error) {
+	// Not supported for the majority of loaders
+	return Ref<Resource>();
+}
+
 Ref<Resource> ResourceFormatLoader::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	Variant res;
 	if (GDVIRTUAL_CALL(_load, p_path, p_original_path, p_use_sub_threads, p_cache_mode, res)) {
@@ -193,6 +198,21 @@ void ResourceFormatLoader::_bind_methods() {
 }
 
 ///////////////////////////////////
+
+Ref<Resource> ResourceLoader::_load_cyclic(const String &p_path, const String &p_type_hint, Error *r_error) {
+	// Try all loaders and pick the first match for the type hint
+	for (int i = 0; i < loader_count; i++) {
+		if (!loader[i]->recognize_path(p_path, p_type_hint)) {
+			continue;
+		}
+		Ref<Resource> res = loader[i]->load_cyclic(p_path, r_error);
+		if (res.is_valid()) {
+			return res;
+		}
+	}
+
+	return Ref<Resource>();
+}
 
 Ref<Resource> ResourceLoader::_load(const String &p_path, const String &p_original_path, const String &p_type_hint, ResourceFormatLoader::CacheMode p_cache_mode, Error *r_error, bool p_use_sub_threads, float *r_progress) {
 	bool found = false;
@@ -527,7 +547,14 @@ Ref<Resource> ResourceLoader::load(const String &p_path, const String &p_type_hi
 			}
 			thread_load_mutex->unlock();
 
-			return load_threaded_get(p_path, r_error);
+			Ref<Resource> res = load_threaded_get(p_path, &err);
+			if (err == ERR_CYCLIC_LINK) {
+				res = _load_cyclic(p_path, p_type_hint, &err);
+			}
+			if (r_error) {
+				*r_error = err;
+			}
+			return res;
 		}
 
 		//Is it cached?

@@ -63,6 +63,7 @@ protected:
 	GDVIRTUAL4RC(Variant, _load, String, String, bool, int)
 
 public:
+	virtual Ref<Resource> load_cyclic(const String &p_path, Error *r_error = nullptr);
 	virtual Ref<Resource> load(const String &p_path, const String &p_original_path = "", Error *r_error = nullptr, bool p_use_sub_threads = false, float *r_progress = nullptr, CacheMode p_cache_mode = CACHE_MODE_REUSE);
 	virtual bool exists(const String &p_path) const;
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
@@ -125,6 +126,7 @@ private:
 	friend class ResourceFormatImporter;
 	friend class ResourceInteractiveLoader;
 	// Internal load function.
+	static Ref<Resource> _load_cyclic(const String &p_path, const String &p_type_hint, Error *p_error);
 	static Ref<Resource> _load(const String &p_path, const String &p_original_path, const String &p_type_hint, ResourceFormatLoader::CacheMode p_cache_mode, Error *r_error, bool p_use_sub_threads, float *r_progress);
 
 	static ResourceLoadedCallback _loaded_callback;

@@ -2639,12 +2639,34 @@ Ref<GDScript> GDScriptLanguage::get_script_by_fully_qualified_name(const String 
 
 /*************** RESOURCE ***************/
 
+Ref<Resource> ResourceFormatLoaderGDScript::load_cyclic(const String &p_path, Error *r_error) {
+	Error err = OK;
+	Ref<Resource> res = GDScriptCache::get_shallow_script(p_path, err);
+	if (r_error) {
+		*r_error = err;
+	}
+	return res;
+}
+
 Ref<Resource> ResourceFormatLoaderGDScript::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
 	if (r_error) {
 		*r_error = ERR_FILE_CANT_OPEN;
 	}
 
-	Error err;
+	Error err = OK;
+	FileAccess::open(p_path, FileAccess::READ, &err);
+	if (err != OK) {
+		if (r_error) {
+			*r_error = err;
+		}
+		return Ref<GDScript>();
+	}
+	if (r_error) {
+		// As we could open the file, we can assume that any error opening the file is linked to a cyclic reference
+		*r_error = ERR_CYCLIC_LINK;
+	}
+
+	err = OK;
 	Ref<GDScript> scr = GDScriptCache::get_full_script(p_path, err, "", p_cache_mode == CACHE_MODE_IGNORE);
 
 	// TODO: Reintroduce binary and encrypted scripts.
