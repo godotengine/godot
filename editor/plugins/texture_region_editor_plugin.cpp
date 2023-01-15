@@ -349,7 +349,7 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 					for (const Rect2 &E : autoslice_cache) {
 						if (E.has_point(point)) {
 							rect = E;
-							if (Input::get_singleton()->is_key_pressed(Key::CTRL) && !(Input::get_singleton()->is_key_pressed(Key(Key::SHIFT | Key::ALT)))) {
+							if (Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL) && !(Input::get_singleton()->is_key_pressed(Key(Key::SHIFT | Key::ALT)))) {
 								Rect2 r;
 								if (atlas_tex.is_valid()) {
 									r = atlas_tex->get_region();
