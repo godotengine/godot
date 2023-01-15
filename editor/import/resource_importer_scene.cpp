@@ -54,7 +54,7 @@
 #include "scene/resources/world_boundary_shape_3d.h"
 
 uint32_t EditorSceneFormatImporter::get_import_flags() const {
-	int ret;
+	uint32_t ret;
 	if (GDVIRTUAL_CALL(_get_import_flags, ret)) {
 		return ret;
 	}

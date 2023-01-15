@@ -172,17 +172,15 @@ Error EditorImportPlugin::import(const String &p_source_file, const String &p_sa
 		++E;
 	}
 
-	int err = 0;
+	Error err = OK;
 	if (GDVIRTUAL_CALL(_import, p_source_file, p_save_path, options, platform_variants, gen_files, err)) {
-		Error ret_err = Error(err);
-
 		for (int i = 0; i < platform_variants.size(); i++) {
 			r_platform_variants->push_back(platform_variants[i]);
 		}
 		for (int i = 0; i < gen_files.size(); i++) {
 			r_gen_files->push_back(gen_files[i]);
 		}
-		return ret_err;
+		return err;
 	}
 	ERR_FAIL_V_MSG(ERR_METHOD_NOT_FOUND, "Unimplemented _import in add-on.");
 }
