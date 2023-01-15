@@ -38,6 +38,7 @@
 			<param index="0" name="normal" type="Vector3" />
 			<description>
 				Creates a plane from the normal vector. The plane will intersect the origin.
+				The [param normal] of the plane must be a unit vector.
 			</description>
 		</constructor>
 		<constructor name="Plane">
@@ -46,6 +47,7 @@
 			<param index="1" name="d" type="float" />
 			<description>
 				Creates a plane from the normal vector and the plane's distance from the origin.
+				The [param normal] of the plane must be a unit vector.
 			</description>
 		</constructor>
 		<constructor name="Plane">
@@ -54,6 +56,7 @@
 			<param index="1" name="point" type="Vector3" />
 			<description>
 				Creates a plane from the normal vector and a point on the plane.
+				The [param normal] of the plane must be a unit vector.
 			</description>
 		</constructor>
 		<constructor name="Plane">
@@ -152,7 +155,7 @@
 			In the scalar equation of the plane [code]ax + by + cz = d[/code], this is [code]d[/code], while the [code](a, b, c)[/code] coordinates are represented by the [member normal] property.
 		</member>
 		<member name="normal" type="Vector3" setter="" getter="" default="Vector3(0, 0, 0)">
-			The normal of the plane, which must be normalized.
+			The normal of the plane, which must be a unit vector.
 			In the scalar equation of the plane [code]ax + by + cz = d[/code], this is the vector [code](a, b, c)[/code], where [code]d[/code] is the [member d] property.
 		</member>
 		<member name="x" type="float" setter="" getter="" default="0.0">
