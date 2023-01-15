@@ -77,7 +77,7 @@ public:
 		Vector3 *ptr = nullptr;
 	};
 
-	static void _shape_col_cbk(const Vector3 &p_point_A, int p_index_A, const Vector3 &p_point_B, int p_index_B, void *p_userdata);
+	static void _shape_col_cbk(const Vector3 &p_point_A, int p_index_A, const Vector3 &p_point_B, int p_index_B, const Vector3 &normal, void *p_userdata);
 
 	virtual RID world_boundary_shape_create() override;
 	virtual RID separation_ray_shape_create() override;

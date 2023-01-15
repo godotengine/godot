@@ -445,7 +445,7 @@ struct _RestCallbackData {
 	_RestResultData *other_results = nullptr;
 };
 
-static void _rest_cbk_result(const Vector3 &p_point_A, int p_index_A, const Vector3 &p_point_B, int p_index_B, void *p_userdata) {
+static void _rest_cbk_result(const Vector3 &p_point_A, int p_index_A, const Vector3 &p_point_B, int p_index_B, const Vector3 &normal, void *p_userdata) {
 	_RestCallbackData *rd = static_cast<_RestCallbackData *>(p_userdata);
 
 	Vector3 contact_rel = p_point_B - p_point_A;
@@ -480,7 +480,7 @@ static void _rest_cbk_result(const Vector3 &p_point_A, int p_index_A, const Vect
 				// Keep this result as separate result.
 				result.len = len;
 				result.contact = p_point_B;
-				result.normal = contact_rel / len;
+				result.normal = normal;
 				result.object = rd->object;
 				result.shape = rd->shape;
 				result.local_shape = rd->local_shape;
@@ -499,7 +499,7 @@ static void _rest_cbk_result(const Vector3 &p_point_A, int p_index_A, const Vect
 
 	rd->best_result.len = len;
 	rd->best_result.contact = p_point_B;
-	rd->best_result.normal = contact_rel / len;
+	rd->best_result.normal = normal;
 	rd->best_result.object = rd->object;
 	rd->best_result.shape = rd->shape;
 	rd->best_result.local_shape = rd->local_shape;
