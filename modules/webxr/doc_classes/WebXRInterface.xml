@@ -18,7 +18,7 @@
 		func _ready():
 		    # We assume this node has a button as a child.
 		    # This button is for the user to consent to entering immersive VR mode.
-		    $Button.pressed.connect(self._on_Button_pressed)
+		    $Button.pressed.connect(self._on_button_pressed)
 
 		    webxr_interface = XRServer.find_interface("WebXR")
 		    if webxr_interface:
@@ -38,7 +38,7 @@
 		    if session_mode == 'immersive-vr':
 		        vr_supported = supported
 
-		func _on_Button_pressed():
+		func _on_button_pressed():
 		    if not vr_supported:
 		        OS.alert("Your browser doesn't support VR")
 		        return

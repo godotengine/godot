@@ -180,14 +180,14 @@
 				[codeblocks]
 				[gdscript]
 				func _make_custom_tooltip(for_text):
-				    var tooltip = preload("res://SomeTooltipScene.tscn").instantiate()
+				    var tooltip = preload("res://some_tooltip_scene.tscn").instantiate()
 				    tooltip.get_node("Label").text = for_text
 				    return tooltip
 				[/gdscript]
 				[csharp]
 				public override Godot.Control _MakeCustomTooltip(String forText)
 				{
-				    Node tooltip = ResourceLoader.Load&lt;PackedScene&gt;("res://SomeTooltipScene.tscn").Instantiate();
+				    Node tooltip = ResourceLoader.Load&lt;PackedScene&gt;("res://some_tooltip_scene.tscn").Instantiate();
 				    tooltip.GetNode&lt;Label&gt;("Label").Text = forText;
 				    return tooltip;
 				}
