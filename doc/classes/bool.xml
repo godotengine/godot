@@ -60,7 +60,7 @@
 		        _can_shoot = false
 		        _cool_down.start()
 
-		func _on_CoolDownTimer_timeout():
+		func _on_cool_down_timer_timeout():
 		    _can_shoot = true
 		[/gdscript]
 		[csharp]
