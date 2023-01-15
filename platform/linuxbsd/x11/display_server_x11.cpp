@@ -1420,13 +1420,22 @@ void DisplayServerX11::window_set_mouse_passthrough(const Vector<Vector2> &p_reg
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
-	const WindowData &wd = windows[p_window];
+	windows[p_window].mpath = p_region;
+	_update_window_mouse_passthrough(p_window);
+}
+
+void DisplayServerX11::_update_window_mouse_passthrough(WindowID p_window) {
+	ERR_FAIL_COND(!windows.has(p_window));
+
+	const Vector<Vector2> region_path = windows[p_window].mpath;
 
 	int event_base, error_base;
 	const Bool ext_okay = XShapeQueryExtension(x11_display, &event_base, &error_base);
 	if (ext_okay) {
 		Region region;
-		if (p_region.size() == 0) {
+		if (windows[p_window].mpass) {
+			region = XCreateRegion();
+		} else if (region_path.size() == 0) {
 			region = XCreateRegion();
 			XRectangle rect;
 			rect.x = 0;
@@ -1435,15 +1444,15 @@ void DisplayServerX11::window_set_mouse_passthrough(const Vector<Vector2> &p_reg
 			rect.height = window_get_size_with_decorations(p_window).y;
 			XUnionRectWithRegion(&rect, region, region);
 		} else {
-			XPoint *points = (XPoint *)memalloc(sizeof(XPoint) * p_region.size());
-			for (int i = 0; i < p_region.size(); i++) {
-				points[i].x = p_region[i].x;
-				points[i].y = p_region[i].y;
+			XPoint *points = (XPoint *)memalloc(sizeof(XPoint) * region_path.size());
+			for (int i = 0; i < region_path.size(); i++) {
+				points[i].x = region_path[i].x;
+				points[i].y = region_path[i].y;
 			}
-			region = XPolygonRegion(points, p_region.size(), EvenOddRule);
+			region = XPolygonRegion(points, region_path.size(), EvenOddRule);
 			memfree(points);
 		}
-		XShapeCombineRegion(x11_display, wd.x11_window, ShapeInput, 0, 0, region, ShapeSet);
+		XShapeCombineRegion(x11_display, windows[p_window].x11_window, ShapeInput, 0, 0, region, ShapeSet);
 		XDestroyRegion(region);
 	}
 }
@@ -2312,6 +2321,7 @@ void DisplayServerX11::window_set_flag(WindowFlags p_flag, bool p_enabled, Windo
 			window_set_size(window_get_size(p_window), p_window);
 
 			wd.borderless = p_enabled;
+			_update_window_mouse_passthrough(p_window);
 		} break;
 		case WINDOW_FLAG_ALWAYS_ON_TOP: {
 			ERR_FAIL_COND_MSG(wd.transient_parent != INVALID_WINDOW_ID, "Can't make a window transient if the 'on top' flag is active.");
@@ -2344,6 +2354,10 @@ void DisplayServerX11::window_set_flag(WindowFlags p_flag, bool p_enabled, Windo
 		} break;
 		case WINDOW_FLAG_NO_FOCUS: {
 			wd.no_focus = p_enabled;
+		} break;
+		case WINDOW_FLAG_MOUSE_PASSTHROUGH: {
+			wd.mpass = p_enabled;
+			_update_window_mouse_passthrough(p_window);
 		} break;
 		case WINDOW_FLAG_POPUP: {
 			XWindowAttributes xwa;
@@ -2397,6 +2411,9 @@ bool DisplayServerX11::window_get_flag(WindowFlags p_flag, WindowID p_window) co
 		} break;
 		case WINDOW_FLAG_NO_FOCUS: {
 			return wd.no_focus;
+		} break;
+		case WINDOW_FLAG_MOUSE_PASSTHROUGH: {
+			return wd.mpass;
 		} break;
 		case WINDOW_FLAG_POPUP: {
 			return wd.is_popup;

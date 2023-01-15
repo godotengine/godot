@@ -527,6 +527,39 @@
 			Set's the window's current mode.
 			[b]Note:[/b] Fullscreen mode is not exclusive full screen on Windows and Linux.
 		</member>
+		<member name="mouse_passthrough" type="bool" setter="set_flag" getter="get_flag" default="false">
+			If [code]true[/code], all mouse event as passed to the underlying window of the same application. See also [member mouse_passthrough_polygon].
+			[b]Note:[/b] This property is implemented on Linux (X11), macOS and Windows.
+		</member>
+		<member name="mouse_passthrough_polygon" type="PackedVector2Array" setter="set_mouse_passthrough_polygon" getter="get_mouse_passthrough_polygon" default="PackedVector2Array()">
+			Sets a polygonal region of the window which accepts mouse events. Mouse events outside the region will be passed through.
+			Passing an empty array will disable passthrough support (all mouse events will be intercepted by the window, which is the default behavior).
+			[codeblocks]
+			[gdscript]
+			# Set region, using Path2D node.
+			$Window.mouse_passthrough_polygon = $Path2D.curve.get_baked_points()
+
+			# Set region, using Polygon2D node.
+			$Window.mouse_passthrough_polygon = $Polygon2D.polygon
+
+			# Reset region to default.
+			$Window.mouse_passthrough_polygon = []
+			[/gdscript]
+			[csharp]
+			// Set region, using Path2D node.
+			GetNode&lt;Window&gt;("Window").MousePassthrough = GetNode&lt;Path2D&gt;("Path2D").Curve.GetBakedPoints();
+
+			// Set region, using Polygon2D node.
+			GetNode&lt;Window&gt;("Window").MousePassthrough = GetNode&lt;Polygon2D&gt;("Polygon2D").Polygon;
+
+			// Reset region to default.
+			GetNode&lt;Window&gt;("Window").MousePassthrough = new Vector2[] {};
+			[/csharp]
+			[/codeblocks]
+			[b]Note:[/b] This property is ignored if [member mouse_passthrough] is set to [code]true[/code].
+			[b]Note:[/b] On Windows, the portion of a window that lies outside the region is not drawn, while on Linux (X11) and macOS it is.
+			[b]Note:[/b] This property is implemented on Linux (X11), macOS and Windows.
+		</member>
 		<member name="popup_window" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the [Window] will be considered a popup. Popups are sub-windows that don't show as separate windows in system's window manager's window list and will send close request when anything is clicked outside of them (unless [member exclusive] is enabled).
 		</member>
@@ -695,7 +728,9 @@
 			Window content is expanded to the full size of the window. Unlike borderless window, the frame is left intact and can be used to resize the window, title bar is transparent, but have minimize/maximize/close buttons. Set with [member extend_to_title].
 			[b]Note:[/b] This flag is implemented on macOS.
 		</constant>
-		<constant name="FLAG_MAX" value="7" enum="Flags">
+		<constant name="FLAG_MOUSE_PASSTHROUGH" value="7" enum="Flags">
+		</constant>
+		<constant name="FLAG_MAX" value="8" enum="Flags">
 			Max value of the [enum Flags].
 		</constant>
 		<constant name="CONTENT_SCALE_MODE_DISABLED" value="0" enum="ContentScaleMode">
