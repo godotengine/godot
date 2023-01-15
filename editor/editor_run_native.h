@@ -42,18 +42,17 @@ class EditorRunNative : public HBoxContainer {
 	RichTextLabel *result_dialog_log = nullptr;
 	AcceptDialog *result_dialog = nullptr;
 
-	HashMap<int, MenuButton *> menus;
+	MenuButton *remote_debug = nullptr;
 	bool first = true;
 
-	int resume_idx;
-	int resume_platform;
+	int resume_id = -1;
 
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
 
 public:
-	Error run_native(int p_idx, int p_platform);
+	Error run_native(int p_id);
 	bool is_deploy_debug_remote_enabled() const;
 
 	void resume_run_native();
