@@ -1,32 +1,32 @@
-/**************************************************************************/
-/*  gdscript_editor.cpp                                                   */
-/**************************************************************************/
-/*                         This file is part of:                          */
-/*                             GODOT ENGINE                               */
-/*                        https://godotengine.org                         */
-/**************************************************************************/
-/* Copyright (c) 2014-present Godot Engine contributors (see AUTHORS.md). */
-/* Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.                  */
-/*                                                                        */
-/* Permission is hereby granted, free of charge, to any person obtaining  */
-/* a copy of this software and associated documentation files (the        */
-/* "Software"), to deal in the Software without restriction, including    */
-/* without limitation the rights to use, copy, modify, merge, publish,    */
-/* distribute, sublicense, and/or sell copies of the Software, and to     */
-/* permit persons to whom the Software is furnished to do so, subject to  */
-/* the following conditions:                                              */
-/*                                                                        */
-/* The above copyright notice and this permission notice shall be         */
-/* included in all copies or substantial portions of the Software.        */
-/*                                                                        */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,        */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF     */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. */
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY   */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,   */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
-/**************************************************************************/
+/*************************************************************************/
+/*  gdscript_editor.cpp                                                  */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                      https://godotengine.org                          */
+/*************************************************************************/
+/* Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).   */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
 
 #include "gdscript.h"
 
@@ -50,7 +50,7 @@ void GDScriptLanguage::get_string_delimiters(List<String> *p_delimiters) const {
 	p_delimiters->push_back("' '");
 }
 
-String GDScriptLanguage::_get_processed_template(const String &p_template, const String &p_base_class_name) const {
+String GDScriptLanguage::_get_processed_template(const String &p_template, const String &p_base_class_name, const String &p_class_name = "") const {
 	String processed_template = p_template;
 
 #ifdef TOOLS_ENABLED
@@ -73,6 +73,7 @@ String GDScriptLanguage::_get_processed_template(const String &p_template, const
 #endif
 
 	processed_template = processed_template.replace("%BASE%", p_base_class_name);
+	processed_template = processed_template.replace("%CLASS%", p_class_name);
 	processed_template = processed_template.replace("%TS%", _get_indentation());
 
 	return processed_template;
@@ -110,7 +111,7 @@ bool GDScriptLanguage::is_using_templates() {
 }
 
 void GDScriptLanguage::make_template(const String &p_class_name, const String &p_base_class_name, Ref<Script> &p_script) {
-	String _template = _get_processed_template(p_script->get_source_code(), p_base_class_name);
+	String _template = _get_processed_template(p_script->get_source_code(), p_base_class_name, p_class_name);
 	p_script->set_source_code(_template);
 }
 
@@ -2983,17 +2984,8 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_path
 							base_type.has_type = false;
 						}
 					} break;
+					case GDScriptParser::DataType::SCRIPT:
 					case GDScriptParser::DataType::GDSCRIPT: {
-						Ref<GDScript> scr = base_type.script_type;
-						if (scr.is_valid()) {
-							for (const Map<StringName, Ref<GDScript>>::Element *E = scr->get_subclasses().front(); E; E = E->next()) {
-								ScriptCodeCompletionOption option(E->key().operator String(), ScriptCodeCompletionOption::KIND_CLASS);
-								options.insert(option.display, option);
-							}
-						}
-						FALLTHROUGH;
-					}
-					case GDScriptParser::DataType::SCRIPT: {
 						Ref<Script> scr = base_type.script_type;
 						if (scr.is_valid()) {
 							Map<StringName, Variant> constants;
