@@ -118,13 +118,13 @@ layout(location = 10) out flat uint instance_index_interp;
 // !BAS! This needs to become an input once we implement our fallback!
 #define ViewIndex 0
 #endif // has_VK_KHR_multiview
-vec3 normal_roughness_uv(vec2 uv) {
+vec3 multiview_uv(vec2 uv) {
 	return vec3(uv, ViewIndex);
 }
 #else // USE_MULTIVIEW
 // Set to zero, not supported in non stereo
 #define ViewIndex 0
-vec2 normal_roughness_uv(vec2 uv) {
+vec2 multiview_uv(vec2 uv) {
 	return uv;
 }
 #endif //USE_MULTIVIEW
@@ -550,13 +550,13 @@ layout(location = 10) in flat uint instance_index_interp;
 // !BAS! This needs to become an input once we implement our fallback!
 #define ViewIndex 0
 #endif // has_VK_KHR_multiview
-vec3 normal_roughness_uv(vec2 uv) {
+vec3 multiview_uv(vec2 uv) {
 	return vec3(uv, ViewIndex);
 }
 #else // USE_MULTIVIEW
 // Set to zero, not supported in non stereo
 #define ViewIndex 0
-vec2 normal_roughness_uv(vec2 uv) {
+vec2 multiview_uv(vec2 uv) {
 	return uv;
 }
 #endif //USE_MULTIVIEW

@@ -1635,8 +1635,8 @@ MaterialStorage::MaterialStorage() {
 		actions.renames["NODE_POSITION_VIEW"] = "(model_matrix * scene_data.view_matrix)[3].xyz";
 
 		actions.renames["VIEW_INDEX"] = "ViewIndex";
-		actions.renames["VIEW_MONO_LEFT"] = "0";
-		actions.renames["VIEW_RIGHT"] = "1";
+		actions.renames["VIEW_MONO_LEFT"] = "uint(0)";
+		actions.renames["VIEW_RIGHT"] = "uint(1)";
 
 		//for light
 		actions.renames["VIEW"] = "view";
@@ -1717,6 +1717,8 @@ MaterialStorage::MaterialStorage() {
 
 		actions.default_filter = ShaderLanguage::FILTER_LINEAR_MIPMAP;
 		actions.default_repeat = ShaderLanguage::REPEAT_ENABLE;
+
+		actions.check_multiview_samplers = true;
 
 		shaders.compiler_scene.initialize(actions);
 	}
