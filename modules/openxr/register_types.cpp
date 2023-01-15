@@ -111,6 +111,10 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 			ERR_FAIL_NULL(openxr_api);
 
 			if (!openxr_api->initialize(Main::get_rendering_driver_name())) {
+				OS::get_singleton()->alert("OpenXR was requested but failed to start.\n"
+										   "Please check if your HMD is connected.\n"
+										   "When using Windows MR please note that WMR only has DirectX support, make sure SteamVR is your default OpenXR runtime.\n"
+										   "Godot will start in normal mode.\n");
 				memdelete(openxr_api);
 				openxr_api = nullptr;
 				return;
