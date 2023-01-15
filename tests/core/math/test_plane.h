@@ -87,8 +87,8 @@ TEST_CASE("[Plane] Plane-point operations") {
 	const Plane y_facing_plane = Plane(0, 1, 0, 4);
 
 	CHECK_MESSAGE(
-			plane.center().is_equal_approx(Vector3(32 * 3, 22 * 3, 16 * 3)),
-			"center() should return a vector pointing to the center of the plane.");
+			plane.get_center().is_equal_approx(Vector3(32 * 3, 22 * 3, 16 * 3)),
+			"get_center() should return a vector pointing to the center of the plane.");
 
 	CHECK_MESSAGE(
 			y_facing_plane.is_point_over(Vector3(0, 5, 0)),

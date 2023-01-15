@@ -67,17 +67,17 @@
 		</constructor>
 	</constructors>
 	<methods>
-		<method name="center" qualifiers="const">
-			<return type="Vector3" />
-			<description>
-				Returns the center of the plane.
-			</description>
-		</method>
 		<method name="distance_to" qualifiers="const">
 			<return type="float" />
 			<param index="0" name="point" type="Vector3" />
 			<description>
 				Returns the shortest distance from the plane to the position [param point]. If the point is above the plane, the distance will be positive. If below, the distance will be negative.
+			</description>
+		</method>
+		<method name="get_center" qualifiers="const">
+			<return type="Vector3" />
+			<description>
+				Returns the center of the plane.
 			</description>
 		</method>
 		<method name="has_point" qualifiers="const">

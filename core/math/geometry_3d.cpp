@@ -748,7 +748,7 @@ Geometry3D::MeshData Geometry3D::build_convex_mesh(const Vector<Plane> &p_planes
 		Vector3 right = p.normal.cross(ref).normalized();
 		Vector3 up = p.normal.cross(right).normalized();
 
-		Vector3 center = p.center();
+		Vector3 center = p.get_center();
 
 		// make a quad clockwise
 		LocalVector<Vector3> vertices = {

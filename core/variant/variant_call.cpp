@@ -1923,7 +1923,7 @@ static void _register_variant_builtin_methods() {
 	/* Plane */
 
 	bind_method(Plane, normalized, sarray(), varray());
-	bind_method(Plane, center, sarray(), varray());
+	bind_method(Plane, get_center, sarray(), varray());
 	bind_method(Plane, is_equal_approx, sarray("to_plane"), varray());
 	bind_method(Plane, is_finite, sarray(), varray());
 	bind_method(Plane, is_point_over, sarray("point"), varray());
