@@ -280,7 +280,13 @@ bool Tween::step(double p_delta) {
 	}
 
 	if (!started) {
-		ERR_FAIL_COND_V_MSG(tweeners.is_empty(), false, "Tween started, but has no Tweeners.");
+		if (tweeners.is_empty()) {
+			if (is_bound) {
+				ERR_FAIL_V_MSG(false, vformat("Tween bound to %s was started, but had no Tweeners.", get_bound_node()->get_name()));
+			} else {
+				ERR_FAIL_V_MSG(false, "Unbound Tween was started, but had no Tweeners.");
+			}
+		}
 		current_step = 0;
 		loops_done = 0;
 		total_time = 0;
