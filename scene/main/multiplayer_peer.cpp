@@ -163,7 +163,7 @@ Error MultiplayerPeerExtension::put_packet(const uint8_t *p_buffer, int p_buffer
 		if (!GDVIRTUAL_CALL(_put_packet_script, a, err)) {
 			return FAILED;
 		}
-		return (Error)err;
+		return err;
 	}
 	WARN_PRINT_ONCE("MultiplayerPeerExtension::_put_packet_native is unimplemented!");
 	return FAILED;
