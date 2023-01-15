@@ -15,7 +15,7 @@ namespace Godot
         private Vector3 _normal;
 
         /// <summary>
-        /// The normal of the plane, which must be normalized.
+        /// The normal of the plane, which must be a unit vector.
         /// In the scalar equation of the plane <c>ax + by + cz = d</c>, this is
         /// the vector <c>(a, b, c)</c>, where <c>d</c> is the <see cref="D"/> property.
         /// </summary>
@@ -85,23 +85,6 @@ namespace Godot
         public real_t D { get; set; }
 
         /// <summary>
-        /// The center of the plane, the point where the normal line intersects the plane.
-        /// </summary>
-        /// <value>Equivalent to <see cref="Normal"/> multiplied by <see cref="D"/>.</value>
-        public Vector3 Center
-        {
-            readonly get
-            {
-                return _normal * D;
-            }
-            set
-            {
-                _normal = value.Normalized();
-                D = value.Length();
-            }
-        }
-
-        /// <summary>
         /// Returns the shortest distance from this plane to the position <paramref name="point"/>.
         /// </summary>
         /// <param name="point">The position to use for the calculation.</param>
@@ -109,6 +92,16 @@ namespace Godot
         public readonly real_t DistanceTo(Vector3 point)
         {
             return _normal.Dot(point) - D;
+        }
+
+        /// <summary>
+        /// Returns the center of the plane, the point on the plane closest to the origin.
+        /// The point where the normal line going through the origin intersects the plane.
+        /// </summary>
+        /// <value>Equivalent to <see cref="Normal"/> multiplied by <see cref="D"/>.</value>
+        public readonly Vector3 GetCenter()
+        {
+            return _normal * D;
         }
 
         /// <summary>
@@ -155,7 +148,7 @@ namespace Godot
         /// <param name="from">The start of the ray.</param>
         /// <param name="dir">The direction of the ray, normalized.</param>
         /// <returns>The intersection, or <see langword="null"/> if none is found.</returns>
-        public readonly Vector3? IntersectRay(Vector3 from, Vector3 dir)
+        public readonly Vector3? IntersectsRay(Vector3 from, Vector3 dir)
         {
             real_t den = _normal.Dot(dir);
 
@@ -183,7 +176,7 @@ namespace Godot
         /// <param name="begin">The start of the line segment.</param>
         /// <param name="end">The end of the line segment.</param>
         /// <returns>The intersection, or <see langword="null"/> if none is found.</returns>
-        public readonly Vector3? IntersectSegment(Vector3 begin, Vector3 end)
+        public readonly Vector3? IntersectsSegment(Vector3 begin, Vector3 end)
         {
             Vector3 segment = begin - end;
             real_t den = _normal.Dot(segment);
@@ -290,10 +283,21 @@ namespace Godot
         }
 
         /// <summary>
+        /// Constructs a <see cref="Plane"/> from a <paramref name="normal"/> vector.
+        /// The plane will intersect the origin.
+        /// </summary>
+        /// <param name="normal">The normal of the plane, must be a unit vector.</param>
+        public Plane(Vector3 normal)
+        {
+            _normal = normal;
+            D = 0;
+        }
+
+        /// <summary>
         /// Constructs a <see cref="Plane"/> from a <paramref name="normal"/> vector and
         /// the plane's distance to the origin <paramref name="d"/>.
         /// </summary>
-        /// <param name="normal">The normal of the plane, must be normalized.</param>
+        /// <param name="normal">The normal of the plane, must be a unit vector.</param>
         /// <param name="d">The plane's distance from the origin. This value is typically non-negative.</param>
         public Plane(Vector3 normal, real_t d)
         {
@@ -305,7 +309,7 @@ namespace Godot
         /// Constructs a <see cref="Plane"/> from a <paramref name="normal"/> vector and
         /// a <paramref name="point"/> on the plane.
         /// </summary>
-        /// <param name="normal">The normal of the plane, must be normalized.</param>
+        /// <param name="normal">The normal of the plane, must be a unit vector.</param>
         /// <param name="point">The point on the plane.</param>
         public Plane(Vector3 normal, Vector3 point)
         {
