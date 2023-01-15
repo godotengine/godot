@@ -816,26 +816,26 @@ namespace Godot
         public Basis(Vector3 axis, real_t angle)
         {
             Vector3 axisSq = new Vector3(axis.x * axis.x, axis.y * axis.y, axis.z * axis.z);
-            real_t cosine = Mathf.Cos(angle);
-            Row0.x = axisSq.x + cosine * (1.0f - axisSq.x);
-            Row1.y = axisSq.y + cosine * (1.0f - axisSq.y);
-            Row2.z = axisSq.z + cosine * (1.0f - axisSq.z);
+            (real_t sin, real_t cos) = Mathf.SinCos(angle);
 
-            real_t sine = Mathf.Sin(angle);
-            real_t t = 1.0f - cosine;
+            Row0.x = axisSq.x + cos * (1.0f - axisSq.x);
+            Row1.y = axisSq.y + cos * (1.0f - axisSq.y);
+            Row2.z = axisSq.z + cos * (1.0f - axisSq.z);
+
+            real_t t = 1.0f - cos;
 
             real_t xyzt = axis.x * axis.y * t;
-            real_t zyxs = axis.z * sine;
+            real_t zyxs = axis.z * sin;
             Row0.y = xyzt - zyxs;
             Row1.x = xyzt + zyxs;
 
             xyzt = axis.x * axis.z * t;
-            zyxs = axis.y * sine;
+            zyxs = axis.y * sin;
             Row0.z = xyzt + zyxs;
             Row2.x = xyzt - zyxs;
 
             xyzt = axis.y * axis.z * t;
-            zyxs = axis.x * sine;
+            zyxs = axis.x * sin;
             Row1.z = xyzt - zyxs;
             Row2.y = xyzt + zyxs;
         }
@@ -885,19 +885,29 @@ namespace Godot
         /// <param name="order">The order to compose the Euler angles.</param>
         public static Basis FromEuler(Vector3 euler, EulerOrder order = EulerOrder.Yxz)
         {
-            real_t c, s;
+            (real_t sin, real_t cos) = Mathf.SinCos(euler.x);
+            Basis xmat = new Basis
+            (
+                new Vector3(1, 0, 0),
+                new Vector3(0, cos, sin),
+                new Vector3(0, -sin, cos)
+            );
 
-            c = Mathf.Cos(euler.x);
-            s = Mathf.Sin(euler.x);
-            Basis xmat = new Basis(new Vector3(1, 0, 0), new Vector3(0, c, s), new Vector3(0, -s, c));
+            (sin, cos) = Mathf.SinCos(euler.y);
+            Basis ymat = new Basis
+            (
+                new Vector3(cos, 0, -sin),
+                new Vector3(0, 1, 0),
+                new Vector3(sin, 0, cos)
+            );
 
-            c = Mathf.Cos(euler.y);
-            s = Mathf.Sin(euler.y);
-            Basis ymat = new Basis(new Vector3(c, 0, -s), new Vector3(0, 1, 0), new Vector3(s, 0, c));
-
-            c = Mathf.Cos(euler.z);
-            s = Mathf.Sin(euler.z);
-            Basis zmat = new Basis(new Vector3(c, s, 0), new Vector3(-s, c, 0), new Vector3(0, 0, 1));
+            (sin, cos) = Mathf.SinCos(euler.z);
+            Basis zmat = new Basis
+            (
+                new Vector3(cos, sin, 0),
+                new Vector3(-sin, cos, 0),
+                new Vector3(0, 0, 1)
+            );
 
             switch (order)
             {
