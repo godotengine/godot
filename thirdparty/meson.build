@@ -14,7 +14,6 @@ subdir('icu4c')
 subdir('harfbuzz')
 
 # the rest
-subdir('basis_universal')
 subdir('cvtt')
 subdir('enet')
 subdir('etcpak')
@@ -40,3 +39,4 @@ subdir('vulkan')
 subdir('wslay')
 subdir('xatlas')
 subdir('zstd')
+subdir('basis_universal')

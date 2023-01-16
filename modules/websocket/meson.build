@@ -1,5 +1,5 @@
 _module_websocket_srcs = files(run_command(GLOB, '*.cpp', check: true).stdout().split('\n'))
-_module_websocket_deps = [godotcore_dep]
+_module_websocket_deps = [godotcore_dep, DEP_ZLIB]
 
 DEP_MODULE_WEBSOCKET = []
 

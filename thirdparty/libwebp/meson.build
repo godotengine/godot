@@ -1,6 +1,7 @@
 if get_option('builtin_libwebp')
     _builtin_libwebp_srcs = files(
         'sharpyuv/sharpyuv.c',
+        'sharpyuv/sharpyuv_cpu.c',
         'sharpyuv/sharpyuv_csp.c',
         'sharpyuv/sharpyuv_dsp.c',
         'sharpyuv/sharpyuv_gamma.c',

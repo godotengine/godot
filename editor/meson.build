@@ -70,7 +70,12 @@ if get_option('tools')
 
     SOURCES += configure_file(
         output: 'editor_translations.gen.h',
-        command: [editor_builders, 'make_editor_translations_header', '@OUTPUT@', meson.current_source_dir() / 'translations'],
+        command: [editor_builders, 'make_editor_translations_header', '@OUTPUT@', meson.current_source_dir() / 'translations/editor'],
+    )
+
+    SOURCES += configure_file(
+        output: 'property_translations.gen.h',
+        command: [editor_builders, 'make_property_translations_header', '@OUTPUT@', meson.current_source_dir() / 'translations/properties'],
     )
 
     # ...and so will fonts
@@ -95,7 +100,7 @@ if get_option('tools')
 
     subdir('debugger')
     subdir('export')
-    subdir('fileserver')
+    subdir('gui')
     subdir('import')
     subdir('plugins')
 

@@ -29,14 +29,18 @@ if get_option('builtin_zlib')
         _zlib_link_args += ['-Wdeprecated-declarations']
     endif
 
-    _lib_zlib = static_library('zlib', _zlib_srcs, include_directories: _zlib_incdirs, link_args: _zlib_link_args, c_args: _zlib_c_args, build_by_default: false)
+    _lib_zlib = static_library('zlib', _zlib_srcs,
+      link_args: _zlib_link_args,
+      c_args: _zlib_c_args)
 
     _zlib_dep_flags = []
     if get_option('debug')
         _zlib_dep_flags += ['-DZLIB_DEBUG']
     endif
 
-    DEP_ZLIB = declare_dependency(link_with: _lib_zlib, include_directories: _zlib_incdirs, compile_args: _zlib_dep_flags)
+    DEP_ZLIB = declare_dependency(link_with: _lib_zlib,
+      include_directories: _zlib_incdirs,
+      compile_args: _zlib_dep_flags)
 else
     DEP_ZLIB = dependency('zlib', required: false)
 endif

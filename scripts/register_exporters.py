@@ -11,6 +11,10 @@ def __make_register_exporters_cpp(platforms: [str], output: str):
         reg_exporters_inc += '#include "platform/' + platform + '/export/export.h"\n'
     reg_exporters_inc += "\n"
     reg_exporters += "}\n"
+    reg_exporters += "void register_exporter_types() {\n"
+    for e in platforms:
+        reg_exporters += "\tregister_" + e + "_exporter_types();\n"
+    reg_exporters += "}\n"
 
     # NOTE: It is safe to generate this file here, since this is still executed serially
     with open(output, "w", encoding="utf-8") as f:

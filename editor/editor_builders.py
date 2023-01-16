@@ -117,7 +117,6 @@ def make_translations_header(dst, source, category):
     g.write("#define _{}_TRANSLATIONS_H\n".format(category.upper()))
 
     sorted_paths = sorted(source, key=lambda path: os.path.splitext(os.path.basename(path))[0])
-
     msgfmt_available = shutil.which("msgfmt") is not None
 
     if not msgfmt_available:
@@ -190,10 +189,12 @@ def make_editor_translations_header(target, sourcedir):
     source = glob(os.path.join(sourcedir, '*.po'))
     make_translations_header(target, source, "editor")
 
-def make_editor_translations_header(target, source):
+def make_editor_translations_header(target, sourcedir):
+    source = glob(os.path.join(sourcedir, '*.po'))
     make_translations_header(target, source, "editor")
 
-def make_property_translations_header(target, source):
+def make_property_translations_header(target, sourcedir):
+    source = glob(os.path.join(sourcedir, '*.po'))
     make_translations_header(target, source, "property")
 
 def make_doc_translations_header(target, sourcedir):
@@ -206,6 +207,8 @@ if __name__ == "__main__":
         make_doc_header(sys.argv[2], sys.argv[3:])
     elif type == 'make_editor_translations_header':
         make_editor_translations_header(sys.argv[2], sys.argv[3])
+    elif type == 'make_property_translations_header':
+        make_property_translations_header(sys.argv[2], sys.argv[3])
     elif type == 'make_doc_translations':
         make_doc_translations_header(sys.argv[2], sys.argv[3])
     elif type == 'make_fonts_header':

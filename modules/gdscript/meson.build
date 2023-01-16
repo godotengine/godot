@@ -37,7 +37,7 @@ lib_gdscript = library('module_gdscript',
     _module_gdscript_srcs,
     templates_gen,
     cpp_args: _module_gdscript_cpp_args,
-    dependencies: _module_gdscript_deps
+    dependencies: [_module_gdscript_deps, DEP_ZLIB]
 )
 
 DEP_MODULE_GDSCRIPT = declare_dependency(link_with: lib_gdscript)
