@@ -342,15 +342,25 @@ namespace Godot
         }
 
         /// <summary>
-        /// Constructs a transformation matrix from the given <paramref name="quaternion"/>
-        /// and <paramref name="origin"/> vector.
+        /// Constructs a transformation matrix from the given components.
+        /// Arguments are named such that xy is equal to calling <c>basis.x.y</c>.
         /// </summary>
-        /// <param name="quaternion">The <see cref="Quaternion"/> to create the basis from.</param>
-        /// <param name="origin">The origin vector, or column index 3.</param>
-        public Transform3D(Quaternion quaternion, Vector3 origin)
+        /// <param name="xx">The X component of the X column vector, accessed via <c>t.basis.x.x</c> or <c>[0][0]</c>.</param>
+        /// <param name="yx">The X component of the Y column vector, accessed via <c>t.basis.y.x</c> or <c>[1][0]</c>.</param>
+        /// <param name="zx">The X component of the Z column vector, accessed via <c>t.basis.z.x</c> or <c>[2][0]</c>.</param>
+        /// <param name="xy">The Y component of the X column vector, accessed via <c>t.basis.x.y</c> or <c>[0][1]</c>.</param>
+        /// <param name="yy">The Y component of the Y column vector, accessed via <c>t.basis.y.y</c> or <c>[1][1]</c>.</param>
+        /// <param name="zy">The Y component of the Z column vector, accessed via <c>t.basis.y.y</c> or <c>[2][1]</c>.</param>
+        /// <param name="xz">The Z component of the X column vector, accessed via <c>t.basis.x.y</c> or <c>[0][2]</c>.</param>
+        /// <param name="yz">The Z component of the Y column vector, accessed via <c>t.basis.y.y</c> or <c>[1][2]</c>.</param>
+        /// <param name="zz">The Z component of the Z column vector, accessed via <c>t.basis.y.y</c> or <c>[2][2]</c>.</param>
+        /// <param name="ox">The X component of the origin vector, accessed via <c>t.origin.x</c> or <c>[2][0]</c>.</param>
+        /// <param name="oy">The Y component of the origin vector, accessed via <c>t.origin.y</c> or <c>[2][1]</c>.</param>
+        /// <param name="oz">The Z component of the origin vector, accessed via <c>t.origin.z</c> or <c>[2][2]</c>.</param>
+        public Transform3D(real_t xx, real_t yx, real_t zx, real_t xy, real_t yy, real_t zy, real_t xz, real_t yz, real_t zz, real_t ox, real_t oy, real_t oz)
         {
-            basis = new Basis(quaternion);
-            this.origin = origin;
+            basis = new Basis(xx, yx, zx, xy, yy, zy, xz, yz, zz);
+            origin = new Vector3(ox, oy, oz);
         }
 
         /// <summary>
@@ -363,6 +373,29 @@ namespace Godot
         {
             this.basis = basis;
             this.origin = origin;
+        }
+
+        /// <summary>
+        /// Constructs a transformation matrix from the given <paramref name="projection"/>
+        /// by trimming the last row of the projection matrix (<c>projection.x.w</c>,
+        /// <c>projection.y.w</c>, <c>projection.z.w</c>, and <c>projection.w.w</c>
+        /// are not copied over).
+        /// </summary>
+        /// <param name="projection">The <see cref="Projection"/> to create the transform from.</param>
+        public Transform3D(Projection projection)
+        {
+            basis = new Basis
+            (
+                projection.x.x, projection.y.x, projection.z.x,
+                projection.x.y, projection.y.y, projection.z.y,
+                projection.x.z, projection.y.z, projection.z.z
+            );
+            origin = new Vector3
+            (
+                projection.w.x,
+                projection.w.y,
+                projection.w.z
+            );
         }
 
         /// <summary>
