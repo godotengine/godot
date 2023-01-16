@@ -5,23 +5,22 @@
 ################################################################################
 # Commands to always run
 ################################################################################
-_target_web_logo = custom_target(
+web_logo = custom_target(
     'web_logo',
-    output: ['logo.gen.h'],
-    input: ['logo.png'],
+    output: ['logo_svg.gen.h'],
+    input: ['logo.svg'],
     command: [SCRIPT_PLATFORM_LOGO, '@INPUT@', '@OUTPUT@', 'web'],
     build_by_default: true
 )
-SOURCES += [_target_web_logo]
 
-_target_web_run_icon = custom_target(
+web_run_icon = custom_target(
     'web_run_icon',
-    output: ['run_icon.gen.h'],
-    input: ['run_icon.png'],
+    output: ['run_icon_svg.gen.h'],
+    input: ['run_icon.svg'],
     command: [SCRIPT_PLATFORM_LOGO, '@INPUT@', '@OUTPUT@', 'web'],
     build_by_default: true
 )
-SOURCES += [_target_web_run_icon]
+SOURCES += [web_logo, web_run_icon]
 
 
 ################################################################################

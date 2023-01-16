@@ -1,5 +1,5 @@
 if get_option('builtin_zstd')
-    _zstd_srcs = files(
+    zstd_srcs = files(
         'common/debug.c',
         'common/entropy_common.c',
         'common/error_private.c',
@@ -27,15 +27,15 @@ if get_option('builtin_zstd')
         'decompress/zstd_decompress.c',
     )
     if host_machine.cpu_family() == 'x86_64' and cpp.get_id() != 'msvc'
-       _zstd_srcs += files('decompress/huf_decompress_amd64.S')
+       zstd_srcs += files('decompress/huf_decompress_amd64.S')
     endif
-    _zstd_incdirs = include_directories('.')
+    zstd_incdirs = include_directories('.')
 
     #_zstd_c_args = ['-DZSTD_STATIC_LINKING_ONLY']
-    
-    _lib_zstd = static_library('zstd', _zstd_srcs, include_directories: _zstd_incdirs, build_by_default: false)
 
-    DEP_ZSTD = declare_dependency(link_with: _lib_zstd, include_directories: _zstd_incdirs)
+    lib_zstd = static_library('zstd', zstd_srcs, build_by_default: false)
+
+    DEP_ZSTD = declare_dependency(link_with: lib_zstd, include_directories: zstd_incdirs)
 else
     DEP_ZSTD = dependency('libzstd')
 endif

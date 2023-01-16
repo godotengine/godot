@@ -1,6 +1,6 @@
-_basis_universal_incdirs = include_directories('.')
+basis_universal_incdirs = include_directories('.')
 
-_basis_universal_srcs = files(
+basis_universal_srcs = files(
     'encoder/basisu_backend.cpp',
     'encoder/basisu_basis_file.cpp',
     'encoder/basisu_bc7enc.cpp',
@@ -23,23 +23,23 @@ _basis_universal_srcs = files(
     'transcoder/basisu_transcoder.cpp'
 )
 
-_basis_universal_cpp_args = []
+basis_universal_cpp_args = []
 
 if meson.get_compiler('cpp').get_id() == 'msvc'
-    _basis_universal_cpp_args += ['-DBASISU_NO_ITERATOR_DEBUG_LEVEL', '-DNOMINMAX']
+    basis_universal_cpp_args += ['-DBASISU_NO_ITERATOR_DEBUG_LEVEL', '-DNOMINMAX']
 elif meson.get_compiler('cpp').get_id() == 'gcc'
-    _basis_universal_cpp_args += '-Wno-multichar'
+    basis_universal_cpp_args += '-Wno-multichar'
 endif
 
 if get_option('debug')
-    _basis_universal_cpp_args += ['-DBASISU_DEVEL_MESSAGES=1', '-DBASISD_ENABLE_DEBUG_FLAGS=1']
+    basis_universal_cpp_args += ['-DBASISU_DEVEL_MESSAGES=1', '-DBASISD_ENABLE_DEBUG_FLAGS=1']
 endif
 
 
-_lib_basis_universal = static_library('builtin_basis_universal', _basis_universal_srcs,
-    include_directories: _basis_universal_incdirs,
-    cpp_args: _basis_universal_cpp_args,
-    build_by_default: false
+lib_basis_universal = static_library('builtin_basis_universal', basis_universal_srcs,
+    cpp_args: basis_universal_cpp_args,
+    dependencies: DEP_ZSTD
 )
 
-DEP_BASIS_UNIVERSAL = declare_dependency(link_with: _lib_basis_universal, include_directories: _basis_universal_incdirs)
+DEP_BASIS_UNIVERSAL = declare_dependency(link_with: lib_basis_universal,
+  include_directories: basis_universal_incdirs)

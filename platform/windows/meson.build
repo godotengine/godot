@@ -5,14 +5,24 @@
 ################################################################################
 # Commands to always run
 ################################################################################
-_target_windows_logo = custom_target(
+windows_logo = custom_target(
     'windows_logo',
-    output: ['logo.gen.h'],
-    input: ['logo.png'],
+    output: ['logo_svg.gen.h'],
+    input: ['logo.svg'],
     command: [SCRIPT_PLATFORM_LOGO, '@INPUT@', '@OUTPUT@', 'windows'],
     build_by_default: true
 )
-SOURCES += [_target_windows_logo]
+
+
+windows_run_icon = custom_target(
+    'android_run_icon',
+    output: ['run_icon_svg.gen.h'],
+    input: ['run_icon.svg'],
+    command: [SCRIPT_PLATFORM_LOGO, '@INPUT@', '@OUTPUT@', 'windows'],
+    build_by_default: true
+)
+
+SOURCES += [windows_logo, windows_run_icon]
 
 ################################################################################
 # Host Machine Specifics

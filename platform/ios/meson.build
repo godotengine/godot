@@ -7,8 +7,8 @@
 ################################################################################
 _target_ios_logo = custom_target(
     'ios_logo',
-    output: ['logo.gen.h'],
-    input: ['logo.png'],
+    output: ['logo_svg.gen.h'],
+    input: ['logo.svg'],
     command: [SCRIPT_PLATFORM_LOGO, '@INPUT@', '@OUTPUT@', 'ios'],
     build_by_default: true
 )

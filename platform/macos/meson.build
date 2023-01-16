@@ -5,14 +5,23 @@
 ################################################################################
 # Commands to always run
 ################################################################################
-_target_macos_logo = custom_target(
+macos_logo = custom_target(
                      'macos_logo',
-    output: ['logo.gen.h'],
-    input: ['logo.png'],
+    output: ['logo_svg.gen.h'],
+    input: ['logo.svg'],
     command: [SCRIPT_PLATFORM_LOGO, '@INPUT@', '@OUTPUT@', 'macos'],
     build_by_default: true
 )
-SOURCES += [_target_macos_logo]
+
+macos_run_icon = custom_target(
+    'android_run_icon',
+    output: ['run_icon_svg.gen.h'],
+    input: ['run_icon.svg'],
+    command: [SCRIPT_PLATFORM_LOGO, '@INPUT@', '@OUTPUT@', 'macos'],
+    build_by_default: true
+)
+
+SOURCES += [macos_logo, macos_run_icon]
 
 
 ################################################################################

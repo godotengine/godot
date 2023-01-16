@@ -7,8 +7,8 @@
 ################################################################################
 _target_uwp_logo = custom_target(
     'uwp_logo',
-    output: ['logo.gen.h'],
-    input: ['logo.png'],
+    output: ['logo_svg.gen.h'],
+    input: ['logo.svg'],
     command: [SCRIPT_PLATFORM_LOGO, '@INPUT@', '@OUTPUT@', 'uwp'],
     build_by_default: true
 )
