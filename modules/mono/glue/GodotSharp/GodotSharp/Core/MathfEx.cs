@@ -83,6 +83,17 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns the sine and cosine of angle <paramref name="s"/> in radians.
+        /// </summary>
+        /// <param name="s">The angle in radians.</param>
+        /// <returns>The sine and cosine of that angle.</returns>
+        public static (real_t Sin, real_t Cos) SinCos(real_t s)
+        {
+            (double sin, double cos) = Math.SinCos(s);
+            return ((real_t)sin, (real_t)cos);
+        }
+
+        /// <summary>
         /// Returns <see langword="true"/> if <paramref name="a"/> and <paramref name="b"/> are approximately
         /// equal to each other.
         /// The comparison is done using the provided tolerance value.

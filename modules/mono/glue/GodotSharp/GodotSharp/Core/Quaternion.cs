@@ -542,14 +542,13 @@ namespace Godot
             }
             else
             {
-                real_t sinAngle = Mathf.Sin(angle * 0.5f);
-                real_t cosAngle = Mathf.Cos(angle * 0.5f);
-                real_t s = sinAngle / d;
+                (real_t sin, real_t cos) = Mathf.SinCos(angle * 0.5f);
+                real_t s = sin / d;
 
                 x = axis.x * s;
                 y = axis.y * s;
                 z = axis.z * s;
-                w = cosAngle;
+                w = cos;
             }
         }
 
@@ -593,12 +592,9 @@ namespace Godot
             // Conversion to quaternion as listed in https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/19770024290.pdf (page A-6)
             // a3 is the angle of the first rotation, following the notation in this reference.
 
-            real_t cosA1 = Mathf.Cos(halfA1);
-            real_t sinA1 = Mathf.Sin(halfA1);
-            real_t cosA2 = Mathf.Cos(halfA2);
-            real_t sinA2 = Mathf.Sin(halfA2);
-            real_t cosA3 = Mathf.Cos(halfA3);
-            real_t sinA3 = Mathf.Sin(halfA3);
+            (real_t sinA1, real_t cosA1) = Mathf.SinCos(halfA1);
+            (real_t sinA2, real_t cosA2) = Mathf.SinCos(halfA2);
+            (real_t sinA3, real_t cosA3) = Mathf.SinCos(halfA3);
 
             return new Quaternion(
                 (sinA1 * cosA2 * sinA3) + (cosA1 * sinA2 * cosA3),
