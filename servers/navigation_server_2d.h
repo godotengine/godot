@@ -254,6 +254,20 @@ public:
 
 	void set_debug_navigation_enable_edge_connections(const bool p_value);
 	bool get_debug_navigation_enable_edge_connections() const;
+
+	void set_debug_navigation_agent_path_color(const Color &p_color);
+	Color get_debug_navigation_agent_path_color() const;
+
+	void set_debug_navigation_enable_agent_paths(const bool p_value);
+	bool get_debug_navigation_enable_agent_paths() const;
+
+	void set_debug_navigation_agent_path_point_size(float p_point_size);
+	float get_debug_navigation_agent_path_point_size() const;
+#endif // DEBUG_ENABLED
+
+#ifdef DEBUG_ENABLED
+private:
+	void _emit_navigation_debug_changed_signal();
 #endif // DEBUG_ENABLED
 };
 
