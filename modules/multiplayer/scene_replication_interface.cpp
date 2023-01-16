@@ -720,6 +720,7 @@ Error SceneReplicationInterface::on_sync_receive(int p_from, const uint8_t *p_bu
 		}
 		Node *node = sync->get_root_node();
 		if (sync->get_multiplayer_authority() != p_from || !node) {
+			ofs += size;
 			ERR_CONTINUE(true);
 		}
 		if (!sync->update_inbound_sync_time(time)) {
