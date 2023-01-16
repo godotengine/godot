@@ -428,6 +428,7 @@ void Viewport::_notification(int p_what) {
 
 		case NOTIFICATION_EXIT_TREE: {
 			_gui_cancel_tooltip();
+			gui.drag_data = Variant(); // Cancel Drag.
 
 			RenderingServer::get_singleton()->viewport_set_scenario(viewport, RID());
 			RenderingServer::get_singleton()->viewport_remove_canvas(viewport, current_canvas);
@@ -1030,14 +1031,43 @@ Ref<World2D> Viewport::find_world_2d() const {
 	}
 }
 
-void Viewport::_propagate_viewport_notification(Node *p_node, int p_what) {
-	p_node->notification(p_what);
+Viewport *Viewport::_get_base_propagation_viewport() {
+	Viewport *base = this;
+	Node *n = base;
+	while (n) {
+		Viewport *vp = Object::cast_to<Viewport>(n);
+		if (vp) {
+			base = this;
+			if (!(Object::cast_to<Window>(vp) || Object::cast_to<SubViewportContainer>(n->get_parent()))) {
+				// Only windows or viewports in a sub-viewport container can be propagated, for other types of viewports the propagation stops here.
+				break;
+			}
+		}
+
+		n = n->get_parent();
+	}
+	return base;
+}
+
+void Viewport::_propagate_drag_notification(Node *p_node, bool p_begin, const Variant &p_drag_data) {
+	Viewport *vp = Object::cast_to<Viewport>(p_node);
+	if (vp != nullptr) {
+		if (!(Object::cast_to<Window>(p_node) || Object::cast_to<SubViewportContainer>(p_node))) {
+			// Only sub-windows or viewports in a sub-viewport container can be notified, for other types of viewports the propagation stops here.
+			return;
+		}
+		if (p_begin) {
+			vp->gui.drag_data = p_drag_data;
+		} else {
+			vp->gui.drag_data = Variant();
+		}
+	}
+
+	p_node->notification(p_begin ? NOTIFICATION_DRAG_BEGIN : NOTIFICATION_DRAG_END);
+
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		Node *c = p_node->get_child(i);
-		if (Object::cast_to<Viewport>(c)) {
-			continue;
-		}
-		_propagate_viewport_notification(c, p_what);
+		_propagate_drag_notification(c, p_begin, p_drag_data);
 	}
 }
 
@@ -1624,14 +1654,15 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			gui.drag_accum += mm->get_relative();
 			float len = gui.drag_accum.length();
 			if (len > 10) {
+				Variant drag_data;
 				{ // Attempt grab, try parent controls too.
 					CanvasItem *ci = gui.mouse_focus;
 					while (ci) {
 						Control *control = Object::cast_to<Control>(ci);
 						if (control) {
 							gui.dragging = true;
-							gui.drag_data = control->get_drag_data(control->get_global_transform_with_canvas().affine_inverse().xform(mpos - gui.drag_accum));
-							if (gui.drag_data.get_type() != Variant::NIL) {
+							drag_data = control->get_drag_data(control->get_global_transform_with_canvas().affine_inverse().xform(mpos - gui.drag_accum));
+							if (drag_data.get_type() != Variant::NIL) {
 								gui.mouse_focus = nullptr;
 								gui.forced_mouse_focus = false;
 								gui.mouse_focus_mask.clear();
@@ -1661,7 +1692,8 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 				gui.drag_attempted = true;
 				if (gui.dragging) {
-					_propagate_viewport_notification(this, NOTIFICATION_DRAG_BEGIN);
+					Viewport *base = _get_base_propagation_viewport();
+					base->_propagate_drag_notification(base, true, drag_data);
 				}
 			}
 		}
@@ -2094,7 +2126,8 @@ void Viewport::_perform_drop(Control *p_control, Point2 p_pos) {
 	gui.drag_data = Variant();
 	gui.dragging = false;
 	gui.drag_mouse_over = nullptr;
-	_propagate_viewport_notification(this, NOTIFICATION_DRAG_END);
+	Viewport *base = _get_base_propagation_viewport();
+	base->_propagate_drag_notification(base, false, Variant());
 	get_base_window()->update_mouse_cursor_shape();
 }
 
@@ -2122,13 +2155,13 @@ void Viewport::_gui_force_drag(Control *p_base, const Variant &p_data, Control *
 	ERR_FAIL_COND_MSG(p_data.get_type() == Variant::NIL, "Drag data must be a value.");
 
 	gui.dragging = true;
-	gui.drag_data = p_data;
 	gui.mouse_focus = nullptr;
 
 	if (p_control) {
 		_gui_set_drag_preview(p_base, p_control);
 	}
-	_propagate_viewport_notification(this, NOTIFICATION_DRAG_BEGIN);
+	Viewport *base = _get_base_propagation_viewport();
+	base->_propagate_drag_notification(base, true, p_data);
 }
 
 void Viewport::_gui_set_drag_preview(Control *p_base, Control *p_control) {

@@ -286,7 +286,8 @@ private:
 
 	bool disable_3d = false;
 
-	void _propagate_viewport_notification(Node *p_node, int p_what);
+	void _propagate_drag_notification(Node *p_node, bool p_begin, const Variant &p_drag_data);
+	Viewport *_get_base_propagation_viewport();
 
 	void _update_global_transform();
 
