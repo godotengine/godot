@@ -84,7 +84,7 @@ void RendererSceneRender::CameraData::set_multiview_camera(uint32_t p_view_count
 	Transform3D main_transform_inv = main_transform.inverse();
 
 	// 5. figure out far plane, this could use some improvement, we may have our far plane too close like this, not sure if this matters
-	Vector3 far_center = (planes[0][Projection::PLANE_FAR].center() + planes[1][Projection::PLANE_FAR].center()) * 0.5;
+	Vector3 far_center = (planes[0][Projection::PLANE_FAR].get_center() + planes[1][Projection::PLANE_FAR].get_center()) * 0.5;
 	Plane far(-z, far_center);
 
 	/////////////////////////////////////////////////////////////////////////////
