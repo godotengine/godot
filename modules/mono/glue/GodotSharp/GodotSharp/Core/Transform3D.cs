@@ -124,11 +124,11 @@ namespace Godot
         /// <returns>The interpolated transform.</returns>
         public readonly Transform3D InterpolateWith(Transform3D transform, real_t weight)
         {
-            Vector3 sourceScale = basis.Scale;
+            Vector3 sourceScale = basis.GetScale();
             Quaternion sourceRotation = basis.GetRotationQuaternion();
             Vector3 sourceLocation = origin;
 
-            Vector3 destinationScale = transform.basis.Scale;
+            Vector3 destinationScale = transform.basis.GetScale();
             Quaternion destinationRotation = transform.basis.GetRotationQuaternion();
             Vector3 destinationLocation = transform.origin;
 

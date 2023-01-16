@@ -120,31 +120,6 @@ namespace Godot
         }
 
         /// <summary>
-        /// The scale of this basis.
-        /// </summary>
-        /// <value>Equivalent to the lengths of each column vector, but negative if the determinant is negative.</value>
-        public Vector3 Scale
-        {
-            readonly get
-            {
-                real_t detSign = Mathf.Sign(Determinant());
-                return detSign * new Vector3
-                (
-                    Column0.Length(),
-                    Column1.Length(),
-                    Column2.Length()
-                );
-            }
-            set
-            {
-                value /= Scale; // Value becomes what's called "delta_scale" in core.
-                Column0 *= value.x;
-                Column1 *= value.y;
-                Column2 *= value.z;
-            }
-        }
-
-        /// <summary>
         /// Access whole columns in the form of <see cref="Vector3"/>.
         /// </summary>
         /// <param name="column">Which column vector.</param>
@@ -564,6 +539,21 @@ namespace Godot
             }
 
             return orthonormalizedBasis.GetQuaternion();
+        }
+
+        /// <summary>
+        /// Assuming that the matrix is the combination of a rotation and scaling,
+        /// return the absolute value of scaling factors along each axis.
+        /// </summary>
+        public readonly Vector3 GetScale()
+        {
+            real_t detSign = Mathf.Sign(Determinant());
+            return detSign * new Vector3
+            (
+                Column0.Length(),
+                Column1.Length(),
+                Column2.Length()
+            );
         }
 
         /// <summary>
