@@ -177,7 +177,7 @@ void AnimationPlayerEditor::_autoplay_pressed() {
 		return;
 	}
 
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	String current = animation->get_item_text(animation->get_selected());
 	if (player->get_autoplay() == current) {
 		//unset
@@ -402,7 +402,7 @@ void AnimationPlayerEditor::_animation_remove_confirmed() {
 	if (current.contains("/")) {
 		current = current.get_slice("/", 1);
 	}
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Remove Animation"));
 	if (player->get_autoplay() == current) {
 		undo_redo->add_do_method(player, "set_autoplay", "");
@@ -478,7 +478,7 @@ void AnimationPlayerEditor::_animation_name_edited() {
 		return;
 	}
 
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	switch (name_dialog_op) {
 		case TOOL_RENAME_ANIM: {
 			String current = animation->get_item_text(animation->get_selected());
@@ -613,7 +613,7 @@ void AnimationPlayerEditor::_blend_editor_next_changed(const int p_idx) {
 
 	String current = animation->get_item_text(animation->get_selected());
 
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Blend Next Changed"));
 	undo_redo->add_do_method(player, "animation_set_next", current, blend_editor.next->get_item_text(p_idx));
 	undo_redo->add_undo_method(player, "animation_set_next", current, player->animation_get_next(current));
@@ -700,7 +700,7 @@ void AnimationPlayerEditor::_blend_edited() {
 	float blend_time = selected->get_range(1);
 	float prev_blend_time = player->get_blend_time(current, to);
 
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Change Blend Time"));
 	undo_redo->add_do_method(player, "set_blend_time", current, to, blend_time);
 	undo_redo->add_undo_method(player, "set_blend_time", current, to, prev_blend_time);

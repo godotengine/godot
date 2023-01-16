@@ -729,7 +729,6 @@ public:
 	static EditorLog *get_log() { return singleton->log; }
 	static EditorData &get_editor_data() { return singleton->editor_data; }
 	static EditorFolding &get_editor_folding() { return singleton->editor_folding; }
-	static Ref<EditorUndoRedoManager> &get_undo_redo();
 
 	static HBoxContainer *get_menu_hb() { return singleton->menu_hb; }
 	static VSplitContainer *get_top_split() { return singleton->top_split; }

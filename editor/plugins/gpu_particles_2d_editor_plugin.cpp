@@ -113,7 +113,7 @@ void GPUParticles2DEditorPlugin::_menu_callback(int p_idx) {
 			cpu_particles->set_process_mode(particles->get_process_mode());
 			cpu_particles->set_z_index(particles->get_z_index());
 
-			Ref<EditorUndoRedoManager> &ur = EditorNode::get_singleton()->get_undo_redo();
+			EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 			ur->create_action(TTR("Convert to CPUParticles2D"));
 			ur->add_do_method(SceneTreeDock::get_singleton(), "replace_node", particles, cpu_particles, true, false);
 			ur->add_do_reference(cpu_particles);
@@ -161,7 +161,7 @@ void GPUParticles2DEditorPlugin::_generate_visibility_rect() {
 		particles->set_emitting(false);
 	}
 
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Generate Visibility Rect"));
 	undo_redo->add_do_method(particles, "set_visibility_rect", rect);
 	undo_redo->add_undo_method(particles, "set_visibility_rect", particles->get_visibility_rect());

@@ -251,7 +251,7 @@ void SpriteFramesEditor::_sheet_add_frames() {
 	const Size2i offset = _get_offset();
 	const Size2i separation = _get_separation();
 
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Add Frame"));
 
 	int fc = frames->get_frame_count(edited_anim);
@@ -470,7 +470,7 @@ void SpriteFramesEditor::_file_load_request(const Vector<String> &p_path, int p_
 		return;
 	}
 
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Add Frame"));
 	int fc = frames->get_frame_count(edited_anim);
 
@@ -541,7 +541,7 @@ void SpriteFramesEditor::_paste_pressed() {
 		return; ///beh should show an error i guess
 	}
 
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Paste Frame"));
 	undo_redo->add_do_method(frames, "add_frame", edited_anim, texture, duration);
 	undo_redo->add_undo_method(frames, "remove_frame", edited_anim, frames->get_frame_count(edited_anim));
@@ -584,7 +584,7 @@ void SpriteFramesEditor::_empty_pressed() {
 
 	Ref<Texture2D> texture;
 
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Add Empty"));
 	undo_redo->add_do_method(frames, "add_frame", edited_anim, texture, 1.0, from);
 	undo_redo->add_undo_method(frames, "remove_frame", edited_anim, from);
@@ -608,7 +608,7 @@ void SpriteFramesEditor::_empty2_pressed() {
 
 	Ref<Texture2D> texture;
 
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Add Empty"));
 	undo_redo->add_do_method(frames, "add_frame", edited_anim, texture, 1.0, from + 1);
 	undo_redo->add_undo_method(frames, "remove_frame", edited_anim, from + 1);
@@ -632,7 +632,7 @@ void SpriteFramesEditor::_up_pressed() {
 	sel = to_move;
 	sel -= 1;
 
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Move Frame"));
 	undo_redo->add_do_method(frames, "set_frame", edited_anim, to_move, frames->get_frame_texture(edited_anim, to_move - 1), frames->get_frame_duration(edited_anim, to_move - 1));
 	undo_redo->add_do_method(frames, "set_frame", edited_anim, to_move - 1, frames->get_frame_texture(edited_anim, to_move), frames->get_frame_duration(edited_anim, to_move));
@@ -658,7 +658,7 @@ void SpriteFramesEditor::_down_pressed() {
 	sel = to_move;
 	sel += 1;
 
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Move Frame"));
 	undo_redo->add_do_method(frames, "set_frame", edited_anim, to_move, frames->get_frame_texture(edited_anim, to_move + 1), frames->get_frame_duration(edited_anim, to_move + 1));
 	undo_redo->add_do_method(frames, "set_frame", edited_anim, to_move + 1, frames->get_frame_texture(edited_anim, to_move), frames->get_frame_duration(edited_anim, to_move));
@@ -681,7 +681,7 @@ void SpriteFramesEditor::_delete_pressed() {
 		return;
 	}
 
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Delete Resource"));
 	undo_redo->add_do_method(frames, "remove_frame", edited_anim, to_delete);
 	undo_redo->add_undo_method(frames, "add_frame", edited_anim, frames->get_frame_texture(edited_anim, to_delete), frames->get_frame_duration(edited_anim, to_delete), to_delete);
@@ -768,7 +768,7 @@ void SpriteFramesEditor::_animation_name_edited() {
 	List<Node *> nodes;
 	_find_anim_sprites(EditorNode::get_singleton()->get_edited_scene(), &nodes, Ref<SpriteFrames>(frames));
 
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Rename Animation"));
 	undo_redo->add_do_method(frames, "rename_animation", edited_anim, name);
 	undo_redo->add_undo_method(frames, "rename_animation", name, edited_anim);
@@ -798,7 +798,7 @@ void SpriteFramesEditor::_animation_add() {
 	List<Node *> nodes;
 	_find_anim_sprites(EditorNode::get_singleton()->get_edited_scene(), &nodes, Ref<SpriteFrames>(frames));
 
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Add Animation"));
 	undo_redo->add_do_method(frames, "add_animation", name);
 	undo_redo->add_undo_method(frames, "remove_animation", name);
@@ -831,7 +831,7 @@ void SpriteFramesEditor::_animation_remove() {
 }
 
 void SpriteFramesEditor::_animation_remove_confirmed() {
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Remove Animation"));
 	undo_redo->add_do_method(frames, "remove_animation", edited_anim);
 	undo_redo->add_undo_method(frames, "add_animation", edited_anim);
@@ -860,7 +860,7 @@ void SpriteFramesEditor::_animation_loop_changed() {
 		return;
 	}
 
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Change Animation Loop"));
 	undo_redo->add_do_method(frames, "set_animation_loop", edited_anim, anim_loop->is_pressed());
 	undo_redo->add_undo_method(frames, "set_animation_loop", edited_anim, frames->get_animation_loop(edited_anim));
@@ -874,7 +874,7 @@ void SpriteFramesEditor::_animation_speed_changed(double p_value) {
 		return;
 	}
 
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Change Animation FPS"), UndoRedo::MERGE_ENDS);
 	undo_redo->add_do_method(frames, "set_animation_speed", edited_anim, p_value);
 	undo_redo->add_undo_method(frames, "set_animation_speed", edited_anim, frames->get_animation_speed(edited_anim));
@@ -926,7 +926,7 @@ void SpriteFramesEditor::_frame_duration_changed(double p_value) {
 	Ref<Texture2D> texture = frames->get_frame_texture(edited_anim, index);
 	float old_duration = frames->get_frame_duration(edited_anim, index);
 
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Set Frame Duration"));
 	undo_redo->add_do_method(frames, "set_frame", edited_anim, index, texture, p_value);
 	undo_redo->add_undo_method(frames, "set_frame", edited_anim, index, texture, old_duration);
@@ -1206,7 +1206,7 @@ void SpriteFramesEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 				reorder = true;
 			}
 
-			Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 			if (reorder) { //drop is from reordering frames
 				int from_frame = -1;
 				float duration = 1.0;

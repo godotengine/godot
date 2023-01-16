@@ -68,7 +68,7 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 	Node *n = get_node(np);
 	ERR_FAIL_COND(!n);
 
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	if (p_id == BUTTON_SUBSCENE) {
 		if (n == get_scene_node()) {
 			if (n && n->get_scene_inherited_state().is_valid()) {
@@ -176,7 +176,7 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 void SceneTreeEditor::_toggle_visible(Node *p_node) {
 	if (p_node->has_method("is_visible") && p_node->has_method("set_visible")) {
 		bool v = bool(p_node->call("is_visible"));
-		Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 		undo_redo->add_do_method(p_node, "set_visible", !v);
 		undo_redo->add_undo_method(p_node, "set_visible", v);
 	}
@@ -1015,7 +1015,7 @@ void SceneTreeEditor::_renamed() {
 		which->set_metadata(0, n->get_path());
 		emit_signal(SNAME("node_renamed"));
 	} else {
-		Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 		undo_redo->create_action(TTR("Rename Node"));
 		emit_signal(SNAME("node_prerename"), n, new_name);
 		undo_redo->add_do_method(this, "_rename_node", n->get_instance_id(), new_name);

@@ -31,7 +31,6 @@
 #include "animation_track_editor_plugins.h"
 
 #include "editor/audio_stream_preview.h"
-#include "editor/editor_node.h"
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_undo_redo_manager.h"
@@ -1018,7 +1017,7 @@ void AnimationTrackEditTypeAudio::drop_data(const Point2 &p_point, const Variant
 				ofs += 0.0001;
 			}
 
-			Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 			undo_redo->create_action(TTR("Add Audio Track Clip"));
 			undo_redo->add_do_method(get_animation().ptr(), "audio_track_insert_key", get_track(), ofs, stream);
 			undo_redo->add_undo_method(get_animation().ptr(), "track_remove_key_at_time", get_track(), ofs);
@@ -1125,7 +1124,7 @@ void AnimationTrackEditTypeAudio::gui_input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	if (len_resizing && mb.is_valid() && !mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
 		if (len_resizing_rel == 0 || len_resizing_index < 0) {
 			len_resizing = false;

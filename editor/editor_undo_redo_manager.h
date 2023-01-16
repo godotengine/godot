@@ -32,11 +32,13 @@
 #define EDITOR_UNDO_REDO_MANAGER_H
 
 #include "core/object/class_db.h"
-#include "core/object/ref_counted.h"
+#include "core/object/object.h"
 #include "core/object/undo_redo.h"
 
-class EditorUndoRedoManager : public RefCounted {
-	GDCLASS(EditorUndoRedoManager, RefCounted);
+class EditorUndoRedoManager : public Object {
+	GDCLASS(EditorUndoRedoManager, Object);
+
+	static EditorUndoRedoManager *singleton;
 
 public:
 	enum SpecialHistory {
@@ -132,6 +134,9 @@ public:
 	int get_current_action_history_id();
 
 	void discard_history(int p_idx, bool p_erase_from_map = true);
+
+	static EditorUndoRedoManager *get_singleton();
+	EditorUndoRedoManager();
 	~EditorUndoRedoManager();
 };
 

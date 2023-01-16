@@ -977,8 +977,8 @@ void EditorPlugin::_bind_methods() {
 	BIND_ENUM_CONSTANT(AFTER_GUI_INPUT_CUSTOM);
 }
 
-Ref<EditorUndoRedoManager> EditorPlugin::get_undo_redo() {
-	return EditorNode::get_undo_redo();
+EditorUndoRedoManager *EditorPlugin::get_undo_redo() {
+	return EditorUndoRedoManager::get_singleton();
 }
 
 EditorPluginCreateFunc EditorPlugins::creation_funcs[MAX_CREATE_FUNCS];
