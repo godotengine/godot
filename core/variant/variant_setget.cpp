@@ -1253,7 +1253,7 @@ bool Variant::iter_init(Variant &r_iter, bool &valid) const {
 			return _data._int > 0;
 		} break;
 		case FLOAT: {
-			r_iter = 0;
+			r_iter = 0.0;
 			return _data._float > 0.0;
 		} break;
 		case VECTOR2: {
@@ -1457,7 +1457,7 @@ bool Variant::iter_next(Variant &r_iter, bool &valid) const {
 			return true;
 		} break;
 		case FLOAT: {
-			int64_t idx = r_iter;
+			double idx = r_iter;
 			idx++;
 			if (idx >= _data._float) {
 				return false;
