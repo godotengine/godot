@@ -1695,7 +1695,7 @@
 			[b]Note:[/b] This flag is implemented on macOS.
 		</constant>
 		<constant name="WINDOW_FLAG_MOUSE_PASSTHROUGH" value="7" enum="WindowFlags">
-			All mouse event as passed to the underlying window of the same application.
+			All mouse events are passed to the underlying window of the same application.
 		</constant>
 		<constant name="WINDOW_FLAG_MAX" value="8" enum="WindowFlags">
 			Max value of the [enum WindowFlags].
