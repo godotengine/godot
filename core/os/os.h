@@ -167,7 +167,8 @@ public:
 
 	virtual bool has_environment(const String &p_var) const = 0;
 	virtual String get_environment(const String &p_var) const = 0;
-	virtual bool set_environment(const String &p_var, const String &p_value) const = 0;
+	virtual void set_environment(const String &p_var, const String &p_value) const = 0;
+	virtual void unset_environment(const String &p_var) const = 0;
 
 	virtual String get_name() const = 0;
 	virtual String get_distribution_name() const = 0;
