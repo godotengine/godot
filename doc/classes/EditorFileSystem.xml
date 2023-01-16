@@ -96,6 +96,11 @@
 				Emitted if at least one resource is reloaded when the filesystem is scanned.
 			</description>
 		</signal>
+		<signal name="script_classes_updated">
+			<description>
+				Emitted when the list of global script classes gets updated.
+			</description>
+		</signal>
 		<signal name="sources_changed">
 			<param index="0" name="exist" type="bool" />
 			<description>
