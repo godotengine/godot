@@ -787,7 +787,7 @@ namespace Godot
         /// <param name="quaternion">The quaternion to create the basis from.</param>
         public Basis(Quaternion quaternion)
         {
-            real_t s = 2.0f / quaternion.LengthSquared;
+            real_t s = 2.0f / quaternion.LengthSquared();
 
             real_t xs = quaternion.x * s;
             real_t ys = quaternion.y * s;
