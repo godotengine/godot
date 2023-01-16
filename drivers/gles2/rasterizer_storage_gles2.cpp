@@ -2120,6 +2120,11 @@ static PoolVector<uint8_t> _unpack_half_floats(const PoolVector<uint8_t> &array,
 					if (!(p_format & VS::ARRAY_COMPRESS_TANGENT && p_format & VS::ARRAY_COMPRESS_NORMAL)) {
 						src_size[VS::ARRAY_NORMAL] = 8;
 						dst_size[VS::ARRAY_NORMAL] = 8;
+
+						// These must be incremented manually,
+						// as we are modifying a previous attribute size.
+						src_stride += 4;
+						dst_stride += 4;
 					}
 					src_size[i] = 0;
 					dst_size[i] = 0;
