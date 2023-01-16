@@ -141,6 +141,8 @@ public:
 
 	void set_setting(const String &p_setting, const Variant &p_value);
 	Variant get_setting(const String &p_setting, const Variant &p_default_value = Variant()) const;
+	Array get_global_class_list();
+	void store_global_class_list(const Array &p_classes);
 
 	bool has_setting(String p_var) const;
 	String localize_path(const String &p_path) const;
