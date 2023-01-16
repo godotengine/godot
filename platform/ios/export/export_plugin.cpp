@@ -1572,7 +1572,7 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	int ret = unzGoToFirstFile(src_pkg_zip);
 	Vector<uint8_t> project_file_data;
 	while (ret == UNZ_OK) {
-#if defined(MACOS_ENABLED) || defined(X11_ENABLED)
+#if defined(MACOS_ENABLED) || defined(LINUXBSD_ENABLED)
 		bool is_execute = false;
 #endif
 
@@ -1605,7 +1605,7 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 				continue; //ignore!
 			}
 			found_library = true;
-#if defined(MACOS_ENABLED) || defined(X11_ENABLED)
+#if defined(MACOS_ENABLED) || defined(LINUXBSD_ENABLED)
 			is_execute = true;
 #endif
 			file = file.replace(library_to_use, binary_name + ".xcframework");
@@ -1648,7 +1648,7 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 				f->store_buffer(data.ptr(), data.size());
 			}
 
-#if defined(MACOS_ENABLED) || defined(X11_ENABLED)
+#if defined(MACOS_ENABLED) || defined(LINUXBSD_ENABLED)
 			if (is_execute) {
 				// we need execute rights on this file
 				chmod(file.utf8().get_data(), 0755);
