@@ -528,5 +528,10 @@
 				Emitted when a navigation map is updated, when a region moves or is modified.
 			</description>
 		</signal>
+		<signal name="navigation_debug_changed">
+			<description>
+				Emitted when navigation debug settings are changed. Only available in debug builds.
+			</description>
+		</signal>
 	</signals>
 </class>
