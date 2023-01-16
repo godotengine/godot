@@ -597,7 +597,7 @@ void RendererCanvasCull::canvas_item_add_line(RID p_item, const Point2 &p_from, 
 	Vector2 end_left;
 	Vector2 end_right;
 
-	if (p_width > 1.001) {
+	if (p_width >= 0.0) {
 		begin_left = p_from + t;
 		begin_right = p_from - t;
 		end_left = p_to + t;
@@ -628,7 +628,7 @@ void RendererCanvasCull::canvas_item_add_line(RID p_item, const Point2 &p_from, 
 		// This value is empirically determined to provide good antialiasing quality
 		// while not making lines appear too soft.
 		float border_size = 1.25f;
-		if (p_width < 1.0f) {
+		if (0.0f <= p_width && p_width < 1.0f) {
 			border_size *= p_width;
 		}
 		Vector2 dir2 = diff.normalized();
@@ -1077,7 +1077,7 @@ void RendererCanvasCull::canvas_item_add_multiline(RID p_item, const Vector<Poin
 	ERR_FAIL_COND(p_points.size() < 2);
 
 	// TODO: `canvas_item_add_line`(`multiline`, `polyline`) share logic, should factor out.
-	if (p_width <= 1) {
+	if (p_width < 0) {
 		Item *canvas_item = canvas_item_owner.get_or_null(p_item);
 		ERR_FAIL_COND(!canvas_item);
 
@@ -1313,7 +1313,7 @@ void RendererCanvasCull::canvas_item_add_nine_patch(RID p_item, const Rect2 &p_r
 	style->axis_y = p_y_axis_mode;
 }
 
-void RendererCanvasCull::canvas_item_add_primitive(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, RID p_texture, float p_width) {
+void RendererCanvasCull::canvas_item_add_primitive(RID p_item, const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, RID p_texture) {
 	uint32_t pc = p_points.size();
 	ERR_FAIL_COND(pc == 0 || pc > 4);
 
