@@ -439,6 +439,8 @@ void ScriptEditor::_goto_script_line(Ref<RefCounted> p_script, int p_line) {
 			} else if (current) {
 				current->goto_line(p_line, true);
 			}
+
+			_save_history();
 		}
 	}
 }
