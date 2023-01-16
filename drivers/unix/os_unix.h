@@ -81,7 +81,9 @@ public:
 
 	virtual bool has_environment(const String &p_var) const override;
 	virtual String get_environment(const String &p_var) const override;
-	virtual bool set_environment(const String &p_var, const String &p_value) const override;
+	virtual void set_environment(const String &p_var, const String &p_value) const override;
+	virtual void unset_environment(const String &p_var) const override;
+
 	virtual String get_locale() const override;
 
 	virtual void initialize_debugging() override;
