@@ -557,44 +557,47 @@ void CanvasItem::draw_multiline_colors(const Vector<Point2> &p_points, const Vec
 void CanvasItem::draw_rect(const Rect2 &p_rect, const Color &p_color, bool p_filled, real_t p_width) {
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
+	Rect2 rect = p_rect.abs();
+
 	if (p_filled) {
 		if (p_width != -1.0) {
 			WARN_PRINT("The draw_rect() \"width\" argument has no effect when \"filled\" is \"true\".");
 		}
 
-		RenderingServer::get_singleton()->canvas_item_add_rect(canvas_item, p_rect, p_color);
+		RenderingServer::get_singleton()->canvas_item_add_rect(canvas_item, rect, p_color);
+	} else if (p_width >= rect.size.width || p_width >= rect.size.height) {
+		RenderingServer::get_singleton()->canvas_item_add_rect(canvas_item, rect.grow(0.5f * p_width), p_color);
 	} else {
 		// Thick lines are offset depending on their width to avoid partial overlapping.
-		// Thin lines don't require an offset, so don't apply one in this case
-		real_t offset;
-		if (p_width >= 0) {
-			offset = p_width / 2.0;
-		} else {
-			offset = 0.0;
-		}
+		// Thin lines are drawn without offset. The result may not be perfect.
+		real_t offset = (p_width >= 0) ? 0.5f * p_width : 0.0f;
 
+		// Top line.
 		RenderingServer::get_singleton()->canvas_item_add_line(
 				canvas_item,
-				p_rect.position + Size2(-offset, 0),
-				p_rect.position + Size2(p_rect.size.width + offset, 0),
+				rect.position + Size2(-offset, 0),
+				rect.position + Size2(-offset + rect.size.width, 0),
 				p_color,
 				p_width);
+		// Right line.
 		RenderingServer::get_singleton()->canvas_item_add_line(
 				canvas_item,
-				p_rect.position + Size2(p_rect.size.width, offset),
-				p_rect.position + Size2(p_rect.size.width, p_rect.size.height - offset),
+				rect.position + Size2(rect.size.width, -offset),
+				rect.position + Size2(rect.size.width, -offset + rect.size.height),
 				p_color,
 				p_width);
+		// Bottom line.
 		RenderingServer::get_singleton()->canvas_item_add_line(
 				canvas_item,
-				p_rect.position + Size2(p_rect.size.width + offset, p_rect.size.height),
-				p_rect.position + Size2(-offset, p_rect.size.height),
+				rect.position + Size2(offset + rect.size.width, rect.size.height),
+				rect.position + Size2(offset, rect.size.height),
 				p_color,
 				p_width);
+		// Left line.
 		RenderingServer::get_singleton()->canvas_item_add_line(
 				canvas_item,
-				p_rect.position + Size2(0, p_rect.size.height - offset),
-				p_rect.position + Size2(0, offset),
+				rect.position + Size2(0, offset + rect.size.height),
+				rect.position + Size2(0, offset),
 				p_color,
 				p_width);
 	}
