@@ -90,11 +90,12 @@ void EditorToaster::_notification(int p_what) {
 				}
 
 				// Hide element if it is not visible anymore.
-				if (modulate_fade.a <= 0) {
-					if (element.key->is_visible()) {
-						element.key->hide();
-						needs_update = true;
-					}
+				if (modulate_fade.a <= 0 && element.key->is_visible()) {
+					element.key->hide();
+					needs_update = true;
+				} else if (modulate_fade.a >= 0 && !element.key->is_visible()) {
+					element.key->show();
+					needs_update = true;
 				}
 			}
 
@@ -419,12 +420,21 @@ void EditorToaster::_popup_str(String p_message, Severity p_severity, String p_t
 
 	// Create a new message if needed.
 	if (control == nullptr) {
-		Label *label = memnew(Label);
+		HBoxContainer *hb = memnew(HBoxContainer);
+		hb->add_theme_constant_override("separation", 0);
 
-		control = popup(label, p_severity, default_message_duration, p_tooltip);
+		Label *label = memnew(Label);
+		hb->add_child(label);
+
+		Label *count_label = memnew(Label);
+		hb->add_child(count_label);
+
+		control = popup(hb, p_severity, default_message_duration, p_tooltip);
 		toasts[control].message = p_message;
 		toasts[control].tooltip = p_tooltip;
 		toasts[control].count = 1;
+		toasts[control].message_label = label;
+		toasts[control].message_count_label = count_label;
 	} else {
 		if (toasts[control].popped) {
 			toasts[control].count += 1;
@@ -441,14 +451,31 @@ void EditorToaster::_popup_str(String p_message, Severity p_severity, String p_t
 		main_button->queue_redraw();
 	}
 
-	// Retrieve the label back then update the text.
-	Label *label = Object::cast_to<Label>(control->get_child(0)->get_child(0));
-	ERR_FAIL_COND(!label);
-	if (toasts[control].count == 1) {
-		label->set_text(p_message);
-	} else {
-		label->set_text(vformat("%s (%d)", p_message, toasts[control].count));
+	// Retrieve the label back, then update the text.
+	Label *message_label = toasts[control].message_label;
+	ERR_FAIL_COND(!message_label);
+	message_label->set_text(p_message);
+	message_label->set_text_overrun_behavior(TextServer::OVERRUN_NO_TRIMMING);
+	message_label->set_custom_minimum_size(Size2());
+
+	Size2i size = message_label->get_combined_minimum_size();
+	int limit_width = get_viewport_rect().size.x / 2; // Limit label size to half the viewport size.
+	if (size.x > limit_width) {
+		message_label->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
+		message_label->set_custom_minimum_size(Size2(limit_width, 0));
 	}
+
+	// Retrieve the count label back, then update the text.
+	Label *message_count_label = toasts[control].message_count_label;
+	if (toasts[control].count == 1) {
+		message_count_label->hide();
+	} else {
+		message_count_label->set_text(vformat("(%d)", toasts[control].count));
+		message_count_label->show();
+	}
+
+	vbox_container->reset_size();
+
 	is_processing_error = false;
 }
 
