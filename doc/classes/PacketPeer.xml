@@ -33,6 +33,7 @@
 			<param index="0" name="allow_objects" type="bool" default="false" />
 			<description>
 				Gets a Variant. If [param allow_objects] is [code]true[/code], decoding objects is allowed.
+				Internally, this uses the same decoding mechanism as the [method @GlobalScope.bytes_to_var] method.
 				[b]Warning:[/b] Deserialized objects can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats such as remote code execution.
 			</description>
 		</method>
@@ -49,6 +50,7 @@
 			<param index="1" name="full_objects" type="bool" default="false" />
 			<description>
 				Sends a [Variant] as a packet. If [param full_objects] is [code]true[/code], encoding objects is allowed (and can potentially include code).
+				Internally, this uses the same encoding mechanism as the [method @GlobalScope.var_to_bytes] method.
 			</description>
 		</method>
 	</methods>
