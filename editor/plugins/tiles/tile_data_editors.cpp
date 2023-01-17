@@ -497,11 +497,11 @@ void GenericTilePolygonEditor::_base_control_gui_input(Ref<InputEvent> p_event) 
 
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid()) {
-		if (mb->get_button_index() == MouseButton::WHEEL_UP && mb->is_ctrl_pressed()) {
+		if (mb->get_button_index() == MouseButton::WHEEL_UP && mb->is_command_or_control_pressed()) {
 			editor_zoom_widget->set_zoom_by_increments(1);
 			_zoom_changed();
 			accept_event();
-		} else if (mb->get_button_index() == MouseButton::WHEEL_DOWN && mb->is_ctrl_pressed()) {
+		} else if (mb->get_button_index() == MouseButton::WHEEL_DOWN && mb->is_command_or_control_pressed()) {
 			editor_zoom_widget->set_zoom_by_increments(-1);
 			_zoom_changed();
 			accept_event();
@@ -984,14 +984,14 @@ void TileDataDefaultEditor::forward_painting_atlas_gui_input(TileAtlasView *p_ti
 	if (mb.is_valid()) {
 		if (mb->get_button_index() == MouseButton::LEFT) {
 			if (mb->is_pressed()) {
-				if (picker_button->is_pressed()) {
+				if (picker_button->is_pressed() || (mb->is_command_or_control_pressed() && !mb->is_shift_pressed())) {
 					Vector2i coords = p_tile_atlas_view->get_atlas_tile_coords_at_pos(mb->get_position());
 					coords = p_tile_set_atlas_source->get_tile_at_coords(coords);
 					if (coords != TileSetSource::INVALID_ATLAS_COORDS) {
 						_set_painted_value(p_tile_set_atlas_source, coords, 0);
 						picker_button->set_pressed(false);
 					}
-				} else if (mb->is_ctrl_pressed()) {
+				} else if (mb->is_command_or_control_pressed() && mb->is_shift_pressed()) {
 					drag_type = DRAG_TYPE_PAINT_RECT;
 					drag_modified.clear();
 					drag_painted_value = _get_painted_value();
@@ -1532,26 +1532,32 @@ Variant TileDataCollisionEditor::_get_value(TileSetAtlasSource *p_tile_set_atlas
 }
 
 void TileDataCollisionEditor::_setup_undo_redo_action(TileSetAtlasSource *p_tile_set_atlas_source, HashMap<TileMapCell, Variant, TileMapCell> p_previous_values, Variant p_new_value) {
-	Array new_array = p_new_value;
+	Dictionary new_dict = p_new_value;
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	for (KeyValue<TileMapCell, Variant> &E : p_previous_values) {
-		Array old_array = E.value;
-
 		Vector2i coords = E.key.get_atlas_coords();
-		undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/physics_layer_%d/polygons_count", coords.x, coords.y, E.key.alternative_tile, physics_layer), old_array.size());
-		for (int i = 0; i < old_array.size(); i++) {
-			Dictionary dict = old_array[i];
-			undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/physics_layer_%d/polygon_%d/points", coords.x, coords.y, E.key.alternative_tile, physics_layer, i), dict["points"]);
-			undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/physics_layer_%d/polygon_%d/one_way", coords.x, coords.y, E.key.alternative_tile, physics_layer, i), dict["one_way"]);
-			undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/physics_layer_%d/polygon_%d/one_way_margin", coords.x, coords.y, E.key.alternative_tile, physics_layer, i), dict["one_way_margin"]);
+
+		Dictionary old_dict = E.value;
+		undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/physics_layer_%d/linear_velocity", coords.x, coords.y, E.key.alternative_tile, physics_layer), old_dict["linear_velocity"]);
+		undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/physics_layer_%d/angular_velocity", coords.x, coords.y, E.key.alternative_tile, physics_layer), old_dict["angular_velocity"]);
+		Array old_polygon_array = old_dict["polygons"];
+		undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/physics_layer_%d/polygons_count", coords.x, coords.y, E.key.alternative_tile, physics_layer), old_polygon_array.size());
+		for (int i = 0; i < old_polygon_array.size(); i++) {
+			Dictionary polygon_dict = old_polygon_array[i];
+			undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/physics_layer_%d/polygon_%d/points", coords.x, coords.y, E.key.alternative_tile, physics_layer, i), polygon_dict["points"]);
+			undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/physics_layer_%d/polygon_%d/one_way", coords.x, coords.y, E.key.alternative_tile, physics_layer, i), polygon_dict["one_way"]);
+			undo_redo->add_undo_property(p_tile_set_atlas_source, vformat("%d:%d/%d/physics_layer_%d/polygon_%d/one_way_margin", coords.x, coords.y, E.key.alternative_tile, physics_layer, i), polygon_dict["one_way_margin"]);
 		}
 
-		undo_redo->add_do_property(p_tile_set_atlas_source, vformat("%d:%d/%d/physics_layer_%d/polygons_count", coords.x, coords.y, E.key.alternative_tile, physics_layer), new_array.size());
-		for (int i = 0; i < new_array.size(); i++) {
-			Dictionary dict = new_array[i];
-			undo_redo->add_do_property(p_tile_set_atlas_source, vformat("%d:%d/%d/physics_layer_%d/polygon_%d/points", coords.x, coords.y, E.key.alternative_tile, physics_layer, i), dict["points"]);
-			undo_redo->add_do_property(p_tile_set_atlas_source, vformat("%d:%d/%d/physics_layer_%d/polygon_%d/one_way", coords.x, coords.y, E.key.alternative_tile, physics_layer, i), dict["one_way"]);
-			undo_redo->add_do_property(p_tile_set_atlas_source, vformat("%d:%d/%d/physics_layer_%d/polygon_%d/one_way_margin", coords.x, coords.y, E.key.alternative_tile, physics_layer, i), dict["one_way_margin"]);
+		undo_redo->add_do_property(p_tile_set_atlas_source, vformat("%d:%d/%d/physics_layer_%d/linear_velocity", coords.x, coords.y, E.key.alternative_tile, physics_layer), new_dict["linear_velocity"]);
+		undo_redo->add_do_property(p_tile_set_atlas_source, vformat("%d:%d/%d/physics_layer_%d/angular_velocity", coords.x, coords.y, E.key.alternative_tile, physics_layer), new_dict["angular_velocity"]);
+		Array new_polygon_array = new_dict["polygons"];
+		undo_redo->add_do_property(p_tile_set_atlas_source, vformat("%d:%d/%d/physics_layer_%d/polygons_count", coords.x, coords.y, E.key.alternative_tile, physics_layer), new_polygon_array.size());
+		for (int i = 0; i < new_polygon_array.size(); i++) {
+			Dictionary polygon_dict = new_polygon_array[i];
+			undo_redo->add_do_property(p_tile_set_atlas_source, vformat("%d:%d/%d/physics_layer_%d/polygon_%d/points", coords.x, coords.y, E.key.alternative_tile, physics_layer, i), polygon_dict["points"]);
+			undo_redo->add_do_property(p_tile_set_atlas_source, vformat("%d:%d/%d/physics_layer_%d/polygon_%d/one_way", coords.x, coords.y, E.key.alternative_tile, physics_layer, i), polygon_dict["one_way"]);
+			undo_redo->add_do_property(p_tile_set_atlas_source, vformat("%d:%d/%d/physics_layer_%d/polygon_%d/one_way_margin", coords.x, coords.y, E.key.alternative_tile, physics_layer, i), polygon_dict["one_way_margin"]);
 		}
 	}
 }
@@ -2091,7 +2097,7 @@ void TileDataTerrainsEditor::forward_painting_atlas_gui_input(TileAtlasView *p_t
 	if (mb.is_valid()) {
 		if (mb->get_button_index() == MouseButton::LEFT || mb->get_button_index() == MouseButton::RIGHT) {
 			if (mb->is_pressed()) {
-				if (mb->get_button_index() == MouseButton::LEFT && picker_button->is_pressed()) {
+				if (picker_button->is_pressed() || (mb->is_command_or_control_pressed() && !mb->is_shift_pressed())) {
 					Vector2i coords = p_tile_atlas_view->get_atlas_tile_coords_at_pos(mb->get_position());
 					coords = p_tile_set_atlas_source->get_tile_at_coords(coords);
 					if (coords != TileSetSource::INVALID_ATLAS_COORDS) {
@@ -2134,7 +2140,7 @@ void TileDataTerrainsEditor::forward_painting_atlas_gui_input(TileAtlasView *p_t
 						if (mb->get_button_index() == MouseButton::RIGHT) {
 							terrain_set = -1;
 						}
-						if (mb->is_ctrl_pressed()) {
+						if (mb->is_command_or_control_pressed() && mb->is_shift_pressed()) {
 							// Paint terrain set with rect.
 							drag_type = DRAG_TYPE_PAINT_TERRAIN_SET_RECT;
 							drag_modified.clear();
@@ -2175,7 +2181,7 @@ void TileDataTerrainsEditor::forward_painting_atlas_gui_input(TileAtlasView *p_t
 						if (mb->get_button_index() == MouseButton::RIGHT) {
 							terrain = -1;
 						}
-						if (mb->is_ctrl_pressed()) {
+						if (mb->is_command_or_control_pressed() && mb->is_shift_pressed()) {
 							// Paint terrain bits with rect.
 							drag_type = DRAG_TYPE_PAINT_TERRAIN_BITS_RECT;
 							drag_modified.clear();
