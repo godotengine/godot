@@ -37,6 +37,7 @@ jobs:
             target: editor
             tests: true
             sconsflags: dev_build=yes precision=double use_asan=yes use_ubsan=yes linker=gold
+            doc-test: true
             proj-test: true
             # Can be turned off for PRs that intentionally break compat with godot-cpp,
             # until both the upstream PR and the matching godot-cpp changes are merged.
