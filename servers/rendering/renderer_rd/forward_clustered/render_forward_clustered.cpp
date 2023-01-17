@@ -520,6 +520,12 @@ void RenderForwardClustered::_render_list_template(RenderingDevice::DrawListID p
 			instance_count /= surf->owner->trail_steps;
 		}
 
+#if defined(WINDOWS_ENABLED) || defined(X11_ENABLED)
+		if (primitive == RS::PRIMITIVE_LINES || primitive == RS::PRIMITIVE_LINE_STRIP) {
+			RD::get_singleton()->draw_list_set_line_width(draw_list, 2.0); // To prevent line's flickering.
+		}
+#endif
+
 		RD::get_singleton()->draw_list_draw(draw_list, index_array_rd.is_valid(), instance_count);
 		i += element_info.repeat - 1; //skip equal elements
 	}
