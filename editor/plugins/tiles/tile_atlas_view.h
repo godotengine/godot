@@ -128,7 +128,7 @@ public:
 	void set_texture_grid_visible(bool p_visible) { base_tiles_texture_grid->set_visible(p_visible); };
 	void set_tile_shape_grid_visible(bool p_visible) { base_tiles_shape_grid->set_visible(p_visible); };
 
-	Vector2i get_atlas_tile_coords_at_pos(const Vector2 p_pos) const;
+	Vector2i get_atlas_tile_coords_at_pos(const Vector2 p_pos, bool p_clamp = false) const;
 
 	void add_control_over_atlas_tiles(Control *p_control, bool scaled = true) {
 		if (scaled) {
