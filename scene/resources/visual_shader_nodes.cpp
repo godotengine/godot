@@ -6407,7 +6407,7 @@ VisualShaderNodeTexture2DParameter::VisualShaderNodeTexture2DParameter() {
 ////////////// Texture Parameter (Triplanar)
 
 String VisualShaderNodeTextureParameterTriplanar::get_caption() const {
-	return "TextureUniformTriplanar";
+	return "TextureParameterTriplanar";
 }
 
 int VisualShaderNodeTextureParameterTriplanar::get_input_port_count() const {
