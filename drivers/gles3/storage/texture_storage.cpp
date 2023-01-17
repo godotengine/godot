@@ -567,23 +567,29 @@ Ref<Image> TextureStorage::_get_gl_image_and_format(const Ref<Image> &p_image, I
 			}
 		} break;
 		case Image::FORMAT_ETC2_RA_AS_RG: {
+#ifndef WEB_ENABLED
 			if (config->etc2_supported) {
 				r_gl_internal_format = _EXT_COMPRESSED_RGBA8_ETC2_EAC;
 				r_gl_format = GL_RGBA;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
-			} else {
+			} else
+#endif
+			{
 				need_decompress = true;
 			}
 			decompress_ra_to_rg = true;
 		} break;
 		case Image::FORMAT_DXT5_RA_AS_RG: {
+#ifndef WEB_ENABLED
 			if (config->s3tc_supported) {
 				r_gl_internal_format = _EXT_COMPRESSED_RGBA_S3TC_DXT5_EXT;
 				r_gl_format = GL_RGBA;
 				r_gl_type = GL_UNSIGNED_BYTE;
 				r_compressed = true;
-			} else {
+			} else
+#endif
+			{
 				need_decompress = true;
 			}
 			decompress_ra_to_rg = true;
@@ -1137,6 +1143,7 @@ void TextureStorage::texture_set_data(RID p_texture, const Ref<Image> &p_image, 
 	texture->gl_set_filter(RS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST);
 	texture->gl_set_repeat(RS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
 
+#ifndef WEB_ENABLED
 	switch (texture->format) {
 #ifdef GLES_OVER_GL
 		case Image::FORMAT_L8: {
@@ -1151,7 +1158,8 @@ void TextureStorage::texture_set_data(RID p_texture, const Ref<Image> &p_image, 
 			glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_B, GL_RED);
 			glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_A, GL_GREEN);
 		} break;
-#endif
+#endif // GLES3_OVER_GL
+
 		case Image::FORMAT_ETC2_RA_AS_RG:
 		case Image::FORMAT_DXT5_RA_AS_RG: {
 			glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_R, GL_RED);
@@ -1172,6 +1180,7 @@ void TextureStorage::texture_set_data(RID p_texture, const Ref<Image> &p_image, 
 			glTexParameteri(texture->target, GL_TEXTURE_SWIZZLE_A, GL_ALPHA);
 		} break;
 	}
+#endif // WEB_ENABLED
 
 	int mipmaps = img->has_mipmaps() ? img->get_mipmap_count() + 1 : 1;
 
