@@ -77,7 +77,7 @@ private:
 	void _track(Node *p_node, const Variant &p_argument, int p_scene_id = INVALID_ID);
 	void _node_added(Node *p_node);
 	void _node_exit(ObjectID p_id);
-	void _node_ready(ObjectID p_id);
+	void _spawn_notify(ObjectID p_id);
 
 	Vector<String> _get_spawnable_scenes() const;
 	void _set_spawnable_scenes(const Vector<String> &p_scenes);
