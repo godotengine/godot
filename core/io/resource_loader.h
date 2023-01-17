@@ -89,8 +89,8 @@ public:
 
 VARIANT_ENUM_CAST(ResourceFormatLoader::CacheMode)
 
-typedef void (*ResourceLoadErrorNotify)(void *p_ud, const String &p_text);
-typedef void (*DependencyErrorNotify)(void *p_ud, const String &p_loading, const String &p_which, const String &p_type);
+typedef void (*ResourceLoadErrorNotify)(const String &p_text);
+typedef void (*DependencyErrorNotify)(const String &p_loading, const String &p_which, const String &p_type);
 
 typedef Error (*ResourceLoaderImport)(const String &p_path);
 typedef void (*ResourceLoadedCallback)(Ref<Resource> p_resource, const String &p_path);
@@ -220,22 +220,20 @@ public:
 
 	static void notify_load_error(const String &p_err) {
 		if (err_notify) {
-			err_notify(err_notify_ud, p_err);
+			err_notify(p_err);
 		}
 	}
-	static void set_error_notify_func(void *p_ud, ResourceLoadErrorNotify p_err_notify) {
+	static void set_error_notify_func(ResourceLoadErrorNotify p_err_notify) {
 		err_notify = p_err_notify;
-		err_notify_ud = p_ud;
 	}
 
 	static void notify_dependency_error(const String &p_path, const String &p_dependency, const String &p_type) {
 		if (dep_err_notify) {
-			dep_err_notify(dep_err_notify_ud, p_path, p_dependency, p_type);
+			dep_err_notify(p_path, p_dependency, p_type);
 		}
 	}
-	static void set_dependency_error_notify_func(void *p_ud, DependencyErrorNotify p_err_notify) {
+	static void set_dependency_error_notify_func(DependencyErrorNotify p_err_notify) {
 		dep_err_notify = p_err_notify;
-		dep_err_notify_ud = p_ud;
 	}
 
 	static void set_abort_on_missing_resources(bool p_abort) { abort_on_missing_resource = p_abort; }

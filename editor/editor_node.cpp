@@ -4115,16 +4115,9 @@ void EditorNode::notify_all_debug_sessions_exited() {
 }
 
 void EditorNode::add_io_error(const String &p_error) {
-	_load_error_notify(singleton, p_error);
-}
-
-void EditorNode::_load_error_notify(void *p_ud, const String &p_text) {
-	EditorNode *en = static_cast<EditorNode *>(p_ud);
-	if (en && en->load_error_dialog) {
-		en->load_errors->add_image(en->gui_base->get_theme_icon(SNAME("Error"), SNAME("EditorIcons")));
-		en->load_errors->add_text(p_text + "\n");
-		en->load_error_dialog->attach_and_popup_centered_ratio(0.5);
-	}
+	singleton->load_errors->add_image(singleton->gui_base->get_theme_icon(SNAME("Error"), SNAME("EditorIcons")));
+	singleton->load_errors->add_text(p_error + "\n");
+	singleton->load_error_dialog->attach_and_popup_centered_ratio(0.5);
 }
 
 bool EditorNode::_find_scene_in_use(Node *p_node, const String &p_path) const {
@@ -6731,8 +6724,8 @@ EditorNode::EditorNode() {
 	}
 
 	ResourceLoader::set_abort_on_missing_resources(false);
-	ResourceLoader::set_error_notify_func(this, _load_error_notify);
-	ResourceLoader::set_dependency_error_notify_func(this, _dependency_error_report);
+	ResourceLoader::set_error_notify_func(&EditorNode::add_io_error);
+	ResourceLoader::set_dependency_error_notify_func(&EditorNode::_dependency_error_report);
 
 	{
 		// Register importers at the beginning, so dialogs are created with the right extensions.
