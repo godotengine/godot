@@ -1901,7 +1901,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			Control *over = control_id.is_valid() ? Object::cast_to<Control>(ObjectDB::get_instance(control_id)) : nullptr;
 			if (over && over->can_process()) {
 				touch_event = touch_event->xformed_by(Transform2D()); // Make a copy.
-				pos = gui.last_mouse_focus->get_global_transform_with_canvas().affine_inverse().xform(pos);
+				pos = over->get_global_transform_with_canvas().affine_inverse().xform(pos);
 				touch_event->set_position(pos);
 
 				stopped = _gui_call_input(over, touch_event);
