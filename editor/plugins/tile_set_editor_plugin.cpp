@@ -2423,6 +2423,7 @@ void TileSetEditor::_undo_tile_removal(int p_id) {
 		undo_redo->add_undo_method(tileset.ptr(), "autotile_set_size", p_id, tileset->autotile_get_size(p_id));
 		undo_redo->add_undo_method(tileset.ptr(), "autotile_set_spacing", p_id, tileset->autotile_get_spacing(p_id));
 		undo_redo->add_undo_method(tileset.ptr(), "autotile_set_bitmask_mode", p_id, tileset->autotile_get_bitmask_mode(p_id));
+		undo_redo->add_undo_method(tileset.ptr(), "autotile_set_fallback_mode", p_id, tileset->autotile_get_fallback_mode(p_id));
 	}
 }
 
@@ -3450,6 +3451,8 @@ bool TilesetEditorContext::_set(const StringName &p_name, const Variant &p_value
 			tileset->set(String::num(tileset_editor->get_current_tile(), 0) + "/autotile/tile_size", p_value, &v);
 		} else if (name2 == "subtile_spacing") {
 			tileset->set(String::num(tileset_editor->get_current_tile(), 0) + "/autotile/spacing", p_value, &v);
+		} else if (name2 == "autotile_fallback_mode") {
+			tileset->set(String::num(tileset_editor->get_current_tile(), 0) + "/autotile/fallback_mode", p_value, &v);
 		} else {
 			tileset->set(String::num(tileset_editor->get_current_tile(), 0) + "/" + name2, p_value, &v);
 		}
@@ -3516,6 +3519,8 @@ bool TilesetEditorContext::_get(const StringName &p_name, Variant &r_ret) const 
 			r_ret = tileset->get(String::num(tileset_editor->get_current_tile(), 0) + "/autotile/tile_size", &v);
 		} else if (name == "subtile_spacing") {
 			r_ret = tileset->get(String::num(tileset_editor->get_current_tile(), 0) + "/autotile/spacing", &v);
+		} else if (name == "autotile_fallback_mode") {
+			r_ret = tileset->get(String::num(tileset_editor->get_current_tile(), 0) + "/autotile/fallback_mode", &v);
 		} else {
 			r_ret = tileset->get(String::num(tileset_editor->get_current_tile(), 0) + "/" + name, &v);
 		}
@@ -3575,6 +3580,7 @@ void TilesetEditorContext::_get_property_list(List<PropertyInfo> *p_list) const 
 			p_list->push_back(PropertyInfo(Variant::INT, PNAME("tile_autotile_bitmask_mode"), PROPERTY_HINT_ENUM, "2x2,3x3 (minimal),3x3"));
 			p_list->push_back(PropertyInfo(Variant::VECTOR2, PNAME("tile_subtile_size")));
 			p_list->push_back(PropertyInfo(Variant::INT, PNAME("tile_subtile_spacing"), PROPERTY_HINT_RANGE, "0, 1024, 1"));
+			p_list->push_back(PropertyInfo(Variant::INT, PNAME("tile_autotile_fallback_mode"), PROPERTY_HINT_ENUM, "Auto,Icon"));
 		} else if (tileset->tile_get_tile_mode(id) == TileSet::ATLAS_TILE) {
 			p_list->push_back(PropertyInfo(Variant::VECTOR2, PNAME("tile_subtile_size")));
 			p_list->push_back(PropertyInfo(Variant::INT, PNAME("tile_subtile_spacing"), PROPERTY_HINT_RANGE, "0, 1024, 1"));
