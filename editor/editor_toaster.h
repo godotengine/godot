@@ -79,6 +79,8 @@ private:
 		String message;
 		String tooltip;
 		int count = 0;
+		Label *message_label = nullptr;
+		Label *message_count_label = nullptr;
 	};
 	HashMap<Control *, Toast> toasts;
 
