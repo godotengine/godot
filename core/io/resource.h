@@ -74,6 +74,9 @@ private:
 
 	SelfList<Resource> remapped_list;
 
+	void _dupe_sub_resources(Variant &r_variant, Node *p_for_scene, HashMap<Ref<Resource>, Ref<Resource>> &p_remap_cache);
+	void _find_sub_resources(const Variant &p_variant, HashSet<Ref<Resource>> &p_resources_found);
+
 protected:
 	virtual void _resource_path_changed();
 	static void _bind_methods();
@@ -111,8 +114,8 @@ public:
 	String get_scene_unique_id() const;
 
 	virtual Ref<Resource> duplicate(bool p_subresources = false) const;
-	Ref<Resource> duplicate_for_local_scene(Node *p_for_scene, HashMap<Ref<Resource>, Ref<Resource>> &remap_cache);
-	void configure_for_local_scene(Node *p_for_scene, HashMap<Ref<Resource>, Ref<Resource>> &remap_cache);
+	Ref<Resource> duplicate_for_local_scene(Node *p_for_scene, HashMap<Ref<Resource>, Ref<Resource>> &p_remap_cache);
+	void configure_for_local_scene(Node *p_for_scene, HashMap<Ref<Resource>, Ref<Resource>> &p_remap_cache);
 
 	void set_local_to_scene(bool p_enable);
 	bool is_local_to_scene() const;
