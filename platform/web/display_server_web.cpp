@@ -787,8 +787,10 @@ DisplayServerWeb::DisplayServerWeb(const String &p_rendering_driver, WindowMode 
 		RasterizerGLES3::make_current();
 
 	} else {
-		OS::get_singleton()->alert("Your browser does not seem to support WebGL2. Please update your browser version.",
-				"Unable to initialize video driver");
+		OS::get_singleton()->alert(
+				"Your browser seems not to support WebGL 2.\n\n"
+				"If possible, consider updating your browser version and video card drivers.",
+				"Unable to initialize WebGL 2 video driver");
 		RasterizerDummy::make_current();
 	}
 #else
