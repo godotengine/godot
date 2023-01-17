@@ -996,6 +996,7 @@ Error RenderingServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surfa
 	if (index_array_len) {
 		List<Variant> keys;
 		p_lods.get_key_list(&keys);
+		keys.sort(); // otherwise lod levels may get skipped
 		for (const Variant &E : keys) {
 			float distance = E;
 			ERR_CONTINUE(distance <= 0.0);
@@ -1826,6 +1827,7 @@ void RenderingServer::_bind_methods() {
 	BIND_BITFIELD_FLAG(ARRAY_FLAG_USE_2D_VERTICES);
 	BIND_BITFIELD_FLAG(ARRAY_FLAG_USE_DYNAMIC_UPDATE);
 	BIND_BITFIELD_FLAG(ARRAY_FLAG_USE_8_BONE_WEIGHTS);
+	BIND_BITFIELD_FLAG(ARRAY_FLAG_USES_EMPTY_VERTEX_ARRAY);
 
 	BIND_ENUM_CONSTANT(PRIMITIVE_POINTS);
 	BIND_ENUM_CONSTANT(PRIMITIVE_LINES);

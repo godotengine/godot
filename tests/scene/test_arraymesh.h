@@ -114,6 +114,17 @@ TEST_CASE("[SceneTree][ArrayMesh] Adding and modifying blendshapes.") {
 		CHECK(mesh->get_blend_shape_count() == 0);
 	}
 
+	SUBCASE("Can't add surface with incorrect number of blend shapes.") {
+		mesh->add_blend_shape(name_a);
+		mesh->add_blend_shape(name_b);
+		Ref<CylinderMesh> cylinder = memnew(CylinderMesh);
+		Array cylinder_array{};
+		ERR_PRINT_OFF
+		mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, cylinder_array);
+		ERR_PRINT_ON
+		CHECK(mesh->get_surface_count() == 0);
+	}
+
 	SUBCASE("Can't clear blend shapes after surface had been added.") {
 		mesh->add_blend_shape(name_a);
 		mesh->add_blend_shape(name_b);
@@ -121,7 +132,15 @@ TEST_CASE("[SceneTree][ArrayMesh] Adding and modifying blendshapes.") {
 		Array cylinder_array{};
 		cylinder_array.resize(Mesh::ARRAY_MAX);
 		cylinder->create_mesh_array(cylinder_array, 3.f, 3.f, 5.f);
-		mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, cylinder_array);
+		Array blend_shape{};
+		blend_shape.resize(Mesh::ARRAY_MAX);
+		blend_shape[Mesh::ARRAY_VERTEX] = cylinder_array[Mesh::ARRAY_VERTEX];
+		blend_shape[Mesh::ARRAY_NORMAL] = cylinder_array[Mesh::ARRAY_NORMAL];
+		blend_shape[Mesh::ARRAY_TANGENT] = cylinder_array[Mesh::ARRAY_TANGENT];
+		Array blend_shapes{};
+		blend_shapes.push_back(blend_shape);
+		blend_shapes.push_back(blend_shape);
+		mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, cylinder_array, blend_shapes);
 
 		ERR_PRINT_OFF
 		mesh->clear_blend_shapes();
