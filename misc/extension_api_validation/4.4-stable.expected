@@ -41,3 +41,10 @@ Validate extension JSON: Error: Field 'classes/RichTextLabel/methods/push_table/
 Validate extension JSON: Error: Field 'classes/TreeItem/methods/add_button/arguments': size changed value in new API, from 5 to 6.
 
 Added optional arguments. Compatibility methods registered.
+
+
+GH-71542
+--------
+Validate extension JSON: JSON file: Field was added in a way that breaks compatibility 'classes/EditorExportPlatform/methods/get_forced_export_files': arguments
+
+Optional argument added. Compatibility methods registered.

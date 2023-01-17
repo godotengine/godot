@@ -114,6 +114,14 @@
 				[/codeblocks]
 			</description>
 		</method>
+		<method name="get_setting_with_override_and_custom_features" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="name" type="StringName" />
+			<param index="1" name="features" type="PackedStringArray" />
+			<description>
+				Similar to [method get_setting_with_override], but applies feature tag overrides instead of current OS features.
+			</description>
+		</method>
 		<method name="globalize_path" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="path" type="String" />

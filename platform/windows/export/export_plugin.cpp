@@ -218,8 +218,8 @@ Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> 
 	bool embedded = p_preset->get("binary_format/embed_pck");
 
 	String pkg_name;
-	if (String(ProjectSettings::get_singleton()->get("application/config/name")) != "") {
-		pkg_name = String(ProjectSettings::get_singleton()->get("application/config/name"));
+	if (String(get_project_setting(p_preset, "application/config/name")) != "") {
+		pkg_name = String(get_project_setting(p_preset, "application/config/name"));
 	} else {
 		pkg_name = "Unnamed";
 	}
@@ -248,7 +248,7 @@ Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> 
 	int export_angle = p_preset->get("application/export_angle");
 	bool include_angle_libs = false;
 	if (export_angle == 0) {
-		include_angle_libs = (String(GLOBAL_GET("rendering/gl_compatibility/driver.windows")) == "opengl3_angle") && (String(GLOBAL_GET("rendering/renderer/rendering_method")) == "gl_compatibility");
+		include_angle_libs = (String(get_project_setting(p_preset, "rendering/gl_compatibility/driver.windows")) == "opengl3_angle") && (String(get_project_setting(p_preset, "rendering/renderer/rendering_method")) == "gl_compatibility");
 	} else if (export_angle == 1) {
 		include_angle_libs = true;
 	}
@@ -268,7 +268,7 @@ Error EditorExportPlatformWindows::export_project(const Ref<EditorExportPreset> 
 	bool agility_sdk_multiarch = p_preset->get("application/d3d12_agility_sdk_multiarch");
 	bool include_d3d12_extra_libs = false;
 	if (export_d3d12 == 0) {
-		include_d3d12_extra_libs = (String(GLOBAL_GET("rendering/rendering_device/driver.windows")) == "d3d12") && (String(GLOBAL_GET("rendering/renderer/rendering_method")) != "gl_compatibility");
+		include_d3d12_extra_libs = (String(get_project_setting(p_preset, "rendering/rendering_device/driver.windows")) == "d3d12") && (String(get_project_setting(p_preset, "rendering/renderer/rendering_method")) != "gl_compatibility");
 	} else if (export_d3d12 == 1) {
 		include_d3d12_extra_libs = true;
 	}
@@ -531,10 +531,10 @@ Error EditorExportPlatformWindows::_rcedit_add_data(const Ref<EditorExportPreset
 	String icon_path;
 	if (p_preset->get("application/icon") != "") {
 		icon_path = p_preset->get("application/icon");
-	} else if (GLOBAL_GET("application/config/windows_native_icon") != "") {
-		icon_path = GLOBAL_GET("application/config/windows_native_icon");
+	} else if (get_project_setting(p_preset, "application/config/windows_native_icon") != "") {
+		icon_path = get_project_setting(p_preset, "application/config/windows_native_icon");
 	} else {
-		icon_path = GLOBAL_GET("application/config/icon");
+		icon_path = get_project_setting(p_preset, "application/config/icon");
 	}
 	icon_path = ProjectSettings::get_singleton()->globalize_path(icon_path);
 

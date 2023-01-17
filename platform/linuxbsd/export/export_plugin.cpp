@@ -80,8 +80,8 @@ Error EditorExportPlatformLinuxBSD::export_project(const Ref<EditorExportPreset>
 	bool export_as_zip = p_path.ends_with("zip");
 
 	String pkg_name;
-	if (String(GLOBAL_GET("application/config/name")) != "") {
-		pkg_name = String(GLOBAL_GET("application/config/name"));
+	if (String(get_project_setting(p_preset, "application/config/name")) != "") {
+		pkg_name = String(get_project_setting(p_preset, "application/config/name"));
 	} else {
 		pkg_name = "Unnamed";
 	}
