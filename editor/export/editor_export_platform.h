@@ -34,6 +34,7 @@
 class EditorFileSystemDirectory;
 struct EditorProgress;
 
+#include "core/config/project_settings.h"
 #include "core/io/dir_access.h"
 #include "core/io/zip_io.h"
 #include "core/os/shared_object.h"
@@ -205,6 +206,7 @@ protected:
 	Ref<Image> _load_icon_or_splash_image(const String &p_path, Error *r_error) const;
 
 public:
+	static Variant get_project_setting(const Ref<EditorExportPreset> &p_preset, const StringName &p_name);
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const = 0;
 
 	struct ExportOption {
@@ -281,7 +283,7 @@ public:
 
 	Dictionary get_internal_export_files(const Ref<EditorExportPreset> &p_preset, bool p_debug);
 
-	static Vector<String> get_forced_export_files();
+	static Vector<String> get_forced_export_files(const Ref<EditorExportPreset> &p_preset);
 
 	virtual bool fill_log_messages(RichTextLabel *p_log, Error p_err);
 
