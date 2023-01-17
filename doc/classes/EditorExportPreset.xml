@@ -121,6 +121,13 @@
 				Returns export preset name.
 			</description>
 		</method>
+		<method name="get_project_setting">
+			<return type="Variant" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Returns the value of the setting identified by [param name] using export preset feature tag overrides instead of current OS features.
+			</description>
+		</method>
 		<method name="get_script_export_mode" qualifiers="const">
 			<return type="int" />
 			<description>
