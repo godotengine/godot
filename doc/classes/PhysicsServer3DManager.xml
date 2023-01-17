@@ -15,7 +15,7 @@
 			<param index="0" name="name" type="String" />
 			<param index="1" name="create_callback" type="Callable" />
 			<description>
-				Register a [PhysicsServer3D] implementation by passing a [param name] and a [Callable] that returns a [PhysicsServer2D] object.
+				Register a [PhysicsServer3D] implementation by passing a [param name] and a [Callable] that returns a [PhysicsServer3D] object.
 			</description>
 		</method>
 		<method name="set_default_server">
