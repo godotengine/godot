@@ -222,6 +222,7 @@ void Label::_shape() {
 			}
 		}
 		lines_dirty = false;
+		lines_shaped_last_width = get_size().width;
 	}
 
 	_update_visible();
@@ -596,7 +597,13 @@ void Label::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_RESIZED: {
-			lines_dirty = true;
+			// It may happen that the reshaping due to this size change triggers a cascade of re-layout
+			// across the hierarchy where this label belongs to in a way that its size changes multiple
+			// times, but ending up with the original size it was already shaped for.
+			// This check prevents the catastrophic, freezing infinite cascade of re-layout.
+			if (lines_shaped_last_width != get_size().width) {
+				lines_dirty = true;
+			}
 		} break;
 	}
 }
