@@ -2795,6 +2795,18 @@ bool BindingsGenerator::_arg_default_value_is_assignable_to_type(const Variant &
 	return false;
 }
 
+bool method_has_ptr_parameter(MethodInfo p_method_info) {
+	if (p_method_info.return_val.type == Variant::INT && p_method_info.return_val.hint == PROPERTY_HINT_INT_IS_POINTER) {
+		return true;
+	}
+	for (PropertyInfo arg : p_method_info.arguments) {
+		if (arg.type == Variant::INT && arg.hint == PROPERTY_HINT_INT_IS_POINTER) {
+			return true;
+		}
+	}
+	return false;
+}
+
 bool BindingsGenerator::_populate_object_type_interfaces() {
 	obj_types.clear();
 
@@ -2935,6 +2947,11 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 			String cname = method_info.name;
 
 			if (blacklisted_methods.find(itype.cname) && blacklisted_methods[itype.cname].find(cname)) {
+				continue;
+			}
+
+			if (method_has_ptr_parameter(method_info)) {
+				// Pointers are not supported.
 				continue;
 			}
 
