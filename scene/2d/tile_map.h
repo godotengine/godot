@@ -179,7 +179,7 @@ private:
 		FORMAT_2,
 		FORMAT_3
 	};
-	mutable DataFormat format = FORMAT_1; // Assume lowest possible format if none is present;
+	mutable DataFormat format = FORMAT_3;
 
 	static constexpr float FP_ADJUST = 0.00001;
 
