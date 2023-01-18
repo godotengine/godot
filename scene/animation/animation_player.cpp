@@ -1852,11 +1852,20 @@ void AnimationPlayer::_node_renamed(Node *p_node, const StringName &p_old_name, 
 
 		for (int track_idx = 0; track_idx < anim->get_track_count(); track_idx++) {
 			NodePath track_path = anim->track_get_path(track_idx);
+			int names = track_path.get_name_count();
 			int subnames = track_path.get_subname_count();
 
-			if (track_path.get_subname(subnames - 1) == p_old_name) {
+			if (track_path.get_name(names - 1) == p_old_name) {
+				String new_path_str = path.get_concatenated_names();
+
+				if (subnames > 0) {
+					new_path_str += ":" + track_path.get_concatenated_subnames();
+				}
+
+				NodePath new_path = NodePath(new_path_str);
+
 				// This path needs to be updated
-				anim->track_set_path(track_idx, path);
+				anim->track_set_path(track_idx, new_path);
 				change_performed = true;
 			}
 		}
