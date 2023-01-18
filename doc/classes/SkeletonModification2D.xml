@@ -56,7 +56,7 @@
 		<method name="get_modification_stack">
 			<return type="SkeletonModificationStack2D" />
 			<description>
-				Returns the [SkeletonModificationStack2D] that this modification is bound to. Through the modification stack, you can access the Skeleton3D the modification is operating on.
+				Returns the [SkeletonModificationStack2D] that this modification is bound to. Through the modification stack, you can access the Skeleton2D the modification is operating on.
 			</description>
 		</method>
 		<method name="set_editor_draw_gizmo">
