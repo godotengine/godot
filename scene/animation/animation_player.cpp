@@ -1843,7 +1843,7 @@ void AnimationPlayer::_node_removed(Node *p_node) {
 	clear_caches(); // nodes contained here are being removed, clear the caches
 }
 
-void AnimationPlayer::_node_renamed(Node* p_node, const StringName &p_old_name) {
+void AnimationPlayer::_node_renamed(Node *p_node, const StringName &p_old_name, const StringName &p_new_name) {
 	const NodePath &path = p_node->get_path();
 	bool change_performed = false;
 

@@ -926,8 +926,8 @@ void Node::set_name(const String &p_name) {
 	propagate_notification(NOTIFICATION_PATH_RENAMED);
 
 	if (is_inside_tree()) {
-		emit_signal(SNAME("renamed"), old_name);
-		get_tree()->node_renamed(this, old_name);
+		emit_signal(SNAME("renamed"), old_name, name);
+		get_tree()->node_renamed(this, old_name, name);
 		get_tree()->tree_changed();
 	}
 }
