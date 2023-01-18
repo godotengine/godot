@@ -3162,32 +3162,37 @@ CodeEdit::~CodeEdit() {
 
 String CodeCompletionOptionCompare::base;
 
-static Vector<int> _get_subseq_distances(const Vector<Pair<int, int>> p_matches) {
-	Vector<int> distances;
-	for (int i = 1; i < p_matches.size(); ++i) {
-		int current = p_matches[i].first;
-		int previous = p_matches[i - 1].first;
-
-		distances.push_back(current - previous);
+int levenshtein_distance(const String &source, const String &target) {
+	if (source.size() > target.size()) {
+		return levenshtein_distance(target, source);
 	}
 
-	return distances;
-}
+	const int min_size = source.size();
+	const int max_size = target.size();
+	Vector<int> lev_dist;
+	lev_dist.resize(min_size + 1);
 
-const int KIND_COUNT = 10;
-// The order in which to sort code completion options.
-const ScriptLanguage::CodeCompletionKind KIND_SORT_ORDER[KIND_COUNT] = {
-	ScriptLanguage::CODE_COMPLETION_KIND_VARIABLE,
-	ScriptLanguage::CODE_COMPLETION_KIND_MEMBER,
-	ScriptLanguage::CODE_COMPLETION_KIND_FUNCTION,
-	ScriptLanguage::CODE_COMPLETION_KIND_SIGNAL,
-	ScriptLanguage::CODE_COMPLETION_KIND_ENUM,
-	ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT,
-	ScriptLanguage::CODE_COMPLETION_KIND_CLASS,
-	ScriptLanguage::CODE_COMPLETION_KIND_NODE_PATH,
-	ScriptLanguage::CODE_COMPLETION_KIND_FILE_PATH,
-	ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT,
-};
+	for (int i = 0; i <= min_size; ++i) {
+		lev_dist.write[i] = i;
+	}
+
+	for (int j = 1; j <= max_size; ++j) {
+		int previous_diagonal = lev_dist[0];
+		lev_dist.write[0] += 1;
+
+		for (int i = 1; i <= min_size; ++i) {
+			const int previous_diagonal_save = lev_dist[i];
+			if (source[i - 1] == target[j - 1]) {
+				lev_dist.write[i] = previous_diagonal;
+			} else {
+				lev_dist.write[i] = MIN(MIN(lev_dist[i - 1], lev_dist[i]), previous_diagonal) + 1;
+			}
+			previous_diagonal = previous_diagonal_save;
+		}
+	}
+
+	return lev_dist[min_size];
+}
 
 // Return true if l should come before r
 bool CodeCompletionOptionCompare::operator()(const ScriptLanguage::CodeCompletionOption &l, const ScriptLanguage::CodeCompletionOption &r) const {
@@ -3195,17 +3200,16 @@ bool CodeCompletionOptionCompare::operator()(const ScriptLanguage::CodeCompletio
 	int l_exact_idx = l.display.findn(base);
 	int r_exact_idx = r.display.findn(base);
 
-	// First, prioritise exact matches
-	// If both exact, the one which occurs first is prioritised unless location is different
 	bool l_exact = l_exact_idx != -1;
 	bool r_exact = r_exact_idx != -1;
 
-	if (l_exact || r_exact) {
+	// Compare position to length of base to discard exact matches which are very far from the start.
+	// Other wise you have things like MyLongVeryLongNameVec3 being ranked before Vector3 for search 'vec3'
+	if ((l_exact && l_exact_idx <= base.length() * 2) || (r_exact && l_exact_idx <= base.length() * 2)) {
 		if (l_exact && r_exact) {
 			if (l.location != r.location) {
 				return l.location < r.location;
 			}
-
 			if (l_exact_idx != r_exact_idx) {
 				return l_exact_idx < r_exact_idx;
 			}
@@ -3216,52 +3220,44 @@ bool CodeCompletionOptionCompare::operator()(const ScriptLanguage::CodeCompletio
 		}
 	}
 
-	// If not exact, defer to sorting by location.
-	// This allows close matches of lesser priority locations to be pushed to the top.
+	const int l_lev = levenshtein_distance(base, l.display);
+	const int r_lev = levenshtein_distance(base, r.display);
+
+	if (ABS(l_lev - r_lev) > 8) {
+		return l_lev < r_lev;
+	}
+
 	if (l.location != r.location) {
 		return l.location < r.location;
 	}
 
-	// Then prioritise based on the position of the first matched character
-	if (!l.matches.is_empty() && (r.matches.is_empty() || l.matches[0].first < r.matches[0].first)) {
-		return true;
-	}
-	if (!r.matches.is_empty() && (l.matches.is_empty() || l.matches[0].first > r.matches[0].first)) {
-		return false;
-	}
-
-	// Then based on the successive distance between subseqence matches
-	const Vector<int> l_subseq_dist = _get_subseq_distances(l.matches);
-	const Vector<int> r_subseq_dist = _get_subseq_distances(r.matches);
-	const int dist_shared_size = MIN(l_subseq_dist.size(), r_subseq_dist.size());
-	for (int i = 0; i < dist_shared_size; ++i) {
-		if (l_subseq_dist[i] != r_subseq_dist[i]) {
-			return l_subseq_dist[i] < r_subseq_dist[i];
+	bool all_match_groups_same = true;
+	int matches_shared_size = MIN(l.matches.size(), r.matches.size());
+	for (int i = 0; i < matches_shared_size; ++i) {
+		if (l.matches[i].first != r.matches[i].first || l.matches[i].second != r.matches[i].second) {
+			all_match_groups_same = false;
+			break;
 		}
 	}
 
-	// Then on similarity to the input string
-	const float l_similarity = l.display.to_lower().similarity(base.to_lower());
-	const float r_similarity = r.display.to_lower().similarity(base.to_lower());
-
-	if (l_similarity > 0.75f || r_similarity > 0.75f) {
-		return l_similarity > r_similarity;
-	}
-
-	if (l.kind != r.kind) {
-		// Sort kinds based on the const sorting array defined above. Lower index = higher priority.
-		int l_index = -1;
-		int r_index = -1;
-		for (int i = 0; i < KIND_COUNT; i++) {
-			const ScriptLanguage::CodeCompletionKind kind = KIND_SORT_ORDER[i];
-			l_index = kind == l.kind ? i : l_index;
-			r_index = kind == r.kind ? i : r_index;
-
-			if (l_index != -1 && r_index != -1) {
-				return l_index < r_index;
+	if (matches_shared_size > 0 && !all_match_groups_same) {
+		for (int i = 0; i < matches_shared_size; ++i) {
+			if (l.matches[i].first != r.matches[i].first) {
+				return l.matches[i].first < r.matches[i].first;
+			}
+			if (l.matches[i].second != r.matches[i].second) {
+				return l.matches[i].second > r.matches[i].second;
 			}
 		}
 	}
 
-	return l_similarity > r_similarity;
+	if (!l.matches.is_empty() && !r.matches.is_empty()) {
+		float l_match_score = (float)(l.matches[0].first + 1) / l.matches[0].second;
+		float r_match_score = (float)(r.matches[0].first + 1) / r.matches[0].second;
+		if (!Math::is_equal_approx(l_match_score, r_match_score, 0.2f)) {
+			return l_match_score < r_match_score;
+		}
+	}
+
+	return l_lev < r_lev;
 }
