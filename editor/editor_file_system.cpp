@@ -922,6 +922,15 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, Ref<DirAc
 			}
 		}
 
+		p_dir->files.push_back(fi);
+		p_progress.update(idx, total);
+	}
+
+	_scan_script_classes(p_dir);
+
+	for (EditorFileSystemDirectory::FileInfo *fi : p_dir->files) {
+		String path = cd.path_join(fi->file);
+
 		for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 			ScriptLanguage *lang = ScriptServer::get_language(i);
 			if (lang->supports_documentation() && fi->type == lang->get_type()) {
@@ -935,9 +944,6 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, Ref<DirAc
 				}
 			}
 		}
-
-		p_dir->files.push_back(fi);
-		p_progress.update(idx, total);
 	}
 }
 
