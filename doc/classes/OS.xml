@@ -592,12 +592,12 @@
 			</description>
 		</method>
 		<method name="set_environment" qualifiers="const">
-			<return type="bool" />
+			<return type="void" />
 			<param index="0" name="variable" type="String" />
 			<param index="1" name="value" type="String" />
 			<description>
 				Sets the value of the environment variable [param variable] to [param value]. The environment variable will be set for the Godot process and any process executed with [method execute] after running [method set_environment]. The environment variable will [i]not[/i] persist to processes run after the Godot process was terminated.
-				[b]Note:[/b] Double-check the casing of [param variable]. Environment variable names are case-sensitive on all platforms except Windows.
+				[b]Note:[/b] Environment variable names are case-sensitive on all platforms except Windows. The [param variable] name cannot be empty or include the [code]=[/code] character. On Windows, there is a 32767 characters limit for the combined length of [param variable], [param value], and the [code]=[/code] and null terminator characters that will be registered in the environment block.
 			</description>
 		</method>
 		<method name="set_restart_on_exit">
@@ -635,6 +635,14 @@
 				- [code]OS.shell_open("mailto:example@example.com")[/code] opens the default email client with the "To" field set to [code]example@example.com[/code]. See [url=https://datatracker.ietf.org/doc/html/rfc2368]RFC 2368 - The [code]mailto[/code] URL scheme[/url] for a list of fields that can be added.
 				Use [method ProjectSettings.globalize_path] to convert a [code]res://[/code] or [code]user://[/code] path into a system path for use with this method.
 				[b]Note:[/b] This method is implemented on Android, iOS, Web, Linux, macOS and Windows.
+			</description>
+		</method>
+		<method name="unset_environment" qualifiers="const">
+			<return type="void" />
+			<param index="0" name="variable" type="String" />
+			<description>
+				Removes the environment [param variable] from the current environment, if it exists. The environment variable will be removed for the Godot process and any process executed with [method execute] after running [method unset_environment]. The removal of the environment variable will [i]not[/i] persist to processes run after the Godot process was terminated.
+				[b]Note:[/b] Environment variable names are case-sensitive on all platforms except Windows. The [param variable] name cannot be empty or include the [code]=[/code] character.
 			</description>
 		</method>
 	</methods>
