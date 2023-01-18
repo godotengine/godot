@@ -460,7 +460,7 @@ void MeshInstance3DEditor::_debug_uv_draw() {
 	debug_uv->draw_rect(Rect2(Vector2(), debug_uv->get_size()), get_theme_color(SNAME("dark_color_3"), SNAME("Editor")));
 	debug_uv->draw_set_transform(Vector2(), 0, debug_uv->get_size());
 	// Use a translucent color to allow overlapping triangles to be visible.
-	debug_uv->draw_multiline(uv_lines, get_theme_color(SNAME("mono_color"), SNAME("Editor")) * Color(1, 1, 1, 0.5), Math::round(EDSCALE));
+	debug_uv->draw_multiline(uv_lines, get_theme_color(SNAME("mono_color"), SNAME("Editor")) * Color(1, 1, 1, 0.5));
 }
 
 void MeshInstance3DEditor::_create_outline_mesh() {
