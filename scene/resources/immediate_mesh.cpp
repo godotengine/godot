@@ -194,25 +194,20 @@ void ImmediateMesh::surface_end() {
 			if (uses_normals) {
 				uint32_t *normal = (uint32_t *)&surface_vertex_ptr[i * vertex_stride + normal_offset];
 
-				Vector3 n = normals[i] * Vector3(0.5, 0.5, 0.5) + Vector3(0.5, 0.5, 0.5);
+				Vector2 n = normals[i].octahedron_encode();
 
 				uint32_t value = 0;
-				value |= CLAMP(int(n.x * 1023.0), 0, 1023);
-				value |= CLAMP(int(n.y * 1023.0), 0, 1023) << 10;
-				value |= CLAMP(int(n.z * 1023.0), 0, 1023) << 20;
+				value |= (uint16_t)CLAMP(n.x * 65535, 0, 65535);
+				value |= (uint16_t)CLAMP(n.y * 65535, 0, 65535) << 16;
 
 				*normal = value;
 			}
 			if (uses_tangents) {
 				uint32_t *tangent = (uint32_t *)&surface_vertex_ptr[i * vertex_stride + tangent_offset];
-				Plane t = tangents[i];
+				Vector2 t = tangents[i].normal.octahedron_tangent_encode(tangents[i].d);
 				uint32_t value = 0;
-				value |= CLAMP(int((t.normal.x * 0.5 + 0.5) * 1023.0), 0, 1023);
-				value |= CLAMP(int((t.normal.y * 0.5 + 0.5) * 1023.0), 0, 1023) << 10;
-				value |= CLAMP(int((t.normal.z * 0.5 + 0.5) * 1023.0), 0, 1023) << 20;
-				if (t.d > 0) {
-					value |= 3UL << 30;
-				}
+				value |= (uint16_t)CLAMP(t.x * 65535, 0, 65535);
+				value |= (uint16_t)CLAMP(t.y * 65535, 0, 65535) << 16;
 
 				*tangent = value;
 			}

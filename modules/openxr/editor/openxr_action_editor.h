@@ -43,7 +43,7 @@ class OpenXRActionEditor : public HBoxContainer {
 	GDCLASS(OpenXRActionEditor, HBoxContainer);
 
 private:
-	Ref<EditorUndoRedoManager> undo_redo;
+	EditorUndoRedoManager *undo_redo;
 	Ref<OpenXRAction> action;
 
 	LineEdit *action_name = nullptr;

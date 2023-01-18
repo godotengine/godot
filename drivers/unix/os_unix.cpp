@@ -411,10 +411,6 @@ bool OS_Unix::is_process_running(const ProcessID &p_pid) const {
 	return true;
 }
 
-bool OS_Unix::has_environment(const String &p_var) const {
-	return getenv(p_var.utf8().get_data()) != nullptr;
-}
-
 String OS_Unix::get_locale() const {
 	if (!has_environment("LANG")) {
 		return "en";
@@ -487,6 +483,10 @@ Error OS_Unix::set_cwd(const String &p_cwd) {
 	return OK;
 }
 
+bool OS_Unix::has_environment(const String &p_var) const {
+	return getenv(p_var.utf8().get_data()) != nullptr;
+}
+
 String OS_Unix::get_environment(const String &p_var) const {
 	if (getenv(p_var.utf8().get_data())) {
 		return getenv(p_var.utf8().get_data());
@@ -494,8 +494,15 @@ String OS_Unix::get_environment(const String &p_var) const {
 	return "";
 }
 
-bool OS_Unix::set_environment(const String &p_var, const String &p_value) const {
-	return setenv(p_var.utf8().get_data(), p_value.utf8().get_data(), /* overwrite: */ true) == 0;
+void OS_Unix::set_environment(const String &p_var, const String &p_value) const {
+	ERR_FAIL_COND_MSG(p_var.is_empty() || p_var.contains("="), vformat("Invalid environment variable name '%s', cannot be empty or include '='.", p_var));
+	int err = setenv(p_var.utf8().get_data(), p_value.utf8().get_data(), /* overwrite: */ 1);
+	ERR_FAIL_COND_MSG(err != 0, vformat("Failed setting environment variable '%s', the system is out of memory.", p_var));
+}
+
+void OS_Unix::unset_environment(const String &p_var) const {
+	ERR_FAIL_COND_MSG(p_var.is_empty() || p_var.contains("="), vformat("Invalid environment variable name '%s', cannot be empty or include '='.", p_var));
+	unsetenv(p_var.utf8().get_data());
 }
 
 String OS_Unix::get_user_data_dir() const {

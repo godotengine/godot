@@ -97,27 +97,6 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the length (magnitude) of the quaternion.
-        /// </summary>
-        /// <seealso cref="LengthSquared"/>
-        /// <value>Equivalent to <c>Mathf.Sqrt(LengthSquared)</c>.</value>
-        public readonly real_t Length
-        {
-            get { return Mathf.Sqrt(LengthSquared); }
-        }
-
-        /// <summary>
-        /// Returns the squared length (squared magnitude) of the quaternion.
-        /// This method runs faster than <see cref="Length"/>, so prefer it if
-        /// you need to compare quaternions or need the squared length for some formula.
-        /// </summary>
-        /// <value>Equivalent to <c>Dot(this)</c>.</value>
-        public readonly real_t LengthSquared
-        {
-            get { return Dot(this); }
-        }
-
-        /// <summary>
         /// Returns the angle between this quaternion and <paramref name="to"/>.
         /// This is the magnitude of the angle you would need to rotate
         /// by to get from one to the other.
@@ -355,7 +334,7 @@ namespace Godot
         /// <returns>A <see langword="bool"/> for whether the quaternion is normalized or not.</returns>
         public readonly bool IsNormalized()
         {
-            return Mathf.Abs(LengthSquared - 1) <= Mathf.Epsilon;
+            return Mathf.Abs(LengthSquared() - 1) <= Mathf.Epsilon;
         }
 
         public readonly Quaternion Log()
@@ -365,12 +344,33 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns the length (magnitude) of the quaternion.
+        /// </summary>
+        /// <seealso cref="LengthSquared"/>
+        /// <value>Equivalent to <c>Mathf.Sqrt(LengthSquared)</c>.</value>
+        public readonly real_t Length()
+        {
+            return Mathf.Sqrt(LengthSquared());
+        }
+
+        /// <summary>
+        /// Returns the squared length (squared magnitude) of the quaternion.
+        /// This method runs faster than <see cref="Length"/>, so prefer it if
+        /// you need to compare quaternions or need the squared length for some formula.
+        /// </summary>
+        /// <value>Equivalent to <c>Dot(this)</c>.</value>
+        public readonly real_t LengthSquared()
+        {
+            return Dot(this);
+        }
+
+        /// <summary>
         /// Returns a copy of the quaternion, normalized to unit length.
         /// </summary>
         /// <returns>The normalized quaternion.</returns>
         public readonly Quaternion Normalized()
         {
-            return this / Length;
+            return this / Length();
         }
 
         /// <summary>
@@ -542,14 +542,13 @@ namespace Godot
             }
             else
             {
-                real_t sinAngle = Mathf.Sin(angle * 0.5f);
-                real_t cosAngle = Mathf.Cos(angle * 0.5f);
-                real_t s = sinAngle / d;
+                (real_t sin, real_t cos) = Mathf.SinCos(angle * 0.5f);
+                real_t s = sin / d;
 
                 x = axis.x * s;
                 y = axis.y * s;
                 z = axis.z * s;
-                w = cosAngle;
+                w = cos;
             }
         }
 
@@ -593,12 +592,9 @@ namespace Godot
             // Conversion to quaternion as listed in https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/19770024290.pdf (page A-6)
             // a3 is the angle of the first rotation, following the notation in this reference.
 
-            real_t cosA1 = Mathf.Cos(halfA1);
-            real_t sinA1 = Mathf.Sin(halfA1);
-            real_t cosA2 = Mathf.Cos(halfA2);
-            real_t sinA2 = Mathf.Sin(halfA2);
-            real_t cosA3 = Mathf.Cos(halfA3);
-            real_t sinA3 = Mathf.Sin(halfA3);
+            (real_t sinA1, real_t cosA1) = Mathf.SinCos(halfA1);
+            (real_t sinA2, real_t cosA2) = Mathf.SinCos(halfA2);
+            (real_t sinA3, real_t cosA3) = Mathf.SinCos(halfA3);
 
             return new Quaternion(
                 (sinA1 * cosA2 * sinA3) + (cosA1 * sinA2 * cosA3),

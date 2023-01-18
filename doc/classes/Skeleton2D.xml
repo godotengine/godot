@@ -16,7 +16,7 @@
 			<param index="0" name="delta" type="float" />
 			<param index="1" name="execution_mode" type="int" />
 			<description>
-				Executes all the modifications on the [SkeletonModificationStack2D], if the Skeleton3D has one assigned.
+				Executes all the modifications on the [SkeletonModificationStack2D], if the Skeleton2D has one assigned.
 			</description>
 		</method>
 		<method name="get_bone">

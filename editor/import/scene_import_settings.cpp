@@ -703,15 +703,17 @@ void SceneImportSettings::_select(Tree *p_from, String p_type, String p_id) {
 		}
 
 		MeshData &md = mesh_map[p_id];
-		if (p_from != mesh_tree) {
-			md.mesh_node->uncollapse_tree();
-			md.mesh_node->select(0);
-			mesh_tree->ensure_cursor_is_visible();
-		}
-		if (p_from != scene_tree) {
-			md.scene_node->uncollapse_tree();
-			md.scene_node->select(0);
-			scene_tree->ensure_cursor_is_visible();
+		if (md.mesh_node != nullptr) {
+			if (p_from != mesh_tree) {
+				md.mesh_node->uncollapse_tree();
+				md.mesh_node->select(0);
+				mesh_tree->ensure_cursor_is_visible();
+			}
+			if (p_from != scene_tree) {
+				md.scene_node->uncollapse_tree();
+				md.scene_node->select(0);
+				scene_tree->ensure_cursor_is_visible();
+			}
 		}
 
 		mesh_preview->set_mesh(md.mesh);
@@ -1234,6 +1236,12 @@ SceneImportSettings::SceneImportSettings() {
 
 	action_menu = memnew(MenuButton);
 	action_menu->set_text(TTR("Actions..."));
+	// Style the MenuButton like a regular Button to make it more noticeable.
+	action_menu->set_flat(false);
+	action_menu->add_theme_style_override("normal", get_theme_stylebox("normal", "Button"));
+	action_menu->add_theme_style_override("hover", get_theme_stylebox("hover", "Button"));
+	action_menu->add_theme_style_override("pressed", get_theme_stylebox("pressed", "Button"));
+	action_menu->set_focus_mode(Control::FOCUS_ALL);
 	menu_hb->add_child(action_menu);
 
 	action_menu->get_popup()->add_item(TTR("Extract Materials"), ACTION_EXTRACT_MATERIALS);

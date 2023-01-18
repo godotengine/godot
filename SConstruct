@@ -202,7 +202,7 @@ opts.Add("extra_suffix", "Custom extra suffix added to the base filename of all 
 opts.Add(BoolVariable("vsproj", "Generate a Visual Studio solution", False))
 opts.Add(BoolVariable("disable_3d", "Disable 3D nodes for a smaller executable", False))
 opts.Add(BoolVariable("disable_advanced_gui", "Disable advanced GUI nodes and behaviors", False))
-opts.Add("build_feature_profile", "Path to a file containing a feature build profile", "")
+opts.Add("build_profile", "Path to a file containing a feature build profile", "")
 opts.Add(BoolVariable("modules_enabled_by_default", "If no, disable all modules except ones explicitly enabled", True))
 opts.Add(BoolVariable("no_editor_splash", "Don't use the custom splash screen for the editor", True))
 opts.Add("system_certs_path", "Use this path as SSL certificates default for editor (for package maintainers)", "")
@@ -492,6 +492,25 @@ if selected_platform in platform_list:
     env["LINKFLAGS"] = ""
     env.Append(LINKFLAGS=str(LINKFLAGS).split())
 
+    # Feature build profile
+    disabled_classes = []
+    if env["build_profile"] != "":
+        print("Using feature build profile: " + env["build_profile"])
+        import json
+
+        try:
+            ft = json.load(open(env["build_profile"]))
+            if "disabled_classes" in ft:
+                disabled_classes = ft["disabled_classes"]
+            if "disabled_build_options" in ft:
+                dbo = ft["disabled_build_options"]
+                for c in dbo:
+                    env[c] = dbo[c]
+        except:
+            print("Error opening feature build profile: " + env["build_profile"])
+            Exit(255)
+    methods.write_disabled_classes(disabled_classes)
+
     # Platform specific flags.
     # These can sometimes override default options.
     flag_list = platform_flags[selected_platform]
@@ -540,6 +559,9 @@ if selected_platform in platform_list:
             env.Append(CCFLAGS=["/Od"])
     else:
         if env["debug_symbols"]:
+            # Adding dwarf-4 explicitly makes stacktraces work with clang builds,
+            # otherwise addr2line doesn't understand them
+            env.Append(CCFLAGS=["-gdwarf-4"])
             if env.dev_build:
                 env.Append(CCFLAGS=["-g3"])
             else:
@@ -814,26 +836,6 @@ if selected_platform in platform_list:
         env["LIBSUFFIXES"] += [env["LIBSUFFIX"], env["SHLIBSUFFIX"]]
     env["LIBSUFFIX"] = suffix + env["LIBSUFFIX"]
     env["SHLIBSUFFIX"] = suffix + env["SHLIBSUFFIX"]
-
-    disabled_classes = []
-
-    if env["build_feature_profile"] != "":
-        print("Using build feature profile: " + env["build_feature_profile"])
-        import json
-
-        try:
-            ft = json.load(open(env["build_feature_profile"]))
-            if "disabled_classes" in ft:
-                disabled_classes = ft["disabled_classes"]
-            if "disabled_build_options" in ft:
-                dbo = ft["disabled_build_options"]
-                for c in dbo:
-                    env[c] = dbo[c]
-        except:
-            print("Error opening feature build profile: " + env["build_feature_profile"])
-            Exit(255)
-
-    methods.write_disabled_classes(disabled_classes)
 
     if env["disable_3d"]:
         if env.editor_build:

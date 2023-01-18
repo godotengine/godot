@@ -194,7 +194,7 @@ void EditorAutoloadSettings::_autoload_edited() {
 	TreeItem *ti = tree->get_edited();
 	int column = tree->get_edited_column();
 
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 
 	if (column == 0) {
 		String name = ti->get_text(0);
@@ -289,7 +289,7 @@ void EditorAutoloadSettings::_autoload_button_pressed(Object *p_item, int p_colu
 
 	String name = "autoload/" + ti->get_text(0);
 
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 
 	switch (p_button) {
 		case BUTTON_OPEN: {
@@ -717,7 +717,7 @@ void EditorAutoloadSettings::drop_data_fw(const Point2 &p_point, const Variant &
 
 	orders.sort();
 
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 
 	undo_redo->create_action(TTR("Rearrange Autoloads"));
 
@@ -760,7 +760,7 @@ bool EditorAutoloadSettings::autoload_add(const String &p_name, const String &p_
 
 	name = "autoload/" + name;
 
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 
 	undo_redo->create_action(TTR("Add Autoload"));
 	// Singleton autoloads are represented with a leading "*" in their path.
@@ -786,7 +786,7 @@ bool EditorAutoloadSettings::autoload_add(const String &p_name, const String &p_
 void EditorAutoloadSettings::autoload_remove(const String &p_name) {
 	String name = "autoload/" + p_name;
 
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 
 	int order = ProjectSettings::get_singleton()->get_order(name);
 
@@ -808,12 +808,6 @@ void EditorAutoloadSettings::autoload_remove(const String &p_name) {
 }
 
 void EditorAutoloadSettings::_bind_methods() {
-	ClassDB::bind_method("_autoload_open", &EditorAutoloadSettings::_autoload_open);
-
-	ClassDB::bind_method("_get_drag_data_fw", &EditorAutoloadSettings::get_drag_data_fw);
-	ClassDB::bind_method("_can_drop_data_fw", &EditorAutoloadSettings::can_drop_data_fw);
-	ClassDB::bind_method("_drop_data_fw", &EditorAutoloadSettings::drop_data_fw);
-
 	ClassDB::bind_method("update_autoload", &EditorAutoloadSettings::update_autoload);
 	ClassDB::bind_method("autoload_add", &EditorAutoloadSettings::autoload_add);
 	ClassDB::bind_method("autoload_remove", &EditorAutoloadSettings::autoload_remove);
@@ -935,7 +929,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 	tree->set_select_mode(Tree::SELECT_MULTI);
 	tree->set_allow_reselect(true);
 
-	tree->set_drag_forwarding_compat(this);
+	SET_DRAG_FORWARDING_GCD(tree, EditorAutoloadSettings);
 
 	tree->set_columns(4);
 	tree->set_column_titles_visible(true);

@@ -70,7 +70,7 @@ class ShaderGlobalsEditorInterface : public Object {
 	GDCLASS(ShaderGlobalsEditorInterface, Object)
 
 	void _set_var(const StringName &p_name, const Variant &p_value, const Variant &p_prev_value) {
-		Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 
 		undo_redo->create_action(TTR("Set Shader Global Variable"));
 		undo_redo->add_do_method(RS::get_singleton(), "global_shader_parameter_set", p_name, p_value);
@@ -399,7 +399,7 @@ void ShaderGlobalsEditor::_variable_added() {
 		return;
 	}
 
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_singleton()->get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 
 	Variant value = create_var(RS::GlobalShaderParameterType(variable_type->get_selected()));
 
@@ -418,7 +418,7 @@ void ShaderGlobalsEditor::_variable_added() {
 }
 
 void ShaderGlobalsEditor::_variable_deleted(const String &p_variable) {
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_singleton()->get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 
 	undo_redo->create_action(TTR("Add Shader Global Parameter"));
 	undo_redo->add_do_method(RS::get_singleton(), "global_shader_parameter_remove", p_variable);

@@ -15,7 +15,7 @@
 			<param index="2" name="state" type="GLTFState" />
 			<param index="3" name="flags" type="int" default="0" />
 			<description>
-				Takes a [PackedByteArray] defining a gLTF and returns a [GLTFState] object through the [param state] parameter.
+				Takes a [PackedByteArray] defining a GLTF and imports the data to the given [GLTFState] object through the [param state] parameter.
 				[b]Note:[/b] The [param base_path] tells [method append_from_buffer] where to find dependencies and can be empty.
 			</description>
 		</method>
@@ -26,7 +26,7 @@
 			<param index="2" name="flags" type="int" default="0" />
 			<param index="3" name="base_path" type="String" default="&quot;&quot;" />
 			<description>
-				Takes a path to a gLTF file and returns a [GLTFState] object through the [param state] parameter.
+				Takes a path to a GLTF file and imports the data at that file path to the given [GLTFState] object through the [param state] parameter.
 				[b]Note:[/b] The [param base_path] tells [method append_from_file] where to find dependencies and can be empty.
 			</description>
 		</method>
@@ -36,14 +36,14 @@
 			<param index="1" name="state" type="GLTFState" />
 			<param index="2" name="flags" type="int" default="0" />
 			<description>
-				Takes a Godot Engine scene node and returns a [GLTFState] object through the [param state] parameter.
+				Takes a Godot Engine scene node and exports it and its descendants to the given [GLTFState] object through the [param state] parameter.
 			</description>
 		</method>
 		<method name="generate_buffer">
 			<return type="PackedByteArray" />
 			<param index="0" name="state" type="GLTFState" />
 			<description>
-				Takes a [GLTFState] object through the [param state] parameter and returns a gLTF [PackedByteArray].
+				Takes a [GLTFState] object through the [param state] parameter and returns a GLTF [PackedByteArray].
 			</description>
 		</method>
 		<method name="generate_scene">

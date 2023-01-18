@@ -185,7 +185,19 @@
 			<return type="Vector2i[]" />
 			<param index="0" name="layer" type="int" />
 			<description>
-				Returns a [Vector2] array with the positions of all cells containing a tile in the given layer. A cell is considered empty if its source identifier equals -1, its atlas coordinates identifiers is [code]Vector2(-1, -1)[/code] and its alternative identifier is -1.
+				Returns a [Vector2i] array with the positions of all cells containing a tile in the given layer. A cell is considered empty if its source identifier equals -1, its atlas coordinates identifiers is [code]Vector2(-1, -1)[/code] and its alternative identifier is -1.
+			</description>
+		</method>
+		<method name="get_used_cells_by_id" qualifiers="const">
+			<return type="Vector2i[]" />
+			<param index="0" name="layer" type="int" />
+			<param index="1" name="source_id" type="int" default="-1" />
+			<param index="2" name="atlas_coords" type="Vector2i" default="Vector2i(-1, -1)" />
+			<param index="3" name="alternative_tile" type="int" default="-1" />
+			<description>
+				Returns a [Vector2i] array with the positions of all cells containing a tile in the given layer. Tiles may be filtered according to their source ([param source_id]), their atlas coordinates ([param atlas_coords]) or alternative id ([param source_id]).
+				If a parameter has it's value set to the default one, this parameter is not used to filter a cell. Thus, if all parameters have their respective default value, this method returns the same result as [method get_used_cells].
+				A cell is considered empty if its source identifier equals -1, its atlas coordinates identifiers is [code]Vector2(-1, -1)[/code] and its alternative identifier is -1.
 			</description>
 		</method>
 		<method name="get_used_rect">

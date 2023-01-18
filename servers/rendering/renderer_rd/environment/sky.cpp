@@ -1085,8 +1085,8 @@ void SkyRD::setup_sky(RID p_env, Ref<RenderSceneBuffersRD> p_render_buffers, con
 			sky->reflection.dirty = true;
 		}
 
+		sky_scene_state.ubo.directional_light_count = 0;
 		if (shader_data->uses_light) {
-			sky_scene_state.ubo.directional_light_count = 0;
 			// Run through the list of lights in the scene and pick out the Directional Lights.
 			// This can't be done in RenderSceneRenderRD::_setup lights because that needs to be called
 			// after the depth prepass, but this runs before the depth prepass

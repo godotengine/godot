@@ -748,6 +748,10 @@ void RendererSceneCull::instance_set_scenario(RID p_instance, RID p_scenario) {
 		switch (instance->base_type) {
 			case RS::INSTANCE_LIGHT: {
 				InstanceLightData *light = static_cast<InstanceLightData *>(instance->base_data);
+				if (instance->visible && RSG::light_storage->light_get_type(instance->base) != RS::LIGHT_DIRECTIONAL && light->bake_mode == RS::LIGHT_BAKE_DYNAMIC) {
+					instance->scenario->dynamic_lights.erase(light->instance);
+				}
+
 #ifdef DEBUG_ENABLED
 				if (light->geometries.size()) {
 					ERR_PRINT("BUG, indexing did not unpair geometries from light.");

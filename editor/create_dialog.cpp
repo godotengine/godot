@@ -724,12 +724,6 @@ void CreateDialog::_load_favorites_and_history() {
 }
 
 void CreateDialog::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_save_and_update_favorite_list"), &CreateDialog::_save_and_update_favorite_list);
-
-	ClassDB::bind_method("_get_drag_data_fw", &CreateDialog::get_drag_data_fw);
-	ClassDB::bind_method("_can_drop_data_fw", &CreateDialog::can_drop_data_fw);
-	ClassDB::bind_method("_drop_data_fw", &CreateDialog::drop_data_fw);
-
 	ADD_SIGNAL(MethodInfo("create"));
 	ADD_SIGNAL(MethodInfo("favorites_updated"));
 }
@@ -759,7 +753,7 @@ CreateDialog::CreateDialog() {
 	favorites->connect("cell_selected", callable_mp(this, &CreateDialog::_favorite_selected));
 	favorites->connect("item_activated", callable_mp(this, &CreateDialog::_favorite_activated));
 	favorites->add_theme_constant_override("draw_guides", 1);
-	favorites->set_drag_forwarding_compat(this);
+	SET_DRAG_FORWARDING_GCD(favorites, CreateDialog);
 	fav_vb->add_margin_child(TTR("Favorites:"), favorites, true);
 
 	VBoxContainer *rec_vb = memnew(VBoxContainer);

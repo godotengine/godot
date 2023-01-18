@@ -322,8 +322,12 @@ String OS::get_environment(const String &p_var) const {
 	return ::OS::get_singleton()->get_environment(p_var);
 }
 
-bool OS::set_environment(const String &p_var, const String &p_value) const {
-	return ::OS::get_singleton()->set_environment(p_var, p_value);
+void OS::set_environment(const String &p_var, const String &p_value) const {
+	::OS::get_singleton()->set_environment(p_var, p_value);
+}
+
+void OS::unset_environment(const String &p_var) const {
+	::OS::get_singleton()->unset_environment(p_var);
 }
 
 String OS::get_name() const {
@@ -548,9 +552,10 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_process_running", "pid"), &OS::is_process_running);
 	ClassDB::bind_method(D_METHOD("get_process_id"), &OS::get_process_id);
 
+	ClassDB::bind_method(D_METHOD("has_environment", "variable"), &OS::has_environment);
 	ClassDB::bind_method(D_METHOD("get_environment", "variable"), &OS::get_environment);
 	ClassDB::bind_method(D_METHOD("set_environment", "variable", "value"), &OS::set_environment);
-	ClassDB::bind_method(D_METHOD("has_environment", "variable"), &OS::has_environment);
+	ClassDB::bind_method(D_METHOD("unset_environment", "variable"), &OS::unset_environment);
 
 	ClassDB::bind_method(D_METHOD("get_name"), &OS::get_name);
 	ClassDB::bind_method(D_METHOD("get_distribution_name"), &OS::get_distribution_name);

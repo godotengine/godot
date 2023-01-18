@@ -120,31 +120,6 @@ namespace Godot
         }
 
         /// <summary>
-        /// The scale of this basis.
-        /// </summary>
-        /// <value>Equivalent to the lengths of each column vector, but negative if the determinant is negative.</value>
-        public Vector3 Scale
-        {
-            readonly get
-            {
-                real_t detSign = Mathf.Sign(Determinant());
-                return detSign * new Vector3
-                (
-                    Column0.Length(),
-                    Column1.Length(),
-                    Column2.Length()
-                );
-            }
-            set
-            {
-                value /= Scale; // Value becomes what's called "delta_scale" in core.
-                Column0 *= value.x;
-                Column1 *= value.y;
-                Column2 *= value.z;
-            }
-        }
-
-        /// <summary>
         /// Access whole columns in the form of <see cref="Vector3"/>.
         /// </summary>
         /// <param name="column">Which column vector.</param>
@@ -493,12 +468,6 @@ namespace Godot
             }
         }
 
-        /// <summary>
-        /// Returns the basis's rotation in the form of a quaternion.
-        /// See <see cref="GetEuler"/> if you need Euler angles, but keep in
-        /// mind that quaternions should generally be preferred to Euler angles.
-        /// </summary>
-        /// <returns>A <see cref="Quaternion"/> representing the basis's rotation.</returns>
         internal readonly Quaternion GetQuaternion()
         {
             real_t trace = Row0[0] + Row1[1] + Row2[2];
@@ -573,106 +542,18 @@ namespace Godot
         }
 
         /// <summary>
-        /// Get rows by index. Rows are not very useful for user code,
-        /// but are more efficient for some internal calculations.
+        /// Assuming that the matrix is the combination of a rotation and scaling,
+        /// return the absolute value of scaling factors along each axis.
         /// </summary>
-        /// <param name="index">Which row.</param>
-        /// <exception cref="ArgumentOutOfRangeException">
-        /// <paramref name="index"/> is not 0, 1 or 2.
-        /// </exception>
-        /// <returns>One of <c>Row0</c>, <c>Row1</c>, or <c>Row2</c>.</returns>
-        public readonly Vector3 GetRow(int index)
+        public readonly Vector3 GetScale()
         {
-            switch (index)
-            {
-                case 0:
-                    return Row0;
-                case 1:
-                    return Row1;
-                case 2:
-                    return Row2;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(index));
-            }
-        }
-
-        /// <summary>
-        /// Sets rows by index. Rows are not very useful for user code,
-        /// but are more efficient for some internal calculations.
-        /// </summary>
-        /// <param name="index">Which row.</param>
-        /// <param name="value">The vector to set the row to.</param>
-        /// <exception cref="ArgumentOutOfRangeException">
-        /// <paramref name="index"/> is not 0, 1 or 2.
-        /// </exception>
-        public void SetRow(int index, Vector3 value)
-        {
-            switch (index)
-            {
-                case 0:
-                    Row0 = value;
-                    return;
-                case 1:
-                    Row1 = value;
-                    return;
-                case 2:
-                    Row2 = value;
-                    return;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(index));
-            }
-        }
-
-        /// <summary>
-        /// This function considers a discretization of rotations into
-        /// 24 points on unit sphere, lying along the vectors (x, y, z) with
-        /// each component being either -1, 0, or 1, and returns the index
-        /// of the point best representing the orientation of the object.
-        /// It is mainly used by the <see cref="GridMap"/> editor.
-        ///
-        /// For further details, refer to the Godot source code.
-        /// </summary>
-        /// <returns>The orthogonal index.</returns>
-        public readonly int GetOrthogonalIndex()
-        {
-            var orth = this;
-
-            for (int i = 0; i < 3; i++)
-            {
-                for (int j = 0; j < 3; j++)
-                {
-                    var row = orth.GetRow(i);
-
-                    real_t v = row[j];
-
-                    if (v > 0.5f)
-                    {
-                        v = 1.0f;
-                    }
-                    else if (v < -0.5f)
-                    {
-                        v = -1.0f;
-                    }
-                    else
-                    {
-                        v = 0f;
-                    }
-
-                    row[j] = v;
-
-                    orth.SetRow(i, row);
-                }
-            }
-
-            for (int i = 0; i < 24; i++)
-            {
-                if (orth == _orthoBases[i])
-                {
-                    return i;
-                }
-            }
-
-            return 0;
+            real_t detSign = Mathf.Sign(Determinant());
+            return detSign * new Vector3
+            (
+                Column0.Length(),
+                Column1.Length(),
+                Column2.Length()
+            );
         }
 
         /// <summary>
@@ -906,7 +787,7 @@ namespace Godot
         /// <param name="quaternion">The quaternion to create the basis from.</param>
         public Basis(Quaternion quaternion)
         {
-            real_t s = 2.0f / quaternion.LengthSquared;
+            real_t s = 2.0f / quaternion.LengthSquared();
 
             real_t xs = quaternion.x * s;
             real_t ys = quaternion.y * s;
@@ -935,26 +816,26 @@ namespace Godot
         public Basis(Vector3 axis, real_t angle)
         {
             Vector3 axisSq = new Vector3(axis.x * axis.x, axis.y * axis.y, axis.z * axis.z);
-            real_t cosine = Mathf.Cos(angle);
-            Row0.x = axisSq.x + cosine * (1.0f - axisSq.x);
-            Row1.y = axisSq.y + cosine * (1.0f - axisSq.y);
-            Row2.z = axisSq.z + cosine * (1.0f - axisSq.z);
+            (real_t sin, real_t cos) = Mathf.SinCos(angle);
 
-            real_t sine = Mathf.Sin(angle);
-            real_t t = 1.0f - cosine;
+            Row0.x = axisSq.x + cos * (1.0f - axisSq.x);
+            Row1.y = axisSq.y + cos * (1.0f - axisSq.y);
+            Row2.z = axisSq.z + cos * (1.0f - axisSq.z);
+
+            real_t t = 1.0f - cos;
 
             real_t xyzt = axis.x * axis.y * t;
-            real_t zyxs = axis.z * sine;
+            real_t zyxs = axis.z * sin;
             Row0.y = xyzt - zyxs;
             Row1.x = xyzt + zyxs;
 
             xyzt = axis.x * axis.z * t;
-            zyxs = axis.y * sine;
+            zyxs = axis.y * sin;
             Row0.z = xyzt + zyxs;
             Row2.x = xyzt - zyxs;
 
             xyzt = axis.y * axis.z * t;
-            zyxs = axis.x * sine;
+            zyxs = axis.x * sin;
             Row1.z = xyzt - zyxs;
             Row2.y = xyzt + zyxs;
         }
@@ -977,8 +858,20 @@ namespace Godot
             // We need to assign the struct fields here first so we can't do it that way...
         }
 
-        // Arguments are named such that xy is equal to calling x.y
-        internal Basis(real_t xx, real_t yx, real_t zx, real_t xy, real_t yy, real_t zy, real_t xz, real_t yz, real_t zz)
+        /// <summary>
+        /// Constructs a transformation matrix from the given components.
+        /// Arguments are named such that xy is equal to calling <c>x.y</c>.
+        /// </summary>
+        /// <param name="xx">The X component of the X column vector, accessed via <c>b.x.x</c> or <c>[0][0]</c>.</param>
+        /// <param name="yx">The X component of the Y column vector, accessed via <c>b.y.x</c> or <c>[1][0]</c>.</param>
+        /// <param name="zx">The X component of the Z column vector, accessed via <c>b.z.x</c> or <c>[2][0]</c>.</param>
+        /// <param name="xy">The Y component of the X column vector, accessed via <c>b.x.y</c> or <c>[0][1]</c>.</param>
+        /// <param name="yy">The Y component of the Y column vector, accessed via <c>b.y.y</c> or <c>[1][1]</c>.</param>
+        /// <param name="zy">The Y component of the Z column vector, accessed via <c>b.y.y</c> or <c>[2][1]</c>.</param>
+        /// <param name="xz">The Z component of the X column vector, accessed via <c>b.x.y</c> or <c>[0][2]</c>.</param>
+        /// <param name="yz">The Z component of the Y column vector, accessed via <c>b.y.y</c> or <c>[1][2]</c>.</param>
+        /// <param name="zz">The Z component of the Z column vector, accessed via <c>b.y.y</c> or <c>[2][2]</c>.</param>
+        public Basis(real_t xx, real_t yx, real_t zx, real_t xy, real_t yy, real_t zy, real_t xz, real_t yz, real_t zz)
         {
             Row0 = new Vector3(xx, yx, zx);
             Row1 = new Vector3(xy, yy, zy);
@@ -992,19 +885,29 @@ namespace Godot
         /// <param name="order">The order to compose the Euler angles.</param>
         public static Basis FromEuler(Vector3 euler, EulerOrder order = EulerOrder.Yxz)
         {
-            real_t c, s;
+            (real_t sin, real_t cos) = Mathf.SinCos(euler.x);
+            Basis xmat = new Basis
+            (
+                new Vector3(1, 0, 0),
+                new Vector3(0, cos, sin),
+                new Vector3(0, -sin, cos)
+            );
 
-            c = Mathf.Cos(euler.x);
-            s = Mathf.Sin(euler.x);
-            Basis xmat = new Basis(new Vector3(1, 0, 0), new Vector3(0, c, s), new Vector3(0, -s, c));
+            (sin, cos) = Mathf.SinCos(euler.y);
+            Basis ymat = new Basis
+            (
+                new Vector3(cos, 0, -sin),
+                new Vector3(0, 1, 0),
+                new Vector3(sin, 0, cos)
+            );
 
-            c = Mathf.Cos(euler.y);
-            s = Mathf.Sin(euler.y);
-            Basis ymat = new Basis(new Vector3(c, 0, -s), new Vector3(0, 1, 0), new Vector3(s, 0, c));
-
-            c = Mathf.Cos(euler.z);
-            s = Mathf.Sin(euler.z);
-            Basis zmat = new Basis(new Vector3(c, s, 0), new Vector3(-s, c, 0), new Vector3(0, 0, 1));
+            (sin, cos) = Mathf.SinCos(euler.z);
+            Basis zmat = new Basis
+            (
+                new Vector3(cos, sin, 0),
+                new Vector3(-sin, cos, 0),
+                new Vector3(0, 0, 1)
+            );
 
             switch (order)
             {

@@ -439,6 +439,8 @@ void ScriptEditor::_goto_script_line(Ref<RefCounted> p_script, int p_line) {
 			} else if (current) {
 				current->goto_line(p_line, true);
 			}
+
+			_save_history();
 		}
 	}
 }
@@ -2254,11 +2256,14 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 			args.push_back(script_path);
 		}
 
-		Error err = OS::get_singleton()->create_process(path, args);
-		if (err == OK) {
-			return false;
+		if (!path.is_empty()) {
+			Error err = OS::get_singleton()->create_process(path, args);
+			if (err == OK) {
+				return false;
+			}
 		}
-		WARN_PRINT("Couldn't open external text editor, using internal");
+
+		ERR_PRINT("Couldn't open external text editor, falling back to the internal editor. Review your `text_editor/external/` editor settings.");
 	}
 
 	for (int i = 0; i < tab_container->get_tab_count(); i++) {
@@ -3610,10 +3615,6 @@ void ScriptEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("register_syntax_highlighter", "syntax_highlighter"), &ScriptEditor::register_syntax_highlighter);
 	ClassDB::bind_method(D_METHOD("unregister_syntax_highlighter", "syntax_highlighter"), &ScriptEditor::unregister_syntax_highlighter);
 
-	ClassDB::bind_method(D_METHOD("_get_drag_data_fw", "point", "from"), &ScriptEditor::get_drag_data_fw);
-	ClassDB::bind_method(D_METHOD("_can_drop_data_fw", "point", "data", "from"), &ScriptEditor::can_drop_data_fw);
-	ClassDB::bind_method(D_METHOD("_drop_data_fw", "point", "data", "from"), &ScriptEditor::drop_data_fw);
-
 	ClassDB::bind_method(D_METHOD("goto_line", "line_number"), &ScriptEditor::_goto_script_line2);
 	ClassDB::bind_method(D_METHOD("get_current_script"), &ScriptEditor::_get_current_script);
 	ClassDB::bind_method(D_METHOD("get_open_scripts"), &ScriptEditor::_get_open_scripts);
@@ -3669,7 +3670,7 @@ ScriptEditor::ScriptEditor() {
 	_sort_list_on_update = true;
 	script_list->connect("item_clicked", callable_mp(this, &ScriptEditor::_script_list_clicked), CONNECT_DEFERRED);
 	script_list->set_allow_rmb_select(true);
-	script_list->set_drag_forwarding_compat(this);
+	SET_DRAG_FORWARDING_GCD(script_list, ScriptEditor);
 
 	context_menu = memnew(PopupMenu);
 	add_child(context_menu);

@@ -1490,14 +1490,6 @@ void ScriptTextEditor::_notification(int p_what) {
 	}
 }
 
-void ScriptTextEditor::_bind_methods() {
-	ClassDB::bind_method("_update_connected_methods", &ScriptTextEditor::_update_connected_methods);
-
-	ClassDB::bind_method("_get_drag_data_fw", &ScriptTextEditor::get_drag_data_fw);
-	ClassDB::bind_method("_can_drop_data_fw", &ScriptTextEditor::can_drop_data_fw);
-	ClassDB::bind_method("_drop_data_fw", &ScriptTextEditor::drop_data_fw);
-}
-
 Control *ScriptTextEditor::get_edit_menu() {
 	return edit_hb;
 }
@@ -2167,7 +2159,7 @@ ScriptTextEditor::ScriptTextEditor() {
 
 	connection_info_dialog = memnew(ConnectionInfoDialog);
 
-	code_editor->get_text_editor()->set_drag_forwarding_compat(this);
+	SET_DRAG_FORWARDING_GCD(code_editor, ScriptTextEditor);
 }
 
 ScriptTextEditor::~ScriptTextEditor() {

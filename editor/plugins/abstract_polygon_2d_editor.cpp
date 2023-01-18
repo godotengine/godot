@@ -91,7 +91,7 @@ void AbstractPolygon2DEditor::_set_polygon(int p_idx, const Variant &p_polygon) 
 
 void AbstractPolygon2DEditor::_action_set_polygon(int p_idx, const Variant &p_previous, const Variant &p_polygon) {
 	Node2D *node = _get_node();
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->add_do_method(node, "set_polygon", p_polygon);
 	undo_redo->add_undo_method(node, "set_polygon", p_previous);
 }
@@ -101,7 +101,7 @@ Vector2 AbstractPolygon2DEditor::_get_offset(int p_idx) const {
 }
 
 void AbstractPolygon2DEditor::_commit_action() {
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->add_do_method(canvas_item_editor, "update_viewport");
 	undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
 	undo_redo->commit_action();
@@ -205,7 +205,7 @@ void AbstractPolygon2DEditor::_wip_close() {
 	if (_is_line()) {
 		_set_polygon(0, wip);
 	} else if (wip.size() >= (_is_line() ? 2 : 3)) {
-		Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 		undo_redo->create_action(TTR("Create Polygon"));
 		_action_add_polygon(wip);
 		if (_has_uv()) {
@@ -257,7 +257,7 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 		return false;
 	}
 
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	Ref<InputEventMouseButton> mb = p_event;
 
 	if (!_has_resource()) {
@@ -619,7 +619,7 @@ void AbstractPolygon2DEditor::_bind_methods() {
 }
 
 void AbstractPolygon2DEditor::remove_point(const Vertex &p_vertex) {
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	Vector<Vector2> vertices = _get_polygon(p_vertex.polygon);
 
 	if (vertices.size() > (_is_line() ? 2 : 3)) {

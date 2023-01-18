@@ -186,8 +186,8 @@ void InspectorDock::_menu_option_confirm(int p_option, bool p_confirmed) {
 					}
 				}
 
-				int history_id = editor_data->get_undo_redo()->get_history_for_object(current).id;
-				editor_data->get_undo_redo()->clear_history(true, history_id);
+				int history_id = EditorUndoRedoManager::get_singleton()->get_history_for_object(current).id;
+				EditorUndoRedoManager::get_singleton()->clear_history(true, history_id);
 
 				EditorNode::get_singleton()->get_editor_plugins_over()->edit(nullptr);
 				EditorNode::get_singleton()->get_editor_plugins_over()->edit(current);

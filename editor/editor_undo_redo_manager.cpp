@@ -39,6 +39,8 @@
 #include "editor/editor_node.h"
 #include "scene/main/node.h"
 
+EditorUndoRedoManager *EditorUndoRedoManager::singleton = nullptr;
+
 EditorUndoRedoManager::History &EditorUndoRedoManager::get_or_create_history(int p_idx) {
 	if (!history_map.has(p_idx)) {
 		History history;
@@ -501,6 +503,16 @@ void EditorUndoRedoManager::_bind_methods() {
 	BIND_ENUM_CONSTANT(GLOBAL_HISTORY);
 	BIND_ENUM_CONSTANT(REMOTE_HISTORY);
 	BIND_ENUM_CONSTANT(INVALID_HISTORY);
+}
+
+EditorUndoRedoManager *EditorUndoRedoManager::get_singleton() {
+	return singleton;
+}
+
+EditorUndoRedoManager::EditorUndoRedoManager() {
+	if (!singleton) {
+		singleton = this;
+	}
 }
 
 EditorUndoRedoManager::~EditorUndoRedoManager() {

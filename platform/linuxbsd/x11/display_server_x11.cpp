@@ -1420,31 +1420,35 @@ void DisplayServerX11::window_set_mouse_passthrough(const Vector<Vector2> &p_reg
 	_THREAD_SAFE_METHOD_
 
 	ERR_FAIL_COND(!windows.has(p_window));
-	const WindowData &wd = windows[p_window];
+	windows[p_window].mpath = p_region;
+	_update_window_mouse_passthrough(p_window);
+}
+
+void DisplayServerX11::_update_window_mouse_passthrough(WindowID p_window) {
+	ERR_FAIL_COND(!windows.has(p_window));
+
+	const Vector<Vector2> region_path = windows[p_window].mpath;
 
 	int event_base, error_base;
 	const Bool ext_okay = XShapeQueryExtension(x11_display, &event_base, &error_base);
 	if (ext_okay) {
-		Region region;
-		if (p_region.size() == 0) {
-			region = XCreateRegion();
-			XRectangle rect;
-			rect.x = 0;
-			rect.y = 0;
-			rect.width = window_get_size_with_decorations(p_window).x;
-			rect.height = window_get_size_with_decorations(p_window).y;
-			XUnionRectWithRegion(&rect, region, region);
+		if (windows[p_window].mpass) {
+			Region region = XCreateRegion();
+			XShapeCombineRegion(x11_display, windows[p_window].x11_window, ShapeInput, 0, 0, region, ShapeSet);
+			XDestroyRegion(region);
+		} else if (region_path.size() == 0) {
+			XShapeCombineMask(x11_display, windows[p_window].x11_window, ShapeInput, 0, 0, None, ShapeSet);
 		} else {
-			XPoint *points = (XPoint *)memalloc(sizeof(XPoint) * p_region.size());
-			for (int i = 0; i < p_region.size(); i++) {
-				points[i].x = p_region[i].x;
-				points[i].y = p_region[i].y;
+			XPoint *points = (XPoint *)memalloc(sizeof(XPoint) * region_path.size());
+			for (int i = 0; i < region_path.size(); i++) {
+				points[i].x = region_path[i].x;
+				points[i].y = region_path[i].y;
 			}
-			region = XPolygonRegion(points, p_region.size(), EvenOddRule);
+			Region region = XPolygonRegion(points, region_path.size(), EvenOddRule);
 			memfree(points);
+			XShapeCombineRegion(x11_display, windows[p_window].x11_window, ShapeInput, 0, 0, region, ShapeSet);
+			XDestroyRegion(region);
 		}
-		XShapeCombineRegion(x11_display, wd.x11_window, ShapeInput, 0, 0, region, ShapeSet);
-		XDestroyRegion(region);
 	}
 }
 
@@ -2312,6 +2316,7 @@ void DisplayServerX11::window_set_flag(WindowFlags p_flag, bool p_enabled, Windo
 			window_set_size(window_get_size(p_window), p_window);
 
 			wd.borderless = p_enabled;
+			_update_window_mouse_passthrough(p_window);
 		} break;
 		case WINDOW_FLAG_ALWAYS_ON_TOP: {
 			ERR_FAIL_COND_MSG(wd.transient_parent != INVALID_WINDOW_ID, "Can't make a window transient if the 'on top' flag is active.");
@@ -2344,6 +2349,10 @@ void DisplayServerX11::window_set_flag(WindowFlags p_flag, bool p_enabled, Windo
 		} break;
 		case WINDOW_FLAG_NO_FOCUS: {
 			wd.no_focus = p_enabled;
+		} break;
+		case WINDOW_FLAG_MOUSE_PASSTHROUGH: {
+			wd.mpass = p_enabled;
+			_update_window_mouse_passthrough(p_window);
 		} break;
 		case WINDOW_FLAG_POPUP: {
 			XWindowAttributes xwa;
@@ -2397,6 +2406,9 @@ bool DisplayServerX11::window_get_flag(WindowFlags p_flag, WindowID p_window) co
 		} break;
 		case WINDOW_FLAG_NO_FOCUS: {
 			return wd.no_focus;
+		} break;
+		case WINDOW_FLAG_MOUSE_PASSTHROUGH: {
+			return wd.mpass;
 		} break;
 		case WINDOW_FLAG_POPUP: {
 			return wd.is_popup;
@@ -4564,18 +4576,20 @@ DisplayServer *DisplayServerX11::create_func(const String &p_rendering_driver, W
 	if (r_error != OK) {
 		if (p_rendering_driver == "vulkan") {
 			String executable_name = OS::get_singleton()->get_executable_path().get_file();
-			OS::get_singleton()->alert("Your video card driver does not support the selected Vulkan version.\n"
-									   "Please try updating your GPU driver or try using the OpenGL 3 driver.\n"
-									   "You can enable the OpenGL 3 driver by starting the engine from the\n"
-									   "command line with the command:\n'./" +
-							executable_name + " --rendering-driver opengl3'.\n "
-											  "If you have updated your graphics drivers recently, try rebooting.",
-					"Unable to initialize Video driver");
+			OS::get_singleton()->alert(
+					vformat("Your video card drivers seem not to support the required Vulkan version.\n\n"
+							"If possible, consider updating your video card drivers or using the OpenGL 3 driver.\n\n"
+							"You can enable the OpenGL 3 driver by starting the engine from the\n"
+							"command line with the command:\n'%s --rendering-driver opengl3'\n\n"
+							"If you recently updated your video card drivers, try rebooting.",
+							executable_name),
+					"Unable to initialize Vulkan video driver");
 		} else {
-			OS::get_singleton()->alert("Your video card driver does not support the selected OpenGL version.\n"
-									   "Please try updating your GPU driver.\n"
-									   "If you have updated your graphics drivers recently, try rebooting.",
-					"Unable to initialize Video driver");
+			OS::get_singleton()->alert(
+					"Your video card drivers seem not to support the required OpenGL 3.3 version.\n\n"
+					"If possible, consider updating your video card drivers.\n\n"
+					"If you recently updated your video card drivers, try rebooting.",
+					"Unable to initialize OpenGL video driver");
 		}
 	}
 	return ds;

@@ -162,7 +162,8 @@ public:
 
 	bool has_environment(const String &p_var) const;
 	String get_environment(const String &p_var) const;
-	bool set_environment(const String &p_var, const String &p_value) const;
+	void set_environment(const String &p_var, const String &p_value) const;
+	void unset_environment(const String &p_var) const;
 
 	String get_name() const;
 	String get_distribution_name() const;

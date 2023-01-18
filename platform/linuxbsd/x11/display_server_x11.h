@@ -149,6 +149,8 @@ class DisplayServerX11 : public DisplayServer {
 		Callable input_text_callback;
 		Callable drop_files_callback;
 
+		Vector<Vector2> mpath;
+
 		WindowID transient_parent = INVALID_WINDOW_ID;
 		HashSet<WindowID> transient_children;
 
@@ -169,6 +171,7 @@ class DisplayServerX11 : public DisplayServer {
 		bool maximized = false;
 		bool is_popup = false;
 		bool layered_window = false;
+		bool mpass = false;
 
 		Rect2i parent_safe_rect;
 
@@ -245,6 +248,7 @@ class DisplayServerX11 : public DisplayServer {
 
 	Atom _process_selection_request_target(Atom p_target, Window p_requestor, Atom p_property, Atom p_selection) const;
 	void _handle_selection_request_event(XSelectionRequestEvent *p_event) const;
+	void _update_window_mouse_passthrough(WindowID p_window);
 
 	String _clipboard_get_impl(Atom p_source, Window x11_window, Atom target) const;
 	String _clipboard_get(Atom p_source, Window x11_window) const;

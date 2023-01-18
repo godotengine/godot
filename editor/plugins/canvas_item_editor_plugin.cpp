@@ -868,7 +868,7 @@ void CanvasItemEditor::_commit_canvas_item_state(List<CanvasItem *> p_canvas_ite
 		return;
 	}
 
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(action_name);
 	for (CanvasItem *ci : modified_canvas_items) {
 		CanvasItemEditorSelectedItem *se = editor_selection->get_node_editor_data<CanvasItemEditorSelectedItem>(ci);
@@ -933,7 +933,7 @@ void CanvasItemEditor::_add_node_pressed(int p_result) {
 				return;
 			}
 
-			Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 			undo_redo->create_action(TTR("Move Node(s) to Position"));
 			for (Node *node : nodes_to_move) {
 				CanvasItem *ci = Object::cast_to<CanvasItem>(node);
@@ -1022,7 +1022,7 @@ void CanvasItemEditor::_on_grid_menu_id_pressed(int p_id) {
 }
 
 bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_event) {
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	Ref<InputEventMouseButton> b = p_event;
 	Ref<InputEventMouseMotion> m = p_event;
 
@@ -1850,7 +1850,7 @@ bool CanvasItemEditor::_gui_input_scale(const Ref<InputEvent> &p_event) {
 
 	// Drag resize handles
 	if (drag_type == DRAG_NONE) {
-		if (b.is_valid() && b->get_button_index() == MouseButton::LEFT && b->is_pressed() && ((b->is_alt_pressed() && b->is_ctrl_pressed()) || tool == TOOL_SCALE)) {
+		if (b.is_valid() && b->get_button_index() == MouseButton::LEFT && b->is_pressed() && ((b->is_alt_pressed() && b->is_command_or_control_pressed()) || tool == TOOL_SCALE)) {
 			List<CanvasItem *> selection = _get_edited_canvas_items();
 			if (selection.size() == 1) {
 				CanvasItem *ci = selection[0];
@@ -1897,7 +1897,7 @@ bool CanvasItemEditor::_gui_input_scale(const Ref<InputEvent> &p_event) {
 			Transform2D simple_xform = (viewport->get_transform() * unscaled_transform).affine_inverse() * transform;
 
 			bool uniform = m->is_shift_pressed();
-			bool is_ctrl = Input::get_singleton()->is_key_pressed(Key::CTRL);
+			bool is_ctrl = m->is_ctrl_pressed();
 
 			Point2 drag_from_local = simple_xform.xform(drag_from);
 			Point2 drag_to_local = simple_xform.xform(drag_to);
@@ -1989,7 +1989,7 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 	if (drag_type == DRAG_NONE) {
 		//Start moving the nodes
 		if (b.is_valid() && b->get_button_index() == MouseButton::LEFT && b->is_pressed()) {
-			if ((b->is_alt_pressed() && !b->is_ctrl_pressed()) || tool == TOOL_MOVE) {
+			if ((b->is_alt_pressed() && !b->is_command_or_control_pressed()) || tool == TOOL_MOVE) {
 				List<CanvasItem *> selection = _get_edited_canvas_items();
 
 				drag_selection.clear();
@@ -3418,7 +3418,7 @@ void CanvasItemEditor::_draw_selection() {
 			}
 
 			// Draw the move handles
-			bool is_ctrl = Input::get_singleton()->is_key_pressed(Key::CTRL);
+			bool is_ctrl = Input::get_singleton()->is_key_pressed(Key::CMD_OR_CTRL);
 			bool is_alt = Input::get_singleton()->is_key_pressed(Key::ALT);
 			if (tool == TOOL_MOVE && show_transformation_gizmos) {
 				if (_is_node_movable(ci)) {
@@ -4263,7 +4263,7 @@ void CanvasItemEditor::_update_override_camera_button(bool p_game_running) {
 }
 
 void CanvasItemEditor::_popup_callback(int p_op) {
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	last_option = MenuOption(p_op);
 	switch (p_op) {
 		case SHOW_ORIGIN: {
@@ -5570,7 +5570,7 @@ void CanvasItemEditorViewport::_create_nodes(Node *parent, Node *child, String &
 	String name = path.get_file().get_basename();
 	child->set_name(Node::adjust_name_casing(name));
 
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	Ref<Texture2D> texture = ResourceCache::get_ref(path);
 
 	if (parent) {
@@ -5649,7 +5649,7 @@ bool CanvasItemEditorViewport::_create_instance(Node *parent, String &path, cons
 
 	instantiated_scene->set_scene_file_path(ProjectSettings::get_singleton()->localize_path(path));
 
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->add_do_method(parent, "add_child", instantiated_scene, true);
 	undo_redo->add_do_method(instantiated_scene, "set_owner", edited_scene);
 	undo_redo->add_do_reference(instantiated_scene);
@@ -5690,7 +5690,7 @@ void CanvasItemEditorViewport::_perform_drop_data() {
 
 	Vector<String> error_files;
 
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Create Node"));
 
 	for (int i = 0; i < selected_files.size(); i++) {

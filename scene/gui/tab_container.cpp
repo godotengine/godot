@@ -954,9 +954,6 @@ void TabContainer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_repaint"), &TabContainer::_repaint);
 	ClassDB::bind_method(D_METHOD("_on_theme_changed"), &TabContainer::_on_theme_changed);
-	ClassDB::bind_method(D_METHOD("_get_drag_data_fw"), &TabContainer::_get_drag_data_fw);
-	ClassDB::bind_method(D_METHOD("_can_drop_data_fw"), &TabContainer::_can_drop_data_fw);
-	ClassDB::bind_method(D_METHOD("_drop_data_fw"), &TabContainer::_drop_data_fw);
 
 	ADD_SIGNAL(MethodInfo("tab_changed", PropertyInfo(Variant::INT, "tab")));
 	ADD_SIGNAL(MethodInfo("tab_selected", PropertyInfo(Variant::INT, "tab")));
@@ -975,7 +972,7 @@ void TabContainer::_bind_methods() {
 
 TabContainer::TabContainer() {
 	tab_bar = memnew(TabBar);
-	tab_bar->set_drag_forwarding_compat(this);
+	SET_DRAG_FORWARDING_GCDU(tab_bar, TabContainer);
 	add_child(tab_bar, false, INTERNAL_MODE_FRONT);
 	tab_bar->set_anchors_and_offsets_preset(Control::PRESET_TOP_WIDE);
 	tab_bar->connect("tab_changed", callable_mp(this, &TabContainer::_on_tab_changed));

@@ -763,7 +763,15 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 
 			MeshesFound &mf = meshes_found.write[m_i];
 
-			Size2i lightmap_size = mf.mesh->get_lightmap_size_hint() * mf.lightmap_scale;
+			Size2i lightmap_size = mf.mesh->get_lightmap_size_hint();
+
+			if (lightmap_size == Size2i(0, 0)) {
+				// TODO we should compute a size if no lightmap hint is set, as we did in 3.x.
+				// For now set to basic size to avoid crash.
+				lightmap_size = Size2i(64, 64);
+			}
+
+			lightmap_size *= mf.lightmap_scale;
 			TypedArray<RID> overrides;
 			overrides.resize(mf.overrides.size());
 			for (int i = 0; i < mf.overrides.size(); i++) {

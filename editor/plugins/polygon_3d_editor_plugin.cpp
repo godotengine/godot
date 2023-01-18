@@ -96,7 +96,7 @@ void Polygon3DEditor::_menu_option(int p_option) {
 void Polygon3DEditor::_wip_close() {
 	Object *obj = node_resource.is_valid() ? (Object *)node_resource.ptr() : node;
 	ERR_FAIL_COND_MSG(!obj, "Edited object is not valid.");
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Create Polygon3D"));
 	undo_redo->add_undo_method(obj, "set_polygon", obj->call("get_polygon"));
 	undo_redo->add_do_method(obj, "set_polygon", wip);
@@ -186,7 +186,7 @@ EditorPlugin::AfterGUIInput Polygon3DEditor::forward_3d_gui_input(Camera3D *p_ca
 					if (mb->is_pressed()) {
 						if (mb->is_ctrl_pressed()) {
 							if (poly.size() < 3) {
-								Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+								EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 								undo_redo->create_action(TTR("Edit Poly"));
 								undo_redo->add_undo_method(obj, "set_polygon", poly);
 								poly.push_back(cpoint);
@@ -265,7 +265,7 @@ EditorPlugin::AfterGUIInput Polygon3DEditor::forward_3d_gui_input(Camera3D *p_ca
 
 							ERR_FAIL_INDEX_V(edited_point, poly.size(), EditorPlugin::AFTER_GUI_INPUT_PASS);
 							poly.write[edited_point] = edited_point_pos;
-							Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+							EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 							undo_redo->create_action(TTR("Edit Poly"));
 							undo_redo->add_do_method(obj, "set_polygon", poly);
 							undo_redo->add_undo_method(obj, "set_polygon", pre_move_edit);
@@ -294,7 +294,7 @@ EditorPlugin::AfterGUIInput Polygon3DEditor::forward_3d_gui_input(Camera3D *p_ca
 					}
 
 					if (closest_idx >= 0) {
-						Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+						EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 						undo_redo->create_action(TTR("Edit Poly (Remove Point)"));
 						undo_redo->add_undo_method(obj, "set_polygon", poly);
 						poly.remove_at(closest_idx);

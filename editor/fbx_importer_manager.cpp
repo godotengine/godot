@@ -144,12 +144,8 @@ FBXImporterManager::FBXImporterManager() {
 	browse_dialog = memnew(EditorFileDialog);
 	browse_dialog->set_access(EditorFileDialog::ACCESS_FILESYSTEM);
 	browse_dialog->set_file_mode(EditorFileDialog::FILE_MODE_OPEN_FILE);
-#if defined(X11_ENABLED)
-	browse_dialog->add_filter("FBX2glTF-linux-x86_64");
-#elif defined(OSX_ENABLED)
-	browse_dialog->add_filter("FBX2glTF-macos-x86_64");
-#elif defined(WINDOWS_ENABLED)
-	browse_dialog->add_filter("FBX2glTF-windows-x86_64");
+#ifdef WINDOWS_ENABLED
+	browse_dialog->add_filter("*.exe");
 #endif
 
 	browse_dialog->connect("file_selected", callable_mp(this, &FBXImporterManager::_select_file));

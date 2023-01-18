@@ -32,45 +32,6 @@ namespace Godot
         public Vector2 origin;
 
         /// <summary>
-        /// The rotation of this transformation matrix.
-        /// </summary>
-        /// <value>Getting is equivalent to calling <see cref="Mathf.Atan2(real_t, real_t)"/> with the values of <see cref="x"/>.</value>
-        public real_t Rotation
-        {
-            readonly get
-            {
-                return Mathf.Atan2(x.y, x.x);
-            }
-            set
-            {
-                Vector2 scale = Scale;
-                x.x = y.y = Mathf.Cos(value);
-                x.y = y.x = Mathf.Sin(value);
-                y.x *= -1;
-                Scale = scale;
-            }
-        }
-
-        /// <summary>
-        /// The scale of this transformation matrix.
-        /// </summary>
-        /// <value>Equivalent to the lengths of each column vector, but Y is negative if the determinant is negative.</value>
-        public Vector2 Scale
-        {
-            readonly get
-            {
-                real_t detSign = Mathf.Sign(BasisDeterminant());
-                return new Vector2(x.Length(), detSign * y.Length());
-            }
-            set
-            {
-                value /= Scale; // Value becomes what's called "delta_scale" in core.
-                x *= value.x;
-                y *= value.y;
-            }
-        }
-
-        /// <summary>
         /// Access whole columns in the form of <see cref="Vector2"/>.
         /// The third column is the <see cref="origin"/> vector.
         /// </summary>
@@ -203,6 +164,23 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns the transform's rotation (in radians).
+        /// </summary>
+        public readonly real_t GetRotation()
+        {
+            return Mathf.Atan2(x.y, x.x);
+        }
+
+        /// <summary>
+        /// Returns the scale.
+        /// </summary>
+        public readonly Vector2 GetScale()
+        {
+            real_t detSign = Mathf.Sign(BasisDeterminant());
+            return new Vector2(x.Length(), detSign * y.Length());
+        }
+
+        /// <summary>
         /// Interpolates this transform to the other <paramref name="transform"/> by <paramref name="weight"/>.
         /// </summary>
         /// <param name="transform">The other transform.</param>
@@ -210,15 +188,17 @@ namespace Godot
         /// <returns>The interpolated transform.</returns>
         public readonly Transform2D InterpolateWith(Transform2D transform, real_t weight)
         {
-            real_t r1 = Rotation;
-            real_t r2 = transform.Rotation;
+            real_t r1 = GetRotation();
+            real_t r2 = transform.GetRotation();
 
-            Vector2 s1 = Scale;
-            Vector2 s2 = transform.Scale;
+            Vector2 s1 = GetScale();
+            Vector2 s2 = transform.GetScale();
 
             // Slerp rotation
-            var v1 = new Vector2(Mathf.Cos(r1), Mathf.Sin(r1));
-            var v2 = new Vector2(Mathf.Cos(r2), Mathf.Sin(r2));
+            (real_t sin1, real_t cos1) = Mathf.SinCos(r1);
+            (real_t sin2, real_t cos2) = Mathf.SinCos(r2);
+            var v1 = new Vector2(cos1, sin1);
+            var v2 = new Vector2(cos2, sin2);
 
             real_t dot = v1.Dot(v2);
 
@@ -235,7 +215,8 @@ namespace Godot
             {
                 real_t angle = weight * Mathf.Acos(dot);
                 Vector2 v3 = (v2 - (v1 * dot)).Normalized();
-                v = (v1 * Mathf.Cos(angle)) + (v3 * Mathf.Sin(angle));
+                (real_t sine, real_t cos) = Mathf.SinCos(angle);
+                v = (v1 * sine) + (v3 * cos);
             }
 
             // Extract parameters
@@ -433,7 +414,7 @@ namespace Godot
 
         /// <summary>
         /// Constructs a transformation matrix from the given components.
-        /// Arguments are named such that xy is equal to calling x.y
+        /// Arguments are named such that xy is equal to calling <c>x.y</c>.
         /// </summary>
         /// <param name="xx">The X component of the X column vector, accessed via <c>t.x.x</c> or <c>[0][0]</c>.</param>
         /// <param name="xy">The Y component of the X column vector, accessed via <c>t.x.y</c> or <c>[0][1]</c>.</param>
@@ -456,9 +437,30 @@ namespace Godot
         /// <param name="origin">The origin vector, or column index 2.</param>
         public Transform2D(real_t rotation, Vector2 origin)
         {
-            x.x = y.y = Mathf.Cos(rotation);
-            x.y = y.x = Mathf.Sin(rotation);
+            (real_t sin, real_t cos) = Mathf.SinCos(rotation);
+            x.x = y.y = cos;
+            x.y = y.x = sin;
             y.x *= -1;
+            this.origin = origin;
+        }
+
+        /// <summary>
+        /// Constructs a transformation matrix from a <paramref name="rotation"/> value,
+        /// <paramref name="scale"/> vector, <paramref name="skew"/> value, and
+        /// <paramref name="origin"/> vector.
+        /// </summary>
+        /// <param name="rotation">The rotation of the new transform, in radians.</param>
+        /// <param name="scale">The scale of the new transform.</param>
+        /// <param name="skew">The skew of the new transform, in radians.</param>
+        /// <param name="origin">The origin vector, or column index 2.</param>
+        public Transform2D(real_t rotation, Vector2 scale, real_t skew, Vector2 origin)
+        {
+            (real_t rotationSin, real_t rotationCos) = Mathf.SinCos(rotation);
+            (real_t rotationSkewSin, real_t rotationSkewCos) = Mathf.SinCos(rotation + skew);
+            x.x = rotationCos * scale.x;
+            y.y = rotationSkewCos * scale.y;
+            y.x = -rotationSkewSin * scale.y;
+            x.y = rotationSin * scale.x;
             this.origin = origin;
         }
 

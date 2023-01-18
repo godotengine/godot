@@ -539,11 +539,12 @@ namespace Godot
         /// <returns>The rotated vector.</returns>
         public readonly Vector2 Rotated(real_t angle)
         {
-            real_t sine = Mathf.Sin(angle);
-            real_t cosi = Mathf.Cos(angle);
-            return new Vector2(
-                x * cosi - y * sine,
-                x * sine + y * cosi);
+            (real_t sin, real_t cos) = Mathf.SinCos(angle);
+            return new Vector2
+            (
+                x * cos - y * sin,
+                x * sin + y * cos
+            );
         }
 
         /// <summary>
@@ -693,7 +694,8 @@ namespace Godot
         /// <returns>The resulting vector.</returns>
         public static Vector2 FromAngle(real_t angle)
         {
-            return new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
+            (real_t sin, real_t cos) = Mathf.SinCos(angle);
+            return new Vector2(cos, sin);
         }
 
         /// <summary>

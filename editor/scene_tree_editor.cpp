@@ -68,7 +68,7 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 	Node *n = get_node(np);
 	ERR_FAIL_COND(!n);
 
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	if (p_id == BUTTON_SUBSCENE) {
 		if (n == get_scene_node()) {
 			if (n && n->get_scene_inherited_state().is_valid()) {
@@ -176,7 +176,7 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 void SceneTreeEditor::_toggle_visible(Node *p_node) {
 	if (p_node->has_method("is_visible") && p_node->has_method("set_visible")) {
 		bool v = bool(p_node->call("is_visible"));
-		Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 		undo_redo->add_do_method(p_node, "set_visible", !v);
 		undo_redo->add_undo_method(p_node, "set_visible", v);
 	}
@@ -1015,7 +1015,7 @@ void SceneTreeEditor::_renamed() {
 		which->set_metadata(0, n->get_path());
 		emit_signal(SNAME("node_renamed"));
 	} else {
-		Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 		undo_redo->create_action(TTR("Rename Node"));
 		emit_signal(SNAME("node_prerename"), n, new_name);
 		undo_redo->add_do_method(this, "_rename_node", n->get_instance_id(), new_name);
@@ -1373,10 +1373,6 @@ void SceneTreeEditor::_bind_methods() {
 	ClassDB::bind_method("_rename_node", &SceneTreeEditor::_rename_node);
 	ClassDB::bind_method("_test_update_tree", &SceneTreeEditor::_test_update_tree);
 
-	ClassDB::bind_method(D_METHOD("_get_drag_data_fw"), &SceneTreeEditor::get_drag_data_fw);
-	ClassDB::bind_method(D_METHOD("_can_drop_data_fw"), &SceneTreeEditor::can_drop_data_fw);
-	ClassDB::bind_method(D_METHOD("_drop_data_fw"), &SceneTreeEditor::drop_data_fw);
-
 	ClassDB::bind_method(D_METHOD("update_tree"), &SceneTreeEditor::update_tree);
 
 	ADD_SIGNAL(MethodInfo("node_selected"));
@@ -1419,7 +1415,7 @@ SceneTreeEditor::SceneTreeEditor(bool p_label, bool p_can_rename, bool p_can_ope
 
 	add_child(tree);
 
-	tree->set_drag_forwarding_compat(this);
+	SET_DRAG_FORWARDING_GCD(tree, SceneTreeEditor);
 	if (p_can_rename) {
 		tree->set_allow_rmb_select(true);
 		tree->connect("item_mouse_selected", callable_mp(this, &SceneTreeEditor::_rmb_select));

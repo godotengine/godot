@@ -1680,13 +1680,13 @@ void EditorInspectorArray::_move_element(int p_element_index, int p_to_pos) {
 	} else {
 		action_name = vformat("Move element %d to position %d in property array with prefix %s.", p_element_index, p_to_pos, array_element_prefix);
 	}
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(action_name);
 	if (mode == MODE_USE_MOVE_ARRAY_ELEMENT_FUNCTION) {
 		// Call the function.
 		Callable move_function = EditorNode::get_singleton()->get_editor_data().get_move_array_element_function(object->get_class_name());
 		if (move_function.is_valid()) {
-			Variant args[] = { undo_redo.ptr(), object, array_element_prefix, p_element_index, p_to_pos };
+			Variant args[] = { undo_redo, object, array_element_prefix, p_element_index, p_to_pos };
 			const Variant *args_p[] = { &args[0], &args[1], &args[2], &args[3], &args[4] };
 			Variant return_value;
 			Callable::CallError call_error;
@@ -1824,14 +1824,14 @@ void EditorInspectorArray::_move_element(int p_element_index, int p_to_pos) {
 }
 
 void EditorInspectorArray::_clear_array() {
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(vformat("Clear property array with prefix %s.", array_element_prefix));
 	if (mode == MODE_USE_MOVE_ARRAY_ELEMENT_FUNCTION) {
 		for (int i = count - 1; i >= 0; i--) {
 			// Call the function.
 			Callable move_function = EditorNode::get_singleton()->get_editor_data().get_move_array_element_function(object->get_class_name());
 			if (move_function.is_valid()) {
-				Variant args[] = { undo_redo.ptr(), object, array_element_prefix, i, -1 };
+				Variant args[] = { undo_redo, object, array_element_prefix, i, -1 };
 				const Variant *args_p[] = { &args[0], &args[1], &args[2], &args[3], &args[4] };
 				Variant return_value;
 				Callable::CallError call_error;
@@ -1877,7 +1877,7 @@ void EditorInspectorArray::_resize_array(int p_size) {
 		return;
 	}
 
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(vformat("Resize property array with prefix %s.", array_element_prefix));
 	if (p_size > count) {
 		if (mode == MODE_USE_MOVE_ARRAY_ELEMENT_FUNCTION) {
@@ -1885,7 +1885,7 @@ void EditorInspectorArray::_resize_array(int p_size) {
 				// Call the function.
 				Callable move_function = EditorNode::get_singleton()->get_editor_data().get_move_array_element_function(object->get_class_name());
 				if (move_function.is_valid()) {
-					Variant args[] = { undo_redo.ptr(), object, array_element_prefix, -1, -1 };
+					Variant args[] = { undo_redo, object, array_element_prefix, -1, -1 };
 					const Variant *args_p[] = { &args[0], &args[1], &args[2], &args[3], &args[4] };
 					Variant return_value;
 					Callable::CallError call_error;
@@ -1904,7 +1904,7 @@ void EditorInspectorArray::_resize_array(int p_size) {
 				// Call the function.
 				Callable move_function = EditorNode::get_singleton()->get_editor_data().get_move_array_element_function(object->get_class_name());
 				if (move_function.is_valid()) {
-					Variant args[] = { undo_redo.ptr(), object, array_element_prefix, i, -1 };
+					Variant args[] = { undo_redo, object, array_element_prefix, i, -1 };
 					const Variant *args_p[] = { &args[0], &args[1], &args[2], &args[3], &args[4] };
 					Variant return_value;
 					Callable::CallError call_error;
@@ -2049,7 +2049,7 @@ void EditorInspectorArray::_setup() {
 		ae.panel = memnew(PanelContainer);
 		ae.panel->set_focus_mode(FOCUS_ALL);
 		ae.panel->set_mouse_filter(MOUSE_FILTER_PASS);
-		ae.panel->set_drag_forwarding_compat(this);
+		SET_DRAG_FORWARDING_GCD(ae.panel, EditorInspectorArray);
 		ae.panel->set_meta("index", begin_array_index + i);
 		ae.panel->set_tooltip_text(vformat(TTR("Element %d: %s%d*"), i, array_element_prefix, i));
 		ae.panel->connect("focus_entered", callable_mp((CanvasItem *)ae.panel, &PanelContainer::queue_redraw));
@@ -2220,10 +2220,6 @@ void EditorInspectorArray::_notification(int p_what) {
 }
 
 void EditorInspectorArray::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_get_drag_data_fw"), &EditorInspectorArray::get_drag_data_fw);
-	ClassDB::bind_method(D_METHOD("_can_drop_data_fw"), &EditorInspectorArray::can_drop_data_fw);
-	ClassDB::bind_method(D_METHOD("_drop_data_fw"), &EditorInspectorArray::drop_data_fw);
-
 	ADD_SIGNAL(MethodInfo("page_change_request"));
 }
 
@@ -3552,8 +3548,8 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 		}
 	}
 
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
-	if (!undo_redo.is_valid() || bool(object->call("_dont_undo_redo"))) {
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	if (bool(object->call("_dont_undo_redo"))) {
 		object->set(p_name, p_value);
 		if (p_refresh_all) {
 			_edit_request_change(object, "");
@@ -3673,7 +3669,7 @@ void EditorInspector::_multiple_properties_changed(Vector<String> p_paths, Array
 		}
 		names += p_paths[i];
 	}
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Set Multiple:") + " " + names, UndoRedo::MERGE_ENDS);
 	for (int i = 0; i < p_paths.size(); i++) {
 		_edit_set(p_paths[i], p_values[i], false, "");
@@ -3708,7 +3704,7 @@ void EditorInspector::_property_deleted(const String &p_path) {
 
 	if (p_path.begins_with("metadata/")) {
 		String name = p_path.replace_first("metadata/", "");
-		Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 		undo_redo->create_action(vformat(TTR("Remove metadata %s"), name));
 		undo_redo->add_do_method(object, "remove_meta", name);
 		undo_redo->add_undo_method(object, "set_meta", name, object->get_meta(name));
@@ -3774,26 +3770,17 @@ void EditorInspector::_property_pinned(const String &p_path, bool p_pinned) {
 	Node *node = Object::cast_to<Node>(object);
 	ERR_FAIL_COND(!node);
 
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
-	if (undo_redo.is_valid()) {
-		undo_redo->create_action(vformat(p_pinned ? TTR("Pinned %s") : TTR("Unpinned %s"), p_path));
-		undo_redo->add_do_method(node, "_set_property_pinned", p_path, p_pinned);
-		undo_redo->add_undo_method(node, "_set_property_pinned", p_path, !p_pinned);
-		if (editor_property_map.has(p_path)) {
-			for (List<EditorProperty *>::Element *E = editor_property_map[p_path].front(); E; E = E->next()) {
-				undo_redo->add_do_method(E->get(), "_update_editor_property_status");
-				undo_redo->add_undo_method(E->get(), "_update_editor_property_status");
-			}
-		}
-		undo_redo->commit_action();
-	} else {
-		node->set_property_pinned(p_path, p_pinned);
-		if (editor_property_map.has(p_path)) {
-			for (List<EditorProperty *>::Element *E = editor_property_map[p_path].front(); E; E = E->next()) {
-				E->get()->update_editor_property_status();
-			}
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(vformat(p_pinned ? TTR("Pinned %s") : TTR("Unpinned %s"), p_path));
+	undo_redo->add_do_method(node, "_set_property_pinned", p_path, p_pinned);
+	undo_redo->add_undo_method(node, "_set_property_pinned", p_path, !p_pinned);
+	if (editor_property_map.has(p_path)) {
+		for (List<EditorProperty *>::Element *E = editor_property_map[p_path].front(); E; E = E->next()) {
+			undo_redo->add_do_method(E->get(), "_update_editor_property_status");
+			undo_redo->add_undo_method(E->get(), "_update_editor_property_status");
 		}
 	}
+	undo_redo->commit_action();
 }
 
 void EditorInspector::_property_selected(const String &p_path, int p_focusable) {
@@ -3972,7 +3959,7 @@ void EditorInspector::_add_meta_confirm() {
 	Variant defval;
 	Callable::CallError ce;
 	Variant::construct(Variant::Type(add_meta_type->get_selected_id()), defval, nullptr, 0, ce);
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(vformat(TTR("Add metadata %s"), name));
 	undo_redo->add_do_method(object, "set_meta", name, defval);
 	undo_redo->add_undo_method(object, "remove_meta", name);

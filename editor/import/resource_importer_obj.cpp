@@ -218,7 +218,8 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 	Vector<Vector3> normals;
 	Vector<Vector2> uvs;
 	Vector<Color> colors;
-	String name;
+	const String default_name = "Mesh";
+	String name = default_name;
 
 	HashMap<String, HashMap<String, Ref<StandardMaterial3D>>> material_map;
 
@@ -395,9 +396,12 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 
 			if (l.begins_with("o ") || f->eof_reached()) {
 				if (!p_single_mesh) {
-					mesh->set_name(name);
-					r_meshes.push_back(mesh);
-					mesh.instantiate();
+					if (mesh->get_surface_count() > 0) {
+						mesh->set_name(name);
+						r_meshes.push_back(mesh);
+						mesh.instantiate();
+					}
+					name = default_name;
 					current_group = "";
 					current_material = "";
 				}
@@ -460,6 +464,7 @@ Node *EditorOBJImporter::import_scene(const String &p_path, uint32_t p_flags, co
 	for (const Ref<Mesh> &m : meshes) {
 		Ref<ImporterMesh> mesh;
 		mesh.instantiate();
+		mesh->set_name(m->get_name());
 		for (int i = 0; i < m->get_surface_count(); i++) {
 			mesh->add_surface(m->surface_get_primitive_type(i), m->surface_get_arrays(i), Array(), Dictionary(), m->surface_get_material(i));
 		}

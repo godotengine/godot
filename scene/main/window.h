@@ -59,6 +59,7 @@ public:
 		FLAG_NO_FOCUS = DisplayServer::WINDOW_FLAG_NO_FOCUS,
 		FLAG_POPUP = DisplayServer::WINDOW_FLAG_POPUP,
 		FLAG_EXTEND_TO_TITLE = DisplayServer::WINDOW_FLAG_EXTEND_TO_TITLE,
+		FLAG_MOUSE_PASSTHROUGH = DisplayServer::WINDOW_FLAG_MOUSE_PASSTHROUGH,
 		FLAG_MAX = DisplayServer::WINDOW_FLAG_MAX,
 	};
 
@@ -101,6 +102,7 @@ private:
 	mutable Size2i size = Size2i(DEFAULT_WINDOW_SIZE, DEFAULT_WINDOW_SIZE);
 	mutable Size2i min_size;
 	mutable Size2i max_size;
+	mutable Vector<Vector2> mpath;
 	mutable Mode mode = MODE_WINDOWED;
 	mutable bool flags[FLAG_MAX] = {};
 	bool visible = true;
@@ -280,6 +282,9 @@ public:
 
 	void set_use_font_oversampling(bool p_oversampling);
 	bool is_using_font_oversampling() const;
+
+	void set_mouse_passthrough_polygon(const Vector<Vector2> &p_region);
+	Vector<Vector2> get_mouse_passthrough_polygon() const;
 
 	void set_wrap_controls(bool p_enable);
 	bool is_wrapping_controls() const;

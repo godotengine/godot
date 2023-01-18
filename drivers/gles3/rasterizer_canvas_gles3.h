@@ -75,6 +75,9 @@ class RasterizerCanvasGLES3 : public RendererCanvasRender {
 
 		FLAGS_USE_MSDF = (1 << 28),
 		FLAGS_USE_LCD = (1 << 29),
+
+		FLAGS_FLIP_H = (1 << 30),
+		FLAGS_FLIP_V = (1 << 31),
 	};
 
 	enum {
