@@ -631,6 +631,11 @@ void ScriptEditor::_go_to_tab(int p_idx) {
 			notify_script_changed(scr);
 		}
 
+		ScriptTextEditor *ste = Object::cast_to<ScriptTextEditor>(_get_current_editor());
+		if (ste && !ste->is_connected("caret_changed", callable_mp(this, &ScriptEditor::_update_members_overview_selection))) {
+			ste->connect("caret_changed", callable_mp(this, &ScriptEditor::_update_members_overview_selection));
+		}
+
 		Object::cast_to<ScriptEditorBase>(c)->validate();
 	}
 	if (Object::cast_to<EditorHelp>(c)) {
@@ -778,6 +783,8 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 				notify_script_close(scr);
 			}
 		}
+
+		current->disconnect("caret_changed", callable_mp(this, &ScriptEditor::_update_members_overview_selection));
 	}
 
 	// roll back to previous tab
@@ -1695,6 +1702,23 @@ void ScriptEditor::get_breakpoints(List<String> *p_breakpoints) {
 		Array breakpoints = _get_cached_breakpoints_for_script(E);
 		for (int i = 0; i < breakpoints.size(); i++) {
 			p_breakpoints->push_back(E + ":" + itos((int)breakpoints[i] + 1));
+		}
+	}
+}
+
+void ScriptEditor::_update_members_overview_selection() {
+	ScriptTextEditor *ste = Object::cast_to<ScriptTextEditor>(_get_current_editor());
+	if (!ste) {
+		return;
+	}
+
+	String method_name = ste->get_method_containing_caret();
+	if (!method_name.is_empty()) {
+		for (int i = 0; i < members_overview->get_item_count(); i++) {
+			if (method_name == members_overview->get_item_text(i)) {
+				members_overview->select(i);
+				members_overview->ensure_current_is_visible();
+			}
 		}
 	}
 }

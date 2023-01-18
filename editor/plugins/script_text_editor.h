@@ -185,6 +185,7 @@ protected:
 	void _edit_option_toggle_inline_comment();
 	void _make_context_menu(bool p_selection, bool p_color, bool p_foldable, bool p_open_docs, bool p_goto_definition, Vector2 p_pos);
 	void _text_edit_gui_input(const Ref<InputEvent> &ev);
+	void _text_edit_caret_changed();
 	void _color_changed(const Color &p_color);
 	void _prepare_edit_menu();
 
@@ -212,6 +213,7 @@ public:
 	virtual void set_edited_resource(const Ref<Resource> &p_res) override;
 	virtual void enable_editor(Control *p_shortcut_context = nullptr) override;
 	virtual Vector<String> get_functions() override;
+	String get_method_containing_caret();
 	virtual void reload_text() override;
 	virtual String get_name() override;
 	virtual Ref<Texture2D> get_theme_icon() override;

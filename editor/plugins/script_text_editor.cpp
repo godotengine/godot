@@ -125,6 +125,28 @@ Vector<String> ScriptTextEditor::get_functions() {
 	return functions;
 }
 
+String ScriptTextEditor::get_method_containing_caret() {
+	CodeEdit *te = code_editor->get_text_editor();
+
+	int iterator = te->get_caret_line();
+	while (iterator > -1) {
+		String line = te->get_line(iterator).strip_edges(true, false);
+
+		if ((line.begins_with("func ") || line.begins_with("static ")) && line.contains(":")) {
+			// This line contains a function definition.
+			int parentesis_idx = line.find_char('(');
+			int space_idx = line.rfind(" ", parentesis_idx);
+
+			if (parentesis_idx > -1 && space_idx > -1 && te->is_in_comment(iterator, parentesis_idx) == -1) {
+				return line.substr(space_idx + 1, parentesis_idx - space_idx - 1);
+			}
+		}
+		// Move up the script.
+		iterator--;
+	}
+	return "";
+}
+
 void ScriptTextEditor::apply_code() {
 	if (script.is_null()) {
 		return;
@@ -1496,6 +1518,8 @@ void ScriptTextEditor::_bind_methods() {
 	ClassDB::bind_method("_get_drag_data_fw", &ScriptTextEditor::get_drag_data_fw);
 	ClassDB::bind_method("_can_drop_data_fw", &ScriptTextEditor::can_drop_data_fw);
 	ClassDB::bind_method("_drop_data_fw", &ScriptTextEditor::drop_data_fw);
+
+	ADD_SIGNAL(MethodInfo("caret_changed"));
 }
 
 Control *ScriptTextEditor::get_edit_menu() {
@@ -1856,6 +1880,10 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 	}
 }
 
+void ScriptTextEditor::_text_edit_caret_changed() {
+	emit_signal("caret_changed");
+}
+
 void ScriptTextEditor::_color_changed(const Color &p_color) {
 	String new_args;
 	if (p_color.a == 1.0f) {
@@ -1948,6 +1976,7 @@ void ScriptTextEditor::_enable_code_editor() {
 	code_editor->get_text_editor()->connect("gutter_removed", callable_mp(this, &ScriptTextEditor::_update_gutter_indexes));
 	code_editor->get_text_editor()->connect("gutter_clicked", callable_mp(this, &ScriptTextEditor::_gutter_clicked));
 	code_editor->get_text_editor()->connect("gui_input", callable_mp(this, &ScriptTextEditor::_text_edit_gui_input));
+	code_editor->get_text_editor()->connect("caret_changed", callable_mp(this, &ScriptTextEditor::_text_edit_caret_changed));
 	code_editor->show_toggle_scripts_button();
 	_update_gutter_indexes();
 

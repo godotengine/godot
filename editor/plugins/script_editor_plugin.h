@@ -397,6 +397,7 @@ class ScriptEditor : public PanelContainer {
 	void _autosave_scripts();
 	void _update_autosave_timer();
 
+	void _update_members_overview_selection();
 	void _update_members_overview_visibility();
 	void _update_members_overview();
 	void _toggle_members_overview_alpha_sort(bool p_alphabetic_sort);
