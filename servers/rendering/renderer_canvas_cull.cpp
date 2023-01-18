@@ -1207,20 +1207,23 @@ void RendererCanvasCull::canvas_item_add_circle(RID p_item, const Point2 &p_pos,
 	static const int circle_points = 64;
 
 	points.resize(circle_points);
+	Vector2 *points_ptr = points.ptrw();
 	const real_t circle_point_step = Math_TAU / circle_points;
 
 	for (int i = 0; i < circle_points; i++) {
 		float angle = i * circle_point_step;
-		points.write[i].x = Math::cos(angle) * p_radius;
-		points.write[i].y = Math::sin(angle) * p_radius;
-		points.write[i] += p_pos;
+		points_ptr[i].x = Math::cos(angle) * p_radius;
+		points_ptr[i].y = Math::sin(angle) * p_radius;
+		points_ptr[i] += p_pos;
 	}
+
 	indices.resize((circle_points - 2) * 3);
+	int *indices_ptr = indices.ptrw();
 
 	for (int i = 0; i < circle_points - 2; i++) {
-		indices.write[i * 3 + 0] = 0;
-		indices.write[i * 3 + 1] = i + 1;
-		indices.write[i * 3 + 2] = i + 2;
+		indices_ptr[i * 3 + 0] = 0;
+		indices_ptr[i * 3 + 1] = i + 1;
+		indices_ptr[i * 3 + 2] = i + 2;
 	}
 
 	Vector<Color> color;

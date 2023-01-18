@@ -45,7 +45,8 @@
 			<param index="6" name="width" type="float" default="1.0" />
 			<param index="7" name="antialiased" type="bool" default="false" />
 			<description>
-				Draws a unfilled arc between the given angles. The larger the value of [param point_count], the smoother the curve. See also [method draw_circle].
+				Draws an unfilled arc between the given angles. The larger the value of [param point_count], the smoother the curve. See also [method draw_circle].
+				The arc is drawn from [param start_angle] towards the value of [param end_angle] so in clockwise direction if [code]start_angle &lt; end_angle[/code] and counter-clockwise otherwise. Passing the same angles but in reversed order will produce the same arc. If absolute difference of [param start_angle] and [param end_angle] is greater than [constant @GDScript.TAU] radians, then a full circle arc is drawn (i.e. arc will not overlap itself).
 			</description>
 		</method>
 		<method name="draw_char" qualifiers="const">
