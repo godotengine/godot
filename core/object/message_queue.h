@@ -51,8 +51,9 @@ private:
 		TYPE_NOTIFICATION,
 		TYPE_SET,
 		TYPE_END, // End marker.
+		FLAG_NULL_IS_OK = 1 << 13,
 		FLAG_SHOW_ERROR = 1 << 14,
-		FLAG_MASK = FLAG_SHOW_ERROR - 1,
+		FLAG_MASK = FLAG_NULL_IS_OK - 1,
 	};
 
 	struct Page {
