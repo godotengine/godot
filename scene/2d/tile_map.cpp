@@ -482,7 +482,11 @@ void TileMap::set_selected_layer(int p_layer_id) {
 	ERR_FAIL_COND(p_layer_id < -1 || p_layer_id >= (int)layers.size());
 	selected_layer = p_layer_id;
 	emit_signal(SNAME("changed"));
-	_make_all_quadrants_dirty();
+
+	// Update the layers modulation.
+	for (unsigned int layer = 0; layer < layers.size(); layer++) {
+		_rendering_update_layer(layer);
+	}
 }
 
 int TileMap::get_selected_layer() const {
@@ -653,8 +657,7 @@ void TileMap::set_layer_modulate(int p_layer, Color p_modulate) {
 	}
 	ERR_FAIL_INDEX(p_layer, (int)layers.size());
 	layers[p_layer].modulate = p_modulate;
-	_clear_layer_internals(p_layer);
-	_recreate_layer_internals(p_layer);
+	_rendering_update_layer(p_layer);
 	emit_signal(SNAME("changed"));
 }
 
@@ -703,8 +706,7 @@ void TileMap::set_layer_z_index(int p_layer, int p_z_index) {
 	}
 	ERR_FAIL_INDEX(p_layer, (int)layers.size());
 	layers[p_layer].z_index = p_z_index;
-	_clear_layer_internals(p_layer);
-	_recreate_layer_internals(p_layer);
+	_rendering_update_layer(p_layer);
 	emit_signal(SNAME("changed"));
 
 	update_configuration_warnings();
@@ -1103,6 +1105,19 @@ void TileMap::_rendering_update_layer(int p_layer) {
 	rs->canvas_item_set_default_texture_filter(ci, RS::CanvasItemTextureFilter(get_texture_filter_in_tree()));
 	rs->canvas_item_set_default_texture_repeat(ci, RS::CanvasItemTextureRepeat(get_texture_repeat_in_tree()));
 	rs->canvas_item_set_light_mask(ci, get_light_mask());
+
+	Color layer_modulate = get_layer_modulate(p_layer);
+	if (selected_layer >= 0 && p_layer != selected_layer) {
+		int z1 = get_layer_z_index(p_layer);
+		int z2 = get_layer_z_index(selected_layer);
+		if (z1 < z2 || (z1 == z2 && p_layer < selected_layer)) {
+			layer_modulate = layer_modulate.darkened(0.5);
+		} else if (z1 > z2 || (z1 == z2 && p_layer > selected_layer)) {
+			layer_modulate = layer_modulate.darkened(0.5);
+			layer_modulate.a *= 0.3;
+		}
+	}
+	rs->canvas_item_set_modulate(ci, layer_modulate);
 }
 
 void TileMap::_rendering_cleanup_layer(int p_layer) {
@@ -1144,19 +1159,6 @@ void TileMap::_rendering_update_dirty_quadrants(SelfList<TileMapQuadrant>::List 
 		Ref<Material> prev_material;
 		int prev_z_index = 0;
 		RID prev_ci;
-
-		Color tile_modulate = get_self_modulate();
-		tile_modulate *= get_layer_modulate(q.layer);
-		if (selected_layer >= 0) {
-			int z1 = get_layer_z_index(q.layer);
-			int z2 = get_layer_z_index(selected_layer);
-			if (z1 < z2 || (z1 == z2 && q.layer < selected_layer)) {
-				tile_modulate = tile_modulate.darkened(0.5);
-			} else if (z1 > z2 || (z1 == z2 && q.layer > selected_layer)) {
-				tile_modulate = tile_modulate.darkened(0.5);
-				tile_modulate.a *= 0.3;
-			}
-		}
 
 		// Iterate over the cells of the quadrant.
 		for (const KeyValue<Vector2i, Vector2i> &E_cell : q.local_to_map) {
@@ -1227,7 +1229,7 @@ void TileMap::_rendering_update_dirty_quadrants(SelfList<TileMapQuadrant>::List 
 					}
 
 					// Drawing the tile in the canvas item.
-					draw_tile(ci, E_cell.key - tile_position, tile_set, c.source_id, c.get_atlas_coords(), c.alternative_tile, -1, tile_modulate, tile_data);
+					draw_tile(ci, E_cell.key - tile_position, tile_set, c.source_id, c.get_atlas_coords(), c.alternative_tile, -1, get_self_modulate(), tile_data);
 
 					// --- Occluders ---
 					for (int i = 0; i < tile_set->get_occlusion_layers_count(); i++) {
@@ -2979,11 +2981,7 @@ void TileMap::_build_runtime_update_tile_data(SelfList<TileMapQuadrant>::List &r
 #ifdef TOOLS_ENABLED
 Rect2 TileMap::_edit_get_rect() const {
 	// Return the visible rect of the tilemap
-	if (pending_update) {
-		const_cast<TileMap *>(this)->_update_dirty_quadrants();
-	} else {
-		const_cast<TileMap *>(this)->_recompute_rect_cache();
-	}
+	const_cast<TileMap *>(this)->_recompute_rect_cache();
 	return rect_cache;
 }
 #endif
@@ -3738,6 +3736,22 @@ TypedArray<Vector2i> TileMap::get_used_cells(int p_layer) const {
 	return a;
 }
 
+TypedArray<Vector2i> TileMap::get_used_cells_by_id(int p_layer, int p_source_id, const Vector2i p_atlas_coords, int p_alternative_tile) const {
+	ERR_FAIL_INDEX_V(p_layer, (int)layers.size(), TypedArray<Vector2i>());
+
+	// Returns the cells used in the tilemap.
+	TypedArray<Vector2i> a;
+	for (const KeyValue<Vector2i, TileMapCell> &E : layers[p_layer].tile_map) {
+		if ((p_source_id == TileSet::INVALID_SOURCE || p_source_id == E.value.source_id) &&
+				(p_atlas_coords == TileSetSource::INVALID_ATLAS_COORDS || p_atlas_coords == E.value.get_atlas_coords()) &&
+				(p_alternative_tile == TileSetSource::INVALID_TILE_ALTERNATIVE || p_alternative_tile == E.value.alternative_tile)) {
+			a.push_back(E.key);
+		}
+	}
+
+	return a;
+}
+
 Rect2i TileMap::get_used_rect() { // Not const because of cache
 	// Return the rect of the currently used area
 	if (used_rect_cache_dirty) {
@@ -4030,6 +4044,7 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_surrounding_cells", "coords"), &TileMap::get_surrounding_cells);
 
 	ClassDB::bind_method(D_METHOD("get_used_cells", "layer"), &TileMap::get_used_cells);
+	ClassDB::bind_method(D_METHOD("get_used_cells_by_id", "layer", "source_id", "atlas_coords", "alternative_tile"), &TileMap::get_used_cells_by_id, DEFVAL(TileSet::INVALID_SOURCE), DEFVAL(TileSetSource::INVALID_ATLAS_COORDS), DEFVAL(TileSetSource::INVALID_TILE_ALTERNATIVE));
 	ClassDB::bind_method(D_METHOD("get_used_rect"), &TileMap::get_used_rect);
 
 	ClassDB::bind_method(D_METHOD("map_to_local", "map_position"), &TileMap::map_to_local);

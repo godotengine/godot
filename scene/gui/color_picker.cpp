@@ -642,7 +642,7 @@ inline int ColorPicker::_get_preset_size() {
 void ColorPicker::_add_preset_button(int p_size, const Color &p_color) {
 	ColorPresetButton *btn_preset_new = memnew(ColorPresetButton(p_color, p_size));
 	btn_preset_new->set_tooltip_text(vformat(RTR("Color: #%s\nLMB: Apply color\nRMB: Remove preset"), p_color.to_html(p_color.a < 1)));
-	btn_preset_new->set_drag_forwarding_compat(this);
+	SET_DRAG_FORWARDING_GCDU(btn_preset_new, ColorPicker);
 	btn_preset_new->set_button_group(preset_group);
 	preset_container->add_child(btn_preset_new);
 	btn_preset_new->set_pressed(true);
@@ -1543,10 +1543,6 @@ void ColorPicker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_recent_presets"), &ColorPicker::get_recent_presets);
 	ClassDB::bind_method(D_METHOD("set_picker_shape", "shape"), &ColorPicker::set_picker_shape);
 	ClassDB::bind_method(D_METHOD("get_picker_shape"), &ColorPicker::get_picker_shape);
-
-	ClassDB::bind_method(D_METHOD("_get_drag_data_fw"), &ColorPicker::_get_drag_data_fw);
-	ClassDB::bind_method(D_METHOD("_can_drop_data_fw"), &ColorPicker::_can_drop_data_fw);
-	ClassDB::bind_method(D_METHOD("_drop_data_fw"), &ColorPicker::_drop_data_fw);
 
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_pick_color", "get_pick_color");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "edit_alpha"), "set_edit_alpha", "is_editing_alpha");

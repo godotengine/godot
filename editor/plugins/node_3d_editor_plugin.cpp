@@ -3894,8 +3894,6 @@ Dictionary Node3DEditorViewport::get_state() const {
 
 void Node3DEditorViewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("update_transform_gizmo_view"), &Node3DEditorViewport::update_transform_gizmo_view); // Used by call_deferred.
-	ClassDB::bind_method(D_METHOD("_can_drop_data_fw"), &Node3DEditorViewport::can_drop_data_fw);
-	ClassDB::bind_method(D_METHOD("_drop_data_fw"), &Node3DEditorViewport::drop_data_fw);
 
 	ADD_SIGNAL(MethodInfo("toggle_maximize_view", PropertyInfo(Variant::OBJECT, "viewport")));
 	ADD_SIGNAL(MethodInfo("clicked", PropertyInfo(Variant::OBJECT, "viewport")));
@@ -4921,7 +4919,7 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 
 	c->add_child(viewport);
 	surface = memnew(Control);
-	surface->set_drag_forwarding_compat(this);
+	SET_DRAG_FORWARDING_CD(surface, Node3DEditorViewport);
 	add_child(surface);
 	surface->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	surface->set_clip_contents(true);

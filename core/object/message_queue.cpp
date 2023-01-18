@@ -114,7 +114,11 @@ Error MessageQueue::push_set(Object *p_object, const StringName &p_prop, const V
 Error MessageQueue::push_callablep(const Callable &p_callable, const Variant **p_args, int p_argcount, bool p_show_error) {
 	_THREAD_SAFE_METHOD_
 
-	int room_needed = sizeof(Message) + sizeof(Variant) * p_argcount;
+	Vector<Variant> bound_arguments;
+	int bound_argcount = 0;
+	p_callable.get_bound_arguments_ref(bound_arguments, bound_argcount);
+
+	int room_needed = sizeof(Message) + sizeof(Variant) * (bound_argcount + p_argcount);
 
 	if ((buffer_end + room_needed) >= buffer_size) {
 		print_line("Failed method: " + p_callable);
@@ -123,7 +127,7 @@ Error MessageQueue::push_callablep(const Callable &p_callable, const Variant **p
 	}
 
 	Message *msg = memnew_placement(&buffer[buffer_end], Message);
-	msg->args = p_argcount;
+	msg->args = bound_argcount + p_argcount;
 	msg->callable = p_callable;
 	msg->type = TYPE_CALL;
 	if (p_show_error) {
@@ -132,6 +136,11 @@ Error MessageQueue::push_callablep(const Callable &p_callable, const Variant **p
 
 	buffer_end += sizeof(Message);
 
+	for (int i = 0; i < bound_argcount; i++) {
+		Variant *v = memnew_placement(&buffer[buffer_end], Variant);
+		buffer_end += sizeof(Variant);
+		*v = bound_arguments[i];
+	}
 	for (int i = 0; i < p_argcount; i++) {
 		Variant *v = memnew_placement(&buffer[buffer_end], Variant);
 		buffer_end += sizeof(Variant);

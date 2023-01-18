@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		This resource is used in [EditorScenePostImport]. Some parameters are referring to bones in [Skeleton3D], [Skin], [Animation], and some other nodes are rewritten based on the parameters of [SkeletonProfile].
+		[b]Note:[/b] These parameters need to be set only when creating a custom profile. In [SkeletonProfileHumanoid], they are defined internally as read-only values.
 	</description>
 	<tutorials>
 		<link title="Retargeting 3D Skeletons">$DOCS_URL/tutorials/assets_pipeline/retargeting_3d_skeletons.html</link>
@@ -160,16 +161,18 @@
 	</methods>
 	<members>
 		<member name="bone_size" type="int" setter="set_bone_size" getter="get_bone_size" default="0">
+			The amount of bones in retargeting section's [BoneMap] editor. For example, [SkeletonProfileHumanoid] has 56 bones.
+			The size of elements in [BoneMap] updates when changing this property in it's assigned [SkeletonProfile].
 		</member>
 		<member name="group_size" type="int" setter="set_group_size" getter="get_group_size" default="0">
+			The amount of groups of bones in retargeting section's [BoneMap] editor. For example, [SkeletonProfileHumanoid] has 4 groups.
+			This property exists to separate the bone list into several sections in the editor.
 		</member>
 		<member name="root_bone" type="StringName" setter="set_root_bone" getter="get_root_bone" default="&amp;&quot;&quot;">
-			A name of bone that will be used as the root bone in [AnimationTree].
-			[b]Note:[/b] In most cases, it is the bone of the parent of the hips that exists at the world origin in the humanoid model.
+			A bone name that will be used as the root bone in [AnimationTree]. This should be the bone of the parent of hips that exists at the world origin.
 		</member>
 		<member name="scale_base_bone" type="StringName" setter="set_scale_base_bone" getter="get_scale_base_bone" default="&amp;&quot;&quot;">
-			A name of bone which height will be used as the coefficient for normalization.
-			[b]Note:[/b] In most cases, it is hips in the humanoid model.
+			A bone name which will use model's height as the coefficient for normalization. For example, [SkeletonProfileHumanoid] defines it as [code]Hips[/code].
 		</member>
 	</members>
 	<signals>
