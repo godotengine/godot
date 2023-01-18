@@ -359,24 +359,6 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the result of the linear interpolation between
-        /// this color and <paramref name="to"/> by color amount <paramref name="weight"/>.
-        /// </summary>
-        /// <param name="to">The destination color for interpolation.</param>
-        /// <param name="weight">A color with components on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
-        /// <returns>The resulting color of the interpolation.</returns>
-        public readonly Color Lerp(Color to, Color weight)
-        {
-            return new Color
-            (
-                (float)Mathf.Lerp(r, to.r, weight.r),
-                (float)Mathf.Lerp(g, to.g, weight.g),
-                (float)Mathf.Lerp(b, to.b, weight.b),
-                (float)Mathf.Lerp(a, to.a, weight.a)
-            );
-        }
-
-        /// <summary>
         /// Returns the color converted to the sRGB color space.
         /// This method assumes the original color is in the linear color space.
         /// See also <see cref="SrgbToLinear"/> which performs the opposite operation.

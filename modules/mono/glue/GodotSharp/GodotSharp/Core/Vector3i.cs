@@ -129,39 +129,6 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the squared distance between this vector and <paramref name="to"/>.
-        /// This method runs faster than <see cref="DistanceTo"/>, so prefer it if
-        /// you need to compare vectors or need the squared distance for some formula.
-        /// </summary>
-        /// <param name="to">The other vector to use.</param>
-        /// <returns>The squared distance between the two vectors.</returns>
-        public readonly int DistanceSquaredTo(Vector3i to)
-        {
-            return (to - this).LengthSquared();
-        }
-
-        /// <summary>
-        /// Returns the distance between this vector and <paramref name="to"/>.
-        /// </summary>
-        /// <seealso cref="DistanceSquaredTo(Vector3i)"/>
-        /// <param name="to">The other vector to use.</param>
-        /// <returns>The distance between the two vectors.</returns>
-        public readonly real_t DistanceTo(Vector3i to)
-        {
-            return (to - this).Length();
-        }
-
-        /// <summary>
-        /// Returns the dot product of this vector and <paramref name="with"/>.
-        /// </summary>
-        /// <param name="with">The other vector to use.</param>
-        /// <returns>The dot product of the two vectors.</returns>
-        public readonly int Dot(Vector3i with)
-        {
-            return x * with.x + y * with.y + z * with.z;
-        }
-
-        /// <summary>
         /// Returns the length (magnitude) of this vector.
         /// </summary>
         /// <seealso cref="LengthSquared"/>
@@ -208,40 +175,6 @@ namespace Godot
         public readonly Axis MinAxisIndex()
         {
             return x < y ? (x < z ? Axis.X : Axis.Z) : (y < z ? Axis.Y : Axis.Z);
-        }
-
-        /// <summary>
-        /// Returns a vector composed of the <see cref="Mathf.PosMod(int, int)"/> of this vector's components
-        /// and <paramref name="mod"/>.
-        /// </summary>
-        /// <param name="mod">A value representing the divisor of the operation.</param>
-        /// <returns>
-        /// A vector with each component <see cref="Mathf.PosMod(int, int)"/> by <paramref name="mod"/>.
-        /// </returns>
-        public readonly Vector3i PosMod(int mod)
-        {
-            Vector3i v = this;
-            v.x = Mathf.PosMod(v.x, mod);
-            v.y = Mathf.PosMod(v.y, mod);
-            v.z = Mathf.PosMod(v.z, mod);
-            return v;
-        }
-
-        /// <summary>
-        /// Returns a vector composed of the <see cref="Mathf.PosMod(int, int)"/> of this vector's components
-        /// and <paramref name="modv"/>'s components.
-        /// </summary>
-        /// <param name="modv">A vector representing the divisors of the operation.</param>
-        /// <returns>
-        /// A vector with each component <see cref="Mathf.PosMod(int, int)"/> by <paramref name="modv"/>'s components.
-        /// </returns>
-        public readonly Vector3i PosMod(Vector3i modv)
-        {
-            Vector3i v = this;
-            v.x = Mathf.PosMod(v.x, modv.x);
-            v.y = Mathf.PosMod(v.y, modv.y);
-            v.z = Mathf.PosMod(v.z, modv.z);
-            return v;
         }
 
         /// <summary>
@@ -455,7 +388,7 @@ namespace Godot
         /// with the components of the given <see langword="int"/>.
         /// This operation uses truncated division, which is often not desired
         /// as it does not work well with negative numbers.
-        /// Consider using <see cref="PosMod(int)"/> instead
+        /// Consider using <see cref="Mathf.PosMod(int, int)"/> instead
         /// if you want to handle negative numbers.
         /// </summary>
         /// <example>
@@ -479,7 +412,7 @@ namespace Godot
         /// with the components of the given <see cref="Vector3i"/>.
         /// This operation uses truncated division, which is often not desired
         /// as it does not work well with negative numbers.
-        /// Consider using <see cref="PosMod(Vector3i)"/> instead
+        /// Consider using <see cref="Mathf.PosMod(int, int)"/> instead
         /// if you want to handle negative numbers.
         /// </summary>
         /// <example>
@@ -495,36 +428,6 @@ namespace Godot
             vec.x %= divisorv.x;
             vec.y %= divisorv.y;
             vec.z %= divisorv.z;
-            return vec;
-        }
-
-        /// <summary>
-        /// Performs a bitwise AND operation with this <see cref="Vector3i"/>
-        /// and the given <see langword="int"/>.
-        /// </summary>
-        /// <param name="vec">The vector to AND with.</param>
-        /// <param name="and">The integer to AND with.</param>
-        /// <returns>The result of the bitwise AND.</returns>
-        public static Vector3i operator &(Vector3i vec, int and)
-        {
-            vec.x &= and;
-            vec.y &= and;
-            vec.z &= and;
-            return vec;
-        }
-
-        /// <summary>
-        /// Performs a bitwise AND operation with this <see cref="Vector3i"/>
-        /// and the given <see cref="Vector3i"/>.
-        /// </summary>
-        /// <param name="vec">The left vector to AND with.</param>
-        /// <param name="andv">The right vector to AND with.</param>
-        /// <returns>The result of the bitwise AND.</returns>
-        public static Vector3i operator &(Vector3i vec, Vector3i andv)
-        {
-            vec.x &= andv.x;
-            vec.y &= andv.y;
-            vec.z &= andv.z;
             return vec;
         }
 
