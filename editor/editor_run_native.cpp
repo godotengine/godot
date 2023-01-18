@@ -44,7 +44,8 @@ void EditorRunNative::_notification(int p_what) {
 			bool changed = EditorExport::get_singleton()->poll_export_platforms() || first;
 
 			if (changed) {
-				remote_debug->get_popup()->clear();
+				PopupMenu *popup = remote_debug->get_popup();
+				popup->clear();
 				for (int i = 0; i < EditorExport::get_singleton()->get_export_platform_count(); i++) {
 					Ref<EditorExportPlatform> eep = EditorExport::get_singleton()->get_export_platform(i);
 					if (eep.is_null()) {
@@ -52,14 +53,21 @@ void EditorRunNative::_notification(int p_what) {
 					}
 					int dc = MIN(eep->get_options_count(), 9000);
 					if (dc > 0) {
-						remote_debug->get_popup()->add_icon_item(eep->get_run_icon(), eep->get_name(), -1);
-						remote_debug->get_popup()->set_item_disabled(-1, true);
+						popup->add_icon_item(eep->get_run_icon(), eep->get_name(), -1);
+						popup->set_item_disabled(-1, true);
 						for (int j = 0; j < dc; j++) {
-							remote_debug->get_popup()->add_icon_item(eep->get_option_icon(j), eep->get_option_label(j), 10000 * i + j);
-							remote_debug->get_popup()->set_item_tooltip(-1, eep->get_option_tooltip(j));
-							remote_debug->get_popup()->set_item_indent(-1, 2);
+							popup->add_icon_item(eep->get_option_icon(j), eep->get_option_label(j), 10000 * i + j);
+							popup->set_item_tooltip(-1, eep->get_option_tooltip(j));
+							popup->set_item_indent(-1, 2);
 						}
 					}
+				}
+				if (popup->get_item_count() == 0) {
+					remote_debug->set_disabled(true);
+					remote_debug->set_tooltip_text(TTR("No Remote Debug export presets configured."));
+				} else {
+					remote_debug->set_disabled(false);
+					remote_debug->set_tooltip_text(TTR("Remote Debug"));
 				}
 
 				first = false;
@@ -149,6 +157,7 @@ EditorRunNative::EditorRunNative() {
 	remote_debug->get_popup()->connect("id_pressed", callable_mp(this, &EditorRunNative::run_native));
 	remote_debug->set_icon(get_theme_icon(SNAME("PlayRemote"), SNAME("EditorIcons")));
 	remote_debug->set_tooltip_text(TTR("Remote Debug"));
+	remote_debug->set_disabled(true);
 
 	add_child(remote_debug);
 
