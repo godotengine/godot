@@ -622,7 +622,7 @@ protected:
 	virtual void _create_mesh_array(Array &p_arr) const override;
 
 public:
-	GDVIRTUAL2RC(Array, _structured_text_parser, Array, String)
+	GDVIRTUAL2RC(TypedArray<Vector3i>, _structured_text_parser, Array, String)
 
 	TextMesh();
 	~TextMesh();

@@ -196,12 +196,12 @@
 			</description>
 		</method>
 		<method name="_structured_text_parser" qualifiers="virtual const">
-			<return type="Vector2i[]" />
+			<return type="Vector3i[]" />
 			<param index="0" name="args" type="Array" />
 			<param index="1" name="text" type="String" />
 			<description>
 				User defined BiDi algorithm override function.
-				Returns an [Array] of [Vector2i] text ranges, in the left-to-right order. Ranges should cover full source [param text] without overlaps. BiDi algorithm will be used on each range separately.
+				Returns an [Array] of [Vector3i] text ranges and text base directions, in the left-to-right order. Ranges should cover full source [param text] without overlaps. BiDi algorithm will be used on each range separately.
 			</description>
 		</method>
 		<method name="accept_event">

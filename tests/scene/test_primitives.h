@@ -734,7 +734,7 @@ TEST_CASE("[SceneTree][Primitive][Text] Text Primitive") {
 				text->get_structured_text_bidi_override() == TextServer::STRUCTURED_TEXT_FILE ||
 				text->get_structured_text_bidi_override() == TextServer::STRUCTURED_TEXT_EMAIL ||
 				text->get_structured_text_bidi_override() == TextServer::STRUCTURED_TEXT_LIST ||
-				text->get_structured_text_bidi_override() == TextServer::STRUCTURED_TEXT_NONE ||
+				text->get_structured_text_bidi_override() == TextServer::STRUCTURED_TEXT_GDSCRIPT ||
 				text->get_structured_text_bidi_override() == TextServer::STRUCTURED_TEXT_CUSTOM));
 		CHECK(text->get_structured_text_bidi_override_options().size() >= 0);
 		CHECK(text->get_width() > 0);

@@ -500,7 +500,7 @@ class TextServerAdvanced : public TextServerExtension {
 		/* Intermediate data */
 		Char16String utf16;
 		Vector<UBiDi *> bidi_iter;
-		Vector<Vector2i> bidi_override;
+		Vector<Vector3i> bidi_override;
 		ScriptIterator *script_iter = nullptr;
 		hb_buffer_t *hb_buffer = nullptr;
 

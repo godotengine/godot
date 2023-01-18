@@ -2683,6 +2683,7 @@ void TextServerFallback::full_copy(ShapedTextDataFallback *p_shaped) {
 
 RID TextServerFallback::_create_shaped_text(TextServer::Direction p_direction, TextServer::Orientation p_orientation) {
 	_THREAD_SAFE_METHOD_
+	ERR_FAIL_COND_V_MSG(p_direction == DIRECTION_INHERITED, RID(), "Invalid text direction.");
 
 	ShapedTextDataFallback *sd = memnew(ShapedTextDataFallback);
 	sd->direction = p_direction;
@@ -2706,6 +2707,7 @@ void TextServerFallback::_shaped_text_clear(const RID &p_shaped) {
 }
 
 void TextServerFallback::_shaped_text_set_direction(const RID &p_shaped, TextServer::Direction p_direction) {
+	ERR_FAIL_COND_MSG(p_direction == DIRECTION_INHERITED, "Invalid text direction.");
 	if (p_direction == DIRECTION_RTL) {
 		ERR_PRINT_ONCE("Right-to-left layout is not supported by this text server.");
 	}

@@ -1208,7 +1208,15 @@ void TextEdit::_notification(int p_what) {
 						char_ofs = 0;
 					}
 					for (int j = 0; j < gl_size; j++) {
-						const Variant *color_data = color_map.getptr(glyphs[j].start);
+						int64_t color_start = -1;
+						for (const Variant *key = color_map.next(nullptr); key; key = color_map.next(key)) {
+							if (int64_t(*key) <= glyphs[j].start) {
+								color_start = *key;
+							} else {
+								break;
+							}
+						}
+						const Variant *color_data = (color_start >= 0) ? color_map.getptr(color_start) : nullptr;
 						if (color_data != nullptr) {
 							current_color = (color_data->operator Dictionary()).get("color", font_color);
 							if (!editable && current_color.a > font_readonly_color.a) {

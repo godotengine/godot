@@ -3680,6 +3680,7 @@ void TextServerAdvanced::full_copy(ShapedTextDataAdvanced *p_shaped) {
 
 RID TextServerAdvanced::_create_shaped_text(TextServer::Direction p_direction, TextServer::Orientation p_orientation) {
 	_THREAD_SAFE_METHOD_
+	ERR_FAIL_COND_V_MSG(p_direction == DIRECTION_INHERITED, RID(), "Invalid text direction.");
 
 	ShapedTextDataAdvanced *sd = memnew(ShapedTextDataAdvanced);
 	sd->hb_buffer = hb_buffer_create();
@@ -3705,6 +3706,7 @@ void TextServerAdvanced::_shaped_text_clear(const RID &p_shaped) {
 
 void TextServerAdvanced::_shaped_text_set_direction(const RID &p_shaped, TextServer::Direction p_direction) {
 	ShapedTextDataAdvanced *sd = shaped_owner.get_or_null(p_shaped);
+	ERR_FAIL_COND_MSG(p_direction == DIRECTION_INHERITED, "Invalid text direction.");
 	ERR_FAIL_COND(!sd);
 
 	MutexLock lock(sd->mutex);
@@ -3764,8 +3766,12 @@ void TextServerAdvanced::_shaped_text_set_bidi_override(const RID &p_shaped, con
 	}
 	sd->bidi_override.clear();
 	for (int i = 0; i < p_override.size(); i++) {
-		if (p_override[i].get_type() == Variant::VECTOR2I) {
-			sd->bidi_override.push_back(p_override[i]);
+		if (p_override[i].get_type() == Variant::VECTOR3I) {
+			const Vector3i &r = p_override[i];
+			sd->bidi_override.push_back(r);
+		} else if (p_override[i].get_type() == Variant::VECTOR2I) {
+			const Vector2i &r = p_override[i];
+			sd->bidi_override.push_back(Vector3i(r.x, r.y, DIRECTION_INHERITED));
 		}
 	}
 	invalidate(sd, false);
@@ -5570,8 +5576,31 @@ bool TextServerAdvanced::_shaped_text_shape(const RID &p_shaped) {
 		sd->script_iter = memnew(ScriptIterator(sd->text, 0, sd->text.length()));
 	}
 
+	int base_para_direction = UBIDI_DEFAULT_LTR;
+	switch (sd->direction) {
+		case DIRECTION_LTR: {
+			sd->para_direction = DIRECTION_LTR;
+			base_para_direction = UBIDI_LTR;
+		} break;
+		case DIRECTION_RTL: {
+			sd->para_direction = DIRECTION_RTL;
+			base_para_direction = UBIDI_RTL;
+		} break;
+		case DIRECTION_INHERITED:
+		case DIRECTION_AUTO: {
+			UBiDiDirection direction = ubidi_getBaseDirection(data, sd->utf16.length());
+			if (direction != UBIDI_NEUTRAL) {
+				sd->para_direction = (direction == UBIDI_RTL) ? DIRECTION_RTL : DIRECTION_LTR;
+				base_para_direction = direction;
+			} else {
+				sd->para_direction = DIRECTION_LTR;
+				base_para_direction = UBIDI_DEFAULT_LTR;
+			}
+		} break;
+	}
+
 	if (sd->bidi_override.is_empty()) {
-		sd->bidi_override.push_back(Vector2i(sd->start, sd->end));
+		sd->bidi_override.push_back(Vector3i(sd->start, sd->end, DIRECTION_INHERITED));
 	}
 
 	for (int ov = 0; ov < sd->bidi_override.size(); ov++) {
@@ -5587,23 +5616,22 @@ bool TextServerAdvanced::_shaped_text_shape(const RID &p_shaped) {
 		UBiDi *bidi_iter = ubidi_openSized(end, 0, &err);
 		ERR_FAIL_COND_V_MSG(U_FAILURE(err), false, u_errorName(err));
 
-		switch (sd->direction) {
+		switch (static_cast<TextServer::Direction>(sd->bidi_override[ov].z)) {
 			case DIRECTION_LTR: {
 				ubidi_setPara(bidi_iter, data + start, end - start, UBIDI_LTR, nullptr, &err);
-				sd->para_direction = DIRECTION_LTR;
 			} break;
 			case DIRECTION_RTL: {
 				ubidi_setPara(bidi_iter, data + start, end - start, UBIDI_RTL, nullptr, &err);
-				sd->para_direction = DIRECTION_RTL;
+			} break;
+			case DIRECTION_INHERITED: {
+				ubidi_setPara(bidi_iter, data + start, end - start, base_para_direction, nullptr, &err);
 			} break;
 			case DIRECTION_AUTO: {
 				UBiDiDirection direction = ubidi_getBaseDirection(data + start, end - start);
 				if (direction != UBIDI_NEUTRAL) {
 					ubidi_setPara(bidi_iter, data + start, end - start, direction, nullptr, &err);
-					sd->para_direction = (direction == UBIDI_RTL) ? DIRECTION_RTL : DIRECTION_LTR;
 				} else {
 					ubidi_setPara(bidi_iter, data + start, end - start, UBIDI_DEFAULT_LTR, nullptr, &err);
-					sd->para_direction = DIRECTION_LTR;
 				}
 			} break;
 		}
