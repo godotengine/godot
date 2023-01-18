@@ -138,10 +138,10 @@
 			Used with [method Node.rpc_config] to disable a method or property for all RPC calls, making it unavailable. Default for all methods.
 		</constant>
 		<constant name="RPC_MODE_ANY_PEER" value="1" enum="RPCMode">
-			Used with [method Node.rpc_config] to set a method to be callable remotely by any peer. Analogous to the [code]@rpc(any)[/code] annotation. Calls are accepted from all remote peers, no matter if they are node's authority or not.
+			Used with [method Node.rpc_config] to set a method to be callable remotely by any peer. Analogous to the [code]@rpc("any")[/code] annotation. Calls are accepted from all remote peers, no matter if they are node's authority or not.
 		</constant>
 		<constant name="RPC_MODE_AUTHORITY" value="2" enum="RPCMode">
-			Used with [method Node.rpc_config] to set a method to be callable remotely only by the current multiplayer authority (which is the server by default). Analogous to the [code]@rpc(authority)[/code] annotation. See [method Node.set_multiplayer_authority].
+			Used with [method Node.rpc_config] to set a method to be callable remotely only by the current multiplayer authority (which is the server by default). Analogous to the [code]@rpc("authority")[/code] annotation. See [method Node.set_multiplayer_authority].
 		</constant>
 	</constants>
 </class>

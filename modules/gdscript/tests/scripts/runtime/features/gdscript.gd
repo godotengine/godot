@@ -11,10 +11,10 @@ class InnerClass:
 	func _init() -> void:
 		prints("Inner")
 '''
-	@warning_ignore(return_value_discarded)
+	@warning_ignore("return_value_discarded")
 	gdscr.reload()
 
 	var inst = gdscr.new()
 
-	@warning_ignore(unsafe_method_access)
+	@warning_ignore("unsafe_method_access")
 	inst.test()

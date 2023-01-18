@@ -802,6 +802,7 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 
 				// Apply annotations.
 				for (GDScriptParser::AnnotationNode *&E : member.variable->annotations) {
+					resolve_annotation(E);
 					E->apply(parser, member.variable);
 				}
 			} break;
@@ -812,6 +813,7 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 
 				// Apply annotations.
 				for (GDScriptParser::AnnotationNode *&E : member.constant->annotations) {
+					resolve_annotation(E);
 					E->apply(parser, member.constant);
 				}
 			} break;
@@ -835,6 +837,7 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 
 				// Apply annotations.
 				for (GDScriptParser::AnnotationNode *&E : member.signal->annotations) {
+					resolve_annotation(E);
 					E->apply(parser, member.signal);
 				}
 			} break;
@@ -882,6 +885,7 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 
 				// Apply annotations.
 				for (GDScriptParser::AnnotationNode *&E : member.m_enum->annotations) {
+					resolve_annotation(E);
 					E->apply(parser, member.m_enum);
 				}
 			} break;
@@ -1064,6 +1068,7 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class, co
 		if (member.type == GDScriptParser::ClassNode::Member::FUNCTION) {
 			// Apply annotations.
 			for (GDScriptParser::AnnotationNode *&E : member.function->annotations) {
+				resolve_annotation(E);
 				E->apply(parser, member.function);
 			}
 
@@ -1290,7 +1295,55 @@ void GDScriptAnalyzer::resolve_node(GDScriptParser::Node *p_node, bool p_is_root
 }
 
 void GDScriptAnalyzer::resolve_annotation(GDScriptParser::AnnotationNode *p_annotation) {
-	// TODO: Add second validation function for annotations, so they can use checked types.
+	ERR_FAIL_COND_MSG(!parser->valid_annotations.has(p_annotation->name), vformat(R"(Annotation "%s" not found to validate.)", p_annotation->name));
+
+	const MethodInfo &annotation_info = parser->valid_annotations[p_annotation->name].info;
+
+	const List<PropertyInfo>::Element *E = annotation_info.arguments.front();
+	for (int i = 0; i < p_annotation->arguments.size(); i++) {
+		GDScriptParser::ExpressionNode *argument = p_annotation->arguments[i];
+		const PropertyInfo &argument_info = E->get();
+
+		if (E->next() != nullptr) {
+			E = E->next();
+		}
+
+		reduce_expression(argument);
+
+		if (!argument->is_constant) {
+			push_error(vformat(R"(Argument %d of annotation "%s" isn't a constant expression.)", i + 1, p_annotation->name), argument);
+			return;
+		}
+
+		Variant value = argument->reduced_value;
+
+		if (value.get_type() != argument_info.type) {
+#ifdef DEBUG_ENABLED
+			if (argument_info.type == Variant::INT && value.get_type() == Variant::FLOAT) {
+				parser->push_warning(argument, GDScriptWarning::NARROWING_CONVERSION);
+			}
+#endif
+
+			if (!Variant::can_convert_strict(value.get_type(), argument_info.type)) {
+				push_error(vformat(R"(Invalid argument for annotation "%s": argument %d should be "%s" but is "%s".)", p_annotation->name, i + 1, Variant::get_type_name(argument_info.type), argument->get_datatype().to_string()), argument);
+				return;
+			}
+
+			Variant converted_to;
+			const Variant *converted_from = &value;
+			Callable::CallError call_error;
+			Variant::construct(argument_info.type, converted_to, &converted_from, 1, call_error);
+
+			if (call_error.error != Callable::CallError::CALL_OK) {
+				push_error(vformat(R"(Cannot convert argument %d of annotation "%s" from "%s" to "%s".)", i + 1, p_annotation->name, Variant::get_type_name(value.get_type()), Variant::get_type_name(argument_info.type)), argument);
+				return;
+			}
+
+			value = converted_to;
+		}
+
+		p_annotation->resolved_arguments.push_back(value);
+	}
 }
 
 void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *p_function, const GDScriptParser::Node *p_source, bool p_is_lambda) {
@@ -1486,8 +1539,10 @@ void GDScriptAnalyzer::decide_suite_type(GDScriptParser::Node *p_suite, GDScript
 void GDScriptAnalyzer::resolve_suite(GDScriptParser::SuiteNode *p_suite) {
 	for (int i = 0; i < p_suite->statements.size(); i++) {
 		GDScriptParser::Node *stmt = p_suite->statements[i];
-		for (GDScriptParser::AnnotationNode *&annotation : stmt->annotations) {
-			annotation->apply(parser, stmt);
+		// Apply annotations.
+		for (GDScriptParser::AnnotationNode *&E : stmt->annotations) {
+			resolve_annotation(E);
+			E->apply(parser, stmt);
 		}
 
 #ifdef DEBUG_ENABLED
@@ -4550,6 +4605,11 @@ Ref<GDScriptParserRef> GDScriptAnalyzer::get_parser_for(const String &p_path) {
 }
 
 Error GDScriptAnalyzer::resolve_inheritance() {
+	// Apply annotations.
+	for (GDScriptParser::AnnotationNode *&E : parser->head->annotations) {
+		resolve_annotation(E);
+		E->apply(parser, parser->head);
+	}
 	return resolve_class_inheritance(parser->head, true);
 }
 

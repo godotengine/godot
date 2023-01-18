@@ -529,7 +529,7 @@ void GDScriptParser::parse_program() {
 		AnnotationNode *annotation = parse_annotation(AnnotationInfo::SCRIPT | AnnotationInfo::STANDALONE | AnnotationInfo::CLASS_LEVEL);
 		if (annotation != nullptr) {
 			if (annotation->applies_to(AnnotationInfo::SCRIPT)) {
-				annotation->apply(this, head);
+				head->annotations.push_back(annotation);
 			} else {
 				annotation_stack.push_back(annotation);
 				// This annotation must appear after script-level annotations
@@ -771,7 +771,6 @@ void GDScriptParser::parse_class_member(T *(GDScriptParser::*p_parse_function)()
 		return;
 	}
 
-	// Apply annotations.
 	for (AnnotationNode *&annotation : annotations) {
 		member->annotations.push_back(annotation);
 	}
@@ -848,7 +847,7 @@ void GDScriptParser::parse_class_body(bool p_is_multiline) {
 						if (previous.type != GDScriptTokenizer::Token::NEWLINE) {
 							push_error(R"(Expected newline after a standalone annotation.)");
 						}
-						annotation->apply(this, head);
+						head->annotations.push_back(annotation);
 					} else {
 						annotation_stack.push_back(annotation);
 					}
@@ -1470,7 +1469,7 @@ GDScriptParser::AnnotationNode *GDScriptParser::parse_annotation(uint32_t p_vali
 	match(GDScriptTokenizer::Token::NEWLINE); // Newline after annotation is optional.
 
 	if (valid) {
-		valid = validate_annotation_arguments(annotation);
+		valid = validate_annotation_argument_count(annotation);
 	}
 
 	return valid ? annotation : nullptr;
@@ -1717,7 +1716,6 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 		}
 	}
 
-	// Apply annotations to statement.
 	while (!is_annotation && result != nullptr && !annotation_stack.is_empty()) {
 		AnnotationNode *last_annotation = annotation_stack.back()->get();
 		if (last_annotation->applies_to(AnnotationInfo::STATEMENT)) {
@@ -3598,7 +3596,7 @@ bool GDScriptParser::AnnotationNode::applies_to(uint32_t p_target_kinds) const {
 	return (info->target_kind & p_target_kinds) > 0;
 }
 
-bool GDScriptParser::validate_annotation_arguments(AnnotationNode *p_annotation) {
+bool GDScriptParser::validate_annotation_argument_count(AnnotationNode *p_annotation) {
 	ERR_FAIL_COND_V_MSG(!valid_annotations.has(p_annotation->name), false, vformat(R"(Annotation "%s" not found to validate.)", p_annotation->name));
 
 	const MethodInfo &info = valid_annotations[p_annotation->name].info;
@@ -3611,62 +3609,6 @@ bool GDScriptParser::validate_annotation_arguments(AnnotationNode *p_annotation)
 	if (p_annotation->arguments.size() < info.arguments.size() - info.default_arguments.size()) {
 		push_error(vformat(R"(Annotation "%s" requires at least %d arguments, but %d were given.)", p_annotation->name, info.arguments.size() - info.default_arguments.size(), p_annotation->arguments.size()));
 		return false;
-	}
-
-	const List<PropertyInfo>::Element *E = info.arguments.front();
-	for (int i = 0; i < p_annotation->arguments.size(); i++) {
-		ExpressionNode *argument = p_annotation->arguments[i];
-		const PropertyInfo &parameter = E->get();
-
-		if (E->next() != nullptr) {
-			E = E->next();
-		}
-
-		switch (parameter.type) {
-			case Variant::STRING:
-			case Variant::STRING_NAME:
-			case Variant::NODE_PATH:
-				// Allow "quote-less strings", as long as they are recognized as identifiers.
-				if (argument->type == Node::IDENTIFIER) {
-					IdentifierNode *string = static_cast<IdentifierNode *>(argument);
-					Callable::CallError error;
-					Vector<Variant> args = varray(string->name);
-					const Variant *name = args.ptr();
-					Variant r;
-					Variant::construct(parameter.type, r, &(name), 1, error);
-					p_annotation->resolved_arguments.push_back(r);
-					if (error.error != Callable::CallError::CALL_OK) {
-						push_error(vformat(R"(Expected %s as argument %d of annotation "%s".)", Variant::get_type_name(parameter.type), i + 1, p_annotation->name));
-						p_annotation->resolved_arguments.remove_at(p_annotation->resolved_arguments.size() - 1);
-						return false;
-					}
-					break;
-				}
-				[[fallthrough]];
-			default: {
-				if (argument->type != Node::LITERAL) {
-					push_error(vformat(R"(Expected %s as argument %d of annotation "%s".)", Variant::get_type_name(parameter.type), i + 1, p_annotation->name));
-					return false;
-				}
-
-				Variant value = static_cast<LiteralNode *>(argument)->value;
-				if (!Variant::can_convert_strict(value.get_type(), parameter.type)) {
-					push_error(vformat(R"(Expected %s as argument %d of annotation "%s".)", Variant::get_type_name(parameter.type), i + 1, p_annotation->name));
-					return false;
-				}
-				Callable::CallError error;
-				const Variant *args = &value;
-				Variant r;
-				Variant::construct(parameter.type, r, &(args), 1, error);
-				p_annotation->resolved_arguments.push_back(r);
-				if (error.error != Callable::CallError::CALL_OK) {
-					push_error(vformat(R"(Expected %s as argument %d of annotation "%s".)", Variant::get_type_name(parameter.type), i + 1, p_annotation->name));
-					p_annotation->resolved_arguments.remove_at(p_annotation->resolved_arguments.size() - 1);
-					return false;
-				}
-				break;
-			}
-		}
 	}
 
 	return true;
