@@ -145,8 +145,9 @@ public:
 	virtual String get_as_text() const = 0;
 	virtual CompareEqualFunc get_compare_equal_func() const = 0;
 	virtual CompareLessFunc get_compare_less_func() const = 0;
+	virtual bool is_valid() const;
 	virtual StringName get_method() const;
-	virtual ObjectID get_object() const = 0; //must always be able to provide an object
+	virtual ObjectID get_object() const = 0;
 	virtual void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const = 0;
 	virtual Error rpc(int p_peer_id, const Variant **p_arguments, int p_argcount, Callable::CallError &r_call_error) const;
 	virtual const Callable *get_base_comparator() const;

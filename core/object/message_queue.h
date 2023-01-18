@@ -49,7 +49,8 @@ class MessageQueue {
 		TYPE_NOTIFICATION,
 		TYPE_SET,
 		FLAG_SHOW_ERROR = 1 << 14,
-		FLAG_MASK = FLAG_SHOW_ERROR - 1
+		FLAG_NULL_IS_OK = 1 << 13,
+		FLAG_MASK = FLAG_NULL_IS_OK - 1
 
 	};
 
