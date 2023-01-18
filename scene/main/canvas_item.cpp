@@ -531,10 +531,13 @@ void CanvasItem::draw_polyline_colors(const Vector<Point2> &p_points, const Vect
 void CanvasItem::draw_arc(const Vector2 &p_center, real_t p_radius, real_t p_start_angle, real_t p_end_angle, int p_point_count, const Color &p_color, real_t p_width, bool p_antialiased) {
 	Vector<Point2> points;
 	points.resize(p_point_count);
-	const real_t delta_angle = p_end_angle - p_start_angle;
+	Point2 *points_ptr = points.ptrw();
+
+	// Clamp angle difference to full circle so arc won't overlap itself.
+	const real_t delta_angle = CLAMP(p_end_angle - p_start_angle, -Math_TAU, Math_TAU);
 	for (int i = 0; i < p_point_count; i++) {
 		real_t theta = (i / (p_point_count - 1.0f)) * delta_angle + p_start_angle;
-		points.set(i, p_center + Vector2(Math::cos(theta), Math::sin(theta)) * p_radius);
+		points_ptr[i] = p_center + Vector2(Math::cos(theta), Math::sin(theta)) * p_radius;
 	}
 
 	draw_polyline(points, p_color, p_width, p_antialiased);
