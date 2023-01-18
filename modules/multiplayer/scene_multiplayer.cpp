@@ -587,13 +587,36 @@ void SceneMultiplayer::_process_sys(int p_from, const uint8_t *p_packet, int p_p
 			gltf.instantiate();
 			Ref<GLTFState> gltf_state;
 			gltf_state.instantiate();
-			String save_path = "user://" + glb_name.replace(".glb", ".gltf");
+			String save_path = "res://" + glb_name.replace(".glb", ".scn");
 
 			gltf->append_from_buffer(distributed_glb, "base_path?", gltf_state);
-			gltf->write_to_filesystem(gltf_state, save_path);
 
+			Node* n = gltf->generate_scene(gltf_state);
+			n->set_name(save_path);
+			Ref<PackedScene> p = memnew(PackedScene);
+			//PackedScene p;
+			//p.instantiate();
+			p->pack(n);
+			ResourceSaver s;
+			Error error = s.save(p, save_path);  // Or "user://..."
+
+			//gltf->write_to_filesystem(gltf_state, save_path);
+
+			printf("here we go--\n");
 			//add to add_spawnable_scene
-			
+			//ObjectID spawner;
+			//MultiplayerSpawner* m = Object::cast_to<MultiplayerSpawner>(ObjectDB::get_instance(spawner));
+			//m->add_spawnable_scene(save_path);
+			//printf("spawnable-scene-count:%d\n", m->get_spawnable_scene_count());
+
+			MultiplayerSpawner* spawner = Object::cast_to<MultiplayerSpawner>(get_path_cache()->get_cached_object(1, 1));
+			//ERR_FAIL_COND_V(!spawner, ERR_DOES_NOT_EXIST);
+			printf("spawnable-scene-count:%d\n", spawner->get_spawnable_scene_count());
+			spawner->add_spawnable_scene(save_path);
+			printf("spawnable-scene-count:%d\n", spawner->get_spawnable_scene_count());
+
+			//MultiplayerSynchronizer* sync = get_id_as<MultiplayerSynchronizer>(p_sid);
+			//ERR_FAIL_COND(!sync); // Bug.
 
 		} break;
 		default: {

@@ -527,6 +527,8 @@ Error SceneReplicationInterface::on_spawn_receive(int p_from, const uint8_t *p_b
 	ofs += 1;
 	uint32_t node_target = decode_uint32(&p_buffer[ofs]);
 	ofs += 4;
+	printf("on-spawn-receive:%u from:%d\n", node_target, p_from);
+
 	MultiplayerSpawner *spawner = Object::cast_to<MultiplayerSpawner>(multiplayer->get_path_cache()->get_cached_object(p_from, node_target));
 	ERR_FAIL_COND_V(!spawner, ERR_DOES_NOT_EXIST);
 	ERR_FAIL_COND_V(p_from != spawner->get_multiplayer_authority(), ERR_UNAUTHORIZED);

@@ -9,6 +9,11 @@
 
 #include "modules/gltf/gltf_document.h"
 
+#include "scene/main/scene_tree.h"
+#include "scene/main/window.h"
+#include "scene/resources/packed_scene.h"
+#include "core/io/resource_saver.h"
+
 void SceneDistributionInterface::_bind_methods()
 {
 	ClassDB::bind_method(D_METHOD("request_glb", "glb_name"), &SceneDistributionInterface::request_glb);
@@ -86,11 +91,46 @@ void SceneDistributionInterface::distribute_glb(const String& p_path, int id)
 	}
 
 	//write it to own user://
-	String save_path = "user://" + p_path.replace(".glb", ".gltf");
+	//String save_path = "res://" + p_path.replace(".glb", ".gltf");
+	String save_path = "res://" + p_path.replace(".glb", ".scn");
 
 	
 	gltf->append_from_buffer(glb_file_PBA, "base_path?", gltf_state);
-	gltf->write_to_filesystem(gltf_state, save_path);
+
+	Node* n = gltf->generate_scene(gltf_state);
+	n->set_name(save_path);
+	Ref<PackedScene> p = memnew(PackedScene);
+	//PackedScene p;
+	//p.instantiate();
+	p->pack(n);
+	ResourceSaver s;
+	Error error = s.save(p, save_path);  // Or "user://..."
+
+
+	//gltf->write_to_filesystem(gltf_state, save_path);
+
+	//MultiplayerSpawner* spawner = Object::cast_to<MultiplayerSpawner>(multiplayer->get_path_cache()->get_cached_object(id, 1));
+	////ERR_FAIL_COND_V(!spawner, ERR_DOES_NOT_EXIST);
+	//printf("we-are-peer:%d\n", multiplayer->get_unique_id());
+	//printf("spawnable-scene-count:%d\n", spawner->get_spawnable_scene_count());
+	//spawner->add_spawnable_scene(save_path);
+	//printf("spawnable-scene-count:%d\n", spawner->get_spawnable_scene_count());
+
+	//Node* root_node =  SceneTree::get_singleton()->get_root()->get_node(multiplayer->get_root_path());
+	//Node* node = root_node->get_node(ni->path);
+
+
+	//Node* root_node = SceneTree::get_singleton()->get_root()->get_node(multiplayer->get_root_path());
+	//HashMap<int, PathGetCache>::Iterator E = path_get_cache.find(p_from);
+
+	Node* root_node = SceneTree::get_singleton()->get_root()->get_node(multiplayer->get_root_path());
+	Node* node = root_node->get_node(NodePath("/root/Main/PlayerSpawner"));
+	MultiplayerSpawner* spawner = Object::cast_to<MultiplayerSpawner>(node);
+	printf("spawnable-scene-count-distglb:%d\n", spawner->get_spawnable_scene_count());
+	spawner->add_spawnable_scene(save_path);
+	printf("spawnable-scene-count-distglb:%d\n", spawner->get_spawnable_scene_count());
+
+
 
 	//send it to the clients and MultiplayerSpawner.add_spawnable_scene
 	int packet_len = SceneMultiplayer::SYS_CMD_SIZE + 4 + 4 + p_path.size() + glb_file_PBA.size() ;
