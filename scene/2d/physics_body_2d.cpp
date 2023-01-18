@@ -1361,14 +1361,23 @@ void CharacterBody2D::_move_and_slide_floating(double p_delta) {
 			motion_results.push_back(result);
 			_set_collision_direction(result);
 
-			if (result.remainder.is_zero_approx()) {
+			if (wall_min_slide_angle != 0 && result.get_angle(-velocity.normalized()) < wall_min_slide_angle + FLOOR_ANGLE_THRESHOLD) {
+				// hit a wall at a sharp enough angle that we should stop
+				if (result.travel.length() <= margin + CMP_EPSILON) {
+					// Cancels the motion.
+					Transform2D gt = get_global_transform();
+					gt.columns[2] -= result.travel;
+					set_global_transform(gt);
+				}
 				motion = Vector2();
+				last_motion = Vector2();
+				velocity = Vector2();
 				break;
 			}
 
-			if (wall_min_slide_angle != 0 && result.get_angle(-velocity.normalized()) < wall_min_slide_angle + FLOOR_ANGLE_THRESHOLD) {
+			if (result.remainder.is_zero_approx()) {
 				motion = Vector2();
-				velocity = Vector2();
+				break;
 			} else if (first_slide) {
 				Vector2 motion_slide_norm = result.remainder.slide(result.collision_normal).normalized();
 				motion = motion_slide_norm * (motion.length() - result.travel.length());
@@ -1388,6 +1397,18 @@ void CharacterBody2D::_move_and_slide_floating(double p_delta) {
 		}
 
 		first_slide = false;
+	}
+
+	// Scales the velocity according to the wall slope.
+	if (is_on_wall() && velocity.dot(motion_results.get(0).collision_normal) < 0) {
+		// Slide the velocity against the first collision.
+		Vector2 slide_motion = velocity.slide(motion_results.get(0).collision_normal);
+		if (velocity.dot(slide_motion) < 0) {
+			// This shouldn't send us backwards.
+			velocity = Vector2();
+		} else {
+			velocity = slide_motion;
+		}
 	}
 }
 
