@@ -326,6 +326,11 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim, Node *p_root_ov
 			child->connect("tree_exiting", callable_mp(this, &AnimationPlayer::_node_removed).bind(child), CONNECT_ONE_SHOT);
 		}
 
+		// When a child node is renamed, we should update the path of the track
+		if (!child->is_connected("renamed", callable_mp(this, &AnimationPlayer::_node_renamed))) {
+			child->connect("renamed", callable_mp(this, &AnimationPlayer::_node_renamed).bind(child), CONNECT_ONE_SHOT);
+		}
+
 		TrackNodeCacheKey key;
 		key.id = id;
 		key.bone_idx = bone_idx;
@@ -1836,6 +1841,30 @@ void AnimationPlayer::_stop_playing_caches(bool p_reset) {
 
 void AnimationPlayer::_node_removed(Node *p_node) {
 	clear_caches(); // nodes contained here are being removed, clear the caches
+}
+
+void AnimationPlayer::_node_renamed(Node* p_node, const StringName &p_old_name) {
+	const NodePath &path = p_node->get_path();
+	bool change_performed = false;
+
+	for (KeyValue<StringName, AnimationData> &E : animation_set) {
+		Animation *anim = E.value.animation.ptr();
+
+		for (int track_idx = 0; track_idx < anim->get_track_count(); track_idx++) {
+			NodePath track_path = anim->track_get_path(track_idx);
+			int subnames = track_path.get_subname_count();
+
+			if (track_path.get_subname(subnames - 1) == p_old_name) {
+				// This path needs to be updated
+				anim->track_set_path(track_idx, path);
+				change_performed = true;
+			}
+		}
+	}
+
+	if (change_performed)
+		// We made a change, let's clear our cache and update.
+		clear_caches();
 }
 
 void AnimationPlayer::clear_caches() {

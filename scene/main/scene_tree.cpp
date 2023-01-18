@@ -135,8 +135,8 @@ void SceneTree::node_removed(Node *p_node) {
 	}
 }
 
-void SceneTree::node_renamed(Node *p_node) {
-	emit_signal(node_renamed_name, p_node);
+void SceneTree::node_renamed(Node *p_node, const StringName &p_old_name) {
+	emit_signal(node_renamed_name, p_node, p_old_name);
 }
 
 SceneTree::Group *SceneTree::add_to_group(const StringName &p_group, Node *p_node) {

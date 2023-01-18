@@ -179,7 +179,7 @@ private:
 	void tree_changed();
 	void node_added(Node *p_node);
 	void node_removed(Node *p_node);
-	void node_renamed(Node *p_node);
+	void node_renamed(Node *p_node, const StringName &p_old_name);
 	void process_timers(double p_delta, bool p_physics_frame);
 	void process_tweens(double p_delta, bool p_physics_frame);
 

@@ -278,6 +278,7 @@ private:
 	void _animation_process(double p_delta);
 
 	void _node_removed(Node *p_node);
+	void _node_renamed(Node *p_node, const StringName &p_old_name);
 	void _stop_playing_caches(bool p_reset);
 
 	// bind helpers
