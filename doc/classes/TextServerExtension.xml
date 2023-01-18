@@ -896,7 +896,7 @@
 			</description>
 		</method>
 		<method name="_parse_structured_text" qualifiers="virtual const">
-			<return type="Vector2i[]" />
+			<return type="Vector3i[]" />
 			<param index="0" name="parser_type" type="int" enum="TextServer.StructuredTextParser" />
 			<param index="1" name="args" type="Array" />
 			<param index="2" name="text" type="String" />

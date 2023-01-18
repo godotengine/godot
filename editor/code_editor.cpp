@@ -2086,6 +2086,7 @@ CodeTextEditor::CodeTextEditor() {
 	text_editor = memnew(CodeEdit);
 	add_child(text_editor);
 	text_editor->set_v_size_flags(SIZE_EXPAND_FILL);
+	text_editor->set_structured_text_bidi_override(TextServer::STRUCTURED_TEXT_GDSCRIPT);
 
 	int ot_mode = EDITOR_GET("interface/editor/code_font_contextual_ligatures");
 	Ref<FontVariation> fc = text_editor->get_theme_font(SNAME("font"));
