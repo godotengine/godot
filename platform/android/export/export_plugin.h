@@ -91,9 +91,12 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 	String get_package_name(const String &p_package) const;
 
+	String get_valid_basename() const;
+
 	String get_assets_directory(const Ref<EditorExportPreset> &p_preset, int p_export_format) const;
 
 	bool is_package_name_valid(const String &p_package, String *r_error = nullptr) const;
+	bool is_project_name_valid() const;
 
 	static bool _should_compress_asset(const String &p_path, const Vector<uint8_t> &p_data);
 
