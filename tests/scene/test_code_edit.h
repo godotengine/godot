@@ -1954,7 +1954,7 @@ TEST_CASE("[SceneTree][CodeEdit] indent") {
 
 		code_edit->set_editable(false);
 
-		code_edit->do_unindent();
+		code_edit->unindent_lines();
 		CHECK(code_edit->get_line(0) == "\t");
 
 		code_edit->unindent_lines();
@@ -1963,15 +1963,8 @@ TEST_CASE("[SceneTree][CodeEdit] indent") {
 		code_edit->set_editable(true);
 
 		/* Simple unindent. */
-		code_edit->do_unindent();
+		code_edit->unindent_lines();
 		CHECK(code_edit->get_line(0) == "");
-
-		/* Should inindent inplace. */
-		code_edit->set_text("");
-		code_edit->insert_text_at_caret("test\t");
-
-		code_edit->do_unindent();
-		CHECK(code_edit->get_line(0) == "test");
 
 		/* Backspace does a simple unindent. */
 		code_edit->set_text("");
@@ -1987,7 +1980,7 @@ TEST_CASE("[SceneTree][CodeEdit] indent") {
 
 		/* Caret on col zero unindent line. */
 		code_edit->set_text("\t\ttest");
-		code_edit->do_unindent();
+		code_edit->unindent_lines();
 		CHECK(code_edit->get_line(0) == "\ttest");
 
 		/* Check input action. */
@@ -1998,34 +1991,34 @@ TEST_CASE("[SceneTree][CodeEdit] indent") {
 		/* Selection does entire line. */
 		code_edit->set_text("\t\ttest");
 		code_edit->select_all();
-		code_edit->do_unindent();
+		code_edit->unindent_lines();
 		CHECK(code_edit->get_line(0) == "\ttest");
 
 		/* Handles multiple lines. */
 		code_edit->set_text("\ttest\n\ttext");
 		code_edit->select_all();
-		code_edit->do_unindent();
+		code_edit->unindent_lines();
 		CHECK(code_edit->get_line(0) == "test");
 		CHECK(code_edit->get_line(1) == "text");
 
 		/* Do not unindent line if last col is zero. */
 		code_edit->set_text("\ttest\n\ttext");
 		code_edit->select(0, 0, 1, 0);
-		code_edit->do_unindent();
+		code_edit->unindent_lines();
 		CHECK(code_edit->get_line(0) == "test");
 		CHECK(code_edit->get_line(1) == "\ttext");
 
 		/* Unindent even if last column of first line. */
 		code_edit->set_text("\ttest\n\ttext");
 		code_edit->select(0, 5, 1, 1);
-		code_edit->do_unindent();
+		code_edit->unindent_lines();
 		CHECK(code_edit->get_line(0) == "test");
 		CHECK(code_edit->get_line(1) == "text");
 
 		/* Check selection is adjusted. */
 		code_edit->set_text("\ttest");
 		code_edit->select(0, 1, 0, 2);
-		code_edit->do_unindent();
+		code_edit->unindent_lines();
 		CHECK(code_edit->get_selection_from_column() == 0);
 		CHECK(code_edit->get_selection_to_column() == 1);
 		CHECK(code_edit->get_line(0) == "test");
@@ -2041,7 +2034,7 @@ TEST_CASE("[SceneTree][CodeEdit] indent") {
 
 		code_edit->set_editable(false);
 
-		code_edit->do_unindent();
+		code_edit->unindent_lines();
 		CHECK(code_edit->get_line(0) == "    ");
 
 		code_edit->unindent_lines();
@@ -2050,15 +2043,8 @@ TEST_CASE("[SceneTree][CodeEdit] indent") {
 		code_edit->set_editable(true);
 
 		/* Simple unindent. */
-		code_edit->do_unindent();
+		code_edit->unindent_lines();
 		CHECK(code_edit->get_line(0) == "");
-
-		/* Should inindent inplace. */
-		code_edit->set_text("");
-		code_edit->insert_text_at_caret("test    ");
-
-		code_edit->do_unindent();
-		CHECK(code_edit->get_line(0) == "test");
 
 		/* Backspace does a simple unindent. */
 		code_edit->set_text("");
@@ -2080,12 +2066,12 @@ TEST_CASE("[SceneTree][CodeEdit] indent") {
 
 		/* Caret on col zero unindent line. */
 		code_edit->set_text("        test");
-		code_edit->do_unindent();
+		code_edit->unindent_lines();
 		CHECK(code_edit->get_line(0) == "    test");
 
 		/* Only as far as needed */
 		code_edit->set_text("       test");
-		code_edit->do_unindent();
+		code_edit->unindent_lines();
 		CHECK(code_edit->get_line(0) == "    test");
 
 		/* Check input action. */
@@ -2096,34 +2082,34 @@ TEST_CASE("[SceneTree][CodeEdit] indent") {
 		/* Selection does entire line. */
 		code_edit->set_text("        test");
 		code_edit->select_all();
-		code_edit->do_unindent();
+		code_edit->unindent_lines();
 		CHECK(code_edit->get_line(0) == "    test");
 
 		/* Handles multiple lines. */
 		code_edit->set_text("    test\n    text");
 		code_edit->select_all();
-		code_edit->do_unindent();
+		code_edit->unindent_lines();
 		CHECK(code_edit->get_line(0) == "test");
 		CHECK(code_edit->get_line(1) == "text");
 
 		/* Do not unindent line if last col is zero. */
 		code_edit->set_text("    test\n    text");
 		code_edit->select(0, 0, 1, 0);
-		code_edit->do_unindent();
+		code_edit->unindent_lines();
 		CHECK(code_edit->get_line(0) == "test");
 		CHECK(code_edit->get_line(1) == "    text");
 
 		/* Unindent even if last column of first line. */
 		code_edit->set_text("    test\n    text");
 		code_edit->select(0, 5, 1, 1);
-		code_edit->do_unindent();
+		code_edit->unindent_lines();
 		CHECK(code_edit->get_line(0) == "test");
 		CHECK(code_edit->get_line(1) == "text");
 
 		/* Check selection is adjusted. */
 		code_edit->set_text("    test");
 		code_edit->select(0, 4, 0, 5);
-		code_edit->do_unindent();
+		code_edit->unindent_lines();
 		CHECK(code_edit->get_selection_from_column() == 0);
 		CHECK(code_edit->get_selection_to_column() == 1);
 		CHECK(code_edit->get_line(0) == "test");
