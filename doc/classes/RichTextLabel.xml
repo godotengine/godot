@@ -283,6 +283,7 @@
 			<return type="void" />
 			<param index="0" name="font_size" type="int" />
 			<description>
+				Adds a [code][font_size][/code] tag to the tag stack. Overrides default font size for its duration.
 			</description>
 		</method>
 		<method name="push_hint">
