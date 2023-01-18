@@ -750,6 +750,7 @@ void DocTools::generate(bool p_basic_types) {
 			MethodInfo mi;
 			mi.name = "operator []";
 			mi.return_val.type = Variant::get_indexed_element_type(Variant::Type(i));
+			mi.return_val.usage = Variant::get_indexed_element_usage(Variant::Type(i));
 			PropertyInfo arg;
 			arg.name = "index";
 			arg.type = Variant::INT;
