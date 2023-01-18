@@ -3171,7 +3171,7 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 		for (int i = 0; i < current_enum->values.size(); i++) {
 			const GDScriptParser::EnumNode::Value &element = current_enum->values[i];
 			if (element.identifier->name == p_identifier->name) {
-				StringName enum_name = current_enum->identifier->name ? current_enum->identifier->name : UNNAMED_ENUM;
+				StringName enum_name = current_enum->identifier ? current_enum->identifier->name : UNNAMED_ENUM;
 				GDScriptParser::DataType type = make_enum_type(enum_name, parser->current_class->fqcn, false);
 				if (element.parent_enum->identifier) {
 					type.enum_type = element.parent_enum->identifier->name;
