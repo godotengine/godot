@@ -113,6 +113,11 @@ void CSharpLanguage::init() {
 	BindingsGenerator::handle_cmdline_args(cmdline_args);
 #endif
 
+	GLOBAL_DEF("dotnet/project/assembly_name", "");
+#ifdef TOOLS_ENABLED
+	GLOBAL_DEF("dotnet/project/solution_directory", "");
+#endif
+
 	gdmono = memnew(GDMono);
 	gdmono->initialize();
 

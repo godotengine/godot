@@ -48,12 +48,6 @@ namespace GodotTools.Internals
             }
         }
 
-        public static void RegisterProjectSettings()
-        {
-            GlobalDef("dotnet/project/assembly_name", "");
-            GlobalDef("dotnet/project/solution_directory", "");
-        }
-
         public static void DetermineProjectLocation()
         {
             static string DetermineProjectName()
