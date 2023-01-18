@@ -176,7 +176,6 @@ protected:
 	void _warning_clicked(Variant p_line);
 
 	void _notification(int p_what);
-	static void _bind_methods();
 
 	HashMap<String, Ref<EditorSyntaxHighlighter>> highlighters;
 	void _change_syntax_highlighter(int p_idx);

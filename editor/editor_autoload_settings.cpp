@@ -808,12 +808,6 @@ void EditorAutoloadSettings::autoload_remove(const String &p_name) {
 }
 
 void EditorAutoloadSettings::_bind_methods() {
-	ClassDB::bind_method("_autoload_open", &EditorAutoloadSettings::_autoload_open);
-
-	ClassDB::bind_method("_get_drag_data_fw", &EditorAutoloadSettings::get_drag_data_fw);
-	ClassDB::bind_method("_can_drop_data_fw", &EditorAutoloadSettings::can_drop_data_fw);
-	ClassDB::bind_method("_drop_data_fw", &EditorAutoloadSettings::drop_data_fw);
-
 	ClassDB::bind_method("update_autoload", &EditorAutoloadSettings::update_autoload);
 	ClassDB::bind_method("autoload_add", &EditorAutoloadSettings::autoload_add);
 	ClassDB::bind_method("autoload_remove", &EditorAutoloadSettings::autoload_remove);
@@ -935,7 +929,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 	tree->set_select_mode(Tree::SELECT_MULTI);
 	tree->set_allow_reselect(true);
 
-	tree->set_drag_forwarding_compat(this);
+	SET_DRAG_FORWARDING_GCD(tree, EditorAutoloadSettings);
 
 	tree->set_columns(4);
 	tree->set_column_titles_visible(true);

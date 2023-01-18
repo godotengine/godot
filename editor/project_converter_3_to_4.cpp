@@ -237,7 +237,6 @@ static const char *gdscript_function_renames[][2] = {
 	{ "bumpmap_to_normalmap", "bump_map_to_normal_map" }, // Image
 	{ "can_be_hidden", "_can_be_hidden" }, // EditorNode3DGizmoPlugin
 	{ "can_drop_data", "_can_drop_data" }, // Control
-	{ "can_drop_data_fw", "_can_drop_data_fw" }, // ScriptEditor
 	{ "can_generate_small_preview", "_can_generate_small_preview" }, // EditorResourcePreviewGenerator
 	{ "can_instance", "can_instantiate" }, // PackedScene, Script
 	{ "canvas_light_set_scale", "canvas_light_set_texture_scale" }, // RenderingServer
@@ -264,7 +263,6 @@ static const char *gdscript_function_renames[][2] = {
 	{ "deselect_items", "deselect_all" }, // FileDialog
 	{ "disable_plugin", "_disable_plugin" }, // EditorPlugin
 	{ "drop_data", "_drop_data" }, // Control
-	{ "drop_data_fw", "_drop_data_fw" }, // ScriptEditor
 	{ "exclude_polygons_2d", "exclude_polygons" }, // Geometry2D
 	{ "find_node", "find_child" }, // Node
 	{ "find_scancode_from_string", "find_keycode_from_string" }, // OS
@@ -303,7 +301,6 @@ static const char *gdscript_function_renames[][2] = {
 	{ "get_d", "get_distance" }, // LineShape2D
 	{ "get_depth_bias_enable", "get_depth_bias_enabled" }, // RDPipelineRasterizationState
 	{ "get_drag_data", "_get_drag_data" }, // Control
-	{ "get_drag_data_fw", "_get_drag_data_fw" }, // ScriptEditor
 	{ "get_editor_viewport", "get_editor_main_screen" }, // EditorPlugin
 	{ "get_enabled_focus_mode", "get_focus_mode" }, // BaseButton
 	{ "get_endian_swap", "is_big_endian" }, // File

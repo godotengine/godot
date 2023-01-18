@@ -702,8 +702,6 @@ void EditorPropertyArray::_reorder_button_up() {
 }
 
 void EditorPropertyArray::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_can_drop_data_fw"), &EditorPropertyArray::can_drop_data_fw);
-	ClassDB::bind_method(D_METHOD("_drop_data_fw"), &EditorPropertyArray::drop_data_fw);
 }
 
 EditorPropertyArray::EditorPropertyArray() {
@@ -715,7 +713,7 @@ EditorPropertyArray::EditorPropertyArray() {
 	edit->set_clip_text(true);
 	edit->connect("pressed", callable_mp(this, &EditorPropertyArray::_edit_pressed));
 	edit->set_toggle_mode(true);
-	edit->set_drag_forwarding_compat(this);
+	SET_DRAG_FORWARDING_CD(edit, EditorPropertyArray);
 	edit->connect("draw", callable_mp(this, &EditorPropertyArray::_button_draw));
 	add_child(edit);
 	add_focusable(edit);

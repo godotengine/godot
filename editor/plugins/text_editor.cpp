@@ -649,8 +649,6 @@ TextEditor::TextEditor() {
 
 	goto_line_dialog = memnew(GotoLineDialog);
 	add_child(goto_line_dialog);
-
-	code_editor->get_text_editor()->set_drag_forwarding_compat(this);
 }
 
 TextEditor::~TextEditor() {
