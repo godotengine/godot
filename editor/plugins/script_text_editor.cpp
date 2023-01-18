@@ -252,12 +252,14 @@ void ScriptTextEditor::_warning_clicked(Variant p_line) {
 	} else if (p_line.get_type() == Variant::DICTIONARY) {
 		Dictionary meta = p_line.operator Dictionary();
 		const int line = meta["line"].operator int64_t() - 1;
+		const String code = meta["code"].operator String();
+		const String quote_style = EDITOR_GET("text_editor/completion/use_single_quotes") ? "'" : "\"";
 
 		CodeEdit *text_editor = code_editor->get_text_editor();
 		String prev_line = line > 0 ? text_editor->get_line(line - 1) : "";
 		if (prev_line.contains("@warning_ignore")) {
 			const int closing_bracket_idx = prev_line.find(")");
-			const String text_to_insert = ", " + meta["code"].operator String();
+			const String text_to_insert = ", " + code.quote(quote_style);
 			prev_line = prev_line.insert(closing_bracket_idx, text_to_insert);
 			text_editor->set_line(line - 1, prev_line);
 		} else {
@@ -268,7 +270,7 @@ void ScriptTextEditor::_warning_clicked(Variant p_line) {
 			} else {
 				annotation_indent = String(" ").repeat(text_editor->get_indent_size() * indent);
 			}
-			text_editor->insert_line_at(line, annotation_indent + "@warning_ignore(" + meta["code"].operator String() + ")");
+			text_editor->insert_line_at(line, annotation_indent + "@warning_ignore(" + code.quote(quote_style) + ")");
 		}
 
 		_validate_script();

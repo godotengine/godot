@@ -1401,7 +1401,7 @@ private:
 	// Annotations
 	AnnotationNode *parse_annotation(uint32_t p_valid_targets);
 	bool register_annotation(const MethodInfo &p_info, uint32_t p_target_kinds, AnnotationAction p_apply, const Vector<Variant> &p_default_arguments = Vector<Variant>(), bool p_is_vararg = false);
-	bool validate_annotation_arguments(AnnotationNode *p_annotation);
+	bool validate_annotation_argument_count(AnnotationNode *p_annotation);
 	void clear_unused_annotations();
 	bool tool_annotation(const AnnotationNode *p_annotation, Node *p_target);
 	bool icon_annotation(const AnnotationNode *p_annotation, Node *p_target);
