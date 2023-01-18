@@ -257,9 +257,10 @@ class EditorFileSystem : public Node {
 		}
 	};
 
-	void _scan_script_classes(EditorFileSystemDirectory *p_dir);
-	SafeFlag update_script_classes_queued;
-	void _queue_update_script_classes();
+	Mutex update_script_mutex;
+	HashSet<String> update_script_paths;
+	void _queue_update_script_class(const String &p_path);
+	void _update_script_classes();
 
 	String _get_global_script_class(const String &p_type, const String &p_path, String *r_extends, String *r_icon_path) const;
 
@@ -311,8 +312,6 @@ public:
 	void reimport_files(const Vector<String> &p_files);
 
 	void reimport_file_with_custom_parameters(const String &p_file, const String &p_importer, const HashMap<StringName, Variant> &p_custom_params);
-
-	void update_script_classes();
 
 	bool is_group_file(const String &p_path) const;
 	void move_group_file(const String &p_path, const String &p_new_path);
