@@ -299,7 +299,7 @@ class AnimationNodeTransition : public AnimationNodeSync {
 
 	double xfade_time = 0.0;
 	Ref<Curve> xfade_curve;
-	bool from_start = true;
+	bool reset = true;
 
 	void _update_inputs();
 
@@ -328,8 +328,8 @@ public:
 	void set_xfade_curve(const Ref<Curve> &p_curve);
 	Ref<Curve> get_xfade_curve() const;
 
-	void set_from_start(bool p_from_start);
-	bool is_from_start() const;
+	void set_reset(bool p_reset);
+	bool is_reset() const;
 
 	double process(double p_time, bool p_seek, bool p_is_external_seeking) override;
 

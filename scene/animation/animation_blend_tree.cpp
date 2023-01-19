@@ -718,12 +718,12 @@ Ref<Curve> AnimationNodeTransition::get_xfade_curve() const {
 	return xfade_curve;
 }
 
-void AnimationNodeTransition::set_from_start(bool p_from_start) {
-	from_start = p_from_start;
+void AnimationNodeTransition::set_reset(bool p_reset) {
+	reset = p_reset;
 }
 
-bool AnimationNodeTransition::is_from_start() const {
-	return from_start;
+bool AnimationNodeTransition::is_reset() const {
+	return reset;
 }
 
 double AnimationNodeTransition::process(double p_time, bool p_seek, bool p_is_external_seeking) {
@@ -783,7 +783,7 @@ double AnimationNodeTransition::process(double p_time, bool p_seek, bool p_is_ex
 
 		// Blend values must be more than CMP_EPSILON to process discrete keys in edge.
 		real_t blend_inv = 1.0 - blend;
-		if (from_start && !p_seek && switched) { //just switched, seek to start of current
+		if (reset && !p_seek && switched) { //just switched, seek to start of current
 			rem = blend_input(cur_current, 0, true, p_is_external_seeking, Math::is_zero_approx(blend_inv) ? CMP_EPSILON : blend_inv, FILTER_IGNORE, true);
 		} else {
 			rem = blend_input(cur_current, p_time, p_seek, p_is_external_seeking, Math::is_zero_approx(blend_inv) ? CMP_EPSILON : blend_inv, FILTER_IGNORE, true);
@@ -836,13 +836,13 @@ void AnimationNodeTransition::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_xfade_curve", "curve"), &AnimationNodeTransition::set_xfade_curve);
 	ClassDB::bind_method(D_METHOD("get_xfade_curve"), &AnimationNodeTransition::get_xfade_curve);
 
-	ClassDB::bind_method(D_METHOD("set_from_start", "from_start"), &AnimationNodeTransition::set_from_start);
-	ClassDB::bind_method(D_METHOD("is_from_start"), &AnimationNodeTransition::is_from_start);
+	ClassDB::bind_method(D_METHOD("set_reset", "reset"), &AnimationNodeTransition::set_reset);
+	ClassDB::bind_method(D_METHOD("is_reset"), &AnimationNodeTransition::is_reset);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "enabled_inputs", PROPERTY_HINT_RANGE, "0,64,1", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_enabled_inputs", "get_enabled_inputs");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "xfade_time", PROPERTY_HINT_RANGE, "0,120,0.01,suffix:s"), "set_xfade_time", "get_xfade_time");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "xfade_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_xfade_curve", "get_xfade_curve");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "from_start"), "set_from_start", "is_from_start");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "reset"), "set_reset", "is_reset");
 
 	for (int i = 0; i < MAX_INPUTS; i++) {
 		ADD_PROPERTYI(PropertyInfo(Variant::STRING, "input_" + itos(i) + "/name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_input_caption", "get_input_caption", i);

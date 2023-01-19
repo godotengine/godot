@@ -43,7 +43,7 @@
 		<member name="enabled_inputs" type="int" setter="set_enabled_inputs" getter="get_enabled_inputs" default="0">
 			The number of enabled input ports for this node.
 		</member>
-		<member name="from_start" type="bool" setter="set_from_start" getter="is_from_start" default="true">
+		<member name="reset" type="bool" setter="set_reset" getter="is_reset" default="true">
 			If [code]true[/code], the destination animation is played back from the beginning when switched.
 		</member>
 		<member name="xfade_curve" type="Curve" setter="set_xfade_curve" getter="get_xfade_curve">
