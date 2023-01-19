@@ -57,6 +57,11 @@ public:
 		String name;
 	};
 
+	struct ChildNode {
+		StringName name;
+		Ref<AnimationNode> node;
+	};
+
 	Vector<Input> inputs;
 
 	friend class AnimationTree;
@@ -112,6 +117,8 @@ protected:
 	static void _bind_methods();
 
 	void _validate_property(PropertyInfo &p_property) const;
+	void _get_parameter_list(Array p_array, List<PropertyInfo> *r_list) const;
+	void _get_child_nodes(Dictionary p_dict, List<ChildNode> *r_child_nodes);
 
 	GDVIRTUAL0RC(Dictionary, _get_child_nodes)
 	GDVIRTUAL0RC(Array, _get_parameter_list)
@@ -129,11 +136,6 @@ public:
 
 	void set_parameter(const StringName &p_name, const Variant &p_value);
 	Variant get_parameter(const StringName &p_name) const;
-
-	struct ChildNode {
-		StringName name;
-		Ref<AnimationNode> node;
-	};
 
 	virtual void get_child_nodes(List<ChildNode> *r_child_nodes);
 

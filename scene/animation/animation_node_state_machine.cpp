@@ -713,18 +713,23 @@ AnimationNodeStateMachinePlayback::AnimationNodeStateMachinePlayback() {
 ///////////////////////////////////////////////////////
 
 void AnimationNodeStateMachine::get_parameter_list(List<PropertyInfo> *r_list) const {
-	r_list->push_back(PropertyInfo(Variant::OBJECT, playback, PROPERTY_HINT_RESOURCE_TYPE, "AnimationNodeStateMachinePlayback", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE));
-	List<StringName> advance_conditions;
-	for (int i = 0; i < transitions.size(); i++) {
-		StringName ac = transitions[i].transition->get_advance_condition_name();
-		if (ac != StringName() && advance_conditions.find(ac) == nullptr) {
-			advance_conditions.push_back(ac);
+	Array parameters;
+	if (GDVIRTUAL_CALL(_get_parameter_list, parameters)) {
+		_get_parameter_list(parameters, r_list);
+	} else {
+		r_list->push_back(PropertyInfo(Variant::OBJECT, playback, PROPERTY_HINT_RESOURCE_TYPE, "AnimationNodeStateMachinePlayback", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE));
+		List<StringName> advance_conditions;
+		for (int i = 0; i < transitions.size(); i++) {
+			StringName ac = transitions[i].transition->get_advance_condition_name();
+			if (ac != StringName() && advance_conditions.find(ac) == nullptr) {
+				advance_conditions.push_back(ac);
+			}
 		}
-	}
 
-	advance_conditions.sort_custom<StringName::AlphCompare>();
-	for (const StringName &E : advance_conditions) {
-		r_list->push_back(PropertyInfo(Variant::BOOL, E));
+		advance_conditions.sort_custom<StringName::AlphCompare>();
+		for (const StringName &E : advance_conditions) {
+			r_list->push_back(PropertyInfo(Variant::BOOL, E));
+		}
 	}
 }
 
@@ -807,19 +812,24 @@ StringName AnimationNodeStateMachine::get_node_name(const Ref<AnimationNode> &p_
 }
 
 void AnimationNodeStateMachine::get_child_nodes(List<ChildNode> *r_child_nodes) {
-	Vector<StringName> nodes;
+	Dictionary dict;
+	if (GDVIRTUAL_CALL(_get_child_nodes, dict)) {
+		_get_child_nodes(dict, r_child_nodes);
+	} else {
+		Vector<StringName> nodes;
 
-	for (const KeyValue<StringName, State> &E : states) {
-		nodes.push_back(E.key);
-	}
+		for (const KeyValue<StringName, State> &E : states) {
+			nodes.push_back(E.key);
+		}
 
-	nodes.sort_custom<StringName::AlphCompare>();
+		nodes.sort_custom<StringName::AlphCompare>();
 
-	for (int i = 0; i < nodes.size(); i++) {
-		ChildNode cn;
-		cn.name = nodes[i];
-		cn.node = states[cn.name].node;
-		r_child_nodes->push_back(cn);
+		for (int i = 0; i < nodes.size(); i++) {
+			ChildNode cn;
+			cn.name = nodes[i];
+			cn.node = states[cn.name].node;
+			r_child_nodes->push_back(cn);
+		}
 	}
 }
 
@@ -1166,6 +1176,11 @@ Vector2 AnimationNodeStateMachine::get_graph_offset() const {
 }
 
 double AnimationNodeStateMachine::process(double p_time, bool p_seek, bool p_is_external_seeking) {
+	double ret = 0.0;
+	if (GDVIRTUAL_CALL(_process, p_time, p_seek, p_is_external_seeking, ret)) {
+		return ret;
+	}
+
 	Ref<AnimationNodeStateMachinePlayback> playback_new = get_parameter(playback);
 	ERR_FAIL_COND_V(playback_new.is_null(), 0.0);
 
@@ -1173,7 +1188,9 @@ double AnimationNodeStateMachine::process(double p_time, bool p_seek, bool p_is_
 }
 
 String AnimationNodeStateMachine::get_caption() const {
-	return "StateMachine";
+	String ret = "StateMachine";
+	GDVIRTUAL_CALL(_get_caption, ret);
+	return ret;
 }
 
 bool AnimationNodeStateMachine::has_local_transition(const StringName &p_from, const StringName &p_to) const {
@@ -1189,7 +1206,9 @@ bool AnimationNodeStateMachine::has_local_transition(const StringName &p_from, c
 }
 
 Ref<AnimationNode> AnimationNodeStateMachine::get_child_by_name(const StringName &p_name) {
-	return get_node(p_name);
+	Ref<AnimationNode> ret = get_node(p_name);
+	GDVIRTUAL_CALL(_get_child_by_name, p_name, ret);
+	return ret;
 }
 
 bool AnimationNodeStateMachine::_set(const StringName &p_name, const Variant &p_value) {

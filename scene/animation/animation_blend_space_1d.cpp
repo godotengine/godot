@@ -31,7 +31,12 @@
 #include "animation_blend_space_1d.h"
 
 void AnimationNodeBlendSpace1D::get_parameter_list(List<PropertyInfo> *r_list) const {
-	r_list->push_back(PropertyInfo(Variant::FLOAT, blend_position));
+	Array parameters;
+	if (GDVIRTUAL_CALL(_get_parameter_list, parameters)) {
+		_get_parameter_list(parameters, r_list);
+	} else {
+		r_list->push_back(PropertyInfo(Variant::FLOAT, blend_position));
+	}
 }
 
 Variant AnimationNodeBlendSpace1D::get_parameter_default_value(const StringName &p_parameter) const {
@@ -39,7 +44,9 @@ Variant AnimationNodeBlendSpace1D::get_parameter_default_value(const StringName 
 }
 
 Ref<AnimationNode> AnimationNodeBlendSpace1D::get_child_by_name(const StringName &p_name) {
-	return get_blend_point_node(p_name.operator String().to_int());
+	Ref<AnimationNode> ret = get_blend_point_node(p_name.operator String().to_int());
+	GDVIRTUAL_CALL(_get_child_by_name, p_name, ret);
+	return ret;
 }
 
 void AnimationNodeBlendSpace1D::_validate_property(PropertyInfo &p_property) const {
@@ -95,11 +102,16 @@ void AnimationNodeBlendSpace1D::_bind_methods() {
 }
 
 void AnimationNodeBlendSpace1D::get_child_nodes(List<ChildNode> *r_child_nodes) {
-	for (int i = 0; i < blend_points_used; i++) {
-		ChildNode cn;
-		cn.name = itos(i);
-		cn.node = blend_points[i].node;
-		r_child_nodes->push_back(cn);
+	Dictionary dict;
+	if (GDVIRTUAL_CALL(_get_child_nodes, dict)) {
+		_get_child_nodes(dict, r_child_nodes);
+	} else {
+		for (int i = 0; i < blend_points_used; i++) {
+			ChildNode cn;
+			cn.name = itos(i);
+			cn.node = blend_points[i].node;
+			r_child_nodes->push_back(cn);
+		}
 	}
 }
 
@@ -231,6 +243,11 @@ void AnimationNodeBlendSpace1D::_add_blend_point(int p_index, const Ref<Animatio
 }
 
 double AnimationNodeBlendSpace1D::process(double p_time, bool p_seek, bool p_is_external_seeking) {
+	double ret = 0.0;
+	if (GDVIRTUAL_CALL(_process, p_time, p_seek, p_is_external_seeking, ret)) {
+		return ret;
+	}
+
 	if (blend_points_used == 0) {
 		return 0.0;
 	}
@@ -318,7 +335,9 @@ double AnimationNodeBlendSpace1D::process(double p_time, bool p_seek, bool p_is_
 }
 
 String AnimationNodeBlendSpace1D::get_caption() const {
-	return "BlendSpace1D";
+	String ret = "BlendSpace1D";
+	GDVIRTUAL_CALL(_get_caption, ret);
+	return ret;
 }
 
 AnimationNodeBlendSpace1D::AnimationNodeBlendSpace1D() {

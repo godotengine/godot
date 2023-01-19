@@ -36,15 +36,18 @@
 #include "scene/scene_string_names.h"
 #include "servers/audio/audio_stream.h"
 
+void AnimationNode::_get_parameter_list(Array p_array, List<PropertyInfo> *r_list) const {
+	for (int i = 0; i < p_array.size(); i++) {
+		Dictionary d = p_array[i];
+		ERR_CONTINUE(d.is_empty());
+		r_list->push_back(PropertyInfo::from_dict(d));
+	}
+}
+
 void AnimationNode::get_parameter_list(List<PropertyInfo> *r_list) const {
 	Array parameters;
-
 	if (GDVIRTUAL_CALL(_get_parameter_list, parameters)) {
-		for (int i = 0; i < parameters.size(); i++) {
-			Dictionary d = parameters[i];
-			ERR_CONTINUE(d.is_empty());
-			r_list->push_back(PropertyInfo::from_dict(d));
-		}
+		_get_parameter_list(parameters, r_list);
 	}
 }
 
@@ -78,17 +81,21 @@ Variant AnimationNode::get_parameter(const StringName &p_name) const {
 	return state->tree->property_map[path].first;
 }
 
+void AnimationNode::_get_child_nodes(Dictionary p_dict, List<ChildNode> *r_child_nodes) {
+	List<Variant> keys;
+	p_dict.get_key_list(&keys);
+	for (const Variant &E : keys) {
+		ChildNode child;
+		child.name = E;
+		child.node = p_dict[E];
+		r_child_nodes->push_back(child);
+	}
+}
+
 void AnimationNode::get_child_nodes(List<ChildNode> *r_child_nodes) {
 	Dictionary cn;
 	if (GDVIRTUAL_CALL(_get_child_nodes, cn)) {
-		List<Variant> keys;
-		cn.get_key_list(&keys);
-		for (const Variant &E : keys) {
-			ChildNode child;
-			child.name = E;
-			child.node = cn[E];
-			r_child_nodes->push_back(child);
-		}
+		_get_child_nodes(cn, r_child_nodes);
 	}
 }
 

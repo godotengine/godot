@@ -34,9 +34,14 @@
 #include "core/math/geometry_2d.h"
 
 void AnimationNodeBlendSpace2D::get_parameter_list(List<PropertyInfo> *r_list) const {
-	r_list->push_back(PropertyInfo(Variant::VECTOR2, blend_position));
-	r_list->push_back(PropertyInfo(Variant::INT, closest, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
-	r_list->push_back(PropertyInfo(Variant::FLOAT, length_internal, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
+	Array parameters;
+	if (GDVIRTUAL_CALL(_get_parameter_list, parameters)) {
+		_get_parameter_list(parameters, r_list);
+	} else {
+		r_list->push_back(PropertyInfo(Variant::VECTOR2, blend_position));
+		r_list->push_back(PropertyInfo(Variant::INT, closest, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
+		r_list->push_back(PropertyInfo(Variant::FLOAT, length_internal, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
+	}
 }
 
 Variant AnimationNodeBlendSpace2D::get_parameter_default_value(const StringName &p_parameter) const {
@@ -50,11 +55,16 @@ Variant AnimationNodeBlendSpace2D::get_parameter_default_value(const StringName 
 }
 
 void AnimationNodeBlendSpace2D::get_child_nodes(List<ChildNode> *r_child_nodes) {
-	for (int i = 0; i < blend_points_used; i++) {
-		ChildNode cn;
-		cn.name = itos(i);
-		cn.node = blend_points[i].node;
-		r_child_nodes->push_back(cn);
+	Dictionary dict;
+	if (GDVIRTUAL_CALL(_get_child_nodes, dict)) {
+		_get_child_nodes(dict, r_child_nodes);
+	} else {
+		for (int i = 0; i < blend_points_used; i++) {
+			ChildNode cn;
+			cn.name = itos(i);
+			cn.node = blend_points[i].node;
+			r_child_nodes->push_back(cn);
+		}
 	}
 }
 
@@ -433,6 +443,11 @@ void AnimationNodeBlendSpace2D::_blend_triangle(const Vector2 &p_pos, const Vect
 }
 
 double AnimationNodeBlendSpace2D::process(double p_time, bool p_seek, bool p_is_external_seeking) {
+	double ret = 0.0;
+	if (GDVIRTUAL_CALL(_process, p_time, p_seek, p_is_external_seeking, ret)) {
+		return ret;
+	}
+
 	_update_triangles();
 
 	Vector2 blend_pos = get_parameter(blend_position);
@@ -565,7 +580,9 @@ double AnimationNodeBlendSpace2D::process(double p_time, bool p_seek, bool p_is_
 }
 
 String AnimationNodeBlendSpace2D::get_caption() const {
-	return "BlendSpace2D";
+	String ret = "BlendSpace2D";
+	GDVIRTUAL_CALL(_get_caption, ret);
+	return ret;
 }
 
 void AnimationNodeBlendSpace2D::_validate_property(PropertyInfo &p_property) const {
@@ -595,7 +612,9 @@ bool AnimationNodeBlendSpace2D::get_auto_triangles() const {
 }
 
 Ref<AnimationNode> AnimationNodeBlendSpace2D::get_child_by_name(const StringName &p_name) {
-	return get_blend_point_node(p_name.operator String().to_int());
+	Ref<AnimationNode> ret = get_blend_point_node(p_name.operator String().to_int());
+	GDVIRTUAL_CALL(_get_child_by_name, p_name, ret);
+	return ret;
 }
 
 void AnimationNodeBlendSpace2D::_tree_changed() {

@@ -44,7 +44,12 @@ StringName AnimationNodeAnimation::get_animation() const {
 Vector<String> (*AnimationNodeAnimation::get_editable_animation_list)() = nullptr;
 
 void AnimationNodeAnimation::get_parameter_list(List<PropertyInfo> *r_list) const {
-	r_list->push_back(PropertyInfo(Variant::FLOAT, time, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
+	Array parameters;
+	if (GDVIRTUAL_CALL(_get_parameter_list, parameters)) {
+		_get_parameter_list(parameters, r_list);
+	} else {
+		r_list->push_back(PropertyInfo(Variant::FLOAT, time, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
+	}
 }
 
 void AnimationNodeAnimation::_validate_property(PropertyInfo &p_property) const {
@@ -65,6 +70,11 @@ void AnimationNodeAnimation::_validate_property(PropertyInfo &p_property) const 
 }
 
 double AnimationNodeAnimation::process(double p_time, bool p_seek, bool p_is_external_seeking) {
+	double ret = 0.0;
+	if (GDVIRTUAL_CALL(_process, p_time, p_seek, p_is_external_seeking, ret)) {
+		return ret;
+	}
+
 	AnimationPlayer *ap = state->player;
 	ERR_FAIL_COND_V(!ap, 0);
 
@@ -170,7 +180,9 @@ double AnimationNodeAnimation::process(double p_time, bool p_seek, bool p_is_ext
 }
 
 String AnimationNodeAnimation::get_caption() const {
-	return "Animation";
+	String ret = "Animation";
+	GDVIRTUAL_CALL(_get_caption, ret);
+	return ret;
 }
 
 void AnimationNodeAnimation::set_play_mode(PlayMode p_play_mode) {
@@ -229,17 +241,25 @@ AnimationNodeSync::AnimationNodeSync() {
 ////////////////////////////////////////////////////////
 
 void AnimationNodeOneShot::get_parameter_list(List<PropertyInfo> *r_list) const {
-	r_list->push_back(PropertyInfo(Variant::BOOL, active, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_READ_ONLY));
-	r_list->push_back(PropertyInfo(Variant::INT, request, PROPERTY_HINT_ENUM, ",Fire,Abort"));
-	r_list->push_back(PropertyInfo(Variant::FLOAT, time, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
-	r_list->push_back(PropertyInfo(Variant::FLOAT, remaining, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
-	r_list->push_back(PropertyInfo(Variant::FLOAT, time_to_restart, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
+	Array parameters;
+	if (GDVIRTUAL_CALL(_get_parameter_list, parameters)) {
+		_get_parameter_list(parameters, r_list);
+	} else {
+		r_list->push_back(PropertyInfo(Variant::BOOL, active, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_READ_ONLY));
+		r_list->push_back(PropertyInfo(Variant::INT, request, PROPERTY_HINT_ENUM, ",Fire,Abort"));
+		r_list->push_back(PropertyInfo(Variant::FLOAT, time, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
+		r_list->push_back(PropertyInfo(Variant::FLOAT, remaining, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
+		r_list->push_back(PropertyInfo(Variant::FLOAT, time_to_restart, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
+	}
 }
 
 Variant AnimationNodeOneShot::get_parameter_default_value(const StringName &p_parameter) const {
-	if (p_parameter == request) {
-		return ONE_SHOT_REQUEST_NONE;
-	} else if (p_parameter == active) {
+	Variant ret;
+	if (GDVIRTUAL_CALL(_get_parameter_default_value, p_parameter, ret)) {
+		return ret;
+	}
+
+	if (p_parameter == active) {
 		return false;
 	} else if (p_parameter == time_to_restart) {
 		return -1;
@@ -249,6 +269,11 @@ Variant AnimationNodeOneShot::get_parameter_default_value(const StringName &p_pa
 }
 
 bool AnimationNodeOneShot::is_parameter_read_only(const StringName &p_parameter) const {
+	bool ret = false;
+	if (GDVIRTUAL_CALL(_is_parameter_read_only, p_parameter, ret)) {
+		return ret;
+	}
+
 	if (p_parameter == active) {
 		return true;
 	}
@@ -304,14 +329,23 @@ AnimationNodeOneShot::MixMode AnimationNodeOneShot::get_mix_mode() const {
 }
 
 String AnimationNodeOneShot::get_caption() const {
-	return "OneShot";
+	String ret = "OneShot";
+	GDVIRTUAL_CALL(_get_caption, ret);
+	return ret;
 }
 
 bool AnimationNodeOneShot::has_filter() const {
-	return true;
+	bool ret = true;
+	GDVIRTUAL_CALL(_has_filter, ret);
+	return ret;
 }
 
 double AnimationNodeOneShot::process(double p_time, bool p_seek, bool p_is_external_seeking) {
+	double ret = 0.0;
+	if (GDVIRTUAL_CALL(_process, p_time, p_seek, p_is_external_seeking, ret)) {
+		return ret;
+	}
+
 	OneShotRequest cur_request = static_cast<OneShotRequest>((int)get_parameter(request));
 	bool cur_active = get_parameter(active);
 	double cur_time = get_parameter(time);
@@ -444,22 +478,41 @@ AnimationNodeOneShot::AnimationNodeOneShot() {
 ////////////////////////////////////////////////
 
 void AnimationNodeAdd2::get_parameter_list(List<PropertyInfo> *r_list) const {
-	r_list->push_back(PropertyInfo(Variant::FLOAT, add_amount, PROPERTY_HINT_RANGE, "0,1,0.01"));
+	Array parameters;
+	if (GDVIRTUAL_CALL(_get_parameter_list, parameters)) {
+		_get_parameter_list(parameters, r_list);
+	} else {
+		r_list->push_back(PropertyInfo(Variant::FLOAT, add_amount, PROPERTY_HINT_RANGE, "0,1,0.01"));
+	}
 }
 
 Variant AnimationNodeAdd2::get_parameter_default_value(const StringName &p_parameter) const {
+	Variant ret;
+	if (GDVIRTUAL_CALL(_get_parameter_default_value, p_parameter, ret)) {
+		return ret;
+	}
+
 	return 0;
 }
 
 String AnimationNodeAdd2::get_caption() const {
-	return "Add2";
+	String ret = "Add2";
+	GDVIRTUAL_CALL(_get_caption, ret);
+	return ret;
 }
 
 bool AnimationNodeAdd2::has_filter() const {
-	return true;
+	bool ret = true;
+	GDVIRTUAL_CALL(_has_filter, ret);
+	return ret;
 }
 
 double AnimationNodeAdd2::process(double p_time, bool p_seek, bool p_is_external_seeking) {
+	double ret = 0.0;
+	if (GDVIRTUAL_CALL(_process, p_time, p_seek, p_is_external_seeking, ret)) {
+		return ret;
+	}
+
 	double amount = get_parameter(add_amount);
 	double rem0 = blend_input(0, p_time, p_seek, p_is_external_seeking, 1.0, FILTER_IGNORE, sync);
 	blend_input(1, p_time, p_seek, p_is_external_seeking, amount, FILTER_PASS, sync);
@@ -478,22 +531,41 @@ AnimationNodeAdd2::AnimationNodeAdd2() {
 ////////////////////////////////////////////////
 
 void AnimationNodeAdd3::get_parameter_list(List<PropertyInfo> *r_list) const {
-	r_list->push_back(PropertyInfo(Variant::FLOAT, add_amount, PROPERTY_HINT_RANGE, "-1,1,0.01"));
+	Array parameters;
+	if (GDVIRTUAL_CALL(_get_parameter_list, parameters)) {
+		_get_parameter_list(parameters, r_list);
+	} else {
+		r_list->push_back(PropertyInfo(Variant::FLOAT, add_amount, PROPERTY_HINT_RANGE, "-1,1,0.01"));
+	}
 }
 
 Variant AnimationNodeAdd3::get_parameter_default_value(const StringName &p_parameter) const {
+	Variant ret;
+	if (GDVIRTUAL_CALL(_get_parameter_default_value, p_parameter, ret)) {
+		return ret;
+	}
+
 	return 0;
 }
 
 String AnimationNodeAdd3::get_caption() const {
-	return "Add3";
+	String ret = "Add3";
+	GDVIRTUAL_CALL(_get_caption, ret);
+	return ret;
 }
 
 bool AnimationNodeAdd3::has_filter() const {
-	return true;
+	bool ret = true;
+	GDVIRTUAL_CALL(_has_filter, ret);
+	return ret;
 }
 
 double AnimationNodeAdd3::process(double p_time, bool p_seek, bool p_is_external_seeking) {
+	double ret = 0.0;
+	if (GDVIRTUAL_CALL(_process, p_time, p_seek, p_is_external_seeking, ret)) {
+		return ret;
+	}
+
 	double amount = get_parameter(add_amount);
 	blend_input(0, p_time, p_seek, p_is_external_seeking, MAX(0, -amount), FILTER_PASS, sync);
 	double rem0 = blend_input(1, p_time, p_seek, p_is_external_seeking, 1.0, FILTER_IGNORE, sync);
@@ -514,18 +586,35 @@ AnimationNodeAdd3::AnimationNodeAdd3() {
 /////////////////////////////////////////////
 
 void AnimationNodeBlend2::get_parameter_list(List<PropertyInfo> *r_list) const {
-	r_list->push_back(PropertyInfo(Variant::FLOAT, blend_amount, PROPERTY_HINT_RANGE, "0,1,0.01"));
+	Array parameters;
+	if (GDVIRTUAL_CALL(_get_parameter_list, parameters)) {
+		_get_parameter_list(parameters, r_list);
+	} else {
+		r_list->push_back(PropertyInfo(Variant::FLOAT, blend_amount, PROPERTY_HINT_RANGE, "0,1,0.01"));
+	}
 }
 
 Variant AnimationNodeBlend2::get_parameter_default_value(const StringName &p_parameter) const {
+	Variant ret;
+	if (GDVIRTUAL_CALL(_get_parameter_default_value, p_parameter, ret)) {
+		return ret;
+	}
+
 	return 0; //for blend amount
 }
 
 String AnimationNodeBlend2::get_caption() const {
-	return "Blend2";
+	String ret = "Blend2";
+	GDVIRTUAL_CALL(_get_caption, ret);
+	return ret;
 }
 
 double AnimationNodeBlend2::process(double p_time, bool p_seek, bool p_is_external_seeking) {
+	double ret = 0.0;
+	if (GDVIRTUAL_CALL(_process, p_time, p_seek, p_is_external_seeking, ret)) {
+		return ret;
+	}
+
 	double amount = get_parameter(blend_amount);
 
 	double rem0 = blend_input(0, p_time, p_seek, p_is_external_seeking, 1.0 - amount, FILTER_BLEND, sync);
@@ -535,7 +624,9 @@ double AnimationNodeBlend2::process(double p_time, bool p_seek, bool p_is_extern
 }
 
 bool AnimationNodeBlend2::has_filter() const {
-	return true;
+	bool ret = true;
+	GDVIRTUAL_CALL(_has_filter, ret);
+	return ret;
 }
 
 void AnimationNodeBlend2::_bind_methods() {
@@ -549,18 +640,35 @@ AnimationNodeBlend2::AnimationNodeBlend2() {
 //////////////////////////////////////
 
 void AnimationNodeBlend3::get_parameter_list(List<PropertyInfo> *r_list) const {
-	r_list->push_back(PropertyInfo(Variant::FLOAT, blend_amount, PROPERTY_HINT_RANGE, "-1,1,0.01"));
+	Array parameters;
+	if (GDVIRTUAL_CALL(_get_parameter_list, parameters)) {
+		_get_parameter_list(parameters, r_list);
+	} else {
+		r_list->push_back(PropertyInfo(Variant::FLOAT, blend_amount, PROPERTY_HINT_RANGE, "-1,1,0.01"));
+	}
 }
 
 Variant AnimationNodeBlend3::get_parameter_default_value(const StringName &p_parameter) const {
+	Variant ret;
+	if (GDVIRTUAL_CALL(_get_parameter_default_value, p_parameter, ret)) {
+		return ret;
+	}
+
 	return 0; //for blend amount
 }
 
 String AnimationNodeBlend3::get_caption() const {
-	return "Blend3";
+	String ret = "Blend3";
+	GDVIRTUAL_CALL(_get_caption, ret);
+	return ret;
 }
 
 double AnimationNodeBlend3::process(double p_time, bool p_seek, bool p_is_external_seeking) {
+	double ret = 0.0;
+	if (GDVIRTUAL_CALL(_process, p_time, p_seek, p_is_external_seeking, ret)) {
+		return ret;
+	}
+
 	double amount = get_parameter(blend_amount);
 	double rem0 = blend_input(0, p_time, p_seek, p_is_external_seeking, MAX(0, -amount), FILTER_IGNORE, sync);
 	double rem1 = blend_input(1, p_time, p_seek, p_is_external_seeking, 1.0 - ABS(amount), FILTER_IGNORE, sync);
@@ -581,18 +689,35 @@ AnimationNodeBlend3::AnimationNodeBlend3() {
 /////////////////////////////////
 
 void AnimationNodeTimeScale::get_parameter_list(List<PropertyInfo> *r_list) const {
-	r_list->push_back(PropertyInfo(Variant::FLOAT, scale, PROPERTY_HINT_RANGE, "-32,32,0.01,or_less,or_greater"));
+	Array parameters;
+	if (GDVIRTUAL_CALL(_get_parameter_list, parameters)) {
+		_get_parameter_list(parameters, r_list);
+	} else {
+		r_list->push_back(PropertyInfo(Variant::FLOAT, scale, PROPERTY_HINT_RANGE, "-32,32,0.01,or_less,or_greater"));
+	}
 }
 
 Variant AnimationNodeTimeScale::get_parameter_default_value(const StringName &p_parameter) const {
+	Variant ret;
+	if (GDVIRTUAL_CALL(_get_parameter_default_value, p_parameter, ret)) {
+		return ret;
+	}
+
 	return 1.0; //initial timescale
 }
 
 String AnimationNodeTimeScale::get_caption() const {
-	return "TimeScale";
+	String ret = "TimeScale";
+	GDVIRTUAL_CALL(_get_caption, ret);
+	return ret;
 }
 
 double AnimationNodeTimeScale::process(double p_time, bool p_seek, bool p_is_external_seeking) {
+	double ret = 0.0;
+	if (GDVIRTUAL_CALL(_process, p_time, p_seek, p_is_external_seeking, ret)) {
+		return ret;
+	}
+
 	double cur_scale = get_parameter(scale);
 	if (p_seek) {
 		return blend_input(0, p_time, true, p_is_external_seeking, 1.0, FILTER_IGNORE, true);
@@ -611,25 +736,42 @@ AnimationNodeTimeScale::AnimationNodeTimeScale() {
 ////////////////////////////////////
 
 void AnimationNodeTimeSeek::get_parameter_list(List<PropertyInfo> *r_list) const {
-	r_list->push_back(PropertyInfo(Variant::FLOAT, seek_pos, PROPERTY_HINT_RANGE, "-1,3600,0.01,or_greater"));
+	Array parameters;
+	if (GDVIRTUAL_CALL(_get_parameter_list, parameters)) {
+		_get_parameter_list(parameters, r_list);
+	} else {
+		r_list->push_back(PropertyInfo(Variant::FLOAT, seek_pos, PROPERTY_HINT_RANGE, "-1,3600,0.01,or_greater"));
+	}
 }
 
 Variant AnimationNodeTimeSeek::get_parameter_default_value(const StringName &p_parameter) const {
+	Variant ret;
+	if (GDVIRTUAL_CALL(_get_parameter_default_value, p_parameter, ret)) {
+		return ret;
+	}
+
 	return 1.0; //initial timescale
 }
 
 String AnimationNodeTimeSeek::get_caption() const {
-	return "Seek";
+	String ret = "Seek";
+	GDVIRTUAL_CALL(_get_caption, ret);
+	return ret;
 }
 
 double AnimationNodeTimeSeek::process(double p_time, bool p_seek, bool p_is_external_seeking) {
+	double ret = 0.0;
+	if (GDVIRTUAL_CALL(_process, p_time, p_seek, p_is_external_seeking, ret)) {
+		return ret;
+	}
+
 	double cur_seek_pos = get_parameter(seek_pos);
 	if (p_seek) {
 		return blend_input(0, p_time, true, p_is_external_seeking, 1.0, FILTER_IGNORE, true);
 	} else if (cur_seek_pos >= 0) {
-		double ret = blend_input(0, cur_seek_pos, true, true, 1.0, FILTER_IGNORE, true);
+		double rem = blend_input(0, cur_seek_pos, true, true, 1.0, FILTER_IGNORE, true);
 		set_parameter(seek_pos, -1.0); //reset
-		return ret;
+		return rem;
 	} else {
 		return blend_input(0, p_time, false, p_is_external_seeking, 1.0, FILTER_IGNORE, true);
 	}
@@ -645,23 +787,33 @@ AnimationNodeTimeSeek::AnimationNodeTimeSeek() {
 /////////////////////////////////////////////////
 
 void AnimationNodeTransition::get_parameter_list(List<PropertyInfo> *r_list) const {
-	String anims;
-	for (int i = 0; i < enabled_inputs; i++) {
-		if (i > 0) {
-			anims += ",";
+	Array parameters;
+	if (GDVIRTUAL_CALL(_get_parameter_list, parameters)) {
+		_get_parameter_list(parameters, r_list);
+	} else {
+		String anims;
+		for (int i = 0; i < enabled_inputs; i++) {
+			if (i > 0) {
+				anims += ",";
+			}
+			anims += inputs[i].name;
 		}
-		anims += inputs[i].name;
-	}
 
-	r_list->push_back(PropertyInfo(Variant::STRING, current_state, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY)); // For interface.
-	r_list->push_back(PropertyInfo(Variant::STRING, transition_request, PROPERTY_HINT_ENUM, anims)); // For transition request. It will be cleared after setting the value immediately.
-	r_list->push_back(PropertyInfo(Variant::INT, current_index, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_READ_ONLY)); // To avoid finding the index every frame, use this internally.
-	r_list->push_back(PropertyInfo(Variant::INT, prev_index, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
-	r_list->push_back(PropertyInfo(Variant::FLOAT, time, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
-	r_list->push_back(PropertyInfo(Variant::FLOAT, prev_xfading, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
+		r_list->push_back(PropertyInfo(Variant::STRING, current_state, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY)); // For interface.
+		r_list->push_back(PropertyInfo(Variant::STRING, transition_request, PROPERTY_HINT_ENUM, anims)); // For transition request. It will be cleared after setting the value immediately.
+		r_list->push_back(PropertyInfo(Variant::INT, current_index, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_READ_ONLY)); // To avoid finding the index every frame, use this internally.
+		r_list->push_back(PropertyInfo(Variant::INT, prev_index, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
+		r_list->push_back(PropertyInfo(Variant::FLOAT, time, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
+		r_list->push_back(PropertyInfo(Variant::FLOAT, prev_xfading, PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE));
+	}
 }
 
 Variant AnimationNodeTransition::get_parameter_default_value(const StringName &p_parameter) const {
+	Variant ret;
+	if (GDVIRTUAL_CALL(_get_parameter_default_value, p_parameter, ret)) {
+		return ret;
+	}
+
 	if (p_parameter == time || p_parameter == prev_xfading) {
 		return 0.0;
 	} else if (p_parameter == prev_index) {
@@ -674,6 +826,11 @@ Variant AnimationNodeTransition::get_parameter_default_value(const StringName &p
 }
 
 bool AnimationNodeTransition::is_parameter_read_only(const StringName &p_parameter) const {
+	bool ret = false;
+	if (GDVIRTUAL_CALL(_is_parameter_read_only, p_parameter, ret)) {
+		return ret;
+	}
+
 	if (p_parameter == current_state || p_parameter == current_index) {
 		return true;
 	}
@@ -681,7 +838,9 @@ bool AnimationNodeTransition::is_parameter_read_only(const StringName &p_paramet
 }
 
 String AnimationNodeTransition::get_caption() const {
-	return "Transition";
+	String ret = "Transition";
+	GDVIRTUAL_CALL(_get_caption, ret);
+	return ret;
 }
 
 void AnimationNodeTransition::_update_inputs() {
@@ -761,10 +920,14 @@ bool AnimationNodeTransition::is_reset() const {
 }
 
 double AnimationNodeTransition::process(double p_time, bool p_seek, bool p_is_external_seeking) {
+	double ret = 0.0;
+	if (GDVIRTUAL_CALL(_process, p_time, p_seek, p_is_external_seeking, ret)) {
+		return ret;
+	}
+
 	String cur_transition_request = get_parameter(transition_request);
 	int cur_current_index = get_parameter(current_index);
 	int cur_prev_index = get_parameter(prev_index);
-
 	double cur_time = get_parameter(time);
 	double cur_prev_xfading = get_parameter(prev_xfading);
 
@@ -921,10 +1084,17 @@ AnimationNodeTransition::AnimationNodeTransition() {
 /////////////////////
 
 String AnimationNodeOutput::get_caption() const {
-	return "Output";
+	String ret = "Output";
+	GDVIRTUAL_CALL(_get_caption, ret);
+	return ret;
 }
 
 double AnimationNodeOutput::process(double p_time, bool p_seek, bool p_is_external_seeking) {
+	double ret = 0.0;
+	if (GDVIRTUAL_CALL(_process, p_time, p_seek, p_is_external_seeking, ret)) {
+		return ret;
+	}
+
 	return blend_input(0, p_time, p_seek, p_is_external_seeking, 1.0, FILTER_IGNORE, true);
 }
 
@@ -979,19 +1149,24 @@ Vector2 AnimationNodeBlendTree::get_node_position(const StringName &p_node) cons
 }
 
 void AnimationNodeBlendTree::get_child_nodes(List<ChildNode> *r_child_nodes) {
-	Vector<StringName> ns;
+	Dictionary dict;
+	if (GDVIRTUAL_CALL(_get_child_nodes, dict)) {
+		_get_child_nodes(dict, r_child_nodes);
+	} else {
+		Vector<StringName> ns;
 
-	for (const KeyValue<StringName, Node> &E : nodes) {
-		ns.push_back(E.key);
-	}
+		for (const KeyValue<StringName, Node> &E : nodes) {
+			ns.push_back(E.key);
+		}
 
-	ns.sort_custom<StringName::AlphCompare>();
+		ns.sort_custom<StringName::AlphCompare>();
 
-	for (int i = 0; i < ns.size(); i++) {
-		ChildNode cn;
-		cn.name = ns[i];
-		cn.node = nodes[cn.name].node;
-		r_child_nodes->push_back(cn);
+		for (int i = 0; i < ns.size(); i++) {
+			ChildNode cn;
+			cn.name = ns[i];
+			cn.node = nodes[cn.name].node;
+			r_child_nodes->push_back(cn);
+		}
 	}
 }
 
@@ -1134,10 +1309,17 @@ void AnimationNodeBlendTree::get_node_connections(List<NodeConnection> *r_connec
 }
 
 String AnimationNodeBlendTree::get_caption() const {
-	return "BlendTree";
+	String ret = "BlendTree";
+	GDVIRTUAL_CALL(_get_caption, ret);
+	return ret;
 }
 
 double AnimationNodeBlendTree::process(double p_time, bool p_seek, bool p_is_external_seeking) {
+	double ret = 0.0;
+	if (GDVIRTUAL_CALL(_process, p_time, p_seek, p_is_external_seeking, ret)) {
+		return ret;
+	}
+
 	Ref<AnimationNodeOutput> output = nodes[SceneStringNames::get_singleton()->output].node;
 	return _blend_node("output", nodes[SceneStringNames::get_singleton()->output].connections, this, output, p_time, p_seek, p_is_external_seeking, 1.0, FILTER_IGNORE, true);
 }
@@ -1157,7 +1339,9 @@ Vector2 AnimationNodeBlendTree::get_graph_offset() const {
 }
 
 Ref<AnimationNode> AnimationNodeBlendTree::get_child_by_name(const StringName &p_name) {
-	return get_node(p_name);
+	Ref<AnimationNode> ret = get_node(p_name);
+	GDVIRTUAL_CALL(_get_child_by_name, p_name, ret);
+	return ret;
 }
 
 bool AnimationNodeBlendTree::_set(const StringName &p_name, const Variant &p_value) {
