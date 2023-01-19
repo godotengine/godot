@@ -510,6 +510,10 @@
 		<member name="interface/theme/custom_theme" type="String" setter="" getter="">
 			The custom theme resource to use for the editor. Must be a Godot theme resource in [code].tres[/code] or [code].res[/code] format.
 		</member>
+		<member name="interface/theme/enable_touchscreen_touch_area" type="bool" setter="" getter="">
+			If [code]true[/code], increases the touch area for the UI elements to improve usability on touchscreen devices.
+			[b]Note:[/b] Defaults to [code]true[/code] on touchscreen devices.
+		</member>
 		<member name="interface/theme/highlight_tabs" type="bool" setter="" getter="">
 			If [code]true[/code], makes the background of selected tabs more contrasted in the editor theme (brighter on dark themes, darker on light themes).
 		</member>
