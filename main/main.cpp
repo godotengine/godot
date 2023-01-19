@@ -2114,7 +2114,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 #endif
 		}
 
-#ifdef TOOLS_ENABLED
+#if defined(TOOLS_ENABLED) && defined(MACOS_ENABLED)
 		if (OS::get_singleton()->get_bundle_icon_path().is_empty()) {
 			Ref<Image> icon = memnew(Image(app_icon_png));
 			DisplayServer::get_singleton()->set_icon(icon);
