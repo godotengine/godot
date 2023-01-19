@@ -607,6 +607,10 @@
 		<member name="interface/theme/draw_extra_borders" type="bool" setter="" getter="">
 			If [code]true[/code], draws additional borders around interactive UI elements in the editor. This is automatically enabled when using the [b]Black (OLED)[/b] theme preset, as this theme preset uses a fully black background.
 		</member>
+		<member name="interface/theme/enable_touchscreen_touch_area" type="bool" setter="" getter="">
+			If [code]true[/code], increases the touch area for the UI elements to improve usability on touchscreen devices.
+			[b]Note:[/b] Defaults to [code]true[/code] on touchscreen devices.
+		</member>
 		<member name="interface/theme/icon_and_font_color" type="int" setter="" getter="">
 			The icon and font color scheme to use in the editor.
 			- [b]Auto[/b] determines the color scheme to use automatically based on [member interface/theme/base_color].
