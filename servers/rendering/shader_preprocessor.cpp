@@ -1081,21 +1081,17 @@ ShaderPreprocessor::Define *ShaderPreprocessor::create_define(const String &p_bo
 	return define;
 }
 
-void ShaderPreprocessor::clear() {
-	if (state_owner && state != nullptr) {
+void ShaderPreprocessor::clear_state() {
+	if (state != nullptr) {
 		for (const RBMap<String, Define *>::Element *E = state->defines.front(); E; E = E->next()) {
 			memdelete(E->get());
 		}
-
-		memdelete(state);
+		state->defines.clear();
 	}
-	state_owner = false;
 	state = nullptr;
 }
 
 Error ShaderPreprocessor::preprocess(State *p_state, const String &p_code, String &r_result) {
-	clear();
-
 	output.clear();
 
 	state = p_state;
@@ -1242,6 +1238,9 @@ Error ShaderPreprocessor::preprocess(const String &p_code, const String &p_filen
 			}
 		}
 	}
+
+	clear_state();
+
 	return err;
 }
 
@@ -1273,5 +1272,4 @@ ShaderPreprocessor::ShaderPreprocessor() {
 }
 
 ShaderPreprocessor::~ShaderPreprocessor() {
-	clear();
 }

@@ -167,7 +167,6 @@ private:
 private:
 	LocalVector<char32_t> output;
 	State *state = nullptr;
-	bool state_owner = false;
 
 private:
 	static bool is_char_word(char32_t p_char);
@@ -211,7 +210,7 @@ private:
 
 	static Define *create_define(const String &p_body);
 
-	void clear();
+	void clear_state();
 
 	Error preprocess(State *p_state, const String &p_code, String &r_result);
 
