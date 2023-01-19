@@ -4115,6 +4115,7 @@ void EditorNode::notify_all_debug_sessions_exited() {
 }
 
 void EditorNode::add_io_error(const String &p_error) {
+	DEV_ASSERT(Thread::get_caller_id() == Thread::get_main_id());
 	singleton->load_errors->add_image(singleton->gui_base->get_theme_icon(SNAME("Error"), SNAME("EditorIcons")));
 	singleton->load_errors->add_text(p_error + "\n");
 	singleton->load_error_dialog->attach_and_popup_centered_ratio(0.5);

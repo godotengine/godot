@@ -505,6 +505,7 @@ private:
 	static Vector<EditorNodeInitCallback> _init_callbacks;
 
 	static void _dependency_error_report(const String &p_path, const String &p_dep, const String &p_type) {
+		DEV_ASSERT(Thread::get_caller_id() == Thread::get_main_id());
 		if (!singleton->dependency_errors.has(p_path)) {
 			singleton->dependency_errors[p_path] = HashSet<String>();
 		}
