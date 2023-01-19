@@ -1798,7 +1798,7 @@ void fragment_shader(in SceneData scene_data) {
 				shadow = float(shadow1 >> ((i - 4u) * 8u) & 0xFFu) / 255.0;
 			}
 
-			shadow = shadow * directional_lights.data[i].shadow_opacity + 1.0 - directional_lights.data[i].shadow_opacity;
+			shadow = mix(1.0, shadow, directional_lights.data[i].shadow_opacity);
 #endif
 
 			blur_shadow(shadow);

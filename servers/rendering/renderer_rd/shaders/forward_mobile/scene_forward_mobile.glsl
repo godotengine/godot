@@ -1515,6 +1515,8 @@ void main() {
 			} else {
 				shadow = float(shadow1 >> ((i - 4) * 8) & 0xFF) / 255.0;
 			}
+
+			shadow = mix(1.0, shadow, directional_lights.data[i].shadow_opacity);
 #endif
 			blur_shadow(shadow);
 
