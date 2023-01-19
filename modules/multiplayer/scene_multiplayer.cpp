@@ -116,19 +116,17 @@ void SceneMultiplayer::_check_glb_existence(const String& p_path, int id)
 	}
 }
 
+// A signal from scene_distributor_interface calls this function, when some peer set itself as
+// a glb creator.
+// Send the "peer" to all clients so they know
 void SceneMultiplayer::_set_glb_creator_peer(int peer)
 {
-	printf("SceneMultiplayer::_set_glb_creator_peer %d\n", peer);
+	printf("SceneMultiplayer::_set_glb_creator_peer->we are %d set:%d\n", get_unique_id(), peer);
 
 	int packet_len = SYS_CMD_SIZE + 4;
-	printf("packet_len:%d", packet_len);
-
-	//if (get_unique_id() == 1) {
-	printf("SceneMultiplayer::_set_glb_creator_peer->we are %d \n", get_unique_id());
 
 	// tell others the glb creator peer
 	std::vector<uint8_t> buf(packet_len, 0);
-	//uint8_t buf[sizeConstant];
 	buf[0] = NETWORK_COMMAND_SYS;
 	buf[1] = SYS_COMMAND_SET_GLB_PEER;
 	multiplayer_peer->set_transfer_channel(0);
@@ -138,12 +136,13 @@ void SceneMultiplayer::_set_glb_creator_peer(int peer)
 	//add peer into buf
 	encode_uint32(peer, &buf[6]);
 	
-
 	for (const int& P : connected_peers) {
+		if (P == get_unique_id())
+			continue;
+
 		multiplayer_peer->set_target_peer(P);
 		_send(buf.data(), packet_len);
 	}
-	//}
 }
 
 Error SceneMultiplayer::poll() {
@@ -541,6 +540,7 @@ void SceneMultiplayer::_process_sys(int p_from, const uint8_t *p_packet, int p_p
 			//_check_glb_existence(glb_name.ascii().get_data(), p_from);
 
 		} break;
+		// All clients run this after some peer has set itself as glb creator
 		case SYS_COMMAND_SET_GLB_PEER: {
 			printf("SYS_COMMAND_SET_GLB_PEER we-are:%d\n", get_unique_id());
 
