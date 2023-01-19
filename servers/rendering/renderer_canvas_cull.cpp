@@ -851,8 +851,9 @@ void RendererCanvasCull::canvas_item_add_polyline(RID p_item, const Vector<Point
 	PackedColorArray colors;
 	PackedVector2Array points;
 
-	colors.resize(polyline_point_count);
-	points.resize(polyline_point_count);
+	// Additional 2+2 vertices to antialias begin+end of the middle triangle strip.
+	colors.resize(polyline_point_count + ((p_antialiased && !loop) ? 4 : 0));
+	points.resize(polyline_point_count + ((p_antialiased && !loop) ? 4 : 0));
 
 	Vector2 *points_ptr = points.ptrw();
 	Color *colors_ptr = colors.ptrw();
@@ -868,96 +869,30 @@ void RendererCanvasCull::canvas_item_add_polyline(RID p_item, const Vector<Point
 		}
 		Color color2 = Color(1, 1, 1, 0);
 
-		PackedColorArray colors_begin;
-		PackedVector2Array points_begin;
-
-		colors_begin.resize(4);
-		points_begin.resize(4);
-
-		PackedColorArray colors_begin_left_corner;
-		PackedVector2Array points_begin_left_corner;
-
-		colors_begin_left_corner.resize(4);
-		points_begin_left_corner.resize(4);
-
-		PackedColorArray colors_begin_right_corner;
-		PackedVector2Array points_begin_right_corner;
-
-		colors_begin_right_corner.resize(4);
-		points_begin_right_corner.resize(4);
-
-		PackedColorArray colors_end;
-		PackedVector2Array points_end;
-
-		colors_end.resize(4);
-		points_end.resize(4);
-
-		PackedColorArray colors_end_left_corner;
-		PackedVector2Array points_end_left_corner;
-
-		colors_end_left_corner.resize(4);
-		points_end_left_corner.resize(4);
-
-		PackedColorArray colors_end_right_corner;
-		PackedVector2Array points_end_right_corner;
-
-		colors_end_right_corner.resize(4);
-		points_end_right_corner.resize(4);
-
-		PackedColorArray colors_left;
-		PackedVector2Array points_left;
-
-		colors_left.resize(polyline_point_count);
-		points_left.resize(polyline_point_count);
-
-		PackedColorArray colors_right;
-		PackedVector2Array points_right;
-
-		colors_right.resize(polyline_point_count);
-		points_right.resize(polyline_point_count);
-
-		Item::CommandPolygon *pline_begin = canvas_item->alloc_command<Item::CommandPolygon>();
-		ERR_FAIL_COND(!pline_begin);
-
-		Item::CommandPolygon *pline_begin_left_corner = canvas_item->alloc_command<Item::CommandPolygon>();
-		ERR_FAIL_COND(!pline_begin_left_corner);
-
-		Item::CommandPolygon *pline_begin_right_corner = canvas_item->alloc_command<Item::CommandPolygon>();
-		ERR_FAIL_COND(!pline_begin_right_corner);
-
-		Item::CommandPolygon *pline_end = canvas_item->alloc_command<Item::CommandPolygon>();
-		ERR_FAIL_COND(!pline_end);
-
-		Item::CommandPolygon *pline_end_left_corner = canvas_item->alloc_command<Item::CommandPolygon>();
-		ERR_FAIL_COND(!pline_end_left_corner);
-
-		Item::CommandPolygon *pline_end_right_corner = canvas_item->alloc_command<Item::CommandPolygon>();
-		ERR_FAIL_COND(!pline_end_right_corner);
-
 		Item::CommandPolygon *pline_left = canvas_item->alloc_command<Item::CommandPolygon>();
 		ERR_FAIL_COND(!pline_left);
 
 		Item::CommandPolygon *pline_right = canvas_item->alloc_command<Item::CommandPolygon>();
 		ERR_FAIL_COND(!pline_right);
 
-		// Makes nine triangle strips for drawing the antialiased line.
+		PackedColorArray colors_left;
+		PackedVector2Array points_left;
 
-		Vector2 *points_begin_ptr = points_begin.ptrw();
-		Vector2 *points_begin_left_corner_ptr = points_begin_left_corner.ptrw();
-		Vector2 *points_begin_right_corner_ptr = points_begin_right_corner.ptrw();
-		Vector2 *points_end_ptr = points_end.ptrw();
-		Vector2 *points_end_left_corner_ptr = points_end_left_corner.ptrw();
-		Vector2 *points_end_right_corner_ptr = points_end_right_corner.ptrw();
-		Vector2 *points_left_ptr = points_left.ptrw();
-		Vector2 *points_right_ptr = points_right.ptrw();
+		PackedColorArray colors_right;
+		PackedVector2Array points_right;
 
-		Color *colors_begin_ptr = colors_begin.ptrw();
-		Color *colors_begin_left_corner_ptr = colors_begin_left_corner.ptrw();
-		Color *colors_begin_right_corner_ptr = colors_begin_right_corner.ptrw();
-		Color *colors_end_ptr = colors_end.ptrw();
-		Color *colors_end_left_corner_ptr = colors_end_left_corner.ptrw();
-		Color *colors_end_right_corner_ptr = colors_end_right_corner.ptrw();
+		// 2+2 additional vertices for begin+end corners.
+		// 1 additional vertex to swap the orientation of the triangles within the end corner's quad.
+		colors_left.resize(polyline_point_count + (loop ? 0 : 5));
+		points_left.resize(polyline_point_count + (loop ? 0 : 5));
+
+		colors_right.resize(polyline_point_count + (loop ? 0 : 5));
+		points_right.resize(polyline_point_count + (loop ? 0 : 5));
+
 		Color *colors_left_ptr = colors_left.ptrw();
+		Vector2 *points_left_ptr = points_left.ptrw();
+
+		Vector2 *points_right_ptr = points_right.ptrw();
 		Color *colors_right_ptr = colors_right.ptrw();
 
 		Vector2 prev_segment_dir;
@@ -985,117 +920,85 @@ void RendererCanvasCull::canvas_item_add_polyline(RID p_item, const Vector<Point
 			Vector2 border = base_edge_offset * border_size;
 			Vector2 pos = p_points[i];
 
-			points_ptr[i * 2 + 0] = pos + edge_offset;
-			points_ptr[i * 2 + 1] = pos - edge_offset;
+			int j = i * 2 + (loop ? 0 : 2);
 
-			points_left_ptr[i * 2 + 0] = pos + edge_offset + border;
-			points_left_ptr[i * 2 + 1] = pos + edge_offset;
+			points_ptr[j + 0] = pos + edge_offset;
+			points_ptr[j + 1] = pos - edge_offset;
 
-			points_right_ptr[i * 2 + 0] = pos - edge_offset;
-			points_right_ptr[i * 2 + 1] = pos - edge_offset - border;
+			points_left_ptr[j + 0] = pos + edge_offset;
+			points_left_ptr[j + 1] = pos + edge_offset + border;
+
+			points_right_ptr[j + 0] = pos - edge_offset;
+			points_right_ptr[j + 1] = pos - edge_offset - border;
 
 			if (i < p_colors.size()) {
 				color = p_colors[i];
 				color2 = Color(color.r, color.g, color.b, 0);
 			}
 
-			colors_ptr[i * 2 + 0] = color;
-			colors_ptr[i * 2 + 1] = color;
+			colors_ptr[j + 0] = color;
+			colors_ptr[j + 1] = color;
 
-			colors_left_ptr[i * 2 + 0] = color2;
-			colors_left_ptr[i * 2 + 1] = color;
+			colors_left_ptr[j + 0] = color;
+			colors_left_ptr[j + 1] = color2;
 
-			colors_right_ptr[i * 2 + 0] = color;
-			colors_right_ptr[i * 2 + 1] = color2;
+			colors_right_ptr[j + 0] = color;
+			colors_right_ptr[j + 1] = color2;
 
-			if (is_first_point) {
-				Vector2 begin_border = loop ? Vector2() : -segment_dir * border_size;
+			if (is_first_point && !loop) {
+				Vector2 begin_border = -segment_dir * border_size;
 
-				points_begin_ptr[0] = pos + edge_offset + begin_border;
-				points_begin_ptr[1] = pos - edge_offset + begin_border;
-				points_begin_ptr[2] = pos + edge_offset;
-				points_begin_ptr[3] = pos - edge_offset;
+				points_ptr[0] = pos + edge_offset + begin_border;
+				points_ptr[1] = pos - edge_offset + begin_border;
 
-				colors_begin_ptr[0] = color2;
-				colors_begin_ptr[1] = color2;
-				colors_begin_ptr[2] = color;
-				colors_begin_ptr[3] = color;
+				colors_ptr[0] = color2;
+				colors_ptr[1] = color2;
 
-				points_begin_left_corner_ptr[0] = pos - edge_offset - border;
-				points_begin_left_corner_ptr[1] = pos - edge_offset + begin_border - border;
-				points_begin_left_corner_ptr[2] = pos - edge_offset;
-				points_begin_left_corner_ptr[3] = pos - edge_offset + begin_border;
+				points_left_ptr[0] = pos + edge_offset + begin_border;
+				points_left_ptr[1] = pos + edge_offset + begin_border + border;
 
-				colors_begin_left_corner_ptr[0] = color2;
-				colors_begin_left_corner_ptr[1] = color2;
-				colors_begin_left_corner_ptr[2] = color;
-				colors_begin_left_corner_ptr[3] = color2;
+				colors_left_ptr[0] = color2;
+				colors_left_ptr[1] = color2;
 
-				points_begin_right_corner_ptr[0] = pos + edge_offset + begin_border;
-				points_begin_right_corner_ptr[1] = pos + edge_offset + begin_border + border;
-				points_begin_right_corner_ptr[2] = pos + edge_offset;
-				points_begin_right_corner_ptr[3] = pos + edge_offset + border;
+				points_right_ptr[0] = pos - edge_offset + begin_border;
+				points_right_ptr[1] = pos - edge_offset + begin_border - border;
 
-				colors_begin_right_corner_ptr[0] = color2;
-				colors_begin_right_corner_ptr[1] = color2;
-				colors_begin_right_corner_ptr[2] = color;
-				colors_begin_right_corner_ptr[3] = color2;
+				colors_right_ptr[0] = color2;
+				colors_right_ptr[1] = color2;
 			}
 
-			if (is_last_point) {
-				Vector2 end_border = loop ? Vector2() : prev_segment_dir * border_size;
+			if (is_last_point && !loop) {
+				Vector2 end_border = prev_segment_dir * border_size;
+				int end_index = polyline_point_count + 2;
 
-				points_end_ptr[0] = pos + edge_offset + end_border;
-				points_end_ptr[1] = pos - edge_offset + end_border;
-				points_end_ptr[2] = pos + edge_offset;
-				points_end_ptr[3] = pos - edge_offset;
+				points_ptr[end_index + 0] = pos + edge_offset + end_border;
+				points_ptr[end_index + 1] = pos - edge_offset + end_border;
 
-				colors_end_ptr[0] = color2;
-				colors_end_ptr[1] = color2;
-				colors_end_ptr[2] = color;
-				colors_end_ptr[3] = color;
+				colors_ptr[end_index + 0] = color2;
+				colors_ptr[end_index + 1] = color2;
 
-				points_end_left_corner_ptr[0] = pos - edge_offset - border;
-				points_end_left_corner_ptr[1] = pos - edge_offset + end_border - border;
-				points_end_left_corner_ptr[2] = pos - edge_offset;
-				points_end_left_corner_ptr[3] = pos - edge_offset + end_border;
+				// Swap orientation of the triangles within both end corner quads so the visual seams
+				// between triangles goes from the edge corner. Done by going back to the edge corner
+				// (1 additional vertex / zero-area triangle per left/right corner).
+				points_left_ptr[end_index + 0] = pos + edge_offset;
+				points_left_ptr[end_index + 1] = pos + edge_offset + end_border + border;
+				points_left_ptr[end_index + 2] = pos + edge_offset + end_border;
 
-				colors_end_left_corner_ptr[0] = color2;
-				colors_end_left_corner_ptr[1] = color2;
-				colors_end_left_corner_ptr[2] = color;
-				colors_end_left_corner_ptr[3] = color2;
+				colors_left_ptr[end_index + 0] = color;
+				colors_left_ptr[end_index + 1] = color2;
+				colors_left_ptr[end_index + 2] = color2;
 
-				points_end_right_corner_ptr[0] = pos + edge_offset + end_border;
-				points_end_right_corner_ptr[1] = pos + edge_offset + end_border + border;
-				points_end_right_corner_ptr[2] = pos + edge_offset;
-				points_end_right_corner_ptr[3] = pos + edge_offset + border;
+				points_right_ptr[end_index + 0] = pos - edge_offset;
+				points_right_ptr[end_index + 1] = pos - edge_offset + end_border - border;
+				points_right_ptr[end_index + 2] = pos - edge_offset + end_border;
 
-				colors_end_right_corner_ptr[0] = color2;
-				colors_end_right_corner_ptr[1] = color2;
-				colors_end_right_corner_ptr[2] = color;
-				colors_end_right_corner_ptr[3] = color2;
+				colors_right_ptr[end_index + 0] = color;
+				colors_right_ptr[end_index + 1] = color2;
+				colors_right_ptr[end_index + 2] = color2;
 			}
 
 			prev_segment_dir = segment_dir;
 		}
-
-		pline_begin->primitive = RS::PRIMITIVE_TRIANGLE_STRIP;
-		pline_begin->polygon.create(indices, points_begin, colors_begin);
-
-		pline_begin_left_corner->primitive = RS::PRIMITIVE_TRIANGLE_STRIP;
-		pline_begin_left_corner->polygon.create(indices, points_begin_left_corner, colors_begin_left_corner);
-
-		pline_begin_right_corner->primitive = RS::PRIMITIVE_TRIANGLE_STRIP;
-		pline_begin_right_corner->polygon.create(indices, points_begin_right_corner, colors_begin_right_corner);
-
-		pline_end->primitive = RS::PRIMITIVE_TRIANGLE_STRIP;
-		pline_end->polygon.create(indices, points_end, colors_end);
-
-		pline_end_left_corner->primitive = RS::PRIMITIVE_TRIANGLE_STRIP;
-		pline_end_left_corner->polygon.create(indices, points_end_left_corner, colors_end_left_corner);
-
-		pline_end_right_corner->primitive = RS::PRIMITIVE_TRIANGLE_STRIP;
-		pline_end_right_corner->polygon.create(indices, points_end_right_corner, colors_end_right_corner);
 
 		pline_left->primitive = RS::PRIMITIVE_TRIANGLE_STRIP;
 		pline_left->polygon.create(indices, points_left, colors_left);
