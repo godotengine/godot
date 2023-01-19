@@ -81,6 +81,9 @@ public:
 		bool uses_fragment_time;
 		bool uses_vertex_time;
 		bool uses_screen_texture_mipmaps;
+		bool uses_screen_texture;
+		bool uses_depth_texture;
+		bool uses_normal_roughness_texture;
 	};
 
 	struct DefaultIdentifierActions {
