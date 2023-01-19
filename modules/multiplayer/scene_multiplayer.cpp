@@ -137,6 +137,8 @@ void SceneMultiplayer::_set_glb_creator_peer(int peer)
 	encode_uint32(peer, &buf[6]);
 	
 	for (const int& P : connected_peers) {
+		//We set ourself in SceneDistributionInterface::set_own_peer_as_glb_creator()
+		//So we dont need todo it again
 		if (P == get_unique_id())
 			continue;
 
@@ -510,49 +512,45 @@ void SceneMultiplayer::_process_sys(int p_from, const uint8_t *p_packet, int p_p
 			distributor->set_glb_existence_info(p_from, result, file_name.ascii().get_data());
 
 		} break;
+		// Should only run by the peer that set itself as glb_creator_peer
 		case SYS_COMMAND_REQUEST_GLB: {
 			printf("SYS_COMMAND_REQUEST_GLB\n");
 
-			//set packet to start of payload
-			const uint8_t* packet = p_packet + SYS_CMD_SIZE;
+			//check if we are the glb_creator_peer
+			if (distributor->glb_creator_peer == get_unique_id()) {
+				//set packet to start of payload
+				const uint8_t* packet = p_packet + SYS_CMD_SIZE;
 
-			//read glb-name from packet, packet_len - 6
-			String glb_name;
-			glb_name.parse_utf8((const char*)(packet), (p_packet_len - 6));
+				//read glb-name from packet, packet_len - 6
+				String glb_name;
+				glb_name.parse_utf8((const char*)(packet), (p_packet_len - 6));
 
-			printf("glb_name is:%s from:%d myself:%d\n", glb_name.ascii().get_data(), p_from, get_unique_id() );
+				printf("glb_name is:%s from:%d myself:%d\n", glb_name.ascii().get_data(), p_from, get_unique_id());
 
-			//check if glb_name was already requested
-			if (distributor->get_requested_glb_files().has(glb_name.ascii().get_data())) {
-				printf("glb file already requested, doing nothing ?\n");
+				//check if glb_name was already requested
+				if (distributor->get_requested_glb_files().has(glb_name.ascii().get_data())) {
+					printf("glb file already requested, doing nothing ?\n");
+				}
+				else {
+					printf("glb file NOT already requested, will create and distribute it\n");
+					//set in requested HashSet
+					get_distributor()->set_glb_as_requested(glb_name.ascii().get_data());
+					//request a create of the glb
+					distributor->request_to_externally_create_glb(glb_name.ascii().get_data());
+				}
 			}
-			else {
-				printf("glb file NOT already requested, will create and distribute it\n");
-				//set in requested HashSet
-				get_distributor()->set_glb_as_requested(glb_name.ascii().get_data());
-				//request a create of the glb
-				distributor->request_to_externally_create_glb(glb_name.ascii().get_data());
-			}
-
-			
-
-			//ask others if they already know about glb_name
-			//_check_glb_existence(glb_name.ascii().get_data(), p_from);
-
 		} break;
 		// All clients run this after some peer has set itself as glb creator
+		// So all clients know the peer to send glb-requests to
 		case SYS_COMMAND_SET_GLB_PEER: {
 			printf("SYS_COMMAND_SET_GLB_PEER we-are:%d\n", get_unique_id());
 
-			//set packet to start of payload
-			const uint8_t* packet = p_packet + SYS_CMD_SIZE;
-
 			//read glb-creator-peer from packet, packet_len - 6
-			uint32_t glb_creator_peer = decode_uint32(packet);
-			
+			uint32_t glb_creator_peer = decode_uint32(p_packet + SYS_CMD_SIZE);
+			distributor->glb_creator_peer = glb_creator_peer;
+
 			printf("glb_creator_peer is:%u from:%d myself:%d\n", glb_creator_peer, p_from, get_unique_id());
 
-			distributor->glb_creator_peer = glb_creator_peer;
 		} break;
 		case SYS_COMMAND_DISTRIBUTE_GLB: {
 			printf("SYS_COMMAND_DISTRIBUTE_GLB we-are:%d\n", get_unique_id());
@@ -564,20 +562,17 @@ void SceneMultiplayer::_process_sys(int p_from, const uint8_t *p_packet, int p_p
 			uint32_t glb_creator_peer = decode_uint32(packet-4);
 			//decode glb name length
 			uint32_t glb_name_length = decode_uint32(packet);
-			printf("glb_name_length:%u", glb_name_length);
 			//decode glb_file_PBA length
 			uint32_t glb_file_PBA_length = decode_uint32(packet + 4);
-			printf("glb_file_PBA_length:%u", glb_file_PBA_length);
 			//decode glb file name
 			String glb_name;
 			glb_name.parse_utf8((const char*)(packet+8), glb_name_length);
-			printf("glb_name is:%s from:%d myself:%d\n", glb_name.ascii().get_data(), p_from, get_unique_id());
 			//read glb_file_PBA
 			PackedByteArray distributed_glb;
 			distributed_glb.resize(glb_file_PBA_length);
 
 			printf("distribute-glb-sys p_packet_len:%d\n", p_packet_len);
-			//err = decode_variant(&distributed_glb, packet, p_packet_len - 6);
+
 			packet = packet + 8 + glb_name_length;
 			for (uint32_t i = 0; i < glb_file_PBA_length; i++) {
 				distributed_glb.set(i, *packet++);
@@ -594,26 +589,14 @@ void SceneMultiplayer::_process_sys(int p_from, const uint8_t *p_packet, int p_p
 			Node* n = gltf->generate_scene(gltf_state);
 			n->set_name(save_path);
 			Ref<PackedScene> p = memnew(PackedScene);
-			//PackedScene p;
-			//p.instantiate();
 			p->pack(n);
 			ResourceSaver s;
 			Error error = s.save(p, save_path);  // Or "user://..."
 
-			//gltf->write_to_filesystem(gltf_state, save_path);
-
-			printf("here we go--\n");
-			//add to add_spawnable_scene
-			//ObjectID spawner;
-			//MultiplayerSpawner* m = Object::cast_to<MultiplayerSpawner>(ObjectDB::get_instance(spawner));
-			//m->add_spawnable_scene(save_path);
-			//printf("spawnable-scene-count:%d\n", m->get_spawnable_scene_count());
-
+			// @TODO better way of getting spawner ???
 			MultiplayerSpawner* spawner = Object::cast_to<MultiplayerSpawner>(get_path_cache()->get_cached_object(1, 1));
 			//ERR_FAIL_COND_V(!spawner, ERR_DOES_NOT_EXIST);
-			printf("spawnable-scene-count:%d\n", spawner->get_spawnable_scene_count());
 			spawner->add_spawnable_scene(save_path);
-			printf("spawnable-scene-count:%d\n", spawner->get_spawnable_scene_count());
 
 			//MultiplayerSynchronizer* sync = get_id_as<MultiplayerSynchronizer>(p_sid);
 			//ERR_FAIL_COND(!sync); // Bug.

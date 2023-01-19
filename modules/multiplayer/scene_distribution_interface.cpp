@@ -38,7 +38,8 @@ void SceneDistributionInterface::set_own_peer_as_glb_creator()
 }
 
 
-// request a glb file from the peer that used set_own_peer_as_glb_creator
+// send request of glb file to the peer that used set_own_peer_as_glb_creator
+// The glb_name should only be a name WITHOUT .glb E.g. "Fox"
 void SceneDistributionInterface::request_glb(const String& glb_name)
 {
 	printf("SceneDistributionInterface::request_glb ->%s\n", glb_name.ascii().get_data());
