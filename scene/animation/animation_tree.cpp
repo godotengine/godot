@@ -54,13 +54,19 @@ Variant AnimationNode::get_parameter_default_value(const StringName &p_parameter
 	return ret;
 }
 
+bool AnimationNode::is_parameter_read_only(const StringName &p_parameter) const {
+	bool ret = false;
+	GDVIRTUAL_CALL(_is_parameter_read_only, p_parameter, ret);
+	return ret;
+}
+
 void AnimationNode::set_parameter(const StringName &p_name, const Variant &p_value) {
 	ERR_FAIL_COND(!state);
 	ERR_FAIL_COND(!state->tree->property_parent_map.has(base_path));
 	ERR_FAIL_COND(!state->tree->property_parent_map[base_path].has(p_name));
 	StringName path = state->tree->property_parent_map[base_path][p_name];
 
-	state->tree->property_map[path] = p_value;
+	state->tree->property_map[path].first = p_value;
 }
 
 Variant AnimationNode::get_parameter(const StringName &p_name) const {
@@ -69,7 +75,7 @@ Variant AnimationNode::get_parameter(const StringName &p_name) const {
 	ERR_FAIL_COND_V(!state->tree->property_parent_map[base_path].has(p_name), Variant());
 
 	StringName path = state->tree->property_parent_map[base_path][p_name];
-	return state->tree->property_map[path];
+	return state->tree->property_map[path].first;
 }
 
 void AnimationNode::get_child_nodes(List<ChildNode> *r_child_nodes) {
@@ -427,6 +433,7 @@ void AnimationNode::_bind_methods() {
 	GDVIRTUAL_BIND(_get_parameter_list);
 	GDVIRTUAL_BIND(_get_child_by_name, "name");
 	GDVIRTUAL_BIND(_get_parameter_default_value, "parameter");
+	GDVIRTUAL_BIND(_is_parameter_read_only, "parameter");
 	GDVIRTUAL_BIND(_process, "time", "seek", "is_external_seeking");
 	GDVIRTUAL_BIND(_get_caption);
 	GDVIRTUAL_BIND(_has_filter);
@@ -1889,7 +1896,10 @@ void AnimationTree::_update_properties_for_node(const String &p_base_path, Ref<A
 		StringName key = pinfo.name;
 
 		if (!property_map.has(p_base_path + key)) {
-			property_map[p_base_path + key] = node->get_parameter_default_value(key);
+			Pair<Variant, bool> param;
+			param.first = node->get_parameter_default_value(key);
+			param.second = node->is_parameter_read_only(key);
+			property_map[p_base_path + key] = param;
 		}
 
 		property_parent_map[p_base_path][key] = p_base_path + key;
@@ -1931,7 +1941,10 @@ bool AnimationTree::_set(const StringName &p_name, const Variant &p_value) {
 	}
 
 	if (property_map.has(p_name)) {
-		property_map[p_name] = p_value;
+		if (is_inside_tree() && property_map[p_name].second) {
+			return false; // Prevent to set property by user.
+		}
+		property_map[p_name].first = p_value;
 		return true;
 	}
 
@@ -1944,7 +1957,7 @@ bool AnimationTree::_get(const StringName &p_name, Variant &r_ret) const {
 	}
 
 	if (property_map.has(p_name)) {
-		r_ret = property_map[p_name];
+		r_ret = property_map[p_name].first;
 		return true;
 	}
 
