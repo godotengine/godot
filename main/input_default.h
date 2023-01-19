@@ -204,6 +204,11 @@ private:
 	bool use_input_buffering;
 	bool use_accumulated_input;
 
+#ifdef DEBUG_ENABLED
+	Set<Ref<InputEvent>> frame_parsed_events;
+	uint64_t last_parsed_frame = UINT64_MAX;
+#endif
+
 protected:
 	struct VibrationInfo {
 		float weak_magnitude;
