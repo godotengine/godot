@@ -53,6 +53,7 @@ protected:
 public:
 	EXBIND0RC(bool, can_instantiate)
 	EXBIND0RC(Ref<Script>, get_base_script)
+	EXBIND0RC(StringName, get_global_name)
 	EXBIND1RC(bool, inherits_script, const Ref<Script> &)
 	EXBIND0RC(StringName, get_instance_base_type)
 

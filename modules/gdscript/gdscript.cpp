@@ -248,6 +248,10 @@ Ref<Script> GDScript::get_base_script() const {
 	}
 }
 
+StringName GDScript::get_global_name() const {
+	return name;
+}
+
 StringName GDScript::get_instance_base_type() const {
 	if (native.is_valid()) {
 		return native->get_name();
