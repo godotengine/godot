@@ -110,7 +110,7 @@ void TileSetAtlasSourceEditor::TileSetAtlasSourceProxyObject::_get_property_list
 	p_list->push_back(PropertyInfo(Variant::STRING, "name", PROPERTY_HINT_NONE, ""));
 	p_list->push_back(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"));
 	p_list->push_back(PropertyInfo(Variant::VECTOR2I, "margins", PROPERTY_HINT_NONE, "suffix:px"));
-	p_list->push_back(PropertyInfo(Variant::VECTOR2I, "separation", PROPERTY_HINT_NONE, "suffix:px"));
+	p_list->push_back(PropertyInfo(Variant::VECTOR2I, "separation", PROPERTY_HINT_NONE));
 	p_list->push_back(PropertyInfo(Variant::VECTOR2I, "texture_region_size", PROPERTY_HINT_NONE, "suffix:px"));
 	p_list->push_back(PropertyInfo(Variant::BOOL, "use_texture_padding", PROPERTY_HINT_NONE, ""));
 }
@@ -164,7 +164,7 @@ bool TileSetAtlasSourceEditor::AtlasTileProxyObject::_set(const StringName &p_na
 			if (p_name == "atlas_coords") {
 				Vector2i as_vector2i = Vector2i(p_value);
 				bool has_room_for_tile = tile_set_atlas_source->has_room_for_tile(as_vector2i, tile_set_atlas_source->get_tile_size_in_atlas(coords), tile_set_atlas_source->get_tile_animation_columns(coords), tile_set_atlas_source->get_tile_animation_separation(coords), tile_set_atlas_source->get_tile_animation_frames_count(coords), coords);
-				ERR_FAIL_COND_V(!has_room_for_tile, false);
+				ERR_FAIL_COND_V_EDMSG(!has_room_for_tile, false, "Cannot move the tile, invalid coordinates or not enough room in the atlas for the tile and its animation frames.");
 
 				if (tiles_set_atlas_source_editor->selection.front()->get().tile == coords) {
 					tiles_set_atlas_source_editor->selection.clear();
@@ -223,7 +223,7 @@ bool TileSetAtlasSourceEditor::AtlasTileProxyObject::_set(const StringName &p_na
 			for (TileSelection tile : tiles) {
 				bool has_room_for_tile = tile_set_atlas_source->has_room_for_tile(tile.tile, tile_set_atlas_source->get_tile_size_in_atlas(tile.tile), p_value, tile_set_atlas_source->get_tile_animation_separation(tile.tile), tile_set_atlas_source->get_tile_animation_frames_count(tile.tile), tile.tile);
 				if (!has_room_for_tile) {
-					ERR_PRINT("No room for tile");
+					ERR_PRINT(vformat("Cannot change the number of columns to %s for tile animation. Not enough room in the atlas to layout %s frame(s).", p_value, tile_set_atlas_source->get_tile_animation_frames_count(tile.tile)));
 				} else {
 					tile_set_atlas_source->set_tile_animation_columns(tile.tile, p_value);
 				}
@@ -234,7 +234,7 @@ bool TileSetAtlasSourceEditor::AtlasTileProxyObject::_set(const StringName &p_na
 			for (TileSelection tile : tiles) {
 				bool has_room_for_tile = tile_set_atlas_source->has_room_for_tile(tile.tile, tile_set_atlas_source->get_tile_size_in_atlas(tile.tile), tile_set_atlas_source->get_tile_animation_columns(tile.tile), p_value, tile_set_atlas_source->get_tile_animation_frames_count(tile.tile), tile.tile);
 				if (!has_room_for_tile) {
-					ERR_PRINT("No room for tile");
+					ERR_PRINT(vformat("Cannot change separation between frames of the animation to %s. Not enough room in the atlas to layout %s frame(s).", p_value, tile_set_atlas_source->get_tile_animation_frames_count(tile.tile)));
 				} else {
 					tile_set_atlas_source->set_tile_animation_separation(tile.tile, p_value);
 				}
@@ -249,11 +249,16 @@ bool TileSetAtlasSourceEditor::AtlasTileProxyObject::_set(const StringName &p_na
 			return true;
 		} else if (p_name == "animation_frames_count") {
 			for (TileSelection tile : tiles) {
-				bool has_room_for_tile = tile_set_atlas_source->has_room_for_tile(tile.tile, tile_set_atlas_source->get_tile_size_in_atlas(tile.tile), tile_set_atlas_source->get_tile_animation_columns(tile.tile), tile_set_atlas_source->get_tile_animation_separation(tile.tile), p_value, tile.tile);
+				int frame_count = p_value;
+				if (frame_count == 0) {
+					frame_count = 1;
+				}
+
+				bool has_room_for_tile = tile_set_atlas_source->has_room_for_tile(tile.tile, tile_set_atlas_source->get_tile_size_in_atlas(tile.tile), tile_set_atlas_source->get_tile_animation_columns(tile.tile), tile_set_atlas_source->get_tile_animation_separation(tile.tile), frame_count, tile.tile);
 				if (!has_room_for_tile) {
-					ERR_PRINT("No room for tile");
+					ERR_PRINT(vformat("Cannot add frames to the animation, not enough room in the atlas to layout %s frames.", frame_count));
 				} else {
-					tile_set_atlas_source->set_tile_animation_frames_count(tile.tile, p_value);
+					tile_set_atlas_source->set_tile_animation_frames_count(tile.tile, frame_count);
 				}
 			}
 			notify_property_list_changed();
