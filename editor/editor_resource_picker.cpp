@@ -42,12 +42,6 @@
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor/scene_tree_dock.h"
 
-HashMap<StringName, List<StringName>> EditorResourcePicker::allowed_types_cache;
-
-void EditorResourcePicker::clear_caches() {
-	allowed_types_cache.clear();
-}
-
 void EditorResourcePicker::_update_resource() {
 	String resource_path;
 	if (edited_resource.is_valid() && edited_resource->get_path().is_resource_file()) {
@@ -464,7 +458,7 @@ void EditorResourcePicker::set_create_options(Object *p_menu_node) {
 	if (!base_type.is_empty()) {
 		int idx = 0;
 
-		HashSet<String> allowed_types;
+		HashSet<StringName> allowed_types;
 		_get_allowed_types(false, &allowed_types);
 
 		Vector<EditorData::CustomType> custom_resources;
@@ -472,7 +466,7 @@ void EditorResourcePicker::set_create_options(Object *p_menu_node) {
 			custom_resources = EditorNode::get_editor_data().get_custom_types()["Resource"];
 		}
 
-		for (const String &E : allowed_types) {
+		for (const StringName &E : allowed_types) {
 			const String &t = E;
 
 			bool is_custom_resource = false;
@@ -561,53 +555,44 @@ String EditorResourcePicker::_get_resource_type(const Ref<Resource> &p_resource)
 	return res_type;
 }
 
-void EditorResourcePicker::_get_allowed_types(bool p_with_convert, HashSet<String> *p_vector) const {
+static void _add_allowed_type(const StringName &p_type, HashSet<StringName> *p_vector) {
+	if (p_vector->has(p_type)) {
+		// Already added
+		return;
+	}
+
+	if (ClassDB::class_exists(p_type)) {
+		// Engine class,
+
+		if (!ClassDB::is_virtual(p_type)) {
+			p_vector->insert(p_type);
+		}
+
+		List<StringName> inheriters;
+		ClassDB::get_inheriters_from_class(p_type, &inheriters);
+		for (const StringName &S : inheriters) {
+			_add_allowed_type(S, p_vector);
+		}
+	} else {
+		// Script class.
+		p_vector->insert(p_type);
+	}
+
+	List<StringName> inheriters;
+	ScriptServer::get_inheriters_list(p_type, &inheriters);
+	for (const StringName &S : inheriters) {
+		_add_allowed_type(S, p_vector);
+	}
+}
+
+void EditorResourcePicker::_get_allowed_types(bool p_with_convert, HashSet<StringName> *p_vector) const {
 	Vector<String> allowed_types = base_type.split(",");
 	int size = allowed_types.size();
 
-	List<StringName> global_classes;
-	ScriptServer::get_global_class_list(&global_classes);
-
 	for (int i = 0; i < size; i++) {
 		String base = allowed_types[i].strip_edges();
-		if (!ClassDB::is_virtual(base)) {
-			p_vector->insert(base);
-		}
 
-		// If we hit a familiar base type, take all the data from cache.
-		if (allowed_types_cache.has(base)) {
-			List<StringName> allowed_subtypes = allowed_types_cache[base];
-			for (const StringName &subtype_name : allowed_subtypes) {
-				if (!ClassDB::is_virtual(subtype_name)) {
-					p_vector->insert(subtype_name);
-				}
-			}
-		} else {
-			List<StringName> allowed_subtypes;
-
-			List<StringName> inheriters;
-			if (!ScriptServer::is_global_class(base)) {
-				ClassDB::get_inheriters_from_class(base, &inheriters);
-			}
-			for (const StringName &subtype_name : inheriters) {
-				if (!ClassDB::is_virtual(subtype_name)) {
-					p_vector->insert(subtype_name);
-				}
-				allowed_subtypes.push_back(subtype_name);
-			}
-
-			for (const StringName &subtype_name : global_classes) {
-				if (EditorNode::get_editor_data().script_class_is_parent(subtype_name, base)) {
-					if (!ClassDB::is_virtual(subtype_name)) {
-						p_vector->insert(subtype_name);
-					}
-					allowed_subtypes.push_back(subtype_name);
-				}
-			}
-
-			// Store the subtypes of the base type in the cache for future use.
-			allowed_types_cache[base] = allowed_subtypes;
-		}
+		_add_allowed_type(base, p_vector);
 
 		if (p_with_convert) {
 			if (base == "BaseMaterial3D") {
@@ -617,14 +602,6 @@ void EditorResourcePicker::_get_allowed_types(bool p_with_convert, HashSet<Strin
 			} else if (base == "Texture2D") {
 				p_vector->insert("Image");
 			}
-		}
-	}
-
-	if (EditorNode::get_editor_data().get_custom_types().has("Resource")) {
-		Vector<EditorData::CustomType> custom_resources = EditorNode::get_editor_data().get_custom_types()["Resource"];
-
-		for (int i = 0; i < custom_resources.size(); i++) {
-			p_vector->insert(custom_resources[i].name);
 		}
 	}
 }
@@ -654,7 +631,7 @@ bool EditorResourcePicker::_is_drop_valid(const Dictionary &p_drag_data) const {
 		}
 	}
 
-	HashSet<String> allowed_types;
+	HashSet<StringName> allowed_types;
 	_get_allowed_types(true, &allowed_types);
 
 	if (res.is_valid()) {
@@ -673,9 +650,9 @@ bool EditorResourcePicker::_is_drop_valid(const Dictionary &p_drag_data) const {
 	return false;
 }
 
-bool EditorResourcePicker::_is_type_valid(const String p_type_name, HashSet<String> p_allowed_types) const {
-	for (const String &E : p_allowed_types) {
-		String at = E.strip_edges();
+bool EditorResourcePicker::_is_type_valid(const String p_type_name, HashSet<StringName> p_allowed_types) const {
+	for (const StringName &E : p_allowed_types) {
+		String at = E;
 		if (p_type_name == at || ClassDB::is_parent_class(p_type_name, at) || EditorNode::get_editor_data().script_class_is_parent(p_type_name, at)) {
 			return true;
 		}
@@ -721,15 +698,15 @@ void EditorResourcePicker::drop_data_fw(const Point2 &p_point, const Variant &p_
 	}
 
 	if (dropped_resource.is_valid()) {
-		HashSet<String> allowed_types;
+		HashSet<StringName> allowed_types;
 		_get_allowed_types(false, &allowed_types);
 
 		String res_type = _get_resource_type(dropped_resource);
 
 		// If the accepted dropped resource is from the extended list, it requires conversion.
 		if (!_is_type_valid(res_type, allowed_types)) {
-			for (const String &E : allowed_types) {
-				String at = E.strip_edges();
+			for (const StringName &E : allowed_types) {
+				String at = E;
 
 				if (at == "BaseMaterial3D" && Ref<Texture2D>(dropped_resource).is_valid()) {
 					// Use existing resource if possible and only replace its data.
@@ -832,7 +809,7 @@ void EditorResourcePicker::set_base_type(const String &p_base_type) {
 	// There is a possibility that the new base type is conflicting with the existing value.
 	// Keep the value, but warn the user that there is a potential mistake.
 	if (!base_type.is_empty() && edited_resource.is_valid()) {
-		HashSet<String> allowed_types;
+		HashSet<StringName> allowed_types;
 		_get_allowed_types(true, &allowed_types);
 
 		StringName custom_class;
@@ -846,10 +823,6 @@ void EditorResourcePicker::set_base_type(const String &p_base_type) {
 			String class_str = (custom_class == StringName() ? edited_resource->get_class() : vformat("%s (%s)", custom_class, edited_resource->get_class()));
 			WARN_PRINT(vformat("Value mismatch between the new base type of this EditorResourcePicker, '%s', and the type of the value it already has, '%s'.", base_type, class_str));
 		}
-	} else {
-		// Call the method to build the cache immediately.
-		HashSet<String> allowed_types;
-		_get_allowed_types(false, &allowed_types);
 	}
 }
 
@@ -858,7 +831,7 @@ String EditorResourcePicker::get_base_type() const {
 }
 
 Vector<String> EditorResourcePicker::get_allowed_types() const {
-	HashSet<String> allowed_types;
+	HashSet<StringName> allowed_types;
 	_get_allowed_types(false, &allowed_types);
 
 	Vector<String> types;
@@ -866,7 +839,7 @@ Vector<String> EditorResourcePicker::get_allowed_types() const {
 
 	int i = 0;
 	String *w = types.ptrw();
-	for (const String &E : allowed_types) {
+	for (const StringName &E : allowed_types) {
 		w[i] = E;
 		i++;
 	}
@@ -882,7 +855,7 @@ void EditorResourcePicker::set_edited_resource(Ref<Resource> p_resource) {
 	}
 
 	if (!base_type.is_empty()) {
-		HashSet<String> allowed_types;
+		HashSet<StringName> allowed_types;
 		_get_allowed_types(true, &allowed_types);
 
 		StringName custom_class;

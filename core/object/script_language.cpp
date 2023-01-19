@@ -245,9 +245,12 @@ void ScriptServer::thread_exit() {
 }
 
 HashMap<StringName, ScriptServer::GlobalScriptClass> ScriptServer::global_classes;
+HashMap<StringName, Vector<StringName>> ScriptServer::inheriters_cache;
+bool ScriptServer::inheriters_cache_dirty = true;
 
 void ScriptServer::global_classes_clear() {
 	global_classes.clear();
+	inheriters_cache.clear();
 }
 
 void ScriptServer::add_global_class(const StringName &p_class, const StringName &p_base, const StringName &p_language, const String &p_path) {
@@ -257,16 +260,44 @@ void ScriptServer::add_global_class(const StringName &p_class, const StringName 
 	g.path = p_path;
 	g.base = p_base;
 	global_classes[p_class] = g;
+	inheriters_cache_dirty = true;
 }
 
 void ScriptServer::remove_global_class(const StringName &p_class) {
 	global_classes.erase(p_class);
+	inheriters_cache_dirty = true;
+}
+
+void ScriptServer::get_inheriters_list(const StringName &p_base_type, List<StringName> *r_classes) {
+	if (inheriters_cache_dirty) {
+		inheriters_cache.clear();
+		for (const KeyValue<StringName, GlobalScriptClass> &K : global_classes) {
+			if (!inheriters_cache.has(K.value.base)) {
+				inheriters_cache[K.value.base] = Vector<StringName>();
+			}
+			inheriters_cache[K.value.base].push_back(K.key);
+		}
+		for (KeyValue<StringName, Vector<StringName>> &K : inheriters_cache) {
+			K.value.sort_custom<StringName::AlphCompare>();
+		}
+		inheriters_cache_dirty = false;
+	}
+
+	if (!inheriters_cache.has(p_base_type)) {
+		return;
+	}
+
+	const Vector<StringName> &v = inheriters_cache[p_base_type];
+	for (int i = 0; i < v.size(); i++) {
+		r_classes->push_back(v[i]);
+	}
 }
 
 void ScriptServer::remove_global_class_by_path(const String &p_path) {
 	for (const KeyValue<StringName, GlobalScriptClass> &kv : global_classes) {
 		if (kv.value.path == p_path) {
 			global_classes.erase(kv.key);
+			inheriters_cache_dirty = true;
 			return;
 		}
 	}
