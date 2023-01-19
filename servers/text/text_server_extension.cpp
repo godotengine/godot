@@ -1373,8 +1373,8 @@ String TextServerExtension::string_to_lower(const String &p_string, const String
 	return p_string;
 }
 
-TypedArray<Vector2i> TextServerExtension::parse_structured_text(StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const {
-	TypedArray<Vector2i> ret;
+TypedArray<Vector3i> TextServerExtension::parse_structured_text(StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const {
+	TypedArray<Vector3i> ret;
 	GDVIRTUAL_CALL(_parse_structured_text, p_parser_type, p_args, p_text, ret);
 	return ret;
 }

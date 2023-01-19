@@ -65,7 +65,8 @@ public:
 	enum Direction {
 		DIRECTION_AUTO,
 		DIRECTION_LTR,
-		DIRECTION_RTL
+		DIRECTION_RTL,
+		DIRECTION_INHERITED,
 	};
 
 	enum Orientation {
@@ -198,7 +199,7 @@ public:
 		STRUCTURED_TEXT_FILE,
 		STRUCTURED_TEXT_EMAIL,
 		STRUCTURED_TEXT_LIST,
-		STRUCTURED_TEXT_NONE,
+		STRUCTURED_TEXT_GDSCRIPT,
 		STRUCTURED_TEXT_CUSTOM
 	};
 
@@ -505,7 +506,7 @@ public:
 	virtual String string_to_upper(const String &p_string, const String &p_language = "") const = 0;
 	virtual String string_to_lower(const String &p_string, const String &p_language = "") const = 0;
 
-	TypedArray<Vector2i> parse_structured_text(StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const;
+	TypedArray<Vector3i> parse_structured_text(StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const;
 
 	virtual void cleanup() {}
 
