@@ -722,16 +722,16 @@ static uint64_t gdextension_file_access_get_buffer(GDExtensionConstObjectPtr p_i
 	return fa->get_buffer(p_dst, p_length);
 }
 
-static int64_t gdextension_worker_thread_pool_add_native_group_task(GDExtensionObjectPtr p_instance, void (*p_func)(void *, uint32_t), void *p_userdata, int p_elements, int p_tasks, bool p_high_priority, GDExtensionConstStringPtr p_description) {
+static int64_t gdextension_worker_thread_pool_add_native_group_task(GDExtensionObjectPtr p_instance, void (*p_func)(void *, uint32_t), void *p_userdata, int p_elements, int p_tasks, GDExtensionBool p_high_priority, GDExtensionConstStringPtr p_description) {
 	WorkerThreadPool *p = (WorkerThreadPool *)p_instance;
 	const String *description = (const String *)p_description;
-	return (int64_t)p->add_native_group_task(p_func, p_userdata, p_elements, p_tasks, p_high_priority, *description);
+	return (int64_t)p->add_native_group_task(p_func, p_userdata, p_elements, p_tasks, static_cast<bool>(p_high_priority), *description);
 }
 
-static int64_t gdextension_worker_thread_pool_add_native_task(GDExtensionObjectPtr p_instance, void (*p_func)(void *), void *p_userdata, bool p_high_priority, GDExtensionConstStringPtr p_description) {
+static int64_t gdextension_worker_thread_pool_add_native_task(GDExtensionObjectPtr p_instance, void (*p_func)(void *), void *p_userdata, GDExtensionBool p_high_priority, GDExtensionConstStringPtr p_description) {
 	WorkerThreadPool *p = (WorkerThreadPool *)p_instance;
 	const String *description = (const String *)p_description;
-	return (int64_t)p->add_native_task(p_func, p_userdata, p_high_priority, *description);
+	return (int64_t)p->add_native_task(p_func, p_userdata, static_cast<bool>(p_high_priority), *description);
 }
 
 /* Packed array functions */
