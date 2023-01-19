@@ -261,6 +261,7 @@ class EditorFileSystem : public Node {
 	HashSet<String> update_script_paths;
 	void _queue_update_script_class(const String &p_path);
 	void _update_script_classes();
+	void _update_pending_script_classes();
 
 	String _get_global_script_class(const String &p_type, const String &p_path, String *r_extends, String *r_icon_path) const;
 
