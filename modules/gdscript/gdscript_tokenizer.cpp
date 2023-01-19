@@ -31,9 +31,13 @@
 #include "gdscript_tokenizer.h"
 
 #include "core/error/error_macros.h"
+#include "core/string/char_utils.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_settings.h"
+#endif
+#ifdef DEBUG_ENABLED
+#include "servers/text_server.h"
 #endif
 
 static const char *token_names[] = {
@@ -435,10 +439,12 @@ GDScriptTokenizer::Token GDScriptTokenizer::check_vcs_marker(char32_t p_test, To
 }
 
 GDScriptTokenizer::Token GDScriptTokenizer::annotation() {
-	if (!is_ascii_identifier_char(_peek())) {
+	if (is_unicode_identifier_start(_peek())) {
+		_advance(); // Consume start character.
+	} else {
 		push_error("Expected annotation identifier after \"@\".");
 	}
-	while (is_ascii_identifier_char(_peek())) {
+	while (is_unicode_identifier_continue(_peek())) {
 		// Consume all identifier characters.
 		_advance();
 	}
@@ -447,7 +453,6 @@ GDScriptTokenizer::Token GDScriptTokenizer::annotation() {
 	return annotation;
 }
 
-GDScriptTokenizer::Token GDScriptTokenizer::potential_identifier() {
 #define KEYWORDS(KEYWORD_GROUP, KEYWORD)     \
 	KEYWORD_GROUP('a')                       \
 	KEYWORD("as", Token::AS)                 \
@@ -512,8 +517,21 @@ GDScriptTokenizer::Token GDScriptTokenizer::potential_identifier() {
 #define MIN_KEYWORD_LENGTH 2
 #define MAX_KEYWORD_LENGTH 10
 
-	// Consume all alphanumeric characters.
-	while (is_ascii_identifier_char(_peek())) {
+#ifdef DEBUG_ENABLED
+void GDScriptTokenizer::make_keyword_list() {
+#define KEYWORD_LINE(keyword, token_type) keyword,
+#define KEYWORD_GROUP_IGNORE(group)
+	keyword_list = {
+		KEYWORDS(KEYWORD_GROUP_IGNORE, KEYWORD_LINE)
+	};
+#undef KEYWORD_LINE
+#undef KEYWORD_GROUP_IGNORE
+}
+#endif // DEBUG_ENABLED
+
+GDScriptTokenizer::Token GDScriptTokenizer::potential_identifier() {
+	// Consume all identifier characters.
+	while (is_unicode_identifier_continue(_peek())) {
 		_advance();
 	}
 
@@ -565,14 +583,27 @@ GDScriptTokenizer::Token GDScriptTokenizer::potential_identifier() {
 	}
 
 	// Not a keyword, so must be an identifier.
-	return make_identifier(name);
+	Token id = make_identifier(name);
 
-#undef KEYWORDS
-#undef MIN_KEYWORD_LENGTH
-#undef MAX_KEYWORD_LENGTH
+#ifdef DEBUG_ENABLED
+	// Additional checks for identifiers but only in debug and if it's available in TextServer.
+	if (TS->has_feature(TextServer::FEATURE_UNICODE_SECURITY)) {
+		int64_t confusable = TS->is_confusable(name, keyword_list);
+		if (confusable >= 0) {
+			push_error(vformat(R"(Identifier "%s" is visually similar to the GDScript keyword "%s" and thus not allowed.)", name, keyword_list[confusable]));
+		}
+	}
+#endif // DEBUG_ENABLED
+
+	return id;
+
 #undef KEYWORD_GROUP_CASE
 #undef KEYWORD
 }
+
+#undef MAX_KEYWORD_LENGTH
+#undef MIN_KEYWORD_LENGTH
+#undef KEYWORDS
 
 void GDScriptTokenizer::newline(bool p_make_token) {
 	// Don't overwrite previous newline, nor create if we want a line continuation.
@@ -720,7 +751,7 @@ GDScriptTokenizer::Token GDScriptTokenizer::number() {
 		error.rightmost_column = column + 1;
 		push_error(error);
 		has_error = true;
-	} else if (is_ascii_identifier_char(_peek())) {
+	} else if (is_unicode_identifier_start(_peek()) || is_unicode_identifier_continue(_peek())) {
 		// Letter at the end of the number.
 		push_error("Invalid numeric notation.");
 	}
@@ -1311,7 +1342,7 @@ GDScriptTokenizer::Token GDScriptTokenizer::scan() {
 
 	if (is_digit(c)) {
 		return number();
-	} else if (is_ascii_identifier_char(c)) {
+	} else if (is_unicode_identifier_start(c)) {
 		return potential_identifier();
 	}
 
@@ -1504,7 +1535,11 @@ GDScriptTokenizer::Token GDScriptTokenizer::scan() {
 			}
 
 		default:
-			return make_error(vformat(R"(Unknown character "%s".)", String(&c, 1)));
+			if (is_whitespace(c)) {
+				return make_error(vformat(R"(Invalid white space character "\\u%X".)", static_cast<int32_t>(c)));
+			} else {
+				return make_error(vformat(R"(Unknown character "%s".)", String(&c, 1)));
+			}
 	}
 }
 
@@ -1514,4 +1549,7 @@ GDScriptTokenizer::GDScriptTokenizer() {
 		tab_size = EditorSettings::get_singleton()->get_setting("text_editor/behavior/indent/size");
 	}
 #endif // TOOLS_ENABLED
+#ifdef DEBUG_ENABLED
+	make_keyword_list();
+#endif // DEBUG_ENABLED
 }

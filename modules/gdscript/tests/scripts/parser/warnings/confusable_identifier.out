@@ -1,0 +1,6 @@
+GDTEST_OK
+>> WARNING
+>> Line: 3
+>> CONFUSABLE_IDENTIFIER
+>> The identifier "pοrt" has misleading characters and might be confused with something else.
+0 1

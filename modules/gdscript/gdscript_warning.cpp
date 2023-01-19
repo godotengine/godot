@@ -155,6 +155,10 @@ String GDScriptWarning::get_message() const {
 			CHECK_SYMBOLS(2);
 			return vformat(R"(The function '%s()' is a static function but was called from an instance. Instead, it should be directly called from the type: '%s.%s()'.)", symbols[0], symbols[1], symbols[0]);
 		}
+		case CONFUSABLE_IDENTIFIER: {
+			CHECK_SYMBOLS(1);
+			return vformat(R"(The identifier "%s" has misleading characters and might be confused with something else.)", symbols[0]);
+		}
 		case WARNING_MAX:
 			break; // Can't happen, but silences warning
 	}
@@ -219,6 +223,7 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		"SHADOWED_GLOBAL_IDENTIFIER",
 		"INT_ASSIGNED_TO_ENUM",
 		"STATIC_CALLED_ON_INSTANCE",
+		"CONFUSABLE_IDENTIFIER",
 	};
 
 	static_assert((sizeof(names) / sizeof(*names)) == WARNING_MAX, "Amount of warning types don't match the amount of warning names.");
