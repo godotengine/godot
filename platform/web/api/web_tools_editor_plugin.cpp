@@ -57,7 +57,7 @@ WebToolsEditorPlugin::WebToolsEditorPlugin() {
 	add_tool_menu_item("Download Project Source", callable_mp(this, &WebToolsEditorPlugin::_download_zip));
 }
 
-void WebToolsEditorPlugin::_download_zip(Variant p_v) {
+void WebToolsEditorPlugin::_download_zip() {
 	if (!Engine::get_singleton() || !Engine::get_singleton()->is_editor_hint()) {
 		ERR_PRINT("Downloading the project as a ZIP archive is only available in Editor mode.");
 		return;
