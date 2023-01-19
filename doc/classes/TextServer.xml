@@ -1042,7 +1042,7 @@
 			</description>
 		</method>
 		<method name="parse_structured_text" qualifiers="const">
-			<return type="Vector2i[]" />
+			<return type="Vector3i[]" />
 			<param index="0" name="parser_type" type="int" enum="TextServer.StructuredTextParser" />
 			<param index="1" name="args" type="Array" />
 			<param index="2" name="text" type="String" />
@@ -1634,6 +1634,9 @@
 		<constant name="DIRECTION_RTL" value="2" enum="Direction">
 			Text is written from right to left.
 		</constant>
+		<constant name="DIRECTION_INHERITED" value="3" enum="Direction">
+			Text writing direction is the same as base string writing direction. Used for BiDi override only.
+		</constant>
 		<constant name="ORIENTATION_HORIZONTAL" value="0" enum="Orientation">
 			Text is written horizontally.
 		</constant>
@@ -1881,7 +1884,7 @@
 			Font have fixed-width characters.
 		</constant>
 		<constant name="STRUCTURED_TEXT_DEFAULT" value="0" enum="StructuredTextParser">
-			Use default behavior. Same as [constant STRUCTURED_TEXT_NONE] unless specified otherwise in the control description.
+			Use default Unicode BiDi algorithm.
 		</constant>
 		<constant name="STRUCTURED_TEXT_URI" value="1" enum="StructuredTextParser">
 			BiDi override for URI.
@@ -1896,8 +1899,8 @@
 			BiDi override for lists.
 			Structured text options: list separator [code]String[/code].
 		</constant>
-		<constant name="STRUCTURED_TEXT_NONE" value="5" enum="StructuredTextParser">
-			Use default Unicode BiDi algorithm.
+		<constant name="STRUCTURED_TEXT_GDSCRIPT" value="5" enum="StructuredTextParser">
+			BiDi override for GDScript.
 		</constant>
 		<constant name="STRUCTURED_TEXT_CUSTOM" value="6" enum="StructuredTextParser">
 			User defined structured text BiDi override function.

@@ -1582,10 +1582,6 @@ void Control::set_block_minimum_size_adjust(bool p_block) {
 	data.block_minimum_size_adjust = p_block;
 }
 
-bool Control::is_minimum_size_adjust_blocked() const {
-	return data.block_minimum_size_adjust;
-}
-
 Size2 Control::get_minimum_size() const {
 	Vector2 ms;
 	GDVIRTUAL_CALL(_get_minimum_size, ms);
@@ -2769,9 +2765,9 @@ void Control::end_bulk_theme_override() {
 
 // Internationalization.
 
-TypedArray<Vector2i> Control::structured_text_parser(TextServer::StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const {
+TypedArray<Vector3i> Control::structured_text_parser(TextServer::StructuredTextParser p_parser_type, const Array &p_args, const String &p_text) const {
 	if (p_parser_type == TextServer::STRUCTURED_TEXT_CUSTOM) {
-		TypedArray<Vector2i> ret;
+		TypedArray<Vector3i> ret;
 		GDVIRTUAL_CALL(_structured_text_parser, p_args, p_text, ret);
 		return ret;
 	} else {

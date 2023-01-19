@@ -679,7 +679,7 @@
 			</description>
 		</operator>
 		<operator name="operator []">
-			<return type="void" />
+			<return type="Variant" />
 			<param index="0" name="index" type="int" />
 			<description>
 				Returns a reference to the element of type [Variant] at the specified location. Arrays start at index 0. [param index] can be a zero or positive value to start from the beginning, or a negative value to start from the end. Out-of-bounds array access causes a run-time error, which will result in an error being printed and the project execution pausing if run from the editor.

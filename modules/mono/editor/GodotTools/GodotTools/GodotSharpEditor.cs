@@ -411,8 +411,6 @@ namespace GodotTools
 
             _editorSettings = editorInterface.GetEditorSettings();
 
-            GodotSharpDirs.RegisterProjectSettings();
-
             _errorDialog = new AcceptDialog();
             editorBaseControl.AddChild(_errorDialog);
 

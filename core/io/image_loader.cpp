@@ -135,10 +135,6 @@ void ImageLoader::remove_image_format_loader(Ref<ImageFormatLoader> p_loader) {
 	loader.erase(p_loader);
 }
 
-const Vector<Ref<ImageFormatLoader>> &ImageLoader::get_image_format_loaders() {
-	return loader;
-}
-
 void ImageLoader::cleanup() {
 	while (loader.size()) {
 		remove_image_format_loader(loader[0]);

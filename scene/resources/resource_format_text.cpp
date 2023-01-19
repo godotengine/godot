@@ -49,10 +49,6 @@
 
 ///
 
-void ResourceLoaderText::set_local_path(const String &p_local_path) {
-	res_path = p_local_path;
-}
-
 Ref<Resource> ResourceLoaderText::get_resource() {
 	return resource;
 }
@@ -1846,6 +1842,9 @@ void ResourceFormatSaverTextInstance::_find_resources(const Variant &p_variant, 
 			List<Variant> keys;
 			d.get_key_list(&keys);
 			for (const Variant &E : keys) {
+				// Of course keys should also be cached, after all we can't prevent users from using resources as keys, right?
+				// See also ResourceFormatSaverBinaryInstance::_find_resources (when p_variant is of type Variant::DICTIONARY)
+				_find_resources(E);
 				Variant v = d[E];
 				_find_resources(v);
 			}

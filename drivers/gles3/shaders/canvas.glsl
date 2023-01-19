@@ -277,7 +277,7 @@ flat in uvec4 varying_G;
 uniform sampler2D atlas_texture; //texunit:-2
 uniform sampler2D shadow_atlas_texture; //texunit:-3
 #endif // DISABLE_LIGHTING
-uniform sampler2D screen_texture; //texunit:-4
+uniform sampler2D color_buffer; //texunit:-4
 uniform sampler2D sdf_texture; //texunit:-5
 uniform sampler2D normal_texture; //texunit:-6
 uniform sampler2D specular_texture; //texunit:-7

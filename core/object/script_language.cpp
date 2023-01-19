@@ -263,6 +263,15 @@ void ScriptServer::remove_global_class(const StringName &p_class) {
 	global_classes.erase(p_class);
 }
 
+void ScriptServer::remove_global_class_by_path(const String &p_path) {
+	for (const KeyValue<StringName, GlobalScriptClass> &kv : global_classes) {
+		if (kv.value.path == p_path) {
+			global_classes.erase(kv.key);
+			return;
+		}
+	}
+}
+
 bool ScriptServer::is_global_class(const StringName &p_class) {
 	return global_classes.has(p_class);
 }

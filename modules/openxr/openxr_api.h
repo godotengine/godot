@@ -312,6 +312,7 @@ public:
 
 	void set_xr_interface(OpenXRInterface *p_xr_interface);
 	static void register_extension_wrapper(OpenXRExtensionWrapper *p_extension_wrapper);
+	static void unregister_extension_wrapper(OpenXRExtensionWrapper *p_extension_wrapper);
 	static void register_extension_metadata();
 	static void cleanup_extension_wrappers();
 

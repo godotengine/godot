@@ -564,10 +564,10 @@ uniform highp samplerCubeShadow positional_shadow; // texunit:-4
 
 #ifdef USE_MULTIVIEW
 uniform highp sampler2DArray depth_buffer; // texunit:-6
-uniform highp sampler2DArray screen_texture; // texunit:-5
+uniform highp sampler2DArray color_buffer; // texunit:-5
 #else
 uniform highp sampler2D depth_buffer; // texunit:-6
-uniform highp sampler2D screen_texture; // texunit:-5
+uniform highp sampler2D color_buffer; // texunit:-5
 #endif
 
 uniform highp mat4 world_transform;

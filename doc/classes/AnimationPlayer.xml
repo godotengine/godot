@@ -208,9 +208,11 @@
 		</method>
 		<method name="stop">
 			<return type="void" />
+			<param index="0" name="keep_state" type="bool" default="false" />
 			<description>
-				Stops the currently playing animation. The animation position is reset to [code]0[/code] and the playback speed is reset to [code]1.0[/code].
-				See also [method pause].
+				Stops the currently playing animation. The animation position is reset to [code]0[/code] and the playback speed is reset to [code]1.0[/code]. See also [method pause].
+				If [param keep_state] is [code]true[/code], the animation state is not updated visually.
+				[b]Note:[/b] The method / audio / animation playback tracks will not be processed by this method.
 			</description>
 		</method>
 	</methods>

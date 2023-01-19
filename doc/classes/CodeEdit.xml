@@ -132,12 +132,6 @@
 				Perform an indent as if the user activated the "ui_text_indent" action.
 			</description>
 		</method>
-		<method name="do_unindent">
-			<return type="void" />
-			<description>
-				Perform an unindent as if the user activated the "ui_text_unindent" action.
-			</description>
-		</method>
 		<method name="fold_all_lines">
 			<return type="void" />
 			<description>
@@ -423,7 +417,7 @@
 		<method name="unindent_lines">
 			<return type="void" />
 			<description>
-				Unindents selected lines, or in the case of no selection the caret line by one.
+				Unindents selected lines, or in the case of no selection the caret line by one. Same as performing "ui_text_unindent" action.
 			</description>
 		</method>
 		<method name="update_code_completion_options">
