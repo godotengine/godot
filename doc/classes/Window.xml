@@ -771,8 +771,16 @@
 			Right-to-left layout direction.
 		</constant>
 		<constant name="WINDOW_INITIAL_POSITION_ABSOLUTE" value="0" enum="WindowInitialPosition">
+			Initial window position is determined by [member position].
 		</constant>
-		<constant name="WINDOW_INITIAL_POSITION_CENTER_SCREEN" value="1" enum="WindowInitialPosition">
+		<constant name="WINDOW_INITIAL_POSITION_CENTER_PRIMARY_SCREEN" value="1" enum="WindowInitialPosition">
+			Initial window position is a center of the primary screen.
+		</constant>
+		<constant name="WINDOW_INITIAL_POSITION_CENTER_MAIN_WINDOW_SCREEN" value="2" enum="WindowInitialPosition">
+			Initial window position is a center of the main window screen.
+		</constant>
+		<constant name="WINDOW_INITIAL_POSITION_CENTER_OTHER_SCREEN" value="3" enum="WindowInitialPosition">
+			Initial window position is a center of [member current_screen] screen.
 		</constant>
 	</constants>
 	<theme_items>

@@ -90,14 +90,16 @@ public:
 
 	enum WindowInitialPosition {
 		WINDOW_INITIAL_POSITION_ABSOLUTE,
-		WINDOW_INITIAL_POSITION_CENTER_SCREEN,
+		WINDOW_INITIAL_POSITION_CENTER_PRIMARY_SCREEN,
+		WINDOW_INITIAL_POSITION_CENTER_MAIN_WINDOW_SCREEN,
+		WINDOW_INITIAL_POSITION_CENTER_OTHER_SCREEN,
 	};
 
 private:
 	DisplayServer::WindowID window_id = DisplayServer::INVALID_WINDOW_ID;
 
 	String title;
-	mutable int current_screen = DisplayServer::SCREEN_PRIMARY;
+	mutable int current_screen = 0;
 	mutable Vector2i position;
 	mutable Size2i size = Size2i(DEFAULT_WINDOW_SIZE, DEFAULT_WINDOW_SIZE);
 	mutable Size2i min_size;
