@@ -345,6 +345,11 @@ def main():  # type: () -> None
     parser.add_argument("path", nargs="+", help="A path to an XML file or a directory containing XML files to parse.")
     parser.add_argument("--filter", default="", help="The filepath pattern for XML files to filter.")
     parser.add_argument("--lang", "-l", default="en", help="Language to use for section headings.")
+    parser.add_argument(
+        "--color",
+        action="store_true",
+        help="Ignored. Supported for forward compatibility.",
+    )
     group = parser.add_mutually_exclusive_group()
     group.add_argument("--output", "-o", default=".", help="The directory to save output .rst files in.")
     group.add_argument(
