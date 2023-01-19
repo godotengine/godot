@@ -127,7 +127,7 @@ public:
 	Variant get_var(bool p_allow_objects = false) const;
 
 	virtual uint64_t get_buffer(uint8_t *p_dst, uint64_t p_length) const; ///< get an array of bytes
-	Vector<uint8_t> _get_buffer(int64_t p_length) const;
+	Vector<uint8_t> get_buffer(int64_t p_length) const;
 	virtual String get_line() const;
 	virtual String get_token() const;
 	virtual Vector<String> get_csv_line(const String &p_delim = ",") const;
@@ -162,7 +162,7 @@ public:
 	virtual String get_pascal_string();
 
 	virtual void store_buffer(const uint8_t *p_src, uint64_t p_length); ///< store an array of bytes
-	void _store_buffer(const Vector<uint8_t> &p_buffer);
+	void store_buffer(const Vector<uint8_t> &p_buffer);
 
 	void store_var(const Variant &p_var, bool p_full_objects = false);
 

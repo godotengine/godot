@@ -1021,15 +1021,15 @@ static Error _parse_methods(Ref<XMLParser> &parser, Vector<DocData::MethodDoc> &
 			if (parser->get_node_name() == element) {
 				DocData::MethodDoc method;
 				ERR_FAIL_COND_V(!parser->has_attribute("name"), ERR_FILE_CORRUPT);
-				method.name = parser->get_attribute_value("name");
+				method.name = parser->get_named_attribute_value("name");
 				if (parser->has_attribute("qualifiers")) {
-					method.qualifiers = parser->get_attribute_value("qualifiers");
+					method.qualifiers = parser->get_named_attribute_value("qualifiers");
 				}
 				if (parser->has_attribute("is_deprecated")) {
-					method.is_deprecated = parser->get_attribute_value("is_deprecated").to_lower() == "true";
+					method.is_deprecated = parser->get_named_attribute_value("is_deprecated").to_lower() == "true";
 				}
 				if (parser->has_attribute("is_experimental")) {
-					method.is_experimental = parser->get_attribute_value("is_experimental").to_lower() == "true";
+					method.is_experimental = parser->get_named_attribute_value("is_experimental").to_lower() == "true";
 				}
 
 				while (parser->read() == OK) {
@@ -1037,21 +1037,21 @@ static Error _parse_methods(Ref<XMLParser> &parser, Vector<DocData::MethodDoc> &
 						String name = parser->get_node_name();
 						if (name == "return") {
 							ERR_FAIL_COND_V(!parser->has_attribute("type"), ERR_FILE_CORRUPT);
-							method.return_type = parser->get_attribute_value("type");
+							method.return_type = parser->get_named_attribute_value("type");
 							if (parser->has_attribute("enum")) {
-								method.return_enum = parser->get_attribute_value("enum");
+								method.return_enum = parser->get_named_attribute_value("enum");
 							}
 						} else if (name == "returns_error") {
 							ERR_FAIL_COND_V(!parser->has_attribute("number"), ERR_FILE_CORRUPT);
-							method.errors_returned.push_back(parser->get_attribute_value("number").to_int());
+							method.errors_returned.push_back(parser->get_named_attribute_value("number").to_int());
 						} else if (name == "param") {
 							DocData::ArgumentDoc argument;
 							ERR_FAIL_COND_V(!parser->has_attribute("name"), ERR_FILE_CORRUPT);
-							argument.name = parser->get_attribute_value("name");
+							argument.name = parser->get_named_attribute_value("name");
 							ERR_FAIL_COND_V(!parser->has_attribute("type"), ERR_FILE_CORRUPT);
-							argument.type = parser->get_attribute_value("type");
+							argument.type = parser->get_named_attribute_value("type");
 							if (parser->has_attribute("enum")) {
-								argument.enumeration = parser->get_attribute_value("enum");
+								argument.enumeration = parser->get_named_attribute_value("enum");
 							}
 
 							method.arguments.push_back(argument);
@@ -1153,21 +1153,21 @@ Error DocTools::_load(Ref<XMLParser> parser) {
 		ERR_FAIL_COND_V(parser->get_node_name() != "class", ERR_FILE_CORRUPT);
 
 		ERR_FAIL_COND_V(!parser->has_attribute("name"), ERR_FILE_CORRUPT);
-		String name = parser->get_attribute_value("name");
+		String name = parser->get_named_attribute_value("name");
 		class_list[name] = DocData::ClassDoc();
 		DocData::ClassDoc &c = class_list[name];
 
 		c.name = name;
 		if (parser->has_attribute("inherits")) {
-			c.inherits = parser->get_attribute_value("inherits");
+			c.inherits = parser->get_named_attribute_value("inherits");
 		}
 
 		if (parser->has_attribute("is_deprecated")) {
-			c.is_deprecated = parser->get_attribute_value("is_deprecated").to_lower() == "true";
+			c.is_deprecated = parser->get_named_attribute_value("is_deprecated").to_lower() == "true";
 		}
 
 		if (parser->has_attribute("is_experimental")) {
-			c.is_experimental = parser->get_attribute_value("is_experimental").to_lower() == "true";
+			c.is_experimental = parser->get_named_attribute_value("is_experimental").to_lower() == "true";
 		}
 
 		while (parser->read() == OK) {
@@ -1193,7 +1193,7 @@ Error DocTools::_load(Ref<XMLParser> parser) {
 							if (name3 == "link") {
 								DocData::TutorialDoc tutorial;
 								if (parser->has_attribute("title")) {
-									tutorial.title = parser->get_attribute_value("title");
+									tutorial.title = parser->get_named_attribute_value("title");
 								}
 								parser->read();
 								if (parser->get_node_type() == XMLParser::NODE_TEXT) {
@@ -1231,23 +1231,23 @@ Error DocTools::_load(Ref<XMLParser> parser) {
 								DocData::PropertyDoc prop2;
 
 								ERR_FAIL_COND_V(!parser->has_attribute("name"), ERR_FILE_CORRUPT);
-								prop2.name = parser->get_attribute_value("name");
+								prop2.name = parser->get_named_attribute_value("name");
 								ERR_FAIL_COND_V(!parser->has_attribute("type"), ERR_FILE_CORRUPT);
-								prop2.type = parser->get_attribute_value("type");
+								prop2.type = parser->get_named_attribute_value("type");
 								if (parser->has_attribute("setter")) {
-									prop2.setter = parser->get_attribute_value("setter");
+									prop2.setter = parser->get_named_attribute_value("setter");
 								}
 								if (parser->has_attribute("getter")) {
-									prop2.getter = parser->get_attribute_value("getter");
+									prop2.getter = parser->get_named_attribute_value("getter");
 								}
 								if (parser->has_attribute("enum")) {
-									prop2.enumeration = parser->get_attribute_value("enum");
+									prop2.enumeration = parser->get_named_attribute_value("enum");
 								}
 								if (parser->has_attribute("is_deprecated")) {
-									prop2.is_deprecated = parser->get_attribute_value("is_deprecated").to_lower() == "true";
+									prop2.is_deprecated = parser->get_named_attribute_value("is_deprecated").to_lower() == "true";
 								}
 								if (parser->has_attribute("is_experimental")) {
-									prop2.is_experimental = parser->get_attribute_value("is_experimental").to_lower() == "true";
+									prop2.is_experimental = parser->get_named_attribute_value("is_experimental").to_lower() == "true";
 								}
 								if (!parser->is_empty()) {
 									parser->read();
@@ -1274,11 +1274,11 @@ Error DocTools::_load(Ref<XMLParser> parser) {
 								DocData::ThemeItemDoc prop2;
 
 								ERR_FAIL_COND_V(!parser->has_attribute("name"), ERR_FILE_CORRUPT);
-								prop2.name = parser->get_attribute_value("name");
+								prop2.name = parser->get_named_attribute_value("name");
 								ERR_FAIL_COND_V(!parser->has_attribute("type"), ERR_FILE_CORRUPT);
-								prop2.type = parser->get_attribute_value("type");
+								prop2.type = parser->get_named_attribute_value("type");
 								ERR_FAIL_COND_V(!parser->has_attribute("data_type"), ERR_FILE_CORRUPT);
-								prop2.data_type = parser->get_attribute_value("data_type");
+								prop2.data_type = parser->get_named_attribute_value("data_type");
 								if (!parser->is_empty()) {
 									parser->read();
 									if (parser->get_node_type() == XMLParser::NODE_TEXT) {
@@ -1303,21 +1303,21 @@ Error DocTools::_load(Ref<XMLParser> parser) {
 							if (name3 == "constant") {
 								DocData::ConstantDoc constant2;
 								ERR_FAIL_COND_V(!parser->has_attribute("name"), ERR_FILE_CORRUPT);
-								constant2.name = parser->get_attribute_value("name");
+								constant2.name = parser->get_named_attribute_value("name");
 								ERR_FAIL_COND_V(!parser->has_attribute("value"), ERR_FILE_CORRUPT);
-								constant2.value = parser->get_attribute_value("value");
+								constant2.value = parser->get_named_attribute_value("value");
 								constant2.is_value_valid = true;
 								if (parser->has_attribute("enum")) {
-									constant2.enumeration = parser->get_attribute_value("enum");
+									constant2.enumeration = parser->get_named_attribute_value("enum");
 								}
 								if (parser->has_attribute("is_bitfield")) {
-									constant2.is_bitfield = parser->get_attribute_value("is_bitfield").to_lower() == "true";
+									constant2.is_bitfield = parser->get_named_attribute_value("is_bitfield").to_lower() == "true";
 								}
 								if (parser->has_attribute("is_deprecated")) {
-									constant2.is_deprecated = parser->get_attribute_value("is_deprecated").to_lower() == "true";
+									constant2.is_deprecated = parser->get_named_attribute_value("is_deprecated").to_lower() == "true";
 								}
 								if (parser->has_attribute("is_experimental")) {
-									constant2.is_experimental = parser->get_attribute_value("is_experimental").to_lower() == "true";
+									constant2.is_experimental = parser->get_named_attribute_value("is_experimental").to_lower() == "true";
 								}
 								if (!parser->is_empty()) {
 									parser->read();

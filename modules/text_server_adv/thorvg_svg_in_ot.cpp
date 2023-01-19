@@ -88,24 +88,13 @@ FT_Error tvg_svg_in_ot_preset_slot(FT_GlyphSlot p_slot, FT_Bool p_cache, FT_Poin
 	if (!gl_state.ready) {
 		Ref<XMLParser> parser;
 		parser.instantiate();
-#ifdef GDEXTENSION
-		PackedByteArray data;
-		data.resize(document->svg_document_length);
-		memcpy(data.ptrw(), document->svg_document, document->svg_document_length);
-		parser->open_buffer(data);
-#else
 		parser->_open_buffer((const uint8_t *)document->svg_document, document->svg_document_length);
-#endif
 
 		float aspect = 1.0f;
 		String xml_body;
 		while (parser->read() == OK) {
 			if (parser->has_attribute("id")) {
-#ifdef GDEXTENSION
 				const String &gl_name = parser->get_named_attribute_value("id");
-#else
-				const String &gl_name = parser->get_attribute_value("id");
-#endif
 				if (gl_name.begins_with("glyph")) {
 					int dot_pos = gl_name.find(".");
 					int64_t gl_idx = gl_name.substr(5, (dot_pos > 0) ? dot_pos - 5 : -1).to_int();
@@ -117,11 +106,7 @@ FT_Error tvg_svg_in_ot_preset_slot(FT_GlyphSlot p_slot, FT_Bool p_cache, FT_Poin
 			}
 			if (parser->get_node_type() == XMLParser::NODE_ELEMENT && parser->get_node_name() == "svg") {
 				if (parser->has_attribute("viewBox")) {
-#ifdef GDEXTENSION
 					PackedStringArray vb = parser->get_named_attribute_value("viewBox").split(" ");
-#else
-					Vector<String> vb = parser->get_attribute_value("viewBox").split(" ");
-#endif
 
 					if (vb.size() == 4) {
 						aspect = vb[2].to_float() / vb[3].to_float();
@@ -129,19 +114,6 @@ FT_Error tvg_svg_in_ot_preset_slot(FT_GlyphSlot p_slot, FT_Bool p_cache, FT_Poin
 				}
 				continue;
 			}
-#ifdef GDEXTENSION
-			if (parser->get_node_type() == XMLParser::NODE_ELEMENT) {
-				xml_body = xml_body + "<" + parser->get_node_name();
-				for (int i = 0; i < parser->get_attribute_count(); i++) {
-					xml_body = xml_body + " " + parser->get_attribute_name(i) + "=\"" + parser->get_attribute_value(i) + "\"";
-				}
-				xml_body = xml_body + ">";
-			} else if (parser->get_node_type() == XMLParser::NODE_TEXT) {
-				xml_body = xml_body + parser->get_node_data();
-			} else if (parser->get_node_type() == XMLParser::NODE_ELEMENT_END) {
-				xml_body = xml_body + "</" + parser->get_node_name() + ">";
-			}
-#else
 			if (parser->get_node_type() == XMLParser::NODE_ELEMENT) {
 				xml_body += vformat("<%s", parser->get_node_name());
 				for (int i = 0; i < parser->get_attribute_count(); i++) {
@@ -153,7 +125,6 @@ FT_Error tvg_svg_in_ot_preset_slot(FT_GlyphSlot p_slot, FT_Bool p_cache, FT_Poin
 			} else if (parser->get_node_type() == XMLParser::NODE_ELEMENT_END) {
 				xml_body += vformat("</%s>", parser->get_node_name());
 			}
-#endif
 		}
 		String temp_xml = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 0 0\">" + xml_body;
 
@@ -175,11 +146,7 @@ FT_Error tvg_svg_in_ot_preset_slot(FT_GlyphSlot p_slot, FT_Bool p_cache, FT_Poin
 			new_h = (new_w / aspect);
 		}
 
-#ifdef GDEXTENSION
 		gl_state.xml_code = "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"" + rtos(min_x) + " " + rtos(min_y) + " " + rtos(new_w) + " " + rtos(new_h) + "\">" + xml_body;
-#else
-		gl_state.xml_code = vformat("<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"%f %f %f %f\">", min_x, min_y, new_w, new_h) + xml_body;
-#endif
 
 		picture = tvg::Picture::gen();
 		result = picture->load(gl_state.xml_code.utf8().get_data(), gl_state.xml_code.utf8().length(), "svg+xml", false);

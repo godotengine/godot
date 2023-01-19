@@ -31,8 +31,11 @@
 #include "gdextension_interface.h"
 
 #include "core/config/engine.h"
+#include "core/io/file_access.h"
+#include "core/io/xml_parser.h"
 #include "core/object/class_db.h"
 #include "core/object/script_language_extension.h"
+#include "core/object/worker_thread_pool.h"
 #include "core/os/memory.h"
 #include "core/variant/variant.h"
 #include "core/version.h"
@@ -678,6 +681,59 @@ static const char32_t *gdextension_string_operator_index_const(GDExtensionConstS
 	return &self->ptr()[p_index];
 }
 
+static void gdextension_string_operator_plus_eq_string(GDExtensionStringPtr p_self, GDExtensionConstStringPtr p_b) {
+	String *self = (String *)p_self;
+	const String *b = (const String *)p_b;
+	*self += *b;
+}
+
+static void gdextension_string_operator_plus_eq_char(GDExtensionStringPtr p_self, char32_t p_b) {
+	String *self = (String *)p_self;
+	*self += p_b;
+}
+
+static void gdextension_string_operator_plus_eq_cstr(GDExtensionStringPtr p_self, const char *p_b) {
+	String *self = (String *)p_self;
+	*self += p_b;
+}
+
+static void gdextension_string_operator_plus_eq_wcstr(GDExtensionStringPtr p_self, const wchar_t *p_b) {
+	String *self = (String *)p_self;
+	*self += p_b;
+}
+
+static void gdextension_string_operator_plus_eq_c32str(GDExtensionStringPtr p_self, const char32_t *p_b) {
+	String *self = (String *)p_self;
+	*self += p_b;
+}
+
+static GDExtensionInt gdextension_xml_parser_open_buffer(GDExtensionObjectPtr p_instance, const uint8_t *p_buffer, size_t p_size) {
+	XMLParser *xml = (XMLParser *)p_instance;
+	return (GDExtensionInt)xml->_open_buffer(p_buffer, p_size);
+}
+
+static void gdextension_file_access_store_buffer(GDExtensionObjectPtr p_instance, const uint8_t *p_src, uint64_t p_length) {
+	FileAccess *fa = (FileAccess *)p_instance;
+	fa->store_buffer(p_src, p_length);
+}
+
+static uint64_t gdextension_file_access_get_buffer(GDExtensionConstObjectPtr p_instance, uint8_t *p_dst, uint64_t p_length) {
+	const FileAccess *fa = (FileAccess *)p_instance;
+	return fa->get_buffer(p_dst, p_length);
+}
+
+static int64_t gdextension_worker_thread_pool_add_native_group_task(GDExtensionObjectPtr p_instance, void (*p_func)(void *, uint32_t), void *p_userdata, int p_elements, int p_tasks, bool p_high_priority, GDExtensionConstStringPtr p_description) {
+	WorkerThreadPool *p = (WorkerThreadPool *)p_instance;
+	const String *description = (const String *)p_description;
+	return (int64_t)p->add_native_group_task(p_func, p_userdata, p_elements, p_tasks, p_high_priority, *description);
+}
+
+static int64_t gdextension_worker_thread_pool_add_native_task(GDExtensionObjectPtr p_instance, void (*p_func)(void *), void *p_userdata, bool p_high_priority, GDExtensionConstStringPtr p_description) {
+	WorkerThreadPool *p = (WorkerThreadPool *)p_instance;
+	const String *description = (const String *)p_description;
+	return (int64_t)p->add_native_task(p_func, p_userdata, p_high_priority, *description);
+}
+
 /* Packed array functions */
 
 static uint8_t *gdextension_packed_byte_array_operator_index(GDExtensionTypePtr p_self, GDExtensionInt p_index) {
@@ -1025,6 +1081,25 @@ void gdextension_setup_interface(GDExtensionInterface *p_interface) {
 	gde_interface.string_to_wide_chars = gdextension_string_to_wide_chars;
 	gde_interface.string_operator_index = gdextension_string_operator_index;
 	gde_interface.string_operator_index_const = gdextension_string_operator_index_const;
+	gde_interface.string_operator_plus_eq_string = gdextension_string_operator_plus_eq_string;
+	gde_interface.string_operator_plus_eq_char = gdextension_string_operator_plus_eq_char;
+	gde_interface.string_operator_plus_eq_cstr = gdextension_string_operator_plus_eq_cstr;
+	gde_interface.string_operator_plus_eq_wcstr = gdextension_string_operator_plus_eq_wcstr;
+	gde_interface.string_operator_plus_eq_c32str = gdextension_string_operator_plus_eq_c32str;
+
+	/*  XMLParser extra utilities */
+
+	gde_interface.xml_parser_open_buffer = gdextension_xml_parser_open_buffer;
+
+	/*  FileAccess extra utilities */
+
+	gde_interface.file_access_store_buffer = gdextension_file_access_store_buffer;
+	gde_interface.file_access_get_buffer = gdextension_file_access_get_buffer;
+
+	/*  WorkerThreadPool extra utilities */
+
+	gde_interface.worker_thread_pool_add_native_group_task = gdextension_worker_thread_pool_add_native_group_task;
+	gde_interface.worker_thread_pool_add_native_task = gdextension_worker_thread_pool_add_native_task;
 
 	/* Packed array functions */
 
