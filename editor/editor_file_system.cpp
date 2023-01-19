@@ -721,6 +721,7 @@ void EditorFileSystem::scan() {
 		new_filesystem = nullptr;
 		_update_scan_actions();
 		scanning = false;
+		_update_pending_script_classes();
 		emit_signal(SNAME("filesystem_changed"));
 		emit_signal(SNAME("sources_changed"), sources_changed.size() > 0);
 		first_scan = false;
@@ -923,6 +924,10 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, Ref<DirAc
 				fi->modified_time = mt;
 				fi->import_modified_time = 0;
 				fi->import_valid = true;
+
+				if (ClassDB::is_parent_class(fi->type, SNAME("Script"))) {
+					_queue_update_script_class(path);
+				}
 			}
 		}
 
@@ -1174,7 +1179,9 @@ void EditorFileSystem::scan_changes() {
 			sp.low = 0;
 			scan_total = 0;
 			_scan_fs_changes(filesystem, sp);
-			if (_update_scan_actions()) {
+			bool changed = _update_scan_actions();
+			_update_pending_script_classes();
+			if (changed) {
 				emit_signal(SNAME("filesystem_changed"));
 			}
 		}
@@ -1223,7 +1230,9 @@ void EditorFileSystem::_notification(int p_what) {
 						set_process(false);
 
 						thread_sources.wait_to_finish();
-						if (_update_scan_actions()) {
+						bool changed = _update_scan_actions();
+						_update_pending_script_classes();
+						if (changed) {
 							emit_signal(SNAME("filesystem_changed"));
 						}
 						emit_signal(SNAME("sources_changed"), sources_changed.size() > 0);
@@ -1239,6 +1248,7 @@ void EditorFileSystem::_notification(int p_what) {
 					new_filesystem = nullptr;
 					thread.wait_to_finish();
 					_update_scan_actions();
+					_update_pending_script_classes();
 					emit_signal(SNAME("filesystem_changed"));
 					emit_signal(SNAME("sources_changed"), sources_changed.size() > 0);
 					first_scan = false;
@@ -1508,11 +1518,20 @@ void EditorFileSystem::_update_script_classes() {
 					lang = ScriptServer::get_language(j)->get_name();
 				}
 			}
+			if (lang.is_empty()) {
+				continue; // No lang found that can handle this global class
+			}
 
 			ScriptServer::add_global_class(efd->files[index]->script_class_name, efd->files[index]->script_class_extends, lang, path);
 			EditorNode::get_editor_data().script_class_set_icon_path(efd->files[index]->script_class_name, efd->files[index]->script_class_icon_path);
 			EditorNode::get_editor_data().script_class_set_name(efd->files[index]->file, efd->files[index]->script_class_name);
 		}
+	}
+
+	// Parse documentation second, as it requires the class names to be correct and registered
+	for (const String &path : update_script_paths) {
+		int index = -1;
+		EditorFileSystemDirectory *efd = find_file(path, &index);
 
 		for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 			ScriptLanguage *lang = ScriptServer::get_language(i);
@@ -1545,14 +1564,16 @@ void EditorFileSystem::_update_script_classes() {
 	ResourceSaver::add_custom_savers();
 }
 
+void EditorFileSystem::_update_pending_script_classes() {
+	if (!update_script_paths.is_empty()) {
+		_update_script_classes();
+	}
+}
+
 void EditorFileSystem::_queue_update_script_class(const String &p_path) {
 	update_script_mutex.lock();
-	bool call_update = update_script_paths.is_empty();
 	update_script_paths.insert(p_path);
 	update_script_mutex.unlock();
-	if (call_update) {
-		call_deferred(SNAME("_update_script_classes"));
-	}
 }
 
 void EditorFileSystem::update_file(const String &p_file) {
@@ -1582,6 +1603,7 @@ void EditorFileSystem::update_file(const String &p_file) {
 			fs->files.remove_at(cpos);
 		}
 
+		_update_pending_script_classes();
 		call_deferred(SNAME("emit_signal"), "filesystem_changed"); //update later
 		return;
 	}
@@ -1646,6 +1668,7 @@ void EditorFileSystem::update_file(const String &p_file) {
 		_queue_update_script_class(p_file);
 	}
 
+	_update_pending_script_classes();
 	call_deferred(SNAME("emit_signal"), "filesystem_changed"); //update later
 }
 
@@ -2428,7 +2451,6 @@ void EditorFileSystem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("update_file", "path"), &EditorFileSystem::update_file);
 	ClassDB::bind_method(D_METHOD("get_filesystem_path", "path"), &EditorFileSystem::get_filesystem_path);
 	ClassDB::bind_method(D_METHOD("get_file_type", "path"), &EditorFileSystem::get_file_type);
-	ClassDB::bind_method(D_METHOD("_update_script_classes"), &EditorFileSystem::_update_script_classes);
 	ClassDB::bind_method(D_METHOD("reimport_files", "files"), &EditorFileSystem::reimport_files);
 
 	ADD_SIGNAL(MethodInfo("filesystem_changed"));
