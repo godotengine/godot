@@ -56,8 +56,6 @@ struct _NO_DISCARD_ Basis {
 
 	_FORCE_INLINE_ real_t determinant() const;
 
-	void from_z(const Vector3 &p_z);
-
 	void rotate(const Vector3 &p_axis, real_t p_angle);
 	Basis rotated(const Vector3 &p_axis, real_t p_angle) const;
 
@@ -101,8 +99,6 @@ struct _NO_DISCARD_ Basis {
 
 	void scale_orthogonal(const Vector3 &p_scale);
 	Basis scaled_orthogonal(const Vector3 &p_scale) const;
-
-	void make_scale_uniform();
 	float get_uniform_scale() const;
 
 	Vector3 get_scale() const;

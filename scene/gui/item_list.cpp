@@ -309,12 +309,6 @@ void ItemList::set_item_tag_icon(int p_idx, const Ref<Texture2D> &p_tag_icon) {
 	shape_changed = true;
 }
 
-Ref<Texture2D> ItemList::get_item_tag_icon(int p_idx) const {
-	ERR_FAIL_INDEX_V(p_idx, items.size(), Ref<Texture2D>());
-
-	return items[p_idx].tag_icon;
-}
-
 void ItemList::set_item_selectable(int p_idx, bool p_selectable) {
 	if (p_idx < 0) {
 		p_idx += get_item_count();

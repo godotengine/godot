@@ -221,12 +221,6 @@ Transform2D Transform2D::operator*(const Transform2D &p_transform) const {
 	return t;
 }
 
-Transform2D Transform2D::basis_scaled(const Size2 &p_scale) const {
-	Transform2D copy = *this;
-	copy.scale_basis(p_scale);
-	return copy;
-}
-
 Transform2D Transform2D::scaled(const Size2 &p_scale) const {
 	// Equivalent to left multiplication
 	Transform2D copy = *this;
