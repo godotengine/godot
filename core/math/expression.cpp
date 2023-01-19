@@ -434,14 +434,13 @@ Error Expression::_get_token(Token &r_token) {
 					}
 					return OK;
 
-				} else if (is_ascii_char(cchar) || is_underscore(cchar)) {
-					String id;
-					bool first = true;
+				} else if (is_unicode_identifier_start(cchar)) {
+					String id = String::chr(cchar);
+					cchar = GET_CHAR();
 
-					while (is_ascii_char(cchar) || is_underscore(cchar) || (!first && is_digit(cchar))) {
+					while (is_unicode_identifier_continue(cchar)) {
 						id += String::chr(cchar);
 						cchar = GET_CHAR();
-						first = false;
 					}
 
 					str_ofs--; //go back one
