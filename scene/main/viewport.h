@@ -281,7 +281,7 @@ private:
 
 	bool disable_3d = false;
 
-	void _propagate_viewport_notification(Node *p_node, int p_what);
+	static void _propagate_drag_notification(Node *p_node, int p_what);
 
 	void _update_global_transform();
 
@@ -362,7 +362,6 @@ private:
 		Window *subwindow_over = nullptr; // mouse_over and subwindow_over are mutually exclusive. At all times at least one of them is nullptr.
 		Window *windowmanager_window_over = nullptr; // Only used in root Viewport.
 		Control *drag_mouse_over = nullptr;
-		Vector2 drag_mouse_over_pos;
 		Control *tooltip_control = nullptr;
 		Window *tooltip_popup = nullptr;
 		Label *tooltip_label = nullptr;
@@ -371,7 +370,7 @@ private:
 		Point2 last_mouse_pos;
 		Point2 drag_accum;
 		bool drag_attempted = false;
-		Variant drag_data;
+		Variant drag_data; // Only used in root-Viewport and SubViewports, that are not children of a SubViewportContainer.
 		ObjectID drag_preview_id;
 		Ref<SceneTreeTimer> tooltip_timer;
 		double tooltip_delay = 0.0;
@@ -379,8 +378,10 @@ private:
 		List<Control *> roots;
 		HashSet<ObjectID> canvas_parents_with_dirty_order;
 		int canvas_sort_index = 0; //for sorting items with canvas as root
-		bool dragging = false;
+		bool dragging = false; // Is true in the viewport in which dragging started while dragging is active.
+		bool global_dragging = false; // Is true while dragging is active. Only used in root-Viewport and SubViewports that are not children of a SubViewportContainer.
 		bool drag_successful = false;
+		Control *target_control = nullptr; // Control that the mouse is over in the innermost nested Viewport. Only used in root-Viewport and SubViewports, that are not children of a SubViewportContainer.
 		bool embed_subwindows_hint = false;
 
 		Window *subwindow_focused = nullptr;
@@ -408,7 +409,7 @@ private:
 	Control *_gui_find_control_at_pos(CanvasItem *p_node, const Point2 &p_global, const Transform2D &p_xform);
 
 	void _gui_input_event(Ref<InputEvent> p_event);
-	void _perform_drop(Control *p_control = nullptr, Point2 p_pos = Point2());
+	void _perform_drop(Control *p_control = nullptr);
 	void _gui_cleanup_internal_state(Ref<InputEvent> p_event);
 
 	void _push_unhandled_input_internal(const Ref<InputEvent> &p_event);
@@ -672,9 +673,9 @@ public:
 	Transform2D get_screen_transform() const;
 	virtual Transform2D get_screen_transform_internal(bool p_absolute_position = false) const;
 	virtual Transform2D get_popup_base_transform() const { return Transform2D(); }
-	virtual bool is_directly_attached_to_screen() const { return false; };
-	virtual bool is_attached_in_viewport() const { return false; };
-	virtual bool is_sub_viewport() const { return false; };
+	virtual Viewport *get_section_root_viewport() const { return nullptr; }
+	virtual bool is_attached_in_viewport() const { return false; }
+	virtual bool is_sub_viewport() const { return false; }
 
 private:
 	// 2D audio, camera, and physics. (don't put World2D here because World2D is needed for Control nodes).
@@ -836,9 +837,9 @@ public:
 
 	virtual Transform2D get_screen_transform_internal(bool p_absolute_position = false) const override;
 	virtual Transform2D get_popup_base_transform() const override;
-	virtual bool is_directly_attached_to_screen() const override;
+	virtual Viewport *get_section_root_viewport() const override;
 	virtual bool is_attached_in_viewport() const override;
-	virtual bool is_sub_viewport() const override { return true; };
+	virtual bool is_sub_viewport() const override { return true; }
 
 	void _validate_property(PropertyInfo &p_property) const;
 	SubViewport();
