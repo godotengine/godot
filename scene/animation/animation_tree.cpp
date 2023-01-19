@@ -1105,9 +1105,9 @@ void AnimationTree::_process_graph(double p_delta) {
 									if (err != OK) {
 										continue;
 									}
-									loc[0] = _post_process_key_value(a, i, loc[0], t->object, t->bone_idx);
+									loc[0] = post_process_key_value(a, i, loc[0], t->object, t->bone_idx);
 									a->position_track_interpolate(i, (double)a->get_length(), &loc[1]);
-									loc[1] = _post_process_key_value(a, i, loc[1], t->object, t->bone_idx);
+									loc[1] = post_process_key_value(a, i, loc[1], t->object, t->bone_idx);
 									t->loc += (loc[1] - loc[0]) * blend;
 									prev_time = 0;
 								}
@@ -1117,9 +1117,9 @@ void AnimationTree::_process_graph(double p_delta) {
 									if (err != OK) {
 										continue;
 									}
-									loc[0] = _post_process_key_value(a, i, loc[0], t->object, t->bone_idx);
+									loc[0] = post_process_key_value(a, i, loc[0], t->object, t->bone_idx);
 									a->position_track_interpolate(i, 0, &loc[1]);
-									loc[1] = _post_process_key_value(a, i, loc[1], t->object, t->bone_idx);
+									loc[1] = post_process_key_value(a, i, loc[1], t->object, t->bone_idx);
 									t->loc += (loc[1] - loc[0]) * blend;
 									prev_time = (double)a->get_length();
 								}
@@ -1129,10 +1129,10 @@ void AnimationTree::_process_graph(double p_delta) {
 							if (err != OK) {
 								continue;
 							}
-							loc[0] = _post_process_key_value(a, i, loc[0], t->object, t->bone_idx);
+							loc[0] = post_process_key_value(a, i, loc[0], t->object, t->bone_idx);
 
 							a->position_track_interpolate(i, time, &loc[1]);
-							loc[1] = _post_process_key_value(a, i, loc[1], t->object, t->bone_idx);
+							loc[1] = post_process_key_value(a, i, loc[1], t->object, t->bone_idx);
 							t->loc += (loc[1] - loc[0]) * blend;
 							prev_time = !backward ? 0 : (double)a->get_length();
 
@@ -1143,7 +1143,7 @@ void AnimationTree::_process_graph(double p_delta) {
 							if (err != OK) {
 								continue;
 							}
-							loc = _post_process_key_value(a, i, loc, t->object, t->bone_idx);
+							loc = post_process_key_value(a, i, loc, t->object, t->bone_idx);
 
 							t->loc += (loc - t->init_loc) * blend;
 						}
@@ -1196,9 +1196,9 @@ void AnimationTree::_process_graph(double p_delta) {
 									if (err != OK) {
 										continue;
 									}
-									rot[0] = _post_process_key_value(a, i, rot[0], t->object, t->bone_idx);
+									rot[0] = post_process_key_value(a, i, rot[0], t->object, t->bone_idx);
 									a->rotation_track_interpolate(i, (double)a->get_length(), &rot[1]);
-									rot[1] = _post_process_key_value(a, i, rot[1], t->object, t->bone_idx);
+									rot[1] = post_process_key_value(a, i, rot[1], t->object, t->bone_idx);
 									t->rot = (t->rot * Quaternion().slerp(rot[0].inverse() * rot[1], blend)).normalized();
 									prev_time = 0;
 								}
@@ -1208,7 +1208,7 @@ void AnimationTree::_process_graph(double p_delta) {
 									if (err != OK) {
 										continue;
 									}
-									rot[0] = _post_process_key_value(a, i, rot[0], t->object, t->bone_idx);
+									rot[0] = post_process_key_value(a, i, rot[0], t->object, t->bone_idx);
 									a->rotation_track_interpolate(i, 0, &rot[1]);
 									t->rot = (t->rot * Quaternion().slerp(rot[0].inverse() * rot[1], blend)).normalized();
 									prev_time = (double)a->get_length();
@@ -1219,10 +1219,10 @@ void AnimationTree::_process_graph(double p_delta) {
 							if (err != OK) {
 								continue;
 							}
-							rot[0] = _post_process_key_value(a, i, rot[0], t->object, t->bone_idx);
+							rot[0] = post_process_key_value(a, i, rot[0], t->object, t->bone_idx);
 
 							a->rotation_track_interpolate(i, time, &rot[1]);
-							rot[1] = _post_process_key_value(a, i, rot[1], t->object, t->bone_idx);
+							rot[1] = post_process_key_value(a, i, rot[1], t->object, t->bone_idx);
 							t->rot = (t->rot * Quaternion().slerp(rot[0].inverse() * rot[1], blend)).normalized();
 							prev_time = !backward ? 0 : (double)a->get_length();
 
@@ -1233,7 +1233,7 @@ void AnimationTree::_process_graph(double p_delta) {
 							if (err != OK) {
 								continue;
 							}
-							rot = _post_process_key_value(a, i, rot, t->object, t->bone_idx);
+							rot = post_process_key_value(a, i, rot, t->object, t->bone_idx);
 
 							t->rot = (t->rot * Quaternion().slerp(t->init_rot.inverse() * rot, blend)).normalized();
 						}
@@ -1286,10 +1286,10 @@ void AnimationTree::_process_graph(double p_delta) {
 									if (err != OK) {
 										continue;
 									}
-									scale[0] = _post_process_key_value(a, i, scale[0], t->object, t->bone_idx);
+									scale[0] = post_process_key_value(a, i, scale[0], t->object, t->bone_idx);
 									a->scale_track_interpolate(i, (double)a->get_length(), &scale[1]);
 									t->scale += (scale[1] - scale[0]) * blend;
-									scale[1] = _post_process_key_value(a, i, scale[1], t->object, t->bone_idx);
+									scale[1] = post_process_key_value(a, i, scale[1], t->object, t->bone_idx);
 									prev_time = 0;
 								}
 							} else {
@@ -1298,9 +1298,9 @@ void AnimationTree::_process_graph(double p_delta) {
 									if (err != OK) {
 										continue;
 									}
-									scale[0] = _post_process_key_value(a, i, scale[0], t->object, t->bone_idx);
+									scale[0] = post_process_key_value(a, i, scale[0], t->object, t->bone_idx);
 									a->scale_track_interpolate(i, 0, &scale[1]);
-									scale[1] = _post_process_key_value(a, i, scale[1], t->object, t->bone_idx);
+									scale[1] = post_process_key_value(a, i, scale[1], t->object, t->bone_idx);
 									t->scale += (scale[1] - scale[0]) * blend;
 									prev_time = (double)a->get_length();
 								}
@@ -1310,10 +1310,10 @@ void AnimationTree::_process_graph(double p_delta) {
 							if (err != OK) {
 								continue;
 							}
-							scale[0] = _post_process_key_value(a, i, scale[0], t->object, t->bone_idx);
+							scale[0] = post_process_key_value(a, i, scale[0], t->object, t->bone_idx);
 
 							a->scale_track_interpolate(i, time, &scale[1]);
-							scale[1] = _post_process_key_value(a, i, scale[1], t->object, t->bone_idx);
+							scale[1] = post_process_key_value(a, i, scale[1], t->object, t->bone_idx);
 							t->scale += (scale[1] - scale[0]) * blend;
 							prev_time = !backward ? 0 : (double)a->get_length();
 
@@ -1324,7 +1324,7 @@ void AnimationTree::_process_graph(double p_delta) {
 							if (err != OK) {
 								continue;
 							}
-							scale = _post_process_key_value(a, i, scale, t->object, t->bone_idx);
+							scale = post_process_key_value(a, i, scale, t->object, t->bone_idx);
 
 							t->scale += (scale - t->init_scale) * blend;
 						}
@@ -1342,7 +1342,7 @@ void AnimationTree::_process_graph(double p_delta) {
 						if (err != OK) {
 							continue;
 						}
-						value = _post_process_key_value(a, i, value, t->object, t->shape_index);
+						value = post_process_key_value(a, i, value, t->object, t->shape_index);
 
 						t->value += (value - t->init_value) * blend;
 #endif // _3D_DISABLED
@@ -1354,7 +1354,7 @@ void AnimationTree::_process_graph(double p_delta) {
 
 						if (update_mode == Animation::UPDATE_CONTINUOUS || update_mode == Animation::UPDATE_CAPTURE) {
 							Variant value = a->value_track_interpolate(i, time);
-							value = _post_process_key_value(a, i, value, t->object);
+							value = post_process_key_value(a, i, value, t->object);
 
 							if (value == Variant()) {
 								continue;
@@ -1394,14 +1394,14 @@ void AnimationTree::_process_graph(double p_delta) {
 									continue;
 								}
 								Variant value = a->track_get_key_value(i, idx);
-								value = _post_process_key_value(a, i, value, t->object);
+								value = post_process_key_value(a, i, value, t->object);
 								t->object->set_indexed(t->subpath, value);
 							} else {
 								List<int> indices;
 								a->track_get_key_indices_in_range(i, time, delta, &indices, looped_flag);
 								for (int &F : indices) {
 									Variant value = a->track_get_key_value(i, F);
-									value = _post_process_key_value(a, i, value, t->object);
+									value = post_process_key_value(a, i, value, t->object);
 									t->object->set_indexed(t->subpath, value);
 								}
 							}
@@ -1438,7 +1438,7 @@ void AnimationTree::_process_graph(double p_delta) {
 						TrackCacheBezier *t = static_cast<TrackCacheBezier *>(track);
 
 						real_t bezier = a->bezier_track_interpolate(i, time);
-						bezier = _post_process_key_value(a, i, bezier, t->object);
+						bezier = post_process_key_value(a, i, bezier, t->object);
 
 						t->value += (bezier - t->init_value) * blend;
 					} break;
@@ -1699,6 +1699,15 @@ void AnimationTree::_process_graph(double p_delta) {
 			}
 		}
 	}
+}
+
+Variant AnimationTree::post_process_key_value(const Ref<Animation> &p_anim, int p_track, Variant p_value, const Object *p_object, int p_object_idx) {
+	Variant res;
+	if (GDVIRTUAL_CALL(_post_process_key_value, p_anim, p_track, p_value, const_cast<Object *>(p_object), p_object_idx, res)) {
+		return res;
+	}
+
+	return _post_process_key_value(p_anim, p_track, p_value, p_object, p_object_idx);
 }
 
 Variant AnimationTree::_post_process_key_value(const Ref<Animation> &p_anim, int p_track, Variant p_value, const Object *p_object, int p_object_idx) {
@@ -2034,6 +2043,8 @@ void AnimationTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("rename_parameter", "old_name", "new_name"), &AnimationTree::rename_parameter);
 
 	ClassDB::bind_method(D_METHOD("advance", "delta"), &AnimationTree::advance);
+
+	GDVIRTUAL_BIND(_post_process_key_value, "animation", "track", "value", "object", "object_idx");
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "tree_root", PROPERTY_HINT_RESOURCE_TYPE, "AnimationRootNode"), "set_tree_root", "get_tree_root");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "anim_player", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "AnimationPlayer"), "set_animation_player", "get_animation_player");
