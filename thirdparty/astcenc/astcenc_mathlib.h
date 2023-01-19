@@ -48,8 +48,6 @@
     #define ASTCENC_SSE 42
   #elif defined(__SSE4_1__)
     #define ASTCENC_SSE 41
-  #elif defined(__SSE3__)
-    #define ASTCENC_SSE 30
   #elif defined(__SSE2__)
     #define ASTCENC_SSE 20
   #else

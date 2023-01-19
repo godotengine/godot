@@ -1046,7 +1046,7 @@ ASTCENC_SIMD_INLINE void vtable_prepare(vint4 t0, vint4& t0p)
  */
 ASTCENC_SIMD_INLINE void vtable_prepare(vint4 t0, vint4 t1, vint4& t0p, vint4& t1p)
 {
-#if ASTCENC_SSE >= 30
+#if ASTCENC_SSE >= 41
 	t0p = t0;
 	t1p = t0 ^ t1;
 #else
@@ -1062,7 +1062,7 @@ ASTCENC_SIMD_INLINE void vtable_prepare(
 	vint4 t0, vint4 t1, vint4 t2, vint4 t3,
 	vint4& t0p, vint4& t1p, vint4& t2p, vint4& t3p)
 {
-#if ASTCENC_SSE >= 30
+#if ASTCENC_SSE >= 41
 	t0p = t0;
 	t1p = t0 ^ t1;
 	t2p = t1 ^ t2;
@@ -1080,7 +1080,7 @@ ASTCENC_SIMD_INLINE void vtable_prepare(
  */
 ASTCENC_SIMD_INLINE vint4 vtable_8bt_32bi(vint4 t0, vint4 idx)
 {
-#if ASTCENC_SSE >= 30
+#if ASTCENC_SSE >= 41
 	// Set index byte MSB to 1 for unused bytes so shuffle returns zero
 	__m128i idxx = _mm_or_si128(idx.m, _mm_set1_epi32(static_cast<int>(0xFFFFFF00)));
 
@@ -1102,7 +1102,7 @@ ASTCENC_SIMD_INLINE vint4 vtable_8bt_32bi(vint4 t0, vint4 idx)
  */
 ASTCENC_SIMD_INLINE vint4 vtable_8bt_32bi(vint4 t0, vint4 t1, vint4 idx)
 {
-#if ASTCENC_SSE >= 30
+#if ASTCENC_SSE >= 41
 	// Set index byte MSB to 1 for unused bytes so shuffle returns zero
 	__m128i idxx = _mm_or_si128(idx.m, _mm_set1_epi32(static_cast<int>(0xFFFFFF00)));
 
@@ -1130,7 +1130,7 @@ ASTCENC_SIMD_INLINE vint4 vtable_8bt_32bi(vint4 t0, vint4 t1, vint4 idx)
  */
 ASTCENC_SIMD_INLINE vint4 vtable_8bt_32bi(vint4 t0, vint4 t1, vint4 t2, vint4 t3, vint4 idx)
 {
-#if ASTCENC_SSE >= 30
+#if ASTCENC_SSE >= 41
 	// Set index byte MSB to 1 for unused bytes so shuffle returns zero
 	__m128i idxx = _mm_or_si128(idx.m, _mm_set1_epi32(static_cast<int>(0xFFFFFF00)));
 
