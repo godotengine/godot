@@ -615,8 +615,17 @@
 			Main window content is expanded to the full size of the window. Unlike a borderless window, the frame is left intact and can be used to resize the window, and the title bar is transparent, but has minimize/maximize/close buttons.
 			[b]Note:[/b] This setting is implemented only on macOS.
 		</member>
-		<member name="display/window/size/initial_screen" type="int" setter="" getter="" default="-2">
-			Main window initial screen.
+		<member name="display/window/size/initial_position" type="Vector2i" setter="" getter="" default="Vector2i(0, 0)">
+			Main window initial position (in virtual desktop coordinates), this settings is used only if [member display/window/size/initial_position_type] is set to "Absolute" ([code]0[/code]).
+		</member>
+		<member name="display/window/size/initial_position_type" type="int" setter="" getter="" default="1">
+			Main window initial position.
+			[code]0[/code] - "Absolute", [member display/window/size/initial_position] is used to set window position.
+			[code]1[/code] - "Primary Screen Center".
+			[code]2[/code] - "Other Screen Center", [member display/window/size/initial_screen] is used to set window position.
+		</member>
+		<member name="display/window/size/initial_screen" type="int" setter="" getter="" default="0">
+			Main window initial screen, this settings is used only if [member display/window/size/initial_position_type] is set to "Other Screen Center" ([code]2[/code]).
 		</member>
 		<member name="display/window/size/mode" type="int" setter="" getter="" default="0">
 			Main window mode. See [enum DisplayServer.WindowMode] for possible values and how each mode behaves.
