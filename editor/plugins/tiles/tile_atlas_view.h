@@ -65,9 +65,8 @@ private:
 	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 
 	Ref<ViewPanner> panner;
-	void _scroll_callback(Vector2 p_scroll_vec, bool p_alt);
-	void _pan_callback(Vector2 p_scroll_vec);
-	void _zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin, bool p_alt);
+	void _pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event);
+	void _zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputEvent> p_event);
 
 	HashMap<Vector2, HashMap<int, Rect2i>> alternative_tiles_rect_cache;
 	void _update_alternative_tiles_rect_cache();

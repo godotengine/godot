@@ -620,22 +620,14 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 	}
 }
 
-void TextureRegionEditor::_scroll_callback(Vector2 p_scroll_vec, bool p_alt) {
-	_pan_callback(-p_scroll_vec * 32);
-}
-
-void TextureRegionEditor::_pan_callback(Vector2 p_scroll_vec) {
+void TextureRegionEditor::_pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event) {
 	p_scroll_vec /= draw_zoom;
 	hscroll->set_value(hscroll->get_value() - p_scroll_vec.x);
 	vscroll->set_value(vscroll->get_value() - p_scroll_vec.y);
 }
 
-void TextureRegionEditor::_zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin, bool p_alt) {
-	if (p_scroll_vec.y < 0) {
-		_zoom_on_position(draw_zoom * ((0.95 + (0.05 * Math::abs(p_scroll_vec.y))) / 0.95), p_origin);
-	} else {
-		_zoom_on_position(draw_zoom * (1 - (0.05 * Math::abs(p_scroll_vec.y))), p_origin);
-	}
+void TextureRegionEditor::_zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputEvent> p_event) {
+	_zoom_on_position(draw_zoom * p_zoom_factor, p_origin);
 }
 
 void TextureRegionEditor::_scroll_changed(float) {
@@ -1169,7 +1161,7 @@ TextureRegionEditor::TextureRegionEditor() {
 	hb_grid->hide();
 
 	panner.instantiate();
-	panner->set_callbacks(callable_mp(this, &TextureRegionEditor::_scroll_callback), callable_mp(this, &TextureRegionEditor::_pan_callback), callable_mp(this, &TextureRegionEditor::_zoom_callback));
+	panner->set_callbacks(callable_mp(this, &TextureRegionEditor::_pan_callback), callable_mp(this, &TextureRegionEditor::_zoom_callback));
 
 	edit_draw = memnew(Panel);
 	vb->add_child(edit_draw);
