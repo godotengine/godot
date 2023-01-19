@@ -12,6 +12,17 @@
 		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
 	</tutorials>
 	<methods>
+		<method name="_post_process_key_value" qualifiers="virtual const">
+			<return type="Variant" />
+			<param index="0" name="animation" type="Animation" />
+			<param index="1" name="track" type="int" />
+			<param index="2" name="value" type="Variant" />
+			<param index="3" name="object" type="Object" />
+			<param index="4" name="object_idx" type="int" />
+			<description>
+				A virtual function for processing after key getting during playback.
+			</description>
+		</method>
 		<method name="advance">
 			<return type="void" />
 			<param index="0" name="delta" type="float" />
