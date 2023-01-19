@@ -2824,7 +2824,9 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 						InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(idata.instance->base_data);
 
 						ERR_FAIL_NULL(geom->geometry_instance);
+						cull_data.cull->lock.lock();
 						geom->geometry_instance->set_softshadow_projector_pairing(geom->softshadow_count > 0, geom->projector_count > 0);
+						cull_data.cull->lock.unlock();
 						idata.flags &= ~uint32_t(InstanceData::FLAG_GEOM_PROJECTOR_SOFTSHADOW_DIRTY);
 					}
 
@@ -2891,7 +2893,9 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 							sh[j] = sh[j].lerp(target_sh[j], MIN(1.0, lightmap_probe_update_speed));
 						}
 						ERR_FAIL_NULL(geom->geometry_instance);
+						cull_data.cull->lock.lock();
 						geom->geometry_instance->set_lightmap_capture(sh);
+						cull_data.cull->lock.unlock();
 						idata.instance->last_frame_pass = frame_number;
 					}
 
