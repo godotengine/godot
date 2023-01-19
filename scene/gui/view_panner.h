@@ -45,7 +45,17 @@ public:
 		SCROLL_PANS,
 	};
 
+	enum PanAxis {
+		PAN_AXIS_BOTH,
+		PAN_AXIS_HORIZONTAL,
+		PAN_AXIS_VERTICAL,
+	};
+
 private:
+	int scroll_speed = 32;
+	float scroll_zoom_factor = 1.1;
+	PanAxis pan_axis = PAN_AXIS_BOTH;
+
 	bool is_dragging = false;
 	bool pan_key_pressed = false;
 	bool force_drag = false;
@@ -55,7 +65,6 @@ private:
 
 	Ref<Shortcut> pan_view_shortcut;
 
-	Callable scroll_callback;
 	Callable pan_callback;
 	Callable zoom_callback;
 
@@ -63,11 +72,14 @@ private:
 	ControlScheme control_scheme = SCROLL_ZOOMS;
 
 public:
-	void set_callbacks(Callable p_scroll_callback, Callable p_pan_callback, Callable p_zoom_callback);
+	void set_callbacks(Callable p_pan_callback, Callable p_zoom_callback);
 	void set_control_scheme(ControlScheme p_scheme);
 	void set_enable_rmb(bool p_enable);
 	void set_pan_shortcut(Ref<Shortcut> p_shortcut);
 	void set_simple_panning_enabled(bool p_enabled);
+	void set_scroll_speed(int p_scroll_speed);
+	void set_scroll_zoom_factor(float p_scroll_zoom_factor);
+	void set_pan_axis(PanAxis p_pan_axis);
 
 	void setup(ControlScheme p_scheme, Ref<Shortcut> p_shortcut, bool p_simple_panning);
 

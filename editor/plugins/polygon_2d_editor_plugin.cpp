@@ -939,21 +939,13 @@ void Polygon2DEditor::_uv_input(const Ref<InputEvent> &p_input) {
 	}
 }
 
-void Polygon2DEditor::_uv_scroll_callback(Vector2 p_scroll_vec, bool p_alt) {
-	_uv_pan_callback(-p_scroll_vec * 32);
-}
-
-void Polygon2DEditor::_uv_pan_callback(Vector2 p_scroll_vec) {
+void Polygon2DEditor::_uv_pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event) {
 	uv_hscroll->set_value(uv_hscroll->get_value() - p_scroll_vec.x);
 	uv_vscroll->set_value(uv_vscroll->get_value() - p_scroll_vec.y);
 }
 
-void Polygon2DEditor::_uv_zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin, bool p_alt) {
-	if (p_scroll_vec.y < 0) {
-		uv_zoom->set_value(uv_zoom->get_value() / (1 - (0.1 * Math::abs(p_scroll_vec.y))));
-	} else {
-		uv_zoom->set_value(uv_zoom->get_value() * (1 - (0.1 * Math::abs(p_scroll_vec.y))));
-	}
+void Polygon2DEditor::_uv_zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputEvent> p_event) {
+	uv_zoom->set_value(uv_zoom->get_value() * p_zoom_factor);
 }
 
 void Polygon2DEditor::_uv_scroll_changed(real_t) {
@@ -1478,7 +1470,7 @@ Polygon2DEditor::Polygon2DEditor() {
 	bone_scroll->add_child(bone_scroll_vb);
 
 	uv_panner.instantiate();
-	uv_panner->set_callbacks(callable_mp(this, &Polygon2DEditor::_uv_scroll_callback), callable_mp(this, &Polygon2DEditor::_uv_pan_callback), callable_mp(this, &Polygon2DEditor::_uv_zoom_callback));
+	uv_panner->set_callbacks(callable_mp(this, &Polygon2DEditor::_uv_pan_callback), callable_mp(this, &Polygon2DEditor::_uv_zoom_callback));
 
 	uv_edit_draw->connect("draw", callable_mp(this, &Polygon2DEditor::_uv_draw));
 	uv_edit_draw->connect("gui_input", callable_mp(this, &Polygon2DEditor::_uv_input));

@@ -1259,57 +1259,25 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event, bo
 		}
 	}
 
-	Ref<InputEventMagnifyGesture> magnify_gesture = p_event;
-	if (magnify_gesture.is_valid() && !p_already_accepted) {
-		// Zoom gesture
-		_zoom_on_position(zoom * magnify_gesture->get_factor(), magnify_gesture->get_position());
-		return true;
-	}
-
-	Ref<InputEventPanGesture> pan_gesture = p_event;
-	if (pan_gesture.is_valid() && !p_already_accepted) {
-		// If ctrl key pressed, then zoom instead of pan.
-		if (pan_gesture->is_ctrl_pressed()) {
-			const real_t factor = pan_gesture->get_delta().y;
-
-			zoom_widget->set_zoom_by_increments(1);
-			if (factor != 1.f) {
-				zoom_widget->set_zoom(zoom * ((zoom_widget->get_zoom() / zoom - 1.f) * factor + 1.f));
-			}
-			_zoom_on_position(zoom_widget->get_zoom(), pan_gesture->get_position());
-
-			return true;
-		}
-
-		// Pan gesture
-		const Vector2 delta = (pan_speed / zoom) * pan_gesture->get_delta();
-		view_offset.x += delta.x;
-		view_offset.y += delta.y;
-		update_viewport();
-		return true;
-	}
-
 	return false;
 }
 
-void CanvasItemEditor::_scroll_callback(Vector2 p_scroll_vec, bool p_alt) {
-	_pan_callback(-p_scroll_vec * pan_speed);
-}
-
-void CanvasItemEditor::_pan_callback(Vector2 p_scroll_vec) {
+void CanvasItemEditor::_pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event) {
 	view_offset.x -= p_scroll_vec.x / zoom;
 	view_offset.y -= p_scroll_vec.y / zoom;
 	update_viewport();
 }
 
-void CanvasItemEditor::_zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin, bool p_alt) {
-	int scroll_sign = (int)SIGN(p_scroll_vec.y);
-	// Inverted so that scrolling up (-1) zooms in, scrolling down (+1) zooms out.
-	zoom_widget->set_zoom_by_increments(-scroll_sign, p_alt);
-	if (!Math::is_equal_approx(ABS(p_scroll_vec.y), (real_t)1.0)) {
-		// Handle high-precision (analog) scrolling.
-		zoom_widget->set_zoom(zoom * ((zoom_widget->get_zoom() / zoom - 1.f) * ABS(p_scroll_vec.y) + 1.f));
+void CanvasItemEditor::_zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputEvent> p_event) {
+	Ref<InputEventMouseButton> mb = p_event;
+	if (mb.is_valid()) {
+		// Special behvior for scroll events, as the zoom_by_increment method can smartly end up on powers of two.
+		int increment = p_zoom_factor > 1.0 ? 1 : -1;
+		zoom_widget->set_zoom_by_increments(increment, mb->is_alt_pressed());
+	} else {
+		zoom_widget->set_zoom(zoom_widget->get_zoom() * p_zoom_factor);
 	}
+
 	_zoom_on_position(zoom_widget->get_zoom(), p_origin);
 }
 
@@ -3868,7 +3836,7 @@ void CanvasItemEditor::_update_editor_settings() {
 	context_menu_panel->add_theme_style_override("panel", get_theme_stylebox(SNAME("ContextualToolbar"), SNAME("EditorStyles")));
 
 	panner->setup((ViewPanner::ControlScheme)EDITOR_GET("editors/panning/2d_editor_panning_scheme").operator int(), ED_GET_SHORTCUT("canvas_item_editor/pan_view"), bool(EDITOR_GET("editors/panning/simple_panning")));
-	pan_speed = int(EDITOR_GET("editors/panning/2d_editor_pan_speed"));
+	panner->set_scroll_speed(EDITOR_GET("editors/panning/2d_editor_pan_speed"));
 	warped_panning = bool(EDITOR_GET("editors/panning/warped_mouse_panning"));
 }
 
@@ -5059,7 +5027,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	zoom_widget->connect("zoom_changed", callable_mp(this, &CanvasItemEditor::_update_zoom));
 
 	panner.instantiate();
-	panner->set_callbacks(callable_mp(this, &CanvasItemEditor::_scroll_callback), callable_mp(this, &CanvasItemEditor::_pan_callback), callable_mp(this, &CanvasItemEditor::_zoom_callback));
+	panner->set_callbacks(callable_mp(this, &CanvasItemEditor::_pan_callback), callable_mp(this, &CanvasItemEditor::_zoom_callback));
 
 	viewport = memnew(CanvasItemEditorViewport(this));
 	viewport_scrollable->add_child(viewport);
