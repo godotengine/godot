@@ -923,7 +923,11 @@ Error ResourceLoaderText::rename_dependencies(Ref<FileAccess> p_f, const String 
 				if (is_scene) {
 					fw->store_line("[gd_scene load_steps=" + itos(resources_total) + " format=" + itos(FORMAT_VERSION) + "]\n");
 				} else {
-					fw->store_line("[gd_resource type=\"" + res_type + "\" load_steps=" + itos(resources_total) + " format=" + itos(FORMAT_VERSION) + "]\n");
+					String script_res_text;
+					if (!script_class.is_empty()) {
+						script_res_text = "script_class=\"" + script_class + "\" ";
+					}
+					fw->store_line("[gd_resource type=\"" + res_type + "\" " + script_res_text + "load_steps=" + itos(resources_total) + " format=" + itos(FORMAT_VERSION) + "]\n");
 				}
 			}
 
@@ -1045,6 +1049,10 @@ void ResourceLoaderText::open(Ref<FileAccess> p_f, bool p_skip_first_tag) {
 			_printerr();
 			error = ERR_PARSE_ERROR;
 			return;
+		}
+
+		if (tag.fields.has("script_class")) {
+			script_class = tag.fields["script_class"];
 		}
 
 		res_type = tag.fields["type"];
@@ -1493,6 +1501,44 @@ Error ResourceLoaderText::get_classes_used(HashSet<StringName> *r_classes) {
 	return OK;
 }
 
+String ResourceLoaderText::recognize_script_class(Ref<FileAccess> p_f) {
+	error = OK;
+
+	lines = 1;
+	f = p_f;
+
+	stream.f = f;
+
+	ignore_resource_parsing = true;
+
+	VariantParser::Tag tag;
+	Error err = VariantParser::parse_tag(&stream, lines, error_text, tag);
+
+	if (err) {
+		_printerr();
+		return "";
+	}
+
+	if (tag.fields.has("format")) {
+		int fmt = tag.fields["format"];
+		if (fmt > FORMAT_VERSION) {
+			error_text = "Saved with newer format version";
+			_printerr();
+			return "";
+		}
+	}
+
+	if (tag.name != "gd_resource") {
+		return "";
+	}
+
+	if (tag.fields.has("script_class")) {
+		return tag.fields["script_class"];
+	}
+
+	return "";
+}
+
 String ResourceLoaderText::recognize(Ref<FileAccess> p_f) {
 	error = OK;
 
@@ -1660,6 +1706,25 @@ String ResourceFormatLoaderText::get_resource_type(const String &p_path) const {
 	loader.res_path = loader.local_path;
 	String r = loader.recognize(f);
 	return ClassDB::get_compatibility_remapped_class(r);
+}
+
+String ResourceFormatLoaderText::get_resource_script_class(const String &p_path) const {
+	String ext = p_path.get_extension().to_lower();
+	if (ext != "tres") {
+		return String();
+	}
+
+	// ...for anything else must test...
+
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
+	if (f.is_null()) {
+		return ""; //could not read
+	}
+
+	ResourceLoaderText loader;
+	loader.local_path = ProjectSettings::get_singleton()->localize_path(p_path);
+	loader.res_path = loader.local_path;
+	return loader.recognize_script_class(f);
 }
 
 ResourceUID::ID ResourceFormatLoaderText::get_resource_uid(const String &p_path) const {
@@ -1905,7 +1970,12 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const Ref<Reso
 		String title = packed_scene.is_valid() ? "[gd_scene " : "[gd_resource ";
 		if (packed_scene.is_null()) {
 			title += "type=\"" + _resource_get_class(p_resource) + "\" ";
+			Ref<Script> script = p_resource->get_script();
+			if (script.is_valid() && script->get_global_name()) {
+				title += "script_class=\"" + String(script->get_global_name()) + "\" ";
+			}
 		}
+
 		int load_steps = saved_resources.size() + external_resources.size();
 
 		if (load_steps > 1) {
@@ -2244,7 +2314,12 @@ Error ResourceLoaderText::set_uid(Ref<FileAccess> p_f, ResourceUID::ID p_uid) {
 	if (is_scene) {
 		fw->store_string("[gd_scene load_steps=" + itos(resources_total) + " format=" + itos(FORMAT_VERSION) + " uid=\"" + ResourceUID::get_singleton()->id_to_text(p_uid) + "\"]");
 	} else {
-		fw->store_string("[gd_resource type=\"" + res_type + "\" load_steps=" + itos(resources_total) + " format=" + itos(FORMAT_VERSION) + " uid=\"" + ResourceUID::get_singleton()->id_to_text(p_uid) + "\"]");
+		String script_res_text;
+		if (!script_class.is_empty()) {
+			script_res_text = "script_class=\"" + script_class + "\" ";
+		}
+
+		fw->store_string("[gd_resource type=\"" + res_type + "\" " + script_res_text + "load_steps=" + itos(resources_total) + " format=" + itos(FORMAT_VERSION) + " uid=\"" + ResourceUID::get_singleton()->id_to_text(p_uid) + "\"]");
 	}
 
 	uint8_t c = f->get_8();

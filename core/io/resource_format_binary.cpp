@@ -91,7 +91,8 @@ enum {
 	// Version 2: added 64 bits support for float and int.
 	// Version 3: changed nodepath encoding.
 	// Version 4: new string ID for ext/subresources, breaks forward compat.
-	FORMAT_VERSION = 4,
+	// Version 5: Ability to store script class in the header.
+	FORMAT_VERSION = 5,
 	FORMAT_VERSION_CAN_RENAME_DEPS = 1,
 	FORMAT_VERSION_NO_NODEPATH_PROPERTY = 3,
 };
@@ -1009,6 +1010,10 @@ void ResourceLoaderBinary::open(Ref<FileAccess> p_f, bool p_no_resources, bool p
 		uid = ResourceUID::INVALID_ID;
 	}
 
+	if (flags & ResourceFormatSaverBinaryInstance::FORMAT_FLAG_HAS_SCRIPT_CLASS) {
+		script_class = get_unicode_string();
+	}
+
 	for (int i = 0; i < ResourceFormatSaverBinaryInstance::RESERVED_FIELDS; i++) {
 		f->get_32(); //skip a few reserved fields
 	}
@@ -1111,6 +1116,57 @@ String ResourceLoaderBinary::recognize(Ref<FileAccess> p_f) {
 	}
 
 	return get_unicode_string();
+}
+
+String ResourceLoaderBinary::recognize_script_class(Ref<FileAccess> p_f) {
+	error = OK;
+
+	f = p_f;
+	uint8_t header[4];
+	f->get_buffer(header, 4);
+	if (header[0] == 'R' && header[1] == 'S' && header[2] == 'C' && header[3] == 'C') {
+		// Compressed.
+		Ref<FileAccessCompressed> fac;
+		fac.instantiate();
+		error = fac->open_after_magic(f);
+		if (error != OK) {
+			f.unref();
+			return "";
+		}
+		f = fac;
+
+	} else if (header[0] != 'R' || header[1] != 'S' || header[2] != 'R' || header[3] != 'C') {
+		// Not normal.
+		error = ERR_FILE_UNRECOGNIZED;
+		f.unref();
+		return "";
+	}
+
+	bool big_endian = f->get_32();
+	f->get_32(); // use_real64
+
+	f->set_big_endian(big_endian != 0); //read big endian if saved as big endian
+
+	uint32_t ver_major = f->get_32();
+	f->get_32(); // ver_minor
+	uint32_t ver_fmt = f->get_32();
+
+	if (ver_fmt > FORMAT_VERSION || ver_major > VERSION_MAJOR) {
+		f.unref();
+		return "";
+	}
+
+	get_unicode_string(); // type
+
+	f->get_64(); // Metadata offset
+	uint32_t flags = f->get_32();
+	f->get_64(); // UID
+
+	if (flags & ResourceFormatSaverBinaryInstance::FORMAT_FLAG_HAS_SCRIPT_CLASS) {
+		return get_unicode_string();
+	} else {
+		return String();
+	}
 }
 
 Ref<Resource> ResourceFormatLoaderBinary::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
@@ -1295,6 +1351,9 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 
 	fw->store_32(flags);
 	fw->store_64(uid_data);
+	if (flags & ResourceFormatSaverBinaryInstance::FORMAT_FLAG_HAS_SCRIPT_CLASS) {
+		save_ustring(fw, get_ustring(f));
+	}
 
 	for (int i = 0; i < ResourceFormatSaverBinaryInstance::RESERVED_FIELDS; i++) {
 		fw->store_32(0); // reserved
@@ -1414,6 +1473,18 @@ String ResourceFormatLoaderBinary::get_resource_type(const String &p_path) const
 	loader.res_path = loader.local_path;
 	String r = loader.recognize(f);
 	return ClassDB::get_compatibility_remapped_class(r);
+}
+
+String ResourceFormatLoaderBinary::get_resource_script_class(const String &p_path) const {
+	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
+	if (f.is_null()) {
+		return ""; //could not read
+	}
+
+	ResourceLoaderBinary loader;
+	loader.local_path = ProjectSettings::get_singleton()->localize_path(p_path);
+	loader.res_path = loader.local_path;
+	return loader.recognize_script_class(f);
 }
 
 ResourceUID::ID ResourceFormatLoaderBinary::get_resource_uid(const String &p_path) const {
@@ -2033,15 +2104,31 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const Ref<Re
 
 	save_unicode_string(f, _resource_get_class(p_resource));
 	f->store_64(0); //offset to import metadata
+
+	String script_class;
 	{
 		uint32_t format_flags = FORMAT_FLAG_NAMED_SCENE_IDS | FORMAT_FLAG_UIDS;
 #ifdef REAL_T_IS_DOUBLE
 		format_flags |= FORMAT_FLAG_REAL_T_IS_DOUBLE;
 #endif
+		if (!p_resource->is_class("PackedScene")) {
+			Ref<Script> s = p_resource->get_script();
+			if (s.is_valid()) {
+				script_class = s->get_global_name();
+				if (!script_class.is_empty()) {
+					format_flags |= ResourceFormatSaverBinaryInstance::FORMAT_FLAG_HAS_SCRIPT_CLASS;
+				}
+			}
+		}
+
 		f->store_32(format_flags);
 	}
 	ResourceUID::ID uid = ResourceSaver::get_resource_id_for_path(p_path, true);
 	f->store_64(uid);
+	if (!script_class.is_empty()) {
+		save_unicode_string(f, script_class);
+	}
+
 	for (int i = 0; i < ResourceFormatSaverBinaryInstance::RESERVED_FIELDS; i++) {
 		f->store_32(0); // reserved
 	}
@@ -2293,6 +2380,10 @@ Error ResourceFormatSaverBinaryInstance::set_uid(const String &p_path, ResourceU
 
 	fw->store_32(flags);
 	fw->store_64(p_uid);
+
+	if (flags & ResourceFormatSaverBinaryInstance::FORMAT_FLAG_HAS_SCRIPT_CLASS) {
+		save_ustring(fw, get_ustring(f));
+	}
 
 	//rest of file
 	uint8_t b = f->get_8();
