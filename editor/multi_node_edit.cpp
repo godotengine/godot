@@ -55,7 +55,7 @@ bool MultiNodeEdit::_set_impl(const StringName &p_name, const Variant &p_value, 
 		node_path_target = es->get_node(p_value);
 	}
 
-	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 
 	ur->create_action(vformat(TTR("Set %s on %d nodes"), name, get_node_count()), UndoRedo::MERGE_ENDS);
 	for (const NodePath &E : nodes) {

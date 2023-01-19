@@ -116,7 +116,7 @@ void BoneTransformEditor::_value_changed(const String &p_property, Variant p_val
 		return;
 	}
 	if (skeleton) {
-		Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 		undo_redo->create_action(TTR("Set Bone Transform"), UndoRedo::MERGE_ENDS);
 		undo_redo->add_undo_property(skeleton, p_property, skeleton->get(p_property));
 		undo_redo->add_do_property(skeleton, p_property, p_value);
@@ -271,7 +271,7 @@ void Skeleton3DEditor::reset_pose(const bool p_all_bones) {
 		return;
 	}
 
-	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 	ur->create_action(TTR("Set Bone Transform"), UndoRedo::MERGE_ENDS);
 	if (p_all_bones) {
 		for (int i = 0; i < bone_len; i++) {
@@ -338,7 +338,7 @@ void Skeleton3DEditor::pose_to_rest(const bool p_all_bones) {
 		return;
 	}
 
-	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 	ur->create_action(TTR("Set Bone Rest"), UndoRedo::MERGE_ENDS);
 	if (p_all_bones) {
 		for (int i = 0; i < bone_len; i++) {
@@ -358,7 +358,7 @@ void Skeleton3DEditor::pose_to_rest(const bool p_all_bones) {
 }
 
 void Skeleton3DEditor::create_physical_skeleton() {
-	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 	ERR_FAIL_COND(!get_tree());
 	Node *owner = get_tree()->get_edited_scene_root();
 
@@ -593,7 +593,7 @@ void Skeleton3DEditor::move_skeleton_bone(NodePath p_skeleton_path, int32_t p_se
 	Node *node = get_node_or_null(p_skeleton_path);
 	Skeleton3D *skeleton_node = Object::cast_to<Skeleton3D>(node);
 	ERR_FAIL_NULL(skeleton_node);
-	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 	ur->create_action(TTR("Set Bone Parentage"));
 	// If the target is a child of ourselves, we move only *us* and not our children.
 	if (skeleton_node->is_bone_parent_of(p_target_boneidx, p_selected_boneidx)) {
@@ -813,7 +813,7 @@ void Skeleton3DEditor::create_editors() {
 	joint_tree->set_v_size_flags(SIZE_EXPAND_FILL);
 	joint_tree->set_h_size_flags(SIZE_EXPAND_FILL);
 	joint_tree->set_allow_rmb_select(true);
-	joint_tree->set_drag_forwarding_compat(this);
+	SET_DRAG_FORWARDING_GCD(joint_tree, Skeleton3DEditor);
 	s_con->add_child(joint_tree);
 
 	pose_editor = memnew(BoneTransformEditor(skeleton));
@@ -888,10 +888,6 @@ void Skeleton3DEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_joint_tree_rmb_select"), &Skeleton3DEditor::_joint_tree_rmb_select);
 	ClassDB::bind_method(D_METHOD("_update_properties"), &Skeleton3DEditor::_update_properties);
 	ClassDB::bind_method(D_METHOD("_on_click_skeleton_option"), &Skeleton3DEditor::_on_click_skeleton_option);
-
-	ClassDB::bind_method(D_METHOD("get_drag_data_fw"), &Skeleton3DEditor::get_drag_data_fw);
-	ClassDB::bind_method(D_METHOD("can_drop_data_fw"), &Skeleton3DEditor::can_drop_data_fw);
-	ClassDB::bind_method(D_METHOD("drop_data_fw"), &Skeleton3DEditor::drop_data_fw);
 
 	ClassDB::bind_method(D_METHOD("move_skeleton_bone"), &Skeleton3DEditor::move_skeleton_bone);
 
@@ -1323,7 +1319,7 @@ void Skeleton3DGizmoPlugin::commit_subgizmos(const EditorNode3DGizmo *p_gizmo, c
 	Skeleton3DEditor *se = Skeleton3DEditor::get_singleton();
 	Node3DEditor *ne = Node3DEditor::get_singleton();
 
-	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 	ur->create_action(TTR("Set Bone Transform"));
 	if (ne->get_tool_mode() == Node3DEditor::TOOL_MODE_SELECT || ne->get_tool_mode() == Node3DEditor::TOOL_MODE_MOVE) {
 		for (int i = 0; i < p_ids.size(); i++) {

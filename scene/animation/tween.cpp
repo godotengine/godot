@@ -60,7 +60,7 @@ void Tweener::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("finished"));
 }
 
-void Tween::start_tweeners() {
+void Tween::_start_tweeners() {
 	if (tweeners.is_empty()) {
 		dead = true;
 		ERR_FAIL_MSG("Tween without commands, aborting.");
@@ -68,6 +68,15 @@ void Tween::start_tweeners() {
 
 	for (Ref<Tweener> &tweener : tweeners.write[current_step]) {
 		tweener->start();
+	}
+}
+
+void Tween::_stop_internal(bool p_reset) {
+	running = false;
+	if (p_reset) {
+		started = false;
+		dead = false;
+		total_time = 0;
 	}
 }
 
@@ -135,14 +144,11 @@ void Tween::append(Ref<Tweener> p_tweener) {
 }
 
 void Tween::stop() {
-	started = false;
-	running = false;
-	dead = false;
-	total_time = 0;
+	_stop_internal(true);
 }
 
 void Tween::pause() {
-	running = false;
+	_stop_internal(false);
 }
 
 void Tween::play() {
@@ -274,11 +280,20 @@ bool Tween::step(double p_delta) {
 	}
 
 	if (!started) {
-		ERR_FAIL_COND_V_MSG(tweeners.is_empty(), false, "Tween started, but has no Tweeners.");
+		if (tweeners.is_empty()) {
+			String tween_id;
+			Node *node = get_bound_node();
+			if (node) {
+				tween_id = vformat("Tween (bound to %s)", node->is_inside_tree() ? (String)node->get_path() : (String)node->get_name());
+			} else {
+				tween_id = to_string();
+			}
+			ERR_FAIL_V_MSG(false, tween_id + ": started with no Tweeners.");
+		}
 		current_step = 0;
 		loops_done = 0;
 		total_time = 0;
-		start_tweeners();
+		_start_tweeners();
 		started = true;
 	}
 
@@ -319,7 +334,7 @@ bool Tween::step(double p_delta) {
 				} else {
 					emit_signal(SNAME("loop_finished"), loops_done);
 					current_step = 0;
-					start_tweeners();
+					_start_tweeners();
 #ifdef DEBUG_ENABLED
 					if (loops <= 0 && Math::is_equal_approx(rem_delta, initial_delta)) {
 						if (!potential_infinite) {
@@ -332,7 +347,7 @@ bool Tween::step(double p_delta) {
 #endif
 				}
 			} else {
-				start_tweeners();
+				_start_tweeners();
 			}
 		}
 	}
@@ -384,6 +399,15 @@ Variant Tween::interpolate_variant(Variant p_initial_val, Variant p_delta_val, d
 
 	Variant ret = Animation::add_variant(p_initial_val, p_delta_val);
 	ret = Animation::interpolate_variant(p_initial_val, ret, run_equation(p_trans, p_ease, p_time, 0.0, 1.0, p_duration));
+	return ret;
+}
+
+String Tween::to_string() {
+	String ret = Object::to_string();
+	Node *node = get_bound_node();
+	if (node) {
+		ret += vformat(" (bound to %s)", node->get_name());
+	}
 	return ret;
 }
 

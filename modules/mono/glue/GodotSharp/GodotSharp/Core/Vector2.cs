@@ -334,6 +334,16 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns <see langword="true"/> if this vector is finite, by calling
+        /// <see cref="Mathf.IsFinite"/> on each component.
+        /// </summary>
+        /// <returns>Whether this vector is finite or not.</returns>
+        public readonly bool IsFinite()
+        {
+            return Mathf.IsFinite(x) && Mathf.IsFinite(y);
+        }
+
+        /// <summary>
         /// Returns <see langword="true"/> if the vector is normalized, and <see langword="false"/> otherwise.
         /// </summary>
         /// <returns>A <see langword="bool"/> indicating whether or not the vector is normalized.</returns>
@@ -376,24 +386,6 @@ namespace Godot
             (
                 Mathf.Lerp(x, to.x, weight),
                 Mathf.Lerp(y, to.y, weight)
-            );
-        }
-
-        /// <summary>
-        /// Returns the result of the linear interpolation between
-        /// this vector and <paramref name="to"/> by the vector amount <paramref name="weight"/>.
-        /// </summary>
-        /// <param name="to">The destination vector for interpolation.</param>
-        /// <param name="weight">
-        /// A vector with components on the range of 0.0 to 1.0, representing the amount of interpolation.
-        /// </param>
-        /// <returns>The resulting vector of the interpolation.</returns>
-        public readonly Vector2 Lerp(Vector2 to, Vector2 weight)
-        {
-            return new Vector2
-            (
-                Mathf.Lerp(x, to.x, weight.x),
-                Mathf.Lerp(y, to.y, weight.y)
             );
         }
 
@@ -529,11 +521,12 @@ namespace Godot
         /// <returns>The rotated vector.</returns>
         public readonly Vector2 Rotated(real_t angle)
         {
-            real_t sine = Mathf.Sin(angle);
-            real_t cosi = Mathf.Cos(angle);
-            return new Vector2(
-                x * cosi - y * sine,
-                x * sine + y * cosi);
+            (real_t sin, real_t cos) = Mathf.SinCos(angle);
+            return new Vector2
+            (
+                x * cos - y * sin,
+                x * sin + y * cos
+            );
         }
 
         /// <summary>
@@ -683,7 +676,8 @@ namespace Godot
         /// <returns>The resulting vector.</returns>
         public static Vector2 FromAngle(real_t angle)
         {
-            return new Vector2(Mathf.Cos(angle), Mathf.Sin(angle));
+            (real_t sin, real_t cos) = Mathf.SinCos(angle);
+            return new Vector2(cos, sin);
         }
 
         /// <summary>
@@ -986,6 +980,18 @@ namespace Godot
         public readonly bool IsEqualApprox(Vector2 other)
         {
             return Mathf.IsEqualApprox(x, other.x) && Mathf.IsEqualApprox(y, other.y);
+        }
+
+        /// <summary>
+        /// Returns <see langword="true"/> if this vector's values are approximately zero,
+        /// by running <see cref="Mathf.IsZeroApprox(real_t)"/> on each component.
+        /// This method is faster than using <see cref="IsEqualApprox"/> with one value
+        /// as a zero vector.
+        /// </summary>
+        /// <returns>Whether or not the vector is approximately zero.</returns>
+        public readonly bool IsZeroApprox()
+        {
+            return Mathf.IsZeroApprox(x) && Mathf.IsZeroApprox(y);
         }
 
         /// <summary>

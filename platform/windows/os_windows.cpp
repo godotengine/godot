@@ -718,15 +718,23 @@ Error OS_Windows::create_process(const String &p_path, const List<String> &p_arg
 }
 
 Error OS_Windows::kill(const ProcessID &p_pid) {
-	ERR_FAIL_COND_V(!process_map->has(p_pid), FAILED);
+	int ret = 0;
+	if (process_map->has(p_pid)) {
+		const PROCESS_INFORMATION pi = (*process_map)[p_pid].pi;
+		process_map->erase(p_pid);
 
-	const PROCESS_INFORMATION pi = (*process_map)[p_pid].pi;
-	process_map->erase(p_pid);
+		ret = TerminateProcess(pi.hProcess, 0);
 
-	const int ret = TerminateProcess(pi.hProcess, 0);
+		CloseHandle(pi.hProcess);
+		CloseHandle(pi.hThread);
+	} else {
+		HANDLE hProcess = OpenProcess(PROCESS_TERMINATE, false, (DWORD)p_pid);
+		if (hProcess != NULL) {
+			ret = TerminateProcess(hProcess, 0);
 
-	CloseHandle(pi.hProcess);
-	CloseHandle(pi.hThread);
+			CloseHandle(hProcess);
+		}
+	}
 
 	return ret != 0 ? OK : FAILED;
 }
@@ -1158,17 +1166,24 @@ String OS_Windows::get_environment(const String &p_var) const {
 	return "";
 }
 
-bool OS_Windows::set_environment(const String &p_var, const String &p_value) const {
-	return (bool)SetEnvironmentVariableW((LPCWSTR)(p_var.utf16().get_data()), (LPCWSTR)(p_value.utf16().get_data()));
+void OS_Windows::set_environment(const String &p_var, const String &p_value) const {
+	ERR_FAIL_COND_MSG(p_var.is_empty() || p_var.contains("="), vformat("Invalid environment variable name '%s', cannot be empty or include '='.", p_var));
+	Char16String var = p_var.utf16();
+	Char16String value = p_value.utf16();
+	ERR_FAIL_COND_MSG(var.length() + value.length() + 2 > 32767, vformat("Invalid definition for environment variable '%s', cannot exceed 32767 characters.", p_var));
+	SetEnvironmentVariableW((LPCWSTR)(var.get_data()), (LPCWSTR)(value.get_data()));
 }
 
-String OS_Windows::get_stdin_string(bool p_block) {
-	if (p_block) {
-		WCHAR buff[1024];
-		DWORD count = 0;
-		if (ReadConsoleW(GetStdHandle(STD_INPUT_HANDLE), buff, 1024, &count, nullptr)) {
-			return String::utf16((const char16_t *)buff, count);
-		}
+void OS_Windows::unset_environment(const String &p_var) const {
+	ERR_FAIL_COND_MSG(p_var.is_empty() || p_var.contains("="), vformat("Invalid environment variable name '%s', cannot be empty or include '='.", p_var));
+	SetEnvironmentVariableW((LPCWSTR)(p_var.utf16().get_data()), nullptr); // Null to delete.
+}
+
+String OS_Windows::get_stdin_string() {
+	WCHAR buff[1024];
+	DWORD count = 0;
+	if (ReadConsoleW(GetStdHandle(STD_INPUT_HANDLE), buff, 1024, &count, nullptr)) {
+		return String::utf16((const char16_t *)buff, count);
 	}
 
 	return String();

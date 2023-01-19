@@ -17,7 +17,7 @@
 		func undo_something():
 		    pass # Put here the code that reverts what's done by "do_something()".
 
-		func _on_MyButton_pressed():
+		func _on_my_button_pressed():
 		    var node = get_node("MyNode2D")
 		    undo_redo.create_action("Move the node")
 		    undo_redo.add_do_method(self, "do_something")

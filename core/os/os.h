@@ -131,7 +131,7 @@ public:
 	void print_rich(const char *p_format, ...) _PRINTF_FORMAT_ATTRIBUTE_2_3;
 	void printerr(const char *p_format, ...) _PRINTF_FORMAT_ATTRIBUTE_2_3;
 
-	virtual String get_stdin_string(bool p_block = true) = 0;
+	virtual String get_stdin_string() = 0;
 
 	virtual Error get_entropy(uint8_t *r_buffer, int p_bytes) = 0; // Should return cryptographically-safe random bytes.
 
@@ -167,7 +167,8 @@ public:
 
 	virtual bool has_environment(const String &p_var) const = 0;
 	virtual String get_environment(const String &p_var) const = 0;
-	virtual bool set_environment(const String &p_var, const String &p_value) const = 0;
+	virtual void set_environment(const String &p_var, const String &p_value) const = 0;
+	virtual void unset_environment(const String &p_var) const = 0;
 
 	virtual String get_name() const = 0;
 	virtual String get_distribution_name() const = 0;

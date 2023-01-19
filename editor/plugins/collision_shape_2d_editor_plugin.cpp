@@ -219,7 +219,7 @@ void CollisionShape2DEditor::set_handle(int idx, Point2 &p_point) {
 }
 
 void CollisionShape2DEditor::commit_handle(int idx, Variant &p_org) {
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Set Handle"));
 
 	switch (shape_type) {

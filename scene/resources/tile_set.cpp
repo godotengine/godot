@@ -473,6 +473,7 @@ void TileSet::_compute_next_source_id() {
 int TileSet::add_source(Ref<TileSetSource> p_tile_set_source, int p_atlas_source_id_override) {
 	ERR_FAIL_COND_V(!p_tile_set_source.is_valid(), TileSet::INVALID_SOURCE);
 	ERR_FAIL_COND_V_MSG(p_atlas_source_id_override >= 0 && (sources.has(p_atlas_source_id_override)), TileSet::INVALID_SOURCE, vformat("Cannot create TileSet atlas source. Another atlas source exists with id %d.", p_atlas_source_id_override));
+	ERR_FAIL_COND_V_MSG(p_atlas_source_id_override < 0 && p_atlas_source_id_override != TileSet::INVALID_SOURCE, TileSet::INVALID_SOURCE, vformat("Provided source ID %d is not valid. Negative source IDs are not allowed.", p_atlas_source_id_override));
 
 	int new_source_id = p_atlas_source_id_override >= 0 ? p_atlas_source_id_override : next_source_id;
 	sources[new_source_id] = p_tile_set_source;

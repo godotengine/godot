@@ -291,6 +291,10 @@ void RenderingServerDefault::set_boot_image(const Ref<Image> &p_image, const Col
 	RSG::rasterizer->set_boot_image(p_image, p_color, p_scale, p_use_filter);
 }
 
+Color RenderingServerDefault::get_default_clear_color() {
+	return RSG::texture_storage->get_default_clear_color();
+}
+
 void RenderingServerDefault::set_default_clear_color(const Color &p_color) {
 	RSG::viewport->set_default_clear_color(p_color);
 }

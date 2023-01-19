@@ -1233,7 +1233,7 @@ void ProjectList::load_project_icon(int p_index) {
 
 	// The default project icon is 128×128 to look crisp on hiDPI displays,
 	// but we want the actual displayed size to be 64×64 on loDPI displays.
-	item.control->icon->set_ignore_texture_size(true);
+	item.control->icon->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
 	item.control->icon->set_custom_minimum_size(Size2(64, 64) * EDSCALE);
 	item.control->icon->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
 
@@ -1273,7 +1273,7 @@ ProjectList::Item ProjectList::load_project_data(const String &p_path, bool p_fa
 	PackedStringArray unsupported_features = ProjectSettings::get_unsupported_features(project_features);
 
 	uint64_t last_edited = 0;
-	if (FileAccess::exists(conf)) {
+	if (cf_err == OK) {
 		// The modification date marks the date the project was last edited.
 		// This is because the `project.godot` file will always be modified
 		// when editing a project (but not when running it).
@@ -2653,8 +2653,9 @@ ProjectManager::ProjectManager() {
 		AcceptDialog::set_swap_cancel_ok(swap_cancel_ok == 2);
 	}
 
-	set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
-	set_theme(create_custom_theme());
+	Ref<Theme> theme = create_custom_theme();
+	set_theme(theme);
+	DisplayServer::set_early_window_clear_color_override(true, theme->get_color(SNAME("background"), SNAME("Editor")));
 
 	set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 

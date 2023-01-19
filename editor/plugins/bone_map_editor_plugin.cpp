@@ -316,7 +316,7 @@ void BoneMapper::create_editor() {
 
 	profile_texture = memnew(TextureRect);
 	profile_texture->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
-	profile_texture->set_ignore_texture_size(true);
+	profile_texture->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
 	profile_texture->set_h_size_flags(Control::SIZE_FILL);
 	profile_texture->set_v_size_flags(Control::SIZE_FILL);
 	bone_mapper_field->add_child(profile_texture);

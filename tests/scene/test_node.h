@@ -37,7 +37,7 @@
 
 namespace TestNode {
 
-TEST_CASE("[SceneTree][Node] Simple Add/Remove/Move/Find") {
+TEST_CASE("[SceneTree][Node] Testing node operations with a very simple scene tree") {
 	Node *node = memnew(Node);
 
 	// Check initial scene tree setup.
@@ -135,10 +135,30 @@ TEST_CASE("[SceneTree][Node] Simple Add/Remove/Move/Find") {
 		CHECK(node->is_inside_tree());
 	}
 
+	SUBCASE("Node should be possible to reparent") {
+		node->reparent(SceneTree::get_singleton()->get_root());
+
+		Node *child = SceneTree::get_singleton()->get_root()->get_child(0);
+		CHECK_EQ(child, node);
+		CHECK(node->is_inside_tree());
+	}
+
+	SUBCASE("Node should be possible to duplicate") {
+		node->set_name("MyName");
+
+		Node *duplicate = node->duplicate();
+
+		CHECK_FALSE(node == duplicate);
+		CHECK_FALSE(duplicate->is_inside_tree());
+		CHECK_EQ(duplicate->get_name(), node->get_name());
+
+		memdelete(duplicate);
+	}
+
 	memdelete(node);
 }
 
-TEST_CASE("[SceneTree][Node] Nested Add/Remove/Move/Find") {
+TEST_CASE("[SceneTree][Node] Testing node operations with a more complex simple scene tree") {
 	Node *node1 = memnew(Node);
 	Node *node2 = memnew(Node);
 	Node *node1_1 = memnew(Node);
@@ -209,7 +229,7 @@ TEST_CASE("[SceneTree][Node] Nested Add/Remove/Move/Find") {
 		CHECK_EQ(child2, node1);
 	}
 
-	SUBCASE("Nodes should be in the expected order when reparented") {
+	SUBCASE("Nodes should be in the expected order when reparented (remove/add)") {
 		CHECK_EQ(node2->get_child_count(), 0);
 
 		node1->remove_child(node1_1);
@@ -217,6 +237,22 @@ TEST_CASE("[SceneTree][Node] Nested Add/Remove/Move/Find") {
 		CHECK_EQ(node1_1->get_parent(), nullptr);
 
 		node2->add_child(node1_1);
+		CHECK_EQ(node2->get_child_count(), 1);
+		CHECK_EQ(node1_1->get_parent(), node2);
+
+		Node *child = node2->get_child(0);
+		CHECK_EQ(child, node1_1);
+
+		CHECK_EQ(SceneTree::get_singleton()->get_root()->get_child_count(), 2);
+		CHECK_EQ(SceneTree::get_singleton()->get_node_count(), 4);
+	}
+
+	SUBCASE("Nodes should be in the expected order when reparented") {
+		CHECK_EQ(node2->get_child_count(), 0);
+
+		node1_1->reparent(node2);
+
+		CHECK_EQ(node1->get_child_count(), 0);
 		CHECK_EQ(node2->get_child_count(), 1);
 		CHECK_EQ(node1_1->get_parent(), node2);
 
@@ -313,6 +349,70 @@ TEST_CASE("[SceneTree][Node] Nested Add/Remove/Move/Find") {
 
 		E = nodes.front();
 		CHECK_EQ(E->get(), node1_1);
+	}
+
+	SUBCASE("Nodes added as siblings of another node should be right next to it") {
+		node1->remove_child(node1_1);
+
+		node1->add_sibling(node1_1);
+
+		CHECK_EQ(SceneTree::get_singleton()->get_root()->get_child_count(), 3);
+		CHECK_EQ(SceneTree::get_singleton()->get_node_count(), 4);
+
+		CHECK_EQ(SceneTree::get_singleton()->get_root()->get_child(0), node1);
+		CHECK_EQ(SceneTree::get_singleton()->get_root()->get_child(1), node1_1);
+		CHECK_EQ(SceneTree::get_singleton()->get_root()->get_child(2), node2);
+	}
+
+	SUBCASE("Replaced nodes should be be removed and the replacing node added") {
+		SceneTree::get_singleton()->get_root()->remove_child(node2);
+
+		node1->replace_by(node2);
+
+		CHECK_EQ(SceneTree::get_singleton()->get_root()->get_child_count(), 1);
+		CHECK_EQ(SceneTree::get_singleton()->get_node_count(), 3);
+
+		CHECK_FALSE(node1->is_inside_tree());
+		CHECK(node2->is_inside_tree());
+
+		CHECK_EQ(node1->get_parent(), nullptr);
+		CHECK_EQ(node2->get_parent(), SceneTree::get_singleton()->get_root());
+		CHECK_EQ(node2->get_child_count(), 1);
+		CHECK_EQ(node2->get_child(0), node1_1);
+	}
+
+	SUBCASE("Replacing nodes should keep the groups of the replaced nodes") {
+		SceneTree::get_singleton()->get_root()->remove_child(node2);
+
+		node1->add_to_group("nodes");
+		node1->replace_by(node2, true);
+
+		List<Node *> nodes;
+		SceneTree::get_singleton()->get_nodes_in_group("nodes", &nodes);
+		CHECK_EQ(nodes.size(), 1);
+
+		List<Node *>::Element *E = nodes.front();
+		CHECK_EQ(E->get(), node2);
+	}
+
+	SUBCASE("Duplicating a node should also duplicate the children") {
+		node1->set_name("MyName1");
+		node1_1->set_name("MyName1_1");
+		Node *duplicate1 = node1->duplicate();
+
+		CHECK_EQ(duplicate1->get_child_count(), node1->get_child_count());
+		Node *duplicate1_1 = duplicate1->get_child(0);
+
+		CHECK_EQ(duplicate1_1->get_child_count(), node1_1->get_child_count());
+
+		CHECK_EQ(duplicate1->get_name(), node1->get_name());
+		CHECK_EQ(duplicate1_1->get_name(), node1_1->get_name());
+
+		CHECK_FALSE(duplicate1->is_inside_tree());
+		CHECK_FALSE(duplicate1_1->is_inside_tree());
+
+		memdelete(duplicate1_1);
+		memdelete(duplicate1);
 	}
 
 	memdelete(node1_1);

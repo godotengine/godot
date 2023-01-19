@@ -583,7 +583,7 @@ void RenameDialog::rename() {
 	_iterate_scene(root_node, selected_node_list, &global_count);
 
 	if (!to_rename.is_empty()) {
-		Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 		undo_redo->create_action(TTR("Batch Rename"));
 
 		// Make sure to iterate reversed so that child nodes will find parents.

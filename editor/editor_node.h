@@ -292,6 +292,7 @@ private:
 	Vector<EditorPlugin *> editor_plugins;
 	bool _initializing_plugins = false;
 	HashMap<String, EditorPlugin *> addon_name_to_plugin;
+	LocalVector<String> pending_addons;
 
 	PanelContainer *scene_root_parent = nullptr;
 	Control *theme_base = nullptr;
@@ -535,6 +536,7 @@ private:
 	static void _resource_loaded(Ref<Resource> p_resource, const String &p_path);
 
 	void _build_icon_type_cache();
+	void _enable_pending_addons();
 
 	void _dialog_action(String p_file);
 
@@ -729,7 +731,6 @@ public:
 	static EditorLog *get_log() { return singleton->log; }
 	static EditorData &get_editor_data() { return singleton->editor_data; }
 	static EditorFolding &get_editor_folding() { return singleton->editor_folding; }
-	static Ref<EditorUndoRedoManager> &get_undo_redo();
 
 	static HBoxContainer *get_menu_hb() { return singleton->menu_hb; }
 	static VSplitContainer *get_top_split() { return singleton->top_split; }
@@ -914,7 +915,7 @@ public:
 
 	bool ensure_main_scene(bool p_from_native);
 
-	Error run_play_native(int p_idx, int p_platform);
+	Error run_play_native(int p_id);
 	void run_play();
 	void run_play_current();
 	void run_play_custom(const String &p_custom);

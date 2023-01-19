@@ -370,6 +370,7 @@ class DisplayServerWindows : public DisplayServer {
 		bool window_has_focus = false;
 		bool exclusive = false;
 		bool context_created = false;
+		bool mpass = false;
 
 		// Used to transfer data between events using timer.
 		WPARAM saved_wparam;
@@ -452,6 +453,8 @@ class DisplayServerWindows : public DisplayServer {
 	bool in_dispatch_input_event = false;
 
 	WNDCLASSEXW wc;
+	HBRUSH window_bkg_brush = nullptr;
+	uint32_t window_bkg_brush_color = 0;
 
 	HCURSOR cursors[CURSOR_MAX] = { nullptr };
 	CursorShape cursor_shape = CursorShape::CURSOR_ARROW;

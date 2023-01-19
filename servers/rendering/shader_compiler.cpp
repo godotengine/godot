@@ -909,9 +909,6 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 
 			if (p_default_actions.renames.has(vnode->name)) {
 				code = p_default_actions.renames[vnode->name];
-				if (vnode->name == "SCREEN_TEXTURE") {
-					r_gen_code.uses_screen_texture_mipmaps = true;
-				}
 			} else {
 				if (shader->uniforms.has(vnode->name)) {
 					//its a uniform!
@@ -919,29 +916,22 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 					if (u.texture_order >= 0) {
 						StringName name = vnode->name;
 						if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_SCREEN_TEXTURE) {
-							name = "SCREEN_TEXTURE";
+							name = "color_buffer";
 							if (u.filter >= ShaderLanguage::FILTER_NEAREST_MIPMAP) {
 								r_gen_code.uses_screen_texture_mipmaps = true;
 							}
+							r_gen_code.uses_screen_texture = true;
 						} else if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_NORMAL_ROUGHNESS_TEXTURE) {
-							name = "NORMAL_ROUGHNESS_TEXTURE";
+							name = "normal_roughness_buffer";
+							r_gen_code.uses_normal_roughness_texture = true;
 						} else if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_DEPTH_TEXTURE) {
-							name = "DEPTH_TEXTURE";
+							name = "depth_buffer";
+							r_gen_code.uses_depth_texture = true;
 						} else {
 							name = _mkid(vnode->name); //texture, use as is
 						}
 
-						if (p_default_actions.renames.has(name)) {
-							code = p_default_actions.renames[name];
-						} else {
-							code = name;
-						}
-
-						if (p_actions.usage_flag_pointers.has(name) && !used_flag_pointers.has(name)) {
-							*p_actions.usage_flag_pointers[name] = true;
-							used_flag_pointers.insert(name);
-						}
-
+						code = name;
 					} else {
 						//a scalar or vector
 						if (u.scope == ShaderLanguage::ShaderNode::Uniform::SCOPE_GLOBAL) {
@@ -1251,16 +1241,20 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 							}
 
 							if (correct_texture_uniform) {
-								//TODO Needs to detect screen_texture hint as well
-								is_screen_texture = (texture_uniform == "SCREEN_TEXTURE");
-
 								String sampler_name;
+								bool is_normal_roughness_texture = false;
 
 								if (actions.custom_samplers.has(texture_uniform)) {
 									sampler_name = actions.custom_samplers[texture_uniform];
 								} else {
 									if (shader->uniforms.has(texture_uniform)) {
-										sampler_name = _get_sampler_name(shader->uniforms[texture_uniform].filter, shader->uniforms[texture_uniform].repeat);
+										const ShaderLanguage::ShaderNode::Uniform &u = shader->uniforms[texture_uniform];
+										if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_SCREEN_TEXTURE) {
+											is_screen_texture = true;
+										} else if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_NORMAL_ROUGHNESS_TEXTURE) {
+											is_normal_roughness_texture = true;
+										}
+										sampler_name = _get_sampler_name(u.filter, u.repeat);
 									} else {
 										bool found = false;
 
@@ -1287,7 +1281,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 								}
 
 								String data_type_name = "";
-								if (texture_uniform == "NORMAL_ROUGHNESS_TEXTURE") {
+								if (is_normal_roughness_texture) {
 									data_type_name = "multiviewSampler";
 									normal_roughness_texture_used = true;
 								} else {
@@ -1515,6 +1509,9 @@ Error ShaderCompiler::compile(RS::ShaderMode p_mode, const String &p_code, Ident
 	r_gen_code.uses_vertex_time = false;
 	r_gen_code.uses_global_textures = false;
 	r_gen_code.uses_screen_texture_mipmaps = false;
+	r_gen_code.uses_screen_texture = false;
+	r_gen_code.uses_depth_texture = false;
+	r_gen_code.uses_normal_roughness_texture = false;
 
 	used_name_defines.clear();
 	used_rmode_defines.clear();

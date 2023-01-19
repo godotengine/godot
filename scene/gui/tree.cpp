@@ -657,7 +657,7 @@ int TreeItem::get_custom_minimum_height() const {
 
 /* Item manipulation */
 
-TreeItem *TreeItem::create_child(int p_idx) {
+TreeItem *TreeItem::create_child(int p_index) {
 	TreeItem *ti = memnew(TreeItem(tree));
 	if (tree) {
 		ti->cells.resize(tree->columns.size());
@@ -669,7 +669,7 @@ TreeItem *TreeItem::create_child(int p_idx) {
 	int idx = 0;
 
 	while (c) {
-		if (idx++ == p_idx) {
+		if (idx++ == p_index) {
 			c->prev = ti;
 			ti->next = c;
 			break;
@@ -683,7 +683,7 @@ TreeItem *TreeItem::create_child(int p_idx) {
 		ti->prev = l_prev;
 		if (!children_cache.is_empty()) {
 			if (ti->next) {
-				children_cache.insert(p_idx, ti);
+				children_cache.insert(p_index, ti);
 			} else {
 				children_cache.append(ti);
 			}
@@ -826,15 +826,15 @@ TreeItem *TreeItem::get_next_visible(bool p_wrap) {
 	return next_item;
 }
 
-TreeItem *TreeItem::get_child(int p_idx) {
+TreeItem *TreeItem::get_child(int p_index) {
 	_create_children_cache();
 
-	if (p_idx < 0) {
-		p_idx += children_cache.size();
+	if (p_index < 0) {
+		p_index += children_cache.size();
 	}
-	ERR_FAIL_INDEX_V(p_idx, children_cache.size(), nullptr);
+	ERR_FAIL_INDEX_V(p_index, children_cache.size(), nullptr);
 
-	return children_cache.get(p_idx);
+	return children_cache.get(p_index);
 }
 
 int TreeItem::get_visible_child_count() {
@@ -1058,28 +1058,28 @@ int TreeItem::get_button_count(int p_column) const {
 	return cells[p_column].buttons.size();
 }
 
-Ref<Texture2D> TreeItem::get_button(int p_column, int p_idx) const {
+Ref<Texture2D> TreeItem::get_button(int p_column, int p_index) const {
 	ERR_FAIL_INDEX_V(p_column, cells.size(), Ref<Texture2D>());
-	ERR_FAIL_INDEX_V(p_idx, cells[p_column].buttons.size(), Ref<Texture2D>());
-	return cells[p_column].buttons[p_idx].texture;
+	ERR_FAIL_INDEX_V(p_index, cells[p_column].buttons.size(), Ref<Texture2D>());
+	return cells[p_column].buttons[p_index].texture;
 }
 
-String TreeItem::get_button_tooltip_text(int p_column, int p_idx) const {
+String TreeItem::get_button_tooltip_text(int p_column, int p_index) const {
 	ERR_FAIL_INDEX_V(p_column, cells.size(), String());
-	ERR_FAIL_INDEX_V(p_idx, cells[p_column].buttons.size(), String());
-	return cells[p_column].buttons[p_idx].tooltip;
+	ERR_FAIL_INDEX_V(p_index, cells[p_column].buttons.size(), String());
+	return cells[p_column].buttons[p_index].tooltip;
 }
 
-int TreeItem::get_button_id(int p_column, int p_idx) const {
+int TreeItem::get_button_id(int p_column, int p_index) const {
 	ERR_FAIL_INDEX_V(p_column, cells.size(), -1);
-	ERR_FAIL_INDEX_V(p_idx, cells[p_column].buttons.size(), -1);
-	return cells[p_column].buttons[p_idx].id;
+	ERR_FAIL_INDEX_V(p_index, cells[p_column].buttons.size(), -1);
+	return cells[p_column].buttons[p_index].id;
 }
 
-void TreeItem::erase_button(int p_column, int p_idx) {
+void TreeItem::erase_button(int p_column, int p_index) {
 	ERR_FAIL_INDEX(p_column, cells.size());
-	ERR_FAIL_INDEX(p_idx, cells[p_column].buttons.size());
-	cells.write[p_column].buttons.remove_at(p_idx);
+	ERR_FAIL_INDEX(p_index, cells[p_column].buttons.size());
+	cells.write[p_column].buttons.remove_at(p_index);
 	_changed_notify(p_column);
 }
 
@@ -1094,52 +1094,52 @@ int TreeItem::get_button_by_id(int p_column, int p_id) const {
 	return -1;
 }
 
-void TreeItem::set_button(int p_column, int p_idx, const Ref<Texture2D> &p_button) {
+void TreeItem::set_button(int p_column, int p_index, const Ref<Texture2D> &p_button) {
 	ERR_FAIL_COND(p_button.is_null());
 	ERR_FAIL_INDEX(p_column, cells.size());
-	ERR_FAIL_INDEX(p_idx, cells[p_column].buttons.size());
+	ERR_FAIL_INDEX(p_index, cells[p_column].buttons.size());
 
-	if (cells[p_column].buttons[p_idx].texture == p_button) {
+	if (cells[p_column].buttons[p_index].texture == p_button) {
 		return;
 	}
 
-	cells.write[p_column].buttons.write[p_idx].texture = p_button;
+	cells.write[p_column].buttons.write[p_index].texture = p_button;
 	cells.write[p_column].cached_minimum_size_dirty = true;
 
 	_changed_notify(p_column);
 }
 
-void TreeItem::set_button_color(int p_column, int p_idx, const Color &p_color) {
+void TreeItem::set_button_color(int p_column, int p_index, const Color &p_color) {
 	ERR_FAIL_INDEX(p_column, cells.size());
-	ERR_FAIL_INDEX(p_idx, cells[p_column].buttons.size());
+	ERR_FAIL_INDEX(p_index, cells[p_column].buttons.size());
 
-	if (cells[p_column].buttons[p_idx].color == p_color) {
+	if (cells[p_column].buttons[p_index].color == p_color) {
 		return;
 	}
 
-	cells.write[p_column].buttons.write[p_idx].color = p_color;
+	cells.write[p_column].buttons.write[p_index].color = p_color;
 	_changed_notify(p_column);
 }
 
-void TreeItem::set_button_disabled(int p_column, int p_idx, bool p_disabled) {
+void TreeItem::set_button_disabled(int p_column, int p_index, bool p_disabled) {
 	ERR_FAIL_INDEX(p_column, cells.size());
-	ERR_FAIL_INDEX(p_idx, cells[p_column].buttons.size());
+	ERR_FAIL_INDEX(p_index, cells[p_column].buttons.size());
 
-	if (cells[p_column].buttons[p_idx].disabled == p_disabled) {
+	if (cells[p_column].buttons[p_index].disabled == p_disabled) {
 		return;
 	}
 
-	cells.write[p_column].buttons.write[p_idx].disabled = p_disabled;
+	cells.write[p_column].buttons.write[p_index].disabled = p_disabled;
 	cells.write[p_column].cached_minimum_size_dirty = true;
 
 	_changed_notify(p_column);
 }
 
-bool TreeItem::is_button_disabled(int p_column, int p_idx) const {
+bool TreeItem::is_button_disabled(int p_column, int p_index) const {
 	ERR_FAIL_INDEX_V(p_column, cells.size(), false);
-	ERR_FAIL_INDEX_V(p_idx, cells[p_column].buttons.size(), false);
+	ERR_FAIL_INDEX_V(p_index, cells[p_column].buttons.size(), false);
 
-	return cells[p_column].buttons[p_idx].disabled;
+	return cells[p_column].buttons[p_index].disabled;
 }
 
 void TreeItem::set_editable(int p_column, bool p_editable) {
@@ -1497,15 +1497,15 @@ void TreeItem::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("add_button", "column", "button", "id", "disabled", "tooltip_text"), &TreeItem::add_button, DEFVAL(-1), DEFVAL(false), DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_button_count", "column"), &TreeItem::get_button_count);
-	ClassDB::bind_method(D_METHOD("get_button_tooltip_text", "column", "button_idx"), &TreeItem::get_button_tooltip_text);
-	ClassDB::bind_method(D_METHOD("get_button_id", "column", "button_idx"), &TreeItem::get_button_id);
+	ClassDB::bind_method(D_METHOD("get_button_tooltip_text", "column", "button_index"), &TreeItem::get_button_tooltip_text);
+	ClassDB::bind_method(D_METHOD("get_button_id", "column", "button_index"), &TreeItem::get_button_id);
 	ClassDB::bind_method(D_METHOD("get_button_by_id", "column", "id"), &TreeItem::get_button_by_id);
-	ClassDB::bind_method(D_METHOD("get_button", "column", "button_idx"), &TreeItem::get_button);
-	ClassDB::bind_method(D_METHOD("set_button", "column", "button_idx", "button"), &TreeItem::set_button);
-	ClassDB::bind_method(D_METHOD("erase_button", "column", "button_idx"), &TreeItem::erase_button);
-	ClassDB::bind_method(D_METHOD("set_button_disabled", "column", "button_idx", "disabled"), &TreeItem::set_button_disabled);
-	ClassDB::bind_method(D_METHOD("set_button_color", "column", "button_idx", "color"), &TreeItem::set_button_color);
-	ClassDB::bind_method(D_METHOD("is_button_disabled", "column", "button_idx"), &TreeItem::is_button_disabled);
+	ClassDB::bind_method(D_METHOD("get_button", "column", "button_index"), &TreeItem::get_button);
+	ClassDB::bind_method(D_METHOD("set_button", "column", "button_index", "button"), &TreeItem::set_button);
+	ClassDB::bind_method(D_METHOD("erase_button", "column", "button_index"), &TreeItem::erase_button);
+	ClassDB::bind_method(D_METHOD("set_button_disabled", "column", "button_index", "disabled"), &TreeItem::set_button_disabled);
+	ClassDB::bind_method(D_METHOD("set_button_color", "column", "button_index", "color"), &TreeItem::set_button_color);
+	ClassDB::bind_method(D_METHOD("is_button_disabled", "column", "button_index"), &TreeItem::is_button_disabled);
 
 	ClassDB::bind_method(D_METHOD("set_tooltip_text", "column", "tooltip"), &TreeItem::set_tooltip_text);
 	ClassDB::bind_method(D_METHOD("get_tooltip_text", "column"), &TreeItem::get_tooltip_text);
@@ -1518,7 +1518,7 @@ void TreeItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_disable_folding", "disable"), &TreeItem::set_disable_folding);
 	ClassDB::bind_method(D_METHOD("is_folding_disabled"), &TreeItem::is_folding_disabled);
 
-	ClassDB::bind_method(D_METHOD("create_child", "idx"), &TreeItem::create_child, DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("create_child", "index"), &TreeItem::create_child, DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("get_tree"), &TreeItem::get_tree);
 
 	ClassDB::bind_method(D_METHOD("get_next"), &TreeItem::get_next);
@@ -1529,7 +1529,7 @@ void TreeItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_next_visible", "wrap"), &TreeItem::get_next_visible, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_prev_visible", "wrap"), &TreeItem::get_prev_visible, DEFVAL(false));
 
-	ClassDB::bind_method(D_METHOD("get_child", "idx"), &TreeItem::get_child);
+	ClassDB::bind_method(D_METHOD("get_child", "index"), &TreeItem::get_child);
 	ClassDB::bind_method(D_METHOD("get_child_count"), &TreeItem::get_child_count);
 	ClassDB::bind_method(D_METHOD("get_children"), &TreeItem::get_children);
 	ClassDB::bind_method(D_METHOD("get_index"), &TreeItem::get_index);
@@ -4108,14 +4108,14 @@ Size2 Tree::get_minimum_size() const {
 	}
 }
 
-TreeItem *Tree::create_item(TreeItem *p_parent, int p_idx) {
+TreeItem *Tree::create_item(TreeItem *p_parent, int p_index) {
 	ERR_FAIL_COND_V(blocked > 0, nullptr);
 
 	TreeItem *ti = nullptr;
 
 	if (p_parent) {
 		ERR_FAIL_COND_V_MSG(p_parent->tree != this, nullptr, "A different tree owns the given parent");
-		ti = p_parent->create_child(p_idx);
+		ti = p_parent->create_child(p_index);
 	} else {
 		if (!root) {
 			// No root exists, make the given item the new root.
@@ -4126,7 +4126,7 @@ TreeItem *Tree::create_item(TreeItem *p_parent, int p_idx) {
 			root = ti;
 		} else {
 			// Root exists, append or insert to root.
-			ti = create_item(root, p_idx);
+			ti = create_item(root, p_index);
 		}
 	}
 
@@ -5162,7 +5162,7 @@ bool Tree::get_allow_reselect() const {
 
 void Tree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear"), &Tree::clear);
-	ClassDB::bind_method(D_METHOD("create_item", "parent", "idx"), &Tree::create_item, DEFVAL(Variant()), DEFVAL(-1));
+	ClassDB::bind_method(D_METHOD("create_item", "parent", "index"), &Tree::create_item, DEFVAL(Variant()), DEFVAL(-1));
 
 	ClassDB::bind_method(D_METHOD("get_root"), &Tree::get_root);
 	ClassDB::bind_method(D_METHOD("set_column_custom_minimum_width", "column", "min_width"), &Tree::set_column_custom_minimum_width);

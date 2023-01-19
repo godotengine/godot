@@ -217,6 +217,16 @@ public:
 	virtual bool is_dark_mode() const { return false; };
 	virtual Color get_accent_color() const { return Color(0, 0, 0, 0); };
 
+private:
+	static bool window_early_clear_override_enabled;
+	static Color window_early_clear_override_color;
+
+protected:
+	static bool _get_window_early_clear_override(Color &r_color);
+
+public:
+	static void set_early_window_clear_color_override(bool p_enabled, Color p_color = Color(0, 0, 0, 0));
+
 	enum MouseMode {
 		MOUSE_MODE_VISIBLE,
 		MOUSE_MODE_HIDDEN,
@@ -301,6 +311,7 @@ public:
 		WINDOW_FLAG_NO_FOCUS,
 		WINDOW_FLAG_POPUP,
 		WINDOW_FLAG_EXTEND_TO_TITLE,
+		WINDOW_FLAG_MOUSE_PASSTHROUGH,
 		WINDOW_FLAG_MAX,
 	};
 
@@ -313,6 +324,7 @@ public:
 		WINDOW_FLAG_NO_FOCUS_BIT = (1 << WINDOW_FLAG_NO_FOCUS),
 		WINDOW_FLAG_POPUP_BIT = (1 << WINDOW_FLAG_POPUP),
 		WINDOW_FLAG_EXTEND_TO_TITLE_BIT = (1 << WINDOW_FLAG_EXTEND_TO_TITLE),
+		WINDOW_FLAG_MOUSE_PASSTHROUGH_BIT = (1 << WINDOW_FLAG_MOUSE_PASSTHROUGH),
 	};
 
 	virtual WindowID create_sub_window(WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Rect2i &p_rect = Rect2i());

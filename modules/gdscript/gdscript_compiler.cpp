@@ -213,7 +213,7 @@ static bool _have_exact_arguments(const MethodBind *p_method, const Vector<GDScr
 }
 
 GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &codegen, Error &r_error, const GDScriptParser::ExpressionNode *p_expression, bool p_root, bool p_initializer, const GDScriptCodeGenerator::Address &p_index_addr) {
-	if (p_expression->is_constant && !p_expression->get_datatype().is_meta_type) {
+	if (p_expression->is_constant && !(p_expression->get_datatype().is_meta_type && p_expression->get_datatype().kind == GDScriptParser::DataType::CLASS)) {
 		return codegen.add_constant(p_expression->reduced_value);
 	}
 
@@ -2116,7 +2116,7 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 					}
 				}
 
-				codegen.generator->write_assign_default_parameter(dst_addr, src_addr);
+				codegen.generator->write_assign_default_parameter(dst_addr, src_addr, parameter->use_conversion_assign);
 				if (src_addr.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
 					codegen.generator->pop_temporary();
 				}

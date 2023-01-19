@@ -390,7 +390,7 @@ void EditorData::set_scene_as_saved(int p_idx) {
 	}
 	ERR_FAIL_INDEX(p_idx, edited_scene.size());
 
-	get_undo_redo()->set_history_as_saved(edited_scene[p_idx].history_id);
+	undo_redo_manager->set_history_as_saved(edited_scene[p_idx].history_id);
 }
 
 bool EditorData::is_scene_changed(int p_idx) {
@@ -399,7 +399,7 @@ bool EditorData::is_scene_changed(int p_idx) {
 	}
 	ERR_FAIL_INDEX_V(p_idx, edited_scene.size(), false);
 
-	uint64_t current_scene_version = get_undo_redo()->get_or_create_history(edited_scene[p_idx].history_id).undo_redo->get_version();
+	uint64_t current_scene_version = undo_redo_manager->get_or_create_history(edited_scene[p_idx].history_id).undo_redo->get_version();
 	bool is_changed = edited_scene[p_idx].last_checked_version != current_scene_version;
 	edited_scene.write[p_idx].last_checked_version = current_scene_version;
 	return is_changed;
@@ -423,10 +423,6 @@ int EditorData::get_current_edited_scene_history_id() const {
 
 int EditorData::get_scene_history_id(int p_idx) const {
 	return edited_scene[p_idx].history_id;
-}
-
-Ref<EditorUndoRedoManager> &EditorData::get_undo_redo() {
-	return undo_redo_manager;
 }
 
 void EditorData::add_undo_redo_inspector_hook_callback(Callable p_callable) {
@@ -998,6 +994,8 @@ void EditorData::script_class_set_name(const String &p_path, const StringName &p
 }
 
 void EditorData::script_class_save_icon_paths() {
+	Array script_classes = ProjectSettings::get_singleton()->get_global_class_list();
+
 	Dictionary d;
 	for (const KeyValue<StringName, String> &E : _script_class_icon_paths) {
 		if (ScriptServer::is_global_class(E.key)) {
@@ -1005,27 +1003,20 @@ void EditorData::script_class_save_icon_paths() {
 		}
 	}
 
-	Dictionary old;
-	if (ProjectSettings::get_singleton()->has_setting("_global_script_class_icons")) {
-		old = GLOBAL_GET("_global_script_class_icons");
-	}
-	if ((!old.is_empty() || d.is_empty()) && d.hash() == old.hash()) {
-		return;
-	}
-
-	if (d.is_empty()) {
-		if (ProjectSettings::get_singleton()->has_setting("_global_script_class_icons")) {
-			ProjectSettings::get_singleton()->clear("_global_script_class_icons");
+	for (int i = 0; i < script_classes.size(); i++) {
+		Dictionary d2 = script_classes[i];
+		if (!d2.has("class")) {
+			continue;
 		}
-	} else {
-		ProjectSettings::get_singleton()->set("_global_script_class_icons", d);
+		d2["icon"] = d.get(d2["class"], "");
 	}
-	ProjectSettings::get_singleton()->save();
+	ProjectSettings::get_singleton()->store_global_class_list(script_classes);
 }
 
 void EditorData::script_class_load_icon_paths() {
 	script_class_clear_icon_paths();
 
+#ifndef DISABLE_DEPRECATED
 	if (ProjectSettings::get_singleton()->has_setting("_global_script_class_icons")) {
 		Dictionary d = GLOBAL_GET("_global_script_class_icons");
 		List<Variant> keys;
@@ -1038,13 +1029,31 @@ void EditorData::script_class_load_icon_paths() {
 			String path = ScriptServer::get_global_class_path(name);
 			script_class_set_name(path, name);
 		}
+		ProjectSettings::get_singleton()->clear("_global_script_class_icons");
+	}
+#endif
+
+	Array script_classes = ProjectSettings::get_singleton()->get_global_class_list();
+	for (int i = 0; i < script_classes.size(); i++) {
+		Dictionary d = script_classes[i];
+		if (!d.has("class") || !d.has("path") || !d.has("icon")) {
+			continue;
+		}
+
+		String name = d["class"];
+		_script_class_icon_paths[name] = d["icon"];
+		script_class_set_name(d["path"], name);
 	}
 }
 
 EditorData::EditorData() {
 	current_edited_scene = -1;
-	undo_redo_manager.instantiate();
+	undo_redo_manager = memnew(EditorUndoRedoManager);
 	script_class_load_icon_paths();
+}
+
+EditorData::~EditorData() {
+	memdelete(undo_redo_manager);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

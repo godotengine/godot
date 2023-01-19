@@ -277,7 +277,7 @@ flat in uvec4 varying_G;
 uniform sampler2D atlas_texture; //texunit:-2
 uniform sampler2D shadow_atlas_texture; //texunit:-3
 #endif // DISABLE_LIGHTING
-uniform sampler2D screen_texture; //texunit:-4
+uniform sampler2D color_buffer; //texunit:-4
 uniform sampler2D sdf_texture; //texunit:-5
 uniform sampler2D normal_texture; //texunit:-6
 uniform sampler2D specular_texture; //texunit:-7
@@ -579,6 +579,12 @@ void main() {
 
 	if (normal_used || (using_light && bool(read_draw_data_flags & FLAGS_DEFAULT_NORMAL_MAP_USED))) {
 		normal.xy = texture(normal_texture, uv).xy * vec2(2.0, -2.0) - vec2(1.0, -1.0);
+		if (bool(read_draw_data_flags & FLAGS_FLIP_H)) {
+			normal.x = -normal.x;
+		}
+		if (bool(read_draw_data_flags & FLAGS_FLIP_V)) {
+			normal.y = -normal.y;
+		}
 		normal.z = sqrt(1.0 - dot(normal.xy, normal.xy));
 		normal_used = true;
 	} else {

@@ -27,6 +27,9 @@
 #define FLAGS_USE_MSDF (1 << 28)
 #define FLAGS_USE_LCD (1 << 29)
 
+#define FLAGS_FLIP_H (1 << 30)
+#define FLAGS_FLIP_V (1 << 31)
+
 #define SAMPLER_NEAREST_CLAMP 0
 #define SAMPLER_LINEAR_CLAMP 1
 #define SAMPLER_NEAREST_WITH_MIPMAPS_CLAMP 2
@@ -134,7 +137,7 @@ layout(set = 0, binding = 4) uniform texture2D shadow_atlas_texture;
 
 layout(set = 0, binding = 5) uniform sampler shadow_sampler;
 
-layout(set = 0, binding = 6) uniform texture2D screen_texture;
+layout(set = 0, binding = 6) uniform texture2D color_buffer;
 layout(set = 0, binding = 7) uniform texture2D sdf_texture;
 
 layout(set = 0, binding = 8) uniform sampler material_samplers[12];

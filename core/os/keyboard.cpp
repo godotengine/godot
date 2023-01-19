@@ -63,12 +63,15 @@ static const _KeyCodeText _keycodes[] = {
 	{Key::CTRL                  ,"Ctrl"},
 #if defined(MACOS_ENABLED)
 	{Key::META                  ,"Command"},
+	{Key::CMD_OR_CTRL           ,"Command"},
 	{Key::ALT                   ,"Option"},
 #elif defined(WINDOWS_ENABLED)
 	{Key::META                  ,"Windows"},
+	{Key::CMD_OR_CTRL           ,"Ctrl"},
 	{Key::ALT                   ,"Alt"},
 #else
 	{Key::META                  ,"Meta"},
+	{Key::CMD_OR_CTRL           ,"Ctrl"},
 	{Key::ALT                   ,"Alt"},
 #endif
 	{Key::CAPSLOCK              ,"CapsLock"},

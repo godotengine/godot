@@ -489,6 +489,7 @@ void Window::_make_window() {
 	ERR_FAIL_COND(window_id == DisplayServer::INVALID_WINDOW_ID);
 	DisplayServer::get_singleton()->window_set_max_size(Size2i(), window_id);
 	DisplayServer::get_singleton()->window_set_min_size(Size2i(), window_id);
+	DisplayServer::get_singleton()->window_set_mouse_passthrough(mpath, window_id);
 	String tr_title = atr(title);
 #ifdef DEBUG_ENABLED
 	if (window_id == DisplayServer::MAIN_WINDOW_ID) {
@@ -1233,6 +1234,18 @@ DisplayServer::WindowID Window::get_window_id() const {
 		return parent->get_window_id();
 	}
 	return window_id;
+}
+
+void Window::set_mouse_passthrough_polygon(const Vector<Vector2> &p_region) {
+	mpath = p_region;
+	if (window_id == DisplayServer::INVALID_WINDOW_ID) {
+		return;
+	}
+	DisplayServer::get_singleton()->window_set_mouse_passthrough(mpath, window_id);
+}
+
+Vector<Vector2> Window::get_mouse_passthrough_polygon() const {
+	return mpath;
 }
 
 void Window::set_wrap_controls(bool p_enable) {
@@ -2163,6 +2176,9 @@ void Window::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_use_font_oversampling", "enable"), &Window::set_use_font_oversampling);
 	ClassDB::bind_method(D_METHOD("is_using_font_oversampling"), &Window::is_using_font_oversampling);
 
+	ClassDB::bind_method(D_METHOD("set_mouse_passthrough_polygon", "polygon"), &Window::set_mouse_passthrough_polygon);
+	ClassDB::bind_method(D_METHOD("get_mouse_passthrough_polygon"), &Window::get_mouse_passthrough_polygon);
+
 	ClassDB::bind_method(D_METHOD("set_wrap_controls", "enable"), &Window::set_wrap_controls);
 	ClassDB::bind_method(D_METHOD("is_wrapping_controls"), &Window::is_wrapping_controls);
 	ClassDB::bind_method(D_METHOD("child_controls_changed"), &Window::child_controls_changed);
@@ -2243,6 +2259,8 @@ void Window::_bind_methods() {
 	}
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_screen", PROPERTY_HINT_ENUM, screen_hints), "set_current_screen", "get_current_screen");
 
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_VECTOR2_ARRAY, "mouse_passthrough_polygon"), "set_mouse_passthrough_polygon", "get_mouse_passthrough_polygon");
+
 	ADD_GROUP("Flags", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "visible"), "set_visible", "is_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "wrap_controls"), "set_wrap_controls", "is_wrapping_controls");
@@ -2255,6 +2273,7 @@ void Window::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "unfocusable"), "set_flag", "get_flag", FLAG_NO_FOCUS);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "popup_window"), "set_flag", "get_flag", FLAG_POPUP);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "extend_to_title"), "set_flag", "get_flag", FLAG_EXTEND_TO_TITLE);
+	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "mouse_passthrough"), "set_flag", "get_flag", FLAG_MOUSE_PASSTHROUGH);
 
 	ADD_GROUP("Limits", "");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "min_size", PROPERTY_HINT_NONE, "suffix:px"), "set_min_size", "get_min_size");
@@ -2302,6 +2321,7 @@ void Window::_bind_methods() {
 	BIND_ENUM_CONSTANT(FLAG_NO_FOCUS);
 	BIND_ENUM_CONSTANT(FLAG_POPUP);
 	BIND_ENUM_CONSTANT(FLAG_EXTEND_TO_TITLE);
+	BIND_ENUM_CONSTANT(FLAG_MOUSE_PASSTHROUGH);
 	BIND_ENUM_CONSTANT(FLAG_MAX);
 
 	BIND_ENUM_CONSTANT(CONTENT_SCALE_MODE_DISABLED);

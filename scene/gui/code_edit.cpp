@@ -548,7 +548,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 	}
 
 	if (k->is_action("ui_text_dedent", true)) {
-		do_unindent();
+		unindent_lines();
 		accept_event();
 		return;
 	}
@@ -894,50 +894,6 @@ void CodeEdit::indent_lines() {
 			select(start_line, get_selection_from_column(c) + selection_offset, get_selection_to_line(c), get_selection_to_column(c) + selection_offset, c);
 		}
 		set_caret_column(get_caret_column(c) + selection_offset, false, c);
-	}
-	end_complex_operation();
-}
-
-void CodeEdit::do_unindent() {
-	if (!is_editable()) {
-		return;
-	}
-
-	int cc = get_caret_column();
-
-	if (has_selection() || cc <= 0) {
-		unindent_lines();
-		return;
-	}
-
-	begin_complex_operation();
-	Vector<int> caret_edit_order = get_caret_index_edit_order();
-	for (const int &c : caret_edit_order) {
-		int cl = get_caret_line(c);
-		const String &line = get_line(cl);
-
-		if (line[cc - 1] == '\t') {
-			remove_text(cl, cc - 1, cl, cc);
-			set_caret_column(MAX(0, cc - 1), c == 0, c);
-			adjust_carets_after_edit(c, cl, cc, cl, cc - 1);
-			continue;
-		}
-
-		if (line[cc - 1] != ' ') {
-			continue;
-		}
-
-		int spaces_to_remove = _calculate_spaces_till_next_left_indent(cc);
-		if (spaces_to_remove > 0) {
-			for (int i = 1; i <= spaces_to_remove; i++) {
-				if (line[cc - i] != ' ') {
-					spaces_to_remove = i - 1;
-					break;
-				}
-			}
-			remove_text(cl, cc - spaces_to_remove, cl, cc);
-			set_caret_column(MAX(0, cc - spaces_to_remove), c == 0, c);
-		}
 	}
 	end_complex_operation();
 }
@@ -2086,9 +2042,11 @@ void CodeEdit::confirm_code_completion(bool p_replace) {
 		int post_brace_pair = get_caret_column(i) < get_line(caret_line).length() ? _get_auto_brace_pair_close_at_pos(caret_line, get_caret_column(i)) : -1;
 
 		// Strings do not nest like brackets, so ensure we don't add an additional closing pair.
-		if (has_string_delimiter(String::chr(last_completion_char)) && post_brace_pair != -1 && last_char_matches) {
-			remove_text(caret_line, get_caret_column(i), caret_line, get_caret_column(i) + 1);
-			adjust_carets_after_edit(i, caret_line, get_caret_column(i), caret_line, get_caret_column(i) + 1);
+		if (has_string_delimiter(String::chr(last_completion_char))) {
+			if (post_brace_pair != -1 && last_char_matches) {
+				remove_text(caret_line, get_caret_column(i), caret_line, get_caret_column(i) + 1);
+				adjust_carets_after_edit(i, caret_line, get_caret_column(i), caret_line, get_caret_column(i) + 1);
+			}
 		} else {
 			if (pre_brace_pair != -1 && pre_brace_pair != post_brace_pair && last_char_matches) {
 				remove_text(caret_line, get_caret_column(i), caret_line, get_caret_column(i) + 1);
@@ -2202,7 +2160,6 @@ void CodeEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_auto_indent_prefixes"), &CodeEdit::get_auto_indent_prefixes);
 
 	ClassDB::bind_method(D_METHOD("do_indent"), &CodeEdit::do_indent);
-	ClassDB::bind_method(D_METHOD("do_unindent"), &CodeEdit::do_unindent);
 
 	ClassDB::bind_method(D_METHOD("indent_lines"), &CodeEdit::indent_lines);
 	ClassDB::bind_method(D_METHOD("unindent_lines"), &CodeEdit::unindent_lines);

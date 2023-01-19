@@ -51,7 +51,7 @@ public:
 
 	virtual Vector<String> get_video_adapter_driver_info() const override;
 
-	virtual String get_stdin_string(bool p_block) override;
+	virtual String get_stdin_string() override;
 
 	virtual Error get_entropy(uint8_t *r_buffer, int p_bytes) override;
 
@@ -81,7 +81,9 @@ public:
 
 	virtual bool has_environment(const String &p_var) const override;
 	virtual String get_environment(const String &p_var) const override;
-	virtual bool set_environment(const String &p_var, const String &p_value) const override;
+	virtual void set_environment(const String &p_var, const String &p_value) const override;
+	virtual void unset_environment(const String &p_var) const override;
+
 	virtual String get_locale() const override;
 
 	virtual void initialize_debugging() override;

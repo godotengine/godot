@@ -85,7 +85,7 @@ bool NavigationLink2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_e
 				end_grabbed = false;
 			}
 		} else {
-			Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 			if (start_grabbed) {
 				undo_redo->create_action(TTR("Set start_location"));
 				undo_redo->add_do_method(node, "set_start_location", node->get_start_location());

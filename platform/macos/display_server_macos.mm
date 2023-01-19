@@ -166,6 +166,17 @@ DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mod
 			layer.contentsScale = scale;
 		}
 
+		NSColor *bg_color = [NSColor windowBackgroundColor];
+		Color _bg_color;
+		if (_get_window_early_clear_override(_bg_color)) {
+			bg_color = [NSColor colorWithCalibratedRed:_bg_color.r green:_bg_color.g blue:_bg_color.b alpha:1.f];
+		}
+
+		[wd.window_object setBackgroundColor:bg_color];
+		if (layer) {
+			[layer setBackgroundColor:bg_color.CGColor];
+		}
+
 #if defined(VULKAN_ENABLED)
 		if (context_vulkan) {
 			Error err = context_vulkan->window_create(window_id_counter, p_vsync_mode, wd.window_view, p_rect.size.width, p_rect.size.height);
@@ -273,12 +284,17 @@ void DisplayServerMacOS::_set_window_per_pixel_transparency_enabled(bool p_enabl
 #endif
 			wd.layered_window = true;
 		} else {
-			[wd.window_object setBackgroundColor:[NSColor colorWithCalibratedWhite:1 alpha:1]];
+			NSColor *bg_color = [NSColor windowBackgroundColor];
+			Color _bg_color;
+			if (_get_window_early_clear_override(_bg_color)) {
+				bg_color = [NSColor colorWithCalibratedRed:_bg_color.r green:_bg_color.g blue:_bg_color.b alpha:1.f];
+			}
+			[wd.window_object setBackgroundColor:bg_color];
 			[wd.window_object setOpaque:YES];
 			[wd.window_object setHasShadow:YES];
 			CALayer *layer = [(NSView *)wd.window_view layer];
 			if (layer) {
-				[layer setBackgroundColor:[NSColor colorWithCalibratedWhite:1 alpha:1].CGColor];
+				[layer setBackgroundColor:bg_color.CGColor];
 				[layer setOpaque:YES];
 			}
 #if defined(GLES3_ENABLED)
@@ -2958,6 +2974,9 @@ void DisplayServerMacOS::window_set_flag(WindowFlags p_flag, bool p_enabled, Win
 		case WINDOW_FLAG_NO_FOCUS: {
 			wd.no_focus = p_enabled;
 		} break;
+		case WINDOW_FLAG_MOUSE_PASSTHROUGH: {
+			wd.mpass = p_enabled;
+		} break;
 		case WINDOW_FLAG_POPUP: {
 			ERR_FAIL_COND_MSG(p_window == MAIN_WINDOW_ID, "Main window can't be popup.");
 			ERR_FAIL_COND_MSG([wd.window_object isVisible] && (wd.is_popup != p_enabled), "Popup flag can't changed while window is opened.");
@@ -2996,6 +3015,9 @@ bool DisplayServerMacOS::window_get_flag(WindowFlags p_flag, WindowID p_window) 
 		} break;
 		case WINDOW_FLAG_NO_FOCUS: {
 			return wd.no_focus;
+		} break;
+		case WINDOW_FLAG_MOUSE_PASSTHROUGH: {
+			return wd.mpass;
 		} break;
 		case WINDOW_FLAG_POPUP: {
 			return wd.is_popup;
@@ -3471,7 +3493,11 @@ void DisplayServerMacOS::process_events() {
 
 	for (KeyValue<WindowID, WindowData> &E : windows) {
 		WindowData &wd = E.value;
-		if (wd.mpath.size() > 0) {
+		if (wd.mpass) {
+			if (![wd.window_object ignoresMouseEvents]) {
+				[wd.window_object setIgnoresMouseEvents:YES];
+			}
+		} else if (wd.mpath.size() > 0) {
 			update_mouse_pos(wd, [wd.window_object mouseLocationOutsideOfEventStream]);
 			if (Geometry2D::is_point_in_polygon(wd.mouse_pos, wd.mpath)) {
 				if ([wd.window_object ignoresMouseEvents]) {
@@ -3581,18 +3607,18 @@ DisplayServer *DisplayServerMacOS::create_func(const String &p_rendering_driver,
 			} else {
 				executable_command = vformat("open %s --args --rendering-driver opengl3", OS::get_singleton()->get_bundle_resource_dir().path_join("../..").simplify_path());
 			}
-			OS::get_singleton()->alert("Your video card driver does not support the selected Vulkan version.\n"
-									   "Please try updating your GPU driver or try using the OpenGL 3 driver.\n"
-									   "You can enable the OpenGL 3 driver by starting the engine from the\n"
-									   "command line with the command: '" +
-							executable_command + "'.\n"
-												 "If you have updated your graphics drivers recently, try rebooting.",
-					"Unable to initialize Video driver");
+			OS::get_singleton()->alert(
+					vformat("Your video card drivers seem not to support the required Vulkan version.\n\n"
+							"If possible, consider updating your macOS version or using the OpenGL 3 driver.\n\n"
+							"You can enable the OpenGL 3 driver by starting the engine from the\n"
+							"command line with the command:\n'%s'",
+							executable_command),
+					"Unable to initialize Vulkan video driver");
 		} else {
-			OS::get_singleton()->alert("Your video card driver does not support the selected OpenGL version.\n"
-									   "Please try updating your GPU driver.\n"
-									   "If you have updated your graphics drivers recently, try rebooting.",
-					"Unable to initialize Video driver");
+			OS::get_singleton()->alert(
+					"Your video card drivers seem not to support the required OpenGL 3.3 version.\n\n"
+					"If possible, consider updating your macOS version.",
+					"Unable to initialize OpenGL video driver");
 		}
 	}
 	return ds;

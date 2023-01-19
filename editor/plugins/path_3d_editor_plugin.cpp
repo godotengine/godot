@@ -174,7 +174,7 @@ void Path3DGizmo::commit_handle(int p_id, bool p_secondary, const Variant &p_res
 		return;
 	}
 
-	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 
 	if (!p_secondary) {
 		if (p_cancel) {
@@ -409,7 +409,7 @@ EditorPlugin::AfterGUIInput Path3DEditorPlugin::forward_3d_gui_input(Camera3D *p
 				}
 			}
 
-			Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
+			EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 			if (closest_seg != -1) {
 				//subdivide
 
@@ -451,21 +451,21 @@ EditorPlugin::AfterGUIInput Path3DEditorPlugin::forward_3d_gui_input(Camera3D *p
 				// Find the offset and point index of the place to break up.
 				// Also check for the control points.
 				if (dist_to_p < click_dist) {
-					Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
+					EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 					ur->create_action(TTR("Remove Path Point"));
 					ur->add_do_method(c.ptr(), "remove_point", i);
 					ur->add_undo_method(c.ptr(), "add_point", c->get_point_position(i), c->get_point_in(i), c->get_point_out(i), i);
 					ur->commit_action();
 					return EditorPlugin::AFTER_GUI_INPUT_STOP;
 				} else if (dist_to_p_out < click_dist) {
-					Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
+					EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 					ur->create_action(TTR("Remove Out-Control Point"));
 					ur->add_do_method(c.ptr(), "set_point_out", i, Vector3());
 					ur->add_undo_method(c.ptr(), "set_point_out", i, c->get_point_out(i));
 					ur->commit_action();
 					return EditorPlugin::AFTER_GUI_INPUT_STOP;
 				} else if (dist_to_p_in < click_dist) {
-					Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
+					EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 					ur->create_action(TTR("Remove In-Control Point"));
 					ur->add_do_method(c.ptr(), "set_point_in", i, Vector3());
 					ur->add_undo_method(c.ptr(), "set_point_in", i, c->get_point_in(i));
@@ -544,7 +544,7 @@ void Path3DEditorPlugin::_close_curve() {
 	if (c->get_point_position(0) == c->get_point_position(c->get_point_count() - 1)) {
 		return;
 	}
-	Ref<EditorUndoRedoManager> &ur = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
 	ur->create_action(TTR("Close Curve"));
 	ur->add_do_method(c.ptr(), "add_point", c->get_point_position(0), c->get_point_in(0), c->get_point_out(0), -1);
 	ur->add_undo_method(c.ptr(), "remove_point", c->get_point_count());

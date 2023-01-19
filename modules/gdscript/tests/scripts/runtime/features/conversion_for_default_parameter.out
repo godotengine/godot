@@ -1,0 +1,8 @@
+GDTEST_OK
+x is 1
+typeof x is 3
+x is 2
+typeof x is 3
+x is 3
+typeof x is 3
+ok

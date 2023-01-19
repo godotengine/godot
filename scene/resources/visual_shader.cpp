@@ -2508,14 +2508,6 @@ void VisualShader::_update_shader() const {
 		global_compute_code += "	return __rand_from_seed(seed) * (to - from) + from;\n";
 		global_compute_code += "}\n\n";
 
-		global_compute_code += "vec2 __randv2_range(inout uint seed, vec2 from, vec2 to) {\n";
-		global_compute_code += "	return vec2(__randf_range(seed, from.x, to.x), __randf_range(seed, from.y, to.y));\n";
-		global_compute_code += "}\n\n";
-
-		global_compute_code += "vec3 __randv3_range(inout uint seed, vec3 from, vec3 to) {\n";
-		global_compute_code += "	return vec3(__randf_range(seed, from.x, to.x), __randf_range(seed, from.y, to.y), __randf_range(seed, from.z, to.z));\n";
-		global_compute_code += "}\n\n";
-
 		global_compute_code += "uint __hash(uint x) {\n";
 		global_compute_code += "	x = ((x >> uint(16)) ^ x) * uint(73244475);\n";
 		global_compute_code += "	x = ((x >> uint(16)) ^ x) * uint(73244475);\n";
@@ -2742,9 +2734,6 @@ const VisualShaderNodeInput::Port VisualShaderNodeInput::ports[] = {
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_VECTOR_2D, "viewport_size", "VIEWPORT_SIZE" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_BOOLEAN, "output_is_srgb", "OUTPUT_IS_SRGB" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_BOOLEAN, "front_facing", "FRONT_FACING" },
-	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_SAMPLER, "screen_texture", "SCREEN_TEXTURE" },
-	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_SAMPLER, "normal_roughness_texture", "NORMAL_ROUGHNESS_TEXTURE" },
-	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_SAMPLER, "depth_texture", "DEPTH_TEXTURE" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_SCALAR_INT, "view_index", "VIEW_INDEX" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_SCALAR_INT, "view_mono_left", "VIEW_MONO_LEFT" },
 	{ Shader::MODE_SPATIAL, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_SCALAR_INT, "view_right", "VIEW_RIGHT" },
@@ -2807,7 +2796,6 @@ const VisualShaderNodeInput::Port VisualShaderNodeInput::ports[] = {
 	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_BOOLEAN, "at_light_pass", "AT_LIGHT_PASS" },
 	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_SAMPLER, "texture", "TEXTURE" },
 	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_SAMPLER, "normal_texture", "NORMAL_TEXTURE" },
-	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_SAMPLER, "screen_texture", "SCREEN_TEXTURE" },
 	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_VECTOR_4D, "specular_shininess", "SPECULAR_SHININESS" },
 	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_SAMPLER, "specular_shininess_texture", "SPECULAR_SHININESS_TEXTURE" },
 	{ Shader::MODE_CANVAS_ITEM, VisualShader::TYPE_FRAGMENT, VisualShaderNode::PORT_TYPE_VECTOR_2D, "vertex", "VERTEX" },

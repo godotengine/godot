@@ -199,10 +199,6 @@ void MultiplayerSpawner::_notification(int p_what) {
 				Node *node = Object::cast_to<Node>(ObjectDB::get_instance(E.key));
 				ERR_CONTINUE(!node);
 				node->disconnect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &MultiplayerSpawner::_node_exit));
-				// This is unlikely, but might still crash the engine.
-				if (node->is_connected(SceneStringNames::get_singleton()->ready, callable_mp(this, &MultiplayerSpawner::_node_ready))) {
-					node->disconnect(SceneStringNames::get_singleton()->ready, callable_mp(this, &MultiplayerSpawner::_node_ready));
-				}
 				get_multiplayer()->object_configuration_remove(node, this);
 			}
 			tracked_nodes.clear();
@@ -244,11 +240,11 @@ void MultiplayerSpawner::_track(Node *p_node, const Variant &p_argument, int p_s
 	if (!tracked_nodes.has(oid)) {
 		tracked_nodes[oid] = SpawnInfo(p_argument.duplicate(true), p_scene_id);
 		p_node->connect(SceneStringNames::get_singleton()->tree_exiting, callable_mp(this, &MultiplayerSpawner::_node_exit).bind(p_node->get_instance_id()), CONNECT_ONE_SHOT);
-		p_node->connect(SceneStringNames::get_singleton()->ready, callable_mp(this, &MultiplayerSpawner::_node_ready).bind(p_node->get_instance_id()), CONNECT_ONE_SHOT);
+		_spawn_notify(p_node->get_instance_id());
 	}
 }
 
-void MultiplayerSpawner::_node_ready(ObjectID p_id) {
+void MultiplayerSpawner::_spawn_notify(ObjectID p_id) {
 	get_multiplayer()->object_configuration_add(ObjectDB::get_instance(p_id), this);
 }
 

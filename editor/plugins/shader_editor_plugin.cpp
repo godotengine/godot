@@ -229,7 +229,7 @@ void ShaderEditorPlugin::_close_shader(int p_index) {
 	memdelete(c);
 	edited_shaders.remove_at(p_index);
 	_update_shader_list();
-	EditorNode::get_undo_redo()->clear_history(); // To prevent undo on deleted graphs.
+	EditorUndoRedoManager::get_singleton()->clear_history(); // To prevent undo on deleted graphs.
 }
 
 void ShaderEditorPlugin::_resource_saved(Object *obj) {
@@ -413,12 +413,6 @@ void ShaderEditorPlugin::drop_data_fw(const Point2 &p_point, const Variant &p_da
 	}
 }
 
-void ShaderEditorPlugin::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_get_drag_data_fw", "point", "from"), &ShaderEditorPlugin::get_drag_data_fw);
-	ClassDB::bind_method(D_METHOD("_can_drop_data_fw", "point", "data", "from"), &ShaderEditorPlugin::can_drop_data_fw);
-	ClassDB::bind_method(D_METHOD("_drop_data_fw", "point", "data", "from"), &ShaderEditorPlugin::drop_data_fw);
-}
-
 ShaderEditorPlugin::ShaderEditorPlugin() {
 	main_split = memnew(HSplitContainer);
 
@@ -451,7 +445,7 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 	vb->add_child(shader_list);
 	shader_list->connect("item_selected", callable_mp(this, &ShaderEditorPlugin::_shader_selected));
 	shader_list->connect("item_clicked", callable_mp(this, &ShaderEditorPlugin::_shader_list_clicked));
-	shader_list->set_drag_forwarding_compat(this);
+	SET_DRAG_FORWARDING_GCD(shader_list, ShaderEditorPlugin);
 
 	main_split->add_child(vb);
 	vb->set_custom_minimum_size(Size2(200, 300) * EDSCALE);

@@ -51,7 +51,6 @@ private:
 
 		bool operator==(const ObjectID &p_other) { return id == p_other; }
 
-		_FORCE_INLINE_ MultiplayerSpawner *get_spawner() const { return spawner.is_valid() ? Object::cast_to<MultiplayerSpawner>(ObjectDB::get_instance(spawner)) : nullptr; }
 		TrackedNode() {}
 		TrackedNode(const ObjectID &p_id) { id = p_id; }
 		TrackedNode(const ObjectID &p_id, uint32_t p_net_id) {
@@ -75,7 +74,10 @@ private:
 	HashSet<ObjectID> spawned_nodes;
 	HashSet<ObjectID> sync_nodes;
 
-	// Pending spawn information.
+	// Pending local spawn information (handles spawning nested nodes during ready).
+	HashSet<ObjectID> spawn_queue;
+
+	// Pending remote spawn information.
 	ObjectID pending_spawn;
 	int pending_spawn_remote = 0;
 	const uint8_t *pending_buffer = nullptr;
@@ -89,6 +91,7 @@ private:
 
 	TrackedNode &_track(const ObjectID &p_id);
 	void _untrack(const ObjectID &p_id);
+	void _node_ready(const ObjectID &p_oid);
 
 	void _send_sync(int p_peer, const HashSet<ObjectID> p_synchronizers, uint16_t p_sync_net_time, uint64_t p_msec);
 	Error _make_spawn_packet(Node *p_node, MultiplayerSpawner *p_spawner, int &r_len);

@@ -772,9 +772,6 @@ void EditorResourcePicker::drop_data_fw(const Point2 &p_point, const Variant &p_
 
 void EditorResourcePicker::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_resource_preview"), &EditorResourcePicker::_update_resource_preview);
-	ClassDB::bind_method(D_METHOD("_get_drag_data_fw", "position", "from"), &EditorResourcePicker::get_drag_data_fw);
-	ClassDB::bind_method(D_METHOD("_can_drop_data_fw", "position", "data", "from"), &EditorResourcePicker::can_drop_data_fw);
-	ClassDB::bind_method(D_METHOD("_drop_data_fw", "position", "data", "from"), &EditorResourcePicker::drop_data_fw);
 
 	ClassDB::bind_method(D_METHOD("set_base_type", "base_type"), &EditorResourcePicker::set_base_type);
 	ClassDB::bind_method(D_METHOD("get_base_type"), &EditorResourcePicker::get_base_type);
@@ -950,7 +947,7 @@ EditorResourcePicker::EditorResourcePicker(bool p_hide_assign_button_controls) {
 	assign_button->set_flat(true);
 	assign_button->set_h_size_flags(SIZE_EXPAND_FILL);
 	assign_button->set_clip_text(true);
-	assign_button->set_drag_forwarding_compat(this);
+	SET_DRAG_FORWARDING_GCD(assign_button, EditorResourcePicker);
 	add_child(assign_button);
 	assign_button->connect("pressed", callable_mp(this, &EditorResourcePicker::_resource_selected));
 	assign_button->connect("draw", callable_mp(this, &EditorResourcePicker::_button_draw));
@@ -958,7 +955,7 @@ EditorResourcePicker::EditorResourcePicker(bool p_hide_assign_button_controls) {
 
 	if (!p_hide_assign_button_controls) {
 		preview_rect = memnew(TextureRect);
-		preview_rect->set_ignore_texture_size(true);
+		preview_rect->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
 		preview_rect->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 		preview_rect->set_offset(SIDE_TOP, 1);
 		preview_rect->set_offset(SIDE_BOTTOM, -1);

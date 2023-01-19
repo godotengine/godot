@@ -735,8 +735,22 @@ DisplayServer::WindowID DisplayServerWindows::create_sub_window(WindowMode p_mod
 	if (p_flags & WINDOW_FLAG_NO_FOCUS_BIT) {
 		wd.no_focus = true;
 	}
+	if (p_flags & WINDOW_FLAG_MOUSE_PASSTHROUGH_BIT) {
+		wd.mpass = true;
+	}
 	if (p_flags & WINDOW_FLAG_POPUP_BIT) {
 		wd.is_popup = true;
+	}
+	if (p_flags & WINDOW_FLAG_TRANSPARENT_BIT) {
+		DWM_BLURBEHIND bb;
+		ZeroMemory(&bb, sizeof(bb));
+		HRGN hRgn = CreateRectRgn(0, 0, -1, -1);
+		bb.dwFlags = DWM_BB_ENABLE | DWM_BB_BLURREGION;
+		bb.hRgnBlur = hRgn;
+		bb.fEnable = TRUE;
+		DwmEnableBlurBehindWindow(wd.hWnd, &bb);
+
+		wd.layered_window = true;
 	}
 
 	// Inherit icons from MAIN_WINDOW for all sub windows.
@@ -774,6 +788,9 @@ void DisplayServerWindows::show_window(WindowID p_id) {
 		ShowWindow(wd.hWnd, SW_SHOW);
 		SetForegroundWindow(wd.hWnd); // Slightly higher priority.
 		SetFocus(wd.hWnd); // Set keyboard focus.
+	}
+	if (wd.always_on_top) {
+		SetWindowPos(wd.hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | ((wd.no_focus || wd.is_popup) ? SWP_NOACTIVATE : 0));
 	}
 }
 
@@ -918,7 +935,7 @@ void DisplayServerWindows::window_set_mouse_passthrough(const Vector<Vector2> &p
 void DisplayServerWindows::_update_window_mouse_passthrough(WindowID p_window) {
 	ERR_FAIL_COND(!windows.has(p_window));
 
-	if (windows[p_window].mpath.size() == 0) {
+	if (windows[p_window].mpass || windows[p_window].mpath.size() == 0) {
 		SetWindowRgn(windows[p_window].hWnd, nullptr, TRUE);
 	} else {
 		POINT *points = (POINT *)memalloc(sizeof(POINT) * windows[p_window].mpath.size());
@@ -1499,6 +1516,10 @@ void DisplayServerWindows::window_set_flag(WindowFlags p_flag, bool p_enabled, W
 			wd.no_focus = p_enabled;
 			_update_window_style(p_window);
 		} break;
+		case WINDOW_FLAG_MOUSE_PASSTHROUGH: {
+			wd.mpass = p_enabled;
+			_update_window_mouse_passthrough(p_window);
+		} break;
 		case WINDOW_FLAG_POPUP: {
 			ERR_FAIL_COND_MSG(p_window == MAIN_WINDOW_ID, "Main window can't be popup.");
 			ERR_FAIL_COND_MSG(IsWindowVisible(wd.hWnd) && (wd.is_popup != p_enabled), "Popup flag can't changed while window is opened.");
@@ -1529,6 +1550,9 @@ bool DisplayServerWindows::window_get_flag(WindowFlags p_flag, WindowID p_window
 		} break;
 		case WINDOW_FLAG_NO_FOCUS: {
 			return wd.no_focus;
+		} break;
+		case WINDOW_FLAG_MOUSE_PASSTHROUGH: {
+			return wd.mpass;
 		} break;
 		case WINDOW_FLAG_POPUP: {
 			return wd.is_popup;
@@ -2464,6 +2488,11 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 
 	// Process window messages.
 	switch (uMsg) {
+		case WM_NCHITTEST: {
+			if (windows[window_id].mpass) {
+				return HTTRANSPARENT;
+			}
+		} break;
 		case WM_MOUSEACTIVATE: {
 			if (windows[window_id].no_focus) {
 				return MA_NOACTIVATEANDEAT; // Do not activate, and discard mouse messages.
@@ -2542,6 +2571,25 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				}
 				return 0;
 			}
+		} break;
+		case WM_ERASEBKGND: {
+			Color early_color;
+			if (!_get_window_early_clear_override(early_color)) {
+				break;
+			}
+			bool must_recreate_brush = !window_bkg_brush || window_bkg_brush_color != early_color.to_argb32();
+			if (must_recreate_brush) {
+				if (window_bkg_brush) {
+					DeleteObject(window_bkg_brush);
+				}
+				window_bkg_brush = CreateSolidBrush(RGB(early_color.get_r8(), early_color.get_g8(), early_color.get_b8()));
+			}
+			HDC hdc = (HDC)wParam;
+			RECT rect = {};
+			if (GetUpdateRect(hWnd, &rect, true)) {
+				FillRect(hdc, &rect, window_bkg_brush);
+			}
+			return 1;
 		} break;
 		case WM_PAINT: {
 			Main::force_redraw();
@@ -3637,7 +3685,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 	DWORD dwExStyle;
 	DWORD dwStyle;
 
-	_get_window_style(window_id_counter == MAIN_WINDOW_ID, (p_mode == WINDOW_MODE_FULLSCREEN || p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN), p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN, p_flags & WINDOW_FLAG_BORDERLESS_BIT, !(p_flags & WINDOW_FLAG_RESIZE_DISABLED_BIT), p_mode == WINDOW_MODE_MAXIMIZED, (p_flags & WINDOW_FLAG_NO_FOCUS_BIT) | (p_flags & WINDOW_FLAG_POPUP), dwStyle, dwExStyle);
+	_get_window_style(window_id_counter == MAIN_WINDOW_ID, (p_mode == WINDOW_MODE_FULLSCREEN || p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN), p_mode != WINDOW_MODE_EXCLUSIVE_FULLSCREEN, p_flags & WINDOW_FLAG_BORDERLESS_BIT, !(p_flags & WINDOW_FLAG_RESIZE_DISABLED_BIT), p_mode == WINDOW_MODE_MAXIMIZED, (p_flags & WINDOW_FLAG_NO_FOCUS_BIT) | (p_flags & WINDOW_FLAG_POPUP), dwStyle, dwExStyle);
 
 	RECT WindowRect;
 
@@ -3982,7 +4030,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 
 	memset(&wc, 0, sizeof(WNDCLASSEXW));
 	wc.cbSize = sizeof(WNDCLASSEXW);
-	wc.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC | CS_DBLCLKS;
+	wc.style = CS_OWNDC | CS_DBLCLKS;
 	wc.lpfnWndProc = (WNDPROC)::WndProc;
 	wc.cbClsExtra = 0;
 	wc.cbWndExtra = 0;
@@ -4111,18 +4159,20 @@ DisplayServer *DisplayServerWindows::create_func(const String &p_rendering_drive
 	if (r_error != OK) {
 		if (p_rendering_driver == "vulkan") {
 			String executable_name = OS::get_singleton()->get_executable_path().get_file();
-			OS::get_singleton()->alert("Your video card driver does not support the selected Vulkan version.\n"
-									   "Please try updating your GPU driver or try using the OpenGL 3 driver.\n"
-									   "You can enable the OpenGL 3 driver by starting the engine from the\n"
-									   "command line with the command:\n'./" +
-							executable_name + " --rendering-driver opengl3'.\n "
-											  "If you have updated your graphics drivers recently, try rebooting.",
-					"Unable to initialize Video driver");
+			OS::get_singleton()->alert(
+					vformat("Your video card drivers seem not to support the required Vulkan version.\n\n"
+							"If possible, consider updating your video card drivers or using the OpenGL 3 driver.\n\n"
+							"You can enable the OpenGL 3 driver by starting the engine from the\n"
+							"command line with the command:\n'%s --rendering-driver opengl3'\n\n"
+							"If you have recently updated your video card drivers, try rebooting.",
+							executable_name),
+					"Unable to initialize Vulkan video driver");
 		} else {
-			OS::get_singleton()->alert("Your video card driver does not support the selected OpenGL version.\n"
-									   "Please try updating your GPU driver.\n"
-									   "If you have updated your graphics drivers recently, try rebooting.",
-					"Unable to initialize Video driver");
+			OS::get_singleton()->alert(
+					"Your video card drivers seem not to support the required OpenGL 3.3 version.\n\n"
+					"If possible, consider updating your video card drivers.\n\n"
+					"If you have recently updated your video card drivers, try rebooting.",
+					"Unable to initialize OpenGL video driver");
 		}
 	}
 	return ds;

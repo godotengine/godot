@@ -143,7 +143,7 @@
 				[gdscript]
 				func _forward_canvas_draw_over_viewport(overlay):
 				    # Draw a circle at cursor position.
-				    overlay.draw_circle(overlay.get_local_mouse_position(), 64, Color.white)
+				    overlay.draw_circle(overlay.get_local_mouse_position(), 64, Color.WHITE)
 
 				func _forward_canvas_gui_input(event):
 				    if event is InputEventMouseMotion:
@@ -347,7 +347,7 @@
 				[codeblock]
 				func _set_state(data):
 				    zoom = data.get("zoom", 1.0)
-				    preferred_color = data.get("my_color", Color.white)
+				    preferred_color = data.get("my_color", Color.WHITE)
 				[/codeblock]
 			</description>
 		</method>
@@ -359,7 +359,7 @@
 				[codeblock]
 				func _set_window_layout(configuration):
 				    $Window.position = configuration.get_value("MyPlugin", "window_position", Vector2())
-				    $Icon.modulate = configuration.get_value("MyPlugin", "icon_color", Color.white)
+				    $Icon.modulate = configuration.get_value("MyPlugin", "icon_color", Color.WHITE)
 				[/codeblock]
 			</description>
 		</method>
@@ -465,6 +465,14 @@
 			<description>
 				Registers a new [EditorNode3DGizmoPlugin]. Gizmo plugins are used to add custom gizmos to the 3D preview viewport for a [Node3D].
 				See [method add_inspector_plugin] for an example of how to register a plugin.
+			</description>
+		</method>
+		<method name="add_resource_conversion_plugin">
+			<return type="void" />
+			<param index="0" name="plugin" type="EditorResourceConversionPlugin" />
+			<description>
+				Registers a new [EditorResourceConversionPlugin]. Resource conversion plugins are used to add custom resource converters to the editor inspector.
+				See [EditorResourceConversionPlugin] for an example of how to create a resource conversion plugin.
 			</description>
 		</method>
 		<method name="add_scene_format_importer_plugin">
@@ -630,6 +638,13 @@
 			<param index="0" name="plugin" type="EditorNode3DGizmoPlugin" />
 			<description>
 				Removes a gizmo plugin registered by [method add_node_3d_gizmo_plugin].
+			</description>
+		</method>
+		<method name="remove_resource_conversion_plugin">
+			<return type="void" />
+			<param index="0" name="plugin" type="EditorResourceConversionPlugin" />
+			<description>
+				Removes a resource conversion plugin registered by [method add_resource_conversion_plugin].
 			</description>
 		</method>
 		<method name="remove_scene_format_importer_plugin">

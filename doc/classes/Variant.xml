@@ -38,7 +38,7 @@
 		        # To get the name of the underlying Object type, you need the `get_class()` method.
 		        print("foo is a(n) %s" % foo.get_class()) # inject the class name into a formatted string.
 		        # Note also that there is not yet any way to get a script's `class_name` string easily.
-		        # To fetch that value, you need to dig deeply into a hidden ProjectSettings setting: an Array of Dictionaries called "_global_script_classes".
+		        # To fetch that value, you can parse the [code]res://.godot/global_script_class_cache.cfg[/code] file with the [ConfigFile] API.
 		        # Open your project.godot file to see it up close.
 		[/gdscript]
 		[csharp]
@@ -70,6 +70,6 @@
 		Modifications to a container will modify all references to it. A [Mutex] should be created to lock it if multi-threaded access is desired.
 	</description>
 	<tutorials>
-		<link title="Variant class">$DOCS_URL/development/cpp/variant_class.html</link>
+		<link title="Variant class introduction">$DOCS_URL/contributing/development/core_and_modules/variant_class.html</link>
 	</tutorials>
 </class>

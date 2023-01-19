@@ -253,6 +253,12 @@ void EditorSpinSlider::_value_input_gui_input(const Ref<InputEvent> &p_event) {
 				value_input_dirty = true;
 				set_process_internal(true);
 			} break;
+			case Key::ESCAPE: {
+				value_input_closed_frame = Engine::get_singleton()->get_frames_drawn();
+				if (value_input_popup) {
+					value_input_popup->hide();
+				}
+			} break;
 			default:
 				break;
 		}
@@ -479,10 +485,10 @@ void EditorSpinSlider::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_FOCUS_ENTER: {
-			if ((Input::get_singleton()->is_action_pressed("ui_focus_next") || Input::get_singleton()->is_action_pressed("ui_focus_prev")) && !value_input_just_closed) {
+			if ((Input::get_singleton()->is_action_pressed("ui_focus_next") || Input::get_singleton()->is_action_pressed("ui_focus_prev")) && value_input_closed_frame != Engine::get_singleton()->get_frames_drawn()) {
 				_focus_entered();
 			}
-			value_input_just_closed = false;
+			value_input_closed_frame = 0;
 		} break;
 	}
 }
@@ -553,7 +559,7 @@ void EditorSpinSlider::_evaluate_input_text() {
 
 //text_submitted signal
 void EditorSpinSlider::_value_input_submitted(const String &p_text) {
-	value_input_just_closed = true;
+	value_input_closed_frame = Engine::get_singleton()->get_frames_drawn();
 	if (value_input_popup) {
 		value_input_popup->hide();
 	}
@@ -562,7 +568,7 @@ void EditorSpinSlider::_value_input_submitted(const String &p_text) {
 //modal_closed signal
 void EditorSpinSlider::_value_input_closed() {
 	_evaluate_input_text();
-	value_input_just_closed = true;
+	value_input_closed_frame = Engine::get_singleton()->get_frames_drawn();
 }
 
 //focus_exited signal
@@ -578,7 +584,7 @@ void EditorSpinSlider::_value_focus_exited() {
 	// -> TAB was pressed
 	// -> modal_close was not called
 	// -> need to close/hide manually
-	if (!value_input_just_closed) { //value_input_just_closed should do the same
+	if (value_input_closed_frame != Engine::get_singleton()->get_frames_drawn()) {
 		if (value_input_popup) {
 			value_input_popup->hide();
 		}
@@ -672,6 +678,7 @@ void EditorSpinSlider::_ensure_input_popup() {
 	add_child(value_input_popup);
 
 	value_input = memnew(LineEdit);
+	value_input->set_focus_mode(FOCUS_CLICK);
 	value_input_popup->add_child(value_input);
 	value_input->set_anchors_and_offsets_preset(PRESET_FULL_RECT);
 	value_input_popup->connect("hidden", callable_mp(this, &EditorSpinSlider::_value_input_closed));

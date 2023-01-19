@@ -331,6 +331,16 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns <see langword="true"/> if this vector is finite, by calling
+        /// <see cref="Mathf.IsFinite"/> on each component.
+        /// </summary>
+        /// <returns>Whether this vector is finite or not.</returns>
+        public readonly bool IsFinite()
+        {
+            return Mathf.IsFinite(x) && Mathf.IsFinite(y) && Mathf.IsFinite(z);
+        }
+
+        /// <summary>
         /// Returns <see langword="true"/> if the vector is normalized, and <see langword="false"/> otherwise.
         /// </summary>
         /// <returns>A <see langword="bool"/> indicating whether or not the vector is normalized.</returns>
@@ -382,23 +392,6 @@ namespace Godot
                 Mathf.Lerp(x, to.x, weight),
                 Mathf.Lerp(y, to.y, weight),
                 Mathf.Lerp(z, to.z, weight)
-            );
-        }
-
-        /// <summary>
-        /// Returns the result of the linear interpolation between
-        /// this vector and <paramref name="to"/> by the vector amount <paramref name="weight"/>.
-        /// </summary>
-        /// <param name="to">The destination vector for interpolation.</param>
-        /// <param name="weight">A vector with components on the range of 0.0 to 1.0, representing the amount of interpolation.</param>
-        /// <returns>The resulting vector of the interpolation.</returns>
-        public readonly Vector3 Lerp(Vector3 to, Vector3 weight)
-        {
-            return new Vector3
-            (
-                Mathf.Lerp(x, to.x, weight.x),
-                Mathf.Lerp(y, to.y, weight.y),
-                Mathf.Lerp(z, to.z, weight.z)
             );
         }
 
@@ -1057,6 +1050,18 @@ namespace Godot
         public readonly bool IsEqualApprox(Vector3 other)
         {
             return Mathf.IsEqualApprox(x, other.x) && Mathf.IsEqualApprox(y, other.y) && Mathf.IsEqualApprox(z, other.z);
+        }
+
+        /// <summary>
+        /// Returns <see langword="true"/> if this vector's values are approximately zero,
+        /// by running <see cref="Mathf.IsZeroApprox(real_t)"/> on each component.
+        /// This method is faster than using <see cref="IsEqualApprox"/> with one value
+        /// as a zero vector.
+        /// </summary>
+        /// <returns>Whether or not the vector is approximately zero.</returns>
+        public readonly bool IsZeroApprox()
+        {
+            return Mathf.IsZeroApprox(x) && Mathf.IsZeroApprox(y) && Mathf.IsZeroApprox(z);
         }
 
         /// <summary>

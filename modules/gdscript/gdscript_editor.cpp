@@ -80,7 +80,7 @@ Ref<Script> GDScriptLanguage::make_template(const String &p_template, const Stri
 	}
 
 	processed_template = processed_template.replace("_BASE_", p_base_class_name)
-								 .replace("_CLASS_", p_class_name)
+								 .replace("_CLASS_", p_class_name.to_pascal_case())
 								 .replace("_TS_", _get_indentation());
 	scr->set_source_code(processed_template);
 	return scr;
@@ -1273,6 +1273,14 @@ static void _find_identifiers(const GDScriptParser::CompletionContext &p_context
 		} else {
 			option = ScriptLanguage::CodeCompletionOption(E.key.operator String(), ScriptLanguage::CODE_COMPLETION_KIND_CONSTANT);
 		}
+		r_result.insert(option.display, option);
+	}
+
+	// Global classes
+	List<StringName> global_classes;
+	ScriptServer::get_global_class_list(&global_classes);
+	for (const StringName &E : global_classes) {
+		ScriptLanguage::CodeCompletionOption option(E, ScriptLanguage::CODE_COMPLETION_KIND_CLASS, ScriptLanguage::LOCATION_OTHER_USER_CODE);
 		r_result.insert(option.display, option);
 	}
 }

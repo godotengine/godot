@@ -1385,7 +1385,6 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #ifdef TOOLS_ENABLED
 	if (editor) {
 		packed_data->set_disabled(true);
-		globals->set_disable_feature_overrides(true);
 		Engine::get_singleton()->set_editor_hint(true);
 		main_args.push_back("--editor");
 		if (!init_windowed) {
@@ -1678,10 +1677,21 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	OS::get_singleton()->_allow_hidpi = GLOBAL_DEF("display/window/dpi/allow_hidpi", true);
 	OS::get_singleton()->_allow_layered = GLOBAL_DEF("display/window/per_pixel_transparency/allowed", false);
 
+#ifdef TOOLS_ENABLED
 	if (editor || project_manager) {
-		// The editor and project manager always detect and use hiDPI if needed
+		// The editor and project manager always detect and use hiDPI if needed.
 		OS::get_singleton()->_allow_hidpi = true;
+		// Disable Vulkan overlays in editor, they cause various issues.
+		OS::get_singleton()->set_environment("DISABLE_MANGOHUD", "1"); // GH-57403.
+		OS::get_singleton()->set_environment("DISABLE_RTSS_LAYER", "1"); // GH-57937.
+		OS::get_singleton()->set_environment("DISABLE_VKBASALT", "1");
+	} else {
+		// Re-allow using Vulkan overlays, disabled while using the editor.
+		OS::get_singleton()->unset_environment("DISABLE_MANGOHUD");
+		OS::get_singleton()->unset_environment("DISABLE_RTSS_LAYER");
+		OS::get_singleton()->unset_environment("DISABLE_VKBASALT");
 	}
+#endif
 
 	if (rtm == -1) {
 		rtm = GLOBAL_DEF("rendering/driver/threads/thread_model", OS::RENDER_THREAD_SAFE);
@@ -1920,6 +1930,9 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 			window_position = &position;
 		}
 
+		Color boot_bg_color = GLOBAL_DEF_BASIC("application/boot_splash/bg_color", boot_splash_bg_color);
+		DisplayServer::set_early_window_clear_color_override(true, boot_bg_color);
+
 		// rendering_driver now held in static global String in main and initialized in setup()
 		Error err;
 		display_server = DisplayServer::create(display_driver_idx, rendering_driver, window_mode, window_vsync_mode, window_flags, window_position, window_size, init_screen, err);
@@ -2085,7 +2098,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 			boot_logo->set_pixel(0, 0, Color(0, 0, 0, 0));
 		}
 
-		Color boot_bg_color = GLOBAL_DEF_BASIC("application/boot_splash/bg_color", boot_splash_bg_color);
+		Color boot_bg_color = GLOBAL_GET("application/boot_splash/bg_color");
 
 #if defined(TOOLS_ENABLED) && !defined(NO_EDITOR_SPLASH)
 		boot_bg_color =
@@ -2112,13 +2125,15 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 #endif
 		}
 
-#ifdef TOOLS_ENABLED
+#if defined(TOOLS_ENABLED) && defined(MACOS_ENABLED)
 		if (OS::get_singleton()->get_bundle_icon_path().is_empty()) {
 			Ref<Image> icon = memnew(Image(app_icon_png));
 			DisplayServer::get_singleton()->set_icon(icon);
 		}
 #endif
 	}
+
+	DisplayServer::set_early_window_clear_color_override(false);
 
 	MAIN_PRINT("Main: DCC");
 	RenderingServer::get_singleton()->set_default_clear_color(
@@ -2964,6 +2979,7 @@ bool Main::is_iterating() {
 // For performance metrics.
 static uint64_t physics_process_max = 0;
 static uint64_t process_max = 0;
+static uint64_t navigation_process_max = 0;
 
 bool Main::iteration() {
 	//for now do not error on this
@@ -2992,6 +3008,7 @@ bool Main::iteration() {
 
 	uint64_t physics_process_ticks = 0;
 	uint64_t process_ticks = 0;
+	uint64_t navigation_process_ticks = 0;
 
 	frame += ticks_elapsed;
 
@@ -3024,11 +3041,19 @@ bool Main::iteration() {
 		PhysicsServer2D::get_singleton()->flush_queries();
 
 		if (OS::get_singleton()->get_main_loop()->physics_process(physics_step * time_scale)) {
+			PhysicsServer3D::get_singleton()->end_sync();
+			PhysicsServer2D::get_singleton()->end_sync();
+
 			exit = true;
 			break;
 		}
 
+		uint64_t navigation_begin = OS::get_singleton()->get_ticks_usec();
+
 		NavigationServer3D::get_singleton()->process(physics_step * time_scale);
+
+		navigation_process_ticks = MAX(navigation_process_ticks, OS::get_singleton()->get_ticks_usec() - navigation_begin); // keep the largest one for reference
+		navigation_process_max = MAX(OS::get_singleton()->get_ticks_usec() - navigation_begin, navigation_process_max);
 
 		message_queue->flush();
 
@@ -3108,8 +3133,10 @@ bool Main::iteration() {
 		Engine::get_singleton()->_fps = frames;
 		performance->set_process_time(USEC_TO_SEC(process_max));
 		performance->set_physics_process_time(USEC_TO_SEC(physics_process_max));
+		performance->set_navigation_process_time(USEC_TO_SEC(navigation_process_max));
 		process_max = 0;
 		physics_process_max = 0;
+		navigation_process_max = 0;
 
 		frame %= 1000000;
 		frames = 0;

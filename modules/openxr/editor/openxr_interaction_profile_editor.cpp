@@ -29,7 +29,6 @@
 /**************************************************************************/
 
 #include "openxr_interaction_profile_editor.h"
-#include "editor/editor_node.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/button.h"
 #include "scene/gui/label.h"
@@ -141,7 +140,7 @@ void OpenXRInteractionProfileEditorBase::remove_all_bindings_for_action(Ref<Open
 }
 
 OpenXRInteractionProfileEditorBase::OpenXRInteractionProfileEditorBase(Ref<OpenXRActionMap> p_action_map, Ref<OpenXRInteractionProfile> p_interaction_profile) {
-	undo_redo = EditorNode::get_undo_redo();
+	undo_redo = EditorUndoRedoManager::get_singleton();
 
 	action_map = p_action_map;
 	interaction_profile = p_interaction_profile;

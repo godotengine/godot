@@ -43,7 +43,7 @@ class OpenXRInteractionProfileEditorBase : public ScrollContainer {
 	GDCLASS(OpenXRInteractionProfileEditorBase, ScrollContainer);
 
 protected:
-	Ref<EditorUndoRedoManager> undo_redo;
+	EditorUndoRedoManager *undo_redo;
 	Ref<OpenXRInteractionProfile> interaction_profile;
 	Ref<OpenXRActionMap> action_map;
 

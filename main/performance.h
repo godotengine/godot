@@ -50,6 +50,7 @@ class Performance : public Object {
 
 	double _process_time;
 	double _physics_process_time;
+	double _navigation_process_time;
 
 	class MonitorCall {
 		Callable _callable;
@@ -69,6 +70,7 @@ public:
 		TIME_FPS,
 		TIME_PROCESS,
 		TIME_PHYSICS_PROCESS,
+		TIME_NAVIGATION_PROCESS,
 		MEMORY_STATIC,
 		MEMORY_STATIC_MAX,
 		MEMORY_MESSAGE_BUFFER_MAX,
@@ -89,6 +91,15 @@ public:
 		PHYSICS_3D_COLLISION_PAIRS,
 		PHYSICS_3D_ISLAND_COUNT,
 		AUDIO_OUTPUT_LATENCY,
+		NAVIGATION_ACTIVE_MAPS,
+		NAVIGATION_REGION_COUNT,
+		NAVIGATION_AGENT_COUNT,
+		NAVIGATION_LINK_COUNT,
+		NAVIGATION_POLYGON_COUNT,
+		NAVIGATION_EDGE_COUNT,
+		NAVIGATION_EDGE_MERGE_COUNT,
+		NAVIGATION_EDGE_CONNECTION_COUNT,
+		NAVIGATION_EDGE_FREE_COUNT,
 		MONITOR_MAX
 	};
 
@@ -105,6 +116,7 @@ public:
 
 	void set_process_time(double p_pt);
 	void set_physics_process_time(double p_pt);
+	void set_navigation_process_time(double p_pt);
 
 	void add_custom_monitor(const StringName &p_id, const Callable &p_callable, const Vector<Variant> &p_args);
 	void remove_custom_monitor(const StringName &p_id);

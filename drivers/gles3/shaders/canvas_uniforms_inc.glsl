@@ -27,6 +27,9 @@
 #define FLAGS_USE_MSDF uint(1 << 28)
 #define FLAGS_USE_LCD uint(1 << 29)
 
+#define FLAGS_FLIP_H uint(1 << 30)
+#define FLAGS_FLIP_V uint(1 << 31)
+
 layout(std140) uniform GlobalShaderUniformData { //ubo:1
 	vec4 global_shader_uniforms[MAX_GLOBAL_SHADER_UNIFORMS];
 };

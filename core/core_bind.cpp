@@ -257,8 +257,8 @@ Error OS::shell_open(String p_uri) {
 	return ::OS::get_singleton()->shell_open(p_uri);
 }
 
-String OS::read_string_from_stdin(bool p_block) {
-	return ::OS::get_singleton()->get_stdin_string(true);
+String OS::read_string_from_stdin() {
+	return ::OS::get_singleton()->get_stdin_string();
 }
 
 int OS::execute(const String &p_path, const Vector<String> &p_arguments, Array r_output, bool p_read_stderr, bool p_open_console) {
@@ -322,8 +322,12 @@ String OS::get_environment(const String &p_var) const {
 	return ::OS::get_singleton()->get_environment(p_var);
 }
 
-bool OS::set_environment(const String &p_var, const String &p_value) const {
-	return ::OS::get_singleton()->set_environment(p_var, p_value);
+void OS::set_environment(const String &p_var, const String &p_value) const {
+	::OS::get_singleton()->set_environment(p_var, p_value);
+}
+
+void OS::unset_environment(const String &p_var) const {
+	::OS::get_singleton()->unset_environment(p_var);
 }
 
 String OS::get_name() const {
@@ -539,7 +543,7 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_system_font_path", "font_name", "weight", "stretch", "italic"), &OS::get_system_font_path, DEFVAL(400), DEFVAL(100), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_system_font_path_for_text", "font_name", "text", "locale", "script", "weight", "stretch", "italic"), &OS::get_system_font_path_for_text, DEFVAL(String()), DEFVAL(String()), DEFVAL(400), DEFVAL(100), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_executable_path"), &OS::get_executable_path);
-	ClassDB::bind_method(D_METHOD("read_string_from_stdin", "block"), &OS::read_string_from_stdin, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("read_string_from_stdin"), &OS::read_string_from_stdin);
 	ClassDB::bind_method(D_METHOD("execute", "path", "arguments", "output", "read_stderr", "open_console"), &OS::execute, DEFVAL(Array()), DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("create_process", "path", "arguments", "open_console"), &OS::create_process, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("create_instance", "arguments"), &OS::create_instance);
@@ -548,9 +552,10 @@ void OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_process_running", "pid"), &OS::is_process_running);
 	ClassDB::bind_method(D_METHOD("get_process_id"), &OS::get_process_id);
 
+	ClassDB::bind_method(D_METHOD("has_environment", "variable"), &OS::has_environment);
 	ClassDB::bind_method(D_METHOD("get_environment", "variable"), &OS::get_environment);
 	ClassDB::bind_method(D_METHOD("set_environment", "variable", "value"), &OS::set_environment);
-	ClassDB::bind_method(D_METHOD("has_environment", "variable"), &OS::has_environment);
+	ClassDB::bind_method(D_METHOD("unset_environment", "variable"), &OS::unset_environment);
 
 	ClassDB::bind_method(D_METHOD("get_name"), &OS::get_name);
 	ClassDB::bind_method(D_METHOD("get_distribution_name"), &OS::get_distribution_name);

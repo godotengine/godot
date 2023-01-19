@@ -123,12 +123,15 @@ private:
 	typedef real_t (*interpolater)(real_t t, real_t b, real_t c, real_t d);
 	static interpolater interpolaters[TRANS_MAX][EASE_MAX];
 
-	void start_tweeners();
+	void _start_tweeners();
+	void _stop_internal(bool p_reset);
 
 protected:
 	static void _bind_methods();
 
 public:
+	virtual String to_string() override;
+
 	Ref<PropertyTweener> tween_property(Object *p_target, NodePath p_property, Variant p_to, double p_duration);
 	Ref<IntervalTweener> tween_interval(double p_time);
 	Ref<CallbackTweener> tween_callback(Callable p_callback);

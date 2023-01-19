@@ -29,7 +29,6 @@
 /**************************************************************************/
 
 #include "openxr_action_editor.h"
-#include "editor/editor_node.h"
 
 void OpenXRActionEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_do_set_name", "name"), &OpenXRActionEditor::_do_set_name);
@@ -125,7 +124,7 @@ void OpenXRActionEditor::_on_remove_action() {
 }
 
 OpenXRActionEditor::OpenXRActionEditor(Ref<OpenXRAction> p_action) {
-	undo_redo = EditorNode::get_undo_redo();
+	undo_redo = EditorUndoRedoManager::get_singleton();
 	action = p_action;
 
 	set_h_size_flags(Control::SIZE_EXPAND_FILL);

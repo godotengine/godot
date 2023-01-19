@@ -56,15 +56,8 @@ DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode 
 	tts = [[TTS_IOS alloc] init];
 
 #if defined(GLES3_ENABLED)
-	// FIXME: Add support for both OpenGL and Vulkan when OpenGL is implemented
-	// again,
-	// Note that we should be checking "opengl3" as the driver, might never enable this seeing OpenGL is deprecated on iOS
-	// We are hardcoding the rendering_driver to "vulkan" down below
-
 	if (rendering_driver == "opengl3") {
 		bool gl_initialization_error = false;
-
-		// FIXME: Add Vulkan support via MoltenVK. Add fallback code back?
 
 		if (RasterizerGLES3::is_viable() == OK) {
 			RasterizerGLES3::register_config();
@@ -74,22 +67,10 @@ DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode 
 		}
 
 		if (gl_initialization_error) {
-			OS::get_singleton()->alert("Your device does not support any of the supported OpenGL versions.", "Unable to initialize video driver");
-			//        return ERR_UNAVAILABLE;
+			OS::get_singleton()->alert(
+					"Your device seems not to support the required OpenGL ES 3.0 version.\n\n",
+					"Unable to initialize OpenGL video driver");
 		}
-
-		//    rendering_server = memnew(RenderingServerDefault);
-		//    // FIXME: Reimplement threaded rendering
-		//    if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
-		//        rendering_server = memnew(RenderingServerWrapMT(rendering_server,
-		//        false));
-		//    }
-		//    rendering_server->init();
-		// rendering_server->cursor_set_visible(false, 0);
-
-		// reset this to what it should be, it will have been set to 0 after
-		// rendering_server->init() is called
-		//    RasterizerStorageGLES3system_fbo = gl_view_base_fb;
 	}
 #endif
 

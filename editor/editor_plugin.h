@@ -48,6 +48,7 @@ class EditorInspector;
 class EditorInspectorPlugin;
 class EditorNode3DGizmoPlugin;
 class EditorPaths;
+class EditorResourceConversionPlugin;
 class EditorResourcePreview;
 class EditorSceneFormatImporter;
 class EditorScenePostImportPlugin;
@@ -148,7 +149,7 @@ protected:
 	void _notification(int p_what);
 
 	static void _bind_methods();
-	Ref<EditorUndoRedoManager> get_undo_redo();
+	EditorUndoRedoManager *get_undo_redo();
 
 	void add_custom_type(const String &p_type, const String &p_base, const Ref<Script> &p_script, const Ref<Texture2D> &p_icon);
 	void remove_custom_type(const String &p_type);
@@ -306,6 +307,9 @@ public:
 
 	void add_debugger_plugin(const Ref<EditorDebuggerPlugin> &p_plugin);
 	void remove_debugger_plugin(const Ref<EditorDebuggerPlugin> &p_plugin);
+
+	void add_resource_conversion_plugin(const Ref<EditorResourceConversionPlugin> &p_plugin);
+	void remove_resource_conversion_plugin(const Ref<EditorResourceConversionPlugin> &p_plugin);
 
 	void enable_plugin();
 	void disable_plugin();

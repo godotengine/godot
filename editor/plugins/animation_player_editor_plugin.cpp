@@ -94,6 +94,7 @@ void AnimationPlayerEditor::_notification(int p_what) {
 				// Need the last frame after it stopped.
 				frame->set_value(player->get_current_animation_position());
 				track_editor->set_anim_pos(player->get_current_animation_position());
+				stop->set_icon(stop_icon);
 			}
 
 			last_active = player->is_playing();
@@ -119,8 +120,15 @@ void AnimationPlayerEditor::_notification(int p_what) {
 		case NOTIFICATION_TRANSLATION_CHANGED:
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_THEME_CHANGED: {
-			autoplay->set_icon(get_theme_icon(SNAME("AutoPlay"), SNAME("EditorIcons")));
+			stop_icon = get_theme_icon(SNAME("Stop"), SNAME("EditorIcons"));
+			pause_icon = get_theme_icon(SNAME("Pause"), SNAME("EditorIcons"));
+			if (player && player->is_playing()) {
+				stop->set_icon(pause_icon);
+			} else {
+				stop->set_icon(stop_icon);
+			}
 
+			autoplay->set_icon(get_theme_icon(SNAME("AutoPlay"), SNAME("EditorIcons")));
 			play->set_icon(get_theme_icon(SNAME("PlayStart"), SNAME("EditorIcons")));
 			play_from->set_icon(get_theme_icon(SNAME("Play"), SNAME("EditorIcons")));
 			play_bw->set_icon(get_theme_icon(SNAME("PlayStartBackwards"), SNAME("EditorIcons")));
@@ -137,7 +145,6 @@ void AnimationPlayerEditor::_notification(int p_what) {
 				autoplay_reset_img->blit_rect(reset_img, Rect2i(Point2i(), icon_size), Point2i(icon_size.x, 0));
 				autoplay_reset_icon = ImageTexture::create_from_image(autoplay_reset_img);
 			}
-			stop->set_icon(get_theme_icon(SNAME("Stop"), SNAME("EditorIcons")));
 
 			onion_toggle->set_icon(get_theme_icon(SNAME("Onion"), SNAME("EditorIcons")));
 			onion_skinning->set_icon(get_theme_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
@@ -170,7 +177,7 @@ void AnimationPlayerEditor::_autoplay_pressed() {
 		return;
 	}
 
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	String current = animation->get_item_text(animation->get_selected());
 	if (player->get_autoplay() == current) {
 		//unset
@@ -204,7 +211,7 @@ void AnimationPlayerEditor::_play_pressed() {
 	}
 
 	//unstop
-	stop->set_pressed(false);
+	stop->set_icon(pause_icon);
 }
 
 void AnimationPlayerEditor::_play_from_pressed() {
@@ -221,7 +228,7 @@ void AnimationPlayerEditor::_play_from_pressed() {
 	}
 
 	//unstop
-	stop->set_pressed(false);
+	stop->set_icon(pause_icon);
 }
 
 String AnimationPlayerEditor::_get_current() const {
@@ -242,7 +249,7 @@ void AnimationPlayerEditor::_play_bw_pressed() {
 	}
 
 	//unstop
-	stop->set_pressed(false);
+	stop->set_icon(pause_icon);
 }
 
 void AnimationPlayerEditor::_play_bw_from_pressed() {
@@ -259,7 +266,7 @@ void AnimationPlayerEditor::_play_bw_from_pressed() {
 	}
 
 	//unstop
-	stop->set_pressed(false);
+	stop->set_icon(pause_icon);
 }
 
 void AnimationPlayerEditor::_stop_pressed() {
@@ -267,9 +274,16 @@ void AnimationPlayerEditor::_stop_pressed() {
 		return;
 	}
 
-	player->stop(false);
-	play->set_pressed(false);
-	stop->set_pressed(true);
+	if (player->is_playing()) {
+		player->pause();
+	} else {
+		String current = _get_current();
+		player->stop();
+		player->set_assigned_animation(current);
+		frame->set_value(0);
+		track_editor->set_anim_pos(0);
+	}
+	stop->set_icon(stop_icon);
 }
 
 void AnimationPlayerEditor::_animation_selected(int p_which) {
@@ -388,7 +402,7 @@ void AnimationPlayerEditor::_animation_remove_confirmed() {
 	if (current.contains("/")) {
 		current = current.get_slice("/", 1);
 	}
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Remove Animation"));
 	if (player->get_autoplay() == current) {
 		undo_redo->add_do_method(player, "set_autoplay", "");
@@ -464,7 +478,7 @@ void AnimationPlayerEditor::_animation_name_edited() {
 		return;
 	}
 
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	switch (name_dialog_op) {
 		case TOOL_RENAME_ANIM: {
 			String current = animation->get_item_text(animation->get_selected());
@@ -599,7 +613,7 @@ void AnimationPlayerEditor::_blend_editor_next_changed(const int p_idx) {
 
 	String current = animation->get_item_text(animation->get_selected());
 
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Blend Next Changed"));
 	undo_redo->add_do_method(player, "animation_set_next", current, blend_editor.next->get_item_text(p_idx));
 	undo_redo->add_undo_method(player, "animation_set_next", current, player->animation_get_next(current));
@@ -686,7 +700,7 @@ void AnimationPlayerEditor::_blend_edited() {
 	float blend_time = selected->get_range(1);
 	float prev_blend_time = player->get_blend_time(current, to);
 
-	Ref<EditorUndoRedoManager> &undo_redo = EditorNode::get_undo_redo();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(TTR("Change Blend Time"));
 	undo_redo->add_do_method(player, "set_blend_time", current, to, blend_time);
 	undo_redo->add_undo_method(player, "set_blend_time", current, to, prev_blend_time);
@@ -798,12 +812,9 @@ void AnimationPlayerEditor::_update_animation() {
 	updating = true;
 
 	if (player->is_playing()) {
-		play->set_pressed(true);
-		stop->set_pressed(false);
-
+		stop->set_icon(pause_icon);
 	} else {
-		play->set_pressed(false);
-		stop->set_pressed(true);
+		stop->set_icon(stop_icon);
 	}
 
 	scale->set_text(String::num(player->get_speed_scale(), 2));
@@ -1155,7 +1166,7 @@ void AnimationPlayerEditor::_seek_value_changed(float p_value, bool p_set, bool 
 
 			player->seek_delta(pos, pos - cpos);
 		} else {
-			player->stop(true);
+			player->stop();
 			player->seek(pos, true);
 		}
 	}
@@ -1663,7 +1674,6 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 
 	stop = memnew(Button);
 	stop->set_flat(true);
-	stop->set_toggle_mode(true);
 	hb->add_child(stop);
 	stop->set_tooltip_text(TTR("Stop animation playback. (S)"));
 

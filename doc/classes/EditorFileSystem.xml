@@ -71,12 +71,6 @@
 				This will not import the file. To reimport, call [method reimport_files] or [method scan] methods.
 			</description>
 		</method>
-		<method name="update_script_classes">
-			<return type="void" />
-			<description>
-				Scans the script files and updates the list of custom class names.
-			</description>
-		</method>
 	</methods>
 	<signals>
 		<signal name="filesystem_changed">
@@ -94,6 +88,11 @@
 			<param index="0" name="resources" type="PackedStringArray" />
 			<description>
 				Emitted if at least one resource is reloaded when the filesystem is scanned.
+			</description>
+		</signal>
+		<signal name="script_classes_updated">
+			<description>
+				Emitted when the list of global script classes gets updated.
 			</description>
 		</signal>
 		<signal name="sources_changed">

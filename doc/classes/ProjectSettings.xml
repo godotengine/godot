@@ -84,6 +84,25 @@
 				GD.Print(ProjectSettings.GetSetting("application/config/custom_description", "No description specified."));
 				[/csharp]
 				[/codeblocks]
+				[b]Note:[/b] This method doesn't take potential feature overrides into account automatically. Use [method get_setting_with_override] to handle seamlessly.
+			</description>
+		</method>
+		<method name="get_setting_with_override" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Similar to [method get_setting], but applies feature tag overrides if any exists and is valid.
+				[b]Example:[/b]
+				If the following setting override exists "application/config/name.windows", and the following code is executed:
+				[codeblocks]
+				[gdscript]
+				print(ProjectSettings.get_setting_with_override("application/config/name"))
+				[/gdscript]
+				[csharp]
+				GD.Print(ProjectSettings.GetSettingWithOverride("application/config/name"));
+				[/csharp]
+				[/codeblocks]
+				Then the overridden setting will be returned instead if the project is running on the [i]Windows[/i] operating system.
 			</description>
 		</method>
 		<method name="globalize_path" qualifiers="const">
@@ -633,6 +652,13 @@
 			See [enum DisplayServer.VSyncMode] for possible values and how they affect the behavior of your application.
 			Depending on the platform and used renderer, the engine will fall back to [code]Enabled[/code], if the desired mode is not supported.
 		</member>
+		<member name="dotnet/project/assembly_name" type="String" setter="" getter="" default="&quot;&quot;">
+			Name of the .NET assembly. This name is used as the name of the [code].csproj[/code] and [code].sln[/code] files. By default, it's set to the name of the project ([member application/config/name]) allowing to change it in the future without affecting the .NET assembly.
+		</member>
+		<member name="dotnet/project/solution_directory" type="String" setter="" getter="" default="&quot;&quot;">
+			Directory that contains the [code].sln[/code] file. By default, the [code].sln[/code] files is in the root of the project directory, next to the [code]project.godot[/code] and [code].csproj[/code] files.
+			Changing this value allows setting up a multi-project scenario where there are multiple [code].csproj[/code]. Keep in mind that the Godot project is considered one of the C# projects in the workspace and it's root directory should contain the [code]project.godot[/code] and [code].csproj[/code] next to each other.
+		</member>
 		<member name="editor/movie_writer/disable_vsync" type="bool" setter="" getter="" default="false">
 			If [code]true[/code], requests V-Sync to be disabled when writing a movie (similar to setting [member display/window/vsync/vsync_mode] to [b]Disabled[/b]). This can speed up video writing if the hardware is fast enough to render, encode and save the video at a framerate higher than the monitor's refresh rate.
 			[b]Note:[/b] [member editor/movie_writer/disable_vsync] has no effect if the operating system or graphics driver forces V-Sync with no way for applications to disable it.
@@ -740,6 +766,9 @@
 		</member>
 		<member name="gui/theme/lcd_subpixel_layout" type="int" setter="" getter="" default="1">
 			LCD subpixel layout used for font anti-aliasing. See [enum TextServer.FontLCDSubpixelLayout].
+		</member>
+		<member name="gui/timers/button_shortcut_feedback_highlight_time" type="float" setter="" getter="" default="0.2">
+			When [member BaseButton.shortcut_feedback] is enabled, this is the time the [BaseButton] will remain highlighted after a shortcut.
 		</member>
 		<member name="gui/timers/incremental_search_max_interval_msec" type="int" setter="" getter="" default="2000">
 			Timer setting for incremental search in [Tree], [ItemList], etc. controls (in milliseconds).

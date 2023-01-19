@@ -360,6 +360,7 @@ public:
 		ExpressionNode *initializer = nullptr;
 		TypeNode *datatype_specifier = nullptr;
 		bool infer_datatype = false;
+		bool use_conversion_assign = false;
 		int usages = 0;
 
 		virtual ~AssignableNode() {}
@@ -1182,7 +1183,6 @@ public:
 		bool onready = false;
 		PropertyInfo export_info;
 		int assignments = 0;
-		bool use_conversion_assign = false;
 #ifdef TOOLS_ENABLED
 		String doc_description;
 #endif // TOOLS_ENABLED

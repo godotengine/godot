@@ -454,21 +454,31 @@ void TileAtlasView::set_padding(Side p_side, int p_padding) {
 	margin_container_paddings[p_side] = p_padding;
 }
 
-Vector2i TileAtlasView::get_atlas_tile_coords_at_pos(const Vector2 p_pos) const {
+Vector2i TileAtlasView::get_atlas_tile_coords_at_pos(const Vector2 p_pos, bool p_clamp) const {
 	Ref<Texture2D> texture = tile_set_atlas_source->get_texture();
-	if (texture.is_valid()) {
-		Vector2i margins = tile_set_atlas_source->get_margins();
-		Vector2i separation = tile_set_atlas_source->get_separation();
-		Vector2i texture_region_size = tile_set_atlas_source->get_texture_region_size();
-
-		// Compute index in atlas
-		Vector2 pos = p_pos - margins;
-		Vector2i ret = (pos / (texture_region_size + separation)).floor();
-
-		return ret;
+	if (!texture.is_valid()) {
+		return TileSetSource::INVALID_ATLAS_COORDS;
 	}
 
-	return TileSetSource::INVALID_ATLAS_COORDS;
+	Vector2i margins = tile_set_atlas_source->get_margins();
+	Vector2i separation = tile_set_atlas_source->get_separation();
+	Vector2i texture_region_size = tile_set_atlas_source->get_texture_region_size();
+
+	// Compute index in atlas
+	Vector2 pos = p_pos - margins;
+	Vector2i ret = (pos / (texture_region_size + separation)).floor();
+
+	// Return invalid value (without clamp).
+	Rect2i rect = Rect2(Vector2i(), tile_set_atlas_source->get_atlas_grid_size());
+	if (!p_clamp && !rect.has_point(ret)) {
+		return TileSetSource::INVALID_ATLAS_COORDS;
+	}
+
+	// Clamp.
+	ret.x = CLAMP(ret.x, 0, rect.size.x - 1);
+	ret.y = CLAMP(ret.y, 0, rect.size.y - 1);
+
+	return ret;
 }
 
 void TileAtlasView::_update_alternative_tiles_rect_cache() {

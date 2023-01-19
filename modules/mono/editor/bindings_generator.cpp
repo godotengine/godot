@@ -1864,12 +1864,7 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 	p_output.append("\n" OPEN_BLOCK_L1);
 
 	if (getter) {
-		p_output.append(INDENT2 "get\n"
-
-								// TODO Remove this once we make accessor methods private/internal (they will no longer be marked as obsolete after that)
-								"#pragma warning disable CS0618 // Disable warning about obsolete method\n"
-
-				OPEN_BLOCK_L2 INDENT3);
+		p_output.append(INDENT2 "get\n" OPEN_BLOCK_L2 INDENT3);
 
 		p_output.append("return ");
 		p_output.append(getter->proxy_name + "(");
@@ -1884,21 +1879,11 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 				p_output.append(itos(p_iprop.index));
 			}
 		}
-		p_output.append(");\n"
-
-				CLOSE_BLOCK_L2
-
-						// TODO Remove this once we make accessor methods private/internal (they will no longer be marked as obsolete after that)
-						"#pragma warning restore CS0618\n");
+		p_output.append(");\n" CLOSE_BLOCK_L2);
 	}
 
 	if (setter) {
-		p_output.append(INDENT2 "set\n"
-
-								// TODO Remove this once we make accessor methods private/internal (they will no longer be marked as obsolete after that)
-								"#pragma warning disable CS0618 // Disable warning about obsolete method\n"
-
-				OPEN_BLOCK_L2 INDENT3);
+		p_output.append(INDENT2 "set\n" OPEN_BLOCK_L2 INDENT3);
 
 		p_output.append(setter->proxy_name + "(");
 		if (p_iprop.index != -1) {
@@ -1912,12 +1897,7 @@ Error BindingsGenerator::_generate_cs_property(const BindingsGenerator::TypeInte
 				p_output.append(itos(p_iprop.index) + ", ");
 			}
 		}
-		p_output.append("value);\n"
-
-				CLOSE_BLOCK_L2
-
-						// TODO Remove this once we make accessor methods private/internal (they will no longer be marked as obsolete after that)
-						"#pragma warning restore CS0618\n");
+		p_output.append("value);\n" CLOSE_BLOCK_L2);
 	}
 
 	p_output.append(CLOSE_BLOCK_L1);
@@ -3056,12 +3036,10 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 
 			HashMap<StringName, StringName>::Iterator accessor = accessor_methods.find(imethod.cname);
 			if (accessor) {
-				const PropertyInterface *accessor_property = itype.find_property_by_name(accessor->value);
-
-				// We only deprecate an accessor method if it's in the same class as the property. It's easier this way, but also
-				// we don't know if an accessor method in a different class could have other purposes, so better leave those untouched.
-				imethod.is_deprecated = true;
-				imethod.deprecation_message = imethod.proxy_name + " is deprecated. Use the " + accessor_property->proxy_name + " property instead.";
+				// We only make internal an accessor method if it's in the same class as the property.
+				// It's easier this way, but also we don't know if an accessor method in a different class
+				// could have other purposes, so better leave those untouched.
+				imethod.is_internal = true;
 			}
 
 			if (itype.class_doc) {

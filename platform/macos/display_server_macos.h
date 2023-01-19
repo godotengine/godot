@@ -114,6 +114,7 @@ public:
 		bool resize_disabled = false;
 		bool no_focus = false;
 		bool is_popup = false;
+		bool mpass = false;
 
 		Rect2i parent_safe_rect;
 	};
