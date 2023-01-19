@@ -75,11 +75,13 @@ struct _CollectorCallback {
 	Vector3 normal;
 	Vector3 *prev_axis = nullptr;
 
-	_FORCE_INLINE_ void call(const Vector3 &p_point_A, const Vector3 &p_point_B) {
+	_FORCE_INLINE_ void call(const Vector3 &p_point_A, const Vector3 &p_point_B, Vector3 p_normal) {
+		if (p_normal.dot(p_point_B - p_point_A) < 0)
+			p_normal = -p_normal;
 		if (swap) {
-			callback(p_point_B, 0, p_point_A, 0, userdata);
+			callback(p_point_B, 0, p_point_A, 0, -p_normal, userdata);
 		} else {
-			callback(p_point_A, 0, p_point_B, 0, userdata);
+			callback(p_point_A, 0, p_point_B, 0, p_normal, userdata);
 		}
 	}
 };
@@ -92,7 +94,7 @@ static void _generate_contacts_point_point(const Vector3 *p_points_A, int p_poin
 	ERR_FAIL_COND(p_point_count_B != 1);
 #endif
 
-	p_callback->call(*p_points_A, *p_points_B);
+	p_callback->call(*p_points_A, *p_points_B, p_callback->normal);
 }
 
 static void _generate_contacts_point_edge(const Vector3 *p_points_A, int p_point_count_A, const Vector3 *p_points_B, int p_point_count_B, _CollectorCallback *p_callback) {
@@ -102,7 +104,7 @@ static void _generate_contacts_point_edge(const Vector3 *p_points_A, int p_point
 #endif
 
 	Vector3 closest_B = Geometry3D::get_closest_point_to_segment_uncapped(*p_points_A, p_points_B);
-	p_callback->call(*p_points_A, closest_B);
+	p_callback->call(*p_points_A, closest_B, p_callback->normal);
 }
 
 static void _generate_contacts_point_face(const Vector3 *p_points_A, int p_point_count_A, const Vector3 *p_points_B, int p_point_count_B, _CollectorCallback *p_callback) {
@@ -111,9 +113,9 @@ static void _generate_contacts_point_face(const Vector3 *p_points_A, int p_point
 	ERR_FAIL_COND(p_point_count_B < 3);
 #endif
 
-	Vector3 closest_B = Plane(p_points_B[0], p_points_B[1], p_points_B[2]).project(*p_points_A);
-
-	p_callback->call(*p_points_A, closest_B);
+	Plane plane(p_points_B[0], p_points_B[1], p_points_B[2]);
+	Vector3 closest_B = plane.project(*p_points_A);
+	p_callback->call(*p_points_A, closest_B, plane.get_normal());
 }
 
 static void _generate_contacts_point_circle(const Vector3 *p_points_A, int p_point_count_A, const Vector3 *p_points_B, int p_point_count_B, _CollectorCallback *p_callback) {
@@ -122,9 +124,9 @@ static void _generate_contacts_point_circle(const Vector3 *p_points_A, int p_poi
 	ERR_FAIL_COND(p_point_count_B != 3);
 #endif
 
-	Vector3 closest_B = Plane(p_points_B[0], p_points_B[1], p_points_B[2]).project(*p_points_A);
-
-	p_callback->call(*p_points_A, closest_B);
+	Plane plane(p_points_B[0], p_points_B[1], p_points_B[2]);
+	Vector3 closest_B = plane.project(*p_points_A);
+	p_callback->call(*p_points_A, closest_B, plane.get_normal());
 }
 
 static void _generate_contacts_edge_edge(const Vector3 *p_points_A, int p_point_count_A, const Vector3 *p_points_B, int p_point_count_B, _CollectorCallback *p_callback) {
@@ -154,8 +156,8 @@ static void _generate_contacts_edge_edge(const Vector3 *p_points_A, int p_point_
 		sa.sort(dvec, 4);
 
 		//use the middle ones as contacts
-		p_callback->call(base_A + axis * dvec[1], base_B + axis * dvec[1]);
-		p_callback->call(base_A + axis * dvec[2], base_B + axis * dvec[2]);
+		p_callback->call(base_A + axis * dvec[1], base_B + axis * dvec[1], p_callback->normal);
+		p_callback->call(base_A + axis * dvec[2], base_B + axis * dvec[2], p_callback->normal);
 
 		return;
 	}
@@ -170,7 +172,14 @@ static void _generate_contacts_edge_edge(const Vector3 *p_points_A, int p_point_
 
 	Vector3 closest_A = p_points_A[0] + rel_A * d;
 	Vector3 closest_B = Geometry3D::get_closest_point_to_segment_uncapped(closest_A, p_points_B);
-	p_callback->call(closest_A, closest_B);
+	// The normal should be perpendicular to both edges.
+	Vector3 normal = rel_A.cross(rel_B);
+	real_t normal_len = normal.length();
+	if (normal_len > 1e-3)
+		normal /= normal_len;
+	else
+		normal = p_callback->normal;
+	p_callback->call(closest_A, closest_B, normal);
 }
 
 static void _generate_contacts_edge_circle(const Vector3 *p_points_A, int p_point_count_A, const Vector3 *p_points_B, int p_point_count_B, _CollectorCallback *p_callback) {
@@ -267,7 +276,7 @@ static void _generate_contacts_edge_circle(const Vector3 *p_points_A, int p_poin
 			continue;
 		}
 
-		p_callback->call(contact_point_A, closest_B);
+		p_callback->call(contact_point_A, closest_B, circle_plane.get_normal());
 	}
 }
 
@@ -352,7 +361,7 @@ static void _generate_contacts_face_face(const Vector3 *p_points_A, int p_point_
 			continue;
 		}
 
-		p_callback->call(clipbuf_src[i], closest_B);
+		p_callback->call(clipbuf_src[i], closest_B, plane_B.get_normal());
 	}
 }
 
@@ -431,7 +440,7 @@ static void _generate_contacts_face_circle(const Vector3 *p_points_A, int p_poin
 			continue;
 		}
 
-		p_callback->call(contact_point_A, closest_B);
+		p_callback->call(contact_point_A, closest_B, circle_plane.get_normal());
 	}
 }
 
@@ -534,7 +543,7 @@ static void _generate_contacts_circle_circle(const Vector3 *p_points_A, int p_po
 			continue;
 		}
 
-		p_callback->call(contact_point_A, closest_B);
+		p_callback->call(contact_point_A, closest_B, circle_B_plane.get_normal());
 	}
 }
 
@@ -678,7 +687,7 @@ public:
 		return true;
 	}
 
-	static _FORCE_INLINE_ void test_contact_points(const Vector3 &p_point_A, int p_index_A, const Vector3 &p_point_B, int p_index_B, void *p_userdata) {
+	static _FORCE_INLINE_ void test_contact_points(const Vector3 &p_point_A, int p_index_A, const Vector3 &p_point_B, int p_index_B, const Vector3 &normal, void *p_userdata) {
 		SeparatorAxisTest<ShapeA, ShapeB, withMargin> *separator = (SeparatorAxisTest<ShapeA, ShapeB, withMargin> *)p_userdata;
 		Vector3 axis = (p_point_B - p_point_A);
 		real_t depth = axis.length();
@@ -802,11 +811,11 @@ static void analytic_sphere_collision(const Vector3 &p_origin_a, real_t p_radius
 	if (p_radius_a < p_radius_b) {
 		Vector3 point_a = p_origin_a - b_to_a * p_radius_a;
 		Vector3 point_b = point_a + b_to_a * overlap;
-		p_collector->call(point_a, point_b); // Consider adding b_to_a vector
+		p_collector->call(point_a, point_b, b_to_a); // Consider adding b_to_a vector
 	} else {
 		Vector3 point_b = p_origin_b + b_to_a * p_radius_b;
 		Vector3 point_a = point_b - b_to_a * overlap;
-		p_collector->call(point_a, point_b); // Consider adding b_to_a vector
+		p_collector->call(point_a, point_b, b_to_a); // Consider adding b_to_a vector
 	}
 }
 
@@ -859,8 +868,8 @@ static void _collision_sphere_box(const GodotShape3D *p_a, const Transform3D &p_
 		axis = delta / length;
 	}
 	Vector3 point_a = p_transform_a.origin + (sphere_A->get_radius() + p_margin_a) * axis;
-	Vector3 point_b = (withMargin ? nearest + p_margin_b * axis : nearest);
-	p_collector->call(point_a, point_b);
+	Vector3 point_b = (withMargin ? nearest - p_margin_b * axis : nearest);
+	p_collector->call(point_a, point_b, axis);
 }
 
 template <bool withMargin>
@@ -926,8 +935,8 @@ static void analytic_sphere_cylinder_collision(real_t p_radius_a, real_t p_radiu
 		axis = delta / length;
 	}
 	Vector3 point_a = p_transform_a.origin + (p_radius_a + p_margin_a) * axis;
-	Vector3 point_b = (withMargin ? nearest + p_margin_b * axis : nearest);
-	p_collector->call(point_a, point_b);
+	Vector3 point_b = (withMargin ? nearest - p_margin_b * axis : nearest);
+	p_collector->call(point_a, point_b, axis);
 }
 
 template <bool withMargin>
