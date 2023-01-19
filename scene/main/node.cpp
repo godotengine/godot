@@ -65,6 +65,18 @@ void Node::_notification(int p_notification) {
 			ERR_FAIL_COND(!get_viewport());
 			ERR_FAIL_COND(!get_tree());
 
+			if (DisplayServerExtensionManager::get_singleton()) {
+				for (int i = 0; i < DisplayServerExtensionManager::get_singleton()->get_interface_count(); i++) {
+					Ref<DisplayServerExtension> dse = DisplayServerExtensionManager::get_singleton()->get_interface(i);
+					if (dse.is_valid() && dse->requires_node_tree_updates()) {
+						dse->node_tree_changed(get_instance_id());
+						if (data.parent) {
+							dse->node_tree_changed(data.parent->get_instance_id());
+						}
+					}
+				}
+			}
+
 			if (data.process_mode == PROCESS_MODE_INHERIT) {
 				if (data.parent) {
 					data.process_owner = data.parent->data.process_owner;
@@ -97,6 +109,17 @@ void Node::_notification(int p_notification) {
 		case NOTIFICATION_EXIT_TREE: {
 			ERR_FAIL_COND(!get_viewport());
 			ERR_FAIL_COND(!get_tree());
+
+			if (DisplayServerExtensionManager::get_singleton()) {
+				for (int i = 0; i < DisplayServerExtensionManager::get_singleton()->get_interface_count(); i++) {
+					Ref<DisplayServerExtension> dse = DisplayServerExtensionManager::get_singleton()->get_interface(i);
+					if (dse.is_valid() && dse->requires_node_tree_updates()) {
+						if (data.parent) {
+							dse->node_tree_changed(data.parent->get_instance_id());
+						}
+					}
+				}
+			}
 
 			get_tree()->node_count--;
 			orphan_node_count++;
@@ -2763,6 +2786,17 @@ String Node::get_configuration_warnings_as_string() const {
 	return all_warnings;
 }
 
+void Node::emit_tree_update() {
+	if (DisplayServerExtensionManager::get_singleton()) {
+		for (int i = 0; i < DisplayServerExtensionManager::get_singleton()->get_interface_count(); i++) {
+			Ref<DisplayServerExtension> dse = DisplayServerExtensionManager::get_singleton()->get_interface(i);
+			if (dse.is_valid() && dse->requires_node_tree_updates()) {
+				dse->node_tree_changed(get_instance_id());
+			}
+		}
+	}
+}
+
 void Node::update_configuration_warnings() {
 #ifdef TOOLS_ENABLED
 	if (!is_inside_tree()) {
@@ -2961,6 +2995,8 @@ void Node::_bind_methods() {
 		mi.name = "rpc_id";
 		ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "rpc_id", &Node::_rpc_id_bind, mi);
 	}
+
+	ClassDB::bind_method(D_METHOD("emit_tree_update"), &Node::emit_tree_update);
 
 	ClassDB::bind_method(D_METHOD("update_configuration_warnings"), &Node::update_configuration_warnings);
 

@@ -1462,6 +1462,9 @@
 		<member name="DisplayServer" type="DisplayServer" setter="" getter="">
 			The [DisplayServer] singleton.
 		</member>
+		<member name="DisplayServerExtensionManager" type="DisplayServerExtensionManager" setter="" getter="">
+			The [DisplayServerExtensionManager] singleton.
+		</member>
 		<member name="Engine" type="Engine" setter="" getter="">
 			The [Engine] singleton.
 		</member>

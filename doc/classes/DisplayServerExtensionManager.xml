@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="DisplayServerExtensionManager" inherits="Object" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Manager for the [DisplayServer] extensions.
+	</brief_description>
+	<description>
+		[DisplayServerExtensionManager] is the API backend for loading and enumeration of the [DisplayServerExtension]s.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_interface">
+			<return type="void" />
+			<param index="0" name="interface" type="DisplayServerExtension" />
+			<description>
+				Registers an [DisplayServerExtension] interface.
+			</description>
+		</method>
+		<method name="find_interface" qualifiers="const">
+			<return type="DisplayServerExtension" />
+			<param index="0" name="name" type="String" />
+			<description>
+				Finds an interface by its name.
+			</description>
+		</method>
+		<method name="get_interface" qualifiers="const">
+			<return type="DisplayServerExtension" />
+			<param index="0" name="idx" type="int" />
+			<description>
+				Returns the interface registered at a given index.
+			</description>
+		</method>
+		<method name="get_interface_count" qualifiers="const">
+			<return type="int" />
+			<description>
+				Returns the number of interfaces currently registered.
+			</description>
+		</method>
+		<method name="get_interfaces" qualifiers="const">
+			<return type="Dictionary[]" />
+			<description>
+				Returns a list of available interfaces the index and name of each interface.
+			</description>
+		</method>
+		<method name="remove_interface">
+			<return type="void" />
+			<param index="0" name="interface" type="DisplayServerExtension" />
+			<description>
+				Removes interface.
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="interface_added">
+			<param index="0" name="interface_name" type="StringName" />
+			<description>
+				Emitted when a new interface has been added.
+			</description>
+		</signal>
+		<signal name="interface_removed">
+			<param index="0" name="interface_name" type="StringName" />
+			<description>
+				Emitted when an interface is removed.
+			</description>
+		</signal>
+	</signals>
+</class>

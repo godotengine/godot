@@ -532,6 +532,8 @@ public:
 
 	void update_configuration_warnings();
 
+	void emit_tree_update();
+
 	void set_display_folded(bool p_folded);
 	bool is_displayed_folded() const;
 	/* NETWORK */

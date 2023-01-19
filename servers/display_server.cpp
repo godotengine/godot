@@ -34,6 +34,149 @@
 #include "scene/resources/texture.h"
 #include "servers/display_server_headless.h"
 
+DisplayServerExtensionManager *DisplayServerExtensionManager::singleton = nullptr;
+
+void DisplayServerExtensionManager::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("add_interface", "interface"), &DisplayServerExtensionManager::add_interface);
+	ClassDB::bind_method(D_METHOD("get_interface_count"), &DisplayServerExtensionManager::get_interface_count);
+	ClassDB::bind_method(D_METHOD("remove_interface", "interface"), &DisplayServerExtensionManager::remove_interface);
+	ClassDB::bind_method(D_METHOD("get_interface", "idx"), &DisplayServerExtensionManager::get_interface);
+	ClassDB::bind_method(D_METHOD("get_interfaces"), &DisplayServerExtensionManager::get_interfaces);
+	ClassDB::bind_method(D_METHOD("find_interface", "name"), &DisplayServerExtensionManager::find_interface);
+
+	ADD_SIGNAL(MethodInfo("interface_added", PropertyInfo(Variant::STRING_NAME, "interface_name")));
+	ADD_SIGNAL(MethodInfo("interface_removed", PropertyInfo(Variant::STRING_NAME, "interface_name")));
+}
+
+void DisplayServerExtensionManager::add_interface(const Ref<DisplayServerExtension> &p_interface) {
+	ERR_FAIL_COND(p_interface.is_null());
+
+	for (int i = 0; i < interfaces.size(); i++) {
+		if (interfaces[i] == p_interface) {
+			ERR_PRINT("DisplayServerExtension: Interface was already added.");
+			return;
+		};
+	};
+
+	interfaces.push_back(p_interface);
+	print_verbose("DisplayServerExtension: Added interface \"" + p_interface->get_name() + "\"");
+	emit_signal(SNAME("interface_added"), p_interface->get_name());
+}
+
+void DisplayServerExtensionManager::remove_interface(const Ref<DisplayServerExtension> &p_interface) {
+	ERR_FAIL_COND(p_interface.is_null());
+
+	int idx = -1;
+	for (int i = 0; i < interfaces.size(); i++) {
+		if (interfaces[i] == p_interface) {
+			idx = i;
+			break;
+		};
+	};
+
+	ERR_FAIL_COND_MSG(idx == -1, "Interface not found.");
+	print_verbose("DisplayServerExtension: Removed interface \"" + p_interface->get_name() + "\"");
+	emit_signal(SNAME("interface_removed"), p_interface->get_name());
+	interfaces.remove_at(idx);
+}
+
+int DisplayServerExtensionManager::get_interface_count() const {
+	return interfaces.size();
+}
+
+Ref<DisplayServerExtension> DisplayServerExtensionManager::get_interface(int p_index) const {
+	ERR_FAIL_INDEX_V(p_index, interfaces.size(), nullptr);
+	return interfaces[p_index];
+}
+
+Ref<DisplayServerExtension> DisplayServerExtensionManager::find_interface(const String &p_name) const {
+	int idx = -1;
+	for (int i = 0; i < interfaces.size(); i++) {
+		if (interfaces[i]->get_name() == p_name) {
+			idx = i;
+			break;
+		};
+	};
+
+	ERR_FAIL_COND_V_MSG(idx == -1, nullptr, "Interface not found.");
+	return interfaces[idx];
+}
+
+TypedArray<Dictionary> DisplayServerExtensionManager::get_interfaces() const {
+	TypedArray<Dictionary> ret;
+
+	for (int i = 0; i < interfaces.size(); i++) {
+		Dictionary iface_info;
+
+		iface_info["id"] = i;
+		iface_info["name"] = interfaces[i]->get_name();
+
+		ret.push_back(iface_info);
+	};
+
+	return ret;
+}
+
+DisplayServerExtensionManager::DisplayServerExtensionManager() {
+	singleton = this;
+}
+
+DisplayServerExtensionManager::~DisplayServerExtensionManager() {
+	while (interfaces.size() > 0) {
+		interfaces.remove_at(0);
+	}
+	singleton = nullptr;
+}
+
+/*************************************************************************/
+
+void DisplayServerExtension::_bind_methods() {
+	GDVIRTUAL_BIND(_get_name);
+
+	GDVIRTUAL_BIND(_create_window, "window_id", "native_display_handle", "native_window_handle", "native_view_handle");
+	GDVIRTUAL_BIND(_destroy_window, "window_id", "native_display_handle", "native_window_handle", "native_view_handle");
+
+	GDVIRTUAL_BIND(_requires_node_tree_updates);
+	GDVIRTUAL_BIND(_node_tree_changed, "id");
+
+	GDVIRTUAL_BIND(_process_events);
+	GDVIRTUAL_BIND(_cleanup);
+}
+
+String DisplayServerExtension::get_name() const {
+	String ret = "Unknown";
+	GDVIRTUAL_CALL(_get_name, ret);
+	return ret;
+}
+
+void DisplayServerExtension::create_window(DisplayServer::WindowID p_window_id, int64_t p_native_display_handle, int64_t p_native_window_handle, int64_t p_native_view_handle) {
+	GDVIRTUAL_CALL(_create_window, p_window_id, p_native_display_handle, p_native_window_handle, p_native_view_handle);
+}
+
+void DisplayServerExtension::destroy_window(DisplayServer::WindowID p_window_id, int64_t p_native_display_handle, int64_t p_native_window_handle, int64_t p_native_view_handle) {
+	GDVIRTUAL_CALL(_destroy_window, p_window_id, p_native_display_handle, p_native_window_handle, p_native_view_handle);
+}
+
+bool DisplayServerExtension::requires_node_tree_updates() const {
+	bool ret = false;
+	GDVIRTUAL_CALL(_requires_node_tree_updates, ret);
+	return ret;
+}
+
+void DisplayServerExtension::node_tree_changed(const ObjectID &p_id) {
+	GDVIRTUAL_CALL(_node_tree_changed, p_id);
+}
+
+void DisplayServerExtension::process_events() {
+	GDVIRTUAL_CALL(_process_events);
+}
+
+void DisplayServerExtension::cleanup() {
+	GDVIRTUAL_CALL(_cleanup);
+}
+
+/*************************************************************************/
+
 DisplayServer *DisplayServer::singleton = nullptr;
 
 bool DisplayServer::hidpi_allowed = false;

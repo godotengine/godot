@@ -532,6 +532,68 @@ public:
 	~DisplayServer();
 };
 
+/*************************************************************************/
+
+class DisplayServerExtension : public RefCounted {
+	GDCLASS(DisplayServerExtension, RefCounted);
+
+protected:
+	static void _bind_methods();
+
+public:
+	virtual String get_name() const;
+	GDVIRTUAL0RC(String, _get_name);
+
+	virtual void create_window(DisplayServer::WindowID p_window_id, int64_t p_native_display_handle, int64_t p_native_window_handle, int64_t p_native_view_handle);
+	virtual void destroy_window(DisplayServer::WindowID p_window_id, int64_t p_native_display_handle, int64_t p_native_window_handle, int64_t p_native_view_handle);
+	GDVIRTUAL4(_create_window, DisplayServer::WindowID, int64_t, int64_t, int64_t);
+	GDVIRTUAL4(_destroy_window, DisplayServer::WindowID, int64_t, int64_t, int64_t);
+
+	virtual bool requires_node_tree_updates() const;
+	GDVIRTUAL0RC(bool, _requires_node_tree_updates);
+
+	virtual void node_tree_changed(const ObjectID &p_id);
+	GDVIRTUAL1(_node_tree_changed, ObjectID);
+
+	virtual void process_events();
+	GDVIRTUAL0(_process_events);
+
+	virtual void cleanup();
+	GDVIRTUAL0(_cleanup);
+
+	DisplayServerExtension() {}
+	~DisplayServerExtension() {}
+};
+
+/*************************************************************************/
+
+class DisplayServerExtensionManager : public Object {
+	GDCLASS(DisplayServerExtensionManager, Object);
+
+protected:
+	static void _bind_methods();
+
+private:
+	static DisplayServerExtensionManager *singleton;
+
+	Vector<Ref<DisplayServerExtension>> interfaces;
+
+public:
+	_FORCE_INLINE_ static DisplayServerExtensionManager *get_singleton() {
+		return singleton;
+	}
+
+	void add_interface(const Ref<DisplayServerExtension> &p_interface);
+	void remove_interface(const Ref<DisplayServerExtension> &p_interface);
+	int get_interface_count() const;
+	Ref<DisplayServerExtension> get_interface(int p_index) const;
+	Ref<DisplayServerExtension> find_interface(const String &p_name) const;
+	TypedArray<Dictionary> get_interfaces() const;
+
+	DisplayServerExtensionManager();
+	~DisplayServerExtensionManager();
+};
+
 VARIANT_ENUM_CAST(DisplayServer::WindowEvent)
 VARIANT_ENUM_CAST(DisplayServer::Feature)
 VARIANT_ENUM_CAST(DisplayServer::MouseMode)

@@ -129,7 +129,12 @@ void register_server_types() {
 
 	OS::get_singleton()->set_has_server_feature_callback(has_server_feature_callback);
 
+	GDREGISTER_CLASS(DisplayServerExtensionManager);
+	GDREGISTER_CLASS(DisplayServerExtension);
 	GDREGISTER_ABSTRACT_CLASS(DisplayServer);
+
+	Engine::get_singleton()->add_singleton(Engine::Singleton("DisplayServerExtensionManager", DisplayServerExtensionManager::get_singleton(), "DisplayServerExtensionManager"));
+
 	GDREGISTER_ABSTRACT_CLASS(RenderingServer);
 	GDREGISTER_CLASS(AudioServer);
 

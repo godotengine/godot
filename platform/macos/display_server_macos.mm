@@ -110,14 +110,14 @@ NSMenu *DisplayServerMacOS::_get_menu_root(const String &p_menu_root) {
 }
 
 DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mode, VSyncMode p_vsync_mode, const Rect2i &p_rect) {
-	WindowID id;
+	WindowID id = window_id_counter++;
 	const float scale = screen_get_max_scale();
 	{
 		WindowData wd;
 
 		wd.window_delegate = [[GodotWindowDelegate alloc] init];
 		ERR_FAIL_COND_V_MSG(wd.window_delegate == nil, INVALID_WINDOW_ID, "Can't create a window delegate");
-		[wd.window_delegate setWindowID:window_id_counter];
+		[wd.window_delegate setWindowID:id];
 
 		int rq_screen = get_screen_from_rect(p_rect);
 		if (rq_screen < 0) {
@@ -143,11 +143,11 @@ DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mod
 							backing:NSBackingStoreBuffered
 							  defer:NO];
 		ERR_FAIL_COND_V_MSG(wd.window_object == nil, INVALID_WINDOW_ID, "Can't create a window");
-		[wd.window_object setWindowID:window_id_counter];
+		[wd.window_object setWindowID:id];
 
 		wd.window_view = [[GodotContentView alloc] init];
 		ERR_FAIL_COND_V_MSG(wd.window_view == nil, INVALID_WINDOW_ID, "Can't create a window view");
-		[wd.window_view setWindowID:window_id_counter];
+		[wd.window_view setWindowID:id];
 		[wd.window_view setWantsLayer:TRUE];
 
 		[wd.window_object setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
@@ -156,6 +156,10 @@ DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mod
 		[wd.window_object setAcceptsMouseMovedEvents:YES];
 		[wd.window_object setRestorable:NO];
 		[wd.window_object setColorSpace:[NSColorSpace sRGBColorSpace]];
+
+		for (int i = 0; i < DisplayServerExtensionManager::get_singleton()->get_interface_count(); i++) {
+			DisplayServerExtensionManager::get_singleton()->get_interface(i)->create_window(id, 0, (int64_t)(wd.window_object), (int64_t)(wd.window_view));
+		}
 
 		if ([wd.window_object respondsToSelector:@selector(setTabbingMode:)]) {
 			[wd.window_object setTabbingMode:NSWindowTabbingModeDisallowed];
@@ -179,16 +183,16 @@ DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mod
 
 #if defined(VULKAN_ENABLED)
 		if (context_vulkan) {
-			Error err = context_vulkan->window_create(window_id_counter, p_vsync_mode, wd.window_view, p_rect.size.width, p_rect.size.height);
+			Error err = context_vulkan->window_create(id, p_vsync_mode, wd.window_view, p_rect.size.width, p_rect.size.height);
 			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't create a Vulkan context");
 		}
 #endif
 #if defined(GLES3_ENABLED)
 		if (gl_manager) {
-			Error err = gl_manager->window_create(window_id_counter, wd.window_view, p_rect.size.width, p_rect.size.height);
+			Error err = gl_manager->window_create(id, wd.window_view, p_rect.size.width, p_rect.size.height);
 			ERR_FAIL_COND_V_MSG(err != OK, INVALID_WINDOW_ID, "Can't create an OpenGL context");
 		}
-		window_set_vsync_mode(p_vsync_mode, window_id_counter);
+		window_set_vsync_mode(p_vsync_mode, id);
 #endif
 		[wd.window_view updateLayerDelegate];
 
@@ -201,7 +205,6 @@ DisplayServerMacOS::WindowID DisplayServerMacOS::_create_window(WindowMode p_mod
 		offset.y -= (windowRect.origin.y + windowRect.size.height);
 		[wd.window_object setFrameTopLeftPoint:NSMakePoint(wpos.x - offset.x, wpos.y - offset.y)];
 
-		id = window_id_counter++;
 		windows[id] = wd;
 	}
 
@@ -729,6 +732,9 @@ void DisplayServerMacOS::window_destroy(WindowID p_window) {
 		context_vulkan->window_destroy(p_window);
 	}
 #endif
+	for (int i = 0; i < DisplayServerExtensionManager::get_singleton()->get_interface_count(); i++) {
+		DisplayServerExtensionManager::get_singleton()->get_interface(i)->destroy_window(p_window, 0, (int64_t)(windows[p_window].window_object), (int64_t)(windows[p_window].window_view));
+	}
 	windows.erase(p_window);
 }
 
@@ -3504,6 +3510,10 @@ void DisplayServerMacOS::process_events() {
 				[wd.window_object setIgnoresMouseEvents:NO];
 			}
 		}
+	}
+
+	for (int i = 0; i < DisplayServerExtensionManager::get_singleton()->get_interface_count(); i++) {
+		DisplayServerExtensionManager::get_singleton()->get_interface(i)->process_events();
 	}
 }
 

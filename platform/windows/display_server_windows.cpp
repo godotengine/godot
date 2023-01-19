@@ -809,6 +809,7 @@ void DisplayServerWindows::delete_sub_window(WindowID p_window) {
 		wintab_WTClose(windows[p_window].wtctx);
 		windows[p_window].wtctx = 0;
 	}
+
 	DestroyWindow(windows[p_window].hWnd);
 	windows.erase(p_window);
 
@@ -1990,6 +1991,10 @@ void DisplayServerWindows::process_events() {
 		_process_key_events();
 		Input::get_singleton()->flush_buffered_events();
 	}
+
+	for (int i = 0; i < DisplayServerExtensionManager::get_singleton()->get_interface_count(); i++) {
+		DisplayServerExtensionManager::get_singleton()->get_interface(i)->process_events();
+	}
 }
 
 void DisplayServerWindows::force_process_and_drop_events() {
@@ -2459,6 +2464,10 @@ LRESULT DisplayServerWindows::_handle_early_window_message(HWND hWnd, UINT uMsg,
 
 			// Fix this up so we can recognize the remaining messages.
 			pWindowData->hWnd = hWnd;
+
+			for (int i = 0; i < DisplayServerExtensionManager::get_singleton()->get_interface_count(); i++) {
+				DisplayServerExtensionManager::get_singleton()->get_interface(i)->create_window(pWindowData->id, 0, (int64_t)(hWnd), 0);
+			}
 		} break;
 		default: {
 			// Additional messages during window creation should happen after we fixed
@@ -3521,6 +3530,9 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			joypad->probe_joypads();
 		} break;
 		case WM_DESTROY: {
+			for (int i = 0; i < DisplayServerExtensionManager::get_singleton()->get_interface_count(); i++) {
+				DisplayServerExtensionManager::get_singleton()->get_interface(i)->destroy_window(window_id, 0, (int64_t)(windows[window_id].hWnd), 0);
+			}
 			Input::get_singleton()->flush_buffered_events();
 		} break;
 		case WM_SETCURSOR: {
@@ -3848,6 +3860,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 	{
 		WindowData &wd = windows[id];
 
+		wd.id = id;
 		wd.hWnd = CreateWindowExW(
 				dwExStyle,
 				L"Engine", L"",

@@ -139,6 +139,7 @@ static RenderingServer *rendering_server = nullptr;
 static CameraServer *camera_server = nullptr;
 static XRServer *xr_server = nullptr;
 static TextServerManager *tsman = nullptr;
+static DisplayServerExtensionManager *dseman = nullptr;
 static PhysicsServer3DManager *physics_server_3d_manager = nullptr;
 static PhysicsServer3D *physics_server_3d = nullptr;
 static PhysicsServer2DManager *physics_server_2d_manager = nullptr;
@@ -1948,6 +1949,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	engine->startup_benchmark_begin_measure("servers");
 
 	tsman = memnew(TextServerManager);
+	dseman = memnew(DisplayServerExtensionManager);
 
 	if (tsman) {
 		Ref<TextServerDummy> ts;
@@ -3400,10 +3402,6 @@ void Main::cleanup(bool p_force) {
 	finalize_navigation_server();
 	finalize_physics();
 
-	GDExtensionManager::get_singleton()->deinitialize_extensions(GDExtension::INITIALIZATION_LEVEL_SERVERS);
-	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_SERVERS);
-	unregister_server_types();
-
 	EngineDebugger::deinitialize();
 
 	if (xr_server) {
@@ -3422,6 +3420,21 @@ void Main::cleanup(bool p_force) {
 	OS::get_singleton()->finalize();
 
 	finalize_display();
+
+	for (int i = 0; i < DisplayServerExtensionManager::get_singleton()->get_interface_count(); i++) {
+		DisplayServerExtensionManager::get_singleton()->get_interface(i)->cleanup();
+	}
+
+	if (tsman) {
+		memdelete(tsman);
+	}
+	if (dseman) {
+		memdelete(dseman);
+	}
+
+	GDExtensionManager::get_singleton()->deinitialize_extensions(GDExtension::INITIALIZATION_LEVEL_SERVERS);
+	uninitialize_modules(MODULE_INITIALIZATION_LEVEL_SERVERS);
+	unregister_server_types();
 
 	if (input) {
 		memdelete(input);
@@ -3444,9 +3457,6 @@ void Main::cleanup(bool p_force) {
 	}
 	if (translation_server) {
 		memdelete(translation_server);
-	}
-	if (tsman) {
-		memdelete(tsman);
 	}
 	if (physics_server_3d_manager) {
 		memdelete(physics_server_3d_manager);

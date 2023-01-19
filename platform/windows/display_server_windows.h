@@ -355,6 +355,7 @@ class DisplayServerWindows : public DisplayServer {
 	TTS_Windows *tts = nullptr;
 
 	struct WindowData {
+		WindowID id;
 		HWND hWnd;
 
 		Vector<Vector2> mpath;

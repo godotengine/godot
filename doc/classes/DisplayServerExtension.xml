@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="DisplayServerExtension" inherits="RefCounted" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Base class for [DisplayServer] plugins.
+	</brief_description>
+	<description>
+		[DisplayServer] plugin implementations should inherit from this class.
+		Implementations should register a derived class during [code]SERVERS[/code] initialization step, create a single instance of it and pass it the [method DisplayServerExtensionManager.add_interface] method. It's automatically unregistered and deleted before [code]SERVERS[/code] deinitialization step.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_cleanup" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				This method is called before all [DisplayServer] plugins are unregistered and deleted.
+			</description>
+		</method>
+		<method name="_create_window" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="window_id" type="int" />
+			<param index="1" name="native_display_handle" type="int" />
+			<param index="2" name="native_window_handle" type="int" />
+			<param index="3" name="native_view_handle" type="int" />
+			<description>
+				This method is called immediately after native window is created by [DisplayServer], allowing to subclass and modify it.
+			</description>
+		</method>
+		<method name="_destroy_window" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="window_id" type="int" />
+			<param index="1" name="native_display_handle" type="int" />
+			<param index="2" name="native_window_handle" type="int" />
+			<param index="3" name="native_view_handle" type="int" />
+			<description>
+				This method is called immediately before native window is destroyed by [DisplayServer].
+			</description>
+		</method>
+		<method name="_get_name" qualifiers="virtual const">
+			<return type="String" />
+			<description>
+				When this method is called, implementation should retun readable plugin name.
+			</description>
+		</method>
+		<method name="_node_tree_changed" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="id" type="int" />
+			<description>
+				If [method _requires_node_tree_updates] returns [code]true[/code], this method should be called when node enters/exits tree (done automatically), or node information relevant for the plugin is changed (use [method Node.emit_tree_update]).
+			</description>
+		</method>
+		<method name="_process_events" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				This method is called at the end of every [DisplayServer]'s event processing loop iteration.
+			</description>
+		</method>
+		<method name="_requires_node_tree_updates" qualifiers="virtual const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code], if this plugin requires notifications about node tree changes.
+			</description>
+		</method>
+	</methods>
+</class>

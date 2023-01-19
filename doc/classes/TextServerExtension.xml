@@ -5,6 +5,7 @@
 	</brief_description>
 	<description>
 		External TextServer implementations should inherit from this class.
+		Implementations should register a derived class during [code]SERVERS[/code] initialization step, create a single instance of it and pass it the [method TextServerManager.add_interface] method. It's automatically unregistered and deleted before [code]SERVERS[/code] deinitialization step.
 	</description>
 	<tutorials>
 	</tutorials>

@@ -1349,6 +1349,10 @@ void DisplayServerX11::delete_sub_window(WindowID p_id) {
 	}
 #endif
 
+	for (int i = 0; i < DisplayServerExtensionManager::get_singleton()->get_interface_count(); i++) {
+		DisplayServerExtensionManager::get_singleton()->get_interface(i)->destroy_window(p_id, (int64_t)(x11_display), (int64_t)(wd.x11_window), 0);
+	}
+
 	if (wd.xic) {
 		XDestroyIC(wd.xic);
 		wd.xic = nullptr;
@@ -4659,6 +4663,10 @@ void DisplayServerX11::process_events() {
 	}
 
 	Input::get_singleton()->flush_buffered_events();
+
+	for (int i = 0; i < DisplayServerExtensionManager::get_singleton()->get_interface_count(); i++) {
+		DisplayServerExtensionManager::get_singleton()->get_interface(i)->process_events();
+	}
 }
 
 void DisplayServerX11::release_rendering_thread() {
@@ -4998,6 +5006,11 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 		window_attributes_ime.event_mask = KeyPressMask | KeyReleaseMask | StructureNotifyMask | ExposureMask;
 
 		wd.x11_xim_window = XCreateWindow(x11_display, wd.x11_window, 0, 0, 1, 1, 0, CopyFromParent, InputOnly, CopyFromParent, CWEventMask, &window_attributes_ime);
+
+		for (int i = 0; i < DisplayServerExtensionManager::get_singleton()->get_interface_count(); i++) {
+			DisplayServerExtensionManager::get_singleton()->get_interface(i)->create_window(id, (int64_t)(x11_display), (int64_t)(wd.x11_window), 0);
+		}
+
 #ifdef XKB_ENABLED
 		if (dead_tbl && xkb_loaded_v05p) {
 			wd.xkb_state = xkb_compose_state_new(dead_tbl, XKB_COMPOSE_STATE_NO_FLAGS);
@@ -5854,6 +5867,11 @@ DisplayServerX11::~DisplayServerX11() {
 #endif
 
 		WindowData &wd = E.value;
+
+		for (int i = 0; i < DisplayServerExtensionManager::get_singleton()->get_interface_count(); i++) {
+			DisplayServerExtensionManager::get_singleton()->get_interface(i)->destroy_window(E.key, (int64_t)(x11_display), (int64_t)(wd.x11_window), 0);
+		}
+
 		if (wd.xic) {
 			XDestroyIC(wd.xic);
 			wd.xic = nullptr;
