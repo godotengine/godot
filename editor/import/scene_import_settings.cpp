@@ -64,6 +64,11 @@ class SceneImportSettingsData : public Object {
 
 			current[p_name] = p_value;
 
+			// SceneImportSettings must decide if a new collider should be generated or not
+			if (category == ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MESH_3D_NODE) {
+				SceneImportSettings::get_singleton()->request_generate_collider();
+			}
+
 			if (SceneImportSettings::get_singleton()->is_editing_animation()) {
 				if (category == ResourceImporterScene::INTERNAL_IMPORT_CATEGORY_MAX) {
 					if (ResourceImporterScene::get_animation_singleton()->get_option_visibility(path, p_name, current)) {
@@ -420,9 +425,9 @@ void SceneImportSettings::_update_view_gizmos() {
 		return;
 	}
 	for (const KeyValue<String, NodeData> &e : node_map) {
-		bool generate_collider = false;
+		bool show_collider_view = false;
 		if (e.value.settings.has(SNAME("generate/physics"))) {
-			generate_collider = e.value.settings[SNAME("generate/physics")];
+			show_collider_view = e.value.settings[SNAME("generate/physics")];
 		}
 
 		MeshInstance3D *mesh_node = Object::cast_to<MeshInstance3D>(e.value.node);
@@ -436,7 +441,7 @@ void SceneImportSettings::_update_view_gizmos() {
 		CRASH_COND_MSG(descendants.is_empty(), "This is unreachable, since the collider view is always created even when the collision is not used! If this is triggered there is a bug on the function `_fill_scene`.");
 
 		MeshInstance3D *collider_view = static_cast<MeshInstance3D *>(descendants[0].operator Object *());
-		collider_view->set_visible(generate_collider);
+		collider_view->set_visible(show_collider_view);
 		if (generate_collider) {
 			// This collider_view doesn't have a mesh so we need to generate a new one.
 
@@ -466,6 +471,8 @@ void SceneImportSettings::_update_view_gizmos() {
 			collider_view->set_transform(transform);
 		}
 	}
+
+	generate_collider = false;
 }
 
 void SceneImportSettings::_update_camera() {
@@ -528,6 +535,10 @@ void SceneImportSettings::_load_default_subresource_settings(HashMap<StringName,
 			}
 		}
 	}
+}
+
+void SceneImportSettings::request_generate_collider() {
+	generate_collider = true;
 }
 
 void SceneImportSettings::update_view() {
