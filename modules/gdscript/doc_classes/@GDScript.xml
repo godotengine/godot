@@ -553,6 +553,7 @@
 				@icon("res://path/to/class/icon.svg")
 				[/codeblock]
 				[b]Note:[/b] Only the script can have a custom icon. Inner classes are not supported.
+				[b]Note:[/b] As annotations describe their subject, the [code]@icon[/code] annotation must be placed before the class definition and inheritance.
 			</description>
 		</annotation>
 		<annotation name="@onready">
@@ -585,6 +586,7 @@
 				@tool
 				extends Node
 				[/codeblock]
+				[b]Note:[/b] As annotations describe their subject, the [code]@tool[/code] annotation must be placed before the class definition and inheritance.
 			</description>
 		</annotation>
 		<annotation name="@warning_ignore" qualifiers="vararg">
