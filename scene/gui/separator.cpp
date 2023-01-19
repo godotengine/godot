@@ -51,7 +51,7 @@ void Separator::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_DRAW: {
 			Size2i size = get_size();
-			Size2i ssize = theme_cache.separator_style->get_minimum_size() + theme_cache.separator_style->get_center_size();
+			Size2i ssize = theme_cache.separator_style->get_minimum_size();
 
 			if (orientation == VERTICAL) {
 				theme_cache.separator_style->draw(get_canvas_item(), Rect2((size.x - ssize.x) / 2, 0, ssize.x, size.y));

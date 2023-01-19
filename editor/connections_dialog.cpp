@@ -285,7 +285,7 @@ void ConnectDialog::_notification(int p_what) {
 
 			Ref<StyleBox> style = get_theme_stylebox("normal", "LineEdit")->duplicate();
 			if (style.is_valid()) {
-				style->set_default_margin(SIDE_TOP, style->get_default_margin(SIDE_TOP) + 1.0);
+				style->set_content_margin(SIDE_TOP, style->get_content_margin(SIDE_TOP) + 1.0);
 				from_signal->add_theme_style_override("normal", style);
 			}
 		} break;

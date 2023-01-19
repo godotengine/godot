@@ -53,7 +53,7 @@ static const int default_corner_radius = 3;
 static Ref<StyleBoxFlat> make_flat_stylebox(Color p_color, float p_margin_left = default_margin, float p_margin_top = default_margin, float p_margin_right = default_margin, float p_margin_bottom = default_margin, int p_corner_radius = default_corner_radius, bool p_draw_center = true, int p_border_width = 0) {
 	Ref<StyleBoxFlat> style(memnew(StyleBoxFlat));
 	style->set_bg_color(p_color);
-	style->set_default_margin_individual(p_margin_left * scale, p_margin_top * scale, p_margin_right * scale, p_margin_bottom * scale);
+	style->set_content_margin_individual(p_margin_left * scale, p_margin_top * scale, p_margin_right * scale, p_margin_bottom * scale);
 
 	style->set_corner_radius_all(p_corner_radius);
 	style->set_anti_aliased(true);
@@ -67,10 +67,10 @@ static Ref<StyleBoxFlat> make_flat_stylebox(Color p_color, float p_margin_left =
 }
 
 static Ref<StyleBoxFlat> sb_expand(Ref<StyleBoxFlat> p_sbox, float p_left, float p_top, float p_right, float p_bottom) {
-	p_sbox->set_expand_margin_size(SIDE_LEFT, p_left * scale);
-	p_sbox->set_expand_margin_size(SIDE_TOP, p_top * scale);
-	p_sbox->set_expand_margin_size(SIDE_RIGHT, p_right * scale);
-	p_sbox->set_expand_margin_size(SIDE_BOTTOM, p_bottom * scale);
+	p_sbox->set_expand_margin(SIDE_LEFT, p_left * scale);
+	p_sbox->set_expand_margin(SIDE_TOP, p_top * scale);
+	p_sbox->set_expand_margin(SIDE_RIGHT, p_right * scale);
+	p_sbox->set_expand_margin(SIDE_BOTTOM, p_bottom * scale);
 	return p_sbox;
 }
 
@@ -93,7 +93,7 @@ static Ref<ImageTexture> generate_icon(int p_index) {
 
 static Ref<StyleBox> make_empty_stylebox(float p_margin_left = -1, float p_margin_top = -1, float p_margin_right = -1, float p_margin_bottom = -1) {
 	Ref<StyleBox> style(memnew(StyleBoxEmpty));
-	style->set_default_margin_individual(p_margin_left * scale, p_margin_top * scale, p_margin_right * scale, p_margin_bottom * scale);
+	style->set_content_margin_individual(p_margin_left * scale, p_margin_top * scale, p_margin_right * scale, p_margin_bottom * scale);
 	return style;
 }
 
@@ -148,7 +148,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	const Ref<StyleBoxFlat> button_disabled = make_flat_stylebox(style_disabled_color);
 	Ref<StyleBoxFlat> focus = make_flat_stylebox(style_focus_color, default_margin, default_margin, default_margin, default_margin, default_corner_radius, false, 2);
 	// Make the focus outline appear to be flush with the buttons it's focusing.
-	focus->set_expand_margin_size_all(2 * scale);
+	focus->set_expand_margin_all(2 * scale);
 
 	theme->set_stylebox("normal", "Button", button_normal);
 	theme->set_stylebox("hover", "Button", button_hover);
@@ -279,9 +279,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	// CheckBox
 
 	Ref<StyleBox> cbx_empty = memnew(StyleBoxEmpty);
-	cbx_empty->set_default_margin_all(4 * scale);
+	cbx_empty->set_content_margin_all(4 * scale);
 	Ref<StyleBox> cbx_focus = focus;
-	cbx_focus->set_default_margin_all(4 * scale);
+	cbx_focus->set_content_margin_all(4 * scale);
 
 	theme->set_stylebox("normal", "CheckBox", cbx_empty);
 	theme->set_stylebox("pressed", "CheckBox", cbx_empty);
@@ -317,7 +317,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	// CheckButton
 
 	Ref<StyleBox> cb_empty = memnew(StyleBoxEmpty);
-	cb_empty->set_default_margin_individual(6 * scale, 4 * scale, 6 * scale, 4 * scale);
+	cb_empty->set_content_margin_individual(6 * scale, 4 * scale, 6 * scale, 4 * scale);
 
 	theme->set_stylebox("normal", "CheckButton", cb_empty);
 	theme->set_stylebox("pressed", "CheckButton", cb_empty);
@@ -634,10 +634,10 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	Ref<StyleBoxLine> separator_horizontal = memnew(StyleBoxLine);
 	separator_horizontal->set_thickness(Math::round(scale));
 	separator_horizontal->set_color(style_separator_color);
-	separator_horizontal->set_default_margin_individual(default_margin, 0, default_margin, 0);
+	separator_horizontal->set_content_margin_individual(default_margin, 0, default_margin, 0);
 	Ref<StyleBoxLine> separator_vertical = separator_horizontal->duplicate();
 	separator_vertical->set_vertical(true);
-	separator_vertical->set_default_margin_individual(0, default_margin, 0, default_margin);
+	separator_vertical->set_content_margin_individual(0, default_margin, 0, default_margin);
 
 	// Always display a border for PopupMenus so they can be distinguished from their background.
 	Ref<StyleBoxFlat> style_popup_panel = make_flat_stylebox(style_popup_color);

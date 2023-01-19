@@ -471,7 +471,7 @@ ColorPicker::PickerShapeType ColorPicker::_get_actual_shape() const {
 
 void ColorPicker::_reset_theme() {
 	Ref<StyleBoxFlat> style_box_flat(memnew(StyleBoxFlat));
-	style_box_flat->set_default_margin(SIDE_TOP, 16 * get_theme_default_base_scale());
+	style_box_flat->set_content_margin(SIDE_TOP, 16 * get_theme_default_base_scale());
 	style_box_flat->set_bg_color(Color(0.2, 0.23, 0.31).lerp(Color(0, 0, 0, 1), 0.3).clamp());
 	for (int i = 0; i < SLIDER_COUNT; i++) {
 		sliders[i]->add_theme_icon_override("grabber", get_theme_icon(SNAME("bar_arrow"), SNAME("ColorPicker")));
@@ -890,7 +890,7 @@ void ColorPicker::set_colorize_sliders(bool p_colorize_sliders) {
 		alpha_slider->add_theme_style_override("slider", style_box_empty);
 	} else {
 		Ref<StyleBoxFlat> style_box_flat(memnew(StyleBoxFlat));
-		style_box_flat->set_default_margin(SIDE_TOP, 16 * get_theme_default_base_scale());
+		style_box_flat->set_content_margin(SIDE_TOP, 16 * get_theme_default_base_scale());
 		style_box_flat->set_bg_color(Color(0.2, 0.23, 0.31).lerp(Color(0, 0, 0, 1), 0.3).clamp());
 
 		if (!slider_theme_modified) {

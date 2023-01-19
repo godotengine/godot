@@ -33,7 +33,7 @@
 #include "core/os/keyboard.h"
 
 Size2 Slider::get_minimum_size() const {
-	Size2i ss = theme_cache.slider_style->get_minimum_size() + theme_cache.slider_style->get_center_size();
+	Size2i ss = theme_cache.slider_style->get_minimum_size();
 	Size2i rs = theme_cache.grabber_icon->get_size();
 
 	if (orientation == HORIZONTAL) {
@@ -212,7 +212,7 @@ void Slider::_notification(int p_what) {
 			}
 
 			if (orientation == VERTICAL) {
-				int widget_width = style->get_minimum_size().width + style->get_center_size().width;
+				int widget_width = style->get_minimum_size().width;
 				double areasize = size.height - grabber->get_size().height;
 				style->draw(ci, Rect2i(Point2i(size.width / 2 - widget_width / 2, 0), Size2i(widget_width, size.height)));
 				grabber_area->draw(ci, Rect2i(Point2i((size.width - widget_width) / 2, size.height - areasize * ratio - grabber->get_size().height / 2), Size2i(widget_width, areasize * ratio + grabber->get_size().height / 2)));
@@ -229,7 +229,7 @@ void Slider::_notification(int p_what) {
 				}
 				grabber->draw(ci, Point2i(size.width / 2 - grabber->get_size().width / 2 + get_theme_constant(SNAME("grabber_offset")), size.height - ratio * areasize - grabber->get_size().height));
 			} else {
-				int widget_height = style->get_minimum_size().height + style->get_center_size().height;
+				int widget_height = style->get_minimum_size().height;
 				double areasize = size.width - grabber->get_size().width;
 
 				style->draw(ci, Rect2i(Point2i(0, (size.height - widget_height) / 2), Size2i(size.width, widget_height)));

@@ -433,7 +433,7 @@ void ScrollBar::_notification(int p_what) {
 
 double ScrollBar::get_grabber_min_size() const {
 	Ref<StyleBox> grabber = theme_cache.grabber_style;
-	Size2 gminsize = grabber->get_minimum_size() + grabber->get_center_size();
+	Size2 gminsize = grabber->get_minimum_size();
 	return (orientation == VERTICAL) ? gminsize.height : gminsize.width;
 }
 
@@ -500,7 +500,7 @@ Size2 ScrollBar::get_minimum_size() const {
 	Size2 minsize;
 
 	if (orientation == VERTICAL) {
-		minsize.width = MAX(incr->get_size().width, (bg->get_minimum_size() + bg->get_center_size()).width);
+		minsize.width = MAX(incr->get_size().width, bg->get_minimum_size().width);
 		minsize.height += incr->get_size().height;
 		minsize.height += decr->get_size().height;
 		minsize.height += bg->get_minimum_size().height;
@@ -508,7 +508,7 @@ Size2 ScrollBar::get_minimum_size() const {
 	}
 
 	if (orientation == HORIZONTAL) {
-		minsize.height = MAX(incr->get_size().height, (bg->get_center_size() + bg->get_minimum_size()).height);
+		minsize.height = MAX(incr->get_size().height, bg->get_minimum_size().height);
 		minsize.width += incr->get_size().width;
 		minsize.width += decr->get_size().width;
 		minsize.width += bg->get_minimum_size().width;

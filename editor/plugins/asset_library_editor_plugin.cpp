@@ -107,7 +107,7 @@ void EditorAssetLibraryItem::_bind_methods() {
 EditorAssetLibraryItem::EditorAssetLibraryItem() {
 	Ref<StyleBoxEmpty> border;
 	border.instantiate();
-	border->set_default_margin_all(5 * EDSCALE);
+	border->set_content_margin_all(5 * EDSCALE);
 	add_theme_style_override("panel", border);
 
 	HBoxContainer *hb = memnew(HBoxContainer);
@@ -1549,7 +1549,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	Ref<StyleBoxEmpty> border2;
 	border2.instantiate();
-	border2->set_default_margin_individual(15 * EDSCALE, 15 * EDSCALE, 35 * EDSCALE, 15 * EDSCALE);
+	border2->set_content_margin_individual(15 * EDSCALE, 15 * EDSCALE, 35 * EDSCALE, 15 * EDSCALE);
 
 	PanelContainer *library_vb_border = memnew(PanelContainer);
 	library_scroll->add_child(library_vb_border);
