@@ -1883,32 +1883,23 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			Control *over = gui_find_control(pos);
 			if (over) {
 				gui.touch_focus[touch_index] = over->get_instance_id();
-				bool stopped = false;
 				if (over->can_process()) {
 					touch_event = touch_event->xformed_by(Transform2D()); // Make a copy.
 					pos = over->get_global_transform_with_canvas().affine_inverse().xform(pos);
 					touch_event->set_position(pos);
-					stopped = _gui_call_input(over, touch_event);
 				}
-				if (stopped) {
-					set_input_as_handled();
-				}
+				set_input_as_handled();
 				return;
 			}
 		} else {
-			bool stopped = false;
 			ObjectID control_id = gui.touch_focus[touch_index];
 			Control *over = control_id.is_valid() ? Object::cast_to<Control>(ObjectDB::get_instance(control_id)) : nullptr;
 			if (over && over->can_process()) {
 				touch_event = touch_event->xformed_by(Transform2D()); // Make a copy.
 				pos = over->get_global_transform_with_canvas().affine_inverse().xform(pos);
 				touch_event->set_position(pos);
-
-				stopped = _gui_call_input(over, touch_event);
 			}
-			if (stopped) {
-				set_input_as_handled();
-			}
+			set_input_as_handled();
 			gui.touch_focus.erase(touch_index);
 			return;
 		}
@@ -1924,16 +1915,12 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 		Control *over = gui_find_control(pos);
 		if (over) {
-			bool stopped = false;
 			if (over->can_process()) {
 				gesture_event = gesture_event->xformed_by(Transform2D()); // Make a copy.
 				pos = over->get_global_transform_with_canvas().affine_inverse().xform(pos);
 				gesture_event->set_position(pos);
-				stopped = _gui_call_input(over, gesture_event);
 			}
-			if (stopped) {
-				set_input_as_handled();
-			}
+			set_input_as_handled();
 			return;
 		}
 	}
@@ -1947,7 +1934,6 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			over = gui_find_control(drag_event->get_position());
 		}
 		if (over) {
-			bool stopped = false;
 			if (over->can_process()) {
 				Transform2D localizer = over->get_global_transform_with_canvas().affine_inverse();
 				Size2 pos = localizer.xform(drag_event->get_position());
@@ -1959,13 +1945,8 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				drag_event->set_velocity(velocity);
 				drag_event->set_relative(rel);
 				drag_event->set_position(pos);
-
-				stopped = _gui_call_input(over, drag_event);
 			}
-
-			if (stopped) {
-				set_input_as_handled();
-			}
+			set_input_as_handled();
 			return;
 		}
 	}
