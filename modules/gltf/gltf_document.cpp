@@ -3124,10 +3124,11 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_p
 				// API for that in Godot, so we'd have to load as a buffer (i.e. embedded in
 				// the material), so we do this only as fallback.
 				Ref<Texture2D> texture = ResourceLoader::load(uri);
+				String extension = uri.get_extension().to_lower();
 				if (texture.is_valid()) {
 					p_state->images.push_back(texture);
 					continue;
-				} else if (mimetype == "image/png" || mimetype == "image/jpeg") {
+				} else if (mimetype == "image/png" || mimetype == "image/jpeg" || extension == "png" || extension == "jpg" || extension == "jpeg") {
 					// Fallback to loading as byte array.
 					// This enables us to support the spec's requirement that we honor mimetype
 					// regardless of file URI.
