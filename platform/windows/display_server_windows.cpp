@@ -741,6 +741,17 @@ DisplayServer::WindowID DisplayServerWindows::create_sub_window(WindowMode p_mod
 	if (p_flags & WINDOW_FLAG_POPUP_BIT) {
 		wd.is_popup = true;
 	}
+	if (p_flags & WINDOW_FLAG_TRANSPARENT_BIT) {
+		DWM_BLURBEHIND bb;
+		ZeroMemory(&bb, sizeof(bb));
+		HRGN hRgn = CreateRectRgn(0, 0, -1, -1);
+		bb.dwFlags = DWM_BB_ENABLE | DWM_BB_BLURREGION;
+		bb.hRgnBlur = hRgn;
+		bb.fEnable = TRUE;
+		DwmEnableBlurBehindWindow(wd.hWnd, &bb);
+
+		wd.layered_window = true;
+	}
 
 	// Inherit icons from MAIN_WINDOW for all sub windows.
 	HICON mainwindow_icon = (HICON)SendMessage(windows[MAIN_WINDOW_ID].hWnd, WM_GETICON, ICON_SMALL, 0);
@@ -777,6 +788,9 @@ void DisplayServerWindows::show_window(WindowID p_id) {
 		ShowWindow(wd.hWnd, SW_SHOW);
 		SetForegroundWindow(wd.hWnd); // Slightly higher priority.
 		SetFocus(wd.hWnd); // Set keyboard focus.
+	}
+	if (wd.always_on_top) {
+		SetWindowPos(wd.hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | ((wd.no_focus || wd.is_popup) ? SWP_NOACTIVATE : 0));
 	}
 }
 
