@@ -143,6 +143,10 @@ void GodotStep3D::_solve_island(uint32_t p_island_index, void *p_userdata) {
 			}
 		}
 
+		for (uint32_t constraint_index = 0; constraint_index < constraint_count; ++constraint_index) {
+			constraint_island[constraint_index]->post_solve();
+		}
+
 		// Check priority to keep only higher priority constraints.
 		uint32_t priority_constraint_count = 0;
 		++current_priority;

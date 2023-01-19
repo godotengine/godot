@@ -37,8 +37,18 @@
 
 #include "core/templates/local_vector.h"
 
+// warning: the large volume of logging from these flags can reduce FPS. Turn them off for performance checks.
+// #define PHYS_SOLVER_LOG		// per-frame stats
+// #define PHYS_SOLVER_VERBOSE	// per-iteration stats - if this is enabled, you must also enable PHYS_SOLVER_LOG.
+
 class GodotBodyContact3D : public GodotConstraint3D {
 protected:
+	struct FrictionTangent {
+		Vector3 tangent;
+		Vector3 prior_tangent;
+		real_t acc_impulse = 0.0;
+	};
+
 	struct Contact {
 		Vector3 position;
 		Vector3 normal;
@@ -46,7 +56,9 @@ protected:
 		Vector3 local_A, local_B;
 		Vector3 acc_impulse; // accumulated impulse - only one of the object's impulse is needed as impulse_a == -impulse_b
 		real_t acc_normal_impulse = 0.0; // accumulated normal impulse (Pn)
-		Vector3 acc_tangent_impulse; // accumulated tangent impulse (Pt)
+
+		FrictionTangent friction_tangents[2]; // 2 tangent directions of friction by lambda.
+
 		real_t acc_bias_impulse = 0.0; // accumulated normal impulse for position bias (Pnb)
 		real_t acc_bias_impulse_center_of_mass = 0.0; // accumulated normal impulse for position bias applied to com
 		real_t mass_normal = 0.0;
@@ -57,6 +69,10 @@ protected:
 		bool active = false;
 		bool used = false;
 		Vector3 rA, rB; // Offset in world orientation with respect to center of mass
+
+#ifdef PHYS_SOLVER_LOG
+		int impulse_iterations = 0; // only for logging
+#endif
 	};
 
 	Vector3 sep_axis;
@@ -93,21 +109,32 @@ class GodotBodyPair3D : public GodotBodyContact3D {
 	bool report_contacts_only = false;
 
 	Vector3 offset_B; //use local A coordinates to avoid numerical issues on collision detection
+	real_t inv_mass_combined = 0.0;
 
 	Contact contacts[MAX_CONTACTS];
 	int contact_count = 0;
+	// contacts from last frame, used during add-contact to persist accumulated impulse for warm start. (aka caching)
+	Contact prior_contacts[MAX_CONTACTS];
+	int prior_contact_count = 0;
+
+// frame & iteration are just for verbose logging
+#ifdef PHYS_SOLVER_LOG
+	int frame_count = 0; // this is the frame count for this body pair, not overall game frames
+	int iteration_count = 0; // solver iteration (resets each frame)
+#endif
 
 	static void _contact_added_callback(const Vector3 &p_point_A, int p_index_A, const Vector3 &p_point_B, int p_index_B, void *p_userdata);
 
 	void contact_added_callback(const Vector3 &p_point_A, int p_index_A, const Vector3 &p_point_B, int p_index_B);
 
-	void validate_contacts();
 	bool _test_ccd(real_t p_step, GodotBody3D *p_A, int p_shape_A, const Transform3D &p_xform_A, GodotBody3D *p_B, int p_shape_B, const Transform3D &p_xform_B);
+	void _solve_tangent(real_t p_step, Contact &c, int tangent_index, real_t jtMax);
 
 public:
 	virtual bool setup(real_t p_step) override;
 	virtual bool pre_solve(real_t p_step) override;
 	virtual void solve(real_t p_step) override;
+	virtual void post_solve() override;
 
 	GodotBodyPair3D(GodotBody3D *p_A, int p_shape_A, GodotBody3D *p_B, int p_shape_B);
 	~GodotBodyPair3D();
@@ -125,12 +152,12 @@ class GodotBodySoftBodyPair3D : public GodotBodyContact3D {
 	bool report_contacts_only = false;
 
 	LocalVector<Contact> contacts;
+	LocalVector<Contact> prior_contacts;
 
 	static void _contact_added_callback(const Vector3 &p_point_A, int p_index_A, const Vector3 &p_point_B, int p_index_B, void *p_userdata);
 
 	void contact_added_callback(const Vector3 &p_point_A, int p_index_A, const Vector3 &p_point_B, int p_index_B);
-
-	void validate_contacts();
+	void _solve_tangent(real_t p_step, Contact &c, int tangent_index, real_t jtMax, real_t inv_mass_combined);
 
 public:
 	virtual bool setup(real_t p_step) override;
