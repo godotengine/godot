@@ -42,8 +42,6 @@ class EditorQuickOpen;
 class EditorResourcePicker : public HBoxContainer {
 	GDCLASS(EditorResourcePicker, HBoxContainer);
 
-	static HashMap<StringName, List<StringName>> allowed_types_cache;
-
 	String base_type;
 	Ref<Resource> edited_resource;
 
@@ -92,9 +90,9 @@ class EditorResourcePicker : public HBoxContainer {
 	void _button_input(const Ref<InputEvent> &p_event);
 
 	String _get_resource_type(const Ref<Resource> &p_resource) const;
-	void _get_allowed_types(bool p_with_convert, HashSet<String> *p_vector) const;
+	void _get_allowed_types(bool p_with_convert, HashSet<StringName> *p_vector) const;
 	bool _is_drop_valid(const Dictionary &p_drag_data) const;
-	bool _is_type_valid(const String p_type_name, HashSet<String> p_allowed_types) const;
+	bool _is_type_valid(const String p_type_name, HashSet<StringName> p_allowed_types) const;
 
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
@@ -118,8 +116,6 @@ protected:
 	GDVIRTUAL1R(bool, _handle_menu_selected, int)
 
 public:
-	static void clear_caches();
-
 	void set_base_type(const String &p_base_type);
 	String get_base_type() const;
 	Vector<String> get_allowed_types() const;

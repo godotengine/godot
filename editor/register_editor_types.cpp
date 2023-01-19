@@ -219,6 +219,4 @@ void unregister_editor_types() {
 	if (EditorPaths::get_singleton()) {
 		EditorPaths::free();
 	}
-
-	EditorResourcePicker::clear_caches();
 }
