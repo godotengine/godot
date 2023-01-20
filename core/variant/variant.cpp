@@ -3492,6 +3492,46 @@ bool Variant::hash_compare(const Variant &p_variant, int recursion_count) const 
 	}
 }
 
+bool Variant::identity_compare(const Variant &p_variant) const {
+	if (type != p_variant.type) {
+		return false;
+	}
+
+	switch (type) {
+		case OBJECT: {
+			return _get_obj().obj == p_variant._get_obj().obj;
+		} break;
+
+		case DICTIONARY: {
+			const Dictionary &l = *(reinterpret_cast<const Dictionary *>(_data._mem));
+			const Dictionary &r = *(reinterpret_cast<const Dictionary *>(p_variant._data._mem));
+			return l.id() == r.id();
+		} break;
+
+		case ARRAY: {
+			const Array &l = *(reinterpret_cast<const Array *>(_data._mem));
+			const Array &r = *(reinterpret_cast<const Array *>(p_variant._data._mem));
+			return l.id() == r.id();
+		} break;
+
+		case PACKED_BYTE_ARRAY:
+		case PACKED_INT32_ARRAY:
+		case PACKED_INT64_ARRAY:
+		case PACKED_FLOAT32_ARRAY:
+		case PACKED_FLOAT64_ARRAY:
+		case PACKED_STRING_ARRAY:
+		case PACKED_VECTOR2_ARRAY:
+		case PACKED_VECTOR3_ARRAY:
+		case PACKED_COLOR_ARRAY: {
+			return _data.packed_array == p_variant._data.packed_array;
+		} break;
+
+		default: {
+			return hash_compare(p_variant);
+		}
+	}
+}
+
 bool StringLikeVariantComparator::compare(const Variant &p_lhs, const Variant &p_rhs) {
 	if (p_lhs.hash_compare(p_rhs)) {
 		return true;
