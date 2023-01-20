@@ -1470,7 +1470,16 @@ float RichTextLabel::_find_click_in_line(ItemFrame *p_frame, int p_line, const V
 				}
 			} break;
 		}
-
+		// Adjust for dropcap.
+		int dc_lines = l.text_buf->get_dropcap_lines();
+		float h_off = l.text_buf->get_dropcap_size().x;
+		if (line <= dc_lines) {
+			if (rtl) {
+				off.x -= h_off;
+			} else {
+				off.x += h_off;
+			}
+		}
 		off.y += TS->shaped_text_get_ascent(rid);
 
 		Array objects = TS->shaped_text_get_objects(rid);
