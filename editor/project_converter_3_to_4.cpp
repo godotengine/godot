@@ -1771,6 +1771,19 @@ static const char *color_renames[][2] = {
 	{ nullptr, nullptr },
 };
 
+// Find "OS.set_property(x)", capturing x into $1.
+static String make_regex_gds_os_property_set(String name_set) {
+	return String("\\bOS\\.") + name_set + "\\s*\\((.*)\\)";
+}
+// Find "OS.property = x", capturing x into $1 or $2.
+static String make_regex_gds_os_property_assign(String name) {
+	return String("\\bOS\\.") + name + "\\s*=\\s*([^#]+)";
+}
+// Find "OS.property" OR "OS.get_property()" / "OS.is_property()".
+static String make_regex_gds_os_property_get(String name, String get) {
+	return String("\\bOS\\.(") + get + "_)?" + name + "(\\s*\\(\\s*\\))?";
+}
+
 class ProjectConverter3To4::RegExContainer {
 public:
 	// Custom GDScript.
@@ -1788,8 +1801,37 @@ public:
 	RegEx reg_join = RegEx("([\\(\\)a-zA-Z0-9_]+)\\.join\\(([^\n^\\)]+)\\)");
 	RegEx reg_image_lock = RegEx("([a-zA-Z0-9_\\.]+)\\.lock\\(\\)");
 	RegEx reg_image_unlock = RegEx("([a-zA-Z0-9_\\.]+)\\.unlock\\(\\)");
-	RegEx reg_os_fullscreen = RegEx("OS.window_fullscreen[= ]+([^#^\n]+)");
 	RegEx reg_instantiate = RegEx("\\.instance\\(([^\\)]*)\\)");
+	// Simple OS properties with getters/setters.
+	RegEx reg_os_current_screen = RegEx("\\bOS\\.(set_|get_)?current_screen\\b");
+	RegEx reg_os_min_window_size = RegEx("\\bOS\\.(set_|get_)?min_window_size\\b");
+	RegEx reg_os_max_window_size = RegEx("\\bOS\\.(set_|get_)?max_window_size\\b");
+	RegEx reg_os_window_position = RegEx("\\bOS\\.(set_|get_)?window_position\\b");
+	RegEx reg_os_window_size = RegEx("\\bOS\\.(set_|get_)?window_size\\b");
+	RegEx reg_os_getset_screen_orient = RegEx("\\bOS\\.(s|g)et_screen_orientation\\b");
+	// OS property getters/setters for non trivial replacements.
+	RegEx reg_os_set_window_resizable = RegEx(make_regex_gds_os_property_set("set_window_resizable"));
+	RegEx reg_os_assign_window_resizable = RegEx(make_regex_gds_os_property_assign("window_resizable"));
+	RegEx reg_os_is_window_resizable = RegEx(make_regex_gds_os_property_get("window_resizable", "is"));
+	RegEx reg_os_set_fullscreen = RegEx(make_regex_gds_os_property_set("set_window_fullscreen"));
+	RegEx reg_os_assign_fullscreen = RegEx(make_regex_gds_os_property_assign("window_fullscreen"));
+	RegEx reg_os_is_fullscreen = RegEx(make_regex_gds_os_property_get("window_fullscreen", "is"));
+	RegEx reg_os_set_maximized = RegEx(make_regex_gds_os_property_set("set_window_maximized"));
+	RegEx reg_os_assign_maximized = RegEx(make_regex_gds_os_property_assign("window_maximized"));
+	RegEx reg_os_is_maximized = RegEx(make_regex_gds_os_property_get("window_maximized", "is"));
+	RegEx reg_os_set_minimized = RegEx(make_regex_gds_os_property_set("set_window_minimized"));
+	RegEx reg_os_assign_minimized = RegEx(make_regex_gds_os_property_assign("window_minimized"));
+	RegEx reg_os_is_minimized = RegEx(make_regex_gds_os_property_get("window_minimized", "is"));
+	RegEx reg_os_set_vsync = RegEx(make_regex_gds_os_property_set("set_use_vsync"));
+	RegEx reg_os_assign_vsync = RegEx(make_regex_gds_os_property_assign("vsync_enabled"));
+	RegEx reg_os_is_vsync = RegEx(make_regex_gds_os_property_get("vsync_enabled", "is"));
+	// OS properties specific cases & specific replacements.
+	RegEx reg_os_assign_screen_orient = RegEx("^(\\s*)OS\\.screen_orientation\\s*=\\s*([^#]+)"); // $1 - indent, $2 - value
+	RegEx reg_os_set_always_on_top = RegEx(make_regex_gds_os_property_set("set_window_always_on_top"));
+	RegEx reg_os_is_always_on_top = RegEx("\\bOS\\.is_window_always_on_top\\s*\\(.*\\)");
+	RegEx reg_os_set_borderless = RegEx(make_regex_gds_os_property_set("set_borderless_window"));
+	RegEx reg_os_get_borderless = RegEx("\\bOS\\.get_borderless_window\\s*\\(\\s*\\)");
+	RegEx reg_os_screen_orient_enum = RegEx("\\bOS\\.SCREEN_ORIENTATION_(\\w+)\\b"); // $1 - constant suffix
 
 	// GDScript keywords.
 	RegEx keyword_gdscript_tool = RegEx("^tool");
@@ -2399,8 +2441,41 @@ bool ProjectConverter3To4::test_conversion(RegExContainer &reg_container) {
 	valid = valid && test_conversion_with_regex("[Master]", "The master and mastersync rpc behavior is not officially supported anymore. Try using another keyword or making custom logic using Multiplayer.GetRemoteSenderId()\n[RPC]", &ProjectConverter3To4::rename_csharp_attributes, "custom rename csharp", reg_container);
 	valid = valid && test_conversion_with_regex("[MasterSync]", "The master and mastersync rpc behavior is not officially supported anymore. Try using another keyword or making custom logic using Multiplayer.GetRemoteSenderId()\n[RPC(CallLocal = true)]", &ProjectConverter3To4::rename_csharp_attributes, "custom rename csharp", reg_container);
 
-	valid = valid && test_conversion_gdscript_builtin("OS.window_fullscreen = Settings.fullscreen", "if Settings.fullscreen:\n\tDisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)\nelse:\n\tDisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
-	valid = valid && test_conversion_gdscript_builtin("OS.get_window_safe_area()", "DisplayServer.get_display_safe_area()", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("\tif OS.window_resizable: pass", "\tif (not get_window().unresizable): pass", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("\tif OS.is_window_resizable(): pass", "\tif (not get_window().unresizable): pass", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("\tOS.set_window_resizable(Settings.resizable)", "\tget_window().unresizable = not (Settings.resizable)", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("\tOS.window_resizable = Settings.resizable", "\tget_window().unresizable = not (Settings.resizable)", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+
+	valid = valid && test_conversion_gdscript_builtin("\tif OS.window_fullscreen: pass", "\tif ((get_window().mode == Window.MODE_EXCLUSIVE_FULLSCREEN) or (get_window().mode == Window.MODE_FULLSCREEN)): pass", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("\tif OS.is_window_fullscreen(): pass", "\tif ((get_window().mode == Window.MODE_EXCLUSIVE_FULLSCREEN) or (get_window().mode == Window.MODE_FULLSCREEN)): pass", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("\tOS.set_window_fullscreen(Settings.fullscreen)", "\tget_window().mode = Window.MODE_EXCLUSIVE_FULLSCREEN if (Settings.fullscreen) else Window.MODE_WINDOWED", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("\tOS.window_fullscreen = Settings.fullscreen", "\tget_window().mode = Window.MODE_EXCLUSIVE_FULLSCREEN if (Settings.fullscreen) else Window.MODE_WINDOWED", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+
+	valid = valid && test_conversion_gdscript_builtin("\tif OS.window_maximized: pass", "\tif (get_window().mode == Window.MODE_MAXIMIZED): pass", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("\tif OS.is_window_maximized(): pass", "\tif (get_window().mode == Window.MODE_MAXIMIZED): pass", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("\tOS.set_window_maximized(Settings.maximized)", "\tget_window().mode = Window.MODE_MAXIMIZED if (Settings.maximized) else Window.MODE_WINDOWED", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("\tOS.window_maximized = Settings.maximized", "\tget_window().mode = Window.MODE_MAXIMIZED if (Settings.maximized) else Window.MODE_WINDOWED", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+
+	valid = valid && test_conversion_gdscript_builtin("\tif OS.window_minimized: pass", "\tif (get_window().mode == Window.MODE_MINIMIZED): pass", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("\tif OS.is_window_minimized(): pass", "\tif (get_window().mode == Window.MODE_MINIMIZED): pass", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("\tOS.set_window_minimized(Settings.minimized)", "\tget_window().mode = Window.MODE_MINIMIZED if (Settings.minimized) else Window.MODE_WINDOWED", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("\tOS.window_minimized = Settings.minimized", "\tget_window().mode = Window.MODE_MINIMIZED if (Settings.minimized) else Window.MODE_WINDOWED", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+
+	valid = valid && test_conversion_gdscript_builtin("\tif OS.vsync_enabled: pass", "\tif (DisplayServer.window_get_vsync_mode() != DisplayServer.VSYNC_DISABLED): pass", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("\tif OS.is_vsync_enabled(): pass", "\tif (DisplayServer.window_get_vsync_mode() != DisplayServer.VSYNC_DISABLED): pass", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("\tOS.set_use_vsync(Settings.vsync)", "\tDisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_ENABLED if (Settings.vsync) else DisplayServer.VSYNC_DISABLED)", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("\tOS.vsync_enabled = Settings.vsync", "\tDisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_ENABLED if (Settings.vsync) else DisplayServer.VSYNC_DISABLED)", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+
+	valid = valid && test_conversion_gdscript_builtin("\tif OS.screen_orientation = OS.SCREEN_ORIENTATION_VERTICAL: pass", "\tif DisplayServer.screen_get_orientation() = DisplayServer.SCREEN_VERTICAL: pass", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("\tif OS.get_screen_orientation() = OS.SCREEN_ORIENTATION_LANDSCAPE: pass", "\tif DisplayServer.screen_get_orientation() = DisplayServer.SCREEN_LANDSCAPE: pass", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("\tOS.set_screen_orientation(Settings.orient)", "\tDisplayServer.screen_set_orientation(Settings.orient)", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("\tOS.screen_orientation = Settings.orient", "\tDisplayServer.screen_set_orientation(Settings.orient)", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+
+	valid = valid && test_conversion_gdscript_builtin("\tif OS.is_window_always_on_top(): pass", "\tif get_window().always_on_top: pass", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("\tOS.set_window_always_on_top(Settings.alwaystop)", "\tget_window().always_on_top = (Settings.alwaystop)", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+
+	valid = valid && test_conversion_gdscript_builtin("\tif OS.get_borderless_window(): pass", "\tif get_window().borderless: pass", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
+	valid = valid && test_conversion_gdscript_builtin("\tOS.set_borderless_window(Settings.borderless)", "\tget_window().borderless = (Settings.borderless)", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 
 	valid = valid && test_conversion_gdscript_builtin("\tvar aa = roman(r.move_and_slide( a, b, c, d, e, f )) # Roman", "\tr.set_velocity(a)\n\tr.set_up_direction(b)\n\tr.set_floor_stop_on_slope_enabled(c)\n\tr.set_max_slides(d)\n\tr.set_floor_max_angle(e)\n\t# TODOConverter40 infinite_inertia were removed in Godot 4.0 - previous value `f`\n\tr.move_and_slide()\n\tvar aa = roman(r.velocity) # Roman", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 	valid = valid && test_conversion_gdscript_builtin("\tmove_and_slide( a, b, c, d, e, f ) # Roman", "\tset_velocity(a)\n\tset_up_direction(b)\n\tset_floor_stop_on_slope_enabled(c)\n\tset_max_slides(d)\n\tset_floor_max_angle(e)\n\t# TODOConverter40 infinite_inertia were removed in Godot 4.0 - previous value `f`\n\tmove_and_slide() # Roman", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
@@ -3163,9 +3238,96 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 		line = reg_container.reg_setget_get.sub(line, "var $1$2: get = $3", true);
 	}
 
-	// OS.window_fullscreen = a -> if a: DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN) else: DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)
+	if (line.contains("window_resizable")) {
+		// OS.set_window_resizable(a) -> get_window().unresizable = not (a)
+		line = reg_container.reg_os_set_window_resizable.sub(line, "get_window().unresizable = not ($1)", true);
+		// OS.window_resizable = a -> same
+		line = reg_container.reg_os_assign_window_resizable.sub(line, "get_window().unresizable = not ($1)", true);
+		// OS.[is_]window_resizable() -> (not get_window().unresizable)
+		line = reg_container.reg_os_is_window_resizable.sub(line, "(not get_window().unresizable)", true);
+	}
+
 	if (line.contains("window_fullscreen")) {
-		line = reg_container.reg_os_fullscreen.sub(line, "if $1:\n\tDisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)\nelse:\n\tDisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_WINDOWED)", true);
+		// OS.window_fullscreen(a) -> get_window().mode = Window.MODE_EXCLUSIVE_FULLSCREEN if (a) else Window.MODE_WINDOWED
+		line = reg_container.reg_os_set_fullscreen.sub(line, "get_window().mode = Window.MODE_EXCLUSIVE_FULLSCREEN if ($1) else Window.MODE_WINDOWED", true);
+		// window_fullscreen = a -> same
+		line = reg_container.reg_os_assign_fullscreen.sub(line, "get_window().mode = Window.MODE_EXCLUSIVE_FULLSCREEN if ($1) else Window.MODE_WINDOWED", true);
+		// OS.[is_]window_fullscreen() -> ((get_window().mode == Window.MODE_EXCLUSIVE_FULLSCREEN) or (get_window().mode == Window.MODE_FULLSCREEN))
+		line = reg_container.reg_os_is_fullscreen.sub(line, "((get_window().mode == Window.MODE_EXCLUSIVE_FULLSCREEN) or (get_window().mode == Window.MODE_FULLSCREEN))", true);
+	}
+
+	if (line.contains("window_maximized")) {
+		// OS.window_maximized(a) -> get_window().mode = Window.MODE_MAXIMIZED if (a) else Window.MODE_WINDOWED
+		line = reg_container.reg_os_set_maximized.sub(line, "get_window().mode = Window.MODE_MAXIMIZED if ($1) else Window.MODE_WINDOWED", true);
+		// window_maximized = a -> same
+		line = reg_container.reg_os_assign_maximized.sub(line, "get_window().mode = Window.MODE_MAXIMIZED if ($1) else Window.MODE_WINDOWED", true);
+		// OS.[is_]window_maximized() -> (get_window().mode == Window.MODE_MAXIMIZED)
+		line = reg_container.reg_os_is_maximized.sub(line, "(get_window().mode == Window.MODE_MAXIMIZED)", true);
+	}
+
+	if (line.contains("window_minimized")) {
+		// OS.window_minimized(a) -> get_window().mode = Window.MODE_MINIMIZED if (a) else Window.MODE_WINDOWED
+		line = reg_container.reg_os_set_minimized.sub(line, "get_window().mode = Window.MODE_MINIMIZED if ($1) else Window.MODE_WINDOWED", true);
+		// window_minimized = a -> same
+		line = reg_container.reg_os_assign_minimized.sub(line, "get_window().mode = Window.MODE_MINIMIZED if ($1) else Window.MODE_WINDOWED", true);
+		// OS.[is_]window_minimized() -> (get_window().mode == Window.MODE_MINIMIZED)
+		line = reg_container.reg_os_is_minimized.sub(line, "(get_window().mode == Window.MODE_MINIMIZED)", true);
+	}
+
+	if (line.contains("set_use_vsync")) {
+		// OS.set_use_vsync(a) -> get_window().window_set_vsync_mode(DisplayServer.VSYNC_ENABLED if (a) else DisplayServer.VSYNC_DISABLED)
+		line = reg_container.reg_os_set_vsync.sub(line, "DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_ENABLED if ($1) else DisplayServer.VSYNC_DISABLED)", true);
+	}
+	if (line.contains("vsync_enabled")) {
+		// vsync_enabled = a -> get_window().window_set_vsync_mode(DisplayServer.VSYNC_ENABLED if (a) else DisplayServer.VSYNC_DISABLED)
+		line = reg_container.reg_os_assign_vsync.sub(line, "DisplayServer.window_set_vsync_mode(DisplayServer.VSYNC_ENABLED if ($1) else DisplayServer.VSYNC_DISABLED)", true);
+		// OS.[is_]vsync_enabled() -> (DisplayServer.window_get_vsync_mode() != DisplayServer.VSYNC_DISABLED)
+		line = reg_container.reg_os_is_vsync.sub(line, "(DisplayServer.window_get_vsync_mode() != DisplayServer.VSYNC_DISABLED)", true);
+	}
+
+	if (line.contains("OS.screen_orientation")) { // keep "OS." at start
+		// OS.screen_orientation = a -> DisplayServer.screen_set_orientation(a)
+		line = reg_container.reg_os_assign_screen_orient.sub(line, "$1DisplayServer.screen_set_orientation($2)", true); // assignment
+		line = line.replace("OS.screen_orientation", "DisplayServer.screen_get_orientation()"); // value access
+	}
+
+	if (line.contains("_window_always_on_top")) {
+		// OS.set_window_always_on_top(a) -> get_window().always_on_top = (a)
+		line = reg_container.reg_os_set_always_on_top.sub(line, "get_window().always_on_top = ($1)", true);
+		// OS.is_window_always_on_top() -> get_window().always_on_top
+		line = reg_container.reg_os_is_always_on_top.sub(line, "get_window().always_on_top", true);
+	}
+
+	if (line.contains("et_borderless_window")) {
+		// OS.set_borderless_window(a) -> get_window().borderless = (a)
+		line = reg_container.reg_os_set_borderless.sub(line, "get_window().borderless = ($1)", true);
+		// OS.get_borderless_window() -> get_window().borderless
+		line = reg_container.reg_os_get_borderless.sub(line, "get_window().borderless", true);
+	}
+
+	// OS.SCREEN_ORIENTATION_* -> DisplayServer.SCREEN_*
+	if (line.contains("OS.SCREEN_ORIENTATION_")) {
+		line = reg_container.reg_os_screen_orient_enum.sub(line, "DisplayServer.SCREEN_$1", true);
+	}
+
+	// OS -> Window simple replacements with optional set/get.
+	if (line.contains("current_screen")) {
+		line = reg_container.reg_os_current_screen.sub(line, "get_window().$1current_screen", true);
+	}
+	if (line.contains("min_window_size")) {
+		line = reg_container.reg_os_min_window_size.sub(line, "get_window().$1min_size", true);
+	}
+	if (line.contains("max_window_size")) {
+		line = reg_container.reg_os_max_window_size.sub(line, "get_window().$1max_size", true);
+	}
+	if (line.contains("window_position")) {
+		line = reg_container.reg_os_window_position.sub(line, "get_window().$1position", true);
+	}
+	if (line.contains("window_size")) {
+		line = reg_container.reg_os_window_size.sub(line, "get_window().$1size", true);
+	}
+	if (line.contains("et_screen_orientation")) {
+		line = reg_container.reg_os_getset_screen_orient.sub(line, "DisplayServer.screen_$1et_orientation", true);
 	}
 
 	// Instantiate
@@ -3665,6 +3827,58 @@ void ProjectConverter3To4::process_gdscript_line(String &line, const RegExContai
 	}
 	if (line.contains("OS.get_datetime")) {
 		line = line.replace("OS.get_datetime", "Time.get_datetime_dict_from_system");
+	}
+
+	// OS -> DisplayServer
+	if (line.contains("OS.get_display_cutouts")) {
+		line = line.replace("OS.get_display_cutouts", "DisplayServer.get_display_cutouts");
+	}
+	if (line.contains("OS.get_screen_count")) {
+		line = line.replace("OS.get_screen_count", "DisplayServer.get_screen_count");
+	}
+	if (line.contains("OS.get_screen_dpi")) {
+		line = line.replace("OS.get_screen_dpi", "DisplayServer.screen_get_dpi");
+	}
+	if (line.contains("OS.get_screen_max_scale")) {
+		line = line.replace("OS.get_screen_max_scale", "DisplayServer.screen_get_max_scale");
+	}
+	if (line.contains("OS.get_screen_position")) {
+		line = line.replace("OS.get_screen_position", "DisplayServer.screen_get_position");
+	}
+	if (line.contains("OS.get_screen_refresh_rate")) {
+		line = line.replace("OS.get_screen_refresh_rate", "DisplayServer.screen_get_refresh_rate");
+	}
+	if (line.contains("OS.get_screen_scale")) {
+		line = line.replace("OS.get_screen_scale", "DisplayServer.screen_get_scale");
+	}
+	if (line.contains("OS.get_screen_size")) {
+		line = line.replace("OS.get_screen_size", "DisplayServer.screen_get_size");
+	}
+	if (line.contains("OS.set_icon")) {
+		line = line.replace("OS.set_icon", "DisplayServer.set_icon");
+	}
+	if (line.contains("OS.set_native_icon")) {
+		line = line.replace("OS.set_native_icon", "DisplayServer.set_native_icon");
+	}
+
+	// OS -> Window
+	if (line.contains("OS.window_borderless")) {
+		line = line.replace("OS.window_borderless", "get_window().borderless");
+	}
+	if (line.contains("OS.get_real_window_size")) {
+		line = line.replace("OS.get_real_window_size", "get_window().get_size_with_decorations");
+	}
+	if (line.contains("OS.is_window_focused")) {
+		line = line.replace("OS.is_window_focused", "get_window().has_focus");
+	}
+	if (line.contains("OS.move_window_to_foreground")) {
+		line = line.replace("OS.move_window_to_foreground", "get_window().move_to_foreground");
+	}
+	if (line.contains("OS.request_attention")) {
+		line = line.replace("OS.request_attention", "get_window().request_attention");
+	}
+	if (line.contains("OS.set_window_title")) {
+		line = line.replace("OS.set_window_title", "get_window().set_title");
 	}
 }
 
