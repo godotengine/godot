@@ -33,7 +33,8 @@
 
 @protocol DisplayLayer <NSObject>
 
-- (void)renderDisplayLayer;
+- (void)startRenderDisplayLayer;
+- (void)stopRenderDisplayLayer;
 - (void)initializeDisplayLayer;
 - (void)layoutDisplayLayer;
 
