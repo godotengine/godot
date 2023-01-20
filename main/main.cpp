@@ -2431,6 +2431,14 @@ bool Main::start() {
 			ERR_FAIL_COND_V_MSG(da.is_null(), false, "Argument supplied to --doctool must be a valid directory path.");
 		}
 
+#ifndef MODULE_MONO_ENABLED
+		// Hack to define .NET-specific project settings even on non-.NET builds,
+		// so that we don't lose their descriptions and default values in DocTools.
+		// Default values should be synced with mono_gd/gd_mono.cpp.
+		GLOBAL_DEF("dotnet/project/assembly_name", "");
+		GLOBAL_DEF("dotnet/project/solution_directory", "");
+#endif
+
 		Error err;
 		DocTools doc;
 		doc.generate(doc_base);
