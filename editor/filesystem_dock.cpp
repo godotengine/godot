@@ -2590,11 +2590,18 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 	if (p_paths.size() == 1) {
 		p_popup->add_separator();
 		if (p_display_path_dependent_options) {
-			p_popup->add_icon_item(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")), TTR("New Folder..."), FILE_NEW_FOLDER);
-			p_popup->add_icon_item(get_theme_icon(SNAME("PackedScene"), SNAME("EditorIcons")), TTR("New Scene..."), FILE_NEW_SCENE);
-			p_popup->add_icon_item(get_theme_icon(SNAME("Script"), SNAME("EditorIcons")), TTR("New Script..."), FILE_NEW_SCRIPT);
-			p_popup->add_icon_item(get_theme_icon(SNAME("Object"), SNAME("EditorIcons")), TTR("New Resource..."), FILE_NEW_RESOURCE);
-			p_popup->add_icon_item(get_theme_icon(SNAME("TextFile"), SNAME("EditorIcons")), TTR("New TextFile..."), FILE_NEW_TEXTFILE);
+			PopupMenu *new_menu = memnew(PopupMenu);
+			new_menu->set_name("New");
+			new_menu->connect("id_pressed", callable_mp(this, &FileSystemDock::_tree_rmb_option));
+
+			p_popup->add_child(new_menu);
+			p_popup->add_submenu_item(TTR("New"), "New");
+
+			new_menu->add_icon_item(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")), TTR("Folder..."), FILE_NEW_FOLDER);
+			new_menu->add_icon_item(get_theme_icon(SNAME("PackedScene"), SNAME("EditorIcons")), TTR("Scene..."), FILE_NEW_SCENE);
+			new_menu->add_icon_item(get_theme_icon(SNAME("Script"), SNAME("EditorIcons")), TTR("Script..."), FILE_NEW_SCRIPT);
+			new_menu->add_icon_item(get_theme_icon(SNAME("Object"), SNAME("EditorIcons")), TTR("Resource..."), FILE_NEW_RESOURCE);
+			new_menu->add_icon_item(get_theme_icon(SNAME("TextFile"), SNAME("EditorIcons")), TTR("TextFile..."), FILE_NEW_TEXTFILE);
 			p_popup->add_separator();
 		}
 
