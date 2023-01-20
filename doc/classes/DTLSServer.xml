@@ -148,11 +148,9 @@
 	<methods>
 		<method name="setup">
 			<return type="int" enum="Error" />
-			<param index="0" name="key" type="CryptoKey" />
-			<param index="1" name="certificate" type="X509Certificate" />
-			<param index="2" name="chain" type="X509Certificate" default="null" />
+			<param index="0" name="server_options" type="TLSOptions" />
 			<description>
-				Setup the DTLS server to use the given [param key] and provide the given [param certificate] to clients. You can pass the optional [param chain] parameter to provide additional CA chain information along with the certificate.
+				Setup the DTLS server to use the given [param server_options]. See [method TLSOptions.server].
 			</description>
 		</method>
 		<method name="take_connection">

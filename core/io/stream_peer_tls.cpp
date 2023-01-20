@@ -57,8 +57,8 @@ bool StreamPeerTLS::is_blocking_handshake_enabled() const {
 
 void StreamPeerTLS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("poll"), &StreamPeerTLS::poll);
-	ClassDB::bind_method(D_METHOD("accept_stream", "stream", "private_key", "certificate", "chain"), &StreamPeerTLS::accept_stream, DEFVAL(Ref<X509Certificate>()));
-	ClassDB::bind_method(D_METHOD("connect_to_stream", "stream", "validate_certs", "for_hostname", "valid_certificate"), &StreamPeerTLS::connect_to_stream, DEFVAL(false), DEFVAL(String()), DEFVAL(Ref<X509Certificate>()));
+	ClassDB::bind_method(D_METHOD("accept_stream", "stream", "server_options"), &StreamPeerTLS::accept_stream);
+	ClassDB::bind_method(D_METHOD("connect_to_stream", "stream", "common_name", "client_options"), &StreamPeerTLS::connect_to_stream, DEFVAL(Ref<TLSOptions>()));
 	ClassDB::bind_method(D_METHOD("get_status"), &StreamPeerTLS::get_status);
 	ClassDB::bind_method(D_METHOD("get_stream"), &StreamPeerTLS::get_stream);
 	ClassDB::bind_method(D_METHOD("disconnect_from_stream"), &StreamPeerTLS::disconnect_from_stream);

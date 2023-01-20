@@ -128,8 +128,8 @@ public:
 	int get_local_port() const;
 
 	// Godot additions
-	Error dtls_server_setup(Ref<CryptoKey> p_key, Ref<X509Certificate> p_cert);
-	Error dtls_client_setup(Ref<X509Certificate> p_cert, const String &p_hostname, bool p_verify = true);
+	Error dtls_server_setup(const Ref<TLSOptions> &p_options);
+	Error dtls_client_setup(const String &p_hostname, const Ref<TLSOptions> &p_options);
 	void refuse_new_connections(bool p_refuse);
 
 	ENetConnection() {}
