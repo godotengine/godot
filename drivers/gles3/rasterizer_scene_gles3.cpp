@@ -1535,8 +1535,6 @@ void RasterizerSceneGLES3::_setup_lights(const RenderDataGLES3 *p_render_data, b
 					}
 				}
 
-				li->gl_id = r_omni_light_count;
-
 				scene_state.omni_light_sort[r_omni_light_count].instance = li;
 				scene_state.omni_light_sort[r_omni_light_count].depth = distance;
 				r_omni_light_count++;
@@ -1559,8 +1557,6 @@ void RasterizerSceneGLES3::_setup_lights(const RenderDataGLES3 *p_render_data, b
 						}
 					}
 				}
-
-				li->gl_id = r_spot_light_count;
 
 				scene_state.spot_light_sort[r_spot_light_count].instance = li;
 				scene_state.spot_light_sort[r_spot_light_count].depth = distance;
@@ -1585,6 +1581,8 @@ void RasterizerSceneGLES3::_setup_lights(const RenderDataGLES3 *p_render_data, b
 		RS::LightType type = (i < r_omni_light_count) ? RS::LIGHT_OMNI : RS::LIGHT_SPOT;
 		GLES3::LightInstance *li = (i < r_omni_light_count) ? scene_state.omni_light_sort[index].instance : scene_state.spot_light_sort[index].instance;
 		RID base = li->light;
+
+		li->gl_id = index;
 
 		Transform3D light_transform = li->transform;
 		Vector3 pos = inverse_transform.xform(light_transform.origin);
