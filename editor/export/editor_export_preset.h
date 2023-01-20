@@ -46,11 +46,6 @@ public:
 		EXCLUDE_SELECTED_RESOURCES,
 	};
 
-	enum ScriptExportMode {
-		MODE_SCRIPT_TEXT,
-		MODE_SCRIPT_COMPILED,
-	};
-
 private:
 	Ref<EditorExportPlatform> platform;
 	ExportFilter export_filter = EXPORT_ALL_RESOURCES;
@@ -78,7 +73,6 @@ private:
 	bool enc_pck = false;
 	bool enc_directory = false;
 
-	int script_mode = MODE_SCRIPT_COMPILED;
 	String script_key;
 
 protected:
@@ -131,9 +125,6 @@ public:
 
 	void set_enc_directory(bool p_enabled);
 	bool get_enc_directory() const;
-
-	void set_script_export_mode(int p_mode);
-	int get_script_export_mode() const;
 
 	void set_script_encryption_key(const String &p_key);
 	String get_script_encryption_key() const;

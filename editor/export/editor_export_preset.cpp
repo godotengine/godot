@@ -203,15 +203,6 @@ bool EditorExportPreset::get_enc_directory() const {
 	return enc_directory;
 }
 
-void EditorExportPreset::set_script_export_mode(int p_mode) {
-	script_mode = p_mode;
-	EditorExport::singleton->save_presets();
-}
-
-int EditorExportPreset::get_script_export_mode() const {
-	return script_mode;
-}
-
 void EditorExportPreset::set_script_encryption_key(const String &p_key) {
 	script_key = p_key;
 	EditorExport::singleton->save_presets();
