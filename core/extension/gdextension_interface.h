@@ -520,8 +520,8 @@ typedef struct {
 
 	/*  WorkerThreadPool extra utilities */
 
-	int64_t (*worker_thread_pool_add_native_group_task)(GDExtensionObjectPtr p_instance, void (*p_func)(void *, uint32_t), void *p_userdata, int p_elements, int p_tasks, bool p_high_priority, GDExtensionConstStringPtr p_description);
-	int64_t (*worker_thread_pool_add_native_task)(GDExtensionObjectPtr p_instance, void (*p_func)(void *), void *p_userdata, bool p_high_priority, GDExtensionConstStringPtr p_description);
+	int64_t (*worker_thread_pool_add_native_group_task)(GDExtensionObjectPtr p_instance, void (*p_func)(void *, uint32_t), void *p_userdata, int p_elements, int p_tasks, GDExtensionBool p_high_priority, GDExtensionConstStringPtr p_description);
+	int64_t (*worker_thread_pool_add_native_task)(GDExtensionObjectPtr p_instance, void (*p_func)(void *), void *p_userdata, GDExtensionBool p_high_priority, GDExtensionConstStringPtr p_description);
 
 	/* Packed array functions */
 
