@@ -34,6 +34,7 @@
 #define CSGJS_HEADER_ONLY
 
 #include "csg.h"
+#include "scene/3d/camera_3d.h"
 #include "scene/3d/path_3d.h"
 #include "scene/3d/visual_instance_3d.h"
 #include "scene/resources/concave_polygon_shape_3d.h"
@@ -68,6 +69,9 @@ private:
 	real_t collision_priority = 1.0;
 	Ref<ConcavePolygonShape3D> root_collision_shape;
 	RID root_collision_instance;
+
+	bool ray_pickable = true;
+	bool capture_input_on_drag = false;
 
 	bool calculate_tangents = true;
 
@@ -107,6 +111,7 @@ private:
 
 	void _update_shape();
 	void _update_collision_faces();
+	void _update_pickable();
 
 protected:
 	void _notification(int p_what);
@@ -120,6 +125,14 @@ protected:
 
 	void _validate_property(PropertyInfo &p_property) const;
 
+	friend class Viewport;
+	virtual void _input_event_call(Camera3D *p_camera, const Ref<InputEvent> &p_input_event, const Vector3 &p_pos, const Vector3 &p_normal, int p_shape);
+	virtual void _mouse_enter();
+	virtual void _mouse_exit();
+
+	GDVIRTUAL5(_input_event, Camera3D *, Ref<InputEvent>, Vector3, Vector3, int)
+	GDVIRTUAL0(_mouse_enter)
+	GDVIRTUAL0(_mouse_exit)
 public:
 	Array get_meshes() const;
 
@@ -147,6 +160,12 @@ public:
 
 	void set_collision_priority(real_t p_priority);
 	real_t get_collision_priority() const;
+
+	void set_ray_pickable(bool p_ray_pickable);
+	bool is_ray_pickable() const;
+
+	void set_capture_input_on_drag(bool p_capture);
+	bool get_capture_input_on_drag() const;
 
 	void set_snap(float p_snap);
 	float get_snap() const;

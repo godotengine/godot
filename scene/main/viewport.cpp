@@ -44,6 +44,9 @@
 #include "scene/3d/camera_3d.h"
 #include "scene/3d/collision_object_3d.h"
 #include "scene/3d/world_environment.h"
+#ifdef MODULE_CSG_ENABLED
+#include "modules/csg/csg_shape.h"
+#endif // MODULE_CSG_ENABLED
 #endif // _3D_DISABLED
 #include "scene/gui/control.h"
 #include "scene/gui/label.h"
@@ -533,6 +536,9 @@ void Viewport::_process_picking() {
 #ifndef _3D_DISABLED
 	Vector2 last_pos(1e20, 1e20);
 	CollisionObject3D *last_object = nullptr;
+#ifdef MODULE_CSG_ENABLED
+	CSGShape3D *last_csg_object = nullptr;
+#endif // MODULE_CSG_ENABLED
 	ObjectID last_id;
 	PhysicsDirectSpaceState3D::RayResult result;
 #endif // _3D_DISABLED
@@ -707,6 +713,8 @@ void Viewport::_process_picking() {
 		bool captured = false;
 
 		if (physics_object_capture.is_valid()) {
+			physics_object_capture = ObjectID();
+
 			CollisionObject3D *co = Object::cast_to<CollisionObject3D>(ObjectDB::get_instance(physics_object_capture));
 			if (co && camera_3d) {
 				_collision_object_3d_input_event(co, camera_3d, ev, Vector3(), Vector3(), 0);
@@ -714,22 +722,40 @@ void Viewport::_process_picking() {
 				if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && !mb->is_pressed()) {
 					physics_object_capture = ObjectID();
 				}
-
-			} else {
-				physics_object_capture = ObjectID();
 			}
+#ifdef MODULE_CSG_ENABLED
+			CSGShape3D *cs = Object::cast_to<CSGShape3D>(ObjectDB::get_instance(physics_object_capture));
+			if (cs && camera_3d) {
+				_csg_shape_3d_input_event(cs, camera_3d, ev, Vector3(), Vector3(), 0);
+				captured = true;
+				if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && !mb->is_pressed()) {
+					physics_object_capture = ObjectID();
+				}
+			}
+#endif // MODULE_CSG_ENABLED
 		}
 
 		if (captured) {
 			// None.
 		} else if (pos == last_pos) {
 			if (last_id.is_valid()) {
-				if (ObjectDB::get_instance(last_id) && last_object) {
-					// Good, exists.
-					_collision_object_3d_input_event(last_object, camera_3d, ev, result.position, result.normal, result.shape);
-					if (last_object->get_capture_input_on_drag() && mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) {
-						physics_object_capture = last_id;
+				if (ObjectDB::get_instance(last_id)) {
+					if (last_object) {
+						// Good, exists.
+						_collision_object_3d_input_event(last_object, camera_3d, ev, result.position, result.normal, result.shape);
+						if (last_object->get_capture_input_on_drag() && mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) {
+							physics_object_capture = last_id;
+						}
 					}
+#ifdef MODULE_CSG_ENABLED
+					if (last_csg_object) {
+						// Good, exists.
+						_csg_shape_3d_input_event(last_csg_object, camera_3d, ev, result.position, result.normal, result.shape);
+						if (last_csg_object->get_capture_input_on_drag() && mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) {
+							physics_object_capture = last_id;
+						}
+					}
+#endif // MODULE_CSG_ENABLED
 				}
 			}
 		} else {
@@ -745,6 +771,7 @@ void Viewport::_process_picking() {
 					ray_params.to = from + dir * far;
 					ray_params.collide_with_areas = true;
 					ray_params.pick_ray = true;
+					ray_params.collision_mask = camera_3d->get_pick_mask();
 
 					bool col = space->intersect_ray(ray_params, result);
 					ObjectID new_collider;
@@ -753,12 +780,28 @@ void Viewport::_process_picking() {
 						if (co && co->can_process()) {
 							_collision_object_3d_input_event(co, camera_3d, ev, result.position, result.normal, result.shape);
 							last_object = co;
+#ifdef MODULE_CSG_ENABLED
+							last_csg_object = nullptr;
+#endif // MODULE_CSG_ENABLED
 							last_id = result.collider_id;
 							new_collider = last_id;
 							if (co->get_capture_input_on_drag() && mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) {
 								physics_object_capture = last_id;
 							}
 						}
+#ifdef MODULE_CSG_ENABLED
+						CSGShape3D *cs = Object::cast_to<CSGShape3D>(result.collider);
+						if (cs && cs->can_process()) {
+							_csg_shape_3d_input_event(cs, camera_3d, ev, result.position, result.normal, result.shape);
+							last_csg_object = cs;
+							last_object = nullptr;
+							last_id = result.collider_id;
+							new_collider = last_id;
+							if (cs->get_capture_input_on_drag() && mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) {
+								physics_object_capture = last_id;
+							}
+						}
+#endif // MODULE_CSG_ENABLED
 					}
 
 					if (is_mouse && new_collider != physics_object_over) {
@@ -767,6 +810,12 @@ void Viewport::_process_picking() {
 							if (co) {
 								co->_mouse_exit();
 							}
+#ifdef MODULE_CSG_ENABLED
+							CSGShape3D *cs = Object::cast_to<CSGShape3D>(ObjectDB::get_instance(physics_object_over));
+							if (cs) {
+								cs->_mouse_exit();
+							}
+#endif // MODULE_CSG_ENABLED
 						}
 
 						if (new_collider.is_valid()) {
@@ -774,6 +823,12 @@ void Viewport::_process_picking() {
 							if (co) {
 								co->_mouse_enter();
 							}
+#ifdef MODULE_CSG_ENABLED
+							CSGShape3D *cs = Object::cast_to<CSGShape3D>(ObjectDB::get_instance(new_collider));
+							if (cs) {
+								cs->_mouse_enter();
+							}
+#endif // MODULE_CSG_ENABLED
 						}
 
 						physics_object_over = new_collider;
@@ -3362,6 +3417,26 @@ void Viewport::_collision_object_3d_input_event(CollisionObject3D *p_object, Cam
 	physics_last_camera_transform = camera_transform;
 	physics_last_id = id;
 }
+
+#ifdef MODULE_CSG_ENABLED
+void Viewport::_csg_shape_3d_input_event(CSGShape3D *p_object, Camera3D *p_camera, const Ref<InputEvent> &p_input_event, const Vector3 &p_pos, const Vector3 &p_normal, int p_shape) {
+	Transform3D object_transform = p_object->get_global_transform();
+	Transform3D camera_transform = p_camera->get_global_transform();
+	ObjectID id = p_object->get_instance_id();
+
+	// Avoid sending the fake event unnecessarily if nothing really changed in the context.
+	if (object_transform == physics_last_object_transform && camera_transform == physics_last_camera_transform && physics_last_id == id) {
+		Ref<InputEventMouseMotion> mm = p_input_event;
+		if (mm.is_valid() && mm->get_device() == InputEvent::DEVICE_ID_INTERNAL) {
+			return; // Discarded.
+		}
+	}
+	p_object->_input_event_call(camera_3d, p_input_event, p_pos, p_normal, p_shape);
+	physics_last_object_transform = object_transform;
+	physics_last_camera_transform = camera_transform;
+	physics_last_id = id;
+}
+#endif // MODULE_CSG_ENABLED
 
 Camera3D *Viewport::get_camera_3d() const {
 	return camera_3d;

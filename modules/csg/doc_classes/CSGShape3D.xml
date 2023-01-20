@@ -11,6 +11,30 @@
 		<link title="Prototyping levels with CSG">$DOCS_URL/tutorials/3d/csg_tools.html</link>
 	</tutorials>
 	<methods>
+		<method name="_input_event" qualifiers="virtual">
+			<return type="void" />
+			<param index="0" name="camera" type="Camera3D" />
+			<param index="1" name="event" type="InputEvent" />
+			<param index="2" name="position" type="Vector3" />
+			<param index="3" name="normal" type="Vector3" />
+			<param index="4" name="shape_idx" type="int" />
+			<description>
+				Receives unhandled [InputEvent]s. [param position] is the location in world space of the mouse pointer on the surface of the shape with index [param shape_idx] and [param normal] is the normal vector of the surface at that point. Connect to the [signal input_event] signal to easily pick up these events.
+				[b]Note:[/b] [method _input_event] requires [member use_collision] and [member input_ray_pickable] to be [code]true[/code] and at least one [member collision_layer] bit to be set.
+			</description>
+		</method>
+		<method name="_mouse_enter" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				Called when the mouse pointer enters any of this object's shapes. Requires [member use_collision] and [member input_ray_pickable] to be [code]true[/code] and at least one [member collision_layer] bit to be set. Note that moving between different shapes within a single [CSGShape3D] won't cause this function to be called.
+			</description>
+		</method>
+		<method name="_mouse_exit" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				Called when the mouse pointer exits all this object's shapes. Requires [member use_collision] and [member input_ray_pickable] to be [code]true[/code] and at least one [member collision_layer] bit to be set. Note that moving between different shapes within a single [CSGShape3D] won't cause this function to be called.
+			</description>
+		</method>
 		<method name="get_collision_layer_value" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="layer_number" type="int" />
@@ -69,6 +93,12 @@
 		<member name="collision_priority" type="float" setter="set_collision_priority" getter="get_collision_priority" default="1.0">
 			The priority used to solve colliding when occurring penetration. Only effective if [member use_collision] is [code]true[/code]. The higher the priority is, the lower the penetration into the object will be. This can for example be used to prevent the player from breaking through the boundaries of a level.
 		</member>
+		<member name="input_capture_on_drag" type="bool" setter="set_capture_input_on_drag" getter="get_capture_input_on_drag" default="false">
+			If [code]true[/code], the [CSGShape3D] will continue to receive input events as the mouse is dragged across its shapes.
+		</member>
+		<member name="input_ray_pickable" type="bool" setter="set_ray_pickable" getter="is_ray_pickable" default="true">
+			If [code]true[/code], this object is pickable. A pickable object can detect the mouse pointer entering/leaving, and if the mouse is inside it, report input events. Requires at least one [member collision_layer] bit to be set.
+		</member>
 		<member name="operation" type="int" setter="set_operation" getter="get_operation" enum="CSGShape3D.Operation" default="0">
 			The operation that is performed on this shape. This is ignored for the first CSG child node as the operation is between this node and the previous child of this nodes parent.
 		</member>
@@ -79,6 +109,31 @@
 			Adds a collision shape to the physics engine for our CSG shape. This will always act like a static body. Note that the collision shape is still active even if the CSG shape itself is hidden. See also [member collision_mask] and [member collision_priority].
 		</member>
 	</members>
+	<signals>
+		<signal name="input_event">
+			<param index="0" name="camera" type="Node" />
+			<param index="1" name="event" type="InputEvent" />
+			<param index="2" name="position" type="Vector3" />
+			<param index="3" name="normal" type="Vector3" />
+			<param index="4" name="shape_idx" type="int" />
+			<description>
+				Emitted when the object receives an unhandled [InputEvent]. [param position] is the location in world space of the mouse pointer on the surface of the shape with index [param shape_idx] and [param normal] is the normal vector of the surface at that point.
+				[b]Note:[/b] [signal input_event] requires [member use_collision] and [member input_ray_pickable] to be [code]true[/code] and at least one [member collision_layer] bit to be set.
+			</description>
+		</signal>
+		<signal name="mouse_entered">
+			<description>
+				Emitted when the mouse pointer enters any of this object's shapes. Requires [member use_collision] and [member input_ray_pickable] to be [code]true[/code] and at least one [member collision_layer] bit to be set.
+				[b]Note:[/b] Due to the lack of continuous collision detection, this signal may not be emitted in the expected order if the mouse moves fast enough and the [CSGShape3D]'s area is small. This signal may also not be emitted if another [CSGShape3D] is overlapping the [CSGShape3D] in question.
+			</description>
+		</signal>
+		<signal name="mouse_exited">
+			<description>
+				Emitted when the mouse pointer exits all this object's shapes. Requires [member use_collision] and [member input_ray_pickable] to be [code]true[/code] and at least one [member collision_layer] bit to be set.
+				[b]Note:[/b] Due to the lack of continuous collision detection, this signal may not be emitted in the expected order if the mouse moves fast enough and the [CSGShape3D]'s area is small. This signal may also not be emitted if another [CSGShape3D] is overlapping the [CSGShape3D] in question.
+			</description>
+		</signal>
+	</signals>
 	<constants>
 		<constant name="OPERATION_UNION" value="0" enum="Operation">
 			Geometry of both primitives is merged, intersecting geometry is removed.

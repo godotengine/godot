@@ -39,6 +39,10 @@ class Camera3D;
 class CollisionObject3D;
 class AudioListener3D;
 class World3D;
+#include "modules/modules_enabled.gen.h" // For csg.
+#ifdef MODULE_CSG_ENABLED
+class CSGShape3D;
+#endif // MODULE_CSG_ENABLED
 #endif // _3D_DISABLED
 
 class AudioListener2D;
@@ -668,6 +672,9 @@ public:
 	void _audio_listener_3d_make_next_current(AudioListener3D *p_exclude);
 
 	void _collision_object_3d_input_event(CollisionObject3D *p_object, Camera3D *p_camera, const Ref<InputEvent> &p_input_event, const Vector3 &p_pos, const Vector3 &p_normal, int p_shape);
+#ifdef MODULE_CSG_ENABLED
+	void _csg_shape_3d_input_event(CSGShape3D *p_object, Camera3D *p_camera, const Ref<InputEvent> &p_input_event, const Vector3 &p_pos, const Vector3 &p_normal, int p_shape);
+#endif // MODULE_CSG_ENABLED
 
 	struct Camera3DOverrideData {
 		Transform3D transform;
