@@ -4,7 +4,7 @@
 # This file is distributed under the same license as the Godot source code.
 #
 # Reubens Sanders <reubensst@protonmail.com>, 2021.
-# ssantos <ssantos@web.de>, 2022.
+# ssantos <ssantos@web.de>, 2022, 2023.
 # Felipe SiFa <felipe@logus.digital>, 2022.
 # Renu <ifpilucas@gmail.com>, 2022.
 # Diogo Gomes <dgomes@graphnode.com>, 2022.
@@ -18,7 +18,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2022-11-18 16:48+0000\n"
+"PO-Revision-Date: 2023-01-11 16:51+0000\n"
 "Last-Translator: ssantos <ssantos@web.de>\n"
 "Language-Team: Portuguese <https://hosted.weblate.org/projects/godot-engine/"
 "godot-class-reference/pt/>\n"
@@ -27,7 +27,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.15-dev\n"
+"X-Generator: Weblate 4.15.1-dev\n"
 
 #: doc/tools/make_rst.py
 msgid "Description"
@@ -394,8 +394,8 @@ msgid ""
 "[/codeblock]\n"
 "This is the inverse of [method ord]."
 msgstr ""
-"Retorna um caractere como uma String de um dado code point Unicode (que é "
-"compatível com ASCII code);\n"
+"Retorna um caractere como uma cadeia de caracteres de um dado code point "
+"Unicode (compatível com ASCII code);\n"
 "[codeblock]\n"
 "a = char(65)      # a é \"A\"\n"
 "a = char(65 + 32) # a é \"a\"\n"
@@ -517,15 +517,15 @@ msgid ""
 "want a true content-aware comparison, you have to use [code]deep_equal[/"
 "code]."
 msgstr ""
-"Compara dois valores verificando seu conteúdo real, por meio de recursão em "
-"um [Array] ou [Dictionary] em todos os seus níveis.\n"
-"Esta função se asemelha ou difere de [code]==[/code] de diversas maneiras:\n"
+"Compara dois valores verificando o conteúdo real deles, por meio de recursão "
+"em um [Array] ou [Dictionary] em todos os seus níveis.\n"
+"Esta função compara a [code]==[/code] de diversas maneiras:\n"
 "- Para [code]null[/code], [code]int[/code], [code]float[/code], "
 "[code]String[/code], [code]Object[/code] e [code] RID[/code] tanto "
 "[code]deep_equal[/code] quanto [code]==[/code] funcionam da mesma forma.\n"
 "- Para [code]Dictionary[/code], [code]==[/code] considera-se igual se, e "
 "somente se, ambas as variáveis apontarem para o mesmo [code]Dictionary[/"
-"code], sem recursão ou checagem de seu conteúdo.\n"
+"code], sem recursão ou checagem do seu conteúdo.\n"
 "- Para [code]Array[/code], [code]==[/code] considera igual se, e somente se, "
 "cada item no primeiro [code]Array[/code] for igual ao seu homólogo no "
 "segundo [ code]Array[/code], conforme informado pelo próprio [code]==[/"
@@ -928,7 +928,7 @@ msgid ""
 "[/codeblock]"
 msgstr ""
 "Retorna o comprimento da Variant [code]var[/code]. Comprimento é a contagem "
-"de caracteres de uma String, contagem de elementos de uma Array, o tamanho "
+"de caracteres de uma cadeia, contagem de elementos de uma Array, o tamanho "
 "de um Dicionario, etc.\n"
 "[b]Note:[/b] Gera um erro fatal se Variant não puder retornar um "
 "comprimento.\n"
@@ -1361,7 +1361,7 @@ msgid ""
 "distinguishes them from print messages used for debugging purposes, while "
 "also displaying a stack trace when an error or warning is printed."
 msgstr ""
-"Converte um ou mais argumentos de qualquer tipo para string da melhor "
+"Converte um ou mais argumentos de qualquer tipo para cadeia da melhor "
 "maneira possível e imprime no console\n"
 "[codeblock]\n"
 "a = [1, 2, 3]\n"
@@ -1370,7 +1370,7 @@ msgstr ""
 "[b]Nota:[/b] Considere usar [method push_error] e [method push_warning] para "
 "imprimir mensagens de erro e aviso ao invés de [method print]. Isso os "
 "distinguirá de impressões com propósito de depuração e também mostrará um "
-"rastreamento de pilha quando um erro ou aviso é impresso ."
+"rastreamento de pilha quando um erro ou aviso é impresso."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -1890,7 +1890,7 @@ msgid ""
 "len(b) # Returns 12\n"
 "[/codeblock]"
 msgstr ""
-"Converte um ou mais argumentos de quaisquer tipos para string na melhor "
+"Converte um ou mais argumentos de quaisquer tipos para cadeia na melhor "
 "maneira possível.\n"
 "[codeblock]\n"
 "var a = [10, 20, 30]\n"
@@ -1909,7 +1909,7 @@ msgid ""
 "print(b[\"a\"]) # Prints 1\n"
 "[/codeblock]"
 msgstr ""
-"Converte um string formatado que foi retornado por [method var2str] para o "
+"Converte uma cadeia formatada que foi retornada por [method var2str] para o "
 "valor original.\n"
 "[codeblock]\n"
 "a = '{ \"a\": 1, \"b\": 2 }'\n"
@@ -2025,8 +2025,8 @@ msgid ""
 "    push_error(\"Invalid JSON: \" + v)\n"
 "[/codeblock]"
 msgstr ""
-"Verifica se [code]json[/code] contém dados JSON válidos. Retorna um String "
-"vazio se válido, ou uma mensagem de erro caso contrário.\n"
+"Verifica se [code]json[/code] contém dados JSON válidos. Retorna uma cadeia "
+"vazia se for válida ou uma mensagem de erro caso contrário.\n"
 "[codeblock]\n"
 "j = to_json([1, 2, 3])\n"
 "v = validate_json(j)\n"
@@ -2062,8 +2062,8 @@ msgid ""
 "}\n"
 "[/codeblock]"
 msgstr ""
-"Converte uma Variant [code]var[/code] para um string formatado que pode ser "
-"convertido de volta com [method str2var].\n"
+"Converte uma Variant [code]var[/code] para uma cadeia formatada que pode ser "
+"convertida de volta com [method str2var].\n"
 "[codeblock]\n"
 "a = { \"a\": 1, \"b\": 2 }\n"
 "print(var2str(a))\n"
@@ -3555,59 +3555,59 @@ msgstr "Máscara da tecla Group Switch."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Left mouse button."
-msgstr "Botão esquerdo do mouse."
+msgstr "Botão esquerdo do rato."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Right mouse button."
-msgstr "Botão direito do mouse."
+msgstr "Botão direito do rato."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Middle mouse button."
-msgstr "Botão central do mouse."
+msgstr "Botão central do rato."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Extra mouse button 1 (only present on some mice)."
-msgstr "Primeiro botão extra do mouse (disponível em apenas alguns mouses)."
+msgstr "Primeiro botão extra do rato (disponível em apenas alguns ratos)."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Extra mouse button 2 (only present on some mice)."
-msgstr "Segundo botão extra do mouse (disponível em apenas alguns mouses)."
+msgstr "Segundo botão extra do rato (disponível em apenas alguns ratos)."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Mouse wheel up."
-msgstr "Roda do mouse para cima."
+msgstr "Roda do rato para cima."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Mouse wheel down."
-msgstr "Roda do mouse para baixo."
+msgstr "Roda do rato para baixo."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Mouse wheel left button (only present on some mice)."
-msgstr "Botão esquerdo da roda do mouse (disponível em apenas alguns mouses)."
+msgstr "Botão esquerdo da roda do rato (disponível em apenas alguns ratos)."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Mouse wheel right button (only present on some mice)."
-msgstr "Botão direito da roda do mouse (disponível em apenas alguns mouses)."
+msgstr "Botão direito da roda do rato (disponível em apenas alguns ratos)."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Left mouse button mask."
-msgstr "Máscara do botão esquerdo do mouse."
+msgstr "Máscara do botão esquerdo do rato."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Right mouse button mask."
-msgstr "Máscara do botão direito do mouse."
+msgstr "Máscara do botão direito do rato."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Middle mouse button mask."
-msgstr "Máscara do botão central do mouse."
+msgstr "Máscara do botão central do rato."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Extra mouse button 1 mask."
-msgstr "Máscara do primeiro botão extra do mouse."
+msgstr "Máscara do primeiro botão extra do rato."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Extra mouse button 2 mask."
-msgstr "Máscara do segundo botão extra do mouse."
+msgstr "Máscara do segundo botão extra do rato."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Invalid button or axis."
@@ -4354,7 +4354,6 @@ msgid ""
 msgstr ""
 
 #: doc/classes/@GlobalScope.xml
-#, fuzzy
 msgid ""
 "Hints that a float property should be edited via an exponential easing "
 "function. The hint string can include [code]\"attenuation\"[/code] to flip "
@@ -4362,9 +4361,9 @@ msgid ""
 "easing."
 msgstr ""
 "Sugere que uma propriedade float deve ser editada através de uma função de "
-"suavização. A string de sugestão pode incluir [code]\"attenuation\"[/code] "
-"para virar a curva horizontalmente e/ou [code]\"inout\"[/code] para incluir "
-"também a suavização in/out."
+"flexibilização. A cadeia de sugestão pode incluir [code]\"attenuation\"[/"
+"code] para virar a curva horizontalmente e/ou [code]\"inout\"[/code] para "
+"incluir também a flexibilização in/out."
 
 #: doc/classes/@GlobalScope.xml
 msgid "Deprecated hint, unused."
@@ -17844,11 +17843,11 @@ msgstr ""
 
 #: doc/classes/Control.xml
 msgid "Sent when the mouse pointer enters the node."
-msgstr "Enviado quando o ponteiro do mouse entra no nó."
+msgstr "Enviado quando o ponteiro do rato entra no nó."
 
 #: doc/classes/Control.xml
 msgid "Sent when the mouse pointer exits the node."
-msgstr "Enviado quando o ponteiro do mouse sai do nó."
+msgstr "Enviado quando o ponteiro do rato sai do nó."
 
 #: doc/classes/Control.xml
 msgid "Sent when the node grabs focus."
@@ -30979,7 +30978,11 @@ msgid ""
 "using an [AnimatedTexture], only the first frame will be displayed.\n"
 "[b]Note:[/b] Only images imported with the [b]Lossless[/b], [b]Lossy[/b] or "
 "[b]Uncompressed[/b] compression modes are supported. The [b]Video RAM[/b] "
-"compression mode can't be used for custom cursors."
+"compression mode can't be used for custom cursors.\n"
+"[b]Note:[/b] On the web platform, the maximum allowed cursor image size is "
+"128×128. Cursor images larger than 32×32 will also only be displayed if the "
+"mouse cursor image is entirely located within the page for [url=https://"
+"chromestatus.com/feature/5825971391299584]security reasons[/url]."
 msgstr ""
 
 #: doc/classes/Input.xml
@@ -37028,7 +37031,7 @@ msgstr ""
 #: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
 #, fuzzy
 msgid "Sets the position of the agent in world space."
-msgstr "Retorna a posição global do mouse."
+msgstr "Retorna a posição global do rato."
 
 #: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
 #, fuzzy
@@ -37256,7 +37259,7 @@ msgstr ""
 #: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
 #, fuzzy
 msgid "Sets the global transformation for the region."
-msgstr "Retorna a posição global do mouse."
+msgstr "Retorna a posição global do rato."
 
 #: doc/classes/Navigation2DServer.xml doc/classes/NavigationServer.xml
 #, fuzzy
@@ -65291,11 +65294,11 @@ msgstr "Emitido quando um item é editado."
 
 #: doc/classes/Tree.xml
 msgid "Emitted when an item is edited using the right mouse button."
-msgstr "Emitido quando um item é editado com botão direito do mouse."
+msgstr "Emitido quando um item é editado com botão direito do rato."
 
 #: doc/classes/Tree.xml
 msgid "Emitted when an item is selected with the right mouse button."
-msgstr "Emitido quando um item é selecionado com o botão direito do mouse."
+msgstr "Emitido quando um item é selecionado com o botão direito do rato."
 
 #: doc/classes/Tree.xml
 msgid "Emitted when an item is selected."
@@ -65310,7 +65313,7 @@ msgstr ""
 #: doc/classes/Tree.xml
 msgid "Emitted when a left mouse button click does not select any item."
 msgstr ""
-"Emitido quando um clique com o botão esquerdo do mouse não seleciona nenhum "
+"Emitido quando um clique com o botão esquerdo do rato não seleciona nenhum "
 "item."
 
 #: doc/classes/Tree.xml
