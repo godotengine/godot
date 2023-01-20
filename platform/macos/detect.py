@@ -230,7 +230,7 @@ def configure(env: "Environment"):
     env.Append(LIBS=["pthread", "z"])
 
     if env["opengl3"]:
-        env.Append(CPPDEFINES=["GLES_ENABLED", "GLES3_ENABLED"])
+        env.Append(CPPDEFINES=["GLES3_ENABLED"])
         env.Append(LINKFLAGS=["-framework", "OpenGL"])
 
     env.Append(LINKFLAGS=["-rpath", "@executable_path/../Frameworks", "-rpath", "@executable_path"])

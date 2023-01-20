@@ -47,6 +47,10 @@
 #endif
 #endif
 
+#if defined(GLES3_ENABLED)
+#include "drivers/gles3/rasterizer_gles3.h"
+#endif // GLES3_ENABLED
+
 #import <Foundation/Foundation.h>
 #import <QuartzCore/CAMetalLayer.h>
 
@@ -216,6 +220,7 @@ public:
 	virtual bool screen_is_kept_on() const override;
 
 	void resize_window(CGSize size);
+	virtual void swap_buffers() override {}
 };
 
 #endif // DISPLAY_SERVER_IOS_H
