@@ -433,38 +433,6 @@ namespace Godot
         }
 
         /// <summary>
-        /// Performs a bitwise AND operation with this <see cref="Vector4i"/>
-        /// and the given <see langword="int"/>.
-        /// </summary>
-        /// <param name="vec">The vector to AND with.</param>
-        /// <param name="and">The integer to AND with.</param>
-        /// <returns>The result of the bitwise AND.</returns>
-        public static Vector4i operator &(Vector4i vec, int and)
-        {
-            vec.x &= and;
-            vec.y &= and;
-            vec.z &= and;
-            vec.w &= and;
-            return vec;
-        }
-
-        /// <summary>
-        /// Performs a bitwise AND operation with this <see cref="Vector4i"/>
-        /// and the given <see cref="Vector4i"/>.
-        /// </summary>
-        /// <param name="vec">The left vector to AND with.</param>
-        /// <param name="andv">The right vector to AND with.</param>
-        /// <returns>The result of the bitwise AND.</returns>
-        public static Vector4i operator &(Vector4i vec, Vector4i andv)
-        {
-            vec.x &= andv.x;
-            vec.y &= andv.y;
-            vec.z &= andv.z;
-            vec.w &= andv.w;
-            return vec;
-        }
-
-        /// <summary>
         /// Returns <see langword="true"/> if the vectors are equal.
         /// </summary>
         /// <param name="left">The left vector.</param>

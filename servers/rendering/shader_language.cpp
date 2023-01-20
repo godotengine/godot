@@ -5399,6 +5399,12 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 					}
 				} else {
 					if (!_find_identifier(p_block, false, p_function_info, identifier, &data_type, &ident_type, &is_const, &array_size, &struct_name)) {
+						if (identifier == "SCREEN_TEXTURE" || identifier == "DEPTH_TEXTURE" || identifier == "NORMAL_ROUGHNESS_TEXTURE") {
+							String name = String(identifier);
+							String name_lower = name.to_lower();
+							_set_error(vformat(RTR("%s has been removed in favor of using hint_%s with a uniform.\nTo continue with minimal code changes add 'uniform sampler2D %s : hint_%s, filter_linear_mipmaps;' near the top of your shader."), name, name_lower, name, name_lower));
+							return nullptr;
+						}
 						_set_error(vformat(RTR("Unknown identifier in expression: '%s'."), String(identifier)));
 						return nullptr;
 					}

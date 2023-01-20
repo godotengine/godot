@@ -206,6 +206,20 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh>> &r_meshes, bool p_
 	Ref<FileAccess> f = FileAccess::open(p_path, FileAccess::READ);
 	ERR_FAIL_COND_V_MSG(f.is_null(), ERR_CANT_OPEN, vformat("Couldn't open OBJ file '%s', it may not exist or not be readable.", p_path));
 
+	// Avoid trying to load/interpret potential build artifacts from Visual Studio (e.g. when compiling native plugins inside the project tree)
+	// This should only match, if it's indeed a COFF file header
+	// https://learn.microsoft.com/en-us/windows/win32/debug/pe-format#machine-types
+	const int first_bytes = f->get_16();
+	static const Vector<int> coff_header_machines{
+		0x0, // IMAGE_FILE_MACHINE_UNKNOWN
+		0x8664, // IMAGE_FILE_MACHINE_AMD64
+		0x1c0, // IMAGE_FILE_MACHINE_ARM
+		0x14c, // IMAGE_FILE_MACHINE_I386
+		0x200, // IMAGE_FILE_MACHINE_IA64
+	};
+	ERR_FAIL_COND_V_MSG(coff_header_machines.find(first_bytes) != -1, ERR_FILE_CORRUPT, vformat("Couldn't read OBJ file '%s', it seems to be binary, corrupted, or empty.", p_path));
+	f->seek(0);
+
 	Ref<ArrayMesh> mesh;
 	mesh.instantiate();
 

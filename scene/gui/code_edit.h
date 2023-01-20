@@ -289,7 +289,6 @@ public:
 	TypedArray<String> get_auto_indent_prefixes() const;
 
 	void do_indent();
-	void do_unindent();
 
 	void indent_lines();
 	void unindent_lines();

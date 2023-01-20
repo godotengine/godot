@@ -137,7 +137,7 @@ layout(set = 0, binding = 4) uniform texture2D shadow_atlas_texture;
 
 layout(set = 0, binding = 5) uniform sampler shadow_sampler;
 
-layout(set = 0, binding = 6) uniform texture2D screen_texture;
+layout(set = 0, binding = 6) uniform texture2D color_buffer;
 layout(set = 0, binding = 7) uniform texture2D sdf_texture;
 
 layout(set = 0, binding = 8) uniform sampler material_samplers[12];

@@ -17,6 +17,8 @@ namespace GodotTools.Export
 {
     public partial class ExportPlugin : EditorExportPlugin
     {
+        public override string _GetName() => "C#";
+
         private List<string> _tempFolders = new List<string>();
 
         public void RegisterExportSettings()

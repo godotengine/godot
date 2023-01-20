@@ -20,7 +20,7 @@
 # MalcomRF <malcomkbk@gmail.com>, 2017.
 # Marcus Correia <marknokalt@live.com>, 2017-2018.
 # Michael Alexsander Silva Dias <michaelalexsander@protonmail.com>, 2017-2018.
-# Renato Rotenberg <renato.rotenberg@gmail.com>, 2017, 2019, 2021.
+# Renato Rotenberg <renato.rotenberg@gmail.com>, 2017, 2019, 2021, 2023.
 # Rodolfo R Gomes <rodolforg@gmail.com>, 2017-2018, 2019.
 # Tiago Almeida <thyagoeap@gmail.com>, 2017.
 # Mauricio Luan Carneiro deSouza <newmailmlcs@gmail.com>, 2018.
@@ -156,13 +156,14 @@
 # Murilo Gama <murilovsky2030@gmail.com>, 2022.
 # Kauã Azevedo <Kazevic@pm.me>, 2022.
 # Zer0-Zer0 <dankmemerson@tutanota.com>, 2022.
+# Levi Ferreira <leviferreiramorais@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2022-12-10 02:13+0000\n"
-"Last-Translator: Julio Yagami <juliohenrique31501234@hotmail.com>\n"
+"PO-Revision-Date: 2023-01-14 00:01+0000\n"
+"Last-Translator: Levi Ferreira <leviferreiramorais@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -170,7 +171,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.15-dev\n"
+"X-Generator: Weblate 4.15.1-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -11075,7 +11076,7 @@ msgstr "Perspectiva Traseira"
 msgid " [auto]"
 msgstr " [automático]"
 
-#. TRANSLATORS: This will be appended to the view name when Portal Occulusion is enabled.
+#. TRANSLATORS: This will be appended to the view name when Portal Occlusion is enabled.
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid " [portals active]"
 msgstr " [portais ativados]"
@@ -14331,17 +14332,15 @@ msgid "Invalid project path (changed anything?)."
 msgstr "Caminho de projeto inválido (mudou alguma coisa?)."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid ""
 "Couldn't load project at '%s' (error %d). It may be missing or corrupted."
 msgstr ""
-"Não foi possível carregar project.godot no caminho do projeto (erro %d). Ele "
-"pode estar ausente ou corrompido."
+"Não foi possível carregar project.godot em '%s' (erro %d). Ele pode estar "
+"ausente ou corrompido."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Couldn't save project at '%s' (error %d)."
-msgstr "Não é possível abrir o projeto em '%s'."
+msgstr "Não foi possível salvar o projeto em '%s' (erro %d)."
 
 #: editor/project_manager.cpp
 msgid "Couldn't create project.godot in project path."
@@ -16200,9 +16199,8 @@ msgid "Multithreaded Server"
 msgstr "Servidor com Multi-Thread"
 
 #: main/main.cpp
-#, fuzzy
 msgid "RID Pool Prealloc"
-msgstr "Pre-alocação de Pool RID"
+msgstr "Pool de Prealocação de RID"
 
 #: main/main.cpp
 msgid "Debugger stdout"
@@ -16310,7 +16308,7 @@ msgstr "Modelo de Thread"
 
 #: main/main.cpp
 msgid "Thread Safe BVH"
-msgstr ""
+msgstr "Thread Segura de BVH"
 
 #: main/main.cpp
 msgid "Handheld"
@@ -16675,9 +16673,8 @@ msgid "Path Local"
 msgstr "Caminho Local"
 
 #: modules/csg/csg_shape.cpp
-#, fuzzy
 msgid "Path Continuous U"
-msgstr "Caminho Contínuo"
+msgstr "Caminho Continuo U"
 
 #: modules/csg/csg_shape.cpp
 msgid "Path U Distance"
@@ -16943,11 +16940,11 @@ msgstr "Contagem Escassa"
 
 #: modules/gltf/gltf_accessor.cpp
 msgid "Sparse Indices Buffer View"
-msgstr ""
+msgstr "Visualização de Buffer dos Indices Esparsos"
 
 #: modules/gltf/gltf_accessor.cpp
 msgid "Sparse Indices Byte Offset"
-msgstr ""
+msgstr "Deslocação de Byte dos Índices Esparsos"
 
 #: modules/gltf/gltf_accessor.cpp
 msgid "Sparse Indices Component Type"
@@ -16955,11 +16952,11 @@ msgstr "Tipo de Componente de Índices Esparsos"
 
 #: modules/gltf/gltf_accessor.cpp
 msgid "Sparse Values Buffer View"
-msgstr ""
+msgstr "Visualização de Buffer dos Valores Esparsos"
 
 #: modules/gltf/gltf_accessor.cpp
 msgid "Sparse Values Byte Offset"
-msgstr ""
+msgstr "Deslocação de Byte dos Valores Esparsos"
 
 #: modules/gltf/gltf_buffer_view.cpp
 msgid "Buffer"
@@ -16971,7 +16968,7 @@ msgstr "Largura do byte"
 
 #: modules/gltf/gltf_buffer_view.cpp
 msgid "Byte Stride"
-msgstr ""
+msgstr "Separação dos Bytes"
 
 #: modules/gltf/gltf_buffer_view.cpp
 msgid "Indices"
@@ -17031,11 +17028,11 @@ msgstr "Pai"
 
 #: modules/gltf/gltf_node.cpp
 msgid "Xform"
-msgstr ""
+msgstr "Xform"
 
 #: modules/gltf/gltf_node.cpp scene/3d/mesh_instance.cpp
 msgid "Skin"
-msgstr ""
+msgstr "Pele"
 
 #: modules/gltf/gltf_node.cpp scene/3d/spatial.cpp
 msgid "Translation"
@@ -17107,11 +17104,11 @@ msgstr "Fator Especular"
 
 #: modules/gltf/gltf_spec_gloss.cpp
 msgid "Spec Gloss Img"
-msgstr ""
+msgstr "Imagem Especular Lustrosa"
 
 #: modules/gltf/gltf_state.cpp
 msgid "Json"
-msgstr ""
+msgstr "Json"
 
 #: modules/gltf/gltf_state.cpp
 msgid "Major Version"
@@ -17127,7 +17124,7 @@ msgstr "Dados do GLB"
 
 #: modules/gltf/gltf_state.cpp
 msgid "Use Named Skin Binds"
-msgstr ""
+msgstr "Usar Associações de Pele com nome"
 
 #: modules/gltf/gltf_state.cpp
 msgid "Buffer Views"
@@ -17432,15 +17429,15 @@ msgstr "Exibir para as Lentes"
 
 #: modules/mobile_vr/mobile_vr_interface.cpp
 msgid "Oversample"
-msgstr ""
+msgstr "Amostragem em excesso"
 
 #: modules/mobile_vr/mobile_vr_interface.cpp
 msgid "K1"
-msgstr ""
+msgstr "K1"
 
 #: modules/mobile_vr/mobile_vr_interface.cpp
 msgid "K2"
-msgstr ""
+msgstr "K2"
 
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
@@ -18019,7 +18016,7 @@ msgstr "Iterador"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "for (elem) in (input):"
-msgstr ""
+msgstr "for (elem) in (input):"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Input type not iterable:"
@@ -18191,7 +18188,7 @@ msgstr "Argumentos inválidos:"
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "a if cond, else b"
-msgstr ""
+msgstr "a se cond, se não b"
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "Var Name"
@@ -18247,11 +18244,11 @@ msgstr "Obter Árvore de Cenas"
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "Get Self"
-msgstr "Obter Sí Mesmo"
+msgstr "Obter Si Mesmo"
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "CustomNode"
-msgstr ""
+msgstr "Nó Personalizado"
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "Custom node has no _step() method, can't process graph."
@@ -18269,7 +18266,7 @@ msgstr ""
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "SubCall"
-msgstr ""
+msgstr "Sub-Chamada"
 
 #: modules/visual_script/visual_script_nodes.cpp scene/gui/graph_node.cpp
 msgid "Title"
@@ -18301,11 +18298,11 @@ msgstr "Buscar VisualScript"
 
 #: modules/visual_script/visual_script_yield_nodes.cpp
 msgid "Yield"
-msgstr ""
+msgstr "Aguardar Retorno"
 
 #: modules/visual_script/visual_script_yield_nodes.cpp
 msgid "Wait"
-msgstr ""
+msgstr "Esperar"
 
 #: modules/visual_script/visual_script_yield_nodes.cpp
 msgid "Next Frame"
@@ -18325,7 +18322,7 @@ msgstr "Tempo de Espera"
 
 #: modules/visual_script/visual_script_yield_nodes.cpp
 msgid "WaitSignal"
-msgstr ""
+msgstr "EsperarSinal"
 
 #: modules/visual_script/visual_script_yield_nodes.cpp
 msgid "WaitNodeSignal"
@@ -18341,7 +18338,7 @@ msgstr "Modo de Escrita"
 
 #: modules/webrtc/webrtc_data_channel.h
 msgid "WebRTC"
-msgstr ""
+msgstr "WebRTC"
 
 #: modules/webrtc/webrtc_data_channel.h
 msgid "Max Channel In Buffer (KB)"
@@ -18381,7 +18378,7 @@ msgstr "Servidor WebSocket"
 
 #: modules/websocket/websocket_server.cpp
 msgid "Bind IP"
-msgstr ""
+msgstr "Atrelar IP"
 
 #: modules/websocket/websocket_server.cpp
 msgid "Private Key"
@@ -18441,11 +18438,11 @@ msgstr "Depurar Keystore"
 
 #: platform/android/export/export.cpp
 msgid "Debug Keystore User"
-msgstr ""
+msgstr "Usuário da Keystore de Depuração"
 
 #: platform/android/export/export.cpp
 msgid "Debug Keystore Pass"
-msgstr ""
+msgstr "Senha da Keystore de Depuração"
 
 #: platform/android/export/export.cpp
 msgid "Force System User"
@@ -19033,43 +19030,43 @@ msgstr "Telas de Inicialização de Paisagem"
 
 #: platform/iphone/export/export.cpp
 msgid "iPhone 2436 X 1125"
-msgstr "IPhone 2436 X 1125"
+msgstr "iPhone 2436 X 1125"
 
 #: platform/iphone/export/export.cpp
 msgid "iPhone 2208 X 1242"
-msgstr ""
+msgstr "iPhone 2208 X 1242"
 
 #: platform/iphone/export/export.cpp
 msgid "iPad 1024 X 768"
-msgstr ""
+msgstr "iPad 1024 X 768"
 
 #: platform/iphone/export/export.cpp
 msgid "iPad 2048 X 1536"
-msgstr ""
+msgstr "iPad 2048 X 1536"
 
 #: platform/iphone/export/export.cpp
 msgid "Portrait Launch Screens"
-msgstr ""
+msgstr "Tela de Apresentação em Retrato"
 
 #: platform/iphone/export/export.cpp
 msgid "iPhone 640 X 960"
-msgstr ""
+msgstr "iPhone 640 X 960"
 
 #: platform/iphone/export/export.cpp
 msgid "iPhone 640 X 1136"
-msgstr ""
+msgstr "iPhone 640 X 1136"
 
 #: platform/iphone/export/export.cpp
 msgid "iPhone 750 X 1334"
-msgstr ""
+msgstr "iPhone 750 X 1334"
 
 #: platform/iphone/export/export.cpp
 msgid "iPhone 1125 X 2436"
-msgstr ""
+msgstr "iPhone 1125 X 2436"
 
 #: platform/iphone/export/export.cpp
 msgid "iPad 768 X 1024"
-msgstr ""
+msgstr "iPad 768 X 1024"
 
 #: platform/iphone/export/export.cpp
 msgid "iPad 1536 X 2048"

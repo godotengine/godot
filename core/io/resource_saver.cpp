@@ -250,13 +250,6 @@ bool ResourceSaver::add_custom_resource_format_saver(String script_path) {
 	return true;
 }
 
-void ResourceSaver::remove_custom_resource_format_saver(String script_path) {
-	Ref<ResourceFormatSaver> custom_saver = _find_custom_resource_format_saver(script_path);
-	if (custom_saver.is_valid()) {
-		remove_resource_format_saver(custom_saver);
-	}
-}
-
 void ResourceSaver::add_custom_savers() {
 	// Custom resource savers exploits global class names
 

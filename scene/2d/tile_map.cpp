@@ -2841,7 +2841,7 @@ void TileMap::_set_tile_data(int p_layer, const Vector<int> &p_data) {
 	const int *r = p_data.ptr();
 
 	int offset = (format >= FORMAT_2) ? 3 : 2;
-	ERR_FAIL_COND_MSG(c % offset != 0, "Corrupted tile data.");
+	ERR_FAIL_COND_MSG(c % offset != 0, vformat("Corrupted tile data. Got size: %s. Expected modulo: %s", offset));
 
 	clear_layer(p_layer);
 

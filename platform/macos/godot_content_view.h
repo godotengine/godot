@@ -53,6 +53,9 @@
 
 @end
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations" // OpenGL is deprecated in macOS 10.14
+
 @interface GodotContentView : RootView <NSTextInputClient> {
 	DisplayServer::WindowID window_id;
 	NSTrackingArea *tracking_area;
@@ -72,5 +75,7 @@
 - (void)cancelComposition;
 
 @end
+
+#pragma clang diagnostic pop
 
 #endif // GODOT_CONTENT_VIEW_H

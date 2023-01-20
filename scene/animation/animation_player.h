@@ -295,7 +295,7 @@ private:
 	void _animation_changed(const StringName &p_name);
 
 	void _set_process(bool p_process, bool p_force = false);
-	void _stop_internal(bool p_reset);
+	void _stop_internal(bool p_reset, bool p_keep_state);
 
 	bool playing = false;
 
@@ -349,7 +349,7 @@ public:
 	Vector<String> get_queue();
 	void clear_queue();
 	void pause();
-	void stop();
+	void stop(bool p_keep_state = false);
 	bool is_playing() const;
 	String get_current_animation() const;
 	void set_current_animation(const String &p_anim);

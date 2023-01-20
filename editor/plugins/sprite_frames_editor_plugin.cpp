@@ -788,11 +788,11 @@ void SpriteFramesEditor::_animation_name_edited() {
 }
 
 void SpriteFramesEditor::_animation_add() {
-	String name = "New Anim";
+	String name = "new_animation";
 	int counter = 0;
 	while (frames->has_animation(name)) {
 		counter++;
-		name = "New Anim " + itos(counter);
+		name = vformat("new_animation_%d", counter);
 	}
 
 	List<Node *> nodes;

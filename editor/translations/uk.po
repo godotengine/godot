@@ -17,21 +17,23 @@
 # Микола Тимошенко <9081@ukr.net>, 2020.
 # Miroslav <zinmirx@gmail.com>, 2020.
 # IllusiveMan196 <hamsterrv@gmail.com>, 2021, 2022.
-# KazanskiyMaks <kazanskiy.maks@gmail.com>, 2022.
+# KazanskiyMaks <kazanskiy.maks@gmail.com>, 2022, 2023.
 # Мирослав <hlopukmyroslav@gmail.com>, 2022.
 # Ostap <ostapbataj79@gmail.com>, 2022.
 # Wald Sin <naaveranos@gmail.com>, 2022.
 # Гліб Соколов <ramithes@i.ua>, 2022.
 # Max Donchenko <maxx.donchenko@gmail.com>, 2022.
 # Artem <artem@molotov.work>, 2022.
-# Teashrock <kajitsu22@gmail.com>, 2022.
+# Teashrock <kajitsu22@gmail.com>, 2022, 2023.
+# kirill7606 <k7606irill@gmail.com>, 2022.
+# Alex <anna.loban@yahoo.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-10-03 12:44+0000\n"
-"Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
+"PO-Revision-Date: 2023-01-08 09:47+0000\n"
+"Last-Translator: KazanskiyMaks <kazanskiy.maks@gmail.com>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
 "Language: uk\n"
@@ -40,7 +42,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.14.1\n"
+"X-Generator: Weblate 4.15.1-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -60,27 +62,27 @@ msgstr "Код виходу"
 
 #: core/bind/core_bind.cpp
 msgid "V-Sync Enabled"
-msgstr "Увімкнено верт. синхронізацію"
+msgstr "Увімкнено вертикальну синхронізацію"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "V-Sync Via Compositor"
-msgstr "Верт. синхр. через засіб композиції"
+msgstr "Вертикальна синхронізація через засіб композиції"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Delta Smoothing"
-msgstr "Згладжування різниці"
+msgstr "Дельта-згладжування"
 
 #: core/bind/core_bind.cpp
 msgid "Low Processor Usage Mode"
-msgstr "Режим низького споживання процесора"
+msgstr "Режим низького використання процесора"
 
 #: core/bind/core_bind.cpp
 msgid "Low Processor Usage Mode Sleep (µsec)"
-msgstr "Присипляння у режимі низького споживання процесора (мкс)"
+msgstr "Час сну в режимі низького використання процесора (мкс)"
 
 #: core/bind/core_bind.cpp main/main.cpp platform/uwp/os_uwp.cpp
 msgid "Keep Screen On"
-msgstr "Залишити зневаджувач відкритим"
+msgstr "Не вимикати екран"
 
 #: core/bind/core_bind.cpp
 msgid "Min Window Size"
@@ -4533,7 +4535,7 @@ msgstr "Перезавантажити поточний проєкт"
 
 #: editor/editor_node.cpp
 msgid "Quit to Project List"
-msgstr "Вийти в список проєктів"
+msgstr "Вийти до списку проєктів"
 
 #: editor/editor_node.cpp
 msgid "Deploy with Remote Debug"
@@ -5496,9 +5498,8 @@ msgid "Mouse Extra Buttons Navigate History"
 msgstr "Додаткові кнопки миші для навігації журналом"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Drag And Drop Selection"
-msgstr "Перетягніть виділене"
+msgstr "Виділення Drag And Drop"
 
 #: editor/editor_settings.cpp
 msgid "Stay In Script Editor On Node Selected"
@@ -10955,7 +10956,7 @@ msgstr "Задній перспективний"
 msgid " [auto]"
 msgstr " [авто]"
 
-#. TRANSLATORS: This will be appended to the view name when Portal Occulusion is enabled.
+#. TRANSLATORS: This will be appended to the view name when Portal Occlusion is enabled.
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid " [portals active]"
 msgstr " [портали активні]"
@@ -14219,17 +14220,15 @@ msgid "Invalid project path (changed anything?)."
 msgstr "Некоректний шлях до проєкту (щось змінилося?)."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid ""
 "Couldn't load project at '%s' (error %d). It may be missing or corrupted."
 msgstr ""
-"Не вдалося завантажити project.godot у каталозі проєкту (помилка %d). "
-"Можливо, файл вилучено або пошкоджено."
+"Не вдалося завантажити проєкт у '%s' (помилка %d). Можливо, файл вилучено "
+"або пошкоджено."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Couldn't save project at '%s' (error %d)."
-msgstr "Не вдалося відкрити проєкт у «%s»."
+msgstr "Не вдалося зберегти проєкт у '%s' (помилка %d)."
 
 #: editor/project_manager.cpp
 msgid "Couldn't create project.godot in project path."
@@ -15272,18 +15271,16 @@ msgid "Make Local"
 msgstr "Зробити локальним"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Enable Scene Unique Name(s)"
-msgstr "Увімкнути унікальну назву сцени"
+msgstr "Увімкнути Унікальні Назви Сцен(и)"
 
 #: editor/scene_tree_dock.cpp
 msgid "Unique names already used by another node in the scene:"
 msgstr "Цю унікальну назву у сцені вже використано іншим вузлом:"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Disable Scene Unique Name(s)"
-msgstr "Вимкнути унікальна назва сцени"
+msgstr "Вимкнути Унікальні Назви Сцен(и)"
 
 #: editor/scene_tree_dock.cpp
 msgid "New Scene Root"
@@ -16315,7 +16312,7 @@ msgstr "Середовище"
 
 #: main/main.cpp
 msgid "Default Clear Color"
-msgstr "Типовий колір очищення"
+msgstr "Типовий чистий колір"
 
 #: main/main.cpp
 msgid "Boot Splash"
@@ -16848,12 +16845,10 @@ msgid "Sparse Indices Component Type"
 msgstr "Тип компонентів індексів розсіювання"
 
 #: modules/gltf/gltf_accessor.cpp
-#, fuzzy
 msgid "Sparse Values Buffer View"
-msgstr "Буферне подання розріджених значень"
+msgstr "Перегляд буфера розріджених значень"
 
 #: modules/gltf/gltf_accessor.cpp
-#, fuzzy
 msgid "Sparse Values Byte Offset"
 msgstr "Зміщення байтів розріджених значень"
 
@@ -16879,7 +16874,7 @@ msgstr "Розмір поля зору"
 
 #: modules/gltf/gltf_camera.cpp
 msgid "Zfar"
-msgstr ""
+msgstr "Віддалення по Z"
 
 #: modules/gltf/gltf_camera.cpp
 msgid "Znear"
@@ -16982,20 +16977,22 @@ msgid "Joint I To Name"
 msgstr "З'єднання I З Іменем"
 
 #: modules/gltf/gltf_skin.cpp
+#, fuzzy
 msgid "Godot Skin"
-msgstr ""
+msgstr "Godot текстура"
 
 #: modules/gltf/gltf_spec_gloss.cpp
 msgid "Diffuse Img"
-msgstr ""
+msgstr "Розсіяне зображення"
 
 #: modules/gltf/gltf_spec_gloss.cpp
 msgid "Diffuse Factor"
-msgstr ""
+msgstr "Фактор розсіювання"
 
 #: modules/gltf/gltf_spec_gloss.cpp
+#, fuzzy
 msgid "Gloss Factor"
-msgstr ""
+msgstr "Фактор блиску"
 
 #: modules/gltf/gltf_spec_gloss.cpp
 msgid "Specular Factor"
@@ -17003,7 +17000,7 @@ msgstr "Коефіцієнт дзеркальності"
 
 #: modules/gltf/gltf_spec_gloss.cpp
 msgid "Spec Gloss Img"
-msgstr ""
+msgstr "Дзеркальне глянцеве зображення"
 
 #: modules/gltf/gltf_state.cpp
 msgid "Json"
@@ -17022,8 +17019,9 @@ msgid "GLB Data"
 msgstr "Дані GLB"
 
 #: modules/gltf/gltf_state.cpp
+#, fuzzy
 msgid "Use Named Skin Binds"
-msgstr ""
+msgstr "Використовуйте іменовані обшивки"
 
 #: modules/gltf/gltf_state.cpp
 msgid "Buffer Views"
@@ -17127,7 +17125,7 @@ msgstr "Навігація"
 #: scene/3d/navigation_mesh_instance.cpp
 #, fuzzy
 msgid "Navigation Layers"
-msgstr "Поведінка навігації"
+msgstr "Навігаційні шари"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Next Plane"
@@ -17292,19 +17290,19 @@ msgstr "Запікати карти освітлення"
 
 #: modules/lightmapper_cpu/register_types.cpp
 msgid "Low Quality Ray Count"
-msgstr ""
+msgstr "Кількість променів низької якості"
 
 #: modules/lightmapper_cpu/register_types.cpp
 msgid "Medium Quality Ray Count"
-msgstr ""
+msgstr "Середня якість підрахунку променів"
 
 #: modules/lightmapper_cpu/register_types.cpp
 msgid "High Quality Ray Count"
-msgstr ""
+msgstr "Висока якість підрахунку променів"
 
 #: modules/lightmapper_cpu/register_types.cpp
 msgid "Ultra Quality Ray Count"
-msgstr ""
+msgstr "Кількість променів високої якості"
 
 #: modules/minimp3/audio_stream_mp3.cpp
 #: modules/minimp3/resource_importer_mp3.cpp
@@ -17315,7 +17313,7 @@ msgstr "Зміщення циклу"
 
 #: modules/mobile_vr/mobile_vr_interface.cpp
 msgid "Eye Height"
-msgstr ""
+msgstr "Висота очей"
 
 #: modules/mobile_vr/mobile_vr_interface.cpp
 msgid "IOD"
@@ -17331,7 +17329,7 @@ msgstr "Перегляд без тіней"
 
 #: modules/mobile_vr/mobile_vr_interface.cpp
 msgid "Oversample"
-msgstr ""
+msgstr "Надвибірка"
 
 #: modules/mobile_vr/mobile_vr_interface.cpp
 msgid "K1"
@@ -17354,19 +17352,16 @@ msgid "Auto Update Project"
 msgstr "Проєкт без назви"
 
 #: modules/mono/godotsharp_dirs.cpp
-#, fuzzy
 msgid "Assembly Name"
-msgstr "Показана назва"
+msgstr "Назва збірки"
 
 #: modules/mono/godotsharp_dirs.cpp
-#, fuzzy
 msgid "Solution Directory"
-msgstr "Виберіть каталог"
+msgstr "Каталог проєкту"
 
 #: modules/mono/godotsharp_dirs.cpp
-#, fuzzy
 msgid "C# Project Directory"
-msgstr "Виберіть каталог"
+msgstr "Каталог проєкту C#"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
@@ -17516,8 +17511,9 @@ msgid "IGD Service Type"
 msgstr "Тип служби IGD"
 
 #: modules/upnp/upnp_device.cpp
+#, fuzzy
 msgid "IGD Our Addr"
-msgstr ""
+msgstr "IGD це Наша адреса"
 
 #: modules/upnp/upnp_device.cpp
 msgid "IGD Status"
@@ -18314,12 +18310,14 @@ msgid "Optional Features"
 msgstr "Необов'язкові можливості"
 
 #: modules/webxr/webxr_interface.cpp
+#, fuzzy
 msgid "Requested Reference Space Types"
-msgstr ""
+msgstr "Запитані типи довідкового простору"
 
 #: modules/webxr/webxr_interface.cpp
+#, fuzzy
 msgid "Reference Space Type"
-msgstr ""
+msgstr "Довідка типу простору"
 
 #: modules/webxr/webxr_interface.cpp
 msgid "Visibility State"
@@ -18335,7 +18333,7 @@ msgstr "Стандартна прив'язка XR"
 
 #: platform/android/export/export.cpp
 msgid "Android SDK Path"
-msgstr ""
+msgstr "Шлях Android SDK"
 
 #: platform/android/export/export.cpp
 msgid "Debug Keystore"
@@ -18358,8 +18356,9 @@ msgid "Shutdown ADB On Exit"
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp
+#, fuzzy
 msgid "Launcher Icons"
-msgstr ""
+msgstr "Значки панелі запуску"
 
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
@@ -18367,12 +18366,14 @@ msgid "Main 192 X 192"
 msgstr "iPhone 120 X 120"
 
 #: platform/android/export/export_plugin.cpp
+#, fuzzy
 msgid "Adaptive Foreground 432 X 432"
-msgstr ""
+msgstr "адаптивний передній план 432 x 432"
 
 #: platform/android/export/export_plugin.cpp
+#, fuzzy
 msgid "Adaptive Background 432 X 432"
-msgstr ""
+msgstr "адаптивний задній план(фон) 432 x 432"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Package name is missing."
@@ -18447,8 +18448,9 @@ msgid "Release Password"
 msgstr "Пароль випуску"
 
 #: platform/android/export/export_plugin.cpp
+#, fuzzy
 msgid "One Click Deploy"
-msgstr ""
+msgstr "Розгортання в один клік"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Clear Previous Install"
@@ -18729,10 +18731,13 @@ msgid "\"Min SDK\" should be a valid integer, but got \"%s\" which is invalid."
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp
+#, fuzzy
 msgid ""
 "\"Min SDK\" cannot be lower than %d, which is the version needed by the "
 "Godot library."
 msgstr ""
+"\"Min SDK\" не може бути нижчим за %d, що є версією, необхідною для "
+"бібліотеки Godot."
 
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
@@ -18743,15 +18748,20 @@ msgstr ""
 "збирання»."
 
 #: platform/android/export/export_plugin.cpp
+#, fuzzy
 msgid ""
 "\"Target SDK\" should be a valid integer, but got \"%s\" which is invalid."
 msgstr ""
+"\"Target SDK\" має бути дійсним цілим числом, але отримано \"%s\", яке не є "
+"дійсним."
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
 "\"Target SDK\" %d is higher than the default version %d. This may work, but "
 "wasn't tested and may be unstable."
 msgstr ""
+"\"Target SDK\" %d вищий за стандартну версію %d. Це може працювати, але це "
+"не було перевірено та може бути нестабільним."
 
 #: platform/android/export/export_plugin.cpp
 #, fuzzy
@@ -18930,8 +18940,9 @@ msgid "The character '%s' is not allowed in Identifier."
 msgstr "У назві ідентифікатора не можна використовувати символи «%s»."
 
 #: platform/iphone/export/export.cpp
+#, fuzzy
 msgid "Landscape Launch Screens"
-msgstr ""
+msgstr "Альбомні екрани запуску"
 
 #: platform/iphone/export/export.cpp
 #, fuzzy
@@ -18954,8 +18965,9 @@ msgid "iPad 2048 X 1536"
 msgstr "iPad 152 X 152"
 
 #: platform/iphone/export/export.cpp
+#, fuzzy
 msgid "Portrait Launch Screens"
-msgstr ""
+msgstr "Портретні початкові екрани"
 
 #: platform/iphone/export/export.cpp
 #, fuzzy
@@ -18994,15 +19006,16 @@ msgstr "iPhone 120 X 120"
 
 #: platform/iphone/export/export.cpp
 msgid "App Store Team ID"
-msgstr ""
+msgstr "Ідентифікатор команди App Store"
 
 #: platform/iphone/export/export.cpp
+#, fuzzy
 msgid "Provisioning Profile UUID Debug"
-msgstr ""
+msgstr "Налагодження профілю UUID"
 
 #: platform/iphone/export/export.cpp
 msgid "Code Sign Identity Debug"
-msgstr ""
+msgstr "Налагодження ідентифікації коду"
 
 #: platform/iphone/export/export.cpp
 msgid "Export Method Debug"

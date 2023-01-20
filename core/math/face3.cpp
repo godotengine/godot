@@ -120,36 +120,6 @@ bool Face3::is_degenerate() const {
 	return (normal.length_squared() < (real_t)CMP_EPSILON2);
 }
 
-Face3::Side Face3::get_side_of(const Face3 &p_face, ClockDirection p_clock_dir) const {
-	int over = 0, under = 0;
-
-	Plane plane = get_plane(p_clock_dir);
-
-	for (int i = 0; i < 3; i++) {
-		const Vector3 &v = p_face.vertex[i];
-
-		if (plane.has_point(v)) { //coplanar, don't bother
-			continue;
-		}
-
-		if (plane.is_point_over(v)) {
-			over++;
-		} else {
-			under++;
-		}
-	}
-
-	if (over > 0 && under == 0) {
-		return SIDE_OVER;
-	} else if (under > 0 && over == 0) {
-		return SIDE_UNDER;
-	} else if (under == 0 && over == 0) {
-		return SIDE_COPLANAR;
-	} else {
-		return SIDE_SPANNING;
-	}
-}
-
 Vector3 Face3::get_random_point_inside() const {
 	real_t a = Math::random(0.0, 1.0);
 	real_t b = Math::random(0.0, 1.0);
@@ -164,18 +134,8 @@ Plane Face3::get_plane(ClockDirection p_dir) const {
 	return Plane(vertex[0], vertex[1], vertex[2], p_dir);
 }
 
-Vector3 Face3::get_median_point() const {
-	return (vertex[0] + vertex[1] + vertex[2]) / 3.0f;
-}
-
 real_t Face3::get_area() const {
 	return vec3_cross(vertex[0] - vertex[1], vertex[0] - vertex[2]).length() * 0.5f;
-}
-
-ClockDirection Face3::get_clock_dir() const {
-	Vector3 normal = vec3_cross(vertex[0] - vertex[1], vertex[0] - vertex[2]);
-	//printf("normal is %g,%g,%g x %g,%g,%g- wtfu is %g\n",tofloat(normal.x),tofloat(normal.y),tofloat(normal.z),tofloat(vertex[0].x),tofloat(vertex[0].y),tofloat(vertex[0].z),tofloat( normal.dot( vertex[0] ) ) );
-	return (normal.dot(vertex[0]) >= 0) ? CLOCKWISE : COUNTERCLOCKWISE;
 }
 
 bool Face3::intersects_aabb(const AABB &p_aabb) const {

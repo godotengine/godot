@@ -109,8 +109,8 @@ public:
 	String get_attribute_name(int p_idx) const;
 	String get_attribute_value(int p_idx) const;
 	bool has_attribute(const String &p_name) const;
-	String get_attribute_value(const String &p_name) const;
-	String get_attribute_value_safe(const String &p_name) const; // do not print error if doesn't exist
+	String get_named_attribute_value(const String &p_name) const;
+	String get_named_attribute_value_safe(const String &p_name) const; // do not print error if doesn't exist
 	bool is_empty() const;
 	int get_current_line() const;
 
