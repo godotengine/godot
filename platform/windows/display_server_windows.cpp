@@ -3513,6 +3513,7 @@ void DisplayServerWindows::_process_activate_event(WindowID p_window_id, WPARAM 
 		alt_mem = false;
 		control_mem = false;
 		shift_mem = false;
+		gr_mem = false;
 
 		// Restore mouse mode.
 		_set_mouse_mode_impl(mouse_mode);
