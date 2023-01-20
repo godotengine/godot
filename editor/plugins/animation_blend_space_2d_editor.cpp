@@ -74,7 +74,6 @@ void AnimationNodeBlendSpace2DEditor::edit(const Ref<AnimationNode> &p_node) {
 	}
 
 	tool_create->set_disabled(read_only);
-	interpolation->set_disabled(read_only);
 	max_x_value->set_editable(!read_only);
 	min_x_value->set_editable(!read_only);
 	max_y_value->set_editable(!read_only);
