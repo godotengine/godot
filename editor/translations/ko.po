@@ -29,7 +29,7 @@
 # 신동규 <rlsl0422@gmail.com>, 2021.
 # Kiroo <elusive1102@naver.com>, 2021.
 # JumpJetAvocado <dwkng@jbnu.ac.kr>, 2021.
-# Lee Minhak <minarihak@gmail.com>, 2022.
+# Lee Minhak <minarihak@gmail.com>, 2022, 2023.
 # 한수현 <shh1473@ajou.ac.kr>, 2022.
 # Taehun Yun <yooontehoon@naver.com>, 2022.
 # vrSono <global.sonogong@gmail.com>, 2022.
@@ -41,13 +41,14 @@
 # nulltable <un5450@naver.com>, 2022.
 # Godoto <aicompose@gmail.com>, 2022.
 # gaenyang <gaenyang@outlook.com>, 2022.
+# 오지훈 <jule1130@naver.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-10-24 12:41+0000\n"
-"Last-Translator: Godoto <aicompose@gmail.com>\n"
+"PO-Revision-Date: 2023-01-20 10:19+0000\n"
+"Last-Translator: 오지훈 <jule1130@naver.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
 "Language: ko\n"
@@ -55,7 +56,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.14.2-dev\n"
+"X-Generator: Weblate 4.15.1\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -582,7 +583,7 @@ msgstr "이름"
 #: modules/visual_script/visual_script_nodes.cpp platform/uwp/export/export.cpp
 #: platform/windows/export/export.cpp
 msgid "Description"
-msgstr "서술"
+msgstr "설명"
 
 #: core/project_settings.cpp editor/editor_node.cpp editor/editor_settings.cpp
 #: editor/plugins/script_editor_plugin.cpp editor/project_manager.cpp
@@ -10886,7 +10887,7 @@ msgstr "후면 원근"
 msgid " [auto]"
 msgstr " [자동]"
 
-#. TRANSLATORS: This will be appended to the view name when Portal Occulusion is enabled.
+#. TRANSLATORS: This will be appended to the view name when Portal Occlusion is enabled.
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid " [portals active]"
 msgstr " [포털 활성]"
@@ -17852,9 +17853,8 @@ msgid "Use Default Args"
 msgstr "디폴트로 재설정"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
-#, fuzzy
 msgid "Validate"
-msgstr "올바른 문자:"
+msgstr "올바른 문자"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 #, fuzzy
@@ -17984,24 +17984,20 @@ msgid "Preload"
 msgstr "새로고침"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Get Index"
-msgstr "Z 인덱스"
+msgstr "인덱스 가져오기"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Set Index"
-msgstr "Z 인덱스"
+msgstr "인덱스 설정"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Global Constant"
-msgstr "상수"
+msgstr "전역 상수"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Class Constant"
-msgstr "상수"
+msgstr "클래스 상수"
 
 #: modules/visual_script/visual_script_nodes.cpp
 #, fuzzy
@@ -18009,24 +18005,21 @@ msgid "Basic Constant"
 msgstr "상수"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Math Constant"
-msgstr "상수"
+msgstr "수학 상수"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Get Engine Singleton"
-msgstr "활성화된 GDNative 싱글톤"
+msgstr "엔진 싱글톤 가져오기"
 
 #: modules/visual_script/visual_script_nodes.cpp
 #, fuzzy
 msgid "Get Scene Node"
-msgstr "시간 탐색 노드"
+msgstr "씬 Node 가져오기"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Get Scene Tree"
-msgstr "씬 트리 편집"
+msgstr "씬 트리 가져오기"
 
 #: modules/visual_script/visual_script_nodes.cpp
 #, fuzzy
@@ -18034,9 +18027,8 @@ msgid "Get Self"
 msgstr "자체"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "CustomNode"
-msgstr "노드 잘라내기"
+msgstr ""
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "Custom node has no _step() method, can't process graph."
@@ -18096,18 +18088,16 @@ msgid "Wait"
 msgstr "대기"
 
 #: modules/visual_script/visual_script_yield_nodes.cpp
-#, fuzzy
 msgid "Next Frame"
-msgstr "프레임 이동"
+msgstr "다음 프레임"
 
 #: modules/visual_script/visual_script_yield_nodes.cpp
-#, fuzzy
 msgid "Next Physics Frame"
-msgstr "물리 프레임 %"
+msgstr "다음 물리 프레임"
 
 #: modules/visual_script/visual_script_yield_nodes.cpp
 msgid "%s sec(s)"
-msgstr ""
+msgstr "%s초"
 
 #: modules/visual_script/visual_script_yield_nodes.cpp scene/main/timer.cpp
 #, fuzzy
@@ -18136,7 +18126,7 @@ msgstr "우선 순위 모드"
 
 #: modules/webrtc/webrtc_data_channel.h
 msgid "WebRTC"
-msgstr ""
+msgstr "WebRTC"
 
 #: modules/webrtc/webrtc_data_channel.h
 msgid "Max Channel In Buffer (KB)"
@@ -18148,12 +18138,12 @@ msgstr ""
 
 #: modules/websocket/websocket_client.cpp
 msgid "Trusted SSL Certificate"
-msgstr ""
+msgstr "신뢰할 수 있는 SSL 인증서"
 
 #: modules/websocket/websocket_macros.h
 #, fuzzy
 msgid "WebSocket Client"
-msgstr "네트워크 프로파일러"
+msgstr "WebSocket 클라이언트"
 
 #: modules/websocket/websocket_macros.h
 msgid "Max In Buffer (KB)"
@@ -18181,13 +18171,12 @@ msgid "Bind IP"
 msgstr ""
 
 #: modules/websocket/websocket_server.cpp
-#, fuzzy
 msgid "Private Key"
-msgstr "물리 키"
+msgstr "개인 키"
 
 #: modules/websocket/websocket_server.cpp platform/javascript/export/export.cpp
 msgid "SSL Certificate"
-msgstr ""
+msgstr "SSL 인증서"
 
 #: modules/websocket/websocket_server.cpp
 #, fuzzy
@@ -18212,8 +18201,9 @@ msgid "Optional Features"
 msgstr "선택적 기능"
 
 #: modules/webxr/webxr_interface.cpp
+#, fuzzy
 msgid "Requested Reference Space Types"
-msgstr ""
+msgstr "요청된 참조 공간 유형"
 
 #: modules/webxr/webxr_interface.cpp
 msgid "Reference Space Type"

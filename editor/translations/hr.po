@@ -8,12 +8,13 @@
 # LeoClose <leoclose575@gmail.com>, 2020, 2021, 2022.
 # Filip <fhomolka@protonmail.com>, 2022.
 # Milo Ivir <mail@milotype.de>, 2022.
+# peter277 <ps2718@hotmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2022-09-27 21:37+0000\n"
-"Last-Translator: Milo Ivir <mail@milotype.de>\n"
+"PO-Revision-Date: 2022-12-21 07:02+0000\n"
+"Last-Translator: peter277 <ps2718@hotmail.com>\n"
 "Language-Team: Croatian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/hr/>\n"
 "Language: hr\n"
@@ -21,7 +22,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.14.1\n"
+"X-Generator: Weblate 4.15.1-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -3432,7 +3433,7 @@ msgstr ""
 
 #: editor/editor_help.cpp
 msgid "Enumerations"
-msgstr ""
+msgstr "Nabrajanja"
 
 #: editor/editor_help.cpp
 msgid "Property Descriptions"
@@ -10824,7 +10825,7 @@ msgstr ""
 msgid " [auto]"
 msgstr ""
 
-#. TRANSLATORS: This will be appended to the view name when Portal Occulusion is enabled.
+#. TRANSLATORS: This will be appended to the view name when Portal Occlusion is enabled.
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid " [portals active]"
 msgstr ""

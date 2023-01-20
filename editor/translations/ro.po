@@ -20,13 +20,15 @@
 # Psynt <nichita@cadvegra.com>, 2022.
 # Ilie Adrian Avramescu <himark1977@protonmail.com>, 2022.
 # Andres Ene <grassiscomplex420@gmail.com>, 2022.
+# Claudiu Ceia <claudiu.ceia@gmail.com>, 2022.
+# Random Videos <istudordanadenis@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-11-22 20:37+0000\n"
-"Last-Translator: Andres Ene <grassiscomplex420@gmail.com>\n"
+"PO-Revision-Date: 2023-01-13 03:04+0000\n"
+"Last-Translator: Random Videos <istudordanadenis@gmail.com>\n"
 "Language-Team: Romanian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ro/>\n"
 "Language: ro\n"
@@ -35,7 +37,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < "
 "20)) ? 1 : 2;\n"
-"X-Generator: Weblate 4.15-dev\n"
+"X-Generator: Weblate 4.15.1-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -66,9 +68,8 @@ msgid "Delta Smoothing"
 msgstr "Netezirea Delta"
 
 #: core/bind/core_bind.cpp
-#, fuzzy
 msgid "Low Processor Usage Mode"
-msgstr "Mod Mutare"
+msgstr "Mod utilizare redusă a procesorului"
 
 #: core/bind/core_bind.cpp
 msgid "Low Processor Usage Mode Sleep (µsec)"
@@ -225,18 +226,16 @@ msgstr "Date"
 #: modules/gdscript/language_server/gdscript_language_server.cpp
 #: modules/webrtc/webrtc_data_channel.h modules/websocket/websocket_macros.h
 #: scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Network"
-msgstr "Analizator Network"
+msgstr "Rețea"
 
 #: core/io/file_access_network.cpp
-#, fuzzy
 msgid "Remote FS"
-msgstr "Ștergeți"
+msgstr "Sistem de fișiere (FS) la distanță"
 
 #: core/io/file_access_network.cpp
 msgid "Page Size"
-msgstr "Marime Pagina"
+msgstr "Mărime Pagina"
 
 #: core/io/file_access_network.cpp
 msgid "Page Read Ahead"
@@ -248,29 +247,27 @@ msgstr "Mod de blocare Activat"
 
 #: core/io/http_client.cpp
 msgid "Connection"
-msgstr "Conexie"
+msgstr "Conexiune"
 
 #: core/io/http_client.cpp
 msgid "Read Chunk Size"
-msgstr ""
+msgstr "Dimensiunea fragmentului de citire"
 
 #: core/io/marshalls.cpp
 msgid "Object ID"
 msgstr "ID Obiect"
 
 #: core/io/multiplayer_api.cpp core/io/packet_peer.cpp
-#, fuzzy
 msgid "Allow Object Decoding"
-msgstr "Activează Onion Skinning"
+msgstr "Permite Decodarea Obiectelor"
 
 #: core/io/multiplayer_api.cpp scene/main/scene_tree.cpp
 msgid "Refuse New Network Connections"
 msgstr "Refuza Conexiuni noi pe retea"
 
 #: core/io/multiplayer_api.cpp scene/main/scene_tree.cpp
-#, fuzzy
 msgid "Network Peer"
-msgstr "Analizator Network"
+msgstr "Peer de Rețea"
 
 #: core/io/multiplayer_api.cpp scene/animation/animation_player.cpp
 msgid "Root Node"
@@ -286,15 +283,15 @@ msgstr "Mod Transfer"
 
 #: core/io/packet_peer.cpp
 msgid "Encode Buffer Max Size"
-msgstr ""
+msgstr "Dimensiunea Maximă a Bufferului de Encodare"
 
 #: core/io/packet_peer.cpp
 msgid "Input Buffer Max Size"
-msgstr ""
+msgstr "Dimensiunea Maximă a Bufferului de Intrare"
 
 #: core/io/packet_peer.cpp
 msgid "Output Buffer Max Size"
-msgstr ""
+msgstr "Dimensiunea Maximă a Bufferului de Ieșire"
 
 #: core/io/packet_peer.cpp
 msgid "Stream Peer"
@@ -302,11 +299,11 @@ msgstr "Fluxul Peer"
 
 #: core/io/stream_peer.cpp
 msgid "Big Endian"
-msgstr ""
+msgstr "Big Endian"
 
 #: core/io/stream_peer.cpp
 msgid "Data Array"
-msgstr ""
+msgstr "Matrice Date"
 
 #: core/io/stream_peer_ssl.cpp
 msgid "Blocking Handshake"
@@ -367,9 +364,8 @@ msgid "Seed"
 msgstr "Semințe"
 
 #: core/math/random_number_generator.cpp
-#, fuzzy
 msgid "State"
-msgstr "Mod Rotație"
+msgstr "State"
 
 #: core/message_queue.cpp
 msgid "Message Queue"
@@ -377,17 +373,15 @@ msgstr "Coada de mesaje"
 
 #: core/message_queue.cpp
 msgid "Max Size (KB)"
-msgstr ""
+msgstr "Dimensiune maximă (KB)"
 
 #: core/os/input.cpp
-#, fuzzy
 msgid "Mouse Mode"
-msgstr "Mod Mutare"
+msgstr "Mod Maus"
 
 #: core/os/input.cpp
-#, fuzzy
 msgid "Use Accumulated Input"
-msgstr "Șterge Intrare(Input)"
+msgstr "Utilizează Intrarea (Input) Acumulată"
 
 #: core/os/input_event.cpp editor/project_settings_editor.cpp
 #: servers/audio_server.cpp
@@ -411,9 +405,8 @@ msgid "Meta"
 msgstr "Meta"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Command"
-msgstr "Comunitate"
+msgstr "Comandă"
 
 #: core/os/input_event.cpp
 #, fuzzy
@@ -444,9 +437,8 @@ msgid "Echo"
 msgstr "Ecou"
 
 #: core/os/input_event.cpp scene/gui/base_button.cpp
-#, fuzzy
 msgid "Button Mask"
-msgstr "Adaugă în Grup"
+msgstr "Mască Buton"
 
 #: core/os/input_event.cpp scene/2d/node_2d.cpp scene/gui/control.cpp
 msgid "Global Position"
@@ -457,9 +449,8 @@ msgid "Factor"
 msgstr "Factor"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Button Index"
-msgstr "Mod În Jur"
+msgstr "Indice Buton"
 
 #: core/os/input_event.cpp
 msgid "Doubleclick"
@@ -498,9 +489,8 @@ msgid "Axis Value"
 msgstr "Valoarea Axei"
 
 #: core/os/input_event.cpp modules/visual_script/visual_script_func_nodes.cpp
-#, fuzzy
 msgid "Index"
-msgstr "Mod În Jur"
+msgstr "Indice"
 
 #: core/os/input_event.cpp editor/project_settings_editor.cpp
 #: modules/visual_script/visual_script_nodes.cpp
@@ -518,29 +508,26 @@ msgid "Delta"
 msgstr "Delta"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Channel"
-msgstr "Schimbați"
+msgstr "Canal"
 
 #: core/os/input_event.cpp main/main.cpp
-#, fuzzy
 msgid "Message"
-msgstr "Sincronizează Modificările Scriptului"
+msgstr "Mesaj"
 
 #: core/os/input_event.cpp
-#, fuzzy
 msgid "Pitch"
-msgstr "Dimensiune:"
+msgstr "Înclinație"
 
 #: core/os/input_event.cpp scene/2d/cpu_particles_2d.cpp
 #: scene/2d/physics_body_2d.cpp scene/3d/cpu_particles.cpp
 #: scene/3d/physics_body.cpp scene/resources/particles_material.cpp
 msgid "Velocity"
-msgstr ""
+msgstr "Viteză (velocity)"
 
 #: core/os/input_event.cpp
 msgid "Instrument"
-msgstr ""
+msgstr "Instrument"
 
 #: core/os/input_event.cpp
 msgid "Controller Number"
@@ -553,19 +540,16 @@ msgstr "Valoarea controlerului"
 #: core/project_settings.cpp editor/editor_node.cpp main/main.cpp
 #: platform/iphone/export/export.cpp platform/osx/export/export.cpp
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Application"
-msgstr "Acțiune"
+msgstr "Aplicație"
 
 #: core/project_settings.cpp main/main.cpp
-#, fuzzy
 msgid "Config"
-msgstr "Configurare Snap"
+msgstr "Configurare"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Project Settings Override"
-msgstr "Setări proiect..."
+msgstr "Suprascriere setări proiect"
 
 #: core/project_settings.cpp core/resource.cpp
 #: editor/animation_track_editor.cpp editor/editor_autoload_settings.cpp
@@ -596,29 +580,27 @@ msgstr "Execută"
 #: core/project_settings.cpp editor/editor_node.cpp
 #: editor/run_settings_dialog.cpp main/main.cpp
 msgid "Main Scene"
-msgstr ""
+msgstr "Scena Principală"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Disable stdout"
-msgstr "Dezactivat"
+msgstr "Dezactivează stdout"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Disable stderr"
-msgstr "Dezactivat"
+msgstr "Dezactivează stderr"
 
 #: core/project_settings.cpp
 msgid "Use Hidden Project Data Directory"
-msgstr ""
+msgstr "Utilizează directorul de date de proiect ascuns"
 
 #: core/project_settings.cpp
 msgid "Use Custom User Dir"
-msgstr ""
+msgstr "Utilizează Director de Utilizator Personalizat"
 
 #: core/project_settings.cpp
 msgid "Custom User Dir Name"
-msgstr ""
+msgstr "Nume de Director de Utilizator Personalizat"
 
 #: core/project_settings.cpp main/main.cpp
 #: platform/javascript/export/export.cpp platform/osx/export/export.cpp
@@ -631,7 +613,7 @@ msgstr "Afișează Tot"
 #: modules/opensimplex/noise_texture.cpp scene/2d/line_2d.cpp
 #: scene/3d/label_3d.cpp scene/gui/text_edit.cpp scene/resources/texture.cpp
 msgid "Width"
-msgstr ""
+msgstr "Lățime"
 
 #: core/project_settings.cpp main/main.cpp modules/csg/csg_shape.cpp
 #: modules/gltf/gltf_node.cpp modules/opensimplex/noise_texture.cpp
@@ -640,21 +622,19 @@ msgstr ""
 #: scene/resources/font.cpp scene/resources/navigation_mesh.cpp
 #: scene/resources/primitive_meshes.cpp scene/resources/texture.cpp
 msgid "Height"
-msgstr ""
+msgstr "Înălțime"
 
 #: core/project_settings.cpp
 msgid "Always On Top"
-msgstr ""
+msgstr "Mereu Deasupra"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Test Width"
-msgstr "Stânga liniară"
+msgstr "Lățime de Test"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Test Height"
-msgstr "Se Testează"
+msgstr "Înălțime de Test"
 
 #: core/project_settings.cpp editor/animation_track_editor.cpp
 #: editor/editor_audio_buses.cpp main/main.cpp servers/audio_server.cpp
@@ -662,9 +642,8 @@ msgid "Audio"
 msgstr "Sunet"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Default Bus Layout"
-msgstr "Încarcă Schema de Pistă Audio implicită."
+msgstr "Schema de Pistă Audio Implicită"
 
 #: core/project_settings.cpp editor/editor_export.cpp
 #: editor/editor_file_system.cpp editor/editor_node.cpp
@@ -687,73 +666,64 @@ msgstr "Căutare în extensii de fișiere"
 
 #: core/project_settings.cpp
 msgid "Script Templates Search Path"
-msgstr ""
+msgstr "Cale de Căutare pentru Șabloane de Scripturi"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Version Control Autoload On Startup"
-msgstr "Control versiune"
+msgstr "Încărcare Automată de Control al Versiunii la Pornire"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "Version Control Plugin Name"
-msgstr "Control versiune"
+msgstr "Numele Pluginului de Control al Versiunii"
 
 #: core/project_settings.cpp scene/2d/collision_object_2d.cpp
 #: scene/3d/collision_object.cpp scene/gui/control.cpp
-#, fuzzy
 msgid "Input"
-msgstr "Adaugă Intrare(Input)"
+msgstr "Intrare (Input)"
 
 #: core/project_settings.cpp
 msgid "UI Accept"
-msgstr ""
+msgstr "Acceptare (UI)"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Select"
-msgstr "Selectează"
+msgstr "Selectează (UI)"
 
 #: core/project_settings.cpp
 msgid "UI Cancel"
-msgstr "Anulare interfață utilizator"
+msgstr "Anulare (UI)"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Focus Next"
-msgstr "Cale focalizare"
+msgstr "Focalizează Urmatorul (UI)"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Focus Prev"
-msgstr "Cale focalizare"
+msgstr "Focalizează Anteriorul (UI)"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Left"
-msgstr "Mod Rotație"
+msgstr "Stânga (UI)"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Right"
-msgstr "Rotație poligon"
+msgstr "Dreapta (UI)"
 
 #: core/project_settings.cpp
 msgid "UI Up"
-msgstr ""
+msgstr "Sus (UI)"
 
 #: core/project_settings.cpp
-#, fuzzy
 msgid "UI Down"
-msgstr "Descarcă"
+msgstr "JUos (UI)"
 
 #: core/project_settings.cpp
 msgid "UI Page Up"
-msgstr "Pagina UI în sus"
+msgstr "Pagina Ssus (UI)"
 
 #: core/project_settings.cpp
 msgid "UI Page Down"
-msgstr ""
+msgstr "Pagină Jos (UI)"
 
 #: core/project_settings.cpp
 msgid "UI Home"
@@ -783,7 +753,7 @@ msgstr "Cadru Fizic %"
 #: scene/3d/physics_body.cpp scene/resources/world.cpp
 #: servers/physics/space_sw.cpp servers/physics_server.cpp
 msgid "3D"
-msgstr ""
+msgstr "3D"
 
 #: core/project_settings.cpp
 #, fuzzy
@@ -800,7 +770,7 @@ msgstr "Creează un Frate de Coliziune Trimesh"
 #: scene/main/viewport.cpp servers/visual/visual_server_scene.cpp
 #: servers/visual_server.cpp
 msgid "Rendering"
-msgstr ""
+msgstr "Randare"
 
 #: core/project_settings.cpp drivers/gles2/rasterizer_storage_gles2.cpp
 #: drivers/gles3/rasterizer_scene_gles3.cpp
@@ -850,17 +820,16 @@ msgid "Max Functions"
 msgstr "Faceți Funcția"
 
 #: core/project_settings.cpp scene/3d/vehicle_body.cpp
-#, fuzzy
 msgid "Compression"
-msgstr "Setare expresie"
+msgstr "Compresie"
 
 #: core/project_settings.cpp
 msgid "Formats"
-msgstr ""
+msgstr "Formate"
 
 #: core/project_settings.cpp
 msgid "Zstd"
-msgstr ""
+msgstr "Zstd"
 
 #: core/project_settings.cpp
 msgid "Long Distance Matching"
@@ -905,11 +874,11 @@ msgstr "Pachet Peer Stream"
 
 #: core/register_core_types.cpp
 msgid "Max Buffer (Power of 2)"
-msgstr ""
+msgstr "Buffer Maxim (Putere de-a lui 2)"
 
 #: core/register_core_types.cpp editor/editor_settings.cpp main/main.cpp
 msgid "SSL"
-msgstr ""
+msgstr "SSL"
 
 #: core/register_core_types.cpp main/main.cpp
 #, fuzzy
@@ -941,7 +910,7 @@ msgstr "Resursă"
 
 #: core/translation.cpp editor/project_settings_editor.cpp
 msgid "Locale"
-msgstr ""
+msgstr "Local"
 
 #: core/translation.cpp
 #, fuzzy
@@ -986,17 +955,17 @@ msgstr "EiB"
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 #: drivers/gles3/rasterizer_storage_gles3.cpp modules/gltf/gltf_state.cpp
 msgid "Buffers"
-msgstr ""
+msgstr "Buffere"
 
 #: drivers/gles2/rasterizer_canvas_base_gles2.cpp
 #: drivers/gles3/rasterizer_canvas_base_gles3.cpp
 msgid "Canvas Polygon Buffer Size (KB)"
-msgstr ""
+msgstr "Dimensiune Buffer Poligon de Canvas (KB)"
 
 #: drivers/gles2/rasterizer_canvas_base_gles2.cpp
 #: drivers/gles3/rasterizer_canvas_base_gles3.cpp
 msgid "Canvas Polygon Index Buffer Size (KB)"
-msgstr ""
+msgstr "Dimensiune Indice Buffer Poligon de Canvas (KB)"
 
 #: drivers/gles2/rasterizer_canvas_base_gles2.cpp
 #: drivers/gles3/rasterizer_canvas_base_gles3.cpp editor/editor_settings.cpp
@@ -1040,11 +1009,11 @@ msgstr "Utilizarea eșantionării bicubice"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Max Renderable Elements"
-msgstr ""
+msgstr "Numărul Maxim de Elemente Care se Pot Randa"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Max Renderable Lights"
-msgstr ""
+msgstr "Numărul Maxim de Lumini Care se Pot Randa"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 #, fuzzy
@@ -1053,7 +1022,7 @@ msgstr "Centrează Selecția"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Max Lights Per Object"
-msgstr ""
+msgstr "Numărul Maxim de Lumini per Obiect"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Subsurface Scattering"
@@ -1087,7 +1056,7 @@ msgstr ""
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp scene/resources/environment.cpp
 msgid "High Quality"
-msgstr ""
+msgstr "Calitate Înaltă"
 
 #: drivers/gles3/rasterizer_storage_gles3.cpp
 msgid "Blend Shape Max Buffer Size (KB)"
@@ -1190,7 +1159,7 @@ msgstr "Rotație"
 #: editor/animation_track_editor.cpp editor/script_editor_debugger.cpp
 #: modules/visual_script/visual_script_nodes.cpp scene/gui/range.cpp
 msgid "Value"
-msgstr ""
+msgstr "Valoare"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -1200,14 +1169,14 @@ msgstr "Cantitate:"
 #: editor/animation_track_editor.cpp main/main.cpp
 #: modules/mono/mono_gd/gd_mono.cpp
 msgid "Args"
-msgstr ""
+msgstr "Argumente"
 
 #: editor/animation_track_editor.cpp editor/editor_settings.cpp
 #: editor/script_editor_debugger.cpp modules/gltf/gltf_accessor.cpp
 #: modules/gltf/gltf_light.cpp modules/visual_script/visual_script_nodes.cpp
 #: scene/3d/physics_body.cpp scene/resources/visual_shader_nodes.cpp
 msgid "Type"
-msgstr ""
+msgstr "Tip"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -1380,7 +1349,7 @@ msgstr "Dimensiune:"
 #: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Type:"
-msgstr ""
+msgstr "Tip:"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -1646,7 +1615,7 @@ msgstr "Anim Mutați Cheie"
 #: servers/camera/camera_feed.cpp servers/physics_2d_server.cpp
 #: servers/physics_server.cpp
 msgid "Transform"
-msgstr ""
+msgstr "Transformă"
 
 #: editor/animation_track_editor.cpp editor/editor_help.cpp
 msgid "Methods"
@@ -2667,7 +2636,7 @@ msgstr "Nume nevalid."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Cannot begin with a digit."
-msgstr ""
+msgstr "Nu poate începe cu o cifră"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Valid characters:"
@@ -2949,7 +2918,7 @@ msgstr "Culoare uniformă."
 
 #: editor/editor_export.cpp
 msgid "64 Bits"
-msgstr ""
+msgstr "64 de biți"
 
 #: editor/editor_export.cpp
 msgid "Embed PCK"
@@ -3207,6 +3176,8 @@ msgstr "Opțiunii Extra:"
 #: editor/editor_feature_profile.cpp
 msgid "Create or import a profile to edit available classes and properties."
 msgstr ""
+"Creează sau importă un profil pentru a edita clasele si proprietățile "
+"disponibile"
 
 #: editor/editor_feature_profile.cpp
 msgid "New profile name:"
@@ -3347,7 +3318,7 @@ msgstr "Comutați Fișiere Ascunse"
 
 #: editor/editor_file_dialog.cpp
 msgid "Disable Overwrite Warning"
-msgstr ""
+msgstr "Opreste suprascrierea avertizărilor"
 
 #: editor/editor_file_dialog.cpp
 msgid "Go Back"
@@ -3496,7 +3467,7 @@ msgstr "Proprietățile Temei"
 #: scene/2d/cpu_particles_2d.cpp scene/3d/cpu_particles.cpp
 #: scene/resources/gradient.cpp
 msgid "Colors"
-msgstr ""
+msgstr "Culori"
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Constants"
@@ -3504,16 +3475,16 @@ msgstr "Constante"
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
 msgid "Fonts"
-msgstr ""
+msgstr "Fonturi"
 
 #: editor/editor_help.cpp editor/plugins/theme_editor_plugin.cpp
 #: platform/iphone/export/export.cpp
 msgid "Icons"
-msgstr ""
+msgstr "Icoană"
 
 #: editor/editor_help.cpp
 msgid "Styles"
-msgstr ""
+msgstr "Stiluri"
 
 #: editor/editor_help.cpp
 msgid "Enumerations"
@@ -3645,7 +3616,7 @@ msgstr "Proprietate:"
 
 #: editor/editor_inspector.cpp editor/editor_spin_slider.cpp
 msgid "Label"
-msgstr ""
+msgstr "Etichetă"
 
 #: editor/editor_inspector.cpp editor/editor_spin_slider.cpp
 #: scene/resources/default_theme/default_theme.cpp
@@ -4213,14 +4184,14 @@ msgid "Unable to load addon script from path: '%s'."
 msgstr "Nu a putut fi încărcat scriptul add-on din calea: '%s'."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "Unable to load addon script from path: '%s'. This might be due to a code "
 "error in that script.\n"
 "Disabling the addon at '%s' to prevent further errors."
 msgstr ""
 "Imposibil de încărcat scriptul addon din cale: '%s' Se pare că există o "
-"eroare în cod, verificați sintaxa."
+"eroare în cod, verificați sintaxa.\n"
+"Dezactivez addon-ul de la '%s' pentru a preveni erori ulterioare."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -7317,9 +7288,8 @@ msgid "Generating Lightmaps"
 msgstr "Se Genereaza Lightmaps"
 
 #: editor/import/resource_importer_scene.cpp
-#, fuzzy
 msgid "Generating for Mesh:"
-msgstr "Se Generează pentru Mesh: "
+msgstr "Se Generează pentru Mesh:"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Running Custom Script..."
@@ -8967,36 +8937,32 @@ msgid "Center Top"
 msgstr "Centrează Selecția"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Center Right"
-msgstr "Rotație poligon"
+msgstr "Centrează Dreapta"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Center Bottom"
-msgstr "Centrează Selecția"
+msgstr "Centrează Jos"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center"
-msgstr ""
+msgstr "Centrează"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Left Wide"
-msgstr "Stânga liniară"
+msgstr "Stânga Lat"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Top Wide"
-msgstr ""
+msgstr "Sus Lat"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Right Wide"
-msgstr "Dreapta liniară"
+msgstr "Dreapta Lat"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Bottom Wide"
-msgstr ""
+msgstr "Jos Lat"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "VCenter Wide"
@@ -9032,6 +8998,9 @@ msgid ""
 "Project Camera Override\n"
 "Overrides the running project's camera with the editor viewport camera."
 msgstr ""
+"Suprascrierea Camerei de Proiect\n"
+"Suprascrie camera proiectului care rulează cu camera de vizualizare a "
+"editorului."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -9040,48 +9009,45 @@ msgid ""
 "No project instance running. Run the project from the editor to use this "
 "feature."
 msgstr ""
+"Suprascrierea Camerei de Proiect\n"
+"Nicio instanță de proiect nu rulează. Rulați proiectul din editor pentru a "
+"utiliza această caracteristică."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Lock Selected"
-msgstr "Selectează"
+msgstr "Blochează Selecția"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Unlock Selected"
-msgstr ""
+msgstr "Deblochează Selecția"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Group Selected"
-msgstr "Elminați Selecția"
+msgstr "Grupează Selecția"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Ungroup Selected"
-msgstr "Elminați Selecția"
+msgstr "Degrupați selecția"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Paste Pose"
 msgstr "Lipește Postura"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Clear Guides"
-msgstr "Curăță Postura"
+msgstr "Elimină Ghidurile"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Create Custom Bone(s) from Node(s)"
-msgstr "Creează Puncte de Emisie Din Mesh"
+msgstr "Crează Oase personalizate din Noduri"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Clear Bones"
-msgstr "Curăță Postura"
+msgstr "Elimină Oase"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Make IK Chain"
@@ -9112,36 +9078,31 @@ msgstr "Selectare mod"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Drag: Rotate selected node around pivot."
-msgstr "Ștergeți pista selectată."
+msgstr "Trage: Rotește nodul selectat în jurul pivotului."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Alt+Drag: Move selected node."
-msgstr "Alt+Trage: Mutare"
+msgstr "Alt+Trage: Mută nodul selectat."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Alt+Drag: Scale selected node."
-msgstr "Alt+Trage: Mutare"
+msgstr "Alt+Trage: Scalează nodul selectat."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "V: Set selected node's pivot position."
-msgstr "Ștergeți pista selectată."
+msgstr "V: Setează poziția pivotului nodului selectat."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
 msgstr ""
-"Arată o listă a tuturor obiectelor la poziția clickului\n"
-"(similar cu Alt+RMB în modul selectare)."
+"Alt+RMB: Arată o listă a tuturor nodurilor la poziția clickului, inclusiv "
+"cele blocate."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "RMB: Add node at position clicked."
-msgstr ""
+msgstr "RMB: Adaugă nod la poziția clickului."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -9155,13 +9116,12 @@ msgstr "Mod Rotație"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Scale Mode"
-msgstr "Mod Redimensionare (R)"
+msgstr "Mod Redimensionare"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Shift: Scale proportionally."
-msgstr ""
+msgstr "Shift: Redimensionare proporțională."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -9189,21 +9149,18 @@ msgid "Toggle smart snapping."
 msgstr "Comutați fixarea inteligentă."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Use Smart Snap"
-msgstr "Utilizează Snap"
+msgstr "Utilizează Snap Inteligent"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Toggle grid snapping."
 msgstr "Comutare grilă fixare."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Use Grid Snap"
-msgstr "Snap Grilă"
+msgstr "Utilizează Snap Grilă"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Snapping Options"
 msgstr "Opțiuni Snapping"
 
@@ -9212,9 +9169,8 @@ msgid "Use Rotation Snap"
 msgstr "Folosește Rotația Snap"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Use Scale Snap"
-msgstr "Utilizează Snap"
+msgstr "Utilizează Snap Redimensionare"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap Relative"
@@ -9225,9 +9181,8 @@ msgid "Use Pixel Snap"
 msgstr "Utilizează Pixel Snap"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Smart Snapping"
-msgstr "Snapping inteligent"
+msgstr "Snapping Inteligent"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -9235,34 +9190,28 @@ msgid "Configure Snap..."
 msgstr "Configurare Snap..."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Snap to Parent"
-msgstr "Snap către părinte"
+msgstr "Snap către Părinte"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Snap to Node Anchor"
-msgstr "Snap către ancora nodului"
+msgstr "Snap către Ancora Nodului"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Snap to Node Sides"
-msgstr "Snap pe fețele nodului"
+msgstr "Snap pe Fețele Nodului"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Snap to Node Center"
-msgstr "Snap către ancora nodului"
+msgstr "Snap către Centrul Nodului"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Snap to Other Nodes"
-msgstr "Snap către alte noduri"
+msgstr "Snap către Alte Noduri"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Snap to Guides"
-msgstr "Snap pe ghizi"
+msgstr "Snap pe Ghiduri"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -9271,9 +9220,8 @@ msgstr "Imobilizează obiectul selectat (nu poate fi mișcat)."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Lock Selected Node(s)"
-msgstr "Selectează"
+msgstr "Blochează Nodurile Selectate"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -9282,9 +9230,8 @@ msgstr "Remobilizează obiectul selectat (poate fi mișcat)."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Unlock Selected Node(s)"
-msgstr "Selectează"
+msgstr "Deblochează Nodurile Selectate"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -9293,9 +9240,8 @@ msgstr "Asigură-te că nu pot fi selectați copiii obiectului."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Group Selected Node(s)"
-msgstr "Elminați Selecția"
+msgstr "Grupează Nodurile Selectate"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -9304,14 +9250,12 @@ msgstr "Restaurează abilitatea copiilor obiectului de a fi selectați."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Ungroup Selected Node(s)"
-msgstr "Elminați Selecția"
+msgstr "Degrupează Nodurile Selectate"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Skeleton Options"
-msgstr "Singleton (Unicat)"
+msgstr "Opțiuni Schelet"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Bones"
@@ -9322,9 +9266,8 @@ msgid "Make Custom Bone(s) from Node(s)"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Clear Custom Bones"
-msgstr "Curăță Oasele"
+msgstr "Curăță Oasele Personalizate"
 
 #. TRANSLATORS: Noun, name of the 2D/3D View menus.
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -9333,23 +9276,20 @@ msgid "View"
 msgstr "Perspectivă"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Show"
-msgstr "Arată Grila"
+msgstr "Arată"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Show When Snapping"
-msgstr "Snapping inteligent"
+msgstr "Arată Când Faci Snap"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Hide"
-msgstr ""
+msgstr "Ascunde"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Toggle Grid"
-msgstr "Comutare mod"
+msgstr "Comutare Grilă"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -9378,7 +9318,7 @@ msgstr "Arată Fereastra de Lucru"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Group And Lock Icons"
-msgstr ""
+msgstr "Arată Pictogramele de Grupare și Blocare"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Center Selection"
@@ -9390,7 +9330,7 @@ msgstr "Încadrează în Ecran Selecția"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Preview Canvas Scale"
-msgstr ""
+msgstr "Previzualizare Scară Canvas"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Layout"
@@ -9421,14 +9361,12 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Auto Insert Key"
-msgstr "Anim Inserați Cheie"
+msgstr "Inserare Automată a Cheii"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Animation Key and Pose Options"
-msgstr "Lungime Animație (în secunde)"
+msgstr "Optiuni pentru Chei Animație și Postură"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key (Existing Tracks)"
@@ -9443,9 +9381,8 @@ msgid "Clear Pose"
 msgstr "Curăță Postura"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Add Node Here"
-msgstr "Adaugă punct"
+msgstr "Adaugă Nod Aici"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
@@ -9467,49 +9404,43 @@ msgstr "Perspectivă Snap"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Zoom to 3.125%"
-msgstr ""
+msgstr "Magnificare la 3.125%"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Zoom to 6.25%"
-msgstr ""
+msgstr "Magnificare la 6.25%"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Zoom to 12.5%"
-msgstr ""
+msgstr "Magnificare la 12.5%"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Zoom to 25%"
-msgstr "Departare"
+msgstr "Magnificare la 25%"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Zoom to 50%"
-msgstr "Departare"
+msgstr "Magnificare la 50%"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Zoom to 100%"
-msgstr "Departare"
+msgstr "Magnificare la 100%"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Zoom to 200%"
-msgstr "Departare"
+msgstr "Magnificare la 200%"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Zoom to 400%"
-msgstr "Departare"
+msgstr "Magnificare la 400%"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Zoom to 800%"
-msgstr "Departare"
+msgstr "Magnificare la 800%"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Zoom to 1600%"
-msgstr ""
+msgstr "Magnificare la 1600%"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Adding %s..."
@@ -9530,9 +9461,8 @@ msgid "Error instancing scene from %s"
 msgstr "Eroare la instanțierea scenei din %s"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Change Default Type"
-msgstr "Schimbă tipul implicit"
+msgstr "Schimbă Tipul Implicit"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
@@ -9543,9 +9473,8 @@ msgstr ""
 "Trage & lasă + Shift: Schimbă tipul nodului"
 
 #: editor/plugins/collision_polygon_editor_plugin.cpp
-#, fuzzy
 msgid "Create Polygon3D"
-msgstr "Crează Poligon"
+msgstr "Crează Poligon3D"
 
 #: editor/plugins/collision_polygon_editor_plugin.cpp
 msgid "Edit Poly"
@@ -9595,7 +9524,7 @@ msgstr "Mască de Emisie"
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Solid Pixels"
-msgstr ""
+msgstr "Pixeli Solizi"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
@@ -9618,9 +9547,8 @@ msgid "Emission Colors"
 msgstr "Culori de Emisie"
 
 #: editor/plugins/cpu_particles_editor_plugin.cpp
-#, fuzzy
 msgid "CPUParticles"
-msgstr "Particule"
+msgstr "ParticuleCPU"
 
 #: editor/plugins/cpu_particles_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
@@ -9667,29 +9595,24 @@ msgid "Load Curve Preset"
 msgstr "Încarcă Presetare a Curbei"
 
 #: editor/plugins/curve_editor_plugin.cpp
-#, fuzzy
 msgid "Add Point"
-msgstr "Adaugă punct"
+msgstr "Adaugă Punct"
 
 #: editor/plugins/curve_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Point"
-msgstr "Elimină punct"
+msgstr "Elimină Punct"
 
 #: editor/plugins/curve_editor_plugin.cpp
-#, fuzzy
 msgid "Left Linear"
-msgstr "Stânga liniară"
+msgstr "Stânga Liniară"
 
 #: editor/plugins/curve_editor_plugin.cpp
-#, fuzzy
 msgid "Right Linear"
-msgstr "Dreapta liniară"
+msgstr "Dreapta Liniară"
 
 #: editor/plugins/curve_editor_plugin.cpp
-#, fuzzy
 msgid "Load Preset"
-msgstr "Încarcă presetare"
+msgstr "Încarcă Presetare"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Remove Curve Point"
@@ -9704,9 +9627,8 @@ msgid "Hold Shift to edit tangents individually"
 msgstr "Ține apăsat Shift pentru a edita individual tangentele"
 
 #: editor/plugins/curve_editor_plugin.cpp
-#, fuzzy
 msgid "Right click to add point"
-msgstr "Click Drept: Ștergere punct"
+msgstr "Click dreapta pentru adăugare punct"
 
 #: editor/plugins/gi_probe_editor_plugin.cpp
 msgid "Bake GI Probe"
@@ -9714,7 +9636,7 @@ msgstr "Procesează Sonda GI"
 
 #: editor/plugins/gradient_editor_plugin.cpp
 msgid "Gradient Edited"
-msgstr ""
+msgstr "Gradient Dditat"
 
 #: editor/plugins/gradient_texture_2d_editor_plugin.cpp
 msgid "Swap GradientTexture2D Fill Points"
@@ -9735,18 +9657,18 @@ msgstr "Comutare mod"
 #: scene/gui/rich_text_label.cpp scene/gui/text_edit.cpp
 #: scene/resources/primitive_meshes.cpp
 msgid "Text"
-msgstr ""
+msgstr "Text"
 
 #: editor/plugins/item_list_editor_plugin.cpp
 #: editor/plugins/tile_set_editor_plugin.cpp main/main.cpp
 #: platform/osx/export/export.cpp platform/windows/export/export.cpp
 #: scene/gui/button.cpp scene/gui/item_list.cpp
 msgid "Icon"
-msgstr ""
+msgstr "Pictogramă"
 
 #: editor/plugins/item_list_editor_plugin.cpp
 msgid "ID"
-msgstr ""
+msgstr "ID"
 
 #: editor/plugins/item_list_editor_plugin.cpp
 #: scene/resources/default_theme/default_theme.cpp
@@ -11288,7 +11210,7 @@ msgstr ""
 msgid " [auto]"
 msgstr ""
 
-#. TRANSLATORS: This will be appended to the view name when Portal Occulusion is enabled.
+#. TRANSLATORS: This will be appended to the view name when Portal Occlusion is enabled.
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid " [portals active]"
 msgstr ""
@@ -18656,14 +18578,12 @@ msgid "Var Name"
 msgstr "Nume"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "VariableGet not found in script:"
-msgstr "Metoda nu a fost găsită în obiect: "
+msgstr "VariableGet nu a fost găsită în obiect:"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "VariableSet not found in script:"
-msgstr "Metoda nu a fost găsită în obiect: "
+msgstr "Metoda VariableSet nu a fost găsită în obiect:"
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "Preload"
@@ -19354,11 +19274,8 @@ msgid "Signing debug %s..."
 msgstr ""
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Signing release %s..."
-msgstr ""
-"Se Scanează Fișierele,\n"
-"Te Rog Așteaptă..."
+msgstr "Se semnează release-ul %s..."
 
 #: platform/android/export/export_plugin.cpp
 msgid "Could not find keystore, unable to export."
