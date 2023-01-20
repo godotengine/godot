@@ -568,8 +568,6 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 	r_directional_light_count = 0;
 	r_positional_light_count = 0;
 
-	Plane camera_plane(-p_camera_transform.basis.get_column(Vector3::AXIS_Z).normalized(), p_camera_transform.origin);
-
 	omni_light_count = 0;
 	spot_light_count = 0;
 
@@ -720,7 +718,7 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 				}
 
 				Transform3D light_transform = light_instance->transform;
-				const real_t distance = camera_plane.distance_to(light_transform.origin);
+				const real_t distance = p_camera_transform.origin.distance_to(light_transform.origin);
 
 				if (light->distance_fade) {
 					const float fade_begin = light->distance_fade_begin;
@@ -745,7 +743,7 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 				}
 
 				Transform3D light_transform = light_instance->transform;
-				const real_t distance = camera_plane.distance_to(light_transform.origin);
+				const real_t distance = p_camera_transform.origin.distance_to(light_transform.origin);
 
 				if (light->distance_fade) {
 					const float fade_begin = light->distance_fade_begin;
@@ -787,6 +785,7 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 		RS::LightType type = (i < omni_light_count) ? RS::LIGHT_OMNI : RS::LIGHT_SPOT;
 		LightInstance *light_instance = (i < omni_light_count) ? omni_light_sort[index].light_instance : spot_light_sort[index].light_instance;
 		Light *light = (i < omni_light_count) ? omni_light_sort[index].light : spot_light_sort[index].light;
+		real_t distance = (i < omni_light_count) ? omni_light_sort[index].depth : spot_light_sort[index].depth;
 
 		if (using_forward_ids) {
 			forward_id_storage->map_forward_id(type == RS::LIGHT_OMNI ? RendererRD::FORWARD_ID_TYPE_OMNI_LIGHT : RendererRD::FORWARD_ID_TYPE_SPOT_LIGHT, light_instance->forward_id, index);
@@ -803,7 +802,6 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 		float fade_begin = 0.0;
 		float fade_shadow = 0.0;
 		float fade_length = 0.0;
-		real_t distance = 0.0;
 
 		float fade = 1.0;
 		float shadow_opacity_fade = 1.0;
@@ -811,7 +809,6 @@ void LightStorage::update_light_buffers(RenderDataRD *p_render_data, const Paged
 			fade_begin = light->distance_fade_begin;
 			fade_shadow = light->distance_fade_shadow;
 			fade_length = light->distance_fade_length;
-			distance = camera_plane.distance_to(light_transform.origin);
 
 			// Use `smoothstep()` to make opacity changes more gradual and less noticeable to the player.
 			if (distance > fade_begin) {

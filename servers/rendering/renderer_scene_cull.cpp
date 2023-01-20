@@ -694,6 +694,7 @@ void RendererSceneCull::instance_set_base(RID p_instance, RID p_base) {
 				instance->base_data = decal;
 
 				decal->instance = RSG::texture_storage->decal_instance_create(p_base);
+				RSG::texture_storage->decal_instance_set_sorting_offset(decal->instance, instance->sorting_offset);
 			} break;
 			case RS::INSTANCE_LIGHTMAP: {
 				InstanceLightmapData *lightmap_data = memnew(InstanceLightmapData);
@@ -871,6 +872,9 @@ void RendererSceneCull::instance_set_pivot_data(RID p_instance, float p_sorting_
 		InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(instance->base_data);
 		ERR_FAIL_NULL(geom->geometry_instance);
 		geom->geometry_instance->set_pivot_data(p_sorting_offset, p_use_aabb_center);
+	} else if (instance->base_type == RS::INSTANCE_DECAL && instance->base_data) {
+		InstanceDecalData *decal = static_cast<InstanceDecalData *>(instance->base_data);
+		RSG::texture_storage->decal_instance_set_sorting_offset(decal->instance, instance->sorting_offset);
 	}
 }
 
