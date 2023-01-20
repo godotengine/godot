@@ -231,7 +231,6 @@ def configure(env: "Environment"):
 
     if env["opengl3"]:
         env.Append(CPPDEFINES=["GLES_ENABLED", "GLES3_ENABLED"])
-        env.Append(CCFLAGS=["-Wno-deprecated-declarations"])  # Disable deprecation warnings
         env.Append(LINKFLAGS=["-framework", "OpenGL"])
 
     env.Append(LINKFLAGS=["-rpath", "@executable_path/../Frameworks", "-rpath", "@executable_path"])

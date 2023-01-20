@@ -33,6 +33,9 @@
 #ifdef MACOS_ENABLED
 #ifdef GLES3_ENABLED
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations" // OpenGL is deprecated in macOS 10.14
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -231,6 +234,8 @@ GLManager_MacOS::GLManager_MacOS(ContextType p_context_type) {
 GLManager_MacOS::~GLManager_MacOS() {
 	release_current();
 }
+
+#pragma clang diagnostic pop
 
 #endif // GLES3_ENABLED
 #endif // MACOS_ENABLED

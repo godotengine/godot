@@ -41,7 +41,7 @@
 
 - (BOOL)menuHasKeyEquivalent:(NSMenu *)menu forEvent:(NSEvent *)event target:(id *)target action:(SEL *)action {
 	NSString *ev_key = [[event charactersIgnoringModifiers] lowercaseString];
-	NSUInteger ev_modifiers = [event modifierFlags] & NSDeviceIndependentModifierFlagsMask;
+	NSUInteger ev_modifiers = [event modifierFlags] & NSEventModifierFlagDeviceIndependentFlagsMask;
 	for (int i = 0; i < [menu numberOfItems]; i++) {
 		const NSMenuItem *menu_item = [menu itemAtIndex:i];
 		if ([menu_item isEnabled] && [[menu_item keyEquivalent] compare:ev_key] == NSOrderedSame) {
