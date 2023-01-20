@@ -716,7 +716,7 @@ bool OS_UWP::set_environment(const String &p_var, const String &p_value) const {
 	return false;
 }
 
-String OS_UWP::get_stdin_string(bool p_block) {
+String OS_UWP::get_stdin_string() {
 	return String();
 }
 
