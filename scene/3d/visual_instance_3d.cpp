@@ -120,6 +120,12 @@ bool VisualInstance3D::is_sorting_use_aabb_center() const {
 	return sorting_use_aabb_center;
 }
 
+void VisualInstance3D::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "sorting_offset" || p_property.name == "sorting_use_aabb_center") {
+		p_property.usage = PROPERTY_USAGE_NONE;
+	}
+}
+
 void VisualInstance3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_base", "base"), &VisualInstance3D::set_base);
 	ClassDB::bind_method(D_METHOD("get_base"), &VisualInstance3D::get_base);
@@ -435,6 +441,12 @@ PackedStringArray GeometryInstance3D::get_configuration_warnings() const {
 	}
 
 	return warnings;
+}
+
+void GeometryInstance3D::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "sorting_offset" || p_property.name == "sorting_use_aabb_center") {
+		p_property.usage = PROPERTY_USAGE_DEFAULT;
+	}
 }
 
 void GeometryInstance3D::_bind_methods() {

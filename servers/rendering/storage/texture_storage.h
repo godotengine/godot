@@ -127,6 +127,7 @@ public:
 	virtual RID decal_instance_create(RID p_decal) = 0;
 	virtual void decal_instance_free(RID p_decal_instance) = 0;
 	virtual void decal_instance_set_transform(RID p_decal_instance, const Transform3D &p_transform) = 0;
+	virtual void decal_instance_set_sorting_offset(RID p_decal_instance, float p_sorting_offset) = 0;
 
 	/* RENDER TARGET */
 
