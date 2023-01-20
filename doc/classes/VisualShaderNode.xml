@@ -58,13 +58,6 @@
 			Sets the output port index which will be showed for preview. If set to [code]-1[/code] no port will be open for preview.
 		</member>
 	</members>
-	<signals>
-		<signal name="editor_refresh_request">
-			<description>
-				Emitted when the node requests an editor refresh. Currently called only in setter of [member VisualShaderNodeTexture.source], [VisualShaderNodeTexture], and [VisualShaderNodeCubemap] (and their derivatives).
-			</description>
-		</signal>
-	</signals>
 	<constants>
 		<constant name="PORT_TYPE_SCALAR" value="0" enum="PortType">
 			Floating-point scalar. Translated to [code]float[/code] type in shader code.
