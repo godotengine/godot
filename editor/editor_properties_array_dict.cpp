@@ -1009,6 +1009,14 @@ void EditorPropertyDictionary::update_property() {
 					prop = memnew(EditorPropertyRID);
 
 				} break;
+				case Variant::SIGNAL: {
+					prop = memnew(EditorPropertySignal);
+
+				} break;
+				case Variant::CALLABLE: {
+					prop = memnew(EditorPropertyCallable);
+
+				} break;
 				case Variant::OBJECT: {
 					if (Object::cast_to<EncodedObjectAsID>(value)) {
 						EditorPropertyObjectID *editor = memnew(EditorPropertyObjectID);
