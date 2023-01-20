@@ -14,11 +14,10 @@
 		<method name="connect_to_peer">
 			<return type="int" enum="Error" />
 			<param index="0" name="packet_peer" type="PacketPeerUDP" />
-			<param index="1" name="validate_certs" type="bool" default="true" />
-			<param index="2" name="for_hostname" type="String" default="&quot;&quot;" />
-			<param index="3" name="valid_certificate" type="X509Certificate" default="null" />
+			<param index="1" name="hostname" type="String" />
+			<param index="2" name="client_options" type="TLSOptions" default="null" />
 			<description>
-				Connects a [param packet_peer] beginning the DTLS handshake using the underlying [PacketPeerUDP] which must be connected (see [method PacketPeerUDP.connect_to_host]). If [param validate_certs] is [code]true[/code], [PacketPeerDTLS] will validate that the certificate presented by the remote peer and match it with the [param for_hostname] argument. You can specify a custom [X509Certificate] to use for validation via the [param valid_certificate] argument.
+				Connects a [param packet_peer] beginning the DTLS handshake using the underlying [PacketPeerUDP] which must be connected (see [method PacketPeerUDP.connect_to_host]). You can optionally specify the [param client_options] to be used while verifying the TLS connections. See [method TLSOptions.client] and [method TLSOptions.client_unsafe].
 			</description>
 		</method>
 		<method name="disconnect_from_peer">

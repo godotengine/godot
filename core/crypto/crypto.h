@@ -67,6 +67,40 @@ public:
 	virtual Error save(String p_path) = 0;
 };
 
+class TLSOptions : public RefCounted {
+	GDCLASS(TLSOptions, RefCounted);
+
+public:
+	enum TLSVerifyMode {
+		TLS_VERIFY_NONE = 0,
+		TLS_VERIFY_CERT = 1,
+		TLS_VERIFY_FULL = 2,
+	};
+
+private:
+	bool server_mode = false;
+	String common_name;
+	TLSVerifyMode verify_mode = TLS_VERIFY_FULL;
+	Ref<X509Certificate> trusted_ca_chain;
+	Ref<X509Certificate> own_certificate;
+	Ref<CryptoKey> private_key;
+
+protected:
+	static void _bind_methods();
+
+public:
+	static Ref<TLSOptions> client(Ref<X509Certificate> p_trusted_chain = Ref<X509Certificate>(), const String &p_common_name_override = String());
+	static Ref<TLSOptions> client_unsafe(Ref<X509Certificate> p_trusted_chain);
+	static Ref<TLSOptions> server(Ref<CryptoKey> p_own_key, Ref<X509Certificate> p_own_certificate);
+
+	TLSVerifyMode get_verify_mode() const { return verify_mode; }
+	String get_common_name() const { return common_name; }
+	Ref<X509Certificate> get_trusted_ca_chain() const { return trusted_ca_chain; }
+	Ref<X509Certificate> get_own_certificate() const { return own_certificate; }
+	Ref<CryptoKey> get_private_key() const { return private_key; }
+	bool is_server() const { return server_mode; }
+};
+
 class HMACContext : public RefCounted {
 	GDCLASS(HMACContext, RefCounted);
 

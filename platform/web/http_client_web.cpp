@@ -37,20 +37,20 @@ void HTTPClientWeb::_parse_headers(int p_len, const char **p_headers, void *p_re
 	}
 }
 
-Error HTTPClientWeb::connect_to_host(const String &p_host, int p_port, bool p_tls, bool p_verify_host) {
+Error HTTPClientWeb::connect_to_host(const String &p_host, int p_port, Ref<TLSOptions> p_tls_options) {
+	ERR_FAIL_COND_V(p_tls_options.is_valid() && p_tls_options->is_server(), ERR_INVALID_PARAMETER);
+
 	close();
-	if (p_tls && !p_verify_host) {
-		WARN_PRINT("Disabling HTTPClientWeb's host verification is not supported for the Web platform, host will be verified");
-	}
 
 	port = p_port;
-	use_tls = p_tls;
+	use_tls = p_tls_options.is_valid();
 
 	host = p_host;
 
 	String host_lower = host.to_lower();
 	if (host_lower.begins_with("http://")) {
 		host = host.substr(7, host.length() - 7);
+		use_tls = false;
 	} else if (host_lower.begins_with("https://")) {
 		use_tls = true;
 		host = host.substr(8, host.length() - 8);

@@ -58,7 +58,8 @@ void EMWSPeer::_esws_on_close(void *p_obj, int p_code, const char *p_reason, int
 	peer->ready_state = STATE_CLOSED;
 }
 
-Error EMWSPeer::connect_to_url(const String &p_url, bool p_verify_tls, Ref<X509Certificate> p_tls_certificate) {
+Error EMWSPeer::connect_to_url(const String &p_url, Ref<TLSOptions> p_tls_options) {
+	ERR_FAIL_COND_V(p_tls_options.is_valid() && p_tls_options->is_server(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(ready_state != STATE_CLOSED, ERR_ALREADY_IN_USE);
 	_clear();
 
@@ -84,9 +85,6 @@ Error EMWSPeer::connect_to_url(const String &p_url, bool p_verify_tls, Ref<X509C
 
 	if (handshake_headers.size()) {
 		WARN_PRINT_ONCE("Custom headers are not supported in Web platform.");
-	}
-	if (p_tls_certificate.is_valid()) {
-		WARN_PRINT_ONCE("Custom SSL certificates are not supported in Web platform.");
 	}
 
 	requested_url = scheme + host;

@@ -13,10 +13,9 @@
 		<method name="create_client">
 			<return type="int" enum="Error" />
 			<param index="0" name="url" type="String" />
-			<param index="1" name="verify_tls" type="bool" default="true" />
-			<param index="2" name="tls_certificate" type="X509Certificate" default="null" />
+			<param index="1" name="tls_client_options" type="TLSOptions" default="null" />
 			<description>
-				Starts a new multiplayer client connecting to the given [param url]. If [param verify_tls] is [code]false[/code] certificate validation will be disabled. If specified, the [param tls_certificate] will be used to verify the TLS host.
+				Starts a new multiplayer client connecting to the given [param url]. TLS certificates will be verified against the hostname when connecting using the [code]wss://[/code] protocol. You can pass the optional [param tls_client_options] parameter to customize the trusted certification authorities, or disable the common name verification. See [method TLSOptions.client] and [method TLSOptions.client_unsafe].
 				[b]Note[/b]: It is recommended to specify the scheme part of the URL, i.e. the [param url] should start with either [code]ws://[/code] or [code]wss://[/code].
 			</description>
 		</method>
@@ -24,10 +23,9 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="port" type="int" />
 			<param index="1" name="bind_address" type="String" default="&quot;*&quot;" />
-			<param index="2" name="tls_key" type="CryptoKey" default="null" />
-			<param index="3" name="tls_certificate" type="X509Certificate" default="null" />
+			<param index="2" name="tls_server_options" type="TLSOptions" default="null" />
 			<description>
-				Starts a new multiplayer server listening on the given [param port]. You can optionally specify a [param bind_address], and provide a [param tls_key] and [param tls_certificate] to use TLS.
+				Starts a new multiplayer server listening on the given [param port]. You can optionally specify a [param bind_address], and provide valiid [param tls_server_options] to use TLS. See [method TLSOptions.server].
 			</description>
 		</method>
 		<method name="get_peer" qualifiers="const">

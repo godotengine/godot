@@ -68,8 +68,8 @@ private:
 	String url;
 	int port = 80;
 	Vector<String> headers;
-	bool validate_tls = false;
 	bool use_tls = false;
+	Ref<TLSOptions> tls_options;
 	HTTPClient::Method method;
 	Vector<uint8_t> request_data;
 
@@ -125,8 +125,8 @@ protected:
 	static void _bind_methods();
 
 public:
-	Error request(const String &p_url, const Vector<String> &p_custom_headers = Vector<String>(), bool p_tls_validate_domain = true, HTTPClient::Method p_method = HTTPClient::METHOD_GET, const String &p_request_data = ""); //connects to a full url and perform request
-	Error request_raw(const String &p_url, const Vector<String> &p_custom_headers = Vector<String>(), bool p_tls_validate_domain = true, HTTPClient::Method p_method = HTTPClient::METHOD_GET, const Vector<uint8_t> &p_request_data_raw = Vector<uint8_t>()); //connects to a full url and perform request
+	Error request(const String &p_url, const Vector<String> &p_custom_headers = Vector<String>(), HTTPClient::Method p_method = HTTPClient::METHOD_GET, const String &p_request_data = ""); //connects to a full url and perform request
+	Error request_raw(const String &p_url, const Vector<String> &p_custom_headers = Vector<String>(), HTTPClient::Method p_method = HTTPClient::METHOD_GET, const Vector<uint8_t> &p_request_data_raw = Vector<uint8_t>()); //connects to a full url and perform request
 	void cancel_request();
 	HTTPClient::Status get_http_client_status() const;
 
@@ -160,6 +160,8 @@ public:
 
 	void set_http_proxy(const String &p_host, int p_port);
 	void set_https_proxy(const String &p_host, int p_port);
+
+	void set_tls_options(const Ref<TLSOptions> &p_options);
 
 	HTTPRequest();
 };
