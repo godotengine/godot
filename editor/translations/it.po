@@ -73,7 +73,7 @@
 # ale piccia <picciatialessio2@gmail.com>, 2022.
 # Simone Starace <simone.starace93@gmail.com>, 2022.
 # Daniele Giunta <danielegiunta2007@gmail.com>, 2022.
-# Damiano Guida <damiano.guida22@gmail.com>, 2022.
+# Damiano Guida <damiano.guida22@gmail.com>, 2022, 2023.
 # Silvia Scaglione <sissisoad@gmail.com>, 2022.
 # Cosimo Davide Viggiano <cosimod089@gmail.com>, 2022.
 # Francesco Cammarata <francescocammarata.fr@gmail.com>, 2022.
@@ -82,8 +82,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-11-22 20:37+0000\n"
-"Last-Translator: Francesco Cammarata <francescocammarata.fr@gmail.com>\n"
+"PO-Revision-Date: 2023-01-15 13:34+0000\n"
+"Last-Translator: Damiano Guida <damiano.guida22@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
 "Language: it\n"
@@ -91,7 +91,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.15-dev\n"
+"X-Generator: Weblate 4.15.1-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -11031,7 +11031,7 @@ msgstr "Prospettica da dietro"
 msgid " [auto]"
 msgstr " [auto]"
 
-#. TRANSLATORS: This will be appended to the view name when Portal Occulusion is enabled.
+#. TRANSLATORS: This will be appended to the view name when Portal Occlusion is enabled.
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid " [portals active]"
 msgstr " [portali attivi]"
@@ -26477,7 +26477,7 @@ msgstr "Debug del Canale UV"
 
 #: scene/resources/environment.cpp
 msgid "Blur"
-msgstr ""
+msgstr "Sfocatura"
 
 #: scene/resources/environment.cpp
 msgid "Edge Sharpness"

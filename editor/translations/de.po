@@ -23,7 +23,7 @@
 # Peter Friedland <peter_friedland@gmx.de>, 2016.
 # No need for a name <endoplasmatik@gmx.net>, 2016.
 # Sönke <me@eknoes.de>, 2018.
-# So Wieso <sowieso@dukun.de>, 2016-2018, 2019, 2020, 2021, 2022.
+# So Wieso <sowieso@dukun.de>, 2016-2018, 2019, 2020, 2021, 2022, 2023.
 # Tim Schellenberg <smwleod@gmail.com>, 2017.
 # Timo Schwarzer <account@timoschwarzer.com>, 2016-2018.
 # viernullvier <hannes.breul+github@gmail.com>, 2016.
@@ -87,13 +87,14 @@
 # Anonynonymouse <tom.spaine60388@gmail.com>, 2022.
 # Felix Bitsch <felix.a.bitsch@gmail.com>, 2022.
 # miguel <miguel-gonzalez@gmx.de>, 2022.
+# Least Significant Bite <leastsignificantbite@proton.me>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-12-13 13:21+0000\n"
-"Last-Translator: ‎ <artism90@googlemail.com>\n"
+"PO-Revision-Date: 2023-01-09 20:42+0000\n"
+"Last-Translator: So Wieso <sowieso@dukun.de>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot/de/>\n"
 "Language: de\n"
@@ -101,7 +102,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.15-dev\n"
+"X-Generator: Weblate 4.15.1-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -482,7 +483,7 @@ msgstr "Gedrückt"
 
 #: core/os/input_event.cpp
 msgid "Scancode"
-msgstr "Scancode"
+msgstr "Tastencode"
 
 #: core/os/input_event.cpp
 msgid "Physical Scancode"
@@ -3751,7 +3752,7 @@ msgstr "Hoch"
 #: editor/editor_network_profiler.cpp editor/editor_node.cpp
 #: scene/main/node.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Node"
-msgstr "Knoten"
+msgstr "das Node"
 
 #: editor/editor_network_profiler.cpp
 msgid "Incoming RPC"
@@ -11038,7 +11039,7 @@ msgstr "Hinten perspektivisch"
 msgid " [auto]"
 msgstr " [auto]"
 
-#. TRANSLATORS: This will be appended to the view name when Portal Occulusion is enabled.
+#. TRANSLATORS: This will be appended to the view name when Portal Occlusion is enabled.
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid " [portals active]"
 msgstr " [Portale aktiv]"
@@ -14308,17 +14309,15 @@ msgid "Invalid project path (changed anything?)."
 msgstr "Ungültiger Projektpfad (etwas geändert?)."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid ""
 "Couldn't load project at '%s' (error %d). It may be missing or corrupted."
 msgstr ""
-"Die Datei project.godot im Projektpfad konnte nicht geladen werden (Fehler "
-"%d). Sie könnte fehlen oder beschädigt sein."
+"Projekt in ‚%s‘ konnte nicht geladen werden (Fehler %d). Es ist "
+"möglicherweise nicht vorhanden oder beschädigt."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Couldn't save project at '%s' (error %d)."
-msgstr "Projekt in ‚%s‘ kann nicht geöffnet werden."
+msgstr "Projekt konnte nicht in ‚%s‘ gespeichert werden (Fehler %d)."
 
 #: editor/project_manager.cpp
 msgid "Couldn't create project.godot in project path."
@@ -23255,14 +23254,12 @@ msgid "AABB"
 msgstr "AABB"
 
 #: scene/3d/visual_instance.cpp
-#, fuzzy
 msgid "Sorting"
-msgstr "Sortiere"
+msgstr "Sortierung"
 
 #: scene/3d/visual_instance.cpp
-#, fuzzy
 msgid "Use AABB Center"
-msgstr "Ambient verwenden"
+msgstr "AABB-Mittelpunkt verwenden"
 
 #: scene/3d/visual_instance.cpp scene/resources/navigation_mesh.cpp
 msgid "Geometry"

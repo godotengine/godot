@@ -46,13 +46,13 @@
 # Fire Dingo <snowsable113@icloud.com>, 2022.
 # Narazaki Shuji <shujinarazaki@protonmail.com>, 2022.
 # ta ko <neji.cion@gmail.com>, 2022.
-# T K <kidaaam@gmail.com>, 2022.
+# T K <kidaaam@gmail.com>, 2022, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-12-13 13:21+0000\n"
+"PO-Revision-Date: 2023-01-20 10:19+0000\n"
 "Last-Translator: T K <kidaaam@gmail.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
@@ -61,7 +61,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.15-dev\n"
+"X-Generator: Weblate 4.15.1\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -886,7 +886,6 @@ msgid "Connect Timeout Seconds"
 msgstr "接続タイムアウトの秒数"
 
 #: core/register_core_types.cpp
-#, fuzzy
 msgid "Packet Peer Stream"
 msgstr "パケットピアストリーム"
 
@@ -5288,12 +5287,11 @@ msgstr "ダイアログのポップアップ時にエディターを薄暗くす
 
 #: editor/editor_settings.cpp main/main.cpp
 msgid "Low Processor Mode Sleep (µsec)"
-msgstr "低プロセッサ モード スリープ (マイクロ秒)"
+msgstr "省エネモードスリープ時間 (マイクロ秒)"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Unfocused Low Processor Mode Sleep (µsec)"
-msgstr "フォーカスされていない低プロセッサ モード スリープ (マイクロ秒)"
+msgstr "非フォーカス時の省エネモードスリープ時間 (マイクロ秒)"
 
 #: editor/editor_settings.cpp
 msgid "Separate Distraction Mode"
@@ -5346,9 +5344,8 @@ msgid "Border Size"
 msgstr "ボーダーサイズ"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Use Graph Node Headers"
-msgstr "グラフ ノード ヘッダーを使用する"
+msgstr "グラフノードヘッダーを使用する"
 
 #: editor/editor_settings.cpp
 msgid "Additional Spacing"
@@ -5690,9 +5687,8 @@ msgid "Secondary Grid Color"
 msgstr "グリッドのセカンダリの色"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Selection Box Color"
-msgstr "選択範囲のみ"
+msgstr "選択ボックスの色"
 
 #: editor/editor_settings.cpp editor/plugins/path_editor_plugin.cpp
 #: editor/spatial_editor_gizmos.cpp modules/csg/csg_gizmos.cpp
@@ -5795,19 +5791,16 @@ msgid "Emulate 3 Button Mouse"
 msgstr "3ボタンマウスをエミュレート"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Orbit Modifier"
-msgstr "更新日時が古い順で並び替え"
+msgstr "オービット操作の修飾キー"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Pan Modifier"
-msgstr "パンモード"
+msgstr "パン操作の修飾キー"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Zoom Modifier"
-msgstr "変更済み"
+msgstr "ズーム操作の修飾キー"
 
 #: editor/editor_settings.cpp editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
@@ -5815,38 +5808,32 @@ msgid "Warped Mouse Panning"
 msgstr "ワープマウスパンニング"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Navigation Feel"
-msgstr "ナビゲーションモード"
+msgstr "ナビゲーション感度"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Orbit Sensitivity"
-msgstr "軌道感度"
+msgstr "オービット感度"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Orbit Inertia"
-msgstr "軌道慣性"
+msgstr "オービット慣性"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Translation Inertia"
-msgstr "翻訳"
+msgstr "移動の慣性"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Zoom Inertia"
-msgstr "ズームイン"
+msgstr "ズームの慣性"
 
 #: editor/editor_settings.cpp
 msgid "Freelook"
 msgstr "フリールック"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Freelook Navigation Scheme"
-msgstr "ナビゲーションメッシュを生成"
+msgstr "フリールックナビゲーション方式"
 
 #: editor/editor_settings.cpp
 msgid "Freelook Sensitivity"
@@ -5861,14 +5848,12 @@ msgid "Freelook Base Speed"
 msgstr "フリールックの基本速度"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Freelook Activation Modifier"
-msgstr "フリールックの減速調整"
+msgstr "フリールック有効化の修飾キー"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Freelook Speed Zoom Link"
-msgstr "フリールックの速度調整"
+msgstr "フリールックの速度をズーム値にリンク"
 
 #: editor/editor_settings.cpp editor/plugins/tile_map_editor_plugin.cpp
 msgid "Grid Color"
@@ -5915,14 +5900,12 @@ msgid "Viewport Border Color"
 msgstr "ビューポートのボーダーの色"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Constrain Editor View"
-msgstr "エディター ビューを制限"
+msgstr "エディタビューを束縛する"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Simple Panning"
-msgstr "簡易パンニング"
+msgstr "簡易パンニング操作"
 
 #: editor/editor_settings.cpp
 #, fuzzy
@@ -5930,23 +5913,20 @@ msgid "Scroll To Pan"
 msgstr "スクロールしてパンニング"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Pan Speed"
-msgstr "速度:"
+msgstr "パン速度"
 
 #: editor/editor_settings.cpp editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Poly Editor"
 msgstr "ポリゴンエディター"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Point Grab Radius"
-msgstr "ポイントグラブ半径"
+msgstr "ポイントの選択半径"
 
 #: editor/editor_settings.cpp editor/plugins/polygon_2d_editor_plugin.cpp
-#, fuzzy
 msgid "Show Previous Outline"
-msgstr "前の平面"
+msgstr "前のアウトラインを表示する"
 
 #: editor/editor_settings.cpp editor/scene_tree_dock.cpp
 msgid "Autorename Animation Tracks"
@@ -5961,19 +5941,16 @@ msgid "Default Create Reset Tracks"
 msgstr "デフォルトでRESETトラックを作成"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Onion Layers Past Color"
 msgstr "オニオンレイヤー過去の色"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Onion Layers Future Color"
 msgstr "オニオンレイヤー将来の色"
 
 #: editor/editor_settings.cpp
-#, fuzzy
 msgid "Visual Editors"
-msgstr "グループエディター"
+msgstr "ビジュアルエディター"
 
 #: editor/editor_settings.cpp
 msgid "Minimap Opacity"
@@ -6086,29 +6063,24 @@ msgid "Background Color"
 msgstr "背景色"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Completion Background Color"
-msgstr "無効な背景色です。"
+msgstr "補完の背景色"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Completion Selected Color"
-msgstr "選択されたものをインポート"
+msgstr "補完の選択中の色"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Completion Existing Color"
-msgstr "既存の色の補完"
+msgstr "既に補完されている箇所の色"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Completion Scroll Color"
-msgstr "スクロール色の補完"
+msgstr "補完ウインドウのスクロール色"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Completion Font Color"
-msgstr "フォント色の補完"
+msgstr "補完のフォント色"
 
 #: editor/editor_settings.cpp
 msgid "Text Color"
@@ -6135,9 +6107,8 @@ msgid "Text Selected Color"
 msgstr "選択されたテキストの色"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
-#, fuzzy
 msgid "Selection Color"
-msgstr "選択範囲のみ"
+msgstr "選択色"
 
 #: editor/editor_settings.cpp scene/resources/default_theme/default_theme.cpp
 msgid "Brace Mismatch Color"
@@ -7235,14 +7206,12 @@ msgid "Fix Alpha Border"
 msgstr "アルファボーダーを修正"
 
 #: editor/import/resource_importer_texture.cpp
-#, fuzzy
 msgid "Premult Alpha"
-msgstr "ポリゴンを編集"
+msgstr "乗算済みアルファ"
 
 #: editor/import/resource_importer_texture.cpp
-#, fuzzy
 msgid "Hdr As Srgb"
-msgstr "SrgbとしてHdr"
+msgstr "HDRをsRGBとして表示"
 
 #: editor/import/resource_importer_texture.cpp
 msgid "Invert Color"
@@ -10980,7 +10949,7 @@ msgstr "後面 透視投影"
 msgid " [auto]"
 msgstr " [自動]"
 
-#. TRANSLATORS: This will be appended to the view name when Portal Occulusion is enabled.
+#. TRANSLATORS: This will be appended to the view name when Portal Occlusion is enabled.
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid " [portals active]"
 msgstr " [ポータル有効]"
@@ -14136,6 +14105,8 @@ msgid ""
 "Note: Encryption key needs to be stored in the binary,\n"
 "you need to build the export templates from source."
 msgstr ""
+"注:暗号化キーはバイナリに格納する必要があります。\n"
+"ソースからエクスポートテンプレートをビルドする必要があります。"
 
 #: editor/project_export.cpp
 msgid "More Info..."
@@ -14242,17 +14213,15 @@ msgid "Invalid project path (changed anything?)."
 msgstr "無効なプロジェクトパスです (なにか変更がありましたか？)。"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid ""
 "Couldn't load project at '%s' (error %d). It may be missing or corrupted."
 msgstr ""
-"プロジェクトパスの project.godot を読み込めませんでした。 (エラー %d)。見つか"
-"らないか破損している可能性があります。"
+"%s のプロジェクトを読み込めませんでした。 (エラー %d)。見つからないか破損して"
+"いる可能性があります。"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Couldn't save project at '%s' (error %d)."
-msgstr "次の場所のプロジェクトを開けません '%s'。"
+msgstr "プロジェクトを '%s' に保存できませんでした (エラー %d)。"
 
 #: editor/project_manager.cpp
 msgid "Couldn't create project.godot in project path."
@@ -15510,6 +15479,9 @@ msgid ""
 "with the '%s' prefix in a node path.\n"
 "Click to disable this."
 msgstr ""
+"このノードには、ノード パスの先頭に '%s' プレフィックスを付けることで、シーン"
+"内のどこからでもアクセスできます。\n"
+"クリックすると無効になります。"
 
 #: editor/scene_tree_editor.cpp
 msgid ""
@@ -15911,7 +15883,7 @@ msgstr "光源の半径を変更"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Stream Player 3D"
-msgstr ""
+msgstr "ストリームプレイヤー3D"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change AudioStreamPlayer3D Emission Angle"
@@ -15933,7 +15905,7 @@ msgstr "カメラサイズを変更"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Visibility Notifier"
-msgstr ""
+msgstr "可視性通知"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Notifier AABB"
@@ -15941,7 +15913,7 @@ msgstr "NotifierのAABBを変更"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Change Particles AABB"
-msgstr "パーティクルの軸平行境界ボックスを変更"
+msgstr "パーティクルのAABBを変更"
 
 #: editor/spatial_editor_gizmos.cpp
 msgid "Reflection Probe"
@@ -16113,9 +16085,8 @@ msgid "RID Pool Prealloc"
 msgstr "RIDプールの事前割り当て"
 
 #: main/main.cpp
-#, fuzzy
 msgid "Debugger stdout"
-msgstr "デバッガー"
+msgstr "デバッガーの標準出力"
 
 #: main/main.cpp
 msgid "Max Chars Per Second"
@@ -16155,7 +16126,7 @@ msgstr "ログのパス"
 
 #: main/main.cpp
 msgid "Max Log Files"
-msgstr ""
+msgstr "最大ログファイル数"
 
 #: main/main.cpp
 msgid "Driver"
@@ -16195,7 +16166,7 @@ msgstr "ピクセル単位の透明度"
 
 #: main/main.cpp
 msgid "Allowed"
-msgstr ""
+msgstr "許可"
 
 #: main/main.cpp
 msgid "Intended Usage"
@@ -16206,9 +16177,8 @@ msgid "Framebuffer Allocation"
 msgstr "フレームバッファの割り当て"
 
 #: main/main.cpp platform/uwp/os_uwp.cpp
-#, fuzzy
 msgid "Energy Saving"
-msgstr "保存中にエラーが発生しました"
+msgstr "省エネルギー"
 
 #: main/main.cpp
 msgid "Threads"
@@ -16224,32 +16194,29 @@ msgstr "スレッドセーフなBVH"
 
 #: main/main.cpp
 msgid "Handheld"
-msgstr ""
+msgstr "ポータブル"
 
 #: main/main.cpp platform/javascript/export/export.cpp
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Orientation"
-msgstr "オンラインドキュメント"
+msgstr "方向"
 
 #: main/main.cpp scene/gui/scroll_container.cpp scene/gui/text_edit.cpp
 #: scene/main/scene_tree.cpp scene/register_scene_types.cpp
-#, fuzzy
 msgid "Common"
-msgstr "コミュニティ"
+msgstr "一般"
 
 #: main/main.cpp
 msgid "Physics FPS"
 msgstr "物理FPS"
 
 #: main/main.cpp
-#, fuzzy
 msgid "Force FPS"
-msgstr "強制プッシュ"
+msgstr "強制FPS"
 
 #: main/main.cpp
 msgid "Enable Pause Aware Picking"
-msgstr ""
+msgstr "一時停止中の選択認識の有効化"
 
 #: main/main.cpp scene/gui/item_list.cpp scene/gui/popup_menu.cpp
 #: scene/gui/scroll_container.cpp scene/gui/text_edit.cpp scene/gui/tree.cpp
@@ -16287,11 +16254,11 @@ msgstr "フレーム遅延 (ミリ秒)"
 
 #: main/main.cpp
 msgid "Low Processor Mode"
-msgstr ""
+msgstr "低プロセッサモード"
 
 #: main/main.cpp
 msgid "Delta Sync After Draw"
-msgstr ""
+msgstr "描画後のデルタ同期"
 
 #: main/main.cpp
 msgid "iOS"
@@ -16299,7 +16266,7 @@ msgstr "iOS"
 
 #: main/main.cpp
 msgid "Hide Home Indicator"
-msgstr ""
+msgstr "ホームインジケーターを隠す"
 
 #: main/main.cpp
 msgid "Input Devices"
@@ -16322,9 +16289,8 @@ msgid "Shaders"
 msgstr "シェーダー"
 
 #: main/main.cpp
-#, fuzzy
 msgid "Debug Shader Fallbacks"
-msgstr "シェーダーフォールバックを強制"
+msgstr "シェーダーフォールバックのデバッグ"
 
 #: main/main.cpp scene/3d/baked_lightmap.cpp scene/3d/camera.cpp
 #: scene/3d/world_environment.cpp scene/main/scene_tree.cpp
@@ -16334,16 +16300,15 @@ msgstr "環境"
 
 #: main/main.cpp
 msgid "Default Clear Color"
-msgstr ""
+msgstr "デフォルトのクリアー色"
 
 #: main/main.cpp
 msgid "Boot Splash"
 msgstr "ブートスプラッシュ"
 
 #: main/main.cpp
-#, fuzzy
 msgid "Show Image"
-msgstr "ボーンを表示する"
+msgstr "画像を表示"
 
 #: main/main.cpp
 msgid "Image"
@@ -16375,7 +16340,7 @@ msgstr "バッファリング"
 
 #: main/main.cpp
 msgid "Agile Event Flushing"
-msgstr ""
+msgstr "即座にイベントフラッシュ"
 
 #: main/main.cpp
 msgid "Emulate Touch From Mouse"
@@ -16390,13 +16355,12 @@ msgid "Mouse Cursor"
 msgstr "マウスカーソル"
 
 #: main/main.cpp
-#, fuzzy
 msgid "Custom Image"
-msgstr "ノードを切り取る"
+msgstr "カスタムイメージ"
 
 #: main/main.cpp
 msgid "Custom Image Hotspot"
-msgstr ""
+msgstr "カスタムイメージホットスポット"
 
 #: main/main.cpp
 msgid "Tooltip Position Offset"
@@ -16441,12 +16405,11 @@ msgstr "縮小"
 
 #: main/main.cpp scene/main/scene_tree.cpp
 msgid "Auto Accept Quit"
-msgstr ""
+msgstr "プログラム終了を自動的に受け入れる"
 
 #: main/main.cpp scene/main/scene_tree.cpp
-#, fuzzy
 msgid "Quit On Go Back"
-msgstr "戻る"
+msgstr "「戻る」時にプログラム終了する"
 
 #: main/main.cpp scene/main/viewport.cpp
 msgid "Snap Controls To Pixels"
@@ -16462,7 +16425,7 @@ msgstr "オーバーサンプリングを使用"
 
 #: modules/bullet/register_types.cpp modules/bullet/space_bullet.cpp
 msgid "Active Soft World"
-msgstr ""
+msgstr "SoftBodyを有効にする"
 
 #: modules/csg/csg_gizmos.cpp
 msgid "CSG"
@@ -16478,11 +16441,11 @@ msgstr "円柱の高さを変更"
 
 #: modules/csg/csg_gizmos.cpp
 msgid "Change Torus Inner Radius"
-msgstr "トーラスの内径を変更"
+msgstr "トーラスの内半径を変更"
 
 #: modules/csg/csg_gizmos.cpp
 msgid "Change Torus Outer Radius"
-msgstr "トーラスの外径を変更"
+msgstr "トーラスの外半径を変更"
 
 #: modules/csg/csg_shape.cpp
 msgid "Operation"
@@ -16546,14 +16509,12 @@ msgid "Cone"
 msgstr "円錐"
 
 #: modules/csg/csg_shape.cpp
-#, fuzzy
 msgid "Inner Radius"
-msgstr "トーラスの内径を変更"
+msgstr "内半径"
 
 #: modules/csg/csg_shape.cpp
-#, fuzzy
 msgid "Outer Radius"
-msgstr "トーラスの外径を変更"
+msgstr "外半径"
 
 #: modules/csg/csg_shape.cpp
 msgid "Ring Sides"
@@ -16629,17 +16590,16 @@ msgid "Channel Count"
 msgstr "チャンネルの数"
 
 #: modules/enet/networked_multiplayer_enet.cpp
-#, fuzzy
 msgid "Always Ordered"
-msgstr "常にグリッドを表示"
+msgstr "常に順序付けをする"
 
 #: modules/enet/networked_multiplayer_enet.cpp
 msgid "Server Relay"
-msgstr ""
+msgstr "サーバーリレー"
 
 #: modules/enet/networked_multiplayer_enet.cpp
 msgid "DTLS Verify"
-msgstr ""
+msgstr "DTLS 検証"
 
 #: modules/enet/networked_multiplayer_enet.cpp
 msgid "DTLS Hostname"
@@ -18014,17 +17974,16 @@ msgid "in order:"
 msgstr ""
 
 #: modules/visual_script/visual_script_flow_control.cpp
-#, fuzzy
 msgid "Steps"
 msgstr "ステップ"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Switch"
-msgstr ""
+msgstr "スイッチ"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "'input' is:"
-msgstr ""
+msgstr "入力は:"
 
 #: modules/visual_script/visual_script_flow_control.cpp
 msgid "Type Cast"
@@ -18273,14 +18232,12 @@ msgid "Construct %s"
 msgstr "定数"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Get Local Var"
-msgstr "ローカル空間を使用"
+msgstr "ローカル変数を使用"
 
 #: modules/visual_script/visual_script_nodes.cpp
-#, fuzzy
 msgid "Set Local Var"
-msgstr "ローカル空間を使用"
+msgstr "ローカル変数をセット"
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "Action %s"
@@ -19552,9 +19509,8 @@ msgstr "コード署名"
 
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Identity"
-msgstr "インデント"
+msgstr "識別子"
 
 #: platform/osx/export/export.cpp platform/windows/export/export.cpp
 #, fuzzy
@@ -19752,9 +19708,8 @@ msgid ""
 msgstr ""
 
 #: platform/osx/export/export.cpp platform/windows/export/export.cpp
-#, fuzzy
 msgid "No identity found."
-msgstr "アイコンが見つかりませんでした。"
+msgstr "識別子が見つかりませんでした。"
 
 #: platform/osx/export/export.cpp
 #, fuzzy
@@ -19818,6 +19773,8 @@ msgid ""
 "Ad-hoc signed applications require the 'Disable Library Validation' "
 "entitlement to load dynamic libraries."
 msgstr ""
+"アドホック署名付きアプリケーションでは、動的ライブラリを読み込むために「ライ"
+"ブラリ検証を無効にする」の権限が必要です。"
 
 #: platform/osx/export/export.cpp
 msgid "Code signing bundle"
@@ -19848,15 +19805,12 @@ msgid "Sending archive for notarization"
 msgstr "公証をするためにアーカイブを送信中"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "ZIP Creation"
-msgstr "プロジェクト"
+msgstr "ZIP作成"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Could not open file to read from path \"%s\"."
-msgstr ""
-"プロジェクトファイルをgladleプロジェクトにエクスポートできませんでした\n"
+msgstr "パス \"%s\" からファイルを開けませんでした。"
 
 #: platform/osx/export/export.cpp
 msgid "Invalid bundle identifier:"
@@ -19867,12 +19821,17 @@ msgid ""
 "Warning: Built-in \"codesign\" is selected in the Editor Settings. Code "
 "signing is limited to ad-hoc signature only."
 msgstr ""
+"警告: ビルトインの「コード署名」がエディター設定で選択されています。コード署"
+"名はアドホック署名のみに制限されています。"
 
 #: platform/osx/export/export.cpp
 msgid ""
 "Warning: Xcode command line tools are not installed, using built-in "
 "\"codesign\". Code signing is limited to ad-hoc signature only."
 msgstr ""
+"警告: Xcodeのコマンドラインツールがインストールされていないため、ビルトインの"
+"「コード署名」が使用されます。コード署名はアドホック署名のみに制限されていま"
+"す。"
 
 #: platform/osx/export/export.cpp
 msgid "Notarization: Notarization with an ad-hoc signature is not supported."
@@ -19911,17 +19870,19 @@ msgid ""
 "Code signing is disabled. The exported project will not run on Macs with "
 "enabled Gatekeeper and Apple Silicon powered Macs."
 msgstr ""
+"コード署名が無効になっています。エクスポートされたプロジェクトは、Gatekeeper "
+"が有効になっている Mac および Apple Silicon 搭載の Mac では動作しません。"
 
 #: platform/osx/export/export.cpp
 msgid ""
 "Hardened Runtime is not compatible with ad-hoc signature, and will be "
 "disabled!"
-msgstr ""
+msgstr "Hardened Runtime はアドホック署名と互換性がないため、無効になります!"
 
 #: platform/osx/export/export.cpp
 msgid ""
 "Timestamping is not compatible with ad-hoc signature, and will be disabled!"
-msgstr ""
+msgstr "タイムスタンプはアドホック署名と互換性がないため、無効になります!"
 
 #: platform/osx/export/export.cpp
 msgid ""
@@ -19937,34 +19898,46 @@ msgid ""
 "Privacy: Microphone access is enabled, but usage description is not "
 "specified."
 msgstr ""
+"プライバシー: マイクへのアクセスが有効になっていますが、使用方法の説明があり"
+"ません。"
 
 #: platform/osx/export/export.cpp
 msgid ""
 "Privacy: Camera access is enabled, but usage description is not specified."
 msgstr ""
+"プライバシー: カメラへのアクセスが有効になっていますが、使用方法の説明があり"
+"ません。"
 
 #: platform/osx/export/export.cpp
 msgid ""
 "Privacy: Location information access is enabled, but usage description is "
 "not specified."
 msgstr ""
+"プライバシー: 位置情報へのアクセスが有効になっていますが、使用方法の説明があ"
+"りません。"
 
 #: platform/osx/export/export.cpp
 msgid ""
 "Privacy: Address book access is enabled, but usage description is not "
 "specified."
 msgstr ""
+"プライバシー: アドレス帳へのアクセスが有効になっていますが、使用方法の説明が"
+"ありません。"
 
 #: platform/osx/export/export.cpp
 msgid ""
 "Privacy: Calendar access is enabled, but usage description is not specified."
 msgstr ""
+"プライバシー: カレンダーへのアクセスが有効になっていますが、使用方法の説明が"
+"ありません。"
 
 #: platform/osx/export/export.cpp
 msgid ""
 "Privacy: Photo library access is enabled, but usage description is not "
 "specified."
 msgstr ""
+"プライバシー:フォトライブラリへのアクセスが有効になっていますが、使用方法の説"
+"明がありません。"
 
 #: platform/osx/export/export.cpp
 msgid "macOS"
@@ -19972,40 +19945,35 @@ msgstr "macOS"
 
 #: platform/osx/export/export.cpp
 msgid "Force Builtin Codesign"
-msgstr ""
+msgstr "ビルドインコード署名を強制"
 
 #: platform/uwp/export/export.cpp
 msgid "Architecture"
 msgstr "アーキテクチャ"
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Display Name"
-msgstr "表示スケール"
+msgstr "表示名"
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Short Name"
-msgstr "スクリプト名:"
+msgstr "略称"
 
 #: platform/uwp/export/export.cpp
 msgid "Publisher"
-msgstr ""
+msgstr "パブリッシャー"
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Publisher Display Name"
-msgstr "パッケージ発行者の表示名が無効です。"
+msgstr "パブリッシャー表示名"
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Product GUID"
-msgstr "無効なプロダクト GUIDです。"
+msgstr "プロダクト GUID"
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Publisher GUID"
-msgstr "ガイドをクリアする"
+msgstr "パブリッシャー GUID"
 
 #: platform/uwp/export/export.cpp
 msgid "Signing"
@@ -20037,73 +20005,71 @@ msgstr "リビジョン"
 
 #: platform/uwp/export/export.cpp
 msgid "Landscape"
-msgstr ""
+msgstr "ランドスケープ"
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Portrait"
-msgstr "ポート"
+msgstr "ポートレート"
 
 #: platform/uwp/export/export.cpp
 msgid "Landscape Flipped"
-msgstr ""
+msgstr "ランドスケープ反転"
 
 #: platform/uwp/export/export.cpp
 msgid "Portrait Flipped"
-msgstr ""
+msgstr "ポートレート反転"
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Store Logo"
-msgstr "スケールモード"
+msgstr "ストアロゴ"
 
 #: platform/uwp/export/export.cpp
 msgid "Square 44 X 44 Logo"
-msgstr ""
+msgstr "正方形 44 x 44 ロゴ"
 
 #: platform/uwp/export/export.cpp
 msgid "Square 71 X 71 Logo"
-msgstr ""
+msgstr "正方形 71 x 71 ロゴ"
 
 #: platform/uwp/export/export.cpp
 msgid "Square 150 X 150 Logo"
-msgstr ""
+msgstr "正方形 150 x 150 ロゴ"
 
 #: platform/uwp/export/export.cpp
 msgid "Square 310 X 310 Logo"
-msgstr ""
+msgstr "正方形 310 x 310 ロゴ"
 
 #: platform/uwp/export/export.cpp
 msgid "Wide 310 X 150 Logo"
-msgstr ""
+msgstr "ワイド 310 x 150 ロゴ"
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Splash Screen"
-msgstr "ドローコール:"
+msgstr "スプラッシュ・スクリーン"
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Tiles"
-msgstr "ファイル"
+msgstr "タイル"
 
 #: platform/uwp/export/export.cpp
 msgid "Show Name On Square 150 X 150"
-msgstr ""
+msgstr "正方形 150×150 表示名"
 
 #: platform/uwp/export/export.cpp
 msgid "Show Name On Wide 310 X 150"
-msgstr ""
+msgstr "ワイド 310x150 表示名"
 
 #: platform/uwp/export/export.cpp
 msgid "Show Name On Square 310 X 310"
-msgstr ""
+msgstr "正方形 310×310 表示名"
 
 #: platform/uwp/export/export.cpp
 msgid ""
 "Godot's Mono version does not support the UWP platform. Use the standard "
 "build (no C# support) if you wish to target UWP."
 msgstr ""
+"Godot の Mono バージョンは UWP プラットフォームをサポートしていません。UWP を"
+"対象としたい場合は、標準ビルド（C# 非サポート)を使用して下さい。"
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid package short name."
@@ -20169,41 +20135,36 @@ msgid "UWP"
 msgstr "UWP"
 
 #: platform/uwp/export/export.cpp platform/windows/export/export.cpp
-#, fuzzy
 msgid "Signtool"
-msgstr "シグナル"
+msgstr "サインツール"
 
 #: platform/uwp/export/export.cpp
 msgid "Debug Certificate"
-msgstr ""
+msgstr "デバッグ証明書"
 
 #: platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Debug Algorithm"
-msgstr "デバッガー"
+msgstr "デバッグアルゴリズム"
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Failed to rename temporary file \"%s\"."
-msgstr "一時ファイルを削除できません:"
+msgstr "一時ファイル \"%s\" の名前の変更に失敗しました。"
 
 #: platform/windows/export/export.cpp
 msgid "Identity Type"
-msgstr ""
+msgstr "識別子タイプ"
 
 #: platform/windows/export/export.cpp
 msgid "Timestamp Server URL"
-msgstr ""
+msgstr "タイムスタンプサーバーURL"
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Digest Algorithm"
-msgstr "デバッガー"
+msgstr "ダイジェストアルゴリズム"
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Modify Resources"
-msgstr "リソースをコピー"
+msgstr "リソースの変更"
 
 #: platform/windows/export/export.cpp
 msgid "File Version"
@@ -20227,22 +20188,19 @@ msgstr "ファイルの説明"
 
 #: platform/windows/export/export.cpp
 msgid "Trademarks"
-msgstr ""
+msgstr "商標"
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Resources Modification"
-msgstr "ランダムな回転:"
+msgstr "リソースの変更"
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Could not find rcedit executable at \"%s\"."
-msgstr "キーストアが見つからないため、エクスポートできません。"
+msgstr "\"%s\" に rcedit 実行ファイルが見つかりませんでした。"
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Could not find wine executable at \"%s\"."
-msgstr "キーストアが見つからないため、エクスポートできません。"
+msgstr "\"%s\" に wine 実行ファイルが見つかりませんでした。"
 
 #: platform/windows/export/export.cpp
 msgid ""
@@ -20250,31 +20208,29 @@ msgid ""
 "Settings (Export > Windows > Rcedit), or disable \"Application > Modify "
 "Resources\" in the export preset."
 msgstr ""
+"rcedit 実行ファイルを開始できませんでした。エディター設定 (Export > Windows "
+"> Rcedit)から rcedit のパスを設定するか、エクスポートプリセットで \"アプリ"
+"ケーション > リソースの変更\"を無効にして下さい。"
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "rcedit failed to modify executable: %s."
-msgstr "無効な実行可能ファイルです。"
+msgstr "rcedit は実行可能ファイルの変更に失敗しました: %s。"
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Could not find signtool executable at \"%s\"."
-msgstr "キーストアが見つからないため、エクスポートできません。"
+msgstr "\"%s\" に サインツール実行ファイルが見つかりませんでした。"
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Could not find osslsigncode executable at \"%s\"."
-msgstr "キーストアが見つからないため、エクスポートできません。"
+msgstr "\"%s\" に osslsigncode 実行ファイルが見つかりませんでした。"
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Invalid identity type."
-msgstr "無効な識別子:"
+msgstr "無効な識別子タイプ。"
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Invalid timestamp server."
-msgstr "無効な名前です。"
+msgstr "タイムスタンプサーバーが無効です。"
 
 #: platform/windows/export/export.cpp
 msgid ""
@@ -20282,22 +20238,25 @@ msgid ""
 "Settings (Export > Windows > Signtool), or disable \"Codesign\" in the "
 "export preset."
 msgstr ""
+"サインツール実行ファイルを開始できませんでした。エディター設定 (Export > "
+"Windows > サインツール)からサインツールのパスを設定するか、エクスポートプリ"
+"セットで \"コード署名\"を無効にして下さい。"
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Signtool failed to sign executable: %s."
-msgstr "無効な実行可能ファイルです。"
+msgstr "サインツールは実行可能ファイルの署名に失敗しました: %s。"
 
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Failed to remove temporary file \"%s\"."
-msgstr "一時ファイルを削除できません:"
+msgstr "一時ファイル \"%s\" の削除に失敗しました。"
 
 #: platform/windows/export/export.cpp
 msgid ""
 "The rcedit tool must be configured in the Editor Settings (Export > Windows "
 "> Rcedit) to change the icon or app information data."
 msgstr ""
+"アイコンやアプリ情報データを変更するには、エディター設定 (Export > Windows > "
+"Rcedit) で rcedit の設定を行う必要があります。"
 
 #: platform/windows/export/export.cpp
 msgid "Invalid icon path:"
@@ -20313,20 +20272,19 @@ msgstr "無効な製品バージョン:"
 
 #: platform/windows/export/export.cpp
 msgid "Windows executables cannot be >= 4 GiB."
-msgstr ""
+msgstr "Windows の実行ファイルは、4GiBを超えることはできません。"
 
 #: platform/windows/export/export.cpp platform/x11/export/export.cpp
-#, fuzzy
 msgid "Failed to open executable file \"%s\"."
-msgstr "無効な実行可能ファイルです。"
+msgstr "実行ファイル \"%s\" を開くのに失敗しました。"
 
 #: platform/windows/export/export.cpp platform/x11/export/export.cpp
 msgid "Executable file header corrupted."
-msgstr ""
+msgstr "実行ファイルのヘッダーが破損しています。"
 
 #: platform/windows/export/export.cpp platform/x11/export/export.cpp
 msgid "Executable \"pck\" section not found."
-msgstr ""
+msgstr "実行可能な \"pck \"セクションが見つかりません。"
 
 #: platform/windows/export/export.cpp
 msgid "Windows"
@@ -20334,7 +20292,7 @@ msgstr "Windows"
 
 #: platform/windows/export/export.cpp
 msgid "Rcedit"
-msgstr ""
+msgstr "Rcedit"
 
 #: platform/windows/export/export.cpp
 msgid "Osslsigncode"
@@ -20363,21 +20321,18 @@ msgstr ""
 
 #: scene/2d/animated_sprite.cpp scene/2d/cpu_particles_2d.cpp
 #: scene/2d/particles_2d.cpp scene/3d/cpu_particles.cpp scene/3d/particles.cpp
-#, fuzzy
 msgid "Speed Scale"
-msgstr "スケール"
+msgstr "スピードスケール"
 
 #: scene/2d/animated_sprite.cpp scene/2d/audio_stream_player_2d.cpp
 #: scene/3d/audio_stream_player_3d.cpp scene/3d/sprite_3d.cpp
 #: scene/audio/audio_stream_player.cpp
-#, fuzzy
 msgid "Playing"
-msgstr "実行"
+msgstr "実行中"
 
 #: scene/2d/animated_sprite.cpp scene/2d/sprite.cpp scene/3d/sprite_3d.cpp
-#, fuzzy
 msgid "Centered"
-msgstr "中央"
+msgstr "中央揃え"
 
 #: scene/2d/animated_sprite.cpp scene/2d/sprite.cpp scene/3d/sprite_3d.cpp
 #: scene/gui/texture_button.cpp scene/gui/texture_rect.cpp
@@ -20390,52 +20345,45 @@ msgid "Flip V"
 msgstr "垂直反転"
 
 #: scene/2d/area_2d.cpp scene/3d/area.cpp
-#, fuzzy
 msgid "Monitoring"
-msgstr "モニター"
+msgstr "モニタリング"
 
 #: scene/2d/area_2d.cpp scene/3d/area.cpp
-#, fuzzy
 msgid "Monitorable"
-msgstr "モニター"
+msgstr "モニター可能"
 
 #: scene/2d/area_2d.cpp scene/3d/area.cpp
 msgid "Physics Overrides"
 msgstr "物理のオーバーライド"
 
 #: scene/2d/area_2d.cpp scene/3d/area.cpp
-#, fuzzy
 msgid "Space Override"
-msgstr "上書き"
+msgstr "領域のオーバーライド"
 
 #: scene/2d/area_2d.cpp scene/3d/area.cpp
-#, fuzzy
 msgid "Gravity Point"
-msgstr "ポイントを生成"
+msgstr "重力点"
 
 #: scene/2d/area_2d.cpp scene/3d/area.cpp
-#, fuzzy
 msgid "Gravity Distance Scale"
-msgstr "インスタンス"
+msgstr "重力距離スケール"
 
 #: scene/2d/area_2d.cpp scene/3d/area.cpp
-#, fuzzy
 msgid "Gravity Vec"
-msgstr "デフォルトのプレビュー"
+msgstr "重力ベクトル"
 
 #: scene/2d/area_2d.cpp scene/2d/cpu_particles_2d.cpp scene/3d/area.cpp
 #: scene/3d/cpu_particles.cpp scene/resources/particles_material.cpp
 msgid "Gravity"
-msgstr ""
+msgstr "重力"
 
 #: scene/2d/area_2d.cpp scene/3d/area.cpp
-#, fuzzy
 msgid "Linear Damp"
-msgstr "リニア"
+msgstr "線形減衰"
 
 #: scene/2d/area_2d.cpp scene/3d/area.cpp
 msgid "Angular Damp"
-msgstr ""
+msgstr "角度減衰"
 
 #: scene/2d/area_2d.cpp scene/3d/area.cpp
 msgid "Audio Bus"
@@ -20453,9 +20401,8 @@ msgstr "ボリューム dB"
 #: scene/2d/audio_stream_player_2d.cpp scene/3d/audio_stream_player_3d.cpp
 #: scene/audio/audio_stream_player.cpp
 #: servers/audio/effects/audio_effect_pitch_shift.cpp
-#, fuzzy
 msgid "Pitch Scale"
-msgstr "スケール"
+msgstr "ピッチスケール"
 
 #: scene/2d/audio_stream_player_2d.cpp scene/3d/audio_stream_player_3d.cpp
 #: scene/audio/audio_stream_player.cpp scene/gui/video_player.cpp
@@ -20465,7 +20412,7 @@ msgstr "自動再生"
 #: scene/2d/audio_stream_player_2d.cpp scene/3d/audio_stream_player_3d.cpp
 #: scene/audio/audio_stream_player.cpp
 msgid "Stream Paused"
-msgstr ""
+msgstr "ストリームの一時停止"
 
 #: scene/2d/audio_stream_player_2d.cpp scene/3d/audio_stream_player_3d.cpp
 #: scene/3d/light.cpp scene/3d/reflection_probe.cpp
@@ -20475,9 +20422,8 @@ msgid "Max Distance"
 msgstr "最大距離"
 
 #: scene/2d/audio_stream_player_2d.cpp scene/3d/light.cpp
-#, fuzzy
 msgid "Attenuation"
-msgstr "アニメーション"
+msgstr "減衰量"
 
 #: scene/2d/audio_stream_player_2d.cpp scene/3d/audio_stream_player_3d.cpp
 #: scene/audio/audio_stream_player.cpp scene/gui/video_player.cpp
@@ -20486,22 +20432,19 @@ msgstr "バス"
 
 #: scene/2d/audio_stream_player_2d.cpp scene/3d/audio_stream_player_3d.cpp
 msgid "Area Mask"
-msgstr ""
+msgstr "エリアマスク"
 
 #: scene/2d/back_buffer_copy.cpp
-#, fuzzy
 msgid "Copy Mode"
-msgstr "ノードをコピー"
+msgstr "コピーモード"
 
 #: scene/2d/camera_2d.cpp
-#, fuzzy
 msgid "Anchor Mode"
-msgstr "アイコンモード"
+msgstr "アンカーモード"
 
 #: scene/2d/camera_2d.cpp
-#, fuzzy
 msgid "Rotating"
-msgstr "回転のステップ:"
+msgstr "回転"
 
 #: scene/2d/camera_2d.cpp scene/2d/listener_2d.cpp scene/3d/camera.cpp
 #: scene/3d/listener.cpp scene/animation/animation_blend_tree.cpp
@@ -20513,9 +20456,8 @@ msgid "Zoom"
 msgstr "ズーム"
 
 #: scene/2d/camera_2d.cpp scene/main/canvas_layer.cpp
-#, fuzzy
 msgid "Custom Viewport"
-msgstr "1 ビューポート"
+msgstr "カスタムビューポート"
 
 #: scene/2d/camera_2d.cpp scene/3d/camera.cpp scene/3d/interpolated_camera.cpp
 #: scene/animation/animation_player.cpp scene/animation/animation_tree.cpp
@@ -20544,29 +20486,24 @@ msgid "Bottom"
 msgstr "下"
 
 #: scene/2d/camera_2d.cpp
-#, fuzzy
 msgid "Smoothed"
-msgstr "スムーズステップ"
+msgstr "スムージング"
 
 #: scene/2d/camera_2d.cpp
-#, fuzzy
 msgid "Draw Margin"
-msgstr "マージンを設定する"
+msgstr "マージンを描画する"
 
 #: scene/2d/camera_2d.cpp
-#, fuzzy
 msgid "Drag Margin H Enabled"
-msgstr "マージンを設定する"
+msgstr "水平方向のドラッグマージンにのみ有効"
 
 #: scene/2d/camera_2d.cpp
-#, fuzzy
 msgid "Drag Margin V Enabled"
-msgstr "マージンを設定する"
+msgstr "垂直方向のドラッグマージンにのみ有効"
 
 #: scene/2d/camera_2d.cpp
-#, fuzzy
 msgid "Smoothing"
-msgstr "スムーズステップ"
+msgstr "スムージング"
 
 #: scene/2d/camera_2d.cpp
 msgid "H"
@@ -20577,35 +20514,29 @@ msgid "V"
 msgstr "垂直"
 
 #: scene/2d/camera_2d.cpp
-#, fuzzy
 msgid "Drag Margin"
-msgstr "マージンを設定する"
+msgstr "ドラッグマージン"
 
 #: scene/2d/camera_2d.cpp
-#, fuzzy
 msgid "Draw Screen"
-msgstr "ドローコール:"
+msgstr "スクリーンを描画する"
 
 #: scene/2d/camera_2d.cpp
-#, fuzzy
 msgid "Draw Limits"
-msgstr "ドローコール:"
+msgstr "限界を描画する"
 
 #: scene/2d/camera_2d.cpp
-#, fuzzy
 msgid "Draw Drag Margin"
-msgstr "マージンを設定する"
+msgstr "ドラッグマージンを描画する"
 
 #: scene/2d/canvas_item.cpp scene/resources/environment.cpp
 #: scene/resources/material.cpp
-#, fuzzy
 msgid "Blend Mode"
-msgstr "ブレンド2 ノード"
+msgstr "ブレンドモード"
 
 #: scene/2d/canvas_item.cpp
-#, fuzzy
 msgid "Light Mode"
-msgstr "右伸長"
+msgstr "ライトモード"
 
 #: scene/2d/canvas_item.cpp
 #, fuzzy
@@ -23582,14 +23513,12 @@ msgid "AABB"
 msgstr ""
 
 #: scene/3d/visual_instance.cpp
-#, fuzzy
 msgid "Sorting"
 msgstr "ソート"
 
 #: scene/3d/visual_instance.cpp
-#, fuzzy
 msgid "Use AABB Center"
-msgstr "アンビエントを使用"
+msgstr "AABBセンターを使用"
 
 #: scene/3d/visual_instance.cpp scene/resources/navigation_mesh.cpp
 #, fuzzy

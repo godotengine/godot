@@ -70,13 +70,14 @@
 # xX-Void-Xx <arandomdude75@gmail.com>, 2022.
 # أحمد النور <ahmed2699@gmail.com>, 2022.
 # Commander Gordon <gordoncommander@gmail.com>, 2022.
+# Abdulrahman <abdelrahman.ramadan686@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-10-29 23:55+0000\n"
-"Last-Translator: Commander Gordon <gordoncommander@gmail.com>\n"
+"PO-Revision-Date: 2022-12-21 07:01+0000\n"
+"Last-Translator: Abdulrahman <abdelrahman.ramadan686@gmail.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ar/>\n"
 "Language: ar\n"
@@ -85,7 +86,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
 "&& n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
-"X-Generator: Weblate 4.14.2-dev\n"
+"X-Generator: Weblate 4.15.1-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -877,7 +878,7 @@ msgstr "مطابقة المسافات الطويلة"
 
 #: core/project_settings.cpp
 msgid "Compression Level"
-msgstr "ضغط المستوى"
+msgstr "مستوى الضغط"
 
 #: core/project_settings.cpp
 msgid "Window Log Size"
@@ -11177,7 +11178,7 @@ msgstr "نظر من الخلف"
 msgid " [auto]"
 msgstr " [auto]"
 
-#. TRANSLATORS: This will be appended to the view name when Portal Occulusion is enabled.
+#. TRANSLATORS: This will be appended to the view name when Portal Occlusion is enabled.
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid " [portals active]"
 msgstr " [البوابات مفعلة]"
@@ -28516,6 +28517,5 @@ msgid "Log Active Async Compiles Count"
 msgstr ""
 
 #: servers/visual_server.cpp
-#, fuzzy
 msgid "Shader Cache Size (MB)"
-msgstr "غيّر حجم الكاميرا"
+msgstr "حجم ذاكرة التظليل المؤقتة (مب)"

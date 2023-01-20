@@ -13,7 +13,7 @@
 # Rueben Stevens <supercell03@gmail.com>, 2017.
 # SARDON <fabio3_Santos@hotmail.com>, 2017.
 # Vinicius Gonçalves <viniciusgoncalves21@gmail.com>, 2017.
-# ssantos <ssantos@web.de>, 2018, 2019, 2020, 2021, 2022.
+# ssantos <ssantos@web.de>, 2018, 2019, 2020, 2021, 2022, 2023.
 # Gonçalo Dinis Guerreiro João <goncalojoao205@gmail.com>, 2019.
 # Manuela Silva <mmsrs@sky.com>, 2020.
 # Murilo Gama <murilovsky2030@gmail.com>, 2020, 2022.
@@ -31,12 +31,13 @@
 # Tuily <brizolla.tuily@gmail.com>, 2022.
 # Thuany <thutymsoares@gmail.com>, 2022.
 # Isaque Mendes <isaquemendes405@gmail.com>, 2022.
+# Alex Bruno Boiniak <aboiniak@gmail.com>, 2022.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-11-19 08:35+0000\n"
+"PO-Revision-Date: 2023-01-11 19:51+0000\n"
 "Last-Translator: ssantos <ssantos@web.de>\n"
 "Language-Team: Portuguese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pt/>\n"
@@ -45,7 +46,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.15-dev\n"
+"X-Generator: Weblate 4.15.1-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -183,7 +184,7 @@ msgstr "Erro"
 
 #: core/bind/core_bind.cpp
 msgid "Error String"
-msgstr "Erro String"
+msgstr "Cadeia de caracteres de erro"
 
 #: core/bind/core_bind.cpp
 msgid "Error Line"
@@ -383,7 +384,7 @@ msgstr "Tamanho Máximo (KB)"
 
 #: core/os/input.cpp
 msgid "Mouse Mode"
-msgstr "Modo Mouse"
+msgstr "Modo do Rato"
 
 #: core/os/input.cpp
 msgid "Use Accumulated Input"
@@ -4332,7 +4333,7 @@ msgstr "Restaurar Cenas quando carregar"
 
 #: editor/editor_node.cpp editor/editor_settings.cpp
 msgid "Show Thumbnail On Hover"
-msgstr "Mostrar Miniatura ao Passar o Mouse Por Cima"
+msgstr "Mostrar Miniatura ao Passar o Rato Por Cima"
 
 #: editor/editor_node.cpp editor/editor_settings.cpp
 msgid "Inspector"
@@ -5479,7 +5480,7 @@ msgstr "Largura do Minimapa"
 
 #: editor/editor_settings.cpp
 msgid "Mouse Extra Buttons Navigate History"
-msgstr "Botões extra do Mouse para Navegar no Histórico"
+msgstr "Botões extra do Rato para Navegar no Histórico"
 
 #: editor/editor_settings.cpp
 msgid "Drag And Drop Selection"
@@ -5773,7 +5774,7 @@ msgstr "Emular Teclado Numérico"
 
 #: editor/editor_settings.cpp
 msgid "Emulate 3 Button Mouse"
-msgstr "Emular Mouse de 3 Botões"
+msgstr "Emular Rato de 3 Botões"
 
 #: editor/editor_settings.cpp
 msgid "Orbit Modifier"
@@ -5789,7 +5790,7 @@ msgstr "Modificador de Zoom"
 
 #: editor/editor_settings.cpp editor/plugins/spatial_editor_plugin.cpp
 msgid "Warped Mouse Panning"
-msgstr "Panorama do Mouse Distorcido"
+msgstr "Panorama do Rato Distorcido"
 
 #: editor/editor_settings.cpp
 msgid "Navigation Feel"
@@ -6037,7 +6038,7 @@ msgstr "Cor do Comentário"
 
 #: editor/editor_settings.cpp
 msgid "String Color"
-msgstr "Cor da String"
+msgstr "Cor da cadeia de caracteres"
 
 #: editor/editor_settings.cpp platform/javascript/export/export.cpp
 #: platform/uwp/export/export.cpp
@@ -6887,9 +6888,8 @@ msgstr "Filtro"
 
 #: editor/import/resource_importer_layered_texture.cpp
 #: editor/import/resource_importer_texture.cpp
-#, fuzzy
 msgid "Mipmaps"
-msgstr "Sinais"
+msgstr "Mipmaps"
 
 #: editor/import/resource_importer_layered_texture.cpp
 #: editor/import/resource_importer_texture.cpp
@@ -10925,7 +10925,7 @@ msgstr "Perspetiva Traseira"
 msgid " [auto]"
 msgstr " [auto]"
 
-#. TRANSLATORS: This will be appended to the view name when Portal Occulusion is enabled.
+#. TRANSLATORS: This will be appended to the view name when Portal Occlusion is enabled.
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid " [portals active]"
 msgstr " [portais ativos]"
@@ -14176,17 +14176,15 @@ msgid "Invalid project path (changed anything?)."
 msgstr "Caminho de projeto inválido (alguma alteração?)."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid ""
 "Couldn't load project at '%s' (error %d). It may be missing or corrupted."
 msgstr ""
-"Não consegui carregar o project.godot no caminho do projeto (erro %d). "
-"Poderá estar em falta ou corrompido."
+"Não pode carregar o projeto em '%s' (error %d). Pode estar sumido ou "
+"corrompido."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Couldn't save project at '%s' (error %d)."
-msgstr "Incapaz de abrir projeto em '%s'."
+msgstr "Incapaz de salvar projeto em '%s' (error %d)."
 
 #: editor/project_manager.cpp
 msgid "Couldn't create project.godot in project path."
@@ -16187,7 +16185,7 @@ msgstr "Interface Gráfica"
 
 #: main/main.cpp
 msgid "Drop Mouse On GUI Input Disabled"
-msgstr "Desabilitar Soltar o Mouse na Entrada da Interface Gráfica"
+msgstr "Desabilitar Soltar o Rato na Entrada da Interface Gráfica"
 
 #: main/main.cpp
 msgid "stdout"
@@ -16305,15 +16303,15 @@ msgstr "Liberação Ágil de Eventos"
 
 #: main/main.cpp
 msgid "Emulate Touch From Mouse"
-msgstr "Emular Toque do Mouse"
+msgstr "Emular Toque do Rato"
 
 #: main/main.cpp
 msgid "Emulate Mouse From Touch"
-msgstr "Emular o Mouse do Toque"
+msgstr "Emular o Rato do Toque"
 
 #: main/main.cpp
 msgid "Mouse Cursor"
-msgstr "Cursor do Mouse"
+msgstr "Cursor do Rato"
 
 #: main/main.cpp
 msgid "Custom Image"
@@ -16516,9 +16514,8 @@ msgid "Path Local"
 msgstr "Caminho Local"
 
 #: modules/csg/csg_shape.cpp
-#, fuzzy
 msgid "Path Continuous U"
-msgstr "Contínuo"
+msgstr "Caminho Contínuo U"
 
 #: modules/csg/csg_shape.cpp
 msgid "Path U Distance"
@@ -16578,9 +16575,8 @@ msgstr "Carregar Apenas uma Vez"
 
 #: modules/gdnative/gdnative.cpp
 #: modules/visual_script/visual_script_func_nodes.cpp
-#, fuzzy
 msgid "Singleton"
-msgstr "Esqueleto"
+msgstr "Singleton"
 
 #: modules/gdnative/gdnative.cpp
 msgid "Symbol Prefix"
@@ -17426,7 +17422,7 @@ msgstr "Nomes"
 
 #: modules/regex/regex.cpp
 msgid "Strings"
-msgstr "Strings"
+msgstr "Cadeias"
 
 #: modules/upnp/upnp.cpp
 msgid "Discover Multicast If"
@@ -18436,9 +18432,8 @@ msgid "XR Mode"
 msgstr "Modo XR"
 
 #: platform/android/export/export_plugin.cpp
-#, fuzzy
 msgid "Hand Tracking"
-msgstr "Empacotamento"
+msgstr "Rastreamento das Mãos"
 
 #: platform/android/export/export_plugin.cpp
 msgid "Hand Tracking Frequency"
@@ -18923,9 +18918,8 @@ msgid "Code Sign Identity Debug"
 msgstr "Depuração de Identidade de Sinal de Código"
 
 #: platform/iphone/export/export.cpp
-#, fuzzy
 msgid "Export Method Debug"
-msgstr "Exportar com Depuração"
+msgstr "Exportar Método Depuração"
 
 #: platform/iphone/export/export.cpp
 msgid "Provisioning Profile UUID Release"
@@ -19001,9 +18995,8 @@ msgid "Microphone Usage Description"
 msgstr "Descrição do Uso do Microfone"
 
 #: platform/iphone/export/export.cpp
-#, fuzzy
 msgid "Photolibrary Usage Description"
-msgstr "Descrições da Propriedade"
+msgstr "Descrição de Uso da Fotobiblioteca"
 
 #: platform/iphone/export/export.cpp
 msgid "iPhone 120 X 120"
@@ -19050,14 +19043,12 @@ msgid "Image Scale Mode"
 msgstr "Modo de Escalonamento de Imagem"
 
 #: platform/iphone/export/export.cpp
-#, fuzzy
 msgid "Custom Image @2x"
-msgstr "CustomNode"
+msgstr "Personalizar Imagem @2x"
 
 #: platform/iphone/export/export.cpp
-#, fuzzy
 msgid "Custom Image @3x"
-msgstr "CustomNode"
+msgstr "Personalizar Imagem @3x"
 
 #: platform/iphone/export/export.cpp
 msgid "Use Custom BG Color"
@@ -19154,9 +19145,8 @@ msgid "Export Icon"
 msgstr "Exportar Ícone"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Custom HTML Shell"
-msgstr "CustomNode"
+msgstr "HTML Shell Personalizado"
 
 #: platform/javascript/export/export.cpp
 msgid "Head Include"
@@ -23759,7 +23749,7 @@ msgstr "Anterior"
 
 #: scene/gui/control.cpp
 msgid "Mouse"
-msgstr "Mouse"
+msgstr "Rato"
 
 #: scene/gui/control.cpp
 msgid "Default Cursor Shape"

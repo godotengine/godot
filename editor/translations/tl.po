@@ -10910,7 +10910,7 @@ msgstr ""
 msgid " [auto]"
 msgstr " [kusa]"
 
-#. TRANSLATORS: This will be appended to the view name when Portal Occulusion is enabled.
+#. TRANSLATORS: This will be appended to the view name when Portal Occlusion is enabled.
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid " [portals active]"
 msgstr " [mga aktibong portal]"
