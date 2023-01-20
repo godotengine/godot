@@ -1363,6 +1363,18 @@ static const char *project_settings_renames[][2] = {
 	{ nullptr, nullptr },
 };
 
+static const char *input_map_renames[][2] = {
+	{ ",\"alt\":", ",\"alt_pressed\":" },
+	{ ",\"shift\":", ",\"shift_pressed\":" },
+	{ ",\"control\":", ",\"ctrl_pressed\":" },
+	{ ",\"meta\":", ",\"meta_pressed\":" },
+	{ ",\"scancode\":", ",\"keycode\":" },
+	{ ",\"physical_scancode\":", ",\"physical_keycode\":" },
+	{ ",\"doubleclick\":", ",\"double_click\":" },
+
+	{ nullptr, nullptr },
+};
+
 static const char *builtin_types_renames[][2] = {
 	{ "PoolByteArray", "PackedByteArray" },
 	{ "PoolColorArray", "PackedColorArray" },
@@ -1878,6 +1890,7 @@ public:
 	LocalVector<RegEx *> enum_regexes;
 	LocalVector<RegEx *> gdscript_function_regexes;
 	LocalVector<RegEx *> project_settings_regexes;
+	LocalVector<RegEx *> input_map_regexes;
 	LocalVector<RegEx *> gdscript_properties_regexes;
 	LocalVector<RegEx *> gdscript_signals_regexes;
 	LocalVector<RegEx *> shaders_regexes;
@@ -1900,6 +1913,10 @@ public:
 			// Project Settings.
 			for (unsigned int current_index = 0; project_settings_renames[current_index][0]; current_index++) {
 				project_settings_regexes.push_back(memnew(RegEx(String("\\b") + project_settings_renames[current_index][0] + "\\b")));
+			}
+			// Input Map.
+			for (unsigned int current_index = 0; input_map_renames[current_index][0]; current_index++) {
+				input_map_regexes.push_back(memnew(RegEx(String("\\b") + input_map_renames[current_index][0] + "\\b")));
 			}
 			// GDScript properties.
 			for (unsigned int current_index = 0; gdscript_properties_renames[current_index][0]; current_index++) {
@@ -1971,6 +1988,9 @@ public:
 		}
 		for (unsigned int i = 0; i < project_settings_regexes.size(); i++) {
 			memdelete(project_settings_regexes[i]);
+		}
+		for (unsigned int i = 0; i < input_map_regexes.size(); i++) {
+			memdelete(input_map_regexes[i]);
 		}
 		for (unsigned int i = 0; i < gdscript_properties_regexes.size(); i++) {
 			memdelete(gdscript_properties_regexes[i]);
@@ -2123,6 +2143,7 @@ int ProjectConverter3To4::convert() {
 			} else if (file_name.ends_with("project.godot")) {
 				rename_common(project_settings_renames, reg_container.project_settings_regexes, lines);
 				rename_common(builtin_types_renames, reg_container.builtin_types_regexes, lines);
+				rename_common(input_map_renames, reg_container.input_map_regexes, lines);
 			} else if (file_name.ends_with(".csproj")) {
 				// TODO
 			} else {
@@ -2288,6 +2309,7 @@ int ProjectConverter3To4::validate_conversion() {
 			} else if (file_name.ends_with("project.godot")) {
 				changed_elements.append_array(check_for_rename_common(project_settings_renames, reg_container.project_settings_regexes, lines));
 				changed_elements.append_array(check_for_rename_common(builtin_types_renames, reg_container.builtin_types_regexes, lines));
+				changed_elements.append_array(check_for_rename_common(input_map_renames, reg_container.input_map_regexes, lines));
 			} else if (file_name.ends_with(".csproj")) {
 				// TODO
 			} else {
@@ -2423,6 +2445,8 @@ bool ProjectConverter3To4::test_conversion(RegExContainer &reg_container) {
 	valid = valid && test_conversion_basic("TextEntered", "TextSubmitted", csharp_signals_renames, reg_container.csharp_signal_regexes, "csharp signal");
 
 	valid = valid && test_conversion_basic("audio/channel_disable_threshold_db", "audio/buses/channel_disable_threshold_db", project_settings_renames, reg_container.project_settings_regexes, "project setting");
+
+	valid = valid && test_conversion_basic("\"device\":-1,\"alt\":false,\"shift\":false,\"control\":false,\"meta\":false,\"doubleclick\":false,\"scancode\":0,\"physical_scancode\":16777254,\"script\":null", "\"device\":-1,\"alt_pressed\":false,\"shift_pressed\":false,\"ctrl_pressed\":false,\"meta_pressed\":false,\"double_click\":false,\"keycode\":0,\"physical_keycode\":16777254,\"script\":null", input_map_renames, reg_container.input_map_regexes, "input map");
 
 	valid = valid && test_conversion_basic("Transform", "Transform3D", builtin_types_renames, reg_container.builtin_types_regexes, "builtin type");
 
@@ -2812,6 +2836,7 @@ bool ProjectConverter3To4::test_array_names() {
 	valid = valid && test_single_array(shaders_renames, true);
 	valid = valid && test_single_array(gdscript_signals_renames);
 	valid = valid && test_single_array(project_settings_renames);
+	valid = valid && test_single_array(input_map_renames);
 	valid = valid && test_single_array(builtin_types_renames);
 	valid = valid && test_single_array(color_renames);
 
