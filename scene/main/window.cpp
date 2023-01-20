@@ -2120,11 +2120,13 @@ Transform2D Window::get_final_transform() const {
 	return window_transform * stretch_transform * global_canvas_transform;
 }
 
-Transform2D Window::get_screen_transform() const {
+Transform2D Window::get_screen_transform_internal(bool p_absolute_position) const {
 	Transform2D embedder_transform;
 	if (_get_embedder()) {
 		embedder_transform.translate_local(get_position());
-		embedder_transform = _get_embedder()->get_screen_transform() * embedder_transform;
+		embedder_transform = _get_embedder()->get_screen_transform_internal(p_absolute_position) * embedder_transform;
+	} else if (p_absolute_position) {
+		embedder_transform.translate_local(get_position());
 	}
 	return embedder_transform * get_final_transform();
 }
