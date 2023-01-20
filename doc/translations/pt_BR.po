@@ -45,12 +45,13 @@
 # Mr.Albino <ricmorsoleto@gmail.com>, 2022.
 # Zer0-Zer0 <dankmemerson@tutanota.com>, 2022.
 # Julio Yagami <juliohenrique31501234@hotmail.com>, 2022.
+# Andrey Gonçalves <kaptaryd@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2022-12-09 19:48+0000\n"
-"Last-Translator: Julio Yagami <juliohenrique31501234@hotmail.com>\n"
+"PO-Revision-Date: 2023-01-09 20:42+0000\n"
+"Last-Translator: Andrey Gonçalves <kaptaryd@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot-class-reference/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -58,7 +59,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.15-dev\n"
+"X-Generator: Weblate 4.15.1-dev\n"
 
 #: doc/tools/make_rst.py
 msgid "Description"
@@ -860,7 +861,6 @@ msgstr ""
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
-#, fuzzy
 msgid ""
 "Returns an interpolation or extrapolation factor considering the range "
 "specified in [code]from[/code] and [code]to[/code], and the interpolated "
@@ -883,8 +883,26 @@ msgid ""
 "See also [method lerp] which performs the reverse of this operation, and "
 "[method range_lerp] to map a continuous series of values to another."
 msgstr ""
-"Retornar a interpolação ou extrapolação do fator considerando o ranger "
-"específico [code ]para[/code]"
+"Retorna o fator de interpolação ou extrapolação considerando o intervalo "
+"especificado no [code]de[/code] e [code]para[/code], e o valor interpolado "
+"especificado no [code]peso[/code]. O valor retornado irá ser entre "
+"[code]0.0[/code] e [code]1.0[/code] se [code]peso[/code] for entre [code]de[/"
+"code] e [code]para[/code] (inclusivo). Se [code]peso[/code] está fora do "
+"intervalo especificado, então um fator de extrapolação será retornado "
+"(retorna valor menor que [code]0.0[/code] ou maior que [code]1.0[/code]). "
+"Use [method clamp] no resultado do [method inverse_lerp] se isso não for o "
+"desejado.\n"
+"[codeblock]\n"
+"# A razão da interpolação no uso do `lerp()` abaixo é 0.75.\n"
+"var meio = lerp(20, 30, 0.75)\n"
+"#`meio` agora é 27.5.\n"
+"# Agora, vamos fingir que esquecemos a razão original e o queremos de "
+"volta.\n"
+"var razao = inverse_lerp(20, 30, 27.5)\n"
+"#`razao` agora é 0.75.\n"
+"[/codeblock]\n"
+"Veja também o [method lerp] que faz o inverso desta operação, e [method "
+"range_lerp] para mapear uma série contínua de valores uns aos outros."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -1423,6 +1441,17 @@ msgid ""
 "print_stack] will not work in projects exported in release mode, or in "
 "projects exported in debug mode if not connected to a debugging server."
 msgstr ""
+"Imprime um rastreamento de pilha no local do código atual. Veja também "
+"[method get_stack]\n"
+"A saída no console seria mais ou menos assim:\n"
+"[codeblock]\n"
+"Frame 0 - res://test.gd:16 in function '_process'\n"
+"[/codeblock]\n"
+"[b]Nota:[/b] [method print_stack] só funciona se a instância em execução "
+"estiver conectada a um servidor de depuração (ou seja, uma instância do "
+"editor). [method print_stack] não funcionará em projetos exportados no modo "
+"de lançamento ou em projetos exportados no modo de depuração se não estiver "
+"conectado a um servidor de depuração."
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid ""
@@ -4070,74 +4099,105 @@ msgid ""
 "down on the key after it \"bottoms out\". This message is different from "
 "polyphonic after-touch as it indicates the highest pressure across all keys."
 msgstr ""
+"Mensagem de pressão do canal MIDI. Esta mensagem geralmente é enviada ao "
+"pressionar a tecla após ela \"ir de dentro pra fora\". Essa mensagem é "
+"diferente do pós-toque polifônico, pois indica a pressão mais alta em todas "
+"as teclas."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
 "MIDI pitch bend message. This message is sent to indicate a change in the "
 "pitch bender (wheel or lever, typically)."
 msgstr ""
+"Mensagem MIDI de dobra de tom (pitch bend). Esta mensagem é enviada para "
+"indicar uma mudança no dobrador de tom (roda ou alavanca, tipicamente)."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
 "MIDI system exclusive message. This has behavior exclusive to the device "
 "you're receiving input from. Getting this data is not implemented in Godot."
 msgstr ""
+"Mensagem exclusiva do sistema MIDI. Isso tem um comportamento exclusivo do "
+"dispositivo do qual você está recebendo entrada. A obtenção desses dados não "
+"está implementada no Godot."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
 "MIDI quarter frame message. Contains timing information that is used to "
 "synchronize MIDI devices. Getting this data is not implemented in Godot."
 msgstr ""
+"Mensagem MIDI de um quarto de quadro. Contém informações de tempo usadas "
+"para sincronizar dispositivos MIDI. A obtenção desses dados não está "
+"implementada no Godot."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
 "MIDI song position pointer message. Gives the number of 16th notes since the "
 "start of the song. Getting this data is not implemented in Godot."
 msgstr ""
+"Mensagem de ponteiro de posição de música MIDI. Dá o número de semicolcheias "
+"(cada 16ª nota) desde o início da música. A obtenção desses dados não está "
+"implementada no Godot."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
 "MIDI song select message. Specifies which sequence or song is to be played. "
 "Getting this data is not implemented in Godot."
 msgstr ""
+"Mensagem MIDI de seleção de música. Especifica qual sequência ou música será "
+"tocada. A obtenção desses dados não está implementada no Godot."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
 "MIDI tune request message. Upon receiving a tune request, all analog "
 "synthesizers should tune their oscillators."
 msgstr ""
+"Mensagem de solicitação de sintonia MIDI. Ao receber uma solicitação de "
+"sintonia, todos os sintetizadores analógicos devem sintonizar seus "
+"osciladores."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
 "MIDI timing clock message. Sent 24 times per quarter note when "
 "synchronization is required."
 msgstr ""
+"Mensagem de relógio de tempo MIDI. Enviado 24 vezes por semínima quando a "
+"sincronização é necessária."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
 "MIDI start message. Start the current sequence playing. This message will be "
 "followed with Timing Clocks."
 msgstr ""
+"mensagem de início MIDI. Inicie a reprodução da sequência atual. Esta "
+"mensagem será seguida de relógios de temporização."
 
 #: doc/classes/@GlobalScope.xml
 msgid "MIDI continue message. Continue at the point the sequence was stopped."
 msgstr ""
+"Mensagem de continuação MIDI. Continue no ponto em que a sequência foi "
+"interrompida."
 
 #: doc/classes/@GlobalScope.xml
 msgid "MIDI stop message. Stop the current sequence."
-msgstr ""
+msgstr "Mensagem de parada MIDI. Pare a sequência atual."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
 "MIDI active sensing message. This message is intended to be sent repeatedly "
 "to tell the receiver that a connection is alive."
 msgstr ""
+"Mensagem de detecção ativa de MIDI. Esta mensagem deve ser enviada "
+"repetidamente para informar ao receptor que uma conexão está ativa."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
 "MIDI system reset message. Reset all receivers in the system to power-up "
 "status. It should not be sent on power-up itself."
 msgstr ""
+"Mensagem de reinicialização do sistema MIDI. Redefina todos os receptores no "
+"sistema para o status de inicialização. Ele não deve ser enviado no próprio "
+"power-up."
 
 #: doc/classes/@GlobalScope.xml
 msgid ""
@@ -31205,7 +31265,11 @@ msgid ""
 "using an [AnimatedTexture], only the first frame will be displayed.\n"
 "[b]Note:[/b] Only images imported with the [b]Lossless[/b], [b]Lossy[/b] or "
 "[b]Uncompressed[/b] compression modes are supported. The [b]Video RAM[/b] "
-"compression mode can't be used for custom cursors."
+"compression mode can't be used for custom cursors.\n"
+"[b]Note:[/b] On the web platform, the maximum allowed cursor image size is "
+"128×128. Cursor images larger than 32×32 will also only be displayed if the "
+"mouse cursor image is entirely located within the page for [url=https://"
+"chromestatus.com/feature/5825971391299584]security reasons[/url]."
 msgstr ""
 
 #: doc/classes/Input.xml

@@ -15,12 +15,14 @@
 # Otis Kao <momoslim@gmail.com>, 2022.
 # YuChiang Chang <chiang.c.tw@gmail.com>, 2022.
 # Hugel <qihu@nfschina.com>, 2022.
+# Chih Wei Chien <dppss92132@gmail.com>, 2022.
+# Edison Lee <edisonlee@edisonlee55.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2022-10-12 06:50+0000\n"
-"Last-Translator: BinotaLIU <me@binota.org>\n"
+"PO-Revision-Date: 2023-01-15 03:49+0000\n"
+"Last-Translator: Edison Lee <edisonlee@edisonlee55.com>\n"
 "Language-Team: Chinese (Traditional) <https://hosted.weblate.org/projects/"
 "godot-engine/godot-class-reference/zh_Hant/>\n"
 "Language: zh_TW\n"
@@ -28,7 +30,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.15-dev\n"
+"X-Generator: Weblate 4.15.1-dev\n"
 
 #: doc/tools/make_rst.py
 msgid "Description"
@@ -84,7 +86,7 @@ msgstr "繼承自:"
 
 #: doc/tools/make_rst.py
 msgid "(overrides %s)"
-msgstr ""
+msgstr "(覆寫 %s)"
 
 #: doc/tools/make_rst.py
 msgid "Default"
@@ -126,13 +128,13 @@ msgstr "此方法用於建構型別。"
 msgid ""
 "This method doesn't need an instance to be called, so it can be called "
 "directly using the class name."
-msgstr ""
+msgstr "該方法不需要使用一個實體來呼叫，所以他可以直接使用 class name 呼叫。"
 
 #: doc/tools/make_rst.py
 msgid ""
 "This method describes a valid operator to use with this type as left-hand "
 "operand."
-msgstr ""
+msgstr "該方法描述一個有效的運算子使用此型別作為左運算值。"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 msgid "Built-in GDScript functions."
@@ -148,7 +150,6 @@ msgstr ""
 "供。 (關鍵字：內建、全域函式、buildin、build in、global functions)"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
-#, fuzzy
 msgid ""
 "Returns a color constructed from integer red, green, blue, and alpha "
 "channels. Each channel should have 8 bits of information ranging from 0 to "
@@ -161,12 +162,12 @@ msgid ""
 "red = Color8(255, 0, 0)\n"
 "[/codeblock]"
 msgstr ""
-"回傳以整數紅色、綠色、藍色與 Alpha 通道構成的色彩。每個通道都應包含 0 至 255 "
-"的 8 位元資訊。\n"
+"回傳以整數紅色、綠色、藍色與透明通道構成的色彩。每個通道都應包含 0 至 255 的 "
+"8 位元資訊。\n"
 "[code]r8[/code] 紅色通道\n"
 "[code]g8[/code] 綠色通道\n"
 "[code]b8[/code] 藍色通道\n"
-"[code]a8[/code] Alpha 通道\n"
+"[code]a8[/code] 透明通道\n"
 "[codeblock]\n"
 "red = Color8(255, 0, 0)\n"
 "[/codeblock]"
@@ -201,7 +202,6 @@ msgstr ""
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
-#, fuzzy
 msgid ""
 "Returns the arc cosine of [code]s[/code] in radians. Use to get the angle of "
 "cosine [code]s[/code]. [code]s[/code] must be between [code]-1.0[/code] and "
@@ -212,15 +212,15 @@ msgid ""
 "c = acos(0.866025)\n"
 "[/codeblock]"
 msgstr ""
-"回傳以弧度表示的[code]s[/code]的反餘弦(cos)值。用於求餘弦(sin)值[code]s[/"
-"code]的夾角。\n"
+"回傳以弧度表示的[code]s[/code]的反餘弦(arc cos)值。用於求餘弦(cos)值[code]s[/"
+"code]的夾角。[code]s[/code]必須介於[code]-1.0[/code]與[code]1.0[/code]之間 "
+"(包含)，否則 [method acos] 會回傳 [constant NAN]。\n"
 "[codeblock]\n"
-"# c 為0.523599，若以rad2deg(s)換算，則為30度\n"
+"# c 為 0.523599，若以 rad2deg(s) 換算，則為30度\n"
 "c = acos(0.866025)\n"
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
-#, fuzzy
 msgid ""
 "Returns the arc sine of [code]s[/code] in radians. Use to get the angle of "
 "sine [code]s[/code]. [code]s[/code] must be between [code]-1.0[/code] and "
@@ -230,7 +230,14 @@ msgid ""
 "# s is 0.523599 or 30 degrees if converted with rad2deg(s)\n"
 "s = asin(0.5)\n"
 "[/codeblock]"
-msgstr "testing"
+msgstr ""
+"回傳以弧度表示的[code]s[/code]的反正弦(arc sin)值。用於求正弦 (sin) 值"
+"[code]s[/code]的夾角。[code]s[/code]必須介於[code]-1.0[/code]與[code]1.0[/"
+"code]之間 (包含)，否則 [method asin] 會回傳 [constant NAN]。\n"
+"[codeblock]\n"
+"# c 為 0.523599，若以 rad2deg(s) 換算，則為 30 度\n"
+"c = asin(0.5)\n"
+"[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
 #, fuzzy
@@ -30066,7 +30073,11 @@ msgid ""
 "using an [AnimatedTexture], only the first frame will be displayed.\n"
 "[b]Note:[/b] Only images imported with the [b]Lossless[/b], [b]Lossy[/b] or "
 "[b]Uncompressed[/b] compression modes are supported. The [b]Video RAM[/b] "
-"compression mode can't be used for custom cursors."
+"compression mode can't be used for custom cursors.\n"
+"[b]Note:[/b] On the web platform, the maximum allowed cursor image size is "
+"128×128. Cursor images larger than 32×32 will also only be displayed if the "
+"mouse cursor image is entirely located within the page for [url=https://"
+"chromestatus.com/feature/5825971391299584]security reasons[/url]."
 msgstr ""
 
 #: doc/classes/Input.xml
@@ -41853,7 +41864,7 @@ msgstr ""
 
 #: doc/classes/OS.xml
 msgid "Desktop directory path."
-msgstr ""
+msgstr "桌面資料夾路徑。"
 
 #: doc/classes/OS.xml
 msgid "DCIM (Digital Camera Images) directory path."
@@ -41861,27 +41872,27 @@ msgstr ""
 
 #: doc/classes/OS.xml
 msgid "Documents directory path."
-msgstr ""
+msgstr "檔案資料夾路徑。"
 
 #: doc/classes/OS.xml
 msgid "Downloads directory path."
-msgstr ""
+msgstr "下載資料夾路徑。"
 
 #: doc/classes/OS.xml
 msgid "Movies directory path."
-msgstr ""
+msgstr "影片資料夾路徑。"
 
 #: doc/classes/OS.xml
 msgid "Music directory path."
-msgstr ""
+msgstr "音樂資料夾路徑。"
 
 #: doc/classes/OS.xml
 msgid "Pictures directory path."
-msgstr ""
+msgstr "圖片資料夾路徑。"
 
 #: doc/classes/OS.xml
 msgid "Ringtones directory path."
-msgstr ""
+msgstr "鈴聲資料夾路徑。"
 
 #: doc/classes/OS.xml
 msgid "Unknown powerstate."
