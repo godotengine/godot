@@ -14,6 +14,9 @@
 #include "scene/resources/packed_scene.h"
 #include "core/io/resource_saver.h"
 
+//perhaps for android _popen() ??
+#include <stdlib.h>
+
 void SceneDistributionInterface::_bind_methods()
 {
 	ClassDB::bind_method(D_METHOD("set_own_peer_as_glb_creator"), &SceneDistributionInterface::set_own_peer_as_glb_creator);
@@ -93,8 +96,7 @@ void SceneDistributionInterface::request_glb(const String& glb_name)
 void SceneDistributionInterface::_distribute_glb(const String& p_path, int id)
 {
 	printf("SceneDistributionInterface::distribute_glb\n");
-	CharString a = p_path.ascii();
-	printf(a.get_data());
+	printf("glb-file-name:%s\n",p_path.ascii().get_data());
 
 	//load glb file into PackedByteArray
 	Ref<GLTFDocument> gltf;
@@ -121,7 +123,7 @@ void SceneDistributionInterface::_distribute_glb(const String& p_path, int id)
 		glb_file_PBA.resize(f->get_length());
 		//f->get_buffer(glb_file_PBA.ptrw(), f->get_length());  //does not work
 		
-		for (int i = 0; i < f->get_length(); i++) {
+		for (uint64_t i = 0; i < f->get_length(); i++) {
 			glb_file_PBA.set(i,data[i]);
 		}
 	}

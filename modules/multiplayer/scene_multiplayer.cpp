@@ -437,7 +437,7 @@ void SceneMultiplayer::_process_sys(int p_from, const uint8_t *p_packet, int p_p
 			const uint8_t* packet = p_packet + SYS_CMD_SIZE;
 
 			//read glb packedByteArray from packet, packet_len - 6
-			uint32_t glb_creator_peer = decode_uint32(packet-4);
+			//uint32_t glb_creator_peer = decode_uint32(packet-4);
 			//decode glb name length
 			uint32_t glb_name_length = decode_uint32(packet);
 			//decode glb_file_PBA length
@@ -467,7 +467,7 @@ void SceneMultiplayer::_process_sys(int p_from, const uint8_t *p_packet, int p_p
 			Ref<PackedScene> p = memnew(PackedScene);
 			p->pack(n);
 			ResourceSaver s;
-			Error error = s.save(p, save_path);  // Or "user://..."
+			s.save(p, save_path);  // Or "user://..."
 
 			// @TODO better way of getting spawner ???
 			MultiplayerSpawner* spawner = Object::cast_to<MultiplayerSpawner>(get_path_cache()->get_cached_object(1, 1));
