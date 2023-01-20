@@ -92,7 +92,7 @@ msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2022-12-05 08:51+0000\n"
+"PO-Revision-Date: 2022-12-28 00:54+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
@@ -101,7 +101,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.15-dev\n"
+"X-Generator: Weblate 4.15.1-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -145,15 +145,15 @@ msgstr "屏幕常亮"
 
 #: core/bind/core_bind.cpp
 msgid "Min Window Size"
-msgstr "最小窗口大小"
+msgstr "最小窗口尺寸"
 
 #: core/bind/core_bind.cpp
 msgid "Max Window Size"
-msgstr "最大窗口大小"
+msgstr "最大窗口尺寸"
 
 #: core/bind/core_bind.cpp
 msgid "Screen Orientation"
-msgstr "窗口朝向"
+msgstr "屏幕朝向"
 
 #: core/bind/core_bind.cpp core/project_settings.cpp main/main.cpp
 #: platform/uwp/os_uwp.cpp
@@ -1097,7 +1097,7 @@ msgstr "权重采样"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Voxel Cone Tracing"
-msgstr "体素椎追踪"
+msgstr "体素锥追踪"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp scene/resources/environment.cpp
 msgid "High Quality"
@@ -5843,7 +5843,7 @@ msgstr "骨骼轮廓颜色"
 
 #: editor/editor_settings.cpp
 msgid "Viewport Border Color"
-msgstr "视区边框颜色"
+msgstr "视口边框颜色"
 
 #: editor/editor_settings.cpp
 msgid "Constrain Editor View"
@@ -8685,7 +8685,7 @@ msgid ""
 "Overrides the running project's camera with the editor viewport camera."
 msgstr ""
 "项目相机覆盖\n"
-"使用编辑器视图相机覆盖正在运行的项目中的相机。"
+"使用编辑器视口相机覆盖正在运行的项目中的相机。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -10819,7 +10819,7 @@ msgstr "透视后视图"
 msgid " [auto]"
 msgstr " [自动]"
 
-#. TRANSLATORS: This will be appended to the view name when Portal Occulusion is enabled.
+#. TRANSLATORS: This will be appended to the view name when Portal Occlusion is enabled.
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid " [portals active]"
 msgstr " [入口生效]"
@@ -11203,27 +11203,27 @@ msgstr "变换对话框..."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "1 Viewport"
-msgstr "1 个视窗"
+msgstr "1 个视口"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "2 Viewports"
-msgstr "2 个视窗"
+msgstr "2 个视口"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "2 Viewports (Alt)"
-msgstr "2 个视窗（备选）"
+msgstr "2 个视口（备选）"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "3 Viewports"
-msgstr "3 个视窗"
+msgstr "3 个视口"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "3 Viewports (Alt)"
-msgstr "3 个视窗（备选）"
+msgstr "3 个视口（备选）"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "4 Viewports"
-msgstr "4 个视窗"
+msgstr "4 个视口"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Gizmos"
@@ -11320,7 +11320,7 @@ msgstr "操作小工具不透明度"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Show Viewport Rotation Gizmo"
-msgstr "显示视区旋转小工具"
+msgstr "显示视口旋转小工具"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Unnamed Gizmo"
@@ -14010,16 +14010,13 @@ msgid "Invalid project path (changed anything?)."
 msgstr "项目路径无效（被外部修改？）。"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid ""
 "Couldn't load project at '%s' (error %d). It may be missing or corrupted."
-msgstr ""
-"无法在项目路径中加载 project.godot 文件（错误 %d）。该文件可能缺失或已损坏。"
+msgstr "无法加载位于“%s”的项目（错误 %d）。项目可能缺失或已损坏。"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Couldn't save project at '%s' (error %d)."
-msgstr "无法打开位于“%s”的项目。"
+msgstr "无法保存位于“%s”的项目（错误 %d）。"
 
 #: editor/project_manager.cpp
 msgid "Couldn't create project.godot in project path."
@@ -14934,7 +14931,7 @@ msgstr "将节点设置为根节点"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete %d nodes and any children?"
-msgstr "是否删除节点 “%s” 及其子节点？"
+msgstr "是否删除 %d 个节点及其子节点？"
 
 #: editor/scene_tree_dock.cpp
 msgid "Delete %d nodes?"
@@ -19971,7 +19968,7 @@ msgstr "缩放"
 
 #: scene/2d/camera_2d.cpp scene/main/canvas_layer.cpp
 msgid "Custom Viewport"
-msgstr "自定义视区"
+msgstr "自定义视口"
 
 #: scene/2d/camera_2d.cpp scene/3d/camera.cpp scene/3d/interpolated_camera.cpp
 #: scene/animation/animation_player.cpp scene/animation/animation_tree.cpp
@@ -22699,14 +22696,12 @@ msgid "AABB"
 msgstr "AABB"
 
 #: scene/3d/visual_instance.cpp
-#, fuzzy
 msgid "Sorting"
 msgstr "排序"
 
 #: scene/3d/visual_instance.cpp
-#, fuzzy
 msgid "Use AABB Center"
-msgstr "使用环境光"
+msgstr "使用 AABB 中心"
 
 #: scene/3d/visual_instance.cpp scene/resources/navigation_mesh.cpp
 msgid "Geometry"
@@ -23869,7 +23864,7 @@ msgstr "拉伸收缩"
 
 #: scene/main/canvas_layer.cpp
 msgid "Follow Viewport"
-msgstr "跟随视区"
+msgstr "跟随视口"
 
 #: scene/main/http_request.cpp
 msgid "Download File"

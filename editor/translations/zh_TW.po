@@ -38,13 +38,14 @@
 # Shi-Xun Hong <jimmy3421@gmail.com>, 2022.
 # Hugel <qihu@nfschina.com>, 2022.
 # nitenook <admin@alterbaum.net>, 2022.
+# Edison Lee <edisonlee@edisonlee55.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-10-16 07:25+0000\n"
-"Last-Translator: BinotaLIU <me@binota.org>\n"
+"PO-Revision-Date: 2023-01-14 10:06+0000\n"
+"Last-Translator: Edison Lee <edisonlee@edisonlee55.com>\n"
 "Language-Team: Chinese (Traditional) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hant/>\n"
 "Language: zh_TW\n"
@@ -52,7 +53,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.15-dev\n"
+"X-Generator: Weblate 4.15.1-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -1154,7 +1155,7 @@ msgstr "旋轉"
 #: editor/animation_track_editor.cpp editor/script_editor_debugger.cpp
 #: modules/visual_script/visual_script_nodes.cpp scene/gui/range.cpp
 msgid "Value"
-msgstr "數值"
+msgstr "值"
 
 #: editor/animation_track_editor.cpp
 msgid "Arg Count"
@@ -10771,7 +10772,7 @@ msgstr "透視後視圖"
 msgid " [auto]"
 msgstr " [自動]"
 
-#. TRANSLATORS: This will be appended to the view name when Portal Occulusion is enabled.
+#. TRANSLATORS: This will be appended to the view name when Portal Occlusion is enabled.
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid " [portals active]"
 msgstr " [入口生效]"
@@ -17787,9 +17788,8 @@ msgid "ShiftRight %s"
 msgstr "將 %s 向右移動"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
-#, fuzzy
 msgid "BitAnd %s"
-msgstr "新增 %"
+msgstr ""
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 #, fuzzy
@@ -18557,9 +18557,8 @@ msgstr "「Target Sdk」版本必須高於或于「Min Sdk」版本一致。"
 
 #: platform/android/export/export_plugin.cpp platform/osx/export/export.cpp
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Code Signing"
-msgstr "訊號"
+msgstr "程式碼簽章"
 
 #: platform/android/export/export_plugin.cpp
 msgid ""
@@ -18766,11 +18765,11 @@ msgstr ""
 
 #: platform/iphone/export/export.cpp
 msgid "App Store Team ID"
-msgstr ""
+msgstr "App Store 團隊 ID"
 
 #: platform/iphone/export/export.cpp
 msgid "Provisioning Profile UUID Debug"
-msgstr ""
+msgstr "部署描述檔 UUID 偵錯"
 
 #: platform/iphone/export/export.cpp
 msgid "Code Sign Identity Debug"
@@ -18848,19 +18847,16 @@ msgid "Accessible From iTunes Sharing"
 msgstr ""
 
 #: platform/iphone/export/export.cpp platform/osx/export/export.cpp
-#, fuzzy
 msgid "Privacy"
-msgstr "實體按鍵"
+msgstr "隱私"
 
 #: platform/iphone/export/export.cpp platform/osx/export/export.cpp
-#, fuzzy
 msgid "Camera Usage Description"
-msgstr "說明"
+msgstr "相機使用描述"
 
 #: platform/iphone/export/export.cpp platform/osx/export/export.cpp
-#, fuzzy
 msgid "Microphone Usage Description"
-msgstr "屬性說明"
+msgstr "麥克風使用描述"
 
 #: platform/iphone/export/export.cpp
 #, fuzzy
@@ -18933,9 +18929,8 @@ msgid "Custom BG Color"
 msgstr "剪下節點"
 
 #: platform/iphone/export/export.cpp
-#, fuzzy
 msgid "Export Icons"
-msgstr "展開全部"
+msgstr "匯出圖示"
 
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp
@@ -19017,7 +19012,7 @@ msgstr ""
 
 #: platform/javascript/export/export.cpp
 msgid "HTML"
-msgstr ""
+msgstr "HTML"
 
 #: platform/javascript/export/export.cpp
 #, fuzzy
@@ -19052,7 +19047,7 @@ msgstr ""
 
 #: platform/javascript/export/export.cpp
 msgid "Offline Page"
-msgstr ""
+msgstr "離線頁面"
 
 #: platform/javascript/export/export.cpp
 msgid "Icon 144 X 144"
@@ -19084,16 +19079,15 @@ msgstr ""
 
 #: platform/javascript/export/export.cpp
 msgid "HTTP Host"
-msgstr ""
+msgstr "HTTP 主機"
 
 #: platform/javascript/export/export.cpp
 msgid "HTTP Port"
-msgstr ""
+msgstr "HTTP 連接埠"
 
 #: platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Use SSL"
-msgstr "使用吸附"
+msgstr "使用 SSL"
 
 #: platform/javascript/export/export.cpp
 msgid "SSL Key"
@@ -19159,9 +19153,8 @@ msgid "Invalid entitlements file."
 msgstr "無效的副檔名。"
 
 #: platform/osx/export/codesign.cpp
-#, fuzzy
 msgid "Invalid executable file."
-msgstr "無效的副檔名。"
+msgstr "無效的執行檔。"
 
 #: platform/osx/export/codesign.cpp
 msgid "Can't resize signature load command."
@@ -19229,24 +19222,21 @@ msgid "Removable Volumes Usage Description"
 msgstr ""
 
 #: platform/osx/export/export.cpp platform/windows/export/export.cpp
-#, fuzzy
 msgid "Codesign"
-msgstr "節點"
+msgstr "程式碼簽章"
 
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
 #: platform/windows/export/export.cpp
-#, fuzzy
 msgid "Identity"
-msgstr "向左縮排"
+msgstr "身分"
 
 #: platform/osx/export/export.cpp platform/windows/export/export.cpp
-#, fuzzy
 msgid "Timestamp"
-msgstr "時間"
+msgstr "時間戳"
 
 #: platform/osx/export/export.cpp
 msgid "Hardened Runtime"
-msgstr ""
+msgstr "Hardened Runtime"
 
 #: platform/osx/export/export.cpp
 #, fuzzy
@@ -19259,9 +19249,8 @@ msgid "Entitlements"
 msgstr "Gizmo"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Custom File"
-msgstr "剪下節點"
+msgstr "自訂檔案"
 
 #: platform/osx/export/export.cpp
 msgid "Allow JIT Code Execution"
@@ -19281,75 +19270,64 @@ msgid "Disable Library Validation"
 msgstr "已停用的按鈕"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Audio Input"
-msgstr "新增輸入"
+msgstr "音源輸入"
 
 #: platform/osx/export/export.cpp
 msgid "Address Book"
-msgstr ""
+msgstr "地址簿"
 
 #: platform/osx/export/export.cpp
 msgid "Calendars"
-msgstr ""
+msgstr "日曆"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Photos Library"
-msgstr "匯出函式庫"
+msgstr "照片圖庫"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Apple Events"
-msgstr "新增事件"
+msgstr "Apple 活動"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Debugging"
 msgstr "偵錯"
 
 #: platform/osx/export/export.cpp
 msgid "App Sandbox"
-msgstr ""
+msgstr "應用程式沙盒"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Network Server"
-msgstr "網路分析工具"
+msgstr "網路伺服器"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Network Client"
-msgstr "網路分析工具"
+msgstr "網路客戶端"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Device USB"
-msgstr "裝置"
+msgstr "裝置 USB"
 
 #: platform/osx/export/export.cpp
 msgid "Device Bluetooth"
-msgstr ""
+msgstr "裝置藍芽"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Files Downloads"
-msgstr "下載"
+msgstr "檔案下載"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Files Pictures"
-msgstr "功能"
+msgstr "檔案圖片"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Files Music"
-msgstr "檔案"
+msgstr "檔案音樂"
 
 #: platform/osx/export/export.cpp
-#, fuzzy
 msgid "Files Movies"
-msgstr "篩選圖塊"
+msgstr "檔案影片"
 
 #: platform/osx/export/export.cpp platform/windows/export/export.cpp
 #, fuzzy
@@ -19362,15 +19340,15 @@ msgstr "公證"
 
 #: platform/osx/export/export.cpp
 msgid "Apple ID Name"
-msgstr ""
+msgstr "Apple ID 名稱"
 
 #: platform/osx/export/export.cpp
 msgid "Apple ID Password"
-msgstr ""
+msgstr "Apple ID 密碼"
 
 #: platform/osx/export/export.cpp
 msgid "Apple Team ID"
-msgstr ""
+msgstr "Apple 團隊 ID"
 
 #: platform/osx/export/export.cpp
 msgid "Could not open icon file \"%s\"."
@@ -20004,7 +19982,7 @@ msgstr ""
 
 #: platform/windows/export/export.cpp
 msgid "Wine"
-msgstr ""
+msgstr "Wine"
 
 #: platform/x11/export/export.cpp
 msgid "32-bit executables cannot have embedded data >= 4 GiB."
@@ -27006,7 +26984,7 @@ msgstr "混合 (Mix)"
 
 #: servers/audio/effects/audio_effect_compressor.cpp
 msgid "Sidechain"
-msgstr ""
+msgstr "側鏈"
 
 #: servers/audio/effects/audio_effect_delay.cpp
 msgid "Tap 1"
