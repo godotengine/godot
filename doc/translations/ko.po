@@ -19,12 +19,13 @@
 # 이지민 <jiminaleejung@gmail.com>, 2022.
 # nulltable <un5450@naver.com>, 2022.
 # Godoto <aicompose@gmail.com>, 2022.
+# 오지훈 <jule1130@naver.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2022-10-18 18:00+0000\n"
-"Last-Translator: Godoto <aicompose@gmail.com>\n"
+"PO-Revision-Date: 2023-01-19 14:47+0000\n"
+"Last-Translator: 오지훈 <jule1130@naver.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot-class-reference/ko/>\n"
 "Language: ko\n"
@@ -32,11 +33,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.15-dev\n"
+"X-Generator: Weblate 4.15.1\n"
 
 #: doc/tools/make_rst.py
 msgid "Description"
-msgstr "서술"
+msgstr "설명"
 
 #: doc/tools/make_rst.py
 msgid "Tutorials"
@@ -30234,7 +30235,11 @@ msgid ""
 "using an [AnimatedTexture], only the first frame will be displayed.\n"
 "[b]Note:[/b] Only images imported with the [b]Lossless[/b], [b]Lossy[/b] or "
 "[b]Uncompressed[/b] compression modes are supported. The [b]Video RAM[/b] "
-"compression mode can't be used for custom cursors."
+"compression mode can't be used for custom cursors.\n"
+"[b]Note:[/b] On the web platform, the maximum allowed cursor image size is "
+"128×128. Cursor images larger than 32×32 will also only be displayed if the "
+"mouse cursor image is entirely located within the page for [url=https://"
+"chromestatus.com/feature/5825971391299584]security reasons[/url]."
 msgstr ""
 
 #: doc/classes/Input.xml
