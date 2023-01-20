@@ -30,6 +30,7 @@
 
 #include "shader_preprocessor.h"
 #include "core/math/expression.h"
+#include "core/object/class_db.h"
 
 const char32_t CURSOR = 0xFFFF;
 
@@ -482,17 +483,9 @@ void ShaderPreprocessor::process_elif(Tokenizer *p_tokenizer) {
 		return;
 	}
 
-	Expression expression;
-	Vector<String> names;
-	error = expression.parse(body, names);
+	Variant result;
+	error = execute_condition(body, line, result);
 	if (error != OK) {
-		set_error(expression.get_error_text(), line);
-		return;
-	}
-
-	Variant v = expression.execute(Array(), nullptr, false);
-	if (v.get_type() == Variant::NIL) {
-		set_error(RTR("Condition evaluation error."), line);
 		return;
 	}
 
@@ -504,7 +497,7 @@ void ShaderPreprocessor::process_elif(Tokenizer *p_tokenizer) {
 		}
 	}
 
-	bool success = !skip && v.booleanize();
+	bool success = !skip && result.booleanize();
 	start_branch_condition(p_tokenizer, success, true);
 
 	if (state->save_regions) {
@@ -587,21 +580,13 @@ void ShaderPreprocessor::process_if(Tokenizer *p_tokenizer) {
 		return;
 	}
 
-	Expression expression;
-	Vector<String> names;
-	error = expression.parse(body, names);
+	Variant result;
+	error = execute_condition(body, line, result);
 	if (error != OK) {
-		set_error(expression.get_error_text(), line);
 		return;
 	}
 
-	Variant v = expression.execute(Array(), nullptr, false);
-	if (v.get_type() == Variant::NIL) {
-		set_error(RTR("Condition evaluation error."), line);
-		return;
-	}
-
-	bool success = v.booleanize();
+	bool success = result.booleanize();
 	start_branch_condition(p_tokenizer, success);
 
 	if (state->save_regions) {
@@ -804,6 +789,34 @@ void ShaderPreprocessor::add_region(int p_line, bool p_enabled, Region *p_parent
 	region.from_line = p_line;
 	region.parent = p_parent_region;
 	state->previous_region = &state->regions[region.file].push_back(region)->get();
+}
+
+Error ShaderPreprocessor::execute_condition(const String &p_code, int p_line, Variant &p_result) {
+	Vector<String> names;
+	Array inputs;
+
+	List<Engine::Singleton> singletons;
+	Engine::get_singleton()->get_singletons(&singletons);
+	for (const Engine::Singleton &singleton : singletons) {
+		names.append(singleton.name);
+		inputs.append(singleton.ptr);
+	}
+
+	Expression expression;
+	Error error = expression.parse(p_code, names);
+	if (error != OK) {
+		set_error(expression.get_error_text(), p_line);
+		return FAILED;
+	}
+
+	Variant v = expression.execute(inputs, nullptr, false);
+	if (expression.has_execute_failed()) {
+		set_error(RTR("Condition evaluation error") + ": " + expression.get_error_text(), p_line);
+		return FAILED;
+	}
+	p_result = v;
+
+	return OK;
 }
 
 void ShaderPreprocessor::start_branch_condition(Tokenizer *p_tokenizer, bool p_success, bool p_continue) {
