@@ -748,6 +748,7 @@ public:
 	uint32_t recursive_hash(int recursion_count) const;
 
 	bool hash_compare(const Variant &p_variant, int recursion_count = 0) const;
+	bool identity_compare(const Variant &p_variant) const;
 	bool booleanize() const;
 	String stringify(int recursion_count = 0) const;
 	String to_json_string() const;
