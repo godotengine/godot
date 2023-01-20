@@ -22,13 +22,14 @@
 # emnrx <emanuelermancia@gmail.com>, 2022.
 # Mau_Restor <restor@gmail.com>, 2022.
 # Leonardo Martínez <leonardomartinez85@gmail.com>, 2022.
+# LR <nancok@tuta.io>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-11-26 14:36+0000\n"
-"Last-Translator: emnrx <emanuelermancia@gmail.com>\n"
+"PO-Revision-Date: 2023-01-01 05:48+0000\n"
+"Last-Translator: LR <nancok@tuta.io>\n"
 "Language-Team: Spanish (Argentina) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/es_AR/>\n"
 "Language: es_AR\n"
@@ -36,7 +37,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.15-dev\n"
+"X-Generator: Weblate 4.15.1-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -286,11 +287,11 @@ msgstr ""
 
 #: core/io/packet_peer.cpp
 msgid "Input Buffer Max Size"
-msgstr ""
+msgstr "Tamaño maximo del bufer de entrada"
 
 #: core/io/packet_peer.cpp
 msgid "Output Buffer Max Size"
-msgstr ""
+msgstr "Tamaño maximo del buffer de salida"
 
 #: core/io/packet_peer.cpp
 msgid "Stream Peer"
@@ -505,8 +506,9 @@ msgid "Strength"
 msgstr "Fuerza"
 
 #: core/os/input_event.cpp
+#, fuzzy
 msgid "Delta"
-msgstr ""
+msgstr "Delta"
 
 #: core/os/input_event.cpp
 msgid "Channel"
@@ -721,7 +723,7 @@ msgstr "Superior Derecha"
 
 #: core/project_settings.cpp
 msgid "UI Up"
-msgstr ""
+msgstr "Interfaz Arriba"
 
 #: core/project_settings.cpp
 #, fuzzy
@@ -735,7 +737,7 @@ msgstr "Página: "
 
 #: core/project_settings.cpp
 msgid "UI Page Down"
-msgstr ""
+msgstr "Interfaz Bajar Pagina"
 
 #: core/project_settings.cpp
 msgid "UI Home"
@@ -1013,7 +1015,7 @@ msgstr "Usar Muestreo Bicúbico"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Max Renderable Elements"
-msgstr ""
+msgstr "Cantidad Maxima de Elementos Renderizables"
 
 #: drivers/gles3/rasterizer_scene_gles3.cpp
 msgid "Max Renderable Lights"
@@ -11251,7 +11253,7 @@ msgstr "Perspectiva Trasera"
 msgid " [auto]"
 msgstr " [auto]"
 
-#. TRANSLATORS: This will be appended to the view name when Portal Occulusion is enabled.
+#. TRANSLATORS: This will be appended to the view name when Portal Occlusion is enabled.
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid " [portals active]"
 msgstr " [portales activos]"
