@@ -14,7 +14,7 @@
 # Diego López <diegodario21@gmail.com>, 2017.
 # eon-s <emanuel.segretin@gmail.com>, 2018, 2019, 2020.
 # Gustavo Leon <gleondiaz@gmail.com>, 2017-2018.
-# Javier Ocampos <xavier.ocampos@gmail.com>, 2018, 2019, 2020, 2021, 2022.
+# Javier Ocampos <xavier.ocampos@gmail.com>, 2018, 2019, 2020, 2021, 2022, 2023.
 # Jose Maria Martinez <josemar1992@hotmail.com>, 2018.
 # Juan Quiroga <juanquiroga9@gmail.com>, 2017.
 # Kiji Pixel <raccoon.fella@gmail.com>, 2017.
@@ -90,14 +90,15 @@
 # M3CG <cgmario1999@gmail.com>, 2022.
 # Chalan <Valentin06ch@outlook.com>, 2022.
 # Luis Miguel Soto Sánchez <luismiguelsoto@jerez.es>, 2022.
-# Victor Stancioiu <victorstancioiu@gmail.com>, 2022.
+# Victor Stancioiu <victorstancioiu@gmail.com>, 2022, 2023.
+# Daniel Miranda <danmiranda@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-11-16 22:47+0000\n"
-"Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
+"PO-Revision-Date: 2023-01-20 10:19+0000\n"
+"Last-Translator: Daniel Miranda <danmiranda@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
 "Language: es\n"
@@ -105,7 +106,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.15-dev\n"
+"X-Generator: Weblate 4.15.1\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -11041,7 +11042,7 @@ msgstr "Perspectiva Trasera"
 msgid " [auto]"
 msgstr " [auto]"
 
-#. TRANSLATORS: This will be appended to the view name when Portal Occulusion is enabled.
+#. TRANSLATORS: This will be appended to the view name when Portal Occlusion is enabled.
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid " [portals active]"
 msgstr " [portales activos]"
@@ -14308,17 +14309,15 @@ msgid "Invalid project path (changed anything?)."
 msgstr "La ruta del proyecto no es correcta (¿has cambiado algo?)."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid ""
 "Couldn't load project at '%s' (error %d). It may be missing or corrupted."
 msgstr ""
-"No se pudo cargar project.godot desde la ruta de proyecto (error %d). La "
-"ruta no existe o está corrupta."
+"No se pudo cargar el proyecto desde la ruta '%s' (error %d). La ruta no "
+"existe o está corrupta."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Couldn't save project at '%s' (error %d)."
-msgstr "No se puede abrir el proyecto en '%s'."
+msgstr "No se pudo guardar el proyecto en '%s' (error %d)."
 
 #: editor/project_manager.cpp
 msgid "Couldn't create project.godot in project path."
@@ -22304,7 +22303,7 @@ msgstr ""
 
 #: scene/3d/mesh_instance.cpp
 msgid "Transform Normals"
-msgstr "Transformar Normales"
+msgstr "Normales de Transformación"
 
 #: scene/3d/navigation.cpp
 msgid ""
@@ -23243,14 +23242,12 @@ msgid "AABB"
 msgstr "AABB"
 
 #: scene/3d/visual_instance.cpp
-#, fuzzy
 msgid "Sorting"
 msgstr "Ordenar"
 
 #: scene/3d/visual_instance.cpp
-#, fuzzy
 msgid "Use AABB Center"
-msgstr "Usar Ambiente"
+msgstr "Usar Centro de AABB"
 
 #: scene/3d/visual_instance.cpp scene/resources/navigation_mesh.cpp
 msgid "Geometry"
@@ -25064,7 +25061,7 @@ msgstr "Marcar"
 
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Updown"
-msgstr ""
+msgstr "Reducción"
 
 #: scene/resources/default_theme/default_theme.cpp
 msgid "Scaleborder Size"
@@ -25544,11 +25541,11 @@ msgstr "Grados de Rotación del Cielo"
 
 #: scene/resources/environment.cpp
 msgid "Canvas Max Layer"
-msgstr ""
+msgstr "Max de Capas del Lienzo"
 
 #: scene/resources/environment.cpp scene/resources/texture.cpp
 msgid "Camera Feed ID"
-msgstr ""
+msgstr "Feed ID de la Cámara"
 
 #: scene/resources/environment.cpp
 msgid "Ambient Light"
@@ -25688,7 +25685,7 @@ msgstr "Nitidez de Borde"
 
 #: scene/resources/environment.cpp
 msgid "DOF Far Blur"
-msgstr ""
+msgstr "DOF Desenfoque Lejano"
 
 #: scene/resources/environment.cpp scene/resources/material.cpp
 msgid "Distance"
@@ -25700,7 +25697,7 @@ msgstr "Transición"
 
 #: scene/resources/environment.cpp
 msgid "DOF Near Blur"
-msgstr ""
+msgstr "DOF Desenfoque Cercano"
 
 #: scene/resources/environment.cpp
 msgid "Glow"
@@ -25760,7 +25757,7 @@ msgstr "Escala HDR"
 
 #: scene/resources/environment.cpp
 msgid "Bicubic Upscale"
-msgstr ""
+msgstr "Escala Bicúbica Superior"
 
 #: scene/resources/environment.cpp
 msgid "Adjustments"
@@ -25816,7 +25813,7 @@ msgstr "Siguiente Paso"
 
 #: scene/resources/material.cpp
 msgid "Use Shadow To Opacity"
-msgstr ""
+msgstr "Usar Sombra para Opacidad"
 
 #: scene/resources/material.cpp
 msgid "Unshaded"
@@ -26655,15 +26652,15 @@ msgstr "Mezcla"
 
 #: servers/audio/effects/audio_effect_compressor.cpp
 msgid "Sidechain"
-msgstr ""
+msgstr "Sidechain"
 
 #: servers/audio/effects/audio_effect_delay.cpp
 msgid "Tap 1"
-msgstr "Toque 1"
+msgstr "Tap 1"
 
 #: servers/audio/effects/audio_effect_delay.cpp
 msgid "Tap 2"
-msgstr "Toque 2"
+msgstr "Tap 2"
 
 #: servers/audio/effects/audio_effect_delay.cpp
 #: servers/audio/effects/audio_effect_phaser.cpp
@@ -26681,7 +26678,7 @@ msgstr "Pre-Ganancia"
 
 #: servers/audio/effects/audio_effect_distortion.cpp
 msgid "Keep Hf Hz"
-msgstr "Mantener Hz Altas"
+msgstr "Mantener Hf Hz"
 
 #: servers/audio/effects/audio_effect_distortion.cpp
 msgid "Drive"
@@ -26697,19 +26694,19 @@ msgstr "Resonancia"
 
 #: servers/audio/effects/audio_effect_limiter.cpp
 msgid "Ceiling dB"
-msgstr "dB Tope"
+msgstr "Límite de dB"
 
 #: servers/audio/effects/audio_effect_limiter.cpp
 msgid "Threshold dB"
-msgstr "Umbral dB"
+msgstr "Umbral de dB"
 
 #: servers/audio/effects/audio_effect_limiter.cpp
 msgid "Soft Clip dB"
-msgstr ""
+msgstr "Soft Clip dB"
 
 #: servers/audio/effects/audio_effect_limiter.cpp
 msgid "Soft Clip Ratio"
-msgstr ""
+msgstr "Soft Clip Ratio"
 
 #: servers/audio/effects/audio_effect_phaser.cpp
 msgid "Range Min Hz"
@@ -26721,7 +26718,7 @@ msgstr "Rango Hz Máximo"
 
 #: servers/audio/effects/audio_effect_pitch_shift.cpp
 msgid "Oversampling"
-msgstr "Sobremuestreo"
+msgstr "Oversampling"
 
 #: servers/audio/effects/audio_effect_pitch_shift.cpp
 #: servers/audio/effects/audio_effect_spectrum_analyzer.cpp
@@ -26730,7 +26727,7 @@ msgstr "Tamaño de FFT"
 
 #: servers/audio/effects/audio_effect_reverb.cpp
 msgid "Predelay"
-msgstr ""
+msgstr "Retraso"
 
 #: servers/audio/effects/audio_effect_reverb.cpp
 msgid "Msec"
@@ -27050,7 +27047,7 @@ msgstr ""
 
 #: servers/visual_server.cpp
 msgid "Disable For Vendors"
-msgstr ""
+msgstr "Deshabilitar para Proveedores"
 
 #: servers/visual_server.cpp
 msgid "Anisotropic Filter Level"
@@ -27182,7 +27179,7 @@ msgstr "Usar PVS Simple"
 
 #: servers/visual_server.cpp
 msgid "PVS Logging"
-msgstr ""
+msgstr "Registro de PVS"
 
 #: servers/visual_server.cpp
 msgid "Use Signals"

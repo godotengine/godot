@@ -8,19 +8,20 @@
 # René <renepiik@gmail.com>, 2020.
 # Kritzmensch <streef.gtx@gmail.com>, 2021, 2022.
 # dogyx <aaronloit@zohomail.eu>, 2022.
+# Oskar U <oskar.unn2003@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2022-09-16 07:12+0000\n"
-"Last-Translator: dogyx <aaronloit@zohomail.eu>\n"
+"PO-Revision-Date: 2023-01-08 09:47+0000\n"
+"Last-Translator: Oskar U <oskar.unn2003@gmail.com>\n"
 "Language-Team: Estonian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/et/>\n"
 "Language: et\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.14.1-dev\n"
+"X-Generator: Weblate 4.15.1-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -9377,18 +9378,18 @@ msgstr "Lülita jagamisrežiim sisse/välja"
 #: scene/gui/rich_text_label.cpp scene/gui/text_edit.cpp
 #: scene/resources/primitive_meshes.cpp
 msgid "Text"
-msgstr ""
+msgstr "Tekst"
 
 #: editor/plugins/item_list_editor_plugin.cpp
 #: editor/plugins/tile_set_editor_plugin.cpp main/main.cpp
 #: platform/osx/export/export.cpp platform/windows/export/export.cpp
 #: scene/gui/button.cpp scene/gui/item_list.cpp
 msgid "Icon"
-msgstr ""
+msgstr "Ikoon"
 
 #: editor/plugins/item_list_editor_plugin.cpp
 msgid "ID"
-msgstr ""
+msgstr "ID"
 
 #: editor/plugins/item_list_editor_plugin.cpp
 #: scene/resources/default_theme/default_theme.cpp
@@ -10857,7 +10858,7 @@ msgstr "Perspektiiv"
 msgid " [auto]"
 msgstr ""
 
-#. TRANSLATORS: This will be appended to the view name when Portal Occulusion is enabled.
+#. TRANSLATORS: This will be appended to the view name when Portal Occlusion is enabled.
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid " [portals active]"
 msgstr ""
