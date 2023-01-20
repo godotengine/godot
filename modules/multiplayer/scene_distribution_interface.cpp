@@ -30,11 +30,13 @@ void SceneDistributionInterface::set_own_peer_as_glb_creator()
 	printf("SceneDistributionInterface::set_own_peer_as_glb_creator\n");
 
 	//check if the glb_create batch script is there
-	std::ifstream f(externally_create_glb_script.ascii().get_data() );
-	if (!f.good()) {
+	Error err;
+	Ref<FileAccess> f = FileAccess::open(externally_create_glb_script, FileAccess::READ, &err);
+	if (f.is_null()) {
 		printf("There is no create glb script at %s , so cannot set glb_creator\n", externally_create_glb_script.ascii().get_data());
 		return;
 	}
+
 
 	//check if glb storage path directory is there
 	struct stat st;
