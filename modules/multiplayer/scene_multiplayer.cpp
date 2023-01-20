@@ -69,52 +69,7 @@ void SceneMultiplayer::_update_status() {
 	}
 }
 
-void SceneMultiplayer::_check_glb_existence(const String& p_path, int id)
-{
-	printf("SceneMultiplayer::_check_glb_existence\n");
 
-	int packet_len = SYS_CMD_SIZE + (p_path.size() * 4) + 4;
-	printf("packet_len:%d", packet_len);
-
-	if (get_unique_id() == 1) {
-		printf("SceneMultiplayer::_check_glb_existence->we are server\n");
-
-		// ask other if they know the glb
-		std::vector<uint8_t> buf(packet_len, 0);
-		//uint8_t buf[sizeConstant];
-		buf[0] = NETWORK_COMMAND_SYS;
-		buf[1] = SYS_COMMAND_CHECK_GLB_EXISTENCE;
-		multiplayer_peer->set_transfer_channel(0);
-		multiplayer_peer->set_transfer_mode(MultiplayerPeer::TRANSFER_MODE_RELIABLE);
-		encode_uint32(id, &buf[2]);
-
-		encode_uint32(p_path.size()*4, &buf[6]);
-		printf("sizeof -> p_path ->4bytes->:%i\n", p_path.size());
-		printf("p_path=%s\n", p_path.ascii().get_data());
-
-		int startIndex = 10;
-		encode_cstring(p_path.utf8().get_data(),  &buf[startIndex]);
-		//for (int i = 0; i < p_path.size(); i++) {
-		//	char32_t oneChar = p_path.get(i);
-		//	encode_uint32(oneChar, &buf[startIndex + i]);
-		//	
-		//	startIndex += 4;
-		//}
-			
-
-		for (const int& P : connected_peers) {
-		/*	if (P == 1) {
-				continue;
-			}*/
-
-			//tell distributor to which peer we send, which file_name we want to distribute
-			
-
-			multiplayer_peer->set_target_peer(P);
-			_send(buf.data(), packet_len);
-		}
-	}
-}
 
 // A signal from scene_distributor_interface calls this function, when some peer set itself as
 // a glb creator.
@@ -434,82 +389,15 @@ void SceneMultiplayer::_process_sys(int p_from, const uint8_t *p_packet, int p_p
 				remote_sender_id = 0;
 			}
 		} break;
-		case SYS_COMMAND_CHECK_GLB_EXISTENCE: {
-			printf("SYS_COMMAND_CHECK_GLB_EXISTENCE\n");
+		// All clients run this after some peer has set itself as glb creator
+		// So all clients know the peer to send glb-requests to
+		case SYS_COMMAND_SET_GLB_PEER: {
+			printf("SYS_COMMAND_SET_GLB_PEER we-are:%d\n", get_unique_id());
 
-			//get path from packet
-			const uint8_t* packet = p_packet + SYS_CMD_SIZE;
-			//int len = p_packet_len - SYS_CMD_SIZE;
-			//printf("SYS_CMD: len:%i\n", len);
-
-			//read paket_len from packet, 4bytes
-			uint32_t path_len = decode_uint32(packet);
-			printf("packet-len-from-packet:%u\n", path_len);
-			packet += 4;
-
-			String glb_path;
-			glb_path.parse_utf8((const char*)(packet), (path_len / 4));
-
-			printf("glb-path is:");
-			printf(glb_path.ascii().get_data());
-			printf("\n");
-
-			//check in path user://distribute_glb if there is a e.g. Fox.glb
-			String user_glb_path_prefix("user://distribute_glb/");
-			String user_glb_path(user_glb_path_prefix + glb_path);
-
-			int glb_file_exists = 0;
-			if (ResourceLoader::exists(user_glb_path)) {
-				printf("path %s exists\n", user_glb_path.ascii().get_data());
-				glb_file_exists = 1;
-			}
-			else {
-				printf("path %s NOT exists\n", user_glb_path.ascii().get_data());
-				glb_file_exists = 0;
-			}
-
-			int packet_len = SYS_CMD_SIZE + 4 + glb_path.size();
-			printf("packet_len to send:%d", packet_len);
-
-			// ask other if they know the glb
-			std::vector<uint8_t> buf(packet_len, 0);
-			//uint8_t buf[sizeConstant];
-			buf[0] = NETWORK_COMMAND_SYS;
-			buf[1] = SYS_COMMAND_COLLECT_CHECK_GLB_EXISTENCE;
-			multiplayer_peer->set_transfer_channel(0);
-			multiplayer_peer->set_transfer_mode(MultiplayerPeer::TRANSFER_MODE_RELIABLE);
-			encode_uint32(1, &buf[2]);  //we send answer to server
-
-			encode_uint32(glb_file_exists, &buf[6]); //we send 0/1 as result
-
-			encode_cstring(glb_path.ascii().get_data(), &buf[10]),  //we send the file-name back
-
-			multiplayer_peer->set_target_peer(1);
-			_send(buf.data(), packet_len);
+			//read glb-creator-peer from packet, packet_len - 6
+			distributor->set_glb_creator_peer(decode_uint32(p_packet + SYS_CMD_SIZE)) ;
 			
-
-		} break;
-		case SYS_COMMAND_COLLECT_CHECK_GLB_EXISTENCE: {
-			printf("SYS_COMMAND_COLLECT_CHECK_GLB_EXISTENCE\n");
-
-			//set packet to start of payload
-			const uint8_t* packet = p_packet + SYS_CMD_SIZE;
-
-			//read true/false from packet, 4bytes
-			uint32_t result = decode_uint32(packet);
-			printf("result-from-id:%d result:%u\n",p_from, result);
-			packet += 4;
-
-			//read file-name from packet, packet_len - 10
-			String file_name;
-			printf("result-packet len:%d", p_packet_len);
-			file_name.parse_utf8((const char*)(packet), (p_packet_len-10));
-
-			printf("file_name is:");
-			printf(file_name.ascii().get_data());
-			printf("\n");
-
-			distributor->set_glb_existence_info(p_from, result, file_name.ascii().get_data());
+			printf("glb_creator_peer is:%u from:%d myself:%d\n", distributor->get_glb_creator_peer(), p_from, get_unique_id());
 
 		} break;
 		// Should only run by the peer that set itself as glb_creator_peer
@@ -517,7 +405,7 @@ void SceneMultiplayer::_process_sys(int p_from, const uint8_t *p_packet, int p_p
 			printf("SYS_COMMAND_REQUEST_GLB\n");
 
 			//check if we are the glb_creator_peer
-			if (distributor->glb_creator_peer == get_unique_id()) {
+			if (distributor->get_glb_creator_peer() == get_unique_id()) {
 				//set packet to start of payload
 				const uint8_t* packet = p_packet + SYS_CMD_SIZE;
 
@@ -533,25 +421,15 @@ void SceneMultiplayer::_process_sys(int p_from, const uint8_t *p_packet, int p_p
 				}
 				else {
 					printf("glb file NOT already requested, will create and distribute it\n");
-					//set in requested HashSet
+					//insert into requested HashSet, NOW IN poll() WE POLL TILL FILE IS FOUND
+					// OR THERE IS NO REQUESTED GLB ANYMORE
 					get_distributor()->set_glb_as_requested(glb_name.ascii().get_data());
 					//request a create of the glb
 					distributor->request_to_externally_create_glb(glb_name.ascii().get_data());
 				}
 			}
 		} break;
-		// All clients run this after some peer has set itself as glb creator
-		// So all clients know the peer to send glb-requests to
-		case SYS_COMMAND_SET_GLB_PEER: {
-			printf("SYS_COMMAND_SET_GLB_PEER we-are:%d\n", get_unique_id());
-
-			//read glb-creator-peer from packet, packet_len - 6
-			uint32_t glb_creator_peer = decode_uint32(p_packet + SYS_CMD_SIZE);
-			distributor->glb_creator_peer = glb_creator_peer;
-
-			printf("glb_creator_peer is:%u from:%d myself:%d\n", glb_creator_peer, p_from, get_unique_id());
-
-		} break;
+		// Runs by all clients, receive .glb from glb_creator_peer, create scene and to add_spawnable_scene
 		case SYS_COMMAND_DISTRIBUTE_GLB: {
 			printf("SYS_COMMAND_DISTRIBUTE_GLB we-are:%d\n", get_unique_id());
 
@@ -570,8 +448,6 @@ void SceneMultiplayer::_process_sys(int p_from, const uint8_t *p_packet, int p_p
 			//read glb_file_PBA
 			PackedByteArray distributed_glb;
 			distributed_glb.resize(glb_file_PBA_length);
-
-			printf("distribute-glb-sys p_packet_len:%d\n", p_packet_len);
 
 			packet = packet + 8 + glb_name_length;
 			for (uint32_t i = 0; i < glb_file_PBA_length; i++) {
@@ -916,7 +792,6 @@ SceneMultiplayer::SceneMultiplayer() {
 	cache = Ref<SceneCacheInterface>(memnew(SceneCacheInterface(this)));
 
 	distributor = Ref<SceneDistributionInterface>(memnew(SceneDistributionInterface(this)));
-	distributor->connect("_check_glb_existence", callable_mp(this, &SceneMultiplayer::_check_glb_existence));
 	distributor->connect("_set_glb_creator_peer", callable_mp(this, &SceneMultiplayer::_set_glb_creator_peer));
 
 	

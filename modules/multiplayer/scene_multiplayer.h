@@ -83,11 +83,9 @@ public:
 		SYS_COMMAND_ADD_PEER,
 		SYS_COMMAND_DEL_PEER,
 		SYS_COMMAND_RELAY,
-		SYS_COMMAND_REQUEST_GLB,
 		SYS_COMMAND_SET_GLB_PEER,
+		SYS_COMMAND_REQUEST_GLB,
 		SYS_COMMAND_DISTRIBUTE_GLB,
-		SYS_COMMAND_CHECK_GLB_EXISTENCE,
-		SYS_COMMAND_COLLECT_CHECK_GLB_EXISTENCE,
 	};
 
 	enum {
@@ -157,7 +155,6 @@ protected:
 	void _del_peer(int p_id);
 	void _update_status();
 
-	void _check_glb_existence(const String& p_path, int id);
 	void _set_glb_creator_peer(int peer);
 
 public:
