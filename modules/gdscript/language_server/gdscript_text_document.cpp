@@ -107,6 +107,7 @@ void GDScriptTextDocument::didSave(const Variant &p_param) {
 		} else {
 			scr->reload(true);
 		}
+		scr->update_exports();
 		ScriptEditor::get_singleton()->update_docs_from_script(scr);
 	}
 }
