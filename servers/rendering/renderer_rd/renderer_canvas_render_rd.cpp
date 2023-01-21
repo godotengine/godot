@@ -455,7 +455,7 @@ void RendererCanvasRenderRD::_render_item(RD::DrawListID p_draw_list, RID p_rend
 
 				light_count++;
 
-				if (light_count == MAX_LIGHTS_PER_ITEM) {
+				if (light_count == MAX_LIGHTS_PER_ITEM - 1) {
 					break;
 				}
 			}
