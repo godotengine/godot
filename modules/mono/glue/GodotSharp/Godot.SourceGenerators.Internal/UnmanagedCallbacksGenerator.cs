@@ -172,11 +172,7 @@ using Godot.NativeInterop;
             {
                 var parameter = callback.Parameters[i];
 
-                AppendRefKind(source, parameter.RefKind);
-                source.Append(' ');
-                source.Append(parameter.Type.FullQualifiedNameIncludeGlobal());
-                source.Append(' ');
-                source.Append(parameter.Name);
+                source.Append(parameter.DeclaringSyntaxReferences[0].GetSyntax().ToString());
 
                 if (parameter.RefKind == RefKind.Out)
                 {
