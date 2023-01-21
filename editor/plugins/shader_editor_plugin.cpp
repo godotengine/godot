@@ -117,6 +117,10 @@ void ShaderEditorPlugin::_move_shader_tab(int p_from, int p_to) {
 }
 
 void ShaderEditorPlugin::edit(Object *p_object) {
+	if (!p_object) {
+		return;
+	}
+
 	EditedShader es;
 
 	ShaderInclude *si = Object::cast_to<ShaderInclude>(p_object);

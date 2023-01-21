@@ -68,6 +68,7 @@ class EditorLayoutsDialog;
 class EditorLog;
 class EditorPluginList;
 class EditorQuickOpen;
+class EditorPropertyResource;
 class EditorResourcePreview;
 class EditorResourceConversionPlugin;
 class EditorRun;
@@ -293,6 +294,8 @@ private:
 	bool _initializing_plugins = false;
 	HashMap<String, EditorPlugin *> addon_name_to_plugin;
 	LocalVector<String> pending_addons;
+	HashMap<ObjectID, HashSet<EditorPlugin *>> active_plugins;
+	bool is_main_screen_editing = false;
 
 	PanelContainer *scene_root_parent = nullptr;
 	Control *theme_base = nullptr;
@@ -592,10 +595,6 @@ private:
 	void _inherit_request(String p_file);
 	void _instantiate_request(const Vector<String> &p_files);
 
-	void _display_top_editors(bool p_display);
-	void _set_top_editors(Vector<EditorPlugin *> p_editor_plugins_over);
-	void _set_editing_top_editors(Object *p_current_object);
-
 	void _quick_opened();
 	void _quick_run();
 	void _open_command_palette();
@@ -796,9 +795,8 @@ public:
 	void show_about() { _menu_option_confirm(HELP_ABOUT, false); }
 
 	void push_item(Object *p_object, const String &p_property = "", bool p_inspector_only = false);
-	void edit_item(Object *p_object);
-	void edit_item_resource(Ref<Resource> p_resource);
-	void hide_top_editors();
+	void edit_item(Object *p_object, Object *p_editing_owner);
+	void hide_unused_editors(const Object *p_editing_owner = nullptr);
 
 	void select_editor_by_name(const String &p_name);
 

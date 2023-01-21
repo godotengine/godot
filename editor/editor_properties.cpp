@@ -3905,40 +3905,7 @@ void EditorPropertyResource::_open_editor_pressed() {
 	Ref<Resource> res = get_edited_object()->get(get_edited_property());
 	if (res.is_valid()) {
 		// May clear the editor so do it deferred.
-		callable_mp(EditorNode::get_singleton(), &EditorNode::edit_item_resource).bind(res).call_deferred();
-	}
-}
-
-void EditorPropertyResource::_fold_other_editors(Object *p_self) {
-	if (this == p_self) {
-		return;
-	}
-
-	Ref<Resource> res = get_edited_object()->get(get_edited_property());
-	if (!res.is_valid()) {
-		return;
-	}
-
-	bool use_editor = false;
-	for (int i = 0; i < EditorNode::get_editor_data().get_editor_plugin_count(); i++) {
-		EditorPlugin *ep = EditorNode::get_editor_data().get_editor_plugin(i);
-		if (ep->handles(res.ptr())) {
-			use_editor = true;
-			break;
-		}
-	}
-	if (!use_editor) {
-		return;
-	}
-
-	opened_editor = false;
-
-	bool unfolded = get_edited_object()->editor_is_section_unfolded(get_edited_property());
-	if (unfolded) {
-		// Refold.
-		resource_picker->set_toggle_pressed(false);
-		get_edited_object()->editor_set_section_unfold(get_edited_property(), false);
-		update_property();
+		callable_mp(EditorNode::get_singleton(), &EditorNode::edit_item).bind(res.ptr(), this).call_deferred();
 	}
 }
 
@@ -4091,20 +4058,17 @@ void EditorPropertyResource::update_property() {
 				sub_inspector_vbox->add_child(sub_inspector);
 				resource_picker->set_toggle_pressed(true);
 
-				bool use_editor = false;
+				Array editor_list;
 				for (int i = 0; i < EditorNode::get_editor_data().get_editor_plugin_count(); i++) {
 					EditorPlugin *ep = EditorNode::get_editor_data().get_editor_plugin(i);
 					if (ep->handles(res.ptr())) {
-						use_editor = true;
+						editor_list.push_back(ep);
 					}
 				}
 
-				if (use_editor) {
-					// Open editor directly and hide other such editors which are currently open.
+				if (!editor_list.is_empty()) {
+					// Open editor directly.
 					_open_editor_pressed();
-					if (is_inside_tree()) {
-						get_tree()->call_deferred(SNAME("call_group"), "_editor_resource_properties", "_fold_other_editors", this);
-					}
 					opened_editor = true;
 				}
 
@@ -4123,7 +4087,7 @@ void EditorPropertyResource::update_property() {
 				sub_inspector_vbox = nullptr;
 
 				if (opened_editor) {
-					EditorNode::get_singleton()->hide_top_editors();
+					EditorNode::get_singleton()->hide_unused_editors();
 					opened_editor = false;
 				}
 
@@ -4157,6 +4121,15 @@ void EditorPropertyResource::set_use_sub_inspector(bool p_enable) {
 	use_sub_inspector = p_enable;
 }
 
+void EditorPropertyResource::fold_resource() {
+	bool unfolded = get_edited_object()->editor_is_section_unfolded(get_edited_property());
+	if (unfolded) {
+		resource_picker->set_toggle_pressed(false);
+		get_edited_object()->editor_set_section_unfold(get_edited_property(), false);
+		update_property();
+	}
+}
+
 void EditorPropertyResource::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
@@ -4168,14 +4141,8 @@ void EditorPropertyResource::_notification(int p_what) {
 	}
 }
 
-void EditorPropertyResource::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_fold_other_editors"), &EditorPropertyResource::_fold_other_editors);
-}
-
 EditorPropertyResource::EditorPropertyResource() {
 	use_sub_inspector = bool(EDITOR_GET("interface/inspector/open_resources_in_current_inspector"));
-
-	add_to_group("_editor_resource_properties");
 }
 
 ////////////// DEFAULT PLUGIN //////////////////////
