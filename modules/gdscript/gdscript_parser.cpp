@@ -1789,11 +1789,10 @@ GDScriptParser::BreakNode *GDScriptParser::parse_break() {
 
 GDScriptParser::ContinueNode *GDScriptParser::parse_continue() {
 	if (!can_continue) {
-		push_error(R"(Cannot use "continue" outside of a loop or pattern matching block.)");
+		push_error(R"(Cannot use "continue" outside of a loop.)");
 	}
 	current_suite->has_continue = true;
 	ContinueNode *cont = alloc_node<ContinueNode>();
-	cont->is_for_match = is_continue_match;
 	complete_extents(cont);
 	end_statement(R"("continue")");
 	return cont;
@@ -1819,12 +1818,10 @@ GDScriptParser::ForNode *GDScriptParser::parse_for() {
 	// Save break/continue state.
 	bool could_break = can_break;
 	bool could_continue = can_continue;
-	bool was_continue_match = is_continue_match;
 
 	// Allow break/continue.
 	can_break = true;
 	can_continue = true;
-	is_continue_match = false;
 
 	SuiteNode *suite = alloc_node<SuiteNode>();
 	if (n_for->variable) {
@@ -1842,7 +1839,6 @@ GDScriptParser::ForNode *GDScriptParser::parse_for() {
 	// Reset break/continue state.
 	can_break = could_break;
 	can_continue = could_continue;
-	is_continue_match = was_continue_match;
 
 	return n_for;
 }
@@ -1979,13 +1975,6 @@ GDScriptParser::MatchBranchNode *GDScriptParser::parse_match_branch() {
 		return nullptr;
 	}
 
-	// Save continue state.
-	bool could_continue = can_continue;
-	bool was_continue_match = is_continue_match;
-	// Allow continue for match.
-	can_continue = true;
-	is_continue_match = true;
-
 	SuiteNode *suite = alloc_node<SuiteNode>();
 	if (branch->patterns.size() > 0) {
 		for (const KeyValue<StringName, IdentifierNode *> &E : branch->patterns[0]->binds) {
@@ -1997,10 +1986,6 @@ GDScriptParser::MatchBranchNode *GDScriptParser::parse_match_branch() {
 
 	branch->block = parse_suite("match pattern block", suite);
 	complete_extents(branch);
-
-	// Restore continue state.
-	can_continue = could_continue;
-	is_continue_match = was_continue_match;
 
 	return branch;
 }
@@ -2160,12 +2145,10 @@ GDScriptParser::WhileNode *GDScriptParser::parse_while() {
 	// Save break/continue state.
 	bool could_break = can_break;
 	bool could_continue = can_continue;
-	bool was_continue_match = is_continue_match;
 
 	// Allow break/continue.
 	can_break = true;
 	can_continue = true;
-	is_continue_match = false;
 
 	n_while->loop = parse_suite(R"("while" block)");
 	n_while->loop->is_loop = true;
@@ -2174,7 +2157,6 @@ GDScriptParser::WhileNode *GDScriptParser::parse_while() {
 	// Reset break/continue state.
 	can_break = could_break;
 	can_continue = could_continue;
-	is_continue_match = was_continue_match;
 
 	return n_while;
 }

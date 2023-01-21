@@ -113,7 +113,6 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	List<int> ternary_jump_skip_pos;
 
 	List<List<int>> current_breaks_to_patch;
-	List<List<int>> match_continues_to_patch;
 
 	void add_stack_identifier(const StringName &p_id, int p_stackpos) {
 		if (locals.size() > max_locals) {
@@ -496,12 +495,8 @@ public:
 	virtual void start_while_condition() override;
 	virtual void write_while(const Address &p_condition) override;
 	virtual void write_endwhile() override;
-	virtual void start_match() override;
-	virtual void start_match_branch() override;
-	virtual void end_match() override;
 	virtual void write_break() override;
 	virtual void write_continue() override;
-	virtual void write_continue_match() override;
 	virtual void write_breakpoint() override;
 	virtual void write_newline(int p_line) override;
 	virtual void write_return(const Address &p_return_value) override;
