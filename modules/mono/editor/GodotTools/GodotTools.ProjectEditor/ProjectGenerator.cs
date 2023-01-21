@@ -22,7 +22,7 @@ namespace GodotTools.ProjectEditor
             root.Sdk = GodotSdkAttrValue;
 
             var mainGroup = root.AddPropertyGroup();
-            mainGroup.AddProperty("TargetFramework", "net6.0");
+            mainGroup.AddProperty("TargetFramework", "net7.0");
             mainGroup.AddProperty("EnableDynamicLoading", "true");
 
             string sanitizedName = IdentifierUtils.SanitizeQualifiedIdentifier(name, allowEmptyIdentifiers: true);

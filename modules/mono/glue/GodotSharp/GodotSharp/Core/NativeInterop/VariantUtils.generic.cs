@@ -13,8 +13,10 @@ public partial class VariantUtils
 
     internal static class GenericConversion<T>
     {
-        public static unsafe godot_variant ToVariant(in T from) =>
+        public static unsafe godot_variant ToVariant(scoped in T from) =>
+#pragma warning disable CS9088 // the delegate pointer cannot be marked scoped, but it should be
             ToVariantCb != null ? ToVariantCb(from) : throw UnsupportedType<T>();
+#pragma warning restore CS9088
 
         public static unsafe T FromVariant(in godot_variant variant) =>
             FromVariantCb != null ? FromVariantCb(variant) : throw UnsupportedType<T>();
@@ -34,7 +36,7 @@ public partial class VariantUtils
 
     [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     [SuppressMessage("ReSharper", "RedundantNameQualifier")]
-    public static godot_variant CreateFrom<[MustBeVariant] T>(in T from)
+    public static godot_variant CreateFrom<[MustBeVariant] T>(scoped in T from)
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         static TTo UnsafeAs<TTo>(in T f) => Unsafe.As<T, TTo>(ref Unsafe.AsRef(f));

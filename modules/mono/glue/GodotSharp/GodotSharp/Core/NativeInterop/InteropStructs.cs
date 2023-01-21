@@ -104,7 +104,7 @@ namespace Godot.NativeInterop
         }
     }
 
-    [StructLayout(LayoutKind.Explicit)]
+    [StructLayout(LayoutKind.Sequential, Pack = 8)]
     // ReSharper disable once InconsistentNaming
     public ref struct godot_variant
     {
@@ -112,12 +112,12 @@ namespace Godot.NativeInterop
         internal readonly unsafe godot_variant* GetUnsafeAddress()
             => (godot_variant*)Unsafe.AsPointer(ref Unsafe.AsRef(in _typeField));
 
-        // Variant.Type is generated as an enum of type long, so we can't use for the field as it must only take 32-bits.
-        [FieldOffset(0)] private int _typeField;
+        // Variant.Type is generated as an enum of type long, so we can't use for the field as it must only take 32-bits. (the native enum actually has no fixed underlying type so it is only at least 6 bits long)
+        private int _typeField;
 
         // There's padding here
 
-        [FieldOffset(8)] private godot_variant_data _data;
+        private godot_variant_data _data;
 
         [StructLayout(LayoutKind.Explicit)]
         // ReSharper disable once InconsistentNaming

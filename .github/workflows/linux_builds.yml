@@ -100,7 +100,7 @@ jobs:
         uses: actions/setup-dotnet@v2
         if: ${{ matrix.build-mono }}
         with:
-          dotnet-version: '6.0.x'
+          dotnet-version: '7.0.x'
 
       - name: Setup GCC problem matcher
         uses: ammaraskar/gcc-problem-matcher@master
