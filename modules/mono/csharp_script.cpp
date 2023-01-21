@@ -2606,6 +2606,10 @@ Ref<Script> CSharpScript::get_base_script() const {
 	return base_script;
 }
 
+StringName CSharpScript::get_global_name() const {
+	return StringName();
+}
+
 void CSharpScript::get_script_property_list(List<PropertyInfo> *r_list) const {
 #ifdef TOOLS_ENABLED
 	const CSharpScript *top = this;

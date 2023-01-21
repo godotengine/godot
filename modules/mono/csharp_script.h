@@ -186,6 +186,8 @@ public:
 	bool inherits_script(const Ref<Script> &p_script) const override;
 
 	Ref<Script> get_base_script() const override;
+	StringName get_global_name() const override;
+
 	ScriptLanguage *get_language() const override;
 
 	void get_script_method_list(List<MethodInfo> *p_list) const override;
