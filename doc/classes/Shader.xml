@@ -26,12 +26,12 @@
 				Returns the shader mode for the shader, either [constant MODE_CANVAS_ITEM], [constant MODE_SPATIAL] or [constant MODE_PARTICLES].
 			</description>
 		</method>
-		<method name="has_parameter" qualifiers="const">
-			<return type="bool" />
-			<param index="0" name="name" type="StringName" />
+		<method name="get_shader_uniform_list">
+			<return type="Array" />
+			<param index="0" name="get_groups" type="bool" default="false" />
 			<description>
-				Returns [code]true[/code] if the shader has this param defined as a uniform in its code.
-				[b]Note:[/b] [param name] must match the name of the uniform in the code exactly.
+				Get the list of shader uniforms that can be assigned to a [ShaderMaterial], for use with [method ShaderMaterial.set_shader_parameter] and [method ShaderMaterial.get_shader_parameter]. The parameters returned are contained in dictionaries in a similar format to the ones returned by [method Object.get_property_list].
+				If argument [param get_groups] is true, parameter grouping hints will be provided.
 			</description>
 		</method>
 		<method name="set_default_texture_parameter">
