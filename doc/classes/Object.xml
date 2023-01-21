@@ -883,7 +883,7 @@
 			<param index="0" name="name" type="StringName" />
 			<param index="1" name="value" type="Variant" />
 			<description>
-				Adds or changes the entry [param name] inside the object's metadata. The metadata [param value] can be any [Variant], although some types cannot be serialised correctly.
+				Adds or changes the entry [param name] inside the object's metadata. The metadata [param value] can be any [Variant], although some types cannot be serialized correctly.
 				If [param value] is [code]null[/code], the entry is removed. This is the equivalent of using [method remove_meta]. See also [method has_meta] and [method get_meta].
 				[b]Note:[/b] Metadata that has a [param name] starting with an underscore ([code]_[/code]) is considered editor-only. Editor-only metadata is not displayed in the Inspector dock and should not be edited.
 			</description>

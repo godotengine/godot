@@ -397,7 +397,7 @@ static const float earth_gravity = 9.80665;
 			UITouch *touch = [tlist objectAtIndex:i];
 			int tid = [self getTouchIDForTouch:touch];
 			ERR_FAIL_COND(tid == -1);
-			DisplayServerIOS::get_singleton()->touches_cancelled(tid);
+			DisplayServerIOS::get_singleton()->touches_canceled(tid);
 		}
 	}
 	[self clearTouches];

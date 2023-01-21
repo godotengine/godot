@@ -1351,8 +1351,8 @@ void fragment_shader(in SceneData scene_data) {
 #endif // USE_MULTIVIEW
 
 			for (int i = 0; i < 4; i++) {
-				const vec2 neighbours[4] = vec2[](vec2(-1, 0), vec2(1, 0), vec2(0, -1), vec2(0, 1));
-				vec2 neighbour_coord = base_coord + neighbours[i] * scene_data.screen_pixel_size;
+				const vec2 neighbors[4] = vec2[](vec2(-1, 0), vec2(1, 0), vec2(0, -1), vec2(0, 1));
+				vec2 neighbour_coord = base_coord + neighbors[i] * scene_data.screen_pixel_size;
 #ifdef USE_MULTIVIEW
 				float neighbour_ang = dot(normal, textureLod(sampler2DArray(normal_roughness_buffer, material_samplers[SAMPLER_LINEAR_CLAMP]), vec3(neighbour_coord, ViewIndex), 0.0).xyz * 2.0 - 1.0);
 #else // USE_MULTIVIEW
@@ -2082,7 +2082,7 @@ void fragment_shader(in SceneData scene_data) {
 			float sRed = floor((cRed / pow(2.0f, exps - B - N)) + 0.5f);
 			float sGreen = floor((cGreen / pow(2.0f, exps - B - N)) + 0.5f);
 			float sBlue = floor((cBlue / pow(2.0f, exps - B - N)) + 0.5f);
-			//store as 8985 to have 2 extra neighbour bits
+			//store as 8985 to have 2 extra neighbor bits
 			uint light_rgbe = ((uint(sRed) & 0x1FFu) >> 1) | ((uint(sGreen) & 0x1FFu) << 8) | (((uint(sBlue) & 0x1FFu) >> 1) << 17) | ((uint(exps) & 0x1Fu) << 25);
 
 			imageStore(emission_grid, grid_pos, uvec4(light_rgbe));

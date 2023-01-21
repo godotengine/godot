@@ -195,7 +195,7 @@ void ProgressDialog::add_task(const String &p_task, const String &p_label, int p
 		cancel_hb->hide();
 	}
 	cancel_hb->move_to_front();
-	cancelled = false;
+	canceled = false;
 	_popup();
 	if (p_can_cancel) {
 		cancel->grab_focus();
@@ -203,12 +203,12 @@ void ProgressDialog::add_task(const String &p_task, const String &p_label, int p
 }
 
 bool ProgressDialog::task_step(const String &p_task, const String &p_state, int p_step, bool p_force_redraw) {
-	ERR_FAIL_COND_V(!tasks.has(p_task), cancelled);
+	ERR_FAIL_COND_V(!tasks.has(p_task), canceled);
 
 	if (!p_force_redraw) {
 		uint64_t tus = OS::get_singleton()->get_ticks_usec();
 		if (tus - last_progress_tick < 200000) { //200ms
-			return cancelled;
+			return canceled;
 		}
 	}
 
@@ -228,7 +228,7 @@ bool ProgressDialog::task_step(const String &p_task, const String &p_state, int 
 #ifndef ANDROID_ENABLED
 	Main::iteration(); // this will not work on a lot of platforms, so it's only meant for the editor
 #endif
-	return cancelled;
+	return canceled;
 }
 
 void ProgressDialog::end_task(const String &p_task) {
@@ -246,7 +246,7 @@ void ProgressDialog::end_task(const String &p_task) {
 }
 
 void ProgressDialog::_cancel_pressed() {
-	cancelled = true;
+	canceled = true;
 }
 
 void ProgressDialog::_bind_methods() {

@@ -136,7 +136,7 @@ int AudioStreamPlaybackPolyphonic::mix(AudioFrame *p_buffer, float p_rate_scale,
 			continue;
 		}
 
-		float volume_db = s.volume_db; // Copy because it can be overriden at any time.
+		float volume_db = s.volume_db; // Copy because it can be overridden at any time.
 		float next_volume = Math::db_to_linear(volume_db);
 		s.prev_volume_db = volume_db;
 

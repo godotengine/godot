@@ -264,7 +264,7 @@ Error AudioDriverPulseAudio::init_device() {
 	samples_in.resize(buffer_frames * channels);
 	samples_out.resize(pa_buffer_size);
 
-	// Reset audio input to keep synchronisation.
+	// Reset audio input to keep synchronization.
 	input_position = 0;
 	input_size = 0;
 

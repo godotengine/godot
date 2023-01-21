@@ -106,11 +106,11 @@ void AStar3D::remove_point(int64_t p_id) {
 	bool p_exists = points.lookup(p_id, p);
 	ERR_FAIL_COND_MSG(!p_exists, vformat("Can't remove point. Point with id: %d doesn't exist.", p_id));
 
-	for (OAHashMap<int64_t, Point *>::Iterator it = p->neighbours.iter(); it.valid; it = p->neighbours.next_iter(it)) {
+	for (OAHashMap<int64_t, Point *>::Iterator it = p->neighbors.iter(); it.valid; it = p->neighbors.next_iter(it)) {
 		Segment s(p_id, (*it.key));
 		segments.erase(s);
 
-		(*it.value)->neighbours.remove(p->id);
+		(*it.value)->neighbors.remove(p->id);
 		(*it.value)->unlinked_neighbours.remove(p->id);
 	}
 
@@ -118,7 +118,7 @@ void AStar3D::remove_point(int64_t p_id) {
 		Segment s(p_id, (*it.key));
 		segments.erase(s);
 
-		(*it.value)->neighbours.remove(p->id);
+		(*it.value)->neighbors.remove(p->id);
 		(*it.value)->unlinked_neighbours.remove(p->id);
 	}
 
@@ -138,10 +138,10 @@ void AStar3D::connect_points(int64_t p_id, int64_t p_with_id, bool bidirectional
 	bool to_exists = points.lookup(p_with_id, b);
 	ERR_FAIL_COND_MSG(!to_exists, vformat("Can't connect points. Point with id: %d doesn't exist.", p_with_id));
 
-	a->neighbours.set(b->id, b);
+	a->neighbors.set(b->id, b);
 
 	if (bidirectional) {
-		b->neighbours.set(a->id, a);
+		b->neighbors.set(a->id, a);
 	} else {
 		b->unlinked_neighbours.set(a->id, a);
 	}
@@ -155,7 +155,7 @@ void AStar3D::connect_points(int64_t p_id, int64_t p_with_id, bool bidirectional
 	if (element) {
 		s.direction |= element->direction;
 		if (s.direction == Segment::BIDIRECTIONAL) {
-			// Both are neighbours of each other now
+			// Both are neighbors of each other now
 			a->unlinked_neighbours.remove(b->id);
 			b->unlinked_neighbours.remove(a->id);
 		}
@@ -183,9 +183,9 @@ void AStar3D::disconnect_points(int64_t p_id, int64_t p_with_id, bool bidirectio
 		// Erase the directions to be removed
 		s.direction = (element->direction & ~remove_direction);
 
-		a->neighbours.remove(b->id);
+		a->neighbors.remove(b->id);
 		if (bidirectional) {
-			b->neighbours.remove(a->id);
+			b->neighbors.remove(a->id);
 			if (element->direction != Segment::BIDIRECTIONAL) {
 				a->unlinked_neighbours.remove(b->id);
 				b->unlinked_neighbours.remove(a->id);
@@ -226,7 +226,7 @@ Vector<int64_t> AStar3D::get_point_connections(int64_t p_id) {
 
 	Vector<int64_t> point_list;
 
-	for (OAHashMap<int64_t, Point *>::Iterator it = p->neighbours.iter(); it.valid; it = p->neighbours.next_iter(it)) {
+	for (OAHashMap<int64_t, Point *>::Iterator it = p->neighbors.iter(); it.valid; it = p->neighbors.next_iter(it)) {
 		point_list.push_back((*it.key));
 	}
 
@@ -346,8 +346,8 @@ bool AStar3D::_solve(Point *begin_point, Point *end_point) {
 		open_list.remove_at(open_list.size() - 1);
 		p->closed_pass = pass; // Mark the point as closed
 
-		for (OAHashMap<int64_t, Point *>::Iterator it = p->neighbours.iter(); it.valid; it = p->neighbours.next_iter(it)) {
-			Point *e = *(it.value); // The neighbour point
+		for (OAHashMap<int64_t, Point *>::Iterator it = p->neighbors.iter(); it.valid; it = p->neighbors.next_iter(it)) {
+			Point *e = *(it.value); // The neighbor point
 
 			if (!e->enabled || e->closed_pass == pass) {
 				continue;
@@ -813,8 +813,8 @@ bool AStar2D::_solve(AStar3D::Point *begin_point, AStar3D::Point *end_point) {
 		open_list.remove_at(open_list.size() - 1);
 		p->closed_pass = astar.pass; // Mark the point as closed.
 
-		for (OAHashMap<int64_t, AStar3D::Point *>::Iterator it = p->neighbours.iter(); it.valid; it = p->neighbours.next_iter(it)) {
-			AStar3D::Point *e = *(it.value); // The neighbour point.
+		for (OAHashMap<int64_t, AStar3D::Point *>::Iterator it = p->neighbors.iter(); it.valid; it = p->neighbors.next_iter(it)) {
+			AStar3D::Point *e = *(it.value); // The neighbor point.
 
 			if (!e->enabled || e->closed_pass == astar.pass) {
 				continue;

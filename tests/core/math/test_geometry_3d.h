@@ -388,13 +388,13 @@ TEST_CASE("[Geometry3D] Segment Intersects Triangle") {
 
 TEST_CASE("[Geometry3D] Triangle and Box Overlap") {
 	struct Case {
-		Vector3 box_centre;
+		Vector3 box_center;
 		Vector3 box_half_size;
 		Vector3 *tri_verts = nullptr;
 		bool want;
 		Case(){};
-		Case(Vector3 p_centre, Vector3 p_half_size, Vector3 *p_verts, bool p_want) :
-				box_centre(p_centre), box_half_size(p_half_size), tri_verts(p_verts), want(p_want){};
+		Case(Vector3 p_center, Vector3 p_half_size, Vector3 *p_verts, bool p_want) :
+				box_center(p_center), box_half_size(p_half_size), tri_verts(p_verts), want(p_want){};
 	};
 	Vector<Case> tt;
 	Vector3 GoodTriangle[3] = { Vector3(3, 2, 3), Vector3(2, 2, 1), Vector3(2, 1, 1) };
@@ -403,7 +403,7 @@ TEST_CASE("[Geometry3D] Triangle and Box Overlap") {
 	tt.push_back(Case(Vector3(1000, 1000, 1000), Vector3(1, 1, 1), BadTriangle, false));
 	for (int i = 0; i < tt.size(); ++i) {
 		Case current_case = tt[i];
-		bool output = Geometry3D::triangle_box_overlap(current_case.box_centre, current_case.box_half_size, current_case.tri_verts);
+		bool output = Geometry3D::triangle_box_overlap(current_case.box_center, current_case.box_half_size, current_case.tri_verts);
 		CHECK(output == current_case.want);
 	}
 }

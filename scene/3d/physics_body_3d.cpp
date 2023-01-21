@@ -1346,7 +1346,7 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 								motion = motion.slide(up_direction);
 								result.travel = Vector3();
 							} else {
-								// Travel is too high to be safely cancelled, we take it into account.
+								// Travel is too high to be safely canceled, we take it into account.
 								result.travel = result.travel.slide(up_direction);
 								motion = motion.normalized() * result.travel.length();
 							}
@@ -1354,7 +1354,7 @@ void CharacterBody3D::_move_and_slide_grounded(double p_delta, bool p_was_on_flo
 							// Determines if you are on the ground, and limits the possibility of climbing on the walls because of the approximations.
 							_snap_on_floor(true, false);
 						} else {
-							// If the movement is not cancelled we only keep the remaining.
+							// If the movement is not canceled we only keep the remaining.
 							motion = result.remainder;
 						}
 

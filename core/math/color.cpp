@@ -194,7 +194,7 @@ void Color::set_hsv(float p_h, float p_s, float p_v, float p_alpha) {
 	a = p_alpha;
 
 	if (p_s == 0.0f) {
-		// Achromatic (grey)
+		// Achromatic (gray)
 		r = g = b = p_v;
 		return;
 	}

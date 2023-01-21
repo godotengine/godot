@@ -2576,7 +2576,7 @@ LineEdit::LineEdit(const String &p_placeholder) {
 
 	set_placeholder(p_placeholder);
 
-	set_editable(true); // Initialise to opposite first, so we get past the early-out in set_editable.
+	set_editable(true); // Initialize to opposite first, so we get past the early-out in set_editable.
 }
 
 LineEdit::~LineEdit() {

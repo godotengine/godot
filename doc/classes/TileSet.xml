@@ -589,7 +589,7 @@
 			<param index="0" name="terrain_set" type="int" />
 			<param index="1" name="mode" type="int" enum="TileSet.TerrainMode" />
 			<description>
-				Sets a terrain mode. Each mode determines which bits of a tile shape is used to match the neighbouring tiles' terrains.
+				Sets a terrain mode. Each mode determines which bits of a tile shape is used to match the neighboring tiles' terrains.
 			</description>
 		</method>
 	</methods>

@@ -797,7 +797,7 @@ namespace Godot
         {
             if (saturation == 0)
             {
-                // Achromatic (grey)
+                // Achromatic (gray)
                 return new Color(value, value, value, alpha);
             }
 

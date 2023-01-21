@@ -225,7 +225,7 @@ void DisplayServerIOS::perform_event(const Ref<InputEvent> &p_event) {
 	Input::get_singleton()->parse_input_event(p_event);
 }
 
-void DisplayServerIOS::touches_cancelled(int p_idx) {
+void DisplayServerIOS::touches_canceled(int p_idx) {
 	touch_press(p_idx, -1, -1, false, false);
 }
 
