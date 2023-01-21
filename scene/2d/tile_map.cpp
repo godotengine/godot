@@ -2129,7 +2129,6 @@ int TileMap::get_cell_alternative_tile(int p_layer, const Vector2i &p_coords, bo
 
 TileData *TileMap::get_cell_tile_data(int p_layer, const Vector2i &p_coords, bool p_use_proxies) const {
 	int source_id = get_cell_source_id(p_layer, p_coords, p_use_proxies);
-	ERR_FAIL_COND_V_MSG(source_id == TileSet::INVALID_SOURCE, nullptr, vformat("Invalid TileSetSource at cell %s. Make sure a tile exists at this cell.", p_coords));
 
 	Ref<TileSetAtlasSource> source = tile_set->get_source(source_id);
 	if (source.is_valid()) {
