@@ -230,6 +230,7 @@ void Area3D::_body_inout(int p_status, const RID &p_body, ObjectID p_instance, i
 		return; //likely removed from the tree
 	}
 
+	lock_callback();
 	locked = true;
 
 	if (body_in) {
@@ -279,6 +280,7 @@ void Area3D::_body_inout(int p_status, const RID &p_body, ObjectID p_instance, i
 	}
 
 	locked = false;
+	unlock_callback();
 }
 
 void Area3D::_clear_monitoring() {
@@ -417,6 +419,7 @@ void Area3D::_area_inout(int p_status, const RID &p_area, ObjectID p_instance, i
 		return; //likely removed from the tree
 	}
 
+	lock_callback();
 	locked = true;
 
 	if (area_in) {
@@ -466,6 +469,7 @@ void Area3D::_area_inout(int p_status, const RID &p_area, ObjectID p_instance, i
 	}
 
 	locked = false;
+	unlock_callback();
 }
 
 bool Area3D::is_monitoring() const {
