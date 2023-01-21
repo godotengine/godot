@@ -407,8 +407,21 @@ void AudioServer::_mix_step() {
 				AudioFrame prev_channel_vol = AudioFrame(0, 0);
 				if (prev_bus_idx != -1) {
 					prev_channel_vol = playback->prev_bus_details->volume[prev_bus_idx][channel_idx];
+					_mix_step_for_channel(channel_buf, buf, prev_channel_vol, channel_vol, playback->attenuation_filter_cutoff_hz.get(), playback->highshelf_gain.get(), &playback->filter_process[channel_idx * 2], &playback->filter_process[channel_idx * 2 + 1]);
+				} else {
+					// Fake the channel volume here because we need to fade this audio in faster.
+					prev_channel_vol = channel_vol;
+					_mix_step_for_channel(channel_buf, buf, prev_channel_vol, channel_vol, playback->attenuation_filter_cutoff_hz.get(), playback->highshelf_gain.get(), &playback->filter_process[channel_idx * 2], &playback->filter_process[channel_idx * 2 + 1]);
+					// The values here should roughly correspond to those used for the fade out logic above.
+					float fadein_base = 0.94;
+					float fadein_coefficient = 1;
+					uint32_t fadein_length = 64;
+					// Reverse from the exponential fade out logic above.
+					for (int32_t i = fadein_length; i >= 0; i--) {
+						fadein_coefficient *= fadein_base;
+						buf[i] *= fadein_coefficient;
+					}
 				}
-				_mix_step_for_channel(channel_buf, buf, prev_channel_vol, channel_vol, playback->attenuation_filter_cutoff_hz.get(), playback->highshelf_gain.get(), &playback->filter_process[channel_idx * 2], &playback->filter_process[channel_idx * 2 + 1]);
 			}
 		}
 
