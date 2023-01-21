@@ -2208,11 +2208,6 @@ void Node3DEditorViewport::_sinput(const Ref<InputEvent> &p_event) {
 		if (ED_IS_SHORTCUT("spatial_editor/focus_selection", p_event)) {
 			_menu_option(VIEW_CENTER_TO_SELECTION);
 		}
-		// Orthgonal mode doesn't work in freelook.
-		if (!freelook_active && ED_IS_SHORTCUT("spatial_editor/switch_perspective_orthogonal", p_event)) {
-			_menu_option(orthogonal ? VIEW_PERSPECTIVE : VIEW_ORTHOGONAL);
-			_update_name();
-		}
 		if (ED_IS_SHORTCUT("spatial_editor/align_transform_with_view", p_event)) {
 			_menu_option(VIEW_ALIGN_TRANSFORM_WITH_VIEW);
 		}
@@ -3277,6 +3272,10 @@ void Node3DEditorViewport::_menu_option(int p_option) {
 			auto_orthogonal = false;
 			call_deferred(SNAME("update_transform_gizmo_view"));
 			_update_name();
+
+		} break;
+		case VIEW_SWITCH_PERSPECTIVE_ORTHOGONAL: {
+			_menu_option(orthogonal ? VIEW_PERSPECTIVE : VIEW_ORTHOGONAL);
 
 		} break;
 		case VIEW_AUTO_ORTHOGONAL: {
@@ -4952,8 +4951,9 @@ Node3DEditorViewport::Node3DEditorViewport(Node3DEditor *p_spatial_editor, int p
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/front_view"), VIEW_FRONT);
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/rear_view"), VIEW_REAR);
 	view_menu->get_popup()->add_separator();
-	view_menu->get_popup()->add_radio_check_item(TTR("Perspective") + " (" + ED_GET_SHORTCUT("spatial_editor/switch_perspective_orthogonal")->get_as_text() + ")", VIEW_PERSPECTIVE);
-	view_menu->get_popup()->add_radio_check_item(TTR("Orthogonal") + " (" + ED_GET_SHORTCUT("spatial_editor/switch_perspective_orthogonal")->get_as_text() + ")", VIEW_ORTHOGONAL);
+	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/switch_perspective_orthogonal"), VIEW_SWITCH_PERSPECTIVE_ORTHOGONAL);
+	view_menu->get_popup()->add_radio_check_item(TTR("Perspective"), VIEW_PERSPECTIVE);
+	view_menu->get_popup()->add_radio_check_item(TTR("Orthogonal"), VIEW_ORTHOGONAL);
 	view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_PERSPECTIVE), true);
 	view_menu->get_popup()->add_check_item(TTR("Auto Orthogonal Enabled"), VIEW_AUTO_ORTHOGONAL);
 	view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_AUTO_ORTHOGONAL), true);
