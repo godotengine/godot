@@ -251,7 +251,7 @@ RID RenderSceneBuffersRD::create_texture(const StringName &p_context, const Stri
 }
 
 RID RenderSceneBuffersRD::create_texture_from_format(const StringName &p_context, const StringName &p_texture_name, const RD::TextureFormat &p_texture_format, RD::TextureView p_view, bool p_unique) {
-	// TODO p_unique, if p_unique is true, this is a texture that can be shared. This will be implemented later as an optimisation.
+	// TODO p_unique, if p_unique is true, this is a texture that can be shared. This will be implemented later as an optimization.
 
 	NTKey key(p_context, p_texture_name);
 

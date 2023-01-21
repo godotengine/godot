@@ -401,7 +401,7 @@ bool AStarGrid2D::_solve(Point *p_begin_point, Point *p_end_point) {
 		List<Point *> nbors;
 		_get_nbors(p, nbors);
 		for (List<Point *>::Element *E = nbors.front(); E; E = E->next()) {
-			Point *e = E->get(); // The neighbour point.
+			Point *e = E->get(); // The neighbor point.
 			real_t weight_scale = 1.0;
 
 			if (jumping_enabled) {

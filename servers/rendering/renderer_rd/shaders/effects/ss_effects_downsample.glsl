@@ -56,7 +56,7 @@ vec4 screen_space_to_view_space_depth(vec4 p_depth) {
 	float depth_linearize_mul = params.z_near;
 	float depth_linearize_add = params.z_far;
 
-	// Optimised version of "-cameraClipNear / (cameraClipFar - projDepth * (cameraClipFar - cameraClipNear)) * cameraClipFar"
+	// Optimized version of "-cameraClipNear / (cameraClipFar - projDepth * (cameraClipFar - cameraClipNear)) * cameraClipFar"
 
 	// Set your depth_linearize_mul and depth_linearize_add to:
 	// depth_linearize_mul = ( cameraClipFar * cameraClipNear) / ( cameraClipFar - cameraClipNear );

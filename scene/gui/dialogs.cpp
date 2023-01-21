@@ -136,7 +136,7 @@ void AcceptDialog::_cancel_pressed() {
 
 	call_deferred(SNAME("hide"));
 
-	emit_signal(SNAME("cancelled"));
+	emit_signal(SNAME("canceled"));
 
 	cancel_pressed();
 
@@ -372,7 +372,7 @@ void AcceptDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_ok_button_text"), &AcceptDialog::get_ok_button_text);
 
 	ADD_SIGNAL(MethodInfo("confirmed"));
-	ADD_SIGNAL(MethodInfo("cancelled"));
+	ADD_SIGNAL(MethodInfo("canceled"));
 	ADD_SIGNAL(MethodInfo("custom_action", PropertyInfo(Variant::STRING_NAME, "action")));
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "ok_button_text"), "set_ok_button_text", "get_ok_button_text");

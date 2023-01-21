@@ -53,7 +53,7 @@
 
 #include "util.h"
 
-// Note, OpenXR code that we wrote for our plugin makes use of C++20 notation for initialising structs which ensures zeroing out unspecified members.
+// Note, OpenXR code that we wrote for our plugin makes use of C++20 notation for initializing structs which ensures zeroing out unspecified members.
 // Godot is currently restricted to C++17 which doesn't allow this notation. Make sure critical fields are set.
 
 // forward declarations, we don't want to include these fully

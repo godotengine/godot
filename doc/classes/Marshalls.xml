@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Marshalls" inherits="Object" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Data transformation (marshalling) and encoding helpers.
+		Data transformation (marshaling) and encoding helpers.
 	</brief_description>
 	<description>
 		Provides data transformation and encoding utility functions.

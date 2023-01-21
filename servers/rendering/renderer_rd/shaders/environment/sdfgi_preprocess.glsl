@@ -102,10 +102,10 @@ dispatch_data;
 
 struct ProcessVoxel {
 	uint position; // xyz 7 bit packed, extra 11 bits for neighbors.
-	uint albedo; //rgb bits 0-15 albedo, bits 16-21 are normal bits (set if geometry exists toward that side), extra 11 bits for neighbours
-	uint light; //rgbe8985 encoded total saved light, extra 2 bits for neighbours
-	uint light_aniso; //55555 light anisotropy, extra 2 bits for neighbours
-	//total neighbours: 26
+	uint albedo; //rgb bits 0-15 albedo, bits 16-21 are normal bits (set if geometry exists toward that side), extra 11 bits for neighbors
+	uint light; //rgbe8985 encoded total saved light, extra 2 bits for neighbors
+	uint light_aniso; //55555 light anisotropy, extra 2 bits for neighbors
+	//total neighbors: 26
 };
 
 layout(set = 0, binding = 11, std430) restrict buffer writeonly ProcessVoxels {
@@ -135,10 +135,10 @@ dispatch_data;
 
 struct ProcessVoxel {
 	uint position; // xyz 7 bit packed, extra 11 bits for neighbors.
-	uint albedo; //rgb bits 0-15 albedo, bits 16-21 are normal bits (set if geometry exists toward that side), extra 11 bits for neighbours
-	uint light; //rgbe8985 encoded total saved light, extra 2 bits for neighbours
-	uint light_aniso; //55555 light anisotropy, extra 2 bits for neighbours
-	//total neighbours: 26
+	uint albedo; //rgb bits 0-15 albedo, bits 16-21 are normal bits (set if geometry exists toward that side), extra 11 bits for neighbors
+	uint light; //rgbe8985 encoded total saved light, extra 2 bits for neighbors
+	uint light_aniso; //55555 light anisotropy, extra 2 bits for neighbors
+	//total neighbors: 26
 };
 
 layout(set = 0, binding = 6, std430) restrict buffer readonly ProcessVoxels {
@@ -1016,14 +1016,14 @@ void main() {
 		store_positions[index].albedo = rgb >> 1; //store as it comes (555) to avoid precision loss (and move away the alpha bit)
 		store_positions[index].albedo |= (facing & 0x3F) << 15; // store facing in bits 15-21
 
-		store_positions[index].albedo |= neighbour_bits << 21; //store lower 11 bits of neighbours with remaining albedo
-		store_positions[index].position |= (neighbour_bits >> 11) << 21; //store 11 bits more of neighbours with position
+		store_positions[index].albedo |= neighbour_bits << 21; //store lower 11 bits of neighbors with remaining albedo
+		store_positions[index].position |= (neighbour_bits >> 11) << 21; //store 11 bits more of neighbors with position
 
 		store_positions[index].light = imageLoad(src_light, pos).r;
 		store_positions[index].light_aniso = imageLoad(src_light_aniso, pos).r;
-		//add neighbours
-		store_positions[index].light |= (neighbour_bits >> 22) << 30; //store 2 bits more of neighbours with light
-		store_positions[index].light_aniso |= (neighbour_bits >> 24) << 30; //store 2 bits more of neighbours with aniso
+		//add neighbors
+		store_positions[index].light |= (neighbour_bits >> 22) << 30; //store 2 bits more of neighbors with light
+		store_positions[index].light_aniso |= (neighbour_bits >> 24) << 30; //store 2 bits more of neighbors with aniso
 	}
 
 	groupMemoryBarrier();

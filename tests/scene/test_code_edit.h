@@ -2773,7 +2773,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 		CHECK(code_edit->get_line(0) == "''");
 		CHECK(code_edit->get_caret_column() == 1);
 
-		/* Move out from centre, Should match and insert larger key. */
+		/* Move out from center, Should match and insert larger key. */
 		SEND_GUI_ACTION(code_edit, "ui_text_caret_right");
 		SEND_GUI_KEY_EVENT(code_edit, Key::APOSTROPHE);
 		CHECK(code_edit->get_line(0) == "''''''");

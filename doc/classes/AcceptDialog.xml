@@ -53,7 +53,7 @@
 			<return type="void" />
 			<param index="0" name="button" type="Control" />
 			<description>
-				Removes the [param button] from the dialog. Does NOT free the [param button]. The [param button] must be a [Button] added with [method add_button] or [method add_cancel_button] method. After removal, pressing the [param button] will no longer emit this dialog's [signal custom_action] or [signal cancelled] signals.
+				Removes the [param button] from the dialog. Does NOT free the [param button]. The [param button] must be a [Button] added with [method add_button] or [method add_cancel_button] method. After removal, pressing the [param button] will no longer emit this dialog's [signal custom_action] or [signal canceled] signals.
 			</description>
 		</method>
 	</methods>
@@ -81,7 +81,7 @@
 		<member name="wrap_controls" type="bool" setter="set_wrap_controls" getter="is_wrapping_controls" overrides="Window" default="true" />
 	</members>
 	<signals>
-		<signal name="cancelled">
+		<signal name="canceled">
 			<description>
 				Emitted when the dialog is closed or the button created with [method add_cancel_button] is pressed.
 			</description>
