@@ -82,7 +82,8 @@ class ShaderMaterial : public Material {
 	GDCLASS(ShaderMaterial, Material);
 	Ref<Shader> shader;
 
-	HashMap<StringName, Variant> param_cache;
+	mutable HashMap<StringName, StringName> remap_cache;
+	mutable HashMap<StringName, Variant> param_cache;
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
