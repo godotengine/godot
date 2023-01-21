@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Godot
@@ -30,6 +31,23 @@ namespace Godot
         /// The origin vector represents translation.
         /// </summary>
         public Vector2 origin;
+
+        /// <summary>
+        /// Returns the transform's rotation (in radians).
+        /// </summary>
+        public readonly real_t Rotation => Mathf.Atan2(x.y, x.x);
+
+        /// <summary>
+        /// Returns the scale.
+        /// </summary>
+        public readonly Vector2 Scale
+        {
+            get
+            {
+                real_t detSign = Mathf.Sign(BasisDeterminant());
+                return new Vector2(x.Length(), detSign * y.Length());
+            }
+        }
 
         /// <summary>
         /// Access whole columns in the form of <see cref="Vector2"/>.
@@ -131,6 +149,7 @@ namespace Godot
         /// and is usually considered invalid.
         /// </summary>
         /// <returns>The determinant of the basis matrix.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private readonly real_t BasisDeterminant()
         {
             return (x.x * y.y) - (x.y * y.x);
@@ -164,23 +183,6 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the transform's rotation (in radians).
-        /// </summary>
-        public readonly real_t GetRotation()
-        {
-            return Mathf.Atan2(x.y, x.x);
-        }
-
-        /// <summary>
-        /// Returns the scale.
-        /// </summary>
-        public readonly Vector2 GetScale()
-        {
-            real_t detSign = Mathf.Sign(BasisDeterminant());
-            return new Vector2(x.Length(), detSign * y.Length());
-        }
-
-        /// <summary>
         /// Interpolates this transform to the other <paramref name="transform"/> by <paramref name="weight"/>.
         /// </summary>
         /// <param name="transform">The other transform.</param>
@@ -188,11 +190,11 @@ namespace Godot
         /// <returns>The interpolated transform.</returns>
         public readonly Transform2D InterpolateWith(Transform2D transform, real_t weight)
         {
-            real_t r1 = GetRotation();
-            real_t r2 = transform.GetRotation();
+            real_t r1 = Rotation;
+            real_t r2 = transform.Rotation;
 
-            Vector2 s1 = GetScale();
-            Vector2 s2 = transform.GetScale();
+            Vector2 s1 = Scale;
+            Vector2 s2 = transform.Scale;
 
             // Slerp rotation
             (real_t sin1, real_t cos1) = Mathf.SinCos(r1);
