@@ -215,7 +215,6 @@ static const char *gdscript_function_renames[][2] = {
 	{ "_get_configuration_warning", "_get_configuration_warnings" }, // Node
 	{ "_set_current", "set_current" }, // Camera2D
 	{ "_set_editor_description", "set_editor_description" }, // Node
-	{ "_set_playing", "set_playing" }, // AnimatedSprite3D
 	{ "_toplevel_raise_self", "_top_level_raise_self" }, // CanvasItem
 	{ "_update_wrap_at", "_update_wrap_at_column" }, // TextEdit
 	{ "add_animation", "add_animation_library" }, // AnimationPlayer
@@ -1168,6 +1167,7 @@ static const char *gdscript_properties_renames[][2] = {
 	{ "unit_db", "volume_db" }, // AudioStreamPlayer3D
 	{ "unit_offset", "progress_ratio" }, // PathFollow2D, PathFollow3D
 	{ "vseparation", "v_separation" }, // Theme
+	{ "frames", "sprite_frames" }, // AnimatedSprite2D, AnimatedSprite3D
 
 	{ nullptr, nullptr },
 };
