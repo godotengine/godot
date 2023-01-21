@@ -502,6 +502,7 @@ class EditorInspector : public ScrollContainer {
 	bool restrict_to_basic = false;
 
 	void _edit_set(const String &p_name, const Variant &p_value, bool p_refresh_all, const String &p_changed_field);
+	bool _is_main_editor_inspector() const;
 
 	void _property_changed(const String &p_path, const Variant &p_value, const String &p_name = "", bool p_changing = false, bool p_update_all = false);
 	void _multiple_properties_changed(Vector<String> p_paths, Array p_values, bool p_changing = false);

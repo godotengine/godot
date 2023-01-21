@@ -834,13 +834,11 @@ class EditorPropertyResource : public EditorProperty {
 	void _sub_inspector_object_id_selected(int p_id);
 
 	void _open_editor_pressed();
-	void _fold_other_editors(Object *p_self);
 	void _update_property_bg();
 	void _update_preferred_shader();
 
 protected:
 	virtual void _set_read_only(bool p_read_only) override;
-	static void _bind_methods();
 	void _notification(int p_what);
 
 public:
@@ -852,6 +850,7 @@ public:
 	void expand_revertable() override;
 
 	void set_use_sub_inspector(bool p_enable);
+	void fold_resource();
 
 	EditorPropertyResource();
 };
