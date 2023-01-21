@@ -1543,28 +1543,6 @@ void GDScriptByteCodeGenerator::write_endwhile() {
 	current_breaks_to_patch.pop_back();
 }
 
-void GDScriptByteCodeGenerator::start_match() {
-	match_continues_to_patch.push_back(List<int>());
-}
-
-void GDScriptByteCodeGenerator::start_match_branch() {
-	// Patch continue statements.
-	for (const int &E : match_continues_to_patch.back()->get()) {
-		patch_jump(E);
-	}
-	match_continues_to_patch.pop_back();
-	// Start a new list for next branch.
-	match_continues_to_patch.push_back(List<int>());
-}
-
-void GDScriptByteCodeGenerator::end_match() {
-	// Patch continue statements.
-	for (const int &E : match_continues_to_patch.back()->get()) {
-		patch_jump(E);
-	}
-	match_continues_to_patch.pop_back();
-}
-
 void GDScriptByteCodeGenerator::write_break() {
 	append_opcode(GDScriptFunction::OPCODE_JUMP);
 	current_breaks_to_patch.back()->get().push_back(opcodes.size());
@@ -1574,12 +1552,6 @@ void GDScriptByteCodeGenerator::write_break() {
 void GDScriptByteCodeGenerator::write_continue() {
 	append_opcode(GDScriptFunction::OPCODE_JUMP);
 	append(continue_addrs.back()->get());
-}
-
-void GDScriptByteCodeGenerator::write_continue_match() {
-	append_opcode(GDScriptFunction::OPCODE_JUMP);
-	match_continues_to_patch.back()->get().push_back(opcodes.size());
-	append(0);
 }
 
 void GDScriptByteCodeGenerator::write_breakpoint() {

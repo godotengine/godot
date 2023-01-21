@@ -148,12 +148,8 @@ public:
 	virtual void start_while_condition() = 0; // Used to allow a jump to the expression evaluation.
 	virtual void write_while(const Address &p_condition) = 0;
 	virtual void write_endwhile() = 0;
-	virtual void start_match() = 0;
-	virtual void start_match_branch() = 0;
-	virtual void end_match() = 0;
 	virtual void write_break() = 0;
 	virtual void write_continue() = 0;
-	virtual void write_continue_match() = 0;
 	virtual void write_breakpoint() = 0;
 	virtual void write_newline(int p_line) = 0;
 	virtual void write_return(const Address &p_return_value) = 0;
