@@ -1722,8 +1722,11 @@ bool AnimationPlayer::is_playing() const {
 void AnimationPlayer::set_current_animation(const String &p_anim) {
 	if (p_anim == "[stop]" || p_anim.is_empty()) {
 		stop();
-	} else if (!is_playing() || playback.assigned != p_anim) {
+	} else if (!is_playing()) {
 		play(p_anim);
+	} else if (playback.assigned != p_anim) {
+		float speed = get_playing_speed();
+		play(p_anim, -1.0, speed, signbit(speed));
 	} else {
 		// Same animation, do not replay from start
 	}
@@ -1735,7 +1738,8 @@ String AnimationPlayer::get_current_animation() const {
 
 void AnimationPlayer::set_assigned_animation(const String &p_anim) {
 	if (is_playing()) {
-		play(p_anim);
+		float speed = get_playing_speed();
+		play(p_anim, -1.0, speed, signbit(speed));
 	} else {
 		ERR_FAIL_COND_MSG(!animation_set.has(p_anim), vformat("Animation not found: %s.", p_anim));
 		playback.current.pos = 0;
@@ -2217,7 +2221,7 @@ void AnimationPlayer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "playback_process_mode", PROPERTY_HINT_ENUM, "Physics,Idle,Manual"), "set_process_callback", "get_process_callback");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "playback_default_blend_time", PROPERTY_HINT_RANGE, "0,4096,0.01,suffix:s"), "set_default_blend_time", "get_default_blend_time");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playback_active", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_active", "is_active");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "playback_speed", PROPERTY_HINT_RANGE, "-64,64,0.01"), "set_speed_scale", "get_speed_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "speed_scale", PROPERTY_HINT_RANGE, "-64,64,0.01"), "set_speed_scale", "get_speed_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "method_call_mode", PROPERTY_HINT_ENUM, "Deferred,Immediate"), "set_method_call_mode", "get_method_call_mode");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "movie_quit_on_finish"), "set_movie_quit_on_finish_enabled", "is_movie_quit_on_finish_enabled");

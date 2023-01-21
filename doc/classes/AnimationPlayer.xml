@@ -113,13 +113,14 @@
 			<param index="0" name="anim_from" type="StringName" />
 			<param index="1" name="anim_to" type="StringName" />
 			<description>
-				Gets the blend time (in seconds) between two animations, referenced by their keys.
+				Returns the blend time (in seconds) between two animations, referenced by their keys.
 			</description>
 		</method>
 		<method name="get_playing_speed" qualifiers="const">
 			<return type="float" />
 			<description>
-				Gets the actual playing speed of current animation or 0 if not playing. This speed is the [member playback_speed] property multiplied by [code]custom_speed[/code] argument specified when calling the [method play] method.
+				Returns the actual playing speed of current animation or [code]0[/code] if not playing. This speed is the [member speed_scale] property multiplied by [code]custom_speed[/code] argument specified when calling the [method play] method.
+				Returns a negative value if the current animation is playing backwards.
 			</description>
 		</method>
 		<method name="get_queue">
@@ -145,7 +146,7 @@
 		<method name="is_playing" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if playing an animation.
+				Returns [code]true[/code] if an animation is currently playing (even if [member speed_scale] and/or [code]custom_speed[/code] are [code]0[/code]).
 			</description>
 		</method>
 		<method name="pause">
@@ -163,7 +164,7 @@
 			<param index="3" name="from_end" type="bool" default="false" />
 			<description>
 				Plays the animation with key [param name]. Custom blend times and speed can be set. If [param custom_speed] is negative and [param from_end] is [code]true[/code], the animation will play backwards (which is equivalent to calling [method play_backwards]).
-				The [AnimationPlayer] keeps track of its current or last played animation with [member assigned_animation]. If this method is called with that same animation [param name], or with no [param name] parameter, the assigned animation will resume playing if it was paused, or restart if it was stopped (see [method stop] for both pause and stop). If the animation was already playing, it will keep playing.
+				The [AnimationPlayer] keeps track of its current or last played animation with [member assigned_animation]. If this method is called with that same animation [param name], or with no [param name] parameter, the assigned animation will resume playing if it was paused.
 				[b]Note:[/b] The animation will be updated the next time the [AnimationPlayer] is processed. If other variables are updated at the same time this is called, they may be updated too early. To perform the update immediately, call [code]advance(0)[/code].
 			</description>
 		</method>
@@ -221,7 +222,7 @@
 			<return type="void" />
 			<param index="0" name="keep_state" type="bool" default="false" />
 			<description>
-				Stops the currently playing animation. The animation position is reset to [code]0[/code] and the playback speed is reset to [code]1.0[/code]. See also [method pause].
+				Stops the currently playing animation. The animation position is reset to [code]0[/code] and the [code]custom_speed[/code] is reset to [code]1.0[/code]. See also [method pause].
 				If [param keep_state] is [code]true[/code], the animation state is not updated visually.
 				[b]Note:[/b] The method / audio / animation playback tracks will not be processed by this method.
 			</description>
@@ -260,15 +261,16 @@
 		<member name="playback_process_mode" type="int" setter="set_process_callback" getter="get_process_callback" enum="AnimationPlayer.AnimationProcessCallback" default="1">
 			The process notification in which to update animations.
 		</member>
-		<member name="playback_speed" type="float" setter="set_speed_scale" getter="get_speed_scale" default="1.0">
-			The speed scaling ratio. For example, if this value is 1, then the animation plays at normal speed. If it's 0.5, then it plays at half speed. If it's 2, then it plays at double speed.
-		</member>
 		<member name="reset_on_save" type="bool" setter="set_reset_on_save_enabled" getter="is_reset_on_save_enabled" default="true">
 			This is used by the editor. If set to [code]true[/code], the scene will be saved with the effects of the reset animation (the animation with the key [code]"RESET"[/code]) applied as if it had been seeked to time 0, with the editor keeping the values that the scene had before saving.
 			This makes it more convenient to preview and edit animations in the editor, as changes to the scene will not be saved as long as they are set in the reset animation.
 		</member>
 		<member name="root_node" type="NodePath" setter="set_root" getter="get_root" default="NodePath(&quot;..&quot;)">
 			The node from which node path references will travel.
+		</member>
+		<member name="speed_scale" type="float" setter="set_speed_scale" getter="get_speed_scale" default="1.0">
+			The speed scaling ratio. For example, if this value is [code]1[/code], then the animation plays at normal speed. If it's [code]0.5[/code], then it plays at half speed. If it's [code]2[/code], then it plays at double speed.
+			If set to a negative value, the animation is played in reverse. If set to [code]0[/code], the animation will not advance.
 		</member>
 	</members>
 	<signals>

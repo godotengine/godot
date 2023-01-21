@@ -245,7 +245,7 @@ void AnimationPlayerEditor::_play_bw_pressed() {
 			player->stop(); //so it won't blend with itself
 		}
 		ERR_FAIL_COND_EDMSG(!_validate_tracks(player->get_animation(current)), "Animation tracks may have any invalid key, abort playing.");
-		player->play(current, -1, -1, true);
+		player->play_backwards(current);
 	}
 
 	//unstop
@@ -262,7 +262,7 @@ void AnimationPlayerEditor::_play_bw_from_pressed() {
 		}
 		ERR_FAIL_COND_EDMSG(!_validate_tracks(player->get_animation(current)), "Animation tracks may have any invalid key, abort playing.");
 		player->seek(time);
-		player->play(current, -1, -1, true);
+		player->play_backwards(current);
 	}
 
 	//unstop
@@ -452,7 +452,9 @@ float AnimationPlayerEditor::_get_editor_step() const {
 }
 
 void AnimationPlayerEditor::_animation_name_edited() {
-	player->stop();
+	if (player->is_playing()) {
+		player->stop();
+	}
 
 	String new_name = name->get_text();
 	if (!AnimationLibrary::is_valid_animation_name(new_name)) {
@@ -1675,7 +1677,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(AnimationPlayerEditorPlugin *p_plug
 	stop = memnew(Button);
 	stop->set_flat(true);
 	hb->add_child(stop);
-	stop->set_tooltip_text(TTR("Stop animation playback. (S)"));
+	stop->set_tooltip_text(TTR("Pause/stop animation playback. (S)"));
 
 	play = memnew(Button);
 	play->set_flat(true);
