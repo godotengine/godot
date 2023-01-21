@@ -803,7 +803,7 @@ void RasterizerCanvasGLES3::_record_item_commands(const Item *p_item, RID p_rend
 
 				light_count++;
 
-				if (light_count == data.max_lights_per_item) {
+				if (light_count == data.max_lights_per_item - 1) {
 					break;
 				}
 			}
