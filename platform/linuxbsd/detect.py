@@ -367,9 +367,6 @@ def configure(env: "Environment"):
         env.Append(CPPDEFINES=["X11_ENABLED"])
 
     if env["wayland"]:
-        if not env["vulkan"]:
-            print("Error: Wayland support requires vulkan=yes")
-            env.Exit(255)
         env.Append(CPPDEFINES=["WAYLAND_ENABLED"])
 
     if env["vulkan"]:
