@@ -43,7 +43,6 @@ Shader::Mode Shader::get_mode() const {
 
 void Shader::_dependency_changed() {
 	RenderingServer::get_singleton()->shader_set_code(shader, RenderingServer::get_singleton()->shader_get_code(shader));
-	params_cache_dirty = true;
 
 	emit_changed();
 }
@@ -93,7 +92,6 @@ void Shader::set_code(const String &p_code) {
 	}
 
 	RenderingServer::get_singleton()->shader_set_code(shader, pp_code);
-	params_cache_dirty = true;
 
 	emit_changed();
 }
@@ -108,8 +106,6 @@ void Shader::get_shader_uniform_list(List<PropertyInfo> *p_params, bool p_get_gr
 
 	List<PropertyInfo> local;
 	RenderingServer::get_singleton()->get_shader_parameter_list(shader, &local);
-	params_cache.clear();
-	params_cache_dirty = false;
 
 	for (PropertyInfo &pi : local) {
 		bool is_group = pi.usage == PROPERTY_USAGE_GROUP || pi.usage == PROPERTY_USAGE_SUBGROUP;
@@ -120,7 +116,6 @@ void Shader::get_shader_uniform_list(List<PropertyInfo> *p_params, bool p_get_gr
 			if (default_textures.has(pi.name)) { //do not show default textures
 				continue;
 			}
-			params_cache[pi.name] = pi.name;
 		}
 		if (p_params) {
 			//small little hack
@@ -176,11 +171,17 @@ bool Shader::is_text_shader() const {
 	return true;
 }
 
-bool Shader::has_parameter(const StringName &p_name) const {
-	return params_cache.has(p_name);
+void Shader::_update_shader() const {
 }
 
-void Shader::_update_shader() const {
+Array Shader::_get_shader_uniform_list(bool p_get_groups) {
+	List<PropertyInfo> uniform_list;
+	get_shader_uniform_list(&uniform_list, p_get_groups);
+	Array ret;
+	for (const PropertyInfo &pi : uniform_list) {
+		ret.push_back(pi.operator Dictionary());
+	}
+	return ret;
 }
 
 void Shader::_bind_methods() {
@@ -192,7 +193,7 @@ void Shader::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_default_texture_parameter", "name", "texture", "index"), &Shader::set_default_texture_parameter, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("get_default_texture_parameter", "name", "index"), &Shader::get_default_texture_parameter, DEFVAL(0));
 
-	ClassDB::bind_method(D_METHOD("has_parameter", "name"), &Shader::has_parameter);
+	ClassDB::bind_method(D_METHOD("get_shader_uniform_list", "get_groups"), &Shader::_get_shader_uniform_list, DEFVAL(false));
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "code", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_code", "get_code");
 
