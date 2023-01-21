@@ -1552,6 +1552,11 @@ void EditorFileSystem::_update_script_classes() {
 		int index = -1;
 		EditorFileSystemDirectory *efd = find_file(path, &index);
 
+		if (!efd || index < 0) {
+			// The file was removed
+			continue;
+		}
+
 		for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 			ScriptLanguage *lang = ScriptServer::get_language(i);
 			if (lang->supports_documentation() && efd->files[index]->type == lang->get_type()) {
