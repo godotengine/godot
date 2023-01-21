@@ -81,7 +81,13 @@ static void handle_crash(int sig) {
 	print_error(vformat("Dumping the backtrace. %s", msg));
 	char **strings = backtrace_symbols(bt_buffer, size);
 	// PIE executable relocation, zero for non-PIE executables
+#ifdef __GLIBC__
+	// This is a glibc only thing apparently.
 	uintptr_t relocation = _r_debug.r_map->l_addr;
+#else
+	// Non glibc systems apparently don't give PIE relocation info.
+	uintptr_t relocation = 0;
+#endif //__GLIBC__
 	if (strings) {
 		List<String> args;
 		for (size_t i = 0; i < size; i++) {
