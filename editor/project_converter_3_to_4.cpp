@@ -1977,8 +1977,8 @@ public:
 		}
 	}
 	~RegExContainer() {
-		for (unsigned int i = 0; i < color_regexes.size(); i++) {
-			memdelete(color_regexes[i]);
+		for (RegEx *regex : color_regexes) {
+			memdelete(regex);
 		}
 		for (unsigned int i = 0; i < class_tscn_regexes.size(); i++) {
 			memdelete(class_tscn_regexes[i]);
@@ -1986,38 +1986,38 @@ public:
 			memdelete(class_shader_regexes[i]);
 			memdelete(class_regexes[i]);
 		}
-		for (unsigned int i = 0; i < enum_regexes.size(); i++) {
-			memdelete(enum_regexes[i]);
+		for (RegEx *regex : enum_regexes) {
+			memdelete(regex);
 		}
-		for (unsigned int i = 0; i < gdscript_function_regexes.size(); i++) {
-			memdelete(gdscript_function_regexes[i]);
+		for (RegEx *regex : gdscript_function_regexes) {
+			memdelete(regex);
 		}
-		for (unsigned int i = 0; i < project_settings_regexes.size(); i++) {
-			memdelete(project_settings_regexes[i]);
+		for (RegEx *regex : project_settings_regexes) {
+			memdelete(regex);
 		}
-		for (unsigned int i = 0; i < input_map_regexes.size(); i++) {
-			memdelete(input_map_regexes[i]);
+		for (RegEx *regex : input_map_regexes) {
+			memdelete(regex);
 		}
-		for (unsigned int i = 0; i < gdscript_properties_regexes.size(); i++) {
-			memdelete(gdscript_properties_regexes[i]);
+		for (RegEx *regex : gdscript_properties_regexes) {
+			memdelete(regex);
 		}
-		for (unsigned int i = 0; i < gdscript_signals_regexes.size(); i++) {
-			memdelete(gdscript_signals_regexes[i]);
+		for (RegEx *regex : gdscript_signals_regexes) {
+			memdelete(regex);
 		}
-		for (unsigned int i = 0; i < shaders_regexes.size(); i++) {
-			memdelete(shaders_regexes[i]);
+		for (RegEx *regex : shaders_regexes) {
+			memdelete(regex);
 		}
-		for (unsigned int i = 0; i < builtin_types_regexes.size(); i++) {
-			memdelete(builtin_types_regexes[i]);
+		for (RegEx *regex : builtin_types_regexes) {
+			memdelete(regex);
 		}
-		for (unsigned int i = 0; i < csharp_function_regexes.size(); i++) {
-			memdelete(csharp_function_regexes[i]);
+		for (RegEx *regex : csharp_function_regexes) {
+			memdelete(regex);
 		}
-		for (unsigned int i = 0; i < csharp_properties_regexes.size(); i++) {
-			memdelete(csharp_properties_regexes[i]);
+		for (RegEx *regex : csharp_properties_regexes) {
+			memdelete(regex);
 		}
-		for (unsigned int i = 0; i < csharp_signal_regexes.size(); i++) {
-			memdelete(csharp_signal_regexes[i]);
+		for (RegEx *regex : csharp_signal_regexes) {
+			memdelete(regex);
 		}
 	}
 };

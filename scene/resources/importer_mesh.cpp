@@ -364,9 +364,7 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 				const LocalVector<Pair<int, int>> &close_verts = E->value;
 
 				bool found = false;
-				for (unsigned int k = 0; k < close_verts.size(); k++) {
-					const Pair<int, int> &idx = close_verts[k];
-
+				for (const Pair<int, int> &idx : close_verts) {
 					bool is_uvs_close = (!uvs_ptr || uvs_ptr[j].distance_squared_to(uvs_ptr[idx.second]) < CMP_EPSILON2);
 					bool is_uv2s_close = (!uv2s_ptr || uv2s_ptr[j].distance_squared_to(uv2s_ptr[idx.second]) < CMP_EPSILON2);
 					ERR_FAIL_INDEX(idx.second, normals.size());
@@ -599,8 +597,7 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 					const LocalVector<int> &corners = vertex_corners[j];
 					const Vector3 &vertex_normal = normals_ptr[j];
 
-					for (unsigned int k = 0; k < corners.size(); k++) {
-						const int &corner_idx = corners[k];
+					for (const int &corner_idx : corners) {
 						const Vector3 &ray_normal = ray_normals[corner_idx];
 
 						if (ray_normal.length_squared() < CMP_EPSILON2) {
@@ -635,8 +632,8 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 							split_vertex_indices.push_back(j);
 							split_vertex_normals.push_back(n);
 							int new_idx = split_vertex_count++;
-							for (unsigned int l = 0; l < group_indices.size(); l++) {
-								new_indices_ptr[group_indices[l]] = new_idx;
+							for (const int &index : group_indices) {
+								new_indices_ptr[index] = new_idx;
 							}
 						}
 					}
@@ -1241,10 +1238,10 @@ Error ImporterMesh::lightmap_unwrap_cached(const Transform3D &p_base_transform, 
 	}
 
 	//generate surfaces
-	for (unsigned int i = 0; i < surfaces_tools.size(); i++) {
-		surfaces_tools[i]->index();
-		Array arrays = surfaces_tools[i]->commit_to_arrays();
-		add_surface(surfaces_tools[i]->get_primitive_type(), arrays, Array(), Dictionary(), surfaces_tools[i]->get_material(), surfaces_tools[i]->get_meta("name"));
+	for (Ref<SurfaceTool> &tool : surfaces_tools) {
+		tool->index();
+		Array arrays = tool->commit_to_arrays();
+		add_surface(tool->get_primitive_type(), arrays, Array(), Dictionary(), tool->get_material(), tool->get_meta("name"));
 	}
 
 	set_lightmap_size_hint(Size2(size_x, size_y));

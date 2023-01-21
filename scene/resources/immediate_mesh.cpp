@@ -41,8 +41,8 @@ void ImmediateMesh::surface_set_color(const Color &p_color) {
 
 	if (!uses_colors) {
 		colors.resize(vertices.size());
-		for (uint32_t i = 0; i < colors.size(); i++) {
-			colors[i] = p_color;
+		for (Color &color : colors) {
+			color = p_color;
 		}
 		uses_colors = true;
 	}
@@ -54,8 +54,8 @@ void ImmediateMesh::surface_set_normal(const Vector3 &p_normal) {
 
 	if (!uses_normals) {
 		normals.resize(vertices.size());
-		for (uint32_t i = 0; i < normals.size(); i++) {
-			normals[i] = p_normal;
+		for (Vector3 &normal : normals) {
+			normal = p_normal;
 		}
 		uses_normals = true;
 	}
@@ -66,8 +66,8 @@ void ImmediateMesh::surface_set_tangent(const Plane &p_tangent) {
 	ERR_FAIL_COND_MSG(!surface_active, "Not creating any surface. Use surface_begin() to do it.");
 	if (!uses_tangents) {
 		tangents.resize(vertices.size());
-		for (uint32_t i = 0; i < tangents.size(); i++) {
-			tangents[i] = p_tangent;
+		for (Plane &tangent : tangents) {
+			tangent = p_tangent;
 		}
 		uses_tangents = true;
 	}
@@ -78,8 +78,8 @@ void ImmediateMesh::surface_set_uv(const Vector2 &p_uv) {
 	ERR_FAIL_COND_MSG(!surface_active, "Not creating any surface. Use surface_begin() to do it.");
 	if (!uses_uvs) {
 		uvs.resize(vertices.size());
-		for (uint32_t i = 0; i < uvs.size(); i++) {
-			uvs[i] = p_uv;
+		for (Vector2 &uv : uvs) {
+			uv = p_uv;
 		}
 		uses_uvs = true;
 	}
@@ -90,8 +90,8 @@ void ImmediateMesh::surface_set_uv2(const Vector2 &p_uv2) {
 	ERR_FAIL_COND_MSG(!surface_active, "Not creating any surface. Use surface_begin() to do it.");
 	if (!uses_uv2s) {
 		uv2s.resize(vertices.size());
-		for (uint32_t i = 0; i < uv2s.size(); i++) {
-			uv2s[i] = p_uv2;
+		for (Vector2 &uv : uv2s) {
+			uv = p_uv2;
 		}
 		uses_uv2s = true;
 	}

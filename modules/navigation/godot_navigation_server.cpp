@@ -731,24 +731,21 @@ COMMAND_1(free, RID, p_object) {
 		NavMap *map = map_owner.get_or_null(p_object);
 
 		// Removes any assigned region
-		LocalVector<NavRegion *> regions = map->get_regions();
-		for (uint32_t i = 0; i < regions.size(); i++) {
-			map->remove_region(regions[i]);
-			regions[i]->set_map(nullptr);
+		for (NavRegion *region : map->get_regions()) {
+			map->remove_region(region);
+			region->set_map(nullptr);
 		}
 
 		// Removes any assigned links
-		LocalVector<NavLink *> links = map->get_links();
-		for (uint32_t i = 0; i < links.size(); i++) {
-			map->remove_link(links[i]);
-			links[i]->set_map(nullptr);
+		for (NavLink *link : map->get_links()) {
+			map->remove_link(link);
+			link->set_map(nullptr);
 		}
 
 		// Remove any assigned agent
-		LocalVector<RvoAgent *> agents = map->get_agents();
-		for (uint32_t i = 0; i < agents.size(); i++) {
-			map->remove_agent(agents[i]);
-			agents[i]->set_map(nullptr);
+		for (RvoAgent *agent : map->get_agents()) {
+			map->remove_agent(agent);
+			agent->set_map(nullptr);
 		}
 
 		int map_index = active_maps.find(map);
@@ -806,9 +803,9 @@ void GodotNavigationServer::flush_queries() {
 	MutexLock lock(commands_mutex);
 	MutexLock lock2(operations_mutex);
 
-	for (size_t i(0); i < commands.size(); i++) {
-		commands[i]->exec(this);
-		memdelete(commands[i]);
+	for (SetCommand *command : commands) {
+		command->exec(this);
+		memdelete(command);
 	}
 	commands.clear();
 }

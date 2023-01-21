@@ -141,21 +141,19 @@ real_t Geometry3D::get_closest_distance_between_segments(const Vector3 &p_p0, co
 void Geometry3D::MeshData::optimize_vertices() {
 	HashMap<int, int> vtx_remap;
 
-	for (uint32_t i = 0; i < faces.size(); i++) {
-		for (uint32_t j = 0; j < faces[i].indices.size(); j++) {
-			int idx = faces[i].indices[j];
-			if (!vtx_remap.has(idx)) {
+	for (MeshData::Face &face : faces) {
+		for (int &index : face.indices) {
+			if (!vtx_remap.has(index)) {
 				int ni = vtx_remap.size();
-				vtx_remap[idx] = ni;
+				vtx_remap[index] = ni;
 			}
-
-			faces[i].indices[j] = vtx_remap[idx];
+			index = vtx_remap[index];
 		}
 	}
 
-	for (uint32_t i = 0; i < edges.size(); i++) {
-		int a = edges[i].vertex_a;
-		int b = edges[i].vertex_b;
+	for (MeshData::Edge edge : edges) {
+		int a = edge.vertex_a;
+		int b = edge.vertex_b;
 
 		if (!vtx_remap.has(a)) {
 			int ni = vtx_remap.size();
@@ -166,8 +164,8 @@ void Geometry3D::MeshData::optimize_vertices() {
 			vtx_remap[b] = ni;
 		}
 
-		edges[i].vertex_a = vtx_remap[a];
-		edges[i].vertex_b = vtx_remap[b];
+		edge.vertex_a = vtx_remap[a];
+		edge.vertex_b = vtx_remap[b];
 	}
 
 	LocalVector<Vector3> new_vertices;
@@ -673,10 +671,10 @@ Geometry3D::MeshData Geometry3D::build_convex_mesh(const Vector<Plane> &p_planes
 		MeshData::Face face;
 
 		// Add face indices.
-		for (uint32_t j = 0; j < vertices.size(); j++) {
+		for (const Vector3 &vertex : vertices) {
 			int idx = -1;
 			for (uint32_t k = 0; k < mesh.vertices.size(); k++) {
-				if (mesh.vertices[k].distance_to(vertices[j]) < 0.001f) {
+				if (mesh.vertices[k].distance_to(vertex) < 0.001f) {
 					idx = k;
 					break;
 				}
@@ -684,7 +682,7 @@ Geometry3D::MeshData Geometry3D::build_convex_mesh(const Vector<Plane> &p_planes
 
 			if (idx == -1) {
 				idx = mesh.vertices.size();
-				mesh.vertices.push_back(vertices[j]);
+				mesh.vertices.push_back(vertex);
 			}
 
 			face.indices.push_back(idx);

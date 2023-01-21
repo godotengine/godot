@@ -313,20 +313,20 @@ public:
 					//remove simplex and continue
 					simplex_list.erase(simplex->SE);
 
-					for (uint32_t k = 0; k < simplex->grid_positions.size(); k++) {
-						Vector3i p = simplex->grid_positions[k].pos;
-						acceleration_grid[p.x][p.y][p.z].erase(simplex->grid_positions[k].E);
+					for (const GridPos &gp : simplex->grid_positions) {
+						Vector3i p = gp.pos;
+						acceleration_grid[p.x][p.y][p.z].erase(gp.E);
 					}
 					memdelete(simplex);
 				}
 				E = N;
 			}
 
-			for (uint32_t j = 0; j < triangles.size(); j++) {
-				if (triangles[j].bad) {
+			for (const Triangle &triangle : triangles) {
+				if (triangle.bad) {
 					continue;
 				}
-				Simplex *new_simplex = memnew(Simplex(triangles[j].triangle[0], triangles[j].triangle[1], triangles[j].triangle[2], i));
+				Simplex *new_simplex = memnew(Simplex(triangle.triangle[0], triangle.triangle[1], triangle.triangle[2], i));
 				circum_sphere_compute(points, new_simplex);
 				new_simplex->SE = simplex_list.push_back(new_simplex);
 				{

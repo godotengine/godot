@@ -353,11 +353,11 @@ Error VulkanContext::_get_preferred_validation_layers(uint32_t *count, const cha
 		ERR_FAIL_V(ERR_CANT_CREATE);
 	}
 
-	for (uint32_t i = 0; i < instance_validation_layers_alt.size(); i++) {
-		if (_check_layers(instance_validation_layers_alt[i].size(), instance_validation_layers_alt[i].ptr(), instance_layer_count, instance_layers)) {
-			*count = instance_validation_layers_alt[i].size();
+	for (const LocalVector<const char *> &layer : instance_validation_layers_alt) {
+		if (_check_layers(layer.size(), layer.ptr(), instance_layer_count, instance_layers)) {
+			*count = layer.size();
 			if (names != nullptr) {
-				*names = instance_validation_layers_alt[i].ptr();
+				*names = layer.ptr();
 			}
 			break;
 		}

@@ -330,8 +330,8 @@ String ShaderPreprocessor::vector_to_string(const LocalVector<char32_t> &p_v, in
 
 String ShaderPreprocessor::tokens_to_string(const LocalVector<Token> &p_tokens) {
 	LocalVector<char32_t> result;
-	for (uint32_t i = 0; i < p_tokens.size(); i++) {
-		result.push_back(p_tokens[i].text);
+	for (const Token &token : p_tokens) {
+		result.push_back(token.text);
 	}
 	return vector_to_string(result);
 }

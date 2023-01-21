@@ -426,8 +426,8 @@ bool RaycastOcclusionCull::Scenario::update() {
 		return false;
 	}
 
-	for (unsigned int i = 0; i < removed_instances.size(); i++) {
-		instances.erase(removed_instances[i]);
+	for (const RID &scenario : removed_instances) {
+		instances.erase(scenario);
 	}
 
 	if (dirty_instances_array.size() / WorkerThreadPool::get_singleton()->get_thread_count() > 128) {

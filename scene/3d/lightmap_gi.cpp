@@ -455,8 +455,8 @@ int32_t LightmapGI::_compute_bsp_tree(const Vector<Vector3> &p_points, const Loc
 	Plane best_plane;
 	float best_plane_score = -1.0;
 
-	for (uint32_t i = 0; i < p_simplex_indices.size(); i++) {
-		const BSPSimplex &s = p_simplices[p_simplex_indices[i]];
+	for (const int idx : p_simplex_indices) {
+		const BSPSimplex &s = p_simplices[idx];
 		for (int j = 0; j < 4; j++) {
 			uint32_t plane_index = s.planes[j];
 			if (planes_tested[plane_index] == node_index) {
@@ -484,8 +484,8 @@ int32_t LightmapGI::_compute_bsp_tree(const Vector<Vector3> &p_points, const Loc
 			int over_count = 0;
 			int under_count = 0;
 
-			for (uint32_t k = 0; k < p_simplex_indices.size(); k++) {
-				int side = _bsp_get_simplex_side(p_points, p_simplices, plane, p_simplex_indices[k]);
+			for (const int &index : p_simplex_indices) {
+				int side = _bsp_get_simplex_side(p_points, p_simplices, plane, index);
 				if (side == -2) {
 					continue; //this simplex is invalid, skip for now
 				} else if (side < 0) {
@@ -523,8 +523,7 @@ int32_t LightmapGI::_compute_bsp_tree(const Vector<Vector3> &p_points, const Loc
 	LocalVector<int32_t> indices_under;
 
 	//split again, but add to list
-	for (uint32_t i = 0; i < p_simplex_indices.size(); i++) {
-		uint32_t index = p_simplex_indices[i];
+	for (const uint32_t index : p_simplex_indices) {
 		int side = _bsp_get_simplex_side(p_points, p_simplices, best_plane, index);
 
 		if (side == -2) {
@@ -977,8 +976,8 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 			}
 		}
 
-		for (uint32_t i = 0; i < new_probe_positions.size(); i++) {
-			probes_found.push_back(new_probe_positions[i]);
+		for (const Vector3 &position : new_probe_positions) {
+			probes_found.push_back(position);
 		}
 	}
 
@@ -1219,8 +1218,8 @@ LightmapGI::BakeError LightmapGI::bake(Node *p_from_node, String p_image_data_pa
 		LocalVector<BSPNode> bsp_nodes;
 		LocalVector<int32_t> planes_tested;
 		planes_tested.resize(bsp_planes.size());
-		for (uint32_t i = 0; i < planes_tested.size(); i++) {
-			planes_tested[i] = 0x7FFFFFFF;
+		for (int &index : planes_tested) {
+			index = 0x7FFFFFFF;
 		}
 
 		if (p_bake_step) {

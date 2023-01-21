@@ -842,15 +842,15 @@ void MeshStorage::mesh_instance_set_blend_shape_weight(RID p_mesh_instance, int 
 }
 
 void MeshStorage::_mesh_instance_clear(MeshInstance *mi) {
-	for (uint32_t i = 0; i < mi->surfaces.size(); i++) {
-		if (mi->surfaces[i].versions) {
-			for (uint32_t j = 0; j < mi->surfaces[i].version_count; j++) {
-				RD::get_singleton()->free(mi->surfaces[i].versions[j].vertex_array);
+	for (const RendererRD::MeshStorage::MeshInstance::Surface surface : mi->surfaces) {
+		if (surface.versions) {
+			for (uint32_t j = 0; j < surface.version_count; j++) {
+				RD::get_singleton()->free(surface.versions[j].vertex_array);
 			}
-			memfree(mi->surfaces[i].versions);
+			memfree(surface.versions);
 		}
-		if (mi->surfaces[i].vertex_buffer.is_valid()) {
-			RD::get_singleton()->free(mi->surfaces[i].vertex_buffer);
+		if (surface.vertex_buffer.is_valid()) {
+			RD::get_singleton()->free(surface.vertex_buffer);
 		}
 	}
 	mi->surfaces.clear();
@@ -866,8 +866,8 @@ void MeshStorage::_mesh_instance_clear(MeshInstance *mi) {
 void MeshStorage::_mesh_instance_add_surface(MeshInstance *mi, Mesh *mesh, uint32_t p_surface) {
 	if (mesh->blend_shape_count > 0 && mi->blend_weights_buffer.is_null()) {
 		mi->blend_weights.resize(mesh->blend_shape_count);
-		for (uint32_t i = 0; i < mi->blend_weights.size(); i++) {
-			mi->blend_weights[i] = 0;
+		for (float &weight : mi->blend_weights) {
+			weight = 0;
 		}
 		mi->blend_weights_buffer = RD::get_singleton()->storage_buffer_create(sizeof(float) * mi->blend_weights.size(), mi->blend_weights.to_byte_array());
 		mi->weights_dirty = true;

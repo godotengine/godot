@@ -4754,17 +4754,17 @@ void Animation::compress(uint32_t p_page_size, uint32_t p_fps, float p_split_tol
 
 			// The frame has advanced, time to validate the previous frame
 			uint32_t current_page_size = base_page_size;
-			for (uint32_t i = 0; i < data_tracks.size(); i++) {
-				uint32_t track_size = data_tracks[i].data.size(); // track size
-				track_size += data_tracks[i].get_temp_packet_size(); // Add the temporary data
+			for (const AnimationCompressionDataState &state : data_tracks) {
+				uint32_t track_size = state.data.size(); // track size
+				track_size += state.get_temp_packet_size(); // Add the temporary data
 				if (track_size > Compression::MAX_DATA_TRACK_SIZE) {
 					rollback = true; //track to large, time track can't point to keys any longer, because key offset is 12 bits
 					break;
 				}
 				current_page_size += track_size;
 			}
-			for (uint32_t i = 0; i < time_tracks.size(); i++) {
-				current_page_size += time_tracks[i].packets.size() * 4; // time packet is 32 bits
+			for (const AnimationCompressionTimeState &state : time_tracks) {
+				current_page_size += state.packets.size() * 4; // time packet is 32 bits
 			}
 
 			if (!rollback && current_page_size > p_page_size) {
@@ -4776,22 +4776,22 @@ void Animation::compress(uint32_t p_page_size, uint32_t p_fps, float p_split_tol
 			if (rollback) {
 				// Not valid any longer, so rollback and commit page
 
-				for (uint32_t i = 0; i < data_tracks.size(); i++) {
-					data_tracks[i].temp_packets.resize(data_tracks[i].validated_packet_count);
+				for (AnimationCompressionDataState &state : data_tracks) {
+					state.temp_packets.resize(state.validated_packet_count);
 				}
-				for (uint32_t i = 0; i < time_tracks.size(); i++) {
-					time_tracks[i].key_index = time_tracks[i].validated_key_index; //rollback key
-					time_tracks[i].packets.resize(time_tracks[i].validated_packet_count);
+				for (AnimationCompressionTimeState &state : time_tracks) {
+					state.key_index = state.validated_key_index; //rollback key
+					state.packets.resize(state.validated_packet_count);
 				}
 
 			} else {
 				// All valid, so save rollback information
-				for (uint32_t i = 0; i < data_tracks.size(); i++) {
-					data_tracks[i].validated_packet_count = data_tracks[i].temp_packets.size();
+				for (AnimationCompressionDataState &state : data_tracks) {
+					state.validated_packet_count = state.temp_packets.size();
 				}
-				for (uint32_t i = 0; i < time_tracks.size(); i++) {
-					time_tracks[i].validated_key_index = time_tracks[i].key_index;
-					time_tracks[i].validated_packet_count = time_tracks[i].packets.size();
+				for (AnimationCompressionTimeState &state : time_tracks) {
+					state.validated_key_index = state.key_index;
+					state.validated_packet_count = state.packets.size();
 				}
 
 				// Accept this frame as the frame being processed (as long as it exists)
@@ -4976,8 +4976,8 @@ void Animation::compress(uint32_t p_page_size, uint32_t p_fps, float p_split_tol
 	}
 
 	uint32_t new_size = 0;
-	for (uint32_t i = 0; i < compression.pages.size(); i++) {
-		new_size += compression.pages[i].data.size();
+	for (const Compression::Page &page : compression.pages) {
+		new_size += page.data.size();
 	}
 
 	print_line("Original size: " + itos(orig_size) + " - Compressed size: " + itos(new_size) + " " + String::num(float(new_size) / float(orig_size) * 100, 2) + "% pages: " + itos(compression.pages.size()));
@@ -5289,8 +5289,8 @@ int Animation::_get_compressed_key_count(uint32_t p_compressed_track) const {
 
 	int key_count = 0;
 
-	for (uint32_t i = 0; i < compression.pages.size(); i++) {
-		const uint8_t *page_data = compression.pages[i].data.ptr();
+	for (const Compression::Page &page : compression.pages) {
+		const uint8_t *page_data = page.data.ptr();
 		// Little endian assumed. No major big endian hardware exists any longer, but in case it does it will need to be supported.
 		const uint32_t *indices = (const uint32_t *)page_data;
 		const uint16_t *time_keys = (const uint16_t *)&page_data[indices[p_compressed_track * 3 + 0]];
@@ -5323,8 +5323,8 @@ bool Animation::_fetch_compressed_by_index(uint32_t p_compressed_track, int p_in
 	ERR_FAIL_COND_V(!compression.enabled, false);
 	ERR_FAIL_UNSIGNED_INDEX_V(p_compressed_track, compression.bounds.size(), false);
 
-	for (uint32_t i = 0; i < compression.pages.size(); i++) {
-		const uint8_t *page_data = compression.pages[i].data.ptr();
+	for (const Compression::Page &page : compression.pages) {
+		const uint8_t *page_data = page.data.ptr();
 		// Little endian assumed. No major big endian hardware exists any longer, but in case it does it will need to be supported.
 		const uint32_t *indices = (const uint32_t *)page_data;
 		const uint16_t *time_keys = (const uint16_t *)&page_data[indices[p_compressed_track * 3 + 0]];
@@ -5374,7 +5374,7 @@ bool Animation::_fetch_compressed_by_index(uint32_t p_compressed_track, int p_in
 					}
 				}
 
-				r_time = compression.pages[i].time_offset + double(frame) / double(compression.fps);
+				r_time = page.time_offset + double(frame) / double(compression.fps);
 				for (uint32_t l = 0; l < COMPONENTS; l++) {
 					r_value[l] = decode[l];
 				}

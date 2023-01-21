@@ -167,14 +167,11 @@ void GodotSoftBody3D::update_rendering_server(PhysicsServer3DRenderingServerHand
 }
 
 void GodotSoftBody3D::update_normals_and_centroids() {
-	uint32_t i, ni;
-
-	for (i = 0, ni = nodes.size(); i < ni; ++i) {
-		nodes[i].n = Vector3();
+	for (Node &node : nodes) {
+		node.n = Vector3();
 	}
 
-	for (i = 0, ni = faces.size(); i < ni; ++i) {
-		Face &face = faces[i];
+	for (Face &face : faces) {
 		const Vector3 n = vec3_cross(face.n[0]->x - face.n[2]->x, face.n[0]->x - face.n[1]->x);
 		face.n[0]->n += n;
 		face.n[1]->n += n;
@@ -184,8 +181,7 @@ void GodotSoftBody3D::update_normals_and_centroids() {
 		face.centroid = 0.33333333333 * (face.n[0]->x + face.n[1]->x + face.n[2]->x);
 	}
 
-	for (i = 0, ni = nodes.size(); i < ni; ++i) {
-		Node &node = nodes[i];
+	for (Node &node : nodes) {
 		real_t len = node.n.length();
 		if (len > CMP_EPSILON) {
 			node.n /= len;
@@ -235,9 +231,7 @@ void GodotSoftBody3D::update_area() {
 	int i, ni;
 
 	// Face area.
-	for (i = 0, ni = faces.size(); i < ni; ++i) {
-		Face &face = faces[i];
-
+	for (Face &face : faces) {
 		const Vector3 &x0 = face.n[0]->x;
 		const Vector3 &x1 = face.n[1]->x;
 		const Vector3 &x2 = face.n[2]->x;
@@ -255,12 +249,11 @@ void GodotSoftBody3D::update_area() {
 		memset(counts.ptr(), 0, counts.size() * sizeof(int));
 	}
 
-	for (i = 0, ni = nodes.size(); i < ni; ++i) {
-		nodes[i].area = 0.0;
+	for (Node &node : nodes) {
+		node.area = 0.0;
 	}
 
-	for (i = 0, ni = faces.size(); i < ni; ++i) {
-		const Face &face = faces[i];
+	for (const Face &face : faces) {
 		for (int j = 0; j < 3; ++j) {
 			const int index = (int)(face.n[j] - &nodes[0]);
 			counts[index]++;
@@ -278,8 +271,7 @@ void GodotSoftBody3D::update_area() {
 }
 
 void GodotSoftBody3D::reset_link_rest_lengths() {
-	for (uint32_t i = 0, ni = links.size(); i < ni; ++i) {
-		Link &link = links[i];
+	for (Link &link : links) {
 		link.rl = (link.n[0]->x - link.n[1]->x).length();
 		link.c1 = link.rl * link.rl;
 	}
@@ -287,8 +279,7 @@ void GodotSoftBody3D::reset_link_rest_lengths() {
 
 void GodotSoftBody3D::update_link_constants() {
 	real_t inv_linear_stiffness = 1.0 / linear_stiffness;
-	for (uint32_t i = 0, ni = links.size(); i < ni; ++i) {
-		Link &link = links[i];
+	for (Link &link : links) {
 		link.c0 = (link.n[0]->im + link.n[1]->im) * inv_linear_stiffness;
 	}
 }
@@ -619,9 +610,9 @@ void GodotSoftBody3D::generate_bending_constraints(int p_distance) {
 				}
 			}
 		}
-		for (i = 0; i < links.size(); ++i) {
-			const int ia = (int)(links[i].n[0] - &nodes[0]);
-			const int ib = (int)(links[i].n[1] - &nodes[0]);
+		for (Link &link : links) {
+			const int ia = (int)(link.n[0] - &nodes[0]);
+			const int ib = (int)(link.n[1] - &nodes[0]);
 			int idx = ib * n + ia;
 			int idx_inv = ia * n + ib;
 			adj[idx] = 1;
@@ -635,9 +626,9 @@ void GodotSoftBody3D::generate_bending_constraints(int p_distance) {
 			// Build node links.
 			node_links.resize(nodes.size());
 
-			for (i = 0; i < links.size(); ++i) {
-				const int ia = (int)(links[i].n[0] - &nodes[0]);
-				const int ib = (int)(links[i].n[1] - &nodes[0]);
+			for (Link &link : links) {
+				const int ia = (int)(link.n[0] - &nodes[0]);
+				const int ib = (int)(link.n[1] - &nodes[0]);
 				if (node_links[ia].find(ib) == -1) {
 					node_links[ia].push_back(ib);
 				}
@@ -649,8 +640,7 @@ void GodotSoftBody3D::generate_bending_constraints(int p_distance) {
 			for (uint32_t ii = 0; ii < node_links.size(); ii++) {
 				for (uint32_t jj = 0; jj < node_links[ii].size(); jj++) {
 					int k = node_links[ii][jj];
-					for (uint32_t kk = 0; kk < node_links[k].size(); kk++) {
-						int l = node_links[k][kk];
+					for (const int &l : node_links[k]) {
 						if ((int)ii != l) {
 							int idx_ik = k * n + ii;
 							int idx_kj = l * n + k;
@@ -916,8 +906,7 @@ void GodotSoftBody3D::set_drag_coefficient(real_t p_val) {
 }
 
 void GodotSoftBody3D::add_velocity(const Vector3 &p_velocity) {
-	for (uint32_t i = 0, ni = nodes.size(); i < ni; ++i) {
-		Node &node = nodes[i];
+	for (Node &node : nodes) {
 		if (node.im > 0) {
 			node.v += p_velocity;
 		}
@@ -929,26 +918,22 @@ void GodotSoftBody3D::apply_forces(const LocalVector<GodotArea3D *> &p_wind_area
 		return;
 	}
 
-	uint32_t i, ni;
 	int32_t j;
 
 	real_t volume = 0.0;
 	const Vector3 &org = nodes[0].x;
 
 	// Iterate over faces (try not to iterate elsewhere if possible).
-	for (i = 0, ni = faces.size(); i < ni; ++i) {
-		const Face &face = faces[i];
-
+	for (const Face &face : faces) {
 		Vector3 wind_force(0, 0, 0);
 
 		// Compute volume.
 		volume += vec3_dot(face.n[0]->x - org, vec3_cross(face.n[1]->x - org, face.n[2]->x - org));
 
 		// Compute nodal forces from area winds.
-		int wind_area_count = p_wind_areas.size();
-		if (wind_area_count > 0) {
-			for (j = 0; j < wind_area_count; j++) {
-				wind_force += _compute_area_windforce(p_wind_areas[j], &face);
+		if (!p_wind_areas.is_empty()) {
+			for (const GodotArea3D *area : p_wind_areas) {
+				wind_force += _compute_area_windforce(area, &face);
 			}
 
 			for (j = 0; j < 3; j++) {
@@ -962,8 +947,7 @@ void GodotSoftBody3D::apply_forces(const LocalVector<GodotArea3D *> &p_wind_area
 	// Apply nodal pressure forces.
 	if (pressure_coefficient > CMP_EPSILON) {
 		real_t ivolumetp = 1.0 / Math::abs(volume) * pressure_coefficient;
-		for (i = 0, ni = nodes.size(); i < ni; ++i) {
-			Node &node = nodes[i];
+		for (Node &node : nodes) {
 			if (node.im > 0) {
 				node.f += node.n * (node.area * ivolumetp);
 			}
@@ -1048,9 +1032,7 @@ void GodotSoftBody3D::predict_motion(real_t p_delta) {
 	real_t clamp_delta_v = max_displacement * inv_delta;
 
 	// Integrate.
-	uint32_t i, ni;
-	for (i = 0, ni = nodes.size(); i < ni; ++i) {
-		Node &node = nodes[i];
+	for (Node &node : nodes) {
 		node.q = node.x;
 		Vector3 delta_v = node.f * node.im * p_delta;
 		for (int c = 0; c < 3; c++) {
@@ -1065,9 +1047,7 @@ void GodotSoftBody3D::predict_motion(real_t p_delta) {
 	update_bounds();
 
 	// Node tree update.
-	for (i = 0, ni = nodes.size(); i < ni; ++i) {
-		const Node &node = nodes[i];
-
+	for (const Node &node : nodes) {
 		AABB node_aabb(node.x, Vector3());
 		node_aabb.expand_to(node.x + node.v * p_delta);
 		node_aabb.grow_by(collision_margin);
@@ -1088,17 +1068,13 @@ void GodotSoftBody3D::predict_motion(real_t p_delta) {
 void GodotSoftBody3D::solve_constraints(real_t p_delta) {
 	const real_t inv_delta = 1.0 / p_delta;
 
-	uint32_t i, ni;
-
-	for (i = 0, ni = links.size(); i < ni; ++i) {
-		Link &link = links[i];
+	for (Link &link : links) {
 		link.c3 = link.n[1]->q - link.n[0]->q;
 		link.c2 = 1 / (link.c3.length_squared() * link.c0);
 	}
 
 	// Solve velocities.
-	for (i = 0, ni = nodes.size(); i < ni; ++i) {
-		Node &node = nodes[i];
+	for (Node &node : nodes) {
 		node.x = node.q + node.v * p_delta;
 	}
 
@@ -1108,9 +1084,7 @@ void GodotSoftBody3D::solve_constraints(real_t p_delta) {
 		solve_links(1.0, ti);
 	}
 	const real_t vc = (1.0 - damping_coefficient) * inv_delta;
-	for (i = 0, ni = nodes.size(); i < ni; ++i) {
-		Node &node = nodes[i];
-
+	for (Node &node : nodes) {
 		node.x += node.bv * p_delta;
 		node.bv = Vector3();
 
@@ -1123,8 +1097,7 @@ void GodotSoftBody3D::solve_constraints(real_t p_delta) {
 }
 
 void GodotSoftBody3D::solve_links(real_t kst, real_t ti) {
-	for (uint32_t i = 0, ni = links.size(); i < ni; ++i) {
-		Link &link = links[i];
+	for (Link &link : links) {
 		if (link.c0 > 0) {
 			Node &node_a = *link.n[0];
 			Node &node_b = *link.n[1];
@@ -1183,9 +1156,7 @@ void GodotSoftBody3D::query_ray(const Vector3 &p_from, const Vector3 &p_to, Godo
 
 void GodotSoftBody3D::initialize_face_tree() {
 	face_tree.clear();
-	for (uint32_t i = 0; i < faces.size(); ++i) {
-		Face &face = faces[i];
-
+	for (Face &face : faces) {
 		AABB face_aabb;
 
 		face_aabb.position = face.n[0]->x;
@@ -1199,9 +1170,7 @@ void GodotSoftBody3D::initialize_face_tree() {
 }
 
 void GodotSoftBody3D::update_face_tree(real_t p_delta) {
-	for (uint32_t i = 0; i < faces.size(); ++i) {
-		const Face &face = faces[i];
-
+	for (const Face &face : faces) {
 		AABB face_aabb;
 
 		const Node *node0 = face.n[0];
