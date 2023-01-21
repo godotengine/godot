@@ -101,10 +101,10 @@ namespace Godot.NativeInterop
 
         internal static partial void godotsharp_internal_reload_registered_script(IntPtr scriptPtr);
 
-        internal static partial void godotsharp_array_filter_godot_objects_by_native(in godot_string_name p_native_name,
-            in godot_array p_input, out godot_array r_output);
+        internal static partial void godotsharp_array_filter_godot_objects_by_native(scoped in godot_string_name p_native_name,
+            scoped in godot_array p_input, out godot_array r_output);
 
-        internal static partial void godotsharp_array_filter_godot_objects_by_non_native(in godot_array p_input,
+        internal static partial void godotsharp_array_filter_godot_objects_by_non_native(scoped in godot_array p_input,
             out godot_array r_output);
 
         public static partial void godotsharp_ref_new_from_ref_counted_ptr(out godot_ref r_dest,
@@ -113,15 +113,15 @@ namespace Godot.NativeInterop
         public static partial void godotsharp_ref_destroy(ref godot_ref p_instance);
 
         public static partial void godotsharp_string_name_new_from_string(out godot_string_name r_dest,
-            in godot_string p_name);
+            scoped in godot_string p_name);
 
         public static partial void godotsharp_node_path_new_from_string(out godot_node_path r_dest,
-            in godot_string p_name);
+            scoped in godot_string p_name);
 
         public static partial void
-            godotsharp_string_name_as_string(out godot_string r_dest, in godot_string_name p_name);
+            godotsharp_string_name_as_string(out godot_string r_dest, scoped in godot_string_name p_name);
 
-        public static partial void godotsharp_node_path_as_string(out godot_string r_dest, in godot_node_path p_np);
+        public static partial void godotsharp_node_path_as_string(out godot_string r_dest, scoped in godot_node_path p_np);
 
         public static partial godot_packed_byte_array godotsharp_packed_byte_array_new_mem_copy(byte* p_src,
             int p_length);
@@ -156,10 +156,10 @@ namespace Godot.NativeInterop
         public static partial void godotsharp_callable_new_with_delegate(IntPtr p_delegate_handle, IntPtr p_trampoline,
             IntPtr p_object, out godot_callable r_callable);
 
-        internal static partial godot_bool godotsharp_callable_get_data_for_marshalling(in godot_callable p_callable,
+        internal static partial godot_bool godotsharp_callable_get_data_for_marshalling(scoped in godot_callable p_callable,
             out IntPtr r_delegate_handle, out IntPtr r_trampoline, out IntPtr r_object, out godot_string_name r_name);
 
-        internal static partial godot_variant godotsharp_callable_call(in godot_callable p_callable,
+        internal static partial godot_variant godotsharp_callable_call(scoped in godot_callable p_callable,
             godot_variant** p_args, int p_arg_count, out godot_variant_call_error p_call_error);
 
         internal static partial void godotsharp_callable_call_deferred(in godot_callable p_callable,
@@ -180,58 +180,58 @@ namespace Godot.NativeInterop
         // variant.h
 
         public static partial void
-            godotsharp_variant_new_string_name(out godot_variant r_dest, in godot_string_name p_s);
+            godotsharp_variant_new_string_name(out godot_variant r_dest, scoped in godot_string_name p_s);
 
-        public static partial void godotsharp_variant_new_copy(out godot_variant r_dest, in godot_variant p_src);
+        public static partial void godotsharp_variant_new_copy(out godot_variant r_dest, scoped in godot_variant p_src);
 
-        public static partial void godotsharp_variant_new_node_path(out godot_variant r_dest, in godot_node_path p_np);
+        public static partial void godotsharp_variant_new_node_path(out godot_variant r_dest, scoped in godot_node_path p_np);
 
         public static partial void godotsharp_variant_new_object(out godot_variant r_dest, IntPtr p_obj);
 
-        public static partial void godotsharp_variant_new_transform2d(out godot_variant r_dest, in Transform2D p_t2d);
+        public static partial void godotsharp_variant_new_transform2d(out godot_variant r_dest, scoped in Transform2D p_t2d);
 
-        public static partial void godotsharp_variant_new_basis(out godot_variant r_dest, in Basis p_basis);
+        public static partial void godotsharp_variant_new_basis(out godot_variant r_dest, scoped in Basis p_basis);
 
-        public static partial void godotsharp_variant_new_transform3d(out godot_variant r_dest, in Transform3D p_trans);
+        public static partial void godotsharp_variant_new_transform3d(out godot_variant r_dest, scoped in Transform3D p_trans);
 
-        public static partial void godotsharp_variant_new_projection(out godot_variant r_dest, in Projection p_proj);
+        public static partial void godotsharp_variant_new_projection(out godot_variant r_dest, scoped in Projection p_proj);
 
-        public static partial void godotsharp_variant_new_aabb(out godot_variant r_dest, in Aabb p_aabb);
+        public static partial void godotsharp_variant_new_aabb(out godot_variant r_dest, scoped in Aabb p_aabb);
 
         public static partial void godotsharp_variant_new_dictionary(out godot_variant r_dest,
-            in godot_dictionary p_dict);
+            scoped in godot_dictionary p_dict);
 
-        public static partial void godotsharp_variant_new_array(out godot_variant r_dest, in godot_array p_arr);
+        public static partial void godotsharp_variant_new_array(out godot_variant r_dest, scoped in godot_array p_arr);
 
         public static partial void godotsharp_variant_new_packed_byte_array(out godot_variant r_dest,
-            in godot_packed_byte_array p_pba);
+            scoped in godot_packed_byte_array p_pba);
 
         public static partial void godotsharp_variant_new_packed_int32_array(out godot_variant r_dest,
-            in godot_packed_int32_array p_pia);
+            scoped in godot_packed_int32_array p_pia);
 
         public static partial void godotsharp_variant_new_packed_int64_array(out godot_variant r_dest,
-            in godot_packed_int64_array p_pia);
+            scoped in godot_packed_int64_array p_pia);
 
         public static partial void godotsharp_variant_new_packed_float32_array(out godot_variant r_dest,
-            in godot_packed_float32_array p_pra);
+            scoped in godot_packed_float32_array p_pra);
 
         public static partial void godotsharp_variant_new_packed_float64_array(out godot_variant r_dest,
-            in godot_packed_float64_array p_pra);
+            scoped in godot_packed_float64_array p_pra);
 
         public static partial void godotsharp_variant_new_packed_string_array(out godot_variant r_dest,
-            in godot_packed_string_array p_psa);
+            scoped in godot_packed_string_array p_psa);
 
         public static partial void godotsharp_variant_new_packed_vector2_array(out godot_variant r_dest,
-            in godot_packed_vector2_array p_pv2a);
+            scoped in godot_packed_vector2_array p_pv2a);
 
         public static partial void godotsharp_variant_new_packed_vector3_array(out godot_variant r_dest,
-            in godot_packed_vector3_array p_pv3a);
+            scoped in godot_packed_vector3_array p_pv3a);
 
         public static partial void godotsharp_variant_new_packed_vector4_array(out godot_variant r_dest,
-            in godot_packed_vector4_array p_pv4a);
+            scoped in godot_packed_vector4_array p_pv4a);
 
         public static partial void godotsharp_variant_new_packed_color_array(out godot_variant r_dest,
-            in godot_packed_color_array p_pca);
+            scoped in godot_packed_color_array p_pca);
 
         public static partial godot_bool godotsharp_variant_as_bool(in godot_variant p_self);
 
@@ -239,7 +239,7 @@ namespace Godot.NativeInterop
 
         public static partial double godotsharp_variant_as_float(in godot_variant p_self);
 
-        public static partial godot_string godotsharp_variant_as_string(in godot_variant p_self);
+        public static partial godot_string godotsharp_variant_as_string(scoped in godot_variant p_self);
 
         public static partial Vector2 godotsharp_variant_as_vector2(in godot_variant p_self);
 
@@ -273,45 +273,45 @@ namespace Godot.NativeInterop
 
         public static partial Color godotsharp_variant_as_color(in godot_variant p_self);
 
-        public static partial godot_string_name godotsharp_variant_as_string_name(in godot_variant p_self);
+        public static partial godot_string_name godotsharp_variant_as_string_name(scoped in godot_variant p_self);
 
-        public static partial godot_node_path godotsharp_variant_as_node_path(in godot_variant p_self);
+        public static partial godot_node_path godotsharp_variant_as_node_path(scoped in godot_variant p_self);
 
         public static partial Rid godotsharp_variant_as_rid(in godot_variant p_self);
 
-        public static partial godot_callable godotsharp_variant_as_callable(in godot_variant p_self);
+        public static partial godot_callable godotsharp_variant_as_callable(scoped in godot_variant p_self);
 
-        public static partial godot_signal godotsharp_variant_as_signal(in godot_variant p_self);
+        public static partial godot_signal godotsharp_variant_as_signal(scoped in godot_variant p_self);
 
-        public static partial godot_dictionary godotsharp_variant_as_dictionary(in godot_variant p_self);
+        public static partial godot_dictionary godotsharp_variant_as_dictionary(scoped in godot_variant p_self);
 
-        public static partial godot_array godotsharp_variant_as_array(in godot_variant p_self);
+        public static partial godot_array godotsharp_variant_as_array(scoped in godot_variant p_self);
 
-        public static partial godot_packed_byte_array godotsharp_variant_as_packed_byte_array(in godot_variant p_self);
+        public static partial godot_packed_byte_array godotsharp_variant_as_packed_byte_array(scoped in godot_variant p_self);
 
-        public static partial godot_packed_int32_array godotsharp_variant_as_packed_int32_array(in godot_variant p_self);
+        public static partial godot_packed_int32_array godotsharp_variant_as_packed_int32_array(scoped in godot_variant p_self);
 
-        public static partial godot_packed_int64_array godotsharp_variant_as_packed_int64_array(in godot_variant p_self);
+        public static partial godot_packed_int64_array godotsharp_variant_as_packed_int64_array(scoped in godot_variant p_self);
 
         public static partial godot_packed_float32_array godotsharp_variant_as_packed_float32_array(
-            in godot_variant p_self);
+            scoped in godot_variant p_self);
 
         public static partial godot_packed_float64_array godotsharp_variant_as_packed_float64_array(
-            in godot_variant p_self);
+            scoped in godot_variant p_self);
 
         public static partial godot_packed_string_array godotsharp_variant_as_packed_string_array(
-            in godot_variant p_self);
+            scoped in godot_variant p_self);
 
         public static partial godot_packed_vector2_array godotsharp_variant_as_packed_vector2_array(
-            in godot_variant p_self);
+            scoped in godot_variant p_self);
 
         public static partial godot_packed_vector3_array godotsharp_variant_as_packed_vector3_array(
-            in godot_variant p_self);
+            scoped in godot_variant p_self);
 
         public static partial godot_packed_vector4_array godotsharp_variant_as_packed_vector4_array(
             in godot_variant p_self);
 
-        public static partial godot_packed_color_array godotsharp_variant_as_packed_color_array(in godot_variant p_self);
+        public static partial godot_packed_color_array godotsharp_variant_as_packed_color_array(scoped in godot_variant p_self);
 
         public static partial godot_bool godotsharp_variant_equals(in godot_variant p_a, in godot_variant p_b);
 
@@ -322,17 +322,17 @@ namespace Godot.NativeInterop
         // string_name.h
 
         public static partial void godotsharp_string_name_new_copy(out godot_string_name r_dest,
-            in godot_string_name p_src);
+            scoped in godot_string_name p_src);
 
         // node_path.h
 
-        public static partial void godotsharp_node_path_new_copy(out godot_node_path r_dest, in godot_node_path p_src);
+        public static partial void godotsharp_node_path_new_copy(out godot_node_path r_dest, scoped in godot_node_path p_src);
 
         // array.h
 
         public static partial void godotsharp_array_new(out godot_array r_dest);
 
-        public static partial void godotsharp_array_new_copy(out godot_array r_dest, in godot_array p_src);
+        public static partial void godotsharp_array_new_copy(out godot_array r_dest, scoped in godot_array p_src);
 
         public static partial godot_variant* godotsharp_array_ptrw(ref godot_array p_self);
 
@@ -341,7 +341,7 @@ namespace Godot.NativeInterop
         public static partial void godotsharp_dictionary_new(out godot_dictionary r_dest);
 
         public static partial void godotsharp_dictionary_new_copy(out godot_dictionary r_dest,
-            in godot_dictionary p_src);
+            scoped in godot_dictionary p_src);
 
         // destroy functions
 
@@ -389,8 +389,7 @@ namespace Godot.NativeInterop
 
         public static partial int godotsharp_array_binary_search(ref godot_array p_self, int p_index, int p_count, in godot_variant p_value);
 
-        public static partial void
-            godotsharp_array_duplicate(ref godot_array p_self, godot_bool p_deep, out godot_array r_dest);
+        public static partial void godotsharp_array_duplicate(scoped ref godot_array p_self, godot_bool p_deep, out godot_array r_dest);
 
         public static partial void godotsharp_array_fill(ref godot_array p_self, in godot_variant p_value);
 
@@ -410,11 +409,11 @@ namespace Godot.NativeInterop
 
         public static partial godot_bool godotsharp_array_is_typed(ref godot_array p_self);
 
-        public static partial void godotsharp_array_max(ref godot_array p_self, out godot_variant r_value);
+        public static partial void godotsharp_array_max(scoped ref godot_array p_self, out godot_variant r_value);
 
-        public static partial void godotsharp_array_min(ref godot_array p_self, out godot_variant r_value);
+        public static partial void godotsharp_array_min(scoped ref godot_array p_self, out godot_variant r_value);
 
-        public static partial void godotsharp_array_pick_random(ref godot_array p_self, out godot_variant r_value);
+        public static partial void godotsharp_array_pick_random(scoped ref godot_array p_self, out godot_variant r_value);
 
         public static partial godot_bool godotsharp_array_recursive_equal(ref godot_array p_self, in godot_array p_other);
 
@@ -426,7 +425,7 @@ namespace Godot.NativeInterop
 
         public static partial void godotsharp_array_shuffle(ref godot_array p_self);
 
-        public static partial void godotsharp_array_slice(ref godot_array p_self, int p_start, int p_end,
+        public static partial void godotsharp_array_slice(scoped ref godot_array p_self, int p_start, int p_end,
             int p_step, godot_bool p_deep, out godot_array r_dest);
 
         public static partial void godotsharp_array_sort(ref godot_array p_self);
@@ -435,20 +434,20 @@ namespace Godot.NativeInterop
 
         // Dictionary
 
-        public static partial godot_bool godotsharp_dictionary_try_get_value(ref godot_dictionary p_self,
-            in godot_variant p_key,
+        public static partial godot_bool godotsharp_dictionary_try_get_value(scoped ref godot_dictionary p_self,
+            scoped in godot_variant p_key,
             out godot_variant r_value);
 
         public static partial void godotsharp_dictionary_set_value(ref godot_dictionary p_self, in godot_variant p_key,
             in godot_variant p_value);
 
-        public static partial void godotsharp_dictionary_keys(ref godot_dictionary p_self, out godot_array r_dest);
+        public static partial void godotsharp_dictionary_keys(scoped ref godot_dictionary p_self, out godot_array r_dest);
 
-        public static partial void godotsharp_dictionary_values(ref godot_dictionary p_self, out godot_array r_dest);
+        public static partial void godotsharp_dictionary_values(scoped ref godot_dictionary p_self, out godot_array r_dest);
 
         public static partial int godotsharp_dictionary_count(ref godot_dictionary p_self);
 
-        public static partial void godotsharp_dictionary_key_value_pair_at(ref godot_dictionary p_self, int p_index,
+        public static partial void godotsharp_dictionary_key_value_pair_at(scoped ref godot_dictionary p_self, int p_index,
             out godot_variant r_key, out godot_variant r_value);
 
         public static partial void godotsharp_dictionary_add(ref godot_dictionary p_self, in godot_variant p_key,
@@ -459,7 +458,7 @@ namespace Godot.NativeInterop
         public static partial godot_bool godotsharp_dictionary_contains_key(ref godot_dictionary p_self,
             in godot_variant p_key);
 
-        public static partial void godotsharp_dictionary_duplicate(ref godot_dictionary p_self, godot_bool p_deep,
+        public static partial void godotsharp_dictionary_duplicate(scoped ref godot_dictionary p_self, godot_bool p_deep,
             out godot_dictionary r_dest);
 
         public static partial void godotsharp_dictionary_merge(ref godot_dictionary p_self, in godot_dictionary p_dictionary, godot_bool p_overwrite);
@@ -496,20 +495,20 @@ namespace Godot.NativeInterop
 
         public static partial void godotsharp_dictionary_get_typed_value_script(ref godot_dictionary p_self, out godot_variant r_dest);
 
-        public static partial void godotsharp_dictionary_to_string(ref godot_dictionary p_self, out godot_string r_str);
+        public static partial void godotsharp_dictionary_to_string(scoped ref godot_dictionary p_self, out godot_string r_str);
 
         // StringExtensions
 
-        public static partial void godotsharp_string_simplify_path(in godot_string p_self,
+        public static partial void godotsharp_string_simplify_path(scoped in godot_string p_self,
             out godot_string r_simplified_path);
 
-        public static partial void godotsharp_string_to_camel_case(in godot_string p_self,
+        public static partial void godotsharp_string_to_camel_case(scoped in godot_string p_self,
             out godot_string r_camel_case);
 
-        public static partial void godotsharp_string_to_pascal_case(in godot_string p_self,
+        public static partial void godotsharp_string_to_pascal_case(scoped in godot_string p_self,
             out godot_string r_pascal_case);
 
-        public static partial void godotsharp_string_to_snake_case(in godot_string p_self,
+        public static partial void godotsharp_string_to_snake_case(scoped in godot_string p_self,
             out godot_string r_snake_case);
 
         // NodePath
@@ -517,18 +516,18 @@ namespace Godot.NativeInterop
         public static partial void godotsharp_node_path_get_as_property_path(in godot_node_path p_self,
             ref godot_node_path r_dest);
 
-        public static partial void godotsharp_node_path_get_concatenated_names(in godot_node_path p_self,
+        public static partial void godotsharp_node_path_get_concatenated_names(scoped in godot_node_path p_self,
             out godot_string r_names);
 
-        public static partial void godotsharp_node_path_get_concatenated_subnames(in godot_node_path p_self,
+        public static partial void godotsharp_node_path_get_concatenated_subnames(scoped in godot_node_path p_self,
             out godot_string r_subnames);
 
-        public static partial void godotsharp_node_path_get_name(in godot_node_path p_self, int p_idx,
+        public static partial void godotsharp_node_path_get_name(scoped in godot_node_path p_self, int p_idx,
             out godot_string r_name);
 
         public static partial int godotsharp_node_path_get_name_count(in godot_node_path p_self);
 
-        public static partial void godotsharp_node_path_get_subname(in godot_node_path p_self, int p_idx,
+        public static partial void godotsharp_node_path_get_subname(scoped in godot_node_path p_self, int p_idx,
             out godot_string r_subname);
 
         public static partial int godotsharp_node_path_get_subname_count(in godot_node_path p_self);
@@ -541,11 +540,11 @@ namespace Godot.NativeInterop
 
         // GD, etc
 
-        internal static partial void godotsharp_bytes_to_var(in godot_packed_byte_array p_bytes,
+        internal static partial void godotsharp_bytes_to_var(scoped in godot_packed_byte_array p_bytes,
             godot_bool p_allow_objects,
             out godot_variant r_ret);
 
-        internal static partial void godotsharp_convert(in godot_variant p_what, int p_type,
+        internal static partial void godotsharp_convert(scoped in godot_variant p_what, int p_type,
             out godot_variant r_ret);
 
         internal static partial int godotsharp_hash(in godot_variant p_var);
@@ -582,12 +581,12 @@ namespace Godot.NativeInterop
 
         internal static partial void godotsharp_weakref(IntPtr p_obj, out godot_ref r_weak_ref);
 
-        internal static partial void godotsharp_str_to_var(in godot_string p_str, out godot_variant r_ret);
+        internal static partial void godotsharp_str_to_var(scoped in godot_string p_str, out godot_variant r_ret);
 
-        internal static partial void godotsharp_var_to_bytes(in godot_variant p_what, godot_bool p_full_objects,
+        internal static partial void godotsharp_var_to_bytes(scoped in godot_variant p_what, godot_bool p_full_objects,
             out godot_packed_byte_array r_bytes);
 
-        internal static partial void godotsharp_var_to_str(in godot_variant p_var, out godot_string r_ret);
+        internal static partial void godotsharp_var_to_str(scoped in godot_variant p_var, out godot_string r_ret);
 
         internal static partial void godotsharp_err_print_error(in godot_string p_function, in godot_string p_file, int p_line, in godot_string p_error, in godot_string p_message = default, godot_bool p_editor_notify = godot_bool.False, godot_error_handler_type p_type = godot_error_handler_type.ERR_HANDLER_ERROR);
 
