@@ -754,7 +754,7 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 						if (has_reset_anim) {
 							int rt = reset_anim->find_track(path, track_type);
 							if (rt >= 0 && reset_anim->track_get_key_count(rt) > 0) {
-								track_bezier->init_value = reset_anim->track_get_key_value(rt, 0);
+								track_bezier->init_value = (reset_anim->track_get_key_value(rt, 0).operator Array())[0];
 							}
 						}
 					} break;
