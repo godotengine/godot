@@ -388,6 +388,16 @@ Color CanvasItem::get_modulate() const {
 	return modulate;
 }
 
+Color CanvasItem::get_modulate_in_tree() const {
+	Color final_modulate = modulate;
+	CanvasItem *parent_item = get_parent_item();
+	while (parent_item) {
+		final_modulate *= parent_item->get_modulate();
+		parent_item = parent_item->get_parent_item();
+	}
+	return final_modulate;
+}
+
 void CanvasItem::set_as_top_level(bool p_top_level) {
 	if (top_level == p_top_level) {
 		return;
