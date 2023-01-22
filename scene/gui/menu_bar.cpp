@@ -214,10 +214,10 @@ void MenuBar::_update_submenu(const String &p_menu_name, PopupMenu *p_child) {
 			PopupMenu *pm = Object::cast_to<PopupMenu>(n);
 			ERR_FAIL_COND_MSG(!pm, "Item subnode is not a PopupMenu: " + p_child->get_item_submenu(i) + ".");
 
-			DisplayServer::get_singleton()->global_menu_add_submenu_item(p_menu_name, p_child->get_item_text(i), p_menu_name + "/" + itos(i));
+			DisplayServer::get_singleton()->global_menu_add_submenu_item(p_menu_name, atr(p_child->get_item_text(i)), p_menu_name + "/" + itos(i));
 			_update_submenu(p_menu_name + "/" + itos(i), pm);
 		} else {
-			int index = DisplayServer::get_singleton()->global_menu_add_item(p_menu_name, p_child->get_item_text(i), callable_mp(p_child, &PopupMenu::activate_item), Callable(), i);
+			int index = DisplayServer::get_singleton()->global_menu_add_item(p_menu_name, atr(p_child->get_item_text(i)), callable_mp(p_child, &PopupMenu::activate_item), Callable(), i);
 
 			if (p_child->is_item_checkable(i)) {
 				DisplayServer::get_singleton()->global_menu_set_item_checkable(p_menu_name, index, true);
@@ -290,7 +290,7 @@ void MenuBar::_update_menu() {
 			if (menu_cache[i].hidden) {
 				continue;
 			}
-			String menu_name = String(popups[i]->get_meta("_menu_name", popups[i]->get_name()));
+			String menu_name = atr(String(popups[i]->get_meta("_menu_name", popups[i]->get_name())));
 
 			index = DisplayServer::get_singleton()->global_menu_add_submenu_item("_main", menu_name, root_name + "/" + itos(i), index);
 			if (menu_cache[i].disabled) {
@@ -525,7 +525,7 @@ void MenuBar::shape(Menu &p_menu) {
 	} else {
 		p_menu.text_buf->set_direction((TextServer::Direction)text_direction);
 	}
-	p_menu.text_buf->add_string(p_menu.name, theme_cache.font, theme_cache.font_size, language);
+	p_menu.text_buf->add_string(atr(p_menu.name), theme_cache.font, theme_cache.font_size, language);
 }
 
 void MenuBar::_refresh_menu_names() {
