@@ -695,7 +695,7 @@ void ConnectionsDock::_disconnect(const ConnectDialog::ConnectionData &p_cd) {
 
 	Callable callable = p_cd.get_callable();
 	undo_redo->add_do_method(selected_node, "disconnect", p_cd.signal, callable);
-	undo_redo->add_undo_method(selected_node, "connect", p_cd.signal, callable, p_cd.binds, p_cd.flags);
+	undo_redo->add_undo_method(selected_node, "connect", p_cd.signal, callable, p_cd.flags);
 	undo_redo->add_do_method(this, "update_tree");
 	undo_redo->add_undo_method(this, "update_tree");
 	undo_redo->add_do_method(SceneTreeDock::get_singleton()->get_tree_editor(), "update_tree"); // To force redraw of scene tree.
@@ -725,7 +725,7 @@ void ConnectionsDock::_disconnect_all() {
 		if (!_is_connection_inherited(connection)) {
 			ConnectDialog::ConnectionData cd = connection;
 			undo_redo->add_do_method(selected_node, "disconnect", cd.signal, cd.get_callable());
-			undo_redo->add_undo_method(selected_node, "connect", cd.signal, cd.get_callable(), cd.binds, cd.flags);
+			undo_redo->add_undo_method(selected_node, "connect", cd.signal, cd.get_callable(), cd.flags);
 		}
 		child = child->get_next();
 	}
