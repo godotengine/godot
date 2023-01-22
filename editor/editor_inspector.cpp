@@ -3282,6 +3282,11 @@ void EditorInspector::update_tree() {
 		ped->parse_end(object);
 		_parse_added_editors(main_vbox, nullptr, ped);
 	}
+
+	if (_is_main_editor_inspector()) {
+		// Updating inspector might invalidate some editing owners.
+		EditorNode::get_singleton()->hide_unused_editors();
+	}
 }
 
 void EditorInspector::update_property(const String &p_prop) {
@@ -3306,6 +3311,9 @@ void EditorInspector::_clear() {
 	sections.clear();
 	pending.clear();
 	restart_request_props.clear();
+	if (_is_main_editor_inspector()) {
+		EditorNode::get_singleton()->hide_unused_editors(this);
+	}
 }
 
 Object *EditorInspector::get_edited_object() {
@@ -3638,6 +3646,10 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 			E->update_editor_property_status();
 		}
 	}
+}
+
+bool EditorInspector::_is_main_editor_inspector() const {
+	return InspectorDock::get_singleton() && InspectorDock::get_inspector_singleton() == this;
 }
 
 void EditorInspector::_property_changed(const String &p_path, const Variant &p_value, const String &p_name, bool p_changing, bool p_update_all) {

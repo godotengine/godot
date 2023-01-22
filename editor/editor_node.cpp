@@ -2078,42 +2078,46 @@ bool EditorNode::_is_class_editor_disabled_by_feature_profile(const StringName &
 	return false;
 }
 
-void EditorNode::edit_item(Object *p_object) {
+void EditorNode::edit_item(Object *p_object, Object *p_editing_owner) {
+	ERR_FAIL_NULL(p_editing_owner);
+
 	if (p_object && _is_class_editor_disabled_by_feature_profile(p_object->get_class())) {
 		return;
 	}
 
-	Vector<EditorPlugin *> top_plugins = editor_plugins_over->get_plugins_list();
 	Vector<EditorPlugin *> item_plugins;
 	if (p_object) {
 		item_plugins = editor_data.get_subeditors(p_object);
 	}
 
 	if (!item_plugins.is_empty()) {
-		bool same = true;
-		if (item_plugins.size() == top_plugins.size()) {
-			for (int i = 0; i < item_plugins.size(); i++) {
-				if (item_plugins[i] != top_plugins[i]) {
-					same = false;
+		ObjectID owner_id = p_editing_owner->get_instance_id();
+
+		for (EditorPlugin *plugin : active_plugins[owner_id]) {
+			if (!item_plugins.has(plugin)) {
+				plugin->make_visible(false);
+				plugin->edit(nullptr);
+			}
+		}
+
+		for (EditorPlugin *plugin : item_plugins) {
+			for (KeyValue<ObjectID, HashSet<EditorPlugin *>> &kv : active_plugins) {
+				if (kv.key != owner_id) {
+					EditorPropertyResource *epres = Object::cast_to<EditorPropertyResource>(ObjectDB::get_instance(kv.key));
+					if (epres && kv.value.has(plugin)) {
+						// If it's resource property editing the same resource type, fold it.
+						epres->fold_resource();
+					}
+					kv.value.erase(plugin);
 				}
 			}
-		} else {
-			same = false;
+			active_plugins[owner_id].insert(plugin);
+			plugin->edit(p_object);
+			plugin->make_visible(true);
 		}
-
-		if (!same) {
-			_display_top_editors(false);
-			_set_top_editors(item_plugins);
-		}
-		_set_editing_top_editors(p_object);
-		_display_top_editors(true);
-	} else if (!top_plugins.is_empty()) {
-		hide_top_editors();
+	} else {
+		hide_unused_editors(p_editing_owner);
 	}
-}
-
-void EditorNode::edit_item_resource(Ref<Resource> p_resource) {
-	edit_item(p_resource.ptr());
 }
 
 void EditorNode::push_item(Object *p_object, const String &p_property, bool p_inspector_only) {
@@ -2122,7 +2126,7 @@ void EditorNode::push_item(Object *p_object, const String &p_property, bool p_in
 		NodeDock::get_singleton()->set_node(nullptr);
 		SceneTreeDock::get_singleton()->set_selected(nullptr);
 		InspectorDock::get_singleton()->update(nullptr);
-		_display_top_editors(false);
+		hide_unused_editors();
 		return;
 	}
 
@@ -2150,22 +2154,34 @@ void EditorNode::_save_default_environment() {
 	}
 }
 
-void EditorNode::hide_top_editors() {
-	_display_top_editors(false);
+void EditorNode::hide_unused_editors(const Object *p_editing_owner) {
+	if (p_editing_owner) {
+		const ObjectID id = p_editing_owner->get_instance_id();
+		for (EditorPlugin *plugin : active_plugins[id]) {
+			plugin->make_visible(false);
+			plugin->edit(nullptr);
+			editor_plugins_over->remove_plugin(plugin);
+		}
+		active_plugins.erase(id);
+	} else {
+		// If no editing owner is provided, this method will go over all owners and check if they are valid.
+		// This is to sweep properties that were removed from the inspector.
+		List<ObjectID> to_remove;
+		for (KeyValue<ObjectID, HashSet<EditorPlugin *>> &kv : active_plugins) {
+			if (!ObjectDB::get_instance(kv.key)) {
+				to_remove.push_back(kv.key);
+				for (EditorPlugin *plugin : kv.value) {
+					plugin->make_visible(false);
+					plugin->edit(nullptr);
+					editor_plugins_over->remove_plugin(plugin);
+				}
+			}
+		}
 
-	editor_plugins_over->clear();
-}
-
-void EditorNode::_display_top_editors(bool p_display) {
-	editor_plugins_over->make_visible(p_display);
-}
-
-void EditorNode::_set_top_editors(Vector<EditorPlugin *> p_editor_plugins_over) {
-	editor_plugins_over->set_plugins_list(p_editor_plugins_over);
-}
-
-void EditorNode::_set_editing_top_editors(Object *p_current_object) {
-	editor_plugins_over->edit(p_current_object);
+		for (const ObjectID &id : to_remove) {
+			active_plugins.erase(id);
+		}
+	}
 }
 
 static bool overrides_external_editor(Object *p_object) {
@@ -2199,7 +2215,7 @@ void EditorNode::_edit_current(bool p_skip_foreign) {
 		NodeDock::get_singleton()->set_node(nullptr);
 		InspectorDock::get_singleton()->update(nullptr);
 
-		_display_top_editors(false);
+		hide_unused_editors();
 
 		return;
 	}
@@ -2327,6 +2343,9 @@ void EditorNode::_edit_current(bool p_skip_foreign) {
 		InspectorDock::get_inspector_singleton()->set_use_folding(!disable_folding);
 	}
 
+	Object *editor_owner = is_node ? (Object *)SceneTreeDock::get_singleton() : is_resource ? (Object *)InspectorDock::get_inspector_singleton()
+																							: (Object *)this;
+
 	// Take care of the main editor plugin.
 
 	if (!inspector_only) {
@@ -2343,6 +2362,7 @@ void EditorNode::_edit_current(bool p_skip_foreign) {
 			}
 		}
 
+		ObjectID editor_owner_id = editor_owner->get_instance_id();
 		if (main_plugin && !skip_main_plugin) {
 			// Special case if use of external editor is true.
 			Resource *current_res = Object::cast_to<Resource>(current_obj);
@@ -2353,15 +2373,22 @@ void EditorNode::_edit_current(bool p_skip_foreign) {
 			}
 
 			else if (main_plugin != editor_plugin_screen && (!ScriptEditor::get_singleton() || !ScriptEditor::get_singleton()->is_visible_in_tree() || ScriptEditor::get_singleton()->can_take_away_focus())) {
+				// Unedit previous plugin.
+				editor_plugin_screen->edit(nullptr);
+				active_plugins[editor_owner_id].erase(editor_plugin_screen);
 				// Update screen main_plugin.
 				editor_select(plugin_index);
 				main_plugin->edit(current_obj);
 			} else {
 				editor_plugin_screen->edit(current_obj);
 			}
+			is_main_screen_editing = true;
+		} else if (!main_plugin && editor_plugin_screen && is_main_screen_editing) {
+			editor_plugin_screen->edit(nullptr);
+			is_main_screen_editing = false;
 		}
 
-		edit_item(current_obj);
+		edit_item(current_obj, editor_owner);
 	}
 
 	InspectorDock::get_singleton()->update(current_obj);
