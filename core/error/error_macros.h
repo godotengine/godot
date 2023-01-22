@@ -189,12 +189,12 @@ void _err_flush_stdout();
  * Ensures an integer index `m_index` is less than `m_size` and greater than or equal to 0.
  * If not, the application crashes.
  */
-#define CRASH_BAD_INDEX(m_index, m_size)                                                                                  \
-	if (unlikely((m_index) < 0 || (m_index) >= (m_size))) {                                                               \
-		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), "", true); \
-		_err_flush_stdout();                                                                                              \
-		GENERATE_TRAP();                                                                                                  \
-	} else                                                                                                                \
+#define CRASH_BAD_INDEX(m_index, m_size)                                                                                         \
+	if (unlikely((m_index) < 0 || (m_index) >= (m_size))) {                                                                      \
+		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), "", false, true); \
+		_err_flush_stdout();                                                                                                     \
+		GENERATE_TRAP();                                                                                                         \
+	} else                                                                                                                       \
 		((void)0)
 
 /**
@@ -204,12 +204,12 @@ void _err_flush_stdout();
  * Ensures an integer index `m_index` is less than `m_size` and greater than or equal to 0.
  * If not, prints `m_msg` and the application crashes.
  */
-#define CRASH_BAD_INDEX_MSG(m_index, m_size, m_msg)                                                                          \
-	if (unlikely((m_index) < 0 || (m_index) >= (m_size))) {                                                                  \
-		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), m_msg, true); \
-		_err_flush_stdout();                                                                                                 \
-		GENERATE_TRAP();                                                                                                     \
-	} else                                                                                                                   \
+#define CRASH_BAD_INDEX_MSG(m_index, m_size, m_msg)                                                                                 \
+	if (unlikely((m_index) < 0 || (m_index) >= (m_size))) {                                                                         \
+		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), m_msg, false, true); \
+		_err_flush_stdout();                                                                                                        \
+		GENERATE_TRAP();                                                                                                            \
+	} else                                                                                                                          \
 		((void)0)
 
 // Unsigned integer index out of bounds error macros.
@@ -292,12 +292,12 @@ void _err_flush_stdout();
  * Ensures an unsigned integer index `m_index` is less than `m_size`.
  * If not, the application crashes.
  */
-#define CRASH_BAD_UNSIGNED_INDEX(m_index, m_size)                                                                         \
-	if (unlikely((m_index) >= (m_size))) {                                                                                \
-		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), "", true); \
-		_err_flush_stdout();                                                                                              \
-		GENERATE_TRAP();                                                                                                  \
-	} else                                                                                                                \
+#define CRASH_BAD_UNSIGNED_INDEX(m_index, m_size)                                                                                \
+	if (unlikely((m_index) >= (m_size))) {                                                                                       \
+		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), "", false, true); \
+		_err_flush_stdout();                                                                                                     \
+		GENERATE_TRAP();                                                                                                         \
+	} else                                                                                                                       \
 		((void)0)
 
 /**
@@ -307,12 +307,12 @@ void _err_flush_stdout();
  * Ensures an unsigned integer index `m_index` is less than `m_size`.
  * If not, prints `m_msg` and the application crashes.
  */
-#define CRASH_BAD_UNSIGNED_INDEX_MSG(m_index, m_size, m_msg)                                                                 \
-	if (unlikely((m_index) >= (m_size))) {                                                                                   \
-		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), m_msg, true); \
-		_err_flush_stdout();                                                                                                 \
-		GENERATE_TRAP();                                                                                                     \
-	} else                                                                                                                   \
+#define CRASH_BAD_UNSIGNED_INDEX_MSG(m_index, m_size, m_msg)                                                                        \
+	if (unlikely((m_index) >= (m_size))) {                                                                                          \
+		_err_print_index_error(FUNCTION_STR, __FILE__, __LINE__, m_index, m_size, _STR(m_index), _STR(m_size), m_msg, false, true); \
+		_err_flush_stdout();                                                                                                        \
+		GENERATE_TRAP();                                                                                                            \
+	} else                                                                                                                          \
 		((void)0)
 
 // Null reference error macros.
