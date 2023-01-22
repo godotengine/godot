@@ -1423,9 +1423,11 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("grabber", "VSplitContainer", theme->get_icon(SNAME("GuiVsplitter"), SNAME("EditorIcons")));
 	theme->set_icon("grabber", "HSplitContainer", theme->get_icon(SNAME("GuiHsplitter"), SNAME("EditorIcons")));
 
+	theme->set_constant("separation", "SplitContainer", default_margin_size * 2 * EDSCALE);
 	theme->set_constant("separation", "HSplitContainer", default_margin_size * 2 * EDSCALE);
 	theme->set_constant("separation", "VSplitContainer", default_margin_size * 2 * EDSCALE);
 
+	theme->set_constant("minimum_grab_thickness", "SplitContainer", 6 * EDSCALE);
 	theme->set_constant("minimum_grab_thickness", "HSplitContainer", 6 * EDSCALE);
 	theme->set_constant("minimum_grab_thickness", "VSplitContainer", 6 * EDSCALE);
 
