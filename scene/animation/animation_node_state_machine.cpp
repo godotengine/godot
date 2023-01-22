@@ -212,7 +212,7 @@ StringName AnimationNodeStateMachinePlayback::get_current_node() const {
 	return current;
 }
 
-StringName AnimationNodeStateMachinePlayback::get_blend_from_node() const {
+StringName AnimationNodeStateMachinePlayback::get_fading_from_node() const {
 	return fading_from;
 }
 
@@ -703,6 +703,7 @@ void AnimationNodeStateMachinePlayback::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_current_node"), &AnimationNodeStateMachinePlayback::get_current_node);
 	ClassDB::bind_method(D_METHOD("get_current_play_position"), &AnimationNodeStateMachinePlayback::get_current_play_pos);
 	ClassDB::bind_method(D_METHOD("get_current_length"), &AnimationNodeStateMachinePlayback::get_current_length);
+	ClassDB::bind_method(D_METHOD("get_fading_from_node"), &AnimationNodeStateMachinePlayback::get_fading_from_node);
 	ClassDB::bind_method(D_METHOD("get_travel_path"), &AnimationNodeStateMachinePlayback::get_travel_path);
 }
 

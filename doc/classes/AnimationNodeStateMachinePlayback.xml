@@ -38,6 +38,12 @@
 				Returns the playback position within the current animation state.
 			</description>
 		</method>
+		<method name="get_fading_from_node" qualifiers="const">
+			<return type="StringName" />
+			<description>
+				Returns the starting state of currently fading animation.
+			</description>
+		</method>
 		<method name="get_travel_path" qualifiers="const">
 			<return type="PackedStringArray" />
 			<description>
