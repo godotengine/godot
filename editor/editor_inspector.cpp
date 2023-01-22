@@ -1124,14 +1124,16 @@ void EditorInspectorCategory::_notification(int p_what) {
 
 			int w = font->get_string_size(label, HORIZONTAL_ALIGNMENT_LEFT, -1, font_size).width;
 			if (icon.is_valid()) {
-				w += hs + icon->get_width();
+				w += (hs + 16 * EDSCALE);
 			}
 
 			int ofs = (get_size().width - w) / 2;
 
 			if (icon.is_valid()) {
-				draw_texture(icon, Point2(ofs, (get_size().height - icon->get_height()) / 2).floor());
-				ofs += hs + icon->get_width();
+				auto rect_size = Size2(16 * EDSCALE, 16 * EDSCALE);
+				auto rect_pos = Point2(ofs, (get_size().height - rect_size.height) / 2).floor();
+				draw_texture_rect(icon, Rect2(rect_pos, rect_size), false);
+				ofs += hs + rect_size.width;
 			}
 
 			Color color = get_theme_color(SNAME("font_color"), SNAME("Tree"));
