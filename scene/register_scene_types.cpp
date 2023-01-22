@@ -140,6 +140,7 @@
 #include "scene/main/viewport.h"
 #include "scene/main/window.h"
 #include "scene/resources/animation_library.h"
+#include "scene/resources/audio_stream_polyphonic.h"
 #include "scene/resources/audio_stream_wav.h"
 #include "scene/resources/bit_map.h"
 #include "scene/resources/bone_map.h"
@@ -907,6 +908,8 @@ void register_scene_types() {
 #endif
 	GDREGISTER_ABSTRACT_CLASS(VideoStream);
 	GDREGISTER_CLASS(AudioStreamWAV);
+	GDREGISTER_CLASS(AudioStreamPolyphonic);
+	GDREGISTER_ABSTRACT_CLASS(AudioStreamPlaybackPolyphonic);
 
 	OS::get_singleton()->yield(); // may take time to init
 
