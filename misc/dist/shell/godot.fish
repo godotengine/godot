@@ -88,4 +88,6 @@ complete -c godot -l doctool -d "Dump the engine API reference to the given path
 complete -c godot -l no-docbase -d "Disallow dumping the base types (used with --doctool)"
 complete -c godot -l build-solutions -d "Build the scripting solutions (e.g. for C# projects)"
 complete -c godot -l gdnative-generate-json-api -d "Generate JSON dump of the Godot API for GDNative bindings"
+complete -c godot -l benchmark -d "Benchmark the run time and print it to console"
+complete -c godot -l benchmark-file -d "Benchmark the run time and save it to a given file in JSON format" -x
 complete -c godot -l test -d "Run a unit test" -x

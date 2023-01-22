@@ -302,11 +302,11 @@ OS::MouseMode OS_Android::get_mouse_mode() const {
 	return mouse_mode;
 }
 
-void OS_Android::set_cursor_shape(CursorShape p_shape) {
+void OS_Android::_set_cursor_shape_helper(CursorShape p_shape, bool force) {
 	if (!godot_java->get_godot_view()->can_update_pointer_icon()) {
 		return;
 	}
-	if (cursor_shape == p_shape) {
+	if (cursor_shape == p_shape && !force) {
 		return;
 	}
 
@@ -314,6 +314,19 @@ void OS_Android::set_cursor_shape(CursorShape p_shape) {
 	if (mouse_mode == MouseMode::MOUSE_MODE_VISIBLE || mouse_mode == MouseMode::MOUSE_MODE_CONFINED) {
 		godot_java->get_godot_view()->set_pointer_icon(android_cursors[cursor_shape]);
 	}
+}
+
+void OS_Android::set_cursor_shape(CursorShape p_shape) {
+	_set_cursor_shape_helper(p_shape);
+}
+
+void OS_Android::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
+	String cursor_path = p_cursor.is_valid() ? p_cursor->get_path() : "";
+	if (!cursor_path.empty()) {
+		cursor_path = ProjectSettings::get_singleton()->globalize_path(cursor_path);
+	}
+	godot_java->get_godot_view()->configure_pointer_icon(android_cursors[cursor_shape], cursor_path, p_hotspot);
+	_set_cursor_shape_helper(p_shape, true);
 }
 
 OS::CursorShape OS_Android::get_cursor_shape() const {
@@ -667,6 +680,27 @@ void OS_Android::vibrate_handheld(int p_duration_ms) {
 
 String OS_Android::get_config_path() const {
 	return get_user_data_dir().plus_file("config");
+}
+
+void OS_Android::benchmark_begin_measure(const String &p_what) {
+#ifdef TOOLS_ENABLED
+	godot_java->begin_benchmark_measure(p_what);
+#endif
+}
+
+void OS_Android::benchmark_end_measure(const String &p_what) {
+#ifdef TOOLS_ENABLED
+	godot_java->end_benchmark_measure(p_what);
+#endif
+}
+
+void OS_Android::benchmark_dump() {
+#ifdef TOOLS_ENABLED
+	if (!is_use_benchmark_set()) {
+		return;
+	}
+	godot_java->dump_benchmark(get_benchmark_file());
+#endif
 }
 
 bool OS_Android::_check_internal_feature_support(const String &p_feature) {

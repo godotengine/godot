@@ -74,4 +74,6 @@ _arguments \
   '--no-docbase[disallow dumping the base types (used with --doctool)]' \
   '--build-solutions[build the scripting solutions (e.g. for C# projects)]' \
   '--gdnative-generate-json-api[generate JSON dump of the Godot API for GDNative bindings]' \
+  '--benchmark[benchmark the run time and print it to console]' \
+  '--benchmark-file[benchmark the run time and save it to a given file in JSON format]:path to output JSON file' \
   '--test[run a unit test]:unit test name'

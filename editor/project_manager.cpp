@@ -2391,6 +2391,7 @@ void ProjectManager::_version_button_pressed() {
 }
 
 ProjectManager::ProjectManager() {
+	OS::get_singleton()->benchmark_begin_measure("project_manager");
 	// load settings
 	if (!EditorSettings::get_singleton()) {
 		EditorSettings::create();
@@ -2791,6 +2792,8 @@ ProjectManager::ProjectManager() {
 
 	about = memnew(EditorAbout);
 	add_child(about);
+
+	OS::get_singleton()->benchmark_end_measure("project_manager");
 }
 
 ProjectManager::~ProjectManager() {

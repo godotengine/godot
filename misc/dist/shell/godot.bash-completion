@@ -77,6 +77,8 @@ _complete_godot_options() {
 --no-docbase
 --build-solutions
 --gdnative-generate-json-api
+--benchmark
+--benchmark-file
 --test
 " -- "$1"))
 }
