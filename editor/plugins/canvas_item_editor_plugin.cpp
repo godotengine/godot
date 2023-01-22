@@ -2646,6 +2646,7 @@ void CanvasItemEditor::_update_cursor() {
 		case DRAG_BOTTOM_LEFT:
 			c = rotation_array[(rotation_array_index + 1) % 4];
 			break;
+		case DRAG_KEY_MOVE:
 		case DRAG_MOVE:
 			c = CURSOR_MOVE;
 			break;
