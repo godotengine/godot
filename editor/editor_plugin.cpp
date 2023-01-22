@@ -662,7 +662,7 @@ void EditorPlugin::make_visible(bool p_visible) {
 }
 
 void EditorPlugin::edit(Object *p_object) {
-	if (p_object->is_class("Resource")) {
+	if (Object::cast_to<Resource>(p_object)) {
 		GDVIRTUAL_CALL(_edit, Ref<Resource>(Object::cast_to<Resource>(p_object)));
 	} else {
 		GDVIRTUAL_CALL(_edit, p_object);
