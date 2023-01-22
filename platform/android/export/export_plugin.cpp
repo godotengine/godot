@@ -437,6 +437,14 @@ String EditorExportPlatformAndroid::get_project_name(const String &p_name) const
 
 String EditorExportPlatformAndroid::get_package_name(const String &p_package) const {
 	String pname = p_package;
+	String name = get_valid_basename();
+	pname = pname.replace("$genname", name);
+	return pname;
+}
+
+// Returns the project name without invalid characters
+// or the "noname" string if all characters are invalid.
+String EditorExportPlatformAndroid::get_valid_basename() const {
 	String basename = GLOBAL_GET("application/config/name");
 	basename = basename.to_lower();
 
@@ -452,13 +460,12 @@ String EditorExportPlatformAndroid::get_package_name(const String &p_package) co
 			first = false;
 		}
 	}
+
 	if (name.is_empty()) {
 		name = "noname";
 	}
 
-	pname = pname.replace("$genname", name);
-
-	return pname;
+	return name;
 }
 
 String EditorExportPlatformAndroid::get_assets_directory(const Ref<EditorExportPreset> &p_preset, int p_export_format) const {
@@ -466,7 +473,7 @@ String EditorExportPlatformAndroid::get_assets_directory(const Ref<EditorExportP
 }
 
 bool EditorExportPlatformAndroid::is_package_name_valid(const String &p_package, String *r_error) const {
-	String pname = p_package;
+	String pname = get_package_name(p_package);
 
 	if (pname.length() == 0) {
 		if (r_error) {
@@ -525,6 +532,24 @@ bool EditorExportPlatformAndroid::is_package_name_valid(const String &p_package,
 		return false;
 	}
 
+	if (p_package.find("$genname") >= 0 && !is_project_name_valid()) {
+		if (r_error) {
+			*r_error = TTR("The project name does not meet the requirement for the package name format. Please explicitly specify the package name.");
+		}
+		return false;
+	}
+
+	return true;
+}
+
+bool EditorExportPlatformAndroid::is_project_name_valid() const {
+	// Get the original project name and convert to lowercase.
+	String basename = GLOBAL_GET("application/config/name");
+	basename = basename.to_lower();
+	// Check if there are invalid characters.
+	if (basename != get_valid_basename()) {
+		return false;
+	}
 	return true;
 }
 
@@ -2286,7 +2311,7 @@ bool EditorExportPlatformAndroid::has_valid_project_configuration(const Ref<Edit
 	String pn = p_preset->get("package/unique_name");
 	String pn_err;
 
-	if (!is_package_name_valid(get_package_name(pn), &pn_err)) {
+	if (!is_package_name_valid(pn, &pn_err)) {
 		valid = false;
 		err += TTR("Invalid package name:") + " " + pn_err + "\n";
 	}

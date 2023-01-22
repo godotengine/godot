@@ -47,7 +47,7 @@
 
 EditorFileSystem *EditorFileSystem::singleton = nullptr;
 //the name is the version, to keep compatibility with different versions of Godot
-#define CACHE_FILE_NAME "filesystem_cache7"
+#define CACHE_FILE_NAME "filesystem_cache8"
 
 void EditorFileSystemDirectory::sort_files() {
 	files.sort_custom<FileInfoSort>();
@@ -169,6 +169,11 @@ StringName EditorFileSystemDirectory::get_file_type(int p_idx) const {
 	return files[p_idx]->type;
 }
 
+StringName EditorFileSystemDirectory::get_file_resource_script_class(int p_idx) const {
+	ERR_FAIL_INDEX_V(p_idx, files.size(), "");
+	return files[p_idx]->resource_script_class;
+}
+
 String EditorFileSystemDirectory::get_name() {
 	return name;
 }
@@ -266,6 +271,10 @@ void EditorFileSystem::_scan_filesystem() {
 
 					FileCache fc;
 					fc.type = split[1];
+					if (fc.type.find("/") != -1) {
+						fc.type = fc.type.get_slice("/", 0);
+						fc.resource_script_class = fc.type.get_slice("/", 1);
+					}
 					fc.uid = split[2].to_int();
 					fc.modification_time = split[3].to_int();
 					fc.import_modification_time = split[4].to_int();
@@ -854,6 +863,7 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, Ref<DirAc
 
 			if (fc && fc->modification_time == mt && fc->import_modification_time == import_mt && !_test_for_reimport(path, true)) {
 				fi->type = fc->type;
+				fi->resource_script_class = fc->resource_script_class;
 				fi->uid = fc->uid;
 				fi->deps = fc->deps;
 				fi->modified_time = fc->modification_time;
@@ -875,6 +885,7 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, Ref<DirAc
 
 				if (fc->type.is_empty()) {
 					fi->type = ResourceLoader::get_resource_type(path);
+					fi->resource_script_class = ResourceLoader::get_resource_script_class(path);
 					fi->import_group_file = ResourceLoader::get_import_group_file(path);
 					//there is also the chance that file type changed due to reimport, must probably check this somehow here (or kind of note it for next time in another file?)
 					//note: I think this should not happen any longer..
@@ -904,6 +915,7 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, Ref<DirAc
 			if (fc && fc->modification_time == mt) {
 				//not imported, so just update type if changed
 				fi->type = fc->type;
+				fi->resource_script_class = fc->resource_script_class;
 				fi->uid = fc->uid;
 				fi->modified_time = fc->modification_time;
 				fi->deps = fc->deps;
@@ -915,6 +927,7 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, Ref<DirAc
 			} else {
 				//new or modified time
 				fi->type = ResourceLoader::get_resource_type(path);
+				fi->resource_script_class = ResourceLoader::get_resource_script_class(path);
 				if (fi->type == "" && textfile_extensions.has(ext)) {
 					fi->type = "TextFile";
 				}
@@ -1029,6 +1042,7 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const 
 					fi->modified_time = FileAccess::get_modified_time(path);
 					fi->import_modified_time = 0;
 					fi->type = ResourceLoader::get_resource_type(path);
+					fi->resource_script_class = ResourceLoader::get_resource_script_class(path);
 					if (fi->type == "" && textfile_extensions.has(ext)) {
 						fi->type = "TextFile";
 					}
@@ -1285,7 +1299,12 @@ void EditorFileSystem::_save_filesystem_cache(EditorFileSystemDirectory *p_dir, 
 		if (!p_dir->files[i]->import_group_file.is_empty()) {
 			group_file_cache.insert(p_dir->files[i]->import_group_file);
 		}
-		String s = p_dir->files[i]->file + "::" + p_dir->files[i]->type + "::" + itos(p_dir->files[i]->uid) + "::" + itos(p_dir->files[i]->modified_time) + "::" + itos(p_dir->files[i]->import_modified_time) + "::" + itos(p_dir->files[i]->import_valid) + "::" + p_dir->files[i]->import_group_file + "::" + p_dir->files[i]->script_class_name + "<>" + p_dir->files[i]->script_class_extends + "<>" + p_dir->files[i]->script_class_icon_path;
+
+		String type = p_dir->files[i]->type;
+		if (p_dir->files[i]->resource_script_class) {
+			type += "/" + String(p_dir->files[i]->resource_script_class);
+		}
+		String s = p_dir->files[i]->file + "::" + type + "::" + itos(p_dir->files[i]->uid) + "::" + itos(p_dir->files[i]->modified_time) + "::" + itos(p_dir->files[i]->import_modified_time) + "::" + itos(p_dir->files[i]->import_valid) + "::" + p_dir->files[i]->import_group_file + "::" + p_dir->files[i]->script_class_name + "<>" + p_dir->files[i]->script_class_extends + "<>" + p_dir->files[i]->script_class_icon_path;
 		s += "::";
 		for (int j = 0; j < p_dir->files[i]->deps.size(); j++) {
 			if (j > 0) {
@@ -1533,6 +1552,11 @@ void EditorFileSystem::_update_script_classes() {
 		int index = -1;
 		EditorFileSystemDirectory *efd = find_file(path, &index);
 
+		if (!efd || index < 0) {
+			// The file was removed
+			continue;
+		}
+
 		for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 			ScriptLanguage *lang = ScriptServer::get_language(i);
 			if (lang->supports_documentation() && efd->files[index]->type == lang->get_type()) {
@@ -1612,6 +1636,8 @@ void EditorFileSystem::update_file(const String &p_file) {
 	if (type.is_empty() && textfile_extensions.has(p_file.get_extension())) {
 		type = "TextFile";
 	}
+	String script_class = ResourceLoader::get_resource_script_class(p_file);
+
 	ResourceUID::ID uid = ResourceLoader::get_resource_uid(p_file);
 
 	if (cpos == -1) {
@@ -1645,6 +1671,7 @@ void EditorFileSystem::update_file(const String &p_file) {
 	}
 
 	fs->files[cpos]->type = type;
+	fs->files[cpos]->resource_script_class = script_class;
 	fs->files[cpos]->uid = uid;
 	fs->files[cpos]->script_class_name = _get_global_script_class(type, p_file, &fs->files[cpos]->script_class_extends, &fs->files[cpos]->script_class_icon_path);
 	fs->files[cpos]->import_group_file = ResourceLoader::get_import_group_file(p_file);

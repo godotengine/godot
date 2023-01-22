@@ -4,7 +4,7 @@
 # This file is distributed under the same license as the Godot source code.
 # Allan Nordhøy <epost@anotheragency.no>, 2017-2018, 2019, 2020, 2021.
 # Anonymous <GentleSaucepan@protonmail.com>, 2017, 2021.
-# Elias <eliasnykrem@gmail.com>, 2018.
+# Elias <eliasnykrem@gmail.com>, 2018, 2023.
 # flesk <eivindkn@gmail.com>, 2017, 2019.
 # Frank T. Rambol <frank@d-fect.com>, 2018, 2021.
 # Jørgen Aarmo Lund <jorgen.aarmo@gmail.com>, 2016, 2019.
@@ -28,8 +28,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-12-08 10:28+0000\n"
-"Last-Translator: slasken06 <ask.skivdal@gmail.com>\n"
+"PO-Revision-Date: 2023-01-17 13:54+0000\n"
+"Last-Translator: Elias <eliasnykrem@gmail.com>\n"
 "Language-Team: Norwegian Bokmål <https://hosted.weblate.org/projects/godot-"
 "engine/godot/nb_NO/>\n"
 "Language: nb\n"
@@ -37,7 +37,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.15-dev\n"
+"X-Generator: Weblate 4.15.1-dev\n"
 
 #: core/bind/core_bind.cpp main/main.cpp
 msgid "Tablet Driver"
@@ -2281,7 +2281,7 @@ msgstr "Åpne"
 
 #: editor/dependency_editor.cpp
 msgid "Owners of: %s (Total: %d)"
-msgstr ""
+msgstr "Eiere av: %s (Totalt: %d)"
 
 #: editor/dependency_editor.cpp
 #, fuzzy
@@ -2868,22 +2868,19 @@ msgstr "Velg"
 
 #: editor/editor_export.cpp
 msgid "Project export for platform:"
-msgstr ""
+msgstr "Prosjekteksport til platform:"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Completed with warnings."
-msgstr "Kopier Node-bane"
+msgstr "Fullført med varsler."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Completed successfully."
-msgstr "Vellykket Installering av Pakke!"
+msgstr "Fullført vellykket."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Failed."
-msgstr "Feilet:"
+msgstr "Feilet."
 
 #: editor/editor_export.cpp
 msgid "Storing File:"
@@ -2898,29 +2895,24 @@ msgid "Packing"
 msgstr "Pakking"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Save PCK"
-msgstr "Lagre som"
+msgstr "Lagre PCK"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Cannot create file \"%s\"."
-msgstr "Kunne ikke opprette mappe."
+msgstr "Kunne ikke opprette filen \"%s\"."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Failed to export project files."
-msgstr "Kunne ikke opprette mappe."
+msgstr "Kunne ikke eksportere prosjektfiler."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Can't open file to read from path \"%s\"."
-msgstr "Kan ikke åpne fil for skriving:"
+msgstr "Kan ikke åpne filen for å lese fra banen \"%s\"."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Save ZIP"
-msgstr "Lagre som"
+msgstr "Lagre ZIP"
 
 #: editor/editor_export.cpp
 msgid ""
@@ -2984,9 +2976,8 @@ msgstr ""
 #: editor/editor_export.cpp platform/android/export/export_plugin.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
 #: platform/osx/export/export.cpp platform/uwp/export/export.cpp
-#, fuzzy
 msgid "Custom Template"
-msgstr "Medlemmer"
+msgstr "Egendefinert mal"
 
 #: editor/editor_export.cpp editor/project_export.cpp
 #: platform/android/export/export_plugin.cpp platform/iphone/export/export.cpp
@@ -2996,22 +2987,20 @@ msgid "Release"
 msgstr "Slipp"
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Binary Format"
-msgstr "Anim Forandre Omforming"
+msgstr "Binærformat"
 
 #: editor/editor_export.cpp
 msgid "64 Bits"
-msgstr ""
+msgstr "64 Bits"
 
 #: editor/editor_export.cpp
 msgid "Embed PCK"
-msgstr ""
+msgstr "Innebygd PCK"
 
 #: editor/editor_export.cpp platform/osx/export/export.cpp
-#, fuzzy
 msgid "Texture Format"
-msgstr "Linjal Modus"
+msgstr "Teksturformat"
 
 #: editor/editor_export.cpp
 msgid "BPTC"
@@ -3031,9 +3020,8 @@ msgid "ETC2"
 msgstr ""
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "No BPTC Fallbacks"
-msgstr "Tilbakefall"
+msgstr "Ingen BPTC tilbakefall"
 
 #: editor/editor_export.cpp platform/android/export/export_plugin.cpp
 #: platform/iphone/export/export.cpp platform/javascript/export/export.cpp
@@ -3048,24 +3036,20 @@ msgid "Custom release template not found."
 msgstr "Fant ikke tilpasset utgivelsesmal."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Prepare Template"
-msgstr "Håndter Eksportmaler"
+msgstr "Forbered mal"
 
 #: editor/editor_export.cpp platform/osx/export/export.cpp
-#, fuzzy
 msgid "The given export path doesn't exist."
-msgstr "Fil eksisterer ikke."
+msgstr "Den angitte eksportbanen eksisterer ikke."
 
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
-#, fuzzy
 msgid "Template file not found: \"%s\"."
-msgstr "Malfil ble ikke funnet:"
+msgstr "Malfil ble ikke funnet \"%s\"."
 
 #: editor/editor_export.cpp
-#, fuzzy
 msgid "Failed to copy export template."
-msgstr "Håndter Eksportmaler"
+msgstr "Kunne ikke kopiere eksportmalen."
 
 #: editor/editor_export.cpp platform/windows/export/export.cpp
 #: platform/x11/export/export.cpp
@@ -3082,9 +3066,8 @@ msgid "Convert Text Resources To Binary On Export"
 msgstr ""
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "3D Editor"
-msgstr "Redigeringsverktøy"
+msgstr "3D Redigeringsverktøy"
 
 #: editor/editor_feature_profile.cpp
 msgid "Script Editor"
@@ -3097,7 +3080,7 @@ msgstr "Ressursbibliotek"
 
 #: editor/editor_feature_profile.cpp
 msgid "Scene Tree Editing"
-msgstr ""
+msgstr "Scenetre redigering"
 
 #: editor/editor_feature_profile.cpp
 #, fuzzy
@@ -3115,7 +3098,7 @@ msgstr "Importer"
 
 #: editor/editor_feature_profile.cpp
 msgid "Allows to view and edit 3D scenes."
-msgstr ""
+msgstr "Lar deg se og redigere 3D scener."
 
 #: editor/editor_feature_profile.cpp
 msgid "Allows to edit scripts using the integrated script editor."
@@ -11529,7 +11512,7 @@ msgstr "Perspektiv"
 msgid " [auto]"
 msgstr ""
 
-#. TRANSLATORS: This will be appended to the view name when Portal Occulusion is enabled.
+#. TRANSLATORS: This will be appended to the view name when Portal Occlusion is enabled.
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid " [portals active]"
 msgstr ""
@@ -14991,9 +14974,8 @@ msgid "Project Path:"
 msgstr "Prosjektsti:"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Project Installation Path:"
-msgstr "Prosjektsti:"
+msgstr "Prosjekt installasjonsti:"
 
 #: editor/project_manager.cpp
 msgid "Renderer:"
@@ -15005,7 +14987,7 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid "Not supported by your GPU drivers."
-msgstr ""
+msgstr "Støttes ikke av dine GPU-drivere."
 
 #: editor/project_manager.cpp
 msgid ""
@@ -15040,9 +15022,8 @@ msgid "Renderer can be changed later, but scenes may need to be adjusted."
 msgstr "Rendrer kan endres senere, men scener må kanskje justeres."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Missing Project"
-msgstr "Importer Eksisterende Prosjekt"
+msgstr "Manglede Prosjekt"
 
 #: editor/project_manager.cpp
 msgid "Error: Project is missing on the filesystem."
@@ -15053,9 +15034,8 @@ msgid "Local"
 msgstr "Lokal"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Local Projects"
-msgstr "Prosjekter"
+msgstr "Lokale prosjekter"
 
 #: editor/project_manager.cpp
 #, fuzzy
@@ -15063,9 +15043,8 @@ msgid "Asset Library Projects"
 msgstr "Ressursbibliotek"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Can't open project at '%s'."
-msgstr "Kan ikke åpne prosjekt"
+msgstr "Kan ikke åpne prosjektet i '%s'."
 
 #: editor/project_manager.cpp
 msgid "Are you sure to open more than one project?"
@@ -15172,23 +15151,20 @@ msgid "Loading, please wait..."
 msgstr "Henter fillager, vennligst vent..."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Edit Project"
-msgstr "Eksporter Prosjekt"
+msgstr "Rediger Prosjekt"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Run Project"
-msgstr "Endre Navn på Prosjekt"
+msgstr "Kjør prosjektet"
 
 #: editor/project_manager.cpp
 msgid "Scan"
-msgstr "Skann"
+msgstr "Søk"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Scan Projects"
-msgstr "Prosjekter"
+msgstr "Søk etter prosjekter"
 
 #: editor/project_manager.cpp
 msgid "Select a Folder to Scan"
@@ -15199,19 +15175,16 @@ msgid "New Project"
 msgstr "Nytt prosjekt"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Import Project"
-msgstr "Eksporter Prosjekt"
+msgstr "Importert prosjekt"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Remove Project"
-msgstr "Endre Navn på Prosjekt"
+msgstr "Fjern prosjekt"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Remove Missing"
-msgstr "Fjern punkt"
+msgstr "Fjern manglende"
 
 #: editor/project_manager.cpp
 msgid "About"
@@ -15227,7 +15200,7 @@ msgstr "Fjern alle"
 
 #: editor/project_manager.cpp
 msgid "Also delete project contents (no undo!)"
-msgstr ""
+msgstr "Slett også prosjektets innhold (kan ikke reverseres!)"
 
 #: editor/project_manager.cpp
 msgid "Can't run project"
@@ -15240,9 +15213,8 @@ msgid ""
 msgstr ""
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Filter projects"
-msgstr "Lim inn Noder"
+msgstr "Filtre prosjekter"
 
 #: editor/project_manager.cpp
 msgid ""

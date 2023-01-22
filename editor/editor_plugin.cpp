@@ -662,7 +662,7 @@ void EditorPlugin::make_visible(bool p_visible) {
 }
 
 void EditorPlugin::edit(Object *p_object) {
-	if (p_object->is_class("Resource")) {
+	if (Object::cast_to<Resource>(p_object)) {
 		GDVIRTUAL_CALL(_edit, Ref<Resource>(Object::cast_to<Resource>(p_object)));
 	} else {
 		GDVIRTUAL_CALL(_edit, p_object);
@@ -711,9 +711,6 @@ void EditorPlugin::get_breakpoints(List<String> *p_breakpoints) {
 bool EditorPlugin::get_remove_list(List<Node *> *p_list) {
 	return false;
 }
-
-void EditorPlugin::restore_global_state() {}
-void EditorPlugin::save_global_state() {}
 
 void EditorPlugin::add_undo_redo_inspector_hook_callback(Callable p_callable) {
 	EditorNode::get_singleton()->get_editor_data().add_undo_redo_inspector_hook_callback(p_callable);

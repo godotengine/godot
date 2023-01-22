@@ -542,9 +542,6 @@ public:
 	virtual void save_external_data() override;
 	virtual void apply_changes() override;
 
-	virtual void restore_global_state() override;
-	virtual void save_global_state() override;
-
 	virtual void set_window_layout(Ref<ConfigFile> p_layout) override;
 	virtual void get_window_layout(Ref<ConfigFile> p_layout) override;
 

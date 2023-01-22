@@ -230,10 +230,10 @@ void EditorToaster::_auto_hide_or_free_toasts() {
 	}
 
 	// Delete the control right away (removed as child) as it might cause issues otherwise when iterative over the vbox_container children.
-	for (unsigned int i = 0; i < to_delete.size(); i++) {
-		vbox_container->remove_child(to_delete[i]);
-		to_delete[i]->queue_free();
-		toasts.erase(to_delete[i]);
+	for (Control *c : to_delete) {
+		vbox_container->remove_child(c);
+		c->queue_free();
+		toasts.erase(c);
 	}
 
 	if (toasts.is_empty()) {
@@ -525,7 +525,7 @@ EditorToaster::EditorToaster() {
 
 	Ref<StyleBoxFlat> boxes[] = { info_panel_style_background, warning_panel_style_background, error_panel_style_background };
 	for (int i = 0; i < 3; i++) {
-		boxes[i]->set_default_margin_individual(int(stylebox_radius * 2.5), 3, int(stylebox_radius * 2.5), 3);
+		boxes[i]->set_content_margin_individual(int(stylebox_radius * 2.5), 3, int(stylebox_radius * 2.5), 3);
 	}
 
 	// Theming (progress).

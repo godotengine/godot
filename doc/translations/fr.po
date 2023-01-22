@@ -60,13 +60,14 @@
 # Augustin Ambiehl <ambiehlaugustin@gmail.com>, 2022.
 # Landry Simo <landrysimo99@gmail.com>, 2022.
 # Alexis Coudert <coudert.alex@gmail.com>, 2022.
+# Callim Ethee <callimethee@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-12-03 00:47+0000\n"
-"Last-Translator: Alexis Coudert <coudert.alex@gmail.com>\n"
+"PO-Revision-Date: 2023-01-01 02:51+0000\n"
+"Last-Translator: Callim Ethee <callimethee@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot-class-reference/fr/>\n"
 "Language: fr\n"
@@ -74,7 +75,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.15-dev\n"
+"X-Generator: Weblate 4.15.1-dev\n"
 
 #: doc/tools/make_rst.py
 msgid "Description"
@@ -137,9 +138,8 @@ msgid "Default"
 msgstr "Défaut"
 
 #: doc/tools/make_rst.py
-#, fuzzy
 msgid "Setter"
-msgstr "Setter"
+msgstr "Donneur"
 
 #: doc/tools/make_rst.py
 msgid "value"
@@ -39456,7 +39456,11 @@ msgid ""
 "using an [AnimatedTexture], only the first frame will be displayed.\n"
 "[b]Note:[/b] Only images imported with the [b]Lossless[/b], [b]Lossy[/b] or "
 "[b]Uncompressed[/b] compression modes are supported. The [b]Video RAM[/b] "
-"compression mode can't be used for custom cursors."
+"compression mode can't be used for custom cursors.\n"
+"[b]Note:[/b] On the web platform, the maximum allowed cursor image size is "
+"128×128. Cursor images larger than 32×32 will also only be displayed if the "
+"mouse cursor image is entirely located within the page for [url=https://"
+"chromestatus.com/feature/5825971391299584]security reasons[/url]."
 msgstr ""
 
 #: doc/classes/Input.xml

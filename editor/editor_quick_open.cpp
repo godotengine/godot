@@ -69,17 +69,9 @@ void EditorQuickOpen::_build_search_cache(EditorFileSystemDirectory *p_efsd) {
 	for (int i = 0; i < p_efsd->get_file_count(); i++) {
 		String file = p_efsd->get_file_path(i);
 		String engine_type = p_efsd->get_file_type(i);
-		// TODO: Fix lack of caching for resource's script's global class name (if applicable).
-		String script_type;
-		if (_load_resources) {
-			Ref<Resource> res = ResourceLoader::load(file);
-			if (res.is_valid()) {
-				Ref<Script> scr = res->get_script();
-				if (scr.is_valid()) {
-					script_type = scr->get_language()->get_global_class_name(file);
-				}
-			}
-		}
+
+		String script_type = p_efsd->get_file_resource_script_class(i);
+
 		String actual_type = script_type.is_empty() ? engine_type : script_type;
 		// Iterate all possible base types.
 		for (String &parent_type : base_types) {

@@ -65,6 +65,7 @@ class ResourceLoaderBinary {
 
 	bool using_named_scene_ids = false;
 	bool using_uids = false;
+	String script_class;
 	bool use_sub_threads = false;
 	float *progress = nullptr;
 	Vector<ExtResource> external_resources;
@@ -92,7 +93,6 @@ class ResourceLoaderBinary {
 	HashMap<String, Ref<Resource>> dependency_cache;
 
 public:
-	void set_local_path(const String &p_local_path);
 	Ref<Resource> get_resource();
 	Error load();
 	void set_translation_remapped(bool p_remapped);
@@ -100,6 +100,7 @@ public:
 	void set_remaps(const HashMap<String, String> &p_remaps) { remaps = p_remaps; }
 	void open(Ref<FileAccess> p_f, bool p_no_resources = false, bool p_keep_uuid_paths = false);
 	String recognize(Ref<FileAccess> p_f);
+	String recognize_script_class(Ref<FileAccess> p_f);
 	void get_dependencies(Ref<FileAccess> p_f, List<String> *p_dependencies, bool p_add_types);
 	void get_classes_used(Ref<FileAccess> p_f, HashSet<StringName> *p_classes);
 
@@ -113,6 +114,7 @@ public:
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;
+	virtual String get_resource_script_class(const String &p_path) const;
 	virtual void get_classes_used(const String &p_path, HashSet<StringName> *r_classes);
 	virtual ResourceUID::ID get_resource_uid(const String &p_path) const;
 	virtual void get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types = false);
@@ -165,6 +167,7 @@ public:
 		FORMAT_FLAG_NAMED_SCENE_IDS = 1,
 		FORMAT_FLAG_UIDS = 2,
 		FORMAT_FLAG_REAL_T_IS_DOUBLE = 4,
+		FORMAT_FLAG_HAS_SCRIPT_CLASS = 8,
 
 		// Amount of reserved 32-bit fields in resource header
 		RESERVED_FIELDS = 11

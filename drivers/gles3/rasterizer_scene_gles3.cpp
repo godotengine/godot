@@ -1535,8 +1535,6 @@ void RasterizerSceneGLES3::_setup_lights(const RenderDataGLES3 *p_render_data, b
 					}
 				}
 
-				li->gl_id = r_omni_light_count;
-
 				scene_state.omni_light_sort[r_omni_light_count].instance = li;
 				scene_state.omni_light_sort[r_omni_light_count].depth = distance;
 				r_omni_light_count++;
@@ -1560,8 +1558,6 @@ void RasterizerSceneGLES3::_setup_lights(const RenderDataGLES3 *p_render_data, b
 					}
 				}
 
-				li->gl_id = r_spot_light_count;
-
 				scene_state.spot_light_sort[r_spot_light_count].instance = li;
 				scene_state.spot_light_sort[r_spot_light_count].depth = distance;
 				r_spot_light_count++;
@@ -1584,7 +1580,10 @@ void RasterizerSceneGLES3::_setup_lights(const RenderDataGLES3 *p_render_data, b
 		LightData &light_data = (i < r_omni_light_count) ? scene_state.omni_lights[index] : scene_state.spot_lights[index];
 		RS::LightType type = (i < r_omni_light_count) ? RS::LIGHT_OMNI : RS::LIGHT_SPOT;
 		GLES3::LightInstance *li = (i < r_omni_light_count) ? scene_state.omni_light_sort[index].instance : scene_state.spot_light_sort[index].instance;
+		real_t distance = (i < r_omni_light_count) ? scene_state.omni_light_sort[index].depth : scene_state.spot_light_sort[index].depth;
 		RID base = li->light;
+
+		li->gl_id = index;
 
 		Transform3D light_transform = li->transform;
 		Vector3 pos = inverse_transform.xform(light_transform.origin);
@@ -1612,13 +1611,11 @@ void RasterizerSceneGLES3::_setup_lights(const RenderDataGLES3 *p_render_data, b
 		// Reuse fade begin, fade length and distance for shadow LOD determination later.
 		float fade_begin = 0.0;
 		float fade_length = 0.0;
-		real_t distance = 0.0;
 
 		float fade = 1.0;
 		if (light_storage->light_is_distance_fade_enabled(li->light)) {
 			fade_begin = light_storage->light_get_distance_fade_begin(li->light);
 			fade_length = light_storage->light_get_distance_fade_length(li->light);
-			distance = p_render_data->cam_transform.origin.distance_to(li->transform.origin);
 
 			if (distance > fade_begin) {
 				// Use `smoothstep()` to make opacity changes more gradual and less noticeable to the player.

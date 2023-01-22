@@ -732,13 +732,13 @@ void SurfaceTool::index() {
 	LocalVector<Vertex> old_vertex_array = vertex_array;
 	vertex_array.clear();
 
-	for (uint32_t i = 0; i < old_vertex_array.size(); i++) {
-		int *idxptr = indices.getptr(old_vertex_array[i]);
+	for (const Vertex &vertex : old_vertex_array) {
+		int *idxptr = indices.getptr(vertex);
 		int idx;
 		if (!idxptr) {
 			idx = indices.size();
-			vertex_array.push_back(old_vertex_array[i]);
-			indices[old_vertex_array[i]] = idx;
+			vertex_array.push_back(vertex);
+			indices[vertex] = idx;
 		} else {
 			idx = *idxptr;
 		}
@@ -756,9 +756,8 @@ void SurfaceTool::deindex() {
 
 	LocalVector<Vertex> old_vertex_array = vertex_array;
 	vertex_array.clear();
-	for (uint32_t i = 0; i < index_array.size(); i++) {
-		uint32_t index = index_array[i];
-		ERR_FAIL_COND(index >= old_vertex_array.size());
+	for (const int &index : index_array) {
+		ERR_FAIL_COND(uint32_t(index) >= old_vertex_array.size());
 		vertex_array.push_back(old_vertex_array[index]);
 	}
 	format &= ~Mesh::ARRAY_FORMAT_INDEX;
@@ -1000,8 +999,7 @@ void SurfaceTool::append_from(const Ref<Mesh> &p_existing, int p_surface, const 
 	}
 	int vfrom = vertex_array.size();
 
-	for (uint32_t vi = 0; vi < nvertices.size(); vi++) {
-		Vertex v = nvertices[vi];
+	for (Vertex &v : nvertices) {
 		v.vertex = p_xform.xform(v.vertex);
 		if (nformat & RS::ARRAY_FORMAT_NORMAL) {
 			v.normal = p_xform.basis.xform(v.normal);
@@ -1014,8 +1012,8 @@ void SurfaceTool::append_from(const Ref<Mesh> &p_existing, int p_surface, const 
 		vertex_array.push_back(v);
 	}
 
-	for (uint32_t i = 0; i < nindices.size(); i++) {
-		int dst_index = nindices[i] + vfrom;
+	for (const int &index : nindices) {
+		int dst_index = index + vfrom;
 		index_array.push_back(dst_index);
 	}
 	if (index_array.size() % 3) {
@@ -1132,9 +1130,9 @@ void SurfaceTool::generate_tangents() {
 
 	TangentGenerationContextUserData triangle_data;
 	triangle_data.vertices = &vertex_array;
-	for (uint32_t i = 0; i < vertex_array.size(); i++) {
-		vertex_array[i].binormal = Vector3();
-		vertex_array[i].tangent = Vector3();
+	for (Vertex &vertex : vertex_array) {
+		vertex.binormal = Vector3();
+		vertex.tangent = Vector3();
 	}
 	triangle_data.indices = &index_array;
 	msc.m_pUserData = &triangle_data;
@@ -1176,12 +1174,12 @@ void SurfaceTool::generate_normals(bool p_flip) {
 		}
 	}
 
-	for (uint32_t vi = 0; vi < vertex_array.size(); vi++) {
-		Vector3 *lv = vertex_hash.getptr(vertex_array[vi]);
+	for (Vertex &vertex : vertex_array) {
+		Vector3 *lv = vertex_hash.getptr(vertex);
 		if (!lv) {
-			vertex_array[vi].normal = Vector3();
+			vertex.normal = Vector3();
 		} else {
-			vertex_array[vi].normal = lv->normalized();
+			vertex.normal = lv->normalized();
 		}
 	}
 

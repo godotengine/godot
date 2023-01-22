@@ -29908,7 +29908,11 @@ msgid ""
 "using an [AnimatedTexture], only the first frame will be displayed.\n"
 "[b]Note:[/b] Only images imported with the [b]Lossless[/b], [b]Lossy[/b] or "
 "[b]Uncompressed[/b] compression modes are supported. The [b]Video RAM[/b] "
-"compression mode can't be used for custom cursors."
+"compression mode can't be used for custom cursors.\n"
+"[b]Note:[/b] On the web platform, the maximum allowed cursor image size is "
+"128×128. Cursor images larger than 32×32 will also only be displayed if the "
+"mouse cursor image is entirely located within the page for [url=https://"
+"chromestatus.com/feature/5825971391299584]security reasons[/url]."
 msgstr ""
 
 #: doc/classes/Input.xml

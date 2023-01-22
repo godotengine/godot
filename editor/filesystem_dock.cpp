@@ -1819,6 +1819,43 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			OS::get_singleton()->shell_open(String("file://") + dir);
 		} break;
 
+		case FILE_OPEN_EXTERNAL: {
+			String fpath = path;
+			if (path == "Favorites") {
+				fpath = p_selected[0];
+			}
+
+			String file = ProjectSettings::get_singleton()->globalize_path(fpath);
+
+			String resource_type = ResourceLoader::get_resource_type(fpath);
+			String external_program;
+
+			if (resource_type == "CompressedTexture2D" || resource_type == "Image") {
+				if (file.get_extension() == "svg" || file.get_extension() == "svgz") {
+					external_program = EDITOR_GET("filesystem/external_programs/vector_image_editor");
+				} else {
+					external_program = EDITOR_GET("filesystem/external_programs/raster_image_editor");
+				}
+			} else if (ClassDB::is_parent_class(resource_type, "AudioStream")) {
+				external_program = EDITOR_GET("filesystem/external_programs/audio_editor");
+			} else if (resource_type == "PackedScene") {
+				// Ignore non-model scenes.
+				if (file.get_extension() != "tscn" && file.get_extension() != "scn" && file.get_extension() != "res") {
+					external_program = EDITOR_GET("filesystem/external_programs/3d_model_editor");
+				}
+			} else if (ClassDB::is_parent_class(resource_type, "Script")) {
+				external_program = EDITOR_GET("text_editor/external/exec_path");
+			}
+
+			if (external_program.is_empty()) {
+				OS::get_singleton()->shell_open(file);
+			} else {
+				List<String> args;
+				args.push_back(file);
+				OS::get_singleton()->create_process(external_program, args);
+			}
+		} break;
+
 		case FILE_OPEN: {
 			// Open folders.
 			TreeItem *selected = tree->get_root();
@@ -2590,18 +2627,29 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 	if (p_paths.size() == 1) {
 		p_popup->add_separator();
 		if (p_display_path_dependent_options) {
-			p_popup->add_icon_item(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")), TTR("New Folder..."), FILE_NEW_FOLDER);
-			p_popup->add_icon_item(get_theme_icon(SNAME("PackedScene"), SNAME("EditorIcons")), TTR("New Scene..."), FILE_NEW_SCENE);
-			p_popup->add_icon_item(get_theme_icon(SNAME("Script"), SNAME("EditorIcons")), TTR("New Script..."), FILE_NEW_SCRIPT);
-			p_popup->add_icon_item(get_theme_icon(SNAME("Object"), SNAME("EditorIcons")), TTR("New Resource..."), FILE_NEW_RESOURCE);
-			p_popup->add_icon_item(get_theme_icon(SNAME("TextFile"), SNAME("EditorIcons")), TTR("New TextFile..."), FILE_NEW_TEXTFILE);
+			PopupMenu *new_menu = memnew(PopupMenu);
+			new_menu->set_name("New");
+			new_menu->connect("id_pressed", callable_mp(this, &FileSystemDock::_tree_rmb_option));
+
+			p_popup->add_child(new_menu);
+			p_popup->add_submenu_item(TTR("New"), "New");
+
+			new_menu->add_icon_item(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")), TTR("Folder..."), FILE_NEW_FOLDER);
+			new_menu->add_icon_item(get_theme_icon(SNAME("PackedScene"), SNAME("EditorIcons")), TTR("Scene..."), FILE_NEW_SCENE);
+			new_menu->add_icon_item(get_theme_icon(SNAME("Script"), SNAME("EditorIcons")), TTR("Script..."), FILE_NEW_SCRIPT);
+			new_menu->add_icon_item(get_theme_icon(SNAME("Object"), SNAME("EditorIcons")), TTR("Resource..."), FILE_NEW_RESOURCE);
+			new_menu->add_icon_item(get_theme_icon(SNAME("TextFile"), SNAME("EditorIcons")), TTR("TextFile..."), FILE_NEW_TEXTFILE);
 			p_popup->add_separator();
 		}
 
 		String fpath = p_paths[0];
-		String item_text = fpath.ends_with("/") ? TTR("Open in File Manager") : TTR("Show in File Manager");
+		bool is_directory = fpath.ends_with("/");
+		String item_text = is_directory ? TTR("Open in File Manager") : TTR("Show in File Manager");
 		p_popup->add_icon_shortcut(get_theme_icon(SNAME("Filesystem"), SNAME("EditorIcons")), ED_GET_SHORTCUT("filesystem_dock/show_in_explorer"), FILE_SHOW_IN_EXPLORER);
 		p_popup->set_item_text(p_popup->get_item_index(FILE_SHOW_IN_EXPLORER), item_text);
+		if (!is_directory) {
+			p_popup->add_icon_item(get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")), TTR("Open in External Program"), FILE_OPEN_EXTERNAL);
+		}
 		path = fpath;
 	}
 }
@@ -2707,6 +2755,7 @@ void FileSystemDock::_file_list_empty_clicked(const Vector2 &p_pos, MouseButton 
 	file_list_popup->add_icon_item(get_theme_icon(SNAME("TextFile"), SNAME("EditorIcons")), TTR("New TextFile..."), FILE_NEW_TEXTFILE);
 	file_list_popup->add_separator();
 	file_list_popup->add_icon_shortcut(get_theme_icon(SNAME("Filesystem"), SNAME("EditorIcons")), ED_GET_SHORTCUT("filesystem_dock/show_in_explorer"), FILE_SHOW_IN_EXPLORER);
+
 	file_list_popup->set_position(files->get_screen_position() + p_pos);
 	file_list_popup->reset_size();
 	file_list_popup->popup();

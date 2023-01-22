@@ -64,7 +64,6 @@ public:
 	void insert_breakpoint(int p_line, const StringName &p_source);
 	void remove_breakpoint(int p_line, const StringName &p_source);
 	bool is_breakpoint(int p_line, const StringName &p_source) const;
-	bool is_breakpoint_line(int p_line) const;
 	void clear_breakpoints();
 	const HashMap<int, HashSet<StringName>> &get_breakpoints() const { return breakpoints; }
 

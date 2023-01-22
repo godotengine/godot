@@ -28,6 +28,12 @@
 		</member>
 	</members>
 	<constants>
+		<constant name="ONE_SHOT_REQUEST_NONE" value="0" enum="OneShotRequest">
+		</constant>
+		<constant name="ONE_SHOT_REQUEST_FIRE" value="1" enum="OneShotRequest">
+		</constant>
+		<constant name="ONE_SHOT_REQUEST_ABORT" value="2" enum="OneShotRequest">
+		</constant>
 		<constant name="MIX_MODE_BLEND" value="0" enum="MixMode">
 		</constant>
 		<constant name="MIX_MODE_ADD" value="1" enum="MixMode">

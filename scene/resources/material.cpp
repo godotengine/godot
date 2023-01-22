@@ -149,11 +149,36 @@ Material::~Material() {
 
 bool ShaderMaterial::_set(const StringName &p_name, const Variant &p_value) {
 	if (shader.is_valid()) {
-		StringName pr = shader->remap_parameter(p_name);
-		if (pr) {
-			set_shader_parameter(pr, p_value);
+		const StringName *sn = remap_cache.getptr(p_name);
+		if (sn) {
+			set_shader_parameter(*sn, p_value);
 			return true;
 		}
+		String s = p_name;
+		if (s.begins_with("shader_parameter/")) {
+			String param = s.replace_first("shader_parameter/", "");
+			remap_cache[s] = param;
+			set_shader_parameter(param, p_value);
+			return true;
+		}
+#ifndef DISABLE_DEPRECATED
+		// Compatibility remaps are only needed here.
+		if (s.begins_with("param/")) {
+			s = s.replace_first("param/", "shader_parameter/");
+		} else if (s.begins_with("shader_param/")) {
+			s = s.replace_first("shader_param/", "shader_parameter/");
+		} else if (s.begins_with("shader_uniform/")) {
+			s = s.replace_first("shader_uniform/", "shader_parameter/");
+		} else {
+			return false; // Not a shader parameter.
+		}
+
+		WARN_PRINT("This material (containing shader with path: '" + shader->get_path() + "') uses an old deprecated parameter names. Consider re-saving this resource (or scene which contains it) in order for it to continue working in future versions.");
+		String param = s.replace_first("shader_parameter/", "");
+		remap_cache[s] = param;
+		set_shader_parameter(param, p_value);
+		return true;
+#endif
 	}
 
 	return false;
@@ -161,9 +186,10 @@ bool ShaderMaterial::_set(const StringName &p_name, const Variant &p_value) {
 
 bool ShaderMaterial::_get(const StringName &p_name, Variant &r_ret) const {
 	if (shader.is_valid()) {
-		StringName pr = shader->remap_parameter(p_name);
-		if (pr) {
-			r_ret = get_shader_parameter(pr);
+		const StringName *sn = remap_cache.getptr(p_name);
+		if (sn) {
+			// Only return a parameter if it was previosly set.
+			r_ret = get_shader_parameter(*sn);
 			return true;
 		}
 	}
@@ -247,6 +273,12 @@ void ShaderMaterial::_get_property_list(List<PropertyInfo> *p_list) const {
 
 			PropertyInfo info = E->get();
 			info.name = "shader_parameter/" + info.name;
+			if (!param_cache.has(E->get().name)) {
+				// Property has never been edited, retrieve with default value.
+				Variant default_value = RenderingServer::get_singleton()->shader_get_parameter_default(shader->get_rid(), E->get().name);
+				param_cache.insert(E->get().name, default_value);
+				remap_cache.insert(info.name, E->get().name);
+			}
 			groups[last_group][last_subgroup].push_back(info);
 		}
 
@@ -275,11 +307,10 @@ void ShaderMaterial::_get_property_list(List<PropertyInfo> *p_list) const {
 
 bool ShaderMaterial::_property_can_revert(const StringName &p_name) const {
 	if (shader.is_valid()) {
-		StringName pr = shader->remap_parameter(p_name);
+		const StringName *pr = remap_cache.getptr(p_name);
 		if (pr) {
-			Variant default_value = RenderingServer::get_singleton()->shader_get_parameter_default(shader->get_rid(), pr);
-			Variant current_value;
-			_get(p_name, current_value);
+			Variant default_value = RenderingServer::get_singleton()->shader_get_parameter_default(shader->get_rid(), *pr);
+			Variant current_value = get_shader_parameter(*pr);
 			return default_value.get_type() != Variant::NIL && default_value != current_value;
 		}
 	}
@@ -288,9 +319,9 @@ bool ShaderMaterial::_property_can_revert(const StringName &p_name) const {
 
 bool ShaderMaterial::_property_get_revert(const StringName &p_name, Variant &r_property) const {
 	if (shader.is_valid()) {
-		StringName pr = shader->remap_parameter(p_name);
-		if (pr) {
-			r_property = RenderingServer::get_singleton()->shader_get_parameter_default(shader->get_rid(), pr);
+		const StringName *pr = remap_cache.getptr(p_name);
+		if (*pr) {
+			r_property = RenderingServer::get_singleton()->shader_get_parameter_default(shader->get_rid(), *pr);
 			return true;
 		}
 	}

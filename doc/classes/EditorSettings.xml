@@ -433,11 +433,23 @@
 			The size to use for port previews in the visual shader uniforms (toggled by clicking the "eye" icon next to an output). The value is defined in pixels at 100% zoom, and will scale with zoom automatically.
 		</member>
 		<member name="filesystem/directories/autoscan_project_path" type="String" setter="" getter="">
-			The folder where projects should be scanned for (recursively), in a way similar to the project manager's [b]Scan[/b]button. This can be set to the same value as [member filesystem/directories/default_project_path] for convenience.
+			The folder where projects should be scanned for (recursively), in a way similar to the project manager's [b]Scan[/b] button. This can be set to the same value as [member filesystem/directories/default_project_path] for convenience.
 			[b]Note:[/b] Setting this path to a folder with very large amounts of files/folders can slow down the project manager startup significantly. To keep the project manager quick to start up, it is recommended to set this value to a folder as "specific" as possible.
 		</member>
 		<member name="filesystem/directories/default_project_path" type="String" setter="" getter="">
 			The folder where new projects should be created by default when clicking the project manager's [b]New Project[/b] button. This can be set to the same value as [member filesystem/directories/autoscan_project_path] for convenience.
+		</member>
+		<member name="filesystem/external_programs/3d_model_editor" type="String" setter="" getter="">
+			The program that opens 3D model scene files when clicking "Open in External Program" option in Filesystem Dock. If not specified, the file will be opened in the system's default program.
+		</member>
+		<member name="filesystem/external_programs/audio_editor" type="String" setter="" getter="">
+			The program that opens audio files when clicking "Open in External Program" option in Filesystem Dock. If not specified, the file will be opened in the system's default program.
+		</member>
+		<member name="filesystem/external_programs/raster_image_editor" type="String" setter="" getter="">
+			The program that opens raster image files when clicking "Open in External Program" option in Filesystem Dock. If not specified, the file will be opened in the system's default program.
+		</member>
+		<member name="filesystem/external_programs/vector_image_editor" type="String" setter="" getter="">
+			The program that opens vector image files when clicking "Open in External Program" option in Filesystem Dock. If not specified, the file will be opened in the system's default program.
 		</member>
 		<member name="filesystem/file_dialog/display_mode" type="int" setter="" getter="">
 			The display mode to use in the editor's file dialogs.

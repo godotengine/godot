@@ -1365,8 +1365,8 @@ void RenderForwardClustered::_pre_opaque_render(RenderDataRD *p_render_data, boo
 		}
 
 		//cube shadows are rendered in their own way
-		for (uint32_t i = 0; i < p_render_data->cube_shadows.size(); i++) {
-			_render_shadow_pass(p_render_data->render_shadows[p_render_data->cube_shadows[i]].light, p_render_data->shadow_atlas, p_render_data->render_shadows[p_render_data->cube_shadows[i]].pass, p_render_data->render_shadows[p_render_data->cube_shadows[i]].instances, camera_plane, lod_distance_multiplier, p_render_data->scene_data->screen_mesh_lod_threshold, true, true, true, p_render_data->render_info);
+		for (const int &index : p_render_data->cube_shadows) {
+			_render_shadow_pass(p_render_data->render_shadows[index].light, p_render_data->shadow_atlas, p_render_data->render_shadows[index].pass, p_render_data->render_shadows[index].instances, camera_plane, lod_distance_multiplier, p_render_data->scene_data->screen_mesh_lod_threshold, true, true, true, p_render_data->render_info);
 		}
 
 		if (p_render_data->directional_shadows.size()) {
@@ -1480,7 +1480,7 @@ void RenderForwardClustered::_pre_opaque_render(RenderDataRD *p_render_data, boo
 	uint32_t directional_light_count = 0;
 	uint32_t positional_light_count = 0;
 	light_storage->update_light_buffers(p_render_data, *p_render_data->lights, p_render_data->scene_data->cam_transform, p_render_data->shadow_atlas, using_shadows, directional_light_count, positional_light_count, p_render_data->directional_light_soft_shadows);
-	texture_storage->update_decal_buffer(*p_render_data->decals, p_render_data->scene_data->cam_transform.affine_inverse());
+	texture_storage->update_decal_buffer(*p_render_data->decals, p_render_data->scene_data->cam_transform);
 
 	p_render_data->directional_light_count = directional_light_count;
 
@@ -2415,8 +2415,7 @@ void RenderForwardClustered::_render_shadow_process() {
 void RenderForwardClustered::_render_shadow_end(uint32_t p_barrier) {
 	RD::get_singleton()->draw_command_begin_label("Shadow Render");
 
-	for (uint32_t i = 0; i < scene_state.shadow_passes.size(); i++) {
-		SceneState::ShadowPass &shadow_pass = scene_state.shadow_passes[i];
+	for (SceneState::ShadowPass &shadow_pass : scene_state.shadow_passes) {
 		RenderListParameters render_list_parameters(render_list[RENDER_LIST_SECONDARY].elements.ptr() + shadow_pass.element_from, render_list[RENDER_LIST_SECONDARY].element_info.ptr() + shadow_pass.element_from, shadow_pass.element_count, shadow_pass.flip_cull, shadow_pass.pass_mode, 0, true, false, shadow_pass.rp_uniform_set, false, Vector2(), shadow_pass.lod_distance_multiplier, shadow_pass.screen_mesh_lod_threshold, 1, shadow_pass.element_from, RD::BARRIER_MASK_NO_BARRIER);
 		_render_list_with_threads(&render_list_parameters, shadow_pass.framebuffer, RD::INITIAL_ACTION_DROP, RD::FINAL_ACTION_DISCARD, shadow_pass.initial_depth_action, shadow_pass.final_depth_action, Vector<Color>(), 1.0, 0, shadow_pass.rect);
 	}
@@ -3376,9 +3375,7 @@ int RenderForwardClustered::sdfgi_get_pending_region_count(const Ref<RenderScene
 	Ref<RendererRD::GI::SDFGI> sdfgi = rb->get_custom_data(RB_SCOPE_SDFGI);
 
 	int dirty_count = 0;
-	for (uint32_t i = 0; i < sdfgi->cascades.size(); i++) {
-		const RendererRD::GI::SDFGI::Cascade &c = sdfgi->cascades[i];
-
+	for (const RendererRD::GI::SDFGI::Cascade &c : sdfgi->cascades) {
 		if (c.dirty_regions == RendererRD::GI::SDFGI::Cascade::DIRTY_ALL) {
 			dirty_count++;
 		} else {
@@ -4007,11 +4004,11 @@ RenderForwardClustered::~RenderForwardClustered() {
 	RSG::light_storage->directional_shadow_atlas_set_size(0);
 
 	{
-		for (uint32_t i = 0; i < scene_state.uniform_buffers.size(); i++) {
-			RD::get_singleton()->free(scene_state.uniform_buffers[i]);
+		for (const RID &rid : scene_state.uniform_buffers) {
+			RD::get_singleton()->free(rid);
 		}
-		for (uint32_t i = 0; i < scene_state.implementation_uniform_buffers.size(); i++) {
-			RD::get_singleton()->free(scene_state.implementation_uniform_buffers[i]);
+		for (const RID &rid : scene_state.implementation_uniform_buffers) {
+			RD::get_singleton()->free(rid);
 		}
 		RD::get_singleton()->free(scene_state.lightmap_buffer);
 		RD::get_singleton()->free(scene_state.lightmap_capture_buffer);

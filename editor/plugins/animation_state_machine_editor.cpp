@@ -1237,7 +1237,7 @@ void AnimationNodeStateMachineEditor::_state_machine_draw() {
 	if (playback.is_valid()) {
 		playing = playback->is_playing();
 		current = playback->get_current_node();
-		blend_from = playback->get_blend_from_node();
+		blend_from = playback->get_fading_from_node();
 		travel_path = playback->get_travel_path();
 	}
 
@@ -1695,7 +1695,7 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 				tp = playback->get_travel_path();
 				is_playing = playback->is_playing();
 				current_node = playback->get_current_node();
-				blend_from_node = playback->get_blend_from_node();
+				blend_from_node = playback->get_fading_from_node();
 				play_pos = playback->get_current_play_pos();
 				current_length = playback->get_current_length();
 			}

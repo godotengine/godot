@@ -81,9 +81,11 @@ bool GodotCollisionSolver3D::solve_static_world_boundary(const GodotShape3D *p_s
 
 		if (p_result_callback) {
 			if (p_swap_result) {
-				p_result_callback(supports[i], 0, support_A, 0, p_userdata);
+				Vector3 normal = (support_A - supports[i]).normalized();
+				p_result_callback(supports[i], 0, support_A, 0, normal, p_userdata);
 			} else {
-				p_result_callback(support_A, 0, supports[i], 0, p_userdata);
+				Vector3 normal = (supports[i] - support_A).normalized();
+				p_result_callback(support_A, 0, supports[i], 0, normal, p_userdata);
 			}
 		}
 	}
@@ -126,9 +128,11 @@ bool GodotCollisionSolver3D::solve_separation_ray(const GodotShape3D *p_shape_A,
 
 	if (p_result_callback) {
 		if (p_swap_result) {
-			p_result_callback(support_B, 0, support_A, 0, p_userdata);
+			Vector3 normal = (support_B - support_A).normalized();
+			p_result_callback(support_B, 0, support_A, 0, normal, p_userdata);
 		} else {
-			p_result_callback(support_A, 0, support_B, 0, p_userdata);
+			Vector3 normal = (support_A - support_B).normalized();
+			p_result_callback(support_A, 0, support_B, 0, normal, p_userdata);
 		}
 	}
 	return true;
@@ -142,7 +146,7 @@ struct _SoftBodyContactCollisionInfo {
 	int contact_count = 0;
 };
 
-void GodotCollisionSolver3D::soft_body_contact_callback(const Vector3 &p_point_A, int p_index_A, const Vector3 &p_point_B, int p_index_B, void *p_userdata) {
+void GodotCollisionSolver3D::soft_body_contact_callback(const Vector3 &p_point_A, int p_index_A, const Vector3 &p_point_B, int p_index_B, const Vector3 &normal, void *p_userdata) {
 	_SoftBodyContactCollisionInfo &cinfo = *(static_cast<_SoftBodyContactCollisionInfo *>(p_userdata));
 
 	++cinfo.contact_count;
@@ -152,9 +156,9 @@ void GodotCollisionSolver3D::soft_body_contact_callback(const Vector3 &p_point_A
 	}
 
 	if (cinfo.swap_result) {
-		cinfo.result_callback(p_point_B, cinfo.node_index, p_point_A, p_index_A, cinfo.userdata);
+		cinfo.result_callback(p_point_B, cinfo.node_index, p_point_A, p_index_A, -normal, cinfo.userdata);
 	} else {
-		cinfo.result_callback(p_point_A, p_index_A, p_point_B, cinfo.node_index, cinfo.userdata);
+		cinfo.result_callback(p_point_A, p_index_A, p_point_B, cinfo.node_index, normal, cinfo.userdata);
 	}
 }
 

@@ -4007,12 +4007,6 @@ void ScriptEditorPlugin::apply_changes() {
 	script_editor->apply_scripts();
 }
 
-void ScriptEditorPlugin::restore_global_state() {
-}
-
-void ScriptEditorPlugin::save_global_state() {
-}
-
 void ScriptEditorPlugin::set_window_layout(Ref<ConfigFile> p_layout) {
 	script_editor->set_window_layout(p_layout);
 }

@@ -851,9 +851,9 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 			collision_heightmap_texture = p_particles->sdf_collision_texture;
 
 			//replace in all other history frames where used because parameters are no longer valid if screen moves
-			for (uint32_t i = 1; i < p_particles->frame_history.size(); i++) {
-				if (p_particles->frame_history[i].collider_count > 0 && p_particles->frame_history[i].colliders[0].type == ParticlesFrameParams::COLLISION_TYPE_2D_SDF) {
-					p_particles->frame_history[i].colliders[0] = frame_params.colliders[0];
+			for (ParticlesFrameParams &params : p_particles->frame_history) {
+				if (params.collider_count > 0 && params.colliders[0].type == ParticlesFrameParams::COLLISION_TYPE_2D_SDF) {
+					params.colliders[0] = frame_params.colliders[0];
 				}
 			}
 		}

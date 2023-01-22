@@ -248,6 +248,10 @@ Ref<Script> GDScript::get_base_script() const {
 	}
 }
 
+StringName GDScript::get_global_name() const {
+	return name;
+}
+
 StringName GDScript::get_instance_base_type() const {
 	if (native.is_valid()) {
 		return native->get_name();
@@ -1007,17 +1011,6 @@ void GDScript::_get_property_list(List<PropertyInfo> *p_properties) const {
 
 void GDScript::_bind_methods() {
 	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "new", &GDScript::_new, MethodInfo("new"));
-
-	ClassDB::bind_method(D_METHOD("get_as_byte_code"), &GDScript::get_as_byte_code);
-}
-
-Vector<uint8_t> GDScript::get_as_byte_code() const {
-	return Vector<uint8_t>();
-};
-
-// TODO: Fully remove this. There's not this kind of "bytecode" anymore.
-Error GDScript::load_byte_code(const String &p_path) {
-	return ERR_COMPILATION_FAILED;
 }
 
 void GDScript::set_path(const String &p_path, bool p_take_over) {
@@ -2647,8 +2640,6 @@ Ref<Resource> ResourceFormatLoaderGDScript::load(const String &p_path, const Str
 	Error err;
 	Ref<GDScript> scr = GDScriptCache::get_full_script(p_path, err, "", p_cache_mode == CACHE_MODE_IGNORE);
 
-	// TODO: Reintroduce binary and encrypted scripts.
-
 	if (scr.is_null()) {
 		// Don't fail loading because of parsing error.
 		scr.instantiate();
@@ -2663,9 +2654,6 @@ Ref<Resource> ResourceFormatLoaderGDScript::load(const String &p_path, const Str
 
 void ResourceFormatLoaderGDScript::get_recognized_extensions(List<String> *p_extensions) const {
 	p_extensions->push_back("gd");
-	// TODO: Reintroduce binary and encrypted scripts.
-	// p_extensions->push_back("gdc");
-	// p_extensions->push_back("gde");
 }
 
 bool ResourceFormatLoaderGDScript::handles_type(const String &p_type) const {
@@ -2674,8 +2662,7 @@ bool ResourceFormatLoaderGDScript::handles_type(const String &p_type) const {
 
 String ResourceFormatLoaderGDScript::get_resource_type(const String &p_path) const {
 	String el = p_path.get_extension().to_lower();
-	// TODO: Reintroduce binary and encrypted scripts.
-	if (el == "gd" /*|| el == "gdc" || el == "gde"*/) {
+	if (el == "gd") {
 		return "GDScript";
 	}
 	return "";

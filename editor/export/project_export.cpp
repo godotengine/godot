@@ -317,9 +317,6 @@ void ProjectExportDialog::_edit_preset(int p_index) {
 	bool enc_directory_mode = current->get_enc_directory();
 	enc_directory->set_pressed(enc_directory_mode);
 
-	int script_export_mode = current->get_script_export_mode();
-	script_mode->select(script_export_mode);
-
 	String key = current->get_script_encryption_key();
 	if (!updating_script_key) {
 		script_key->set_text(key);
@@ -509,19 +506,6 @@ void ProjectExportDialog::_enc_directory_changed(bool p_pressed) {
 	ERR_FAIL_COND(current.is_null());
 
 	current->set_enc_directory(p_pressed);
-
-	_update_current_preset();
-}
-
-void ProjectExportDialog::_script_export_mode_changed(int p_mode) {
-	if (updating) {
-		return;
-	}
-
-	Ref<EditorExportPreset> current = get_current_preset();
-	ERR_FAIL_COND(current.is_null());
-
-	current->set_script_export_mode(p_mode);
 
 	_update_current_preset();
 }
@@ -1110,12 +1094,6 @@ ProjectExportDialog::ProjectExportDialog() {
 			TTR("Filters to exclude files/folders from project\n(comma-separated, e.g: *.json, *.txt, docs/*)"),
 			exclude_filters);
 	exclude_filters->connect("text_changed", callable_mp(this, &ProjectExportDialog::_filter_changed));
-
-	script_mode = memnew(OptionButton);
-	resources_vb->add_margin_child(TTR("GDScript Export Mode:"), script_mode);
-	script_mode->add_item(TTR("Text"), (int)EditorExportPreset::MODE_SCRIPT_TEXT);
-	script_mode->add_item(TTR("Compiled Bytecode (Faster Loading)"), (int)EditorExportPreset::MODE_SCRIPT_COMPILED);
-	script_mode->connect("item_selected", callable_mp(this, &ProjectExportDialog::_script_export_mode_changed));
 
 	// Feature tags.
 

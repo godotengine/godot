@@ -39,12 +39,13 @@
 # Keyla Arroyos <keylaarroyos@protonmail.com>, 2022.
 # Victor Stancioiu <victorstancioiu@gmail.com>, 2022.
 # yohanger <yohangerariel@gmail.com>, 2022.
+# Mateo <mfdez920@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2022-11-29 20:23+0000\n"
-"Last-Translator: yohanger <yohangerariel@gmail.com>\n"
+"PO-Revision-Date: 2023-01-12 06:06+0000\n"
+"Last-Translator: Mateo <mfdez920@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-class-reference/es/>\n"
 "Language: es\n"
@@ -52,7 +53,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.15-dev\n"
+"X-Generator: Weblate 4.15.1-dev\n"
 
 #: doc/tools/make_rst.py
 msgid "Description"
@@ -751,7 +752,6 @@ msgstr ""
 "[/codeblock]"
 
 #: modules/gdscript/doc_classes/@GDScript.xml
-#, fuzzy
 msgid ""
 "Returns an array of dictionaries representing the current call stack. See "
 "also [method print_stack].\n"
@@ -776,7 +776,7 @@ msgid ""
 "projects exported in debug mode if not connected to a debugging server."
 msgstr ""
 "Devuelve un conjunto de diccionarios que representan la pila de llamadas "
-"actual.\n"
+"actual. Véase también [method print_stack].\n"
 "[codeblock]\n"
 "func _ready():\n"
 "    foo()\n"
@@ -39560,6 +39560,7 @@ msgid ""
 msgstr ""
 
 #: doc/classes/Input.xml
+#, fuzzy
 msgid ""
 "Sets a custom mouse cursor image, which is only visible inside the game "
 "window. The hotspot can also be specified. Passing [code]null[/code] to the "
@@ -39571,7 +39572,11 @@ msgid ""
 "using an [AnimatedTexture], only the first frame will be displayed.\n"
 "[b]Note:[/b] Only images imported with the [b]Lossless[/b], [b]Lossy[/b] or "
 "[b]Uncompressed[/b] compression modes are supported. The [b]Video RAM[/b] "
-"compression mode can't be used for custom cursors."
+"compression mode can't be used for custom cursors.\n"
+"[b]Note:[/b] On the web platform, the maximum allowed cursor image size is "
+"128×128. Cursor images larger than 32×32 will also only be displayed if the "
+"mouse cursor image is entirely located within the page for [url=https://"
+"chromestatus.com/feature/5825971391299584]security reasons[/url]."
 msgstr ""
 "Establece una imagen personalizada del cursor del ratón, que sólo es visible "
 "dentro de la ventana del juego. También se puede especificar el punto de "

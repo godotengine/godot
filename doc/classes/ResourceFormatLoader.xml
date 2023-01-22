@@ -38,6 +38,13 @@
 				Gets the list of extensions for files this loader is able to read.
 			</description>
 		</method>
+		<method name="_get_resource_script_class" qualifiers="virtual const">
+			<return type="String" />
+			<param index="0" name="path" type="String" />
+			<description>
+				Returns the script class name associated with the [Resource] under the given [param path]. If the resource has no script or the script isn't a named class, it should return [code]""[/code].
+			</description>
+		</method>
 		<method name="_get_resource_type" qualifiers="virtual const">
 			<return type="String" />
 			<param index="0" name="path" type="String" />

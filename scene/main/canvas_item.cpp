@@ -388,6 +388,16 @@ Color CanvasItem::get_modulate() const {
 	return modulate;
 }
 
+Color CanvasItem::get_modulate_in_tree() const {
+	Color final_modulate = modulate;
+	CanvasItem *parent_item = get_parent_item();
+	while (parent_item) {
+		final_modulate *= parent_item->get_modulate();
+		parent_item = parent_item->get_parent_item();
+	}
+	return final_modulate;
+}
+
 void CanvasItem::set_as_top_level(bool p_top_level) {
 	if (top_level == p_top_level) {
 		return;
@@ -560,44 +570,47 @@ void CanvasItem::draw_multiline_colors(const Vector<Point2> &p_points, const Vec
 void CanvasItem::draw_rect(const Rect2 &p_rect, const Color &p_color, bool p_filled, real_t p_width) {
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
+	Rect2 rect = p_rect.abs();
+
 	if (p_filled) {
 		if (p_width != -1.0) {
 			WARN_PRINT("The draw_rect() \"width\" argument has no effect when \"filled\" is \"true\".");
 		}
 
-		RenderingServer::get_singleton()->canvas_item_add_rect(canvas_item, p_rect, p_color);
+		RenderingServer::get_singleton()->canvas_item_add_rect(canvas_item, rect, p_color);
+	} else if (p_width >= rect.size.width || p_width >= rect.size.height) {
+		RenderingServer::get_singleton()->canvas_item_add_rect(canvas_item, rect.grow(0.5f * p_width), p_color);
 	} else {
 		// Thick lines are offset depending on their width to avoid partial overlapping.
-		// Thin lines don't require an offset, so don't apply one in this case
-		real_t offset;
-		if (p_width >= 0) {
-			offset = p_width / 2.0;
-		} else {
-			offset = 0.0;
-		}
+		// Thin lines are drawn without offset. The result may not be perfect.
+		real_t offset = (p_width >= 0) ? 0.5f * p_width : 0.0f;
 
+		// Top line.
 		RenderingServer::get_singleton()->canvas_item_add_line(
 				canvas_item,
-				p_rect.position + Size2(-offset, 0),
-				p_rect.position + Size2(p_rect.size.width + offset, 0),
+				rect.position + Size2(-offset, 0),
+				rect.position + Size2(-offset + rect.size.width, 0),
 				p_color,
 				p_width);
+		// Right line.
 		RenderingServer::get_singleton()->canvas_item_add_line(
 				canvas_item,
-				p_rect.position + Size2(p_rect.size.width, offset),
-				p_rect.position + Size2(p_rect.size.width, p_rect.size.height - offset),
+				rect.position + Size2(rect.size.width, -offset),
+				rect.position + Size2(rect.size.width, -offset + rect.size.height),
 				p_color,
 				p_width);
+		// Bottom line.
 		RenderingServer::get_singleton()->canvas_item_add_line(
 				canvas_item,
-				p_rect.position + Size2(p_rect.size.width + offset, p_rect.size.height),
-				p_rect.position + Size2(-offset, p_rect.size.height),
+				rect.position + Size2(offset + rect.size.width, rect.size.height),
+				rect.position + Size2(offset, rect.size.height),
 				p_color,
 				p_width);
+		// Left line.
 		RenderingServer::get_singleton()->canvas_item_add_line(
 				canvas_item,
-				p_rect.position + Size2(0, p_rect.size.height - offset),
-				p_rect.position + Size2(0, offset),
+				rect.position + Size2(0, offset + rect.size.height),
+				rect.position + Size2(0, offset),
 				p_color,
 				p_width);
 	}
@@ -973,9 +986,9 @@ void CanvasItem::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("draw_line", "from", "to", "color", "width", "antialiased"), &CanvasItem::draw_line, DEFVAL(-1.0), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_dashed_line", "from", "to", "color", "width", "dash", "aligned"), &CanvasItem::draw_dashed_line, DEFVAL(-1.0), DEFVAL(2.0), DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("draw_polyline", "points", "color", "width", "antialiased"), &CanvasItem::draw_polyline, DEFVAL(1.0), DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("draw_polyline_colors", "points", "colors", "width", "antialiased"), &CanvasItem::draw_polyline_colors, DEFVAL(1.0), DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("draw_arc", "center", "radius", "start_angle", "end_angle", "point_count", "color", "width", "antialiased"), &CanvasItem::draw_arc, DEFVAL(1.0), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("draw_polyline", "points", "color", "width", "antialiased"), &CanvasItem::draw_polyline, DEFVAL(-1.0), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("draw_polyline_colors", "points", "colors", "width", "antialiased"), &CanvasItem::draw_polyline_colors, DEFVAL(-1.0), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("draw_arc", "center", "radius", "start_angle", "end_angle", "point_count", "color", "width", "antialiased"), &CanvasItem::draw_arc, DEFVAL(-1.0), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_multiline", "points", "color", "width"), &CanvasItem::draw_multiline, DEFVAL(-1.0));
 	ClassDB::bind_method(D_METHOD("draw_multiline_colors", "points", "colors", "width"), &CanvasItem::draw_multiline_colors, DEFVAL(-1.0));
 	ClassDB::bind_method(D_METHOD("draw_rect", "rect", "color", "filled", "width"), &CanvasItem::draw_rect, DEFVAL(true), DEFVAL(-1.0));

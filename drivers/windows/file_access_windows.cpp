@@ -34,7 +34,6 @@
 
 #include "core/os/os.h"
 #include "core/string/print_string.h"
-
 #include <share.h> // _SH_DENYNO
 #include <shlwapi.h>
 #define WIN32_LEAN_AND_MEAN
@@ -58,7 +57,27 @@ void FileAccessWindows::check_errors() const {
 	}
 }
 
+bool FileAccessWindows::is_path_invalid(const String &p_path) {
+	// Check for invalid operating system file.
+	String fname = p_path;
+	int dot = fname.find(".");
+	if (dot != -1) {
+		fname = fname.substr(0, dot);
+	}
+	fname = fname.to_lower();
+	return invalid_files.has(fname);
+}
+
 Error FileAccessWindows::open_internal(const String &p_path, int p_mode_flags) {
+	if (is_path_invalid(p_path)) {
+#ifdef DEBUG_ENABLED
+		if (p_mode_flags != READ) {
+			WARN_PRINT("The path :" + p_path + " is a reserved Windows system pipe, so it can't be used for creating files.");
+		}
+#endif
+		return ERR_INVALID_PARAMETER;
+	}
+
 	_close();
 
 	path_src = p_path;
@@ -313,6 +332,10 @@ void FileAccessWindows::store_buffer(const uint8_t *p_src, uint64_t p_length) {
 }
 
 bool FileAccessWindows::file_exists(const String &p_name) {
+	if (is_path_invalid(p_name)) {
+		return false;
+	}
+
 	String filename = fix_path(p_name);
 	FILE *g = _wfsopen((LPCWSTR)(filename.utf16().get_data()), L"rb", _SH_DENYNO);
 	if (g == nullptr) {
@@ -324,6 +347,10 @@ bool FileAccessWindows::file_exists(const String &p_name) {
 }
 
 uint64_t FileAccessWindows::_get_modified_time(const String &p_file) {
+	if (is_path_invalid(p_file)) {
+		return 0;
+	}
+
 	String file = fix_path(p_file);
 	if (file.ends_with("/") && file != "/") {
 		file = file.substr(0, file.length() - 1);
@@ -350,6 +377,22 @@ Error FileAccessWindows::_set_unix_permissions(const String &p_file, uint32_t p_
 
 FileAccessWindows::~FileAccessWindows() {
 	_close();
+}
+
+HashSet<String> FileAccessWindows::invalid_files;
+
+void FileAccessWindows::initialize() {
+	static const char *reserved_files[]{
+		"con", "prn", "aux", "nul", "com0", "com1", "com2", "com3", "com4", "com5", "com6", "com7", "com8", "com9", "lpt0", "lpt1", "lpt2", "lpt3", "lpt4", "lpt5", "lpt6", "lpt7", "lpt8", "lpt9", nullptr
+	};
+	int reserved_file_index = 0;
+	while (reserved_files[reserved_file_index] != nullptr) {
+		invalid_files.insert(reserved_files[reserved_file_index]);
+		reserved_file_index++;
+	}
+}
+void FileAccessWindows::finalize() {
+	invalid_files.clear();
 }
 
 #endif // WINDOWS_ENABLED

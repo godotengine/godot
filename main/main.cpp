@@ -185,6 +185,7 @@ static bool init_maximized = false;
 static bool init_windowed = false;
 static bool init_always_on_top = false;
 static bool init_use_custom_pos = false;
+static bool init_use_custom_screen = false;
 static Vector2 init_custom_pos;
 
 // Debug
@@ -964,6 +965,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 			if (I->next()) {
 				init_screen = I->next()->get().to_int();
+				init_use_custom_screen = true;
 
 				N = I->next()->next();
 			} else {
@@ -1669,7 +1671,23 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			window_flags |= DisplayServer::WINDOW_FLAG_NO_FOCUS_BIT;
 		}
 		window_mode = (DisplayServer::WindowMode)(GLOBAL_GET("display/window/size/mode").operator int());
-		init_screen = GLOBAL_GET("display/window/size/initial_screen").operator int();
+		int initial_position_type = GLOBAL_GET("display/window/size/initial_position_type").operator int();
+		if (initial_position_type == 0) {
+			if (!init_use_custom_pos) {
+				init_custom_pos = GLOBAL_GET("display/window/size/initial_position").operator Vector2i();
+				init_use_custom_pos = true;
+			}
+		} else if (initial_position_type == 1) {
+			if (!init_use_custom_screen) {
+				init_screen = DisplayServer::SCREEN_PRIMARY;
+				init_use_custom_screen = true;
+			}
+		} else if (initial_position_type == 2) {
+			if (!init_use_custom_screen) {
+				init_screen = GLOBAL_GET("display/window/size/initial_screen").operator int();
+				init_use_custom_screen = true;
+			}
+		}
 	}
 
 	GLOBAL_DEF("internationalization/locale/include_text_server_data", false);
@@ -2431,6 +2449,14 @@ bool Main::start() {
 			ERR_FAIL_COND_V_MSG(da.is_null(), false, "Argument supplied to --doctool must be a valid directory path.");
 		}
 
+#ifndef MODULE_MONO_ENABLED
+		// Hack to define .NET-specific project settings even on non-.NET builds,
+		// so that we don't lose their descriptions and default values in DocTools.
+		// Default values should be synced with mono_gd/gd_mono.cpp.
+		GLOBAL_DEF("dotnet/project/assembly_name", "");
+		GLOBAL_DEF("dotnet/project/solution_directory", "");
+#endif
+
 		Error err;
 		DocTools doc;
 		doc.generate(doc_base);
@@ -3167,10 +3193,12 @@ bool Main::iteration() {
 		auto_build_solutions = false;
 		// Only relevant when running the editor.
 		if (!editor) {
+			OS::get_singleton()->set_exit_code(EXIT_FAILURE);
 			ERR_FAIL_V_MSG(true,
 					"Command line option --build-solutions was passed, but no project is being edited. Aborting.");
 		}
 		if (!EditorNode::get_singleton()->call_build()) {
+			OS::get_singleton()->set_exit_code(EXIT_FAILURE);
 			ERR_FAIL_V_MSG(true,
 					"Command line option --build-solutions was passed, but the build callback failed. Aborting.");
 		}

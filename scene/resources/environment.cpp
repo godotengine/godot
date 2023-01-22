@@ -1043,6 +1043,18 @@ void Environment::_validate_property(PropertyInfo &p_property) const {
 		}
 	}
 
+	if (p_property.name == "ambient_light_color" || p_property.name == "ambient_light_energy") {
+		if (ambient_source == AMBIENT_SOURCE_DISABLED) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+	}
+
+	if (p_property.name == "ambient_light_sky_contribution") {
+		if (ambient_source == AMBIENT_SOURCE_DISABLED || ambient_source == AMBIENT_SOURCE_COLOR) {
+			p_property.usage = PROPERTY_USAGE_NO_EDITOR;
+		}
+	}
+
 	if (p_property.name == "fog_aerial_perspective") {
 		if (bg_mode != BG_SKY) {
 			p_property.usage = PROPERTY_USAGE_NO_EDITOR;

@@ -139,7 +139,6 @@ void MeshLibrary::set_item_name(int p_item, const String &p_name) {
 	ERR_FAIL_COND_MSG(!item_map.has(p_item), "Requested for nonexistent MeshLibrary item '" + itos(p_item) + "'.");
 	item_map[p_item].name = p_name;
 	emit_changed();
-	notify_property_list_changed();
 }
 
 void MeshLibrary::set_item_mesh(int p_item, const Ref<Mesh> &p_mesh) {
@@ -155,7 +154,6 @@ void MeshLibrary::set_item_mesh_transform(int p_item, const Transform3D &p_trans
 	item_map[p_item].mesh_transform = p_transform;
 	notify_change_to_owners();
 	emit_changed();
-	notify_property_list_changed();
 }
 
 void MeshLibrary::set_item_shapes(int p_item, const Vector<ShapeData> &p_shapes) {
@@ -190,7 +188,6 @@ void MeshLibrary::set_item_navigation_layers(int p_item, uint32_t p_navigation_l
 	notify_property_list_changed();
 	notify_change_to_owners();
 	emit_changed();
-	notify_property_list_changed();
 }
 
 void MeshLibrary::set_item_preview(int p_item, const Ref<Texture2D> &p_preview) {

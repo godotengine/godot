@@ -17,6 +17,18 @@ Files extracted from upstream source:
 - `license.txt`
 
 
+## astcenc
+
+- Upstream: https://github.com/ARM-software/astc-encoder
+- Version: 4.3.0 (ec83dda79fcefe07f69cdae7ed980d169bf2c4d4, 2023)
+- License: Apache 2.0
+
+Files extracted from upstream source:
+
+- `astcenc_*` and `astcenc.h` files from `Source`
+- `LICENSE.txt`
+
+
 ## basis_universal
 
 - Upstream: https://github.com/BinomialLLC/basis_universal

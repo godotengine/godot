@@ -227,10 +227,10 @@
 			Contains custom color channel 3. [PackedByteArray] if [code](format &gt;&gt; [constant ARRAY_FORMAT_CUSTOM3_SHIFT]) &amp; [constant ARRAY_FORMAT_CUSTOM_MASK])[/code] is [constant ARRAY_CUSTOM_RGBA8_UNORM], [constant ARRAY_CUSTOM_RGBA8_UNORM], [constant ARRAY_CUSTOM_RG_HALF] or [constant ARRAY_CUSTOM_RGBA_HALF]. [PackedFloat32Array] otherwise.
 		</constant>
 		<constant name="ARRAY_BONES" value="10" enum="ArrayType">
-			[PackedFloat32Array] or [PackedInt32Array] of bone indices. Each element is a group of 4 numbers.
+			[PackedFloat32Array] or [PackedInt32Array] of bone indices. Contains either 4 or 8 numbers per vertex depending on the presence of the [constant ARRAY_FLAG_USE_8_BONE_WEIGHTS] flag.
 		</constant>
 		<constant name="ARRAY_WEIGHTS" value="11" enum="ArrayType">
-			[PackedFloat32Array] of bone weights. Each element in groups of 4 floats.
+			[PackedFloat32Array] or [PackedFloat64Array] of bone weights in the range [code]0.0[/code] to [code]1.0[/code] (inclusive). Contains either 4 or 8 numbers per vertex depending on the presence of the [constant ARRAY_FLAG_USE_8_BONE_WEIGHTS] flag.
 		</constant>
 		<constant name="ARRAY_INDEX" value="12" enum="ArrayType">
 			[PackedInt32Array] of integers used as indices referencing vertices, colors, normals, tangents, and textures. All of those arrays must have the same number of elements as the vertex array. No index can be beyond the vertex array size. When this index array is present, it puts the function into "index mode," where the index selects the *i*'th vertex, normal, tangent, color, UV, etc. This means if you want to have different normals or colors along an edge, you have to duplicate the vertices.
@@ -340,6 +340,9 @@
 		</constant>
 		<constant name="ARRAY_FLAG_USE_8_BONE_WEIGHTS" value="134217728" enum="ArrayFormat" is_bitfield="true">
 			Flag used to mark that the mesh contains up to 8 bone influences per vertex. This flag indicates that [constant ARRAY_BONES] and [constant ARRAY_WEIGHTS] elements will have double length.
+		</constant>
+		<constant name="ARRAY_FLAG_USES_EMPTY_VERTEX_ARRAY" value="268435456" enum="ArrayFormat" is_bitfield="true">
+			Flag used to mark that the mesh intentionally contains no vertex array.
 		</constant>
 		<constant name="BLEND_SHAPE_MODE_NORMALIZED" value="0" enum="BlendShapeMode">
 			Blend shapes are normalized.

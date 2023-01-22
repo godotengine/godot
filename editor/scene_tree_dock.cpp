@@ -1428,6 +1428,9 @@ void SceneTreeDock::_script_open_request(const Ref<Script> &p_script) {
 
 void SceneTreeDock::_push_item(Object *p_object) {
 	EditorNode::get_singleton()->push_item(p_object);
+	if (p_object == nullptr) {
+		EditorNode::get_singleton()->hide_unused_editors(this);
+	}
 }
 
 void SceneTreeDock::_handle_select(Node *p_node) {
@@ -2061,7 +2064,7 @@ void SceneTreeDock::_delete_confirm(bool p_cut) {
 		return;
 	}
 
-	EditorNode::get_singleton()->get_editor_plugins_over()->make_visible(false);
+	EditorNode::get_singleton()->hide_unused_editors(this);
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	undo_redo->create_action(p_cut ? TTR("Cut Node(s)") : TTR("Remove Node(s)"), UndoRedo::MERGE_DISABLE, remove_list.front()->get());

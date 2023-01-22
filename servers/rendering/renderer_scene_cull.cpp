@@ -694,6 +694,7 @@ void RendererSceneCull::instance_set_base(RID p_instance, RID p_base) {
 				instance->base_data = decal;
 
 				decal->instance = RSG::texture_storage->decal_instance_create(p_base);
+				RSG::texture_storage->decal_instance_set_sorting_offset(decal->instance, instance->sorting_offset);
 			} break;
 			case RS::INSTANCE_LIGHTMAP: {
 				InstanceLightmapData *lightmap_data = memnew(InstanceLightmapData);
@@ -871,6 +872,9 @@ void RendererSceneCull::instance_set_pivot_data(RID p_instance, float p_sorting_
 		InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(instance->base_data);
 		ERR_FAIL_NULL(geom->geometry_instance);
 		geom->geometry_instance->set_pivot_data(p_sorting_offset, p_use_aabb_center);
+	} else if (instance->base_type == RS::INSTANCE_DECAL && instance->base_data) {
+		InstanceDecalData *decal = static_cast<InstanceDecalData *>(instance->base_data);
+		RSG::texture_storage->decal_instance_set_sorting_offset(decal->instance, instance->sorting_offset);
 	}
 }
 
@@ -2824,7 +2828,9 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 						InstanceGeometryData *geom = static_cast<InstanceGeometryData *>(idata.instance->base_data);
 
 						ERR_FAIL_NULL(geom->geometry_instance);
+						cull_data.cull->lock.lock();
 						geom->geometry_instance->set_softshadow_projector_pairing(geom->softshadow_count > 0, geom->projector_count > 0);
+						cull_data.cull->lock.unlock();
 						idata.flags &= ~uint32_t(InstanceData::FLAG_GEOM_PROJECTOR_SOFTSHADOW_DIRTY);
 					}
 
@@ -2891,7 +2897,9 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 							sh[j] = sh[j].lerp(target_sh[j], MIN(1.0, lightmap_probe_update_speed));
 						}
 						ERR_FAIL_NULL(geom->geometry_instance);
+						cull_data.cull->lock.lock();
 						geom->geometry_instance->set_lightmap_capture(sh);
+						cull_data.cull->lock.unlock();
 						idata.instance->last_frame_pass = frame_number;
 					}
 
@@ -3088,15 +3096,15 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 #endif
 		if (cull_to > thread_cull_threshold) {
 			//multiple threads
-			for (uint32_t i = 0; i < scene_cull_result_threads.size(); i++) {
-				scene_cull_result_threads[i].clear();
+			for (InstanceCullResult &thread : scene_cull_result_threads) {
+				thread.clear();
 			}
 
 			WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &RendererSceneCull::_scene_cull_threaded, &cull_data, scene_cull_result_threads.size(), -1, true, SNAME("RenderCullInstances"));
 			WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
 
-			for (uint32_t i = 0; i < scene_cull_result_threads.size(); i++) {
-				scene_cull_result.append_from(scene_cull_result_threads[i]);
+			for (InstanceCullResult &thread : scene_cull_result_threads) {
+				scene_cull_result.append_from(thread);
 			}
 
 		} else {
@@ -4126,8 +4134,8 @@ RendererSceneCull::RendererSceneCull() {
 
 	scene_cull_result.init(&rid_cull_page_pool, &geometry_instance_cull_page_pool, &instance_cull_page_pool);
 	scene_cull_result_threads.resize(WorkerThreadPool::get_singleton()->get_thread_count());
-	for (uint32_t i = 0; i < scene_cull_result_threads.size(); i++) {
-		scene_cull_result_threads[i].init(&rid_cull_page_pool, &geometry_instance_cull_page_pool, &instance_cull_page_pool);
+	for (InstanceCullResult &thread : scene_cull_result_threads) {
+		thread.init(&rid_cull_page_pool, &geometry_instance_cull_page_pool, &instance_cull_page_pool);
 	}
 
 	indexer_update_iterations = GLOBAL_GET("rendering/limits/spatial_indexer/update_iterations_per_frame");
@@ -4155,8 +4163,8 @@ RendererSceneCull::~RendererSceneCull() {
 	}
 
 	scene_cull_result.reset();
-	for (uint32_t i = 0; i < scene_cull_result_threads.size(); i++) {
-		scene_cull_result_threads[i].reset();
+	for (InstanceCullResult &thread : scene_cull_result_threads) {
+		thread.reset();
 	}
 	scene_cull_result_threads.clear();
 

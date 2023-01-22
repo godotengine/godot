@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  dictionary_property_edit.h                                            */
+/*  register_types.cpp                                                    */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,37 +28,21 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef DICTIONARY_PROPERTY_EDIT_H
-#define DICTIONARY_PROPERTY_EDIT_H
+#include "register_types.h"
 
-#include "scene/main/node.h"
+#include "image_compress_astcenc.h"
 
-class DictionaryPropertyEdit : public RefCounted {
-	GDCLASS(DictionaryPropertyEdit, RefCounted);
+void initialize_astcenc_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
 
-	ObjectID obj;
-	StringName property;
+	Image::_image_compress_astc_func = _compress_astc;
+	Image::_image_decompress_astc = _decompress_astc;
+}
 
-	void _notif_change();
-	void _set_key(const Variant &p_old_key, const Variant &p_new_key);
-	void _set_value(const Variant &p_key, const Variant &p_value);
-
-	Variant get_dictionary() const;
-
-	bool _dont_undo_redo();
-
-protected:
-	static void _bind_methods();
-	bool _set(const StringName &p_name, const Variant &p_value);
-	bool _get(const StringName &p_name, Variant &r_ret) const;
-	void _get_property_list(List<PropertyInfo> *p_list) const;
-
-public:
-	void edit(Object *p_obj, const StringName &p_prop);
-
-	Node *get_node();
-
-	DictionaryPropertyEdit();
-};
-
-#endif // DICTIONARY_PROPERTY_EDIT_H
+void uninitialize_astcenc_module(ModuleInitializationLevel p_level) {
+	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
+		return;
+	}
+}

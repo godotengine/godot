@@ -33,8 +33,8 @@
 #include "core/os/os.h"
 #include "core/string/print_string.h"
 
-#include "thirdparty/etcpak/ProcessDxtc.hpp"
-#include "thirdparty/etcpak/ProcessRGB.hpp"
+#include <ProcessDxtc.hpp>
+#include <ProcessRGB.hpp>
 
 EtcpakType _determine_etc_type(Image::UsedChannels p_channels) {
 	switch (p_channels) {
@@ -130,7 +130,7 @@ void _compress_etcpak(EtcpakType p_compresstype, Image *r_img, float p_lossy_qua
 	} else if (p_compresstype == EtcpakType::ETCPAK_TYPE_DXT5) {
 		target_format = Image::FORMAT_DXT5;
 	} else {
-		ERR_FAIL_MSG("Invalid or unsupported Etcpak compression format.");
+		ERR_FAIL_MSG("Invalid or unsupported etcpak compression format, not ETC or DXT.");
 	}
 
 	// Compress image data and (if required) mipmaps.
@@ -171,7 +171,7 @@ void _compress_etcpak(EtcpakType p_compresstype, Image *r_img, float p_lossy_qua
 
 	const uint8_t *src_read = r_img->get_data().ptr();
 
-	print_verbose(vformat("ETCPAK: Encoding image size %dx%d to format %s.", width, height, Image::get_format_name(target_format)));
+	print_verbose(vformat("etcpak: Encoding image size %dx%d to format %s%s.", width, height, Image::get_format_name(target_format), mipmaps ? ", with mipmaps" : ""));
 
 	int dest_size = Image::get_image_data_size(width, height, target_format, mipmaps);
 	Vector<uint8_t> dest_data;
@@ -232,12 +232,12 @@ void _compress_etcpak(EtcpakType p_compresstype, Image *r_img, float p_lossy_qua
 		} else if (p_compresstype == EtcpakType::ETCPAK_TYPE_DXT5 || p_compresstype == EtcpakType::ETCPAK_TYPE_DXT5_RA_AS_RG) {
 			CompressDxt5(src_mip_read, dest_mip_write, blocks, mip_w);
 		} else {
-			ERR_FAIL_MSG("Invalid or unsupported Etcpak compression format.");
+			ERR_FAIL_MSG("etcpak: Invalid or unsupported compression format.");
 		}
 	}
 
 	// Replace original image with compressed one.
 	r_img->set_data(width, height, mipmaps, target_format, dest_data);
 
-	print_verbose(vformat("ETCPAK encode took %s ms.", rtos(OS::get_singleton()->get_ticks_msec() - start_time)));
+	print_verbose(vformat("etcpak: Encoding took %s ms.", rtos(OS::get_singleton()->get_ticks_msec() - start_time)));
 }

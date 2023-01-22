@@ -227,8 +227,6 @@ void EditorExportPlugin::_bind_methods() {
 }
 
 EditorExportPlugin::EditorExportPlugin() {
-	GLOBAL_DEF("editor/export/convert_text_resources_to_binary", false);
-
 	EDITOR_DEF("export/ssh/ssh", "");
 	EDITOR_DEF("export/ssh/scp", "");
 }

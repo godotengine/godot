@@ -35,11 +35,6 @@
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "scene/gui/color_mode.h"
-
-#ifdef TOOLS_ENABLED
-#include "editor/editor_settings.h"
-#endif
-
 #include "thirdparty/misc/ok_color.h"
 #include "thirdparty/misc/ok_color_shader.h"
 
@@ -50,31 +45,6 @@ void ColorPicker::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			_update_color();
-#ifdef TOOLS_ENABLED
-			if (Engine::get_singleton()->is_editor_hint()) {
-				if (preset_cache.is_empty()) {
-					PackedColorArray saved_presets = EditorSettings::get_singleton()->get_project_metadata("color_picker", "presets", PackedColorArray());
-					for (int i = 0; i < saved_presets.size(); i++) {
-						preset_cache.push_back(saved_presets[i]);
-					}
-				}
-
-				for (int i = 0; i < preset_cache.size(); i++) {
-					presets.push_back(preset_cache[i]);
-				}
-
-				if (recent_preset_cache.is_empty()) {
-					PackedColorArray saved_recent_presets = EditorSettings::get_singleton()->get_project_metadata("color_picker", "recent_presets", PackedColorArray());
-					for (int i = 0; i < saved_recent_presets.size(); i++) {
-						recent_preset_cache.push_back(saved_recent_presets[i]);
-					}
-				}
-
-				for (int i = 0; i < recent_preset_cache.size(); i++) {
-					recent_presets.push_back(recent_preset_cache[i]);
-				}
-			}
-#endif
 			[[fallthrough]];
 		}
 		case NOTIFICATION_THEME_CHANGED: {
@@ -404,6 +374,40 @@ void ColorPicker::create_slider(GridContainer *gc, int idx) {
 	}
 }
 
+#ifdef TOOLS_ENABLED
+void ColorPicker::set_editor_settings(Object *p_editor_settings) {
+	if (editor_settings) {
+		return;
+	}
+	editor_settings = p_editor_settings;
+
+	if (preset_cache.is_empty()) {
+		PackedColorArray saved_presets = editor_settings->call(SNAME("get_project_metadata"), "color_picker", "presets", PackedColorArray());
+		for (int i = 0; i < saved_presets.size(); i++) {
+			preset_cache.push_back(saved_presets[i]);
+		}
+	}
+
+	for (int i = 0; i < preset_cache.size(); i++) {
+		presets.push_back(preset_cache[i]);
+	}
+
+	if (recent_preset_cache.is_empty()) {
+		PackedColorArray saved_recent_presets = editor_settings->call(SNAME("get_project_metadata"), "color_picker", "recent_presets", PackedColorArray());
+		for (int i = 0; i < saved_recent_presets.size(); i++) {
+			recent_preset_cache.push_back(saved_recent_presets[i]);
+		}
+	}
+
+	for (int i = 0; i < recent_preset_cache.size(); i++) {
+		recent_presets.push_back(recent_preset_cache[i]);
+	}
+
+	_update_presets();
+	_update_recent_presets();
+}
+#endif
+
 HSlider *ColorPicker::get_slider(int p_idx) {
 	if (p_idx < SLIDER_COUNT) {
 		return sliders[p_idx];
@@ -471,7 +475,7 @@ ColorPicker::PickerShapeType ColorPicker::_get_actual_shape() const {
 
 void ColorPicker::_reset_theme() {
 	Ref<StyleBoxFlat> style_box_flat(memnew(StyleBoxFlat));
-	style_box_flat->set_default_margin(SIDE_TOP, 16 * get_theme_default_base_scale());
+	style_box_flat->set_content_margin(SIDE_TOP, 16 * get_theme_default_base_scale());
 	style_box_flat->set_bg_color(Color(0.2, 0.23, 0.31).lerp(Color(0, 0, 0, 1), 0.3).clamp());
 	for (int i = 0; i < SLIDER_COUNT; i++) {
 		sliders[i]->add_theme_icon_override("grabber", get_theme_icon(SNAME("bar_arrow"), SNAME("ColorPicker")));
@@ -553,7 +557,7 @@ void ColorPicker::_update_presets() {
 	}
 
 #ifdef TOOLS_ENABLED
-	if (Engine::get_singleton()->is_editor_hint()) {
+	if (editor_settings) {
 		// Only load preset buttons when the only child is the add-preset button.
 		if (preset_container->get_child_count() == 1) {
 			for (int i = 0; i < preset_cache.size(); i++) {
@@ -567,7 +571,7 @@ void ColorPicker::_update_presets() {
 
 void ColorPicker::_update_recent_presets() {
 #ifdef TOOLS_ENABLED
-	if (Engine::get_singleton()->is_editor_hint()) {
+	if (editor_settings) {
 		int recent_preset_count = recent_preset_hbc->get_child_count();
 		for (int i = 0; i < recent_preset_count; i++) {
 			memdelete(recent_preset_hbc->get_child(0));
@@ -743,9 +747,9 @@ void ColorPicker::add_preset(const Color &p_color) {
 	}
 
 #ifdef TOOLS_ENABLED
-	if (Engine::get_singleton()->is_editor_hint()) {
+	if (editor_settings) {
 		PackedColorArray arr_to_save = get_presets();
-		EditorSettings::get_singleton()->set_project_metadata("color_picker", "presets", arr_to_save);
+		editor_settings->call(SNAME("set_project_metadata"), "color_picker", "presets", arr_to_save);
 	}
 #endif
 }
@@ -764,9 +768,9 @@ void ColorPicker::add_recent_preset(const Color &p_color) {
 	_select_from_preset_container(p_color);
 
 #ifdef TOOLS_ENABLED
-	if (Engine::get_singleton()->is_editor_hint()) {
+	if (editor_settings) {
 		PackedColorArray arr_to_save = get_recent_presets();
-		EditorSettings::get_singleton()->set_project_metadata("color_picker", "recent_presets", arr_to_save);
+		editor_settings->call(SNAME("set_project_metadata"), "color_picker", "recent_presets", arr_to_save);
 	}
 #endif
 }
@@ -787,9 +791,9 @@ void ColorPicker::erase_preset(const Color &p_color) {
 		}
 
 #ifdef TOOLS_ENABLED
-		if (Engine::get_singleton()->is_editor_hint()) {
+		if (editor_settings) {
 			PackedColorArray arr_to_save = get_presets();
-			EditorSettings::get_singleton()->set_project_metadata("color_picker", "presets", arr_to_save);
+			editor_settings->call(SNAME("set_project_metadata"), "color_picker", "presets", arr_to_save);
 		}
 #endif
 	}
@@ -811,9 +815,9 @@ void ColorPicker::erase_recent_preset(const Color &p_color) {
 		}
 
 #ifdef TOOLS_ENABLED
-		if (Engine::get_singleton()->is_editor_hint()) {
+		if (editor_settings) {
 			PackedColorArray arr_to_save = get_recent_presets();
-			EditorSettings::get_singleton()->set_project_metadata("color_picker", "recent_presets", arr_to_save);
+			editor_settings->call(SNAME("set_project_metadata"), "color_picker", "recent_presets", arr_to_save);
 		}
 #endif
 	}
@@ -890,7 +894,7 @@ void ColorPicker::set_colorize_sliders(bool p_colorize_sliders) {
 		alpha_slider->add_theme_style_override("slider", style_box_empty);
 	} else {
 		Ref<StyleBoxFlat> style_box_flat(memnew(StyleBoxFlat));
-		style_box_flat->set_default_margin(SIDE_TOP, 16 * get_theme_default_base_scale());
+		style_box_flat->set_content_margin(SIDE_TOP, 16 * get_theme_default_base_scale());
 		style_box_flat->set_bg_color(Color(0.2, 0.23, 0.31).lerp(Color(0, 0, 0, 1), 0.3).clamp());
 
 		if (!slider_theme_modified) {

@@ -28,6 +28,9 @@
 		<member name="priority" type="int" setter="set_priority" getter="get_priority" default="1">
 			Lower priority transitions are preferred when travelling through the tree via [method AnimationNodeStateMachinePlayback.travel] or [member advance_mode] is set to [constant ADVANCE_MODE_AUTO].
 		</member>
+		<member name="reset" type="bool" setter="set_reset" getter="is_reset" default="true">
+			If [code]true[/code], the destination animation is played back from the beginning when switched.
+		</member>
 		<member name="switch_mode" type="int" setter="set_switch_mode" getter="get_switch_mode" enum="AnimationNodeStateMachineTransition.SwitchMode" default="0">
 			The transition type.
 		</member>

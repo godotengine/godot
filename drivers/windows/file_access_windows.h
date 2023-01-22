@@ -50,6 +50,9 @@ class FileAccessWindows : public FileAccess {
 
 	void _close();
 
+	static bool is_path_invalid(const String &p_path);
+	static HashSet<String> invalid_files;
+
 public:
 	virtual Error open_internal(const String &p_path, int p_mode_flags) override; ///< open a file
 	virtual bool is_open() const override; ///< true when file is open
@@ -78,6 +81,9 @@ public:
 	uint64_t _get_modified_time(const String &p_file) override;
 	virtual uint32_t _get_unix_permissions(const String &p_file) override;
 	virtual Error _set_unix_permissions(const String &p_file, uint32_t p_permissions) override;
+
+	static void initialize();
+	static void finalize();
 
 	FileAccessWindows() {}
 	virtual ~FileAccessWindows();

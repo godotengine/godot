@@ -51,7 +51,6 @@ using namespace godot;
 #include "core/error/error_macros.h"
 #include "core/string/print_string.h"
 #include "core/string/translation.h"
-#include "core/string/ucaps.h"
 
 #include "modules/modules_enabled.gen.h" // For freetype, msdfgen, svg.
 
@@ -2665,6 +2664,7 @@ void TextServerFallback::full_copy(ShapedTextDataFallback *p_shaped) {
 
 RID TextServerFallback::_create_shaped_text(TextServer::Direction p_direction, TextServer::Orientation p_orientation) {
 	_THREAD_SAFE_METHOD_
+	ERR_FAIL_COND_V_MSG(p_direction == DIRECTION_INHERITED, RID(), "Invalid text direction.");
 
 	ShapedTextDataFallback *sd = memnew(ShapedTextDataFallback);
 	sd->direction = p_direction;
@@ -2688,6 +2688,7 @@ void TextServerFallback::_shaped_text_clear(const RID &p_shaped) {
 }
 
 void TextServerFallback::_shaped_text_set_direction(const RID &p_shaped, TextServer::Direction p_direction) {
+	ERR_FAIL_COND_MSG(p_direction == DIRECTION_INHERITED, "Invalid text direction.");
 	if (p_direction == DIRECTION_RTL) {
 		ERR_PRINT_ONCE("Right-to-left layout is not supported by this text server.");
 	}
@@ -4060,31 +4061,11 @@ double TextServerFallback::_shaped_text_get_underline_thickness(const RID &p_sha
 }
 
 String TextServerFallback::_string_to_upper(const String &p_string, const String &p_language) const {
-	String upper = p_string;
-
-	for (int i = 0; i <= upper.length(); i++) {
-		const char32_t s = upper[i];
-		const char32_t t = _find_upper(s);
-		if (s != t) { // avoid copy on write
-			upper[i] = t;
-		}
-	}
-
-	return upper;
+	return p_string.to_upper();
 }
 
 String TextServerFallback::_string_to_lower(const String &p_string, const String &p_language) const {
-	String lower = p_string;
-
-	for (int i = 0; i <= lower.length(); i++) {
-		const char32_t s = lower[i];
-		const char32_t t = _find_lower(s);
-		if (s != t) { // avoid copy on write
-			lower[i] = t;
-		}
-	}
-
-	return lower;
+	return p_string.to_lower();
 }
 
 PackedInt32Array TextServerFallback::_string_get_word_breaks(const String &p_string, const String &p_language, int p_chars_per_line) const {
