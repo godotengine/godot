@@ -1704,6 +1704,7 @@ static void _collision_capsule_convex_polygon(const GodotShape3D *p_a, const Tra
 	const Geometry3D::MeshData::Edge *edges = mesh.edges.ptr();
 	int edge_count = mesh.edges.size();
 	const Vector3 *vertices = mesh.vertices.ptr();
+	int vertex_count = mesh.vertices.size();
 
 	// Precalculating this makes the transforms faster.
 	Basis b_xform_normal = p_transform_b.basis.inverse().transposed();
@@ -1711,42 +1712,47 @@ static void _collision_capsule_convex_polygon(const GodotShape3D *p_a, const Tra
 	// faces of B
 	for (int i = 0; i < face_count; i++) {
 		Vector3 axis = b_xform_normal.xform(faces[i].plane.normal).normalized();
-
 		if (!separator.test_axis(axis)) {
 			return;
 		}
 	}
 
-	// edges of B, capsule cylinder
+	// vertices of B
+	Vector3 capsule_axis = p_transform_a.basis.get_column(1) * (capsule_A->get_height() * 0.5 - capsule_A->get_radius());
+	Vector3 capsule_ends[2] = { p_transform_a.origin + capsule_axis, p_transform_a.origin - capsule_axis };
+	for (int i = 0; i < vertex_count; i++) {
+		Vector3 v1 = p_transform_b.xform(vertices[i]);
+		Vector3 v2 = Geometry3D::get_closest_point_to_segment(p_transform_a.origin, capsule_ends);
+		Vector3 axis = (v2 - v1).normalized();
+		if (!separator.test_axis(axis)) {
+			return;
+		}
+	}
 
+	// edges of B
 	for (int i = 0; i < edge_count; i++) {
-		// cylinder
-		Vector3 edge_axis = p_transform_b.basis.xform(vertices[edges[i].vertex_a]) - p_transform_b.basis.xform(vertices[edges[i].vertex_b]);
-		Vector3 axis = edge_axis.cross(p_transform_a.basis.get_column(1)).normalized();
+		Vector3 v1 = p_transform_b.basis.xform(vertices[edges[i].vertex_a]);
+		Vector3 v2 = p_transform_b.basis.xform(vertices[edges[i].vertex_b]);
 
-		if (!separator.test_axis(axis)) {
+		// capsule cylinder
+		Vector3 edge_axis = v1 - v2;
+		Vector3 axis1 = edge_axis.cross(p_transform_a.basis.get_column(1)).normalized();
+		if (!separator.test_axis(axis1)) {
 			return;
 		}
-	}
 
-	// capsule balls, edges of B
+		// first capsule sphere
+		Vector3 n1 = capsule_ends[0] - v1;
+		Vector3 axis2 = n1.cross(edge_axis).cross(edge_axis).normalized();
+		if (!separator.test_axis(axis2)) {
+			return;
+		}
 
-	for (int i = 0; i < 2; i++) {
-		// edges of B, capsule cylinder
-
-		Vector3 capsule_axis = p_transform_a.basis.get_column(1) * (capsule_A->get_height() * 0.5 - capsule_A->get_radius());
-
-		Vector3 sphere_pos = p_transform_a.origin + ((i == 0) ? capsule_axis : -capsule_axis);
-
-		for (int j = 0; j < edge_count; j++) {
-			Vector3 n1 = sphere_pos - p_transform_b.xform(vertices[edges[j].vertex_a]);
-			Vector3 n2 = p_transform_b.basis.xform(vertices[edges[j].vertex_a]) - p_transform_b.basis.xform(vertices[edges[j].vertex_b]);
-
-			Vector3 axis = n1.cross(n2).cross(n2).normalized();
-
-			if (!separator.test_axis(axis)) {
-				return;
-			}
+		// second capsule sphere
+		Vector3 n2 = capsule_ends[1] - v1;
+		Vector3 axis3 = n2.cross(edge_axis).cross(edge_axis).normalized();
+		if (!separator.test_axis(axis3)) {
+			return;
 		}
 	}
 
