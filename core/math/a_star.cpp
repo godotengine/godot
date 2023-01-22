@@ -794,7 +794,7 @@ bool AStar2D::_solve(AStar3D::Point *begin_point, AStar3D::Point *end_point) {
 
 	bool found_route = false;
 
-	Vector<AStar3D::Point *> open_list;
+	LocalVector<AStar3D::Point *> open_list;
 	SortArray<AStar3D::Point *, AStar3D::SortPoints> sorter;
 
 	begin_point->g_score = 0;
@@ -802,19 +802,19 @@ bool AStar2D::_solve(AStar3D::Point *begin_point, AStar3D::Point *end_point) {
 	open_list.push_back(begin_point);
 
 	while (!open_list.is_empty()) {
-		AStar3D::Point *p = open_list[0]; // The currently processed point
+		AStar3D::Point *p = open_list[0]; // The currently processed point.
 
 		if (p == end_point) {
 			found_route = true;
 			break;
 		}
 
-		sorter.pop_heap(0, open_list.size(), open_list.ptrw()); // Remove the current point from the open list
+		sorter.pop_heap(0, open_list.size(), open_list.ptr()); // Remove the current point from the open list.
 		open_list.remove_at(open_list.size() - 1);
-		p->closed_pass = astar.pass; // Mark the point as closed
+		p->closed_pass = astar.pass; // Mark the point as closed.
 
 		for (OAHashMap<int64_t, AStar3D::Point *>::Iterator it = p->neighbours.iter(); it.valid; it = p->neighbours.next_iter(it)) {
-			AStar3D::Point *e = *(it.value); // The neighbour point
+			AStar3D::Point *e = *(it.value); // The neighbour point.
 
 			if (!e->enabled || e->closed_pass == astar.pass) {
 				continue;
@@ -837,9 +837,9 @@ bool AStar2D::_solve(AStar3D::Point *begin_point, AStar3D::Point *end_point) {
 			e->f_score = e->g_score + _estimate_cost(e->id, end_point->id);
 
 			if (new_point) { // The position of the new points is already known.
-				sorter.push_heap(0, open_list.size() - 1, 0, e, open_list.ptrw());
+				sorter.push_heap(0, open_list.size() - 1, 0, e, open_list.ptr());
 			} else {
-				sorter.push_heap(0, open_list.find(e), 0, e, open_list.ptrw());
+				sorter.push_heap(0, open_list.find(e), 0, e, open_list.ptr());
 			}
 		}
 	}
