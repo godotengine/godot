@@ -86,7 +86,7 @@ public:
 	Dictionary duplicate(bool p_deep = false) const;
 	Dictionary recursive_duplicate(bool p_deep, int recursion_count) const;
 
-	void set_read_only(bool p_enable);
+	void make_read_only();
 	bool is_read_only() const;
 
 	const void *id() const;

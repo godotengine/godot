@@ -392,13 +392,19 @@
 		<method name="is_read_only" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if the array is read-only. See [method set_read_only]. Arrays are automatically read-only if declared with [code]const[/code] keyword.
+				Returns [code]true[/code] if the array is read-only. See [method make_read_only]. Arrays are automatically read-only if declared with [code]const[/code] keyword.
 			</description>
 		</method>
 		<method name="is_typed" qualifiers="const">
 			<return type="bool" />
 			<description>
 				Returns [code]true[/code] if the array is typed. Typed arrays can only store elements of their associated type and provide type safety for the [code][][/code] operator. Methods of typed array still return [Variant].
+			</description>
+		</method>
+		<method name="make_read_only">
+			<return type="void" />
+			<description>
+				Makes the array read-only, i.e. disabled modifying of the array's elements. Does not apply to nested content, e.g. content of nested arrays.
 			</description>
 		</method>
 		<method name="map" qualifiers="const">
@@ -522,13 +528,6 @@
 			<param index="1" name="from" type="int" default="-1" />
 			<description>
 				Searches the array in reverse order. Optionally, a start search index can be passed. If negative, the start index is considered relative to the end of the array.
-			</description>
-		</method>
-		<method name="set_read_only">
-			<return type="void" />
-			<param index="0" name="enable" type="bool" />
-			<description>
-				Makes the [Array] read-only, i.e. disabled modifying of the array's elements. Does not apply to nested content, e.g. content of nested arrays.
 			</description>
 		</method>
 		<method name="set_typed">
