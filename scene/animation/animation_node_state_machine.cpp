@@ -411,9 +411,11 @@ double AnimationNodeStateMachinePlayback::_process(AnimationNodeStateMachine *p_
 				// can't travel, then teleport
 				if (p_state_machine->states.has(travel_request)) {
 					path.clear();
-					current = travel_request;
-					play_start = true;
-					reset_request = reset_request_on_teleport;
+					if (current != travel_request || reset_request_on_teleport) {
+						current = travel_request;
+						play_start = true;
+						reset_request = reset_request_on_teleport;
+					}
 				} else {
 					StringName node = travel_request;
 					travel_request = StringName();
