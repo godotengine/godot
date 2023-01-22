@@ -2159,7 +2159,7 @@ ScriptTextEditor::ScriptTextEditor() {
 
 	connection_info_dialog = memnew(ConnectionInfoDialog);
 
-	SET_DRAG_FORWARDING_GCD(code_editor, ScriptTextEditor);
+	SET_DRAG_FORWARDING_GCD(code_editor->get_text_editor(), ScriptTextEditor);
 }
 
 ScriptTextEditor::~ScriptTextEditor() {
