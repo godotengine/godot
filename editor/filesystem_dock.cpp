@@ -2648,7 +2648,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 		p_popup->add_icon_shortcut(get_theme_icon(SNAME("Filesystem"), SNAME("EditorIcons")), ED_GET_SHORTCUT("filesystem_dock/show_in_explorer"), FILE_SHOW_IN_EXPLORER);
 		p_popup->set_item_text(p_popup->get_item_index(FILE_SHOW_IN_EXPLORER), item_text);
 		if (!is_directory) {
-			p_popup->add_icon_item(get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")), TTR("Open in External Program"), FILE_OPEN_EXTERNAL);
+			p_popup->add_icon_shortcut(get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")), ED_GET_SHORTCUT("filesystem_dock/open_in_external_program"), FILE_OPEN_EXTERNAL);
 		}
 		path = fpath;
 	}
@@ -2869,6 +2869,8 @@ void FileSystemDock::_tree_gui_input(Ref<InputEvent> p_event) {
 			_tree_rmb_option(FILE_RENAME);
 		} else if (ED_IS_SHORTCUT("filesystem_dock/show_in_explorer", p_event)) {
 			_tree_rmb_option(FILE_SHOW_IN_EXPLORER);
+		} else if (ED_IS_SHORTCUT("filesystem_dock/open_in_external_program", p_event)) {
+			_tree_rmb_option(FILE_OPEN_EXTERNAL);
 		} else if (ED_IS_SHORTCUT("editor/open_search", p_event)) {
 			focus_on_filter();
 		} else {
@@ -3098,6 +3100,7 @@ FileSystemDock::FileSystemDock() {
 	ED_SHORTCUT("filesystem_dock/rename", TTR("Rename..."), Key::F2);
 	ED_SHORTCUT_OVERRIDE("filesystem_dock/rename", "macos", Key::ENTER);
 	ED_SHORTCUT("filesystem_dock/show_in_explorer", TTR("Open in File Manager"));
+	ED_SHORTCUT("filesystem_dock/open_in_external_program", TTR("Open in External Program"));
 
 	VBoxContainer *top_vbc = memnew(VBoxContainer);
 	add_child(top_vbc);
