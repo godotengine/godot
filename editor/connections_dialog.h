@@ -88,7 +88,7 @@ public:
 			method = base_callable.get_method();
 		}
 
-		Callable get_callable() {
+		Callable get_callable() const {
 			if (unbinds > 0) {
 				return Callable(target, method).unbind(unbinds);
 			} else if (!binds.is_empty()) {
@@ -107,7 +107,9 @@ private:
 	Label *connect_to_label = nullptr;
 	LineEdit *from_signal = nullptr;
 	Node *source = nullptr;
+	ConnectionData source_connection_data;
 	StringName signal;
+	PackedStringArray signal_args;
 	LineEdit *dst_method = nullptr;
 	ConnectDialogBinds *cdbinds = nullptr;
 	bool edit_mode = false;
@@ -145,7 +147,9 @@ protected:
 public:
 	static StringName generate_method_callback_name(Node *p_source, String p_signal_name, Node *p_target);
 	Node *get_source() const;
+	ConnectionData get_source_connection_data() const;
 	StringName get_signal_name() const;
+	PackedStringArray get_signal_args() const;
 	NodePath get_dst_path() const;
 	void set_dst_node(Node *p_node);
 	StringName get_dst_method_name() const;
@@ -157,7 +161,7 @@ public:
 	bool get_one_shot() const;
 	bool is_editing() const;
 
-	void init(ConnectionData p_cd, bool p_edit = false);
+	void init(const ConnectionData &p_cd, const PackedStringArray &p_signal_args, bool p_edit = false);
 
 	void popup_dialog(const String &p_for_signal);
 	ConnectDialog();
@@ -203,8 +207,8 @@ class ConnectionsDock : public VBoxContainer {
 	void _filter_changed(const String &p_text);
 
 	void _make_or_edit_connection();
-	void _connect(ConnectDialog::ConnectionData p_cd);
-	void _disconnect(TreeItem &p_item);
+	void _connect(const ConnectDialog::ConnectionData &p_cd);
+	void _disconnect(const ConnectDialog::ConnectionData &p_cd);
 	void _disconnect_all();
 
 	void _tree_item_selected();
@@ -213,7 +217,7 @@ class ConnectionsDock : public VBoxContainer {
 	bool _is_connection_inherited(Connection &p_connection);
 
 	void _open_connection_dialog(TreeItem &p_item);
-	void _open_connection_dialog(ConnectDialog::ConnectionData p_cd);
+	void _open_edit_connection_dialog(TreeItem &p_item);
 	void _go_to_script(TreeItem &p_item);
 
 	void _handle_signal_menu_option(int p_option);
