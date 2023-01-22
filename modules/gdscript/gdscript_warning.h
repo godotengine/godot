@@ -76,7 +76,8 @@ public:
 		REDUNDANT_AWAIT, // await is used but expression is synchronous (not a signal nor a coroutine).
 		EMPTY_FILE, // A script file is empty.
 		SHADOWED_GLOBAL_IDENTIFIER, // A global class or function has the same name as variable.
-		INT_ASSIGNED_TO_ENUM, // An integer value was assigned to an enum-typed variable without casting.
+		INT_AS_ENUM_WITHOUT_CAST, // An integer value was used as an enum value without casting.
+		INT_AS_ENUM_WITHOUT_MATCH, // An integer value was used as an enum value without matching enum member.
 		STATIC_CALLED_ON_INSTANCE, // A static method was called on an instance of a class instead of on the class itself.
 		CONFUSABLE_IDENTIFIER, // The identifier contains misleading characters that can be confused. E.g. "usеr" (has Cyrillic "е" instead of Latin "e").
 		WARNING_MAX,
