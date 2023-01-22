@@ -921,6 +921,8 @@ EditorResourcePicker::EditorResourcePicker(bool p_hide_assign_button_controls) {
 	assign_button->set_h_size_flags(SIZE_EXPAND_FILL);
 	assign_button->set_clip_text(true);
 	SET_DRAG_FORWARDING_GCD(assign_button, EditorResourcePicker);
+	assign_button->add_theme_constant_override(SNAME("icon_maximum_width"), 16 * EDSCALE);
+	assign_button->add_theme_constant_override(SNAME("icon_maximum_height"), 16 * EDSCALE);
 	add_child(assign_button);
 	assign_button->connect("pressed", callable_mp(this, &EditorResourcePicker::_resource_selected));
 	assign_button->connect("draw", callable_mp(this, &EditorResourcePicker::_button_draw));

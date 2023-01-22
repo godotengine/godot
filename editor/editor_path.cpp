@@ -221,7 +221,9 @@ EditorPath::EditorPath(EditorSelectionHistory *p_history) {
 	main_mc->add_child(main_hb);
 
 	current_object_icon = memnew(TextureRect);
-	current_object_icon->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
+	current_object_icon->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
+	current_object_icon->set_expand_mode(TextureRect::EXPAND_IGNORE_SIZE);
+	current_object_icon->set_custom_minimum_size(Size2(16 * EDSCALE, 16 * EDSCALE));
 	main_hb->add_child(current_object_icon);
 
 	current_object_label = memnew(Label);
