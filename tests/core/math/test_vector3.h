@@ -478,6 +478,15 @@ TEST_CASE("[Vector3] Linear algebra methods") {
 	CHECK_MESSAGE(
 			Vector3(-a.x, a.y, -a.z).dot(Vector3(b.x, -b.y, b.z)) == doctest::Approx((real_t)-75.24),
 			"Vector3 dot should return expected value.");
+	CHECK_MESSAGE(
+			a.cos_to(b) == doctest::Approx((real_t)a.normalized().dot(b.normalized())),
+			"Vector3 cos_to should return expected value.");
+	CHECK_MESSAGE(
+			Vector3(0, 0, 0).cos_to(b) == doctest::Approx((real_t)Vector3(0, 0, 0).dot(b.normalized())),
+			"Vector3 cos_to edge case should match Vector3 normalize edge case.");
+	CHECK_MESSAGE(
+			a.cos_to(Vector3(0, 0, 0)) == doctest::Approx((real_t)a.normalized().dot(Vector3(0, 0, 0))),
+			"Vector3 cos_to edge case should match Vector3 normalize edge case.");
 }
 
 TEST_CASE("[Vector3] Finite number checks") {

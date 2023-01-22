@@ -464,6 +464,15 @@ TEST_CASE("[Vector2] Linear algebra methods") {
 	CHECK_MESSAGE(
 			Vector2(-a.x, a.y).dot(Vector2(b.x, -b.y)) == doctest::Approx((real_t)-57.3),
 			"Vector2 dot should return expected value.");
+	CHECK_MESSAGE(
+			a.cos_to(b) == doctest::Approx((real_t)a.normalized().dot(b.normalized())),
+			"Vector2 cos_to should return expected value.");
+	CHECK_MESSAGE(
+			Vector2(0, 0).cos_to(b) == doctest::Approx((real_t)Vector2(0, 0).dot(b.normalized())),
+			"Vector2 cos_to should edge case should match Vector2 normalized edge case.");
+	CHECK_MESSAGE(
+			a.cos_to(Vector2(0, 0)) == doctest::Approx((real_t)a.normalized().dot(Vector2(0, 0))),
+			"Vector2 cos_to should edge case should match Vector2 normalized edge case.");
 }
 
 TEST_CASE("[Vector2] Finite number checks") {

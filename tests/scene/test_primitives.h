@@ -207,9 +207,9 @@ TEST_CASE("[SceneTree][Primitive][Box] Box Primitive") {
 			bool normal_correct_direction{ true };
 			for (int rowIndex = 0; rowIndex < distinct_normals.size(); ++rowIndex) {
 				for (int colIndex = rowIndex + 1; colIndex < distinct_normals.size(); ++colIndex) {
-					if (!Math::is_equal_approx(distinct_normals[rowIndex].normalized().dot(distinct_normals[colIndex].normalized()), 0) &&
-							!Math::is_equal_approx(distinct_normals[rowIndex].normalized().dot(distinct_normals[colIndex].normalized()), 1) &&
-							!Math::is_equal_approx(distinct_normals[rowIndex].normalized().dot(distinct_normals[colIndex].normalized()), -1)) {
+					if (!Math::is_equal_approx(distinct_normals[rowIndex].cos_to(distinct_normals[colIndex]), 0) &&
+							!Math::is_equal_approx(distinct_normals[rowIndex].cos_to(distinct_normals[colIndex]), 1) &&
+							!Math::is_equal_approx(distinct_normals[rowIndex].cos_to(distinct_normals[colIndex]), -1)) {
 						normal_correct_direction = false;
 						break;
 					}
@@ -553,7 +553,7 @@ TEST_CASE("[SceneTree][Primitive][Sphere] Sphere Primitive") {
 		SUBCASE("[Primitive][Sphere] All normals lie in direction of corresponding point.") {
 			bool is_normals_correct = true;
 			for (int index = 0; index < points.size(); ++index) {
-				if (!Math::is_equal_approx(normals[index].normalized().dot(points[index].normalized()), 1)) {
+				if (!Math::is_equal_approx(normals[index].cos_to(points[index]), 1)) {
 					is_normals_correct = false;
 					break;
 				}

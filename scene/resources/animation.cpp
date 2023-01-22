@@ -3964,7 +3964,7 @@ bool Animation::_vector2_track_optimize_key(const TKey<Vector2> t0, const TKey<V
 		return false;
 	}
 	// Check axis.
-	if (vc0.normalized().dot(vc1.normalized()) >= 1.0 - p_allowed_angular_error * 2.0) {
+	if (vc0.cos_to(vc1) >= 1.0 - p_allowed_angular_error * 2.0) {
 		v0 = abs(v0);
 		v1 = abs(v1);
 		double ratio = v0 < v1 ? v0 / v1 : v1 / v0;
@@ -3995,7 +3995,7 @@ bool Animation::_vector3_track_optimize_key(const TKey<Vector3> t0, const TKey<V
 		return false;
 	}
 	// Check axis.
-	if (vc0.normalized().dot(vc1.normalized()) >= 1.0 - p_allowed_angular_error * 2.0) {
+	if (vc0.cos_to(vc1) >= 1.0 - p_allowed_angular_error * 2.0) {
 		v0 = abs(v0);
 		v1 = abs(v1);
 		double ratio = v0 < v1 ? v0 / v1 : v1 / v0;

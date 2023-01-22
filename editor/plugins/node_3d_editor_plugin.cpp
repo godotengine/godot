@@ -3696,7 +3696,7 @@ void Node3DEditorViewport::update_transform_gizmo_view() {
 
 	for (int i = 0; i < 3; i++) {
 		Transform3D axis_angle;
-		if (xform.basis.get_column(i).normalized().dot(xform.basis.get_column((i + 1) % 3).normalized()) < 1.0) {
+		if (xform.basis.get_column(i).cos_to(xform.basis.get_column((i + 1) % 3)) < 1.0) {
 			axis_angle = axis_angle.looking_at(xform.basis.get_column(i).normalized(), xform.basis.get_column((i + 1) % 3).normalized());
 		}
 		axis_angle.basis.scale(scale);

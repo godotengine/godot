@@ -452,7 +452,7 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 
 		if (emission_angle_enabled) {
 			Vector3 listenertopos = global_pos - listener_node->get_global_transform().origin;
-			float c = listenertopos.normalized().dot(get_global_transform().basis.get_column(2).normalized()); //it's z negative
+			float c = listenertopos.cos_to(get_global_transform().basis.get_column(2)); //it's z negative
 			float angle = Math::rad_to_deg(Math::acos(c));
 			if (angle > emission_angle) {
 				db_att -= -emission_angle_filter_attenuation_db;
@@ -503,7 +503,7 @@ Vector<AudioFrame> AudioStreamPlayer3D::_update_panning() {
 			Vector3 local_velocity = listener_node->get_global_transform().orthonormalized().basis.xform_inv(linear_velocity - listener_velocity);
 
 			if (local_velocity != Vector3()) {
-				float approaching = local_pos.normalized().dot(local_velocity.normalized());
+				float approaching = local_pos.cos_to(local_velocity);
 				float velocity = local_velocity.length();
 				float speed_of_sound = 343.0;
 
