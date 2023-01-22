@@ -879,7 +879,7 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 
 				current_enum = prev_enum;
 
-				dictionary.set_read_only(true);
+				dictionary.make_read_only();
 				member.m_enum->set_datatype(enum_type);
 				member.m_enum->dictionary = dictionary;
 
@@ -3892,7 +3892,7 @@ void GDScriptAnalyzer::const_fold_array(GDScriptParser::ArrayNode *p_array, bool
 		array[i] = p_array->elements[i]->reduced_value;
 	}
 	if (p_is_const) {
-		array.set_read_only(true);
+		array.make_read_only();
 	}
 	p_array->is_constant = true;
 	p_array->reduced_value = array;
@@ -3919,7 +3919,7 @@ void GDScriptAnalyzer::const_fold_dictionary(GDScriptParser::DictionaryNode *p_d
 		dict[element.key->reduced_value] = element.value->reduced_value;
 	}
 	if (p_is_const) {
-		dict.set_read_only(true);
+		dict.make_read_only();
 	}
 	p_dictionary->is_constant = true;
 	p_dictionary->reduced_value = dict;

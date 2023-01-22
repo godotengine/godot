@@ -127,7 +127,7 @@ public:
 	StringName get_typed_class_name() const;
 	Variant get_typed_script() const;
 
-	void set_read_only(bool p_enable);
+	void make_read_only();
 	bool is_read_only() const;
 
 	Array(const Array &p_base, uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
