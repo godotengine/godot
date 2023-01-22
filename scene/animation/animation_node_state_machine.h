@@ -159,7 +159,7 @@ public:
 	void stop();
 	bool is_playing() const;
 	StringName get_current_node() const;
-	StringName get_blend_from_node() const;
+	StringName get_fading_from_node() const;
 	Vector<StringName> get_travel_path() const;
 	float get_current_play_pos() const;
 	float get_current_length() const;
