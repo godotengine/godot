@@ -83,6 +83,8 @@ void Button::_update_theme_item_cache() {
 	theme_cache.icon = get_theme_icon(SNAME("icon"));
 
 	theme_cache.h_separation = get_theme_constant(SNAME("h_separation"));
+	theme_cache.icon_maximum_width = get_theme_constant(SNAME("icon_maximum_width"));
+	theme_cache.icon_maximum_height = get_theme_constant(SNAME("icon_maximum_height"));
 }
 
 void Button::_notification(int p_what) {
@@ -286,6 +288,13 @@ void Button::_notification(int p_what) {
 					icon_size = Size2(icon_width, icon_height);
 				}
 
+				if (theme_cache.icon_maximum_width > 0) {
+					icon_size.x = MIN(theme_cache.icon_maximum_width, icon_size.width);
+				}
+				if (theme_cache.icon_maximum_height > 0) {
+					icon_size.y = MIN(theme_cache.icon_maximum_height, icon_size.height);
+				}
+
 				if (icon_align_rtl_checked == HORIZONTAL_ALIGNMENT_LEFT) {
 					icon_region = Rect2(style_offset + Point2(icon_ofs_region, Math::floor((valign - icon_size.y) * 0.5)), icon_size);
 				} else if (icon_align_rtl_checked == HORIZONTAL_ALIGNMENT_CENTER) {
@@ -380,15 +389,17 @@ Size2 Button::get_minimum_size_for_text_and_icon(const String &p_text, Ref<Textu
 	}
 
 	if (!expand_icon && p_icon.is_valid()) {
-		minsize.height = MAX(minsize.height, p_icon->get_height());
+		auto max_icon_height = theme_cache.icon_maximum_height > 0 ? theme_cache.icon_maximum_height : p_icon->get_height();
+		minsize.height = MAX(minsize.height, MIN(p_icon->get_height(), max_icon_height));
 
+		auto max_icon_width = theme_cache.icon_maximum_width > 0 ? theme_cache.icon_maximum_width : p_icon->get_width();
 		if (icon_alignment != HORIZONTAL_ALIGNMENT_CENTER) {
-			minsize.width += p_icon->get_width();
+			minsize.width += MIN(p_icon->get_width(), max_icon_width);
 			if (!xl_text.is_empty() || !p_text.is_empty()) {
 				minsize.width += MAX(0, theme_cache.h_separation);
 			}
 		} else {
-			minsize.width = MAX(minsize.width, p_icon->get_width());
+			minsize.width = MAX(minsize.width, MIN(p_icon->get_width(), max_icon_height));
 		}
 	}
 

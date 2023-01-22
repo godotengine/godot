@@ -89,6 +89,8 @@ private:
 		Ref<Texture2D> icon;
 
 		int h_separation = 0;
+		int icon_maximum_width = 0;
+		int icon_maximum_height = 0;
 	} theme_cache;
 
 	void _shape(Ref<TextParagraph> p_paragraph = Ref<TextParagraph>(), String p_text = "");
