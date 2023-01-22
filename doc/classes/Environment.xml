@@ -90,7 +90,7 @@
 			The [Color] displayed for clear areas of the scene. Only effective when using the [constant BG_COLOR] or [constant BG_COLOR_SKY] background modes).
 		</member>
 		<member name="background_energy" type="float" setter="set_bg_energy" getter="get_bg_energy" default="1.0">
-			The power of the light emitted by the background.
+			The power of the light emitted by the background. This affects the sky brightness, the ambient light (if [member ambient_light_sky_contribution] is greater than [code]0.0[/code]) and specular light from the sky.
 		</member>
 		<member name="background_mode" type="int" setter="set_background" getter="get_background" enum="Environment.BGMode" default="0">
 			The background mode. See [enum BGMode] for possible values.
