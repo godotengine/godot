@@ -172,7 +172,7 @@ ReplicationEditor::ReplicationEditor() {
 	set_custom_minimum_size(Size2(0, 200) * EDSCALE);
 
 	delete_dialog = memnew(ConfirmationDialog);
-	delete_dialog->connect("cancelled", callable_mp(this, &ReplicationEditor::_dialog_closed).bind(false));
+	delete_dialog->connect("canceled", callable_mp(this, &ReplicationEditor::_dialog_closed).bind(false));
 	delete_dialog->connect("confirmed", callable_mp(this, &ReplicationEditor::_dialog_closed).bind(true));
 	add_child(delete_dialog);
 

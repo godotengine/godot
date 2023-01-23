@@ -111,7 +111,7 @@ public:
 		Most VR platforms, and our assumption, is that 1 unit in our virtual world equates to 1 meter in the real mode.
 		This scale basically effects the unit size relationship to real world size.
 
-		I may remove access to this property in GDScript in favour of exposing it on the XROrigin3D node
+		I may remove access to this property in GDScript in favor of exposing it on the XROrigin3D node
 	*/
 	double get_world_scale() const;
 	void set_world_scale(double p_world_scale);

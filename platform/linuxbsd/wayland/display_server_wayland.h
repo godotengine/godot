@@ -43,7 +43,7 @@
 #include "dynwrappers/wayland-client-core.h"
 #include "dynwrappers/wayland-cursor.h"
 #include "dynwrappers/wayland-egl-core.h"
-#include "dynwrappers/xkbcommon.h"
+#include "dynwrappers/xkbcommon-so_wrap.h"
 
 #ifdef LIBDECOR_ENABLED
 #include "dynwrappers/libdecor-so_wrap.h"

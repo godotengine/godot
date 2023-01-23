@@ -188,7 +188,7 @@ bool ShaderMaterial::_get(const StringName &p_name, Variant &r_ret) const {
 	if (shader.is_valid()) {
 		const StringName *sn = remap_cache.getptr(p_name);
 		if (sn) {
-			// Only return a parameter if it was previosly set.
+			// Only return a parameter if it was previously set.
 			r_ret = get_shader_parameter(*sn);
 			return true;
 		}

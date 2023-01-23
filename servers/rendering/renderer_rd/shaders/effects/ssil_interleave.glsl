@@ -62,8 +62,8 @@ void main() {
 	int mx = int(pix_pos.x % 2);
 	int my = int(pix_pos.y % 2);
 	int index_center = mx + my * 2; // center index
-	int index_horizontal = (1 - mx) + my * 2; // neighbouring, horizontal
-	int index_vertical = mx + (1 - my) * 2; // neighbouring, vertical
+	int index_horizontal = (1 - mx) + my * 2; // neighboring, horizontal
+	int index_vertical = mx + (1 - my) * 2; // neighboring, vertical
 	int index_diagonal = (1 - mx) + (1 - my) * 2; // diagonal
 
 	vec4 color = texelFetch(source_texture, ivec3(pix_pos / uvec2(params.size_modifier), index_center), 0);

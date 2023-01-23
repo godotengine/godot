@@ -95,6 +95,24 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	RBMap<MethodBind *, int> method_bind_map;
 	RBMap<GDScriptFunction *, int> lambdas_map;
 
+#if DEBUG_ENABLED
+	// Keep method and property names for pointer and validated operations.
+	// Used when disassembling the bytecode.
+	Vector<String> operator_names;
+	Vector<String> setter_names;
+	Vector<String> getter_names;
+	Vector<String> builtin_methods_names;
+	Vector<String> constructors_names;
+	Vector<String> utilities_names;
+	Vector<String> gds_utilities_names;
+	void add_debug_name(Vector<String> &vector, int index, const String &name) {
+		if (index >= vector.size()) {
+			vector.resize(index + 1);
+		}
+		vector.write[index] = name;
+	}
+#endif
+
 	// Lists since these can be nested.
 	List<int> if_jmp_addrs;
 	List<int> for_jmp_addrs;
@@ -113,7 +131,6 @@ class GDScriptByteCodeGenerator : public GDScriptCodeGenerator {
 	List<int> ternary_jump_skip_pos;
 
 	List<List<int>> current_breaks_to_patch;
-	List<List<int>> match_continues_to_patch;
 
 	void add_stack_identifier(const StringName &p_id, int p_stackpos) {
 		if (locals.size() > max_locals) {
@@ -468,8 +485,8 @@ public:
 	virtual void write_super_call(const Address &p_target, const StringName &p_function_name, const Vector<Address> &p_arguments) override;
 	virtual void write_call_async(const Address &p_target, const Address &p_base, const StringName &p_function_name, const Vector<Address> &p_arguments) override;
 	virtual void write_call_utility(const Address &p_target, const StringName &p_function, const Vector<Address> &p_arguments) override;
-	virtual void write_call_gdscript_utility(const Address &p_target, GDScriptUtilityFunctions::FunctionPtr p_function, const Vector<Address> &p_arguments) override;
 	void write_call_builtin_type(const Address &p_target, const Address &p_base, Variant::Type p_type, const StringName &p_method, bool p_is_static, const Vector<Address> &p_arguments);
+	virtual void write_call_gdscript_utility(const Address &p_target, const StringName &p_function, const Vector<Address> &p_arguments) override;
 	virtual void write_call_builtin_type(const Address &p_target, const Address &p_base, Variant::Type p_type, const StringName &p_method, const Vector<Address> &p_arguments) override;
 	virtual void write_call_builtin_type_static(const Address &p_target, Variant::Type p_type, const StringName &p_method, const Vector<Address> &p_arguments) override;
 	virtual void write_call_native_static(const Address &p_target, const StringName &p_class, const StringName &p_method, const Vector<Address> &p_arguments) override;
@@ -496,12 +513,8 @@ public:
 	virtual void start_while_condition() override;
 	virtual void write_while(const Address &p_condition) override;
 	virtual void write_endwhile() override;
-	virtual void start_match() override;
-	virtual void start_match_branch() override;
-	virtual void end_match() override;
 	virtual void write_break() override;
 	virtual void write_continue() override;
-	virtual void write_continue_match() override;
 	virtual void write_breakpoint() override;
 	virtual void write_newline(int p_line) override;
 	virtual void write_return(const Address &p_return_value) override;

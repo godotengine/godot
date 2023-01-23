@@ -93,8 +93,8 @@ public class GodotTextInputWrapper implements TextWatcher, OnEditorActionListene
 	@Override
 	public void beforeTextChanged(final CharSequence pCharSequence, final int start, final int count, final int after) {
 		for (int i = 0; i < count; ++i) {
-			GodotLib.key(0, KeyEvent.KEYCODE_DEL, 0, true);
-			GodotLib.key(0, KeyEvent.KEYCODE_DEL, 0, false);
+			GodotLib.key(KeyEvent.KEYCODE_DEL, 0, 0, true);
+			GodotLib.key(KeyEvent.KEYCODE_DEL, 0, 0, false);
 
 			if (mHasSelection) {
 				mHasSelection = false;
@@ -110,13 +110,13 @@ public class GodotTextInputWrapper implements TextWatcher, OnEditorActionListene
 			newChars[i - start] = pCharSequence.charAt(i);
 		}
 		for (int i = 0; i < count; ++i) {
-			int key = newChars[i];
-			if ((key == '\n') && !(mEdit.getKeyboardType() == GodotEditText.VirtualKeyboardType.KEYBOARD_TYPE_MULTILINE)) {
+			final int character = newChars[i];
+			if ((character == '\n') && !(mEdit.getKeyboardType() == GodotEditText.VirtualKeyboardType.KEYBOARD_TYPE_MULTILINE)) {
 				// Return keys are handled through action events
 				continue;
 			}
-			GodotLib.key(key, 0, key, true);
-			GodotLib.key(key, 0, key, false);
+			GodotLib.key(0, character, 0, true);
+			GodotLib.key(0, character, 0, false);
 		}
 	}
 
@@ -126,17 +126,17 @@ public class GodotTextInputWrapper implements TextWatcher, OnEditorActionListene
 			final String characters = pKeyEvent.getCharacters();
 
 			for (int i = 0; i < characters.length(); i++) {
-				final int ch = characters.codePointAt(i);
-				GodotLib.key(ch, 0, ch, true);
-				GodotLib.key(ch, 0, ch, false);
+				final int character = characters.codePointAt(i);
+				GodotLib.key(0, character, 0, true);
+				GodotLib.key(0, character, 0, false);
 			}
 		}
 
 		if (pActionID == EditorInfo.IME_ACTION_DONE) {
 			// Enter key has been pressed
 			mRenderView.queueOnRenderThread(() -> {
-				GodotLib.key(0, KeyEvent.KEYCODE_ENTER, 0, true);
-				GodotLib.key(0, KeyEvent.KEYCODE_ENTER, 0, false);
+				GodotLib.key(KeyEvent.KEYCODE_ENTER, 0, 0, true);
+				GodotLib.key(KeyEvent.KEYCODE_ENTER, 0, 0, false);
 			});
 			mRenderView.getView().requestFocus();
 			return true;

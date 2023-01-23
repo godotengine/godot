@@ -3,8 +3,6 @@ func test():
 	match i:
 		"Hello":
 			print("hello")
-			# This will fall through to the default case below.
-			continue
 		"Good bye":
 			print("bye")
 		_:

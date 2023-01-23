@@ -3335,8 +3335,10 @@ void ThemeTypeEditor::set_edited_theme(const Ref<Theme> &p_theme) {
 	}
 
 	edited_theme = p_theme;
-	edited_theme->connect("changed", callable_mp(this, &ThemeTypeEditor::_update_type_list_debounced));
-	_update_type_list();
+	if (edited_theme.is_valid()) {
+		edited_theme->connect("changed", callable_mp(this, &ThemeTypeEditor::_update_type_list_debounced));
+		_update_type_list();
+	}
 
 	add_type_dialog->set_edited_theme(edited_theme);
 }
@@ -3496,7 +3498,9 @@ void ThemeEditor::edit(const Ref<Theme> &p_theme) {
 		preview_tab->set_preview_theme(p_theme);
 	}
 
-	theme_name->set_text(TTR("Theme:") + " " + theme->get_path().get_file());
+	if (theme.is_valid()) {
+		theme_name->set_text(TTR("Theme:") + " " + theme->get_path().get_file());
+	}
 }
 
 Ref<Theme> ThemeEditor::get_edited_theme() {

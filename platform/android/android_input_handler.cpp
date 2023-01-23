@@ -56,7 +56,7 @@ void AndroidInputHandler::_set_key_modifier_state(Ref<InputEventWithModifiers> e
 	ev->set_ctrl_pressed(control_mem);
 }
 
-void AndroidInputHandler::process_key_event(int p_keycode, int p_physical_keycode, int p_unicode, bool p_pressed) {
+void AndroidInputHandler::process_key_event(int p_physical_keycode, int p_unicode, int p_key_label, bool p_pressed) {
 	static char32_t prev_wc = 0;
 	char32_t unicode = p_unicode;
 	if ((p_unicode & 0xfffffc00) == 0xd800) {
@@ -80,10 +80,7 @@ void AndroidInputHandler::process_key_event(int p_keycode, int p_physical_keycod
 	ev.instantiate();
 
 	Key physical_keycode = godot_code_from_android_code(p_physical_keycode);
-	Key keycode = physical_keycode;
-	if (p_keycode != 0) {
-		keycode = godot_code_from_unicode(p_keycode);
-	}
+	Key keycode = fix_keycode(unicode, physical_keycode);
 
 	switch (physical_keycode) {
 		case Key::SHIFT: {
@@ -104,7 +101,8 @@ void AndroidInputHandler::process_key_event(int p_keycode, int p_physical_keycod
 
 	ev->set_keycode(keycode);
 	ev->set_physical_keycode(physical_keycode);
-	ev->set_unicode(unicode);
+	ev->set_key_label(fix_key_label(p_key_label, keycode));
+	ev->set_unicode(fix_unicode(unicode));
 	ev->set_pressed(p_pressed);
 
 	_set_key_modifier_state(ev);

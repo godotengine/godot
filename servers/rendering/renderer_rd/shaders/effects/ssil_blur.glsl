@@ -124,14 +124,14 @@ void main() {
 
 	vec2 uv = (vec2(gl_GlobalInvocationID.xy) + vec2(0.5, 0.5)) * params.half_screen_pixel_size;
 
-	vec4 centre = textureLod(source_ssil, uv, 0.0);
+	vec4 center = textureLod(source_ssil, uv, 0.0);
 
 	vec4 value = textureLod(source_ssil, vec2(uv + vec2(-half_pixel.x * 3, -half_pixel.y)), 0.0) * 0.2;
 	value += textureLod(source_ssil, vec2(uv + vec2(+half_pixel.x, -half_pixel.y * 3)), 0.0) * 0.2;
 	value += textureLod(source_ssil, vec2(uv + vec2(-half_pixel.x, +half_pixel.y * 3)), 0.0) * 0.2;
 	value += textureLod(source_ssil, vec2(uv + vec2(+half_pixel.x * 3, +half_pixel.y)), 0.0) * 0.2;
 
-	vec4 sampled = value + centre * 0.2;
+	vec4 sampled = value + center * 0.2;
 
 #else
 #ifdef MODE_SMART

@@ -325,7 +325,7 @@ Vector<Vector2> PolygonPathFinder::find_path(const Vector2 &p_from, const Vector
 		}
 
 		const Point &np = points[least_cost_point];
-		//open the neighbours for search
+		//open the neighbors for search
 
 		for (const int &E : np.connections) {
 			Point &p = points.write[E];
@@ -339,7 +339,7 @@ Vector<Vector2> PolygonPathFinder::find_path(const Vector2 &p_from, const Vector
 					p.distance = distance;
 				}
 			} else {
-				//add to open neighbours
+				//add to open neighbors
 
 				p.prev = least_cost_point;
 				p.distance = distance;

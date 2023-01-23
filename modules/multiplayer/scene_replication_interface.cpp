@@ -125,7 +125,7 @@ void SceneReplicationInterface::on_reset() {
 }
 
 void SceneReplicationInterface::on_network_process() {
-	// Prevent endless stalling in case of unforseen spawn errors.
+	// Prevent endless stalling in case of unforeseen spawn errors.
 	if (spawn_queue.size()) {
 		ERR_PRINT("An error happened during last spawn, this usually means the 'ready' signal was not emitted by the spawned node.");
 		for (const ObjectID &oid : spawn_queue) {

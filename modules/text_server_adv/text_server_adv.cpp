@@ -4136,8 +4136,9 @@ bool TextServerAdvanced::_shape_substr(ShapedTextDataAdvanced *p_new_sd, const S
 			if (p_sd->bidi_override[ov].x >= p_start + p_length || p_sd->bidi_override[ov].y <= p_start) {
 				continue;
 			}
-			int start = _convert_pos_inv(p_sd, MAX(0, p_start - p_sd->bidi_override[ov].x));
-			int end = _convert_pos_inv(p_sd, MIN(p_start + p_length, p_sd->bidi_override[ov].y) - p_sd->bidi_override[ov].x);
+			int ov_start = _convert_pos_inv(p_sd, p_sd->bidi_override[ov].x);
+			int start = MAX(0, _convert_pos_inv(p_sd, p_start) - ov_start);
+			int end = MIN(_convert_pos_inv(p_sd, p_start + p_length), _convert_pos_inv(p_sd, p_sd->bidi_override[ov].y)) - ov_start;
 
 			ERR_FAIL_COND_V_MSG((start < 0 || end - start > p_new_sd->utf16.length()), false, "Invalid BiDi override range.");
 
@@ -4159,8 +4160,8 @@ bool TextServerAdvanced::_shape_substr(ShapedTextDataAdvanced *p_new_sd, const S
 				int32_t _bidi_run_length = 0;
 				ubidi_getVisualRun(bidi_iter, i, &_bidi_run_start, &_bidi_run_length);
 
-				int32_t bidi_run_start = _convert_pos(p_sd, p_sd->bidi_override[ov].x + start + _bidi_run_start);
-				int32_t bidi_run_end = _convert_pos(p_sd, p_sd->bidi_override[ov].x + start + _bidi_run_start + _bidi_run_length);
+				int32_t bidi_run_start = _convert_pos(p_sd, ov_start + start + _bidi_run_start);
+				int32_t bidi_run_end = _convert_pos(p_sd, ov_start + start + _bidi_run_start + _bidi_run_length);
 
 				for (int j = 0; j < sd_size; j++) {
 					if ((sd_glyphs[j].start >= bidi_run_start) && (sd_glyphs[j].end <= bidi_run_end)) {
@@ -5587,7 +5588,7 @@ bool TextServerAdvanced::_shaped_text_shape(const RID &p_shaped) {
 		}
 
 		UErrorCode err = U_ZERO_ERROR;
-		UBiDi *bidi_iter = ubidi_openSized(end, 0, &err);
+		UBiDi *bidi_iter = ubidi_openSized(end - start, 0, &err);
 		ERR_FAIL_COND_V_MSG(U_FAILURE(err), false, u_errorName(err));
 
 		switch (static_cast<TextServer::Direction>(sd->bidi_override[ov].z)) {
@@ -5605,7 +5606,7 @@ bool TextServerAdvanced::_shaped_text_shape(const RID &p_shaped) {
 				if (direction != UBIDI_NEUTRAL) {
 					ubidi_setPara(bidi_iter, data + start, end - start, direction, nullptr, &err);
 				} else {
-					ubidi_setPara(bidi_iter, data + start, end - start, UBIDI_DEFAULT_LTR, nullptr, &err);
+					ubidi_setPara(bidi_iter, data + start, end - start, base_para_direction, nullptr, &err);
 				}
 			} break;
 		}
@@ -5637,8 +5638,8 @@ bool TextServerAdvanced::_shaped_text_shape(const RID &p_shaped) {
 				}
 			}
 
-			int32_t bidi_run_start = _convert_pos(sd, sd->bidi_override[ov].x - sd->start + _bidi_run_start);
-			int32_t bidi_run_end = _convert_pos(sd, sd->bidi_override[ov].x - sd->start + _bidi_run_start + _bidi_run_length);
+			int32_t bidi_run_start = _convert_pos(sd, start + _bidi_run_start);
+			int32_t bidi_run_end = _convert_pos(sd, start + _bidi_run_start + _bidi_run_length);
 
 			// Shape runs.
 

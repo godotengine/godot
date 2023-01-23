@@ -41,6 +41,8 @@ class KeyMappingWindows {
 	KeyMappingWindows() {}
 
 public:
+	static void initialize();
+
 	static Key get_keysym(unsigned int p_code);
 	static unsigned int get_scancode(Key p_keycode);
 	static Key get_scansym(unsigned int p_code, bool p_extended);

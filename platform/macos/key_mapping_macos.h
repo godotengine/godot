@@ -36,13 +36,15 @@
 class KeyMappingMacOS {
 	KeyMappingMacOS() {}
 
-	static bool is_numpad_key(unsigned int key);
+	static bool is_numpad_key(unsigned int p_key);
 
 public:
+	static void initialize();
+
 	// Mappings input.
-	static Key translate_key(unsigned int key);
-	static unsigned int unmap_key(Key key);
-	static Key remap_key(unsigned int key, unsigned int state);
+	static Key translate_key(unsigned int p_key);
+	static unsigned int unmap_key(Key p_key);
+	static Key remap_key(unsigned int p_key, unsigned int p_state, bool p_unicode);
 
 	// Mapping for menu shortcuts.
 	static String keycode_get_native_string(Key p_keycode);

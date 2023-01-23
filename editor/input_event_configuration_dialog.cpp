@@ -38,9 +38,10 @@
 #include "scene/gui/separator.h"
 #include "scene/gui/tree.h"
 
-void InputEventConfigurationDialog::_set_event(const Ref<InputEvent> &p_event, bool p_update_input_list_selection) {
+void InputEventConfigurationDialog::_set_event(const Ref<InputEvent> &p_event, const Ref<InputEvent> &p_original_event, bool p_update_input_list_selection) {
 	if (p_event.is_valid()) {
 		event = p_event;
+		original_event = p_original_event;
 
 		// If the event is changed to something which is not the same as the listener,
 		// clear out the event from the listener text box to avoid confusion.
@@ -61,7 +62,7 @@ void InputEventConfigurationDialog::_set_event(const Ref<InputEvent> &p_event, b
 		// Update option values and visibility
 		bool show_mods = false;
 		bool show_device = false;
-		bool show_phys_key = false;
+		bool show_key = false;
 
 		if (mod.is_valid()) {
 			show_mods = true;
@@ -74,9 +75,25 @@ void InputEventConfigurationDialog::_set_event(const Ref<InputEvent> &p_event, b
 		}
 
 		if (k.is_valid()) {
-			show_phys_key = true;
-			physical_key_checkbox->set_pressed(k->get_physical_keycode() != Key::NONE && k->get_keycode() == Key::NONE);
+			show_key = true;
+			if (k->get_keycode() == Key::NONE && k->get_physical_keycode() == Key::NONE && k->get_key_label() != Key::NONE) {
+				key_mode->select(KEYMODE_UNICODE);
+			} else if (k->get_keycode() != Key::NONE) {
+				key_mode->select(KEYMODE_KEYCODE);
+			} else if (k->get_physical_keycode() != Key::NONE) {
+				key_mode->select(KEYMODE_PHY_KEYCODE);
+			} else {
+				// Invalid key.
+				event = Ref<InputEvent>();
+				original_event = Ref<InputEvent>();
+				event_listener->clear_event();
+				event_as_text->set_text(TTR("No Event Configured"));
 
+				additional_options_container->hide();
+				input_list_tree->deselect_all();
+				_update_input_list();
+				return;
+			}
 		} else if (joyb.is_valid() || joym.is_valid() || mb.is_valid()) {
 			show_device = true;
 			_set_current_device(event->get_device());
@@ -84,11 +101,20 @@ void InputEventConfigurationDialog::_set_event(const Ref<InputEvent> &p_event, b
 
 		mod_container->set_visible(show_mods);
 		device_container->set_visible(show_device);
-		physical_key_checkbox->set_visible(show_phys_key);
+		key_mode->set_visible(show_key);
 		additional_options_container->show();
+
+		// Update mode selector based on original key event.
+		Ref<InputEventKey> ko = p_original_event;
+		if (ko.is_valid()) {
+			key_mode->set_item_disabled(KEYMODE_KEYCODE, ko->get_keycode() == Key::NONE);
+			key_mode->set_item_disabled(KEYMODE_PHY_KEYCODE, ko->get_physical_keycode() == Key::NONE);
+			key_mode->set_item_disabled(KEYMODE_UNICODE, ko->get_key_label() == Key::NONE);
+		}
 
 		// Update selected item in input list.
 		if (p_update_input_list_selection && (k.is_valid() || joyb.is_valid() || joym.is_valid() || mb.is_valid())) {
+			in_tree_update = true;
 			TreeItem *category = input_list_tree->get_root()->get_first_child();
 			while (category) {
 				TreeItem *input_item = category->get_first_child();
@@ -97,6 +123,7 @@ void InputEventConfigurationDialog::_set_event(const Ref<InputEvent> &p_event, b
 					// input_type should always be > 0, unless the tree structure has been misconfigured.
 					int input_type = input_item->get_parent()->get_meta("__type", 0);
 					if (input_type == 0) {
+						in_tree_update = false;
 						return;
 					}
 
@@ -112,6 +139,7 @@ void InputEventConfigurationDialog::_set_event(const Ref<InputEvent> &p_event, b
 								category->set_collapsed(false);
 								input_item->select(0);
 								input_list_tree->ensure_cursor_is_visible();
+								in_tree_update = false;
 								return;
 							}
 							input_item = input_item->get_next();
@@ -122,10 +150,12 @@ void InputEventConfigurationDialog::_set_event(const Ref<InputEvent> &p_event, b
 				category->set_collapsed(true); // Event not in this category, so collapse;
 				category = category->get_next();
 			}
+			in_tree_update = false;
 		}
 	} else {
 		// Event is not valid, reset dialog
-		event = p_event;
+		event = Ref<InputEvent>();
+		original_event = Ref<InputEvent>();
 		event_listener->clear_event();
 		event_as_text->set_text(TTR("No Event Configured"));
 
@@ -141,8 +171,10 @@ void InputEventConfigurationDialog::_on_listen_input_changed(const Ref<InputEven
 		return;
 	}
 
-	// Create an editable reference
+	// Create an editable reference and a copy of full event.
 	Ref<InputEvent> received_event = p_event;
+	Ref<InputEvent> received_original_event = received_event->duplicate();
+
 	// Check what the type is and if it is allowed.
 	Ref<InputEventKey> k = received_event;
 	Ref<InputEventJoypadButton> joyb = received_event;
@@ -170,11 +202,15 @@ void InputEventConfigurationDialog::_on_listen_input_changed(const Ref<InputEven
 
 	if (k.is_valid()) {
 		k->set_pressed(false); // To avoid serialisation of 'pressed' property - doesn't matter for actions anyway.
-		// Maintain physical keycode option state
-		if (physical_key_checkbox->is_pressed()) {
-			k->set_keycode(Key::NONE);
-		} else {
+		if (key_mode->get_selected_id() == KEYMODE_KEYCODE) {
 			k->set_physical_keycode(Key::NONE);
+			k->set_key_label(Key::NONE);
+		} else if (key_mode->get_selected_id() == KEYMODE_PHY_KEYCODE) {
+			k->set_keycode(Key::NONE);
+			k->set_key_label(Key::NONE);
+		} else if (key_mode->get_selected_id() == KEYMODE_UNICODE) {
+			k->set_physical_keycode(Key::NONE);
+			k->set_keycode(Key::NONE);
 		}
 	}
 
@@ -186,7 +222,7 @@ void InputEventConfigurationDialog::_on_listen_input_changed(const Ref<InputEven
 	// Maintain device selection.
 	received_event->set_device(_get_current_device());
 
-	_set_event(received_event);
+	_set_event(received_event, received_original_event);
 }
 
 void InputEventConfigurationDialog::_on_listen_focus_changed() {
@@ -326,14 +362,14 @@ void InputEventConfigurationDialog::_mod_toggled(bool p_checked, int p_index) {
 		}
 	}
 
-	_set_event(ie);
+	_set_event(ie, original_event);
 }
 
 void InputEventConfigurationDialog::_autoremap_command_or_control_toggled(bool p_checked) {
 	Ref<InputEventWithModifiers> ie = event;
 	if (ie.is_valid()) {
 		ie->set_command_or_control_autoremap(p_checked);
-		_set_event(ie);
+		_set_event(ie, original_event);
 	}
 
 	if (p_checked) {
@@ -345,26 +381,37 @@ void InputEventConfigurationDialog::_autoremap_command_or_control_toggled(bool p
 	}
 }
 
-void InputEventConfigurationDialog::_physical_keycode_toggled(bool p_checked) {
+void InputEventConfigurationDialog::_key_mode_selected(int p_mode) {
 	Ref<InputEventKey> k = event;
-
-	if (k.is_null()) {
+	Ref<InputEventKey> ko = original_event;
+	if (k.is_null() || ko.is_null()) {
 		return;
 	}
 
-	if (p_checked) {
-		k->set_physical_keycode(k->get_keycode());
-		k->set_keycode(Key::NONE);
-	} else {
-		k->set_keycode((Key)k->get_physical_keycode());
+	if (key_mode->get_selected_id() == KEYMODE_KEYCODE) {
+		k->set_keycode(ko->get_keycode());
 		k->set_physical_keycode(Key::NONE);
+		k->set_key_label(Key::NONE);
+	} else if (key_mode->get_selected_id() == KEYMODE_PHY_KEYCODE) {
+		k->set_keycode(Key::NONE);
+		k->set_physical_keycode(ko->get_physical_keycode());
+		k->set_key_label(Key::NONE);
+	} else if (key_mode->get_selected_id() == KEYMODE_UNICODE) {
+		k->set_physical_keycode(Key::NONE);
+		k->set_keycode(Key::NONE);
+		k->set_key_label(ko->get_key_label());
 	}
 
-	_set_event(k);
+	_set_event(k, original_event);
 }
 
 void InputEventConfigurationDialog::_input_list_item_selected() {
 	TreeItem *selected = input_list_tree->get_selected();
+
+	// Called form _set_event, do not update for a second time.
+	if (in_tree_update) {
+		return;
+	}
 
 	// Invalid tree selection - type only exists on the "category" items, which are not a valid selection.
 	if (selected->has_meta("__type")) {
@@ -379,15 +426,11 @@ void InputEventConfigurationDialog::_input_list_item_selected() {
 			Ref<InputEventKey> k;
 			k.instantiate();
 
-			if (physical_key_checkbox->is_pressed()) {
-				k->set_physical_keycode(keycode);
-				k->set_keycode(Key::NONE);
-			} else {
-				k->set_physical_keycode(Key::NONE);
-				k->set_keycode(keycode);
-			}
+			k->set_physical_keycode(keycode);
+			k->set_keycode(keycode);
+			k->set_key_label(keycode);
 
-			// Maintain modifier state from checkboxes
+			// Maintain modifier state from checkboxes.
 			k->set_alt_pressed(mod_checkboxes[MOD_ALT]->is_pressed());
 			k->set_shift_pressed(mod_checkboxes[MOD_SHIFT]->is_pressed());
 			if (autoremap_command_or_control_checkbox->is_pressed()) {
@@ -397,7 +440,23 @@ void InputEventConfigurationDialog::_input_list_item_selected() {
 				k->set_meta_pressed(mod_checkboxes[MOD_META]->is_pressed());
 			}
 
-			_set_event(k, false);
+			Ref<InputEventKey> ko = k->duplicate();
+
+			if (key_mode->get_selected_id() == KEYMODE_UNICODE) {
+				key_mode->select(KEYMODE_PHY_KEYCODE);
+			}
+
+			if (key_mode->get_selected_id() == KEYMODE_KEYCODE) {
+				k->set_physical_keycode(Key::NONE);
+				k->set_keycode(keycode);
+				k->set_key_label(Key::NONE);
+			} else if (key_mode->get_selected_id() == KEYMODE_PHY_KEYCODE) {
+				k->set_physical_keycode(keycode);
+				k->set_keycode(Key::NONE);
+				k->set_key_label(Key::NONE);
+			}
+
+			_set_event(k, ko, false);
 		} break;
 		case INPUT_MOUSE_BUTTON: {
 			MouseButton idx = (MouseButton)(int)selected->get_meta("__index");
@@ -417,7 +476,7 @@ void InputEventConfigurationDialog::_input_list_item_selected() {
 			// Maintain selected device
 			mb->set_device(_get_current_device());
 
-			_set_event(mb, false);
+			_set_event(mb, mb, false);
 		} break;
 		case INPUT_JOY_BUTTON: {
 			JoyButton idx = (JoyButton)(int)selected->get_meta("__index");
@@ -426,7 +485,7 @@ void InputEventConfigurationDialog::_input_list_item_selected() {
 			// Maintain selected device
 			jb->set_device(_get_current_device());
 
-			_set_event(jb, false);
+			_set_event(jb, jb, false);
 		} break;
 		case INPUT_JOY_MOTION: {
 			JoyAxis axis = (JoyAxis)(int)selected->get_meta("__axis");
@@ -440,7 +499,7 @@ void InputEventConfigurationDialog::_input_list_item_selected() {
 			// Maintain selected device
 			jm->set_device(_get_current_device());
 
-			_set_event(jm, false);
+			_set_event(jm, jm, false);
 		} break;
 	}
 }
@@ -470,7 +529,9 @@ void InputEventConfigurationDialog::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			input_list_search->set_right_icon(input_list_search->get_theme_icon(SNAME("Search"), SNAME("EditorIcons")));
 
-			physical_key_checkbox->set_icon(get_theme_icon(SNAME("KeyboardPhysical"), SNAME("EditorIcons")));
+			key_mode->set_item_icon(KEYMODE_KEYCODE, get_theme_icon(SNAME("Keyboard"), SNAME("EditorIcons")));
+			key_mode->set_item_icon(KEYMODE_PHY_KEYCODE, get_theme_icon(SNAME("KeyboardPhysical"), SNAME("EditorIcons")));
+			key_mode->set_item_icon(KEYMODE_UNICODE, get_theme_icon(SNAME("KeyboardLabel"), SNAME("EditorIcons")));
 
 			icon_cache.keyboard = get_theme_icon(SNAME("Keyboard"), SNAME("EditorIcons"));
 			icon_cache.mouse = get_theme_icon(SNAME("Mouse"), SNAME("EditorIcons"));
@@ -484,22 +545,22 @@ void InputEventConfigurationDialog::_notification(int p_what) {
 
 void InputEventConfigurationDialog::popup_and_configure(const Ref<InputEvent> &p_event) {
 	if (p_event.is_valid()) {
-		_set_event(p_event);
+		_set_event(p_event, p_event->duplicate());
 	} else {
 		// Clear Event
-		_set_event(p_event);
+		_set_event(Ref<InputEvent>(), Ref<InputEvent>());
 
 		// Clear Checkbox Values
 		for (int i = 0; i < MOD_MAX; i++) {
 			mod_checkboxes[i]->set_pressed(false);
 		}
 
-		// Enable the Physical Key checkbox by default to encourage its use.
+		// Enable the Physical Key by default to encourage its use.
 		// Physical Key should be used for most game inputs as it allows keys to work
 		// on non-QWERTY layouts out of the box.
 		// This is especially important for WASD movement layouts.
-		physical_key_checkbox->set_pressed(true);
 
+		key_mode->select(KEYMODE_PHY_KEYCODE);
 		autoremap_command_or_control_checkbox->set_pressed(false);
 
 		// Select "All Devices" by default.
@@ -621,14 +682,15 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	mod_container->hide();
 	additional_options_container->add_child(mod_container);
 
-	// Physical Key Checkbox
+	// Key Mode Selection
 
-	physical_key_checkbox = memnew(CheckBox);
-	physical_key_checkbox->set_text(TTR("Use Physical Keycode"));
-	physical_key_checkbox->set_tooltip_text(TTR("Stores the physical position of the key on the keyboard rather than the key's value. Used for compatibility with non-latin layouts.\nThis should generally be enabled for most game shortcuts, but not in non-game applications."));
-	physical_key_checkbox->connect("toggled", callable_mp(this, &InputEventConfigurationDialog::_physical_keycode_toggled));
-	physical_key_checkbox->hide();
-	additional_options_container->add_child(physical_key_checkbox);
+	key_mode = memnew(OptionButton);
+	key_mode->add_item("Keycode (Latin equvialent)", KEYMODE_KEYCODE);
+	key_mode->add_item("Physical Keycode (poistion of US QWERTY keyboard)", KEYMODE_PHY_KEYCODE);
+	key_mode->add_item("Unicode (case-insencetive)", KEYMODE_UNICODE);
+	key_mode->connect("item_selected", callable_mp(this, &InputEventConfigurationDialog::_key_mode_selected));
+	key_mode->hide();
+	additional_options_container->add_child(key_mode);
 
 	main_vbox->add_child(additional_options_container);
 }

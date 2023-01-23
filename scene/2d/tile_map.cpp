@@ -2568,7 +2568,7 @@ HashMap<Vector2i, TileSet::TerrainsPattern> TileMap::terrain_fill_path(int p_lay
 				}
 			}
 		}
-		ERR_FAIL_COND_V_MSG(found_bit == TileSet::CELL_NEIGHBOR_MAX, output, vformat("Invalid terrain path, %s is not a neighbouring tile of %s", p_path[i + 1], p_path[i]));
+		ERR_FAIL_COND_V_MSG(found_bit == TileSet::CELL_NEIGHBOR_MAX, output, vformat("Invalid terrain path, %s is not a neighboring tile of %s", p_path[i + 1], p_path[i]));
 		neighbor_list.push_back(found_bit);
 	}
 
@@ -3220,7 +3220,7 @@ Vector2i TileMap::local_to_map(const Vector2 &p_local_position) const {
 				ret = ret.floor();
 			}
 
-			// Compute the tile offset, and if we might the output for a neighbour top tile
+			// Compute the tile offset, and if we might the output for a neighbor top tile
 			Vector2 in_tile_pos = raw_pos - ret;
 			bool in_top_left_triangle = (in_tile_pos - Vector2(0.5, 0.0)).cross(Vector2(-0.5, 1.0 / overlapping_ratio - 1)) <= 0;
 			bool in_top_right_triangle = (in_tile_pos - Vector2(0.5, 0.0)).cross(Vector2(0.5, 1.0 / overlapping_ratio - 1)) > 0;
@@ -3284,7 +3284,7 @@ Vector2i TileMap::local_to_map(const Vector2 &p_local_position) const {
 				ret = ret.floor();
 			}
 
-			// Compute the tile offset, and if we might the output for a neighbour top tile
+			// Compute the tile offset, and if we might the output for a neighbor top tile
 			Vector2 in_tile_pos = raw_pos - ret;
 			bool in_top_left_triangle = (in_tile_pos - Vector2(0.0, 0.5)).cross(Vector2(1.0 / overlapping_ratio - 1, -0.5)) > 0;
 			bool in_bottom_left_triangle = (in_tile_pos - Vector2(0.0, 0.5)).cross(Vector2(1.0 / overlapping_ratio - 1, 0.5)) <= 0;

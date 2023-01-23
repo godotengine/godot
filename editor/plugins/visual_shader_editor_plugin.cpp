@@ -5186,7 +5186,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	members_dialog->set_ok_button_text(TTR("Create"));
 	members_dialog->get_ok_button()->connect("pressed", callable_mp(this, &VisualShaderEditor::_member_create));
 	members_dialog->get_ok_button()->set_disabled(true);
-	members_dialog->connect("cancelled", callable_mp(this, &VisualShaderEditor::_member_cancel));
+	members_dialog->connect("canceled", callable_mp(this, &VisualShaderEditor::_member_cancel));
 	add_child(members_dialog);
 
 	// add varyings dialog

@@ -1324,6 +1324,8 @@ void DisplayServerX11::delete_sub_window(WindowID p_id) {
 	}
 #endif
 
+	XDestroyWindow(x11_display, wd.x11_xim_window);
+
 	XUnmapWindow(x11_display, wd.x11_window);
 	XDestroyWindow(x11_display, wd.x11_window);
 	if (wd.xic) {
@@ -2490,24 +2492,39 @@ void DisplayServerX11::window_set_ime_active(const bool p_active, WindowID p_win
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
-	wd.im_active = p_active;
-
 	if (!wd.xic) {
+		return;
+	}
+	if (!wd.focused) {
 		return;
 	}
 
 	// Block events polling while changing input focus
 	// because it triggers some event polling internally.
 	if (p_active) {
-		{
-			MutexLock mutex_lock(events_mutex);
-			XSetICFocus(wd.xic);
+		MutexLock mutex_lock(events_mutex);
+
+		wd.ime_active = true;
+
+		XMapWindow(x11_display, wd.x11_xim_window);
+
+		XWindowAttributes xwa;
+		XSync(x11_display, False);
+		XGetWindowAttributes(x11_display, wd.x11_xim_window, &xwa);
+		if (xwa.map_state == IsViewable) {
+			XSetInputFocus(x11_display, wd.x11_xim_window, RevertToPointerRoot, CurrentTime);
 		}
-		window_set_ime_position(wd.im_position, p_window);
+		XSetICFocus(wd.xic);
 	} else {
 		MutexLock mutex_lock(events_mutex);
 		XUnsetICFocus(wd.xic);
+		XUnmapWindow(x11_display, wd.x11_xim_window);
+		wd.ime_active = false;
+
+		im_text = String();
+		im_selection = Vector2i();
 	}
+	OS_Unix::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_OS_IME_UPDATE);
 }
 
 void DisplayServerX11::window_set_ime_position(const Point2i &p_pos, WindowID p_window) {
@@ -2516,25 +2533,29 @@ void DisplayServerX11::window_set_ime_position(const Point2i &p_pos, WindowID p_
 	ERR_FAIL_COND(!windows.has(p_window));
 	WindowData &wd = windows[p_window];
 
-	wd.im_position = p_pos;
-
 	if (!wd.xic) {
 		return;
 	}
-
-	::XPoint spot;
-	spot.x = short(p_pos.x);
-	spot.y = short(p_pos.y);
-	XVaNestedList preedit_attr = XVaCreateNestedList(0, XNSpotLocation, &spot, nullptr);
-
-	{
-		// Block events polling during this call
-		// because it triggers some event polling internally.
-		MutexLock mutex_lock(events_mutex);
-		XSetICValues(wd.xic, XNPreeditAttributes, preedit_attr, nullptr);
+	if (!wd.focused) {
+		return;
 	}
 
-	XFree(preedit_attr);
+	if (wd.ime_active) {
+		XWindowAttributes xwa;
+		XSync(x11_display, False);
+		XGetWindowAttributes(x11_display, wd.x11_xim_window, &xwa);
+		if (xwa.map_state == IsViewable) {
+			XMoveWindow(x11_display, wd.x11_xim_window, p_pos.x, p_pos.y);
+		}
+	}
+}
+
+Point2i DisplayServerX11::ime_get_selection() const {
+	return im_selection;
+}
+
+String DisplayServerX11::ime_get_text() const {
+	return im_text;
 }
 
 void DisplayServerX11::cursor_set_shape(CursorShape p_shape) {
@@ -2872,6 +2893,16 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 	// X11 functions don't know what const is
 	XKeyEvent *xkeyevent = p_event;
 
+	if (wd.ime_in_progress) {
+		return;
+	}
+	if (wd.ime_suppress_next_keyup) {
+		wd.ime_suppress_next_keyup = false;
+		if (xkeyevent->type != KeyPress) {
+			return;
+		}
+	}
+
 	// This code was pretty difficult to write.
 	// The docs stink and every toolkit seems to
 	// do it in a different way.
@@ -2895,12 +2926,18 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 	KeySym keysym_unicode = 0; // keysym used to find unicode
 
 	// XLookupString returns keysyms usable as nice keycodes.
-	char str[256 + 1];
+	char str[256] = {};
 	XKeyEvent xkeyevent_no_mod = *xkeyevent;
 	xkeyevent_no_mod.state &= ~ShiftMask;
 	xkeyevent_no_mod.state &= ~ControlMask;
-	XLookupString(xkeyevent, str, 256, &keysym_unicode, nullptr);
-	XLookupString(&xkeyevent_no_mod, nullptr, 0, &keysym_keycode, nullptr);
+	XLookupString(xkeyevent, str, 255, &keysym_unicode, nullptr);
+
+	String keysym;
+	if (xkb_keysym_to_utf32 && xkb_keysym_to_upper) {
+		KeySym keysym_unicode_nm = 0; // keysym used to find unicode
+		XLookupString(&xkeyevent_no_mod, nullptr, 0, &keysym_unicode_nm, nullptr);
+		keysym = String::chr(xkb_keysym_to_utf32(xkb_keysym_to_upper(keysym_unicode_nm)));
+	}
 
 	// Meanwhile, XLookupString returns keysyms useful for unicode.
 
@@ -2950,13 +2987,18 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 				_get_key_modifier_state(xkeyevent->state, k);
 
 				k->set_window_id(p_window);
-				k->set_unicode(tmp[i]);
-
 				k->set_pressed(keypress);
 
 				k->set_keycode(keycode);
-
-				k->set_physical_keycode((Key)physical_keycode);
+				k->set_physical_keycode(physical_keycode);
+				if (!keysym.is_empty()) {
+					k->set_key_label(fix_key_label(keysym[0], keycode));
+				} else {
+					k->set_key_label(keycode);
+				}
+				if (keypress) {
+					k->set_unicode(fix_unicode(tmp[i]));
+				}
 
 				k->set_echo(false);
 
@@ -2999,7 +3041,7 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 	// KeyMappingX11 also translates keysym to unicode.
 	// It does a binary search on a table to translate
 	// most properly.
-	unsigned int unicode = keysym_unicode > 0 ? KeyMappingX11::get_unicode_from_keysym(keysym_unicode) : 0;
+	char32_t unicode = keysym_unicode > 0 ? KeyMappingX11::get_unicode_from_keysym(keysym_unicode) : 0;
 
 	/* Phase 4, determine if event must be filtered */
 
@@ -3085,7 +3127,14 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 
 	k->set_keycode(keycode);
 	k->set_physical_keycode((Key)physical_keycode);
-	k->set_unicode(unicode);
+	if (!keysym.is_empty()) {
+		k->set_key_label(fix_key_label(keysym[0], keycode));
+	} else {
+		k->set_key_label(keycode);
+	}
+	if (keypress) {
+		k->set_unicode(fix_unicode(unicode));
+	}
 	k->set_echo(p_echo);
 
 	if (k->get_keycode() == Key::BACKTAB) {
@@ -3237,6 +3286,80 @@ void DisplayServerX11::_handle_selection_request_event(XSelectionRequestEvent *p
 	XFlush(x11_display);
 }
 
+int DisplayServerX11::_xim_preedit_start_callback(::XIM xim, ::XPointer client_data,
+		::XPointer call_data) {
+	DisplayServerX11 *ds = reinterpret_cast<DisplayServerX11 *>(client_data);
+	WindowID window_id = ds->_get_focused_window_or_popup();
+	WindowData &wd = ds->windows[window_id];
+	if (wd.ime_active) {
+		wd.ime_in_progress = true;
+	}
+
+	return -1; // Allow preedit strings of any length (no limit).
+}
+
+void DisplayServerX11::_xim_preedit_done_callback(::XIM xim, ::XPointer client_data,
+		::XPointer call_data) {
+	DisplayServerX11 *ds = reinterpret_cast<DisplayServerX11 *>(client_data);
+	WindowID window_id = ds->_get_focused_window_or_popup();
+	WindowData &wd = ds->windows[window_id];
+	if (wd.ime_active) {
+		wd.ime_in_progress = false;
+		wd.ime_suppress_next_keyup = true;
+	}
+}
+
+void DisplayServerX11::_xim_preedit_draw_callback(::XIM xim, ::XPointer client_data,
+		::XIMPreeditDrawCallbackStruct *call_data) {
+	DisplayServerX11 *ds = reinterpret_cast<DisplayServerX11 *>(client_data);
+	WindowID window_id = ds->_get_focused_window_or_popup();
+	WindowData &wd = ds->windows[window_id];
+
+	XIMText *xim_text = call_data->text;
+	if (xim_text != nullptr) {
+		String changed_text;
+		if (xim_text->encoding_is_wchar) {
+			changed_text = String(xim_text->string.wide_char);
+		} else {
+			changed_text.parse_utf8(xim_text->string.multi_byte);
+		}
+
+		if (call_data->chg_length < 0) {
+			ds->im_text = ds->im_text.substr(0, call_data->chg_first) + changed_text;
+		} else {
+			ds->im_text = ds->im_text.substr(0, call_data->chg_first) + changed_text + ds->im_text.substr(call_data->chg_length);
+		}
+
+		// Find the start and end of the selection.
+		int start = 0, count = 0;
+		for (int i = 0; i < xim_text->length; i++) {
+			if (xim_text->feedback[i] & XIMReverse) {
+				if (count == 0) {
+					start = i;
+					count = 1;
+				} else {
+					count++;
+				}
+			}
+		}
+		if (count > 0) {
+			ds->im_selection = Point2i(start + call_data->chg_first, count);
+		} else {
+			ds->im_selection = Point2i(call_data->caret, 0);
+		}
+	} else {
+		ds->im_text = String();
+		ds->im_selection = Point2i();
+	}
+	if (wd.ime_active) {
+		OS_Unix::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_OS_IME_UPDATE);
+	}
+}
+
+void DisplayServerX11::_xim_preedit_caret_callback(::XIM xim, ::XPointer client_data,
+		::XIMPreeditCaretCallbackStruct *call_data) {
+}
+
 void DisplayServerX11::_xim_destroy_callback(::XIM im, ::XPointer client_data,
 		::XPointer call_data) {
 	WARN_PRINT("Input method stopped");
@@ -3285,10 +3408,6 @@ void DisplayServerX11::_window_changed(XEvent *event) {
 
 	if (new_rect == Rect2i(wd.position, wd.size)) {
 		return;
-	}
-	if (wd.xic) {
-		//  Not portable.
-		window_set_ime_position(Point2(0, 1));
 	}
 
 	wd.position = new_rect.position;
@@ -3637,12 +3756,18 @@ void DisplayServerX11::process_events() {
 			continue;
 		}
 
+		bool ime_window_event = false;
 		WindowID window_id = MAIN_WINDOW_ID;
 
 		// Assign the event to the relevant window
 		for (const KeyValue<WindowID, WindowData> &E : windows) {
 			if (event.xany.window == E.value.x11_window) {
 				window_id = E.key;
+				break;
+			}
+			if (event.xany.window == E.value.x11_xim_window) {
+				window_id = E.key;
+				ime_window_event = true;
 				break;
 			}
 		}
@@ -3659,6 +3784,9 @@ void DisplayServerX11::process_events() {
 						_refresh_device_info();
 					} break;
 					case XI_RawMotion: {
+						if (ime_window_event) {
+							break;
+						}
 						XIRawEvent *raw_event = (XIRawEvent *)event_data;
 						int device_id = raw_event->sourceid;
 
@@ -3761,6 +3889,9 @@ void DisplayServerX11::process_events() {
 #ifdef TOUCH_ENABLED
 					case XI_TouchBegin:
 					case XI_TouchEnd: {
+						if (ime_window_event) {
+							break;
+						}
 						bool is_begin = event_data->evtype == XI_TouchBegin;
 
 						Ref<InputEventScreenTouch> st;
@@ -3791,6 +3922,9 @@ void DisplayServerX11::process_events() {
 					} break;
 
 					case XI_TouchUpdate: {
+						if (ime_window_event) {
+							break;
+						}
 						HashMap<int, Vector2>::Iterator curr_pos_elem = xi.state.find(index);
 						if (!curr_pos_elem) { // Defensive
 							break;
@@ -3817,6 +3951,9 @@ void DisplayServerX11::process_events() {
 		switch (event.type) {
 			case MapNotify: {
 				DEBUG_LOG_X11("[%u] MapNotify window=%lu (%u) \n", frame, event.xmap.window, window_id);
+				if (ime_window_event) {
+					break;
+				}
 
 				const WindowData &wd = windows[window_id];
 
@@ -3837,6 +3974,9 @@ void DisplayServerX11::process_events() {
 
 			case Expose: {
 				DEBUG_LOG_X11("[%u] Expose window=%lu (%u), count='%u' \n", frame, event.xexpose.window, window_id, event.xexpose.count);
+				if (ime_window_event) {
+					break;
+				}
 
 				windows[window_id].fullscreen = _window_fullscreen_check(window_id);
 
@@ -3845,18 +3985,27 @@ void DisplayServerX11::process_events() {
 
 			case NoExpose: {
 				DEBUG_LOG_X11("[%u] NoExpose drawable=%lu (%u) \n", frame, event.xnoexpose.drawable, window_id);
+				if (ime_window_event) {
+					break;
+				}
 
 				windows[window_id].minimized = true;
 			} break;
 
 			case VisibilityNotify: {
 				DEBUG_LOG_X11("[%u] VisibilityNotify window=%lu (%u), state=%u \n", frame, event.xvisibility.window, window_id, event.xvisibility.state);
+				if (ime_window_event) {
+					break;
+				}
 
 				windows[window_id].minimized = _window_minimize_check(window_id);
 			} break;
 
 			case LeaveNotify: {
 				DEBUG_LOG_X11("[%u] LeaveNotify window=%lu (%u), mode='%u' \n", frame, event.xcrossing.window, window_id, event.xcrossing.mode);
+				if (ime_window_event) {
+					break;
+				}
 
 				if (!mouse_mode_grab) {
 					_send_window_event(windows[window_id], WINDOW_EVENT_MOUSE_EXIT);
@@ -3866,6 +4015,9 @@ void DisplayServerX11::process_events() {
 
 			case EnterNotify: {
 				DEBUG_LOG_X11("[%u] EnterNotify window=%lu (%u), mode='%u' \n", frame, event.xcrossing.window, window_id, event.xcrossing.mode);
+				if (ime_window_event) {
+					break;
+				}
 
 				if (!mouse_mode_grab) {
 					_send_window_event(windows[window_id], WINDOW_EVENT_MOUSE_ENTER);
@@ -3874,17 +4026,13 @@ void DisplayServerX11::process_events() {
 
 			case FocusIn: {
 				DEBUG_LOG_X11("[%u] FocusIn window=%lu (%u), mode='%u' \n", frame, event.xfocus.window, window_id, event.xfocus.mode);
+				if (ime_window_event) {
+					break;
+				}
 
 				WindowData &wd = windows[window_id];
 				last_focused_window = window_id;
 				wd.focused = true;
-
-				if (wd.xic) {
-					// Block events polling while changing input focus
-					// because it triggers some event polling internally.
-					MutexLock mutex_lock(events_mutex);
-					XSetICFocus(wd.xic);
-				}
 
 				// Keep track of focus order for overlapping windows.
 				static unsigned int focus_order = 0;
@@ -3925,17 +4073,20 @@ void DisplayServerX11::process_events() {
 
 			case FocusOut: {
 				DEBUG_LOG_X11("[%u] FocusOut window=%lu (%u), mode='%u' \n", frame, event.xfocus.window, window_id, event.xfocus.mode);
-
 				WindowData &wd = windows[window_id];
-
-				wd.focused = false;
-
-				if (wd.xic) {
-					// Block events polling while changing input focus
-					// because it triggers some event polling internally.
+				if (wd.ime_active && event.xfocus.detail == NotifyInferior) {
+					break;
+				}
+				if (wd.ime_active) {
 					MutexLock mutex_lock(events_mutex);
 					XUnsetICFocus(wd.xic);
+					XUnmapWindow(x11_display, wd.x11_xim_window);
+					wd.ime_active = false;
+					im_text = String();
+					im_selection = Vector2i();
+					OS_Unix::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_OS_IME_UPDATE);
 				}
+				wd.focused = false;
 
 				Input::get_singleton()->release_pressed_events();
 				_send_window_event(wd, WINDOW_EVENT_FOCUS_OUT);
@@ -3971,6 +4122,9 @@ void DisplayServerX11::process_events() {
 
 			case ConfigureNotify: {
 				DEBUG_LOG_X11("[%u] ConfigureNotify window=%lu (%u), event=%lu, above=%lu, override_redirect=%u \n", frame, event.xconfigure.window, window_id, event.xconfigure.event, event.xconfigure.above, event.xconfigure.override_redirect);
+				if (event.xconfigure.window == windows[window_id].x11_xim_window) {
+					break;
+				}
 
 				const WindowData &wd = windows[window_id];
 
@@ -3990,6 +4144,9 @@ void DisplayServerX11::process_events() {
 
 			case ButtonPress:
 			case ButtonRelease: {
+				if (ime_window_event) {
+					break;
+				}
 				/* exit in case of a mouse button press */
 				last_timestamp = event.xbutton.time;
 				if (mouse_mode == MOUSE_MODE_CAPTURED) {
@@ -4088,6 +4245,9 @@ void DisplayServerX11::process_events() {
 
 			} break;
 			case MotionNotify: {
+				if (ime_window_event) {
+					break;
+				}
 				// The X11 API requires filtering one-by-one through the motion
 				// notify events, in order to figure out which event is the one
 				// generated by warping the mouse pointer.
@@ -4248,7 +4408,9 @@ void DisplayServerX11::process_events() {
 			} break;
 
 			case SelectionNotify:
-
+				if (ime_window_event) {
+					break;
+				}
 				if (event.xselection.target == requested) {
 					Property p = _read_property(x11_display, windows[window_id].x11_window, XInternAtom(x11_display, "PRIMARY", 0));
 
@@ -4283,7 +4445,9 @@ void DisplayServerX11::process_events() {
 				break;
 
 			case ClientMessage:
-
+				if (ime_window_event) {
+					break;
+				}
 				if ((unsigned int)event.xclient.data.l[0] == (unsigned int)wm_delete) {
 					_send_window_event(windows[window_id], WINDOW_EVENT_CLOSE_REQUEST);
 				}
@@ -4692,6 +4856,7 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 
 	{
 		wd.x11_window = XCreateWindow(x11_display, RootWindow(x11_display, visualInfo.screen), win_rect.position.x, win_rect.position.y, win_rect.size.width > 0 ? win_rect.size.width : 1, win_rect.size.height > 0 ? win_rect.size.height : 1, 0, visualInfo.depth, InputOutput, visualInfo.visual, valuemask, &windowAttributes);
+		wd.x11_xim_window = XCreateWindow(x11_display, wd.x11_window, 0, 0, 1, 1, 0, visualInfo.depth, InputOutput, visualInfo.visual, valuemask, &windowAttributes);
 
 		// Enable receiving notification when the window is initialized (MapNotify)
 		// so the focus can be set at the right time.
@@ -4763,7 +4928,50 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 			// because it triggers some event polling internally.
 			MutexLock mutex_lock(events_mutex);
 
-			wd.xic = XCreateIC(xim, XNInputStyle, xim_style, XNClientWindow, wd.x11_window, XNFocusWindow, wd.x11_window, (char *)nullptr);
+			// Force on-the-spot for the over-the-spot style.
+			if ((xim_style & XIMPreeditPosition) != 0) {
+				xim_style &= ~XIMPreeditPosition;
+				xim_style |= XIMPreeditCallbacks;
+			}
+			if ((xim_style & XIMPreeditCallbacks) != 0) {
+				::XIMCallback preedit_start_callback;
+				preedit_start_callback.client_data = (::XPointer)(this);
+				preedit_start_callback.callback = (::XIMProc)(void *)(_xim_preedit_start_callback);
+
+				::XIMCallback preedit_done_callback;
+				preedit_done_callback.client_data = (::XPointer)(this);
+				preedit_done_callback.callback = (::XIMProc)(_xim_preedit_done_callback);
+
+				::XIMCallback preedit_draw_callback;
+				preedit_draw_callback.client_data = (::XPointer)(this);
+				preedit_draw_callback.callback = (::XIMProc)(_xim_preedit_draw_callback);
+
+				::XIMCallback preedit_caret_callback;
+				preedit_caret_callback.client_data = (::XPointer)(this);
+				preedit_caret_callback.callback = (::XIMProc)(_xim_preedit_caret_callback);
+
+				::XVaNestedList preedit_attributes = XVaCreateNestedList(0,
+						XNPreeditStartCallback, &preedit_start_callback,
+						XNPreeditDoneCallback, &preedit_done_callback,
+						XNPreeditDrawCallback, &preedit_draw_callback,
+						XNPreeditCaretCallback, &preedit_caret_callback,
+						(char *)nullptr);
+
+				wd.xic = XCreateIC(xim,
+						XNInputStyle, xim_style,
+						XNClientWindow, wd.x11_xim_window,
+						XNFocusWindow, wd.x11_xim_window,
+						XNPreeditAttributes, preedit_attributes,
+						(char *)nullptr);
+				XFree(preedit_attributes);
+			} else {
+				wd.xic = XCreateIC(xim,
+						XNInputStyle, xim_style,
+						XNClientWindow, wd.x11_xim_window,
+						XNFocusWindow, wd.x11_xim_window,
+						(char *)nullptr);
+			}
+
 			if (XGetICValues(wd.xic, XNFilterEvents, &im_event_mask, nullptr) != nullptr) {
 				WARN_PRINT("XGetICValues couldn't obtain XNFilterEvents value");
 				XDestroyIC(wd.xic);
@@ -4854,7 +5062,66 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 	return id;
 }
 
+static bool _is_xim_style_supported(const ::XIMStyle &p_style) {
+	const ::XIMStyle supported_preedit = XIMPreeditCallbacks | XIMPreeditPosition | XIMPreeditNothing | XIMPreeditNone;
+	const ::XIMStyle supported_status = XIMStatusNothing | XIMStatusNone;
+
+	// Check preedit style is supported
+	if ((p_style & supported_preedit) == 0) {
+		return false;
+	}
+
+	// Check status style is supported
+	if ((p_style & supported_status) == 0) {
+		return false;
+	}
+
+	return true;
+}
+
+static ::XIMStyle _get_best_xim_style(const ::XIMStyle &p_style_a, const ::XIMStyle &p_style_b) {
+	if (p_style_a == 0) {
+		return p_style_b;
+	}
+	if (p_style_b == 0) {
+		return p_style_a;
+	}
+
+	const ::XIMStyle preedit = XIMPreeditArea | XIMPreeditCallbacks | XIMPreeditPosition | XIMPreeditNothing | XIMPreeditNone;
+	const ::XIMStyle status = XIMStatusArea | XIMStatusCallbacks | XIMStatusNothing | XIMStatusNone;
+
+	::XIMStyle a = p_style_a & preedit;
+	::XIMStyle b = p_style_b & preedit;
+	if (a != b) {
+		// Compare preedit styles.
+		if ((a | b) & XIMPreeditCallbacks) {
+			return a == XIMPreeditCallbacks ? p_style_a : p_style_b;
+		} else if ((a | b) & XIMPreeditPosition) {
+			return a == XIMPreeditPosition ? p_style_a : p_style_b;
+		} else if ((a | b) & XIMPreeditArea) {
+			return a == XIMPreeditArea ? p_style_a : p_style_b;
+		} else if ((a | b) & XIMPreeditNothing) {
+			return a == XIMPreeditNothing ? p_style_a : p_style_b;
+		}
+	} else {
+		// Preedit styles are the same, compare status styles.
+		a = p_style_a & status;
+		b = p_style_b & status;
+
+		if ((a | b) & XIMStatusCallbacks) {
+			return a == XIMStatusCallbacks ? p_style_a : p_style_b;
+		} else if ((a | b) & XIMStatusArea) {
+			return a == XIMStatusArea ? p_style_a : p_style_b;
+		} else if ((a | b) & XIMStatusNothing) {
+			return a == XIMStatusNothing ? p_style_a : p_style_b;
+		}
+	}
+	return p_style_a;
+}
+
 DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error) {
+	KeyMappingX11::initialize();
+
 #ifdef DEBUG_ENABLED
 	int dylibloader_verbose = 1;
 #else
@@ -4869,6 +5136,8 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 		r_error = ERR_UNAVAILABLE;
 		ERR_FAIL_MSG("Can't load XCursor dynamically.");
 	}
+
+	initialize_xkbcommon(dylibloader_verbose); // Optional, used for key_label.
 
 	if (initialize_xext(dylibloader_verbose) != 0) {
 		r_error = ERR_UNAVAILABLE;
@@ -5001,11 +5270,13 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 		if (xim_styles) {
 			xim_style = 0L;
 			for (int i = 0; i < xim_styles->count_styles; i++) {
-				if (xim_styles->supported_styles[i] ==
-						(XIMPreeditNothing | XIMStatusNothing)) {
-					xim_style = xim_styles->supported_styles[i];
-					break;
+				const ::XIMStyle &style = xim_styles->supported_styles[i];
+
+				if (!_is_xim_style_supported(style)) {
+					continue;
 				}
+
+				xim_style = _get_best_xim_style(xim_style, style);
 			}
 
 			XFree(xim_styles);

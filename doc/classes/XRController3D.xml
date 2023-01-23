@@ -13,11 +13,18 @@
 		<link title="XR documentation index">$DOCS_URL/tutorials/xr/index.html</link>
 	</tutorials>
 	<methods>
-		<method name="get_axis" qualifiers="const">
-			<return type="Vector2" />
+		<method name="get_float" qualifiers="const">
+			<return type="float" />
 			<param index="0" name="name" type="StringName" />
 			<description>
-				Returns a [Vector2] for the input with the given [param name]. This is used for thumbsticks and thumbpads found on many controllers.
+				Returns a numeric value for the input with the given [param name]. This is used for triggers and grip sensors.
+			</description>
+		</method>
+		<method name="get_input" qualifiers="const">
+			<return type="Variant" />
+			<param index="0" name="name" type="StringName" />
+			<description>
+				Returns a [Variant] for the input with the given [param name]. This works for any input type, the variant will be typed according to the actions configuration.
 			</description>
 		</method>
 		<method name="get_tracker_hand" qualifiers="const">
@@ -26,11 +33,11 @@
 				Returns the hand holding this controller, if known. See [enum XRPositionalTracker.TrackerHand].
 			</description>
 		</method>
-		<method name="get_value" qualifiers="const">
-			<return type="float" />
+		<method name="get_vector2" qualifiers="const">
+			<return type="Vector2" />
 			<param index="0" name="name" type="StringName" />
 			<description>
-				Returns a numeric value for the input with the given [param name]. This is used for triggers and grip sensors.
+				Returns a [Vector2] for the input with the given [param name]. This is used for thumbsticks and thumbpads found on many controllers.
 			</description>
 		</method>
 		<method name="is_button_pressed" qualifiers="const">
@@ -54,18 +61,18 @@
 				Emitted when a button on this controller is released.
 			</description>
 		</signal>
-		<signal name="input_axis_changed">
-			<param index="0" name="name" type="String" />
-			<param index="1" name="value" type="Vector2" />
-			<description>
-				Emitted when a thumbstick or thumbpad on this controller is moved.
-			</description>
-		</signal>
-		<signal name="input_value_changed">
+		<signal name="input_float_changed">
 			<param index="0" name="name" type="String" />
 			<param index="1" name="value" type="float" />
 			<description>
 				Emitted when a trigger or similar input on this controller changes value.
+			</description>
+		</signal>
+		<signal name="input_vector2_changed">
+			<param index="0" name="name" type="String" />
+			<param index="1" name="value" type="Vector2" />
+			<description>
+				Emitted when a thumbstick or thumbpad on this controller is moved.
 			</description>
 		</signal>
 	</signals>

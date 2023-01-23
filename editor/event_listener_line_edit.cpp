@@ -59,16 +59,42 @@ static const char *_joy_axis_descriptions[(size_t)JoyAxis::MAX * 2] = {
 String EventListenerLineEdit::get_event_text(const Ref<InputEvent> &p_event, bool p_include_device) {
 	ERR_FAIL_COND_V_MSG(p_event.is_null(), String(), "Provided event is not a valid instance of InputEvent");
 
-	String text = p_event->as_text();
-
+	String text;
 	Ref<InputEventKey> key = p_event;
-	if (key.is_valid() && key->is_command_or_control_autoremap()) {
+	if (key.is_valid()) {
+		String mods_text = key->InputEventWithModifiers::as_text();
+		mods_text = mods_text.is_empty() ? mods_text : mods_text + "+";
+		if (key->is_command_or_control_autoremap()) {
 #ifdef MACOS_ENABLED
-		text = text.replace("Command", "Command/Ctrl");
+			mods_text = mods_text.replace("Command", "Command/Ctrl");
 #else
-		text = text.replace("Ctrl", "Command/Ctrl");
+			mods_text = mods_text.replace("Ctrl", "Command/Ctrl");
 #endif
+		}
+
+		if (key->get_keycode() != Key::NONE) {
+			text += mods_text + keycode_get_string(key->get_keycode());
+		}
+		if (key->get_physical_keycode() != Key::NONE) {
+			if (!text.is_empty()) {
+				text += " or ";
+			}
+			text += mods_text + keycode_get_string(key->get_physical_keycode()) + " (" + RTR("Physical") + ")";
+		}
+		if (key->get_key_label() != Key::NONE) {
+			if (!text.is_empty()) {
+				text += " or ";
+			}
+			text += mods_text + keycode_get_string(key->get_key_label()) + " (Unicode)";
+		}
+
+		if (text.is_empty()) {
+			text = "(" + RTR("Unset") + ")";
+		}
+	} else {
+		text = p_event->as_text();
 	}
+
 	Ref<InputEventMouse> mouse = p_event;
 	Ref<InputEventJoypadMotion> jp_motion = p_event;
 	Ref<InputEventJoypadButton> jp_button = p_event;

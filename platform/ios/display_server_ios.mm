@@ -36,6 +36,7 @@
 #import "device_metrics.h"
 #import "godot_view.h"
 #include "ios.h"
+#import "key_mapping_ios.h"
 #import "keyboard_input_view.h"
 #include "os_ios.h"
 #include "tts_ios.h"
@@ -50,33 +51,14 @@ DisplayServerIOS *DisplayServerIOS::get_singleton() {
 }
 
 DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode p_mode, DisplayServer::VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error) {
+	KeyMappingIOS::initialize();
+
 	rendering_driver = p_rendering_driver;
 
 	// Init TTS
 	tts = [[TTS_IOS alloc] init];
 
-#if defined(GLES3_ENABLED)
-	if (rendering_driver == "opengl3") {
-		bool gl_initialization_error = false;
-
-		if (RasterizerGLES3::is_viable() == OK) {
-			RasterizerGLES3::register_config();
-			RasterizerGLES3::make_current();
-		} else {
-			gl_initialization_error = true;
-		}
-
-		if (gl_initialization_error) {
-			OS::get_singleton()->alert(
-					"Your device seems not to support the required OpenGL ES 3.0 version.\n\n",
-					"Unable to initialize OpenGL video driver");
-		}
-	}
-#endif
-
 #if defined(VULKAN_ENABLED)
-	rendering_driver = "vulkan";
-
 	context_vulkan = nullptr;
 	rendering_device_vulkan = nullptr;
 
@@ -91,13 +73,14 @@ DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode 
 		CALayer *layer = [AppDelegate.viewController.godotView initializeRenderingForDriver:@"vulkan"];
 
 		if (!layer) {
-			ERR_FAIL_MSG("Failed to create iOS rendering layer.");
+			ERR_FAIL_MSG("Failed to create iOS Vulkan rendering layer.");
 		}
 
 		Size2i size = Size2i(layer.bounds.size.width, layer.bounds.size.height) * screen_get_max_scale();
 		if (context_vulkan->window_create(MAIN_WINDOW_ID, p_vsync_mode, layer, size.width, size.height) != OK) {
 			memdelete(context_vulkan);
 			context_vulkan = nullptr;
+			r_error = ERR_UNAVAILABLE;
 			ERR_FAIL_MSG("Failed to create Vulkan window.");
 		}
 
@@ -105,6 +88,18 @@ DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode 
 		rendering_device_vulkan->initialize(context_vulkan);
 
 		RendererCompositorRD::make_current();
+	}
+#endif
+
+#if defined(GLES3_ENABLED)
+	if (rendering_driver == "opengl3") {
+		CALayer *layer = [AppDelegate.viewController.godotView initializeRenderingForDriver:@"opengl3"];
+
+		if (!layer) {
+			ERR_FAIL_MSG("Failed to create iOS OpenGLES rendering layer.");
+		}
+
+		RasterizerGLES3::make_current();
 	}
 #endif
 
@@ -233,20 +228,35 @@ void DisplayServerIOS::perform_event(const Ref<InputEvent> &p_event) {
 	Input::get_singleton()->parse_input_event(p_event);
 }
 
-void DisplayServerIOS::touches_cancelled(int p_idx) {
+void DisplayServerIOS::touches_canceled(int p_idx) {
 	touch_press(p_idx, -1, -1, false, false);
 }
 
 // MARK: Keyboard
 
-void DisplayServerIOS::key(Key p_key, char32_t p_char, bool p_pressed) {
+void DisplayServerIOS::key(Key p_key, char32_t p_char, Key p_unshifted, Key p_physical, NSInteger p_modifier, bool p_pressed) {
 	Ref<InputEventKey> ev;
 	ev.instantiate();
 	ev->set_echo(false);
 	ev->set_pressed(p_pressed);
-	ev->set_keycode(p_key);
-	ev->set_physical_keycode(p_key);
-	ev->set_unicode(p_char);
+	ev->set_keycode(fix_keycode(p_char, p_key));
+	if (@available(iOS 13.4, *)) {
+		if (p_key != Key::SHIFT) {
+			ev->set_shift_pressed(p_modifier & UIKeyModifierShift);
+		}
+		if (p_key != Key::CTRL) {
+			ev->set_ctrl_pressed(p_modifier & UIKeyModifierControl);
+		}
+		if (p_key != Key::ALT) {
+			ev->set_alt_pressed(p_modifier & UIKeyModifierAlternate);
+		}
+		if (p_key != Key::META) {
+			ev->set_meta_pressed(p_modifier & UIKeyModifierCommand);
+		}
+	}
+	ev->set_key_label(p_unshifted);
+	ev->set_physical_keycode(p_physical);
+	ev->set_unicode(fix_unicode(p_char));
 	perform_event(ev);
 }
 
@@ -624,6 +634,10 @@ void DisplayServerIOS::virtual_keyboard_show(const String &p_existing_text, cons
 								 cursorEnd:_convert_utf32_offset_to_utf16(p_existing_text, p_cursor_end)];
 }
 
+bool DisplayServerIOS::is_keyboard_active() const {
+	return [AppDelegate.viewController.keyboardView isFirstResponder];
+}
+
 void DisplayServerIOS::virtual_keyboard_hide() {
 	[AppDelegate.viewController.keyboardView resignFirstResponder];
 }
@@ -670,15 +684,18 @@ void DisplayServerIOS::resize_window(CGSize viewSize) {
 void DisplayServerIOS::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 #if defined(VULKAN_ENABLED)
-	context_vulkan->set_vsync_mode(p_window, p_vsync_mode);
+	if (context_vulkan) {
+		context_vulkan->set_vsync_mode(p_window, p_vsync_mode);
+	}
 #endif
 }
 
 DisplayServer::VSyncMode DisplayServerIOS::window_get_vsync_mode(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 #if defined(VULKAN_ENABLED)
-	return context_vulkan->get_vsync_mode(p_window);
-#else
-	return DisplayServer::VSYNC_ENABLED;
+	if (context_vulkan) {
+		return context_vulkan->get_vsync_mode(p_window);
+	}
 #endif
+	return DisplayServer::VSYNC_ENABLED;
 }

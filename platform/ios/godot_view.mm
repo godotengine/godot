@@ -74,16 +74,20 @@ static const float earth_gravity = 9.80665;
 	CALayer<DisplayLayer> *layer;
 
 	if ([driverName isEqualToString:@"vulkan"]) {
+#if defined(TARGET_OS_SIMULATOR) && TARGET_OS_SIMULATOR
+		if (@available(iOS 13, *)) {
+			layer = [GodotMetalLayer layer];
+		} else {
+			return nil;
+		}
+#else
 		layer = [GodotMetalLayer layer];
+#endif
 	} else if ([driverName isEqualToString:@"opengl3"]) {
 		if (@available(iOS 13, *)) {
 			NSLog(@"OpenGL ES is deprecated on iOS 13");
 		}
-#if defined(TARGET_OS_SIMULATOR) && TARGET_OS_SIMULATOR
-		return nil;
-#else
 		layer = [GodotOpenGLLayer layer];
-#endif
 	} else {
 		return nil;
 	}
@@ -238,7 +242,7 @@ static const float earth_gravity = 9.80665;
 		[self.displayLink setPaused:NO];
 	}
 
-	[self.renderingLayer renderDisplayLayer];
+	[self.renderingLayer startRenderDisplayLayer];
 
 	if (!self.renderer) {
 		return;
@@ -258,6 +262,8 @@ static const float earth_gravity = 9.80665;
 
 	[self handleMotion];
 	[self.renderer renderOnView:self];
+
+	[self.renderingLayer stopRenderDisplayLayer];
 }
 
 - (BOOL)canRender {
@@ -391,7 +397,7 @@ static const float earth_gravity = 9.80665;
 			UITouch *touch = [tlist objectAtIndex:i];
 			int tid = [self getTouchIDForTouch:touch];
 			ERR_FAIL_COND(tid == -1);
-			DisplayServerIOS::get_singleton()->touches_cancelled(tid);
+			DisplayServerIOS::get_singleton()->touches_canceled(tid);
 		}
 	}
 	[self clearTouches];

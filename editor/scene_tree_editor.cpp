@@ -677,7 +677,7 @@ bool SceneTreeEditor::_item_matches_all_terms(TreeItem *p_item, PackedStringArra
 	for (int i = 0; i < p_terms.size(); i++) {
 		String term = p_terms[i];
 
-		// Recognise special filter.
+		// Recognize special filter.
 		if (term.contains(":") && !term.get_slicec(':', 0).is_empty()) {
 			String parameter = term.get_slicec(':', 0);
 			String argument = term.get_slicec(':', 1);

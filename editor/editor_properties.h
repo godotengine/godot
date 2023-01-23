@@ -121,7 +121,7 @@ class EditorPropertyTextEnum : public EditorProperty {
 	void _edit_custom_value();
 	void _custom_value_submitted(String p_value);
 	void _custom_value_accepted();
-	void _custom_value_cancelled();
+	void _custom_value_canceled();
 
 protected:
 	virtual void _set_read_only(bool p_read_only) override;

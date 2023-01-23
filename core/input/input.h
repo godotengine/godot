@@ -84,6 +84,7 @@ public:
 private:
 	BitField<MouseButtonMask> mouse_button_mask;
 
+	RBSet<Key> key_label_pressed;
 	RBSet<Key> physical_keys_pressed;
 	RBSet<Key> keys_pressed;
 	RBSet<JoyButton> joy_buttons_pressed;
@@ -247,6 +248,7 @@ public:
 	bool is_anything_pressed() const;
 	bool is_key_pressed(Key p_keycode) const;
 	bool is_physical_key_pressed(Key p_keycode) const;
+	bool is_key_label_pressed(Key p_keycode) const;
 	bool is_mouse_button_pressed(MouseButton p_button) const;
 	bool is_joy_button_pressed(int p_device, JoyButton p_button) const;
 	bool is_action_pressed(const StringName &p_action, bool p_exact = false) const;

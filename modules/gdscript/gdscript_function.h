@@ -505,6 +505,16 @@ private:
 	Vector<Variant> default_arg_values;
 #endif
 
+#ifdef DEBUG_ENABLED
+	Vector<String> operator_names;
+	Vector<String> setter_names;
+	Vector<String> getter_names;
+	Vector<String> builtin_methods_names;
+	Vector<String> constructors_names;
+	Vector<String> utilities_names;
+	Vector<String> gds_utilities_names;
+#endif
+
 	List<StackDebug> stack_debug;
 
 	Variant _get_default_variant_for_data_type(const GDScriptDataType &p_data_type);

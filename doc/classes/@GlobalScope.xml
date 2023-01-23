@@ -1767,29 +1767,14 @@
 		<constant name="KEY_KP_9" value="4194447" enum="Key">
 			Number 9 on the numeric keypad.
 		</constant>
-		<constant name="KEY_SUPER_L" value="4194368" enum="Key">
-			Left Super key (Windows key).
-		</constant>
-		<constant name="KEY_SUPER_R" value="4194369" enum="Key">
-			Right Super key (Windows key).
-		</constant>
 		<constant name="KEY_MENU" value="4194370" enum="Key">
 			Context menu key.
 		</constant>
-		<constant name="KEY_HYPER_L" value="4194371" enum="Key">
-			Left Hyper key.
-		</constant>
-		<constant name="KEY_HYPER_R" value="4194372" enum="Key">
-			Right Hyper key.
+		<constant name="KEY_HYPER" value="4194371" enum="Key">
+			Hyper key. (On Linux/X11 only).
 		</constant>
 		<constant name="KEY_HELP" value="4194373" enum="Key">
 			Help key.
-		</constant>
-		<constant name="KEY_DIRECTION_L" value="4194374" enum="Key">
-			Left Direction key.
-		</constant>
-		<constant name="KEY_DIRECTION_R" value="4194375" enum="Key">
-			Right Direction key.
 		</constant>
 		<constant name="KEY_BACK" value="4194376" enum="Key">
 			Media back key. Not to be confused with the Back button on an Android device.
@@ -1811,21 +1796,6 @@
 		</constant>
 		<constant name="KEY_VOLUMEUP" value="4194382" enum="Key">
 			Volume up key.
-		</constant>
-		<constant name="KEY_BASSBOOST" value="4194383" enum="Key">
-			Bass Boost key.
-		</constant>
-		<constant name="KEY_BASSUP" value="4194384" enum="Key">
-			Bass up key.
-		</constant>
-		<constant name="KEY_BASSDOWN" value="4194385" enum="Key">
-			Bass down key.
-		</constant>
-		<constant name="KEY_TREBLEUP" value="4194386" enum="Key">
-			Treble up key.
-		</constant>
-		<constant name="KEY_TREBLEDOWN" value="4194387" enum="Key">
-			Treble down key.
 		</constant>
 		<constant name="KEY_MEDIAPLAY" value="4194388" enum="Key">
 			Media play key.
@@ -1911,7 +1881,7 @@
 		<constant name="KEY_LAUNCHF" value="4194415" enum="Key">
 			Launch Shortcut F key.
 		</constant>
-		<constant name="KEY_UNKNOWN" value="16777215" enum="Key">
+		<constant name="KEY_UNKNOWN" value="8388607" enum="Key">
 			Unknown key.
 		</constant>
 		<constant name="KEY_SPACE" value="32" enum="Key">
@@ -2121,203 +2091,23 @@
 		<constant name="KEY_ASCIITILDE" value="126" enum="Key">
 			~ key.
 		</constant>
-		<constant name="KEY_NOBREAKSPACE" value="160" enum="Key">
-			Non-breakable space key.
-		</constant>
-		<constant name="KEY_EXCLAMDOWN" value="161" enum="Key">
-			¡ key.
-		</constant>
-		<constant name="KEY_CENT" value="162" enum="Key">
-			¢ key.
-		</constant>
-		<constant name="KEY_STERLING" value="163" enum="Key">
-			£ key.
-		</constant>
-		<constant name="KEY_CURRENCY" value="164" enum="Key">
-			¤ key.
-		</constant>
 		<constant name="KEY_YEN" value="165" enum="Key">
 			¥ key.
-		</constant>
-		<constant name="KEY_BROKENBAR" value="166" enum="Key">
-			¦ key.
 		</constant>
 		<constant name="KEY_SECTION" value="167" enum="Key">
 			§ key.
 		</constant>
-		<constant name="KEY_DIAERESIS" value="168" enum="Key">
-			¨ key.
+		<constant name="KEY_GLOBE" value="4194416" enum="Key">
+			"Globe" key on Mac / iPad keyboard.
 		</constant>
-		<constant name="KEY_COPYRIGHT" value="169" enum="Key">
-			© key.
+		<constant name="KEY_KEYBOARD" value="4194417" enum="Key">
+			"On-screen keyboard" key iPad keyboard.
 		</constant>
-		<constant name="KEY_ORDFEMININE" value="170" enum="Key">
-			ª key.
+		<constant name="KEY_JIS_EISU" value="4194418" enum="Key">
+			英数 key on Mac keyboard.
 		</constant>
-		<constant name="KEY_GUILLEMOTLEFT" value="171" enum="Key">
-			« key.
-		</constant>
-		<constant name="KEY_NOTSIGN" value="172" enum="Key">
-			¬ key.
-		</constant>
-		<constant name="KEY_HYPHEN" value="173" enum="Key">
-			Soft hyphen key.
-		</constant>
-		<constant name="KEY_REGISTERED" value="174" enum="Key">
-			® key.
-		</constant>
-		<constant name="KEY_MACRON" value="175" enum="Key">
-			¯ key.
-		</constant>
-		<constant name="KEY_DEGREE" value="176" enum="Key">
-			° key.
-		</constant>
-		<constant name="KEY_PLUSMINUS" value="177" enum="Key">
-			± key.
-		</constant>
-		<constant name="KEY_TWOSUPERIOR" value="178" enum="Key">
-			² key.
-		</constant>
-		<constant name="KEY_THREESUPERIOR" value="179" enum="Key">
-			³ key.
-		</constant>
-		<constant name="KEY_ACUTE" value="180" enum="Key">
-			´ key.
-		</constant>
-		<constant name="KEY_MU" value="181" enum="Key">
-			µ key.
-		</constant>
-		<constant name="KEY_PARAGRAPH" value="182" enum="Key">
-			¶ key.
-		</constant>
-		<constant name="KEY_PERIODCENTERED" value="183" enum="Key">
-			· key.
-		</constant>
-		<constant name="KEY_CEDILLA" value="184" enum="Key">
-			¸ key.
-		</constant>
-		<constant name="KEY_ONESUPERIOR" value="185" enum="Key">
-			¹ key.
-		</constant>
-		<constant name="KEY_MASCULINE" value="186" enum="Key">
-			º key.
-		</constant>
-		<constant name="KEY_GUILLEMOTRIGHT" value="187" enum="Key">
-			» key.
-		</constant>
-		<constant name="KEY_ONEQUARTER" value="188" enum="Key">
-			¼ key.
-		</constant>
-		<constant name="KEY_ONEHALF" value="189" enum="Key">
-			½ key.
-		</constant>
-		<constant name="KEY_THREEQUARTERS" value="190" enum="Key">
-			¾ key.
-		</constant>
-		<constant name="KEY_QUESTIONDOWN" value="191" enum="Key">
-			¿ key.
-		</constant>
-		<constant name="KEY_AGRAVE" value="192" enum="Key">
-			À key.
-		</constant>
-		<constant name="KEY_AACUTE" value="193" enum="Key">
-			Á key.
-		</constant>
-		<constant name="KEY_ACIRCUMFLEX" value="194" enum="Key">
-			Â key.
-		</constant>
-		<constant name="KEY_ATILDE" value="195" enum="Key">
-			Ã key.
-		</constant>
-		<constant name="KEY_ADIAERESIS" value="196" enum="Key">
-			Ä key.
-		</constant>
-		<constant name="KEY_ARING" value="197" enum="Key">
-			Å key.
-		</constant>
-		<constant name="KEY_AE" value="198" enum="Key">
-			Æ key.
-		</constant>
-		<constant name="KEY_CCEDILLA" value="199" enum="Key">
-			Ç key.
-		</constant>
-		<constant name="KEY_EGRAVE" value="200" enum="Key">
-			È key.
-		</constant>
-		<constant name="KEY_EACUTE" value="201" enum="Key">
-			É key.
-		</constant>
-		<constant name="KEY_ECIRCUMFLEX" value="202" enum="Key">
-			Ê key.
-		</constant>
-		<constant name="KEY_EDIAERESIS" value="203" enum="Key">
-			Ë key.
-		</constant>
-		<constant name="KEY_IGRAVE" value="204" enum="Key">
-			Ì key.
-		</constant>
-		<constant name="KEY_IACUTE" value="205" enum="Key">
-			Í key.
-		</constant>
-		<constant name="KEY_ICIRCUMFLEX" value="206" enum="Key">
-			Î key.
-		</constant>
-		<constant name="KEY_IDIAERESIS" value="207" enum="Key">
-			Ï key.
-		</constant>
-		<constant name="KEY_ETH" value="208" enum="Key">
-			Ð key.
-		</constant>
-		<constant name="KEY_NTILDE" value="209" enum="Key">
-			Ñ key.
-		</constant>
-		<constant name="KEY_OGRAVE" value="210" enum="Key">
-			Ò key.
-		</constant>
-		<constant name="KEY_OACUTE" value="211" enum="Key">
-			Ó key.
-		</constant>
-		<constant name="KEY_OCIRCUMFLEX" value="212" enum="Key">
-			Ô key.
-		</constant>
-		<constant name="KEY_OTILDE" value="213" enum="Key">
-			Õ key.
-		</constant>
-		<constant name="KEY_ODIAERESIS" value="214" enum="Key">
-			Ö key.
-		</constant>
-		<constant name="KEY_MULTIPLY" value="215" enum="Key">
-			× key.
-		</constant>
-		<constant name="KEY_OOBLIQUE" value="216" enum="Key">
-			Ø key.
-		</constant>
-		<constant name="KEY_UGRAVE" value="217" enum="Key">
-			Ù key.
-		</constant>
-		<constant name="KEY_UACUTE" value="218" enum="Key">
-			Ú key.
-		</constant>
-		<constant name="KEY_UCIRCUMFLEX" value="219" enum="Key">
-			Û key.
-		</constant>
-		<constant name="KEY_UDIAERESIS" value="220" enum="Key">
-			Ü key.
-		</constant>
-		<constant name="KEY_YACUTE" value="221" enum="Key">
-			Ý key.
-		</constant>
-		<constant name="KEY_THORN" value="222" enum="Key">
-			Þ key.
-		</constant>
-		<constant name="KEY_SSHARP" value="223" enum="Key">
-			ß key.
-		</constant>
-		<constant name="KEY_DIVISION" value="247" enum="Key">
-			÷ key.
-		</constant>
-		<constant name="KEY_YDIAERESIS" value="255" enum="Key">
-			ÿ key.
+		<constant name="KEY_JIS_KANA" value="4194419" enum="Key">
+			かな key on Mac keyboard.
 		</constant>
 		<constant name="KEY_CODE_MASK" value="8388607" enum="KeyModifierMask" is_bitfield="true">
 			Key Code mask.

@@ -434,7 +434,8 @@ void DisplayServerMacOS::_process_key_events() {
 			k->set_pressed(ke.pressed);
 			k->set_echo(ke.echo);
 			k->set_keycode(ke.keycode);
-			k->set_physical_keycode((Key)ke.physical_keycode);
+			k->set_physical_keycode(ke.physical_keycode);
+			k->set_key_label(ke.key_label);
 			k->set_unicode(ke.unicode);
 
 			_push_input(k);
@@ -449,6 +450,7 @@ void DisplayServerMacOS::_process_key_events() {
 				k->set_echo(ke.echo);
 				k->set_keycode(Key::NONE);
 				k->set_physical_keycode(Key::NONE);
+				k->set_key_label(Key::NONE);
 				k->set_unicode(ke.unicode);
 
 				_push_input(k);
@@ -461,7 +463,8 @@ void DisplayServerMacOS::_process_key_events() {
 				k->set_pressed(ke.pressed);
 				k->set_echo(ke.echo);
 				k->set_keycode(ke.keycode);
-				k->set_physical_keycode((Key)ke.physical_keycode);
+				k->set_physical_keycode(ke.physical_keycode);
+				k->set_key_label(ke.key_label);
 
 				if (i + 1 < key_event_pos && key_event_buffer[i + 1].keycode == Key::NONE) {
 					k->set_unicode(key_event_buffer[i + 1].unicode);
@@ -633,6 +636,7 @@ void DisplayServerMacOS::send_event(NSEvent *p_event) {
 			k->set_pressed(true);
 			k->set_keycode(Key::PERIOD);
 			k->set_physical_keycode(Key::PERIOD);
+			k->set_key_label(Key::PERIOD);
 			k->set_echo([p_event isARepeat]);
 
 			Input::get_singleton()->parse_input_event(k);
@@ -672,6 +676,12 @@ void DisplayServerMacOS::update_mouse_pos(DisplayServerMacOS::WindowData &p_wd, 
 	p_wd.mouse_pos.x = p_location_in_window.x * scale;
 	p_wd.mouse_pos.y = (content_rect.size.height - p_location_in_window.y) * scale;
 	Input::get_singleton()->set_mouse_position(p_wd.mouse_pos);
+}
+
+void DisplayServerMacOS::pop_last_key_event() {
+	if (key_event_pos > 0) {
+		key_event_pos--;
+	}
 }
 
 void DisplayServerMacOS::push_to_key_event_buffer(const DisplayServerMacOS::KeyEvent &p_event) {
@@ -3142,7 +3152,9 @@ ObjectID DisplayServerMacOS::window_get_attached_instance_id(WindowID p_window) 
 
 void DisplayServerMacOS::gl_window_make_current(DisplayServer::WindowID p_window_id) {
 #if defined(GLES3_ENABLED)
-	gl_manager->window_make_current(p_window_id);
+	if (gl_manager) {
+		gl_manager->window_make_current(p_window_id);
+	}
 #endif
 }
 
@@ -3449,14 +3461,14 @@ String DisplayServerMacOS::keyboard_get_layout_name(int p_index) const {
 }
 
 Key DisplayServerMacOS::keyboard_get_keycode_from_physical(Key p_keycode) const {
-	if (p_keycode == Key::PAUSE) {
+	if (p_keycode == Key::PAUSE || p_keycode == Key::NONE) {
 		return p_keycode;
 	}
 
 	Key modifiers = p_keycode & KeyModifierMask::MODIFIER_MASK;
 	Key keycode_no_mod = p_keycode & KeyModifierMask::CODE_MASK;
-	unsigned int macos_keycode = KeyMappingMacOS::unmap_key((Key)keycode_no_mod);
-	return (Key)(KeyMappingMacOS::remap_key(macos_keycode, 0) | modifiers);
+	unsigned int macos_keycode = KeyMappingMacOS::unmap_key(keycode_no_mod);
+	return (Key)(KeyMappingMacOS::remap_key(macos_keycode, 0, false) | modifiers);
 }
 
 void DisplayServerMacOS::process_events() {
@@ -3768,6 +3780,8 @@ bool DisplayServerMacOS::mouse_process_popups(bool p_close) {
 }
 
 DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error) {
+	KeyMappingMacOS::initialize();
+
 	Input::get_singleton()->set_event_dispatch_function(_dispatch_input_events);
 
 	r_error = OK;

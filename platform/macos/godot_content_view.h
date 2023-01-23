@@ -64,6 +64,7 @@
 	bool mouse_down_control;
 	bool ignore_momentum_scroll;
 	bool last_pen_inverted;
+	bool ime_suppress_next_keyup;
 	id layer_delegate;
 }
 

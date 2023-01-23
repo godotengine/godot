@@ -952,9 +952,9 @@ void LineEdit::_notification(int p_what) {
 				// Prevent carets from disappearing at theme scales below 1.0 (if the caret width is 1).
 				const int caret_width = theme_cache.caret_width * MAX(1, theme_cache.base_scale);
 
-				if (ime_text.length() == 0) {
+				if (ime_text.is_empty() || ime_selection.y == 0) {
 					// Normal caret.
-					CaretInfo caret = TS->shaped_text_get_carets(text_rid, caret_column);
+					CaretInfo caret = TS->shaped_text_get_carets(text_rid, ime_text.is_empty() ? caret_column : caret_column + ime_selection.x);
 					if (using_placeholder || (caret.l_caret == Rect2() && caret.t_caret == Rect2())) {
 						// No carets, add one at the start.
 						int h = theme_cache.font->get_height(theme_cache.font_size);
@@ -980,6 +980,7 @@ void LineEdit::_notification(int p_what) {
 								}
 							} break;
 						}
+
 						RenderingServer::get_singleton()->canvas_item_add_rect(ci, caret.l_caret, caret_color);
 					} else {
 						if (caret.l_caret != Rect2() && caret.l_dir == TextServer::DIRECTION_AUTO) {
@@ -1009,7 +1010,8 @@ void LineEdit::_notification(int p_what) {
 
 						RenderingServer::get_singleton()->canvas_item_add_rect(ci, caret.t_caret, caret_color);
 					}
-				} else {
+				}
+				if (!ime_text.is_empty()) {
 					{
 						// IME intermediate text range.
 						Vector<Vector2> sel = TS->shaped_text_get_selection(text_rid, caret_column, caret_column + ime_text.length());
@@ -1030,20 +1032,22 @@ void LineEdit::_notification(int p_what) {
 					}
 					{
 						// IME caret.
-						Vector<Vector2> sel = TS->shaped_text_get_selection(text_rid, caret_column + ime_selection.x, caret_column + ime_selection.x + ime_selection.y);
-						for (int i = 0; i < sel.size(); i++) {
-							Rect2 rect = Rect2(sel[i].x + ofs.x, ofs.y, sel[i].y - sel[i].x, text_height);
-							if (rect.position.x + rect.size.x <= x_ofs || rect.position.x > ofs_max) {
-								continue;
+						if (ime_selection.y > 0) {
+							Vector<Vector2> sel = TS->shaped_text_get_selection(text_rid, caret_column + ime_selection.x, caret_column + ime_selection.x + ime_selection.y);
+							for (int i = 0; i < sel.size(); i++) {
+								Rect2 rect = Rect2(sel[i].x + ofs.x, ofs.y, sel[i].y - sel[i].x, text_height);
+								if (rect.position.x + rect.size.x <= x_ofs || rect.position.x > ofs_max) {
+									continue;
+								}
+								if (rect.position.x < x_ofs) {
+									rect.size.x -= (x_ofs - rect.position.x);
+									rect.position.x = x_ofs;
+								} else if (rect.position.x + rect.size.x > ofs_max) {
+									rect.size.x = ofs_max - rect.position.x;
+								}
+								rect.size.y = caret_width * 3;
+								RenderingServer::get_singleton()->canvas_item_add_rect(ci, rect, caret_color);
 							}
-							if (rect.position.x < x_ofs) {
-								rect.size.x -= (x_ofs - rect.position.x);
-								rect.position.x = x_ofs;
-							} else if (rect.position.x + rect.size.x > ofs_max) {
-								rect.size.x = ofs_max - rect.position.x;
-							}
-							rect.size.y = caret_width * 3;
-							RenderingServer::get_singleton()->canvas_item_add_rect(ci, rect, caret_color);
 						}
 					}
 				}
@@ -1052,7 +1056,8 @@ void LineEdit::_notification(int p_what) {
 			if (has_focus()) {
 				if (get_viewport()->get_window_id() != DisplayServer::INVALID_WINDOW_ID && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_IME)) {
 					DisplayServer::get_singleton()->window_set_ime_active(true, get_viewport()->get_window_id());
-					DisplayServer::get_singleton()->window_set_ime_position(get_global_position() + Point2(using_placeholder ? 0 : x_ofs, y_ofs + TS->shaped_text_get_size(text_rid).y), get_viewport()->get_window_id());
+					Point2 pos = Point2(get_caret_pixel_pos().x, (get_size().y + theme_cache.font->get_height(theme_cache.font_size)) / 2);
+					DisplayServer::get_singleton()->window_set_ime_position(get_global_position() + pos, get_viewport()->get_window_id());
 				}
 			}
 		} break;
@@ -1071,8 +1076,8 @@ void LineEdit::_notification(int p_what) {
 
 			if (get_viewport()->get_window_id() != DisplayServer::INVALID_WINDOW_ID && DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_IME)) {
 				DisplayServer::get_singleton()->window_set_ime_active(true, get_viewport()->get_window_id());
-				Point2 column = Point2(get_caret_column(), 1) * get_minimum_size().height;
-				DisplayServer::get_singleton()->window_set_ime_position(get_global_position() + column, get_viewport()->get_window_id());
+				Point2 pos = Point2(get_caret_pixel_pos().x, (get_size().y + theme_cache.font->get_height(theme_cache.font_size)) / 2);
+				DisplayServer::get_singleton()->window_set_ime_position(get_global_position() + pos, get_viewport()->get_window_id());
 			}
 
 			show_virtual_keyboard();
@@ -1103,6 +1108,11 @@ void LineEdit::_notification(int p_what) {
 			if (has_focus()) {
 				ime_text = DisplayServer::get_singleton()->ime_get_text();
 				ime_selection = DisplayServer::get_singleton()->ime_get_selection();
+
+				if (!ime_text.is_empty()) {
+					selection_delete();
+				}
+
 				_shape();
 				set_caret_column(caret_column); // Update scroll_offset
 
@@ -2576,7 +2586,7 @@ LineEdit::LineEdit(const String &p_placeholder) {
 
 	set_placeholder(p_placeholder);
 
-	set_editable(true); // Initialise to opposite first, so we get past the early-out in set_editable.
+	set_editable(true); // Initialize to opposite first, so we get past the early-out in set_editable.
 }
 
 LineEdit::~LineEdit() {

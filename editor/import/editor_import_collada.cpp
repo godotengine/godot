@@ -734,7 +734,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ImporterMesh> &p
 		/* CREATE PRIMITIVE ARRAY */
 		/**************************/
 
-		// The way collada uses indices is more optimal, and friendlier with 3D modelling software,
+		// The way collada uses indices is more optimal, and friendlier with 3D modeling software,
 		// because it can index everything, not only vertices (similar to how the WII works).
 		// This is, however, more incompatible with standard video cards, so arrays must be converted.
 		// Must convert to GL/DX format.

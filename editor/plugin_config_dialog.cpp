@@ -92,7 +92,7 @@ void PluginConfigDialog::_on_confirmed() {
 	_clear_fields();
 }
 
-void PluginConfigDialog::_on_cancelled() {
+void PluginConfigDialog::_on_canceled() {
 	_clear_fields();
 }
 
@@ -162,7 +162,7 @@ void PluginConfigDialog::_notification(int p_what) {
 
 		case NOTIFICATION_READY: {
 			connect("confirmed", callable_mp(this, &PluginConfigDialog::_on_confirmed));
-			get_cancel_button()->connect("pressed", callable_mp(this, &PluginConfigDialog::_on_cancelled));
+			get_cancel_button()->connect("pressed", callable_mp(this, &PluginConfigDialog::_on_canceled));
 		} break;
 	}
 }

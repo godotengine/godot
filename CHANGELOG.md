@@ -404,7 +404,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 #### Shaders
 
-- Removed `SCREEN_TEXTURE` and `DEPTH_TEXTURE` in favour of uniform hints `hint_screen_texture` and `hint_depth_texture`.
+- Removed `SCREEN_TEXTURE` and `DEPTH_TEXTURE` in favor of uniform hints `hint_screen_texture` and `hint_depth_texture`.
 
 ### Fixed
 

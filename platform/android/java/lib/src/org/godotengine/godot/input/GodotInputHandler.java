@@ -129,12 +129,10 @@ public class GodotInputHandler implements InputManager.InputDeviceListener {
 			}
 		} else {
 			// getKeyCode(): The physical key that was pressed.
-			// Godot's keycodes match the ASCII codes, so for single byte unicode characters,
-			// we can use the unmodified unicode character to determine Godot's keycode.
-			final int keycode = event.getUnicodeChar(0);
 			final int physical_keycode = event.getKeyCode();
 			final int unicode = event.getUnicodeChar();
-			GodotLib.key(keycode, physical_keycode, unicode, false);
+			final int key_label = event.getDisplayLabel();
+			GodotLib.key(physical_keycode, unicode, key_label, false);
 		};
 
 		return true;
@@ -166,10 +164,10 @@ public class GodotInputHandler implements InputManager.InputDeviceListener {
 				GodotLib.joybutton(godotJoyId, button, true);
 			}
 		} else {
-			final int keycode = event.getUnicodeChar(0);
 			final int physical_keycode = event.getKeyCode();
 			final int unicode = event.getUnicodeChar();
-			GodotLib.key(keycode, physical_keycode, unicode, true);
+			final int key_label = event.getDisplayLabel();
+			GodotLib.key(physical_keycode, unicode, key_label, true);
 		}
 
 		return true;
