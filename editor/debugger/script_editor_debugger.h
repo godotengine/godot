@@ -210,6 +210,8 @@ private:
 
 	void _breakpoint_tree_clicked();
 
+	String _format_frame_text(const ScriptLanguage::StackInfo *info);
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
