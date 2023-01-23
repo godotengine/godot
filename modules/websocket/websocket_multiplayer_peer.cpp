@@ -237,7 +237,6 @@ void WebSocketMultiplayerPeer::_poll_client() {
 				}
 				connection_status = CONNECTION_CONNECTED;
 				emit_signal("peer_connected", 1);
-				emit_signal("connection_succeeded");
 			} else {
 				return; // Still waiting for an ID.
 			}

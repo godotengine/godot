@@ -2986,7 +2986,6 @@ bool AnimationTrackEdit::can_drop_data(const Point2 &p_point, const Variant &p_d
 	}
 
 	const_cast<AnimationTrackEdit *>(this)->queue_redraw();
-	const_cast<AnimationTrackEdit *>(this)->emit_signal(SNAME("drop_attempted"), track);
 
 	return true;
 }

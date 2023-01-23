@@ -410,11 +410,6 @@
 				Emitted when an item is collapsed by a click on the folding arrow.
 			</description>
 		</signal>
-		<signal name="item_custom_button_pressed">
-			<description>
-				Emitted when a custom button is pressed (i.e. in a [constant TreeItem.CELL_MODE_CUSTOM] mode cell).
-			</description>
-		</signal>
 		<signal name="item_edited">
 			<description>
 				Emitted when an item is edited.

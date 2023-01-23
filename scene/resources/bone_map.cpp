@@ -152,7 +152,6 @@ void BoneMap::_validate_bone_map() {
 	} else {
 		bone_map.clear();
 	}
-	emit_signal("retarget_option_updated");
 }
 
 void BoneMap::_bind_methods() {
