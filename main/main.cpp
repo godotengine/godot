@@ -2165,7 +2165,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	if (id) {
 		agile_input_event_flushing = GLOBAL_DEF("input_devices/buffering/agile_event_flushing", false);
 
-		if (bool(GLOBAL_DEF("input_devices/pointing/emulate_touch_from_mouse", false)) &&
+		if (bool(GLOBAL_DEF_BASIC("input_devices/pointing/emulate_touch_from_mouse", false)) &&
 				!(editor || project_manager)) {
 			if (!DisplayServer::get_singleton()->is_touchscreen_available()) {
 				//only if no touchscreen ui hint, set emulation
@@ -2173,7 +2173,7 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 			}
 		}
 
-		id->set_emulate_mouse_from_touch(bool(GLOBAL_DEF("input_devices/pointing/emulate_mouse_from_touch", true)));
+		id->set_emulate_mouse_from_touch(bool(GLOBAL_DEF_BASIC("input_devices/pointing/emulate_mouse_from_touch", true)));
 	}
 
 	MAIN_PRINT("Main: Load Translations and Remaps");
