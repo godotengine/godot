@@ -2135,7 +2135,7 @@ static void _register_variant_builtin_methods() {
 	bind_static_method(Projection, create_depth_correction, sarray("flip_y"), varray());
 	bind_static_method(Projection, create_light_atlas_rect, sarray("rect"), varray());
 	bind_static_method(Projection, create_perspective, sarray("fovy", "aspect", "z_near", "z_far", "flip_fov"), varray(false));
-	bind_static_method(Projection, create_perspective_hmd, sarray("fovy", "aspect", "z_near", "z_far", "flip_fov", "eye", "intraocular_dist", " convergence_dist"), varray());
+	bind_static_method(Projection, create_perspective_hmd, sarray("fovy", "aspect", "z_near", "z_far", "flip_fov", "eye", "intraocular_dist", "convergence_dist"), varray());
 	bind_static_method(Projection, create_for_hmd, sarray("eye", "aspect", "intraocular_dist", "display_width", "display_to_lens", "oversample", "z_near", "z_far"), varray());
 	bind_static_method(Projection, create_orthogonal, sarray("left", "right", "bottom", "top", "z_near", "z_far"), varray());
 	bind_static_method(Projection, create_orthogonal_aspect, sarray("size", "aspect", "z_near", "z_far", "flip_fov"), varray(false));
