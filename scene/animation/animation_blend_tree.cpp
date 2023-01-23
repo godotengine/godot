@@ -189,7 +189,7 @@ float AnimationNodeOneShot::get_autorestart_random_delay() const {
 void AnimationNodeOneShot::set_mix_mode(MixMode p_mix) {
 	mix = p_mix;
 }
-AnimationNodeOneShot::MixMode AnimationNodeOneShot::get_mix_mode() const {
+AnimationNode::MixMode AnimationNodeOneShot::get_mix_mode() const {
 	return mix;
 }
 
@@ -359,6 +359,50 @@ AnimationNodeOneShot::AnimationNodeOneShot() {
 	time_to_restart = "time_to_restart";
 }
 
+
+////////////////////////////////////////////////
+
+void AnimationNodeSub2::get_parameter_list(List<PropertyInfo> *r_list) const {
+}
+
+Variant AnimationNodeSub2::get_parameter_default_value(const StringName &p_parameter) const {
+	return 0;
+}
+
+String AnimationNodeSub2::get_caption() const {
+	return "Sub2";
+}
+void AnimationNodeSub2::set_use_sync(bool p_sync) {
+	sync = p_sync;
+}
+
+bool AnimationNodeSub2::is_using_sync() const {
+	return sync;
+}
+
+bool AnimationNodeSub2::has_filter() const {
+	return true;
+}
+
+float AnimationNodeSub2::process(float p_time, bool p_seek) {
+	float rem0 = blend_input(0, p_time, p_seek, 1.0, FILTER_IGNORE, !sync, MIX_MODE_BLEND);
+	blend_input(1, p_time, p_seek, 1.0, FILTER_PASS, !sync, MIX_MODE_SUB);
+
+	return rem0;
+}
+
+void AnimationNodeSub2::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_use_sync", "enable"), &AnimationNodeSub2::set_use_sync);
+	ClassDB::bind_method(D_METHOD("is_using_sync"), &AnimationNodeSub2::is_using_sync);
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sync"), "set_use_sync", "is_using_sync");
+}
+
+AnimationNodeSub2::AnimationNodeSub2() {
+	add_input("in");
+	add_input("sub");
+	sync = false;
+}
+
 ////////////////////////////////////////////////
 
 void AnimationNodeAdd2::get_parameter_list(List<PropertyInfo> *r_list) const {
@@ -379,6 +423,14 @@ bool AnimationNodeAdd2::is_using_sync() const {
 	return sync;
 }
 
+void AnimationNodeAdd2::set_add_directly(bool p_add_directly) {
+	add_directly = p_add_directly;
+}
+
+bool AnimationNodeAdd2::get_add_directly() const {
+	return add_directly;
+}
+
 bool AnimationNodeAdd2::has_filter() const {
 	return true;
 }
@@ -386,7 +438,7 @@ bool AnimationNodeAdd2::has_filter() const {
 float AnimationNodeAdd2::process(float p_time, bool p_seek) {
 	float amount = get_parameter(add_amount);
 	float rem0 = blend_input(0, p_time, p_seek, 1.0, FILTER_IGNORE, !sync);
-	blend_input(1, p_time, p_seek, amount, FILTER_PASS, !sync);
+	blend_input(1, p_time, p_seek, amount, FILTER_PASS, !sync, add_directly ? MIX_MODE_ADD_DIRECT : MIX_MODE_ADD);
 
 	return rem0;
 }
@@ -395,7 +447,11 @@ void AnimationNodeAdd2::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_use_sync", "enable"), &AnimationNodeAdd2::set_use_sync);
 	ClassDB::bind_method(D_METHOD("is_using_sync"), &AnimationNodeAdd2::is_using_sync);
 
+	ClassDB::bind_method(D_METHOD("set_add_directly", "enable"), &AnimationNodeAdd2::set_add_directly);
+	ClassDB::bind_method(D_METHOD("get_add_directly"), &AnimationNodeAdd2::get_add_directly);
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sync"), "set_use_sync", "is_using_sync");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "add_directly"), "set_add_directly", "get_add_directly");
 }
 
 AnimationNodeAdd2::AnimationNodeAdd2() {
@@ -403,6 +459,7 @@ AnimationNodeAdd2::AnimationNodeAdd2() {
 	add_input("in");
 	add_input("add");
 	sync = false;
+	add_directly = false;
 }
 
 ////////////////////////////////////////////////

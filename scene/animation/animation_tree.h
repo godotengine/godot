@@ -51,6 +51,13 @@ public:
 		FILTER_BLEND
 	};
 
+	enum MixMode {
+		MIX_MODE_BLEND,
+		MIX_MODE_ADD,
+		MIX_MODE_ADD_DIRECT,
+		MIX_MODE_SUB
+	};
+
 	struct Input {
 		String name;
 	};
@@ -66,6 +73,7 @@ public:
 		const Vector<float> *track_blends;
 		float blend;
 		bool seeked;
+		MixMode mix;
 	};
 
 	struct State {
@@ -91,6 +99,7 @@ public:
 
 	HashMap<NodePath, bool> filter;
 	bool filter_enabled;
+	MixMode mix;
 
 	Array _get_filters() const;
 	void _set_filters(const Array &p_filters);
@@ -100,7 +109,7 @@ public:
 protected:
 	void blend_animation(const StringName &p_animation, float p_time, float p_delta, bool p_seeked, float p_blend);
 	float blend_node(const StringName &p_sub_path, Ref<AnimationNode> p_node, float p_time, bool p_seek, float p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_optimize = true);
-	float blend_input(int p_input, float p_time, bool p_seek, float p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_optimize = true);
+	float blend_input(int p_input, float p_time, bool p_seek, float p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_optimize = true, MixMode p_mix = MIX_MODE_BLEND);
 	void make_invalid(const String &p_reason);
 
 	static void _bind_methods();
