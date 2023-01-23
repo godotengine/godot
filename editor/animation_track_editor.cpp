@@ -4299,6 +4299,8 @@ void AnimationTrackEditor::_update_tracks() {
 		memdelete(track_vbox->get_child(0));
 	}
 
+	timeline->set_track_edit(nullptr);
+
 	track_edits.clear();
 	groups.clear();
 
