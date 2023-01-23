@@ -51,5 +51,10 @@
 			<description>
 			</description>
 		</signal>
+		<signal name="resource_removed">
+			<param index="0" name="resource" type="Resource" />
+			<description>
+			</description>
+		</signal>
 	</signals>
 </class>

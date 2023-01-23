@@ -1531,6 +1531,10 @@ void FileSystemDock::_make_scene_confirm() {
 	EditorNode::get_singleton()->save_scene_list({ scene_path });
 }
 
+void FileSystemDock::_resource_removed(const Ref<Resource> &p_resource) {
+	emit_signal(SNAME("resource_removed"), p_resource);
+}
+
 void FileSystemDock::_file_removed(String p_file) {
 	emit_signal(SNAME("file_removed"), p_file);
 
@@ -3095,6 +3099,7 @@ void FileSystemDock::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("inherit", PropertyInfo(Variant::STRING, "file")));
 	ADD_SIGNAL(MethodInfo("instantiate", PropertyInfo(Variant::PACKED_STRING_ARRAY, "files")));
 
+	ADD_SIGNAL(MethodInfo("resource_removed", PropertyInfo(Variant::OBJECT, "resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource")));
 	ADD_SIGNAL(MethodInfo("file_removed", PropertyInfo(Variant::STRING, "file")));
 	ADD_SIGNAL(MethodInfo("folder_removed", PropertyInfo(Variant::STRING, "folder")));
 	ADD_SIGNAL(MethodInfo("files_moved", PropertyInfo(Variant::STRING, "old_file"), PropertyInfo(Variant::STRING, "new_file")));
@@ -3254,6 +3259,7 @@ FileSystemDock::FileSystemDock() {
 	add_child(owners_editor);
 
 	remove_dialog = memnew(DependencyRemoveDialog);
+	remove_dialog->connect("resource_removed", callable_mp(this, &FileSystemDock::_resource_removed));
 	remove_dialog->connect("file_removed", callable_mp(this, &FileSystemDock::_file_removed));
 	remove_dialog->connect("folder_removed", callable_mp(this, &FileSystemDock::_folder_removed));
 	add_child(remove_dialog);
