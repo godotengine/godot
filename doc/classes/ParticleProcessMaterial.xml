@@ -123,7 +123,8 @@
 		</member>
 		<member name="collision_mode" type="int" setter="set_collision_mode" getter="get_collision_mode" enum="ParticleProcessMaterial.CollisionMode" default="0">
 			The particles' collision mode.
-			[b]Note:[/b] Particles can only collide with [GPUParticlesCollision3D] nodes, not [PhysicsBody3D] nodes. To make particles collide with various objects, you can add [GPUParticlesCollision3D] nodes as children of [PhysicsBody3D] nodes.
+			[b]Note:[/b] 3D Particles can only collide with [GPUParticlesCollision3D] nodes, not [PhysicsBody3D] nodes. To make particles collide with various objects, you can add [GPUParticlesCollision3D] nodes as children of [PhysicsBody3D] nodes.
+			[b]Note:[/b] 2D Particles can only collide with [LightOccluder2D] nodes, not [PhysicsBody2D] nodes.
 		</member>
 		<member name="collision_use_scale" type="bool" setter="set_collision_use_scale" getter="is_collision_using_scale" default="false">
 			Should collision take scale into account.
