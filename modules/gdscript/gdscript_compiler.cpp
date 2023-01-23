@@ -2451,12 +2451,7 @@ Error GDScriptCompiler::_populate_class_members(GDScript *p_script, const GDScri
 				const GDScriptParser::SignalNode *signal = member.signal;
 				StringName name = signal->identifier->name;
 
-				Vector<StringName> parameters_names;
-				parameters_names.resize(signal->parameters.size());
-				for (int j = 0; j < signal->parameters.size(); j++) {
-					parameters_names.write[j] = signal->parameters[j]->identifier->name;
-				}
-				p_script->_signals[name] = parameters_names;
+				p_script->_signals[name] = signal->datatype.method_info;
 #ifdef TOOLS_ENABLED
 				if (!signal->doc_description.is_empty()) {
 					p_script->doc_signals[name] = signal->doc_description;

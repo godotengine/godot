@@ -126,8 +126,9 @@ class GDScriptAnalyzer {
 	Ref<GDScriptParserRef> get_parser_for(const String &p_path);
 	static void reduce_identifier_from_base_set_class(GDScriptParser::IdentifierNode *p_identifier, GDScriptParser::DataType p_identifier_datatype);
 #ifdef DEBUG_ENABLED
+	bool validate_signal_connection(const GDScriptParser::CallNode *p_call, GDScriptParser::DataType *p_base_type);
 	bool is_shadowing(GDScriptParser::IdentifierNode *p_local, const String &p_context);
-#endif
+#endif // DEBUG_ENABLED
 
 public:
 	Error resolve_inheritance();

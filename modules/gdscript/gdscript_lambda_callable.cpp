@@ -86,6 +86,21 @@ void GDScriptLambdaCallable::call(const Variant **p_arguments, int p_argcount, V
 	}
 }
 
+bool GDScriptLambdaCallable::get_method_info(MethodInfo *r_method_info) const {
+	MethodInfo l_info = MethodInfo(get_as_text());
+	for (int i = 0; i < function->get_argument_count(); i++) {
+		PropertyInfo arg_info = function->get_argument_type(i).operator PropertyInfo();
+#ifdef TOOLS_ENABLED
+		arg_info.name = function->get_argument_name(i);
+#else
+		arg_info.name = "arg" + itos(i);
+#endif
+		l_info.arguments.push_back(arg_info);
+	}
+	*r_method_info = l_info;
+	return true;
+}
+
 GDScriptLambdaCallable::GDScriptLambdaCallable(Ref<GDScript> p_script, GDScriptFunction *p_function, const Vector<Variant> &p_captures) {
 	script = p_script;
 	function = p_function;

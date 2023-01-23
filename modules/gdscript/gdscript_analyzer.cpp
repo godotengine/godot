@@ -1324,19 +1324,21 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 #endif // TOOLS_ENABLED
 
 	for (int i = 0; i < p_function->parameters.size(); i++) {
-		resolve_parameter(p_function->parameters[i]);
+		GDScriptParser::ParameterNode *parameter = p_function->parameters[i];
+		resolve_parameter(parameter);
 #ifdef DEBUG_ENABLED
-		if (p_function->parameters[i]->usages == 0 && !String(p_function->parameters[i]->identifier->name).begins_with("_")) {
-			parser->push_warning(p_function->parameters[i]->identifier, GDScriptWarning::UNUSED_PARAMETER, function_name, p_function->parameters[i]->identifier->name);
+		p_function->info.arguments.push_back(PropertyInfo(parameter->get_datatype().builtin_type, parameter->identifier->name));
+		if (parameter->usages == 0 && !String(parameter->identifier->name).begins_with("_")) {
+			parser->push_warning(parameter->identifier, GDScriptWarning::UNUSED_PARAMETER, function_name, parameter->identifier->name);
 		}
-		is_shadowing(p_function->parameters[i]->identifier, "function parameter");
+		is_shadowing(parameter->identifier, "function parameter");
 #endif // DEBUG_ENABLED
 #ifdef TOOLS_ENABLED
-		if (p_function->parameters[i]->initializer) {
+		if (parameter->initializer) {
 			default_value_count++;
 
-			if (p_function->parameters[i]->initializer->is_constant) {
-				p_function->default_arg_values.push_back(p_function->parameters[i]->initializer->reduced_value);
+			if (parameter->initializer->is_constant) {
+				p_function->default_arg_values.push_back(parameter->initializer->reduced_value);
 			} else {
 				p_function->default_arg_values.push_back(Variant()); // Prevent shift.
 			}
@@ -1366,7 +1368,11 @@ void GDScriptAnalyzer::resolve_function_signature(GDScriptParser::FunctionNode *
 			return_type.kind = GDScriptParser::DataType::VARIANT;
 			p_function->set_datatype(return_type);
 		}
-
+#ifdef DEBUG_ENABLED
+		p_function->info.name = function_name;
+		p_function->info.return_val = PropertyInfo(p_function->datatype.builtin_type, "");
+		p_function->info.default_arguments = p_function->default_arg_values;
+#endif // DEBUG_ENABLED
 #ifdef TOOLS_ENABLED
 		// Check if the function signature matches the parent. If not it's an error since it breaks polymorphism.
 		// Not for the constructor which can vary in signature.
@@ -2684,6 +2690,14 @@ void GDScriptAnalyzer::reduce_call(GDScriptParser::CallNode *p_call, bool p_is_a
 		return;
 	}
 
+#ifdef DEBUG_ENABLED
+	if (p_call->function_name == SNAME("connect")) {
+		if (!validate_signal_connection(p_call, &base_type)) {
+			return;
+		}
+	}
+#endif // DEBUG_ENABLED
+
 	bool is_static = false;
 	bool is_vararg = false;
 	int default_arg_count = 0;
@@ -3379,6 +3393,9 @@ void GDScriptAnalyzer::reduce_lambda(GDScriptParser::LambdaNode *p_lambda) {
 	resolve_function_signature(p_lambda->function, p_lambda, true);
 	resolve_function_body(p_lambda->function, true);
 	lambda_stack.pop_back();
+#ifdef DEBUG_ENABLED
+	p_lambda->datatype.method_info = p_lambda->function->info;
+#endif // DEBUG_ENABLED
 
 	int captures_amount = p_lambda->captures.size();
 	if (captures_amount > 0) {
@@ -4212,6 +4229,110 @@ bool GDScriptAnalyzer::validate_call_arg(const List<GDScriptParser::DataType> &p
 }
 
 #ifdef DEBUG_ENABLED
+// Returns false if the connection is NOT valid, but could return true if validation fails.
+// This could return true if it couldn't get MethodInfo from the provided data, for example.
+bool GDScriptAnalyzer::validate_signal_connection(const GDScriptParser::CallNode *p_call, GDScriptParser::DataType *p_base_type) {
+	// Signal
+	String signal_name;
+	MethodInfo signal_method_info;
+	int signal_required_argument_count;
+	GDScriptParser::DataType signal_datatype;
+
+	// Target
+	GDScriptParser::ExpressionNode *target_argument_node = nullptr;
+	MethodInfo target_method_info;
+	int target_required_argument_count;
+	GDScriptParser::DataType target_datatype;
+
+	if (p_base_type->builtin_type == Variant::OBJECT) {
+		if (p_call->arguments.size() < 2) { // Must have signal & callable arguments
+			return true;
+		}
+		target_argument_node = p_call->arguments[1];
+		// Fetch signal info
+		GDScriptParser::IdentifierNode *signal_identifier = nullptr;
+		if (p_call->arguments[0]->type == GDScriptParser::Node::LITERAL) {
+			GDScriptParser::LiteralNode *signal_literal = static_cast<GDScriptParser::LiteralNode *>(p_call->arguments[0]);
+			if (!Variant::can_convert_strict(signal_literal->value.get_type(), Variant::STRING)) {
+				return true;
+			}
+			signal_identifier = parser->alloc_node<GDScriptParser::IdentifierNode>();
+			parser->reset_extents(signal_identifier, signal_literal);
+			signal_identifier->name = signal_literal->value;
+		} else if (p_call->arguments[0]->type == GDScriptParser::Node::IDENTIFIER) {
+			signal_identifier = static_cast<GDScriptParser::IdentifierNode *>(p_call->arguments[0]);
+		} else {
+			return true;
+		}
+		reduce_identifier_from_base(signal_identifier, p_base_type);
+		signal_datatype = signal_identifier->get_datatype();
+		signal_name = signal_identifier->name;
+
+		// Fetch target callable info
+		target_datatype = target_argument_node->get_datatype();
+	} else if (p_base_type->builtin_type == Variant::SIGNAL) {
+		if (p_call->arguments.size() < 1) { // Must have callable argument
+			return true;
+		}
+		target_argument_node = p_call->arguments[0];
+		GDScriptParser::IdentifierNode *signal_identifier = nullptr;
+		if (p_call->get_callee_type() == GDScriptParser::Node::IDENTIFIER) {
+			signal_identifier = static_cast<GDScriptParser::IdentifierNode *>(p_call->callee);
+		} else if (p_call->get_callee_type() == GDScriptParser::Node::SUBSCRIPT) {
+			GDScriptParser::SubscriptNode *subscript = static_cast<GDScriptParser::SubscriptNode *>(p_call->callee);
+			// Calls should only be attributes.
+			if (subscript->is_attribute) {
+				signal_identifier = subscript->attribute;
+			} else {
+				return true;
+			}
+		} else {
+			return true;
+		}
+		reduce_identifier_from_base(signal_identifier, p_base_type);
+		signal_datatype = signal_identifier->get_datatype();
+		target_datatype = target_argument_node->get_datatype();
+	} else {
+		return true;
+	}
+	// Validate provided arguments & setup for target validation
+	if (signal_datatype.builtin_type != Variant::SIGNAL) {
+		return true;
+	}
+	signal_method_info = signal_datatype.method_info;
+	signal_required_argument_count = signal_method_info.arguments.size() - signal_method_info.default_arguments.size();
+	if (target_datatype.builtin_type != Variant::CALLABLE) {
+		return true;
+	}
+	target_method_info = target_datatype.method_info;
+	target_required_argument_count = target_method_info.arguments.size();
+
+	// Validate target arg count
+	if (target_required_argument_count < signal_required_argument_count) {
+		push_error(vformat("Target callable cannot be connected to '%s': '%s' requires at least %s argument(s).", signal_name, signal_name, signal_required_argument_count), target_argument_node);
+		return false;
+	}
+	// Validate target arg types
+	for (int i = 0; i < signal_required_argument_count; i++) {
+		PropertyInfo target_arg_info = target_method_info.arguments[i];
+		PropertyInfo signal_arg_info = signal_method_info.arguments[i];
+		if (Variant::can_convert_strict(target_arg_info.type, signal_arg_info.type) && target_arg_info.class_name == signal_arg_info.class_name) {
+			continue;
+		}
+		String signature = "";
+		for (int arg = 0; arg < signal_required_argument_count; arg++) {
+			String type_name = Variant::get_type_name(signal_method_info.arguments[arg].type);
+			signature += type_name;
+			if (arg < signal_required_argument_count - 1) {
+				signature += ", ";
+			}
+		}
+		push_error(vformat("Target callable cannot be connected to '%s': '%s' requires the target to accept '%s' as arguments.", signal_name, signal_name, signature), target_argument_node);
+		return false;
+	}
+	return true;
+}
+
 bool GDScriptAnalyzer::is_shadowing(GDScriptParser::IdentifierNode *p_local, const String &p_context) {
 	const StringName &name = p_local->name;
 	GDScriptParser::DataType base = parser->current_class->get_datatype();

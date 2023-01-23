@@ -715,12 +715,7 @@ bool GDScript::_update_exports(bool *r_err, bool p_recursive_call, PlaceHolderSc
 					} break;
 					case GDScriptParser::ClassNode::Member::SIGNAL: {
 						// TODO: Cache this in parser to avoid loops like this.
-						Vector<StringName> parameters_names;
-						parameters_names.resize(member.signal->parameters.size());
-						for (int j = 0; j < member.signal->parameters.size(); j++) {
-							parameters_names.write[j] = member.signal->parameters[j]->identifier->name;
-						}
-						_signals[member.signal->identifier->name] = parameters_names;
+						_signals[member.signal->identifier->name] = member.signal->datatype.method_info;
 					} break;
 					case GDScriptParser::ClassNode::Member::GROUP: {
 						members_cache.push_back(member.annotation->export_info);
@@ -1246,15 +1241,8 @@ bool GDScript::has_script_signal(const StringName &p_signal) const {
 }
 
 void GDScript::_get_script_signal_list(List<MethodInfo> *r_list, bool p_include_base) const {
-	for (const KeyValue<StringName, Vector<StringName>> &E : _signals) {
-		MethodInfo mi;
-		mi.name = E.key;
-		for (int i = 0; i < E.value.size(); i++) {
-			PropertyInfo arg;
-			arg.name = E.value[i];
-			mi.arguments.push_back(arg);
-		}
-		r_list->push_back(mi);
+	for (const KeyValue<StringName, MethodInfo> &E : _signals) {
+		r_list->push_back(E.value);
 	}
 
 	if (!p_include_base) {
@@ -1616,7 +1604,7 @@ bool GDScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
 			// Signals.
 			const GDScript *sl = sptr;
 			while (sl) {
-				HashMap<StringName, Vector<StringName>>::ConstIterator E = sl->_signals.find(p_name);
+				HashMap<StringName, MethodInfo>::ConstIterator E = sl->_signals.find(p_name);
 				if (E) {
 					r_ret = Signal(this->owner, E->key);
 					return true; //index found
@@ -1801,7 +1789,13 @@ void GDScriptInstance::get_method_list(List<MethodInfo> *p_list) const {
 			MethodInfo mi;
 			mi.name = E.key;
 			for (int i = 0; i < E.value->get_argument_count(); i++) {
-				mi.arguments.push_back(PropertyInfo(Variant::NIL, "arg" + itos(i)));
+				PropertyInfo arg = E.value->get_argument_type(i);
+#ifdef TOOLS_ENABLED
+				arg.name = E.value->get_argument_name(i);
+#else
+				arg.name = "arg" + itos(i);
+#endif
+				mi.arguments.push_back(arg);
 			}
 			p_list->push_back(mi);
 		}

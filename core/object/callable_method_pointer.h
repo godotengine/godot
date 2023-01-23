@@ -73,6 +73,7 @@ public:
 #endif
 	virtual CompareEqualFunc get_compare_equal_func() const;
 	virtual CompareLessFunc get_compare_less_func() const;
+	virtual bool get_method_info(MethodInfo *r_method_info) const;
 
 	virtual uint32_t hash() const;
 };

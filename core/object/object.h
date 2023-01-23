@@ -578,8 +578,16 @@ private:
 			List<Connection>::Element *cE = nullptr;
 		};
 
-		MethodInfo user;
+		MethodInfo info;
 		VMap<Callable, Slot> slot_map;
+
+		SignalData() {
+
+		}
+
+		SignalData(MethodInfo p_info) {
+			info = p_info;
+		}
 	};
 
 	HashMap<StringName, SignalData> signal_map;
@@ -799,6 +807,7 @@ public:
 	Variant property_get_revert(const StringName &p_name) const;
 
 	bool has_method(const StringName &p_method) const;
+	bool get_method_info(const StringName &p_method, MethodInfo *r_info) const;
 	void get_method_list(List<MethodInfo> *p_list) const;
 	Variant callv(const StringName &p_method, const Array &p_args);
 	virtual Variant callp(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error);

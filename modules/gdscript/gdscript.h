@@ -96,7 +96,7 @@ class GDScript : public Script {
 	HashMap<StringName, GDScriptFunction *> member_functions;
 	HashMap<StringName, MemberInfo> member_indices; //members are just indices to the instantiated script.
 	HashMap<StringName, Ref<GDScript>> subclasses;
-	HashMap<StringName, Vector<StringName>> _signals;
+	HashMap<StringName, MethodInfo> _signals;
 	Dictionary rpc_config;
 
 #ifdef TOOLS_ENABLED

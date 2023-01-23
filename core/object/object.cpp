@@ -573,6 +573,52 @@ Variant Object::property_get_revert(const StringName &p_name) const {
 	return Variant();
 }
 
+bool Object::get_method_info(const StringName &p_method, MethodInfo *r_info) const {
+	if (r_info == nullptr) {
+		return false;
+	}
+	List<MethodInfo> method_list;
+	int index = 0;
+
+	// Check script instance
+	if (script_instance) {
+		script_instance->get_method_list(&method_list);
+		while (index < method_list.size()) {
+			if (method_list[index].name == p_method) {
+				// Duplicate method info to return, since method_list only contains references
+				*r_info = method_list[index];
+				return true;
+			}
+			index++;
+		}
+	}
+	// Check base class
+	MethodBind *method = ClassDB::get_method(get_class_name(), p_method);
+	if (method == nullptr) {
+		return false;
+	}
+	// Create MethodInfo from MethodBind.
+	MethodInfo minfo;
+	minfo.name = method->get_name();
+	minfo.id = method->get_method_id();
+
+	for (int i = 0; i < method->get_argument_count(); i++) {
+		minfo.arguments.push_back(method->get_argument_info(i));
+	}
+
+	minfo.return_val = method->get_return_info();
+	minfo.flags = method->get_hint_flags();
+
+	for (int i = 0; i < method->get_argument_count(); i++) {
+		if (method->has_default_argument(i)) {
+			minfo.default_arguments.push_back(method->get_default_argument(i));
+		}
+	}
+
+	*r_info = minfo;
+	return true;
+}
+
 void Object::get_method_list(List<MethodInfo> *p_list) const {
 	ClassDB::get_method_list(get_class_name(), p_list);
 	if (script_instance) {
@@ -955,7 +1001,7 @@ void Object::add_user_signal(const MethodInfo &p_signal) {
 	ERR_FAIL_COND_MSG(ClassDB::has_signal(get_class_name(), p_signal.name), "User signal's name conflicts with a built-in signal of '" + get_class_name() + "'.");
 	ERR_FAIL_COND_MSG(signal_map.has(p_signal.name), "Trying to add already existing signal '" + p_signal.name + "'.");
 	SignalData s;
-	s.user = p_signal;
+	s.info = p_signal;
 	signal_map[p_signal.name] = s;
 }
 
@@ -963,7 +1009,7 @@ bool Object::_has_user_signal(const StringName &p_name) const {
 	if (!signal_map.has(p_name)) {
 		return false;
 	}
-	return signal_map[p_name].user.name.length() > 0;
+	return signal_map[p_name].info.name.length() > 0;
 }
 
 struct _ObjectSignalDisconnectData {
@@ -1179,9 +1225,9 @@ void Object::get_signal_list(List<MethodInfo> *p_signals) const {
 	//find maybe usersignals?
 
 	for (const KeyValue<StringName, SignalData> &E : signal_map) {
-		if (!E.value.user.name.is_empty()) {
+		if (!E.value.info.name.is_empty()) {
 			//user signal
-			p_signals->push_back(E.value.user);
+			p_signals->push_back(E.value.info);
 		}
 	}
 }
@@ -1237,14 +1283,21 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, ui
 
 	SignalData *s = signal_map.getptr(p_signal);
 	if (!s) {
-		bool signal_is_valid = ClassDB::has_signal(get_class_name(), p_signal);
+		MethodInfo signal;
+		bool signal_is_valid = ClassDB::get_signal(get_class_name(), p_signal, &signal);
 		//check in script
 		if (!signal_is_valid && !script.is_null()) {
-			if (Ref<Script>(script)->has_script_signal(p_signal)) {
-				signal_is_valid = true;
+			List<MethodInfo> signal_list;
+			Ref<Script>(script)->get_script_signal_list(&signal_list);
+			for (int i = 0; i < signal_list.size(); i++) {
+				if (signal_list[i].name == p_signal) {
+					signal = signal_list[i];
+					signal_is_valid = true;
+					break;
+				}
 			}
 #ifdef TOOLS_ENABLED
-			else {
+			if (!signal_is_valid) {
 				//allow connecting signals anyway if script is invalid, see issue #17070
 				if (!Ref<Script>(script)->is_valid()) {
 					signal_is_valid = true;
@@ -1255,11 +1308,36 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, ui
 
 		ERR_FAIL_COND_V_MSG(!signal_is_valid, ERR_INVALID_PARAMETER, "In Object of type '" + String(get_class()) + "': Attempt to connect nonexistent signal '" + p_signal + "' to callable '" + p_callable + "'.");
 
-		signal_map[p_signal] = SignalData();
+		signal_map[p_signal] = SignalData(signal);
 		s = &signal_map[p_signal];
 	}
 
 	Callable target = p_callable;
+
+	MethodInfo target_method_info;
+	if (target.get_method_info(&target_method_info)) {
+		int target_required_arguments_count = target_method_info.arguments.size();
+		int signal_required_argument_count = s->info.arguments.size() - s->info.default_arguments.size();
+		if (target_required_arguments_count < signal_required_argument_count) {
+			ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, vformat("Callable '%s' could not be connected to '%s': '%s' requires at least %s argument(s).", target.operator String(), p_signal, p_signal, signal_required_argument_count));
+		}
+		for (int i = 0; i < signal_required_argument_count; i++) {
+			PropertyInfo target_arg_info = target_method_info.arguments[i];
+			PropertyInfo signal_arg_info = s->info.arguments[i];
+			if (Variant::can_convert_strict(target_arg_info.type, signal_arg_info.type) && target_arg_info.class_name == signal_arg_info.class_name) {
+				continue;
+			}
+			String signature = "";
+			for (int arg = 0; arg < signal_required_argument_count; arg++) {
+				signature += Variant::get_type_name(s->info.arguments[arg].type);
+				if (arg < signal_required_argument_count - 1) {
+					signature += ", ";
+				}
+			}
+			ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, vformat("Callable '%s' could not be connected to '%s': '%s' does not have the required arguments '%s'", target.operator String(), p_signal, target.get_method(), signature));
+		}
+	}
+
 
 	//compare with the base callable, so binds can be ignored
 	if (s->slot_map.has(*target.get_base_comparator())) {
