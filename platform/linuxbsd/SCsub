@@ -11,6 +11,7 @@ common_linuxbsd = [
     "joypad_linux.cpp",
     "freedesktop_portal_desktop.cpp",
     "freedesktop_screensaver.cpp",
+    "xkbcommon-so_wrap.c",
 ]
 
 if env["x11"]:
