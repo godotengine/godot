@@ -9370,7 +9370,7 @@ bool RenderingDeviceVulkan::has_feature(const Features p_feature) const {
 		} break;
 		case SUPPORTS_ATTACHMENT_VRS: {
 			VulkanContext::VRSCapabilities vrs_capabilities = context->get_vrs_capabilities();
-			return vrs_capabilities.attachment_vrs_supported;
+			return vrs_capabilities.attachment_vrs_supported && context->get_physical_device_features().shaderStorageImageExtendedFormats;
 		} break;
 		default: {
 			return false;
