@@ -68,7 +68,7 @@ namespace Godot.NativeInterop
             string file = globalFrames.Count > 0 ? globalFrames[0].File ?? "" : "";
             string func = globalFrames.Count > 0 ? globalFrames[0].Func : "";
             int line = globalFrames.Count > 0 ? globalFrames[0].Line : 0;
-            string errorMsg = "Exception";
+            string errorMsg = e.GetType().FullName ?? "";
 
             using godot_string nFile = Marshaling.ConvertStringToNative(file);
             using godot_string nFunc = Marshaling.ConvertStringToNative(func);
