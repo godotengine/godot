@@ -2112,6 +2112,7 @@ void EditorNode::edit_item(Object *p_object, Object *p_editing_owner) {
 				}
 			}
 			active_plugins[owner_id].insert(plugin);
+			editor_plugins_over->add_plugin(plugin);
 			plugin->edit(p_object);
 			plugin->make_visible(true);
 		}
