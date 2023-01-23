@@ -3653,12 +3653,12 @@ void EditorNode::_set_main_scene_state(Dictionary p_state, Node *p_for_scene) {
 
 	if (get_edited_scene()) {
 		if (current_tab < 2) {
-			// Use heuristic instead.
-			int n2d = 0, n3d = 0;
-			_find_node_types(get_edited_scene(), n2d, n3d);
-			if (n2d > n3d) {
+			Node *editor_node = SceneTreeDock::get_singleton()->get_tree_editor()->get_selected();
+			editor_node = editor_node == nullptr ? get_edited_scene() : editor_node;
+
+			if (Object::cast_to<Node2D>(editor_node) || Object::cast_to<Control>(editor_node)) {
 				editor_select(EDITOR_2D);
-			} else if (n3d > n2d) {
+			} else if (Object::cast_to<Node3D>(editor_node)) {
 				editor_select(EDITOR_3D);
 			}
 		}
