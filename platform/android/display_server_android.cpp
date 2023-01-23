@@ -212,7 +212,18 @@ float DisplayServerAndroid::screen_get_scale(int p_screen) const {
 	GodotIOJavaWrapper *godot_io_java = OS_Android::get_singleton()->get_godot_io_java();
 	ERR_FAIL_NULL_V(godot_io_java, 1.0f);
 
-	return godot_io_java->get_scaled_density();
+	float screen_scale = godot_io_java->get_scaled_density();
+
+	// Update the scale to avoid cropping.
+	Size2i screen_size = screen_get_size(p_screen);
+	if (screen_size != Size2i()) {
+		float width_scale = screen_size.width / (float)OS_Android::DEFAULT_WINDOW_WIDTH;
+		float height_scale = screen_size.height / (float)OS_Android::DEFAULT_WINDOW_HEIGHT;
+		screen_scale = MIN(screen_scale, MIN(width_scale, height_scale));
+	}
+
+	print_line("Selected screen scale: ", screen_scale);
+	return screen_scale;
 }
 
 float DisplayServerAndroid::screen_get_refresh_rate(int p_screen) const {

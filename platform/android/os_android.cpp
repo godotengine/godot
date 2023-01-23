@@ -695,8 +695,8 @@ bool OS_Android::_check_internal_feature_support(const String &p_feature) {
 }
 
 OS_Android::OS_Android(GodotJavaWrapper *p_godot_java, GodotIOJavaWrapper *p_godot_io_java, bool p_use_apk_expansion) {
-	display_size.width = 800;
-	display_size.height = 600;
+	display_size.width = DEFAULT_WINDOW_WIDTH;
+	display_size.height = DEFAULT_WINDOW_HEIGHT;
 
 	use_apk_expansion = p_use_apk_expansion;
 
