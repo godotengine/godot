@@ -185,6 +185,7 @@
 	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
 	if (wd.im_active) {
 		ime_input_event_in_progress = true;
+		ds->pop_last_key_event();
 		ds->update_im_text(Point2i(selectedRange.location, selectedRange.length), String::utf8([[marked_text mutableString] UTF8String]));
 	}
 }
@@ -194,6 +195,9 @@
 }
 
 - (void)unmarkText {
+	if (ime_input_event_in_progress) {
+		ime_suppress_next_keyup = true;
+	}
 	ime_input_event_in_progress = false;
 	[[marked_text mutableString] setString:@""];
 
@@ -245,8 +249,6 @@
 }
 
 - (void)insertText:(id)aString replacementRange:(NSRange)replacementRange {
-	NSEvent *event = [NSApp currentEvent];
-
 	NSString *characters;
 	if ([aString isKindOfClass:[NSAttributedString class]]) {
 		characters = [aString string];
@@ -284,13 +286,14 @@
 		DisplayServerMacOS::KeyEvent ke;
 
 		ke.window_id = window_id;
-		ke.macos_state = [event modifierFlags];
+		ke.macos_state = 0;
 		ke.pressed = true;
 		ke.echo = false;
 		ke.raw = false; // IME input event.
 		ke.keycode = Key::NONE;
 		ke.physical_keycode = Key::NONE;
-		ke.unicode = codepoint;
+		ke.key_label = Key::NONE;
+		ke.unicode = fix_unicode(codepoint);
 
 		ds->push_to_key_event_buffer(ke);
 	}
@@ -584,7 +587,7 @@
 		NSString *characters = [event characters];
 		NSUInteger length = [characters length];
 
-		if (!wd.im_active && length > 0 && keycode_has_unicode(KeyMappingMacOS::remap_key([event keyCode], [event modifierFlags]))) {
+		if (!wd.im_active && length > 0 && keycode_has_unicode(KeyMappingMacOS::remap_key([event keyCode], [event modifierFlags], true))) {
 			// Fallback unicode character handler used if IME is not active.
 			Char16String text;
 			text.resize([characters length] + 1);
@@ -602,10 +605,11 @@
 				ke.macos_state = [event modifierFlags];
 				ke.pressed = true;
 				ke.echo = [event isARepeat];
-				ke.keycode = KeyMappingMacOS::remap_key([event keyCode], [event modifierFlags]);
+				ke.keycode = KeyMappingMacOS::remap_key([event keyCode], [event modifierFlags], false);
 				ke.physical_keycode = KeyMappingMacOS::translate_key([event keyCode]);
+				ke.key_label = KeyMappingMacOS::remap_key([event keyCode], [event modifierFlags], true);
+				ke.unicode = fix_unicode(codepoint);
 				ke.raw = true;
-				ke.unicode = codepoint;
 
 				ds->push_to_key_event_buffer(ke);
 			}
@@ -616,10 +620,11 @@
 			ke.macos_state = [event modifierFlags];
 			ke.pressed = true;
 			ke.echo = [event isARepeat];
-			ke.keycode = KeyMappingMacOS::remap_key([event keyCode], [event modifierFlags]);
+			ke.keycode = KeyMappingMacOS::remap_key([event keyCode], [event modifierFlags], false);
 			ke.physical_keycode = KeyMappingMacOS::translate_key([event keyCode]);
-			ke.raw = false;
+			ke.key_label = KeyMappingMacOS::remap_key([event keyCode], [event modifierFlags], true);
 			ke.unicode = 0;
+			ke.raw = false;
 
 			ds->push_to_key_event_buffer(ke);
 		}
@@ -638,56 +643,54 @@
 	}
 	ignore_momentum_scroll = true;
 
-	// Ignore all input if IME input is in progress
-	if (!ime_input_event_in_progress) {
-		DisplayServerMacOS::KeyEvent ke;
+	DisplayServerMacOS::KeyEvent ke;
 
-		ke.window_id = window_id;
-		ke.echo = false;
-		ke.raw = true;
+	ke.window_id = window_id;
+	ke.echo = false;
+	ke.raw = true;
 
-		int key = [event keyCode];
-		int mod = [event modifierFlags];
+	int key = [event keyCode];
+	int mod = [event modifierFlags];
 
-		if (key == 0x36 || key == 0x37) {
-			if (mod & NSEventModifierFlagCommand) {
-				mod &= ~NSEventModifierFlagCommand;
-				ke.pressed = true;
-			} else {
-				ke.pressed = false;
-			}
-		} else if (key == 0x38 || key == 0x3c) {
-			if (mod & NSEventModifierFlagShift) {
-				mod &= ~NSEventModifierFlagShift;
-				ke.pressed = true;
-			} else {
-				ke.pressed = false;
-			}
-		} else if (key == 0x3a || key == 0x3d) {
-			if (mod & NSEventModifierFlagOption) {
-				mod &= ~NSEventModifierFlagOption;
-				ke.pressed = true;
-			} else {
-				ke.pressed = false;
-			}
-		} else if (key == 0x3b || key == 0x3e) {
-			if (mod & NSEventModifierFlagControl) {
-				mod &= ~NSEventModifierFlagControl;
-				ke.pressed = true;
-			} else {
-				ke.pressed = false;
-			}
+	if (key == 0x36 || key == 0x37) {
+		if (mod & NSEventModifierFlagCommand) {
+			mod &= ~NSEventModifierFlagCommand;
+			ke.pressed = true;
 		} else {
-			return;
+			ke.pressed = false;
 		}
-
-		ke.macos_state = mod;
-		ke.keycode = KeyMappingMacOS::remap_key(key, mod);
-		ke.physical_keycode = KeyMappingMacOS::translate_key(key);
-		ke.unicode = 0;
-
-		ds->push_to_key_event_buffer(ke);
+	} else if (key == 0x38 || key == 0x3c) {
+		if (mod & NSEventModifierFlagShift) {
+			mod &= ~NSEventModifierFlagShift;
+			ke.pressed = true;
+		} else {
+			ke.pressed = false;
+		}
+	} else if (key == 0x3a || key == 0x3d) {
+		if (mod & NSEventModifierFlagOption) {
+			mod &= ~NSEventModifierFlagOption;
+			ke.pressed = true;
+		} else {
+			ke.pressed = false;
+		}
+	} else if (key == 0x3b || key == 0x3e) {
+		if (mod & NSEventModifierFlagControl) {
+			mod &= ~NSEventModifierFlagControl;
+			ke.pressed = true;
+		} else {
+			ke.pressed = false;
+		}
+	} else {
+		return;
 	}
+
+	ke.macos_state = mod;
+	ke.keycode = KeyMappingMacOS::remap_key(key, mod, false);
+	ke.physical_keycode = KeyMappingMacOS::translate_key(key);
+	ke.key_label = KeyMappingMacOS::remap_key(key, mod, true);
+	ke.unicode = 0;
+
+	ds->push_to_key_event_buffer(ke);
 }
 
 - (void)keyUp:(NSEvent *)event {
@@ -696,51 +699,26 @@
 		return;
 	}
 
-	DisplayServerMacOS::WindowData &wd = ds->get_window(window_id);
-
 	// Ignore all input if IME input is in progress.
+	if (ime_suppress_next_keyup) {
+		ime_suppress_next_keyup = false;
+		return;
+	}
+
 	if (!ime_input_event_in_progress) {
-		NSString *characters = [event characters];
-		NSUInteger length = [characters length];
+		DisplayServerMacOS::KeyEvent ke;
 
-		// Fallback unicode character handler used if IME is not active.
-		if (!wd.im_active && length > 0 && keycode_has_unicode(KeyMappingMacOS::remap_key([event keyCode], [event modifierFlags]))) {
-			Char16String text;
-			text.resize([characters length] + 1);
-			[characters getCharacters:(unichar *)text.ptrw() range:NSMakeRange(0, [characters length])];
+		ke.window_id = window_id;
+		ke.macos_state = [event modifierFlags];
+		ke.pressed = false;
+		ke.echo = [event isARepeat];
+		ke.keycode = KeyMappingMacOS::remap_key([event keyCode], [event modifierFlags], false);
+		ke.physical_keycode = KeyMappingMacOS::translate_key([event keyCode]);
+		ke.key_label = KeyMappingMacOS::remap_key([event keyCode], [event modifierFlags], true);
+		ke.unicode = 0;
+		ke.raw = true;
 
-			String u32text;
-			u32text.parse_utf16(text.ptr(), text.length());
-
-			for (int i = 0; i < u32text.length(); i++) {
-				const char32_t codepoint = u32text[i];
-				DisplayServerMacOS::KeyEvent ke;
-
-				ke.window_id = window_id;
-				ke.macos_state = [event modifierFlags];
-				ke.pressed = false;
-				ke.echo = [event isARepeat];
-				ke.keycode = KeyMappingMacOS::remap_key([event keyCode], [event modifierFlags]);
-				ke.physical_keycode = KeyMappingMacOS::translate_key([event keyCode]);
-				ke.raw = true;
-				ke.unicode = codepoint;
-
-				ds->push_to_key_event_buffer(ke);
-			}
-		} else {
-			DisplayServerMacOS::KeyEvent ke;
-
-			ke.window_id = window_id;
-			ke.macos_state = [event modifierFlags];
-			ke.pressed = false;
-			ke.echo = [event isARepeat];
-			ke.keycode = KeyMappingMacOS::remap_key([event keyCode], [event modifierFlags]);
-			ke.physical_keycode = KeyMappingMacOS::translate_key([event keyCode]);
-			ke.raw = true;
-			ke.unicode = 0;
-
-			ds->push_to_key_event_buffer(ke);
-		}
+		ds->push_to_key_event_buffer(ke);
 	}
 }
 

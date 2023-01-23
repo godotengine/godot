@@ -127,14 +127,9 @@ static const _KeyCodeText _keycodes[] = {
 	{Key::KP_7                  ,"Kp 7"},
 	{Key::KP_8                  ,"Kp 8"},
 	{Key::KP_9                  ,"Kp 9"},
-	{Key::SUPER_L               ,"Super L"},
-	{Key::SUPER_R               ,"Super R"},
 	{Key::MENU                  ,"Menu"},
-	{Key::HYPER_L               ,"Hyper L"},
-	{Key::HYPER_R               ,"Hyper R"},
+	{Key::HYPER                 ,"Hyper"},
 	{Key::HELP                  ,"Help"},
-	{Key::DIRECTION_L           ,"Direction L"},
-	{Key::DIRECTION_R           ,"Direction R"},
 	{Key::BACK                  ,"Back"},
 	{Key::FORWARD               ,"Forward"},
 	{Key::STOP                  ,"Stop"},
@@ -142,11 +137,6 @@ static const _KeyCodeText _keycodes[] = {
 	{Key::VOLUMEDOWN            ,"VolumeDown"},
 	{Key::VOLUMEMUTE            ,"VolumeMute"},
 	{Key::VOLUMEUP              ,"VolumeUp"},
-	{Key::BASSBOOST             ,"BassBoost"},
-	{Key::BASSUP                ,"BassUp"},
-	{Key::BASSDOWN              ,"BassDown"},
-	{Key::TREBLEUP              ,"TrebleUp"},
-	{Key::TREBLEDOWN            ,"TrebleDown"},
 	{Key::MEDIAPLAY             ,"MediaPlay"},
 	{Key::MEDIASTOP             ,"MediaStop"},
 	{Key::MEDIAPREVIOUS         ,"MediaPrevious"},
@@ -174,6 +164,10 @@ static const _KeyCodeText _keycodes[] = {
 	{Key::LAUNCHD               ,"LaunchD"},
 	{Key::LAUNCHE               ,"LaunchE"},
 	{Key::LAUNCHF               ,"LaunchF"},
+	{Key::GLOBE                 ,"Globe"},
+	{Key::KEYBOARD              ,"On-screen keyboard"},
+	{Key::JIS_EISU              ,"JIS Eisu"},
+	{Key::JIS_KANA              ,"JIS Kana"},
 	{Key::UNKNOWN               ,"Unknown"},
 	{Key::SPACE                 ,"Space"},
 	{Key::EXCLAM                ,"Exclam"},
@@ -244,72 +238,6 @@ static const _KeyCodeText _keycodes[] = {
 	{Key::BAR                   ,"Bar"},
 	{Key::BRACERIGHT            ,"BraceRight"},
 	{Key::ASCIITILDE            ,"AsciiTilde"},
-	{Key::NOBREAKSPACE          ,"NoBreakSpace"},
-	{Key::EXCLAMDOWN            ,"ExclamDown"},
-	{Key::CENT                  ,"Cent"},
-	{Key::STERLING              ,"Sterling"},
-	{Key::CURRENCY              ,"Currency"},
-	{Key::YEN                   ,"Yen"},
-	{Key::BROKENBAR             ,"BrokenBar"},
-	{Key::SECTION               ,"Section"},
-	{Key::DIAERESIS             ,"Diaeresis"},
-	{Key::COPYRIGHT             ,"Copyright"},
-	{Key::ORDFEMININE           ,"Ordfeminine"},
-	{Key::GUILLEMOTLEFT         ,"GuillemotLeft"},
-	{Key::NOTSIGN               ,"NotSign"},
-	{Key::HYPHEN                ,"Hyphen"},
-	{Key::KEY_REGISTERED        ,"Registered"},
-	{Key::MACRON                ,"Macron"},
-	{Key::DEGREE                ,"Degree"},
-	{Key::PLUSMINUS             ,"PlusMinus"},
-	{Key::TWOSUPERIOR           ,"TwoSuperior"},
-	{Key::THREESUPERIOR         ,"ThreeSuperior"},
-	{Key::ACUTE                 ,"Acute"},
-	{Key::MU                    ,"Mu"},
-	{Key::PARAGRAPH             ,"Paragraph"},
-	{Key::PERIODCENTERED        ,"PeriodCentered"},
-	{Key::CEDILLA               ,"Cedilla"},
-	{Key::ONESUPERIOR           ,"OneSuperior"},
-	{Key::MASCULINE             ,"Masculine"},
-	{Key::GUILLEMOTRIGHT        ,"GuillemotRight"},
-	{Key::ONEQUARTER            ,"OneQuarter"},
-	{Key::ONEHALF               ,"OneHalf"},
-	{Key::THREEQUARTERS         ,"ThreeQuarters"},
-	{Key::QUESTIONDOWN          ,"QuestionDown"},
-	{Key::AGRAVE                ,"Agrave"},
-	{Key::AACUTE                ,"Aacute"},
-	{Key::ACIRCUMFLEX           ,"AcircumFlex"},
-	{Key::ATILDE                ,"Atilde"},
-	{Key::ADIAERESIS            ,"Adiaeresis"},
-	{Key::ARING                 ,"Aring"},
-	{Key::AE                    ,"Ae"},
-	{Key::CCEDILLA              ,"Ccedilla"},
-	{Key::EGRAVE                ,"Egrave"},
-	{Key::EACUTE                ,"Eacute"},
-	{Key::ECIRCUMFLEX           ,"Ecircumflex"},
-	{Key::EDIAERESIS            ,"Ediaeresis"},
-	{Key::IGRAVE                ,"Igrave"},
-	{Key::IACUTE                ,"Iacute"},
-	{Key::ICIRCUMFLEX           ,"Icircumflex"},
-	{Key::IDIAERESIS            ,"Idiaeresis"},
-	{Key::ETH                   ,"Eth"},
-	{Key::NTILDE                ,"Ntilde"},
-	{Key::OGRAVE                ,"Ograve"},
-	{Key::OACUTE                ,"Oacute"},
-	{Key::OCIRCUMFLEX           ,"Ocircumflex"},
-	{Key::OTILDE                ,"Otilde"},
-	{Key::ODIAERESIS            ,"Odiaeresis"},
-	{Key::MULTIPLY              ,"Multiply"},
-	{Key::OOBLIQUE              ,"Ooblique"},
-	{Key::UGRAVE                ,"Ugrave"},
-	{Key::UACUTE                ,"Uacute"},
-	{Key::UCIRCUMFLEX           ,"Ucircumflex"},
-	{Key::UDIAERESIS            ,"Udiaeresis"},
-	{Key::YACUTE                ,"Yacute"},
-	{Key::THORN                 ,"Thorn"},
-	{Key::SSHARP                ,"Ssharp"},
-	{Key::DIVISION              ,"Division"},
-	{Key::YDIAERESIS            ,"Ydiaeresis"},
 	{Key::NONE                  ,nullptr}
 	/* clang-format on */
 };
@@ -378,14 +306,9 @@ bool keycode_has_unicode(Key p_keycode) {
 		case Key::F33:
 		case Key::F34:
 		case Key::F35:
-		case Key::SUPER_L:
-		case Key::SUPER_R:
 		case Key::MENU:
-		case Key::HYPER_L:
-		case Key::HYPER_R:
+		case Key::HYPER:
 		case Key::HELP:
-		case Key::DIRECTION_L:
-		case Key::DIRECTION_R:
 		case Key::BACK:
 		case Key::FORWARD:
 		case Key::STOP:
@@ -393,11 +316,6 @@ bool keycode_has_unicode(Key p_keycode) {
 		case Key::VOLUMEDOWN:
 		case Key::VOLUMEMUTE:
 		case Key::VOLUMEUP:
-		case Key::BASSBOOST:
-		case Key::BASSUP:
-		case Key::BASSDOWN:
-		case Key::TREBLEUP:
-		case Key::TREBLEDOWN:
 		case Key::MEDIAPLAY:
 		case Key::MEDIASTOP:
 		case Key::MEDIAPREVIOUS:
@@ -426,6 +344,10 @@ bool keycode_has_unicode(Key p_keycode) {
 		case Key::LAUNCHD:
 		case Key::LAUNCHE:
 		case Key::LAUNCHF:
+		case Key::GLOBE:
+		case Key::KEYBOARD:
+		case Key::JIS_EISU:
+		case Key::JIS_KANA:
 			return false;
 		default: {
 		}
@@ -521,4 +443,25 @@ int keycode_get_value_by_index(int p_index) {
 
 const char *keycode_get_name_by_index(int p_index) {
 	return _keycodes[p_index].text;
+}
+
+char32_t fix_unicode(char32_t p_char) {
+	if (p_char >= 0x20 && p_char != 0x7F) {
+		return p_char;
+	}
+	return 0;
+}
+
+Key fix_keycode(char32_t p_char, Key p_key) {
+	if (p_char >= 0x20 && p_char <= 0x7E) {
+		return (Key)String::char_uppercase(p_char);
+	}
+	return p_key;
+}
+
+Key fix_key_label(char32_t p_char, Key p_key) {
+	if (p_char >= 0x20 && p_char != 0x7F) {
+		return (Key)String::char_uppercase(p_char);
+	}
+	return p_key;
 }

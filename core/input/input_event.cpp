@@ -285,6 +285,8 @@ void InputEventWithModifiers::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_meta_pressed", "pressed"), &InputEventWithModifiers::set_meta_pressed);
 	ClassDB::bind_method(D_METHOD("is_meta_pressed"), &InputEventWithModifiers::is_meta_pressed);
 
+	ClassDB::bind_method(D_METHOD("get_modifiers_mask"), &InputEventWithModifiers::get_modifiers_mask);
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "command_or_control_autoremap"), "set_command_or_control_autoremap", "is_command_or_control_autoremap");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "alt_pressed"), "set_alt_pressed", "is_alt_pressed");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shift_pressed"), "set_shift_pressed", "is_shift_pressed");
@@ -328,6 +330,15 @@ Key InputEventKey::get_keycode() const {
 	return keycode;
 }
 
+void InputEventKey::set_key_label(Key p_key_label) {
+	key_label = p_key_label;
+	emit_changed();
+}
+
+Key InputEventKey::get_key_label() const {
+	return key_label;
+}
+
 void InputEventKey::set_physical_keycode(Key p_keycode) {
 	physical_keycode = p_keycode;
 	emit_changed();
@@ -363,13 +374,72 @@ Key InputEventKey::get_physical_keycode_with_modifiers() const {
 	return physical_keycode | (int64_t)get_modifiers_mask();
 }
 
+Key InputEventKey::get_key_label_with_modifiers() const {
+	return key_label | get_modifiers_mask();
+}
+
+String InputEventKey::as_text_physical_keycode() const {
+	String kc;
+
+	if (physical_keycode != Key::NONE) {
+		kc = keycode_get_string(physical_keycode);
+	} else {
+		kc = "(" + RTR("Unset") + ")";
+	}
+
+	if (kc.is_empty()) {
+		return kc;
+	}
+
+	String mods_text = InputEventWithModifiers::as_text();
+	return mods_text.is_empty() ? kc : mods_text + "+" + kc;
+}
+
+String InputEventKey::as_text_keycode() const {
+	String kc;
+
+	if (keycode != Key::NONE) {
+		kc = keycode_get_string(keycode);
+	} else {
+		kc = "(" + RTR("Unset") + ")";
+	}
+
+	if (kc.is_empty()) {
+		return kc;
+	}
+
+	String mods_text = InputEventWithModifiers::as_text();
+	return mods_text.is_empty() ? kc : mods_text + "+" + kc;
+}
+
+String InputEventKey::as_text_key_label() const {
+	String kc;
+
+	if (key_label != Key::NONE) {
+		kc = keycode_get_string(key_label);
+	} else {
+		kc = "(" + RTR("Unset") + ")";
+	}
+
+	if (kc.is_empty()) {
+		return kc;
+	}
+
+	String mods_text = InputEventWithModifiers::as_text();
+	return mods_text.is_empty() ? kc : mods_text + "+" + kc;
+}
+
 String InputEventKey::as_text() const {
 	String kc;
 
-	if (keycode == Key::NONE) {
+	if (keycode == Key::NONE && physical_keycode == Key::NONE && key_label != Key::NONE) {
+		kc = keycode_get_string(key_label) + " (Unicode)";
+	} else if (keycode != Key::NONE) {
+		kc = keycode_get_string(keycode);
+	} else if (physical_keycode != Key::NONE) {
 		kc = keycode_get_string(physical_keycode) + " (" + RTR("Physical") + ")";
 	} else {
-		kc = keycode_get_string(keycode);
+		kc = "(" + RTR("Unset") + ")";
 	}
 
 	if (kc.is_empty()) {
@@ -386,11 +456,16 @@ String InputEventKey::to_string() {
 
 	String kc = "";
 	String physical = "false";
-	if (keycode == Key::NONE) {
+
+	if (keycode == Key::NONE && physical_keycode == Key::NONE && unicode != 0) {
+		kc = "U+" + String::num_uint64(unicode, 16) + " (" + String::chr(unicode) + ")";
+	} else if (keycode != Key::NONE) {
+		kc = itos((int64_t)keycode) + " (" + keycode_get_string(keycode) + ")";
+	} else if (physical_keycode != Key::NONE) {
 		kc = itos((int64_t)physical_keycode) + " (" + keycode_get_string(physical_keycode) + ")";
 		physical = "true";
 	} else {
-		kc = itos((int64_t)keycode) + " (" + keycode_get_string(keycode) + ")";
+		kc = "(" + RTR("Unset") + ")";
 	}
 
 	String mods = InputEventWithModifiers::as_text();
@@ -403,6 +478,7 @@ Ref<InputEventKey> InputEventKey::create_reference(Key p_keycode) {
 	Ref<InputEventKey> ie;
 	ie.instantiate();
 	ie->set_keycode(p_keycode & KeyModifierMask::CODE_MASK);
+	ie->set_key_label(p_keycode & KeyModifierMask::CODE_MASK);
 	ie->set_unicode(char32_t(p_keycode & KeyModifierMask::CODE_MASK));
 
 	if ((p_keycode & KeyModifierMask::SHIFT) != Key::NONE) {
@@ -435,11 +511,16 @@ bool InputEventKey::action_match(const Ref<InputEvent> &p_event, bool p_exact_ma
 	}
 
 	bool match;
-	if (keycode != Key::NONE) {
+	if (keycode == Key::NONE && physical_keycode == Key::NONE && key_label != Key::NONE) {
+		match = key_label == key->key_label;
+	} else if (keycode != Key::NONE) {
 		match = keycode == key->keycode;
+	} else if (physical_keycode != Key::NONE) {
+		match = physical_keycode == key->physical_keycode;
 	} else {
-		match = get_physical_keycode() == key->get_physical_keycode();
+		match = false;
 	}
+
 	Key action_mask = (Key)(int64_t)get_modifiers_mask();
 	Key key_mask = (Key)(int64_t)key->get_modifiers_mask();
 	if (key->is_pressed()) {
@@ -470,12 +551,17 @@ bool InputEventKey::is_match(const Ref<InputEvent> &p_event, bool p_exact_match)
 		return false;
 	}
 
-	if (keycode == Key::NONE) {
-		return physical_keycode == key->physical_keycode &&
+	if (keycode == Key::NONE && physical_keycode == Key::NONE && key_label != Key::NONE) {
+		return (key_label == key->key_label) &&
+				(!p_exact_match || get_modifiers_mask() == key->get_modifiers_mask());
+	} else if (keycode != Key::NONE) {
+		return (keycode == key->keycode) &&
+				(!p_exact_match || get_modifiers_mask() == key->get_modifiers_mask());
+	} else if (physical_keycode != Key::NONE) {
+		return (physical_keycode == key->physical_keycode) &&
 				(!p_exact_match || get_modifiers_mask() == key->get_modifiers_mask());
 	} else {
-		return keycode == key->keycode &&
-				(!p_exact_match || get_modifiers_mask() == key->get_modifiers_mask());
+		return false;
 	}
 }
 
@@ -488,6 +574,9 @@ void InputEventKey::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_physical_keycode", "physical_keycode"), &InputEventKey::set_physical_keycode);
 	ClassDB::bind_method(D_METHOD("get_physical_keycode"), &InputEventKey::get_physical_keycode);
 
+	ClassDB::bind_method(D_METHOD("set_key_label", "key_label"), &InputEventKey::set_key_label);
+	ClassDB::bind_method(D_METHOD("get_key_label"), &InputEventKey::get_key_label);
+
 	ClassDB::bind_method(D_METHOD("set_unicode", "unicode"), &InputEventKey::set_unicode);
 	ClassDB::bind_method(D_METHOD("get_unicode"), &InputEventKey::get_unicode);
 
@@ -495,10 +584,16 @@ void InputEventKey::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_keycode_with_modifiers"), &InputEventKey::get_keycode_with_modifiers);
 	ClassDB::bind_method(D_METHOD("get_physical_keycode_with_modifiers"), &InputEventKey::get_physical_keycode_with_modifiers);
+	ClassDB::bind_method(D_METHOD("get_key_label_with_modifiers"), &InputEventKey::get_key_label_with_modifiers);
+
+	ClassDB::bind_method(D_METHOD("as_text_keycode"), &InputEventKey::as_text_keycode);
+	ClassDB::bind_method(D_METHOD("as_text_physical_keycode"), &InputEventKey::as_text_physical_keycode);
+	ClassDB::bind_method(D_METHOD("as_text_key_label"), &InputEventKey::as_text_key_label);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pressed"), "set_pressed", "is_pressed");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "keycode"), "set_keycode", "get_keycode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "physical_keycode"), "set_physical_keycode", "get_physical_keycode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "key_label"), "set_key_label", "get_key_label");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "unicode"), "set_unicode", "get_unicode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "echo"), "set_echo", "is_echo");
 }

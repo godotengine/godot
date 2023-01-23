@@ -1610,6 +1610,58 @@ bool DisplayServerWindows::can_any_window_draw() const {
 	return false;
 }
 
+Vector2i DisplayServerWindows::ime_get_selection() const {
+	_THREAD_SAFE_METHOD_
+
+	DisplayServer::WindowID window_id = _get_focused_window_or_popup();
+	const WindowData &wd = windows[window_id];
+	if (!wd.ime_active) {
+		return Vector2i();
+	}
+
+	int cursor = ImmGetCompositionStringW(wd.im_himc, GCS_CURSORPOS, nullptr, 0);
+
+	int32_t length = ImmGetCompositionStringW(wd.im_himc, GCS_COMPSTR, nullptr, 0);
+	wchar_t *string = reinterpret_cast<wchar_t *>(memalloc(length));
+	ImmGetCompositionStringW(wd.im_himc, GCS_COMPSTR, string, length);
+
+	int32_t utf32_cursor = 0;
+	for (int32_t i = 0; i < length / sizeof(wchar_t); i++) {
+		if ((string[i] & 0xfffffc00) == 0xd800) {
+			i++;
+		}
+		if (i < cursor) {
+			utf32_cursor++;
+		} else {
+			break;
+		}
+	}
+
+	memdelete(string);
+
+	return Vector2i(utf32_cursor, 0);
+}
+
+String DisplayServerWindows::ime_get_text() const {
+	_THREAD_SAFE_METHOD_
+
+	DisplayServer::WindowID window_id = _get_focused_window_or_popup();
+	const WindowData &wd = windows[window_id];
+	if (!wd.ime_active) {
+		return String();
+	}
+
+	String ret;
+	int32_t length = ImmGetCompositionStringW(wd.im_himc, GCS_COMPSTR, nullptr, 0);
+	wchar_t *string = reinterpret_cast<wchar_t *>(memalloc(length));
+	ImmGetCompositionStringW(wd.im_himc, GCS_COMPSTR, string, length);
+	ret.parse_utf16((char16_t *)string, length / sizeof(wchar_t));
+
+	memdelete(string);
+
+	return ret;
+}
+
 void DisplayServerWindows::window_set_ime_active(const bool p_active, WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
@@ -1617,11 +1669,12 @@ void DisplayServerWindows::window_set_ime_active(const bool p_active, WindowID p
 	WindowData &wd = windows[p_window];
 
 	if (p_active) {
+		wd.ime_active = true;
 		ImmAssociateContext(wd.hWnd, wd.im_himc);
-
 		window_set_ime_position(wd.im_position, p_window);
 	} else {
 		ImmAssociateContext(wd.hWnd, (HIMC)0);
+		wd.ime_active = false;
 	}
 }
 
@@ -1639,7 +1692,7 @@ void DisplayServerWindows::window_set_ime_position(const Point2i &p_pos, WindowI
 	}
 
 	COMPOSITIONFORM cps;
-	cps.dwStyle = CFS_FORCE_POSITION;
+	cps.dwStyle = CFS_POINT;
 	cps.ptCurrentPos.x = wd.im_position.x;
 	cps.ptCurrentPos.y = wd.im_position.y;
 	ImmSetCompositionWindow(himc, &cps);
@@ -3353,10 +3406,18 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 				windows[window_id].focus_timer_id = 0U;
 			}
 		} break;
-		case WM_SYSKEYDOWN:
 		case WM_SYSKEYUP:
 		case WM_KEYUP:
+			if (windows[window_id].ime_suppress_next_keyup) {
+				windows[window_id].ime_suppress_next_keyup = false;
+				break;
+			}
+			[[fallthrough]];
+		case WM_SYSKEYDOWN:
 		case WM_KEYDOWN: {
+			if (windows[window_id].ime_in_progress) {
+				break;
+			}
 			if (wParam == VK_SHIFT) {
 				shift_mem = (uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN);
 			}
@@ -3379,6 +3440,9 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			[[fallthrough]];
 		}
 		case WM_CHAR: {
+			if (windows[window_id].ime_in_progress) {
+				break;
+			}
 			ERR_BREAK(key_event_pos >= KEY_EVENT_BUFFER_SIZE);
 
 			// Make sure we don't include modifiers for the modifier key itself.
@@ -3402,8 +3466,42 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 			key_event_buffer[key_event_pos++] = ke;
 
 		} break;
+		case WM_IME_COMPOSITION: {
+			CANDIDATEFORM cf;
+			cf.dwIndex = 0;
+			cf.dwStyle = CFS_EXCLUDE;
+			cf.ptCurrentPos.x = windows[window_id].im_position.x;
+			cf.ptCurrentPos.y = windows[window_id].im_position.y;
+			cf.rcArea.left = windows[window_id].im_position.x;
+			cf.rcArea.right = windows[window_id].im_position.x;
+			cf.rcArea.top = windows[window_id].im_position.y;
+			cf.rcArea.bottom = windows[window_id].im_position.y;
+			ImmSetCandidateWindow(windows[window_id].im_himc, &cf);
+			if (windows[window_id].ime_active) {
+				OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_OS_IME_UPDATE);
+			}
+		} break;
 		case WM_INPUTLANGCHANGEREQUEST: {
 			// FIXME: Do something?
+		} break;
+		case WM_IME_STARTCOMPOSITION: {
+			if (windows[window_id].ime_active) {
+				windows[window_id].ime_in_progress = true;
+				if (key_event_pos > 0) {
+					key_event_pos--;
+				}
+			}
+			return 0;
+		} break;
+		case WM_IME_ENDCOMPOSITION: {
+			if (windows[window_id].ime_active) {
+				windows[window_id].ime_in_progress = false;
+				windows[window_id].ime_suppress_next_keyup = true;
+			}
+			return 0;
+		} break;
+		case WM_IME_NOTIFY: {
+			return 0;
 		} break;
 		case WM_TOUCH: {
 			BOOL bHandled = FALSE;
@@ -3557,22 +3655,34 @@ void DisplayServerWindows::_process_key_events() {
 					Ref<InputEventKey> k;
 					k.instantiate();
 
+					Key keycode = KeyMappingWindows::get_keysym(MapVirtualKey((ke.lParam >> 16) & 0xFF, MAPVK_VSC_TO_VK));
+					Key key_label = keycode;
+					Key physical_keycode = KeyMappingWindows::get_scansym((ke.lParam >> 16) & 0xFF, ke.lParam & (1 << 24));
+
+					static BYTE keyboard_state[256];
+					memset(keyboard_state, 0, 256);
+					wchar_t chars[256] = {};
+					UINT extended_code = MapVirtualKey((ke.lParam >> 16) & 0xFF, MAPVK_VSC_TO_VK_EX);
+					if (!(ke.lParam & (1 << 24)) && ToUnicodeEx(extended_code, (ke.lParam >> 16) & 0xFF, keyboard_state, chars, 255, 0, GetKeyboardLayout(0)) > 0) {
+						String keysym = String::utf16((char16_t *)chars, 255);
+						if (!keysym.is_empty()) {
+							key_label = fix_key_label(keysym[0], keycode);
+						}
+					}
+
 					k->set_window_id(ke.window_id);
 					k->set_shift_pressed(ke.shift);
 					k->set_alt_pressed(ke.alt);
 					k->set_ctrl_pressed(ke.control);
 					k->set_meta_pressed(ke.meta);
 					k->set_pressed(true);
-					k->set_keycode((Key)KeyMappingWindows::get_keysym(MapVirtualKey((ke.lParam >> 16) & 0xFF, MAPVK_VSC_TO_VK)));
-					k->set_physical_keycode((Key)(KeyMappingWindows::get_scansym((ke.lParam >> 16) & 0xFF, ke.lParam & (1 << 24))));
-					k->set_unicode(unicode);
+					k->set_keycode(keycode);
+					k->set_physical_keycode(physical_keycode);
+					k->set_key_label(key_label);
+					k->set_unicode(fix_unicode(unicode));
 					if (k->get_unicode() && gr_mem) {
 						k->set_alt_pressed(false);
 						k->set_ctrl_pressed(false);
-					}
-
-					if (k->get_unicode() < 32) {
-						k->set_unicode(0);
 					}
 
 					Input::get_singleton()->parse_input_event(k);
@@ -3593,14 +3703,28 @@ void DisplayServerWindows::_process_key_events() {
 
 				k->set_pressed(ke.uMsg == WM_KEYDOWN);
 
+				Key keycode = KeyMappingWindows::get_keysym(ke.wParam);
 				if ((ke.lParam & (1 << 24)) && (ke.wParam == VK_RETURN)) {
 					// Special case for Numpad Enter key.
-					k->set_keycode(Key::KP_ENTER);
-				} else {
-					k->set_keycode((Key)KeyMappingWindows::get_keysym(ke.wParam));
+					keycode = Key::KP_ENTER;
+				}
+				Key key_label = keycode;
+				Key physical_keycode = KeyMappingWindows::get_scansym((ke.lParam >> 16) & 0xFF, ke.lParam & (1 << 24));
+
+				static BYTE keyboard_state[256];
+				memset(keyboard_state, 0, 256);
+				wchar_t chars[256] = {};
+				UINT extended_code = MapVirtualKey((ke.lParam >> 16) & 0xFF, MAPVK_VSC_TO_VK_EX);
+				if (!(ke.lParam & (1 << 24)) && ToUnicodeEx(extended_code, (ke.lParam >> 16) & 0xFF, keyboard_state, chars, 255, 0, GetKeyboardLayout(0)) > 0) {
+					String keysym = String::utf16((char16_t *)chars, 255);
+					if (!keysym.is_empty()) {
+						key_label = fix_key_label(keysym[0], keycode);
+					}
 				}
 
-				k->set_physical_keycode((Key)(KeyMappingWindows::get_scansym((ke.lParam >> 16) & 0xFF, ke.lParam & (1 << 24))));
+				k->set_keycode(keycode);
+				k->set_physical_keycode(physical_keycode);
+				k->set_key_label(key_label);
 
 				if (i + 1 < key_event_pos && key_event_buffer[i + 1].uMsg == WM_CHAR) {
 					char32_t unicode = key_event_buffer[i + 1].wParam;
@@ -3621,15 +3745,11 @@ void DisplayServerWindows::_process_key_events() {
 					} else {
 						prev_wck = 0;
 					}
-					k->set_unicode(unicode);
+					k->set_unicode(fix_unicode(unicode));
 				}
 				if (k->get_unicode() && gr_mem) {
 					k->set_alt_pressed(false);
 					k->set_ctrl_pressed(false);
-				}
-
-				if (k->get_unicode() < 32) {
-					k->set_unicode(0);
 				}
 
 				k->set_echo((ke.uMsg == WM_KEYDOWN && (ke.lParam & (1 << 30))));
@@ -3842,7 +3962,7 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 
 		// IME.
 		wd.im_himc = ImmGetContext(wd.hWnd);
-		ImmReleaseContext(wd.hWnd, wd.im_himc);
+		ImmAssociateContext(wd.hWnd, (HIMC)0);
 
 		wd.im_position = Vector2();
 
@@ -3936,6 +4056,8 @@ void DisplayServerWindows::tablet_set_current_driver(const String &p_driver) {
 }
 
 DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error) {
+	KeyMappingWindows::initialize();
+
 	drop_events = false;
 	key_event_pos = 0;
 
@@ -4043,7 +4165,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 	wc.lpszClassName = L"Engine";
 
 	if (!RegisterClassExW(&wc)) {
-		MessageBox(nullptr, "Failed To Register The Window Class.", "ERROR", MB_OK | MB_ICONEXCLAMATION);
+		MessageBoxW(nullptr, L"Failed To Register The Window Class.", L"ERROR", MB_OK | MB_ICONEXCLAMATION);
 		r_error = ERR_UNAVAILABLE;
 		return;
 	}
@@ -4122,7 +4244,7 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		// from making the system unresponsive.
 		SetPriorityClass(GetCurrentProcess(), ABOVE_NORMAL_PRIORITY_CLASS);
 		DWORD index = 0;
-		HANDLE handle = AvSetMmThreadCharacteristics("Games", &index);
+		HANDLE handle = AvSetMmThreadCharacteristicsW(L"Games", &index);
 		if (handle) {
 			AvSetMmThreadPriority(handle, AVRT_PRIORITY_CRITICAL);
 		}

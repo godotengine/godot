@@ -192,6 +192,7 @@ def configure(env: "Environment"):
         env.ParseConfig("pkg-config xrandr --cflags")
         env.ParseConfig("pkg-config xrender --cflags")
         env.ParseConfig("pkg-config xi --cflags")
+        env.ParseConfig("pkg-config xkbcommon --cflags")
 
     if env["touch"]:
         env.Append(CPPDEFINES=["TOUCH_ENABLED"])

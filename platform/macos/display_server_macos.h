@@ -69,6 +69,7 @@ public:
 		bool raw = false;
 		Key keycode = Key::NONE;
 		Key physical_keycode = Key::NONE;
+		Key key_label = Key::NONE;
 		uint32_t unicode = 0;
 	};
 
@@ -201,8 +202,6 @@ private:
 	Point2i _get_native_screen_position(int p_screen) const;
 	static void _displays_arrangement_changed(CGDirectDisplayID display_id, CGDisplayChangeSummaryFlags flags, void *user_info);
 
-	WindowID _get_focused_window_or_popup() const;
-
 	static void _dispatch_input_events(const Ref<InputEvent> &p_event);
 	void _dispatch_input_event(const Ref<InputEvent> &p_event);
 	void _push_input(const Ref<InputEvent> &p_event);
@@ -229,6 +228,7 @@ public:
 	void get_key_modifier_state(unsigned int p_macos_state, Ref<InputEventWithModifiers> r_state) const;
 	void update_mouse_pos(WindowData &p_wd, NSPoint p_location_in_window);
 	void push_to_key_event_buffer(const KeyEvent &p_event);
+	void pop_last_key_event();
 	void update_im_text(const Point2i &p_selection, const String &p_text);
 	void set_last_focused_window(WindowID p_window);
 	bool mouse_process_popups(bool p_close = false);
@@ -237,6 +237,7 @@ public:
 	void set_is_resizing(bool p_is_resizing);
 	bool get_is_resizing() const;
 	void reparent_check(WindowID p_window);
+	WindowID _get_focused_window_or_popup() const;
 
 	void window_update(WindowID p_window);
 	void window_destroy(WindowID p_window);

@@ -153,6 +153,7 @@ class InputEventKey : public InputEventWithModifiers {
 
 	Key keycode = Key::NONE; // Key enum, without modifier masks.
 	Key physical_keycode = Key::NONE;
+	Key key_label = Key::NONE;
 	uint32_t unicode = 0; ///unicode
 
 	bool echo = false; /// true if this is an echo key
@@ -170,6 +171,9 @@ public:
 	void set_physical_keycode(Key p_keycode);
 	Key get_physical_keycode() const;
 
+	void set_key_label(Key p_key_label);
+	Key get_key_label() const;
+
 	void set_unicode(char32_t p_unicode);
 	char32_t get_unicode() const;
 
@@ -178,12 +182,16 @@ public:
 
 	Key get_keycode_with_modifiers() const;
 	Key get_physical_keycode_with_modifiers() const;
+	Key get_key_label_with_modifiers() const;
 
 	virtual bool action_match(const Ref<InputEvent> &p_event, bool p_exact_match, float p_deadzone, bool *r_pressed, float *r_strength, float *r_raw_strength) const override;
 	virtual bool is_match(const Ref<InputEvent> &p_event, bool p_exact_match = true) const override;
 
 	virtual bool is_action_type() const override { return true; }
 
+	virtual String as_text_physical_keycode() const;
+	virtual String as_text_keycode() const;
+	virtual String as_text_key_label() const;
 	virtual String as_text() const override;
 	virtual String to_string() override;
 

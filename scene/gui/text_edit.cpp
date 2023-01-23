@@ -1319,11 +1319,12 @@ void TextEdit::_notification(int p_what) {
 						if (!clipped && get_caret_line(c) == line && carets_wrap_index[c] == line_wrap_index) {
 							carets.write[c].draw_pos.y = ofs_y + ldata->get_line_descent(line_wrap_index);
 
-							if (ime_text.length() == 0) {
+							if (ime_text.is_empty() || ime_selection.y == 0) {
+								// Normal caret.
 								CaretInfo ts_caret;
-								if (str.length() != 0) {
+								if (!str.is_empty() || !ime_text.is_empty()) {
 									// Get carets.
-									ts_caret = TS->shaped_text_get_carets(rid, get_caret_column(c));
+									ts_caret = TS->shaped_text_get_carets(rid, ime_text.is_empty() ? get_caret_column(c) : get_caret_column(c) + ime_selection.x);
 								} else {
 									// No carets, add one at the start.
 									int h = font->get_height(font_size);
@@ -1426,7 +1427,8 @@ void TextEdit::_notification(int p_what) {
 										}
 									}
 								}
-							} else {
+							}
+							if (!ime_text.is_empty()) {
 								{
 									// IME Intermediate text range.
 									Vector<Vector2> sel = TS->shaped_text_get_selection(rid, get_caret_column(c), get_caret_column(c) + ime_text.length());
@@ -1545,6 +1547,10 @@ void TextEdit::_notification(int p_what) {
 			if (has_focus()) {
 				ime_text = DisplayServer::get_singleton()->ime_get_text();
 				ime_selection = DisplayServer::get_singleton()->ime_get_selection();
+
+				if (!ime_text.is_empty()) {
+					delete_selection();
+				}
 
 				for (int i = 0; i < carets.size(); i++) {
 					String t;
