@@ -1145,7 +1145,7 @@ void ParticlesStorage::particles_set_view_axis(RID p_particles, const Vector3 &p
 		return;
 	}
 
-	if (particles->particle_buffer.is_null()) {
+	if (particles->particle_buffer.is_null() || particles->trail_bind_pose_uniform_set.is_null()) {
 		return; //particles have not processed yet
 	}
 
