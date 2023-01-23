@@ -443,19 +443,11 @@ bool TextServerAdvanced::_load_support_data(const String &p_filename) {
 }
 
 String TextServerAdvanced::_get_support_data_filename() const {
-#ifdef ICU_STATIC_DATA
 	return _MKSTR(ICU_DATA_NAME);
-#else
-	return String();
-#endif
 }
 
 String TextServerAdvanced::_get_support_data_info() const {
-#ifdef ICU_STATIC_DATA
 	return String("ICU break iteration data (") + _MKSTR(ICU_DATA_NAME) + String(").");
-#else
-	return String();
-#endif
 }
 
 bool TextServerAdvanced::_save_support_data(const String &p_filename) const {

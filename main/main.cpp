@@ -524,7 +524,11 @@ Error Main::test_setup() {
 		}
 	}
 	if (text_driver_idx >= 0) {
-		TextServerManager::get_singleton()->set_primary_interface(TextServerManager::get_singleton()->get_interface(text_driver_idx));
+		Ref<TextServer> ts = TextServerManager::get_singleton()->get_interface(text_driver_idx);
+		TextServerManager::get_singleton()->set_primary_interface(ts);
+		if (ts->has_feature(TextServer::FEATURE_USE_SUPPORT_DATA)) {
+			ts->load_support_data("res://" + ts->get_support_data_filename());
+		}
 	} else {
 		ERR_FAIL_V_MSG(ERR_CANT_CREATE, "TextServer: Unable to create TextServer interface.");
 	}
@@ -2238,7 +2242,11 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		}
 	}
 	if (text_driver_idx >= 0) {
-		TextServerManager::get_singleton()->set_primary_interface(TextServerManager::get_singleton()->get_interface(text_driver_idx));
+		Ref<TextServer> ts = TextServerManager::get_singleton()->get_interface(text_driver_idx);
+		TextServerManager::get_singleton()->set_primary_interface(ts);
+		if (ts->has_feature(TextServer::FEATURE_USE_SUPPORT_DATA)) {
+			ts->load_support_data("res://" + ts->get_support_data_filename());
+		}
 	} else {
 		ERR_FAIL_V_MSG(ERR_CANT_CREATE, "TextServer: Unable to create TextServer interface.");
 	}
