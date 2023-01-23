@@ -149,7 +149,7 @@
 			<param index="4" name="flip_fov" type="bool" />
 			<param index="5" name="eye" type="int" />
 			<param index="6" name="intraocular_dist" type="float" />
-			<param index="7" name=" convergence_dist" type="float" />
+			<param index="7" name="convergence_dist" type="float" />
 			<description>
 				Creates a new [Projection] that projects positions using a perspective projection with the given Y-axis field of view (in degrees), X:Y aspect ratio, and clipping distances. The projection is adjusted for a head-mounted display with the given distance between eyes and distance to a point that can be focused on.
 				[param eye] creates the projection for the left eye when set to 1, or the right eye when set to 2.
