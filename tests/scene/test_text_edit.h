@@ -3271,6 +3271,7 @@ TEST_CASE("[SceneTree][TextEdit] mouse") {
 
 TEST_CASE("[SceneTree][TextEdit] caret") {
 	TextEdit *text_edit = memnew(TextEdit);
+	text_edit->set_context_menu_enabled(false); // Prohibit sending InputEvents to the context menu.
 	SceneTree::get_singleton()->get_root()->add_child(text_edit);
 
 	text_edit->set_size(Size2(800, 200));
