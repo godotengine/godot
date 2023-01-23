@@ -1434,9 +1434,9 @@
 			<param index="0" name="vsync_mode" type="int" enum="DisplayServer.VSyncMode" />
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
-				Sets the V-Sync mode of the given window.
+				Sets the V-Sync mode of the given window. See also [member ProjectSettings.display/window/vsync/vsync_mode].
 				See [enum DisplayServer.VSyncMode] for possible values and how they affect the behavior of your application.
-				Depending on the platform and used renderer, the engine will fall back to [constant VSYNC_ENABLED], if the desired mode is not supported.
+				Depending on the platform and used renderer, the engine will fall back to [constant VSYNC_ENABLED] if the desired mode is not supported.
 			</description>
 		</method>
 		<method name="window_set_window_buttons_offset">
