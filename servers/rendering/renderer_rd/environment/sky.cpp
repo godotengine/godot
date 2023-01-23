@@ -347,7 +347,10 @@ void SkyRD::ReflectionData::update_reflection_data(int p_size, int p_mipmaps, bo
 	tf.texture_type = RD::TEXTURE_TYPE_CUBE;
 	tf.array_layers = 6;
 	tf.mipmaps = p_low_quality ? 7 : mipmaps - 1;
-	tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
+	tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
+	if (RendererSceneRenderRD::get_singleton()->_render_buffers_can_be_storage()) {
+		tf.usage_bits |= RD::TEXTURE_USAGE_STORAGE_BIT;
+	}
 
 	downsampled_radiance_cubemap = RD::get_singleton()->texture_create(tf, RD::TextureView());
 	RD::get_singleton()->set_resource_name(downsampled_radiance_cubemap, "downsampled radiance cubemap");
@@ -1627,7 +1630,10 @@ void SkyRD::update_dirty_skys() {
 				tf.mipmaps = mipmaps;
 				tf.width = w;
 				tf.height = h;
-				tf.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
+				tf.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT;
+				if (RendererSceneRenderRD::get_singleton()->_render_buffers_can_be_storage()) {
+					tf.usage_bits |= RD::TEXTURE_USAGE_STORAGE_BIT;
+				}
 
 				sky->radiance = RD::get_singleton()->texture_create(tf, RD::TextureView());
 
