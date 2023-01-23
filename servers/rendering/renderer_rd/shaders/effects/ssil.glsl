@@ -234,7 +234,7 @@ void SSILTap(const int p_quality_level, inout vec3 r_color_sum, inout float r_ob
 	// snap to pixel center (more correct obscurance math, avoids artifacts)
 	sample_offset = round(sample_offset);
 
-	// calculate MIP based on the sample distance from the centre, similar to as described
+	// calculate MIP based on the sample distance from the center, similar to as described
 	// in http://graphics.cs.williams.edu/papers/SAOHPG12/.
 	float mip_level = (p_quality_level < SSIL_DEPTH_MIPS_ENABLE_AT_QUALITY_PRESET) ? (0) : (sample_pow_2_len + p_mip_offset);
 
@@ -272,7 +272,7 @@ void generate_SSIL(out vec3 r_color, out vec4 r_edges, out float r_obscurance, o
 	// get this pixel's viewspace depth
 	pix_z = valuesUL.y;
 
-	// get left right top bottom neighbouring pixels for edge detection (gets compiled out on quality_level == 0)
+	// get left right top bottom neighboring pixels for edge detection (gets compiled out on quality_level == 0)
 	pix_left_z = valuesUL.x;
 	pix_top_z = valuesUL.z;
 	pix_right_z = valuesBR.z;
@@ -318,7 +318,7 @@ void generate_SSIL(out vec3 r_color, out vec4 r_edges, out float r_obscurance, o
 	float obscurance_sum = 0.0;
 	float weight_sum = 0.0;
 
-	// edge mask for between this and left/right/top/bottom neighbour pixels - not used in quality level 0 so initialize to "no edge" (1 is no edge, 0 is edge)
+	// edge mask for between this and left/right/top/bottom neighbor pixels - not used in quality level 0 so initialize to "no edge" (1 is no edge, 0 is edge)
 	vec4 edgesLRTB = vec4(1.0, 1.0, 1.0, 1.0);
 
 	// Move center pixel slightly towards camera to avoid imprecision artifacts due to using of 16bit depth buffer; a lot smaller offsets needed when using 32bit floats

@@ -696,7 +696,7 @@
 		<method name="merge_overlapping_carets">
 			<return type="void" />
 			<description>
-				Merges any overlapping carets. Will favour the newest caret, or the caret with a selection.
+				Merges any overlapping carets. Will favor the newest caret, or the caret with a selection.
 				[b]Note:[/b] This is not called when a caret changes position but after certain actions, so it is possible to get into a state where carets overlap.
 			</description>
 		</method>

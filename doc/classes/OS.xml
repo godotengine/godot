@@ -566,7 +566,7 @@
 		<method name="open_midi_inputs">
 			<return type="void" />
 			<description>
-				Initialises the singleton for the system MIDI driver.
+				Initializes the singleton for the system MIDI driver.
 				[b]Note:[/b] This method is implemented on Linux, macOS and Windows.
 			</description>
 		</method>

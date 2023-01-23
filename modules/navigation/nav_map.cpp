@@ -225,7 +225,7 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 						avp.entry = new_entry;
 					}
 				} else {
-					// Add the neighbour polygon to the reachable ones.
+					// Add the neighbor polygon to the reachable ones.
 					gd::NavigationPoly new_navigation_poly = gd::NavigationPoly(connection.polygon);
 					new_navigation_poly.self_id = navigation_polys.size();
 					new_navigation_poly.back_navigation_poly_id = least_cost_id;
@@ -236,7 +236,7 @@ Vector<Vector3> NavMap::get_path(Vector3 p_origin, Vector3 p_destination, bool p
 					new_navigation_poly.entry = new_entry;
 					navigation_polys.push_back(new_navigation_poly);
 
-					// Add the neighbour polygon to the polygons to visit.
+					// Add the neighbor polygon to the polygons to visit.
 					to_visit.push_back(navigation_polys.size() - 1);
 				}
 			}

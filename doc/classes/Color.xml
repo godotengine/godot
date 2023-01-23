@@ -101,7 +101,7 @@
 			<return type="Color" />
 			<param index="0" name="over" type="Color" />
 			<description>
-				Returns a new color resulting from overlaying this color over the given color. In a painting program, you can imagine it as the [param over] color painted over this colour (including alpha).
+				Returns a new color resulting from overlaying this color over the given color. In a painting program, you can imagine it as the [param over] color painted over this color (including alpha).
 				[codeblocks]
 				[gdscript]
 				var bg = Color(0.0, 1.0, 0.0, 0.5) # Green with alpha of 50%

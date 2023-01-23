@@ -135,7 +135,7 @@ Error MultiplayerAPI::encode_and_compress_variant(const Variant &p_variant, uint
 				return err;
 			}
 			if (r_buffer) {
-				// The first byte is not used by the marshalling, so store the type
+				// The first byte is not used by the marshaling, so store the type
 				// so we know how to decompress and decode this variant.
 				r_buffer[0] = p_variant.get_type();
 			}

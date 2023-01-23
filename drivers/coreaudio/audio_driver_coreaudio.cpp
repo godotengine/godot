@@ -632,7 +632,7 @@ void AudioDriverCoreAudio::_set_device(const String &device, bool capture) {
 		ERR_FAIL_COND(result != noErr);
 
 		if (capture) {
-			// Reset audio input to keep synchronisation.
+			// Reset audio input to keep synchronization.
 			input_position = 0;
 			input_size = 0;
 		}

@@ -268,7 +268,7 @@ void EditorPropertyTextEnum::_custom_value_accepted() {
 	_custom_value_submitted(new_value);
 }
 
-void EditorPropertyTextEnum::_custom_value_cancelled() {
+void EditorPropertyTextEnum::_custom_value_canceled() {
 	custom_value_edit->set_text(get_edited_object()->get(get_edited_property()));
 
 	edit_custom_layout->hide();
@@ -380,7 +380,7 @@ EditorPropertyTextEnum::EditorPropertyTextEnum() {
 	cancel_button = memnew(Button);
 	cancel_button->set_flat(true);
 	edit_custom_layout->add_child(cancel_button);
-	cancel_button->connect("pressed", callable_mp(this, &EditorPropertyTextEnum::_custom_value_cancelled));
+	cancel_button->connect("pressed", callable_mp(this, &EditorPropertyTextEnum::_custom_value_canceled));
 
 	add_focusable(option_button);
 	add_focusable(edit_button);

@@ -454,7 +454,7 @@ void GradientEditor::_notification(int p_what) {
 				// Draw with selection color.
 				draw_rect(Rect2(button_offset, 0, h, h), points[grabbed].color);
 			} else {
-				// If no color selected draw grey color with 'X' on top.
+				// If no color selected draw gray color with 'X' on top.
 				draw_rect(Rect2(button_offset, 0, h, h), Color(0.5, 0.5, 0.5, 1));
 				draw_line(Vector2(button_offset, 0), Vector2(button_offset + h, h), Color(1, 1, 1, 0.6));
 				draw_line(Vector2(button_offset, h), Vector2(button_offset + h, 0), Color(1, 1, 1, 0.6));

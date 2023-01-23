@@ -52,7 +52,7 @@ class AStar3D : public RefCounted {
 		real_t weight_scale = 0;
 		bool enabled = false;
 
-		OAHashMap<int64_t, Point *> neighbours = 4u;
+		OAHashMap<int64_t, Point *> neighbors = 4u;
 		OAHashMap<int64_t, Point *> unlinked_neighbours = 4u;
 
 		// Used for pathfinding.
