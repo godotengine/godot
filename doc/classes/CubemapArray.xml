@@ -12,4 +12,12 @@
 	</description>
 	<tutorials>
 	</tutorials>
+	<methods>
+		<method name="create_placeholder" qualifiers="const">
+			<return type="Resource" />
+			<description>
+				Creates a placeholder version of this resource ([PlaceholderCubemapArray]).
+			</description>
+		</method>
+	</methods>
 </class>

@@ -74,6 +74,12 @@
 				Called when a pixel's opaque state in the [Texture2D] is queried at the specified [code](x, y)[/code] position.
 			</description>
 		</method>
+		<method name="create_placeholder" qualifiers="const">
+			<return type="Resource" />
+			<description>
+				Creates a placeholder version of this resource ([PlaceholderTexture2D]).
+			</description>
+		</method>
 		<method name="draw" qualifiers="const">
 			<return type="void" />
 			<param index="0" name="canvas_item" type="RID" />

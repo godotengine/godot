@@ -10,4 +10,12 @@
 	</description>
 	<tutorials>
 	</tutorials>
+	<methods>
+		<method name="create_placeholder" qualifiers="const">
+			<return type="Resource" />
+			<description>
+				Creates a placeholder version of this resource ([PlaceholderTexture2DArray]).
+			</description>
+		</method>
+	</methods>
 </class>
