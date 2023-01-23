@@ -11,6 +11,7 @@ readability.
 - Version: 1.1.3-5
 - License: LPGL-2.1+
 
+Patches in the `patches` directory should be re-applied after updates.
 
 ## dbus
 
