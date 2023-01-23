@@ -113,7 +113,7 @@ struct ReflectionProbe {
 	Color ambient_color;
 	float ambient_color_energy = 1.0;
 	float max_distance = 0;
-	Vector3 extents = Vector3(1, 1, 1);
+	Vector3 extents = Vector3(10, 10, 10);
 	Vector3 origin_offset;
 	bool interior = false;
 	bool box_projection = false;
