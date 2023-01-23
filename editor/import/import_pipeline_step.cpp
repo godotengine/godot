@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  mesh_editor_plugin.h                                                  */
+/*  import_pipeline_step.cpp                                              */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,33 +28,68 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MESH_EDITOR_PLUGIN_H
-#define MESH_EDITOR_PLUGIN_H
+#include "import_pipeline_step.h"
 
-#include "editor/editor_inspector.h"
-#include "editor/editor_plugin.h"
-#include "scene/3d/camera_3d.h"
-#include "scene/3d/light_3d.h"
+#include "core/error/error_macros.h"
+#include "core/io/resource_saver.h"
+#include "editor/editor_node.h"
+#include "scene/3d/area_3d.h"
+#include "scene/3d/collision_shape_3d.h"
+#include "scene/3d/importer_mesh_instance_3d.h"
 #include "scene/3d/mesh_instance_3d.h"
-#include "scene/gui/subviewport_container.h"
-#include "scene/resources/camera_attributes.h"
-#include "scene/resources/material.h"
+#include "scene/3d/navigation_region_3d.h"
+#include "scene/3d/occluder_instance_3d.h"
+#include "scene/3d/physics_body_3d.h"
+#include "scene/3d/vehicle_body_3d.h"
+#include "scene/animation/animation_player.h"
+#include "scene/resources/animation.h"
+#include "scene/resources/box_shape_3d.h"
+#include "scene/resources/importer_mesh.h"
+#include "scene/resources/packed_scene.h"
+#include "scene/resources/resource_format_text.h"
+#include "scene/resources/separation_ray_shape_3d.h"
+#include "scene/resources/sphere_shape_3d.h"
+#include "scene/resources/surface_tool.h"
+#include "scene/resources/world_boundary_shape_3d.h"
 
-class EditorInspectorPluginMesh : public EditorInspectorPlugin {
-	GDCLASS(EditorInspectorPluginMesh, EditorInspectorPlugin);
+void ImportPipelineStep::_bind_methods() {
+	GDVIRTUAL_BIND(_update);
+	GDVIRTUAL_BIND(_source_changed);
+	GDVIRTUAL_BIND(_get_inputs);
+	GDVIRTUAL_BIND(_get_outputs);
+	GDVIRTUAL_BIND(_get_tree);
 
-public:
-	virtual bool can_handle(Object *p_object) override;
-	virtual void parse_begin(Object *p_object) override;
-};
+	ADD_SIGNAL(MethodInfo("name_changed", PropertyInfo(Variant::STRING, "name")));
+}
 
-class MeshEditorPlugin : public EditorPlugin {
-	GDCLASS(MeshEditorPlugin, EditorPlugin);
+void ImportPipelineStep::update() {
+	GDVIRTUAL_CALL(_update);
+}
 
-public:
-	virtual String get_name() const override { return "Mesh"; }
+void ImportPipelineStep::source_changed() {
+	GDVIRTUAL_CALL(_source_changed);
+}
 
-	MeshEditorPlugin();
-};
+PackedStringArray ImportPipelineStep::get_inputs() {
+	PackedStringArray ret;
+	if (GDVIRTUAL_CALL(_get_inputs, ret)) {
+		return ret;
+	}
+	return PackedStringArray();
+}
 
-#endif // MESH_EDITOR_PLUGIN_H
+PackedStringArray ImportPipelineStep::get_outputs() {
+	PackedStringArray ret;
+	if (GDVIRTUAL_CALL(_get_outputs, ret)) {
+		return ret;
+	}
+	return PackedStringArray();
+}
+
+Node *ImportPipelineStep::get_tree() {
+	Node *ret;
+	if (GDVIRTUAL_CALL(_get_tree, ret)) {
+		return ret;
+	}
+	return nullptr;
+}

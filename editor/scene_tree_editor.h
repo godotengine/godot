@@ -69,6 +69,9 @@ class SceneTreeEditor : public Control {
 
 	int blocked;
 
+	bool use_scene_root = false;
+	Node *scene_root = nullptr;
+
 	void _compute_hash(Node *p_node, uint64_t &hash);
 
 	void _add_nodes(Node *p_node, TreeItem *p_parent);
@@ -143,6 +146,8 @@ public:
 
 	void set_as_scene_tree_dock();
 	void set_display_foreign_nodes(bool p_display);
+
+	void set_scene_root(Node *p_node);
 
 	void set_marked(const HashSet<Node *> &p_marked, bool p_selectable = false, bool p_children_selectable = true);
 	void set_marked(Node *p_marked, bool p_selectable = false, bool p_children_selectable = true);

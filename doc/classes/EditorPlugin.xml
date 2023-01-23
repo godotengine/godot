@@ -429,6 +429,12 @@
 				See [method add_inspector_plugin] for an example of how to register a plugin.
 			</description>
 		</method>
+		<method name="add_import_pipeline_plugin">
+			<return type="void" />
+			<param index="0" name="plugin" type="ImportPipelinePlugin" />
+			<description>
+			</description>
+		</method>
 		<method name="add_import_plugin">
 			<return type="void" />
 			<param index="0" name="importer" type="EditorImportPlugin" />
@@ -618,6 +624,12 @@
 			<param index="0" name="plugin" type="EditorExportPlugin" />
 			<description>
 				Removes an export plugin registered by [method add_export_plugin].
+			</description>
+		</method>
+		<method name="remove_import_pipeline_plugin">
+			<return type="void" />
+			<param index="0" name="plugin" type="ImportPipelinePlugin" />
+			<description>
 			</description>
 		</method>
 		<method name="remove_import_plugin">

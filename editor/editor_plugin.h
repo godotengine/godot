@@ -61,6 +61,7 @@ class FileSystemDock;
 class ScriptCreateDialog;
 class ScriptEditor;
 class VBoxContainer;
+class ImportPipelinePlugin;
 
 class EditorInterface : public Node {
 	GDCLASS(EditorInterface, Node);
@@ -283,6 +284,9 @@ public:
 
 	void add_import_plugin(const Ref<EditorImportPlugin> &p_importer, bool p_first_priority = false);
 	void remove_import_plugin(const Ref<EditorImportPlugin> &p_importer);
+
+	void add_import_pipeline_plugin(const Ref<ImportPipelinePlugin> &p_plugin);
+	void remove_import_pipeline_plugin(const Ref<ImportPipelinePlugin> &p_plugin);
 
 	void add_export_plugin(const Ref<EditorExportPlugin> &p_exporter);
 	void remove_export_plugin(const Ref<EditorExportPlugin> &p_exporter);

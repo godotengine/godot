@@ -103,6 +103,7 @@
 #include "editor/import/audio_stream_import_settings.h"
 #include "editor/import/dynamic_font_import_settings.h"
 #include "editor/import/editor_import_collada.h"
+#include "editor/import/import_pipeline_plugin.h"
 #include "editor/import/resource_importer_bitmask.h"
 #include "editor/import/resource_importer_bmfont.h"
 #include "editor/import/resource_importer_csv_translation.h"
@@ -128,6 +129,9 @@
 #include "editor/plugins/editor_preview_plugins.h"
 #include "editor/plugins/editor_resource_conversion_plugin.h"
 #include "editor/plugins/gdextension_export_plugin.h"
+#include "editor/plugins/import_pipeline_editor_plugin.h"
+#include "editor/plugins/import_pipeline_steps_mesh.h"
+#include "editor/plugins/import_pipeline_steps_scene.h"
 #include "editor/plugins/material_editor_plugin.h"
 #include "editor/plugins/mesh_library_editor_plugin.h"
 #include "editor/plugins/node_3d_editor_plugin.h"
@@ -6743,6 +6747,19 @@ EditorNode::EditorNode() {
 		EditorInspector::add_inspector_plugin(smp);
 	}
 
+	{
+		ImportPipelinePlugins *import_pipeline_plugins = memnew(ImportPipelinePlugins);
+		add_child(import_pipeline_plugins);
+
+		Ref<ImportPipelinePluginScene> scene_plugin;
+		scene_plugin.instantiate();
+		import_pipeline_plugins->add_plugin(scene_plugin);
+
+		Ref<ImportPipelinePluginMesh> mesh_plugin;
+		mesh_plugin.instantiate();
+		import_pipeline_plugins->add_plugin(mesh_plugin);
+	}
+
 	editor_selection = memnew(EditorSelection);
 
 	EditorFileSystem *efs = memnew(EditorFileSystem);
@@ -7785,6 +7802,7 @@ EditorNode::EditorNode() {
 	add_editor_plugin(memnew(CanvasItemEditorPlugin));
 	add_editor_plugin(memnew(Node3DEditorPlugin));
 	add_editor_plugin(memnew(ScriptEditorPlugin));
+	add_editor_plugin(memnew(ImportPipelineEditorPlugin));
 
 	EditorAudioBuses *audio_bus_editor = EditorAudioBuses::register_editor();
 

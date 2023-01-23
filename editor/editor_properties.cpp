@@ -3516,7 +3516,9 @@ void EditorPropertyNodePath::_node_selected(const NodePath &p_path) {
 	NodePath path = p_path;
 	Node *base_node = nullptr;
 
-	if (!use_path_from_scene_root) {
+	if (get_scene_root() != nullptr) {
+		base_node = get_scene_root();
+	} else if (!use_path_from_scene_root) {
 		base_node = Object::cast_to<Node>(get_edited_object());
 
 		if (!base_node) {
@@ -3556,6 +3558,7 @@ void EditorPropertyNodePath::_node_assign() {
 		scene_tree = memnew(SceneTreeDialog);
 		scene_tree->get_scene_tree()->set_show_enabled_subscene(true);
 		scene_tree->get_scene_tree()->set_valid_types(valid_types);
+		scene_tree->get_scene_tree()->set_scene_root(get_scene_root());
 		add_child(scene_tree);
 		scene_tree->connect("selected", callable_mp(this, &EditorPropertyNodePath::_node_selected));
 	}

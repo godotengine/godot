@@ -39,12 +39,10 @@ class PackedSceneEditor : public VBoxContainer {
 	GDCLASS(PackedSceneEditor, VBoxContainer);
 
 	Ref<PackedScene> packed_scene;
-	Button *open_scene_button;
+	Control *preview = nullptr;
 
 	void _on_open_scene_pressed();
-
-protected:
-	void _notification(int p_what);
+	void _on_open_preview_pressed();
 
 public:
 	PackedSceneEditor(Ref<PackedScene> &p_packed_scene);

@@ -41,6 +41,7 @@ class ImportDockParameters : public Object {
 
 public:
 	HashMap<StringName, Variant> values;
+	Ref<ImportPipeline> import_pipeline;
 	List<PropertyInfo> properties;
 	Ref<ResourceImporter> importer;
 	Vector<String> paths;
@@ -49,7 +50,10 @@ public:
 	String base_options_path;
 
 	bool _set(const StringName &p_name, const Variant &p_value) {
-		if (values.has(p_name)) {
+		if (p_name == "post_import/pipeline") {
+			import_pipeline = p_value;
+			return true;
+		} else if (values.has(p_name)) {
 			values[p_name] = p_value;
 			if (checking) {
 				checked.insert(p_name);
@@ -62,7 +66,10 @@ public:
 	}
 
 	bool _get(const StringName &p_name, Variant &r_ret) const {
-		if (values.has(p_name)) {
+		if (p_name == "post_import/pipeline") {
+			r_ret = import_pipeline;
+			return true;
+		} else if (values.has(p_name)) {
 			r_ret = values[p_name];
 			return true;
 		}
@@ -83,6 +90,7 @@ public:
 			}
 			p_list->push_back(pi);
 		}
+		p_list->push_back(PropertyInfo(Variant::OBJECT, "post_import/pipeline", PROPERTY_HINT_RESOURCE_TYPE, "ImportPipeline"));
 	}
 
 	void update() {
@@ -176,6 +184,11 @@ void ImportDock::_update_options(const String &p_path, const Ref<ConfigFile> &p_
 		} else {
 			params->values[E.option.name] = E.default_value;
 		}
+	}
+	if (p_config->has_section("post_import")) {
+		params->import_pipeline = p_config->get_value("post_import", "pipeline");
+	} else {
+		params->import_pipeline = Ref<ImportPipeline>();
 	}
 
 	params->update();
@@ -431,6 +444,7 @@ void ImportDock::clear() {
 	preset->set_disabled(true);
 	params->values.clear();
 	params->properties.clear();
+	params->import_pipeline = Ref<ImportPipeline>();
 	params->update();
 	preset->get_popup()->clear();
 	content->hide();
@@ -545,6 +559,8 @@ void ImportDock::_reimport() {
 			} else {
 				config->set_value("remap", "group_file", Variant()); //clear group file if unused
 			}
+
+			config->set_value("post_import", "pipeline", params->import_pipeline);
 
 		} else {
 			//set to no import

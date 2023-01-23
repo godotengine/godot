@@ -410,6 +410,10 @@ Object *EditorProperty::get_edited_object() {
 	return object;
 }
 
+Node *EditorProperty::get_scene_root() {
+	return state.scene_root;
+}
+
 StringName EditorProperty::get_edited_property() const {
 	return property;
 }
@@ -1000,7 +1004,7 @@ void EditorProperty::_bind_methods() {
 }
 
 EditorProperty::EditorProperty() {
-	object = nullptr;
+	state = EditorInspectorState();
 	split_ratio = 0.5;
 	text_size = 0;
 	property_usage = 0;
@@ -2494,7 +2498,7 @@ void EditorInspector::_parse_added_editors(VBoxContainer *current_vbox, EditorIn
 		current_vbox->add_child(F.property_editor);
 
 		if (ep) {
-			ep->object = object;
+			ep->state = state;
 			ep->connect("property_changed", callable_mp(this, &EditorInspector::_property_changed).bind(false));
 			ep->connect("property_keyed", callable_mp(this, &EditorInspector::_property_keyed));
 			ep->connect("property_deleted", callable_mp(this, &EditorInspector::_property_deleted), CONNECT_DEFERRED);
@@ -3188,7 +3192,7 @@ void EditorInspector::update_tree() {
 
 			if (ep) {
 				// Set all this before the control gets the ENTER_TREE notification.
-				ep->object = object;
+				ep->state = state;
 
 				if (properties.size()) {
 					if (properties.size() == 1) {
@@ -3320,7 +3324,7 @@ Object *EditorInspector::get_edited_object() {
 	return object;
 }
 
-void EditorInspector::edit(Object *p_object) {
+void EditorInspector::edit(Object *p_object, Node *p_scene_root) {
 	if (object == p_object) {
 		return;
 	}
@@ -3331,6 +3335,7 @@ void EditorInspector::edit(Object *p_object) {
 	per_array_page.clear();
 
 	object = p_object;
+	scene_root = p_scene_root;
 
 	if (object) {
 		update_scroll_request = 0; //reset

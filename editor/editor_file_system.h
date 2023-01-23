@@ -36,6 +36,7 @@
 #include "core/os/thread_safe.h"
 #include "core/templates/hash_set.h"
 #include "core/templates/safe_refcount.h"
+#include "editor/import/import_pipeline.h"
 #include "scene/main/node.h"
 
 class FileAccess;
@@ -242,7 +243,7 @@ class EditorFileSystem : public Node {
 
 	void _update_extensions();
 
-	void _reimport_file(const String &p_file, const HashMap<StringName, Variant> *p_custom_options = nullptr, const String &p_custom_importer = String());
+	void _reimport_file(const String &p_file, const HashMap<StringName, Variant> *p_custom_options = nullptr, const String &p_custom_importer = String(), Ref<ImportPipeline> p_custom_pipeline = nullptr);
 	Error _reimport_group(const String &p_group_file, const Vector<String> &p_files);
 
 	bool _test_for_reimport(const String &p_path, bool p_only_imported_files);
@@ -316,7 +317,7 @@ public:
 
 	void reimport_files(const Vector<String> &p_files);
 
-	void reimport_file_with_custom_parameters(const String &p_file, const String &p_importer, const HashMap<StringName, Variant> &p_custom_params);
+	void reimport_file_with_custom_parameters(const String &p_file, const String &p_importer, const HashMap<StringName, Variant> &p_custom_params, Ref<ImportPipeline> p_custom_pipeline = Ref<ImportPipeline>());
 
 	bool is_group_file(const String &p_path) const;
 	void move_group_file(const String &p_path, const String &p_new_path);

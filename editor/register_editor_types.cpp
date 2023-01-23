@@ -46,6 +46,8 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "editor/filesystem_dock.h"
 #include "editor/import/editor_import_plugin.h"
+#include "editor/import/import_pipeline.h"
+#include "editor/import/import_pipeline_step.h"
 #include "editor/import/resource_importer_scene.h"
 #include "editor/plugins/animation_tree_editor_plugin.h"
 #include "editor/plugins/audio_stream_editor_plugin.h"
@@ -67,6 +69,7 @@
 #include "editor/plugins/gpu_particles_collision_sdf_editor_plugin.h"
 #include "editor/plugins/gradient_editor_plugin.h"
 #include "editor/plugins/gradient_texture_2d_editor_plugin.h"
+#include "editor/plugins/import_pipeline_steps_scene.h"
 #include "editor/plugins/input_event_editor_plugin.h"
 #include "editor/plugins/light_occluder_2d_editor_plugin.h"
 #include "editor/plugins/lightmap_gi_editor_plugin.h"
@@ -145,6 +148,10 @@ void register_editor_types() {
 	GDREGISTER_CLASS(EditorResourcePicker);
 	GDREGISTER_CLASS(EditorScriptPicker);
 	GDREGISTER_ABSTRACT_CLASS(EditorUndoRedoManager);
+
+	GDREGISTER_CLASS(ImportPipeline);
+	GDREGISTER_CLASS(ImportPipelineStep);
+	GDREGISTER_CLASS(ImportPipelinePlugin);
 
 	GDREGISTER_ABSTRACT_CLASS(FileSystemDock);
 	GDREGISTER_VIRTUAL_CLASS(EditorFileSystemImportFormatSupportQuery);

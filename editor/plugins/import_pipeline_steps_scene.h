@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  mesh_editor_plugin.h                                                  */
+/*  import_pipeline_steps_scene.h                                         */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,33 +28,20 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MESH_EDITOR_PLUGIN_H
-#define MESH_EDITOR_PLUGIN_H
+#ifndef IMPORT_PIPELINE_STEPS_SCENE_H
+#define IMPORT_PIPELINE_STEPS_SCENE_H
 
-#include "editor/editor_inspector.h"
-#include "editor/editor_plugin.h"
-#include "scene/3d/camera_3d.h"
-#include "scene/3d/light_3d.h"
-#include "scene/3d/mesh_instance_3d.h"
-#include "scene/gui/subviewport_container.h"
-#include "scene/resources/camera_attributes.h"
-#include "scene/resources/material.h"
+#include "editor/import/import_pipeline.h"
+#include "editor/import/import_pipeline_plugin.h"
+#include "editor/import/import_pipeline_step.h"
 
-class EditorInspectorPluginMesh : public EditorInspectorPlugin {
-	GDCLASS(EditorInspectorPluginMesh, EditorInspectorPlugin);
+class ImportPipelinePluginScene : public ImportPipelinePlugin {
+	GDCLASS(ImportPipelinePluginScene, ImportPipelinePlugin);
 
 public:
-	virtual bool can_handle(Object *p_object) override;
-	virtual void parse_begin(Object *p_object) override;
+	virtual String get_category() override { return "Scene"; }
+	virtual PackedStringArray get_avaible_steps() override;
+	virtual Ref<ImportPipelineStep> get_step(const String &p_name) override;
 };
 
-class MeshEditorPlugin : public EditorPlugin {
-	GDCLASS(MeshEditorPlugin, EditorPlugin);
-
-public:
-	virtual String get_name() const override { return "Mesh"; }
-
-	MeshEditorPlugin();
-};
-
-#endif // MESH_EDITOR_PLUGIN_H
+#endif // IMPORT_PIPELINE_STEPS_SCENE_H

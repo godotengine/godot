@@ -46,6 +46,9 @@
 #include "scene/resources/packed_scene.h"
 
 Node *SceneTreeEditor::get_scene_node() {
+	if (use_scene_root) {
+		return scene_root;
+	}
 	ERR_FAIL_COND_V(!is_inside_tree(), nullptr);
 
 	return get_tree()->get_edited_scene_root();
@@ -1026,6 +1029,11 @@ void SceneTreeEditor::_renamed() {
 
 Node *SceneTreeEditor::get_selected() {
 	return selected;
+}
+
+void SceneTreeEditor::set_scene_root(Node *p_node) {
+	scene_root = p_node;
+	use_scene_root = true;
 }
 
 void SceneTreeEditor::set_marked(const HashSet<Node *> &p_marked, bool p_selectable, bool p_children_selectable) {

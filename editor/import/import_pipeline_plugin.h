@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  mesh_editor_plugin.h                                                  */
+/*  import_pipeline_plugin.h                                              */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,33 +28,52 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MESH_EDITOR_PLUGIN_H
-#define MESH_EDITOR_PLUGIN_H
+#ifndef IMPORT_PIPELINE_PLUGIN_H
+#define IMPORT_PIPELINE_PLUGIN_H
 
-#include "editor/editor_inspector.h"
-#include "editor/editor_plugin.h"
-#include "scene/3d/camera_3d.h"
-#include "scene/3d/light_3d.h"
-#include "scene/3d/mesh_instance_3d.h"
-#include "scene/gui/subviewport_container.h"
-#include "scene/resources/camera_attributes.h"
-#include "scene/resources/material.h"
+#include "core/error/error_macros.h"
+#include "core/io/resource_importer.h"
+#include "core/variant/dictionary.h"
+#include "editor/import/import_pipeline_step.h"
+#include "scene/resources/packed_scene.h"
 
-class EditorInspectorPluginMesh : public EditorInspectorPlugin {
-	GDCLASS(EditorInspectorPluginMesh, EditorInspectorPlugin);
+class ImportPipelinePlugin : public RefCounted {
+	GDCLASS(ImportPipelinePlugin, RefCounted);
 
-public:
-	virtual bool can_handle(Object *p_object) override;
-	virtual void parse_begin(Object *p_object) override;
-};
+protected:
+	GDVIRTUAL0R(String, _get_category);
+	GDVIRTUAL0R(PackedStringArray, _get_avaible_steps);
+	GDVIRTUAL1R(Ref<ImportPipelineStep>, _get_step, String);
 
-class MeshEditorPlugin : public EditorPlugin {
-	GDCLASS(MeshEditorPlugin, EditorPlugin);
+	static void _bind_methods();
 
 public:
-	virtual String get_name() const override { return "Mesh"; }
-
-	MeshEditorPlugin();
+	virtual String get_category();
+	virtual PackedStringArray get_avaible_steps();
+	virtual Ref<ImportPipelineStep> get_step(const String &p_name);
 };
 
-#endif // MESH_EDITOR_PLUGIN_H
+class ImportPipelinePlugins : public Node {
+	GDCLASS(ImportPipelinePlugins, Node);
+
+	static ImportPipelinePlugins *singleton;
+
+	Vector<Ref<ImportPipelinePlugin>> plugins;
+
+protected:
+	static void _bind_methods();
+
+public:
+	static ImportPipelinePlugins *get_singleton() { return singleton; }
+
+	void add_plugin(Ref<ImportPipelinePlugin> p_plugin);
+	void remove_plugin(Ref<ImportPipelinePlugin> p_plugin);
+	int get_plugin_count() { return plugins.size(); }
+	Ref<ImportPipelinePlugin> get_plugin(int p_index) { return plugins[p_index]; }
+	Ref<ImportPipelineStep> create_step(const String &p_category, const String &p_name);
+
+	ImportPipelinePlugins() { singleton = this; };
+	~ImportPipelinePlugins() { singleton = nullptr; };
+};
+
+#endif // IMPORT_PIPELINE_PLUGIN_H

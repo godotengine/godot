@@ -41,6 +41,7 @@
 #include "editor/export/editor_export.h"
 #include "editor/filesystem_dock.h"
 #include "editor/import/editor_import_plugin.h"
+#include "editor/import/import_pipeline_plugin.h"
 #include "editor/import/resource_importer_scene.h"
 #include "editor/inspector_dock.h"
 #include "editor/plugins/canvas_item_editor_plugin.h"
@@ -742,6 +743,16 @@ void EditorPlugin::remove_import_plugin(const Ref<EditorImportPlugin> &p_importe
 	EditorFileSystem::get_singleton()->call_deferred(SNAME("scan"));
 }
 
+void EditorPlugin::add_import_pipeline_plugin(const Ref<ImportPipelinePlugin> &p_plugin) {
+	ERR_FAIL_COND(!p_plugin.is_valid());
+	ImportPipelinePlugins::get_singleton()->add_plugin(p_plugin);
+}
+
+void EditorPlugin::remove_import_pipeline_plugin(const Ref<ImportPipelinePlugin> &p_plugin) {
+	ERR_FAIL_COND(!p_plugin.is_valid());
+	ImportPipelinePlugins::get_singleton()->remove_plugin(p_plugin);
+}
+
 void EditorPlugin::add_export_plugin(const Ref<EditorExportPlugin> &p_exporter) {
 	ERR_FAIL_COND(!p_exporter.is_valid());
 	EditorExport::get_singleton()->add_export_plugin(p_exporter);
@@ -907,6 +918,8 @@ void EditorPlugin::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_translation_parser_plugin", "parser"), &EditorPlugin::remove_translation_parser_plugin);
 	ClassDB::bind_method(D_METHOD("add_import_plugin", "importer", "first_priority"), &EditorPlugin::add_import_plugin, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("remove_import_plugin", "importer"), &EditorPlugin::remove_import_plugin);
+	ClassDB::bind_method(D_METHOD("add_import_pipeline_plugin", "plugin"), &EditorPlugin::add_import_pipeline_plugin);
+	ClassDB::bind_method(D_METHOD("remove_import_pipeline_plugin", "plugin"), &EditorPlugin::remove_import_pipeline_plugin);
 	ClassDB::bind_method(D_METHOD("add_scene_format_importer_plugin", "scene_format_importer", "first_priority"), &EditorPlugin::add_scene_format_importer_plugin, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("remove_scene_format_importer_plugin", "scene_format_importer"), &EditorPlugin::remove_scene_format_importer_plugin);
 	ClassDB::bind_method(D_METHOD("add_scene_post_import_plugin", "scene_import_plugin", "first_priority"), &EditorPlugin::add_scene_post_import_plugin, DEFVAL(false));

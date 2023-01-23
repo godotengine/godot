@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ImportPipeline" inherits="Resource" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Pipeline to allow post processing of imported resources.
+	</brief_description>
+	<description>
+		A ImportPipeline is a collection of steps and connections.
+		It allows complicated behavior after a resource import like editing the resource or saving additional resources.
+	</description>
+	<tutorials>
+	</tutorials>
+	<members>
+		<member name="connections" type="Dictionary[]" setter="set_connections" getter="get_connections" default="[]">
+		</member>
+		<member name="steps" type="Dictionary[]" setter="set_steps" getter="get_steps" default="[]">
+		</member>
+	</members>
+</class>

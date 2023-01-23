@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  mesh_editor_plugin.h                                                  */
+/*  import_pipeline.h                                                     */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,33 +28,34 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MESH_EDITOR_PLUGIN_H
-#define MESH_EDITOR_PLUGIN_H
+#ifndef IMPORT_PIPELINE_H
+#define IMPORT_PIPELINE_H
 
-#include "editor/editor_inspector.h"
-#include "editor/editor_plugin.h"
-#include "scene/3d/camera_3d.h"
-#include "scene/3d/light_3d.h"
-#include "scene/3d/mesh_instance_3d.h"
-#include "scene/gui/subviewport_container.h"
-#include "scene/resources/camera_attributes.h"
-#include "scene/resources/material.h"
+#include "core/error/error_macros.h"
+#include "core/io/resource_importer.h"
+#include "core/variant/dictionary.h"
+#include "editor/import/import_pipeline_step.h"
+#include "scene/resources/packed_scene.h"
 
-class EditorInspectorPluginMesh : public EditorInspectorPlugin {
-	GDCLASS(EditorInspectorPluginMesh, EditorInspectorPlugin);
+class ImportPipeline : public Resource {
+	GDCLASS(ImportPipeline, Resource);
+	RES_BASE_EXTENSION("pipeline");
 
-public:
-	virtual bool can_handle(Object *p_object) override;
-	virtual void parse_begin(Object *p_object) override;
-};
+	TypedArray<Dictionary> steps;
+	TypedArray<Dictionary> connections;
 
-class MeshEditorPlugin : public EditorPlugin {
-	GDCLASS(MeshEditorPlugin, EditorPlugin);
+protected:
+	static void _bind_methods();
 
 public:
-	virtual String get_name() const override { return "Mesh"; }
+	TypedArray<Dictionary> get_steps() { return steps; }
+	void set_steps(TypedArray<Dictionary> p_steps) { steps = p_steps; }
+	TypedArray<Dictionary> get_connections() { return connections; }
+	void set_connections(TypedArray<Dictionary> p_connections) { connections = p_connections; }
 
-	MeshEditorPlugin();
+	Ref<Resource> execute(Ref<Resource> p_source, const String &p_path);
+
+	ImportPipeline() {}
 };
 
-#endif // MESH_EDITOR_PLUGIN_H
+#endif // IMPORT_PIPELINE_H

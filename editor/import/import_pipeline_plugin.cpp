@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  mesh_editor_plugin.h                                                  */
+/*  import_pipeline_plugin.cpp                                            */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,33 +28,76 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef MESH_EDITOR_PLUGIN_H
-#define MESH_EDITOR_PLUGIN_H
+#include "import_pipeline_plugin.h"
 
-#include "editor/editor_inspector.h"
-#include "editor/editor_plugin.h"
-#include "scene/3d/camera_3d.h"
-#include "scene/3d/light_3d.h"
-#include "scene/3d/mesh_instance_3d.h"
-#include "scene/gui/subviewport_container.h"
-#include "scene/resources/camera_attributes.h"
-#include "scene/resources/material.h"
+#include "core/error/error_macros.h"
+#include "editor/editor_node.h"
+#include "editor/import/import_pipeline_step.h"
 
-class EditorInspectorPluginMesh : public EditorInspectorPlugin {
-	GDCLASS(EditorInspectorPluginMesh, EditorInspectorPlugin);
+void ImportPipelinePlugin::_bind_methods() {
+	GDVIRTUAL_BIND(_get_category);
+	GDVIRTUAL_BIND(_get_avaible_steps);
+	GDVIRTUAL_BIND(_get_step, "step");
+}
 
-public:
-	virtual bool can_handle(Object *p_object) override;
-	virtual void parse_begin(Object *p_object) override;
-};
+String ImportPipelinePlugin::get_category() {
+	String ret;
+	if (GDVIRTUAL_CALL(_get_category, ret)) {
+		return ret;
+	}
+	return "Others";
+}
 
-class MeshEditorPlugin : public EditorPlugin {
-	GDCLASS(MeshEditorPlugin, EditorPlugin);
+PackedStringArray ImportPipelinePlugin::get_avaible_steps() {
+	PackedStringArray ret;
+	if (GDVIRTUAL_CALL(_get_avaible_steps, ret)) {
+		return ret;
+	}
+	return PackedStringArray();
+}
 
-public:
-	virtual String get_name() const override { return "Mesh"; }
+Ref<ImportPipelineStep> ImportPipelinePlugin::get_step(const String &p_name) {
+	Ref<ImportPipelineStep> ret;
+	if (GDVIRTUAL_CALL(_get_step, p_name, ret)) {
+		return ret;
+	}
+	return Ref<ImportPipelineStep>();
+}
 
-	MeshEditorPlugin();
-};
+///////////////////////////////////////
 
-#endif // MESH_EDITOR_PLUGIN_H
+ImportPipelinePlugins *ImportPipelinePlugins::singleton = nullptr;
+
+void ImportPipelinePlugins::_bind_methods() {
+	ADD_SIGNAL(MethodInfo("plugins_changed"));
+}
+
+void ImportPipelinePlugins::add_plugin(Ref<ImportPipelinePlugin> p_plugin) {
+	plugins.push_back(p_plugin);
+	emit_signal("plugins_changed");
+}
+
+void ImportPipelinePlugins::remove_plugin(Ref<ImportPipelinePlugin> p_plugin) {
+	plugins.erase(p_plugin);
+	emit_signal("plugins_changed");
+}
+
+Ref<ImportPipelineStep> ImportPipelinePlugins::create_step(const String &p_category, const String &p_name) {
+	if (p_category.is_empty() || p_name.is_empty()) {
+		return memnew(ImportPipelineStep);
+	}
+	for (Ref<ImportPipelinePlugin> plugin : plugins) {
+		if (plugin->get_category() != p_category) {
+			continue;
+		}
+		Ref<ImportPipelineStep> step = plugin->get_step(p_name);
+		if (!step.is_valid()) {
+			continue;
+		}
+		step->set_category_name(p_category);
+		step->set_step_name(p_name);
+		return step;
+	}
+
+	ERR_FAIL_V_MSG(Ref<ImportPipelineStep>(), vformat("Invalid category '%s' or name '%s' for pipeline step", p_category, p_name));
+}

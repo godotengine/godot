@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="ImportPipelineStep" inherits="RefCounted" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Step to transform resources.
+	</brief_description>
+	<description>
+		This step transforms the input resources into output resources.
+		The amount and type of in- and output resources can change.
+		Avaible parameters should be exposed as exported properties.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="_get_inputs" qualifiers="virtual">
+			<return type="PackedStringArray" />
+			<description>
+				Select which exported resources should be used as inputs.
+			</description>
+		</method>
+		<method name="_get_outputs" qualifiers="virtual">
+			<return type="PackedStringArray" />
+			<description>
+				Select which exported resources should be used as outputs.
+			</description>
+		</method>
+		<method name="_get_tree" qualifiers="virtual">
+			<return type="Node" />
+			<description>
+			</description>
+		</method>
+		<method name="_source_changed" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				Called when a source resource is changed.
+				Avaible properties based on the source can be calculated.
+			</description>
+		</method>
+		<method name="_update" qualifiers="virtual">
+			<return type="void" />
+			<description>
+				Update the output resources.
+			</description>
+		</method>
+	</methods>
+	<signals>
+		<signal name="name_changed">
+			<param index="0" name="name" type="String" />
+			<description>
+				Emit to change the displayed name of the node in the import pipeline
+			</description>
+		</signal>
+	</signals>
+</class>
