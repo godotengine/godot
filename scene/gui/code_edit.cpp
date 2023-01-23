@@ -3088,6 +3088,8 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 	}
 
 	code_completion_options.append_array(completion_options_casei);
+	code_completion_options.append_array(completion_options_substr);
+	code_completion_options.append_array(completion_options_substr_casei);
 	code_completion_options.append_array(completion_options_subseq);
 	code_completion_options.append_array(completion_options_subseq_casei);
 
