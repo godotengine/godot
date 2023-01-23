@@ -87,7 +87,6 @@ void AudioStreamPlaybackPolyphonic::stop() {
 			AudioServer::get_singleton()->lock();
 		}
 		s.active.clear();
-		s.finalizing.clear();
 		s.finish_request.clear();
 		s.stream_playback.unref();
 		s.stream.unref();
@@ -145,7 +144,6 @@ int AudioStreamPlaybackPolyphonic::mix(AudioFrame *p_buffer, float p_rate_scale,
 			if (s.pending_play.is_set()) {
 				// Did not get the chance to play, was finalized too soon.
 				s.active.clear();
-				s.finalizing.set();
 				continue;
 			}
 			next_volume = 0;
@@ -163,6 +161,8 @@ int AudioStreamPlaybackPolyphonic::mix(AudioFrame *p_buffer, float p_rate_scale,
 		int offset = 0;
 		float volume = prev_volume;
 
+		bool stream_done = false;
+
 		while (todo) {
 			int to_mix = MIN(todo, int(INTERNAL_BUFFER_LEN));
 			int mixed = s.stream_playback->mix(internal_buffer, s.pitch_scale, to_mix);
@@ -175,7 +175,7 @@ int AudioStreamPlaybackPolyphonic::mix(AudioFrame *p_buffer, float p_rate_scale,
 			if (mixed < to_mix) {
 				// Stream is done.
 				s.active.clear();
-				s.finalizing.set();
+				stream_done = true;
 				break;
 			}
 
@@ -183,34 +183,22 @@ int AudioStreamPlaybackPolyphonic::mix(AudioFrame *p_buffer, float p_rate_scale,
 			offset += to_mix;
 		}
 
+		if (stream_done) {
+			continue;
+		}
+
 		if (s.finish_request.is_set()) {
 			s.active.clear();
-			s.finalizing.set();
 		}
 	}
 
 	return p_frames;
 }
 
-void AudioStreamPlaybackPolyphonic::_check_finalized_streams() {
-	if (!active) {
-		return;
-	}
-
-	for (Stream &s : streams) {
-		if (!s.active.is_set() && s.finalizing.is_set()) {
-			s.stream_playback.unref();
-			s.stream.unref();
-			s.finalizing.clear();
-			s.finish_request.clear();
-		}
-	}
-}
-
 AudioStreamPlaybackPolyphonic::ID AudioStreamPlaybackPolyphonic::play_stream(const Ref<AudioStream> &p_stream, float p_from_offset, float p_volume_db, float p_pitch_scale) {
 	ERR_FAIL_COND_V(p_stream.is_null(), INVALID_ID);
 	for (uint32_t i = 0; i < streams.size(); i++) {
-		if (!streams[i].active.is_set() && !streams[i].finish_request.is_set() && !streams[i].finalizing.is_set()) {
+		if (!streams[i].active.is_set()) {
 			// Can use this stream, as it's not active.
 			streams[i].stream = p_stream;
 			streams[i].stream_playback = streams[i].stream->instantiate_playback();
@@ -219,6 +207,7 @@ AudioStreamPlaybackPolyphonic::ID AudioStreamPlaybackPolyphonic::play_stream(con
 			streams[i].prev_volume_db = p_volume_db;
 			streams[i].pitch_scale = p_pitch_scale;
 			streams[i].id = id_counter++;
+			streams[i].finish_request.clear();
 			streams[i].pending_play.set();
 			streams[i].active.set();
 			return (ID(i) << INDEX_SHIFT) | ID(streams[i].id);
@@ -282,5 +271,4 @@ void AudioStreamPlaybackPolyphonic::_bind_methods() {
 }
 
 AudioStreamPlaybackPolyphonic::AudioStreamPlaybackPolyphonic() {
-	SceneTree::get_singleton()->connect(SNAME("process_frame"), callable_mp(this, &AudioStreamPlaybackPolyphonic::_check_finalized_streams));
 }
