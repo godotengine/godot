@@ -1361,8 +1361,11 @@ private:
 	void clear();
 	void push_error(const String &p_message, const Node *p_origin = nullptr);
 #ifdef DEBUG_ENABLED
-	void push_warning(const Node *p_source, GDScriptWarning::Code p_code, const String &p_symbol1 = String(), const String &p_symbol2 = String(), const String &p_symbol3 = String(), const String &p_symbol4 = String());
 	void push_warning(const Node *p_source, GDScriptWarning::Code p_code, const Vector<String> &p_symbols);
+	template <typename... Symbols>
+	void push_warning(const Node *p_source, GDScriptWarning::Code p_code, const Symbols &...p_symbols) {
+		push_warning(p_source, p_code, Vector<String>{ p_symbols... });
+	}
 #endif
 
 	void make_completion_context(CompletionType p_type, Node *p_node, int p_argument = -1, bool p_force = false);

@@ -41,6 +41,7 @@
 #include "core/os/os.h"
 #include "core/string/string_builder.h"
 #include "gdscript_warning.h"
+#include "servers/text_server.h"
 #endif // DEBUG_ENABLED
 
 #ifdef TOOLS_ENABLED
@@ -186,24 +187,6 @@ void GDScriptParser::push_error(const String &p_message, const Node *p_origin) {
 }
 
 #ifdef DEBUG_ENABLED
-void GDScriptParser::push_warning(const Node *p_source, GDScriptWarning::Code p_code, const String &p_symbol1, const String &p_symbol2, const String &p_symbol3, const String &p_symbol4) {
-	ERR_FAIL_COND(p_source == nullptr);
-	Vector<String> symbols;
-	if (!p_symbol1.is_empty()) {
-		symbols.push_back(p_symbol1);
-	}
-	if (!p_symbol2.is_empty()) {
-		symbols.push_back(p_symbol2);
-	}
-	if (!p_symbol3.is_empty()) {
-		symbols.push_back(p_symbol3);
-	}
-	if (!p_symbol4.is_empty()) {
-		symbols.push_back(p_symbol4);
-	}
-	push_warning(p_source, p_code, symbols);
-}
-
 void GDScriptParser::push_warning(const Node *p_source, GDScriptWarning::Code p_code, const Vector<String> &p_symbols) {
 	ERR_FAIL_COND(p_source == nullptr);
 	if (is_ignoring_warnings) {
@@ -2251,7 +2234,14 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_expression(bool p_can_assi
 }
 
 GDScriptParser::IdentifierNode *GDScriptParser::parse_identifier() {
-	return static_cast<IdentifierNode *>(parse_identifier(nullptr, false));
+	IdentifierNode *identifier = static_cast<IdentifierNode *>(parse_identifier(nullptr, false));
+#ifdef DEBUG_ENABLED
+	// Check for spoofing here (if available in TextServer) since this isn't called inside expressions. This is only relevant for declarations.
+	if (identifier && TS->has_feature(TextServer::FEATURE_UNICODE_SECURITY) && TS->spoof_check(identifier->name.operator String())) {
+		push_warning(identifier, GDScriptWarning::CONFUSABLE_IDENTIFIER, identifier->name.operator String());
+	}
+#endif
+	return identifier;
 }
 
 GDScriptParser::ExpressionNode *GDScriptParser::parse_identifier(ExpressionNode *p_previous_operand, bool p_can_assign) {
