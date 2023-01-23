@@ -308,10 +308,8 @@ void AudioStreamPlayer::_bus_layout_changed() {
 }
 
 Ref<AudioStreamPlayback> AudioStreamPlayer::get_stream_playback() {
-	if (!stream_playbacks.is_empty()) {
-		return stream_playbacks[stream_playbacks.size() - 1];
-	}
-	return nullptr;
+	ERR_FAIL_COND_V_MSG(stream_playbacks.is_empty(), Ref<AudioStreamPlayback>(), "Player is inactive. Call play() before requesting get_stream_playback().");
+	return stream_playbacks[stream_playbacks.size() - 1];
 }
 
 void AudioStreamPlayer::_bind_methods() {

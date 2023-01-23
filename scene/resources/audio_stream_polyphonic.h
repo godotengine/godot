@@ -63,7 +63,6 @@ class AudioStreamPlaybackPolyphonic : public AudioStreamPlayback {
 		SafeFlag active;
 		SafeFlag pending_play;
 		SafeFlag finish_request;
-		SafeFlag finalizing;
 		float play_offset = 0;
 		float pitch_scale = 1.0;
 		Ref<AudioStream> stream;
@@ -73,7 +72,7 @@ class AudioStreamPlaybackPolyphonic : public AudioStreamPlayback {
 		uint32_t id = 0;
 
 		Stream() :
-				active(false), pending_play(false), finish_request(false), finalizing(false) {}
+				active(false), pending_play(false), finish_request(false) {}
 	};
 
 	LocalVector<Stream> streams;
@@ -83,8 +82,6 @@ class AudioStreamPlaybackPolyphonic : public AudioStreamPlayback {
 	uint32_t id_counter = 1;
 
 	_FORCE_INLINE_ Stream *_find_stream(int64_t p_id);
-
-	void _check_finalized_streams();
 
 	friend class AudioStreamPolyphonic;
 
