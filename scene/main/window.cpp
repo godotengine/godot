@@ -2344,6 +2344,7 @@ void Window::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("visibility_changed"));
 	ADD_SIGNAL(MethodInfo("about_to_popup"));
 	ADD_SIGNAL(MethodInfo("theme_changed"));
+	ADD_SIGNAL(MethodInfo("dpi_changed"));
 	ADD_SIGNAL(MethodInfo("titlebar_changed"));
 
 	BIND_CONSTANT(NOTIFICATION_VISIBILITY_CHANGED);
