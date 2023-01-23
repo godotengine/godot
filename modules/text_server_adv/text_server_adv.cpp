@@ -6114,6 +6114,11 @@ String TextServerAdvanced::_percent_sign(const String &p_language) const {
 }
 
 int64_t TextServerAdvanced::_is_confusable(const String &p_string, const PackedStringArray &p_dict) const {
+#ifndef ICU_STATIC_DATA
+	if (!icu_data_loaded) {
+		return -1;
+	}
+#endif
 	UErrorCode status = U_ZERO_ERROR;
 	int64_t match_index = -1;
 
@@ -6154,6 +6159,11 @@ int64_t TextServerAdvanced::_is_confusable(const String &p_string, const PackedS
 }
 
 bool TextServerAdvanced::_spoof_check(const String &p_string) const {
+#ifndef ICU_STATIC_DATA
+	if (!icu_data_loaded) {
+		return false;
+	}
+#endif
 	UErrorCode status = U_ZERO_ERROR;
 	Char16String utf16 = p_string.utf16();
 
@@ -6176,6 +6186,11 @@ bool TextServerAdvanced::_spoof_check(const String &p_string) const {
 }
 
 String TextServerAdvanced::_strip_diacritics(const String &p_string) const {
+#ifndef ICU_STATIC_DATA
+	if (!icu_data_loaded) {
+		return TextServer::strip_diacritics(p_string);
+	}
+#endif
 	UErrorCode err = U_ZERO_ERROR;
 
 	// Get NFKD normalizer singleton.
@@ -6213,6 +6228,12 @@ String TextServerAdvanced::_strip_diacritics(const String &p_string) const {
 }
 
 String TextServerAdvanced::_string_to_upper(const String &p_string, const String &p_language) const {
+#ifndef ICU_STATIC_DATA
+	if (!icu_data_loaded) {
+		return p_string.to_upper();
+	}
+#endif
+
 	if (p_string.is_empty()) {
 		return p_string;
 	}
@@ -6235,6 +6256,12 @@ String TextServerAdvanced::_string_to_upper(const String &p_string, const String
 }
 
 String TextServerAdvanced::_string_to_lower(const String &p_string, const String &p_language) const {
+#ifndef ICU_STATIC_DATA
+	if (!icu_data_loaded) {
+		return p_string.to_lower();
+	}
+#endif
+
 	if (p_string.is_empty()) {
 		return p_string;
 	}
@@ -6270,8 +6297,8 @@ PackedInt32Array TextServerAdvanced::_string_get_word_breaks(const String &p_str
 				breaks.insert(pos);
 			}
 		}
+		ubrk_close(bi);
 	}
-	ubrk_close(bi);
 
 	PackedInt32Array ret;
 
@@ -6352,6 +6379,13 @@ PackedInt32Array TextServerAdvanced::_string_get_word_breaks(const String &p_str
 }
 
 bool TextServerAdvanced::_is_valid_identifier(const String &p_string) const {
+#ifndef ICU_STATIC_DATA
+	if (!icu_data_loaded) {
+		WARN_PRINT_ONCE("ICU data is not loaded, Unicode security and spoofing detection disabled.");
+		return TextServer::is_valid_identifier(p_string);
+	}
+#endif
+
 	enum UAX31SequenceStatus {
 		SEQ_NOT_STARTED,
 		SEQ_STARTED,
