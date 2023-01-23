@@ -1294,7 +1294,9 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 			} else {
 				// Use default text server data.
 				String icu_data_file = EditorPaths::get_singleton()->get_cache_dir().path_join("tmp_icu_data");
-				TS->save_support_data(icu_data_file);
+				if (!TS->save_support_data(icu_data_file)) {
+					return ERR_INVALID_DATA;
+				}
 				Vector<uint8_t> array = FileAccess::get_file_as_bytes(icu_data_file);
 				err = p_func(p_udata, ts_data, array, idx, total, enc_in_filters, enc_ex_filters, key);
 				DirAccess::remove_file_or_error(icu_data_file);
