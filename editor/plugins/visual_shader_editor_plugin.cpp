@@ -40,6 +40,7 @@
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
+#include "editor/filesystem_dock.h"
 #include "editor/inspector_dock.h"
 #include "editor/plugins/curve_editor_plugin.h"
 #include "editor/plugins/shader_editor_plugin.h"
@@ -1271,18 +1272,55 @@ Dictionary VisualShaderEditor::get_custom_node_data(Ref<VisualShaderNodeCustom> 
 	return dict;
 }
 
-void VisualShaderEditor::update_custom_type(const Ref<Resource> &p_resource) {
-	Ref<Script> scr = Ref<Script>(p_resource.ptr());
-	if (scr.is_null() || scr->get_instance_base_type() != "VisualShaderNodeCustom") {
+void VisualShaderEditor::_get_current_mode_limits(int &r_begin_type, int &r_end_type) const {
+	switch (visual_shader->get_mode()) {
+		case Shader::MODE_CANVAS_ITEM:
+		case Shader::MODE_SPATIAL: {
+			r_begin_type = 0;
+			r_end_type = 3;
+		} break;
+		case Shader::MODE_PARTICLES: {
+			r_begin_type = 3;
+			r_end_type = 5 + r_begin_type;
+		} break;
+		case Shader::MODE_SKY: {
+			r_begin_type = 8;
+			r_end_type = 1 + r_begin_type;
+		} break;
+		case Shader::MODE_FOG: {
+			r_begin_type = 9;
+			r_end_type = 1 + r_begin_type;
+		} break;
+		default: {
+		} break;
+	}
+}
+
+void VisualShaderEditor::_script_created(const Ref<Script> &p_script) {
+	if (p_script.is_null() || p_script->get_instance_base_type() != "VisualShaderNodeCustom") {
+		return;
+	}
+	Ref<VisualShaderNodeCustom> ref;
+	ref.instantiate();
+	ref->set_script(p_script);
+
+	Dictionary dict = get_custom_node_data(ref);
+	add_custom_type(dict["name"], dict["script"], dict["description"], dict["return_icon_type"], dict["category"], dict["highend"]);
+
+	_update_options_menu();
+}
+
+void VisualShaderEditor::_update_custom_script(const Ref<Script> &p_script) {
+	if (p_script.is_null() || p_script->get_instance_base_type() != "VisualShaderNodeCustom") {
 		return;
 	}
 
 	Ref<VisualShaderNodeCustom> ref;
 	ref.instantiate();
-	ref->set_script(scr);
+	ref->set_script(p_script);
 	if (!ref->is_available(visual_shader->get_mode(), visual_shader->get_shader_type())) {
 		for (int i = 0; i < add_options.size(); i++) {
-			if (add_options[i].is_custom && add_options[i].script == scr) {
+			if (add_options[i].is_custom && add_options[i].script == p_script) {
 				add_options.remove_at(i);
 				_update_options_menu();
 				// TODO: Make indication for the existed custom nodes with that script on graph to be disabled.
@@ -1296,8 +1334,8 @@ void VisualShaderEditor::update_custom_type(const Ref<Resource> &p_resource) {
 	bool found_type = false;
 	bool need_rebuild = false;
 
-	for (int i = 0; i < add_options.size(); i++) {
-		if (add_options[i].is_custom && add_options[i].script == scr) {
+	for (int i = custom_node_option_idx; i < add_options.size(); i++) {
+		if (add_options[i].script == p_script) {
 			found_type = true;
 
 			add_options.write[i].name = dict["name"];
@@ -1306,31 +1344,11 @@ void VisualShaderEditor::update_custom_type(const Ref<Resource> &p_resource) {
 			add_options.write[i].category = dict["category"];
 			add_options.write[i].highend = dict["highend"];
 
-			int max_type = 0;
-			int type_offset = 0;
-			switch (visual_shader->get_mode()) {
-				case Shader::MODE_CANVAS_ITEM:
-				case Shader::MODE_SPATIAL: {
-					max_type = 3;
-				} break;
-				case Shader::MODE_PARTICLES: {
-					max_type = 5;
-					type_offset = 3;
-				} break;
-				case Shader::MODE_SKY: {
-					max_type = 1;
-					type_offset = 8;
-				} break;
-				case Shader::MODE_FOG: {
-					max_type = 1;
-					type_offset = 9;
-				} break;
-				default: {
-				} break;
-			}
-			max_type = type_offset + max_type;
+			int begin_type = 0;
+			int end_type = 0;
+			_get_current_mode_limits(begin_type, end_type);
 
-			for (int t = type_offset; t < max_type; t++) {
+			for (int t = begin_type; t < end_type; t++) {
 				VisualShader::Type type = (VisualShader::Type)t;
 				Vector<int> nodes = visual_shader->get_node_list(type);
 
@@ -1339,28 +1357,27 @@ void VisualShaderEditor::update_custom_type(const Ref<Resource> &p_resource) {
 
 				List<VisualShader::Connection> custom_node_input_connections;
 				List<VisualShader::Connection> custom_node_output_connections;
+
 				for (const VisualShader::Connection &E : node_connections) {
 					int from = E.from_node;
-					int from_idx = E.from_port;
+					int from_port = E.from_port;
 					int to = E.to_node;
-					int to_idx = E.to_port;
+					int to_port = E.to_port;
 
-					if (graph_plugin->get_node_script(from) == scr) {
-						custom_node_output_connections.push_back({ from, from_idx, to, to_idx });
-					} else if (graph_plugin->get_node_script(to) == scr) {
-						custom_node_input_connections.push_back({ from, from_idx, to, to_idx });
+					if (graph_plugin->get_node_script(from) == p_script) {
+						custom_node_output_connections.push_back({ from, from_port, to, to_port });
+					} else if (graph_plugin->get_node_script(to) == p_script) {
+						custom_node_input_connections.push_back({ from, from_port, to, to_port });
 					}
 				}
 
-				for (int j = 0; j < nodes.size(); j++) {
-					int node_id = nodes[j];
-
+				for (int node_id : nodes) {
 					Ref<VisualShaderNode> vsnode = visual_shader->get_node(type, node_id);
 					if (vsnode.is_null()) {
 						continue;
 					}
 					Ref<VisualShaderNodeCustom> custom_node = Ref<VisualShaderNodeCustom>(vsnode.ptr());
-					if (custom_node.is_null() || custom_node->get_script() != scr) {
+					if (custom_node.is_null() || custom_node->get_script() != p_script) {
 						continue;
 					}
 					need_rebuild = true;
@@ -1426,6 +1443,89 @@ void VisualShaderEditor::update_custom_type(const Ref<Resource> &p_resource) {
 		_block_rebuild_shader = true;
 
 		call_deferred(SNAME("_rebuild_shader_deferred"));
+	}
+}
+
+void VisualShaderEditor::_resource_saved(const Ref<Resource> &p_resource) {
+	_update_custom_script(Ref<Script>(p_resource.ptr()));
+}
+
+void VisualShaderEditor::_resources_removed() {
+	bool has_any_instance = false;
+
+	for (const Ref<Script> &scr : custom_scripts_to_delete) {
+		for (int i = custom_node_option_idx; i < add_options.size(); i++) {
+			if (add_options[i].script == scr) {
+				add_options.remove_at(i);
+
+				// Removes all node instances using that script from the graph.
+				{
+					int begin_type = 0;
+					int end_type = 0;
+					_get_current_mode_limits(begin_type, end_type);
+
+					for (int t = begin_type; t < end_type; t++) {
+						VisualShader::Type type = (VisualShader::Type)t;
+
+						List<VisualShader::Connection> node_connections;
+						visual_shader->get_node_connections(type, &node_connections);
+
+						for (const VisualShader::Connection &E : node_connections) {
+							int from = E.from_node;
+							int from_port = E.from_port;
+							int to = E.to_node;
+							int to_port = E.to_port;
+
+							if (graph_plugin->get_node_script(from) == scr || graph_plugin->get_node_script(to) == scr) {
+								visual_shader->disconnect_nodes(type, from, from_port, to, to_port);
+								graph_plugin->disconnect_nodes(type, from, from_port, to, to_port);
+							}
+						}
+
+						Vector<int> nodes = visual_shader->get_node_list(type);
+						for (int node_id : nodes) {
+							Ref<VisualShaderNode> vsnode = visual_shader->get_node(type, node_id);
+							if (vsnode.is_null()) {
+								continue;
+							}
+							Ref<VisualShaderNodeCustom> custom_node = Ref<VisualShaderNodeCustom>(vsnode.ptr());
+							if (custom_node.is_null() || custom_node->get_script() != scr) {
+								continue;
+							}
+							visual_shader->remove_node(type, node_id);
+							graph_plugin->remove_node(type, node_id, false);
+
+							has_any_instance = true;
+						}
+					}
+				}
+
+				break;
+			}
+		}
+	}
+	if (has_any_instance) {
+		EditorUndoRedoManager::get_singleton()->clear_history(); // Need to clear undo history, otherwise it may lead to hard-detected errors and crashes (since the script was removed).
+		ResourceSaver::save(visual_shader, visual_shader->get_path());
+	}
+	_update_options_menu();
+
+	custom_scripts_to_delete.clear();
+	pending_custom_scripts_to_delete = false;
+}
+
+void VisualShaderEditor::_resource_removed(const Ref<Resource> &p_resource) {
+	Ref<Script> scr = Ref<Script>(p_resource.ptr());
+	if (scr.is_null() || scr->get_instance_base_type() != "VisualShaderNodeCustom") {
+		return;
+	}
+
+	custom_scripts_to_delete.push_back(scr);
+
+	if (!pending_custom_scripts_to_delete) {
+		pending_custom_scripts_to_delete = true;
+
+		call_deferred("_resources_removed");
 	}
 }
 
@@ -4901,13 +5001,16 @@ void VisualShaderEditor::_bind_methods() {
 	ClassDB::bind_method("_expand_output_port", &VisualShaderEditor::_expand_output_port);
 	ClassDB::bind_method("_update_options_menu_deferred", &VisualShaderEditor::_update_options_menu_deferred);
 	ClassDB::bind_method("_rebuild_shader_deferred", &VisualShaderEditor::_rebuild_shader_deferred);
+	ClassDB::bind_method("_resources_removed", &VisualShaderEditor::_resources_removed);
 
 	ClassDB::bind_method("_is_available", &VisualShaderEditor::_is_available);
 }
 
 VisualShaderEditor::VisualShaderEditor() {
 	ShaderLanguage::get_keyword_list(&keyword_list);
-	EditorNode::get_singleton()->connect("resource_saved", callable_mp(this, &VisualShaderEditor::update_custom_type));
+	EditorNode::get_singleton()->connect("resource_saved", callable_mp(this, &VisualShaderEditor::_resource_saved));
+	FileSystemDock::get_singleton()->get_script_create_dialog()->connect("script_created", callable_mp(this, &VisualShaderEditor::_script_created));
+	FileSystemDock::get_singleton()->connect("resource_removed", callable_mp(this, &VisualShaderEditor::_resource_removed));
 
 	graph = memnew(GraphEdit);
 	graph->get_zoom_hbox()->set_h_size_flags(SIZE_EXPAND_FILL);

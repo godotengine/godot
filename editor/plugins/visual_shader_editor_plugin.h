@@ -188,6 +188,9 @@ class VisualShaderEditor : public VBoxContainer {
 	PanelContainer *error_panel = nullptr;
 	Label *error_label = nullptr;
 
+	bool pending_custom_scripts_to_delete = false;
+	List<Ref<Script>> custom_scripts_to_delete;
+
 	bool _block_update_options_menu = false;
 	bool _block_rebuild_shader = false;
 
@@ -503,6 +506,13 @@ class VisualShaderEditor : public VBoxContainer {
 
 	void _visibility_changed();
 
+	void _get_current_mode_limits(int &r_begin_type, int &r_end_type) const;
+	void _update_custom_script(const Ref<Script> &p_script);
+	void _script_created(const Ref<Script> &p_script);
+	void _resource_saved(const Ref<Resource> &p_resource);
+	void _resource_removed(const Ref<Resource> &p_resource);
+	void _resources_removed();
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -517,7 +527,6 @@ public:
 	void add_custom_type(const String &p_name, const Ref<Script> &p_script, const String &p_description, int p_return_icon_type, const String &p_category, bool p_highend);
 
 	Dictionary get_custom_node_data(Ref<VisualShaderNodeCustom> &p_custom_node);
-	void update_custom_type(const Ref<Resource> &p_resource);
 
 	virtual Size2 get_minimum_size() const override;
 	void edit(VisualShader *p_visual_shader);

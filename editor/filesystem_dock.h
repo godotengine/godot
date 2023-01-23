@@ -227,6 +227,7 @@ private:
 	void _update_favorites_list_after_move(const HashMap<String, String> &p_files_renames, const HashMap<String, String> &p_folders_renames) const;
 	void _update_project_settings_after_move(const HashMap<String, String> &p_renames) const;
 
+	void _resource_removed(const Ref<Resource> &p_resource);
 	void _file_removed(String p_file);
 	void _folder_removed(String p_folder);
 
