@@ -55,28 +55,7 @@ DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode 
 	// Init TTS
 	tts = [[TTS_IOS alloc] init];
 
-#if defined(GLES3_ENABLED)
-	if (rendering_driver == "opengl3") {
-		bool gl_initialization_error = false;
-
-		if (RasterizerGLES3::is_viable() == OK) {
-			RasterizerGLES3::register_config();
-			RasterizerGLES3::make_current();
-		} else {
-			gl_initialization_error = true;
-		}
-
-		if (gl_initialization_error) {
-			OS::get_singleton()->alert(
-					"Your device seems not to support the required OpenGL ES 3.0 version.\n\n",
-					"Unable to initialize OpenGL video driver");
-		}
-	}
-#endif
-
 #if defined(VULKAN_ENABLED)
-	rendering_driver = "vulkan";
-
 	context_vulkan = nullptr;
 	rendering_device_vulkan = nullptr;
 
@@ -91,13 +70,14 @@ DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode 
 		CALayer *layer = [AppDelegate.viewController.godotView initializeRenderingForDriver:@"vulkan"];
 
 		if (!layer) {
-			ERR_FAIL_MSG("Failed to create iOS rendering layer.");
+			ERR_FAIL_MSG("Failed to create iOS Vulkan rendering layer.");
 		}
 
 		Size2i size = Size2i(layer.bounds.size.width, layer.bounds.size.height) * screen_get_max_scale();
 		if (context_vulkan->window_create(MAIN_WINDOW_ID, p_vsync_mode, layer, size.width, size.height) != OK) {
 			memdelete(context_vulkan);
 			context_vulkan = nullptr;
+			r_error = ERR_UNAVAILABLE;
 			ERR_FAIL_MSG("Failed to create Vulkan window.");
 		}
 
@@ -105,6 +85,18 @@ DisplayServerIOS::DisplayServerIOS(const String &p_rendering_driver, WindowMode 
 		rendering_device_vulkan->initialize(context_vulkan);
 
 		RendererCompositorRD::make_current();
+	}
+#endif
+
+#if defined(GLES3_ENABLED)
+	if (rendering_driver == "opengl3") {
+		CALayer *layer = [AppDelegate.viewController.godotView initializeRenderingForDriver:@"opengl3"];
+
+		if (!layer) {
+			ERR_FAIL_MSG("Failed to create iOS OpenGLES rendering layer.");
+		}
+
+		RasterizerGLES3::make_current();
 	}
 #endif
 
@@ -670,15 +662,18 @@ void DisplayServerIOS::resize_window(CGSize viewSize) {
 void DisplayServerIOS::window_set_vsync_mode(DisplayServer::VSyncMode p_vsync_mode, WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 #if defined(VULKAN_ENABLED)
-	context_vulkan->set_vsync_mode(p_window, p_vsync_mode);
+	if (context_vulkan) {
+		context_vulkan->set_vsync_mode(p_window, p_vsync_mode);
+	}
 #endif
 }
 
 DisplayServer::VSyncMode DisplayServerIOS::window_get_vsync_mode(WindowID p_window) const {
 	_THREAD_SAFE_METHOD_
 #if defined(VULKAN_ENABLED)
-	return context_vulkan->get_vsync_mode(p_window);
-#else
-	return DisplayServer::VSYNC_ENABLED;
+	if (context_vulkan) {
+		return context_vulkan->get_vsync_mode(p_window);
+	}
 #endif
+	return DisplayServer::VSYNC_ENABLED;
 }
