@@ -1861,6 +1861,8 @@ void AnimationTree::_setup_animation_player() {
 		return;
 	}
 
+	cache_valid = false;
+
 	AnimationPlayer *new_player = nullptr;
 	if (!animation_player.is_empty()) {
 		new_player = Object::cast_to<AnimationPlayer>(get_node_or_null(animation_player));
