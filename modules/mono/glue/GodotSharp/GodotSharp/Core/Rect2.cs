@@ -51,11 +51,11 @@ namespace Godot
 
         /// <summary>
         /// The area of this <see cref="Rect2"/>.
+        /// See also <see cref="HasArea"/>.
         /// </summary>
-        /// <value>Equivalent to <see cref="GetArea()"/>.</value>
         public readonly real_t Area
         {
-            get { return GetArea(); }
+            get { return _size.X * _size.Y; }
         }
 
         /// <summary>
@@ -161,15 +161,6 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the area of the <see cref="Rect2"/>.
-        /// </summary>
-        /// <returns>The area.</returns>
-        public readonly real_t GetArea()
-        {
-            return _size.X * _size.Y;
-        }
-
-        /// <summary>
         /// Returns the center of the <see cref="Rect2"/>, which is equal
         /// to <see cref="Position"/> + (<see cref="Size"/> / 2).
         /// </summary>
@@ -247,7 +238,7 @@ namespace Godot
         /// Returns <see langword="true"/> if the <see cref="Rect2"/> has
         /// area, and <see langword="false"/> if the <see cref="Rect2"/>
         /// is linear, empty, or has a negative <see cref="Size"/>.
-        /// See also <see cref="GetArea"/>.
+        /// See also <see cref="Area"/>.
         /// </summary>
         /// <returns>
         /// A <see langword="bool"/> for whether or not the <see cref="Rect2"/> has area.
