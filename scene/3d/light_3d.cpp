@@ -157,9 +157,16 @@ AABB Light3D::get_aabb() const {
 		return AABB(Vector3(-1, -1, -1) * param[PARAM_RANGE], Vector3(2, 2, 2) * param[PARAM_RANGE]);
 
 	} else if (type == RenderingServer::LIGHT_SPOT) {
-		real_t len = param[PARAM_RANGE];
-		real_t size = Math::tan(Math::deg_to_rad(param[PARAM_SPOT_ANGLE])) * len;
-		return AABB(Vector3(-size, -size, -len), Vector3(size * 2, size * 2, len));
+		real_t cone_slant_height = param[PARAM_RANGE];
+		real_t cone_angle_rad = Math::deg_to_rad(param[PARAM_SPOT_ANGLE]);
+
+		if (cone_angle_rad > Math_PI / 2.0) {
+			// Just return the AABB of an omni light if the spot angle is above 90 degrees.
+			return AABB(Vector3(-1, -1, -1) * cone_slant_height, Vector3(2, 2, 2) * cone_slant_height);
+		}
+
+		real_t size = Math::sin(cone_angle_rad) * cone_slant_height;
+		return AABB(Vector3(-size, -size, -cone_slant_height), Vector3(2 * size, 2 * size, cone_slant_height));
 	}
 
 	return AABB();
