@@ -51,7 +51,9 @@ public:
 	enum AlphaCutMode {
 		ALPHA_CUT_DISABLED,
 		ALPHA_CUT_DISCARD,
-		ALPHA_CUT_OPAQUE_PREPASS
+		ALPHA_CUT_OPAQUE_PREPASS,
+		ALPHA_CUT_HASH,
+		ALPHA_CUT_MAX
 	};
 
 private:
@@ -59,6 +61,7 @@ private:
 	bool flags[FLAG_MAX] = {};
 	AlphaCutMode alpha_cut = ALPHA_CUT_DISABLED;
 	float alpha_scissor_threshold = 0.5;
+	float alpha_hash_scale = 1.0;
 
 	AABB aabb;
 
@@ -227,6 +230,9 @@ public:
 
 	void set_alpha_scissor_threshold(float p_threshold);
 	float get_alpha_scissor_threshold() const;
+
+	void set_alpha_hash_scale(float p_hash_scale);
+	float get_alpha_hash_scale() const;
 
 	void set_billboard_mode(StandardMaterial3D::BillboardMode p_mode);
 	StandardMaterial3D::BillboardMode get_billboard_mode() const;
