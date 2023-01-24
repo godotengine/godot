@@ -1398,18 +1398,6 @@ void CharacterBody2D::_move_and_slide_floating(double p_delta) {
 
 		first_slide = false;
 	}
-
-	// Scales the velocity according to the wall slope.
-	if (is_on_wall() && velocity.dot(motion_results.get(0).collision_normal) < 0) {
-		// Slide the velocity against the first collision.
-		Vector2 slide_motion = velocity.slide(motion_results.get(0).collision_normal);
-		if (velocity.dot(slide_motion) < 0) {
-			// This shouldn't send us backwards.
-			velocity = Vector2();
-		} else {
-			velocity = slide_motion;
-		}
-	}
 }
 
 void CharacterBody2D::_snap_on_floor(bool p_was_on_floor, bool p_vel_dir_facing_up, bool p_wall_as_floor) {
