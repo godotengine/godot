@@ -1286,6 +1286,7 @@ static const char *gdscript_signals_renames[][2] = {
 	{ "about_to_show", "about_to_popup" }, // Popup
 	{ "button_release", "button_released" }, // XRController3D
 	{ "cancelled", "canceled" }, // AcceptDialog
+	{ "item_double_clicked", "item_icon_double_clicked" }, // Tree
 	{ "network_peer_connected", "peer_connected" }, // MultiplayerAPI
 	{ "network_peer_disconnected", "peer_disconnected" }, // MultiplayerAPI
 	{ "network_peer_packet", "peer_packet" }, // MultiplayerAPI
