@@ -5163,6 +5163,7 @@ ImporterMeshInstance3D *GLTFDocument::_generate_mesh_instance(Ref<GLTFState> p_s
 	ImporterMeshInstance3D *mi = memnew(ImporterMeshInstance3D);
 	print_verbose("glTF: Creating mesh for: " + gltf_node->get_name());
 
+	p_state->scene_mesh_instances.insert(p_node_index, mi);
 	Ref<GLTFMesh> mesh = p_state->meshes.write[gltf_node->mesh];
 	if (mesh.is_null()) {
 		return mi;
@@ -5619,7 +5620,13 @@ void GLTFDocument::_generate_scene_node(Ref<GLTFState> p_state, Node *scene_pare
 	}
 	// If none of our GLTFDocumentExtension classes generated us a node, we generate one.
 	if (!current_node) {
-		if (gltf_node->mesh >= 0) {
+		if (gltf_node->skin >= 0 && gltf_node->mesh >= 0 && !gltf_node->children.is_empty()) {
+			current_node = _generate_spatial(p_state, node_index);
+			Node3D *mesh_inst = _generate_mesh_instance(p_state, node_index);
+			mesh_inst->set_name(gltf_node->get_name());
+
+			current_node->add_child(mesh_inst, true);
+		} else if (gltf_node->mesh >= 0) {
 			current_node = _generate_mesh_instance(p_state, node_index);
 		} else if (gltf_node->camera >= 0) {
 			current_node = _generate_camera(p_state, node_index);
@@ -5640,7 +5647,6 @@ void GLTFDocument::_generate_scene_node(Ref<GLTFState> p_state, Node *scene_pare
 	current_node->set_name(gltf_node->get_name());
 
 	p_state->scene_nodes.insert(node_index, current_node);
-
 	for (int i = 0; i < gltf_node->children.size(); ++i) {
 		_generate_scene_node(p_state, current_node, scene_root, gltf_node->children[i]);
 	}
@@ -5885,6 +5891,8 @@ void GLTFDocument::_import_animation(Ref<GLTFState> p_state, AnimationPlayer *p_
 		NodePath node_path;
 		//for skeletons, transform tracks always affect bones
 		NodePath transform_node_path;
+		//for meshes, especially skinned meshes, there are cases where it will be added as a child
+		NodePath mesh_instance_node_path;
 
 		GLTFNodeIndex node_index = track_i.key;
 
@@ -5895,6 +5903,12 @@ void GLTFDocument::_import_animation(Ref<GLTFState> p_state, AnimationPlayer *p_
 		HashMap<GLTFNodeIndex, Node *>::Iterator node_element = p_state->scene_nodes.find(node_index);
 		ERR_CONTINUE_MSG(!node_element, vformat("Unable to find node %d for animation", node_index));
 		node_path = root->get_path_to(node_element->value);
+		HashMap<GLTFNodeIndex, ImporterMeshInstance3D *>::Iterator mesh_instance_element = p_state->scene_mesh_instances.find(node_index);
+		if (mesh_instance_element) {
+			mesh_instance_node_path = root->get_path_to(mesh_instance_element->value);
+		} else {
+			mesh_instance_node_path = node_path;
+		}
 
 		if (gltf_node->skeleton >= 0) {
 			const Skeleton3D *sk = p_state->skeletons[gltf_node->skeleton]->godot_skeleton;
@@ -6067,7 +6081,7 @@ void GLTFDocument::_import_animation(Ref<GLTFState> p_state, AnimationPlayer *p_
 			ERR_CONTINUE(mesh->get_mesh().is_null());
 			ERR_CONTINUE(mesh->get_mesh()->get_mesh().is_null());
 
-			const String blend_path = String(node_path) + ":" + String(mesh->get_mesh()->get_blend_shape_name(i));
+			const String blend_path = String(mesh_instance_node_path) + ":" + String(mesh->get_mesh()->get_blend_shape_name(i));
 
 			const int track_idx = animation->get_track_count();
 			animation->add_track(Animation::TYPE_BLEND_SHAPE);
@@ -6258,11 +6272,16 @@ void GLTFDocument::_process_mesh_instances(Ref<GLTFState> p_state, Node *p_scene
 		if (node->skin >= 0 && node->mesh >= 0) {
 			const GLTFSkinIndex skin_i = node->skin;
 
-			HashMap<GLTFNodeIndex, Node *>::Iterator mi_element = p_state->scene_nodes.find(node_i);
-			ERR_CONTINUE_MSG(!mi_element, vformat("Unable to find node %d", node_i));
-
-			ImporterMeshInstance3D *mi = Object::cast_to<ImporterMeshInstance3D>(mi_element->value);
-			ERR_CONTINUE_MSG(mi == nullptr, vformat("Unable to cast node %d of type %s to ImporterMeshInstance3D", node_i, mi_element->value->get_class_name()));
+			ImporterMeshInstance3D *mi = nullptr;
+			HashMap<GLTFNodeIndex, ImporterMeshInstance3D *>::Iterator mi_element = p_state->scene_mesh_instances.find(node_i);
+			if (mi_element) {
+				mi = mi_element->value;
+			} else {
+				HashMap<GLTFNodeIndex, Node *>::Iterator si_element = p_state->scene_nodes.find(node_i);
+				ERR_CONTINUE_MSG(!si_element, vformat("Unable to find node %d", node_i));
+				mi = Object::cast_to<ImporterMeshInstance3D>(si_element->value);
+				ERR_CONTINUE_MSG(mi == nullptr, vformat("Unable to cast node %d of type %s to ImporterMeshInstance3D", node_i, si_element->value->get_class_name()));
+			}
 
 			const GLTFSkeletonIndex skel_i = p_state->skins.write[node->skin]->skeleton;
 			Ref<GLTFSkeleton> gltf_skeleton = p_state->skeletons.write[skel_i];
