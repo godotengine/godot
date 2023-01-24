@@ -1066,6 +1066,14 @@ void godotsharp_dictionary_duplicate(const Dictionary *p_self, bool p_deep, Dict
 	memnew_placement(r_dest, Dictionary(p_self->duplicate(p_deep)));
 }
 
+void godotsharp_dictionary_merge(Dictionary *p_self, const Dictionary *p_dictionary, bool p_overwrite) {
+	p_self->merge(*p_dictionary, p_overwrite);
+}
+
+bool godotsharp_dictionary_recursive_equal(const Dictionary *p_self, const Dictionary *p_other) {
+	return p_self->recursive_equal(*p_other, 0);
+}
+
 bool godotsharp_dictionary_remove_key(Dictionary *p_self, const Variant *p_key) {
 	return p_self->erase(*p_key);
 }
@@ -1455,6 +1463,8 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_dictionary_clear,
 	(void *)godotsharp_dictionary_contains_key,
 	(void *)godotsharp_dictionary_duplicate,
+	(void *)godotsharp_dictionary_merge,
+	(void *)godotsharp_dictionary_recursive_equal,
 	(void *)godotsharp_dictionary_remove_key,
 	(void *)godotsharp_dictionary_to_string,
 	(void *)godotsharp_string_simplify_path,
