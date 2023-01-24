@@ -15,7 +15,7 @@
 			<argument index="0" name="index" type="int" />
 			<argument index="1" name="position" type="Vector3" />
 			<description>
-				Sets an individual sphere's position.
+				Sets an individual sphere's position. Primarily for use by the editor.
 			</description>
 		</method>
 		<method name="set_sphere_radius">
@@ -23,7 +23,7 @@
 			<argument index="0" name="index" type="int" />
 			<argument index="1" name="radius" type="float" />
 			<description>
-				Sets an individual sphere's radius.
+				Sets an individual sphere's radius. Primarily for use by the editor.
 			</description>
 		</method>
 	</methods>

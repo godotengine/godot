@@ -102,9 +102,7 @@ void OccluderShapePolygon::_sanitize_points() {
 }
 
 void OccluderShapePolygon::set_polygon_point(int p_idx, const Vector2 &p_point) {
-	if (p_idx >= _poly_pts_local_raw.size()) {
-		return;
-	}
+	ERR_FAIL_INDEX_MSG(p_idx, _poly_pts_local_raw.size(), "Index out of bounds. Call set_polygon_points() to set the size of the array.");
 
 	_poly_pts_local_raw.set(p_idx, p_point);
 	_sanitize_points();
@@ -113,9 +111,7 @@ void OccluderShapePolygon::set_polygon_point(int p_idx, const Vector2 &p_point) 
 }
 
 void OccluderShapePolygon::set_hole_point(int p_idx, const Vector2 &p_point) {
-	if (p_idx >= _hole_pts_local_raw.size()) {
-		return;
-	}
+	ERR_FAIL_INDEX_MSG(p_idx, _hole_pts_local_raw.size(), "Index out of bounds. Call set_hole_points() to set the size of the array.");
 
 	_hole_pts_local_raw.set(p_idx, p_point);
 	_sanitize_points();

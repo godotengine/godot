@@ -131,9 +131,7 @@ void Room::set_use_default_simplify(bool p_use) {
 }
 
 void Room::set_point(int p_idx, const Vector3 &p_point) {
-	if (p_idx >= _bound_pts.size()) {
-		return;
-	}
+	ERR_FAIL_INDEX_MSG(p_idx, _bound_pts.size(), "Index out of bounds. Call set_points() to set the size of the array.");
 
 	_bound_pts.set(p_idx, p_point);
 

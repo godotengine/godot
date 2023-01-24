@@ -18,6 +18,7 @@
 			<argument index="1" name="position" type="Vector2" />
 			<description>
 				Sets individual points. Primarily for use by the editor.
+				[b]Note:[/b] This function will not resize the point array. Set [member points] to set the number of points.
 			</description>
 		</method>
 	</methods>
