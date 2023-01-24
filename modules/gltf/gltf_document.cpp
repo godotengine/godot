@@ -5954,59 +5954,25 @@ void GLTFDocument::_import_animation(Ref<GLTFState> p_state, AnimationPlayer *p_
 			int scale_idx = -1;
 
 			if (track.position_track.values.size()) {
-				Vector3 base_pos = p_state->nodes[track_i.key]->position;
-				bool not_default = false; //discard the track if all it contains is default values
-				for (int i = 0; i < track.position_track.times.size(); i++) {
-					Vector3 value = track.position_track.values[track.position_track.interpolation == GLTFAnimation::INTERP_CUBIC_SPLINE ? (1 + i * 3) : i];
-					if (!value.is_equal_approx(base_pos)) {
-						not_default = true;
-						break;
-					}
-				}
-				if (not_default) {
-					position_idx = base_idx;
-					animation->add_track(Animation::TYPE_POSITION_3D);
-					animation->track_set_path(position_idx, transform_node_path);
-					animation->track_set_imported(position_idx, true); //helps merging later
-
-					base_idx++;
-				}
+				position_idx = base_idx;
+				animation->add_track(Animation::TYPE_POSITION_3D);
+				animation->track_set_path(position_idx, transform_node_path);
+				animation->track_set_imported(position_idx, true); //helps merging later
+				base_idx++;
 			}
 			if (track.rotation_track.values.size()) {
-				Quaternion base_rot = p_state->nodes[track_i.key]->rotation.normalized();
-				bool not_default = false; //discard the track if all it contains is default values
-				for (int i = 0; i < track.rotation_track.times.size(); i++) {
-					Quaternion value = track.rotation_track.values[track.rotation_track.interpolation == GLTFAnimation::INTERP_CUBIC_SPLINE ? (1 + i * 3) : i].normalized();
-					if (!value.is_equal_approx(base_rot)) {
-						not_default = true;
-						break;
-					}
-				}
-				if (not_default) {
-					rotation_idx = base_idx;
-					animation->add_track(Animation::TYPE_ROTATION_3D);
-					animation->track_set_path(rotation_idx, transform_node_path);
-					animation->track_set_imported(rotation_idx, true); //helps merging later
-					base_idx++;
-				}
+				rotation_idx = base_idx;
+				animation->add_track(Animation::TYPE_ROTATION_3D);
+				animation->track_set_path(rotation_idx, transform_node_path);
+				animation->track_set_imported(rotation_idx, true); //helps merging later
+				base_idx++;
 			}
 			if (track.scale_track.values.size()) {
-				Vector3 base_scale = p_state->nodes[track_i.key]->scale;
-				bool not_default = false; //discard the track if all it contains is default values
-				for (int i = 0; i < track.scale_track.times.size(); i++) {
-					Vector3 value = track.scale_track.values[track.scale_track.interpolation == GLTFAnimation::INTERP_CUBIC_SPLINE ? (1 + i * 3) : i];
-					if (!value.is_equal_approx(base_scale)) {
-						not_default = true;
-						break;
-					}
-				}
-				if (not_default) {
-					scale_idx = base_idx;
-					animation->add_track(Animation::TYPE_SCALE_3D);
-					animation->track_set_path(scale_idx, transform_node_path);
-					animation->track_set_imported(scale_idx, true); //helps merging later
-					base_idx++;
-				}
+				scale_idx = base_idx;
+				animation->add_track(Animation::TYPE_SCALE_3D);
+				animation->track_set_path(scale_idx, transform_node_path);
+				animation->track_set_imported(scale_idx, true); //helps merging later
+				base_idx++;
 			}
 
 			const double increment = 1.0 / p_bake_fps;
