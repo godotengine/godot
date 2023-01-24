@@ -376,6 +376,8 @@ namespace Godot.NativeInterop
 
         public static partial Error godotsharp_array_resize(ref godot_array p_self, int p_new_size);
 
+        public static partial void godotsharp_array_make_read_only(ref godot_array p_self);
+
         public static partial void godotsharp_array_shuffle(ref godot_array p_self);
 
         public static partial void godotsharp_array_to_string(ref godot_array p_self, out godot_string r_str);
@@ -415,6 +417,8 @@ namespace Godot.NativeInterop
 
         public static partial godot_bool godotsharp_dictionary_remove_key(ref godot_dictionary p_self,
             in godot_variant p_key);
+
+        public static partial void godotsharp_dictionary_make_read_only(ref godot_dictionary p_self);
 
         public static partial void godotsharp_dictionary_to_string(ref godot_dictionary p_self, out godot_string r_str);
 

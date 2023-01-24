@@ -1012,6 +1012,10 @@ int32_t godotsharp_array_resize(Array *p_self, int32_t p_new_size) {
 	return (int32_t)p_self->resize(p_new_size);
 }
 
+void godotsharp_array_make_read_only(Array *p_self) {
+	p_self->make_read_only();
+}
+
 void godotsharp_array_shuffle(Array *p_self) {
 	p_self->shuffle();
 }
@@ -1079,6 +1083,10 @@ bool godotsharp_dictionary_recursive_equal(const Dictionary *p_self, const Dicti
 
 bool godotsharp_dictionary_remove_key(Dictionary *p_self, const Variant *p_key) {
 	return p_self->erase(*p_key);
+}
+
+void godotsharp_dictionary_make_read_only(Dictionary *p_self) {
+	p_self->make_read_only();
 }
 
 void godotsharp_dictionary_to_string(const Dictionary *p_self, String *r_str) {
@@ -1439,6 +1447,7 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_array_insert,
 	(void *)godotsharp_array_remove_at,
 	(void *)godotsharp_array_resize,
+	(void *)godotsharp_array_make_read_only,
 	(void *)godotsharp_array_shuffle,
 	(void *)godotsharp_array_to_string,
 	(void *)godotsharp_dictionary_try_get_value,
@@ -1454,6 +1463,7 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_dictionary_merge,
 	(void *)godotsharp_dictionary_recursive_equal,
 	(void *)godotsharp_dictionary_remove_key,
+	(void *)godotsharp_dictionary_make_read_only,
 	(void *)godotsharp_dictionary_to_string,
 	(void *)godotsharp_string_simplify_path,
 	(void *)godotsharp_string_to_camel_case,
