@@ -113,6 +113,12 @@ bool Material::_can_use_render_priority() const {
 	return ret;
 }
 
+Ref<Resource> Material::create_placeholder() const {
+	Ref<PlaceholderMaterial> placeholder;
+	placeholder.instantiate();
+	return placeholder;
+}
+
 void Material::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_next_pass", "next_pass"), &Material::set_next_pass);
 	ClassDB::bind_method(D_METHOD("get_next_pass"), &Material::get_next_pass);
@@ -122,6 +128,8 @@ void Material::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("inspect_native_shader_code"), &Material::inspect_native_shader_code);
 	ClassDB::set_method_flags(get_class_static(), _scs_create("inspect_native_shader_code"), METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
+
+	ClassDB::bind_method(D_METHOD("create_placeholder"), &Material::create_placeholder);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_priority", PROPERTY_HINT_RANGE, itos(RENDER_PRIORITY_MIN) + "," + itos(RENDER_PRIORITY_MAX) + ",1"), "set_render_priority", "get_render_priority");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "next_pass", PROPERTY_HINT_RESOURCE_TYPE, "Material"), "set_next_pass", "get_next_pass");

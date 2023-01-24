@@ -47,6 +47,12 @@
 				Called when the presence of mipmaps in the [Texture3D] is queried.
 			</description>
 		</method>
+		<method name="create_placeholder" qualifiers="const">
+			<return type="Resource" />
+			<description>
+				Creates a placeholder version of this resource ([PlaceholderTexture3D]).
+			</description>
+		</method>
 		<method name="get_data" qualifiers="const">
 			<return type="Image[]" />
 			<description>

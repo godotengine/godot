@@ -42,9 +42,12 @@ Shader::Mode Shader::get_mode() const {
 }
 
 void Shader::_dependency_changed() {
-	RenderingServer::get_singleton()->shader_set_code(shader, RenderingServer::get_singleton()->shader_get_code(shader));
+	// Preprocess and compile the code again because a dependency has changed. It also calls emit_changed() for us.
+	_recompile();
+}
 
-	emit_changed();
+void Shader::_recompile() {
+	set_code(get_code());
 }
 
 void Shader::set_path(const String &p_path, bool p_take_over) {

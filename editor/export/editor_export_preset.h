@@ -44,6 +44,14 @@ public:
 		EXPORT_SELECTED_SCENES,
 		EXPORT_SELECTED_RESOURCES,
 		EXCLUDE_SELECTED_RESOURCES,
+		EXPORT_CUSTOMIZED,
+	};
+
+	enum FileExportMode {
+		MODE_FILE_NOT_CUSTOMIZED,
+		MODE_FILE_STRIP,
+		MODE_FILE_KEEP,
+		MODE_FILE_REMOVE,
 	};
 
 private:
@@ -55,7 +63,9 @@ private:
 
 	String exporter;
 	HashSet<String> selected_files;
+	HashMap<String, FileExportMode> customized_files;
 	bool runnable = false;
+	bool dedicated_server = false;
 
 	friend class EditorExport;
 	friend class EditorExportPlatform;
@@ -85,19 +95,28 @@ public:
 
 	bool has(const StringName &p_property) const { return values.has(p_property); }
 
-	void update_files_to_export();
+	void update_files();
 
 	Vector<String> get_files_to_export() const;
+	Dictionary get_customized_files() const;
+	int get_customized_files_count() const;
+	void set_customized_files(const Dictionary &p_files);
 
 	void add_export_file(const String &p_path);
 	void remove_export_file(const String &p_path);
 	bool has_export_file(const String &p_path);
+
+	void set_file_export_mode(const String &p_path, FileExportMode p_mode);
+	FileExportMode get_file_export_mode(const String &p_path, FileExportMode p_default = MODE_FILE_NOT_CUSTOMIZED) const;
 
 	void set_name(const String &p_name);
 	String get_name() const;
 
 	void set_runnable(bool p_enable);
 	bool is_runnable() const;
+
+	void set_dedicated_server(bool p_enable);
+	bool is_dedicated_server() const;
 
 	void set_export_filter(ExportFilter p_filter);
 	ExportFilter get_export_filter() const;

@@ -559,6 +559,8 @@ void add_exposed_classes(Context &r_context) {
 
 			MethodData method;
 			method.name = method_info.name;
+			TEST_FAIL_COND(!String(method.name).is_valid_identifier(),
+					"Method name is not a valid identifier: '", exposed_class.name, ".", method.name, "'.");
 
 			if (method_info.flags & METHOD_FLAG_VIRTUAL) {
 				method.is_virtual = true;
@@ -682,6 +684,8 @@ void add_exposed_classes(Context &r_context) {
 			const MethodInfo &method_info = signal_map.get(K.key);
 
 			signal.name = method_info.name;
+			TEST_FAIL_COND(!String(signal.name).is_valid_identifier(),
+					"Signal name is not a valid identifier: '", exposed_class.name, ".", signal.name, "'.");
 
 			int argc = method_info.arguments.size();
 

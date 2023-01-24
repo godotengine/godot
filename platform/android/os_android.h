@@ -86,6 +86,8 @@ private:
 
 public:
 	static const char *ANDROID_EXEC_PATH;
+	static const int DEFAULT_WINDOW_WIDTH = 800;
+	static const int DEFAULT_WINDOW_HEIGHT = 600;
 
 	virtual void initialize_core() override;
 	virtual void initialize() override;
