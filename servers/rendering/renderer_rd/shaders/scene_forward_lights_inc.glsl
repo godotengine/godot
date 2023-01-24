@@ -794,8 +794,13 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 v
 	float light_length = length(light_rel_vec);
 	float spot_attenuation = get_omni_attenuation(light_length, spot_lights.data[idx].inv_radius, spot_lights.data[idx].attenuation);
 	vec3 spot_dir = spot_lights.data[idx].direction;
-	float scos = max(dot(-normalize(light_rel_vec), spot_dir), spot_lights.data[idx].cone_angle);
-	float spot_rim = max(0.0001, (1.0 - scos) / (1.0 - spot_lights.data[idx].cone_angle));
+
+	// This conversion to a highp float is crucial to prevent light leaking
+	// due to precision errors in the following calculations (cone angle is mediump).
+	highp float cone_angle = spot_lights.data[idx].cone_angle;
+	float scos = max(dot(-normalize(light_rel_vec), spot_dir), cone_angle);
+	float spot_rim = max(0.0001, (1.0 - scos) / (1.0 - cone_angle));
+
 	spot_attenuation *= 1.0 - pow(spot_rim, spot_lights.data[idx].cone_attenuation);
 	float light_attenuation = spot_attenuation;
 	vec3 color = spot_lights.data[idx].color;
