@@ -6,8 +6,46 @@ namespace Godot
     public partial class Object
     {
         /// <summary>
-        /// Returns whether <paramref name="instance"/> is a valid object
-        /// (e.g. has not been deleted from memory).
+        /// Returns the <see cref="Object"/> that corresponds to <paramref name="instanceId"/>.
+        /// All Objects have a unique instance ID. See also <see cref="GetInstanceId"/>.
+        /// </summary>
+        /// <example>
+        /// <code>
+        /// public partial class MyNode : Node
+        /// {
+        ///     public string Foo { get; set; } = "bar";
+        ///
+        ///     public override void _Ready()
+        ///     {
+        ///         ulong id = GetInstanceId();
+        ///         var inst = (MyNode)InstanceFromId(Id);
+        ///         GD.Print(inst.Foo); // Prints bar
+        ///     }
+        /// }
+        /// </code>
+        /// </example>
+        /// <param name="instanceId">Instance ID of the Object to retrieve.</param>
+        /// <returns>The <see cref="Object"/> instance.</returns>
+        public static Object InstanceFromId(ulong instanceId)
+        {
+            return InteropUtils.UnmanagedGetManaged(NativeFuncs.godotsharp_instance_from_id(instanceId));
+        }
+
+        /// <summary>
+        /// Returns <see langword="true"/> if the <see cref="Object"/> that corresponds
+        /// to <paramref name="id"/> is a valid object (e.g. has not been deleted from
+        /// memory). All Objects have a unique instance ID.
+        /// </summary>
+        /// <param name="id">The Object ID to check.</param>
+        /// <returns>If the instance with the given ID is a valid object.</returns>
+        public static bool IsInstanceIdValid(ulong id)
+        {
+            return IsInstanceValid(InstanceFromId(id));
+        }
+
+        /// <summary>
+        /// Returns <see langword="true"/> if <paramref name="instance"/> is a
+        /// valid <see cref="Object"/> (e.g. has not been deleted from memory).
         /// </summary>
         /// <param name="instance">The instance to check.</param>
         /// <returns>If the instance is a valid object.</returns>

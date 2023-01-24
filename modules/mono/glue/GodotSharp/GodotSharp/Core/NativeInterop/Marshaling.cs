@@ -310,7 +310,7 @@ namespace Godot.NativeInterop
 
         public static Signal ConvertSignalToManaged(in godot_signal p_signal)
         {
-            var owner = GD.InstanceFromId(p_signal.ObjectId);
+            var owner = Godot.Object.InstanceFromId(p_signal.ObjectId);
             var name = StringName.CreateTakingOwnershipOfDisposableValue(
                 NativeFuncs.godotsharp_string_name_new_copy(p_signal.Name));
             return new Signal(owner, name);
