@@ -3532,6 +3532,7 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 				}
 #endif
 				result_type.kind = GDScriptParser::DataType::VARIANT;
+				mark_node_unsafe(p_subscript);
 			}
 		}
 		if (!valid) {
