@@ -60,6 +60,7 @@ private:
 	HashMap<StringName, HashMap<int, Ref<Texture2D>>> default_textures;
 
 	void _dependency_changed();
+	void _recompile();
 	virtual void _update_shader() const; //used for visual shader
 	Array _get_shader_uniform_list(bool p_get_groups = false);
 
