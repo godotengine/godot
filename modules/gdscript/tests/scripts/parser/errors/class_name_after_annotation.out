@@ -1,2 +1,2 @@
 GDTEST_PARSER_ERROR
-Annotation "@icon" is not allowed in this level.
+Annotation "@icon" must be before "class_name".
