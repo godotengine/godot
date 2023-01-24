@@ -251,6 +251,14 @@
 				Adds a [code][color][/code] tag to the tag stack.
 			</description>
 		</method>
+		<method name="push_customfx">
+			<return type="void" />
+			<param index="0" name="effect" type="RichTextEffect" />
+			<param index="1" name="env" type="Dictionary" />
+			<description>
+				Adds a custom effect tag to the tag stack. The effect does not need to be in [member custom_effects]. The environment is directly passed to the effect.
+			</description>
+		</method>
 		<method name="push_dropcap">
 			<return type="void" />
 			<param index="0" name="string" type="String" />

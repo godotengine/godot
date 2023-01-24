@@ -3435,6 +3435,8 @@ void RichTextLabel::push_customfx(Ref<RichTextEffect> p_custom_effect, Dictionar
 	item->custom_effect = p_custom_effect;
 	item->char_fx_transform->environment = p_environment;
 	_add_item(item, true);
+
+	set_process_internal(true);
 }
 
 void RichTextLabel::set_table_column_expand(int p_column, bool p_expand, int p_ratio) {
@@ -4552,7 +4554,6 @@ void RichTextLabel::append_text(const String &p_bbcode) {
 					push_customfx(effect, properties);
 					pos = brk_end + 1;
 					tag_stack.push_front(identifier);
-					set_process_internal(true);
 				} else {
 					add_text("["); //ignore
 					pos = brk_pos + 1;
@@ -5346,6 +5347,7 @@ void RichTextLabel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("push_cell"), &RichTextLabel::push_cell);
 	ClassDB::bind_method(D_METHOD("push_fgcolor", "fgcolor"), &RichTextLabel::push_fgcolor);
 	ClassDB::bind_method(D_METHOD("push_bgcolor", "bgcolor"), &RichTextLabel::push_bgcolor);
+	ClassDB::bind_method(D_METHOD("push_customfx", "effect", "env"), &RichTextLabel::push_customfx);
 	ClassDB::bind_method(D_METHOD("pop"), &RichTextLabel::pop);
 
 	ClassDB::bind_method(D_METHOD("clear"), &RichTextLabel::clear);
