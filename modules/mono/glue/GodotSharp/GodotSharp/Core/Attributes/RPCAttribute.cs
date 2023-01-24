@@ -9,7 +9,7 @@ namespace Godot
     /// By default, methods are not exposed to networking (and RPCs).
     /// </summary>
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-    public class RPCAttribute : Attribute
+    public sealed class RPCAttribute : Attribute
     {
         /// <summary>
         /// RPC mode for the annotated method.
