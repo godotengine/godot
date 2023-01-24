@@ -1344,7 +1344,6 @@ void CharacterBody2D::_move_and_slide_floating(double p_delta) {
 
 	platform_rid = RID();
 	platform_object_id = ObjectID();
-	floor_normal = Vector2();
 	platform_velocity = Vector2();
 
 	bool first_slide = true;
@@ -1361,7 +1360,7 @@ void CharacterBody2D::_move_and_slide_floating(double p_delta) {
 			motion_results.push_back(result);
 			_set_collision_direction(result);
 
-			if (wall_min_slide_angle != 0 && result.get_angle(-velocity.normalized()) < wall_min_slide_angle + FLOOR_ANGLE_THRESHOLD) {
+			if (wall_min_slide_angle != 0 && Math::acos(result.collision_normal.dot(-velocity.normalized())) < wall_min_slide_angle + FLOOR_ANGLE_THRESHOLD) {
 				// hit a wall at a sharp enough angle that we should stop
 				if (result.travel.length() <= margin + CMP_EPSILON) {
 					// Cancels the motion.
