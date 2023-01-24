@@ -49,17 +49,6 @@ namespace Godot
             return Variant.CreateTakingOwnershipOfDisposableValue(ret);
         }
 
-        /// <summary>
-        /// Converts from decibels to linear energy (audio).
-        /// </summary>
-        /// <seealso cref="LinearToDb(real_t)"/>
-        /// <param name="db">Decibels to convert.</param>
-        /// <returns>Audio volume as linear energy.</returns>
-        public static real_t DbToLinear(real_t db)
-        {
-            return (real_t)Math.Exp(db * 0.11512925464970228420089957273422);
-        }
-
         private static string[] GetPrintParams(object[] parameters)
         {
             if (parameters == null)
@@ -109,26 +98,6 @@ namespace Godot
         public static Object InstanceFromId(ulong instanceId)
         {
             return InteropUtils.UnmanagedGetManaged(NativeFuncs.godotsharp_instance_from_id(instanceId));
-        }
-
-        /// <summary>
-        /// Converts from linear energy to decibels (audio).
-        /// This can be used to implement volume sliders that behave as expected (since volume isn't linear).
-        /// </summary>
-        /// <seealso cref="DbToLinear(real_t)"/>
-        /// <example>
-        /// <code>
-        /// // "slider" refers to a node that inherits Range such as HSlider or VSlider.
-        /// // Its range must be configured to go from 0 to 1.
-        /// // Change the bus name if you'd like to change the volume of a specific bus only.
-        /// AudioServer.SetBusVolumeDb(AudioServer.GetBusIndex("Master"), GD.LinearToDb(slider.value));
-        /// </code>
-        /// </example>
-        /// <param name="linear">The linear energy to convert.</param>
-        /// <returns>Audio as decibels.</returns>
-        public static real_t LinearToDb(real_t linear)
-        {
-            return (real_t)(Math.Log(linear) * 8.6858896380650365530225783783321);
         }
 
         /// <summary>
