@@ -856,6 +856,13 @@ static GDExtensionVariantPtr gdextension_array_operator_index_const(GDExtensionC
 	return (GDExtensionVariantPtr)&self->operator[](p_index);
 }
 
+void gdextension_array_set_typed(GDExtensionTypePtr p_self, uint32_t p_type, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstVariantPtr p_script) {
+	Array *self = reinterpret_cast<Array *>(p_self);
+	const StringName *class_name = reinterpret_cast<const StringName *>(p_class_name);
+	const Variant *script = reinterpret_cast<const Variant *>(p_script);
+	self->set_typed(p_type, *class_name, *script);
+}
+
 /* Dictionary functions */
 
 static GDExtensionVariantPtr gdextension_dictionary_operator_index(GDExtensionTypePtr p_self, GDExtensionConstVariantPtr p_key) {
@@ -1129,6 +1136,7 @@ void gdextension_setup_interface(GDExtensionInterface *p_interface) {
 
 	gde_interface.array_operator_index = gdextension_array_operator_index;
 	gde_interface.array_operator_index_const = gdextension_array_operator_index_const;
+	gde_interface.array_set_typed = gdextension_array_set_typed;
 
 	/* Dictionary functions */
 
