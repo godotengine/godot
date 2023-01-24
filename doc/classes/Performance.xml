@@ -45,7 +45,7 @@
 				[csharp]
 				public override void _Ready()
 				{
-				    var monitorValue = new Callable(this, nameof(GetMonitorValue));
+				    var monitorValue = new Callable(this, MethodName.GetMonitorValue);
 
 				    // Adds monitor with name "MyName" to category "MyCategory".
 				    Performance.AddCustomMonitor("MyCategory/MyMonitor", monitorValue);

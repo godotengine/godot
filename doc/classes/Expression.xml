@@ -28,7 +28,7 @@
 
 		public override void _Ready()
 		{
-		    GetNode("LineEdit").TextSubmitted += OnTextEntered;
+		    GetNode&lt;LineEdit&gt;("LineEdit").TextSubmitted += OnTextEntered;
 		}
 
 		private void OnTextEntered(string command)
