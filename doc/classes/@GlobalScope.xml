@@ -442,9 +442,14 @@
 			<param index="0" name="variable" type="Variant" />
 			<description>
 				Returns the integer hash of the passed [param variable].
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				print(hash("a")) # Prints 177670
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				GD.Print(GD.Hash("a")); // Prints 177670
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="instance_from_id">
@@ -452,13 +457,29 @@
 			<param index="0" name="instance_id" type="int" />
 			<description>
 				Returns the [Object] that corresponds to [param instance_id]. All Objects have a unique instance ID. See also [method Object.get_instance_id].
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				var foo = "bar"
+
 				func _ready():
 				    var id = get_instance_id()
 				    var inst = instance_from_id(id)
 				    print(inst.foo) # Prints bar
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				public partial class MyNode : Node
+				{
+				    public string Foo { get; set; } = "bar";
+
+				    public override void _Ready()
+				    {
+				        ulong id = GetInstanceId();
+				        var inst = (MyNode)InstanceFromId(Id);
+				        GD.Print(inst.Foo); // Prints bar
+				    }
+				}
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="inverse_lerp">
@@ -764,10 +785,16 @@
 		<method name="print" qualifiers="vararg">
 			<description>
 				Converts one or more arguments of any type to string in the best way possible and prints them to the console.
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				var a = [1, 2, 3]
 				print("a", "b", a) # Prints ab[1, 2, 3]
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				var a = new Godot.Collections.Array { 1, 2, 3 };
+				GD.Print("a", "b", a); // Prints ab[1, 2, 3]
+				[/csharp]
+				[/codeblocks]
 				[b]Note:[/b] Consider using [method push_error] and [method push_warning] to print error and warning messages instead of [method print] or [method print_rich]. This distinguishes them from print messages used for debugging purposes, while also displaying a stack trace when an error or warning is printed.
 			</description>
 		</method>
@@ -775,9 +802,14 @@
 			<description>
 				Converts one or more arguments of any type to string in the best way possible and prints them to the console. The following BBCode tags are supported: b, i, u, s, indent, code, url, center, right, color, bgcolor, fgcolor. Color tags only support named colors such as [code]red[/code], [i]not[/i] hexadecimal color codes. Unsupported tags will be left as-is in standard output.
 				When printing to standard output, the supported subset of BBCode is converted to ANSI escape codes for the terminal emulator to display. Displaying ANSI escape codes is currently only supported on Linux and macOS. Support for ANSI escape codes may vary across terminal emulators, especially for italic and strikethrough.
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				print_rich("[code][b]Hello world![/b][/code]") # Prints out: [b]Hello world![/b]
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				GD.PrintRich("[code][b]Hello world![/b][/code]"); // Prints out: [b]Hello world![/b]
+				[/csharp]
+				[/codeblocks]
 				[b]Note:[/b] Consider using [method push_error] and [method push_warning] to print error and warning messages instead of [method print] or [method print_rich]. This distinguishes them from print messages used for debugging purposes, while also displaying a stack trace when an error or warning is printed.
 			</description>
 		</method>
@@ -789,53 +821,86 @@
 		<method name="printerr" qualifiers="vararg">
 			<description>
 				Prints one or more arguments to strings in the best way possible to standard error line.
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				printerr("prints to stderr")
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				GD.PrintErr("prints to stderr");
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="printraw" qualifiers="vararg">
 			<description>
 				Prints one or more arguments to strings in the best way possible to the OS terminal. Unlike [method print], no newline is automatically added at the end.
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				printraw("A")
 				printraw("B")
 				printraw("C")
 				# Prints ABC to terminal
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				GD.PrintRaw("A");
+				GD.PrintRaw("B");
+				GD.PrintRaw("C");
+				// Prints ABC to terminal
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="prints" qualifiers="vararg">
 			<description>
 				Prints one or more arguments to the console with a space between each argument.
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				prints("A", "B", "C") # Prints A B C
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				GD.PrintS("A", "B", "C"); // Prints A B C
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="printt" qualifiers="vararg">
 			<description>
 				Prints one or more arguments to the console with a tab between each argument.
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				printt("A", "B", "C") # Prints A       B       C
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				GD.PrintT("A", "B", "C"); // Prints A       B       C
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="push_error" qualifiers="vararg">
 			<description>
 				Pushes an error message to Godot's built-in debugger and to the OS terminal.
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				push_error("test error") # Prints "test error" to debugger and terminal as error call
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				GD.PushError("test error"); // Prints "test error" to debugger and terminal as error call
+				[/csharp]
+				[/codeblocks]
 				[b]Note:[/b] This function does not pause project execution. To print an error message and pause project execution in debug builds, use [code]assert(false, "test error")[/code] instead.
 			</description>
 		</method>
 		<method name="push_warning" qualifiers="vararg">
 			<description>
 				Pushes a warning message to Godot's built-in debugger and to the OS terminal.
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				push_warning("test warning") # Prints "test warning" to debugger and terminal as warning call
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				GD.PushWarning("test warning"); // Prints "test warning" to debugger and terminal as warning call
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="rad_to_deg">
@@ -868,9 +933,14 @@
 			<return type="float" />
 			<description>
 				Returns a random floating point value between [code]0.0[/code] and [code]1.0[/code] (inclusive).
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				randf() # Returns e.g. 0.375671
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				GD.Randf(); // Returns e.g. 0.375671
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="randf_range">
@@ -879,10 +949,16 @@
 			<param index="1" name="to" type="float" />
 			<description>
 				Returns a random floating point value between [param from] and [param to] (inclusive).
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				randf_range(0, 20.5) # Returns e.g. 7.45315
 				randf_range(-10, 10) # Returns e.g. -3.844535
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				GD.RandRange(0.0, 20.5);   // Returns e.g. 7.45315
+				GD.RandRange(-10.0, 10.0); // Returns e.g. -3.844535
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="randfn">
@@ -897,12 +973,20 @@
 			<return type="int" />
 			<description>
 				Returns a random unsigned 32-bit integer. Use remainder to obtain a random value in the interval [code][0, N - 1][/code] (where N is smaller than 2^32).
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				randi()           # Returns random integer between 0 and 2^32 - 1
 				randi() % 20      # Returns random integer between 0 and 19
 				randi() % 100     # Returns random integer between 0 and 99
 				randi() % 100 + 1 # Returns random integer between 1 and 100
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				GD.Randi();           // Returns random integer between 0 and 2^32 - 1
+				GD.Randi() % 20;      // Returns random integer between 0 and 19
+				GD.Randi() % 100;     // Returns random integer between 0 and 99
+				GD.Randi() % 100 + 1; // Returns random integer between 1 and 100
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="randi_range">
@@ -911,10 +995,16 @@
 			<param index="1" name="to" type="int" />
 			<description>
 				Returns a random signed 32-bit integer between [param from] and [param to] (inclusive). If [param to] is lesser than [param from], they are swapped.
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				randi_range(0, 1)      # Returns either 0 or 1
 				randi_range(-10, 1000) # Returns random integer between -10 and 1000
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				GD.RandRange(0, 1);      // Returns either 0 or 1
+				GD.RandRange(-10, 1000); // Returns random integer between -10 and 1000
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="randomize">
@@ -985,14 +1075,24 @@
 			<param index="0" name="base" type="int" />
 			<description>
 				Sets the seed for the random number generator to [param base]. Setting the seed manually can ensure consistent, repeatable results for most random functions.
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				var my_seed = "Godot Rocks".hash()
 				seed(my_seed)
 				var a = randf() + randi()
 				seed(my_seed)
 				var b = randf() + randi()
 				# a and b are now identical
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				ulong mySeed = (ulong)GD.Hash("Godot Rocks");
+				GD.Seed(mySeed);
+				var a = GD.Randf() + GD.Randi();
+				GD.Seed(mySeed);
+				var b = GD.Randf() + GD.Randi();
+				// a and b are now identical
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="sign">
@@ -1154,11 +1254,18 @@
 			<param index="0" name="string" type="String" />
 			<description>
 				Converts a formatted [param string] that was returned by [method var_to_str] to the original [Variant].
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				var a = '{ "a": 1, "b": 2 }' # a is a String
 				var b = str_to_var(a)        # b is a Dictionary
 				print(b["a"])                # Prints 1
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				string a = "{ \"a\": 1, \"b\": 2 }";        // a is a string
+				var b = GD.StrToVar(a).AsGodotDictionary(); // b is a Dictionary
+				GD.Print(b["a"]);                           // Prints 1
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="tan">
@@ -1218,15 +1325,21 @@
 			<param index="0" name="variable" type="Variant" />
 			<description>
 				Converts a [Variant] [param variable] to a formatted [String] that can then be parsed using [method str_to_var].
-				[codeblock]
-				a = { "a": 1, "b": 2 }
+				[codeblocks]
+				[gdscript]
+				var a = { "a": 1, "b": 2 }
 				print(var_to_str(a))
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				var a = new Godot.Collections.Dictionary { ["a"] = 1, ["b"] = 2 };
+				GD.Print(GD.VarToStr(a));
+				[/csharp]
+				[/codeblocks]
 				Prints:
 				[codeblock]
 				{
-				"a": 1,
-				"b": 2
+				    "a": 1,
+				    "b": 2
 				}
 				[/codeblock]
 			</description>
