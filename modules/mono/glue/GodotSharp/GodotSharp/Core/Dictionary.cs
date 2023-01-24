@@ -68,7 +68,15 @@ namespace Godot.Collections
         }
 
         /// <summary>
-        /// Duplicates this <see cref="Dictionary"/>.
+        /// Returns a copy of the <see cref="Dictionary"/>.
+        /// If <paramref name="deep"/> is <see langword="true"/>, a deep copy is performed:
+        /// all nested arrays and dictionaries are duplicated and will not be shared with
+        /// the original dictionary. If <see langword="false"/>, a shallow copy is made and
+        /// references to the original nested arrays and dictionaries are kept, so that
+        /// modifying a sub-array or dictionary in the copy will also impact those
+        /// referenced in the source dictionary. Note that any <see cref="Object"/> derived
+        /// elements will be shallow copied regardless of the <paramref name="deep"/>
+        /// setting.
         /// </summary>
         /// <param name="deep">If <see langword="true"/>, performs a deep copy.</param>
         /// <returns>A new Godot Dictionary.</returns>
@@ -78,6 +86,39 @@ namespace Godot.Collections
             var self = (godot_dictionary)NativeValue;
             NativeFuncs.godotsharp_dictionary_duplicate(ref self, deep.ToGodotBool(), out newDictionary);
             return CreateTakingOwnershipOfDisposableValue(newDictionary);
+        }
+
+        /// <summary>
+        /// Adds entries from <paramref name="dictionary"/> to this dictionary.
+        /// By default, duplicate keys are not copied over, unless <paramref name="overwrite"/>
+        /// is <see langword="true"/>.
+        /// </summary>
+        /// <param name="dictionary">Dictionary to copy entries from.</param>
+        /// <param name="overwrite">If duplicate keys should be copied over as well.</param>
+        public void Merge(Dictionary dictionary, bool overwrite = false)
+        {
+            var self = (godot_dictionary)NativeValue;
+            var other = (godot_dictionary)dictionary.NativeValue;
+            NativeFuncs.godotsharp_dictionary_merge(ref self, in other, overwrite.ToGodotBool());
+        }
+
+        /// <summary>
+        /// Compares this <see cref="Dictionary"/> against the <paramref name="other"/>
+        /// <see cref="Dictionary"/> recursively. Returns <see langword="true"/> if the
+        /// two dictionaries contain the same keys and values. The order of the entries
+        /// does not matter.
+        /// otherwise.
+        /// </summary>
+        /// <param name="other">The other dictionary to compare against.</param>
+        /// <returns>
+        /// <see langword="true"/> if the dictionaries contain the same keys and values,
+        /// <see langword="false"/> otherwise.
+        /// </returns>
+        public bool RecursiveEqual(Dictionary other)
+        {
+            var self = (godot_dictionary)NativeValue;
+            var otherVariant = (godot_dictionary)other.NativeValue;
+            return NativeFuncs.godotsharp_dictionary_recursive_equal(ref self, otherVariant).ToBool();
         }
 
         // IDictionary
@@ -134,6 +175,9 @@ namespace Godot.Collections
         /// <summary>
         /// Returns the value at the given <paramref name="key"/>.
         /// </summary>
+        /// <exception cref="KeyNotFoundException">
+        /// An entry for <paramref name="key"/> does not exist in the dictionary.
+        /// </exception>
         /// <value>The value at the given <paramref name="key"/>.</value>
         public Variant this[Variant key]
         {
@@ -163,6 +207,9 @@ namespace Godot.Collections
         /// Adds an value <paramref name="value"/> at key <paramref name="key"/>
         /// to this <see cref="Dictionary"/>.
         /// </summary>
+        /// <exception cref="ArgumentException">
+        /// An entry for <paramref name="key"/> already exists in the dictionary.
+        /// </exception>
         /// <param name="key">The key at which to add the value.</param>
         /// <param name="value">The value to add.</param>
         public void Add(Variant key, Variant value)
@@ -181,7 +228,7 @@ namespace Godot.Collections
             => Add(item.Key, item.Value);
 
         /// <summary>
-        /// Erases all items from this <see cref="Dictionary"/>.
+        /// Clears the dictionary, removing all entries from it.
         /// </summary>
         public void Clear()
         {
@@ -200,7 +247,7 @@ namespace Godot.Collections
             return NativeFuncs.godotsharp_dictionary_contains_key(ref self, (godot_variant)key.NativeVar).ToBool();
         }
 
-        public bool Contains(KeyValuePair<Variant, Variant> item)
+        bool ICollection<KeyValuePair<Variant, Variant>>.Contains(KeyValuePair<Variant, Variant> item)
         {
             godot_variant variantKey = (godot_variant)item.Key.NativeVar;
             var self = (godot_dictionary)NativeValue;
@@ -227,7 +274,7 @@ namespace Godot.Collections
             return NativeFuncs.godotsharp_dictionary_remove_key(ref self, (godot_variant)key.NativeVar).ToBool();
         }
 
-        public bool Remove(KeyValuePair<Variant, Variant> item)
+        bool ICollection<KeyValuePair<Variant, Variant>>.Remove(KeyValuePair<Variant, Variant> item)
         {
             godot_variant variantKey = (godot_variant)item.Key.NativeVar;
             var self = (godot_dictionary)NativeValue;
@@ -266,6 +313,14 @@ namespace Godot.Collections
 
         bool ICollection<KeyValuePair<Variant, Variant>>.IsReadOnly => false;
 
+        /// <summary>
+        /// Gets the value for the given <paramref name="key"/> in the dictionary.
+        /// Returns <see langword="true"/> if an entry for the given key exists in
+        /// the dictionary; otherwise, returns <see langword="false"/>.
+        /// </summary>
+        /// <param name="key">The key of the element to get.</param>
+        /// <param name="value">The value at the given <paramref name="key"/>.</param>
+        /// <returns>If an entry was found for the given <paramref name="key"/>.</returns>
         public bool TryGetValue(Variant key, out Variant value)
         {
             var self = (godot_dictionary)NativeValue;
@@ -283,7 +338,7 @@ namespace Godot.Collections
         /// </summary>
         /// <param name="array">The array to copy to.</param>
         /// <param name="arrayIndex">The index to start at.</param>
-        public void CopyTo(KeyValuePair<Variant, Variant>[] array, int arrayIndex)
+        void ICollection<KeyValuePair<Variant, Variant>>.CopyTo(KeyValuePair<Variant, Variant>[] array, int arrayIndex)
         {
             if (array == null)
                 throw new ArgumentNullException(nameof(array), "Value cannot be null.");
@@ -433,13 +488,47 @@ namespace Godot.Collections
         }
 
         /// <summary>
-        /// Duplicates this <see cref="Dictionary{TKey, TValue}"/>.
+        /// Returns a copy of the <see cref="Dictionary{TKey, TValue}"/>.
+        /// If <paramref name="deep"/> is <see langword="true"/>, a deep copy is performed:
+        /// all nested arrays and dictionaries are duplicated and will not be shared with
+        /// the original dictionary. If <see langword="false"/>, a shallow copy is made and
+        /// references to the original nested arrays and dictionaries are kept, so that
+        /// modifying a sub-array or dictionary in the copy will also impact those
+        /// referenced in the source dictionary. Note that any <see cref="Object"/> derived
+        /// elements will be shallow copied regardless of the <paramref name="deep"/>
+        /// setting.
         /// </summary>
-        /// <param name="deep">If <see langword="true"/>, performs a deep copy.</param>
-        /// <returns>A new Godot Dictionary.</returns>
         public Dictionary<TKey, TValue> Duplicate(bool deep = false)
         {
             return new Dictionary<TKey, TValue>(_underlyingDict.Duplicate(deep));
+        }
+
+        /// <summary>
+        /// Adds entries from <paramref name="dictionary"/> to this dictionary.
+        /// By default, duplicate keys are not copied over, unless <paramref name="overwrite"/>
+        /// is <see langword="true"/>.
+        /// </summary>
+        /// <param name="dictionary">Dictionary to copy entries from.</param>
+        /// <param name="overwrite">If duplicate keys should be copied over as well.</param>
+        public void Merge(Dictionary<TKey, TValue> dictionary, bool overwrite = false)
+        {
+            _underlyingDict.Merge(dictionary._underlyingDict, overwrite);
+        }
+
+        /// <summary>
+        /// Compares this <see cref="Dictionary{TKey, TValue}"/> against the <paramref name="other"/>
+        /// <see cref="Dictionary{TKey, TValue}"/> recursively. Returns <see langword="true"/> if the
+        /// two dictionaries contain the same keys and values. The order of the entries does not matter.
+        /// otherwise.
+        /// </summary>
+        /// <param name="other">The other dictionary to compare against.</param>
+        /// <returns>
+        /// <see langword="true"/> if the dictionaries contain the same keys and values,
+        /// <see langword="false"/> otherwise.
+        /// </returns>
+        public bool RecursiveEqual(Dictionary<TKey, TValue> other)
+        {
+            return _underlyingDict.RecursiveEqual(other._underlyingDict);
         }
 
         // IDictionary<TKey, TValue>
@@ -565,11 +654,13 @@ namespace Godot.Collections
         }
 
         /// <summary>
-        /// Gets the object at the given <paramref name="key"/>.
+        /// Gets the value for the given <paramref name="key"/> in the dictionary.
+        /// Returns <see langword="true"/> if an entry for the given key exists in
+        /// the dictionary; otherwise, returns <see langword="false"/>.
         /// </summary>
         /// <param name="key">The key of the element to get.</param>
         /// <param name="value">The value at the given <paramref name="key"/>.</param>
-        /// <returns>If an object was found for the given <paramref name="key"/>.</returns>
+        /// <returns>If an entry was found for the given <paramref name="key"/>.</returns>
         public bool TryGetValue(TKey key, [MaybeNullWhen(false)] out TValue value)
         {
             using var variantKey = VariantUtils.CreateFrom(key);
@@ -598,7 +689,7 @@ namespace Godot.Collections
             => Add(item.Key, item.Value);
 
         /// <summary>
-        /// Erases all the items from this <see cref="Dictionary{TKey, TValue}"/>.
+        /// Clears the dictionary, removing all entries from it.
         /// </summary>
         public void Clear() => _underlyingDict.Clear();
 
@@ -625,7 +716,7 @@ namespace Godot.Collections
         /// </summary>
         /// <param name="array">The array to copy to.</param>
         /// <param name="arrayIndex">The index to start at.</param>
-        public void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
+        void ICollection<KeyValuePair<TKey, TValue>>.CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
         {
             if (array == null)
                 throw new ArgumentNullException(nameof(array), "Value cannot be null.");
