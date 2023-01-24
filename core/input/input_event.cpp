@@ -478,7 +478,6 @@ Ref<InputEventKey> InputEventKey::create_reference(Key p_keycode) {
 	Ref<InputEventKey> ie;
 	ie.instantiate();
 	ie->set_keycode(p_keycode & KeyModifierMask::CODE_MASK);
-	ie->set_key_label(p_keycode & KeyModifierMask::CODE_MASK);
 	ie->set_unicode(char32_t(p_keycode & KeyModifierMask::CODE_MASK));
 
 	if ((p_keycode & KeyModifierMask::SHIFT) != Key::NONE) {
