@@ -15,9 +15,11 @@
 
 #if defined(WEBP_USE_SSE2)
 
-#include "src/dsp/common_sse2.h"
 #include <stdlib.h>
 #include <emmintrin.h>
+
+#include "src/dsp/common_sse2.h"
+#include "src/utils/utils.h"
 
 //-----------------------------------------------------------------------------
 // Convert spans of 32 pixels to various RGB formats for the fancy upsampler.
@@ -74,7 +76,7 @@ static WEBP_INLINE __m128i Load_HI_16_SSE2(const uint8_t* src) {
 // Load and replicate the U/V samples
 static WEBP_INLINE __m128i Load_UV_HI_8_SSE2(const uint8_t* src) {
   const __m128i zero = _mm_setzero_si128();
-  const __m128i tmp0 = _mm_cvtsi32_si128(*(const uint32_t*)src);
+  const __m128i tmp0 = _mm_cvtsi32_si128(WebPMemToInt32(src));
   const __m128i tmp1 = _mm_unpacklo_epi8(zero, tmp0);
   return _mm_unpacklo_epi16(tmp1, tmp1);   // replicate samples
 }
@@ -130,7 +132,7 @@ static WEBP_INLINE void PackAndStore4444_SSE2(const __m128i* const R,
   const __m128i rg0 = _mm_packus_epi16(*B, *A);
   const __m128i ba0 = _mm_packus_epi16(*R, *G);
 #endif
-  const __m128i mask_0xf0 = _mm_set1_epi8(0xf0);
+  const __m128i mask_0xf0 = _mm_set1_epi8((char)0xf0);
   const __m128i rb1 = _mm_unpacklo_epi8(rg0, ba0);  // rbrbrbrbrb...
   const __m128i ga1 = _mm_unpackhi_epi8(rg0, ba0);  // gagagagaga...
   const __m128i rb2 = _mm_and_si128(rb1, mask_0xf0);
@@ -147,9 +149,10 @@ static WEBP_INLINE void PackAndStore565_SSE2(const __m128i* const R,
   const __m128i r0 = _mm_packus_epi16(*R, *R);
   const __m128i g0 = _mm_packus_epi16(*G, *G);
   const __m128i b0 = _mm_packus_epi16(*B, *B);
-  const __m128i r1 = _mm_and_si128(r0, _mm_set1_epi8(0xf8));
+  const __m128i r1 = _mm_and_si128(r0, _mm_set1_epi8((char)0xf8));
   const __m128i b1 = _mm_and_si128(_mm_srli_epi16(b0, 3), _mm_set1_epi8(0x1f));
-  const __m128i g1 = _mm_srli_epi16(_mm_and_si128(g0, _mm_set1_epi8(0xe0)), 5);
+  const __m128i g1 =
+      _mm_srli_epi16(_mm_and_si128(g0, _mm_set1_epi8((char)0xe0)), 5);
   const __m128i g2 = _mm_slli_epi16(_mm_and_si128(g0, _mm_set1_epi8(0x1c)), 3);
   const __m128i rg = _mm_or_si128(r1, g1);
   const __m128i gb = _mm_or_si128(g2, b1);
