@@ -1671,9 +1671,11 @@ void DisplayServerWindows::window_set_ime_active(const bool p_active, WindowID p
 	if (p_active) {
 		wd.ime_active = true;
 		ImmAssociateContext(wd.hWnd, wd.im_himc);
+		CreateCaret(wd.hWnd, NULL, 1, 1);
 		window_set_ime_position(wd.im_position, p_window);
 	} else {
 		ImmAssociateContext(wd.hWnd, (HIMC)0);
+		DestroyCaret();
 		wd.ime_active = false;
 	}
 }
@@ -3469,15 +3471,21 @@ LRESULT DisplayServerWindows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARA
 		case WM_IME_COMPOSITION: {
 			CANDIDATEFORM cf;
 			cf.dwIndex = 0;
-			cf.dwStyle = CFS_EXCLUDE;
+
+			cf.dwStyle = CFS_CANDIDATEPOS;
 			cf.ptCurrentPos.x = windows[window_id].im_position.x;
 			cf.ptCurrentPos.y = windows[window_id].im_position.y;
+			ImmSetCandidateWindow(windows[window_id].im_himc, &cf);
+
+			cf.dwStyle = CFS_EXCLUDE;
 			cf.rcArea.left = windows[window_id].im_position.x;
 			cf.rcArea.right = windows[window_id].im_position.x;
 			cf.rcArea.top = windows[window_id].im_position.y;
 			cf.rcArea.bottom = windows[window_id].im_position.y;
 			ImmSetCandidateWindow(windows[window_id].im_himc, &cf);
+
 			if (windows[window_id].ime_active) {
+				SetCaretPos(windows[window_id].im_position.x, windows[window_id].im_position.y);
 				OS::get_singleton()->get_main_loop()->notification(MainLoop::NOTIFICATION_OS_IME_UPDATE);
 			}
 		} break;
