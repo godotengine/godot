@@ -129,10 +129,20 @@ void EditorExport::add_export_preset(const Ref<EditorExportPreset> &p_preset, in
 }
 
 String EditorExportPlatform::test_etc2() const {
-	const bool etc2_supported = GLOBAL_GET("rendering/textures/vram_compression/import_etc2");
+	const bool etc2_supported = GLOBAL_GET("rendering/textures/vram_compression/import_etc2_astc");
 
 	if (!etc2_supported) {
-		return TTR("Target platform requires 'ETC2' texture compression. Enable 'Import Etc 2' in Project Settings.");
+		return TTR("Target platform requires 'ETC2/ASTC' texture compression. Enable 'Import ETC2 ASTC' in Project Settings.");
+	}
+
+	return String();
+}
+
+String EditorExportPlatform::test_bc() const {
+	const bool bc_supported = GLOBAL_GET("rendering/textures/vram_compression/import_s3tc_bptc");
+
+	if (!bc_supported) {
+		return TTR("Target platform requires 'S3TC/BPTC' texture compression. Enable 'Import S3TC BPTC' in Project Settings.");
 	}
 
 	return String();

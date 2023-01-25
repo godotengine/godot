@@ -594,6 +594,50 @@ Ref<Image> TextureStorage::_get_gl_image_and_format(const Ref<Image> &p_image, I
 			}
 			decompress_ra_to_rg = true;
 		} break;
+		case Image::FORMAT_ASTC_4x4: {
+			if (config->astc_supported) {
+				r_gl_internal_format = _EXT_COMPRESSED_RGBA_ASTC_4x4_KHR;
+				r_gl_format = GL_RGBA;
+				r_gl_type = GL_UNSIGNED_BYTE;
+				r_compressed = true;
+
+			} else {
+				need_decompress = true;
+			}
+		} break;
+		case Image::FORMAT_ASTC_4x4_HDR: {
+			if (config->astc_hdr_supported) {
+				r_gl_internal_format = _EXT_COMPRESSED_RGBA_ASTC_4x4_KHR;
+				r_gl_format = GL_RGBA;
+				r_gl_type = GL_UNSIGNED_BYTE;
+				r_compressed = true;
+
+			} else {
+				need_decompress = true;
+			}
+		} break;
+		case Image::FORMAT_ASTC_8x8: {
+			if (config->astc_supported) {
+				r_gl_internal_format = _EXT_COMPRESSED_RGBA_ASTC_8x8_KHR;
+				r_gl_format = GL_RGBA;
+				r_gl_type = GL_UNSIGNED_BYTE;
+				r_compressed = true;
+
+			} else {
+				need_decompress = true;
+			}
+		} break;
+		case Image::FORMAT_ASTC_8x8_HDR: {
+			if (config->astc_hdr_supported) {
+				r_gl_internal_format = _EXT_COMPRESSED_RGBA_ASTC_8x8_KHR;
+				r_gl_format = GL_RGBA;
+				r_gl_type = GL_UNSIGNED_BYTE;
+				r_compressed = true;
+
+			} else {
+				need_decompress = true;
+			}
+		} break;
 		default: {
 			ERR_FAIL_V_MSG(Ref<Image>(), "Image Format: " + itos(p_format) + " is not supported by the OpenGL3 Renderer");
 		}
