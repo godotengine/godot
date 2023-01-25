@@ -1,2 +1,2 @@
 GDTEST_PARSER_ERROR
-Annotation "@icon" is not allowed in this level.
+Annotation "@icon" must be at the top of the script, before "extends" and "class_name".
