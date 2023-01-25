@@ -2305,6 +2305,46 @@ void TileMap::set_pattern(int p_layer, const Vector2i &p_position, const Ref<Til
 	}
 }
 
+void TileMap::_set_cells_terrain_connect(int p_layer, TypedArray<Vector2i> p_cells, int p_terrain_set, int p_terrain, bool p_connect_corners, bool p_ignore_empty_terrains) {
+	ERR_FAIL_COND(!tile_set.is_valid());
+	ERR_FAIL_INDEX(p_layer, (int)layers.size());
+	ERR_FAIL_INDEX(p_terrain_set, tile_set->get_terrain_sets_count());
+
+	Vector<Vector2i> cells_vector;
+	HashSet<Vector2i> painted_set;
+	for (int i = 0; i < p_cells.size(); i++) {
+		cells_vector.push_back(p_cells[i]);
+		painted_set.insert(p_cells[i]);
+	}
+	HashMap<Vector2i, TileSet::TerrainsPattern> terrain_fill_output = terrain_fill_connect(p_layer, cells_vector, p_terrain_set, p_terrain, p_connect_corners, p_ignore_empty_terrains);
+	for (const KeyValue<Vector2i, TileSet::TerrainsPattern> &kv : terrain_fill_output) {
+		if (painted_set.has(kv.key)) {
+			// Paint a random tile with the correct terrain for the painted path.
+			TileMapCell c = tile_set->get_random_tile_from_terrains_pattern(p_terrain_set, kv.value);
+			set_cell(p_layer, kv.key, c.source_id, c.get_atlas_coords(), c.alternative_tile);
+		} else {
+			// Avoids updating the painted path from the output if the new pattern is the same as before.
+			TileSet::TerrainsPattern in_map_terrain_pattern = TileSet::TerrainsPattern(*tile_set, p_terrain_set);
+			TileMapCell cell = get_cell(p_layer, kv.key);
+			if (cell.source_id != TileSet::INVALID_SOURCE) {
+				TileSetSource *source = *tile_set->get_source(cell.source_id);
+				TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
+				if (atlas_source) {
+					// Get tile data.
+					TileData *tile_data = atlas_source->get_tile_data(cell.get_atlas_coords(), cell.alternative_tile);
+					if (tile_data && tile_data->get_terrain_set() == p_terrain_set) {
+						in_map_terrain_pattern = tile_data->get_terrains_pattern();
+					}
+				}
+			}
+			if (in_map_terrain_pattern != kv.value) {
+				TileMapCell c = tile_set->get_random_tile_from_terrains_pattern(p_terrain_set, kv.value);
+				set_cell(p_layer, kv.key, c.source_id, c.get_atlas_coords(), c.alternative_tile);
+			}
+		}
+	}
+}
+
 TileSet::TerrainsPattern TileMap::_get_best_terrain_pattern_for_constraints(int p_terrain_set, const Vector2i &p_position, const RBSet<TerrainConstraint> &p_constraints, TileSet::TerrainsPattern p_current_pattern) {
 	if (!tile_set.is_valid()) {
 		return TileSet::TerrainsPattern();
@@ -2520,7 +2560,7 @@ HashMap<Vector2i, TileSet::TerrainsPattern> TileMap::terrain_fill_constraints(in
 	return output;
 }
 
-HashMap<Vector2i, TileSet::TerrainsPattern> TileMap::terrain_fill_connect(int p_layer, const Vector<Vector2i> &p_coords_array, int p_terrain_set, int p_terrain, bool p_ignore_empty_terrains) {
+HashMap<Vector2i, TileSet::TerrainsPattern> TileMap::terrain_fill_connect(int p_layer, const Vector<Vector2i> &p_coords_array, int p_terrain_set, int p_terrain, bool p_connect_corners, bool p_ignore_empty_terrains) {
 	HashMap<Vector2i, TileSet::TerrainsPattern> output;
 	ERR_FAIL_COND_V(!tile_set.is_valid(), output);
 	ERR_FAIL_INDEX_V(p_terrain_set, tile_set->get_terrain_sets_count(), output);
@@ -2598,17 +2638,26 @@ HashMap<Vector2i, TileSet::TerrainsPattern> TileMap::terrain_fill_connect(int p_
 						constraints.insert(c);
 					}
 				} else {
-					// Corner peering bits: add the constraint if all tiles on the constraint has the same center bit
-					HashMap<Vector2i, TileSet::CellNeighbor> overlapping_terrain_bits = c.get_overlapping_coords_and_peering_bits();
-					bool valid = true;
-					for (KeyValue<Vector2i, TileSet::CellNeighbor> kv : overlapping_terrain_bits) {
-						if (!cells_with_terrain_center_bit.has(kv.key)) {
-							valid = false;
-							break;
+					// Corner peering bits.
+					if (p_connect_corners) {
+						// Add the corner if we force-connect using corners.
+						Vector2i neighbor = get_neighbor_cell(coords, bit);
+						if (cells_with_terrain_center_bit.has(neighbor)) {
+							constraints.insert(c);
 						}
-					}
-					if (valid) {
-						constraints.insert(c);
+					} else {
+						// Corner peering bits: add the constraint if all tiles on the constraint has the same center bit
+						HashMap<Vector2i, TileSet::CellNeighbor> overlapping_terrain_bits = c.get_overlapping_coords_and_peering_bits();
+						bool valid = true;
+						for (KeyValue<Vector2i, TileSet::CellNeighbor> kv : overlapping_terrain_bits) {
+							if (!cells_with_terrain_center_bit.has(kv.key)) {
+								valid = false;
+								break;
+							}
+						}
+						if (valid) {
+							constraints.insert(c);
+						}
 					}
 				}
 			}
@@ -2751,44 +2800,12 @@ HashMap<Vector2i, TileSet::TerrainsPattern> TileMap::terrain_fill_pattern(int p_
 }
 
 void TileMap::set_cells_terrain_connect(int p_layer, TypedArray<Vector2i> p_cells, int p_terrain_set, int p_terrain, bool p_ignore_empty_terrains) {
-	ERR_FAIL_COND(!tile_set.is_valid());
-	ERR_FAIL_INDEX(p_layer, (int)layers.size());
-	ERR_FAIL_INDEX(p_terrain_set, tile_set->get_terrain_sets_count());
+	_set_cells_terrain_connect(p_layer, p_cells, p_terrain_set, p_terrain, true, p_ignore_empty_terrains);
+};
 
-	Vector<Vector2i> cells_vector;
-	HashSet<Vector2i> painted_set;
-	for (int i = 0; i < p_cells.size(); i++) {
-		cells_vector.push_back(p_cells[i]);
-		painted_set.insert(p_cells[i]);
-	}
-	HashMap<Vector2i, TileSet::TerrainsPattern> terrain_fill_output = terrain_fill_connect(p_layer, cells_vector, p_terrain_set, p_terrain, p_ignore_empty_terrains);
-	for (const KeyValue<Vector2i, TileSet::TerrainsPattern> &kv : terrain_fill_output) {
-		if (painted_set.has(kv.key)) {
-			// Paint a random tile with the correct terrain for the painted path.
-			TileMapCell c = tile_set->get_random_tile_from_terrains_pattern(p_terrain_set, kv.value);
-			set_cell(p_layer, kv.key, c.source_id, c.get_atlas_coords(), c.alternative_tile);
-		} else {
-			// Avoids updating the painted path from the output if the new pattern is the same as before.
-			TileSet::TerrainsPattern in_map_terrain_pattern = TileSet::TerrainsPattern(*tile_set, p_terrain_set);
-			TileMapCell cell = get_cell(p_layer, kv.key);
-			if (cell.source_id != TileSet::INVALID_SOURCE) {
-				TileSetSource *source = *tile_set->get_source(cell.source_id);
-				TileSetAtlasSource *atlas_source = Object::cast_to<TileSetAtlasSource>(source);
-				if (atlas_source) {
-					// Get tile data.
-					TileData *tile_data = atlas_source->get_tile_data(cell.get_atlas_coords(), cell.alternative_tile);
-					if (tile_data && tile_data->get_terrain_set() == p_terrain_set) {
-						in_map_terrain_pattern = tile_data->get_terrains_pattern();
-					}
-				}
-			}
-			if (in_map_terrain_pattern != kv.value) {
-				TileMapCell c = tile_set->get_random_tile_from_terrains_pattern(p_terrain_set, kv.value);
-				set_cell(p_layer, kv.key, c.source_id, c.get_atlas_coords(), c.alternative_tile);
-			}
-		}
-	}
-}
+void TileMap::set_cells_terrain_connect_no_corners(int p_layer, TypedArray<Vector2i> p_cells, int p_terrain_set, int p_terrain, bool p_ignore_empty_terrains) {
+	_set_cells_terrain_connect(p_layer, p_cells, p_terrain_set, p_terrain, false, p_ignore_empty_terrains);
+};
 
 void TileMap::set_cells_terrain_path(int p_layer, TypedArray<Vector2i> p_path, int p_terrain_set, int p_terrain, bool p_ignore_empty_terrains) {
 	ERR_FAIL_COND(!tile_set.is_valid());
@@ -4124,6 +4141,7 @@ void TileMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_pattern", "layer", "position", "pattern"), &TileMap::set_pattern);
 
 	ClassDB::bind_method(D_METHOD("set_cells_terrain_connect", "layer", "cells", "terrain_set", "terrain", "ignore_empty_terrains"), &TileMap::set_cells_terrain_connect, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("set_cells_terrain_connect_no_corners", "layer", "cells", "terrain_set", "terrain", "ignore_empty_terrains"), &TileMap::set_cells_terrain_connect_no_corners, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("set_cells_terrain_path", "layer", "path", "terrain_set", "terrain", "ignore_empty_terrains"), &TileMap::set_cells_terrain_path, DEFVAL(true));
 
 	ClassDB::bind_method(D_METHOD("fix_invalid_tiles"), &TileMap::fix_invalid_tiles);

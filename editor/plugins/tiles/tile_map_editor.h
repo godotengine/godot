@@ -268,7 +268,12 @@ private:
 	HashMap<Vector2i, TileMapCell> drag_modified;
 
 	// Painting
-	HashMap<Vector2i, TileMapCell> _draw_terrain_path_or_connect(const Vector<Vector2i> &p_to_paint, int p_terrain_set, int p_terrain, bool p_connect) const;
+	enum DrawTerrainMode {
+		DRAW_TERRAIN_MODE_PATH = 0,
+		DRAW_TERRAIN_MODE_CONNECT,
+		DRAW_TERRAIN_MODE_CONNECT_WITH_CORNERS,
+	};
+	HashMap<Vector2i, TileMapCell> _draw_terrain_path_or_connect(const Vector<Vector2i> &p_to_paint, int p_terrain_set, int p_terrain, DrawTerrainMode p_mode) const;
 	HashMap<Vector2i, TileMapCell> _draw_terrain_pattern(const Vector<Vector2i> &p_to_paint, int p_terrain_set, TileSet::TerrainsPattern p_terrains_pattern) const;
 	HashMap<Vector2i, TileMapCell> _draw_line(Vector2i p_start_cell, Vector2i p_end_cell, bool p_erase);
 	HashMap<Vector2i, TileMapCell> _draw_rect(Vector2i p_start_cell, Vector2i p_end_cell, bool p_erase);
@@ -278,6 +283,7 @@ private:
 
 	enum SelectedType {
 		SELECTED_TYPE_CONNECT = 0,
+		SELECTED_TYPE_CONNECT_WITH_CORNERS,
 		SELECTED_TYPE_PATH,
 		SELECTED_TYPE_PATTERN,
 	};
