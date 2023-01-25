@@ -82,6 +82,11 @@ static String get_property_info_type_name(const PropertyInfo &p_info) {
 	return get_builtin_or_variant_type_name(p_info.type);
 }
 
+static String get_type_meta_name(const GodotTypeInfo::Metadata metadata) {
+	static const char *argmeta[11] = { "none", "int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64", "float", "double" };
+	return argmeta[metadata];
+}
+
 Dictionary GDExtensionAPIDump::generate_extension_api() {
 	Dictionary api_dump;
 
@@ -840,6 +845,10 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 
 							d3["type"] = get_property_info_type_name(pinfo);
 
+							if (mi.get_argument_meta(i) > 0) {
+								d3["meta"] = get_type_meta_name((GodotTypeInfo::Metadata)mi.get_argument_meta(i));
+							}
+
 							if (i == -1) {
 								d2["return_value"] = d3;
 							} else {
@@ -884,8 +893,7 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 							d3["type"] = get_property_info_type_name(pinfo);
 
 							if (method->get_argument_meta(i) > 0) {
-								static const char *argmeta[11] = { "none", "int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64", "float", "double" };
-								d3["meta"] = argmeta[method->get_argument_meta(i)];
+								d3["meta"] = get_type_meta_name(method->get_argument_meta(i));
 							}
 
 							if (i >= 0 && i >= (method->get_argument_count() - default_args.size())) {
@@ -929,6 +937,9 @@ Dictionary GDExtensionAPIDump::generate_extension_api() {
 						Dictionary d3;
 						d3["name"] = F.arguments[i].name;
 						d3["type"] = get_property_info_type_name(F.arguments[i]);
+						if (F.get_argument_meta(i) > 0) {
+							d3["meta"] = get_type_meta_name((GodotTypeInfo::Metadata)F.get_argument_meta(i));
+						}
 						arguments.push_back(d3);
 					}
 					if (arguments.size()) {
