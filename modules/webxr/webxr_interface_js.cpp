@@ -347,9 +347,8 @@ Transform3D WebXRInterfaceJS::get_camera_transform() {
 	ERR_FAIL_NULL_V(xr_server, camera_transform);
 
 	if (initialized) {
-		float world_scale = xr_server->get_world_scale();
+		double world_scale = xr_server->get_world_scale();
 
-		// just scale our origin point of our transform
 		Transform3D _head_transform = head_transform;
 		_head_transform.origin *= world_scale;
 
@@ -372,13 +371,8 @@ Transform3D WebXRInterfaceJS::get_transform_for_view(uint32_t p_view, const Tran
 
 	Transform3D transform_for_view = _js_matrix_to_transform(js_matrix);
 
-	float world_scale = xr_server->get_world_scale();
-	// Scale only the center point of our eye transform, so we don't scale the
-	// distance between the eyes.
-	Transform3D _head_transform = head_transform;
-	transform_for_view.origin -= _head_transform.origin;
-	_head_transform.origin *= world_scale;
-	transform_for_view.origin += _head_transform.origin;
+	double world_scale = xr_server->get_world_scale();
+	transform_for_view.origin *= world_scale;
 
 	return p_cam_transform * xr_server->get_reference_frame() * transform_for_view;
 };

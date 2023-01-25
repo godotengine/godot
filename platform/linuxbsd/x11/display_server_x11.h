@@ -75,9 +75,10 @@
 #include "dynwrappers/xext-so_wrap.h"
 #include "dynwrappers/xinerama-so_wrap.h"
 #include "dynwrappers/xinput2-so_wrap.h"
-#include "dynwrappers/xkbcommon-so_wrap.h"
 #include "dynwrappers/xrandr-so_wrap.h"
 #include "dynwrappers/xrender-so_wrap.h"
+
+#include "../xkbcommon-so_wrap.h"
 
 typedef struct _xrr_monitor_info {
 	Atom name;

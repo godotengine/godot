@@ -401,7 +401,7 @@
 		</signal>
 		<signal name="item_activated">
 			<description>
-				Emitted when an item's label is double-clicked.
+				Emitted when an item is double-clicked, or selected with a [code]ui_accept[/code] input event (e.g. using [kbd]Enter[/kbd] or [kbd]Space[/kbd] on the keyboard).
 			</description>
 		</signal>
 		<signal name="item_collapsed">
@@ -415,14 +415,14 @@
 				Emitted when a custom button is pressed (i.e. in a [constant TreeItem.CELL_MODE_CUSTOM] mode cell).
 			</description>
 		</signal>
-		<signal name="item_double_clicked">
-			<description>
-				Emitted when an item's icon is double-clicked.
-			</description>
-		</signal>
 		<signal name="item_edited">
 			<description>
 				Emitted when an item is edited.
+			</description>
+		</signal>
+		<signal name="item_icon_double_clicked">
+			<description>
+				Emitted when an item's icon is double-clicked. For a signal that emits when any part of the item is double-clicked, see [signal item_activated].
 			</description>
 		</signal>
 		<signal name="item_mouse_selected">
