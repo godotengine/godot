@@ -344,7 +344,6 @@ DisplayServer::MouseMode DisplayServer::mouse_get_mode() const {
 }
 
 void DisplayServer::warp_mouse(const Point2i &p_position) {
-	WARN_PRINT("Mouse warping is not supported by this display server.");
 }
 
 Point2i DisplayServer::mouse_get_position() const {
