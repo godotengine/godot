@@ -23,9 +23,11 @@ namespace GodotTools.Build
             if (dotnetPath == null)
                 throw new FileNotFoundException("Cannot find the dotnet executable.");
 
+            var editorSettings = GodotSharpEditor.Instance.GetEditorInterface().GetEditorSettings();
+
             var startInfo = new ProcessStartInfo(dotnetPath);
 
-            BuildArguments(buildInfo, startInfo.ArgumentList);
+            BuildArguments(buildInfo, startInfo.ArgumentList, editorSettings);
 
             string launchMessage = startInfo.GetCommandLineDisplay(new StringBuilder("Running: ")).ToString();
             stdOutHandler?.Invoke(launchMessage);
@@ -36,6 +38,8 @@ namespace GodotTools.Build
             startInfo.RedirectStandardError = true;
             startInfo.UseShellExecute = false;
             startInfo.CreateNoWindow = true;
+            startInfo.EnvironmentVariables["DOTNET_CLI_UI_LANGUAGE"]
+                = ((string)editorSettings.GetSetting("interface/editor/editor_language")).Replace('_', '-');
 
             // Needed when running from Developer Command Prompt for VS
             RemovePlatformVariable(startInfo.EnvironmentVariables);
@@ -84,9 +88,11 @@ namespace GodotTools.Build
             if (dotnetPath == null)
                 throw new FileNotFoundException("Cannot find the dotnet executable.");
 
+            var editorSettings = GodotSharpEditor.Instance.GetEditorInterface().GetEditorSettings();
+
             var startInfo = new ProcessStartInfo(dotnetPath);
 
-            BuildPublishArguments(buildInfo, startInfo.ArgumentList);
+            BuildPublishArguments(buildInfo, startInfo.ArgumentList, editorSettings);
 
             string launchMessage = startInfo.GetCommandLineDisplay(new StringBuilder("Running: ")).ToString();
             stdOutHandler?.Invoke(launchMessage);
@@ -96,6 +102,8 @@ namespace GodotTools.Build
             startInfo.RedirectStandardOutput = true;
             startInfo.RedirectStandardError = true;
             startInfo.UseShellExecute = false;
+            startInfo.EnvironmentVariables["DOTNET_CLI_UI_LANGUAGE"]
+                = ((string)editorSettings.GetSetting("interface/editor/editor_language")).Replace('_', '-');
 
             // Needed when running from Developer Command Prompt for VS
             RemovePlatformVariable(startInfo.EnvironmentVariables);
@@ -125,10 +133,9 @@ namespace GodotTools.Build
             }
         }
 
-        private static void BuildArguments(BuildInfo buildInfo, Collection<string> arguments)
+        private static void BuildArguments(BuildInfo buildInfo, Collection<string> arguments,
+            EditorSettings editorSettings)
         {
-            var editorSettings = GodotSharpEditor.Instance.GetEditorInterface().GetEditorSettings();
-
             // `dotnet clean` / `dotnet build` commands
             arguments.Add(buildInfo.OnlyClean ? "clean" : "build");
 
@@ -168,10 +175,9 @@ namespace GodotTools.Build
             }
         }
 
-        private static void BuildPublishArguments(BuildInfo buildInfo, Collection<string> arguments)
+        private static void BuildPublishArguments(BuildInfo buildInfo, Collection<string> arguments,
+            EditorSettings editorSettings)
         {
-            var editorSettings = GodotSharpEditor.Instance.GetEditorInterface().GetEditorSettings();
-
             arguments.Add("publish"); // `dotnet publish` command
 
             // Solution
