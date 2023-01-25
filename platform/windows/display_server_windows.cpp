@@ -3663,7 +3663,7 @@ void DisplayServerWindows::_process_key_events() {
 					memset(keyboard_state, 0, 256);
 					wchar_t chars[256] = {};
 					UINT extended_code = MapVirtualKey((ke.lParam >> 16) & 0xFF, MAPVK_VSC_TO_VK_EX);
-					if (!(ke.lParam & (1 << 24)) && ToUnicodeEx(extended_code, (ke.lParam >> 16) & 0xFF, keyboard_state, chars, 255, 0, GetKeyboardLayout(0)) > 0) {
+					if (!(ke.lParam & (1 << 24)) && ToUnicodeEx(extended_code, (ke.lParam >> 16) & 0xFF, keyboard_state, chars, 255, 4, GetKeyboardLayout(0)) > 0) {
 						String keysym = String::utf16((char16_t *)chars, 255);
 						if (!keysym.is_empty()) {
 							key_label = fix_key_label(keysym[0], keycode);
@@ -3715,7 +3715,7 @@ void DisplayServerWindows::_process_key_events() {
 				memset(keyboard_state, 0, 256);
 				wchar_t chars[256] = {};
 				UINT extended_code = MapVirtualKey((ke.lParam >> 16) & 0xFF, MAPVK_VSC_TO_VK_EX);
-				if (!(ke.lParam & (1 << 24)) && ToUnicodeEx(extended_code, (ke.lParam >> 16) & 0xFF, keyboard_state, chars, 255, 0, GetKeyboardLayout(0)) > 0) {
+				if (!(ke.lParam & (1 << 24)) && ToUnicodeEx(extended_code, (ke.lParam >> 16) & 0xFF, keyboard_state, chars, 255, 4, GetKeyboardLayout(0)) > 0) {
 					String keysym = String::utf16((char16_t *)chars, 255);
 					if (!keysym.is_empty()) {
 						key_label = fix_key_label(keysym[0], keycode);
