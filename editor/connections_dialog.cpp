@@ -350,6 +350,7 @@ void ConnectDialog::_update_method_tree() {
 	}
 
 	if (script_methods_only->is_pressed()) {
+		empty_tree_label->set_visible(root_item->get_first_child() == nullptr);
 		return;
 	}
 
@@ -376,6 +377,8 @@ void ConnectDialog::_update_method_tree() {
 		}
 		current_class = ClassDB::get_parent_class_nocheck(current_class);
 	} while (current_class != StringName());
+
+	empty_tree_label->set_visible(root_item->get_first_child() == nullptr);
 }
 
 void ConnectDialog::_method_check_button_pressed(const CheckButton *p_button) {
@@ -432,6 +435,7 @@ void ConnectDialog::_notification(int p_what) {
 				from_signal->add_theme_style_override("normal", style);
 			}
 			method_search->set_right_icon(get_theme_icon("Search", "EditorIcons"));
+			open_method_tree->set_icon(get_theme_icon("Edit", "EditorIcons"));
 		} break;
 	}
 }
@@ -597,18 +601,9 @@ ConnectDialog::ConnectDialog() {
 	main_hb->add_child(vbc_left);
 	vbc_left->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 
-	HBoxContainer *from_signal_hb = memnew(HBoxContainer);
-
 	from_signal = memnew(LineEdit);
+	vbc_left->add_margin_child(TTR("From Signal:"), from_signal);
 	from_signal->set_editable(false);
-	from_signal->set_h_size_flags(Control::SIZE_EXPAND_FILL);
-	from_signal_hb->add_child(from_signal);
-
-	advanced = memnew(CheckButton(TTR("Advanced")));
-	from_signal_hb->add_child(advanced);
-	advanced->connect("pressed", callable_mp(this, &ConnectDialog::_advanced_pressed));
-
-	vbc_left->add_margin_child(TTR("From Signal:"), from_signal_hb);
 
 	tree = memnew(SceneTreeEditor(false));
 	tree->set_connecting_signal(true);
@@ -645,6 +640,10 @@ ConnectDialog::ConnectDialog() {
 	method_tree->set_hide_root(true);
 	method_tree->connect("item_selected", callable_mp(this, &ConnectDialog::_method_selected));
 	method_tree->connect("item_activated", callable_mp((Window *)method_popup, &Window::hide));
+
+	empty_tree_label = memnew(Label(TTR("No method found matching given filters.")));
+	method_tree->add_child(empty_tree_label);
+	empty_tree_label->set_anchors_and_offsets_preset(Control::PRESET_CENTER);
 
 	script_methods_only = memnew(CheckButton(TTR("Script Methods Only")));
 	method_vbc->add_child(script_methods_only);
@@ -712,15 +711,13 @@ ConnectDialog::ConnectDialog() {
 	dst_method->connect("text_submitted", callable_mp(this, &ConnectDialog::_text_submitted));
 	hbc_method->add_child(dst_method);
 
-	Button *open_tree_button = memnew(Button);
-	open_tree_button->set_flat(false);
-	open_tree_button->set_text("...");
-	open_tree_button->connect("pressed", callable_mp(this, &ConnectDialog::_open_method_popup));
-	hbc_method->add_child(open_tree_button);
+	open_method_tree = memnew(Button);
+	hbc_method->add_child(open_method_tree);
+	open_method_tree->set_text("Pick");
+	open_method_tree->connect("pressed", callable_mp(this, &ConnectDialog::_open_method_popup));
 
-	advanced = memnew(CheckButton);
+	advanced = memnew(CheckButton(TTR("Advanced")));
 	vbc_left->add_child(advanced);
-	advanced->set_text(TTR("Advanced"));
 	advanced->set_h_size_flags(Control::SIZE_SHRINK_BEGIN | Control::SIZE_EXPAND);
 	advanced->set_pressed(EditorSettings::get_singleton()->get_project_metadata("editor_metadata", "use_advanced_connections", false));
 	advanced->connect("pressed", callable_mp(this, &ConnectDialog::_advanced_pressed));

@@ -117,8 +117,10 @@ private:
 	SceneTreeEditor *tree = nullptr;
 	AcceptDialog *error = nullptr;
 
+	Button *open_method_tree = nullptr;
 	AcceptDialog *method_popup = nullptr;
 	Tree *method_tree = nullptr;
+	Label *empty_tree_label = nullptr;
 	LineEdit *method_search = nullptr;
 	CheckButton *script_methods_only = nullptr;
 	CheckButton *compatible_methods_only = nullptr;
