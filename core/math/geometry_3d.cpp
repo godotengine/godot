@@ -151,7 +151,7 @@ void Geometry3D::MeshData::optimize_vertices() {
 		}
 	}
 
-	for (MeshData::Edge edge : edges) {
+	for (MeshData::Edge &edge : edges) {
 		int a = edge.vertex_a;
 		int b = edge.vertex_b;
 
