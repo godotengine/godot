@@ -39,8 +39,21 @@
 #include <X11/keysymdef.h>
 
 #include "core/os/keyboard.h"
+#include "core/templates/hash_map.h"
 
 class KeyMappingX11 {
+	struct HashMapHasherKeys {
+		static _FORCE_INLINE_ uint32_t hash(const Key p_key) { return hash_fmix32(static_cast<uint32_t>(p_key)); }
+		static _FORCE_INLINE_ uint32_t hash(const char32_t p_uchar) { return hash_fmix32(p_uchar); }
+		static _FORCE_INLINE_ uint32_t hash(const unsigned p_key) { return hash_fmix32(p_key); }
+		static _FORCE_INLINE_ uint32_t hash(const KeySym p_key) { return hash_fmix32(p_key); }
+	};
+
+	static inline HashMap<KeySym, Key, HashMapHasherKeys> xkeysym_map;
+	static inline HashMap<unsigned int, Key, HashMapHasherKeys> scancode_map;
+	static inline HashMap<Key, unsigned int, HashMapHasherKeys> scancode_map_inv;
+	static inline HashMap<KeySym, char32_t, HashMapHasherKeys> xkeysym_unicode_map;
+
 	KeyMappingX11() {}
 
 public:
