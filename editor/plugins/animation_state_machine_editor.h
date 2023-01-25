@@ -85,9 +85,12 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 	static AnimationNodeStateMachineEditor *singleton;
 
 	void _state_machine_gui_input(const Ref<InputEvent> &p_event);
-	void _connection_draw(const Vector2 &p_from, const Vector2 &p_to, AnimationNodeStateMachineTransition::SwitchMode p_mode, bool p_enabled, bool p_selected, bool p_travel, bool p_auto_advance, bool p_multi_transitions);
+	void _connection_draw(const Vector2 &p_from, const Vector2 &p_to, AnimationNodeStateMachineTransition::SwitchMode p_mode, bool p_enabled, bool p_selected, bool p_travel, float p_fade_ratio, bool p_auto_advance, bool p_multi_transitions);
+
 	void _state_machine_draw();
-	void _state_machine_pos_draw();
+
+	void _state_machine_pos_draw_individual(String p_name, float p_ratio);
+	void _state_machine_pos_draw_all();
 
 	void _update_graph();
 
@@ -150,6 +153,7 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 		float width = 0;
 		bool selected;
 		bool travel;
+		float fade_ratio;
 		bool hidden;
 		int transition_index;
 		Vector<TransitionLine> multi_transitions;
@@ -204,12 +208,22 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 	void _delete_tree_draw();
 
 	bool last_active = false;
-	StringName last_blend_from_node;
+	StringName last_fading_from_node;
 	StringName last_current_node;
 	Vector<StringName> last_travel_path;
+
+	float fade_from_last_play_pos = 0.0f;
+	float fade_from_current_play_pos = 0.0f;
+	float fade_from_length = 0.0f;
+
 	float last_play_pos = 0.0f;
-	float play_pos = 0.0f;
+	float current_play_pos = 0.0f;
 	float current_length = 0.0f;
+
+	float last_fading_time = 0.0f;
+	float last_fading_pos = 0.0f;
+	float fading_time = 0.0f;
+	float fading_pos = 0.0f;
 
 	float error_time = 0.0f;
 	String error_text;

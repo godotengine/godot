@@ -118,6 +118,9 @@ class AnimationNodeStateMachinePlayback : public Resource {
 		StringName next;
 	};
 
+	double len_fade_from = 0.0;
+	double pos_fade_from = 0.0;
+
 	double len_current = 0.0;
 	double pos_current = 0.0;
 	bool end_loop = false;
@@ -163,6 +166,12 @@ public:
 	Vector<StringName> get_travel_path() const;
 	float get_current_play_pos() const;
 	float get_current_length() const;
+
+	float get_fade_from_play_pos() const;
+	float get_fade_from_length() const;
+
+	float get_fading_time() const;
+	float get_fading_pos() const;
 
 	AnimationNodeStateMachinePlayback();
 };
