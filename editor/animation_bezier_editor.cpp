@@ -1489,32 +1489,21 @@ void AnimationBezierTrackEdit::gui_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
-void AnimationBezierTrackEdit::_scroll_callback(Vector2 p_scroll_vec, bool p_alt) {
-	_pan_callback(-p_scroll_vec * 32);
-}
-
-void AnimationBezierTrackEdit::_pan_callback(Vector2 p_scroll_vec) {
+void AnimationBezierTrackEdit::_pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event) {
 	v_scroll += p_scroll_vec.y * v_zoom;
 	v_scroll = CLAMP(v_scroll, -100000, 100000);
 	timeline->set_value(timeline->get_value() - p_scroll_vec.x / timeline->get_zoom_scale());
 	queue_redraw();
 }
 
-void AnimationBezierTrackEdit::_zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin, bool p_alt) {
+void AnimationBezierTrackEdit::_zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputEvent> p_event) {
 	const float v_zoom_orig = v_zoom;
-	if (p_alt) {
+	Ref<InputEventWithModifiers> iewm = p_event;
+	if (iewm.is_valid() && iewm->is_alt_pressed()) {
 		// Alternate zoom (doesn't affect timeline).
-		if (p_scroll_vec.y > 0) {
-			v_zoom = MIN(v_zoom * 1.2, 100000);
-		} else {
-			v_zoom = MAX(v_zoom / 1.2, 0.000001);
-		}
+		v_zoom = CLAMP(v_zoom * p_zoom_factor, 0.000001, 100000);
 	} else {
-		if (p_scroll_vec.y > 0) {
-			timeline->get_zoom()->set_value(timeline->get_zoom()->get_value() / 1.05);
-		} else {
-			timeline->get_zoom()->set_value(timeline->get_zoom()->get_value() * 1.05);
-		}
+		timeline->get_zoom()->set_value(timeline->get_zoom()->get_value() / p_zoom_factor);
 	}
 	v_scroll = v_scroll + (p_origin.y - get_size().y / 2.0) * (v_zoom - v_zoom_orig);
 	queue_redraw();
@@ -1681,7 +1670,7 @@ void AnimationBezierTrackEdit::_bind_methods() {
 
 AnimationBezierTrackEdit::AnimationBezierTrackEdit() {
 	panner.instantiate();
-	panner->set_callbacks(callable_mp(this, &AnimationBezierTrackEdit::_scroll_callback), callable_mp(this, &AnimationBezierTrackEdit::_pan_callback), callable_mp(this, &AnimationBezierTrackEdit::_zoom_callback));
+	panner->set_callbacks(callable_mp(this, &AnimationBezierTrackEdit::_pan_callback), callable_mp(this, &AnimationBezierTrackEdit::_zoom_callback));
 
 	play_position = memnew(Control);
 	play_position->set_mouse_filter(MOUSE_FILTER_PASS);

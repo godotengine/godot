@@ -1704,25 +1704,13 @@ Control::CursorShape AnimationTimelineEdit::get_cursor_shape(const Point2 &p_pos
 	}
 }
 
-void AnimationTimelineEdit::_scroll_callback(Vector2 p_scroll_vec, bool p_alt) {
-	// Timeline has no vertical scroll, so we change it to horizontal.
-	p_scroll_vec.x += p_scroll_vec.y;
-	_pan_callback(-p_scroll_vec * 32);
-}
-
-void AnimationTimelineEdit::_pan_callback(Vector2 p_scroll_vec) {
+void AnimationTimelineEdit::_pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event) {
 	set_value(get_value() - p_scroll_vec.x / get_zoom_scale());
 }
 
-void AnimationTimelineEdit::_zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin, bool p_alt) {
-	double new_zoom_value;
+void AnimationTimelineEdit::_zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputEvent> p_event) {
 	double current_zoom_value = get_zoom()->get_value();
-	if (current_zoom_value <= 0.1) {
-		new_zoom_value = MAX(0.01, current_zoom_value - 0.01 * SIGN(p_scroll_vec.y));
-	} else {
-		new_zoom_value = p_scroll_vec.y > 0 ? MAX(0.01, current_zoom_value / 1.05) : current_zoom_value * 1.05;
-	}
-	get_zoom()->set_value(new_zoom_value);
+	get_zoom()->set_value(MAX(0.01, current_zoom_value * p_zoom_factor));
 }
 
 void AnimationTimelineEdit::set_use_fps(bool p_use_fps) {
@@ -1798,7 +1786,8 @@ AnimationTimelineEdit::AnimationTimelineEdit() {
 	len_hb->hide();
 
 	panner.instantiate();
-	panner->set_callbacks(callable_mp(this, &AnimationTimelineEdit::_scroll_callback), callable_mp(this, &AnimationTimelineEdit::_pan_callback), callable_mp(this, &AnimationTimelineEdit::_zoom_callback));
+	panner->set_callbacks(callable_mp(this, &AnimationTimelineEdit::_pan_callback), callable_mp(this, &AnimationTimelineEdit::_zoom_callback));
+	panner->set_pan_axis(ViewPanner::PAN_AXIS_HORIZONTAL);
 
 	set_layout_direction(Control::LAYOUT_DIRECTION_LTR);
 }
@@ -5358,32 +5347,23 @@ void AnimationTrackEditor::_toggle_bezier_edit() {
 	}
 }
 
-void AnimationTrackEditor::_scroll_callback(Vector2 p_scroll_vec, bool p_alt) {
-	if (p_alt) {
+void AnimationTrackEditor::_pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event) {
+	Ref<InputEventWithModifiers> iewm = p_event;
+	if (iewm.is_valid() && iewm->is_alt_pressed()) {
 		if (p_scroll_vec.x < 0 || p_scroll_vec.y < 0) {
 			goto_prev_step(true);
 		} else {
 			goto_next_step(true);
 		}
 	} else {
-		_pan_callback(-p_scroll_vec * 32);
+		timeline->set_value(timeline->get_value() - p_scroll_vec.x / timeline->get_zoom_scale());
+		scroll->set_v_scroll(scroll->get_v_scroll() - p_scroll_vec.y);
 	}
 }
 
-void AnimationTrackEditor::_pan_callback(Vector2 p_scroll_vec) {
-	timeline->set_value(timeline->get_value() - p_scroll_vec.x / timeline->get_zoom_scale());
-	scroll->set_v_scroll(scroll->get_v_scroll() - p_scroll_vec.y);
-}
-
-void AnimationTrackEditor::_zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin, bool p_alt) {
-	double new_zoom_value;
+void AnimationTrackEditor::_zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputEvent> p_event) {
 	double current_zoom_value = timeline->get_zoom()->get_value();
-	if (current_zoom_value <= 0.1) {
-		new_zoom_value = MAX(0.01, current_zoom_value - 0.01 * SIGN(p_scroll_vec.y));
-	} else {
-		new_zoom_value = p_scroll_vec.y > 0 ? MAX(0.01, current_zoom_value / 1.05) : current_zoom_value * 1.05;
-	}
-	timeline->get_zoom()->set_value(new_zoom_value);
+	timeline->get_zoom()->set_value(MAX(0.01, current_zoom_value * p_zoom_factor));
 }
 
 void AnimationTrackEditor::_cancel_bezier_edit() {
@@ -6398,7 +6378,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	timeline->connect("length_changed", callable_mp(this, &AnimationTrackEditor::_update_length));
 
 	panner.instantiate();
-	panner->set_callbacks(callable_mp(this, &AnimationTrackEditor::_scroll_callback), callable_mp(this, &AnimationTrackEditor::_pan_callback), callable_mp(this, &AnimationTrackEditor::_zoom_callback));
+	panner->set_callbacks(callable_mp(this, &AnimationTrackEditor::_pan_callback), callable_mp(this, &AnimationTrackEditor::_zoom_callback));
 
 	scroll = memnew(ScrollContainer);
 	timeline_vbox->add_child(scroll);
