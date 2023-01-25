@@ -14,10 +14,10 @@
 			Height map data, pool array must be of [member map_width] * [member map_depth] size.
 		</member>
 		<member name="map_depth" type="int" setter="set_map_depth" getter="get_map_depth" default="2">
-			Depth of the height map data. Changing this will resize the [member map_data].
+			Number of vertices in the depth of the height map. Changing this will resize the [member map_data].
 		</member>
 		<member name="map_width" type="int" setter="set_map_width" getter="get_map_width" default="2">
-			Width of the height map data. Changing this will resize the [member map_data].
+			Number of vertices in the width of the height map. Changing this will resize the [member map_data].
 		</member>
 	</members>
 </class>
