@@ -266,7 +266,7 @@ void TileMapEditorTilesPlugin::_patterns_item_list_gui_input(const Ref<InputEven
 	}
 
 	Ref<TileSet> tile_set = tile_map->get_tileset();
-	if (!tile_set.is_valid()) {
+	if (!tile_set.is_valid() || EditorNode::get_singleton()->is_resource_read_only(tile_set)) {
 		return;
 	}
 
@@ -1277,13 +1277,15 @@ void TileMapEditorTilesPlugin::_stop_dragging() {
 					tile_map->set_cell(tile_map_layer, kv.key, kv.value.source_id, kv.value.get_atlas_coords(), kv.value.alternative_tile);
 				}
 
-				// Creating a pattern in the pattern list.
-				select_last_pattern = true;
-				int new_pattern_index = tile_set->get_patterns_count();
-				undo_redo->create_action(TTR("Add TileSet pattern"));
-				undo_redo->add_do_method(*tile_set, "add_pattern", selection_pattern, new_pattern_index);
-				undo_redo->add_undo_method(*tile_set, "remove_pattern", new_pattern_index);
-				undo_redo->commit_action();
+				if (EditorNode::get_singleton()->is_resource_read_only(tile_set)) {
+					// Creating a pattern in the pattern list.
+					select_last_pattern = true;
+					int new_pattern_index = tile_set->get_patterns_count();
+					undo_redo->create_action(TTR("Add TileSet pattern"));
+					undo_redo->add_do_method(*tile_set, "add_pattern", selection_pattern, new_pattern_index);
+					undo_redo->add_undo_method(*tile_set, "remove_pattern", new_pattern_index);
+					undo_redo->commit_action();
+				}
 			} else {
 				// Get the top-left cell.
 				Vector2i top_left;
@@ -1988,6 +1990,15 @@ TypedArray<Vector2i> TileMapEditorTilesPlugin::_get_tile_map_selection() const {
 
 void TileMapEditorTilesPlugin::edit(ObjectID p_tile_map_id, int p_tile_map_layer) {
 	_stop_dragging(); // Avoids staying in a wrong drag state.
+
+	// Disable sort button if the tileset is read-only
+	TileMap *tile_map = Object::cast_to<TileMap>(ObjectDB::get_instance(tile_map_id));
+	if (tile_map) {
+		Ref<TileSet> tile_set = tile_map->get_tileset();
+		if (tile_set.is_valid()) {
+			source_sort_button->set_disabled(EditorNode::get_singleton()->is_resource_read_only(tile_set));
+		}
+	}
 
 	if (tile_map_id != p_tile_map_id) {
 		tile_map_id = p_tile_map_id;
