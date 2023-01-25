@@ -895,6 +895,7 @@
 			<param index="0" name="position" type="Vector2" />
 			<description>
 				Moves the mouse cursor to [param position], relative to [member position] of this [Control].
+				[b]Note:[/b] [method warp_mouse] is only supported on Windows, macOS and Linux. It has no effect on Android, iOS and Web.
 			</description>
 		</method>
 	</methods>
