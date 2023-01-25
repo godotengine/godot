@@ -4859,7 +4859,11 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 
 	{
 		wd.x11_window = XCreateWindow(x11_display, RootWindow(x11_display, visualInfo.screen), win_rect.position.x, win_rect.position.y, win_rect.size.width > 0 ? win_rect.size.width : 1, win_rect.size.height > 0 ? win_rect.size.height : 1, 0, visualInfo.depth, InputOutput, visualInfo.visual, valuemask, &windowAttributes);
-		wd.x11_xim_window = XCreateWindow(x11_display, wd.x11_window, 0, 0, 1, 1, 0, visualInfo.depth, InputOutput, visualInfo.visual, valuemask, &windowAttributes);
+
+		XSetWindowAttributes window_attributes_ime = {};
+		window_attributes_ime.event_mask = KeyPressMask | KeyReleaseMask | StructureNotifyMask | ExposureMask;
+
+		wd.x11_xim_window = XCreateWindow(x11_display, wd.x11_window, 0, 0, 1, 1, 0, CopyFromParent, InputOnly, CopyFromParent, CWEventMask, &window_attributes_ime);
 
 		// Enable receiving notification when the window is initialized (MapNotify)
 		// so the focus can be set at the right time.
