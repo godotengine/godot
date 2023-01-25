@@ -65,13 +65,14 @@ void AnimationTreeEditor::edit(AnimationTree *p_tree) {
 	tree = p_tree;
 
 	Vector<String> path;
-	if (tree && tree->has_meta("_tree_edit_path")) {
-		path = tree->get_meta("_tree_edit_path");
-	} else {
-		current_root = ObjectID();
+	if (tree) {
+		if (tree->has_meta("_tree_edit_path")) {
+			path = tree->get_meta("_tree_edit_path");
+		} else {
+			current_root = ObjectID();
+		}
+		edit_path(path);
 	}
-
-	edit_path(path);
 }
 
 void AnimationTreeEditor::_node_removed(Node *p_node) {

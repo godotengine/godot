@@ -1138,7 +1138,7 @@ void AnimationNodeStateMachineEditor::_connection_draw(const Vector2 &p_from, co
 		accent.a *= 0.6;
 	}
 
-	const Ref<Texture2D> icons[6] = {
+	const Ref<Texture2D> icons[] = {
 		get_theme_icon(SNAME("TransitionImmediateBig"), SNAME("EditorIcons")),
 		get_theme_icon(SNAME("TransitionSyncBig"), SNAME("EditorIcons")),
 		get_theme_icon(SNAME("TransitionEndBig"), SNAME("EditorIcons")),
@@ -1146,6 +1146,7 @@ void AnimationNodeStateMachineEditor::_connection_draw(const Vector2 &p_from, co
 		get_theme_icon(SNAME("TransitionSyncAutoBig"), SNAME("EditorIcons")),
 		get_theme_icon(SNAME("TransitionEndAutoBig"), SNAME("EditorIcons"))
 	};
+	const int ICON_COUNT = sizeof(icons) / sizeof(*icons);
 
 	if (p_selected) {
 		state_machine_draw->draw_line(p_from, p_to, accent, 6);
@@ -1162,7 +1163,9 @@ void AnimationNodeStateMachineEditor::_connection_draw(const Vector2 &p_from, co
 		fade_linecolor.set_hsv(1.0, fade_linecolor.get_s(), fade_linecolor.get_v());
 		state_machine_draw->draw_line(p_from, p_from.lerp(p_to, p_fade_ratio), fade_linecolor, 2);
 	}
-	Ref<Texture2D> icon = icons[p_mode + (p_auto_advance ? 3 : 0)];
+	int icon_index = p_mode + (p_auto_advance ? ICON_COUNT / 2 : 0);
+	ERR_FAIL_COND(icon_index >= ICON_COUNT);
+	Ref<Texture2D> icon = icons[icon_index];
 
 	Transform2D xf;
 	xf.columns[0] = (p_to - p_from).normalized();
