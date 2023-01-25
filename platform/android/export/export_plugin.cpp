@@ -1711,6 +1711,7 @@ Vector<EditorExportPlatformAndroid::ABI> EditorExportPlatformAndroid::get_enable
 
 void EditorExportPlatformAndroid::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const {
 	r_features->push_back("etc2");
+	r_features->push_back("astc");
 
 	Vector<ABI> abis = get_enabled_abis(p_preset);
 	for (int i = 0; i < abis.size(); ++i) {

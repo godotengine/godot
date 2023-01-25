@@ -33,7 +33,7 @@
 
 #include "core/io/image.h"
 
-void _compress_astc(Image *r_img, float p_lossy_quality, Image::ASTCFormat p_format);
+void _compress_astc(Image *r_img, Image::ASTCFormat p_format);
 void _decompress_astc(Image *r_img);
 
 #endif // IMAGE_COMPRESS_ASTCENC_H

@@ -74,24 +74,22 @@ EtcpakType _determine_dxt_type(Image::UsedChannels p_channels) {
 	}
 }
 
-void _compress_etc1(Image *r_img, float p_lossy_quality) {
-	_compress_etcpak(EtcpakType::ETCPAK_TYPE_ETC1, r_img, p_lossy_quality);
+void _compress_etc1(Image *r_img) {
+	_compress_etcpak(EtcpakType::ETCPAK_TYPE_ETC1, r_img);
 }
 
-void _compress_etc2(Image *r_img, float p_lossy_quality, Image::UsedChannels p_channels) {
+void _compress_etc2(Image *r_img, Image::UsedChannels p_channels) {
 	EtcpakType type = _determine_etc_type(p_channels);
-	_compress_etcpak(type, r_img, p_lossy_quality);
+	_compress_etcpak(type, r_img);
 }
 
-void _compress_bc(Image *r_img, float p_lossy_quality, Image::UsedChannels p_channels) {
+void _compress_bc(Image *r_img, Image::UsedChannels p_channels) {
 	EtcpakType type = _determine_dxt_type(p_channels);
-	_compress_etcpak(type, r_img, p_lossy_quality);
+	_compress_etcpak(type, r_img);
 }
 
-void _compress_etcpak(EtcpakType p_compresstype, Image *r_img, float p_lossy_quality) {
+void _compress_etcpak(EtcpakType p_compresstype, Image *r_img) {
 	uint64_t start_time = OS::get_singleton()->get_ticks_msec();
-
-	// TODO: See how to handle lossy quality.
 
 	Image::Format img_format = r_img->get_format();
 	if (img_format >= Image::FORMAT_DXT1) {
