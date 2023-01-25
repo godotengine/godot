@@ -2933,6 +2933,7 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 	xkeyevent_no_mod.state &= ~ShiftMask;
 	xkeyevent_no_mod.state &= ~ControlMask;
 	XLookupString(xkeyevent, str, 255, &keysym_unicode, nullptr);
+	XLookupString(&xkeyevent_no_mod, nullptr, 0, &keysym_keycode, nullptr);
 
 	String keysym;
 	if (xkb_keysym_to_utf32 && xkb_keysym_to_upper) {
