@@ -20,8 +20,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - name: Editor w/ Mono (target=editor)
+        include: - name: Editor w/ Mono (target=editor)
             cache-name: linux-editor-mono
             target: editor
             tests: false # Disabled due freeze caused by mix Mono build and CI
@@ -82,11 +81,8 @@ jobs:
           sudo cp -f misc/ci/sources.list /etc/apt/sources.list
           sudo apt-get update
           # The actual dependencies
-          sudo apt-get install build-essential pkg-config libx11-dev libxcursor-dev \
-              libxinerama-dev libwayland-dev libgl1-mesa-dev libglu-dev libasound2-dev \
-              libpulse-dev libdbus-1-dev libudev-dev libxi-dev libxrandr-dev yasm xvfb \
-              wget unzip llvm libspeechd-dev speech-dispatcher fontconfig libfontconfig-dev \
-              libxkbcommon-dev
+          sudo apt-get install build-essential pkg-config libgl1-mesa-dev libglu-dev \
+              xvfb wget unzip llvm libwayland-dev
 
       - name: Setup Godot build cache
         uses: ./.github/actions/godot-cache

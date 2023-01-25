@@ -1701,6 +1701,7 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 					case Node::CALL:
 					case Node::ASSIGNMENT:
 					case Node::AWAIT:
+					case Node::TERNARY_OPERATOR:
 						// Fine.
 						break;
 					case Node::LAMBDA:

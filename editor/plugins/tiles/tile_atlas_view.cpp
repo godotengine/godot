@@ -47,18 +47,14 @@ void TileAtlasView::gui_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
-void TileAtlasView::_scroll_callback(Vector2 p_scroll_vec, bool p_alt) {
-	_pan_callback(-p_scroll_vec * 32);
-}
-
-void TileAtlasView::_pan_callback(Vector2 p_scroll_vec) {
+void TileAtlasView::_pan_callback(Vector2 p_scroll_vec, Ref<InputEvent> p_event) {
 	panning += p_scroll_vec;
 	_update_zoom_and_panning(true);
 	emit_signal(SNAME("transform_changed"), zoom_widget->get_zoom(), panning);
 }
 
-void TileAtlasView::_zoom_callback(Vector2 p_scroll_vec, Vector2 p_origin, bool p_alt) {
-	zoom_widget->set_zoom_by_increments(-p_scroll_vec.y * 2);
+void TileAtlasView::_zoom_callback(float p_zoom_factor, Vector2 p_origin, Ref<InputEvent> p_event) {
+	zoom_widget->set_zoom(zoom_widget->get_zoom() * p_zoom_factor);
 	_update_zoom_and_panning(true);
 	emit_signal(SNAME("transform_changed"), zoom_widget->get_zoom(), panning);
 }
@@ -583,7 +579,7 @@ TileAtlasView::TileAtlasView() {
 	add_child(button_center_view);
 
 	panner.instantiate();
-	panner->set_callbacks(callable_mp(this, &TileAtlasView::_scroll_callback), callable_mp(this, &TileAtlasView::_pan_callback), callable_mp(this, &TileAtlasView::_zoom_callback));
+	panner->set_callbacks(callable_mp(this, &TileAtlasView::_pan_callback), callable_mp(this, &TileAtlasView::_zoom_callback));
 	panner->set_enable_rmb(true);
 
 	center_container = memnew(CenterContainer);

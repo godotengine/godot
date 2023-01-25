@@ -43,36 +43,42 @@ bool ViewPanner::gui_input(const Ref<InputEvent> &p_event, Rect2 p_canvas_rect) 
 		if (scroll_vec != Vector2() && mb->is_pressed()) {
 			if (control_scheme == SCROLL_PANS) {
 				if (mb->is_ctrl_pressed()) {
-					scroll_vec.y *= mb->get_factor();
-					callback_helper(zoom_callback, varray(scroll_vec, mb->get_position(), mb->is_alt_pressed()));
+					// Compute the zoom factor.
+					float zoom_factor = mb->get_factor() <= 0 ? 1.0 : mb->get_factor();
+					zoom_factor = ((scroll_zoom_factor - 1.0) * zoom_factor) + 1.0;
+					float zoom = (scroll_vec.x + scroll_vec.y) > 0 ? 1.0 / scroll_zoom_factor : scroll_zoom_factor;
+					callback_helper(zoom_callback, varray(zoom, mb->get_position(), p_event));
 					return true;
 				} else {
-					Vector2 panning;
-					if (mb->is_shift_pressed()) {
-						panning.x += mb->get_factor() * scroll_vec.y;
-						panning.y += mb->get_factor() * scroll_vec.x;
-					} else {
-						panning.y += mb->get_factor() * scroll_vec.y;
-						panning.x += mb->get_factor() * scroll_vec.x;
+					Vector2 panning = scroll_vec * mb->get_factor();
+					if (pan_axis == PAN_AXIS_HORIZONTAL) {
+						panning = Vector2(panning.x + panning.y, 0);
+					} else if (pan_axis == PAN_AXIS_VERTICAL) {
+						panning = Vector2(0, panning.x + panning.y);
+					} else if (mb->is_shift_pressed()) {
+						panning = Vector2(panning.y, panning.x);
 					}
-					callback_helper(scroll_callback, varray(panning, mb->is_alt_pressed()));
+					callback_helper(pan_callback, varray(-panning * scroll_speed, p_event));
 					return true;
 				}
 			} else {
 				if (mb->is_ctrl_pressed()) {
-					Vector2 panning;
-					if (mb->is_shift_pressed()) {
-						panning.x += mb->get_factor() * scroll_vec.y;
-						panning.y += mb->get_factor() * scroll_vec.x;
-					} else {
-						panning.y += mb->get_factor() * scroll_vec.y;
-						panning.x += mb->get_factor() * scroll_vec.x;
+					Vector2 panning = scroll_vec * mb->get_factor();
+					if (pan_axis == PAN_AXIS_HORIZONTAL) {
+						panning = Vector2(panning.x + panning.y, 0);
+					} else if (pan_axis == PAN_AXIS_VERTICAL) {
+						panning = Vector2(0, panning.x + panning.y);
+					} else if (mb->is_shift_pressed()) {
+						panning = Vector2(panning.y, panning.x);
 					}
-					callback_helper(scroll_callback, varray(panning, mb->is_alt_pressed()));
+					callback_helper(pan_callback, varray(-panning * scroll_speed, p_event));
 					return true;
 				} else if (!mb->is_shift_pressed()) {
-					scroll_vec.y *= mb->get_factor();
-					callback_helper(zoom_callback, varray(scroll_vec, mb->get_position(), mb->is_alt_pressed()));
+					// Compute the zoom factor.
+					float zoom_factor = mb->get_factor() <= 0 ? 1.0 : mb->get_factor();
+					zoom_factor = ((scroll_zoom_factor - 1.0) * zoom_factor) + 1.0;
+					float zoom = (scroll_vec.x + scroll_vec.y) > 0 ? 1.0 / scroll_zoom_factor : scroll_zoom_factor;
+					callback_helper(zoom_callback, varray(zoom, mb->get_position(), p_event));
 					return true;
 				}
 			}
@@ -102,12 +108,29 @@ bool ViewPanner::gui_input(const Ref<InputEvent> &p_event, Rect2 p_canvas_rect) 
 	if (mm.is_valid()) {
 		if (is_dragging) {
 			if (p_canvas_rect != Rect2()) {
-				callback_helper(pan_callback, varray(Input::get_singleton()->warp_mouse_motion(mm, p_canvas_rect)));
+				callback_helper(pan_callback, varray(Input::get_singleton()->warp_mouse_motion(mm, p_canvas_rect), p_event));
 			} else {
-				callback_helper(pan_callback, varray(mm->get_relative()));
+				callback_helper(pan_callback, varray(mm->get_relative(), p_event));
 			}
 			return true;
 		}
+	}
+
+	Ref<InputEventMagnifyGesture> magnify_gesture = p_event;
+	if (magnify_gesture.is_valid()) {
+		// Zoom gesture
+		callback_helper(zoom_callback, varray(magnify_gesture->get_factor(), magnify_gesture->get_position(), p_event));
+		return true;
+	}
+
+	Ref<InputEventPanGesture> pan_gesture = p_event;
+	if (pan_gesture.is_valid()) {
+		callback_helper(pan_callback, varray(-pan_gesture->get_delta(), p_event));
+	}
+
+	Ref<InputEventScreenDrag> screen_drag = p_event;
+	if (screen_drag.is_valid()) {
+		callback_helper(pan_callback, varray(screen_drag->get_relative(), p_event));
 	}
 
 	Ref<InputEventKey> k = p_event;
@@ -140,8 +163,7 @@ void ViewPanner::callback_helper(Callable p_callback, Vector<Variant> p_args) {
 	p_callback.callp(argptr, p_args.size(), result, ce);
 }
 
-void ViewPanner::set_callbacks(Callable p_scroll_callback, Callable p_pan_callback, Callable p_zoom_callback) {
-	scroll_callback = p_scroll_callback;
+void ViewPanner::set_callbacks(Callable p_pan_callback, Callable p_zoom_callback) {
 	pan_callback = p_pan_callback;
 	zoom_callback = p_zoom_callback;
 }
@@ -161,6 +183,20 @@ void ViewPanner::set_pan_shortcut(Ref<Shortcut> p_shortcut) {
 
 void ViewPanner::set_simple_panning_enabled(bool p_enabled) {
 	simple_panning_enabled = p_enabled;
+}
+
+void ViewPanner::set_scroll_speed(int p_scroll_speed) {
+	ERR_FAIL_COND(p_scroll_speed <= 0);
+	scroll_speed = p_scroll_speed;
+}
+
+void ViewPanner::set_scroll_zoom_factor(float p_scroll_zoom_factor) {
+	ERR_FAIL_COND(p_scroll_zoom_factor <= 1.0);
+	scroll_zoom_factor = p_scroll_zoom_factor;
+}
+
+void ViewPanner::set_pan_axis(PanAxis p_pan_axis) {
+	pan_axis = p_pan_axis;
 }
 
 void ViewPanner::setup(ControlScheme p_scheme, Ref<Shortcut> p_shortcut, bool p_simple_panning) {
