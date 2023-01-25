@@ -1648,7 +1648,10 @@ void SkyRD::update_dirty_skys() {
 				tf.mipmaps = MIN(mipmaps, layers);
 				tf.width = w;
 				tf.height = h;
-				tf.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT;
+				tf.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT;
+				if (RendererSceneRenderRD::get_singleton()->_render_buffers_can_be_storage()) {
+					tf.usage_bits |= RD::TEXTURE_USAGE_STORAGE_BIT;
+				}
 
 				sky->radiance = RD::get_singleton()->texture_create(tf, RD::TextureView());
 
