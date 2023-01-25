@@ -7,7 +7,7 @@ WAYLAND_BUILDERS = {
     "WAYLAND_API_HEADER": Builder(
         action=Action(
             "wayland-scanner -c client-header < ${SOURCE} | sed 's:wayland-util\.h:../dynwrappers/wayland-client-core_so-wrap\.h:' > ${TARGET}",
-            'Generating Wayland client header: "${TARGET}"'
+            'Generating Wayland client header: "${TARGET}"',
         ),
         single_source=True,
     ),
