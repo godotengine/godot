@@ -1,9 +1,4 @@
 func test():
-	var one_0 = 0
-	one_0 = 1
-	var one_1 := one_0
-	print(one_1)
-
 	var two: Variant = 0
 	two += 2
 	print(two)
