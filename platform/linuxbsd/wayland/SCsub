@@ -6,13 +6,14 @@ Import("env")
 WAYLAND_BUILDERS = {
     "WAYLAND_API_HEADER": Builder(
         action=Action(
-            "wayland-scanner -c client-header ${SOURCE} ${TARGET}", 'Generating Wayland client header: "${TARGET}"'
+            "wayland-scanner -c client-header < ${SOURCE} | sed 's:wayland-util\.h:../dynwrappers/wayland-client-core_so-wrap\.h:' > ${TARGET}",
+            'Generating Wayland client header: "${TARGET}"'
         ),
         single_source=True,
     ),
     "WAYLAND_API_CODE": Builder(
         action=Action(
-            "wayland-scanner -c private-code ${SOURCE} ${TARGET}",
+            "wayland-scanner -c private-code < ${SOURCE} | sed 's:wayland-client-core\.h:../dynwrappers/wayland-client-core_so-wrap\.h:' > ${TARGET}",
             'Generating Wayland protocol marshalling code: "${TARGET}"',
         ),
         single_source=True,
@@ -104,9 +105,9 @@ env.WAYLAND_API_CODE(
 )
 
 source_files = [
-    "dynwrappers/wayland-cursor.c",
-    "dynwrappers/wayland-client-core.c",
-    "dynwrappers/wayland-egl-core.c",
+    "dynwrappers/wayland-cursor-so_wrap.c",
+    "dynwrappers/wayland-client-core-so_wrap.c",
+    "dynwrappers/wayland-egl-core-so_wrap.c",
     "protocol/wayland.gen.c",
     "protocol/xdg_shell.gen.c",
     "protocol/xdg_decoration.gen.c",

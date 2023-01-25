@@ -187,10 +187,6 @@ def configure(env: "Environment"):
     ## Dependencies
 
     if env["wayland"]:
-        # Only cflags, we dlopen the libraries.
-        env.ParseConfig("pkg-config wayland-client --cflags")
-        env.ParseConfig("pkg-config wayland-cursor --cflags")
-
         if os.system("pkg-config --exists libdecor-0") == 0:  # 0 means found
             env.ParseConfig("pkg-config libdecor-0 --cflags")  # Only cflags, we dlopen the library.
         else:
@@ -329,6 +325,7 @@ def configure(env: "Environment"):
 
     if env["wayland"]:
         env.Append(CPPDEFINES=["WAYLAND_ENABLED"])
+        env.Append(LIBS=["rt"])  # Needed by glibc, used by _allocate_shm_file
 
     if env["vulkan"]:
         env.Append(CPPDEFINES=["VULKAN_ENABLED"])
@@ -340,10 +337,6 @@ def configure(env: "Environment"):
 
     if env["opengl3"]:
         env.Append(CPPDEFINES=["GLES3_ENABLED"])
-
-        if env["wayland"]:
-            env.Append(LIBS=["rt"])  # Needed by glibc, used by _allocate_shm_file
-            env.ParseConfig("pkg-config wayland-egl --cflags")  # Only cflags, we dlopen the library.
 
     env.Append(LIBS=["pthread"])
 

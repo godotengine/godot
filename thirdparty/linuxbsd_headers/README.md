@@ -48,6 +48,13 @@ Patches in the `patches` directory should be re-applied after updates.
 - License: LPGL-2.1+
 
 
+## wayland
+
+- Upstream: https://gitlab.freedesktop.org/wayland/wayland
+- Version: 1.21.0 (8135e856ebd79872f886466e9cee39affb7d9ee8, 2022)
+- License: MIT
+
+
 ## X11
 
 - Upstream: https://x.org/wiki/

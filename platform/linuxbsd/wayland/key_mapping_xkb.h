@@ -31,7 +31,7 @@
 #ifndef KEY_MAPPING_XKB_H
 #define KEY_MAPPING_XKB_H
 
-#include "thirdparty/linuxbsd_headers/xkbcommon/xkbcommon.h"
+#include "../xkbcommon-so_wrap.h"
 
 #include "core/os/keyboard.h"
 #include "core/templates/hash_map.h"

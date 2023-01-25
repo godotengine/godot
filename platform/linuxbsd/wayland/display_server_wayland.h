@@ -40,9 +40,9 @@
 #include <sys/mman.h>
 #include <unistd.h>
 
-#include "dynwrappers/wayland-client-core.h"
-#include "dynwrappers/wayland-cursor.h"
-#include "dynwrappers/wayland-egl-core.h"
+#include "dynwrappers/wayland-client-core-so_wrap.h"
+#include "dynwrappers/wayland-cursor-so_wrap.h"
+#include "dynwrappers/wayland-egl-core-so_wrap.h"
 
 #include "../xkbcommon-so_wrap.h"
 

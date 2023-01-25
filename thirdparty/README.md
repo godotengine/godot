@@ -749,18 +749,6 @@ Version: 3.0.1 (2022-06-10), commit `cfdc0f8775ab3258a3b9c4e47d8ce4b6f52a5441`
 Patches in the `patches` directory should be re-applied after updates.
 
 
-## wayland
-
-- Upstream: https://gitlab.freedesktop.org/wayland/wayland
-- Version: 1.21.0 (8135e856ebd79872f886466e9cee39affb7d9ee8, 2022)
-- License: MIT
-
-Files extracted from upstream source:
-
-- `protocol/wayland.xml`
-- `COPYING`
-
-
 # wayland-protocols
 
 - Upstream: https://gitlab.freedesktop.org/wayland/wayland-protocols
