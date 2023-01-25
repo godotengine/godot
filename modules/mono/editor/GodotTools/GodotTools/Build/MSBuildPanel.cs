@@ -175,7 +175,7 @@ namespace GodotTools.Build
             AddChild(BuildOutputView);
         }
 
-        public override void _Notification(long what)
+        public override void _Notification(int what)
         {
             base._Notification(what);
 
