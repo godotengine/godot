@@ -228,10 +228,21 @@ bool DisplayServerWayland::_seat_state_configure_key_event(SeatState &p_ss, Ref<
 	p_event->set_alt_pressed(p_ss.alt_pressed);
 	p_event->set_meta_pressed(p_ss.meta_pressed);
 
+	p_event->set_pressed(p_pressed);
 	p_event->set_keycode(keycode);
 	p_event->set_physical_keycode(physical_keycode);
-	p_event->set_unicode(xkb_state_key_get_utf32(p_ss.xkb_state, p_keycode));
-	p_event->set_pressed(p_pressed);
+
+	uint32_t unicode = xkb_state_key_get_utf32(p_ss.xkb_state, p_keycode);
+
+	if (unicode != 0) {
+		p_event->set_key_label(fix_key_label(unicode, keycode));
+	} else {
+		p_event->set_key_label(keycode);
+	}
+
+	if (p_pressed) {
+		p_event->set_unicode(fix_unicode(unicode));
+	}
 
 	// Taken from DisplayServerX11.
 	if (p_event->get_keycode() == Key::BACKTAB) {
@@ -3191,6 +3202,8 @@ DisplayServerWayland::DisplayServerWayland(const String &p_rendering_driver, Win
 		WARN_PRINT("Can't load the XKBcommon library.");
 		return;
 	}
+
+	KeyMappingXKB::initialize();
 
 	wls.wl_display = wl_display_connect(nullptr);
 
