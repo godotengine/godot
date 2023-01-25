@@ -22,6 +22,11 @@ namespace GodotTools
 {
     public partial class GodotSharpEditor : EditorPlugin, ISerializationListener
     {
+        public static class Settings
+        {
+            public const string ExternalEditor = "dotnet/editor/external_editor";
+        }
+
         private EditorSettings _editorSettings;
 
         private PopupMenu _menuPopup;
@@ -171,7 +176,7 @@ namespace GodotTools
         [UsedImplicitly]
         public Error OpenInExternalEditor(Script script, int line, int col)
         {
-            var editorId = (ExternalEditorId)(int)_editorSettings.GetSetting("mono/editor/external_editor");
+            var editorId = _editorSettings.GetSetting(Settings.ExternalEditor).As<ExternalEditorId>();
 
             switch (editorId)
             {
@@ -323,8 +328,7 @@ namespace GodotTools
         [UsedImplicitly]
         public bool OverridesExternalEditor()
         {
-            return (ExternalEditorId)(int)_editorSettings.GetSetting("mono/editor/external_editor") !=
-                   ExternalEditorId.None;
+            return _editorSettings.GetSetting(Settings.ExternalEditor).As<ExternalEditorId>() != ExternalEditorId.None;
         }
 
         public override bool _Build()
@@ -453,7 +457,7 @@ namespace GodotTools
             _menuPopup.IdPressed += _MenuOptionPressed;
 
             // External editor settings
-            EditorDef("mono/editor/external_editor", Variant.From(ExternalEditorId.None));
+            EditorDef(Settings.ExternalEditor, Variant.From(ExternalEditorId.None));
 
             string settingsHintStr = "Disabled";
 
@@ -481,7 +485,7 @@ namespace GodotTools
             _editorSettings.AddPropertyInfo(new Godot.Collections.Dictionary
             {
                 ["type"] = (int)Variant.Type.Int,
-                ["name"] = "mono/editor/external_editor",
+                ["name"] = Settings.ExternalEditor,
                 ["hint"] = (int)PropertyHint.Enum,
                 ["hint_string"] = settingsHintStr
             });
