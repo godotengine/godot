@@ -622,7 +622,7 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 					char_idx += 2;
 
 					include_positions.resize(include_positions.size() - 1); // Pop back.
-					tk_line = include_positions[include_positions.size() - 1].line; // Restore line.
+					tk_line = include_positions[include_positions.size() - 1].line - 1; // Restore line.
 
 				} else {
 					return _make_token(TK_ERROR, "Invalid include enter/exit hint token (@@> and @@<)");
