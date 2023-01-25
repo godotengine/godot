@@ -151,11 +151,6 @@ void StyleBoxTexture::set_texture(Ref<Texture2D> p_texture) {
 		return;
 	}
 	texture = p_texture;
-	if (p_texture.is_null()) {
-		region_rect = Rect2(0, 0, 0, 0);
-	} else {
-		region_rect = Rect2(Point2(), texture->get_size());
-	}
 	emit_changed();
 }
 
