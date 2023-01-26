@@ -1546,6 +1546,8 @@ MaterialStorage::MaterialStorage() {
 		actions.render_mode_defines["unshaded"] = "#define MODE_UNSHADED\n";
 		actions.render_mode_defines["light_only"] = "#define MODE_LIGHT_ONLY\n";
 
+		actions.global_buffer_array_variable = "global_shader_uniforms";
+
 		shaders.compiler_canvas.initialize(actions);
 	}
 
@@ -1719,6 +1721,7 @@ MaterialStorage::MaterialStorage() {
 		actions.default_repeat = ShaderLanguage::REPEAT_ENABLE;
 
 		actions.check_multiview_samplers = true;
+		actions.global_buffer_array_variable = "global_shader_uniforms";
 
 		shaders.compiler_scene.initialize(actions);
 	}
@@ -1775,6 +1778,8 @@ MaterialStorage::MaterialStorage() {
 		actions.default_filter = ShaderLanguage::FILTER_LINEAR_MIPMAP;
 		actions.default_repeat = ShaderLanguage::REPEAT_ENABLE;
 
+		actions.global_buffer_array_variable = "global_shader_uniforms";
+
 		shaders.compiler_particles.initialize(actions);
 	}
 
@@ -1827,6 +1832,8 @@ MaterialStorage::MaterialStorage() {
 
 		actions.default_filter = ShaderLanguage::FILTER_LINEAR_MIPMAP;
 		actions.default_repeat = ShaderLanguage::REPEAT_ENABLE;
+
+		actions.global_buffer_array_variable = "global_shader_uniforms";
 
 		shaders.compiler_sky.initialize(actions);
 	}
