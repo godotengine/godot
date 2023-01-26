@@ -525,6 +525,31 @@
 				Returns [code]true[/code] if [param x] is a NaN ("Not a Number" or invalid) value.
 			</description>
 		</method>
+		<method name="is_same">
+			<return type="bool" />
+			<param index="0" name="a" type="Variant" />
+			<param index="1" name="b" type="Variant" />
+			<description>
+				Returns [code]true[/code], for value types, if [param a] and [param b] share the same value. Returns [code]true[/code], for reference types, if the references of [param a] and [param b] are the same.
+				[codeblock]
+				# Vector2 is a value type
+				var vec2_a = Vector2(0, 0)
+				var vec2_b = Vector2(0, 0)
+				var vec2_c = Vector2(1, 1)
+				is_same(vec2_a, vec2_a)  # true
+				is_same(vec2_a, vec2_b)  # true
+				is_same(vec2_a, vec2_c)  # false
+
+				# Array is a reference type
+				var arr_a = []
+				var arr_b = []
+				is_same(arr_a, arr_a)  # true
+				is_same(arr_a, arr_b)  # false
+				[/codeblock]
+				These are [Variant] value types: [code]null[/code], [bool], [int], [float], [String], [StringName], [Vector2], [Vector2i], [Vector3], [Vector3i], [Vector4], [Vector4i], [Rect2], [Rect2i], [Transform2D], [Transform3D], [Plane], [Quaternion], [AABB], [Basis], [Projection], [Color], [NodePath], [RID], [Callable] and [Signal].
+				These are [Variant] reference types: [Object], [Dictionary], [Array], [PackedByteArray], [PackedInt32Array], [PackedInt64Array], [PackedFloat32Array], [PackedFloat64Array], [PackedStringArray], [PackedVector2Array], [PackedVector3Array] and [PackedColorArray].
+			</description>
+		</method>
 		<method name="is_zero_approx">
 			<return type="bool" />
 			<param index="0" name="x" type="float" />
