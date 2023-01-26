@@ -229,6 +229,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 
 	List<String> tag_stack;
 	bool code_tag = false;
+	bool line_del = false;
 
 	int pos = 0;
 	while (pos < bbcode.length()) {
@@ -239,20 +240,22 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 		}
 
 		if (brk_pos > pos) {
-			String text = bbcode.substr(pos, brk_pos - pos);
-			if (code_tag || tag_stack.size() > 0) {
-				xml_output.append(text.xml_escape());
-			} else {
-				Vector<String> lines = text.split("\n");
-				for (int i = 0; i < lines.size(); i++) {
-					if (i != 0) {
-						xml_output.append("<para>");
-					}
+			if (!line_del) {
+				String text = bbcode.substr(pos, brk_pos - pos);
+				if (code_tag || tag_stack.size() > 0) {
+					xml_output.append(text.xml_escape());
+				} else {
+					Vector<String> lines = text.split("\n");
+					for (int i = 0; i < lines.size(); i++) {
+						if (i != 0) {
+							xml_output.append("<para>");
+						}
 
-					xml_output.append(lines[i].xml_escape());
+						xml_output.append(lines[i].xml_escape());
 
-					if (i != lines.size() - 1) {
-						xml_output.append("</para>\n");
+						if (i != lines.size() - 1) {
+							xml_output.append("</para>\n");
+						}
 					}
 				}
 			}
@@ -265,20 +268,22 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 		int brk_end = bbcode.find("]", brk_pos + 1);
 
 		if (brk_end == -1) {
-			String text = bbcode.substr(brk_pos, bbcode.length() - brk_pos);
-			if (code_tag || tag_stack.size() > 0) {
-				xml_output.append(text.xml_escape());
-			} else {
-				Vector<String> lines = text.split("\n");
-				for (int i = 0; i < lines.size(); i++) {
-					if (i != 0) {
-						xml_output.append("<para>");
-					}
+			if (!line_del) {
+				String text = bbcode.substr(brk_pos, bbcode.length() - brk_pos);
+				if (code_tag || tag_stack.size() > 0) {
+					xml_output.append(text.xml_escape());
+				} else {
+					Vector<String> lines = text.split("\n");
+					for (int i = 0; i < lines.size(); i++) {
+						if (i != 0) {
+							xml_output.append("<para>");
+						}
 
-					xml_output.append(lines[i].xml_escape());
+						xml_output.append(lines[i].xml_escape());
 
-					if (i != lines.size() - 1) {
-						xml_output.append("</para>\n");
+						if (i != lines.size() - 1) {
+							xml_output.append("</para>\n");
+						}
 					}
 				}
 			}
@@ -292,7 +297,9 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 			bool tag_ok = tag_stack.size() && tag_stack.front()->get() == tag.substr(1, tag.length());
 
 			if (!tag_ok) {
-				xml_output.append("[");
+				if (!line_del) {
+					xml_output.append("[");
+				}
 				pos = brk_pos + 1;
 				continue;
 			}
@@ -307,11 +314,20 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 				xml_output.append("</c>");
 			} else if (tag == "/codeblock") {
 				xml_output.append("</code>");
+			} else if (tag == "/b") {
+				xml_output.append("</b>");
+			} else if (tag == "/i") {
+				xml_output.append("</i>");
+			} else if (tag == "/csharp") {
+				xml_output.append("</code>");
+				line_del = true;
+			} else if (tag == "/codeblocks") {
+				line_del = false;
 			}
 		} else if (code_tag) {
 			xml_output.append("[");
 			pos = brk_pos + 1;
-		} else if (tag.begins_with("method ") || tag.begins_with("member ") || tag.begins_with("signal ") || tag.begins_with("enum ") || tag.begins_with("constant ") || tag.begins_with("theme_item ")) {
+		} else if (tag.begins_with("method ") || tag.begins_with("member ") || tag.begins_with("signal ") || tag.begins_with("enum ") || tag.begins_with("constant ") || tag.begins_with("theme_item ") || tag.begins_with("param ")) {
 			const int tag_end = tag.find(" ");
 			const String link_tag = tag.substr(0, tag_end);
 			const String link_target = tag.substr(tag_end + 1, tag.length()).lstrip(" ");
@@ -356,6 +372,8 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 			} else if (link_tag == "theme_item") {
 				// We do not declare theme_items in any way in C#, so there is nothing to reference
 				_append_xml_undeclared(xml_output, link_target);
+			} else if (link_tag == "param") {
+				_append_xml_undeclared(xml_output, snake_to_camel_case(link_target, false));
 			}
 
 			pos = brk_end + 1;
@@ -377,8 +395,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 #endif
 								  "\"/>");
 			} else if (tag == "Variant") {
-				// We use System.Object for Variant, so there is no Variant type in C#
-				xml_output.append("<c>Variant</c>");
+				xml_output.append("<see cref=\"Godot.Variant\"/>");
 			} else if (tag == "String") {
 				xml_output.append("<see cref=\"string\"/>");
 			} else if (tag == "Nil") {
@@ -428,11 +445,13 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 
 			pos = brk_end + 1;
 		} else if (tag == "b") {
-			// bold is not supported in xml comments
+			xml_output.append("<b>");
+
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag == "i") {
-			// italics is not supported in xml comments
+			xml_output.append("<i>");
+
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag == "code") {
@@ -444,6 +463,17 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 		} else if (tag == "codeblock") {
 			xml_output.append("<code>");
 
+			code_tag = true;
+			pos = brk_end + 1;
+			tag_stack.push_front(tag);
+		} else if (tag == "codeblocks") {
+			line_del = true;
+			pos = brk_end + 1;
+			tag_stack.push_front(tag);
+		} else if (tag == "csharp") {
+			xml_output.append("<code>");
+
+			line_del = false;
 			code_tag = true;
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
@@ -459,7 +489,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 			xml_output.append("\n"); // FIXME: Should use <para> instead. Luckily this tag isn't used for now.
 			pos = brk_end + 1;
 		} else if (tag == "u") {
-			// underline is not supported in xml comments
+			// underline is not supported in Rider xml comments
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag == "s") {
@@ -510,7 +540,9 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 			pos = brk_end + 1;
 			tag_stack.push_front("font");
 		} else {
-			xml_output.append("["); // ignore
+			if (!line_del) {
+				xml_output.append("["); // ignore
+			}
 			pos = brk_pos + 1;
 		}
 	}
