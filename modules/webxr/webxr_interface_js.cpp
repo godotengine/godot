@@ -334,13 +334,12 @@ Transform WebXRInterfaceJS::get_transform_for_eye(ARVRInterface::Eyes p_eye, con
 	ERR_FAIL_NULL_V(arvr_server, transform_for_eye);
 
 	float *js_matrix = godot_webxr_get_transform_for_eye(p_eye);
-	if (!initialized || js_matrix == nullptr) {
-		transform_for_eye = p_cam_transform;
-		return transform_for_eye;
-	}
+	if (js_matrix != nullptr) {
+		transform_for_eye = _js_matrix_to_transform(js_matrix);
+		free(js_matrix);
 
-	transform_for_eye = _js_matrix_to_transform(js_matrix);
-	free(js_matrix);
+		transform_for_eye.origin *= arvr_server->get_world_scale();
+	}
 
 	return p_cam_transform * arvr_server->get_reference_frame() * transform_for_eye;
 };
@@ -420,7 +419,7 @@ void WebXRInterfaceJS::_update_tracker(int p_controller_id) {
 		float *tracker_matrix = godot_webxr_get_controller_transform(p_controller_id);
 		if (tracker_matrix) {
 			Transform transform = _js_matrix_to_transform(tracker_matrix);
-			tracker->set_position(transform.origin);
+			tracker->set_rw_position(transform.origin);
 			tracker->set_orientation(transform.basis);
 			free(tracker_matrix);
 		}
