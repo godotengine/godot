@@ -63,7 +63,7 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_activity, jobject p_
 	_destroy_offscreen_gl = p_env->GetMethodID(godot_class, "destroyOffscreenGL", "()V");
 	_set_offscreen_gl_current = p_env->GetMethodID(godot_class, "setOffscreenGLCurrent", "(Z)V");
 	_restart = p_env->GetMethodID(godot_class, "restart", "()V");
-	_finish = p_env->GetMethodID(godot_class, "forceQuit", "()V");
+	_finish = p_env->GetMethodID(godot_class, "forceQuit", "(I)Z");
 	_set_keep_screen_on = p_env->GetMethodID(godot_class, "setKeepScreenOn", "(Z)V");
 	_alert = p_env->GetMethodID(godot_class, "alert", "(Ljava/lang/String;Ljava/lang/String;)V");
 	_get_GLES_version_code = p_env->GetMethodID(godot_class, "getGLESVersionCode", "()I");
@@ -80,7 +80,7 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_activity, jobject p_
 	_get_input_fallback_mapping = p_env->GetMethodID(godot_class, "getInputFallbackMapping", "()Ljava/lang/String;");
 	_on_godot_setup_completed = p_env->GetMethodID(godot_class, "onGodotSetupCompleted", "()V");
 	_on_godot_main_loop_started = p_env->GetMethodID(godot_class, "onGodotMainLoopStarted", "()V");
-	_create_new_godot_instance = p_env->GetMethodID(godot_class, "createNewGodotInstance", "([Ljava/lang/String;)V");
+	_create_new_godot_instance = p_env->GetMethodID(godot_class, "createNewGodotInstance", "([Ljava/lang/String;)I");
 	_get_render_view = p_env->GetMethodID(godot_class, "getRenderView", "()Lorg/godotengine/godot/GodotView;");
 
 	// get some Activity method pointers...
@@ -206,14 +206,15 @@ void GodotJavaWrapper::restart(JNIEnv *p_env) {
 	}
 }
 
-void GodotJavaWrapper::force_quit(JNIEnv *p_env) {
+bool GodotJavaWrapper::force_quit(JNIEnv *p_env, int p_instance_id) {
 	if (_finish) {
 		if (p_env == nullptr) {
 			p_env = get_jni_env();
 		}
-		ERR_FAIL_NULL(p_env);
-		p_env->CallVoidMethod(godot_instance, _finish);
+		ERR_FAIL_NULL_V(p_env, false);
+		return p_env->CallBooleanMethod(godot_instance, _finish, p_instance_id);
 	}
+	return false;
 }
 
 void GodotJavaWrapper::set_keep_screen_on(bool p_enabled) {
@@ -372,14 +373,16 @@ void GodotJavaWrapper::vibrate(int p_duration_ms) {
 	}
 }
 
-void GodotJavaWrapper::create_new_godot_instance(List<String> args) {
+int GodotJavaWrapper::create_new_godot_instance(List<String> args) {
 	if (_create_new_godot_instance) {
 		JNIEnv *env = get_jni_env();
-		ERR_FAIL_NULL(env);
+		ERR_FAIL_NULL_V(env, 0);
 		jobjectArray jargs = env->NewObjectArray(args.size(), env->FindClass("java/lang/String"), env->NewStringUTF(""));
 		for (int i = 0; i < args.size(); i++) {
 			env->SetObjectArrayElement(jargs, i, env->NewStringUTF(args[i].utf8().get_data()));
 		}
-		env->CallVoidMethod(godot_instance, _create_new_godot_instance, jargs);
+		return env->CallIntMethod(godot_instance, _create_new_godot_instance, jargs);
+	} else {
+		return 0;
 	}
 }
