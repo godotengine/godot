@@ -4,8 +4,8 @@
 		3D Agent used in navigation for collision avoidance.
 	</brief_description>
 	<description>
-		3D Agent that is used in navigation to reach a location while avoiding static and dynamic obstacles. The dynamic obstacles are avoided using RVO collision avoidance. The agent needs navigation data to work correctly. [NavigationAgent3D] is physics safe.
-		[b]Note:[/b] After setting [member target_location] it is required to use the [method get_next_location] function once every physics frame to update the internal path logic of the NavigationAgent. The returned vector position from this function should be used as the next movement position for the agent's parent Node.
+		3D Agent that is used in navigation to reach a position while avoiding static and dynamic obstacles. The dynamic obstacles are avoided using RVO collision avoidance. The agent needs navigation data to work correctly. [NavigationAgent3D] is physics safe.
+		[b]Note:[/b] After setting [member target_position] it is required to use the [method get_next_path_position] function once every physics frame to update the internal path logic of the NavigationAgent. The returned vector position from this function should be used as the next movement position for the agent's parent Node.
 	</description>
 	<tutorials>
 		<link title="Using NavigationAgents">$DOCS_URL/tutorials/navigation/navigation_using_navigationagents.html</link>
@@ -14,13 +14,13 @@
 		<method name="distance_to_target" qualifiers="const">
 			<return type="float" />
 			<description>
-				Returns the distance to the target location, using the agent's global position. The user must set [member target_location] in order for this to be accurate.
+				Returns the distance to the target position, using the agent's global position. The user must set [member target_position] in order for this to be accurate.
 			</description>
 		</method>
 		<method name="get_current_navigation_path" qualifiers="const">
 			<return type="PackedVector3Array" />
 			<description>
-				Returns this agent's current path from start to finish in global coordinates. The path only updates when the target location is changed or the agent requires a repath. The path array is not intended to be used in direct path movement as the agent has its own internal path logic that would get corrupted by changing the path array manually. Use the intended [method get_next_location] once every physics frame to receive the next path point for the agents movement as this function also updates the internal path logic.
+				Returns this agent's current path from start to finish in global coordinates. The path only updates when the target position is changed or the agent requires a repath. The path array is not intended to be used in direct path movement as the agent has its own internal path logic that would get corrupted by changing the path array manually. Use the intended [method get_next_path_position] once every physics frame to receive the next path point for the agents movement as this function also updates the internal path logic.
 			</description>
 		</method>
 		<method name="get_current_navigation_path_index" qualifiers="const">
@@ -35,10 +35,10 @@
 				Returns the path query result for the path the agent is currently following.
 			</description>
 		</method>
-		<method name="get_final_location">
+		<method name="get_final_position">
 			<return type="Vector3" />
 			<description>
-				Returns the reachable final location in global coordinates. This can change if the navigation path is altered in any way. Because of this, it would be best to check this each frame.
+				Returns the reachable final position in global coordinates. This can change if the navigation path is altered in any way. Because of this, it would be best to check this each frame.
 			</description>
 		</method>
 		<method name="get_navigation_layer_value" qualifiers="const">
@@ -54,10 +54,10 @@
 				Returns the [RID] of the navigation map for this NavigationAgent node. This function returns always the map set on the NavigationAgent node and not the map of the abstract agent on the NavigationServer. If the agent map is changed directly with the NavigationServer API the NavigationAgent node will not be aware of the map change. Use [method set_navigation_map] to change the navigation map for the NavigationAgent and also update the agent on the NavigationServer.
 			</description>
 		</method>
-		<method name="get_next_location">
+		<method name="get_next_path_position">
 			<return type="Vector3" />
 			<description>
-				Returns the next location in global coordinates that can be moved to, making sure that there are no static objects in the way. If the agent does not have a navigation path, it will return the position of the agent's parent. The use of this function once every physics frame is required to update the internal path logic of the NavigationAgent.
+				Returns the next position in global coordinates that can be moved to, making sure that there are no static objects in the way. If the agent does not have a navigation path, it will return the position of the agent's parent. The use of this function once every physics frame is required to update the internal path logic of the NavigationAgent.
 			</description>
 		</method>
 		<method name="get_rid" qualifiers="const">
@@ -69,19 +69,19 @@
 		<method name="is_navigation_finished">
 			<return type="bool" />
 			<description>
-				Returns true if the navigation path's final location has been reached.
+				Returns true if the navigation path's final position has been reached.
 			</description>
 		</method>
 		<method name="is_target_reachable">
 			<return type="bool" />
 			<description>
-				Returns true if [member target_location] is reachable.
+				Returns true if [member target_position] is reachable.
 			</description>
 		</method>
 		<method name="is_target_reached" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns true if [member target_location] is reached. It may not always be possible to reach the target location. It should always be possible to reach the final location though. See [method get_final_location].
+				Returns true if [member target_position] is reached. It may not always be possible to reach the target position. It should always be possible to reach the final position though. See [method get_final_position].
 			</description>
 		</method>
 		<method name="set_navigation_layer_value">
@@ -133,7 +133,7 @@
 			The distance threshold before a path point is considered to be reached. This will allow an agent to not have to hit a path point on the path exactly, but in the area. If this value is set to high the NavigationAgent will skip points on the path which can lead to leaving the navigation mesh. If this value is set to low the NavigationAgent will be stuck in a repath loop cause it will constantly overshoot or undershoot the distance to the next point on each physics frame update.
 		</member>
 		<member name="path_max_distance" type="float" setter="set_path_max_distance" getter="get_path_max_distance" default="3.0">
-			The maximum distance the agent is allowed away from the ideal path to the final location. This can happen due to trying to avoid collisions. When the maximum distance is exceeded, it recalculates the ideal path.
+			The maximum distance the agent is allowed away from the ideal path to the final position. This can happen due to trying to avoid collisions. When the maximum distance is exceeded, it recalculates the ideal path.
 		</member>
 		<member name="path_metadata_flags" type="int" setter="set_path_metadata_flags" getter="get_path_metadata_flags" enum="NavigationPathQueryParameters3D.PathMetadataFlags" default="7">
 			Additional information to return with the navigation path.
@@ -145,8 +145,8 @@
 		<member name="target_desired_distance" type="float" setter="set_target_desired_distance" getter="get_target_desired_distance" default="1.0">
 			The distance threshold before the final target point is considered to be reached. This will allow an agent to not have to hit the point of the final target exactly, but only the area. If this value is set to low the NavigationAgent will be stuck in a repath loop cause it will constantly overshoot or undershoot the distance to the final target point on each physics frame update.
 		</member>
-		<member name="target_location" type="Vector3" setter="set_target_location" getter="get_target_location" default="Vector3(0, 0, 0)">
-			The user-defined target location. Setting this property will clear the current navigation path.
+		<member name="target_position" type="Vector3" setter="set_target_position" getter="get_target_position" default="Vector3(0, 0, 0)">
+			The user-defined target position. Setting this property will clear the current navigation path.
 		</member>
 		<member name="time_horizon" type="float" setter="set_time_horizon" getter="get_time_horizon" default="5.0">
 			The minimal amount of time for which this agent's velocities, that are computed with the collision avoidance algorithm, are safe with respect to other agents. The larger the number, the sooner the agent will respond to other agents, but less freedom in choosing its velocities. Must be positive.
@@ -158,7 +158,7 @@
 			<description>
 				Notifies when a navigation link has been reached.
 				The details dictionary may contain the following keys depending on the value of [member path_metadata_flags]:
-				- [code]location[/code]: The start location of the link that was reached.
+				- [code]position[/code]: The start position of the link that was reached.
 				- [code]type[/code]: Always [constant NavigationPathQueryResult3D.PATH_SEGMENT_TYPE_LINK].
 				- [code]rid[/code]: The [RID] of the link.
 				- [code]owner[/code]: The object which manages the link (usually [NavigationLink3D]).
@@ -166,7 +166,7 @@
 		</signal>
 		<signal name="navigation_finished">
 			<description>
-				Notifies when the final location is reached.
+				Notifies when the final position is reached.
 			</description>
 		</signal>
 		<signal name="path_changed">
@@ -176,7 +176,7 @@
 		</signal>
 		<signal name="target_reached">
 			<description>
-				Notifies when the player-defined [member target_location] is reached.
+				Notifies when the player-defined [member target_position] is reached.
 			</description>
 		</signal>
 		<signal name="velocity_computed">
@@ -190,7 +190,7 @@
 			<description>
 				Notifies when a waypoint along the path has been reached.
 				The details dictionary may contain the following keys depending on the value of [member path_metadata_flags]:
-				- [code]location[/code]: The location of the waypoint that was reached.
+				- [code]position[/code]: The position of the waypoint that was reached.
 				- [code]type[/code]: The type of navigation primitive (region or link) that contains this waypoint.
 				- [code]rid[/code]: The [RID] of the containing navigation primitive (region or link).
 				- [code]owner[/code]: The object which manages the containing navigation primitive (region or link).

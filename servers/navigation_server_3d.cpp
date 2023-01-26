@@ -90,10 +90,10 @@ void NavigationServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("link_is_bidirectional", "link"), &NavigationServer3D::link_is_bidirectional);
 	ClassDB::bind_method(D_METHOD("link_set_navigation_layers", "link", "navigation_layers"), &NavigationServer3D::link_set_navigation_layers);
 	ClassDB::bind_method(D_METHOD("link_get_navigation_layers", "link"), &NavigationServer3D::link_get_navigation_layers);
-	ClassDB::bind_method(D_METHOD("link_set_start_location", "link", "location"), &NavigationServer3D::link_set_start_location);
-	ClassDB::bind_method(D_METHOD("link_get_start_location", "link"), &NavigationServer3D::link_get_start_location);
-	ClassDB::bind_method(D_METHOD("link_set_end_location", "link", "location"), &NavigationServer3D::link_set_end_location);
-	ClassDB::bind_method(D_METHOD("link_get_end_location", "link"), &NavigationServer3D::link_get_end_location);
+	ClassDB::bind_method(D_METHOD("link_set_start_position", "link", "position"), &NavigationServer3D::link_set_start_position);
+	ClassDB::bind_method(D_METHOD("link_get_start_position", "link"), &NavigationServer3D::link_get_start_position);
+	ClassDB::bind_method(D_METHOD("link_set_end_position", "link", "position"), &NavigationServer3D::link_set_end_position);
+	ClassDB::bind_method(D_METHOD("link_get_end_position", "link"), &NavigationServer3D::link_get_end_position);
 	ClassDB::bind_method(D_METHOD("link_set_enter_cost", "link", "enter_cost"), &NavigationServer3D::link_set_enter_cost);
 	ClassDB::bind_method(D_METHOD("link_get_enter_cost", "link"), &NavigationServer3D::link_get_enter_cost);
 	ClassDB::bind_method(D_METHOD("link_set_travel_cost", "link", "travel_cost"), &NavigationServer3D::link_set_travel_cost);

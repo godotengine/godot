@@ -43,10 +43,10 @@ class NavigationLink2DEditor : public Control {
 	NavigationLink2D *node = nullptr;
 
 	bool start_grabbed = false;
-	Vector2 original_start_location;
+	Vector2 original_start_position;
 
 	bool end_grabbed = false;
-	Vector2 original_end_location;
+	Vector2 original_end_position;
 
 protected:
 	void _notification(int p_what);
