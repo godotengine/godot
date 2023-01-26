@@ -64,7 +64,7 @@ internal class AssetsDirectoryAccess(context: Context) : DirectoryAccessHandler.
 	override fun hasDirId(dirId: Int) = dirs.indexOfKey(dirId) >= 0
 
 	override fun dirOpen(path: String): Int {
-		val assetsPath = getAssetsPath(path) ?: return INVALID_DIR_ID
+		val assetsPath = getAssetsPath(path)
 		try {
 			val files = assetManager.list(assetsPath) ?: return INVALID_DIR_ID
 			// Empty directories don't get added to the 'assets' directory, so
@@ -99,7 +99,7 @@ internal class AssetsDirectoryAccess(context: Context) : DirectoryAccessHandler.
 	}
 
 	override fun fileExists(path: String): Boolean {
-		val assetsPath = getAssetsPath(path) ?: return false
+		val assetsPath = getAssetsPath(path)
 		try {
 			val files = assetManager.list(assetsPath) ?: return false
 			// Empty directories don't get added to the 'assets' directory, so
