@@ -452,6 +452,8 @@ class SystemFont : public Font {
 	TextServer::SubpixelPositioning subpixel_positioning = TextServer::SUBPIXEL_POSITIONING_AUTO;
 	real_t oversampling = 0.f;
 	bool msdf = false;
+	int msdf_pixel_range = 16;
+	int msdf_size = 48;
 
 protected:
 	static void _bind_methods();
@@ -487,6 +489,12 @@ public:
 
 	virtual void set_multichannel_signed_distance_field(bool p_msdf);
 	virtual bool is_multichannel_signed_distance_field() const;
+
+	virtual void set_msdf_pixel_range(int p_msdf_pixel_range);
+	virtual int get_msdf_pixel_range() const;
+
+	virtual void set_msdf_size(int p_msdf_size);
+	virtual int get_msdf_size() const;
 
 	virtual void set_font_names(const PackedStringArray &p_names);
 	virtual PackedStringArray get_font_names() const;
