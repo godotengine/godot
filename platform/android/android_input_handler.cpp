@@ -80,7 +80,20 @@ void AndroidInputHandler::process_key_event(int p_physical_keycode, int p_unicod
 	ev.instantiate();
 
 	Key physical_keycode = godot_code_from_android_code(p_physical_keycode);
-	Key keycode = fix_keycode(unicode, physical_keycode);
+	Key keycode = physical_keycode;
+	if (unicode == '\b') { // 0x08
+		keycode = Key::BACKSPACE;
+	} else if (unicode == '\t') { // 0x09
+		keycode = Key::TAB;
+	} else if (unicode == '\n') { // 0x0A
+		keycode = Key::ENTER;
+	} else if (unicode == 0x1B) {
+		keycode = Key::ESCAPE;
+	} else if (unicode == 0x1F) {
+		keycode = Key::KEY_DELETE;
+	} else {
+		keycode = fix_keycode(unicode, physical_keycode);
+	}
 
 	switch (physical_keycode) {
 		case Key::SHIFT: {
