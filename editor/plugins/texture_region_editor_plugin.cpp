@@ -740,6 +740,9 @@ void TextureRegionEditor::_update_rect() {
 		}
 	} else if (obj_styleBox.is_valid()) {
 		rect = obj_styleBox->get_region_rect();
+		if (rect == Rect2()) {
+			rect = Rect2(Vector2(), obj_styleBox->get_texture()->get_size());
+		}
 	}
 }
 
