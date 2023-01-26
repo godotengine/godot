@@ -842,7 +842,7 @@ void MeshStorage::mesh_instance_set_blend_shape_weight(RID p_mesh_instance, int 
 }
 
 void MeshStorage::_mesh_instance_clear(MeshInstance *mi) {
-	for (const RendererRD::MeshStorage::MeshInstance::Surface surface : mi->surfaces) {
+	for (const RendererRD::MeshStorage::MeshInstance::Surface &surface : mi->surfaces) {
 		if (surface.versions) {
 			for (uint32_t j = 0; j < surface.version_count; j++) {
 				RD::get_singleton()->free(surface.versions[j].vertex_array);
