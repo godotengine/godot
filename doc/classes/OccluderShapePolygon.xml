@@ -17,7 +17,8 @@
 			<argument index="0" name="index" type="int" />
 			<argument index="1" name="position" type="Vector2" />
 			<description>
-				Sets an individual hole point position.
+				Sets an individual hole point position. Primarily for use by the editor.
+				[b]Note:[/b] This function will not resize the hole point array. Set [member hole_points] to set the number of points.
 			</description>
 		</method>
 		<method name="set_polygon_point">
@@ -25,7 +26,8 @@
 			<argument index="0" name="index" type="int" />
 			<argument index="1" name="position" type="Vector2" />
 			<description>
-				Sets an individual polygon point position.
+				Sets an individual polygon point position. Primarily for use by the editor.
+				[b]Note:[/b] This function will not resize the polygon point array. Set [member polygon_points] to set the number of points.
 			</description>
 		</method>
 	</methods>

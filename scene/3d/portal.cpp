@@ -115,9 +115,7 @@ String Portal::get_configuration_warning() const {
 }
 
 void Portal::set_point(int p_idx, const Vector2 &p_point) {
-	if (p_idx >= _pts_local_raw.size()) {
-		return;
-	}
+	ERR_FAIL_INDEX_MSG(p_idx, _pts_local_raw.size(), "Index out of bounds. Call set_points() to set the size of the array.");
 
 	_pts_local_raw.set(p_idx, p_point);
 	_sanitize_points();

@@ -210,29 +210,29 @@ void OccluderShapeSphere::set_spheres(const Vector<Plane> &p_spheres) {
 }
 
 void OccluderShapeSphere::set_sphere_position(int p_idx, const Vector3 &p_position) {
-	if ((p_idx >= 0) && (p_idx < _spheres.size())) {
-		Plane p = _spheres[p_idx];
-		p.normal = p_position;
-		_spheres.set(p_idx, p);
+	ERR_FAIL_INDEX(p_idx, _spheres.size());
+
+	Plane p = _spheres[p_idx];
+	p.normal = p_position;
+	_spheres.set(p_idx, p);
 #ifdef TOOLS_ENABLED
-		_update_aabb();
+	_update_aabb();
 #endif
-		update_shape_to_visual_server();
-		notify_change_to_owners();
-	}
+	update_shape_to_visual_server();
+	notify_change_to_owners();
 }
 
 void OccluderShapeSphere::set_sphere_radius(int p_idx, real_t p_radius) {
-	if ((p_idx >= 0) && (p_idx < _spheres.size())) {
-		Plane p = _spheres[p_idx];
-		p.d = MAX(p_radius, _min_radius);
-		_spheres.set(p_idx, p);
+	ERR_FAIL_INDEX(p_idx, _spheres.size());
+
+	Plane p = _spheres[p_idx];
+	p.d = MAX(p_radius, _min_radius);
+	_spheres.set(p_idx, p);
 #ifdef TOOLS_ENABLED
-		_update_aabb();
+	_update_aabb();
 #endif
-		update_shape_to_visual_server();
-		notify_change_to_owners();
-	}
+	update_shape_to_visual_server();
+	notify_change_to_owners();
 }
 
 OccluderShapeSphere::OccluderShapeSphere() {
