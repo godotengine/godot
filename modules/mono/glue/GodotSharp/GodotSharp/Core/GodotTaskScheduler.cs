@@ -10,7 +10,7 @@ namespace Godot
     /// GodotTaskScheduler contains a linked list of tasks to perform as a queue. Methods
     /// within the class are used to control the queue and perform the contained tasks.
     /// </summary>
-    public class GodotTaskScheduler : TaskScheduler
+    public sealed class GodotTaskScheduler : TaskScheduler, IDisposable
     {
         /// <summary>
         /// The current synchronization context.
@@ -107,6 +107,11 @@ namespace Godot
                     }
                 }
             }
+        }
+
+        public void Dispose()
+        {
+            Context.Dispose();
         }
     }
 }
