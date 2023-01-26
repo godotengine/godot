@@ -1050,7 +1050,7 @@ Camera2D *Viewport::get_camera_2d() const {
 }
 
 Transform2D Viewport::get_final_transform() const {
-	return stretch_transform * global_canvas_transform;
+	return _get_input_pre_xform().affine_inverse() * stretch_transform * global_canvas_transform;
 }
 
 void Viewport::_update_canvas_items(Node *p_node) {
@@ -1133,7 +1133,7 @@ Ref<InputEvent> Viewport::_make_input_local(const Ref<InputEvent> &ev) {
 		return ev; // No transformation defined for null event
 	}
 
-	Transform2D ai = get_final_transform().affine_inverse() * _get_input_pre_xform();
+	Transform2D ai = get_final_transform().affine_inverse();
 	return ev->xformed_by(ai);
 }
 
@@ -1795,9 +1795,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 					if (w->is_embedded()) {
 						embedder = w->_get_embedder();
 
-						Transform2D ai = (get_final_transform().affine_inverse() * _get_input_pre_xform()).affine_inverse();
-
-						viewport_pos = ai.xform(mpos) + w->get_position(); // To parent coords.
+						viewport_pos = get_final_transform().xform(mpos) + w->get_position(); // To parent coords.
 					}
 				}
 			}
@@ -1847,7 +1845,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 			if (viewport_under) {
 				if (viewport_under != this) {
-					Transform2D ai = (viewport_under->get_final_transform().affine_inverse() * viewport_under->_get_input_pre_xform());
+					Transform2D ai = viewport_under->get_final_transform().affine_inverse();
 					viewport_pos = ai.xform(viewport_pos);
 				}
 				// Find control under at position.
@@ -2853,7 +2851,7 @@ bool Viewport::get_physics_object_picking() {
 }
 
 Vector2 Viewport::get_camera_coords(const Vector2 &p_viewport_coords) const {
-	Transform2D xf = get_final_transform();
+	Transform2D xf = stretch_transform * global_canvas_transform;
 	return xf.xform(p_viewport_coords);
 }
 
@@ -3245,7 +3243,7 @@ Viewport::SDFScale Viewport::get_sdf_scale() const {
 }
 
 Transform2D Viewport::get_screen_transform() const {
-	return _get_input_pre_xform().affine_inverse() * get_final_transform();
+	return get_final_transform();
 }
 
 void Viewport::set_canvas_cull_mask(uint32_t p_canvas_cull_mask) {
