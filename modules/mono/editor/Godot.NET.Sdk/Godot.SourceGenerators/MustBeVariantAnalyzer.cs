@@ -26,6 +26,10 @@ namespace Godot.SourceGenerators
 
         private void AnalyzeNode(SyntaxNodeAnalysisContext context)
         {
+            // Ignore syntax inside comments
+            if (IsInsideDocumentation(context.Node))
+                return;
+
             var typeArgListSyntax = (TypeArgumentListSyntax)context.Node;
 
             // Method invocation or variable declaration that contained the type arguments
@@ -71,6 +75,26 @@ namespace Godot.SourceGenerators
                     continue;
                 }
             }
+        }
+
+        /// <summary>
+        /// Check if the syntax node is inside a documentation syntax.
+        /// </summary>
+        /// <param name="syntax">Syntax node to check.</param>
+        /// <returns><see langword="true"/> if the syntax node is inside a documentation syntax.</returns>
+        private bool IsInsideDocumentation(SyntaxNode? syntax)
+        {
+            while (syntax != null)
+            {
+                if (syntax is DocumentationCommentTriviaSyntax)
+                {
+                    return true;
+                }
+
+                syntax = syntax.Parent;
+            }
+
+            return false;
         }
 
         /// <summary>

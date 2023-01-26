@@ -260,7 +260,7 @@ namespace Godot.NativeInterop
             => from != null ? CreateFromArray((godot_array)from.NativeValue) : default;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static godot_variant CreateFromArray<T>(Array<T>? from)
+        public static godot_variant CreateFromArray<[MustBeVariant] T>(Array<T>? from)
             => from != null ? CreateFromArray((godot_array)((Collections.Array)from).NativeValue) : default;
 
         public static godot_variant CreateFromDictionary(godot_dictionary from)
@@ -274,7 +274,7 @@ namespace Godot.NativeInterop
             => from != null ? CreateFromDictionary((godot_dictionary)from.NativeValue) : default;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static godot_variant CreateFromDictionary<TKey, TValue>(Dictionary<TKey, TValue>? from)
+        public static godot_variant CreateFromDictionary<[MustBeVariant] TKey, [MustBeVariant] TValue>(Dictionary<TKey, TValue>? from)
             => from != null ? CreateFromDictionary((godot_dictionary)((Dictionary)from).NativeValue) : default;
 
         public static godot_variant CreateFromStringName(godot_string_name from)
@@ -526,7 +526,7 @@ namespace Godot.NativeInterop
             => Collections.Array.CreateTakingOwnershipOfDisposableValue(ConvertToNativeArray(p_var));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Array<T> ConvertToArray<T>(in godot_variant p_var)
+        public static Array<T> ConvertToArray<[MustBeVariant] T>(in godot_variant p_var)
             => Array<T>.CreateTakingOwnershipOfDisposableValue(ConvertToNativeArray(p_var));
 
         public static godot_dictionary ConvertToNativeDictionary(in godot_variant p_var)
@@ -539,7 +539,7 @@ namespace Godot.NativeInterop
             => Dictionary.CreateTakingOwnershipOfDisposableValue(ConvertToNativeDictionary(p_var));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Dictionary<TKey, TValue> ConvertToDictionary<TKey, TValue>(in godot_variant p_var)
+        public static Dictionary<TKey, TValue> ConvertToDictionary<[MustBeVariant] TKey, [MustBeVariant] TValue>(in godot_variant p_var)
             => Dictionary<TKey, TValue>.CreateTakingOwnershipOfDisposableValue(ConvertToNativeDictionary(p_var));
 
         public static byte[] ConvertAsPackedByteArrayToSystemArray(in godot_variant p_var)
