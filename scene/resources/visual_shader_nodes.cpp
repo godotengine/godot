@@ -3690,14 +3690,45 @@ String VisualShaderNodeDerivativeFunc::get_output_port_name(int p_port) const {
 
 String VisualShaderNodeDerivativeFunc::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
 	static const char *functions[FUNC_MAX] = {
-		"fwidth($)",
-		"dFdx($)",
-		"dFdy($)"
+		"fwidth$($)",
+		"dFdx$($)",
+		"dFdy$($)"
+	};
+
+	static const char *precisions[PRECISION_MAX] = {
+		"",
+		"Coarse",
+		"Fine"
 	};
 
 	String code;
-	code += "	" + p_output_vars[0] + " = " + String(functions[func]).replace("$", p_input_vars[0]) + ";\n";
+	if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
+		code += "	" + p_output_vars[0] + " = " + String(functions[func]).replace_first("$", "").replace_first("$", p_input_vars[0]) + ";\n";
+		return code;
+	}
+
+	code += "	" + p_output_vars[0] + " = " + String(functions[func]).replace_first("$", String(precisions[precision])).replace_first("$", p_input_vars[0]) + ";\n";
 	return code;
+}
+
+String VisualShaderNodeDerivativeFunc::get_warning(Shader::Mode p_mode, VisualShader::Type p_type) const {
+	if (precision != PRECISION_NONE && OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
+		String precision_str;
+		switch (precision) {
+			case PRECISION_COARSE: {
+				precision_str = "Coarse";
+			} break;
+			case PRECISION_FINE: {
+				precision_str = "Fine";
+			} break;
+			default: {
+			} break;
+		}
+
+		return vformat(RTR("`%s` precision mode is not available for `gl_compatibility` profile.\nReverted to `None` precision."), precision_str);
+	}
+
+	return String();
 }
 
 void VisualShaderNodeDerivativeFunc::set_op_type(OpType p_op_type) {
@@ -3742,10 +3773,24 @@ VisualShaderNodeDerivativeFunc::Function VisualShaderNodeDerivativeFunc::get_fun
 	return func;
 }
 
+void VisualShaderNodeDerivativeFunc::set_precision(Precision p_precision) {
+	ERR_FAIL_INDEX(int(p_precision), int(PRECISION_MAX));
+	if (precision == p_precision) {
+		return;
+	}
+	precision = p_precision;
+	emit_changed();
+}
+
+VisualShaderNodeDerivativeFunc::Precision VisualShaderNodeDerivativeFunc::get_precision() const {
+	return precision;
+}
+
 Vector<StringName> VisualShaderNodeDerivativeFunc::get_editable_properties() const {
 	Vector<StringName> props;
 	props.push_back("op_type");
 	props.push_back("function");
+	props.push_back("precision");
 	return props;
 }
 
@@ -3756,8 +3801,12 @@ void VisualShaderNodeDerivativeFunc::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_function", "func"), &VisualShaderNodeDerivativeFunc::set_function);
 	ClassDB::bind_method(D_METHOD("get_function"), &VisualShaderNodeDerivativeFunc::get_function);
 
+	ClassDB::bind_method(D_METHOD("set_precision", "precision"), &VisualShaderNodeDerivativeFunc::set_precision);
+	ClassDB::bind_method(D_METHOD("get_precision"), &VisualShaderNodeDerivativeFunc::get_precision);
+
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "op_type", PROPERTY_HINT_ENUM, "Scalar,Vector2,Vector3,Vector4"), "set_op_type", "get_op_type");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "function", PROPERTY_HINT_ENUM, "Sum,X,Y"), "set_function", "get_function");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "precision", PROPERTY_HINT_ENUM, "None,Coarse,Fine"), "set_precision", "get_precision");
 
 	BIND_ENUM_CONSTANT(OP_TYPE_SCALAR);
 	BIND_ENUM_CONSTANT(OP_TYPE_VECTOR_2D);
@@ -3769,6 +3818,11 @@ void VisualShaderNodeDerivativeFunc::_bind_methods() {
 	BIND_ENUM_CONSTANT(FUNC_X);
 	BIND_ENUM_CONSTANT(FUNC_Y);
 	BIND_ENUM_CONSTANT(FUNC_MAX);
+
+	BIND_ENUM_CONSTANT(PRECISION_NONE);
+	BIND_ENUM_CONSTANT(PRECISION_COARSE);
+	BIND_ENUM_CONSTANT(PRECISION_FINE);
+	BIND_ENUM_CONSTANT(PRECISION_MAX);
 }
 
 VisualShaderNodeDerivativeFunc::VisualShaderNodeDerivativeFunc() {
