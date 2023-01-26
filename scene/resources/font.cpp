@@ -2868,6 +2868,12 @@ void SystemFont::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_multichannel_signed_distance_field", "msdf"), &SystemFont::set_multichannel_signed_distance_field);
 	ClassDB::bind_method(D_METHOD("is_multichannel_signed_distance_field"), &SystemFont::is_multichannel_signed_distance_field);
 
+	ClassDB::bind_method(D_METHOD("set_msdf_pixel_range", "msdf_pixel_range"), &SystemFont::set_msdf_pixel_range);
+	ClassDB::bind_method(D_METHOD("get_msdf_pixel_range"), &SystemFont::get_msdf_pixel_range);
+
+	ClassDB::bind_method(D_METHOD("set_msdf_size", "msdf_size"), &SystemFont::set_msdf_size);
+	ClassDB::bind_method(D_METHOD("get_msdf_size"), &SystemFont::get_msdf_size);
+
 	ClassDB::bind_method(D_METHOD("set_oversampling", "oversampling"), &SystemFont::set_oversampling);
 	ClassDB::bind_method(D_METHOD("get_oversampling"), &SystemFont::get_oversampling);
 
@@ -2890,6 +2896,8 @@ void SystemFont::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "hinting", PROPERTY_HINT_ENUM, "None,Light,Normal"), "set_hinting", "get_hinting");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "subpixel_positioning", PROPERTY_HINT_ENUM, "Disabled,Auto,One Half of a Pixel,One Quarter of a Pixel"), "set_subpixel_positioning", "get_subpixel_positioning");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "multichannel_signed_distance_field"), "set_multichannel_signed_distance_field", "is_multichannel_signed_distance_field");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "msdf_pixel_range"), "set_msdf_pixel_range", "get_msdf_pixel_range");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "msdf_size"), "set_msdf_size", "get_msdf_size");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "oversampling", PROPERTY_HINT_RANGE, "0,10,0.1"), "set_oversampling", "get_oversampling");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "fallbacks", PROPERTY_HINT_ARRAY_TYPE, MAKE_RESOURCE_TYPE_HINT("Font")), "set_fallbacks", "get_fallbacks");
 }
@@ -2987,6 +2995,8 @@ void SystemFont::_update_base_font() {
 		file->set_hinting(hinting);
 		file->set_subpixel_positioning(subpixel_positioning);
 		file->set_multichannel_signed_distance_field(msdf);
+		file->set_msdf_pixel_range(msdf_pixel_range);
+		file->set_msdf_size(msdf_size);
 		file->set_oversampling(oversampling);
 
 		base_font = file;
@@ -3184,6 +3194,34 @@ void SystemFont::set_multichannel_signed_distance_field(bool p_msdf) {
 
 bool SystemFont::is_multichannel_signed_distance_field() const {
 	return msdf;
+}
+
+void SystemFont::set_msdf_pixel_range(int p_msdf_pixel_range) {
+	if (msdf_pixel_range != p_msdf_pixel_range) {
+		msdf_pixel_range = p_msdf_pixel_range;
+		if (base_font.is_valid()) {
+			base_font->set_msdf_pixel_range(msdf_pixel_range);
+		}
+		emit_changed();
+	}
+}
+
+int SystemFont::get_msdf_pixel_range() const {
+	return msdf_pixel_range;
+}
+
+void SystemFont::set_msdf_size(int p_msdf_size) {
+	if (msdf_size != p_msdf_size) {
+		msdf_size = p_msdf_size;
+		if (base_font.is_valid()) {
+			base_font->set_msdf_size(msdf_size);
+		}
+		emit_changed();
+	}
+}
+
+int SystemFont::get_msdf_size() const {
+	return msdf_size;
 }
 
 void SystemFont::set_oversampling(real_t p_oversampling) {
