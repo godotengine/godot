@@ -543,6 +543,7 @@ String GLTFDocument::_gen_unique_bone_name(Ref<GLTFState> p_state, const GLTFSke
 }
 
 Error GLTFDocument::_parse_scenes(Ref<GLTFState> p_state) {
+	p_state->unique_names.insert("Skeleton3D"); // Reserve skeleton name.
 	ERR_FAIL_COND_V(!p_state->json.has("scenes"), ERR_FILE_CORRUPT);
 	const Array &scenes = p_state->json["scenes"];
 	int loaded_scene = 0;
@@ -4471,7 +4472,7 @@ Error GLTFDocument::_create_skeletons(Ref<GLTFState> p_state) {
 		p_state->skeleton3d_to_gltf_skeleton[skeleton->get_instance_id()] = skel_i;
 
 		// Make a unique name, no gltf node represents this skeleton
-		skeleton->set_name(_gen_unique_name(p_state, "Skeleton3D"));
+		skeleton->set_name("Skeleton3D");
 
 		List<GLTFNodeIndex> bones;
 
@@ -5603,7 +5604,7 @@ void GLTFDocument::_generate_scene_node(Ref<GLTFState> p_state, Node *scene_pare
 		bone_attachment->set_owner(scene_root);
 
 		// There is no gltf_node that represent this, so just directly create a unique name
-		bone_attachment->set_name(_gen_unique_name(p_state, "BoneAttachment3D"));
+		bone_attachment->set_name(gltf_node->get_name());
 
 		// We change the scene_parent to our bone attachment now. We do not set current_node because we want to make the node
 		// and attach it to the bone_attachment
@@ -5694,7 +5695,7 @@ void GLTFDocument::_generate_skeleton_bone_node(Ref<GLTFState> p_state, Node *p_
 			bone_attachment->set_owner(p_scene_root);
 
 			// There is no gltf_node that represent this, so just directly create a unique name
-			bone_attachment->set_name(_gen_unique_name(p_state, "BoneAttachment3D"));
+			bone_attachment->set_name(gltf_node->get_name());
 
 			// We change the scene_parent to our bone attachment now. We do not set current_node because we want to make the node
 			// and attach it to the bone_attachment
