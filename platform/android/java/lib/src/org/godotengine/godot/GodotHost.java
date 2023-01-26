@@ -55,21 +55,35 @@ public interface GodotHost {
 	default void onGodotMainLoopStarted() {}
 
 	/**
-	 * Invoked on the UI thread as the last step of the Godot instance clean up phase.
+	 * Invoked on the render thread to terminate the given Godot instance.
 	 */
 	default void onGodotForceQuit(Godot instance) {}
 
 	/**
-	 * Invoked on the UI thread when the Godot instance wants to be restarted. It's up to the host
+	 * Invoked on the render thread to terminate the Godot instance with the given id.
+	 * @param godotInstanceId id of the Godot instance to terminate. See {@code onNewGodotInstanceRequested}
+	 *
+	 * @return true if successful, false otherwise.
+	 */
+	default boolean onGodotForceQuit(int godotInstanceId) {
+		return false;
+	}
+
+	/**
+	 * Invoked on the render thread when the Godot instance wants to be restarted. It's up to the host
 	 * to perform the appropriate action(s).
 	 */
 	default void onGodotRestartRequested(Godot instance) {}
 
 	/**
-	 * Invoked on the UI thread when a new Godot instance is requested. It's up to the host to
+	 * Invoked on the render thread when a new Godot instance is requested. It's up to the host to
 	 * perform the appropriate action(s).
 	 *
 	 * @param args Arguments used to initialize the new instance.
+	 *
+	 * @return the id of the new instance. See {@code onGodotForceQuit}
 	 */
-	default void onNewGodotInstanceRequested(String[] args) {}
+	default int onNewGodotInstanceRequested(String[] args) {
+		return 0;
+	}
 }

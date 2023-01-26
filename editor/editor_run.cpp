@@ -272,7 +272,9 @@ Error EditorRun::run(const String &p_scene, const String &p_write_movie) {
 		OS::ProcessID pid = 0;
 		Error err = OS::get_singleton()->create_instance(args, &pid);
 		ERR_FAIL_COND_V(err, err);
-		pids.push_back(pid);
+		if (pid != 0) {
+			pids.push_back(pid);
+		}
 	}
 
 	status = STATUS_PLAY;
