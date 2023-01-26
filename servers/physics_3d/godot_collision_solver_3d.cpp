@@ -127,11 +127,10 @@ bool GodotCollisionSolver3D::solve_separation_ray(const GodotShape3D *p_shape_A,
 	}
 
 	if (p_result_callback) {
+		Vector3 normal = (support_B - support_A).normalized();
 		if (p_swap_result) {
-			Vector3 normal = (support_B - support_A).normalized();
-			p_result_callback(support_B, 0, support_A, 0, normal, p_userdata);
+			p_result_callback(support_B, 0, support_A, 0, -normal, p_userdata);
 		} else {
-			Vector3 normal = (support_A - support_B).normalized();
 			p_result_callback(support_A, 0, support_B, 0, normal, p_userdata);
 		}
 	}
