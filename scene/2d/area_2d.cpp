@@ -652,6 +652,7 @@ Area2D::Area2D() :
 	set_gravity_direction(Vector2(0, 1));
 	set_monitoring(true);
 	set_monitorable(true);
+	set_hide_clip_children(true);
 }
 
 Area2D::~Area2D() {

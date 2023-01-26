@@ -101,6 +101,7 @@ void BackBufferCopy::_bind_methods() {
 
 BackBufferCopy::BackBufferCopy() {
 	_update_copy_mode();
+	set_hide_clip_children(true);
 }
 
 BackBufferCopy::~BackBufferCopy() {

@@ -927,6 +927,12 @@ void CanvasItem::force_update_transform() {
 	notification(NOTIFICATION_TRANSFORM_CHANGED);
 }
 
+void CanvasItem::_validate_property(PropertyInfo &p_property) const {
+	if (hide_clip_children && p_property.name == "clip_children") {
+		p_property.usage = PROPERTY_USAGE_NONE;
+	}
+}
+
 void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_top_level_raise_self"), &CanvasItem::_top_level_raise_self);
 
