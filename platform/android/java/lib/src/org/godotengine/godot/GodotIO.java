@@ -49,6 +49,9 @@ import android.view.Display;
 import android.view.DisplayCutout;
 import android.view.WindowInsets;
 
+import androidx.core.content.FileProvider;
+
+import java.io.File;
 import java.util.List;
 import java.util.Locale;
 
@@ -84,29 +87,42 @@ public class GodotIO {
 	// MISCELLANEOUS OS IO
 	/////////////////////////
 
-	public int openURI(String p_uri) {
+	public int openURI(String uriString) {
 		try {
-			String path = p_uri;
-			String type = "";
-			if (path.startsWith("/")) {
-				//absolute path to filesystem, prepend file://
-				path = "file://" + path;
-				if (p_uri.endsWith(".png") || p_uri.endsWith(".jpg") || p_uri.endsWith(".gif") || p_uri.endsWith(".webp")) {
-					type = "image/*";
+			Uri dataUri;
+			String dataType = "";
+			boolean grantReadUriPermission = false;
+
+			if (uriString.startsWith("/") || uriString.startsWith("file://")) {
+				String filePath = uriString;
+				// File uris needs to be provided via the FileProvider
+				grantReadUriPermission = true;
+				if (filePath.startsWith("file://")) {
+					filePath = filePath.replace("file://", "");
 				}
+
+				File targetFile = new File(filePath);
+				dataUri = FileProvider.getUriForFile(activity, activity.getPackageName() + ".fileprovider", targetFile);
+				dataType = activity.getContentResolver().getType(dataUri);
+			} else {
+				dataUri = Uri.parse(uriString);
 			}
 
 			Intent intent = new Intent();
 			intent.setAction(Intent.ACTION_VIEW);
-			if (!type.equals("")) {
-				intent.setDataAndType(Uri.parse(path), type);
+			if (TextUtils.isEmpty(dataType)) {
+				intent.setData(dataUri);
 			} else {
-				intent.setData(Uri.parse(path));
+				intent.setDataAndType(dataUri, dataType);
+			}
+			if (grantReadUriPermission) {
+				intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 			}
 
 			activity.startActivity(intent);
 			return 0;
 		} catch (ActivityNotFoundException e) {
+			Log.e(TAG, "Unable to open uri " + uriString, e);
 			return 1;
 		}
 	}

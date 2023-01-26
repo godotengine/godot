@@ -968,6 +968,10 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 						encode_uint32(is_resizeable, &p_manifest.write[iofs + 16]);
 					}
 
+					if (tname == "provider" && attrname == "authorities") {
+						string_table.write[attr_value] = get_package_name(package_name) + String(".fileprovider");
+					}
+
 					if (tname == "supports-screens") {
 						if (attrname == "smallScreens") {
 							encode_uint32(screen_support_small ? 0xFFFFFFFF : 0, &p_manifest.write[iofs + 16]);
