@@ -251,7 +251,7 @@
 			<param index="0" name="map_position" type="Vector2i" />
 			<description>
 				Returns the centered position of a cell in the TileMap's local coordinate space. To convert the returned value into global coordinates, use [method Node2D.to_global]. See also [method local_to_map].
-				[b]Note:[/b] This may not correspond to the visual position of the tile, i.e. it ignores the [member TileData.texture_offset] property of individual tiles.
+				[b]Note:[/b] This may not correspond to the visual position of the tile, i.e. it ignores the [member TileData.texture_origin] property of individual tiles.
 			</description>
 		</method>
 		<method name="move_layer">

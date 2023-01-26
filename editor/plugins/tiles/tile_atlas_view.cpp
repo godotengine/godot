@@ -247,7 +247,7 @@ void TileAtlasView::_draw_base_tiles() {
 			for (int frame = 0; frame < tile_set_atlas_source->get_tile_animation_frames_count(atlas_coords); frame++) {
 				// Update the y to max value.
 				Rect2i base_frame_rect = tile_set_atlas_source->get_tile_texture_region(atlas_coords, frame);
-				Vector2i offset_pos = base_frame_rect.get_center() + tile_set_atlas_source->get_tile_effective_texture_offset(atlas_coords, 0);
+				Vector2i offset_pos = base_frame_rect.get_center() + tile_set_atlas_source->get_tile_data(atlas_coords, 0)->get_texture_origin();
 
 				// Draw the tile.
 				TileMap::draw_tile(base_tiles_draw->get_canvas_item(), offset_pos, tile_set, source_id, atlas_coords, 0, frame);
@@ -322,18 +322,19 @@ void TileAtlasView::_draw_base_tiles_shape_grid() {
 	Vector2i tile_shape_size = tile_set->get_tile_size();
 	for (int i = 0; i < tile_set_atlas_source->get_tiles_count(); i++) {
 		Vector2i tile_id = tile_set_atlas_source->get_tile_id(i);
-		Vector2 in_tile_base_offset = tile_set_atlas_source->get_tile_effective_texture_offset(tile_id, 0);
-
-		for (int frame = 0; frame < tile_set_atlas_source->get_tile_animation_frames_count(tile_id); frame++) {
-			Color color = grid_color;
-			if (frame > 0) {
-				color.a *= 0.3;
+		Vector2 in_tile_base_offset = tile_set_atlas_source->get_tile_data(tile_id, 0)->get_texture_origin();
+		if (tile_set_atlas_source->is_position_in_tile_texture_region(tile_id, 0, -tile_shape_size / 2) && tile_set_atlas_source->is_position_in_tile_texture_region(tile_id, 0, tile_shape_size / 2 - Vector2(1, 1))) {
+			for (int frame = 0; frame < tile_set_atlas_source->get_tile_animation_frames_count(tile_id); frame++) {
+				Color color = grid_color;
+				if (frame > 0) {
+					color.a *= 0.3;
+				}
+				Rect2i texture_region = tile_set_atlas_source->get_tile_texture_region(tile_id, frame);
+				Transform2D tile_xform;
+				tile_xform.set_origin(texture_region.get_center() + in_tile_base_offset);
+				tile_xform.set_scale(tile_shape_size);
+				tile_set->draw_tile_shape(base_tiles_shape_grid, tile_xform, color);
 			}
-			Rect2i texture_region = tile_set_atlas_source->get_tile_texture_region(tile_id);
-			Transform2D tile_xform;
-			tile_xform.set_origin(texture_region.get_center() + in_tile_base_offset);
-			tile_xform.set_scale(tile_shape_size);
-			tile_set->draw_tile_shape(base_tiles_shape_grid, tile_xform, color);
 		}
 	}
 }
@@ -372,10 +373,10 @@ void TileAtlasView::_draw_alternatives() {
 				// Update the y to max value.
 				Vector2i offset_pos;
 				if (transposed) {
-					offset_pos = (current_pos + Vector2(texture_region_size.y, texture_region_size.x) / 2 + tile_set_atlas_source->get_tile_effective_texture_offset(atlas_coords, alternative_id));
+					offset_pos = (current_pos + Vector2(texture_region_size.y, texture_region_size.x) / 2 + tile_data->get_texture_origin());
 					y_increment = MAX(y_increment, texture_region_size.x);
 				} else {
-					offset_pos = (current_pos + texture_region_size / 2 + tile_set_atlas_source->get_tile_effective_texture_offset(atlas_coords, alternative_id));
+					offset_pos = (current_pos + texture_region_size / 2 + tile_data->get_texture_origin());
 					y_increment = MAX(y_increment, texture_region_size.y);
 				}
 

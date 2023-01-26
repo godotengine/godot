@@ -640,14 +640,14 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 	// --- Rendering ---
 	ADD_TILE_DATA_EDITOR_GROUP("Rendering");
 
-	ADD_TILE_DATA_EDITOR(group, "Texture Offset", "texture_offset");
-	if (!tile_data_editors.has("texture_offset")) {
-		TileDataTextureOffsetEditor *tile_data_texture_offset_editor = memnew(TileDataTextureOffsetEditor);
-		tile_data_texture_offset_editor->hide();
-		tile_data_texture_offset_editor->setup_property_editor(Variant::VECTOR2, "texture_offset");
-		tile_data_texture_offset_editor->connect("needs_redraw", callable_mp((CanvasItem *)tile_atlas_control_unscaled, &Control::queue_redraw));
-		tile_data_texture_offset_editor->connect("needs_redraw", callable_mp((CanvasItem *)alternative_tiles_control_unscaled, &Control::queue_redraw));
-		tile_data_editors["texture_offset"] = tile_data_texture_offset_editor;
+	ADD_TILE_DATA_EDITOR(group, "Texture Origin", "texture_origin");
+	if (!tile_data_editors.has("texture_origin")) {
+		TileDataTextureOriginEditor *tile_data_texture_origin_editor = memnew(TileDataTextureOriginEditor);
+		tile_data_texture_origin_editor->hide();
+		tile_data_texture_origin_editor->setup_property_editor(Variant::VECTOR2, "texture_origin");
+		tile_data_texture_origin_editor->connect("needs_redraw", callable_mp((CanvasItem *)tile_atlas_control_unscaled, &Control::queue_redraw));
+		tile_data_texture_origin_editor->connect("needs_redraw", callable_mp((CanvasItem *)alternative_tiles_control_unscaled, &Control::queue_redraw));
+		tile_data_editors["texture_origin"] = tile_data_texture_origin_editor;
 	}
 
 	ADD_TILE_DATA_EDITOR(group, "Modulate", "modulate");
@@ -1864,7 +1864,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_unscaled_draw() {
 		for (int i = 0; i < tile_set_atlas_source->get_tiles_count(); i++) {
 			Vector2i coords = tile_set_atlas_source->get_tile_id(i);
 			Rect2i texture_region = tile_set_atlas_source->get_tile_texture_region(coords);
-			Vector2i position = texture_region.get_center() + tile_set_atlas_source->get_tile_effective_texture_offset(coords, 0);
+			Vector2i position = texture_region.get_center() + tile_set_atlas_source->get_tile_data(coords, 0)->get_texture_origin();
 
 			Transform2D xform = tile_atlas_control->get_parent_control()->get_transform();
 			xform.translate_local(position);
@@ -1887,7 +1887,7 @@ void TileSetAtlasSourceEditor::_tile_atlas_control_unscaled_draw() {
 					continue;
 				}
 				Rect2i texture_region = tile_set_atlas_source->get_tile_texture_region(E.tile);
-				Vector2i position = texture_region.get_center() + tile_set_atlas_source->get_tile_effective_texture_offset(E.tile, 0);
+				Vector2i position = texture_region.get_center() + tile_set_atlas_source->get_tile_data(E.tile, 0)->get_texture_origin();
 
 				Transform2D xform = tile_atlas_control->get_parent_control()->get_transform();
 				xform.translate_local(position);
@@ -2039,7 +2039,7 @@ void TileSetAtlasSourceEditor::_tile_alternatives_control_unscaled_draw() {
 					continue;
 				}
 				Rect2i rect = tile_atlas_view->get_alternative_tile_rect(coords, alternative_tile);
-				Vector2 position = rect.get_center() + tile_set_atlas_source->get_tile_effective_texture_offset(coords, alternative_tile);
+				Vector2 position = rect.get_center() + tile_set_atlas_source->get_tile_data(coords, alternative_tile)->get_texture_origin();
 
 				Transform2D xform = alternative_tiles_control->get_parent_control()->get_transform();
 				xform.translate_local(position);
@@ -2063,7 +2063,7 @@ void TileSetAtlasSourceEditor::_tile_alternatives_control_unscaled_draw() {
 					continue;
 				}
 				Rect2i rect = tile_atlas_view->get_alternative_tile_rect(E.tile, E.alternative);
-				Vector2 position = rect.get_center() + tile_set_atlas_source->get_tile_effective_texture_offset(E.tile, E.alternative);
+				Vector2 position = rect.get_center() + tile_set_atlas_source->get_tile_data(E.tile, E.alternative)->get_texture_origin();
 
 				Transform2D xform = alternative_tiles_control->get_parent_control()->get_transform();
 				xform.translate_local(position);
@@ -2704,7 +2704,7 @@ void EditorPropertyTilePolygon::update_property() {
 	Vector2i coords = atlas_tile_proxy_object->get_edited_tiles().front()->get().tile;
 	int alternative = atlas_tile_proxy_object->get_edited_tiles().front()->get().alternative;
 	TileData *tile_data = tile_set_atlas_source->get_tile_data(coords, alternative);
-	generic_tile_polygon_editor->set_background(tile_set_atlas_source->get_texture(), tile_set_atlas_source->get_tile_texture_region(coords), tile_set_atlas_source->get_tile_effective_texture_offset(coords, alternative), tile_data->get_flip_h(), tile_data->get_flip_v(), tile_data->get_transpose(), tile_data->get_modulate());
+	generic_tile_polygon_editor->set_background(tile_set_atlas_source->get_texture(), tile_set_atlas_source->get_tile_texture_region(coords), tile_data->get_texture_origin(), tile_data->get_flip_h(), tile_data->get_flip_v(), tile_data->get_transpose(), tile_data->get_modulate());
 
 	// Reset the polygons.
 	generic_tile_polygon_editor->clear_polygons();
