@@ -1610,7 +1610,7 @@ void DisplayServerX11::window_set_transient(WindowID p_window, WindowID p_parent
 		// a subwindow and its parent are both destroyed.
 		if (!wd_window.no_focus && !wd_window.is_popup && wd_window.focused) {
 			if ((xwa.map_state == IsViewable) && !wd_parent.no_focus && !wd_window.is_popup) {
-				XSetInputFocus(x11_display, wd_parent.x11_window, RevertToPointerRoot, CurrentTime);
+				XSetInputFocus(x11_display, wd_parent.x11_window, RevertToParent, CurrentTime);
 			}
 		}
 	} else {
