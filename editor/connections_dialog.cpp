@@ -1170,6 +1170,10 @@ void ConnectionsDock::set_node(Node *p_node) {
 }
 
 void ConnectionsDock::update_tree() {
+	String prev_selected;
+	if (tree->is_anything_selected()) {
+		prev_selected = tree->get_selected()->get_text(0);
+	}
 	tree->clear();
 
 	if (!selected_node) {
@@ -1261,7 +1265,14 @@ void ConnectionsDock::update_tree() {
 
 			// Create the children of the subsection - the actual list of signals.
 			TreeItem *signal_item = tree->create_item(section_item);
-			signal_item->set_text(0, String(signal_name) + signaldesc);
+			String signame = String(signal_name) + signaldesc;
+			signal_item->set_text(0, signame);
+
+			if (signame == prev_selected) {
+				signal_item->select(0);
+				prev_selected = "";
+			}
+
 			Dictionary sinfo;
 			sinfo["name"] = signal_name;
 			sinfo["args"] = argnames;
