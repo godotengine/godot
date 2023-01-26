@@ -248,6 +248,34 @@ namespace Godot
         }
 
         /// <summary>
+        /// Adds each component of the <see cref="Vector2i"/>
+        /// by the given <see langword="int"/>.
+        /// </summary>
+        /// <param name="left">The vector to add</param>
+        /// <param name="right">The value to add by</param>
+        /// <returns>The added vector</returns>
+        public static Vector2i operator +(Vector2i left, int right)
+        {
+            left.x += right;
+            left.y += right;
+            return left;
+        }
+
+        /// <summary>
+        /// Adds each component of the <see cref="Vector2i"/>
+        /// by the given <see langword="int"/>.
+        /// </summary>
+        /// <param name="left">The value to add by</param>
+        /// <param name="right">The vector to add</param>
+        /// <returns>The added vector</returns>
+        public static Vector2i operator +(int left, Vector2i right)
+        {
+            right.x += left;
+            right.y += left;
+            return right;
+        }
+
+        /// <summary>
         /// Subtracts each component of the <see cref="Vector2i"/>
         /// by the components of the given <see cref="Vector2i"/>.
         /// </summary>
@@ -259,6 +287,34 @@ namespace Godot
             left.x -= right.x;
             left.y -= right.y;
             return left;
+        }
+
+        /// <summary>
+        /// Subtract each component of the <see cref="Vector2i"/>
+        /// by the given <see langword="int"/>.
+        /// </summary>
+        /// <param name="left">The vector to subtract</param>
+        /// <param name="right">The value to subtract by</param>
+        /// <returns>The subtracted vector</returns>
+        public static Vector2i operator -(Vector2i left, int right)
+        {
+            left.x -= right;
+            left.y -= right;
+            return left;
+        }
+
+        /// <summary>
+        /// Subtract each component of the <see cref="Vector2i"/>
+        /// by the given <see langword="int"/>.
+        /// </summary>
+        /// <param name="left">The value to subtract by</param>
+        /// <param name="right">The vector to subtract</param>
+        /// <returns>The subtracted vector</returns>
+        public static Vector2i operator -(int left, Vector2i right)
+        {
+            right.x -= left;
+            right.y -= left;
+            return right;
         }
 
         /// <summary>

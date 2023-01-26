@@ -278,6 +278,36 @@ namespace Godot
         }
 
         /// <summary>
+        /// Adds each component of the <see cref="Vector3i"/>
+        /// by the given <see langword="int"/>.
+        /// </summary>
+        /// <param name="left">The vector to add</param>
+        /// <param name="right">The value to add by</param>
+        /// <returns>The added vector</returns>
+        public static Vector3i operator +(Vector3i left, int right)
+        {
+            left.x += right;
+            left.y += right;
+            left.z += right;
+            return left;
+        }
+
+        /// <summary>
+        /// Adds each component of the <see cref="Vector3i"/>
+        /// by the given <see langword="int"/>.
+        /// </summary>
+        /// <param name="left">The value to add by</param>
+        /// <param name="right">The vector to add</param>
+        /// <returns>The added vector</returns>
+        public static Vector3i operator +(int left, Vector3i right)
+        {
+            right.x += left;
+            right.y += left;
+            right.z += left;
+            return right;
+        }
+
+        /// <summary>
         /// Subtracts each component of the <see cref="Vector3i"/>
         /// by the components of the given <see cref="Vector3i"/>.
         /// </summary>
@@ -290,6 +320,36 @@ namespace Godot
             left.y -= right.y;
             left.z -= right.z;
             return left;
+        }
+
+        /// <summary>
+        /// Subtract each component of the <see cref="Vector3i"/>
+        /// by the given <see langword="int"/>.
+        /// </summary>
+        /// <param name="left">The vector to subtract</param>
+        /// <param name="right">The value to subtract by</param>
+        /// <returns>The subtracted vector</returns>
+        public static Vector3i operator -(Vector3i left, int right)
+        {
+            left.x -= right;
+            left.y -= right;
+            left.z -= right;
+            return left;
+        }
+
+        /// <summary>
+        /// Subtract each component of the <see cref="Vector3i"/>
+        /// by the given <see langword="int"/>.
+        /// </summary>
+        /// <param name="left">The value to subtract by</param>
+        /// <param name="right">The vector to subtract</param>
+        /// <returns>The subtracted vector</returns>
+        public static Vector3i operator -(int left, Vector3i right)
+        {
+            right.x -= left;
+            right.y -= left;
+            right.z -= left;
+            return right;
         }
 
         /// <summary>
