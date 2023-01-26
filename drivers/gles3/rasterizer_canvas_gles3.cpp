@@ -853,18 +853,19 @@ void RasterizerCanvasGLES3::_record_item_commands(const Item *p_item, RID p_rend
 
 		state.instance_data_array[r_index].flags = base_flags | (state.instance_data_array[r_index == 0 ? 0 : r_index - 1].flags & (FLAGS_DEFAULT_NORMAL_MAP_USED | FLAGS_DEFAULT_SPECULAR_MAP_USED)); //reset on each command for sanity, keep canvastexture binding config
 
-		Color blend_color;
+		Color blend_color = base_color;
+		GLES3::CanvasShaderData::BlendMode blend_mode = p_blend_mode;
 		if (c->type == Item::Command::TYPE_RECT) {
 			const Item::CommandRect *rect = static_cast<const Item::CommandRect *>(c);
 			if (rect->flags & CANVAS_RECT_LCD) {
-				p_blend_mode = GLES3::CanvasShaderData::BLEND_MODE_LCD;
+				blend_mode = GLES3::CanvasShaderData::BLEND_MODE_LCD;
 				blend_color = rect->modulate * base_color;
 			}
 		}
 
-		if (p_blend_mode != state.canvas_instance_batches[state.current_batch_index].blend_mode || blend_color != state.canvas_instance_batches[state.current_batch_index].blend_color) {
+		if (blend_mode != state.canvas_instance_batches[state.current_batch_index].blend_mode || blend_color != state.canvas_instance_batches[state.current_batch_index].blend_color) {
 			_new_batch(r_batch_broken, r_index);
-			state.canvas_instance_batches[state.current_batch_index].blend_mode = p_blend_mode;
+			state.canvas_instance_batches[state.current_batch_index].blend_mode = blend_mode;
 			state.canvas_instance_batches[state.current_batch_index].blend_color = blend_color;
 		}
 
