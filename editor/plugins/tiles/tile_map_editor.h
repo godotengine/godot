@@ -38,6 +38,7 @@
 #include "scene/2d/tile_map.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/check_box.h"
+#include "scene/gui/flow_container.h"
 #include "scene/gui/item_list.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/option_button.h"
@@ -323,7 +324,7 @@ private:
 	Vector<TileMapEditorPlugin *> tile_map_editor_plugins;
 
 	// Toolbar.
-	HBoxContainer *tile_map_toolbar = nullptr;
+	HFlowContainer *tile_map_toolbar = nullptr;
 
 	OptionButton *layers_selection_button = nullptr;
 	Button *toggle_highlight_selected_layer_button = nullptr;
