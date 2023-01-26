@@ -231,22 +231,6 @@ bool StyleBoxTexture::is_draw_center_enabled() const {
 	return draw_center;
 }
 
-Size2 StyleBoxTexture::get_minimum_size() const {
-	Size2 min_size = StyleBox::get_minimum_size();
-
-	// Make sure that the min size is no smaller than the used texture region.
-	if (texture.is_valid()) {
-		if (min_size.x < region_rect.size.x) {
-			min_size.x = region_rect.size.x;
-		}
-		if (min_size.y < region_rect.size.y) {
-			min_size.y = region_rect.size.y;
-		}
-	}
-
-	return min_size;
-}
-
 void StyleBoxTexture::set_expand_margin(Side p_side, float p_size) {
 	ERR_FAIL_INDEX((int)p_side, 4);
 	expand_margin[p_side] = p_size;

@@ -198,7 +198,7 @@ static Ref<StyleBoxTexture> make_stylebox(Ref<Texture2D> p_texture, float p_left
 	Ref<StyleBoxTexture> style(memnew(StyleBoxTexture));
 	style->set_texture(p_texture);
 	style->set_texture_margin_individual(p_left * EDSCALE, p_top * EDSCALE, p_right * EDSCALE, p_bottom * EDSCALE);
-	style->set_content_margin_individual(p_margin_left * EDSCALE, p_margin_top * EDSCALE, p_margin_right * EDSCALE, p_margin_bottom * EDSCALE);
+	style->set_content_margin_individual((p_left + p_margin_left) * EDSCALE, (p_top + p_margin_top) * EDSCALE, (p_right + p_margin_right) * EDSCALE, (p_bottom + p_margin_bottom) * EDSCALE);
 	style->set_draw_center(p_draw_center);
 	return style;
 }
@@ -1492,11 +1492,11 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// HScrollBar
 	Ref<Texture2D> empty_icon = memnew(ImageTexture);
 
-	theme->set_stylebox("scroll", "HScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollBg"), SNAME("EditorIcons")), 5, 5, 5, 5, 0, 0, 0, 0));
-	theme->set_stylebox("scroll_focus", "HScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollBg"), SNAME("EditorIcons")), 5, 5, 5, 5, 0, 0, 0, 0));
-	theme->set_stylebox("grabber", "HScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollGrabber"), SNAME("EditorIcons")), 6, 6, 6, 6, 2, 2, 2, 2));
-	theme->set_stylebox("grabber_highlight", "HScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollGrabberHl"), SNAME("EditorIcons")), 5, 5, 5, 5, 2, 2, 2, 2));
-	theme->set_stylebox("grabber_pressed", "HScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollGrabberPressed"), SNAME("EditorIcons")), 6, 6, 6, 6, 2, 2, 2, 2));
+	theme->set_stylebox("scroll", "HScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollBg"), SNAME("EditorIcons")), 5, 5, 5, 5, 1, 1, 1, 1));
+	theme->set_stylebox("scroll_focus", "HScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollBg"), SNAME("EditorIcons")), 5, 5, 5, 5, 1, 1, 1, 1));
+	theme->set_stylebox("grabber", "HScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollGrabber"), SNAME("EditorIcons")), 6, 6, 6, 6, 1, 1, 1, 1));
+	theme->set_stylebox("grabber_highlight", "HScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollGrabberHl"), SNAME("EditorIcons")), 5, 5, 5, 5, 1, 1, 1, 1));
+	theme->set_stylebox("grabber_pressed", "HScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollGrabberPressed"), SNAME("EditorIcons")), 6, 6, 6, 6, 1, 1, 1, 1));
 
 	theme->set_icon("increment", "HScrollBar", empty_icon);
 	theme->set_icon("increment_highlight", "HScrollBar", empty_icon);
@@ -1506,11 +1506,11 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("decrement_pressed", "HScrollBar", empty_icon);
 
 	// VScrollBar
-	theme->set_stylebox("scroll", "VScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollBg"), SNAME("EditorIcons")), 5, 5, 5, 5, 0, 0, 0, 0));
-	theme->set_stylebox("scroll_focus", "VScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollBg"), SNAME("EditorIcons")), 5, 5, 5, 5, 0, 0, 0, 0));
-	theme->set_stylebox("grabber", "VScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollGrabber"), SNAME("EditorIcons")), 6, 6, 6, 6, 2, 2, 2, 2));
-	theme->set_stylebox("grabber_highlight", "VScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollGrabberHl"), SNAME("EditorIcons")), 5, 5, 5, 5, 2, 2, 2, 2));
-	theme->set_stylebox("grabber_pressed", "VScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollGrabberPressed"), SNAME("EditorIcons")), 6, 6, 6, 6, 2, 2, 2, 2));
+	theme->set_stylebox("scroll", "VScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollBg"), SNAME("EditorIcons")), 5, 5, 5, 5, 1, 1, 1, 1));
+	theme->set_stylebox("scroll_focus", "VScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollBg"), SNAME("EditorIcons")), 5, 5, 5, 5, 1, 1, 1, 1));
+	theme->set_stylebox("grabber", "VScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollGrabber"), SNAME("EditorIcons")), 6, 6, 6, 6, 1, 1, 1, 1));
+	theme->set_stylebox("grabber_highlight", "VScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollGrabberHl"), SNAME("EditorIcons")), 5, 5, 5, 5, 1, 1, 1, 1));
+	theme->set_stylebox("grabber_pressed", "VScrollBar", make_stylebox(theme->get_icon(SNAME("GuiScrollGrabberPressed"), SNAME("EditorIcons")), 6, 6, 6, 6, 1, 1, 1, 1));
 
 	theme->set_icon("increment", "VScrollBar", empty_icon);
 	theme->set_icon("increment_highlight", "VScrollBar", empty_icon);
