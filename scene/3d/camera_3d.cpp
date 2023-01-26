@@ -526,6 +526,8 @@ void Camera3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_v_offset"), &Camera3D::get_v_offset);
 	ClassDB::bind_method(D_METHOD("set_cull_mask", "mask"), &Camera3D::set_cull_mask);
 	ClassDB::bind_method(D_METHOD("get_cull_mask"), &Camera3D::get_cull_mask);
+	ClassDB::bind_method(D_METHOD("set_pick_mask", "pick_mask"), &Camera3D::set_pick_mask);
+	ClassDB::bind_method(D_METHOD("get_pick_mask"), &Camera3D::get_pick_mask);
 	ClassDB::bind_method(D_METHOD("set_environment", "env"), &Camera3D::set_environment);
 	ClassDB::bind_method(D_METHOD("get_environment"), &Camera3D::get_environment);
 	ClassDB::bind_method(D_METHOD("set_attributes", "env"), &Camera3D::set_attributes);
@@ -541,11 +543,14 @@ void Camera3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_cull_mask_value", "layer_number", "value"), &Camera3D::set_cull_mask_value);
 	ClassDB::bind_method(D_METHOD("get_cull_mask_value", "layer_number"), &Camera3D::get_cull_mask_value);
+	ClassDB::bind_method(D_METHOD("set_pick_mask_value", "layer_number", "value"), &Camera3D::set_pick_mask_value);
+	ClassDB::bind_method(D_METHOD("get_pick_mask_value", "layer_number"), &Camera3D::get_pick_mask_value);
 
 	//ClassDB::bind_method(D_METHOD("_camera_make_current"),&Camera::_camera_make_current );
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "keep_aspect", PROPERTY_HINT_ENUM, "Keep Width,Keep Height"), "set_keep_aspect_mode", "get_keep_aspect_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cull_mask", PROPERTY_HINT_LAYERS_3D_RENDER), "set_cull_mask", "get_cull_mask");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "pick_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_pick_mask", "get_pick_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "environment", PROPERTY_HINT_RESOURCE_TYPE, "Environment"), "set_environment", "get_environment");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "attributes", PROPERTY_HINT_RESOURCE_TYPE, "CameraAttributesPractical,CameraAttributesPhysical"), "set_attributes", "get_attributes");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "h_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_h_offset", "get_h_offset");
@@ -648,6 +653,32 @@ bool Camera3D::get_cull_mask_value(int p_layer_number) const {
 	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Render layer number must be between 1 and 20 inclusive.");
 	ERR_FAIL_COND_V_MSG(p_layer_number > 20, false, "Render layer number must be between 1 and 20 inclusive.");
 	return layers & (1 << (p_layer_number - 1));
+}
+
+void Camera3D::set_pick_mask(uint32_t p_layers) {
+	pick_layers = p_layers;
+}
+
+uint32_t Camera3D::get_pick_mask() const {
+	return pick_layers;
+}
+
+void Camera3D::set_pick_mask_value(int p_layer_number, bool p_value) {
+	ERR_FAIL_COND_MSG(p_layer_number < 1, "Pick layer number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_MSG(p_layer_number > 32, "Pick layer number must be between 1 and 32 inclusive.");
+	uint32_t mask = get_pick_mask();
+	if (p_value) {
+		mask |= 1 << (p_layer_number - 1);
+	} else {
+		mask &= ~(1 << (p_layer_number - 1));
+	}
+	set_pick_mask(mask);
+}
+
+bool Camera3D::get_pick_mask_value(int p_layer_number) const {
+	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Pick layer number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_V_MSG(p_layer_number > 32, false, "Pick layer number must be between 1 and 32 inclusive.");
+	return pick_layers & (1 << (p_layer_number - 1));
 }
 
 Vector<Plane> Camera3D::get_frustum() const {

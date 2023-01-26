@@ -42,6 +42,13 @@
 				Returns the camera's frustum planes in world space units as an array of [Plane]s in the following order: near, far, left, top, right, bottom. Not to be confused with [member frustum_offset].
 			</description>
 		</method>
+		<method name="get_pick_mask_value" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="layer_number" type="int" />
+			<description>
+				Returns whether or not the specified layer of the [member pick_mask] is enabled, given a [code]layer_number[/code] between 1 and 32.
+			</description>
+		</method>
 		<method name="get_pyramid_shape_rid">
 			<return type="RID" />
 			<description>
@@ -134,6 +141,14 @@
 				Sets the camera projection to perspective mode (see [constant PROJECTION_PERSPECTIVE]), by specifying a [param fov] (field of view) angle in degrees, and the [param z_near] and [param z_far] clip planes in world space units.
 			</description>
 		</method>
+		<method name="set_pick_mask_value">
+			<return type="void" />
+			<param index="0" name="layer_number" type="int" />
+			<param index="1" name="value" type="bool" />
+			<description>
+				Based on [code]value[/code], enables or disables the specified layer in the [member pick_mask], given a [code]layer_number[/code] between 1 and 32.
+			</description>
+		</method>
 		<method name="unproject_position" qualifiers="const">
 			<return type="Vector2" />
 			<param index="0" name="world_point" type="Vector3" />
@@ -189,6 +204,9 @@
 		</member>
 		<member name="near" type="float" setter="set_near" getter="get_near" default="0.05">
 			The distance to the near culling boundary for this camera relative to its local Z axis.
+		</member>
+		<member name="pick_mask" type="int" setter="set_pick_mask" getter="get_pick_mask" default="4294967295">
+			The physics layers this camera scans for picking rays.
 		</member>
 		<member name="projection" type="int" setter="set_projection" getter="get_projection" enum="Camera3D.ProjectionType" default="0">
 			The camera's projection mode. In [constant PROJECTION_PERSPECTIVE] mode, objects' Z distance from the camera's local space scales their perceived size.

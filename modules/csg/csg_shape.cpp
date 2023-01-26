@@ -31,6 +31,7 @@
 #include "csg_shape.h"
 
 #include "core/math/geometry_2d.h"
+#include "scene/scene_string_names.h"
 
 void CSGShape3D::set_use_collision(bool p_enable) {
 	if (use_collision == p_enable) {
@@ -134,6 +135,27 @@ void CSGShape3D::set_collision_priority(real_t p_priority) {
 
 real_t CSGShape3D::get_collision_priority() const {
 	return collision_priority;
+}
+
+void CSGShape3D::set_ray_pickable(bool p_ray_pickable) {
+	if (ray_pickable == p_ray_pickable) {
+		return;
+	}
+
+	ray_pickable = p_ray_pickable;
+	_update_pickable();
+}
+
+bool CSGShape3D::is_ray_pickable() const {
+	return ray_pickable;
+}
+
+void CSGShape3D::set_capture_input_on_drag(bool p_capture) {
+	capture_input_on_drag = p_capture;
+}
+
+bool CSGShape3D::get_capture_input_on_drag() const {
+	return capture_input_on_drag;
 }
 
 bool CSGShape3D::is_root_shape() const {
@@ -479,6 +501,15 @@ void CSGShape3D::_update_collision_faces() {
 	}
 }
 
+void CSGShape3D::_update_pickable() {
+	if (!is_inside_tree() || !is_root_shape()) {
+		return;
+	}
+
+	bool pickable = ray_pickable && is_visible_in_tree();
+	PhysicsServer3D::get_singleton()->body_set_ray_pickable(root_collision_instance, pickable);
+}
+
 AABB CSGShape3D::get_aabb() const {
 	return node_aabb;
 }
@@ -607,6 +638,25 @@ void CSGShape3D::_validate_property(PropertyInfo &p_property) const {
 	}
 }
 
+void CSGShape3D::_input_event_call(Camera3D *p_camera, const Ref<InputEvent> &p_input_event, const Vector3 &p_pos, const Vector3 &p_normal, int p_shape) {
+	GDVIRTUAL_CALL(_input_event, p_camera, p_input_event, p_pos, p_normal, p_shape);
+	emit_signal(SceneStringNames::get_singleton()->input_event, p_camera, p_input_event, p_pos, p_normal, p_shape);
+}
+
+void CSGShape3D::_mouse_enter() {
+	if (get_script_instance()) {
+		get_script_instance()->call(SceneStringNames::get_singleton()->_mouse_enter);
+	}
+	emit_signal(SceneStringNames::get_singleton()->mouse_entered);
+}
+
+void CSGShape3D::_mouse_exit() {
+	if (get_script_instance()) {
+		get_script_instance()->call(SceneStringNames::get_singleton()->_mouse_exit);
+	}
+	emit_signal(SceneStringNames::get_singleton()->mouse_exited);
+}
+
 Array CSGShape3D::get_meshes() const {
 	if (root_mesh.is_valid()) {
 		Array arr;
@@ -647,10 +697,24 @@ void CSGShape3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_collision_priority", "priority"), &CSGShape3D::set_collision_priority);
 	ClassDB::bind_method(D_METHOD("get_collision_priority"), &CSGShape3D::get_collision_priority);
 
+	ClassDB::bind_method(D_METHOD("set_ray_pickable", "ray_pickable"), &CSGShape3D::set_ray_pickable);
+	ClassDB::bind_method(D_METHOD("is_ray_pickable"), &CSGShape3D::is_ray_pickable);
+
+	ClassDB::bind_method(D_METHOD("set_capture_input_on_drag", "enable"), &CSGShape3D::set_capture_input_on_drag);
+	ClassDB::bind_method(D_METHOD("get_capture_input_on_drag"), &CSGShape3D::get_capture_input_on_drag);
+
 	ClassDB::bind_method(D_METHOD("set_calculate_tangents", "enabled"), &CSGShape3D::set_calculate_tangents);
 	ClassDB::bind_method(D_METHOD("is_calculating_tangents"), &CSGShape3D::is_calculating_tangents);
 
 	ClassDB::bind_method(D_METHOD("get_meshes"), &CSGShape3D::get_meshes);
+
+	GDVIRTUAL_BIND(_input_event, "camera", "event", "position", "normal", "shape_idx");
+	GDVIRTUAL_BIND(_mouse_enter);
+	GDVIRTUAL_BIND(_mouse_exit);
+
+	ADD_SIGNAL(MethodInfo("input_event", PropertyInfo(Variant::OBJECT, "camera", PROPERTY_HINT_RESOURCE_TYPE, "Node"), PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent"), PropertyInfo(Variant::VECTOR3, "position"), PropertyInfo(Variant::VECTOR3, "normal"), PropertyInfo(Variant::INT, "shape_idx")));
+	ADD_SIGNAL(MethodInfo("mouse_entered"));
+	ADD_SIGNAL(MethodInfo("mouse_exited"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "operation", PROPERTY_HINT_ENUM, "Union,Intersection,Subtraction"), "set_operation", "get_operation");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "snap", PROPERTY_HINT_RANGE, "0.0001,1,0.001,suffix:m"), "set_snap", "get_snap");
@@ -661,6 +725,10 @@ void CSGShape3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layer", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_layer", "get_collision_layer");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collision_mask", "get_collision_mask");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "collision_priority"), "set_collision_priority", "get_collision_priority");
+
+	ADD_GROUP("Input", "input_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "input_ray_pickable"), "set_ray_pickable", "is_ray_pickable");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "input_capture_on_drag"), "set_capture_input_on_drag", "get_capture_input_on_drag");
 
 	BIND_ENUM_CONSTANT(OPERATION_UNION);
 	BIND_ENUM_CONSTANT(OPERATION_INTERSECTION);
