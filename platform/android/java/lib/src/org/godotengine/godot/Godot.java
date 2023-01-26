@@ -348,11 +348,9 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 	}
 
 	public void restart() {
-		runOnUiThread(() -> {
-			if (godotHost != null) {
-				godotHost.onGodotRestartRequested(this);
-			}
-		});
+		if (godotHost != null) {
+			godotHost.onGodotRestartRequested(this);
+		}
 	}
 
 	public void alert(final String message, final String title) {
@@ -889,11 +887,20 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 	private void forceQuit() {
 		// TODO: This is a temp solution. The proper fix will involve tracking down and properly shutting down each
 		// native Godot components that is started in Godot#onVideoInit.
-		runOnUiThread(() -> {
-			if (godotHost != null) {
-				godotHost.onGodotForceQuit(this);
-			}
-		});
+		forceQuit(0);
+	}
+
+	@Keep
+	private boolean forceQuit(int instanceId) {
+		if (godotHost == null) {
+			return false;
+		}
+		if (instanceId == 0) {
+			godotHost.onGodotForceQuit(this);
+			return true;
+		} else {
+			return godotHost.onGodotForceQuit(instanceId);
+		}
 	}
 
 	private boolean obbIsCorrupted(String f, String main_pack_md5) {
@@ -1052,11 +1059,10 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 	}
 
 	@Keep
-	private void createNewGodotInstance(String[] args) {
-		runOnUiThread(() -> {
-			if (godotHost != null) {
-				godotHost.onNewGodotInstanceRequested(args);
-			}
-		});
+	private int createNewGodotInstance(String[] args) {
+		if (godotHost != null) {
+			return godotHost.onNewGodotInstanceRequested(args);
+		}
+		return 0;
 	}
 }
