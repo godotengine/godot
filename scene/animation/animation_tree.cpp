@@ -1015,8 +1015,9 @@ void AnimationTree::_process_graph(double p_delta) {
 
 	// Apply value/transform/blend/bezier blends to track caches and execute method/audio/animation tracks.
 	{
+#ifdef TOOLS_ENABLED
 		bool can_call = is_inside_tree() && !Engine::get_singleton()->is_editor_hint();
-
+#endif // TOOLS_ENABLED
 		for (const AnimationNode::AnimationState &as : state.animation_states) {
 			Ref<Animation> a = as.animation;
 			double time = as.time;
@@ -1408,6 +1409,11 @@ void AnimationTree::_process_graph(double p_delta) {
 
 					} break;
 					case Animation::TYPE_METHOD: {
+#ifdef TOOLS_ENABLED
+						if (!can_call) {
+							return;
+						}
+#endif // TOOLS_ENABLED
 						TrackCacheMethod *t = static_cast<TrackCacheMethod *>(track);
 
 						if (seeked) {
@@ -1417,18 +1423,14 @@ void AnimationTree::_process_graph(double p_delta) {
 							}
 							StringName method = a->method_track_get_name(i, idx);
 							Vector<Variant> params = a->method_track_get_params(i, idx);
-							if (can_call) {
-								_call_object(t->object, method, params, false);
-							}
+							_call_object(t->object, method, params, false);
 						} else {
 							List<int> indices;
 							a->track_get_key_indices_in_range(i, time, delta, &indices, looped_flag);
 							for (int &F : indices) {
 								StringName method = a->method_track_get_name(i, F);
 								Vector<Variant> params = a->method_track_get_params(i, F);
-								if (can_call) {
-									_call_object(t->object, method, params, true);
-								}
+								_call_object(t->object, method, params, true);
 							}
 						}
 					} break;
@@ -1444,7 +1446,6 @@ void AnimationTree::_process_graph(double p_delta) {
 						TrackCacheAudio *t = static_cast<TrackCacheAudio *>(track);
 
 						if (seeked) {
-							//find whatever should be playing
 							int idx = a->track_find_key(i, time, is_external_seeking ? Animation::FIND_MODE_NEAREST : Animation::FIND_MODE_EXACT);
 							if (idx < 0) {
 								continue;
