@@ -373,6 +373,7 @@ public:
 	//
 
 	virtual Transform2D get_screen_transform() const override;
+	virtual Transform2D get_popup_base_transform() const override;
 
 	Rect2i get_parent_rect() const;
 	virtual DisplayServer::WindowID get_window_id() const override;
