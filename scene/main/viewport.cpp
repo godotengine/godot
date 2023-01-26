@@ -759,6 +759,7 @@ void Viewport::_process_picking() {
 						}
 
 						if (new_collider.is_valid()) {
+							DEV_ASSERT(co);
 							co->_mouse_enter();
 						}
 
