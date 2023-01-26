@@ -107,8 +107,6 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual Size2 get_minimum_size() const override;
-
 	void set_expand_margin(Side p_expand_side, float p_size);
 	void set_expand_margin_all(float p_expand_margin_size);
 	void set_expand_margin_individual(float p_left, float p_top, float p_right, float p_bottom);
