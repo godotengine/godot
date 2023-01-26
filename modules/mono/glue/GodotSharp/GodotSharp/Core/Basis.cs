@@ -120,6 +120,24 @@ namespace Godot
         }
 
         /// <summary>
+        /// Assuming that the matrix is the combination of a rotation and scaling,
+        /// return the absolute value of scaling factors along each axis.
+        /// </summary>
+        public readonly Vector3 Scale
+        {
+            get
+            {
+                real_t detSign = Mathf.Sign(Determinant());
+                return detSign * new Vector3
+                (
+                    Column0.Length(),
+                    Column1.Length(),
+                    Column2.Length()
+                );
+            }
+        }
+
+        /// <summary>
         /// Access whole columns in the form of <see cref="Vector3"/>.
         /// </summary>
         /// <param name="column">Which column vector.</param>
@@ -539,21 +557,6 @@ namespace Godot
             }
 
             return orthonormalizedBasis.GetQuaternion();
-        }
-
-        /// <summary>
-        /// Assuming that the matrix is the combination of a rotation and scaling,
-        /// return the absolute value of scaling factors along each axis.
-        /// </summary>
-        public readonly Vector3 GetScale()
-        {
-            real_t detSign = Mathf.Sign(Determinant());
-            return detSign * new Vector3
-            (
-                Column0.Length(),
-                Column1.Length(),
-                Column2.Length()
-            );
         }
 
         /// <summary>
