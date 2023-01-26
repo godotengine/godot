@@ -218,7 +218,7 @@
 		<member name="terrain_set" type="int" setter="set_terrain_set" getter="get_terrain_set" default="-1">
 			ID of the terrain set that the tile uses.
 		</member>
-		<member name="texture_offset" type="Vector2i" setter="set_texture_offset" getter="get_texture_offset" default="Vector2i(0, 0)">
+		<member name="texture_origin" type="Vector2i" setter="set_texture_origin" getter="get_texture_origin" default="Vector2i(0, 0)">
 			Offsets the position of where the tile is drawn.
 		</member>
 		<member name="transpose" type="bool" setter="set_transpose" getter="get_transpose" default="false">
