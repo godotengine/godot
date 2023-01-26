@@ -158,6 +158,7 @@ public:
 	virtual Error execute(const String &p_path, const List<String> &p_arguments, String *r_pipe = nullptr, int *r_exitcode = nullptr, bool read_stderr = false, Mutex *p_pipe_mutex = nullptr, bool p_open_console = false) override;
 	virtual Error create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id = nullptr, bool p_open_console = false) override;
 	virtual Error create_instance(const List<String> &p_arguments, ProcessID *r_child_id = nullptr) override;
+	virtual Error kill(const ProcessID &p_pid) override;
 
 	virtual bool _check_internal_feature_support(const String &p_feature) override;
 	OS_Android(GodotJavaWrapper *p_godot_java, GodotIOJavaWrapper *p_godot_io_java, bool p_use_apk_expansion);

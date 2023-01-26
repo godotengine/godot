@@ -74,28 +74,36 @@ public abstract class FullScreenGodotApp extends FragmentActivity implements God
 	public void onDestroy() {
 		Log.v(TAG, "Destroying Godot app...");
 		super.onDestroy();
-		onGodotForceQuit(godotFragment);
+		terminateGodotInstance(godotFragment);
 	}
 
 	@Override
 	public final void onGodotForceQuit(Godot instance) {
+		runOnUiThread(() -> {
+			terminateGodotInstance(instance);
+		});
+	}
+
+	private void terminateGodotInstance(Godot instance) {
 		if (instance == godotFragment) {
 			Log.v(TAG, "Force quitting Godot instance");
-			ProcessPhoenix.forceQuit(this);
+			ProcessPhoenix.forceQuit(FullScreenGodotApp.this);
 		}
 	}
 
 	@Override
 	public final void onGodotRestartRequested(Godot instance) {
-		if (instance == godotFragment) {
-			// It's very hard to properly de-initialize Godot on Android to restart the game
-			// from scratch. Therefore, we need to kill the whole app process and relaunch it.
-			//
-			// Restarting only the activity, wouldn't be enough unless it did proper cleanup (including
-			// releasing and reloading native libs or resetting their state somehow and clearing statics).
-			Log.v(TAG, "Restarting Godot instance...");
-			ProcessPhoenix.triggerRebirth(this);
-		}
+		runOnUiThread(() -> {
+			if (instance == godotFragment) {
+				// It's very hard to properly de-initialize Godot on Android to restart the game
+				// from scratch. Therefore, we need to kill the whole app process and relaunch it.
+				//
+				// Restarting only the activity, wouldn't be enough unless it did proper cleanup (including
+				// releasing and reloading native libs or resetting their state somehow and clearing statics).
+				Log.v(TAG, "Restarting Godot instance...");
+				ProcessPhoenix.triggerRebirth(FullScreenGodotApp.this);
+			}
+		});
 	}
 
 	@Override
