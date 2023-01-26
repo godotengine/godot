@@ -97,6 +97,21 @@ private:
 		static _FORCE_INLINE_ uint32_t hash(const Vertex &p_vtx);
 	};
 
+	struct SmoothGroupVertex {
+		Vector3 vertex;
+		uint32_t smooth_group = 0;
+		bool operator==(const SmoothGroupVertex &p_vertex) const;
+
+		SmoothGroupVertex(const Vertex &p_vertex) {
+			vertex = p_vertex.vertex;
+			smooth_group = p_vertex.smooth_group;
+		};
+	};
+
+	struct SmoothGroupVertexHasher {
+		static _FORCE_INLINE_ uint32_t hash(const SmoothGroupVertex &p_vtx);
+	};
+
 	struct TriangleHasher {
 		static _FORCE_INLINE_ uint32_t hash(const int *p_triangle);
 		static _FORCE_INLINE_ bool compare(const int *p_lhs, const int *p_rhs);
