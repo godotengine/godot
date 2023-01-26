@@ -485,7 +485,7 @@
 				Export a [NodePath] property with a filter for allowed node types.
 				See also [constant PROPERTY_HINT_NODE_PATH_VALID_TYPES].
 				[codeblock]
-				@export_node_path(Button, TouchScreenButton) var some_button
+				@export_node_path("Button", "TouchScreenButton") var some_button
 				[/codeblock]
 			</description>
 		</annotation>
