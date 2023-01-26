@@ -473,7 +473,9 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 	ERR_FAIL_COND(p_anim->node_cache.size() != p_anim->animation->get_track_count());
 
 	Animation *a = p_anim->animation.operator->();
+#ifdef TOOLS_ENABLED
 	bool can_call = is_inside_tree() && !Engine::get_singleton()->is_editor_hint();
+#endif // TOOLS_ENABLED
 	bool backward = signbit(p_delta);
 
 	for (int i = 0; i < a->get_track_count(); i++) {
@@ -745,11 +747,13 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 
 			} break;
 			case Animation::TYPE_METHOD: {
-				if (!nc->node || is_stopping) {
+#ifdef TOOLS_ENABLED
+				if (!can_call) {
 					continue;
 				}
-				if (!p_is_current) {
-					break;
+#endif // TOOLS_ENABLED
+				if (!p_is_current || !nc->node || is_stopping) {
+					continue;
 				}
 
 				List<int> indices;
@@ -772,16 +776,12 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 				for (int &E : indices) {
 					StringName method = a->method_track_get_name(i, E);
 					Vector<Variant> params = a->method_track_get_params(i, E);
-
 #ifdef DEBUG_ENABLED
 					if (!nc->node->has_method(method)) {
 						ERR_PRINT("Invalid method call '" + method + "'. '" + a->get_name() + "' at node '" + get_path() + "'.");
 					}
 #endif
-
-					if (can_call) {
-						_call_object(nc->node, method, params, method_call_mode == ANIMATION_METHOD_CALL_DEFERRED);
-					}
+					_call_object(nc->node, method, params, method_call_mode == ANIMATION_METHOD_CALL_DEFERRED);
 				}
 
 			} break;
@@ -813,7 +813,11 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 				}
 
 				if (p_seeked) {
-					//find whatever should be playing
+#ifdef TOOLS_ENABLED
+					if (!can_call) {
+						continue; // To avoid spamming the preview in editor.
+					}
+#endif // TOOLS_ENABLED
 					int idx = a->track_find_key(i, p_time);
 					if (idx < 0) {
 						continue;
