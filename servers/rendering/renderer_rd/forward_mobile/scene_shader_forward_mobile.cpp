@@ -609,6 +609,7 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 		actions.instance_uniform_index_variable = "draw_call.instance_uniforms_ofs";
 
 		actions.apply_luminance_multiplier = true; // apply luminance multiplier to screen texture
+		actions.check_multiview_samplers = true; // make sure we check sampling multiview textures
 
 		compiler.initialize(actions);
 	}

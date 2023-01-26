@@ -717,6 +717,8 @@ void SceneShaderForwardClustered::init(const String p_defines) {
 		actions.global_buffer_array_variable = "global_shader_uniforms.data";
 		actions.instance_uniform_index_variable = "instances.data[instance_index_interp].instance_uniforms_ofs";
 
+		actions.check_multiview_samplers = true; // make sure we check sampling multiview textures
+
 		compiler.initialize(actions);
 	}
 

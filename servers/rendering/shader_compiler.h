@@ -101,6 +101,7 @@ public:
 		String instance_uniform_index_variable;
 		uint32_t base_varying_index = 0;
 		bool apply_luminance_multiplier = false;
+		bool check_multiview_samplers = false;
 	};
 
 private:

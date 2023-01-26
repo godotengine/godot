@@ -271,15 +271,16 @@ layout(r32ui, set = 1, binding = 13) uniform restrict uimage3D geom_facing_grid;
 #define multiviewSampler sampler2D
 #else
 
-layout(set = 1, binding = 10) uniform texture2D depth_buffer;
-layout(set = 1, binding = 11) uniform texture2D color_buffer;
-
 #ifdef USE_MULTIVIEW
+layout(set = 1, binding = 10) uniform texture2DArray depth_buffer;
+layout(set = 1, binding = 11) uniform texture2DArray color_buffer;
 layout(set = 1, binding = 12) uniform texture2DArray normal_roughness_buffer;
 layout(set = 1, binding = 14) uniform texture2DArray ambient_buffer;
 layout(set = 1, binding = 15) uniform texture2DArray reflection_buffer;
 #define multiviewSampler sampler2DArray
 #else // USE_MULTIVIEW
+layout(set = 1, binding = 10) uniform texture2D depth_buffer;
+layout(set = 1, binding = 11) uniform texture2D color_buffer;
 layout(set = 1, binding = 12) uniform texture2D normal_roughness_buffer;
 layout(set = 1, binding = 14) uniform texture2D ambient_buffer;
 layout(set = 1, binding = 15) uniform texture2D reflection_buffer;
