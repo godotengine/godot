@@ -110,6 +110,7 @@ void VisibleOnScreenNotifier2D::_bind_methods() {
 
 VisibleOnScreenNotifier2D::VisibleOnScreenNotifier2D() {
 	rect = Rect2(-10, -10, 20, 20);
+	set_hide_clip_children(true);
 }
 
 //////////////////////////////////////

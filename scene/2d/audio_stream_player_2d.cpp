@@ -486,6 +486,7 @@ void AudioStreamPlayer2D::_bind_methods() {
 AudioStreamPlayer2D::AudioStreamPlayer2D() {
 	AudioServer::get_singleton()->connect("bus_layout_changed", callable_mp(this, &AudioStreamPlayer2D::_bus_layout_changed));
 	cached_global_panning_strength = GLOBAL_GET("audio/general/2d_panning_strength");
+	set_hide_clip_children(true);
 }
 
 AudioStreamPlayer2D::~AudioStreamPlayer2D() {

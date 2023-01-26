@@ -308,6 +308,7 @@ NavigationLink2D::NavigationLink2D() {
 	NavigationServer2D::get_singleton()->link_set_owner_id(link, get_instance_id());
 
 	set_notify_transform(true);
+	set_hide_clip_children(true);
 }
 
 NavigationLink2D::~NavigationLink2D() {

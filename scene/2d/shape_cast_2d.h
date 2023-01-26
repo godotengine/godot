@@ -119,6 +119,8 @@ public:
 	void clear_exceptions();
 
 	PackedStringArray get_configuration_warnings() const override;
+
+	ShapeCast2D();
 };
 
 #endif // SHAPE_CAST_2D_H

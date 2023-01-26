@@ -832,4 +832,5 @@ Camera2D::Camera2D() {
 	drag_margin[SIDE_BOTTOM] = 0.2;
 
 	set_notify_transform(true);
+	set_hide_clip_children(true);
 }

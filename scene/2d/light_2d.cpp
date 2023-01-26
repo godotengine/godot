@@ -443,6 +443,7 @@ void PointLight2D::_bind_methods() {
 
 PointLight2D::PointLight2D() {
 	RS::get_singleton()->canvas_light_set_mode(_get_light(), RS::CANVAS_LIGHT_MODE_POINT);
+	set_hide_clip_children(true);
 }
 
 //////////
@@ -467,4 +468,5 @@ void DirectionalLight2D::_bind_methods() {
 DirectionalLight2D::DirectionalLight2D() {
 	RS::get_singleton()->canvas_light_set_mode(_get_light(), RS::CANVAS_LIGHT_MODE_DIRECTIONAL);
 	set_max_distance(max_distance); // Update RenderingServer.
+	set_hide_clip_children(true);
 }

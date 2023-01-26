@@ -243,6 +243,7 @@ void Joint2D::_bind_methods() {
 
 Joint2D::Joint2D() {
 	joint = PhysicsServer2D::get_singleton()->joint_create();
+	set_hide_clip_children(true);
 }
 
 Joint2D::~Joint2D() {

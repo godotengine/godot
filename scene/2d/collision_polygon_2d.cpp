@@ -320,4 +320,5 @@ void CollisionPolygon2D::_bind_methods() {
 
 CollisionPolygon2D::CollisionPolygon2D() {
 	set_notify_local_transform(true);
+	set_hide_clip_children(true);
 }

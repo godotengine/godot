@@ -370,4 +370,5 @@ void RayCast2D::_bind_methods() {
 }
 
 RayCast2D::RayCast2D() {
+	set_hide_clip_children(true);
 }
