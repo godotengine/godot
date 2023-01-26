@@ -15,6 +15,9 @@
 		<member name="op_type" type="int" setter="set_op_type" getter="get_op_type" enum="VisualShaderNodeDerivativeFunc.OpType" default="0">
 			A type of operands and returned value. See [enum OpType] for options.
 		</member>
+		<member name="precision" type="int" setter="set_precision" getter="get_precision" enum="VisualShaderNodeDerivativeFunc.Precision" default="0">
+			Sets the level of precision to use for the derivative function. See [enum Precision] for options. When using the GL_Compatibility renderer, this setting has no effect.
+		</member>
 	</members>
 	<constants>
 		<constant name="OP_TYPE_SCALAR" value="0" enum="OpType">
@@ -43,6 +46,18 @@
 		</constant>
 		<constant name="FUNC_MAX" value="3" enum="Function">
 			Represents the size of the [enum Function] enum.
+		</constant>
+		<constant name="PRECISION_NONE" value="0" enum="Precision">
+			No precision is specified, the GPU driver is allowed to use whatever level of precision it chooses. This is the default option and is equivalent to using [code]dFdx()[/code] or [code]dFdy()[/code] in text shaders.
+		</constant>
+		<constant name="PRECISION_COARSE" value="1" enum="Precision">
+			The derivative will be calculated using the current fragment's neighbors (which may not include the current fragment). This tends to be faster than using [constant PRECISION_FINE], but may not be suitable when more precision is needed. This is equivalent to using [code]dFdxCoarse()[/code] or [code]dFdyCoarse()[/code] in text shaders.
+		</constant>
+		<constant name="PRECISION_FINE" value="2" enum="Precision">
+			The derivative will be calculated using the current fragment and its immediate neighbors. This tends to be slower than using [constant PRECISION_COARSE], but may be necessary when more precision is needed. This is equivalent to using [code]dFdxFine()[/code] or [code]dFdyFine()[/code] in text shaders.
+		</constant>
+		<constant name="PRECISION_MAX" value="3" enum="Precision">
+			Represents the size of the [enum Precision] enum.
 		</constant>
 	</constants>
 </class>

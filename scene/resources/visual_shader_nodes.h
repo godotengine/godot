@@ -1536,9 +1536,17 @@ public:
 		FUNC_MAX,
 	};
 
+	enum Precision {
+		PRECISION_NONE,
+		PRECISION_COARSE,
+		PRECISION_FINE,
+		PRECISION_MAX,
+	};
+
 protected:
 	OpType op_type = OP_TYPE_SCALAR;
 	Function func = FUNC_SUM;
+	Precision precision = PRECISION_NONE;
 
 protected:
 	static void _bind_methods();
@@ -1555,12 +1563,16 @@ public:
 	virtual String get_output_port_name(int p_port) const override;
 
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const override;
+	virtual String get_warning(Shader::Mode p_mode, VisualShader::Type p_type) const override;
 
 	void set_op_type(OpType p_op_type);
 	OpType get_op_type() const;
 
 	void set_function(Function p_func);
 	Function get_function() const;
+
+	void set_precision(Precision p_precision);
+	Precision get_precision() const;
 
 	virtual Vector<StringName> get_editable_properties() const override;
 
@@ -1569,6 +1581,7 @@ public:
 
 VARIANT_ENUM_CAST(VisualShaderNodeDerivativeFunc::OpType)
 VARIANT_ENUM_CAST(VisualShaderNodeDerivativeFunc::Function)
+VARIANT_ENUM_CAST(VisualShaderNodeDerivativeFunc::Precision)
 
 ///////////////////////////////////////
 /// FACEFORWARD
