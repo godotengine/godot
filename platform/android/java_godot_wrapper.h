@@ -94,7 +94,7 @@ public:
 	void on_godot_setup_completed(JNIEnv *p_env = NULL);
 	void on_godot_main_loop_started(JNIEnv *p_env = NULL);
 	void restart(JNIEnv *p_env = NULL);
-	void force_quit(JNIEnv *p_env = NULL);
+	bool force_quit(JNIEnv *p_env = NULL, int p_instance_id = 0);
 	void set_keep_screen_on(bool p_enabled);
 	void alert(const String &p_message, const String &p_title);
 	int get_gles_version_code();
@@ -112,7 +112,7 @@ public:
 	bool is_activity_resumed();
 	void vibrate(int p_duration_ms);
 	String get_input_fallback_mapping();
-	void create_new_godot_instance(List<String> args);
+	int create_new_godot_instance(List<String> args);
 };
 
 #endif // JAVA_GODOT_WRAPPER_H
