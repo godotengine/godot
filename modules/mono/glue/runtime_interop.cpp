@@ -1180,21 +1180,6 @@ void godotsharp_weakref(Object *p_ptr, Ref<RefCounted> *r_weak_ref) {
 	memnew_placement(r_weak_ref, Ref<RefCounted>(wref));
 }
 
-void godotsharp_str(const godot_array *p_what, godot_string *r_ret) {
-	String &str = *memnew_placement(r_ret, String);
-	const Array &what = *reinterpret_cast<const Array *>(p_what);
-
-	for (int i = 0; i < what.size(); i++) {
-		String os = what[i].operator String();
-
-		if (i == 0) {
-			str = os;
-		} else {
-			str += os;
-		}
-	}
-}
-
 void godotsharp_print(const godot_string *p_what) {
 	print_line(*reinterpret_cast<const String *>(p_what));
 }
@@ -1488,7 +1473,6 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_rand_from_seed,
 	(void *)godotsharp_seed,
 	(void *)godotsharp_weakref,
-	(void *)godotsharp_str,
 	(void *)godotsharp_str_to_var,
 	(void *)godotsharp_var_to_bytes,
 	(void *)godotsharp_var_to_str,

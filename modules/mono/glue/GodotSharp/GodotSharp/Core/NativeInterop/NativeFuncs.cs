@@ -494,8 +494,6 @@ namespace Godot.NativeInterop
 
         internal static partial void godotsharp_weakref(IntPtr p_obj, out godot_ref r_weak_ref);
 
-        internal static partial void godotsharp_str(in godot_array p_what, out godot_string r_ret);
-
         internal static partial void godotsharp_str_to_var(in godot_string p_str, out godot_variant r_ret);
 
         internal static partial void godotsharp_var_to_bytes(in godot_variant p_what, godot_bool p_full_objects,
