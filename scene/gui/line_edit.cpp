@@ -1724,6 +1724,10 @@ void LineEdit::insert_text_at_caret(String p_text) {
 		input_direction = (TextDirection)dir;
 	}
 	set_caret_column(caret_column + p_text.length());
+
+	if (!ime_text.is_empty()) {
+		_shape();
+	}
 }
 
 void LineEdit::clear_internal() {
