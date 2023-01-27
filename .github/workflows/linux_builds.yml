@@ -82,8 +82,9 @@ jobs:
           sudo cp -f misc/ci/sources.list /etc/apt/sources.list
           sudo apt-get update
           # The actual dependencies
+          # libwayland-bin is needed to generate the protocol bindings through wayland-scanner.
           sudo apt-get install build-essential pkg-config libgl1-mesa-dev libglu-dev \
-              xvfb wget unzip llvm
+              xvfb wget unzip llvm libwayland-bin
 
       - name: Setup Godot build cache
         uses: ./.github/actions/godot-cache
