@@ -31,8 +31,6 @@
 #ifndef RW_LOCK_H
 #define RW_LOCK_H
 
-#include "core/error/error_list.h"
-
 #include <shared_mutex>
 
 class RWLock {
@@ -49,9 +47,9 @@ public:
 		mutex.unlock_shared();
 	}
 
-	// Attempt to lock the rwlock, OK on success, ERR_BUSY means it can't lock.
-	Error read_try_lock() const {
-		return mutex.try_lock_shared() ? OK : ERR_BUSY;
+	// Attempt to lock the RWLock for reading. True on success, false means it can't lock.
+	bool read_try_lock() const {
+		return mutex.try_lock_shared();
 	}
 
 	// Lock the rwlock, block if locked by someone else
@@ -64,9 +62,9 @@ public:
 		mutex.unlock();
 	}
 
-	// Attempt to lock the rwlock, OK on success, ERR_BUSY means it can't lock.
-	Error write_try_lock() {
-		return mutex.try_lock() ? OK : ERR_BUSY;
+	// Attempt to lock the RWLock for writing. True on success, false means it can't lock.
+	bool write_try_lock() {
+		return mutex.try_lock();
 	}
 };
 

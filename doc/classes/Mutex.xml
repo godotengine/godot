@@ -18,9 +18,9 @@
 			</description>
 		</method>
 		<method name="try_lock">
-			<return type="int" enum="Error" />
+			<return type="bool" />
 			<description>
-				Tries locking this [Mutex], but does not block. Returns [constant OK] on success, [constant ERR_BUSY] otherwise.
+				Tries locking this [Mutex], but does not block. Returns [code]true[/code] on success, [code]false[/code] otherwise.
 				[b]Note:[/b] This function returns [constant OK] if the thread already has ownership of the mutex.
 			</description>
 		</method>

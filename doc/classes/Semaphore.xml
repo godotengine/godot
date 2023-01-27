@@ -17,9 +17,9 @@
 			</description>
 		</method>
 		<method name="try_wait">
-			<return type="int" enum="Error" />
+			<return type="bool" />
 			<description>
-				Like [method wait], but won't block, so if the value is zero, fails immediately and returns [constant ERR_BUSY]. If non-zero, it returns [constant OK] to report success.
+				Like [method wait], but won't block, so if the value is zero, fails immediately and returns [code]false[/code]. If non-zero, it returns [code]true[/code] to report success.
 			</description>
 		</method>
 		<method name="wait">
