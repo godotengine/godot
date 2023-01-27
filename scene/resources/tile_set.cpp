@@ -2630,6 +2630,7 @@ void TileSet::_compatibility_conversion() {
 			} break;
 			case COMPATIBILITY_TILE_MODE_AUTO_TILE: {
 				// Not supported. It would need manual conversion.
+				WARN_PRINT_ONCE("Could not convert 3.x autotiles to 4.x. This operation cannot be done automatically, autotiles must be re-created using the terrain system.");
 			} break;
 			case COMPATIBILITY_TILE_MODE_ATLAS_TILE: {
 				atlas_source->set_margins(ctd->region.get_position());
