@@ -118,18 +118,6 @@ DOCTEST_STRINGIFY_VARIANT(PackedVector2Array);
 DOCTEST_STRINGIFY_VARIANT(PackedVector3Array);
 DOCTEST_STRINGIFY_VARIANT(PackedColorArray);
 
-// Register test commands to be launched from the command-line.
-// For instance: REGISTER_TEST_COMMAND("gdscript-parser" &test_parser_func).
-// Example usage: `godot --test gdscript-parser`.
-
-typedef void (*TestFunc)();
-extern HashMap<String, TestFunc> *test_commands;
-int register_test_command(String p_command, TestFunc p_function);
-
-#define REGISTER_TEST_COMMAND(m_command, m_function)                 \
-	DOCTEST_GLOBAL_NO_WARNINGS(DOCTEST_ANONYMOUS(DOCTEST_ANON_VAR_), \
-			register_test_command(m_command, m_function))
-
 // Utility macros to send an event actions to a given object
 // Requires Message Queue and InputMap to be setup.
 // SEND_GUI_ACTION    - takes an object and a input map key. e.g SEND_GUI_ACTION(code_edit, "ui_text_newline").

@@ -116,8 +116,6 @@
 #include "servers/rendering/rendering_server_default.h"
 
 int test_main(int argc, char *argv[]) {
-	bool run_tests = true;
-
 	// Convert arguments to Godot's command-line.
 	List<String> args;
 
@@ -126,21 +124,6 @@ int test_main(int argc, char *argv[]) {
 	}
 	OS::get_singleton()->set_cmdline("", args, List<String>());
 
-	// Run custom test tools.
-	if (test_commands) {
-		for (const KeyValue<String, TestFunc> &E : (*test_commands)) {
-			if (args.find(E.key)) {
-				const TestFunc &test_func = E.value;
-				test_func();
-				run_tests = false;
-				break;
-			}
-		}
-		if (!run_tests) {
-			delete test_commands;
-			return 0;
-		}
-	}
 	// Doctest runner.
 	doctest::Context test_context;
 	List<String> test_args;
