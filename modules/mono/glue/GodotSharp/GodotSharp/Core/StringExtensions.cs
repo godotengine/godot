@@ -69,19 +69,6 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns <see langword="true"/> if the strings begins
-        /// with the given string <paramref name="text"/>.
-        /// </summary>
-        /// <param name="instance">The string to check.</param>
-        /// <param name="text">The beginning string.</param>
-        /// <returns>If the string begins with the given string.</returns>
-        [Obsolete("Use string.StartsWith instead.")]
-        public static bool BeginsWith(this string instance, string text)
-        {
-            return instance.StartsWith(text);
-        }
-
-        /// <summary>
         /// Returns the bigrams (pairs of consecutive letters) of this string.
         /// </summary>
         /// <param name="instance">The string that will be used.</param>
@@ -618,7 +605,7 @@ namespace Godot
             }
             else
             {
-                if (instance.BeginsWith("/"))
+                if (instance.StartsWith('/'))
                 {
                     rs = instance.Substring(1);
                     directory = "/";
@@ -1199,23 +1186,6 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns a copy of the string with characters removed from the left.
-        /// The <paramref name="chars"/> argument is a string specifying the set of characters
-        /// to be removed.
-        /// Note: The <paramref name="chars"/> is not a prefix. See <see cref="TrimPrefix"/>
-        /// method that will remove a single prefix string rather than a set of characters.
-        /// </summary>
-        /// <seealso cref="RStrip(string, string)"/>
-        /// <param name="instance">The string to remove characters from.</param>
-        /// <param name="chars">The characters to be removed.</param>
-        /// <returns>A copy of the string with characters removed from the left.</returns>
-        [Obsolete("Use string.TrimStart instead.")]
-        public static string LStrip(this string instance, string chars)
-        {
-            return instance.TrimStart(chars.ToCharArray());
-        }
-
-        /// <summary>
         /// Do a simple expression match, where '*' matches zero or more
         /// arbitrary characters and '?' matches any single character except '.'.
         /// </summary>
@@ -1501,23 +1471,6 @@ namespace Godot
                 return string.Empty;
 
             return instance.Substring(pos, instance.Length - pos);
-        }
-
-        /// <summary>
-        /// Returns a copy of the string with characters removed from the right.
-        /// The <paramref name="chars"/> argument is a string specifying the set of characters
-        /// to be removed.
-        /// Note: The <paramref name="chars"/> is not a suffix. See <see cref="TrimSuffix"/>
-        /// method that will remove a single suffix string rather than a set of characters.
-        /// </summary>
-        /// <seealso cref="LStrip(string, string)"/>
-        /// <param name="instance">The string to remove characters from.</param>
-        /// <param name="chars">The characters to be removed.</param>
-        /// <returns>A copy of the string with characters removed from the right.</returns>
-        [Obsolete("Use string.TrimEnd instead.")]
-        public static string RStrip(this string instance, string chars)
-        {
-            return instance.TrimEnd(chars.ToCharArray());
         }
 
         /// <summary>
