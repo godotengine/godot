@@ -2533,6 +2533,11 @@ void TileSet::_compatibility_conversion() {
 					bool flip_v = flags & 2;
 					bool transpose = flags & 4;
 
+					Transform2D xform;
+					xform = flip_h ? xform.scaled(Size2(-1, 1)) : xform;
+					xform = flip_v ? xform.scaled(Size2(1, -1)) : xform;
+					xform = transpose ? xform.rotated(Math_PI).scaled(Size2(-1, -1)) : xform;
+
 					int alternative_tile = 0;
 					if (!atlas_source->has_tile(coords)) {
 						atlas_source->create_tile(coords);
@@ -2569,14 +2574,26 @@ void TileSet::_compatibility_conversion() {
 					if (ctd->occluder.is_valid()) {
 						if (get_occlusion_layers_count() < 1) {
 							add_occlusion_layer();
+						};
+						Ref<OccluderPolygon2D> occluder = ctd->occluder->duplicate();
+						Vector<Vector2> polygon = ctd->occluder->get_polygon();
+						for (int index = 0; index < polygon.size(); index++) {
+							polygon.write[index] = xform.xform(polygon[index] - ctd->region.get_size() / 2.0);
 						}
-						tile_data->set_occluder(0, ctd->occluder);
+						occluder->set_polygon(polygon);
+						tile_data->set_occluder(0, occluder);
 					}
 					if (ctd->navigation.is_valid()) {
 						if (get_navigation_layers_count() < 1) {
 							add_navigation_layer();
 						}
-						tile_data->set_navigation_polygon(0, ctd->autotile_navpoly_map[coords]);
+						Ref<NavigationPolygon> navigation = ctd->navigation->duplicate();
+						Vector<Vector2> vertices = navigation->get_vertices();
+						for (int index = 0; index < vertices.size(); index++) {
+							vertices.write[index] = xform.xform(vertices[index] - ctd->region.get_size() / 2.0);
+						}
+						navigation->set_vertices(vertices);
+						tile_data->set_navigation_polygon(0, navigation);
 					}
 
 					tile_data->set_z_index(ctd->z_index);
@@ -2594,7 +2611,7 @@ void TileSet::_compatibility_conversion() {
 							if (convex_shape.is_valid()) {
 								Vector<Vector2> polygon = convex_shape->get_points();
 								for (int point_index = 0; point_index < polygon.size(); point_index++) {
-									polygon.write[point_index] = csd.transform.xform(polygon[point_index]);
+									polygon.write[point_index] = xform.xform(csd.transform.xform(polygon[point_index]) - ctd->region.get_size() / 2.0);
 								}
 								tile_data->set_collision_polygons_count(0, tile_data->get_collision_polygons_count(0) + 1);
 								int index = tile_data->get_collision_polygons_count(0) - 1;
@@ -2605,6 +2622,11 @@ void TileSet::_compatibility_conversion() {
 						}
 					}
 				}
+				// Update the size count.
+				if (!compatibility_size_count.has(ctd->region.get_size())) {
+					compatibility_size_count[ctd->region.get_size()] = 0;
+				}
+				compatibility_size_count[ctd->region.get_size()]++;
 			} break;
 			case COMPATIBILITY_TILE_MODE_AUTO_TILE: {
 				// Not supported. It would need manual conversion.
@@ -2623,6 +2645,11 @@ void TileSet::_compatibility_conversion() {
 							bool flip_h = flags & 1;
 							bool flip_v = flags & 2;
 							bool transpose = flags & 4;
+
+							Transform2D xform;
+							xform = flip_h ? xform.scaled(Size2(-1, 1)) : xform;
+							xform = flip_v ? xform.scaled(Size2(1, -1)) : xform;
+							xform = transpose ? xform.rotated(Math_PI).scaled(Size2(-1, -1)) : xform;
 
 							int alternative_tile = 0;
 							if (!atlas_source->has_tile(coords)) {
@@ -2661,13 +2688,25 @@ void TileSet::_compatibility_conversion() {
 								if (get_occlusion_layers_count() < 1) {
 									add_occlusion_layer();
 								}
-								tile_data->set_occluder(0, ctd->autotile_occluder_map[coords]);
+								Ref<OccluderPolygon2D> occluder = ctd->autotile_occluder_map[coords]->duplicate();
+								Vector<Vector2> polygon = ctd->occluder->get_polygon();
+								for (int index = 0; index < polygon.size(); index++) {
+									polygon.write[index] = xform.xform(polygon[index] - ctd->region.get_size() / 2.0);
+								}
+								occluder->set_polygon(polygon);
+								tile_data->set_occluder(0, occluder);
 							}
 							if (ctd->autotile_navpoly_map.has(coords)) {
 								if (get_navigation_layers_count() < 1) {
 									add_navigation_layer();
 								}
-								tile_data->set_navigation_polygon(0, ctd->autotile_navpoly_map[coords]);
+								Ref<NavigationPolygon> navigation = ctd->autotile_navpoly_map[coords]->duplicate();
+								Vector<Vector2> vertices = navigation->get_vertices();
+								for (int index = 0; index < vertices.size(); index++) {
+									vertices.write[index] = xform.xform(vertices[index] - ctd->region.get_size() / 2.0);
+								}
+								navigation->set_vertices(vertices);
+								tile_data->set_navigation_polygon(0, navigation);
 							}
 							if (ctd->autotile_priority_map.has(coords)) {
 								tile_data->set_probability(ctd->autotile_priority_map[coords]);
@@ -2689,7 +2728,7 @@ void TileSet::_compatibility_conversion() {
 									if (convex_shape.is_valid()) {
 										Vector<Vector2> polygon = convex_shape->get_points();
 										for (int point_index = 0; point_index < polygon.size(); point_index++) {
-											polygon.write[point_index] = csd.transform.xform(polygon[point_index]);
+											polygon.write[point_index] = xform.xform(csd.transform.xform(polygon[point_index]) - ctd->autotile_tile_size / 2.0);
 										}
 										tile_data->set_collision_polygons_count(0, tile_data->get_collision_polygons_count(0) + 1);
 										int index = tile_data->get_collision_polygons_count(0) - 1;
@@ -2712,6 +2751,12 @@ void TileSet::_compatibility_conversion() {
 						}
 					}
 				}
+
+				// Update the size count.
+				if (!compatibility_size_count.has(ctd->region.get_size())) {
+					compatibility_size_count[ctd->autotile_tile_size] = 0;
+				}
+				compatibility_size_count[ctd->autotile_tile_size] += atlas_size.x * atlas_size.y;
 			} break;
 		}
 
@@ -2728,7 +2773,18 @@ void TileSet::_compatibility_conversion() {
 		}
 	}
 
-	// Reset compatibility data
+	// Update the TileSet tile_size according to the most common size found.
+	Vector2i max_size = get_tile_size();
+	int max_count = 0;
+	for (KeyValue<Vector2i, int> kv : compatibility_size_count) {
+		if (kv.value > max_count) {
+			max_size = kv.key;
+			max_count = kv.value;
+		}
+	}
+	set_tile_size(max_size);
+
+	// Reset compatibility data (besides the histogram counts)
 	for (const KeyValue<int, CompatibilityTileData *> &E : compatibility_data) {
 		memdelete(E.value);
 	}
@@ -2909,6 +2965,10 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 				}
 				ctd->shapes.push_back(csd);
 			}
+		} else if (what == "occluder") {
+			ctd->occluder = p_value;
+		} else if (what == "navigation") {
+			ctd->navigation = p_value;
 
 			/*
 		// IGNORED FOR NOW, they seem duplicated data compared to the shapes array
