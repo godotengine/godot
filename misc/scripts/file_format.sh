@@ -39,8 +39,6 @@ while IFS= read -rd '' f; do
         continue
     elif [[ "$f" == *"-so_wrap."* ]]; then
         continue
-    elif [[ "$f" == "*/dynwrappers/*" ]]; then
-        continue
     elif [[ "$f" == *".test.txt" ]]; then
         continue
     fi
