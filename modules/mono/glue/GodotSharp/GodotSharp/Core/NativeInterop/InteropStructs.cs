@@ -697,12 +697,21 @@ namespace Godot.NativeInterop
             private uint _safeRefCount;
 
             public VariantVector _arrayVector;
+
+            private unsafe godot_variant* _readOnly;
+
             // There are more fields here, but we don't care as we never store this in C#
 
             public readonly int Size
             {
                 [MethodImpl(MethodImplOptions.AggressiveInlining)]
                 get => _arrayVector.Size;
+            }
+
+            public readonly unsafe bool IsReadOnly
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get => _readOnly != null;
             }
         }
 
@@ -737,6 +746,12 @@ namespace Godot.NativeInterop
             get => _p != null ? _p->Size : 0;
         }
 
+        public readonly unsafe bool IsReadOnly
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _p != null && _p->IsReadOnly;
+        }
+
         public unsafe void Dispose()
         {
             if (_p == null)
@@ -766,35 +781,59 @@ namespace Godot.NativeInterop
     // A correctly constructed value needs to call the native default constructor to allocate `_p`.
     // Don't pass a C# default constructed `godot_dictionary` to native code, unless it's going to
     // be re-assigned a new value (the copy constructor checks if `_p` is null so that's fine).
-    [StructLayout(LayoutKind.Sequential)]
+    [StructLayout(LayoutKind.Explicit)]
     // ReSharper disable once InconsistentNaming
     public ref struct godot_dictionary
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         internal readonly unsafe godot_dictionary* GetUnsafeAddress()
-            => (godot_dictionary*)Unsafe.AsPointer(ref Unsafe.AsRef(in _p));
+            => (godot_dictionary*)Unsafe.AsPointer(ref Unsafe.AsRef(in _getUnsafeAddressHelper));
 
-        private IntPtr _p;
+        [FieldOffset(0)] private byte _getUnsafeAddressHelper;
 
-        public readonly bool IsAllocated
+        [FieldOffset(0)] private unsafe DictionaryPrivate* _p;
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct DictionaryPrivate
         {
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _p != IntPtr.Zero;
+            private uint _safeRefCount;
+
+            private unsafe godot_variant* _readOnly;
+
+            // There are more fields here, but we don't care as we never store this in C#
+
+            public readonly unsafe bool IsReadOnly
+            {
+                [MethodImpl(MethodImplOptions.AggressiveInlining)]
+                get => _readOnly != null;
+            }
         }
 
-        public void Dispose()
+        public readonly unsafe bool IsAllocated
         {
-            if (_p == IntPtr.Zero)
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _p != null;
+        }
+
+        public readonly unsafe bool IsReadOnly
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => _p != null && _p->IsReadOnly;
+        }
+
+        public unsafe void Dispose()
+        {
+            if (_p == null)
                 return;
             NativeFuncs.godotsharp_dictionary_destroy(ref this);
-            _p = IntPtr.Zero;
+            _p = null;
         }
 
         [StructLayout(LayoutKind.Sequential)]
         // ReSharper disable once InconsistentNaming
         internal struct movable
         {
-            private IntPtr _p;
+            private unsafe DictionaryPrivate* _p;
 
             public static unsafe explicit operator movable(in godot_dictionary value)
                 => *(movable*)CustomUnsafe.AsPointer(ref CustomUnsafe.AsRef(value));
