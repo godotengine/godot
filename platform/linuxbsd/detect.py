@@ -327,6 +327,7 @@ def configure(env: "Environment"):
         env.Append(CPPDEFINES=["X11_ENABLED"])
 
     if env["wayland"]:
+        env.Prepend(CPPPATH=["#platform/linuxbsd", "#thirdparty/linuxbsd_headers/wayland/"])
         env.Append(CPPDEFINES=["WAYLAND_ENABLED"])
         env.Append(LIBS=["rt"])  # Needed by glibc, used by _allocate_shm_file
 
