@@ -4691,6 +4691,7 @@ void Animation::compress(uint32_t p_page_size, uint32_t p_fps, float p_split_tol
 	data_tracks.resize(tracks_to_compress.size());
 	time_tracks.resize(tracks_to_compress.size());
 
+	uint32_t needed_min_page_size = base_page_size;
 	for (uint32_t i = 0; i < data_tracks.size(); i++) {
 		data_tracks[i].split_tolerance = p_split_tolerance;
 		if (track_get_type(tracks_to_compress[i]) == TYPE_BLEND_SHAPE) {
@@ -4698,7 +4699,12 @@ void Animation::compress(uint32_t p_page_size, uint32_t p_fps, float p_split_tol
 		} else {
 			data_tracks[i].components = 3;
 		}
+		needed_min_page_size += data_tracks[i].data.size() + data_tracks[i].get_temp_packet_size();
 	}
+	for (uint32_t i = 0; i < time_tracks.size(); i++) {
+		needed_min_page_size += time_tracks[i].packets.size() * 4; // time packet is 32 bits
+	}
+	ERR_FAIL_COND_MSG(p_page_size < needed_min_page_size, "Cannot compress with the given page size");
 
 	while (true) {
 		// Begin by finding the keyframe in all tracks with the time closest to the current time
