@@ -1531,9 +1531,9 @@ void CharacterBody3D::_move_and_slide_floating(double p_delta) {
 					gt.columns[2] -= result.travel;
 					set_global_transform(gt);
 				}
-				motion = Vector2();
-				last_motion = Vector2();
-				velocity = Vector2();
+				motion = Vector3();
+				last_motion = Vector3();
+				velocity = Vector3();
 				break;
 			}
 
