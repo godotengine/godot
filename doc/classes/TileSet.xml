@@ -143,6 +143,14 @@
 				Returns the custom data layers count.
 			</description>
 		</method>
+		<method name="get_navigation_layer_layer_value" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="layer_index" type="int" />
+			<param index="1" name="layer_number" type="int" />
+			<description>
+				Returns whether or not the specified navigation layer of the TileSet navigation data layer identified by the given [param layer_index] is enabled, given a navigation_layers [param layer_number] between 1 and 32.
+			</description>
+		</method>
 		<method name="get_navigation_layer_layers" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="layer_index" type="int" />
@@ -498,6 +506,15 @@
 			<param index="1" name="layer_type" type="int" enum="Variant.Type" />
 			<description>
 				Sets the type of the custom data layer identified by the given index.
+			</description>
+		</method>
+		<method name="set_navigation_layer_layer_value">
+			<return type="void" />
+			<param index="0" name="layer_index" type="int" />
+			<param index="1" name="layer_number" type="int" />
+			<param index="2" name="value" type="bool" />
+			<description>
+				Based on [param value], enables or disables the specified navigation layer of the TileSet navigation data layer identified by the given [param layer_index], given a navigation_layers [param layer_number] between 1 and 32.
 			</description>
 		</method>
 		<method name="set_navigation_layer_layers">
