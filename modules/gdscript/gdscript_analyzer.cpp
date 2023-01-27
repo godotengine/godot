@@ -1972,17 +1972,40 @@ void GDScriptAnalyzer::resolve_return(GDScriptParser::ReturnNode *p_return) {
 	}
 
 	if (p_return->return_value != nullptr) {
-		reduce_expression(p_return->return_value);
-		if (p_return->return_value->type == GDScriptParser::Node::ARRAY && has_expected_type && expected_type.has_container_element_type()) {
-			update_array_literal_element_type(static_cast<GDScriptParser::ArrayNode *>(p_return->return_value), expected_type.get_container_element_type());
+		bool is_void_function = has_expected_type && expected_type.is_hard_type() && expected_type.kind == GDScriptParser::DataType::BUILTIN && expected_type.builtin_type == Variant::NIL;
+		bool is_call = p_return->return_value->type == GDScriptParser::Node::CALL;
+		if (is_void_function && is_call) {
+			// Pretend the call is a root expression to allow those that are "void".
+			reduce_call(static_cast<GDScriptParser::CallNode *>(p_return->return_value), false, true);
+		} else {
+			reduce_expression(p_return->return_value);
 		}
-		if (has_expected_type && expected_type.is_hard_type() && expected_type.kind == GDScriptParser::DataType::BUILTIN && expected_type.builtin_type == Variant::NIL) {
-			push_error("A void function cannot return a value.", p_return);
+		if (is_void_function) {
+			p_return->void_return = true;
+			const GDScriptParser::DataType &return_type = p_return->return_value->datatype;
+			if (is_call && !return_type.is_hard_type()) {
+				String function_name = parser->current_function->identifier ? parser->current_function->identifier->name.operator String() : String("<anonymous function>");
+				String called_function_name = static_cast<GDScriptParser::CallNode *>(p_return->return_value)->function_name.operator String();
+#ifdef DEBUG_ENABLED
+				parser->push_warning(p_return, GDScriptWarning::UNSAFE_VOID_RETURN, function_name, called_function_name);
+#endif
+				mark_node_unsafe(p_return);
+			} else if (!is_call) {
+				push_error("A void function cannot return a value.", p_return);
+			}
+			result.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
+			result.kind = GDScriptParser::DataType::BUILTIN;
+			result.builtin_type = Variant::NIL;
+			result.is_constant = true;
+		} else {
+			if (p_return->return_value->type == GDScriptParser::Node::ARRAY && has_expected_type && expected_type.has_container_element_type()) {
+				update_array_literal_element_type(static_cast<GDScriptParser::ArrayNode *>(p_return->return_value), expected_type.get_container_element_type());
+			}
+			if (has_expected_type && expected_type.is_hard_type() && p_return->return_value->is_constant) {
+				update_const_expression_builtin_type(p_return->return_value, expected_type, "return");
+			}
+			result = p_return->return_value->get_datatype();
 		}
-		if (has_expected_type && expected_type.is_hard_type() && p_return->return_value->is_constant) {
-			update_const_expression_builtin_type(p_return->return_value, expected_type, "return");
-		}
-		result = p_return->return_value->get_datatype();
 	} else {
 		// Return type is null by default.
 		result.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
