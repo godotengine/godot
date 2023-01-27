@@ -13,7 +13,7 @@ WAYLAND_BUILDERS = {
     ),
     "WAYLAND_API_CODE": Builder(
         action=Action(
-            "wayland-scanner -c private-code < ${SOURCE} | sed 's:wayland-client-core\.h:../dynwrappers/wayland-client-core-so_wrap\.h:' > ${TARGET}",
+            "wayland-scanner -c private-code < ${SOURCE} | sed 's:wayland-util\.h:../dynwrappers/wayland-client-core-so_wrap\.h:' > ${TARGET}",
             'Generating Wayland protocol marshalling code: "${TARGET}"',
         ),
         single_source=True,
