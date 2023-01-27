@@ -20,7 +20,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include: - name: Editor w/ Mono (target=editor)
+        include:
+          - name: Editor w/ Mono (target=editor)
             cache-name: linux-editor-mono
             target: editor
             tests: false # Disabled due freeze caused by mix Mono build and CI
