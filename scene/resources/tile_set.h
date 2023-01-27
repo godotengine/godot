@@ -475,6 +475,8 @@ public:
 	void remove_navigation_layer(int p_index);
 	void set_navigation_layer_layers(int p_layer_index, uint32_t p_layers);
 	uint32_t get_navigation_layer_layers(int p_layer_index) const;
+	void set_navigation_layer_layer_value(int p_layer_index, int p_layer_number, bool p_value);
+	bool get_navigation_layer_layer_value(int p_layer_index, int p_layer_number) const;
 
 	// Custom data
 	int get_custom_data_layers_count() const;
