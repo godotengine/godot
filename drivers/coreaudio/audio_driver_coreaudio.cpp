@@ -283,7 +283,7 @@ void AudioDriverCoreAudio::unlock() {
 }
 
 bool AudioDriverCoreAudio::try_lock() {
-	return mutex.try_lock() == OK;
+	return mutex.try_lock();
 }
 
 void AudioDriverCoreAudio::finish() {

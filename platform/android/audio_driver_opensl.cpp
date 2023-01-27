@@ -44,7 +44,7 @@ void AudioDriverOpenSL::_buffer_callback(
 	if (pause) {
 		mix = false;
 	} else {
-		mix = mutex.try_lock() == OK;
+		mix = mutex.try_lock();
 	}
 
 	if (mix) {
