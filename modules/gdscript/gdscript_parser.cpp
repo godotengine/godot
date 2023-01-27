@@ -840,14 +840,19 @@ void GDScriptParser::parse_class_body(bool p_is_multiline) {
 			case GDScriptTokenizer::Token::ANNOTATION: {
 				advance();
 
-				// Check for class-level annotations.
+				// Check for standalone and class-level annotations.
 				AnnotationNode *annotation = parse_annotation(AnnotationInfo::STANDALONE | AnnotationInfo::CLASS_LEVEL);
 				if (annotation != nullptr) {
 					if (annotation->applies_to(AnnotationInfo::STANDALONE)) {
 						if (previous.type != GDScriptTokenizer::Token::NEWLINE) {
 							push_error(R"(Expected newline after a standalone annotation.)");
 						}
-						head->annotations.push_back(annotation);
+						if (annotation->name == "@export_category" || annotation->name == "@export_group" || annotation->name == "@export_subgroup") {
+							current_class->add_member_group(annotation);
+						} else {
+							// For potential non-group standalone annotations.
+							push_error(R"(Unexpected standalone annotation in class body.)");
+						}
 					} else {
 						annotation_stack.push_back(annotation);
 					}
@@ -3841,7 +3846,6 @@ bool GDScriptParser::export_group_annotations(const AnnotationNode *p_annotation
 		} break;
 	}
 
-	current_class->add_member_group(annotation);
 	return true;
 }
 
