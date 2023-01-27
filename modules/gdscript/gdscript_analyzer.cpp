@@ -1062,7 +1062,7 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class, co
 		resolve_class_body(base_class, p_class);
 	}
 
-	// Do functions and properties now.
+	// Do functions, properties, and groups now.
 	for (int i = 0; i < p_class->members.size(); i++) {
 		GDScriptParser::ClassNode::Member member = p_class->members[i];
 		if (member.type == GDScriptParser::ClassNode::Member::FUNCTION) {
@@ -1102,6 +1102,10 @@ void GDScriptAnalyzer::resolve_class_body(GDScriptParser::ClassNode *p_class, co
 					resolve_function_body(member.variable->setter);
 				}
 			}
+		} else if (member.type == GDScriptParser::ClassNode::Member::GROUP) {
+			// Apply annotation (`@export_{category,group,subgroup}`).
+			resolve_annotation(member.annotation);
+			member.annotation->apply(parser, nullptr);
 		}
 	}
 
