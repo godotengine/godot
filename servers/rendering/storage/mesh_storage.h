@@ -83,6 +83,7 @@ public:
 	virtual void mesh_instance_set_skeleton(RID p_mesh_instance, RID p_skeleton) = 0;
 	virtual void mesh_instance_set_blend_shape_weight(RID p_mesh_instance, int p_shape, float p_weight) = 0;
 	virtual void mesh_instance_check_for_update(RID p_mesh_instance) = 0;
+	virtual void mesh_instance_set_canvas_item_transform(RID p_mesh_instance, const Transform2D &p_transform) = 0;
 	virtual void update_mesh_instances() = 0;
 
 	/* MULTIMESH API */
