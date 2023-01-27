@@ -775,15 +775,9 @@ Variant Array::get_typed_script() const {
 	return _p->typed.script;
 }
 
-void Array::set_read_only(bool p_enable) {
-	if (p_enable == bool(_p->read_only != nullptr)) {
-		return;
-	}
-	if (p_enable) {
+void Array::make_read_only() {
+	if (_p->read_only == nullptr) {
 		_p->read_only = memnew(Variant);
-	} else {
-		memdelete(_p->read_only);
-		_p->read_only = nullptr;
 	}
 }
 

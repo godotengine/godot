@@ -333,15 +333,9 @@ Dictionary Dictionary::duplicate(bool p_deep) const {
 	return recursive_duplicate(p_deep, 0);
 }
 
-void Dictionary::set_read_only(bool p_enable) {
-	if (p_enable == bool(_p->read_only != nullptr)) {
-		return;
-	}
-	if (p_enable) {
+void Dictionary::make_read_only() {
+	if (_p->read_only == nullptr) {
 		_p->read_only = memnew(Variant);
-	} else {
-		memdelete(_p->read_only);
-		_p->read_only = nullptr;
 	}
 }
 bool Dictionary::is_read_only() const {

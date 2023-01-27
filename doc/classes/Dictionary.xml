@@ -271,10 +271,22 @@
 				Returns [code]true[/code] if the dictionary is empty (its size is [code]0[/code]). See also [method size].
 			</description>
 		</method>
+		<method name="is_read_only" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the dictionary is read-only. See [method make_read_only]. Dictionaries are automatically read-only if declared with [code]const[/code] keyword.
+			</description>
+		</method>
 		<method name="keys" qualifiers="const">
 			<return type="Array" />
 			<description>
 				Returns the list of keys in the dictionary.
+			</description>
+		</method>
+		<method name="make_read_only">
+			<return type="void" />
+			<description>
+				Makes the dictionary read-only, i.e. disabled modifying of the dictionary's contents. Does not apply to nested content, e.g. content of nested dicitonaries.
 			</description>
 		</method>
 		<method name="merge">
