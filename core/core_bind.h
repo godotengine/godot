@@ -361,7 +361,7 @@ class Mutex : public RefCounted {
 
 public:
 	void lock();
-	Error try_lock();
+	bool try_lock();
 	void unlock();
 };
 
@@ -373,7 +373,7 @@ class Semaphore : public RefCounted {
 
 public:
 	void wait();
-	Error try_wait();
+	bool try_wait();
 	void post();
 };
 

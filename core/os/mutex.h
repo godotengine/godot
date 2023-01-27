@@ -31,7 +31,6 @@
 #ifndef MUTEX_H
 #define MUTEX_H
 
-#include "core/error/error_list.h"
 #include "core/typedefs.h"
 
 #include <mutex>
@@ -49,8 +48,8 @@ public:
 		mutex.unlock();
 	}
 
-	_ALWAYS_INLINE_ Error try_lock() const {
-		return mutex.try_lock() ? OK : ERR_BUSY;
+	_ALWAYS_INLINE_ bool try_lock() const {
+		return mutex.try_lock();
 	}
 };
 
