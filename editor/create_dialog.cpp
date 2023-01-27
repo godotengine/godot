@@ -122,7 +122,7 @@ bool CreateDialog::_should_hide_type(const String &p_type) const {
 		return true;
 	}
 
-	if (base_type == "Node" && p_type.begins_with("Editor")) {
+	if (is_base_type_node && p_type.begins_with("Editor")) {
 		return true; // Do not show editor nodes.
 	}
 
@@ -506,6 +506,11 @@ String CreateDialog::get_selected_type() {
 	}
 
 	return selected->get_text(0);
+}
+
+void CreateDialog::set_base_type(const String &p_base) {
+	base_type = p_base;
+	is_base_type_node = ClassDB::is_parent_class(p_base, "Node");
 }
 
 Variant CreateDialog::instantiate_selected() {
