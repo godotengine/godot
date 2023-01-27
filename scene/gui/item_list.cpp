@@ -801,8 +801,9 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 			search_string = ""; //any mousepress cancels
 
 			for (int i = 4; i > 0; i--) {
-				if (current - current_columns * i >= 0 && CAN_SELECT(current - current_columns * i)) {
-					set_current(current - current_columns * i);
+				int index = current - current_columns * i;
+				if (index >= 0 && index < items.size() && CAN_SELECT(index)) {
+					set_current(index);
 					ensure_current_is_visible();
 					if (select_mode == SELECT_SINGLE) {
 						emit_signal(SNAME("item_selected"), current);
@@ -815,8 +816,9 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 			search_string = ""; //any mousepress cancels
 
 			for (int i = 4; i > 0; i--) {
-				if (current + current_columns * i < items.size() && CAN_SELECT(current + current_columns * i)) {
-					set_current(current + current_columns * i);
+				int index = current + current_columns * i;
+				if (index >= 0 && index < items.size() && CAN_SELECT(index)) {
+					set_current(index);
 					ensure_current_is_visible();
 					if (select_mode == SELECT_SINGLE) {
 						emit_signal(SNAME("item_selected"), current);
@@ -832,7 +834,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 			if (current % current_columns != 0) {
 				int current_row = current / current_columns;
 				int next = current - 1;
-				while (!CAN_SELECT(next)) {
+				while (next >= 0 && !CAN_SELECT(next)) {
 					next = next - 1;
 				}
 				if (next < 0 || !IS_SAME_ROW(next, current_row)) {
@@ -852,7 +854,7 @@ void ItemList::gui_input(const Ref<InputEvent> &p_event) {
 			if (current % current_columns != (current_columns - 1) && current + 1 < items.size()) {
 				int current_row = current / current_columns;
 				int next = current + 1;
-				while (!CAN_SELECT(next)) {
+				while (next < items.size() && !CAN_SELECT(next)) {
 					next = next + 1;
 				}
 				if (items.size() <= next || !IS_SAME_ROW(next, current_row)) {
