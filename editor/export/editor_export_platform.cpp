@@ -1802,6 +1802,13 @@ Error EditorExportPlatform::ssh_run_on_remote(const String &p_host, const String
 	List<String> args;
 	args.push_back("-p");
 	args.push_back(p_port);
+	args.push_back("-q");
+	args.push_back("-o");
+	args.push_back("LogLevel=error");
+	args.push_back("-o");
+	args.push_back("BatchMode=yes");
+	args.push_back("-o");
+	args.push_back("StrictHostKeyChecking=no");
 	for (const String &E : p_ssh_args) {
 		args.push_back(E);
 	}
@@ -1852,6 +1859,13 @@ Error EditorExportPlatform::ssh_run_on_remote_no_wait(const String &p_host, cons
 	List<String> args;
 	args.push_back("-p");
 	args.push_back(p_port);
+	args.push_back("-q");
+	args.push_back("-o");
+	args.push_back("LogLevel=error");
+	args.push_back("-o");
+	args.push_back("BatchMode=yes");
+	args.push_back("-o");
+	args.push_back("StrictHostKeyChecking=no");
 	for (const String &E : p_ssh_args) {
 		args.push_back(E);
 	}
@@ -1882,6 +1896,13 @@ Error EditorExportPlatform::ssh_push_to_remote(const String &p_host, const Strin
 	List<String> args;
 	args.push_back("-P");
 	args.push_back(p_port);
+	args.push_back("-q");
+	args.push_back("-o");
+	args.push_back("LogLevel=error");
+	args.push_back("-o");
+	args.push_back("BatchMode=yes");
+	args.push_back("-o");
+	args.push_back("StrictHostKeyChecking=no");
 	for (const String &E : p_scp_args) {
 		args.push_back(E);
 	}
