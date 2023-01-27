@@ -653,7 +653,7 @@ Ref<Image> CompressedTexture2D::load_image_from_file(Ref<FileAccess> f, int p_si
 	uint32_t mipmaps = f->get_32();
 	Image::Format format = Image::Format(f->get_32());
 
-	if (data_format == DATA_FORMAT_PNG || data_format == DATA_FORMAT_WEBP || data_format == DATA_FORMAT_BASIS_UNIVERSAL) {
+	if (data_format == DATA_FORMAT_PNG || data_format == DATA_FORMAT_WEBP) {
 		//look for a PNG or WebP file inside
 
 		int sw = w;
@@ -684,9 +684,7 @@ Ref<Image> CompressedTexture2D::load_image_from_file(Ref<FileAccess> f, int p_si
 			}
 
 			Ref<Image> img;
-			if (data_format == DATA_FORMAT_BASIS_UNIVERSAL && Image::basis_universal_unpacker) {
-				img = Image::basis_universal_unpacker(pv);
-			} else if (data_format == DATA_FORMAT_PNG && Image::png_unpacker) {
+			if (data_format == DATA_FORMAT_PNG && Image::png_unpacker) {
 				img = Image::png_unpacker(pv);
 			} else if (data_format == DATA_FORMAT_WEBP && Image::webp_unpacker) {
 				img = Image::webp_unpacker(pv);
@@ -745,6 +743,32 @@ Ref<Image> CompressedTexture2D::load_image_from_file(Ref<FileAccess> f, int p_si
 			return image;
 		}
 
+	} else if (data_format == DATA_FORMAT_BASIS_UNIVERSAL) {
+		int sw = w;
+		int sh = h;
+		uint32_t size = f->get_32();
+		if (p_size_limit > 0 && (sw > p_size_limit || sh > p_size_limit)) {
+			//can't load this due to size limit
+			sw = MAX(sw >> 1, 1);
+			sh = MAX(sh >> 1, 1);
+			f->seek(f->get_position() + size);
+			return Ref<Image>();
+		}
+		Vector<uint8_t> pv;
+		pv.resize(size);
+		{
+			uint8_t *wr = pv.ptrw();
+			f->get_buffer(wr, size);
+		}
+		Ref<Image> img;
+		img = Image::basis_universal_unpacker(pv);
+		if (img.is_null() || img->is_empty()) {
+			ERR_FAIL_COND_V(img.is_null() || img->is_empty(), Ref<Image>());
+		}
+		format = img->get_format();
+		sw = MAX(sw >> 1, 1);
+		sh = MAX(sh >> 1, 1);
+		return img;
 	} else if (data_format == DATA_FORMAT_IMAGE) {
 		int size = Image::get_image_data_size(w, h, format, mipmaps ? true : false);
 

@@ -32,6 +32,7 @@
 
 #include "editor_scene_importer_gltf.h"
 
+#include "../gltf_defines.h"
 #include "../gltf_document.h"
 
 uint32_t EditorSceneFormatImporterGLTF::get_import_flags() const {
@@ -50,6 +51,10 @@ Node *EditorSceneFormatImporterGLTF::import_scene(const String &p_path, uint32_t
 	doc.instantiate();
 	Ref<GLTFState> state;
 	state.instantiate();
+	if (p_options.has("meshes/handle_gltf_embedded_images")) {
+		int32_t enum_option = p_options["meshes/handle_gltf_embedded_images"];
+		state->set_handle_binary_image(enum_option);
+	}
 	Error err = doc->append_from_file(p_path, state, p_flags);
 	if (err != OK) {
 		if (r_err) {
@@ -66,6 +71,11 @@ Node *EditorSceneFormatImporterGLTF::import_scene(const String &p_path, uint32_t
 	} else {
 		return doc->generate_scene(state, (float)p_options["animation/fps"], false);
 	}
+}
+
+void EditorSceneFormatImporterGLTF::get_import_options(const String &p_path,
+		List<ResourceImporter::ImportOption> *r_options) {
+	r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::INT, "meshes/handle_gltf_embedded_images", PROPERTY_HINT_ENUM, "Discard All Textures,Extract Textures,Embed As Basis Universal", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), GLTFState::HANDLE_BINARY_EXTRACT_TEXTURES));
 }
 
 #endif // TOOLS_ENABLED
