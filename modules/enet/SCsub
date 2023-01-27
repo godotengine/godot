@@ -25,6 +25,7 @@ if env["builtin_enet"]:
 
     env_enet.Prepend(CPPPATH=[thirdparty_dir])
     env_enet.Append(CPPDEFINES=["GODOT_ENET"])
+    env_enet.Append(CPPDEFINES=["ENET_DEBUG"])
 
     env_thirdparty = env_enet.Clone()
     env_thirdparty.disable_warnings()
