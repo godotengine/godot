@@ -1411,7 +1411,7 @@ void AnimationTree::_process_graph(double p_delta) {
 					case Animation::TYPE_METHOD: {
 #ifdef TOOLS_ENABLED
 						if (!can_call) {
-							return;
+							continue;
 						}
 #endif // TOOLS_ENABLED
 						TrackCacheMethod *t = static_cast<TrackCacheMethod *>(track);
