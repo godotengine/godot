@@ -4282,19 +4282,11 @@ Rect2i TileSetAtlasSource::get_tile_texture_region(Vector2i p_atlas_coords, int 
 	return Rect2(origin, region_size);
 }
 
-Vector2i TileSetAtlasSource::get_tile_effective_texture_offset(Vector2i p_atlas_coords, int p_alternative_tile) const {
-	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), Vector2i(), vformat("TileSetAtlasSource has no tile at %s.", Vector2i(p_atlas_coords)));
-	ERR_FAIL_COND_V_MSG(!has_alternative_tile(p_atlas_coords, p_alternative_tile), Vector2i(), vformat("TileSetAtlasSource has no alternative tile with id %d at %s.", p_alternative_tile, String(p_atlas_coords)));
-	ERR_FAIL_COND_V(!tile_set, Vector2i());
+bool TileSetAtlasSource::is_position_in_tile_texture_region(const Vector2i p_atlas_coords, int p_alternative_tile, Vector2 p_position) const {
+	Size2 size = get_tile_texture_region(p_atlas_coords).size;
+	Rect2 rect = Rect2(-size / 2 - get_tile_data(p_atlas_coords, p_alternative_tile)->get_texture_origin(), size);
 
-	Vector2 margin = (get_tile_texture_region(p_atlas_coords).size - tile_set->get_tile_size()) / 2;
-	margin = Vector2i(MAX(0, margin.x), MAX(0, margin.y));
-	Vector2i effective_texture_offset = get_tile_data(p_atlas_coords, p_alternative_tile)->get_texture_offset();
-	if (ABS(effective_texture_offset.x) > margin.x || ABS(effective_texture_offset.y) > margin.y) {
-		effective_texture_offset = effective_texture_offset.clamp(-margin, margin);
-	}
-
-	return effective_texture_offset;
+	return rect.has_point(p_position);
 }
 
 // Getters for texture and tile region (padded or not)
@@ -5046,7 +5038,7 @@ TileData *TileData::duplicate() {
 	output->flip_h = flip_h;
 	output->flip_v = flip_v;
 	output->transpose = transpose;
-	output->tex_offset = tex_offset;
+	output->texture_origin = texture_origin;
 	output->material = material;
 	output->modulate = modulate;
 	output->z_index = z_index;
@@ -5096,13 +5088,13 @@ bool TileData::get_transpose() const {
 	return transpose;
 }
 
-void TileData::set_texture_offset(Vector2i p_texture_offset) {
-	tex_offset = p_texture_offset;
+void TileData::set_texture_origin(Vector2i p_texture_origin) {
+	texture_origin = p_texture_origin;
 	emit_signal(SNAME("changed"));
 }
 
-Vector2i TileData::get_texture_offset() const {
-	return tex_offset;
+Vector2i TileData::get_texture_origin() const {
+	return texture_origin;
 }
 
 void TileData::set_material(Ref<Material> p_material) {
@@ -5390,6 +5382,13 @@ Variant TileData::get_custom_data_by_layer_id(int p_layer_id) const {
 }
 
 bool TileData::_set(const StringName &p_name, const Variant &p_value) {
+#ifndef DISABLE_DEPRECATED
+	if (p_name == "texture_offset") {
+		texture_origin = p_value;
+		return true;
+	}
+#endif
+
 	Vector<String> components = String(p_name).split("/", true, 2);
 
 	if (components.size() == 2 && components[0].begins_with("occlusion_layer_") && components[0].trim_prefix("occlusion_layer_").is_valid_int()) {
@@ -5511,6 +5510,13 @@ bool TileData::_set(const StringName &p_name, const Variant &p_value) {
 }
 
 bool TileData::_get(const StringName &p_name, Variant &r_ret) const {
+#ifndef DISABLE_DEPRECATED
+	if (p_name == "texture_offset") {
+		r_ret = texture_origin;
+		return true;
+	}
+#endif
+
 	Vector<String> components = String(p_name).split("/", true, 2);
 
 	if (tile_set) {
@@ -5692,8 +5698,8 @@ void TileData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_transpose"), &TileData::get_transpose);
 	ClassDB::bind_method(D_METHOD("set_material", "material"), &TileData::set_material);
 	ClassDB::bind_method(D_METHOD("get_material"), &TileData::get_material);
-	ClassDB::bind_method(D_METHOD("set_texture_offset", "texture_offset"), &TileData::set_texture_offset);
-	ClassDB::bind_method(D_METHOD("get_texture_offset"), &TileData::get_texture_offset);
+	ClassDB::bind_method(D_METHOD("set_texture_origin", "texture_origin"), &TileData::set_texture_origin);
+	ClassDB::bind_method(D_METHOD("get_texture_origin"), &TileData::get_texture_origin);
 	ClassDB::bind_method(D_METHOD("set_modulate", "modulate"), &TileData::set_modulate);
 	ClassDB::bind_method(D_METHOD("get_modulate"), &TileData::get_modulate);
 	ClassDB::bind_method(D_METHOD("set_z_index", "z_index"), &TileData::set_z_index);
@@ -5746,7 +5752,7 @@ void TileData::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_h"), "set_flip_h", "get_flip_h");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_v"), "set_flip_v", "get_flip_v");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "transpose"), "set_transpose", "get_transpose");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "texture_offset", PROPERTY_HINT_NONE, "suffix:px"), "set_texture_offset", "get_texture_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "texture_origin", PROPERTY_HINT_NONE, "suffix:px"), "set_texture_origin", "get_texture_origin");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "modulate"), "set_modulate", "get_modulate");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "CanvasItemMaterial,ShaderMaterial"), "set_material", "get_material");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "z_index"), "set_z_index", "get_z_index");

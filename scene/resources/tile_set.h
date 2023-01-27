@@ -719,7 +719,7 @@ public:
 	// Helpers.
 	Vector2i get_atlas_grid_size() const;
 	Rect2i get_tile_texture_region(Vector2i p_atlas_coords, int p_frame = 0) const;
-	Vector2i get_tile_effective_texture_offset(Vector2i p_atlas_coords, int p_alternative_tile) const;
+	bool is_position_in_tile_texture_region(const Vector2i p_atlas_coords, int p_alternative_tile, Vector2 p_position) const;
 
 	// Getters for texture and tile region (padded or not)
 	Ref<Texture2D> get_runtime_texture() const;
@@ -785,7 +785,7 @@ private:
 	bool flip_h = false;
 	bool flip_v = false;
 	bool transpose = false;
-	Vector2i tex_offset;
+	Vector2i texture_origin;
 	Ref<Material> material = Ref<Material>();
 	Color modulate = Color(1.0, 1.0, 1.0, 1.0);
 	int z_index = 0;
@@ -864,8 +864,8 @@ public:
 	void set_transpose(bool p_transpose);
 	bool get_transpose() const;
 
-	void set_texture_offset(Vector2i p_texture_offset);
-	Vector2i get_texture_offset() const;
+	void set_texture_origin(Vector2i p_texture_origin);
+	Vector2i get_texture_origin() const;
 	void set_material(Ref<Material> p_material);
 	Ref<Material> get_material() const;
 	void set_modulate(Color p_modulate);
