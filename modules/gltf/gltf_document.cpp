@@ -3065,6 +3065,7 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_p
 	// Ref: https://github.com/KhronosGroup/glTF/blob/master/specification/2.0/README.md#images
 
 	const Array &images = p_state->json["images"];
+	HashSet<String> used_names;
 	for (int i = 0; i < images.size(); i++) {
 		const Dictionary &d = images[i];
 
@@ -3092,11 +3093,21 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_p
 		int data_size = 0;
 
 		String image_name;
+		if (d.has("name")) {
+			image_name = d["name"];
+			image_name = image_name.get_file().get_basename().validate_filename();
+		}
+		if (image_name.is_empty()) {
+			image_name = itos(i);
+		}
+		while (used_names.has(image_name)) {
+			image_name += "_" + itos(i);
+		}
+		used_names.insert(image_name);
 
 		if (d.has("uri")) {
 			// Handles the first two bullet points from the spec (embedded data, or external file).
 			String uri = d["uri"];
-			image_name = uri;
 
 			if (uri.begins_with("data:")) { // Embedded data using base64.
 				// Validate data MIME types and throw a warning if it's one we don't know/support.
@@ -3158,7 +3169,6 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_p
 					vformat("glTF: Image index '%d' specifies 'bufferView' but no 'mimeType', which is invalid.", i));
 
 			const GLTFBufferViewIndex bvi = d["bufferView"];
-			image_name = itos(bvi);
 
 			ERR_FAIL_INDEX_V(bvi, p_state->buffer_views.size(), ERR_PARAMETER_RANGE_ERROR);
 
@@ -3206,13 +3216,12 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_p
 			p_state->source_images.push_back(Ref<Image>());
 			continue;
 		}
+		img->set_name(image_name);
 		if (GLTFState::GLTFHandleBinary(p_state->handle_binary_image) == GLTFState::GLTFHandleBinary::HANDLE_BINARY_DISCARD_TEXTURES) {
 			p_state->images.push_back(Ref<Texture2D>());
 			p_state->source_images.push_back(Ref<Image>());
 			continue;
 		} else if (GLTFState::GLTFHandleBinary(p_state->handle_binary_image) == GLTFState::GLTFHandleBinary::HANDLE_BINARY_EXTRACT_TEXTURES) {
-			String extracted_image_name = image_name.get_file().get_basename().validate_filename();
-			img->set_name(extracted_image_name);
 			if (p_state->base_path.is_empty()) {
 				p_state->images.push_back(Ref<Texture2D>());
 				p_state->source_images.push_back(Ref<Image>());
