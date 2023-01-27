@@ -831,8 +831,8 @@ Error EditorExportPlatformWindows::run(const Ref<EditorExportPreset> &p_preset, 
 	if (port.is_empty()) {
 		port = "22";
 	}
-	Vector<String> extra_args_ssh = p_preset->get("ssh_remote_deploy/extra_args_ssh").operator String().split(" ");
-	Vector<String> extra_args_scp = p_preset->get("ssh_remote_deploy/extra_args_scp").operator String().split(" ");
+	Vector<String> extra_args_ssh = p_preset->get("ssh_remote_deploy/extra_args_ssh").operator String().split(" ", false);
+	Vector<String> extra_args_scp = p_preset->get("ssh_remote_deploy/extra_args_scp").operator String().split(" ", false);
 
 	const String basepath = dest.path_join("tmp_windows_export");
 
