@@ -3805,20 +3805,28 @@ static _FORCE_INLINE_ bool _is_valid_identifier_bit(int p_index, char32_t p_char
 
 String String::validate_identifier() const {
 	if (is_empty()) {
-		return "_"; // Empty string is not a valid identifier;
+		return "_"; // Empty string is not a valid identifier.
 	}
 
-	String result = *this;
-	int len = result.length();
-	char32_t *buffer = result.ptrw();
+	String new_string;
+	int len = length();
 
 	for (int i = 0; i < len; i++) {
-		if (!_is_valid_identifier_bit(i, buffer[i])) {
-			buffer[i] = '_';
+		const char32_t c = operator[](i);
+		if (is_ascii_identifier_char(c)) {
+			new_string += c;
 		}
 	}
 
-	return result;
+	if (new_string.is_empty()) {
+		return "_";
+	}
+
+	if (is_digit(new_string[0])) {
+		return "_" + new_string;
+	}
+
+	return new_string;
 }
 
 bool String::is_valid_identifier() const {
