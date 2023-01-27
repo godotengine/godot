@@ -69,6 +69,7 @@ public:
 		UNSAFE_METHOD_ACCESS, // Function not found in the detected type (but can be in subtypes).
 		UNSAFE_CAST, // Cast used in an unknown type.
 		UNSAFE_CALL_ARGUMENT, // Function call argument is of a supertype of the require argument.
+		UNSAFE_VOID_RETURN, // Function returns void but returned a call to a function that can't be type checked.
 		DEPRECATED_KEYWORD, // The keyword is deprecated and should be replaced.
 		STANDALONE_TERNARY, // Return value of ternary expression is discarded.
 		ASSERT_ALWAYS_TRUE, // Expression for assert argument is always true.
