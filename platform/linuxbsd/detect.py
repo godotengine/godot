@@ -187,6 +187,9 @@ def configure(env: "Environment"):
     ## Dependencies
 
     if env["wayland"]:
+        if os.system("wayland-scanner -v") != 0:
+            print("wayland-scanner not found. Aborting.")
+            exit(255)
         if os.system("pkg-config --exists libdecor-0") == 0:  # 0 means found
             env.ParseConfig("pkg-config libdecor-0 --cflags")  # Only cflags, we dlopen the library.
         else:
