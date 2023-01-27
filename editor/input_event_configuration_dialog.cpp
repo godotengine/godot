@@ -685,9 +685,9 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	// Key Mode Selection
 
 	key_mode = memnew(OptionButton);
-	key_mode->add_item("Keycode (Latin equvialent)", KEYMODE_KEYCODE);
-	key_mode->add_item("Physical Keycode (poistion of US QWERTY keyboard)", KEYMODE_PHY_KEYCODE);
-	key_mode->add_item("Unicode (case-insencetive)", KEYMODE_UNICODE);
+	key_mode->add_item("Keycode (Latin equivalent)", KEYMODE_KEYCODE);
+	key_mode->add_item("Physical Keycode (position of US QWERTY keyboard)", KEYMODE_PHY_KEYCODE);
+	key_mode->add_item("Unicode (case-insensitive)", KEYMODE_UNICODE);
 	key_mode->connect("item_selected", callable_mp(this, &InputEventConfigurationDialog::_key_mode_selected));
 	key_mode->hide();
 	additional_options_container->add_child(key_mode);
