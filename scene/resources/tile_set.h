@@ -198,6 +198,7 @@ private:
 	HashMap<int, CompatibilityTileData *> compatibility_data;
 	HashMap<int, int> compatibility_tilemap_mapping_tile_modes;
 	HashMap<int, RBMap<Array, Array>> compatibility_tilemap_mapping;
+	HashMap<Vector2i, int> compatibility_size_count;
 
 	void _compatibility_conversion();
 
