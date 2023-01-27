@@ -15,7 +15,7 @@
 			$animation_tree.set("parameters/conditions/idle", is_on_floor and (linear_velocity.x == 0))
 			[/gdscript]
 			[csharp]
-			GetNode&lt;AnimationTree&gt;("animation_tree").Set("parameters/conditions/idle", IsOnFloor &amp;&amp; (LinearVelocity.x == 0));
+			GetNode&lt;AnimationTree&gt;("animation_tree").Set("parameters/conditions/idle", IsOnFloor &amp;&amp; (LinearVelocity.X == 0));
 			[/csharp]
 			[/codeblocks]
 		</member>

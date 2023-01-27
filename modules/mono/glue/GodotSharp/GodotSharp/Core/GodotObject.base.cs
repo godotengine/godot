@@ -5,20 +5,20 @@ using Godot.NativeInterop;
 
 namespace Godot
 {
-    public partial class Object : IDisposable
+    public partial class GodotObject : IDisposable
     {
         private bool _disposed = false;
-        private static readonly Type CachedType = typeof(Object);
+        private static readonly Type CachedType = typeof(GodotObject);
 
         internal IntPtr NativePtr;
         private bool _memoryOwn;
 
-        private WeakReference<Object> _weakReferenceToSelf;
+        private WeakReference<GodotObject> _weakReferenceToSelf;
 
         /// <summary>
-        /// Constructs a new <see cref="Object"/>.
+        /// Constructs a new <see cref="GodotObject"/>.
         /// </summary>
-        public Object() : this(false)
+        public GodotObject() : this(false)
         {
             unsafe
             {
@@ -49,17 +49,17 @@ namespace Godot
             _weakReferenceToSelf = DisposablesTracker.RegisterGodotObject(this);
         }
 
-        internal Object(bool memoryOwn)
+        internal GodotObject(bool memoryOwn)
         {
             _memoryOwn = memoryOwn;
         }
 
         /// <summary>
-        /// The pointer to the native instance of this <see cref="Object"/>.
+        /// The pointer to the native instance of this <see cref="GodotObject"/>.
         /// </summary>
         public IntPtr NativeInstance => NativePtr;
 
-        internal static IntPtr GetPtr(Object instance)
+        internal static IntPtr GetPtr(GodotObject instance)
         {
             if (instance == null)
                 return IntPtr.Zero;
@@ -75,13 +75,13 @@ namespace Godot
             return instance.NativePtr;
         }
 
-        ~Object()
+        ~GodotObject()
         {
             Dispose(false);
         }
 
         /// <summary>
-        /// Disposes of this <see cref="Object"/>.
+        /// Disposes of this <see cref="GodotObject"/>.
         /// </summary>
         public void Dispose()
         {
@@ -90,7 +90,7 @@ namespace Godot
         }
 
         /// <summary>
-        /// Disposes implementation of this <see cref="Object"/>.
+        /// Disposes implementation of this <see cref="GodotObject"/>.
         /// </summary>
         protected virtual void Dispose(bool disposing)
         {
@@ -129,7 +129,7 @@ namespace Godot
         }
 
         /// <summary>
-        /// Converts this <see cref="Object"/> to a string.
+        /// Converts this <see cref="GodotObject"/> to a string.
         /// </summary>
         /// <returns>A string representation of this object.</returns>
         public override string ToString()
@@ -166,7 +166,7 @@ namespace Godot
         /// A <see cref="SignalAwaiter"/> that completes when
         /// <paramref name="source"/> emits the <paramref name="signal"/>.
         /// </returns>
-        public SignalAwaiter ToSignal(Object source, StringName signal)
+        public SignalAwaiter ToSignal(GodotObject source, StringName signal)
         {
             return new SignalAwaiter(source, signal, this);
         }

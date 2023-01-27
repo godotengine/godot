@@ -336,7 +336,7 @@ namespace GodotTools.Build
             _ = index; // Unused
 
             _issuesListContextMenu.Clear();
-            _issuesListContextMenu.Size = new Vector2i(1, 1);
+            _issuesListContextMenu.Size = new Vector2I(1, 1);
 
             if (_issuesList.IsAnythingSelected())
             {
@@ -347,7 +347,7 @@ namespace GodotTools.Build
 
             if (_issuesListContextMenu.ItemCount > 0)
             {
-                _issuesListContextMenu.Position = (Vector2i)(_issuesList.GlobalPosition + atPosition);
+                _issuesListContextMenu.Position = (Vector2I)(_issuesList.GlobalPosition + atPosition);
                 _issuesListContextMenu.Popup();
             }
         }

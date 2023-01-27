@@ -19,7 +19,7 @@ namespace Godot.SourceGenerators
                            throw new InvalidOperationException($"Type not found: '{fullyQualifiedMetadataName}'.");
                 }
 
-                GodotObjectType = GetTypeByMetadataNameOrThrow("Godot.Object");
+                GodotObjectType = GetTypeByMetadataNameOrThrow(GodotClasses.GodotObject);
             }
         }
 
@@ -40,19 +40,19 @@ namespace Godot.SourceGenerators
                 MarshalType.Double => VariantType.Float,
                 MarshalType.String => VariantType.String,
                 MarshalType.Vector2 => VariantType.Vector2,
-                MarshalType.Vector2i => VariantType.Vector2i,
+                MarshalType.Vector2I => VariantType.Vector2I,
                 MarshalType.Rect2 => VariantType.Rect2,
-                MarshalType.Rect2i => VariantType.Rect2i,
-                MarshalType.Transform2D => VariantType.Transform2d,
+                MarshalType.Rect2I => VariantType.Rect2I,
+                MarshalType.Transform2D => VariantType.Transform2D,
                 MarshalType.Vector3 => VariantType.Vector3,
-                MarshalType.Vector3i => VariantType.Vector3i,
+                MarshalType.Vector3I => VariantType.Vector3I,
                 MarshalType.Basis => VariantType.Basis,
                 MarshalType.Quaternion => VariantType.Quaternion,
-                MarshalType.Transform3D => VariantType.Transform3d,
+                MarshalType.Transform3D => VariantType.Transform3D,
                 MarshalType.Vector4 => VariantType.Vector4,
-                MarshalType.Vector4i => VariantType.Vector4i,
+                MarshalType.Vector4I => VariantType.Vector4I,
                 MarshalType.Projection => VariantType.Projection,
-                MarshalType.AABB => VariantType.Aabb,
+                MarshalType.Aabb => VariantType.Aabb,
                 MarshalType.Color => VariantType.Color,
                 MarshalType.Plane => VariantType.Plane,
                 MarshalType.Callable => VariantType.Callable,
@@ -70,12 +70,12 @@ namespace Godot.SourceGenerators
                 MarshalType.GodotObjectOrDerivedArray => VariantType.Array,
                 MarshalType.SystemArrayOfStringName => VariantType.Array,
                 MarshalType.SystemArrayOfNodePath => VariantType.Array,
-                MarshalType.SystemArrayOfRID => VariantType.Array,
+                MarshalType.SystemArrayOfRid => VariantType.Array,
                 MarshalType.Variant => VariantType.Nil,
                 MarshalType.GodotObjectOrDerived => VariantType.Object,
                 MarshalType.StringName => VariantType.StringName,
                 MarshalType.NodePath => VariantType.NodePath,
-                MarshalType.RID => VariantType.Rid,
+                MarshalType.Rid => VariantType.Rid,
                 MarshalType.GodotDictionary => VariantType.Dictionary,
                 MarshalType.GodotArray => VariantType.Array,
                 MarshalType.GodotGenericDictionary => VariantType.Dictionary,
@@ -130,22 +130,22 @@ namespace Godot.SourceGenerators
                             return type switch
                             {
                                 { Name: "Vector2" } => MarshalType.Vector2,
-                                { Name: "Vector2i" } => MarshalType.Vector2i,
+                                { Name: "Vector2I" } => MarshalType.Vector2I,
                                 { Name: "Rect2" } => MarshalType.Rect2,
-                                { Name: "Rect2i" } => MarshalType.Rect2i,
+                                { Name: "Rect2I" } => MarshalType.Rect2I,
                                 { Name: "Transform2D" } => MarshalType.Transform2D,
                                 { Name: "Vector3" } => MarshalType.Vector3,
-                                { Name: "Vector3i" } => MarshalType.Vector3i,
+                                { Name: "Vector3I" } => MarshalType.Vector3I,
                                 { Name: "Basis" } => MarshalType.Basis,
                                 { Name: "Quaternion" } => MarshalType.Quaternion,
                                 { Name: "Transform3D" } => MarshalType.Transform3D,
                                 { Name: "Vector4" } => MarshalType.Vector4,
-                                { Name: "Vector4i" } => MarshalType.Vector4i,
+                                { Name: "Vector4I" } => MarshalType.Vector4I,
                                 { Name: "Projection" } => MarshalType.Projection,
-                                { Name: "AABB" } => MarshalType.AABB,
+                                { Name: "Aabb" } => MarshalType.Aabb,
                                 { Name: "Color" } => MarshalType.Color,
                                 { Name: "Plane" } => MarshalType.Plane,
-                                { Name: "RID" } => MarshalType.RID,
+                                { Name: "Rid" } => MarshalType.Rid,
                                 { Name: "Callable" } => MarshalType.Callable,
                                 { Name: "Signal" } => MarshalType.Signal,
                                 { Name: "Variant" } => MarshalType.Variant,
@@ -196,8 +196,8 @@ namespace Godot.SourceGenerators
                                     return MarshalType.SystemArrayOfStringName;
                                 case { Name: "NodePath" }:
                                     return MarshalType.SystemArrayOfNodePath;
-                                case { Name: "RID" }:
-                                    return MarshalType.SystemArrayOfRID;
+                                case { Name: "Rid" }:
+                                    return MarshalType.SystemArrayOfRid;
                             }
                         }
 

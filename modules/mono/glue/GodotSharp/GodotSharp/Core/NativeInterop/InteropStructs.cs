@@ -126,10 +126,10 @@ namespace Godot.NativeInterop
             [FieldOffset(0)] public godot_bool _bool;
             [FieldOffset(0)] public long _int;
             [FieldOffset(0)] public double _float;
-            [FieldOffset(0)] public Transform2D* _transform2D;
-            [FieldOffset(0)] public AABB* _aabb;
+            [FieldOffset(0)] public Transform2D* _transform2d;
+            [FieldOffset(0)] public Aabb* _aabb;
             [FieldOffset(0)] public Basis* _basis;
-            [FieldOffset(0)] public Transform3D* _transform3D;
+            [FieldOffset(0)] public Transform3D* _transform3d;
             [FieldOffset(0)] public Projection* _projection;
             [FieldOffset(0)] private godot_variant_data_mem _mem;
 
@@ -137,18 +137,18 @@ namespace Godot.NativeInterop
             [FieldOffset(0)] public godot_string_name _m_string_name;
             [FieldOffset(0)] public godot_string _m_string;
             [FieldOffset(0)] public Vector4 _m_vector4;
-            [FieldOffset(0)] public Vector4i _m_vector4i;
+            [FieldOffset(0)] public Vector4I _m_vector4i;
             [FieldOffset(0)] public Vector3 _m_vector3;
-            [FieldOffset(0)] public Vector3i _m_vector3i;
+            [FieldOffset(0)] public Vector3I _m_vector3i;
             [FieldOffset(0)] public Vector2 _m_vector2;
-            [FieldOffset(0)] public Vector2i _m_vector2i;
+            [FieldOffset(0)] public Vector2I _m_vector2i;
             [FieldOffset(0)] public Rect2 _m_rect2;
-            [FieldOffset(0)] public Rect2i _m_rect2i;
+            [FieldOffset(0)] public Rect2I _m_rect2i;
             [FieldOffset(0)] public Plane _m_plane;
             [FieldOffset(0)] public Quaternion _m_quaternion;
             [FieldOffset(0)] public Color _m_color;
             [FieldOffset(0)] public godot_node_path _m_node_path;
-            [FieldOffset(0)] public RID _m_rid;
+            [FieldOffset(0)] public Rid _m_rid;
             [FieldOffset(0)] public godot_variant_obj_data _m_obj_data;
             [FieldOffset(0)] public godot_callable _m_callable;
             [FieldOffset(0)] public godot_signal _m_signal;
@@ -211,10 +211,10 @@ namespace Godot.NativeInterop
         public readonly unsafe Transform2D* Transform2D
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _data._transform2D;
+            get => _data._transform2d;
         }
 
-        public readonly unsafe AABB* AABB
+        public readonly unsafe Aabb* Aabb
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             get => _data._aabb;
@@ -229,7 +229,7 @@ namespace Godot.NativeInterop
         public readonly unsafe Transform3D* Transform3D
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            get => _data._transform3D;
+            get => _data._transform3d;
         }
 
         public readonly unsafe Projection* Projection
@@ -262,7 +262,7 @@ namespace Godot.NativeInterop
             set => _data._m_vector4 = value;
         }
 
-        public Vector4i Vector4i
+        public Vector4I Vector4I
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             readonly get => _data._m_vector4i;
@@ -278,7 +278,7 @@ namespace Godot.NativeInterop
             set => _data._m_vector3 = value;
         }
 
-        public Vector3i Vector3i
+        public Vector3I Vector3I
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             readonly get => _data._m_vector3i;
@@ -294,7 +294,7 @@ namespace Godot.NativeInterop
             set => _data._m_vector2 = value;
         }
 
-        public Vector2i Vector2i
+        public Vector2I Vector2I
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             readonly get => _data._m_vector2i;
@@ -310,7 +310,7 @@ namespace Godot.NativeInterop
             set => _data._m_rect2 = value;
         }
 
-        public Rect2i Rect2i
+        public Rect2I Rect2I
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             readonly get => _data._m_rect2i;
@@ -350,7 +350,7 @@ namespace Godot.NativeInterop
             set => _data._m_node_path = value;
         }
 
-        public RID RID
+        public Rid Rid
         {
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             readonly get => _data._m_rid;
@@ -405,13 +405,13 @@ namespace Godot.NativeInterop
                 case Variant.Type.Int:
                 case Variant.Type.Float:
                 case Variant.Type.Vector2:
-                case Variant.Type.Vector2i:
+                case Variant.Type.Vector2I:
                 case Variant.Type.Rect2:
-                case Variant.Type.Rect2i:
+                case Variant.Type.Rect2I:
                 case Variant.Type.Vector3:
-                case Variant.Type.Vector3i:
+                case Variant.Type.Vector3I:
                 case Variant.Type.Vector4:
-                case Variant.Type.Vector4i:
+                case Variant.Type.Vector4I:
                 case Variant.Type.Plane:
                 case Variant.Type.Quaternion:
                 case Variant.Type.Color:

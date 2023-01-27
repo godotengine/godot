@@ -192,7 +192,7 @@ namespace GodotTools
 
                     try
                     {
-                        if (Godot.OS.IsStdoutVerbose())
+                        if (Godot.OS.IsStdOutVerbose())
                             Console.WriteLine(
                                 $"Running: \"{command}\" {string.Join(" ", args.Select(a => $"\"{a}\""))}");
 
@@ -385,7 +385,7 @@ namespace GodotTools
             // correct version first (`RegisterDefaults` always picks the latest).
             if (DotNetFinder.TryFindDotNetSdk(dotNetSdkSearchVersion, out var sdkVersion, out string sdkPath))
             {
-                if (Godot.OS.IsStdoutVerbose())
+                if (Godot.OS.IsStdOutVerbose())
                     Console.WriteLine($"Found .NET Sdk version '{sdkVersion}': {sdkPath}");
 
                 ProjectUtils.MSBuildLocatorRegisterMSBuildPath(sdkPath);
@@ -395,12 +395,12 @@ namespace GodotTools
                 try
                 {
                     ProjectUtils.MSBuildLocatorRegisterDefaults(out sdkVersion, out sdkPath);
-                    if (Godot.OS.IsStdoutVerbose())
+                    if (Godot.OS.IsStdOutVerbose())
                         Console.WriteLine($"Found .NET Sdk version '{sdkVersion}': {sdkPath}");
                 }
                 catch (InvalidOperationException e)
                 {
-                    if (Godot.OS.IsStdoutVerbose())
+                    if (Godot.OS.IsStdOutVerbose())
                         GD.PrintErr(e.ToString());
                     GD.PushError($".NET Sdk not found. The required version is '{dotNetSdkSearchVersion}'.");
                 }

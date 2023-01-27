@@ -328,15 +328,15 @@ namespace Godot.SourceGenerators
 
         private static void AppendGroupingPropertyInfo(StringBuilder source, PropertyInfo propertyInfo)
         {
-            source.Append("        properties.Add(new(type: (Godot.Variant.Type)")
+            source.Append("        properties.Add(new(type: (global::Godot.Variant.Type)")
                 .Append((int)VariantType.Nil)
                 .Append(", name: \"")
                 .Append(propertyInfo.Name)
-                .Append("\", hint: (Godot.PropertyHint)")
+                .Append("\", hint: (global::Godot.PropertyHint)")
                 .Append((int)PropertyHint.None)
                 .Append(", hintString: \"")
                 .Append(propertyInfo.HintString)
-                .Append("\", usage: (Godot.PropertyUsageFlags)")
+                .Append("\", usage: (global::Godot.PropertyUsageFlags)")
                 .Append((int)propertyInfo.Usage)
                 .Append(", exported: true));\n");
         }

@@ -74,7 +74,7 @@ namespace Godot.Collections
         /// the original dictionary. If <see langword="false"/>, a shallow copy is made and
         /// references to the original nested arrays and dictionaries are kept, so that
         /// modifying a sub-array or dictionary in the copy will also impact those
-        /// referenced in the source dictionary. Note that any <see cref="Object"/> derived
+        /// referenced in the source dictionary. Note that any <see cref="GodotObject"/> derived
         /// elements will be shallow copied regardless of the <paramref name="deep"/>
         /// setting.
         /// </summary>
@@ -494,7 +494,7 @@ namespace Godot.Collections
         /// the original dictionary. If <see langword="false"/>, a shallow copy is made and
         /// references to the original nested arrays and dictionaries are kept, so that
         /// modifying a sub-array or dictionary in the copy will also impact those
-        /// referenced in the source dictionary. Note that any <see cref="Object"/> derived
+        /// referenced in the source dictionary. Note that any <see cref="GodotObject"/> derived
         /// elements will be shallow copied regardless of the <paramref name="deep"/>
         /// setting.
         /// </summary>

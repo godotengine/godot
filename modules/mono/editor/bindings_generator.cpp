@@ -38,10 +38,10 @@
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/os/os.h"
-#include "core/string/ucaps.h"
 #include "main/main.h"
 
 #include "../godotsharp_defs.h"
+#include "../utils/naming_utils.h"
 #include "../utils/path_utils.h"
 #include "../utils/string_utils.h"
 
@@ -144,74 +144,6 @@ static String fix_doc_description(const String &p_bbcode) {
 			.replace("\t", "")
 			.replace("\r", "")
 			.strip_edges();
-}
-
-static String snake_to_pascal_case(const String &p_identifier, bool p_input_is_upper = false) {
-	String ret;
-	Vector<String> parts = p_identifier.split("_", true);
-
-	for (int i = 0; i < parts.size(); i++) {
-		String part = parts[i];
-
-		if (part.length()) {
-			part[0] = _find_upper(part[0]);
-			if (p_input_is_upper) {
-				for (int j = 1; j < part.length(); j++) {
-					part[j] = _find_lower(part[j]);
-				}
-			}
-			ret += part;
-		} else {
-			if (i == 0 || i == (parts.size() - 1)) {
-				// Preserve underscores at the beginning and end
-				ret += "_";
-			} else {
-				// Preserve contiguous underscores
-				if (parts[i - 1].length()) {
-					ret += "__";
-				} else {
-					ret += "_";
-				}
-			}
-		}
-	}
-
-	return ret;
-}
-
-static String snake_to_camel_case(const String &p_identifier, bool p_input_is_upper = false) {
-	String ret;
-	Vector<String> parts = p_identifier.split("_", true);
-
-	for (int i = 0; i < parts.size(); i++) {
-		String part = parts[i];
-
-		if (part.length()) {
-			if (i != 0) {
-				part[0] = _find_upper(part[0]);
-			}
-			if (p_input_is_upper) {
-				for (int j = i != 0 ? 1 : 0; j < part.length(); j++) {
-					part[j] = _find_lower(part[j]);
-				}
-			}
-			ret += part;
-		} else {
-			if (i == 0 || i == (parts.size() - 1)) {
-				// Preserve underscores at the beginning and end
-				ret += "_";
-			} else {
-				// Preserve contiguous underscores
-				if (parts[i - 1].length()) {
-					ret += "__";
-				} else {
-					ret += "_";
-				}
-			}
-		}
-	}
-
-	return ret;
 }
 
 String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterface *p_itype) {
@@ -565,7 +497,7 @@ void BindingsGenerator::_append_xml_method(StringBuilder &p_xml_output, const Ty
 	} else if (!p_target_itype || !p_target_itype->is_object_type) {
 		if (OS::get_singleton()->is_stdout_verbose()) {
 			if (p_target_itype) {
-				OS::get_singleton()->print("Cannot resolve method reference for non-Godot.Object type in documentation: %s\n", p_link_target.utf8().get_data());
+				OS::get_singleton()->print("Cannot resolve method reference for non-GodotObject type in documentation: %s\n", p_link_target.utf8().get_data());
 			} else {
 				OS::get_singleton()->print("Cannot resolve type from method reference in documentation: %s\n", p_link_target.utf8().get_data());
 			}
@@ -605,7 +537,7 @@ void BindingsGenerator::_append_xml_member(StringBuilder &p_xml_output, const Ty
 	} else if (!p_target_itype || !p_target_itype->is_object_type) {
 		if (OS::get_singleton()->is_stdout_verbose()) {
 			if (p_target_itype) {
-				OS::get_singleton()->print("Cannot resolve member reference for non-Godot.Object type in documentation: %s\n", p_link_target.utf8().get_data());
+				OS::get_singleton()->print("Cannot resolve member reference for non-GodotObject type in documentation: %s\n", p_link_target.utf8().get_data());
 			} else {
 				OS::get_singleton()->print("Cannot resolve type from member reference in documentation: %s\n", p_link_target.utf8().get_data());
 			}
@@ -641,7 +573,7 @@ void BindingsGenerator::_append_xml_signal(StringBuilder &p_xml_output, const Ty
 	if (!p_target_itype || !p_target_itype->is_object_type) {
 		if (OS::get_singleton()->is_stdout_verbose()) {
 			if (p_target_itype) {
-				OS::get_singleton()->print("Cannot resolve signal reference for non-Godot.Object type in documentation: %s\n", p_link_target.utf8().get_data());
+				OS::get_singleton()->print("Cannot resolve signal reference for non-GodotObject type in documentation: %s\n", p_link_target.utf8().get_data());
 			} else {
 				OS::get_singleton()->print("Cannot resolve type from signal reference in documentation: %s\n", p_link_target.utf8().get_data());
 			}
@@ -698,7 +630,7 @@ void BindingsGenerator::_append_xml_constant(StringBuilder &p_xml_output, const 
 
 		if (OS::get_singleton()->is_stdout_verbose()) {
 			if (p_target_itype) {
-				OS::get_singleton()->print("Cannot resolve constant reference for non-Godot.Object type in documentation: %s\n", p_link_target.utf8().get_data());
+				OS::get_singleton()->print("Cannot resolve constant reference for non-GodotObject type in documentation: %s\n", p_link_target.utf8().get_data());
 			} else {
 				OS::get_singleton()->print("Cannot resolve type from constant reference in documentation: %s\n", p_link_target.utf8().get_data());
 			}
@@ -967,11 +899,11 @@ void BindingsGenerator::_generate_array_extensions(StringBuilder &p_output) {
 	ARRAY_ALL(string);
 	ARRAY_ALL(Color);
 	ARRAY_ALL(Vector2);
-	ARRAY_ALL(Vector2i);
+	ARRAY_ALL(Vector2I);
 	ARRAY_ALL(Vector3);
-	ARRAY_ALL(Vector3i);
+	ARRAY_ALL(Vector3I);
 	ARRAY_ALL(Vector4);
-	ARRAY_ALL(Vector4i);
+	ARRAY_ALL(Vector4I);
 
 #undef ARRAY_ALL
 #undef ARRAY_IS_EMPTY
@@ -1041,7 +973,7 @@ void BindingsGenerator::_generate_global_constants(StringBuilder &p_output) {
 			_log("Declaring global enum '%s' inside struct '%s'\n", enum_proxy_name.utf8().get_data(), enum_class_name.utf8().get_data());
 
 			p_output.append("\npublic partial struct ");
-			p_output.append(enum_class_name);
+			p_output.append(pascal_to_pascal_case(enum_class_name));
 			p_output.append("\n" OPEN_BLOCK);
 		}
 
@@ -1050,7 +982,7 @@ void BindingsGenerator::_generate_global_constants(StringBuilder &p_output) {
 		}
 
 		p_output.append("\npublic enum ");
-		p_output.append(enum_proxy_name);
+		p_output.append(pascal_to_pascal_case(enum_proxy_name));
 		p_output.append(" : long");
 		p_output.append("\n" OPEN_BLOCK);
 
@@ -1385,7 +1317,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 	bool is_derived_type = itype.base_name != StringName();
 
 	if (!is_derived_type) {
-		// Some Godot.Object assertions
+		// Some GodotObject assertions
 		CRASH_COND(itype.cname != name_cache.type_Object);
 		CRASH_COND(!itype.is_instantiable);
 		CRASH_COND(itype.api_type != ClassDB::API_CORE);
@@ -1502,7 +1434,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 		}
 
 		output.append(MEMBER_BEGIN "public enum ");
-		output.append(ienum.cname.operator String());
+		output.append(pascal_to_pascal_case(ienum.cname.operator String()));
 		output.append(" : long");
 		output.append(MEMBER_BEGIN OPEN_BLOCK);
 
@@ -1547,9 +1479,9 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 	if (itype.is_singleton) {
 		// Add the type name and the singleton pointer as static fields
 
-		output.append(MEMBER_BEGIN "private static Godot.Object singleton;\n");
+		output.append(MEMBER_BEGIN "private static GodotObject singleton;\n");
 
-		output << MEMBER_BEGIN "public static Godot.Object " CS_PROPERTY_SINGLETON "\n" INDENT1 "{\n"
+		output << MEMBER_BEGIN "public static GodotObject " CS_PROPERTY_SINGLETON "\n" INDENT1 "{\n"
 			   << INDENT2 "get\n" INDENT2 "{\n" INDENT3 "if (singleton == null)\n"
 			   << INDENT4 "singleton = " C_METHOD_ENGINE_GET_SINGLETON "(typeof("
 			   << itype.proxy_name
@@ -1559,8 +1491,8 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 		output.append(itype.name);
 		output.append("\";\n");
 	} else {
-		// IMPORTANT: We also generate the static fields for Godot.Object instead of declaring
-		// them manually in the `Object.base.cs` partial class declaration, because they're
+		// IMPORTANT: We also generate the static fields for GodotObject instead of declaring
+		// them manually in the `GodotObject.base.cs` partial class declaration, because they're
 		// required by other static fields in this generated partial class declaration.
 		// Static fields are initialized in order of declaration, but when they're in different
 		// partial class declarations then it becomes harder to tell (Rider warns about this).
@@ -2130,9 +2062,9 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 					 << INDENT1 "private static readonly IntPtr " << method_bind_field << " = ";
 
 			if (p_itype.is_singleton) {
-				// Singletons are static classes. They don't derive Godot.Object,
+				// Singletons are static classes. They don't derive GodotObject,
 				// so we need to specify the type to call the static method.
-				p_output << "Object.";
+				p_output << "GodotObject.";
 			}
 
 			p_output << ICALL_CLASSDB_GET_METHOD "(" BINDINGS_NATIVE_NAME_FIELD ", MethodName."
@@ -2896,7 +2828,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 
 		ClassDB::ClassInfo *class_info = ClassDB::classes.getptr(type_cname);
 
-		TypeInterface itype = TypeInterface::create_object_type(type_cname, api_type);
+		TypeInterface itype = TypeInterface::create_object_type(type_cname, pascal_to_pascal_case(type_cname), api_type);
 
 		itype.base_name = ClassDB::get_parent_class(type_cname);
 		itype.is_singleton = Engine::get_singleton()->has_singleton(itype.proxy_name);
@@ -2911,9 +2843,9 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 		itype.cs_type = itype.proxy_name;
 
 		if (itype.is_singleton) {
-			itype.cs_in_expr = "Object." CS_STATIC_METHOD_GETINSTANCE "(" CS_PROPERTY_SINGLETON ")";
+			itype.cs_in_expr = "GodotObject." CS_STATIC_METHOD_GETINSTANCE "(" CS_PROPERTY_SINGLETON ")";
 		} else {
-			itype.cs_in_expr = "Object." CS_STATIC_METHOD_GETINSTANCE "(%0)";
+			itype.cs_in_expr = "GodotObject." CS_STATIC_METHOD_GETINSTANCE "(%0)";
 		}
 
 		itype.cs_out = "%5return (%2)%0(%1);";
@@ -2921,7 +2853,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 		itype.c_arg_in = "(void*)%s";
 		itype.c_type = "IntPtr";
 		itype.c_type_in = itype.c_type;
-		itype.c_type_out = "Object";
+		itype.c_type_out = "GodotObject";
 
 		// Populate properties
 
@@ -3241,7 +3173,7 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 
 		for (const KeyValue<StringName, ClassDB::ClassInfo::EnumInfo> &E : enum_map) {
 			StringName enum_proxy_cname = E.key;
-			String enum_proxy_name = enum_proxy_cname.operator String();
+			String enum_proxy_name = pascal_to_pascal_case(enum_proxy_cname.operator String());
 			if (itype.find_property_by_proxy_name(enum_proxy_name) || itype.find_method_by_proxy_name(enum_proxy_name) || itype.find_signal_by_proxy_name(enum_proxy_name)) {
 				// In case the enum name conflicts with other PascalCase members,
 				// we append 'Enum' to the enum name in those cases.
@@ -3369,7 +3301,7 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 		} break;
 		case Variant::AABB: {
 			AABB aabb = p_val.operator ::AABB();
-			r_iarg.default_argument = "new AABB(new Vector3" + aabb.position.operator String() + ", new Vector3" + aabb.size.operator String() + ")";
+			r_iarg.default_argument = "new Aabb(new Vector3" + aabb.position.operator String() + ", new Vector3" + aabb.size.operator String() + ")";
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 		} break;
 		case Variant::RECT2: {
@@ -3379,7 +3311,7 @@ bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, Ar
 		} break;
 		case Variant::RECT2I: {
 			Rect2i rect = p_val.operator Rect2i();
-			r_iarg.default_argument = "new Rect2i(new Vector2i" + rect.position.operator String() + ", new Vector2i" + rect.size.operator String() + ")";
+			r_iarg.default_argument = "new Rect2I(new Vector2I" + rect.position.operator String() + ", new Vector2I" + rect.size.operator String() + ")";
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 		} break;
 		case Variant::COLOR:
@@ -3513,32 +3445,30 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 
 	TypeInterface itype;
 
-#define INSERT_STRUCT_TYPE(m_type)                                 \
-	{                                                              \
-		itype = TypeInterface::create_value_type(String(#m_type)); \
-		itype.c_type_in = #m_type "*";                             \
-		itype.c_type_out = itype.cs_type;                          \
-		itype.cs_in_expr = "&%0";                                  \
-		itype.cs_in_expr_is_unsafe = true;                         \
-		builtin_types.insert(itype.cname, itype);                  \
+#define INSERT_STRUCT_TYPE(m_type, m_proxy_name)                                          \
+	{                                                                                     \
+		itype = TypeInterface::create_value_type(String(#m_type), String(#m_proxy_name)); \
+		itype.cs_in_expr = "&%0";                                                         \
+		itype.cs_in_expr_is_unsafe = true;                                                \
+		builtin_types.insert(itype.cname, itype);                                         \
 	}
 
-	INSERT_STRUCT_TYPE(Vector2)
-	INSERT_STRUCT_TYPE(Vector2i)
-	INSERT_STRUCT_TYPE(Rect2)
-	INSERT_STRUCT_TYPE(Rect2i)
-	INSERT_STRUCT_TYPE(Transform2D)
-	INSERT_STRUCT_TYPE(Vector3)
-	INSERT_STRUCT_TYPE(Vector3i)
-	INSERT_STRUCT_TYPE(Basis)
-	INSERT_STRUCT_TYPE(Quaternion)
-	INSERT_STRUCT_TYPE(Transform3D)
-	INSERT_STRUCT_TYPE(AABB)
-	INSERT_STRUCT_TYPE(Color)
-	INSERT_STRUCT_TYPE(Plane)
-	INSERT_STRUCT_TYPE(Vector4)
-	INSERT_STRUCT_TYPE(Vector4i)
-	INSERT_STRUCT_TYPE(Projection)
+	INSERT_STRUCT_TYPE(Vector2, Vector2)
+	INSERT_STRUCT_TYPE(Vector2i, Vector2I)
+	INSERT_STRUCT_TYPE(Rect2, Rect2)
+	INSERT_STRUCT_TYPE(Rect2i, Rect2I)
+	INSERT_STRUCT_TYPE(Transform2D, Transform2D)
+	INSERT_STRUCT_TYPE(Vector3, Vector3)
+	INSERT_STRUCT_TYPE(Vector3i, Vector3I)
+	INSERT_STRUCT_TYPE(Basis, Basis)
+	INSERT_STRUCT_TYPE(Quaternion, Quaternion)
+	INSERT_STRUCT_TYPE(Transform3D, Transform3D)
+	INSERT_STRUCT_TYPE(AABB, Aabb)
+	INSERT_STRUCT_TYPE(Color, Color)
+	INSERT_STRUCT_TYPE(Plane, Plane)
+	INSERT_STRUCT_TYPE(Vector4, Vector4)
+	INSERT_STRUCT_TYPE(Vector4i, Vector4I)
+	INSERT_STRUCT_TYPE(Projection, Projection)
 
 #undef INSERT_STRUCT_TYPE
 
@@ -3677,7 +3607,7 @@ void BindingsGenerator::_populate_builtin_type_interfaces() {
 	itype = TypeInterface();
 	itype.name = "RID";
 	itype.cname = itype.name;
-	itype.proxy_name = "RID";
+	itype.proxy_name = "Rid";
 	itype.cs_type = itype.proxy_name;
 	itype.c_arg_in = "&%s";
 	itype.c_type = itype.cs_type;
@@ -3891,7 +3821,7 @@ void BindingsGenerator::_populate_global_constants() {
 			enum_itype.is_enum = true;
 			enum_itype.name = ienum.cname.operator String();
 			enum_itype.cname = ienum.cname;
-			enum_itype.proxy_name = enum_itype.name;
+			enum_itype.proxy_name = pascal_to_pascal_case(enum_itype.name);
 			TypeInterface::postsetup_enum_type(enum_itype);
 			enum_types.insert(enum_itype.cname, enum_itype);
 
@@ -3913,9 +3843,9 @@ void BindingsGenerator::_populate_global_constants() {
 	// HARDCODED
 	List<StringName> hardcoded_enums;
 	hardcoded_enums.push_back("Vector2.Axis");
-	hardcoded_enums.push_back("Vector2i.Axis");
+	hardcoded_enums.push_back("Vector2I.Axis");
 	hardcoded_enums.push_back("Vector3.Axis");
-	hardcoded_enums.push_back("Vector3i.Axis");
+	hardcoded_enums.push_back("Vector3I.Axis");
 	for (const StringName &enum_cname : hardcoded_enums) {
 		// These enums are not generated and must be written manually (e.g.: Vector3.Axis)
 		// Here, we assume core types do not begin with underscore
@@ -3923,7 +3853,7 @@ void BindingsGenerator::_populate_global_constants() {
 		enum_itype.is_enum = true;
 		enum_itype.name = enum_cname.operator String();
 		enum_itype.cname = enum_cname;
-		enum_itype.proxy_name = enum_itype.name;
+		enum_itype.proxy_name = pascal_to_pascal_case(enum_itype.name);
 		TypeInterface::postsetup_enum_type(enum_itype);
 		enum_types.insert(enum_itype.cname, enum_itype);
 	}
