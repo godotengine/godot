@@ -1523,18 +1523,23 @@ void CharacterBody3D::_move_and_slide_floating(double p_delta) {
 			CollisionState result_state;
 			_set_collision_direction(result, result_state);
 
-			if (result.remainder.is_zero_approx()) {
-				motion = Vector3();
+			if (wall_min_slide_angle != 0 && Math::acos(result.collision_normal.dot(-velocity.normalized())) < wall_min_slide_angle + FLOOR_ANGLE_THRESHOLD) {
+				// hit a wall at a sharp enough angle that we should stop
+				if (result.travel.length() <= margin + CMP_EPSILON) {
+					// Cancels the motion.
+					Transform2D gt = get_global_transform();
+					gt.columns[2] -= result.travel;
+					set_global_transform(gt);
+				}
+				motion = Vector2();
+				last_motion = Vector2();
+				velocity = Vector2();
 				break;
 			}
 
-			if (wall_min_slide_angle != 0 && Math::acos(wall_normal.dot(-velocity.normalized())) < wall_min_slide_angle + FLOOR_ANGLE_THRESHOLD) {
+			if (result.remainder.is_zero_approx()) {
 				motion = Vector3();
-				if (result.travel.length() < margin + CMP_EPSILON) {
-					Transform3D gt = get_global_transform();
-					gt.origin -= result.travel;
-					set_global_transform(gt);
-				}
+				break;
 			} else if (first_slide) {
 				Vector3 motion_slide_norm = result.remainder.slide(wall_normal).normalized();
 				motion = motion_slide_norm * (motion.length() - result.travel.length());
