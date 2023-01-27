@@ -33,6 +33,8 @@
 
 #include "scene/resources/texture.h"
 
+static const float SPRITE_FRAME_MINIMUM_DURATION = 0.01;
+
 class SpriteFrames : public Resource {
 	GDCLASS(SpriteFrames, Resource);
 
@@ -89,10 +91,10 @@ public:
 
 	_FORCE_INLINE_ float get_frame_duration(const StringName &p_anim, int p_idx) const {
 		HashMap<StringName, Anim>::ConstIterator E = animations.find(p_anim);
-		ERR_FAIL_COND_V_MSG(!E, 0.0, "Animation '" + String(p_anim) + "' doesn't exist.");
-		ERR_FAIL_COND_V(p_idx < 0, 0.0);
+		ERR_FAIL_COND_V_MSG(!E, 1.0, "Animation '" + String(p_anim) + "' doesn't exist.");
+		ERR_FAIL_COND_V(p_idx < 0, 1.0);
 		if (p_idx >= E->value.frames.size()) {
-			return 0.0;
+			return 1.0;
 		}
 
 		return E->value.frames[p_idx].duration;
