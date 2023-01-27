@@ -160,6 +160,8 @@ private:
 			float &r_metallic);
 	GLTFNodeIndex _find_highest_node(Ref<GLTFState> p_state,
 			const Vector<GLTFNodeIndex> &p_subset);
+	void _recurse_children(Ref<GLTFState> p_state, const GLTFNodeIndex p_node_index,
+			RBSet<GLTFNodeIndex> &p_all_skin_nodes, HashSet<GLTFNodeIndex> &p_child_visited_set);
 	bool _capture_nodes_in_skin(Ref<GLTFState> p_state, Ref<GLTFSkin> p_skin,
 			const GLTFNodeIndex p_node_index);
 	void _capture_nodes_for_multirooted_skin(Ref<GLTFState> p_state, Ref<GLTFSkin> p_skin);

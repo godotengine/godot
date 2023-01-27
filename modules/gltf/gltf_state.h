@@ -89,6 +89,7 @@ class GLTFState : public Resource {
 	HashMap<GLTFSkeletonIndex, GLTFNodeIndex> skeleton_to_node;
 	Vector<Ref<GLTFAnimation>> animations;
 	HashMap<GLTFNodeIndex, Node *> scene_nodes;
+	HashMap<GLTFNodeIndex, ImporterMeshInstance3D *> scene_mesh_instances;
 
 	HashMap<ObjectID, GLTFSkeletonIndex> skeleton3d_to_gltf_skeleton;
 	HashMap<ObjectID, HashMap<ObjectID, GLTFSkinIndex>> skin_and_skeleton3d_to_gltf_skin;
@@ -182,6 +183,7 @@ public:
 	void set_animations(TypedArray<GLTFAnimation> p_animations);
 
 	Node *get_scene_node(GLTFNodeIndex idx);
+	ImporterMeshInstance3D *get_scene_mesh_instance(GLTFNodeIndex idx);
 
 	int get_animation_players_count(int idx);
 
