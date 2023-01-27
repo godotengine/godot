@@ -71,7 +71,7 @@ namespace GodotTools.Export
             }
         }
 
-        public override void _ExportBegin(string[] features, bool isDebug, string path, long flags)
+        public override void _ExportBegin(string[] features, bool isDebug, string path, uint flags)
         {
             base._ExportBegin(features, isDebug, path, flags);
 

@@ -1549,7 +1549,9 @@ void Object::_bind_methods() {
 #define BIND_OBJ_CORE_METHOD(m_method) \
 	::ClassDB::add_virtual_method(get_class_static(), m_method, true, Vector<String>(), true);
 
-	BIND_OBJ_CORE_METHOD(MethodInfo("_notification", PropertyInfo(Variant::INT, "what")));
+	MethodInfo notification_mi("_notification", PropertyInfo(Variant::INT, "what"));
+	notification_mi.arguments_metadata.push_back(GodotTypeInfo::Metadata::METADATA_INT_IS_INT32);
+	BIND_OBJ_CORE_METHOD(notification_mi);
 	BIND_OBJ_CORE_METHOD(MethodInfo(Variant::BOOL, "_set", PropertyInfo(Variant::STRING_NAME, "property"), PropertyInfo(Variant::NIL, "value")));
 #ifdef TOOLS_ENABLED
 	MethodInfo miget("_get", PropertyInfo(Variant::STRING_NAME, "property"));
