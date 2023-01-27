@@ -265,7 +265,7 @@ AStarGrid2D::Point *AStarGrid2D::_jump(Point *p_from, Point *p_to) {
 	return nullptr;
 }
 
-void AStarGrid2D::_get_nbors(Point *p_point, List<Point *> &r_nbors) {
+void AStarGrid2D::_get_nbors(Point *p_point, LocalVector<Point *> &r_nbors) {
 	bool ts0 = false, td0 = false,
 		 ts1 = false, td1 = false,
 		 ts2 = false, td2 = false,
@@ -378,7 +378,7 @@ bool AStarGrid2D::_solve(Point *p_begin_point, Point *p_end_point) {
 
 	bool found_route = false;
 
-	Vector<Point *> open_list;
+	LocalVector<Point *> open_list;
 	SortArray<Point *, SortPoints> sorter;
 
 	p_begin_point->g_score = 0;
@@ -394,14 +394,14 @@ bool AStarGrid2D::_solve(Point *p_begin_point, Point *p_end_point) {
 			break;
 		}
 
-		sorter.pop_heap(0, open_list.size(), open_list.ptrw()); // Remove the current point from the open list.
+		sorter.pop_heap(0, open_list.size(), open_list.ptr()); // Remove the current point from the open list.
 		open_list.remove_at(open_list.size() - 1);
 		p->closed_pass = pass; // Mark the point as closed.
 
-		List<Point *> nbors;
+		LocalVector<Point *> nbors;
 		_get_nbors(p, nbors);
-		for (List<Point *>::Element *E = nbors.front(); E; E = E->next()) {
-			Point *e = E->get(); // The neighbor point.
+
+		for (Point *e : nbors) {
 			real_t weight_scale = 1.0;
 
 			if (jumping_enabled) {
@@ -433,9 +433,9 @@ bool AStarGrid2D::_solve(Point *p_begin_point, Point *p_end_point) {
 			e->f_score = e->g_score + _estimate_cost(e->id, p_end_point->id);
 
 			if (new_point) { // The position of the new points is already known.
-				sorter.push_heap(0, open_list.size() - 1, 0, e, open_list.ptrw());
+				sorter.push_heap(0, open_list.size() - 1, 0, e, open_list.ptr());
 			} else {
-				sorter.push_heap(0, open_list.find(e), 0, e, open_list.ptrw());
+				sorter.push_heap(0, open_list.find(e), 0, e, open_list.ptr());
 			}
 		}
 	}
