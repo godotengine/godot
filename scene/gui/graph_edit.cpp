@@ -920,7 +920,8 @@ void GraphEdit::_draw_connection_line(CanvasItem *p_where, const Vector2 &p_from
 		scaled_points.push_back(points[i] * p_zoom);
 	}
 
-	p_where->draw_polyline_colors(scaled_points, colors, Math::floor(p_width * get_theme_default_base_scale()), lines_antialiased);
+	// Thickness below 0.5 doesn't look good on the graph or its minimap.
+	p_where->draw_polyline_colors(scaled_points, colors, MAX(0.5, Math::floor(p_width * get_theme_default_base_scale())), lines_antialiased);
 }
 
 void GraphEdit::_connections_layer_draw() {
@@ -1088,7 +1089,7 @@ void GraphEdit::_minimap_draw() {
 			from_color = from_color.lerp(activity_color, E.activity);
 			to_color = to_color.lerp(activity_color, E.activity);
 		}
-		_draw_connection_line(minimap, from_position, to_position, from_color, to_color, 0.1, minimap->_convert_from_graph_position(Vector2(zoom, zoom)).length());
+		_draw_connection_line(minimap, from_position, to_position, from_color, to_color, 0.5, minimap->_convert_from_graph_position(Vector2(zoom, zoom)).length());
 	}
 
 	// Draw the "camera" viewport.
