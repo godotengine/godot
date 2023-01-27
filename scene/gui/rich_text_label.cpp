@@ -2808,7 +2808,7 @@ void RichTextLabel::_process_line_caches() {
 
 	int ctrl_height = get_size().height;
 	int fi = main->first_invalid_line.load();
-	int total_chars = (fi == 0) ? 0 : (main->lines[fi].char_offset + main->lines[fi].char_count);
+	int total_chars = main->lines[fi].char_offset;
 
 	float total_height = (fi == 0) ? 0 : _calculate_line_vertical_offset(main->lines[fi - 1]);
 	for (int i = fi; i < (int)main->lines.size(); i++) {
