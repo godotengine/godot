@@ -39,32 +39,33 @@
 
 class Semaphore {
 private:
-	mutable std::mutex mutex_;
-	mutable std::condition_variable condition_;
-	mutable unsigned long count_ = 0; // Initialized as locked.
+	mutable std::mutex mutex;
+	mutable std::condition_variable condition;
+	mutable uint32_t count = 0; // Initialized as locked.
 
 public:
 	_ALWAYS_INLINE_ void post() const {
-		std::lock_guard<decltype(mutex_)> lock(mutex_);
-		++count_;
-		condition_.notify_one();
+		std::lock_guard lock(mutex);
+		count++;
+		condition.notify_one();
 	}
 
 	_ALWAYS_INLINE_ void wait() const {
-		std::unique_lock<decltype(mutex_)> lock(mutex_);
-		while (!count_) { // Handle spurious wake-ups.
-			condition_.wait(lock);
+		std::unique_lock lock(mutex);
+		while (!count) { // Handle spurious wake-ups.
+			condition.wait(lock);
 		}
-		--count_;
+		count--;
 	}
 
 	_ALWAYS_INLINE_ bool try_wait() const {
-		std::lock_guard<decltype(mutex_)> lock(mutex_);
-		if (count_) {
-			--count_;
+		std::lock_guard lock(mutex);
+		if (count) {
+			count--;
 			return true;
+		} else {
+			return false;
 		}
-		return false;
 	}
 };
 
