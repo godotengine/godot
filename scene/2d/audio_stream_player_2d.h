@@ -56,6 +56,7 @@ private:
 
 	SafeFlag active{ false };
 	SafeNumeric<float> setplay{ -1.0 };
+	Ref<AudioStreamPlayback> setplayback;
 
 	Vector<AudioFrame> volume_vector;
 
@@ -129,6 +130,7 @@ public:
 	void set_panning_strength(float p_panning_strength);
 	float get_panning_strength() const;
 
+	bool has_stream_playback();
 	Ref<AudioStreamPlayback> get_stream_playback();
 
 	AudioStreamPlayer2D();

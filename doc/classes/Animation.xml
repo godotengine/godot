@@ -104,6 +104,13 @@
 				[param stream] is the [AudioStream] resource to play. [param start_offset] is the number of seconds cut off at the beginning of the audio stream, while [param end_offset] is at the ending.
 			</description>
 		</method>
+		<method name="audio_track_is_use_blend" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="track_idx" type="int" />
+			<description>
+				Returns [code]true[/code] if the track at [code]idx[/code] will be blended with other animations.
+			</description>
+		</method>
 		<method name="audio_track_set_key_end_offset">
 			<return type="void" />
 			<param index="0" name="track_idx" type="int" />
@@ -129,6 +136,14 @@
 			<param index="2" name="stream" type="Resource" />
 			<description>
 				Sets the stream of the key identified by [param key_idx] to value [param stream]. The [param track_idx] must be the index of an Audio Track.
+			</description>
+		</method>
+		<method name="audio_track_set_use_blend">
+			<return type="void" />
+			<param index="0" name="track_idx" type="int" />
+			<param index="1" name="enable" type="bool" />
+			<description>
+				Sets whether the track will be blended with other animations. If [code]true[/code], the audio playback volume changes depending on the blend value.
 			</description>
 		</method>
 		<method name="bezier_track_get_key_in_handle" qualifiers="const">
