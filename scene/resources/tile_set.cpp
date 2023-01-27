@@ -991,6 +991,28 @@ uint32_t TileSet::get_navigation_layer_layers(int p_layer_index) const {
 	return navigation_layers[p_layer_index].layers;
 }
 
+void TileSet::set_navigation_layer_layer_value(int p_layer_index, int p_layer_number, bool p_value) {
+	ERR_FAIL_COND_MSG(p_layer_number < 1, "Navigation layer number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_MSG(p_layer_number > 32, "Navigation layer number must be between 1 and 32 inclusive.");
+
+	uint32_t _navigation_layers = get_navigation_layer_layers(p_layer_index);
+
+	if (p_value) {
+		_navigation_layers |= 1 << (p_layer_number - 1);
+	} else {
+		_navigation_layers &= ~(1 << (p_layer_number - 1));
+	}
+
+	set_navigation_layer_layers(p_layer_index, _navigation_layers);
+}
+
+bool TileSet::get_navigation_layer_layer_value(int p_layer_index, int p_layer_number) const {
+	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Navigation layer number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_V_MSG(p_layer_number > 32, false, "Navigation layer number must be between 1 and 32 inclusive.");
+
+	return get_navigation_layer_layers(p_layer_index) & (1 << (p_layer_number - 1));
+}
+
 // Custom data.
 int TileSet::get_custom_data_layers_count() const {
 	return custom_data_layers.size();
@@ -3387,6 +3409,8 @@ void TileSet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_navigation_layer", "layer_index"), &TileSet::remove_navigation_layer);
 	ClassDB::bind_method(D_METHOD("set_navigation_layer_layers", "layer_index", "layers"), &TileSet::set_navigation_layer_layers);
 	ClassDB::bind_method(D_METHOD("get_navigation_layer_layers", "layer_index"), &TileSet::get_navigation_layer_layers);
+	ClassDB::bind_method(D_METHOD("set_navigation_layer_layer_value", "layer_index", "layer_number", "value"), &TileSet::set_navigation_layer_layer_value);
+	ClassDB::bind_method(D_METHOD("get_navigation_layer_layer_value", "layer_index", "layer_number"), &TileSet::get_navigation_layer_layer_value);
 
 	// Custom data
 	ClassDB::bind_method(D_METHOD("get_custom_data_layers_count"), &TileSet::get_custom_data_layers_count);
