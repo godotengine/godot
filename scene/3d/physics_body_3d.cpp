@@ -1523,12 +1523,26 @@ void CharacterBody3D::_move_and_slide_floating(double p_delta) {
 			CollisionState result_state;
 			_set_collision_direction(result, result_state);
 
-			if (wall_min_slide_angle != 0 && Math::acos(result.collision_normal.dot(-velocity.normalized())) < wall_min_slide_angle + FLOOR_ANGLE_THRESHOLD) {
+			if (wall_min_slide_angle != 0 && Math::acos(wall_normal.dot(-velocity.normalized())) < wall_min_slide_angle + FLOOR_ANGLE_THRESHOLD) {
 				// hit a wall at a sharp enough angle that we should stop
 				if (result.travel.length() <= margin + CMP_EPSILON) {
 					// Cancels the motion.
-					Transform2D gt = get_global_transform();
-					gt.columns[2] -= result.travel;
+					Transform3D gt = get_global_transform();
+					real_t travel_total = result.travel.length();
+					real_t cancel_dist_max = MIN(0.1, margin * 20);
+					if (travel_total <= margin + CMP_EPSILON) {
+						gt.origin -= result.travel;
+						result.travel = Vector3(); // Cancel for constant speed computation.
+					} else if (travel_total < cancel_dist_max) { // If the movement is large the body can be prevented from reaching the walls.
+						gt.origin -= result.travel.slide(up_direction);
+						// Keep remaining motion in sync with amount canceled.
+						motion = motion.slide(up_direction);
+						result.travel = Vector3();
+					} else {
+						// Travel is too high to be safely cancelled, we take it into account.
+						result.travel = result.travel.slide(up_direction);
+						motion = motion.normalized() * result.travel.length();
+					}
 					set_global_transform(gt);
 				}
 				motion = Vector3();
