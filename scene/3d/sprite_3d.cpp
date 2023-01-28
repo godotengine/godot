@@ -1182,8 +1182,9 @@ void AnimatedSprite3D::play(const StringName &p_name, float p_custom_scale, bool
 		}
 	}
 
-	notify_property_list_changed();
 	set_process_internal(true);
+	notify_property_list_changed();
+	_queue_redraw();
 }
 
 void AnimatedSprite3D::play_backwards(const StringName &p_name) {
