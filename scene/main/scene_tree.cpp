@@ -444,9 +444,8 @@ void SceneTree::set_group(const StringName &p_group, const String &p_name, const
 
 void SceneTree::initialize() {
 	ERR_FAIL_NULL(root);
-	initialized = true;
-	root->_set_tree(this);
 	MainLoop::initialize();
+	root->_set_tree(this);
 }
 
 bool SceneTree::physics_process(double p_time) {
@@ -618,20 +617,18 @@ void SceneTree::finalize() {
 
 	_flush_ugc();
 
-	initialized = false;
-
-	MainLoop::finalize();
-
 	if (root) {
 		root->_set_tree(nullptr);
 		root->_propagate_after_exit_tree();
 		memdelete(root); //delete root
 		root = nullptr;
+
+		// In case deletion of some objects was queued when destructing the `root`.
+		// E.g. if `queue_free()` was called for some node outside the tree when handling NOTIFICATION_PREDELETE for some node in the tree.
+		_flush_delete_queue();
 	}
 
-	// In case deletion of some objects was queued when destructing the `root`.
-	// E.g. if `queue_free()` was called for some node outside the tree when handling NOTIFICATION_PREDELETE for some node in the tree.
-	_flush_delete_queue();
+	MainLoop::finalize();
 
 	// Cleanup timers.
 	for (Ref<SceneTreeTimer> &timer : timers) {
