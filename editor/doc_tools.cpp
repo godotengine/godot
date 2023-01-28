@@ -1372,10 +1372,7 @@ static void _write_string(Ref<FileAccess> f, int p_tablevel, const String &p_str
 	if (p_string.is_empty()) {
 		return;
 	}
-	String tab;
-	for (int i = 0; i < p_tablevel; i++) {
-		tab += "\t";
-	}
+	String tab = String("\t").repeat(p_tablevel);
 	f->store_string(tab + p_string + "\n");
 }
 
