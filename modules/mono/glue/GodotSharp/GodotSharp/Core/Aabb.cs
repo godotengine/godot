@@ -50,6 +50,15 @@ namespace Godot
         }
 
         /// <summary>
+        /// The volume of this <see cref="Aabb"/>.
+        /// See also <see cref="HasVolume"/>.
+        /// </summary>
+        public readonly real_t Volume
+        {
+            get { return _size.X * _size.Y * _size.Z; }
+        }
+
+        /// <summary>
         /// Returns an <see cref="Aabb"/> with equivalent position and size, modified so that
         /// the most-negative corner is the origin and the size is positive.
         /// </summary>
@@ -312,15 +321,6 @@ namespace Godot
         }
 
         /// <summary>
-        /// Returns the volume of the <see cref="Aabb"/>.
-        /// </summary>
-        /// <returns>The volume.</returns>
-        public readonly real_t GetVolume()
-        {
-            return _size.X * _size.Y * _size.Z;
-        }
-
-        /// <summary>
         /// Returns a copy of the <see cref="Aabb"/> grown a given amount of units towards all the sides.
         /// </summary>
         /// <param name="by">The amount to grow by.</param>
@@ -383,7 +383,7 @@ namespace Godot
         /// Returns <see langword="true"/> if the <see cref="Aabb"/> has
         /// area, and <see langword="false"/> if the <see cref="Aabb"/>
         /// is linear, empty, or has a negative <see cref="Size"/>.
-        /// See also <see cref="GetVolume"/>.
+        /// See also <see cref="Volume"/>.
         /// </summary>
         /// <returns>
         /// A <see langword="bool"/> for whether or not the <see cref="Aabb"/> has volume.
