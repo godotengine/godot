@@ -6,6 +6,11 @@
 	<description>
 		A unit of execution in a process. Can run methods on [Object]s simultaneously. The use of synchronization via [Mutex] or [Semaphore] is advised if working with shared objects.
 		[b]Note:[/b] Breakpoints won't break on code if it's running in a thread. This is a current limitation of the GDScript debugger.
+		[b]Warning:[/b]
+		To guarantee that the operating system is able to perform proper cleanup (no crashes, no deadlocks), these conditions must be met by the time a [Thread]'s reference count reaches zero and therefore it is destroyed:
+		- It must not have any [Mutex] objects locked.
+		- It must not be waiting on any [Semaphore] objects.
+		- [method wait_to_finish] should have been called on it.
 	</description>
 	<tutorials>
 		<link title="Using multiple threads">$DOCS_URL/tutorials/performance/threads/using_multiple_threads.html</link>

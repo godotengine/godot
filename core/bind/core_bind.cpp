@@ -2807,7 +2807,27 @@ void _Thread::_start_func(void *ud) {
 
 	Thread::set_name(t->target_method);
 
-	t->ret = target_instance->call(t->target_method, arg, argc, ce);
+	// To avoid a circular reference between the thread and the script which can possibly contain a reference
+	// to the thread, we will do the call (keeping a reference up to that point) and then break chains with it.
+	// When the call returns, we will reference the thread again if possible.
+	ObjectID th_instance_id = t->get_instance_id();
+	StringName target_method = t->target_method;
+	t = Ref<_Thread>();
+
+	Variant ret;
+	ret = target_instance->call(target_method, arg, argc, ce);
+
+	// If script properly kept a reference to the thread, we should be able to re-reference it now
+	// (well, or if the call failed, since we had to break chains anyway because the outcome isn't known upfront).
+	t = Ref<_Thread>(ObjectDB::get_instance(th_instance_id));
+	if (t.is_valid()) {
+		t->ret = ret;
+		t->running.clear();
+	} else {
+		// We could print a warning here, but the Thread object will be eventually destroyed
+		// noticing wait_to_finish() hasn't been called on it, and it will print a warning itself.
+	}
+
 	if (ce.error != Variant::CallError::CALL_OK) {
 		String reason;
 		switch (ce.error) {
@@ -2826,12 +2846,8 @@ void _Thread::_start_func(void *ud) {
 			default: {
 			}
 		}
-
-		t->running.clear();
-		ERR_FAIL_MSG("Could not call function '" + t->target_method.operator String() + "' to start thread " + t->get_id() + ": " + reason + ".");
+		ERR_FAIL_MSG("Could not call function '" + target_method.operator String() + "' to start thread " + uitos(Thread::get_caller_id()) + ": " + reason + ".");
 	}
-
-	t->running.clear();
 }
 
 Error _Thread::start(Object *p_instance, const StringName &p_method, const Variant &p_userdata, Priority p_priority) {

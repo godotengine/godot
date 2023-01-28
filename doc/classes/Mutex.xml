@@ -5,6 +5,11 @@
 	</brief_description>
 	<description>
 		A synchronization mutex (mutual exclusion). This is used to synchronize multiple [Thread]s, and is equivalent to a binary [Semaphore]. It guarantees that only one thread can ever acquire the lock at a time. A mutex can be used to protect a critical section; however, be careful to avoid deadlocks.
+		It's of the recursive kind, so it can be locked multiple times by one thread, provided it also unlocks it as many times.
+		[b]Warning:[/b]
+		To guarantee that the operating system is able to perform proper cleanup (no crashes, no deadlocks), these conditions must be met:
+		- By the time a [Mutex]'s reference count reaches zero and therefore it is destroyed, no threads (including the one on which the destruction will happen) must have it locked.
+		- By the time a [Thread]'s reference count reaches zero and therefore it is destroyed, it must not have any mutex locked.
 	</description>
 	<tutorials>
 		<link>$DOCS_URL/tutorials/performance/threads/using_multiple_threads.html</link>
@@ -29,6 +34,7 @@
 			<description>
 				Unlocks this [Mutex], leaving it to other threads.
 				[b]Note:[/b] If a thread called [method lock] or [method try_lock] multiple times while already having ownership of the mutex, it must also call [method unlock] the same number of times in order to unlock it correctly.
+				[b]Warning:[/b] Calling [method unlock] more times that [method lock] on a given thread, thus ending up trying to unlock a non-locked mutex, is wrong and may causes crashes or deadlocks.
 			</description>
 		</method>
 	</methods>
