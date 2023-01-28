@@ -48,12 +48,6 @@
             android:name="xr_hand_tracking_version_name"
             android:value="xr_hand_tracking_version_value"/>
 
-        <!-- Supported Meta devices -->
-        <!-- This is removed by the exporter if the xr mode is not VR. -->
-        <meta-data
-            android:name="com.oculus.supportedDevices"
-            android:value="all" />
-
         <activity
             android:name=".GodotApp"
             android:label="@string/godot_project_name_string"
@@ -65,9 +59,6 @@
             android:configChanges="orientation|keyboardHidden|screenSize|smallestScreenSize|density|keyboard|navigation|screenLayout|uiMode"
             android:resizeableActivity="false"
             tools:ignore="UnusedAttribute" >
-
-            <!-- Focus awareness metadata is removed at export time if the xr mode is not VR. -->
-            <meta-data android:name="com.oculus.vr.focusaware" android:value="true" />
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
