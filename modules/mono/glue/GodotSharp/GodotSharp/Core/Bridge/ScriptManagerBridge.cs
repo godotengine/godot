@@ -243,9 +243,33 @@ namespace Godot.Bridge
 
             if (wrapperType == null)
             {
-                wrapperType = AppDomain.CurrentDomain.GetAssemblies()
-                    .FirstOrDefault(a => a.GetName().Name == "GodotSharpEditor")?
-                    .GetType("Godot." + nativeTypeNameStr);
+                wrapperType = GetTypeByGodotClassAttr(typeof(GodotObject).Assembly, nativeTypeNameStr);
+            }
+
+            if (wrapperType == null)
+            {
+                var editorAssembly = AppDomain.CurrentDomain.GetAssemblies()
+                    .FirstOrDefault(a => a.GetName().Name == "GodotSharpEditor");
+                wrapperType = editorAssembly?.GetType("Godot." + nativeTypeNameStr);
+
+                if (wrapperType == null)
+                {
+                    wrapperType = GetTypeByGodotClassAttr(editorAssembly, nativeTypeNameStr);
+                }
+            }
+
+            static Type? GetTypeByGodotClassAttr(Assembly assembly, string nativeTypeNameStr)
+            {
+                var types = assembly.GetTypes();
+                foreach (var type in types)
+                {
+                    var attr = type.GetCustomAttribute<GodotClassNameAttribute>();
+                    if (attr?.Name == nativeTypeNameStr)
+                    {
+                        return type;
+                    }
+                }
+                return null;
             }
 
             static bool IsStatic(Type type) => type.IsAbstract && type.IsSealed;
