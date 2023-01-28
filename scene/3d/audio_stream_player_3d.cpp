@@ -284,14 +284,12 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 				volume_vector = _update_panning();
 			}
 
-			if (setplay.get() >= 0 && stream.is_valid()) {
+			if (setplayback.is_valid() && setplay.get() >= 0) {
 				active.set();
-				Ref<AudioStreamPlayback> new_playback = stream->instantiate_playback();
-				ERR_FAIL_COND_MSG(new_playback.is_null(), "Failed to instantiate playback.");
 				HashMap<StringName, Vector<AudioFrame>> bus_map;
 				bus_map[_get_actual_bus()] = volume_vector;
-				AudioServer::get_singleton()->start_playback_stream(new_playback, bus_map, setplay.get(), actual_pitch_scale, linear_attenuation, attenuation_filter_cutoff_hz);
-				stream_playbacks.push_back(new_playback);
+				AudioServer::get_singleton()->start_playback_stream(setplayback, bus_map, setplay.get(), actual_pitch_scale, linear_attenuation, attenuation_filter_cutoff_hz);
+				setplayback.unref();
 				setplay.set(-1);
 			}
 
@@ -580,14 +578,21 @@ void AudioStreamPlayer3D::play(float p_from_pos) {
 	if (stream->is_monophonic() && is_playing()) {
 		stop();
 	}
+	Ref<AudioStreamPlayback> stream_playback = stream->instantiate_playback();
+	ERR_FAIL_COND_MSG(stream_playback.is_null(), "Failed to instantiate playback.");
+
+	stream_playbacks.push_back(stream_playback);
+	setplayback = stream_playback;
 	setplay.set(p_from_pos);
 	active.set();
 	set_physics_process_internal(true);
 }
 
 void AudioStreamPlayer3D::seek(float p_seconds) {
-	stop();
-	play(p_seconds);
+	if (is_playing()) {
+		stop();
+		play(p_seconds);
+	}
 }
 
 void AudioStreamPlayer3D::stop() {
@@ -783,6 +788,10 @@ bool AudioStreamPlayer3D::get_stream_paused() const {
 	return false;
 }
 
+bool AudioStreamPlayer3D::has_stream_playback() {
+	return !stream_playbacks.is_empty();
+}
+
 Ref<AudioStreamPlayback> AudioStreamPlayer3D::get_stream_playback() {
 	ERR_FAIL_COND_V_MSG(stream_playbacks.is_empty(), Ref<AudioStreamPlayback>(), "Player is inactive. Call play() before requesting get_stream_playback().");
 	return stream_playbacks[stream_playbacks.size() - 1];
@@ -875,6 +884,7 @@ void AudioStreamPlayer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_panning_strength", "panning_strength"), &AudioStreamPlayer3D::set_panning_strength);
 	ClassDB::bind_method(D_METHOD("get_panning_strength"), &AudioStreamPlayer3D::get_panning_strength);
 
+	ClassDB::bind_method(D_METHOD("has_stream_playback"), &AudioStreamPlayer3D::has_stream_playback);
 	ClassDB::bind_method(D_METHOD("get_stream_playback"), &AudioStreamPlayer3D::get_stream_playback);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "stream", PROPERTY_HINT_RESOURCE_TYPE, "AudioStream"), "set_stream", "get_stream");

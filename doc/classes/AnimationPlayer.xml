@@ -232,6 +232,10 @@
 		<member name="assigned_animation" type="String" setter="set_assigned_animation" getter="get_assigned_animation">
 			If playing, the the current animation's key, otherwise, the animation last played. When set, this changes the animation, but will not play it unless already playing. See also [member current_animation].
 		</member>
+		<member name="audio_max_polyphony" type="int" setter="set_audio_max_polyphony" getter="get_audio_max_polyphony" default="32">
+			The number of possible simultaneous sounds for each of the assigned AudioStreamPlayers.
+			For example, if this value is [code]32[/code] and the animation has two audio tracks, the two [AudioStreamPlayer]s assigned can play simultaneously up to [code]32[/code] voices each.
+		</member>
 		<member name="autoplay" type="String" setter="set_autoplay" getter="get_autoplay" default="&quot;&quot;">
 			The key of the animation to play when the scene loads.
 		</member>

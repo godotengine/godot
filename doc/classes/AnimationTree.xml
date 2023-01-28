@@ -110,6 +110,10 @@
 		<member name="anim_player" type="NodePath" setter="set_animation_player" getter="get_animation_player" default="NodePath(&quot;&quot;)">
 			The path to the [AnimationPlayer] used for animating.
 		</member>
+		<member name="audio_max_polyphony" type="int" setter="set_audio_max_polyphony" getter="get_audio_max_polyphony" default="32">
+			The number of possible simultaneous sounds for each of the assigned AudioStreamPlayers.
+			For example, if this value is [code]32[/code] and the animation has two audio tracks, the two [AudioStreamPlayer]s assigned can play simultaneously up to [code]32[/code] voices each.
+		</member>
 		<member name="process_callback" type="int" setter="set_process_callback" getter="get_process_callback" enum="AnimationTree.AnimationProcessCallback" default="1">
 			The process mode of this [AnimationTree]. See [enum AnimationProcessCallback] for available modes.
 		</member>
