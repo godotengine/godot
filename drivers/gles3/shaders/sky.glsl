@@ -10,6 +10,9 @@ mode_cubemap_quarter_res = #define USE_CUBEMAP_PASS \n#define USE_QUARTER_RES_PA
 
 #[specializations]
 
+USE_MULTIVIEW = false
+USE_INVERTED_Y = true
+
 #[vertex]
 
 layout(location = 0) in vec2 vertex_attrib;
@@ -19,7 +22,11 @@ out vec2 uv_interp;
 
 void main() {
 	uv_interp = vertex_attrib;
+#ifdef USE_INVERTED_Y
 	gl_Position = vec4(uv_interp, 1.0, 1.0);
+#else
+	gl_Position = vec4(uv_interp.x, uv_interp.y * -1.0, 1.0, 1.0);
+#endif
 }
 
 /* clang-format off */
@@ -37,6 +44,9 @@ uniform samplerCube radiance; //texunit:-1
 #ifdef USE_CUBEMAP_PASS
 uniform samplerCube half_res; //texunit:-2
 uniform samplerCube quarter_res; //texunit:-3
+#elif defined(USE_MULTIVIEW)
+uniform sampler2DArray half_res; //texunit:-2
+uniform sampler2DArray quarter_res; //texunit:-3
 #else
 uniform sampler2D half_res; //texunit:-2
 uniform sampler2D quarter_res; //texunit:-3
@@ -102,6 +112,15 @@ uniform float fog_density;
 uniform float z_far;
 uniform uint directional_light_count;
 
+#ifdef USE_MULTIVIEW
+layout(std140) uniform MultiviewData { // ubo:5
+	highp mat4 projection_matrix_view[MAX_VIEWS];
+	highp mat4 inv_projection_matrix_view[MAX_VIEWS];
+	highp vec4 eye_offset[MAX_VIEWS];
+}
+multiview_data;
+#endif
+
 layout(location = 0) out vec4 frag_color;
 
 #ifdef USE_DEBANDING
@@ -115,9 +134,20 @@ vec3 interleaved_gradient_noise(vec2 pos) {
 
 void main() {
 	vec3 cube_normal;
+#ifdef USE_MULTIVIEW
+	// In multiview our projection matrices will contain positional and rotational offsets that we need to properly unproject.
+	vec4 unproject = vec4(uv_interp.x, uv_interp.y, 1.0, 1.0);
+	vec4 unprojected = multiview_data.inv_projection_matrix_view[ViewIndex] * unproject;
+	cube_normal = unprojected.xyz / unprojected.w;
+	cube_normal += multiview_data.eye_offset[ViewIndex].xyz;
+#else
 	cube_normal.z = -1.0;
 	cube_normal.x = (uv_interp.x + projection.x) / projection.y;
 	cube_normal.y = (-uv_interp.y - projection.z) / projection.w;
+#endif
+#ifndef USE_INVERTED_Y
+	cube_normal.y *= -1.0;
+#endif
 	cube_normal = mat3(orientation) * cube_normal;
 	cube_normal = normalize(cube_normal);
 
@@ -146,10 +176,18 @@ void main() {
 #endif
 #else
 #ifdef USES_HALF_RES_COLOR
+#ifdef USE_MULTIVIEW
+	half_res_color = textureLod(sampler2DArray(half_res, material_samplers[SAMPLER_LINEAR_CLAMP]), vec3(uv, ViewIndex), 0.0);
+#else
 	half_res_color = textureLod(sampler2D(half_res, material_samplers[SAMPLER_LINEAR_CLAMP]), uv, 0.0);
 #endif
+#endif
 #ifdef USES_QUARTER_RES_COLOR
+#ifdef USE_MULTIVIEW
+	quarter_res_color = textureLod(sampler2DArray(quarter_res, material_samplers[SAMPLER_LINEAR_CLAMP]), vec3(uv, ViewIndex), 0.0);
+#else
 	quarter_res_color = textureLod(sampler2D(quarter_res, material_samplers[SAMPLER_LINEAR_CLAMP]), uv, 0.0);
+#endif
 #endif
 #endif
 
