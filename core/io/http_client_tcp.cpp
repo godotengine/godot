@@ -364,7 +364,6 @@ Error HTTPClientTCP::poll() {
 						if (!handshaking) {
 							// Connect the StreamPeerTLS and start handshaking.
 							tls_conn = Ref<StreamPeerTLS>(StreamPeerTLS::create());
-							tls_conn->set_blocking_handshake_enabled(false);
 							Error err = tls_conn->connect_to_stream(tcp_connection, conn_host, tls_options);
 							if (err != OK) {
 								close();

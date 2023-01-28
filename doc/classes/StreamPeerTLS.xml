@@ -53,10 +53,6 @@
 			</description>
 		</method>
 	</methods>
-	<members>
-		<member name="blocking_handshake" type="bool" setter="set_blocking_handshake_enabled" getter="is_blocking_handshake_enabled" default="true">
-		</member>
-	</members>
 	<constants>
 		<constant name="STATUS_DISCONNECTED" value="0" enum="Status">
 			A status representing a [StreamPeerTLS] that is disconnected.

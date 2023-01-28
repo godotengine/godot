@@ -80,22 +80,17 @@ void StreamPeerMbedTLS::_cleanup() {
 }
 
 Error StreamPeerMbedTLS::_do_handshake() {
-	int ret = 0;
-	while ((ret = mbedtls_ssl_handshake(tls_ctx->get_context())) != 0) {
-		if (ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE) {
-			// An error occurred.
-			ERR_PRINT("TLS handshake error: " + itos(ret));
-			TLSContextMbedTLS::print_mbedtls_error(ret);
-			disconnect_from_stream();
-			status = STATUS_ERROR;
-			return FAILED;
-		}
-
-		// Handshake is still in progress.
-		if (!blocking_handshake) {
-			// Will retry via poll later
-			return OK;
-		}
+	int ret = mbedtls_ssl_handshake(tls_ctx->get_context());
+	if (ret == MBEDTLS_ERR_SSL_WANT_READ || ret == MBEDTLS_ERR_SSL_WANT_WRITE) {
+		// Handshake is still in progress, will retry via poll later.
+		return OK;
+	} else if (ret != 0) {
+		// An error occurred.
+		ERR_PRINT("TLS handshake error: " + itos(ret));
+		TLSContextMbedTLS::print_mbedtls_error(ret);
+		disconnect_from_stream();
+		status = STATUS_ERROR;
+		return FAILED;
 	}
 
 	status = STATUS_CONNECTED;
@@ -306,10 +301,8 @@ StreamPeerTLS *StreamPeerMbedTLS::_create_func() {
 
 void StreamPeerMbedTLS::initialize_tls() {
 	_create = _create_func;
-	available = true;
 }
 
 void StreamPeerMbedTLS::finalize_tls() {
-	available = false;
 	_create = nullptr;
 }
