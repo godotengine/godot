@@ -352,6 +352,18 @@ void Label::_notification(int p_what) {
 			for (const RID &line_rid : lines_rid) {
 				if (!TS->shaped_text_is_ready(line_rid)) {
 					lines_dirty = true;
+<<<<<<< HEAD
+=======
+					break;
+				}
+			}
+
+			if (dirty || font_dirty || lines_dirty) {
+				_shape();
+				if (lines_dirty) {
+					// There will be another pass.
+					queue_redraw();
+>>>>>>> 5ffd13dfa5 (Mark dirty flags when shaped texts are invalidated)
 					break;
 				}
 			}
