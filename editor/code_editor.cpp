@@ -143,7 +143,9 @@ void FindReplaceBar::unhandled_input(const Ref<InputEvent> &p_event) {
 }
 
 bool FindReplaceBar::_search(uint32_t p_flags, int p_from_line, int p_from_col) {
-	text_editor->remove_secondary_carets();
+	if (!preserve_cursor) {
+		text_editor->remove_secondary_carets();
+	}
 	String text = get_search_text();
 	Point2i pos = text_editor->search(text, p_flags, p_from_line, p_from_col);
 
