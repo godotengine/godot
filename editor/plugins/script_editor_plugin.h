@@ -96,6 +96,24 @@ public:
 	virtual Ref<EditorSyntaxHighlighter> _create() const override;
 };
 
+class EditorJSONSyntaxHighlighter : public EditorSyntaxHighlighter {
+	GDCLASS(EditorJSONSyntaxHighlighter, EditorSyntaxHighlighter)
+
+private:
+	Ref<CodeHighlighter> highlighter;
+
+public:
+	virtual void _update_cache() override;
+	virtual Dictionary _get_line_syntax_highlighting_impl(int p_line) override { return highlighter->get_line_syntax_highlighting(p_line); }
+
+	virtual PackedStringArray _get_supported_languages() const override { return PackedStringArray{ "json" }; }
+	virtual String _get_name() const override { return TTR("JSON"); }
+
+	virtual Ref<EditorSyntaxHighlighter> _create() const override;
+
+	EditorJSONSyntaxHighlighter() { highlighter.instantiate(); }
+};
+
 ///////////////////////////////////////////////////////////////////////////////
 
 class ScriptEditorQuickOpen : public ConfirmationDialog {
