@@ -151,7 +151,7 @@
 		</method>
 		<method name="notify_group_flags">
 			<return type="void" />
-			<param index="0" name="call_flags" type="int" />
+			<param index="0" name="call_flags" type="int" enum="SceneTree.GroupCallFlags" is_bitfield="true" />
 			<param index="1" name="group" type="StringName" />
 			<param index="2" name="notification" type="int" />
 			<description>
@@ -195,7 +195,7 @@
 		</method>
 		<method name="set_group_flags">
 			<return type="void" />
-			<param index="0" name="call_flags" type="int" />
+			<param index="0" name="call_flags" type="int" enum="SceneTree.GroupCallFlags" is_bitfield="true" />
 			<param index="1" name="group" type="StringName" />
 			<param index="2" name="property" type="String" />
 			<param index="3" name="value" type="Variant" />
@@ -308,16 +308,16 @@
 		</signal>
 	</signals>
 	<constants>
-		<constant name="GROUP_CALL_DEFAULT" value="0" enum="GroupCallFlags">
+		<constant name="GROUP_CALL_DEFAULT" value="0" enum="GroupCallFlags" is_bitfield="true">
 			Call a group with no flags (default).
 		</constant>
-		<constant name="GROUP_CALL_REVERSE" value="1" enum="GroupCallFlags">
+		<constant name="GROUP_CALL_REVERSE" value="1" enum="GroupCallFlags" is_bitfield="true">
 			Call a group in reverse scene order.
 		</constant>
-		<constant name="GROUP_CALL_DEFERRED" value="2" enum="GroupCallFlags">
+		<constant name="GROUP_CALL_DEFERRED" value="2" enum="GroupCallFlags" is_bitfield="true">
 			Call a group at the end of the current frame (process or physics).
 		</constant>
-		<constant name="GROUP_CALL_UNIQUE" value="4" enum="GroupCallFlags">
+		<constant name="GROUP_CALL_UNIQUE" value="4" enum="GroupCallFlags" is_bitfield="true">
 			Call a group only once even if the call is executed many times.
 			[b]Note:[/b] Arguments are not taken into account when deciding whether the call is unique or not. Therefore when the same method is called with different arguments, only the first call will be performed.
 		</constant>

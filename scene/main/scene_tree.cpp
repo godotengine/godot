@@ -226,7 +226,7 @@ void SceneTree::_update_group_order(Group &g) {
 	g.changed = false;
 }
 
-void SceneTree::call_group_flagsp(uint32_t p_call_flags, const StringName &p_group, const StringName &p_function, const Variant **p_args, int p_argcount) {
+void SceneTree::call_group_flagsp(BitField<GroupCallFlags> p_call_flags, const StringName &p_group, const StringName &p_function, const Variant **p_args, int p_argcount) {
 	Vector<Node *> nodes_copy;
 
 	{
@@ -241,7 +241,7 @@ void SceneTree::call_group_flagsp(uint32_t p_call_flags, const StringName &p_gro
 			return;
 		}
 
-		if (p_call_flags & GROUP_CALL_UNIQUE && p_call_flags & GROUP_CALL_DEFERRED) {
+		if (p_call_flags.has_flag(GROUP_CALL_UNIQUE) && p_call_flags.has_flag(GROUP_CALL_DEFERRED)) {
 			ERR_FAIL_COND(ugc_locked);
 
 			UGCall ug;
@@ -273,13 +273,13 @@ void SceneTree::call_group_flagsp(uint32_t p_call_flags, const StringName &p_gro
 		nodes_removed_on_group_call_lock++;
 	}
 
-	if (p_call_flags & GROUP_CALL_REVERSE) {
+	if (p_call_flags.has_flag(GROUP_CALL_REVERSE)) {
 		for (int i = gr_node_count - 1; i >= 0; i--) {
 			if (nodes_removed_on_group_call_lock && nodes_removed_on_group_call.has(gr_nodes[i])) {
 				continue;
 			}
 
-			if (!(p_call_flags & GROUP_CALL_DEFERRED)) {
+			if (!p_call_flags.has_flag(GROUP_CALL_DEFERRED)) {
 				Callable::CallError ce;
 				gr_nodes[i]->callp(p_function, p_args, p_argcount, ce);
 			} else {
@@ -293,7 +293,7 @@ void SceneTree::call_group_flagsp(uint32_t p_call_flags, const StringName &p_gro
 				continue;
 			}
 
-			if (!(p_call_flags & GROUP_CALL_DEFERRED)) {
+			if (!p_call_flags.has_flag(GROUP_CALL_DEFERRED)) {
 				Callable::CallError ce;
 				gr_nodes[i]->callp(p_function, p_args, p_argcount, ce);
 			} else {
@@ -311,7 +311,7 @@ void SceneTree::call_group_flagsp(uint32_t p_call_flags, const StringName &p_gro
 	}
 }
 
-void SceneTree::notify_group_flags(uint32_t p_call_flags, const StringName &p_group, int p_notification) {
+void SceneTree::notify_group_flags(BitField<GroupCallFlags> p_call_flags, const StringName &p_group, int p_notification) {
 	Vector<Node *> nodes_copy;
 	{
 		_THREAD_SAFE_METHOD_
@@ -337,13 +337,13 @@ void SceneTree::notify_group_flags(uint32_t p_call_flags, const StringName &p_gr
 		nodes_removed_on_group_call_lock++;
 	}
 
-	if (p_call_flags & GROUP_CALL_REVERSE) {
+	if (p_call_flags.has_flag(GROUP_CALL_REVERSE)) {
 		for (int i = gr_node_count - 1; i >= 0; i--) {
 			if (nodes_removed_on_group_call.has(gr_nodes[i])) {
 				continue;
 			}
 
-			if (!(p_call_flags & GROUP_CALL_DEFERRED)) {
+			if (!p_call_flags.has_flag(GROUP_CALL_DEFERRED)) {
 				gr_nodes[i]->notification(p_notification, true);
 			} else {
 				MessageQueue::get_singleton()->push_notification(gr_nodes[i], p_notification);
@@ -356,7 +356,7 @@ void SceneTree::notify_group_flags(uint32_t p_call_flags, const StringName &p_gr
 				continue;
 			}
 
-			if (!(p_call_flags & GROUP_CALL_DEFERRED)) {
+			if (!p_call_flags.has_flag(GROUP_CALL_DEFERRED)) {
 				gr_nodes[i]->notification(p_notification);
 			} else {
 				MessageQueue::get_singleton()->push_notification(gr_nodes[i], p_notification);
@@ -373,7 +373,7 @@ void SceneTree::notify_group_flags(uint32_t p_call_flags, const StringName &p_gr
 	}
 }
 
-void SceneTree::set_group_flags(uint32_t p_call_flags, const StringName &p_group, const String &p_name, const Variant &p_value) {
+void SceneTree::set_group_flags(BitField<GroupCallFlags> p_call_flags, const StringName &p_group, const String &p_name, const Variant &p_value) {
 	Vector<Node *> nodes_copy;
 	{
 		_THREAD_SAFE_METHOD_
@@ -399,13 +399,13 @@ void SceneTree::set_group_flags(uint32_t p_call_flags, const StringName &p_group
 		nodes_removed_on_group_call_lock++;
 	}
 
-	if (p_call_flags & GROUP_CALL_REVERSE) {
+	if (p_call_flags.has_flag(GROUP_CALL_REVERSE)) {
 		for (int i = gr_node_count - 1; i >= 0; i--) {
 			if (nodes_removed_on_group_call.has(gr_nodes[i])) {
 				continue;
 			}
 
-			if (!(p_call_flags & GROUP_CALL_DEFERRED)) {
+			if (!p_call_flags.has_flag(GROUP_CALL_DEFERRED)) {
 				gr_nodes[i]->set(p_name, p_value);
 			} else {
 				MessageQueue::get_singleton()->push_set(gr_nodes[i], p_name, p_value);
@@ -418,7 +418,7 @@ void SceneTree::set_group_flags(uint32_t p_call_flags, const StringName &p_group
 				continue;
 			}
 
-			if (!(p_call_flags & GROUP_CALL_DEFERRED)) {
+			if (!p_call_flags.has_flag(GROUP_CALL_DEFERRED)) {
 				gr_nodes[i]->set(p_name, p_value);
 			} else {
 				MessageQueue::get_singleton()->push_set(gr_nodes[i], p_name, p_value);
@@ -1596,7 +1596,7 @@ void SceneTree::_bind_methods() {
 
 	MethodInfo mi;
 	mi.name = "call_group_flags";
-	mi.arguments.push_back(PropertyInfo(Variant::INT, "flags"));
+	mi.arguments.push_back(PropertyInfo(Variant::INT, "flags", PROPERTY_HINT_FLAGS, "Default:0,Reverse:1,Deferred:2,Unique:4"));
 	mi.arguments.push_back(PropertyInfo(Variant::STRING_NAME, "group"));
 	mi.arguments.push_back(PropertyInfo(Variant::STRING_NAME, "method"));
 
@@ -1653,10 +1653,10 @@ void SceneTree::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("process_frame"));
 	ADD_SIGNAL(MethodInfo("physics_frame"));
 
-	BIND_ENUM_CONSTANT(GROUP_CALL_DEFAULT);
-	BIND_ENUM_CONSTANT(GROUP_CALL_REVERSE);
-	BIND_ENUM_CONSTANT(GROUP_CALL_DEFERRED);
-	BIND_ENUM_CONSTANT(GROUP_CALL_UNIQUE);
+	BIND_BITFIELD_FLAG(GROUP_CALL_DEFAULT);
+	BIND_BITFIELD_FLAG(GROUP_CALL_REVERSE);
+	BIND_BITFIELD_FLAG(GROUP_CALL_DEFERRED);
+	BIND_BITFIELD_FLAG(GROUP_CALL_UNIQUE);
 }
 
 SceneTree *SceneTree::singleton = nullptr;
