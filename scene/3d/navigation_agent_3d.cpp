@@ -212,9 +212,9 @@ NavigationAgent3D::~NavigationAgent3D() {
 void NavigationAgent3D::set_avoidance_enabled(bool p_enabled) {
 	avoidance_enabled = p_enabled;
 	if (avoidance_enabled) {
-		NavigationServer3D::get_singleton()->agent_set_callback(agent, get_instance_id(), "_avoidance_done");
+		NavigationServer3D::get_singleton()->agent_set_callback(agent, callable_mp(this, &NavigationAgent3D::_avoidance_done));
 	} else {
-		NavigationServer3D::get_singleton()->agent_set_callback(agent, ObjectID(), "_avoidance_done");
+		NavigationServer3D::get_singleton()->agent_set_callback(agent, Callable());
 	}
 }
 
@@ -224,7 +224,8 @@ bool NavigationAgent3D::get_avoidance_enabled() const {
 
 void NavigationAgent3D::set_agent_parent(Node *p_agent_parent) {
 	// remove agent from any avoidance map before changing parent or there will be leftovers on the RVO map
-	NavigationServer3D::get_singleton()->agent_set_callback(agent, ObjectID(), "_avoidance_done");
+	NavigationServer3D::get_singleton()->agent_set_callback(agent, Callable());
+
 	if (Object::cast_to<Node3D>(p_agent_parent) != nullptr) {
 		// place agent on navigation map first or else the RVO agent callback creation fails silently later
 		agent_parent = Object::cast_to<Node3D>(p_agent_parent);
@@ -233,6 +234,7 @@ void NavigationAgent3D::set_agent_parent(Node *p_agent_parent) {
 		} else {
 			NavigationServer3D::get_singleton()->agent_set_map(get_rid(), agent_parent->get_world_3d()->get_navigation_map());
 		}
+
 		// create new avoidance callback if enabled
 		set_avoidance_enabled(avoidance_enabled);
 	} else {

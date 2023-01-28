@@ -54,10 +54,6 @@
 	virtual void F_NAME(T_0 D_0, T_1 D_1) override; \
 	void MERGE(_cmd_, F_NAME)(T_0 D_0, T_1 D_1)
 
-#define COMMAND_4_DEF(F_NAME, T_0, D_0, T_1, D_1, T_2, D_2, T_3, D_3, D_3_DEF)  \
-	virtual void F_NAME(T_0 D_0, T_1 D_1, T_2 D_2, T_3 D_3 = D_3_DEF) override; \
-	void MERGE(_cmd_, F_NAME)(T_0 D_0, T_1 D_1, T_2 D_2, T_3 D_3)
-
 class GodotNavigationServer;
 
 struct SetCommand {
@@ -182,7 +178,7 @@ public:
 	COMMAND_2(agent_set_position, RID, p_agent, Vector3, p_position);
 	COMMAND_2(agent_set_ignore_y, RID, p_agent, bool, p_ignore);
 	virtual bool agent_is_map_changed(RID p_agent) const override;
-	COMMAND_4_DEF(agent_set_callback, RID, p_agent, ObjectID, p_object_id, StringName, p_method, Variant, p_udata, Variant());
+	COMMAND_2(agent_set_callback, RID, p_agent, Callable, p_callback);
 
 	COMMAND_1(free, RID, p_object);
 
@@ -198,6 +194,5 @@ public:
 
 #undef COMMAND_1
 #undef COMMAND_2
-#undef COMMAND_4_DEF
 
 #endif // GODOT_NAVIGATION_SERVER_H
