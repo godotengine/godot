@@ -441,7 +441,7 @@ void SceneImportSettings::_update_view_gizmos() {
 			// This collider_view doesn't have a mesh so we need to generate a new one.
 
 			// Generate the mesh collider.
-			Vector<Ref<Shape3D>> shapes = ResourceImporterScene::get_collision_shapes(mesh_node->get_mesh(), e.value.settings);
+			Vector<Ref<Shape3D>> shapes = ResourceImporterScene::get_collision_shapes(mesh_node->get_mesh(), e.value.settings, 1.0);
 			const Transform3D transform = ResourceImporterScene::get_collision_shapes_transform(e.value.settings);
 
 			Ref<ArrayMesh> collider_view_mesh;
