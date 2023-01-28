@@ -89,6 +89,8 @@ void AudioStreamPlayback::_bind_methods() {
 	GDVIRTUAL_BIND(_seek, "position")
 	GDVIRTUAL_BIND(_mix, "buffer", "rate_scale", "frames");
 	GDVIRTUAL_BIND(_tag_used_streams);
+
+	ADD_SIGNAL(MethodInfo("looped"));
 }
 //////////////////////////////
 
@@ -761,12 +763,18 @@ void AudioStreamPlaybackRandomizer::start(double p_from_pos) {
 
 	if (playing.is_valid()) {
 		playing->start(p_from_pos);
+		playing->connect(SNAME("looped"), callable_mp(this, &AudioStreamPlaybackRandomizer::_looped));
 	}
+}
+
+void AudioStreamPlaybackRandomizer::_looped() {
+	emit_signal(SNAME("looped"));
 }
 
 void AudioStreamPlaybackRandomizer::stop() {
 	if (playing.is_valid()) {
 		playing->stop();
+		playing->disconnect(SNAME("looped"), callable_mp(this, &AudioStreamPlaybackRandomizer::_looped));
 	}
 }
 

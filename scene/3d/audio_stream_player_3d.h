@@ -119,6 +119,8 @@ private:
 	float panning_strength = 1.0f;
 	float cached_global_panning_strength = 0.5f;
 
+	void _looped();
+
 protected:
 	void _validate_property(PropertyInfo &p_property) const;
 	void _notification(int p_what);

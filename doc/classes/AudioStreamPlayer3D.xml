@@ -115,6 +115,11 @@
 				Emitted when the audio stops playing.
 			</description>
 		</signal>
+		<signal name="looped">
+			<description>
+				Emitted when the audio loops.
+			</description>
+		</signal>
 	</signals>
 	<constants>
 		<constant name="ATTENUATION_INVERSE_DISTANCE" value="0" enum="AttenuationModel">

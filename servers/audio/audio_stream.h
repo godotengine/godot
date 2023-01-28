@@ -282,6 +282,8 @@ class AudioStreamPlaybackRandomizer : public AudioStreamPlayback {
 	float pitch_scale;
 	float volume_scale;
 
+	void _looped();
+
 public:
 	virtual void start(double p_from_pos = 0.0) override;
 	virtual void stop() override;

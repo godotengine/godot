@@ -69,6 +69,8 @@ private:
 	void _bus_layout_changed();
 	void _mix_to_bus(const AudioFrame *p_frames, int p_amount);
 
+	void _looped();
+
 	Vector<AudioFrame> _get_volume_vector();
 
 protected:

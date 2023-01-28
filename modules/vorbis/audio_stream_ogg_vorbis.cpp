@@ -114,7 +114,10 @@ int AudioStreamPlaybackOggVorbis::_mix_internal(AudioFrame *p_buffer, int p_fram
 				}
 
 				seek(vorbis_stream->loop_offset);
+
 				loops++;
+				emit_signal(SNAME("looped"));
+
 				// We still have buffer to fill, start from this element in the next iteration.
 				continue;
 			}
@@ -128,6 +131,8 @@ int AudioStreamPlaybackOggVorbis::_mix_internal(AudioFrame *p_buffer, int p_fram
 
 				seek(vorbis_stream->loop_offset);
 				loops++;
+				emit_signal(SNAME("looped"));
+
 				// We still have buffer to fill, start from this element in the next iteration.
 
 			} else {

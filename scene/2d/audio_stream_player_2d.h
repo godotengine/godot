@@ -74,6 +74,8 @@ private:
 	void _update_panning();
 	void _bus_layout_changed();
 
+	void _looped();
+
 	static void _listener_changed_cb(void *self) { reinterpret_cast<AudioStreamPlayer2D *>(self)->_update_panning(); }
 
 	uint32_t area_mask = 1;
