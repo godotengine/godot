@@ -548,7 +548,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			cpp_cond->set_text(0, "<" + vformat(TTR("%s Error"), source_language_name) + ">");
 			cpp_cond->set_text(1, oe.error);
 			cpp_cond->set_text_alignment(0, HORIZONTAL_ALIGNMENT_LEFT);
-			tooltip += vformat(TTR("%s Error:"), source_language_name) + "\n";
+			tooltip += vformat(TTR("%s Error:"), source_language_name) + " " + oe.error + "\n";
 			if (source_is_project_file) {
 				cpp_cond->set_metadata(0, source_meta);
 			}
@@ -570,7 +570,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		cpp_source->set_text(0, "<" + vformat(TTR("%s Source"), source_language_name) + ">");
 		cpp_source->set_text(1, source_txt);
 		cpp_source->set_text_alignment(0, HORIZONTAL_ALIGNMENT_LEFT);
-		tooltip += vformat(TTR("%s Source:"), source_language_name) + source_txt + "\n";
+		tooltip += vformat(TTR("%s Source:"), source_language_name) + " " + source_txt + "\n";
 
 		// Set metadata to highlight error line in scripts.
 		if (source_is_project_file) {
