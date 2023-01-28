@@ -101,7 +101,9 @@ Thread::Thread() {
 Thread::~Thread() {
 	if (id != UNASSIGNED_ID) {
 #ifdef DEBUG_ENABLED
-		WARN_PRINT("A Thread object has been destroyed without wait_to_finish() having been called on it. Please do so to ensure correct cleanup of the thread.");
+		WARN_PRINT(
+				"A Thread object is being destroyed without its completion having been realized.\n"
+				"Please call wait_to_finish() on it to ensure correct cleanup.");
 #endif
 		thread.detach();
 	}
