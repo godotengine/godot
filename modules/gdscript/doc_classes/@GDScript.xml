@@ -576,10 +576,10 @@
 				@rpc
 				func fn(): pass
 
-				@rpc(any_peer, unreliable_ordered)
+				@rpc("any_peer", "unreliable_ordered")
 				func fn_update_pos(): pass
 
-				@rpc(authority, call_remote, unreliable, 0) # Equivalent to @rpc
+				@rpc("authority", "call_remote", "unreliable", 0) # Equivalent to @rpc
 				func fn_default(): pass
 				[/codeblock]
 			</description>

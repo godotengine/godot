@@ -666,7 +666,7 @@
 				    channel = 0,
 				}
 				[/codeblock]
-				See [enum MultiplayerAPI.RPCMode] and [enum MultiplayerPeer.TransferMode]. An alternative is annotating methods and properties with the corresponding [annotation @GDScript.@rpc] annotation ([code]@rpc(any_peer)[/code], [code]@rpc(authority)[/code]). By default, methods are not exposed to networking (and RPCs).
+				See [enum MultiplayerAPI.RPCMode] and [enum MultiplayerPeer.TransferMode]. An alternative is annotating methods and properties with the corresponding [annotation @GDScript.@rpc] annotation ([code]@rpc("any_peer")[/code], [code]@rpc("authority")[/code]). By default, methods are not exposed to networking (and RPCs).
 			</description>
 		</method>
 		<method name="rpc_id" qualifiers="vararg">
