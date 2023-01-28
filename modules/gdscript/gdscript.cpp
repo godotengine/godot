@@ -98,7 +98,7 @@ Variant GDScriptNativeClass::callp(const StringName &p_method, const Variant **p
 		return Object::callp(p_method, p_args, p_argcount, r_error);
 	}
 	MethodBind *method = ClassDB::get_method(name, p_method);
-	if (method) {
+	if (method && method->is_static()) {
 		// Native static method.
 		return method->call(nullptr, p_args, p_argcount, r_error);
 	}
