@@ -1314,6 +1314,10 @@ void CodeTextEditor::move_lines_up() {
 		if (text_editor->has_selection(c)) {
 			group_border.first = text_editor->get_selection_from_line(c);
 			group_border.second = text_editor->get_selection_to_line(c);
+			// Don't move a line with no selected characters
+			if (text_editor->get_selection_to_column(c) == 0) {
+				group_border.second--;
+			}
 		} else {
 			group_border.first = text_editor->get_caret_line(c);
 			group_border.second = text_editor->get_caret_line(c);
@@ -1325,6 +1329,9 @@ void CodeTextEditor::move_lines_up() {
 
 			int next_start_pos = text_editor->has_selection(c_next) ? text_editor->get_selection_from_line(c_next) : text_editor->get_caret_line(c_next);
 			int next_end_pos = text_editor->has_selection(c_next) ? text_editor->get_selection_to_line(c_next) : text_editor->get_caret_line(c_next);
+			if (text_editor->get_selection_to_column(c_next) == 0 && text_editor->has_selection(c_next)) {
+				next_end_pos--;
+			}
 
 			int current_start_pos = text_editor->has_selection(c_current) ? text_editor->get_selection_from_line(c_current) : text_editor->get_caret_line(c_current);
 
@@ -1414,6 +1421,10 @@ void CodeTextEditor::move_lines_down() {
 		if (text_editor->has_selection(c)) {
 			group_border.first = text_editor->get_selection_from_line(c);
 			group_border.second = text_editor->get_selection_to_line(c);
+			// Don't move a line with no selected characters
+			if (text_editor->get_selection_to_column(c) == 0) {
+				group_border.second--;
+			}
 		} else {
 			group_border.first = text_editor->get_caret_line(c);
 			group_border.second = text_editor->get_caret_line(c);
@@ -1425,6 +1436,9 @@ void CodeTextEditor::move_lines_down() {
 
 			int next_start_pos = text_editor->has_selection(c_next) ? text_editor->get_selection_from_line(c_next) : text_editor->get_caret_line(c_next);
 			int next_end_pos = text_editor->has_selection(c_next) ? text_editor->get_selection_to_line(c_next) : text_editor->get_caret_line(c_next);
+			if (text_editor->has_selection(c_next) && text_editor->get_selection_to_column(c_next) == 0) {
+				next_end_pos--;
+			}
 
 			int current_start_pos = text_editor->has_selection(c_current) ? text_editor->get_selection_from_line(c_current) : text_editor->get_caret_line(c_current);
 
