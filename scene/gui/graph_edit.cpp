@@ -582,6 +582,7 @@ bool GraphEdit::_filter_input(const Point2 &p_point) {
 
 		for (int j = 0; j < gn->get_connection_input_count(); j++) {
 			Vector2i port_size = Vector2i(port_icon->get_width(), port_icon->get_height());
+			port_size *= zoom;
 			port_size.height = MAX(port_size.height, gn->get_connection_input_height(j));
 			if (is_in_input_hotzone(gn, j, p_point / zoom, port_size)) {
 				return true;
@@ -590,6 +591,7 @@ bool GraphEdit::_filter_input(const Point2 &p_point) {
 
 		for (int j = 0; j < gn->get_connection_output_count(); j++) {
 			Vector2i port_size = Vector2i(port_icon->get_width(), port_icon->get_height());
+			port_size *= zoom;
 			port_size.height = MAX(port_size.height, gn->get_connection_output_height(j));
 			if (is_in_output_hotzone(gn, j, p_point / zoom, port_size)) {
 				return true;
@@ -616,6 +618,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 			for (int j = 0; j < gn->get_connection_output_count(); j++) {
 				Vector2 pos = gn->get_connection_output_position(j) + gn->get_position();
 				Vector2i port_size = Vector2i(port_icon->get_width(), port_icon->get_height());
+				port_size *= zoom;
 				port_size.height = MAX(port_size.height, gn->get_connection_output_height(j));
 
 				if (is_in_output_hotzone(gn, j, click_pos, port_size)) {
@@ -669,6 +672,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 				Vector2 pos = gn->get_connection_input_position(j) + gn->get_position();
 
 				Vector2i port_size = Vector2i(port_icon->get_width(), port_icon->get_height());
+				port_size *= zoom;
 				port_size.height = MAX(port_size.height, gn->get_connection_input_height(j));
 
 				if (is_in_input_hotzone(gn, j, click_pos, port_size)) {
@@ -740,6 +744,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 					for (int j = 0; j < gn->get_connection_output_count(); j++) {
 						Vector2 pos = gn->get_connection_output_position(j) + gn->get_position();
 						Vector2i port_size = Vector2i(port_icon->get_width(), port_icon->get_height());
+						port_size *= zoom;
 						port_size.height = MAX(port_size.height, gn->get_connection_output_height(j));
 
 						int type = gn->get_connection_output_type(j);
@@ -758,6 +763,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 					for (int j = 0; j < gn->get_connection_input_count(); j++) {
 						Vector2 pos = gn->get_connection_input_position(j) + gn->get_position();
 						Vector2i port_size = Vector2i(port_icon->get_width(), port_icon->get_height());
+						port_size *= zoom;
 						port_size.height = MAX(port_size.height, gn->get_connection_input_height(j));
 
 						int type = gn->get_connection_input_type(j);
