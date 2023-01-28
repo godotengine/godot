@@ -83,6 +83,7 @@ enum SkyUniformLocation {
 	SKY_EMPTY, // Unused, put here to avoid conflicts with SCENE_DATA_UNIFORM_LOCATION.
 	SKY_MATERIAL_UNIFORM_LOCATION,
 	SKY_DIRECTIONAL_LIGHT_UNIFORM_LOCATION,
+	SKY_MULTIVIEW_UNIFORM_LOCATION,
 };
 
 struct RenderDataGLES3 {
@@ -570,7 +571,7 @@ protected:
 	void _update_dirty_skys();
 	void _update_sky_radiance(RID p_env, const Projection &p_projection, const Transform3D &p_transform, float p_luminance_multiplier);
 	void _filter_sky_radiance(Sky *p_sky, int p_base_layer);
-	void _draw_sky(RID p_env, const Projection &p_projection, const Transform3D &p_transform, float p_luminance_multiplier);
+	void _draw_sky(RID p_env, const Projection &p_projection, const Transform3D &p_transform, float p_luminance_multiplier, bool p_use_multiview, bool p_flip_y);
 	void _free_sky_data(Sky *p_sky);
 
 public:
