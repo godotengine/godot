@@ -333,7 +333,6 @@ void WSLPeer::_do_client_handshake() {
 			// Start SSL handshake
 			tls = Ref<StreamPeerTLS>(StreamPeerTLS::create());
 			ERR_FAIL_COND_MSG(tls.is_null(), "SSL is not available in this build.");
-			tls->set_blocking_handshake_enabled(false);
 			if (tls->connect_to_stream(tcp, requested_host, tls_options) != OK) {
 				close(-1);
 				return; // Error.

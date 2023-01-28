@@ -41,18 +41,8 @@ StreamPeerTLS *StreamPeerTLS::create() {
 	return nullptr;
 }
 
-bool StreamPeerTLS::available = false;
-
 bool StreamPeerTLS::is_available() {
-	return available;
-}
-
-void StreamPeerTLS::set_blocking_handshake_enabled(bool p_enabled) {
-	blocking_handshake = p_enabled;
-}
-
-bool StreamPeerTLS::is_blocking_handshake_enabled() const {
-	return blocking_handshake;
+	return _create != nullptr;
 }
 
 void StreamPeerTLS::_bind_methods() {
@@ -62,10 +52,6 @@ void StreamPeerTLS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_status"), &StreamPeerTLS::get_status);
 	ClassDB::bind_method(D_METHOD("get_stream"), &StreamPeerTLS::get_stream);
 	ClassDB::bind_method(D_METHOD("disconnect_from_stream"), &StreamPeerTLS::disconnect_from_stream);
-	ClassDB::bind_method(D_METHOD("set_blocking_handshake_enabled", "enabled"), &StreamPeerTLS::set_blocking_handshake_enabled);
-	ClassDB::bind_method(D_METHOD("is_blocking_handshake_enabled"), &StreamPeerTLS::is_blocking_handshake_enabled);
-
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "blocking_handshake"), "set_blocking_handshake_enabled", "is_blocking_handshake_enabled");
 
 	BIND_ENUM_CONSTANT(STATUS_DISCONNECTED);
 	BIND_ENUM_CONSTANT(STATUS_HANDSHAKING);
