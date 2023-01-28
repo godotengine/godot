@@ -81,36 +81,6 @@ using namespace NavigationUtilities;
 	}                                                               \
 	void GodotNavigationServer::MERGE(_cmd_, F_NAME)(T_0 D_0, T_1 D_1)
 
-#define COMMAND_4(F_NAME, T_0, D_0, T_1, D_1, T_2, D_2, T_3, D_3)            \
-	struct MERGE(F_NAME, _command) : public SetCommand {                     \
-		T_0 d_0;                                                             \
-		T_1 d_1;                                                             \
-		T_2 d_2;                                                             \
-		T_3 d_3;                                                             \
-		MERGE(F_NAME, _command)                                              \
-		(                                                                    \
-				T_0 p_d_0,                                                   \
-				T_1 p_d_1,                                                   \
-				T_2 p_d_2,                                                   \
-				T_3 p_d_3) :                                                 \
-				d_0(p_d_0),                                                  \
-				d_1(p_d_1),                                                  \
-				d_2(p_d_2),                                                  \
-				d_3(p_d_3) {}                                                \
-		virtual void exec(GodotNavigationServer *server) override {          \
-			server->MERGE(_cmd_, F_NAME)(d_0, d_1, d_2, d_3);                \
-		}                                                                    \
-	};                                                                       \
-	void GodotNavigationServer::F_NAME(T_0 D_0, T_1 D_1, T_2 D_2, T_3 D_3) { \
-		auto cmd = memnew(MERGE(F_NAME, _command)(                           \
-				D_0,                                                         \
-				D_1,                                                         \
-				D_2,                                                         \
-				D_3));                                                       \
-		add_command(cmd);                                                    \
-	}                                                                        \
-	void GodotNavigationServer::MERGE(_cmd_, F_NAME)(T_0 D_0, T_1 D_1, T_2 D_2, T_3 D_3)
-
 GodotNavigationServer::GodotNavigationServer() {}
 
 GodotNavigationServer::~GodotNavigationServer() {
@@ -711,17 +681,17 @@ bool GodotNavigationServer::agent_is_map_changed(RID p_agent) const {
 	return agent->is_map_changed();
 }
 
-COMMAND_4(agent_set_callback, RID, p_agent, ObjectID, p_object_id, StringName, p_method, Variant, p_udata) {
+COMMAND_2(agent_set_callback, RID, p_agent, Callable, p_callback) {
 	RvoAgent *agent = agent_owner.get_or_null(p_agent);
 	ERR_FAIL_COND(agent == nullptr);
 
-	agent->set_callback(p_object_id, p_method, p_udata);
+	agent->set_callback(p_callback);
 
 	if (agent->get_map()) {
-		if (p_object_id == ObjectID()) {
-			agent->get_map()->remove_agent_as_controlled(agent);
-		} else {
+		if (p_callback.is_valid()) {
 			agent->get_map()->set_agent_as_controlled(agent);
+		} else {
+			agent->get_map()->remove_agent_as_controlled(agent);
 		}
 	}
 }
@@ -946,4 +916,3 @@ int GodotNavigationServer::get_process_info(ProcessInfo p_info) const {
 
 #undef COMMAND_1
 #undef COMMAND_2
-#undef COMMAND_4
