@@ -1367,6 +1367,10 @@ static const char *project_settings_renames[][2] = {
 	{ "rendering/vram_compression/import_etc2", "rendering/textures/vram_compression/import_etc2" },
 	{ "rendering/vram_compression/import_pvrtc", "rendering/textures/vram_compression/import_pvrtc" },
 	{ "rendering/vram_compression/import_s3tc", "rendering/textures/vram_compression/import_s3tc" },
+	{ "window/size/width", "window/size/viewport_width" },
+	{ "window/size/height", "window/size/viewport_height" },
+	{ "window/size/test_width", "window/size/window_width_override" },
+	{ "window/size/test_height", "window/size/window_height_override" },
 
 	{ nullptr, nullptr },
 };
