@@ -73,6 +73,7 @@ class SpriteFramesEditor : public HSplitContainer {
 	Ref<Texture2D> autoplay_icon;
 	Ref<Texture2D> stop_icon;
 	Ref<Texture2D> pause_icon;
+	Ref<Texture2D> empty_icon = memnew(ImageTexture);
 
 	HBoxContainer *playback_container = nullptr;
 	Button *stop = nullptr;
@@ -100,13 +101,14 @@ class SpriteFramesEditor : public HSplitContainer {
 
 	Button *add_anim = nullptr;
 	Button *delete_anim = nullptr;
+	SpinBox *anim_speed = nullptr;
+	Button *anim_loop = nullptr;
+
 	HBoxContainer *autoplay_container = nullptr;
 	Button *autoplay = nullptr;
-	LineEdit *anim_search_box = nullptr;
 
+	LineEdit *anim_search_box = nullptr;
 	Tree *animations = nullptr;
-	SpinBox *anim_speed = nullptr;
-	CheckButton *anim_loop = nullptr;
 
 	EditorFileDialog *file = nullptr;
 
