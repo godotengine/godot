@@ -173,13 +173,9 @@ void Node::_notification(int p_notification) {
 	}
 }
 
-void Node::_propagate_ready() {
+void Node::_do_ready() {
+	ERR_FAIL_COND(data.ready_notified);
 	data.ready_notified = true;
-	data.blocked++;
-	for (int i = 0; i < data.children.size(); i++) {
-		data.children[i]->_propagate_ready();
-	}
-	data.blocked--;
 
 	notification(NOTIFICATION_POST_ENTER_TREE);
 
@@ -190,8 +186,20 @@ void Node::_propagate_ready() {
 	}
 }
 
-void Node::_propagate_enter_tree() {
+void Node::_propagate_ready(PropagateNodeType propagate_to) {
+	data.blocked++;
+
+	Vector<Node *> nodes = _get_children_to_propagate(propagate_to);
+
+	for (Node *node : nodes) {
+		node->_propagate_ready(propagate_to);
+		node->_do_ready();
+	}
+	data.blocked--;
+}
+void Node::_do_enter_tree() {
 	// this needs to happen to all children before any enter_tree
+	ERR_FAIL_COND(is_inside_tree());
 
 	if (data.parent) {
 		data.tree = data.parent->data.tree;
@@ -224,13 +232,17 @@ void Node::_propagate_enter_tree() {
 		const Variant *cptr = &c;
 		data.parent->emit_signalp(SNAME("child_entered_tree"), &cptr, 1);
 	}
+}
 
+void Node::_propagate_enter_tree(PropagateNodeType propagate_to) {
 	data.blocked++;
 	//block while adding children
 
-	for (int i = 0; i < data.children.size(); i++) {
-		if (!data.children[i]->is_inside_tree()) { // could have been added in enter_tree
-			data.children[i]->_propagate_enter_tree();
+	Vector<Node *> nodes = _get_children_to_propagate(propagate_to);
+	for (Node *node : nodes) {
+		if (!node->is_inside_tree()) { // could have been added in enter_tree
+			node->_do_enter_tree();
+			node->_propagate_enter_tree(propagate_to);
 		}
 	}
 
@@ -1891,6 +1903,27 @@ void Node::_print_tree(const Node *p_node) {
 	}
 }
 
+Vector<Node *> Node::_get_children_to_propagate(PropagateNodeType propagate_to) const {
+	Vector<Node *> res;
+	if (propagate_to == PropagateNodeType::EVERYONE) {
+		res = data.children;
+	} else {
+		const bool root_children = get_tree() && get_tree()->get_root() == this;
+		for (Node *child : data.children) {
+			const bool is_singleton = root_children && child != get_tree()->current_scene;
+			if (propagate_to == PropagateNodeType::AUTOLOAD) {
+				if (is_singleton) {
+					res.push_back(child);
+				}
+			} else if (!is_singleton) {
+				res.push_back(child);
+			}
+		}
+	}
+
+	return res;
+}
+
 void Node::_propagate_reverse_notification(int p_notification) {
 	data.blocked++;
 	for (int i = data.children.size() - 1; i >= 0; i--) {
@@ -2600,11 +2633,18 @@ void Node::_set_tree(SceneTree *p_tree) {
 	data.tree = p_tree;
 
 	if (data.tree) {
-		_propagate_enter_tree();
+		// split autoload nodes and normal nodes to ensure correct initialization order
+		_do_enter_tree();
+		_propagate_enter_tree(PropagateNodeType::AUTOLOAD);
 		if (!data.parent || data.parent->data.ready_notified) { // No parent (root) or parent ready
-			_propagate_ready(); //reverse_notification(NOTIFICATION_READY);
+			_propagate_ready(PropagateNodeType::AUTOLOAD); //reverse_notification(NOTIFICATION_READY);
 		}
 
+		_propagate_enter_tree(PropagateNodeType::NORMAL_NODE);
+		if (!data.parent || data.parent->data.ready_notified) { // No parent (root) or parent ready
+			_propagate_ready(PropagateNodeType::NORMAL_NODE); //reverse_notification(NOTIFICATION_READY);
+		}
+		_do_ready();
 		tree_changed_b = data.tree;
 	}
 

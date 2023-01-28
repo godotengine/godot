@@ -156,6 +156,12 @@ private:
 
 	} data;
 
+	enum class PropagateNodeType {
+		AUTOLOAD,
+		NORMAL_NODE,
+		EVERYONE
+	};
+
 	Ref<MultiplayerAPI> multiplayer;
 
 	void _print_tree_pretty(const String &prefix, const bool last);
@@ -170,8 +176,11 @@ private:
 
 	void _propagate_reverse_notification(int p_notification);
 	void _propagate_deferred_notification(int p_notification, bool p_reverse);
-	void _propagate_enter_tree();
-	void _propagate_ready();
+	Vector<Node *> _get_children_to_propagate(PropagateNodeType propagate_to) const;
+	void _do_enter_tree();
+	void _propagate_enter_tree(PropagateNodeType propagate_to);
+	void _do_ready();
+	void _propagate_ready(PropagateNodeType propagate_to);
 	void _propagate_exit_tree();
 	void _propagate_after_exit_tree();
 	void _propagate_process_owner(Node *p_owner, int p_pause_notification, int p_enabled_notification);
