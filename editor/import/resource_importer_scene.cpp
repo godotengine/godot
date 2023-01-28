@@ -1085,10 +1085,10 @@ Node *ResourceImporterScene::_post_fix_animations(Node *p_node, Node *p_root, co
 	return p_node;
 }
 
-Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> &collision_map, Pair<PackedVector3Array, PackedInt32Array> &r_occluder_arrays, HashSet<Ref<ImporterMesh>> &r_scanned_meshes, const Dictionary &p_node_data, const Dictionary &p_material_data, const Dictionary &p_animation_data, float p_animation_fps) {
+Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> &collision_map, Pair<PackedVector3Array, PackedInt32Array> &r_occluder_arrays, HashSet<Ref<ImporterMesh>> &r_scanned_meshes, const Dictionary &p_node_data, const Dictionary &p_material_data, const Dictionary &p_animation_data, float p_animation_fps, float p_applied_root_scale) {
 	// children first
 	for (int i = 0; i < p_node->get_child_count(); i++) {
-		Node *r = _post_fix_node(p_node->get_child(i), p_root, collision_map, r_occluder_arrays, r_scanned_meshes, p_node_data, p_material_data, p_animation_data, p_animation_fps);
+		Node *r = _post_fix_node(p_node->get_child(i), p_root, collision_map, r_occluder_arrays, r_scanned_meshes, p_node_data, p_material_data, p_animation_data, p_animation_fps, p_applied_root_scale);
 		if (!r) {
 			i--; //was erased
 		}
@@ -1231,7 +1231,8 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 					} else {
 						shapes = get_collision_shapes(
 								m->get_mesh(),
-								node_settings);
+								node_settings,
+								p_applied_root_scale);
 					}
 
 					if (shapes.size()) {
@@ -1242,6 +1243,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 								p_node->add_child(col, true);
 								col->set_owner(p_node->get_owner());
 								col->set_transform(get_collision_shapes_transform(node_settings));
+								col->set_position(p_applied_root_scale * col->get_position());
 								base = col;
 							} break;
 							case MESH_PHYSICS_RIGID_BODY_AND_MESH: {
@@ -1249,6 +1251,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 								rigid_body->set_name(p_node->get_name());
 								p_node->replace_by(rigid_body);
 								rigid_body->set_transform(mi->get_transform() * get_collision_shapes_transform(node_settings));
+								rigid_body->set_position(p_applied_root_scale * rigid_body->get_position());
 								p_node = rigid_body;
 								mi->set_transform(Transform3D());
 								rigid_body->add_child(mi, true);
@@ -1258,6 +1261,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 							case MESH_PHYSICS_STATIC_COLLIDER_ONLY: {
 								StaticBody3D *col = memnew(StaticBody3D);
 								col->set_transform(mi->get_transform() * get_collision_shapes_transform(node_settings));
+								col->set_position(p_applied_root_scale * col->get_position());
 								col->set_name(p_node->get_name());
 								p_node->replace_by(col);
 								memdelete(p_node);
@@ -1267,6 +1271,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 							case MESH_PHYSICS_AREA_ONLY: {
 								Area3D *area = memnew(Area3D);
 								area->set_transform(mi->get_transform() * get_collision_shapes_transform(node_settings));
+								area->set_position(p_applied_root_scale * area->get_position());
 								area->set_name(p_node->get_name());
 								p_node->replace_by(area);
 								memdelete(p_node);
@@ -2397,7 +2402,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 		fps = (float)p_options[SNAME("animation/fps")];
 	}
 	_pre_fix_animations(scene, scene, node_data, animation_data, fps);
-	_post_fix_node(scene, scene, collision_map, occluder_arrays, scanned_meshes, node_data, material_data, animation_data, fps);
+	_post_fix_node(scene, scene, collision_map, occluder_arrays, scanned_meshes, node_data, material_data, animation_data, fps, apply_root ? root_scale : 1.0);
 	_post_fix_animations(scene, scene, node_data, animation_data, fps);
 
 	String root_type = p_options["nodes/root_type"];
