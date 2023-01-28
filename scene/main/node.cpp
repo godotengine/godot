@@ -912,6 +912,9 @@ void Node::set_name(const String &p_name) {
 	if (data.unique_name_in_owner && data.owner) {
 		_release_unique_name_in_owner();
 	}
+
+	StringName &old_name = data.name;
+
 	data.name = name;
 
 	if (data.parent) {
@@ -925,8 +928,8 @@ void Node::set_name(const String &p_name) {
 	propagate_notification(NOTIFICATION_PATH_RENAMED);
 
 	if (is_inside_tree()) {
-		emit_signal(SNAME("renamed"));
-		get_tree()->node_renamed(this);
+		emit_signal(SNAME("renamed"), old_name, name);
+		get_tree()->node_renamed(this, old_name, name);
 		get_tree()->tree_changed();
 	}
 }
