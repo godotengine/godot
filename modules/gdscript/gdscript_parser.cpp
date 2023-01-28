@@ -1904,7 +1904,6 @@ GDScriptParser::MatchNode *GDScriptParser::parse_match() {
 #ifdef DEBUG_ENABLED
 	bool all_have_return = true;
 	bool have_wildcard = false;
-	bool have_wildcard_without_continue = false;
 #endif
 
 	while (!check(GDScriptTokenizer::Token::DEDENT) && !is_at_end()) {
@@ -1915,19 +1914,12 @@ GDScriptParser::MatchNode *GDScriptParser::parse_match() {
 		}
 
 #ifdef DEBUG_ENABLED
-		if (have_wildcard_without_continue && !branch->patterns.is_empty()) {
+		if (have_wildcard && !branch->patterns.is_empty()) {
 			push_warning(branch->patterns[0], GDScriptWarning::UNREACHABLE_PATTERN);
 		}
 
-		if (branch->has_wildcard) {
-			have_wildcard = true;
-			if (!branch->block->has_continue) {
-				have_wildcard_without_continue = true;
-			}
-		}
-		if (!branch->block->has_return) {
-			all_have_return = false;
-		}
+		have_wildcard = have_wildcard || branch->has_wildcard;
+		all_have_return = all_have_return && branch->block->has_return;
 #endif
 		match->branches.push_back(branch);
 	}
