@@ -2890,6 +2890,18 @@ void TextMesh::_create_mesh_array(Array &p_arr) const {
 		dirty_cache = false;
 	}
 
+	// When a shaped text is invalidated by an external source, we want to reshape it.
+	if (!TS->shaped_text_is_ready(text_rid)) {
+		dirty_text = true;
+	}
+
+	for (const RID &line_rid : lines_rid) {
+		if (!TS->shaped_text_is_ready(line_rid)) {
+			dirty_lines = true;
+			break;
+		}
+	}
+
 	// Update text buffer.
 	if (dirty_text) {
 		TS->shaped_text_clear(text_rid);

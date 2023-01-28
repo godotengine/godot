@@ -345,6 +345,18 @@ void Label::_notification(int p_what) {
 				RenderingServer::get_singleton()->canvas_item_set_clip(get_canvas_item(), true);
 			}
 
+			// When a shaped text is invalidated by an external source, we want to reshape it.
+			if (!TS->shaped_text_is_ready(text_rid)) {
+				dirty = true;
+			}
+
+			for (const RID &line_rid : lines_rid) {
+				if (!TS->shaped_text_is_ready(line_rid)) {
+					lines_dirty = true;
+					break;
+				}
+			}
+
 			if (dirty || font_dirty || lines_dirty) {
 				_shape();
 			}
