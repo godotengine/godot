@@ -253,12 +253,14 @@ private:
 		}
 	};
 
+	// Audio stream information for each audio stream placed on the track.
 	struct PlayingAudioStreamInfo {
-		int64_t index = -1;
+		AudioStreamPlaybackPolyphonic::ID index = -1; // ID retrieved from AudioStreamPlaybackPolyphonic.
 		double start = 0.0;
 		double len = 0.0;
 	};
 
+	// Audio track information for mixng and ending.
 	struct PlayingAudioTrackInfo {
 		HashMap<int, PlayingAudioStreamInfo> stream_info;
 		double length = 0.0;
@@ -272,7 +274,7 @@ private:
 	struct TrackCacheAudio : public TrackCache {
 		Ref<AudioStreamPolyphonic> audio_stream;
 		Ref<AudioStreamPlaybackPolyphonic> audio_stream_playback;
-		HashMap<ObjectID, PlayingAudioTrackInfo> playing_streams; // Animation resource RID & AudioTrack key index: PlayingAudioStreamInfo.
+		HashMap<ObjectID, PlayingAudioTrackInfo> playing_streams; // Key is Animation resource ObjectID.
 
 		TrackCacheAudio() {
 			type = Animation::TYPE_AUDIO;

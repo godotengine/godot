@@ -149,7 +149,7 @@ private:
 		HashMap<StringName, BezierAnim> bezier_anim;
 
 		struct PlayingAudioStreamInfo {
-			int64_t index = -1;
+			AudioStreamPlaybackPolyphonic::ID index = -1;
 			double start = 0.0;
 			double len = 0.0;
 		};
