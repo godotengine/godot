@@ -3920,6 +3920,7 @@ DisplayServerMacOS::DisplayServerMacOS(const String &p_rendering_driver, WindowM
 		}
 	}
 	show_window(MAIN_WINDOW_ID);
+	force_process_and_drop_events();
 
 #if defined(GLES3_ENABLED)
 	if (rendering_driver == "opengl3") {
