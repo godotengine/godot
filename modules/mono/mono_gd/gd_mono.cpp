@@ -259,18 +259,34 @@ using godot_plugins_initialize_fn = bool (*)(void *, GDMonoCache::ManagedCallbac
 #endif
 
 #ifdef TOOLS_ENABLED
+String get_project_assembly_path(const String &p_extension) {
+	String assembly_name = path::get_csharp_project_name();
+	String assembly_path = GodotSharpDirs::get_res_temp_assemblies_dir().path_join(assembly_name + p_extension);
+	return ProjectSettings::get_singleton()->globalize_path(assembly_path);
+}
+
+void try_load_runtime(load_assembly_and_get_function_pointer_fn &r_load_assembly_and_get_function_pointer, const String &p_config_path) {
+	if (r_load_assembly_and_get_function_pointer != nullptr) {
+		return;
+	}
+	if (!FileAccess::exists(p_config_path)) {
+		return;
+	}
+	r_load_assembly_and_get_function_pointer = initialize_hostfxr_for_config(get_data(str_to_hostfxr(p_config_path)));
+}
+
 godot_plugins_initialize_fn initialize_hostfxr_and_godot_plugins(bool &r_runtime_initialized) {
 	godot_plugins_initialize_fn godot_plugins_initialize = nullptr;
 
 	HostFxrCharString godot_plugins_path = str_to_hostfxr(
 			GodotSharpDirs::get_api_assemblies_dir().path_join("GodotPlugins.dll"));
 
-	HostFxrCharString config_path = str_to_hostfxr(
-			GodotSharpDirs::get_api_assemblies_dir().path_join("GodotPlugins.runtimeconfig.json"));
+	load_assembly_and_get_function_pointer_fn load_assembly_and_get_function_pointer = nullptr;
 
-	load_assembly_and_get_function_pointer_fn load_assembly_and_get_function_pointer =
-			initialize_hostfxr_for_config(get_data(config_path));
-
+	// First, try to load the runtime specified by the project.
+	try_load_runtime(load_assembly_and_get_function_pointer, get_project_assembly_path(".runtimeconfig.json"));
+	// If that fails, fall back to the latest installed runtime.
+	try_load_runtime(load_assembly_and_get_function_pointer, GodotSharpDirs::get_api_assemblies_dir().path_join("GodotPlugins.runtimeconfig.json"));
 	if (load_assembly_and_get_function_pointer == nullptr) {
 		// Show a message box to the user to make the problem explicit (and explain a potential crash).
 		OS::get_singleton()->alert(TTR("Unable to load .NET runtime, no compatible version was found.\nAttempting to create/edit a project will lead to a crash.\n\nPlease install the .NET SDK 6.0 or later from https://dotnet.microsoft.com/en-us/download and restart Godot."), TTR("Failed to load .NET runtime"));
@@ -465,11 +481,7 @@ void GDMono::_init_godot_api_hashes() {
 
 #ifdef TOOLS_ENABLED
 bool GDMono::_load_project_assembly() {
-	String assembly_name = path::get_csharp_project_name();
-
-	String assembly_path = GodotSharpDirs::get_res_temp_assemblies_dir()
-								   .path_join(assembly_name + ".dll");
-	assembly_path = ProjectSettings::get_singleton()->globalize_path(assembly_path);
+	String assembly_path = ::get_project_assembly_path(".dll");
 
 	if (!FileAccess::exists(assembly_path)) {
 		return false;

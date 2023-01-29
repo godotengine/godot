@@ -61,6 +61,10 @@ void godot_icall_GodotSharpDirs_ResMetadataDir(godot_string *r_dest) {
 	memnew_placement(r_dest, String(GodotSharpDirs::get_res_metadata_dir()));
 }
 
+void godot_icall_GodotSharpDirs_ResTempAssembliesDir(godot_string *r_dest) {
+	memnew_placement(r_dest, String(GodotSharpDirs::get_res_temp_assemblies_dir()));
+}
+
 void godot_icall_GodotSharpDirs_MonoUserDir(godot_string *r_dest) {
 	memnew_placement(r_dest, String(GodotSharpDirs::get_mono_user_dir()));
 }
@@ -232,6 +236,7 @@ bool godot_icall_Utils_OS_UnixFileHasExecutableAccess(const godot_string *p_file
 // the methods in 'GodotTools/Internals/Internal.cs'.
 static const void *unmanaged_callbacks[]{
 	(void *)godot_icall_GodotSharpDirs_ResMetadataDir,
+	(void *)godot_icall_GodotSharpDirs_ResTempAssembliesDir,
 	(void *)godot_icall_GodotSharpDirs_MonoUserDir,
 	(void *)godot_icall_GodotSharpDirs_BuildLogsDirs,
 	(void *)godot_icall_GodotSharpDirs_DataEditorToolsDir,

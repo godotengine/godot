@@ -18,6 +18,16 @@ namespace GodotTools.Internals
             }
         }
 
+        public static string ResTempAssembliesDir
+        {
+            get
+            {
+                Internal.godot_icall_GodotSharpDirs_ResTempAssembliesDir(out godot_string dest);
+                using (dest)
+                    return Marshaling.ConvertStringToManaged(dest);
+            }
+        }
+
         public static string MonoUserDir
         {
             get

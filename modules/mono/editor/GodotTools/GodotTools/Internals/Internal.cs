@@ -95,6 +95,8 @@ namespace GodotTools.Internals
 
         public static partial void godot_icall_GodotSharpDirs_ResMetadataDir(out godot_string r_dest);
 
+        public static partial void godot_icall_GodotSharpDirs_ResTempAssembliesDir(out godot_string r_dest);
+
         public static partial void godot_icall_GodotSharpDirs_MonoUserDir(out godot_string r_dest);
 
         public static partial void godot_icall_GodotSharpDirs_BuildLogsDirs(out godot_string r_dest);

@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Godot;
 using GodotTools.Internals;
@@ -204,6 +205,16 @@ namespace GodotTools.Build
             }
         }
 
+        private static string GetRuntimeConfig()
+        {
+            var runtimeConfigPath = Path.Join(GodotSharpDirs.ResTempAssembliesDir,
+                GodotSharpDirs.ProjectAssemblyName + ".runtimeconfig.json");
+            using var file = Godot.FileAccess.Open(runtimeConfigPath, Godot.FileAccess.ModeFlags.Read);
+            if (file == null)
+                return null;
+            return file.GetAsText();
+        }
+
         private static bool BuildProjectBlocking(BuildInfo buildInfo)
         {
             if (!File.Exists(buildInfo.Project))
@@ -213,10 +224,19 @@ namespace GodotTools.Build
 
             pr.Step("Building project", 0);
 
+            string rcBefore = GetRuntimeConfig();
+
             if (!Build(buildInfo))
             {
                 ShowBuildErrorDialog("Failed to build project");
                 return false;
+            }
+
+            string rcAfter = GetRuntimeConfig();
+
+            if (rcBefore != rcAfter)
+            {
+                ShowBuildErrorDialog($".NET runtime configuration has changed.\nPlease restart Godot to load the correct runtime or continue with the {RuntimeInformation.FrameworkDescription} runtime.");
             }
 
             return true;
