@@ -307,7 +307,7 @@ Dictionary GDScriptSyntaxHighlighter::_get_line_syntax_highlighting_impl(int p_l
 			in_number = true;
 		}
 
-		if (!in_word && (is_ascii_char(str[j]) || is_underscore(str[j])) && !in_number) {
+		if (!in_word && is_unicode_identifier_start(str[j]) && !in_number) {
 			in_word = true;
 		}
 
