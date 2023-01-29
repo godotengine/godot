@@ -17,8 +17,10 @@
 			<param index="1" name="height" type="int" />
 			<param index="2" name="invert" type="bool" default="false" />
 			<param index="3" name="in_3d_space" type="bool" default="false" />
+			<param index="4" name="normalize" type="bool" default="true" />
 			<description>
 				Returns a 2D [Image] noise image.
+				Note: With [param normalize] set to [code]false[/code] the default implementation expects the noise generator to return values in the range [code]-1.0[/code] to [code]1.0[/code].
 			</description>
 		</method>
 		<method name="get_noise_1d" qualifiers="const">
@@ -66,8 +68,10 @@
 			<param index="2" name="invert" type="bool" default="false" />
 			<param index="3" name="in_3d_space" type="bool" default="false" />
 			<param index="4" name="skirt" type="float" default="0.1" />
+			<param index="5" name="normalize" type="bool" default="true" />
 			<description>
 				Returns a seamless 2D [Image] noise image.
+				Note: With [param normalize] set to [code]false[/code] the default implementation expects the noise generator to return values in the range [code]-1.0[/code] to [code]1.0[/code].
 			</description>
 		</method>
 	</methods>
