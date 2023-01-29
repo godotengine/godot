@@ -1079,8 +1079,8 @@ void main() {
 #endif // !DISABLE_FOG
 #endif // !CUSTOM_FOG_USED
 
-	uint fog_rg = packHalf2x16(fog.rg);
-	uint fog_ba = packHalf2x16(fog.ba);
+	uint fog_rg = packUnorm2x16(fog.rg);
+	uint fog_ba = packUnorm2x16(fog.ba);
 
 	// Convert colors to linear
 	albedo = srgb_to_linear(albedo);
@@ -1294,7 +1294,7 @@ void main() {
 	frag_color.rgb += emission + ambient_light;
 #endif
 #endif //MODE_UNSHADED
-	fog = vec4(unpackHalf2x16(fog_rg), unpackHalf2x16(fog_ba));
+	fog = vec4(unpackUnorm2x16(fog_rg), unpackUnorm2x16(fog_ba));
 
 #ifndef DISABLE_FOG
 	if (scene_data.fog_enabled) {
