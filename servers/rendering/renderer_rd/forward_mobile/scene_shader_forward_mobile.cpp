@@ -421,7 +421,7 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 
 		shader.initialize(shader_versions, p_defines);
 
-		if (!RendererCompositorRD::singleton->is_xr_enabled()) {
+		if (!RendererCompositorRD::get_singleton()->is_xr_enabled()) {
 			shader.set_variant_enabled(SHADER_VERSION_COLOR_PASS_MULTIVIEW, false);
 			shader.set_variant_enabled(SHADER_VERSION_LIGHTMAP_COLOR_PASS_MULTIVIEW, false);
 			shader.set_variant_enabled(SHADER_VERSION_SHADOW_PASS_MULTIVIEW, false);
@@ -610,7 +610,7 @@ void SceneShaderForwardMobile::init(const String p_defines) {
 		actions.instance_uniform_index_variable = "draw_call.instance_uniforms_ofs";
 
 		actions.apply_luminance_multiplier = true; // apply luminance multiplier to screen texture
-		actions.check_multiview_samplers = true; // make sure we check sampling multiview textures
+		actions.check_multiview_samplers = RendererCompositorRD::get_singleton()->is_xr_enabled(); // Make sure we check sampling multiview textures.
 
 		compiler.initialize(actions);
 	}
