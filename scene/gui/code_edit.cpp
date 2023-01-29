@@ -3245,9 +3245,6 @@ bool CodeCompletionOptionCompare::operator()(const ScriptLanguage::CodeCompletio
 			if (l.matches[i].first != r.matches[i].first) {
 				return l.matches[i].first < r.matches[i].first;
 			}
-			if (l.matches[i].second != r.matches[i].second) {
-				return l.matches[i].second > r.matches[i].second;
-			}
 		}
 	}
 
