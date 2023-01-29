@@ -774,7 +774,7 @@ void ParticlesStorage::_particles_process(Particles *p_particles, double p_delta
 
 	p_particles->phase = new_phase;
 
-	frame_params.time = RendererCompositorRD::singleton->get_total_time();
+	frame_params.time = RendererCompositorRD::get_singleton()->get_total_time();
 	frame_params.delta = p_delta * p_particles->speed_scale;
 	frame_params.random_seed = p_particles->random_seed;
 	frame_params.explosiveness = p_particles->explosiveness;
@@ -1228,7 +1228,7 @@ void ParticlesStorage::particles_set_view_axis(RID p_particles, const Vector3 &p
 		RD::get_singleton()->compute_list_dispatch_threads(compute_list, particles->amount, 1, 1);
 
 		RD::get_singleton()->compute_list_end();
-		RendererCompositorRD::singleton->get_effects()->sort_buffer(particles->particles_sort_uniform_set, particles->amount);
+		RendererCompositorRD::get_singleton()->get_effects()->sort_buffer(particles->particles_sort_uniform_set, particles->amount);
 	}
 
 	if (particles->trails_enabled && particles->trail_bind_poses.size() > 1) {
@@ -1341,7 +1341,7 @@ void ParticlesStorage::update_particles() {
 			particles->inactive = false;
 			particles->inactive_time = 0;
 		} else {
-			particles->inactive_time += particles->speed_scale * RendererCompositorRD::singleton->get_frame_delta_time();
+			particles->inactive_time += particles->speed_scale * RendererCompositorRD::get_singleton()->get_frame_delta_time();
 			if (particles->inactive_time > particles->lifetime * 1.2) {
 				particles->inactive = true;
 				continue;
@@ -1442,7 +1442,7 @@ void ParticlesStorage::update_particles() {
 				frame_time = 1.0 / fixed_fps;
 				decr = frame_time;
 			}
-			double delta = RendererCompositorRD::singleton->get_frame_delta_time();
+			double delta = RendererCompositorRD::get_singleton()->get_frame_delta_time();
 			if (delta > 0.1) { //avoid recursive stalls if fps goes below 10
 				delta = 0.1;
 			} else if (delta <= 0.0) { //unlikely but..
@@ -1461,7 +1461,7 @@ void ParticlesStorage::update_particles() {
 			if (zero_time_scale) {
 				_particles_process(particles, 0.0);
 			} else {
-				_particles_process(particles, RendererCompositorRD::singleton->get_frame_delta_time());
+				_particles_process(particles, RendererCompositorRD::get_singleton()->get_frame_delta_time());
 			}
 		}
 

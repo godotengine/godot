@@ -44,7 +44,7 @@ VRS::VRS() {
 
 		vrs_shader.shader.initialize(vrs_modes);
 
-		if (!RendererCompositorRD::singleton->is_xr_enabled()) {
+		if (!RendererCompositorRD::get_singleton()->is_xr_enabled()) {
 			vrs_shader.shader.set_variant_enabled(VRS_MULTIVIEW, false);
 		}
 
