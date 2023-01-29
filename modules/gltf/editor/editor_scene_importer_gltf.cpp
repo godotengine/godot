@@ -66,11 +66,23 @@ Node *EditorSceneFormatImporterGLTF::import_scene(const String &p_path, uint32_t
 		state->set_create_animations(bool(p_options["animation/import"]));
 	}
 
+#ifndef DISABLE_DEPRECATED
 	if (p_options.has("animation/trimming")) {
-		return doc->generate_scene(state, (float)p_options["animation/fps"], (bool)p_options["animation/trimming"]);
+		if (p_options.has("animation/remove_immutable_tracks")) {
+			return doc->generate_scene(state, (float)p_options["animation/fps"], (bool)p_options["animation/trimming"], (bool)p_options["animation/remove_immutable_tracks"]);
+		} else {
+			return doc->generate_scene(state, (float)p_options["animation/fps"], (bool)p_options["animation/trimming"], true);
+		}
 	} else {
-		return doc->generate_scene(state, (float)p_options["animation/fps"], false);
+		if (p_options.has("animation/remove_immutable_tracks")) {
+			return doc->generate_scene(state, (float)p_options["animation/fps"], false, (bool)p_options["animation/remove_immutable_tracks"]);
+		} else {
+			return doc->generate_scene(state, (float)p_options["animation/fps"], false, true);
+		}
 	}
+#else
+	return doc->generate_scene(state, (float)p_options["animation/fps"], (bool)p_options["animation/trimming"], (bool)p_options["animation/remove_immutable_tracks"]);
+#endif
 }
 
 void EditorSceneFormatImporterGLTF::get_import_options(const String &p_path,
