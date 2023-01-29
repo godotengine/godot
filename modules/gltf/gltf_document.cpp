@@ -5961,7 +5961,7 @@ T GLTFDocument::_interpolate_track(const Vector<real_t> &p_times, const Vector<T
 	ERR_FAIL_V(p_values[0]);
 }
 
-void GLTFDocument::_import_animation(Ref<GLTFState> p_state, AnimationPlayer *p_animation_player, const GLTFAnimationIndex p_index, const float p_bake_fps, const bool p_trimming) {
+void GLTFDocument::_import_animation(Ref<GLTFState> p_state, AnimationPlayer *p_animation_player, const GLTFAnimationIndex p_index, const float p_bake_fps, const bool p_trimming, const bool p_remove_immutable_tracks) {
 	Ref<GLTFAnimation> anim = p_state->animations[p_index];
 
 	String anim_name = anim->get_name();
@@ -6064,35 +6064,38 @@ void GLTFDocument::_import_animation(Ref<GLTFState> p_state, AnimationPlayer *p_
 			int scale_idx = -1;
 
 			if (track.position_track.values.size()) {
-				Vector3 base_pos = p_state->nodes[track_i.key]->position;
-				bool not_default = false; //discard the track if all it contains is default values
-				for (int i = 0; i < track.position_track.times.size(); i++) {
-					Vector3 value = track.position_track.values[track.position_track.interpolation == GLTFAnimation::INTERP_CUBIC_SPLINE ? (1 + i * 3) : i];
-					if (!value.is_equal_approx(base_pos)) {
-						not_default = true;
-						break;
+				bool is_default = true; //discard the track if all it contains is default values
+				if (p_remove_immutable_tracks) {
+					Vector3 base_pos = p_state->nodes[track_i.key]->position;
+					for (int i = 0; i < track.position_track.times.size(); i++) {
+						Vector3 value = track.position_track.values[track.position_track.interpolation == GLTFAnimation::INTERP_CUBIC_SPLINE ? (1 + i * 3) : i];
+						if (!value.is_equal_approx(base_pos)) {
+							is_default = false;
+							break;
+						}
 					}
 				}
-				if (not_default) {
+				if (!p_remove_immutable_tracks || !is_default) {
 					position_idx = base_idx;
 					animation->add_track(Animation::TYPE_POSITION_3D);
 					animation->track_set_path(position_idx, transform_node_path);
 					animation->track_set_imported(position_idx, true); //helps merging later
-
 					base_idx++;
 				}
 			}
 			if (track.rotation_track.values.size()) {
-				Quaternion base_rot = p_state->nodes[track_i.key]->rotation.normalized();
-				bool not_default = false; //discard the track if all it contains is default values
-				for (int i = 0; i < track.rotation_track.times.size(); i++) {
-					Quaternion value = track.rotation_track.values[track.rotation_track.interpolation == GLTFAnimation::INTERP_CUBIC_SPLINE ? (1 + i * 3) : i].normalized();
-					if (!value.is_equal_approx(base_rot)) {
-						not_default = true;
-						break;
+				bool is_default = true; //discard the track if all it contains is default values
+				if (p_remove_immutable_tracks) {
+					Quaternion base_rot = p_state->nodes[track_i.key]->rotation.normalized();
+					for (int i = 0; i < track.rotation_track.times.size(); i++) {
+						Quaternion value = track.rotation_track.values[track.rotation_track.interpolation == GLTFAnimation::INTERP_CUBIC_SPLINE ? (1 + i * 3) : i].normalized();
+						if (!value.is_equal_approx(base_rot)) {
+							is_default = false;
+							break;
+						}
 					}
 				}
-				if (not_default) {
+				if (!p_remove_immutable_tracks || !is_default) {
 					rotation_idx = base_idx;
 					animation->add_track(Animation::TYPE_ROTATION_3D);
 					animation->track_set_path(rotation_idx, transform_node_path);
@@ -6101,16 +6104,18 @@ void GLTFDocument::_import_animation(Ref<GLTFState> p_state, AnimationPlayer *p_
 				}
 			}
 			if (track.scale_track.values.size()) {
-				Vector3 base_scale = p_state->nodes[track_i.key]->scale;
-				bool not_default = false; //discard the track if all it contains is default values
-				for (int i = 0; i < track.scale_track.times.size(); i++) {
-					Vector3 value = track.scale_track.values[track.scale_track.interpolation == GLTFAnimation::INTERP_CUBIC_SPLINE ? (1 + i * 3) : i];
-					if (!value.is_equal_approx(base_scale)) {
-						not_default = true;
-						break;
+				bool is_default = true; //discard the track if all it contains is default values
+				if (p_remove_immutable_tracks) {
+					Vector3 base_scale = p_state->nodes[track_i.key]->scale;
+					for (int i = 0; i < track.scale_track.times.size(); i++) {
+						Vector3 value = track.scale_track.values[track.scale_track.interpolation == GLTFAnimation::INTERP_CUBIC_SPLINE ? (1 + i * 3) : i];
+						if (!value.is_equal_approx(base_scale)) {
+							is_default = false;
+							break;
+						}
 					}
 				}
-				if (not_default) {
+				if (!p_remove_immutable_tracks || !is_default) {
 					scale_idx = base_idx;
 					animation->add_track(Animation::TYPE_SCALE_3D);
 					animation->track_set_path(scale_idx, transform_node_path);
@@ -6895,8 +6900,8 @@ void GLTFDocument::_bind_methods() {
 			&GLTFDocument::append_from_buffer, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("append_from_scene", "node", "state", "flags"),
 			&GLTFDocument::append_from_scene, DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("generate_scene", "state", "bake_fps", "trimming"),
-			&GLTFDocument::generate_scene, DEFVAL(30), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("generate_scene", "state", "bake_fps", "trimming", "remove_immutable_tracks"),
+			&GLTFDocument::generate_scene, DEFVAL(30), DEFVAL(false), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("generate_buffer", "state"),
 			&GLTFDocument::generate_buffer);
 	ClassDB::bind_method(D_METHOD("write_to_filesystem", "state", "path"),
@@ -7005,7 +7010,7 @@ Error GLTFDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_
 	return OK;
 }
 
-Node *GLTFDocument::generate_scene(Ref<GLTFState> p_state, float p_bake_fps, bool p_trimming) {
+Node *GLTFDocument::generate_scene(Ref<GLTFState> p_state, float p_bake_fps, bool p_trimming, bool p_remove_immutable_tracks) {
 	ERR_FAIL_NULL_V(p_state, nullptr);
 	ERR_FAIL_INDEX_V(0, p_state->root_nodes.size(), nullptr);
 	Error err = OK;
@@ -7019,7 +7024,7 @@ Node *GLTFDocument::generate_scene(Ref<GLTFState> p_state, float p_bake_fps, boo
 		root->add_child(ap, true);
 		ap->set_owner(root);
 		for (int i = 0; i < p_state->animations.size(); i++) {
-			_import_animation(p_state, ap, i, p_bake_fps, p_trimming);
+			_import_animation(p_state, ap, i, p_bake_fps, p_trimming, p_remove_immutable_tracks);
 		}
 	}
 	for (KeyValue<GLTFNodeIndex, Node *> E : p_state->scene_nodes) {

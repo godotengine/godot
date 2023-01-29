@@ -51,6 +51,7 @@
 			<param index="0" name="state" type="GLTFState" />
 			<param index="1" name="bake_fps" type="float" default="30" />
 			<param index="2" name="trimming" type="bool" default="false" />
+			<param index="3" name="remove_immutable_tracks" type="bool" default="true" />
 			<description>
 				Takes a [GLTFState] object through the [param state] parameter and returns a Godot Engine scene node.
 			</description>
