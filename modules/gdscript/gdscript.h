@@ -479,6 +479,12 @@ public:
 	virtual void add_global_constant(const StringName &p_variable, const Variant &p_value);
 	virtual void add_named_global_constant(const StringName &p_name, const Variant &p_value);
 	virtual void remove_named_global_constant(const StringName &p_name);
+	
+	virtual String _get_current_system_date() const;
+	virtual String _get_current_app_user() const;
+	virtual String _get_current_user_company() const;
+	virtual String _get_current_project_name() const;
+	virtual String _get_current_project_version() const;
 
 	/* DEBUGGER FUNCTIONS */
 
