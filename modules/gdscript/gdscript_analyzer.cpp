@@ -1958,11 +1958,9 @@ void GDScriptAnalyzer::resolve_return(GDScriptParser::ReturnNode *p_return) {
 	GDScriptParser::DataType result;
 
 	GDScriptParser::DataType expected_type;
-	bool has_expected_type = false;
-
-	if (parser->current_function != nullptr) {
+	bool has_expected_type = parser->current_function != nullptr;
+	if (has_expected_type) {
 		expected_type = parser->current_function->get_datatype();
-		has_expected_type = true;
 	}
 
 	if (p_return->return_value != nullptr) {
@@ -1985,24 +1983,21 @@ void GDScriptAnalyzer::resolve_return(GDScriptParser::ReturnNode *p_return) {
 		result.is_constant = true;
 	}
 
-	if (has_expected_type) {
-		expected_type.is_meta_type = false;
-		if (expected_type.is_hard_type()) {
-			if (!is_type_compatible(expected_type, result)) {
-				// Try other way. Okay but not safe.
-				if (!is_type_compatible(result, expected_type)) {
-					push_error(vformat(R"(Cannot return value of type "%s" because the function return type is "%s".)", result.to_string(), expected_type.to_string()), p_return);
-				} else {
-					// TODO: Add warning.
-					mark_node_unsafe(p_return);
-				}
-#ifdef DEBUG_ENABLED
-			} else if (expected_type.builtin_type == Variant::INT && result.builtin_type == Variant::FLOAT) {
-				parser->push_warning(p_return, GDScriptWarning::NARROWING_CONVERSION);
-			} else if (result.is_variant() && !expected_type.is_variant()) {
-				mark_node_unsafe(p_return);
-#endif
+	if (has_expected_type && !expected_type.is_variant()) {
+		if (result.is_variant() || !result.is_hard_type()) {
+			mark_node_unsafe(p_return);
+			if (!is_type_compatible(expected_type, result, true, p_return)) {
+				downgrade_node_type_source(p_return);
 			}
+		} else if (!is_type_compatible(expected_type, result, true, p_return)) {
+			mark_node_unsafe(p_return);
+			if (!is_type_compatible(result, expected_type)) {
+				push_error(vformat(R"(Cannot return value of type "%s" because the function return type is "%s".)", result.to_string(), expected_type.to_string()), p_return);
+			}
+#ifdef DEBUG_ENABLED
+		} else if (expected_type.builtin_type == Variant::INT && result.builtin_type == Variant::FLOAT) {
+			parser->push_warning(p_return, GDScriptWarning::NARROWING_CONVERSION);
+#endif
 		}
 	}
 
