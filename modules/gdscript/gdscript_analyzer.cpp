@@ -1891,11 +1891,22 @@ void GDScriptAnalyzer::resolve_match_pattern(GDScriptParser::PatternNode *p_matc
 			break;
 		case GDScriptParser::PatternNode::PT_EXPRESSION:
 			if (p_match_pattern->expression) {
-				reduce_expression(p_match_pattern->expression);
-				if (!p_match_pattern->expression->is_constant) {
-					push_error(R"(Expression in match pattern must be a constant.)", p_match_pattern->expression);
+				GDScriptParser::ExpressionNode *expr = p_match_pattern->expression;
+				reduce_expression(expr);
+				result = expr->get_datatype();
+				if (!expr->is_constant) {
+					while (expr && expr->type == GDScriptParser::Node::SUBSCRIPT) {
+						GDScriptParser::SubscriptNode *sub = static_cast<GDScriptParser::SubscriptNode *>(expr);
+						if (!sub->is_attribute) {
+							expr = nullptr;
+						} else {
+							expr = sub->base;
+						}
+					}
+					if (!expr || expr->type != GDScriptParser::Node::IDENTIFIER) {
+						push_error(R"(Expression in match pattern must be a constant expression, an identifier, or an attribute access ("A.B").)", expr);
+					}
 				}
-				result = p_match_pattern->expression->get_datatype();
 			}
 			break;
 		case GDScriptParser::PatternNode::PT_BIND:
