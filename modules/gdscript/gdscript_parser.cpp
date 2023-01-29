@@ -1833,10 +1833,18 @@ GDScriptParser::IfNode *GDScriptParser::parse_if(const String &p_token) {
 
 	if (match(GDScriptTokenizer::Token::ELIF)) {
 		SuiteNode *else_block = alloc_node<SuiteNode>();
+		else_block->parent_function = current_function;
+		else_block->parent_block = current_suite;
+
+		SuiteNode *previous_suite = current_suite;
+		current_suite = else_block;
+
 		IfNode *elif = parse_if("elif");
 		else_block->statements.push_back(elif);
 		complete_extents(else_block);
 		n_if->false_block = else_block;
+
+		current_suite = previous_suite;
 	} else if (match(GDScriptTokenizer::Token::ELSE)) {
 		consume(GDScriptTokenizer::Token::COLON, R"(Expected ":" after "else".)");
 		n_if->false_block = parse_suite(R"("else" block)");
