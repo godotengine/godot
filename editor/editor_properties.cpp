@@ -1323,10 +1323,12 @@ void EditorPropertyObjectID::update_property() {
 	ObjectID id = get_edited_object()->get(get_edited_property());
 	if (id.is_valid()) {
 		edit->set_text(type + " ID: " + uitos(id));
+		edit->set_tooltip_text(type + " ID: " + uitos(id));
 		edit->set_disabled(false);
 		edit->set_icon(EditorNode::get_singleton()->get_class_icon(type));
 	} else {
 		edit->set_text(TTR("<empty>"));
+		edit->set_tooltip_text("");
 		edit->set_disabled(true);
 		edit->set_icon(Ref<Texture2D>());
 	}
@@ -1343,6 +1345,7 @@ EditorPropertyObjectID::EditorPropertyObjectID() {
 	edit = memnew(Button);
 	add_child(edit);
 	add_focusable(edit);
+	edit->set_text_overrun_behavior(TextServer::OVERRUN_TRIM_ELLIPSIS);
 	edit->connect("pressed", callable_mp(this, &EditorPropertyObjectID::_edit_pressed));
 }
 
