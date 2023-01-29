@@ -316,12 +316,21 @@
 			<return type="void" />
 			<param index="0" name="names" type="String" />
 			<description>
-				Export a [String] or integer property as an enumerated list of options. If the property is an integer field, then the index of the value is stored, in the same order the values are provided. You can add specific identifiers for allowed values using a colon.
+				Export an [int] or [String] property as an enumerated list of options. If the property is an [int], then the index of the value is stored, in the same order the values are provided. You can add specific identifiers for allowed values using a colon. If the property is a [String], then the value is stored.
 				See also [constant PROPERTY_HINT_ENUM].
 				[codeblock]
-				@export_enum("Rebecca", "Mary", "Leah") var character_name: String
 				@export_enum("Warrior", "Magician", "Thief") var character_class: int
 				@export_enum("Slow:30", "Average:60", "Very Fast:200") var character_speed: int
+				@export_enum("Rebecca", "Mary", "Leah") var character_name: String
+				[/codeblock]
+				If you want to set an initial value, you must specify it explicitly:
+				[codeblock]
+				@export_enum("Rebecca", "Mary", "Leah") var character_name: String = "Rebecca"
+				[/codeblock]
+				If you want to use named GDScript enums, then use [annotation @export] instead:
+				[codeblock]
+				enum CharacterName {REBECCA, MARY, LEAH}
+				@export var character_name: CharacterName
 				[/codeblock]
 			</description>
 		</annotation>
@@ -507,7 +516,7 @@
 			<param index="2" name="step" type="float" default="1.0" />
 			<param index="3" name="extra_hints" type="String" default="&quot;&quot;" />
 			<description>
-				Export a numeric property as a range value. The range must be defined by [param min] and [param max], as well as an optional [param step] and a variety of extra hints. The [param step] defaults to [code]1[/code] for integer properties. For floating-point numbers this value depends on your [code]EditorSettings.interface/inspector/default_float_step[/code] setting.
+				Export an [int] or [float] property as a range value. The range must be defined by [param min] and [param max], as well as an optional [param step] and a variety of extra hints. The [param step] defaults to [code]1[/code] for integer properties. For floating-point numbers this value depends on your [code]EditorSettings.interface/inspector/default_float_step[/code] setting.
 				If hints [code]"or_greater"[/code] and [code]"or_less"[/code] are provided, the editor widget will not cap the value at range boundaries. The [code]"exp"[/code] hint will make the edited values on range to change exponentially. The [code]"hide_slider"[/code] hint will hide the slider element of the editor widget.
 				Hints also allow to indicate the units for the edited value. Using [code]"radians"[/code] you can specify that the actual value is in radians, but should be displayed in degrees in the Inspector dock. [code]"degrees"[/code] allows to add a degree sign as a unit suffix. Finally, a custom suffix can be provided using [code]"suffix:unit"[/code], where "unit" can be any string.
 				See also [constant PROPERTY_HINT_RANGE].
