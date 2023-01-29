@@ -303,42 +303,55 @@ double AnimationNode::_blend_node(const StringName &p_subpath, const Vector<Stri
 	return p_node->_pre_process(new_path, new_parent, state, p_time, p_seek, p_is_external_seeking, p_connections);
 }
 
-int AnimationNode::get_input_count() const {
-	return inputs.size();
-}
-
-String AnimationNode::get_input_name(int p_input) {
-	ERR_FAIL_INDEX_V(p_input, inputs.size(), String());
-	return inputs[p_input].name;
-}
-
 String AnimationNode::get_caption() const {
 	String ret = "Node";
 	GDVIRTUAL_CALL(_get_caption, ret);
 	return ret;
 }
 
-void AnimationNode::add_input(const String &p_name) {
+bool AnimationNode::add_input(const String &p_name) {
 	//root nodes can't add inputs
-	ERR_FAIL_COND(Object::cast_to<AnimationRootNode>(this) != nullptr);
+	ERR_FAIL_COND_V(Object::cast_to<AnimationRootNode>(this) != nullptr, false);
 	Input input;
-	ERR_FAIL_COND(p_name.contains(".") || p_name.contains("/"));
+	ERR_FAIL_COND_V(p_name.contains(".") || p_name.contains("/"), false);
 	input.name = p_name;
 	inputs.push_back(input);
 	emit_changed();
-}
-
-void AnimationNode::set_input_name(int p_input, const String &p_name) {
-	ERR_FAIL_INDEX(p_input, inputs.size());
-	ERR_FAIL_COND(p_name.contains(".") || p_name.contains("/"));
-	inputs.write[p_input].name = p_name;
-	emit_changed();
+	return true;
 }
 
 void AnimationNode::remove_input(int p_index) {
 	ERR_FAIL_INDEX(p_index, inputs.size());
 	inputs.remove_at(p_index);
 	emit_changed();
+}
+
+bool AnimationNode::set_input_name(int p_input, const String &p_name) {
+	ERR_FAIL_INDEX_V(p_input, inputs.size(), false);
+	ERR_FAIL_COND_V(p_name.contains(".") || p_name.contains("/"), false);
+	inputs.write[p_input].name = p_name;
+	emit_changed();
+	return true;
+}
+
+String AnimationNode::get_input_name(int p_input) const {
+	ERR_FAIL_INDEX_V(p_input, inputs.size(), String());
+	return inputs[p_input].name;
+}
+
+int AnimationNode::get_input_count() const {
+	return inputs.size();
+}
+
+int AnimationNode::find_input(const String &p_name) const {
+	int idx = -1;
+	for (int i = 0; i < inputs.size(); i++) {
+		if (inputs[i].name == p_name) {
+			idx = i;
+			break;
+		}
+	}
+	return idx;
 }
 
 double AnimationNode::process(double p_time, bool p_seek, bool p_is_external_seeking) {
@@ -404,11 +417,12 @@ Ref<AnimationNode> AnimationNode::get_child_by_name(const StringName &p_name) {
 }
 
 void AnimationNode::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("get_input_count"), &AnimationNode::get_input_count);
-	ClassDB::bind_method(D_METHOD("get_input_name", "input"), &AnimationNode::get_input_name);
-
 	ClassDB::bind_method(D_METHOD("add_input", "name"), &AnimationNode::add_input);
 	ClassDB::bind_method(D_METHOD("remove_input", "index"), &AnimationNode::remove_input);
+	ClassDB::bind_method(D_METHOD("set_input_name", "input", "name"), &AnimationNode::set_input_name);
+	ClassDB::bind_method(D_METHOD("get_input_name", "input"), &AnimationNode::get_input_name);
+	ClassDB::bind_method(D_METHOD("get_input_count"), &AnimationNode::get_input_count);
+	ClassDB::bind_method(D_METHOD("find_input", "name"), &AnimationNode::find_input);
 
 	ClassDB::bind_method(D_METHOD("set_filter_path", "path", "enable"), &AnimationNode::set_filter_path);
 	ClassDB::bind_method(D_METHOD("is_path_filtered", "path"), &AnimationNode::is_path_filtered);
