@@ -84,6 +84,7 @@ void CircleShape2D::draw(const RID &p_to_rid, const Color &p_color) {
 
 	if (is_collision_outline_enabled()) {
 		points.push_back(points[0]);
+		col = { Color(p_color, 1.0) };
 		RenderingServer::get_singleton()->canvas_item_add_polyline(p_to_rid, points, col);
 	}
 }
