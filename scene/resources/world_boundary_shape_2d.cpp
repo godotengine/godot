@@ -76,11 +76,12 @@ real_t WorldBoundaryShape2D::get_distance() const {
 
 void WorldBoundaryShape2D::draw(const RID &p_to_rid, const Color &p_color) {
 	Vector2 point = get_distance() * get_normal();
+	real_t line_width = 3.0;
 
 	Vector2 l1[2] = { point - get_normal().orthogonal() * 100, point + get_normal().orthogonal() * 100 };
-	RS::get_singleton()->canvas_item_add_line(p_to_rid, l1[0], l1[1], p_color, 3);
-	Vector2 l2[2] = { point, point + get_normal() * 30 };
-	RS::get_singleton()->canvas_item_add_line(p_to_rid, l2[0], l2[1], p_color, 3);
+	RS::get_singleton()->canvas_item_add_line(p_to_rid, l1[0], l1[1], p_color, line_width);
+	Vector2 l2[2] = { point + get_normal().normalized() * (0.5 * line_width), point + get_normal() * 30 };
+	RS::get_singleton()->canvas_item_add_line(p_to_rid, l2[0], l2[1], p_color, line_width);
 }
 
 Rect2 WorldBoundaryShape2D::get_rect() const {
