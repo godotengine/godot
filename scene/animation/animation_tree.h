@@ -141,12 +141,12 @@ public:
 	virtual double process(double p_time, bool p_seek, bool p_is_external_seeking);
 	virtual String get_caption() const;
 
-	int get_input_count() const;
-	String get_input_name(int p_input);
-
 	void add_input(const String &p_name);
-	void set_input_name(int p_input, const String &p_name);
 	void remove_input(int p_index);
+	int get_input_count() const;
+	int find_input(const String &p_name) const;
+	void set_input_name(int p_input, const String &p_name);
+	String get_input_name(int p_input) const;
 
 	void set_filter_path(const NodePath &p_path, bool p_enable);
 	bool is_path_filtered(const NodePath &p_path) const;

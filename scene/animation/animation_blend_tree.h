@@ -320,10 +320,6 @@ public:
 	void set_input_as_auto_advance(int p_input, bool p_enable);
 	bool is_input_set_as_auto_advance(int p_input) const;
 
-	void set_input_caption(int p_input, const String &p_name);
-	String get_input_caption(int p_input) const;
-	int find_input_caption(const String &p_name) const;
-
 	void set_xfade_time(double p_fade);
 	double get_xfade_time() const;
 
