@@ -164,10 +164,20 @@ void Node::_notification(int p_notification) {
 				data.parent->remove_child(this);
 			}
 
-			// kill children as cleanly as possible
-			while (data.children.size()) {
-				Node *child = data.children[data.children.size() - 1]; //begin from the end because its faster and more consistent with creation
-				memdelete(child);
+			Vector<Node *> to_delete;
+			to_delete.push_back(this);
+
+			while (!to_delete.is_empty()) {
+				Node *n = to_delete[to_delete.size() - 1];
+				// begin from the end because its faster and more consistent with creation
+				if (n->data.children.size()) {
+					to_delete.push_back(n->data.children[n->data.children.size() - 1]);
+				} else {
+					to_delete.resize(to_delete.size() - 1);
+					if (this != n) {
+						memdelete(n);
+					}
+				}
 			}
 		} break;
 	}

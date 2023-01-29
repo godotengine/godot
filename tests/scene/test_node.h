@@ -415,6 +415,16 @@ TEST_CASE("[SceneTree][Node] Testing node operations with a more complex simple 
 		memdelete(duplicate1);
 	}
 
+	SUBCASE("Deleting deeply nested nodes should not overflow the stack") {
+		Node *top = memnew(Node);
+		for (int i = 0; i < 100000; i++) {
+			Node *tmp = memnew(Node);
+			tmp->add_child(top);
+			top = tmp;
+		}
+		memdelete(top);
+	}
+
 	memdelete(node1_1);
 	memdelete(node1);
 	memdelete(node2);
