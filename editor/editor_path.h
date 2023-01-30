@@ -49,12 +49,20 @@ class EditorPath : public Button {
 	TextureRect *sub_objects_icon = nullptr;
 	PopupMenu *sub_objects_menu = nullptr;
 
-	Vector<ObjectID> objects;
+	struct Property {
+		String name;
+		ObjectID value;
+		int depth = 0;
+	};
+	Vector<Property> objects;
 
-	void _show_popup();
-	void _id_pressed(int p_idx);
+	String _get_human_readable_name(Object *p_obj, String p_prop_name = "") const;
+	void _add_object_properties(Object *p_obj, int p_depth = 1);
+
+	void _toggle_popup();
+	void _id_pressed(int p_id);
 	void _about_to_show();
-	void _add_children_to_popup(Object *p_obj, int p_depth = 0);
+	void _add_children_to_popup();
 
 protected:
 	void _notification(int p_what);

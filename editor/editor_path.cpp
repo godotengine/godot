@@ -35,7 +35,76 @@
 #include "editor/editor_scale.h"
 #include "editor/multi_node_edit.h"
 
-void EditorPath::_add_children_to_popup(Object *p_obj, int p_depth) {
+String EditorPath::_get_human_readable_name(Object *p_obj, String p_prop_name) const {
+	String obj_text;
+	if (p_obj->has_method("_get_editor_name")) {
+		obj_text = p_obj->call("_get_editor_name");
+	} else if (Object::cast_to<Resource>(p_obj)) {
+		Resource *r = Object::cast_to<Resource>(p_obj);
+		if (r->get_path().is_resource_file()) {
+			obj_text = r->get_path().get_file();
+		} else if (!r->get_name().is_empty()) {
+			obj_text = r->get_name();
+		} else {
+			obj_text = r->get_class();
+		}
+	} else if (Object::cast_to<Node>(p_obj)) {
+		obj_text = Object::cast_to<Node>(p_obj)->get_name();
+	} else if (p_obj->is_class("EditorDebuggerRemoteObject")) {
+		obj_text = p_obj->call("get_title");
+	} else {
+		obj_text = p_obj->get_class();
+	}
+
+	if (p_prop_name.is_empty()) {
+		return obj_text;
+	}
+
+	String obj_name;
+	Vector<String> name_parts = p_prop_name.split("/");
+	for (int i = 0; i < name_parts.size(); i++) {
+		if (i > 0) {
+			obj_name += " > ";
+		}
+		obj_name += name_parts[i].capitalize();
+	}
+
+	return vformat("%s (%s)", obj_name, obj_text);
+}
+
+void EditorPath::_add_children_to_popup() {
+	ObjectID selected_obj_id = history->get_path_object(history->get_path_size() - 1);
+
+	for (int i = 0; i < objects.size(); i++) {
+		const Property &prop = objects[i];
+
+		ObjectID obj_id = prop.value;
+		Object *obj = ObjectDB::get_instance(obj_id);
+
+		String obj_name;
+		Ref<Texture2D> obj_icon;
+		if (obj) {
+			obj_name = _get_human_readable_name(obj, prop.name);
+
+			if (Object::cast_to<MultiNodeEdit>(obj)) {
+				obj_icon = EditorNode::get_singleton()->get_class_icon(Object::cast_to<MultiNodeEdit>(obj)->get_edited_class_name());
+			} else {
+				obj_icon = EditorNode::get_singleton()->get_object_icon(obj);
+			}
+		}
+
+		int index = sub_objects_menu->get_item_count();
+		sub_objects_menu->add_icon_item(obj_icon, obj_name, index - 1);
+		sub_objects_menu->set_item_indent(index, prop.depth);
+		sub_objects_menu->set_item_disabled(index, selected_obj_id == obj_id);
+
+		if (i == 0) {
+			sub_objects_menu->add_separator();
+		}
+	}
+}
+
+void EditorPath::_add_object_properties(Object *p_obj, int p_depth) {
 	if (p_depth > 8) {
 		return;
 	}
@@ -59,28 +128,17 @@ void EditorPath::_add_children_to_popup(Object *p_obj, int p_depth) {
 			continue;
 		}
 
-		Ref<Texture2D> obj_icon = EditorNode::get_singleton()->get_object_icon(obj);
+		Property prop;
+		prop.name = E.name;
+		prop.value = obj->get_instance_id();
+		prop.depth = p_depth;
 
-		String proper_name = "";
-		Vector<String> name_parts = E.name.split("/");
-
-		for (int i = 0; i < name_parts.size(); i++) {
-			if (i > 0) {
-				proper_name += " > ";
-			}
-			proper_name += name_parts[i].capitalize();
-		}
-
-		int index = sub_objects_menu->get_item_count();
-		sub_objects_menu->add_icon_item(obj_icon, proper_name, objects.size());
-		sub_objects_menu->set_item_indent(index, p_depth);
-		objects.push_back(obj->get_instance_id());
-
-		_add_children_to_popup(obj, p_depth + 1);
+		objects.push_back(prop);
+		_add_object_properties(obj, p_depth + 1);
 	}
 }
 
-void EditorPath::_show_popup() {
+void EditorPath::_toggle_popup() {
 	if (sub_objects_menu->is_visible()) {
 		sub_objects_menu->hide();
 		return;
@@ -101,67 +159,50 @@ void EditorPath::_show_popup() {
 }
 
 void EditorPath::_about_to_show() {
+	ObjectID base_object_id = history->get_path_object(0);
+	Object *base_obj = ObjectDB::get_instance(base_object_id);
+	if (!base_obj) {
+		return;
+	}
+
+	Property base_object_prop;
+	base_object_prop.name = "";
+	base_object_prop.value = base_object_id;
+	base_object_prop.depth = 0;
+
+	objects.clear();
+	objects.push_back(base_object_prop);
+	_add_object_properties(base_obj);
+
+	_add_children_to_popup();
+
+	if (objects.size() == 1) {
+		sub_objects_menu->add_item(TTR("No sub-resources found."));
+		sub_objects_menu->set_item_disabled(sub_objects_menu->get_item_count() - 1, true);
+	}
+}
+
+void EditorPath::update_path() {
 	Object *obj = ObjectDB::get_instance(history->get_path_object(history->get_path_size() - 1));
 	if (!obj) {
 		return;
 	}
 
-	objects.clear();
-
-	_add_children_to_popup(obj);
-	if (sub_objects_menu->get_item_count() == 0) {
-		sub_objects_menu->add_item(TTR("No sub-resources found."));
-		sub_objects_menu->set_item_disabled(0, true);
+	Ref<Texture2D> obj_icon;
+	if (Object::cast_to<MultiNodeEdit>(obj)) {
+		obj_icon = EditorNode::get_singleton()->get_class_icon(Object::cast_to<MultiNodeEdit>(obj)->get_edited_class_name());
+	} else {
+		obj_icon = EditorNode::get_singleton()->get_object_icon(obj);
 	}
-}
 
-void EditorPath::update_path() {
-	for (int i = 0; i < history->get_path_size(); i++) {
-		Object *obj = ObjectDB::get_instance(history->get_path_object(i));
-		if (!obj) {
-			continue;
-		}
-
-		Ref<Texture2D> obj_icon;
-		if (Object::cast_to<MultiNodeEdit>(obj)) {
-			obj_icon = EditorNode::get_singleton()->get_class_icon(Object::cast_to<MultiNodeEdit>(obj)->get_edited_class_name());
-		} else {
-			obj_icon = EditorNode::get_singleton()->get_object_icon(obj);
-		}
-
-		if (obj_icon.is_valid()) {
-			current_object_icon->set_texture(obj_icon);
-		}
-
-		if (i == history->get_path_size() - 1) {
-			String name;
-			if (obj->has_method("_get_editor_name")) {
-				name = obj->call("_get_editor_name");
-			} else if (Object::cast_to<Resource>(obj)) {
-				Resource *r = Object::cast_to<Resource>(obj);
-				if (r->get_path().is_resource_file()) {
-					name = r->get_path().get_file();
-				} else {
-					name = r->get_name();
-				}
-
-				if (name.is_empty()) {
-					name = r->get_class();
-				}
-			} else if (obj->is_class("EditorDebuggerRemoteObject")) {
-				name = obj->call("get_title");
-			} else if (Object::cast_to<Node>(obj)) {
-				name = Object::cast_to<Node>(obj)->get_name();
-			} else if (Object::cast_to<Resource>(obj) && !Object::cast_to<Resource>(obj)->get_name().is_empty()) {
-				name = Object::cast_to<Resource>(obj)->get_name();
-			} else {
-				name = obj->get_class();
-			}
-
-			current_object_label->set_text(name);
-			set_tooltip_text(obj->get_class());
-		}
+	if (obj_icon.is_valid()) {
+		current_object_icon->set_texture(obj_icon);
 	}
+
+	String name = _get_human_readable_name(obj);
+
+	current_object_label->set_text(name);
+	set_tooltip_text(obj->get_class());
 }
 
 void EditorPath::clear_path() {
@@ -178,15 +219,15 @@ void EditorPath::enable_path() {
 	sub_objects_icon->show();
 }
 
-void EditorPath::_id_pressed(int p_idx) {
-	ERR_FAIL_INDEX(p_idx, objects.size());
+void EditorPath::_id_pressed(int p_id) {
+	ERR_FAIL_INDEX(p_id, objects.size());
 
-	Object *obj = ObjectDB::get_instance(objects[p_idx]);
+	Object *obj = ObjectDB::get_instance(objects[p_id].value);
 	if (!obj) {
 		return;
 	}
 
-	EditorNode::get_singleton()->push_item(obj);
+	EditorNode::get_singleton()->push_item(obj, objects[p_id].name);
 }
 
 void EditorPath::_notification(int p_what) {
@@ -200,7 +241,7 @@ void EditorPath::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_READY: {
-			connect("pressed", callable_mp(this, &EditorPath::_show_popup));
+			connect("pressed", callable_mp(this, &EditorPath::_toggle_popup));
 		} break;
 	}
 }
