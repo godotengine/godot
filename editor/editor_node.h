@@ -460,6 +460,7 @@ private:
 	EditorToaster *editor_toaster = nullptr;
 	LinkButton *version_btn = nullptr;
 	Button *bottom_panel_raise = nullptr;
+	bool bottom_panel_updating = false;
 
 	Tree *disk_changed_list = nullptr;
 	ConfirmationDialog *disk_changed = nullptr;
