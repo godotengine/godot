@@ -129,7 +129,7 @@ static void _digest_row_task(const CVTTCompressionJobParams &p_job_params, const
 	}
 }
 
-void image_compress_cvtt(Image *p_image, float p_lossy_quality, Image::UsedChannels p_channels) {
+void image_compress_cvtt(Image *p_image, Image::UsedChannels p_channels) {
 	if (p_image->get_format() >= Image::FORMAT_BPTC_RGBA) {
 		return; //do not compress, already compressed
 	}

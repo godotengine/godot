@@ -1626,7 +1626,7 @@ Vector2i DisplayServerWindows::ime_get_selection() const {
 	ImmGetCompositionStringW(wd.im_himc, GCS_COMPSTR, string, length);
 
 	int32_t utf32_cursor = 0;
-	for (int32_t i = 0; i < length / sizeof(wchar_t); i++) {
+	for (int32_t i = 0; i < length / int32_t(sizeof(wchar_t)); i++) {
 		if ((string[i] & 0xfffffc00) == 0xd800) {
 			i++;
 		}

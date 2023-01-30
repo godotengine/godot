@@ -553,6 +553,16 @@ void OS::add_frame_delay(bool p_can_draw) {
 	}
 }
 
+OS::PreferredTextureFormat OS::get_preferred_texture_format() const {
+#if defined(__arm__) || defined(__aarch64__) || defined(_M_ARM) || defined(_M_ARM64)
+	return PREFERRED_TEXTURE_FORMAT_ETC2_ASTC; // By rule, ARM hardware uses ETC texture compression.
+#elif defined(__x86_64__) || defined(_M_X64) || defined(i386) || defined(__i386__) || defined(__i386) || defined(_M_IX86)
+	return PREFERRED_TEXTURE_FORMAT_S3TC_BPTC; // By rule, X86 hardware prefers S3TC and derivatives.
+#else
+	return PREFERRED_TEXTURE_FORMAT_S3TC_BPTC; // Override in platform if needed.
+#endif
+}
+
 OS::OS() {
 	singleton = this;
 

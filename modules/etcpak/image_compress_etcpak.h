@@ -43,10 +43,10 @@ enum class EtcpakType {
 	ETCPAK_TYPE_DXT5_RA_AS_RG,
 };
 
-void _compress_etc1(Image *r_img, float p_lossy_quality);
-void _compress_etc2(Image *r_img, float p_lossy_quality, Image::UsedChannels p_channels);
-void _compress_bc(Image *r_img, float p_lossy_quality, Image::UsedChannels p_channels);
+void _compress_etc1(Image *r_img);
+void _compress_etc2(Image *r_img, Image::UsedChannels p_channels);
+void _compress_bc(Image *r_img, Image::UsedChannels p_channels);
 
-void _compress_etcpak(EtcpakType p_compresstype, Image *r_img, float p_lossy_quality);
+void _compress_etcpak(EtcpakType p_compresstype, Image *r_img);
 
 #endif // IMAGE_COMPRESS_ETCPAK_H

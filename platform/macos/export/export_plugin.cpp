@@ -48,16 +48,18 @@
 #endif
 
 void EditorExportPlatformMacOS::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) const {
-	if (p_preset->get("texture_format/s3tc")) {
-		r_features->push_back("s3tc");
-	}
-	if (p_preset->get("texture_format/etc")) {
-		r_features->push_back("etc");
-	}
-	if (p_preset->get("texture_format/etc2")) {
-		r_features->push_back("etc2");
-	}
 	r_features->push_back(p_preset->get("binary_format/architecture"));
+	String architecture = p_preset->get("binary_format/architecture");
+
+	if (architecture == "universal" || architecture == "x86_64") {
+		r_features->push_back("s3tc");
+		r_features->push_back("bptc");
+	} else if (architecture == "arm64") {
+		r_features->push_back("etc2");
+		r_features->push_back("astc");
+	} else {
+		ERR_PRINT("Invalid architecture");
+	}
 }
 
 bool EditorExportPlatformMacOS::get_export_option_visibility(const EditorExportPreset *p_preset, const String &p_option, const HashMap<StringName, Variant> &p_options) const {
@@ -209,10 +211,6 @@ void EditorExportPlatformMacOS::get_export_options(List<ExportOption> *r_options
 	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "privacy/network_volumes_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/removable_volumes_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need to use removable volumes"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "privacy/removable_volumes_usage_description_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
-
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/s3tc"), true));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/etc"), false));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/etc2"), false));
 
 	String run_script = "#!/usr/bin/env bash\n"
 						"unzip -o -q \"{temp_dir}/{archive_name}\" -d \"{temp_dir}\"\n"
@@ -1764,6 +1762,24 @@ bool EditorExportPlatformMacOS::has_valid_export_configuration(const Ref<EditorE
 		if (!rvalid) {
 			err += TTR("Custom release template not found.") + "\n";
 		}
+	}
+
+	String architecture = p_preset->get("binary_format/architecture");
+
+	if (architecture == "universal" || architecture == "x86_64") {
+		const String bc_error = test_bc();
+		if (!bc_error.is_empty()) {
+			valid = false;
+			err += bc_error;
+		}
+	} else if (architecture == "arm64") {
+		const String etc_error = test_etc2();
+		if (!etc_error.is_empty()) {
+			valid = false;
+			err += etc_error;
+		}
+	} else {
+		ERR_PRINT("Invalid architecture");
 	}
 
 	// Look for export templates (official templates, check only is custom templates are not set).

@@ -290,6 +290,14 @@ public:
 	virtual Vector<String> get_granted_permissions() const { return Vector<String>(); }
 
 	virtual void process_and_drop_events() {}
+
+	enum PreferredTextureFormat {
+		PREFERRED_TEXTURE_FORMAT_S3TC_BPTC,
+		PREFERRED_TEXTURE_FORMAT_ETC2_ASTC
+	};
+
+	virtual PreferredTextureFormat get_preferred_texture_format() const;
+
 	OS();
 	virtual ~OS();
 };
