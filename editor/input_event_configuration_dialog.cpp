@@ -201,7 +201,7 @@ void InputEventConfigurationDialog::_on_listen_input_changed(const Ref<InputEven
 	}
 
 	if (k.is_valid()) {
-		k->set_pressed(false); // To avoid serialisation of 'pressed' property - doesn't matter for actions anyway.
+		k->set_pressed(false); // To avoid serialization of 'pressed' property - doesn't matter for actions anyway.
 		if (key_mode->get_selected_id() == KEYMODE_KEYCODE) {
 			k->set_physical_keycode(Key::NONE);
 			k->set_key_label(Key::NONE);

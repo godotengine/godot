@@ -286,7 +286,7 @@
 		<method name="make_read_only">
 			<return type="void" />
 			<description>
-				Makes the dictionary read-only, i.e. disabled modifying of the dictionary's contents. Does not apply to nested content, e.g. content of nested dicitonaries.
+				Makes the dictionary read-only, i.e. disables modification of the dictionary's contents. Does not apply to nested content, e.g. content of nested dictionaries.
 			</description>
 		</method>
 		<method name="merge">

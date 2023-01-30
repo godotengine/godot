@@ -25,7 +25,7 @@
 			<param index="1" name="common_name" type="String" />
 			<param index="2" name="client_options" type="TLSOptions" default="null" />
 			<description>
-				Connects to a peer using an underlying [StreamPeer] [param stream] and verifying the remote certificate is correcly signed for the given [param common_name]. You can pass the optional [param client_options] parameter to customize the trusted certification authorities, or disable the common name verification. See [method TLSOptions.client] and [method TLSOptions.client_unsafe].
+				Connects to a peer using an underlying [StreamPeer] [param stream] and verifying the remote certificate is correctly signed for the given [param common_name]. You can pass the optional [param client_options] parameter to customize the trusted certification authorities, or disable the common name verification. See [method TLSOptions.client] and [method TLSOptions.client_unsafe].
 			</description>
 		</method>
 		<method name="disconnect_from_stream">
