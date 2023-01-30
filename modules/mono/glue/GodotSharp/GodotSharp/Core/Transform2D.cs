@@ -50,6 +50,18 @@ namespace Godot
         }
 
         /// <summary>
+        /// Returns the transform's skew (in radians).
+        /// </summary>
+        public readonly real_t Skew
+        {
+            get
+            {
+                real_t detSign = Mathf.Sign(BasisDeterminant());
+                return Mathf.Acos(X.Normalized().Dot(detSign * Y.Normalized())) - Mathf.Pi * 0.5f;
+            }
+        }
+
+        /// <summary>
         /// Access whole columns in the form of <see cref="Vector2"/>.
         /// The third column is the <see cref="Origin"/> vector.
         /// </summary>
@@ -190,48 +202,13 @@ namespace Godot
         /// <returns>The interpolated transform.</returns>
         public readonly Transform2D InterpolateWith(Transform2D transform, real_t weight)
         {
-            real_t r1 = Rotation;
-            real_t r2 = transform.Rotation;
-
-            Vector2 s1 = Scale;
-            Vector2 s2 = transform.Scale;
-
-            // Slerp rotation
-            (real_t sin1, real_t cos1) = Mathf.SinCos(r1);
-            (real_t sin2, real_t cos2) = Mathf.SinCos(r2);
-            var v1 = new Vector2(cos1, sin1);
-            var v2 = new Vector2(cos2, sin2);
-
-            real_t dot = v1.Dot(v2);
-
-            dot = Mathf.Clamp(dot, -1.0f, 1.0f);
-
-            Vector2 v;
-
-            if (dot > 0.9995f)
-            {
-                // Linearly interpolate to avoid numerical precision issues
-                v = v1.Lerp(v2, weight).Normalized();
-            }
-            else
-            {
-                real_t angle = weight * Mathf.Acos(dot);
-                Vector2 v3 = (v2 - (v1 * dot)).Normalized();
-                (real_t sine, real_t cos) = Mathf.SinCos(angle);
-                v = (v1 * sine) + (v3 * cos);
-            }
-
-            // Extract parameters
-            Vector2 p1 = Origin;
-            Vector2 p2 = transform.Origin;
-
-            // Construct matrix
-            var res = new Transform2D(Mathf.Atan2(v.Y, v.X), p1.Lerp(p2, weight));
-            Vector2 scale = s1.Lerp(s2, weight);
-            res.X *= scale;
-            res.Y *= scale;
-
-            return res;
+            return new Transform2D
+            (
+                Mathf.LerpAngle(Rotation, transform.Rotation, weight),
+                Scale.Lerp(transform.Scale, weight),
+                Mathf.LerpAngle(Skew, transform.Skew, weight),
+                Origin.Lerp(transform.Origin, weight)
+            );
         }
 
         /// <summary>
