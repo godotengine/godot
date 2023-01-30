@@ -233,8 +233,8 @@ public:
 	virtual real_t get_noise_3dv(Vector3 p_v) const = 0;
 	virtual real_t get_noise_3d(real_t p_x, real_t p_y, real_t p_z) const = 0;
 
-	virtual Ref<Image> get_image(int p_width, int p_height, bool p_invert = false, bool p_in_3d_space = false) const;
-	virtual Ref<Image> get_seamless_image(int p_width, int p_height, bool p_invert = false, bool p_in_3d_space = false, real_t p_blend_skirt = 0.1) const;
+	virtual Ref<Image> get_image(int p_width, int p_height, bool p_invert = false, bool p_in_3d_space = false, bool p_normalize = true) const;
+	virtual Ref<Image> get_seamless_image(int p_width, int p_height, bool p_invert = false, bool p_in_3d_space = false, real_t p_blend_skirt = 0.1, bool p_normalize = true) const;
 };
 
 #endif // NOISE_H
