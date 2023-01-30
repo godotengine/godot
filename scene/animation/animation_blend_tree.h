@@ -276,16 +276,7 @@ public:
 class AnimationNodeTransition : public AnimationNodeSync {
 	GDCLASS(AnimationNodeTransition, AnimationNodeSync);
 
-	enum {
-		MAX_INPUTS = 32
-	};
-	struct InputData {
-		String name;
-		bool auto_advance = false;
-	};
-
-	InputData inputs[MAX_INPUTS];
-	int enabled_inputs = 0;
+	Vector<bool> input_as_auto_advance;
 
 	StringName time = "time";
 	StringName prev_xfading = "prev_xfading";
@@ -301,11 +292,11 @@ class AnimationNodeTransition : public AnimationNodeSync {
 	Ref<Curve> xfade_curve;
 	bool reset = true;
 
-	void _update_inputs();
-
 protected:
+	bool _get(const StringName &p_path, Variant &r_ret) const;
+	bool _set(const StringName &p_path, const Variant &p_value);
 	static void _bind_methods();
-	void _validate_property(PropertyInfo &p_property) const;
+	void _get_property_list(List<PropertyInfo> *p_list) const;
 
 public:
 	virtual void get_parameter_list(List<PropertyInfo> *r_list) const override;
@@ -314,15 +305,13 @@ public:
 
 	virtual String get_caption() const override;
 
-	void set_enabled_inputs(int p_inputs);
-	int get_enabled_inputs();
+	void set_input_count(int p_inputs);
+
+	virtual bool add_input(const String &p_name) override;
+	virtual void remove_input(int p_index) override;
 
 	void set_input_as_auto_advance(int p_input, bool p_enable);
 	bool is_input_set_as_auto_advance(int p_input) const;
-
-	void set_input_caption(int p_input, const String &p_name);
-	String get_input_caption(int p_input) const;
-	int find_input_caption(const String &p_name) const;
 
 	void set_xfade_time(double p_fade);
 	double get_xfade_time() const;
