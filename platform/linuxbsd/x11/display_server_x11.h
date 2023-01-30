@@ -139,6 +139,7 @@ class DisplayServerX11 : public DisplayServer {
 		Window x11_window;
 		Window x11_xim_window;
 		::XIC xic;
+		::GC gc;
 		bool ime_active = false;
 		bool ime_in_progress = false;
 		bool ime_suppress_next_keyup = false;
@@ -191,6 +192,8 @@ class DisplayServerX11 : public DisplayServer {
 	xkb_compose_table *dead_tbl = nullptr;
 
 	HashMap<WindowID, WindowData> windows;
+	HashSet<WindowID> windows_pending_map;
+	bool main_win_first_drawn = false;
 
 	unsigned int last_mouse_monitor_mask = 0;
 	uint64_t time_since_popup = 0;

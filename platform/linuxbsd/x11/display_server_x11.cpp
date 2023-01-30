@@ -1288,9 +1288,24 @@ void DisplayServerX11::show_window(WindowID p_id) {
 
 	DEBUG_LOG_X11("show_window: %lu (%u) \n", wd.x11_window, p_id);
 
-	XMapWindow(x11_display, wd.x11_window);
-	XSync(x11_display, False);
-	_validate_mode_on_map(p_id);
+	// Let the main window be shown very early the first time it's shown for boot logo, etc.
+	if (p_id == MAIN_WINDOW_ID && !main_win_first_drawn) {
+		XMapWindow(x11_display, wd.x11_window);
+
+		Color clear_color;
+		if (_get_window_early_clear_override(clear_color)) {
+			XSetForeground(x11_display, wd.gc, clear_color.to_argb32());
+			XFillRectangle(x11_display, wd.x11_window, wd.gc, 0, 0, wd.size.x, wd.size.y);
+		}
+
+		XSync(x11_display, False);
+		usleep(200000);
+		_validate_mode_on_map(p_id);
+
+		main_win_first_drawn = true;
+	} else {
+		windows_pending_map.insert(p_id);
+	}
 }
 
 void DisplayServerX11::delete_sub_window(WindowID p_id) {
@@ -3478,6 +3493,32 @@ void DisplayServerX11::_window_changed(XEvent *event) {
 		return;
 	}
 
+	Color clear_color;
+	if (_get_window_early_clear_override(clear_color)) {
+		XRectangle rects[3];
+		int num_rects = 0;
+		int grown_w = new_rect.size.x - wd.size.x;
+		if (grown_w > 0) {
+			rects[num_rects] = XRectangle{ (int16_t)wd.size.x, 0, (uint16_t)grown_w, (uint16_t)new_rect.size.y };
+			num_rects++;
+		}
+		int grown_h = new_rect.size.y - wd.size.y;
+		if (grown_h > 0) {
+			// Since the piece of the OS controlling the rendering surface may do vertical letterboxing or
+			// bottom-align of the previously rendered contents on resize, we're covering one extra half of
+			// the grown size at the bottom and the full grown height at the top.
+			rects[num_rects] = XRectangle{ 0, 0, (uint16_t)new_rect.size.x, (uint16_t)grown_h };
+			num_rects++;
+			rects[num_rects] = XRectangle{ 0, (int16_t)wd.size.y, (uint16_t)new_rect.size.x, (uint16_t)(3 * grown_h / 2) };
+			num_rects++;
+		}
+		if (num_rects) {
+			XSetForeground(x11_display, wd.gc, clear_color.to_argb32());
+			XFillRectangles(x11_display, wd.x11_window, wd.gc, rects, num_rects);
+			XSync(x11_display, false);
+		}
+	}
+
 	wd.position = new_rect.position;
 	wd.size = new_rect.size;
 
@@ -4047,6 +4088,9 @@ void DisplayServerX11::process_events() {
 				}
 
 				windows[window_id].fullscreen = _window_fullscreen_check(window_id);
+
+				if (window_id == MAIN_WINDOW_ID) {
+				}
 
 				Main::force_redraw();
 			} break;
@@ -4622,6 +4666,12 @@ void DisplayServerX11::swap_buffers() {
 		gl_manager->swap_buffers();
 	}
 #endif
+	for (WindowID wid : windows_pending_map) {
+		XMapWindow(x11_display, windows[wid].x11_window);
+		XSync(x11_display, False);
+		_validate_mode_on_map(wid);
+	}
+	windows_pending_map.clear();
 }
 
 void DisplayServerX11::_update_context(WindowData &wd) {
@@ -5062,6 +5112,8 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 			wd.xic = nullptr;
 			WARN_PRINT("XCreateIC couldn't create wd.xic");
 		}
+
+		wd.gc = XCreateGC(x11_display, wd.x11_window, 0, 0);
 
 		_update_context(wd);
 
@@ -5704,6 +5756,9 @@ DisplayServerX11::~DisplayServerX11() {
 				wd.xkb_state = nullptr;
 			}
 		}
+
+		XFreeGC(x11_display, wd.gc);
+
 		XUnmapWindow(x11_display, wd.x11_window);
 		XDestroyWindow(x11_display, wd.x11_window);
 	}
