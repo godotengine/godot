@@ -74,13 +74,13 @@ String GDScriptLanguage::_get_processed_template(const String &p_template, const
 
 	processed_template = processed_template.replace("%BASE%", p_base_class_name);
 	processed_template = processed_template.replace("%TS%", _get_indentation());
-
-	processed_template = processed_template.replace("%DATE%", _get_current_system_date());
-	processed_template = processed_template.replace("%USER%", _get_current_app_user());
-	processed_template = processed_template.replace("%COMPANY%", _get_current_user_company());
-	processed_template = processed_template.replace("%PROJECT%", _get_current_project_name());
-	processed_template = processed_template.replace("%VERSION%", _get_current_project_version());
-
+#ifdef TOOLS_ENABLED
+	processed_template = processed_template.replace("%DATE%", get_current_system_date());
+	processed_template = processed_template.replace("%USER%", get_current_app_user());
+	processed_template = processed_template.replace("%COMPANY%", get_current_user_company());
+	processed_template = processed_template.replace("%PROJECT%", get_current_project_name());
+	processed_template = processed_template.replace("%VERSION%", get_current_project_version());
+#endif
 	return processed_template;
 }
 
@@ -3067,7 +3067,7 @@ String GDScriptLanguage::_get_indentation() const {
 }
 
 #ifdef TOOLS_ENABLED
-String GDScriptLanguage::_get_current_system_date() const {
+String GDScriptLanguage::get_current_system_date() const {
 	time_t currTime = time(NULL);
 	struct tm buf;
 	char dateString[100];
@@ -3077,19 +3077,19 @@ String GDScriptLanguage::_get_current_system_date() const {
 	return dateString;
 }
 
-String GDScriptLanguage::_get_current_app_user() const {
+String GDScriptLanguage::get_current_app_user() const {
 	return (String)ProjectSettings::get_singleton()->get("application/config/user");
 }
 
-String GDScriptLanguage::_get_current_user_company() const {
+String GDScriptLanguage::get_current_user_company() const {
 	return (String)ProjectSettings::get_singleton()->get("application/config/company_name");
 }
 
-String GDScriptLanguage::_get_current_project_name() const {
+String GDScriptLanguage::get_current_project_name() const {
 	return (String)ProjectSettings::get_singleton()->get("application/config/project_name");
 }
 
-String GDScriptLanguage::_get_current_project_version() const {
+String GDScriptLanguage::get_current_project_version() const {
 	return (String)ProjectSettings::get_singleton()->get("application/config/version");
 }
 #endif
