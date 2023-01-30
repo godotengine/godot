@@ -754,22 +754,27 @@ void ProjectExportDialog::_fill_resource_tree() {
 	include_margin->show();
 
 	_fill_tree(EditorFileSystem::get_singleton()->get_filesystem(), root, current, f);
+
+	if (f == EditorExportPreset::EXPORT_CUSTOMIZED) {
+		_propagate_file_export_mode(include_files->get_root(), EditorExportPreset::MODE_FILE_NOT_CUSTOMIZED);
+	}
 }
 
 void ProjectExportDialog::_setup_item_for_file_mode(TreeItem *p_item, EditorExportPreset::FileExportMode p_mode) {
 	if (p_mode == EditorExportPreset::MODE_FILE_NOT_CUSTOMIZED) {
 		p_item->set_checked(0, false);
 		p_item->set_cell_mode(1, TreeItem::CELL_MODE_STRING);
-		p_item->set_text(1, "");
 		p_item->set_editable(1, false);
 		p_item->set_selectable(1, false);
+		p_item->set_custom_color(1, get_theme_color(SNAME("disabled_font_color"), SNAME("Editor")));
 	} else {
 		p_item->set_checked(0, true);
 		p_item->set_cell_mode(1, TreeItem::CELL_MODE_CUSTOM);
-		p_item->set_text(1, file_mode_popup->get_item_text(file_mode_popup->get_item_index(p_mode)));
 		p_item->set_editable(1, true);
 		p_item->set_selectable(1, true);
+		p_item->clear_custom_color(1);
 	}
+	p_item->set_metadata(1, p_mode);
 }
 
 bool ProjectExportDialog::_fill_tree(EditorFileSystemDirectory *p_dir, TreeItem *p_item, Ref<EditorExportPreset> &current, EditorExportPreset::ExportFilter p_export_filter) {
@@ -824,6 +829,23 @@ bool ProjectExportDialog::_fill_tree(EditorFileSystemDirectory *p_dir, TreeItem 
 	return used;
 }
 
+void ProjectExportDialog::_propagate_file_export_mode(TreeItem *p_item, EditorExportPreset::FileExportMode p_inherited_export_mode) {
+	EditorExportPreset::FileExportMode file_export_mode = (EditorExportPreset::FileExportMode)(int)p_item->get_metadata(1);
+	if (file_export_mode == EditorExportPreset::MODE_FILE_NOT_CUSTOMIZED) {
+		file_export_mode = p_inherited_export_mode;
+	}
+
+	if (file_export_mode == EditorExportPreset::MODE_FILE_NOT_CUSTOMIZED) {
+		p_item->set_text(1, "");
+	} else {
+		p_item->set_text(1, file_mode_popup->get_item_text(file_mode_popup->get_item_index(file_export_mode)));
+	}
+
+	for (int i = 0; i < p_item->get_child_count(); i++) {
+		_propagate_file_export_mode(p_item->get_child(i), file_export_mode);
+	}
+}
+
 void ProjectExportDialog::_tree_changed() {
 	if (updating) {
 		return;
@@ -847,8 +869,9 @@ void ProjectExportDialog::_tree_changed() {
 			file_mode = current->get_file_export_mode(path, EditorExportPreset::MODE_FILE_STRIP);
 		}
 
-		_setup_item_for_file_mode(item, file_mode);
 		current->set_file_export_mode(path, file_mode);
+		_setup_item_for_file_mode(item, file_mode);
+		_propagate_file_export_mode(include_files->get_root(), EditorExportPreset::MODE_FILE_NOT_CUSTOMIZED);
 	} else {
 		item->propagate_check(0);
 	}
@@ -890,9 +913,10 @@ void ProjectExportDialog::_set_file_export_mode(int p_id) {
 	TreeItem *item = include_files->get_edited();
 	String path = item->get_metadata(0);
 
-	current->set_file_export_mode(path, (EditorExportPreset::FileExportMode)p_id);
-
-	item->set_text(1, file_mode_popup->get_item_text(file_mode_popup->get_item_index(p_id)));
+	EditorExportPreset::FileExportMode file_export_mode = (EditorExportPreset::FileExportMode)p_id;
+	current->set_file_export_mode(path, file_export_mode);
+	item->set_metadata(1, file_export_mode);
+	_propagate_file_export_mode(include_files->get_root(), EditorExportPreset::MODE_FILE_NOT_CUSTOMIZED);
 }
 
 void ProjectExportDialog::_export_pck_zip() {
