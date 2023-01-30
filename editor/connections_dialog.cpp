@@ -186,7 +186,7 @@ void ConnectDialog::_unbind_count_changed(double p_count) {
 
 void ConnectDialog::_method_selected() {
 	TreeItem *selected_item = method_tree->get_selected();
-	dst_method->set_text(selected_item->get_text(0));
+	dst_method->set_text(selected_item->get_metadata(0));
 }
 
 /*
@@ -260,12 +260,8 @@ StringName ConnectDialog::generate_method_callback_name(Node *p_source, String p
 void ConnectDialog::_create_method_tree_items(const List<MethodInfo> &p_methods, TreeItem *p_parent_item) {
 	for (const MethodInfo &mi : p_methods) {
 		TreeItem *method_item = method_tree->create_item(p_parent_item);
-		method_item->set_text(0, mi.name);
-		if (mi.return_val.type == Variant::NIL) {
-			method_item->set_icon(0, get_theme_icon(SNAME("Variant"), "EditorIcons"));
-		} else {
-			method_item->set_icon(0, get_theme_icon(Variant::get_type_name(mi.return_val.type), "EditorIcons"));
-		}
+		method_item->set_text(0, get_signature(mi));
+		method_item->set_metadata(0, mi.name);
 	}
 }
 
@@ -290,6 +286,11 @@ List<MethodInfo> ConnectDialog::_filter_method_list(const List<MethodInfo> &p_me
 				Variant::Type mtype = F->get().type;
 
 				if (stype != Variant::NIL && mtype != Variant::NIL && stype != mtype) {
+					type_mismatch = true;
+					break;
+				}
+
+				if (stype == Variant::OBJECT && mtype == Variant::OBJECT && E->get().class_name != F->get().class_name) {
 					type_mismatch = true;
 					break;
 				}
@@ -488,6 +489,34 @@ Vector<Variant> ConnectDialog::get_binds() const {
 	return cdbinds->params;
 }
 
+String ConnectDialog::get_signature(const MethodInfo &p_method, PackedStringArray *r_arg_names) {
+	PackedStringArray signature;
+	signature.append(p_method.name);
+	signature.append("(");
+
+	for (int i = 0; i < p_method.arguments.size(); i++) {
+		if (i > 0) {
+			signature.append(", ");
+		}
+
+		const PropertyInfo &pi = p_method.arguments[i];
+		String tname = "var";
+		if (pi.type == Variant::OBJECT && pi.class_name != StringName()) {
+			tname = pi.class_name.operator String();
+		} else if (pi.type != Variant::NIL) {
+			tname = Variant::get_type_name(pi.type);
+		}
+
+		signature.append((pi.name.is_empty() ? String("arg " + itos(i)) : pi.name) + ": " + tname);
+		if (r_arg_names) {
+			r_arg_names->push_back(pi.name + ":" + tname);
+		}
+	}
+
+	signature.append(")");
+	return String().join(signature);
+}
+
 bool ConnectDialog::get_deferred() const {
 	return deferred->is_pressed();
 }
@@ -545,7 +574,7 @@ void ConnectDialog::init(const ConnectionData &p_cd, const PackedStringArray &p_
 	source_connection_data = p_cd;
 }
 
-void ConnectDialog::popup_dialog(const String &p_for_signal) {
+void ConnectDialog::popup_dialog(const String p_for_signal) {
 	from_signal->set_text(p_for_signal);
 	error_label->add_theme_color_override("font_color", error_label->get_theme_color(SNAME("error_color"), SNAME("Editor")));
 	if (!advanced->is_pressed()) {
@@ -972,8 +1001,6 @@ void ConnectionsDock::_open_connection_dialog(TreeItem &p_item) {
 	String signal_name = sinfo["name"];
 	PackedStringArray signal_args = sinfo["args"];
 
-	const String &signal_name_ref = signal_name;
-
 	Node *dst_node = selected_node->get_owner() ? selected_node->get_owner() : selected_node;
 	if (!dst_node || dst_node->get_script().is_null()) {
 		dst_node = _find_first_script(get_tree()->get_edited_scene_root(), get_tree()->get_edited_scene_root());
@@ -981,10 +1008,10 @@ void ConnectionsDock::_open_connection_dialog(TreeItem &p_item) {
 
 	ConnectDialog::ConnectionData cd;
 	cd.source = selected_node;
-	cd.signal = StringName(signal_name_ref);
+	cd.signal = StringName(signal_name);
 	cd.target = dst_node;
 	cd.method = ConnectDialog::generate_method_callback_name(cd.source, signal_name, cd.target);
-	connect_dialog->popup_dialog(signal_name_ref);
+	connect_dialog->popup_dialog(signal_name + "(" + String(", ").join(signal_args) + ")");
 	connect_dialog->init(cd, signal_args);
 	connect_dialog->set_title(TTR("Connect a Signal to a Method"));
 }
@@ -1235,37 +1262,15 @@ void ConnectionsDock::update_tree() {
 		}
 
 		for (MethodInfo &mi : node_signals2) {
-			StringName signal_name = mi.name;
-			String signaldesc = "(";
-			PackedStringArray argnames;
-
-			String filter_text = search_box->get_text();
-			if (!filter_text.is_subsequence_ofn(signal_name)) {
+			const StringName signal_name = mi.name;
+			if (!search_box->get_text().is_subsequence_ofn(signal_name)) {
 				continue;
 			}
-
-			if (mi.arguments.size()) {
-				for (int i = 0; i < mi.arguments.size(); i++) {
-					PropertyInfo &pi = mi.arguments[i];
-
-					if (i > 0) {
-						signaldesc += ", ";
-					}
-					String tname = "var";
-					if (pi.type == Variant::OBJECT && pi.class_name != StringName()) {
-						tname = pi.class_name.operator String();
-					} else if (pi.type != Variant::NIL) {
-						tname = Variant::get_type_name(pi.type);
-					}
-					signaldesc += (pi.name.is_empty() ? String("arg " + itos(i)) : pi.name) + ": " + tname;
-					argnames.push_back(pi.name + ":" + tname);
-				}
-			}
-			signaldesc += ")";
+			PackedStringArray argnames;
 
 			// Create the children of the subsection - the actual list of signals.
 			TreeItem *signal_item = tree->create_item(section_item);
-			String signame = String(signal_name) + signaldesc;
+			String signame = connect_dialog->get_signature(mi, &argnames);
 			signal_item->set_text(0, signame);
 
 			if (signame == prev_selected) {
@@ -1313,7 +1318,7 @@ void ConnectionsDock::update_tree() {
 				}
 
 				// "::" separators used in make_custom_tooltip for formatting.
-				signal_item->set_tooltip_text(0, String(signal_name) + "::" + signaldesc + "::" + descr);
+				signal_item->set_tooltip_text(0, String(signal_name) + "::" + signame.trim_prefix(mi.name) + "::" + descr);
 			}
 
 			// List existing connections.
