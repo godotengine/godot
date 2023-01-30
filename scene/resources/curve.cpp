@@ -2225,6 +2225,7 @@ void Curve3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("sample_baked", "offset", "cubic"), &Curve3D::sample_baked, DEFVAL(0.0), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("sample_baked_with_rotation", "offset", "cubic", "apply_tilt"), &Curve3D::sample_baked_with_rotation, DEFVAL(0.0), DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("sample_baked_up_vector", "offset", "apply_tilt"), &Curve3D::sample_baked_up_vector, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("sample_baked_tilt", "offset"), &Curve3D::sample_baked_tilt, DEFVAL(0.0));
 	ClassDB::bind_method(D_METHOD("get_baked_points"), &Curve3D::get_baked_points);
 	ClassDB::bind_method(D_METHOD("get_baked_tilts"), &Curve3D::get_baked_tilts);
 	ClassDB::bind_method(D_METHOD("get_baked_up_vectors"), &Curve3D::get_baked_up_vectors);
