@@ -276,7 +276,11 @@ public:
 class AnimationNodeTransition : public AnimationNodeSync {
 	GDCLASS(AnimationNodeTransition, AnimationNodeSync);
 
-	Vector<bool> input_as_auto_advance;
+	struct InputData {
+		bool auto_advance = false;
+		bool reset = true;
+	};
+	Vector<InputData> input_data;
 
 	StringName time = "time";
 	StringName prev_xfading = "prev_xfading";
@@ -290,7 +294,6 @@ class AnimationNodeTransition : public AnimationNodeSync {
 
 	double xfade_time = 0.0;
 	Ref<Curve> xfade_curve;
-	bool reset = true;
 
 protected:
 	bool _get(const StringName &p_path, Variant &r_ret) const;
@@ -313,14 +316,14 @@ public:
 	void set_input_as_auto_advance(int p_input, bool p_enable);
 	bool is_input_set_as_auto_advance(int p_input) const;
 
+	void set_input_reset(int p_input, bool p_enable);
+	bool is_input_reset(int p_input) const;
+
 	void set_xfade_time(double p_fade);
 	double get_xfade_time() const;
 
 	void set_xfade_curve(const Ref<Curve> &p_curve);
 	Ref<Curve> get_xfade_curve() const;
-
-	void set_reset(bool p_reset);
-	bool is_reset() const;
 
 	double process(double p_time, bool p_seek, bool p_is_external_seeking) override;
 
