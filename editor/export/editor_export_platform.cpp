@@ -785,10 +785,10 @@ String EditorExportPlatform::_export_customize(const String &p_path, LocalVector
 					break;
 				}
 			}
-		}
 
-		if (_export_customize_object(res.ptr(), customize_resources_plugins)) {
-			modified = true;
+			if (_export_customize_object(res.ptr(), customize_resources_plugins)) {
+				modified = true;
+			}
 		}
 
 		if (modified || p_force_save) {
