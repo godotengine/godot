@@ -85,7 +85,7 @@ public:
 		bool viewport_render_direct_to_screen;
 
 		bool disable_2d = false;
-		bool disable_environment = false;
+		RS::ViewportEnvironmentMode disable_environment = RS::VIEWPORT_ENVIRONMENT_INHERIT;
 		bool disable_3d = false;
 		bool measure_render_time = false;
 
@@ -238,8 +238,10 @@ public:
 	const RendererSceneRender::CameraData *viewport_get_prev_camera_data(RID p_viewport);
 
 	void viewport_set_disable_2d(RID p_viewport, bool p_disable);
-	void viewport_set_disable_environment(RID p_viewport, bool p_disable);
+	void viewport_set_environment_mode(RID p_viewport, RS::ViewportEnvironmentMode p_mode);
 	void viewport_set_disable_3d(RID p_viewport, bool p_disable);
+
+	bool viewport_is_environment_disabled(Viewport *viewport);
 
 	void viewport_attach_camera(RID p_viewport, RID p_camera);
 	void viewport_set_scenario(RID p_viewport, RID p_scenario);
