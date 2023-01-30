@@ -581,6 +581,7 @@ void EditorNode::_notification(int p_what) {
 
 			ResourceImporterTexture::get_singleton()->update_imports();
 
+			bottom_panel_updating = false;
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
@@ -5601,12 +5602,16 @@ void EditorNode::remove_bottom_panel_item(Control *p_item) {
 }
 
 void EditorNode::_bottom_panel_switch(bool p_enable, int p_idx) {
+	if (bottom_panel_updating) {
+		return;
+	}
 	ERR_FAIL_INDEX(p_idx, bottom_panel_items.size());
 
 	if (bottom_panel_items[p_idx].control->is_visible() == p_enable) {
 		return;
 	}
 
+	bottom_panel_updating = true;
 	if (p_enable) {
 		for (int i = 0; i < bottom_panel_items.size(); i++) {
 			bottom_panel_items[i].button->set_pressed(i == p_idx);
