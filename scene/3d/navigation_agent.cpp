@@ -407,11 +407,16 @@ void NavigationAgent::_avoidance_done(Vector3 p_new_velocity) {
 }
 
 String NavigationAgent::get_configuration_warning() const {
+	String warning = Node::get_configuration_warning();
+
 	if (!Object::cast_to<Spatial>(get_parent())) {
-		return TTR("The NavigationAgent can be used only under a Spatial inheriting parent node.");
+		if (warning != String()) {
+			warning += "\n\n";
+		}
+		warning += TTR("The NavigationAgent can be used only under a Spatial inheriting parent node.");
 	}
 
-	return String();
+	return warning;
 }
 
 void NavigationAgent::update_navigation() {

@@ -245,15 +245,16 @@ void NavigationMeshInstance::_bake_finished(Ref<NavigationMesh> p_nav_mesh) {
 }
 
 String NavigationMeshInstance::get_configuration_warning() const {
-	if (!is_visible_in_tree() || !is_inside_tree()) {
-		return String();
-	}
+	String warning = Spatial::get_configuration_warning();
 
 	if (!navmesh.is_valid()) {
-		return TTR("A NavigationMesh resource must be set or created for this node to work.");
+		if (warning != String()) {
+			warning += "\n\n";
+		}
+		warning += TTR("A NavigationMesh resource must be set or created for this node to work.");
 	}
 
-	return String();
+	return warning;
 }
 
 void NavigationMeshInstance::_bind_methods() {

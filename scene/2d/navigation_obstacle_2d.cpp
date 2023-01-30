@@ -158,16 +158,24 @@ Node *NavigationObstacle2D::get_navigation_node() const {
 }
 
 String NavigationObstacle2D::get_configuration_warning() const {
+	String warning = Node::get_configuration_warning();
+
 	if (!Object::cast_to<Node2D>(get_parent())) {
-		return TTR("The NavigationObstacle2D only serves to provide collision avoidance to a Node2D object.");
+		if (warning != String()) {
+			warning += "\n\n";
+		}
+		warning += TTR("The NavigationObstacle2D only serves to provide collision avoidance to a Node2D object.");
 	}
 
 	if (Object::cast_to<StaticBody2D>(get_parent())) {
-		return TTR("The NavigationObstacle2D is intended for constantly moving bodies like KinematicBody2D or RigidBody2D as it creates only an RVO avoidance radius and does not follow scene geometry exactly."
-				   "\nNot constantly moving or complete static objects should be captured with a refreshed NavigationPolygon so agents can not only avoid them but also move along those objects outline at high detail");
+		if (warning != String()) {
+			warning += "\n\n";
+		}
+		warning += TTR("The NavigationObstacle2D is intended for constantly moving bodies like KinematicBody2D or RigidBody2D as it creates only an RVO avoidance radius and does not follow scene geometry exactly."
+					   "\nNot constantly moving or complete static objects should be (re)baked to a NavigationMesh so agents can not only avoid them but also move along those objects outline at high detail");
 	}
 
-	return String();
+	return warning;
 }
 
 void NavigationObstacle2D::initialize_agent() {
