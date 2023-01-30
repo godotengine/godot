@@ -272,6 +272,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 				}
 			}
 			grab_focus();
+			accept_event();
 			return;
 		}
 
@@ -381,6 +382,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 		}
 
 		queue_redraw();
+		return;
 	}
 
 	Ref<InputEventMouseMotion> m = p_event;
@@ -405,6 +407,8 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 			drag_caret_force_displayed = true;
 			set_caret_at_pixel_pos(m->get_position().x);
 		}
+
+		return;
 	}
 
 	Ref<InputEventKey> k = p_event;
@@ -458,6 +462,9 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 				menu->reset_size();
 				menu->popup();
 				menu->grab_focus();
+
+				accept_event();
+				return;
 			}
 		}
 
@@ -467,6 +474,8 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 			if (DisplayServer::get_singleton()->has_feature(DisplayServer::FEATURE_VIRTUAL_KEYBOARD) && virtual_keyboard_enabled) {
 				DisplayServer::get_singleton()->virtual_keyboard_hide();
 			}
+			accept_event();
+			return;
 		}
 
 		if (is_shortcut_keys_enabled()) {
@@ -606,6 +615,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 				_text_changed();
 			}
 			accept_event();
+			return;
 		}
 	}
 }
