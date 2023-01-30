@@ -55,6 +55,13 @@ RID World3D::get_space() const {
 }
 
 RID World3D::get_navigation_map() const {
+	if (navigation_map.is_null()) {
+		navigation_map = NavigationServer3D::get_singleton()->map_create();
+		NavigationServer3D::get_singleton()->map_set_active(navigation_map, true);
+		NavigationServer3D::get_singleton()->map_set_cell_size(navigation_map, GLOBAL_GET("navigation/3d/default_cell_size"));
+		NavigationServer3D::get_singleton()->map_set_edge_connection_margin(navigation_map, GLOBAL_GET("navigation/3d/default_edge_connection_margin"));
+		NavigationServer3D::get_singleton()->map_set_link_connection_radius(navigation_map, GLOBAL_GET("navigation/3d/default_link_connection_radius"));
+	}
 	return navigation_map;
 }
 
@@ -146,12 +153,6 @@ World3D::World3D() {
 	PhysicsServer3D::get_singleton()->area_set_param(space, PhysicsServer3D::AREA_PARAM_GRAVITY_VECTOR, GLOBAL_DEF_BASIC("physics/3d/default_gravity_vector", Vector3(0, -1, 0)));
 	PhysicsServer3D::get_singleton()->area_set_param(space, PhysicsServer3D::AREA_PARAM_LINEAR_DAMP, GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/3d/default_linear_damp", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater"), 0.1));
 	PhysicsServer3D::get_singleton()->area_set_param(space, PhysicsServer3D::AREA_PARAM_ANGULAR_DAMP, GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/3d/default_angular_damp", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater"), 0.1));
-
-	navigation_map = NavigationServer3D::get_singleton()->map_create();
-	NavigationServer3D::get_singleton()->map_set_active(navigation_map, true);
-	NavigationServer3D::get_singleton()->map_set_cell_size(navigation_map, GLOBAL_DEF("navigation/3d/default_cell_size", 0.25));
-	NavigationServer3D::get_singleton()->map_set_edge_connection_margin(navigation_map, GLOBAL_DEF("navigation/3d/default_edge_connection_margin", 0.25));
-	NavigationServer3D::get_singleton()->map_set_link_connection_radius(navigation_map, GLOBAL_DEF("navigation/3d/default_link_connection_radius", 1.0));
 }
 
 World3D::~World3D() {
@@ -160,5 +161,7 @@ World3D::~World3D() {
 	ERR_FAIL_NULL(NavigationServer3D::get_singleton());
 	PhysicsServer3D::get_singleton()->free(space);
 	RenderingServer::get_singleton()->free(scenario);
-	NavigationServer3D::get_singleton()->free(navigation_map);
+	if (navigation_map.is_valid()) {
+		NavigationServer3D::get_singleton()->free(navigation_map);
+	}
 }
