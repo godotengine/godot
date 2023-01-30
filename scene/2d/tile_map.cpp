@@ -3969,6 +3969,17 @@ PackedStringArray TileMap::get_configuration_warnings() const {
 		}
 	}
 
+	// Check if Y-sort is enabled on a layer but not on the node.
+	if (!is_y_sort_enabled()) {
+		for (const TileMapLayer &layer : layers) {
+			if (layer.y_sort_enabled) {
+				warnings.push_back(RTR("A TileMap layer is set as Y-sorted, but Y-sort is not enabled on the TileMap node itself."));
+				break;
+			}
+		}
+	}
+
+	// Check if we are in isometric mode without Y-sort enabled.
 	if (tile_set.is_valid() && tile_set->get_tile_shape() == TileSet::TILE_SHAPE_ISOMETRIC) {
 		bool warn = !is_y_sort_enabled();
 		if (!warn) {
