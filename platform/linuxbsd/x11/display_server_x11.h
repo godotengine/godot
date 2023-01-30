@@ -142,6 +142,7 @@ class DisplayServerX11 : public DisplayServer {
 		bool ime_active = false;
 		bool ime_in_progress = false;
 		bool ime_suppress_next_keyup = false;
+		xkb_compose_state *xkb_state = nullptr;
 
 		Size2i min_size;
 		Size2i max_size;
@@ -184,6 +185,10 @@ class DisplayServerX11 : public DisplayServer {
 
 	Point2i im_selection;
 	String im_text;
+
+	bool xkb_loaded = false;
+	xkb_context *xkb_ctx = nullptr;
+	xkb_compose_table *dead_tbl = nullptr;
 
 	HashMap<WindowID, WindowData> windows;
 
