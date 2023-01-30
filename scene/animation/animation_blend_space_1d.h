@@ -36,6 +36,14 @@
 class AnimationNodeBlendSpace1D : public AnimationRootNode {
 	GDCLASS(AnimationNodeBlendSpace1D, AnimationRootNode);
 
+public:
+	enum BlendMode {
+		BLEND_MODE_INTERPOLATED,
+		BLEND_MODE_DISCRETE,
+		BLEND_MODE_DISCRETE_CARRY,
+	};
+
+protected:
 	enum {
 		MAX_BLEND_POINTS = 64
 	};
@@ -61,6 +69,10 @@ class AnimationNodeBlendSpace1D : public AnimationRootNode {
 	void _tree_changed();
 
 	StringName blend_position = "blend_position";
+	StringName closest = "closest";
+	StringName length_internal = "length_internal";
+
+	BlendMode blend_mode = BLEND_MODE_INTERPOLATED;
 
 protected:
 	bool sync = false;
@@ -95,6 +107,9 @@ public:
 	void set_value_label(const String &p_label);
 	String get_value_label() const;
 
+	void set_blend_mode(BlendMode p_blend_mode);
+	BlendMode get_blend_mode() const;
+
 	void set_use_sync(bool p_sync);
 	bool is_using_sync() const;
 
@@ -106,5 +121,7 @@ public:
 	AnimationNodeBlendSpace1D();
 	~AnimationNodeBlendSpace1D();
 };
+
+VARIANT_ENUM_CAST(AnimationNodeBlendSpace1D::BlendMode)
 
 #endif // ANIMATION_BLEND_SPACE_1D_H
