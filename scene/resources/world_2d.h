@@ -44,7 +44,7 @@ class World2D : public Resource {
 
 	RID canvas;
 	RID space;
-	RID navigation_map;
+	mutable RID navigation_map;
 
 	HashSet<Viewport *> viewports;
 

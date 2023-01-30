@@ -46,8 +46,8 @@ class World3D : public Resource {
 
 private:
 	RID space;
-	RID navigation_map;
 	RID scenario;
+	mutable RID navigation_map;
 
 	Ref<Environment> environment;
 	Ref<Environment> fallback_environment;

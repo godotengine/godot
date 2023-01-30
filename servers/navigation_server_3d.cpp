@@ -30,9 +30,7 @@
 
 #include "navigation_server_3d.h"
 
-#ifdef DEBUG_ENABLED
 #include "core/config/project_settings.h"
-#endif // DEBUG_ENABLED
 
 NavigationServer3D *NavigationServer3D::singleton = nullptr;
 
@@ -144,6 +142,14 @@ NavigationServer3D *NavigationServer3D::get_singleton() {
 NavigationServer3D::NavigationServer3D() {
 	ERR_FAIL_COND(singleton != nullptr);
 	singleton = this;
+
+	GLOBAL_DEF("navigation/2d/default_cell_size", 1);
+	GLOBAL_DEF("navigation/2d/default_edge_connection_margin", 1);
+	GLOBAL_DEF("navigation/2d/default_link_connection_radius", 4);
+
+	GLOBAL_DEF("navigation/3d/default_cell_size", 0.25);
+	GLOBAL_DEF("navigation/3d/default_edge_connection_margin", 0.25);
+	GLOBAL_DEF("navigation/3d/default_link_connection_radius", 1.0);
 
 #ifdef DEBUG_ENABLED
 	debug_navigation_edge_connection_color = GLOBAL_DEF("debug/shapes/navigation/edge_connection_color", Color(1.0, 0.0, 1.0, 1.0));
