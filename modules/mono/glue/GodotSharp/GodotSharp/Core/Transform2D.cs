@@ -271,7 +271,7 @@ namespace Godot
         /// <returns>The rotated transformation matrix.</returns>
         public readonly Transform2D Rotated(real_t angle)
         {
-            return this * new Transform2D(angle, new Vector2());
+            return new Transform2D(angle, new Vector2()) * this;
         }
 
         /// <summary>
@@ -283,7 +283,7 @@ namespace Godot
         /// <returns>The rotated transformation matrix.</returns>
         public readonly Transform2D RotatedLocal(real_t angle)
         {
-            return new Transform2D(angle, new Vector2()) * this;
+            return this * new Transform2D(angle, new Vector2());
         }
 
         /// <summary>
