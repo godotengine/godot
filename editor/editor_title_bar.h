@@ -42,7 +42,7 @@ class EditorTitleBar : public HBoxContainer {
 	bool can_move = false;
 
 protected:
-	virtual void input(const Ref<InputEvent> &p_event) override;
+	virtual void gui_input(const Ref<InputEvent> &p_event) override;
 	static void _bind_methods(){};
 
 public:

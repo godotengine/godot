@@ -42,6 +42,7 @@ class ShaderInclude : public Resource {
 
 private:
 	String code;
+	String include_path;
 	HashSet<Ref<ShaderInclude>> dependencies;
 	void _dependency_changed();
 
@@ -51,6 +52,8 @@ protected:
 public:
 	void set_code(const String &p_text);
 	String get_code() const;
+
+	void set_include_path(const String &p_path);
 };
 
 class ResourceFormatLoaderShaderInclude : public ResourceFormatLoader {

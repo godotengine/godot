@@ -84,6 +84,19 @@ TEST_CASE("[Transform2D] rotation") {
 	CHECK(orig.rotated_local(phi) == orig * R);
 }
 
+TEST_CASE("[Transform2D] Interpolation") {
+	Transform2D rotate_scale_skew_pos = Transform2D(Math::deg_to_rad(170.0), Vector2(3.6, 8.0), Math::deg_to_rad(20.0), Vector2(2.4, 6.8));
+	Transform2D rotate_scale_skew_pos_halfway = Transform2D(Math::deg_to_rad(85.0), Vector2(2.3, 4.5), Math::deg_to_rad(10.0), Vector2(1.2, 3.4));
+	Transform2D interpolated = Transform2D().interpolate_with(rotate_scale_skew_pos, 0.5);
+	CHECK(interpolated.get_origin().is_equal_approx(rotate_scale_skew_pos_halfway.get_origin()));
+	CHECK(interpolated.get_rotation() == doctest::Approx(rotate_scale_skew_pos_halfway.get_rotation()));
+	CHECK(interpolated.get_scale().is_equal_approx(rotate_scale_skew_pos_halfway.get_scale()));
+	CHECK(interpolated.get_skew() == doctest::Approx(rotate_scale_skew_pos_halfway.get_skew()));
+	CHECK(interpolated.is_equal_approx(rotate_scale_skew_pos_halfway));
+	interpolated = rotate_scale_skew_pos.interpolate_with(Transform2D(), 0.5);
+	CHECK(interpolated.is_equal_approx(rotate_scale_skew_pos_halfway));
+}
+
 TEST_CASE("[Transform2D] Finite number checks") {
 	const Vector2 x(0, 1);
 	const Vector2 infinite(NAN, NAN);

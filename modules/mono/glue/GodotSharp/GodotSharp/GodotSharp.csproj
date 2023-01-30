@@ -49,7 +49,7 @@
   </ItemGroup>
   <!-- Sources -->
   <ItemGroup>
-    <Compile Include="Core\AABB.cs" />
+    <Compile Include="Core\Aabb.cs" />
     <Compile Include="Core\Bridge\GodotSerializationInfo.cs" />
     <Compile Include="Core\Bridge\MethodInfo.cs" />
     <Compile Include="Core\Callable.generics.cs" />
@@ -60,8 +60,9 @@
     <Compile Include="Core\Attributes\ExportCategoryAttribute.cs" />
     <Compile Include="Core\Attributes\ExportGroupAttribute.cs" />
     <Compile Include="Core\Attributes\ExportSubgroupAttribute.cs" />
+    <Compile Include="Core\Attributes\GodotClassNameAttribute.cs" />
     <Compile Include="Core\Attributes\MustBeVariantAttribute.cs" />
-    <Compile Include="Core\Attributes\RPCAttribute.cs" />
+    <Compile Include="Core\Attributes\RpcAttribute.cs" />
     <Compile Include="Core\Attributes\ScriptPathAttribute.cs" />
     <Compile Include="Core\Attributes\SignalAttribute.cs" />
     <Compile Include="Core\Attributes\ToolAttribute.cs" />
@@ -80,11 +81,13 @@
     <Compile Include="Core\DelegateUtils.cs" />
     <Compile Include="Core\Dictionary.cs" />
     <Compile Include="Core\Dispatcher.cs" />
+    <Compile Include="Core\Extensions\GodotObjectExtensions.cs" />
     <Compile Include="Core\Extensions\NodeExtensions.cs" />
-    <Compile Include="Core\Extensions\ObjectExtensions.cs" />
     <Compile Include="Core\Extensions\PackedSceneExtensions.cs" />
     <Compile Include="Core\Extensions\ResourceLoaderExtensions.cs" />
     <Compile Include="Core\GD.cs" />
+    <Compile Include="Core\GodotObject.base.cs" />
+    <Compile Include="Core\GodotObject.exceptions.cs" />
     <Compile Include="Core\GodotSynchronizationContext.cs" />
     <Compile Include="Core\GodotTaskScheduler.cs" />
     <Compile Include="Core\GodotTraceListener.cs" />
@@ -104,15 +107,13 @@
     <Compile Include="Core\NativeInterop\VariantUtils.cs" />
     <Compile Include="Core\NativeInterop\VariantUtils.generic.cs" />
     <Compile Include="Core\NodePath.cs" />
-    <Compile Include="Core\Object.base.cs" />
-    <Compile Include="Core\Object.exceptions.cs" />
     <Compile Include="Core\Plane.cs" />
     <Compile Include="Core\Projection.cs" />
     <Compile Include="Core\Quaternion.cs" />
     <Compile Include="Core\Rect2.cs" />
-    <Compile Include="Core\Rect2i.cs" />
+    <Compile Include="Core\Rect2I.cs" />
     <Compile Include="Core\ReflectionUtils.cs" />
-    <Compile Include="Core\RID.cs" />
+    <Compile Include="Core\Rid.cs" />
     <Compile Include="Core\NativeInterop\NativeFuncs.cs" />
     <Compile Include="Core\NativeInterop\InteropStructs.cs" />
     <Compile Include="Core\NativeInterop\Marshaling.cs" />
@@ -124,11 +125,11 @@
     <Compile Include="Core\Transform3D.cs" />
     <Compile Include="Core\Variant.cs" />
     <Compile Include="Core\Vector2.cs" />
-    <Compile Include="Core\Vector2i.cs" />
+    <Compile Include="Core\Vector2I.cs" />
     <Compile Include="Core\Vector3.cs" />
-    <Compile Include="Core\Vector3i.cs" />
+    <Compile Include="Core\Vector3I.cs" />
     <Compile Include="Core\Vector4.cs" />
-    <Compile Include="Core\Vector4i.cs" />
+    <Compile Include="Core\Vector4I.cs" />
     <Compile Include="GlobalUsings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -117,7 +117,6 @@ void AnimatedSprite2D::_validate_property(PropertyInfo &p_property) const {
 	}
 
 	if (p_property.name == "animation") {
-		p_property.hint = PROPERTY_HINT_ENUM;
 		List<StringName> names;
 		frames->get_animation_list(&names);
 		names.sort_custom<StringName::AlphCompare>();
@@ -167,6 +166,12 @@ void AnimatedSprite2D::_validate_property(PropertyInfo &p_property) const {
 
 void AnimatedSprite2D::_notification(int p_what) {
 	switch (p_what) {
+		case NOTIFICATION_READY: {
+			if (!Engine::get_singleton()->is_editor_hint() && !frames.is_null() && frames->has_animation(autoplay)) {
+				play(autoplay);
+			}
+		} break;
+
 		case NOTIFICATION_INTERNAL_PROCESS: {
 			if (frames.is_null() || !frames->has_animation(animation)) {
 				return;
@@ -176,7 +181,8 @@ void AnimatedSprite2D::_notification(int p_what) {
 			int i = 0;
 			while (remaining) {
 				// Animation speed may be changed by animation_finished or frame_changed signals.
-				double speed = frames->get_animation_speed(animation) * Math::abs(speed_scale);
+				double speed = frames->get_animation_speed(animation) * speed_scale * custom_speed_scale * frame_speed_scale;
+				double abs_speed = Math::abs(speed);
 
 				if (speed == 0) {
 					return; // Do nothing.
@@ -185,52 +191,56 @@ void AnimatedSprite2D::_notification(int p_what) {
 				// Frame count may be changed by animation_finished or frame_changed signals.
 				int fc = frames->get_frame_count(animation);
 
-				if (timeout <= 0) {
-					int last_frame = fc - 1;
-					if (!playing_backwards) {
-						// Forward.
+				int last_frame = fc - 1;
+				if (!signbit(speed)) {
+					// Forwards.
+					if (frame_progress >= 1.0) {
 						if (frame >= last_frame) {
 							if (frames->get_animation_loop(animation)) {
 								frame = 0;
-								emit_signal(SceneStringNames::get_singleton()->animation_finished);
+								emit_signal("animation_looped");
 							} else {
 								frame = last_frame;
-								if (!is_over) {
-									is_over = true;
-									emit_signal(SceneStringNames::get_singleton()->animation_finished);
-								}
+								pause();
+								emit_signal(SceneStringNames::get_singleton()->animation_finished);
+								return;
 							}
 						} else {
 							frame++;
 						}
-					} else {
-						// Reversed.
+						_calc_frame_speed_scale();
+						frame_progress = 0.0;
+						queue_redraw();
+						emit_signal(SceneStringNames::get_singleton()->frame_changed);
+					}
+					double to_process = MIN((1.0 - frame_progress) / abs_speed, remaining);
+					frame_progress += to_process * abs_speed;
+					remaining -= to_process;
+				} else {
+					// Backwards.
+					if (frame_progress <= 0) {
 						if (frame <= 0) {
 							if (frames->get_animation_loop(animation)) {
 								frame = last_frame;
-								emit_signal(SceneStringNames::get_singleton()->animation_finished);
+								emit_signal("animation_looped");
 							} else {
 								frame = 0;
-								if (!is_over) {
-									is_over = true;
-									emit_signal(SceneStringNames::get_singleton()->animation_finished);
-								}
+								pause();
+								emit_signal(SceneStringNames::get_singleton()->animation_finished);
+								return;
 							}
 						} else {
 							frame--;
 						}
+						_calc_frame_speed_scale();
+						frame_progress = 1.0;
+						queue_redraw();
+						emit_signal(SceneStringNames::get_singleton()->frame_changed);
 					}
-
-					timeout = _get_frame_duration();
-
-					queue_redraw();
-
-					emit_signal(SceneStringNames::get_singleton()->frame_changed);
+					double to_process = MIN(frame_progress / abs_speed, remaining);
+					frame_progress -= to_process * abs_speed;
+					remaining -= to_process;
 				}
-
-				double to_process = MIN(timeout / speed, remaining);
-				timeout -= to_process * speed;
-				remaining -= to_process;
 
 				i++;
 				if (i > fc) {
@@ -275,25 +285,37 @@ void AnimatedSprite2D::_notification(int p_what) {
 }
 
 void AnimatedSprite2D::set_sprite_frames(const Ref<SpriteFrames> &p_frames) {
+	if (frames == p_frames) {
+		return;
+	}
+
 	if (frames.is_valid()) {
 		frames->disconnect(SceneStringNames::get_singleton()->changed, callable_mp(this, &AnimatedSprite2D::_res_changed));
 	}
-
+	stop();
 	frames = p_frames;
 	if (frames.is_valid()) {
 		frames->connect(SceneStringNames::get_singleton()->changed, callable_mp(this, &AnimatedSprite2D::_res_changed));
-	}
 
-	if (frames.is_null()) {
-		frame = 0;
-	} else {
-		set_frame(frame);
+		List<StringName> al;
+		frames->get_animation_list(&al);
+		if (al.size() == 0) {
+			set_animation(StringName());
+			set_autoplay(String());
+		} else {
+			if (!frames->has_animation(animation)) {
+				set_animation(al[0]);
+			}
+			if (!frames->has_animation(autoplay)) {
+				set_autoplay(String());
+			}
+		}
 	}
 
 	notify_property_list_changed();
-	_reset_timeout();
 	queue_redraw();
 	update_configuration_warnings();
+	emit_signal("sprite_frames_changed");
 }
 
 Ref<SpriteFrames> AnimatedSprite2D::get_sprite_frames() const {
@@ -301,42 +323,61 @@ Ref<SpriteFrames> AnimatedSprite2D::get_sprite_frames() const {
 }
 
 void AnimatedSprite2D::set_frame(int p_frame) {
-	if (frames.is_null()) {
-		return;
-	}
-
-	if (frames->has_animation(animation)) {
-		int limit = frames->get_frame_count(animation);
-		if (p_frame >= limit) {
-			p_frame = limit - 1;
-		}
-	}
-
-	if (p_frame < 0) {
-		p_frame = 0;
-	}
-
-	if (frame == p_frame) {
-		return;
-	}
-
-	frame = p_frame;
-	_reset_timeout();
-	queue_redraw();
-	emit_signal(SceneStringNames::get_singleton()->frame_changed);
+	set_frame_and_progress(p_frame, signbit(get_playing_speed()) ? 1.0 : 0.0);
 }
 
 int AnimatedSprite2D::get_frame() const {
 	return frame;
 }
 
+void AnimatedSprite2D::set_frame_progress(real_t p_progress) {
+	frame_progress = p_progress;
+}
+
+real_t AnimatedSprite2D::get_frame_progress() const {
+	return frame_progress;
+}
+
+void AnimatedSprite2D::set_frame_and_progress(int p_frame, real_t p_progress) {
+	if (frames.is_null()) {
+		return;
+	}
+
+	bool has_animation = frames->has_animation(animation);
+	int end_frame = has_animation ? MAX(0, frames->get_frame_count(animation) - 1) : 0;
+	bool is_changed = frame != p_frame;
+
+	if (p_frame < 0) {
+		frame = 0;
+	} else if (has_animation && p_frame > end_frame) {
+		frame = end_frame;
+	} else {
+		frame = p_frame;
+	}
+
+	_calc_frame_speed_scale();
+	frame_progress = p_progress;
+
+	if (!is_changed) {
+		return; // No change, don't redraw.
+	}
+	queue_redraw();
+	emit_signal(SceneStringNames::get_singleton()->frame_changed);
+}
+
 void AnimatedSprite2D::set_speed_scale(float p_speed_scale) {
 	speed_scale = p_speed_scale;
-	playing_backwards = signbit(speed_scale) != backwards;
 }
 
 float AnimatedSprite2D::get_speed_scale() const {
 	return speed_scale;
+}
+
+float AnimatedSprite2D::get_playing_speed() const {
+	if (!playing) {
+		return 0;
+	}
+	return speed_scale * custom_speed_scale;
 }
 
 void AnimatedSprite2D::set_centered(bool p_center) {
@@ -378,18 +419,8 @@ bool AnimatedSprite2D::is_flipped_v() const {
 }
 
 void AnimatedSprite2D::_res_changed() {
-	set_frame(frame);
+	set_frame_and_progress(frame, frame_progress);
 	queue_redraw();
-	notify_property_list_changed();
-}
-
-void AnimatedSprite2D::set_playing(bool p_playing) {
-	if (playing == p_playing) {
-		return;
-	}
-	playing = p_playing;
-	playing_backwards = signbit(speed_scale) != backwards;
-	set_process_internal(playing);
 	notify_property_list_changed();
 }
 
@@ -397,50 +428,122 @@ bool AnimatedSprite2D::is_playing() const {
 	return playing;
 }
 
-void AnimatedSprite2D::play(const StringName &p_animation, bool p_backwards) {
-	backwards = p_backwards;
-	playing_backwards = signbit(speed_scale) != backwards;
+void AnimatedSprite2D::set_autoplay(const String &p_name) {
+	if (is_inside_tree() && !Engine::get_singleton()->is_editor_hint()) {
+		WARN_PRINT("Setting autoplay after the node has been added to the scene has no effect.");
+	}
 
-	if (p_animation) {
-		set_animation(p_animation);
-		if (frames.is_valid() && playing_backwards && get_frame() == 0) {
-			set_frame(frames->get_frame_count(p_animation) - 1);
+	autoplay = p_name;
+}
+
+String AnimatedSprite2D::get_autoplay() const {
+	return autoplay;
+}
+
+void AnimatedSprite2D::play(const StringName &p_name, float p_custom_scale, bool p_from_end) {
+	StringName name = p_name;
+
+	if (name == StringName()) {
+		name = animation;
+	}
+
+	ERR_FAIL_COND_MSG(frames == nullptr, vformat("There is no animation with name '%s'.", name));
+	ERR_FAIL_COND_MSG(!frames->get_animation_names().has(name), vformat("There is no animation with name '%s'.", name));
+
+	if (frames->get_frame_count(name) == 0) {
+		return;
+	}
+
+	playing = true;
+	custom_speed_scale = p_custom_scale;
+
+	int end_frame = MAX(0, frames->get_frame_count(animation) - 1);
+	if (name != animation) {
+		animation = name;
+		if (p_from_end) {
+			set_frame_and_progress(end_frame, 1.0);
+		} else {
+			set_frame_and_progress(0, 0.0);
+		}
+		emit_signal("animation_changed");
+	} else {
+		bool is_backward = signbit(speed_scale * custom_speed_scale);
+		if (p_from_end && is_backward && frame == 0 && frame_progress <= 0.0) {
+			set_frame_and_progress(end_frame, 1.0);
+		} else if (!p_from_end && !is_backward && frame == end_frame && frame_progress >= 1.0) {
+			set_frame_and_progress(0, 0.0);
 		}
 	}
 
-	is_over = false;
-	set_playing(true);
+	set_process_internal(true);
+	notify_property_list_changed();
+	queue_redraw();
+}
+
+void AnimatedSprite2D::play_backwards(const StringName &p_name) {
+	play(p_name, -1, true);
+}
+
+void AnimatedSprite2D::_stop_internal(bool p_reset) {
+	playing = false;
+	if (p_reset) {
+		custom_speed_scale = 1.0;
+		set_frame_and_progress(0, 0.0);
+	}
+	notify_property_list_changed();
+	set_process_internal(false);
+}
+
+void AnimatedSprite2D::pause() {
+	_stop_internal(false);
 }
 
 void AnimatedSprite2D::stop() {
-	set_playing(false);
-	backwards = false;
-	_reset_timeout();
+	_stop_internal(true);
 }
 
 double AnimatedSprite2D::_get_frame_duration() {
 	if (frames.is_valid() && frames->has_animation(animation)) {
 		return frames->get_frame_duration(animation, frame);
 	}
-	return 0.0;
+	return 1.0;
 }
 
-void AnimatedSprite2D::_reset_timeout() {
-	timeout = _get_frame_duration();
-	is_over = false;
+void AnimatedSprite2D::_calc_frame_speed_scale() {
+	frame_speed_scale = 1.0 / _get_frame_duration();
 }
 
-void AnimatedSprite2D::set_animation(const StringName &p_animation) {
-	ERR_FAIL_COND_MSG(frames == nullptr, vformat("There is no animation with name '%s'.", p_animation));
-	ERR_FAIL_COND_MSG(!frames->get_animation_names().has(p_animation), vformat("There is no animation with name '%s'.", p_animation));
-
-	if (animation == p_animation) {
+void AnimatedSprite2D::set_animation(const StringName &p_name) {
+	if (animation == p_name) {
 		return;
 	}
 
-	animation = p_animation;
-	set_frame(0);
-	_reset_timeout();
+	animation = p_name;
+
+	emit_signal("animation_changed");
+
+	if (frames == nullptr) {
+		animation = StringName();
+		stop();
+		ERR_FAIL_MSG(vformat("There is no animation with name '%s'.", p_name));
+	}
+
+	int frame_count = frames->get_frame_count(animation);
+	if (animation == StringName() || frame_count == 0) {
+		stop();
+		return;
+	} else if (!frames->get_animation_names().has(animation)) {
+		animation = StringName();
+		stop();
+		ERR_FAIL_MSG(vformat("There is no animation with name '%s'.", p_name));
+	}
+
+	if (signbit(get_playing_speed())) {
+		set_frame_and_progress(frame_count - 1, 1.0);
+	} else {
+		set_frame_and_progress(0, 0.0);
+	}
+
 	notify_property_list_changed();
 	queue_redraw();
 }
@@ -468,17 +571,30 @@ void AnimatedSprite2D::get_argument_options(const StringName &p_function, int p_
 	Node::get_argument_options(p_function, p_idx, r_options);
 }
 
+#ifndef DISABLE_DEPRECATED
+bool AnimatedSprite2D::_set(const StringName &p_name, const Variant &p_value) {
+	if ((p_name == SNAME("frames"))) {
+		set_sprite_frames(p_value);
+		return true;
+	}
+	return false;
+}
+#endif
 void AnimatedSprite2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_sprite_frames", "sprite_frames"), &AnimatedSprite2D::set_sprite_frames);
 	ClassDB::bind_method(D_METHOD("get_sprite_frames"), &AnimatedSprite2D::get_sprite_frames);
 
-	ClassDB::bind_method(D_METHOD("set_animation", "animation"), &AnimatedSprite2D::set_animation);
+	ClassDB::bind_method(D_METHOD("set_animation", "name"), &AnimatedSprite2D::set_animation);
 	ClassDB::bind_method(D_METHOD("get_animation"), &AnimatedSprite2D::get_animation);
 
-	ClassDB::bind_method(D_METHOD("set_playing", "playing"), &AnimatedSprite2D::set_playing);
+	ClassDB::bind_method(D_METHOD("set_autoplay", "name"), &AnimatedSprite2D::set_autoplay);
+	ClassDB::bind_method(D_METHOD("get_autoplay"), &AnimatedSprite2D::get_autoplay);
+
 	ClassDB::bind_method(D_METHOD("is_playing"), &AnimatedSprite2D::is_playing);
 
-	ClassDB::bind_method(D_METHOD("play", "anim", "backwards"), &AnimatedSprite2D::play, DEFVAL(StringName()), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("play", "name", "custom_speed", "from_end"), &AnimatedSprite2D::play, DEFVAL(StringName()), DEFVAL(1.0), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("play_backwards", "name"), &AnimatedSprite2D::play_backwards, DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("pause"), &AnimatedSprite2D::pause);
 	ClassDB::bind_method(D_METHOD("stop"), &AnimatedSprite2D::stop);
 
 	ClassDB::bind_method(D_METHOD("set_centered", "centered"), &AnimatedSprite2D::set_centered);
@@ -496,18 +612,28 @@ void AnimatedSprite2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_frame", "frame"), &AnimatedSprite2D::set_frame);
 	ClassDB::bind_method(D_METHOD("get_frame"), &AnimatedSprite2D::get_frame);
 
+	ClassDB::bind_method(D_METHOD("set_frame_progress", "progress"), &AnimatedSprite2D::set_frame_progress);
+	ClassDB::bind_method(D_METHOD("get_frame_progress"), &AnimatedSprite2D::get_frame_progress);
+
+	ClassDB::bind_method(D_METHOD("set_frame_and_progress", "frame", "progress"), &AnimatedSprite2D::set_frame_and_progress);
+
 	ClassDB::bind_method(D_METHOD("set_speed_scale", "speed_scale"), &AnimatedSprite2D::set_speed_scale);
 	ClassDB::bind_method(D_METHOD("get_speed_scale"), &AnimatedSprite2D::get_speed_scale);
+	ClassDB::bind_method(D_METHOD("get_playing_speed"), &AnimatedSprite2D::get_playing_speed);
 
+	ADD_SIGNAL(MethodInfo("sprite_frames_changed"));
+	ADD_SIGNAL(MethodInfo("animation_changed"));
 	ADD_SIGNAL(MethodInfo("frame_changed"));
+	ADD_SIGNAL(MethodInfo("animation_looped"));
 	ADD_SIGNAL(MethodInfo("animation_finished"));
 
 	ADD_GROUP("Animation", "");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "frames", PROPERTY_HINT_RESOURCE_TYPE, "SpriteFrames"), "set_sprite_frames", "get_sprite_frames");
-	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "animation"), "set_animation", "get_animation");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "sprite_frames", PROPERTY_HINT_RESOURCE_TYPE, "SpriteFrames"), "set_sprite_frames", "get_sprite_frames");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "animation", PROPERTY_HINT_ENUM, ""), "set_animation", "get_animation");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING_NAME, "autoplay", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_autoplay", "get_autoplay");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "frame"), "set_frame", "get_frame");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "frame_progress", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_frame_progress", "get_frame_progress");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "speed_scale"), "set_speed_scale", "get_speed_scale");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing"), "set_playing", "is_playing");
 	ADD_GROUP("Offset", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "centered"), "set_centered", "is_centered");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset", PROPERTY_HINT_NONE, "suffix:px"), "set_offset", "get_offset");

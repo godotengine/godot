@@ -991,6 +991,28 @@ uint32_t TileSet::get_navigation_layer_layers(int p_layer_index) const {
 	return navigation_layers[p_layer_index].layers;
 }
 
+void TileSet::set_navigation_layer_layer_value(int p_layer_index, int p_layer_number, bool p_value) {
+	ERR_FAIL_COND_MSG(p_layer_number < 1, "Navigation layer number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_MSG(p_layer_number > 32, "Navigation layer number must be between 1 and 32 inclusive.");
+
+	uint32_t _navigation_layers = get_navigation_layer_layers(p_layer_index);
+
+	if (p_value) {
+		_navigation_layers |= 1 << (p_layer_number - 1);
+	} else {
+		_navigation_layers &= ~(1 << (p_layer_number - 1));
+	}
+
+	set_navigation_layer_layers(p_layer_index, _navigation_layers);
+}
+
+bool TileSet::get_navigation_layer_layer_value(int p_layer_index, int p_layer_number) const {
+	ERR_FAIL_COND_V_MSG(p_layer_number < 1, false, "Navigation layer number must be between 1 and 32 inclusive.");
+	ERR_FAIL_COND_V_MSG(p_layer_number > 32, false, "Navigation layer number must be between 1 and 32 inclusive.");
+
+	return get_navigation_layer_layers(p_layer_index) & (1 << (p_layer_number - 1));
+}
+
 // Custom data.
 int TileSet::get_custom_data_layers_count() const {
 	return custom_data_layers.size();
@@ -2533,6 +2555,11 @@ void TileSet::_compatibility_conversion() {
 					bool flip_v = flags & 2;
 					bool transpose = flags & 4;
 
+					Transform2D xform;
+					xform = flip_h ? xform.scaled(Size2(-1, 1)) : xform;
+					xform = flip_v ? xform.scaled(Size2(1, -1)) : xform;
+					xform = transpose ? xform.rotated(Math_PI).scaled(Size2(-1, -1)) : xform;
+
 					int alternative_tile = 0;
 					if (!atlas_source->has_tile(coords)) {
 						atlas_source->create_tile(coords);
@@ -2569,14 +2596,26 @@ void TileSet::_compatibility_conversion() {
 					if (ctd->occluder.is_valid()) {
 						if (get_occlusion_layers_count() < 1) {
 							add_occlusion_layer();
+						};
+						Ref<OccluderPolygon2D> occluder = ctd->occluder->duplicate();
+						Vector<Vector2> polygon = ctd->occluder->get_polygon();
+						for (int index = 0; index < polygon.size(); index++) {
+							polygon.write[index] = xform.xform(polygon[index] - ctd->region.get_size() / 2.0);
 						}
-						tile_data->set_occluder(0, ctd->occluder);
+						occluder->set_polygon(polygon);
+						tile_data->set_occluder(0, occluder);
 					}
 					if (ctd->navigation.is_valid()) {
 						if (get_navigation_layers_count() < 1) {
 							add_navigation_layer();
 						}
-						tile_data->set_navigation_polygon(0, ctd->autotile_navpoly_map[coords]);
+						Ref<NavigationPolygon> navigation = ctd->navigation->duplicate();
+						Vector<Vector2> vertices = navigation->get_vertices();
+						for (int index = 0; index < vertices.size(); index++) {
+							vertices.write[index] = xform.xform(vertices[index] - ctd->region.get_size() / 2.0);
+						}
+						navigation->set_vertices(vertices);
+						tile_data->set_navigation_polygon(0, navigation);
 					}
 
 					tile_data->set_z_index(ctd->z_index);
@@ -2594,7 +2633,7 @@ void TileSet::_compatibility_conversion() {
 							if (convex_shape.is_valid()) {
 								Vector<Vector2> polygon = convex_shape->get_points();
 								for (int point_index = 0; point_index < polygon.size(); point_index++) {
-									polygon.write[point_index] = csd.transform.xform(polygon[point_index]);
+									polygon.write[point_index] = xform.xform(csd.transform.xform(polygon[point_index]) - ctd->region.get_size() / 2.0);
 								}
 								tile_data->set_collision_polygons_count(0, tile_data->get_collision_polygons_count(0) + 1);
 								int index = tile_data->get_collision_polygons_count(0) - 1;
@@ -2605,9 +2644,15 @@ void TileSet::_compatibility_conversion() {
 						}
 					}
 				}
+				// Update the size count.
+				if (!compatibility_size_count.has(ctd->region.get_size())) {
+					compatibility_size_count[ctd->region.get_size()] = 0;
+				}
+				compatibility_size_count[ctd->region.get_size()]++;
 			} break;
 			case COMPATIBILITY_TILE_MODE_AUTO_TILE: {
 				// Not supported. It would need manual conversion.
+				WARN_PRINT_ONCE("Could not convert 3.x autotiles to 4.x. This operation cannot be done automatically, autotiles must be re-created using the terrain system.");
 			} break;
 			case COMPATIBILITY_TILE_MODE_ATLAS_TILE: {
 				atlas_source->set_margins(ctd->region.get_position());
@@ -2623,6 +2668,11 @@ void TileSet::_compatibility_conversion() {
 							bool flip_h = flags & 1;
 							bool flip_v = flags & 2;
 							bool transpose = flags & 4;
+
+							Transform2D xform;
+							xform = flip_h ? xform.scaled(Size2(-1, 1)) : xform;
+							xform = flip_v ? xform.scaled(Size2(1, -1)) : xform;
+							xform = transpose ? xform.rotated(Math_PI).scaled(Size2(-1, -1)) : xform;
 
 							int alternative_tile = 0;
 							if (!atlas_source->has_tile(coords)) {
@@ -2661,13 +2711,25 @@ void TileSet::_compatibility_conversion() {
 								if (get_occlusion_layers_count() < 1) {
 									add_occlusion_layer();
 								}
-								tile_data->set_occluder(0, ctd->autotile_occluder_map[coords]);
+								Ref<OccluderPolygon2D> occluder = ctd->autotile_occluder_map[coords]->duplicate();
+								Vector<Vector2> polygon = ctd->occluder->get_polygon();
+								for (int index = 0; index < polygon.size(); index++) {
+									polygon.write[index] = xform.xform(polygon[index] - ctd->region.get_size() / 2.0);
+								}
+								occluder->set_polygon(polygon);
+								tile_data->set_occluder(0, occluder);
 							}
 							if (ctd->autotile_navpoly_map.has(coords)) {
 								if (get_navigation_layers_count() < 1) {
 									add_navigation_layer();
 								}
-								tile_data->set_navigation_polygon(0, ctd->autotile_navpoly_map[coords]);
+								Ref<NavigationPolygon> navigation = ctd->autotile_navpoly_map[coords]->duplicate();
+								Vector<Vector2> vertices = navigation->get_vertices();
+								for (int index = 0; index < vertices.size(); index++) {
+									vertices.write[index] = xform.xform(vertices[index] - ctd->region.get_size() / 2.0);
+								}
+								navigation->set_vertices(vertices);
+								tile_data->set_navigation_polygon(0, navigation);
 							}
 							if (ctd->autotile_priority_map.has(coords)) {
 								tile_data->set_probability(ctd->autotile_priority_map[coords]);
@@ -2689,7 +2751,7 @@ void TileSet::_compatibility_conversion() {
 									if (convex_shape.is_valid()) {
 										Vector<Vector2> polygon = convex_shape->get_points();
 										for (int point_index = 0; point_index < polygon.size(); point_index++) {
-											polygon.write[point_index] = csd.transform.xform(polygon[point_index]);
+											polygon.write[point_index] = xform.xform(csd.transform.xform(polygon[point_index]) - ctd->autotile_tile_size / 2.0);
 										}
 										tile_data->set_collision_polygons_count(0, tile_data->get_collision_polygons_count(0) + 1);
 										int index = tile_data->get_collision_polygons_count(0) - 1;
@@ -2712,6 +2774,12 @@ void TileSet::_compatibility_conversion() {
 						}
 					}
 				}
+
+				// Update the size count.
+				if (!compatibility_size_count.has(ctd->region.get_size())) {
+					compatibility_size_count[ctd->autotile_tile_size] = 0;
+				}
+				compatibility_size_count[ctd->autotile_tile_size] += atlas_size.x * atlas_size.y;
 			} break;
 		}
 
@@ -2728,7 +2796,18 @@ void TileSet::_compatibility_conversion() {
 		}
 	}
 
-	// Reset compatibility data
+	// Update the TileSet tile_size according to the most common size found.
+	Vector2i max_size = get_tile_size();
+	int max_count = 0;
+	for (KeyValue<Vector2i, int> kv : compatibility_size_count) {
+		if (kv.value > max_count) {
+			max_size = kv.key;
+			max_count = kv.value;
+		}
+	}
+	set_tile_size(max_size);
+
+	// Reset compatibility data (besides the histogram counts)
 	for (const KeyValue<int, CompatibilityTileData *> &E : compatibility_data) {
 		memdelete(E.value);
 	}
@@ -2909,6 +2988,10 @@ bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 				}
 				ctd->shapes.push_back(csd);
 			}
+		} else if (what == "occluder") {
+			ctd->occluder = p_value;
+		} else if (what == "navigation") {
+			ctd->navigation = p_value;
 
 			/*
 		// IGNORED FOR NOW, they seem duplicated data compared to the shapes array
@@ -3387,6 +3470,8 @@ void TileSet::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_navigation_layer", "layer_index"), &TileSet::remove_navigation_layer);
 	ClassDB::bind_method(D_METHOD("set_navigation_layer_layers", "layer_index", "layers"), &TileSet::set_navigation_layer_layers);
 	ClassDB::bind_method(D_METHOD("get_navigation_layer_layers", "layer_index"), &TileSet::get_navigation_layer_layers);
+	ClassDB::bind_method(D_METHOD("set_navigation_layer_layer_value", "layer_index", "layer_number", "value"), &TileSet::set_navigation_layer_layer_value);
+	ClassDB::bind_method(D_METHOD("get_navigation_layer_layer_value", "layer_index", "layer_number"), &TileSet::get_navigation_layer_layer_value);
 
 	// Custom data
 	ClassDB::bind_method(D_METHOD("get_custom_data_layers_count"), &TileSet::get_custom_data_layers_count);
@@ -4282,19 +4367,11 @@ Rect2i TileSetAtlasSource::get_tile_texture_region(Vector2i p_atlas_coords, int 
 	return Rect2(origin, region_size);
 }
 
-Vector2i TileSetAtlasSource::get_tile_effective_texture_offset(Vector2i p_atlas_coords, int p_alternative_tile) const {
-	ERR_FAIL_COND_V_MSG(!tiles.has(p_atlas_coords), Vector2i(), vformat("TileSetAtlasSource has no tile at %s.", Vector2i(p_atlas_coords)));
-	ERR_FAIL_COND_V_MSG(!has_alternative_tile(p_atlas_coords, p_alternative_tile), Vector2i(), vformat("TileSetAtlasSource has no alternative tile with id %d at %s.", p_alternative_tile, String(p_atlas_coords)));
-	ERR_FAIL_COND_V(!tile_set, Vector2i());
+bool TileSetAtlasSource::is_position_in_tile_texture_region(const Vector2i p_atlas_coords, int p_alternative_tile, Vector2 p_position) const {
+	Size2 size = get_tile_texture_region(p_atlas_coords).size;
+	Rect2 rect = Rect2(-size / 2 - get_tile_data(p_atlas_coords, p_alternative_tile)->get_texture_origin(), size);
 
-	Vector2 margin = (get_tile_texture_region(p_atlas_coords).size - tile_set->get_tile_size()) / 2;
-	margin = Vector2i(MAX(0, margin.x), MAX(0, margin.y));
-	Vector2i effective_texture_offset = get_tile_data(p_atlas_coords, p_alternative_tile)->get_texture_offset();
-	if (ABS(effective_texture_offset.x) > margin.x || ABS(effective_texture_offset.y) > margin.y) {
-		effective_texture_offset = effective_texture_offset.clamp(-margin, margin);
-	}
-
-	return effective_texture_offset;
+	return rect.has_point(p_position);
 }
 
 // Getters for texture and tile region (padded or not)
@@ -5046,7 +5123,7 @@ TileData *TileData::duplicate() {
 	output->flip_h = flip_h;
 	output->flip_v = flip_v;
 	output->transpose = transpose;
-	output->tex_offset = tex_offset;
+	output->texture_origin = texture_origin;
 	output->material = material;
 	output->modulate = modulate;
 	output->z_index = z_index;
@@ -5096,13 +5173,13 @@ bool TileData::get_transpose() const {
 	return transpose;
 }
 
-void TileData::set_texture_offset(Vector2i p_texture_offset) {
-	tex_offset = p_texture_offset;
+void TileData::set_texture_origin(Vector2i p_texture_origin) {
+	texture_origin = p_texture_origin;
 	emit_signal(SNAME("changed"));
 }
 
-Vector2i TileData::get_texture_offset() const {
-	return tex_offset;
+Vector2i TileData::get_texture_origin() const {
+	return texture_origin;
 }
 
 void TileData::set_material(Ref<Material> p_material) {
@@ -5390,6 +5467,13 @@ Variant TileData::get_custom_data_by_layer_id(int p_layer_id) const {
 }
 
 bool TileData::_set(const StringName &p_name, const Variant &p_value) {
+#ifndef DISABLE_DEPRECATED
+	if (p_name == "texture_offset") {
+		texture_origin = p_value;
+		return true;
+	}
+#endif
+
 	Vector<String> components = String(p_name).split("/", true, 2);
 
 	if (components.size() == 2 && components[0].begins_with("occlusion_layer_") && components[0].trim_prefix("occlusion_layer_").is_valid_int()) {
@@ -5511,6 +5595,13 @@ bool TileData::_set(const StringName &p_name, const Variant &p_value) {
 }
 
 bool TileData::_get(const StringName &p_name, Variant &r_ret) const {
+#ifndef DISABLE_DEPRECATED
+	if (p_name == "texture_offset") {
+		r_ret = texture_origin;
+		return true;
+	}
+#endif
+
 	Vector<String> components = String(p_name).split("/", true, 2);
 
 	if (tile_set) {
@@ -5692,8 +5783,8 @@ void TileData::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_transpose"), &TileData::get_transpose);
 	ClassDB::bind_method(D_METHOD("set_material", "material"), &TileData::set_material);
 	ClassDB::bind_method(D_METHOD("get_material"), &TileData::get_material);
-	ClassDB::bind_method(D_METHOD("set_texture_offset", "texture_offset"), &TileData::set_texture_offset);
-	ClassDB::bind_method(D_METHOD("get_texture_offset"), &TileData::get_texture_offset);
+	ClassDB::bind_method(D_METHOD("set_texture_origin", "texture_origin"), &TileData::set_texture_origin);
+	ClassDB::bind_method(D_METHOD("get_texture_origin"), &TileData::get_texture_origin);
 	ClassDB::bind_method(D_METHOD("set_modulate", "modulate"), &TileData::set_modulate);
 	ClassDB::bind_method(D_METHOD("get_modulate"), &TileData::get_modulate);
 	ClassDB::bind_method(D_METHOD("set_z_index", "z_index"), &TileData::set_z_index);
@@ -5746,7 +5837,7 @@ void TileData::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_h"), "set_flip_h", "get_flip_h");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_v"), "set_flip_v", "get_flip_v");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "transpose"), "set_transpose", "get_transpose");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "texture_offset", PROPERTY_HINT_NONE, "suffix:px"), "set_texture_offset", "get_texture_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2I, "texture_origin", PROPERTY_HINT_NONE, "suffix:px"), "set_texture_origin", "get_texture_origin");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "modulate"), "set_modulate", "get_modulate");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "CanvasItemMaterial,ShaderMaterial"), "set_material", "get_material");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "z_index"), "set_z_index", "get_z_index");

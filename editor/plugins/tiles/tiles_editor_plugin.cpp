@@ -106,7 +106,7 @@ void TilesEditorPlugin::_thread() {
 						Vector2i coords = tile_map->get_cell_atlas_coords(0, cell);
 						int alternative = tile_map->get_cell_alternative_tile(0, cell);
 
-						Vector2 center = world_pos - atlas_source->get_tile_effective_texture_offset(coords, alternative);
+						Vector2 center = world_pos - atlas_source->get_tile_data(coords, alternative)->get_texture_origin();
 						encompassing_rect.expand_to(center - atlas_source->get_tile_texture_region(coords).size / 2);
 						encompassing_rect.expand_to(center + atlas_source->get_tile_texture_region(coords).size / 2);
 					}

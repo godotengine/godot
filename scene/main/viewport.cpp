@@ -704,25 +704,15 @@ void Viewport::_process_picking() {
 		}
 
 #ifndef _3D_DISABLED
-		bool captured = false;
-
+		CollisionObject3D *capture_object = nullptr;
 		if (physics_object_capture.is_valid()) {
-			CollisionObject3D *co = Object::cast_to<CollisionObject3D>(ObjectDB::get_instance(physics_object_capture));
-			if (co && camera_3d) {
-				_collision_object_3d_input_event(co, camera_3d, ev, Vector3(), Vector3(), 0);
-				captured = true;
-				if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && !mb->is_pressed()) {
-					physics_object_capture = ObjectID();
-				}
-
-			} else {
+			capture_object = Object::cast_to<CollisionObject3D>(ObjectDB::get_instance(physics_object_capture));
+			if (!capture_object || !camera_3d || (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && !mb->is_pressed())) {
 				physics_object_capture = ObjectID();
 			}
 		}
 
-		if (captured) {
-			// None.
-		} else if (pos == last_pos) {
+		if (pos == last_pos) {
 			if (last_id.is_valid()) {
 				if (ObjectDB::get_instance(last_id) && last_object) {
 					// Good, exists.
@@ -748,13 +738,12 @@ void Viewport::_process_picking() {
 
 					bool col = space->intersect_ray(ray_params, result);
 					ObjectID new_collider;
-					if (col) {
-						CollisionObject3D *co = Object::cast_to<CollisionObject3D>(result.collider);
-						if (co && co->can_process()) {
-							_collision_object_3d_input_event(co, camera_3d, ev, result.position, result.normal, result.shape);
+					CollisionObject3D *co = col ? Object::cast_to<CollisionObject3D>(result.collider) : nullptr;
+					if (co && co->can_process()) {
+						new_collider = result.collider_id;
+						if (!capture_object) {
 							last_object = co;
 							last_id = result.collider_id;
-							new_collider = last_id;
 							if (co->get_capture_input_on_drag() && mb.is_valid() && mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) {
 								physics_object_capture = last_id;
 							}
@@ -763,20 +752,23 @@ void Viewport::_process_picking() {
 
 					if (is_mouse && new_collider != physics_object_over) {
 						if (physics_object_over.is_valid()) {
-							CollisionObject3D *co = Object::cast_to<CollisionObject3D>(ObjectDB::get_instance(physics_object_over));
-							if (co) {
-								co->_mouse_exit();
+							CollisionObject3D *previous_co = Object::cast_to<CollisionObject3D>(ObjectDB::get_instance(physics_object_over));
+							if (previous_co) {
+								previous_co->_mouse_exit();
 							}
 						}
 
 						if (new_collider.is_valid()) {
-							CollisionObject3D *co = Object::cast_to<CollisionObject3D>(ObjectDB::get_instance(new_collider));
-							if (co) {
-								co->_mouse_enter();
-							}
+							DEV_ASSERT(co);
+							co->_mouse_enter();
 						}
 
 						physics_object_over = new_collider;
+					}
+					if (capture_object) {
+						_collision_object_3d_input_event(capture_object, camera_3d, ev, result.position, result.normal, result.shape);
+					} else if (new_collider.is_valid()) {
+						_collision_object_3d_input_event(co, camera_3d, ev, result.position, result.normal, result.shape);
 					}
 				}
 
@@ -1050,7 +1042,7 @@ Camera2D *Viewport::get_camera_2d() const {
 }
 
 Transform2D Viewport::get_final_transform() const {
-	return stretch_transform * global_canvas_transform;
+	return _get_input_pre_xform().affine_inverse() * stretch_transform * global_canvas_transform;
 }
 
 void Viewport::_update_canvas_items(Node *p_node) {
@@ -1133,7 +1125,7 @@ Ref<InputEvent> Viewport::_make_input_local(const Ref<InputEvent> &ev) {
 		return ev; // No transformation defined for null event
 	}
 
-	Transform2D ai = get_final_transform().affine_inverse() * _get_input_pre_xform();
+	Transform2D ai = get_final_transform().affine_inverse();
 	return ev->xformed_by(ai);
 }
 
@@ -1795,9 +1787,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 					if (w->is_embedded()) {
 						embedder = w->_get_embedder();
 
-						Transform2D ai = (get_final_transform().affine_inverse() * _get_input_pre_xform()).affine_inverse();
-
-						viewport_pos = ai.xform(mpos) + w->get_position(); // To parent coords.
+						viewport_pos = get_final_transform().xform(mpos) + w->get_position(); // To parent coords.
 					}
 				}
 			}
@@ -1847,7 +1837,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 			if (viewport_under) {
 				if (viewport_under != this) {
-					Transform2D ai = (viewport_under->get_final_transform().affine_inverse() * viewport_under->_get_input_pre_xform());
+					Transform2D ai = viewport_under->get_final_transform().affine_inverse();
 					viewport_pos = ai.xform(viewport_pos);
 				}
 				// Find control under at position.
@@ -2853,7 +2843,7 @@ bool Viewport::get_physics_object_picking() {
 }
 
 Vector2 Viewport::get_camera_coords(const Vector2 &p_viewport_coords) const {
-	Transform2D xf = get_final_transform();
+	Transform2D xf = stretch_transform * global_canvas_transform;
 	return xf.xform(p_viewport_coords);
 }
 
@@ -3245,7 +3235,7 @@ Viewport::SDFScale Viewport::get_sdf_scale() const {
 }
 
 Transform2D Viewport::get_screen_transform() const {
-	return _get_input_pre_xform().affine_inverse() * get_final_transform();
+	return get_final_transform();
 }
 
 void Viewport::set_canvas_cull_mask(uint32_t p_canvas_cull_mask) {
@@ -4186,6 +4176,21 @@ Transform2D SubViewport::get_screen_transform() const {
 		WARN_PRINT_ONCE("SubViewport is not a child of a SubViewportContainer. get_screen_transform doesn't return the actual screen position.");
 	}
 	return container_transform * Viewport::get_screen_transform();
+}
+
+Transform2D SubViewport::get_popup_base_transform() const {
+	if (is_embedding_subwindows()) {
+		return Transform2D();
+	}
+	SubViewportContainer *c = Object::cast_to<SubViewportContainer>(get_parent());
+	if (!c) {
+		return Viewport::get_screen_transform();
+	}
+	Transform2D container_transform;
+	if (c->is_stretch_enabled()) {
+		container_transform.scale(Vector2(c->get_stretch_shrink(), c->get_stretch_shrink()));
+	}
+	return c->get_screen_transform() * container_transform * Viewport::get_screen_transform();
 }
 
 void SubViewport::_notification(int p_what) {

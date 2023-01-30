@@ -60,13 +60,13 @@ public partial struct Variant : IDisposable
             case Type.Int:
             case Type.Float:
             case Type.Vector2:
-            case Type.Vector2i:
+            case Type.Vector2I:
             case Type.Rect2:
-            case Type.Rect2i:
+            case Type.Rect2I:
             case Type.Vector3:
-            case Type.Vector3i:
+            case Type.Vector3I:
             case Type.Vector4:
-            case Type.Vector4i:
+            case Type.Vector4I:
             case Type.Plane:
             case Type.Quaternion:
             case Type.Color:
@@ -117,24 +117,24 @@ public partial struct Variant : IDisposable
             Type.Float => AsDouble(),
             Type.String => AsString(),
             Type.Vector2 => AsVector2(),
-            Type.Vector2i => AsVector2i(),
+            Type.Vector2I => AsVector2I(),
             Type.Rect2 => AsRect2(),
-            Type.Rect2i => AsRect2i(),
+            Type.Rect2I => AsRect2I(),
             Type.Vector3 => AsVector3(),
-            Type.Vector3i => AsVector3i(),
-            Type.Transform2d => AsTransform2D(),
+            Type.Vector3I => AsVector3I(),
+            Type.Transform2D => AsTransform2D(),
             Type.Vector4 => AsVector4(),
-            Type.Vector4i => AsVector4i(),
+            Type.Vector4I => AsVector4I(),
             Type.Plane => AsPlane(),
             Type.Quaternion => AsQuaternion(),
-            Type.Aabb => AsAABB(),
+            Type.Aabb => AsAabb(),
             Type.Basis => AsBasis(),
-            Type.Transform3d => AsTransform3D(),
+            Type.Transform3D => AsTransform3D(),
             Type.Projection => AsProjection(),
             Type.Color => AsColor(),
             Type.StringName => AsStringName(),
             Type.NodePath => AsNodePath(),
-            Type.Rid => AsRID(),
+            Type.Rid => AsRid(),
             Type.Object => AsGodotObject(),
             Type.Callable => AsCallable(),
             Type.Signal => AsSignal(),
@@ -219,16 +219,16 @@ public partial struct Variant : IDisposable
         VariantUtils.ConvertToVector2((godot_variant)NativeVar);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Vector2i AsVector2i() =>
-        VariantUtils.ConvertToVector2i((godot_variant)NativeVar);
+    public Vector2I AsVector2I() =>
+        VariantUtils.ConvertToVector2I((godot_variant)NativeVar);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Rect2 AsRect2() =>
         VariantUtils.ConvertToRect2((godot_variant)NativeVar);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Rect2i AsRect2i() =>
-        VariantUtils.ConvertToRect2i((godot_variant)NativeVar);
+    public Rect2I AsRect2I() =>
+        VariantUtils.ConvertToRect2I((godot_variant)NativeVar);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Transform2D AsTransform2D() =>
@@ -239,8 +239,8 @@ public partial struct Variant : IDisposable
         VariantUtils.ConvertToVector3((godot_variant)NativeVar);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Vector3i AsVector3i() =>
-        VariantUtils.ConvertToVector3i((godot_variant)NativeVar);
+    public Vector3I AsVector3I() =>
+        VariantUtils.ConvertToVector3I((godot_variant)NativeVar);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Basis AsBasis() =>
@@ -259,16 +259,16 @@ public partial struct Variant : IDisposable
         VariantUtils.ConvertToVector4((godot_variant)NativeVar);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Vector4i AsVector4i() =>
-        VariantUtils.ConvertToVector4i((godot_variant)NativeVar);
+    public Vector4I AsVector4I() =>
+        VariantUtils.ConvertToVector4I((godot_variant)NativeVar);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Projection AsProjection() =>
         VariantUtils.ConvertToProjection((godot_variant)NativeVar);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public AABB AsAABB() =>
-        VariantUtils.ConvertToAABB((godot_variant)NativeVar);
+    public Aabb AsAabb() =>
+        VariantUtils.ConvertToAabb((godot_variant)NativeVar);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Color AsColor() =>
@@ -324,15 +324,15 @@ public partial struct Variant : IDisposable
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public T[] AsGodotObjectArray<T>()
-        where T : Godot.Object =>
+        where T : GodotObject =>
         VariantUtils.ConvertToSystemArrayOfGodotObject<T>((godot_variant)NativeVar);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Collections.Dictionary<TKey, TValue> AsGodotDictionary<TKey, TValue>() =>
+    public Collections.Dictionary<TKey, TValue> AsGodotDictionary<[MustBeVariant] TKey, [MustBeVariant] TValue>() =>
         VariantUtils.ConvertToDictionary<TKey, TValue>((godot_variant)NativeVar);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Collections.Array<T> AsGodotArray<T>() =>
+    public Collections.Array<T> AsGodotArray<[MustBeVariant] T>() =>
         VariantUtils.ConvertToArray<T>((godot_variant)NativeVar);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -344,11 +344,11 @@ public partial struct Variant : IDisposable
         VariantUtils.ConvertToSystemArrayOfNodePath((godot_variant)NativeVar);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public RID[] AsSystemArrayOfRID() =>
-        VariantUtils.ConvertToSystemArrayOfRID((godot_variant)NativeVar);
+    public Rid[] AsSystemArrayOfRid() =>
+        VariantUtils.ConvertToSystemArrayOfRid((godot_variant)NativeVar);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Godot.Object AsGodotObject() =>
+    public GodotObject AsGodotObject() =>
         VariantUtils.ConvertToGodotObject((godot_variant)NativeVar);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -360,8 +360,8 @@ public partial struct Variant : IDisposable
         VariantUtils.ConvertToNodePath((godot_variant)NativeVar);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public RID AsRID() =>
-        VariantUtils.ConvertToRID((godot_variant)NativeVar);
+    public Rid AsRid() =>
+        VariantUtils.ConvertToRid((godot_variant)NativeVar);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Collections.Dictionary AsGodotDictionary() =>
@@ -416,13 +416,13 @@ public partial struct Variant : IDisposable
     public static explicit operator Vector2(Variant from) => from.AsVector2();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static explicit operator Vector2i(Variant from) => from.AsVector2i();
+    public static explicit operator Vector2I(Variant from) => from.AsVector2I();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static explicit operator Rect2(Variant from) => from.AsRect2();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static explicit operator Rect2i(Variant from) => from.AsRect2i();
+    public static explicit operator Rect2I(Variant from) => from.AsRect2I();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static explicit operator Transform2D(Variant from) => from.AsTransform2D();
@@ -431,7 +431,7 @@ public partial struct Variant : IDisposable
     public static explicit operator Vector3(Variant from) => from.AsVector3();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static explicit operator Vector3i(Variant from) => from.AsVector3i();
+    public static explicit operator Vector3I(Variant from) => from.AsVector3I();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static explicit operator Basis(Variant from) => from.AsBasis();
@@ -446,13 +446,13 @@ public partial struct Variant : IDisposable
     public static explicit operator Vector4(Variant from) => from.AsVector4();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static explicit operator Vector4i(Variant from) => from.AsVector4i();
+    public static explicit operator Vector4I(Variant from) => from.AsVector4I();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static explicit operator Projection(Variant from) => from.AsProjection();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static explicit operator AABB(Variant from) => from.AsAABB();
+    public static explicit operator Aabb(Variant from) => from.AsAabb();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static explicit operator Color(Variant from) => from.AsColor();
@@ -500,10 +500,10 @@ public partial struct Variant : IDisposable
     public static explicit operator NodePath[](Variant from) => from.AsSystemArrayOfNodePath();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static explicit operator RID[](Variant from) => from.AsSystemArrayOfRID();
+    public static explicit operator Rid[](Variant from) => from.AsSystemArrayOfRid();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static explicit operator Godot.Object(Variant from) => from.AsGodotObject();
+    public static explicit operator GodotObject(Variant from) => from.AsGodotObject();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static explicit operator StringName(Variant from) => from.AsStringName();
@@ -512,7 +512,7 @@ public partial struct Variant : IDisposable
     public static explicit operator NodePath(Variant from) => from.AsNodePath();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static explicit operator RID(Variant from) => from.AsRID();
+    public static explicit operator Rid(Variant from) => from.AsRid();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static explicit operator Collections.Dictionary(Variant from) => from.AsGodotDictionary();
@@ -566,13 +566,13 @@ public partial struct Variant : IDisposable
     public static Variant CreateFrom(Vector2 from) => from;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Variant CreateFrom(Vector2i from) => from;
+    public static Variant CreateFrom(Vector2I from) => from;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Variant CreateFrom(Rect2 from) => from;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Variant CreateFrom(Rect2i from) => from;
+    public static Variant CreateFrom(Rect2I from) => from;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Variant CreateFrom(Transform2D from) => from;
@@ -581,7 +581,7 @@ public partial struct Variant : IDisposable
     public static Variant CreateFrom(Vector3 from) => from;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Variant CreateFrom(Vector3i from) => from;
+    public static Variant CreateFrom(Vector3I from) => from;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Variant CreateFrom(Basis from) => from;
@@ -596,13 +596,13 @@ public partial struct Variant : IDisposable
     public static Variant CreateFrom(Vector4 from) => from;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Variant CreateFrom(Vector4i from) => from;
+    public static Variant CreateFrom(Vector4I from) => from;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Variant CreateFrom(Projection from) => from;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Variant CreateFrom(AABB from) => from;
+    public static Variant CreateFrom(Aabb from) => from;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Variant CreateFrom(Color from) => from;
@@ -644,14 +644,14 @@ public partial struct Variant : IDisposable
     public static Variant CreateFrom(Span<Color> from) => from;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Variant CreateFrom(Godot.Object[] from) => from;
+    public static Variant CreateFrom(GodotObject[] from) => from;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Variant CreateFrom<TKey, TValue>(Collections.Dictionary<TKey, TValue> from) =>
+    public static Variant CreateFrom<[MustBeVariant] TKey, [MustBeVariant] TValue>(Collections.Dictionary<TKey, TValue> from) =>
         CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromDictionary(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Variant CreateFrom<T>(Collections.Array<T> from) =>
+    public static Variant CreateFrom<[MustBeVariant] T>(Collections.Array<T> from) =>
         CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromArray(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -661,10 +661,10 @@ public partial struct Variant : IDisposable
     public static Variant CreateFrom(Span<NodePath> from) => from;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Variant CreateFrom(Span<RID> from) => from;
+    public static Variant CreateFrom(Span<Rid> from) => from;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Variant CreateFrom(Godot.Object from) => from;
+    public static Variant CreateFrom(GodotObject from) => from;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Variant CreateFrom(StringName from) => from;
@@ -673,7 +673,7 @@ public partial struct Variant : IDisposable
     public static Variant CreateFrom(NodePath from) => from;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static Variant CreateFrom(RID from) => from;
+    public static Variant CreateFrom(Rid from) => from;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static Variant CreateFrom(Collections.Dictionary from) => from;
@@ -740,16 +740,16 @@ public partial struct Variant : IDisposable
         CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromVector2(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static implicit operator Variant(Vector2i from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromVector2i(from));
+    public static implicit operator Variant(Vector2I from) =>
+        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromVector2I(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(Rect2 from) =>
         CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromRect2(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static implicit operator Variant(Rect2i from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromRect2i(from));
+    public static implicit operator Variant(Rect2I from) =>
+        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromRect2I(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(Transform2D from) =>
@@ -760,8 +760,8 @@ public partial struct Variant : IDisposable
         CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromVector3(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static implicit operator Variant(Vector3i from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromVector3i(from));
+    public static implicit operator Variant(Vector3I from) =>
+        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromVector3I(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(Basis from) =>
@@ -780,16 +780,16 @@ public partial struct Variant : IDisposable
         CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromVector4(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static implicit operator Variant(Vector4i from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromVector4i(from));
+    public static implicit operator Variant(Vector4I from) =>
+        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromVector4I(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(Projection from) =>
         CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromProjection(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static implicit operator Variant(AABB from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromAABB(from));
+    public static implicit operator Variant(Aabb from) =>
+        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromAabb(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(Color from) =>
@@ -844,7 +844,7 @@ public partial struct Variant : IDisposable
         (Variant)from.AsSpan();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static implicit operator Variant(Godot.Object[] from) =>
+    public static implicit operator Variant(GodotObject[] from) =>
         CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromSystemArrayOfGodotObject(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -856,7 +856,7 @@ public partial struct Variant : IDisposable
         (Variant)from.AsSpan();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static implicit operator Variant(RID[] from) =>
+    public static implicit operator Variant(Rid[] from) =>
         (Variant)from.AsSpan();
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -904,11 +904,11 @@ public partial struct Variant : IDisposable
         CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromSystemArrayOfNodePath(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static implicit operator Variant(Span<RID> from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromSystemArrayOfRID(from));
+    public static implicit operator Variant(Span<Rid> from) =>
+        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromSystemArrayOfRid(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static implicit operator Variant(Godot.Object from) =>
+    public static implicit operator Variant(GodotObject from) =>
         CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromGodotObject(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -920,8 +920,8 @@ public partial struct Variant : IDisposable
         CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromNodePath(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public static implicit operator Variant(RID from) =>
-        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromRID(from));
+    public static implicit operator Variant(Rid from) =>
+        CreateTakingOwnershipOfDisposableValue(VariantUtils.CreateFromRid(from));
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static implicit operator Variant(Collections.Dictionary from) =>

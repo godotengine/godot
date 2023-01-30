@@ -242,8 +242,8 @@ public:
 	~TileDataDefaultEditor();
 };
 
-class TileDataTextureOffsetEditor : public TileDataDefaultEditor {
-	GDCLASS(TileDataTextureOffsetEditor, TileDataDefaultEditor);
+class TileDataTextureOriginEditor : public TileDataDefaultEditor {
+	GDCLASS(TileDataTextureOriginEditor, TileDataDefaultEditor);
 
 public:
 	virtual void draw_over_tile(CanvasItem *p_canvas_item, Transform2D p_transform, TileMapCell p_cell, bool p_selected = false) override;

@@ -33,6 +33,7 @@
 
 #include "editor/editor_plugin.h"
 #include "scene/2d/animated_sprite_2d.h"
+#include "scene/3d/sprite_3d.h"
 #include "scene/gui/button.h"
 #include "scene/gui/check_button.h"
 #include "scene/gui/dialogs.h"
@@ -57,6 +58,9 @@ public:
 class SpriteFramesEditor : public HSplitContainer {
 	GDCLASS(SpriteFramesEditor, HSplitContainer);
 
+	Ref<SpriteFrames> frames;
+	Node *animated_sprite = nullptr;
+
 	enum {
 		PARAM_USE_CURRENT, // Used in callbacks to indicate `dominant_param` should be not updated.
 		PARAM_FRAME_COUNT, // Keep "Horizontal" & "Vertical" values.
@@ -65,6 +69,17 @@ class SpriteFramesEditor : public HSplitContainer {
 	int dominant_param = PARAM_FRAME_COUNT;
 
 	bool read_only = false;
+
+	Ref<Texture2D> autoplay_icon;
+	Ref<Texture2D> stop_icon;
+	Ref<Texture2D> pause_icon;
+
+	HBoxContainer *playback_container = nullptr;
+	Button *stop = nullptr;
+	Button *play = nullptr;
+	Button *play_from = nullptr;
+	Button *play_bw = nullptr;
+	Button *play_bw_from = nullptr;
 
 	Button *load = nullptr;
 	Button *load_sheet = nullptr;
@@ -85,6 +100,8 @@ class SpriteFramesEditor : public HSplitContainer {
 
 	Button *add_anim = nullptr;
 	Button *delete_anim = nullptr;
+	HBoxContainer *autoplay_container = nullptr;
+	Button *autoplay = nullptr;
 	LineEdit *anim_search_box = nullptr;
 
 	Tree *animations = nullptr;
@@ -94,8 +111,6 @@ class SpriteFramesEditor : public HSplitContainer {
 	EditorFileDialog *file = nullptr;
 
 	AcceptDialog *dialog = nullptr;
-
-	SpriteFrames *frames = nullptr;
 
 	StringName edited_anim;
 
@@ -146,7 +161,15 @@ class SpriteFramesEditor : public HSplitContainer {
 	void _frame_duration_changed(double p_value);
 	void _update_library(bool p_skip_selector = false);
 
-	void _animation_select();
+	void _update_stop_icon();
+	void _play_pressed();
+	void _play_from_pressed();
+	void _play_bw_pressed();
+	void _play_bw_from_pressed();
+	void _autoplay_pressed();
+	void _stop_pressed();
+
+	void _animation_selected();
 	void _animation_name_edited();
 	void _animation_add();
 	void _animation_remove();
@@ -183,12 +206,24 @@ class SpriteFramesEditor : public HSplitContainer {
 	void _sheet_zoom_reset();
 	void _sheet_select_clear_all_frames();
 
+	void _edit();
+	void _regist_scene_undo(EditorUndoRedoManager *undo_redo);
+	void _fetch_sprite_node();
+	void _remove_sprite_node();
+
+	bool sprite_node_updating = false;
+	void _sync_animation();
+
+	void _select_animation(const String &p_name, bool p_update_node = true);
+	void _rename_node_animation(EditorUndoRedoManager *undo_redo, bool is_undo, const String &p_filter, const String &p_new_animation, const String &p_new_autoplay);
+
 protected:
 	void _notification(int p_what);
+	void _node_removed(Node *p_node);
 	static void _bind_methods();
 
 public:
-	void edit(SpriteFrames *p_frames);
+	void edit(Ref<SpriteFrames> p_frames);
 	SpriteFramesEditor();
 };
 

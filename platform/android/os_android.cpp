@@ -739,8 +739,18 @@ Error OS_Android::create_process(const String &p_path, const List<String> &p_arg
 }
 
 Error OS_Android::create_instance(const List<String> &p_arguments, ProcessID *r_child_id) {
-	godot_java->create_new_godot_instance(p_arguments);
+	int instance_id = godot_java->create_new_godot_instance(p_arguments);
+	if (r_child_id) {
+		*r_child_id = instance_id;
+	}
 	return OK;
+}
+
+Error OS_Android::kill(const ProcessID &p_pid) {
+	if (godot_java->force_quit(nullptr, p_pid)) {
+		return OK;
+	}
+	return OS_Unix::kill(p_pid);
 }
 
 OS_Android::~OS_Android() {

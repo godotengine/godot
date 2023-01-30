@@ -519,7 +519,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		String error_title;
 		if (oe.callstack.size() > 0) {
 			// If available, use the script's stack in the error title.
-			error_title = oe.callstack[oe.callstack.size() - 1].func + ": ";
+			error_title = _format_frame_text(&oe.callstack[0]) + ": ";
 		} else if (!oe.source_func.is_empty()) {
 			// Otherwise try to use the C++ source function.
 			error_title += oe.source_func + ": ";
@@ -530,13 +530,25 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		error->set_text(1, error_title);
 		tooltip += " " + error_title + "\n";
 
+		// Find the language of the error's source file.
+		String source_language_name = "C++"; // Default value is the old hard-coded one.
+		const String source_file_extension = oe.source_file.get_extension();
+		for (int i = 0; i < ScriptServer::get_language_count(); ++i) {
+			ScriptLanguage *script_language = ScriptServer::get_language(i);
+			if (source_file_extension == script_language->get_extension()) {
+				source_language_name = script_language->get_name();
+				break;
+			}
+		}
+
 		if (!oe.error_descr.is_empty()) {
 			// Add item for C++ error condition.
 			TreeItem *cpp_cond = error_tree->create_item(error);
-			cpp_cond->set_text(0, "<" + TTR("C++ Error") + ">");
+			// TRANSLATORS: %s is the name of a language, e.g. C++.
+			cpp_cond->set_text(0, "<" + vformat(TTR("%s Error"), source_language_name) + ">");
 			cpp_cond->set_text(1, oe.error);
 			cpp_cond->set_text_alignment(0, HORIZONTAL_ALIGNMENT_LEFT);
-			tooltip += TTR("C++ Error:") + " " + oe.error + "\n";
+			tooltip += vformat(TTR("%s Error:"), source_language_name) + " " + oe.error + "\n";
 			if (source_is_project_file) {
 				cpp_cond->set_metadata(0, source_meta);
 			}
@@ -547,14 +559,18 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		// Source of the error.
 		String source_txt = (source_is_project_file ? oe.source_file.get_file() : oe.source_file) + ":" + itos(oe.source_line);
 		if (!oe.source_func.is_empty()) {
-			source_txt += " @ " + oe.source_func + "()";
+			source_txt += " @ " + oe.source_func;
+			if (!oe.source_func.ends_with(")")) {
+				source_txt += "()";
+			}
 		}
 
 		TreeItem *cpp_source = error_tree->create_item(error);
-		cpp_source->set_text(0, "<" + (source_is_project_file ? TTR("Source") : TTR("C++ Source")) + ">");
+		// TRANSLATORS: %s is the name of a language, e.g. C++.
+		cpp_source->set_text(0, "<" + vformat(TTR("%s Source"), source_language_name) + ">");
 		cpp_source->set_text(1, source_txt);
 		cpp_source->set_text_alignment(0, HORIZONTAL_ALIGNMENT_LEFT);
-		tooltip += (source_is_project_file ? TTR("Source:") : TTR("C++ Source:")) + " " + source_txt + "\n";
+		tooltip += vformat(TTR("%s Source:"), source_language_name) + " " + source_txt + "\n";
 
 		// Set metadata to highlight error line in scripts.
 		if (source_is_project_file) {
@@ -581,7 +597,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 				tooltip += TTR("Stack Trace:") + "\n";
 			}
 
-			String frame_txt = infos[i].file.get_file() + ":" + itos(infos[i].line) + " @ " + infos[i].func + "()";
+			String frame_txt = _format_frame_text(&infos[i]);
 			tooltip += frame_txt + "\n";
 			stack_trace->set_text(1, frame_txt);
 		}
@@ -899,6 +915,14 @@ void ScriptEditorDebugger::_breakpoint_tree_clicked() {
 	if (selected->has_meta("line")) {
 		emit_signal(SNAME("breakpoint_selected"), selected->get_parent()->get_text(0), int(selected->get_meta("line")));
 	}
+}
+
+String ScriptEditorDebugger::_format_frame_text(const ScriptLanguage::StackInfo *info) {
+	String text = info->file.get_file() + ":" + itos(info->line) + " @ " + info->func;
+	if (!text.ends_with(")")) {
+		text += "()";
+	}
+	return text;
 }
 
 void ScriptEditorDebugger::start(Ref<RemoteDebuggerPeer> p_peer) {

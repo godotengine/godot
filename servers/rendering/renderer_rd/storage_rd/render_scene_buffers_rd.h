@@ -185,6 +185,9 @@ public:
 
 	// For our internal textures we provide some easy access methods.
 
+	_FORCE_INLINE_ bool has_internal_texture() const {
+		return has_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR);
+	}
 	_FORCE_INLINE_ RID get_internal_texture() const {
 		return get_texture(RB_SCOPE_BUFFERS, RB_TEX_COLOR);
 	}
@@ -192,6 +195,7 @@ public:
 		return get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_COLOR, p_layer, 0);
 	}
 
+	bool has_depth_texture();
 	RID get_depth_texture();
 	RID get_depth_texture(const uint32_t p_layer);
 

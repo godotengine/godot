@@ -124,7 +124,7 @@ private: // Internal routines.
 		return &points[p_y][p_x];
 	}
 
-	void _get_nbors(Point *p_point, List<Point *> &r_nbors);
+	void _get_nbors(Point *p_point, LocalVector<Point *> &r_nbors);
 	Point *_jump(Point *p_from, Point *p_to);
 	bool _solve(Point *p_begin_point, Point *p_end_point);
 

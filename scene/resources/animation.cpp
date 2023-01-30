@@ -127,6 +127,10 @@ bool Animation::_set(const StringName &p_name, const Variant &p_value) {
 				}
 			}
 			return true;
+		} else if (what == "use_blend") {
+			if (track_get_type(track) == TYPE_AUDIO) {
+				audio_track_set_use_blend(track, p_value);
+			}
 		} else if (what == "interp") {
 			track_set_interpolation_type(track, InterpolationType(p_value.operator int()));
 		} else if (what == "loop_wrap") {
@@ -528,7 +532,10 @@ bool Animation::_get(const StringName &p_name, Variant &r_ret) const {
 			}
 
 			return true;
-
+		} else if (what == "use_blend") {
+			if (track_get_type(track) == TYPE_AUDIO) {
+				r_ret = audio_track_is_use_blend(track);
+			}
 		} else if (what == "interp") {
 			r_ret = track_get_interpolation_type(track);
 		} else if (what == "loop_wrap") {
@@ -833,6 +840,9 @@ void Animation::_get_property_list(List<PropertyInfo> *p_list) const {
 			p_list->push_back(PropertyInfo(Variant::INT, "tracks/" + itos(i) + "/interp", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 			p_list->push_back(PropertyInfo(Variant::BOOL, "tracks/" + itos(i) + "/loop_wrap", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 			p_list->push_back(PropertyInfo(Variant::ARRAY, "tracks/" + itos(i) + "/keys", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
+		}
+		if (track_get_type(i) == TYPE_AUDIO) {
+			p_list->push_back(PropertyInfo(Variant::BOOL, "tracks/" + itos(i) + "/use_blend", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR | PROPERTY_USAGE_INTERNAL));
 		}
 	}
 }
@@ -3581,6 +3591,27 @@ real_t Animation::audio_track_get_key_end_offset(int p_track, int p_key) const {
 	return at->values[p_key].value.end_offset;
 }
 
+void Animation::audio_track_set_use_blend(int p_track, bool p_enable) {
+	ERR_FAIL_INDEX(p_track, tracks.size());
+	Track *t = tracks[p_track];
+	ERR_FAIL_COND(t->type != TYPE_AUDIO);
+
+	AudioTrack *at = static_cast<AudioTrack *>(t);
+
+	at->use_blend = p_enable;
+	emit_changed();
+}
+
+bool Animation::audio_track_is_use_blend(int p_track) const {
+	ERR_FAIL_INDEX_V(p_track, tracks.size(), false);
+	Track *t = tracks[p_track];
+	ERR_FAIL_COND_V(t->type != TYPE_AUDIO, false);
+
+	AudioTrack *at = static_cast<AudioTrack *>(t);
+
+	return at->use_blend;
+}
+
 //
 
 int Animation::animation_track_insert_key(int p_track, double p_time, const StringName &p_animation) {
@@ -3813,6 +3844,8 @@ void Animation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("audio_track_get_key_stream", "track_idx", "key_idx"), &Animation::audio_track_get_key_stream);
 	ClassDB::bind_method(D_METHOD("audio_track_get_key_start_offset", "track_idx", "key_idx"), &Animation::audio_track_get_key_start_offset);
 	ClassDB::bind_method(D_METHOD("audio_track_get_key_end_offset", "track_idx", "key_idx"), &Animation::audio_track_get_key_end_offset);
+	ClassDB::bind_method(D_METHOD("audio_track_set_use_blend", "track_idx", "enable"), &Animation::audio_track_set_use_blend);
+	ClassDB::bind_method(D_METHOD("audio_track_is_use_blend", "track_idx"), &Animation::audio_track_is_use_blend);
 
 	ClassDB::bind_method(D_METHOD("animation_track_insert_key", "track_idx", "time", "animation"), &Animation::animation_track_insert_key);
 	ClassDB::bind_method(D_METHOD("animation_track_set_key_animation", "track_idx", "key_idx", "animation"), &Animation::animation_track_set_key_animation);
@@ -4691,6 +4724,7 @@ void Animation::compress(uint32_t p_page_size, uint32_t p_fps, float p_split_tol
 	data_tracks.resize(tracks_to_compress.size());
 	time_tracks.resize(tracks_to_compress.size());
 
+	uint32_t needed_min_page_size = base_page_size;
 	for (uint32_t i = 0; i < data_tracks.size(); i++) {
 		data_tracks[i].split_tolerance = p_split_tolerance;
 		if (track_get_type(tracks_to_compress[i]) == TYPE_BLEND_SHAPE) {
@@ -4698,7 +4732,12 @@ void Animation::compress(uint32_t p_page_size, uint32_t p_fps, float p_split_tol
 		} else {
 			data_tracks[i].components = 3;
 		}
+		needed_min_page_size += data_tracks[i].data.size() + data_tracks[i].get_temp_packet_size();
 	}
+	for (uint32_t i = 0; i < time_tracks.size(); i++) {
+		needed_min_page_size += time_tracks[i].packets.size() * 4; // time packet is 32 bits
+	}
+	ERR_FAIL_COND_MSG(p_page_size < needed_min_page_size, "Cannot compress with the given page size");
 
 	while (true) {
 		// Begin by finding the keyframe in all tracks with the time closest to the current time

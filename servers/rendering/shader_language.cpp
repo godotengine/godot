@@ -90,8 +90,9 @@ const char *ShaderLanguage::token_names[TK_MAX] = {
 	"IDENTIFIER",
 	"TRUE",
 	"FALSE",
-	"REAL_CONSTANT",
+	"FLOAT_CONSTANT",
 	"INT_CONSTANT",
+	"UINT_CONSTANT",
 	"TYPE_VOID",
 	"TYPE_BOOL",
 	"TYPE_BVEC2",
@@ -126,6 +127,7 @@ const char *ShaderLanguage::token_names[TK_MAX] = {
 	"INTERPOLATION_FLAT",
 	"INTERPOLATION_SMOOTH",
 	"CONST",
+	"STRUCT",
 	"PRECISION_LOW",
 	"PRECISION_MID",
 	"PRECISION_HIGH",
@@ -169,6 +171,7 @@ const char *ShaderLanguage::token_names[TK_MAX] = {
 	"CF_DO",
 	"CF_SWITCH",
 	"CF_CASE",
+	"CF_DEFAULT",
 	"CF_BREAK",
 	"CF_CONTINUE",
 	"CF_RETURN",
@@ -185,19 +188,26 @@ const char *ShaderLanguage::token_names[TK_MAX] = {
 	"SEMICOLON",
 	"PERIOD",
 	"UNIFORM",
+	"UNIFORM_GROUP",
 	"INSTANCE",
 	"GLOBAL",
 	"VARYING",
-	"IN",
-	"OUT",
-	"INOUT",
+	"ARG_IN",
+	"ARG_OUT",
+	"ARG_INOUT",
 	"RENDER_MODE",
-	"SOURCE_COLOR",
 	"HINT_DEFAULT_WHITE_TEXTURE",
 	"HINT_DEFAULT_BLACK_TEXTURE",
 	"HINT_DEFAULT_TRANSPARENT_TEXTURE",
 	"HINT_NORMAL_TEXTURE",
+	"HINT_ROUGHNESS_NORMAL_TEXTURE",
+	"HINT_ROUGHNESS_R",
+	"HINT_ROUGHNESS_G",
+	"HINT_ROUGHNESS_B",
+	"HINT_ROUGHNESS_A",
+	"HINT_ROUGHNESS_GRAY",
 	"HINT_ANISOTROPY_TEXTURE",
+	"HINT_SOURCE_COLOR",
 	"HINT_RANGE",
 	"HINT_INSTANCE_INDEX",
 	"HINT_SCREEN_TEXTURE",
@@ -612,7 +622,7 @@ ShaderLanguage::Token ShaderLanguage::_get_token() {
 					char_idx += 2;
 
 					include_positions.resize(include_positions.size() - 1); // Pop back.
-					tk_line = include_positions[include_positions.size() - 1].line; // Restore line.
+					tk_line = include_positions[include_positions.size() - 1].line - 1; // Restore line.
 
 				} else {
 					return _make_token(TK_ERROR, "Invalid include enter/exit hint token (@@> and @@<)");
@@ -2827,6 +2837,20 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 	{ "dFdx", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, { "p" }, TAG_GLOBAL, false },
 	{ "dFdx", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, { "p" }, TAG_GLOBAL, false },
 
+	// dFdxCoarse
+
+	{ "dFdxCoarse", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, { "p" }, TAG_GLOBAL, true },
+	{ "dFdxCoarse", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, { "p" }, TAG_GLOBAL, true },
+	{ "dFdxCoarse", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, { "p" }, TAG_GLOBAL, true },
+	{ "dFdxCoarse", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, { "p" }, TAG_GLOBAL, true },
+
+	// dFdxFine
+
+	{ "dFdxFine", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, { "p" }, TAG_GLOBAL, true },
+	{ "dFdxFine", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, { "p" }, TAG_GLOBAL, true },
+	{ "dFdxFine", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, { "p" }, TAG_GLOBAL, true },
+	{ "dFdxFine", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, { "p" }, TAG_GLOBAL, true },
+
 	// dFdy
 
 	{ "dFdy", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, { "p" }, TAG_GLOBAL, false },
@@ -2834,12 +2858,40 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 	{ "dFdy", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, { "p" }, TAG_GLOBAL, false },
 	{ "dFdy", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, { "p" }, TAG_GLOBAL, false },
 
+	// dFdyCoarse
+
+	{ "dFdyCoarse", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, { "p" }, TAG_GLOBAL, true },
+	{ "dFdyCoarse", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, { "p" }, TAG_GLOBAL, true },
+	{ "dFdyCoarse", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, { "p" }, TAG_GLOBAL, true },
+	{ "dFdyCoarse", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, { "p" }, TAG_GLOBAL, true },
+
+	// dFdyFine
+
+	{ "dFdyFine", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, { "p" }, TAG_GLOBAL, true },
+	{ "dFdyFine", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, { "p" }, TAG_GLOBAL, true },
+	{ "dFdyFine", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, { "p" }, TAG_GLOBAL, true },
+	{ "dFdyFine", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, { "p" }, TAG_GLOBAL, true },
+
 	// fwidth
 
 	{ "fwidth", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, { "p" }, TAG_GLOBAL, false },
 	{ "fwidth", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, { "p" }, TAG_GLOBAL, false },
 	{ "fwidth", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, { "p" }, TAG_GLOBAL, false },
 	{ "fwidth", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, { "p" }, TAG_GLOBAL, false },
+
+	// fwidthCoarse
+
+	{ "fwidthCoarse", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, { "p" }, TAG_GLOBAL, true },
+	{ "fwidthCoarse", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, { "p" }, TAG_GLOBAL, true },
+	{ "fwidthCoarse", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, { "p" }, TAG_GLOBAL, true },
+	{ "fwidthCoarse", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, { "p" }, TAG_GLOBAL, true },
+
+	// fwidthFine
+
+	{ "fwidthFine", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID }, { "p" }, TAG_GLOBAL, true },
+	{ "fwidthFine", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID }, { "p" }, TAG_GLOBAL, true },
+	{ "fwidthFine", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID }, { "p" }, TAG_GLOBAL, true },
+	{ "fwidthFine", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID }, { "p" }, TAG_GLOBAL, true },
 
 	// Sub-functions.
 	// array
@@ -8231,6 +8283,10 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 #endif // DEBUG_ENABLED
 					if (String(shader_type_identifier) != "spatial") {
 						_set_error(vformat(RTR("Uniform instances are not yet implemented for '%s' shaders."), shader_type_identifier));
+						return ERR_PARSE_ERROR;
+					}
+					if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
+						_set_error(RTR("Uniform instances are not supported in gl_compatibility shaders."));
 						return ERR_PARSE_ERROR;
 					}
 					if (uniform_scope == ShaderNode::Uniform::SCOPE_LOCAL) {

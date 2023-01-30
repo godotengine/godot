@@ -780,7 +780,7 @@ private:
 			if (p_thread_safe) {
 				_mutex = p_mutex;
 
-				if (_mutex->try_lock() != OK) {
+				if (!_mutex->try_lock()) {
 					WARN_PRINT("Info : multithread BVH access detected (benign)");
 					_mutex->lock();
 				}

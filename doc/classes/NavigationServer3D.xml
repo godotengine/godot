@@ -41,12 +41,10 @@
 		<method name="agent_set_callback">
 			<return type="void" />
 			<param index="0" name="agent" type="RID" />
-			<param index="1" name="object_id" type="int" />
-			<param index="2" name="method" type="StringName" />
-			<param index="3" name="userdata" type="Variant" default="null" />
+			<param index="1" name="callback" type="Callable" />
 			<description>
-				Sets the callback [param object_id] and [param method] that gets called after each avoidance processing step for the [param agent]. The calculated [code]safe_velocity[/code] will be dispatched with a signal to the object just before the physics calculations.
-				[b]Note:[/b] Created callbacks are always processed independently of the SceneTree state as long as the agent is on a navigation map and not freed. To disable the dispatch of a callback from an agent use [method agent_set_callback] again with a [code]0[/code] ObjectID as the [param object_id].
+				Sets the callback that gets called after each avoidance processing step for the [param agent]. The calculated [code]safe_velocity[/code] will be passed as the first parameter just before the physics calculations.
+				[b]Note:[/b] Created callbacks are always processed independently of the SceneTree state as long as the agent is on a navigation map and not freed. To disable the dispatch of a callback from an agent use [method agent_set_callback] again with an empty [Callable].
 			</description>
 		</method>
 		<method name="agent_set_map">
@@ -144,14 +142,14 @@
 		<method name="link_create">
 			<return type="RID" />
 			<description>
-				Create a new link between two locations on a map.
+				Create a new link between two positions on a map.
 			</description>
 		</method>
-		<method name="link_get_end_location" qualifiers="const">
+		<method name="link_get_end_position" qualifiers="const">
 			<return type="Vector3" />
 			<param index="0" name="link" type="RID" />
 			<description>
-				Returns the ending location of this [code]link[/code].
+				Returns the ending position of this [code]link[/code].
 			</description>
 		</method>
 		<method name="link_get_enter_cost" qualifiers="const">
@@ -182,11 +180,11 @@
 				Returns the [code]ObjectID[/code] of the object which manages this link.
 			</description>
 		</method>
-		<method name="link_get_start_location" qualifiers="const">
+		<method name="link_get_start_position" qualifiers="const">
 			<return type="Vector3" />
 			<param index="0" name="link" type="RID" />
 			<description>
-				Returns the starting location of this [code]link[/code].
+				Returns the starting position of this [code]link[/code].
 			</description>
 		</method>
 		<method name="link_get_travel_cost" qualifiers="const">
@@ -211,12 +209,12 @@
 				Sets whether this [code]link[/code] can be travelled in both directions.
 			</description>
 		</method>
-		<method name="link_set_end_location">
+		<method name="link_set_end_position">
 			<return type="void" />
 			<param index="0" name="link" type="RID" />
-			<param index="1" name="location" type="Vector3" />
+			<param index="1" name="position" type="Vector3" />
 			<description>
-				Sets the exit location for the [code]link[/code].
+				Sets the exit position for the [code]link[/code].
 			</description>
 		</method>
 		<method name="link_set_enter_cost">
@@ -251,12 +249,12 @@
 				Set the [code]ObjectID[/code] of the object which manages this link.
 			</description>
 		</method>
-		<method name="link_set_start_location">
+		<method name="link_set_start_position">
 			<return type="void" />
 			<param index="0" name="link" type="RID" />
-			<param index="1" name="location" type="Vector3" />
+			<param index="1" name="position" type="Vector3" />
 			<description>
-				Sets the entry location for this [code]link[/code].
+				Sets the entry position for this [code]link[/code].
 			</description>
 		</method>
 		<method name="link_set_travel_cost">

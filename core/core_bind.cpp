@@ -1105,8 +1105,8 @@ void Semaphore::wait() {
 	semaphore.wait();
 }
 
-Error Semaphore::try_wait() {
-	return semaphore.try_wait() ? OK : ERR_BUSY;
+bool Semaphore::try_wait() {
+	return semaphore.try_wait();
 }
 
 void Semaphore::post() {
@@ -1125,7 +1125,7 @@ void Mutex::lock() {
 	mutex.lock();
 }
 
-Error Mutex::try_lock() {
+bool Mutex::try_lock() {
 	return mutex.try_lock();
 }
 

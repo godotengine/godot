@@ -780,8 +780,8 @@ void NavMap::sync() {
 
 		// Search for polygons within range of a nav link.
 		for (const NavLink *link : links) {
-			const Vector3 start = link->get_start_location();
-			const Vector3 end = link->get_end_location();
+			const Vector3 start = link->get_start_position();
+			const Vector3 end = link->get_end_position();
 
 			gd::Polygon *closest_start_polygon = nullptr;
 			real_t closest_start_distance = link_connection_radius;

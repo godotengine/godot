@@ -33,6 +33,7 @@
 #include "extensions/gltf_spec_gloss.h"
 
 #include "core/crypto/crypto_core.h"
+#include "core/io/config_file.h"
 #include "core/io/dir_access.h"
 #include "core/io/file_access.h"
 #include "core/io/file_access_memory.h"
@@ -543,6 +544,7 @@ String GLTFDocument::_gen_unique_bone_name(Ref<GLTFState> p_state, const GLTFSke
 }
 
 Error GLTFDocument::_parse_scenes(Ref<GLTFState> p_state) {
+	p_state->unique_names.insert("Skeleton3D"); // Reserve skeleton name.
 	ERR_FAIL_COND_V(!p_state->json.has("scenes"), ERR_FILE_CORRUPT);
 	const Array &scenes = p_state->json["scenes"];
 	int loaded_scene = 0;
@@ -3089,9 +3091,12 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_p
 		const uint8_t *data_ptr = nullptr;
 		int data_size = 0;
 
+		String image_name;
+
 		if (d.has("uri")) {
 			// Handles the first two bullet points from the spec (embedded data, or external file).
 			String uri = d["uri"];
+			image_name = uri;
 
 			if (uri.begins_with("data:")) { // Embedded data using base64.
 				// Validate data MIME types and throw a warning if it's one we don't know/support.
@@ -3127,6 +3132,7 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_p
 				String extension = uri.get_extension().to_lower();
 				if (texture.is_valid()) {
 					p_state->images.push_back(texture);
+					p_state->source_images.push_back(texture->get_image());
 					continue;
 				} else if (mimetype == "image/png" || mimetype == "image/jpeg" || extension == "png" || extension == "jpg" || extension == "jpeg") {
 					// Fallback to loading as byte array.
@@ -3152,6 +3158,7 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_p
 					vformat("glTF: Image index '%d' specifies 'bufferView' but no 'mimeType', which is invalid.", i));
 
 			const GLTFBufferViewIndex bvi = d["bufferView"];
+			image_name = itos(bvi);
 
 			ERR_FAIL_INDEX_V(bvi, p_state->buffer_views.size(), ERR_PARAMETER_RANGE_ERROR);
 
@@ -3196,9 +3203,70 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_p
 		if (img.is_null()) {
 			ERR_PRINT(vformat("glTF: Couldn't load image index '%d' with its given mimetype: %s.", i, mimetype));
 			p_state->images.push_back(Ref<Texture2D>());
+			p_state->source_images.push_back(Ref<Image>());
 			continue;
 		}
-		p_state->images.push_back(ImageTexture::create_from_image(img));
+		if (GLTFState::GLTFHandleBinary(p_state->handle_binary_image) == GLTFState::GLTFHandleBinary::HANDLE_BINARY_DISCARD_TEXTURES) {
+			p_state->images.push_back(Ref<Texture2D>());
+			p_state->source_images.push_back(Ref<Image>());
+			continue;
+		} else if (GLTFState::GLTFHandleBinary(p_state->handle_binary_image) == GLTFState::GLTFHandleBinary::HANDLE_BINARY_EXTRACT_TEXTURES) {
+			String extracted_image_name = image_name.get_file().get_basename().validate_filename();
+			img->set_name(extracted_image_name);
+			if (p_state->base_path.is_empty()) {
+				p_state->images.push_back(Ref<Texture2D>());
+				p_state->source_images.push_back(Ref<Image>());
+			} else if (img->get_name().is_empty()) {
+				WARN_PRINT(vformat("glTF: Image index '%d' couldn't be named. Skipping it.", i));
+				p_state->images.push_back(Ref<Texture2D>());
+				p_state->source_images.push_back(Ref<Image>());
+			} else {
+				String file_path = p_state->get_base_path() + "/" + p_state->filename.get_basename() + "_" + img->get_name() + ".png";
+				Ref<ConfigFile> config;
+				config.instantiate();
+				if (FileAccess::exists(file_path + ".import")) {
+					config->load(file_path + ".import");
+				}
+				config->set_value("remap", "importer", "texture");
+				config->set_value("remap", "type", "Texture2D");
+				if (!config->has_section_key("params", "compress/mode")) {
+					config->set_value("remap", "compress/mode", 2); //user may want another compression, so leave it bes
+				}
+				if (!config->has_section_key("params", "mipmaps/generate")) {
+					config->set_value("params", "mipmaps/generate", true);
+				}
+				Error err = OK;
+				err = config->save(file_path + ".import");
+				ERR_FAIL_COND_V(err != OK, err);
+				img->save_png(file_path);
+				ERR_FAIL_COND_V(err != OK, err);
+				ResourceLoader::import(file_path);
+				Ref<Texture2D> saved_image = ResourceLoader::load(file_path, "Texture2D");
+				if (saved_image.is_valid()) {
+					p_state->images.push_back(saved_image);
+					p_state->source_images.push_back(img);
+				} else {
+					WARN_PRINT(vformat("glTF: Image index '%d' couldn't be loaded with the name: %s. Skipping it.", i, img->get_name()));
+					// Placeholder to keep count.
+					p_state->images.push_back(Ref<Texture2D>());
+					p_state->source_images.push_back(Ref<Image>());
+				}
+			}
+			continue;
+		} else if (GLTFState::GLTFHandleBinary(p_state->handle_binary_image) == GLTFState::GLTFHandleBinary::HANDLE_BINARY_EMBED_AS_BASISU) {
+			Ref<PortableCompressedTexture2D> tex;
+			tex.instantiate();
+			tex->set_name(img->get_name());
+			tex->set_keep_compressed_buffer(true);
+			p_state->source_images.push_back(img);
+			tex->create_from_image(img, PortableCompressedTexture2D::COMPRESSION_MODE_BASIS_UNIVERSAL);
+			p_state->images.push_back(tex);
+			p_state->source_images.push_back(img);
+			continue;
+		}
+
+		p_state->images.push_back(Ref<Texture2D>());
+		p_state->source_images.push_back(Ref<Image>());
 	}
 
 	print_verbose("glTF: Total images: " + itos(p_state->images.size()));
@@ -3268,12 +3336,24 @@ GLTFTextureIndex GLTFDocument::_set_texture(Ref<GLTFState> p_state, Ref<Texture2
 	return gltf_texture_i;
 }
 
-Ref<Texture2D> GLTFDocument::_get_texture(Ref<GLTFState> p_state, const GLTFTextureIndex p_texture) {
+Ref<Texture2D> GLTFDocument::_get_texture(Ref<GLTFState> p_state, const GLTFTextureIndex p_texture, int p_texture_types) {
 	ERR_FAIL_INDEX_V(p_texture, p_state->textures.size(), Ref<Texture2D>());
 	const GLTFImageIndex image = p_state->textures[p_texture]->get_src_image();
-
 	ERR_FAIL_INDEX_V(image, p_state->images.size(), Ref<Texture2D>());
-
+	if (GLTFState::GLTFHandleBinary(p_state->handle_binary_image) == GLTFState::GLTFHandleBinary::HANDLE_BINARY_EMBED_AS_BASISU) {
+		Ref<PortableCompressedTexture2D> portable_texture;
+		portable_texture.instantiate();
+		portable_texture->set_keep_compressed_buffer(true);
+		Ref<Image> new_img = p_state->source_images[p_texture]->duplicate();
+		ERR_FAIL_COND_V(new_img.is_null(), Ref<Texture2D>());
+		new_img->generate_mipmaps();
+		if (p_texture_types) {
+			portable_texture->create_from_image(new_img, PortableCompressedTexture2D::COMPRESSION_MODE_BASIS_UNIVERSAL, true);
+		} else {
+			portable_texture->create_from_image(new_img, PortableCompressedTexture2D::COMPRESSION_MODE_BASIS_UNIVERSAL, false);
+		}
+		p_state->images.write[image] = portable_texture;
+	}
 	return p_state->images[image];
 }
 
@@ -3684,7 +3764,7 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 						material->set_texture_filter(diffuse_sampler->get_filter_mode());
 						material->set_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT, diffuse_sampler->get_wrap_mode());
 					}
-					Ref<Texture2D> diffuse_texture = _get_texture(p_state, diffuse_texture_dict["index"]);
+					Ref<Texture2D> diffuse_texture = _get_texture(p_state, diffuse_texture_dict["index"], TEXTURE_TYPE_GENERIC);
 					if (diffuse_texture.is_valid()) {
 						spec_gloss->diffuse_img = diffuse_texture->get_image();
 						material->set_texture(BaseMaterial3D::TEXTURE_ALBEDO, diffuse_texture);
@@ -3712,7 +3792,7 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 			if (sgm.has("specularGlossinessTexture")) {
 				const Dictionary &spec_gloss_texture = sgm["specularGlossinessTexture"];
 				if (spec_gloss_texture.has("index")) {
-					const Ref<Texture2D> orig_texture = _get_texture(p_state, spec_gloss_texture["index"]);
+					const Ref<Texture2D> orig_texture = _get_texture(p_state, spec_gloss_texture["index"], TEXTURE_TYPE_GENERIC);
 					if (orig_texture.is_valid()) {
 						spec_gloss->spec_gloss_img = orig_texture->get_image();
 					}
@@ -3735,7 +3815,7 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 					Ref<GLTFTextureSampler> bct_sampler = _get_sampler_for_texture(p_state, bct["index"]);
 					material->set_texture_filter(bct_sampler->get_filter_mode());
 					material->set_flag(BaseMaterial3D::FLAG_USE_TEXTURE_REPEAT, bct_sampler->get_wrap_mode());
-					material->set_texture(BaseMaterial3D::TEXTURE_ALBEDO, _get_texture(p_state, bct["index"]));
+					material->set_texture(BaseMaterial3D::TEXTURE_ALBEDO, _get_texture(p_state, bct["index"], TEXTURE_TYPE_GENERIC));
 				}
 				if (!mr.has("baseColorFactor")) {
 					material->set_albedo(Color(1, 1, 1));
@@ -3758,7 +3838,7 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 			if (mr.has("metallicRoughnessTexture")) {
 				const Dictionary &bct = mr["metallicRoughnessTexture"];
 				if (bct.has("index")) {
-					const Ref<Texture2D> t = _get_texture(p_state, bct["index"]);
+					const Ref<Texture2D> t = _get_texture(p_state, bct["index"], TEXTURE_TYPE_GENERIC);
 					material->set_texture(BaseMaterial3D::TEXTURE_METALLIC, t);
 					material->set_metallic_texture_channel(BaseMaterial3D::TEXTURE_CHANNEL_BLUE);
 					material->set_texture(BaseMaterial3D::TEXTURE_ROUGHNESS, t);
@@ -3776,7 +3856,7 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 		if (d.has("normalTexture")) {
 			const Dictionary &bct = d["normalTexture"];
 			if (bct.has("index")) {
-				material->set_texture(BaseMaterial3D::TEXTURE_NORMAL, _get_texture(p_state, bct["index"]));
+				material->set_texture(BaseMaterial3D::TEXTURE_NORMAL, _get_texture(p_state, bct["index"], TEXTURE_TYPE_NORMAL));
 				material->set_feature(BaseMaterial3D::FEATURE_NORMAL_MAPPING, true);
 			}
 			if (bct.has("scale")) {
@@ -3786,7 +3866,7 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 		if (d.has("occlusionTexture")) {
 			const Dictionary &bct = d["occlusionTexture"];
 			if (bct.has("index")) {
-				material->set_texture(BaseMaterial3D::TEXTURE_AMBIENT_OCCLUSION, _get_texture(p_state, bct["index"]));
+				material->set_texture(BaseMaterial3D::TEXTURE_AMBIENT_OCCLUSION, _get_texture(p_state, bct["index"], TEXTURE_TYPE_GENERIC));
 				material->set_ao_texture_channel(BaseMaterial3D::TEXTURE_CHANNEL_RED);
 				material->set_feature(BaseMaterial3D::FEATURE_AMBIENT_OCCLUSION, true);
 			}
@@ -3804,7 +3884,7 @@ Error GLTFDocument::_parse_materials(Ref<GLTFState> p_state) {
 		if (d.has("emissiveTexture")) {
 			const Dictionary &bct = d["emissiveTexture"];
 			if (bct.has("index")) {
-				material->set_texture(BaseMaterial3D::TEXTURE_EMISSION, _get_texture(p_state, bct["index"]));
+				material->set_texture(BaseMaterial3D::TEXTURE_EMISSION, _get_texture(p_state, bct["index"], TEXTURE_TYPE_GENERIC));
 				material->set_feature(BaseMaterial3D::FEATURE_EMISSION, true);
 				material->set_emission(Color(0, 0, 0));
 			}
@@ -4233,6 +4313,21 @@ Error GLTFDocument::_parse_skins(Ref<GLTFState> p_state) {
 	return OK;
 }
 
+void GLTFDocument::_recurse_children(Ref<GLTFState> p_state, const GLTFNodeIndex p_node_index,
+		RBSet<GLTFNodeIndex> &p_all_skin_nodes, HashSet<GLTFNodeIndex> &p_child_visited_set) {
+	if (p_child_visited_set.has(p_node_index)) {
+		return;
+	}
+	p_child_visited_set.insert(p_node_index);
+	for (int i = 0; i < p_state->nodes[p_node_index]->children.size(); ++i) {
+		_recurse_children(p_state, p_state->nodes[p_node_index]->children[i], p_all_skin_nodes, p_child_visited_set);
+	}
+
+	if (p_state->nodes[p_node_index]->skin < 0 || p_state->nodes[p_node_index]->mesh < 0 || !p_state->nodes[p_node_index]->children.is_empty()) {
+		p_all_skin_nodes.insert(p_node_index);
+	}
+}
+
 Error GLTFDocument::_determine_skeletons(Ref<GLTFState> p_state) {
 	// Using a disjoint set, we are going to potentially combine all skins that are actually branches
 	// of a main skeleton, or treat skins defining the same set of nodes as ONE skeleton.
@@ -4243,16 +4338,21 @@ Error GLTFDocument::_determine_skeletons(Ref<GLTFState> p_state) {
 	for (GLTFSkinIndex skin_i = 0; skin_i < p_state->skins.size(); ++skin_i) {
 		const Ref<GLTFSkin> skin = p_state->skins[skin_i];
 
-		Vector<GLTFNodeIndex> all_skin_nodes;
-		all_skin_nodes.append_array(skin->joints);
-		all_skin_nodes.append_array(skin->non_joints);
-
-		for (int i = 0; i < all_skin_nodes.size(); ++i) {
-			const GLTFNodeIndex node_index = all_skin_nodes[i];
+		HashSet<GLTFNodeIndex> child_visited_set;
+		RBSet<GLTFNodeIndex> all_skin_nodes;
+		for (int i = 0; i < skin->joints.size(); ++i) {
+			all_skin_nodes.insert(skin->joints[i]);
+			_recurse_children(p_state, skin->joints[i], all_skin_nodes, child_visited_set);
+		}
+		for (int i = 0; i < skin->non_joints.size(); ++i) {
+			all_skin_nodes.insert(skin->non_joints[i]);
+			_recurse_children(p_state, skin->non_joints[i], all_skin_nodes, child_visited_set);
+		}
+		for (GLTFNodeIndex node_index : all_skin_nodes) {
 			const GLTFNodeIndex parent = p_state->nodes[node_index]->parent;
 			skeleton_sets.insert(node_index);
 
-			if (all_skin_nodes.find(parent) >= 0) {
+			if (all_skin_nodes.has(parent)) {
 				skeleton_sets.create_union(parent, node_index);
 			}
 		}
@@ -4471,7 +4571,7 @@ Error GLTFDocument::_create_skeletons(Ref<GLTFState> p_state) {
 		p_state->skeleton3d_to_gltf_skeleton[skeleton->get_instance_id()] = skel_i;
 
 		// Make a unique name, no gltf node represents this skeleton
-		skeleton->set_name(_gen_unique_name(p_state, "Skeleton3D"));
+		skeleton->set_name("Skeleton3D");
 
 		List<GLTFNodeIndex> bones;
 
@@ -5163,6 +5263,7 @@ ImporterMeshInstance3D *GLTFDocument::_generate_mesh_instance(Ref<GLTFState> p_s
 	ImporterMeshInstance3D *mi = memnew(ImporterMeshInstance3D);
 	print_verbose("glTF: Creating mesh for: " + gltf_node->get_name());
 
+	p_state->scene_mesh_instances.insert(p_node_index, mi);
 	Ref<GLTFMesh> mesh = p_state->meshes.write[gltf_node->mesh];
 	if (mesh.is_null()) {
 		return mi;
@@ -5603,7 +5704,7 @@ void GLTFDocument::_generate_scene_node(Ref<GLTFState> p_state, Node *scene_pare
 		bone_attachment->set_owner(scene_root);
 
 		// There is no gltf_node that represent this, so just directly create a unique name
-		bone_attachment->set_name(_gen_unique_name(p_state, "BoneAttachment3D"));
+		bone_attachment->set_name(gltf_node->get_name());
 
 		// We change the scene_parent to our bone attachment now. We do not set current_node because we want to make the node
 		// and attach it to the bone_attachment
@@ -5619,7 +5720,13 @@ void GLTFDocument::_generate_scene_node(Ref<GLTFState> p_state, Node *scene_pare
 	}
 	// If none of our GLTFDocumentExtension classes generated us a node, we generate one.
 	if (!current_node) {
-		if (gltf_node->mesh >= 0) {
+		if (gltf_node->skin >= 0 && gltf_node->mesh >= 0 && !gltf_node->children.is_empty()) {
+			current_node = _generate_spatial(p_state, node_index);
+			Node3D *mesh_inst = _generate_mesh_instance(p_state, node_index);
+			mesh_inst->set_name(gltf_node->get_name());
+
+			current_node->add_child(mesh_inst, true);
+		} else if (gltf_node->mesh >= 0) {
 			current_node = _generate_mesh_instance(p_state, node_index);
 		} else if (gltf_node->camera >= 0) {
 			current_node = _generate_camera(p_state, node_index);
@@ -5640,7 +5747,6 @@ void GLTFDocument::_generate_scene_node(Ref<GLTFState> p_state, Node *scene_pare
 	current_node->set_name(gltf_node->get_name());
 
 	p_state->scene_nodes.insert(node_index, current_node);
-
 	for (int i = 0; i < gltf_node->children.size(); ++i) {
 		_generate_scene_node(p_state, current_node, scene_root, gltf_node->children[i]);
 	}
@@ -5659,22 +5765,17 @@ void GLTFDocument::_generate_skeleton_bone_node(Ref<GLTFState> p_state, Node *p_
 	Skeleton3D *active_skeleton = Object::cast_to<Skeleton3D>(p_scene_parent);
 	if (active_skeleton != skeleton) {
 		if (active_skeleton) {
-			// Bone Attachment - Direct Parented Skeleton Case
+			// Should no longer be possible.
+			ERR_PRINT(vformat("glTF: Generating scene detected direct parented Skeletons at node %d", p_node_index));
 			BoneAttachment3D *bone_attachment = _generate_bone_attachment(p_state, active_skeleton, p_node_index, gltf_node->parent);
-
 			p_scene_parent->add_child(bone_attachment, true);
 			bone_attachment->set_owner(p_scene_root);
-
 			// There is no gltf_node that represent this, so just directly create a unique name
 			bone_attachment->set_name(_gen_unique_name(p_state, "BoneAttachment3D"));
-
 			// We change the scene_parent to our bone attachment now. We do not set current_node because we want to make the node
 			// and attach it to the bone_attachment
 			p_scene_parent = bone_attachment;
-			WARN_PRINT(vformat("glTF: Generating scene detected direct parented Skeletons at node %d", p_node_index));
 		}
-
-		// Add it to the scene if it has not already been added
 		if (skeleton->get_parent() == nullptr) {
 			p_scene_parent->add_child(skeleton, true);
 			skeleton->set_owner(p_scene_root);
@@ -5682,9 +5783,10 @@ void GLTFDocument::_generate_skeleton_bone_node(Ref<GLTFState> p_state, Node *p_
 	}
 
 	active_skeleton = skeleton;
-	current_node = skeleton;
+	current_node = active_skeleton;
 
 	if (requires_extra_node) {
+		current_node = nullptr;
 		// skinned meshes must not be placed in a bone attachment.
 		if (!is_skinned_mesh) {
 			// Bone Attachment - Same Node Case
@@ -5694,7 +5796,7 @@ void GLTFDocument::_generate_skeleton_bone_node(Ref<GLTFState> p_state, Node *p_
 			bone_attachment->set_owner(p_scene_root);
 
 			// There is no gltf_node that represent this, so just directly create a unique name
-			bone_attachment->set_name(_gen_unique_name(p_state, "BoneAttachment3D"));
+			bone_attachment->set_name(gltf_node->get_name());
 
 			// We change the scene_parent to our bone attachment now. We do not set current_node because we want to make the node
 			// and attach it to the bone_attachment
@@ -5885,6 +5987,8 @@ void GLTFDocument::_import_animation(Ref<GLTFState> p_state, AnimationPlayer *p_
 		NodePath node_path;
 		//for skeletons, transform tracks always affect bones
 		NodePath transform_node_path;
+		//for meshes, especially skinned meshes, there are cases where it will be added as a child
+		NodePath mesh_instance_node_path;
 
 		GLTFNodeIndex node_index = track_i.key;
 
@@ -5895,6 +5999,12 @@ void GLTFDocument::_import_animation(Ref<GLTFState> p_state, AnimationPlayer *p_
 		HashMap<GLTFNodeIndex, Node *>::Iterator node_element = p_state->scene_nodes.find(node_index);
 		ERR_CONTINUE_MSG(!node_element, vformat("Unable to find node %d for animation", node_index));
 		node_path = root->get_path_to(node_element->value);
+		HashMap<GLTFNodeIndex, ImporterMeshInstance3D *>::Iterator mesh_instance_element = p_state->scene_mesh_instances.find(node_index);
+		if (mesh_instance_element) {
+			mesh_instance_node_path = root->get_path_to(mesh_instance_element->value);
+		} else {
+			mesh_instance_node_path = node_path;
+		}
 
 		if (gltf_node->skeleton >= 0) {
 			const Skeleton3D *sk = p_state->skeletons[gltf_node->skeleton]->godot_skeleton;
@@ -6067,7 +6177,7 @@ void GLTFDocument::_import_animation(Ref<GLTFState> p_state, AnimationPlayer *p_
 			ERR_CONTINUE(mesh->get_mesh().is_null());
 			ERR_CONTINUE(mesh->get_mesh()->get_mesh().is_null());
 
-			const String blend_path = String(node_path) + ":" + String(mesh->get_mesh()->get_blend_shape_name(i));
+			const String blend_path = String(mesh_instance_node_path) + ":" + String(mesh->get_mesh()->get_blend_shape_name(i));
 
 			const int track_idx = animation->get_track_count();
 			animation->add_track(Animation::TYPE_BLEND_SHAPE);
@@ -6258,11 +6368,16 @@ void GLTFDocument::_process_mesh_instances(Ref<GLTFState> p_state, Node *p_scene
 		if (node->skin >= 0 && node->mesh >= 0) {
 			const GLTFSkinIndex skin_i = node->skin;
 
-			HashMap<GLTFNodeIndex, Node *>::Iterator mi_element = p_state->scene_nodes.find(node_i);
-			ERR_CONTINUE_MSG(!mi_element, vformat("Unable to find node %d", node_i));
-
-			ImporterMeshInstance3D *mi = Object::cast_to<ImporterMeshInstance3D>(mi_element->value);
-			ERR_CONTINUE_MSG(mi == nullptr, vformat("Unable to cast node %d of type %s to ImporterMeshInstance3D", node_i, mi_element->value->get_class_name()));
+			ImporterMeshInstance3D *mi = nullptr;
+			HashMap<GLTFNodeIndex, ImporterMeshInstance3D *>::Iterator mi_element = p_state->scene_mesh_instances.find(node_i);
+			if (mi_element) {
+				mi = mi_element->value;
+			} else {
+				HashMap<GLTFNodeIndex, Node *>::Iterator si_element = p_state->scene_nodes.find(node_i);
+				ERR_CONTINUE_MSG(!si_element, vformat("Unable to find node %d", node_i));
+				mi = Object::cast_to<ImporterMeshInstance3D>(si_element->value);
+				ERR_CONTINUE_MSG(mi == nullptr, vformat("Unable to cast node %d of type %s to ImporterMeshInstance3D", node_i, si_element->value->get_class_name()));
+			}
 
 			const GLTFSkeletonIndex skel_i = p_state->skins.write[node->skin]->skeleton;
 			Ref<GLTFSkeleton> gltf_skeleton = p_state->skeletons.write[skel_i];

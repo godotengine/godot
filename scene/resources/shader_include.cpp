@@ -45,9 +45,14 @@ void ShaderInclude::set_code(const String &p_code) {
 	}
 
 	{
+		String path = get_path();
+		if (path.is_empty()) {
+			path = include_path;
+		}
+
 		String pp_code;
 		ShaderPreprocessor preprocessor;
-		preprocessor.preprocess(p_code, "", pp_code, nullptr, nullptr, nullptr, &new_dependencies);
+		preprocessor.preprocess(p_code, path, pp_code, nullptr, nullptr, nullptr, &new_dependencies);
 	}
 
 	// This ensures previous include resources are not freed and then re-loaded during parse (which would make compiling slower)
@@ -62,6 +67,10 @@ void ShaderInclude::set_code(const String &p_code) {
 
 String ShaderInclude::get_code() const {
 	return code;
+}
+
+void ShaderInclude::set_include_path(const String &p_path) {
+	include_path = p_path;
 }
 
 void ShaderInclude::_bind_methods() {
@@ -86,6 +95,7 @@ Ref<Resource> ResourceFormatLoaderShaderInclude::load(const String &p_path, cons
 	String str;
 	str.parse_utf8((const char *)buffer.ptr(), buffer.size());
 
+	shader_inc->set_include_path(p_path);
 	shader_inc->set_code(str);
 
 	if (r_error) {

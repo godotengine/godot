@@ -32,10 +32,6 @@
 
 #include "nav_map.h"
 
-RvoAgent::RvoAgent() {
-	callback.id = ObjectID();
-}
-
 void RvoAgent::set_map(NavMap *p_map) {
 	map = p_map;
 }
@@ -50,31 +46,25 @@ bool RvoAgent::is_map_changed() {
 	}
 }
 
-void RvoAgent::set_callback(ObjectID p_id, const StringName p_method, const Variant p_udata) {
-	callback.id = p_id;
-	callback.method = p_method;
-	callback.udata = p_udata;
+void RvoAgent::set_callback(Callable p_callback) {
+	callback = p_callback;
 }
 
 bool RvoAgent::has_callback() const {
-	return callback.id.is_valid();
+	return callback.is_valid();
 }
 
 void RvoAgent::dispatch_callback() {
-	if (callback.id.is_null()) {
-		return;
-	}
-	Object *obj = ObjectDB::get_instance(callback.id);
-	if (!obj) {
-		callback.id = ObjectID();
+	if (!callback.is_valid()) {
 		return;
 	}
 
-	Callable::CallError responseCallError;
+	Vector3 new_velocity = Vector3(agent.newVelocity_.x(), agent.newVelocity_.y(), agent.newVelocity_.z());
 
-	callback.new_velocity = Vector3(agent.newVelocity_.x(), agent.newVelocity_.y(), agent.newVelocity_.z());
-
-	const Variant *vp[2] = { &callback.new_velocity, &callback.udata };
-	int argc = (callback.udata.get_type() == Variant::NIL) ? 1 : 2;
-	obj->callp(callback.method, vp, argc, responseCallError);
+	// Invoke the callback with the new velocity.
+	Variant args[] = { new_velocity };
+	const Variant *args_p[] = { &args[0] };
+	Variant return_value;
+	Callable::CallError call_error;
+	callback.callp(args_p, 1, return_value, call_error);
 }

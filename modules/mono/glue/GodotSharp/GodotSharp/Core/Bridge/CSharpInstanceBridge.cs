@@ -12,7 +12,7 @@ namespace Godot.Bridge
         {
             try
             {
-                var godotObject = (Object)GCHandle.FromIntPtr(godotObjectGCHandle).Target;
+                var godotObject = (GodotObject)GCHandle.FromIntPtr(godotObjectGCHandle).Target;
 
                 if (godotObject == null)
                 {
@@ -49,7 +49,7 @@ namespace Godot.Bridge
         {
             try
             {
-                var godotObject = (Object)GCHandle.FromIntPtr(godotObjectGCHandle).Target;
+                var godotObject = (GodotObject)GCHandle.FromIntPtr(godotObjectGCHandle).Target;
 
                 if (godotObject == null)
                     throw new InvalidOperationException();
@@ -79,14 +79,31 @@ namespace Godot.Bridge
         {
             try
             {
-                var godotObject = (Object)GCHandle.FromIntPtr(godotObjectGCHandle).Target;
+                var godotObject = (GodotObject)GCHandle.FromIntPtr(godotObjectGCHandle).Target;
 
                 if (godotObject == null)
                     throw new InvalidOperationException();
 
+                // Properties
                 if (godotObject.GetGodotClassPropertyValue(CustomUnsafe.AsRef(name), out godot_variant outRetValue))
                 {
                     *outRet = outRetValue;
+                    return godot_bool.True;
+                }
+
+                // Signals
+                if (godotObject.HasGodotClassSignal(CustomUnsafe.AsRef(name)))
+                {
+                    godot_signal signal = new godot_signal(*name, godotObject.GetInstanceId());
+                    *outRet = VariantUtils.CreateFromSignalTakingOwnershipOfDisposableValue(signal);
+                    return godot_bool.True;
+                }
+
+                // Methods
+                if (godotObject.HasGodotClassMethod(CustomUnsafe.AsRef(name)))
+                {
+                    godot_callable method = new godot_callable(*name, godotObject.GetInstanceId());
+                    *outRet = VariantUtils.CreateFromCallableTakingOwnershipOfDisposableValue(method);
                     return godot_bool.True;
                 }
 
@@ -117,7 +134,7 @@ namespace Godot.Bridge
         {
             try
             {
-                var godotObject = (Object)GCHandle.FromIntPtr(godotObjectGCHandle).Target;
+                var godotObject = (GodotObject)GCHandle.FromIntPtr(godotObjectGCHandle).Target;
 
                 if (okIfNull.ToBool())
                     godotObject?.Dispose();
@@ -135,7 +152,7 @@ namespace Godot.Bridge
         {
             try
             {
-                var self = (Object)GCHandle.FromIntPtr(godotObjectGCHandle).Target;
+                var self = (GodotObject)GCHandle.FromIntPtr(godotObjectGCHandle).Target;
 
                 if (self == null)
                 {
@@ -169,7 +186,7 @@ namespace Godot.Bridge
         {
             try
             {
-                var godotObject = (Object)GCHandle.FromIntPtr(godotObjectGCHandle).Target;
+                var godotObject = (GodotObject)GCHandle.FromIntPtr(godotObjectGCHandle).Target;
 
                 if (godotObject == null)
                     return godot_bool.False;
@@ -192,7 +209,7 @@ namespace Godot.Bridge
         {
             try
             {
-                var godotObject = (Object)GCHandle.FromIntPtr(godotObjectGCHandle).Target;
+                var godotObject = (GodotObject)GCHandle.FromIntPtr(godotObjectGCHandle).Target;
 
                 if (godotObject == null)
                     return;
@@ -225,7 +242,7 @@ namespace Godot.Bridge
         {
             try
             {
-                var godotObject = (Object)GCHandle.FromIntPtr(godotObjectGCHandle).Target;
+                var godotObject = (GodotObject)GCHandle.FromIntPtr(godotObjectGCHandle).Target;
 
                 if (godotObject == null)
                     return;

@@ -190,6 +190,7 @@
 			<description>
 				Adds a new checkable item with text [param label] to the global menu with ID [param menu_root].
 				Returns index of the inserted item, it's not guaranteed to be the same as [param index] value.
+				[b]Note:[/b] The [param callback] and [param key_callback] Callables need to accept exactly one Variant parameter, the parameter passed to the Callables will be the value passed to [param tag].
 				[b]Note:[/b] This method is implemented on macOS.
 				[b]Supported system menu IDs:[/b]
 				[codeblock]
@@ -211,6 +212,7 @@
 			<description>
 				Adds a new checkable item with text [param label] and icon [param icon] to the global menu with ID [param menu_root].
 				Returns index of the inserted item, it's not guaranteed to be the same as [param index] value.
+				[b]Note:[/b] The [param callback] and [param key_callback] Callables need to accept exactly one Variant parameter, the parameter passed to the Callables will be the value passed to [param tag].
 				[b]Note:[/b] This method is implemented on macOS.
 				[b]Supported system menu IDs:[/b]
 				[codeblock]
@@ -232,6 +234,7 @@
 			<description>
 				Adds a new item with text [param label] and icon [param icon] to the global menu with ID [param menu_root].
 				Returns index of the inserted item, it's not guaranteed to be the same as [param index] value.
+				[b]Note:[/b] The [param callback] and [param key_callback] Callables need to accept exactly one Variant parameter, the parameter passed to the Callables will be the value passed to [param tag].
 				[b]Note:[/b] This method is implemented on macOS.
 				[b]Supported system menu IDs:[/b]
 				[codeblock]
@@ -254,6 +257,7 @@
 				Adds a new radio-checkable item with text [param label] and icon [param icon] to the global menu with ID [param menu_root].
 				Returns index of the inserted item, it's not guaranteed to be the same as [param index] value.
 				[b]Note:[/b] Radio-checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually. See [method global_menu_set_item_checked] for more info on how to control it.
+				[b]Note:[/b] The [param callback] and [param key_callback] Callables need to accept exactly one Variant parameter, the parameter passed to the Callables will be the value passed to [param tag].
 				[b]Note:[/b] This method is implemented on macOS.
 				[b]Supported system menu IDs:[/b]
 				[codeblock]
@@ -274,6 +278,7 @@
 			<description>
 				Adds a new item with text [param label] to the global menu with ID [param menu_root].
 				Returns index of the inserted item, it's not guaranteed to be the same as [param index] value.
+				[b]Note:[/b] The [param callback] and [param key_callback] Callables need to accept exactly one Variant parameter, the parameter passed to the Callables will be the value passed to [param tag].
 				[b]Note:[/b] This method is implemented on macOS.
 				[b]Supported system menu IDs:[/b]
 				[codeblock]
@@ -285,7 +290,7 @@
 		<method name="global_menu_add_multistate_item">
 			<return type="int" />
 			<param index="0" name="menu_root" type="String" />
-			<param index="1" name="labe" type="String" />
+			<param index="1" name="label" type="String" />
 			<param index="2" name="max_states" type="int" />
 			<param index="3" name="default_state" type="int" />
 			<param index="4" name="callback" type="Callable" />
@@ -294,10 +299,11 @@
 			<param index="7" name="accelerator" type="int" enum="Key" default="0" />
 			<param index="8" name="index" type="int" default="-1" />
 			<description>
-				Adds a new item with text [param labe] to the global menu with ID [param menu_root].
+				Adds a new item with text [param label] to the global menu with ID [param menu_root].
 				Contrarily to normal binary items, multistate items can have more than two states, as defined by [param max_states]. Each press or activate of the item will increase the state by one. The default value is defined by [param default_state].
 				Returns index of the inserted item, it's not guaranteed to be the same as [param index] value.
 				[b]Note:[/b] By default, there's no indication of the current item state, it should be changed manually.
+				[b]Note:[/b] The [param callback] and [param key_callback] Callables need to accept exactly one Variant parameter, the parameter passed to the Callables will be the value passed to [param tag].
 				[b]Note:[/b] This method is implemented on macOS.
 				[b]Supported system menu IDs:[/b]
 				[codeblock]
@@ -319,6 +325,7 @@
 				Adds a new radio-checkable item with text [param label] to the global menu with ID [param menu_root].
 				Returns index of the inserted item, it's not guaranteed to be the same as [param index] value.
 				[b]Note:[/b] Radio-checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually. See [method global_menu_set_item_checked] for more info on how to control it.
+				[b]Note:[/b] The [param callback] and [param key_callback] Callables need to accept exactly one Variant parameter, the parameter passed to the Callables will be the value passed to [param tag].
 				[b]Note:[/b] This method is implemented on macOS.
 				[b]Supported system menu IDs:[/b]
 				[codeblock]
@@ -562,6 +569,7 @@
 			<param index="2" name="callback" type="Callable" />
 			<description>
 				Sets the callback of the item at index [param idx]. Callback is emitted when an item is pressed.
+				[b]Note:[/b] The [param callback] Callable needs to accept exactly one Variant parameter, the parameter passed to the Callable will be the value passed to the tag parameter when the menu item was created.
 				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
@@ -623,6 +631,7 @@
 			<param index="2" name="key_callback" type="Callable" />
 			<description>
 				Sets the callback of the item at index [param idx]. Callback is emitted when its accelerator is activated.
+				[b]Note:[/b] The [param key_callback] Callable needs to accept exactly one Variant parameter, the parameter passed to the Callable will be the value passed to the tag parameter when the menu item was created.
 				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>
@@ -1090,6 +1099,7 @@
 			<param index="0" name="position" type="Vector2i" />
 			<description>
 				Sets the mouse cursor position to the given [param position] relative to an origin at the upper left corner of the currently focused game Window Manager window.
+				[b]Note:[/b] [method warp_mouse] is only supported on Windows, macOS and Linux. It has no effect on Android, iOS and Web.
 			</description>
 		</method>
 		<method name="window_can_draw" qualifiers="const">

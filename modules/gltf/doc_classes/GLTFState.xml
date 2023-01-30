@@ -55,6 +55,11 @@
 			<description>
 			</description>
 		</method>
+		<method name="get_handle_binary_image">
+			<return type="int" />
+			<description>
+			</description>
+		</method>
 		<method name="get_images">
 			<return type="Texture2D[]" />
 			<description>
@@ -155,6 +160,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="set_handle_binary_image">
+			<return type="void" />
+			<param index="0" name="method" type="int" />
+			<description>
+			</description>
+		</method>
 		<method name="set_images">
 			<return type="void" />
 			<param index="0" name="images" type="Texture2D[]" />
@@ -251,4 +262,12 @@
 		<member name="use_named_skin_binds" type="bool" setter="set_use_named_skin_binds" getter="get_use_named_skin_binds" default="false">
 		</member>
 	</members>
+	<constants>
+		<constant name="HANDLE_BINARY_DISCARD_TEXTURES" value="0">
+		</constant>
+		<constant name="HANDLE_BINARY_EXTRACT_TEXTURES" value="1">
+		</constant>
+		<constant name="HANDLE_BINARY_EMBED_AS_BASISU" value="2">
+		</constant>
+	</constants>
 </class>

@@ -1,13 +1,13 @@
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 
 namespace Godot
 {
-    public class GodotSynchronizationContext : SynchronizationContext
+    public sealed class GodotSynchronizationContext : SynchronizationContext, IDisposable
     {
-        private readonly BlockingCollection<KeyValuePair<SendOrPostCallback, object>> _queue =
-            new BlockingCollection<KeyValuePair<SendOrPostCallback, object>>();
+        private readonly BlockingCollection<KeyValuePair<SendOrPostCallback, object>> _queue = new();
 
         public override void Post(SendOrPostCallback d, object state)
         {
@@ -23,6 +23,11 @@ namespace Godot
             {
                 workItem.Key(workItem.Value);
             }
+        }
+
+        public void Dispose()
+        {
+            _queue.Dispose();
         }
     }
 }

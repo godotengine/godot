@@ -198,6 +198,7 @@ private:
 	HashMap<int, CompatibilityTileData *> compatibility_data;
 	HashMap<int, int> compatibility_tilemap_mapping_tile_modes;
 	HashMap<int, RBMap<Array, Array>> compatibility_tilemap_mapping;
+	HashMap<Vector2i, int> compatibility_size_count;
 
 	void _compatibility_conversion();
 
@@ -475,6 +476,8 @@ public:
 	void remove_navigation_layer(int p_index);
 	void set_navigation_layer_layers(int p_layer_index, uint32_t p_layers);
 	uint32_t get_navigation_layer_layers(int p_layer_index) const;
+	void set_navigation_layer_layer_value(int p_layer_index, int p_layer_number, bool p_value);
+	bool get_navigation_layer_layer_value(int p_layer_index, int p_layer_number) const;
 
 	// Custom data
 	int get_custom_data_layers_count() const;
@@ -719,7 +722,7 @@ public:
 	// Helpers.
 	Vector2i get_atlas_grid_size() const;
 	Rect2i get_tile_texture_region(Vector2i p_atlas_coords, int p_frame = 0) const;
-	Vector2i get_tile_effective_texture_offset(Vector2i p_atlas_coords, int p_alternative_tile) const;
+	bool is_position_in_tile_texture_region(const Vector2i p_atlas_coords, int p_alternative_tile, Vector2 p_position) const;
 
 	// Getters for texture and tile region (padded or not)
 	Ref<Texture2D> get_runtime_texture() const;
@@ -785,7 +788,7 @@ private:
 	bool flip_h = false;
 	bool flip_v = false;
 	bool transpose = false;
-	Vector2i tex_offset;
+	Vector2i texture_origin;
 	Ref<Material> material = Ref<Material>();
 	Color modulate = Color(1.0, 1.0, 1.0, 1.0);
 	int z_index = 0;
@@ -864,8 +867,8 @@ public:
 	void set_transpose(bool p_transpose);
 	bool get_transpose() const;
 
-	void set_texture_offset(Vector2i p_texture_offset);
-	Vector2i get_texture_offset() const;
+	void set_texture_origin(Vector2i p_texture_origin);
+	Vector2i get_texture_origin() const;
 	void set_material(Ref<Material> p_material);
 	Ref<Material> get_material() const;
 	void set_modulate(Color p_modulate);

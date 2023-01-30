@@ -247,7 +247,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 			return;
 		}
 		if (b->is_pressed() && b->get_button_index() == MouseButton::RIGHT && context_menu_enabled) {
-			_ensure_menu();
+			_update_context_menu();
 			menu->set_position(get_screen_position() + get_local_mouse_position());
 			menu->reset_size();
 			menu->popup();
@@ -452,7 +452,7 @@ void LineEdit::gui_input(const Ref<InputEvent> &p_event) {
 
 		if (context_menu_enabled) {
 			if (k->is_action("ui_menu", true)) {
-				_ensure_menu();
+				_update_context_menu();
 				Point2 pos = Point2(get_caret_pixel_pos().x, (get_size().y + theme_cache.font->get_height(theme_cache.font_size)) / 2);
 				menu->set_position(get_screen_position() + pos);
 				menu->reset_size();
@@ -1724,6 +1724,10 @@ void LineEdit::insert_text_at_caret(String p_text) {
 		input_direction = (TextDirection)dir;
 	}
 	set_caret_column(caret_column + p_text.length());
+
+	if (!ime_text.is_empty()) {
+		_shape();
+	}
 }
 
 void LineEdit::clear_internal() {
@@ -2073,7 +2077,9 @@ bool LineEdit::is_menu_visible() const {
 }
 
 PopupMenu *LineEdit::get_menu() const {
-	const_cast<LineEdit *>(this)->_ensure_menu();
+	if (!menu) {
+		const_cast<LineEdit *>(this)->_generate_context_menu();
+	}
 	return menu;
 }
 
@@ -2331,6 +2337,115 @@ Key LineEdit::_get_menu_action_accelerator(const String &p_action) {
 	}
 }
 
+void LineEdit::_generate_context_menu() {
+	menu = memnew(PopupMenu);
+	add_child(menu, false, INTERNAL_MODE_FRONT);
+
+	menu_dir = memnew(PopupMenu);
+	menu_dir->set_name("DirMenu");
+	menu_dir->add_radio_check_item(RTR("Same as Layout Direction"), MENU_DIR_INHERITED);
+	menu_dir->add_radio_check_item(RTR("Auto-Detect Direction"), MENU_DIR_AUTO);
+	menu_dir->add_radio_check_item(RTR("Left-to-Right"), MENU_DIR_LTR);
+	menu_dir->add_radio_check_item(RTR("Right-to-Left"), MENU_DIR_RTL);
+	menu->add_child(menu_dir, false, INTERNAL_MODE_FRONT);
+
+	menu_ctl = memnew(PopupMenu);
+	menu_ctl->set_name("CTLMenu");
+	menu_ctl->add_item(RTR("Left-to-Right Mark (LRM)"), MENU_INSERT_LRM);
+	menu_ctl->add_item(RTR("Right-to-Left Mark (RLM)"), MENU_INSERT_RLM);
+	menu_ctl->add_item(RTR("Start of Left-to-Right Embedding (LRE)"), MENU_INSERT_LRE);
+	menu_ctl->add_item(RTR("Start of Right-to-Left Embedding (RLE)"), MENU_INSERT_RLE);
+	menu_ctl->add_item(RTR("Start of Left-to-Right Override (LRO)"), MENU_INSERT_LRO);
+	menu_ctl->add_item(RTR("Start of Right-to-Left Override (RLO)"), MENU_INSERT_RLO);
+	menu_ctl->add_item(RTR("Pop Direction Formatting (PDF)"), MENU_INSERT_PDF);
+	menu_ctl->add_separator();
+	menu_ctl->add_item(RTR("Arabic Letter Mark (ALM)"), MENU_INSERT_ALM);
+	menu_ctl->add_item(RTR("Left-to-Right Isolate (LRI)"), MENU_INSERT_LRI);
+	menu_ctl->add_item(RTR("Right-to-Left Isolate (RLI)"), MENU_INSERT_RLI);
+	menu_ctl->add_item(RTR("First Strong Isolate (FSI)"), MENU_INSERT_FSI);
+	menu_ctl->add_item(RTR("Pop Direction Isolate (PDI)"), MENU_INSERT_PDI);
+	menu_ctl->add_separator();
+	menu_ctl->add_item(RTR("Zero-Width Joiner (ZWJ)"), MENU_INSERT_ZWJ);
+	menu_ctl->add_item(RTR("Zero-Width Non-Joiner (ZWNJ)"), MENU_INSERT_ZWNJ);
+	menu_ctl->add_item(RTR("Word Joiner (WJ)"), MENU_INSERT_WJ);
+	menu_ctl->add_item(RTR("Soft Hyphen (SHY)"), MENU_INSERT_SHY);
+	menu->add_child(menu_ctl, false, INTERNAL_MODE_FRONT);
+
+	menu->add_item(RTR("Cut"), MENU_CUT);
+	menu->add_item(RTR("Copy"), MENU_COPY);
+	menu->add_item(RTR("Paste"), MENU_PASTE);
+	menu->add_separator();
+	menu->add_item(RTR("Select All"), MENU_SELECT_ALL);
+	menu->add_item(RTR("Clear"), MENU_CLEAR);
+	menu->add_separator();
+	menu->add_item(RTR("Undo"), MENU_UNDO);
+	menu->add_item(RTR("Redo"), MENU_REDO);
+	menu->add_separator();
+	menu->add_submenu_item(RTR("Text Writing Direction"), "DirMenu", MENU_SUBMENU_TEXT_DIR);
+	menu->add_separator();
+	menu->add_check_item(RTR("Display Control Characters"), MENU_DISPLAY_UCC);
+	menu->add_submenu_item(RTR("Insert Control Character"), "CTLMenu", MENU_SUBMENU_INSERT_UCC);
+
+	menu->connect("id_pressed", callable_mp(this, &LineEdit::menu_option));
+	menu_dir->connect("id_pressed", callable_mp(this, &LineEdit::menu_option));
+	menu_ctl->connect("id_pressed", callable_mp(this, &LineEdit::menu_option));
+
+	menu->connect(SNAME("focus_entered"), callable_mp(this, &LineEdit::_validate_caret_can_draw));
+	menu->connect(SNAME("focus_exited"), callable_mp(this, &LineEdit::_validate_caret_can_draw));
+}
+
+void LineEdit::_update_context_menu() {
+	if (!menu) {
+		_generate_context_menu();
+	}
+
+	int idx = -1;
+
+#define MENU_ITEM_ACTION_DISABLED(m_menu, m_id, m_action, m_disabled)                                                  \
+	idx = m_menu->get_item_index(m_id);                                                                                \
+	if (idx >= 0) {                                                                                                    \
+		m_menu->set_item_accelerator(idx, shortcut_keys_enabled ? _get_menu_action_accelerator(m_action) : Key::NONE); \
+		m_menu->set_item_disabled(idx, m_disabled);                                                                    \
+	}
+
+#define MENU_ITEM_ACTION(m_menu, m_id, m_action)                                                                       \
+	idx = m_menu->get_item_index(m_id);                                                                                \
+	if (idx >= 0) {                                                                                                    \
+		m_menu->set_item_accelerator(idx, shortcut_keys_enabled ? _get_menu_action_accelerator(m_action) : Key::NONE); \
+	}
+
+#define MENU_ITEM_DISABLED(m_menu, m_id, m_disabled) \
+	idx = m_menu->get_item_index(m_id);              \
+	if (idx >= 0) {                                  \
+		m_menu->set_item_disabled(idx, m_disabled);  \
+	}
+
+#define MENU_ITEM_CHECKED(m_menu, m_id, m_checked) \
+	idx = m_menu->get_item_index(m_id);            \
+	if (idx >= 0) {                                \
+		m_menu->set_item_checked(idx, m_checked);  \
+	}
+
+	MENU_ITEM_ACTION_DISABLED(menu, MENU_CUT, "ui_cut", !editable)
+	MENU_ITEM_ACTION(menu, MENU_COPY, "ui_copy")
+	MENU_ITEM_ACTION_DISABLED(menu, MENU_PASTE, "ui_paste", !editable)
+	MENU_ITEM_ACTION_DISABLED(menu, MENU_SELECT_ALL, "ui_text_select_all", !selecting_enabled)
+	MENU_ITEM_DISABLED(menu, MENU_CLEAR, !editable)
+	MENU_ITEM_ACTION_DISABLED(menu, MENU_UNDO, "ui_undo", !editable || !has_undo())
+	MENU_ITEM_ACTION_DISABLED(menu, MENU_REDO, "ui_redo", !editable || !has_redo())
+	MENU_ITEM_CHECKED(menu_dir, MENU_DIR_INHERITED, text_direction == TEXT_DIRECTION_INHERITED)
+	MENU_ITEM_CHECKED(menu_dir, MENU_DIR_AUTO, text_direction == TEXT_DIRECTION_AUTO)
+	MENU_ITEM_CHECKED(menu_dir, MENU_DIR_LTR, text_direction == TEXT_DIRECTION_LTR)
+	MENU_ITEM_CHECKED(menu_dir, MENU_DIR_RTL, text_direction == TEXT_DIRECTION_RTL)
+	MENU_ITEM_CHECKED(menu, MENU_DISPLAY_UCC, draw_control_chars)
+	MENU_ITEM_DISABLED(menu, MENU_SUBMENU_INSERT_UCC, !editable)
+
+#undef MENU_ITEM_ACTION_DISABLED
+#undef MENU_ITEM_ACTION
+#undef MENU_ITEM_DISABLED
+#undef MENU_ITEM_CHECKED
+}
+
 void LineEdit::_validate_property(PropertyInfo &p_property) const {
 	if (!caret_blink_enabled && p_property.name == "caret_blink_interval") {
 		p_property.usage = PROPERTY_USAGE_NO_EDITOR;
@@ -2425,11 +2540,13 @@ void LineEdit::_bind_methods() {
 	BIND_ENUM_CONSTANT(MENU_SELECT_ALL);
 	BIND_ENUM_CONSTANT(MENU_UNDO);
 	BIND_ENUM_CONSTANT(MENU_REDO);
+	BIND_ENUM_CONSTANT(MENU_SUBMENU_TEXT_DIR);
 	BIND_ENUM_CONSTANT(MENU_DIR_INHERITED);
 	BIND_ENUM_CONSTANT(MENU_DIR_AUTO);
 	BIND_ENUM_CONSTANT(MENU_DIR_LTR);
 	BIND_ENUM_CONSTANT(MENU_DIR_RTL);
 	BIND_ENUM_CONSTANT(MENU_DISPLAY_UCC);
+	BIND_ENUM_CONSTANT(MENU_SUBMENU_INSERT_UCC);
 	BIND_ENUM_CONSTANT(MENU_INSERT_LRM);
 	BIND_ENUM_CONSTANT(MENU_INSERT_RLM);
 	BIND_ENUM_CONSTANT(MENU_INSERT_LRE);
@@ -2490,86 +2607,6 @@ void LineEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "language", PROPERTY_HINT_LOCALE_ID, ""), "set_language", "get_language");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "structured_text_bidi_override", PROPERTY_HINT_ENUM, "Default,URI,File,Email,List,None,Custom"), "set_structured_text_bidi_override", "get_structured_text_bidi_override");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "structured_text_bidi_override_options"), "set_structured_text_bidi_override_options", "get_structured_text_bidi_override_options");
-}
-
-void LineEdit::_ensure_menu() {
-	if (!menu) {
-		menu = memnew(PopupMenu);
-		add_child(menu, false, INTERNAL_MODE_FRONT);
-
-		menu_dir = memnew(PopupMenu);
-		menu_dir->set_name("DirMenu");
-		menu_dir->add_radio_check_item(RTR("Same as Layout Direction"), MENU_DIR_INHERITED);
-		menu_dir->add_radio_check_item(RTR("Auto-Detect Direction"), MENU_DIR_AUTO);
-		menu_dir->add_radio_check_item(RTR("Left-to-Right"), MENU_DIR_LTR);
-		menu_dir->add_radio_check_item(RTR("Right-to-Left"), MENU_DIR_RTL);
-		menu->add_child(menu_dir, false, INTERNAL_MODE_FRONT);
-
-		menu_ctl = memnew(PopupMenu);
-		menu_ctl->set_name("CTLMenu");
-		menu_ctl->add_item(RTR("Left-to-Right Mark (LRM)"), MENU_INSERT_LRM);
-		menu_ctl->add_item(RTR("Right-to-Left Mark (RLM)"), MENU_INSERT_RLM);
-		menu_ctl->add_item(RTR("Start of Left-to-Right Embedding (LRE)"), MENU_INSERT_LRE);
-		menu_ctl->add_item(RTR("Start of Right-to-Left Embedding (RLE)"), MENU_INSERT_RLE);
-		menu_ctl->add_item(RTR("Start of Left-to-Right Override (LRO)"), MENU_INSERT_LRO);
-		menu_ctl->add_item(RTR("Start of Right-to-Left Override (RLO)"), MENU_INSERT_RLO);
-		menu_ctl->add_item(RTR("Pop Direction Formatting (PDF)"), MENU_INSERT_PDF);
-		menu_ctl->add_separator();
-		menu_ctl->add_item(RTR("Arabic Letter Mark (ALM)"), MENU_INSERT_ALM);
-		menu_ctl->add_item(RTR("Left-to-Right Isolate (LRI)"), MENU_INSERT_LRI);
-		menu_ctl->add_item(RTR("Right-to-Left Isolate (RLI)"), MENU_INSERT_RLI);
-		menu_ctl->add_item(RTR("First Strong Isolate (FSI)"), MENU_INSERT_FSI);
-		menu_ctl->add_item(RTR("Pop Direction Isolate (PDI)"), MENU_INSERT_PDI);
-		menu_ctl->add_separator();
-		menu_ctl->add_item(RTR("Zero-Width Joiner (ZWJ)"), MENU_INSERT_ZWJ);
-		menu_ctl->add_item(RTR("Zero-Width Non-Joiner (ZWNJ)"), MENU_INSERT_ZWNJ);
-		menu_ctl->add_item(RTR("Word Joiner (WJ)"), MENU_INSERT_WJ);
-		menu_ctl->add_item(RTR("Soft Hyphen (SHY)"), MENU_INSERT_SHY);
-		menu->add_child(menu_ctl, false, INTERNAL_MODE_FRONT);
-
-		menu->connect("id_pressed", callable_mp(this, &LineEdit::menu_option));
-		menu->connect(SNAME("focus_entered"), callable_mp(this, &LineEdit::_validate_caret_can_draw));
-		menu->connect(SNAME("focus_exited"), callable_mp(this, &LineEdit::_validate_caret_can_draw));
-		menu_dir->connect("id_pressed", callable_mp(this, &LineEdit::menu_option));
-		menu_ctl->connect("id_pressed", callable_mp(this, &LineEdit::menu_option));
-	}
-
-	// Reorganize context menu.
-	menu->clear();
-	if (editable) {
-		menu->add_item(RTR("Cut"), MENU_CUT, is_shortcut_keys_enabled() ? _get_menu_action_accelerator("ui_cut") : Key::NONE);
-	}
-	menu->add_item(RTR("Copy"), MENU_COPY, is_shortcut_keys_enabled() ? _get_menu_action_accelerator("ui_copy") : Key::NONE);
-	if (editable) {
-		menu->add_item(RTR("Paste"), MENU_PASTE, is_shortcut_keys_enabled() ? _get_menu_action_accelerator("ui_paste") : Key::NONE);
-	}
-	menu->add_separator();
-	if (is_selecting_enabled()) {
-		menu->add_item(RTR("Select All"), MENU_SELECT_ALL, is_shortcut_keys_enabled() ? _get_menu_action_accelerator("ui_text_select_all") : Key::NONE);
-	}
-	if (editable) {
-		menu->add_item(RTR("Clear"), MENU_CLEAR);
-		menu->add_separator();
-		menu->add_item(RTR("Undo"), MENU_UNDO, is_shortcut_keys_enabled() ? _get_menu_action_accelerator("ui_undo") : Key::NONE);
-		menu->add_item(RTR("Redo"), MENU_REDO, is_shortcut_keys_enabled() ? _get_menu_action_accelerator("ui_redo") : Key::NONE);
-	}
-	menu->add_separator();
-	menu->add_submenu_item(RTR("Text Writing Direction"), "DirMenu");
-	menu->add_separator();
-	menu->add_check_item(RTR("Display Control Characters"), MENU_DISPLAY_UCC);
-	menu->set_item_checked(menu->get_item_index(MENU_DISPLAY_UCC), draw_control_chars);
-	if (editable) {
-		menu->add_submenu_item(RTR("Insert Control Character"), "CTLMenu");
-	}
-	menu_dir->set_item_checked(menu_dir->get_item_index(MENU_DIR_INHERITED), text_direction == TEXT_DIRECTION_INHERITED);
-	menu_dir->set_item_checked(menu_dir->get_item_index(MENU_DIR_AUTO), text_direction == TEXT_DIRECTION_AUTO);
-	menu_dir->set_item_checked(menu_dir->get_item_index(MENU_DIR_LTR), text_direction == TEXT_DIRECTION_LTR);
-	menu_dir->set_item_checked(menu_dir->get_item_index(MENU_DIR_RTL), text_direction == TEXT_DIRECTION_RTL);
-
-	if (editable) {
-		menu->set_item_disabled(menu->get_item_index(MENU_UNDO), !has_undo());
-		menu->set_item_disabled(menu->get_item_index(MENU_REDO), !has_redo());
-	}
 }
 
 LineEdit::LineEdit(const String &p_placeholder) {

@@ -260,15 +260,35 @@ Ref<Resource> Resource::duplicate(bool p_subresources) const {
 		}
 		Variant p = get(E.name);
 
-		if ((p.get_type() == Variant::DICTIONARY || p.get_type() == Variant::ARRAY)) {
-			r->set(E.name, p.duplicate(p_subresources));
-		} else if (p.get_type() == Variant::OBJECT && !(E.usage & PROPERTY_USAGE_NEVER_DUPLICATE) && (p_subresources || (E.usage & PROPERTY_USAGE_ALWAYS_DUPLICATE))) {
-			Ref<Resource> sr = p;
-			if (sr.is_valid()) {
-				r->set(E.name, sr->duplicate(p_subresources));
+		switch (p.get_type()) {
+			case Variant::Type::DICTIONARY:
+			case Variant::Type::ARRAY:
+			case Variant::Type::PACKED_BYTE_ARRAY:
+			case Variant::Type::PACKED_COLOR_ARRAY:
+			case Variant::Type::PACKED_INT32_ARRAY:
+			case Variant::Type::PACKED_INT64_ARRAY:
+			case Variant::Type::PACKED_FLOAT32_ARRAY:
+			case Variant::Type::PACKED_FLOAT64_ARRAY:
+			case Variant::Type::PACKED_STRING_ARRAY:
+			case Variant::Type::PACKED_VECTOR2_ARRAY:
+			case Variant::Type::PACKED_VECTOR3_ARRAY: {
+				r->set(E.name, p.duplicate(p_subresources));
+			} break;
+
+			case Variant::Type::OBJECT: {
+				if (!(E.usage & PROPERTY_USAGE_NEVER_DUPLICATE) && (p_subresources || (E.usage & PROPERTY_USAGE_ALWAYS_DUPLICATE))) {
+					Ref<Resource> sr = p;
+					if (sr.is_valid()) {
+						r->set(E.name, sr->duplicate(p_subresources));
+					}
+				} else {
+					r->set(E.name, p);
+				}
+			} break;
+
+			default: {
+				r->set(E.name, p);
 			}
-		} else {
-			r->set(E.name, p);
 		}
 	}
 

@@ -31,6 +31,7 @@
 #include "runtime_interop.h"
 
 #include "core/config/engine.h"
+#include "core/config/project_settings.h"
 #include "core/debugger/engine_debugger.h"
 #include "core/debugger/script_debugger.h"
 #include "core/io/marshalls.h"
@@ -45,6 +46,7 @@
 #include "modules/mono/managed_callable.h"
 #include "modules/mono/mono_gd/gd_mono_cache.h"
 #include "modules/mono/signal_awaiter_utils.h"
+#include "modules/mono/utils/path_utils.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -84,7 +86,8 @@ void godotsharp_stack_info_vector_destroy(
 void godotsharp_internal_script_debugger_send_error(const String *p_func,
 		const String *p_file, int32_t p_line, const String *p_err, const String *p_descr,
 		bool p_warning, const Vector<ScriptLanguage::StackInfo> *p_stack_info_vector) {
-	EngineDebugger::get_script_debugger()->send_error(*p_func, *p_file, p_line, *p_err, *p_descr,
+	const String file = ProjectSettings::get_singleton()->localize_path(p_file->simplify_path());
+	EngineDebugger::get_script_debugger()->send_error(*p_func, file, p_line, *p_err, *p_descr,
 			true, p_warning ? ERR_HANDLER_WARNING : ERR_HANDLER_ERROR, *p_stack_info_vector);
 }
 
@@ -1009,6 +1012,10 @@ int32_t godotsharp_array_resize(Array *p_self, int32_t p_new_size) {
 	return (int32_t)p_self->resize(p_new_size);
 }
 
+void godotsharp_array_make_read_only(Array *p_self) {
+	p_self->make_read_only();
+}
+
 void godotsharp_array_shuffle(Array *p_self) {
 	p_self->shuffle();
 }
@@ -1066,8 +1073,20 @@ void godotsharp_dictionary_duplicate(const Dictionary *p_self, bool p_deep, Dict
 	memnew_placement(r_dest, Dictionary(p_self->duplicate(p_deep)));
 }
 
+void godotsharp_dictionary_merge(Dictionary *p_self, const Dictionary *p_dictionary, bool p_overwrite) {
+	p_self->merge(*p_dictionary, p_overwrite);
+}
+
+bool godotsharp_dictionary_recursive_equal(const Dictionary *p_self, const Dictionary *p_other) {
+	return p_self->recursive_equal(*p_other, 0);
+}
+
 bool godotsharp_dictionary_remove_key(Dictionary *p_self, const Variant *p_key) {
 	return p_self->erase(*p_key);
+}
+
+void godotsharp_dictionary_make_read_only(Dictionary *p_self) {
+	p_self->make_read_only();
 }
 
 void godotsharp_dictionary_to_string(const Dictionary *p_self, String *r_str) {
@@ -1178,21 +1197,6 @@ void godotsharp_weakref(Object *p_ptr, Ref<RefCounted> *r_weak_ref) {
 	}
 
 	memnew_placement(r_weak_ref, Ref<RefCounted>(wref));
-}
-
-void godotsharp_str(const godot_array *p_what, godot_string *r_ret) {
-	String &str = *memnew_placement(r_ret, String);
-	const Array &what = *reinterpret_cast<const Array *>(p_what);
-
-	for (int i = 0; i < what.size(); i++) {
-		String os = what[i].operator String();
-
-		if (i == 0) {
-			str = os;
-		} else {
-			str += os;
-		}
-	}
 }
 
 void godotsharp_print(const godot_string *p_what) {
@@ -1443,6 +1447,7 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_array_insert,
 	(void *)godotsharp_array_remove_at,
 	(void *)godotsharp_array_resize,
+	(void *)godotsharp_array_make_read_only,
 	(void *)godotsharp_array_shuffle,
 	(void *)godotsharp_array_to_string,
 	(void *)godotsharp_dictionary_try_get_value,
@@ -1455,7 +1460,10 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_dictionary_clear,
 	(void *)godotsharp_dictionary_contains_key,
 	(void *)godotsharp_dictionary_duplicate,
+	(void *)godotsharp_dictionary_merge,
+	(void *)godotsharp_dictionary_recursive_equal,
 	(void *)godotsharp_dictionary_remove_key,
+	(void *)godotsharp_dictionary_make_read_only,
 	(void *)godotsharp_dictionary_to_string,
 	(void *)godotsharp_string_simplify_path,
 	(void *)godotsharp_string_to_camel_case,
@@ -1488,7 +1496,6 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_rand_from_seed,
 	(void *)godotsharp_seed,
 	(void *)godotsharp_weakref,
-	(void *)godotsharp_str,
 	(void *)godotsharp_str_to_var,
 	(void *)godotsharp_var_to_bytes,
 	(void *)godotsharp_var_to_str,

@@ -486,13 +486,7 @@ void AnimationTree::set_active(bool p_active) {
 	}
 
 	if (!active && is_inside_tree()) {
-		for (const TrackCache *E : playing_caches) {
-			if (ObjectDB::get_instance(E->object_id)) {
-				E->object->call(SNAME("stop"));
-			}
-		}
-
-		playing_caches.clear();
+		_clear_caches();
 	}
 }
 
@@ -531,6 +525,7 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 	if (!player->has_node(player->get_root())) {
 		ERR_PRINT("AnimationTree: AnimationPlayer root is invalid.");
 		set_active(false);
+		_clear_caches();
 		return false;
 	}
 	Node *parent = player->get_node(player->get_root());
@@ -763,6 +758,8 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 
 						track_audio->object = child;
 						track_audio->object_id = track_audio->object->get_instance_id();
+						track_audio->audio_stream.instantiate();
+						track_audio->audio_stream->set_polyphony(audio_max_polyphony);
 
 						track = track_audio;
 
@@ -860,12 +857,30 @@ void AnimationTree::_animation_player_changed() {
 }
 
 void AnimationTree::_clear_caches() {
+	_clear_audio_streams();
+	_clear_playing_caches();
 	for (KeyValue<NodePath, TrackCache *> &K : track_cache) {
 		memdelete(K.value);
 	}
-	playing_caches.clear();
 	track_cache.clear();
 	cache_valid = false;
+}
+
+void AnimationTree::_clear_audio_streams() {
+	for (int i = 0; i < playing_audio_stream_players.size(); i++) {
+		playing_audio_stream_players[i]->call(SNAME("stop"));
+		playing_audio_stream_players[i]->call(SNAME("set_stream"), Ref<AudioStream>());
+	}
+	playing_audio_stream_players.clear();
+}
+
+void AnimationTree::_clear_playing_caches() {
+	for (const TrackCache *E : playing_caches) {
+		if (ObjectDB::get_instance(E->object_id)) {
+			E->object->call(SNAME("stop"));
+		}
+	}
+	playing_caches.clear();
 }
 
 static void _call_object(Object *p_object, const StringName &p_method, const Vector<Variant> &p_params, bool p_deferred) {
@@ -1007,6 +1022,13 @@ void AnimationTree::_process_graph(double p_delta) {
 					TrackCacheBezier *t = static_cast<TrackCacheBezier *>(track);
 					t->value = t->init_value;
 				} break;
+				case Animation::TYPE_AUDIO: {
+					TrackCacheAudio *t = static_cast<TrackCacheAudio *>(track);
+					for (KeyValue<ObjectID, PlayingAudioTrackInfo> &L : t->playing_streams) {
+						PlayingAudioTrackInfo &track_info = L.value;
+						track_info.volume = 0.0;
+					}
+				} break;
 				default: {
 				} break;
 			}
@@ -1015,8 +1037,9 @@ void AnimationTree::_process_graph(double p_delta) {
 
 	// Apply value/transform/blend/bezier blends to track caches and execute method/audio/animation tracks.
 	{
+#ifdef TOOLS_ENABLED
 		bool can_call = is_inside_tree() && !Engine::get_singleton()->is_editor_hint();
-
+#endif // TOOLS_ENABLED
 		for (const AnimationNode::AnimationState &as : state.animation_states) {
 			Ref<Animation> a = as.animation;
 			double time = as.time;
@@ -1025,8 +1048,8 @@ void AnimationTree::_process_graph(double p_delta) {
 			bool seeked = as.seeked;
 			Animation::LoopedFlag looped_flag = as.looped_flag;
 			bool is_external_seeking = as.is_external_seeking;
+			bool backward = signbit(delta); // This flag is used by the root motion calculates or detecting the end of audio stream.
 #ifndef _3D_DISABLED
-			bool backward = signbit(delta); // This flag is required only for the root motion since it calculates the difference between the previous and current frames.
 			bool calc_root = !seeked || is_external_seeking;
 #endif // _3D_DISABLED
 
@@ -1045,9 +1068,6 @@ void AnimationTree::_process_graph(double p_delta) {
 				int blend_idx = state.track_map[path];
 				ERR_CONTINUE(blend_idx < 0 || blend_idx >= state.track_count);
 				real_t blend = (*as.track_blends)[blend_idx] * weight;
-				if (Math::is_zero_approx(blend)) {
-					continue; // Nothing to blend.
-				}
 
 				Animation::TrackType ttype = a->track_get_type(i);
 				if (ttype != Animation::TYPE_POSITION_3D && ttype != Animation::TYPE_ROTATION_3D && ttype != Animation::TYPE_SCALE_3D && track->type != ttype) {
@@ -1059,6 +1079,9 @@ void AnimationTree::_process_graph(double p_delta) {
 				switch (ttype) {
 					case Animation::TYPE_POSITION_3D: {
 #ifndef _3D_DISABLED
+						if (Math::is_zero_approx(blend)) {
+							continue; // Nothing to blend.
+						}
 						TrackCacheTransform *t = static_cast<TrackCacheTransform *>(track);
 						if (track->root_motion && calc_root) {
 							double prev_time = time - delta;
@@ -1104,9 +1127,9 @@ void AnimationTree::_process_graph(double p_delta) {
 									if (err != OK) {
 										continue;
 									}
-									loc[0] = _post_process_key_value(a, i, loc[0], t->object, t->bone_idx);
+									loc[0] = post_process_key_value(a, i, loc[0], t->object, t->bone_idx);
 									a->position_track_interpolate(i, (double)a->get_length(), &loc[1]);
-									loc[1] = _post_process_key_value(a, i, loc[1], t->object, t->bone_idx);
+									loc[1] = post_process_key_value(a, i, loc[1], t->object, t->bone_idx);
 									t->loc += (loc[1] - loc[0]) * blend;
 									prev_time = 0;
 								}
@@ -1116,9 +1139,9 @@ void AnimationTree::_process_graph(double p_delta) {
 									if (err != OK) {
 										continue;
 									}
-									loc[0] = _post_process_key_value(a, i, loc[0], t->object, t->bone_idx);
+									loc[0] = post_process_key_value(a, i, loc[0], t->object, t->bone_idx);
 									a->position_track_interpolate(i, 0, &loc[1]);
-									loc[1] = _post_process_key_value(a, i, loc[1], t->object, t->bone_idx);
+									loc[1] = post_process_key_value(a, i, loc[1], t->object, t->bone_idx);
 									t->loc += (loc[1] - loc[0]) * blend;
 									prev_time = (double)a->get_length();
 								}
@@ -1128,10 +1151,10 @@ void AnimationTree::_process_graph(double p_delta) {
 							if (err != OK) {
 								continue;
 							}
-							loc[0] = _post_process_key_value(a, i, loc[0], t->object, t->bone_idx);
+							loc[0] = post_process_key_value(a, i, loc[0], t->object, t->bone_idx);
 
 							a->position_track_interpolate(i, time, &loc[1]);
-							loc[1] = _post_process_key_value(a, i, loc[1], t->object, t->bone_idx);
+							loc[1] = post_process_key_value(a, i, loc[1], t->object, t->bone_idx);
 							t->loc += (loc[1] - loc[0]) * blend;
 							prev_time = !backward ? 0 : (double)a->get_length();
 
@@ -1142,7 +1165,7 @@ void AnimationTree::_process_graph(double p_delta) {
 							if (err != OK) {
 								continue;
 							}
-							loc = _post_process_key_value(a, i, loc, t->object, t->bone_idx);
+							loc = post_process_key_value(a, i, loc, t->object, t->bone_idx);
 
 							t->loc += (loc - t->init_loc) * blend;
 						}
@@ -1150,6 +1173,9 @@ void AnimationTree::_process_graph(double p_delta) {
 					} break;
 					case Animation::TYPE_ROTATION_3D: {
 #ifndef _3D_DISABLED
+						if (Math::is_zero_approx(blend)) {
+							continue; // Nothing to blend.
+						}
 						TrackCacheTransform *t = static_cast<TrackCacheTransform *>(track);
 						if (track->root_motion && calc_root) {
 							double prev_time = time - delta;
@@ -1195,9 +1221,9 @@ void AnimationTree::_process_graph(double p_delta) {
 									if (err != OK) {
 										continue;
 									}
-									rot[0] = _post_process_key_value(a, i, rot[0], t->object, t->bone_idx);
+									rot[0] = post_process_key_value(a, i, rot[0], t->object, t->bone_idx);
 									a->rotation_track_interpolate(i, (double)a->get_length(), &rot[1]);
-									rot[1] = _post_process_key_value(a, i, rot[1], t->object, t->bone_idx);
+									rot[1] = post_process_key_value(a, i, rot[1], t->object, t->bone_idx);
 									t->rot = (t->rot * Quaternion().slerp(rot[0].inverse() * rot[1], blend)).normalized();
 									prev_time = 0;
 								}
@@ -1207,7 +1233,7 @@ void AnimationTree::_process_graph(double p_delta) {
 									if (err != OK) {
 										continue;
 									}
-									rot[0] = _post_process_key_value(a, i, rot[0], t->object, t->bone_idx);
+									rot[0] = post_process_key_value(a, i, rot[0], t->object, t->bone_idx);
 									a->rotation_track_interpolate(i, 0, &rot[1]);
 									t->rot = (t->rot * Quaternion().slerp(rot[0].inverse() * rot[1], blend)).normalized();
 									prev_time = (double)a->get_length();
@@ -1218,10 +1244,10 @@ void AnimationTree::_process_graph(double p_delta) {
 							if (err != OK) {
 								continue;
 							}
-							rot[0] = _post_process_key_value(a, i, rot[0], t->object, t->bone_idx);
+							rot[0] = post_process_key_value(a, i, rot[0], t->object, t->bone_idx);
 
 							a->rotation_track_interpolate(i, time, &rot[1]);
-							rot[1] = _post_process_key_value(a, i, rot[1], t->object, t->bone_idx);
+							rot[1] = post_process_key_value(a, i, rot[1], t->object, t->bone_idx);
 							t->rot = (t->rot * Quaternion().slerp(rot[0].inverse() * rot[1], blend)).normalized();
 							prev_time = !backward ? 0 : (double)a->get_length();
 
@@ -1232,7 +1258,7 @@ void AnimationTree::_process_graph(double p_delta) {
 							if (err != OK) {
 								continue;
 							}
-							rot = _post_process_key_value(a, i, rot, t->object, t->bone_idx);
+							rot = post_process_key_value(a, i, rot, t->object, t->bone_idx);
 
 							t->rot = (t->rot * Quaternion().slerp(t->init_rot.inverse() * rot, blend)).normalized();
 						}
@@ -1240,6 +1266,9 @@ void AnimationTree::_process_graph(double p_delta) {
 					} break;
 					case Animation::TYPE_SCALE_3D: {
 #ifndef _3D_DISABLED
+						if (Math::is_zero_approx(blend)) {
+							continue; // Nothing to blend.
+						}
 						TrackCacheTransform *t = static_cast<TrackCacheTransform *>(track);
 						if (track->root_motion && calc_root) {
 							double prev_time = time - delta;
@@ -1285,10 +1314,10 @@ void AnimationTree::_process_graph(double p_delta) {
 									if (err != OK) {
 										continue;
 									}
-									scale[0] = _post_process_key_value(a, i, scale[0], t->object, t->bone_idx);
+									scale[0] = post_process_key_value(a, i, scale[0], t->object, t->bone_idx);
 									a->scale_track_interpolate(i, (double)a->get_length(), &scale[1]);
 									t->scale += (scale[1] - scale[0]) * blend;
-									scale[1] = _post_process_key_value(a, i, scale[1], t->object, t->bone_idx);
+									scale[1] = post_process_key_value(a, i, scale[1], t->object, t->bone_idx);
 									prev_time = 0;
 								}
 							} else {
@@ -1297,9 +1326,9 @@ void AnimationTree::_process_graph(double p_delta) {
 									if (err != OK) {
 										continue;
 									}
-									scale[0] = _post_process_key_value(a, i, scale[0], t->object, t->bone_idx);
+									scale[0] = post_process_key_value(a, i, scale[0], t->object, t->bone_idx);
 									a->scale_track_interpolate(i, 0, &scale[1]);
-									scale[1] = _post_process_key_value(a, i, scale[1], t->object, t->bone_idx);
+									scale[1] = post_process_key_value(a, i, scale[1], t->object, t->bone_idx);
 									t->scale += (scale[1] - scale[0]) * blend;
 									prev_time = (double)a->get_length();
 								}
@@ -1309,10 +1338,10 @@ void AnimationTree::_process_graph(double p_delta) {
 							if (err != OK) {
 								continue;
 							}
-							scale[0] = _post_process_key_value(a, i, scale[0], t->object, t->bone_idx);
+							scale[0] = post_process_key_value(a, i, scale[0], t->object, t->bone_idx);
 
 							a->scale_track_interpolate(i, time, &scale[1]);
-							scale[1] = _post_process_key_value(a, i, scale[1], t->object, t->bone_idx);
+							scale[1] = post_process_key_value(a, i, scale[1], t->object, t->bone_idx);
 							t->scale += (scale[1] - scale[0]) * blend;
 							prev_time = !backward ? 0 : (double)a->get_length();
 
@@ -1323,7 +1352,7 @@ void AnimationTree::_process_graph(double p_delta) {
 							if (err != OK) {
 								continue;
 							}
-							scale = _post_process_key_value(a, i, scale, t->object, t->bone_idx);
+							scale = post_process_key_value(a, i, scale, t->object, t->bone_idx);
 
 							t->scale += (scale - t->init_scale) * blend;
 						}
@@ -1331,6 +1360,9 @@ void AnimationTree::_process_graph(double p_delta) {
 					} break;
 					case Animation::TYPE_BLEND_SHAPE: {
 #ifndef _3D_DISABLED
+						if (Math::is_zero_approx(blend)) {
+							continue; // Nothing to blend.
+						}
 						TrackCacheBlendShape *t = static_cast<TrackCacheBlendShape *>(track);
 
 						float value;
@@ -1341,19 +1373,22 @@ void AnimationTree::_process_graph(double p_delta) {
 						if (err != OK) {
 							continue;
 						}
-						value = _post_process_key_value(a, i, value, t->object, t->shape_index);
+						value = post_process_key_value(a, i, value, t->object, t->shape_index);
 
 						t->value += (value - t->init_value) * blend;
 #endif // _3D_DISABLED
 					} break;
 					case Animation::TYPE_VALUE: {
+						if (Math::is_zero_approx(blend)) {
+							continue; // Nothing to blend.
+						}
 						TrackCacheValue *t = static_cast<TrackCacheValue *>(track);
 
 						Animation::UpdateMode update_mode = a->value_track_get_update_mode(i);
 
 						if (update_mode == Animation::UPDATE_CONTINUOUS || update_mode == Animation::UPDATE_CAPTURE) {
 							Variant value = a->value_track_interpolate(i, time);
-							value = _post_process_key_value(a, i, value, t->object);
+							value = post_process_key_value(a, i, value, t->object);
 
 							if (value == Variant()) {
 								continue;
@@ -1393,14 +1428,14 @@ void AnimationTree::_process_graph(double p_delta) {
 									continue;
 								}
 								Variant value = a->track_get_key_value(i, idx);
-								value = _post_process_key_value(a, i, value, t->object);
+								value = post_process_key_value(a, i, value, t->object);
 								t->object->set_indexed(t->subpath, value);
 							} else {
 								List<int> indices;
 								a->track_get_key_indices_in_range(i, time, delta, &indices, looped_flag);
 								for (int &F : indices) {
 									Variant value = a->track_get_key_value(i, F);
-									value = _post_process_key_value(a, i, value, t->object);
+									value = post_process_key_value(a, i, value, t->object);
 									t->object->set_indexed(t->subpath, value);
 								}
 							}
@@ -1408,6 +1443,14 @@ void AnimationTree::_process_graph(double p_delta) {
 
 					} break;
 					case Animation::TYPE_METHOD: {
+#ifdef TOOLS_ENABLED
+						if (!can_call) {
+							continue;
+						}
+#endif // TOOLS_ENABLED
+						if (Math::is_zero_approx(blend)) {
+							continue; // Nothing to blend.
+						}
 						TrackCacheMethod *t = static_cast<TrackCacheMethod *>(track);
 
 						if (seeked) {
@@ -1417,137 +1460,112 @@ void AnimationTree::_process_graph(double p_delta) {
 							}
 							StringName method = a->method_track_get_name(i, idx);
 							Vector<Variant> params = a->method_track_get_params(i, idx);
-							if (can_call) {
-								_call_object(t->object, method, params, false);
-							}
+							_call_object(t->object, method, params, false);
 						} else {
 							List<int> indices;
 							a->track_get_key_indices_in_range(i, time, delta, &indices, looped_flag);
 							for (int &F : indices) {
 								StringName method = a->method_track_get_name(i, F);
 								Vector<Variant> params = a->method_track_get_params(i, F);
-								if (can_call) {
-									_call_object(t->object, method, params, true);
-								}
+								_call_object(t->object, method, params, true);
 							}
 						}
 					} break;
 					case Animation::TYPE_BEZIER: {
+						if (Math::is_zero_approx(blend)) {
+							continue; // Nothing to blend.
+						}
 						TrackCacheBezier *t = static_cast<TrackCacheBezier *>(track);
 
 						real_t bezier = a->bezier_track_interpolate(i, time);
-						bezier = _post_process_key_value(a, i, bezier, t->object);
+						bezier = post_process_key_value(a, i, bezier, t->object);
 
 						t->value += (bezier - t->init_value) * blend;
 					} break;
 					case Animation::TYPE_AUDIO: {
 						TrackCacheAudio *t = static_cast<TrackCacheAudio *>(track);
 
+						Node *asp = Object::cast_to<Node>(t->object);
+						if (!asp) {
+							t->playing_streams.clear();
+							continue;
+						}
+
+						ObjectID oid = a->get_instance_id();
+						if (!t->playing_streams.has(oid)) {
+							t->playing_streams[oid] = PlayingAudioTrackInfo();
+						}
+						// The end of audio should be observed even if the blend value is 0, build up the information and store to the cache for that.
+						PlayingAudioTrackInfo &track_info = t->playing_streams[oid];
+						track_info.length = a->get_length();
+						track_info.time = time;
+						track_info.volume += blend;
+						track_info.loop = a->get_loop_mode() != Animation::LOOP_NONE;
+						track_info.backward = backward;
+						track_info.use_blend = a->audio_track_is_use_blend(i);
+
+						HashMap<int, PlayingAudioStreamInfo> &map = track_info.stream_info;
+						// Find stream.
+						int idx = -1;
 						if (seeked) {
-							//find whatever should be playing
-							int idx = a->track_find_key(i, time, is_external_seeking ? Animation::FIND_MODE_NEAREST : Animation::FIND_MODE_EXACT);
-							if (idx < 0) {
-								continue;
+							idx = a->track_find_key(i, time, is_external_seeking ? Animation::FIND_MODE_NEAREST : Animation::FIND_MODE_EXACT);
+							// Discard previous stream when seeking.
+							if (map.has(idx)) {
+								t->audio_stream_playback->stop_stream(map[idx].index);
+								map.erase(idx);
 							}
-
-							Ref<AudioStream> stream = a->audio_track_get_key_stream(i, idx);
-							if (!stream.is_valid()) {
-								t->object->call(SNAME("stop"));
-								t->playing = false;
-								playing_caches.erase(t);
-							} else {
-								double start_ofs = a->audio_track_get_key_start_offset(i, idx);
-								start_ofs += time - a->track_get_key_time(i, idx);
-								double end_ofs = a->audio_track_get_key_end_offset(i, idx);
-								double len = stream->get_length();
-
-								if (start_ofs > len - end_ofs) {
-									t->object->call(SNAME("stop"));
-									t->playing = false;
-									playing_caches.erase(t);
-									continue;
-								}
-
-								t->object->call(SNAME("set_stream"), stream);
-								t->object->call(SNAME("play"), start_ofs);
-
-								t->playing = true;
-								playing_caches.insert(t);
-								if (len && end_ofs > 0) { //force an end at a time
-									t->len = len - start_ofs - end_ofs;
-								} else {
-									t->len = 0;
-								}
-
-								t->start = time;
-							}
-
 						} else {
-							//find stuff to play
 							List<int> to_play;
 							a->track_get_key_indices_in_range(i, time, delta, &to_play, looped_flag);
 							if (to_play.size()) {
-								int idx = to_play.back()->get();
-
-								Ref<AudioStream> stream = a->audio_track_get_key_stream(i, idx);
-								if (!stream.is_valid()) {
-									t->object->call(SNAME("stop"));
-									t->playing = false;
-									playing_caches.erase(t);
-								} else {
-									double start_ofs = a->audio_track_get_key_start_offset(i, idx);
-									double end_ofs = a->audio_track_get_key_end_offset(i, idx);
-									double len = stream->get_length();
-
-									t->object->call(SNAME("set_stream"), stream);
-									t->object->call(SNAME("play"), start_ofs);
-
-									t->playing = true;
-									playing_caches.insert(t);
-									if (len && end_ofs > 0) { //force an end at a time
-										t->len = len - start_ofs - end_ofs;
-									} else {
-										t->len = 0;
-									}
-
-									t->start = time;
-								}
-							} else if (t->playing) {
-								bool loop = a->get_loop_mode() != Animation::LOOP_NONE;
-
-								bool stop = false;
-
-								if (!loop) {
-									if (delta > 0) {
-										if (time < t->start) {
-											stop = true;
-										}
-									} else if (delta < 0) {
-										if (time > t->start) {
-											stop = true;
-										}
-									}
-								} else if (t->len > 0) {
-									double len = t->start > time ? (a->get_length() - t->start) + time : time - t->start;
-
-									if (len > t->len) {
-										stop = true;
-									}
-								}
-
-								if (stop) {
-									//time to stop
-									t->object->call(SNAME("stop"));
-									t->playing = false;
-									playing_caches.erase(t);
-								}
+								idx = to_play.back()->get();
 							}
 						}
+						if (idx < 0) {
+							continue;
+						}
 
-						real_t db = Math::linear_to_db(MAX(blend, 0.00001));
-						t->object->call(SNAME("set_volume_db"), db);
+						// Play stream.
+						Ref<AudioStream> stream = a->audio_track_get_key_stream(i, idx);
+						if (stream.is_valid()) {
+							double start_ofs = a->audio_track_get_key_start_offset(i, idx);
+							double end_ofs = a->audio_track_get_key_end_offset(i, idx);
+							double len = stream->get_length();
+
+							if (t->object->call(SNAME("get_stream")) != t->audio_stream) {
+								t->object->call(SNAME("set_stream"), t->audio_stream);
+								t->audio_stream_playback.unref();
+								if (!playing_audio_stream_players.has(asp)) {
+									playing_audio_stream_players.push_back(asp);
+								}
+							}
+							if (!t->object->call(SNAME("is_playing"))) {
+								t->object->call(SNAME("play"));
+							}
+							if (!t->object->call(SNAME("has_stream_playback"))) {
+								t->audio_stream_playback.unref();
+								continue;
+							}
+							if (t->audio_stream_playback.is_null()) {
+								t->audio_stream_playback = t->object->call(SNAME("get_stream_playback"));
+							}
+
+							PlayingAudioStreamInfo pasi;
+							pasi.index = t->audio_stream_playback->play_stream(stream, start_ofs);
+							pasi.start = time;
+							if (len && end_ofs > 0) { // Force an end at a time.
+								pasi.len = len - start_ofs - end_ofs;
+							} else {
+								pasi.len = 0;
+							}
+							map[idx] = pasi;
+						}
+
 					} break;
 					case Animation::TYPE_ANIMATION: {
+						if (Math::is_zero_approx(blend)) {
+							continue; // Nothing to blend.
+						}
 						TrackCacheAnimation *t = static_cast<TrackCacheAnimation *>(track);
 
 						AnimationPlayer *player2 = Object::cast_to<AnimationPlayer>(t->object);
@@ -1693,11 +1711,78 @@ void AnimationTree::_process_graph(double p_delta) {
 					t->object->set_indexed(t->subpath, t->value);
 
 				} break;
+				case Animation::TYPE_AUDIO: {
+					TrackCacheAudio *t = static_cast<TrackCacheAudio *>(track);
+
+					// Audio ending process.
+					LocalVector<ObjectID> erase_maps;
+					for (KeyValue<ObjectID, PlayingAudioTrackInfo> &L : t->playing_streams) {
+						PlayingAudioTrackInfo &track_info = L.value;
+						float db = Math::linear_to_db(track_info.use_blend ? track_info.volume : 1.0);
+						LocalVector<int> erase_streams;
+						HashMap<int, PlayingAudioStreamInfo> &map = track_info.stream_info;
+						for (const KeyValue<int, PlayingAudioStreamInfo> &M : map) {
+							PlayingAudioStreamInfo pasi = M.value;
+
+							bool stop = false;
+							if (!t->audio_stream_playback->is_stream_playing(pasi.index)) {
+								stop = true;
+							}
+							if (!track_info.loop) {
+								if (!track_info.backward) {
+									if (track_info.time < pasi.start) {
+										stop = true;
+									}
+								} else if (track_info.backward) {
+									if (track_info.time > pasi.start) {
+										stop = true;
+									}
+								}
+							}
+							if (pasi.len > 0) {
+								double len = 0.0;
+								if (!track_info.backward) {
+									len = pasi.start > track_info.time ? (track_info.length - pasi.start) + track_info.time : track_info.time - pasi.start;
+								} else {
+									len = pasi.start < track_info.time ? (track_info.length - track_info.time) + pasi.start : pasi.start - track_info.time;
+								}
+								if (len > pasi.len) {
+									stop = true;
+								}
+							}
+							if (stop) {
+								// Time to stop.
+								t->audio_stream_playback->stop_stream(pasi.index);
+								erase_streams.push_back(M.key);
+							} else {
+								t->audio_stream_playback->set_stream_volume(pasi.index, db);
+							}
+						}
+						for (uint32_t erase_idx = 0; erase_idx < erase_streams.size(); erase_idx++) {
+							map.erase(erase_streams[erase_idx]);
+						}
+						if (map.size() == 0) {
+							erase_maps.push_back(L.key);
+						}
+					}
+					for (uint32_t erase_idx = 0; erase_idx < erase_maps.size(); erase_idx++) {
+						t->playing_streams.erase(erase_maps[erase_idx]);
+					}
+				} break;
 				default: {
 				} //the rest don't matter
 			}
 		}
 	}
+}
+
+Variant AnimationTree::post_process_key_value(const Ref<Animation> &p_anim, int p_track, Variant p_value, const Object *p_object, int p_object_idx) {
+	Variant res;
+	if (GDVIRTUAL_CALL(_post_process_key_value, p_anim, p_track, p_value, const_cast<Object *>(p_object), p_object_idx, res)) {
+		return res;
+	}
+
+	return _post_process_key_value(p_anim, p_track, p_value, p_object, p_object_idx);
 }
 
 Variant AnimationTree::_post_process_key_value(const Ref<Animation> &p_anim, int p_track, Variant p_value, const Object *p_object, int p_object_idx) {
@@ -1807,6 +1892,15 @@ void AnimationTree::set_advance_expression_base_node(const NodePath &p_advance_e
 
 NodePath AnimationTree::get_advance_expression_base_node() const {
 	return advance_expression_base_node;
+}
+
+void AnimationTree::set_audio_max_polyphony(int p_audio_max_polyphony) {
+	ERR_FAIL_COND(p_audio_max_polyphony < 0 || p_audio_max_polyphony > 128);
+	audio_max_polyphony = p_audio_max_polyphony;
+}
+
+int AnimationTree::get_audio_max_polyphony() const {
+	return audio_max_polyphony;
 }
 
 bool AnimationTree::is_state_invalid() const {
@@ -2024,6 +2118,9 @@ void AnimationTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_root_motion_track", "path"), &AnimationTree::set_root_motion_track);
 	ClassDB::bind_method(D_METHOD("get_root_motion_track"), &AnimationTree::get_root_motion_track);
 
+	ClassDB::bind_method(D_METHOD("set_audio_max_polyphony", "max_polyphony"), &AnimationTree::set_audio_max_polyphony);
+	ClassDB::bind_method(D_METHOD("get_audio_max_polyphony"), &AnimationTree::get_audio_max_polyphony);
+
 	ClassDB::bind_method(D_METHOD("get_root_motion_position"), &AnimationTree::get_root_motion_position);
 	ClassDB::bind_method(D_METHOD("get_root_motion_rotation"), &AnimationTree::get_root_motion_rotation);
 	ClassDB::bind_method(D_METHOD("get_root_motion_scale"), &AnimationTree::get_root_motion_scale);
@@ -2034,12 +2131,16 @@ void AnimationTree::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("advance", "delta"), &AnimationTree::advance);
 
+	GDVIRTUAL_BIND(_post_process_key_value, "animation", "track", "value", "object", "object_idx");
+
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "tree_root", PROPERTY_HINT_RESOURCE_TYPE, "AnimationRootNode"), "set_tree_root", "get_tree_root");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "anim_player", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "AnimationPlayer"), "set_animation_player", "get_animation_player");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "advance_expression_base_node", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Node"), "set_advance_expression_base_node", "get_advance_expression_base_node");
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "active"), "set_active", "is_active");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_callback", PROPERTY_HINT_ENUM, "Physics,Idle,Manual"), "set_process_callback", "get_process_callback");
+	ADD_GROUP("Audio", "audio_");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "audio_max_polyphony", PROPERTY_HINT_RANGE, "1,127,1"), "set_audio_max_polyphony", "get_audio_max_polyphony");
 	ADD_GROUP("Root Motion", "root_motion_");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "root_motion_track"), "set_root_motion_track", "get_root_motion_track");
 

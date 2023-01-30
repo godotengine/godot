@@ -68,7 +68,15 @@ namespace Godot.Collections
         }
 
         /// <summary>
-        /// Duplicates this <see cref="Dictionary"/>.
+        /// Returns a copy of the <see cref="Dictionary"/>.
+        /// If <paramref name="deep"/> is <see langword="true"/>, a deep copy is performed:
+        /// all nested arrays and dictionaries are duplicated and will not be shared with
+        /// the original dictionary. If <see langword="false"/>, a shallow copy is made and
+        /// references to the original nested arrays and dictionaries are kept, so that
+        /// modifying a sub-array or dictionary in the copy will also impact those
+        /// referenced in the source dictionary. Note that any <see cref="GodotObject"/> derived
+        /// elements will be shallow copied regardless of the <paramref name="deep"/>
+        /// setting.
         /// </summary>
         /// <param name="deep">If <see langword="true"/>, performs a deep copy.</param>
         /// <returns>A new Godot Dictionary.</returns>
@@ -78,6 +86,44 @@ namespace Godot.Collections
             var self = (godot_dictionary)NativeValue;
             NativeFuncs.godotsharp_dictionary_duplicate(ref self, deep.ToGodotBool(), out newDictionary);
             return CreateTakingOwnershipOfDisposableValue(newDictionary);
+        }
+
+        /// <summary>
+        /// Adds entries from <paramref name="dictionary"/> to this dictionary.
+        /// By default, duplicate keys are not copied over, unless <paramref name="overwrite"/>
+        /// is <see langword="true"/>.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">
+        /// The dictionary is read-only.
+        /// </exception>
+        /// <param name="dictionary">Dictionary to copy entries from.</param>
+        /// <param name="overwrite">If duplicate keys should be copied over as well.</param>
+        public void Merge(Dictionary dictionary, bool overwrite = false)
+        {
+            ThrowIfReadOnly();
+
+            var self = (godot_dictionary)NativeValue;
+            var other = (godot_dictionary)dictionary.NativeValue;
+            NativeFuncs.godotsharp_dictionary_merge(ref self, in other, overwrite.ToGodotBool());
+        }
+
+        /// <summary>
+        /// Compares this <see cref="Dictionary"/> against the <paramref name="other"/>
+        /// <see cref="Dictionary"/> recursively. Returns <see langword="true"/> if the
+        /// two dictionaries contain the same keys and values. The order of the entries
+        /// does not matter.
+        /// otherwise.
+        /// </summary>
+        /// <param name="other">The other dictionary to compare against.</param>
+        /// <returns>
+        /// <see langword="true"/> if the dictionaries contain the same keys and values,
+        /// <see langword="false"/> otherwise.
+        /// </returns>
+        public bool RecursiveEqual(Dictionary other)
+        {
+            var self = (godot_dictionary)NativeValue;
+            var otherVariant = (godot_dictionary)other.NativeValue;
+            return NativeFuncs.godotsharp_dictionary_recursive_equal(ref self, otherVariant).ToBool();
         }
 
         // IDictionary
@@ -134,6 +180,13 @@ namespace Godot.Collections
         /// <summary>
         /// Returns the value at the given <paramref name="key"/>.
         /// </summary>
+        /// <exception cref="InvalidOperationException">
+        /// The property is assigned and the dictionary is read-only.
+        /// </exception>
+        /// <exception cref="KeyNotFoundException">
+        /// The property is retrieved and an entry for <paramref name="key"/>
+        /// does not exist in the dictionary.
+        /// </exception>
         /// <value>The value at the given <paramref name="key"/>.</value>
         public Variant this[Variant key]
         {
@@ -153,6 +206,8 @@ namespace Godot.Collections
             }
             set
             {
+                ThrowIfReadOnly();
+
                 var self = (godot_dictionary)NativeValue;
                 NativeFuncs.godotsharp_dictionary_set_value(ref self,
                     (godot_variant)key.NativeVar, (godot_variant)value.NativeVar);
@@ -163,10 +218,18 @@ namespace Godot.Collections
         /// Adds an value <paramref name="value"/> at key <paramref name="key"/>
         /// to this <see cref="Dictionary"/>.
         /// </summary>
+        /// <exception cref="InvalidOperationException">
+        /// The dictionary is read-only.
+        /// </exception>
+        /// <exception cref="ArgumentException">
+        /// An entry for <paramref name="key"/> already exists in the dictionary.
+        /// </exception>
         /// <param name="key">The key at which to add the value.</param>
         /// <param name="value">The value to add.</param>
         public void Add(Variant key, Variant value)
         {
+            ThrowIfReadOnly();
+
             var variantKey = (godot_variant)key.NativeVar;
             var self = (godot_dictionary)NativeValue;
 
@@ -181,10 +244,15 @@ namespace Godot.Collections
             => Add(item.Key, item.Value);
 
         /// <summary>
-        /// Erases all items from this <see cref="Dictionary"/>.
+        /// Clears the dictionary, removing all entries from it.
         /// </summary>
+        /// <exception cref="InvalidOperationException">
+        /// The dictionary is read-only.
+        /// </exception>
         public void Clear()
         {
+            ThrowIfReadOnly();
+
             var self = (godot_dictionary)NativeValue;
             NativeFuncs.godotsharp_dictionary_clear(ref self);
         }
@@ -200,7 +268,7 @@ namespace Godot.Collections
             return NativeFuncs.godotsharp_dictionary_contains_key(ref self, (godot_variant)key.NativeVar).ToBool();
         }
 
-        public bool Contains(KeyValuePair<Variant, Variant> item)
+        bool ICollection<KeyValuePair<Variant, Variant>>.Contains(KeyValuePair<Variant, Variant> item)
         {
             godot_variant variantKey = (godot_variant)item.Key.NativeVar;
             var self = (godot_dictionary)NativeValue;
@@ -220,15 +288,22 @@ namespace Godot.Collections
         /// <summary>
         /// Removes an element from this <see cref="Dictionary"/> by key.
         /// </summary>
+        /// <exception cref="InvalidOperationException">
+        /// The dictionary is read-only.
+        /// </exception>
         /// <param name="key">The key of the element to remove.</param>
         public bool Remove(Variant key)
         {
+            ThrowIfReadOnly();
+
             var self = (godot_dictionary)NativeValue;
             return NativeFuncs.godotsharp_dictionary_remove_key(ref self, (godot_variant)key.NativeVar).ToBool();
         }
 
-        public bool Remove(KeyValuePair<Variant, Variant> item)
+        bool ICollection<KeyValuePair<Variant, Variant>>.Remove(KeyValuePair<Variant, Variant> item)
         {
+            ThrowIfReadOnly();
+
             godot_variant variantKey = (godot_variant)item.Key.NativeVar;
             var self = (godot_dictionary)NativeValue;
             bool found = NativeFuncs.godotsharp_dictionary_try_get_value(ref self,
@@ -264,8 +339,37 @@ namespace Godot.Collections
             }
         }
 
-        bool ICollection<KeyValuePair<Variant, Variant>>.IsReadOnly => false;
+        /// <summary>
+        /// Returns <see langword="true"/> if the dictionary is read-only.
+        /// See <see cref="MakeReadOnly"/>.
+        /// </summary>
+        public bool IsReadOnly => NativeValue.DangerousSelfRef.IsReadOnly;
 
+        /// <summary>
+        /// Makes the <see cref="Dictionary"/> read-only, i.e. disabled modying of the
+        /// dictionary's elements. Does not apply to nested content, e.g. content of
+        /// nested dictionaries.
+        /// </summary>
+        public void MakeReadOnly()
+        {
+            if (IsReadOnly)
+            {
+                // Avoid interop call when the dictionary is already read-only.
+                return;
+            }
+
+            var self = (godot_dictionary)NativeValue;
+            NativeFuncs.godotsharp_dictionary_make_read_only(ref self);
+        }
+
+        /// <summary>
+        /// Gets the value for the given <paramref name="key"/> in the dictionary.
+        /// Returns <see langword="true"/> if an entry for the given key exists in
+        /// the dictionary; otherwise, returns <see langword="false"/>.
+        /// </summary>
+        /// <param name="key">The key of the element to get.</param>
+        /// <param name="value">The value at the given <paramref name="key"/>.</param>
+        /// <returns>If an entry was found for the given <paramref name="key"/>.</returns>
         public bool TryGetValue(Variant key, out Variant value)
         {
             var self = (godot_dictionary)NativeValue;
@@ -283,7 +387,7 @@ namespace Godot.Collections
         /// </summary>
         /// <param name="array">The array to copy to.</param>
         /// <param name="arrayIndex">The index to start at.</param>
-        public void CopyTo(KeyValuePair<Variant, Variant>[] array, int arrayIndex)
+        void ICollection<KeyValuePair<Variant, Variant>>.CopyTo(KeyValuePair<Variant, Variant>[] array, int arrayIndex)
         {
             if (array == null)
                 throw new ArgumentNullException(nameof(array), "Value cannot be null.");
@@ -341,6 +445,14 @@ namespace Godot.Collections
             NativeFuncs.godotsharp_dictionary_to_string(ref self, out godot_string str);
             using (str)
                 return Marshaling.ConvertStringToManaged(str);
+        }
+
+        private void ThrowIfReadOnly()
+        {
+            if (IsReadOnly)
+            {
+                throw new InvalidOperationException("Dictionary instance is read-only.");
+            }
         }
     }
 
@@ -433,13 +545,50 @@ namespace Godot.Collections
         }
 
         /// <summary>
-        /// Duplicates this <see cref="Dictionary{TKey, TValue}"/>.
+        /// Returns a copy of the <see cref="Dictionary{TKey, TValue}"/>.
+        /// If <paramref name="deep"/> is <see langword="true"/>, a deep copy is performed:
+        /// all nested arrays and dictionaries are duplicated and will not be shared with
+        /// the original dictionary. If <see langword="false"/>, a shallow copy is made and
+        /// references to the original nested arrays and dictionaries are kept, so that
+        /// modifying a sub-array or dictionary in the copy will also impact those
+        /// referenced in the source dictionary. Note that any <see cref="GodotObject"/> derived
+        /// elements will be shallow copied regardless of the <paramref name="deep"/>
+        /// setting.
         /// </summary>
-        /// <param name="deep">If <see langword="true"/>, performs a deep copy.</param>
-        /// <returns>A new Godot Dictionary.</returns>
         public Dictionary<TKey, TValue> Duplicate(bool deep = false)
         {
             return new Dictionary<TKey, TValue>(_underlyingDict.Duplicate(deep));
+        }
+
+        /// <summary>
+        /// Adds entries from <paramref name="dictionary"/> to this dictionary.
+        /// By default, duplicate keys are not copied over, unless <paramref name="overwrite"/>
+        /// is <see langword="true"/>.
+        /// </summary>
+        /// <exception cref="InvalidOperationException">
+        /// The dictionary is read-only.
+        /// </exception>
+        /// <param name="dictionary">Dictionary to copy entries from.</param>
+        /// <param name="overwrite">If duplicate keys should be copied over as well.</param>
+        public void Merge(Dictionary<TKey, TValue> dictionary, bool overwrite = false)
+        {
+            _underlyingDict.Merge(dictionary._underlyingDict, overwrite);
+        }
+
+        /// <summary>
+        /// Compares this <see cref="Dictionary{TKey, TValue}"/> against the <paramref name="other"/>
+        /// <see cref="Dictionary{TKey, TValue}"/> recursively. Returns <see langword="true"/> if the
+        /// two dictionaries contain the same keys and values. The order of the entries does not matter.
+        /// otherwise.
+        /// </summary>
+        /// <param name="other">The other dictionary to compare against.</param>
+        /// <returns>
+        /// <see langword="true"/> if the dictionaries contain the same keys and values,
+        /// <see langword="false"/> otherwise.
+        /// </returns>
+        public bool RecursiveEqual(Dictionary<TKey, TValue> other)
+        {
+            return _underlyingDict.RecursiveEqual(other._underlyingDict);
         }
 
         // IDictionary<TKey, TValue>
@@ -447,6 +596,13 @@ namespace Godot.Collections
         /// <summary>
         /// Returns the value at the given <paramref name="key"/>.
         /// </summary>
+        /// <exception cref="InvalidOperationException">
+        /// The property is assigned and the dictionary is read-only.
+        /// </exception>
+        /// <exception cref="KeyNotFoundException">
+        /// The property is retrieved and an entry for <paramref name="key"/>
+        /// does not exist in the dictionary.
+        /// </exception>
         /// <value>The value at the given <paramref name="key"/>.</value>
         public TValue this[TKey key]
         {
@@ -468,6 +624,8 @@ namespace Godot.Collections
             }
             set
             {
+                ThrowIfReadOnly();
+
                 using var variantKey = VariantUtils.CreateFrom(key);
                 using var variantValue = VariantUtils.CreateFrom(value);
                 var self = (godot_dictionary)_underlyingDict.NativeValue;
@@ -527,10 +685,15 @@ namespace Godot.Collections
         /// Adds an object <paramref name="value"/> at key <paramref name="key"/>
         /// to this <see cref="Dictionary{TKey, TValue}"/>.
         /// </summary>
+        /// <exception cref="InvalidOperationException">
+        /// The dictionary is read-only.
+        /// </exception>
         /// <param name="key">The key at which to add the object.</param>
         /// <param name="value">The object to add.</param>
         public void Add(TKey key, TValue value)
         {
+            ThrowIfReadOnly();
+
             using var variantKey = VariantUtils.CreateFrom(key);
             var self = (godot_dictionary)_underlyingDict.NativeValue;
 
@@ -556,20 +719,27 @@ namespace Godot.Collections
         /// <summary>
         /// Removes an element from this <see cref="Dictionary{TKey, TValue}"/> by key.
         /// </summary>
+        /// <exception cref="InvalidOperationException">
+        /// The dictionary is read-only.
+        /// </exception>
         /// <param name="key">The key of the element to remove.</param>
         public bool Remove(TKey key)
         {
+            ThrowIfReadOnly();
+
             using var variantKey = VariantUtils.CreateFrom(key);
             var self = (godot_dictionary)_underlyingDict.NativeValue;
             return NativeFuncs.godotsharp_dictionary_remove_key(ref self, variantKey).ToBool();
         }
 
         /// <summary>
-        /// Gets the object at the given <paramref name="key"/>.
+        /// Gets the value for the given <paramref name="key"/> in the dictionary.
+        /// Returns <see langword="true"/> if an entry for the given key exists in
+        /// the dictionary; otherwise, returns <see langword="false"/>.
         /// </summary>
         /// <param name="key">The key of the element to get.</param>
         /// <param name="value">The value at the given <paramref name="key"/>.</param>
-        /// <returns>If an object was found for the given <paramref name="key"/>.</returns>
+        /// <returns>If an entry was found for the given <paramref name="key"/>.</returns>
         public bool TryGetValue(TKey key, [MaybeNullWhen(false)] out TValue value)
         {
             using var variantKey = VariantUtils.CreateFrom(key);
@@ -592,14 +762,31 @@ namespace Godot.Collections
         /// <returns>The number of elements.</returns>
         public int Count => _underlyingDict.Count;
 
-        bool ICollection<KeyValuePair<TKey, TValue>>.IsReadOnly => false;
+        /// <summary>
+        /// Returns <see langword="true"/> if the dictionary is read-only.
+        /// See <see cref="MakeReadOnly"/>.
+        /// </summary>
+        public bool IsReadOnly => _underlyingDict.IsReadOnly;
+
+        /// <summary>
+        /// Makes the <see cref="Dictionary{TKey, TValue}"/> read-only, i.e. disabled
+        /// modying of the dictionary's elements. Does not apply to nested content,
+        /// e.g. content of nested dictionaries.
+        /// </summary>
+        public void MakeReadOnly()
+        {
+            _underlyingDict.MakeReadOnly();
+        }
 
         void ICollection<KeyValuePair<TKey, TValue>>.Add(KeyValuePair<TKey, TValue> item)
             => Add(item.Key, item.Value);
 
         /// <summary>
-        /// Erases all the items from this <see cref="Dictionary{TKey, TValue}"/>.
+        /// Clears the dictionary, removing all entries from it.
         /// </summary>
+        /// <exception cref="InvalidOperationException">
+        /// The dictionary is read-only.
+        /// </exception>
         public void Clear() => _underlyingDict.Clear();
 
         bool ICollection<KeyValuePair<TKey, TValue>>.Contains(KeyValuePair<TKey, TValue> item)
@@ -625,7 +812,7 @@ namespace Godot.Collections
         /// </summary>
         /// <param name="array">The array to copy to.</param>
         /// <param name="arrayIndex">The index to start at.</param>
-        public void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
+        void ICollection<KeyValuePair<TKey, TValue>>.CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
         {
             if (array == null)
                 throw new ArgumentNullException(nameof(array), "Value cannot be null.");
@@ -649,6 +836,8 @@ namespace Godot.Collections
 
         bool ICollection<KeyValuePair<TKey, TValue>>.Remove(KeyValuePair<TKey, TValue> item)
         {
+            ThrowIfReadOnly();
+
             using var variantKey = VariantUtils.CreateFrom(item.Key);
             var self = (godot_dictionary)_underlyingDict.NativeValue;
             bool found = NativeFuncs.godotsharp_dictionary_try_get_value(ref self,
@@ -698,5 +887,13 @@ namespace Godot.Collections
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static explicit operator Dictionary<TKey, TValue>(Variant from) =>
             from.AsGodotDictionary<TKey, TValue>();
+
+        private void ThrowIfReadOnly()
+        {
+            if (IsReadOnly)
+            {
+                throw new InvalidOperationException("Dictionary instance is read-only.");
+            }
+        }
     }
 }

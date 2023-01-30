@@ -42,7 +42,7 @@
 		You can access a dictionary's value by referencing its corresponding key. In the above example, [code]points_dict["White"][/code] will return [code]50[/code]. You can also write [code]points_dict.White[/code], which is equivalent. However, you'll have to use the bracket syntax if the key you're accessing the dictionary with isn't a fixed string (such as a number or variable).
 		[codeblocks]
 		[gdscript]
-		@export(String, "White", "Yellow", "Orange") var my_color
+		@export_enum("White", "Yellow", "Orange") var my_color: String
 		var points_dict = {"White": 50, "Yellow": 75, "Orange": 100}
 		func _ready():
 		    # We can't use dot syntax here as `my_color` is a variable.
@@ -271,10 +271,22 @@
 				Returns [code]true[/code] if the dictionary is empty (its size is [code]0[/code]). See also [method size].
 			</description>
 		</method>
+		<method name="is_read_only" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] if the dictionary is read-only. See [method make_read_only]. Dictionaries are automatically read-only if declared with [code]const[/code] keyword.
+			</description>
+		</method>
 		<method name="keys" qualifiers="const">
 			<return type="Array" />
 			<description>
 				Returns the list of keys in the dictionary.
+			</description>
+		</method>
+		<method name="make_read_only">
+			<return type="void" />
+			<description>
+				Makes the dictionary read-only, i.e. disabled modifying of the dictionary's contents. Does not apply to nested content, e.g. content of nested dicitonaries.
 			</description>
 		</method>
 		<method name="merge">

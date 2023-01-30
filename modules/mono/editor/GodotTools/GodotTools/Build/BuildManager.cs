@@ -55,7 +55,7 @@ namespace GodotTools.Build
 
         private static void PrintVerbose(string text)
         {
-            if (OS.IsStdoutVerbose())
+            if (OS.IsStdOutVerbose())
                 GD.Print(text);
         }
 

@@ -55,7 +55,7 @@
 		<method name="get_final_transform" qualifiers="const">
 			<return type="Transform2D" />
 			<description>
-				Returns the total transform of the viewport.
+				Returns the transform from the viewport's coordinate system to the embedder's coordinate system.
 			</description>
 		</method>
 		<method name="get_mouse_position" qualifiers="const">
@@ -210,6 +210,7 @@
 			<param index="0" name="position" type="Vector2" />
 			<description>
 				Moves the mouse pointer to the specified position in this [Viewport] using the coordinate system of this [Viewport].
+				[b]Note:[/b] [method warp_mouse] is only supported on Windows, macOS and Linux. It has no effect on Android, iOS and Web.
 			</description>
 		</method>
 	</methods>

@@ -41,12 +41,12 @@ void EditorZoomWidget::_update_zoom_label() {
 	// lower the editor scale to increase the available real estate,
 	// even if their display doesn't have a particularly low DPI.
 	if (zoom >= 10) {
-		// Don't show a decimal when the zoom level is higher than 1000 %.
-		zoom_text = TS->format_number(rtos(Math::round((zoom / MAX(1, EDSCALE)) * 100))) + " " + TS->percent_sign();
+		zoom_text = TS->format_number(rtos(Math::round((zoom / MAX(1, EDSCALE)) * 100)));
 	} else {
-		zoom_text = TS->format_number(rtos(Math::snapped((zoom / MAX(1, EDSCALE)) * 100, 0.1))) + " " + TS->percent_sign();
+		// 2 decimal places if the zoom is below 10%, 1 decimal place if it's below 1000%.
+		zoom_text = TS->format_number(rtos(Math::snapped((zoom / MAX(1, EDSCALE)) * 100, (zoom >= 0.1) ? 0.1 : 0.01)));
 	}
-
+	zoom_text += " " + TS->percent_sign();
 	zoom_reset->set_text(zoom_text);
 }
 
@@ -134,7 +134,7 @@ void EditorZoomWidget::set_zoom_by_increments(int p_increment_count, bool p_inte
 		float new_zoom_index = closest_zoom_index + p_increment_count;
 		float new_zoom = Math::pow(2.f, new_zoom_index / 12.f);
 
-		// Restore Editor scale transformation
+		// Restore Editor scale transformation.
 		new_zoom *= MAX(1, EDSCALE);
 
 		set_zoom(new_zoom);
@@ -179,8 +179,12 @@ EditorZoomWidget::EditorZoomWidget() {
 
 	zoom_reset = memnew(Button);
 	zoom_reset->set_flat(true);
+	zoom_reset->add_theme_style_override("normal", memnew(StyleBoxEmpty));
+	zoom_reset->add_theme_style_override("hover", memnew(StyleBoxEmpty));
+	zoom_reset->add_theme_style_override("focus", memnew(StyleBoxEmpty));
+	zoom_reset->add_theme_style_override("pressed", memnew(StyleBoxEmpty));
 	add_child(zoom_reset);
-	zoom_reset->add_theme_constant_override("outline_size", 1);
+	zoom_reset->add_theme_constant_override("outline_size", Math::ceil(2 * EDSCALE));
 	zoom_reset->add_theme_color_override("font_outline_color", Color(0, 0, 0));
 	zoom_reset->add_theme_color_override("font_color", Color(1, 1, 1));
 	zoom_reset->connect("pressed", callable_mp(this, &EditorZoomWidget::_button_zoom_reset));
@@ -189,7 +193,7 @@ EditorZoomWidget::EditorZoomWidget() {
 	zoom_reset->set_focus_mode(FOCUS_NONE);
 	zoom_reset->set_text_alignment(HORIZONTAL_ALIGNMENT_CENTER);
 	// Prevent the button's size from changing when the text size changes
-	zoom_reset->set_custom_minimum_size(Size2(75 * EDSCALE, 0));
+	zoom_reset->set_custom_minimum_size(Size2(56 * EDSCALE, 0));
 
 	zoom_plus = memnew(Button);
 	zoom_plus->set_flat(true);
@@ -201,5 +205,5 @@ EditorZoomWidget::EditorZoomWidget() {
 
 	_update_zoom_label();
 
-	add_theme_constant_override("separation", Math::round(-8 * EDSCALE));
+	add_theme_constant_override("separation", 0);
 }

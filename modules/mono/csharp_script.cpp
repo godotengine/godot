@@ -60,6 +60,7 @@
 #include "mono_gd/gd_mono_cache.h"
 #include "signal_awaiter_utils.h"
 #include "utils/macros.h"
+#include "utils/naming_utils.h"
 #include "utils/string_utils.h"
 
 #define CACHED_STRING_NAME(m_var) (CSharpLanguage::get_singleton()->get_string_names().m_var)
@@ -333,7 +334,7 @@ void CSharpLanguage::get_string_delimiters(List<String> *p_delimiters) const {
 }
 
 static String get_base_class_name(const String &p_base_class_name, const String p_class_name) {
-	String base_class = p_base_class_name;
+	String base_class = pascal_to_pascal_case(p_base_class_name);
 	if (p_class_name == base_class) {
 		base_class = "Godot." + base_class;
 	}
@@ -394,17 +395,22 @@ bool CSharpLanguage::supports_builtin_mode() const {
 }
 
 #ifdef TOOLS_ENABLED
+struct VariantCsName {
+	Variant::Type variant_type;
+	const String cs_type;
+};
+
 static String variant_type_to_managed_name(const String &p_var_type_name) {
 	if (p_var_type_name.is_empty()) {
 		return "Variant";
 	}
 
 	if (ClassDB::class_exists(p_var_type_name)) {
-		return p_var_type_name;
+		return pascal_to_pascal_case(p_var_type_name);
 	}
 
 	if (p_var_type_name == Variant::get_type_name(Variant::OBJECT)) {
-		return "Godot.Object";
+		return "GodotObject";
 	}
 
 	if (p_var_type_name == Variant::get_type_name(Variant::INT)) {
@@ -459,34 +465,34 @@ static String variant_type_to_managed_name(const String &p_var_type_name) {
 		return "Signal";
 	}
 
-	Variant::Type var_types[] = {
-		Variant::BOOL,
-		Variant::INT,
-		Variant::VECTOR2,
-		Variant::VECTOR2I,
-		Variant::RECT2,
-		Variant::RECT2I,
-		Variant::VECTOR3,
-		Variant::VECTOR3I,
-		Variant::TRANSFORM2D,
-		Variant::VECTOR4,
-		Variant::VECTOR4I,
-		Variant::PLANE,
-		Variant::QUATERNION,
-		Variant::AABB,
-		Variant::BASIS,
-		Variant::TRANSFORM3D,
-		Variant::PROJECTION,
-		Variant::COLOR,
-		Variant::STRING_NAME,
-		Variant::NODE_PATH,
-		Variant::RID,
-		Variant::CALLABLE
+	const VariantCsName var_types[] = {
+		{ Variant::BOOL, "bool" },
+		{ Variant::INT, "long" },
+		{ Variant::VECTOR2, "Vector2" },
+		{ Variant::VECTOR2I, "Vector2I" },
+		{ Variant::RECT2, "Rect2" },
+		{ Variant::RECT2I, "Rect2I" },
+		{ Variant::VECTOR3, "Vector3" },
+		{ Variant::VECTOR3I, "Vector3I" },
+		{ Variant::TRANSFORM2D, "Transform2D" },
+		{ Variant::VECTOR4, "Vector4" },
+		{ Variant::VECTOR4I, "Vector4I" },
+		{ Variant::PLANE, "Plane" },
+		{ Variant::QUATERNION, "Quaternion" },
+		{ Variant::AABB, "Aabb" },
+		{ Variant::BASIS, "Basis" },
+		{ Variant::TRANSFORM3D, "Transform3D" },
+		{ Variant::PROJECTION, "Projection" },
+		{ Variant::COLOR, "Color" },
+		{ Variant::STRING_NAME, "StringName" },
+		{ Variant::NODE_PATH, "NodePath" },
+		{ Variant::RID, "Rid" },
+		{ Variant::CALLABLE, "Callable" },
 	};
 
-	for (unsigned int i = 0; i < sizeof(var_types) / sizeof(Variant::Type); i++) {
-		if (p_var_type_name == Variant::get_type_name(var_types[i])) {
-			return p_var_type_name;
+	for (unsigned int i = 0; i < sizeof(var_types) / sizeof(VariantCsName); i++) {
+		if (p_var_type_name == Variant::get_type_name(var_types[i].variant_type)) {
+			return var_types[i].cs_type;
 		}
 	}
 

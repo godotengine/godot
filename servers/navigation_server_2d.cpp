@@ -81,33 +81,10 @@ NavigationServer2D *NavigationServer2D::singleton = nullptr;
 		return CONV_R(NavigationServer3D::get_singleton()->FUNC_NAME(CONV_0(D_0), CONV_1(D_1))); \
 	}
 
-#define FORWARD_4(FUNC_NAME, T_0, D_0, T_1, D_1, T_2, D_2, T_3, D_3, CONV_0, CONV_1, CONV_2, CONV_3)               \
-	NavigationServer2D::FUNC_NAME(T_0 D_0, T_1 D_1, T_2 D_2, T_3 D_3) {                                            \
-		return NavigationServer3D::get_singleton()->FUNC_NAME(CONV_0(D_0), CONV_1(D_1), CONV_2(D_2), CONV_3(D_3)); \
-	}
-
-#define FORWARD_4_R_C(CONV_R, FUNC_NAME, T_0, D_0, T_1, D_1, T_2, D_2, T_3, D_3, CONV_0, CONV_1, CONV_2, CONV_3)           \
-	NavigationServer2D::FUNC_NAME(T_0 D_0, T_1 D_1, T_2 D_2, T_3 D_3)                                                      \
-			const {                                                                                                        \
-		return CONV_R(NavigationServer3D::get_singleton()->FUNC_NAME(CONV_0(D_0), CONV_1(D_1), CONV_2(D_2), CONV_3(D_3))); \
-	}
-
-#define FORWARD_4_C(FUNC_NAME, T_0, D_0, T_1, D_1, T_2, D_2, T_3, D_3, CONV_0, CONV_1, CONV_2, CONV_3)             \
-	NavigationServer2D::FUNC_NAME(T_0 D_0, T_1 D_1, T_2 D_2, T_3 D_3)                                              \
-			const {                                                                                                \
-		return NavigationServer3D::get_singleton()->FUNC_NAME(CONV_0(D_0), CONV_1(D_1), CONV_2(D_2), CONV_3(D_3)); \
-	}
-
 #define FORWARD_5_R_C(CONV_R, FUNC_NAME, T_0, D_0, T_1, D_1, T_2, D_2, T_3, D_3, T_4, D_4, CONV_0, CONV_1, CONV_2, CONV_3, CONV_4)      \
 	NavigationServer2D::FUNC_NAME(T_0 D_0, T_1 D_1, T_2 D_2, T_3 D_3, T_4 D_4)                                                          \
 			const {                                                                                                                     \
 		return CONV_R(NavigationServer3D::get_singleton()->FUNC_NAME(CONV_0(D_0), CONV_1(D_1), CONV_2(D_2), CONV_3(D_3), CONV_4(D_4))); \
-	}
-
-#define FORWARD_5_C(FUNC_NAME, T_0, D_0, T_1, D_1, T_2, D_2, T_3, D_3, T_4, D_4, CONV_0, CONV_1, CONV_2, CONV_3, CONV_4)        \
-	NavigationServer2D::FUNC_NAME(T_0 D_0, T_1 D_1, T_2 D_2, T_3 D_3, T_4 D_4)                                                  \
-			const {                                                                                                             \
-		return NavigationServer3D::get_singleton()->FUNC_NAME(CONV_0(D_0), CONV_1(D_1), CONV_2(D_2), CONV_3(D_3), CONV_4(D_4)); \
 	}
 
 static RID rid_to_rid(const RID d) {
@@ -155,16 +132,12 @@ static Transform3D trf2_to_trf3(const Transform2D &d) {
 	return Transform3D(b, o);
 }
 
-static StringName sn_to_sn(const StringName &d) {
-	return d;
-}
-
-static Variant var_to_var(const Variant &d) {
-	return d;
-}
-
 static ObjectID id_to_id(const ObjectID &id) {
 	return id;
+}
+
+static Callable callable_to_callable(const Callable &c) {
+	return c;
 }
 
 static Ref<NavigationMesh> poly_to_mesh(Ref<NavigationPolygon> d) {
@@ -285,10 +258,10 @@ void NavigationServer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("link_is_bidirectional", "link"), &NavigationServer2D::link_is_bidirectional);
 	ClassDB::bind_method(D_METHOD("link_set_navigation_layers", "link", "navigation_layers"), &NavigationServer2D::link_set_navigation_layers);
 	ClassDB::bind_method(D_METHOD("link_get_navigation_layers", "link"), &NavigationServer2D::link_get_navigation_layers);
-	ClassDB::bind_method(D_METHOD("link_set_start_location", "link", "location"), &NavigationServer2D::link_set_start_location);
-	ClassDB::bind_method(D_METHOD("link_get_start_location", "link"), &NavigationServer2D::link_get_start_location);
-	ClassDB::bind_method(D_METHOD("link_set_end_location", "link", "location"), &NavigationServer2D::link_set_end_location);
-	ClassDB::bind_method(D_METHOD("link_get_end_location", "link"), &NavigationServer2D::link_get_end_location);
+	ClassDB::bind_method(D_METHOD("link_set_start_position", "link", "position"), &NavigationServer2D::link_set_start_position);
+	ClassDB::bind_method(D_METHOD("link_get_start_position", "link"), &NavigationServer2D::link_get_start_position);
+	ClassDB::bind_method(D_METHOD("link_set_end_position", "link", "position"), &NavigationServer2D::link_set_end_position);
+	ClassDB::bind_method(D_METHOD("link_get_end_position", "link"), &NavigationServer2D::link_get_end_position);
 	ClassDB::bind_method(D_METHOD("link_set_enter_cost", "link", "enter_cost"), &NavigationServer2D::link_set_enter_cost);
 	ClassDB::bind_method(D_METHOD("link_get_enter_cost", "link"), &NavigationServer2D::link_get_enter_cost);
 	ClassDB::bind_method(D_METHOD("link_set_travel_cost", "link", "travel_cost"), &NavigationServer2D::link_set_travel_cost);
@@ -308,7 +281,7 @@ void NavigationServer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("agent_set_target_velocity", "agent", "target_velocity"), &NavigationServer2D::agent_set_target_velocity);
 	ClassDB::bind_method(D_METHOD("agent_set_position", "agent", "position"), &NavigationServer2D::agent_set_position);
 	ClassDB::bind_method(D_METHOD("agent_is_map_changed", "agent"), &NavigationServer2D::agent_is_map_changed);
-	ClassDB::bind_method(D_METHOD("agent_set_callback", "agent", "object_id", "method", "userdata"), &NavigationServer2D::agent_set_callback, DEFVAL(Variant()));
+	ClassDB::bind_method(D_METHOD("agent_set_callback", "agent", "callback"), &NavigationServer2D::agent_set_callback);
 
 	ClassDB::bind_method(D_METHOD("free_rid", "rid"), &NavigationServer2D::free);
 
@@ -392,10 +365,10 @@ void FORWARD_2(link_set_bidirectional, RID, p_link, bool, p_bidirectional, rid_t
 bool FORWARD_1_C(link_is_bidirectional, RID, p_link, rid_to_rid);
 void FORWARD_2(link_set_navigation_layers, RID, p_link, uint32_t, p_navigation_layers, rid_to_rid, uint32_to_uint32);
 uint32_t FORWARD_1_C(link_get_navigation_layers, RID, p_link, rid_to_rid);
-void FORWARD_2(link_set_start_location, RID, p_link, Vector2, p_location, rid_to_rid, v2_to_v3);
-Vector2 FORWARD_1_R_C(v3_to_v2, link_get_start_location, RID, p_link, rid_to_rid);
-void FORWARD_2(link_set_end_location, RID, p_link, Vector2, p_location, rid_to_rid, v2_to_v3);
-Vector2 FORWARD_1_R_C(v3_to_v2, link_get_end_location, RID, p_link, rid_to_rid);
+void FORWARD_2(link_set_start_position, RID, p_link, Vector2, p_position, rid_to_rid, v2_to_v3);
+Vector2 FORWARD_1_R_C(v3_to_v2, link_get_start_position, RID, p_link, rid_to_rid);
+void FORWARD_2(link_set_end_position, RID, p_link, Vector2, p_position, rid_to_rid, v2_to_v3);
+Vector2 FORWARD_1_R_C(v3_to_v2, link_get_end_position, RID, p_link, rid_to_rid);
 void FORWARD_2(link_set_enter_cost, RID, p_link, real_t, p_enter_cost, rid_to_rid, real_to_real);
 real_t FORWARD_1_C(link_get_enter_cost, RID, p_link, rid_to_rid);
 void FORWARD_2(link_set_travel_cost, RID, p_link, real_t, p_travel_cost, rid_to_rid, real_to_real);
@@ -420,7 +393,7 @@ void FORWARD_2(agent_set_target_velocity, RID, p_agent, Vector2, p_velocity, rid
 void FORWARD_2(agent_set_position, RID, p_agent, Vector2, p_position, rid_to_rid, v2_to_v3);
 void FORWARD_2(agent_set_ignore_y, RID, p_agent, bool, p_ignore, rid_to_rid, bool_to_bool);
 bool FORWARD_1_C(agent_is_map_changed, RID, p_agent, rid_to_rid);
-void FORWARD_4(agent_set_callback, RID, p_agent, ObjectID, p_object_id, StringName, p_method, Variant, p_udata, rid_to_rid, id_to_id, sn_to_sn, var_to_var);
+void FORWARD_2(agent_set_callback, RID, p_agent, Callable, p_callback, rid_to_rid, callable_to_callable);
 
 void FORWARD_1(free, RID, p_object, rid_to_rid);
 

@@ -223,6 +223,16 @@ struct MethodInfo {
 	int id = 0;
 	List<PropertyInfo> arguments;
 	Vector<Variant> default_arguments;
+	int return_val_metadata = 0;
+	Vector<int> arguments_metadata;
+
+	int get_argument_meta(int p_arg) const {
+		ERR_FAIL_COND_V(p_arg < -1 || p_arg > arguments.size(), 0);
+		if (p_arg == -1) {
+			return return_val_metadata;
+		}
+		return arguments_metadata.size() > p_arg ? arguments_metadata[p_arg] : 0;
+	}
 
 	inline bool operator==(const MethodInfo &p_method) const { return id == p_method.id; }
 	inline bool operator<(const MethodInfo &p_method) const { return id == p_method.id ? (name < p_method.name) : (id < p_method.id); }

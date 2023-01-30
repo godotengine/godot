@@ -65,20 +65,20 @@ bool NavigationLink2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_e
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT) {
 		if (mb->is_pressed()) {
-			// Start location
-			if (xform.xform(node->get_start_location()).distance_to(mb->get_position()) < grab_threshold) {
+			// Start position
+			if (xform.xform(node->get_start_position()).distance_to(mb->get_position()) < grab_threshold) {
 				start_grabbed = true;
-				original_start_location = node->get_start_location();
+				original_start_position = node->get_start_position();
 
 				return true;
 			} else {
 				start_grabbed = false;
 			}
 
-			// End location
-			if (xform.xform(node->get_end_location()).distance_to(mb->get_position()) < grab_threshold) {
+			// End position
+			if (xform.xform(node->get_end_position()).distance_to(mb->get_position()) < grab_threshold) {
 				end_grabbed = true;
-				original_end_location = node->get_end_location();
+				original_end_position = node->get_end_position();
 
 				return true;
 			} else {
@@ -87,10 +87,10 @@ bool NavigationLink2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_e
 		} else {
 			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 			if (start_grabbed) {
-				undo_redo->create_action(TTR("Set start_location"));
-				undo_redo->add_do_method(node, "set_start_location", node->get_start_location());
+				undo_redo->create_action(TTR("Set start_position"));
+				undo_redo->add_do_method(node, "set_start_position", node->get_start_position());
 				undo_redo->add_do_method(canvas_item_editor, "update_viewport");
-				undo_redo->add_undo_method(node, "set_start_location", original_start_location);
+				undo_redo->add_undo_method(node, "set_start_position", original_start_position);
 				undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
 				undo_redo->commit_action();
 
@@ -100,10 +100,10 @@ bool NavigationLink2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_e
 			}
 
 			if (end_grabbed) {
-				undo_redo->create_action(TTR("Set end_location"));
-				undo_redo->add_do_method(node, "set_end_location", node->get_end_location());
+				undo_redo->create_action(TTR("Set end_position"));
+				undo_redo->add_do_method(node, "set_end_position", node->get_end_position());
 				undo_redo->add_do_method(canvas_item_editor, "update_viewport");
-				undo_redo->add_undo_method(node, "set_end_location", original_end_location);
+				undo_redo->add_undo_method(node, "set_end_position", original_end_position);
 				undo_redo->add_undo_method(canvas_item_editor, "update_viewport");
 				undo_redo->commit_action();
 
@@ -120,14 +120,14 @@ bool NavigationLink2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_e
 		point = node->get_global_transform().affine_inverse().xform(point);
 
 		if (start_grabbed) {
-			node->set_start_location(point);
+			node->set_start_position(point);
 			canvas_item_editor->update_viewport();
 
 			return true;
 		}
 
 		if (end_grabbed) {
-			node->set_end_location(point);
+			node->set_end_position(point);
 			canvas_item_editor->update_viewport();
 
 			return true;
@@ -143,13 +143,13 @@ void NavigationLink2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 	}
 
 	Transform2D gt = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
-	Vector2 global_start_location = gt.xform(node->get_start_location());
-	Vector2 global_end_location = gt.xform(node->get_end_location());
+	Vector2 global_start_position = gt.xform(node->get_start_position());
+	Vector2 global_end_position = gt.xform(node->get_end_position());
 
 	// Only drawing the handles here, since the debug rendering will fill in the rest.
 	const Ref<Texture2D> handle = get_theme_icon(SNAME("EditorHandle"), SNAME("EditorIcons"));
-	p_overlay->draw_texture(handle, global_start_location - handle->get_size() / 2);
-	p_overlay->draw_texture(handle, global_end_location - handle->get_size() / 2);
+	p_overlay->draw_texture(handle, global_start_position - handle->get_size() / 2);
+	p_overlay->draw_texture(handle, global_end_position - handle->get_size() / 2);
 }
 
 void NavigationLink2DEditor::edit(NavigationLink2D *p_node) {

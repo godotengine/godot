@@ -70,10 +70,10 @@ void NavigationLink3D::_update_debug_mesh() {
 	Vector<Vector3> lines;
 
 	// Draw line between the points.
-	lines.push_back(start_location);
-	lines.push_back(end_location);
+	lines.push_back(start_position);
+	lines.push_back(end_position);
 
-	// Draw start location search radius
+	// Draw start position search radius
 	for (int i = 0; i < 30; i++) {
 		// Create a circle
 		const float ra = Math::deg_to_rad((float)(i * 12));
@@ -84,21 +84,21 @@ void NavigationLink3D::_update_debug_mesh() {
 		// Draw axis-aligned circle
 		switch (up_axis) {
 			case Vector3::AXIS_X:
-				lines.append(start_location + Vector3(0, a.x, a.y));
-				lines.append(start_location + Vector3(0, b.x, b.y));
+				lines.append(start_position + Vector3(0, a.x, a.y));
+				lines.append(start_position + Vector3(0, b.x, b.y));
 				break;
 			case Vector3::AXIS_Y:
-				lines.append(start_location + Vector3(a.x, 0, a.y));
-				lines.append(start_location + Vector3(b.x, 0, b.y));
+				lines.append(start_position + Vector3(a.x, 0, a.y));
+				lines.append(start_position + Vector3(b.x, 0, b.y));
 				break;
 			case Vector3::AXIS_Z:
-				lines.append(start_location + Vector3(a.x, a.y, 0));
-				lines.append(start_location + Vector3(b.x, b.y, 0));
+				lines.append(start_position + Vector3(a.x, a.y, 0));
+				lines.append(start_position + Vector3(b.x, b.y, 0));
 				break;
 		}
 	}
 
-	// Draw end location search radius
+	// Draw end position search radius
 	for (int i = 0; i < 30; i++) {
 		// Create a circle
 		const float ra = Math::deg_to_rad((float)(i * 12));
@@ -109,16 +109,16 @@ void NavigationLink3D::_update_debug_mesh() {
 		// Draw axis-aligned circle
 		switch (up_axis) {
 			case Vector3::AXIS_X:
-				lines.append(end_location + Vector3(0, a.x, a.y));
-				lines.append(end_location + Vector3(0, b.x, b.y));
+				lines.append(end_position + Vector3(0, a.x, a.y));
+				lines.append(end_position + Vector3(0, b.x, b.y));
 				break;
 			case Vector3::AXIS_Y:
-				lines.append(end_location + Vector3(a.x, 0, a.y));
-				lines.append(end_location + Vector3(b.x, 0, b.y));
+				lines.append(end_position + Vector3(a.x, 0, a.y));
+				lines.append(end_position + Vector3(b.x, 0, b.y));
 				break;
 			case Vector3::AXIS_Z:
-				lines.append(end_location + Vector3(a.x, a.y, 0));
-				lines.append(end_location + Vector3(b.x, b.y, 0));
+				lines.append(end_position + Vector3(a.x, a.y, 0));
+				lines.append(end_position + Vector3(b.x, b.y, 0));
 				break;
 		}
 	}
@@ -157,11 +157,11 @@ void NavigationLink3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_navigation_layer_value", "layer_number", "value"), &NavigationLink3D::set_navigation_layer_value);
 	ClassDB::bind_method(D_METHOD("get_navigation_layer_value", "layer_number"), &NavigationLink3D::get_navigation_layer_value);
 
-	ClassDB::bind_method(D_METHOD("set_start_location", "location"), &NavigationLink3D::set_start_location);
-	ClassDB::bind_method(D_METHOD("get_start_location"), &NavigationLink3D::get_start_location);
+	ClassDB::bind_method(D_METHOD("set_start_position", "position"), &NavigationLink3D::set_start_position);
+	ClassDB::bind_method(D_METHOD("get_start_position"), &NavigationLink3D::get_start_position);
 
-	ClassDB::bind_method(D_METHOD("set_end_location", "location"), &NavigationLink3D::set_end_location);
-	ClassDB::bind_method(D_METHOD("get_end_location"), &NavigationLink3D::get_end_location);
+	ClassDB::bind_method(D_METHOD("set_end_position", "position"), &NavigationLink3D::set_end_position);
+	ClassDB::bind_method(D_METHOD("get_end_position"), &NavigationLink3D::get_end_position);
 
 	ClassDB::bind_method(D_METHOD("set_enter_cost", "enter_cost"), &NavigationLink3D::set_enter_cost);
 	ClassDB::bind_method(D_METHOD("get_enter_cost"), &NavigationLink3D::get_enter_cost);
@@ -172,11 +172,37 @@ void NavigationLink3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "bidirectional"), "set_bidirectional", "is_bidirectional");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "navigation_layers", PROPERTY_HINT_LAYERS_3D_NAVIGATION), "set_navigation_layers", "get_navigation_layers");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "start_location"), "set_start_location", "get_start_location");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "end_location"), "set_end_location", "get_end_location");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "start_position"), "set_start_position", "get_start_position");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "end_position"), "set_end_position", "get_end_position");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "enter_cost"), "set_enter_cost", "get_enter_cost");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "travel_cost"), "set_travel_cost", "get_travel_cost");
 }
+
+#ifndef DISABLE_DEPRECATED
+bool NavigationLink3D::_set(const StringName &p_name, const Variant &p_value) {
+	if (p_name == "start_location") {
+		set_start_position(p_value);
+		return true;
+	}
+	if (p_name == "end_location") {
+		set_end_position(p_value);
+		return true;
+	}
+	return false;
+}
+
+bool NavigationLink3D::_get(const StringName &p_name, Variant &r_ret) const {
+	if (p_name == "start_location") {
+		r_ret = get_start_position();
+		return true;
+	}
+	if (p_name == "end_location") {
+		r_ret = get_end_position();
+		return true;
+	}
+	return false;
+}
+#endif // DISABLE_DEPRECATED
 
 void NavigationLink3D::_notification(int p_what) {
 	switch (p_what) {
@@ -186,8 +212,8 @@ void NavigationLink3D::_notification(int p_what) {
 
 				// Update global positions for the link.
 				Transform3D gt = get_global_transform();
-				NavigationServer3D::get_singleton()->link_set_start_location(link, gt.xform(start_location));
-				NavigationServer3D::get_singleton()->link_set_end_location(link, gt.xform(end_location));
+				NavigationServer3D::get_singleton()->link_set_start_position(link, gt.xform(start_position));
+				NavigationServer3D::get_singleton()->link_set_end_position(link, gt.xform(end_position));
 			}
 
 #ifdef DEBUG_ENABLED
@@ -197,8 +223,8 @@ void NavigationLink3D::_notification(int p_what) {
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			// Update global positions for the link.
 			Transform3D gt = get_global_transform();
-			NavigationServer3D::get_singleton()->link_set_start_location(link, gt.xform(start_location));
-			NavigationServer3D::get_singleton()->link_set_end_location(link, gt.xform(end_location));
+			NavigationServer3D::get_singleton()->link_set_start_position(link, gt.xform(start_position));
+			NavigationServer3D::get_singleton()->link_set_end_position(link, gt.xform(end_position));
 
 #ifdef DEBUG_ENABLED
 			if (is_inside_tree() && debug_instance.is_valid()) {
@@ -316,19 +342,19 @@ bool NavigationLink3D::get_navigation_layer_value(int p_layer_number) const {
 	return get_navigation_layers() & (1 << (p_layer_number - 1));
 }
 
-void NavigationLink3D::set_start_location(Vector3 p_location) {
-	if (start_location.is_equal_approx(p_location)) {
+void NavigationLink3D::set_start_position(Vector3 p_position) {
+	if (start_position.is_equal_approx(p_position)) {
 		return;
 	}
 
-	start_location = p_location;
+	start_position = p_position;
 
 	if (!is_inside_tree()) {
 		return;
 	}
 
 	Transform3D gt = get_global_transform();
-	NavigationServer3D::get_singleton()->link_set_start_location(link, gt.xform(start_location));
+	NavigationServer3D::get_singleton()->link_set_start_position(link, gt.xform(start_position));
 
 #ifdef DEBUG_ENABLED
 	_update_debug_mesh();
@@ -338,19 +364,19 @@ void NavigationLink3D::set_start_location(Vector3 p_location) {
 	update_configuration_warnings();
 }
 
-void NavigationLink3D::set_end_location(Vector3 p_location) {
-	if (end_location.is_equal_approx(p_location)) {
+void NavigationLink3D::set_end_position(Vector3 p_position) {
+	if (end_position.is_equal_approx(p_position)) {
 		return;
 	}
 
-	end_location = p_location;
+	end_position = p_position;
 
 	if (!is_inside_tree()) {
 		return;
 	}
 
 	Transform3D gt = get_global_transform();
-	NavigationServer3D::get_singleton()->link_set_end_location(link, gt.xform(end_location));
+	NavigationServer3D::get_singleton()->link_set_end_position(link, gt.xform(end_position));
 
 #ifdef DEBUG_ENABLED
 	_update_debug_mesh();
@@ -385,8 +411,8 @@ void NavigationLink3D::set_travel_cost(real_t p_travel_cost) {
 PackedStringArray NavigationLink3D::get_configuration_warnings() const {
 	PackedStringArray warnings = Node::get_configuration_warnings();
 
-	if (start_location.is_equal_approx(end_location)) {
-		warnings.push_back(RTR("NavigationLink3D start location should be different than the end location to be useful."));
+	if (start_position.is_equal_approx(end_position)) {
+		warnings.push_back(RTR("NavigationLink3D start position should be different than the end position to be useful."));
 	}
 
 	return warnings;

@@ -897,7 +897,7 @@ void TileMapEditorTilesPlugin::forward_canvas_draw_over_viewport(Control *p_over
 
 							// Compute the offset
 							Rect2i source_rect = atlas_source->get_tile_texture_region(E.value.get_atlas_coords());
-							Vector2i tile_offset = atlas_source->get_tile_effective_texture_offset(E.value.get_atlas_coords(), E.value.alternative_tile);
+							Vector2i tile_offset = tile_data->get_texture_origin();
 
 							// Compute the destination rectangle in the CanvasItem.
 							Rect2 dest_rect;
@@ -3997,7 +3997,7 @@ TileMapEditor::TileMapEditor() {
 	tabs_bar->connect("tab_changed", callable_mp(this, &TileMapEditor::_tab_changed));
 
 	// --- TileMap toolbar ---
-	tile_map_toolbar = memnew(HBoxContainer);
+	tile_map_toolbar = memnew(HFlowContainer);
 	tile_map_toolbar->set_h_size_flags(SIZE_EXPAND_FILL);
 	add_child(tile_map_toolbar);
 
@@ -4012,8 +4012,11 @@ TileMapEditor::TileMapEditor() {
 		}
 	}
 
-	// Wide empty separation control.
-	tile_map_toolbar->add_spacer();
+	// Wide empty separation control. (like BoxContainer::add_spacer())
+	Control *c = memnew(Control);
+	c->set_mouse_filter(MOUSE_FILTER_PASS);
+	c->set_h_size_flags(SIZE_EXPAND_FILL);
+	tile_map_toolbar->add_child(c);
 
 	// Layer selector.
 	layers_selection_button = memnew(OptionButton);

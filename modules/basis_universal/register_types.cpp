@@ -52,43 +52,49 @@ enum BasisDecompressFormat {
 #ifdef TOOLS_ENABLED
 static Vector<uint8_t> basis_universal_packer(const Ref<Image> &p_image, Image::UsedChannels p_channels) {
 	Vector<uint8_t> budata;
-
 	{
+		basisu::basis_compressor_params params;
 		Ref<Image> image = p_image->duplicate();
-
-		// unfortunately, basis universal does not support compressing supplied mipmaps,
-		// so for the time being, only compressing individual images will have to do.
-
-		if (image->has_mipmaps()) {
-			image->clear_mipmaps();
-		}
 		if (image->get_format() != Image::FORMAT_RGBA8) {
 			image->convert(Image::FORMAT_RGBA8);
 		}
-
-		basisu::image buimg(image->get_width(), image->get_height());
-
+		Ref<Image> image_single = image->duplicate();
 		{
-			Vector<uint8_t> vec = image->get_data();
+			if (image_single->has_mipmaps()) {
+				image_single->clear_mipmaps();
+			}
+			basisu::image buimg(image_single->get_width(), image_single->get_height());
+			Vector<uint8_t> vec = image_single->get_data();
 			const uint8_t *r = vec.ptr();
-
 			memcpy(buimg.get_ptr(), r, vec.size());
+			params.m_source_images.push_back(buimg);
+		}
+		basisu::vector<basisu::image> source_images;
+		for (int32_t mipmap_i = 1; mipmap_i < image->get_mipmap_count(); mipmap_i++) {
+			Ref<Image> mip = image->get_image_from_mipmap(mipmap_i);
+			basisu::image buimg(mip->get_width(), mip->get_height());
+			Vector<uint8_t> vec = mip->get_data();
+			const uint8_t *r = vec.ptr();
+			memcpy(buimg.get_ptr(), r, vec.size());
+			source_images.push_back(buimg);
 		}
 
-		basisu::basis_compressor_params params;
 		params.m_uastc = true;
-		params.m_max_endpoint_clusters = 512;
-		params.m_max_selector_clusters = 512;
+		params.m_quality_level = basisu::BASISU_QUALITY_MIN;
+
+		params.m_pack_uastc_flags &= ~basisu::cPackUASTCLevelMask;
+
+		static const uint32_t s_level_flags[basisu::TOTAL_PACK_UASTC_LEVELS] = { basisu::cPackUASTCLevelFastest, basisu::cPackUASTCLevelFaster, basisu::cPackUASTCLevelDefault, basisu::cPackUASTCLevelSlower, basisu::cPackUASTCLevelVerySlow };
+		params.m_pack_uastc_flags |= s_level_flags[0];
+		params.m_rdo_uastc = 0.0f;
+		params.m_rdo_uastc_quality_scalar = 0.0f;
+		params.m_rdo_uastc_dict_size = 1024;
+
+		params.m_mip_fast = true;
 		params.m_multithreading = true;
-		//params.m_quality_level = 0;
-		//params.m_disable_hierarchical_endpoint_codebooks = true;
-		//params.m_no_selector_rdo = true;
 
 		basisu::job_pool jpool(OS::get_singleton()->get_processor_count());
 		params.m_pJob_pool = &jpool;
-
-		params.m_mip_gen = false; //sorry, please some day support provided mipmaps.
-		params.m_source_images.push_back(buimg);
 
 		BasisDecompressFormat decompress_format = BASIS_DECOMPRESS_RG;
 		params.m_check_for_alpha = false;
@@ -252,8 +258,7 @@ static Ref<Image> basis_universal_unpacker_ptr(const uint8_t *p_data, int p_size
 		};
 	};
 
-	image.instantiate();
-	image->set_data(info.m_width, info.m_height, info.m_total_levels > 1, imgfmt, gpudata);
+	image = Image::create_from_data(info.m_width, info.m_height, info.m_total_levels > 1, imgfmt, gpudata);
 
 	return image;
 }

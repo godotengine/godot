@@ -46,11 +46,13 @@ public:
 		MENU_SELECT_ALL,
 		MENU_UNDO,
 		MENU_REDO,
+		MENU_SUBMENU_TEXT_DIR,
 		MENU_DIR_INHERITED,
 		MENU_DIR_AUTO,
 		MENU_DIR_LTR,
 		MENU_DIR_RTL,
 		MENU_DISPLAY_UCC,
+		MENU_SUBMENU_INSERT_UCC,
 		MENU_INSERT_LRM,
 		MENU_INSERT_RLM,
 		MENU_INSERT_LRE,
@@ -207,6 +209,8 @@ private:
 	void _create_undo_state();
 
 	Key _get_menu_action_accelerator(const String &p_action);
+	void _generate_context_menu();
+	void _update_context_menu();
 
 	void _shape();
 	void _fit_to_width();
@@ -238,8 +242,6 @@ private:
 	void _move_caret_end(bool p_select);
 	void _backspace(bool p_word = false, bool p_all_to_left = false);
 	void _delete(bool p_word = false, bool p_all_to_right = false);
-
-	void _ensure_menu();
 
 protected:
 	bool _is_over_clear_button(const Point2 &p_pos) const;

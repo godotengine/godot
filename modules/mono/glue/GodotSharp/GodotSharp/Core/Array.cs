@@ -99,7 +99,7 @@ namespace Godot.Collections
                 this[i] = array[i];
         }
 
-        public Array(Span<RID> array) : this()
+        public Array(Span<Rid> array) : this()
         {
             if (array == null)
                 throw new ArgumentNullException(nameof(array));
@@ -120,7 +120,7 @@ namespace Godot.Collections
         // fine as long as the array is not mutated. However, Span does this type checking at
         // instantiation, so it's not possible to use it even when not mutating anything.
         // ReSharper disable once RedundantNameQualifier
-        public Array(ReadOnlySpan<Godot.Object> array) : this()
+        public Array(ReadOnlySpan<GodotObject> array) : this()
         {
             if (array == null)
                 throw new ArgumentNullException(nameof(array));
@@ -189,10 +189,15 @@ namespace Godot.Collections
         /// <summary>
         /// Resizes this <see cref="Array"/> to the given size.
         /// </summary>
+        /// <exception cref="InvalidOperationException">
+        /// The array is read-only.
+        /// </exception>
         /// <param name="newSize">The new size of the array.</param>
         /// <returns><see cref="Error.Ok"/> if successful, or an error code.</returns>
         public Error Resize(int newSize)
         {
+            ThrowIfReadOnly();
+
             var self = (godot_array)NativeValue;
             return NativeFuncs.godotsharp_array_resize(ref self, newSize);
         }
@@ -200,8 +205,13 @@ namespace Godot.Collections
         /// <summary>
         /// Shuffles the contents of this <see cref="Array"/> into a random order.
         /// </summary>
+        /// <exception cref="InvalidOperationException">
+        /// The array is read-only.
+        /// </exception>
         public void Shuffle()
         {
+            ThrowIfReadOnly();
+
             var self = (godot_array)NativeValue;
             NativeFuncs.godotsharp_array_shuffle(ref self);
         }
@@ -240,6 +250,9 @@ namespace Godot.Collections
         /// <summary>
         /// Returns the item at the given <paramref name="index"/>.
         /// </summary>
+        /// <exception cref="InvalidOperationException">
+        /// The property is assigned and the array is read-only.
+        /// </exception>
         /// <value>The <see cref="Variant"/> item at the given <paramref name="index"/>.</value>
         public unsafe Variant this[int index]
         {
@@ -250,8 +263,11 @@ namespace Godot.Collections
             }
             set
             {
+                ThrowIfReadOnly();
+
                 if (index < 0 || index >= Count)
                     throw new ArgumentOutOfRangeException(nameof(index));
+
                 var self = (godot_array)NativeValue;
                 godot_variant* ptrw = NativeFuncs.godotsharp_array_ptrw(ref self);
                 godot_variant* itemPtr = &ptrw[index];
@@ -264,9 +280,14 @@ namespace Godot.Collections
         /// Adds an item to the end of this <see cref="Array"/>.
         /// This is the same as <c>append</c> or <c>push_back</c> in GDScript.
         /// </summary>
+        /// <exception cref="InvalidOperationException">
+        /// The array is read-only.
+        /// </exception>
         /// <param name="item">The <see cref="Variant"/> item to add.</param>
         public void Add(Variant item)
         {
+            ThrowIfReadOnly();
+
             godot_variant variantValue = (godot_variant)item.NativeVar;
             var self = (godot_array)NativeValue;
             _ = NativeFuncs.godotsharp_array_add(ref self, variantValue);
@@ -282,6 +303,9 @@ namespace Godot.Collections
         /// <summary>
         /// Erases all items from this <see cref="Array"/>.
         /// </summary>
+        /// <exception cref="InvalidOperationException">
+        /// The array is read-only.
+        /// </exception>
         public void Clear() => Resize(0);
 
         /// <summary>
@@ -303,10 +327,15 @@ namespace Godot.Collections
         /// or the position at the end of the array.
         /// Existing items will be moved to the right.
         /// </summary>
+        /// <exception cref="InvalidOperationException">
+        /// The array is read-only.
+        /// </exception>
         /// <param name="index">The index to insert at.</param>
         /// <param name="item">The <see cref="Variant"/> item to insert.</param>
         public void Insert(int index, Variant item)
         {
+            ThrowIfReadOnly();
+
             if (index < 0 || index > Count)
                 throw new ArgumentOutOfRangeException(nameof(index));
 
@@ -319,9 +348,14 @@ namespace Godot.Collections
         /// Removes the first occurrence of the specified <paramref name="item"/>
         /// from this <see cref="Array"/>.
         /// </summary>
+        /// <exception cref="InvalidOperationException">
+        /// The array is read-only.
+        /// </exception>
         /// <param name="item">The value to remove.</param>
         public bool Remove(Variant item)
         {
+            ThrowIfReadOnly();
+
             int index = IndexOf(item);
             if (index >= 0)
             {
@@ -335,9 +369,14 @@ namespace Godot.Collections
         /// <summary>
         /// Removes an element from this <see cref="Array"/> by index.
         /// </summary>
+        /// <exception cref="InvalidOperationException">
+        /// The array is read-only.
+        /// </exception>
         /// <param name="index">The index of the element to remove.</param>
         public void RemoveAt(int index)
         {
+            ThrowIfReadOnly();
+
             if (index < 0 || index > Count)
                 throw new ArgumentOutOfRangeException(nameof(index));
 
@@ -358,7 +397,28 @@ namespace Godot.Collections
 
         object ICollection.SyncRoot => false;
 
-        bool ICollection<Variant>.IsReadOnly => false;
+        /// <summary>
+        /// Returns <see langword="true"/> if the array is read-only.
+        /// See <see cref="MakeReadOnly"/>.
+        /// </summary>
+        public bool IsReadOnly => NativeValue.DangerousSelfRef.IsReadOnly;
+
+        /// <summary>
+        /// Makes the <see cref="Array"/> read-only, i.e. disabled modying of the
+        /// array's elements. Does not apply to nested content, e.g. content of
+        /// nested arrays.
+        /// </summary>
+        public void MakeReadOnly()
+        {
+            if (IsReadOnly)
+            {
+                // Avoid interop call when the array is already read-only.
+                return;
+            }
+
+            var self = (godot_array)NativeValue;
+            NativeFuncs.godotsharp_array_make_read_only(ref self);
+        }
 
         /// <summary>
         /// Copies the elements of this <see cref="Array"/> to the given
@@ -471,6 +531,14 @@ namespace Godot.Collections
         internal unsafe void GetVariantBorrowElementAtUnchecked(int index, out godot_variant elem)
         {
             elem = NativeValue.DangerousSelfRef.Elements[index];
+        }
+
+        private void ThrowIfReadOnly()
+        {
+            if (IsReadOnly)
+            {
+                throw new InvalidOperationException("Array instance is read-only.");
+            }
         }
     }
 
@@ -592,6 +660,9 @@ namespace Godot.Collections
         /// <summary>
         /// Resizes this <see cref="Array{T}"/> to the given size.
         /// </summary>
+        /// <exception cref="InvalidOperationException">
+        /// The array is read-only.
+        /// </exception>
         /// <param name="newSize">The new size of the array.</param>
         /// <returns><see cref="Error.Ok"/> if successful, or an error code.</returns>
         public Error Resize(int newSize)
@@ -602,6 +673,9 @@ namespace Godot.Collections
         /// <summary>
         /// Shuffles the contents of this <see cref="Array{T}"/> into a random order.
         /// </summary>
+        /// <exception cref="InvalidOperationException">
+        /// The array is read-only.
+        /// </exception>
         public void Shuffle()
         {
             _underlyingArray.Shuffle();
@@ -634,6 +708,9 @@ namespace Godot.Collections
         /// <summary>
         /// Returns the value at the given <paramref name="index"/>.
         /// </summary>
+        /// <exception cref="InvalidOperationException">
+        /// The property is assigned and the array is read-only.
+        /// </exception>
         /// <value>The value at the given <paramref name="index"/>.</value>
         public unsafe T this[int index]
         {
@@ -644,8 +721,11 @@ namespace Godot.Collections
             }
             set
             {
+                ThrowIfReadOnly();
+
                 if (index < 0 || index >= Count)
                     throw new ArgumentOutOfRangeException(nameof(index));
+
                 var self = (godot_array)_underlyingArray.NativeValue;
                 godot_variant* ptrw = NativeFuncs.godotsharp_array_ptrw(ref self);
                 godot_variant* itemPtr = &ptrw[index];
@@ -673,10 +753,15 @@ namespace Godot.Collections
         /// or the position at the end of the array.
         /// Existing items will be moved to the right.
         /// </summary>
+        /// <exception cref="InvalidOperationException">
+        /// The array is read-only.
+        /// </exception>
         /// <param name="index">The index to insert at.</param>
         /// <param name="item">The item to insert.</param>
         public void Insert(int index, T item)
         {
+            ThrowIfReadOnly();
+
             if (index < 0 || index > Count)
                 throw new ArgumentOutOfRangeException(nameof(index));
 
@@ -688,6 +773,9 @@ namespace Godot.Collections
         /// <summary>
         /// Removes an element from this <see cref="Array{T}"/> by index.
         /// </summary>
+        /// <exception cref="InvalidOperationException">
+        /// The array is read-only.
+        /// </exception>
         /// <param name="index">The index of the element to remove.</param>
         public void RemoveAt(int index)
         {
@@ -703,16 +791,35 @@ namespace Godot.Collections
         /// <returns>The number of elements.</returns>
         public int Count => _underlyingArray.Count;
 
-        bool ICollection<T>.IsReadOnly => false;
+        /// <summary>
+        /// Returns <see langword="true"/> if the array is read-only.
+        /// See <see cref="MakeReadOnly"/>.
+        /// </summary>
+        public bool IsReadOnly => _underlyingArray.IsReadOnly;
+
+        /// <summary>
+        /// Makes the <see cref="Array{T}"/> read-only, i.e. disabled modying of the
+        /// array's elements. Does not apply to nested content, e.g. content of
+        /// nested arrays.
+        /// </summary>
+        public void MakeReadOnly()
+        {
+            _underlyingArray.MakeReadOnly();
+        }
 
         /// <summary>
         /// Adds an item to the end of this <see cref="Array{T}"/>.
         /// This is the same as <c>append</c> or <c>push_back</c> in GDScript.
         /// </summary>
+        /// <exception cref="InvalidOperationException">
+        /// The array is read-only.
+        /// </exception>
         /// <param name="item">The item to add.</param>
         /// <returns>The new size after adding the item.</returns>
         public void Add(T item)
         {
+            ThrowIfReadOnly();
+
             using var variantValue = VariantUtils.CreateFrom(item);
             var self = (godot_array)_underlyingArray.NativeValue;
             _ = NativeFuncs.godotsharp_array_add(ref self, variantValue);
@@ -721,6 +828,9 @@ namespace Godot.Collections
         /// <summary>
         /// Erases all items from this <see cref="Array{T}"/>.
         /// </summary>
+        /// <exception cref="InvalidOperationException">
+        /// The array is read-only.
+        /// </exception>
         public void Clear()
         {
             _underlyingArray.Clear();
@@ -769,10 +879,15 @@ namespace Godot.Collections
         /// Removes the first occurrence of the specified value
         /// from this <see cref="Array{T}"/>.
         /// </summary>
+        /// <exception cref="InvalidOperationException">
+        /// The array is read-only.
+        /// </exception>
         /// <param name="item">The value to remove.</param>
         /// <returns>A <see langword="bool"/> indicating success or failure.</returns>
         public bool Remove(T item)
         {
+            ThrowIfReadOnly();
+
             int index = IndexOf(item);
             if (index >= 0)
             {
@@ -812,5 +927,13 @@ namespace Godot.Collections
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static explicit operator Array<T>(Variant from) => from.AsGodotArray<T>();
+
+        private void ThrowIfReadOnly()
+        {
+            if (IsReadOnly)
+            {
+                throw new InvalidOperationException("Array instance is read-only.");
+            }
+        }
     }
 }

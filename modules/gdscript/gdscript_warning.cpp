@@ -148,9 +148,13 @@ String GDScriptWarning::get_message() const {
 			CHECK_SYMBOLS(3);
 			return vformat(R"(The %s '%s' has the same name as a %s.)", symbols[0], symbols[1], symbols[2]);
 		}
-		case INT_ASSIGNED_TO_ENUM: {
+		case INT_AS_ENUM_WITHOUT_CAST: {
 			return "Integer used when an enum value is expected. If this is intended cast the integer to the enum type.";
 		}
+		case INT_AS_ENUM_WITHOUT_MATCH: {
+			CHECK_SYMBOLS(3);
+			return vformat(R"(Cannot %s %s as Enum "%s": no enum member has matching value.)", symbols[0], symbols[1], symbols[2]);
+		} break;
 		case STATIC_CALLED_ON_INSTANCE: {
 			CHECK_SYMBOLS(2);
 			return vformat(R"(The function '%s()' is a static function but was called from an instance. Instead, it should be directly called from the type: '%s.%s()'.)", symbols[0], symbols[1], symbols[0]);
@@ -221,7 +225,8 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		"REDUNDANT_AWAIT",
 		"EMPTY_FILE",
 		"SHADOWED_GLOBAL_IDENTIFIER",
-		"INT_ASSIGNED_TO_ENUM",
+		"INT_AS_ENUM_WITHOUT_CAST",
+		"INT_AS_ENUM_WITHOUT_MATCH",
 		"STATIC_CALLED_ON_INSTANCE",
 		"CONFUSABLE_IDENTIFIER",
 	};

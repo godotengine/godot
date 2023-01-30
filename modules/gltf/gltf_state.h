@@ -59,6 +59,8 @@ class GLTFState : public Resource {
 	bool discard_meshes_and_materials = false;
 	bool create_animations = true;
 
+	int handle_binary_image = HANDLE_BINARY_EXTRACT_TEXTURES;
+
 	Vector<Ref<GLTFNode>> nodes;
 	Vector<Vector<uint8_t>> buffers;
 	Vector<Ref<GLTFBufferView>> buffer_views;
@@ -78,6 +80,7 @@ class GLTFState : public Resource {
 	Vector<Ref<Texture2D>> images;
 	Vector<String> extensions_used;
 	Vector<String> extensions_required;
+	Vector<Ref<Image>> source_images;
 
 	Vector<Ref<GLTFSkin>> skins;
 	Vector<Ref<GLTFCamera>> cameras;
@@ -89,6 +92,7 @@ class GLTFState : public Resource {
 	HashMap<GLTFSkeletonIndex, GLTFNodeIndex> skeleton_to_node;
 	Vector<Ref<GLTFAnimation>> animations;
 	HashMap<GLTFNodeIndex, Node *> scene_nodes;
+	HashMap<GLTFNodeIndex, ImporterMeshInstance3D *> scene_mesh_instances;
 
 	HashMap<ObjectID, GLTFSkeletonIndex> skeleton3d_to_gltf_skeleton;
 	HashMap<ObjectID, HashMap<ObjectID, GLTFSkinIndex>> skin_and_skeleton3d_to_gltf_skin;
@@ -99,6 +103,18 @@ protected:
 
 public:
 	void add_used_extension(const String &p_extension, bool p_required = false);
+
+	enum GLTFHandleBinary {
+		HANDLE_BINARY_DISCARD_TEXTURES = 0,
+		HANDLE_BINARY_EXTRACT_TEXTURES,
+		HANDLE_BINARY_EMBED_AS_BASISU,
+	};
+	int32_t get_handle_binary_image() {
+		return handle_binary_image;
+	}
+	void set_handle_binary_image(int32_t p_handle_binary_image) {
+		handle_binary_image = p_handle_binary_image;
+	}
 
 	Dictionary get_json();
 	void set_json(Dictionary p_json);
@@ -114,6 +130,15 @@ public:
 
 	bool get_use_named_skin_binds();
 	void set_use_named_skin_binds(bool p_use_named_skin_binds);
+
+	bool get_discard_textures();
+	void set_discard_textures(bool p_discard_textures);
+
+	bool get_embed_as_basisu();
+	void set_embed_as_basisu(bool p_embed_as_basisu);
+
+	bool get_extract_textures();
+	void set_extract_textures(bool p_extract_textures);
 
 	bool get_discard_meshes_and_materials();
 	void set_discard_meshes_and_materials(bool p_discard_meshes_and_materials);
@@ -182,6 +207,7 @@ public:
 	void set_animations(TypedArray<GLTFAnimation> p_animations);
 
 	Node *get_scene_node(GLTFNodeIndex idx);
+	ImporterMeshInstance3D *get_scene_mesh_instance(GLTFNodeIndex idx);
 
 	int get_animation_players_count(int idx);
 
