@@ -15,8 +15,7 @@
 		extends EditorTranslationParserPlugin
 
 		func _parse_file(path, msgids, msgids_context_plural):
-		    var file = File.new()
-		    file.open(path, File.READ)
+		    var file = FileAccess.open(path, FileAccess.READ)
 		    var text = file.get_as_text()
 		    var split_strs = text.split(",", false)
 		    for s in split_strs:

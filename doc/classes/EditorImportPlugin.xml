@@ -37,8 +37,8 @@
 		    return [{"name": "my_option", "default_value": false}]
 
 		func _import(source_file, save_path, options, platform_variants, gen_files):
-		    var file = File.new()
-		    if file.open(source_file, File.READ) != OK:
+		    var file = FileAccess.open(source_file, FileAccess.READ)
+		    if file == null:
 		        return FAILED
 		    var mesh = ArrayMesh.new()
 		    # Fill the Mesh with data read in "file", left as an exercise to the reader.
