@@ -1797,7 +1797,9 @@ void RichTextLabel::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
-			queue_redraw();
+			if (is_visible_in_tree()) {
+				queue_redraw();
+			}
 		} break;
 
 		case NOTIFICATION_DRAW: {
@@ -2665,19 +2667,26 @@ bool RichTextLabel::_find_layout_subitem(Item *from, Item *to) {
 	return false;
 }
 
-void RichTextLabel::_thread_function(void *self) {
-	RichTextLabel *rtl = reinterpret_cast<RichTextLabel *>(self);
-	rtl->set_physics_process_internal(true);
-	rtl->_process_line_caches();
-	rtl->set_physics_process_internal(false);
-	rtl->updating.store(false);
-	rtl->call_deferred(SNAME("queue_redraw"));
+void RichTextLabel::_thread_function(void *p_userdata) {
+	_process_line_caches();
+	updating.store(false);
+	call_deferred(SNAME("thread_end"));
+}
+
+void RichTextLabel::_thread_end() {
+	set_physics_process_internal(false);
+	if (is_visible_in_tree()) {
+		queue_redraw();
+	}
 }
 
 void RichTextLabel::_stop_thread() {
 	if (threaded) {
 		stop_thread.store(true);
-		thread.wait_to_finish();
+		if (task != WorkerThreadPool::INVALID_TASK_ID) {
+			WorkerThreadPool::get_singleton()->wait_for_task_completion(task);
+			task = WorkerThreadPool::INVALID_TASK_ID;
+		}
 	}
 }
 
@@ -2787,7 +2796,8 @@ bool RichTextLabel::_validate_line_caches() {
 	if (threaded) {
 		updating.store(true);
 		loaded.store(true);
-		thread.start(RichTextLabel::_thread_function, reinterpret_cast<void *>(this));
+		task = WorkerThreadPool::get_singleton()->add_template_task(this, &RichTextLabel::_thread_function, nullptr, true, vformat("RichTextLabelShape:%x", (int64_t)get_instance_id()));
+		set_physics_process_internal(true);
 		loading_started = OS::get_singleton()->get_ticks_msec();
 		return false;
 	} else {
@@ -5456,6 +5466,8 @@ void RichTextLabel::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_menu"), &RichTextLabel::get_menu);
 	ClassDB::bind_method(D_METHOD("is_menu_visible"), &RichTextLabel::is_menu_visible);
+
+	ClassDB::bind_method(D_METHOD("_thread_end"), &RichTextLabel::_thread_end);
 
 	// Note: set "bbcode_enabled" first, to avoid unnecessary "text" resets.
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "bbcode_enabled"), "set_use_bbcode", "is_using_bbcode");
