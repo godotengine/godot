@@ -399,6 +399,29 @@ TEST_CASE("[Object] Signals") {
 		SIGNAL_CHECK("my_custom_signal", empty_signal_args);
 		SIGNAL_UNWATCH(&object, "my_custom_signal");
 	}
+
+	SUBCASE("Connecting and then disconnecting many signals should not leave anything behind") {
+		List<Object::Connection> signal_connections;
+		Object targets[100];
+
+		for (int i = 0; i < 10; i++) {
+			ERR_PRINT_OFF;
+			for (Object &target : targets) {
+				object.connect("my_custom_signal", callable_mp(&target, &Object::notify_property_list_changed));
+			}
+			ERR_PRINT_ON;
+			signal_connections.clear();
+			object.get_all_signal_connections(&signal_connections);
+			CHECK(signal_connections.size() == 100);
+		}
+
+		for (Object &target : targets) {
+			object.disconnect("my_custom_signal", callable_mp(&target, &Object::notify_property_list_changed));
+		}
+		signal_connections.clear();
+		object.get_all_signal_connections(&signal_connections);
+		CHECK(signal_connections.size() == 0);
+	}
 }
 
 } // namespace TestObject
