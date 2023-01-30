@@ -1524,7 +1524,7 @@ void CodeTextEditor::delete_lines() {
 		int c = caret_edit_order[i];
 		int cl = text_editor->get_caret_line(c);
 
-		bool swaped_caret = false;
+		bool swapped_caret = false;
 		for (int j = i + 1; j < caret_edit_order.size(); j++) {
 			if (text_editor->has_selection(caret_edit_order[j])) {
 				if (text_editor->get_selection_from_line() == cl) {
@@ -1542,7 +1542,7 @@ void CodeTextEditor::delete_lines() {
 
 					carets_to_remove.push_back(c);
 					i = j - 1;
-					swaped_caret = true;
+					swapped_caret = true;
 					break;
 				}
 				break;
@@ -1556,13 +1556,17 @@ void CodeTextEditor::delete_lines() {
 			break;
 		}
 
-		if (swaped_caret) {
+		if (swapped_caret) {
 			continue;
 		}
 
 		if (text_editor->has_selection(c)) {
-			int to_line = text_editor->get_selection_to_line(c);
 			int from_line = text_editor->get_selection_from_line(c);
+			int to_line = text_editor->get_selection_to_line(c);
+			// Don't delete a line with no selected characters
+			if (text_editor->get_selection_to_column(c) == 0) {
+				to_line--;
+			}
 			int count = Math::abs(to_line - from_line) + 1;
 
 			text_editor->set_caret_line(from_line, false, true, 0, c);
@@ -1575,7 +1579,7 @@ void CodeTextEditor::delete_lines() {
 		}
 	}
 
-	// Sort and remove backwards to preserve indexes.
+	// Sort and remove backwards to preserve indices.
 	carets_to_remove.sort();
 	for (int i = carets_to_remove.size() - 1; i >= 0; i--) {
 		text_editor->remove_caret(carets_to_remove[i]);
