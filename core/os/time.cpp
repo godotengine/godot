@@ -52,6 +52,8 @@ static const uint8_t MONTH_DAYS_TABLE[2][12] = {
 	{ 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 }
 };
 
+String validation_error = "";
+
 VARIANT_ENUM_CAST(Month);
 VARIANT_ENUM_CAST(Weekday);
 
@@ -95,21 +97,36 @@ VARIANT_ENUM_CAST(Weekday);
 		day = day_number_copy + 1;                                                          \
 	}
 
-#define VALIDATE_YMDHMS(ret)                                                                                                                                              \
-	ERR_FAIL_COND_V_MSG(month == 0, ret, "Invalid month value of: " + itos(month) + ", months are 1-indexed and cannot be 0. See the Time.Month enum for valid values."); \
-	ERR_FAIL_COND_V_MSG(month < 0, ret, "Invalid month value of: " + itos(month) + ".");                                                                                  \
-	ERR_FAIL_COND_V_MSG(month > 12, ret, "Invalid month value of: " + itos(month) + ". See the Time.Month enum for valid values.");                                       \
-	ERR_FAIL_COND_V_MSG(hour > 23, ret, "Invalid hour value of: " + itos(hour) + ".");                                                                                    \
-	ERR_FAIL_COND_V_MSG(hour < 0, ret, "Invalid hour value of: " + itos(hour) + ".");                                                                                     \
-	ERR_FAIL_COND_V_MSG(minute > 59, ret, "Invalid minute value of: " + itos(minute) + ".");                                                                              \
-	ERR_FAIL_COND_V_MSG(minute < 0, ret, "Invalid minute value of: " + itos(minute) + ".");                                                                               \
-	ERR_FAIL_COND_V_MSG(second > 59, ret, "Invalid second value of: " + itos(second) + " (leap seconds are not supported).");                                             \
-	ERR_FAIL_COND_V_MSG(second < 0, ret, "Invalid second value of: " + itos(second) + ".");                                                                               \
-	ERR_FAIL_COND_V_MSG(day == 0, ret, "Invalid day value of: " + itos(day) + ", days are 1-indexed and cannot be 0.");                                                   \
-	ERR_FAIL_COND_V_MSG(day < 0, ret, "Invalid day value of: " + itos(day) + ".");                                                                                        \
-	/* Do this check after month is tested as valid. */                                                                                                                   \
-	uint8_t days_in_this_month = MONTH_DAYS_TABLE[IS_LEAP_YEAR(year)][month - 1];                                                                                         \
-	ERR_FAIL_COND_V_MSG(day > days_in_this_month, ret, "Invalid day value of: " + itos(day) + " which is larger than the maximum for this month, " + itos(days_in_this_month) + ".");
+#define VALIDATE_YMDHMS()                                                                                                                                  \
+	validation_error = "";                                                                                                                                 \
+	if (month == 0) {                                                                                                                                      \
+		validation_error = "Invalid month value of: " + itos(month) + ", months are 1-indexed and cannot be 0. See the Time.Month enum for valid values."; \
+	} else if (month < 0) {                                                                                                                                \
+		validation_error = "Invalid month value of: " + itos(month) + ".";                                                                                 \
+	} else if (month > 12) {                                                                                                                               \
+		validation_error = "Invalid month value of: " + itos(month) + ". See the Time.Month enum for valid values.";                                       \
+	} else if (hour > 23) {                                                                                                                                \
+		validation_error = "Invalid hour value of: " + itos(hour) + ".";                                                                                   \
+	} else if (hour < 0) {                                                                                                                                 \
+		validation_error = "Invalid hour value of: " + itos(hour) + ".";                                                                                   \
+	} else if (minute > 59) {                                                                                                                              \
+		validation_error = "Invalid minute value of: " + itos(minute) + ".";                                                                               \
+	} else if (minute < 0) {                                                                                                                               \
+		validation_error = "Invalid minute value of: " + itos(minute) + ".";                                                                               \
+	} else if (second > 59) {                                                                                                                              \
+		validation_error = "Invalid second value of: " + itos(second) + " (leap seconds are not supported).";                                              \
+	} else if (second < 0) {                                                                                                                               \
+		validation_error = "Invalid second value of: " + itos(second) + ".";                                                                               \
+	} else if (day == 0) {                                                                                                                                 \
+		validation_error = "Invalid day value of: " + itos(day) + ", days are 1-indexed and cannot be 0.";                                                 \
+	} else if (day < 0) {                                                                                                                                  \
+		validation_error = "Invalid day value of: " + itos(day) + ".";                                                                                     \
+	}                                                                                                                                                      \
+	/* Do this check after month is tested as valid. */                                                                                                    \
+	uint8_t days_in_this_month = MONTH_DAYS_TABLE[IS_LEAP_YEAR(year)][month - 1];                                                                          \
+	if (day > days_in_this_month) {                                                                                                                        \
+		validation_error = "Invalid day value of: " + itos(day) + " which is larger than the maximum for this month, " + itos(days_in_this_month) + ".";   \
+	}
 
 #define YMD_TO_DAY_NUMBER                                                           \
 	/* The day number since Unix epoch (0-index). Days before 1970 are negative. */ \
@@ -263,6 +280,10 @@ String Time::get_time_string_from_unix_time(int64_t p_unix_time_val) const {
 
 Dictionary Time::get_datetime_dict_from_datetime_string(String p_datetime, bool p_weekday) const {
 	PARSE_ISO8601_STRING(Dictionary())
+	VALIDATE_YMDHMS()
+	if (validation_error != "") {
+		return Dictionary();
+	}
 	Dictionary dict;
 	dict[YEAR_KEY] = year;
 	dict[MONTH_KEY] = (uint8_t)month;
@@ -279,10 +300,17 @@ Dictionary Time::get_datetime_dict_from_datetime_string(String p_datetime, bool 
 	return dict;
 }
 
+String Time::get_datetime_error() const {
+	return validation_error;
+}
+
 String Time::get_datetime_string_from_datetime_dict(const Dictionary p_datetime, bool p_use_space) const {
 	ERR_FAIL_COND_V_MSG(p_datetime.is_empty(), "", "Invalid datetime Dictionary: Dictionary is empty.");
 	EXTRACT_FROM_DICTIONARY
-	VALIDATE_YMDHMS("")
+	VALIDATE_YMDHMS()
+	if (validation_error != "") {
+		return "";
+	}
 	// vformat only supports up to 6 arguments, so we need to split this up into 2 parts.
 	String timestamp = vformat("%04d-%02d-%02d", year, (uint8_t)month, day);
 	if (p_use_space) {
@@ -296,14 +324,20 @@ String Time::get_datetime_string_from_datetime_dict(const Dictionary p_datetime,
 int64_t Time::get_unix_time_from_datetime_dict(const Dictionary p_datetime) const {
 	ERR_FAIL_COND_V_MSG(p_datetime.is_empty(), 0, "Invalid datetime Dictionary: Dictionary is empty");
 	EXTRACT_FROM_DICTIONARY
-	VALIDATE_YMDHMS(0)
+	VALIDATE_YMDHMS()
+	if (validation_error != "") {
+		return -1;
+	}
 	YMD_TO_DAY_NUMBER
 	return day_number * SECONDS_PER_DAY + hour * 3600 + minute * 60 + second;
 }
 
 int64_t Time::get_unix_time_from_datetime_string(String p_datetime) const {
 	PARSE_ISO8601_STRING(-1)
-	VALIDATE_YMDHMS(0)
+	VALIDATE_YMDHMS()
+	if (validation_error != "") {
+		return -1;
+	}
 	YMD_TO_DAY_NUMBER
 	return day_number * SECONDS_PER_DAY + hour * 3600 + minute * 60 + second;
 }
@@ -423,6 +457,8 @@ void Time::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_unix_time_from_system"), &Time::get_unix_time_from_system);
 	ClassDB::bind_method(D_METHOD("get_ticks_msec"), &Time::get_ticks_msec);
 	ClassDB::bind_method(D_METHOD("get_ticks_usec"), &Time::get_ticks_usec);
+
+	ClassDB::bind_method(D_METHOD("get_datetime_error"), &Time::get_datetime_error);
 
 	BIND_ENUM_CONSTANT(MONTH_JANUARY);
 	BIND_ENUM_CONSTANT(MONTH_FEBRUARY);

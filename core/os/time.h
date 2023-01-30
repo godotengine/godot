@@ -49,8 +49,13 @@ class Time : public Object {
 	static void _bind_methods();
 	static Time *singleton;
 
+private:
+	const String datetime_error;
+
 public:
 	static Time *get_singleton();
+
+	String get_datetime_error() const;
 
 	// Methods that convert times.
 	Dictionary get_datetime_dict_from_unix_time(int64_t p_unix_time_val) const;
