@@ -1816,15 +1816,18 @@ float AnimationPlayer::get_playing_speed() const {
 }
 
 void AnimationPlayer::seek(double p_time, bool p_update) {
+	playback.current.pos = p_time;
+
 	if (!playback.current.from) {
 		if (playback.assigned) {
 			ERR_FAIL_COND_MSG(!animation_set.has(playback.assigned), vformat("Animation not found: %s.", playback.assigned));
 			playback.current.from = &animation_set[playback.assigned];
 		}
-		ERR_FAIL_COND(!playback.current.from);
+		if (!playback.current.from) {
+			return; // There is no animation.
+		}
 	}
 
-	playback.current.pos = p_time;
 	playback.seeked = true;
 	if (p_update) {
 		_animation_process(0);
@@ -1832,20 +1835,22 @@ void AnimationPlayer::seek(double p_time, bool p_update) {
 }
 
 void AnimationPlayer::seek_delta(double p_time, double p_delta) {
+	playback.current.pos = p_time - p_delta;
+
 	if (!playback.current.from) {
 		if (playback.assigned) {
 			ERR_FAIL_COND_MSG(!animation_set.has(playback.assigned), vformat("Animation not found: %s.", playback.assigned));
 			playback.current.from = &animation_set[playback.assigned];
 		}
-		ERR_FAIL_COND(!playback.current.from);
+		if (!playback.current.from) {
+			return; // There is no animation.
+		}
 	}
 
-	playback.current.pos = p_time - p_delta;
 	if (speed_scale != 0.0) {
 		p_delta /= speed_scale;
 	}
 	_animation_process(p_delta);
-	//playback.current.pos=p_time;
 }
 
 bool AnimationPlayer::is_valid() const {
