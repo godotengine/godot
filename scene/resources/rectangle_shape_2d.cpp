@@ -79,11 +79,7 @@ void RectangleShape2D::draw(const RID &p_to_rid, const Color &p_color) {
 		stroke_points.write[3] = Vector2(-size.x, size.y) * 0.5;
 		stroke_points.write[4] = -size * 0.5;
 
-		Vector<Color> stroke_colors;
-		stroke_colors.resize(5);
-		for (int i = 0; i < 5; i++) {
-			stroke_colors.write[i] = (p_color);
-		}
+		Vector<Color> stroke_colors = { Color(p_color, 1.0) };
 
 		RenderingServer::get_singleton()->canvas_item_add_polyline(p_to_rid, stroke_points, stroke_colors);
 	}
