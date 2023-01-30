@@ -594,7 +594,7 @@ PropertyTweener::PropertyTweener(Object *p_target, NodePath p_property, Variant 
 }
 
 PropertyTweener::PropertyTweener() {
-	ERR_FAIL_MSG("Can't create empty PropertyTweener. Use get_tree().tween_property() or tween_property() instead.");
+	ERR_FAIL_MSG("PropertyTweener can't be created directly. Use the tween_property() method in Tween.");
 }
 
 void IntervalTweener::start() {
@@ -625,7 +625,7 @@ IntervalTweener::IntervalTweener(double p_time) {
 }
 
 IntervalTweener::IntervalTweener() {
-	ERR_FAIL_MSG("Can't create empty IntervalTweener. Use get_tree().tween_interval() instead.");
+	ERR_FAIL_MSG("IntervalTweener can't be created directly. Use the tween_interval() method in Tween.");
 }
 
 Ref<CallbackTweener> CallbackTweener::set_delay(double p_delay) {
@@ -676,7 +676,7 @@ CallbackTweener::CallbackTweener(Callable p_callback) {
 }
 
 CallbackTweener::CallbackTweener() {
-	ERR_FAIL_MSG("Can't create empty CallbackTweener. Use get_tree().tween_callback() instead.");
+	ERR_FAIL_MSG("CallbackTweener can't be created directly. Use the tween_callback() method in Tween.");
 }
 
 Ref<MethodTweener> MethodTweener::set_delay(double p_delay) {
@@ -769,5 +769,5 @@ MethodTweener::MethodTweener(Callable p_callback, Variant p_from, Variant p_to, 
 }
 
 MethodTweener::MethodTweener() {
-	ERR_FAIL_MSG("Can't create empty MethodTweener. Use get_tree().tween_method() instead.");
+	ERR_FAIL_MSG("MethodTweener can't be created directly. Use the tween_method() method in Tween.");
 }
