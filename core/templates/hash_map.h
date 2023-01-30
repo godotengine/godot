@@ -67,7 +67,6 @@ template <class TKey, class TValue,
 		class Allocator = DefaultTypedAllocator<HashMapElement<TKey, TValue>>>
 class HashMap {
 public:
-	static constexpr uint32_t MIN_CAPACITY_INDEX = 2; // Use a prime.
 	static constexpr float MAX_OCCUPANCY = 0.75;
 	static constexpr uint32_t EMPTY_HASH = 0;
 
@@ -160,8 +159,7 @@ private:
 	void _resize_and_rehash(uint32_t p_new_capacity_index) {
 		uint32_t old_capacity = hash_table_size_primes[capacity_index];
 
-		// Capacity can't be 0.
-		capacity_index = MAX((uint32_t)MIN_CAPACITY_INDEX, p_new_capacity_index);
+		capacity_index = MAX(uint32_t(0), p_new_capacity_index);
 
 		uint32_t capacity = hash_table_size_primes[capacity_index];
 
@@ -560,7 +558,7 @@ public:
 		reserve(p_initial_capacity);
 	}
 	HashMap() {
-		capacity_index = MIN_CAPACITY_INDEX;
+		capacity_index = 0;
 	}
 
 	uint32_t debug_get_hash(uint32_t p_index) {

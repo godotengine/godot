@@ -162,6 +162,9 @@ TEST_CASE("[HashSet] Insert and erase half elements") {
 
 TEST_CASE("[HashSet] Size") {
 	HashSet<int> set;
+
+	CHECK(set.get_capacity() < 9);
+
 	set.insert(42);
 	set.insert(123);
 	set.insert(123);

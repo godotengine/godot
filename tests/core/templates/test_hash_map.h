@@ -73,8 +73,55 @@ TEST_CASE("[HashMap] Erase via key") {
 	CHECK(!map.find(42));
 }
 
+TEST_CASE("[HashMap] Bulk insert and remove") {
+	HashMap<int, String> map;
+
+	for (int z = 0; z < 5; z++) {
+		for (int i = 0; i < 30; i++) {
+			CHECK(!map.has(29));
+			CHECK(!map.find(29));
+			CHECK(!map.has(i));
+			CHECK(!map.find(i));
+
+			if (z & 1) {
+				map.insert(i, itos(i));
+			} else {
+				map[i] = itos(i);
+			}
+
+			CHECK(map.has(0));
+			CHECK(map.find(0));
+			CHECK(map.has(i));
+			CHECK(map.find(i));
+			CHECK(map[0] == "0");
+			CHECK(map[i] == itos(i));
+		}
+		CHECK(map.size() == 30);
+
+		for (int i = 0; i < 30; i++) {
+			CHECK(map.has(29));
+			CHECK(map.find(29));
+			CHECK(map.has(i));
+			CHECK(map.find(i));
+			CHECK(map[29] == "29");
+			CHECK(map[i] == itos(i));
+
+			map.erase(i);
+
+			CHECK(!map.has(0));
+			CHECK(!map.find(0));
+			CHECK(!map.has(i));
+			CHECK(!map.find(i));
+		}
+		CHECK(map.size() == 0);
+	}
+}
+
 TEST_CASE("[HashMap] Size") {
 	HashMap<int, int> map;
+
+	CHECK(map.get_capacity() < 9);
+
 	map.insert(42, 84);
 	map.insert(123, 84);
 	map.insert(123, 84);
