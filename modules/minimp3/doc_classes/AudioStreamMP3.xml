@@ -21,21 +21,17 @@
 			[codeblocks]
 			[gdscript]
 			func load_mp3(path):
-			    var file = File.new()
-			    file.open(path, File.READ)
+			    var file = FileAccess.open(path, FileAccess.READ)
 			    var sound = AudioStreamMP3.new()
 			    sound.data = file.get_buffer(file.get_length())
-			    file.close()
 			    return sound
 			[/gdscript]
 			[csharp]
 			public AudioStreamMP3 LoadMP3(string path)
 			{
-			    var file = new File();
-			    file.Open(path, File.READ);
+			    using var file = FileAccess.Open(path, FileAccess.ModeFlags.Read);
 			    var sound = new AudioStreamMP3();
 			    sound.Data = file.GetBuffer(file.GetLength());
-			    file.Close();
 			    return sound;
 			}
 			[/csharp]
