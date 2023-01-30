@@ -3516,6 +3516,14 @@
 				If [code]true[/code], use Temporal Anti-Aliasing.
 			</description>
 		</method>
+		<method name="viewport_set_use_xr">
+			<return type="void" />
+			<param index="0" name="viewport" type="RID" />
+			<param index="1" name="use_xr" type="bool" />
+			<description>
+				Deprecated. Please use ViewportMode instead. Setter will change the viewport mode to Viewport 'VIEWPORT_MODE_XR' if [code]true[/code] and 'VIEWPORT_MODE_2D_AND_3D' if [code]false[/code]
+			</description>
+		</method>
 		<method name="viewport_set_vrs_mode">
 			<return type="void" />
 			<param index="0" name="viewport" type="RID" />
