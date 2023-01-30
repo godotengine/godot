@@ -11,10 +11,31 @@
 		<link title="Setting up XR">$DOCS_URL/tutorials/xr/setting_up_xr.html</link>
 	</tutorials>
 	<methods>
+		<method name="get_action_sets" qualifiers="const">
+			<return type="Array" />
+			<description>
+				Returns a list of action sets registered with Godot (loaded from the action map at runtime).
+			</description>
+		</method>
 		<method name="get_available_display_refresh_rates" qualifiers="const">
 			<return type="Array" />
 			<description>
 				Returns display refresh rates supported by the current HMD. Only returned if this feature is supported by the OpenXR runtime and after the interface has been initialized.
+			</description>
+		</method>
+		<method name="is_action_set_active" qualifiers="const">
+			<return type="bool" />
+			<param index="0" name="name" type="String" />
+			<description>
+				Returns [code]true[/code] if the given action set is active.
+			</description>
+		</method>
+		<method name="set_action_set_active">
+			<return type="void" />
+			<param index="0" name="name" type="String" />
+			<param index="1" name="active" type="bool" />
+			<description>
+				Sets the given action set as active or inactive.
 			</description>
 		</method>
 	</methods>

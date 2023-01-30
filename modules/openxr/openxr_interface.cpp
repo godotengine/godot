@@ -47,6 +47,10 @@ void OpenXRInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_display_refresh_rate", "refresh_rate"), &OpenXRInterface::set_display_refresh_rate);
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "display_refresh_rate"), "set_display_refresh_rate", "get_display_refresh_rate");
 
+	ClassDB::bind_method(D_METHOD("is_action_set_active", "name"), &OpenXRInterface::is_action_set_active);
+	ClassDB::bind_method(D_METHOD("set_action_set_active", "name", "active"), &OpenXRInterface::set_action_set_active);
+	ClassDB::bind_method(D_METHOD("get_action_sets"), &OpenXRInterface::get_action_sets);
+
 	ClassDB::bind_method(D_METHOD("get_available_display_refresh_rates"), &OpenXRInterface::get_available_display_refresh_rates);
 }
 
@@ -619,6 +623,38 @@ Array OpenXRInterface::get_available_display_refresh_rates() const {
 	} else {
 		return openxr_api->get_available_display_refresh_rates();
 	}
+}
+
+bool OpenXRInterface::is_action_set_active(const String &p_action_set) const {
+	for (ActionSet *action_set : action_sets) {
+		if (action_set->action_set_name == p_action_set) {
+			return action_set->is_active;
+		}
+	}
+
+	WARN_PRINT("OpenXR: Unknown action set " + p_action_set);
+	return false;
+}
+
+void OpenXRInterface::set_action_set_active(const String &p_action_set, bool p_active) {
+	for (ActionSet *action_set : action_sets) {
+		if (action_set->action_set_name == p_action_set) {
+			action_set->is_active = p_active;
+			return;
+		}
+	}
+
+	WARN_PRINT("OpenXR: Unknown action set " + p_action_set);
+}
+
+Array OpenXRInterface::get_action_sets() const {
+	Array arr;
+
+	for (ActionSet *action_set : action_sets) {
+		arr.push_back(action_set->action_set_name);
+	}
+
+	return arr;
 }
 
 Size2 OpenXRInterface::get_render_target_size() {
