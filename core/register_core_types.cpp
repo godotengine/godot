@@ -209,6 +209,7 @@ void register_core_types() {
 	GDREGISTER_CLASS(AESContext);
 	ClassDB::register_custom_instance_class<X509Certificate>();
 	ClassDB::register_custom_instance_class<CryptoKey>();
+	GDREGISTER_ABSTRACT_CLASS(TLSOptions);
 	ClassDB::register_custom_instance_class<HMACContext>();
 	ClassDB::register_custom_instance_class<Crypto>();
 	ClassDB::register_custom_instance_class<StreamPeerTLS>();

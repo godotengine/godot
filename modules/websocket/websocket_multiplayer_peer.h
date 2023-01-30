@@ -71,9 +71,7 @@ protected:
 	Ref<WebSocketPeer> peer_config;
 	HashMap<int, PendingPeer> pending_peers;
 	Ref<TCPServer> tcp_server;
-	bool use_tls = false;
-	Ref<X509Certificate> tls_certificate;
-	Ref<CryptoKey> tls_key;
+	Ref<TLSOptions> tls_server_options;
 
 	ConnectionStatus connection_status = CONNECTION_DISCONNECTED;
 
@@ -115,8 +113,8 @@ public:
 	/* WebSocketPeer */
 	virtual Ref<WebSocketPeer> get_peer(int p_peer_id) const;
 
-	Error create_client(const String &p_url, bool p_verify_tls, Ref<X509Certificate> p_tls_certificate);
-	Error create_server(int p_port, IPAddress p_bind_ip, Ref<CryptoKey> p_tls_key, Ref<X509Certificate> p_tls_certificate);
+	Error create_client(const String &p_url, Ref<TLSOptions> p_options);
+	Error create_server(int p_port, IPAddress p_bind_ip, Ref<TLSOptions> p_options);
 
 	void set_supported_protocols(const Vector<String> &p_protocols);
 	Vector<String> get_supported_protocols() const;

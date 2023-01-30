@@ -39,29 +39,31 @@ HTTPClient *HTTPClientTCP::_create_func() {
 	return memnew(HTTPClientTCP);
 }
 
-Error HTTPClientTCP::connect_to_host(const String &p_host, int p_port, bool p_tls, bool p_verify_host) {
+Error HTTPClientTCP::connect_to_host(const String &p_host, int p_port, Ref<TLSOptions> p_options) {
 	close();
 
 	conn_port = p_port;
 	conn_host = p_host;
+	tls_options = p_options;
 
 	ip_candidates.clear();
-
-	tls = p_tls;
-	tls_verify_host = p_verify_host;
 
 	String host_lower = conn_host.to_lower();
 	if (host_lower.begins_with("http://")) {
 		conn_host = conn_host.substr(7, conn_host.length() - 7);
+		tls_options.unref();
 	} else if (host_lower.begins_with("https://")) {
-		tls = true;
+		if (tls_options.is_null()) {
+			tls_options = TLSOptions::client();
+		}
 		conn_host = conn_host.substr(8, conn_host.length() - 8);
 	}
 
+	ERR_FAIL_COND_V(tls_options.is_valid() && tls_options->is_server(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(conn_host.length() < HOST_MIN_LEN, ERR_INVALID_PARAMETER);
 
 	if (conn_port < 0) {
-		if (tls) {
+		if (tls_options.is_valid()) {
 			conn_port = PORT_HTTPS;
 		} else {
 			conn_port = PORT_HTTP;
@@ -70,11 +72,11 @@ Error HTTPClientTCP::connect_to_host(const String &p_host, int p_port, bool p_tl
 
 	connection = tcp_connection;
 
-	if (tls && https_proxy_port != -1) {
+	if (tls_options.is_valid() && https_proxy_port != -1) {
 		proxy_client.instantiate(); // Needs proxy negotiation.
 		server_host = https_proxy_host;
 		server_port = https_proxy_port;
-	} else if (!tls && http_proxy_port != -1) {
+	} else if (tls_options.is_null() && http_proxy_port != -1) {
 		server_host = http_proxy_host;
 		server_port = http_proxy_port;
 	} else {
@@ -107,7 +109,7 @@ Error HTTPClientTCP::connect_to_host(const String &p_host, int p_port, bool p_tl
 void HTTPClientTCP::set_connection(const Ref<StreamPeer> &p_connection) {
 	ERR_FAIL_COND_MSG(p_connection.is_null(), "Connection is not a reference to a valid StreamPeer object.");
 
-	if (tls) {
+	if (tls_options.is_valid()) {
 		ERR_FAIL_NULL_MSG(Object::cast_to<StreamPeerTLS>(p_connection.ptr()),
 				"Connection is not a reference to a valid StreamPeerTLS object.");
 	}
@@ -156,7 +158,7 @@ Error HTTPClientTCP::request(Method p_method, const String &p_url, const Vector<
 	}
 
 	String uri = p_url;
-	if (!tls && http_proxy_port != -1) {
+	if (tls_options.is_null() && http_proxy_port != -1) {
 		uri = vformat("http://%s:%d%s", conn_host, conn_port, p_url);
 	}
 
@@ -181,7 +183,7 @@ Error HTTPClientTCP::request(Method p_method, const String &p_url, const Vector<
 		}
 	}
 	if (add_host) {
-		if ((tls && conn_port == PORT_HTTPS) || (!tls && conn_port == PORT_HTTP)) {
+		if ((tls_options.is_valid() && conn_port == PORT_HTTPS) || (tls_options.is_null() && conn_port == PORT_HTTP)) {
 			// Don't append the standard ports.
 			request += "Host: " + conn_host + "\r\n";
 		} else {
@@ -316,7 +318,7 @@ Error HTTPClientTCP::poll() {
 					return OK;
 				} break;
 				case StreamPeerTCP::STATUS_CONNECTED: {
-					if (tls && proxy_client.is_valid()) {
+					if (tls_options.is_valid() && proxy_client.is_valid()) {
 						Error err = proxy_client->poll();
 						if (err == ERR_UNCONFIGURED) {
 							proxy_client->set_connection(tcp_connection);
@@ -357,13 +359,12 @@ Error HTTPClientTCP::poll() {
 								return ERR_CANT_CONNECT;
 							} break;
 						}
-					} else if (tls) {
+					} else if (tls_options.is_valid()) {
 						Ref<StreamPeerTLS> tls_conn;
 						if (!handshaking) {
 							// Connect the StreamPeerTLS and start handshaking.
 							tls_conn = Ref<StreamPeerTLS>(StreamPeerTLS::create());
-							tls_conn->set_blocking_handshake_enabled(false);
-							Error err = tls_conn->connect_to_stream(tcp_connection, tls_verify_host, conn_host);
+							Error err = tls_conn->connect_to_stream(tcp_connection, conn_host, tls_options);
 							if (err != OK) {
 								close();
 								status = STATUS_TLS_HANDSHAKE_ERROR;
@@ -421,7 +422,7 @@ Error HTTPClientTCP::poll() {
 		case STATUS_BODY:
 		case STATUS_CONNECTED: {
 			// Check if we are still connected.
-			if (tls) {
+			if (tls_options.is_valid()) {
 				Ref<StreamPeerTLS> tmp = connection;
 				tmp->poll();
 				if (tmp->get_status() != StreamPeerTLS::STATUS_CONNECTED) {

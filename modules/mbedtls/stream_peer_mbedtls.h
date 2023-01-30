@@ -54,8 +54,8 @@ protected:
 
 public:
 	virtual void poll();
-	virtual Error accept_stream(Ref<StreamPeer> p_base, Ref<CryptoKey> p_key, Ref<X509Certificate> p_cert, Ref<X509Certificate> p_ca_chain = Ref<X509Certificate>());
-	virtual Error connect_to_stream(Ref<StreamPeer> p_base, bool p_validate_certs = false, const String &p_for_hostname = String(), Ref<X509Certificate> p_valid_cert = Ref<X509Certificate>());
+	virtual Error accept_stream(Ref<StreamPeer> p_base, Ref<TLSOptions> p_options);
+	virtual Error connect_to_stream(Ref<StreamPeer> p_base, const String &p_common_name, Ref<TLSOptions> p_options);
 	virtual Status get_status() const;
 	virtual Ref<StreamPeer> get_stream() const;
 

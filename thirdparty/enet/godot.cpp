@@ -164,16 +164,14 @@ class ENetDTLSClient : public ENetGodotSocket {
 	bool connected = false;
 	Ref<PacketPeerUDP> udp;
 	Ref<PacketPeerDTLS> dtls;
-	bool verify = false;
+	Ref<TLSOptions> tls_options;
 	String for_hostname;
-	Ref<X509Certificate> cert;
 	IPAddress local_address;
 
 public:
-	ENetDTLSClient(ENetUDP *p_base, Ref<X509Certificate> p_cert, bool p_verify, String p_for_hostname) {
-		verify = p_verify;
+	ENetDTLSClient(ENetUDP *p_base, String p_for_hostname, Ref<TLSOptions> p_options) {
 		for_hostname = p_for_hostname;
-		cert = p_cert;
+		tls_options = p_options;
 		udp.instantiate();
 		dtls = Ref<PacketPeerDTLS>(PacketPeerDTLS::create());
 		if (p_base->bound) {
@@ -205,7 +203,7 @@ public:
 	Error sendto(const uint8_t *p_buffer, int p_len, int &r_sent, IPAddress p_ip, uint16_t p_port) {
 		if (!connected) {
 			udp->connect_to_host(p_ip, p_port);
-			if (dtls->connect_to_peer(udp, verify, for_hostname, cert)) {
+			if (dtls->connect_to_peer(udp, for_hostname, tls_options)) {
 				return FAILED;
 			}
 			connected = true;
@@ -265,7 +263,7 @@ class ENetDTLSServer : public ENetGodotSocket {
 	IPAddress local_address;
 
 public:
-	ENetDTLSServer(ENetUDP *p_base, Ref<CryptoKey> p_key, Ref<X509Certificate> p_cert) {
+	ENetDTLSServer(ENetUDP *p_base, Ref<TLSOptions> p_options) {
 		udp_server.instantiate();
 		if (p_base->bound) {
 			uint16_t port;
@@ -274,7 +272,7 @@ public:
 			bind(local_address, port);
 		}
 		server = Ref<DTLSServer>(DTLSServer::create());
-		server->setup(p_key, p_cert);
+		server->setup(p_options);
 	}
 
 	~ENetDTLSServer() {
@@ -437,22 +435,22 @@ ENetSocket enet_socket_create(ENetSocketType type) {
 	return socket;
 }
 
-int enet_host_dtls_server_setup(ENetHost *host, void *p_key, void *p_cert) {
+int enet_host_dtls_server_setup(ENetHost *host, void *p_options) {
 	ENetGodotSocket *sock = (ENetGodotSocket *)host->socket;
 	if (!sock->can_upgrade()) {
 		return -1;
 	}
-	host->socket = memnew(ENetDTLSServer((ENetUDP *)sock, Ref<CryptoKey>((CryptoKey *)p_key), Ref<X509Certificate>((X509Certificate *)p_cert)));
+	host->socket = memnew(ENetDTLSServer(static_cast<ENetUDP *>(sock), Ref<TLSOptions>(static_cast<TLSOptions *>(p_options))));
 	memdelete(sock);
 	return 0;
 }
 
-int enet_host_dtls_client_setup(ENetHost *host, void *p_cert, uint8_t p_verify, const char *p_for_hostname) {
+int enet_host_dtls_client_setup(ENetHost *host, const char *p_for_hostname, void *p_options) {
 	ENetGodotSocket *sock = (ENetGodotSocket *)host->socket;
 	if (!sock->can_upgrade()) {
 		return -1;
 	}
-	host->socket = memnew(ENetDTLSClient((ENetUDP *)sock, Ref<X509Certificate>((X509Certificate *)p_cert), p_verify, String::utf8(p_for_hostname)));
+	host->socket = memnew(ENetDTLSClient(static_cast<ENetUDP *>(sock), String::utf8(p_for_hostname), Ref<TLSOptions>(static_cast<TLSOptions *>(p_options))));
 	memdelete(sock);
 	return 0;
 }

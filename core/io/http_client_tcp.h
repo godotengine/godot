@@ -33,6 +33,8 @@
 
 #include "http_client.h"
 
+#include "core/crypto/crypto.h"
+
 class HTTPClientTCP : public HTTPClient {
 private:
 	Status status = STATUS_DISCONNECTED;
@@ -46,11 +48,10 @@ private:
 	String http_proxy_host;
 	int https_proxy_port = -1; // Proxy server for https requests.
 	String https_proxy_host;
-	bool tls = false;
-	bool tls_verify_host = false;
 	bool blocking = false;
 	bool handshaking = false;
 	bool head_request = false;
+	Ref<TLSOptions> tls_options;
 
 	Vector<uint8_t> response_str;
 
@@ -79,7 +80,7 @@ public:
 
 	Error request(Method p_method, const String &p_url, const Vector<String> &p_headers, const uint8_t *p_body, int p_body_size) override;
 
-	Error connect_to_host(const String &p_host, int p_port = -1, bool p_tls = false, bool p_verify_host = true) override;
+	Error connect_to_host(const String &p_host, int p_port = -1, Ref<TLSOptions> p_tls_options = Ref<TLSOptions>()) override;
 	void set_connection(const Ref<StreamPeer> &p_connection) override;
 	Ref<StreamPeer> get_connection() const override;
 	void close() override;

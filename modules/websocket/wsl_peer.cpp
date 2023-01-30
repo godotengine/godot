@@ -333,8 +333,7 @@ void WSLPeer::_do_client_handshake() {
 			// Start SSL handshake
 			tls = Ref<StreamPeerTLS>(StreamPeerTLS::create());
 			ERR_FAIL_COND_MSG(tls.is_null(), "SSL is not available in this build.");
-			tls->set_blocking_handshake_enabled(false);
-			if (tls->connect_to_stream(tcp, verify_tls, requested_host, tls_cert) != OK) {
+			if (tls->connect_to_stream(tcp, requested_host, tls_options) != OK) {
 				close(-1);
 				return; // Error.
 			}
@@ -476,9 +475,10 @@ bool WSLPeer::_verify_server_response() {
 	return true;
 }
 
-Error WSLPeer::connect_to_url(const String &p_url, bool p_verify_tls, Ref<X509Certificate> p_cert) {
+Error WSLPeer::connect_to_url(const String &p_url, Ref<TLSOptions> p_options) {
 	ERR_FAIL_COND_V(wsl_ctx || tcp.is_valid(), ERR_ALREADY_IN_USE);
 	ERR_FAIL_COND_V(p_url.is_empty(), ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(p_options.is_valid() && p_options->is_server(), ERR_INVALID_PARAMETER);
 
 	_clear();
 
@@ -506,8 +506,13 @@ Error WSLPeer::connect_to_url(const String &p_url, bool p_verify_tls, Ref<X509Ce
 
 	requested_url = p_url;
 	requested_host = host;
-	verify_tls = p_verify_tls;
-	tls_cert = p_cert;
+
+	if (p_options.is_valid()) {
+		tls_options = p_options;
+	} else {
+		tls_options = TLSOptions::client();
+	}
+
 	tcp.instantiate();
 
 	resolver.start(host, port);
