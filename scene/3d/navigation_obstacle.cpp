@@ -164,16 +164,24 @@ Node *NavigationObstacle::get_navigation_node() const {
 }
 
 String NavigationObstacle::get_configuration_warning() const {
+	String warning = Node::get_configuration_warning();
+
 	if (!Object::cast_to<Spatial>(get_parent())) {
-		return TTR("The NavigationObstacle only serves to provide collision avoidance to a Spatial inheriting parent object.");
+		if (warning != String()) {
+			warning += "\n\n";
+		}
+		warning += TTR("The NavigationObstacle only serves to provide collision avoidance to a Spatial inheriting parent object.");
 	}
 
 	if (Object::cast_to<StaticBody>(get_parent())) {
-		return TTR("The NavigationObstacle is intended for constantly moving bodies like KinematicBody3D or RigidBody3D as it creates only an RVO avoidance radius and does not follow scene geometry exactly."
-				   "\nNot constantly moving or complete static objects should be (re)baked to a NavigationMesh so agents can not only avoid them but also move along those objects outline at high detail");
+		if (warning != String()) {
+			warning += "\n\n";
+		}
+		warning += TTR("The NavigationObstacle is intended for constantly moving bodies like KinematicBody or RigidBody as it creates only an RVO avoidance radius and does not follow scene geometry exactly."
+					   "\nNot constantly moving or complete static objects should be (re)baked to a NavigationMesh so agents can not only avoid them but also move along those objects outline at high detail");
 	}
 
-	return String();
+	return warning;
 }
 
 void NavigationObstacle::initialize_agent() {
