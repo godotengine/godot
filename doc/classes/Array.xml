@@ -59,7 +59,7 @@
 			<param index="2" name="class_name" type="StringName" />
 			<param index="3" name="script" type="Variant" />
 			<description>
-				Creates a typed array from the [param base] array. The base array can't be already typed. See [method set_typed] for more details.
+				Creates a typed array from the [param base] array. The base array can't be already typed.
 			</description>
 		</constructor>
 		<constructor name="Array">
@@ -528,16 +528,6 @@
 			<param index="1" name="from" type="int" default="-1" />
 			<description>
 				Searches the array in reverse order. Optionally, a start search index can be passed. If negative, the start index is considered relative to the end of the array.
-			</description>
-		</method>
-		<method name="set_typed">
-			<return type="void" />
-			<param index="0" name="type" type="int" />
-			<param index="1" name="class_name" type="StringName" />
-			<param index="2" name="script" type="Variant" />
-			<description>
-				Makes the [Array] typed. The [param type] should be one of the [enum Variant.Type] constants. [param class_name] is optional and can only be provided for [constant TYPE_OBJECT]. [param script] can only be provided if [param class_name] is not empty.
-				The method fails if an array is already typed.
 			</description>
 		</method>
 		<method name="shuffle">
