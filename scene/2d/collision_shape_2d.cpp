@@ -288,5 +288,6 @@ void CollisionShape2D::_bind_methods() {
 
 CollisionShape2D::CollisionShape2D() {
 	set_notify_local_transform(true);
+	set_hide_clip_children(true);
 	debug_color = _get_default_debug_color();
 }

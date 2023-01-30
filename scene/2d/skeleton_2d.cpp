@@ -519,6 +519,7 @@ Bone2D::Bone2D() {
 	bone_angle = 0;
 	autocalculate_length_and_angle = true;
 	set_notify_local_transform(true);
+	set_hide_clip_children(true);
 	//this is a clever hack so the bone knows no rest has been set yet, allowing to show an error.
 	for (int i = 0; i < 3; i++) {
 		rest[i] = Vector2(0, 0);
@@ -801,6 +802,7 @@ void Skeleton2D::_bind_methods() {
 Skeleton2D::Skeleton2D() {
 	skeleton = RS::get_singleton()->skeleton_create();
 	set_notify_transform(true);
+	set_hide_clip_children(true);
 }
 
 Skeleton2D::~Skeleton2D() {
