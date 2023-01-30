@@ -6206,7 +6206,7 @@ void EditorNode::reload_instances_with_path_in_edited_scenes(const String &p_ins
 						List<PropertyInfo> pinfo;
 						modifiable_node->get_property_list(&pinfo);
 
-						// Get names of all valid property names (TODO: make this more efficent).
+						// Get names of all valid property names (TODO: make this more efficient).
 						List<String> property_names;
 						for (const PropertyInfo &E2 : pinfo) {
 							if (E2.usage & PROPERTY_USAGE_STORAGE) {
@@ -6224,7 +6224,7 @@ void EditorNode::reload_instances_with_path_in_edited_scenes(const String &p_ins
 						for (const ConnectionWithNodePath &E2 : E.value.connections_to) {
 							Connection conn = E2.connection;
 
-							// Get the node the callable is targetting.
+							// Get the node the callable is targeting.
 							Node *target_node = cast_to<Node>(conn.callable.get_object());
 
 							// If the callable object no longer exists or is marked for deletion,

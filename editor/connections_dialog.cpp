@@ -354,7 +354,7 @@ void ConnectDialog::_update_method_tree() {
 		return;
 	}
 
-	// Get methods from each class in the heirarchy.
+	// Get methods from each class in the hierarchy.
 	StringName current_class = target->get_class_name();
 	do {
 		TreeItem *class_item = method_tree->create_item(root_item);

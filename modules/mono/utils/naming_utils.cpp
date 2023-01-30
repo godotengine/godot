@@ -109,7 +109,7 @@ Vector<String> _split_pascal_case(const String &p_identifier) {
 				if (!is_digit(p_identifier[i])) {
 					// These conditions only apply when the separator is not a digit.
 					if (i - current_part_start == 1) {
-						// Upper character was only the beggining of a word.
+						// Upper character was only the beginning of a word.
 						prev_was_upper = false;
 						continue;
 					}

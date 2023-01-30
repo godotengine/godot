@@ -363,7 +363,7 @@ Error ENetMultiplayerPeer::put_packet(const uint8_t *p_buffer, int p_buffer_size
 
 #ifdef DEBUG_ENABLED
 	if ((packet_flags & ENET_PACKET_FLAG_UNRELIABLE_FRAGMENT) && p_buffer_size > ENET_HOST_DEFAULT_MTU) {
-		WARN_PRINT_ONCE(vformat("Sending %d bytes unrealiably which is above the MTU (%d), this will result in higher packet loss", p_buffer_size, ENET_HOST_DEFAULT_MTU));
+		WARN_PRINT_ONCE(vformat("Sending %d bytes unreliably which is above the MTU (%d), this will result in higher packet loss", p_buffer_size, ENET_HOST_DEFAULT_MTU));
 	}
 #endif
 
