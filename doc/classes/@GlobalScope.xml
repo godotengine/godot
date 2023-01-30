@@ -1271,7 +1271,13 @@
 		<method name="str" qualifiers="vararg">
 			<return type="String" />
 			<description>
-				Converts one or more arguments of any [Variant] type to [String] in the best way possible.
+				Converts one or more arguments of any [Variant] type to a [String] in the best way possible.
+				[codeblock]
+				var a = [10, 20, 30]
+				var b = str(a)
+				print(len(a)) # Prints 3 (the number of elements in the array).
+				print(len(b)) # Prints 12 (the length of the string "[10, 20, 30]").
+				[/codeblock]
 			</description>
 		</method>
 		<method name="str_to_var">
