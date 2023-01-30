@@ -667,6 +667,8 @@ bool AnimationNodeTransition::_set(const StringName &p_path, const Variant &p_va
 		set_input_name(which, p_value);
 	} else if (what == "auto_advance") {
 		set_input_as_auto_advance(which, p_value);
+	} else if (what == "reset") {
+		set_input_reset(which, p_value);
 	} else {
 		return false;
 	}
@@ -690,6 +692,8 @@ bool AnimationNodeTransition::_get(const StringName &p_path, Variant &r_ret) con
 		r_ret = get_input_name(which);
 	} else if (what == "auto_advance") {
 		r_ret = is_input_set_as_auto_advance(which);
+	} else if (what == "reset") {
+		r_ret = is_input_reset(which);
 	} else {
 		return false;
 	}
@@ -749,25 +753,35 @@ void AnimationNodeTransition::set_input_count(int p_inputs) {
 
 bool AnimationNodeTransition::add_input(const String &p_name) {
 	if (AnimationNode::add_input(p_name)) {
-		input_as_auto_advance.push_back(false);
+		input_data.push_back(InputData());
 		return true;
 	}
 	return false;
 }
 
 void AnimationNodeTransition::remove_input(int p_index) {
-	input_as_auto_advance.remove_at(p_index);
+	input_data.remove_at(p_index);
 	AnimationNode::remove_input(p_index);
 }
 
 void AnimationNodeTransition::set_input_as_auto_advance(int p_input, bool p_enable) {
 	ERR_FAIL_INDEX(p_input, get_input_count());
-	input_as_auto_advance.write[p_input] = p_enable;
+	input_data.write[p_input].auto_advance = p_enable;
 }
 
 bool AnimationNodeTransition::is_input_set_as_auto_advance(int p_input) const {
 	ERR_FAIL_INDEX_V(p_input, get_input_count(), false);
-	return input_as_auto_advance[p_input];
+	return input_data[p_input].auto_advance;
+}
+
+void AnimationNodeTransition::set_input_reset(int p_input, bool p_enable) {
+	ERR_FAIL_INDEX(p_input, get_input_count());
+	input_data.write[p_input].reset = p_enable;
+}
+
+bool AnimationNodeTransition::is_input_reset(int p_input) const {
+	ERR_FAIL_INDEX_V(p_input, get_input_count(), true);
+	return input_data[p_input].reset;
 }
 
 void AnimationNodeTransition::set_xfade_time(double p_fade) {
@@ -786,14 +800,6 @@ Ref<Curve> AnimationNodeTransition::get_xfade_curve() const {
 	return xfade_curve;
 }
 
-void AnimationNodeTransition::set_reset(bool p_reset) {
-	reset = p_reset;
-}
-
-bool AnimationNodeTransition::is_reset() const {
-	return reset;
-}
-
 double AnimationNodeTransition::process(double p_time, bool p_seek, bool p_is_external_seeking) {
 	String cur_transition_request = get_parameter(transition_request);
 	int cur_current_index = get_parameter(current_index);
@@ -810,7 +816,7 @@ double AnimationNodeTransition::process(double p_time, bool p_seek, bool p_is_ex
 		if (new_idx >= 0) {
 			if (cur_current_index == new_idx) {
 				// Transition to same state.
-				restart = reset;
+				restart = input_data[cur_current_index].reset;
 				cur_prev_xfading = 0;
 				set_parameter(prev_xfading, 0);
 				cur_prev_index = -1;
@@ -865,7 +871,7 @@ double AnimationNodeTransition::process(double p_time, bool p_seek, bool p_is_ex
 			cur_time += p_time;
 		}
 
-		if (input_as_auto_advance[cur_current_index] && rem <= xfade_time) {
+		if (input_data[cur_current_index].auto_advance && rem <= xfade_time) {
 			set_parameter(transition_request, get_input_name((cur_current_index + 1) % get_input_count()));
 		}
 
@@ -878,7 +884,7 @@ double AnimationNodeTransition::process(double p_time, bool p_seek, bool p_is_ex
 
 		// Blend values must be more than CMP_EPSILON to process discrete keys in edge.
 		real_t blend_inv = 1.0 - blend;
-		if (reset && !p_seek && switched) { //just switched, seek to start of current
+		if (input_data[cur_current_index].reset && !p_seek && switched) { //just switched, seek to start of current
 			rem = blend_input(cur_current_index, 0, true, p_is_external_seeking, Math::is_zero_approx(blend_inv) ? CMP_EPSILON : blend_inv, FILTER_IGNORE, true);
 		} else {
 			rem = blend_input(cur_current_index, p_time, p_seek, p_is_external_seeking, Math::is_zero_approx(blend_inv) ? CMP_EPSILON : blend_inv, FILTER_IGNORE, true);
@@ -907,6 +913,7 @@ void AnimationNodeTransition::_get_property_list(List<PropertyInfo> *p_list) con
 	for (int i = 0; i < get_input_count(); i++) {
 		p_list->push_back(PropertyInfo(Variant::STRING, "input_" + itos(i) + "/name", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL));
 		p_list->push_back(PropertyInfo(Variant::BOOL, "input_" + itos(i) + "/auto_advance", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL));
+		p_list->push_back(PropertyInfo(Variant::BOOL, "input_" + itos(i) + "/reset", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL));
 	}
 }
 
@@ -916,18 +923,17 @@ void AnimationNodeTransition::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_input_as_auto_advance", "input", "enable"), &AnimationNodeTransition::set_input_as_auto_advance);
 	ClassDB::bind_method(D_METHOD("is_input_set_as_auto_advance", "input"), &AnimationNodeTransition::is_input_set_as_auto_advance);
 
+	ClassDB::bind_method(D_METHOD("set_input_reset", "input", "enable"), &AnimationNodeTransition::set_input_reset);
+	ClassDB::bind_method(D_METHOD("is_input_reset", "input"), &AnimationNodeTransition::is_input_reset);
+
 	ClassDB::bind_method(D_METHOD("set_xfade_time", "time"), &AnimationNodeTransition::set_xfade_time);
 	ClassDB::bind_method(D_METHOD("get_xfade_time"), &AnimationNodeTransition::get_xfade_time);
 
 	ClassDB::bind_method(D_METHOD("set_xfade_curve", "curve"), &AnimationNodeTransition::set_xfade_curve);
 	ClassDB::bind_method(D_METHOD("get_xfade_curve"), &AnimationNodeTransition::get_xfade_curve);
 
-	ClassDB::bind_method(D_METHOD("set_reset", "reset"), &AnimationNodeTransition::set_reset);
-	ClassDB::bind_method(D_METHOD("is_reset"), &AnimationNodeTransition::is_reset);
-
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "xfade_time", PROPERTY_HINT_RANGE, "0,120,0.01,suffix:s"), "set_xfade_time", "get_xfade_time");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "xfade_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_xfade_curve", "get_xfade_curve");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "reset"), "set_reset", "is_reset");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "input_count", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_ARRAY | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED, "Inputs,input_"), "set_input_count", "get_input_count");
 }
 
