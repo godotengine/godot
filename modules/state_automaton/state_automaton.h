@@ -13,13 +13,14 @@
 #include "core/string_name.h"
 #include "core/script_language.h"
 #include "core/ordered_hash_map.h"
+#include "core/hash_map.h"
 
 class State;
 class PushdownAutomaton;
 class StateAutomaton;
 
 typedef OrderedHashMap<StringName, Ref<State>> StateHashMap;
-typedef OrderedHashMap<String, Variant> BlackboardHashMap;
+typedef HashMap<String, Variant> BlackboardHashMap;
 
 class State : public Reference {
 	GDCLASS(State, Reference);
@@ -55,22 +56,22 @@ public:
 	PushdownAutomaton();
 	~PushdownAutomaton();
 	
-	Ref<State> get_entry_state();
-	Ref<State> get_state_by_name(const StringName& state_name) const;
-	Ref<State> get_next_state(const StringName& from_state) const;
-	Ref<State> get_prev_state(const StringName& from_state) const;
+	virtual Ref<State> get_entry_state();
+	virtual Ref<State> get_state_by_name(const StringName& state_name) const;
+	virtual Ref<State> get_next_state(const StringName& from_state) const;
+	virtual Ref<State> get_prev_state(const StringName& from_state) const;
 
 	friend class StateAutomaton;
 
-	bool add_state(const Ref<State>& new_state);
-	bool remove_state(const StringName& state_name);
+	virtual bool add_state(const Ref<State>& new_state);
+	virtual bool remove_state(const StringName& state_name);
 
-	void set_termination(const bool& status);
-	inline bool is_terminated() const { return terminated; }
+	virtual void set_termination(const bool& status);
+	virtual inline bool is_terminated() const { return terminated; }
 
-	inline void clean_pool() { state_pool.clear(); }
-	Dictionary get_all_states() const;
-	inline int get_pool_size() const { return state_pool.size(); }
+	virtual inline void clean_pool() { state_pool.clear(); }
+	virtual Dictionary get_all_states() const;
+	virtual inline int get_pool_size() const { return state_pool.size(); }
 };
 
 class StateAutomaton : public Reference {

@@ -1,3 +1,7 @@
 Import('env')
 
+from generate_mt_boilerplate import *
+
+generate_file(COMMON_FILE_NAME)
+
 env.add_source_files(env.modules_sources, "*.cpp")

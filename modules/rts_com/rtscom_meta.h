@@ -219,6 +219,9 @@ protected:
 	Sentrience *combat_server;
 
 public:
+	RID_RCS() {}
+	virtual ~RID_RCS() {}
+
 	virtual Ref<RawRecord> serialize() const { return Ref<RawRecord>(); }
 	virtual bool serialize(const Ref<RawRecord> &from) { return false; }
 	virtual void deserialize(const RawRecord &rec) {}

@@ -1,8 +1,7 @@
 #ifndef RCS_MAINCOMP_H
 #define RCS_MAINCOMP_H
 
-
-
+#include <mutex>
 #include <string>
 
 // #include "combat_server.h"
@@ -19,6 +18,8 @@
 #include "core/reference.h"
 #include "rtscom_rid.h"
 #include "rtscom_meta.h"
+
+#define SimulationSync(mutex) std::lock_guard<std::recursive_mutex> __guard(mutex)
 
 #define MIN_RADAR_SPREAD 0.008726646
 #define MAX_RADAR_SPREAD Math_PI
@@ -50,6 +51,7 @@ class RCSEngagementInternal;
 class RCSWorld;
 class RCSStaticWorld;
 class RCSSingleWorld;
+class RCSSyncServer;
 
 class EventReport;
 class CombatantEventReport;
@@ -625,6 +627,30 @@ public:
 	_FORCE_INLINE_ RID_TYPE get_deffending_squad()	const { ERR_FAIL_COND_V(!logger, RID_TYPE()); return logger->get_deffending_squad(); }
 };
 
+class RCSSyncServer {
+	_THREAD_SAFE_CLASS_;
+private:
+	struct SyncTicket {
+		friend class RCSSyncServer;
+		void (*func)(const void*);
+		void* data;
+
+		SyncTicket(void (*func)(const void*) = nullptr, const void* data = nullptr) {
+			this->func = func;
+			this->data = const_cast<void*>(data);
+		}
+	};
+private:
+	List<SyncTicket> sync_requests;
+public:
+	RCSSyncServer();
+	~RCSSyncServer();
+
+	void add_sync_request(void (*func)(const void*), const void* data = nullptr);
+
+	void sync();
+};
+
 class RCSSimulationProfile : public RCSProfile {
 	GDCLASS(RCSSimulationProfile, RCSProfile);
 private:
@@ -655,7 +681,38 @@ public:
 };
 
 class RCSSimulation : public RID_RCS {
+public:
+	enum SyncAction : unsigned int {
+		NA = 0,
+		ADD = 1,
+		REMOVE = 2,
+		COMBATANT = 4,
+		SQUAD = 8,
+		TEAM = 16,
+		RADAR = 32,
+	};
 private:
+	struct SyncTicket {
+		unsigned int action;
+		RID_RCS* subject;
+		void* additional_info;
+		SyncTicket(const unsigned int& action, const RID_RCS* subject, const void* additional_info = (const void*)nullptr){
+			this->action = action;
+			this->subject = const_cast<RID_RCS*>(subject);
+			this->additional_info = const_cast<void*>(additional_info);
+		}
+		SyncTicket(const SyncTicket& other){
+			this->action = other.action;
+			this->subject = other.subject;
+			this->additional_info = other.additional_info;
+		}
+	};
+private:
+	RCSSyncServer* sync_server;
+
+	std::recursive_mutex sync_mutex;
+	VECTOR<SyncTicket*> sync_machine;
+
 	VECTOR<RCSCombatant *> combatants;
 	VECTOR<RCSSquad *> squads;
 	VECTOR<RCSTeam *> teams;
@@ -667,6 +724,8 @@ private:
 
 	VECTOR<std::shared_ptr<RCSEngagementInternal>> engagements;
 private:
+	void sync(const float& delta);
+
 	void ihandler_projectile_fired(std::shared_ptr<ProjectileEventReport>& event);
 	void ihandler_radar_scan_concluded(std::shared_ptr<RadarEventReport>& event);
 public:
@@ -676,15 +735,15 @@ public:
 	_FORCE_INLINE_ void set_profile(const Ref<RCSSimulationProfile>& new_profile) { profile->copy(new_profile); }
 	_FORCE_INLINE_ Ref<RCSSimulationProfile> get_profile() const { return profile->duplicate(); }
 
-	void add_combatant(RCSCombatant *com);
-	void add_squad(RCSSquad *squad);
-	void add_team(RCSTeam *team);
-	void add_radar(RCSRadar *rad);
+	void add_combatant(RCSCombatant *com, const bool& try_sync = false);
+	void add_squad(RCSSquad *squad, const bool& try_sync = false);
+	void add_team(RCSTeam *team, const bool& try_sync = false);
+	void add_radar(RCSRadar *rad, const bool& try_sync = false);
 
-	void remove_combatant(RCSCombatant *com);
-	void remove_squad(RCSSquad *squad);
-	void remove_team(RCSTeam *team);
-	void remove_radar(RCSRadar *rad);
+	void remove_combatant(RCSCombatant *com, const bool& try_sync = false);
+	void remove_squad(RCSSquad *squad, const bool& try_sync = false);
+	void remove_team(RCSTeam *team, const bool& try_sync = false);
+	void remove_radar(RCSRadar *rad, const bool& try_sync = false);
 
 	_FORCE_INLINE_ uint32_t count_combatants() const { return combatants.size(); }
 	_FORCE_INLINE_ uint32_t count_squads() const { return squads.size(); }

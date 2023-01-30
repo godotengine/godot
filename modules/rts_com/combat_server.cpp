@@ -1,7 +1,8 @@
 #include "combat_server.h"
 
 Sentrience* Sentrience::singleton = nullptr;
-
+std::recursive_mutex Sentrience::global_lock;
+List<Sentrience*> Sentrience::all_instances;
 
 #ifdef USE_THREAD_SAFE_API
 #define SIMULATION_THREAD_SAFE                                          \
@@ -147,9 +148,8 @@ void Sentrience::init_debug_record(){
 #endif
 
 Sentrience::Sentrience(){
-	ERR_FAIL_COND(singleton);
-	singleton = this;
 	// RCSMemoryAllocationPtr = rcsnew(RCSMemoryAllocation);
+	Sentrience::add_instance(this);
 	active = false;
 #ifdef USE_CIRCULAR_DEBUG_RECORD
 	init_debug_record();
@@ -164,6 +164,7 @@ Sentrience::Sentrience(){
 
 Sentrience::~Sentrience(){
 	// flush_instances_pool();
+	Sentrience::remove_instance(this);
 #ifdef USE_THREAD_SAFE_API
 	if (!all_rids.empty()) {
 		auto size = all_rids.size();
@@ -209,8 +210,6 @@ Sentrience::~Sentrience(){
 	gc_thread->join();
 	delete gc_thread;
 #endif
-	singleton = nullptr;
-	// rcsdel(RCSMemoryAllocationPtr);
 }
 
 Ref<SentrienceContext> Sentrience::memcontext_create(){
@@ -226,7 +225,7 @@ void Sentrience::memcontext_remove(){
 	active_watcher = Ref<SentrienceContext>();
 }
 
-void Sentrience::free_single_rid_internal(const RID_TYPE& target){
+void Sentrience::free_single_rid_internal(RID_TYPE target){
 	if (simulation_owner.owns(target)){
 		SIMULATION_THREAD_SAFE;
 		FreeLog(RCSSimulation, target);
@@ -314,7 +313,7 @@ void Sentrience::gc_worker(){
 #else
 void Sentrience::gc_worker(){}
 #endif
-String Sentrience::rid_sort(const RID_TYPE& target){
+String Sentrience::rid_sort(RID_TYPE target){
 	RIDSort(recording_owner, RCSRecording, target)
 	else RIDSort(simulation_owner, RCSSimulation, target)
 	else RIDSort(combatant_owner, RCSCombatant, target)
@@ -322,6 +321,720 @@ String Sentrience::rid_sort(const RID_TYPE& target){
 	else RIDSort(team_owner, RCSTeam, target)
 	else RIDSort(radar_owner, RCSRadar, target)
 	return String("<unknown>");
+}
+
+void Sentrience::poll(const float& delta){
+#ifdef SENTRIENCE_SINGLE_INSTANCE
+	iterate(delta);
+#else
+	ERR_FAIL_COND_MSG(this != singleton, "Sentrience::poll can only be called to the primary instance");
+	SentrienceGlobalLock();
+	for (auto E = all_instances.front(); E; E = E->next()){
+		auto instance = E->get();
+		instance->sync();
+		instance->iterate(delta);
+	}
+#endif
+}
+
+void Sentrience::iterate(const float& delta){
+	if (!active) return;
+	if (Engine::get_singleton()->get_physics_frames() % poll_scatter != 0) return;
+	
+	for (uint32_t i = 0; i < active_simulations.size(); i++){
+		auto space = active_simulations[i];
+		if (space) space->poll(delta);
+	}
+}
+
+void Sentrience::free_all_instances(){
+	log("This method has been deprecated.");
+}
+
+void Sentrience::memcontext_flush(Ref<SentrienceContext> watcher){
+#ifndef USE_THREAD_SAFE_API
+	if (watcher.is_null()) return;
+	std::lock_guard<std::recursive_mutex> guard(watcher->lock);
+	for (auto E = watcher->get_rid_pool()->front(); E; E = E->next()){
+		free_single_rid_internal(E->get());
+	}
+	watcher->get_rid_pool()->clear();
+	// memcontext_remove();
+#endif
+}
+#ifdef USE_SAFE_RID_COUNT
+#define QueueDeletionLog(rid) \
+	log(String("Queuing no.") + itos(rid) + String(" for deletion"));
+#else
+#define QueueDeletionLog(rid) \
+	log(String("Queuing no.") + itos(rid.get_id()) + String(" for deletion"));
+#endif
+
+void Sentrience::flush_instances_pool(){
+	// uint32_t count = 0;
+	// while (!all_rids.empty()) {
+	// 	auto rid = all_rids[0];
+	// 	// log(String("Freeing RID_TYPE No.") + String(std::to_string(count).c_str()) + String(" with id.") + String(std::to_string(rid.get_id()).c_str()));
+	// 	free_rid(rid);
+	// 	VEC_REMOVE(all_rids, 0);
+	// }
+#ifdef USE_THREAD_SAFE_API
+	gc_queue_mutex.lock();
+	auto size = all_rids.size();
+	for (uint32_t i = 0; i < size; i++){
+		auto rid = all_rids[i];
+		QueueDeletionLog(rid);
+		rid_deletion_queue.push_back(rid);
+	}
+	gc_queue_mutex.unlock();
+#else
+	// memcontext_flush();
+	ERR_FAIL_MSG("This method is deprecated");
+#endif
+}
+
+#ifdef USE_SAFE_RID_COUNT
+void Sentrience::free_rid(RID_TYPEtarget) {
+	if (simulation_owner.owns(target)) {
+		FreeLog(RCSSimulation, target);
+		simulation_owner.free(target);
+	} else if (combatant_owner.owns(target)) {
+		FreeLog(RCSCombatant, target);
+		combatant_owner.free(target);
+	} else if (squad_owner.owns(target)) {
+		FreeLog(RCSSquad, target);
+		squad_owner.free(target);
+	} else if (team_owner.owns(target)) {
+		FreeLog(RCSTeam, target);
+		team_owner.free(target);
+	} else if (radar_owner.owns(target)) {
+		FreeLog(RCSRadar, target);
+		radar_owner.free(target);
+	} else if (recording_owner.owns(target)) {
+		FreeLog(RCSRecording, target);
+		recording_owner.free(target);
+	}
+}
+#else
+void Sentrience::free_rid(RID_TYPE target){
+#ifdef USE_THREAD_SAFE_API
+	gc_queue_mutex.lock();
+	QueueDeletionLog(target);
+	rid_deletion_queue.push_back(target);
+	gc_queue_mutex.unlock();
+#else
+	if (!active_watcher.is_null()) active_watcher->remove_rid(target);
+	free_single_rid_internal(target);
+#endif
+}
+#endif
+
+RID_TYPE Sentrience::recording_create(){
+	auto subject = rcsnew(RCSRecording);
+	RCSMakeRID(recording_owner, subject);
+}
+bool Sentrience::recording_assert(RID_TYPE r_rec){
+	return recording_owner.owns(r_rec);
+}
+void Sentrience::recording_add_simulation(RID_TYPE r_rec, RID_TYPE r_simul){
+	RECORDINGS_THREAD_SAFE;
+	auto recording = recording_owner.get(r_rec);
+	auto simulation = simulation_owner.get(r_simul);
+	ERR_FAIL_COND(!recording || !simulation || simulation->has_recorder());
+	simulation->set_recorder(recording);
+}
+void Sentrience::recording_remove_simulation(RID_TYPE r_rec, RID_TYPE r_simul){
+	RECORDINGS_THREAD_SAFE;
+	auto recording = recording_owner.get(r_rec);
+	auto simulation = simulation_owner.get(r_simul);
+	ERR_FAIL_COND(!recording || !simulation || !simulation->has_recorder());
+	simulation->set_recorder(nullptr);
+}
+Dictionary Sentrience::recording_compile_by_simulation(RID_TYPE r_rec, RID_TYPE r_simul){
+	RECORDINGS_THREAD_SAFE;
+	auto recording = recording_owner.get(r_rec);
+	auto simulation = simulation_owner.get(r_simul);
+	ERR_FAIL_COND_V(!recording || !simulation, Dictionary());
+	return recording->events_by_simulation_compat(simulation);
+}
+bool Sentrience::recording_start(RID_TYPE r_rec){
+	RECORDINGS_THREAD_SAFE;
+	auto recording = recording_owner.get(r_rec);
+	ERR_FAIL_COND_V(!recording, false);
+	int search_res = 0;
+	VEC_FIND(active_rec, recording, search_res);
+	if (search_res != -1) return false;
+	OverweightAssertReturn(active_rec, false);
+	// active_rec.push_back(recording);
+	recording->start_recording();
+	return true;
+}
+bool Sentrience::recording_end(RID_TYPE r_rec){
+	RECORDINGS_THREAD_SAFE;
+	auto recording = recording_owner.get(r_rec);
+	ERR_FAIL_COND_V(!recording, false);
+	int search_res = 0;
+	VEC_FIND(active_rec, recording, search_res);
+	if (search_res != -1) return false;
+
+	// VEC_ERASE(active_rec, recording);
+	recording->end_recording();
+	return false;
+}
+
+bool Sentrience::recording_running(RID_TYPE r_rec){
+	RECORDINGS_THREAD_SAFE;
+	auto recording = recording_owner.get(r_rec);
+	ERR_FAIL_COND_V(!recording, false);
+	return recording->running;
+}
+
+void Sentrience::recording_purge(RID_TYPE r_rec){
+	RECORDINGS_THREAD_SAFE;
+	auto recording = recording_owner.get(r_rec);
+	ERR_FAIL_COND(!recording);
+	recording->purge();
+}
+
+RID_TYPE Sentrience::simulation_create(){
+	auto subject = rcsnew(RCSSimulation);
+	RCSMakeRID(simulation_owner, subject);
+}
+
+bool Sentrience::simulation_assert(RID_TYPE r_simul){
+	return simulation_owner.owns(r_simul);
+}
+
+void Sentrience::simulation_set_active(RID_TYPE r_simul, const bool& p_active){
+	SIMULATION_THREAD_SAFE;
+	auto simulation = simulation_owner.get(r_simul);
+	ERR_FAIL_COND(!simulation);
+	if (simulation_is_active(r_simul) == p_active) return;
+
+	if (p_active) {
+		OverweightAssert(active_simulations);
+		active_simulations.push_back(simulation);
+	}
+	// else active_simulations.erase(simulation);
+	else VEC_ERASE(active_simulations, simulation)
+}
+
+bool Sentrience::simulation_is_active(RID_TYPE r_simul){
+	SIMULATION_THREAD_SAFE;
+	auto simulation = simulation_owner.get(r_simul);
+	ERR_FAIL_COND_V(!simulation, false);
+	VEC_HAS(active_simulations, simulation)
+}
+Array Sentrience::simulation_get_all_engagements(RID_TYPE r_simul){
+	SIMULATION_THREAD_SAFE;
+	auto simulation = simulation_owner.get(r_simul);
+	ERR_FAIL_COND_V(!simulation, Array());
+	return simulation->request_all_engagements_compat();
+}
+Array Sentrience::simulation_get_all_active_engagements(RID_TYPE r_simul){
+	SIMULATION_THREAD_SAFE;
+	auto simulation = simulation_owner.get(r_simul);
+	ERR_FAIL_COND_V(!simulation, Array());
+	return simulation->request_all_active_engagements_compat();
+}
+void Sentrience::simulation_set_profile(RID_TYPE r_simul, const Ref<RCSSimulationProfile>& profile){
+	SIMULATION_THREAD_SAFE;
+	auto simulation = simulation_owner.get(r_simul);
+	ERR_FAIL_COND(!simulation);
+	simulation->set_profile(profile);
+}
+Ref<RCSSimulationProfile> Sentrience::simulation_get_profile(RID_TYPE r_simul){
+	SIMULATION_THREAD_SAFE;
+	auto simulation = simulation_owner.get(r_simul);
+	ERR_FAIL_COND_V(!simulation, Ref<RCSSimulationProfile>());
+	return simulation->get_profile();
+}
+void Sentrience::simulation_bind_recording(RID_TYPE r_simul, RID_TYPE r_rec){
+	SIMULATION_THREAD_SAFE;
+	auto simulation = simulation_owner.get(r_simul);
+	auto recording = recording_owner.get(r_rec);
+	ERR_FAIL_COND(!simulation);
+	simulation->set_recorder(recording);
+}
+void Sentrience::simulation_unbind_recording(RID_TYPE r_simul){
+	SIMULATION_THREAD_SAFE;
+	auto simulation = simulation_owner.get(r_simul);
+	ERR_FAIL_COND(!simulation);
+	simulation->set_recorder(nullptr);
+}
+uint32_t Sentrience::simulation_count_combatant(RID_TYPE r_simul){
+	SIMULATION_THREAD_SAFE;
+	auto simulation = simulation_owner.get(r_simul);
+	ERR_FAIL_COND_V(!simulation, 0);
+	return simulation->count_combatants();
+}
+uint32_t Sentrience::simulation_count_squad(RID_TYPE r_simul){
+	SIMULATION_THREAD_SAFE;
+	auto simulation = simulation_owner.get(r_simul);
+	ERR_FAIL_COND_V(!simulation, 0);
+	return simulation->count_squads();
+}
+uint32_t Sentrience::simulation_count_team(RID_TYPE r_simul){
+	SIMULATION_THREAD_SAFE;
+	auto simulation = simulation_owner.get(r_simul);
+	ERR_FAIL_COND_V(!simulation, 0);
+	return simulation->count_teams();
+}
+uint32_t Sentrience::simulation_count_radar(RID_TYPE r_simul){
+	SIMULATION_THREAD_SAFE;
+	auto simulation = simulation_owner.get(r_simul);
+	ERR_FAIL_COND_V(!simulation, 0);
+	return simulation->count_radars();
+}
+uint32_t Sentrience::simulation_count_engagement(RID_TYPE r_simul){
+	SIMULATION_THREAD_SAFE;
+	auto simulation = simulation_owner.get(r_simul);
+	ERR_FAIL_COND_V(!simulation, 0);
+	return 0;
+}
+uint32_t Sentrience::simulation_count_all_instances(RID_TYPE r_simul){
+	SIMULATION_THREAD_SAFE;
+	auto simulation = simulation_owner.get(r_simul);
+	ERR_FAIL_COND_V(!simulation, 0);
+	return (simulation->count_combatants()	+
+			simulation->count_squads()		+
+			simulation->count_teams()		+
+			simulation->count_radars());
+}
+
+RID_TYPE Sentrience::combatant_create(){
+	auto subject = rcsnew(RCSCombatant);
+	RCSMakeRID(combatant_owner, subject);
+}
+
+bool Sentrience::combatant_assert(RID_TYPE r_com){
+	return combatant_owner.owns(r_com);
+}
+
+RID_TYPE Sentrience::combatant_get_simulation(RID_TYPE r_com){
+	COMBATANTS_THREAD_SAFE;
+	GetSimulation(combatant_owner, r_com);
+}
+
+bool Sentrience::combatant_is_squad(RID_TYPE r_com, RID_TYPE r_squad){
+	COMBATANTS_THREAD_SAFE;
+	auto combatant = combatant_owner.get(r_com);
+	ERR_FAIL_COND_V(!combatant, false);
+	auto squad = combatant->get_squad();
+	if (!squad) return false;
+	return (squad->get_self() == r_squad);
+}
+
+bool Sentrience::combatant_is_team(RID_TYPE r_com, RID_TYPE r_team){
+	COMBATANTS_THREAD_SAFE;
+	auto combatant = combatant_owner.get(r_com);
+	ERR_FAIL_COND_V(!combatant, false);
+	auto squad = combatant->get_squad();
+	if (!squad) return false;
+	auto team = squad->get_team();
+	if (!team) return false;
+	return (team->get_self() == r_team);
+}
+Array Sentrience::combatant_get_involving_engagements(RID_TYPE r_com){
+	// COMBATANTS_THREAD_SAFE;
+	// auto combatant = combatant_owner.get(r_com);
+	// Array re;
+	// ERR_FAIL_COND_V(!combatant, re);
+	// // Manually doing this to avoid prompting errors
+	// auto squad = combatant->get_squad();
+	// if (!squad) return re;
+	// auto team = squad->get_team();
+	// if (!team) return re;
+	// return team->get_engagements_ref();
+	ERR_FAIL_V_MSG(Array(), "Deprecated method");
+}
+void Sentrience::combatant_set_simulation(RID_TYPE r_com, RID_TYPE r_simul){
+	COMBATANTS_THREAD_SAFE;
+	auto combatant = combatant_owner.get(r_com);
+	auto simulation = simulation_owner.get(r_simul);
+	ERR_FAIL_COND((!combatant || !simulation));
+	combatant->set_simulation(simulation);
+}
+
+void Sentrience::combatant_set_local_transform(RID_TYPE r_com, const Transform& trans){
+	COMBATANTS_THREAD_SAFE;
+	auto combatant = combatant_owner.get(r_com);
+	ERR_FAIL_COND(!combatant);
+	combatant->set_lt(trans);
+}
+void Sentrience::combatant_set_space_transform(RID_TYPE r_com, const Transform& trans){
+	COMBATANTS_THREAD_SAFE;
+	auto combatant = combatant_owner.get(r_com);
+	ERR_FAIL_COND(!combatant);
+	combatant->set_st(trans);
+}
+
+Transform Sentrience::combatant_get_space_transform(RID_TYPE r_com){
+	COMBATANTS_THREAD_SAFE;
+	auto combatant = combatant_owner.get(r_com);
+	ERR_FAIL_COND_V(!combatant, Transform());
+	return combatant->get_global_transform();
+}
+Transform Sentrience::combatant_get_local_transform(RID_TYPE r_com){
+	COMBATANTS_THREAD_SAFE;
+	auto combatant = combatant_owner.get(r_com);
+	ERR_FAIL_COND_V(!combatant, Transform());
+	return combatant->get_local_transform();
+}
+
+Transform Sentrience::combatant_get_combined_transform(RID_TYPE r_com){
+	COMBATANTS_THREAD_SAFE;
+	auto combatant = combatant_owner.get(r_com);
+	ERR_FAIL_COND_V(!combatant, Transform());
+	return combatant->get_combined_transform();
+}
+uint32_t Sentrience::combatant_get_status(RID_TYPE r_com){
+	COMBATANTS_THREAD_SAFE;
+	auto combatant = combatant_owner.get(r_com);
+	ERR_FAIL_COND_V(!combatant, 0);
+	return combatant->get_status();
+}
+
+void Sentrience::combatant_set_iid(RID_TYPE r_com, const uint64_t& iid){
+	COMBATANTS_THREAD_SAFE;
+	auto combatant = combatant_owner.get(r_com);
+	ERR_FAIL_COND(!combatant);
+	combatant->set_iid(iid);
+}
+uint64_t Sentrience::combatant_get_iid(RID_TYPE r_com){
+	COMBATANTS_THREAD_SAFE;
+	auto combatant = combatant_owner.get(r_com);
+	ERR_FAIL_COND_V(!combatant, 0);
+	return combatant->get_iid();
+}
+void Sentrience::combatant_set_detection_meter(RID_TYPE r_com, const double& dmeter){
+	COMBATANTS_THREAD_SAFE;
+	auto combatant = combatant_owner.get(r_com);
+	ERR_FAIL_COND(!combatant);
+	combatant->_set_detection_meter(dmeter);
+}
+double Sentrience::combatant_get_detection_meter(RID_TYPE r_com){
+	COMBATANTS_THREAD_SAFE;
+	auto combatant = combatant_owner.get(r_com);
+	ERR_FAIL_COND_V(!combatant, 0.0);
+	return combatant->_get_detection_meter();
+}
+
+bool Sentrience::combatant_engagable(RID_TYPE from, RID_TYPE to){
+	COMBATANTS_THREAD_SAFE;
+	auto combatant_1 = combatant_owner.get(from);
+	auto combatant_2 = combatant_owner.get(to);
+	ERR_FAIL_COND_V(!combatant_1 || !combatant_2, false);
+	return combatant_1->is_engagable(combatant_2);
+}
+void Sentrience::combatant_bind_chip(RID_TYPE r_com, const Ref<RCSChip>& chip, const bool& auto_unbind){
+	COMBATANTS_THREAD_SAFE;
+	auto combatant = combatant_owner.get(r_com);
+	ERR_FAIL_COND(!combatant);
+	if (auto_unbind) combatant->set_chip(Ref<RCSChip>());
+	ERR_FAIL_COND(combatant->get_chip().is_valid());
+	combatant->set_chip(chip);
+}
+
+void Sentrience::combatant_unbind_chip(RID_TYPE r_com){
+	COMBATANTS_THREAD_SAFE;
+	auto combatant = combatant_owner.get(r_com);
+	ERR_FAIL_COND(!combatant);
+	combatant->set_chip(Ref<RCSChip>());
+}
+
+void Sentrience::combatant_set_profile(RID_TYPE r_com, const Ref<RCSCombatantProfile>& profile){
+	COMBATANTS_THREAD_SAFE;
+	auto combatant = combatant_owner.get(r_com);
+	ERR_FAIL_COND(!combatant);
+	combatant->set_profile(profile);
+}
+Ref<RCSCombatantProfile> Sentrience::combatant_get_profile(RID_TYPE r_com){
+	COMBATANTS_THREAD_SAFE;
+	auto combatant = combatant_owner.get(r_com);
+	ERR_FAIL_COND_V(!combatant, Ref<RCSCombatantProfile>());
+	return combatant->get_profile();
+}
+
+void Sentrience::combatant_set_projectile_profile(RID_TYPE r_com, const Ref<RCSProjectileProfile>& profile){
+	COMBATANTS_THREAD_SAFE;
+	auto combatant = combatant_owner.get(r_com);
+	ERR_FAIL_COND(!combatant);
+	combatant->set_projectile_profile(profile);
+}
+Ref<RCSProjectileProfile> Sentrience::combatant_get_projectile_profile(RID_TYPE r_com){
+	COMBATANTS_THREAD_SAFE;
+	auto combatant = combatant_owner.get(r_com);
+	ERR_FAIL_COND_V(!combatant, Ref<RCSProjectileProfile>());
+	return combatant->get_projectile_profile();
+}
+
+RID_TYPE Sentrience::squad_create(){
+	auto subject = rcsnew(RCSSquad);
+	RCSMakeRID(squad_owner, subject);
+}
+
+bool Sentrience::squad_assert(RID_TYPE r_squad){
+	return squad_owner.owns(r_squad);
+}
+
+void Sentrience::squad_set_simulation(RID_TYPE r_squad, RID_TYPE r_simul){
+	SQUADS_THREAD_SAFE;
+	auto squad = squad_owner.get(r_squad);
+	auto simulation = simulation_owner.get(r_simul);
+	ERR_FAIL_COND(!squad || !simulation);
+	squad->set_simulation(simulation);
+}
+
+bool Sentrience::squad_is_team(RID_TYPE r_squad, RID_TYPE r_team){
+	SQUADS_THREAD_SAFE;
+	auto squad = squad_owner.get(r_squad);
+	// auto team = team_owner.get(r_team);
+	ERR_FAIL_COND_V(!squad, false);
+	auto team = squad->get_team();
+	if (!team) return false;
+	return (team->get_self() == r_team);
+}
+
+Array Sentrience::squad_get_involving_engagements(RID_TYPE r_squad){
+	// SQUADS_THREAD_SAFE;
+	// auto squad = squad_owner.get(r_squad);
+	// Array re;
+	// ERR_FAIL_COND_V(!squad, re);
+	// auto team = squad->get_team();
+	// if (!team) return re;
+	// return team->get_engagements_ref();
+	ERR_FAIL_V_MSG(Array(), "Deprecated method");
+}
+
+void Sentrience::squad_add_combatant(RID_TYPE r_squad, RID_TYPE r_com){
+	SQUADS_THREAD_SAFE;
+	auto squad = squad_owner.get(r_squad);
+	auto combatant = combatant_owner.get(r_com);
+	ERR_FAIL_COND((!squad || !combatant));
+	if (squad->has_combatant(combatant)) return;
+	OverweightAssert(squad->combatants);
+	combatant->set_squad(squad);
+}
+void Sentrience::squad_remove_combatant(RID_TYPE r_squad, RID_TYPE r_com){
+	SQUADS_THREAD_SAFE;
+	auto squad = squad_owner.get(r_squad);
+	auto combatant = combatant_owner.get(r_com);
+	ERR_FAIL_COND((!squad || !combatant));
+	if (!squad->has_combatant(combatant)) return;
+	combatant->set_squad(nullptr);
+}
+bool Sentrience::squad_has_combatant(RID_TYPE r_squad, RID_TYPE r_com){
+	SQUADS_THREAD_SAFE;
+	auto squad = squad_owner.get(r_squad);
+	auto combatant = combatant_owner.get(r_com);
+	ERR_FAIL_COND_V((!squad || !combatant), false);
+	return squad->has_combatant(combatant);
+}
+bool Sentrience::squad_engagable(RID_TYPE from, RID_TYPE to){
+	SQUADS_THREAD_SAFE;
+	auto squad_1 = squad_owner.get(from);
+	auto squad_2 = squad_owner.get(to);
+	ERR_FAIL_COND_V((!squad_1 || !squad_2), false);
+	return squad_1->is_engagable(squad_2);
+}
+uint32_t Sentrience::squad_count_combatant(RID_TYPE r_squad){
+	SQUADS_THREAD_SAFE;
+	auto squad = squad_owner.get(r_squad);
+	ERR_FAIL_COND_V(!squad, 0);
+	return squad->get_combatants()->size();
+}
+void Sentrience::squad_bind_chip(RID_TYPE r_com, const Ref<RCSChip>& chip, const bool& auto_unbind){
+	SQUADS_THREAD_SAFE;
+	auto squad = squad_owner.get(r_com);
+	ERR_FAIL_COND(!squad);
+	if (auto_unbind) squad->set_chip(Ref<RCSChip>());
+	ERR_FAIL_COND(squad->get_chip().is_valid());
+	squad->set_chip(chip);
+}
+void Sentrience::squad_unbind_chip(RID_TYPE r_com){
+	SQUADS_THREAD_SAFE;
+	auto squad = squad_owner.get(r_com);
+	ERR_FAIL_COND(!squad);
+	squad->set_chip(Ref<RCSChip>());
+}
+
+RID_TYPE Sentrience::squad_get_simulation(RID_TYPE r_com){
+	SQUADS_THREAD_SAFE;
+	GetSimulation(squad_owner, r_com);
+}
+
+RID_TYPE Sentrience::team_create(){
+	auto subject = rcsnew(RCSTeam);
+	RCSMakeRID(team_owner, subject);
+}
+bool Sentrience::team_assert(RID_TYPE r_team){
+	return team_owner.owns(r_team);
+}
+void Sentrience::team_set_simulation(RID_TYPE r_team, RID_TYPE r_simul){
+	TEAMS_THREAD_SAFE;
+	auto team = team_owner.get(r_team);
+	auto simulation = simulation_owner.get(r_simul);
+	ERR_FAIL_COND(!team || !simulation);
+	team->set_simulation(simulation);
+}
+RID_TYPE Sentrience::team_get_simulation(RID_TYPE r_team){
+	TEAMS_THREAD_SAFE;
+	GetSimulation(team_owner, r_team);
+}
+void Sentrience::team_add_squad(RID_TYPE r_team, RID_TYPE r_squad){
+	TEAMS_THREAD_SAFE;
+	auto team = team_owner.get(r_team);
+	auto squad = squad_owner.get(r_squad);
+	ERR_FAIL_COND(!team || !squad);
+	OverweightAssert(team->squads);
+	if (!team->has_squad(squad))
+		squad->set_team(team);
+}
+void Sentrience::team_remove_squad(RID_TYPE r_team, RID_TYPE r_squad){
+	TEAMS_THREAD_SAFE;
+	auto team = team_owner.get(r_team);
+	auto squad = squad_owner.get(r_squad);
+	ERR_FAIL_COND(!team || !squad);
+	if (team->has_squad(squad))
+		squad->set_team(nullptr);
+}
+Array Sentrience::team_get_involving_engagements(RID_TYPE r_team){
+	auto team = team_owner.get(r_team);
+	ERR_FAIL_COND_V(!team, Array());
+	return team->get_all_engagements_compat();
+}
+bool Sentrience::team_has_squad(RID_TYPE r_team, RID_TYPE r_squad){
+	TEAMS_THREAD_SAFE;
+	auto team = team_owner.get(r_team);
+	auto squad = squad_owner.get(r_squad);
+	ERR_FAIL_COND_V(!team || !squad, false);
+	return team->has_squad(squad);
+}
+bool Sentrience::team_engagable(RID_TYPE from, RID_TYPE to){
+	TEAMS_THREAD_SAFE;
+	auto team_from	= team_owner.get(from);
+	auto team_to	= team_owner.get(to);
+	ERR_FAIL_COND_V(!team_from || !team_to, false);
+	return team_from->is_engagable(team_to);
+}
+Ref<RCSUnilateralTeamsBind> Sentrience::team_create_link(RID_TYPE from, RID_TYPE to){
+	TEAMS_THREAD_SAFE;
+	auto team_from	= team_owner.get(from);
+	auto team_to	= team_owner.get(to);
+	ERR_FAIL_COND_V(!team_from || !team_to, Ref<RCSUnilateralTeamsBind>());
+	auto preallocated_link = team_from->get_link_to(team_to);
+	if (preallocated_link.is_valid()) return preallocated_link;
+	OverweightAssertReturn(team_from->team_binds, preallocated_link);
+	return team_from->add_link(team_to);
+}
+void Sentrience::team_create_link_bilateral(RID_TYPE from, RID_TYPE to){
+	TEAMS_THREAD_SAFE;
+	team_create_link(from, to);
+	team_create_link(to, from);
+}
+Ref<RCSUnilateralTeamsBind> Sentrience::team_get_link(RID_TYPE from, RID_TYPE to){
+	TEAMS_THREAD_SAFE;
+	auto team_from	= team_owner.get(from);
+	auto team_to	= team_owner.get(to);
+	ERR_FAIL_COND_V(!team_from || !team_to, Ref<RCSUnilateralTeamsBind>());
+	return team_from->get_link_to(team_to);
+}
+bool Sentrience::team_has_link(RID_TYPE from, RID_TYPE to){
+	TEAMS_THREAD_SAFE;
+	return team_get_link(from, to).is_valid();
+}
+bool Sentrience::team_unlink(RID_TYPE from, RID_TYPE to){
+	TEAMS_THREAD_SAFE;
+	auto team_from	= team_owner.get(from);
+	auto team_to	= team_owner.get(to);
+	ERR_FAIL_COND_V(!team_from || !team_to, false);
+	return team_from->remove_link(team_to);
+}
+bool Sentrience::team_unlink_bilateral(RID_TYPE from, RID_TYPE to){
+	TEAMS_THREAD_SAFE;
+	return (team_unlink(from, to) && team_unlink(to, from));
+}
+
+void Sentrience::team_purge_links_multilateral(RID_TYPE from){
+	TEAMS_THREAD_SAFE;
+	auto team_from	= team_owner.get(from);
+	ERR_FAIL_COND(!team_from);
+	team_from->purge_all_links();
+}
+
+uint32_t Sentrience::team_count_squad(RID_TYPE r_team){
+	TEAMS_THREAD_SAFE;
+	auto team = team_owner.get(r_team);
+	ERR_FAIL_COND_V(!team, 0);
+	return team->get_squads()->size();
+}
+
+void Sentrience::team_bind_chip(RID_TYPE r_team, const Ref<RCSChip>& chip, const bool& auto_unbind){
+	TEAMS_THREAD_SAFE;
+	auto team = team_owner.get(r_team);
+	ERR_FAIL_COND(!team);
+	if (auto_unbind) team->set_chip(Ref<RCSChip>());
+	ERR_FAIL_COND(team->get_chip().is_valid());
+	team->set_chip(chip);
+}
+void Sentrience::team_unbind_chip(RID_TYPE r_team){
+	TEAMS_THREAD_SAFE;
+	auto team = team_owner.get(r_team);
+	ERR_FAIL_COND(!team);
+	team->set_chip(Ref<RCSChip>());
+}
+
+RID_TYPE Sentrience::radar_create(){
+	auto subject = rcsnew(RCSRadar);
+	RCSMakeRID(radar_owner, subject);
+}
+bool Sentrience::radar_assert(RID_TYPE r_rad){
+	return radar_owner.owns(r_rad);
+}
+void Sentrience::radar_set_simulation(RID_TYPE r_rad, RID_TYPE r_simul){
+	RADARS_THREAD_SAFE;
+	auto radar = radar_owner.get(r_rad);
+	auto simulation = simulation_owner.get(r_simul);
+	ERR_FAIL_COND(!radar || !simulation);
+	radar->set_simulation(simulation);
+}
+RID_TYPE Sentrience::radar_get_simulation(RID_TYPE r_rad){
+	RADARS_THREAD_SAFE;
+	GetSimulation(radar_owner, r_rad);
+}
+void Sentrience::radar_set_profile(RID_TYPE r_rad, const Ref<RCSRadarProfile>& profile){
+	RADARS_THREAD_SAFE;
+	auto radar = radar_owner.get(r_rad);
+	ERR_FAIL_COND(!radar);
+	radar->set_profile(profile);
+}
+Ref<RCSRadarProfile> Sentrience::radar_get_profile(RID_TYPE r_rad){
+	RADARS_THREAD_SAFE;
+	auto radar = radar_owner.get(r_rad);
+	ERR_FAIL_COND_V(!radar, Ref<RCSRadarProfile>());
+	return radar->get_profile();
+}
+void Sentrience::request_radar_recheck_on(RID_TYPE r_rad, RID_TYPE r_com){
+	RADARS_THREAD_SAFE;
+	auto radar = radar_owner.get(r_rad);
+	auto combatant = combatant_owner.get(r_com);
+	ERR_FAIL_COND(!radar || !combatant);
+	auto simulation = radar->simulation;
+	ERR_FAIL_COND(!simulation);
+	simulation->demand_radar_recheck(new RadarRecheckTicket(radar, combatant));
+}
+Vector<RID_TYPE> Sentrience::radar_get_detected(RID_TYPE r_rad){
+	RADARS_THREAD_SAFE;
+	auto radar = radar_owner.get(r_rad);
+	ERR_FAIL_COND_V(!radar, Vector<RID_TYPE>());
+	return radar->get_detected();
+}
+Vector<RID_TYPE> Sentrience::radar_get_locked(RID_TYPE r_rad){
+	RADARS_THREAD_SAFE;
+	auto radar = radar_owner.get(r_rad);
+	ERR_FAIL_COND_V(!radar, Vector<RID_TYPE>());
+	return radar->get_locked();
 }
 
 void Sentrience::_bind_methods(){
@@ -435,708 +1148,4 @@ void Sentrience::_bind_methods(){
 	ClassDB::bind_method(D_METHOD("request_radar_recheck_on", "r_rad", "r_com"), &Sentrience::request_radar_recheck_on);
 	ClassDB::bind_method(D_METHOD("radar_get_detected", "r_rad"), &Sentrience::radar_get_detected);
 	ClassDB::bind_method(D_METHOD("radar_get_locked", "r_rad"), &Sentrience::radar_get_locked);
-}
-
-void Sentrience::poll(const float& delta){
-	if (!active) return;
-	if (Engine::get_singleton()->get_physics_frames() % poll_scatter != 0) return;
-	
-	for (uint32_t i = 0; i < active_simulations.size(); i++){
-		auto space = active_simulations[i];
-		if (space) space->poll(delta);
-		// else {
-		// 	active_simulations.remove(i);
-		// 	i -= 1;
-		// }
-	}
-}
-
-void Sentrience::free_all_instances(){
-	log("This method has been deprecated.");
-}
-
-void Sentrience::memcontext_flush(Ref<SentrienceContext> watcher){
-#ifndef USE_THREAD_SAFE_API
-	if (watcher.is_null()) return;
-	std::lock_guard<std::recursive_mutex> guard(watcher->lock);
-	for (auto E = watcher->get_rid_pool()->front(); E; E = E->next()){
-		free_single_rid_internal(E->get());
-	}
-	watcher->get_rid_pool()->clear();
-	// memcontext_remove();
-#endif
-}
-#ifdef USE_SAFE_RID_COUNT
-#define QueueDeletionLog(rid) \
-	log(String("Queuing no.") + itos(rid) + String(" for deletion"));
-#else
-#define QueueDeletionLog(rid) \
-	log(String("Queuing no.") + itos(rid.get_id()) + String(" for deletion"));
-#endif
-
-void Sentrience::flush_instances_pool(){
-	// uint32_t count = 0;
-	// while (!all_rids.empty()) {
-	// 	auto rid = all_rids[0];
-	// 	// log(String("Freeing RID_TYPE No.") + String(std::to_string(count).c_str()) + String(" with id.") + String(std::to_string(rid.get_id()).c_str()));
-	// 	free_rid(rid);
-	// 	VEC_REMOVE(all_rids, 0);
-	// }
-#ifdef USE_THREAD_SAFE_API
-	gc_queue_mutex.lock();
-	auto size = all_rids.size();
-	for (uint32_t i = 0; i < size; i++){
-		auto rid = all_rids[i];
-		QueueDeletionLog(rid);
-		rid_deletion_queue.push_back(rid);
-	}
-	gc_queue_mutex.unlock();
-#else
-	// memcontext_flush();
-	ERR_FAIL_MSG("This method is deprecated");
-#endif
-}
-
-#ifdef USE_SAFE_RID_COUNT
-void Sentrience::free_rid(const RID_TYPE &target) {
-	if (simulation_owner.owns(target)) {
-		FreeLog(RCSSimulation, target);
-		simulation_owner.free(target);
-	} else if (combatant_owner.owns(target)) {
-		FreeLog(RCSCombatant, target);
-		combatant_owner.free(target);
-	} else if (squad_owner.owns(target)) {
-		FreeLog(RCSSquad, target);
-		squad_owner.free(target);
-	} else if (team_owner.owns(target)) {
-		FreeLog(RCSTeam, target);
-		team_owner.free(target);
-	} else if (radar_owner.owns(target)) {
-		FreeLog(RCSRadar, target);
-		radar_owner.free(target);
-	} else if (recording_owner.owns(target)) {
-		FreeLog(RCSRecording, target);
-		recording_owner.free(target);
-	}
-}
-#else
-void Sentrience::free_rid(const RID_TYPE& target){
-#ifdef USE_THREAD_SAFE_API
-	gc_queue_mutex.lock();
-	QueueDeletionLog(target);
-	rid_deletion_queue.push_back(target);
-	gc_queue_mutex.unlock();
-#else
-	if (!active_watcher.is_null()) active_watcher->remove_rid(target);
-	free_single_rid_internal(target);
-#endif
-}
-#endif
-
-RID_TYPE Sentrience::recording_create(){
-	auto subject = rcsnew(RCSRecording);
-	RCSMakeRID(recording_owner, subject);
-}
-bool Sentrience::recording_assert(const RID_TYPE& r_rec){
-	return recording_owner.owns(r_rec);
-}
-void Sentrience::recording_add_simulation(const RID_TYPE& r_rec, const RID_TYPE& r_simul){
-	RECORDINGS_THREAD_SAFE;
-	auto recording = recording_owner.get(r_rec);
-	auto simulation = simulation_owner.get(r_simul);
-	ERR_FAIL_COND(!recording || !simulation || simulation->has_recorder());
-	simulation->set_recorder(recording);
-}
-void Sentrience::recording_remove_simulation(const RID_TYPE& r_rec, const RID_TYPE& r_simul){
-	RECORDINGS_THREAD_SAFE;
-	auto recording = recording_owner.get(r_rec);
-	auto simulation = simulation_owner.get(r_simul);
-	ERR_FAIL_COND(!recording || !simulation || !simulation->has_recorder());
-	simulation->set_recorder(nullptr);
-}
-Dictionary Sentrience::recording_compile_by_simulation(const RID_TYPE& r_rec, const RID_TYPE& r_simul){
-	RECORDINGS_THREAD_SAFE;
-	auto recording = recording_owner.get(r_rec);
-	auto simulation = simulation_owner.get(r_simul);
-	ERR_FAIL_COND_V(!recording || !simulation, Dictionary());
-	return recording->events_by_simulation_compat(simulation);
-}
-bool Sentrience::recording_start(const RID_TYPE& r_rec){
-	RECORDINGS_THREAD_SAFE;
-	auto recording = recording_owner.get(r_rec);
-	ERR_FAIL_COND_V(!recording, false);
-	int search_res = 0;
-	VEC_FIND(active_rec, recording, search_res);
-	if (search_res != -1) return false;
-	OverweightAssertReturn(active_rec, false);
-	// active_rec.push_back(recording);
-	recording->start_recording();
-	return true;
-}
-bool Sentrience::recording_end(const RID_TYPE& r_rec){
-	RECORDINGS_THREAD_SAFE;
-	auto recording = recording_owner.get(r_rec);
-	ERR_FAIL_COND_V(!recording, false);
-	int search_res = 0;
-	VEC_FIND(active_rec, recording, search_res);
-	if (search_res != -1) return false;
-
-	// VEC_ERASE(active_rec, recording);
-	recording->end_recording();
-	return false;
-}
-
-bool Sentrience::recording_running(const RID_TYPE& r_rec){
-	RECORDINGS_THREAD_SAFE;
-	auto recording = recording_owner.get(r_rec);
-	ERR_FAIL_COND_V(!recording, false);
-	return recording->running;
-}
-
-void Sentrience::recording_purge(const RID_TYPE& r_rec){
-	RECORDINGS_THREAD_SAFE;
-	auto recording = recording_owner.get(r_rec);
-	ERR_FAIL_COND(!recording);
-	recording->purge();
-}
-
-RID_TYPE Sentrience::simulation_create(){
-	auto subject = rcsnew(RCSSimulation);
-	RCSMakeRID(simulation_owner, subject);
-}
-
-bool Sentrience::simulation_assert(const RID_TYPE& r_simul){
-	return simulation_owner.owns(r_simul);
-}
-
-void Sentrience::simulation_set_active(const RID_TYPE& r_simul, const bool& p_active){
-	SIMULATION_THREAD_SAFE;
-	auto simulation = simulation_owner.get(r_simul);
-	ERR_FAIL_COND(!simulation);
-	if (simulation_is_active(r_simul) == p_active) return;
-
-	if (p_active) {
-		OverweightAssert(active_simulations);
-		active_simulations.push_back(simulation);
-	}
-	// else active_simulations.erase(simulation);
-	else VEC_ERASE(active_simulations, simulation)
-}
-
-bool Sentrience::simulation_is_active(const RID_TYPE& r_simul){
-	SIMULATION_THREAD_SAFE;
-	auto simulation = simulation_owner.get(r_simul);
-	ERR_FAIL_COND_V(!simulation, false);
-	VEC_HAS(active_simulations, simulation)
-}
-Array Sentrience::simulation_get_all_engagements(const RID_TYPE& r_simul){
-	SIMULATION_THREAD_SAFE;
-	auto simulation = simulation_owner.get(r_simul);
-	ERR_FAIL_COND_V(!simulation, Array());
-	return simulation->request_all_engagements_compat();
-}
-Array Sentrience::simulation_get_all_active_engagements(const RID_TYPE& r_simul){
-	SIMULATION_THREAD_SAFE;
-	auto simulation = simulation_owner.get(r_simul);
-	ERR_FAIL_COND_V(!simulation, Array());
-	return simulation->request_all_active_engagements_compat();
-}
-void Sentrience::simulation_set_profile(const RID_TYPE& r_simul, const Ref<RCSSimulationProfile>& profile){
-	SIMULATION_THREAD_SAFE;
-	auto simulation = simulation_owner.get(r_simul);
-	ERR_FAIL_COND(!simulation);
-	simulation->set_profile(profile);
-}
-Ref<RCSSimulationProfile> Sentrience::simulation_get_profile(const RID_TYPE& r_simul){
-	SIMULATION_THREAD_SAFE;
-	auto simulation = simulation_owner.get(r_simul);
-	ERR_FAIL_COND_V(!simulation, Ref<RCSSimulationProfile>());
-	return simulation->get_profile();
-}
-void Sentrience::simulation_bind_recording(const RID_TYPE& r_simul, const RID_TYPE& r_rec){
-	SIMULATION_THREAD_SAFE;
-	auto simulation = simulation_owner.get(r_simul);
-	auto recording = recording_owner.get(r_rec);
-	ERR_FAIL_COND(!simulation);
-	simulation->set_recorder(recording);
-}
-void Sentrience::simulation_unbind_recording(const RID_TYPE& r_simul){
-	SIMULATION_THREAD_SAFE;
-	auto simulation = simulation_owner.get(r_simul);
-	ERR_FAIL_COND(!simulation);
-	simulation->set_recorder(nullptr);
-}
-uint32_t Sentrience::simulation_count_combatant(const RID_TYPE& r_simul){
-	SIMULATION_THREAD_SAFE;
-	auto simulation = simulation_owner.get(r_simul);
-	ERR_FAIL_COND_V(!simulation, 0);
-	return simulation->count_combatants();
-}
-uint32_t Sentrience::simulation_count_squad(const RID_TYPE& r_simul){
-	SIMULATION_THREAD_SAFE;
-	auto simulation = simulation_owner.get(r_simul);
-	ERR_FAIL_COND_V(!simulation, 0);
-	return simulation->count_squads();
-}
-uint32_t Sentrience::simulation_count_team(const RID_TYPE& r_simul){
-	SIMULATION_THREAD_SAFE;
-	auto simulation = simulation_owner.get(r_simul);
-	ERR_FAIL_COND_V(!simulation, 0);
-	return simulation->count_teams();
-}
-uint32_t Sentrience::simulation_count_radar(const RID_TYPE& r_simul){
-	SIMULATION_THREAD_SAFE;
-	auto simulation = simulation_owner.get(r_simul);
-	ERR_FAIL_COND_V(!simulation, 0);
-	return simulation->count_radars();
-}
-uint32_t Sentrience::simulation_count_engagement(const RID_TYPE& r_simul){
-	SIMULATION_THREAD_SAFE;
-	auto simulation = simulation_owner.get(r_simul);
-	ERR_FAIL_COND_V(!simulation, 0);
-	return 0;
-}
-uint32_t Sentrience::simulation_count_all_instances(const RID_TYPE& r_simul){
-	SIMULATION_THREAD_SAFE;
-	auto simulation = simulation_owner.get(r_simul);
-	ERR_FAIL_COND_V(!simulation, 0);
-	return (simulation->count_combatants()	+
-			simulation->count_squads()		+
-			simulation->count_teams()		+
-			simulation->count_radars());
-}
-
-RID_TYPE Sentrience::combatant_create(){
-	auto subject = rcsnew(RCSCombatant);
-	RCSMakeRID(combatant_owner, subject);
-}
-
-bool Sentrience::combatant_assert(const RID_TYPE& r_com){
-	return combatant_owner.owns(r_com);
-}
-
-RID_TYPE Sentrience::combatant_get_simulation(const RID_TYPE& r_com){
-	COMBATANTS_THREAD_SAFE;
-	GetSimulation(combatant_owner, r_com);
-}
-
-bool Sentrience::combatant_is_squad(const RID_TYPE& r_com, const RID_TYPE& r_squad){
-	COMBATANTS_THREAD_SAFE;
-	auto combatant = combatant_owner.get(r_com);
-	ERR_FAIL_COND_V(!combatant, false);
-	auto squad = combatant->get_squad();
-	if (!squad) return false;
-	return (squad->get_self() == r_squad);
-}
-
-bool Sentrience::combatant_is_team(const RID_TYPE& r_com, const RID_TYPE& r_team){
-	COMBATANTS_THREAD_SAFE;
-	auto combatant = combatant_owner.get(r_com);
-	ERR_FAIL_COND_V(!combatant, false);
-	auto squad = combatant->get_squad();
-	if (!squad) return false;
-	auto team = squad->get_team();
-	if (!team) return false;
-	return (team->get_self() == r_team);
-}
-Array Sentrience::combatant_get_involving_engagements(const RID_TYPE& r_com){
-	// COMBATANTS_THREAD_SAFE;
-	// auto combatant = combatant_owner.get(r_com);
-	// Array re;
-	// ERR_FAIL_COND_V(!combatant, re);
-	// // Manually doing this to avoid prompting errors
-	// auto squad = combatant->get_squad();
-	// if (!squad) return re;
-	// auto team = squad->get_team();
-	// if (!team) return re;
-	// return team->get_engagements_ref();
-	ERR_FAIL_V_MSG(Array(), "Deprecated method");
-}
-void Sentrience::combatant_set_simulation(const RID_TYPE& r_com, const RID_TYPE& r_simul){
-	COMBATANTS_THREAD_SAFE;
-	auto combatant = combatant_owner.get(r_com);
-	auto simulation = simulation_owner.get(r_simul);
-	ERR_FAIL_COND((!combatant || !simulation));
-	combatant->set_simulation(simulation);
-}
-
-void Sentrience::combatant_set_local_transform(const RID_TYPE& r_com, const Transform& trans){
-	COMBATANTS_THREAD_SAFE;
-	auto combatant = combatant_owner.get(r_com);
-	ERR_FAIL_COND(!combatant);
-	combatant->set_lt(trans);
-}
-void Sentrience::combatant_set_space_transform(const RID_TYPE& r_com, const Transform& trans){
-	COMBATANTS_THREAD_SAFE;
-	auto combatant = combatant_owner.get(r_com);
-	ERR_FAIL_COND(!combatant);
-	combatant->set_st(trans);
-}
-
-Transform Sentrience::combatant_get_space_transform(const RID_TYPE& r_com){
-	COMBATANTS_THREAD_SAFE;
-	auto combatant = combatant_owner.get(r_com);
-	ERR_FAIL_COND_V(!combatant, Transform());
-	return combatant->get_global_transform();
-}
-Transform Sentrience::combatant_get_local_transform(const RID_TYPE& r_com){
-	COMBATANTS_THREAD_SAFE;
-	auto combatant = combatant_owner.get(r_com);
-	ERR_FAIL_COND_V(!combatant, Transform());
-	return combatant->get_local_transform();
-}
-
-Transform Sentrience::combatant_get_combined_transform(const RID_TYPE& r_com){
-	COMBATANTS_THREAD_SAFE;
-	auto combatant = combatant_owner.get(r_com);
-	ERR_FAIL_COND_V(!combatant, Transform());
-	return combatant->get_combined_transform();
-}
-uint32_t Sentrience::combatant_get_status(const RID_TYPE& r_com){
-	COMBATANTS_THREAD_SAFE;
-	auto combatant = combatant_owner.get(r_com);
-	ERR_FAIL_COND_V(!combatant, 0);
-	return combatant->get_status();
-}
-
-void Sentrience::combatant_set_iid(const RID_TYPE& r_com, const uint64_t& iid){
-	COMBATANTS_THREAD_SAFE;
-	auto combatant = combatant_owner.get(r_com);
-	ERR_FAIL_COND(!combatant);
-	combatant->set_iid(iid);
-}
-uint64_t Sentrience::combatant_get_iid(const RID_TYPE& r_com){
-	COMBATANTS_THREAD_SAFE;
-	auto combatant = combatant_owner.get(r_com);
-	ERR_FAIL_COND_V(!combatant, 0);
-	return combatant->get_iid();
-}
-void Sentrience::combatant_set_detection_meter(const RID_TYPE& r_com, const double& dmeter){
-	COMBATANTS_THREAD_SAFE;
-	auto combatant = combatant_owner.get(r_com);
-	ERR_FAIL_COND(!combatant);
-	combatant->_set_detection_meter(dmeter);
-}
-double Sentrience::combatant_get_detection_meter(const RID_TYPE& r_com){
-	COMBATANTS_THREAD_SAFE;
-	auto combatant = combatant_owner.get(r_com);
-	ERR_FAIL_COND_V(!combatant, 0.0);
-	return combatant->_get_detection_meter();
-}
-
-bool Sentrience::combatant_engagable(const RID_TYPE& from, const RID_TYPE& to){
-	COMBATANTS_THREAD_SAFE;
-	auto combatant_1 = combatant_owner.get(from);
-	auto combatant_2 = combatant_owner.get(to);
-	ERR_FAIL_COND_V(!combatant_1 || !combatant_2, false);
-	return combatant_1->is_engagable(combatant_2);
-}
-void Sentrience::combatant_bind_chip(const RID_TYPE& r_com, const Ref<RCSChip>& chip, const bool& auto_unbind){
-	COMBATANTS_THREAD_SAFE;
-	auto combatant = combatant_owner.get(r_com);
-	ERR_FAIL_COND(!combatant);
-	if (auto_unbind) combatant->set_chip(Ref<RCSChip>());
-	ERR_FAIL_COND(combatant->get_chip().is_valid());
-	combatant->set_chip(chip);
-}
-
-void Sentrience::combatant_unbind_chip(const RID_TYPE& r_com){
-	COMBATANTS_THREAD_SAFE;
-	auto combatant = combatant_owner.get(r_com);
-	ERR_FAIL_COND(!combatant);
-	combatant->set_chip(Ref<RCSChip>());
-}
-
-void Sentrience::combatant_set_profile(const RID_TYPE& r_com, const Ref<RCSCombatantProfile>& profile){
-	COMBATANTS_THREAD_SAFE;
-	auto combatant = combatant_owner.get(r_com);
-	ERR_FAIL_COND(!combatant);
-	combatant->set_profile(profile);
-}
-Ref<RCSCombatantProfile> Sentrience::combatant_get_profile(const RID_TYPE& r_com){
-	COMBATANTS_THREAD_SAFE;
-	auto combatant = combatant_owner.get(r_com);
-	ERR_FAIL_COND_V(!combatant, Ref<RCSCombatantProfile>());
-	return combatant->get_profile();
-}
-
-void Sentrience::combatant_set_projectile_profile(const RID_TYPE& r_com, const Ref<RCSProjectileProfile>& profile){
-	COMBATANTS_THREAD_SAFE;
-	auto combatant = combatant_owner.get(r_com);
-	ERR_FAIL_COND(!combatant);
-	combatant->set_projectile_profile(profile);
-}
-Ref<RCSProjectileProfile> Sentrience::combatant_get_projectile_profile(const RID_TYPE& r_com){
-	COMBATANTS_THREAD_SAFE;
-	auto combatant = combatant_owner.get(r_com);
-	ERR_FAIL_COND_V(!combatant, Ref<RCSProjectileProfile>());
-	return combatant->get_projectile_profile();
-}
-
-RID_TYPE Sentrience::squad_create(){
-	auto subject = rcsnew(RCSSquad);
-	RCSMakeRID(squad_owner, subject);
-}
-
-bool Sentrience::squad_assert(const RID_TYPE& r_squad){
-	return squad_owner.owns(r_squad);
-}
-
-void Sentrience::squad_set_simulation(const RID_TYPE& r_squad, const RID_TYPE& r_simul){
-	SQUADS_THREAD_SAFE;
-	auto squad = squad_owner.get(r_squad);
-	auto simulation = simulation_owner.get(r_simul);
-	ERR_FAIL_COND(!squad || !simulation);
-	squad->set_simulation(simulation);
-}
-
-bool Sentrience::squad_is_team(const RID_TYPE& r_squad, const RID_TYPE& r_team){
-	SQUADS_THREAD_SAFE;
-	auto squad = squad_owner.get(r_squad);
-	// auto team = team_owner.get(r_team);
-	ERR_FAIL_COND_V(!squad, false);
-	auto team = squad->get_team();
-	if (!team) return false;
-	return (team->get_self() == r_team);
-}
-
-Array Sentrience::squad_get_involving_engagements(const RID_TYPE& r_squad){
-	// SQUADS_THREAD_SAFE;
-	// auto squad = squad_owner.get(r_squad);
-	// Array re;
-	// ERR_FAIL_COND_V(!squad, re);
-	// auto team = squad->get_team();
-	// if (!team) return re;
-	// return team->get_engagements_ref();
-	ERR_FAIL_V_MSG(Array(), "Deprecated method");
-}
-
-void Sentrience::squad_add_combatant(const RID_TYPE& r_squad, const RID_TYPE& r_com){
-	SQUADS_THREAD_SAFE;
-	auto squad = squad_owner.get(r_squad);
-	auto combatant = combatant_owner.get(r_com);
-	ERR_FAIL_COND((!squad || !combatant));
-	if (squad->has_combatant(combatant)) return;
-	OverweightAssert(squad->combatants);
-	combatant->set_squad(squad);
-}
-void Sentrience::squad_remove_combatant(const RID_TYPE& r_squad, const RID_TYPE& r_com){
-	SQUADS_THREAD_SAFE;
-	auto squad = squad_owner.get(r_squad);
-	auto combatant = combatant_owner.get(r_com);
-	ERR_FAIL_COND((!squad || !combatant));
-	if (!squad->has_combatant(combatant)) return;
-	combatant->set_squad(nullptr);
-}
-bool Sentrience::squad_has_combatant(const RID_TYPE& r_squad, const RID_TYPE& r_com){
-	SQUADS_THREAD_SAFE;
-	auto squad = squad_owner.get(r_squad);
-	auto combatant = combatant_owner.get(r_com);
-	ERR_FAIL_COND_V((!squad || !combatant), false);
-	return squad->has_combatant(combatant);
-}
-bool Sentrience::squad_engagable(const RID_TYPE& from, const RID_TYPE& to){
-	SQUADS_THREAD_SAFE;
-	auto squad_1 = squad_owner.get(from);
-	auto squad_2 = squad_owner.get(to);
-	ERR_FAIL_COND_V((!squad_1 || !squad_2), false);
-	return squad_1->is_engagable(squad_2);
-}
-uint32_t Sentrience::squad_count_combatant(const RID_TYPE& r_squad){
-	SQUADS_THREAD_SAFE;
-	auto squad = squad_owner.get(r_squad);
-	ERR_FAIL_COND_V(!squad, 0);
-	return squad->get_combatants()->size();
-}
-void Sentrience::squad_bind_chip(const RID_TYPE& r_com, const Ref<RCSChip>& chip, const bool& auto_unbind){
-	SQUADS_THREAD_SAFE;
-	auto squad = squad_owner.get(r_com);
-	ERR_FAIL_COND(!squad);
-	if (auto_unbind) squad->set_chip(Ref<RCSChip>());
-	ERR_FAIL_COND(squad->get_chip().is_valid());
-	squad->set_chip(chip);
-}
-void Sentrience::squad_unbind_chip(const RID_TYPE& r_com){
-	SQUADS_THREAD_SAFE;
-	auto squad = squad_owner.get(r_com);
-	ERR_FAIL_COND(!squad);
-	squad->set_chip(Ref<RCSChip>());
-}
-
-RID_TYPE Sentrience::squad_get_simulation(const RID_TYPE& r_com){
-	SQUADS_THREAD_SAFE;
-	GetSimulation(squad_owner, r_com);
-}
-
-RID_TYPE Sentrience::team_create(){
-	auto subject = rcsnew(RCSTeam);
-	RCSMakeRID(team_owner, subject);
-}
-bool Sentrience::team_assert(const RID_TYPE& r_team){
-	return team_owner.owns(r_team);
-}
-void Sentrience::team_set_simulation(const RID_TYPE& r_team, const RID_TYPE& r_simul){
-	TEAMS_THREAD_SAFE;
-	auto team = team_owner.get(r_team);
-	auto simulation = simulation_owner.get(r_simul);
-	ERR_FAIL_COND(!team || !simulation);
-	team->set_simulation(simulation);
-}
-RID_TYPE Sentrience::team_get_simulation(const RID_TYPE& r_team){
-	TEAMS_THREAD_SAFE;
-	GetSimulation(team_owner, r_team);
-}
-void Sentrience::team_add_squad(const RID_TYPE& r_team, const RID_TYPE& r_squad){
-	TEAMS_THREAD_SAFE;
-	auto team = team_owner.get(r_team);
-	auto squad = squad_owner.get(r_squad);
-	ERR_FAIL_COND(!team || !squad);
-	OverweightAssert(team->squads);
-	if (!team->has_squad(squad))
-		squad->set_team(team);
-}
-void Sentrience::team_remove_squad(const RID_TYPE& r_team, const RID_TYPE& r_squad){
-	TEAMS_THREAD_SAFE;
-	auto team = team_owner.get(r_team);
-	auto squad = squad_owner.get(r_squad);
-	ERR_FAIL_COND(!team || !squad);
-	if (team->has_squad(squad))
-		squad->set_team(nullptr);
-}
-Array Sentrience::team_get_involving_engagements(const RID_TYPE& r_team){
-	auto team = team_owner.get(r_team);
-	ERR_FAIL_COND_V(!team, Array());
-	return team->get_all_engagements_compat();
-}
-bool Sentrience::team_has_squad(const RID_TYPE& r_team, const RID_TYPE& r_squad){
-	TEAMS_THREAD_SAFE;
-	auto team = team_owner.get(r_team);
-	auto squad = squad_owner.get(r_squad);
-	ERR_FAIL_COND_V(!team || !squad, false);
-	return team->has_squad(squad);
-}
-bool Sentrience::team_engagable(const RID_TYPE& from, const RID_TYPE& to){
-	TEAMS_THREAD_SAFE;
-	auto team_from	= team_owner.get(from);
-	auto team_to	= team_owner.get(to);
-	ERR_FAIL_COND_V(!team_from || !team_to, false);
-	return team_from->is_engagable(team_to);
-}
-Ref<RCSUnilateralTeamsBind> Sentrience::team_create_link(const RID_TYPE& from, const RID_TYPE& to){
-	TEAMS_THREAD_SAFE;
-	auto team_from	= team_owner.get(from);
-	auto team_to	= team_owner.get(to);
-	ERR_FAIL_COND_V(!team_from || !team_to, Ref<RCSUnilateralTeamsBind>());
-	auto preallocated_link = team_from->get_link_to(team_to);
-	if (preallocated_link.is_valid()) return preallocated_link;
-	OverweightAssertReturn(team_from->team_binds, preallocated_link);
-	return team_from->add_link(team_to);
-}
-void Sentrience::team_create_link_bilateral(const RID_TYPE& from, const RID_TYPE& to){
-	TEAMS_THREAD_SAFE;
-	team_create_link(from, to);
-	team_create_link(to, from);
-}
-Ref<RCSUnilateralTeamsBind> Sentrience::team_get_link(const RID_TYPE& from, const RID_TYPE& to){
-	TEAMS_THREAD_SAFE;
-	auto team_from	= team_owner.get(from);
-	auto team_to	= team_owner.get(to);
-	ERR_FAIL_COND_V(!team_from || !team_to, Ref<RCSUnilateralTeamsBind>());
-	return team_from->get_link_to(team_to);
-}
-bool Sentrience::team_has_link(const RID_TYPE& from, const RID_TYPE& to){
-	TEAMS_THREAD_SAFE;
-	return team_get_link(from, to).is_valid();
-}
-bool Sentrience::team_unlink(const RID_TYPE& from, const RID_TYPE& to){
-	TEAMS_THREAD_SAFE;
-	auto team_from	= team_owner.get(from);
-	auto team_to	= team_owner.get(to);
-	ERR_FAIL_COND_V(!team_from || !team_to, false);
-	return team_from->remove_link(team_to);
-}
-bool Sentrience::team_unlink_bilateral(const RID_TYPE& from, const RID_TYPE& to){
-	TEAMS_THREAD_SAFE;
-	return (team_unlink(from, to) && team_unlink(to, from));
-}
-
-void Sentrience::team_purge_links_multilateral(const RID_TYPE& from){
-	TEAMS_THREAD_SAFE;
-	auto team_from	= team_owner.get(from);
-	ERR_FAIL_COND(!team_from);
-	team_from->purge_all_links();
-}
-
-uint32_t Sentrience::team_count_squad(const RID_TYPE& r_team){
-	TEAMS_THREAD_SAFE;
-	auto team = team_owner.get(r_team);
-	ERR_FAIL_COND_V(!team, 0);
-	return team->get_squads()->size();
-}
-
-void Sentrience::team_bind_chip(const RID_TYPE& r_team, const Ref<RCSChip>& chip, const bool& auto_unbind){
-	TEAMS_THREAD_SAFE;
-	auto team = team_owner.get(r_team);
-	ERR_FAIL_COND(!team);
-	if (auto_unbind) team->set_chip(Ref<RCSChip>());
-	ERR_FAIL_COND(team->get_chip().is_valid());
-	team->set_chip(chip);
-}
-void Sentrience::team_unbind_chip(const RID_TYPE& r_team){
-	TEAMS_THREAD_SAFE;
-	auto team = team_owner.get(r_team);
-	ERR_FAIL_COND(!team);
-	team->set_chip(Ref<RCSChip>());
-}
-
-RID_TYPE Sentrience::radar_create(){
-	auto subject = rcsnew(RCSRadar);
-	RCSMakeRID(radar_owner, subject);
-}
-bool Sentrience::radar_assert(const RID_TYPE& r_rad){
-	return radar_owner.owns(r_rad);
-}
-void Sentrience::radar_set_simulation(const RID_TYPE& r_rad, const RID_TYPE& r_simul){
-	RADARS_THREAD_SAFE;
-	auto radar = radar_owner.get(r_rad);
-	auto simulation = simulation_owner.get(r_simul);
-	ERR_FAIL_COND(!radar || !simulation);
-	radar->set_simulation(simulation);
-}
-RID_TYPE Sentrience::radar_get_simulation(const RID_TYPE& r_rad){
-	RADARS_THREAD_SAFE;
-	GetSimulation(radar_owner, r_rad);
-}
-void Sentrience::radar_set_profile(const RID_TYPE& r_rad, const Ref<RCSRadarProfile>& profile){
-	RADARS_THREAD_SAFE;
-	auto radar = radar_owner.get(r_rad);
-	ERR_FAIL_COND(!radar);
-	radar->set_profile(profile);
-}
-Ref<RCSRadarProfile> Sentrience::radar_get_profile(const RID_TYPE& r_rad){
-	RADARS_THREAD_SAFE;
-	auto radar = radar_owner.get(r_rad);
-	ERR_FAIL_COND_V(!radar, Ref<RCSRadarProfile>());
-	return radar->get_profile();
-}
-void Sentrience::request_radar_recheck_on(const RID_TYPE& r_rad, const RID_TYPE& r_com){
-	RADARS_THREAD_SAFE;
-	auto radar = radar_owner.get(r_rad);
-	auto combatant = combatant_owner.get(r_com);
-	ERR_FAIL_COND(!radar || !combatant);
-	auto simulation = radar->simulation;
-	ERR_FAIL_COND(!simulation);
-	simulation->demand_radar_recheck(new RadarRecheckTicket(radar, combatant));
-}
-Vector<RID_TYPE> Sentrience::radar_get_detected(const RID_TYPE& r_rad){
-	RADARS_THREAD_SAFE;
-	auto radar = radar_owner.get(r_rad);
-	ERR_FAIL_COND_V(!radar, Vector<RID_TYPE>());
-	return radar->get_detected();
-}
-Vector<RID_TYPE> Sentrience::radar_get_locked(const RID_TYPE& r_rad){
-	RADARS_THREAD_SAFE;
-	auto radar = radar_owner.get(r_rad);
-	ERR_FAIL_COND_V(!radar, Vector<RID_TYPE>());
-	return radar->get_locked();
 }

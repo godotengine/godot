@@ -3,6 +3,7 @@
 
 #include "core/ustring.h"
 #include "core/print_string.h"
+#include "core/safe_refcount.h"
 
 #include <cstdlib>
 // #include <functional>
@@ -671,6 +672,148 @@ public:
 		auto elem_size        = sizeof(SWContigousStack<T>::Element);
 		auto stack_chain_size = elem_size * get_max_size();
 		return class_size + data_size + stack_chain_size;
+	}
+};
+
+// A read-only, 8 members Tuple implementation
+template <class ItemA, class ItemB = void*, class ItemC = void*, class ItemD = void*, 
+		  class ItemE = void*, class ItemF = void*, class ItemG = void*, class ItemH = void*>
+class Tuple {
+private:
+	class Data {
+		friend class Tuple<ItemA, ItemB, ItemC, ItemD, ItemE, ItemF, ItemG, ItemH>;
+
+		ItemA* it_a{};
+		ItemB* it_b{};
+		ItemC* it_c{};
+		ItemD* it_d{};
+		ItemE* it_e{};
+		ItemF* it_f{};
+		ItemG* it_g{};
+		ItemH* it_h{};
+		uint32_t size = 0;
+		SafeRefCount refcount;
+	public:
+		Data() = default;
+		~Data(){
+			if (it_a) delete it_a;
+			if (it_b) delete it_b;
+			if (it_c) delete it_c;
+			if (it_d) delete it_d;
+			if (it_e) delete it_e;
+			if (it_f) delete it_f;
+			if (it_g) delete it_g;
+			if (it_h) delete it_h;
+		}
+	};
+	Data *_data{};
+	void unreference(){
+		if (_data && _data->refcount.unref()){
+			delete _data;
+		}
+	}
+	void reference(const Data* other){
+		unreference();
+		_data = const_cast<Data*>(other);
+		if (_data) _data->refcount.ref();
+	}
+public:
+	Tuple() = delete;
+	~Tuple(){
+		unreference();
+	}
+	_FORCE_INLINE_ Tuple(const Tuple& other) {
+		reference(other._data);
+	}
+	_FORCE_INLINE_ Tuple(const ItemA& it_a){
+		_data = new Data();
+		_data->refcount.init();
+		_data->it_a = new ItemA(it_a);
+		_data->size = 1;
+	}
+	_FORCE_INLINE_ Tuple(const ItemA& it_a, const ItemB& it_b)
+		 : Tuple(it_a)
+	{
+		_data->it_b = new ItemB(it_b);
+		_data->size = 2;
+	}
+	_FORCE_INLINE_ Tuple(const ItemA& it_a, const ItemB& it_b, const ItemC& it_c)
+		: Tuple(it_a, it_b)
+	{
+		_data->it_c = new ItemC(it_c);
+		_data->size = 3;
+	}
+	_FORCE_INLINE_ Tuple(const ItemA& it_a, const ItemB& it_b, const ItemC& it_c, const ItemD& it_d)
+		: Tuple(it_a, it_b, it_c)
+	{
+		_data->it_d = new ItemD(it_d);
+		_data->size = 4;
+	}
+	_FORCE_INLINE_ Tuple(const ItemA& it_a, const ItemB& it_b, const ItemC& it_c, const ItemD& it_d, const ItemE& it_e)
+		: Tuple(it_a, it_b, it_c, it_d)
+	{
+		_data->it_e = new ItemE(it_e);
+		_data->size = 5;
+	}
+	_FORCE_INLINE_ Tuple(const ItemA& it_a, const ItemB& it_b, const ItemC& it_c, const ItemD& it_d, const ItemE& it_e, const ItemF& it_f)
+		: Tuple(it_a, it_b, it_c, it_d, it_e)
+	{
+		_data->it_f = new ItemF(it_f);
+		_data->size = 6;
+	}
+	_FORCE_INLINE_ Tuple(const ItemA& it_a, const ItemB& it_b, const ItemC& it_c, const ItemD& it_d, const ItemE& it_e, const ItemF& it_f, const ItemG& it_g)
+		: Tuple(it_a, it_b, it_c, it_d, it_e, it_f)
+	{
+		_data->it_g = new ItemG(it_g);
+		_data->size = 7;
+	}
+	_FORCE_INLINE_ Tuple(const ItemA& it_a, const ItemB& it_b, const ItemC& it_c, const ItemD& it_d, const ItemE& it_e, const ItemF& it_f, const ItemG& it_g, const ItemH& it_h)
+		: Tuple(it_a, it_b, it_c, it_d, it_e, it_f, it_g)
+	{
+		_data->it_h = new ItemH(it_h);
+		_data->size = 8;
+	}
+	_FORCE_INLINE_ uint32_t size() const noexcept {
+		return _data->size;
+	}
+
+	_FORCE_INLINE_ const void* operator[](const uint32_t& idx) const {
+		// CRASH_BAD_UNSIGNED_INDEX(idx, size());
+		switch (idx) {
+			case 0: return  (const void*)_data->it_a;
+			case 1: return  (const void*)_data->it_b;
+			case 2: return  (const void*)_data->it_c;
+			case 3: return  (const void*)_data->it_d;
+			case 4: return  (const void*)_data->it_e;
+			case 5: return  (const void*)_data->it_f;
+			case 6: return  (const void*)_data->it_g;
+			case 7: return  (const void*)_data->it_h;
+			default: return (const void*)nullptr;
+		}
+	}
+	_FORCE_INLINE_ const ItemA& get_A() const {
+		return *_data->it_a;
+	}
+	_FORCE_INLINE_ const ItemB& get_B() const {
+		return *_data->it_b;
+	}
+	_FORCE_INLINE_ const ItemC& get_C() const {
+		return *_data->it_c;
+	}
+	_FORCE_INLINE_ const ItemD& get_D() const {
+		return *_data->it_d;
+	}
+	_FORCE_INLINE_ const ItemE& get_E() const {
+		return *_data->it_e;
+	}
+	_FORCE_INLINE_ const ItemF& get_F() const {
+		return *_data->it_f;
+	}
+	_FORCE_INLINE_ const ItemG& get_G() const {
+		return *_data->it_g;
+	}
+	_FORCE_INLINE_ const ItemH& get_H() const {
+		return *_data->it_h;
 	}
 };
 

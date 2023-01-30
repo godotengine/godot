@@ -245,7 +245,7 @@ void SettingsServer::set_current_display(const uint16_t& display_no){
 void SettingsServer::load_gpp_internal() const{
 	switch (current_gp){
 		case GraphicsPreset::GRAPHICS_LOWEST:
-			Engine::get_singleton()->set_target_fps(60);
+			Engine::get_singleton()->set_target_fps(0);
 			// Engine::get_singleton()->set_iterations_per_second(30);
 			main_viewport->set_hdr(false);
 			main_viewport->set_use_debanding(false);
@@ -255,7 +255,7 @@ void SettingsServer::load_gpp_internal() const{
 			main_viewport->set_msaa(Viewport::MSAA_DISABLED);
 			break;
 		case GraphicsPreset::GRAPHICS_LOW:
-			Engine::get_singleton()->set_target_fps(60);
+			Engine::get_singleton()->set_target_fps(0);
 			// Engine::get_singleton()->set_iterations_per_second(30);
 			main_viewport->set_hdr(false);
 			main_viewport->set_use_debanding(false);
@@ -265,7 +265,7 @@ void SettingsServer::load_gpp_internal() const{
 			main_viewport->set_msaa(Viewport::MSAA_DISABLED);
 			break;
 		case GraphicsPreset::GRAPHICS_MEDIUM:
-			Engine::get_singleton()->set_target_fps(60);
+			Engine::get_singleton()->set_target_fps(0);
 			// Engine::get_singleton()->set_iterations_per_second(60);
 			main_viewport->set_hdr(true);
 			main_viewport->set_use_debanding(true);
