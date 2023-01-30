@@ -148,9 +148,6 @@ void GodotArea2D::set_param(PhysicsServer2D::AreaParameter p_param, const Varian
 		case PhysicsServer2D::AREA_PARAM_GRAVITY_DISTANCE_SCALE:
 			gravity_distance_scale = p_value;
 			break;
-		case PhysicsServer2D::AREA_PARAM_GRAVITY_POINT_ATTENUATION:
-			point_attenuation = p_value;
-			break;
 		case PhysicsServer2D::AREA_PARAM_LINEAR_DAMP_OVERRIDE_MODE:
 			_set_space_override_mode(linear_damping_override_mode, (PhysicsServer2D::AreaSpaceOverrideMode)(int)p_value);
 			break;
@@ -181,8 +178,6 @@ Variant GodotArea2D::get_param(PhysicsServer2D::AreaParameter p_param) const {
 			return gravity_is_point;
 		case PhysicsServer2D::AREA_PARAM_GRAVITY_DISTANCE_SCALE:
 			return gravity_distance_scale;
-		case PhysicsServer2D::AREA_PARAM_GRAVITY_POINT_ATTENUATION:
-			return point_attenuation;
 		case PhysicsServer2D::AREA_PARAM_LINEAR_DAMP_OVERRIDE_MODE:
 			return linear_damping_override_mode;
 		case PhysicsServer2D::AREA_PARAM_LINEAR_DAMP:

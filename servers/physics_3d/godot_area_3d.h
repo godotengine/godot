@@ -50,7 +50,6 @@ class GodotArea3D : public GodotCollisionObject3D {
 	Vector3 gravity_vector = Vector3(0, -1, 0);
 	bool gravity_is_point = false;
 	real_t gravity_distance_scale = 0.0;
-	real_t point_attenuation = 1.0;
 	real_t linear_damp = 0.1;
 	real_t angular_damp = 0.1;
 	real_t wind_force_magnitude = 0.0;
@@ -136,9 +135,6 @@ public:
 
 	_FORCE_INLINE_ void set_gravity_distance_scale(real_t scale) { gravity_distance_scale = scale; }
 	_FORCE_INLINE_ real_t get_gravity_distance_scale() const { return gravity_distance_scale; }
-
-	_FORCE_INLINE_ void set_point_attenuation(real_t p_point_attenuation) { point_attenuation = p_point_attenuation; }
-	_FORCE_INLINE_ real_t get_point_attenuation() const { return point_attenuation; }
 
 	_FORCE_INLINE_ void set_linear_damp(real_t p_linear_damp) { linear_damp = p_linear_damp; }
 	_FORCE_INLINE_ real_t get_linear_damp() const { return linear_damp; }
