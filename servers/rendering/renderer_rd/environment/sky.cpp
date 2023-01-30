@@ -574,7 +574,7 @@ RID SkyRD::Sky::get_textures(SkyTextureSetVersion p_version, RID p_default_shade
 		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 		u.binding = 1; // half res
 		if (p_version >= SKY_TEXTURE_SET_CUBEMAP) {
-			if (reflection.layers[0].views[1].is_valid() && p_version != SKY_TEXTURE_SET_CUBEMAP_HALF_RES) {
+			if (reflection.layers.size() != 0 && reflection.layers[0].views[1].is_valid() && p_version != SKY_TEXTURE_SET_CUBEMAP_HALF_RES) {
 				u.append_id(reflection.layers[0].views[1]);
 			} else {
 				u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_CUBEMAP_BLACK));
@@ -594,7 +594,7 @@ RID SkyRD::Sky::get_textures(SkyTextureSetVersion p_version, RID p_default_shade
 		u.uniform_type = RD::UNIFORM_TYPE_TEXTURE;
 		u.binding = 2; // quarter res
 		if (p_version >= SKY_TEXTURE_SET_CUBEMAP) {
-			if (reflection.layers[0].views[2].is_valid() && p_version != SKY_TEXTURE_SET_CUBEMAP_QUARTER_RES) {
+			if (reflection.layers.size() != 0 && reflection.layers[0].views[2].is_valid() && p_version != SKY_TEXTURE_SET_CUBEMAP_QUARTER_RES) {
 				u.append_id(reflection.layers[0].views[2]);
 			} else {
 				u.append_id(texture_storage->texture_rd_get_default(RendererRD::TextureStorage::DEFAULT_RD_TEXTURE_CUBEMAP_BLACK));
@@ -1323,7 +1323,7 @@ void SkyRD::update_radiance_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, 
 
 		// Note, we ignore environment_get_sky_orientation here as this is applied when we do our lookup in our scene shader.
 
-		if (shader_data->uses_quarter_res) {
+		if (shader_data->uses_quarter_res && sky->reflection.layers.size() != 0) {
 			RD::get_singleton()->draw_command_begin_label("Render Sky to Quarter Res Cubemap");
 			PipelineCacheRD *pipeline = &shader_data->pipelines[SKY_VERSION_CUBEMAP_QUARTER_RES];
 
@@ -1342,7 +1342,7 @@ void SkyRD::update_radiance_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, 
 			RD::get_singleton()->draw_command_end_label();
 		}
 
-		if (shader_data->uses_half_res) {
+		if (shader_data->uses_half_res && sky->reflection.layers.size() != 0) {
 			RD::get_singleton()->draw_command_begin_label("Render Sky to Half Res Cubemap");
 			PipelineCacheRD *pipeline = &shader_data->pipelines[SKY_VERSION_CUBEMAP_HALF_RES];
 
@@ -1364,16 +1364,18 @@ void SkyRD::update_radiance_buffers(Ref<RenderSceneBuffersRD> p_render_buffers, 
 		RD::DrawListID cubemap_draw_list;
 		PipelineCacheRD *pipeline = &shader_data->pipelines[SKY_VERSION_CUBEMAP];
 
-		RD::get_singleton()->draw_command_begin_label("Render Sky Cubemap");
-		for (int i = 0; i < 6; i++) {
-			Basis local_view = Basis::looking_at(view_normals[i], view_up[i]);
-			RID texture_uniform_set = sky->get_textures(SKY_TEXTURE_SET_CUBEMAP, sky_shader.default_shader_rd, p_render_buffers);
+		if (sky->reflection.layers.size() != 0) {
+			RD::get_singleton()->draw_command_begin_label("Render Sky Cubemap");
+			for (int i = 0; i < 6; i++) {
+				Basis local_view = Basis::looking_at(view_normals[i], view_up[i]);
+				RID texture_uniform_set = sky->get_textures(SKY_TEXTURE_SET_CUBEMAP, sky_shader.default_shader_rd, p_render_buffers);
 
-			cubemap_draw_list = RD::get_singleton()->draw_list_begin(sky->reflection.layers[0].mipmaps[0].framebuffers[i], RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD);
-			_render_sky(cubemap_draw_list, p_time, sky->reflection.layers[0].mipmaps[0].framebuffers[i], pipeline, material->uniform_set, texture_uniform_set, cm, local_view, p_global_pos, p_luminance_multiplier);
-			RD::get_singleton()->draw_list_end();
+				cubemap_draw_list = RD::get_singleton()->draw_list_begin(sky->reflection.layers[0].mipmaps[0].framebuffers[i], RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD);
+				_render_sky(cubemap_draw_list, p_time, sky->reflection.layers[0].mipmaps[0].framebuffers[i], pipeline, material->uniform_set, texture_uniform_set, cm, local_view, p_global_pos, p_luminance_multiplier);
+				RD::get_singleton()->draw_list_end();
+			}
+			RD::get_singleton()->draw_command_end_label();
 		}
-		RD::get_singleton()->draw_command_end_label();
 
 		if (sky_mode == RS::SKY_MODE_REALTIME) {
 			sky->reflection.create_reflection_fast_filter(sky_use_cubemap_array);
