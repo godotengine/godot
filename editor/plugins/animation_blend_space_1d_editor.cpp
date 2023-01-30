@@ -38,6 +38,7 @@
 #include "editor/editor_undo_redo_manager.h"
 #include "scene/animation/animation_blend_tree.h"
 #include "scene/gui/check_box.h"
+#include "scene/gui/option_button.h"
 #include "scene/gui/panel_container.h"
 
 StringName AnimationNodeBlendSpace1DEditor::get_blend_position_path() const {
@@ -335,6 +336,7 @@ void AnimationNodeBlendSpace1DEditor::_update_space() {
 	min_value->set_value(blend_space->get_min_space());
 
 	sync->set_pressed(blend_space->is_using_sync());
+	interpolation->select(blend_space->get_blend_mode());
 
 	label_value->set_text(blend_space->get_value_label());
 
@@ -361,6 +363,8 @@ void AnimationNodeBlendSpace1DEditor::_config_changed(double) {
 	undo_redo->add_undo_method(blend_space.ptr(), "set_snap", blend_space->get_snap());
 	undo_redo->add_do_method(blend_space.ptr(), "set_use_sync", sync->is_pressed());
 	undo_redo->add_undo_method(blend_space.ptr(), "set_use_sync", blend_space->is_using_sync());
+	undo_redo->add_do_method(blend_space.ptr(), "set_blend_mode", interpolation->get_selected());
+	undo_redo->add_undo_method(blend_space.ptr(), "set_blend_mode", blend_space->get_blend_mode());
 	undo_redo->add_do_method(this, "_update_space");
 	undo_redo->add_undo_method(this, "_update_space");
 	undo_redo->commit_action();
@@ -579,6 +583,10 @@ void AnimationNodeBlendSpace1DEditor::_notification(int p_what) {
 			tool_erase->set_icon(get_theme_icon(SNAME("Remove"), SNAME("EditorIcons")));
 			snap->set_icon(get_theme_icon(SNAME("SnapGrid"), SNAME("EditorIcons")));
 			open_editor->set_icon(get_theme_icon(SNAME("Edit"), SNAME("EditorIcons")));
+			interpolation->clear();
+			interpolation->add_icon_item(get_theme_icon(SNAME("TrackContinuous"), SNAME("EditorIcons")), "", 0);
+			interpolation->add_icon_item(get_theme_icon(SNAME("TrackDiscrete"), SNAME("EditorIcons")), "", 1);
+			interpolation->add_icon_item(get_theme_icon(SNAME("TrackCapture"), SNAME("EditorIcons")), "", 2);
 		} break;
 
 		case NOTIFICATION_PROCESS: {
@@ -639,6 +647,7 @@ void AnimationNodeBlendSpace1DEditor::edit(const Ref<AnimationNode> &p_node) {
 	min_value->set_editable(!read_only);
 	max_value->set_editable(!read_only);
 	sync->set_disabled(read_only);
+	interpolation->set_disabled(read_only);
 }
 
 AnimationNodeBlendSpace1DEditor *AnimationNodeBlendSpace1DEditor::singleton = nullptr;
@@ -706,6 +715,13 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	sync = memnew(CheckBox);
 	top_hb->add_child(sync);
 	sync->connect("toggled", callable_mp(this, &AnimationNodeBlendSpace1DEditor::_config_changed));
+
+	top_hb->add_child(memnew(VSeparator));
+
+	top_hb->add_child(memnew(Label(TTR("Blend:"))));
+	interpolation = memnew(OptionButton);
+	top_hb->add_child(interpolation);
+	interpolation->connect("item_selected", callable_mp(this, &AnimationNodeBlendSpace1DEditor::_config_changed));
 
 	edit_hb = memnew(HBoxContainer);
 	top_hb->add_child(edit_hb);
