@@ -3245,12 +3245,12 @@
 			<description>
 			</description>
 		</method>
-		<method name="viewport_set_disable_environment">
+		<method name="viewport_set_environment_mode">
 			<return type="void" />
 			<param index="0" name="viewport" type="RID" />
-			<param index="1" name="disabled" type="bool" />
+			<param index="1" name="mode" type="int" enum="RenderingServer.ViewportEnvironmentMode" />
 			<description>
-				If [code]true[/code], rendering of a viewport's environment is disabled.
+				Sets the viewport's environment mode which allows enabling or disabling rendering of 3D environment over 2D canvas. When disabled, 2D will not be affected by the environment. When enabled, 2D will be affected by the environment if the environment background mode is [constant ENV_BG_CANVAS]. The default behaviour is to inherit the setting from the viewport's parent. If the topmost parent is also set to [constant VIEWPORT_ENVIRONMENT_INHERIT], then the behavior will be the same as if it was set to [constant VIEWPORT_ENVIRONMENT_ENABLED].
 			</description>
 		</method>
 		<method name="viewport_set_fsr_sharpness">
@@ -4134,6 +4134,18 @@
 		</constant>
 		<constant name="VIEWPORT_CLEAR_ONLY_NEXT_FRAME" value="2" enum="ViewportClearMode">
 			The viewport is cleared once, then the clear mode is set to [constant VIEWPORT_CLEAR_NEVER].
+		</constant>
+		<constant name="VIEWPORT_ENVIRONMENT_DISABLED" value="0" enum="ViewportEnvironmentMode">
+			Disable rendering of 3D environment over 2D canvas.
+		</constant>
+		<constant name="VIEWPORT_ENVIRONMENT_ENABLED" value="1" enum="ViewportEnvironmentMode">
+			Enable rendering of 3D environment over 2D canvas.
+		</constant>
+		<constant name="VIEWPORT_ENVIRONMENT_INHERIT" value="2" enum="ViewportEnvironmentMode">
+			Inherit enable/disable value from parent. If topmost parent is also set to inherit, then this has the same behavior as [constant VIEWPORT_ENVIRONMENT_ENABLED].
+		</constant>
+		<constant name="VIEWPORT_ENVIRONMENT_MAX" value="3" enum="ViewportEnvironmentMode">
+			Max value of [enum ViewportEnvironmentMode] enum.
 		</constant>
 		<constant name="VIEWPORT_SDF_OVERSIZE_100_PERCENT" value="0" enum="ViewportSDFOversize">
 		</constant>

@@ -840,7 +840,14 @@ public:
 
 	virtual RID viewport_get_texture(RID p_viewport) const = 0;
 
-	virtual void viewport_set_disable_environment(RID p_viewport, bool p_disable) = 0;
+	enum ViewportEnvironmentMode {
+		VIEWPORT_ENVIRONMENT_DISABLED,
+		VIEWPORT_ENVIRONMENT_ENABLED,
+		VIEWPORT_ENVIRONMENT_INHERIT,
+		VIEWPORT_ENVIRONMENT_MAX,
+	};
+
+	virtual void viewport_set_environment_mode(RID p_viewport, ViewportEnvironmentMode p_mode) = 0;
 	virtual void viewport_set_disable_3d(RID p_viewport, bool p_disable) = 0;
 	virtual void viewport_set_disable_2d(RID p_viewport, bool p_disable) = 0;
 
@@ -1639,6 +1646,7 @@ VARIANT_ENUM_CAST(RenderingServer::FogVolumeShape);
 VARIANT_ENUM_CAST(RenderingServer::ViewportScaling3DMode);
 VARIANT_ENUM_CAST(RenderingServer::ViewportUpdateMode);
 VARIANT_ENUM_CAST(RenderingServer::ViewportClearMode);
+VARIANT_ENUM_CAST(RenderingServer::ViewportEnvironmentMode);
 VARIANT_ENUM_CAST(RenderingServer::ViewportMSAA);
 VARIANT_ENUM_CAST(RenderingServer::ViewportScreenSpaceAA);
 VARIANT_ENUM_CAST(RenderingServer::ViewportRenderInfo);

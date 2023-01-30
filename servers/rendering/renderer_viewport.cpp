@@ -236,7 +236,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 		}
 	}
 
-	if (!p_viewport->disable_2d && !p_viewport->disable_environment && RSG::scene->is_scenario(p_viewport->scenario)) {
+	if (!p_viewport->disable_2d && !viewport_is_environment_disabled(p_viewport) && RSG::scene->is_scenario(p_viewport->scenario)) {
 		RID environment = RSG::scene->scenario_get_environment(p_viewport->scenario);
 		if (RSG::scene->is_environment(environment)) {
 			scenario_draw_canvas_bg = RSG::scene->environment_get_background(environment) == RS::ENV_BG_CANVAS;
@@ -992,11 +992,21 @@ void RendererViewport::viewport_set_disable_2d(RID p_viewport, bool p_disable) {
 	viewport->disable_2d = p_disable;
 }
 
-void RendererViewport::viewport_set_disable_environment(RID p_viewport, bool p_disable) {
+void RendererViewport::viewport_set_environment_mode(RID p_viewport, RS::ViewportEnvironmentMode p_mode) {
 	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_COND(!viewport);
 
-	viewport->disable_environment = p_disable;
+	viewport->disable_environment = p_mode;
+}
+
+bool RendererViewport::viewport_is_environment_disabled(Viewport *viewport) {
+	ERR_FAIL_COND_V(!viewport, false);
+
+	if (viewport->parent.is_valid() && viewport->disable_environment == RS::VIEWPORT_ENVIRONMENT_INHERIT) {
+		Viewport *parent = viewport_owner.get_or_null(viewport->parent);
+		return viewport_is_environment_disabled(parent);
+	}
+	return viewport->disable_environment == RS::VIEWPORT_ENVIRONMENT_DISABLED;
 }
 
 void RendererViewport::viewport_set_disable_3d(RID p_viewport, bool p_disable) {

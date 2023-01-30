@@ -608,7 +608,7 @@ public:
 	FUNC1RC(RID, viewport_get_texture, RID)
 
 	FUNC2(viewport_set_disable_2d, RID, bool)
-	FUNC2(viewport_set_disable_environment, RID, bool)
+	FUNC2(viewport_set_environment_mode, RID, ViewportEnvironmentMode)
 	FUNC2(viewport_set_disable_3d, RID, bool)
 
 	FUNC2(viewport_set_canvas_cull_mask, RID, uint32_t)
