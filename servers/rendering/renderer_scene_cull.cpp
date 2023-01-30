@@ -2964,11 +2964,13 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 
 	Scenario *scenario = scenario_owner.get_or_null(p_scenario);
 
+	ERR_FAIL_COND(p_render_buffers.is_null());
+
 	render_pass++;
 
 	scene_render->set_scene_pass(render_pass);
 
-	if (p_render_buffers.is_valid() && p_reflection_probe.is_null()) {
+	if (p_reflection_probe.is_null()) {
 		//no rendering code here, this is only to set up what needs to be done, request regions, etc.
 		scene_render->sdfgi_update(p_render_buffers, p_environment, p_camera_data->main_transform.origin); //update conditions for SDFGI (whether its used or not)
 	}
@@ -3050,7 +3052,7 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 	{ //sdfgi
 		cull.sdfgi.region_count = 0;
 
-		if (p_render_buffers.is_valid() && p_reflection_probe.is_null()) {
+		if (p_reflection_probe.is_null()) {
 			cull.sdfgi.cascade_light_count = 0;
 
 			uint32_t prev_cascade = 0xFFFFFFFF;
@@ -3279,7 +3281,7 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 			}
 		}
 
-		if (p_render_buffers.is_valid() && p_reflection_probe.is_null()) {
+		if (p_reflection_probe.is_null()) {
 			sdfgi_update_data.directional_lights = &directional_lights;
 			sdfgi_update_data.positional_light_instances = scenario->dynamic_lights.ptr();
 			sdfgi_update_data.positional_light_count = scenario->dynamic_lights.size();

@@ -331,8 +331,12 @@ void RendererSceneRenderRD::_render_buffers_copy_depth_texture(const RenderDataR
 void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const RenderDataRD *p_render_data) {
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 
+	ERR_FAIL_NULL(p_render_data);
+
 	Ref<RenderSceneBuffersRD> rb = p_render_data->render_buffers;
 	ERR_FAIL_COND(rb.is_null());
+
+	ERR_FAIL_COND_MSG(p_render_data->reflection_probe.is_valid(), "Post processes should not be applied on reflection probes.");
 
 	// Glow, auto exposure and DoF (if enabled).
 
@@ -928,11 +932,9 @@ void RendererSceneRenderRD::render_scene(const Ref<RenderSceneBuffers> &p_render
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 
 	// getting this here now so we can direct call a bunch of things more easily
-	Ref<RenderSceneBuffersRD> rb;
-	if (p_render_buffers.is_valid()) {
-		rb = p_render_buffers; // cast it...
-		ERR_FAIL_COND(rb.is_null());
-	}
+	ERR_FAIL_COND(p_render_buffers.is_null());
+	Ref<RenderSceneBuffersRD> rb = p_render_buffers;
+	ERR_FAIL_COND(rb.is_null());
 
 	// setup scene data
 	RenderSceneDataRD scene_data;
