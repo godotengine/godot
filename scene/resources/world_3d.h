@@ -45,8 +45,8 @@ class World3D : public Resource {
 	GDCLASS(World3D, Resource);
 
 private:
-	RID space;
 	RID scenario;
+	mutable RID space;
 	mutable RID navigation_map;
 
 	Ref<Environment> environment;
