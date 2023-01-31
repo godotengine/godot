@@ -746,7 +746,16 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	// TRANSLATORS: Project Manager here refers to the tool used to create/manage Godot projects.
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "project_manager/sorting_order", 0, "Last Edited,Name,Path")
+
+#if defined(WEB_ENABLED)
+	// Web platform only supports `gl_compatibility`.
+	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_NONE, "project_manager/default_renderer", "gl_compatibility", "forward_plus,mobile,gl_compatibility")
+#elif defined(ANDROID_ENABLED)
+	// Use more suitable rendering method by default.
+	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_NONE, "project_manager/default_renderer", "mobile", "forward_plus,mobile,gl_compatibility")
+#else
 	EDITOR_SETTING(Variant::STRING, PROPERTY_HINT_NONE, "project_manager/default_renderer", "forward_plus", "forward_plus,mobile,gl_compatibility")
+#endif
 
 	if (p_extra_config.is_valid()) {
 		if (p_extra_config->has_section("init_projects") && p_extra_config->has_section_key("init_projects", "list")) {

@@ -911,33 +911,41 @@ public:
 		Button *rs_button = memnew(CheckBox);
 		rs_button->set_button_group(renderer_button_group);
 		rs_button->set_text(TTR("Forward+"));
+#if defined(WEB_ENABLED)
+		rs_button->set_disabled(true);
+#endif
 		rs_button->set_meta(SNAME("rendering_method"), "forward_plus");
 		rs_button->connect("pressed", callable_mp(this, &ProjectDialog::_renderer_selected));
 		rvb->add_child(rs_button);
 		if (default_renderer_type == "forward_plus") {
 			rs_button->set_pressed(true);
 		}
-
 		rs_button = memnew(CheckBox);
 		rs_button->set_button_group(renderer_button_group);
 		rs_button->set_text(TTR("Mobile"));
+#if defined(WEB_ENABLED)
+		rs_button->set_disabled(true);
+#endif
 		rs_button->set_meta(SNAME("rendering_method"), "mobile");
 		rs_button->connect("pressed", callable_mp(this, &ProjectDialog::_renderer_selected));
 		rvb->add_child(rs_button);
 		if (default_renderer_type == "mobile") {
 			rs_button->set_pressed(true);
 		}
-
 		rs_button = memnew(CheckBox);
 		rs_button->set_button_group(renderer_button_group);
 		rs_button->set_text(TTR("Compatibility"));
+#if !defined(GLES3_ENABLED)
+		rs_button->set_disabled(true);
+#endif
 		rs_button->set_meta(SNAME("rendering_method"), "gl_compatibility");
 		rs_button->connect("pressed", callable_mp(this, &ProjectDialog::_renderer_selected));
 		rvb->add_child(rs_button);
+#if defined(GLES3_ENABLED)
 		if (default_renderer_type == "gl_compatibility") {
 			rs_button->set_pressed(true);
 		}
-
+#endif
 		rshc->add_child(memnew(VSeparator));
 
 		// Right hand side, used for text explaining each choice.
