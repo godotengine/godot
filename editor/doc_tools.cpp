@@ -461,7 +461,7 @@ void DocTools::generate(bool p_basic_types) {
 				}
 
 				if (default_value_valid && default_value.get_type() != Variant::OBJECT) {
-					prop.default_value = default_value.get_construct_string().replace("\n", " ");
+					prop.default_value = DocData::get_default_value_string(default_value);
 				}
 
 				StringName setter = ClassDB::get_property_setter(name, E.name);
@@ -591,7 +591,7 @@ void DocTools::generate(bool p_basic_types) {
 					tid.name = E;
 					tid.type = "Color";
 					tid.data_type = "color";
-					tid.default_value = Variant(ThemeDB::get_singleton()->get_default_theme()->get_color(E, cname)).get_construct_string().replace("\n", " ");
+					tid.default_value = DocData::get_default_value_string(ThemeDB::get_singleton()->get_default_theme()->get_color(E, cname));
 					c.theme_properties.push_back(tid);
 				}
 
@@ -772,8 +772,7 @@ void DocTools::generate(bool p_basic_types) {
 
 				int darg_idx = mi.default_arguments.size() - mi.arguments.size() + j;
 				if (darg_idx >= 0) {
-					Variant default_arg = mi.default_arguments[darg_idx];
-					ad.default_value = default_arg.get_construct_string().replace("\n", " ");
+					ad.default_value = DocData::get_default_value_string(mi.default_arguments[darg_idx]);
 				}
 
 				method.arguments.push_back(ad);
@@ -817,7 +816,7 @@ void DocTools::generate(bool p_basic_types) {
 			DocData::PropertyDoc property;
 			property.name = pi.name;
 			property.type = Variant::get_type_name(pi.type);
-			property.default_value = v.get(pi.name).get_construct_string().replace("\n", " ");
+			property.default_value = DocData::get_default_value_string(v.get(pi.name));
 
 			c.properties.push_back(property);
 		}
@@ -948,8 +947,7 @@ void DocTools::generate(bool p_basic_types) {
 
 					int darg_idx = j - (mi.arguments.size() - mi.default_arguments.size());
 					if (darg_idx >= 0) {
-						Variant default_arg = mi.default_arguments[darg_idx];
-						ad.default_value = default_arg.get_construct_string().replace("\n", " ");
+						ad.default_value = DocData::get_default_value_string(mi.default_arguments[darg_idx]);
 					}
 
 					md.arguments.push_back(ad);
@@ -993,8 +991,7 @@ void DocTools::generate(bool p_basic_types) {
 
 					int darg_idx = j - (ai.arguments.size() - ai.default_arguments.size());
 					if (darg_idx >= 0) {
-						Variant default_arg = ai.default_arguments[darg_idx];
-						ad.default_value = default_arg.get_construct_string().replace("\n", " ");
+						ad.default_value = DocData::get_default_value_string(ai.default_arguments[darg_idx]);
 					}
 
 					atd.arguments.push_back(ad);

@@ -43,13 +43,11 @@ class Callable;
 
 class Array {
 	mutable ArrayPrivate *_p;
-	void _ref(const Array &p_from) const;
 	void _unref() const;
 
-protected:
-	bool _assign(const Array &p_array);
-
 public:
+	void _ref(const Array &p_from) const;
+
 	Variant &operator[](int p_idx);
 	const Variant &operator[](int p_idx) const;
 
@@ -68,6 +66,7 @@ public:
 	uint32_t recursive_hash(int recursion_count) const;
 	void operator=(const Array &p_array);
 
+	void assign(const Array &p_array);
 	void push_back(const Variant &p_value);
 	_FORCE_INLINE_ void append(const Variant &p_value) { push_back(p_value); } //for python compatibility
 	void append_array(const Array &p_array);
@@ -120,9 +119,9 @@ public:
 
 	const void *id() const;
 
-	bool typed_assign(const Array &p_other);
 	void set_typed(uint32_t p_type, const StringName &p_class_name, const Variant &p_script);
 	bool is_typed() const;
+	bool is_same_typed(const Array &p_other) const;
 	uint32_t get_typed_builtin() const;
 	StringName get_typed_class_name() const;
 	Variant get_typed_script() const;

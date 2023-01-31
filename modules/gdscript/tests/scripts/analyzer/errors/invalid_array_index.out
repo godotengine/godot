@@ -1,2 +1,2 @@
 GDTEST_ANALYZER_ERROR
-Cannot get index "true" from "[0, 1]".
+Invalid index type "bool" for a base of type "Array".

@@ -51,46 +51,8 @@
 static HashMap<StringName, Variant::Type> builtin_types;
 Variant::Type GDScriptParser::get_builtin_type(const StringName &p_type) {
 	if (builtin_types.is_empty()) {
-		builtin_types["bool"] = Variant::BOOL;
-		builtin_types["int"] = Variant::INT;
-		builtin_types["float"] = Variant::FLOAT;
-		builtin_types["String"] = Variant::STRING;
-		builtin_types["Vector2"] = Variant::VECTOR2;
-		builtin_types["Vector2i"] = Variant::VECTOR2I;
-		builtin_types["Rect2"] = Variant::RECT2;
-		builtin_types["Rect2i"] = Variant::RECT2I;
-		builtin_types["Transform2D"] = Variant::TRANSFORM2D;
-		builtin_types["Vector3"] = Variant::VECTOR3;
-		builtin_types["Vector3i"] = Variant::VECTOR3I;
-		builtin_types["Vector4"] = Variant::VECTOR4;
-		builtin_types["Vector4i"] = Variant::VECTOR4I;
-		builtin_types["AABB"] = Variant::AABB;
-		builtin_types["Plane"] = Variant::PLANE;
-		builtin_types["Quaternion"] = Variant::QUATERNION;
-		builtin_types["Basis"] = Variant::BASIS;
-		builtin_types["Transform3D"] = Variant::TRANSFORM3D;
-		builtin_types["Projection"] = Variant::PROJECTION;
-		builtin_types["Color"] = Variant::COLOR;
-		builtin_types["RID"] = Variant::RID;
-		builtin_types["Object"] = Variant::OBJECT;
-		builtin_types["StringName"] = Variant::STRING_NAME;
-		builtin_types["NodePath"] = Variant::NODE_PATH;
-		builtin_types["Dictionary"] = Variant::DICTIONARY;
-		builtin_types["Callable"] = Variant::CALLABLE;
-		builtin_types["Signal"] = Variant::SIGNAL;
-		builtin_types["Array"] = Variant::ARRAY;
-		builtin_types["PackedByteArray"] = Variant::PACKED_BYTE_ARRAY;
-		builtin_types["PackedInt32Array"] = Variant::PACKED_INT32_ARRAY;
-		builtin_types["PackedInt64Array"] = Variant::PACKED_INT64_ARRAY;
-		builtin_types["PackedFloat32Array"] = Variant::PACKED_FLOAT32_ARRAY;
-		builtin_types["PackedFloat64Array"] = Variant::PACKED_FLOAT64_ARRAY;
-		builtin_types["PackedStringArray"] = Variant::PACKED_STRING_ARRAY;
-		builtin_types["PackedVector2Array"] = Variant::PACKED_VECTOR2_ARRAY;
-		builtin_types["PackedVector3Array"] = Variant::PACKED_VECTOR3_ARRAY;
-		builtin_types["PackedColorArray"] = Variant::PACKED_COLOR_ARRAY;
-		// NIL is not here, hence the -1.
-		if (builtin_types.size() != Variant::VARIANT_MAX - 1) {
-			ERR_PRINT("Outdated parser: amount of built-in types don't match the amount of types in Variant.");
+		for (int i = 1; i < Variant::VARIANT_MAX; i++) {
+			builtin_types[Variant::get_type_name((Variant::Type)i)] = (Variant::Type)i;
 		}
 	}
 
@@ -982,14 +944,14 @@ GDScriptParser::VariableNode *GDScriptParser::parse_property(VariableNode *p_var
 
 	// Run with a loop because order doesn't matter.
 	for (int i = 0; i < 2; i++) {
-		if (function->name == "set") {
+		if (function->name == SNAME("set")) {
 			if (setter_used) {
 				push_error(R"(Properties can only have one setter.)");
 			} else {
 				parse_property_setter(property);
 				setter_used = true;
 			}
-		} else if (function->name == "get") {
+		} else if (function->name == SNAME("get")) {
 			if (getter_used) {
 				push_error(R"(Properties can only have one getter.)");
 			} else {
@@ -2921,7 +2883,7 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_call(ExpressionNode *p_pre
 
 	// Arguments.
 	CompletionType ct = COMPLETION_CALL_ARGUMENTS;
-	if (call->function_name == "load") {
+	if (call->function_name == SNAME("load")) {
 		ct = COMPLETION_RESOURCE_PATH;
 	}
 	push_completion_call(call);
