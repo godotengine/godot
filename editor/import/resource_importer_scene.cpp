@@ -857,11 +857,7 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 		s->set_transform(Transform3D());
 
 		p_node = bv;
-	} else if (_teststr(name, "wheel")) {
-		if (isroot) {
-			return p_node;
-		}
-
+	} else if (_teststr(name, "wheel") && !isroot && Object::cast_to<VehicleBody3D>(p_node->get_parent())) {
 		Node *owner = p_node->get_owner();
 		Node3D *s = Object::cast_to<Node3D>(p_node);
 		VehicleWheel3D *bv = memnew(VehicleWheel3D);
