@@ -86,8 +86,9 @@
 		<member name="gravity_point_center" type="Vector3" setter="set_gravity_point_center" getter="get_gravity_point_center" default="Vector3(0, -1, 0)">
 			If gravity is a point (see [member gravity_point]), this will be the point of attraction.
 		</member>
-		<member name="gravity_point_distance_scale" type="float" setter="set_gravity_point_distance_scale" getter="get_gravity_point_distance_scale" default="0.0">
-			The falloff factor for point gravity. The greater the value, the faster gravity decreases with distance.
+		<member name="gravity_point_unit_distance" type="float" setter="set_gravity_point_unit_distance" getter="get_gravity_point_unit_distance" default="0.0">
+			The distance at which the gravity strength is equal to [member gravity]. For example, on a planet 100 meters in radius with a surface gravity of 4.0 m/s², set the [member gravity] to 4.0 and the unit distance to 100.0. The gravity will have falloff according to the inverse square law, so in the example, at 200 meters from the center the gravity will be 1.0 m/s² (twice the distance, 1/4th the gravity), at 50 meters it will be 16.0 m/s² (half the distance, 4x the gravity), and so on.
+			The above is true only when the unit distance is a positive number. When this is set to 0.0, the gravity will be constant regardless of distance.
 		</member>
 		<member name="gravity_space_override" type="int" setter="set_gravity_space_override_mode" getter="get_gravity_space_override_mode" enum="Area3D.SpaceOverride" default="0">
 			Override mode for gravity calculations within this area. See [enum SpaceOverride] for possible values.

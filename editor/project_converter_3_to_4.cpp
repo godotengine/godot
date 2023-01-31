@@ -311,8 +311,8 @@ static const char *gdscript_function_renames[][2] = {
 	{ "get_font_types", "get_font_type_list" }, // Theme
 	{ "get_frame_color", "get_color" }, // ColorRect
 	{ "get_global_rate_scale", "get_playback_speed_scale" }, // AudioServer
-	{ "get_gravity_distance_scale", "get_gravity_point_distance_scale" }, //Area2D
-	{ "get_gravity_vector", "get_gravity_direction" }, //Area2D
+	{ "get_gravity_distance_scale", "get_gravity_point_unit_distance" }, // Area(2D/3D)
+	{ "get_gravity_vector", "get_gravity_direction" }, // Area(2D/3D)
 	{ "get_h_scrollbar", "get_h_scroll_bar" }, //ScrollContainer
 	{ "get_hand", "get_tracker_hand" }, // XRPositionalTracker
 	{ "get_handle_name", "_get_handle_name" }, // EditorNode3DGizmo
@@ -509,8 +509,8 @@ static const char *gdscript_function_renames[][2] = {
 	{ "set_follow_smoothing", "set_position_smoothing_speed" }, // Camera2D
 	{ "set_frame_color", "set_color" }, // ColorRect
 	{ "set_global_rate_scale", "set_playback_speed_scale" }, // AudioServer
-	{ "set_gravity_distance_scale", "set_gravity_point_distance_scale" }, // Area2D
-	{ "set_gravity_vector", "set_gravity_direction" }, // Area2D
+	{ "set_gravity_distance_scale", "set_gravity_point_unit_distance" }, // Area(2D/3D)
+	{ "set_gravity_vector", "set_gravity_direction" }, // Area(2D/3D)
 	{ "set_h_drag_enabled", "set_drag_horizontal_enabled" }, // Camera2D
 	{ "set_icon_align", "set_icon_alignment" }, // Button
 	{ "set_interior_ambient", "set_ambient_color" }, // ReflectionProbe
@@ -1111,8 +1111,8 @@ static const char *gdscript_properties_renames[][2] = {
 	{ "files_disabled", "file_disabled_color" }, // Theme
 	{ "folder_icon_modulate", "folder_icon_color" }, // Theme
 	{ "global_rate_scale", "playback_speed_scale" }, // AudioServer
-	{ "gravity_distance_scale", "gravity_point_distance_scale" }, // Area2D
-	{ "gravity_vec", "gravity_direction" }, // Area2D
+	{ "gravity_distance_scale", "gravity_point_unit_distance" }, // Area(2D/3D)
+	{ "gravity_vec", "gravity_direction" }, // Area(2D/3D)
 	{ "hint_tooltip", "tooltip_text" }, // Control
 	{ "hseparation", "h_separation" }, // Theme
 	{ "icon_align", "icon_alignment" }, // Button
