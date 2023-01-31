@@ -1859,7 +1859,12 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Sui
 					}
 				}
 
-				gen->write_return(return_value);
+				if (return_n->void_return) {
+					// Always return "null", even if the expression is a call to a void function.
+					gen->write_return(codegen.add_constant(Variant()));
+				} else {
+					gen->write_return(return_value);
+				}
 				if (return_value.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
 					codegen.generator->pop_temporary();
 				}

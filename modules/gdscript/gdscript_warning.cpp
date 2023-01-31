@@ -125,6 +125,10 @@ String GDScriptWarning::get_message() const {
 			CHECK_SYMBOLS(4);
 			return "The argument '" + symbols[0] + "' of the function '" + symbols[1] + "' requires a the subtype '" + symbols[2] + "' but the supertype '" + symbols[3] + "' was provided";
 		} break;
+		case UNSAFE_VOID_RETURN: {
+			CHECK_SYMBOLS(2);
+			return "The method '" + symbols[0] + "()' returns 'void' but it's trying to return a call to '" + symbols[1] + "()' that can't be ensured to also be 'void'.";
+		} break;
 		case DEPRECATED_KEYWORD: {
 			CHECK_SYMBOLS(2);
 			return "The '" + symbols[0] + "' keyword is deprecated and will be removed in a future release, please replace its uses by '" + symbols[1] + "'.";
@@ -224,6 +228,7 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		"UNSAFE_METHOD_ACCESS",
 		"UNSAFE_CAST",
 		"UNSAFE_CALL_ARGUMENT",
+		"UNSAFE_VOID_RETURN",
 		"DEPRECATED_KEYWORD",
 		"STANDALONE_TERNARY",
 		"ASSERT_ALWAYS_TRUE",
