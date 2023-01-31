@@ -51,8 +51,8 @@ Node *EditorSceneFormatImporterGLTF::import_scene(const String &p_path, uint32_t
 	doc.instantiate();
 	Ref<GLTFState> state;
 	state.instantiate();
-	if (p_options.has("meshes/handle_gltf_embedded_images")) {
-		int32_t enum_option = p_options["meshes/handle_gltf_embedded_images"];
+	if (p_options.has("gltf/embedded_image_handling")) {
+		int32_t enum_option = p_options["gltf/embedded_image_handling"];
 		state->set_handle_binary_image(enum_option);
 	}
 	Error err = doc->append_from_file(p_path, state, p_flags);
@@ -87,7 +87,7 @@ Node *EditorSceneFormatImporterGLTF::import_scene(const String &p_path, uint32_t
 
 void EditorSceneFormatImporterGLTF::get_import_options(const String &p_path,
 		List<ResourceImporter::ImportOption> *r_options) {
-	r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::INT, "meshes/handle_gltf_embedded_images", PROPERTY_HINT_ENUM, "Discard All Textures,Extract Textures,Embed As Basis Universal", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), GLTFState::HANDLE_BINARY_EXTRACT_TEXTURES));
+	r_options->push_back(ResourceImporterScene::ImportOption(PropertyInfo(Variant::INT, "gltf/embedded_image_handling", PROPERTY_HINT_ENUM, "Discard All Textures,Extract Textures,Embed As Basis Universal,Embed as Uncompressed", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), GLTFState::HANDLE_BINARY_EXTRACT_TEXTURES));
 }
 
 #endif // TOOLS_ENABLED
