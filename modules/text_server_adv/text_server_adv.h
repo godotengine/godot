@@ -132,7 +132,6 @@ using namespace godot;
 
 class TextServerAdvanced : public TextServerExtension {
 	GDCLASS(TextServerAdvanced, TextServerExtension);
-	_THREAD_SAFE_CLASS_
 
 	struct NumSystemData {
 		HashSet<StringName> lang;
@@ -280,6 +279,7 @@ class TextServerAdvanced : public TextServerExtension {
 #ifdef MODULE_FREETYPE_ENABLED
 		FT_Face face = nullptr;
 		FT_StreamRec stream;
+		const Mutex *ft_mutex = nullptr;
 #endif
 
 		~FontForSizeAdvanced() {
@@ -288,13 +288,15 @@ class TextServerAdvanced : public TextServerExtension {
 			}
 #ifdef MODULE_FREETYPE_ENABLED
 			if (face != nullptr) {
+				ft_mutex->lock();
 				FT_Done_Face(face);
+				ft_mutex->unlock();
 			}
 #endif
 		}
 	};
 
-	struct FontAdvanced {
+	struct FontAdvanced : public RefCounted {
 		Mutex mutex;
 
 		TextServer::FontAntialiasing antialiasing = TextServer::FONT_ANTIALIASING_GRAY;
@@ -343,19 +345,19 @@ class TextServerAdvanced : public TextServerExtension {
 		}
 	};
 
-	_FORCE_INLINE_ FontTexturePosition find_texture_pos_for_glyph(FontForSizeAdvanced *p_data, int p_color_size, Image::Format p_image_format, int p_width, int p_height, bool p_msdf) const;
+	_FORCE_INLINE_ FontTexturePosition _find_texture_pos_for_glyph(FontForSizeAdvanced *p_data, int p_color_size, Image::Format p_image_format, int p_width, int p_height, bool p_msdf) const;
 #ifdef MODULE_MSDFGEN_ENABLED
-	_FORCE_INLINE_ FontGlyph rasterize_msdf(FontAdvanced *p_font_data, FontForSizeAdvanced *p_data, int p_pixel_range, int p_rect_margin, FT_Outline *outline, const Vector2 &advance) const;
+	_FORCE_INLINE_ FontGlyph _rasterize_msdf(Ref<FontAdvanced> &p_font_data, FontForSizeAdvanced *p_data, int p_pixel_range, int p_rect_margin, FT_Outline *outline, const Vector2 &advance) const;
 #endif
 #ifdef MODULE_FREETYPE_ENABLED
-	_FORCE_INLINE_ FontGlyph rasterize_bitmap(FontForSizeAdvanced *p_data, int p_rect_margin, FT_Bitmap bitmap, int yofs, int xofs, const Vector2 &advance, bool p_bgra) const;
+	_FORCE_INLINE_ FontGlyph _rasterize_bitmap(FontForSizeAdvanced *p_data, int p_rect_margin, FT_Bitmap bitmap, int yofs, int xofs, const Vector2 &advance, bool p_bgra) const;
 #endif
-	_FORCE_INLINE_ bool _ensure_glyph(FontAdvanced *p_font_data, const Vector2i &p_size, int32_t p_glyph) const;
-	_FORCE_INLINE_ bool _ensure_cache_for_size(FontAdvanced *p_font_data, const Vector2i &p_size) const;
-	_FORCE_INLINE_ void _font_clear_cache(FontAdvanced *p_font_data);
+	_FORCE_INLINE_ bool _ensure_glyph(Ref<FontAdvanced> &p_font_data, const Vector2i &p_size, int32_t p_glyph) const;
+	_FORCE_INLINE_ bool _ensure_cache_for_size(Ref<FontAdvanced> &p_font_data, const Vector2i &p_size) const;
+	_FORCE_INLINE_ void _font_clear_cache(Ref<FontAdvanced> &p_font_data);
 	static void _generateMTSDF_threaded(void *p_td, uint32_t p_y);
 
-	_FORCE_INLINE_ Vector2i _get_size(const FontAdvanced *p_font_data, int p_size) const {
+	_FORCE_INLINE_ Vector2i _get_size(const Ref<FontAdvanced> &p_font_data, int p_size) const {
 		if (p_font_data->msdf) {
 			return Vector2i(p_font_data->msdf_source_size, 0);
 		} else if (p_font_data->fixed_size > 0) {
@@ -365,7 +367,7 @@ class TextServerAdvanced : public TextServerExtension {
 		}
 	}
 
-	_FORCE_INLINE_ Vector2i _get_size_outline(const FontAdvanced *p_font_data, const Vector2i &p_size) const {
+	_FORCE_INLINE_ Vector2i _get_size_outline(const Ref<FontAdvanced> &p_font_data, const Vector2i &p_size) const {
 		if (p_font_data->msdf) {
 			return Vector2i(p_font_data->msdf_source_size, 0);
 		} else if (p_font_data->fixed_size > 0) {
@@ -437,7 +439,7 @@ class TextServerAdvanced : public TextServerExtension {
 		Vector<Glyph> ellipsis_glyph_buf;
 	};
 
-	struct ShapedTextDataAdvanced {
+	struct ShapedTextDataAdvanced : public RefCounted {
 		Mutex mutex;
 
 		/* Source data */
@@ -532,8 +534,21 @@ class TextServerAdvanced : public TextServerExtension {
 	// Common data.
 
 	double oversampling = 1.0;
+
 	mutable RID_PtrOwner<FontAdvanced> font_owner;
+	mutable Mutex font_owner_mutex;
 	mutable RID_PtrOwner<ShapedTextDataAdvanced> shaped_owner;
+	mutable Mutex shaped_owner_mutex;
+
+	_FORCE_INLINE_ Ref<FontAdvanced> _get_font_safe_ref(const RID &p_rid) const {
+		MutexLock lock(font_owner_mutex);
+		return Ref<FontAdvanced>(font_owner.get_or_null(p_rid));
+	}
+
+	_FORCE_INLINE_ Ref<ShapedTextDataAdvanced> _get_shaped_safe_ref(const RID &p_rid) const {
+		MutexLock lock(shaped_owner_mutex);
+		return Ref<ShapedTextDataAdvanced>(shaped_owner.get_or_null(p_rid));
+	}
 
 	struct SystemFontKey {
 		String font_name;
@@ -608,15 +623,19 @@ class TextServerAdvanced : public TextServerExtension {
 		}
 	};
 	mutable HashMap<SystemFontKey, SystemFontCache, SystemFontKeyHasher> system_fonts;
+	mutable Mutex system_font_mutex;
 	mutable HashMap<String, PackedByteArray> system_font_data;
 
-	void _realign(ShapedTextDataAdvanced *p_sd) const;
+	void _realign(Ref<ShapedTextDataAdvanced> &p_sd) const;
+	void _full_copy(Ref<ShapedTextDataAdvanced> &p_shaped);
+	void _invalidate(Ref<ShapedTextDataAdvanced> &p_shaped, bool p_text = false);
+
 	int64_t _convert_pos(const String &p_utf32, const Char16String &p_utf16, int64_t p_pos) const;
-	int64_t _convert_pos(const ShapedTextDataAdvanced *p_sd, int64_t p_pos) const;
-	int64_t _convert_pos_inv(const ShapedTextDataAdvanced *p_sd, int64_t p_pos) const;
-	bool _shape_substr(ShapedTextDataAdvanced *p_new_sd, const ShapedTextDataAdvanced *p_sd, int64_t p_start, int64_t p_length) const;
-	void _shape_run(ShapedTextDataAdvanced *p_sd, int64_t p_start, int64_t p_end, hb_script_t p_script, hb_direction_t p_direction, TypedArray<RID> p_fonts, int64_t p_span, int64_t p_fb_index, int64_t p_prev_start, int64_t p_prev_end);
-	Glyph _shape_single_glyph(ShapedTextDataAdvanced *p_sd, char32_t p_char, hb_script_t p_script, hb_direction_t p_direction, const RID &p_font, int64_t p_font_size);
+	int64_t _convert_pos(const Ref<ShapedTextDataAdvanced> &p_sd, int64_t p_pos) const;
+	int64_t _convert_pos_inv(const Ref<ShapedTextDataAdvanced> &p_sd, int64_t p_pos) const;
+	bool _shape_substr(Ref<ShapedTextDataAdvanced> &p_new_sd, const Ref<ShapedTextDataAdvanced> &p_sd, int64_t p_start, int64_t p_length) const;
+	void _shape_run(Ref<ShapedTextDataAdvanced> &p_sd, int64_t p_start, int64_t p_end, hb_script_t p_script, hb_direction_t p_direction, TypedArray<RID> p_fonts, int64_t p_span, int64_t p_fb_index, int64_t p_prev_start, int64_t p_prev_end);
+	Glyph _shape_single_glyph(Ref<ShapedTextDataAdvanced> &p_sd, char32_t p_char, hb_script_t p_script, hb_direction_t p_direction, const RID &p_font, int64_t p_font_size);
 
 	_FORCE_INLINE_ void _add_featuers(const Dictionary &p_source, Vector<hb_feature_t> &r_ftrs);
 
@@ -666,9 +685,6 @@ class TextServerAdvanced : public TextServerExtension {
 
 protected:
 	static void _bind_methods(){};
-
-	void full_copy(ShapedTextDataAdvanced *p_shaped);
-	void invalidate(ShapedTextDataAdvanced *p_shaped, bool p_text = false);
 
 public:
 	MODBIND1RC(bool, has_feature, Feature);
