@@ -65,7 +65,6 @@ class VideoStreamPlayer : public Control {
 	float volume = 1.0;
 	double last_audio_time = 0.0;
 	bool expand = false;
-	bool loops = false;
 	int buffering_ms = 500;
 	int audio_track = 0;
 	int bus_index = 0;

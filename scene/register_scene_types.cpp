@@ -393,6 +393,8 @@ void register_scene_types() {
 
 	GDREGISTER_CLASS(LineEdit);
 	GDREGISTER_CLASS(VideoStreamPlayer);
+	GDREGISTER_VIRTUAL_CLASS(VideoStreamPlayback);
+	GDREGISTER_VIRTUAL_CLASS(VideoStream);
 
 #ifndef ADVANCED_GUI_DISABLED
 	GDREGISTER_CLASS(FileDialog);
@@ -906,7 +908,6 @@ void register_scene_types() {
 #ifndef _3D_DISABLED
 	GDREGISTER_CLASS(AudioStreamPlayer3D);
 #endif
-	GDREGISTER_ABSTRACT_CLASS(VideoStream);
 	GDREGISTER_CLASS(AudioStreamWAV);
 	GDREGISTER_CLASS(AudioStreamPolyphonic);
 	GDREGISTER_ABSTRACT_CLASS(AudioStreamPlaybackPolyphonic);
