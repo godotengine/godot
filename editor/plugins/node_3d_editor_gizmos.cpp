@@ -1943,6 +1943,8 @@ void Camera3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 			Vector3 tup(0, up.y + hsize / 2, side.z);
 			ADD_TRIANGLE(tup + offset, side + up + offset, nside + up + offset);
 		} break;
+		case Camera3D::PROJECTION_TYPE_MAX: // Can't happen, but silences warning.
+			break;
 	}
 
 #undef ADD_TRIANGLE

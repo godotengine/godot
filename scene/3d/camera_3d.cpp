@@ -55,6 +55,8 @@ void Camera3D::_update_camera_mode() {
 		case PROJECTION_FRUSTUM: {
 			set_frustum(size, frustum_offset, near, far);
 		} break;
+		case PROJECTION_TYPE_MAX: // Can't happen, but silences warning.
+			break;
 	}
 }
 
