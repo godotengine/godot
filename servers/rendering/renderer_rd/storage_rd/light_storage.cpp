@@ -1554,6 +1554,11 @@ bool LightStorage::reflection_probe_instance_postprocess_step(RID p_instance) {
 	if (rpi->processing_side == 6) {
 		rpi->processing_side = 0;
 		rpi->processing_layer++;
+		if (rpi->processing_layer == atlas->reflections[rpi->atlas_index].data.layers[0].mipmaps.size()) {
+			rpi->rendering = false;
+			rpi->processing_layer = 1;
+			return true;
+		}
 	}
 
 	return false;
