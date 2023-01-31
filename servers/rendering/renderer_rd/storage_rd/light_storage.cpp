@@ -232,6 +232,8 @@ void LightStorage::light_set_projector(RID p_light, RID p_texture) {
 		return;
 	}
 
+	ERR_FAIL_COND(p_texture.is_valid() && !texture_storage->owns_texture(p_texture));
+
 	if (light->type != RS::LIGHT_DIRECTIONAL && light->projector.is_valid()) {
 		texture_storage->texture_remove_from_decal_atlas(light->projector, light->type == RS::LIGHT_OMNI);
 	}
