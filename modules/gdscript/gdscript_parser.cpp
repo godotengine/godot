@@ -491,7 +491,12 @@ void GDScriptParser::parse_program() {
 		AnnotationNode *annotation = parse_annotation(AnnotationInfo::SCRIPT | AnnotationInfo::STANDALONE | AnnotationInfo::CLASS_LEVEL);
 		if (annotation != nullptr) {
 			if (annotation->applies_to(AnnotationInfo::SCRIPT)) {
-				head->annotations.push_back(annotation);
+				// `@icon` needs to be applied in the parser. See GH-72444.
+				if (annotation->name == SNAME("@icon")) {
+					annotation->apply(this, head);
+				} else {
+					head->annotations.push_back(annotation);
+				}
 			} else {
 				annotation_stack.push_back(annotation);
 				// This annotation must appear after script-level annotations
@@ -809,7 +814,7 @@ void GDScriptParser::parse_class_body(bool p_is_multiline) {
 						if (previous.type != GDScriptTokenizer::Token::NEWLINE) {
 							push_error(R"(Expected newline after a standalone annotation.)");
 						}
-						if (annotation->name == "@export_category" || annotation->name == "@export_group" || annotation->name == "@export_subgroup") {
+						if (annotation->name == SNAME("@export_category") || annotation->name == SNAME("@export_group") || annotation->name == SNAME("@export_subgroup")) {
 							current_class->add_member_group(annotation);
 						} else {
 							// For potential non-group standalone annotations.
@@ -1436,7 +1441,7 @@ GDScriptParser::AnnotationNode *GDScriptParser::parse_annotation(uint32_t p_vali
 	match(GDScriptTokenizer::Token::NEWLINE); // Newline after annotation is optional.
 
 	if (valid) {
-		valid = validate_annotation_argument_count(annotation);
+		valid = validate_annotation_arguments(annotation);
 	}
 
 	return valid ? annotation : nullptr;
@@ -3551,7 +3556,7 @@ bool GDScriptParser::AnnotationNode::applies_to(uint32_t p_target_kinds) const {
 	return (info->target_kind & p_target_kinds) > 0;
 }
 
-bool GDScriptParser::validate_annotation_argument_count(AnnotationNode *p_annotation) {
+bool GDScriptParser::validate_annotation_arguments(AnnotationNode *p_annotation) {
 	ERR_FAIL_COND_V_MSG(!valid_annotations.has(p_annotation->name), false, vformat(R"(Annotation "%s" not found to validate.)", p_annotation->name));
 
 	const MethodInfo &info = valid_annotations[p_annotation->name].info;
@@ -3565,6 +3570,27 @@ bool GDScriptParser::validate_annotation_argument_count(AnnotationNode *p_annota
 		push_error(vformat(R"(Annotation "%s" requires at least %d arguments, but %d were given.)", p_annotation->name, info.arguments.size() - info.default_arguments.size(), p_annotation->arguments.size()));
 		return false;
 	}
+
+	// `@icon`'s argument needs to be resolved in the parser. See GH-72444.
+	if (p_annotation->name == SNAME("@icon")) {
+		ExpressionNode *argument = p_annotation->arguments[0];
+
+		if (argument->type != Node::LITERAL) {
+			push_error(R"(Argument 1 of annotation "@icon" must be a string literal.)", argument);
+			return false;
+		}
+
+		Variant value = static_cast<LiteralNode *>(argument)->value;
+
+		if (value.get_type() != Variant::STRING) {
+			push_error(R"(Argument 1 of annotation "@icon" must be a string literal.)", argument);
+			return false;
+		}
+
+		p_annotation->resolved_arguments.push_back(value);
+	}
+
+	// For other annotations, see `GDScriptAnalyzer::resolve_annotation()`.
 
 	return true;
 }

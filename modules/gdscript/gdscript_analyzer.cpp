@@ -4708,11 +4708,6 @@ Ref<GDScriptParserRef> GDScriptAnalyzer::get_parser_for(const String &p_path) {
 }
 
 Error GDScriptAnalyzer::resolve_inheritance() {
-	// Apply annotations.
-	for (GDScriptParser::AnnotationNode *&E : parser->head->annotations) {
-		resolve_annotation(E);
-		E->apply(parser, parser->head);
-	}
 	return resolve_class_inheritance(parser->head, true);
 }
 
@@ -4744,6 +4739,12 @@ Error GDScriptAnalyzer::analyze() {
 	err = resolve_inheritance();
 	if (err) {
 		return err;
+	}
+
+	// Apply annotations.
+	for (GDScriptParser::AnnotationNode *&E : parser->head->annotations) {
+		resolve_annotation(E);
+		E->apply(parser, parser->head);
 	}
 
 	resolve_interface();
