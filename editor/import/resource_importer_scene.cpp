@@ -2289,7 +2289,14 @@ Node *ResourceImporterScene::pre_import(const String &p_source_file, const HashM
 	ERR_FAIL_COND_V(!importer.is_valid(), nullptr);
 
 	Error err = OK;
-	Node *scene = importer->import_scene(p_source_file, EditorSceneFormatImporter::IMPORT_ANIMATION | EditorSceneFormatImporter::IMPORT_GENERATE_TANGENT_ARRAYS, p_options, nullptr, &err);
+	HashMap<StringName, Variant> options_dupe = p_options;
+
+	// By default, the GLTF importer will extract embedded images into files on disk
+	// However, we do not want the advanced settings dialog to be able to write files on disk.
+	// To avoid this and also avoid compressing to basis every time, we are using the uncompressed option.
+	options_dupe["gltf/embedded_image_handling"] = 3; // Embed as Uncompressed defined in GLTFState::GLTFHandleBinary::HANDLE_BINARY_EMBED_AS_UNCOMPRESSED
+
+	Node *scene = importer->import_scene(p_source_file, EditorSceneFormatImporter::IMPORT_ANIMATION | EditorSceneFormatImporter::IMPORT_GENERATE_TANGENT_ARRAYS, options_dupe, nullptr, &err);
 	if (!scene || err != OK) {
 		return nullptr;
 	}
