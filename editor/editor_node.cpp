@@ -2925,6 +2925,16 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		} break;
 		case SET_RENDERER_NAME_SAVE_AND_RESTART: {
 			ProjectSettings::get_singleton()->set("rendering/renderer/rendering_method", renderer_request);
+			if (renderer_request == "mobile" || renderer_request == "gl_compatibility") {
+				// Also change the mobile override if changing to a compatible rendering method.
+				// This prevents visual discrepancies between desktop and mobile platforms.
+				ProjectSettings::get_singleton()->set("rendering/renderer/rendering_method.mobile", renderer_request);
+			} else if (renderer_request == "forward_plus") {
+				// Use the equivalent mobile rendering method. This prevents the rendering method from staying
+				// on its old choice if moving from `gl_compatibility` to `forward_plus`.
+				ProjectSettings::get_singleton()->set("rendering/renderer/rendering_method.mobile", "mobile");
+			}
+
 			ProjectSettings::get_singleton()->save();
 
 			save_all_scenes();
@@ -6571,6 +6581,9 @@ void EditorNode::_renderer_selected(int p_which) {
 	}
 
 	renderer_request = rendering_method;
+	video_restart_dialog->set_text(
+			vformat(TTR("Changing the renderer requires restarting the editor.\n\nChoosing Save & Restart will change the rendering method to:\n- Desktop platforms: %s\n- Mobile platforms: %s\n- Web platform: gl_compatibility"),
+					renderer_request, renderer_request.replace("forward_plus", "mobile")));
 	video_restart_dialog->popup_centered();
 	renderer->select(renderer_current);
 	_update_renderer_color();
@@ -7583,7 +7596,7 @@ EditorNode::EditorNode() {
 	renderer->connect("item_selected", callable_mp(this, &EditorNode::_renderer_selected));
 	renderer->add_theme_font_override("font", gui_base->get_theme_font(SNAME("bold"), SNAME("EditorFonts")));
 	renderer->add_theme_font_size_override("font_size", gui_base->get_theme_font_size(SNAME("bold_size"), SNAME("EditorFonts")));
-	renderer->set_tooltip_text(TTR("Choose a renderer."));
+	renderer->set_tooltip_text(TTR("Choose a rendering method.\n\nNotes:\n- On mobile platforms, the Mobile rendering method is used if Forward+ is selected here.\n- On the web platform, the Compatibility rendering method is always used."));
 
 	right_menu_hb->add_child(renderer);
 
@@ -7628,7 +7641,6 @@ EditorNode::EditorNode() {
 	_update_renderer_color();
 
 	video_restart_dialog = memnew(ConfirmationDialog);
-	video_restart_dialog->set_text(TTR("Changing the renderer requires restarting the editor."));
 	video_restart_dialog->set_ok_button_text(TTR("Save & Restart"));
 	video_restart_dialog->connect("confirmed", callable_mp(this, &EditorNode::_menu_option).bind(SET_RENDERER_NAME_SAVE_AND_RESTART));
 	gui_base->add_child(video_restart_dialog);
