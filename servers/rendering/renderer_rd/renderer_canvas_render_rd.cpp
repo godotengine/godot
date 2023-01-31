@@ -1550,6 +1550,9 @@ void RendererCanvasRenderRD::light_set_texture(RID p_rid, RID p_texture) {
 	if (cl->texture == p_texture) {
 		return;
 	}
+
+	ERR_FAIL_COND(p_texture.is_valid() && !texture_storage->owns_texture(p_texture));
+
 	if (cl->texture.is_valid()) {
 		texture_storage->texture_remove_from_decal_atlas(cl->texture);
 	}
