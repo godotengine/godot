@@ -32,9 +32,10 @@
 
 #include "modules/modules_enabled.gen.h"
 
-const int ERROR_CODE = 77;
-
+#ifndef DISABLE_DEPRECATED
 #ifdef MODULE_REGEX_ENABLED
+
+const int ERROR_CODE = 77;
 
 #include "modules/regex/regex.h"
 
@@ -44,7 +45,7 @@ const int ERROR_CODE = 77;
 #include "core/templates/list.h"
 #include "core/templates/local_vector.h"
 
-static const char *enum_renames[][2] = {
+const char *ProjectConverter3To4::enum_renames[][2] = {
 	//// constants
 	{ "TYPE_COLOR_ARRAY", "TYPE_PACKED_COLOR_ARRAY" },
 	{ "TYPE_FLOAT64_ARRAY", "TYPE_PACKED_FLOAT64_ARRAY" },
@@ -164,7 +165,7 @@ static const char *enum_renames[][2] = {
 	{ nullptr, nullptr },
 };
 
-static const char *gdscript_function_renames[][2] = {
+const char *ProjectConverter3To4::gdscript_function_renames[][2] = {
 	// { "_set_name", "get_tracker_name"}, // XRPositionalTracker - CameraFeed use this
 	// { "_unhandled_input", "_unhandled_key_input"}, // BaseButton, ViewportContainer broke Node, FileDialog,SubViewportContainer
 	// { "create_gizmo", "_create_gizmo"}, // EditorNode3DGizmoPlugin - may be used
@@ -619,7 +620,7 @@ static const char *gdscript_function_renames[][2] = {
 };
 
 // gdscript_function_renames clone with CamelCase
-static const char *csharp_function_renames[][2] = {
+const char *ProjectConverter3To4::csharp_function_renames[][2] = {
 	// { "_SetName", "GetTrackerName"}, // XRPositionalTracker - CameraFeed use this
 	// { "_UnhandledInput", "_UnhandledKeyInput"}, // BaseButton, ViewportContainer broke Node, FileDialog,SubViewportContainer
 	// { "CreateGizmo", "_CreateGizmo"}, // EditorNode3DGizmoPlugin - may be used
@@ -1056,7 +1057,7 @@ static const char *csharp_function_renames[][2] = {
 };
 
 // Some needs to be disabled, because users can use this names as variables
-static const char *gdscript_properties_renames[][2] = {
+const char *ProjectConverter3To4::gdscript_properties_renames[][2] = {
 	//	// { "d", "distance" }, //WorldMarginShape2D - TODO, looks that polish letters ą ę are treaten as space, not as letter, so `będą` are renamed to `będistanceą`
 	//	// {"alt","alt_pressed"}, // This may broke a lot of comments and user variables
 	//	// {"command","command_pressed"},// This may broke a lot of comments and user variables
@@ -1173,7 +1174,7 @@ static const char *gdscript_properties_renames[][2] = {
 };
 
 // Some needs to be disabled, because users can use this names as variables
-static const char *csharp_properties_renames[][2] = {
+const char *ProjectConverter3To4::csharp_properties_renames[][2] = {
 	//	// { "D", "Distance" }, //WorldMarginShape2D - TODO, looks that polish letters ą ę are treaten as space, not as letter, so `będą` are renamed to `będistanceą`
 	//	// {"Alt","AltPressed"}, // This may broke a lot of comments and user variables
 	//	// {"Command","CommandPressed"},// This may broke a lot of comments and user variables
@@ -1278,7 +1279,7 @@ static const char *csharp_properties_renames[][2] = {
 	{ nullptr, nullptr },
 };
 
-static const char *gdscript_signals_renames[][2] = {
+const char *ProjectConverter3To4::gdscript_signals_renames[][2] = {
 	//  {"instantiate","instance"}, // FileSystemDock
 	// { "hide", "hidden" }, // CanvasItem - function with same name exists
 	// { "tween_all_completed","loop_finished"}, // Tween - TODO, not sure
@@ -1303,7 +1304,7 @@ static const char *gdscript_signals_renames[][2] = {
 	{ nullptr, nullptr },
 };
 
-static const char *csharp_signals_renames[][2] = {
+const char *ProjectConverter3To4::csharp_signals_renames[][2] = {
 	//  {"Instantiate","Instance"}, // FileSystemDock
 	// { "Hide", "Hidden" }, // CanvasItem - function with same name exists
 	// { "TweenAllCompleted","LoopFinished"}, // Tween - TODO, not sure
@@ -1327,7 +1328,7 @@ static const char *csharp_signals_renames[][2] = {
 
 };
 
-static const char *project_settings_renames[][2] = {
+const char *ProjectConverter3To4::project_settings_renames[][2] = {
 	{ "audio/channel_disable_threshold_db", "audio/buses/channel_disable_threshold_db" },
 	{ "audio/channel_disable_time", "audio/buses/channel_disable_time" },
 	{ "audio/default_bus_layout", "audio/buses/default_bus_layout" },
@@ -1372,7 +1373,7 @@ static const char *project_settings_renames[][2] = {
 	{ nullptr, nullptr },
 };
 
-static const char *input_map_renames[][2] = {
+const char *ProjectConverter3To4::input_map_renames[][2] = {
 	{ ",\"alt\":", ",\"alt_pressed\":" },
 	{ ",\"shift\":", ",\"shift_pressed\":" },
 	{ ",\"control\":", ",\"ctrl_pressed\":" },
@@ -1384,7 +1385,7 @@ static const char *input_map_renames[][2] = {
 	{ nullptr, nullptr },
 };
 
-static const char *builtin_types_renames[][2] = {
+const char *ProjectConverter3To4::builtin_types_renames[][2] = {
 	{ "PoolByteArray", "PackedByteArray" },
 	{ "PoolColorArray", "PackedColorArray" },
 	{ "PoolIntArray", "PackedInt32Array" },
@@ -1398,7 +1399,7 @@ static const char *builtin_types_renames[][2] = {
 	{ nullptr, nullptr },
 };
 
-static const char *shaders_renames[][2] = {
+const char *ProjectConverter3To4::shaders_renames[][2] = {
 	{ "ALPHA_SCISSOR", "ALPHA_SCISSOR_THRESHOLD" },
 	{ "CAMERA_MATRIX", "INV_VIEW_MATRIX" },
 	{ "INV_CAMERA_MATRIX", "VIEW_MATRIX" },
@@ -1416,7 +1417,7 @@ static const char *shaders_renames[][2] = {
 	{ nullptr, nullptr },
 };
 
-static const char *class_renames[][2] = {
+const char *ProjectConverter3To4::class_renames[][2] = {
 	// { "BulletPhysicsDirectBodyState", "BulletPhysicsDirectBodyState3D" }, // Class is not visible in ClassDB
 	// { "BulletPhysicsServer", "BulletPhysicsServer3D" }, // Class is not visible in ClassDB
 	// { "GDScriptFunctionState", "Node3D" }, // TODO - not sure to which should be changed
@@ -1641,7 +1642,7 @@ static const char *class_renames[][2] = {
 	{ nullptr, nullptr },
 };
 
-static const char *color_renames[][2] = {
+const char *ProjectConverter3To4::ProjectConverter3To4::color_renames[][2] = {
 	{ "aliceblue", "ALICE_BLUE" },
 	{ "antiquewhite", "ANTIQUE_WHITE" },
 	{ "aqua", "AQUA" },
@@ -4350,3 +4351,4 @@ int ProjectConverter3To4::validate_conversion() {
 }
 
 #endif // MODULE_REGEX_ENABLED
+#endif // DISABLE_DEPRECATED
