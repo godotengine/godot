@@ -2458,21 +2458,25 @@ String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_b
 
 	GDScriptParser parser;
 	err = parser.parse(source, p_path, false);
-	if (err) {
-		return String();
-	}
-
-	GDScriptAnalyzer analyzer(&parser);
-	err = analyzer.resolve_inheritance();
-	if (err) {
-		return String();
-	}
 
 	const GDScriptParser::ClassNode *c = parser.get_tree();
-
-	if (r_base_type) {
-		*r_base_type = c->get_datatype().native_type;
+	if (!c) {
+		return String(); // No class parsed.
 	}
+
+	/* **WARNING**
+	 *
+	 * This function is written with the goal to be *extremely* error tolerant, as such
+	 * it should meet the following requirements:
+	 *
+	 * - It must not rely on the analyzer (in fact, the analyzer must not be used here),
+	 *   because at the time global classes are parsed, the dependencies may not be present
+	 *   yet, hence the function will fail (which is unintended).
+	 * - It must not fail even if the parsing fails, because even if the file is broken,
+	 *   it should attempt its best to retrieve the inheritance metadata.
+	 *
+	 * Before changing this function, please ask the current maintainer of EditorFileSystem.
+	 */
 
 	if (r_icon_path) {
 		if (c->icon_path.is_empty() || c->icon_path.is_absolute_path()) {
@@ -2481,7 +2485,73 @@ String GDScriptLanguage::get_global_class_name(const String &p_path, String *r_b
 			*r_icon_path = p_path.get_base_dir().path_join(c->icon_path).simplify_path();
 		}
 	}
+	if (r_base_type) {
+		const GDScriptParser::ClassNode *subclass = c;
+		String path = p_path;
+		GDScriptParser subparser;
+		while (subclass) {
+			if (subclass->extends_used) {
+				if (!subclass->extends_path.is_empty()) {
+					if (subclass->extends.size() == 0) {
+						get_global_class_name(subclass->extends_path, r_base_type);
+						subclass = nullptr;
+						break;
+					} else {
+						Vector<StringName> extend_classes = subclass->extends;
 
+						Ref<FileAccess> subfile = FileAccess::open(subclass->extends_path, FileAccess::READ);
+						if (subfile.is_null()) {
+							break;
+						}
+						String subsource = subfile->get_as_utf8_string();
+
+						if (subsource.is_empty()) {
+							break;
+						}
+						String subpath = subclass->extends_path;
+						if (subpath.is_relative_path()) {
+							subpath = path.get_base_dir().path_join(subpath).simplify_path();
+						}
+
+						if (OK != subparser.parse(subsource, subpath, false)) {
+							break;
+						}
+						path = subpath;
+						subclass = subparser.get_tree();
+
+						while (extend_classes.size() > 0) {
+							bool found = false;
+							for (int i = 0; i < subclass->members.size(); i++) {
+								if (subclass->members[i].type != GDScriptParser::ClassNode::Member::CLASS) {
+									continue;
+								}
+
+								const GDScriptParser::ClassNode *inner_class = subclass->members[i].m_class;
+								if (inner_class->identifier->name == extend_classes[0]) {
+									extend_classes.remove_at(0);
+									found = true;
+									subclass = inner_class;
+									break;
+								}
+							}
+							if (!found) {
+								subclass = nullptr;
+								break;
+							}
+						}
+					}
+				} else if (subclass->extends.size() == 1) {
+					*r_base_type = subclass->extends[0];
+					subclass = nullptr;
+				} else {
+					break;
+				}
+			} else {
+				*r_base_type = "RefCounted";
+				subclass = nullptr;
+			}
+		}
+	}
 	return c->identifier != nullptr ? String(c->identifier->name) : String();
 }
 
