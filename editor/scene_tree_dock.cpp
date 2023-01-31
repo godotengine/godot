@@ -1427,7 +1427,14 @@ void SceneTreeDock::_script_open_request(const Ref<Script> &p_script) {
 }
 
 void SceneTreeDock::_push_item(Object *p_object) {
-	EditorNode::get_singleton()->push_item(p_object);
+	Node *node = Object::cast_to<Node>(p_object);
+	if (node || !p_object) {
+		// Assume that null object is a Node.
+		EditorNode::get_singleton()->push_node_item(node);
+	} else {
+		EditorNode::get_singleton()->push_item(p_object);
+	}
+
 	if (p_object == nullptr) {
 		EditorNode::get_singleton()->hide_unused_editors(this);
 	}
