@@ -31,6 +31,7 @@
 #include "editor_import_plugin.h"
 
 #include "core/object/script_language.h"
+#include "editor/editor_file_system.h"
 
 EditorImportPlugin::EditorImportPlugin() {
 }
@@ -185,6 +186,20 @@ Error EditorImportPlugin::import(const String &p_source_file, const String &p_sa
 	ERR_FAIL_V_MSG(ERR_METHOD_NOT_FOUND, "Unimplemented _import in add-on.");
 }
 
+Error EditorImportPlugin::_append_import_external_resource(const String &p_file, const Dictionary &p_custom_options, const String &p_custom_importer) {
+	HashMap<StringName, Variant> options;
+	List<Variant> keys;
+	p_custom_options.get_key_list(&keys);
+	for (const Variant &K : keys) {
+		options.insert(K, p_custom_options[K]);
+	}
+	return append_import_external_resource(p_file, options, p_custom_importer);
+}
+
+Error EditorImportPlugin::append_import_external_resource(const String &p_file, const HashMap<StringName, Variant> &p_custom_options, const String &p_custom_importer) {
+	return EditorFileSystem::get_singleton()->reimport_append(p_file, p_custom_options, p_custom_importer);
+}
+
 void EditorImportPlugin::_bind_methods() {
 	GDVIRTUAL_BIND(_get_importer_name)
 	GDVIRTUAL_BIND(_get_visible_name)
@@ -198,4 +213,5 @@ void EditorImportPlugin::_bind_methods() {
 	GDVIRTUAL_BIND(_get_import_order)
 	GDVIRTUAL_BIND(_get_option_visibility, "path", "option_name", "options")
 	GDVIRTUAL_BIND(_import, "source_file", "save_path", "options", "platform_variants", "gen_files");
+	ClassDB::bind_method(D_METHOD("append_import_external_resource", "path", "custom_options", "custom_importer"), &EditorImportPlugin::_append_import_external_resource, DEFVAL(Dictionary()), DEFVAL(String()));
 }
