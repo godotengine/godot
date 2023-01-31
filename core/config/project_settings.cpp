@@ -1137,7 +1137,7 @@ Array ProjectSettings::get_global_class_list() {
 
 	Ref<ConfigFile> cf;
 	cf.instantiate();
-	if (cf->load(get_project_data_path().path_join("global_script_class_cache.cfg")) == OK) {
+	if (cf->load(get_global_class_list_path()) == OK) {
 		script_classes = cf->get_value("", "list");
 	} else {
 #ifndef TOOLS_ENABLED
@@ -1148,11 +1148,15 @@ Array ProjectSettings::get_global_class_list() {
 	return script_classes;
 }
 
+String ProjectSettings::get_global_class_list_path() const {
+	return get_project_data_path().path_join("global_script_class_cache.cfg");
+}
+
 void ProjectSettings::store_global_class_list(const Array &p_classes) {
 	Ref<ConfigFile> cf;
 	cf.instantiate();
 	cf->set_value("", "list", p_classes);
-	cf->save(get_project_data_path().path_join("global_script_class_cache.cfg"));
+	cf->save(get_global_class_list_path());
 }
 
 bool ProjectSettings::has_custom_feature(const String &p_feature) const {

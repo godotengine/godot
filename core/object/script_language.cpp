@@ -369,6 +369,14 @@ void ScriptServer::save_global_classes() {
 	ProjectSettings::get_singleton()->store_global_class_list(gcarr);
 }
 
+bool ScriptServer::has_global_classes() {
+	return !global_classes.is_empty();
+}
+
+String ScriptServer::get_global_class_cache_file_path() {
+	return ProjectSettings::get_singleton()->get_global_class_list_path();
+}
+
 ////////////////////
 
 Variant ScriptInstance::call_const(const StringName &p_method, const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
