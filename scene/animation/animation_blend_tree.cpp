@@ -800,6 +800,14 @@ Ref<Curve> AnimationNodeTransition::get_xfade_curve() const {
 	return xfade_curve;
 }
 
+void AnimationNodeTransition::set_allow_transition_to_self(bool p_enable) {
+	allow_transition_to_self = p_enable;
+}
+
+bool AnimationNodeTransition::is_allow_transition_to_self() const {
+	return allow_transition_to_self;
+}
+
 double AnimationNodeTransition::process(double p_time, bool p_seek, bool p_is_external_seeking) {
 	String cur_transition_request = get_parameter(transition_request);
 	int cur_current_index = get_parameter(current_index);
@@ -815,20 +823,22 @@ double AnimationNodeTransition::process(double p_time, bool p_seek, bool p_is_ex
 		int new_idx = find_input(cur_transition_request);
 		if (new_idx >= 0) {
 			if (cur_current_index == new_idx) {
-				// Transition to same state.
-				restart = input_data[cur_current_index].reset;
-				cur_prev_xfading = 0;
-				set_parameter(prev_xfading, 0);
-				cur_prev_index = -1;
-				set_parameter(prev_index, -1);
+				if (allow_transition_to_self) {
+					// Transition to same state.
+					restart = input_data[cur_current_index].reset;
+					cur_prev_xfading = 0;
+					set_parameter(prev_xfading, 0);
+					cur_prev_index = -1;
+					set_parameter(prev_index, -1);
+				}
 			} else {
 				switched = true;
 				cur_prev_index = cur_current_index;
 				set_parameter(prev_index, cur_current_index);
+				cur_current_index = new_idx;
+				set_parameter(current_index, cur_current_index);
+				set_parameter(current_state, cur_transition_request);
 			}
-			cur_current_index = new_idx;
-			set_parameter(current_index, cur_current_index);
-			set_parameter(current_state, cur_transition_request);
 		} else {
 			ERR_PRINT("No such input: '" + cur_transition_request + "'");
 		}
@@ -932,8 +942,12 @@ void AnimationNodeTransition::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_xfade_curve", "curve"), &AnimationNodeTransition::set_xfade_curve);
 	ClassDB::bind_method(D_METHOD("get_xfade_curve"), &AnimationNodeTransition::get_xfade_curve);
 
+	ClassDB::bind_method(D_METHOD("set_allow_transition_to_self", "enable"), &AnimationNodeTransition::set_allow_transition_to_self);
+	ClassDB::bind_method(D_METHOD("is_allow_transition_to_self"), &AnimationNodeTransition::is_allow_transition_to_self);
+
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "xfade_time", PROPERTY_HINT_RANGE, "0,120,0.01,suffix:s"), "set_xfade_time", "get_xfade_time");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "xfade_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_xfade_curve", "get_xfade_curve");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_transition_to_self"), "set_allow_transition_to_self", "is_allow_transition_to_self");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "input_count", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_ARRAY | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED, "Inputs,input_"), "set_input_count", "get_input_count");
 }
 
