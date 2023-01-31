@@ -247,6 +247,7 @@ void SpriteBase3D::draw_texture_rect(Ref<Texture2D> p_texture, Rect2 p_dst_rect,
 
 	RS::get_singleton()->material_set_param(get_material(), "alpha_scissor_threshold", alpha_scissor_threshold);
 	RS::get_singleton()->material_set_param(get_material(), "alpha_hash_scale", alpha_hash_scale);
+	RS::get_singleton()->material_set_param(get_material(), "alpha_antialiasing_edge", alpha_antialiasing_edge);
 
 	BaseMaterial3D::Transparency mat_transparency = BaseMaterial3D::Transparency::TRANSPARENCY_DISABLED;
 	if (get_draw_flag(FLAG_TRANSPARENT)) {
@@ -262,7 +263,7 @@ void SpriteBase3D::draw_texture_rect(Ref<Texture2D> p_texture, Rect2 p_dst_rect,
 	}
 
 	RID shader_rid;
-	StandardMaterial3D::get_material_for_2d(get_draw_flag(FLAG_SHADED), mat_transparency, get_draw_flag(FLAG_DOUBLE_SIDED), get_billboard_mode() == StandardMaterial3D::BILLBOARD_ENABLED, get_billboard_mode() == StandardMaterial3D::BILLBOARD_FIXED_Y, false, get_draw_flag(FLAG_DISABLE_DEPTH_TEST), get_draw_flag(FLAG_FIXED_SIZE), get_texture_filter(), &shader_rid);
+	StandardMaterial3D::get_material_for_2d(get_draw_flag(FLAG_SHADED), mat_transparency, get_draw_flag(FLAG_DOUBLE_SIDED), get_billboard_mode() == StandardMaterial3D::BILLBOARD_ENABLED, get_billboard_mode() == StandardMaterial3D::BILLBOARD_FIXED_Y, false, get_draw_flag(FLAG_DISABLE_DEPTH_TEST), get_draw_flag(FLAG_FIXED_SIZE), get_texture_filter(), alpha_antialiasing_mode, &shader_rid);
 
 	if (last_shader != shader_rid) {
 		RS::get_singleton()->material_set_shader(get_material(), shader_rid);
@@ -481,6 +482,28 @@ float SpriteBase3D::get_alpha_scissor_threshold() const {
 	return alpha_scissor_threshold;
 }
 
+void SpriteBase3D::set_alpha_antialiasing(BaseMaterial3D::AlphaAntiAliasing p_alpha_aa) {
+	if (alpha_antialiasing_mode != p_alpha_aa) {
+		alpha_antialiasing_mode = p_alpha_aa;
+		_queue_redraw();
+	}
+}
+
+BaseMaterial3D::AlphaAntiAliasing SpriteBase3D::get_alpha_antialiasing() const {
+	return alpha_antialiasing_mode;
+}
+
+void SpriteBase3D::set_alpha_antialiasing_edge(float p_edge) {
+	if (alpha_antialiasing_edge != p_edge) {
+		alpha_antialiasing_edge = p_edge;
+		_queue_redraw();
+	}
+}
+
+float SpriteBase3D::get_alpha_antialiasing_edge() const {
+	return alpha_antialiasing_edge;
+}
+
 void SpriteBase3D::set_billboard_mode(StandardMaterial3D::BillboardMode p_mode) {
 	ERR_FAIL_INDEX(p_mode, 3); // Cannot use BILLBOARD_PARTICLES.
 	billboard_mode = p_mode;
@@ -539,6 +562,12 @@ void SpriteBase3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_alpha_hash_scale", "threshold"), &SpriteBase3D::set_alpha_hash_scale);
 	ClassDB::bind_method(D_METHOD("get_alpha_hash_scale"), &SpriteBase3D::get_alpha_hash_scale);
 
+	ClassDB::bind_method(D_METHOD("set_alpha_antialiasing", "alpha_aa"), &SpriteBase3D::set_alpha_antialiasing);
+	ClassDB::bind_method(D_METHOD("get_alpha_antialiasing"), &SpriteBase3D::get_alpha_antialiasing);
+
+	ClassDB::bind_method(D_METHOD("set_alpha_antialiasing_edge", "edge"), &SpriteBase3D::set_alpha_antialiasing_edge);
+	ClassDB::bind_method(D_METHOD("get_alpha_antialiasing_edge"), &SpriteBase3D::get_alpha_antialiasing_edge);
+
 	ClassDB::bind_method(D_METHOD("set_billboard_mode", "mode"), &SpriteBase3D::set_billboard_mode);
 	ClassDB::bind_method(D_METHOD("get_billboard_mode"), &SpriteBase3D::get_billboard_mode);
 
@@ -567,6 +596,8 @@ void SpriteBase3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "alpha_cut", PROPERTY_HINT_ENUM, "Disabled,Discard,Opaque Pre-Pass,Alpha Hash"), "set_alpha_cut_mode", "get_alpha_cut_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "alpha_scissor_threshold", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_alpha_scissor_threshold", "get_alpha_scissor_threshold");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "alpha_hash_scale", PROPERTY_HINT_RANGE, "0,2,0.01"), "set_alpha_hash_scale", "get_alpha_hash_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "alpha_antialiasing_mode", PROPERTY_HINT_ENUM, "Disabled,Alpha Edge Blend,Alpha Edge Clip"), "set_alpha_antialiasing", "get_alpha_antialiasing");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "alpha_antialiasing_edge", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_alpha_antialiasing_edge", "get_alpha_antialiasing_edge");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_filter", PROPERTY_HINT_ENUM, "Nearest,Linear,Nearest Mipmap,Linear Mipmap,Nearest Mipmap Anisotropic,Linear Mipmap Anisotropic"), "set_texture_filter", "get_texture_filter");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_priority", PROPERTY_HINT_RANGE, itos(RS::MATERIAL_RENDER_PRIORITY_MIN) + "," + itos(RS::MATERIAL_RENDER_PRIORITY_MAX) + ",1"), "set_render_priority", "get_render_priority");
 

@@ -112,6 +112,12 @@ void Label3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_alpha_hash_scale", "threshold"), &Label3D::set_alpha_hash_scale);
 	ClassDB::bind_method(D_METHOD("get_alpha_hash_scale"), &Label3D::get_alpha_hash_scale);
 
+	ClassDB::bind_method(D_METHOD("set_alpha_antialiasing", "alpha_aa"), &Label3D::set_alpha_antialiasing);
+	ClassDB::bind_method(D_METHOD("get_alpha_antialiasing"), &Label3D::get_alpha_antialiasing);
+
+	ClassDB::bind_method(D_METHOD("set_alpha_antialiasing_edge", "edge"), &Label3D::set_alpha_antialiasing_edge);
+	ClassDB::bind_method(D_METHOD("get_alpha_antialiasing_edge"), &Label3D::get_alpha_antialiasing_edge);
+
 	ClassDB::bind_method(D_METHOD("set_texture_filter", "mode"), &Label3D::set_texture_filter);
 	ClassDB::bind_method(D_METHOD("get_texture_filter"), &Label3D::get_texture_filter);
 
@@ -133,6 +139,8 @@ void Label3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "alpha_cut", PROPERTY_HINT_ENUM, "Disabled,Discard,Opaque Pre-Pass,Alpha Hash"), "set_alpha_cut_mode", "get_alpha_cut_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "alpha_scissor_threshold", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_alpha_scissor_threshold", "get_alpha_scissor_threshold");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "alpha_hash_scale", PROPERTY_HINT_RANGE, "0,2,0.01"), "set_alpha_hash_scale", "get_alpha_hash_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "alpha_antialiasing_mode", PROPERTY_HINT_ENUM, "Disabled,Alpha Edge Blend,Alpha Edge Clip"), "set_alpha_antialiasing", "get_alpha_antialiasing");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "alpha_antialiasing_edge", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_alpha_antialiasing_edge", "get_alpha_antialiasing_edge");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_filter", PROPERTY_HINT_ENUM, "Nearest,Linear,Nearest Mipmap,Linear Mipmap,Nearest Mipmap Anisotropic,Linear Mipmap Anisotropic"), "set_texture_filter", "get_texture_filter");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_priority", PROPERTY_HINT_RANGE, itos(RS::MATERIAL_RENDER_PRIORITY_MIN) + "," + itos(RS::MATERIAL_RENDER_PRIORITY_MAX) + ",1"), "set_render_priority", "get_render_priority");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "outline_render_priority", PROPERTY_HINT_RANGE, itos(RS::MATERIAL_RENDER_PRIORITY_MIN) + "," + itos(RS::MATERIAL_RENDER_PRIORITY_MAX) + ",1"), "set_outline_render_priority", "get_outline_render_priority");
@@ -356,6 +364,7 @@ void Label3D::_generate_glyph_surfaces(const Glyph &p_glyph, Vector2 &r_offset, 
 			RS::get_singleton()->material_set_param(surf.material, "uv2_scale", Vector3(1, 1, 1));
 			RS::get_singleton()->material_set_param(surf.material, "alpha_scissor_threshold", alpha_scissor_threshold);
 			RS::get_singleton()->material_set_param(surf.material, "alpha_hash_scale", alpha_hash_scale);
+			RS::get_singleton()->material_set_param(surf.material, "alpha_antialiasing_edge", alpha_antialiasing_edge);
 			if (msdf) {
 				RS::get_singleton()->material_set_param(surf.material, "msdf_pixel_range", TS->font_get_msdf_pixel_range(p_glyph.font_rid));
 				RS::get_singleton()->material_set_param(surf.material, "msdf_outline_size", p_outline_size);
@@ -371,7 +380,7 @@ void Label3D::_generate_glyph_surfaces(const Glyph &p_glyph, Vector2 &r_offset, 
 			}
 
 			RID shader_rid;
-			StandardMaterial3D::get_material_for_2d(get_draw_flag(FLAG_SHADED), mat_transparency, get_draw_flag(FLAG_DOUBLE_SIDED), get_billboard_mode() == StandardMaterial3D::BILLBOARD_ENABLED, get_billboard_mode() == StandardMaterial3D::BILLBOARD_FIXED_Y, msdf, get_draw_flag(FLAG_DISABLE_DEPTH_TEST), get_draw_flag(FLAG_FIXED_SIZE), texture_filter, &shader_rid);
+			StandardMaterial3D::get_material_for_2d(get_draw_flag(FLAG_SHADED), mat_transparency, get_draw_flag(FLAG_DOUBLE_SIDED), get_billboard_mode() == StandardMaterial3D::BILLBOARD_ENABLED, get_billboard_mode() == StandardMaterial3D::BILLBOARD_FIXED_Y, msdf, get_draw_flag(FLAG_DISABLE_DEPTH_TEST), get_draw_flag(FLAG_FIXED_SIZE), texture_filter, alpha_antialiasing_mode, &shader_rid);
 
 			RS::get_singleton()->material_set_shader(surf.material, shader_rid);
 			RS::get_singleton()->material_set_param(surf.material, "texture_albedo", tex);
@@ -964,6 +973,28 @@ void Label3D::set_alpha_scissor_threshold(float p_threshold) {
 
 float Label3D::get_alpha_scissor_threshold() const {
 	return alpha_scissor_threshold;
+}
+
+void Label3D::set_alpha_antialiasing(BaseMaterial3D::AlphaAntiAliasing p_alpha_aa) {
+	if (alpha_antialiasing_mode != p_alpha_aa) {
+		alpha_antialiasing_mode = p_alpha_aa;
+		_queue_update();
+	}
+}
+
+BaseMaterial3D::AlphaAntiAliasing Label3D::get_alpha_antialiasing() const {
+	return alpha_antialiasing_mode;
+}
+
+void Label3D::set_alpha_antialiasing_edge(float p_edge) {
+	if (alpha_antialiasing_edge != p_edge) {
+		alpha_antialiasing_edge = p_edge;
+		_queue_update();
+	}
+}
+
+float Label3D::get_alpha_antialiasing_edge() const {
+	return alpha_antialiasing_edge;
 }
 
 Label3D::Label3D() {
