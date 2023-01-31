@@ -2024,6 +2024,17 @@ void TileMap::set_cell(int p_layer, const Vector2i &p_coords, int p_source_id, c
 		ERR_FAIL_COND(!Q);
 		TileMapQuadrant &q = Q->value;
 
+		// Find node in scenes and remove it.
+		auto entry = q.scenes.find(pk);
+		if (entry != q.scenes.end()) {
+			String name = entry->value;
+			Node *scene = get_node_or_null(name);
+			if (scene) {
+				scene->queue_free();
+				instantiated_scenes.erase(Vector3i(p_layer, pk.x, pk.y));
+			}
+		}
+
 		q.cells.erase(pk);
 
 		// Remove or make the quadrant dirty.
