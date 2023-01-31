@@ -425,6 +425,7 @@ void SpriteFramesEditor::_notification(int p_what) {
 			_update_stop_icon();
 
 			autoplay->set_icon(get_theme_icon(SNAME("AutoPlay"), SNAME("EditorIcons")));
+			anim_loop->set_icon(get_theme_icon(SNAME("Loop"), SNAME("EditorIcons")));
 			play->set_icon(get_theme_icon(SNAME("PlayStart"), SNAME("EditorIcons")));
 			play_from->set_icon(get_theme_icon(SNAME("Play"), SNAME("EditorIcons")));
 			play_bw->set_icon(get_theme_icon(SNAME("PlayStartBackwards"), SNAME("EditorIcons")));
@@ -1114,18 +1115,19 @@ void SpriteFramesEditor::_update_library(bool p_skip_selector) {
 	}
 
 	for (int i = 0; i < frames->get_frame_count(edited_anim); i++) {
-		String name;
+		String name = itos(i);
 		Ref<Texture2D> texture = frames->get_frame_texture(edited_anim, i);
 		float duration = frames->get_frame_duration(edited_anim, i);
-		String duration_string;
-		if (duration != 1.0f) {
-			duration_string = String::utf8(" [ ×") + String::num_real(frames->get_frame_duration(edited_anim, i)) + " ]";
-		}
 
 		if (texture.is_null()) {
-			name = itos(i) + ": " + TTR("(empty)") + duration_string;
-		} else {
-			name = itos(i) + ": " + texture->get_name() + duration_string;
+			texture = empty_icon;
+			name += ": " + TTR("(empty)");
+		} else if (!texture->get_name().is_empty()) {
+			name += ": " + texture->get_name();
+		}
+
+		if (duration != 1.0f) {
+			name += String::utf8(" [× ") + String::num(duration, 2) + "]";
 		}
 
 		frame_list->add_item(name, texture);
@@ -1521,9 +1523,30 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	delete_anim->set_disabled(true);
 	delete_anim->connect("pressed", callable_mp(this, &SpriteFramesEditor::_animation_remove));
 
+	hbc_animlist->add_child(memnew(VSeparator));
+
+	anim_speed = memnew(SpinBox);
+	anim_speed->set_suffix(TTR("FPS"));
+	anim_speed->set_min(0);
+	anim_speed->set_max(120);
+	anim_speed->set_step(0.01);
+	anim_speed->set_custom_arrow_step(1);
+	anim_speed->set_tooltip_text(TTR("Animation Speed"));
+	anim_speed->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_animation_speed_changed));
+	hbc_animlist->add_child(anim_speed);
+
+	anim_loop = memnew(Button);
+	anim_loop->set_toggle_mode(true);
+	anim_loop->set_flat(true);
+	anim_loop->set_tooltip_text(TTR("Animation Looping"));
+	anim_loop->connect("pressed", callable_mp(this, &SpriteFramesEditor::_animation_loop_changed));
+	hbc_animlist->add_child(anim_loop);
+
 	autoplay_container = memnew(HBoxContainer);
 	hbc_animlist->add_child(autoplay_container);
+
 	autoplay_container->add_child(memnew(VSeparator));
+
 	autoplay = memnew(Button);
 	autoplay->set_flat(true);
 	autoplay->set_tooltip_text(TTR("Autoplay on Load"));
@@ -1548,23 +1571,6 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	add_anim->set_shortcut(ED_SHORTCUT("sprite_frames/new_animation", TTR("Add Animation"), KeyModifierMask::CMD_OR_CTRL | Key::N));
 	delete_anim->set_shortcut_context(animations);
 	delete_anim->set_shortcut(ED_SHORTCUT("sprite_frames/delete_animation", TTR("Delete Animation"), Key::KEY_DELETE));
-
-	HBoxContainer *hbc_anim_speed = memnew(HBoxContainer);
-	hbc_anim_speed->add_child(memnew(Label(TTR("Speed:"))));
-	vbc_animlist->add_child(hbc_anim_speed);
-	anim_speed = memnew(SpinBox);
-	anim_speed->set_suffix(TTR("FPS"));
-	anim_speed->set_min(0);
-	anim_speed->set_max(120);
-	anim_speed->set_step(0.01);
-	anim_speed->set_h_size_flags(SIZE_EXPAND_FILL);
-	hbc_anim_speed->add_child(anim_speed);
-	anim_speed->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_animation_speed_changed));
-
-	anim_loop = memnew(CheckButton);
-	anim_loop->set_text(TTR("Loop"));
-	vbc_animlist->add_child(anim_loop);
-	anim_loop->connect("pressed", callable_mp(this, &SpriteFramesEditor::_animation_loop_changed));
 
 	VBoxContainer *vbc = memnew(VBoxContainer);
 	add_child(vbc);
@@ -1667,6 +1673,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	frame_duration->set_min(SPRITE_FRAME_MINIMUM_DURATION); // Avoid zero div.
 	frame_duration->set_max(10);
 	frame_duration->set_step(0.01);
+	frame_duration->set_custom_arrow_step(0.1);
 	frame_duration->set_allow_lesser(false);
 	frame_duration->set_allow_greater(true);
 	hbc->add_child(frame_duration);
