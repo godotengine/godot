@@ -57,7 +57,7 @@
 		    // Perform a POST request. The URL below returns JSON as of writing.
 		    // Note: Don't make simultaneous requests using a single HTTPRequest node.
 		    // The snippet below is provided for reference only.
-		    string body = new JSON().Stringify(new Godot.Collections.Dictionary
+		    string body = new Json().Stringify(new Godot.Collections.Dictionary
 		    {
 		        { "name", "Godette" }
 		    });
@@ -69,14 +69,14 @@
 		}
 
 		// Called when the HTTP request is completed.
-		private void HttpRequestCompleted(int result, int responseCode, string[] headers, byte[] body)
+		private void HttpRequestCompleted(long result, long responseCode, string[] headers, byte[] body)
 		{
-		    var json = new JSON();
-		    json.Parse(body.GetStringFromUTF8());
-		    var response = json.GetData() as Godot.Collections.Dictionary;
+		    var json = new Json();
+		    json.Parse(body.GetStringFromUtf8());
+		    var response = json.GetData().AsGodotDictionary();
 
 		    // Will print the user agent string used by the HTTPRequest node (as recognized by httpbin.org).
-		    GD.Print((response["headers"] as Godot.Collections.Dictionary)["User-Agent"]);
+		    GD.Print((response["headers"].AsGodotDictionary())["User-Agent"]);
 		}
 		[/csharp]
 		[/codeblocks]
@@ -128,9 +128,9 @@
 		}
 
 		// Called when the HTTP request is completed.
-		private void HttpRequestCompleted(int result, int responseCode, string[] headers, byte[] body)
+		private void HttpRequestCompleted(long result, long responseCode, string[] headers, byte[] body)
 		{
-		    if (result != (int)HTTPRequest.Result.Success)
+		    if (result != (long)HTTPRequest.Result.Success)
 		    {
 		        GD.PushError("Image couldn't be downloaded. Try a different image.");
 		    }

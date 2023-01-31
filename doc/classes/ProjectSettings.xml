@@ -1743,7 +1743,7 @@
 			[/gdscript]
 			[csharp]
 			// Set the default gravity strength to 980.
-			PhysicsServer2D.AreaSetParam(GetViewport().FindWorld2d().Space, PhysicsServer2D.AreaParameter.Gravity, 980);
+			PhysicsServer2D.AreaSetParam(GetViewport().FindWorld2D().Space, PhysicsServer2D.AreaParameter.Gravity, 980);
 			[/csharp]
 			[/codeblocks]
 		</member>
@@ -1757,7 +1757,7 @@
 			[/gdscript]
 			[csharp]
 			// Set the default gravity direction to `Vector2(0, 1)`.
-			PhysicsServer2D.AreaSetParam(GetViewport().FindWorld2d().Space, PhysicsServer2D.AreaParameter.GravityVector, Vector2.Down)
+			PhysicsServer2D.AreaSetParam(GetViewport().FindWorld2D().Space, PhysicsServer2D.AreaParameter.GravityVector, Vector2.Down)
 			[/csharp]
 			[/codeblocks]
 		</member>

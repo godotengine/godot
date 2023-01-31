@@ -72,8 +72,9 @@
 				    return from != to
 				[/gdscript]
 				[csharp]
-				public override bool _IsNodeHoverValid(String from, int fromSlot, String to, int toSlot) {
-				    return from != to;
+				public override bool _IsNodeHoverValid(StringName fromNode, int fromPort, StringName toNode, int toPort)
+				{
+				    return fromNode != toNode;
 				}
 				[/csharp]
 				[/codeblocks]

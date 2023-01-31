@@ -110,7 +110,7 @@
 				[/gdscript]
 				[csharp]
 				[Tool]
-				public class MyNode2D : Node2D
+				public partial class MyNode2D : Node2D
 				{
 				    private bool _holdingHammer;
 
@@ -433,9 +433,9 @@
 				    var button = new Button();
 				    // Option 1: In C#, we can use signals as events and connect with this idiomatic syntax:
 				    button.ButtonDown += OnButtonDown;
-				    // Option 2: Object.Connect() with a constructed Callable from a method group.
+				    // Option 2: GodotObject.Connect() with a constructed Callable from a method group.
 				    button.Connect(Button.SignalName.ButtonDown, Callable.From(OnButtonDown));
-				    // Option 3: Object.Connect() with a constructed Callable using a target object and method name.
+				    // Option 3: GodotObject.Connect() with a constructed Callable using a target object and method name.
 				    button.Connect(Button.SignalName.ButtonDown, new Callable(this, MethodName.OnButtonDown));
 				}
 
@@ -700,10 +700,10 @@
 				sprite2d.is_class("Node3D")   # Returns false
 				[/gdscript]
 				[csharp]
-				var sprite2d = new Sprite2D();
-				sprite2d.IsClass("Sprite2D"); // Returns true
-				sprite2d.IsClass("Node");     // Returns true
-				sprite2d.IsClass("Node3D");   // Returns false
+				var sprite2D = new Sprite2D();
+				sprite2D.IsClass("Sprite2D"); // Returns true
+				sprite2D.IsClass("Node");     // Returns true
+				sprite2D.IsClass("Node3D");   // Returns false
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] This method ignores [code]class_name[/code] declarations in the object's script.
@@ -747,10 +747,10 @@
 				player.SetScript(GD.Load("res://player.gd"));
 
 				player.Notification(NotificationEnterTree);
-				// The call order is Object -&gt; Node -&gt; Node2D -&gt; player.gd.
+				// The call order is GodotObject -&gt; Node -&gt; Node2D -&gt; player.gd.
 
-				player.notification(NotificationEnterTree, true);
-				// The call order is player.gd -&gt; Node2D -&gt; Node -&gt; Object.
+				player.Notification(NotificationEnterTree, true);
+				// The call order is player.gd -&gt; Node2D -&gt; Node -&gt; GodotObject.
 				[/csharp]
 				[/codeblocks]
 			</description>
