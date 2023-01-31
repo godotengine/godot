@@ -89,6 +89,8 @@ private:
 	AlphaCutMode alpha_cut = ALPHA_CUT_DISABLED;
 	float alpha_scissor_threshold = 0.5;
 	float alpha_hash_scale = 1.0;
+	StandardMaterial3D::AlphaAntiAliasing alpha_antialiasing_mode = StandardMaterial3D::ALPHA_ANTIALIASING_OFF;
+	float alpha_antialiasing_edge = 0.0f;
 	StandardMaterial3D::BillboardMode billboard_mode = StandardMaterial3D::BILLBOARD_DISABLED;
 	StandardMaterial3D::TextureFilter texture_filter = StandardMaterial3D::TEXTURE_FILTER_LINEAR_WITH_MIPMAPS;
 	bool pending_update = false;
@@ -152,6 +154,12 @@ public:
 
 	void set_alpha_hash_scale(float p_hash_scale);
 	float get_alpha_hash_scale() const;
+
+	void set_alpha_antialiasing(BaseMaterial3D::AlphaAntiAliasing p_alpha_aa);
+	BaseMaterial3D::AlphaAntiAliasing get_alpha_antialiasing() const;
+
+	void set_alpha_antialiasing_edge(float p_edge);
+	float get_alpha_antialiasing_edge() const;
 
 	void set_billboard_mode(StandardMaterial3D::BillboardMode p_mode);
 	StandardMaterial3D::BillboardMode get_billboard_mode() const;
