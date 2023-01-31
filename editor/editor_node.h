@@ -798,6 +798,7 @@ public:
 
 	void push_item(Object *p_object, const String &p_property = "", bool p_inspector_only = false);
 	void edit_item(Object *p_object, Object *p_editing_owner);
+	void push_node_item(Node *p_node);
 	void hide_unused_editors(const Object *p_editing_owner = nullptr);
 
 	void select_editor_by_name(const String &p_name);
