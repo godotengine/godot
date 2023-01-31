@@ -107,6 +107,7 @@
 
 #include "modules/modules_tests.gen.h"
 
+#include "tests/display_server_mock.h"
 #include "tests/test_macros.h"
 
 #include "scene/theme/theme_db.h"
@@ -126,6 +127,7 @@ int test_main(int argc, char *argv[]) {
 		args.push_back(String::utf8(argv[i]));
 	}
 	OS::get_singleton()->set_cmdline("", args, List<String>());
+	DisplayServerMock::register_mock_driver();
 
 	// Run custom test tools.
 	if (test_commands) {
@@ -200,11 +202,12 @@ struct GodotTestCaseListener : public doctest::IReporter {
 			memnew(MessageQueue);
 
 			memnew(Input);
+			Input::get_singleton()->set_use_accumulated_input(false);
 
 			Error err = OK;
 			OS::get_singleton()->set_has_server_feature_callback(nullptr);
 			for (int i = 0; i < DisplayServer::get_create_function_count(); i++) {
-				if (String("headless") == DisplayServer::get_create_function_name(i)) {
+				if (String("mock") == DisplayServer::get_create_function_name(i)) {
 					DisplayServer::create(i, "", DisplayServer::WindowMode::WINDOW_MODE_MINIMIZED, DisplayServer::VSyncMode::VSYNC_ENABLED, 0, nullptr, Vector2i(0, 0), DisplayServer::SCREEN_PRIMARY, err);
 					break;
 				}
