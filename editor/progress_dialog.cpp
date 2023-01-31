@@ -257,6 +257,7 @@ ProgressDialog::ProgressDialog() {
 	add_child(main);
 	main->set_anchors_and_offsets_preset(Control::PRESET_FULL_RECT);
 	set_exclusive(true);
+	set_flag(Window::FLAG_POPUP, false);
 	last_progress_tick = 0;
 	singleton = this;
 	cancel_hb = memnew(HBoxContainer);
