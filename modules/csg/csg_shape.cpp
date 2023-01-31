@@ -558,7 +558,7 @@ void CSGShape3D::_notification(int p_what) {
 				set_collision_layer(collision_layer);
 				set_collision_mask(collision_mask);
 				set_collision_priority(collision_priority);
-				_update_collision_faces();
+				_make_dirty();
 			}
 		} break;
 
@@ -1763,7 +1763,7 @@ CSGBrush *CSGPolygon3D::_build_brush() {
 			}
 		}
 
-		if (!path) {
+		if (!path || !path->is_inside_tree()) {
 			return new_brush;
 		}
 
