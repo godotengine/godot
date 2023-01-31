@@ -41,7 +41,8 @@ TEST_SUITE("[Modules][GDScript]") {
 	// Allow the tests to fail, but do not ignore errors during development.
 	// Update the scripts and expected output as needed.
 	TEST_CASE("Script compilation and runtime") {
-		GDScriptTestRunner runner("modules/gdscript/tests/scripts", true);
+		bool print_filenames = OS::get_singleton()->get_cmdline_args().find("--print-filenames") != nullptr;
+		GDScriptTestRunner runner("modules/gdscript/tests/scripts", true, print_filenames);
 		int fail_count = runner.run_tests();
 		INFO("Make sure `*.out` files have expected results.");
 		REQUIRE_MESSAGE(fail_count == 0, "All GDScript tests should pass.");
