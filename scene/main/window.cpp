@@ -2135,13 +2135,13 @@ Transform2D Window::get_popup_base_transform() const {
 	if (is_embedding_subwindows()) {
 		return Transform2D();
 	}
-	Transform2D window_transform;
-	window_transform.set_origin(get_position());
-	window_transform *= Viewport::get_screen_transform();
+	Transform2D popup_base_transform;
+	popup_base_transform.set_origin(get_position());
+	popup_base_transform *= Viewport::get_screen_transform();
 	if (_get_embedder()) {
-		return _get_embedder()->get_popup_base_transform() * window_transform;
+		return _get_embedder()->get_popup_base_transform() * popup_base_transform;
 	}
-	return window_transform;
+	return popup_base_transform;
 }
 
 void Window::_bind_methods() {
