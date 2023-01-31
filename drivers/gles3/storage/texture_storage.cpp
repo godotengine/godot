@@ -1822,6 +1822,10 @@ void TextureStorage::_clear_render_target(RenderTarget *rt) {
 		rt->overridden.color = RID();
 	} else if (rt->color) {
 		glDeleteTextures(1, &rt->color);
+		if (rt->texture.is_valid()) {
+			Texture *tex = get_texture(rt->texture);
+			tex->tex_id = 0;
+		}
 	}
 	rt->color = 0;
 
