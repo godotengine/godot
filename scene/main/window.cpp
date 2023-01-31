@@ -907,6 +907,7 @@ void Window::_update_viewport_size() {
 	Rect2i attach_to_screen_rect(Point2i(), size);
 	Transform2D stretch_transform_new;
 	float font_oversampling = 1.0;
+	window_transform = Transform2D();
 
 	if (content_scale_mode == CONTENT_SCALE_MODE_DISABLED || content_scale_size.x == 0 || content_scale_size.y == 0) {
 		font_oversampling = content_scale_factor;
@@ -993,11 +994,18 @@ void Window::_update_viewport_size() {
 				Size2 scale = Vector2(screen_size) / Vector2(final_size_override);
 				stretch_transform_new.scale(scale);
 
+				window_transform.translate_local(margin);
 			} break;
 			case CONTENT_SCALE_MODE_VIEWPORT: {
 				final_size = (viewport_size / content_scale_factor).floor();
 				attach_to_screen_rect = Rect2(margin, screen_size);
 
+				window_transform.translate_local(margin);
+				if (final_size.x != 0 && final_size.y != 0) {
+					Transform2D scale_transform;
+					scale_transform.scale(Vector2(attach_to_screen_rect.size) / Vector2(final_size));
+					window_transform *= scale_transform;
+				}
 			} break;
 		}
 	}
