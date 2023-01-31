@@ -47,8 +47,8 @@ class AudioDriverCoreAudio : public AudioDriver {
 	bool active = false;
 	Mutex mutex;
 
-	String device_name = "Default";
-	String capture_device_name = "Default";
+	String output_device_name = "Default";
+	String input_device_name = "Default";
 
 	int mix_rate = 0;
 	unsigned int channels = 2;
@@ -60,7 +60,7 @@ class AudioDriverCoreAudio : public AudioDriver {
 
 #ifdef MACOS_ENABLED
 	PackedStringArray _get_device_list(bool capture = false);
-	void _set_device(const String &device, bool capture = false);
+	void _set_device(const String &output_device, bool capture = false);
 
 	static OSStatus input_device_address_cb(AudioObjectID inObjectID,
 			UInt32 inNumberAddresses, const AudioObjectPropertyAddress *inAddresses,
@@ -107,13 +107,13 @@ public:
 	void stop();
 
 #ifdef MACOS_ENABLED
-	virtual PackedStringArray get_device_list();
-	virtual String get_device();
-	virtual void set_device(String device);
+	virtual PackedStringArray get_output_device_list();
+	virtual String get_output_device();
+	virtual void set_output_device(String output_device);
 
-	virtual PackedStringArray capture_get_device_list();
-	virtual void capture_set_device(const String &p_name);
-	virtual String capture_get_device();
+	virtual PackedStringArray get_input_device_list();
+	virtual void set_input_device(const String &p_name);
+	virtual String get_input_device();
 #endif
 
 	AudioDriverCoreAudio();

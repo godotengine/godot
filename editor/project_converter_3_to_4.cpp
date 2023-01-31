@@ -241,6 +241,9 @@ const char *ProjectConverter3To4::gdscript_function_renames[][2] = {
 	{ "can_generate_small_preview", "_can_generate_small_preview" }, // EditorResourcePreviewGenerator
 	{ "can_instance", "can_instantiate" }, // PackedScene, Script
 	{ "canvas_light_set_scale", "canvas_light_set_texture_scale" }, // RenderingServer
+	{ "capture_get_device", "get_input_device" }, // AudioServer
+	{ "capture_get_device_list", "get_input_device_list" }, // AudioServer
+	{ "capture_set_device", "set_input_device" }, // AudioServer
 	{ "center_viewport_to_cursor", "center_viewport_to_caret" }, // TextEdit
 	{ "change_scene", "change_scene_to_file" }, // SceneTree
 	{ "change_scene_to", "change_scene_to_packed" }, // SceneTree
@@ -301,6 +304,8 @@ const char *ProjectConverter3To4::gdscript_function_renames[][2] = {
 	{ "get_cursor_position", "get_caret_column" }, // LineEdit
 	{ "get_d", "get_distance" }, // LineShape2D
 	{ "get_depth_bias_enable", "get_depth_bias_enabled" }, // RDPipelineRasterizationState
+	{ "get_device", "get_output_device" }, // AudioServer
+	{ "get_device_list", "get_output_device_list" }, // AudioServer
 	{ "get_drag_data", "_get_drag_data" }, // Control
 	{ "get_editor_viewport", "get_editor_main_screen" }, // EditorPlugin
 	{ "get_enabled_focus_mode", "get_focus_mode" }, // BaseButton
@@ -499,6 +504,7 @@ const char *ProjectConverter3To4::gdscript_function_renames[][2] = {
 	{ "set_cursor_position", "set_caret_column" }, // LineEdit
 	{ "set_d", "set_distance" }, // WorldMarginShape2D
 	{ "set_depth_bias_enable", "set_depth_bias_enabled" }, // RDPipelineRasterizationState
+	{ "set_device", "set_output_device" }, // AudioServer
 	{ "set_doubleclick", "set_double_click" }, // InputEventMouseButton
 	{ "set_draw_red", "set_draw_warning" }, // EditorProperty
 	{ "set_enable_follow_smoothing", "set_position_smoothing_enabled" }, // Camera2D
@@ -697,6 +703,9 @@ const char *ProjectConverter3To4::csharp_function_renames[][2] = {
 	{ "CanGenerateSmallPreview", "_CanGenerateSmallPreview" }, // EditorResourcePreviewGenerator
 	{ "CanInstance", "CanInstantiate" }, // PackedScene, Script
 	{ "CanvasLightSetScale", "CanvasLightSetTextureScale" }, // RenderingServer
+	{ "CaptureGetDevice", "GetInputDevice" }, // AudioServer
+	{ "CaptureGetDeviceList", "GetInputDeviceList" }, // AudioServer
+	{ "CaptureSetDevice", "SetInputDevice" }, // AudioServer
 	{ "CenterViewportToCursor", "CenterViewportToCaret" }, // TextEdit
 	{ "ChangeScene", "ChangeSceneToFile" }, // SceneTree
 	{ "ChangeSceneTo", "ChangeSceneToPacked" }, // SceneTree
@@ -754,6 +763,8 @@ const char *ProjectConverter3To4::csharp_function_renames[][2] = {
 	{ "GetCursorPosition", "GetCaretColumn" }, // LineEdit
 	{ "GetD", "GetDistance" }, // LineShape2D
 	{ "GetDepthBiasEnable", "GetDepthBiasEnabled" }, // RDPipelineRasterizationState
+	{ "GetDevice", "GetOutputDevice" }, // AudioServer
+	{ "GetDeviceList", "GetOutputDeviceList" }, // AudioServer
 	{ "GetDragDataFw", "_GetDragDataFw" }, // ScriptEditor
 	{ "GetEditorViewport", "GetViewport" }, // EditorPlugin
 	{ "GetEnabledFocusMode", "GetFocusMode" }, // BaseButton
@@ -942,6 +953,7 @@ const char *ProjectConverter3To4::csharp_function_renames[][2] = {
 	{ "SetCursorPosition", "SetCaretColumn" }, // LineEdit
 	{ "SetD", "SetDistance" }, // WorldMarginShape2D
 	{ "SetDepthBiasEnable", "SetDepthBiasEnabled" }, // RDPipelineRasterizationState
+	{ "SetDevice", "SetOutputDevice" }, // AudioServer
 	{ "SetDoubleclick", "SetDoubleClick" }, // InputEventMouseButton
 	{ "SetEnableFollowSmoothing", "SetFollowSmoothingEnabled" }, // Camera2D
 	{ "SetEnabledFocusMode", "SetFocusMode" }, // BaseButton
@@ -1070,6 +1082,7 @@ const char *ProjectConverter3To4::gdscript_properties_renames[][2] = {
 	//	// {"shift","shift_pressed"},// This may broke a lot of comments and user variables
 	//	{ "autowrap", "autowrap_mode" }, // Label
 	//	{ "cast_to", "target_position" }, // RayCast2D, RayCast3D
+	//	{ "device", "output_device"}, // AudioServer - Too vague, most likely breaks comments & variables
 	//	{ "doubleclick", "double_click" }, // InputEventMouseButton
 	//	{ "group", "button_group" }, // BaseButton
 	//	{ "process_mode", "process_callback" }, // AnimationTree, Camera2D
@@ -1085,6 +1098,7 @@ const char *ProjectConverter3To4::gdscript_properties_renames[][2] = {
 	{ "bbcode_text", "text" }, // RichTextLabel
 	{ "bg", "panel" }, // Theme
 	{ "bg_focus", "focus" }, // Theme
+	{ "capture_device", "input_device" }, // AudioServer
 	{ "caret_blink_speed", "caret_blink_interval" }, // TextEdit, LineEdit
 	{ "caret_moving_by_right_click", "caret_move_on_right_click" }, // TextEdit
 	{ "caret_position", "caret_column" }, // LineEdit
