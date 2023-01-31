@@ -1138,7 +1138,7 @@ Array ProjectSettings::get_global_class_list() {
 	Ref<ConfigFile> cf;
 	cf.instantiate();
 	if (cf->load(get_global_class_list_path()) == OK) {
-		script_classes = cf->get_value("", "list");
+		script_classes = cf->get_value("", "list", Array());
 	} else {
 #ifndef TOOLS_ENABLED
 		// Script classes can't be recreated in exported project, so print an error.
