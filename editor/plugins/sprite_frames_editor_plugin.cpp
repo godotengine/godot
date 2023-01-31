@@ -1523,7 +1523,24 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	delete_anim->set_disabled(true);
 	delete_anim->connect("pressed", callable_mp(this, &SpriteFramesEditor::_animation_remove));
 
+	autoplay_container = memnew(HBoxContainer);
+	hbc_animlist->add_child(autoplay_container);
+
+	autoplay_container->add_child(memnew(VSeparator));
+
+	autoplay = memnew(Button);
+	autoplay->set_flat(true);
+	autoplay->set_tooltip_text(TTR("Autoplay on Load"));
+	autoplay_container->add_child(autoplay);
+
 	hbc_animlist->add_child(memnew(VSeparator));
+
+	anim_loop = memnew(Button);
+	anim_loop->set_toggle_mode(true);
+	anim_loop->set_flat(true);
+	anim_loop->set_tooltip_text(TTR("Animation Looping"));
+	anim_loop->connect("pressed", callable_mp(this, &SpriteFramesEditor::_animation_loop_changed));
+	hbc_animlist->add_child(anim_loop);
 
 	anim_speed = memnew(SpinBox);
 	anim_speed->set_suffix(TTR("FPS"));
@@ -1534,23 +1551,6 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	anim_speed->set_tooltip_text(TTR("Animation Speed"));
 	anim_speed->connect("value_changed", callable_mp(this, &SpriteFramesEditor::_animation_speed_changed));
 	hbc_animlist->add_child(anim_speed);
-
-	anim_loop = memnew(Button);
-	anim_loop->set_toggle_mode(true);
-	anim_loop->set_flat(true);
-	anim_loop->set_tooltip_text(TTR("Animation Looping"));
-	anim_loop->connect("pressed", callable_mp(this, &SpriteFramesEditor::_animation_loop_changed));
-	hbc_animlist->add_child(anim_loop);
-
-	autoplay_container = memnew(HBoxContainer);
-	hbc_animlist->add_child(autoplay_container);
-
-	autoplay_container->add_child(memnew(VSeparator));
-
-	autoplay = memnew(Button);
-	autoplay->set_flat(true);
-	autoplay->set_tooltip_text(TTR("Autoplay on Load"));
-	autoplay_container->add_child(autoplay);
 
 	anim_search_box = memnew(LineEdit);
 	sub_vb->add_child(anim_search_box);
@@ -1953,9 +1953,7 @@ void SpriteFramesEditorPlugin::make_visible(bool p_visible) {
 		EditorNode::get_singleton()->make_bottom_panel_item_visible(frames_editor);
 	} else {
 		button->hide();
-		if (frames_editor->is_visible_in_tree()) {
-			EditorNode::get_singleton()->hide_bottom_panel();
-		}
+		frames_editor->edit(Ref<SpriteFrames>());
 	}
 }
 
