@@ -2947,7 +2947,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 				} else if (export_template_manager->can_install_android_template()) {
 					install_android_build_template->popup_centered();
 				} else {
-					custom_build_manage_templates->popup_centered();
+					gradle_build_manage_templates->popup_centered();
 				}
 			}
 		} break;
@@ -3037,7 +3037,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 #endif
 		} break;
 		case SETTINGS_INSTALL_ANDROID_BUILD_TEMPLATE: {
-			custom_build_manage_templates->hide();
+			gradle_build_manage_templates->hide();
 			file_android_build_source->popup_centered_ratio();
 		} break;
 		case SETTINGS_MANAGE_FEATURE_PROFILES: {
@@ -7700,12 +7700,12 @@ EditorNode::EditorNode() {
 	save_confirmation->connect("confirmed", callable_mp(this, &EditorNode::_menu_confirm_current));
 	save_confirmation->connect("custom_action", callable_mp(this, &EditorNode::_discard_changes));
 
-	custom_build_manage_templates = memnew(ConfirmationDialog);
-	custom_build_manage_templates->set_text(TTR("Android build template is missing, please install relevant templates."));
-	custom_build_manage_templates->set_ok_button_text(TTR("Manage Templates"));
-	custom_build_manage_templates->add_button(TTR("Install from file"))->connect("pressed", callable_mp(this, &EditorNode::_menu_option).bind(SETTINGS_INSTALL_ANDROID_BUILD_TEMPLATE));
-	custom_build_manage_templates->connect("confirmed", callable_mp(this, &EditorNode::_menu_option).bind(SETTINGS_MANAGE_EXPORT_TEMPLATES));
-	gui_base->add_child(custom_build_manage_templates);
+	gradle_build_manage_templates = memnew(ConfirmationDialog);
+	gradle_build_manage_templates->set_text(TTR("Android build template is missing, please install relevant templates."));
+	gradle_build_manage_templates->set_ok_button_text(TTR("Manage Templates"));
+	gradle_build_manage_templates->add_button(TTR("Install from file"))->connect("pressed", callable_mp(this, &EditorNode::_menu_option).bind(SETTINGS_INSTALL_ANDROID_BUILD_TEMPLATE));
+	gradle_build_manage_templates->connect("confirmed", callable_mp(this, &EditorNode::_menu_option).bind(SETTINGS_MANAGE_EXPORT_TEMPLATES));
+	gui_base->add_child(gradle_build_manage_templates);
 
 	file_android_build_source = memnew(EditorFileDialog);
 	file_android_build_source->set_title(TTR("Select Android sources file"));
@@ -7716,7 +7716,7 @@ EditorNode::EditorNode() {
 	gui_base->add_child(file_android_build_source);
 
 	install_android_build_template = memnew(ConfirmationDialog);
-	install_android_build_template->set_text(TTR("This will set up your project for custom Android builds by installing the source template to \"res://android/build\".\nYou can then apply modifications and build your own custom APK on export (adding modules, changing the AndroidManifest.xml, etc.).\nNote that in order to make custom builds instead of using pre-built APKs, the \"Use Custom Build\" option should be enabled in the Android export preset."));
+	install_android_build_template->set_text(TTR("This will set up your project for gradle Android builds by installing the source template to \"res://android/build\".\nYou can then apply modifications and build your own custom APK on export (adding modules, changing the AndroidManifest.xml, etc.).\nNote that in order to make gradle builds instead of using pre-built APKs, the \"Use Gradle Build\" option should be enabled in the Android export preset."));
 	install_android_build_template->set_ok_button_text(TTR("Install"));
 	install_android_build_template->connect("confirmed", callable_mp(this, &EditorNode::_menu_confirm_current));
 	gui_base->add_child(install_android_build_template);
