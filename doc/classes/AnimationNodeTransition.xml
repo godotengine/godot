@@ -44,6 +44,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="allow_transition_to_self" type="bool" setter="set_allow_transition_to_self" getter="is_allow_transition_to_self" default="false">
+			If [code]true[/code], allows transition to the self state. When the reset option is enabled in input, the animation is restarted. If [code]false[/code], nothing happens on the transition to the self state.
+		</member>
 		<member name="input_count" type="int" setter="set_input_count" getter="get_input_count" default="0">
 			The number of enabled input ports for this node.
 		</member>

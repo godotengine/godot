@@ -161,4 +161,9 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="allow_transition_to_self" type="bool" setter="set_allow_transition_to_self" getter="is_allow_transition_to_self" default="false">
+			If [code]true[/code], allows teleport to the self state with [method AnimationNodeStateMachinePlayback.travel]. When the reset option is enabled in [method AnimationNodeStateMachinePlayback.travel], the animation is restarted. If [code]false[/code], nothing happens on the teleportation to the self state.
+		</member>
+	</members>
 </class>

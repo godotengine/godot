@@ -294,6 +294,7 @@ class AnimationNodeTransition : public AnimationNodeSync {
 
 	double xfade_time = 0.0;
 	Ref<Curve> xfade_curve;
+	bool allow_transition_to_self = false;
 
 protected:
 	bool _get(const StringName &p_path, Variant &r_ret) const;
@@ -324,6 +325,9 @@ public:
 
 	void set_xfade_curve(const Ref<Curve> &p_curve);
 	Ref<Curve> get_xfade_curve() const;
+
+	void set_allow_transition_to_self(bool p_enable);
+	bool is_allow_transition_to_self() const;
 
 	double process(double p_time, bool p_seek, bool p_is_external_seeking) override;
 
