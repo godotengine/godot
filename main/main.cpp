@@ -2366,8 +2366,10 @@ bool Main::start() {
 	String _export_preset;
 	bool export_debug = false;
 	bool export_pack_only = false;
+#ifndef DISABLE_DEPRECATED
 	bool converting_project = false;
 	bool validating_converting_project = false;
+#endif // DISABLE_DEPRECATED
 #endif
 
 	main_timer_sync.init(OS::get_singleton()->get_ticks_usec());
@@ -2383,10 +2385,12 @@ bool Main::start() {
 #ifdef TOOLS_ENABLED
 		} else if (args[i] == "--no-docbase") {
 			doc_base = false;
+#ifndef DISABLE_DEPRECATED
 		} else if (args[i] == "--convert-3to4") {
 			converting_project = true;
 		} else if (args[i] == "--validate-conversion-3to4") {
 			validating_converting_project = true;
+#endif // DISABLE_DEPRECATED
 		} else if (args[i] == "-e" || args[i] == "--editor") {
 			editor = true;
 		} else if (args[i] == "-p" || args[i] == "--project-manager") {
@@ -2547,6 +2551,7 @@ bool Main::start() {
 		return false;
 	}
 
+#ifndef DISABLE_DEPRECATED
 	if (converting_project) {
 		int exit_code = ProjectConverter3To4(converter_max_kb_file, converter_max_line_length).convert();
 		OS::get_singleton()->set_exit_code(exit_code);
@@ -2557,6 +2562,7 @@ bool Main::start() {
 		OS::get_singleton()->set_exit_code(exit_code);
 		return false;
 	}
+#endif // DISABLE_DEPRECATED
 
 #endif
 
