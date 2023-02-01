@@ -1942,6 +1942,44 @@ void CodeTextEditor::_toggle_scripts_pressed() {
 	update_toggle_scripts_button();
 }
 
+int CodeTextEditor::_get_affected_lines_from(int p_caret) {
+	if (text_editor->has_selection(p_caret)) {
+		return text_editor->get_selection_from_line(p_caret);
+	} else {
+		return text_editor->get_caret_line(p_caret);
+	}
+}
+
+int CodeTextEditor::_get_affected_lines_to(int p_caret) {
+	if (text_editor->has_selection(p_caret)) {
+		int line = text_editor->get_selection_to_line(p_caret);
+		// Don't affect a line with no selected characters
+		if (text_editor->get_selection_to_column(p_caret) == 0) {
+			line--;
+		}
+		return line;
+	} else {
+		return text_editor->get_caret_line(p_caret);
+	}
+}
+
+/**
+ * Returns all lines which have selections or carets in them.
+ * The lines are ordered from bottom upwards.
+ */
+Vector<int> CodeTextEditor::_get_affected_lines() {
+	Vector<int> lines;
+	Vector<int> caret_edit_order = text_editor->get_caret_index_edit_order();
+	for (int p_caret : caret_edit_order) {
+		for (int line = _get_affected_lines_to(p_caret); line >= _get_affected_lines_from(p_caret); line--) {
+			if (!lines.has(line)) {
+				lines.append(line);
+			}
+		}
+	}
+	return lines;
+}
+
 void CodeTextEditor::_error_pressed(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == MouseButton::LEFT) {
@@ -2010,9 +2048,15 @@ void CodeTextEditor::set_warning_count(int p_warning_count) {
 }
 
 void CodeTextEditor::toggle_bookmark() {
-	for (int i = 0; i < text_editor->get_caret_count(); i++) {
-		int line = text_editor->get_caret_line(i);
-		text_editor->set_line_as_bookmarked(line, !text_editor->is_line_bookmarked(line));
+	bool selection_has_bookmarks = false;
+	for (int line : _get_affected_lines()) {
+		if (text_editor->is_line_bookmarked(line)) {
+			selection_has_bookmarks = true;
+			break;
+		}
+	}
+	for (int line : _get_affected_lines()) {
+		text_editor->set_line_as_bookmarked(line, !selection_has_bookmarks);
 	}
 }
 
