@@ -3637,15 +3637,6 @@ template <PropertyHint t_hint, Variant::Type t_type>
 bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node *p_node) {
 	ERR_FAIL_COND_V_MSG(p_node->type != Node::VARIABLE, false, vformat(R"("%s" annotation can only be applied to variables.)", p_annotation->name));
 
-	{
-		const int max_flags = 32;
-
-		if (t_hint == PropertyHint::PROPERTY_HINT_FLAGS && p_annotation->resolved_arguments.size() > max_flags) {
-			push_error(vformat(R"(The argument count limit for "@export_flags" is exceeded (%d/%d).)", p_annotation->resolved_arguments.size(), max_flags), p_annotation);
-			return false;
-		}
-	}
-
 	VariableNode *variable = static_cast<VariableNode *>(p_node);
 	if (variable->exported) {
 		push_error(vformat(R"(Annotation "%s" cannot be used with another "@export" annotation.)", p_annotation->name), p_annotation);
@@ -3659,14 +3650,50 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 
 	String hint_string;
 	for (int i = 0; i < p_annotation->resolved_arguments.size(); i++) {
-		if (p_annotation->name != SNAME("@export_placeholder") && String(p_annotation->resolved_arguments[i]).contains(",")) {
-			push_error(vformat(R"(Argument %d of annotation "%s" contains a comma. Use separate arguments instead.)", i + 1, p_annotation->name), p_annotation->arguments[i]);
-			return false;
+		String arg_string = String(p_annotation->resolved_arguments[i]);
+
+		if (p_annotation->name != SNAME("@export_placeholder")) {
+			if (arg_string.is_empty()) {
+				push_error(vformat(R"(Argument %d of annotation "%s" is empty.)", i + 1, p_annotation->name), p_annotation->arguments[i]);
+				return false;
+			}
+			if (arg_string.contains(",")) {
+				push_error(vformat(R"(Argument %d of annotation "%s" contains a comma. Use separate arguments instead.)", i + 1, p_annotation->name), p_annotation->arguments[i]);
+				return false;
+			}
 		}
+
+		if (p_annotation->name == SNAME("@export_flags")) {
+			const int64_t max_flags = 32;
+			Vector<String> t = arg_string.split(":", true, 1);
+			if (t[0].is_empty()) {
+				push_error(vformat(R"(Invalid argument %d of annotation "@export_flags": Expected flag name.)", i + 1), p_annotation->arguments[i]);
+				return false;
+			}
+			if (t.size() == 2) {
+				if (t[1].is_empty()) {
+					push_error(vformat(R"(Invalid argument %d of annotation "@export_flags": Expected flag value.)", i + 1), p_annotation->arguments[i]);
+					return false;
+				}
+				if (!t[1].is_valid_int()) {
+					push_error(vformat(R"(Invalid argument %d of annotation "@export_flags": The flag value must be a valid integer.)", i + 1), p_annotation->arguments[i]);
+					return false;
+				}
+				int64_t value = t[1].to_int();
+				if (value < 1 || value >= (1LL << max_flags)) {
+					push_error(vformat(R"(Invalid argument %d of annotation "@export_flags": The flag value must be at least 1 and at most 2 ** %d - 1.)", i + 1, max_flags), p_annotation->arguments[i]);
+					return false;
+				}
+			} else if (i >= max_flags) {
+				push_error(vformat(R"(Invalid argument %d of annotation "@export_flags": Starting from argument %d, the flag value must be specified explicitly.)", i + 1, max_flags + 1), p_annotation->arguments[i]);
+				return false;
+			}
+		}
+
 		if (i > 0) {
 			hint_string += ",";
 		}
-		hint_string += String(p_annotation->resolved_arguments[i]);
+		hint_string += arg_string;
 	}
 
 	variable->export_info.hint_string = hint_string;
