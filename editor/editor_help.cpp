@@ -2448,10 +2448,6 @@ void FindBar::_notification(int p_what) {
 	}
 }
 
-void FindBar::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("search"));
-}
-
 void FindBar::set_rich_text_label(RichTextLabel *p_rich_text_label) {
 	rich_text_label = p_rich_text_label;
 }

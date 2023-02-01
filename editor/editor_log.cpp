@@ -360,11 +360,6 @@ void EditorLog::_reset_message_counts() {
 	}
 }
 
-void EditorLog::_bind_methods() {
-	ADD_SIGNAL(MethodInfo("clear_request"));
-	ADD_SIGNAL(MethodInfo("copy_request"));
-}
-
 EditorLog::EditorLog() {
 	save_state_timer = memnew(Timer);
 	save_state_timer->set_wait_time(2);

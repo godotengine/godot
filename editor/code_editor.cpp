@@ -670,7 +670,6 @@ void FindReplaceBar::set_text_edit(CodeTextEditor *p_text_editor) {
 void FindReplaceBar::_bind_methods() {
 	ClassDB::bind_method("_search_current", &FindReplaceBar::search_current);
 
-	ADD_SIGNAL(MethodInfo("search"));
 	ADD_SIGNAL(MethodInfo("error"));
 }
 
