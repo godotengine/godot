@@ -408,8 +408,8 @@ void CanvasItem::set_as_top_level(bool p_top_level) {
 
 void CanvasItem::_toplevel_changed() {
 	// Inform children that toplevel status has changed on a parent.
-	int childs = get_child_count();
-	for (int i = 0; i < childs; i++) {
+	int children = get_child_count();
+	for (int i = 0; i < children; i++) {
 		CanvasItem *child = Object::cast_to<CanvasItem>(get_child(i));
 		if (child) {
 			child->_toplevel_changed_on_parent();
