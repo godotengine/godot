@@ -223,7 +223,7 @@
 				put_data("Hello world".to_utf8())
 				[/gdscript]
 				[csharp]
-				PutData("Hello World".ToUTF8());
+				PutData("Hello World".ToUtf8());
 				[/csharp]
 				[/codeblocks]
 			</description>

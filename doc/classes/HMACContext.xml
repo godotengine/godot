@@ -26,25 +26,24 @@
 		[/gdscript]
 		[csharp]
 		using Godot;
-		using System;
 		using System.Diagnostics;
 
-		public class CryptoNode : Node
+		public partial class MyNode : Node
 		{
-		    private HMACContext ctx = new HMACContext();
+		    private HmacContext _ctx = new HmacContext();
 
 		    public override void _Ready()
 		    {
-		        byte[] key = "supersecret".ToUTF8();
-		        Error err = ctx.Start(HashingContext.HashType.Sha256, key);
+		        byte[] key = "supersecret".ToUtf8();
+		        Error err = _ctx.Start(HashingContext.HashType.Sha256, key);
 		        Debug.Assert(err == Error.Ok);
-		        byte[] msg1 = "this is ".ToUTF8();
-		        byte[] msg2 = "super duper secret".ToUTF8();
-		        err = ctx.Update(msg1);
+		        byte[] msg1 = "this is ".ToUtf8();
+		        byte[] msg2 = "super duper secret".ToUtf8();
+		        err = _ctx.Update(msg1);
 		        Debug.Assert(err == Error.Ok);
-		        err = ctx.Update(msg2);
+		        err = _ctx.Update(msg2);
 		        Debug.Assert(err == Error.Ok);
-		        byte[] hmac = ctx.Finish();
+		        byte[] hmac = _ctx.Finish();
 		        GD.Print(hmac.HexEncode());
 		    }
 		}

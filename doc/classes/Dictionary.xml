@@ -51,7 +51,7 @@
 		[csharp]
 		[Export(PropertyHint.Enum, "White,Yellow,Orange")]
 		public string MyColor { get; set; }
-		public Godot.Collections.Dictionary pointsDict = new Godot.Collections.Dictionary
+		private Godot.Collections.Dictionary _pointsDict = new Godot.Collections.Dictionary
 		{
 		    {"White", 50},
 		    {"Yellow", 75},
@@ -60,7 +60,7 @@
 
 		public override void _Ready()
 		{
-		    int points = (int)pointsDict[MyColor];
+		    int points = (int)_pointsDict[MyColor];
 		}
 		[/csharp]
 		[/codeblocks]

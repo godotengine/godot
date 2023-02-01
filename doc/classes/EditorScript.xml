@@ -17,10 +17,9 @@
 		[/gdscript]
 		[csharp]
 		using Godot;
-		using System;
 
 		[Tool]
-		public class HelloEditor : EditorScript
+		public partial class HelloEditor : EditorScript
 		{
 		    public override void _Run()
 		    {

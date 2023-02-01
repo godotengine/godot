@@ -105,7 +105,7 @@
 				[/gdscript]
 				[csharp]
 				var fields = new Godot.Collections.Dictionary { { "username", "user" }, { "password", "pass" } };
-				string queryString = new HTTPClient().QueryStringFromDict(fields);
+				string queryString = httpClient.QueryStringFromDict(fields);
 				// Returns "username=user&amp;password=pass"
 				[/csharp]
 				[/codeblocks]
@@ -117,8 +117,13 @@
 				# Returns "single=123&amp;not_valued&amp;multiple=22&amp;multiple=33&amp;multiple=44"
 				[/gdscript]
 				[csharp]
-				var fields = new Godot.Collections.Dictionary{{"single", 123}, {"notValued", null}, {"multiple", new Godot.Collections.Array{22, 33, 44}}};
-				string queryString = new HTTPClient().QueryStringFromDict(fields);
+				var fields = new Godot.Collections.Dictionary
+				{
+				    { "single", 123 },
+				    { "notValued", default },
+				    { "multiple", new Godot.Collections.Array { 22, 33, 44 } },
+				};
+				string queryString = httpClient.QueryStringFromDict(fields);
 				// Returns "single=123&amp;not_valued&amp;multiple=22&amp;multiple=33&amp;multiple=44"
 				[/csharp]
 				[/codeblocks]
@@ -151,7 +156,7 @@
 				[csharp]
 				var fields = new Godot.Collections.Dictionary { { "username", "user" }, { "password", "pass" } };
 				string queryString = new HTTPClient().QueryStringFromDict(fields);
-				string[] headers = {"Content-Type: application/x-www-form-urlencoded", "Content-Length: " + queryString.Length};
+				string[] headers = { "Content-Type: application/x-www-form-urlencoded", $"Content-Length: {queryString.Length}" };
 				var result = new HTTPClient().Request(HTTPClient.Method.Post, "index.php", headers, queryString);
 				[/csharp]
 				[/codeblocks]
