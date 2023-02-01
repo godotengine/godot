@@ -93,6 +93,10 @@ public:
 		bool storage_input_output_16;
 	};
 
+	struct GPLCapabilities {
+		bool graphics_pipeline_library_supported;
+	};
+
 private:
 	enum {
 		MAX_EXTENSIONS = 128,
@@ -116,6 +120,7 @@ private:
 	VRSCapabilities vrs_capabilities;
 	ShaderCapabilities shader_capabilities;
 	StorageBufferCapabilities storage_buffer_capabilities;
+	GPLCapabilities graphics_pipeline_library_capabilities;
 
 	String device_vendor;
 	String device_name;
@@ -280,6 +285,7 @@ public:
 	const VRSCapabilities &get_vrs_capabilities() const { return vrs_capabilities; };
 	const ShaderCapabilities &get_shader_capabilities() const { return shader_capabilities; };
 	const StorageBufferCapabilities &get_storage_buffer_capabilities() const { return storage_buffer_capabilities; };
+	const GPLCapabilities &get_graphics_pipeline_library_capabilities() const { return graphics_pipeline_library_capabilities;};
 	const VkPhysicalDeviceFeatures &get_physical_device_features() const { return physical_device_features; };
 
 	VkDevice get_device();

@@ -6067,6 +6067,25 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 	input_assembly_create_info.topology = topology_list[p_render_primitive];
 	input_assembly_create_info.primitiveRestartEnable = (p_render_primitive == RENDER_PRIMITIVE_TRIANGLE_STRIPS_WITH_RESTART_INDEX);
 
+	VkGraphicsPipelineLibraryCreateInfoEXT library_info{};
+	library_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_LIBRARY_CREATE_INFO_EXT;
+	library_info.flags = VK_GRAPHICS_PIPELINE_LIBRARY_VERTEX_INPUT_INTERFACE_BIT_EXT;
+
+	VkGraphicsPipelineCreateInfo vertex_input_pipeline_create_info = {};
+	vertex_input_pipeline_create_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+	vertex_input_pipeline_create_info.flags = VK_PIPELINE_CREATE_LIBRARY_BIT_KHR | VK_PIPELINE_CREATE_RETAIN_LINK_TIME_OPTIMIZATION_INFO_BIT_EXT;
+	vertex_input_pipeline_create_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+	vertex_input_pipeline_create_info.pNext = &library_info;
+	vertex_input_pipeline_create_info.pInputAssemblyState = &input_assembly_create_info;
+	vertex_input_pipeline_create_info.pVertexInputState = &pipeline_vertex_input_state_create_info;
+
+	//TODO: make these pipeline stages reusable.
+	VkPipeline vertex_input_pipeline = VK_NULL_HANDLE;
+	if (context->get_graphics_pipeline_library_capabilities().graphics_pipeline_library_supported){
+		VkResult err = vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &vertex_input_pipeline_create_info, nullptr, &vertex_input_pipeline);
+		ERR_FAIL_COND_V_MSG(err, RID(), "vertex input stage vkCreateGraphicsPipelines failed with error " + itos(err) + " for shader '" + shader->name + "'.");
+	}
+
 	// Tessellation.
 	VkPipelineTessellationStateCreateInfo tessellation_create_info;
 	tessellation_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO;
@@ -6312,6 +6331,9 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 	graphics_pipeline_create_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 	graphics_pipeline_create_info.pNext = graphics_pipeline_nextptr;
 	graphics_pipeline_create_info.flags = 0;
+	if (context->get_graphics_pipeline_library_capabilities().graphics_pipeline_library_supported){
+		graphics_pipeline_create_info.flags = VK_PIPELINE_CREATE_LIBRARY_BIT_KHR | VK_PIPELINE_CREATE_RETAIN_LINK_TIME_OPTIMIZATION_INFO_BIT_EXT;
+	}
 
 	Vector<VkPipelineShaderStageCreateInfo> pipeline_stages = shader->pipeline_stages;
 	Vector<VkSpecializationInfo> specialization_info;
