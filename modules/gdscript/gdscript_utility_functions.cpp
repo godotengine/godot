@@ -112,28 +112,6 @@ struct GDScriptUtilityFunctionsDefinitions {
 		*r_ret = String(result);
 	}
 
-	static inline void str(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
-		if (p_arg_count < 1) {
-			r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
-			r_error.argument = 1;
-			r_error.expected = 1;
-			*r_ret = Variant();
-			return;
-		}
-
-		String str;
-		for (int i = 0; i < p_arg_count; i++) {
-			String os = p_args[i]->operator String();
-
-			if (i == 0) {
-				str = os;
-			} else {
-				str += os;
-			}
-		}
-		*r_ret = str;
-	}
-
 	static inline void range(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
 		switch (p_arg_count) {
 			case 0: {
@@ -651,7 +629,6 @@ void GDScriptUtilityFunctions::register_functions() {
 	REGISTER_VARIANT_FUNC(convert, true, VARARG("what"), ARG("type", Variant::INT));
 	REGISTER_FUNC(type_exists, true, Variant::BOOL, ARG("type", Variant::STRING_NAME));
 	REGISTER_FUNC(_char, true, Variant::STRING, ARG("char", Variant::INT));
-	REGISTER_VARARG_FUNC(str, true, Variant::STRING);
 	REGISTER_VARARG_FUNC(range, false, Variant::ARRAY);
 	REGISTER_CLASS_FUNC(load, false, "Resource", ARG("path", Variant::STRING));
 	REGISTER_FUNC(inst_to_dict, false, Variant::DICTIONARY, ARG("instance", Variant::OBJECT));

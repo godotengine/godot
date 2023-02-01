@@ -227,18 +227,6 @@
 				[/codeblock]
 			</description>
 		</method>
-		<method name="str" qualifiers="vararg">
-			<return type="String" />
-			<description>
-				Converts one or more arguments to a [String] in the best way possible.
-				[codeblock]
-				var a = [10, 20, 30]
-				var b = str(a);
-				len(a) # Returns 3
-				len(b) # Returns 12
-				[/codeblock]
-			</description>
-		</method>
 		<method name="type_exists">
 			<return type="bool" />
 			<param index="0" name="type" type="StringName" />
