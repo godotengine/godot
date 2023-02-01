@@ -840,6 +840,9 @@ void PopupMenu::_notification(int p_what) {
 				float pm_delay = pm->get_submenu_popup_delay();
 				set_submenu_popup_delay(pm_delay);
 			}
+			if (!is_embedded()) {
+				set_flag(FLAG_NO_FOCUS, true);
+			}
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED:
