@@ -246,7 +246,7 @@ void Array::assign(const Array &p_array) {
 			ERR_FAIL_COND_MSG(ce.error, vformat(R"(Unable to convert array index %i from "%s" to "%s".)", i, Variant::get_type_name(value->get_type()), Variant::get_type_name(typed.type)));
 		}
 	} else if (Variant::can_convert_strict(source_typed.type, typed.type)) {
-		// from primitives to different convertable primitives
+		// from primitives to different convertible primitives
 		for (int i = 0; i < size; i++) {
 			const Variant *value = source + i;
 			Callable::CallError ce;

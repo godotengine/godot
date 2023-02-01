@@ -904,7 +904,7 @@ void Input::parse_input_event(const Ref<InputEvent> &p_event) {
 		// - If platform doesn't use buffering and event accumulation is disabled.
 		// - If platform doesn't use buffering and the event type is not accumulable.
 		// However, it wouldn't be reasonable to ask users to remember the full ruleset and be aware at all times
-		// of the possibilites of the target platform, project settings and engine internals, which may change
+		// of the possibilities of the target platform, project settings and engine internals, which may change
 		// without prior notice.
 		// Therefore, the guideline is, "don't send the same event object more than once per frame".
 		WARN_PRINT_ONCE(
