@@ -315,9 +315,11 @@ void vertex_shader(in uint instance_index, in bool is_multimesh, in uint multime
 #ifdef USE_MULTIVIEW
 	mat4 projection_matrix = scene_data.projection_matrix_view[ViewIndex];
 	mat4 inv_projection_matrix = scene_data.inv_projection_matrix_view[ViewIndex];
+	vec3 eye_offset = scene_data.eye_offset[ViewIndex].xyz;
 #else
 	mat4 projection_matrix = scene_data.projection_matrix;
 	mat4 inv_projection_matrix = scene_data.inv_projection_matrix;
+	vec3 eye_offset = vec3(0.0, 0.0, 0.0);
 #endif //USE_MULTIVIEW
 
 //using world coordinates
@@ -722,8 +724,10 @@ void fragment_shader(in SceneData scene_data) {
 	//lay out everything, whatever is unused is optimized away anyway
 	vec3 vertex = vertex_interp;
 #ifdef USE_MULTIVIEW
-	vec3 view = -normalize(vertex_interp - scene_data.eye_offset[ViewIndex].xyz);
+	vec3 eye_offset = scene_data.eye_offset[ViewIndex].xyz;
+	vec3 view = -normalize(vertex_interp - eye_offset);
 #else
+	vec3 eye_offset = vec3(0.0, 0.0, 0.0);
 	vec3 view = -normalize(vertex_interp);
 #endif
 	vec3 albedo = vec3(1.0);
