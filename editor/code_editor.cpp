@@ -1312,20 +1312,15 @@ void CodeTextEditor::move_lines_up() {
 
 		Vector<int> new_group{ c };
 		Pair<int, int> group_border;
-		if (text_editor->has_selection(c)) {
-			group_border.first = text_editor->get_selection_from_line(c);
-			group_border.second = text_editor->get_selection_to_line(c);
-		} else {
-			group_border.first = text_editor->get_caret_line(c);
-			group_border.second = text_editor->get_caret_line(c);
-		}
+		group_border.first = _get_affected_lines_from(c);
+		group_border.second = _get_affected_lines_to(c);
 
 		for (int j = i; j < caret_edit_order.size() - 1; j++) {
 			int c_current = caret_edit_order[j];
 			int c_next = caret_edit_order[j + 1];
 
-			int next_start_pos = text_editor->has_selection(c_next) ? text_editor->get_selection_from_line(c_next) : text_editor->get_caret_line(c_next);
-			int next_end_pos = text_editor->has_selection(c_next) ? text_editor->get_selection_to_line(c_next) : text_editor->get_caret_line(c_next);
+			int next_start_pos = _get_affected_lines_from(c_next);
+			int next_end_pos = _get_affected_lines_to(c_next);
 
 			int current_start_pos = text_editor->has_selection(c_current) ? text_editor->get_selection_from_line(c_current) : text_editor->get_caret_line(c_current);
 
@@ -1412,20 +1407,15 @@ void CodeTextEditor::move_lines_down() {
 
 		Vector<int> new_group{ c };
 		Pair<int, int> group_border;
-		if (text_editor->has_selection(c)) {
-			group_border.first = text_editor->get_selection_from_line(c);
-			group_border.second = text_editor->get_selection_to_line(c);
-		} else {
-			group_border.first = text_editor->get_caret_line(c);
-			group_border.second = text_editor->get_caret_line(c);
-		}
+		group_border.first = _get_affected_lines_from(c);
+		group_border.second = _get_affected_lines_to(c);
 
 		for (int j = i; j < caret_edit_order.size() - 1; j++) {
 			int c_current = caret_edit_order[j];
 			int c_next = caret_edit_order[j + 1];
 
-			int next_start_pos = text_editor->has_selection(c_next) ? text_editor->get_selection_from_line(c_next) : text_editor->get_caret_line(c_next);
-			int next_end_pos = text_editor->has_selection(c_next) ? text_editor->get_selection_to_line(c_next) : text_editor->get_caret_line(c_next);
+			int next_start_pos = _get_affected_lines_from(c_next);
+			int next_end_pos = _get_affected_lines_to(c_next);
 
 			int current_start_pos = text_editor->has_selection(c_current) ? text_editor->get_selection_from_line(c_current) : text_editor->get_caret_line(c_current);
 
@@ -1940,6 +1930,44 @@ void CodeTextEditor::_set_show_warnings_panel(bool p_show) {
 void CodeTextEditor::_toggle_scripts_pressed() {
 	ScriptEditor::get_singleton()->toggle_scripts_panel();
 	update_toggle_scripts_button();
+}
+
+int CodeTextEditor::_get_affected_lines_from(int p_caret) {
+	if (text_editor->has_selection(p_caret)) {
+		return text_editor->get_selection_from_line(p_caret);
+	} else {
+		return text_editor->get_caret_line(p_caret);
+	}
+}
+
+int CodeTextEditor::_get_affected_lines_to(int p_caret) {
+	if (text_editor->has_selection(p_caret)) {
+		int line = text_editor->get_selection_to_line(p_caret);
+		// Don't affect a line with no selected characters
+		if (text_editor->get_selection_to_column(p_caret) == 0) {
+			line--;
+		}
+		return line;
+	} else {
+		return text_editor->get_caret_line(p_caret);
+	}
+}
+
+/**
+ * Returns all lines which have selections or carets in them.
+ * The lines are ordered from bottom upwards.
+ */
+Vector<int> CodeTextEditor::_get_affected_lines() {
+	Vector<int> lines;
+	Vector<int> caret_edit_order = text_editor->get_caret_index_edit_order();
+	for (int p_caret : caret_edit_order) {
+		for (int line = _get_affected_lines_to(p_caret); line >= _get_affected_lines_from(p_caret); line--) {
+			if (!lines.has(line)) {
+				lines.append(line);
+			}
+		}
+	}
+	return lines;
 }
 
 void CodeTextEditor::_error_pressed(const Ref<InputEvent> &p_event) {
