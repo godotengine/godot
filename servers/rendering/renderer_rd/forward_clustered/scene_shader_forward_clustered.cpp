@@ -625,6 +625,7 @@ void SceneShaderForwardClustered::init(const String p_defines) {
 		actions.renames["VIEW_INDEX"] = "ViewIndex";
 		actions.renames["VIEW_MONO_LEFT"] = "0";
 		actions.renames["VIEW_RIGHT"] = "1";
+		actions.renames["EYE_OFFSET"] = "eye_offset";
 
 		//for light
 		actions.renames["VIEW"] = "view";
