@@ -65,6 +65,45 @@ void X509Certificate::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("load", "path"), &X509Certificate::load);
 }
 
+/// TLSOptions
+
+Ref<TLSOptions> TLSOptions::client(Ref<X509Certificate> p_trusted_chain, const String &p_common_name_override) {
+	Ref<TLSOptions> opts;
+	opts.instantiate();
+	opts->trusted_ca_chain = p_trusted_chain;
+	opts->common_name = p_common_name_override;
+	opts->verify_mode = TLS_VERIFY_FULL;
+	return opts;
+}
+
+Ref<TLSOptions> TLSOptions::client_unsafe(Ref<X509Certificate> p_trusted_chain) {
+	Ref<TLSOptions> opts;
+	opts.instantiate();
+	opts->trusted_ca_chain = p_trusted_chain;
+	if (p_trusted_chain.is_null()) {
+		opts->verify_mode = TLS_VERIFY_NONE;
+	} else {
+		opts->verify_mode = TLS_VERIFY_CERT;
+	}
+	return opts;
+}
+
+Ref<TLSOptions> TLSOptions::server(Ref<CryptoKey> p_own_key, Ref<X509Certificate> p_own_certificate) {
+	Ref<TLSOptions> opts;
+	opts.instantiate();
+	opts->server_mode = true;
+	opts->own_certificate = p_own_certificate;
+	opts->private_key = p_own_key;
+	opts->verify_mode = TLS_VERIFY_NONE;
+	return opts;
+}
+
+void TLSOptions::_bind_methods() {
+	ClassDB::bind_static_method("TLSOptions", D_METHOD("client", "trusted_chain", "common_name_override"), &TLSOptions::client, DEFVAL(Ref<X509Certificate>()), DEFVAL(String()));
+	ClassDB::bind_static_method("TLSOptions", D_METHOD("client_unsafe", "trusted_chain"), &TLSOptions::client_unsafe, DEFVAL(Ref<X509Certificate>()));
+	ClassDB::bind_static_method("TLSOptions", D_METHOD("server", "key", "certificate"), &TLSOptions::server);
+}
+
 /// HMACContext
 
 void HMACContext::_bind_methods() {

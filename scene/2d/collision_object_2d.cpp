@@ -651,6 +651,7 @@ CollisionObject2D::CollisionObject2D(RID p_rid, bool p_area) {
 	area = p_area;
 	pickable = true;
 	set_notify_transform(true);
+	set_hide_clip_children(true);
 	total_subshapes = 0;
 	only_update_transform_changes = false;
 

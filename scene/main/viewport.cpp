@@ -527,6 +527,11 @@ void Viewport::_process_picking() {
 	if (to_screen_rect != Rect2i() && Input::get_singleton()->get_mouse_mode() == Input::MOUSE_MODE_CAPTURED) {
 		return;
 	}
+	if (!gui.mouse_in_viewport) {
+		// Clear picking events if mouse has left viewport.
+		physics_picking_events.clear();
+		return;
+	}
 
 	_drop_physics_mouseover(true);
 
@@ -791,15 +796,21 @@ void Viewport::update_canvas_items() {
 	_update_canvas_items(this);
 }
 
-void Viewport::_set_size(const Size2i &p_size, const Size2i &p_size_2d_override, const Rect2i &p_to_screen_rect, const Transform2D &p_stretch_transform, bool p_allocated) {
-	if (size == p_size && size_allocated == p_allocated && stretch_transform == p_stretch_transform && p_size_2d_override == size_2d_override && to_screen_rect == p_to_screen_rect) {
+void Viewport::_set_size(const Size2i &p_size, const Size2i &p_size_2d_override, const Rect2i &p_to_screen_rect, bool p_allocated) {
+	Transform2D stretch_transform_new = Transform2D();
+	if (is_size_2d_override_stretch_enabled() && p_size_2d_override.width > 0 && p_size_2d_override.height > 0) {
+		Size2 scale = Size2(p_size) / Size2(p_size_2d_override);
+		stretch_transform_new.scale(scale);
+	}
+
+	if (size == p_size && size_allocated == p_allocated && stretch_transform == stretch_transform_new && p_size_2d_override == size_2d_override && to_screen_rect == p_to_screen_rect) {
 		return;
 	}
 
 	size = p_size;
 	size_allocated = p_allocated;
 	size_2d_override = p_size_2d_override;
-	stretch_transform = p_stretch_transform;
+	stretch_transform = stretch_transform_new;
 	to_screen_rect = p_to_screen_rect;
 
 #ifndef _3D_DISABLED
@@ -1045,6 +1056,25 @@ Transform2D Viewport::get_final_transform() const {
 	return _get_input_pre_xform().affine_inverse() * stretch_transform * global_canvas_transform;
 }
 
+void Viewport::assign_next_enabled_camera_2d(const StringName &p_camera_group) {
+	List<Node *> camera_list;
+	get_tree()->get_nodes_in_group(p_camera_group, &camera_list);
+
+	Camera2D *new_camera = nullptr;
+	for (const Node *E : camera_list) {
+		const Camera2D *cam = Object::cast_to<Camera2D>(E);
+		if (cam->is_enabled()) {
+			new_camera = const_cast<Camera2D *>(cam);
+			break;
+		}
+	}
+
+	_camera_2d_set(new_camera);
+	if (!camera_2d) {
+		set_canvas_transform(Transform2D());
+	}
+}
+
 void Viewport::_update_canvas_items(Node *p_node) {
 	if (p_node != this) {
 		Window *w = Object::cast_to<Window>(p_node);
@@ -1110,14 +1140,11 @@ Viewport::PositionalShadowAtlasQuadrantSubdiv Viewport::get_positional_shadow_at
 }
 
 Transform2D Viewport::_get_input_pre_xform() const {
-	Transform2D pre_xf;
-
-	if (to_screen_rect.size.x != 0 && to_screen_rect.size.y != 0) {
-		pre_xf.columns[2] = -to_screen_rect.position;
-		pre_xf.scale(Vector2(size) / to_screen_rect.size);
+	const Window *this_window = Object::cast_to<Window>(this);
+	if (this_window) {
+		return this_window->window_transform.affine_inverse();
 	}
-
-	return pre_xf;
+	return Transform2D();
 }
 
 Ref<InputEvent> Viewport::_make_input_local(const Ref<InputEvent> &ev) {
@@ -4098,9 +4125,26 @@ Viewport::~Viewport() {
 /////////////////////////////////
 
 void SubViewport::set_size(const Size2i &p_size) {
-	_set_size(p_size, _get_size_2d_override(), Rect2i(), _stretch_transform(), true);
+	_internal_set_size(p_size);
+}
 
+void SubViewport::set_size_force(const Size2i &p_size) {
+	// Use only for setting the size from the parent SubViewportContainer with enabled stretch mode.
+	// Don't expose function to scripting.
+	_internal_set_size(p_size, true);
+}
+
+void SubViewport::_internal_set_size(const Size2i &p_size, bool p_force) {
 	SubViewportContainer *c = Object::cast_to<SubViewportContainer>(get_parent());
+	if (!p_force && c && c->is_stretch_enabled()) {
+#ifdef DEBUG_ENABLED
+		WARN_PRINT("Can't change the size of a `SubViewport` with a `SubViewportContainer` parent that has `stretch` enabled. Set `SubViewportContainer.stretch` to `false` to allow changing the size manually.");
+#endif // DEBUG_ENABLED
+		return;
+	}
+
+	_set_size(p_size, _get_size_2d_override(), Rect2i(), true);
+
 	if (c) {
 		c->update_minimum_size();
 	}
@@ -4111,7 +4155,7 @@ Size2i SubViewport::get_size() const {
 }
 
 void SubViewport::set_size_2d_override(const Size2i &p_size) {
-	_set_size(_get_size(), p_size, Rect2i(), _stretch_transform(), true);
+	_set_size(_get_size(), p_size, Rect2i(), true);
 }
 
 Size2i SubViewport::get_size_2d_override() const {
@@ -4124,7 +4168,7 @@ void SubViewport::set_size_2d_override_stretch(bool p_enable) {
 	}
 
 	size_2d_override_stretch = p_enable;
-	_set_size(_get_size(), _get_size_2d_override(), Rect2i(), _stretch_transform(), true);
+	_set_size(_get_size(), _get_size_2d_override(), Rect2i(), true);
 }
 
 bool SubViewport::is_size_2d_override_stretch_enabled() const {
@@ -4151,17 +4195,6 @@ SubViewport::ClearMode SubViewport::get_clear_mode() const {
 
 DisplayServer::WindowID SubViewport::get_window_id() const {
 	return DisplayServer::INVALID_WINDOW_ID;
-}
-
-Transform2D SubViewport::_stretch_transform() {
-	Transform2D transform;
-	Size2i view_size_2d_override = _get_size_2d_override();
-	if (size_2d_override_stretch && view_size_2d_override.width > 0 && view_size_2d_override.height > 0) {
-		Size2 scale = Size2(_get_size()) / Size2(view_size_2d_override);
-		transform.scale(scale);
-	}
-
-	return transform;
 }
 
 Transform2D SubViewport::get_screen_transform() const {

@@ -12,18 +12,11 @@
 		<link title="Third Person Shooter Demo">https://godotengine.org/asset-library/asset/678</link>
 	</tutorials>
 	<methods>
-		<method name="find_input_caption" qualifiers="const">
-			<return type="int" />
-			<param index="0" name="caption" type="String" />
-			<description>
-				Returns the input index which corresponds to [param caption]. If not found, returns [code]-1[/code].
-			</description>
-		</method>
-		<method name="get_input_caption" qualifiers="const">
-			<return type="String" />
+		<method name="is_input_reset" qualifiers="const">
+			<return type="bool" />
 			<param index="0" name="input" type="int" />
 			<description>
-				Returns the name of the input at the given [param input] index. This name is displayed in the editor next to the node input.
+				Returns whether the animation restarts when the animation transitions from the other animation.
 			</description>
 		</method>
 		<method name="is_input_set_as_auto_advance" qualifiers="const">
@@ -41,21 +34,21 @@
 				Enables or disables auto-advance for the given [param input] index. If enabled, state changes to the next input after playing the animation once. If enabled for the last input state, it loops to the first.
 			</description>
 		</method>
-		<method name="set_input_caption">
+		<method name="set_input_reset">
 			<return type="void" />
 			<param index="0" name="input" type="int" />
-			<param index="1" name="caption" type="String" />
+			<param index="1" name="enable" type="bool" />
 			<description>
-				Sets the name of the input at the given [param input] index. This name is displayed in the editor next to the node input.
+				If [code]true[/code], the destination animation is restarted when the animation transitions.
 			</description>
 		</method>
 	</methods>
 	<members>
-		<member name="enabled_inputs" type="int" setter="set_enabled_inputs" getter="get_enabled_inputs" default="0">
-			The number of enabled input ports for this node. The maximum is [code]31[/code].
+		<member name="allow_transition_to_self" type="bool" setter="set_allow_transition_to_self" getter="is_allow_transition_to_self" default="false">
+			If [code]true[/code], allows transition to the self state. When the reset option is enabled in input, the animation is restarted. If [code]false[/code], nothing happens on the transition to the self state.
 		</member>
-		<member name="reset" type="bool" setter="set_reset" getter="is_reset" default="true">
-			If [code]true[/code], the destination animation is played back from the beginning when switched.
+		<member name="input_count" type="int" setter="set_input_count" getter="get_input_count" default="0">
+			The number of enabled input ports for this node.
 		</member>
 		<member name="xfade_curve" type="Curve" setter="set_xfade_curve" getter="get_xfade_curve">
 			Determines how cross-fading between animations is eased. If empty, the transition will be linear.

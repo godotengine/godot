@@ -245,8 +245,26 @@ void SpriteBase3D::draw_texture_rect(Ref<Texture2D> p_texture, Rect2 p_dst_rect,
 	RS::get_singleton()->mesh_set_custom_aabb(mesh_new, aabb_new);
 	set_aabb(aabb_new);
 
+	RS::get_singleton()->material_set_param(get_material(), "alpha_scissor_threshold", alpha_scissor_threshold);
+	RS::get_singleton()->material_set_param(get_material(), "alpha_hash_scale", alpha_hash_scale);
+	RS::get_singleton()->material_set_param(get_material(), "alpha_antialiasing_edge", alpha_antialiasing_edge);
+
+	BaseMaterial3D::Transparency mat_transparency = BaseMaterial3D::Transparency::TRANSPARENCY_DISABLED;
+	if (get_draw_flag(FLAG_TRANSPARENT)) {
+		if (get_alpha_cut_mode() == ALPHA_CUT_DISCARD) {
+			mat_transparency = BaseMaterial3D::Transparency::TRANSPARENCY_ALPHA_SCISSOR;
+		} else if (get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS) {
+			mat_transparency = BaseMaterial3D::Transparency::TRANSPARENCY_ALPHA_DEPTH_PRE_PASS;
+		} else if (get_alpha_cut_mode() == ALPHA_CUT_HASH) {
+			mat_transparency = BaseMaterial3D::Transparency::TRANSPARENCY_ALPHA_HASH;
+		} else {
+			mat_transparency = BaseMaterial3D::Transparency::TRANSPARENCY_ALPHA;
+		}
+	}
+
 	RID shader_rid;
-	StandardMaterial3D::get_material_for_2d(get_draw_flag(FLAG_SHADED), get_draw_flag(FLAG_TRANSPARENT), get_draw_flag(FLAG_DOUBLE_SIDED), get_alpha_cut_mode() == ALPHA_CUT_DISCARD, get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS, get_billboard_mode() == StandardMaterial3D::BILLBOARD_ENABLED, get_billboard_mode() == StandardMaterial3D::BILLBOARD_FIXED_Y, false, get_draw_flag(FLAG_DISABLE_DEPTH_TEST), get_draw_flag(FLAG_FIXED_SIZE), get_texture_filter(), &shader_rid);
+	StandardMaterial3D::get_material_for_2d(get_draw_flag(FLAG_SHADED), mat_transparency, get_draw_flag(FLAG_DOUBLE_SIDED), get_billboard_mode() == StandardMaterial3D::BILLBOARD_ENABLED, get_billboard_mode() == StandardMaterial3D::BILLBOARD_FIXED_Y, false, get_draw_flag(FLAG_DISABLE_DEPTH_TEST), get_draw_flag(FLAG_FIXED_SIZE), get_texture_filter(), alpha_antialiasing_mode, &shader_rid);
+
 	if (last_shader != shader_rid) {
 		RS::get_singleton()->material_set_shader(get_material(), shader_rid);
 		last_shader = shader_rid;
@@ -433,13 +451,57 @@ bool SpriteBase3D::get_draw_flag(DrawFlags p_flag) const {
 }
 
 void SpriteBase3D::set_alpha_cut_mode(AlphaCutMode p_mode) {
-	ERR_FAIL_INDEX(p_mode, 3);
+	ERR_FAIL_INDEX(p_mode, ALPHA_CUT_MAX);
 	alpha_cut = p_mode;
 	_queue_redraw();
 }
 
 SpriteBase3D::AlphaCutMode SpriteBase3D::get_alpha_cut_mode() const {
 	return alpha_cut;
+}
+
+void SpriteBase3D::set_alpha_hash_scale(float p_hash_scale) {
+	if (alpha_hash_scale != p_hash_scale) {
+		alpha_hash_scale = p_hash_scale;
+		_queue_redraw();
+	}
+}
+
+float SpriteBase3D::get_alpha_hash_scale() const {
+	return alpha_hash_scale;
+}
+
+void SpriteBase3D::set_alpha_scissor_threshold(float p_threshold) {
+	if (alpha_scissor_threshold != p_threshold) {
+		alpha_scissor_threshold = p_threshold;
+		_queue_redraw();
+	}
+}
+
+float SpriteBase3D::get_alpha_scissor_threshold() const {
+	return alpha_scissor_threshold;
+}
+
+void SpriteBase3D::set_alpha_antialiasing(BaseMaterial3D::AlphaAntiAliasing p_alpha_aa) {
+	if (alpha_antialiasing_mode != p_alpha_aa) {
+		alpha_antialiasing_mode = p_alpha_aa;
+		_queue_redraw();
+	}
+}
+
+BaseMaterial3D::AlphaAntiAliasing SpriteBase3D::get_alpha_antialiasing() const {
+	return alpha_antialiasing_mode;
+}
+
+void SpriteBase3D::set_alpha_antialiasing_edge(float p_edge) {
+	if (alpha_antialiasing_edge != p_edge) {
+		alpha_antialiasing_edge = p_edge;
+		_queue_redraw();
+	}
+}
+
+float SpriteBase3D::get_alpha_antialiasing_edge() const {
+	return alpha_antialiasing_edge;
 }
 
 void SpriteBase3D::set_billboard_mode(StandardMaterial3D::BillboardMode p_mode) {
@@ -494,6 +556,18 @@ void SpriteBase3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_alpha_cut_mode", "mode"), &SpriteBase3D::set_alpha_cut_mode);
 	ClassDB::bind_method(D_METHOD("get_alpha_cut_mode"), &SpriteBase3D::get_alpha_cut_mode);
 
+	ClassDB::bind_method(D_METHOD("set_alpha_scissor_threshold", "threshold"), &SpriteBase3D::set_alpha_scissor_threshold);
+	ClassDB::bind_method(D_METHOD("get_alpha_scissor_threshold"), &SpriteBase3D::get_alpha_scissor_threshold);
+
+	ClassDB::bind_method(D_METHOD("set_alpha_hash_scale", "threshold"), &SpriteBase3D::set_alpha_hash_scale);
+	ClassDB::bind_method(D_METHOD("get_alpha_hash_scale"), &SpriteBase3D::get_alpha_hash_scale);
+
+	ClassDB::bind_method(D_METHOD("set_alpha_antialiasing", "alpha_aa"), &SpriteBase3D::set_alpha_antialiasing);
+	ClassDB::bind_method(D_METHOD("get_alpha_antialiasing"), &SpriteBase3D::get_alpha_antialiasing);
+
+	ClassDB::bind_method(D_METHOD("set_alpha_antialiasing_edge", "edge"), &SpriteBase3D::set_alpha_antialiasing_edge);
+	ClassDB::bind_method(D_METHOD("get_alpha_antialiasing_edge"), &SpriteBase3D::get_alpha_antialiasing_edge);
+
 	ClassDB::bind_method(D_METHOD("set_billboard_mode", "mode"), &SpriteBase3D::set_billboard_mode);
 	ClassDB::bind_method(D_METHOD("get_billboard_mode"), &SpriteBase3D::get_billboard_mode);
 
@@ -519,7 +593,11 @@ void SpriteBase3D::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "double_sided"), "set_draw_flag", "get_draw_flag", FLAG_DOUBLE_SIDED);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "no_depth_test"), "set_draw_flag", "get_draw_flag", FLAG_DISABLE_DEPTH_TEST);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "fixed_size"), "set_draw_flag", "get_draw_flag", FLAG_FIXED_SIZE);
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "alpha_cut", PROPERTY_HINT_ENUM, "Disabled,Discard,Opaque Pre-Pass"), "set_alpha_cut_mode", "get_alpha_cut_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "alpha_cut", PROPERTY_HINT_ENUM, "Disabled,Discard,Opaque Pre-Pass,Alpha Hash"), "set_alpha_cut_mode", "get_alpha_cut_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "alpha_scissor_threshold", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_alpha_scissor_threshold", "get_alpha_scissor_threshold");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "alpha_hash_scale", PROPERTY_HINT_RANGE, "0,2,0.01"), "set_alpha_hash_scale", "get_alpha_hash_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "alpha_antialiasing_mode", PROPERTY_HINT_ENUM, "Disabled,Alpha Edge Blend,Alpha Edge Clip"), "set_alpha_antialiasing", "get_alpha_antialiasing");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "alpha_antialiasing_edge", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_alpha_antialiasing_edge", "get_alpha_antialiasing_edge");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "texture_filter", PROPERTY_HINT_ENUM, "Nearest,Linear,Nearest Mipmap,Linear Mipmap,Nearest Mipmap Anisotropic,Linear Mipmap Anisotropic"), "set_texture_filter", "get_texture_filter");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_priority", PROPERTY_HINT_RANGE, itos(RS::MATERIAL_RENDER_PRIORITY_MIN) + "," + itos(RS::MATERIAL_RENDER_PRIORITY_MAX) + ",1"), "set_render_priority", "get_render_priority");
 
@@ -533,6 +611,7 @@ void SpriteBase3D::_bind_methods() {
 	BIND_ENUM_CONSTANT(ALPHA_CUT_DISABLED);
 	BIND_ENUM_CONSTANT(ALPHA_CUT_DISCARD);
 	BIND_ENUM_CONSTANT(ALPHA_CUT_OPAQUE_PREPASS);
+	BIND_ENUM_CONSTANT(ALPHA_CUT_HASH);
 }
 
 SpriteBase3D::SpriteBase3D() {
@@ -550,7 +629,6 @@ SpriteBase3D::SpriteBase3D() {
 	RS::get_singleton()->material_set_param(material, "uv1_scale", Vector3(1, 1, 1));
 	RS::get_singleton()->material_set_param(material, "uv2_offset", Vector3(0, 0, 0));
 	RS::get_singleton()->material_set_param(material, "uv2_scale", Vector3(1, 1, 1));
-	RS::get_singleton()->material_set_param(material, "alpha_scissor_threshold", 0.5);
 
 	mesh = RenderingServer::get_singleton()->mesh_create();
 

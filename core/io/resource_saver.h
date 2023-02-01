@@ -41,7 +41,7 @@ class ResourceFormatSaver : public RefCounted {
 protected:
 	static void _bind_methods();
 
-	GDVIRTUAL3R(int64_t, _save, Ref<Resource>, String, uint32_t)
+	GDVIRTUAL3R(Error, _save, Ref<Resource>, String, uint32_t)
 	GDVIRTUAL2R(Error, _set_uid, String, ResourceUID::ID)
 	GDVIRTUAL1RC(bool, _recognize, Ref<Resource>)
 	GDVIRTUAL1RC(Vector<String>, _get_recognized_extensions, Ref<Resource>)

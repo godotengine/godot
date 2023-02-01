@@ -53,7 +53,7 @@ private:
 
 	struct FogVolume {
 		RID material;
-		Vector3 extents = Vector3(1, 1, 1);
+		Vector3 size = Vector3(2, 2, 2);
 
 		RS::FogVolumeShape shape = RS::FOG_VOLUME_SHAPE_BOX;
 
@@ -83,7 +83,7 @@ private:
 			float position[3];
 			float pad;
 
-			float extents[3];
+			float size[3];
 			float pad2;
 
 			int32_t corner[3];
@@ -239,12 +239,12 @@ public:
 	Dependency *fog_volume_get_dependency(RID p_fog_volume) const;
 
 	virtual void fog_volume_set_shape(RID p_fog_volume, RS::FogVolumeShape p_shape) override;
-	virtual void fog_volume_set_extents(RID p_fog_volume, const Vector3 &p_extents) override;
+	virtual void fog_volume_set_size(RID p_fog_volume, const Vector3 &p_size) override;
 	virtual void fog_volume_set_material(RID p_fog_volume, RID p_material) override;
 	virtual RS::FogVolumeShape fog_volume_get_shape(RID p_fog_volume) const override;
 	RID fog_volume_get_material(RID p_fog_volume) const;
 	virtual AABB fog_volume_get_aabb(RID p_fog_volume) const override;
-	Vector3 fog_volume_get_extents(RID p_fog_volume) const;
+	Vector3 fog_volume_get_size(RID p_fog_volume) const;
 
 	/* FOG VOLUMES INSTANCE */
 

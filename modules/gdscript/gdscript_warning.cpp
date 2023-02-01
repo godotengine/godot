@@ -125,6 +125,10 @@ String GDScriptWarning::get_message() const {
 			CHECK_SYMBOLS(4);
 			return "The argument '" + symbols[0] + "' of the function '" + symbols[1] + "' requires a the subtype '" + symbols[2] + "' but the supertype '" + symbols[3] + "' was provided";
 		} break;
+		case UNSAFE_VOID_RETURN: {
+			CHECK_SYMBOLS(2);
+			return "The method '" + symbols[0] + "()' returns 'void' but it's trying to return a call to '" + symbols[1] + "()' that can't be ensured to also be 'void'.";
+		} break;
 		case DEPRECATED_KEYWORD: {
 			CHECK_SYMBOLS(2);
 			return "The '" + symbols[0] + "' keyword is deprecated and will be removed in a future release, please replace its uses by '" + symbols[1] + "'.";
@@ -163,6 +167,9 @@ String GDScriptWarning::get_message() const {
 			CHECK_SYMBOLS(1);
 			return vformat(R"(The identifier "%s" has misleading characters and might be confused with something else.)", symbols[0]);
 		}
+		case RENAMED_IN_GD4_HINT: {
+			break; // Renamed identifier hint is taken care of by the GDScriptAnalyzer. No message needed here.
+		}
 		case WARNING_MAX:
 			break; // Can't happen, but silences warning
 	}
@@ -184,6 +191,9 @@ int GDScriptWarning::get_default_value(Code p_code) {
 
 PropertyInfo GDScriptWarning::get_property_info(Code p_code) {
 	// Making this a separate function in case a warning needs different PropertyInfo in the future.
+	if (p_code == Code::RENAMED_IN_GD4_HINT) {
+		return PropertyInfo(Variant::BOOL, get_settings_path_from_code(p_code));
+	}
 	return PropertyInfo(Variant::INT, get_settings_path_from_code(p_code), PROPERTY_HINT_ENUM, "Ignore,Warn,Error");
 }
 
@@ -218,6 +228,7 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		"UNSAFE_METHOD_ACCESS",
 		"UNSAFE_CAST",
 		"UNSAFE_CALL_ARGUMENT",
+		"UNSAFE_VOID_RETURN",
 		"DEPRECATED_KEYWORD",
 		"STANDALONE_TERNARY",
 		"ASSERT_ALWAYS_TRUE",
@@ -229,6 +240,7 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		"INT_AS_ENUM_WITHOUT_MATCH",
 		"STATIC_CALLED_ON_INSTANCE",
 		"CONFUSABLE_IDENTIFIER",
+		"RENAMED_IN_GODOT_4_HINT"
 	};
 
 	static_assert((sizeof(names) / sizeof(*names)) == WARNING_MAX, "Amount of warning types don't match the amount of warning names.");

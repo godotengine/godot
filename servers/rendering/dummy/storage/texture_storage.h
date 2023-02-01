@@ -134,7 +134,7 @@ public:
 	virtual void decal_initialize(RID p_rid) override {}
 	virtual void decal_free(RID p_rid) override{};
 
-	virtual void decal_set_extents(RID p_decal, const Vector3 &p_extents) override {}
+	virtual void decal_set_size(RID p_decal, const Vector3 &p_size) override {}
 	virtual void decal_set_texture(RID p_decal, RS::DecalTexture p_type, RID p_texture) override {}
 	virtual void decal_set_emission_energy(RID p_decal, float p_energy) override {}
 	virtual void decal_set_albedo_mix(RID p_decal, float p_mix) override {}

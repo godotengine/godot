@@ -68,10 +68,10 @@
 			</description>
 		</method>
 		<method name="add_input">
-			<return type="void" />
+			<return type="bool" />
 			<param index="0" name="name" type="String" />
 			<description>
-				Adds an input to the node. This is only useful for nodes created for use in an [AnimationNodeBlendTree].
+				Adds an input to the node. This is only useful for nodes created for use in an [AnimationNodeBlendTree]. If the addition fails, returns [code]false[/code].
 			</description>
 		</method>
 		<method name="blend_animation">
@@ -115,13 +115,20 @@
 				Blend another animation node (in case this node contains children animation nodes). This function is only useful if you inherit from [AnimationRootNode] instead, else editors will not display your node for addition.
 			</description>
 		</method>
+		<method name="find_input" qualifiers="const">
+			<return type="int" />
+			<param index="0" name="name" type="String" />
+			<description>
+				Returns the input index which corresponds to [param name]. If not found, returns [code]-1[/code].
+			</description>
+		</method>
 		<method name="get_input_count" qualifiers="const">
 			<return type="int" />
 			<description>
 				Amount of inputs in this node, only useful for nodes that go into [AnimationNodeBlendTree].
 			</description>
 		</method>
-		<method name="get_input_name">
+		<method name="get_input_name" qualifiers="const">
 			<return type="String" />
 			<param index="0" name="input" type="int" />
 			<description>
@@ -155,6 +162,14 @@
 			<param index="1" name="enable" type="bool" />
 			<description>
 				Adds or removes a path for the filter.
+			</description>
+		</method>
+		<method name="set_input_name">
+			<return type="bool" />
+			<param index="0" name="input" type="int" />
+			<param index="1" name="name" type="String" />
+			<description>
+				Sets the name of the input at the given [param input] index. If the setting fails, returns [code]false[/code].
 			</description>
 		</method>
 		<method name="set_parameter">

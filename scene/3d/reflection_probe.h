@@ -52,7 +52,7 @@ private:
 	RID probe;
 	float intensity = 1.0;
 	float max_distance = 0.0;
-	Vector3 extents = Vector3(10, 10, 10);
+	Vector3 size = Vector3(20, 20, 20);
 	Vector3 origin_offset = Vector3(0, 0, 0);
 	bool box_projection = false;
 	bool enable_shadows = false;
@@ -68,6 +68,10 @@ private:
 protected:
 	static void _bind_methods();
 	void _validate_property(PropertyInfo &p_property) const;
+#ifndef DISABLE_DEPRECATED
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_property) const;
+#endif // DISABLE_DEPRECATED
 
 public:
 	void set_intensity(float p_intensity);
@@ -91,10 +95,10 @@ public:
 	void set_mesh_lod_threshold(float p_pixels);
 	float get_mesh_lod_threshold() const;
 
-	void set_extents(const Vector3 &p_extents);
-	Vector3 get_extents() const;
+	void set_size(const Vector3 &p_size);
+	Vector3 get_size() const;
 
-	void set_origin_offset(const Vector3 &p_extents);
+	void set_origin_offset(const Vector3 &p_offset);
 	Vector3 get_origin_offset() const;
 
 	void set_as_interior(bool p_enable);

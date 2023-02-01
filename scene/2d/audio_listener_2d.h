@@ -54,6 +54,8 @@ public:
 	void make_current();
 	void clear_current();
 	bool is_current() const;
+
+	AudioListener2D();
 };
 
 #endif // AUDIO_LISTENER_2D_H

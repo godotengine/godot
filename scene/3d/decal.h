@@ -47,7 +47,7 @@ public:
 
 private:
 	RID decal;
-	Vector3 extents = Vector3(1, 1, 1);
+	Vector3 size = Vector3(2, 2, 2);
 	Ref<Texture2D> textures[TEXTURE_MAX];
 	real_t emission_energy = 1.0;
 	real_t albedo_mix = 1.0;
@@ -63,12 +63,16 @@ private:
 protected:
 	static void _bind_methods();
 	void _validate_property(PropertyInfo &p_property) const;
+#ifndef DISABLE_DEPRECATED
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_property) const;
+#endif // DISABLE_DEPRECATED
 
 public:
 	virtual PackedStringArray get_configuration_warnings() const override;
 
-	void set_extents(const Vector3 &p_extents);
-	Vector3 get_extents() const;
+	void set_size(const Vector3 &p_size);
+	Vector3 get_size() const;
 
 	void set_texture(DecalTexture p_type, const Ref<Texture2D> &p_texture);
 	Ref<Texture2D> get_texture(DecalTexture p_type) const;

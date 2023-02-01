@@ -1805,7 +1805,7 @@ void Camera3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id,
 	} else {
 		Vector3 ra, rb;
 		Geometry3D::get_closest_points_between_segments(Vector3(0, 0, -1), Vector3(4096, 0, -1), s[0], s[1], ra, rb);
-		float d = ra.x * 2.0;
+		float d = ra.x * 2;
 		if (Node3DEditor::get_singleton()->is_snap_enabled()) {
 			d = Math::snapped(d, Node3DEditor::get_singleton()->get_translate_snap());
 		}
@@ -2099,7 +2099,7 @@ void OccluderInstance3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo,
 		Ref<BoxOccluder3D> bo = o;
 		Vector3 ra, rb;
 		Geometry3D::get_closest_points_between_segments(Vector3(), axis * 4096, sg[0], sg[1], ra, rb);
-		float d = ra[p_id];
+		float d = ra[p_id] * 2;
 		if (snap_enabled) {
 			d = Math::snapped(d, snap);
 		}
@@ -2109,7 +2109,7 @@ void OccluderInstance3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo,
 		}
 
 		Vector3 he = bo->get_size();
-		he[p_id] = d * 2;
+		he[p_id] = d;
 		bo->set_size(he);
 	}
 
@@ -3184,7 +3184,7 @@ String GPUParticlesCollision3DGizmoPlugin::get_handle_name(const EditorNode3DGiz
 	}
 
 	if (Object::cast_to<GPUParticlesCollisionBox3D>(cs) || Object::cast_to<GPUParticlesAttractorBox3D>(cs) || Object::cast_to<GPUParticlesAttractorVectorField3D>(cs) || Object::cast_to<GPUParticlesCollisionSDF3D>(cs) || Object::cast_to<GPUParticlesCollisionHeightField3D>(cs)) {
-		return "Extents";
+		return "Size";
 	}
 
 	return "";
@@ -3198,7 +3198,7 @@ Variant GPUParticlesCollision3DGizmoPlugin::get_handle_value(const EditorNode3DG
 	}
 
 	if (Object::cast_to<GPUParticlesCollisionBox3D>(cs) || Object::cast_to<GPUParticlesAttractorBox3D>(cs) || Object::cast_to<GPUParticlesAttractorVectorField3D>(cs) || Object::cast_to<GPUParticlesCollisionSDF3D>(cs) || Object::cast_to<GPUParticlesCollisionHeightField3D>(cs)) {
-		return Vector3(p_gizmo->get_node_3d()->call("get_extents"));
+		return Vector3(p_gizmo->get_node_3d()->call("get_size"));
 	}
 
 	return Variant();
@@ -3235,7 +3235,7 @@ void GPUParticlesCollision3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_g
 		axis[p_id] = 1.0;
 		Vector3 ra, rb;
 		Geometry3D::get_closest_points_between_segments(Vector3(), axis * 4096, sg[0], sg[1], ra, rb);
-		float d = ra[p_id];
+		float d = ra[p_id] * 2;
 		if (Node3DEditor::get_singleton()->is_snap_enabled()) {
 			d = Math::snapped(d, Node3DEditor::get_singleton()->get_translate_snap());
 		}
@@ -3244,9 +3244,9 @@ void GPUParticlesCollision3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_g
 			d = 0.001;
 		}
 
-		Vector3 he = sn->call("get_extents");
+		Vector3 he = sn->call("get_size");
 		he[p_id] = d;
-		sn->call("set_extents", he);
+		sn->call("set_size", he);
 	}
 }
 
@@ -3268,14 +3268,14 @@ void GPUParticlesCollision3DGizmoPlugin::commit_handle(const EditorNode3DGizmo *
 
 	if (Object::cast_to<GPUParticlesCollisionBox3D>(sn) || Object::cast_to<GPUParticlesAttractorBox3D>(sn) || Object::cast_to<GPUParticlesAttractorVectorField3D>(sn) || Object::cast_to<GPUParticlesCollisionSDF3D>(sn) || Object::cast_to<GPUParticlesCollisionHeightField3D>(sn)) {
 		if (p_cancel) {
-			sn->call("set_extents", p_restore);
+			sn->call("set_size", p_restore);
 			return;
 		}
 
 		EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
-		ur->create_action(TTR("Change Box Shape Extents"));
-		ur->add_do_method(sn, "set_extents", sn->call("get_extents"));
-		ur->add_undo_method(sn, "set_extents", p_restore);
+		ur->create_action(TTR("Change Box Shape Size"));
+		ur->add_do_method(sn, "set_size", sn->call("get_size"));
+		ur->add_undo_method(sn, "set_size", p_restore);
 		ur->commit_action();
 	}
 }
@@ -3342,8 +3342,8 @@ void GPUParticlesCollision3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	if (Object::cast_to<GPUParticlesCollisionBox3D>(cs) || Object::cast_to<GPUParticlesAttractorBox3D>(cs) || Object::cast_to<GPUParticlesAttractorVectorField3D>(cs) || Object::cast_to<GPUParticlesCollisionSDF3D>(cs) || Object::cast_to<GPUParticlesCollisionHeightField3D>(cs)) {
 		Vector<Vector3> lines;
 		AABB aabb;
-		aabb.position = -cs->call("get_extents").operator Vector3();
-		aabb.size = aabb.position * -2;
+		aabb.size = cs->call("get_size").operator Vector3();
+		aabb.position = aabb.size / -2;
 
 		for (int i = 0; i < 12; i++) {
 			Vector3 a, b;
@@ -3356,7 +3356,7 @@ void GPUParticlesCollision3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 		for (int i = 0; i < 3; i++) {
 			Vector3 ax;
-			ax[i] = cs->call("get_extents").operator Vector3()[i];
+			ax[i] = cs->call("get_size").operator Vector3()[i] / 2;
 			handles.push_back(ax);
 		}
 
@@ -3442,11 +3442,11 @@ int ReflectionProbeGizmoPlugin::get_priority() const {
 String ReflectionProbeGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
 	switch (p_id) {
 		case 0:
-			return "Extents X";
+			return "Size X";
 		case 1:
-			return "Extents Y";
+			return "Size Y";
 		case 2:
-			return "Extents Z";
+			return "Size Z";
 		case 3:
 			return "Origin X";
 		case 4:
@@ -3460,7 +3460,7 @@ String ReflectionProbeGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gi
 
 Variant ReflectionProbeGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
 	ReflectionProbe *probe = Object::cast_to<ReflectionProbe>(p_gizmo->get_node_3d());
-	return AABB(probe->get_extents(), probe->get_origin_offset());
+	return AABB(probe->get_origin_offset(), probe->get_size());
 }
 
 void ReflectionProbeGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, Camera3D *p_camera, const Point2 &p_point) {
@@ -3470,7 +3470,7 @@ void ReflectionProbeGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, in
 	Transform3D gi = gt.affine_inverse();
 
 	if (p_id < 3) {
-		Vector3 extents = probe->get_extents();
+		Vector3 size = probe->get_size();
 
 		Vector3 ray_from = p_camera->project_ray_origin(p_point);
 		Vector3 ray_dir = p_camera->project_ray_normal(p_point);
@@ -3482,7 +3482,7 @@ void ReflectionProbeGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, in
 
 		Vector3 ra, rb;
 		Geometry3D::get_closest_points_between_segments(Vector3(), axis * 16384, sg[0], sg[1], ra, rb);
-		float d = ra[p_id];
+		float d = ra[p_id] * 2;
 		if (Node3DEditor::get_singleton()->is_snap_enabled()) {
 			d = Math::snapped(d, Node3DEditor::get_singleton()->get_translate_snap());
 		}
@@ -3491,8 +3491,8 @@ void ReflectionProbeGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, in
 			d = 0.001;
 		}
 
-		extents[p_id] = d;
-		probe->set_extents(extents);
+		size[p_id] = d;
+		probe->set_size(size);
 	} else {
 		p_id -= 3;
 
@@ -3526,17 +3526,17 @@ void ReflectionProbeGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo,
 	AABB restore = p_restore;
 
 	if (p_cancel) {
-		probe->set_extents(restore.position);
-		probe->set_origin_offset(restore.size);
+		probe->set_origin_offset(restore.position);
+		probe->set_size(restore.size);
 		return;
 	}
 
 	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
-	ur->create_action(TTR("Change Probe Extents"));
-	ur->add_do_method(probe, "set_extents", probe->get_extents());
+	ur->create_action(TTR("Change Probe Size"));
+	ur->add_do_method(probe, "set_size", probe->get_size());
 	ur->add_do_method(probe, "set_origin_offset", probe->get_origin_offset());
-	ur->add_undo_method(probe, "set_extents", restore.position);
-	ur->add_undo_method(probe, "set_origin_offset", restore.size);
+	ur->add_undo_method(probe, "set_size", restore.size);
+	ur->add_undo_method(probe, "set_origin_offset", restore.position);
 	ur->commit_action();
 }
 
@@ -3547,11 +3547,11 @@ void ReflectionProbeGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 	Vector<Vector3> lines;
 	Vector<Vector3> internal_lines;
-	Vector3 extents = probe->get_extents();
+	Vector3 size = probe->get_size();
 
 	AABB aabb;
-	aabb.position = -extents;
-	aabb.size = extents * 2;
+	aabb.position = -size / 2;
+	aabb.size = size;
 
 	for (int i = 0; i < 12; i++) {
 		Vector3 a, b;
@@ -3593,7 +3593,7 @@ void ReflectionProbeGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 	if (p_gizmo->is_selected()) {
 		Ref<Material> solid_material = get_material("reflection_probe_solid_material", p_gizmo);
-		p_gizmo->add_solid_box(solid_material, probe->get_extents() * 2.0);
+		p_gizmo->add_solid_box(solid_material, probe->get_size());
 	}
 
 	p_gizmo->add_unscaled_billboard(icon, 0.05);
@@ -3627,11 +3627,11 @@ int DecalGizmoPlugin::get_priority() const {
 String DecalGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
 	switch (p_id) {
 		case 0:
-			return "Extents X";
+			return "Size X";
 		case 1:
-			return "Extents Y";
+			return "Size Y";
 		case 2:
-			return "Extents Z";
+			return "Size Z";
 	}
 
 	return "";
@@ -3639,7 +3639,7 @@ String DecalGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p
 
 Variant DecalGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
 	Decal *decal = Object::cast_to<Decal>(p_gizmo->get_node_3d());
-	return decal->get_extents();
+	return decal->get_size();
 }
 
 void DecalGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, Camera3D *p_camera, const Point2 &p_point) {
@@ -3648,7 +3648,7 @@ void DecalGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bo
 
 	Transform3D gi = gt.affine_inverse();
 
-	Vector3 extents = decal->get_extents();
+	Vector3 size = decal->get_size();
 
 	Vector3 ray_from = p_camera->project_ray_origin(p_point);
 	Vector3 ray_dir = p_camera->project_ray_normal(p_point);
@@ -3660,7 +3660,7 @@ void DecalGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bo
 
 	Vector3 ra, rb;
 	Geometry3D::get_closest_points_between_segments(Vector3(), axis * 16384, sg[0], sg[1], ra, rb);
-	float d = ra[p_id];
+	float d = ra[p_id] * 2;
 	if (Node3DEditor::get_singleton()->is_snap_enabled()) {
 		d = Math::snapped(d, Node3DEditor::get_singleton()->get_translate_snap());
 	}
@@ -3669,8 +3669,8 @@ void DecalGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bo
 		d = 0.001;
 	}
 
-	extents[p_id] = d;
-	decal->set_extents(extents);
+	size[p_id] = d;
+	decal->set_size(size);
 }
 
 void DecalGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel) {
@@ -3679,14 +3679,14 @@ void DecalGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_id,
 	Vector3 restore = p_restore;
 
 	if (p_cancel) {
-		decal->set_extents(restore);
+		decal->set_size(restore);
 		return;
 	}
 
 	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
-	ur->create_action(TTR("Change Decal Extents"));
-	ur->add_do_method(decal, "set_extents", decal->get_extents());
-	ur->add_undo_method(decal, "set_extents", restore);
+	ur->create_action(TTR("Change Decal Size"));
+	ur->add_do_method(decal, "set_size", decal->get_size());
+	ur->add_undo_method(decal, "set_size", restore);
 	ur->commit_action();
 }
 
@@ -3696,11 +3696,11 @@ void DecalGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	p_gizmo->clear();
 
 	Vector<Vector3> lines;
-	Vector3 extents = decal->get_extents();
+	Vector3 size = decal->get_size();
 
 	AABB aabb;
-	aabb.position = -extents;
-	aabb.size = extents * 2;
+	aabb.position = -size / 2;
+	aabb.size = size;
 
 	for (int i = 0; i < 12; i++) {
 		Vector3 a, b;
@@ -3718,8 +3718,9 @@ void DecalGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 		}
 	}
 
-	lines.push_back(Vector3(0, extents.y, 0));
-	lines.push_back(Vector3(0, extents.y * 1.2, 0));
+	float half_size_y = size.y / 2;
+	lines.push_back(Vector3(0, half_size_y, 0));
+	lines.push_back(Vector3(0, half_size_y * 1.2, 0));
 
 	Vector<Vector3> handles;
 
@@ -3767,11 +3768,11 @@ int VoxelGIGizmoPlugin::get_priority() const {
 String VoxelGIGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
 	switch (p_id) {
 		case 0:
-			return "Extents X";
+			return "Size X";
 		case 1:
-			return "Extents Y";
+			return "Size Y";
 		case 2:
-			return "Extents Z";
+			return "Size Z";
 	}
 
 	return "";
@@ -3779,7 +3780,7 @@ String VoxelGIGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int
 
 Variant VoxelGIGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
 	VoxelGI *probe = Object::cast_to<VoxelGI>(p_gizmo->get_node_3d());
-	return probe->get_extents();
+	return probe->get_size();
 }
 
 void VoxelGIGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, Camera3D *p_camera, const Point2 &p_point) {
@@ -3788,7 +3789,7 @@ void VoxelGIGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, 
 	Transform3D gt = probe->get_global_transform();
 	Transform3D gi = gt.affine_inverse();
 
-	Vector3 extents = probe->get_extents();
+	Vector3 size = probe->get_size();
 
 	Vector3 ray_from = p_camera->project_ray_origin(p_point);
 	Vector3 ray_dir = p_camera->project_ray_normal(p_point);
@@ -3800,7 +3801,7 @@ void VoxelGIGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, 
 
 	Vector3 ra, rb;
 	Geometry3D::get_closest_points_between_segments(Vector3(), axis * 16384, sg[0], sg[1], ra, rb);
-	float d = ra[p_id];
+	float d = ra[p_id] * 2;
 	if (Node3DEditor::get_singleton()->is_snap_enabled()) {
 		d = Math::snapped(d, Node3DEditor::get_singleton()->get_translate_snap());
 	}
@@ -3809,8 +3810,8 @@ void VoxelGIGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, 
 		d = 0.001;
 	}
 
-	extents[p_id] = d;
-	probe->set_extents(extents);
+	size[p_id] = d;
+	probe->set_size(size);
 }
 
 void VoxelGIGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel) {
@@ -3819,14 +3820,14 @@ void VoxelGIGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_i
 	Vector3 restore = p_restore;
 
 	if (p_cancel) {
-		probe->set_extents(restore);
+		probe->set_size(restore);
 		return;
 	}
 
 	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
-	ur->create_action(TTR("Change Probe Extents"));
-	ur->add_do_method(probe, "set_extents", probe->get_extents());
-	ur->add_undo_method(probe, "set_extents", restore);
+	ur->create_action(TTR("Change Probe Size"));
+	ur->add_do_method(probe, "set_size", probe->get_size());
+	ur->add_undo_method(probe, "set_size", restore);
 	ur->commit_action();
 }
 
@@ -3840,11 +3841,11 @@ void VoxelGIGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	p_gizmo->clear();
 
 	Vector<Vector3> lines;
-	Vector3 extents = probe->get_extents();
+	Vector3 size = probe->get_size();
 
 	static const int subdivs[VoxelGI::SUBDIV_MAX] = { 64, 128, 256, 512 };
 
-	AABB aabb = AABB(-extents, extents * 2);
+	AABB aabb = AABB(-size / 2, size);
 	int subdiv = subdivs[probe->get_subdiv()];
 	float cell_size = aabb.get_longest_axis_size() / subdiv;
 
@@ -4363,7 +4364,7 @@ void CollisionShape3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, i
 		Ref<BoxShape3D> bs = s;
 		Vector3 ra, rb;
 		Geometry3D::get_closest_points_between_segments(Vector3(), axis * 4096, sg[0], sg[1], ra, rb);
-		float d = ra[p_id];
+		float d = ra[p_id] * 2;
 		if (Node3DEditor::get_singleton()->is_snap_enabled()) {
 			d = Math::snapped(d, Node3DEditor::get_singleton()->get_translate_snap());
 		}
@@ -4373,7 +4374,7 @@ void CollisionShape3DGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, i
 		}
 
 		Vector3 he = bs->get_size();
-		he[p_id] = d * 2;
+		he[p_id] = d;
 		bs->set_size(he);
 	}
 
@@ -5902,11 +5903,11 @@ int FogVolumeGizmoPlugin::get_priority() const {
 }
 
 String FogVolumeGizmoPlugin::get_handle_name(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
-	return "Extents";
+	return "Size";
 }
 
 Variant FogVolumeGizmoPlugin::get_handle_value(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary) const {
-	return Vector3(p_gizmo->get_node_3d()->call("get_extents"));
+	return Vector3(p_gizmo->get_node_3d()->call("get_size"));
 }
 
 void FogVolumeGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, Camera3D *p_camera, const Point2 &p_point) {
@@ -5924,7 +5925,7 @@ void FogVolumeGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id
 	axis[p_id] = 1.0;
 	Vector3 ra, rb;
 	Geometry3D::get_closest_points_between_segments(Vector3(), axis * 4096, sg[0], sg[1], ra, rb);
-	float d = ra[p_id];
+	float d = ra[p_id] * 2;
 	if (Node3DEditor::get_singleton()->is_snap_enabled()) {
 		d = Math::snapped(d, Node3DEditor::get_singleton()->get_translate_snap());
 	}
@@ -5933,23 +5934,23 @@ void FogVolumeGizmoPlugin::set_handle(const EditorNode3DGizmo *p_gizmo, int p_id
 		d = 0.001;
 	}
 
-	Vector3 he = sn->call("get_extents");
+	Vector3 he = sn->call("get_size");
 	he[p_id] = d;
-	sn->call("set_extents", he);
+	sn->call("set_size", he);
 }
 
 void FogVolumeGizmoPlugin::commit_handle(const EditorNode3DGizmo *p_gizmo, int p_id, bool p_secondary, const Variant &p_restore, bool p_cancel) {
 	Node3D *sn = p_gizmo->get_node_3d();
 
 	if (p_cancel) {
-		sn->call("set_extents", p_restore);
+		sn->call("set_size", p_restore);
 		return;
 	}
 
 	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
-	ur->create_action(TTR("Change Fog Volume Extents"));
-	ur->add_do_method(sn, "set_extents", sn->call("get_extents"));
-	ur->add_undo_method(sn, "set_extents", p_restore);
+	ur->create_action(TTR("Change Fog Volume Size"));
+	ur->add_do_method(sn, "set_size", sn->call("get_size"));
+	ur->add_undo_method(sn, "set_size", p_restore);
 	ur->commit_action();
 }
 
@@ -5968,8 +5969,8 @@ void FogVolumeGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 		Vector<Vector3> lines;
 		AABB aabb;
-		aabb.position = -cs->call("get_extents").operator Vector3();
-		aabb.size = aabb.position * -2;
+		aabb.size = cs->call("get_size").operator Vector3();
+		aabb.position = aabb.size / -2;
 
 		for (int i = 0; i < 12; i++) {
 			Vector3 a, b;
@@ -5982,7 +5983,7 @@ void FogVolumeGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 
 		for (int i = 0; i < 3; i++) {
 			Vector3 ax;
-			ax[i] = cs->call("get_extents").operator Vector3()[i];
+			ax[i] = cs->call("get_size").operator Vector3()[i] / 2;
 			handles.push_back(ax);
 		}
 

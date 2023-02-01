@@ -71,17 +71,17 @@ public:
 	static void print_mbedtls_error(int p_ret);
 
 	Ref<X509CertificateMbedTLS> certs;
+	Ref<CryptoKeyMbedTLS> pkey;
+	Ref<CookieContextMbedTLS> cookies;
+
 	mbedtls_entropy_context entropy;
 	mbedtls_ctr_drbg_context ctr_drbg;
 	mbedtls_ssl_context tls;
 	mbedtls_ssl_config conf;
 
-	Ref<CookieContextMbedTLS> cookies;
-	Ref<CryptoKeyMbedTLS> pkey;
-
 	Error _setup(int p_endpoint, int p_transport, int p_authmode);
-	Error init_server(int p_transport, int p_authmode, Ref<CryptoKeyMbedTLS> p_pkey, Ref<X509CertificateMbedTLS> p_cert, Ref<CookieContextMbedTLS> p_cookies = Ref<CookieContextMbedTLS>());
-	Error init_client(int p_transport, int p_authmode, Ref<X509CertificateMbedTLS> p_valid_cas);
+	Error init_server(int p_transport, Ref<TLSOptions> p_options, Ref<CookieContextMbedTLS> p_cookies = Ref<CookieContextMbedTLS>());
+	Error init_client(int p_transport, const String &p_hostname, Ref<TLSOptions> p_options);
 	void clear();
 
 	mbedtls_ssl_context *get_context();

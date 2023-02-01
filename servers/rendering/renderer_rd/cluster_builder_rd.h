@@ -330,7 +330,7 @@ public:
 		render_element_count++;
 	}
 
-	_FORCE_INLINE_ void add_box(BoxType p_box_type, const Transform3D &p_transform, const Vector3 &p_half_extents) {
+	_FORCE_INLINE_ void add_box(BoxType p_box_type, const Transform3D &p_transform, const Vector3 &p_half_size) {
 		if (p_box_type == BOX_TYPE_DECAL && cluster_count_by_type[ELEMENT_TYPE_DECAL] == max_elements_by_type) {
 			return; // Max number elements reached.
 		}
@@ -342,7 +342,7 @@ public:
 		Transform3D xform = view_xform * p_transform;
 
 		// Extract scale and scale the matrix by it, makes things simpler.
-		Vector3 scale = p_half_extents;
+		Vector3 scale = p_half_size;
 		for (uint32_t i = 0; i < 3; i++) {
 			float s = xform.basis.rows[i].length();
 			scale[i] *= s;

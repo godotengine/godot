@@ -51,7 +51,7 @@ private:
 	Vector3 gravity_vec;
 	real_t gravity = 0.0;
 	bool gravity_is_point = false;
-	real_t gravity_distance_scale = 0.0;
+	real_t gravity_point_unit_distance = 0.0;
 
 	SpaceOverride linear_damp_space_override = SPACE_OVERRIDE_DISABLED;
 	SpaceOverride angular_damp_space_override = SPACE_OVERRIDE_DISABLED;
@@ -155,8 +155,8 @@ public:
 	void set_gravity_is_point(bool p_enabled);
 	bool is_gravity_a_point() const;
 
-	void set_gravity_point_distance_scale(real_t p_scale);
-	real_t get_gravity_point_distance_scale() const;
+	void set_gravity_point_unit_distance(real_t p_scale);
+	real_t get_gravity_point_unit_distance() const;
 
 	void set_gravity_point_center(const Vector3 &p_center);
 	const Vector3 &get_gravity_point_center() const;

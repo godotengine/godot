@@ -136,9 +136,9 @@ PackedStringArray XRInterfaceExtension::get_suggested_pose_names(const StringNam
 }
 
 XRInterface::TrackingStatus XRInterfaceExtension::get_tracking_status() const {
-	uint32_t status = XR_UNKNOWN_TRACKING;
+	XRInterface::TrackingStatus status = XR_UNKNOWN_TRACKING;
 	GDVIRTUAL_CALL(_get_tracking_status, status);
-	return TrackingStatus(status);
+	return status;
 }
 
 void XRInterfaceExtension::trigger_haptic_pulse(const String &p_action_name, const StringName &p_tracker_name, double p_frequency, double p_amplitude, double p_duration_sec, double p_delay_sec) {
@@ -152,9 +152,9 @@ bool XRInterfaceExtension::supports_play_area_mode(XRInterface::PlayAreaMode p_m
 }
 
 XRInterface::PlayAreaMode XRInterfaceExtension::get_play_area_mode() const {
-	uint32_t mode = XR_PLAY_AREA_UNKNOWN;
+	XRInterface::PlayAreaMode mode = XR_PLAY_AREA_UNKNOWN;
 	GDVIRTUAL_CALL(_get_play_area_mode, mode);
-	return XRInterface::PlayAreaMode(mode);
+	return mode;
 }
 
 bool XRInterfaceExtension::set_play_area_mode(XRInterface::PlayAreaMode p_mode) {

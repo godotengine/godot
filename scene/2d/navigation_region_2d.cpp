@@ -330,6 +330,7 @@ bool NavigationRegion2D::_get(const StringName &p_name, Variant &r_ret) const {
 
 NavigationRegion2D::NavigationRegion2D() {
 	set_notify_transform(true);
+	set_hide_clip_children(true);
 
 	region = NavigationServer2D::get_singleton()->region_create();
 	NavigationServer2D::get_singleton()->region_set_owner_id(region, get_instance_id());

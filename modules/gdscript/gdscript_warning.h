@@ -69,6 +69,7 @@ public:
 		UNSAFE_METHOD_ACCESS, // Function not found in the detected type (but can be in subtypes).
 		UNSAFE_CAST, // Cast used in an unknown type.
 		UNSAFE_CALL_ARGUMENT, // Function call argument is of a supertype of the require argument.
+		UNSAFE_VOID_RETURN, // Function returns void but returned a call to a function that can't be type checked.
 		DEPRECATED_KEYWORD, // The keyword is deprecated and should be replaced.
 		STANDALONE_TERNARY, // Return value of ternary expression is discarded.
 		ASSERT_ALWAYS_TRUE, // Expression for assert argument is always true.
@@ -80,6 +81,7 @@ public:
 		INT_AS_ENUM_WITHOUT_MATCH, // An integer value was used as an enum value without matching enum member.
 		STATIC_CALLED_ON_INSTANCE, // A static method was called on an instance of a class instead of on the class itself.
 		CONFUSABLE_IDENTIFIER, // The identifier contains misleading characters that can be confused. E.g. "usеr" (has Cyrillic "е" instead of Latin "e").
+		RENAMED_IN_GD4_HINT, // A variable or function that could not be found has been renamed in Godot 4
 		WARNING_MAX,
 	};
 

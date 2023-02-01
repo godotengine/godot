@@ -69,21 +69,22 @@
 				    return EditorPlugin.AFTER_GUI_INPUT_PASS
 				[/gdscript]
 				[csharp]
-				public override void _Forward3dDrawOverViewport(Godot.Control overlay)
+				public override void _Forward3DDrawOverViewport(Control viewportControl)
 				{
 				    // Draw a circle at cursor position.
-				    overlay.DrawCircle(overlay.GetLocalMousePosition(), 64, Colors.White);
+				    viewportControl.DrawCircle(viewportControl.GetLocalMousePosition(), 64, Colors.White);
 				}
 
-				public override EditorPlugin.AfterGUIInput _Forward3dGuiInput(Godot.Camera3D camera, InputEvent @event)
+				public override EditorPlugin.AfterGuiInput _Forward3DGuiInput(Camera3D viewportCamera, InputEvent @event)
 				{
 				    if (@event is InputEventMouseMotion)
 				    {
 				        // Redraw viewport when cursor is moved.
 				        UpdateOverlays();
-				        return EditorPlugin.AFTER_GUI_INPUT_STOP;
+				        return EditorPlugin.AfterGuiInput.Stop;
 				    }
-				    return EditorPlugin.AFTER_GUI_INPUT_PASS;
+				    return EditorPlugin.AfterGuiInput.Pass;
+				}
 				[/csharp]
 				[/codeblocks]
 			</description>
@@ -111,9 +112,9 @@
 				[/gdscript]
 				[csharp]
 				// Prevents the InputEvent from reaching other Editor classes.
-				public override EditorPlugin.AfterGUIInput _Forward3dGuiInput(Camera3D camera, InputEvent @event)
+				public override EditorPlugin.AfterGuiInput _Forward3DGuiInput(Camera3D camera, InputEvent @event)
 				{
-				    return EditorPlugin.AFTER_GUI_INPUT_STOP;
+				    return EditorPlugin.AfterGuiInput.Stop;
 				}
 				[/csharp]
 				[/codeblocks]
@@ -127,9 +128,9 @@
 				[/gdscript]
 				[csharp]
 				// Consumes InputEventMouseMotion and forwards other InputEvent types.
-				public override EditorPlugin.AfterGUIInput _Forward3dGuiInput(Camera3D camera, InputEvent @event)
+				public override EditorPlugin.AfterGuiInput _Forward3DGuiInput(Camera3D camera, InputEvent @event)
 				{
-				    return @event is InputEventMouseMotion ? EditorPlugin.AFTER_GUI_INPUT_STOP : EditorPlugin.AFTER_GUI_INPUT_PASS;
+				    return @event is InputEventMouseMotion ? EditorPlugin.AfterGuiInput.Stop : EditorPlugin.AfterGuiInput.Pass;
 				}
 				[/csharp]
 				[/codeblocks]
@@ -154,13 +155,13 @@
 				    return false
 				[/gdscript]
 				[csharp]
-				public override void ForwardCanvasDrawOverViewport(Godot.Control overlay)
+				public override void _ForwardCanvasDrawOverViewport(Control viewportControl)
 				{
 				    // Draw a circle at cursor position.
-				    overlay.DrawCircle(overlay.GetLocalMousePosition(), 64, Colors.White);
+				    viewportControl.DrawCircle(viewportControl.GetLocalMousePosition(), 64, Colors.White);
 				}
 
-				public override bool ForwardCanvasGuiInput(InputEvent @event)
+				public override bool _ForwardCanvasGuiInput(InputEvent @event)
 				{
 				    if (@event is InputEventMouseMotion)
 				    {
@@ -169,6 +170,7 @@
 				        return true;
 				    }
 				    return false;
+				}
 				[/csharp]
 				[/codeblocks]
 			</description>
@@ -213,12 +215,13 @@
 				[/gdscript]
 				[csharp]
 				// Consumes InputEventMouseMotion and forwards other InputEvent types.
-				public override bool ForwardCanvasGuiInput(InputEvent @event)
+				public override bool _ForwardCanvasGuiInput(InputEvent @event)
 				{
-				    if (@event is InputEventMouseMotion) {
+				    if (@event is InputEventMouseMotion)
+				    {
 				        return true;
 				    }
-				    return false
+				    return false;
 				}
 				[/csharp]
 				[/codeblocks]
@@ -245,7 +248,7 @@
 				    return get_editor_interface().get_base_control().get_theme_icon("Node", "EditorIcons")
 				[/gdscript]
 				[csharp]
-				public override Texture2D GetPluginIcon()
+				public override Texture2D _GetPluginIcon()
 				{
 				    // You can use a custom icon:
 				    return ResourceLoader.Load&lt;Texture2D&gt;("res://addons/my_plugin/my_plugin_icon.svg");
@@ -409,6 +412,7 @@
 			<description>
 				Adds a custom type, which will appear in the list of nodes or resources. An icon can be optionally passed.
 				When a given node or resource is selected, the base type will be instantiated (e.g. "Node3D", "Control", "Resource"), then the script will be loaded and set to this object.
+				[b]Note:[/b] The base type is the base engine class which this type's class hierarchy inherits, not any custom type parent classes.
 				You can use the virtual method [method _handles] to check if your custom object is being edited by checking the script or using the [code]is[/code] keyword.
 				During run-time, this will be a simple object with a script so this function does not need to be called then.
 				[b]Note:[/b] Custom types added this way are not true classes. They are just a helper to create a node with specific script.

@@ -188,6 +188,7 @@ private:
 	};
 
 	HashMap<StringName, State> states;
+	bool allow_transition_to_self = false;
 
 	struct Transition {
 		StringName from;
@@ -253,6 +254,9 @@ public:
 	int get_transition_count() const;
 	void remove_transition_by_index(const int p_transition);
 	void remove_transition(const StringName &p_from, const StringName &p_to);
+
+	void set_allow_transition_to_self(bool p_enable);
+	bool is_allow_transition_to_self() const;
 
 	bool can_edit_node(const StringName &p_name) const;
 

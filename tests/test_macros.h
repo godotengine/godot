@@ -31,6 +31,8 @@
 #ifndef TEST_MACROS_H
 #define TEST_MACROS_H
 
+#include "display_server_mock.h"
+
 #include "core/core_globals.h"
 #include "core/input/input_map.h"
 #include "core/object/message_queue.h"
@@ -139,13 +141,15 @@ int register_test_command(String p_command, TestFunc p_function);
 // SEND_GUI_MOUSE_MOTION_EVENT - takes an object, position, mouse mask and modifiers e.g SEND_GUI_MOUSE_MOTION_EVENT(code_edit, Vector2(50, 50), MouseButtonMask::LEFT, KeyModifierMask::META);
 // SEND_GUI_DOUBLE_CLICK - takes an object, position and modifiers. e.g SEND_GUI_DOUBLE_CLICK(code_edit, Vector2(50, 50), KeyModifierMask::META);
 
+#define _SEND_DISPLAYSERVER_EVENT(m_event) ((DisplayServerMock *)(DisplayServer::get_singleton()))->simulate_event(m_event);
+
 #define SEND_GUI_ACTION(m_object, m_action)                                                           \
 	{                                                                                                 \
 		const List<Ref<InputEvent>> *events = InputMap::get_singleton()->action_get_events(m_action); \
 		const List<Ref<InputEvent>>::Element *first_event = events->front();                          \
 		Ref<InputEventKey> event = first_event->get();                                                \
 		event->set_pressed(true);                                                                     \
-		m_object->get_viewport()->push_input(event);                                                  \
+		_SEND_DISPLAYSERVER_EVENT(event);                                                             \
 		MessageQueue::get_singleton()->flush();                                                       \
 	}
 
@@ -153,7 +157,7 @@ int register_test_command(String p_command, TestFunc p_function);
 	{                                                                        \
 		Ref<InputEventKey> event = InputEventKey::create_reference(m_input); \
 		event->set_pressed(true);                                            \
-		m_object->get_viewport()->push_input(event);                         \
+		_SEND_DISPLAYSERVER_EVENT(event);                                    \
 		MessageQueue::get_singleton()->flush();                              \
 	}
 
@@ -176,7 +180,7 @@ int register_test_command(String p_command, TestFunc p_function);
 #define SEND_GUI_MOUSE_BUTTON_EVENT(m_object, m_local_pos, m_input, m_mask, m_modifers) \
 	{                                                                                   \
 		_CREATE_GUI_MOUSE_EVENT(m_object, m_local_pos, m_input, m_mask, m_modifers);    \
-		m_object->get_viewport()->push_input(event);                                    \
+		_SEND_DISPLAYSERVER_EVENT(event);                                               \
 		MessageQueue::get_singleton()->flush();                                         \
 	}
 
@@ -184,7 +188,7 @@ int register_test_command(String p_command, TestFunc p_function);
 	{                                                                                            \
 		_CREATE_GUI_MOUSE_EVENT(m_object, m_local_pos, m_input, m_mask, m_modifers);             \
 		event->set_pressed(false);                                                               \
-		m_object->get_viewport()->push_input(event);                                             \
+		_SEND_DISPLAYSERVER_EVENT(event);                                                        \
 		MessageQueue::get_singleton()->flush();                                                  \
 	}
 
@@ -192,7 +196,7 @@ int register_test_command(String p_command, TestFunc p_function);
 	{                                                                                     \
 		_CREATE_GUI_MOUSE_EVENT(m_object, m_local_pos, MouseButton::LEFT, 0, m_modifers); \
 		event->set_double_click(true);                                                    \
-		m_object->get_viewport()->push_input(event);                                      \
+		_SEND_DISPLAYSERVER_EVENT(event);                                                 \
 		MessageQueue::get_singleton()->flush();                                           \
 	}
 
@@ -207,7 +211,7 @@ int register_test_command(String p_command, TestFunc p_function);
 		event->set_button_mask(m_mask);                                        \
 		event->set_relative(Vector2(10, 10));                                  \
 		_UPDATE_EVENT_MODIFERS(event, m_modifers);                             \
-		m_object->get_viewport()->push_input(event);                           \
+		_SEND_DISPLAYSERVER_EVENT(event);                                      \
 		MessageQueue::get_singleton()->flush();                                \
 		CoreGlobals::print_error_enabled = errors_enabled;                     \
 	}

@@ -32,6 +32,7 @@
 
 #include "extensions/gltf_spec_gloss.h"
 
+#include "core/config/project_settings.h"
 #include "core/crypto/crypto_core.h"
 #include "core/io/config_file.h"
 #include "core/io/dir_access.h"
@@ -3065,6 +3066,7 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_p
 	// Ref: https://github.com/KhronosGroup/glTF/blob/master/specification/2.0/README.md#images
 
 	const Array &images = p_state->json["images"];
+	HashSet<String> used_names;
 	for (int i = 0; i < images.size(); i++) {
 		const Dictionary &d = images[i];
 
@@ -3092,11 +3094,21 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_p
 		int data_size = 0;
 
 		String image_name;
+		if (d.has("name")) {
+			image_name = d["name"];
+			image_name = image_name.get_file().get_basename().validate_filename();
+		}
+		if (image_name.is_empty()) {
+			image_name = itos(i);
+		}
+		while (used_names.has(image_name)) {
+			image_name += "_" + itos(i);
+		}
+		used_names.insert(image_name);
 
 		if (d.has("uri")) {
 			// Handles the first two bullet points from the spec (embedded data, or external file).
 			String uri = d["uri"];
-			image_name = uri;
 
 			if (uri.begins_with("data:")) { // Embedded data using base64.
 				// Validate data MIME types and throw a warning if it's one we don't know/support.
@@ -3158,7 +3170,6 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_p
 					vformat("glTF: Image index '%d' specifies 'bufferView' but no 'mimeType', which is invalid.", i));
 
 			const GLTFBufferViewIndex bvi = d["bufferView"];
-			image_name = itos(bvi);
 
 			ERR_FAIL_INDEX_V(bvi, p_state->buffer_views.size(), ERR_PARAMETER_RANGE_ERROR);
 
@@ -3206,13 +3217,12 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_p
 			p_state->source_images.push_back(Ref<Image>());
 			continue;
 		}
+		img->set_name(image_name);
 		if (GLTFState::GLTFHandleBinary(p_state->handle_binary_image) == GLTFState::GLTFHandleBinary::HANDLE_BINARY_DISCARD_TEXTURES) {
 			p_state->images.push_back(Ref<Texture2D>());
 			p_state->source_images.push_back(Ref<Image>());
-			continue;
-		} else if (GLTFState::GLTFHandleBinary(p_state->handle_binary_image) == GLTFState::GLTFHandleBinary::HANDLE_BINARY_EXTRACT_TEXTURES) {
-			String extracted_image_name = image_name.get_file().get_basename().validate_filename();
-			img->set_name(extracted_image_name);
+#ifdef TOOLS_ENABLED
+		} else if (Engine::get_singleton()->is_editor_hint() && GLTFState::GLTFHandleBinary(p_state->handle_binary_image) == GLTFState::GLTFHandleBinary::HANDLE_BINARY_EXTRACT_TEXTURES) {
 			if (p_state->base_path.is_empty()) {
 				p_state->images.push_back(Ref<Texture2D>());
 				p_state->source_images.push_back(Ref<Image>());
@@ -3221,26 +3231,56 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_p
 				p_state->images.push_back(Ref<Texture2D>());
 				p_state->source_images.push_back(Ref<Image>());
 			} else {
-				String file_path = p_state->get_base_path() + "/" + p_state->filename.get_basename() + "_" + img->get_name() + ".png";
-				Ref<ConfigFile> config;
-				config.instantiate();
-				if (FileAccess::exists(file_path + ".import")) {
-					config->load(file_path + ".import");
-				}
-				config->set_value("remap", "importer", "texture");
-				config->set_value("remap", "type", "Texture2D");
-				if (!config->has_section_key("params", "compress/mode")) {
-					config->set_value("remap", "compress/mode", 2); //user may want another compression, so leave it bes
-				}
-				if (!config->has_section_key("params", "mipmaps/generate")) {
-					config->set_value("params", "mipmaps/generate", true);
-				}
 				Error err = OK;
-				err = config->save(file_path + ".import");
-				ERR_FAIL_COND_V(err != OK, err);
-				img->save_png(file_path);
-				ERR_FAIL_COND_V(err != OK, err);
-				ResourceLoader::import(file_path);
+				bool must_import = false;
+				String file_path = p_state->get_base_path() + "/" + p_state->filename.get_basename() + "_" + img->get_name() + ".png";
+				if (!FileAccess::exists(file_path + ".import")) {
+					Ref<ConfigFile> config;
+					config.instantiate();
+					config->set_value("remap", "importer", "texture");
+					config->set_value("remap", "type", "Texture2D");
+					// Currently, it will likely use project defaults of Detect 3D, so textures will be reimported again.
+					if (!config->has_section_key("params", "mipmaps/generate")) {
+						config->set_value("params", "mipmaps/generate", true);
+					}
+
+					if (ProjectSettings::get_singleton()->has_setting("importer_defaults/texture")) {
+						//use defaults if exist
+						Dictionary importer_defaults = GLOBAL_GET("importer_defaults/texture");
+						List<Variant> importer_def_keys;
+						importer_defaults.get_key_list(&importer_def_keys);
+						for (const Variant &key : importer_def_keys) {
+							if (!config->has_section_key("params", (String)key)) {
+								config->set_value("params", (String)key, importer_defaults[key]);
+							}
+						}
+					}
+					err = config->save(file_path + ".import");
+					ERR_FAIL_COND_V(err != OK, err);
+					must_import = true;
+				}
+				Vector<uint8_t> png_buffer = img->save_png_to_buffer();
+				if (ResourceLoader::exists(file_path)) {
+					Ref<FileAccess> file = FileAccess::open(file_path, FileAccess::READ, &err);
+					if (err == OK && file.is_valid()) {
+						Vector<uint8_t> orig_png_buffer = file->get_buffer(file->get_length());
+						if (png_buffer != orig_png_buffer) {
+							must_import = true;
+						}
+					}
+				} else {
+					must_import = true;
+				}
+				if (must_import) {
+					Ref<FileAccess> file = FileAccess::open(file_path, FileAccess::WRITE, &err);
+					ERR_FAIL_COND_V(err != OK, err);
+					ERR_FAIL_COND_V(file.is_null(), FAILED);
+					file->store_buffer(png_buffer);
+					file->flush();
+					file.unref();
+					// ResourceLoader::import will crash if not is_editor_hint(), so this case is protected above and will fall through to uncompressed.
+					ResourceLoader::import(file_path);
+				}
 				Ref<Texture2D> saved_image = ResourceLoader::load(file_path, "Texture2D");
 				if (saved_image.is_valid()) {
 					p_state->images.push_back(saved_image);
@@ -3252,7 +3292,7 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_p
 					p_state->source_images.push_back(Ref<Image>());
 				}
 			}
-			continue;
+#endif
 		} else if (GLTFState::GLTFHandleBinary(p_state->handle_binary_image) == GLTFState::GLTFHandleBinary::HANDLE_BINARY_EMBED_AS_BASISU) {
 			Ref<PortableCompressedTexture2D> tex;
 			tex.instantiate();
@@ -3262,11 +3302,15 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_p
 			tex->create_from_image(img, PortableCompressedTexture2D::COMPRESSION_MODE_BASIS_UNIVERSAL);
 			p_state->images.push_back(tex);
 			p_state->source_images.push_back(img);
-			continue;
+		} else {
+			// This handles two cases: if editor hint and HANDLE_BINARY_EXTRACT_TEXTURES; or if HANDLE_BINARY_EMBED_AS_UNCOMPRESSED
+			Ref<ImageTexture> tex;
+			tex.instantiate();
+			tex->set_name(img->get_name());
+			tex->set_image(img);
+			p_state->images.push_back(tex);
+			p_state->source_images.push_back(img);
 		}
-
-		p_state->images.push_back(Ref<Texture2D>());
-		p_state->source_images.push_back(Ref<Image>());
 	}
 
 	print_verbose("glTF: Total images: " + itos(p_state->images.size()));
@@ -5961,7 +6005,7 @@ T GLTFDocument::_interpolate_track(const Vector<real_t> &p_times, const Vector<T
 	ERR_FAIL_V(p_values[0]);
 }
 
-void GLTFDocument::_import_animation(Ref<GLTFState> p_state, AnimationPlayer *p_animation_player, const GLTFAnimationIndex p_index, const float p_bake_fps, const bool p_trimming) {
+void GLTFDocument::_import_animation(Ref<GLTFState> p_state, AnimationPlayer *p_animation_player, const GLTFAnimationIndex p_index, const float p_bake_fps, const bool p_trimming, const bool p_remove_immutable_tracks) {
 	Ref<GLTFAnimation> anim = p_state->animations[p_index];
 
 	String anim_name = anim->get_name();
@@ -6064,35 +6108,38 @@ void GLTFDocument::_import_animation(Ref<GLTFState> p_state, AnimationPlayer *p_
 			int scale_idx = -1;
 
 			if (track.position_track.values.size()) {
-				Vector3 base_pos = p_state->nodes[track_i.key]->position;
-				bool not_default = false; //discard the track if all it contains is default values
-				for (int i = 0; i < track.position_track.times.size(); i++) {
-					Vector3 value = track.position_track.values[track.position_track.interpolation == GLTFAnimation::INTERP_CUBIC_SPLINE ? (1 + i * 3) : i];
-					if (!value.is_equal_approx(base_pos)) {
-						not_default = true;
-						break;
+				bool is_default = true; //discard the track if all it contains is default values
+				if (p_remove_immutable_tracks) {
+					Vector3 base_pos = p_state->nodes[track_i.key]->position;
+					for (int i = 0; i < track.position_track.times.size(); i++) {
+						Vector3 value = track.position_track.values[track.position_track.interpolation == GLTFAnimation::INTERP_CUBIC_SPLINE ? (1 + i * 3) : i];
+						if (!value.is_equal_approx(base_pos)) {
+							is_default = false;
+							break;
+						}
 					}
 				}
-				if (not_default) {
+				if (!p_remove_immutable_tracks || !is_default) {
 					position_idx = base_idx;
 					animation->add_track(Animation::TYPE_POSITION_3D);
 					animation->track_set_path(position_idx, transform_node_path);
 					animation->track_set_imported(position_idx, true); //helps merging later
-
 					base_idx++;
 				}
 			}
 			if (track.rotation_track.values.size()) {
-				Quaternion base_rot = p_state->nodes[track_i.key]->rotation.normalized();
-				bool not_default = false; //discard the track if all it contains is default values
-				for (int i = 0; i < track.rotation_track.times.size(); i++) {
-					Quaternion value = track.rotation_track.values[track.rotation_track.interpolation == GLTFAnimation::INTERP_CUBIC_SPLINE ? (1 + i * 3) : i].normalized();
-					if (!value.is_equal_approx(base_rot)) {
-						not_default = true;
-						break;
+				bool is_default = true; //discard the track if all it contains is default values
+				if (p_remove_immutable_tracks) {
+					Quaternion base_rot = p_state->nodes[track_i.key]->rotation.normalized();
+					for (int i = 0; i < track.rotation_track.times.size(); i++) {
+						Quaternion value = track.rotation_track.values[track.rotation_track.interpolation == GLTFAnimation::INTERP_CUBIC_SPLINE ? (1 + i * 3) : i].normalized();
+						if (!value.is_equal_approx(base_rot)) {
+							is_default = false;
+							break;
+						}
 					}
 				}
-				if (not_default) {
+				if (!p_remove_immutable_tracks || !is_default) {
 					rotation_idx = base_idx;
 					animation->add_track(Animation::TYPE_ROTATION_3D);
 					animation->track_set_path(rotation_idx, transform_node_path);
@@ -6101,16 +6148,18 @@ void GLTFDocument::_import_animation(Ref<GLTFState> p_state, AnimationPlayer *p_
 				}
 			}
 			if (track.scale_track.values.size()) {
-				Vector3 base_scale = p_state->nodes[track_i.key]->scale;
-				bool not_default = false; //discard the track if all it contains is default values
-				for (int i = 0; i < track.scale_track.times.size(); i++) {
-					Vector3 value = track.scale_track.values[track.scale_track.interpolation == GLTFAnimation::INTERP_CUBIC_SPLINE ? (1 + i * 3) : i];
-					if (!value.is_equal_approx(base_scale)) {
-						not_default = true;
-						break;
+				bool is_default = true; //discard the track if all it contains is default values
+				if (p_remove_immutable_tracks) {
+					Vector3 base_scale = p_state->nodes[track_i.key]->scale;
+					for (int i = 0; i < track.scale_track.times.size(); i++) {
+						Vector3 value = track.scale_track.values[track.scale_track.interpolation == GLTFAnimation::INTERP_CUBIC_SPLINE ? (1 + i * 3) : i];
+						if (!value.is_equal_approx(base_scale)) {
+							is_default = false;
+							break;
+						}
 					}
 				}
-				if (not_default) {
+				if (!p_remove_immutable_tracks || !is_default) {
 					scale_idx = base_idx;
 					animation->add_track(Animation::TYPE_SCALE_3D);
 					animation->track_set_path(scale_idx, transform_node_path);
@@ -6895,8 +6944,8 @@ void GLTFDocument::_bind_methods() {
 			&GLTFDocument::append_from_buffer, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("append_from_scene", "node", "state", "flags"),
 			&GLTFDocument::append_from_scene, DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("generate_scene", "state", "bake_fps", "trimming"),
-			&GLTFDocument::generate_scene, DEFVAL(30), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("generate_scene", "state", "bake_fps", "trimming", "remove_immutable_tracks"),
+			&GLTFDocument::generate_scene, DEFVAL(30), DEFVAL(false), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("generate_buffer", "state"),
 			&GLTFDocument::generate_buffer);
 	ClassDB::bind_method(D_METHOD("write_to_filesystem", "state", "path"),
@@ -7005,7 +7054,7 @@ Error GLTFDocument::write_to_filesystem(Ref<GLTFState> p_state, const String &p_
 	return OK;
 }
 
-Node *GLTFDocument::generate_scene(Ref<GLTFState> p_state, float p_bake_fps, bool p_trimming) {
+Node *GLTFDocument::generate_scene(Ref<GLTFState> p_state, float p_bake_fps, bool p_trimming, bool p_remove_immutable_tracks) {
 	ERR_FAIL_NULL_V(p_state, nullptr);
 	ERR_FAIL_INDEX_V(0, p_state->root_nodes.size(), nullptr);
 	Error err = OK;
@@ -7019,7 +7068,7 @@ Node *GLTFDocument::generate_scene(Ref<GLTFState> p_state, float p_bake_fps, boo
 		root->add_child(ap, true);
 		ap->set_owner(root);
 		for (int i = 0; i < p_state->animations.size(); i++) {
-			_import_animation(p_state, ap, i, p_bake_fps, p_trimming);
+			_import_animation(p_state, ap, i, p_bake_fps, p_trimming, p_remove_immutable_tracks);
 		}
 	}
 	for (KeyValue<GLTFNodeIndex, Node *> E : p_state->scene_nodes) {

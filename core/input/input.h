@@ -223,6 +223,10 @@ private:
 	void _parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_emulated);
 
 	List<Ref<InputEvent>> buffered_events;
+#ifdef DEBUG_ENABLED
+	HashSet<Ref<InputEvent>> frame_parsed_events;
+	uint64_t last_parsed_frame = UINT64_MAX;
+#endif
 
 	friend class DisplayServer;
 

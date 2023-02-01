@@ -64,7 +64,7 @@
 			</description>
 		</method>
 		<method name="_get_play_area_mode" qualifiers="virtual const">
-			<return type="int" />
+			<return type="int" enum="XRInterface.PlayAreaMode" />
 			<description>
 				Returns the [enum XRInterface.PlayAreaMode] that sets up our play area.
 			</description>
@@ -99,7 +99,7 @@
 			</description>
 		</method>
 		<method name="_get_tracking_status" qualifiers="virtual const">
-			<return type="int" />
+			<return type="int" enum="XRInterface.TrackingStatus" />
 			<description>
 				Returns a [enum XRInterface.TrackingStatus] specifying the current status of our tracking.
 			</description>
@@ -177,7 +177,7 @@
 		</method>
 		<method name="_set_play_area_mode" qualifiers="virtual const">
 			<return type="bool" />
-			<param index="0" name="mode" type="int" />
+			<param index="0" name="mode" type="int" enum="XRInterface.PlayAreaMode" />
 			<description>
 				Set the play area mode for this interface.
 			</description>

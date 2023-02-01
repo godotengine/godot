@@ -75,9 +75,6 @@
 		<member name="emission_energy" type="float" setter="set_emission_energy" getter="get_emission_energy" default="1.0">
 			Energy multiplier for the emission texture. This will make the decal emit light at a higher or lower intensity, independently of the albedo color. See also [member modulate].
 		</member>
-		<member name="extents" type="Vector3" setter="set_extents" getter="get_extents" default="Vector3(1, 1, 1)">
-			Sets the size of the [AABB] used by the decal. The AABB goes from [code]-extents[/code] to [code]extents[/code].
-		</member>
 		<member name="lower_fade" type="float" setter="set_lower_fade" getter="get_lower_fade" default="0.3">
 			Sets the curve over which the decal will fade as the surface gets further from the center of the [AABB]. Only positive values are valid (negative values will be clamped to [code]0.0[/code]). See also [member upper_fade].
 		</member>
@@ -87,6 +84,9 @@
 		<member name="normal_fade" type="float" setter="set_normal_fade" getter="get_normal_fade" default="0.0">
 			Fades the Decal if the angle between the Decal's [AABB] and the target surface becomes too large. A value of [code]0[/code] projects the Decal regardless of angle, a value of [code]1[/code] limits the Decal to surfaces that are nearly perpendicular.
 			[b]Note:[/b] Setting [member normal_fade] to a value greater than [code]0.0[/code] has a small performance cost due to the added normal angle computations.
+		</member>
+		<member name="size" type="Vector3" setter="set_size" getter="get_size" default="Vector3(2, 2, 2)">
+			Sets the size of the [AABB] used by the decal. The AABB goes from [code]-size/2[/code] to [code]size/2[/code].
 		</member>
 		<member name="texture_albedo" type="Texture2D" setter="set_texture" getter="get_texture">
 			[Texture2D] with the base [Color] of the Decal. Either this or the [member texture_emission] must be set for the Decal to be visible. Use the alpha channel like a mask to smoothly blend the edges of the decal with the underlying object.

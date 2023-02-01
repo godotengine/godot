@@ -40,14 +40,9 @@
 template <class T>
 class TypedArray : public Array {
 public:
-	template <class U>
-	_FORCE_INLINE_ void operator=(const TypedArray<U> &p_array) {
-		static_assert(__is_base_of(T, U));
-		_assign(p_array);
-	}
-
 	_FORCE_INLINE_ void operator=(const Array &p_array) {
-		_assign(p_array);
+		ERR_FAIL_COND_MSG(!is_same_typed(p_array), "Cannot assign an array with a different element type.");
+		_ref(p_array);
 	}
 	_FORCE_INLINE_ TypedArray(const Variant &p_variant) :
 			Array(Array(p_variant), Variant::OBJECT, T::get_class_static(), Variant()) {
@@ -62,22 +57,23 @@ public:
 
 //specialization for the rest of variant types
 
-#define MAKE_TYPED_ARRAY(m_type, m_variant_type)                                   \
-	template <>                                                                    \
-	class TypedArray<m_type> : public Array {                                      \
-	public:                                                                        \
-		_FORCE_INLINE_ void operator=(const Array &p_array) {                      \
-			_assign(p_array);                                                      \
-		}                                                                          \
-		_FORCE_INLINE_ TypedArray(const Variant &p_variant) :                      \
-				Array(Array(p_variant), m_variant_type, StringName(), Variant()) { \
-		}                                                                          \
-		_FORCE_INLINE_ TypedArray(const Array &p_array) :                          \
-				Array(p_array, m_variant_type, StringName(), Variant()) {          \
-		}                                                                          \
-		_FORCE_INLINE_ TypedArray() {                                              \
-			set_typed(m_variant_type, StringName(), Variant());                    \
-		}                                                                          \
+#define MAKE_TYPED_ARRAY(m_type, m_variant_type)                                                                 \
+	template <>                                                                                                  \
+	class TypedArray<m_type> : public Array {                                                                    \
+	public:                                                                                                      \
+		_FORCE_INLINE_ void operator=(const Array &p_array) {                                                    \
+			ERR_FAIL_COND_MSG(!is_same_typed(p_array), "Cannot assign an array with a different element type."); \
+			_ref(p_array);                                                                                       \
+		}                                                                                                        \
+		_FORCE_INLINE_ TypedArray(const Variant &p_variant) :                                                    \
+				Array(Array(p_variant), m_variant_type, StringName(), Variant()) {                               \
+		}                                                                                                        \
+		_FORCE_INLINE_ TypedArray(const Array &p_array) :                                                        \
+				Array(p_array, m_variant_type, StringName(), Variant()) {                                        \
+		}                                                                                                        \
+		_FORCE_INLINE_ TypedArray() {                                                                            \
+			set_typed(m_variant_type, StringName(), Variant());                                                  \
+		}                                                                                                        \
 	};
 
 MAKE_TYPED_ARRAY(bool, Variant::BOOL)

@@ -226,7 +226,7 @@ private:
 		Color ambient_color;
 		float ambient_color_energy = 1.0;
 		float max_distance = 0;
-		Vector3 extents = Vector3(10, 10, 10);
+		Vector3 size = Vector3(20, 20, 20);
 		Vector3 origin_offset;
 		bool interior = false;
 		bool box_projection = false;
@@ -791,7 +791,7 @@ public:
 	virtual void reflection_probe_set_ambient_color(RID p_probe, const Color &p_color) override;
 	virtual void reflection_probe_set_ambient_energy(RID p_probe, float p_energy) override;
 	virtual void reflection_probe_set_max_distance(RID p_probe, float p_distance) override;
-	virtual void reflection_probe_set_extents(RID p_probe, const Vector3 &p_extents) override;
+	virtual void reflection_probe_set_size(RID p_probe, const Vector3 &p_size) override;
 	virtual void reflection_probe_set_origin_offset(RID p_probe, const Vector3 &p_offset) override;
 	virtual void reflection_probe_set_as_interior(RID p_probe, bool p_enable) override;
 	virtual void reflection_probe_set_enable_box_projection(RID p_probe, bool p_enable) override;
@@ -805,7 +805,7 @@ public:
 	virtual AABB reflection_probe_get_aabb(RID p_probe) const override;
 	virtual RS::ReflectionProbeUpdateMode reflection_probe_get_update_mode(RID p_probe) const override;
 	virtual uint32_t reflection_probe_get_cull_mask(RID p_probe) const override;
-	virtual Vector3 reflection_probe_get_extents(RID p_probe) const override;
+	virtual Vector3 reflection_probe_get_size(RID p_probe) const override;
 	virtual Vector3 reflection_probe_get_origin_offset(RID p_probe) const override;
 	virtual float reflection_probe_get_origin_max_distance(RID p_probe) const override;
 	virtual float reflection_probe_get_mesh_lod_threshold(RID p_probe) const override;

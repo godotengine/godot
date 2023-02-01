@@ -81,7 +81,7 @@
 			</description>
 		</method>
 		<method name="_get_input_port_type" qualifiers="virtual const">
-			<return type="int" />
+			<return type="int" enum="VisualShaderNode.PortType" />
 			<param index="0" name="port" type="int" />
 			<description>
 				Override this method to define the returned type of each input port of the associated custom node (see [enum VisualShaderNode.PortType] for possible types).
@@ -111,7 +111,7 @@
 			</description>
 		</method>
 		<method name="_get_output_port_type" qualifiers="virtual const">
-			<return type="int" />
+			<return type="int" enum="VisualShaderNode.PortType" />
 			<param index="0" name="port" type="int" />
 			<description>
 				Override this method to define the returned type of each output port of the associated custom node (see [enum VisualShaderNode.PortType] for possible types).
@@ -119,7 +119,7 @@
 			</description>
 		</method>
 		<method name="_get_return_icon_type" qualifiers="virtual const">
-			<return type="int" />
+			<return type="int" enum="VisualShaderNode.PortType" />
 			<description>
 				Override this method to define the return icon of the associated custom node in the Visual Shader Editor's members dialog.
 				Defining this method is [b]optional[/b]. If not overridden, no return icon is shown.

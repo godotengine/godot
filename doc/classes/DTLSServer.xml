@@ -38,45 +38,46 @@
 		                p.put_packet("Hello DTLS client".to_utf8())
 		[/gdscript]
 		[csharp]
-		using Godot;
-		using System;
 		// ServerNode.cs
-		public class ServerNode : Node
+		using Godot;
+
+		public partial class ServerNode : Node
 		{
-		    public DTLSServer Dtls = new DTLSServer();
-		    public UDPServer Server = new UDPServer();
-		    public Godot.Collections.Array&lt;PacketPeerDTLS&gt; Peers = new Godot.Collections.Array&lt;PacketPeerDTLS&gt;();
+		    private DtlsServer _dtls = new DtlsServer();
+		    private UdpServer _server = new UdpServer();
+		    private Godot.Collections.Array&lt;PacketPeerDTLS&gt; _peers = new Godot.Collections.Array&lt;PacketPeerDTLS&gt;();
+
 		    public override void _Ready()
 		    {
-		        Server.Listen(4242);
+		        _server.Listen(4242);
 		        var key = GD.Load&lt;CryptoKey&gt;("key.key"); // Your private key.
 		        var cert = GD.Load&lt;X509Certificate&gt;("cert.crt"); // Your X509 certificate.
-		        Dtls.Setup(key, cert);
+		        _dtls.Setup(key, cert);
 		    }
 
-		    public override void _Process(float delta)
+		    public override void _Process(double delta)
 		    {
 		        while (Server.IsConnectionAvailable())
 		        {
-		            PacketPeerUDP peer = Server.TakeConnection();
-		            PacketPeerDTLS dtlsPeer = Dtls.TakeConnection(peer);
-		            if (dtlsPeer.GetStatus() != PacketPeerDTLS.Status.Handshaking)
+		            PacketPeerUDP peer = _server.TakeConnection();
+		            PacketPeerDTLS dtlsPeer = _dtls.TakeConnection(peer);
+		            if (dtlsPeer.GetStatus() != PacketPeerDtls.Status.Handshaking)
 		            {
 		                continue; // It is normal that 50% of the connections fails due to cookie exchange.
 		            }
 		            GD.Print("Peer connected!");
-		            Peers.Add(dtlsPeer);
+		            _peers.Add(dtlsPeer);
 		        }
 
-		        foreach (var p in Peers)
+		        foreach (var p in _peers)
 		        {
 		            p.Poll(); // Must poll to update the state.
-		            if (p.GetStatus() == PacketPeerDTLS.Status.Connected)
+		            if (p.GetStatus() == PacketPeerDtls.Status.Connected)
 		            {
 		                while (p.GetAvailablePacketCount() &gt; 0)
 		                {
-		                    GD.Print("Received Message From Client: " + p.GetPacket().GetStringFromUTF8());
-		                    p.PutPacket("Hello Dtls Client".ToUTF8());
+		                    GD.Print($"Received Message From Client: {p.GetPacket().GetStringFromUtf8()}");
+		                    p.PutPacket("Hello DTLS Client".ToUtf8());
 		                }
 		            }
 		        }
@@ -108,34 +109,36 @@
 		            connected = true
 		[/gdscript]
 		[csharp]
+		// ClientNode.cs
 		using Godot;
 		using System.Text;
-		// ClientNode.cs
-		public class ClientNode : Node
+
+		public partial class ClientNode : Node
 		{
-		    public PacketPeerDTLS Dtls = new PacketPeerDTLS();
-		    public PacketPeerUDP Udp = new PacketPeerUDP();
-		    public bool Connected = false;
+		    private PacketPeerDtls _dtls = new PacketPeerDtls();
+		    private PacketPeerUdp _udp = new PacketPeerUdp();
+		    private bool _connected = false;
+
 		    public override void _Ready()
 		    {
-		        Udp.ConnectToHost("127.0.0.1", 4242);
-		        Dtls.ConnectToPeer(Udp, false); // Use true in production for certificate validation!
+		        _udp.ConnectToHost("127.0.0.1", 4242);
+		        _dtls.ConnectToPeer(_udp, validateCerts: false); // Use true in production for certificate validation!
 		    }
 
-		    public override void _Process(float delta)
+		    public override void _Process(double delta)
 		    {
-		        Dtls.Poll();
-		        if (Dtls.GetStatus() == PacketPeerDTLS.Status.Connected)
+		        _dtls.Poll();
+		        if (_dtls.GetStatus() == PacketPeerDtls.Status.Connected)
 		        {
-		            if (!Connected)
+		            if (!_connected)
 		            {
 		                // Try to contact server
-		                Dtls.PutPacket("The Answer Is..42!".ToUTF8());
+		                _dtls.PutPacket("The Answer Is..42!".ToUtf8());
 		            }
-		            while (Dtls.GetAvailablePacketCount() &gt; 0)
+		            while (_dtls.GetAvailablePacketCount() &gt; 0)
 		            {
-		                GD.Print("Connected: " + Dtls.GetPacket().GetStringFromUTF8());
-		                Connected = true;
+		                GD.Print($"Connected: {_dtls.GetPacket().GetStringFromUtf8()}");
+		                _connected = true;
 		            }
 		        }
 		    }
@@ -148,11 +151,9 @@
 	<methods>
 		<method name="setup">
 			<return type="int" enum="Error" />
-			<param index="0" name="key" type="CryptoKey" />
-			<param index="1" name="certificate" type="X509Certificate" />
-			<param index="2" name="chain" type="X509Certificate" default="null" />
+			<param index="0" name="server_options" type="TLSOptions" />
 			<description>
-				Setup the DTLS server to use the given [param key] and provide the given [param certificate] to clients. You can pass the optional [param chain] parameter to provide additional CA chain information along with the certificate.
+				Setup the DTLS server to use the given [param server_options]. See [method TLSOptions.server].
 			</description>
 		</method>
 		<method name="take_connection">

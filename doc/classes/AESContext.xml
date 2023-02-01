@@ -39,39 +39,38 @@
 		[/gdscript]
 		[csharp]
 		using Godot;
-		using System;
 		using System.Diagnostics;
 
-		public class Example : Node
+		public partial class MyNode : Node
 		{
-		    public AESContext Aes = new AESContext();
+		    private AesContext _aes = new AesContext();
 
 		    public override void _Ready()
 		    {
 		        string key = "My secret key!!!"; // Key must be either 16 or 32 bytes.
 		        string data = "My secret text!!"; // Data size must be multiple of 16 bytes, apply padding if needed.
 		        // Encrypt ECB
-		        Aes.Start(AESContext.Mode.EcbEncrypt, key.ToUTF8());
-		        byte[] encrypted = Aes.Update(data.ToUTF8());
-		        Aes.Finish();
+		        _aes.Start(AesContext.Mode.EcbEncrypt, key.ToUtf8());
+		        byte[] encrypted = _aes.Update(data.ToUtf8());
+		        _aes.Finish();
 		        // Decrypt ECB
-		        Aes.Start(AESContext.Mode.EcbDecrypt, key.ToUTF8());
-		        byte[] decrypted = Aes.Update(encrypted);
-		        Aes.Finish();
+		        _aes.Start(AesContext.Mode.EcbDecrypt, key.ToUtf8());
+		        byte[] decrypted = _aes.Update(encrypted);
+		        _aes.Finish();
 		        // Check ECB
-		        Debug.Assert(decrypted == data.ToUTF8());
+		        Debug.Assert(decrypted == data.ToUtf8());
 
 		        string iv = "My secret iv!!!!"; // IV must be of exactly 16 bytes.
 		        // Encrypt CBC
-		        Aes.Start(AESContext.Mode.EcbEncrypt, key.ToUTF8(), iv.ToUTF8());
-		        encrypted = Aes.Update(data.ToUTF8());
-		        Aes.Finish();
+		        _aes.Start(AesContext.Mode.EcbEncrypt, key.ToUtf8(), iv.ToUtf8());
+		        encrypted = _aes.Update(data.ToUtf8());
+		        _aes.Finish();
 		        // Decrypt CBC
-		        Aes.Start(AESContext.Mode.EcbDecrypt, key.ToUTF8(), iv.ToUTF8());
-		        decrypted = Aes.Update(encrypted);
-		        Aes.Finish();
+		        _aes.Start(AesContext.Mode.EcbDecrypt, key.ToUtf8(), iv.ToUtf8());
+		        decrypted = _aes.Update(encrypted);
+		        _aes.Finish();
 		        // Check CBC
-		        Debug.Assert(decrypted == data.ToUTF8());
+		        Debug.Assert(decrypted == data.ToUtf8());
 		    }
 		}
 		[/csharp]

@@ -88,7 +88,7 @@
 			</description>
 		</method>
 		<method name="_rename_dependencies" qualifiers="virtual const">
-			<return type="int" />
+			<return type="int" enum="Error" />
 			<param index="0" name="path" type="String" />
 			<param index="1" name="renames" type="Dictionary" />
 			<description>

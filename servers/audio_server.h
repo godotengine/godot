@@ -94,18 +94,18 @@ public:
 	virtual void start() = 0;
 	virtual int get_mix_rate() const = 0;
 	virtual SpeakerMode get_speaker_mode() const = 0;
-	virtual PackedStringArray get_device_list();
-	virtual String get_device();
-	virtual void set_device(String device) {}
+	virtual PackedStringArray get_output_device_list();
+	virtual String get_output_device();
+	virtual void set_output_device(String output_device) {}
 	virtual void lock() = 0;
 	virtual void unlock() = 0;
 	virtual void finish() = 0;
 
 	virtual Error capture_start() { return FAILED; }
 	virtual Error capture_stop() { return FAILED; }
-	virtual void capture_set_device(const String &p_name) {}
-	virtual String capture_get_device() { return "Default"; }
-	virtual PackedStringArray capture_get_device_list();
+	virtual void set_input_device(const String &p_name) {}
+	virtual String get_input_device() { return "Default"; }
+	virtual PackedStringArray get_input_device_list();
 
 	virtual float get_latency() { return 0; }
 
@@ -419,13 +419,13 @@ public:
 	void set_bus_layout(const Ref<AudioBusLayout> &p_bus_layout);
 	Ref<AudioBusLayout> generate_bus_layout() const;
 
-	PackedStringArray get_device_list();
-	String get_device();
-	void set_device(String device);
+	PackedStringArray get_output_device_list();
+	String get_output_device();
+	void set_output_device(String output_device);
 
-	PackedStringArray capture_get_device_list();
-	String capture_get_device();
-	void capture_set_device(const String &p_name);
+	PackedStringArray get_input_device_list();
+	String get_input_device();
+	void set_input_device(const String &p_name);
 
 	void set_enable_tagging_used_audio_streams(bool p_enable);
 

@@ -1271,7 +1271,13 @@
 		<method name="str" qualifiers="vararg">
 			<return type="String" />
 			<description>
-				Converts one or more arguments of any [Variant] type to [String] in the best way possible.
+				Converts one or more arguments of any [Variant] type to a [String] in the best way possible.
+				[codeblock]
+				var a = [10, 20, 30]
+				var b = str(a)
+				print(len(a)) # Prints 3 (the number of elements in the array).
+				print(len(b)) # Prints 12 (the length of the string "[10, 20, 30]").
+				[/codeblock]
 			</description>
 		</method>
 		<method name="str_to_var">
@@ -2647,7 +2653,7 @@
 			Additionally, other keywords can be included: [code]"exp"[/code] for exponential range editing, [code]"radians"[/code] for editing radian angles in degrees, [code]"degrees"[/code] to hint at an angle and [code]"hide_slider"[/code] to hide the slider.
 		</constant>
 		<constant name="PROPERTY_HINT_ENUM" value="2" enum="PropertyHint">
-			Hints that an [int], [float], or [String] property is an enumerated value to pick in a list specified via a hint string.
+			Hints that an [int] or [String] property is an enumerated value to pick in a list specified via a hint string.
 			The hint string is a comma separated list of names such as [code]"Hello,Something,Else"[/code]. Whitespaces are [b]not[/b] removed from either end of a name. For integer and float properties, the first name in the list has value 0, the next 1, and so on. Explicit values can also be specified by appending [code]:integer[/code] to the name, e.g. [code]"Zero,One,Three:3,Four,Six:6"[/code].
 		</constant>
 		<constant name="PROPERTY_HINT_ENUM_SUGGESTION" value="3" enum="PropertyHint">

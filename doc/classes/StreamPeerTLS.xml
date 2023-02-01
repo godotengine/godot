@@ -14,22 +14,18 @@
 		<method name="accept_stream">
 			<return type="int" enum="Error" />
 			<param index="0" name="stream" type="StreamPeer" />
-			<param index="1" name="private_key" type="CryptoKey" />
-			<param index="2" name="certificate" type="X509Certificate" />
-			<param index="3" name="chain" type="X509Certificate" default="null" />
+			<param index="1" name="server_options" type="TLSOptions" />
 			<description>
-				Accepts a peer connection as a server using the given [param private_key] and providing the given [param certificate] to the client. You can pass the optional [param chain] parameter to provide additional CA chain information along with the certificate.
+				Accepts a peer connection as a server using the given [param server_options]. See [method TLSOptions.server].
 			</description>
 		</method>
 		<method name="connect_to_stream">
 			<return type="int" enum="Error" />
 			<param index="0" name="stream" type="StreamPeer" />
-			<param index="1" name="validate_certs" type="bool" default="false" />
-			<param index="2" name="for_hostname" type="String" default="&quot;&quot;" />
-			<param index="3" name="valid_certificate" type="X509Certificate" default="null" />
+			<param index="1" name="common_name" type="String" />
+			<param index="2" name="client_options" type="TLSOptions" default="null" />
 			<description>
-				Connects to a peer using an underlying [StreamPeer] [param stream]. If [param validate_certs] is [code]true[/code], [StreamPeerTLS] will validate that the certificate presented by the peer matches the [param for_hostname].
-				[b]Note:[/b] Specifying a custom [param valid_certificate] is not supported in Web exports due to browsers restrictions.
+				Connects to a peer using an underlying [StreamPeer] [param stream] and verifying the remote certificate is correctly signed for the given [param common_name]. You can pass the optional [param client_options] parameter to customize the trusted certification authorities, or disable the common name verification. See [method TLSOptions.client] and [method TLSOptions.client_unsafe].
 			</description>
 		</method>
 		<method name="disconnect_from_stream">
@@ -57,10 +53,6 @@
 			</description>
 		</method>
 	</methods>
-	<members>
-		<member name="blocking_handshake" type="bool" setter="set_blocking_handshake_enabled" getter="is_blocking_handshake_enabled" default="true">
-		</member>
-	</members>
 	<constants>
 		<constant name="STATUS_DISCONNECTED" value="0" enum="Status">
 			A status representing a [StreamPeerTLS] that is disconnected.

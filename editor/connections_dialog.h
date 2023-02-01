@@ -172,6 +172,7 @@ public:
 	void set_dst_method(const StringName &p_method);
 	int get_unbinds() const;
 	Vector<Variant> get_binds() const;
+	String get_signature(const MethodInfo &p_method, PackedStringArray *r_arg_names = nullptr);
 
 	bool get_deferred() const;
 	bool get_one_shot() const;
@@ -179,7 +180,7 @@ public:
 
 	void init(const ConnectionData &p_cd, const PackedStringArray &p_signal_args, bool p_edit = false);
 
-	void popup_dialog(const String &p_for_signal);
+	void popup_dialog(const String p_for_signal);
 	ConnectDialog();
 	~ConnectDialog();
 };

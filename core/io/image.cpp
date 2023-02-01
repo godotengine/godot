@@ -78,6 +78,10 @@ const char *Image::format_names[Image::FORMAT_MAX] = {
 	"ETC2_RGB8A1",
 	"ETC2_RA_AS_RG",
 	"FORMAT_DXT5_RA_AS_RG",
+	"ASTC_4x4",
+	"ASTC_4x4_HDR",
+	"ASTC_8x8",
+	"ASTC_8x8_HDR",
 };
 
 SavePNGFunc Image::save_png_func = nullptr;
@@ -2187,16 +2191,16 @@ void Image::initialize_data(int p_width, int p_height, bool p_use_mipmaps, Forma
 	int size = _get_dst_image_size(p_width, p_height, p_format, mm, p_use_mipmaps ? -1 : 0);
 
 	if (unlikely(p_data.size() != size)) {
-		String description_mipmaps;
+		String description_mipmaps = get_format_name(p_format) + " ";
 		if (p_use_mipmaps) {
 			const int num_mipmaps = get_image_required_mipmaps(p_width, p_height, p_format);
 			if (num_mipmaps != 1) {
-				description_mipmaps = vformat("with %d mipmaps", num_mipmaps);
+				description_mipmaps += vformat("with %d mipmaps", num_mipmaps);
 			} else {
-				description_mipmaps = "with 1 mipmap";
+				description_mipmaps += "with 1 mipmap";
 			}
 		} else {
-			description_mipmaps = "without mipmaps";
+			description_mipmaps += "without mipmaps";
 		}
 		const String description = vformat("%dx%dx%d (%s)", p_width, p_height, get_format_pixel_size(p_format), description_mipmaps);
 		ERR_FAIL_MSG(vformat("Expected Image data size of %s = %d bytes, got %d bytes instead.", description, size, p_data.size()));
@@ -2618,35 +2622,35 @@ Error Image::decompress() {
 	return OK;
 }
 
-Error Image::compress(CompressMode p_mode, CompressSource p_source, float p_lossy_quality, ASTCFormat p_astc_format) {
+Error Image::compress(CompressMode p_mode, CompressSource p_source, ASTCFormat p_astc_format) {
 	ERR_FAIL_INDEX_V_MSG(p_mode, COMPRESS_MAX, ERR_INVALID_PARAMETER, "Invalid compress mode.");
 	ERR_FAIL_INDEX_V_MSG(p_source, COMPRESS_SOURCE_MAX, ERR_INVALID_PARAMETER, "Invalid compress source.");
-	return compress_from_channels(p_mode, detect_used_channels(p_source), p_lossy_quality, p_astc_format);
+	return compress_from_channels(p_mode, detect_used_channels(p_source), p_astc_format);
 }
 
-Error Image::compress_from_channels(CompressMode p_mode, UsedChannels p_channels, float p_lossy_quality, ASTCFormat p_astc_format) {
+Error Image::compress_from_channels(CompressMode p_mode, UsedChannels p_channels, ASTCFormat p_astc_format) {
 	ERR_FAIL_COND_V(data.is_empty(), ERR_INVALID_DATA);
 
 	switch (p_mode) {
 		case COMPRESS_S3TC: {
 			ERR_FAIL_COND_V(!_image_compress_bc_func, ERR_UNAVAILABLE);
-			_image_compress_bc_func(this, p_lossy_quality, p_channels);
+			_image_compress_bc_func(this, p_channels);
 		} break;
 		case COMPRESS_ETC: {
 			ERR_FAIL_COND_V(!_image_compress_etc1_func, ERR_UNAVAILABLE);
-			_image_compress_etc1_func(this, p_lossy_quality);
+			_image_compress_etc1_func(this);
 		} break;
 		case COMPRESS_ETC2: {
 			ERR_FAIL_COND_V(!_image_compress_etc2_func, ERR_UNAVAILABLE);
-			_image_compress_etc2_func(this, p_lossy_quality, p_channels);
+			_image_compress_etc2_func(this, p_channels);
 		} break;
 		case COMPRESS_BPTC: {
 			ERR_FAIL_COND_V(!_image_compress_bptc_func, ERR_UNAVAILABLE);
-			_image_compress_bptc_func(this, p_lossy_quality, p_channels);
+			_image_compress_bptc_func(this, p_channels);
 		} break;
 		case COMPRESS_ASTC: {
 			ERR_FAIL_COND_V(!_image_compress_bptc_func, ERR_UNAVAILABLE);
-			_image_compress_astc_func(this, p_lossy_quality, p_astc_format);
+			_image_compress_astc_func(this, p_astc_format);
 		} break;
 		case COMPRESS_MAX: {
 			ERR_FAIL_V(ERR_INVALID_PARAMETER);
@@ -3000,11 +3004,11 @@ ImageMemLoadFunc Image::_webp_mem_loader_func = nullptr;
 ImageMemLoadFunc Image::_tga_mem_loader_func = nullptr;
 ImageMemLoadFunc Image::_bmp_mem_loader_func = nullptr;
 
-void (*Image::_image_compress_bc_func)(Image *, float, Image::UsedChannels) = nullptr;
-void (*Image::_image_compress_bptc_func)(Image *, float, Image::UsedChannels) = nullptr;
-void (*Image::_image_compress_etc1_func)(Image *, float) = nullptr;
-void (*Image::_image_compress_etc2_func)(Image *, float, Image::UsedChannels) = nullptr;
-void (*Image::_image_compress_astc_func)(Image *, float, Image::ASTCFormat) = nullptr;
+void (*Image::_image_compress_bc_func)(Image *, Image::UsedChannels) = nullptr;
+void (*Image::_image_compress_bptc_func)(Image *, Image::UsedChannels) = nullptr;
+void (*Image::_image_compress_etc1_func)(Image *) = nullptr;
+void (*Image::_image_compress_etc2_func)(Image *, Image::UsedChannels) = nullptr;
+void (*Image::_image_compress_astc_func)(Image *, Image::ASTCFormat) = nullptr;
 void (*Image::_image_decompress_bc)(Image *) = nullptr;
 void (*Image::_image_decompress_bptc)(Image *) = nullptr;
 void (*Image::_image_decompress_etc1)(Image *) = nullptr;
@@ -3426,8 +3430,8 @@ void Image::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_invisible"), &Image::is_invisible);
 
 	ClassDB::bind_method(D_METHOD("detect_used_channels", "source"), &Image::detect_used_channels, DEFVAL(COMPRESS_SOURCE_GENERIC));
-	ClassDB::bind_method(D_METHOD("compress", "mode", "source", "lossy_quality", "astc_format"), &Image::compress, DEFVAL(COMPRESS_SOURCE_GENERIC), DEFVAL(0.7), DEFVAL(ASTC_FORMAT_4x4));
-	ClassDB::bind_method(D_METHOD("compress_from_channels", "mode", "channels", "lossy_quality", "astc_format"), &Image::compress_from_channels, DEFVAL(0.7), DEFVAL(ASTC_FORMAT_4x4));
+	ClassDB::bind_method(D_METHOD("compress", "mode", "source", "astc_format"), &Image::compress, DEFVAL(COMPRESS_SOURCE_GENERIC), DEFVAL(ASTC_FORMAT_4x4));
+	ClassDB::bind_method(D_METHOD("compress_from_channels", "mode", "channels", "astc_format"), &Image::compress_from_channels, DEFVAL(ASTC_FORMAT_4x4));
 	ClassDB::bind_method(D_METHOD("decompress"), &Image::decompress);
 	ClassDB::bind_method(D_METHOD("is_compressed"), &Image::is_compressed);
 
@@ -3547,11 +3551,11 @@ void Image::_bind_methods() {
 	BIND_ENUM_CONSTANT(ASTC_FORMAT_8x8);
 }
 
-void Image::set_compress_bc_func(void (*p_compress_func)(Image *, float, UsedChannels)) {
+void Image::set_compress_bc_func(void (*p_compress_func)(Image *, UsedChannels)) {
 	_image_compress_bc_func = p_compress_func;
 }
 
-void Image::set_compress_bptc_func(void (*p_compress_func)(Image *, float, UsedChannels)) {
+void Image::set_compress_bptc_func(void (*p_compress_func)(Image *, UsedChannels)) {
 	_image_compress_bptc_func = p_compress_func;
 }
 

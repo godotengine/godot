@@ -317,7 +317,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				text += " = ";
 				text += DADDR(2);
 
-				incr += 3;
+				incr += 6;
 			} break;
 			case OPCODE_ASSIGN_TYPED_NATIVE: {
 				text += "assign typed native (";
@@ -434,7 +434,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 				int instr_var_args = _code_ptr[++ip];
 				int argc = _code_ptr[ip + 1 + instr_var_args];
 
-				Ref<Script> script_type = get_constant(_code_ptr[ip + argc + 2]);
+				Ref<Script> script_type = get_constant(_code_ptr[ip + argc + 2] & GDScriptFunction::ADDR_MASK);
 				Variant::Type builtin_type = (Variant::Type)_code_ptr[ip + argc + 4];
 				StringName native_type = get_global_name(_code_ptr[ip + argc + 5]);
 
@@ -463,7 +463,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				text += "]";
 
-				incr += 3 + argc;
+				incr += 6 + argc;
 			} break;
 			case OPCODE_CONSTRUCT_DICTIONARY: {
 				int instr_var_args = _code_ptr[++ip];

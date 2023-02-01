@@ -1591,6 +1591,11 @@ void EditorFileSystem::_update_script_classes() {
 void EditorFileSystem::_update_pending_script_classes() {
 	if (!update_script_paths.is_empty()) {
 		_update_script_classes();
+	} else {
+		// In case the class cache file was removed somehow, regenerate it.
+		if (!FileAccess::exists(ScriptServer::get_global_class_cache_file_path())) {
+			ScriptServer::save_global_classes();
+		}
 	}
 }
 

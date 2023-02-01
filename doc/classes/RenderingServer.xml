@@ -4,10 +4,10 @@
 		Server for anything visible.
 	</brief_description>
 	<description>
-		Server for anything visible. The rendering server is the API backend for everything visible. The whole scene system mounts on it to display.
+		The rendering server is the API backend for everything visible. The whole scene system mounts on it to display.
 		The rendering server is completely opaque, the internals are entirely implementation specific and cannot be accessed.
-		The rendering server can be used to bypass the scene system entirely.
-		Resources are created using the [code]*_create[/code] functions.
+		The rendering server can be used to bypass the scene/[Node] system entirely.
+		Resources are created using the [code]*_create[/code] functions. These functions return [RID]s which are not references to the objects themselves, but opaque [i]pointers[/i] towards these objects.
 		All objects are drawn to a viewport. You can use the [Viewport] attached to the [SceneTree] or you can create one yourself with [method viewport_create]. When using a custom scenario or canvas, the scenario or canvas needs to be attached to the viewport using [method viewport_set_scenario] or [method viewport_attach_canvas].
 		In 3D, all visual objects must be associated with a scenario. The scenario is a visual representation of the world. If accessing the rendering server from a running game, the scenario can be accessed from the scene tree from any [Node3D] node with [method Node3D.get_world_3d]. Otherwise, a scenario can be created with [method scenario_create].
 		Similarly, in 2D, a canvas is needed to draw all canvas items.
@@ -25,6 +25,7 @@
 			<param index="1" name="material_overrides" type="RID[]" />
 			<param index="2" name="image_size" type="Vector2i" />
 			<description>
+				Bakes the material data of the Mesh passed in the [param base] parameter with optional [param material_overrides] to a set of [Image]s of size [param image_size]. Returns an array of [Image]s containing material properties as specified in [enum BakeChannels].
 			</description>
 		</method>
 		<method name="camera_attributes_create">
@@ -43,6 +44,7 @@
 			<param index="4" name="speed" type="float" />
 			<param index="5" name="scale" type="float" />
 			<description>
+				Sets the parameters to use with the auto-exposure effect. These parameters take on the same meaning as their counterparts in [CameraAttributes] and [CameraAttributesPractical].
 			</description>
 		</method>
 		<method name="camera_attributes_set_dof_blur">
@@ -56,12 +58,14 @@
 			<param index="6" name="near_transition" type="float" />
 			<param index="7" name="amount" type="float" />
 			<description>
+				Sets the parameters to use with the DOF blur effect. These parameters take on the same meaning as their counterparts in [CameraAttributesPractical].
 			</description>
 		</method>
 		<method name="camera_attributes_set_dof_blur_bokeh_shape">
 			<return type="void" />
 			<param index="0" name="shape" type="int" enum="RenderingServer.DOFBokehShape" />
 			<description>
+				Sets the shape of the DOF bokeh pattern. Different shapes may be used to achieve artistic effect, or to meet performance targets. For more detail on available options see [enum DOFBokehShape].
 			</description>
 		</method>
 		<method name="camera_attributes_set_dof_blur_quality">
@@ -69,6 +73,7 @@
 			<param index="0" name="quality" type="int" enum="RenderingServer.DOFBlurQuality" />
 			<param index="1" name="use_jitter" type="bool" />
 			<description>
+				Sets the quality level of the DOF blur effect to one of the options in [enum DOFBlurQuality]. [param use_jitter] can be used to jitter samples taken during the blur pass to hide artifacts at the cost of looking more fuzzy.
 			</description>
 		</method>
 		<method name="camera_attributes_set_exposure">
@@ -102,6 +107,7 @@
 			<param index="0" name="camera" type="RID" />
 			<param index="1" name="effects" type="RID" />
 			<description>
+				Sets the camera_attributes created with [method camera_attributes_create] to the given camera.
 			</description>
 		</method>
 		<method name="camera_set_cull_mask">
@@ -192,6 +198,7 @@
 			<param index="2" name="radius" type="float" />
 			<param index="3" name="color" type="Color" />
 			<description>
+				Draws a circle on the [CanvasItem] pointed to by the [param item] [RID]. See also [method CanvasItem.draw_circle].
 			</description>
 		</method>
 		<method name="canvas_item_add_clip_ignore">
@@ -199,6 +206,7 @@
 			<param index="0" name="item" type="RID" />
 			<param index="1" name="ignore" type="bool" />
 			<description>
+				If [param ignore] is [code]true[/code], ignore clipping on items drawn with this canvas item until this is called again with [param ignore] set to false.
 			</description>
 		</method>
 		<method name="canvas_item_add_lcd_texture_rect_region">
@@ -209,6 +217,7 @@
 			<param index="3" name="src_rect" type="Rect2" />
 			<param index="4" name="modulate" type="Color" />
 			<description>
+				See also [method CanvasItem.draw_lcd_texture_rect_region].
 			</description>
 		</method>
 		<method name="canvas_item_add_line">
@@ -220,6 +229,7 @@
 			<param index="4" name="width" type="float" default="-1.0" />
 			<param index="5" name="antialiased" type="bool" default="false" />
 			<description>
+				Draws a line on the [CanvasItem] pointed to by the [param item] [RID]. See also [method CanvasItem.draw_line].
 			</description>
 		</method>
 		<method name="canvas_item_add_mesh">
@@ -230,6 +240,7 @@
 			<param index="3" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
 			<param index="4" name="texture" type="RID" />
 			<description>
+				Draws a mesh created with [method mesh_create] with given [param transform], [param modulate] color, and [param texture]. This is used internally by [MeshInstance2D].
 			</description>
 		</method>
 		<method name="canvas_item_add_msdf_texture_rect_region">
@@ -243,6 +254,7 @@
 			<param index="6" name="px_range" type="float" default="1.0" />
 			<param index="7" name="scale" type="float" default="1.0" />
 			<description>
+				See also [method CanvasItem.draw_msdf_texture_rect_region].
 			</description>
 		</method>
 		<method name="canvas_item_add_multimesh">
@@ -251,6 +263,7 @@
 			<param index="1" name="mesh" type="RID" />
 			<param index="2" name="texture" type="RID" />
 			<description>
+				Draws a 2D [MultiMesh] on the [CanvasItem] pointed to by the [param item] [RID]. See also [method CanvasItem.draw_multimesh].
 			</description>
 		</method>
 		<method name="canvas_item_add_nine_patch">
@@ -266,6 +279,7 @@
 			<param index="8" name="draw_center" type="bool" default="true" />
 			<param index="9" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
 			<description>
+				Draws a nine-patch rectangle on the [CanvasItem] pointed to by the [param item] [RID].
 			</description>
 		</method>
 		<method name="canvas_item_add_particles">
@@ -274,6 +288,7 @@
 			<param index="1" name="particles" type="RID" />
 			<param index="2" name="texture" type="RID" />
 			<description>
+				Draws particles on the [CanvasItem] pointed to by the [param item] [RID].
 			</description>
 		</method>
 		<method name="canvas_item_add_polygon">
@@ -284,6 +299,7 @@
 			<param index="3" name="uvs" type="PackedVector2Array" default="PackedVector2Array()" />
 			<param index="4" name="texture" type="RID" />
 			<description>
+				Draws a 2D polygon on the [CanvasItem] pointed to by the [param item] [RID]. See also [method CanvasItem.draw_polygon].
 			</description>
 		</method>
 		<method name="canvas_item_add_polyline">
@@ -294,6 +310,7 @@
 			<param index="3" name="width" type="float" default="-1.0" />
 			<param index="4" name="antialiased" type="bool" default="false" />
 			<description>
+				Draws a 2D polyline on the [CanvasItem] pointed to by the [param item] [RID]. See also [method CanvasItem.draw_polyline].
 			</description>
 		</method>
 		<method name="canvas_item_add_primitive">
@@ -304,6 +321,7 @@
 			<param index="3" name="uvs" type="PackedVector2Array" />
 			<param index="4" name="texture" type="RID" />
 			<description>
+				Draws a 2D primitive on the [CanvasItem] pointed to by the [param item] [RID]. See also [method CanvasItem.draw_primitive].
 			</description>
 		</method>
 		<method name="canvas_item_add_rect">
@@ -312,6 +330,7 @@
 			<param index="1" name="rect" type="Rect2" />
 			<param index="2" name="color" type="Color" />
 			<description>
+				Draws a rectangle on the [CanvasItem] pointed to by the [param item] [RID]. See also [method CanvasItem.draw_rect].
 			</description>
 		</method>
 		<method name="canvas_item_add_set_transform">
@@ -319,6 +338,7 @@
 			<param index="0" name="item" type="RID" />
 			<param index="1" name="transform" type="Transform2D" />
 			<description>
+				Sets a [Transform2D] that will be used to transform subsequent canvas item commands.
 			</description>
 		</method>
 		<method name="canvas_item_add_texture_rect">
@@ -368,6 +388,7 @@
 		<method name="canvas_item_create">
 			<return type="RID" />
 			<description>
+				Creates a new [CanvasItem] instance and returns its [RID].
 			</description>
 		</method>
 		<method name="canvas_item_set_canvas_group_mode">
@@ -877,13 +898,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="decal_set_extents">
-			<return type="void" />
-			<param index="0" name="decal" type="RID" />
-			<param index="1" name="extents" type="Vector3" />
-			<description>
-			</description>
-		</method>
 		<method name="decal_set_fade">
 			<return type="void" />
 			<param index="0" name="decal" type="RID" />
@@ -903,6 +917,13 @@
 			<return type="void" />
 			<param index="0" name="decal" type="RID" />
 			<param index="1" name="fade" type="float" />
+			<description>
+			</description>
+		</method>
+		<method name="decal_set_size">
+			<return type="void" />
+			<param index="0" name="decal" type="RID" />
+			<param index="1" name="size" type="Vector3" />
 			<description>
 			</description>
 		</method>
@@ -1218,14 +1239,6 @@
 				Creates a new fog volume and allocates an RID.
 			</description>
 		</method>
-		<method name="fog_volume_set_extents">
-			<return type="void" />
-			<param index="0" name="fog_volume" type="RID" />
-			<param index="1" name="extents" type="Vector3" />
-			<description>
-				Sets the size of the fog volume when shape is [constant RenderingServer.FOG_VOLUME_SHAPE_ELLIPSOID], [constant RenderingServer.FOG_VOLUME_SHAPE_CONE], [constant RenderingServer.FOG_VOLUME_SHAPE_CYLINDER] or [constant RenderingServer.FOG_VOLUME_SHAPE_BOX].
-			</description>
-		</method>
 		<method name="fog_volume_set_material">
 			<return type="void" />
 			<param index="0" name="fog_volume" type="RID" />
@@ -1240,6 +1253,14 @@
 			<param index="1" name="shape" type="int" enum="RenderingServer.FogVolumeShape" />
 			<description>
 				Sets the shape of the fog volume to either [constant RenderingServer.FOG_VOLUME_SHAPE_ELLIPSOID], [constant RenderingServer.FOG_VOLUME_SHAPE_CONE], [constant RenderingServer.FOG_VOLUME_SHAPE_CYLINDER], [constant RenderingServer.FOG_VOLUME_SHAPE_BOX] or [constant RenderingServer.FOG_VOLUME_SHAPE_WORLD].
+			</description>
+		</method>
+		<method name="fog_volume_set_size">
+			<return type="void" />
+			<param index="0" name="fog_volume" type="RID" />
+			<param index="1" name="size" type="Vector3" />
+			<description>
+				Sets the size of the fog volume when shape is [constant RenderingServer.FOG_VOLUME_SHAPE_ELLIPSOID], [constant RenderingServer.FOG_VOLUME_SHAPE_CONE], [constant RenderingServer.FOG_VOLUME_SHAPE_CYLINDER] or [constant RenderingServer.FOG_VOLUME_SHAPE_BOX].
 			</description>
 		</method>
 		<method name="force_draw">
@@ -1792,6 +1813,7 @@
 		<method name="lightmap_create">
 			<return type="RID" />
 			<description>
+				Creates a new [LightmapGI] instance.
 			</description>
 		</method>
 		<method name="lightmap_get_probe_capture_bsp_tree" qualifiers="const">
@@ -2655,14 +2677,6 @@
 				If [code]true[/code], computes shadows in the reflection probe. This makes the reflection much slower to compute. Equivalent to [member ReflectionProbe.enable_shadows].
 			</description>
 		</method>
-		<method name="reflection_probe_set_extents">
-			<return type="void" />
-			<param index="0" name="probe" type="RID" />
-			<param index="1" name="extents" type="Vector3" />
-			<description>
-				Sets the size of the area that the reflection probe will capture. Equivalent to [member ReflectionProbe.extents].
-			</description>
-		</method>
 		<method name="reflection_probe_set_intensity">
 			<return type="void" />
 			<param index="0" name="probe" type="RID" />
@@ -2699,6 +2713,14 @@
 			<param index="0" name="probe" type="RID" />
 			<param index="1" name="resolution" type="int" />
 			<description>
+			</description>
+		</method>
+		<method name="reflection_probe_set_size">
+			<return type="void" />
+			<param index="0" name="probe" type="RID" />
+			<param index="1" name="size" type="Vector3" />
+			<description>
+				Sets the size of the area that the reflection probe will capture. Equivalent to [member ReflectionProbe.size].
 			</description>
 		</method>
 		<method name="reflection_probe_set_update_mode">
@@ -3245,12 +3267,12 @@
 			<description>
 			</description>
 		</method>
-		<method name="viewport_set_disable_environment">
+		<method name="viewport_set_environment_mode">
 			<return type="void" />
 			<param index="0" name="viewport" type="RID" />
-			<param index="1" name="disabled" type="bool" />
+			<param index="1" name="mode" type="int" enum="RenderingServer.ViewportEnvironmentMode" />
 			<description>
-				If [code]true[/code], rendering of a viewport's environment is disabled.
+				Sets the viewport's environment mode which allows enabling or disabling rendering of 3D environment over 2D canvas. When disabled, 2D will not be affected by the environment. When enabled, 2D will be affected by the environment if the environment background mode is [constant ENV_BG_CANVAS]. The default behavior is to inherit the setting from the viewport's parent. If the topmost parent is also set to [constant VIEWPORT_ENVIRONMENT_INHERIT], then the behavior will be the same as if it was set to [constant VIEWPORT_ENVIRONMENT_ENABLED].
 			</description>
 		</method>
 		<method name="viewport_set_fsr_sharpness">
@@ -4091,10 +4113,10 @@
 			[FogVolume] will be shaped like an ellipsoid (stretched sphere).
 		</constant>
 		<constant name="FOG_VOLUME_SHAPE_CONE" value="1" enum="FogVolumeShape">
-			[FogVolume] will be shaped like a cone pointing upwards (in local coordinates). The cone's angle is set automatically to fill the extents. The cone will be adjusted to fit within the extents. Rotate the [FogVolume] node to reorient the cone. Non-uniform scaling via extents is not supported (scale the [FogVolume] node instead).
+			[FogVolume] will be shaped like a cone pointing upwards (in local coordinates). The cone's angle is set automatically to fill the size. The cone will be adjusted to fit within the size. Rotate the [FogVolume] node to reorient the cone. Non-uniform scaling via size is not supported (scale the [FogVolume] node instead).
 		</constant>
 		<constant name="FOG_VOLUME_SHAPE_CYLINDER" value="2" enum="FogVolumeShape">
-			[FogVolume] will be shaped like an upright cylinder (in local coordinates). Rotate the [FogVolume] node to reorient the cylinder. The cylinder will be adjusted to fit within the extents. Non-uniform scaling via extents is not supported (scale the [FogVolume] node instead).
+			[FogVolume] will be shaped like an upright cylinder (in local coordinates). Rotate the [FogVolume] node to reorient the cylinder. The cylinder will be adjusted to fit within the size. Non-uniform scaling via size is not supported (scale the [FogVolume] node instead).
 		</constant>
 		<constant name="FOG_VOLUME_SHAPE_BOX" value="3" enum="FogVolumeShape">
 			[FogVolume] will be shaped like a box.
@@ -4134,6 +4156,18 @@
 		</constant>
 		<constant name="VIEWPORT_CLEAR_ONLY_NEXT_FRAME" value="2" enum="ViewportClearMode">
 			The viewport is cleared once, then the clear mode is set to [constant VIEWPORT_CLEAR_NEVER].
+		</constant>
+		<constant name="VIEWPORT_ENVIRONMENT_DISABLED" value="0" enum="ViewportEnvironmentMode">
+			Disable rendering of 3D environment over 2D canvas.
+		</constant>
+		<constant name="VIEWPORT_ENVIRONMENT_ENABLED" value="1" enum="ViewportEnvironmentMode">
+			Enable rendering of 3D environment over 2D canvas.
+		</constant>
+		<constant name="VIEWPORT_ENVIRONMENT_INHERIT" value="2" enum="ViewportEnvironmentMode">
+			Inherit enable/disable value from parent. If topmost parent is also set to inherit, then this has the same behavior as [constant VIEWPORT_ENVIRONMENT_ENABLED].
+		</constant>
+		<constant name="VIEWPORT_ENVIRONMENT_MAX" value="3" enum="ViewportEnvironmentMode">
+			Max value of [enum ViewportEnvironmentMode] enum.
 		</constant>
 		<constant name="VIEWPORT_SDF_OVERSIZE_100_PERCENT" value="0" enum="ViewportSDFOversize">
 		</constant>
@@ -4553,12 +4587,16 @@
 			Fade-in the given instance's dependencies when reaching its visibility range limits.
 		</constant>
 		<constant name="BAKE_CHANNEL_ALBEDO_ALPHA" value="0" enum="BakeChannels">
+			Index of [Image] in array of [Image]s returned by [method bake_render_uv2]. Image uses [constant Image.FORMAT_RGBA8] and contains albedo color in the [code].rgb[/code] channels and alpha in the [code].a[/code] channel.
 		</constant>
 		<constant name="BAKE_CHANNEL_NORMAL" value="1" enum="BakeChannels">
+			Index of [Image] in array of [Image]s returned by [method bake_render_uv2]. Image uses [constant Image.FORMAT_RGBA8] and contains the per-pixel normal of the object in the [code].rgb[/code] channels and nothing in the [code].a[/code] channel. The per-pixel normal is encoded as [code]normal * 0.5 + 0.5[/code].
 		</constant>
 		<constant name="BAKE_CHANNEL_ORM" value="2" enum="BakeChannels">
+			Index of [Image] in array of [Image]s returned by [method bake_render_uv2]. Image uses [constant Image.FORMAT_RGBA8] and contains ambient occlusion (from material and decals only) in the [code].r[/code] channel, roughness in the [code].g[/code] channel, metallic in the [code].b[/code] channel and sub surface scattering amount in the [code].a[/code] channel.
 		</constant>
 		<constant name="BAKE_CHANNEL_EMISSION" value="3" enum="BakeChannels">
+			Index of [Image] in array of [Image]s returned by [method bake_render_uv2]. Image uses [constant Image.FORMAT_RGBAH] and contains emission color in the [code].rgb[/code] channels and nothing in the [code].a[/code] channel.
 		</constant>
 		<constant name="CANVAS_TEXTURE_CHANNEL_DIFFUSE" value="0" enum="CanvasTextureChannel">
 		</constant>

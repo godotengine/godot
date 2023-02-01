@@ -594,6 +594,50 @@ Ref<Image> TextureStorage::_get_gl_image_and_format(const Ref<Image> &p_image, I
 			}
 			decompress_ra_to_rg = true;
 		} break;
+		case Image::FORMAT_ASTC_4x4: {
+			if (config->astc_supported) {
+				r_gl_internal_format = _EXT_COMPRESSED_RGBA_ASTC_4x4_KHR;
+				r_gl_format = GL_RGBA;
+				r_gl_type = GL_UNSIGNED_BYTE;
+				r_compressed = true;
+
+			} else {
+				need_decompress = true;
+			}
+		} break;
+		case Image::FORMAT_ASTC_4x4_HDR: {
+			if (config->astc_hdr_supported) {
+				r_gl_internal_format = _EXT_COMPRESSED_RGBA_ASTC_4x4_KHR;
+				r_gl_format = GL_RGBA;
+				r_gl_type = GL_UNSIGNED_BYTE;
+				r_compressed = true;
+
+			} else {
+				need_decompress = true;
+			}
+		} break;
+		case Image::FORMAT_ASTC_8x8: {
+			if (config->astc_supported) {
+				r_gl_internal_format = _EXT_COMPRESSED_RGBA_ASTC_8x8_KHR;
+				r_gl_format = GL_RGBA;
+				r_gl_type = GL_UNSIGNED_BYTE;
+				r_compressed = true;
+
+			} else {
+				need_decompress = true;
+			}
+		} break;
+		case Image::FORMAT_ASTC_8x8_HDR: {
+			if (config->astc_hdr_supported) {
+				r_gl_internal_format = _EXT_COMPRESSED_RGBA_ASTC_8x8_KHR;
+				r_gl_format = GL_RGBA;
+				r_gl_type = GL_UNSIGNED_BYTE;
+				r_compressed = true;
+
+			} else {
+				need_decompress = true;
+			}
+		} break;
 		default: {
 			ERR_FAIL_V_MSG(Ref<Image>(), "Image Format: " + itos(p_format) + " is not supported by the OpenGL3 Renderer");
 		}
@@ -1503,7 +1547,7 @@ RID TextureStorage::decal_allocate() {
 void TextureStorage::decal_initialize(RID p_rid) {
 }
 
-void TextureStorage::decal_set_extents(RID p_decal, const Vector3 &p_extents) {
+void TextureStorage::decal_set_size(RID p_decal, const Vector3 &p_size) {
 }
 
 void TextureStorage::decal_set_texture(RID p_decal, RS::DecalTexture p_type, RID p_texture) {
@@ -1778,6 +1822,10 @@ void TextureStorage::_clear_render_target(RenderTarget *rt) {
 		rt->overridden.color = RID();
 	} else if (rt->color) {
 		glDeleteTextures(1, &rt->color);
+		if (rt->texture.is_valid()) {
+			Texture *tex = get_texture(rt->texture);
+			tex->tex_id = 0;
+		}
 	}
 	rt->color = 0;
 

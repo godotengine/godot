@@ -2316,71 +2316,51 @@ BaseMaterial3D::TextureChannel BaseMaterial3D::get_refraction_texture_channel() 
 	return refraction_texture_channel;
 }
 
-Ref<Material> BaseMaterial3D::get_material_for_2d(bool p_shaded, bool p_transparent, bool p_double_sided, bool p_cut_alpha, bool p_opaque_prepass, bool p_billboard, bool p_billboard_y, bool p_msdf, bool p_no_depth, bool p_fixed_size, TextureFilter p_filter, RID *r_shader_rid) {
-	int64_t hash = 0;
-	if (p_shaded) {
-		hash |= 1 << 0;
-	}
-	if (p_transparent) {
-		hash |= 1 << 1;
-	}
-	if (p_cut_alpha) {
-		hash |= 1 << 2;
-	}
-	if (p_opaque_prepass) {
-		hash |= 1 << 3;
-	}
-	if (p_double_sided) {
-		hash |= 1 << 4;
-	}
-	if (p_billboard) {
-		hash |= 1 << 5;
-	}
-	if (p_billboard_y) {
-		hash |= 1 << 6;
-	}
-	if (p_msdf) {
-		hash |= 1 << 7;
-	}
-	if (p_no_depth) {
-		hash |= 1 << 8;
-	}
-	if (p_fixed_size) {
-		hash |= 1 << 9;
-	}
-	hash = hash_murmur3_one_64(p_filter, hash);
+Ref<Material> BaseMaterial3D::get_material_for_2d(bool p_shaded, Transparency p_transparency, bool p_double_sided, bool p_billboard, bool p_billboard_y, bool p_msdf, bool p_no_depth, bool p_fixed_size, TextureFilter p_filter, AlphaAntiAliasing p_alpha_antialiasing_mode, RID *r_shader_rid) {
+	uint64_t key = 0;
+	key |= ((int8_t)p_shaded & 0x01) << 0;
+	key |= ((int8_t)p_transparency & 0x07) << 1; // Bits 1-3.
+	key |= ((int8_t)p_double_sided & 0x01) << 4;
+	key |= ((int8_t)p_billboard & 0x01) << 5;
+	key |= ((int8_t)p_billboard_y & 0x01) << 6;
+	key |= ((int8_t)p_msdf & 0x01) << 7;
+	key |= ((int8_t)p_no_depth & 0x01) << 8;
+	key |= ((int8_t)p_fixed_size & 0x01) << 9;
+	key |= ((int8_t)p_filter & 0x07) << 10; // Bits 10-12.
+	key |= ((int8_t)p_alpha_antialiasing_mode & 0x07) << 13; // Bits 13-15.
 
-	if (materials_for_2d.has(hash)) {
+	if (materials_for_2d.has(key)) {
 		if (r_shader_rid) {
-			*r_shader_rid = materials_for_2d[hash]->get_shader_rid();
+			*r_shader_rid = materials_for_2d[key]->get_shader_rid();
 		}
-		return materials_for_2d[hash];
+		return materials_for_2d[key];
 	}
 
 	Ref<StandardMaterial3D> material;
 	material.instantiate();
 
 	material->set_shading_mode(p_shaded ? SHADING_MODE_PER_PIXEL : SHADING_MODE_UNSHADED);
-	material->set_transparency(p_transparent ? (p_opaque_prepass ? TRANSPARENCY_ALPHA_DEPTH_PRE_PASS : (p_cut_alpha ? TRANSPARENCY_ALPHA_SCISSOR : TRANSPARENCY_ALPHA)) : TRANSPARENCY_DISABLED);
+	material->set_transparency(p_transparency);
 	material->set_cull_mode(p_double_sided ? CULL_DISABLED : CULL_BACK);
 	material->set_flag(FLAG_SRGB_VERTEX_COLOR, true);
 	material->set_flag(FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 	material->set_flag(FLAG_ALBEDO_TEXTURE_MSDF, p_msdf);
 	material->set_flag(FLAG_DISABLE_DEPTH_TEST, p_no_depth);
 	material->set_flag(FLAG_FIXED_SIZE, p_fixed_size);
+	material->set_alpha_antialiasing(p_alpha_antialiasing_mode);
 	material->set_texture_filter(p_filter);
 	if (p_billboard || p_billboard_y) {
 		material->set_flag(FLAG_BILLBOARD_KEEP_SCALE, true);
 		material->set_billboard_mode(p_billboard_y ? BILLBOARD_FIXED_Y : BILLBOARD_ENABLED);
 	}
 
-	materials_for_2d[hash] = material;
+	materials_for_2d[key] = material;
 
 	if (r_shader_rid) {
-		*r_shader_rid = materials_for_2d[hash]->get_shader_rid();
+		*r_shader_rid = materials_for_2d[key]->get_shader_rid();
 	}
 
-	return materials_for_2d[hash];
+	return materials_for_2d[key];
 }
 
 void BaseMaterial3D::set_on_top_of_alpha() {

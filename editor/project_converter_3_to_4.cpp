@@ -32,9 +32,10 @@
 
 #include "modules/modules_enabled.gen.h"
 
-const int ERROR_CODE = 77;
-
+#ifndef DISABLE_DEPRECATED
 #ifdef MODULE_REGEX_ENABLED
+
+const int ERROR_CODE = 77;
 
 #include "modules/regex/regex.h"
 
@@ -44,7 +45,7 @@ const int ERROR_CODE = 77;
 #include "core/templates/list.h"
 #include "core/templates/local_vector.h"
 
-static const char *enum_renames[][2] = {
+const char *ProjectConverter3To4::enum_renames[][2] = {
 	//// constants
 	{ "TYPE_COLOR_ARRAY", "TYPE_PACKED_COLOR_ARRAY" },
 	{ "TYPE_FLOAT64_ARRAY", "TYPE_PACKED_FLOAT64_ARRAY" },
@@ -164,7 +165,7 @@ static const char *enum_renames[][2] = {
 	{ nullptr, nullptr },
 };
 
-static const char *gdscript_function_renames[][2] = {
+const char *ProjectConverter3To4::gdscript_function_renames[][2] = {
 	// { "_set_name", "get_tracker_name"}, // XRPositionalTracker - CameraFeed use this
 	// { "_unhandled_input", "_unhandled_key_input"}, // BaseButton, ViewportContainer broke Node, FileDialog,SubViewportContainer
 	// { "create_gizmo", "_create_gizmo"}, // EditorNode3DGizmoPlugin - may be used
@@ -240,6 +241,9 @@ static const char *gdscript_function_renames[][2] = {
 	{ "can_generate_small_preview", "_can_generate_small_preview" }, // EditorResourcePreviewGenerator
 	{ "can_instance", "can_instantiate" }, // PackedScene, Script
 	{ "canvas_light_set_scale", "canvas_light_set_texture_scale" }, // RenderingServer
+	{ "capture_get_device", "get_input_device" }, // AudioServer
+	{ "capture_get_device_list", "get_input_device_list" }, // AudioServer
+	{ "capture_set_device", "set_input_device" }, // AudioServer
 	{ "center_viewport_to_cursor", "center_viewport_to_caret" }, // TextEdit
 	{ "change_scene", "change_scene_to_file" }, // SceneTree
 	{ "change_scene_to", "change_scene_to_packed" }, // SceneTree
@@ -300,6 +304,8 @@ static const char *gdscript_function_renames[][2] = {
 	{ "get_cursor_position", "get_caret_column" }, // LineEdit
 	{ "get_d", "get_distance" }, // LineShape2D
 	{ "get_depth_bias_enable", "get_depth_bias_enabled" }, // RDPipelineRasterizationState
+	{ "get_device", "get_output_device" }, // AudioServer
+	{ "get_device_list", "get_output_device_list" }, // AudioServer
 	{ "get_drag_data", "_get_drag_data" }, // Control
 	{ "get_editor_viewport", "get_editor_main_screen" }, // EditorPlugin
 	{ "get_enabled_focus_mode", "get_focus_mode" }, // BaseButton
@@ -311,8 +317,8 @@ static const char *gdscript_function_renames[][2] = {
 	{ "get_font_types", "get_font_type_list" }, // Theme
 	{ "get_frame_color", "get_color" }, // ColorRect
 	{ "get_global_rate_scale", "get_playback_speed_scale" }, // AudioServer
-	{ "get_gravity_distance_scale", "get_gravity_point_distance_scale" }, //Area2D
-	{ "get_gravity_vector", "get_gravity_direction" }, //Area2D
+	{ "get_gravity_distance_scale", "get_gravity_point_unit_distance" }, // Area(2D/3D)
+	{ "get_gravity_vector", "get_gravity_direction" }, // Area(2D/3D)
 	{ "get_h_scrollbar", "get_h_scroll_bar" }, //ScrollContainer
 	{ "get_hand", "get_tracker_hand" }, // XRPositionalTracker
 	{ "get_handle_name", "_get_handle_name" }, // EditorNode3DGizmo
@@ -498,6 +504,7 @@ static const char *gdscript_function_renames[][2] = {
 	{ "set_cursor_position", "set_caret_column" }, // LineEdit
 	{ "set_d", "set_distance" }, // WorldMarginShape2D
 	{ "set_depth_bias_enable", "set_depth_bias_enabled" }, // RDPipelineRasterizationState
+	{ "set_device", "set_output_device" }, // AudioServer
 	{ "set_doubleclick", "set_double_click" }, // InputEventMouseButton
 	{ "set_draw_red", "set_draw_warning" }, // EditorProperty
 	{ "set_enable_follow_smoothing", "set_position_smoothing_enabled" }, // Camera2D
@@ -509,8 +516,8 @@ static const char *gdscript_function_renames[][2] = {
 	{ "set_follow_smoothing", "set_position_smoothing_speed" }, // Camera2D
 	{ "set_frame_color", "set_color" }, // ColorRect
 	{ "set_global_rate_scale", "set_playback_speed_scale" }, // AudioServer
-	{ "set_gravity_distance_scale", "set_gravity_point_distance_scale" }, // Area2D
-	{ "set_gravity_vector", "set_gravity_direction" }, // Area2D
+	{ "set_gravity_distance_scale", "set_gravity_point_unit_distance" }, // Area(2D/3D)
+	{ "set_gravity_vector", "set_gravity_direction" }, // Area(2D/3D)
 	{ "set_h_drag_enabled", "set_drag_horizontal_enabled" }, // Camera2D
 	{ "set_icon_align", "set_icon_alignment" }, // Button
 	{ "set_interior_ambient", "set_ambient_color" }, // ReflectionProbe
@@ -619,7 +626,7 @@ static const char *gdscript_function_renames[][2] = {
 };
 
 // gdscript_function_renames clone with CamelCase
-static const char *csharp_function_renames[][2] = {
+const char *ProjectConverter3To4::csharp_function_renames[][2] = {
 	// { "_SetName", "GetTrackerName"}, // XRPositionalTracker - CameraFeed use this
 	// { "_UnhandledInput", "_UnhandledKeyInput"}, // BaseButton, ViewportContainer broke Node, FileDialog,SubViewportContainer
 	// { "CreateGizmo", "_CreateGizmo"}, // EditorNode3DGizmoPlugin - may be used
@@ -696,6 +703,9 @@ static const char *csharp_function_renames[][2] = {
 	{ "CanGenerateSmallPreview", "_CanGenerateSmallPreview" }, // EditorResourcePreviewGenerator
 	{ "CanInstance", "CanInstantiate" }, // PackedScene, Script
 	{ "CanvasLightSetScale", "CanvasLightSetTextureScale" }, // RenderingServer
+	{ "CaptureGetDevice", "GetInputDevice" }, // AudioServer
+	{ "CaptureGetDeviceList", "GetInputDeviceList" }, // AudioServer
+	{ "CaptureSetDevice", "SetInputDevice" }, // AudioServer
 	{ "CenterViewportToCursor", "CenterViewportToCaret" }, // TextEdit
 	{ "ChangeScene", "ChangeSceneToFile" }, // SceneTree
 	{ "ChangeSceneTo", "ChangeSceneToPacked" }, // SceneTree
@@ -753,6 +763,8 @@ static const char *csharp_function_renames[][2] = {
 	{ "GetCursorPosition", "GetCaretColumn" }, // LineEdit
 	{ "GetD", "GetDistance" }, // LineShape2D
 	{ "GetDepthBiasEnable", "GetDepthBiasEnabled" }, // RDPipelineRasterizationState
+	{ "GetDevice", "GetOutputDevice" }, // AudioServer
+	{ "GetDeviceList", "GetOutputDeviceList" }, // AudioServer
 	{ "GetDragDataFw", "_GetDragDataFw" }, // ScriptEditor
 	{ "GetEditorViewport", "GetViewport" }, // EditorPlugin
 	{ "GetEnabledFocusMode", "GetFocusMode" }, // BaseButton
@@ -941,6 +953,7 @@ static const char *csharp_function_renames[][2] = {
 	{ "SetCursorPosition", "SetCaretColumn" }, // LineEdit
 	{ "SetD", "SetDistance" }, // WorldMarginShape2D
 	{ "SetDepthBiasEnable", "SetDepthBiasEnabled" }, // RDPipelineRasterizationState
+	{ "SetDevice", "SetOutputDevice" }, // AudioServer
 	{ "SetDoubleclick", "SetDoubleClick" }, // InputEventMouseButton
 	{ "SetEnableFollowSmoothing", "SetFollowSmoothingEnabled" }, // Camera2D
 	{ "SetEnabledFocusMode", "SetFocusMode" }, // BaseButton
@@ -1056,7 +1069,7 @@ static const char *csharp_function_renames[][2] = {
 };
 
 // Some needs to be disabled, because users can use this names as variables
-static const char *gdscript_properties_renames[][2] = {
+const char *ProjectConverter3To4::gdscript_properties_renames[][2] = {
 	//	// { "d", "distance" }, //WorldMarginShape2D - TODO, looks that polish letters ą ę are treaten as space, not as letter, so `będą` are renamed to `będistanceą`
 	//	// {"alt","alt_pressed"}, // This may broke a lot of comments and user variables
 	//	// {"command","command_pressed"},// This may broke a lot of comments and user variables
@@ -1069,6 +1082,7 @@ static const char *gdscript_properties_renames[][2] = {
 	//	// {"shift","shift_pressed"},// This may broke a lot of comments and user variables
 	//	{ "autowrap", "autowrap_mode" }, // Label
 	//	{ "cast_to", "target_position" }, // RayCast2D, RayCast3D
+	//	{ "device", "output_device"}, // AudioServer - Too vague, most likely breaks comments & variables
 	//	{ "doubleclick", "double_click" }, // InputEventMouseButton
 	//	{ "group", "button_group" }, // BaseButton
 	//	{ "process_mode", "process_callback" }, // AnimationTree, Camera2D
@@ -1084,6 +1098,7 @@ static const char *gdscript_properties_renames[][2] = {
 	{ "bbcode_text", "text" }, // RichTextLabel
 	{ "bg", "panel" }, // Theme
 	{ "bg_focus", "focus" }, // Theme
+	{ "capture_device", "input_device" }, // AudioServer
 	{ "caret_blink_speed", "caret_blink_interval" }, // TextEdit, LineEdit
 	{ "caret_moving_by_right_click", "caret_move_on_right_click" }, // TextEdit
 	{ "caret_position", "caret_column" }, // LineEdit
@@ -1111,8 +1126,8 @@ static const char *gdscript_properties_renames[][2] = {
 	{ "files_disabled", "file_disabled_color" }, // Theme
 	{ "folder_icon_modulate", "folder_icon_color" }, // Theme
 	{ "global_rate_scale", "playback_speed_scale" }, // AudioServer
-	{ "gravity_distance_scale", "gravity_point_distance_scale" }, // Area2D
-	{ "gravity_vec", "gravity_direction" }, // Area2D
+	{ "gravity_distance_scale", "gravity_point_unit_distance" }, // Area(2D/3D)
+	{ "gravity_vec", "gravity_direction" }, // Area(2D/3D)
 	{ "hint_tooltip", "tooltip_text" }, // Control
 	{ "hseparation", "h_separation" }, // Theme
 	{ "icon_align", "icon_alignment" }, // Button
@@ -1173,7 +1188,7 @@ static const char *gdscript_properties_renames[][2] = {
 };
 
 // Some needs to be disabled, because users can use this names as variables
-static const char *csharp_properties_renames[][2] = {
+const char *ProjectConverter3To4::csharp_properties_renames[][2] = {
 	//	// { "D", "Distance" }, //WorldMarginShape2D - TODO, looks that polish letters ą ę are treaten as space, not as letter, so `będą` are renamed to `będistanceą`
 	//	// {"Alt","AltPressed"}, // This may broke a lot of comments and user variables
 	//	// {"Command","CommandPressed"},// This may broke a lot of comments and user variables
@@ -1278,7 +1293,7 @@ static const char *csharp_properties_renames[][2] = {
 	{ nullptr, nullptr },
 };
 
-static const char *gdscript_signals_renames[][2] = {
+const char *ProjectConverter3To4::gdscript_signals_renames[][2] = {
 	//  {"instantiate","instance"}, // FileSystemDock
 	// { "hide", "hidden" }, // CanvasItem - function with same name exists
 	// { "tween_all_completed","loop_finished"}, // Tween - TODO, not sure
@@ -1303,7 +1318,7 @@ static const char *gdscript_signals_renames[][2] = {
 	{ nullptr, nullptr },
 };
 
-static const char *csharp_signals_renames[][2] = {
+const char *ProjectConverter3To4::csharp_signals_renames[][2] = {
 	//  {"Instantiate","Instance"}, // FileSystemDock
 	// { "Hide", "Hidden" }, // CanvasItem - function with same name exists
 	// { "TweenAllCompleted","LoopFinished"}, // Tween - TODO, not sure
@@ -1327,7 +1342,7 @@ static const char *csharp_signals_renames[][2] = {
 
 };
 
-static const char *project_settings_renames[][2] = {
+const char *ProjectConverter3To4::project_settings_renames[][2] = {
 	{ "audio/channel_disable_threshold_db", "audio/buses/channel_disable_threshold_db" },
 	{ "audio/channel_disable_time", "audio/buses/channel_disable_time" },
 	{ "audio/default_bus_layout", "audio/buses/default_bus_layout" },
@@ -1362,11 +1377,8 @@ static const char *project_settings_renames[][2] = {
 	{ "rendering/quality/shadow_atlas/quadrant_3_subdiv", "rendering/lights_and_shadows/shadow_atlas/quadrant_3_subdiv" },
 	{ "rendering/quality/shadow_atlas/size", "rendering/lights_and_shadows/shadow_atlas/size" },
 	{ "rendering/quality/shadow_atlas/size.mobile", "rendering/lights_and_shadows/shadow_atlas/size.mobile" },
-	{ "rendering/vram_compression/import_bptc", "rendering/textures/vram_compression/import_bptc" },
-	{ "rendering/vram_compression/import_etc", "rendering/textures/vram_compression/import_etc" },
-	{ "rendering/vram_compression/import_etc2", "rendering/textures/vram_compression/import_etc2" },
-	{ "rendering/vram_compression/import_pvrtc", "rendering/textures/vram_compression/import_pvrtc" },
-	{ "rendering/vram_compression/import_s3tc", "rendering/textures/vram_compression/import_s3tc" },
+	{ "rendering/vram_compression/import_etc2", "rendering/textures/vram_compression/import_etc2_astc" },
+	{ "rendering/vram_compression/import_s3tc", "rendering/textures/vram_compression/import_s3tc_bptc" },
 	{ "window/size/width", "window/size/viewport_width" },
 	{ "window/size/height", "window/size/viewport_height" },
 	{ "window/size/test_width", "window/size/window_width_override" },
@@ -1375,7 +1387,7 @@ static const char *project_settings_renames[][2] = {
 	{ nullptr, nullptr },
 };
 
-static const char *input_map_renames[][2] = {
+const char *ProjectConverter3To4::input_map_renames[][2] = {
 	{ ",\"alt\":", ",\"alt_pressed\":" },
 	{ ",\"shift\":", ",\"shift_pressed\":" },
 	{ ",\"control\":", ",\"ctrl_pressed\":" },
@@ -1387,7 +1399,7 @@ static const char *input_map_renames[][2] = {
 	{ nullptr, nullptr },
 };
 
-static const char *builtin_types_renames[][2] = {
+const char *ProjectConverter3To4::builtin_types_renames[][2] = {
 	{ "PoolByteArray", "PackedByteArray" },
 	{ "PoolColorArray", "PackedColorArray" },
 	{ "PoolIntArray", "PackedInt32Array" },
@@ -1401,7 +1413,7 @@ static const char *builtin_types_renames[][2] = {
 	{ nullptr, nullptr },
 };
 
-static const char *shaders_renames[][2] = {
+const char *ProjectConverter3To4::shaders_renames[][2] = {
 	{ "ALPHA_SCISSOR", "ALPHA_SCISSOR_THRESHOLD" },
 	{ "CAMERA_MATRIX", "INV_VIEW_MATRIX" },
 	{ "INV_CAMERA_MATRIX", "VIEW_MATRIX" },
@@ -1419,7 +1431,7 @@ static const char *shaders_renames[][2] = {
 	{ nullptr, nullptr },
 };
 
-static const char *class_renames[][2] = {
+const char *ProjectConverter3To4::class_renames[][2] = {
 	// { "BulletPhysicsDirectBodyState", "BulletPhysicsDirectBodyState3D" }, // Class is not visible in ClassDB
 	// { "BulletPhysicsServer", "BulletPhysicsServer3D" }, // Class is not visible in ClassDB
 	// { "GDScriptFunctionState", "Node3D" }, // TODO - not sure to which should be changed
@@ -1644,7 +1656,7 @@ static const char *class_renames[][2] = {
 	{ nullptr, nullptr },
 };
 
-static const char *color_renames[][2] = {
+const char *ProjectConverter3To4::ProjectConverter3To4::color_renames[][2] = {
 	{ "aliceblue", "ALICE_BLUE" },
 	{ "antiquewhite", "ANTIQUE_WHITE" },
 	{ "aqua", "AQUA" },
@@ -4353,3 +4365,4 @@ int ProjectConverter3To4::validate_conversion() {
 }
 
 #endif // MODULE_REGEX_ENABLED
+#endif // DISABLE_DEPRECATED

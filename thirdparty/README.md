@@ -376,7 +376,7 @@ File extracted from upstream release tarball:
 ## meshoptimizer
 
 - Upstream: https://github.com/zeux/meshoptimizer
-- Version: git (ea4558d1c0f217f1d67ed7fe0b07896ece88ae18, 2022)
+- Version: git (4a287848fd664ae1c3fc8e5e008560534ceeb526, 2022)
 - License: MIT
 
 Files extracted from upstream repository:

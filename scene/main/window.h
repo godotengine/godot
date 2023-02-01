@@ -173,6 +173,8 @@ private:
 
 	Viewport *embedder = nullptr;
 
+	Transform2D window_transform;
+
 	friend class Viewport; //friend back, can call the methods below
 
 	void _window_input(const Ref<InputEvent> &p_ev);

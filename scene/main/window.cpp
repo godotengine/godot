@@ -905,16 +905,13 @@ void Window::_update_viewport_size() {
 	Size2i final_size;
 	Size2i final_size_override;
 	Rect2i attach_to_screen_rect(Point2i(), size);
-	Transform2D stretch_transform_new;
 	float font_oversampling = 1.0;
+	window_transform = Transform2D();
 
 	if (content_scale_mode == CONTENT_SCALE_MODE_DISABLED || content_scale_size.x == 0 || content_scale_size.y == 0) {
 		font_oversampling = content_scale_factor;
 		final_size = size;
 		final_size_override = Size2(size) / content_scale_factor;
-
-		stretch_transform_new = Transform2D();
-		stretch_transform_new.scale(Size2(content_scale_factor, content_scale_factor));
 	} else {
 		//actual screen video mode
 		Size2 video_mode = size;
@@ -990,20 +987,24 @@ void Window::_update_viewport_size() {
 				attach_to_screen_rect = Rect2(margin, screen_size);
 				font_oversampling = (screen_size.x / viewport_size.x) * content_scale_factor;
 
-				Size2 scale = Vector2(screen_size) / Vector2(final_size_override);
-				stretch_transform_new.scale(scale);
-
+				window_transform.translate_local(margin);
 			} break;
 			case CONTENT_SCALE_MODE_VIEWPORT: {
 				final_size = (viewport_size / content_scale_factor).floor();
 				attach_to_screen_rect = Rect2(margin, screen_size);
 
+				window_transform.translate_local(margin);
+				if (final_size.x != 0 && final_size.y != 0) {
+					Transform2D scale_transform;
+					scale_transform.scale(Vector2(attach_to_screen_rect.size) / Vector2(final_size));
+					window_transform *= scale_transform;
+				}
 			} break;
 		}
 	}
 
 	bool allocate = is_inside_tree() && visible && (window_id != DisplayServer::INVALID_WINDOW_ID || embedder != nullptr);
-	_set_size(final_size, final_size_override, attach_to_screen_rect, stretch_transform_new, allocate);
+	_set_size(final_size, final_size_override, attach_to_screen_rect, allocate);
 
 	if (window_id != DisplayServer::INVALID_WINDOW_ID) {
 		RenderingServer::get_singleton()->viewport_attach_to_screen(get_viewport_rid(), attach_to_screen_rect, window_id);
@@ -2127,13 +2128,13 @@ Transform2D Window::get_popup_base_transform() const {
 	if (is_embedding_subwindows()) {
 		return Transform2D();
 	}
-	Transform2D window_transform;
-	window_transform.set_origin(get_position());
-	window_transform *= Viewport::get_screen_transform();
+	Transform2D popup_base_transform;
+	popup_base_transform.set_origin(get_position());
+	popup_base_transform *= Viewport::get_screen_transform();
 	if (_get_embedder()) {
-		return _get_embedder()->get_popup_base_transform() * window_transform;
+		return _get_embedder()->get_popup_base_transform() * popup_base_transform;
 	}
-	return window_transform;
+	return popup_base_transform;
 }
 
 void Window::_bind_methods() {
@@ -2336,6 +2337,7 @@ void Window::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("visibility_changed"));
 	ADD_SIGNAL(MethodInfo("about_to_popup"));
 	ADD_SIGNAL(MethodInfo("theme_changed"));
+	ADD_SIGNAL(MethodInfo("dpi_changed"));
 	ADD_SIGNAL(MethodInfo("titlebar_changed"));
 
 	BIND_CONSTANT(NOTIFICATION_VISIBILITY_CHANGED);

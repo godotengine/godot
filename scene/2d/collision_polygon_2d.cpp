@@ -131,15 +131,7 @@ void CollisionPolygon2D::_notification(int p_what) {
 				break;
 			}
 
-			int polygon_count = polygon.size();
-			for (int i = 0; i < polygon_count; i++) {
-				Vector2 p = polygon[i];
-				Vector2 n = polygon[(i + 1) % polygon_count];
-				// draw line with width <= 1, so it does not scale with zoom and break pixel exact editing
-				draw_line(p, n, Color(0.9, 0.2, 0.0, 0.8), 1);
-			}
-
-			if (polygon_count > 2) {
+			if (polygon.size() > 2) {
 #define DEBUG_DECOMPOSE
 #if defined(TOOLS_ENABLED) && defined(DEBUG_DECOMPOSE)
 				Vector<Vector<Vector2>> decomp = _decompose_in_convex();
@@ -152,6 +144,11 @@ void CollisionPolygon2D::_notification(int p_what) {
 #else
 				draw_colored_polygon(polygon, get_tree()->get_debug_collisions_color());
 #endif
+
+				const Color stroke_color = Color(0.9, 0.2, 0.0);
+				draw_polyline(polygon, stroke_color);
+				// Draw the last segment.
+				draw_line(polygon[polygon.size() - 1], polygon[0], stroke_color);
 			}
 
 			if (one_way_collision) {
@@ -323,4 +320,5 @@ void CollisionPolygon2D::_bind_methods() {
 
 CollisionPolygon2D::CollisionPolygon2D() {
 	set_notify_local_transform(true);
+	set_hide_clip_children(true);
 }

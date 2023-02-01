@@ -37,11 +37,11 @@
 				    return typeof(data) == TYPE_DICTIONARY and data.has("expected")
 				[/gdscript]
 				[csharp]
-				public override bool CanDropData(Vector2 position, object data)
+				public override bool _CanDropData(Vector2 atPosition, Variant data)
 				{
 				    // Check position if it is relevant to you
 				    // Otherwise, just check data
-				    return data is Godot.Collections.Dictionary &amp;&amp; (data as Godot.Collections.Dictionary).Contains("expected");
+				    return data.VariantType == Variant.Type.Dictionary &amp;&amp; data.AsGodotDictionary().Contains("expected");
 				}
 				[/csharp]
 				[/codeblocks]
@@ -57,17 +57,19 @@
 				[gdscript]
 				func _can_drop_data(position, data):
 				    return typeof(data) == TYPE_DICTIONARY and data.has("color")
+
 				func _drop_data(position, data):
 				    var color = data["color"]
 				[/gdscript]
 				[csharp]
-				public override bool CanDropData(Vector2 position, object data)
+				public override bool _CanDropData(Vector2 atPosition, Variant data)
 				{
-				    return data is Godot.Collections.Dictionary &amp;&amp; (data as Godot.Collections.Dictionary).Contains("color");
+				    return data.VariantType == Variant.Type.Dictionary &amp;&amp; dict.AsGodotDictionary().Contains("color");
 				}
-				public override void DropData(Vector2 position, object data)
+
+				public override void _DropData(Vector2 atPosition, Variant data)
 				{
-				    Color color = (Color)(data as Godot.Collections.Dictionary)["color"];
+				    Color color = data.AsGodotDictionary()["color"].AsColor();
 				}
 				[/csharp]
 				[/codeblocks]
@@ -87,11 +89,11 @@
 				    return mydata
 				[/gdscript]
 				[csharp]
-				public override object GetDragData(Vector2 position)
+				public override Variant _GetDragData(Vector2 atPosition)
 				{
-				    object mydata = MakeData(); // This is your custom method generating the drag data.
-				    SetDragPreview(MakePreview(mydata)); // This is your custom method generating the preview of the drag data.
-				    return mydata;
+				    var myData = MakeData(); // This is your custom method generating the drag data.
+				    SetDragPreview(MakePreview(myData)); // This is your custom method generating the preview of the drag data.
+				    return myData;
 				}
 				[/csharp]
 				[/codeblocks]
@@ -121,10 +123,9 @@
 				[csharp]
 				public override void _GuiInput(InputEvent @event)
 				{
-				    if (@event is InputEventMouseButton)
+				    if (@event is InputEventMouseButton mb)
 				    {
-				        var mb = @event as InputEventMouseButton;
-				        if (mb.ButtonIndex == (int)ButtonList.Left &amp;&amp; mb.Pressed)
+				        if (mb.ButtonIndex == MouseButton.Left &amp;&amp; mb.Pressed)
 				        {
 				            GD.Print("I've been clicked D:");
 				        }
@@ -168,7 +169,7 @@
 				    return label
 				[/gdscript]
 				[csharp]
-				public override Godot.Control _MakeCustomTooltip(String forText)
+				public override Control _MakeCustomTooltip(string forText)
 				{
 				    var label = new Label();
 				    label.Text = forText;
@@ -185,7 +186,7 @@
 				    return tooltip
 				[/gdscript]
 				[csharp]
-				public override Godot.Control _MakeCustomTooltip(String forText)
+				public override Control _MakeCustomTooltip(string forText)
 				{
 				    Node tooltip = ResourceLoader.Load&lt;PackedScene&gt;("res://some_tooltip_scene.tscn").Instantiate();
 				    tooltip.GetNode&lt;Label&gt;("Label").Text = forText;
@@ -229,11 +230,11 @@
 				[/gdscript]
 				[csharp]
 				// Given the child Label node "MyLabel", override its font color with a custom value.
-				GetNode&lt;Label&gt;("MyLabel").AddThemeColorOverride("font_color", new Color(1, 0.5f, 0))
+				GetNode&lt;Label&gt;("MyLabel").AddThemeColorOverride("font_color", new Color(1, 0.5f, 0));
 				// Reset the font color of the child label.
-				GetNode&lt;Label&gt;("MyLabel").RemoveThemeColorOverride("font_color")
+				GetNode&lt;Label&gt;("MyLabel").RemoveThemeColorOverride("font_color");
 				// Alternatively it can be overridden with the default value from the Label type.
-				GetNode&lt;Label&gt;("MyLabel").AddThemeColorOverride("font_color", GetThemeColor("font_color", "Label"))
+				GetNode&lt;Label&gt;("MyLabel").AddThemeColorOverride("font_color", GetThemeColor("font_color", "Label"));
 				[/csharp]
 				[/codeblocks]
 			</description>
@@ -542,12 +543,12 @@
 				[codeblocks]
 				[gdscript]
 				func _process(delta):
-				    grab_click_focus() #when clicking another Control node, this node will be clicked instead
+				    grab_click_focus() # When clicking another Control node, this node will be clicked instead.
 				[/gdscript]
 				[csharp]
-				public override void _Process(float delta)
+				public override void _Process(double delta)
 				{
-				    GrabClickFocus(); //when clicking another Control node, this node will be clicked instead
+				    GrabClickFocus(); // When clicking another Control node, this node will be clicked instead.
 				}
 				[/csharp]
 				[/codeblocks]
@@ -812,16 +813,16 @@
 				[/gdscript]
 				[csharp]
 				[Export]
-				public Color Color = new Color(1, 0, 0, 1);
+				private Color _color = new Color(1, 0, 0, 1);
 
-				public override object GetDragData(Vector2 position)
+				public override Variant _GetDragData(Vector2 atPosition)
 				{
 				    // Use a control that is not in the tree
 				    var cpb = new ColorPickerButton();
-				    cpb.Color = Color;
-				    cpb.RectSize = new Vector2(50, 50);
+				    cpb.Color = _color;
+				    cpb.Size = new Vector2(50, 50);
 				    SetDragPreview(cpb);
-				    return Color;
+				    return _color;
 				}
 				[/csharp]
 				[/codeblocks]

@@ -80,38 +80,30 @@ void StreamPeerMbedTLS::_cleanup() {
 }
 
 Error StreamPeerMbedTLS::_do_handshake() {
-	int ret = 0;
-	while ((ret = mbedtls_ssl_handshake(tls_ctx->get_context())) != 0) {
-		if (ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE) {
-			// An error occurred.
-			ERR_PRINT("TLS handshake error: " + itos(ret));
-			TLSContextMbedTLS::print_mbedtls_error(ret);
-			disconnect_from_stream();
-			status = STATUS_ERROR;
-			return FAILED;
-		}
-
-		// Handshake is still in progress.
-		if (!blocking_handshake) {
-			// Will retry via poll later
-			return OK;
-		}
+	int ret = mbedtls_ssl_handshake(tls_ctx->get_context());
+	if (ret == MBEDTLS_ERR_SSL_WANT_READ || ret == MBEDTLS_ERR_SSL_WANT_WRITE) {
+		// Handshake is still in progress, will retry via poll later.
+		return OK;
+	} else if (ret != 0) {
+		// An error occurred.
+		ERR_PRINT("TLS handshake error: " + itos(ret));
+		TLSContextMbedTLS::print_mbedtls_error(ret);
+		disconnect_from_stream();
+		status = STATUS_ERROR;
+		return FAILED;
 	}
 
 	status = STATUS_CONNECTED;
 	return OK;
 }
 
-Error StreamPeerMbedTLS::connect_to_stream(Ref<StreamPeer> p_base, bool p_validate_certs, const String &p_for_hostname, Ref<X509Certificate> p_ca_certs) {
+Error StreamPeerMbedTLS::connect_to_stream(Ref<StreamPeer> p_base, const String &p_common_name, Ref<TLSOptions> p_options) {
 	ERR_FAIL_COND_V(p_base.is_null(), ERR_INVALID_PARAMETER);
 
-	base = p_base;
-	int authmode = p_validate_certs ? MBEDTLS_SSL_VERIFY_REQUIRED : MBEDTLS_SSL_VERIFY_NONE;
-
-	Error err = tls_ctx->init_client(MBEDTLS_SSL_TRANSPORT_STREAM, authmode, p_ca_certs);
+	Error err = tls_ctx->init_client(MBEDTLS_SSL_TRANSPORT_STREAM, p_common_name, p_options.is_valid() ? p_options : TLSOptions::client());
 	ERR_FAIL_COND_V(err != OK, err);
 
-	mbedtls_ssl_set_hostname(tls_ctx->get_context(), p_for_hostname.utf8().get_data());
+	base = p_base;
 	mbedtls_ssl_set_bio(tls_ctx->get_context(), this, bio_send, bio_recv, nullptr);
 
 	status = STATUS_HANDSHAKING;
@@ -124,10 +116,11 @@ Error StreamPeerMbedTLS::connect_to_stream(Ref<StreamPeer> p_base, bool p_valida
 	return OK;
 }
 
-Error StreamPeerMbedTLS::accept_stream(Ref<StreamPeer> p_base, Ref<CryptoKey> p_key, Ref<X509Certificate> p_cert, Ref<X509Certificate> p_ca_chain) {
+Error StreamPeerMbedTLS::accept_stream(Ref<StreamPeer> p_base, Ref<TLSOptions> p_options) {
 	ERR_FAIL_COND_V(p_base.is_null(), ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(p_options.is_null() || !p_options->is_server(), ERR_INVALID_PARAMETER);
 
-	Error err = tls_ctx->init_server(MBEDTLS_SSL_TRANSPORT_STREAM, MBEDTLS_SSL_VERIFY_NONE, p_key, p_cert);
+	Error err = tls_ctx->init_server(MBEDTLS_SSL_TRANSPORT_STREAM, p_options);
 	ERR_FAIL_COND_V(err != OK, err);
 
 	base = p_base;
@@ -308,10 +301,8 @@ StreamPeerTLS *StreamPeerMbedTLS::_create_func() {
 
 void StreamPeerMbedTLS::initialize_tls() {
 	_create = _create_func;
-	available = true;
 }
 
 void StreamPeerMbedTLS::finalize_tls() {
-	available = false;
 	_create = nullptr;
 }

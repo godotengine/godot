@@ -22,7 +22,7 @@
 			</description>
 		</method>
 		<method name="_export_node" qualifiers="virtual">
-			<return type="int" />
+			<return type="int" enum="Error" />
 			<param index="0" name="state" type="GLTFState" />
 			<param index="1" name="gltf_node" type="GLTFNode" />
 			<param index="2" name="json" type="Dictionary" />
@@ -33,7 +33,7 @@
 			</description>
 		</method>
 		<method name="_export_post" qualifiers="virtual">
-			<return type="int" />
+			<return type="int" enum="Error" />
 			<param index="0" name="state" type="GLTFState" />
 			<description>
 				Part of the export process. This method is run last, after all other parts of the export process.
@@ -41,7 +41,7 @@
 			</description>
 		</method>
 		<method name="_export_preflight" qualifiers="virtual">
-			<return type="int" />
+			<return type="int" enum="Error" />
 			<param index="0" name="state" type="GLTFState" />
 			<param index="1" name="root" type="Node" />
 			<description>
@@ -67,7 +67,7 @@
 			</description>
 		</method>
 		<method name="_import_node" qualifiers="virtual">
-			<return type="int" />
+			<return type="int" enum="Error" />
 			<param index="0" name="state" type="GLTFState" />
 			<param index="1" name="gltf_node" type="GLTFNode" />
 			<param index="2" name="json" type="Dictionary" />
@@ -78,7 +78,7 @@
 			</description>
 		</method>
 		<method name="_import_post" qualifiers="virtual">
-			<return type="int" />
+			<return type="int" enum="Error" />
 			<param index="0" name="state" type="GLTFState" />
 			<param index="1" name="root" type="Node" />
 			<description>
@@ -87,7 +87,7 @@
 			</description>
 		</method>
 		<method name="_import_post_parse" qualifiers="virtual">
-			<return type="int" />
+			<return type="int" enum="Error" />
 			<param index="0" name="state" type="GLTFState" />
 			<description>
 				Part of the import process. This method is run after [method _generate_scene_node] and before [method _import_node].
@@ -95,7 +95,7 @@
 			</description>
 		</method>
 		<method name="_import_preflight" qualifiers="virtual">
-			<return type="int" />
+			<return type="int" enum="Error" />
 			<param index="0" name="state" type="GLTFState" />
 			<param index="1" name="extensions" type="PackedStringArray" />
 			<description>
@@ -104,7 +104,7 @@
 			</description>
 		</method>
 		<method name="_parse_node_extensions" qualifiers="virtual">
-			<return type="int" />
+			<return type="int" enum="Error" />
 			<param index="0" name="state" type="GLTFState" />
 			<param index="1" name="gltf_node" type="GLTFNode" />
 			<param index="2" name="extensions" type="Dictionary" />

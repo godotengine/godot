@@ -232,6 +232,8 @@ void LightStorage::light_set_projector(RID p_light, RID p_texture) {
 		return;
 	}
 
+	ERR_FAIL_COND(p_texture.is_valid() && !texture_storage->owns_texture(p_texture));
+
 	if (light->type != RS::LIGHT_DIRECTIONAL && light->projector.is_valid()) {
 		texture_storage->texture_remove_from_decal_atlas(light->projector, light->type == RS::LIGHT_OMNI);
 	}
@@ -1064,14 +1066,14 @@ void LightStorage::reflection_probe_set_max_distance(RID p_probe, float p_distan
 	reflection_probe->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_REFLECTION_PROBE);
 }
 
-void LightStorage::reflection_probe_set_extents(RID p_probe, const Vector3 &p_extents) {
+void LightStorage::reflection_probe_set_size(RID p_probe, const Vector3 &p_size) {
 	ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
 	ERR_FAIL_COND(!reflection_probe);
 
-	if (reflection_probe->extents == p_extents) {
+	if (reflection_probe->size == p_size) {
 		return;
 	}
-	reflection_probe->extents = p_extents;
+	reflection_probe->size = p_size;
 	reflection_probe->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_REFLECTION_PROBE);
 }
 
@@ -1143,8 +1145,8 @@ AABB LightStorage::reflection_probe_get_aabb(RID p_probe) const {
 	ERR_FAIL_COND_V(!reflection_probe, AABB());
 
 	AABB aabb;
-	aabb.position = -reflection_probe->extents;
-	aabb.size = reflection_probe->extents * 2.0;
+	aabb.position = -reflection_probe->size / 2;
+	aabb.size = reflection_probe->size;
 
 	return aabb;
 }
@@ -1163,11 +1165,11 @@ uint32_t LightStorage::reflection_probe_get_cull_mask(RID p_probe) const {
 	return reflection_probe->cull_mask;
 }
 
-Vector3 LightStorage::reflection_probe_get_extents(RID p_probe) const {
+Vector3 LightStorage::reflection_probe_get_size(RID p_probe) const {
 	const ReflectionProbe *reflection_probe = reflection_probe_owner.get_or_null(p_probe);
 	ERR_FAIL_COND_V(!reflection_probe, Vector3());
 
-	return reflection_probe->extents;
+	return reflection_probe->size;
 }
 
 Vector3 LightStorage::reflection_probe_get_origin_offset(RID p_probe) const {
@@ -1552,6 +1554,11 @@ bool LightStorage::reflection_probe_instance_postprocess_step(RID p_instance) {
 	if (rpi->processing_side == 6) {
 		rpi->processing_side = 0;
 		rpi->processing_layer++;
+		if (rpi->processing_layer == atlas->reflections[rpi->atlas_index].data.layers[0].mipmaps.size()) {
+			rpi->rendering = false;
+			rpi->processing_layer = 1;
+			return true;
+		}
 	}
 
 	return false;
@@ -1667,7 +1674,7 @@ void LightStorage::update_reflection_probe_buffer(RenderDataRD *p_render_data, c
 
 		ReflectionData &reflection_ubo = reflections[i];
 
-		Vector3 extents = probe->extents;
+		Vector3 extents = probe->size / 2;
 
 		rpi->cull_mask = probe->cull_mask;
 

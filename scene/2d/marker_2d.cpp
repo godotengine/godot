@@ -117,4 +117,5 @@ void Marker2D::_bind_methods() {
 }
 
 Marker2D::Marker2D() {
+	set_hide_clip_children(true);
 }

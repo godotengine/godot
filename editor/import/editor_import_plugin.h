@@ -51,7 +51,7 @@ protected:
 	GDVIRTUAL0RC(float, _get_priority)
 	GDVIRTUAL0RC(int, _get_import_order)
 	GDVIRTUAL3RC(bool, _get_option_visibility, String, StringName, Dictionary)
-	GDVIRTUAL5RC(int, _import, String, String, Dictionary, TypedArray<String>, TypedArray<String>)
+	GDVIRTUAL5RC(Error, _import, String, String, Dictionary, TypedArray<String>, TypedArray<String>)
 
 public:
 	EditorImportPlugin();

@@ -329,9 +329,9 @@ void MultiplayerAPI::_bind_methods() {
 /// MultiplayerAPIExtension
 
 Error MultiplayerAPIExtension::poll() {
-	int err = OK;
+	Error err = OK;
 	GDVIRTUAL_CALL(_poll, err);
-	return (Error)err;
+	return err;
 }
 
 void MultiplayerAPIExtension::set_multiplayer_peer(const Ref<MultiplayerPeer> &p_peer) {
@@ -364,9 +364,9 @@ Error MultiplayerAPIExtension::rpcp(Object *p_obj, int p_peer_id, const StringNa
 	for (int i = 0; i < p_argcount; i++) {
 		args.push_back(*p_arg[i]);
 	}
-	int ret = FAILED;
+	Error ret = FAILED;
 	GDVIRTUAL_CALL(_rpc, p_peer_id, p_obj, p_method, args, ret);
-	return (Error)ret;
+	return ret;
 }
 
 int MultiplayerAPIExtension::get_remote_sender_id() {
@@ -376,15 +376,15 @@ int MultiplayerAPIExtension::get_remote_sender_id() {
 }
 
 Error MultiplayerAPIExtension::object_configuration_add(Object *p_object, Variant p_config) {
-	int err = ERR_UNAVAILABLE;
+	Error err = ERR_UNAVAILABLE;
 	GDVIRTUAL_CALL(_object_configuration_add, p_object, p_config, err);
-	return (Error)err;
+	return err;
 }
 
 Error MultiplayerAPIExtension::object_configuration_remove(Object *p_object, Variant p_config) {
-	int err = ERR_UNAVAILABLE;
+	Error err = ERR_UNAVAILABLE;
 	GDVIRTUAL_CALL(_object_configuration_remove, p_object, p_config, err);
-	return (Error)err;
+	return err;
 }
 
 void MultiplayerAPIExtension::_bind_methods() {

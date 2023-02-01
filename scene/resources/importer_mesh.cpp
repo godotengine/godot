@@ -452,6 +452,7 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 			new_indices.resize(index_count);
 
 			Vector<float> merged_normals_f32 = vector3_to_float32_array(merged_normals.ptr(), merged_normals.size());
+			const int simplify_options = SurfaceTool::SIMPLIFY_LOCK_BORDER;
 
 			size_t new_index_count = SurfaceTool::simplify_with_attrib_func(
 					(unsigned int *)new_indices.ptrw(),
@@ -460,6 +461,7 @@ void ImporterMesh::generate_lods(float p_normal_merge_angle, float p_normal_spli
 					sizeof(float) * 3, // Vertex stride
 					index_target,
 					max_mesh_error,
+					simplify_options,
 					&mesh_error,
 					merged_normals_f32.ptr(),
 					normal_weights.ptr(), 3);
@@ -1058,6 +1060,8 @@ struct EditorSceneFormatImporterMeshLightmapSurface {
 	String name;
 };
 
+static const uint32_t custom_shift[RS::ARRAY_CUSTOM_COUNT] = { Mesh::ARRAY_FORMAT_CUSTOM0_SHIFT, Mesh::ARRAY_FORMAT_CUSTOM1_SHIFT, Mesh::ARRAY_FORMAT_CUSTOM2_SHIFT, Mesh::ARRAY_FORMAT_CUSTOM3_SHIFT };
+
 Error ImporterMesh::lightmap_unwrap_cached(const Transform3D &p_base_transform, float p_texel_size, const Vector<uint8_t> &p_src_cache, Vector<uint8_t> &r_dst_cache) {
 	ERR_FAIL_COND_V(!array_mesh_lightmap_unwrap_callback, ERR_UNCONFIGURED);
 	ERR_FAIL_COND_V_MSG(blend_shapes.size() != 0, ERR_UNAVAILABLE, "Can't unwrap mesh with blend shapes.");
@@ -1178,9 +1182,6 @@ Error ImporterMesh::lightmap_unwrap_cached(const Transform3D &p_base_transform, 
 		return ERR_CANT_CREATE;
 	}
 
-	//remove surfaces
-	clear();
-
 	//create surfacetools for each surface..
 	LocalVector<Ref<SurfaceTool>> surfaces_tools;
 
@@ -1190,8 +1191,15 @@ Error ImporterMesh::lightmap_unwrap_cached(const Transform3D &p_base_transform, 
 		st->begin(Mesh::PRIMITIVE_TRIANGLES);
 		st->set_material(lightmap_surfaces[i].material);
 		st->set_meta("name", lightmap_surfaces[i].name);
+
+		for (int custom_i = 0; custom_i < RS::ARRAY_CUSTOM_COUNT; custom_i++) {
+			st->set_custom_format(custom_i, (SurfaceTool::CustomFormat)((lightmap_surfaces[i].format >> custom_shift[custom_i]) & RS::ARRAY_FORMAT_CUSTOM_MASK));
+		}
 		surfaces_tools.push_back(st); //stay there
 	}
+
+	//remove surfaces
+	clear();
 
 	print_verbose("Mesh: Gen indices: " + itos(gen_index_count));
 
@@ -1229,6 +1237,11 @@ Error ImporterMesh::lightmap_unwrap_cached(const Transform3D &p_base_transform, 
 			if (lightmap_surfaces[surface].format & Mesh::ARRAY_FORMAT_WEIGHTS) {
 				surfaces_tools[surface]->set_weights(v.weights);
 			}
+			for (int custom_i = 0; custom_i < RS::ARRAY_CUSTOM_COUNT; custom_i++) {
+				if ((lightmap_surfaces[surface].format >> custom_shift[custom_i]) & RS::ARRAY_FORMAT_CUSTOM_MASK) {
+					surfaces_tools[surface]->set_custom(custom_i, v.custom[custom_i]);
+				}
+			}
 
 			Vector2 uv2(gen_uvs[gen_indices[i + j] * 2 + 0], gen_uvs[gen_indices[i + j] * 2 + 1]);
 			surfaces_tools[surface]->set_uv2(uv2);
@@ -1238,10 +1251,11 @@ Error ImporterMesh::lightmap_unwrap_cached(const Transform3D &p_base_transform, 
 	}
 
 	//generate surfaces
-	for (Ref<SurfaceTool> &tool : surfaces_tools) {
+	for (int i = 0; i < lightmap_surfaces.size(); i++) {
+		Ref<SurfaceTool> &tool = surfaces_tools[i];
 		tool->index();
 		Array arrays = tool->commit_to_arrays();
-		add_surface(tool->get_primitive_type(), arrays, Array(), Dictionary(), tool->get_material(), tool->get_meta("name"));
+		add_surface(tool->get_primitive_type(), arrays, Array(), Dictionary(), tool->get_material(), tool->get_meta("name"), lightmap_surfaces[i].format);
 	}
 
 	set_lightmap_size_hint(Size2(size_x, size_y));

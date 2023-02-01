@@ -400,9 +400,26 @@ void CanvasItem::set_as_top_level(bool p_top_level) {
 
 	_exit_canvas();
 	top_level = p_top_level;
+	_toplevel_changed();
 	_enter_canvas();
 
 	_notify_transform();
+}
+
+void CanvasItem::_toplevel_changed() {
+	// Inform children that toplevel status has changed on a parent.
+	int children = get_child_count();
+	for (int i = 0; i < children; i++) {
+		CanvasItem *child = Object::cast_to<CanvasItem>(get_child(i));
+		if (child) {
+			child->_toplevel_changed_on_parent();
+		}
+	}
+}
+
+void CanvasItem::_toplevel_changed_on_parent() {
+	// Inform children that toplevel status has changed on a parent.
+	_toplevel_changed();
 }
 
 bool CanvasItem::is_set_as_top_level() const {
@@ -915,6 +932,12 @@ void CanvasItem::force_update_transform() {
 	get_tree()->xform_change_list.remove(&xform_change);
 
 	notification(NOTIFICATION_TRANSFORM_CHANGED);
+}
+
+void CanvasItem::_validate_property(PropertyInfo &p_property) const {
+	if (hide_clip_children && p_property.name == "clip_children") {
+		p_property.usage = PROPERTY_USAGE_NONE;
+	}
 }
 
 void CanvasItem::_bind_methods() {

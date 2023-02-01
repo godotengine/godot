@@ -353,6 +353,11 @@ void SceneShaderForwardClustered::ShaderData::set_code(const String &p_code) {
 						}
 
 						int variant = shader_version + shader_flags;
+
+						if (!static_cast<SceneShaderForwardClustered *>(singleton)->shader.is_variant_enabled(variant)) {
+							continue;
+						}
+
 						RID shader_variant = shader_singleton->shader.version_get_shader(version, variant);
 						color_pipelines[i][j][l].setup(shader_variant, primitive_rd, raster_state, multisample_state, depth_stencil, blend_state, 0, singleton->default_specialization_constants);
 					}
@@ -503,7 +508,14 @@ void SceneShaderForwardClustered::init(const String p_defines) {
 			shader.set_variant_enabled(SHADER_VERSION_DEPTH_PASS_MULTIVIEW, false);
 			shader.set_variant_enabled(SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_MULTIVIEW, false);
 			shader.set_variant_enabled(SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS_AND_VOXEL_GI_MULTIVIEW, false);
-			// TODO Add a way to enable/disable color pass flags
+
+			// Disable Color Passes
+			for (int i = 0; i < SHADER_COLOR_PASS_FLAG_COUNT; i++) {
+				// Selectively disable any shader pass that includes Multiview.
+				if ((i & SHADER_COLOR_PASS_FLAG_MULTIVIEW)) {
+					shader.set_variant_enabled(i + SHADER_VERSION_COLOR_PASS, false);
+				}
+			}
 		}
 	}
 
@@ -625,6 +637,7 @@ void SceneShaderForwardClustered::init(const String p_defines) {
 		actions.renames["VIEW_INDEX"] = "ViewIndex";
 		actions.renames["VIEW_MONO_LEFT"] = "0";
 		actions.renames["VIEW_RIGHT"] = "1";
+		actions.renames["EYE_OFFSET"] = "eye_offset";
 
 		//for light
 		actions.renames["VIEW"] = "view";

@@ -34,6 +34,7 @@
 
 #include "../gltf_defines.h"
 #include "../gltf_document.h"
+#include "editor_import_blend_runner.h"
 
 #include "core/config/project_settings.h"
 #include "editor/editor_file_dialog.h"
@@ -68,149 +69,129 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 
 	// Handle configuration options.
 
-	String parameters_arg;
+	Dictionary request_options;
+	Dictionary parameters_map;
+
+	parameters_map["filepath"] = sink_global;
+	parameters_map["export_keep_originals"] = true;
+	parameters_map["export_format"] = "GLTF_SEPARATE";
+	parameters_map["export_yup"] = true;
 
 	if (p_options.has(SNAME("blender/nodes/custom_properties")) && p_options[SNAME("blender/nodes/custom_properties")]) {
-		parameters_arg += "export_extras=True,";
+		parameters_map["export_extras"] = true;
 	} else {
-		parameters_arg += "export_extras=False,";
+		parameters_map["export_extras"] = false;
 	}
 	if (p_options.has(SNAME("blender/meshes/skins"))) {
 		int32_t skins = p_options["blender/meshes/skins"];
 		if (skins == BLEND_BONE_INFLUENCES_NONE) {
-			parameters_arg += "export_skins=False,";
+			parameters_map["export_skins"] = false;
 		} else if (skins == BLEND_BONE_INFLUENCES_COMPATIBLE) {
-			parameters_arg += "export_all_influences=False,export_skins=True,";
+			parameters_map["export_skins"] = true;
+			parameters_map["export_all_influences"] = false;
 		} else if (skins == BLEND_BONE_INFLUENCES_ALL) {
-			parameters_arg += "export_all_influences=True,export_skins=True,";
+			parameters_map["export_skins"] = true;
+			parameters_map["export_all_influences"] = true;
 		}
 	} else {
-		parameters_arg += "export_skins=False,";
+		parameters_map["export_skins"] = false;
 	}
 	if (p_options.has(SNAME("blender/materials/export_materials"))) {
 		int32_t exports = p_options["blender/materials/export_materials"];
 		if (exports == BLEND_MATERIAL_EXPORT_PLACEHOLDER) {
-			parameters_arg += "export_materials='PLACEHOLDER',";
+			parameters_map["export_materials"] = "PLACEHOLDER";
 		} else if (exports == BLEND_MATERIAL_EXPORT_EXPORT) {
-			parameters_arg += "export_materials='EXPORT',";
+			parameters_map["export_materials"] = "EXPORT";
 		}
 	} else {
-		parameters_arg += "export_materials='PLACEHOLDER',";
+		parameters_map["export_materials"] = "PLACEHOLDER";
 	}
 	if (p_options.has(SNAME("blender/nodes/cameras")) && p_options[SNAME("blender/nodes/cameras")]) {
-		parameters_arg += "export_cameras=True,";
+		parameters_map["export_cameras"] = true;
 	} else {
-		parameters_arg += "export_cameras=False,";
+		parameters_map["export_cameras"] = false;
 	}
 	if (p_options.has(SNAME("blender/nodes/punctual_lights")) && p_options[SNAME("blender/nodes/punctual_lights")]) {
-		parameters_arg += "export_lights=True,";
+		parameters_map["export_lights"] = true;
 	} else {
-		parameters_arg += "export_lights=False,";
+		parameters_map["export_lights"] = false;
 	}
 	if (p_options.has(SNAME("blender/meshes/colors")) && p_options[SNAME("blender/meshes/colors")]) {
-		parameters_arg += "export_colors=True,";
+		parameters_map["export_colors"] = true;
 	} else {
-		parameters_arg += "export_colors=False,";
+		parameters_map["export_colors"] = false;
 	}
 	if (p_options.has(SNAME("blender/nodes/visible"))) {
 		int32_t visible = p_options["blender/nodes/visible"];
 		if (visible == BLEND_VISIBLE_VISIBLE_ONLY) {
-			parameters_arg += "use_visible=True,";
+			parameters_map["use_visible"] = true;
 		} else if (visible == BLEND_VISIBLE_RENDERABLE) {
-			parameters_arg += "use_renderable=True,";
+			parameters_map["use_renderable"] = true;
 		} else if (visible == BLEND_VISIBLE_ALL) {
-			parameters_arg += "use_visible=False,use_renderable=False,";
+			parameters_map["use_renderable"] = false;
+			parameters_map["use_visible"] = false;
 		}
 	} else {
-		parameters_arg += "use_visible=False,use_renderable=False,";
+		parameters_map["use_renderable"] = false;
+		parameters_map["use_visible"] = false;
 	}
 
 	if (p_options.has(SNAME("blender/meshes/uvs")) && p_options[SNAME("blender/meshes/uvs")]) {
-		parameters_arg += "export_texcoords=True,";
+		parameters_map["export_texcoords"] = true;
 	} else {
-		parameters_arg += "export_texcoords=False,";
+		parameters_map["export_texcoords"] = false;
 	}
 	if (p_options.has(SNAME("blender/meshes/normals")) && p_options[SNAME("blender/meshes/normals")]) {
-		parameters_arg += "export_normals=True,";
+		parameters_map["export_normals"] = true;
 	} else {
-		parameters_arg += "export_normals=False,";
+		parameters_map["export_normals"] = false;
 	}
 	if (p_options.has(SNAME("blender/meshes/tangents")) && p_options[SNAME("blender/meshes/tangents")]) {
-		parameters_arg += "export_tangents=True,";
+		parameters_map["export_tangents"] = true;
 	} else {
-		parameters_arg += "export_tangents=False,";
+		parameters_map["export_tangents"] = false;
 	}
 	if (p_options.has(SNAME("blender/animation/group_tracks")) && p_options[SNAME("blender/animation/group_tracks")]) {
-		parameters_arg += "export_nla_strips=True,";
+		parameters_map["export_nla_strips"] = true;
 	} else {
-		parameters_arg += "export_nla_strips=False,";
+		parameters_map["export_nla_strips"] = false;
 	}
 	if (p_options.has(SNAME("blender/animation/limit_playback")) && p_options[SNAME("blender/animation/limit_playback")]) {
-		parameters_arg += "export_frame_range=True,";
+		parameters_map["export_frame_range"] = true;
 	} else {
-		parameters_arg += "export_frame_range=False,";
+		parameters_map["export_frame_range"] = false;
 	}
 	if (p_options.has(SNAME("blender/animation/always_sample")) && p_options[SNAME("blender/animation/always_sample")]) {
-		parameters_arg += "export_force_sampling=True,";
+		parameters_map["export_force_sampling"] = true;
 	} else {
-		parameters_arg += "export_force_sampling=False,";
+		parameters_map["export_force_sampling"] = false;
 	}
 	if (p_options.has(SNAME("blender/meshes/export_bones_deforming_mesh_only")) && p_options[SNAME("blender/meshes/export_bones_deforming_mesh_only")]) {
-		parameters_arg += "export_def_bones=True,";
+		parameters_map["export_def_bones"] = true;
 	} else {
-		parameters_arg += "export_def_bones=False,";
+		parameters_map["export_def_bones"] = false;
 	}
 	if (p_options.has(SNAME("blender/nodes/modifiers")) && p_options[SNAME("blender/nodes/modifiers")]) {
-		parameters_arg += "export_apply=True";
+		parameters_map["export_apply"] = true;
 	} else {
-		parameters_arg += "export_apply=False";
+		parameters_map["export_apply"] = false;
 	}
 
-	String unpack_all;
 	if (p_options.has(SNAME("blender/materials/unpack_enabled")) && p_options[SNAME("blender/materials/unpack_enabled")]) {
-		unpack_all = "bpy.ops.file.unpack_all(method='USE_LOCAL');";
+		request_options["unpack_all"] = true;
+	} else {
+		request_options["unpack_all"] = false;
 	}
 
-	// Prepare Blender export script.
+	request_options["path"] = source_global;
+	request_options["gltf_options"] = parameters_map;
 
-	String common_args = vformat("filepath='%s',", sink_global) +
-			"export_format='GLTF_SEPARATE',"
-			"export_yup=True," +
-			parameters_arg;
-	String export_script =
-			String("import bpy, sys;") +
-			"print('Blender 3.0 or higher is required.', file=sys.stderr) if bpy.app.version < (3, 0, 0) else None;" +
-			vformat("bpy.ops.wm.open_mainfile(filepath='%s');", source_global) +
-			unpack_all +
-			vformat("bpy.ops.export_scene.gltf(export_keep_originals=True,%s);", common_args);
-	print_verbose(export_script);
-
-	// Run script with configured Blender binary.
-
-	String blender_path = EDITOR_GET("filesystem/import/blender/blender3_path");
-
-#ifdef WINDOWS_ENABLED
-	blender_path = blender_path.path_join("blender.exe");
-#else
-	blender_path = blender_path.path_join("blender");
-#endif
-
-	List<String> args;
-	args.push_back("--background");
-	args.push_back("--python-expr");
-	args.push_back(export_script);
-
-	String standard_out;
-	int ret;
-	OS::get_singleton()->execute(blender_path, args, &standard_out, &ret, true);
-	print_verbose(blender_path);
-	print_verbose(standard_out);
-
-	if (ret != 0) {
+	// Run Blender and export glTF.
+	Error err = EditorImportBlendRunner::get_singleton()->do_import(request_options);
+	if (err != OK) {
 		if (r_err) {
 			*r_err = ERR_SCRIPT_FAILED;
 		}
-		ERR_PRINT(vformat("Blend export to glTF failed with error: %d.", ret));
 		return nullptr;
 	}
 
@@ -226,14 +207,14 @@ Node *EditorSceneFormatImporterBlend::import_scene(const String &p_path, uint32_
 	if (p_options.has(SNAME("blender/materials/unpack_enabled")) && p_options[SNAME("blender/materials/unpack_enabled")]) {
 		base_dir = sink.get_base_dir();
 	}
-	Error err = gltf->append_from_file(sink.get_basename() + ".gltf", state, p_flags, base_dir);
+	err = gltf->append_from_file(sink.get_basename() + ".gltf", state, p_flags, base_dir);
 	if (err != OK) {
 		if (r_err) {
 			*r_err = FAILED;
 		}
 		return nullptr;
 	}
-	return gltf->generate_scene(state, (float)p_options["animation/fps"], (bool)p_options["animation/trimming"]);
+	return gltf->generate_scene(state, (float)p_options["animation/fps"], (bool)p_options["animation/trimming"], (bool)p_options["animation/remove_immutable_tracks"]);
 }
 
 Variant EditorSceneFormatImporterBlend::get_option_visibility(const String &p_path, bool p_for_animation, const String &p_option,

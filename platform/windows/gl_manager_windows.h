@@ -74,7 +74,6 @@ private:
 	GLWindow *_current_window = nullptr;
 
 	PFNWGLSWAPINTERVALEXTPROC wglSwapIntervalEXT = nullptr;
-	PFNWGLGETSWAPINTERVALEXTPROC wglGetSwapIntervalEXT = nullptr;
 
 	// funcs
 	void _internal_set_current_window(GLWindow *p_win);

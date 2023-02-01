@@ -44,7 +44,7 @@ public:
 	virtual void fog_volume_free(RID p_rid) = 0;
 
 	virtual void fog_volume_set_shape(RID p_fog_volume, RS::FogVolumeShape p_shape) = 0;
-	virtual void fog_volume_set_extents(RID p_fog_volume, const Vector3 &p_extents) = 0;
+	virtual void fog_volume_set_size(RID p_fog_volume, const Vector3 &p_size) = 0;
 	virtual void fog_volume_set_material(RID p_fog_volume, RID p_material) = 0;
 	virtual AABB fog_volume_get_aabb(RID p_fog_volume) const = 0;
 	virtual RS::FogVolumeShape fog_volume_get_shape(RID p_fog_volume) const = 0;

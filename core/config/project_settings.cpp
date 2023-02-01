@@ -221,7 +221,9 @@ String ProjectSettings::localize_path(const String &p_path) const {
 
 void ProjectSettings::set_initial_value(const String &p_name, const Variant &p_value) {
 	ERR_FAIL_COND_MSG(!props.has(p_name), "Request for nonexistent project setting: " + p_name + ".");
-	props[p_name].initial = p_value;
+
+	// Duplicate so that if value is array or dictionary, changing the setting will not change the stored initial value.
+	props[p_name].initial = p_value.duplicate();
 }
 
 void ProjectSettings::set_restart_if_changed(const String &p_name, bool p_restart) {
@@ -1116,7 +1118,9 @@ bool ProjectSettings::_property_get_revert(const StringName &p_name, Variant &r_
 		return false;
 	}
 
-	r_property = props[p_name].initial;
+	// Duplicate so that if value is array or dictionary, changing the setting will not change the stored initial value.
+	r_property = props[p_name].initial.duplicate();
+
 	return true;
 }
 
@@ -1137,8 +1141,8 @@ Array ProjectSettings::get_global_class_list() {
 
 	Ref<ConfigFile> cf;
 	cf.instantiate();
-	if (cf->load(get_project_data_path().path_join("global_script_class_cache.cfg")) == OK) {
-		script_classes = cf->get_value("", "list");
+	if (cf->load(get_global_class_list_path()) == OK) {
+		script_classes = cf->get_value("", "list", Array());
 	} else {
 #ifndef TOOLS_ENABLED
 		// Script classes can't be recreated in exported project, so print an error.
@@ -1148,11 +1152,15 @@ Array ProjectSettings::get_global_class_list() {
 	return script_classes;
 }
 
+String ProjectSettings::get_global_class_list_path() const {
+	return get_project_data_path().path_join("global_script_class_cache.cfg");
+}
+
 void ProjectSettings::store_global_class_list(const Array &p_classes) {
 	Ref<ConfigFile> cf;
 	cf.instantiate();
 	cf->set_value("", "list", p_classes);
-	cf->save(get_project_data_path().path_join("global_script_class_cache.cfg"));
+	cf->save(get_global_class_list_path());
 }
 
 bool ProjectSettings::has_custom_feature(const String &p_feature) const {

@@ -51,7 +51,7 @@
 		[csharp]
 		[Export(PropertyHint.Enum, "White,Yellow,Orange")]
 		public string MyColor { get; set; }
-		public Godot.Collections.Dictionary pointsDict = new Godot.Collections.Dictionary
+		private Godot.Collections.Dictionary _pointsDict = new Godot.Collections.Dictionary
 		{
 		    {"White", 50},
 		    {"Yellow", 75},
@@ -60,7 +60,7 @@
 
 		public override void _Ready()
 		{
-		    int points = (int)pointsDict[MyColor];
+		    int points = (int)_pointsDict[MyColor];
 		}
 		[/csharp]
 		[/codeblocks]
@@ -153,7 +153,7 @@
 			<return type="Dictionary" />
 			<param index="0" name="from" type="Dictionary" />
 			<description>
-				Returns the same array as [param from]. If you need a copy of the array, use [method duplicate].
+				Returns the same dictionary as [param from]. If you need a copy of the dictionary, use [method duplicate].
 			</description>
 		</constructor>
 	</constructors>
@@ -286,7 +286,7 @@
 		<method name="make_read_only">
 			<return type="void" />
 			<description>
-				Makes the dictionary read-only, i.e. disabled modifying of the dictionary's contents. Does not apply to nested content, e.g. content of nested dicitonaries.
+				Makes the dictionary read-only, i.e. disables modification of the dictionary's contents. Does not apply to nested content, e.g. content of nested dictionaries.
 			</description>
 		</method>
 		<method name="merge">

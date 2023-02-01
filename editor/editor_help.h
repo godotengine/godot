@@ -72,8 +72,6 @@ protected:
 
 	bool _search(bool p_search_previous = false);
 
-	static void _bind_methods();
-
 public:
 	void set_rich_text_label(RichTextLabel *p_rich_text_label);
 

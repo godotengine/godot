@@ -264,10 +264,16 @@
 	</members>
 	<constants>
 		<constant name="HANDLE_BINARY_DISCARD_TEXTURES" value="0">
+			Discards all embedded textures and uses untextured materials.
 		</constant>
 		<constant name="HANDLE_BINARY_EXTRACT_TEXTURES" value="1">
+			Extracts embedded textures to be reimported and compressed. Editor only. Acts as uncompressed at runtime.
 		</constant>
 		<constant name="HANDLE_BINARY_EMBED_AS_BASISU" value="2">
+			Embeds textures VRAM compressed with Basis Universal into the generated scene.
+		</constant>
+		<constant name="HANDLE_BINARY_EMBED_AS_UNCOMPRESSED" value="3">
+			Embeds textures compressed losslessly into the generated scene, matching old behavior.
 		</constant>
 	</constants>
 </class>

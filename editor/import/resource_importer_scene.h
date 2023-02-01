@@ -56,7 +56,7 @@ protected:
 	Node *import_scene_wrapper(const String &p_path, uint32_t p_flags, Dictionary p_options);
 	Ref<Animation> import_animation_wrapper(const String &p_path, uint32_t p_flags, Dictionary p_options);
 
-	GDVIRTUAL0RC(int, _get_import_flags)
+	GDVIRTUAL0RC(uint32_t, _get_import_flags)
 	GDVIRTUAL0RC(Vector<String>, _get_extensions)
 	GDVIRTUAL3R(Object *, _import_scene, String, uint32_t, Dictionary)
 	GDVIRTUAL1(_get_import_options, String)
@@ -279,7 +279,7 @@ public:
 
 	Node *_pre_fix_node(Node *p_node, Node *p_root, HashMap<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> &r_collision_map, Pair<PackedVector3Array, PackedInt32Array> *r_occluder_arrays, List<Pair<NodePath, Node *>> &r_node_renames);
 	Node *_pre_fix_animations(Node *p_node, Node *p_root, const Dictionary &p_node_data, const Dictionary &p_animation_data, float p_animation_fps);
-	Node *_post_fix_node(Node *p_node, Node *p_root, HashMap<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> &collision_map, Pair<PackedVector3Array, PackedInt32Array> &r_occluder_arrays, HashSet<Ref<ImporterMesh>> &r_scanned_meshes, const Dictionary &p_node_data, const Dictionary &p_material_data, const Dictionary &p_animation_data, float p_animation_fps);
+	Node *_post_fix_node(Node *p_node, Node *p_root, HashMap<Ref<ImporterMesh>, Vector<Ref<Shape3D>>> &collision_map, Pair<PackedVector3Array, PackedInt32Array> &r_occluder_arrays, HashSet<Ref<ImporterMesh>> &r_scanned_meshes, const Dictionary &p_node_data, const Dictionary &p_material_data, const Dictionary &p_animation_data, float p_animation_fps, float p_applied_root_scale);
 	Node *_post_fix_animations(Node *p_node, Node *p_root, const Dictionary &p_node_data, const Dictionary &p_animation_data, float p_animation_fps);
 
 	Ref<Animation> _save_animation_to_file(Ref<Animation> anim, bool p_save_to_file, String p_save_to_path, bool p_keep_custom_tracks);
@@ -298,7 +298,7 @@ public:
 	ResourceImporterScene(bool p_animation_import = false);
 
 	template <class M>
-	static Vector<Ref<Shape3D>> get_collision_shapes(const Ref<Mesh> &p_mesh, const M &p_options);
+	static Vector<Ref<Shape3D>> get_collision_shapes(const Ref<Mesh> &p_mesh, const M &p_options, float p_applied_root_scale);
 
 	template <class M>
 	static Transform3D get_collision_shapes_transform(const M &p_options);
@@ -314,7 +314,7 @@ public:
 };
 
 template <class M>
-Vector<Ref<Shape3D>> ResourceImporterScene::get_collision_shapes(const Ref<Mesh> &p_mesh, const M &p_options) {
+Vector<Ref<Shape3D>> ResourceImporterScene::get_collision_shapes(const Ref<Mesh> &p_mesh, const M &p_options, float p_applied_root_scale) {
 	ShapeType generate_shape_type = SHAPE_TYPE_DECOMPOSE_CONVEX;
 	if (p_options.has(SNAME("physics/shape_type"))) {
 		generate_shape_type = (ShapeType)p_options[SNAME("physics/shape_type")].operator int();
@@ -409,7 +409,7 @@ Vector<Ref<Shape3D>> ResourceImporterScene::get_collision_shapes(const Ref<Mesh>
 		Ref<BoxShape3D> box;
 		box.instantiate();
 		if (p_options.has(SNAME("primitive/size"))) {
-			box->set_size(p_options[SNAME("primitive/size")]);
+			box->set_size(p_options[SNAME("primitive/size")].operator Vector3() * p_applied_root_scale);
 		}
 
 		Vector<Ref<Shape3D>> shapes;
@@ -420,7 +420,7 @@ Vector<Ref<Shape3D>> ResourceImporterScene::get_collision_shapes(const Ref<Mesh>
 		Ref<SphereShape3D> sphere;
 		sphere.instantiate();
 		if (p_options.has(SNAME("primitive/radius"))) {
-			sphere->set_radius(p_options[SNAME("primitive/radius")]);
+			sphere->set_radius(p_options[SNAME("primitive/radius")].operator float() * p_applied_root_scale);
 		}
 
 		Vector<Ref<Shape3D>> shapes;
@@ -430,10 +430,10 @@ Vector<Ref<Shape3D>> ResourceImporterScene::get_collision_shapes(const Ref<Mesh>
 		Ref<CylinderShape3D> cylinder;
 		cylinder.instantiate();
 		if (p_options.has(SNAME("primitive/height"))) {
-			cylinder->set_height(p_options[SNAME("primitive/height")]);
+			cylinder->set_height(p_options[SNAME("primitive/height")].operator float() * p_applied_root_scale);
 		}
 		if (p_options.has(SNAME("primitive/radius"))) {
-			cylinder->set_radius(p_options[SNAME("primitive/radius")]);
+			cylinder->set_radius(p_options[SNAME("primitive/radius")].operator float() * p_applied_root_scale);
 		}
 
 		Vector<Ref<Shape3D>> shapes;
@@ -443,10 +443,10 @@ Vector<Ref<Shape3D>> ResourceImporterScene::get_collision_shapes(const Ref<Mesh>
 		Ref<CapsuleShape3D> capsule;
 		capsule.instantiate();
 		if (p_options.has(SNAME("primitive/height"))) {
-			capsule->set_height(p_options[SNAME("primitive/height")]);
+			capsule->set_height(p_options[SNAME("primitive/height")].operator float() * p_applied_root_scale);
 		}
 		if (p_options.has(SNAME("primitive/radius"))) {
-			capsule->set_radius(p_options[SNAME("primitive/radius")]);
+			capsule->set_radius(p_options[SNAME("primitive/radius")].operator float() * p_applied_root_scale);
 		}
 
 		Vector<Ref<Shape3D>> shapes;

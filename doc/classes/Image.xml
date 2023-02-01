@@ -75,12 +75,10 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="mode" type="int" enum="Image.CompressMode" />
 			<param index="1" name="source" type="int" enum="Image.CompressSource" default="0" />
-			<param index="2" name="lossy_quality" type="float" default="0.7" />
-			<param index="3" name="astc_format" type="int" enum="Image.ASTCFormat" default="0" />
+			<param index="2" name="astc_format" type="int" enum="Image.ASTCFormat" default="0" />
 			<description>
 				Compresses the image to use less memory. Can not directly access pixel data while the image is compressed. Returns error if the chosen compression mode is not available.
 				The [param mode] parameter helps to pick the best compression method for DXT and ETC2 formats. It is ignored for ASTC compression.
-				The [param lossy_quality] parameter is optional for compressors that support it.
 				For ASTC compression, the [param astc_format] parameter must be supplied.
 			</description>
 		</method>
@@ -88,12 +86,10 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="mode" type="int" enum="Image.CompressMode" />
 			<param index="1" name="channels" type="int" enum="Image.UsedChannels" />
-			<param index="2" name="lossy_quality" type="float" default="0.7" />
-			<param index="3" name="astc_format" type="int" enum="Image.ASTCFormat" default="0" />
+			<param index="2" name="astc_format" type="int" enum="Image.ASTCFormat" default="0" />
 			<description>
 				Compresses the image to use less memory. Can not directly access pixel data while the image is compressed. Returns error if the chosen compression mode is not available.
 				This is an alternative to [method compress] that lets the user supply the channels used in order for the compressor to pick the best DXT and ETC2 formats. For other formats (non DXT or ETC2), this argument is ignored.
-				The [param lossy_quality] parameter is optional for compressors that support it.
 				For ASTC compression, the [param astc_format] parameter must be supplied.
 			</description>
 		</method>

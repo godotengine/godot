@@ -99,7 +99,7 @@
 			</description>
 		</method>
 		<method name="_object_configuration_add" qualifiers="virtual">
-			<return type="int" />
+			<return type="int" enum="Error" />
 			<param index="0" name="object" type="Object" />
 			<param index="1" name="configuration" type="Variant" />
 			<description>
@@ -107,7 +107,7 @@
 			</description>
 		</method>
 		<method name="_object_configuration_remove" qualifiers="virtual">
-			<return type="int" />
+			<return type="int" enum="Error" />
 			<param index="0" name="object" type="Object" />
 			<param index="1" name="configuration" type="Variant" />
 			<description>
@@ -115,13 +115,13 @@
 			</description>
 		</method>
 		<method name="_poll" qualifiers="virtual">
-			<return type="int" />
+			<return type="int" enum="Error" />
 			<description>
 				Callback for [method MultiplayerAPI.poll].
 			</description>
 		</method>
 		<method name="_rpc" qualifiers="virtual">
-			<return type="int" />
+			<return type="int" enum="Error" />
 			<param index="0" name="peer" type="int" />
 			<param index="1" name="object" type="Object" />
 			<param index="2" name="method" type="StringName" />

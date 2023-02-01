@@ -43,10 +43,25 @@ RID World2D::get_canvas() const {
 }
 
 RID World2D::get_space() const {
+	if (space.is_null()) {
+		space = PhysicsServer2D::get_singleton()->space_create();
+		PhysicsServer2D::get_singleton()->space_set_active(space, true);
+		PhysicsServer2D::get_singleton()->area_set_param(space, PhysicsServer2D::AREA_PARAM_GRAVITY, GLOBAL_GET("physics/2d/default_gravity"));
+		PhysicsServer2D::get_singleton()->area_set_param(space, PhysicsServer2D::AREA_PARAM_GRAVITY_VECTOR, GLOBAL_GET("physics/2d/default_gravity_vector"));
+		PhysicsServer2D::get_singleton()->area_set_param(space, PhysicsServer2D::AREA_PARAM_LINEAR_DAMP, GLOBAL_GET("physics/2d/default_linear_damp"));
+		PhysicsServer2D::get_singleton()->area_set_param(space, PhysicsServer2D::AREA_PARAM_ANGULAR_DAMP, GLOBAL_GET("physics/2d/default_angular_damp"));
+	}
 	return space;
 }
 
 RID World2D::get_navigation_map() const {
+	if (navigation_map.is_null()) {
+		navigation_map = NavigationServer2D::get_singleton()->map_create();
+		NavigationServer2D::get_singleton()->map_set_active(navigation_map, true);
+		NavigationServer2D::get_singleton()->map_set_cell_size(navigation_map, GLOBAL_GET("navigation/2d/default_cell_size"));
+		NavigationServer2D::get_singleton()->map_set_edge_connection_margin(navigation_map, GLOBAL_GET("navigation/2d/default_edge_connection_margin"));
+		NavigationServer2D::get_singleton()->map_set_link_connection_radius(navigation_map, GLOBAL_GET("navigation/2d/default_link_connection_radius"));
+	}
 	return navigation_map;
 }
 
@@ -64,26 +79,11 @@ void World2D::_bind_methods() {
 }
 
 PhysicsDirectSpaceState2D *World2D::get_direct_space_state() {
-	return PhysicsServer2D::get_singleton()->space_get_direct_state(space);
+	return PhysicsServer2D::get_singleton()->space_get_direct_state(get_space());
 }
 
 World2D::World2D() {
 	canvas = RenderingServer::get_singleton()->canvas_create();
-
-	// Create and configure space2D to be more friendly with pixels than meters
-	space = PhysicsServer2D::get_singleton()->space_create();
-	PhysicsServer2D::get_singleton()->space_set_active(space, true);
-	PhysicsServer2D::get_singleton()->area_set_param(space, PhysicsServer2D::AREA_PARAM_GRAVITY, GLOBAL_DEF_BASIC("physics/2d/default_gravity", 980.0));
-	PhysicsServer2D::get_singleton()->area_set_param(space, PhysicsServer2D::AREA_PARAM_GRAVITY_VECTOR, GLOBAL_DEF_BASIC("physics/2d/default_gravity_vector", Vector2(0, 1)));
-	PhysicsServer2D::get_singleton()->area_set_param(space, PhysicsServer2D::AREA_PARAM_LINEAR_DAMP, GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/2d/default_linear_damp", PROPERTY_HINT_RANGE, "-1,100,0.001,or_greater"), 0.1));
-	PhysicsServer2D::get_singleton()->area_set_param(space, PhysicsServer2D::AREA_PARAM_ANGULAR_DAMP, GLOBAL_DEF(PropertyInfo(Variant::FLOAT, "physics/2d/default_angular_damp", PROPERTY_HINT_RANGE, "-1,100,0.001,or_greater"), 1.0));
-
-	// Create and configure the navigation_map to be more friendly with pixels than meters.
-	navigation_map = NavigationServer2D::get_singleton()->map_create();
-	NavigationServer2D::get_singleton()->map_set_active(navigation_map, true);
-	NavigationServer2D::get_singleton()->map_set_cell_size(navigation_map, GLOBAL_DEF("navigation/2d/default_cell_size", 1));
-	NavigationServer2D::get_singleton()->map_set_edge_connection_margin(navigation_map, GLOBAL_DEF("navigation/2d/default_edge_connection_margin", 1));
-	NavigationServer2D::get_singleton()->map_set_link_connection_radius(navigation_map, GLOBAL_DEF("navigation/2d/default_link_connection_radius", 4));
 }
 
 World2D::~World2D() {
@@ -91,6 +91,10 @@ World2D::~World2D() {
 	ERR_FAIL_NULL(PhysicsServer2D::get_singleton());
 	ERR_FAIL_NULL(NavigationServer2D::get_singleton());
 	RenderingServer::get_singleton()->free(canvas);
-	PhysicsServer2D::get_singleton()->free(space);
-	NavigationServer2D::get_singleton()->free(navigation_map);
+	if (space.is_valid()) {
+		PhysicsServer2D::get_singleton()->free(space);
+	}
+	if (navigation_map.is_valid()) {
+		NavigationServer2D::get_singleton()->free(navigation_map);
+	}
 }

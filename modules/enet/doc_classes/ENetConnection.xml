@@ -84,19 +84,17 @@
 		</method>
 		<method name="dtls_client_setup">
 			<return type="int" enum="Error" />
-			<param index="0" name="certificate" type="X509Certificate" />
-			<param index="1" name="hostname" type="String" />
-			<param index="2" name="verify" type="bool" default="true" />
+			<param index="0" name="hostname" type="String" />
+			<param index="1" name="client_options" type="TLSOptions" default="null" />
 			<description>
-				Configure this ENetHost to use the custom Godot extension allowing DTLS encryption for ENet clients. Call this before [method connect_to_host] to have ENet connect using DTLS with [code]certificate[/code] and [code]hostname[/code] verification. Verification can be optionally turned off via the [code]verify[/code] parameter.
+				Configure this ENetHost to use the custom Godot extension allowing DTLS encryption for ENet clients. Call this before [method connect_to_host] to have ENet connect using DTLS validating the server certificate against [code]hostname[/code]. You can pass the optional [param client_options] parameter to customize the trusted certification authorities, or disable the common name verification. See [method TLSOptions.client] and [method TLSOptions.client_unsafe].
 			</description>
 		</method>
 		<method name="dtls_server_setup">
 			<return type="int" enum="Error" />
-			<param index="0" name="key" type="CryptoKey" />
-			<param index="1" name="certificate" type="X509Certificate" />
+			<param index="0" name="server_options" type="TLSOptions" />
 			<description>
-				Configure this ENetHost to use the custom Godot extension allowing DTLS encryption for ENet servers. Call this right after [method create_host_bound] to have ENet expect peers to connect using DTLS.
+				Configure this ENetHost to use the custom Godot extension allowing DTLS encryption for ENet servers. Call this right after [method create_host_bound] to have ENet expect peers to connect using DTLS. See [method TLSOptions.server].
 			</description>
 		</method>
 		<method name="flush">

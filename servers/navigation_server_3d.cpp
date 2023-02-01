@@ -30,9 +30,7 @@
 
 #include "navigation_server_3d.h"
 
-#ifdef DEBUG_ENABLED
 #include "core/config/project_settings.h"
-#endif // DEBUG_ENABLED
 
 NavigationServer3D *NavigationServer3D::singleton = nullptr;
 
@@ -145,6 +143,14 @@ NavigationServer3D::NavigationServer3D() {
 	ERR_FAIL_COND(singleton != nullptr);
 	singleton = this;
 
+	GLOBAL_DEF("navigation/2d/default_cell_size", 1);
+	GLOBAL_DEF("navigation/2d/default_edge_connection_margin", 1);
+	GLOBAL_DEF("navigation/2d/default_link_connection_radius", 4);
+
+	GLOBAL_DEF("navigation/3d/default_cell_size", 0.25);
+	GLOBAL_DEF("navigation/3d/default_edge_connection_margin", 0.25);
+	GLOBAL_DEF("navigation/3d/default_link_connection_radius", 1.0);
+
 #ifdef DEBUG_ENABLED
 	debug_navigation_edge_connection_color = GLOBAL_DEF("debug/shapes/navigation/edge_connection_color", Color(1.0, 0.0, 1.0, 1.0));
 	debug_navigation_geometry_edge_color = GLOBAL_DEF("debug/shapes/navigation/geometry_edge_color", Color(0.5, 1.0, 1.0, 1.0));
@@ -153,6 +159,7 @@ NavigationServer3D::NavigationServer3D() {
 	debug_navigation_geometry_face_disabled_color = GLOBAL_DEF("debug/shapes/navigation/geometry_face_disabled_color", Color(0.5, 0.5, 0.5, 0.4));
 	debug_navigation_link_connection_color = GLOBAL_DEF("debug/shapes/navigation/link_connection_color", Color(1.0, 0.5, 1.0, 1.0));
 	debug_navigation_link_connection_disabled_color = GLOBAL_DEF("debug/shapes/navigation/link_connection_disabled_color", Color(0.5, 0.5, 0.5, 1.0));
+	debug_navigation_agent_path_color = GLOBAL_DEF("debug/shapes/navigation/agent_path_color", Color(1.0, 0.0, 0.0, 1.0));
 
 	debug_navigation_enable_edge_connections = GLOBAL_DEF("debug/shapes/navigation/enable_edge_connections", true);
 	debug_navigation_enable_edge_connections_xray = GLOBAL_DEF("debug/shapes/navigation/enable_edge_connections_xray", true);
@@ -161,6 +168,11 @@ NavigationServer3D::NavigationServer3D() {
 	debug_navigation_enable_geometry_face_random_color = GLOBAL_DEF("debug/shapes/navigation/enable_geometry_face_random_color", true);
 	debug_navigation_enable_link_connections = GLOBAL_DEF("debug/shapes/navigation/enable_link_connections", true);
 	debug_navigation_enable_link_connections_xray = GLOBAL_DEF("debug/shapes/navigation/enable_link_connections_xray", true);
+
+	debug_navigation_enable_agent_paths = GLOBAL_DEF("debug/shapes/navigation/enable_agent_paths", true);
+	debug_navigation_enable_agent_paths_xray = GLOBAL_DEF("debug/shapes/navigation/enable_agent_paths_xray", true);
+
+	debug_navigation_agent_path_point_size = GLOBAL_DEF("debug/shapes/navigation/agent_path_point_size", 4.0);
 
 	if (Engine::get_singleton()->is_editor_hint()) {
 		// enable NavigationServer3D when in Editor or else navigation mesh edge connections are invisible
@@ -323,6 +335,42 @@ Ref<StandardMaterial3D> NavigationServer3D::get_debug_navigation_link_connection
 	return debug_navigation_link_connections_disabled_material;
 }
 
+Ref<StandardMaterial3D> NavigationServer3D::get_debug_navigation_agent_path_line_material() {
+	if (debug_navigation_agent_path_line_material.is_valid()) {
+		return debug_navigation_agent_path_line_material;
+	}
+
+	Ref<StandardMaterial3D> material = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
+	material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+	material->set_albedo(debug_navigation_agent_path_color);
+	if (debug_navigation_enable_agent_paths_xray) {
+		material->set_flag(StandardMaterial3D::FLAG_DISABLE_DEPTH_TEST, true);
+	}
+	material->set_render_priority(StandardMaterial3D::RENDER_PRIORITY_MAX - 2);
+
+	debug_navigation_agent_path_line_material = material;
+	return debug_navigation_agent_path_line_material;
+}
+
+Ref<StandardMaterial3D> NavigationServer3D::get_debug_navigation_agent_path_point_material() {
+	if (debug_navigation_agent_path_point_material.is_valid()) {
+		return debug_navigation_agent_path_point_material;
+	}
+
+	Ref<StandardMaterial3D> material = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
+	material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+	material->set_albedo(debug_navigation_agent_path_color);
+	material->set_flag(StandardMaterial3D::FLAG_USE_POINT_SIZE, true);
+	material->set_point_size(debug_navigation_agent_path_point_size);
+	if (debug_navigation_enable_agent_paths_xray) {
+		material->set_flag(StandardMaterial3D::FLAG_DISABLE_DEPTH_TEST, true);
+	}
+	material->set_render_priority(StandardMaterial3D::RENDER_PRIORITY_MAX - 2);
+
+	debug_navigation_agent_path_point_material = material;
+	return debug_navigation_agent_path_point_material;
+}
+
 void NavigationServer3D::set_debug_navigation_edge_connection_color(const Color &p_color) {
 	debug_navigation_edge_connection_color = p_color;
 	if (debug_navigation_edge_connections_material.is_valid()) {
@@ -398,6 +446,31 @@ void NavigationServer3D::set_debug_navigation_link_connection_disabled_color(con
 
 Color NavigationServer3D::get_debug_navigation_link_connection_disabled_color() const {
 	return debug_navigation_link_connection_disabled_color;
+}
+
+void NavigationServer3D::set_debug_navigation_agent_path_point_size(float p_point_size) {
+	debug_navigation_agent_path_point_size = MAX(0.1, p_point_size);
+	if (debug_navigation_agent_path_point_material.is_valid()) {
+		debug_navigation_agent_path_point_material->set_point_size(debug_navigation_agent_path_point_size);
+	}
+}
+
+float NavigationServer3D::get_debug_navigation_agent_path_point_size() const {
+	return debug_navigation_agent_path_point_size;
+}
+
+void NavigationServer3D::set_debug_navigation_agent_path_color(const Color &p_color) {
+	debug_navigation_agent_path_color = p_color;
+	if (debug_navigation_agent_path_line_material.is_valid()) {
+		debug_navigation_agent_path_line_material->set_albedo(debug_navigation_agent_path_color);
+	}
+	if (debug_navigation_agent_path_point_material.is_valid()) {
+		debug_navigation_agent_path_point_material->set_albedo(debug_navigation_agent_path_color);
+	}
+}
+
+Color NavigationServer3D::get_debug_navigation_agent_path_color() const {
+	return debug_navigation_agent_path_color;
 }
 
 void NavigationServer3D::set_debug_navigation_enable_edge_connections(const bool p_value) {
@@ -488,6 +561,37 @@ void NavigationServer3D::set_debug_enabled(bool p_enabled) {
 bool NavigationServer3D::get_debug_enabled() const {
 	return debug_enabled;
 }
+
+void NavigationServer3D::set_debug_navigation_enable_agent_paths(const bool p_value) {
+	if (debug_navigation_enable_agent_paths != p_value) {
+		debug_dirty = true;
+	}
+
+	debug_navigation_enable_agent_paths = p_value;
+
+	if (debug_dirty) {
+		call_deferred("_emit_navigation_debug_changed_signal");
+	}
+}
+
+bool NavigationServer3D::get_debug_navigation_enable_agent_paths() const {
+	return debug_navigation_enable_agent_paths;
+}
+
+void NavigationServer3D::set_debug_navigation_enable_agent_paths_xray(const bool p_value) {
+	debug_navigation_enable_agent_paths_xray = p_value;
+	if (debug_navigation_agent_path_line_material.is_valid()) {
+		debug_navigation_agent_path_line_material->set_flag(StandardMaterial3D::FLAG_DISABLE_DEPTH_TEST, debug_navigation_enable_agent_paths_xray);
+	}
+	if (debug_navigation_agent_path_point_material.is_valid()) {
+		debug_navigation_agent_path_point_material->set_flag(StandardMaterial3D::FLAG_DISABLE_DEPTH_TEST, debug_navigation_enable_agent_paths_xray);
+	}
+}
+
+bool NavigationServer3D::get_debug_navigation_enable_agent_paths_xray() const {
+	return debug_navigation_enable_agent_paths_xray;
+}
+
 #endif // DEBUG_ENABLED
 
 ///////////////////////////////////////////////////////

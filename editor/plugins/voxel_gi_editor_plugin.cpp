@@ -101,12 +101,12 @@ void VoxelGIEditorPlugin::_notification(int p_what) {
 			// Set information tooltip on the Bake button. This information is useful
 			// to optimize performance (video RAM size) and reduce light leaking (individual cell size).
 
-			const Vector3i size = voxel_gi->get_estimated_cell_size();
+			const Vector3i cell_size = voxel_gi->get_estimated_cell_size();
 
-			const Vector3 extents = voxel_gi->get_extents();
+			const Vector3 half_size = voxel_gi->get_size() / 2;
 
 			const int data_size = 4;
-			const double size_mb = size.x * size.y * size.z * data_size / (1024.0 * 1024.0);
+			const double size_mb = cell_size.x * cell_size.y * cell_size.z * data_size / (1024.0 * 1024.0);
 			// Add a qualitative measurement to help the user assess whether a VoxelGI node is using a lot of VRAM.
 			String size_quality;
 			if (size_mb < 16.0) {
@@ -118,8 +118,8 @@ void VoxelGIEditorPlugin::_notification(int p_what) {
 			}
 
 			String text;
-			text += vformat(TTR("Subdivisions: %s"), vformat(String::utf8("%d × %d × %d"), size.x, size.y, size.z)) + "\n";
-			text += vformat(TTR("Cell size: %s"), vformat(String::utf8("%.3f × %.3f × %.3f"), extents.x / size.x, extents.y / size.y, extents.z / size.z)) + "\n";
+			text += vformat(TTR("Subdivisions: %s"), vformat(String::utf8("%d × %d × %d"), cell_size.x, cell_size.y, cell_size.z)) + "\n";
+			text += vformat(TTR("Cell size: %s"), vformat(String::utf8("%.3f × %.3f × %.3f"), half_size.x / cell_size.x, half_size.y / cell_size.y, half_size.z / cell_size.z)) + "\n";
 			text += vformat(TTR("Video RAM size: %s MB (%s)"), String::num(size_mb, 2), size_quality);
 
 			// Only update the tooltip when needed to avoid constant redrawing.

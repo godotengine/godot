@@ -71,7 +71,7 @@ public:
 
 	GDVIRTUAL0RC(PackedStringArray, _get_suggested_tracker_names);
 	GDVIRTUAL1RC(PackedStringArray, _get_suggested_pose_names, const StringName &);
-	GDVIRTUAL0RC(uint32_t, _get_tracking_status);
+	GDVIRTUAL0RC(XRInterface::TrackingStatus, _get_tracking_status);
 	GDVIRTUAL6(_trigger_haptic_pulse, const String &, const StringName &, double, double, double, double);
 
 	/** specific to VR **/
@@ -81,8 +81,8 @@ public:
 	virtual PackedVector3Array get_play_area() const override; /* if available, returns an array of vectors denoting the play area the player can move around in */
 
 	GDVIRTUAL1RC(bool, _supports_play_area_mode, XRInterface::PlayAreaMode);
-	GDVIRTUAL0RC(uint32_t, _get_play_area_mode);
-	GDVIRTUAL1RC(bool, _set_play_area_mode, uint32_t);
+	GDVIRTUAL0RC(XRInterface::PlayAreaMode, _get_play_area_mode);
+	GDVIRTUAL1RC(bool, _set_play_area_mode, XRInterface::PlayAreaMode);
 	GDVIRTUAL0RC(PackedVector3Array, _get_play_area);
 
 	/** specific to AR **/

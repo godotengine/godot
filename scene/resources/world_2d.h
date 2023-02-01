@@ -43,8 +43,8 @@ class World2D : public Resource {
 	GDCLASS(World2D, Resource);
 
 	RID canvas;
-	RID space;
-	RID navigation_map;
+	mutable RID space;
+	mutable RID navigation_map;
 
 	HashSet<Viewport *> viewports;
 

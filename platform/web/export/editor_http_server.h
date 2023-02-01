@@ -205,8 +205,7 @@ public:
 			if (tls.is_null()) {
 				tls = Ref<StreamPeerTLS>(StreamPeerTLS::create());
 				peer = tls;
-				tls->set_blocking_handshake_enabled(false);
-				if (tls->accept_stream(tcp, key, cert) != OK) {
+				if (tls->accept_stream(tcp, TLSOptions::server(key, cert)) != OK) {
 					_clear_client();
 					return;
 				}

@@ -233,7 +233,6 @@
 			<description>
 				Returns a new color from [param rgba], an HTML hexadecimal color string. [param rgba] is not case-sensitive, and may be prefixed by a hash sign ([code]#[/code]).
 				[param rgba] must be a valid three-digit or six-digit hexadecimal color string, and may contain an alpha channel value. If [param rgba] does not contain an alpha channel value, an alpha channel value of 1.0 is applied. If [param rgba] is invalid, returns an empty color.
-				[b]Note:[/b] In C#, this method is not implemented. The same functionality is provided by the Color constructor.
 				[codeblocks]
 				[gdscript]
 				var blue = Color.html("#0000ff") # blue is Color(0.0, 0.0, 1.0, 1.0)
@@ -264,13 +263,13 @@
 				Color.html_is_valid("#55aaFF5")  # Returns false
 				[/gdscript]
 				[csharp]
-				Color.IsHtmlValid("#55AAFF");   // Returns true
-				Color.IsHtmlValid("#55AAFF20"); // Returns true
-				Color.IsHtmlValid("55AAFF");    // Returns true
-				Color.IsHtmlValid("#F2C");      // Returns true
+				Color.HtmlIsValid("#55AAFF");   // Returns true
+				Color.HtmlIsValid("#55AAFF20"); // Returns true
+				Color.HtmlIsValid("55AAFF");    // Returns true
+				Color.HtmlIsValid("#F2C");      // Returns true
 
-				Color.IsHtmlValid("#AABBC");    // Returns false
-				Color.IsHtmlValid("#55aaFF5");  // Returns false
+				Color.HtmlIsValid("#AABBC");    // Returns false
+				Color.HtmlIsValid("#55aaFF5");  // Returns false
 				[/csharp]
 				[/codeblocks]
 			</description>

@@ -102,6 +102,8 @@ class EditorPropertyArray : public EditorProperty {
 	HBoxContainer *reorder_selected_element_hbox = nullptr;
 	Button *reorder_selected_button = nullptr;
 
+	void initialize_array(Variant &p_array);
+
 	void _page_changed(int p_page);
 
 	void _reorder_button_gui_input(const Ref<InputEvent> &p_event);

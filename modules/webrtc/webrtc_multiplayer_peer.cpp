@@ -128,7 +128,6 @@ void WebRTCMultiplayerPeer::poll() {
 			// Server connected.
 			connection_status = CONNECTION_CONNECTED;
 			emit_signal(SNAME("peer_connected"), TARGET_PEER_SERVER);
-			emit_signal(SNAME("connection_succeeded"));
 		} else {
 			emit_signal(SNAME("peer_connected"), E);
 		}

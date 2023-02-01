@@ -44,6 +44,10 @@
 		<member name="noise" type="Noise" setter="set_noise" getter="get_noise">
 			The instance of the [Noise] object.
 		</member>
+		<member name="normalize" type="bool" setter="set_normalize" getter="is_normalized" default="true">
+			If [code]true[/code], the noise image coming from the noise generator is normalized to the range [code]0.0[/code] to [code]1.0[/code].
+			Turning normalization off can affect the contrast and allows you to generate non repeating tileable noise textures.
+		</member>
 		<member name="resource_local_to_scene" type="bool" setter="set_local_to_scene" getter="is_local_to_scene" overrides="Resource" default="false" />
 		<member name="seamless" type="bool" setter="set_seamless" getter="get_seamless" default="false">
 			If [code]true[/code], a seamless texture is requested from the [Noise] resource.
