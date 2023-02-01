@@ -32,6 +32,7 @@
 
 #include "extensions/gltf_spec_gloss.h"
 
+#include "core/config/project_settings.h"
 #include "core/crypto/crypto_core.h"
 #include "core/io/config_file.h"
 #include "core/io/dir_access.h"
@@ -3220,8 +3221,8 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_p
 		if (GLTFState::GLTFHandleBinary(p_state->handle_binary_image) == GLTFState::GLTFHandleBinary::HANDLE_BINARY_DISCARD_TEXTURES) {
 			p_state->images.push_back(Ref<Texture2D>());
 			p_state->source_images.push_back(Ref<Image>());
-			continue;
-		} else if (GLTFState::GLTFHandleBinary(p_state->handle_binary_image) == GLTFState::GLTFHandleBinary::HANDLE_BINARY_EXTRACT_TEXTURES) {
+#ifdef TOOLS_ENABLED
+		} else if (Engine::get_singleton()->is_editor_hint() && GLTFState::GLTFHandleBinary(p_state->handle_binary_image) == GLTFState::GLTFHandleBinary::HANDLE_BINARY_EXTRACT_TEXTURES) {
 			if (p_state->base_path.is_empty()) {
 				p_state->images.push_back(Ref<Texture2D>());
 				p_state->source_images.push_back(Ref<Image>());
@@ -3230,26 +3231,56 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_p
 				p_state->images.push_back(Ref<Texture2D>());
 				p_state->source_images.push_back(Ref<Image>());
 			} else {
-				String file_path = p_state->get_base_path() + "/" + p_state->filename.get_basename() + "_" + img->get_name() + ".png";
-				Ref<ConfigFile> config;
-				config.instantiate();
-				if (FileAccess::exists(file_path + ".import")) {
-					config->load(file_path + ".import");
-				}
-				config->set_value("remap", "importer", "texture");
-				config->set_value("remap", "type", "Texture2D");
-				if (!config->has_section_key("params", "compress/mode")) {
-					config->set_value("remap", "compress/mode", 2); //user may want another compression, so leave it bes
-				}
-				if (!config->has_section_key("params", "mipmaps/generate")) {
-					config->set_value("params", "mipmaps/generate", true);
-				}
 				Error err = OK;
-				err = config->save(file_path + ".import");
-				ERR_FAIL_COND_V(err != OK, err);
-				img->save_png(file_path);
-				ERR_FAIL_COND_V(err != OK, err);
-				ResourceLoader::import(file_path);
+				bool must_import = false;
+				String file_path = p_state->get_base_path() + "/" + p_state->filename.get_basename() + "_" + img->get_name() + ".png";
+				if (!FileAccess::exists(file_path + ".import")) {
+					Ref<ConfigFile> config;
+					config.instantiate();
+					config->set_value("remap", "importer", "texture");
+					config->set_value("remap", "type", "Texture2D");
+					// Currently, it will likely use project defaults of Detect 3D, so textures will be reimported again.
+					if (!config->has_section_key("params", "mipmaps/generate")) {
+						config->set_value("params", "mipmaps/generate", true);
+					}
+
+					if (ProjectSettings::get_singleton()->has_setting("importer_defaults/texture")) {
+						//use defaults if exist
+						Dictionary importer_defaults = GLOBAL_GET("importer_defaults/texture");
+						List<Variant> importer_def_keys;
+						importer_defaults.get_key_list(&importer_def_keys);
+						for (const Variant &key : importer_def_keys) {
+							if (!config->has_section_key("params", (String)key)) {
+								config->set_value("params", (String)key, importer_defaults[key]);
+							}
+						}
+					}
+					err = config->save(file_path + ".import");
+					ERR_FAIL_COND_V(err != OK, err);
+					must_import = true;
+				}
+				Vector<uint8_t> png_buffer = img->save_png_to_buffer();
+				if (ResourceLoader::exists(file_path)) {
+					Ref<FileAccess> file = FileAccess::open(file_path, FileAccess::READ, &err);
+					if (err == OK && file.is_valid()) {
+						Vector<uint8_t> orig_png_buffer = file->get_buffer(file->get_length());
+						if (png_buffer != orig_png_buffer) {
+							must_import = true;
+						}
+					}
+				} else {
+					must_import = true;
+				}
+				if (must_import) {
+					Ref<FileAccess> file = FileAccess::open(file_path, FileAccess::WRITE, &err);
+					ERR_FAIL_COND_V(err != OK, err);
+					ERR_FAIL_COND_V(file.is_null(), FAILED);
+					file->store_buffer(png_buffer);
+					file->flush();
+					file.unref();
+					// ResourceLoader::import will crash if not is_editor_hint(), so this case is protected above and will fall through to uncompressed.
+					ResourceLoader::import(file_path);
+				}
 				Ref<Texture2D> saved_image = ResourceLoader::load(file_path, "Texture2D");
 				if (saved_image.is_valid()) {
 					p_state->images.push_back(saved_image);
@@ -3261,7 +3292,7 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_p
 					p_state->source_images.push_back(Ref<Image>());
 				}
 			}
-			continue;
+#endif
 		} else if (GLTFState::GLTFHandleBinary(p_state->handle_binary_image) == GLTFState::GLTFHandleBinary::HANDLE_BINARY_EMBED_AS_BASISU) {
 			Ref<PortableCompressedTexture2D> tex;
 			tex.instantiate();
@@ -3271,11 +3302,15 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_p
 			tex->create_from_image(img, PortableCompressedTexture2D::COMPRESSION_MODE_BASIS_UNIVERSAL);
 			p_state->images.push_back(tex);
 			p_state->source_images.push_back(img);
-			continue;
+		} else {
+			// This handles two cases: if editor hint and HANDLE_BINARY_EXTRACT_TEXTURES; or if HANDLE_BINARY_EMBED_AS_UNCOMPRESSED
+			Ref<ImageTexture> tex;
+			tex.instantiate();
+			tex->set_name(img->get_name());
+			tex->set_image(img);
+			p_state->images.push_back(tex);
+			p_state->source_images.push_back(img);
 		}
-
-		p_state->images.push_back(Ref<Texture2D>());
-		p_state->source_images.push_back(Ref<Image>());
 	}
 
 	print_verbose("glTF: Total images: " + itos(p_state->images.size()));
