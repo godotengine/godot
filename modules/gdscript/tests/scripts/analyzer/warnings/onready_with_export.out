@@ -1,6 +1,0 @@
-GDTEST_OK
->> WARNING
->> Line: 3
->> ONREADY_WITH_EXPORT
->> The "@onready" annotation will make the default value to be set after the "@export" takes effect and will override it.
-warn

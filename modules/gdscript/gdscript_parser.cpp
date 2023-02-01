@@ -158,10 +158,14 @@ void GDScriptParser::push_warning(const Node *p_source, GDScriptWarning::Code p_
 		return;
 	}
 
-	if (ignored_warnings.has(p_code)) {
+	if (ignored_warning_codes.has(p_code)) {
 		return;
 	}
 
+	String warn_name = GDScriptWarning::get_name_from_code((GDScriptWarning::Code)p_code).to_lower();
+	if (ignored_warnings.has(warn_name)) {
+		return;
+	}
 	int warn_level = (int)GLOBAL_GET(GDScriptWarning::get_settings_path_from_code(p_code));
 	if (!warn_level) {
 		return;
@@ -176,7 +180,7 @@ void GDScriptParser::push_warning(const Node *p_source, GDScriptWarning::Code p_
 	warning.rightmost_column = p_source->rightmost_column;
 
 	if (warn_level == GDScriptWarning::WarnLevel::ERROR || bool(GLOBAL_GET("debug/gdscript/warnings/treat_warnings_as_errors"))) {
-		push_error(warning.get_message() + String(" (Warning treated as error.)"), p_source);
+		push_error(warning.get_message(), p_source);
 		return;
 	}
 
@@ -3544,11 +3548,7 @@ const GDScriptParser::SuiteNode::Local &GDScriptParser::SuiteNode::get_local(con
 	return empty;
 }
 
-bool GDScriptParser::AnnotationNode::apply(GDScriptParser *p_this, Node *p_target) {
-	if (is_applied) {
-		return true;
-	}
-	is_applied = true;
+bool GDScriptParser::AnnotationNode::apply(GDScriptParser *p_this, Node *p_target) const {
 	return (p_this->*(p_this->valid_annotations[name].apply))(this, p_target);
 }
 
