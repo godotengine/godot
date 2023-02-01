@@ -591,14 +591,12 @@ void ConnectDialog::popup_dialog(const String p_for_signal) {
 
 void ConnectDialog::_advanced_pressed() {
 	if (advanced->is_pressed()) {
-		set_min_size(Size2(900, 500) * EDSCALE);
 		connect_to_label->set_text(TTR("Connect to Node:"));
 		tree->set_connect_to_script_mode(false);
 
 		vbc_right->show();
 		error_label->hide();
 	} else {
-		set_min_size(Size2(600, 500) * EDSCALE);
 		reset_size();
 		connect_to_label->set_text(TTR("Connect to Script:"));
 		tree->set_connect_to_script_mode(true);
@@ -613,18 +611,15 @@ void ConnectDialog::_advanced_pressed() {
 }
 
 ConnectDialog::ConnectDialog() {
-	set_min_size(Size2(600, 500) * EDSCALE);
-
-	VBoxContainer *vbc = memnew(VBoxContainer);
-	add_child(vbc);
+	set_min_size(Size2(0, 500) * EDSCALE);
 
 	HBoxContainer *main_hb = memnew(HBoxContainer);
-	vbc->add_child(main_hb);
-	main_hb->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	add_child(main_hb);
 
 	VBoxContainer *vbc_left = memnew(VBoxContainer);
 	main_hb->add_child(vbc_left);
 	vbc_left->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	vbc_left->set_custom_minimum_size(Vector2(400 * EDSCALE, 0));
 
 	from_signal = memnew(LineEdit);
 	vbc_left->add_margin_child(TTR("From Signal:"), from_signal);
@@ -685,6 +680,7 @@ ConnectDialog::ConnectDialog() {
 	vbc_right = memnew(VBoxContainer);
 	main_hb->add_child(vbc_right);
 	vbc_right->set_h_size_flags(Control::SIZE_EXPAND_FILL);
+	vbc_right->set_custom_minimum_size(Vector2(150 * EDSCALE, 0));
 	vbc_right->hide();
 
 	HBoxContainer *add_bind_hb = memnew(HBoxContainer);
