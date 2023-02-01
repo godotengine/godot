@@ -640,9 +640,9 @@ public:
 	RendererRD::SSEffects *get_ss_effects() { return ss_effects; }
 
 	/* callback from updating our lighting UBOs, used to populate cluster builder */
-	virtual void setup_added_reflection_probe(const Transform3D &p_transform, const Vector3 &p_half_extents) override;
+	virtual void setup_added_reflection_probe(const Transform3D &p_transform, const Vector3 &p_half_size) override;
 	virtual void setup_added_light(const RS::LightType p_type, const Transform3D &p_transform, float p_radius, float p_spot_aperture) override;
-	virtual void setup_added_decal(const Transform3D &p_transform, const Vector3 &p_half_extents) override;
+	virtual void setup_added_decal(const Transform3D &p_transform, const Vector3 &p_half_size) override;
 
 	virtual void base_uniforms_changed() override;
 	_FORCE_INLINE_ virtual void update_uniform_sets() override {

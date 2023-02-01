@@ -30,14 +30,14 @@
 
 #include "decal.h"
 
-void Decal::set_extents(const Vector3 &p_extents) {
-	extents = p_extents;
-	RS::get_singleton()->decal_set_extents(decal, p_extents);
+void Decal::set_size(const Vector3 &p_size) {
+	size = p_size;
+	RS::get_singleton()->decal_set_size(decal, p_size);
 	update_gizmos();
 }
 
-Vector3 Decal::get_extents() const {
-	return extents;
+Vector3 Decal::get_size() const {
+	return size;
 }
 
 void Decal::set_texture(DecalTexture p_type, const Ref<Texture2D> &p_texture) {
@@ -147,8 +147,8 @@ uint32_t Decal::get_cull_mask() const {
 
 AABB Decal::get_aabb() const {
 	AABB aabb;
-	aabb.position = -extents;
-	aabb.size = extents * 2.0;
+	aabb.position = -size / 2;
+	aabb.size = size;
 	return aabb;
 }
 
@@ -181,8 +181,8 @@ PackedStringArray Decal::get_configuration_warnings() const {
 }
 
 void Decal::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_extents", "extents"), &Decal::set_extents);
-	ClassDB::bind_method(D_METHOD("get_extents"), &Decal::get_extents);
+	ClassDB::bind_method(D_METHOD("set_size", "size"), &Decal::set_size);
+	ClassDB::bind_method(D_METHOD("get_size"), &Decal::get_size);
 
 	ClassDB::bind_method(D_METHOD("set_texture", "type", "texture"), &Decal::set_texture);
 	ClassDB::bind_method(D_METHOD("get_texture", "type"), &Decal::get_texture);
@@ -217,7 +217,7 @@ void Decal::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_cull_mask", "mask"), &Decal::set_cull_mask);
 	ClassDB::bind_method(D_METHOD("get_cull_mask"), &Decal::get_cull_mask);
 
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "extents", PROPERTY_HINT_RANGE, "0,1024,0.001,or_greater,suffix:m"), "set_extents", "get_extents");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "size", PROPERTY_HINT_RANGE, "0,1024,0.001,or_greater,suffix:m"), "set_size", "get_size");
 
 	ADD_GROUP("Textures", "texture_");
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "texture_albedo", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_texture", "get_texture", TEXTURE_ALBEDO);
@@ -251,6 +251,24 @@ void Decal::_bind_methods() {
 	BIND_ENUM_CONSTANT(TEXTURE_EMISSION);
 	BIND_ENUM_CONSTANT(TEXTURE_MAX);
 }
+
+#ifndef DISABLE_DEPRECATED
+bool Decal::_set(const StringName &p_name, const Variant &p_value) {
+	if (p_name == "extents") { // Compatibility with Godot 3.x.
+		set_size((Vector3)p_value * 2);
+		return true;
+	}
+	return false;
+}
+
+bool Decal::_get(const StringName &p_name, Variant &r_property) const {
+	if (p_name == "extents") { // Compatibility with Godot 3.x.
+		r_property = size / 2;
+		return true;
+	}
+	return false;
+}
+#endif // DISABLE_DEPRECATED
 
 Decal::Decal() {
 	decal = RenderingServer::get_singleton()->decal_create();

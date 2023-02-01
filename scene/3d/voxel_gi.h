@@ -118,7 +118,7 @@ private:
 	RID voxel_gi;
 
 	Subdiv subdiv = SUBDIV_128;
-	Vector3 extents = Vector3(10, 10, 10);
+	Vector3 size = Vector3(20, 20, 20);
 	Ref<CameraAttributes> camera_attributes;
 
 	struct PlotMesh {
@@ -133,6 +133,10 @@ private:
 
 protected:
 	static void _bind_methods();
+#ifndef DISABLE_DEPRECATED
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_property) const;
+#endif // DISABLE_DEPRECATED
 
 public:
 	static BakeBeginFunc bake_begin_function;
@@ -145,8 +149,8 @@ public:
 	void set_subdiv(Subdiv p_subdiv);
 	Subdiv get_subdiv() const;
 
-	void set_extents(const Vector3 &p_extents);
-	Vector3 get_extents() const;
+	void set_size(const Vector3 &p_size);
+	Vector3 get_size() const;
 
 	void set_camera_attributes(const Ref<CameraAttributes> &p_camera_attributes);
 	Ref<CameraAttributes> get_camera_attributes() const;

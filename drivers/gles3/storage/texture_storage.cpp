@@ -1547,7 +1547,7 @@ RID TextureStorage::decal_allocate() {
 void TextureStorage::decal_initialize(RID p_rid) {
 }
 
-void TextureStorage::decal_set_extents(RID p_decal, const Vector3 &p_extents) {
+void TextureStorage::decal_set_size(RID p_decal, const Vector3 &p_size) {
 }
 
 void TextureStorage::decal_set_texture(RID p_decal, RS::DecalTexture p_type, RID p_texture) {

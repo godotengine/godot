@@ -74,14 +74,18 @@ public:
 class GPUParticlesCollisionBox3D : public GPUParticlesCollision3D {
 	GDCLASS(GPUParticlesCollisionBox3D, GPUParticlesCollision3D);
 
-	Vector3 extents = Vector3(1, 1, 1);
+	Vector3 size = Vector3(2, 2, 2);
 
 protected:
 	static void _bind_methods();
+#ifndef DISABLE_DEPRECATED
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_property) const;
+#endif // DISABLE_DEPRECATED
 
 public:
-	void set_extents(const Vector3 &p_extents);
-	Vector3 get_extents() const;
+	void set_size(const Vector3 &p_size);
+	Vector3 get_size() const;
 
 	virtual AABB get_aabb() const override;
 
@@ -108,7 +112,7 @@ public:
 	typedef void (*BakeEndFunc)();
 
 private:
-	Vector3 extents = Vector3(1, 1, 1);
+	Vector3 size = Vector3(2, 2, 2);
 	Resolution resolution = RESOLUTION_64;
 	uint32_t bake_mask = 0xFFFFFFFF;
 	Ref<Texture3D> texture;
@@ -160,6 +164,10 @@ private:
 
 protected:
 	static void _bind_methods();
+#ifndef DISABLE_DEPRECATED
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_property) const;
+#endif // DISABLE_DEPRECATED
 
 public:
 	virtual PackedStringArray get_configuration_warnings() const override;
@@ -167,8 +175,8 @@ public:
 	void set_thickness(float p_thickness);
 	float get_thickness() const;
 
-	void set_extents(const Vector3 &p_extents);
-	Vector3 get_extents() const;
+	void set_size(const Vector3 &p_size);
+	Vector3 get_size() const;
 
 	void set_resolution(Resolution p_resolution);
 	Resolution get_resolution() const;
@@ -217,7 +225,7 @@ public:
 	};
 
 private:
-	Vector3 extents = Vector3(1, 1, 1);
+	Vector3 size = Vector3(2, 2, 2);
 	Resolution resolution = RESOLUTION_1024;
 	bool follow_camera_mode = false;
 
@@ -226,10 +234,14 @@ private:
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
+#ifndef DISABLE_DEPRECATED
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_property) const;
+#endif // DISABLE_DEPRECATED
 
 public:
-	void set_extents(const Vector3 &p_extents);
-	Vector3 get_extents() const;
+	void set_size(const Vector3 &p_size);
+	Vector3 get_size() const;
 
 	void set_resolution(Resolution p_resolution);
 	Resolution get_resolution() const;
@@ -301,14 +313,18 @@ public:
 class GPUParticlesAttractorBox3D : public GPUParticlesAttractor3D {
 	GDCLASS(GPUParticlesAttractorBox3D, GPUParticlesAttractor3D);
 
-	Vector3 extents = Vector3(1, 1, 1);
+	Vector3 size = Vector3(2, 2, 2);
 
 protected:
 	static void _bind_methods();
+#ifndef DISABLE_DEPRECATED
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_property) const;
+#endif // DISABLE_DEPRECATED
 
 public:
-	void set_extents(const Vector3 &p_extents);
-	Vector3 get_extents() const;
+	void set_size(const Vector3 &p_size);
+	Vector3 get_size() const;
 
 	virtual AABB get_aabb() const override;
 
@@ -319,15 +335,19 @@ public:
 class GPUParticlesAttractorVectorField3D : public GPUParticlesAttractor3D {
 	GDCLASS(GPUParticlesAttractorVectorField3D, GPUParticlesAttractor3D);
 
-	Vector3 extents = Vector3(1, 1, 1);
+	Vector3 size = Vector3(2, 2, 2);
 	Ref<Texture3D> texture;
 
 protected:
 	static void _bind_methods();
+#ifndef DISABLE_DEPRECATED
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_property) const;
+#endif // DISABLE_DEPRECATED
 
 public:
-	void set_extents(const Vector3 &p_extents);
-	Vector3 get_extents() const;
+	void set_size(const Vector3 &p_size);
+	Vector3 get_size() const;
 
 	void set_texture(const Ref<Texture3D> &p_texture);
 	Ref<Texture3D> get_texture() const;

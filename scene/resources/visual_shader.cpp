@@ -2936,7 +2936,7 @@ const VisualShaderNodeInput::Port VisualShaderNodeInput::ports[] = {
 	{ Shader::MODE_FOG, VisualShader::TYPE_FOG, VisualShaderNode::PORT_TYPE_VECTOR_3D, "world_position", "WORLD_POSITION" },
 	{ Shader::MODE_FOG, VisualShader::TYPE_FOG, VisualShaderNode::PORT_TYPE_VECTOR_3D, "object_position", "OBJECT_POSITION" },
 	{ Shader::MODE_FOG, VisualShader::TYPE_FOG, VisualShaderNode::PORT_TYPE_VECTOR_3D, "uvw", "UVW" },
-	{ Shader::MODE_FOG, VisualShader::TYPE_FOG, VisualShaderNode::PORT_TYPE_VECTOR_3D, "extents", "EXTENTS" },
+	{ Shader::MODE_FOG, VisualShader::TYPE_FOG, VisualShaderNode::PORT_TYPE_VECTOR_3D, "size", "SIZE" },
 	{ Shader::MODE_FOG, VisualShader::TYPE_FOG, VisualShaderNode::PORT_TYPE_SCALAR, "sdf", "SDF" },
 	{ Shader::MODE_FOG, VisualShader::TYPE_FOG, VisualShaderNode::PORT_TYPE_SCALAR, "time", "TIME" },
 
