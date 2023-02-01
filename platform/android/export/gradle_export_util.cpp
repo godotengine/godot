@@ -276,17 +276,39 @@ String _get_xr_features_tag(const Ref<EditorExportPreset> &p_preset) {
 	return manifest_xr_features;
 }
 
-String _get_activity_tag(const Ref<EditorExportPreset> &p_preset) {
+String _get_activity_tag(const Ref<EditorExportPreset> &p_preset, bool p_uses_xr) {
 	String orientation = _get_android_orientation_label(DisplayServer::ScreenOrientation(int(GLOBAL_GET("display/window/handheld/orientation"))));
 	String manifest_activity_text = vformat(
 			"        <activity android:name=\"com.godot.game.GodotApp\" "
 			"tools:replace=\"android:screenOrientation,android:excludeFromRecents,android:resizeableActivity\" "
+			"tools:node=\"mergeOnlyAttributes\" "
 			"android:excludeFromRecents=\"%s\" "
 			"android:screenOrientation=\"%s\" "
 			"android:resizeableActivity=\"%s\">\n",
 			bool_to_string(p_preset->get("package/exclude_from_recents")),
 			orientation,
 			bool_to_string(bool(GLOBAL_GET("display/window/size/resizable"))));
+
+	if (p_uses_xr) {
+		manifest_activity_text += "            <intent-filter>\n"
+								  "                <action android:name=\"android.intent.action.MAIN\" />\n"
+								  "                <category android:name=\"android.intent.category.LAUNCHER\" />\n"
+								  "\n"
+								  "                <!-- Enable access to OpenXR on Oculus mobile devices, no-op on other Android\n"
+								  "                platforms. -->\n"
+								  "                <category android:name=\"com.oculus.intent.category.VR\" />\n"
+								  "\n"
+								  "                <!-- OpenXR category tag to indicate the activity starts in an immersive OpenXR mode. \n"
+								  "                See https://registry.khronos.org/OpenXR/specs/1.0/html/xrspec.html#android-runtime-category. -->\n"
+								  "                <category android:name=\"org.khronos.openxr.intent.category.IMMERSIVE_HMD\" />\n"
+								  "            </intent-filter>\n";
+	} else {
+		manifest_activity_text += "            <intent-filter>\n"
+								  "                <action android:name=\"android.intent.action.MAIN\" />\n"
+								  "                <category android:name=\"android.intent.category.LAUNCHER\" />\n"
+								  "            </intent-filter>\n";
+	}
+
 	manifest_activity_text += "        </activity>\n";
 	return manifest_activity_text;
 }
@@ -307,9 +329,7 @@ String _get_application_tag(const Ref<EditorExportPreset> &p_preset, bool p_has_
 			"        android:hasFragileUserData=\"%s\"\n"
 			"        android:requestLegacyExternalStorage=\"%s\"\n"
 			"        tools:replace=\"android:allowBackup,android:appCategory,android:isGame,android:hasFragileUserData,android:requestLegacyExternalStorage\"\n"
-			"        tools:ignore=\"GoogleAppIndexingWarning\">\n\n"
-			"        <meta-data tools:node=\"remove\" android:name=\"xr_hand_tracking_version_name\" />\n"
-			"        <meta-data tools:node=\"remove\" android:name=\"xr_hand_tracking_metadata_name\" />\n",
+			"        tools:ignore=\"GoogleAppIndexingWarning\">\n\n",
 			bool_to_string(p_preset->get("user_data_backup/allow")),
 			_get_app_category_label(app_category_index),
 			bool_to_string(is_game),
@@ -327,7 +347,7 @@ String _get_application_tag(const Ref<EditorExportPreset> &p_preset, bool p_has_
 			manifest_application_text += "        <meta-data tools:node=\"replace\" android:name=\"com.oculus.handtracking.version\" android:value=\"V2.0\" />\n";
 		}
 	}
-	manifest_application_text += _get_activity_tag(p_preset);
+	manifest_application_text += _get_activity_tag(p_preset, uses_xr);
 	manifest_application_text += "    </application>\n";
 	return manifest_application_text;
 }
