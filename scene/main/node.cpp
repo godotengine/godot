@@ -2135,13 +2135,13 @@ Node *Node::_duplicate(int p_flags, HashMap<const Node *, Node *> *r_duplimap) c
 	} else if ((p_flags & DUPLICATE_USE_INSTANTIATION) && !get_scene_file_path().is_empty()) {
 		Ref<PackedScene> res = ResourceLoader::load(get_scene_file_path());
 		ERR_FAIL_COND_V(res.is_null(), nullptr);
-		PackedScene::GenEditState ges = PackedScene::GEN_EDIT_STATE_DISABLED;
+		PackedScene::GenEditState edit_state = PackedScene::GEN_EDIT_STATE_DISABLED;
 #ifdef TOOLS_ENABLED
 		if (p_flags & DUPLICATE_FROM_EDITOR) {
-			ges = PackedScene::GEN_EDIT_STATE_INSTANCE;
+			edit_state = PackedScene::GEN_EDIT_STATE_INSTANCE;
 		}
 #endif
-		node = res->instantiate(ges);
+		node = res->instantiate(edit_state);
 		ERR_FAIL_COND_V(!node, nullptr);
 		node->set_scene_instance_load_placeholder(get_scene_instance_load_placeholder());
 

@@ -241,8 +241,8 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 	}
 
 	for (int i = 0; i < favorite_paths.size(); i++) {
-		String fave = favorite_paths[i];
-		if (!fave.begins_with("res://")) {
+		String favorite = favorite_paths[i];
+		if (!favorite.begins_with("res://")) {
 			continue;
 		}
 
@@ -252,18 +252,18 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 		String text;
 		Ref<Texture2D> icon;
 		Color color;
-		if (fave == "res://") {
+		if (favorite == "res://") {
 			text = "/";
 			icon = folder_icon;
 			color = folder_color;
-		} else if (fave.ends_with("/")) {
-			text = fave.substr(0, fave.length() - 1).get_file();
+		} else if (favorite.ends_with("/")) {
+			text = favorite.substr(0, favorite.length() - 1).get_file();
 			icon = folder_icon;
 			color = folder_color;
 		} else {
-			text = fave.get_file();
+			text = favorite.get_file();
 			int index;
-			EditorFileSystemDirectory *dir = EditorFileSystem::get_singleton()->find_file(fave, &index);
+			EditorFileSystemDirectory *dir = EditorFileSystem::get_singleton()->find_file(favorite, &index);
 			if (dir) {
 				icon = _get_tree_item_icon(dir->get_file_import_is_valid(index), dir->get_file_type(index));
 			} else {
@@ -277,18 +277,18 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 			ti->set_text(0, text);
 			ti->set_icon(0, icon);
 			ti->set_icon_modulate(0, color);
-			ti->set_tooltip_text(0, fave);
+			ti->set_tooltip_text(0, favorite);
 			ti->set_selectable(0, true);
-			ti->set_metadata(0, fave);
-			if (p_select_in_favorites && fave == path) {
+			ti->set_metadata(0, favorite);
+			if (p_select_in_favorites && favorite == path) {
 				ti->select(0);
 				ti->set_as_cursor(0);
 			}
-			if (!fave.ends_with("/")) {
+			if (!favorite.ends_with("/")) {
 				Array udata;
 				udata.push_back(tree_update_id);
 				udata.push_back(ti);
-				EditorResourcePreview::get_singleton()->queue_resource_preview(fave, this, "_tree_thumbnail_done", udata);
+				EditorResourcePreview::get_singleton()->queue_resource_preview(favorite, this, "_tree_thumbnail_done", udata);
 			}
 		}
 	}
@@ -2643,17 +2643,24 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 			new_menu->add_icon_item(get_theme_icon(SNAME("Script"), SNAME("EditorIcons")), TTR("Script..."), FILE_NEW_SCRIPT);
 			new_menu->add_icon_item(get_theme_icon(SNAME("Object"), SNAME("EditorIcons")), TTR("Resource..."), FILE_NEW_RESOURCE);
 			new_menu->add_icon_item(get_theme_icon(SNAME("TextFile"), SNAME("EditorIcons")), TTR("TextFile..."), FILE_NEW_TEXTFILE);
+#if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
 			p_popup->add_separator();
+#endif
 		}
 
-		String fpath = p_paths[0];
-		bool is_directory = fpath.ends_with("/");
-		String item_text = is_directory ? TTR("Open in File Manager") : TTR("Show in File Manager");
+		const String fpath = p_paths[0];
+
+#if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
+		// Opening the system file manager is not supported on the Android and web editors.
+		const bool is_directory = fpath.ends_with("/");
+		const String item_text = is_directory ? TTR("Open in File Manager") : TTR("Show in File Manager");
 		p_popup->add_icon_shortcut(get_theme_icon(SNAME("Filesystem"), SNAME("EditorIcons")), ED_GET_SHORTCUT("filesystem_dock/show_in_explorer"), FILE_SHOW_IN_EXPLORER);
 		p_popup->set_item_text(p_popup->get_item_index(FILE_SHOW_IN_EXPLORER), item_text);
 		if (!is_directory) {
 			p_popup->add_icon_shortcut(get_theme_icon(SNAME("ExternalLink"), SNAME("EditorIcons")), ED_GET_SHORTCUT("filesystem_dock/open_in_external_program"), FILE_OPEN_EXTERNAL);
 		}
+#endif
+
 		path = fpath;
 	}
 }
@@ -2697,8 +2704,11 @@ void FileSystemDock::_tree_empty_click(const Vector2 &p_pos, MouseButton p_butto
 	tree_popup->add_icon_item(get_theme_icon(SNAME("Script"), SNAME("EditorIcons")), TTR("New Script..."), FILE_NEW_SCRIPT);
 	tree_popup->add_icon_item(get_theme_icon(SNAME("Object"), SNAME("EditorIcons")), TTR("New Resource..."), FILE_NEW_RESOURCE);
 	tree_popup->add_icon_item(get_theme_icon(SNAME("TextFile"), SNAME("EditorIcons")), TTR("New TextFile..."), FILE_NEW_TEXTFILE);
+#if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
+	// Opening the system file manager is not supported on the Android and web editors.
 	tree_popup->add_separator();
 	tree_popup->add_icon_shortcut(get_theme_icon(SNAME("Filesystem"), SNAME("EditorIcons")), ED_GET_SHORTCUT("filesystem_dock/show_in_explorer"), FILE_SHOW_IN_EXPLORER);
+#endif
 
 	tree_popup->set_position(tree->get_screen_position() + p_pos);
 	tree_popup->reset_size();
@@ -3120,8 +3130,11 @@ FileSystemDock::FileSystemDock() {
 	ED_SHORTCUT("filesystem_dock/delete", TTR("Delete"), Key::KEY_DELETE);
 	ED_SHORTCUT("filesystem_dock/rename", TTR("Rename..."), Key::F2);
 	ED_SHORTCUT_OVERRIDE("filesystem_dock/rename", "macos", Key::ENTER);
+#if !defined(ANDROID_ENABLED) && !defined(WEB_ENABLED)
+	// Opening the system file manager or opening in an external program is not supported on the Android and web editors.
 	ED_SHORTCUT("filesystem_dock/show_in_explorer", TTR("Open in File Manager"));
 	ED_SHORTCUT("filesystem_dock/open_in_external_program", TTR("Open in External Program"));
+#endif
 
 	VBoxContainer *top_vbc = memnew(VBoxContainer);
 	add_child(top_vbc);

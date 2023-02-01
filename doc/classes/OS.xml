@@ -553,11 +553,11 @@
 				[b]Note:[/b] If the user has disabled the recycle bin on their system, the file will be permanently deleted instead.
 				[codeblocks]
 				[gdscript]
-				var file_to_remove = "user://slot1.sav"
+				var file_to_remove = "user://slot1.save"
 				OS.move_to_trash(ProjectSettings.globalize_path(file_to_remove))
 				[/gdscript]
 				[csharp]
-				var fileToRemove = "user://slot1.sav";
+				var fileToRemove = "user://slot1.save";
 				OS.MoveToTrash(ProjectSettings.GlobalizePath(fileToRemove));
 				[/csharp]
 				[/codeblocks]

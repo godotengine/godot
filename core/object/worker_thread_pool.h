@@ -173,8 +173,8 @@ public:
 
 	template <class C, class M, class U>
 	GroupID add_template_group_task(C *p_instance, M p_method, U p_userdata, int p_elements, int p_tasks = -1, bool p_high_priority = false, const String &p_description = String()) {
-		typedef GroupUserData<C, M, U> GUD;
-		GUD *ud = memnew(GUD);
+		typedef GroupUserData<C, M, U> GroupUD;
+		GroupUD *ud = memnew(GroupUD);
 		ud->instance = p_instance;
 		ud->method = p_method;
 		ud->userdata = p_userdata;
