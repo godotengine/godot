@@ -257,7 +257,7 @@ public:
 class AnimationNodeTimeSeek : public AnimationNode {
 	GDCLASS(AnimationNodeTimeSeek, AnimationNode);
 
-	StringName seek_pos = PNAME("seek_position");
+	StringName seek_pos_request = PNAME("seek_request");
 
 protected:
 	static void _bind_methods();
