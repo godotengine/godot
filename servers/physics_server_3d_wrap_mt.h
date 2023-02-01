@@ -260,10 +260,7 @@ public:
 
 	FUNC2(body_set_ray_pickable, RID, bool);
 
-	bool body_test_motion(RID p_body, const MotionParameters &p_parameters, MotionResult *r_result = nullptr) override {
-		ERR_FAIL_COND_V(main_thread != Thread::get_caller_id(), false);
-		return physics_server_3d->body_test_motion(p_body, p_parameters, r_result);
-	}
+	FUNC3R(bool, body_test_motion, RID, const MotionParameters &, MotionResult *);
 
 	// this function only works on physics process, errors and returns null otherwise
 	PhysicsDirectBodyState3D *body_get_direct_state(RID p_body) override {
