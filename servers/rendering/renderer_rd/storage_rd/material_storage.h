@@ -323,13 +323,13 @@ public:
 
 	// http://andrewthall.org/papers/df64_qf128.pdf
 #ifdef REAL_T_IS_DOUBLE
-	static _FORCE_INLINE_ void split_double(double a, float *ahi, float *alo) {
+	static _FORCE_INLINE_ void split_double(double a, float *a_hi, float *a_lo) {
 		const double SPLITTER = (1 << 29) + 1;
 		double t = a * SPLITTER;
-		double thi = t - (t - a);
-		double tlo = a - thi;
-		*ahi = (float)thi;
-		*alo = (float)tlo;
+		double t_hi = t - (t - a);
+		double t_lo = a - t_hi;
+		*a_hi = (float)t_hi;
+		*a_lo = (float)t_lo;
 	}
 #endif
 
