@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  rvo_agent.h                                                           */
+/*  nav_agent.h                                                           */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef RVO_AGENT_H
-#define RVO_AGENT_H
+#ifndef NAV_AGENT_H
+#define NAV_AGENT_H
 
 #include "core/object/class_db.h"
 #include "nav_rid.h"
@@ -38,7 +38,7 @@
 
 class NavMap;
 
-class RvoAgent : public NavRid {
+class NavAgent : public NavRid {
 	NavMap *map = nullptr;
 	RVO::Agent agent;
 	Callable callback = Callable();
@@ -62,4 +62,4 @@ public:
 	void dispatch_callback();
 };
 
-#endif // RVO_AGENT_H
+#endif // NAV_AGENT_H

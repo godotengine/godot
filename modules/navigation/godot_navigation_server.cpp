@@ -262,7 +262,7 @@ TypedArray<RID> GodotNavigationServer::map_get_agents(RID p_map) const {
 	const NavMap *map = map_owner.get_or_null(p_map);
 	ERR_FAIL_COND_V(map == nullptr, agents_rids);
 
-	const LocalVector<RvoAgent *> agents = map->get_agents();
+	const LocalVector<NavAgent *> agents = map->get_agents();
 	agents_rids.resize(agents.size());
 
 	for (uint32_t i = 0; i < agents.size(); i++) {
@@ -282,7 +282,7 @@ RID GodotNavigationServer::region_get_map(RID p_region) const {
 }
 
 RID GodotNavigationServer::agent_get_map(RID p_agent) const {
-	RvoAgent *agent = agent_owner.get_or_null(p_agent);
+	NavAgent *agent = agent_owner.get_or_null(p_agent);
 	ERR_FAIL_COND_V(agent == nullptr, RID());
 
 	if (agent->get_map()) {
@@ -579,13 +579,13 @@ RID GodotNavigationServer::agent_create() {
 	MutexLock lock(operations_mutex);
 
 	RID rid = agent_owner.make_rid();
-	RvoAgent *agent = agent_owner.get_or_null(rid);
+	NavAgent *agent = agent_owner.get_or_null(rid);
 	agent->set_self(rid);
 	return rid;
 }
 
 COMMAND_2(agent_set_map, RID, p_agent, RID, p_map) {
-	RvoAgent *agent = agent_owner.get_or_null(p_agent);
+	NavAgent *agent = agent_owner.get_or_null(p_agent);
 	ERR_FAIL_COND(agent == nullptr);
 
 	if (agent->get_map()) {
@@ -612,77 +612,77 @@ COMMAND_2(agent_set_map, RID, p_agent, RID, p_map) {
 }
 
 COMMAND_2(agent_set_neighbor_distance, RID, p_agent, real_t, p_distance) {
-	RvoAgent *agent = agent_owner.get_or_null(p_agent);
+	NavAgent *agent = agent_owner.get_or_null(p_agent);
 	ERR_FAIL_COND(agent == nullptr);
 
 	agent->get_agent()->neighborDist_ = p_distance;
 }
 
 COMMAND_2(agent_set_max_neighbors, RID, p_agent, int, p_count) {
-	RvoAgent *agent = agent_owner.get_or_null(p_agent);
+	NavAgent *agent = agent_owner.get_or_null(p_agent);
 	ERR_FAIL_COND(agent == nullptr);
 
 	agent->get_agent()->maxNeighbors_ = p_count;
 }
 
 COMMAND_2(agent_set_time_horizon, RID, p_agent, real_t, p_time) {
-	RvoAgent *agent = agent_owner.get_or_null(p_agent);
+	NavAgent *agent = agent_owner.get_or_null(p_agent);
 	ERR_FAIL_COND(agent == nullptr);
 
 	agent->get_agent()->timeHorizon_ = p_time;
 }
 
 COMMAND_2(agent_set_radius, RID, p_agent, real_t, p_radius) {
-	RvoAgent *agent = agent_owner.get_or_null(p_agent);
+	NavAgent *agent = agent_owner.get_or_null(p_agent);
 	ERR_FAIL_COND(agent == nullptr);
 
 	agent->get_agent()->radius_ = p_radius;
 }
 
 COMMAND_2(agent_set_max_speed, RID, p_agent, real_t, p_max_speed) {
-	RvoAgent *agent = agent_owner.get_or_null(p_agent);
+	NavAgent *agent = agent_owner.get_or_null(p_agent);
 	ERR_FAIL_COND(agent == nullptr);
 
 	agent->get_agent()->maxSpeed_ = p_max_speed;
 }
 
 COMMAND_2(agent_set_velocity, RID, p_agent, Vector3, p_velocity) {
-	RvoAgent *agent = agent_owner.get_or_null(p_agent);
+	NavAgent *agent = agent_owner.get_or_null(p_agent);
 	ERR_FAIL_COND(agent == nullptr);
 
 	agent->get_agent()->velocity_ = RVO::Vector3(p_velocity.x, p_velocity.y, p_velocity.z);
 }
 
 COMMAND_2(agent_set_target_velocity, RID, p_agent, Vector3, p_velocity) {
-	RvoAgent *agent = agent_owner.get_or_null(p_agent);
+	NavAgent *agent = agent_owner.get_or_null(p_agent);
 	ERR_FAIL_COND(agent == nullptr);
 
 	agent->get_agent()->prefVelocity_ = RVO::Vector3(p_velocity.x, p_velocity.y, p_velocity.z);
 }
 
 COMMAND_2(agent_set_position, RID, p_agent, Vector3, p_position) {
-	RvoAgent *agent = agent_owner.get_or_null(p_agent);
+	NavAgent *agent = agent_owner.get_or_null(p_agent);
 	ERR_FAIL_COND(agent == nullptr);
 
 	agent->get_agent()->position_ = RVO::Vector3(p_position.x, p_position.y, p_position.z);
 }
 
 COMMAND_2(agent_set_ignore_y, RID, p_agent, bool, p_ignore) {
-	RvoAgent *agent = agent_owner.get_or_null(p_agent);
+	NavAgent *agent = agent_owner.get_or_null(p_agent);
 	ERR_FAIL_COND(agent == nullptr);
 
 	agent->get_agent()->ignore_y_ = p_ignore;
 }
 
 bool GodotNavigationServer::agent_is_map_changed(RID p_agent) const {
-	RvoAgent *agent = agent_owner.get_or_null(p_agent);
+	NavAgent *agent = agent_owner.get_or_null(p_agent);
 	ERR_FAIL_COND_V(agent == nullptr, false);
 
 	return agent->is_map_changed();
 }
 
 COMMAND_2(agent_set_callback, RID, p_agent, Callable, p_callback) {
-	RvoAgent *agent = agent_owner.get_or_null(p_agent);
+	NavAgent *agent = agent_owner.get_or_null(p_agent);
 	ERR_FAIL_COND(agent == nullptr);
 
 	agent->set_callback(p_callback);
@@ -713,7 +713,7 @@ COMMAND_1(free, RID, p_object) {
 		}
 
 		// Remove any assigned agent
-		for (RvoAgent *agent : map->get_agents()) {
+		for (NavAgent *agent : map->get_agents()) {
 			map->remove_agent(agent);
 			agent->set_map(nullptr);
 		}
@@ -746,7 +746,7 @@ COMMAND_1(free, RID, p_object) {
 		link_owner.free(p_object);
 
 	} else if (agent_owner.owns(p_object)) {
-		RvoAgent *agent = agent_owner.get_or_null(p_object);
+		NavAgent *agent = agent_owner.get_or_null(p_object);
 
 		// Removes this agent from the map if assigned
 		if (agent->get_map() != nullptr) {
