@@ -305,6 +305,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	String preset = EDITOR_GET("interface/theme/preset");
 
+	bool enable_touchscreen_touch_area = EDITOR_GET("interface/theme/enable_touchscreen_touch_area");
 	bool highlight_tabs = EDITOR_GET("interface/theme/highlight_tabs");
 	int border_size = EDITOR_GET("interface/theme/border_size");
 
@@ -316,11 +317,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	// Please, use alphabet order if you've added new theme here(After "Default" and "Custom")
 
-	if (preset == "Default") {
-		preset_accent_color = Color(0.41, 0.61, 0.91);
-		preset_base_color = Color(0.2, 0.23, 0.31);
-		preset_contrast = default_contrast;
-	} else if (preset == "Custom") {
+	if (preset == "Custom") {
 		accent_color = EDITOR_GET("interface/theme/accent_color");
 		base_color = EDITOR_GET("interface/theme/base_color");
 		contrast = EDITOR_GET("interface/theme/contrast");
@@ -1053,7 +1050,11 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// HScrollBar
 	Ref<Texture> empty_icon = memnew(ImageTexture);
 
-	theme->set_stylebox("scroll", "HScrollBar", make_stylebox(theme->get_icon("GuiScrollBg", "EditorIcons"), 5, 5, 5, 5, 0, 0, 0, 0));
+	if (enable_touchscreen_touch_area) {
+		theme->set_stylebox("scroll", "HScrollBar", make_line_stylebox(separator_color, 50));
+	} else {
+		theme->set_stylebox("scroll", "HScrollBar", make_stylebox(theme->get_icon("GuiScrollBg", "EditorIcons"), 5, 5, 5, 5, 0, 0, 0, 0));
+	}
 	theme->set_stylebox("scroll_focus", "HScrollBar", make_stylebox(theme->get_icon("GuiScrollBg", "EditorIcons"), 5, 5, 5, 5, 0, 0, 0, 0));
 	theme->set_stylebox("grabber", "HScrollBar", make_stylebox(theme->get_icon("GuiScrollGrabber", "EditorIcons"), 6, 6, 6, 6, 2, 2, 2, 2));
 	theme->set_stylebox("grabber_highlight", "HScrollBar", make_stylebox(theme->get_icon("GuiScrollGrabberHl", "EditorIcons"), 5, 5, 5, 5, 2, 2, 2, 2));
@@ -1067,7 +1068,11 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("decrement_pressed", "HScrollBar", empty_icon);
 
 	// VScrollBar
-	theme->set_stylebox("scroll", "VScrollBar", make_stylebox(theme->get_icon("GuiScrollBg", "EditorIcons"), 5, 5, 5, 5, 0, 0, 0, 0));
+	if (enable_touchscreen_touch_area) {
+		theme->set_stylebox("scroll", "VScrollBar", make_line_stylebox(separator_color, 50, 1, 1, true));
+	} else {
+		theme->set_stylebox("scroll", "VScrollBar", make_stylebox(theme->get_icon("GuiScrollBg", "EditorIcons"), 5, 5, 5, 5, 0, 0, 0, 0));
+	}
 	theme->set_stylebox("scroll_focus", "VScrollBar", make_stylebox(theme->get_icon("GuiScrollBg", "EditorIcons"), 5, 5, 5, 5, 0, 0, 0, 0));
 	theme->set_stylebox("grabber", "VScrollBar", make_stylebox(theme->get_icon("GuiScrollGrabber", "EditorIcons"), 6, 6, 6, 6, 2, 2, 2, 2));
 	theme->set_stylebox("grabber_highlight", "VScrollBar", make_stylebox(theme->get_icon("GuiScrollGrabberHl", "EditorIcons"), 5, 5, 5, 5, 2, 2, 2, 2));

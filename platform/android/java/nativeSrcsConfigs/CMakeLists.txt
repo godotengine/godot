@@ -18,4 +18,4 @@ target_include_directories(${PROJECT_NAME}
         ${GODOT_ROOT_DIR}
         ${GODOT_ROOT_DIR}/modules/gdnative/include)
 
-add_definitions(-DUNIX_ENABLED -DANDROID_ENABLED)
+add_definitions(-DUNIX_ENABLED -DANDROID_ENABLED -DTOOLS_ENABLED)
