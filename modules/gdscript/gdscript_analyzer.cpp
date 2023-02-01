@@ -4113,7 +4113,6 @@ void GDScriptAnalyzer::reduce_ternary_op(GDScriptParser::TernaryOpNode *p_ternar
 		if (!is_type_compatible(true_type, false_type)) {
 			result = false_type;
 			if (!is_type_compatible(false_type, true_type)) {
-				result.type_source = GDScriptParser::DataType::UNDETECTED;
 				result.kind = GDScriptParser::DataType::VARIANT;
 #ifdef DEBUG_ENABLED
 				parser->push_warning(p_ternary_op, GDScriptWarning::INCOMPATIBLE_TERNARY);
@@ -4121,6 +4120,7 @@ void GDScriptAnalyzer::reduce_ternary_op(GDScriptParser::TernaryOpNode *p_ternar
 			}
 		}
 	}
+	result.type_source = true_type.is_hard_type() && false_type.is_hard_type() ? GDScriptParser::DataType::ANNOTATED_INFERRED : GDScriptParser::DataType::INFERRED;
 
 	p_ternary_op->set_datatype(result);
 }
