@@ -1061,10 +1061,10 @@ void Viewport::assign_next_enabled_camera_2d(const StringName &p_camera_group) {
 	get_tree()->get_nodes_in_group(p_camera_group, &camera_list);
 
 	Camera2D *new_camera = nullptr;
-	for (const Node *E : camera_list) {
-		const Camera2D *cam = Object::cast_to<Camera2D>(E);
+	for (Node *E : camera_list) {
+		Camera2D *cam = Object::cast_to<Camera2D>(E);
 		if (cam->is_enabled()) {
-			new_camera = const_cast<Camera2D *>(cam);
+			new_camera = cam;
 			break;
 		}
 	}
