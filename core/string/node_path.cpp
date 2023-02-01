@@ -339,7 +339,6 @@ NodePath::NodePath(const Vector<StringName> &p_path, bool p_absolute) {
 	data->refcount.init();
 	data->absolute = p_absolute;
 	data->path = p_path;
-	data->has_slashes = true;
 	data->hash_cache_valid = false;
 }
 
@@ -353,7 +352,6 @@ NodePath::NodePath(const Vector<StringName> &p_path, const Vector<StringName> &p
 	data->absolute = p_absolute;
 	data->path = p_path;
 	data->subpath = p_subpath;
-	data->has_slashes = true;
 	data->hash_cache_valid = false;
 }
 
@@ -373,7 +371,6 @@ NodePath::NodePath(const String &p_path) {
 
 	bool absolute = (path[0] == '/');
 	bool last_is_slash = true;
-	bool has_slashes = false;
 	int slices = 0;
 	int subpath_pos = path.find(":");
 
@@ -402,7 +399,6 @@ NodePath::NodePath(const String &p_path) {
 	for (int i = (int)absolute; i < path.length(); i++) {
 		if (path[i] == '/') {
 			last_is_slash = true;
-			has_slashes = true;
 		} else {
 			if (last_is_slash) {
 				slices++;
@@ -419,7 +415,6 @@ NodePath::NodePath(const String &p_path) {
 	data = memnew(Data);
 	data->refcount.init();
 	data->absolute = absolute;
-	data->has_slashes = has_slashes;
 	data->subpath = subpath;
 	data->hash_cache_valid = false;
 
