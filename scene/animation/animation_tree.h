@@ -389,8 +389,6 @@ public:
 	real_t get_connection_activity(const StringName &p_path, int p_connection) const;
 	void advance(double p_time);
 
-	void rename_parameter(const String &p_base, const String &p_new_base);
-
 	uint64_t get_last_process_pass() const;
 	AnimationTree();
 	~AnimationTree();
