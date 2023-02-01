@@ -114,6 +114,18 @@
 		<member name="avoidance_enabled" type="bool" setter="set_avoidance_enabled" getter="get_avoidance_enabled" default="false">
 			If [code]true[/code] the agent is registered for an RVO avoidance callback on the [NavigationServer3D]. When [method NavigationAgent3D.set_velocity] is used and the processing is completed a [code]safe_velocity[/code] Vector3 is received with a signal connection to [signal velocity_computed]. Avoidance processing with many registered agents has a significant performance cost and should only be enabled on agents that currently require it.
 		</member>
+		<member name="debug_enabled" type="bool" setter="set_debug_enabled" getter="get_debug_enabled" default="false">
+			If [code]true[/code] shows debug visuals for this agent.
+		</member>
+		<member name="debug_path_custom_color" type="Color" setter="set_debug_path_custom_color" getter="get_debug_path_custom_color" default="Color(1, 1, 1, 1)">
+			If [member debug_use_custom] is [code]true[/code] uses this color for this agent instead of global color.
+		</member>
+		<member name="debug_path_custom_point_size" type="float" setter="set_debug_path_custom_point_size" getter="get_debug_path_custom_point_size" default="4.0">
+			If [member debug_use_custom] is [code]true[/code] uses this rasterized point size for rendering path points for this agent instead of global point size.
+		</member>
+		<member name="debug_use_custom" type="bool" setter="set_debug_use_custom" getter="get_debug_use_custom" default="false">
+			If [code]true[/code] uses the defined [member debug_path_custom_color] for this agent instead of global color.
+		</member>
 		<member name="ignore_y" type="bool" setter="set_ignore_y" getter="get_ignore_y" default="true">
 			Ignores collisions on the Y axis. Must be true to move on a horizontal plane.
 		</member>
