@@ -463,7 +463,7 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				text += "]";
 
-				incr += 3 + argc;
+				incr += 4 + instr_var_args;
 			} break;
 			case OPCODE_CONSTRUCT_DICTIONARY: {
 				int instr_var_args = _code_ptr[++ip];
