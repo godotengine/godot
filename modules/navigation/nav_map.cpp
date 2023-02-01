@@ -31,9 +31,9 @@
 #include "nav_map.h"
 
 #include "core/object/worker_thread_pool.h"
+#include "nav_agent.h"
 #include "nav_link.h"
 #include "nav_region.h"
-#include "rvo_agent.h"
 #include <algorithm>
 
 #define THREE_POINTS_CROSS_PRODUCT(m_a, m_b, m_c) (((m_c) - (m_a)).cross((m_b) - (m_a)))
@@ -568,18 +568,18 @@ void NavMap::remove_link(NavLink *p_link) {
 	}
 }
 
-bool NavMap::has_agent(RvoAgent *agent) const {
+bool NavMap::has_agent(NavAgent *agent) const {
 	return (agents.find(agent) != -1);
 }
 
-void NavMap::add_agent(RvoAgent *agent) {
+void NavMap::add_agent(NavAgent *agent) {
 	if (!has_agent(agent)) {
 		agents.push_back(agent);
 		agents_dirty = true;
 	}
 }
 
-void NavMap::remove_agent(RvoAgent *agent) {
+void NavMap::remove_agent(NavAgent *agent) {
 	remove_agent_as_controlled(agent);
 	int64_t agent_index = agents.find(agent);
 	if (agent_index != -1) {
@@ -588,7 +588,7 @@ void NavMap::remove_agent(RvoAgent *agent) {
 	}
 }
 
-void NavMap::set_agent_as_controlled(RvoAgent *agent) {
+void NavMap::set_agent_as_controlled(NavAgent *agent) {
 	const bool exist = (controlled_agents.find(agent) != -1);
 	if (!exist) {
 		ERR_FAIL_COND(!has_agent(agent));
@@ -596,7 +596,7 @@ void NavMap::set_agent_as_controlled(RvoAgent *agent) {
 	}
 }
 
-void NavMap::remove_agent_as_controlled(RvoAgent *agent) {
+void NavMap::remove_agent_as_controlled(NavAgent *agent) {
 	int64_t active_avoidance_agent_index = controlled_agents.find(agent);
 	if (active_avoidance_agent_index != -1) {
 		controlled_agents.remove_at_unordered(active_avoidance_agent_index);
@@ -895,7 +895,7 @@ void NavMap::sync() {
 		// cannot use LocalVector here as RVO library expects std::vector to build KdTree
 		std::vector<RVO::Agent *> raw_agents;
 		raw_agents.reserve(agents.size());
-		for (RvoAgent *agent : agents) {
+		for (NavAgent *agent : agents) {
 			raw_agents.push_back(agent->get_agent());
 		}
 		rvo.buildAgentTree(raw_agents);
@@ -916,7 +916,7 @@ void NavMap::sync() {
 	pm_edge_free_count = _new_pm_edge_free_count;
 }
 
-void NavMap::compute_single_step(uint32_t index, RvoAgent **agent) {
+void NavMap::compute_single_step(uint32_t index, NavAgent **agent) {
 	(*(agent + index))->get_agent()->computeNeighbors(&rvo);
 	(*(agent + index))->get_agent()->computeNewVelocity(deltatime);
 }
@@ -930,7 +930,7 @@ void NavMap::step(real_t p_deltatime) {
 }
 
 void NavMap::dispatch_callbacks() {
-	for (RvoAgent *agent : controlled_agents) {
+	for (NavAgent *agent : controlled_agents) {
 		agent->dispatch_callback();
 	}
 }

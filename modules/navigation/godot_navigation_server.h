@@ -36,10 +36,10 @@
 #include "core/templates/rid_owner.h"
 #include "servers/navigation_server_3d.h"
 
+#include "nav_agent.h"
 #include "nav_link.h"
 #include "nav_map.h"
 #include "nav_region.h"
-#include "rvo_agent.h"
 
 /// The commands are functions executed during the `sync` phase.
 
@@ -71,7 +71,7 @@ class GodotNavigationServer : public NavigationServer3D {
 	mutable RID_Owner<NavLink> link_owner;
 	mutable RID_Owner<NavMap> map_owner;
 	mutable RID_Owner<NavRegion> region_owner;
-	mutable RID_Owner<RvoAgent> agent_owner;
+	mutable RID_Owner<NavAgent> agent_owner;
 
 	bool active = true;
 	LocalVector<NavMap *> active_maps;
