@@ -41,34 +41,26 @@ struct ContainerTypeValidate {
 	const char *where = "container";
 
 	_FORCE_INLINE_ bool can_reference(const ContainerTypeValidate &p_type) const {
-		if (type == p_type.type) {
-			if (type != Variant::OBJECT) {
-				return true; //nothing else to check
-			}
-		} else {
+		if (type != p_type.type) {
+			return false;
+		} else if (type != Variant::OBJECT) {
+			return true;
+		}
+
+		if (class_name == StringName()) {
+			return true;
+		} else if (p_type.class_name == StringName()) {
+			return false;
+		} else if (class_name != p_type.class_name && !ClassDB::is_parent_class(p_type.class_name, class_name)) {
 			return false;
 		}
 
-		//both are object
-
-		if ((class_name != StringName()) != (p_type.class_name != StringName())) {
-			return false; //both need to have class or none
-		}
-
-		if (class_name != p_type.class_name) {
-			if (!ClassDB::is_parent_class(p_type.class_name, class_name)) {
-				return false;
-			}
-		}
-
-		if (script.is_null() != p_type.script.is_null()) {
+		if (script.is_null()) {
+			return true;
+		} else if (p_type.script.is_null()) {
 			return false;
-		}
-
-		if (script != p_type.script) {
-			if (!p_type.script->inherits_script(script)) {
-				return false;
-			}
+		} else if (script != p_type.script && !p_type.script->inherits_script(script)) {
+			return false;
 		}
 
 		return true;

@@ -225,6 +225,9 @@ void Array::assign(const Array &p_array) {
 		_p->array = p_array._p->array;
 		return;
 	}
+	if (typed.type == Variant::OBJECT || source_typed.type == Variant::OBJECT) {
+		ERR_FAIL_MSG(vformat(R"(Cannot assign contents of "Array[%s]" to "Array[%s]".)", Variant::get_type_name(source_typed.type), Variant::get_type_name(typed.type)));
+	}
 
 	Vector<Variant> array;
 	array.resize(size);

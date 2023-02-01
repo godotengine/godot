@@ -201,4 +201,10 @@ func test():
 	assert(typed_enums.get_typed_builtin() == TYPE_INT)
 
 
+	var a := A.new()
+	var typed_natives: Array[RefCounted] = [a]
+	var typed_scripts = Array(typed_natives, TYPE_OBJECT, "RefCounted", A)
+	assert(typed_scripts[0] == a)
+
+
 	print('ok')
