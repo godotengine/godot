@@ -754,6 +754,8 @@ private:
 	ClearMode clear_mode = CLEAR_MODE_ALWAYS;
 	bool size_2d_override_stretch = false;
 
+	void _internal_set_size(const Size2i &p_size, bool p_force = false);
+
 protected:
 	static void _bind_methods();
 	virtual DisplayServer::WindowID get_window_id() const override;
@@ -763,6 +765,7 @@ protected:
 public:
 	void set_size(const Size2i &p_size);
 	Size2i get_size() const;
+	void set_size_force(const Size2i &p_size);
 
 	void set_size_2d_override(const Size2i &p_size);
 	Size2i get_size_2d_override() const;
