@@ -43,7 +43,7 @@
 #include "scene/main/missing_node.h"
 #include "scene/property_utils.h"
 
-#define PACKED_SCENE_VERSION 2
+#define PACKED_SCENE_VERSION 3
 #define META_POINTER_PROPERTY_BASE "metadata/_editor_prop_ptr_"
 bool SceneState::can_instantiate() const {
 	return nodes.size() > 0;
@@ -1294,6 +1294,9 @@ void SceneState::set_bundled_scene(const Dictionary &p_dictionary) {
 			for (int j = 0; j < cd.binds.size(); j++) {
 				cd.binds.write[j] = r[idx++];
 			}
+			if (version >= 3) {
+				cd.unbinds = r[idx++];
+			}
 		}
 	}
 
@@ -1380,6 +1383,7 @@ Dictionary SceneState::get_bundled_scene() const {
 		for (int j = 0; j < cd.binds.size(); j++) {
 			rconns.push_back(cd.binds[j]);
 		}
+		rconns.push_back(cd.unbinds);
 	}
 
 	d["conns"] = rconns;
