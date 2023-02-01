@@ -151,7 +151,7 @@ void Transform2D::orthonormalize() {
 	Vector2 y = columns[1];
 
 	x.normalize();
-	y = (y - x * (x.dot(y)));
+	y = y - x * x.dot(y);
 	y.normalize();
 
 	columns[0] = x;
@@ -159,9 +159,9 @@ void Transform2D::orthonormalize() {
 }
 
 Transform2D Transform2D::orthonormalized() const {
-	Transform2D on = *this;
-	on.orthonormalize();
-	return on;
+	Transform2D ortho = *this;
+	ortho.orthonormalize();
+	return ortho;
 }
 
 bool Transform2D::is_equal_approx(const Transform2D &p_transform) const {

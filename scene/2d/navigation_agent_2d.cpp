@@ -140,7 +140,7 @@ void NavigationAgent2D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_POST_ENTER_TREE: {
 			// need to use POST_ENTER_TREE cause with normal ENTER_TREE not all required Nodes are ready.
-			// cannot use READY as ready does not get called if Node is readded to SceneTree
+			// cannot use READY as ready does not get called if Node is re-added to SceneTree
 			set_agent_parent(get_parent());
 			set_physics_process_internal(true);
 

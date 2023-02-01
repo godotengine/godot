@@ -99,7 +99,7 @@ public abstract class FullScreenGodotApp extends FragmentActivity implements God
 				// from scratch. Therefore, we need to kill the whole app process and relaunch it.
 				//
 				// Restarting only the activity, wouldn't be enough unless it did proper cleanup (including
-				// releasing and reloading native libs or resetting their state somehow and clearing statics).
+				// releasing and reloading native libs or resetting their state somehow and clearing static data).
 				Log.v(TAG, "Restarting Godot instance...");
 				ProcessPhoenix.triggerRebirth(FullScreenGodotApp.this);
 			}

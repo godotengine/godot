@@ -247,19 +247,19 @@ namespace Godot
         /// <returns>The orthonormalized transform.</returns>
         public readonly Transform2D Orthonormalized()
         {
-            Transform2D on = this;
+            Transform2D ortho = this;
 
-            Vector2 onX = on.X;
-            Vector2 onY = on.Y;
+            Vector2 orthoX = ortho.X;
+            Vector2 orthoY = ortho.Y;
 
-            onX.Normalize();
-            onY = onY - (onX * onX.Dot(onY));
-            onY.Normalize();
+            orthoX.Normalize();
+            orthoY = orthoY - orthoX * orthoX.Dot(orthoY);
+            orthoY.Normalize();
 
-            on.X = onX;
-            on.Y = onY;
+            ortho.X = orthoX;
+            ortho.Y = orthoY;
 
-            return on;
+            return ortho;
         }
 
         /// <summary>
