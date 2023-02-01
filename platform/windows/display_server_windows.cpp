@@ -2360,8 +2360,23 @@ Rect2i DisplayServerWindows::window_get_popup_safe_rect(WindowID p_window) const
 void DisplayServerWindows::popup_open(WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
-	const WindowData &wd = windows[p_window];
-	if (wd.is_popup) {
+	bool has_popup_ancestor = false;
+	WindowID transient_root = p_window;
+	while (true) {
+		WindowID parent = windows[transient_root].transient_parent;
+		if (parent == INVALID_WINDOW_ID) {
+			break;
+		} else {
+			transient_root = parent;
+			if (windows[parent].is_popup) {
+				has_popup_ancestor = true;
+				break;
+			}
+		}
+	}
+
+	WindowData &wd = windows[p_window];
+	if (wd.is_popup || has_popup_ancestor) {
 		// Find current popup parent, or root popup if new window is not transient.
 		List<WindowID>::Element *C = nullptr;
 		List<WindowID>::Element *E = popup_list.back();

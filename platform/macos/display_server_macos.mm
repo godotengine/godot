@@ -3681,8 +3681,23 @@ Rect2i DisplayServerMacOS::window_get_popup_safe_rect(WindowID p_window) const {
 void DisplayServerMacOS::popup_open(WindowID p_window) {
 	_THREAD_SAFE_METHOD_
 
+	bool has_popup_ancestor = false;
+	WindowID transient_root = p_window;
+	while (true) {
+		WindowID parent = windows[transient_root].transient_parent;
+		if (parent == INVALID_WINDOW_ID) {
+			break;
+		} else {
+			transient_root = parent;
+			if (windows[parent].is_popup) {
+				has_popup_ancestor = true;
+				break;
+			}
+		}
+	}
+
 	WindowData &wd = windows[p_window];
-	if (wd.is_popup) {
+	if (wd.is_popup || has_popup_ancestor) {
 		bool was_empty = popup_list.is_empty();
 		// Find current popup parent, or root popup if new window is not transient.
 		List<WindowID>::Element *C = nullptr;
