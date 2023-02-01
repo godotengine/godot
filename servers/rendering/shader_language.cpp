@@ -4530,14 +4530,14 @@ bool ShaderLanguage::_check_node_constness(const Node *p_node) const {
 		case Node::TYPE_CONSTANT:
 			break;
 		case Node::TYPE_VARIABLE: {
-			const VariableNode *varn = static_cast<const VariableNode *>(p_node);
-			if (!varn->is_const) {
+			const VariableNode *var_node = static_cast<const VariableNode *>(p_node);
+			if (!var_node->is_const) {
 				return false;
 			}
 		} break;
 		case Node::TYPE_ARRAY: {
-			const ArrayNode *arrn = static_cast<const ArrayNode *>(p_node);
-			if (!arrn->is_const) {
+			const ArrayNode *arr_node = static_cast<const ArrayNode *>(p_node);
+			if (!arr_node->is_const) {
 				return false;
 			}
 		} break;

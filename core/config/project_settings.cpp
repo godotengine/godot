@@ -301,13 +301,13 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 
 				for (int i = 1; i < s.size(); i++) {
 					String feature = s[i].strip_edges();
-					Pair<StringName, StringName> fo(feature, p_name);
+					Pair<StringName, StringName> feature_override(feature, p_name);
 
 					if (!feature_overrides.has(s[0])) {
 						feature_overrides[s[0]] = LocalVector<Pair<StringName, StringName>>();
 					}
 
-					feature_overrides[s[0]].push_back(fo);
+					feature_overrides[s[0]].push_back(feature_override);
 				}
 			}
 		}

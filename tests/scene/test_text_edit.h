@@ -3086,7 +3086,7 @@ TEST_CASE("[SceneTree][TextEdit] context menu") {
 	text_edit->get_viewport()->set_embedding_subwindows(true); // Bypass display server for drop handling.
 
 	text_edit->set_size(Size2(800, 200));
-	text_edit->set_line(0, "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec varius mattis leo, sed porta ex lacinia bibendum. Nunc bibendum pellentesque.");
+	text_edit->set_line(0, "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec vasius mattis leo, sed porta ex lacinia bibendum. Nunc bibendum pellentesque.");
 	MessageQueue::get_singleton()->flush();
 
 	text_edit->set_context_menu_enabled(false);
@@ -3227,7 +3227,7 @@ TEST_CASE("[SceneTree][TextEdit] mouse") {
 	SceneTree::get_singleton()->get_root()->add_child(text_edit);
 
 	text_edit->set_size(Size2(800, 200));
-	text_edit->set_line(0, "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec varius mattis leo, sed porta ex lacinia bibendum. Nunc bibendum pellentesque.");
+	text_edit->set_line(0, "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec vasius mattis leo, sed porta ex lacinia bibendum. Nunc bibendum pellentesque.");
 	MessageQueue::get_singleton()->flush();
 
 	CHECK(text_edit->get_word_at_pos(text_edit->get_pos_at_line_column(0, 1)) == "Lorem");
@@ -3305,9 +3305,9 @@ TEST_CASE("[SceneTree][TextEdit] caret") {
 	SEND_GUI_ACTION(text_edit, "ui_text_caret_left");
 	CHECK(text_edit->get_caret_column() == 0);
 
-	text_edit->set_line(0, "Lorem  ipsum dolor sit amet, consectetur adipiscing elit. Donec varius mattis leo, sed porta ex lacinia bibendum. Nunc bibendum pellentesque.");
+	text_edit->set_line(0, "Lorem  ipsum dolor sit amet, consectetur adipiscing elit. Donec vasius mattis leo, sed porta ex lacinia bibendum. Nunc bibendum pellentesque.");
 	for (int i = 0; i < 3; i++) {
-		text_edit->insert_line_at(0, "Lorem  ipsum dolor sit amet, consectetur adipiscing elit. Donec varius mattis leo, sed porta ex lacinia bibendum. Nunc bibendum pellentesque.");
+		text_edit->insert_line_at(0, "Lorem  ipsum dolor sit amet, consectetur adipiscing elit. Donec vasius mattis leo, sed porta ex lacinia bibendum. Nunc bibendum pellentesque.");
 	}
 	MessageQueue::get_singleton()->flush();
 
@@ -3519,7 +3519,7 @@ TEST_CASE("[SceneTree][TextEdit] line wrapping") {
 
 	// Set size for boundary.
 	text_edit->set_size(Size2(800, 200));
-	text_edit->set_line(0, "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec varius mattis leo, sed porta ex lacinia bibendum. Nunc bibendum pellentesque.");
+	text_edit->set_line(0, "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec vasius mattis leo, sed porta ex lacinia bibendum. Nunc bibendum pellentesque.");
 	CHECK_FALSE(text_edit->is_line_wrapped(0));
 	CHECK(text_edit->get_line_wrap_count(0) == 0);
 	CHECK(text_edit->get_line_wrap_index_at_column(0, 130) == 0);
@@ -3569,7 +3569,7 @@ TEST_CASE("[SceneTree][TextEdit] viewport") {
 	// No subcases here for performance.
 	text_edit->set_size(Size2(800, 600));
 	for (int i = 0; i < 50; i++) {
-		text_edit->insert_line_at(0, "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec varius mattis leo, sed porta ex lacinia bibendum. Nunc bibendum pellentesque.");
+		text_edit->insert_line_at(0, "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec vasius mattis leo, sed porta ex lacinia bibendum. Nunc bibendum pellentesque.");
 	}
 	MessageQueue::get_singleton()->flush();
 
@@ -3897,7 +3897,7 @@ TEST_CASE("[SceneTree][TextEdit] viewport") {
 	CHECK(text_edit->get_h_scroll() == 0);
 
 	text_edit->set_h_scroll(10000000);
-	CHECK(text_edit->get_h_scroll() == 313);
+	CHECK(text_edit->get_h_scroll() == 314);
 
 	text_edit->set_h_scroll(-100);
 	CHECK(text_edit->get_h_scroll() == 0);

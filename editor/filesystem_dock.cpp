@@ -241,8 +241,8 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 	}
 
 	for (int i = 0; i < favorite_paths.size(); i++) {
-		String fave = favorite_paths[i];
-		if (!fave.begins_with("res://")) {
+		String favorite = favorite_paths[i];
+		if (!favorite.begins_with("res://")) {
 			continue;
 		}
 
@@ -252,18 +252,18 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 		String text;
 		Ref<Texture2D> icon;
 		Color color;
-		if (fave == "res://") {
+		if (favorite == "res://") {
 			text = "/";
 			icon = folder_icon;
 			color = folder_color;
-		} else if (fave.ends_with("/")) {
-			text = fave.substr(0, fave.length() - 1).get_file();
+		} else if (favorite.ends_with("/")) {
+			text = favorite.substr(0, favorite.length() - 1).get_file();
 			icon = folder_icon;
 			color = folder_color;
 		} else {
-			text = fave.get_file();
+			text = favorite.get_file();
 			int index;
-			EditorFileSystemDirectory *dir = EditorFileSystem::get_singleton()->find_file(fave, &index);
+			EditorFileSystemDirectory *dir = EditorFileSystem::get_singleton()->find_file(favorite, &index);
 			if (dir) {
 				icon = _get_tree_item_icon(dir->get_file_import_is_valid(index), dir->get_file_type(index));
 			} else {
@@ -277,18 +277,18 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 			ti->set_text(0, text);
 			ti->set_icon(0, icon);
 			ti->set_icon_modulate(0, color);
-			ti->set_tooltip_text(0, fave);
+			ti->set_tooltip_text(0, favorite);
 			ti->set_selectable(0, true);
-			ti->set_metadata(0, fave);
-			if (p_select_in_favorites && fave == path) {
+			ti->set_metadata(0, favorite);
+			if (p_select_in_favorites && favorite == path) {
 				ti->select(0);
 				ti->set_as_cursor(0);
 			}
-			if (!fave.ends_with("/")) {
+			if (!favorite.ends_with("/")) {
 				Array udata;
 				udata.push_back(tree_update_id);
 				udata.push_back(ti);
-				EditorResourcePreview::get_singleton()->queue_resource_preview(fave, this, "_tree_thumbnail_done", udata);
+				EditorResourcePreview::get_singleton()->queue_resource_preview(favorite, this, "_tree_thumbnail_done", udata);
 			}
 		}
 	}
