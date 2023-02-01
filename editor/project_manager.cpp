@@ -2785,6 +2785,8 @@ void ProjectList::add_search_tag(const String &p_tag) {
 }
 
 ProjectManager::ProjectManager() {
+	print_line("Opening project manager.");
+
 	singleton = this;
 
 	// load settings
