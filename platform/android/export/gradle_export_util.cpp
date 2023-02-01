@@ -276,7 +276,7 @@ String _get_xr_features_tag(const Ref<EditorExportPreset> &p_preset) {
 	return manifest_xr_features;
 }
 
-String _get_activity_tag(const Ref<EditorExportPreset> &p_preset) {
+String _get_activity_tag(const Ref<EditorExportPreset> &p_preset, bool uses_open_xr) {
 	String orientation = _get_android_orientation_label(DisplayServer::ScreenOrientation(int(GLOBAL_GET("display/window/handheld/orientation"))));
 	String manifest_activity_text = vformat(
 			"        <activity android:name=\"com.godot.game.GodotApp\" "
@@ -287,6 +287,19 @@ String _get_activity_tag(const Ref<EditorExportPreset> &p_preset) {
 			bool_to_string(p_preset->get("package/exclude_from_recents")),
 			orientation,
 			bool_to_string(bool(GLOBAL_GET("display/window/size/resizable"))));
+	if (uses_open_xr) {
+		// If this activity is an OpenXR activity we must mark the
+		// intent using the category org.khronos.openxr.intent.category.IMMERSIVE_HMD
+		// for more details please see:
+		// https://registry.khronos.org/OpenXR/specs/1.0/html/xrspec.html#android-runtime-category
+		//
+		// The placeholder action is required to avoid Android from removing the intent filter upon
+		// Activity start.
+		manifest_activity_text += "            <intent-filter>\n"
+								  "                <action android:name=\"org.khronos.openxr.action.PLACEHOLDER\" />\n"
+								  "                <category android:name=\"org.khronos.openxr.intent.category.IMMERSIVE_HMD\" />\n"
+								  "            </intent-filter>\n";
+	}
 	manifest_activity_text += "        </activity>\n";
 	return manifest_activity_text;
 }
@@ -327,7 +340,7 @@ String _get_application_tag(const Ref<EditorExportPreset> &p_preset, bool p_has_
 			manifest_application_text += "        <meta-data tools:node=\"replace\" android:name=\"com.oculus.handtracking.version\" android:value=\"V2.0\" />\n";
 		}
 	}
-	manifest_application_text += _get_activity_tag(p_preset);
+	manifest_application_text += _get_activity_tag(p_preset, uses_xr);
 	manifest_application_text += "    </application>\n";
 	return manifest_application_text;
 }
