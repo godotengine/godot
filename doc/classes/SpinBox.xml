@@ -39,6 +39,9 @@
 		<member name="align" type="int" setter="set_align" getter="get_align" enum="LineEdit.Align" default="0">
 			Sets the text alignment of the [SpinBox].
 		</member>
+		<member name="custom_arrow_step" type="float" setter="set_custom_arrow_step" getter="get_custom_arrow_step" default="0.0">
+			If not [code]0[/code], [code]value[/code] will always be rounded to a multiple of [code]custom_arrow_step[/code] when interacting with the arrow buttons of the [SpinBox].
+		</member>
 		<member name="editable" type="bool" setter="set_editable" getter="is_editable" default="true">
 			If [code]true[/code], the [SpinBox] will be editable. Otherwise, it will be read only.
 		</member>
