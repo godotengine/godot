@@ -38,7 +38,14 @@ Vector<Vector3> Navigation::get_simple_path(const Vector3 &p_start, const Vector
 }
 
 String Navigation::get_configuration_warning() const {
-	return TTR("'Navigation' node and 'Navigation.get_simple_path()' are deprecated and will be removed in a future version. Use 'NavigationServer.map_get_path()' instead.");
+	String warning = Spatial::get_configuration_warning();
+
+	if (warning != String()) {
+		warning += "\n\n";
+	}
+	warning += TTR("'Navigation' node and 'Navigation.get_simple_path()' are deprecated and will be removed in a future version. Use 'NavigationServer.map_get_path()' instead.");
+
+	return warning;
 }
 
 Vector3 Navigation::get_closest_point_to_segment(const Vector3 &p_from, const Vector3 &p_to, bool p_use_collision) const {
