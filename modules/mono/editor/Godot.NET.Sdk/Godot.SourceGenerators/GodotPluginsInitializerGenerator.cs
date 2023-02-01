@@ -48,7 +48,7 @@ namespace GodotPlugins.Game
             }
             catch (Exception e)
             {
-                Console.Error.WriteLine(e);
+                global::System.Console.Error.WriteLine(e);
                 return false.ToGodotBool();
             }
         }
