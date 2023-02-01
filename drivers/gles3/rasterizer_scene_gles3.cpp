@@ -1994,6 +1994,28 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		_draw_sky(render_data.environment, render_data.cam_projection, render_data.cam_transform, sky_energy_multiplier, p_camera_data->view_count > 1, flip_y);
 	}
 
+	if (scene_state.used_screen_texture || scene_state.used_depth_texture) {
+		texture_storage->copy_scene_to_backbuffer(rt, scene_state.used_screen_texture, scene_state.used_depth_texture);
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, rt->fbo);
+		glReadBuffer(GL_COLOR_ATTACHMENT0);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, rt->backbuffer_fbo);
+		if (scene_state.used_screen_texture) {
+			glBlitFramebuffer(0, 0, rt->size.x, rt->size.y,
+					0, 0, rt->size.x, rt->size.y,
+					GL_COLOR_BUFFER_BIT, GL_NEAREST);
+			glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 5);
+			glBindTexture(GL_TEXTURE_2D, rt->backbuffer);
+		}
+		if (scene_state.used_depth_texture) {
+			glBlitFramebuffer(0, 0, rt->size.x, rt->size.y,
+					0, 0, rt->size.x, rt->size.y,
+					GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+			glActiveTexture(GL_TEXTURE0 + config->max_texture_image_units - 6);
+			glBindTexture(GL_TEXTURE_2D, rt->backbuffer_depth);
+		}
+		glBindFramebuffer(GL_FRAMEBUFFER, rt->fbo);
+	}
+
 	RENDER_TIMESTAMP("Render 3D Transparent Pass");
 	glEnable(GL_BLEND);
 
