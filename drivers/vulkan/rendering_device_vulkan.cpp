@@ -6081,7 +6081,7 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 
 	//TODO: make these pipeline stages reusable.
 	VkPipeline vertex_input_pipeline = VK_NULL_HANDLE;
-	if (context->get_graphics_pipeline_library_capabilities().graphics_pipeline_library_supported){
+	if (context->get_graphics_pipeline_library_capabilities().graphics_pipeline_library_supported && GLOBAL_GET("rendering/rendering_device/vulkan/use_graphics_pipeline_library")){
 		VkResult err = vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &vertex_input_pipeline_create_info, nullptr, &vertex_input_pipeline);
 		ERR_FAIL_COND_V_MSG(err, RID(), "vertex input stage vkCreateGraphicsPipelines failed with error " + itos(err) + " for shader '" + shader->name + "'.");
 	}
@@ -6331,7 +6331,7 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 	graphics_pipeline_create_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 	graphics_pipeline_create_info.pNext = graphics_pipeline_nextptr;
 	graphics_pipeline_create_info.flags = 0;
-	if (context->get_graphics_pipeline_library_capabilities().graphics_pipeline_library_supported){
+	if (context->get_graphics_pipeline_library_capabilities().graphics_pipeline_library_supported && GLOBAL_GET("rendering/rendering_device/vulkan/use_graphics_pipeline_library")){
 		graphics_pipeline_create_info.flags = VK_PIPELINE_CREATE_LIBRARY_BIT_KHR | VK_PIPELINE_CREATE_RETAIN_LINK_TIME_OPTIMIZATION_INFO_BIT_EXT;
 	}
 
