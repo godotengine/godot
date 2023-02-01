@@ -1633,80 +1633,61 @@ void CodeTextEditor::duplicate_selection() {
 void CodeTextEditor::toggle_inline_comment(const String &delimiter) {
 	text_editor->begin_complex_operation();
 
-	Vector<int> caret_edit_order = text_editor->get_caret_index_edit_order();
-	for (const int &c : caret_edit_order) {
-		if (text_editor->has_selection(c)) {
-			int begin = text_editor->get_selection_from_line(c);
-			int end = text_editor->get_selection_to_line(c);
-
-			// End of selection ends on the first column of the last line, ignore it.
-			if (text_editor->get_selection_to_column(c) == 0) {
-				end -= 1;
-			}
-
-			int col_to = text_editor->get_selection_to_column(c);
-			int cursor_pos = text_editor->get_caret_column(c);
-
-			// Check if all lines in the selected block are commented.
-			bool is_commented = true;
-			for (int i = begin; i <= end; i++) {
-				if (!text_editor->get_line(i).begins_with(delimiter)) {
-					is_commented = false;
-					break;
-				}
-			}
-			for (int i = begin; i <= end; i++) {
-				String line_text = text_editor->get_line(i);
-
-				if (line_text.strip_edges().is_empty()) {
-					line_text = delimiter;
-				} else {
-					if (is_commented) {
-						line_text = line_text.substr(delimiter.length(), line_text.length());
-					} else {
-						line_text = delimiter + line_text;
-					}
-				}
-				text_editor->set_line(i, line_text);
-			}
-
-			// Adjust selection & cursor position.
-			int offset = (is_commented ? -1 : 1) * delimiter.length();
-			int col_from = text_editor->get_selection_from_column(c) > 0 ? text_editor->get_selection_from_column(c) + offset : 0;
-
-			if (is_commented && text_editor->get_caret_column(c) == text_editor->get_line(text_editor->get_caret_line(c)).length() + 1) {
-				cursor_pos += 1;
-			}
-
-			if (text_editor->get_selection_to_column(c) != 0 && col_to != text_editor->get_line(text_editor->get_selection_to_line(c)).length() + 1) {
-				col_to += offset;
-			}
-
-			if (text_editor->get_caret_column(c) != 0) {
-				cursor_pos += offset;
-			}
-
-			text_editor->select(begin, col_from, text_editor->get_selection_to_line(c), col_to, c);
-			text_editor->set_caret_column(cursor_pos, c == 0, c);
-
-		} else {
-			int begin = text_editor->get_caret_line(c);
-			String line_text = text_editor->get_line(begin);
-			int delimiter_length = delimiter.length();
-
-			int col = text_editor->get_caret_column(c);
-			if (line_text.begins_with(delimiter)) {
-				line_text = line_text.substr(delimiter_length, line_text.length());
-				col -= delimiter_length;
-			} else {
-				line_text = delimiter + line_text;
-				col += delimiter_length;
-			}
-
-			text_editor->set_line(begin, line_text);
-			text_editor->set_caret_column(col, c == 0, c);
+	// Comment only if there's any uncommented lines in selection.
+	Vector<int> lines = _get_affected_lines();
+	bool is_commented = true;
+	for (const int &line : lines) {
+		if (!text_editor->get_line(line).begins_with(delimiter)) {
+			is_commented = false;
+			break;
 		}
 	}
+
+	// Caret positions need to be saved since they could be moved at the eol.
+	Vector<int> caret_edit_order = text_editor->get_caret_index_edit_order();
+	Vector<Pair<int, int>> selection_col;
+	for (const int &c : caret_edit_order) {
+		selection_col.append(Pair<int, int>(
+				text_editor->get_caret_column(c),
+				text_editor->has_selection(c) ? text_editor->get_selection_to_column(c) : 0));
+	}
+
+	// Comment/uncomment
+	for (const int &line : lines) {
+		String line_text = text_editor->get_line(line);
+
+		if (line_text.strip_edges().is_empty()) {
+			line_text = delimiter;
+		} else {
+			if (is_commented) {
+				line_text = line_text.substr(delimiter.length(), line_text.length());
+			} else {
+				line_text = delimiter + line_text;
+			}
+		}
+		text_editor->set_line(line, line_text);
+	}
+
+	// Readjust carets and selections.
+	int i = 0;
+	int offset = (is_commented ? -1 : 1) * delimiter.length();
+	for (const int &c : caret_edit_order) {
+		int caret_col = selection_col[i].first;
+		caret_col += (caret_col == 0) ? 0 : offset;
+		text_editor->set_caret_column(caret_col, c == 0, c);
+
+		if (text_editor->has_selection(c)) {
+			int from_col = text_editor->get_selection_from_column(c);
+			from_col += (from_col == 0) ? 0 : offset;
+			int to_col = selection_col[i].second;
+			to_col += (to_col == 0) ? 0 : offset;
+			text_editor->select(
+					text_editor->get_selection_from_line(c), from_col,
+					text_editor->get_selection_to_line(c), to_col, c);
+		}
+		i++;
+	}
+
 	text_editor->merge_overlapping_carets();
 	text_editor->end_complex_operation();
 	text_editor->queue_redraw();
@@ -1940,6 +1921,44 @@ void CodeTextEditor::_set_show_warnings_panel(bool p_show) {
 void CodeTextEditor::_toggle_scripts_pressed() {
 	ScriptEditor::get_singleton()->toggle_scripts_panel();
 	update_toggle_scripts_button();
+}
+
+int CodeTextEditor::_get_affected_lines_from(int p_caret) {
+	if (text_editor->has_selection(p_caret)) {
+		return text_editor->get_selection_from_line(p_caret);
+	} else {
+		return text_editor->get_caret_line(p_caret);
+	}
+}
+
+int CodeTextEditor::_get_affected_lines_to(int p_caret) {
+	if (text_editor->has_selection(p_caret)) {
+		int line = text_editor->get_selection_to_line(p_caret);
+		// Don't affect a line with no selected characters
+		if (text_editor->get_selection_to_column(p_caret) == 0) {
+			line--;
+		}
+		return line;
+	} else {
+		return text_editor->get_caret_line(p_caret);
+	}
+}
+
+/**
+ * Returns all lines which have selections or carets in them.
+ * The lines are ordered from bottom upwards.
+ */
+Vector<int> CodeTextEditor::_get_affected_lines() {
+	Vector<int> lines;
+	Vector<int> caret_edit_order = text_editor->get_caret_index_edit_order();
+	for (int p_caret : caret_edit_order) {
+		for (int line = _get_affected_lines_to(p_caret); line >= _get_affected_lines_from(p_caret); line--) {
+			if (!lines.has(line)) {
+				lines.append(line);
+			}
+		}
+	}
+	return lines;
 }
 
 void CodeTextEditor::_error_pressed(const Ref<InputEvent> &p_event) {
