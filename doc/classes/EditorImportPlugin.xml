@@ -216,7 +216,7 @@
 			</description>
 		</method>
 		<method name="_import" qualifiers="virtual const">
-			<return type="int" />
+			<return type="int" enum="Error" />
 			<param index="0" name="source_file" type="String" />
 			<param index="1" name="save_path" type="String" />
 			<param index="2" name="options" type="Dictionary" />

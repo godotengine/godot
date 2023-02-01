@@ -176,9 +176,9 @@ Error ResourceFormatLoader::rename_dependencies(const String &p_path, const Hash
 		deps_dict[E.key] = E.value;
 	}
 
-	int64_t err = OK;
+	Error err = OK;
 	GDVIRTUAL_CALL(_rename_dependencies, p_path, deps_dict, err);
-	return (Error)err;
+	return err;
 }
 
 void ResourceFormatLoader::_bind_methods() {

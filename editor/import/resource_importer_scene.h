@@ -56,7 +56,7 @@ protected:
 	Node *import_scene_wrapper(const String &p_path, uint32_t p_flags, Dictionary p_options);
 	Ref<Animation> import_animation_wrapper(const String &p_path, uint32_t p_flags, Dictionary p_options);
 
-	GDVIRTUAL0RC(int, _get_import_flags)
+	GDVIRTUAL0RC(uint32_t, _get_import_flags)
 	GDVIRTUAL0RC(Vector<String>, _get_extensions)
 	GDVIRTUAL3R(Object *, _import_scene, String, uint32_t, Dictionary)
 	GDVIRTUAL1(_get_import_options, String)

@@ -34,7 +34,7 @@
 			</description>
 		</method>
 		<method name="_save" qualifiers="virtual">
-			<return type="int" />
+			<return type="int" enum="Error" />
 			<param index="0" name="resource" type="Resource" />
 			<param index="1" name="path" type="String" />
 			<param index="2" name="flags" type="int" />

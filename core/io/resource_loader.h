@@ -58,7 +58,7 @@ protected:
 	GDVIRTUAL1RC(ResourceUID::ID, _get_resource_uid, String)
 	GDVIRTUAL2RC(Vector<String>, _get_dependencies, String, bool)
 	GDVIRTUAL1RC(Vector<String>, _get_classes_used, String)
-	GDVIRTUAL2RC(int64_t, _rename_dependencies, String, Dictionary)
+	GDVIRTUAL2RC(Error, _rename_dependencies, String, Dictionary)
 	GDVIRTUAL1RC(bool, _exists, String)
 
 	GDVIRTUAL4RC(Variant, _load, String, String, bool, int)

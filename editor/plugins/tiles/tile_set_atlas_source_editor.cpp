@@ -2773,7 +2773,7 @@ bool EditorInspectorPluginTileData::can_handle(Object *p_object) {
 	return Object::cast_to<TileSetAtlasSourceEditor::AtlasTileProxyObject>(p_object) != nullptr;
 }
 
-bool EditorInspectorPluginTileData::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide) {
+bool EditorInspectorPluginTileData::parse_property(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const BitField<PropertyUsageFlags> p_usage, const bool p_wide) {
 	Vector<String> components = String(p_path).split("/", true, 2);
 	if (components.size() == 2 && components[0].begins_with("occlusion_layer_") && components[0].trim_prefix("occlusion_layer_").is_valid_int()) {
 		// Occlusion layers.
