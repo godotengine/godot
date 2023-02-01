@@ -986,7 +986,10 @@ void MeshStorage::update_mesh_instances() {
 			push_constant.skin_stride = (mi->mesh->surfaces[i]->skin_buffer_size / mi->mesh->surfaces[i]->vertex_count) / 4;
 			push_constant.skin_weight_offset = (mi->mesh->surfaces[i]->format & RS::ARRAY_FLAG_USE_8_BONE_WEIGHTS) ? 4 : 2;
 
-			Transform2D transform = mi->canvas_item_transform_2d.affine_inverse() * sk->base_transform_2d;
+			Transform2D transform = Transform2D();
+			if (sk && sk->use_2d) {
+				transform = mi->canvas_item_transform_2d.affine_inverse() * sk->base_transform_2d;
+			}
 			push_constant.skeleton_transform_x[0] = transform.columns[0][0];
 			push_constant.skeleton_transform_x[1] = transform.columns[0][1];
 			push_constant.skeleton_transform_y[0] = transform.columns[1][0];
