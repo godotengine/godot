@@ -185,7 +185,7 @@ void CanvasItem::_top_level_raise_self() {
 }
 
 void CanvasItem::_enter_canvas() {
-	// Resolves to nullptr if the node is toplevel.
+	// Resolves to nullptr if the node is top_level.
 	CanvasItem *parent_item = get_parent_item();
 
 	if (parent_item) {
@@ -400,26 +400,26 @@ void CanvasItem::set_as_top_level(bool p_top_level) {
 
 	_exit_canvas();
 	top_level = p_top_level;
-	_toplevel_changed();
+	_top_level_changed();
 	_enter_canvas();
 
 	_notify_transform();
 }
 
-void CanvasItem::_toplevel_changed() {
-	// Inform children that toplevel status has changed on a parent.
+void CanvasItem::_top_level_changed() {
+	// Inform children that top_level status has changed on a parent.
 	int children = get_child_count();
 	for (int i = 0; i < children; i++) {
 		CanvasItem *child = Object::cast_to<CanvasItem>(get_child(i));
 		if (child) {
-			child->_toplevel_changed_on_parent();
+			child->_top_level_changed_on_parent();
 		}
 	}
 }
 
-void CanvasItem::_toplevel_changed_on_parent() {
-	// Inform children that toplevel status has changed on a parent.
-	_toplevel_changed();
+void CanvasItem::_top_level_changed_on_parent() {
+	// Inform children that top_level status has changed on a parent.
+	_top_level_changed();
 }
 
 bool CanvasItem::is_set_as_top_level() const {
