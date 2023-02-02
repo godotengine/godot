@@ -2084,20 +2084,6 @@ void AnimationTree::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 }
 
-void AnimationTree::rename_parameter(const String &p_base, const String &p_new_base) {
-	//rename values first
-	for (const PropertyInfo &E : properties) {
-		if (E.name.begins_with(p_base)) {
-			String new_name = E.name.replace_first(p_base, p_new_base);
-			property_map[new_name] = property_map[E.name];
-		}
-	}
-
-	//update tree second
-	properties_dirty = true;
-	_update_properties();
-}
-
 real_t AnimationTree::get_connection_activity(const StringName &p_path, int p_connection) const {
 	if (!input_activity_map_get.has(p_path)) {
 		return 0;
@@ -2142,8 +2128,6 @@ void AnimationTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_root_motion_scale"), &AnimationTree::get_root_motion_scale);
 
 	ClassDB::bind_method(D_METHOD("_update_properties"), &AnimationTree::_update_properties);
-
-	ClassDB::bind_method(D_METHOD("rename_parameter", "old_name", "new_name"), &AnimationTree::rename_parameter);
 
 	ClassDB::bind_method(D_METHOD("advance", "delta"), &AnimationTree::advance);
 
