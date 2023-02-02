@@ -299,7 +299,9 @@ public:
 		int leftmost_column = 0, rightmost_column = 0;
 		Node *next = nullptr;
 		List<AnnotationNode *> annotations;
-		Vector<uint32_t> ignored_warnings;
+#ifdef DEBUG_ENABLED
+		Vector<GDScriptWarning::Code> ignored_warnings;
+#endif
 
 		DataType datatype;
 
@@ -331,8 +333,10 @@ public:
 
 		AnnotationInfo *info = nullptr;
 		PropertyInfo export_info;
+		bool is_resolved = false;
+		bool is_applied = false;
 
-		bool apply(GDScriptParser *p_this, Node *p_target) const;
+		bool apply(GDScriptParser *p_this, Node *p_target);
 		bool applies_to(uint32_t p_target_kinds) const;
 
 		AnnotationNode() {
@@ -1265,8 +1269,7 @@ private:
 #ifdef DEBUG_ENABLED
 	bool is_ignoring_warnings = false;
 	List<GDScriptWarning> warnings;
-	HashSet<String> ignored_warnings;
-	HashSet<uint32_t> ignored_warning_codes;
+	HashSet<GDScriptWarning::Code> ignored_warnings;
 	HashSet<int> unsafe_lines;
 #endif
 
