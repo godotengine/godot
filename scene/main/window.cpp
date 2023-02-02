@@ -2115,13 +2115,17 @@ bool Window::is_auto_translating() const {
 	return auto_translate;
 }
 
+Transform2D Window::get_final_transform() const {
+	return window_transform * stretch_transform * global_canvas_transform;
+}
+
 Transform2D Window::get_screen_transform() const {
 	Transform2D embedder_transform;
 	if (_get_embedder()) {
 		embedder_transform.translate_local(get_position());
 		embedder_transform = _get_embedder()->get_screen_transform() * embedder_transform;
 	}
-	return embedder_transform * Viewport::get_screen_transform();
+	return embedder_transform * get_final_transform();
 }
 
 Transform2D Window::get_popup_base_transform() const {
@@ -2130,7 +2134,7 @@ Transform2D Window::get_popup_base_transform() const {
 	}
 	Transform2D popup_base_transform;
 	popup_base_transform.set_origin(get_position());
-	popup_base_transform *= Viewport::get_screen_transform();
+	popup_base_transform *= get_final_transform();
 	if (_get_embedder()) {
 		return _get_embedder()->get_popup_base_transform() * popup_base_transform;
 	}
