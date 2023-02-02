@@ -49,6 +49,13 @@
 				Returns the remote port of the given peer.
 			</description>
 		</method>
+		<method name="is_server" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns whether the [WebSocketMultiplayerPeer] is initialized as a server or as a client.
+				Returns [code]false[/code] when the connection is closed.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="handshake_headers" type="PackedStringArray" setter="set_handshake_headers" getter="get_handshake_headers" default="PackedStringArray()">

@@ -74,6 +74,8 @@ void WebSocketMultiplayerPeer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_client", "url", "tls_client_options"), &WebSocketMultiplayerPeer::create_client, DEFVAL(Ref<TLSOptions>()));
 	ClassDB::bind_method(D_METHOD("create_server", "port", "bind_address", "tls_server_options"), &WebSocketMultiplayerPeer::create_server, DEFVAL("*"), DEFVAL(Ref<TLSOptions>()));
 
+	ClassDB::bind_method(D_METHOD("is_server"), &WebSocketMultiplayerPeer::is_server);
+
 	ClassDB::bind_method(D_METHOD("get_peer", "peer_id"), &WebSocketMultiplayerPeer::get_peer);
 	ClassDB::bind_method(D_METHOD("get_peer_address", "id"), &WebSocketMultiplayerPeer::get_peer_address);
 	ClassDB::bind_method(D_METHOD("get_peer_port", "id"), &WebSocketMultiplayerPeer::get_peer_port);
