@@ -692,7 +692,7 @@ Transform2D Control::get_transform() const {
 	return xform;
 }
 
-void Control::_toplevel_changed_on_parent() {
+void Control::_top_level_changed_on_parent() {
 	// Update root control status.
 	_notification(NOTIFICATION_EXIT_CANVAS);
 	_notification(NOTIFICATION_ENTER_CANVAS);
