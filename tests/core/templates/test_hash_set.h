@@ -34,6 +34,7 @@
 #include "core/templates/hash_set.h"
 
 #include "tests/test_macros.h"
+#include "tests/test_tools.h"
 
 namespace TestHashSet {
 
@@ -219,6 +220,41 @@ TEST_CASE("[HashSet] Copy") {
 		CHECK(expected[idx] == E);
 		++idx;
 	}
+}
+
+TEST_CASE("[HashSet] Collision warnings") {
+	ErrorDetector ed;
+
+	{
+		HashSet<int> set;
+		for (int i = 0; i < 100; i++) {
+			set.insert(i);
+		}
+		CHECK(set.size() == 100);
+		CHECK_FALSE(ed.has_error);
+	}
+
+	HashSet<int, BadHasher> set;
+
+	for (int i = 0; i < 10; i++) {
+		set.insert(i);
+	}
+	CHECK(set.size() == 10);
+	CHECK_FALSE(ed.has_error);
+
+	ERR_PRINT_OFF;
+	for (int i = 0; i < 100; i++) {
+		set.insert(i);
+	}
+	ERR_PRINT_ON;
+
+	CHECK(set.size() == 100);
+
+#ifdef DEV_ENABLED
+	CHECK(ed.has_error);
+#else
+	CHECK_FALSE(ed.has_error);
+#endif
 }
 
 } // namespace TestHashSet

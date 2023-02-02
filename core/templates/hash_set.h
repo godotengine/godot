@@ -122,6 +122,12 @@ private:
 				hashes[pos] = hash;
 				key_to_hash[index] = pos;
 				hash_to_key[pos] = index;
+
+#ifdef DEV_ENABLED
+				if ((capacity > 100) && (distance * 2 > capacity)) {
+					WARN_PRINT("Excessive collision count (" + itos(distance) + "), is the right hash function being used?");
+				}
+#endif
 				return pos;
 			}
 

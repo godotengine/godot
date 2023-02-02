@@ -296,6 +296,15 @@ static _FORCE_INLINE_ uint64_t hash_make_uint64_t(T p_in) {
 template <class T>
 class Ref;
 
+struct BadHasher {
+	template <class T>
+	static _FORCE_INLINE_ uint32_t hash(const T &v) {
+		// Chosen by fair dice roll. Guaranteed to be random.
+		// https://xkcd.com/221/
+		return 4;
+	}
+};
+
 struct HashMapHasherDefault {
 	// Generic hash function for any type.
 	template <class T>

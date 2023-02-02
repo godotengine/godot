@@ -34,6 +34,7 @@
 #include "core/templates/hash_map.h"
 
 #include "tests/test_macros.h"
+#include "tests/test_tools.h"
 
 namespace TestHashMap {
 
@@ -128,6 +129,42 @@ TEST_CASE("[HashMap] Const iteration") {
 		++idx;
 	}
 }
+
+TEST_CASE("[HashMap] Collision warnings") {
+	ErrorDetector ed;
+
+	{
+		HashMap<int, int> map;
+		for (int i = 0; i < 100; i++) {
+			map.insert(i, i);
+		}
+		CHECK(map.size() == 100);
+		CHECK_FALSE(ed.has_error);
+	}
+
+	HashMap<int, int, BadHasher> map;
+
+	for (int i = 0; i < 10; i++) {
+		map.insert(i, i);
+	}
+	CHECK(map.size() == 10);
+	CHECK_FALSE(ed.has_error);
+
+	ERR_PRINT_OFF;
+	for (int i = 0; i < 100; i++) {
+		map.insert(i, i);
+	}
+	ERR_PRINT_ON;
+
+	CHECK(map.size() == 100);
+
+#ifdef DEV_ENABLED
+	CHECK(ed.has_error);
+#else
+	CHECK_FALSE(ed.has_error);
+#endif
+}
+
 } // namespace TestHashMap
 
 #endif // TEST_HASH_MAP_H
