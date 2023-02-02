@@ -3602,6 +3602,7 @@ bool GDScriptParser::tool_annotation(const AnnotationNode *p_annotation, Node *p
 
 bool GDScriptParser::icon_annotation(const AnnotationNode *p_annotation, Node *p_node) {
 	ERR_FAIL_COND_V_MSG(p_node->type != Node::CLASS, false, R"("@icon" annotation can only be applied to classes.)");
+	ERR_FAIL_COND_V(p_annotation->resolved_arguments.is_empty(), false);
 	ClassNode *p_class = static_cast<ClassNode *>(p_node);
 	p_class->icon_path = p_annotation->resolved_arguments[0];
 	return true;
@@ -3830,6 +3831,10 @@ template <PropertyUsageFlags t_usage>
 bool GDScriptParser::export_group_annotations(const AnnotationNode *p_annotation, Node *p_node) {
 	AnnotationNode *annotation = const_cast<AnnotationNode *>(p_annotation);
 
+	if (annotation->resolved_arguments.is_empty()) {
+		return false;
+	}
+
 	annotation->export_info.name = annotation->resolved_arguments[0];
 
 	switch (t_usage) {
@@ -3887,7 +3892,7 @@ bool GDScriptParser::rpc_annotation(const AnnotationNode *p_annotation, Node *p_
 
 	Dictionary rpc_config;
 	rpc_config["rpc_mode"] = MultiplayerAPI::RPC_MODE_AUTHORITY;
-	if (p_annotation->resolved_arguments.size()) {
+	if (!p_annotation->resolved_arguments.is_empty()) {
 		int last = p_annotation->resolved_arguments.size() - 1;
 		if (p_annotation->resolved_arguments[last].get_type() == Variant::INT) {
 			rpc_config["channel"] = p_annotation->resolved_arguments[last].operator int();
