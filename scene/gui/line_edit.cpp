@@ -84,6 +84,7 @@ void LineEdit::_move_caret_left(bool p_select, bool p_move_by_word) {
 	}
 
 	shift_selection_check_post(p_select);
+	_reset_caret_blink_timer();
 }
 
 void LineEdit::_move_caret_right(bool p_select, bool p_move_by_word) {
@@ -116,6 +117,7 @@ void LineEdit::_move_caret_right(bool p_select, bool p_move_by_word) {
 	}
 
 	shift_selection_check_post(p_select);
+	_reset_caret_blink_timer();
 }
 
 void LineEdit::_move_caret_start(bool p_select) {
