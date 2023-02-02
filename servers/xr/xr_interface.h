@@ -78,6 +78,12 @@ public:
 		XR_PLAY_AREA_STAGE, /* Same as roomscale but origin point is fixed to the center of the physical space, XRServer.center_on_hmd disabled */
 	};
 
+	enum EnvironmentBlendMode {
+		XR_ENV_BLEND_MODE_OPAQUE, /* You cannot see the real world, VR like */
+		XR_ENV_BLEND_MODE_ADDITIVE, /* You can see the real world, AR like */
+		XR_ENV_BLEND_MODE_ALPHA_BLEND, /* Real world is passed through where alpha channel is 0.0 and gradually blends to opaque for value 1.0. */
+	};
+
 protected:
 	_THREAD_SAFE_CLASS_
 
@@ -138,6 +144,10 @@ public:
 	virtual bool start_passthrough() { return false; }
 	virtual void stop_passthrough() {}
 
+	/** environment blend mode. */
+	virtual Array get_supported_environment_blend_modes();
+	virtual bool set_environment_blend_mode(EnvironmentBlendMode mode) { return false; }
+
 	XRInterface();
 	~XRInterface();
 
@@ -151,5 +161,6 @@ private:
 VARIANT_ENUM_CAST(XRInterface::Capabilities);
 VARIANT_ENUM_CAST(XRInterface::TrackingStatus);
 VARIANT_ENUM_CAST(XRInterface::PlayAreaMode);
+VARIANT_ENUM_CAST(XRInterface::EnvironmentBlendMode);
 
 #endif // XR_INTERFACE_H
