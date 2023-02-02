@@ -99,8 +99,12 @@ private:
 	XrFormFactor form_factor = XR_FORM_FACTOR_HEAD_MOUNTED_DISPLAY;
 	XrViewConfigurationType view_configuration = XR_VIEW_CONFIGURATION_TYPE_PRIMARY_STEREO;
 	XrReferenceSpaceType reference_space = XR_REFERENCE_SPACE_TYPE_STAGE;
-	// XrEnvironmentBlendMode environment_blend_mode = XR_ENVIRONMENT_BLEND_MODE_OPAQUE;
 	bool submit_depth_buffer = false; // if set to true we submit depth buffers to OpenXR if a suitable extension is enabled.
+
+	// blend mode
+	XrEnvironmentBlendMode environment_blend_mode = XR_ENVIRONMENT_BLEND_MODE_OPAQUE;
+	uint32_t num_supported_environment_blend_modes = 0;
+	XrEnvironmentBlendMode *supported_environment_blend_modes = nullptr;
 
 	// state
 	XrInstance instance = XR_NULL_HANDLE;
@@ -182,6 +186,7 @@ private:
 	EXT_PROTO_XRRESULT_FUNC2(xrEndFrame, (XrSession), session, (const XrFrameEndInfo *), frameEndInfo)
 	EXT_PROTO_XRRESULT_FUNC1(xrEndSession, (XrSession), session)
 	EXT_PROTO_XRRESULT_FUNC3(xrEnumerateApiLayerProperties, (uint32_t), propertyCapacityInput, (uint32_t *), propertyCountOutput, (XrApiLayerProperties *), properties)
+	EXT_PROTO_XRRESULT_FUNC6(xrEnumerateEnvironmentBlendModes, (XrInstance), instance, (XrSystemId), systemId, (XrViewConfigurationType), viewConfigurationType, (uint32_t), environmentBlendModeCapacityInput, (uint32_t *), environmentBlendModeCountOutput, (XrEnvironmentBlendMode *), environmentBlendModes)
 	EXT_PROTO_XRRESULT_FUNC4(xrEnumerateInstanceExtensionProperties, (const char *), layerName, (uint32_t), propertyCapacityInput, (uint32_t *), propertyCountOutput, (XrExtensionProperties *), properties)
 	EXT_PROTO_XRRESULT_FUNC4(xrEnumerateReferenceSpaces, (XrSession), session, (uint32_t), spaceCapacityInput, (uint32_t *), spaceCountOutput, (XrReferenceSpaceType *), spaces)
 	EXT_PROTO_XRRESULT_FUNC4(xrEnumerateSwapchainFormats, (XrSession), session, (uint32_t), formatCapacityInput, (uint32_t *), formatCountOutput, (int64_t *), formats)
@@ -210,6 +215,7 @@ private:
 	bool create_instance();
 	bool get_system_info();
 	bool load_supported_view_configuration_types();
+	bool load_supported_environmental_blend_modes();
 	bool is_view_configuration_supported(XrViewConfigurationType p_configuration_type) const;
 	bool load_supported_view_configuration_views(XrViewConfigurationType p_configuration_type);
 	void destroy_instance();
@@ -389,6 +395,9 @@ public:
 
 	void register_composition_layer_provider(OpenXRCompositionLayerProvider *provider);
 	void unregister_composition_layer_provider(OpenXRCompositionLayerProvider *provider);
+
+	const XrEnvironmentBlendMode *get_supported_environment_blend_modes(uint32_t &count);
+	bool set_environment_blend_mode(XrEnvironmentBlendMode mode);
 
 	OpenXRAPI();
 	~OpenXRAPI();

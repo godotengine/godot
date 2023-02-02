@@ -41,6 +41,7 @@ public:
 	static String get_structure_type_name(XrStructureType p_structure_type);
 	static String get_session_state_name(XrSessionState p_session_state);
 	static String get_action_type_name(XrActionType p_action_type);
+	static String get_environment_blend_mode_name(XrEnvironmentBlendMode p_blend_mode);
 	static String make_xr_version_string(XrVersion p_version);
 };
 
