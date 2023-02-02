@@ -376,6 +376,7 @@ public:
 
 	//
 
+	virtual Transform2D get_final_transform() const override;
 	virtual Transform2D get_screen_transform() const override;
 	virtual Transform2D get_popup_base_transform() const override;
 
