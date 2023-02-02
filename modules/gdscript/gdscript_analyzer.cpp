@@ -4037,6 +4037,10 @@ void GDScriptAnalyzer::reduce_unary_op(GDScriptParser::UnaryOpNode *p_unary_op) 
 Variant GDScriptAnalyzer::make_expression_reduced_value(GDScriptParser::ExpressionNode *p_expression, bool &is_reduced) {
 	Variant value;
 
+	if (p_expression == nullptr) {
+		return value;
+	}
+
 	if (p_expression->is_constant) {
 		is_reduced = true;
 		value = p_expression->reduced_value;
@@ -4101,6 +4105,10 @@ Variant GDScriptAnalyzer::make_dictionary_reduced_value(GDScriptParser::Dictiona
 }
 
 Variant GDScriptAnalyzer::make_subscript_reduced_value(GDScriptParser::SubscriptNode *p_subscript, bool &is_reduced) {
+	if (p_subscript->base == nullptr || p_subscript->index == nullptr) {
+		return Variant();
+	}
+
 	bool is_base_value_reduced = false;
 	Variant base_value = make_expression_reduced_value(p_subscript->base, is_base_value_reduced);
 	if (!is_base_value_reduced) {
