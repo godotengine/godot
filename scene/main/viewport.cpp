@@ -4136,7 +4136,11 @@ void SubViewport::set_size_force(const Size2i &p_size) {
 
 void SubViewport::_internal_set_size(const Size2i &p_size, bool p_force) {
 	SubViewportContainer *c = Object::cast_to<SubViewportContainer>(get_parent());
-	if (!p_force && c && c->is_stretch_enabled()) {
+	bool forbidden_change = !p_force && c && c->is_stretch_enabled();
+#ifdef TOOLS_ENABLED
+	forbidden_change = forbidden_change && !(Engine::get_singleton()->is_editor_hint() && is_inside_tree() && get_tree()->get_edited_scene_root() && get_tree()->get_edited_scene_root()->is_ancestor_of(this));
+#endif // TOOLS_ENABLED
+	if (forbidden_change) {
 #ifdef DEBUG_ENABLED
 		WARN_PRINT("Can't change the size of a `SubViewport` with a `SubViewportContainer` parent that has `stretch` enabled. Set `SubViewportContainer.stretch` to `false` to allow changing the size manually.");
 #endif // DEBUG_ENABLED
