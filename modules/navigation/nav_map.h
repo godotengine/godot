@@ -42,7 +42,7 @@
 
 class NavLink;
 class NavRegion;
-class RvoAgent;
+class NavAgent;
 
 class NavMap : public NavRid {
 	/// Map Up
@@ -78,10 +78,10 @@ class NavMap : public NavRid {
 	bool agents_dirty = false;
 
 	/// All the Agents (even the controlled one)
-	LocalVector<RvoAgent *> agents;
+	LocalVector<NavAgent *> agents;
 
 	/// Controlled agents
-	LocalVector<RvoAgent *> controlled_agents;
+	LocalVector<NavAgent *> controlled_agents;
 
 	/// Physics delta time
 	real_t deltatime = 0.0;
@@ -144,15 +144,15 @@ public:
 		return links;
 	}
 
-	bool has_agent(RvoAgent *agent) const;
-	void add_agent(RvoAgent *agent);
-	void remove_agent(RvoAgent *agent);
-	const LocalVector<RvoAgent *> &get_agents() const {
+	bool has_agent(NavAgent *agent) const;
+	void add_agent(NavAgent *agent);
+	void remove_agent(NavAgent *agent);
+	const LocalVector<NavAgent *> &get_agents() const {
 		return agents;
 	}
 
-	void set_agent_as_controlled(RvoAgent *agent);
-	void remove_agent_as_controlled(RvoAgent *agent);
+	void set_agent_as_controlled(NavAgent *agent);
+	void remove_agent_as_controlled(NavAgent *agent);
 
 	uint32_t get_map_update_id() const {
 		return map_update_id;
@@ -173,7 +173,7 @@ public:
 	int get_pm_edge_free_count() const { return pm_edge_free_count; }
 
 private:
-	void compute_single_step(uint32_t index, RvoAgent **agent);
+	void compute_single_step(uint32_t index, NavAgent **agent);
 	void clip_path(const LocalVector<gd::NavigationPoly> &p_navigation_polys, Vector<Vector3> &path, const gd::NavigationPoly *from_poly, const Vector3 &p_to_point, const gd::NavigationPoly *p_to_poly, Vector<int32_t> *r_path_types, TypedArray<RID> *r_path_rids, Vector<int64_t> *r_path_owners) const;
 };
 
