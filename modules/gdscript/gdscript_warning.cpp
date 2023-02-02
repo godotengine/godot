@@ -170,6 +170,21 @@ String GDScriptWarning::get_message() const {
 		case RENAMED_IN_GD4_HINT: {
 			break; // Renamed identifier hint is taken care of by the GDScriptAnalyzer. No message needed here.
 		}
+		case INFERENCE_ON_VARIANT: {
+			CHECK_SYMBOLS(1);
+			return vformat("The %s type is being inferred from a Variant value, so it will be typed as Variant.", symbols[0]);
+		}
+		case NATIVE_METHOD_OVERRIDE: {
+			CHECK_SYMBOLS(2);
+			return vformat(R"(The method "%s" overrides a method from native class "%s". This won't be called by the engine and may not work as expected.)", symbols[0], symbols[1]);
+		}
+		case GET_NODE_DEFAULT_WITHOUT_ONREADY: {
+			CHECK_SYMBOLS(1);
+			return vformat(R"*(The default value is using "%s" which won't return nodes in the scene tree before "_ready()" is called. Use the "@onready" annotation to solve this.)*", symbols[0]);
+		}
+		case ONREADY_WITH_EXPORT: {
+			return R"(The "@onready" annotation will make the default value to be set after the "@export" takes effect and will override it.)";
+		}
 		case WARNING_MAX:
 			break; // Can't happen, but silences warning
 	}
@@ -179,14 +194,8 @@ String GDScriptWarning::get_message() const {
 }
 
 int GDScriptWarning::get_default_value(Code p_code) {
-	if (get_name_from_code(p_code).to_lower().begins_with("unsafe_")) {
-		return WarnLevel::IGNORE;
-	}
-	// Too spammy by default on common cases (connect, Tween, etc.).
-	if (p_code == RETURN_VALUE_DISCARDED) {
-		return WarnLevel::IGNORE;
-	}
-	return WarnLevel::WARN;
+	ERR_FAIL_INDEX_V_MSG(p_code, WARNING_MAX, WarnLevel::IGNORE, "Getting default value of invalid warning code.");
+	return default_warning_levels[p_code];
 }
 
 PropertyInfo GDScriptWarning::get_property_info(Code p_code) {
@@ -240,7 +249,11 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		"INT_AS_ENUM_WITHOUT_MATCH",
 		"STATIC_CALLED_ON_INSTANCE",
 		"CONFUSABLE_IDENTIFIER",
-		"RENAMED_IN_GODOT_4_HINT"
+		"RENAMED_IN_GODOT_4_HINT",
+		"INFERENCE_ON_VARIANT",
+		"NATIVE_METHOD_OVERRIDE",
+		"GET_NODE_DEFAULT_WITHOUT_ONREADY",
+		"ONREADY_WITH_EXPORT",
 	};
 
 	static_assert((sizeof(names) / sizeof(*names)) == WARNING_MAX, "Amount of warning types don't match the amount of warning names.");
