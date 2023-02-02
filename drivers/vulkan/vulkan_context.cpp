@@ -1299,8 +1299,15 @@ Error VulkanContext::_create_physical_device(VkSurfaceKHR p_surface) {
 	// Get device version
 	device_api_version = gpu_props.apiVersion;
 
+	String rendering_method;
+	if (OS::get_singleton()->get_current_rendering_method() == "mobile") {
+		rendering_method = "Forward Mobile";
+	} else {
+		rendering_method = "Forward+";
+	}
+
 	// Output our device version
-	print_line("Vulkan API " + get_device_api_version() + " - " + "Using Vulkan Device #" + itos(device_index) + ": " + device_vendor + " - " + device_name);
+	print_line(vformat("Vulkan API %s - %s - Using Vulkan Device #%d: %s - %s", get_device_api_version(), rendering_method, device_index, device_vendor, device_name));
 
 	{
 		Error _err = _initialize_device_extensions();
