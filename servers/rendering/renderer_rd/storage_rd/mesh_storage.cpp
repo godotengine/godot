@@ -586,6 +586,8 @@ void MeshStorage::mesh_set_custom_aabb(RID p_mesh, const AABB &p_aabb) {
 	Mesh *mesh = mesh_owner.get_or_null(p_mesh);
 	ERR_FAIL_COND(!mesh);
 	mesh->custom_aabb = p_aabb;
+
+	mesh->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_AABB);
 }
 
 AABB MeshStorage::mesh_get_custom_aabb(RID p_mesh) const {
