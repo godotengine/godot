@@ -512,8 +512,10 @@ EditorExportPlatform::ExportNotifier::~ExportNotifier() {
 	for (int i = 0; i < export_plugins.size(); i++) {
 		if (export_plugins[i]->get_script_instance()) {
 			export_plugins.write[i]->_export_end_script();
+		} else {
+			export_plugins.write[i]->_export_end();
 		}
-		export_plugins.write[i]->_export_end();
+		export_plugins.write[i]->_export_end_clear();
 		export_plugins.write[i]->set_export_preset(Ref<EditorExportPlugin>());
 	}
 }
