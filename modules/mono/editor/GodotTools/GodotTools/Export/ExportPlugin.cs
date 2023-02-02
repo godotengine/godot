@@ -185,7 +185,9 @@ namespace GodotTools.Export
 
                 foreach (string file in Directory.GetFiles(publishOutputTempDir, "*", SearchOption.AllDirectories))
                 {
-                    AddSharedObject(file, tags: null, projectDataDirName);
+                    AddSharedObject(file, tags: null,
+                        Path.Join(projectDataDirName,
+                            Path.GetRelativePath(publishOutputTempDir, Path.GetDirectoryName(file))));
                 }
             }
         }
