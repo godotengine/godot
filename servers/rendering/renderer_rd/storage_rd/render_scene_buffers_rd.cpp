@@ -50,25 +50,19 @@ void RenderSceneBuffersRD::_bind_methods() {
 	// ClassDB::bind_method(D_METHOD("create_texture_view", "context", "name", "view_name", "view"), &RenderSceneBuffersRD::has_texture);
 	ClassDB::bind_method(D_METHOD("get_texture", "context", "name"), &RenderSceneBuffersRD::get_texture);
 	// ClassDB::bind_method(D_METHOD("get_texture_format", "context", "name"), &RenderSceneBuffersRD::get_texture_format);
-	ClassDB::bind_method(D_METHOD("get_texture_slice", "context", "name", "layer", "mipmap"), &RenderSceneBuffersRD::get_texture_slice);
-	ClassDB::bind_method(D_METHOD("get_texture_slice_size", "context", "name", "layer", "mipmap"), &RenderSceneBuffersRD::get_texture_slice_size);
+	ClassDB::bind_method(D_METHOD("get_texture_slice", "context", "name", "layer", "mipmap", "layers", "mipmaps"), &RenderSceneBuffersRD::get_texture_slice);
+	ClassDB::bind_method(D_METHOD("get_texture_slice_size", "context", "name", "mipmap"), &RenderSceneBuffersRD::get_texture_slice_size);
 	ClassDB::bind_method(D_METHOD("clear_context", "context"), &RenderSceneBuffersRD::clear_context);
 }
 
 void RenderSceneBuffersRD::update_sizes(NamedTexture &p_named_texture) {
 	ERR_FAIL_COND(p_named_texture.texture.is_null());
 
-	uint32_t size = p_named_texture.format.array_layers * p_named_texture.format.mipmaps;
-	p_named_texture.sizes.resize(size);
+	p_named_texture.sizes.resize(p_named_texture.format.mipmaps);
 
 	Size2i mipmap_size = Size2i(p_named_texture.format.width, p_named_texture.format.height);
-
 	for (uint32_t mipmap = 0; mipmap < p_named_texture.format.mipmaps; mipmap++) {
-		for (uint32_t layer = 0; layer < p_named_texture.format.array_layers; layer++) {
-			uint32_t index = layer * p_named_texture.format.mipmaps + mipmap;
-
-			p_named_texture.sizes.ptrw()[index] = mipmap_size;
-		}
+		p_named_texture.sizes.ptrw()[mipmap] = mipmap_size;
 
 		mipmap_size.width = MAX(1, mipmap_size.width >> 1);
 		mipmap_size.height = MAX(1, mipmap_size.height >> 1);
@@ -324,7 +318,7 @@ const RD::TextureFormat RenderSceneBuffersRD::get_texture_format(const StringNam
 	return named_textures[key].format;
 }
 
-RID RenderSceneBuffersRD::get_texture_slice(const StringName &p_context, const StringName &p_texture_name, const uint32_t p_layer, const uint32_t p_mipmap) {
+RID RenderSceneBuffersRD::get_texture_slice(const StringName &p_context, const StringName &p_texture_name, const uint32_t p_layer, const uint32_t p_mipmap, const uint32_t p_layers, const uint32_t p_mipmaps) {
 	NTKey key(p_context, p_texture_name);
 
 	// check if this is a known texture
@@ -334,36 +328,41 @@ RID RenderSceneBuffersRD::get_texture_slice(const StringName &p_context, const S
 
 	// check if we're in bounds
 	ERR_FAIL_UNSIGNED_INDEX_V(p_layer, named_texture.format.array_layers, RID());
+	ERR_FAIL_COND_V(p_layers == 0, RID());
+	ERR_FAIL_COND_V(p_layer + p_layers > named_texture.format.array_layers, RID());
 	ERR_FAIL_UNSIGNED_INDEX_V(p_mipmap, named_texture.format.mipmaps, RID());
+	ERR_FAIL_COND_V(p_mipmaps == 0, RID());
+	ERR_FAIL_COND_V(p_mipmap + p_mipmaps > named_texture.format.mipmaps, RID());
 
-	// if we don't have multiple layers or mipmaps, we can just return our texture as is
-	if (named_texture.format.array_layers == 1 && named_texture.format.mipmaps == 1) {
+	// asking the whole thing? just return the original
+	if (p_layer == 0 && p_mipmap == 0 && named_texture.format.array_layers == p_layers && named_texture.format.mipmaps == p_mipmaps) {
 		return named_texture.texture;
 	}
 
-	// get our index and make sure we have enough entries in our slices vector
-	uint32_t index = p_layer * named_texture.format.mipmaps + p_mipmap;
-	while (named_texture.slices.size() <= int(index)) {
-		named_texture.slices.push_back(RID());
+	// see if we have this
+	NTSliceKey slice_key(p_layer, p_layers, p_mipmap, p_mipmaps);
+	if (named_texture.slices.has(slice_key)) {
+		return named_texture.slices[slice_key];
 	}
 
-	// create our slice if we don't have it already
-	if (named_texture.slices[index].is_null()) {
-		named_texture.slices.ptrw()[index] = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), named_texture.texture, p_layer, p_mipmap);
+	// create our slice
+	RID &slice = named_texture.slices[slice_key];
+	slice = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), named_texture.texture, p_layer, p_mipmap, p_mipmaps, p_layers > 1 ? RD::TEXTURE_SLICE_2D_ARRAY : RD::TEXTURE_SLICE_2D, p_layers);
 
-		Array arr;
-		arr.push_back(p_context);
-		arr.push_back(p_texture_name);
-		arr.push_back(itos(p_layer));
-		arr.push_back(itos(p_mipmap));
-		RD::get_singleton()->set_resource_name(named_texture.slices[index], String("RenderBuffer {0}/{1} slice {2}/{3}").format(arr));
-	}
+	Array arr;
+	arr.push_back(p_context);
+	arr.push_back(p_texture_name);
+	arr.push_back(itos(p_layer));
+	arr.push_back(itos(p_layers));
+	arr.push_back(itos(p_mipmap));
+	arr.push_back(itos(p_mipmaps));
+	RD::get_singleton()->set_resource_name(slice, String("RenderBuffer {0}/{1}, layer {2}/{3}, mipmap {4}/{5}").format(arr));
 
 	// and return our slice
-	return named_texture.slices[index];
+	return slice;
 }
 
-Size2i RenderSceneBuffersRD::get_texture_slice_size(const StringName &p_context, const StringName &p_texture_name, const uint32_t p_layer, const uint32_t p_mipmap) {
+Size2i RenderSceneBuffersRD::get_texture_slice_size(const StringName &p_context, const StringName &p_texture_name, const uint32_t p_mipmap) {
 	NTKey key(p_context, p_texture_name);
 
 	// check if this is a known texture
@@ -372,14 +371,10 @@ Size2i RenderSceneBuffersRD::get_texture_slice_size(const StringName &p_context,
 	ERR_FAIL_COND_V(named_texture.texture.is_null(), Size2i());
 
 	// check if we're in bounds
-	ERR_FAIL_UNSIGNED_INDEX_V(p_layer, named_texture.format.array_layers, Size2i());
 	ERR_FAIL_UNSIGNED_INDEX_V(p_mipmap, named_texture.format.mipmaps, Size2i());
 
-	// get our index
-	uint32_t index = p_layer * named_texture.format.mipmaps + p_mipmap;
-
-	// and return our size
-	return named_texture.sizes[index];
+	// return our size
+	return named_texture.sizes[p_mipmap];
 }
 
 void RenderSceneBuffersRD::clear_context(const StringName &p_context) {
