@@ -13,8 +13,8 @@
 		<member name="axis" type="int" setter="set_axis" getter="get_axis" enum="JoyAxis" default="0">
 			Axis identifier. Use one of the [enum JoyAxis] axis constants.
 		</member>
-		<member name="axis_value" type="float" setter="set_axis_value" getter="get_axis_value" default="0.0">
-			Current position of the joystick on the given axis. The value ranges from [code]-1.0[/code] to [code]1.0[/code]. A value of [code]0[/code] means the axis is in its resting position.
+		<member name="axis_value" type="float" setter="set_axis_value" getter="get_axis_value" default="1.0">
+			Direction identifier. [code]-1.0[/code] for a negitive axis or [code]1.0[/code] for a positive axis.
 		</member>
 	</members>
 </class>
