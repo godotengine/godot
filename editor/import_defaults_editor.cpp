@@ -84,11 +84,11 @@ void ImportDefaultsEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			inspector->set_property_name_style(EditorPropertyNameProcessor::get_settings_style());
+			settings_inspector->set_property_name_style(EditorPropertyNameProcessor::get_settings_style());
 		} break;
 
 		case NOTIFICATION_PREDELETE: {
-			inspector->edit(nullptr);
+			settings_inspector->edit(nullptr);
 		} break;
 	}
 }
@@ -153,24 +153,24 @@ void ImportDefaultsEditor::_update_importer() {
 			settings->default_values[E.option.name] = E.default_value;
 		}
 
-		save_defaults->set_disabled(false);
-		reset_defaults->set_disabled(false);
+		save_default_settings->set_disabled(false);
+		reset_default_settings->set_disabled(false);
 
 	} else {
-		save_defaults->set_disabled(true);
-		reset_defaults->set_disabled(true);
+		save_default_settings->set_disabled(true);
+		reset_default_settings->set_disabled(true);
 	}
 
 	settings->notify_property_list_changed();
 
-	inspector->edit(settings);
+	settings_inspector->edit(settings);
 }
 
 void ImportDefaultsEditor::_importer_selected(int p_index) {
 	_update_importer();
 }
 
-void ImportDefaultsEditor::clear() {
+void ImportDefaultsEditor::initialize() {
 	String last_selected;
 	if (importers->get_selected() > 0) {
 		last_selected = importers->get_item_text(importers->get_selected());
@@ -210,20 +210,20 @@ ImportDefaultsEditor::ImportDefaultsEditor() {
 	hb->add_child(importers);
 	hb->add_spacer();
 	importers->connect("item_selected", callable_mp(this, &ImportDefaultsEditor::_importer_selected));
-	reset_defaults = memnew(Button);
-	reset_defaults->set_text(TTR("Reset to Defaults"));
-	reset_defaults->set_disabled(true);
-	reset_defaults->connect("pressed", callable_mp(this, &ImportDefaultsEditor::_reset));
-	hb->add_child(reset_defaults);
+	reset_default_settings = memnew(Button);
+	reset_default_settings->set_text(TTR("Reset to Defaults"));
+	reset_default_settings->set_disabled(true);
+	reset_default_settings->connect("pressed", callable_mp(this, &ImportDefaultsEditor::_reset));
+	hb->add_child(reset_default_settings);
 	add_child(hb);
-	inspector = memnew(EditorInspector);
-	add_child(inspector);
-	inspector->set_v_size_flags(SIZE_EXPAND_FILL);
+	settings_inspector = memnew(EditorInspector);
+	add_child(settings_inspector);
+	settings_inspector->set_v_size_flags(SIZE_EXPAND_FILL);
 	CenterContainer *cc = memnew(CenterContainer);
-	save_defaults = memnew(Button);
-	save_defaults->set_text(TTR("Save"));
-	save_defaults->connect("pressed", callable_mp(this, &ImportDefaultsEditor::_save));
-	cc->add_child(save_defaults);
+	save_default_settings = memnew(Button);
+	save_default_settings->set_text(TTR("Save"));
+	save_default_settings->connect("pressed", callable_mp(this, &ImportDefaultsEditor::_save));
+	cc->add_child(save_default_settings);
 	add_child(cc);
 
 	settings = memnew(ImportDefaultsEditorSettings);

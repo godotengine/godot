@@ -42,10 +42,10 @@ class ImportDefaultsEditor : public VBoxContainer {
 	GDCLASS(ImportDefaultsEditor, VBoxContainer)
 
 	OptionButton *importers = nullptr;
-	Button *save_defaults = nullptr;
-	Button *reset_defaults = nullptr;
 
-	EditorInspector *inspector = nullptr;
+	EditorInspector *settings_inspector = nullptr;
+	Button *save_default_settings = nullptr;
+	Button *reset_default_settings = nullptr;
 
 	ImportDefaultsEditorSettings *settings = nullptr;
 
@@ -60,7 +60,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void clear();
+	void initialize();
 
 	ImportDefaultsEditor();
 	~ImportDefaultsEditor();

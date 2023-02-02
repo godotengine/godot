@@ -61,7 +61,7 @@ void ProjectSettingsEditor::popup_project_settings() {
 	localization_editor->update_translations();
 	autoload_settings->update_autoload();
 	plugin_settings->update_plugins();
-	import_defaults_editor->clear();
+	import_defaults_editor->initialize();
 }
 
 void ProjectSettingsEditor::queue_save() {
