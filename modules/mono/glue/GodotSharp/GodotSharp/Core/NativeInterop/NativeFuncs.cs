@@ -459,6 +459,10 @@ namespace Godot.NativeInterop
 
         public static partial godot_bool godotsharp_node_path_is_absolute(in godot_node_path p_self);
 
+        public static partial godot_bool godotsharp_node_path_equals(in godot_node_path p_self, in godot_node_path p_other);
+
+        public static partial int godotsharp_node_path_hash(in godot_node_path p_self);
+
         // GD, etc
 
         internal static partial void godotsharp_bytes_to_var(in godot_packed_byte_array p_bytes,
