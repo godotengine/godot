@@ -80,14 +80,106 @@ protected:
 	}
 };
 
+class DefaultImportersEditorSettings : public Object {
+	GDCLASS(DefaultImportersEditorSettings, Object)
+	friend class ImportDefaultsEditor;
+	List<PropertyInfo> properties;
+	HashMap<StringName, Variant> values;
+
+	void initialize() {
+		properties.clear();
+		values.clear();
+
+		List<String> all_extensions;
+		ResourceFormatImporter::get_singleton()->get_recognized_extensions(&all_extensions);
+		all_extensions.sort();
+		for (const String &extension : all_extensions) {
+			// Retrieve the current default importer (if any).
+			Ref<ResourceImporter> default = ResourceFormatImporter::get_singleton()->get_default_importer_by_extension(extension);
+			values[extension] = 0; // Initialize a default fallback value.
+
+			// Create a property for this extension.
+			PropertyInfo pinfo;
+			pinfo.name = extension;
+			pinfo.type = Variant::INT;
+			pinfo.hint = PropertyHint::PROPERTY_HINT_ENUM;
+
+			// Construct the hint string.
+			pinfo.hint_string = "";
+			List<Ref<ResourceImporter>> importers;
+			ResourceFormatImporter::get_singleton()->get_importers_for_extension(extension, &importers);
+			int i = 1; // We start at 1 to allow for the empty "Default" choice.
+			for (const Ref<ResourceImporter> &importer : importers) {
+				// Add the importer to the selectbox.
+				pinfo.hint_string += "," + importer->get_visible_name();
+				// If that's our valid default importer, set the default value.
+				if (default.is_valid() && default->get_importer_name() == importer->get_importer_name()) {
+					values[extension] = i;//get_value_from_importer(importer);
+				}
+				++i;
+			}
+
+			properties.push_back(pinfo); // Finally add the property to the object.
+		}
+	}
+
+	bool save_default_importer_for_extension(const String &p_extension) const {
+		Variant index;
+		print_line(vformat("Attempting so save '%s'", p_extension));
+		if (_get(p_extension, index)) {
+			Variant value; // Fallback to default (unset the setting).
+			if ((int)index > 0) {
+				index = (int)index - 1; // Account for the default empty value.
+				List<Ref<ResourceImporter>> importers;
+				ResourceFormatImporter::get_singleton()->get_importers_for_extension(p_extension, &importers);
+				if (importers.size() > (int)index) {
+					// If we have a valid importer at this index, that's the one.
+					value = importers[(int)index]->get_importer_name();
+				}
+			}
+
+			const String setting_name = "default_resource_importers/" + p_extension;
+			ProjectSettings::get_singleton()->set(setting_name, value);
+
+			return true;
+		}
+
+		return false;
+	}
+
+protected:
+	bool _set(const StringName &p_name, const Variant &p_value) {
+		if (values.has(p_name)) {
+			values[p_name] = p_value;
+			return true;
+		}
+		return false;
+	}
+
+	bool _get(const StringName &p_name, Variant &r_ret) const {
+		if (values.has(p_name)) {
+			r_ret = values[p_name];
+			return true;
+		}
+		r_ret = Variant();
+		return false;
+	}
+
+	void _get_property_list(List<PropertyInfo> *p_list) const {
+		*p_list = properties;
+	}
+};
+
 void ImportDefaultsEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE:
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			importers_inspector->set_property_name_style(EditorPropertyNameProcessor::Style::STYLE_RAW);
 			settings_inspector->set_property_name_style(EditorPropertyNameProcessor::get_settings_style());
 		} break;
 
 		case NOTIFICATION_PREDELETE: {
+			importers_inspector->edit(nullptr);
 			settings_inspector->edit(nullptr);
 		} break;
 	}
@@ -116,6 +208,12 @@ void ImportDefaultsEditor::_save() {
 			ProjectSettings::get_singleton()->set("importer_defaults/" + settings->importer->get_importer_name(), Variant());
 		}
 
+		emit_signal(SNAME("project_settings_changed"));
+	}
+}
+
+void ImportDefaultsEditor::_save_default_importer(const String &p_property_name) {
+	if (default_importers->save_default_importer_for_extension(p_property_name)) {
 		emit_signal(SNAME("project_settings_changed"));
 	}
 }
@@ -171,6 +269,9 @@ void ImportDefaultsEditor::_importer_selected(int p_index) {
 }
 
 void ImportDefaultsEditor::initialize() {
+	default_importers->initialize();
+	importers_inspector->edit(default_importers);
+
 	String last_selected;
 	if (importers->get_selected() > 0) {
 		last_selected = importers->get_item_text(importers->get_selected());
@@ -204,18 +305,30 @@ void ImportDefaultsEditor::_bind_methods() {
 }
 
 ImportDefaultsEditor::ImportDefaultsEditor() {
-	HBoxContainer *hb = memnew(HBoxContainer);
-	hb->add_child(memnew(Label(TTR("Importer:"))));
+	Label *top_label = memnew(Label(TTR("Default importers by extension:")));
+	top_label->set_theme_type_variation("HeaderSmall");
+	add_child(top_label);
+	importers_inspector = memnew(EditorInspector);
+	importers_inspector->set_v_size_flags(SIZE_EXPAND_FILL);
+	importers_inspector->connect("property_edited", callable_mp(this, &ImportDefaultsEditor::_save_default_importer));
+	add_child(importers_inspector);
+
+	default_importers = memnew(DefaultImportersEditorSettings);
+
+	HBoxContainer *bottom_hb = memnew(HBoxContainer);
+	Label *bottom_label = memnew(Label(TTR("Default settings for:")));
+	bottom_label->set_theme_type_variation("HeaderSmall");
+	bottom_hb->add_child(bottom_label);
 	importers = memnew(OptionButton);
-	hb->add_child(importers);
-	hb->add_spacer();
+	bottom_hb->add_child(importers);
+	bottom_hb->add_spacer();
 	importers->connect("item_selected", callable_mp(this, &ImportDefaultsEditor::_importer_selected));
 	reset_default_settings = memnew(Button);
 	reset_default_settings->set_text(TTR("Reset to Defaults"));
 	reset_default_settings->set_disabled(true);
 	reset_default_settings->connect("pressed", callable_mp(this, &ImportDefaultsEditor::_reset));
-	hb->add_child(reset_default_settings);
-	add_child(hb);
+	bottom_hb->add_child(reset_default_settings);
+	add_child(bottom_hb);
 	settings_inspector = memnew(EditorInspector);
 	add_child(settings_inspector);
 	settings_inspector->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -230,5 +343,6 @@ ImportDefaultsEditor::ImportDefaultsEditor() {
 }
 
 ImportDefaultsEditor::~ImportDefaultsEditor() {
+	memdelete(default_importers);
 	memdelete(settings);
 }

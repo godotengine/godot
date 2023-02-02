@@ -36,6 +36,7 @@
 #include "scene/gui/option_button.h"
 
 class ImportDefaultsEditorSettings;
+class DefaultImportersEditorSettings;
 class EditorInspector;
 
 class ImportDefaultsEditor : public VBoxContainer {
@@ -47,13 +48,17 @@ class ImportDefaultsEditor : public VBoxContainer {
 	Button *save_default_settings = nullptr;
 	Button *reset_default_settings = nullptr;
 
+	EditorInspector *importers_inspector = nullptr;
+
 	ImportDefaultsEditorSettings *settings = nullptr;
+	DefaultImportersEditorSettings *default_importers = nullptr;
 
 	void _update_importer();
 	void _importer_selected(int p_index);
 
 	void _reset();
 	void _save();
+	void _save_default_importer(const String &);
 
 protected:
 	void _notification(int p_what);
