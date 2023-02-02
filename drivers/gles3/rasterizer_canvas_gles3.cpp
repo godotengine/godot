@@ -920,7 +920,7 @@ void RasterizerCanvasGLES3::_record_item_commands(const Item *p_item, RID p_rend
 					}
 
 					if (rect->flags & CANVAS_RECT_TRANSPOSE) {
-						dst_rect.size.x *= -1; // Encoding in the dst_rect.z uniform
+						state.instance_data_array[r_index].flags |= FLAGS_TRANSPOSE_RECT;
 					}
 
 					if (rect->flags & CANVAS_RECT_CLIP_UV) {
