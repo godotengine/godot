@@ -2636,7 +2636,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 			new_menu->connect("id_pressed", callable_mp(this, &FileSystemDock::_tree_rmb_option));
 
 			p_popup->add_child(new_menu);
-			p_popup->add_submenu_item(TTR("New"), "New");
+			p_popup->add_submenu_item(TTR("New"), "New", FILE_NEW);
 
 			new_menu->add_icon_item(get_theme_icon(SNAME("Folder"), SNAME("EditorIcons")), TTR("Folder..."), FILE_NEW_FOLDER);
 			new_menu->add_icon_item(get_theme_icon(SNAME("PackedScene"), SNAME("EditorIcons")), TTR("Scene..."), FILE_NEW_SCENE);
