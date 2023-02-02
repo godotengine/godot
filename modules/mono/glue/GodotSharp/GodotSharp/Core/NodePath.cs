@@ -39,7 +39,7 @@ namespace Godot
     /// new NodePath("/root/MyAutoload"); // If you have an autoloaded node or scene.
     /// </code>
     /// </example>
-    public sealed class NodePath : IDisposable
+    public sealed class NodePath : IDisposable, IEquatable<NodePath>
     {
         internal godot_node_path.movable NativeValue;
 
@@ -288,5 +288,37 @@ namespace Godot
         /// </summary>
         /// <returns>If the <see cref="NodePath"/> is empty.</returns>
         public bool IsEmpty => NativeValue.DangerousSelfRef.IsEmpty;
+
+        public static bool operator ==(NodePath left, NodePath right)
+        {
+            if (left is null)
+                return right is null;
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(NodePath left, NodePath right)
+        {
+            return !(left == right);
+        }
+
+        public bool Equals(NodePath other)
+        {
+            if (other is null)
+                return false;
+            var self = (godot_node_path)NativeValue;
+            var otherNative = (godot_node_path)other.NativeValue;
+            return NativeFuncs.godotsharp_node_path_equals(self, otherNative).ToBool();
+        }
+
+        public override bool Equals(object obj)
+        {
+            return ReferenceEquals(this, obj) || (obj is NodePath other && Equals(other));
+        }
+
+        public override int GetHashCode()
+        {
+            var self = (godot_node_path)NativeValue;
+            return NativeFuncs.godotsharp_node_path_hash(self);
+        }
     }
 }

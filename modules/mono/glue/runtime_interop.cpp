@@ -1141,6 +1141,14 @@ bool godotsharp_node_path_is_absolute(const NodePath *p_self) {
 	return p_self->is_absolute();
 }
 
+bool godotsharp_node_path_equals(const NodePath *p_self, const NodePath *p_other) {
+	return *p_self == *p_other;
+}
+
+int godotsharp_node_path_hash(const NodePath *p_self) {
+	return p_self->hash();
+}
+
 void godotsharp_randomize() {
 	Math::randomize();
 }
@@ -1477,6 +1485,8 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_node_path_get_subname,
 	(void *)godotsharp_node_path_get_subname_count,
 	(void *)godotsharp_node_path_is_absolute,
+	(void *)godotsharp_node_path_equals,
+	(void *)godotsharp_node_path_hash,
 	(void *)godotsharp_bytes_to_var,
 	(void *)godotsharp_convert,
 	(void *)godotsharp_hash,
