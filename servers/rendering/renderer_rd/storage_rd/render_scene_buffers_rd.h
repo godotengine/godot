@@ -93,7 +93,6 @@ private:
 		}
 
 		static uint32_t hash(const NTKey &p_val) {
-			// FIXME, properly hash two stringnames together
 			uint32_t h = p_val.context.hash();
 			h = hash_murmur3_one_32(p_val.buffer_name.hash(), h);
 			return hash_fmix32(h);
@@ -106,6 +105,33 @@ private:
 		}
 	};
 
+	struct NTSliceKey {
+		uint32_t layer;
+		uint32_t layers;
+		uint32_t mipmap;
+		uint32_t mipmaps;
+
+		bool operator==(const NTSliceKey &p_val) const {
+			return (layer == p_val.layer) && (layers == p_val.layers) && (mipmap == p_val.mipmap) && (mipmaps == p_val.mipmaps);
+		}
+
+		static uint32_t hash(const NTSliceKey &p_val) {
+			uint32_t h = hash_murmur3_one_32(p_val.layer);
+			h = hash_murmur3_one_32(p_val.layers, h);
+			h = hash_murmur3_one_32(p_val.mipmap, h);
+			h = hash_murmur3_one_32(p_val.mipmaps, h);
+			return hash_fmix32(h);
+		}
+
+		NTSliceKey() {}
+		NTSliceKey(uint32_t p_layer, uint32_t p_layers, uint32_t p_mipmap, uint32_t p_mipmaps) {
+			layer = p_layer;
+			layers = p_layers;
+			mipmap = p_mipmap;
+			mipmaps = p_mipmaps;
+		}
+	};
+
 	struct NamedTexture {
 		// Cache the data used to create our texture
 		RD::TextureFormat format;
@@ -113,7 +139,7 @@ private:
 
 		// Our texture objects, slices are lazy (i.e. only created when requested).
 		RID texture;
-		Vector<RID> slices;
+		mutable HashMap<NTSliceKey, RID, NTSliceKey> slices;
 		Vector<Size2i> sizes;
 	};
 
@@ -154,8 +180,8 @@ public:
 	RID create_texture_view(const StringName &p_context, const StringName &p_texture_name, const StringName p_view_name, RD::TextureView p_view = RD::TextureView());
 	RID get_texture(const StringName &p_context, const StringName &p_texture_name) const;
 	const RD::TextureFormat get_texture_format(const StringName &p_context, const StringName &p_texture_name) const;
-	RID get_texture_slice(const StringName &p_context, const StringName &p_texture_name, const uint32_t p_layer, const uint32_t p_mipmap);
-	Size2i get_texture_slice_size(const StringName &p_context, const StringName &p_texture_name, const uint32_t p_layer, const uint32_t p_mipmap);
+	RID get_texture_slice(const StringName &p_context, const StringName &p_texture_name, const uint32_t p_layer, const uint32_t p_mipmap, const uint32_t p_layers = 1, const uint32_t p_mipmaps = 1);
+	Size2i get_texture_slice_size(const StringName &p_context, const StringName &p_texture_name, const uint32_t p_mipmap);
 
 	void clear_context(const StringName &p_context);
 

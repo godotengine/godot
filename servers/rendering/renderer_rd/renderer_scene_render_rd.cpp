@@ -280,7 +280,7 @@ void RendererSceneRenderRD::_render_buffers_copy_screen_texture(const RenderData
 		for (int i = 1; i < mipmaps; i++) {
 			RID source = dest;
 			dest = rb->get_texture_slice(RB_SCOPE_BUFFERS, RB_TEX_BLUR_0, v, i);
-			Size2i msize = rb->get_texture_slice_size(RB_SCOPE_BUFFERS, RB_TEX_BLUR_0, v, i);
+			Size2i msize = rb->get_texture_slice_size(RB_SCOPE_BUFFERS, RB_TEX_BLUR_0, i);
 
 			if (can_use_storage) {
 				copy_effects->make_mipmap(source, dest, msize);
@@ -448,7 +448,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 		float luminance_multiplier = _render_buffers_get_luminance_multiplier();
 		for (uint32_t l = 0; l < rb->get_view_count(); l++) {
 			for (int i = 0; i < (max_glow_level + 1); i++) {
-				Size2i vp_size = rb->get_texture_slice_size(RB_SCOPE_BUFFERS, RB_TEX_BLUR_1, l, i);
+				Size2i vp_size = rb->get_texture_slice_size(RB_SCOPE_BUFFERS, RB_TEX_BLUR_1, i);
 
 				if (i == 0) {
 					RID luminance_texture;
@@ -502,7 +502,7 @@ void RendererSceneRenderRD::_render_buffers_post_process_and_tonemap(const Rende
 				tonemap.glow_levels[i] = environment_get_glow_levels(p_render_data->environment)[i];
 			}
 
-			Size2i msize = rb->get_texture_slice_size(RB_SCOPE_BUFFERS, RB_TEX_BLUR_1, 0, 0);
+			Size2i msize = rb->get_texture_slice_size(RB_SCOPE_BUFFERS, RB_TEX_BLUR_1, 0);
 			tonemap.glow_texture_size.x = msize.width;
 			tonemap.glow_texture_size.y = msize.height;
 			tonemap.glow_use_bicubic_upscale = glow_bicubic_upscale;
