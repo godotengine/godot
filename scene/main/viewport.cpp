@@ -524,7 +524,7 @@ void Viewport::_process_picking() {
 	if (!physics_object_picking) {
 		return;
 	}
-	if (to_screen_rect != Rect2i() && Input::get_singleton()->get_mouse_mode() == Input::MOUSE_MODE_CAPTURED) {
+	if (Object::cast_to<Window>(this) && Input::get_singleton()->get_mouse_mode() == Input::MOUSE_MODE_CAPTURED) {
 		return;
 	}
 	if (!gui.mouse_in_viewport) {
@@ -796,14 +796,14 @@ void Viewport::update_canvas_items() {
 	_update_canvas_items(this);
 }
 
-void Viewport::_set_size(const Size2i &p_size, const Size2i &p_size_2d_override, const Rect2i &p_to_screen_rect, bool p_allocated) {
+void Viewport::_set_size(const Size2i &p_size, const Size2i &p_size_2d_override, bool p_allocated) {
 	Transform2D stretch_transform_new = Transform2D();
 	if (is_size_2d_override_stretch_enabled() && p_size_2d_override.width > 0 && p_size_2d_override.height > 0) {
 		Size2 scale = Size2(p_size) / Size2(p_size_2d_override);
 		stretch_transform_new.scale(scale);
 	}
 
-	if (size == p_size && size_allocated == p_allocated && stretch_transform == stretch_transform_new && p_size_2d_override == size_2d_override && to_screen_rect == p_to_screen_rect) {
+	if (size == p_size && size_allocated == p_allocated && stretch_transform == stretch_transform_new && p_size_2d_override == size_2d_override) {
 		return;
 	}
 
@@ -811,7 +811,6 @@ void Viewport::_set_size(const Size2i &p_size, const Size2i &p_size_2d_override,
 	size_allocated = p_allocated;
 	size_2d_override = p_size_2d_override;
 	stretch_transform = stretch_transform_new;
-	to_screen_rect = p_to_screen_rect;
 
 #ifndef _3D_DISABLED
 	if (!use_xr) {
@@ -4143,7 +4142,7 @@ void SubViewport::_internal_set_size(const Size2i &p_size, bool p_force) {
 		return;
 	}
 
-	_set_size(p_size, _get_size_2d_override(), Rect2i(), true);
+	_set_size(p_size, _get_size_2d_override(), true);
 
 	if (c) {
 		c->update_minimum_size();
@@ -4155,7 +4154,7 @@ Size2i SubViewport::get_size() const {
 }
 
 void SubViewport::set_size_2d_override(const Size2i &p_size) {
-	_set_size(_get_size(), p_size, Rect2i(), true);
+	_set_size(_get_size(), p_size, true);
 }
 
 Size2i SubViewport::get_size_2d_override() const {
@@ -4168,7 +4167,7 @@ void SubViewport::set_size_2d_override_stretch(bool p_enable) {
 	}
 
 	size_2d_override_stretch = p_enable;
-	_set_size(_get_size(), _get_size_2d_override(), Rect2i(), true);
+	_set_size(_get_size(), _get_size_2d_override(), true);
 }
 
 bool SubViewport::is_size_2d_override_stretch_enabled() const {
