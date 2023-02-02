@@ -2240,6 +2240,28 @@ void GDScriptAnalyzer::reduce_assignment(GDScriptParser::AssignmentNode *p_assig
 
 	if (assignee_type.is_constant || (p_assignment->assignee->type == GDScriptParser::Node::SUBSCRIPT && static_cast<GDScriptParser::SubscriptNode *>(p_assignment->assignee)->base->is_constant)) {
 		push_error("Cannot assign a new value to a constant.", p_assignment->assignee);
+		return;
+	} else if (assignee_type.is_read_only) {
+		push_error("Cannot assign a new value to a read-only property.", p_assignment->assignee);
+		return;
+	} else if (p_assignment->assignee->type == GDScriptParser::Node::SUBSCRIPT) {
+		GDScriptParser::SubscriptNode *sub = static_cast<GDScriptParser::SubscriptNode *>(p_assignment->assignee);
+		while (sub) {
+			const GDScriptParser::DataType &base_type = sub->base->datatype;
+			if (base_type.is_hard_type() && base_type.is_read_only) {
+				if (base_type.kind == GDScriptParser::DataType::BUILTIN && !Variant::is_type_shared(base_type.builtin_type)) {
+					push_error("Cannot assign a new value to a read-only property.", p_assignment->assignee);
+					return;
+				}
+			} else {
+				break;
+			}
+			if (sub->base->type == GDScriptParser::Node::SUBSCRIPT) {
+				sub = static_cast<GDScriptParser::SubscriptNode *>(sub->base);
+			} else {
+				sub = nullptr;
+			}
+		}
 	}
 
 	// Check if assigned value is an array literal, so we can make it a typed array too if appropriate.
@@ -3329,7 +3351,8 @@ void GDScriptAnalyzer::reduce_identifier_from_base(GDScriptParser::IdentifierNod
 			StringName getter_name = ClassDB::get_property_getter(native, name);
 			MethodBind *getter = ClassDB::get_method(native, getter_name);
 			if (getter != nullptr) {
-				p_identifier->set_datatype(type_from_property(getter->get_return_info()));
+				bool has_setter = ClassDB::get_property_setter(native, name) != StringName();
+				p_identifier->set_datatype(type_from_property(getter->get_return_info(), false, !has_setter));
 				p_identifier->source = GDScriptParser::IdentifierNode::INHERITED_VARIABLE;
 			}
 			return;
@@ -4268,8 +4291,9 @@ GDScriptParser::DataType GDScriptAnalyzer::type_from_metatype(const GDScriptPars
 	return result;
 }
 
-GDScriptParser::DataType GDScriptAnalyzer::type_from_property(const PropertyInfo &p_property, bool p_is_arg) const {
+GDScriptParser::DataType GDScriptAnalyzer::type_from_property(const PropertyInfo &p_property, bool p_is_arg, bool p_is_readonly) const {
 	GDScriptParser::DataType result;
+	result.is_read_only = p_is_readonly;
 	result.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
 	if (p_property.type == Variant::NIL && (p_is_arg || (p_property.usage & PROPERTY_USAGE_NIL_IS_VARIANT))) {
 		// Variant
