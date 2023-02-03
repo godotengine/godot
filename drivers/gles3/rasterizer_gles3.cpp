@@ -200,11 +200,11 @@ void RasterizerGLES3::finalize() {
 RasterizerGLES3::RasterizerGLES3() {
 #ifdef GLAD_ENABLED
 	if (!gladLoaderLoadGL()) {
-		ERR_PRINT("Error initializing GLAD");
-		// FIXME this is an early return from a constructor.  Any other code using this instance will crash or the finalizer will crash, because none of
-		// the members of this instance are initialized, so this just makes debugging harder.  It should either crash here intentionally,
-		// or we need to actually test for this situation before constructing this.
-		return;
+		CRASH_NOW_MSG(
+				"Error initializing OpenGL support using GLAD.\n"
+				"This could be due to your video card drivers not supporting the required OpenGL 3.3 or OpenGL ES 3.0 version.\n"
+				"If possible, consider updating your video card drivers.\n"
+				"If you recently updated your video card drivers, try rebooting.");
 	}
 #endif
 
