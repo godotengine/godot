@@ -105,6 +105,13 @@ void NavigationObstacle2D::_notification(int p_what) {
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (parent_node2d && parent_node2d->is_inside_tree()) {
 				NavigationServer2D::get_singleton()->agent_set_position(agent, parent_node2d->get_global_position());
+
+				RigidBody2D *rigid = Object::cast_to<RigidBody2D>(get_parent());
+				if (rigid) {
+					Vector2 v = rigid->get_linear_velocity();
+					NavigationServer2D::get_singleton()->agent_set_velocity(agent, v);
+					NavigationServer2D::get_singleton()->agent_set_target_velocity(agent, v);
+				}
 			}
 		} break;
 	}
