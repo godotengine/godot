@@ -1062,6 +1062,10 @@ void Viewport::assign_next_enabled_camera_2d(const StringName &p_camera_group) {
 	Camera2D *new_camera = nullptr;
 	for (Node *E : camera_list) {
 		Camera2D *cam = Object::cast_to<Camera2D>(E);
+		if (!cam) {
+			continue; // Non-camera node (e.g. ParallaxBackground).
+		}
+
 		if (cam->is_enabled()) {
 			new_camera = cam;
 			break;
