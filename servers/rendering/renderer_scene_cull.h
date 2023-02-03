@@ -485,6 +485,7 @@ public:
 					singleton->_instance_queue_update(instance, true, false);
 
 				} break;
+				case Dependency::DEPENDENCY_CHANGED_MULTIMESH_VISIBLE_INSTANCES:
 				case Dependency::DEPENDENCY_CHANGED_MATERIAL: {
 					singleton->_instance_queue_update(instance, false, true);
 				} break;
@@ -495,9 +496,6 @@ public:
 				case Dependency::DEPENDENCY_CHANGED_LIGHT:
 				case Dependency::DEPENDENCY_CHANGED_REFLECTION_PROBE: {
 					singleton->_instance_queue_update(instance, true, true);
-				} break;
-				case Dependency::DEPENDENCY_CHANGED_MULTIMESH_VISIBLE_INSTANCES: {
-					//ignored
 				} break;
 				case Dependency::DEPENDENCY_CHANGED_LIGHT_SOFT_SHADOW_AND_PROJECTOR: {
 					//requires repairing
