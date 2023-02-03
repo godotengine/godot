@@ -6307,10 +6307,10 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 	}
 
 	// Finally, pipeline create info.
-	VkGraphicsPipelineCreateInfo graphics_pipeline_create_info;
+	VkGraphicsPipelineCreateInfo graphics_pipeline_create_info = {};
 
 	graphics_pipeline_create_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-	graphics_pipeline_create_info.pNext = graphics_pipeline_nextptr;
+	graphics_pipeline_create_info.pNext = nullptr;
 	graphics_pipeline_create_info.flags = 0;
 
 	Vector<VkPipelineShaderStageCreateInfo> pipeline_stages = shader->pipeline_stages;
@@ -6464,12 +6464,12 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 		pipeline_library_create_info.libraryCount = pipeline_library_stages.size();
 		pipeline_library_create_info.pLibraries = pipeline_library_stages.ptr();
 
-		//vrs is currently discarded
+		//TODO: re-enable VRS
+		graphics_pipeline_create_info.flags = VK_PIPELINE_CREATE_LINK_TIME_OPTIMIZATION_BIT_EXT;
 		graphics_pipeline_create_info.pNext = &pipeline_library_create_info;
 		graphics_pipeline_create_info.layout = shader->pipeline_layout;
 		graphics_pipeline_create_info.basePipelineHandle = VK_NULL_HANDLE;
 		graphics_pipeline_create_info.basePipelineIndex = 0;
-		graphics_pipeline_create_info.flags = VK_PIPELINE_CREATE_LINK_TIME_OPTIMIZATION_BIT_EXT;
 
 
 
