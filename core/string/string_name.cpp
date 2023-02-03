@@ -121,9 +121,8 @@ void StringName::cleanup() {
 void StringName::unref() {
 	ERR_FAIL_COND(!configured);
 
+	MutexLock lock(mutex);
 	if (_data && _data->refcount.unref()) {
-		MutexLock lock(mutex);
-
 		if (_data->static_count.get() > 0) {
 			if (_data->cname) {
 				ERR_PRINT("BUG: Unreferenced static string to 0: " + String(_data->cname));
