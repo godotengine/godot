@@ -537,6 +537,9 @@ void WorkerThreadPool::init(int p_thread_count, bool p_use_native_threads_low_pr
 	ERR_FAIL_COND(threads.size() > 0);
 	if (p_thread_count < 0) {
 		p_thread_count = OS::get_singleton()->get_default_thread_pool_size();
+#ifdef DEBUG_ENABLED
+		p_thread_count = 16;
+#endif
 	}
 
 	if (p_use_native_threads_low_priority) {

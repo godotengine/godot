@@ -196,7 +196,7 @@ void RendererViewport::_draw_3d(Viewport *p_viewport) {
 	if (p_viewport->use_occlusion_culling) {
 		if (p_viewport->occlusion_buffer_dirty) {
 			float aspect = p_viewport->size.aspect();
-			int max_size = occlusion_rays_per_thread * WorkerThreadPool::get_singleton()->get_thread_count();
+			int max_size = occlusion_rays_per_thread * OS::get_singleton()->get_processor_count();
 
 			int viewport_size = p_viewport->size.width * p_viewport->size.height;
 			max_size = CLAMP(max_size, viewport_size / (32 * 32), viewport_size / (2 * 2)); // At least one depth pixel for every 16x16 region. At most one depth pixel for every 2x2 region.
