@@ -60,6 +60,18 @@
 				Clears the whole configuration (not recommended, may break things).
 			</description>
 		</method>
+		<method name="get_global_class_list">
+			<return type="Dictionary[]" />
+			<description>
+				Returns an [Array] of registered global classes. Each global class is represented as a [Dictionary] that contains the following entries:
+				- [code]base[/code] is a name of the base class;
+				- [code]class[/code] is a name of the registered global class;
+				- [code]icon[/code] is a path to a custom icon of the global class, if it has any;
+				- [code]language[/code] is a name of a programming language in which the global class is written;
+				- [code]path[/code] is a path to a file containing the global class.
+				[b]Note:[/b] Both the script and the icon paths are local to the project filesystem, i.e. they start with [code]res://[/code].
+			</description>
+		</method>
 		<method name="get_order" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="name" type="String" />
