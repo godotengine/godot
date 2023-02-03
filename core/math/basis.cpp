@@ -239,12 +239,17 @@ void Basis::scale_orthogonal(const Vector3 &p_scale) {
 Basis Basis::scaled_orthogonal(const Vector3 &p_scale) const {
 	Basis m = *this;
 	Vector3 s = Vector3(-1, -1, -1) + p_scale;
+	bool sign = signbit(s.x + s.y + s.z);
+	Basis b = m.orthonormalized();
+	s = b.xform_inv(s);
 	Vector3 dots;
-	Basis b;
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 3; j++) {
 			dots[j] += s[i] * abs(m.get_column(i).normalized().dot(b.get_column(j)));
 		}
+	}
+	if (sign != signbit(dots.x + dots.y + dots.z)) {
+		dots = -dots;
 	}
 	m.scale_local(Vector3(1, 1, 1) + dots);
 	return m;
