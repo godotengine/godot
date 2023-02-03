@@ -364,6 +364,25 @@ Variant ProjectSettings::get_setting_with_override(const StringName &p_name) con
 		WARN_PRINT("Property not found: " + String(name));
 		return Variant();
 	}
+
+#ifdef DEBUG_ENABLED
+	String env_var = "GODOT_" + String(name).replace("/", "_").to_upper();
+	String env_val = OS::get_singleton()->get_environment(env_var);
+
+	if (!env_val.is_empty()) {
+		// Work around ThreadSanitizer lock order complaint
+		// when using print_line()
+		String msg = String(p_name) + " set to " + env_val;
+		OS::get_singleton()->print("%s\n", msg.utf8().get_data());
+
+		if (env_val.is_valid_int()) {
+			// Allow for "0" => 0 => false
+			return env_val.to_int();
+		}
+		return env_val;
+	}
+#endif
+
 	return props[name].variant;
 }
 
