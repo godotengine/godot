@@ -1362,11 +1362,38 @@ void ScriptTextEditor::_edit_option(int p_op) {
 			code_editor->remove_all_bookmarks();
 		} break;
 		case DEBUG_TOGGLE_BREAKPOINT: {
-			for (int caret_idx = 0; caret_idx < tx->get_caret_count(); caret_idx++) {
-				int line = tx->get_caret_line(caret_idx);
-				bool dobreak = !tx->is_line_breakpointed(line);
-				tx->set_line_as_breakpoint(line, dobreak);
-				EditorDebuggerNode::get_singleton()->set_breakpoint(script->get_path(), line + 1, dobreak);
+			Vector<int> lines;
+			Vector<int> caret_edit_order = tx->get_caret_index_edit_order();
+			for (int p_caret : caret_edit_order) {
+				int from, to;
+				if (tx->has_selection(p_caret)) {
+					from = tx->get_selection_from_line(p_caret);
+					to = tx->get_selection_to_line(p_caret);
+					// Don't affect a line with no selected characters
+					if (tx->get_selection_to_column(p_caret) == 0) {
+						to--;
+					}
+				} else {
+					from = tx->get_caret_line(p_caret);
+					to = from;
+				}
+				for (int line = to; line >= from; line--) {
+					if (!lines.has(line)) {
+						lines.append(line);
+					}
+				}
+			}
+
+			bool selection_has_breakpoints = false;
+			for (const int &line : lines) {
+				if (tx->is_line_breakpointed(line)) {
+					selection_has_breakpoints = true;
+					break;
+				}
+			}
+			for (const int &line : lines) {
+				tx->set_line_as_breakpoint(line, !selection_has_breakpoints);
+				EditorDebuggerNode::get_singleton()->set_breakpoint(script->get_path(), line + 1, !selection_has_breakpoints);
 			}
 		} break;
 		case DEBUG_REMOVE_ALL_BREAKPOINTS: {
