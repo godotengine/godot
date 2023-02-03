@@ -404,7 +404,7 @@ bool RaycastOcclusionCull::Scenario::update() {
 		instances.erase(scenario);
 	}
 
-	if (dirty_instances_array.size() / WorkerThreadPool::get_singleton()->get_thread_count() > 128) {
+	if (WorkerThreadPool::get_singleton()->is_parallel_workload(dirty_instances_array.size() / 128)) {
 		// Lots of instances, use per-instance threading
 		WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &Scenario::_update_dirty_instance_thread, dirty_instances_array.ptr(), dirty_instances_array.size(), -1, true, SNAME("RaycastOcclusionCullUpdate"));
 		WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);

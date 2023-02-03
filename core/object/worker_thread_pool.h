@@ -194,6 +194,22 @@ public:
 	void wait_for_group_task_completion(GroupID p_group);
 
 	_FORCE_INLINE_ int get_thread_count() const { return threads.size(); }
+	_FORCE_INLINE_ bool is_parallel_workload(int p_group_elements) const {
+		bool is_parallel = threads.size() > 1;
+
+#ifndef DEBUG_ENABLED
+		// Disabling single/multithreading selection logic in debug mode
+		// makes it easier for the user to force a specific codepath to always be taken,
+		// which helps greatly when testing, debugging, and benchmarking.
+
+		if (p_group_elements < (int)threads.size()) {
+			// Small workload, multithreading probably won't provide any benefits here.
+			is_parallel = false;
+		}
+#endif
+
+		return is_parallel;
+	}
 
 	static WorkerThreadPool *get_singleton() { return singleton; }
 	void init(int p_thread_count = -1, bool p_use_native_threads_low_priority = true, float p_low_priority_task_ratio = 0.3);

@@ -2999,7 +2999,7 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 				continue;
 			}
 
-			if (visibility_cull_data.cull_count > thread_cull_threshold) {
+			if (WorkerThreadPool::get_singleton()->is_parallel_workload(visibility_cull_data.cull_count / 16)) {
 				WorkerThreadPool::GroupID group_task = WorkerThreadPool::get_singleton()->add_template_group_task(this, &RendererSceneCull::_visibility_cull_threaded, &visibility_cull_data, WorkerThreadPool::get_singleton()->get_thread_count(), -1, true, SNAME("VisibilityCullInstances"));
 				WorkerThreadPool::get_singleton()->wait_for_group_task_completion(group_task);
 			} else {
@@ -3100,7 +3100,7 @@ void RendererSceneCull::_render_scene(const RendererSceneRender::CameraData *p_c
 #ifdef DEBUG_CULL_TIME
 		uint64_t time_from = OS::get_singleton()->get_ticks_usec();
 #endif
-		if (cull_to > thread_cull_threshold) {
+		if (WorkerThreadPool::get_singleton()->is_parallel_workload(cull_to / 16)) {
 			//multiple threads
 			for (InstanceCullResult &thread : scene_cull_result_threads) {
 				thread.clear();
@@ -4145,8 +4145,6 @@ RendererSceneCull::RendererSceneCull() {
 	}
 
 	indexer_update_iterations = GLOBAL_GET("rendering/limits/spatial_indexer/update_iterations_per_frame");
-	thread_cull_threshold = GLOBAL_GET("rendering/limits/spatial_indexer/threaded_cull_minimum_instances");
-	thread_cull_threshold = MAX(thread_cull_threshold, (uint32_t)WorkerThreadPool::get_singleton()->get_thread_count()); //make sure there is at least one thread per CPU
 
 	taa_jitter_array.resize(TAA_JITTER_COUNT);
 	for (int i = 0; i < TAA_JITTER_COUNT; i++) {

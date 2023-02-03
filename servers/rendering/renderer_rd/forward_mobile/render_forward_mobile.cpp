@@ -945,7 +945,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 			RD::FramebufferFormatID fb_format = RD::get_singleton()->framebuffer_get_format(framebuffer);
 			RenderListParameters render_list_params(render_list[RENDER_LIST_OPAQUE].elements.ptr(), render_list[RENDER_LIST_OPAQUE].element_info.ptr(), render_list[RENDER_LIST_OPAQUE].elements.size(), reverse_cull, PASS_MODE_COLOR, rp_uniform_set, spec_constant_base_flags, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), p_render_data->scene_data->lod_distance_multiplier, p_render_data->scene_data->screen_mesh_lod_threshold, p_render_data->scene_data->view_count);
 			render_list_params.framebuffer_format = fb_format;
-			if ((uint32_t)render_list_params.element_count > render_list_thread_threshold && false) {
+			if (WorkerThreadPool::get_singleton()->is_parallel_workload(render_list_params.element_count / 16) && false) {
 				// secondary command buffers need more testing at this time
 				//multi threaded
 				thread_draw_lists.resize(WorkerThreadPool::get_singleton()->get_thread_count());
@@ -1007,7 +1007,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 			RD::FramebufferFormatID fb_format = RD::get_singleton()->framebuffer_get_format(framebuffer);
 			RenderListParameters render_list_params(render_list[RENDER_LIST_ALPHA].elements.ptr(), render_list[RENDER_LIST_ALPHA].element_info.ptr(), render_list[RENDER_LIST_ALPHA].elements.size(), reverse_cull, PASS_MODE_COLOR_TRANSPARENT, rp_uniform_set, spec_constant_base_flags, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), p_render_data->scene_data->lod_distance_multiplier, p_render_data->scene_data->screen_mesh_lod_threshold, p_render_data->scene_data->view_count);
 			render_list_params.framebuffer_format = fb_format;
-			if ((uint32_t)render_list_params.element_count > render_list_thread_threshold && false) {
+			if (WorkerThreadPool::get_singleton()->is_parallel_workload(render_list_params.element_count / 16) && false) {
 				// secondary command buffers need more testing at this time
 				//multi threaded
 				thread_draw_lists.resize(WorkerThreadPool::get_singleton()->get_thread_count());
@@ -1048,7 +1048,7 @@ void RenderForwardMobile::_render_scene(RenderDataRD *p_render_data, const Color
 			RD::FramebufferFormatID fb_format = RD::get_singleton()->framebuffer_get_format(framebuffer);
 			RenderListParameters render_list_params(render_list[RENDER_LIST_ALPHA].elements.ptr(), render_list[RENDER_LIST_ALPHA].element_info.ptr(), render_list[RENDER_LIST_ALPHA].elements.size(), reverse_cull, PASS_MODE_COLOR, rp_uniform_set, spec_constant_base_flags, get_debug_draw_mode() == RS::VIEWPORT_DEBUG_DRAW_WIREFRAME, Vector2(), p_render_data->scene_data->lod_distance_multiplier, p_render_data->scene_data->screen_mesh_lod_threshold, p_render_data->scene_data->view_count);
 			render_list_params.framebuffer_format = fb_format;
-			if ((uint32_t)render_list_params.element_count > render_list_thread_threshold && false) {
+			if (WorkerThreadPool::get_singleton()->is_parallel_workload(render_list_params.element_count / 16) && false) {
 				// secondary command buffers need more testing at this time
 				//multi threaded
 				thread_draw_lists.resize(WorkerThreadPool::get_singleton()->get_thread_count());
@@ -1987,7 +1987,7 @@ void RenderForwardMobile::_render_list_with_threads(RenderListParameters *p_para
 	RD::FramebufferFormatID fb_format = RD::get_singleton()->framebuffer_get_format(p_framebuffer);
 	p_params->framebuffer_format = fb_format;
 
-	if ((uint32_t)p_params->element_count > render_list_thread_threshold && false) { // secondary command buffers need more testing at this time
+	if (WorkerThreadPool::get_singleton()->is_parallel_workload(p_params->element_count / 16) && false) { // secondary command buffers need more testing at this time
 		//multi threaded
 		thread_draw_lists.resize(WorkerThreadPool::get_singleton()->get_thread_count());
 		RD::get_singleton()->draw_list_begin_split(p_framebuffer, thread_draw_lists.size(), thread_draw_lists.ptr(), p_initial_color_action, p_final_color_action, p_initial_depth_action, p_final_depth_action, p_clear_color_values, p_clear_depth, p_clear_stencil, p_region, p_storage_textures);
@@ -2798,9 +2798,6 @@ RenderForwardMobile::RenderForwardMobile() {
 #endif
 
 	scene_shader.init(defines);
-
-	// !BAS! maybe we need a mobile version of this setting?
-	render_list_thread_threshold = GLOBAL_GET("rendering/limits/forward_renderer/threaded_render_minimum_instances");
 
 	_update_shader_quality_settings();
 }
