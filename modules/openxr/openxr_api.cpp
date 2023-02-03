@@ -483,6 +483,37 @@ bool OpenXRAPI::load_supported_view_configuration_types() {
 	return true;
 }
 
+bool OpenXRAPI::load_supported_environmental_blend_modes() {
+	// This queries the supported environmental blend modes.
+
+	ERR_FAIL_COND_V(instance == XR_NULL_HANDLE, false);
+
+	if (supported_environment_blend_modes != nullptr) {
+		// free previous results
+		memfree(supported_environment_blend_modes);
+		supported_environment_blend_modes = nullptr;
+		num_supported_environment_blend_modes = 0;
+	}
+
+	XrResult result = xrEnumerateEnvironmentBlendModes(instance, system_id, view_configuration, 0, &num_supported_environment_blend_modes, nullptr);
+	if (XR_FAILED(result)) {
+		print_line("OpenXR: Failed to get supported environmental blend mode count [", get_error_string(result), "]");
+		return false;
+	}
+
+	supported_environment_blend_modes = (XrEnvironmentBlendMode *)memalloc(sizeof(XrEnvironmentBlendMode) * num_supported_environment_blend_modes);
+	ERR_FAIL_NULL_V(supported_environment_blend_modes, false);
+
+	result = xrEnumerateEnvironmentBlendModes(instance, system_id, view_configuration, num_supported_environment_blend_modes, &num_supported_environment_blend_modes, supported_environment_blend_modes);
+	ERR_FAIL_COND_V_MSG(XR_FAILED(result), false, "OpenXR: Failed to enumerate environmental blend modes");
+
+	for (uint32_t i = 0; i < num_supported_environment_blend_modes; i++) {
+		print_verbose(String("OpenXR: Found environmental blend mode ") + OpenXRUtil::get_environment_blend_mode_name(supported_environment_blend_modes[i]));
+	}
+
+	return true;
+}
+
 bool OpenXRAPI::is_view_configuration_supported(XrViewConfigurationType p_configuration_type) const {
 	ERR_FAIL_NULL_V(supported_view_configuration_types, false);
 
@@ -549,6 +580,12 @@ void OpenXRAPI::destroy_instance() {
 	if (supported_view_configuration_types != nullptr) {
 		memfree(supported_view_configuration_types);
 		supported_view_configuration_types = nullptr;
+	}
+
+	if (supported_environment_blend_modes != nullptr) {
+		memfree(supported_environment_blend_modes);
+		supported_environment_blend_modes = nullptr;
+		num_supported_environment_blend_modes = 0;
 	}
 
 	if (instance != XR_NULL_HANDLE) {
@@ -1205,6 +1242,7 @@ bool OpenXRAPI::resolve_instance_openxr_symbols() {
 	OPENXR_API_INIT_XR_FUNC_V(xrDestroySwapchain);
 	OPENXR_API_INIT_XR_FUNC_V(xrEndFrame);
 	OPENXR_API_INIT_XR_FUNC_V(xrEndSession);
+	OPENXR_API_INIT_XR_FUNC_V(xrEnumerateEnvironmentBlendModes);
 	OPENXR_API_INIT_XR_FUNC_V(xrEnumerateReferenceSpaces);
 	OPENXR_API_INIT_XR_FUNC_V(xrEnumerateSwapchainFormats);
 	OPENXR_API_INIT_XR_FUNC_V(xrEnumerateViewConfigurations);
@@ -1308,6 +1346,11 @@ bool OpenXRAPI::initialize(const String &p_rendering_driver) {
 	}
 
 	if (!load_supported_view_configuration_views(view_configuration)) {
+		destroy_instance();
+		return false;
+	}
+
+	if (!load_supported_environmental_blend_modes()) {
 		destroy_instance();
 		return false;
 	}
@@ -1822,7 +1865,7 @@ void OpenXRAPI::end_frame() {
 			XR_TYPE_FRAME_END_INFO, // type
 			nullptr, // next
 			frame_state.predictedDisplayTime, // displayTime
-			XR_ENVIRONMENT_BLEND_MODE_OPAQUE, // environmentBlendMode
+			environment_blend_mode, // environmentBlendMode
 			0, // layerCount
 			nullptr // layers
 		};
@@ -1874,7 +1917,7 @@ void OpenXRAPI::end_frame() {
 		XR_TYPE_FRAME_END_INFO, // type
 		nullptr, // next
 		frame_state.predictedDisplayTime, // displayTime
-		XR_ENVIRONMENT_BLEND_MODE_OPAQUE, // environmentBlendMode
+		environment_blend_mode, // environmentBlendMode
 		static_cast<uint32_t>(layers_list.size()), // layerCount
 		layers_list.ptr() // layers
 	};
@@ -2776,4 +2819,19 @@ void OpenXRAPI::register_composition_layer_provider(OpenXRCompositionLayerProvid
 
 void OpenXRAPI::unregister_composition_layer_provider(OpenXRCompositionLayerProvider *provider) {
 	composition_layer_providers.erase(provider);
+}
+
+const XrEnvironmentBlendMode *OpenXRAPI::get_supported_environment_blend_modes(uint32_t &count) {
+	count = num_supported_environment_blend_modes;
+	return supported_environment_blend_modes;
+}
+
+bool OpenXRAPI::set_environment_blend_mode(XrEnvironmentBlendMode mode) {
+	for (uint32_t i = 0; i < num_supported_environment_blend_modes; i++) {
+		if (supported_environment_blend_modes[i] == mode) {
+			environment_blend_mode = mode;
+			return true;
+		}
+	}
+	return false;
 }

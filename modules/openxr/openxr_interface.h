@@ -147,6 +147,10 @@ public:
 	virtual bool start_passthrough() override;
 	virtual void stop_passthrough() override;
 
+	/** environment blend mode. */
+	virtual Array get_supported_environment_blend_modes() override;
+	virtual bool set_environment_blend_mode(XRInterface::EnvironmentBlendMode mode) override;
+
 	void on_state_ready();
 	void on_state_visible();
 	void on_state_focused();
