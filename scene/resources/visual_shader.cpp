@@ -815,6 +815,8 @@ void VisualShader::remove_node(Type p_type, int p_id) {
 			if (E->get().from_node == p_id) {
 				g->nodes[E->get().to_node].prev_connected_nodes.erase(p_id);
 				g->nodes[E->get().to_node].node->set_input_port_connected(E->get().to_port, false);
+			} else if (E->get().to_node == p_id) {
+				g->nodes[E->get().from_node].next_connected_nodes.erase(p_id);
 			}
 		}
 		E = N;
@@ -981,6 +983,7 @@ void VisualShader::connect_nodes_forced(Type p_type, int p_from_node, int p_from
 	c.to_node = p_to_node;
 	c.to_port = p_to_port;
 	g->connections.push_back(c);
+	g->nodes[p_from_node].next_connected_nodes.push_back(p_to_node);
 	g->nodes[p_to_node].prev_connected_nodes.push_back(p_from_node);
 	g->nodes[p_from_node].node->set_output_port_connected(p_from_port, true);
 	g->nodes[p_to_node].node->set_input_port_connected(p_to_port, true);
@@ -1014,6 +1017,7 @@ Error VisualShader::connect_nodes(Type p_type, int p_from_node, int p_from_port,
 	c.to_node = p_to_node;
 	c.to_port = p_to_port;
 	g->connections.push_back(c);
+	g->nodes[p_from_node].next_connected_nodes.push_back(p_to_node);
 	g->nodes[p_to_node].prev_connected_nodes.push_back(p_from_node);
 	g->nodes[p_from_node].node->set_output_port_connected(p_from_port, true);
 	g->nodes[p_to_node].node->set_input_port_connected(p_to_port, true);
@@ -1029,6 +1033,7 @@ void VisualShader::disconnect_nodes(Type p_type, int p_from_node, int p_from_por
 	for (const List<Connection>::Element *E = g->connections.front(); E; E = E->next()) {
 		if (E->get().from_node == p_from_node && E->get().from_port == p_from_port && E->get().to_node == p_to_node && E->get().to_port == p_to_port) {
 			g->connections.erase(E);
+			g->nodes[p_from_node].next_connected_nodes.erase(p_to_node);
 			g->nodes[p_to_node].prev_connected_nodes.erase(p_from_node);
 			g->nodes[p_from_node].node->set_output_port_connected(p_from_port, false);
 			g->nodes[p_to_node].node->set_input_port_connected(p_to_port, false);
