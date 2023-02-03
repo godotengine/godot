@@ -115,7 +115,7 @@ void SplitContainerDragger::_notification(int p_what) {
 				return;
 			}
 
-			Ref<Texture2D> tex = sc->get_theme_icon(SNAME("grabber"));
+			Ref<Texture2D> tex = sc->_get_grabber_icon();
 			draw_texture(tex, (get_size() - tex->get_size()) / 2);
 		} break;
 	}
