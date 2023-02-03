@@ -57,7 +57,6 @@ class NavigationAgent2D : public Node {
 	int max_neighbors = 10;
 	real_t time_horizon = 1.0;
 	real_t max_speed = 100.0;
-
 	real_t path_max_distance = 100.0;
 
 	Vector2 target_position;
