@@ -29,8 +29,9 @@
 /**************************************************************************/
 
 #ifndef PROJECT_CONVERTER_3_TO_4_H
-#ifndef DISABLE_DEPRECATED
 #define PROJECT_CONVERTER_3_TO_4_H
+
+#ifndef DISABLE_DEPRECATED
 
 #include "core/io/file_access.h"
 #include "core/object/ref_counted.h"
