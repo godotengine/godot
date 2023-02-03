@@ -2508,6 +2508,10 @@ void DisplayServerX11::window_set_ime_active(const bool p_active, WindowID p_win
 		return;
 	}
 
+	if (p_active == wd.ime_active) {
+		return;
+	}
+
 	// Block events polling while changing input focus
 	// because it triggers some event polling internally.
 	if (p_active) {
@@ -5105,6 +5109,7 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 			if (wt_atom != None && type_atom != None) {
 				XChangeProperty(x11_display, wd.x11_window, wt_atom, XA_ATOM, 32, PropModeReplace, (unsigned char *)&type_atom, 1);
 			}
+			window_set_ime_active(true, id);
 		}
 
 		_update_size_hints(id);
