@@ -40,6 +40,8 @@
 #include "core/object/callable_method_pointer.h"
 #include "core/templates/hash_set.h"
 
+#include <type_traits>
+
 #define DEFVAL(m_defval) (m_defval)
 
 #ifdef DEBUG_METHODS_ENABLED
@@ -241,6 +243,24 @@ public:
 
 	static uint64_t get_api_hash(APIType p_api);
 
+	template <typename>
+	struct member_function_traits;
+
+	template <typename R, typename T, typename... Args>
+	struct member_function_traits<R (T::*)(Args...)> {
+		using return_type = R;
+	};
+
+	template <typename R, typename T, typename... Args>
+	struct member_function_traits<R (T::*)(Args...) const> {
+		using return_type = R;
+	};
+
+	template <typename R, typename... Args>
+	struct member_function_traits<R (*)(Args...)> {
+		using return_type = R;
+	};
+
 	template <class N, class M, typename... VarArgs>
 	static MethodBind *bind_method(N p_method_name, M p_method, VarArgs... p_args) {
 		Variant args[sizeof...(p_args) + 1] = { p_args..., Variant() }; // +1 makes sure zero sized arrays are also supported.
@@ -249,6 +269,9 @@ public:
 			argptrs[i] = &args[i];
 		}
 		MethodBind *bind = create_method_bind(p_method);
+		if constexpr (std::is_same<typename member_function_traits<M>::return_type, Object *>::value) {
+			bind->set_return_type_is_raw_object_ptr(true);
+		}
 		return bind_methodfi(METHOD_FLAGS_DEFAULT, bind, p_method_name, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
 	}
 
@@ -261,6 +284,9 @@ public:
 		}
 		MethodBind *bind = create_static_method_bind(p_method);
 		bind->set_instance_class(p_class);
+		if constexpr (std::is_same<typename member_function_traits<M>::return_type, Object *>::value) {
+			bind->set_return_type_is_raw_object_ptr(true);
+		}
 		return bind_methodfi(METHOD_FLAGS_DEFAULT, bind, p_method_name, sizeof...(p_args) == 0 ? nullptr : (const Variant **)argptrs, sizeof...(p_args));
 	}
 
@@ -273,6 +299,9 @@ public:
 
 		bind->set_name(p_name);
 		bind->set_default_arguments(p_default_args);
+		if constexpr (std::is_same<typename member_function_traits<M>::return_type, Object *>::value) {
+			bind->set_return_type_is_raw_object_ptr(true);
+		}
 
 		String instance_type = bind->get_instance_class();
 
