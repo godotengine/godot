@@ -6067,25 +6067,6 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 	input_assembly_create_info.topology = topology_list[p_render_primitive];
 	input_assembly_create_info.primitiveRestartEnable = (p_render_primitive == RENDER_PRIMITIVE_TRIANGLE_STRIPS_WITH_RESTART_INDEX);
 
-	VkGraphicsPipelineLibraryCreateInfoEXT library_info{};
-	library_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_LIBRARY_CREATE_INFO_EXT;
-	library_info.flags = VK_GRAPHICS_PIPELINE_LIBRARY_VERTEX_INPUT_INTERFACE_BIT_EXT;
-
-	VkGraphicsPipelineCreateInfo vertex_input_pipeline_create_info = {};
-	vertex_input_pipeline_create_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-	vertex_input_pipeline_create_info.flags = VK_PIPELINE_CREATE_LIBRARY_BIT_KHR | VK_PIPELINE_CREATE_RETAIN_LINK_TIME_OPTIMIZATION_INFO_BIT_EXT;
-	vertex_input_pipeline_create_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-	vertex_input_pipeline_create_info.pNext = &library_info;
-	vertex_input_pipeline_create_info.pInputAssemblyState = &input_assembly_create_info;
-	vertex_input_pipeline_create_info.pVertexInputState = &pipeline_vertex_input_state_create_info;
-
-	//TODO: make these pipeline stages reusable.
-	VkPipeline vertex_input_pipeline = VK_NULL_HANDLE;
-	if (context->get_graphics_pipeline_library_capabilities().graphics_pipeline_library_supported && GLOBAL_GET("rendering/rendering_device/vulkan/use_graphics_pipeline_library")){
-		VkResult err = vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &vertex_input_pipeline_create_info, nullptr, &vertex_input_pipeline);
-		ERR_FAIL_COND_V_MSG(err, RID(), "vertex input stage vkCreateGraphicsPipelines failed with error " + itos(err) + " for shader '" + shader->name + "'.");
-	}
-
 	// Tessellation.
 	VkPipelineTessellationStateCreateInfo tessellation_create_info;
 	tessellation_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO;
@@ -6331,9 +6312,6 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 	graphics_pipeline_create_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 	graphics_pipeline_create_info.pNext = graphics_pipeline_nextptr;
 	graphics_pipeline_create_info.flags = 0;
-	if (context->get_graphics_pipeline_library_capabilities().graphics_pipeline_library_supported && GLOBAL_GET("rendering/rendering_device/vulkan/use_graphics_pipeline_library")){
-		graphics_pipeline_create_info.flags = VK_PIPELINE_CREATE_LIBRARY_BIT_KHR | VK_PIPELINE_CREATE_RETAIN_LINK_TIME_OPTIMIZATION_INFO_BIT_EXT;
-	}
 
 	Vector<VkPipelineShaderStageCreateInfo> pipeline_stages = shader->pipeline_stages;
 	Vector<VkSpecializationInfo> specialization_info;
@@ -6388,25 +6366,135 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 		}
 	}
 
-	graphics_pipeline_create_info.stageCount = pipeline_stages.size();
-	graphics_pipeline_create_info.pStages = pipeline_stages.ptr();
+	//TODO: make these pipeline stages reusable.
+	Vector<VkPipeline> pipeline_library_stages;
+	if (context->get_graphics_pipeline_library_capabilities().graphics_pipeline_library_supported && GLOBAL_GET("rendering/rendering_device/vulkan/use_graphics_pipeline_library")){
+		Vector<VkPipelineShaderStageCreateInfo> pre_raster_stages;
+		VkPipelineShaderStageCreateInfo fragment_stage = {};
 
-	graphics_pipeline_create_info.pVertexInputState = &pipeline_vertex_input_state_create_info;
-	graphics_pipeline_create_info.pInputAssemblyState = &input_assembly_create_info;
-	graphics_pipeline_create_info.pTessellationState = &tessellation_create_info;
-	graphics_pipeline_create_info.pViewportState = &viewport_state_create_info;
-	graphics_pipeline_create_info.pRasterizationState = &rasterization_state_create_info;
-	graphics_pipeline_create_info.pMultisampleState = &multisample_state_create_info;
-	graphics_pipeline_create_info.pDepthStencilState = &depth_stencil_state_create_info;
-	graphics_pipeline_create_info.pColorBlendState = &color_blend_state_create_info;
-	graphics_pipeline_create_info.pDynamicState = &dynamic_state_create_info;
-	graphics_pipeline_create_info.layout = shader->pipeline_layout;
-	graphics_pipeline_create_info.renderPass = fb_format.render_pass;
+		for(int i = 0; i < pipeline_stages.size(); i++) {
+			if(pipeline_stages[i].stage != VK_SHADER_STAGE_FRAGMENT_BIT){
+				pre_raster_stages.push_back(pipeline_stages[i]);
+			}else {
+				fragment_stage = pipeline_stages[i];
+			}
+		}
 
-	graphics_pipeline_create_info.subpass = p_for_render_pass;
-	graphics_pipeline_create_info.basePipelineHandle = VK_NULL_HANDLE;
-	graphics_pipeline_create_info.basePipelineIndex = 0;
+		VkGraphicsPipelineLibraryCreateInfoEXT library_info = {};
+		library_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_LIBRARY_CREATE_INFO_EXT;
+		library_info.flags = VK_GRAPHICS_PIPELINE_LIBRARY_VERTEX_INPUT_INTERFACE_BIT_EXT;
+		
+		//vertex input stage
+		VkGraphicsPipelineCreateInfo vertex_input_pipeline_create_info = {};
+		vertex_input_pipeline_create_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+		vertex_input_pipeline_create_info.flags = VK_PIPELINE_CREATE_LIBRARY_BIT_KHR | VK_PIPELINE_CREATE_RETAIN_LINK_TIME_OPTIMIZATION_INFO_BIT_EXT;
+		vertex_input_pipeline_create_info.pNext = &library_info;
+		vertex_input_pipeline_create_info.pInputAssemblyState = &input_assembly_create_info;
+		vertex_input_pipeline_create_info.pVertexInputState = &pipeline_vertex_input_state_create_info;
+		{
+			VkPipeline pipeline = VK_NULL_HANDLE;
+			VkResult err = vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &vertex_input_pipeline_create_info, nullptr, &pipeline);
+			ERR_FAIL_COND_V_MSG(err, RID(), "vertex input stage vkCreateGraphicsPipelines failed with error " + itos(err) + " for shader '" + shader->name + "'.");
+			pipeline_library_stages.push_back(pipeline);
+		}
 
+		//pre-rasterization stage / vertex, geometry & tesselation shaders
+		library_info.flags = VK_GRAPHICS_PIPELINE_LIBRARY_PRE_RASTERIZATION_SHADERS_BIT_EXT;
+		VkGraphicsPipelineCreateInfo pre_rasterization_pipeline_create_info = {};
+		pre_rasterization_pipeline_create_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+		pre_rasterization_pipeline_create_info.flags = VK_PIPELINE_CREATE_LIBRARY_BIT_KHR | VK_PIPELINE_CREATE_RETAIN_LINK_TIME_OPTIMIZATION_INFO_BIT_EXT;
+		pre_rasterization_pipeline_create_info.pNext = &library_info;
+		pre_rasterization_pipeline_create_info.layout = shader->pipeline_layout;
+		pre_rasterization_pipeline_create_info.renderPass = fb_format.render_pass;
+		pre_rasterization_pipeline_create_info.subpass = p_for_render_pass;
+		pre_rasterization_pipeline_create_info.stageCount = pre_raster_stages.size();
+		pre_rasterization_pipeline_create_info.pStages = pre_raster_stages.ptr();
+		pre_rasterization_pipeline_create_info.pDynamicState = &dynamic_state_create_info;
+		pre_rasterization_pipeline_create_info.pViewportState = &viewport_state_create_info;
+		pre_rasterization_pipeline_create_info.pRasterizationState = &rasterization_state_create_info;
+		pre_rasterization_pipeline_create_info.pTessellationState = &tessellation_create_info;
+		{
+			VkPipeline pipeline = VK_NULL_HANDLE;
+			VkResult err = vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pre_rasterization_pipeline_create_info, nullptr, &pipeline);
+			ERR_FAIL_COND_V_MSG(err, RID(), "pre-rasterization stage vkCreateGraphicsPipelines failed with error " + itos(err) + " for shader '" + shader->name + "'.");
+			pipeline_library_stages.push_back(pipeline);
+		}
+
+		//fragment shader stage
+		library_info.flags = VK_GRAPHICS_PIPELINE_LIBRARY_FRAGMENT_SHADER_BIT_EXT;
+		VkGraphicsPipelineCreateInfo fragment_shader_pipeline_create_info = {};
+		fragment_shader_pipeline_create_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+		fragment_shader_pipeline_create_info.flags = VK_PIPELINE_CREATE_LIBRARY_BIT_KHR | VK_PIPELINE_CREATE_RETAIN_LINK_TIME_OPTIMIZATION_INFO_BIT_EXT;
+		fragment_shader_pipeline_create_info.pNext = &library_info;
+		fragment_shader_pipeline_create_info.layout = shader->pipeline_layout;
+		fragment_shader_pipeline_create_info.renderPass = fb_format.render_pass;
+		fragment_shader_pipeline_create_info.subpass = p_for_render_pass;
+		fragment_shader_pipeline_create_info.stageCount = 1;
+		fragment_shader_pipeline_create_info.pStages = &fragment_stage;
+		fragment_shader_pipeline_create_info.pDepthStencilState = &depth_stencil_state_create_info;
+		fragment_shader_pipeline_create_info.pMultisampleState = &multisample_state_create_info;
+		{
+			VkPipeline pipeline = VK_NULL_HANDLE;
+			VkResult err = vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &fragment_shader_pipeline_create_info, nullptr, &pipeline);
+			ERR_FAIL_COND_V_MSG(err, RID(), "fragment shader stage vkCreateGraphicsPipelines failed with error " + itos(err) + " for shader '" + shader->name + "'.");
+			pipeline_library_stages.push_back(pipeline);
+		}
+
+		//fragment output stage
+		library_info.flags = VK_GRAPHICS_PIPELINE_LIBRARY_FRAGMENT_OUTPUT_INTERFACE_BIT_EXT;
+		VkGraphicsPipelineCreateInfo fragment_output_pipeline_create_info = {};
+		fragment_output_pipeline_create_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+		fragment_output_pipeline_create_info.flags = VK_PIPELINE_CREATE_LIBRARY_BIT_KHR | VK_PIPELINE_CREATE_RETAIN_LINK_TIME_OPTIMIZATION_INFO_BIT_EXT;
+		fragment_output_pipeline_create_info.pNext = &library_info;
+		fragment_output_pipeline_create_info.layout = shader->pipeline_layout;
+		fragment_output_pipeline_create_info.renderPass = fb_format.render_pass;
+		fragment_output_pipeline_create_info.subpass = p_for_render_pass;
+		fragment_output_pipeline_create_info.pColorBlendState = &color_blend_state_create_info;
+		fragment_output_pipeline_create_info.pMultisampleState = &multisample_state_create_info;
+		{
+			VkPipeline pipeline = VK_NULL_HANDLE;
+			VkResult err = vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &fragment_output_pipeline_create_info, nullptr, &pipeline);
+			ERR_FAIL_COND_V_MSG(err, RID(), "fragment shader stage vkCreateGraphicsPipelines failed with error " + itos(err) + " for shader '" + shader->name + "'.");
+			pipeline_library_stages.push_back(pipeline);
+		}
+
+		// Link the library parts into a graphics pipeline
+		VkPipelineLibraryCreateInfoKHR pipeline_library_create_info = {};
+		pipeline_library_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LIBRARY_CREATE_INFO_KHR;
+		pipeline_library_create_info.libraryCount = pipeline_library_stages.size();
+		pipeline_library_create_info.pLibraries = pipeline_library_stages.ptr();
+
+		//vrs is currently discarded
+		graphics_pipeline_create_info.pNext = &pipeline_library_create_info;
+		graphics_pipeline_create_info.layout = shader->pipeline_layout;
+		graphics_pipeline_create_info.basePipelineHandle = VK_NULL_HANDLE;
+		graphics_pipeline_create_info.basePipelineIndex = 0;
+		graphics_pipeline_create_info.flags = VK_PIPELINE_CREATE_LINK_TIME_OPTIMIZATION_BIT_EXT;
+
+
+
+	}else {
+
+		graphics_pipeline_create_info.stageCount = pipeline_stages.size();
+		graphics_pipeline_create_info.pStages = pipeline_stages.ptr();
+
+		graphics_pipeline_create_info.pVertexInputState = &pipeline_vertex_input_state_create_info;
+		graphics_pipeline_create_info.pInputAssemblyState = &input_assembly_create_info;
+		graphics_pipeline_create_info.pTessellationState = &tessellation_create_info;
+		graphics_pipeline_create_info.pViewportState = &viewport_state_create_info;
+		graphics_pipeline_create_info.pRasterizationState = &rasterization_state_create_info;
+		graphics_pipeline_create_info.pMultisampleState = &multisample_state_create_info;
+		graphics_pipeline_create_info.pDepthStencilState = &depth_stencil_state_create_info;
+		graphics_pipeline_create_info.pColorBlendState = &color_blend_state_create_info;
+		graphics_pipeline_create_info.pDynamicState = &dynamic_state_create_info;
+		graphics_pipeline_create_info.layout = shader->pipeline_layout;
+		graphics_pipeline_create_info.renderPass = fb_format.render_pass;
+
+		graphics_pipeline_create_info.subpass = p_for_render_pass;
+		graphics_pipeline_create_info.basePipelineHandle = VK_NULL_HANDLE;
+		graphics_pipeline_create_info.basePipelineIndex = 0;
+	}
+	
 	RenderPipeline pipeline;
 	VkResult err = vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &graphics_pipeline_create_info, nullptr, &pipeline.pipeline);
 	ERR_FAIL_COND_V_MSG(err, RID(), "vkCreateGraphicsPipelines failed with error " + itos(err) + " for shader '" + shader->name + "'.");
