@@ -81,6 +81,30 @@ void Array::_unref() const {
 	_p = nullptr;
 }
 
+void Array::_internal_shuffle(const Callable &p_callable) {
+	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
+	const int n = _p->array.size();
+	if (n < 2) {
+		return;
+	}
+	bool use_default = p_callable.is_null();
+	Variant *data = _p->array.ptrw();
+	for (int i = n - 1; i >= 1; i--) {
+		Variant retv;
+		Callable::CallError ce;
+		if (use_default) {
+			retv = Math::rand();
+		} else {
+			p_callable.callp(nullptr, 0, retv, ce);
+		}
+		ERR_FAIL_COND_MSG(ce.error != Callable::CallError::CALL_OK, "Error calling method from 'shuffle_custom': " + Variant::get_callable_error_text(p_callable, nullptr, 0, ce));
+		const int j = (retv.operator unsigned int()) % (i + 1);
+		const Variant tmp = data[j];
+		data[j] = data[i];
+		data[i] = tmp;
+	}
+}
+
 Variant &Array::operator[](int p_idx) {
 	if (unlikely(_p->read_only)) {
 		*_p->read_only = _p->array[p_idx];
@@ -615,18 +639,11 @@ void Array::sort_custom(const Callable &p_callable) {
 }
 
 void Array::shuffle() {
-	ERR_FAIL_COND_MSG(_p->read_only, "Array is in read-only state.");
-	const int n = _p->array.size();
-	if (n < 2) {
-		return;
-	}
-	Variant *data = _p->array.ptrw();
-	for (int i = n - 1; i >= 1; i--) {
-		const int j = Math::rand() % (i + 1);
-		const Variant tmp = data[j];
-		data[j] = data[i];
-		data[i] = tmp;
-	}
+	_internal_shuffle(Callable());
+}
+
+void Array::shuffle_custom(const Callable &p_callable) {
+	_internal_shuffle(p_callable);
 }
 
 int Array::bsearch(const Variant &p_value, bool p_before) {
