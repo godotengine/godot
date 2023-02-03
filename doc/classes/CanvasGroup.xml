@@ -8,6 +8,7 @@
 		[b]Note:[/b] The [CanvasGroup] uses a custom shader to read from the backbuffer to draw its children. Assigning a [Material] to the [CanvasGroup] overrides the builtin shader. To duplicate the behavior of the builtin shader in a custom [Shader] use the following:
 		[codeblock]
 		shader_type canvas_item;
+		render_mode unshaded;
 
 		uniform sampler2D screen_texture : hint_screen_texture, repeat_disable, filter_nearest;
 

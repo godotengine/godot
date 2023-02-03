@@ -645,7 +645,7 @@ void main() {
 
 #ifdef MODE_LIGHT_ONLY
 	color = vec4(0.0);
-#else
+#elif !defined(MODE_UNSHADED)
 	color *= canvas_modulation;
 #endif
 
