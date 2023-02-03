@@ -1128,6 +1128,12 @@ void RasterizerCanvasGLES3::_record_item_commands(const Item *p_item, RID p_rend
 					state.canvas_instance_batches[state.current_batch_index].tex = mm->texture;
 					state.canvas_instance_batches[state.current_batch_index].shader_variant = CanvasShaderGLES3::MODE_INSTANCED;
 
+					if (GLES3::MeshStorage::get_singleton()->multimesh_uses_colors(mm->multimesh)) {
+						state.instance_data_array[r_index].flags |= FLAGS_INSTANCING_HAS_COLORS;
+					}
+					if (GLES3::MeshStorage::get_singleton()->multimesh_uses_custom_data(mm->multimesh)) {
+						state.instance_data_array[r_index].flags |= FLAGS_INSTANCING_HAS_CUSTOM_DATA;
+					}
 				} else if (c->type == Item::Command::TYPE_PARTICLES) {
 					GLES3::ParticlesStorage *particles_storage = GLES3::ParticlesStorage::get_singleton();
 					GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
