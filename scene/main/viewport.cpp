@@ -1052,7 +1052,7 @@ Camera2D *Viewport::get_camera_2d() const {
 }
 
 Transform2D Viewport::get_final_transform() const {
-	return _get_input_pre_xform().affine_inverse() * stretch_transform * global_canvas_transform;
+	return stretch_transform * global_canvas_transform;
 }
 
 void Viewport::assign_next_enabled_camera_2d(const StringName &p_camera_group) {
@@ -1136,14 +1136,6 @@ void Viewport::set_positional_shadow_atlas_quadrant_subdiv(int p_quadrant, Posit
 Viewport::PositionalShadowAtlasQuadrantSubdiv Viewport::get_positional_shadow_atlas_quadrant_subdiv(int p_quadrant) const {
 	ERR_FAIL_INDEX_V(p_quadrant, 4, SHADOW_ATLAS_QUADRANT_SUBDIV_DISABLED);
 	return positional_shadow_atlas_quadrant_subdiv[p_quadrant];
-}
-
-Transform2D Viewport::_get_input_pre_xform() const {
-	const Window *this_window = Object::cast_to<Window>(this);
-	if (this_window) {
-		return this_window->window_transform.affine_inverse();
-	}
-	return Transform2D();
 }
 
 Ref<InputEvent> Viewport::_make_input_local(const Ref<InputEvent> &ev) {
@@ -4207,7 +4199,7 @@ Transform2D SubViewport::get_screen_transform() const {
 	} else {
 		WARN_PRINT_ONCE("SubViewport is not a child of a SubViewportContainer. get_screen_transform doesn't return the actual screen position.");
 	}
-	return container_transform * Viewport::get_screen_transform();
+	return container_transform * get_final_transform();
 }
 
 Transform2D SubViewport::get_popup_base_transform() const {
@@ -4216,13 +4208,13 @@ Transform2D SubViewport::get_popup_base_transform() const {
 	}
 	SubViewportContainer *c = Object::cast_to<SubViewportContainer>(get_parent());
 	if (!c) {
-		return Viewport::get_screen_transform();
+		return get_final_transform();
 	}
 	Transform2D container_transform;
 	if (c->is_stretch_enabled()) {
 		container_transform.scale(Vector2(c->get_stretch_shrink(), c->get_stretch_shrink()));
 	}
-	return c->get_screen_transform() * container_transform * Viewport::get_screen_transform();
+	return c->get_screen_transform() * container_transform * get_final_transform();
 }
 
 void SubViewport::_notification(int p_what) {
