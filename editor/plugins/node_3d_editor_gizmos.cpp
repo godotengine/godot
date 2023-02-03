@@ -4876,6 +4876,10 @@ NavigationRegion3DGizmoPlugin::NavigationRegion3DGizmoPlugin() {
 	create_material("face_material_disabled", NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_disabled_color(), false, false, true);
 	create_material("edge_material", NavigationServer3D::get_singleton()->get_debug_navigation_geometry_edge_color());
 	create_material("edge_material_disabled", NavigationServer3D::get_singleton()->get_debug_navigation_geometry_edge_disabled_color());
+
+	Color baking_aabb_material_color = Color(0.8, 0.5, 0.7);
+	baking_aabb_material_color.a = 0.1;
+	create_material("baking_aabb_material", baking_aabb_material_color);
 }
 
 bool NavigationRegion3DGizmoPlugin::has_gizmo(Node3D *p_spatial) {
@@ -4897,6 +4901,16 @@ void NavigationRegion3DGizmoPlugin::redraw(EditorNode3DGizmo *p_gizmo) {
 	Ref<NavigationMesh> navigationmesh = navigationregion->get_navigation_mesh();
 	if (navigationmesh.is_null()) {
 		return;
+	}
+
+	AABB baking_aabb = navigationmesh->get_filter_baking_aabb();
+	if (baking_aabb.has_volume()) {
+		Vector3 baking_aabb_offset = navigationmesh->get_filter_baking_aabb_offset();
+
+		if (p_gizmo->is_selected()) {
+			Ref<Material> material = get_material("baking_aabb_material", p_gizmo);
+			p_gizmo->add_solid_box(material, baking_aabb.get_size(), baking_aabb.get_center() + baking_aabb_offset);
+		}
 	}
 
 	Vector<Vector3> vertices = navigationmesh->get_vertices();
