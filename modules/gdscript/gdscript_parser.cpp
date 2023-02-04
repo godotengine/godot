@@ -3685,6 +3685,13 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 			variable->export_info.type = Variant::DICTIONARY;
 
 			return true;
+		} else if (export_type.builtin_type == Variant::PACKED_STRING_ARRAY) {
+			String hint_prefix = itos(Variant::STRING) + "/" + itos(variable->export_info.hint);
+			variable->export_info.hint = PROPERTY_HINT_TYPE_STRING;
+			variable->export_info.hint_string = hint_prefix + ":" + variable->export_info.hint_string;
+			variable->export_info.type = Variant::PACKED_STRING_ARRAY;
+
+			return true;
 		}
 	}
 
