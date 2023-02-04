@@ -55,7 +55,7 @@ private:
 
 	struct BaseTemplateUserdata {
 		virtual void callback() {}
-		virtual void callback_indexed(uint32_t p_index) {}
+		virtual void callback_range(uint32_t p_from, uint32_t p_to) {}
 		virtual ~BaseTemplateUserdata() {}
 	};
 
@@ -154,8 +154,10 @@ private:
 		C *instance;
 		M method;
 		U userdata;
-		virtual void callback_indexed(uint32_t p_index) override {
-			(instance->*method)(p_index, userdata);
+		virtual void callback_range(uint32_t p_from, uint32_t p_to) override {
+			for (uint32_t p_index = p_from; p_index < p_to; p_index++) {
+				(instance->*method)(p_index, userdata);
+			}
 		}
 	};
 

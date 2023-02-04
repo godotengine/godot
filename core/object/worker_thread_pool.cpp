@@ -49,6 +49,33 @@ void WorkerThreadPool::_process_task_queue() {
 	_process_task(task);
 }
 
+// We want a batch size that's small enough to avoid unbalanced threads,
+// but large enough to minimize cache contention and synchronization overhead.
+// This is currently using a placeholder formula, it should probably be
+// adjusted once there's more multithreading code available to test with.
+static int calculate_batch_size(int p_num_elements, int p_num_threads) {
+#ifndef DEBUG_ENABLED
+	// Prevent the batch size from becoming too large on systems with
+	// low core counts. This allows threads that finish early to be
+	// able to pick up another batch instead of just idling.
+	// Disabled in debug mode so that larger batch sizes can be reached
+	// with a smaller number of elements, making testing more efficient.
+	p_num_threads = MAX(p_num_threads, 8);
+#endif
+
+	// Divide workload evenly among all available threads.
+	// With this method, any threads that finish processing early will
+	// still have to wait for the slowest thread in the group.
+	int batch_size = p_num_elements / p_num_threads;
+
+	// Cap the batch size since context switching costs become
+	// negligible past a certain point.
+	// 4096 may or may not be that point.
+	batch_size = MIN(batch_size, 4096);
+
+	return MAX(batch_size, 1);
+}
+
 void WorkerThreadPool::_process_task(Task *p_task) {
 	bool low_priority = p_task->low_priority;
 	int pool_thread_index = -1;
@@ -72,29 +99,47 @@ void WorkerThreadPool::_process_task(Task *p_task) {
 	if (p_task->group) {
 		// Handling a group
 		bool do_post = false;
-		Callable::CallError ce;
-		Variant ret;
-		Variant arg;
-		Variant *argptr = &arg;
+
+		// Process nearby indices in the same thread for better caching
+		const uint32_t batch_size = calculate_batch_size(p_task->group->max, p_task->group->tasks_used);
 
 		while (true) {
-			uint32_t work_index = p_task->group->index.postincrement();
-
+			uint32_t work_index = p_task->group->index.postadd(batch_size);
 			if (work_index >= p_task->group->max) {
 				break;
 			}
+
+#ifdef DEBUG_ENABLED
+			// Probably random enough
+			const uint32_t rand = hash_murmur3_one_32(work_index, (uintptr_t)p_task);
+
+			// Make execution order more random so that race conditions
+			// have a higher chance of being found. We run this outside
+			// the batch to minimize the performance impact.
+			OS::get_singleton()->delay_usec(rand % 10);
+#endif
+
+			uint32_t local_batch = MIN(batch_size, p_task->group->max - work_index);
+
 			if (p_task->native_group_func) {
-				p_task->native_group_func(p_task->native_func_userdata, work_index);
+				for (uint32_t i = 0; i < local_batch; i++) {
+					p_task->native_group_func(p_task->native_func_userdata, work_index + i);
+				}
 			} else if (p_task->template_userdata) {
-				p_task->template_userdata->callback_indexed(work_index);
+				p_task->template_userdata->callback_range(work_index, work_index + local_batch);
 			} else {
-				arg = work_index;
-				p_task->callable.callp((const Variant **)&argptr, 1, ret, ce);
+				Callable::CallError ce;
+				Variant ret;
+				Variant arg;
+				Variant *argptr = &arg;
+				for (uint32_t i = 0; i < local_batch; i++) {
+					arg = work_index + i;
+					p_task->callable.callp((const Variant **)&argptr, 1, ret, ce);
+				}
 			}
 
 			// This is the only way to ensure posting is done when all tasks are really complete.
-			uint32_t completed_amount = p_task->group->completed_index.increment();
-
+			uint32_t completed_amount = p_task->group->completed_index.add(local_batch);
 			if (completed_amount == p_task->group->max) {
 				do_post = true;
 			}
