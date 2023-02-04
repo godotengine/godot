@@ -2712,6 +2712,9 @@ Ref<Font> FontVariation::_get_base_font_or_default() const {
 		for (const StringName &E : theme_types) {
 			if (ThemeDB::get_singleton()->get_project_theme()->has_theme_item(Theme::DATA_TYPE_FONT, "font", E)) {
 				Ref<Font> f = ThemeDB::get_singleton()->get_project_theme()->get_theme_item(Theme::DATA_TYPE_FONT, "font", E);
+				if (f == this) {
+					continue;
+				}
 				if (f.is_valid()) {
 					theme_font = f;
 					theme_font->connect(CoreStringNames::get_singleton()->changed, callable_mp(reinterpret_cast<Font *>(const_cast<FontVariation *>(this)), &Font::_invalidate_rids), CONNECT_REFERENCE_COUNTED);
@@ -2729,6 +2732,9 @@ Ref<Font> FontVariation::_get_base_font_or_default() const {
 		for (const StringName &E : theme_types) {
 			if (ThemeDB::get_singleton()->get_default_theme()->has_theme_item(Theme::DATA_TYPE_FONT, "font", E)) {
 				Ref<Font> f = ThemeDB::get_singleton()->get_default_theme()->get_theme_item(Theme::DATA_TYPE_FONT, "font", E);
+				if (f == this) {
+					continue;
+				}
 				if (f.is_valid()) {
 					theme_font = f;
 					theme_font->connect(CoreStringNames::get_singleton()->changed, callable_mp(reinterpret_cast<Font *>(const_cast<FontVariation *>(this)), &Font::_invalidate_rids), CONNECT_REFERENCE_COUNTED);
@@ -2739,11 +2745,13 @@ Ref<Font> FontVariation::_get_base_font_or_default() const {
 
 		// If they don't exist, use any type to return the default/empty value.
 		Ref<Font> f = ThemeDB::get_singleton()->get_default_theme()->get_theme_item(Theme::DATA_TYPE_FONT, "font", StringName());
-		if (f.is_valid()) {
-			theme_font = f;
-			theme_font->connect(CoreStringNames::get_singleton()->changed, callable_mp(reinterpret_cast<Font *>(const_cast<FontVariation *>(this)), &Font::_invalidate_rids), CONNECT_REFERENCE_COUNTED);
+		if (f != this) {
+			if (f.is_valid()) {
+				theme_font = f;
+				theme_font->connect(CoreStringNames::get_singleton()->changed, callable_mp(reinterpret_cast<Font *>(const_cast<FontVariation *>(this)), &Font::_invalidate_rids), CONNECT_REFERENCE_COUNTED);
+			}
+			return f;
 		}
-		return f;
 	}
 
 	return Ref<Font>();
@@ -3061,6 +3069,9 @@ Ref<Font> SystemFont::_get_base_font_or_default() const {
 		for (const StringName &E : theme_types) {
 			if (ThemeDB::get_singleton()->get_project_theme()->has_theme_item(Theme::DATA_TYPE_FONT, "font", E)) {
 				Ref<Font> f = ThemeDB::get_singleton()->get_project_theme()->get_theme_item(Theme::DATA_TYPE_FONT, "font", E);
+				if (f == this) {
+					continue;
+				}
 				if (f.is_valid()) {
 					theme_font = f;
 					theme_font->connect(CoreStringNames::get_singleton()->changed, callable_mp(reinterpret_cast<Font *>(const_cast<SystemFont *>(this)), &Font::_invalidate_rids), CONNECT_REFERENCE_COUNTED);
@@ -3078,6 +3089,9 @@ Ref<Font> SystemFont::_get_base_font_or_default() const {
 		for (const StringName &E : theme_types) {
 			if (ThemeDB::get_singleton()->get_default_theme()->has_theme_item(Theme::DATA_TYPE_FONT, "font", E)) {
 				Ref<Font> f = ThemeDB::get_singleton()->get_default_theme()->get_theme_item(Theme::DATA_TYPE_FONT, "font", E);
+				if (f == this) {
+					continue;
+				}
 				if (f.is_valid()) {
 					theme_font = f;
 					theme_font->connect(CoreStringNames::get_singleton()->changed, callable_mp(reinterpret_cast<Font *>(const_cast<SystemFont *>(this)), &Font::_invalidate_rids), CONNECT_REFERENCE_COUNTED);
@@ -3088,11 +3102,13 @@ Ref<Font> SystemFont::_get_base_font_or_default() const {
 
 		// If they don't exist, use any type to return the default/empty value.
 		Ref<Font> f = ThemeDB::get_singleton()->get_default_theme()->get_theme_item(Theme::DATA_TYPE_FONT, "font", StringName());
-		if (f.is_valid()) {
-			theme_font = f;
-			theme_font->connect(CoreStringNames::get_singleton()->changed, callable_mp(reinterpret_cast<Font *>(const_cast<SystemFont *>(this)), &Font::_invalidate_rids), CONNECT_REFERENCE_COUNTED);
+		if (f != this) {
+			if (f.is_valid()) {
+				theme_font = f;
+				theme_font->connect(CoreStringNames::get_singleton()->changed, callable_mp(reinterpret_cast<Font *>(const_cast<SystemFont *>(this)), &Font::_invalidate_rids), CONNECT_REFERENCE_COUNTED);
+			}
+			return f;
 		}
-		return f;
 	}
 
 	return Ref<Font>();
