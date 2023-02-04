@@ -296,6 +296,8 @@ class AnimationNodeTransition : public AnimationNodeSync {
 	Ref<Curve> xfade_curve;
 	bool allow_transition_to_self = false;
 
+	bool pending_update = false;
+
 protected:
 	bool _get(const StringName &p_path, Variant &r_ret) const;
 	bool _set(const StringName &p_path, const Variant &p_value);
@@ -313,6 +315,7 @@ public:
 
 	virtual bool add_input(const String &p_name) override;
 	virtual void remove_input(int p_index) override;
+	virtual bool set_input_name(int p_input, const String &p_name) override;
 
 	void set_input_as_auto_advance(int p_input, bool p_enable);
 	bool is_input_set_as_auto_advance(int p_input) const;
@@ -358,7 +361,6 @@ class AnimationNodeBlendTree : public AnimationRootNode {
 
 	Vector2 graph_offset;
 
-	void _tree_changed();
 	void _node_changed(const StringName &p_node);
 
 	void _initialize_node_tree();
@@ -368,6 +370,10 @@ protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
+
+	virtual void _tree_changed() override;
+	virtual void _animation_node_renamed(const ObjectID &p_oid, const String &p_old_name, const String &p_new_name) override;
+	virtual void _animation_node_removed(const ObjectID &p_oid, const StringName &p_node) override;
 
 	virtual void reset_state() override;
 

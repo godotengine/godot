@@ -85,13 +85,14 @@ protected:
 	void _update_triangles();
 	void _queue_auto_triangles();
 
-	void _tree_changed();
-
-protected:
 	bool sync = false;
 
 	void _validate_property(PropertyInfo &p_property) const;
 	static void _bind_methods();
+
+	virtual void _tree_changed() override;
+	virtual void _animation_node_renamed(const ObjectID &p_oid, const String &p_old_name, const String &p_new_name) override;
+	virtual void _animation_node_removed(const ObjectID &p_oid, const StringName &p_node) override;
 
 public:
 	virtual void get_parameter_list(List<PropertyInfo> *r_list) const override;
