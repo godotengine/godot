@@ -49,4 +49,17 @@ public:
 	}
 };
 
+class ScopedSpinLock {
+	SpinLock &spin_lock;
+
+public:
+	_ALWAYS_INLINE_ ScopedSpinLock(SpinLock &p_spin_lock) :
+			spin_lock(p_spin_lock) {
+		spin_lock.lock();
+	}
+	_ALWAYS_INLINE_ ~ScopedSpinLock() {
+		spin_lock.unlock();
+	}
+};
+
 #endif // SPIN_LOCK_H

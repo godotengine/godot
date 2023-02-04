@@ -46,7 +46,7 @@ StringName _scs_create(const char *p_chr, bool p_static) {
 }
 
 bool StringName::configured = false;
-Mutex StringName::mutex;
+SpinLock StringName::spin_lock;
 
 #ifdef DEBUG_ENABLED
 bool StringName::debug_stringname = false;
@@ -61,7 +61,7 @@ void StringName::setup() {
 }
 
 void StringName::cleanup() {
-	MutexLock lock(mutex);
+	ScopedSpinLock lock(spin_lock);
 
 #ifdef DEBUG_ENABLED
 	if (unlikely(debug_stringname)) {
@@ -96,7 +96,7 @@ void StringName::cleanup() {
 	for (int i = 0; i < STRING_TABLE_LEN; i++) {
 		while (_table[i]) {
 			_Data *d = _table[i];
-			if (d->static_count.get() != d->refcount.get()) {
+			if (d->static_count != d->refcount) {
 				lost_strings++;
 
 				if (OS::get_singleton()->is_stdout_verbose()) {
@@ -119,12 +119,15 @@ void StringName::cleanup() {
 }
 
 void StringName::unref() {
+	ScopedSpinLock lock(spin_lock);
+	unref_impl();
+}
+
+void StringName::unref_impl() {
 	ERR_FAIL_COND(!configured);
 
-	if (_data && _data->refcount.unref()) {
-		MutexLock lock(mutex);
-
-		if (_data->static_count.get() > 0) {
+	if (_data && --_data->refcount == 0) {
+		if (_data->static_count > 0) {
 			if (_data->cname) {
 				ERR_PRINT("BUG: Unreferenced static string to 0: " + String(_data->cname));
 			} else {
@@ -184,9 +187,12 @@ void StringName::operator=(const StringName &p_name) {
 		return;
 	}
 
-	unref();
+	ScopedSpinLock lock(spin_lock);
 
-	if (p_name._data && p_name._data->refcount.ref()) {
+	unref_impl();
+
+	if (p_name._data && p_name._data->refcount) {
+		p_name._data->refcount++;
 		_data = p_name._data;
 	}
 }
@@ -196,7 +202,9 @@ StringName::StringName(const StringName &p_name) {
 
 	ERR_FAIL_COND(!configured);
 
-	if (p_name._data && p_name._data->refcount.ref()) {
+	ScopedSpinLock lock(spin_lock);
+	if (p_name._data && p_name._data->refcount) {
+		p_name._data->refcount++;
 		_data = p_name._data;
 	}
 }
@@ -210,7 +218,7 @@ StringName::StringName(const char *p_name, bool p_static) {
 		return; //empty, ignore
 	}
 
-	MutexLock lock(mutex);
+	ScopedSpinLock lock(spin_lock);
 
 	uint32_t hash = String::hash(p_name);
 
@@ -227,10 +235,11 @@ StringName::StringName(const char *p_name, bool p_static) {
 	}
 
 	if (_data) {
-		if (_data->refcount.ref()) {
+		if (_data->refcount) {
+			_data->refcount++;
 			// exists
 			if (p_static) {
-				_data->static_count.increment();
+				_data->static_count++;
 			}
 #ifdef DEBUG_ENABLED
 			if (unlikely(debug_stringname)) {
@@ -244,8 +253,8 @@ StringName::StringName(const char *p_name, bool p_static) {
 
 	_data = memnew(_Data);
 	_data->name = p_name;
-	_data->refcount.init();
-	_data->static_count.set(p_static ? 1 : 0);
+	_data->refcount = 1;
+	_data->static_count = p_static ? 1 : 0;
 	_data->hash = hash;
 	_data->idx = idx;
 	_data->cname = nullptr;
@@ -255,8 +264,8 @@ StringName::StringName(const char *p_name, bool p_static) {
 #ifdef DEBUG_ENABLED
 	if (unlikely(debug_stringname)) {
 		// Keep in memory, force static.
-		_data->refcount.ref();
-		_data->static_count.increment();
+		_data->refcount++;
+		_data->static_count++;
 	}
 #endif
 	if (_table[idx]) {
@@ -272,7 +281,7 @@ StringName::StringName(const StaticCString &p_static_string, bool p_static) {
 
 	ERR_FAIL_COND(!p_static_string.ptr || !p_static_string.ptr[0]);
 
-	MutexLock lock(mutex);
+	ScopedSpinLock lock(spin_lock);
 
 	uint32_t hash = String::hash(p_static_string.ptr);
 
@@ -289,10 +298,11 @@ StringName::StringName(const StaticCString &p_static_string, bool p_static) {
 	}
 
 	if (_data) {
-		if (_data->refcount.ref()) {
+		if (_data->refcount) {
+			_data->refcount++;
 			// exists
 			if (p_static) {
-				_data->static_count.increment();
+				_data->static_count++;
 			}
 #ifdef DEBUG_ENABLED
 			if (unlikely(debug_stringname)) {
@@ -305,8 +315,8 @@ StringName::StringName(const StaticCString &p_static_string, bool p_static) {
 
 	_data = memnew(_Data);
 
-	_data->refcount.init();
-	_data->static_count.set(p_static ? 1 : 0);
+	_data->refcount = 1;
+	_data->static_count = p_static ? 1 : 0;
 	_data->hash = hash;
 	_data->idx = idx;
 	_data->cname = p_static_string.ptr;
@@ -315,8 +325,8 @@ StringName::StringName(const StaticCString &p_static_string, bool p_static) {
 #ifdef DEBUG_ENABLED
 	if (unlikely(debug_stringname)) {
 		// Keep in memory, force static.
-		_data->refcount.ref();
-		_data->static_count.increment();
+		_data->refcount++;
+		_data->static_count++;
 	}
 #endif
 	if (_table[idx]) {
@@ -334,7 +344,7 @@ StringName::StringName(const String &p_name, bool p_static) {
 		return;
 	}
 
-	MutexLock lock(mutex);
+	ScopedSpinLock lock(spin_lock);
 
 	uint32_t hash = p_name.hash();
 	uint32_t idx = hash & STRING_TABLE_MASK;
@@ -349,10 +359,11 @@ StringName::StringName(const String &p_name, bool p_static) {
 	}
 
 	if (_data) {
-		if (_data->refcount.ref()) {
+		if (_data->refcount) {
+			_data->refcount++;
 			// exists
 			if (p_static) {
-				_data->static_count.increment();
+				_data->static_count++;
 			}
 #ifdef DEBUG_ENABLED
 			if (unlikely(debug_stringname)) {
@@ -365,8 +376,8 @@ StringName::StringName(const String &p_name, bool p_static) {
 
 	_data = memnew(_Data);
 	_data->name = p_name;
-	_data->refcount.init();
-	_data->static_count.set(p_static ? 1 : 0);
+	_data->refcount = 1;
+	_data->static_count = p_static ? 1 : 0;
 	_data->hash = hash;
 	_data->idx = idx;
 	_data->cname = nullptr;
@@ -375,8 +386,8 @@ StringName::StringName(const String &p_name, bool p_static) {
 #ifdef DEBUG_ENABLED
 	if (unlikely(debug_stringname)) {
 		// Keep in memory, force static.
-		_data->refcount.ref();
-		_data->static_count.increment();
+		_data->refcount++;
+		_data->static_count++;
 	}
 #endif
 
@@ -394,7 +405,7 @@ StringName StringName::search(const char *p_name) {
 		return StringName();
 	}
 
-	MutexLock lock(mutex);
+	ScopedSpinLock lock(spin_lock);
 
 	uint32_t hash = String::hash(p_name);
 	uint32_t idx = hash & STRING_TABLE_MASK;
@@ -409,7 +420,8 @@ StringName StringName::search(const char *p_name) {
 		_data = _data->next;
 	}
 
-	if (_data && _data->refcount.ref()) {
+	if (_data && _data->refcount) {
+		_data->refcount++;
 #ifdef DEBUG_ENABLED
 		if (unlikely(debug_stringname)) {
 			_data->debug_references++;
@@ -430,7 +442,7 @@ StringName StringName::search(const char32_t *p_name) {
 		return StringName();
 	}
 
-	MutexLock lock(mutex);
+	ScopedSpinLock lock(spin_lock);
 
 	uint32_t hash = String::hash(p_name);
 
@@ -446,7 +458,8 @@ StringName StringName::search(const char32_t *p_name) {
 		_data = _data->next;
 	}
 
-	if (_data && _data->refcount.ref()) {
+	if (_data && _data->refcount) {
+		_data->refcount++;
 		return StringName(_data);
 	}
 
@@ -456,7 +469,7 @@ StringName StringName::search(const char32_t *p_name) {
 StringName StringName::search(const String &p_name) {
 	ERR_FAIL_COND_V(p_name.is_empty(), StringName());
 
-	MutexLock lock(mutex);
+	ScopedSpinLock lock(spin_lock);
 
 	uint32_t hash = p_name.hash();
 
@@ -472,7 +485,8 @@ StringName StringName::search(const String &p_name) {
 		_data = _data->next;
 	}
 
-	if (_data && _data->refcount.ref()) {
+	if (_data && _data->refcount) {
+		_data->refcount++;
 #ifdef DEBUG_ENABLED
 		if (unlikely(debug_stringname)) {
 			_data->debug_references++;

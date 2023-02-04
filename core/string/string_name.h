@@ -31,9 +31,8 @@
 #ifndef STRING_NAME_H
 #define STRING_NAME_H
 
-#include "core/os/mutex.h"
+#include "core/os/spin_lock.h"
 #include "core/string/ustring.h"
-#include "core/templates/safe_refcount.h"
 
 #define UNIQUE_NODE_PREFIX "%"
 
@@ -52,8 +51,8 @@ class StringName {
 	};
 
 	struct _Data {
-		SafeRefCount refcount;
-		SafeNumeric<uint32_t> static_count;
+		uint32_t refcount = 0;
+		uint32_t static_count = 0;
 		const char *cname = nullptr;
 		String name;
 #ifdef DEBUG_ENABLED
@@ -77,10 +76,11 @@ class StringName {
 	};
 
 	void unref();
+	void unref_impl();
 	friend void register_core_types();
 	friend void unregister_core_types();
 	friend class Main;
-	static Mutex mutex;
+	static SpinLock spin_lock;
 	static void setup();
 	static void cleanup();
 	static bool configured;
