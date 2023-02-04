@@ -61,7 +61,15 @@ void AnimationNodeBlendSpace1D::_validate_property(PropertyInfo &p_property) con
 }
 
 void AnimationNodeBlendSpace1D::_tree_changed() {
-	emit_signal(SNAME("tree_changed"));
+	AnimationRootNode::_tree_changed();
+}
+
+void AnimationNodeBlendSpace1D::_animation_node_renamed(const ObjectID &p_oid, const String &p_old_name, const String &p_new_name) {
+	AnimationRootNode::_animation_node_renamed(p_oid, p_old_name, p_new_name);
+}
+
+void AnimationNodeBlendSpace1D::_animation_node_removed(const ObjectID &p_oid, const StringName &p_node) {
+	AnimationRootNode::_animation_node_removed(p_oid, p_node);
 }
 
 void AnimationNodeBlendSpace1D::_bind_methods() {
@@ -137,6 +145,8 @@ void AnimationNodeBlendSpace1D::add_blend_point(const Ref<AnimationRootNode> &p_
 	blend_points[p_at_index].position = p_position;
 
 	blend_points[p_at_index].node->connect("tree_changed", callable_mp(this, &AnimationNodeBlendSpace1D::_tree_changed), CONNECT_REFERENCE_COUNTED);
+	blend_points[p_at_index].node->connect("animation_node_renamed", callable_mp(this, &AnimationNodeBlendSpace1D::_animation_node_renamed), CONNECT_REFERENCE_COUNTED);
+	blend_points[p_at_index].node->connect("animation_node_removed", callable_mp(this, &AnimationNodeBlendSpace1D::_animation_node_removed), CONNECT_REFERENCE_COUNTED);
 
 	blend_points_used++;
 	emit_signal(SNAME("tree_changed"));
@@ -154,10 +164,14 @@ void AnimationNodeBlendSpace1D::set_blend_point_node(int p_point, const Ref<Anim
 
 	if (blend_points[p_point].node.is_valid()) {
 		blend_points[p_point].node->disconnect("tree_changed", callable_mp(this, &AnimationNodeBlendSpace1D::_tree_changed));
+		blend_points[p_point].node->disconnect("animation_node_renamed", callable_mp(this, &AnimationNodeBlendSpace1D::_animation_node_renamed));
+		blend_points[p_point].node->disconnect("animation_node_removed", callable_mp(this, &AnimationNodeBlendSpace1D::_animation_node_removed));
 	}
 
 	blend_points[p_point].node = p_node;
 	blend_points[p_point].node->connect("tree_changed", callable_mp(this, &AnimationNodeBlendSpace1D::_tree_changed), CONNECT_REFERENCE_COUNTED);
+	blend_points[p_point].node->connect("animation_node_renamed", callable_mp(this, &AnimationNodeBlendSpace1D::_animation_node_renamed), CONNECT_REFERENCE_COUNTED);
+	blend_points[p_point].node->connect("animation_node_removed", callable_mp(this, &AnimationNodeBlendSpace1D::_animation_node_removed), CONNECT_REFERENCE_COUNTED);
 
 	emit_signal(SNAME("tree_changed"));
 }
@@ -177,12 +191,16 @@ void AnimationNodeBlendSpace1D::remove_blend_point(int p_point) {
 
 	ERR_FAIL_COND(blend_points[p_point].node.is_null());
 	blend_points[p_point].node->disconnect("tree_changed", callable_mp(this, &AnimationNodeBlendSpace1D::_tree_changed));
+	blend_points[p_point].node->disconnect("animation_node_renamed", callable_mp(this, &AnimationNodeBlendSpace1D::_animation_node_renamed));
+	blend_points[p_point].node->disconnect("animation_node_removed", callable_mp(this, &AnimationNodeBlendSpace1D::_animation_node_removed));
 
 	for (int i = p_point; i < blend_points_used - 1; i++) {
 		blend_points[i] = blend_points[i + 1];
 	}
 
 	blend_points_used--;
+
+	emit_signal(SNAME("animation_node_removed"), get_instance_id(), itos(p_point));
 	emit_signal(SNAME("tree_changed"));
 }
 
