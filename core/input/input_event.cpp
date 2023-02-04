@@ -34,7 +34,7 @@
 #include "core/input/shortcut.h"
 #include "core/os/keyboard.h"
 
-const int InputEvent::DEVICE_ID_TOUCH_MOUSE = -1;
+const int InputEvent::DEVICE_ID_EMULATION = -1;
 const int InputEvent::DEVICE_ID_INTERNAL = -2;
 
 void InputEvent::set_device(int p_device) {
