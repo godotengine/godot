@@ -5152,6 +5152,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	grid_snap_button->set_shortcut_context(this);
 
 	snap_config_menu = memnew(MenuButton);
+	snap_config_menu->set_flat(true);
 	snap_config_menu->set_shortcut_context(this);
 	main_menu_hbox->add_child(snap_config_menu);
 	snap_config_menu->set_h_size_flags(SIZE_SHRINK_END);
@@ -5220,6 +5221,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	main_menu_hbox->add_child(memnew(VSeparator));
 
 	skeleton_menu = memnew(MenuButton);
+	skelton_menu->set_flat(true);
 	skeleton_menu->set_shortcut_context(this);
 	main_menu_hbox->add_child(skeleton_menu);
 	skeleton_menu->set_tooltip_text(TTR("Skeleton Options"));
@@ -5245,6 +5247,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	main_menu_hbox->add_child(memnew(VSeparator));
 
 	view_menu = memnew(MenuButton);
+	view_menu->set_flat(true);
 	// TRANSLATORS: Noun, name of the 2D/3D View menus.
 	view_menu->set_text(TTR("View"));
 	view_menu->set_switch_on_hover(true);
@@ -5341,6 +5344,7 @@ CanvasItemEditor::CanvasItemEditor() {
 	animation_hb->add_child(key_auto_insert_button);
 
 	animation_menu = memnew(MenuButton);
+	animation_menu->set_flat(true);
 	animation_menu->set_shortcut_context(this);
 	animation_menu->set_tooltip_text(TTR("Animation Key and Pose Options"));
 	animation_hb->add_child(animation_menu);

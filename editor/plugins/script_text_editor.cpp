@@ -2128,6 +2128,7 @@ ScriptTextEditor::ScriptTextEditor() {
 
 	edit_menu = memnew(MenuButton);
 	edit_menu->set_text(TTR("Edit"));
+	edit_menu->set_flat(true);
 	edit_menu->set_switch_on_hover(true);
 	edit_menu->set_shortcut_context(this);
 
@@ -2145,11 +2146,13 @@ ScriptTextEditor::ScriptTextEditor() {
 
 	search_menu = memnew(MenuButton);
 	search_menu->set_text(TTR("Search"));
+	search_menu->set_flat(true);
 	search_menu->set_switch_on_hover(true);
 	search_menu->set_shortcut_context(this);
 
 	goto_menu = memnew(MenuButton);
 	goto_menu->set_text(TTR("Go To"));
+	goto_menu->set_flat(true);
 	goto_menu->set_switch_on_hover(true);
 	goto_menu->set_shortcut_context(this);
 

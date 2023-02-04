@@ -157,6 +157,7 @@ EditorRunNative::EditorRunNative() {
 	remote_debug->get_popup()->connect("id_pressed", callable_mp(this, &EditorRunNative::run_native));
 	remote_debug->set_icon(get_theme_icon(SNAME("PlayRemote"), SNAME("EditorIcons")));
 	remote_debug->set_tooltip_text(TTR("Remote Debug"));
+	remote_debug->set_flat(true);
 	remote_debug->set_disabled(true);
 
 	add_child(remote_debug);

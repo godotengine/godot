@@ -1089,6 +1089,7 @@ TextShaderEditor::TextShaderEditor() {
 	edit_menu = memnew(MenuButton);
 	edit_menu->set_shortcut_context(this);
 	edit_menu->set_text(TTR("Edit"));
+	edit_menu->set_flat(true);
 	edit_menu->set_switch_on_hover(true);
 
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("ui_undo"), EDIT_UNDO);
@@ -1114,6 +1115,7 @@ TextShaderEditor::TextShaderEditor() {
 	search_menu = memnew(MenuButton);
 	search_menu->set_shortcut_context(this);
 	search_menu->set_text(TTR("Search"));
+	search_menu->set_flat(true);
 	search_menu->set_switch_on_hover(true);
 
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find"), SEARCH_FIND);
@@ -1125,6 +1127,7 @@ TextShaderEditor::TextShaderEditor() {
 	MenuButton *goto_menu = memnew(MenuButton);
 	goto_menu->set_shortcut_context(this);
 	goto_menu->set_text(TTR("Go To"));
+	goto_menu->set_flat(true);
 	goto_menu->set_switch_on_hover(true);
 	goto_menu->get_popup()->connect("id_pressed", callable_mp(this, &TextShaderEditor::_menu_option));
 
@@ -1141,6 +1144,7 @@ TextShaderEditor::TextShaderEditor() {
 
 	help_menu = memnew(MenuButton);
 	help_menu->set_text(TTR("Help"));
+	help_menu->set_flat(true);
 	help_menu->set_switch_on_hover(true);
 	help_menu->get_popup()->add_item(TTR("Online Docs"), HELP_DOCS);
 	help_menu->get_popup()->connect("id_pressed", callable_mp(this, &TextShaderEditor::_menu_option));

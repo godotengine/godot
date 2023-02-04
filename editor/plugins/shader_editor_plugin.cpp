@@ -425,6 +425,7 @@ ShaderEditorPlugin::ShaderEditorPlugin() {
 	HBoxContainer *file_hb = memnew(HBoxContainer);
 	vb->add_child(file_hb);
 	file_menu = memnew(MenuButton);
+	file_menu->set_flat(true);
 	file_menu->set_text(TTR("File"));
 	file_menu->get_popup()->add_item(TTR("New Shader"), FILE_NEW);
 	file_menu->get_popup()->add_item(TTR("New Shader Include"), FILE_NEW_INCLUDE);
