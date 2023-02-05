@@ -1861,6 +1861,7 @@ void ResourceImporterScene::get_import_options(const String &p_path, List<Import
 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "nodes/apply_root_scale"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "nodes/root_scale", PROPERTY_HINT_RANGE, "0.001,1000,0.001"), 1.0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "nodes/rotate_180_degrees"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/ensure_tangents"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/generate_lods"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "meshes/create_shadow_meshes"), true));
@@ -2412,6 +2413,30 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	_pre_fix_animations(scene, scene, node_data, animation_data, fps);
 	_post_fix_node(scene, scene, collision_map, occluder_arrays, scanned_meshes, node_data, material_data, animation_data, fps, apply_root ? root_scale : 1.0);
 	_post_fix_animations(scene, scene, node_data, animation_data, fps);
+
+	// Rotating by 180 degrees must be done after scaling and skeleton import.
+	bool rotate_180_degrees = false;
+	if (p_options.has("nodes/rotate_180_degrees")) {
+		rotate_180_degrees = p_options["nodes/rotate_180_degrees"];
+	}
+	if (rotate_180_degrees) {
+		if (apply_root) {
+			for (int i = 0; i < scene->get_child_count(); i++) {
+				Node *child = scene->get_child(i);
+				if (Object::cast_to<Node3D>(child)) {
+					Node3D *child_3d = Object::cast_to<Node3D>(child);
+					Transform3D child_transform = child_3d->get_transform();
+					// Linear algebra trick: A negative scale on two axes performs
+					// a 180 degree rotation on the plane formed by those axes.
+					child_transform.basis.scale(Vector3(-1.0, 1.0, -1.0));
+					child_transform.origin *= Vector3(-1.0, 1.0, -1.0);
+					child_3d->set_transform(child_transform);
+				}
+			}
+		} else if (Object::cast_to<Node3D>(scene)) {
+			Object::cast_to<Node3D>(scene)->scale(Vector3(-1.0, 1.0, -1.0));
+		}
+	}
 
 	String root_type = p_options["nodes/root_type"];
 	root_type = root_type.split(" ")[0]; // full root_type is "ClassName (filename.gd)" for a script global class.
