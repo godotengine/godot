@@ -168,8 +168,8 @@ public:
 	void set_angular_damp(real_t p_angular_damp);
 	real_t get_angular_damp() const;
 
-	void set_priority(real_t p_priority);
-	real_t get_priority() const;
+	void set_priority(int p_priority);
+	int get_priority() const;
 
 	void set_monitoring(bool p_enable);
 	bool is_monitoring() const;
