@@ -37,6 +37,9 @@
 #include "core/templates/local_vector.h"
 #include "core/templates/rb_set.h"
 
+template <typename T>
+class TypedArray;
+
 class ProjectSettings : public Object {
 	GDCLASS(ProjectSettings, Object);
 	_THREAD_SAFE_CLASS_
@@ -99,6 +102,9 @@ protected:
 
 	HashMap<StringName, AutoloadInfo> autoloads;
 
+	Array global_class_list;
+	bool is_global_class_list_loaded = false;
+
 	String project_data_dir_name;
 
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -141,7 +147,7 @@ public:
 
 	void set_setting(const String &p_setting, const Variant &p_value);
 	Variant get_setting(const String &p_setting, const Variant &p_default_value = Variant()) const;
-	Array get_global_class_list();
+	TypedArray<Dictionary> get_global_class_list();
 	void store_global_class_list(const Array &p_classes);
 	String get_global_class_list_path() const;
 
