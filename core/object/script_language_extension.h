@@ -241,6 +241,16 @@ public:
 		}
 	}
 
+	GDVIRTUAL0RC(Vector<String>, _get_doc_comment_delimiters)
+
+	virtual void get_doc_comment_delimiters(List<String> *p_words) const override {
+		Vector<String> ret;
+		GDVIRTUAL_CALL(_get_doc_comment_delimiters, ret);
+		for (int i = 0; i < ret.size(); i++) {
+			p_words->push_back(ret[i]);
+		}
+	}
+
 	GDVIRTUAL0RC(Vector<String>, _get_string_delimiters)
 
 	virtual void get_string_delimiters(List<String> *p_words) const override {

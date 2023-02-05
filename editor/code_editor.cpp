@@ -951,6 +951,8 @@ void CodeTextEditor::_complete_request() {
 			font_color = get_theme_color(e.theme_color_name, SNAME("Editor"));
 		} else if (e.insert_text.begins_with("\"") || e.insert_text.begins_with("\'")) {
 			font_color = completion_string_color;
+		} else if (e.insert_text.begins_with("##") || e.insert_text.begins_with("///")) {
+			font_color = completion_doc_comment_color;
 		} else if (e.insert_text.begins_with("#") || e.insert_text.begins_with("//")) {
 			font_color = completion_comment_color;
 		}
@@ -1026,6 +1028,7 @@ void CodeTextEditor::update_editor_settings() {
 	completion_font_color = EDITOR_GET("text_editor/theme/highlighting/completion_font_color");
 	completion_string_color = EDITOR_GET("text_editor/theme/highlighting/string_color");
 	completion_comment_color = EDITOR_GET("text_editor/theme/highlighting/comment_color");
+	completion_doc_comment_color = EDITOR_GET("text_editor/theme/highlighting/doc_comment_color");
 
 	// Appearance: Caret
 	text_editor->set_caret_type((TextEdit::CaretType)EDITOR_GET("text_editor/appearance/caret/type").operator int());
