@@ -40,6 +40,7 @@
 #include "scene/gui/line_edit.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/option_button.h"
+#include "scene/gui/panel.h"
 #include "scene/gui/popup.h"
 #include "scene/gui/separator.h"
 #include "scene/gui/slider.h"
@@ -111,7 +112,12 @@ private:
 
 	Vector<ColorMode *> modes;
 
-	Control *screen = nullptr;
+	Popup *picker_window = nullptr;
+	TextureRect *picker_texture_rect = nullptr;
+	Panel *picker_preview = nullptr;
+	Label *picker_preview_label = nullptr;
+	Ref<StyleBoxFlat> picker_preview_style_box;
+	Color picker_color;
 	Control *uv_edit = nullptr;
 	Control *w_edit = nullptr;
 	AspectRatioContainer *wheel_edit = nullptr;
@@ -211,10 +217,10 @@ private:
 	void _line_edit_input(const Ref<InputEvent> &p_event);
 	void _preset_input(const Ref<InputEvent> &p_event, const Color &p_color);
 	void _recent_preset_pressed(const bool pressed, ColorPresetButton *p_preset);
-	void _screen_input(const Ref<InputEvent> &p_event);
+	void _picker_texture_input(const Ref<InputEvent> &p_event);
 	void _text_changed(const String &p_new_text);
 	void _add_preset_pressed();
-	void _screen_pick_pressed();
+	void _pick_button_pressed();
 	void _html_focus_exit();
 
 	inline int _get_preset_size();
