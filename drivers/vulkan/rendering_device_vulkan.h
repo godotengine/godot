@@ -786,6 +786,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		Vector<uint32_t> set_formats;
 		VkPipelineLayout pipeline_layout = VK_NULL_HANDLE; // Not owned, needed for push constants.
 		VkPipeline pipeline = VK_NULL_HANDLE;
+		List<VkPipeline> pipeline_libraries; //only used when graphics pipeline library feature is enabled
 		uint32_t push_constant_size = 0;
 		uint32_t push_constant_stages_mask = 0;
 	};
@@ -804,6 +805,109 @@ class RenderingDeviceVulkan : public RenderingDevice {
 
 	RID_Owner<ComputePipeline, true> compute_pipeline_owner;
 
+	struct PipelineLibrary{
+		struct Stage{
+			VkGraphicsPipelineCreateInfo pipeline_stage_info = {};
+			VkPipeline pipeline = VK_NULL_HANDLE;
+
+			bool operator==(const Stage &p_key) const {
+				VkGraphicsPipelineCreateInfo pci = pipeline_stage_info;
+				VkGraphicsPipelineCreateInfo pcik = p_key.pipeline_stage_info;
+				if (pci.pInputAssemblyState != pcik.pInputAssemblyState){
+					return false;
+				}
+				if (pci.pVertexInputState != pcik.pVertexInputState){
+					return false;
+				}
+				if (pci.pViewportState != pcik.pViewportState){
+					return false;
+				}
+				if (pci.pDynamicState != pcik.pDynamicState){
+					return false;
+				}
+				if (pci.pTessellationState != pcik.pTessellationState){
+					return false;
+				}
+				if (pci.pStages != pcik.pStages){
+					return false;
+				}
+				if (pci.pDepthStencilState != pcik.pDepthStencilState){
+					return false;
+				}
+				if (pci.pMultisampleState != pcik.pMultisampleState){
+					return false;
+				}
+				if (pci.pColorBlendState != pcik.pColorBlendState){
+					return false;
+				}
+				if (pci.pRasterizationState != pcik.pRasterizationState){
+					return false;
+				}
+				if (pci.layout != pcik.layout){
+					return false;
+				}
+				if(pci.renderPass != pcik.renderPass){
+					return false;
+				}
+				if(pci.subpass != pcik.subpass){
+					return false;
+				}
+				if(pci.pStages != pcik.pStages){
+					return false;
+				}
+				return true; // They are equal.
+			}
+			bool operator!=(const Stage &p_key) const {
+				VkGraphicsPipelineCreateInfo pci = pipeline_stage_info;
+				VkGraphicsPipelineCreateInfo pcik = p_key.pipeline_stage_info;
+				if (pci.pInputAssemblyState != pcik.pInputAssemblyState){
+					return true;
+				}
+				if (pci.pVertexInputState != pcik.pVertexInputState){
+					return true;
+				}
+				if (pci.pViewportState != pcik.pViewportState){
+					return true;
+				}
+				if (pci.pDynamicState != pcik.pDynamicState){
+					return true;
+				}
+				if (pci.pTessellationState != pcik.pTessellationState){
+					return true;
+				}
+				if (pci.pStages != pcik.pStages){
+					return true;
+				}
+				if (pci.pDepthStencilState != pcik.pDepthStencilState){
+					return true;
+				}
+				if (pci.pMultisampleState != pcik.pMultisampleState){
+					return true;
+				}
+				if (pci.pColorBlendState != pcik.pColorBlendState){
+					return true;
+				}
+				if (pci.pRasterizationState != pcik.pRasterizationState){
+					return true;
+				}
+				if (pci.layout != pcik.layout){
+					return true;
+				}
+				if(pci.renderPass != pcik.renderPass){
+					return true;
+				}
+				if(pci.subpass != pcik.subpass){
+					return true;
+				}
+				if(pci.pStages != pcik.pStages){
+					return true;
+				}
+				return false; // They are equal.
+			}
+		};
+		Vector<Stage> stages;
+	};
+	HashMap<RID,PipelineLibrary> pipeline_library_cache;
 	/*******************/
 	/**** DRAW LIST ****/
 	/*******************/
@@ -983,6 +1087,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		List<UniformSet> uniform_sets_to_dispose_of;
 		List<RenderPipeline> render_pipelines_to_dispose_of;
 		List<ComputePipeline> compute_pipelines_to_dispose_of;
+		List<VkPipeline> pipeline_libraries_to_dispose_of;
 
 		VkCommandPool command_pool = VK_NULL_HANDLE;
 		VkCommandBuffer setup_command_buffer = VK_NULL_HANDLE; // Used at the beginning of every frame for set-up.
