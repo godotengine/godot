@@ -6118,20 +6118,22 @@ int64_t TextServerAdvanced::_is_confusable(const String &p_string, const PackedS
 	Vector<UChar *> skeletons;
 	skeletons.resize(p_dict.size());
 
-	USpoofChecker *sc = uspoof_open(&status);
-	uspoof_setChecks(sc, USPOOF_CONFUSABLE, &status);
+	if (sc_conf == nullptr) {
+		sc_conf = uspoof_open(&status);
+		uspoof_setChecks(sc_conf, USPOOF_CONFUSABLE, &status);
+	}
 	for (int i = 0; i < p_dict.size(); i++) {
 		Char16String word = p_dict[i].utf16();
-		int32_t len = uspoof_getSkeleton(sc, 0, word.get_data(), -1, NULL, 0, &status);
+		int32_t len = uspoof_getSkeleton(sc_conf, 0, word.get_data(), -1, NULL, 0, &status);
 		skeletons.write[i] = (UChar *)memalloc(++len * sizeof(UChar));
 		status = U_ZERO_ERROR;
-		uspoof_getSkeleton(sc, 0, word.get_data(), -1, skeletons.write[i], len, &status);
+		uspoof_getSkeleton(sc_conf, 0, word.get_data(), -1, skeletons.write[i], len, &status);
 	}
 
-	int32_t len = uspoof_getSkeleton(sc, 0, utf16.get_data(), -1, NULL, 0, &status);
+	int32_t len = uspoof_getSkeleton(sc_conf, 0, utf16.get_data(), -1, NULL, 0, &status);
 	UChar *skel = (UChar *)memalloc(++len * sizeof(UChar));
 	status = U_ZERO_ERROR;
-	uspoof_getSkeleton(sc, 0, utf16.get_data(), -1, skel, len, &status);
+	uspoof_getSkeleton(sc_conf, 0, utf16.get_data(), -1, skel, len, &status);
 	for (int i = 0; i < skeletons.size(); i++) {
 		if (u_strcmp(skel, skeletons[i]) == 0) {
 			match_index = i;
@@ -6143,7 +6145,6 @@ int64_t TextServerAdvanced::_is_confusable(const String &p_string, const PackedS
 	for (int i = 0; i < skeletons.size(); i++) {
 		memfree(skeletons.write[i]);
 	}
-	uspoof_close(sc);
 
 	ERR_FAIL_COND_V_MSG(U_FAILURE(status), -1, u_errorName(status));
 
@@ -6159,19 +6160,18 @@ bool TextServerAdvanced::_spoof_check(const String &p_string) const {
 	UErrorCode status = U_ZERO_ERROR;
 	Char16String utf16 = p_string.utf16();
 
-	USet *allowed = uset_openEmpty();
-	uset_addAll(allowed, uspoof_getRecommendedSet(&status));
-	uset_addAll(allowed, uspoof_getInclusionSet(&status));
+	if (allowed == nullptr) {
+		allowed = uset_openEmpty();
+		uset_addAll(allowed, uspoof_getRecommendedSet(&status));
+		uset_addAll(allowed, uspoof_getInclusionSet(&status));
+	}
+	if (sc_spoof == nullptr) {
+		sc_spoof = uspoof_open(&status);
+		uspoof_setAllowedChars(sc_spoof, allowed, &status);
+		uspoof_setRestrictionLevel(sc_spoof, USPOOF_MODERATELY_RESTRICTIVE);
+	}
 
-	USpoofChecker *sc = uspoof_open(&status);
-	uspoof_setAllowedChars(sc, allowed, &status);
-	uspoof_setRestrictionLevel(sc, USPOOF_MODERATELY_RESTRICTIVE);
-
-	int32_t bitmask = uspoof_check(sc, utf16.get_data(), -1, NULL, &status);
-
-	uspoof_close(sc);
-	uset_close(allowed);
-
+	int32_t bitmask = uspoof_check(sc_spoof, utf16.get_data(), -1, NULL, &status);
 	ERR_FAIL_COND_V_MSG(U_FAILURE(status), false, u_errorName(status));
 
 	return (bitmask != 0);
@@ -6587,5 +6587,17 @@ TextServerAdvanced::~TextServerAdvanced() {
 		FT_Done_FreeType(ft_library);
 	}
 #endif
+	if (sc_spoof != nullptr) {
+		uspoof_close(sc_spoof);
+		sc_spoof = nullptr;
+	}
+	if (sc_conf != nullptr) {
+		uspoof_close(sc_conf);
+		sc_conf = nullptr;
+	}
+	if (allowed != nullptr) {
+		uset_close(allowed);
+		allowed = nullptr;
+	}
 	u_cleanup();
 }
