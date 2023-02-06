@@ -389,7 +389,7 @@ Rect2 AnimationTrackEditSpriteFrame::get_key_rect(int p_index, float p_pixels_se
 
 		size = texture->get_size();
 
-		if (bool(object->call("is_region"))) {
+		if (bool(object->call("is_region_enabled"))) {
 			size = Rect2(object->call("get_region_rect")).size;
 		}
 
@@ -479,7 +479,7 @@ void AnimationTrackEditSpriteFrame::draw_key(int p_index, float p_pixels_sec, in
 
 		region.size = texture->get_size();
 
-		if (bool(object->call("is_region"))) {
+		if (bool(object->call("is_region_enabled"))) {
 			region = Rect2(object->call("get_region_rect"));
 		}
 
