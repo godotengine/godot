@@ -1702,12 +1702,12 @@ void EditorExportPlatformAndroid::get_export_options(List<ExportOption> *r_optio
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/debug", PROPERTY_HINT_GLOBAL_FILE, "*.apk"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, "*.apk"), ""));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "custom_build/use_custom_build"), false));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "custom_build/export_format", PROPERTY_HINT_ENUM, "Export APK,Export AAB"), EXPORT_FORMAT_APK));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "gradle_build/use_gradle_build"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "gradle_build/export_format", PROPERTY_HINT_ENUM, "Export APK,Export AAB"), EXPORT_FORMAT_APK));
 	// Using String instead of int to default to an empty string (no override) with placeholder for instructions (see GH-62465).
 	// This implies doing validation that the string is a proper int.
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_build/min_sdk", PROPERTY_HINT_PLACEHOLDER_TEXT, vformat("%d (default)", DEFAULT_MIN_SDK_VERSION)), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_build/target_sdk", PROPERTY_HINT_PLACEHOLDER_TEXT, vformat("%d (default)", DEFAULT_TARGET_SDK_VERSION)), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "gradle_build/min_sdk", PROPERTY_HINT_PLACEHOLDER_TEXT, vformat("%d (default)", DEFAULT_MIN_SDK_VERSION)), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "gradle_build/target_sdk", PROPERTY_HINT_PLACEHOLDER_TEXT, vformat("%d (default)", DEFAULT_TARGET_SDK_VERSION)), ""));
 
 	Vector<PluginConfigAndroid> plugins_configs = get_plugins();
 	for (int i = 0; i < plugins_configs.size(); i++) {
@@ -2132,11 +2132,11 @@ String EditorExportPlatformAndroid::get_apksigner_path(int p_target_sdk, bool p_
 bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error, bool &r_missing_templates) const {
 	String err;
 	bool valid = false;
-	const bool custom_build_enabled = p_preset->get("custom_build/use_custom_build");
+	const bool gradle_build_enabled = p_preset->get("gradle_build/use_gradle_build");
 
 	// Look for export templates (first official, and if defined custom templates).
 
-	if (!custom_build_enabled) {
+	if (!gradle_build_enabled) {
 		String template_err;
 		bool dvalid = false;
 		bool rvalid = false;
@@ -2243,7 +2243,7 @@ bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<Edito
 			valid = false;
 		}
 
-		String target_sdk_version = p_preset->get("custom_build/target_sdk");
+		String target_sdk_version = p_preset->get("gradle_build/target_sdk");
 		if (!target_sdk_version.is_valid_int()) {
 			target_sdk_version = itos(DEFAULT_TARGET_SDK_VERSION);
 		}
@@ -2267,7 +2267,7 @@ bool EditorExportPlatformAndroid::has_valid_export_configuration(const Ref<Edito
 bool EditorExportPlatformAndroid::has_valid_project_configuration(const Ref<EditorExportPreset> &p_preset, String &r_error) const {
 	String err;
 	bool valid = true;
-	const bool custom_build_enabled = p_preset->get("custom_build/use_custom_build");
+	const bool gradle_build_enabled = p_preset->get("gradle_build/use_gradle_build");
 
 	// Validate the project configuration.
 	bool apk_expansion = p_preset->get("apk_expansion/enable");
@@ -2296,11 +2296,11 @@ bool EditorExportPlatformAndroid::has_valid_project_configuration(const Ref<Edit
 		err += etc_error;
 	}
 
-	// Ensure that `Use Custom Build` is enabled if a plugin is selected.
+	// Ensure that `Use Gradle Build` is enabled if a plugin is selected.
 	String enabled_plugins_names = PluginConfigAndroid::get_plugins_names(get_enabled_plugins(p_preset));
-	if (!enabled_plugins_names.is_empty() && !custom_build_enabled) {
+	if (!enabled_plugins_names.is_empty() && !gradle_build_enabled) {
 		valid = false;
-		err += TTR("\"Use Custom Build\" must be enabled to use the plugins.");
+		err += TTR("\"Use Gradle Build\" must be enabled to use the plugins.");
 		err += "\n";
 	}
 
@@ -2308,9 +2308,9 @@ bool EditorExportPlatformAndroid::has_valid_project_configuration(const Ref<Edit
 	int xr_mode_index = p_preset->get("xr_features/xr_mode");
 	int hand_tracking = p_preset->get("xr_features/hand_tracking");
 	int passthrough_mode = p_preset->get("xr_features/passthrough");
-	if (xr_mode_index == XR_MODE_OPENXR && !custom_build_enabled) {
+	if (xr_mode_index == XR_MODE_OPENXR && !gradle_build_enabled) {
 		valid = false;
-		err += TTR("OpenXR requires \"Use Custom Build\" to be enabled");
+		err += TTR("OpenXR requires \"Use Gradle Build\" to be enabled");
 		err += "\n";
 	}
 
@@ -2328,20 +2328,20 @@ bool EditorExportPlatformAndroid::has_valid_project_configuration(const Ref<Edit
 		}
 	}
 
-	if (int(p_preset->get("custom_build/export_format")) == EXPORT_FORMAT_AAB &&
-			!custom_build_enabled) {
+	if (int(p_preset->get("gradle_build/export_format")) == EXPORT_FORMAT_AAB &&
+			!gradle_build_enabled) {
 		valid = false;
-		err += TTR("\"Export AAB\" is only valid when \"Use Custom Build\" is enabled.");
+		err += TTR("\"Export AAB\" is only valid when \"Use Gradle Build\" is enabled.");
 		err += "\n";
 	}
 
 	// Check the min sdk version.
-	String min_sdk_str = p_preset->get("custom_build/min_sdk");
+	String min_sdk_str = p_preset->get("gradle_build/min_sdk");
 	int min_sdk_int = DEFAULT_MIN_SDK_VERSION;
 	if (!min_sdk_str.is_empty()) { // Empty means no override, nothing to do.
-		if (!custom_build_enabled) {
+		if (!gradle_build_enabled) {
 			valid = false;
-			err += TTR("\"Min SDK\" can only be overridden when \"Use Custom Build\" is enabled.");
+			err += TTR("\"Min SDK\" can only be overridden when \"Use Gradle Build\" is enabled.");
 			err += "\n";
 		}
 		if (!min_sdk_str.is_valid_int()) {
@@ -2359,12 +2359,12 @@ bool EditorExportPlatformAndroid::has_valid_project_configuration(const Ref<Edit
 	}
 
 	// Check the target sdk version.
-	String target_sdk_str = p_preset->get("custom_build/target_sdk");
+	String target_sdk_str = p_preset->get("gradle_build/target_sdk");
 	int target_sdk_int = DEFAULT_TARGET_SDK_VERSION;
 	if (!target_sdk_str.is_empty()) { // Empty means no override, nothing to do.
-		if (!custom_build_enabled) {
+		if (!gradle_build_enabled) {
 			valid = false;
-			err += TTR("\"Target SDK\" can only be overridden when \"Use Custom Build\" is enabled.");
+			err += TTR("\"Target SDK\" can only be overridden when \"Use Gradle Build\" is enabled.");
 			err += "\n";
 		}
 		if (!target_sdk_str.is_valid_int()) {
@@ -2484,12 +2484,12 @@ void EditorExportPlatformAndroid::get_command_line_flags(const Ref<EditorExportP
 }
 
 Error EditorExportPlatformAndroid::sign_apk(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &export_path, EditorProgress &ep) {
-	int export_format = int(p_preset->get("custom_build/export_format"));
+	int export_format = int(p_preset->get("gradle_build/export_format"));
 	String export_label = export_format == EXPORT_FORMAT_AAB ? "AAB" : "APK";
 	String release_keystore = p_preset->get("keystore/release");
 	String release_username = p_preset->get("keystore/release_user");
 	String release_password = p_preset->get("keystore/release_password");
-	String target_sdk_version = p_preset->get("custom_build/target_sdk");
+	String target_sdk_version = p_preset->get("gradle_build/target_sdk");
 	if (!target_sdk_version.is_valid_int()) {
 		target_sdk_version = itos(DEFAULT_TARGET_SDK_VERSION);
 	}
@@ -2666,7 +2666,7 @@ String EditorExportPlatformAndroid::join_abis(const Vector<EditorExportPlatformA
 }
 
 Error EditorExportPlatformAndroid::export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags) {
-	int export_format = int(p_preset->get("custom_build/export_format"));
+	int export_format = int(p_preset->get("gradle_build/export_format"));
 	bool should_sign = p_preset->get("package/signed");
 	return export_project_helper(p_preset, p_debug, p_path, export_format, should_sign, p_flags);
 }
@@ -2679,7 +2679,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 
 	EditorProgress ep("export", TTR("Exporting for Android"), 105, true);
 
-	bool use_custom_build = bool(p_preset->get("custom_build/use_custom_build"));
+	bool use_gradle_build = bool(p_preset->get("gradle_build/use_gradle_build"));
 	bool p_give_internet = p_flags & (DEBUG_FLAG_DUMB_CLIENT | DEBUG_FLAG_REMOTE_DEBUG);
 	bool apk_expansion = p_preset->get("apk_expansion/enable");
 	Vector<ABI> enabled_abis = get_enabled_abis(p_preset);
@@ -2689,7 +2689,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 	print_verbose("- export path: " + p_path);
 	print_verbose("- export format: " + itos(export_format));
 	print_verbose("- sign build: " + bool_to_string(should_sign));
-	print_verbose("- custom build enabled: " + bool_to_string(use_custom_build));
+	print_verbose("- gradle build enabled: " + bool_to_string(use_gradle_build));
 	print_verbose("- apk expansion enabled: " + bool_to_string(apk_expansion));
 	print_verbose("- enabled abis: " + join_abis(enabled_abis, ",", false));
 	print_verbose("- export filter: " + itos(p_preset->get_export_filter()));
@@ -2729,14 +2729,14 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		return ERR_UNCONFIGURED;
 	}
 
-	if (use_custom_build) {
-		print_verbose("Starting custom build...");
+	if (use_gradle_build) {
+		print_verbose("Starting gradle build...");
 		//test that installed build version is alright
 		{
 			print_verbose("Checking build version...");
 			Ref<FileAccess> f = FileAccess::open("res://android/.build_version", FileAccess::READ);
 			if (f.is_null()) {
-				add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Trying to build from a custom built template, but no version info for it exists. Please reinstall from the 'Project' menu."));
+				add_message(EXPORT_MESSAGE_ERROR, TTR("Export"), TTR("Trying to build from a gradle built template, but no version info for it exists. Please reinstall from the 'Project' menu."));
 				return ERR_UNCONFIGURED;
 			}
 			String version = f->get_line().strip_edges();
@@ -2806,11 +2806,11 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 		String package_name = get_package_name(p_preset->get("package/unique_name"));
 		String version_code = itos(p_preset->get("version/code"));
 		String version_name = p_preset->get("version/name");
-		String min_sdk_version = p_preset->get("custom_build/min_sdk");
+		String min_sdk_version = p_preset->get("gradle_build/min_sdk");
 		if (!min_sdk_version.is_valid_int()) {
 			min_sdk_version = itos(DEFAULT_MIN_SDK_VERSION);
 		}
-		String target_sdk_version = p_preset->get("custom_build/target_sdk");
+		String target_sdk_version = p_preset->get("gradle_build/target_sdk");
 		if (!target_sdk_version.is_valid_int()) {
 			target_sdk_version = itos(DEFAULT_TARGET_SDK_VERSION);
 		}
@@ -2936,7 +2936,7 @@ Error EditorExportPlatformAndroid::export_project_helper(const Ref<EditorExportP
 			return ERR_CANT_CREATE;
 		}
 
-		print_verbose("Successfully completed Android custom build.");
+		print_verbose("Successfully completed Android gradle build.");
 		return OK;
 	}
 	// This is the start of the Legacy build system
