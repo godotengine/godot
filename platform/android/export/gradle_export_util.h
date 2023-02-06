@@ -116,7 +116,7 @@ String _get_gles_tag();
 
 String _get_screen_sizes_tag(const Ref<EditorExportPreset> &p_preset);
 
-String _get_xr_features_tag(const Ref<EditorExportPreset> &p_preset);
+String _get_xr_features_tag(const Ref<EditorExportPreset> &p_preset, bool p_uses_vulkan);
 
 String _get_activity_tag(const Ref<EditorExportPreset> &p_preset, bool p_uses_xr);
 
