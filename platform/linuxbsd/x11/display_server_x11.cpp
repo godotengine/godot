@@ -4109,7 +4109,7 @@ void DisplayServerX11::process_events() {
 
 			case FocusIn: {
 				DEBUG_LOG_X11("[%u] FocusIn window=%lu (%u), mode='%u' \n", frame, event.xfocus.window, window_id, event.xfocus.mode);
-				if (ime_window_event) {
+				if (ime_window_event || (event.xfocus.detail == NotifyInferior)) {
 					break;
 				}
 
@@ -4157,7 +4157,7 @@ void DisplayServerX11::process_events() {
 			case FocusOut: {
 				DEBUG_LOG_X11("[%u] FocusOut window=%lu (%u), mode='%u' \n", frame, event.xfocus.window, window_id, event.xfocus.mode);
 				WindowData &wd = windows[window_id];
-				if (wd.ime_active && event.xfocus.detail == NotifyInferior) {
+				if (ime_window_event || (event.xfocus.detail == NotifyInferior)) {
 					break;
 				}
 				if (wd.ime_active) {
