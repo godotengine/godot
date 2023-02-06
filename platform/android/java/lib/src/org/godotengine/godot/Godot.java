@@ -258,13 +258,13 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 	 */
 	@Keep
 	private boolean onVideoInit() {
-		final Activity activity = getActivity();
+		final Activity activity = requireActivity();
 		containerLayout = new FrameLayout(activity);
 		containerLayout.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 
 		// GodotEditText layout
 		GodotEditText editText = new GodotEditText(activity);
-		editText.setLayoutParams(new ViewGroup.LayoutParams(LayoutParams.MATCH_PARENT,
+		editText.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT,
 				(int)getResources().getDimension(R.dimen.text_edit_height)));
 		// ...add to FrameLayout
 		containerLayout.addView(editText);
@@ -279,6 +279,11 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 		if (renderer.equals("gl_compatibility")) {
 			mRenderView = new GodotGLRenderView(activity, this, xrMode, use_debug_opengl);
 		} else {
+			if (!meetsVulkanRequirements(activity.getPackageManager())) {
+				Log.e(TAG, "Missing requirements for vulkan support! Aborting...");
+				alert(R.string.error_missing_vulkan_requirements_message, R.string.text_error_title, this::forceQuit);
+				return false;
+			}
 			mRenderView = new GodotVulkanRenderView(activity, this);
 		}
 
@@ -315,6 +320,17 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 			}
 		}
 		return true;
+	}
+
+	/**
+	 * Returns true if the device meets the base requirements for Vulkan support, false otherwise.
+	 */
+	private boolean meetsVulkanRequirements(@Nullable PackageManager packageManager) {
+		if (packageManager == null) {
+			return false;
+		}
+
+		return Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && packageManager.hasSystemFeature(PackageManager.FEATURE_VULKAN_HARDWARE_LEVEL, 1);
 	}
 
 	public void setKeepScreenOn(final boolean p_enabled) {

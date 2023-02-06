@@ -252,6 +252,7 @@ static const char *APK_ASSETS_DIRECTORY = "res://android/build/assets";
 static const char *AAB_ASSETS_DIRECTORY = "res://android/build/assetPacks/installTime/src/main/assets";
 
 static const int DEFAULT_MIN_SDK_VERSION = 21; // Should match the value in 'platform/android/java/app/config.gradle#minSdk'
+static const int VULKAN_MIN_SDK_VERSION = 24;
 static const int DEFAULT_TARGET_SDK_VERSION = 32; // Should match the value in 'platform/android/java/app/config.gradle#targetSdk'
 
 #ifndef ANDROID_ENABLED
@@ -1055,6 +1056,15 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 					Vector<String> feature_names;
 					Vector<bool> feature_required_list;
 					Vector<int> feature_versions;
+
+					String current_renderer = GLOBAL_GET("rendering/renderer/rendering_method.mobile");
+					bool has_vulkan = current_renderer == "forward_plus" || current_renderer == "mobile";
+					if (has_vulkan) {
+						// Require vulkan hardware level 1 support
+						feature_names.push_back("android.hardware.vulkan.level");
+						feature_required_list.push_back(true);
+						feature_versions.push_back(1);
+					}
 
 					if (feature_names.size() > 0) {
 						ofs += 24; // skip over end tag
@@ -2370,6 +2380,19 @@ bool EditorExportPlatformAndroid::has_valid_project_configuration(const Ref<Edit
 	if (target_sdk_int < min_sdk_int) {
 		valid = false;
 		err += TTR("\"Target SDK\" version must be greater or equal to \"Min SDK\" version.");
+		err += "\n";
+	}
+
+	String current_renderer = GLOBAL_GET("rendering/renderer/rendering_method.mobile");
+	bool uses_vulkan = current_renderer == "forward_plus" || current_renderer == "mobile";
+	if (current_renderer == "forward_plus") {
+		// Warning only, so don't override `valid`.
+		err += vformat(TTR("The \"%s\" renderer is designed for Desktop devices, and is not suitable for Android devices."), current_renderer);
+		err += "\n";
+	}
+	if (uses_vulkan && min_sdk_int < VULKAN_MIN_SDK_VERSION) {
+		// Warning only, so don't override `valid`.
+		err += vformat(TTR("\"Min SDK\" should be greater or equal to %d for the \"%s\" renderer."), VULKAN_MIN_SDK_VERSION, current_renderer);
 		err += "\n";
 	}
 
