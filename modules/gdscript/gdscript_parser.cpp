@@ -3619,7 +3619,7 @@ bool GDScriptParser::icon_annotation(const AnnotationNode *p_annotation, Node *p
 bool GDScriptParser::onready_annotation(const AnnotationNode *p_annotation, Node *p_node) {
 	ERR_FAIL_COND_V_MSG(p_node->type != Node::VARIABLE, false, R"("@onready" annotation can only be applied to class variables.)");
 
-	if (head && !ClassDB::is_parent_class(head->get_datatype().native_type, SNAME("Node"))) {
+	if (current_class && !ClassDB::is_parent_class(current_class->get_datatype().native_type, SNAME("Node"))) {
 		push_error(R"("@onready" can only be used in classes that inherit "Node".)", p_annotation);
 	}
 
