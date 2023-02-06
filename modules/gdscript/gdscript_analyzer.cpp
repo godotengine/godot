@@ -2471,30 +2471,27 @@ void GDScriptAnalyzer::reduce_await(GDScriptParser::AwaitNode *p_await) {
 		return;
 	}
 
-	GDScriptParser::DataType awaiting_type;
-
 	if (p_await->to_await->type == GDScriptParser::Node::CALL) {
 		reduce_call(static_cast<GDScriptParser::CallNode *>(p_await->to_await), true);
-		awaiting_type = p_await->to_await->get_datatype();
 	} else {
 		reduce_expression(p_await->to_await);
 	}
 
-	if (p_await->to_await->is_constant) {
+	GDScriptParser::DataType await_type = p_await->to_await->get_datatype();
+	// We cannot infer the type of the result of waiting for a signal.
+	if (await_type.is_hard_type() && await_type.kind == GDScriptParser::DataType::BUILTIN && await_type.builtin_type == Variant::SIGNAL) {
+		await_type.kind = GDScriptParser::DataType::VARIANT;
+		await_type.type_source = GDScriptParser::DataType::UNDETECTED;
+	} else if (p_await->to_await->is_constant) {
 		p_await->is_constant = p_await->to_await->is_constant;
 		p_await->reduced_value = p_await->to_await->reduced_value;
-
-		awaiting_type = p_await->to_await->get_datatype();
-	} else {
-		awaiting_type.kind = GDScriptParser::DataType::VARIANT;
-		awaiting_type.type_source = GDScriptParser::DataType::UNDETECTED;
 	}
-
-	p_await->set_datatype(awaiting_type);
+	await_type.is_coroutine = false;
+	p_await->set_datatype(await_type);
 
 #ifdef DEBUG_ENABLED
-	awaiting_type = p_await->to_await->get_datatype();
-	if (!(awaiting_type.has_no_type() || awaiting_type.is_coroutine || awaiting_type.builtin_type == Variant::SIGNAL)) {
+	GDScriptParser::DataType to_await_type = p_await->to_await->get_datatype();
+	if (!(to_await_type.has_no_type() || to_await_type.is_coroutine || to_await_type.builtin_type == Variant::SIGNAL)) {
 		parser->push_warning(p_await, GDScriptWarning::REDUNDANT_AWAIT);
 	}
 #endif
