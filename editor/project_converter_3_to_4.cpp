@@ -30,12 +30,13 @@
 
 #include "project_converter_3_to_4.h"
 
-#include "modules/modules_enabled.gen.h"
-
 #ifndef DISABLE_DEPRECATED
-#ifdef MODULE_REGEX_ENABLED
 
 const int ERROR_CODE = 77;
+
+#include "modules/modules_enabled.gen.h" // For regex.
+
+#ifdef MODULE_REGEX_ENABLED
 
 #include "modules/regex/regex.h"
 
