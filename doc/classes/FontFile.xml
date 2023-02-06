@@ -17,13 +17,13 @@
 		[codeblocks]
 		[gdscript]
 		var f = load("res://BarlowCondensed-Bold.ttf")
-		$"Label".set("custom_fonts/font", f)
-		$"Label".set("custom_fonts/font_size", 64)
+		$Label.add_theme_font_override("font", f)
+		$Label.add_theme_font_size_override("font_size", 64)
 		[/gdscript]
 		[csharp]
 		var f = ResourceLoader.Load&lt;FontFile&gt;("res://BarlowCondensed-Bold.ttf");
-		GetNode("Label").Set("custom_fonts/font", f);
-		GetNode("Label").Set("custom_font_sizes/font_size", 64);
+		GetNode("Label").AddThemeFontOverride("font", f);
+		GetNode("Label").AddThemeFontSizeOverride("font_size", 64);
 		[/csharp]
 		[/codeblocks]
 	</description>
@@ -88,6 +88,7 @@
 			<param index="0" name="cache_index" type="int" />
 			<param index="1" name="size" type="int" />
 			<description>
+				Returns the font descent (number of pixels below the baseline).
 			</description>
 		</method>
 		<method name="get_cache_scale" qualifiers="const">
@@ -95,6 +96,7 @@
 			<param index="0" name="cache_index" type="int" />
 			<param index="1" name="size" type="int" />
 			<description>
+				Returns scaling factor of the color bitmap font.
 			</description>
 		</method>
 		<method name="get_cache_underline_position" qualifiers="const">
@@ -102,6 +104,7 @@
 			<param index="0" name="cache_index" type="int" />
 			<param index="1" name="size" type="int" />
 			<description>
+				Returns pixel offset of the underline below the baseline.
 			</description>
 		</method>
 		<method name="get_cache_underline_thickness" qualifiers="const">
@@ -109,6 +112,7 @@
 			<param index="0" name="cache_index" type="int" />
 			<param index="1" name="size" type="int" />
 			<description>
+				Returns thickness of the underline in pixels.
 			</description>
 		</method>
 		<method name="get_embolden" qualifiers="const">
@@ -377,6 +381,7 @@
 			<param index="1" name="size" type="int" />
 			<param index="2" name="ascent" type="float" />
 			<description>
+				Sets the font ascent (number of pixels above the baseline).
 			</description>
 		</method>
 		<method name="set_cache_descent">
@@ -385,6 +390,7 @@
 			<param index="1" name="size" type="int" />
 			<param index="2" name="descent" type="float" />
 			<description>
+				Sets the font descent (number of pixels below the baseline).
 			</description>
 		</method>
 		<method name="set_cache_scale">
@@ -393,6 +399,7 @@
 			<param index="1" name="size" type="int" />
 			<param index="2" name="scale" type="float" />
 			<description>
+				Sets scaling factor of the color bitmap font.
 			</description>
 		</method>
 		<method name="set_cache_underline_position">
@@ -401,6 +408,7 @@
 			<param index="1" name="size" type="int" />
 			<param index="2" name="underline_position" type="float" />
 			<description>
+				Sets pixel offset of the underline below the baseline.
 			</description>
 		</method>
 		<method name="set_cache_underline_thickness">
@@ -409,6 +417,7 @@
 			<param index="1" name="size" type="int" />
 			<param index="2" name="underline_thickness" type="float" />
 			<description>
+				Sets thickness of the underline in pixels.
 			</description>
 		</method>
 		<method name="set_embolden">
