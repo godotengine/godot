@@ -614,7 +614,7 @@ void Viewport::_process_picking() {
 				physics_last_mouse_state.mouse_mask.clear_flag(mouse_button_to_mask(mb->get_button_index()));
 
 				// If touch mouse raised, assume we don't know last mouse pos until new events come
-				if (mb->get_device() == InputEvent::DEVICE_ID_TOUCH_MOUSE) {
+				if (mb->get_device() == InputEvent::DEVICE_ID_EMULATION) {
 					physics_has_last_mousepos = false;
 				}
 			}
@@ -2290,6 +2290,7 @@ void Viewport::_drop_mouse_focus() {
 			mb->set_global_position(c->get_local_mouse_position());
 			mb->set_button_index(MouseButton(i + 1));
 			mb->set_pressed(false);
+			mb->set_device(InputEvent::DEVICE_ID_INTERNAL);
 			c->_call_gui_input(mb);
 		}
 	}
@@ -2401,6 +2402,7 @@ void Viewport::_post_gui_grab_click_focus() {
 				mb->set_position(click);
 				mb->set_button_index(MouseButton(i + 1));
 				mb->set_pressed(false);
+				mb->set_device(InputEvent::DEVICE_ID_INTERNAL);
 				gui.mouse_focus->_call_gui_input(mb);
 			}
 		}
@@ -2418,6 +2420,7 @@ void Viewport::_post_gui_grab_click_focus() {
 				mb->set_position(click);
 				mb->set_button_index(MouseButton(i + 1));
 				mb->set_pressed(true);
+				mb->set_device(InputEvent::DEVICE_ID_INTERNAL);
 				MessageQueue::get_singleton()->push_callable(callable_mp(gui.mouse_focus, &Control::_call_gui_input), mb);
 			}
 		}

@@ -647,6 +647,7 @@ void Window::update_mouse_cursor_shape() {
 	mm.instantiate();
 	mm->set_position(pos);
 	mm->set_global_position(xform.xform(pos));
+	mm->set_device(InputEvent::DEVICE_ID_INTERNAL);
 	push_input(mm);
 }
 
