@@ -37,7 +37,6 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <stdio.h>
 
 #ifndef __cplusplus
 typedef uint32_t char32_t;
