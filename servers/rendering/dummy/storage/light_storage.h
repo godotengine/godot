@@ -80,6 +80,7 @@ public:
 	virtual RS::LightBakeMode light_get_bake_mode(RID p_light) override { return RS::LIGHT_BAKE_DISABLED; }
 	virtual uint32_t light_get_max_sdfgi_cascade(RID p_light) override { return 0; }
 	virtual uint64_t light_get_version(RID p_light) const override { return 0; }
+	virtual uint32_t light_get_cull_mask(RID p_light) const override { return 0; }
 
 	/* LIGHT INSTANCE API */
 

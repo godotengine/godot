@@ -118,6 +118,7 @@ public:
 	virtual void decal_set_normal_fade(RID p_decal, float p_fade) = 0;
 
 	virtual AABB decal_get_aabb(RID p_decal) const = 0;
+	virtual uint32_t decal_get_cull_mask(RID p_decal) const = 0;
 
 	virtual void texture_add_to_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) = 0;
 	virtual void texture_remove_from_decal_atlas(RID p_texture, bool p_panorama_to_dp = false) = 0;

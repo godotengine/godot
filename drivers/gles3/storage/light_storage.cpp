@@ -311,6 +311,13 @@ uint64_t LightStorage::light_get_version(RID p_light) const {
 	return light->version;
 }
 
+uint32_t LightStorage::light_get_cull_mask(RID p_light) const {
+	const Light *light = light_owner.get_or_null(p_light);
+	ERR_FAIL_COND_V(!light, 0);
+
+	return light->cull_mask;
+}
+
 AABB LightStorage::light_get_aabb(RID p_light) const {
 	const Light *light = light_owner.get_or_null(p_light);
 	ERR_FAIL_COND_V(!light, AABB());
