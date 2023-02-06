@@ -254,7 +254,7 @@ String _get_screen_sizes_tag(const Ref<EditorExportPreset> &p_preset) {
 	return manifest_screen_sizes;
 }
 
-String _get_xr_features_tag(const Ref<EditorExportPreset> &p_preset) {
+String _get_xr_features_tag(const Ref<EditorExportPreset> &p_preset, bool p_uses_vulkan) {
 	String manifest_xr_features;
 	int xr_mode_index = (int)(p_preset->get("xr_features/xr_mode"));
 	bool uses_xr = xr_mode_index == XR_MODE_OPENXR;
@@ -274,9 +274,7 @@ String _get_xr_features_tag(const Ref<EditorExportPreset> &p_preset) {
 		}
 	}
 
-	String current_renderer = GLOBAL_GET("rendering/renderer/rendering_method.mobile");
-	bool has_vulkan = current_renderer == "forward_plus" || current_renderer == "mobile";
-	if (has_vulkan) {
+	if (p_uses_vulkan) {
 		manifest_xr_features += "    <uses-feature tools:node=\"replace\" android:name=\"android.hardware.vulkan.level\" android:required=\"true\" android:version=\"1\" />\n";
 	}
 	return manifest_xr_features;

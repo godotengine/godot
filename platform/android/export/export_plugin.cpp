@@ -800,6 +800,12 @@ bool EditorExportPlatformAndroid::_has_manage_external_storage_permission(const 
 	return p_permissions.find("android.permission.MANAGE_EXTERNAL_STORAGE") != -1;
 }
 
+bool EditorExportPlatformAndroid::_uses_vulkan() {
+	String current_renderer = GLOBAL_GET("rendering/renderer/rendering_method.mobile");
+	bool uses_vulkan = (current_renderer == "forward_plus" || current_renderer == "mobile") && GLOBAL_GET("rendering/rendering_device/driver.android") == "vulkan";
+	return uses_vulkan;
+}
+
 void EditorExportPlatformAndroid::_get_permissions(const Ref<EditorExportPreset> &p_preset, bool p_give_internet, Vector<String> &r_permissions) {
 	const char **aperms = android_perms;
 	while (*aperms) {
@@ -854,7 +860,7 @@ void EditorExportPlatformAndroid::_write_tmp_manifest(const Ref<EditorExportPres
 		}
 	}
 
-	manifest_text += _get_xr_features_tag(p_preset);
+	manifest_text += _get_xr_features_tag(p_preset, _uses_vulkan());
 	manifest_text += _get_application_tag(p_preset, _has_read_write_storage_permission(perms));
 	manifest_text += "</manifest>\n";
 	String manifest_path = vformat("res://android/build/src/%s/AndroidManifest.xml", (p_debug ? "debug" : "release"));
@@ -1057,9 +1063,7 @@ void EditorExportPlatformAndroid::_fix_manifest(const Ref<EditorExportPreset> &p
 					Vector<bool> feature_required_list;
 					Vector<int> feature_versions;
 
-					String current_renderer = GLOBAL_GET("rendering/renderer/rendering_method.mobile");
-					bool has_vulkan = current_renderer == "forward_plus" || current_renderer == "mobile";
-					if (has_vulkan) {
+					if (_uses_vulkan()) {
 						// Require vulkan hardware level 1 support
 						feature_names.push_back("android.hardware.vulkan.level");
 						feature_required_list.push_back(true);
@@ -2384,13 +2388,12 @@ bool EditorExportPlatformAndroid::has_valid_project_configuration(const Ref<Edit
 	}
 
 	String current_renderer = GLOBAL_GET("rendering/renderer/rendering_method.mobile");
-	bool uses_vulkan = current_renderer == "forward_plus" || current_renderer == "mobile";
 	if (current_renderer == "forward_plus") {
 		// Warning only, so don't override `valid`.
 		err += vformat(TTR("The \"%s\" renderer is designed for Desktop devices, and is not suitable for Android devices."), current_renderer);
 		err += "\n";
 	}
-	if (uses_vulkan && min_sdk_int < VULKAN_MIN_SDK_VERSION) {
+	if (_uses_vulkan() && min_sdk_int < VULKAN_MIN_SDK_VERSION) {
 		// Warning only, so don't override `valid`.
 		err += vformat(TTR("\"Min SDK\" should be greater or equal to %d for the \"%s\" renderer."), VULKAN_MIN_SDK_VERSION, current_renderer);
 		err += "\n";
