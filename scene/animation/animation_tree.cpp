@@ -1546,6 +1546,10 @@ void AnimationTree::_process_graph(double p_delta) {
 							double end_ofs = a->audio_track_get_key_end_offset(i, idx);
 							double len = stream->get_length();
 
+							if (seeked) {
+								start_ofs += time - a->track_get_key_time(i, idx);
+							}
+
 							if (t->object->call(SNAME("get_stream")) != t->audio_stream) {
 								t->object->call(SNAME("set_stream"), t->audio_stream);
 								t->audio_stream_playback.unref();
