@@ -273,6 +273,12 @@ String _get_xr_features_tag(const Ref<EditorExportPreset> &p_preset) {
 			manifest_xr_features += "    <uses-feature tools:node=\"replace\" android:name=\"com.oculus.feature.PASSTHROUGH\" android:required=\"true\" />\n";
 		}
 	}
+
+	String current_renderer = GLOBAL_GET("rendering/renderer/rendering_method.mobile");
+	bool has_vulkan = current_renderer == "forward_plus" || current_renderer == "mobile";
+	if (has_vulkan) {
+		manifest_xr_features += "    <uses-feature tools:node=\"replace\" android:name=\"android.hardware.vulkan.level\" android:required=\"true\" android:version=\"1\" />\n";
+	}
 	return manifest_xr_features;
 }
 
