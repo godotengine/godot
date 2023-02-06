@@ -1900,7 +1900,7 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 	return err;
 }
 
-Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<StringName, Variant> *p_custom_options, const String &p_custom_importer) {
+Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<StringName, Variant> &p_custom_options, const String &p_custom_importer, Variant *p_generator_parameters) {
 	EditorFileSystemDirectory *fs = nullptr;
 	int cpos = -1;
 	bool found = _find_file(p_file, &fs, cpos);
@@ -1908,46 +1908,48 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 
 	//try to obtain existing params
 
-	HashMap<StringName, Variant> params;
+	HashMap<StringName, Variant> params = p_custom_options;
 	String importer_name; //empty by default though
 
 	if (!p_custom_importer.is_empty()) {
 		importer_name = p_custom_importer;
 	}
-	if (p_custom_options != nullptr) {
-		params = *p_custom_options;
-	}
 
 	ResourceUID::ID uid = ResourceUID::INVALID_ID;
-	Variant gen_params;
+	Variant generator_parameters;
+	if (p_generator_parameters) {
+		generator_parameters = *p_generator_parameters;
+	}
 
 	if (FileAccess::exists(p_file + ".import")) {
 		//use existing
-		if (p_custom_options == nullptr) {
-			Ref<ConfigFile> cf;
-			cf.instantiate();
-			Error err = cf->load(p_file + ".import");
-			if (err == OK) {
-				if (cf->has_section("params")) {
-					List<String> sk;
-					cf->get_section_keys("params", &sk);
-					for (const String &E : sk) {
+		Ref<ConfigFile> cf;
+		cf.instantiate();
+		Error err = cf->load(p_file + ".import");
+		if (err == OK) {
+			if (cf->has_section("params")) {
+				List<String> sk;
+				cf->get_section_keys("params", &sk);
+				for (const String &E : sk) {
+					if (!params.has(E)) {
 						params[E] = cf->get_value("params", E);
 					}
 				}
+			}
 
-				if (cf->has_section("remap")) {
-					if (p_custom_importer.is_empty()) {
-						importer_name = cf->get_value("remap", "importer");
-					}
+			if (cf->has_section("remap")) {
+				if (p_custom_importer.is_empty()) {
+					importer_name = cf->get_value("remap", "importer");
+				}
 
-					if (cf->has_section_key("remap", "uid")) {
-						String uidt = cf->get_value("remap", "uid");
-						uid = ResourceUID::get_singleton()->text_to_id(uidt);
-					}
+				if (cf->has_section_key("remap", "uid")) {
+					String uidt = cf->get_value("remap", "uid");
+					uid = ResourceUID::get_singleton()->text_to_id(uidt);
+				}
 
-					if (cf->has_section_key("remap", "gen_params")) {
-						gen_params = cf->get_value("remap", "gen_params");
+				if (!p_generator_parameters) {
+					if (cf->has_section_key("remap", "generator_parameters")) {
+						generator_parameters = cf->get_value("remap", "generator_parameters");
 					}
 				}
 			}
@@ -2061,8 +2063,8 @@ Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<Strin
 			f->store_line("metadata=" + meta.get_construct_string());
 		}
 
-		if (gen_params != Variant()) {
-			f->store_line("gen_params=" + gen_params.get_construct_string());
+		if (generator_parameters != Variant()) {
+			f->store_line("generator_parameters=" + generator_parameters.get_construct_string());
 		}
 
 		f->store_line("");
@@ -2164,7 +2166,7 @@ void EditorFileSystem::_find_group_files(EditorFileSystemDirectory *efd, HashMap
 }
 
 void EditorFileSystem::reimport_file_with_custom_parameters(const String &p_file, const String &p_importer, const HashMap<StringName, Variant> &p_custom_params) {
-	_reimport_file(p_file, &p_custom_params, p_importer);
+	_reimport_file(p_file, p_custom_params, p_importer);
 }
 
 void EditorFileSystem::_reimport_thread(uint32_t p_index, ImportThreadData *p_import_data) {
@@ -2301,9 +2303,9 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 	emit_signal(SNAME("resources_reimported"), reloads);
 }
 
-Error EditorFileSystem::reimport_append(const String &p_file, const HashMap<StringName, Variant> &p_custom_options, const String &p_custom_importer) {
+Error EditorFileSystem::reimport_append(const String &p_file, const HashMap<StringName, Variant> &p_custom_options, const String &p_custom_importer, Variant p_generator_parameters) {
 	ERR_FAIL_COND_V_MSG(!importing, ERR_INVALID_PARAMETER, "Can only append files to import during a current reimport process.");
-	return _reimport_file(p_file, &p_custom_options, p_custom_importer);
+	return _reimport_file(p_file, p_custom_options, p_custom_importer, &p_generator_parameters);
 }
 
 Error EditorFileSystem::_resource_import(const String &p_path) {

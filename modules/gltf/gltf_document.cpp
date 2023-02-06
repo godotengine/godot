@@ -54,6 +54,9 @@
 
 #include "modules/modules_enabled.gen.h" // For csg, gridmap.
 
+#ifdef TOOLS_ENABLED
+#include "editor/editor_file_system.h"
+#endif
 #ifdef MODULE_CSG_ENABLED
 #include "modules/csg/csg_shape.h"
 #endif // MODULE_CSG_ENABLED
@@ -3232,54 +3235,38 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_p
 				p_state->source_images.push_back(Ref<Image>());
 			} else {
 				Error err = OK;
-				bool must_import = false;
+				bool must_import = true;
+				Vector<uint8_t> img_data = img->get_data();
+				Dictionary generator_parameters;
 				String file_path = p_state->get_base_path() + "/" + p_state->filename.get_basename() + "_" + img->get_name() + ".png";
-				if (!FileAccess::exists(file_path + ".import")) {
+				if (FileAccess::exists(file_path + ".import")) {
 					Ref<ConfigFile> config;
 					config.instantiate();
-					config->set_value("remap", "importer", "texture");
-					config->set_value("remap", "type", "Texture2D");
-					// Currently, it will likely use project defaults of Detect 3D, so textures will be reimported again.
-					if (!config->has_section_key("params", "mipmaps/generate")) {
-						config->set_value("params", "mipmaps/generate", true);
+					config->load(file_path + ".import");
+					if (config->has_section_key("remap", "generator_parameters")) {
+						generator_parameters = (Dictionary)config->get_value("remap", "generator_parameters");
 					}
-
-					if (ProjectSettings::get_singleton()->has_setting("importer_defaults/texture")) {
-						//use defaults if exist
-						Dictionary importer_defaults = GLOBAL_GET("importer_defaults/texture");
-						List<Variant> importer_def_keys;
-						importer_defaults.get_key_list(&importer_def_keys);
-						for (const Variant &key : importer_def_keys) {
-							if (!config->has_section_key("params", (String)key)) {
-								config->set_value("params", (String)key, importer_defaults[key]);
-							}
-						}
+					if (!generator_parameters.has("md5")) {
+						must_import = false; // Didn't come form a gltf document; don't overwrite.
 					}
-					err = config->save(file_path + ".import");
-					ERR_FAIL_COND_V(err != OK, err);
-					must_import = true;
-				}
-				Vector<uint8_t> png_buffer = img->save_png_to_buffer();
-				if (ResourceLoader::exists(file_path)) {
-					Ref<FileAccess> file = FileAccess::open(file_path, FileAccess::READ, &err);
-					if (err == OK && file.is_valid()) {
-						Vector<uint8_t> orig_png_buffer = file->get_buffer(file->get_length());
-						if (png_buffer != orig_png_buffer) {
-							must_import = true;
-						}
+					String existing_md5 = generator_parameters["md5"];
+					unsigned char md5_hash[16];
+					CryptoCore::md5(img_data.ptr(), img_data.size(), md5_hash);
+					String new_md5 = String::hex_encode_buffer(md5_hash, 16);
+					generator_parameters["md5"] = new_md5;
+					if (new_md5 == existing_md5) {
+						must_import = false;
 					}
-				} else {
-					must_import = true;
 				}
 				if (must_import) {
-					Ref<FileAccess> file = FileAccess::open(file_path, FileAccess::WRITE, &err);
+					err = img->save_png(file_path);
 					ERR_FAIL_COND_V(err != OK, err);
-					ERR_FAIL_COND_V(file.is_null(), FAILED);
-					file->store_buffer(png_buffer);
-					file->flush();
-					file.unref();
 					// ResourceLoader::import will crash if not is_editor_hint(), so this case is protected above and will fall through to uncompressed.
-					ResourceLoader::import(file_path);
+					HashMap<StringName, Variant> custom_options;
+					custom_options[SNAME("mipmaps/generate")] = true;
+					// Will only use project settings defaults if custom_importer is empty.
+					EditorFileSystem::get_singleton()->update_file(file_path);
+					EditorFileSystem::get_singleton()->reimport_append(file_path, custom_options, String(), generator_parameters);
 				}
 				Ref<Texture2D> saved_image = ResourceLoader::load(file_path, "Texture2D");
 				if (saved_image.is_valid()) {
