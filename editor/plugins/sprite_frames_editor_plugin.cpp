@@ -1171,31 +1171,28 @@ void SpriteFramesEditor::edit(Ref<SpriteFrames> p_frames) {
 
 	if (!p_frames.is_valid()) {
 		frames.unref();
+		hide();
 		return;
 	}
 
 	frames = p_frames;
 	read_only = EditorNode::get_singleton()->is_resource_read_only(p_frames);
 
-	if (p_frames.is_valid()) {
-		if (!p_frames->has_animation(edited_anim)) {
-			List<StringName> anim_names;
-			frames->get_animation_list(&anim_names);
-			anim_names.sort_custom<StringName::AlphCompare>();
-			if (anim_names.size()) {
-				edited_anim = anim_names.front()->get();
-			} else {
-				edited_anim = StringName();
-			}
+	if (!p_frames->has_animation(edited_anim)) {
+		List<StringName> anim_names;
+		frames->get_animation_list(&anim_names);
+		anim_names.sort_custom<StringName::AlphCompare>();
+		if (anim_names.size()) {
+			edited_anim = anim_names.front()->get();
+		} else {
+			edited_anim = StringName();
 		}
-
-		_update_library();
-		// Clear zoom and split sheet texture
-		split_sheet_preview->set_texture(Ref<Texture2D>());
-		_zoom_reset();
-	} else {
-		hide();
 	}
+
+	_update_library();
+	// Clear zoom and split sheet texture
+	split_sheet_preview->set_texture(Ref<Texture2D>());
+	_zoom_reset();
 
 	add_anim->set_disabled(read_only);
 	delete_anim->set_disabled(read_only);
