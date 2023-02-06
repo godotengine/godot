@@ -181,7 +181,18 @@ Error EditorImportBlendRunner::start_blender(const String &p_python_script, bool
 
 Error EditorImportBlendRunner::do_import(const Dictionary &p_options) {
 	if (is_using_rpc()) {
-		return do_import_rpc(p_options);
+		Error err = do_import_rpc(p_options);
+		if (err != OK) {
+			// Retry without using RPC (slow, but better than the import failing completely).
+			if (err == ERR_CONNECTION_ERROR) {
+				// Disable RPC if the connection could not be established.
+				print_error(vformat("Failed to connect to Blender via RPC, switching to direct imports of .blend files. Check your proxy and firewall settings, then RPC can be re-enabled by changing the editor setting `filesystem/import/blender/rpc_port` to %d.", rpc_port));
+				EditorSettings::get_singleton()->set_manually("filesystem/import/blender/rpc_port", 0);
+				rpc_port = 0;
+			}
+			err = do_import_direct(p_options);
+		}
+		return err;
 	} else {
 		return do_import_direct(p_options);
 	}
