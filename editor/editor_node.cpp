@@ -852,6 +852,18 @@ void EditorNode::_remove_plugin_from_enabled(const String &p_name) {
 	ps->set("editor_plugins/enabled", enabled_plugins);
 }
 
+void EditorNode::_plugin_over_edit(EditorPlugin *p_plugin, Object *p_object) {
+	if (p_object) {
+		editor_plugins_over->add_plugin(p_plugin);
+		p_plugin->make_visible(true);
+		p_plugin->edit(p_object);
+	} else {
+		editor_plugins_over->remove_plugin(p_plugin);
+		p_plugin->make_visible(false);
+		p_plugin->edit(nullptr);
+	}
+}
+
 void EditorNode::_resources_changed(const Vector<String> &p_resources) {
 	List<Ref<Resource>> changed;
 
@@ -2102,8 +2114,7 @@ void EditorNode::edit_item(Object *p_object, Object *p_editing_owner) {
 			if (!item_plugins.has(plugin)) {
 				// Remove plugins no longer used by this editing owner.
 				to_remove.push_back(plugin);
-				plugin->make_visible(false);
-				plugin->edit(nullptr);
+				_plugin_over_edit(plugin, nullptr);
 			}
 		}
 
@@ -2113,6 +2124,7 @@ void EditorNode::edit_item(Object *p_object, Object *p_editing_owner) {
 
 		for (EditorPlugin *plugin : item_plugins) {
 			if (active_plugins[owner_id].has(plugin)) {
+				plugin->edit(p_object);
 				continue;
 			}
 
@@ -2127,9 +2139,7 @@ void EditorNode::edit_item(Object *p_object, Object *p_editing_owner) {
 				}
 			}
 			active_plugins[owner_id].insert(plugin);
-			editor_plugins_over->add_plugin(plugin);
-			plugin->edit(p_object);
-			plugin->make_visible(true);
+			_plugin_over_edit(plugin, p_object);
 		}
 	} else {
 		hide_unused_editors(p_editing_owner);
@@ -2181,9 +2191,7 @@ void EditorNode::hide_unused_editors(const Object *p_editing_owner) {
 	if (p_editing_owner) {
 		const ObjectID id = p_editing_owner->get_instance_id();
 		for (EditorPlugin *plugin : active_plugins[id]) {
-			plugin->make_visible(false);
-			plugin->edit(nullptr);
-			editor_plugins_over->remove_plugin(plugin);
+			_plugin_over_edit(plugin, nullptr);
 		}
 		active_plugins.erase(id);
 	} else {
@@ -2194,9 +2202,7 @@ void EditorNode::hide_unused_editors(const Object *p_editing_owner) {
 			if (!ObjectDB::get_instance(kv.key)) {
 				to_remove.push_back(kv.key);
 				for (EditorPlugin *plugin : kv.value) {
-					plugin->make_visible(false);
-					plugin->edit(nullptr);
-					editor_plugins_over->remove_plugin(plugin);
+					_plugin_over_edit(plugin, nullptr);
 				}
 			}
 		}
