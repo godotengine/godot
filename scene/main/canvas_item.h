@@ -246,6 +246,7 @@ public:
 
 	void set_z_index(int p_z);
 	int get_z_index() const;
+	int get_effective_z_index() const;
 
 	void set_z_as_relative(bool p_enabled);
 	bool is_z_relative() const;

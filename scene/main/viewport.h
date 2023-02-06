@@ -246,6 +246,7 @@ private:
 	bool snap_2d_vertices_to_pixel = false;
 
 	bool physics_object_picking = false;
+	bool physics_object_picking_sort = false;
 	List<Ref<InputEvent>> physics_picking_events;
 	ObjectID physics_object_capture;
 	ObjectID physics_object_over;
@@ -574,6 +575,8 @@ public:
 
 	void set_physics_object_picking(bool p_enable);
 	bool get_physics_object_picking();
+	void set_physics_object_picking_sort(bool p_enable);
+	bool get_physics_object_picking_sort();
 
 	Variant gui_get_drag_data() const;
 
