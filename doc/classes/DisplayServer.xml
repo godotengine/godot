@@ -1325,6 +1325,7 @@
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
 				Sets the maximum size of the window specified by [param window_id] in pixels. Normally, the user will not be able to drag the window to make it smaller than the specified size. See also [method window_get_max_size].
+				[b]Note:[/b] It's recommended to change this value using [member Window.max_size] instead.
 				[b]Note:[/b] Using third-party tools, it is possible for users to disable window geometry restrictions and therefore bypass this limit.
 			</description>
 		</method>
@@ -1334,6 +1335,7 @@
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
 				Sets the minimum size for the given window to [param min_size] (in pixels). Normally, the user will not be able to drag the window to make it larger than the specified size. See also [method window_get_min_size].
+				[b]Note:[/b] It's recommended to change this value using [member Window.min_size] instead.
 				[b]Note:[/b] By default, the main window has a minimum size of [code]Vector2i(64, 64)[/code]. This prevents issues that can arise when the window is resized to a near-zero size.
 				[b]Note:[/b] Using third-party tools, it is possible for users to disable window geometry restrictions and therefore bypass this limit.
 			</description>
@@ -1403,6 +1405,7 @@
 				+-------------+ +-------+
 				[/codeblock]
 				See also [method window_get_position] and [method window_set_size].
+				[b]Note:[/b] It's recommended to change this value using [member Window.position] instead.
 			</description>
 		</method>
 		<method name="window_set_rect_changed_callback">
@@ -1419,6 +1422,7 @@
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
 				Sets the size of the given window to [param size] (in pixels). See also [method window_get_size] and [method window_get_position].
+				[b]Note:[/b] It's recommended to change this value using [member Window.size] instead.
 			</description>
 		</method>
 		<method name="window_set_title">
@@ -1427,6 +1431,7 @@
 			<param index="1" name="window_id" type="int" default="0" />
 			<description>
 				Sets the title of the given window to [param title].
+				[b]Note:[/b] It's recommended to change this value using [member Window.title] instead.
 				[b]Note:[/b] Avoid changing the window title every frame, as this can cause performance issues on certain window managers. Try to change the window title only a few times per second at most.
 			</description>
 		</method>
@@ -1436,7 +1441,8 @@
 			<param index="1" name="parent_window_id" type="int" />
 			<description>
 				Sets window transient parent. Transient window is will be destroyed with its transient parent and will return focus to their parent when closed. The transient window is displayed on top of a non-exclusive full-screen parent window. Transient windows can't enter full-screen mode.
-				Note that behavior might be different depending on the platform.
+				[b]Note:[/b] It's recommended to change this value using [member Window.transient] instead.
+				[b]Note:[/b] The behavior might be different depending on the platform.
 			</description>
 		</method>
 		<method name="window_set_vsync_mode">
