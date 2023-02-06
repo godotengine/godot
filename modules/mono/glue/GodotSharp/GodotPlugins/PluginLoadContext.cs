@@ -30,7 +30,7 @@ namespace GodotPlugins
                 if (baseDirectory != null)
                 {
                     if (!Path.EndsInDirectorySeparator(baseDirectory))
-                        baseDirectory += Path.PathSeparator;
+                        baseDirectory += Path.DirectorySeparatorChar;
                     // This SetData call effectively sets AppContext.BaseDirectory
                     // See https://github.com/dotnet/runtime/blob/v6.0.0/src/libraries/System.Private.CoreLib/src/System/AppContext.cs#L21-L25
                     AppDomain.CurrentDomain.SetData("APP_CONTEXT_BASE_DIRECTORY", baseDirectory);
