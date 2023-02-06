@@ -275,16 +275,16 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 			return false;
 		}
 
-		final String renderer = GodotLib.getGlobal("rendering/renderer/rendering_method");
-		if (renderer.equals("gl_compatibility")) {
-			mRenderView = new GodotGLRenderView(activity, this, xrMode, use_debug_opengl);
-		} else {
+		if (usesVulkan()) {
 			if (!meetsVulkanRequirements(activity.getPackageManager())) {
 				Log.e(TAG, "Missing requirements for vulkan support! Aborting...");
 				alert(R.string.error_missing_vulkan_requirements_message, R.string.text_error_title, this::forceQuit);
 				return false;
 			}
 			mRenderView = new GodotVulkanRenderView(activity, this);
+		} else {
+			// Fallback to openGl
+			mRenderView = new GodotGLRenderView(activity, this, xrMode, use_debug_opengl);
 		}
 
 		View view = mRenderView.getView();
@@ -320,6 +320,15 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 			}
 		}
 		return true;
+	}
+
+	/**
+	 * Returns true if `Vulkan` is used for rendering.
+	 */
+	private boolean usesVulkan() {
+		final String renderer = GodotLib.getGlobal("rendering/renderer/rendering_method");
+		final String renderingDevice = GodotLib.getGlobal("rendering/rendering_device/driver");
+		return ("forward_plus".equals(renderer) || "mobile".equals(renderer)) && "vulkan".equals(renderingDevice);
 	}
 
 	/**
