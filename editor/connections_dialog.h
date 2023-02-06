@@ -106,6 +106,7 @@ public:
 private:
 	Label *connect_to_label = nullptr;
 	LineEdit *from_signal = nullptr;
+	LineEdit *filter_nodes = nullptr;
 	Node *source = nullptr;
 	ConnectionData source_connection_data;
 	StringName signal;
@@ -142,6 +143,7 @@ private:
 	void _item_activated();
 	void _text_submitted(const String &p_text);
 	void _tree_node_selected();
+	void _focus_currently_connected();
 
 	void _method_selected();
 	void _create_method_tree_items(const List<MethodInfo> &p_methods, TreeItem *p_parent_item);
