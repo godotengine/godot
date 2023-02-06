@@ -13,17 +13,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      # Azure repositories are not reliable, we need to prevent Azure giving us packages.
-      - name: Make apt sources.list use the default Ubuntu repositories
+      - name: Install dependencies
         run: |
-          sudo rm -f /etc/apt/sources.list.d/*
-          sudo cp -f misc/ci/sources.list /etc/apt/sources.list
           wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
           sudo apt-add-repository "deb http://apt.llvm.org/focal/ llvm-toolchain-focal-15 main"
           sudo apt-get update
-
-      - name: Install dependencies
-        run: |
           sudo apt-get install -qq dos2unix clang-format-15 libxml2-utils python3-pip moreutils
           sudo update-alternatives --remove-all clang-format || true
           sudo update-alternatives --install /usr/bin/clang-format clang-format /usr/bin/clang-format-15 100
