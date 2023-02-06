@@ -5624,8 +5624,9 @@ void EditorNode::_bottom_panel_switch(bool p_enable, int p_idx) {
 		return;
 	}
 
-	bottom_panel_updating = true;
 	if (p_enable) {
+		bottom_panel_updating = true;
+
 		for (int i = 0; i < bottom_panel_items.size(); i++) {
 			bottom_panel_items[i].button->set_pressed(i == p_idx);
 			bottom_panel_items[i].control->set_visible(i == p_idx);
@@ -5642,7 +5643,6 @@ void EditorNode::_bottom_panel_switch(bool p_enable, int p_idx) {
 			top_split->hide();
 		}
 		bottom_panel_raise->show();
-
 	} else {
 		bottom_panel->add_theme_style_override("panel", gui_base->get_theme_stylebox(SNAME("BottomPanel"), SNAME("EditorStyles")));
 		bottom_panel_items[p_idx].button->set_pressed(false);
