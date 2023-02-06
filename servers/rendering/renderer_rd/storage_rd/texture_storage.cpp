@@ -1906,7 +1906,7 @@ void TextureStorage::decal_set_cull_mask(RID p_decal, uint32_t p_layers) {
 	Decal *decal = decal_owner.get_or_null(p_decal);
 	ERR_FAIL_COND(!decal);
 	decal->cull_mask = p_layers;
-	decal->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_AABB);
+	decal->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_DECAL);
 }
 
 void TextureStorage::decal_set_distance_fade(RID p_decal, bool p_enabled, float p_begin, float p_length) {
@@ -1950,6 +1950,13 @@ AABB TextureStorage::decal_get_aabb(RID p_decal) const {
 	ERR_FAIL_COND_V(!decal, AABB());
 
 	return AABB(-decal->size / 2, decal->size);
+}
+
+uint32_t TextureStorage::decal_get_cull_mask(RID p_decal) const {
+	Decal *decal = decal_owner.get_or_null(p_decal);
+	ERR_FAIL_COND_V(!decal, 0);
+
+	return decal->cull_mask;
 }
 
 Dependency *TextureStorage::decal_get_dependency(RID p_decal) {
