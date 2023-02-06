@@ -800,6 +800,15 @@ static void _find_annotation_arguments(const GDScriptParser::AnnotationNode *p_a
 			warning.insert_text = warning.display.quote(p_quote_style);
 			r_result.insert(warning.display, warning);
 		}
+	} else if (p_annotation->name == SNAME("@rpc")) {
+		if (p_argument == 0 || p_argument == 1 || p_argument == 2) {
+			static const char *options[7] = { "call_local", "call_remote", "any_peer", "authority", "reliable", "unreliable", "unreliable_ordered" };
+			for (int i = 0; i < 7; i++) {
+				ScriptLanguage::CodeCompletionOption option(options[i], ScriptLanguage::CODE_COMPLETION_KIND_PLAIN_TEXT);
+				option.insert_text = option.display.quote(p_quote_style);
+				r_result.insert(option.display, option);
+			}
+		}
 	}
 }
 
