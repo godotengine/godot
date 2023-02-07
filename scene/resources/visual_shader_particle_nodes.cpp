@@ -1195,7 +1195,7 @@ int VisualShaderNodeParticleOutput::get_input_port_count() const {
 		case VisualShader::TYPE_START:
 			return 8;
 		case VisualShader::TYPE_PROCESS:
-			return 7;
+			return 8;
 		case VisualShader::TYPE_COLLIDE:
 			return 5;
 		case VisualShader::TYPE_START_CUSTOM:
@@ -1231,7 +1231,7 @@ VisualShaderNodeParticleOutput::PortType VisualShaderNodeParticleOutput::get_inp
 				break; // alpha
 			}
 			if (shader_type == VisualShader::TYPE_PROCESS) {
-				break; // scale
+				return PORT_TYPE_VECTOR_3D; // scale
 			}
 			if (shader_type == VisualShader::TYPE_COLLIDE) {
 				return PORT_TYPE_TRANSFORM; // transform
@@ -1244,13 +1244,16 @@ VisualShaderNodeParticleOutput::PortType VisualShaderNodeParticleOutput::get_inp
 			if (shader_type == VisualShader::TYPE_PROCESS) {
 				return PORT_TYPE_VECTOR_3D; // rotation_axis
 			}
-			break; // scale (scalar)
+			return PORT_TYPE_VECTOR_3D; // scale (scalar)
 		case 6:
 			if (shader_type == VisualShader::TYPE_START) {
 				return PORT_TYPE_VECTOR_3D; // rotation_axis
 			}
 			break;
 		case 7:
+			if (shader_type == VisualShader::TYPE_PROCESS) {
+				return PORT_TYPE_VECTOR_3D; // position
+			}
 			break; // angle (scalar)
 	}
 	return PORT_TYPE_SCALAR;
@@ -1321,6 +1324,10 @@ String VisualShaderNodeParticleOutput::get_input_port_name(int p_port) const {
 			port_name = "rotation_axis";
 			break;
 		case 7:
+			if (shader_type == VisualShader::TYPE_PROCESS) {
+				port_name = "position";
+				break;
+			}
 			port_name = "angle_in_radians";
 			break;
 		default:
@@ -1385,6 +1392,7 @@ String VisualShaderNodeParticleOutput::generate_code(Shader::Mode p_mode, Visual
 
 		// position
 		if (shader_type == VisualShader::TYPE_START) {
+			code += tab + "CUSTOM.x = TIME;\n";
 			code += tab + "if (RESTART_POSITION) {\n";
 			if (!p_input_vars[4].is_empty()) {
 				code += tab + "	TRANSFORM = mat4(vec4(1.0, 0.0, 0.0, 0.0), vec4(0.0, 1.0, 0.0, 0.0), vec4(0.0, 0.0, 1.0, 0.0), vec4(" + p_input_vars[4] + ", 1.0));\n";
@@ -1406,16 +1414,21 @@ String VisualShaderNodeParticleOutput::generate_code(Shader::Mode p_mode, Visual
 			int scale = 5;
 			int rotation_axis = 6;
 			int rotation = 7;
+			int position = 4;
 			if (shader_type == VisualShader::TYPE_PROCESS) {
 				scale = 4;
 				rotation_axis = 5;
 				rotation = 6;
+				position = 7;
 			}
-			String op;
-			if (shader_type == VisualShader::TYPE_START) {
-				op = "*=";
-			} else {
-				op = "=";
+
+			code += tab + "mat4 backup = TRANSFORM;\n";
+			code += tab + "TRANSFORM = mat4(1.0);\n";
+
+			if (!p_input_vars[scale].is_empty()) { // scale
+				code += tab + "TRANSFORM[0].x = " + p_input_vars[scale] + ".x;\n";
+				code += tab + "TRANSFORM[1].y = " + p_input_vars[scale] + ".y;\n";
+				code += tab + "TRANSFORM[2].z = " + p_input_vars[scale] + ".z;\n";
 			}
 
 			if (!p_input_vars[rotation].is_empty()) { // rotation_axis & angle_in_radians
@@ -1425,10 +1438,13 @@ String VisualShaderNodeParticleOutput::generate_code(Shader::Mode p_mode, Visual
 				} else {
 					axis = p_input_vars[rotation_axis];
 				}
-				code += tab + "TRANSFORM " + op + " __build_rotation_mat4(" + axis + ", " + p_input_vars[rotation] + ");\n";
+				code += tab + "TRANSFORM *= __build_rotation_mat4(" + axis + ", " + p_input_vars[rotation] + ");\n";
 			}
-			if (!p_input_vars[scale].is_empty()) { // scale
-				code += tab + "TRANSFORM " + op + " mat4(vec4(" + p_input_vars[scale] + ", 0, 0, 0), vec4(0, " + p_input_vars[scale] + ", 0, 0), vec4(0, 0, " + p_input_vars[scale] + ", 0), vec4(0, 0, 0, 1));\n";
+
+			if (p_input_vars[position].is_empty()) { // position
+				code += tab + "TRANSFORM[3].xyz = backup[3].xyz;\n";
+			} else {
+				code += tab + "TRANSFORM[3].xyz = " + p_input_vars[position] + ";\n";
 			}
 		}
 		if (!p_input_vars[0].is_empty()) { // Active (end).
