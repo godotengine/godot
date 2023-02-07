@@ -72,6 +72,8 @@ public:
 		ROTATION_ORIENTED
 	};
 
+	bool z_forward = false;
+
 	static Transform3D correct_posture(Transform3D p_transform, PathFollow3D::RotationMode p_rotation_mode);
 
 private:
@@ -117,6 +119,9 @@ public:
 
 	void set_rotation_mode(RotationMode p_rotation_mode);
 	RotationMode get_rotation_mode() const;
+
+	void set_z_forward(bool p_enabled);
+	bool is_z_forward() const;
 
 	void set_cubic_interpolation_enabled(bool p_enabled);
 	bool is_cubic_interpolation_enabled() const;

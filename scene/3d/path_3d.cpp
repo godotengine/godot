@@ -191,6 +191,9 @@ void PathFollow3D::_update_transform(bool p_update_xyz_rot) {
 		t.origin = pos;
 	} else {
 		t = c->sample_baked_with_rotation(progress, cubic, false);
+		if (z_forward) {
+			t.basis = Basis(t.basis.get_column(1).normalized(), Math_PI) * t.basis;
+		}
 		Vector3 forward = t.basis.get_column(2); // Retain tangent for applying tilt
 		t = PathFollow3D::correct_posture(t, rotation_mode);
 
@@ -334,6 +337,9 @@ void PathFollow3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_cubic_interpolation_enabled", "enabled"), &PathFollow3D::set_cubic_interpolation_enabled);
 	ClassDB::bind_method(D_METHOD("is_cubic_interpolation_enabled"), &PathFollow3D::is_cubic_interpolation_enabled);
 
+	ClassDB::bind_method(D_METHOD("set_z_forward", "enabled"), &PathFollow3D::set_z_forward);
+	ClassDB::bind_method(D_METHOD("is_z_forward"), &PathFollow3D::is_z_forward);
+
 	ClassDB::bind_method(D_METHOD("set_loop", "loop"), &PathFollow3D::set_loop);
 	ClassDB::bind_method(D_METHOD("has_loop"), &PathFollow3D::has_loop);
 
@@ -347,6 +353,7 @@ void PathFollow3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "h_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_h_offset", "get_h_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "v_offset", PROPERTY_HINT_NONE, "suffix:m"), "set_v_offset", "get_v_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "rotation_mode", PROPERTY_HINT_ENUM, "None,Y,XY,XYZ,Oriented"), "set_rotation_mode", "get_rotation_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "z_forward"), "set_z_forward", "is_z_forward");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "cubic_interpolation_enabled"), "set_cubic_interpolation_enabled", "is_cubic_interpolation_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "loop"), "set_loop", "has_loop");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "tilt_enabled"), "set_tilt_enabled", "is_tilt_enabled");
@@ -427,6 +434,14 @@ void PathFollow3D::set_rotation_mode(RotationMode p_rotation_mode) {
 
 PathFollow3D::RotationMode PathFollow3D::get_rotation_mode() const {
 	return rotation_mode;
+}
+
+void PathFollow3D::set_z_forward(bool p_enabled) {
+	z_forward = p_enabled;
+}
+
+bool PathFollow3D::is_z_forward() const {
+	return z_forward;
 }
 
 void PathFollow3D::set_loop(bool p_loop) {
