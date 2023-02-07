@@ -409,6 +409,7 @@ Error ServersDebugger::_capture(void *p_user, const String &p_cmd, const Array &
 		if (RenderingServer::get_singleton()->has_changed()) {
 			RenderingServer::get_singleton()->draw(true, delta);
 		}
+		EngineDebugger::get_singleton()->send_message("servers:drawn", Array());
 	} else if (p_cmd == "foreground") {
 		singleton->last_draw_time = 0.0;
 		DisplayServer::get_singleton()->window_move_to_foreground();
