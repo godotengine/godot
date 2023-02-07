@@ -544,6 +544,8 @@ private:
 #endif
 
 public:
+	static constexpr int MAX_CALL_DEPTH = 2048; // Limit to try to avoid crash because of a stack overflow.
+
 	struct CallState {
 		GDScript *script = nullptr;
 		GDScriptInstance *instance = nullptr;
