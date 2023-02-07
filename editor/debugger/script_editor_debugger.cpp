@@ -308,6 +308,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		String error = p_data[1];
 		bool has_stackdump = p_data[2];
 		breaked = true;
+		can_request_idle_draw = true;
 		can_debug = can_continue;
 		_update_buttons_state();
 		_set_reason_text(error, MESSAGE_ERROR);
@@ -378,6 +379,8 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		vmem_total->set_tooltip_text(TTR("Bytes:") + " " + itos(total));
 		vmem_total->set_text(String::humanize_size(total));
 
+	} else if (p_msg == "servers:drawn") {
+		can_request_idle_draw = true;
 	} else if (p_msg == "stack_dump") {
 		DebuggerMarshalls::ScriptStackDump stack;
 		stack.deserialize(p_data);
@@ -843,8 +846,9 @@ void ScriptEditorDebugger::_notification(int p_what) {
 					msg.push_back(cam->get_far());
 					_put_msg("scene:override_camera_3D:transform", msg);
 				}
-				if (breaked) {
+				if (breaked && can_request_idle_draw) {
 					_put_msg("servers:draw", Array());
+					can_request_idle_draw = false;
 				}
 			}
 

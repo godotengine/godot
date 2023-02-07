@@ -155,6 +155,7 @@ private:
 	bool breaked = false;
 	bool can_debug = false;
 	bool move_to_foreground = true;
+	bool can_request_idle_draw = false;
 
 	bool live_debug;
 
