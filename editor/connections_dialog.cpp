@@ -170,6 +170,10 @@ void ConnectDialog::_tree_node_selected() {
 	_update_ok_enabled();
 }
 
+void ConnectDialog::_focus_currently_connected() {
+	tree->set_selected(source);
+}
+
 void ConnectDialog::_unbind_count_changed(double p_count) {
 	for (Control *control : bind_controls) {
 		BaseButton *b = Object::cast_to<BaseButton>(control);
@@ -577,6 +581,8 @@ void ConnectDialog::init(const ConnectionData &p_cd, const PackedStringArray &p_
 void ConnectDialog::popup_dialog(const String p_for_signal) {
 	from_signal->set_text(p_for_signal);
 	error_label->add_theme_color_override("font_color", error_label->get_theme_color(SNAME("error_color"), SNAME("Editor")));
+	filter_nodes->clear();
+
 	if (!advanced->is_pressed()) {
 		error_label->set_visible(!_find_first_script(get_tree()->get_edited_scene_root(), get_tree()->get_edited_scene_root()));
 	}
@@ -628,12 +634,28 @@ ConnectDialog::ConnectDialog() {
 	tree = memnew(SceneTreeEditor(false));
 	tree->set_connecting_signal(true);
 	tree->set_show_enabled_subscene(true);
+	tree->set_v_size_flags(Control::SIZE_FILL | Control::SIZE_EXPAND);
 	tree->get_scene_tree()->connect("item_activated", callable_mp(this, &ConnectDialog::_item_activated));
 	tree->connect("node_selected", callable_mp(this, &ConnectDialog::_tree_node_selected));
 	tree->set_connect_to_script_mode(true);
 
-	Node *mc = vbc_left->add_margin_child(TTR("Connect to Script:"), tree, true);
+	HBoxContainer *hbc_filter = memnew(HBoxContainer);
+
+	filter_nodes = memnew(LineEdit);
+	hbc_filter->add_child(filter_nodes);
+	filter_nodes->set_h_size_flags(Control::SIZE_FILL | Control::SIZE_EXPAND);
+	filter_nodes->set_placeholder(TTR("Filter Nodes"));
+	filter_nodes->set_clear_button_enabled(true);
+	filter_nodes->connect("text_changed", callable_mp(tree, &SceneTreeEditor::set_filter));
+
+	Button *focus_current = memnew(Button);
+	hbc_filter->add_child(focus_current);
+	focus_current->set_text(TTR("Go to Source"));
+	focus_current->connect("pressed", callable_mp(this, &ConnectDialog::_focus_currently_connected));
+
+	Node *mc = vbc_left->add_margin_child(TTR("Connect to Script:"), hbc_filter, false);
 	connect_to_label = Object::cast_to<Label>(vbc_left->get_child(mc->get_index() - 1));
+	vbc_left->add_child(tree);
 
 	error_label = memnew(Label);
 	error_label->set_text(TTR("Scene does not contain any script."));

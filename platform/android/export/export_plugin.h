@@ -74,7 +74,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 	Vector<PluginConfigAndroid> plugins;
 	String last_plugin_names;
-	uint64_t last_custom_build_time = 0;
+	uint64_t last_gradle_build_time = 0;
 	SafeFlag plugins_changed;
 	Mutex plugins_lock;
 	Vector<Device> devices;
@@ -172,6 +172,8 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 
 	static Vector<ABI> get_enabled_abis(const Ref<EditorExportPreset> &p_preset);
 
+	static bool _uses_vulkan();
+
 public:
 	typedef Error (*EditorExportSaveFunction)(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key);
 
@@ -213,14 +215,14 @@ public:
 
 	inline bool is_clean_build_required(Vector<PluginConfigAndroid> enabled_plugins) {
 		String plugin_names = PluginConfigAndroid::get_plugins_names(enabled_plugins);
-		bool first_build = last_custom_build_time == 0;
+		bool first_build = last_gradle_build_time == 0;
 		bool have_plugins_changed = false;
 
 		if (!first_build) {
 			have_plugins_changed = plugin_names != last_plugin_names;
 			if (!have_plugins_changed) {
 				for (int i = 0; i < enabled_plugins.size(); i++) {
-					if (enabled_plugins.get(i).last_updated > last_custom_build_time) {
+					if (enabled_plugins.get(i).last_updated > last_gradle_build_time) {
 						have_plugins_changed = true;
 						break;
 					}
@@ -228,7 +230,7 @@ public:
 			}
 		}
 
-		last_custom_build_time = OS::get_singleton()->get_unix_time();
+		last_gradle_build_time = OS::get_singleton()->get_unix_time();
 		last_plugin_names = plugin_names;
 
 		return have_plugins_changed || first_build;

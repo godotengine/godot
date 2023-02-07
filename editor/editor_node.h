@@ -398,7 +398,7 @@ private:
 	PopupMenu *editor_layouts = nullptr;
 	EditorLayoutsDialog *layout_dialog = nullptr;
 
-	ConfirmationDialog *custom_build_manage_templates = nullptr;
+	ConfirmationDialog *gradle_build_manage_templates = nullptr;
 	ConfirmationDialog *install_android_build_template = nullptr;
 	ConfirmationDialog *remove_android_build_template = nullptr;
 
@@ -565,6 +565,7 @@ private:
 	void _update_file_menu_closed();
 
 	void _remove_plugin_from_enabled(const String &p_name);
+	void _plugin_over_edit(EditorPlugin *p_plugin, Object *p_object);
 
 	void _fs_changed();
 	void _resources_reimported(const Vector<String> &p_resources);

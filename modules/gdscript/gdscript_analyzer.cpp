@@ -1576,11 +1576,8 @@ void GDScriptAnalyzer::resolve_function_body(GDScriptParser::FunctionNode *p_fun
 
 	resolve_suite(p_function->body);
 
-	GDScriptParser::DataType return_type = p_function->body->get_datatype();
-
-	if (!p_function->get_datatype().is_hard_type() && return_type.is_set()) {
+	if (!p_function->get_datatype().is_hard_type() && p_function->body->get_datatype().is_set()) {
 		// Use the suite inferred type if return isn't explicitly set.
-		return_type.type_source = GDScriptParser::DataType::INFERRED;
 		p_function->set_datatype(p_function->body->get_datatype());
 	} else if (p_function->get_datatype().is_hard_type() && (p_function->get_datatype().kind != GDScriptParser::DataType::BUILTIN || p_function->get_datatype().builtin_type != Variant::NIL)) {
 		if (!p_function->body->has_return && (p_is_lambda || p_function->identifier->name != GDScriptLanguage::get_singleton()->strings._init)) {
@@ -2471,30 +2468,27 @@ void GDScriptAnalyzer::reduce_await(GDScriptParser::AwaitNode *p_await) {
 		return;
 	}
 
-	GDScriptParser::DataType awaiting_type;
-
 	if (p_await->to_await->type == GDScriptParser::Node::CALL) {
 		reduce_call(static_cast<GDScriptParser::CallNode *>(p_await->to_await), true);
-		awaiting_type = p_await->to_await->get_datatype();
 	} else {
 		reduce_expression(p_await->to_await);
 	}
 
-	if (p_await->to_await->is_constant) {
+	GDScriptParser::DataType await_type = p_await->to_await->get_datatype();
+	// We cannot infer the type of the result of waiting for a signal.
+	if (await_type.is_hard_type() && await_type.kind == GDScriptParser::DataType::BUILTIN && await_type.builtin_type == Variant::SIGNAL) {
+		await_type.kind = GDScriptParser::DataType::VARIANT;
+		await_type.type_source = GDScriptParser::DataType::UNDETECTED;
+	} else if (p_await->to_await->is_constant) {
 		p_await->is_constant = p_await->to_await->is_constant;
 		p_await->reduced_value = p_await->to_await->reduced_value;
-
-		awaiting_type = p_await->to_await->get_datatype();
-	} else {
-		awaiting_type.kind = GDScriptParser::DataType::VARIANT;
-		awaiting_type.type_source = GDScriptParser::DataType::UNDETECTED;
 	}
-
-	p_await->set_datatype(awaiting_type);
+	await_type.is_coroutine = false;
+	p_await->set_datatype(await_type);
 
 #ifdef DEBUG_ENABLED
-	awaiting_type = p_await->to_await->get_datatype();
-	if (!(awaiting_type.has_no_type() || awaiting_type.is_coroutine || awaiting_type.builtin_type == Variant::SIGNAL)) {
+	GDScriptParser::DataType to_await_type = p_await->to_await->get_datatype();
+	if (!(to_await_type.has_no_type() || to_await_type.is_coroutine || to_await_type.builtin_type == Variant::SIGNAL)) {
 		parser->push_warning(p_await, GDScriptWarning::REDUNDANT_AWAIT);
 	}
 #endif
@@ -4113,7 +4107,6 @@ void GDScriptAnalyzer::reduce_ternary_op(GDScriptParser::TernaryOpNode *p_ternar
 		if (!is_type_compatible(true_type, false_type)) {
 			result = false_type;
 			if (!is_type_compatible(false_type, true_type)) {
-				result.type_source = GDScriptParser::DataType::UNDETECTED;
 				result.kind = GDScriptParser::DataType::VARIANT;
 #ifdef DEBUG_ENABLED
 				parser->push_warning(p_ternary_op, GDScriptWarning::INCOMPATIBLE_TERNARY);
@@ -4121,6 +4114,7 @@ void GDScriptAnalyzer::reduce_ternary_op(GDScriptParser::TernaryOpNode *p_ternar
 			}
 		}
 	}
+	result.type_source = true_type.is_hard_type() && false_type.is_hard_type() ? GDScriptParser::DataType::ANNOTATED_INFERRED : GDScriptParser::DataType::INFERRED;
 
 	p_ternary_op->set_datatype(result);
 }

@@ -50,7 +50,7 @@ dependencies {
     } else if (rootProject.findProject(":godot:lib")) {
         implementation project(":godot:lib")
     } else {
-        // Custom build mode. In this scenario this project is the only one around and the Godot
+        // Godot gradle build mode. In this scenario this project is the only one around and the Godot
         // library is available through the pre-generated godot-lib.*.aar android archive files.
         debugImplementation fileTree(dir: 'libs/debug', include: ['*.jar', '*.aar'])
         devImplementation fileTree(dir: 'libs/dev', include: ['*.jar', '*.aar'])
@@ -153,7 +153,7 @@ android {
 
         debug {
             // Signing and zip-aligning are skipped for prebuilt builds, but
-            // performed for custom builds.
+            // performed for Godot gradle builds.
             zipAlignEnabled shouldZipAlign()
             if (shouldSign()) {
                 signingConfig signingConfigs.debug
@@ -165,7 +165,7 @@ android {
         dev {
             initWith debug
             // Signing and zip-aligning are skipped for prebuilt builds, but
-            // performed for custom builds.
+            // performed for Godot gradle builds.
             zipAlignEnabled shouldZipAlign()
             if (shouldSign()) {
                 signingConfig signingConfigs.debug
@@ -176,7 +176,7 @@ android {
 
         release {
             // Signing and zip-aligning are skipped for prebuilt builds, but
-            // performed for custom builds.
+            // performed for Godot gradle builds.
             zipAlignEnabled shouldZipAlign()
             if (shouldSign()) {
                 signingConfig signingConfigs.release

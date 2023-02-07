@@ -246,6 +246,7 @@ private:
 	bool snap_2d_vertices_to_pixel = false;
 
 	bool physics_object_picking = false;
+	bool physics_object_picking_sort = false;
 	List<Ref<InputEvent>> physics_picking_events;
 	ObjectID physics_object_capture;
 	ObjectID physics_object_over;
@@ -574,6 +575,8 @@ public:
 
 	void set_physics_object_picking(bool p_enable);
 	bool get_physics_object_picking();
+	void set_physics_object_picking_sort(bool p_enable);
+	bool get_physics_object_picking_sort();
 
 	Variant gui_get_drag_data() const;
 
@@ -648,7 +651,8 @@ public:
 
 	virtual bool is_size_2d_override_stretch_enabled() const { return true; }
 
-	virtual Transform2D get_screen_transform() const;
+	Transform2D get_screen_transform() const;
+	virtual Transform2D get_screen_transform_internal(bool p_absolute_position = false) const;
 	virtual Transform2D get_popup_base_transform() const { return Transform2D(); }
 
 #ifndef _3D_DISABLED
@@ -777,7 +781,7 @@ public:
 	void set_clear_mode(ClearMode p_mode);
 	ClearMode get_clear_mode() const;
 
-	virtual Transform2D get_screen_transform() const override;
+	virtual Transform2D get_screen_transform_internal(bool p_absolute_position = false) const override;
 	virtual Transform2D get_popup_base_transform() const override;
 
 	SubViewport();

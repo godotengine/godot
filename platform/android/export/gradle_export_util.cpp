@@ -166,7 +166,7 @@ Error store_string_at_path(const String &p_path, const String &p_data) {
 // This method will only be called as an input to export_project_files.
 // It is used by the export_project_files method to save all the asset files into the gradle project.
 // It's functionality mirrors that of the method save_apk_file.
-// This method will be called ONLY when custom build is enabled.
+// This method will be called ONLY when gradle build is enabled.
 Error rename_and_store_file_in_gradle_project(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total, const Vector<String> &p_enc_in_filters, const Vector<String> &p_enc_ex_filters, const Vector<uint8_t> &p_key) {
 	CustomExportData *export_data = static_cast<CustomExportData *>(p_userdata);
 	String dst_path = p_path.replace_first("res://", export_data->assets_directory + "/");
@@ -254,7 +254,7 @@ String _get_screen_sizes_tag(const Ref<EditorExportPreset> &p_preset) {
 	return manifest_screen_sizes;
 }
 
-String _get_xr_features_tag(const Ref<EditorExportPreset> &p_preset) {
+String _get_xr_features_tag(const Ref<EditorExportPreset> &p_preset, bool p_uses_vulkan) {
 	String manifest_xr_features;
 	int xr_mode_index = (int)(p_preset->get("xr_features/xr_mode"));
 	bool uses_xr = xr_mode_index == XR_MODE_OPENXR;
@@ -272,6 +272,10 @@ String _get_xr_features_tag(const Ref<EditorExportPreset> &p_preset) {
 		} else if (passthrough_mode == XR_PASSTHROUGH_REQUIRED) {
 			manifest_xr_features += "    <uses-feature tools:node=\"replace\" android:name=\"com.oculus.feature.PASSTHROUGH\" android:required=\"true\" />\n";
 		}
+	}
+
+	if (p_uses_vulkan) {
+		manifest_xr_features += "    <uses-feature tools:node=\"replace\" android:name=\"android.hardware.vulkan.level\" android:required=\"true\" android:version=\"1\" />\n";
 	}
 	return manifest_xr_features;
 }

@@ -367,7 +367,6 @@ void EditorSpinSlider::_draw_spin_slider() {
 
 	if (!hide_slider) {
 		if (get_step() == 1) {
-			number_width -= updown->get_width();
 			Ref<Texture2D> updown2 = get_theme_icon(is_read_only() ? SNAME("updown_disabled") : SNAME("updown"), SNAME("SpinBox"));
 			int updown_vofs = (size.height - updown2->get_height()) / 2;
 			if (rtl) {

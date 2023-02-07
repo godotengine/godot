@@ -517,13 +517,6 @@ public:
 		return light->color;
 	}
 
-	_FORCE_INLINE_ uint32_t light_get_cull_mask(RID p_light) {
-		const Light *light = light_owner.get_or_null(p_light);
-		ERR_FAIL_COND_V(!light, 0);
-
-		return light->cull_mask;
-	}
-
 	_FORCE_INLINE_ bool light_is_distance_fade_enabled(RID p_light) {
 		const Light *light = light_owner.get_or_null(p_light);
 		return light->distance_fade;
@@ -575,6 +568,7 @@ public:
 	virtual RS::LightBakeMode light_get_bake_mode(RID p_light) override;
 	virtual uint32_t light_get_max_sdfgi_cascade(RID p_light) override;
 	virtual uint64_t light_get_version(RID p_light) const override;
+	virtual uint32_t light_get_cull_mask(RID p_light) const override;
 
 	Dependency *light_get_dependency(RID p_light) const;
 

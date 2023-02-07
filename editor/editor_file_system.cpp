@@ -1900,49 +1900,56 @@ Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector
 	return err;
 }
 
-void EditorFileSystem::_reimport_file(const String &p_file, const HashMap<StringName, Variant> *p_custom_options, const String &p_custom_importer) {
+Error EditorFileSystem::_reimport_file(const String &p_file, const HashMap<StringName, Variant> &p_custom_options, const String &p_custom_importer, Variant *p_generator_parameters) {
 	EditorFileSystemDirectory *fs = nullptr;
 	int cpos = -1;
 	bool found = _find_file(p_file, &fs, cpos);
-	ERR_FAIL_COND_MSG(!found, "Can't find file '" + p_file + "'.");
+	ERR_FAIL_COND_V_MSG(!found, ERR_FILE_NOT_FOUND, "Can't find file '" + p_file + "'.");
 
 	//try to obtain existing params
 
-	HashMap<StringName, Variant> params;
+	HashMap<StringName, Variant> params = p_custom_options;
 	String importer_name; //empty by default though
 
 	if (!p_custom_importer.is_empty()) {
 		importer_name = p_custom_importer;
 	}
-	if (p_custom_options != nullptr) {
-		params = *p_custom_options;
-	}
 
 	ResourceUID::ID uid = ResourceUID::INVALID_ID;
+	Variant generator_parameters;
+	if (p_generator_parameters) {
+		generator_parameters = *p_generator_parameters;
+	}
 
 	if (FileAccess::exists(p_file + ".import")) {
 		//use existing
-		if (p_custom_options == nullptr) {
-			Ref<ConfigFile> cf;
-			cf.instantiate();
-			Error err = cf->load(p_file + ".import");
-			if (err == OK) {
-				if (cf->has_section("params")) {
-					List<String> sk;
-					cf->get_section_keys("params", &sk);
-					for (const String &E : sk) {
+		Ref<ConfigFile> cf;
+		cf.instantiate();
+		Error err = cf->load(p_file + ".import");
+		if (err == OK) {
+			if (cf->has_section("params")) {
+				List<String> sk;
+				cf->get_section_keys("params", &sk);
+				for (const String &E : sk) {
+					if (!params.has(E)) {
 						params[E] = cf->get_value("params", E);
 					}
 				}
+			}
 
-				if (cf->has_section("remap")) {
-					if (p_custom_importer.is_empty()) {
-						importer_name = cf->get_value("remap", "importer");
-					}
+			if (cf->has_section("remap")) {
+				if (p_custom_importer.is_empty()) {
+					importer_name = cf->get_value("remap", "importer");
+				}
 
-					if (cf->has_section_key("remap", "uid")) {
-						String uidt = cf->get_value("remap", "uid");
-						uid = ResourceUID::get_singleton()->text_to_id(uidt);
+				if (cf->has_section_key("remap", "uid")) {
+					String uidt = cf->get_value("remap", "uid");
+					uid = ResourceUID::get_singleton()->text_to_id(uidt);
+				}
+
+				if (!p_generator_parameters) {
+					if (cf->has_section_key("remap", "generator_parameters")) {
+						generator_parameters = cf->get_value("remap", "generator_parameters");
 					}
 				}
 			}
@@ -1957,7 +1964,7 @@ void EditorFileSystem::_reimport_file(const String &p_file, const HashMap<String
 		fs->files[cpos]->type = "";
 		fs->files[cpos]->import_valid = false;
 		EditorResourcePreview::get_singleton()->check_for_invalidation(p_file);
-		return;
+		return OK;
 	}
 	Ref<ResourceImporter> importer;
 	bool load_default = false;
@@ -1971,8 +1978,7 @@ void EditorFileSystem::_reimport_file(const String &p_file, const HashMap<String
 		importer = ResourceFormatImporter::get_singleton()->get_importer_by_extension(p_file.get_extension());
 		load_default = true;
 		if (importer.is_null()) {
-			ERR_PRINT("BUG: File queued for import, but can't be imported, importer for type '" + importer_name + "' not found.");
-			ERR_FAIL();
+			ERR_FAIL_V_MSG(ERR_FILE_CANT_OPEN, "BUG: File queued for import, but can't be imported, importer for type '" + importer_name + "' not found.");
 		}
 	}
 
@@ -2005,16 +2011,14 @@ void EditorFileSystem::_reimport_file(const String &p_file, const HashMap<String
 	Variant meta;
 	Error err = importer->import(p_file, base_path, params, &import_variants, &gen_files, &meta);
 
-	if (err != OK) {
-		ERR_PRINT("Error importing '" + p_file + "'.");
-	}
+	ERR_FAIL_COND_V_MSG(err != OK, ERR_FILE_UNRECOGNIZED, "Error importing '" + p_file + "'.");
 
 	//as import is complete, save the .import file
 
 	Vector<String> dest_paths;
 	{
 		Ref<FileAccess> f = FileAccess::open(p_file + ".import", FileAccess::WRITE);
-		ERR_FAIL_COND_MSG(f.is_null(), "Cannot open file from path '" + p_file + ".import'.");
+		ERR_FAIL_COND_V_MSG(f.is_null(), ERR_FILE_CANT_OPEN, "Cannot open file from path '" + p_file + ".import'.");
 
 		//write manually, as order matters ([remap] has to go first for performance).
 		f->store_line("[remap]");
@@ -2057,6 +2061,10 @@ void EditorFileSystem::_reimport_file(const String &p_file, const HashMap<String
 
 		if (meta != Variant()) {
 			f->store_line("metadata=" + meta.get_construct_string());
+		}
+
+		if (generator_parameters != Variant()) {
+			f->store_line("generator_parameters=" + generator_parameters.get_construct_string());
 		}
 
 		f->store_line("");
@@ -2102,7 +2110,7 @@ void EditorFileSystem::_reimport_file(const String &p_file, const HashMap<String
 	// Store the md5's of the various files. These are stored separately so that the .import files can be version controlled.
 	{
 		Ref<FileAccess> md5s = FileAccess::open(base_path + ".md5", FileAccess::WRITE);
-		ERR_FAIL_COND_MSG(md5s.is_null(), "Cannot open MD5 file '" + base_path + ".md5'.");
+		ERR_FAIL_COND_V_MSG(md5s.is_null(), ERR_FILE_CANT_OPEN, "Cannot open MD5 file '" + base_path + ".md5'.");
 
 		md5s->store_line("source_md5=\"" + FileAccess::get_md5(p_file) + "\"");
 		if (dest_paths.size()) {
@@ -2136,6 +2144,8 @@ void EditorFileSystem::_reimport_file(const String &p_file, const HashMap<String
 	}
 
 	EditorResourcePreview::get_singleton()->check_for_invalidation(p_file);
+
+	return OK;
 }
 
 void EditorFileSystem::_find_group_files(EditorFileSystemDirectory *efd, HashMap<String, Vector<String>> &group_files, HashSet<String> &groups_to_reimport) {
@@ -2156,7 +2166,7 @@ void EditorFileSystem::_find_group_files(EditorFileSystemDirectory *efd, HashMap
 }
 
 void EditorFileSystem::reimport_file_with_custom_parameters(const String &p_file, const String &p_importer, const HashMap<StringName, Variant> &p_custom_params) {
-	_reimport_file(p_file, &p_custom_params, p_importer);
+	_reimport_file(p_file, p_custom_params, p_importer);
 }
 
 void EditorFileSystem::_reimport_thread(uint32_t p_index, ImportThreadData *p_import_data) {
@@ -2166,9 +2176,10 @@ void EditorFileSystem::_reimport_thread(uint32_t p_index, ImportThreadData *p_im
 
 void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 	importing = true;
-	EditorProgress pr("reimport", TTR("(Re)Importing Assets"), p_files.size());
 
 	Vector<String> reloads;
+
+	EditorProgress pr("reimport", TTR("(Re)Importing Assets"), p_files.size());
 
 	Vector<ImportFile> reimport_files;
 
@@ -2290,6 +2301,11 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 	}
 
 	emit_signal(SNAME("resources_reimported"), reloads);
+}
+
+Error EditorFileSystem::reimport_append(const String &p_file, const HashMap<StringName, Variant> &p_custom_options, const String &p_custom_importer, Variant p_generator_parameters) {
+	ERR_FAIL_COND_V_MSG(!importing, ERR_INVALID_PARAMETER, "Can only append files to import during a current reimport process.");
+	return _reimport_file(p_file, p_custom_options, p_custom_importer, &p_generator_parameters);
 }
 
 Error EditorFileSystem::_resource_import(const String &p_path) {
