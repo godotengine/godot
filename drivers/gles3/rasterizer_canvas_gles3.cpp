@@ -1142,6 +1142,8 @@ void RasterizerCanvasGLES3::_record_item_commands(const Item *p_item, RID p_rend
 					RID particles = pt->particles;
 					state.canvas_instance_batches[state.current_batch_index].tex = pt->texture;
 					state.canvas_instance_batches[state.current_batch_index].shader_variant = CanvasShaderGLES3::MODE_INSTANCED;
+					state.instance_data_array[r_index].flags |= FLAGS_INSTANCING_HAS_COLORS;
+					state.instance_data_array[r_index].flags |= FLAGS_INSTANCING_HAS_CUSTOM_DATA;
 
 					if (particles_storage->particles_has_collision(particles) && texture_storage->render_target_is_sdf_enabled(p_render_target)) {
 						// Pass collision information.
