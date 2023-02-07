@@ -9,7 +9,7 @@ namespace GodotTools.Ides.Rider
 {
     public static class RiderPathManager
     {
-        public static readonly string EditorPathSettingName = "mono/editor/editor_path_optional";
+        public static readonly string EditorPathSettingName = "dotnet/editor/editor_path_optional";
 
         private static string GetRiderPathFromSettings()
         {
@@ -22,7 +22,7 @@ namespace GodotTools.Ides.Rider
         public static void Initialize()
         {
             var editorSettings = GodotSharpEditor.Instance.GetEditorInterface().GetEditorSettings();
-            var editor = (ExternalEditorId)(int)editorSettings.GetSetting("mono/editor/external_editor");
+            var editor = editorSettings.GetSetting(GodotSharpEditor.Settings.ExternalEditor).As<ExternalEditorId>();
             if (editor == ExternalEditorId.Rider)
             {
                 if (!editorSettings.HasSetting(EditorPathSettingName))

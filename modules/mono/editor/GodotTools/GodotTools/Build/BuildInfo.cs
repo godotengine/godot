@@ -22,8 +22,7 @@ namespace GodotTools.Build
         // TODO Use List once we have proper serialization
         public Godot.Collections.Array CustomProperties { get; private set; } = new();
 
-        public string LogsDirPath =>
-            Path.Combine(GodotSharpDirs.BuildLogsDirs, $"{Solution.Md5Text()}_{Configuration}");
+        public string LogsDirPath => GodotSharpDirs.LogsDirPathFor(Solution, Configuration);
 
         public override bool Equals(object? obj)
         {
