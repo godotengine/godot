@@ -300,7 +300,7 @@ Vector<String> OptimizedTranslation::get_translated_message_list() const {
 	return msgs;
 }
 
-StringName OptimizedTranslation::get_plural_message(const StringName &p_src_text, const StringName &p_plural_text, int p_n, const StringName &p_context) const {
+StringName OptimizedTranslation::get_plural_message(int p_n, const StringName &p_src_text, const StringName &p_plural_text, const StringName &p_context) const {
 	// The use of plurals translation is not yet supported in OptimizedTranslation.
 	return get_message(p_src_text, p_context);
 }

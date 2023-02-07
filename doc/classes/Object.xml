@@ -910,9 +910,9 @@
 		</method>
 		<method name="tr_n" qualifiers="const">
 			<return type="String" />
-			<param index="0" name="message" type="StringName" />
-			<param index="1" name="plural_message" type="StringName" />
-			<param index="2" name="n" type="int" />
+			<param index="0" name="n" type="int" />
+			<param index="1" name="message" type="StringName" />
+			<param index="2" name="plural_message" type="StringName" default="&quot;&quot;" />
 			<param index="3" name="context" type="StringName" default="&quot;&quot;" />
 			<description>
 				Translates a [param message] or [param plural_message], using the translation catalogs configured in the Project Settings. Further [param context] can be specified to help with the translation.

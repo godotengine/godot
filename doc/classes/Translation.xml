@@ -21,9 +21,9 @@
 		</method>
 		<method name="_get_plural_message" qualifiers="virtual const">
 			<return type="StringName" />
-			<param index="0" name="src_message" type="StringName" />
-			<param index="1" name="src_plural_message" type="StringName" />
-			<param index="2" name="n" type="int" />
+			<param index="0" name="n" type="int" />
+			<param index="1" name="src_message" type="StringName" />
+			<param index="2" name="src_plural_message" type="StringName" />
 			<param index="3" name="context" type="StringName" />
 			<description>
 				Virtual method to override [method get_plural_message].
@@ -79,9 +79,9 @@
 		</method>
 		<method name="get_plural_message" qualifiers="const">
 			<return type="StringName" />
-			<param index="0" name="src_message" type="StringName" />
-			<param index="1" name="src_plural_message" type="StringName" />
-			<param index="2" name="n" type="int" />
+			<param index="0" name="n" type="int" />
+			<param index="1" name="src_message" type="StringName" />
+			<param index="2" name="src_plural_message" type="StringName" default="&quot;&quot;" />
 			<param index="3" name="context" type="StringName" default="&quot;&quot;" />
 			<description>
 				Returns a message's translation involving plurals.

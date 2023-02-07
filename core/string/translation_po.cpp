@@ -241,7 +241,7 @@ StringName TranslationPO::get_message(const StringName &p_src_text, const String
 	return translation_map[p_context][p_src_text][0];
 }
 
-StringName TranslationPO::get_plural_message(const StringName &p_src_text, const StringName &p_plural_text, int p_n, const StringName &p_context) const {
+StringName TranslationPO::get_plural_message(int p_n, const StringName &p_src_text, const StringName &p_plural_text, const StringName &p_context) const {
 	ERR_FAIL_COND_V_MSG(p_n < 0, StringName(), "N passed into translation to get a plural message should not be negative. For negative numbers, use singular translation please. Search \"gettext PO Plural Forms\" online for the documentation on translating negative numbers.");
 
 	// If the query is the same as last time, return the cached result.

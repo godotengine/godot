@@ -122,11 +122,11 @@ TEST_CASE("[TranslationPO] Plural messages") {
 	translation->add_plural_message("There are %d apples", plurals);
 	ERR_PRINT_OFF;
 	// This is invalid, as the number passed to `get_plural_message()` may not be negative.
-	CHECK(vformat(translation->get_plural_message("There are %d apples", "", -1), -1) == "");
+	CHECK(vformat(translation->get_plural_message(-1, "There are %d apples"), -1) == "");
 	ERR_PRINT_ON;
-	CHECK(vformat(translation->get_plural_message("There are %d apples", "", 0), 0) == "Il y a 0 pomme");
-	CHECK(vformat(translation->get_plural_message("There are %d apples", "", 1), 1) == "Il y a 1 pomme");
-	CHECK(vformat(translation->get_plural_message("There are %d apples", "", 2), 2) == "Il y a 2 pommes");
+	CHECK(vformat(translation->get_plural_message(0, "There are %d apples"), 0) == "Il y a 0 pomme");
+	CHECK(vformat(translation->get_plural_message(1, "There are %d apples"), 1) == "Il y a 1 pomme");
+	CHECK(vformat(translation->get_plural_message(2, "There are %d apples"), 2) == "Il y a 2 pommes");
 }
 
 TEST_CASE("[OptimizedTranslation] Generate from Translation and read messages") {
@@ -173,7 +173,7 @@ TEST_CASE("[Translation] CSV import") {
 
 	TranslationServer::get_singleton()->set_locale("de");
 
-	CHECK(Object().tr("GOOD_MORNING", "") == "Guten Morgen");
+	CHECK(Object().tr("GOOD_MORNING") == "Guten Morgen");
 }
 #endif // TOOLS_ENABLED
 

@@ -267,11 +267,11 @@ void GDScriptEditorTranslationParserPlugin::_extract_from_call(GDScriptParser::C
 			ids_ctx_plural->push_back(id_ctx_plural);
 		}
 	} else if (function_name == trn_func) {
-		// Extract from tr_n(id, plural, n, ctx).
+		// Extract from tr_n(n, id, plural, ctx).
 		Vector<int> indices;
-		indices.push_back(0);
-		indices.push_back(3);
 		indices.push_back(1);
+		indices.push_back(3);
+		indices.push_back(2);
 		for (int i = 0; i < indices.size(); i++) {
 			if (indices[i] >= p_call->arguments.size()) {
 				continue;

@@ -419,9 +419,9 @@ void FindReplaceBar::_update_matches_label() {
 		if (results_count == 0) {
 			matches_label->set_text("No match");
 		} else if (results_count_to_current == -1) {
-			matches_label->set_text(vformat(TTRN("%d match", "%d matches", results_count), results_count));
+			matches_label->set_text(vformat(TTRN(results_count, "%d match", "%d matches"), results_count));
 		} else {
-			matches_label->set_text(vformat(TTRN("%d of %d match", "%d of %d matches", results_count), results_count_to_current, results_count));
+			matches_label->set_text(vformat(TTRN(results_count, "%d of %d match", "%d of %d matches"), results_count_to_current, results_count));
 		}
 	}
 }

@@ -227,7 +227,7 @@ void ThemeItemImportTree::_update_items_tree() {
 	if (color_amount > 0) {
 		Array arr;
 		arr.push_back(color_amount);
-		select_colors_label->set_text(TTRN("1 color", "{num} colors", color_amount).format(arr, "{num}"));
+		select_colors_label->set_text(TTRN(color_amount, "1 color", "{num} colors").format(arr, "{num}"));
 		select_all_colors_button->set_visible(true);
 		select_full_colors_button->set_visible(true);
 		deselect_all_colors_button->set_visible(true);
@@ -241,7 +241,7 @@ void ThemeItemImportTree::_update_items_tree() {
 	if (constant_amount > 0) {
 		Array arr;
 		arr.push_back(constant_amount);
-		select_constants_label->set_text(TTRN("1 constant", "{num} constants", constant_amount).format(arr, "{num}"));
+		select_constants_label->set_text(TTRN(constant_amount, "1 constant", "{num} constants").format(arr, "{num}"));
 		select_all_constants_button->set_visible(true);
 		select_full_constants_button->set_visible(true);
 		deselect_all_constants_button->set_visible(true);
@@ -255,7 +255,7 @@ void ThemeItemImportTree::_update_items_tree() {
 	if (font_amount > 0) {
 		Array arr;
 		arr.push_back(font_amount);
-		select_fonts_label->set_text(TTRN("1 font", "{num} fonts", font_amount).format(arr, "{num}"));
+		select_fonts_label->set_text(TTRN(font_amount, "1 font", "{num} fonts").format(arr, "{num}"));
 		select_all_fonts_button->set_visible(true);
 		select_full_fonts_button->set_visible(true);
 		deselect_all_fonts_button->set_visible(true);
@@ -269,7 +269,7 @@ void ThemeItemImportTree::_update_items_tree() {
 	if (font_size_amount > 0) {
 		Array arr;
 		arr.push_back(font_size_amount);
-		select_font_sizes_label->set_text(TTRN("1 font size", "{num} font sizes", font_size_amount).format(arr, "{num}"));
+		select_font_sizes_label->set_text(TTRN(font_size_amount, "1 font size", "{num} font sizes").format(arr, "{num}"));
 		select_all_font_sizes_button->set_visible(true);
 		select_full_font_sizes_button->set_visible(true);
 		deselect_all_font_sizes_button->set_visible(true);
@@ -283,7 +283,7 @@ void ThemeItemImportTree::_update_items_tree() {
 	if (icon_amount > 0) {
 		Array arr;
 		arr.push_back(icon_amount);
-		select_icons_label->set_text(TTRN("1 icon", "{num} icons", icon_amount).format(arr, "{num}"));
+		select_icons_label->set_text(TTRN(icon_amount, "1 icon", "{num} icons").format(arr, "{num}"));
 		select_all_icons_button->set_visible(true);
 		select_full_icons_button->set_visible(true);
 		deselect_all_icons_button->set_visible(true);
@@ -299,7 +299,7 @@ void ThemeItemImportTree::_update_items_tree() {
 	if (stylebox_amount > 0) {
 		Array arr;
 		arr.push_back(stylebox_amount);
-		select_styleboxes_label->set_text(TTRN("1 stylebox", "{num} styleboxes", stylebox_amount).format(arr, "{num}"));
+		select_styleboxes_label->set_text(TTRN(stylebox_amount, "1 stylebox", "{num} styleboxes").format(arr, "{num}"));
 		select_all_styleboxes_button->set_visible(true);
 		select_full_styleboxes_button->set_visible(true);
 		deselect_all_styleboxes_button->set_visible(true);
@@ -447,7 +447,7 @@ void ThemeItemImportTree::_update_total_selected(Theme::DataType p_data_type) {
 	} else {
 		Array arr;
 		arr.push_back(count);
-		total_selected_items_label->set_text(TTRN("{num} currently selected", "{num} currently selected", count).format(arr, "{num}"));
+		total_selected_items_label->set_text(TTRN(count, "{num} currently selected", "{num} currently selected").format(arr, "{num}"));
 		total_selected_items_label->show();
 	}
 }

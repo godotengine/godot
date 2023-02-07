@@ -51,7 +51,7 @@ protected:
 	static void _bind_methods();
 
 	GDVIRTUAL2RC(StringName, _get_message, StringName, StringName);
-	GDVIRTUAL4RC(StringName, _get_plural_message, StringName, StringName, int, StringName);
+	GDVIRTUAL4RC(StringName, _get_plural_message, int, StringName, StringName, StringName);
 
 public:
 	void set_locale(const String &p_locale);
@@ -60,7 +60,7 @@ public:
 	virtual void add_message(const StringName &p_src_text, const StringName &p_xlated_text, const StringName &p_context = "");
 	virtual void add_plural_message(const StringName &p_src_text, const Vector<String> &p_plural_xlated_texts, const StringName &p_context = "");
 	virtual StringName get_message(const StringName &p_src_text, const StringName &p_context = "") const; //overridable for other implementations
-	virtual StringName get_plural_message(const StringName &p_src_text, const StringName &p_plural_text, int p_n, const StringName &p_context = "") const;
+	virtual StringName get_plural_message(int p_n, const StringName &p_src_text, const StringName &p_plural_text = "", const StringName &p_context = "") const;
 	virtual void erase_message(const StringName &p_src_text, const StringName &p_context = "");
 	virtual void get_message_list(List<StringName> *r_messages) const;
 	virtual int get_message_count() const;
@@ -154,7 +154,7 @@ public:
 	void remove_translation(const Ref<Translation> &p_translation);
 
 	StringName translate(const StringName &p_message, const StringName &p_context = "") const;
-	StringName translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context = "") const;
+	StringName translate_plural(int p_n, const StringName &p_message, const StringName &p_message_plural = "", const StringName &p_context = "") const;
 
 	StringName pseudolocalize(const StringName &p_message) const;
 
@@ -171,10 +171,10 @@ public:
 	void set_tool_translation(const Ref<Translation> &p_translation);
 	Ref<Translation> get_tool_translation() const;
 	StringName tool_translate(const StringName &p_message, const StringName &p_context = "") const;
-	StringName tool_translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context = "") const;
+	StringName tool_translate_plural(int p_n, const StringName &p_message, const StringName &p_message_plural, const StringName &p_context = "") const;
 	void set_doc_translation(const Ref<Translation> &p_translation);
 	StringName doc_translate(const StringName &p_message, const StringName &p_context = "") const;
-	StringName doc_translate_plural(const StringName &p_message, const StringName &p_message_plural, int p_n, const StringName &p_context = "") const;
+	StringName doc_translate_plural(int p_n, const StringName &p_message, const StringName &p_message_plural, const StringName &p_context = "") const;
 	void set_property_translation(const Ref<Translation> &p_translation);
 	StringName property_translate(const StringName &p_message) const;
 

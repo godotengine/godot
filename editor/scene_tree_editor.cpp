@@ -316,13 +316,13 @@ void SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 		if (num_connections >= 1) {
 			Array arr;
 			arr.push_back(num_connections);
-			msg_temp += TTRN("Node has one connection.", "Node has {num} connections.", num_connections).format(arr, "{num}");
+			msg_temp += TTRN(num_connections, "Node has one connection.", "Node has {num} connections.").format(arr, "{num}");
 			if (num_groups >= 1) {
 				msg_temp += "\n";
 			}
 		}
 		if (num_groups >= 1) {
-			msg_temp += TTRN("Node is in this group:", "Node is in the following groups:", num_groups) + "\n";
+			msg_temp += TTRN(num_groups, "Node is in this group:", "Node is in the following groups:") + "\n";
 
 			List<GroupInfo> groups;
 			p_node->get_groups(&groups);

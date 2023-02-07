@@ -5052,15 +5052,15 @@ String TTR(const String &p_text, const String &p_context) {
  * be specified to disambiguate between identical source strings in
  * translations. Use `TTR()` if the string doesn't need dynamic plural form.
  * When placeholders are desired, use
- * `vformat(TTRN("%d item", "%d items", some_integer), some_integer)`.
+ * `vformat(TTRN(some_integer, "%d item", "%d items"), some_integer)`.
  * The placeholder must be present in both strings to avoid run-time warnings in `vformat()`.
  *
  * NOTE: Only use `TTRN()` in editor-only code (typically within the `editor/` folder).
  * For translations that can be supplied by exported projects, use `RTRN()` instead.
  */
-String TTRN(const String &p_text, const String &p_text_plural, int p_n, const String &p_context) {
+String TTRN(int p_n, const String &p_text, const String &p_text_plural, const String &p_context) {
 	if (TranslationServer::get_singleton()) {
-		return TranslationServer::get_singleton()->tool_translate_plural(p_text, p_text_plural, p_n, p_context);
+		return TranslationServer::get_singleton()->tool_translate_plural(p_n, p_text, p_text_plural, p_context);
 	}
 
 	// Return message based on English plural rule if translation is not possible.
@@ -5093,12 +5093,12 @@ String DTR(const String &p_text, const String &p_context) {
  * It also replaces `$DOCS_URL` with the actual URL to the documentation's branch,
  * to allow dehardcoding it in the XML and doing proper substitutions everywhere.
  */
-String DTRN(const String &p_text, const String &p_text_plural, int p_n, const String &p_context) {
+String DTRN(int p_n, const String &p_text, const String &p_text_plural, const String &p_context) {
 	const String text = p_text.dedent().strip_edges();
 	const String text_plural = p_text_plural.dedent().strip_edges();
 
 	if (TranslationServer::get_singleton()) {
-		return String(TranslationServer::get_singleton()->doc_translate_plural(text, text_plural, p_n, p_context)).replace("$DOCS_URL", VERSION_DOCS_URL);
+		return String(TranslationServer::get_singleton()->doc_translate_plural(p_n, text, text_plural, p_context)).replace("$DOCS_URL", VERSION_DOCS_URL);
 	}
 
 	// Return message based on English plural rule if translation is not possible.
@@ -5143,17 +5143,17 @@ String RTR(const String &p_text, const String &p_context) {
  * optionally be specified to disambiguate between identical source strings in
  * translations. Use `RTR()` if the string doesn't need dynamic plural form.
  * When placeholders are desired, use
- * `vformat(RTRN("%d item", "%d items", some_integer), some_integer)`.
+ * `vformat(RTRN(some_integer, "%d item", "%d items"), some_integer)`.
  * The placeholder must be present in both strings to avoid run-time warnings in `vformat()`.
  *
  * NOTE: Do not use `RTRN()` in editor-only code (typically within the `editor/`
  * folder). For editor translations, use `TTRN()` instead.
  */
-String RTRN(const String &p_text, const String &p_text_plural, int p_n, const String &p_context) {
+String RTRN(int p_n, const String &p_text, const String &p_text_plural, const String &p_context) {
 	if (TranslationServer::get_singleton()) {
-		String rtr = TranslationServer::get_singleton()->tool_translate_plural(p_text, p_text_plural, p_n, p_context);
+		String rtr = TranslationServer::get_singleton()->tool_translate_plural(p_n, p_text, p_text_plural, p_context);
 		if (rtr.is_empty() || rtr == p_text || rtr == p_text_plural) {
-			return TranslationServer::get_singleton()->translate_plural(p_text, p_text_plural, p_n, p_context);
+			return TranslationServer::get_singleton()->translate_plural(p_n, p_text, p_text_plural, p_context);
 		} else {
 			return rtr;
 		}
