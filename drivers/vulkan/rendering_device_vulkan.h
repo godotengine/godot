@@ -786,7 +786,6 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		Vector<uint32_t> set_formats;
 		VkPipelineLayout pipeline_layout = VK_NULL_HANDLE; // Not owned, needed for push constants.
 		VkPipeline pipeline = VK_NULL_HANDLE;
-		List<VkPipeline> pipeline_libraries; //only used when graphics pipeline library feature is enabled
 		uint32_t push_constant_size = 0;
 		uint32_t push_constant_stages_mask = 0;
 	};
@@ -805,109 +804,373 @@ class RenderingDeviceVulkan : public RenderingDevice {
 
 	RID_Owner<ComputePipeline, true> compute_pipeline_owner;
 
-	struct PipelineLibrary{
-		struct Stage{
-			VkGraphicsPipelineCreateInfo pipeline_stage_info = {};
-			VkPipeline pipeline = VK_NULL_HANDLE;
+	struct PipelineLibraryKey{
+		RID shader;
+		VkGraphicsPipelineLibraryFlagsEXT flags = {};
+		VkGraphicsPipelineCreateInfo stage_info = {};
+		bool operator==(const PipelineLibraryKey &p_key) const {
+			VkGraphicsPipelineCreateInfo pci = stage_info;
+			VkGraphicsPipelineCreateInfo pcik = p_key.stage_info;
+			if(shader != p_key.shader){
+				return false;
+			}
+			if(flags != p_key.flags){
+				return false;
+			}
+			if(pci.stageCount != pcik.stageCount){
+				return false;
+			}
+			if(pcik.pStages != nullptr){
+				if(pci.pStages->flags != pcik.pStages->flags){
+					return false;
+				}
+				if(pci.pStages->stage != pcik.pStages->stage){
+					return false;
+				}
+				if(pci.pStages->pSpecializationInfo != nullptr){
+					if(pci.pStages->pSpecializationInfo->dataSize != pcik.pStages->pSpecializationInfo->dataSize){
+						return false;
+					}
+					for(uint32_t i=0; i< pci.pStages->pSpecializationInfo->mapEntryCount; i++){
+						if(pci.pStages->pSpecializationInfo->pMapEntries[i].constantID != pcik.pStages->pSpecializationInfo->pMapEntries[i].constantID){
+							return false;
+						}
+						if(pci.pStages->pSpecializationInfo->pMapEntries[i].offset != pcik.pStages->pSpecializationInfo->pMapEntries[i].offset){
+							return false;
+						}
+						if(pci.pStages->pSpecializationInfo->pMapEntries[i].size != pcik.pStages->pSpecializationInfo->pMapEntries[i].size){
+							return false;
+						}
+					}
+					if(pci.pStages->pSpecializationInfo->pData != pcik.pStages->pSpecializationInfo->pData){
+						return false;
+					}
+				}else{
+					return false;
+				}
+			}else{
+				return false;
+			}
+			if(pcik.pVertexInputState != nullptr){
+				if(pci.pVertexInputState->flags != pcik.pVertexInputState->flags){
+					return false;
+				}
+				for(uint32_t i=0; i < pci.pVertexInputState->vertexAttributeDescriptionCount; i++){
+					if(pci.pVertexInputState->pVertexAttributeDescriptions[i].binding != pcik.pVertexInputState->pVertexAttributeDescriptions[i].binding){
+						return false;
+					}
+					if(pci.pVertexInputState->pVertexAttributeDescriptions[i].format != pcik.pVertexInputState->pVertexAttributeDescriptions[i].format){
+						return false;
+					}
+					if(pci.pVertexInputState->pVertexAttributeDescriptions[i].location != pcik.pVertexInputState->pVertexAttributeDescriptions[i].location){
+						return false;
+					}
+					if(pci.pVertexInputState->pVertexAttributeDescriptions[i].offset != pcik.pVertexInputState->pVertexAttributeDescriptions[i].offset){
+						return false;
+					}
+				}
+				for(uint32_t i=0; i < pci.pVertexInputState->vertexBindingDescriptionCount; i++){
+					if(pci.pVertexInputState->pVertexBindingDescriptions[i].binding != pcik.pVertexInputState->pVertexBindingDescriptions[i].binding){
+						return false;
+					}
+					if(pci.pVertexInputState->pVertexBindingDescriptions[i].inputRate != pcik.pVertexInputState->pVertexBindingDescriptions[i].inputRate){
+						return false;
+					}
+					if(pci.pVertexInputState->pVertexBindingDescriptions[i].stride != pcik.pVertexInputState->pVertexBindingDescriptions[i].stride){
+						return false;
+					}
+				}
+			}else {
+				return false;
+			}
+			if(pcik.pInputAssemblyState != nullptr){
+				if(pci.pInputAssemblyState->flags != pcik.pInputAssemblyState->flags){
+					return false;
+				}
+				if(pci.pInputAssemblyState->primitiveRestartEnable != pcik.pInputAssemblyState->primitiveRestartEnable){
+					return false;
+				}
+				if(pci.pInputAssemblyState->topology != pcik.pInputAssemblyState->topology){
+					return false;
+				}
+			}else {
+				return false;
+			}
+			if(pcik.pTessellationState != nullptr){
+				if(pci.pTessellationState->flags != pcik.pTessellationState->flags){
+					return false;
+				}
+				if(pci.pTessellationState->patchControlPoints != pcik.pTessellationState->patchControlPoints){
+					return false;
+				}
+			}else {
+				return false;
+			}
+			if(pcik.pViewportState != nullptr){
+				if(pci.pViewportState->flags != pcik.pViewportState->flags){
+					return false;
+				}
+				if(pci.pViewportState->viewportCount != pcik.pViewportState->viewportCount){
+					return false;
+				}
+				if(pci.pViewportState->scissorCount != pcik.pViewportState->scissorCount){
+					return false;
+				}
+			}else{
+				return false;
+			}
+			if(pcik.pRasterizationState != nullptr){
+				if(pci.pRasterizationState->flags != pcik.pRasterizationState->flags){
+					return false;
+				}
+				if(pci.pRasterizationState->cullMode != pcik.pRasterizationState->cullMode){
+					return false;
+				}
+				if(pci.pRasterizationState->depthBiasClamp != pcik.pRasterizationState->depthBiasClamp){
+					return false;
+				}
+				if(pci.pRasterizationState->depthBiasConstantFactor != pcik.pRasterizationState->depthBiasConstantFactor){
+					return false;
+				}
+				if(pci.pRasterizationState->depthBiasEnable != pcik.pRasterizationState->depthBiasEnable){
+					return false;
+				}
+				if(pci.pRasterizationState->depthBiasSlopeFactor != pcik.pRasterizationState->depthBiasSlopeFactor){
+					return false;
+				}
+				if(pci.pRasterizationState->depthClampEnable != pcik.pRasterizationState->depthClampEnable){
+					return false;
+				}
+				if(pci.pRasterizationState->frontFace != pcik.pRasterizationState->frontFace){
+					return false;
+				}
+				if(pci.pRasterizationState->lineWidth != pcik.pRasterizationState->lineWidth){
+					return false;
+				}
+				if(pci.pRasterizationState->polygonMode != pcik.pRasterizationState->polygonMode){
+					return false;
+				}
+				if(pci.pRasterizationState->rasterizerDiscardEnable != pcik.pRasterizationState->rasterizerDiscardEnable){
+					return false;
+				}
+			}else{
+				return false;
+			}
+			if(pcik.pMultisampleState != nullptr){
+				if(pci.pMultisampleState->flags != pcik.pMultisampleState->flags){
+					return false;
+				}
+				if(pci.pMultisampleState->alphaToCoverageEnable != pcik.pMultisampleState->alphaToCoverageEnable){
+					return false;
+				}
+				if(pci.pMultisampleState->alphaToOneEnable != pcik.pMultisampleState->alphaToOneEnable){
+					return false;
+				}
+				if(pci.pMultisampleState->minSampleShading != pcik.pMultisampleState->minSampleShading){
+					return false;
+				}
+				if(pci.pMultisampleState->pSampleMask != pcik.pMultisampleState->pSampleMask){
+					return false;
+				}
+				if(pci.pMultisampleState->rasterizationSamples != pcik.pMultisampleState->rasterizationSamples){
+					return false;
+				}
+				if(pci.pMultisampleState->sampleShadingEnable != pcik.pMultisampleState->sampleShadingEnable){
+					return false;
+				}
+			}else{
+				return false;
+			}
+			if(pcik.pDepthStencilState != nullptr){
+				if(pci.pDepthStencilState->flags != pcik.pDepthStencilState->flags){
+					return false;
+				}
+				if(pci.pDepthStencilState->depthBoundsTestEnable != pcik.pDepthStencilState->depthBoundsTestEnable){
+					return false;
+				}
+				if(pci.pDepthStencilState->depthCompareOp != pcik.pDepthStencilState->depthCompareOp){
+					return false;
+				}
+				if(pci.pDepthStencilState->depthTestEnable != pcik.pDepthStencilState->depthTestEnable){
+					return false;
+				}
+				if(pci.pDepthStencilState->depthWriteEnable != pcik.pDepthStencilState->depthWriteEnable){
+					return false;
+				}
+				if(pci.pDepthStencilState->maxDepthBounds != pcik.pDepthStencilState->maxDepthBounds){
+					return false;
+				}
+				if(pci.pDepthStencilState->minDepthBounds != pcik.pDepthStencilState->minDepthBounds){
+					return false;
+				}
+				if(pci.pDepthStencilState->back.depthFailOp != pcik.pDepthStencilState->back.depthFailOp
+				|| pci.pDepthStencilState->back.failOp != pcik.pDepthStencilState->back.failOp
+				|| pci.pDepthStencilState->back.compareMask != pcik.pDepthStencilState->back.compareMask
+				|| pci.pDepthStencilState->back.compareOp != pcik.pDepthStencilState->back.compareOp
+				|| pci.pDepthStencilState->back.writeMask != pcik.pDepthStencilState->back.writeMask
+				|| pci.pDepthStencilState->back.passOp != pcik.pDepthStencilState->back.passOp
+				|| pci.pDepthStencilState->back.reference != pcik.pDepthStencilState->back.reference){
+					return false;
+				}
+				if(pci.pDepthStencilState->front.depthFailOp != pcik.pDepthStencilState->front.depthFailOp
+				|| pci.pDepthStencilState->front.failOp != pcik.pDepthStencilState->front.failOp
+				|| pci.pDepthStencilState->front.compareMask != pcik.pDepthStencilState->front.compareMask
+				|| pci.pDepthStencilState->front.compareOp != pcik.pDepthStencilState->front.compareOp
+				|| pci.pDepthStencilState->front.writeMask != pcik.pDepthStencilState->front.writeMask
+				|| pci.pDepthStencilState->front.passOp != pcik.pDepthStencilState->front.passOp
+				|| pci.pDepthStencilState->front.reference != pcik.pDepthStencilState->back.reference){
+					return false;
+				}
+				if(pci.pDepthStencilState->stencilTestEnable != pcik.pDepthStencilState->stencilTestEnable){
+					return false;
+				}
+			}else{
+				return false;
+			}
+			if(pcik.pColorBlendState != nullptr){
+				if(pci.pColorBlendState->flags != pcik.pColorBlendState->flags){
+					return false;
+				}
+				for(uint32_t i=0; i < pci.pColorBlendState->attachmentCount; i++){
+					if(pci.pColorBlendState->pAttachments[i].colorBlendOp != pcik.pColorBlendState->pAttachments[i].colorBlendOp){
+						return false;
+					}
+					if(pci.pColorBlendState->pAttachments[i].dstColorBlendFactor != pcik.pColorBlendState->pAttachments[i].dstColorBlendFactor){
+						return false;
+					}
+					if(pci.pColorBlendState->pAttachments[i].srcColorBlendFactor != pcik.pColorBlendState->pAttachments[i].srcColorBlendFactor){
+						return false;
+					}
+					if(pci.pColorBlendState->pAttachments[i].alphaBlendOp != pcik.pColorBlendState->pAttachments[i].alphaBlendOp){
+						return false;
+					}
+					if(pci.pColorBlendState->pAttachments[i].blendEnable != pcik.pColorBlendState->pAttachments[i].blendEnable){
+						return false;
+					}
+					if(pci.pColorBlendState->pAttachments[i].colorWriteMask != pcik.pColorBlendState->pAttachments[i].colorWriteMask){
+						return false;
+					}
+					if(pci.pColorBlendState->pAttachments[i].dstAlphaBlendFactor != pcik.pColorBlendState->pAttachments[i].dstAlphaBlendFactor){
+						return false;
+					}
+					if(pci.pColorBlendState->pAttachments[i].srcAlphaBlendFactor != pcik.pColorBlendState->pAttachments[i].srcAlphaBlendFactor){
+						return false;
+					}
+				}
+				for(int i=0; i < 4; i++){
+					if(pci.pColorBlendState->blendConstants[i] != pcik.pColorBlendState->blendConstants[i]){
+						return false;
+					}
+				}
+				if(pci.pColorBlendState->logicOp != pcik.pColorBlendState->logicOp){
+					return false;
+				}
+				if(pci.pColorBlendState->logicOpEnable != pcik.pColorBlendState->logicOpEnable){
+					return false;
+				}
+			}else{
+				return false;
+			}
+			if(pcik.pDynamicState != nullptr){
+				if(pci.pDynamicState->flags != pcik.pDynamicState->flags){
+					return false;
+				}
+				if(pci.pDynamicState->dynamicStateCount != pcik.pDynamicState->dynamicStateCount){
+					return false;
+				}
+			}else{
+				return false;
+			}
+			if(pci.layout != pcik.layout){
+				return false;
+			}
+			if(pci.renderPass != pcik.renderPass){
+				return false;
+			}
+			if(pci.subpass != pcik.subpass){
+				return false;
+			}
+			if(pci.basePipelineHandle != pcik.basePipelineHandle){
+				return false;
+			}
+			if(pci.basePipelineIndex != pcik.basePipelineIndex){
+				return false;
+			}
+			return true; // They are equal.
+		}
 
-			bool operator==(const Stage &p_key) const {
-				VkGraphicsPipelineCreateInfo pci = pipeline_stage_info;
-				VkGraphicsPipelineCreateInfo pcik = p_key.pipeline_stage_info;
-				if (pci.pInputAssemblyState != pcik.pInputAssemblyState){
-					return false;
-				}
-				if (pci.pVertexInputState != pcik.pVertexInputState){
-					return false;
-				}
-				if (pci.pViewportState != pcik.pViewportState){
-					return false;
-				}
-				if (pci.pDynamicState != pcik.pDynamicState){
-					return false;
-				}
-				if (pci.pTessellationState != pcik.pTessellationState){
-					return false;
-				}
-				if (pci.pStages != pcik.pStages){
-					return false;
-				}
-				if (pci.pDepthStencilState != pcik.pDepthStencilState){
-					return false;
-				}
-				if (pci.pMultisampleState != pcik.pMultisampleState){
-					return false;
-				}
-				if (pci.pColorBlendState != pcik.pColorBlendState){
-					return false;
-				}
-				if (pci.pRasterizationState != pcik.pRasterizationState){
-					return false;
-				}
-				if (pci.layout != pcik.layout){
-					return false;
-				}
-				if(pci.renderPass != pcik.renderPass){
-					return false;
-				}
-				if(pci.subpass != pcik.subpass){
-					return false;
-				}
-				if(pci.pStages != pcik.pStages){
-					return false;
-				}
-				return true; // They are equal.
+		uint32_t hash() const {
+			uint32_t h = 0;
+			h = hash_murmur3_one_32(shader.get_id(), h);
+			h = hash_murmur3_one_32(flags, h);
+			if(stage_info.pInputAssemblyState != nullptr){
+				h = hash_murmur3_one_32(stage_info.pInputAssemblyState->flags, h);
+				h = hash_murmur3_one_32(stage_info.pInputAssemblyState->primitiveRestartEnable, h);
+				h = hash_murmur3_one_32(stage_info.pInputAssemblyState->topology, h);
 			}
-			bool operator!=(const Stage &p_key) const {
-				VkGraphicsPipelineCreateInfo pci = pipeline_stage_info;
-				VkGraphicsPipelineCreateInfo pcik = p_key.pipeline_stage_info;
-				if (pci.pInputAssemblyState != pcik.pInputAssemblyState){
-					return true;
-				}
-				if (pci.pVertexInputState != pcik.pVertexInputState){
-					return true;
-				}
-				if (pci.pViewportState != pcik.pViewportState){
-					return true;
-				}
-				if (pci.pDynamicState != pcik.pDynamicState){
-					return true;
-				}
-				if (pci.pTessellationState != pcik.pTessellationState){
-					return true;
-				}
-				if (pci.pStages != pcik.pStages){
-					return true;
-				}
-				if (pci.pDepthStencilState != pcik.pDepthStencilState){
-					return true;
-				}
-				if (pci.pMultisampleState != pcik.pMultisampleState){
-					return true;
-				}
-				if (pci.pColorBlendState != pcik.pColorBlendState){
-					return true;
-				}
-				if (pci.pRasterizationState != pcik.pRasterizationState){
-					return true;
-				}
-				if (pci.layout != pcik.layout){
-					return true;
-				}
-				if(pci.renderPass != pcik.renderPass){
-					return true;
-				}
-				if(pci.subpass != pcik.subpass){
-					return true;
-				}
-				if(pci.pStages != pcik.pStages){
-					return true;
-				}
-				return false; // They are equal.
+			if(stage_info.pVertexInputState != nullptr){
+				h = hash_murmur3_one_32(stage_info.pVertexInputState->flags, h);
+				h = hash_murmur3_one_32(stage_info.pVertexInputState->vertexAttributeDescriptionCount, h);
+				h = hash_murmur3_one_32(stage_info.pVertexInputState->vertexBindingDescriptionCount, h);
 			}
-		};
-		Vector<Stage> stages;
+			if(stage_info.pColorBlendState != nullptr){
+				h = hash_murmur3_one_32(stage_info.pColorBlendState->attachmentCount, h);
+				h = hash_murmur3_one_32(stage_info.pColorBlendState->flags, h);
+				h = hash_murmur3_one_32(stage_info.pColorBlendState->logicOpEnable, h);
+			}
+			if(stage_info.pDepthStencilState != nullptr){
+				h = hash_murmur3_one_32(stage_info.pDepthStencilState->depthBoundsTestEnable, h);
+				h = hash_murmur3_one_32(stage_info.pDepthStencilState->depthTestEnable, h);
+				h = hash_murmur3_one_32(stage_info.pDepthStencilState->stencilTestEnable, h);
+				h = hash_murmur3_one_32(stage_info.pDepthStencilState->depthWriteEnable, h);
+				h = hash_murmur3_one_32(stage_info.pDepthStencilState->flags, h);
+				h = hash_murmur3_one_32(stage_info.pDepthStencilState->depthCompareOp, h);
+			}
+			if(stage_info.pDynamicState != nullptr){
+				h = hash_murmur3_one_32(stage_info.pDynamicState->flags, h);
+				h = hash_murmur3_one_32(stage_info.pDynamicState->dynamicStateCount, h);
+			}
+			if(stage_info.pTessellationState != nullptr){
+				h = hash_murmur3_one_32(stage_info.pTessellationState->flags, h);
+				h = hash_murmur3_one_32(stage_info.pTessellationState->patchControlPoints, h);
+			}
+			if(stage_info.pViewportState != nullptr){
+				h = hash_murmur3_one_32(stage_info.pViewportState->viewportCount, h);
+				h = hash_murmur3_one_32(stage_info.pViewportState->flags, h);
+				h = hash_murmur3_one_32(stage_info.pViewportState->scissorCount, h);
+			}
+			if(stage_info.pRasterizationState != nullptr){
+				h = hash_murmur3_one_32(stage_info.pRasterizationState->cullMode, h);
+				h = hash_murmur3_one_32(stage_info.pRasterizationState->polygonMode,h );
+				h = hash_murmur3_one_32(stage_info.pRasterizationState->flags, h);
+				h = hash_murmur3_one_32(stage_info.pRasterizationState->depthBiasEnable, h);
+				h = hash_murmur3_one_32(stage_info.pRasterizationState->depthClampEnable, h);
+				h = hash_murmur3_one_32(stage_info.pRasterizationState->rasterizerDiscardEnable,h);
+			}
+			if(stage_info.pMultisampleState != nullptr){
+				h = hash_murmur3_one_32(stage_info.pMultisampleState->flags,h);
+				h = hash_murmur3_one_32(stage_info.pMultisampleState->alphaToCoverageEnable,h);
+				h = hash_murmur3_one_32(stage_info.pMultisampleState->alphaToOneEnable,h);
+				h = hash_murmur3_one_32(stage_info.pMultisampleState->sampleShadingEnable,h);
+				h = hash_murmur3_one_32(stage_info.pMultisampleState->rasterizationSamples,h);
+			}
+			h = hash_murmur3_one_32(stage_info.stageCount, h);
+			return h;
+		}
+
 	};
-	HashMap<RID,PipelineLibrary> pipeline_library_cache;
+
+	struct PipelineLibraryHash {
+		static _FORCE_INLINE_ uint32_t hash(const PipelineLibraryKey &p_key) {
+			return p_key.hash();
+		}
+	};
+
+	struct PipelineLibraryCache {
+		VkPipeline pipeline = VK_NULL_HANDLE;
+	};
+
+	HashMap<PipelineLibraryKey,PipelineLibraryCache, PipelineLibraryHash> pipeline_library_cache = {};
 	/*******************/
 	/**** DRAW LIST ****/
 	/*******************/

@@ -6003,7 +6003,7 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 				"Mismatch fragment shader output mask (" + itos(shader->fragment_output_mask) + ") and framebuffer color output mask (" + itos(output_mask) + ") when binding both in render pipeline.");
 	}
 	// Vertex.
-	VkPipelineVertexInputStateCreateInfo pipeline_vertex_input_state_create_info;
+	VkPipelineVertexInputStateCreateInfo pipeline_vertex_input_state_create_info = {};
 
 	if (p_vertex_format != INVALID_ID) {
 		// Uses vertices, else it does not.
@@ -6366,7 +6366,10 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 		}
 	}
 
-	Vector<VkPipeline> libraries; 
+	Vector<VkPipeline> libraries;
+	VkPipelineLibraryCreateInfoKHR pipeline_library_create_info = {};
+	pipeline_library_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LIBRARY_CREATE_INFO_KHR;
+
 	if (context->get_graphics_pipeline_library_capabilities().graphics_pipeline_library_supported && GLOBAL_GET("rendering/rendering_device/vulkan/use_graphics_pipeline_library")){
 		Vector<VkPipelineShaderStageCreateInfo> pre_raster_stages;
 		VkPipelineShaderStageCreateInfo fragment_stage = {};
@@ -6382,7 +6385,7 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 		VkGraphicsPipelineLibraryCreateInfoEXT library_info = {};
 		library_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_LIBRARY_CREATE_INFO_EXT;
 		library_info.flags = VK_GRAPHICS_PIPELINE_LIBRARY_VERTEX_INPUT_INTERFACE_BIT_EXT;
-		
+
 		//vertex input stage
 		VkGraphicsPipelineCreateInfo vertex_input_pipeline_create_info = {};
 		vertex_input_pipeline_create_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -6391,17 +6394,20 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 		vertex_input_pipeline_create_info.pInputAssemblyState = &input_assembly_create_info;
 		vertex_input_pipeline_create_info.pVertexInputState = &pipeline_vertex_input_state_create_info;
 
-		if(!pipeline_library_cache.find(p_shader)){
-			pipeline_library_cache[p_shader];
-			pipeline_library_cache.get(p_shader).stages.resize(4);
-		}
 		{
-			PipelineLibrary::Stage stage;
-			stage.pipeline_stage_info = vertex_input_pipeline_create_info;
-			if(pipeline_library_cache.get(p_shader).stages.get(0) != stage){
-				VkResult err = vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &stage.pipeline_stage_info, nullptr, &stage.pipeline);
+			PipelineLibraryKey key = {};
+			PipelineLibraryCache cache = {};
+			key.shader = p_shader;
+			key.flags = library_info.flags;
+			key.stage_info = vertex_input_pipeline_create_info;
+			HashMap<PipelineLibraryKey, PipelineLibraryCache, PipelineLibraryHash>::Iterator E = pipeline_library_cache.find(key);
+			if(E){
+				libraries.push_back(E->value.pipeline);
+			}else {
+				VkResult err = vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &key.stage_info, nullptr, &cache.pipeline);
 				ERR_FAIL_COND_V_MSG(err, RID(), "vertex input stage vkCreateGraphicsPipelines failed with error " + itos(err) + " for shader '" + shader->name + "'.");
-				pipeline_library_cache.get(p_shader).stages.set(0, stage);
+				pipeline_library_cache[key] = cache;
+				libraries.push_back(cache.pipeline);
 			}
 		}
 
@@ -6421,12 +6427,20 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 		pre_rasterization_pipeline_create_info.pRasterizationState = &rasterization_state_create_info;
 		pre_rasterization_pipeline_create_info.pTessellationState = &tessellation_create_info;
 		{
-			PipelineLibrary::Stage stage;
-			stage.pipeline_stage_info = pre_rasterization_pipeline_create_info;
-			if(pipeline_library_cache.get(p_shader).stages.get(1) != stage){
-				VkResult err = vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &stage.pipeline_stage_info, nullptr, &stage.pipeline);
+			PipelineLibraryKey key = {};
+			PipelineLibraryCache cache = {};
+			key.shader = p_shader;
+			key.flags = library_info.flags;
+			key.stage_info = pre_rasterization_pipeline_create_info;
+
+			HashMap<PipelineLibraryKey, PipelineLibraryCache, PipelineLibraryHash>::Iterator E = pipeline_library_cache.find(key);
+			if(E){
+				libraries.push_back(E->value.pipeline);
+			}else {
+				VkResult err = vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &key.stage_info, nullptr, &cache.pipeline);
 				ERR_FAIL_COND_V_MSG(err, RID(), "pre-rasterization stage vkCreateGraphicsPipelines failed with error " + itos(err) + " for shader '" + shader->name + "'.");
-				pipeline_library_cache.get(p_shader).stages.set(1, stage);
+				pipeline_library_cache[key] = cache;
+				libraries.push_back(cache.pipeline);
 			}
 		}
 
@@ -6444,12 +6458,19 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 		fragment_shader_pipeline_create_info.pDepthStencilState = &depth_stencil_state_create_info;
 		fragment_shader_pipeline_create_info.pMultisampleState = &multisample_state_create_info;
 		{
-			PipelineLibrary::Stage stage;
-			stage.pipeline_stage_info = fragment_shader_pipeline_create_info;
-			if(pipeline_library_cache.get(p_shader).stages.get(2) != stage){
-				VkResult err = vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &stage.pipeline_stage_info, nullptr, &stage.pipeline);
+			PipelineLibraryKey key = {};
+			PipelineLibraryCache cache = {};
+			key.shader = p_shader;
+			key.flags = library_info.flags;
+			key.stage_info = fragment_shader_pipeline_create_info;
+			HashMap<PipelineLibraryKey, PipelineLibraryCache, PipelineLibraryHash>::Iterator E = pipeline_library_cache.find(key);
+			if(E){
+				libraries.push_back(E->value.pipeline);
+			}else {
+				VkResult err = vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &key.stage_info, nullptr, &cache.pipeline);
 				ERR_FAIL_COND_V_MSG(err, RID(), "fragment shader stage vkCreateGraphicsPipelines failed with error " + itos(err) + " for shader '" + shader->name + "'.");
-				pipeline_library_cache.get(p_shader).stages.set(2, stage);
+				pipeline_library_cache[key] = cache;
+				libraries.push_back(cache.pipeline);
 			}
 		}
 
@@ -6465,27 +6486,28 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 		fragment_output_pipeline_create_info.pColorBlendState = &color_blend_state_create_info;
 		fragment_output_pipeline_create_info.pMultisampleState = &multisample_state_create_info;
 		{
-			PipelineLibrary::Stage stage;
-			stage.pipeline_stage_info = fragment_output_pipeline_create_info;
-			if(pipeline_library_cache.get(p_shader).stages.get(3) != stage){
-				VkResult err = vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &stage.pipeline_stage_info, nullptr, &stage.pipeline);
+			PipelineLibraryKey key = {};
+			PipelineLibraryCache cache = {};
+			key.shader = p_shader;
+			key.flags = library_info.flags;
+			key.stage_info = fragment_output_pipeline_create_info;
+			HashMap<PipelineLibraryKey, PipelineLibraryCache, PipelineLibraryHash>::Iterator E = pipeline_library_cache.find(key);
+			if(E){
+				libraries.push_back(E->value.pipeline);
+			}else {
+				VkResult err = vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &key.stage_info, nullptr, &cache.pipeline);
 				ERR_FAIL_COND_V_MSG(err, RID(), "fragment output stage vkCreateGraphicsPipelines failed with error " + itos(err) + " for shader '" + shader->name + "'.");
-				pipeline_library_cache.get(p_shader).stages.set(3, stage);
+				pipeline_library_cache[key] = cache;
+				libraries.push_back(cache.pipeline);
 			}
-		}
-		for(int i = 0; i < pipeline_library_cache.get(p_shader).stages.size(); i++){
-			libraries.push_back(pipeline_library_cache.get(p_shader).stages.get(i).pipeline);
 		}
 
 		// Link the library parts into a graphics pipeline
-		VkPipelineLibraryCreateInfoKHR pipeline_library_create_info = {};
-		pipeline_library_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LIBRARY_CREATE_INFO_KHR;
 		pipeline_library_create_info.libraryCount = libraries.size();
 		pipeline_library_create_info.pLibraries = libraries.ptr();
 
 		//TODO: re-enable VRS
 		graphics_pipeline_create_info.flags = VK_PIPELINE_CREATE_LINK_TIME_OPTIMIZATION_BIT_EXT;
-		graphics_pipeline_create_info.pNext = &graphics_pipeline_nextptr;
 		graphics_pipeline_create_info.pNext = &pipeline_library_create_info;
 		graphics_pipeline_create_info.layout = shader->pipeline_layout;
 		graphics_pipeline_create_info.basePipelineHandle = VK_NULL_HANDLE;
@@ -6514,7 +6536,7 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 		graphics_pipeline_create_info.basePipelineHandle = VK_NULL_HANDLE;
 		graphics_pipeline_create_info.basePipelineIndex = 0;
 	}
-	
+
 	RenderPipeline pipeline;
 	VkResult err = vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &graphics_pipeline_create_info, nullptr, &pipeline.pipeline);
 	ERR_FAIL_COND_V_MSG(err, RID(), "vkCreateGraphicsPipelines failed with error " + itos(err) + " for shader '" + shader->name + "'.");
@@ -8770,14 +8792,6 @@ void RenderingDeviceVulkan::_free_pending_resources(int p_frame) {
 		frames[p_frame].compute_pipelines_to_dispose_of.pop_front();
 	}
 
-	while (frames[p_frame].pipeline_libraries_to_dispose_of.front()) {
-		VkPipeline pipeline = frames[p_frame].pipeline_libraries_to_dispose_of.front()->get();
-
-		vkDestroyPipeline(device, pipeline, nullptr);
-
-		frames[p_frame].pipeline_libraries_to_dispose_of.pop_front();
-	}
-
 	// Uniform sets.
 	while (frames[p_frame].uniform_sets_to_dispose_of.front()) {
 		UniformSet *uniform_set = &frames[p_frame].uniform_sets_to_dispose_of.front()->get();
@@ -9448,6 +9462,11 @@ void RenderingDeviceVulkan::finalize() {
 			}
 		}
 	}
+	//Free pipeline libraries only after all executing pipelines are destroyed
+	for(KeyValue<PipelineLibraryKey, PipelineLibraryCache> &E : pipeline_library_cache) {
+		vkDestroyPipeline(device, E.value.pipeline, nullptr);
+	}
+	pipeline_library_cache.clear();
 
 	// Free everything pending.
 	for (int i = 0; i < frame_count; i++) {
