@@ -305,6 +305,9 @@ String _get_activity_tag(const Ref<EditorExportPreset> &p_preset, bool p_uses_xr
 								  "                <!-- OpenXR category tag to indicate the activity starts in an immersive OpenXR mode. \n"
 								  "                See https://registry.khronos.org/OpenXR/specs/1.0/html/xrspec.html#android-runtime-category. -->\n"
 								  "                <category android:name=\"org.khronos.openxr.intent.category.IMMERSIVE_HMD\" />\n"
+								  "\n"
+								  "                <!-- Enable VR access on HTC Vive Focus devices. -->\n"
+								  "                <category android:name=\"com.htc.intent.category.VRAPP\" />\n"
 								  "            </intent-filter>\n";
 	} else {
 		manifest_activity_text += "            <intent-filter>\n"
