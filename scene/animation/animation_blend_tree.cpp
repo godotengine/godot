@@ -810,6 +810,7 @@ bool AnimationNodeTransition::is_allow_transition_to_self() const {
 
 double AnimationNodeTransition::process(double p_time, bool p_seek, bool p_is_external_seeking) {
 	String cur_transition_request = get_parameter(transition_request);
+	String cur_current_state = get_parameter(current_state);
 	int cur_current_index = get_parameter(current_index);
 	int cur_prev_index = get_parameter(prev_index);
 
@@ -837,13 +838,20 @@ double AnimationNodeTransition::process(double p_time, bool p_seek, bool p_is_ex
 				set_parameter(prev_index, cur_current_index);
 				cur_current_index = new_idx;
 				set_parameter(current_index, cur_current_index);
-				set_parameter(current_state, cur_transition_request);
 			}
+			// Update current_state with the new valid transition_request
+			cur_current_state = cur_transition_request;
+			set_parameter(current_state, cur_current_state);
 		} else {
 			ERR_PRINT("No such input: '" + cur_transition_request + "'");
 		}
 		cur_transition_request = String();
 		set_parameter(transition_request, cur_transition_request);
+	}
+	else if(cur_current_state.is_empty()) {
+		// Update initialy empty current_state with the name of the initial state
+		cur_current_state = get_input_name(cur_current_index);
+		set_parameter(current_state, cur_current_state);
 	}
 
 	// Special case for restart.
