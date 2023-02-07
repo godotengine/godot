@@ -593,12 +593,10 @@ void RenderForwardMobile::_pre_opaque_render(RenderDataRD *p_render_data) {
 
 	bool render_shadows = p_render_data->directional_shadows.size() || p_render_data->shadows.size();
 
-	if (render_shadows) {
-		RENDER_TIMESTAMP("Render Shadows");
-	}
-
 	//prepare shadow rendering
 	if (render_shadows) {
+		RENDER_TIMESTAMP("Render Shadows");
+
 		_render_shadow_begin();
 
 		//render directional shadows

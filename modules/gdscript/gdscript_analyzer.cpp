@@ -1576,11 +1576,8 @@ void GDScriptAnalyzer::resolve_function_body(GDScriptParser::FunctionNode *p_fun
 
 	resolve_suite(p_function->body);
 
-	GDScriptParser::DataType return_type = p_function->body->get_datatype();
-
-	if (!p_function->get_datatype().is_hard_type() && return_type.is_set()) {
+	if (!p_function->get_datatype().is_hard_type() && p_function->body->get_datatype().is_set()) {
 		// Use the suite inferred type if return isn't explicitly set.
-		return_type.type_source = GDScriptParser::DataType::INFERRED;
 		p_function->set_datatype(p_function->body->get_datatype());
 	} else if (p_function->get_datatype().is_hard_type() && (p_function->get_datatype().kind != GDScriptParser::DataType::BUILTIN || p_function->get_datatype().builtin_type != Variant::NIL)) {
 		if (!p_function->body->has_return && (p_is_lambda || p_function->identifier->name != GDScriptLanguage::get_singleton()->strings._init)) {

@@ -380,7 +380,7 @@ void Viewport::_notification(int p_what) {
 			if (get_tree()->is_debugging_collisions_hint()) {
 				PhysicsServer2D::get_singleton()->space_set_debug_contacts(find_world_2d()->get_space(), get_tree()->get_collision_debug_contact_count());
 				contact_2d_debug = RenderingServer::get_singleton()->canvas_item_create();
-				RenderingServer::get_singleton()->canvas_item_set_parent(contact_2d_debug, find_world_2d()->get_canvas());
+				RenderingServer::get_singleton()->canvas_item_set_parent(contact_2d_debug, current_canvas);
 #ifndef _3D_DISABLED
 				PhysicsServer3D::get_singleton()->space_set_debug_contacts(find_world_3d()->get_space(), get_tree()->get_collision_debug_contact_count());
 				contact_3d_debug_multimesh = RenderingServer::get_singleton()->multimesh_create();
