@@ -78,6 +78,10 @@ private:
 	void _update_transform();
 
 protected:
+#ifndef DISABLE_DEPRECATED
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+#endif
 	void _validate_property(PropertyInfo &p_property) const;
 
 	void _notification(int p_what);
@@ -107,8 +111,8 @@ public:
 	void set_rotates(bool p_rotates);
 	bool is_rotating() const;
 
-	void set_cubic_interpolation(bool p_enable);
-	bool get_cubic_interpolation() const;
+	void set_cubic_interpolation(bool p_enabled);
+	bool is_cubic_interpolation_enabled() const;
 
 	PackedStringArray get_configuration_warnings() const override;
 

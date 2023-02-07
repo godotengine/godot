@@ -268,11 +268,11 @@ void PathFollow2D::_notification(int p_what) {
 	}
 }
 
-void PathFollow2D::set_cubic_interpolation(bool p_enable) {
-	cubic = p_enable;
+void PathFollow2D::set_cubic_interpolation(bool p_enabled) {
+	cubic = p_enabled;
 }
 
-bool PathFollow2D::get_cubic_interpolation() const {
+bool PathFollow2D::is_cubic_interpolation_enabled() const {
 	return cubic;
 }
 
@@ -299,6 +299,24 @@ PackedStringArray PathFollow2D::get_configuration_warnings() const {
 	return warnings;
 }
 
+#ifndef DISABLE_DEPRECATED
+bool PathFollow2D::_set(const StringName &p_name, const Variant &p_value) {
+	if ((p_name == SNAME("cubic_interp"))) {
+		set_cubic_interpolation(p_value);
+		return true;
+	}
+	return false;
+}
+bool PathFollow2D::_get(const StringName &p_name, Variant &r_ret) const {
+	String name = p_name;
+	if ((p_name == SNAME("cubic_interp"))) {
+		r_ret = is_cubic_interpolation_enabled();
+	} else {
+		return false;
+	}
+	return true;
+}
+#endif
 void PathFollow2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_progress", "progress"), &PathFollow2D::set_progress);
 	ClassDB::bind_method(D_METHOD("get_progress"), &PathFollow2D::get_progress);
@@ -315,8 +333,8 @@ void PathFollow2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_rotates", "enable"), &PathFollow2D::set_rotates);
 	ClassDB::bind_method(D_METHOD("is_rotating"), &PathFollow2D::is_rotating);
 
-	ClassDB::bind_method(D_METHOD("set_cubic_interpolation", "enable"), &PathFollow2D::set_cubic_interpolation);
-	ClassDB::bind_method(D_METHOD("get_cubic_interpolation"), &PathFollow2D::get_cubic_interpolation);
+	ClassDB::bind_method(D_METHOD("set_cubic_interpolation", "enabled"), &PathFollow2D::set_cubic_interpolation);
+	ClassDB::bind_method(D_METHOD("is_cubic_interpolation_enabled"), &PathFollow2D::is_cubic_interpolation_enabled);
 
 	ClassDB::bind_method(D_METHOD("set_loop", "loop"), &PathFollow2D::set_loop);
 	ClassDB::bind_method(D_METHOD("has_loop"), &PathFollow2D::has_loop);
@@ -329,7 +347,7 @@ void PathFollow2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "h_offset"), "set_h_offset", "get_h_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "v_offset"), "set_v_offset", "get_v_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "rotates"), "set_rotates", "is_rotating");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "cubic_interp"), "set_cubic_interpolation", "get_cubic_interpolation");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "cubic_interpolation"), "set_cubic_interpolation", "is_cubic_interpolation_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "loop"), "set_loop", "has_loop");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "lookahead", PROPERTY_HINT_RANGE, "0.001,1024.0,0.001"), "set_lookahead", "get_lookahead");
 }
