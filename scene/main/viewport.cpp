@@ -2561,20 +2561,14 @@ bool Viewport::_sub_windows_forward_input(const Ref<InputEvent> &p_event) {
 			if (gui.subwindow_drag == SUB_WINDOW_DRAG_RESIZE) {
 				Vector2i diff = mm->get_position() - gui.subwindow_drag_from;
 				Size2i min_size = gui.subwindow_focused->get_min_size();
+				Size2i min_size_clamped = gui.subwindow_focused->get_clamped_minimum_size();
 
-				Size2i min_size_adjusted = min_size;
-				if (gui.subwindow_focused->is_wrapping_controls()) {
-					Size2i cms = gui.subwindow_focused->get_contents_minimum_size();
-					min_size_adjusted.x = MAX(cms.x, min_size.x);
-					min_size_adjusted.y = MAX(cms.y, min_size.y);
-				}
-
-				min_size_adjusted.x = MAX(min_size_adjusted.x, 1);
-				min_size_adjusted.y = MAX(min_size_adjusted.y, 1);
+				min_size_clamped.x = MAX(min_size_clamped.x, 1);
+				min_size_clamped.y = MAX(min_size_clamped.y, 1);
 
 				Rect2i r = gui.subwindow_resize_from_rect;
 
-				Size2i limit = r.size - min_size_adjusted;
+				Size2i limit = r.size - min_size_clamped;
 
 				switch (gui.subwindow_resize_mode) {
 					case SUB_WINDOW_RESIZE_TOP_LEFT: {
