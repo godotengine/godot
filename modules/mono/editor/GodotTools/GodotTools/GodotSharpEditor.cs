@@ -25,6 +25,9 @@ namespace GodotTools
         public static class Settings
         {
             public const string ExternalEditor = "dotnet/editor/external_editor";
+            public const string VerbosityLevel = "dotnet/build/verbosity_level";
+            public const string NoConsoleLogging = "dotnet/build/no_console_logging";
+            public const string CreateBinaryLog = "dotnet/build/create_binary_log";
         }
 
         private EditorSettings _editorSettings;
@@ -458,6 +461,9 @@ namespace GodotTools
 
             // External editor settings
             EditorDef(Settings.ExternalEditor, Variant.From(ExternalEditorId.None));
+            EditorDef(Settings.VerbosityLevel, Variant.From(VerbosityLevelId.Normal));
+            EditorDef(Settings.NoConsoleLogging, false);
+            EditorDef(Settings.CreateBinaryLog, false);
 
             string settingsHintStr = "Disabled";
 
@@ -490,6 +496,18 @@ namespace GodotTools
                 ["hint_string"] = settingsHintStr
             });
 
+            var verbosityLevels = Enum.GetValues<VerbosityLevelId>().Select(level => $"{Enum.GetName(level)}:{(int)level}");
+            _editorSettings.AddPropertyInfo(new Godot.Collections.Dictionary
+            {
+                ["type"] = (int)Variant.Type.Int,
+                ["name"] = Settings.VerbosityLevel,
+                ["hint"] = (int)PropertyHint.Enum,
+                ["hint_string"] = string.Join(",", verbosityLevels),
+            });
+
+            OnSettingsChanged();
+            _editorSettings.SettingsChanged += OnSettingsChanged;
+
             // Export plugin
             var exportPlugin = new ExportPlugin();
             AddExportPlugin(exportPlugin);
@@ -512,6 +530,24 @@ namespace GodotTools
 
             GodotIdeManager = new GodotIdeManager();
             AddChild(GodotIdeManager);
+        }
+
+        public override void _DisablePlugin()
+        {
+            base._DisablePlugin();
+
+            _editorSettings.SettingsChanged -= OnSettingsChanged;
+        }
+
+        private void OnSettingsChanged()
+        {
+            // We want to force NoConsoleLogging to true when the VerbosityLevel is at Detailed or above.
+            // At that point, there's so much info logged that it doesn't make sense to display it in
+            // the tiny editor window, and it'd make the editor hang or crash anyway.
+            var verbosityLevel = _editorSettings.GetSetting(Settings.VerbosityLevel).As<VerbosityLevelId>();
+            var hideConsoleLog = (bool)_editorSettings.GetSetting(Settings.NoConsoleLogging);
+            if (verbosityLevel >= VerbosityLevelId.Detailed && !hideConsoleLog)
+                _editorSettings.SetSetting(Settings.NoConsoleLogging, Variant.From(true));
         }
 
         protected override void Dispose(bool disposing)
