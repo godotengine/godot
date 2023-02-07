@@ -408,6 +408,24 @@
 		<constant name="BACK" value="Vector3(0, 0, 1)">
 			Back unit vector. Represents the local direction of back, and the global direction of south.
 		</constant>
+		<constant name="GLTF_LEFT" value="Vector3(1, 0, 0)">
+			Left unit vector in glTF space.
+		</constant>
+		<constant name="GLTF_RIGHT" value="Vector3(-1, 0, 0)">
+			Right unit vector in glTF space.
+		</constant>
+		<constant name="GLTF_UP" value="Vector3(0, 1, 0)">
+			Up unit vector in glTF space.
+		</constant>
+		<constant name="GLTF_DOWN" value="Vector3(0, -1, 0)">
+			Down unit vector in glTF space.
+		</constant>
+		<constant name="GLTF_FORWARD" value="Vector3(0, 0, 1)">
+			Forward unit vector in glTF space.
+		</constant>
+		<constant name="GLTF_BACK" value="Vector3(0, 0, -1)">
+			Back unit vector in glTF space.
+		</constant>
 	</constants>
 	<operators>
 		<operator name="operator !=">

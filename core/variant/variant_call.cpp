@@ -2083,7 +2083,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Basis, is_equal_approx, sarray("b"), varray());
 	bind_method(Basis, is_finite, sarray(), varray());
 	bind_method(Basis, get_rotation_quaternion, sarray(), varray());
-	bind_static_method(Basis, looking_at, sarray("target", "up"), varray(Vector3(0, 1, 0)));
+	bind_static_method(Basis, looking_at, sarray("target", "up", "is_z_forward"), varray(Vector3(0, 1, 0), false));
 	bind_static_method(Basis, from_scale, sarray("scale"), varray());
 	bind_static_method(Basis, from_euler, sarray("euler", "order"), varray((int64_t)EulerOrder::YXZ));
 
@@ -2126,7 +2126,7 @@ static void _register_variant_builtin_methods() {
 	bind_method(Transform3D, scaled_local, sarray("scale"), varray());
 	bind_method(Transform3D, translated, sarray("offset"), varray());
 	bind_method(Transform3D, translated_local, sarray("offset"), varray());
-	bind_method(Transform3D, looking_at, sarray("target", "up"), varray(Vector3(0, 1, 0)));
+	bind_method(Transform3D, looking_at, sarray("target", "up", "is_z_forward"), varray(Vector3(0, 1, 0), false));
 	bind_method(Transform3D, interpolate_with, sarray("xform", "weight"), varray());
 	bind_method(Transform3D, is_equal_approx, sarray("xform"), varray());
 	bind_method(Transform3D, is_finite, sarray(), varray());
@@ -2512,6 +2512,12 @@ static void _register_variant_builtin_methods() {
 	_VariantCall::add_variant_constant(Variant::VECTOR3, "DOWN", Vector3(0, -1, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR3, "FORWARD", Vector3(0, 0, -1));
 	_VariantCall::add_variant_constant(Variant::VECTOR3, "BACK", Vector3(0, 0, 1));
+	_VariantCall::add_variant_constant(Variant::VECTOR3, "GLTF_LEFT", Vector3(1, 0, 0));
+	_VariantCall::add_variant_constant(Variant::VECTOR3, "GLTF_RIGHT", Vector3(-1, 0, 0));
+	_VariantCall::add_variant_constant(Variant::VECTOR3, "GLTF_UP", Vector3(0, 1, 0));
+	_VariantCall::add_variant_constant(Variant::VECTOR3, "GLTF_DOWN", Vector3(0, -1, 0));
+	_VariantCall::add_variant_constant(Variant::VECTOR3, "GLTF_FORWARD", Vector3(0, 0, 1));
+	_VariantCall::add_variant_constant(Variant::VECTOR3, "GLTF_BACK", Vector3(0, 0, -1));
 
 	_VariantCall::add_constant(Variant::VECTOR4, "AXIS_X", Vector4::AXIS_X);
 	_VariantCall::add_constant(Variant::VECTOR4, "AXIS_Y", Vector4::AXIS_Y);
@@ -2555,6 +2561,12 @@ static void _register_variant_builtin_methods() {
 	_VariantCall::add_variant_constant(Variant::VECTOR3I, "DOWN", Vector3i(0, -1, 0));
 	_VariantCall::add_variant_constant(Variant::VECTOR3I, "FORWARD", Vector3i(0, 0, -1));
 	_VariantCall::add_variant_constant(Variant::VECTOR3I, "BACK", Vector3i(0, 0, 1));
+	_VariantCall::add_variant_constant(Variant::VECTOR3I, "GLTF_LEFT", Vector3i(1, 0, 0));
+	_VariantCall::add_variant_constant(Variant::VECTOR3I, "GLTF_RIGHT", Vector3i(-1, 0, 0));
+	_VariantCall::add_variant_constant(Variant::VECTOR3I, "GLTF_UP", Vector3i(0, 1, 0));
+	_VariantCall::add_variant_constant(Variant::VECTOR3I, "GLTF_DOWN", Vector3i(0, -1, 0));
+	_VariantCall::add_variant_constant(Variant::VECTOR3I, "GLTF_FORWARD", Vector3i(0, 0, 1));
+	_VariantCall::add_variant_constant(Variant::VECTOR3I, "GLTF_BACK", Vector3i(0, 0, -1));
 
 	_VariantCall::add_constant(Variant::VECTOR2, "AXIS_X", Vector2::AXIS_X);
 	_VariantCall::add_constant(Variant::VECTOR2, "AXIS_Y", Vector2::AXIS_Y);
