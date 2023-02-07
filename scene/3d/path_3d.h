@@ -87,6 +87,10 @@ private:
 	void _update_transform(bool p_update_xyz_rot = true);
 
 protected:
+#ifndef DISABLE_DEPRECATED
+	bool _set(const StringName &p_name, const Variant &p_value);
+	bool _get(const StringName &p_name, Variant &r_ret) const;
+#endif
 	void _validate_property(PropertyInfo &p_property) const;
 
 	void _notification(int p_what);
@@ -108,14 +112,14 @@ public:
 	void set_loop(bool p_loop);
 	bool has_loop() const;
 
-	void set_tilt_enabled(bool p_enable);
+	void set_tilt_enabled(bool p_enabled);
 	bool is_tilt_enabled() const;
 
 	void set_rotation_mode(RotationMode p_rotation_mode);
 	RotationMode get_rotation_mode() const;
 
-	void set_cubic_interpolation(bool p_enable);
-	bool get_cubic_interpolation() const;
+	void set_cubic_interpolation_enabled(bool p_enabled);
+	bool is_cubic_interpolation_enabled() const;
 
 	PackedStringArray get_configuration_warnings() const override;
 
