@@ -167,6 +167,11 @@ VARIANT_ENUM_CAST(AnimationNode::FilterAction)
 class AnimationRootNode : public AnimationNode {
 	GDCLASS(AnimationRootNode, AnimationNode);
 
+protected:
+	virtual void _tree_changed();
+	virtual void _animation_node_renamed(const ObjectID &p_oid, const String &p_old_name, const String &p_new_name);
+	virtual void _animation_node_removed(const ObjectID &p_oid, const StringName &p_node);
+
 public:
 	AnimationRootNode() {}
 };
@@ -326,9 +331,12 @@ private:
 	friend class AnimationNode;
 	bool properties_dirty = true;
 	void _tree_changed();
+	void _animation_node_renamed(const ObjectID &p_oid, const String &p_old_name, const String &p_new_name);
+	void _animation_node_removed(const ObjectID &p_oid, const StringName &p_node);
 	void _update_properties();
 	List<PropertyInfo> properties;
 	HashMap<StringName, HashMap<StringName, StringName>> property_parent_map;
+	HashMap<ObjectID, StringName> property_reference_map;
 	HashMap<StringName, Pair<Variant, bool>> property_map; // Property value and read-only flag.
 
 	struct Activity {
