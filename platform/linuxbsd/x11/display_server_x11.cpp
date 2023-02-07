@@ -3834,10 +3834,6 @@ void DisplayServerX11::process_events() {
 
 	for (uint32_t event_index = 0; event_index < events.size(); ++event_index) {
 		XEvent &event = events[event_index];
-		if (ignore_events) {
-			XFreeEventData(x11_display, &event.xcookie);
-			continue;
-		}
 
 		bool ime_window_event = false;
 		WindowID window_id = MAIN_WINDOW_ID;
@@ -3867,7 +3863,7 @@ void DisplayServerX11::process_events() {
 						_refresh_device_info();
 					} break;
 					case XI_RawMotion: {
-						if (ime_window_event) {
+						if (ime_window_event || ignore_events) {
 							break;
 						}
 						XIRawEvent *raw_event = (XIRawEvent *)event_data;
@@ -3972,7 +3968,7 @@ void DisplayServerX11::process_events() {
 #ifdef TOUCH_ENABLED
 					case XI_TouchBegin:
 					case XI_TouchEnd: {
-						if (ime_window_event) {
+						if (ime_window_event || ignore_events) {
 							break;
 						}
 						bool is_begin = event_data->evtype == XI_TouchBegin;
@@ -4005,7 +4001,7 @@ void DisplayServerX11::process_events() {
 					} break;
 
 					case XI_TouchUpdate: {
-						if (ime_window_event) {
+						if (ime_window_event || ignore_events) {
 							break;
 						}
 						HashMap<int, Vector2>::Iterator curr_pos_elem = xi.state.find(index);
@@ -4227,7 +4223,7 @@ void DisplayServerX11::process_events() {
 
 			case ButtonPress:
 			case ButtonRelease: {
-				if (ime_window_event) {
+				if (ime_window_event || ignore_events) {
 					break;
 				}
 				/* exit in case of a mouse button press */
@@ -4328,7 +4324,7 @@ void DisplayServerX11::process_events() {
 
 			} break;
 			case MotionNotify: {
-				if (ime_window_event) {
+				if (ime_window_event || ignore_events) {
 					break;
 				}
 				// The X11 API requires filtering one-by-one through the motion
@@ -4476,6 +4472,9 @@ void DisplayServerX11::process_events() {
 			} break;
 			case KeyPress:
 			case KeyRelease: {
+				if (ignore_events) {
+					break;
+				}
 #ifdef DISPLAY_SERVER_X11_DEBUG_LOGS_ENABLED
 				if (event.type == KeyPress) {
 					DEBUG_LOG_X11("[%u] KeyPress window=%lu (%u), keycode=%u, time=%lu \n", frame, event.xkey.window, window_id, event.xkey.keycode, event.xkey.time);
