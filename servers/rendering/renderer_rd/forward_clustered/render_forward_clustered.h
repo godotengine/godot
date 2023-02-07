@@ -104,16 +104,11 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		ClusterBuilderRD *cluster_builder = nullptr;
 
 		struct SSEffectsData {
-			RID linear_depth;
-			Vector<RID> linear_depth_slices;
-
-			RID downsample_uniform_set;
-
-			Projection last_frame_projection;
+			Projection last_frame_projections[RendererSceneRender::MAX_RENDER_VIEWS];
 			Transform3D last_frame_transform;
 
-			RendererRD::SSEffects::SSAORenderBuffers ssao;
 			RendererRD::SSEffects::SSILRenderBuffers ssil;
+			RendererRD::SSEffects::SSAORenderBuffers ssao;
 			RendererRD::SSEffects::SSRRenderBuffers ssr;
 		} ss_effects_data;
 
@@ -154,9 +149,6 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 		RID get_color_pass_fb(uint32_t p_color_pass_flags);
 		RID get_depth_fb(DepthFrameBufferType p_type = DEPTH_FB);
 		RID get_specular_only_fb();
-
-		RID get_ao_texture() const { return ss_effects_data.ssao.ao_final; }
-		RID get_ssil_texture() const { return ss_effects_data.ssil.ssil_final; }
 
 		virtual void configure(RenderSceneBuffersRD *p_render_buffers) override;
 		virtual void free_data() override;
@@ -600,8 +592,8 @@ class RenderForwardClustered : public RendererSceneRenderRD {
 	void _render_shadow_end(uint32_t p_barrier = RD::BARRIER_MASK_ALL_BARRIERS);
 
 	/* Render Scene */
-	void _process_ssao(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_environment, RID p_normal_buffer, const Projection &p_projection);
-	void _process_ssil(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_environment, RID p_normal_buffer, const Projection &p_projection, const Transform3D &p_transform);
+	void _process_ssao(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_environment, const RID *p_normal_buffers, const Projection *p_projections);
+	void _process_ssil(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_environment, const RID *p_normal_buffers, const Projection *p_projections, const Transform3D &p_transform);
 	void _copy_framebuffer_to_ssil(Ref<RenderSceneBuffersRD> p_render_buffers);
 	void _pre_opaque_render(RenderDataRD *p_render_data, bool p_use_ssao, bool p_use_ssil, bool p_use_gi, const RID *p_normal_roughness_slices, RID p_voxel_gi_buffer);
 	void _process_ssr(Ref<RenderSceneBuffersRD> p_render_buffers, RID p_dest_framebuffer, const RID *p_normal_buffer_slices, RID p_specular_buffer, const RID *p_metallic_slices, RID p_environment, const Projection *p_projections, const Vector3 *p_eye_offsets, bool p_use_additive);
