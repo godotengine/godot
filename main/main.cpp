@@ -89,6 +89,7 @@
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/doc_data_class_path.gen.h"
 #include "editor/doc_tools.h"
+#include "editor/editor_help.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_settings.h"
@@ -2575,6 +2576,11 @@ bool Main::start() {
 		print_line("Generating new docs...");
 		err = doc.save_classes(index_path, doc_data_classes);
 		ERR_FAIL_COND_V_MSG(err != OK, false, "Error saving new docs:" + itos(err));
+
+		print_line("Deleting docs cache...");
+		if (FileAccess::exists(EditorHelp::get_cache_full_path())) {
+			DirAccess::remove_file_or_error(EditorHelp::get_cache_full_path());
+		}
 
 		OS::get_singleton()->set_exit_code(EXIT_SUCCESS);
 		return false;
