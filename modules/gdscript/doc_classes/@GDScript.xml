@@ -304,7 +304,7 @@
 			<return type="void" />
 			<param index="0" name="names" type="String" />
 			<description>
-				Export an [int] or [String] property as an enumerated list of options. If the property is an [int], then the index of the value is stored, in the same order the values are provided. You can add specific identifiers for allowed values using a colon. If the property is a [String], then the value is stored.
+				Export an [int] or [String] property as an enumerated list of options. If the property is an [int], then the index of the value is stored, in the same order the values are provided. You can add explicit values using a colon. If the property is a [String], then the value is stored.
 				See also [constant PROPERTY_HINT_ENUM].
 				[codeblock]
 				@export_enum("Warrior", "Magician", "Thief") var character_class: int
@@ -356,6 +356,20 @@
 				See also [constant PROPERTY_HINT_FLAGS].
 				[codeblock]
 				@export_flags("Fire", "Water", "Earth", "Wind") var spell_elements = 0
+				[/codeblock]
+				You can add explicit values using a colon:
+				[codeblock]
+				@export_flags("Self:4", "Allies:8", "Foes:16") var spell_targets = 0
+				[/codeblock]
+				You can also combine several flags:
+				[codeblock]
+				@export_flags("Self:4", "Allies:8", "Self and Allies:12", "Foes:16")
+				var spell_targets = 0
+				[/codeblock]
+				[b]Note:[/b] A flag value must be at least [code]1[/code] and at most [code]2 ** 32 - 1[/code].
+				[b]Note:[/b] Unlike [annotation @export_enum], the previous explicit value is not taken into account. In the following example, A is 16, B is 2, C is 4.
+				[codeblock]
+				@export_flags("A:16", "B", "C") var x
 				[/codeblock]
 			</description>
 		</annotation>
