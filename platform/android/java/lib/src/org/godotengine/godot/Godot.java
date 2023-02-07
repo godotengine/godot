@@ -83,6 +83,7 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.CallSuper;
 import androidx.annotation.Keep;
@@ -277,9 +278,7 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 
 		if (usesVulkan()) {
 			if (!meetsVulkanRequirements(activity.getPackageManager())) {
-				Log.e(TAG, "Missing requirements for vulkan support! Aborting...");
-				alert(R.string.error_missing_vulkan_requirements_message, R.string.text_error_title, this::forceQuit);
-				return false;
+				Log.w(TAG, "Missing requirements for vulkan support!");
 			}
 			mRenderView = new GodotVulkanRenderView(activity, this);
 		} else {
