@@ -1,2 +1,0 @@
-GDTEST_ANALYZER_ERROR
-Cannot call non-static function "duplicate()" on a class directly. Make an instance instead.
