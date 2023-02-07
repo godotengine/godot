@@ -228,6 +228,12 @@ private:
 		}
 	};
 
+	struct RootMotionCache {
+		Vector3 loc = Vector3(0, 0, 0);
+		Quaternion rot = Quaternion(0, 0, 0, 1);
+		Vector3 scale = Vector3(1, 1, 1);
+	};
+
 	struct TrackCacheBlendShape : public TrackCache {
 		MeshInstance3D *mesh_3d = nullptr;
 		float init_value = 0;
@@ -294,6 +300,7 @@ private:
 		}
 	};
 
+	RootMotionCache root_motion_cache;
 	HashMap<NodePath, TrackCache *> track_cache;
 	HashSet<TrackCache *> playing_caches;
 	Vector<Node *> playing_audio_stream_players;
@@ -327,6 +334,9 @@ private:
 	Vector3 root_motion_position = Vector3(0, 0, 0);
 	Quaternion root_motion_rotation = Quaternion(0, 0, 0, 1);
 	Vector3 root_motion_scale = Vector3(0, 0, 0);
+	Vector3 root_motion_position_accumulator = Vector3(0, 0, 0);
+	Quaternion root_motion_rotation_accumulator = Quaternion(0, 0, 0, 1);
+	Vector3 root_motion_scale_accumulator = Vector3(1, 1, 1);
 
 	friend class AnimationNode;
 	bool properties_dirty = true;
@@ -393,6 +403,10 @@ public:
 	Vector3 get_root_motion_position() const;
 	Quaternion get_root_motion_rotation() const;
 	Vector3 get_root_motion_scale() const;
+
+	Vector3 get_root_motion_position_accumulator() const;
+	Quaternion get_root_motion_rotation_accumulator() const;
+	Vector3 get_root_motion_scale_accumulator() const;
 
 	real_t get_connection_activity(const StringName &p_path, int p_connection) const;
 	void advance(double p_time);
