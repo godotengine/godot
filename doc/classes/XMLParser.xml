@@ -142,8 +142,5 @@
 		<constant name="NODE_UNKNOWN" value="6" enum="NodeType">
 			Unknown node.
 		</constant>
-		<constant name="NODE_XML_DEFINITION" value="7" enum="NodeType">
-			XML definition node. Effectively the same as an empty [enum NodeType.NODE_ELEMENT].
-		</constant>
 	</constants>
 </class>
