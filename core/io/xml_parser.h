@@ -61,7 +61,8 @@ public:
 		NODE_TEXT,
 		NODE_COMMENT,
 		NODE_CDATA,
-		NODE_UNKNOWN
+		NODE_UNKNOWN,
+		NODE_XML_DEFINITION
 	};
 
 private:
@@ -84,7 +85,6 @@ private:
 
 	bool _set_text(const char *start, const char *end);
 	void _parse_closing_xml_element();
-	void _ignore_definition();
 	bool _parse_cdata();
 	void _parse_comment();
 	void _parse_opening_xml_element();

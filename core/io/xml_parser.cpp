@@ -89,21 +89,6 @@ void XMLParser::_parse_closing_xml_element() {
 	}
 }
 
-void XMLParser::_ignore_definition() {
-	node_type = NODE_UNKNOWN;
-
-	const char *F = P;
-	// move until end marked with '>' reached
-	while (*P && *P != '>') {
-		next_char();
-	}
-	node_name.parse_utf8(F, P - F);
-
-	if (*P) {
-		next_char();
-	}
-}
-
 bool XMLParser::_parse_cdata() {
 	if (*(P + 1) != '[') {
 		return false;
@@ -201,6 +186,8 @@ void XMLParser::_parse_opening_xml_element() {
 	node_empty = false;
 	attributes.clear();
 
+	bool is_xml_def = false;
+
 	// find name
 	const char *startName = P;
 
@@ -216,7 +203,7 @@ void XMLParser::_parse_opening_xml_element() {
 		if (_is_white_space(*P)) {
 			next_char();
 		} else {
-			if (*P != '/') {
+			if (*P != '/' and *P != '?') {
 				// we've got an attribute
 
 				// read the attribute names
@@ -268,6 +255,10 @@ void XMLParser::_parse_opening_xml_element() {
 				attributes.push_back(attr);
 			} else {
 				// tag is closed directly
+				if (*P == '?') {
+					is_xml_def = true;
+				}
+
 				next_char();
 				node_empty = true;
 				break;
@@ -283,6 +274,11 @@ void XMLParser::_parse_opening_xml_element() {
 	}
 
 	node_name = String::utf8(startName, (int)(endName - startName));
+
+	if (is_xml_def) {
+		node_name = node_name.substr(1); // do not include '?' in node name
+		node_type = NODE_XML_DEFINITION;
+	}
 #ifdef DEBUG_XML
 	print_line("XML OPEN: " + node_name);
 #endif
@@ -318,9 +314,6 @@ void XMLParser::_parse_current_node() {
 	switch (*P) {
 		case '/':
 			_parse_closing_xml_element();
-			break;
-		case '?':
-			_ignore_definition();
 			break;
 		case '!':
 			if (!_parse_cdata()) {
