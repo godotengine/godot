@@ -31,6 +31,7 @@
 #ifndef WORKER_THREAD_POOL_H
 #define WORKER_THREAD_POOL_H
 
+#include "core/config/project_settings.h"
 #include "core/os/memory.h"
 #include "core/os/os.h"
 #include "core/os/semaphore.h"
@@ -39,6 +40,106 @@
 #include "core/templates/paged_allocator.h"
 #include "core/templates/rid.h"
 #include "core/templates/safe_refcount.h"
+
+struct ABState {
+	float sum_time[2] = { 0.0f, 0.0f };
+	int sum_samples[2] = { 0, 0 };
+	bool running_version_a = false;
+	int swap_counter = 0;
+	char enabled = 0; // 0, 'y', 'n'
+};
+class ABTester {
+private:
+	ABState &state;
+	String location;
+	bool default_to_version_a;
+	float time;
+
+public:
+	_FORCE_INLINE_ bool version_a() {
+		if (state.enabled == 'n') {
+			return default_to_version_a;
+		}
+		return state.running_version_a;
+	}
+
+	_FORCE_INLINE_ ABTester(
+			ABState &_state,
+			String _name,
+			String _location,
+			bool _default_to_version_a) :
+			state(_state),
+			location(_location),
+			default_to_version_a(_default_to_version_a) {
+		if (state.enabled == 0) {
+			String glob = GLOBAL_GET("debug/performance/include_ab_tests");
+			state.enabled = _name.match(glob) ? 'y' : 'n';
+
+			if (!glob.is_empty()) {
+				print_line(glob + " matched " + _name + ": " + state.enabled);
+			}
+		}
+		if (state.enabled == 'n') {
+			return;
+		}
+
+		if (++state.swap_counter >= 5) {
+			state.running_version_a = !state.running_version_a;
+			state.swap_counter = 0;
+		}
+		time = OS::get_singleton()->get_ticks_usec();
+	}
+	_FORCE_INLINE_ ~ABTester() {
+		if (state.enabled == 'n') {
+			return;
+		}
+
+		if (state.swap_counter < 1) {
+			// Discard one warm-up iteration. This is probably a placebo.
+			return;
+		}
+		float now = OS::get_singleton()->get_ticks_usec();
+
+		state.sum_time[state.running_version_a] += (now - time) / 1e3;
+		state.sum_samples[state.running_version_a]++;
+
+		if (state.sum_samples[0] + state.sum_samples[1] >= 100) {
+			state.sum_time[0] /= state.sum_samples[0];
+			state.sum_time[1] /= state.sum_samples[1];
+
+			float a_speedup = state.sum_time[0] / state.sum_time[1];
+			print_line("\n" + location);
+			printf("    A=%.2f ms    B=%.2f ms    ", state.sum_time[1], state.sum_time[0]);
+			printf("Version %c is %.2f%% faster\n",
+					a_speedup > 1.0f ? 'A' : 'B',
+					((a_speedup > 1.0f ? a_speedup : 1.0f / a_speedup) * 100) - 100);
+
+			if ((a_speedup > 1.0f) != default_to_version_a) {
+				WARN_PRINT(String() + "The default version is slower. Please swap the first parameter to AB_TEST(" + (default_to_version_a ? "false" : "true") + ", ...)");
+			}
+
+			state.sum_time[0] = state.sum_time[1] = 0.0f;
+			state.sum_samples[0] = state.sum_samples[1] = 0;
+		}
+	}
+};
+
+#define AB_TEST(default_to_version_a, CODE_BLOCK)                                  \
+	{                                                                              \
+		static ABState _benchmark_ab_state;                                        \
+		ABTester _benchmark_ab_tester(                                             \
+				_benchmark_ab_state,                                               \
+				__FILE__,                                                          \
+				String(FUNCTION_STR) + "()    " + __FILE__ + ":" + itos(__LINE__), \
+				default_to_version_a);                                             \
+		if (_benchmark_ab_tester.version_a()) {                                    \
+			constexpr bool VERSION_A = true;                                       \
+			CODE_BLOCK                                                             \
+		} else {                                                                   \
+			constexpr bool VERSION_A = false;                                      \
+			CODE_BLOCK                                                             \
+		}                                                                          \
+	}
 
 class WorkerThreadPool : public Object {
 	GDCLASS(WorkerThreadPool, Object)
