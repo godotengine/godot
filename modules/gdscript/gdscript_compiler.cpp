@@ -591,6 +591,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 						}
 					} else if (callee->type == GDScriptParser::Node::SUBSCRIPT) {
 						const GDScriptParser::SubscriptNode *subscript = static_cast<const GDScriptParser::SubscriptNode *>(call->callee);
+
 						if (subscript->is_attribute) {
 							// May be static built-in method call.
 							if (!call->is_super && subscript->base->type == GDScriptParser::Node::IDENTIFIER && GDScriptParser::get_builtin_type(static_cast<GDScriptParser::IdentifierNode *>(subscript->base)->name) < Variant::VARIANT_MAX) {
@@ -614,7 +615,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 									} else {
 										class_name = base.type.native_type == StringName() ? base.type.script_type->get_instance_base_type() : base.type.native_type;
 									}
-									if (!subscript->base->is_constant && ClassDB::class_exists(class_name) && ClassDB::has_method(class_name, call->function_name)) {
+									if (ClassDB::class_exists(class_name) && ClassDB::has_method(class_name, call->function_name)) {
 										MethodBind *method = ClassDB::get_method(class_name, call->function_name);
 										if (_can_use_ptrcall(method, arguments)) {
 											// Exact arguments, use ptrcall.
