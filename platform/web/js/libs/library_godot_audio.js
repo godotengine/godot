@@ -186,17 +186,17 @@ const GodotAudio = {
 		}
 	},
 
-	godot_audio_capture_start__proxy: 'sync',
-	godot_audio_capture_start__sig: 'i',
-	godot_audio_capture_start: function () {
+	godot_audio_input_start__proxy: 'sync',
+	godot_audio_input_start__sig: 'i',
+	godot_audio_input_start: function () {
 		return GodotAudio.create_input(function (input) {
 			input.connect(GodotAudio.driver.get_node());
 		});
 	},
 
-	godot_audio_capture_stop__proxy: 'sync',
-	godot_audio_capture_stop__sig: 'v',
-	godot_audio_capture_stop: function () {
+	godot_audio_input_stop__proxy: 'sync',
+	godot_audio_input_stop__sig: 'v',
+	godot_audio_input_stop: function () {
 		if (GodotAudio.input) {
 			const tracks = GodotAudio.input['mediaStream']['getTracks']();
 			for (let i = 0; i < tracks.length; i++) {
