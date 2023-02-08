@@ -108,7 +108,6 @@ void NavigationAgent2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "time_horizon", PROPERTY_HINT_RANGE, "0.1,10,0.01,suffix:s"), "set_time_horizon", "get_time_horizon");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "max_speed", PROPERTY_HINT_RANGE, "0.1,10000,0.01,suffix:px/s"), "set_max_speed", "get_max_speed");
 
-#ifdef DEBUG_ENABLED
 	ClassDB::bind_method(D_METHOD("set_debug_enabled", "enabled"), &NavigationAgent2D::set_debug_enabled);
 	ClassDB::bind_method(D_METHOD("get_debug_enabled"), &NavigationAgent2D::get_debug_enabled);
 	ClassDB::bind_method(D_METHOD("set_debug_use_custom", "enabled"), &NavigationAgent2D::set_debug_use_custom);
@@ -126,7 +125,6 @@ void NavigationAgent2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "debug_path_custom_color"), "set_debug_path_custom_color", "get_debug_path_custom_color");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "debug_path_custom_point_size", PROPERTY_HINT_RANGE, "1,50,1,suffix:px"), "set_debug_path_custom_point_size", "get_debug_path_custom_point_size");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "debug_path_custom_line_width", PROPERTY_HINT_RANGE, "1,50,1,suffix:px"), "set_debug_path_custom_line_width", "get_debug_path_custom_line_width");
-#endif // DEBUG_ENABLED
 
 	ADD_SIGNAL(MethodInfo("path_changed"));
 	ADD_SIGNAL(MethodInfo("target_reached"));
@@ -670,14 +668,15 @@ void NavigationAgent2D::_check_distance_to_target() {
 
 ////////DEBUG////////////////////////////////////////////////////////////
 
-#ifdef DEBUG_ENABLED
 void NavigationAgent2D::set_debug_enabled(bool p_enabled) {
+#ifdef DEBUG_ENABLED
 	if (debug_enabled == p_enabled) {
 		return;
 	}
 
 	debug_enabled = p_enabled;
 	debug_path_dirty = true;
+#endif // DEBUG_ENABLED
 }
 
 bool NavigationAgent2D::get_debug_enabled() const {
@@ -685,12 +684,14 @@ bool NavigationAgent2D::get_debug_enabled() const {
 }
 
 void NavigationAgent2D::set_debug_use_custom(bool p_enabled) {
+#ifdef DEBUG_ENABLED
 	if (debug_use_custom == p_enabled) {
 		return;
 	}
 
 	debug_use_custom = p_enabled;
 	debug_path_dirty = true;
+#endif // DEBUG_ENABLED
 }
 
 bool NavigationAgent2D::get_debug_use_custom() const {
@@ -698,12 +699,14 @@ bool NavigationAgent2D::get_debug_use_custom() const {
 }
 
 void NavigationAgent2D::set_debug_path_custom_color(Color p_color) {
+#ifdef DEBUG_ENABLED
 	if (debug_path_custom_color == p_color) {
 		return;
 	}
 
 	debug_path_custom_color = p_color;
 	debug_path_dirty = true;
+#endif // DEBUG_ENABLED
 }
 
 Color NavigationAgent2D::get_debug_path_custom_color() const {
@@ -711,12 +714,14 @@ Color NavigationAgent2D::get_debug_path_custom_color() const {
 }
 
 void NavigationAgent2D::set_debug_path_custom_point_size(float p_point_size) {
+#ifdef DEBUG_ENABLED
 	if (Math::is_equal_approx(debug_path_custom_point_size, p_point_size)) {
 		return;
 	}
 
 	debug_path_custom_point_size = MAX(0.1, p_point_size);
 	debug_path_dirty = true;
+#endif // DEBUG_ENABLED
 }
 
 float NavigationAgent2D::get_debug_path_custom_point_size() const {
@@ -724,18 +729,21 @@ float NavigationAgent2D::get_debug_path_custom_point_size() const {
 }
 
 void NavigationAgent2D::set_debug_path_custom_line_width(float p_line_width) {
+#ifdef DEBUG_ENABLED
 	if (Math::is_equal_approx(debug_path_custom_line_width, p_line_width)) {
 		return;
 	}
 
 	debug_path_custom_line_width = p_line_width;
 	debug_path_dirty = true;
+#endif // DEBUG_ENABLED
 }
 
 float NavigationAgent2D::get_debug_path_custom_line_width() const {
 	return debug_path_custom_line_width;
 }
 
+#ifdef DEBUG_ENABLED
 void NavigationAgent2D::_navigation_debug_changed() {
 	debug_path_dirty = true;
 }
