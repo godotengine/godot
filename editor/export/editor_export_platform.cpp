@@ -322,6 +322,11 @@ Ref<EditorExportPreset> EditorExportPlatform::create_preset() {
 	List<ExportOption> options;
 	get_export_options(&options);
 
+	Vector<Ref<EditorExportPlugin>> export_plugins = EditorExport::get_singleton()->get_export_plugins();
+	for (int i = 0; i < export_plugins.size(); i++) {
+		export_plugins.write[i]->_get_export_options(Ref<EditorExportPlatform>(this), &options);
+	}
+
 	for (const ExportOption &E : options) {
 		preset->properties.push_back(E.option);
 		preset->values[E.option.name] = E.default_value;
@@ -489,6 +494,7 @@ EditorExportPlatform::ExportNotifier::ExportNotifier(EditorExportPlatform &p_pla
 	Vector<Ref<EditorExportPlugin>> export_plugins = EditorExport::get_singleton()->get_export_plugins();
 	//initial export plugin callback
 	for (int i = 0; i < export_plugins.size(); i++) {
+		export_plugins.write[i]->set_export_preset(p_preset);
 		if (export_plugins[i]->get_script_instance()) { //script based
 			PackedStringArray features_psa;
 			for (const String &feature : features) {
@@ -508,6 +514,7 @@ EditorExportPlatform::ExportNotifier::~ExportNotifier() {
 			export_plugins.write[i]->_export_end_script();
 		}
 		export_plugins.write[i]->_export_end();
+		export_plugins.write[i]->set_export_preset(Ref<EditorExportPlugin>());
 	}
 }
 
@@ -932,12 +939,10 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 		}
 	};
 
-	// Always sort by name, to so if for some reason theya are re-arranged, it still works.
+	// Always sort by name, to so if for some reason they are re-arranged, it still works.
 	export_plugins.sort_custom<SortByName>();
 
 	for (int i = 0; i < export_plugins.size(); i++) {
-		export_plugins.write[i]->set_export_preset(p_preset);
-
 		if (p_so_func) {
 			for (int j = 0; j < export_plugins[i]->shared_objects.size(); j++) {
 				err = p_so_func(p_udata, export_plugins[i]->shared_objects[j]);
