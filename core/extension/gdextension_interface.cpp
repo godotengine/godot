@@ -871,11 +871,11 @@ void gdextension_array_ref(GDExtensionTypePtr p_self, GDExtensionConstTypePtr p_
 	self->_ref(*from);
 }
 
-void gdextension_array_set_typed(GDExtensionTypePtr p_self, uint32_t p_type, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstVariantPtr p_script) {
+void gdextension_array_set_typed(GDExtensionTypePtr p_self, GDExtensionVariantType p_type, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstVariantPtr p_script) {
 	Array *self = reinterpret_cast<Array *>(p_self);
 	const StringName *class_name = reinterpret_cast<const StringName *>(p_class_name);
 	const Variant *script = reinterpret_cast<const Variant *>(p_script);
-	self->set_typed(p_type, *class_name, *script);
+	self->set_typed((uint32_t)p_type, *class_name, *script);
 }
 
 /* Dictionary functions */
