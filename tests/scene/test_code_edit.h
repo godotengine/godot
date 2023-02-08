@@ -189,7 +189,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 			arg2.push_back(1);
 			args.push_back(arg2);
 
-			SEND_GUI_ACTION(code_edit, "ui_text_newline");
+			SEND_GUI_ACTION("ui_text_newline");
 			CHECK(code_edit->get_line_count() == 2);
 			CHECK_FALSE(code_edit->is_line_breakpointed(0));
 			CHECK(code_edit->is_line_breakpointed(1));
@@ -198,7 +198,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 			/* Non-Breaking. */
 			((Array)args[0])[0] = 1;
 			((Array)args[1])[0] = 2;
-			SEND_GUI_ACTION(code_edit, "ui_text_newline_blank");
+			SEND_GUI_ACTION("ui_text_newline_blank");
 			CHECK(code_edit->get_line_count() == 3);
 			CHECK_FALSE(code_edit->is_line_breakpointed(1));
 			CHECK(code_edit->is_line_breakpointed(2));
@@ -207,7 +207,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 			/* Above. */
 			((Array)args[0])[0] = 2;
 			((Array)args[1])[0] = 3;
-			SEND_GUI_ACTION(code_edit, "ui_text_newline_above");
+			SEND_GUI_ACTION("ui_text_newline_above");
 			CHECK(code_edit->get_line_count() == 4);
 			CHECK_FALSE(code_edit->is_line_breakpointed(2));
 			CHECK(code_edit->is_line_breakpointed(3));
@@ -227,7 +227,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 			SIGNAL_CHECK("breakpoint_toggled", args);
 
 			/* Normal. */
-			SEND_GUI_ACTION(code_edit, "ui_text_newline");
+			SEND_GUI_ACTION("ui_text_newline");
 			CHECK(code_edit->get_line_count() == 2);
 			CHECK(code_edit->is_line_breakpointed(0));
 			CHECK_FALSE(code_edit->is_line_breakpointed(1));
@@ -235,7 +235,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 
 			/* Non-Breaking. */
 			code_edit->set_caret_line(0);
-			SEND_GUI_ACTION(code_edit, "ui_text_newline_blank");
+			SEND_GUI_ACTION("ui_text_newline_blank");
 			CHECK(code_edit->get_line_count() == 3);
 			CHECK(code_edit->is_line_breakpointed(0));
 			CHECK_FALSE(code_edit->is_line_breakpointed(1));
@@ -248,7 +248,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 			args.push_back(arg2);
 
 			code_edit->set_caret_line(0);
-			SEND_GUI_ACTION(code_edit, "ui_text_newline_above");
+			SEND_GUI_ACTION("ui_text_newline_above");
 			CHECK(code_edit->get_line_count() == 4);
 			CHECK_FALSE(code_edit->is_line_breakpointed(0));
 			CHECK(code_edit->is_line_breakpointed(1));
@@ -269,12 +269,12 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 			code_edit->set_caret_line(2);
 
 			/* backspace onto line does not remove breakpoint */
-			SEND_GUI_ACTION(code_edit, "ui_text_backspace");
+			SEND_GUI_ACTION("ui_text_backspace");
 			CHECK(code_edit->is_line_breakpointed(1));
 			SIGNAL_CHECK_FALSE("breakpoint_toggled");
 
 			/* backspace on breakpointed line removes it */
-			SEND_GUI_ACTION(code_edit, "ui_text_backspace");
+			SEND_GUI_ACTION("ui_text_backspace");
 			CHECK_FALSE(code_edit->is_line_breakpointed(0));
 			ERR_PRINT_OFF;
 			CHECK_FALSE(code_edit->is_line_breakpointed(1));
@@ -294,7 +294,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 			Array arg2;
 			arg2.push_back(1);
 			args.push_back(arg2);
-			SEND_GUI_ACTION(code_edit, "ui_text_backspace");
+			SEND_GUI_ACTION("ui_text_backspace");
 			ERR_PRINT_OFF;
 			CHECK_FALSE(code_edit->is_line_breakpointed(2));
 			ERR_PRINT_ON;
@@ -315,14 +315,14 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 			code_edit->set_caret_line(1);
 
 			/* Delete onto breakpointed lines does not remove it. */
-			SEND_GUI_ACTION(code_edit, "ui_text_delete");
+			SEND_GUI_ACTION("ui_text_delete");
 			CHECK(code_edit->get_line_count() == 2);
 			CHECK(code_edit->is_line_breakpointed(1));
 			SIGNAL_CHECK_FALSE("breakpoint_toggled");
 
 			/* Delete moving breakpointed line up removes it. */
 			code_edit->set_caret_line(0);
-			SEND_GUI_ACTION(code_edit, "ui_text_delete");
+			SEND_GUI_ACTION("ui_text_delete");
 			CHECK(code_edit->get_line_count() == 1);
 			ERR_PRINT_OFF;
 			CHECK_FALSE(code_edit->is_line_breakpointed(1));
@@ -342,7 +342,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 			Array arg2;
 			arg2.push_back(1);
 			args.push_back(arg2);
-			SEND_GUI_ACTION(code_edit, "ui_text_delete");
+			SEND_GUI_ACTION("ui_text_delete");
 			ERR_PRINT_OFF;
 			CHECK_FALSE(code_edit->is_line_breakpointed(2));
 			ERR_PRINT_ON;
@@ -380,7 +380,7 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 			Array arg2;
 			arg2.push_back(4);
 			args.push_back(arg2);
-			SEND_GUI_ACTION(code_edit, "ui_text_newline");
+			SEND_GUI_ACTION("ui_text_newline");
 			ERR_PRINT_OFF;
 			CHECK_FALSE(code_edit->is_line_breakpointed(9));
 			ERR_PRINT_ON;
@@ -524,19 +524,19 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 			CHECK(code_edit->is_line_bookmarked(0));
 
 			/* Normal. */
-			SEND_GUI_ACTION(code_edit, "ui_text_newline");
+			SEND_GUI_ACTION("ui_text_newline");
 			CHECK(code_edit->get_line_count() == 2);
 			CHECK_FALSE(code_edit->is_line_bookmarked(0));
 			CHECK(code_edit->is_line_bookmarked(1));
 
 			/* Non-Breaking. */
-			SEND_GUI_ACTION(code_edit, "ui_text_newline_blank");
+			SEND_GUI_ACTION("ui_text_newline_blank");
 			CHECK(code_edit->get_line_count() == 3);
 			CHECK_FALSE(code_edit->is_line_bookmarked(1));
 			CHECK(code_edit->is_line_bookmarked(2));
 
 			/* Above. */
-			SEND_GUI_ACTION(code_edit, "ui_text_newline_above");
+			SEND_GUI_ACTION("ui_text_newline_above");
 			CHECK(code_edit->get_line_count() == 4);
 			CHECK_FALSE(code_edit->is_line_bookmarked(2));
 			CHECK(code_edit->is_line_bookmarked(3));
@@ -549,21 +549,21 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 			CHECK(code_edit->is_line_bookmarked(0));
 
 			/* Normal. */
-			SEND_GUI_ACTION(code_edit, "ui_text_newline");
+			SEND_GUI_ACTION("ui_text_newline");
 			CHECK(code_edit->get_line_count() == 2);
 			CHECK(code_edit->is_line_bookmarked(0));
 			CHECK_FALSE(code_edit->is_line_bookmarked(1));
 
 			/* Non-Breaking. */
 			code_edit->set_caret_line(0);
-			SEND_GUI_ACTION(code_edit, "ui_text_newline_blank");
+			SEND_GUI_ACTION("ui_text_newline_blank");
 			CHECK(code_edit->get_line_count() == 3);
 			CHECK(code_edit->is_line_bookmarked(0));
 			CHECK_FALSE(code_edit->is_line_bookmarked(1));
 
 			/* Above does move. */
 			code_edit->set_caret_line(0);
-			SEND_GUI_ACTION(code_edit, "ui_text_newline_above");
+			SEND_GUI_ACTION("ui_text_newline_above");
 			CHECK(code_edit->get_line_count() == 4);
 			CHECK_FALSE(code_edit->is_line_bookmarked(0));
 			CHECK(code_edit->is_line_bookmarked(1));
@@ -577,11 +577,11 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 			code_edit->set_caret_line(2);
 
 			/* backspace onto line does not remove bookmark */
-			SEND_GUI_ACTION(code_edit, "ui_text_backspace");
+			SEND_GUI_ACTION("ui_text_backspace");
 			CHECK(code_edit->is_line_bookmarked(1));
 
 			/* backspace on bookmarked line removes it */
-			SEND_GUI_ACTION(code_edit, "ui_text_backspace");
+			SEND_GUI_ACTION("ui_text_backspace");
 			CHECK_FALSE(code_edit->is_line_bookmarked(0));
 			ERR_PRINT_OFF;
 			CHECK_FALSE(code_edit->is_line_bookmarked(1));
@@ -595,13 +595,13 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 			code_edit->set_caret_line(1);
 
 			/* Delete onto bookmarked lines does not remove it. */
-			SEND_GUI_ACTION(code_edit, "ui_text_delete");
+			SEND_GUI_ACTION("ui_text_delete");
 			CHECK(code_edit->get_line_count() == 2);
 			CHECK(code_edit->is_line_bookmarked(1));
 
 			/* Delete moving bookmarked line up removes it. */
 			code_edit->set_caret_line(0);
-			SEND_GUI_ACTION(code_edit, "ui_text_delete");
+			SEND_GUI_ACTION("ui_text_delete");
 			CHECK(code_edit->get_line_count() == 1);
 			ERR_PRINT_OFF;
 			CHECK_FALSE(code_edit->is_line_bookmarked(1));
@@ -730,19 +730,19 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 			CHECK(code_edit->is_line_executing(0));
 
 			/* Normal. */
-			SEND_GUI_ACTION(code_edit, "ui_text_newline");
+			SEND_GUI_ACTION("ui_text_newline");
 			CHECK(code_edit->get_line_count() == 2);
 			CHECK_FALSE(code_edit->is_line_executing(0));
 			CHECK(code_edit->is_line_executing(1));
 
 			/* Non-Breaking. */
-			SEND_GUI_ACTION(code_edit, "ui_text_newline_blank");
+			SEND_GUI_ACTION("ui_text_newline_blank");
 			CHECK(code_edit->get_line_count() == 3);
 			CHECK_FALSE(code_edit->is_line_executing(1));
 			CHECK(code_edit->is_line_executing(2));
 
 			/* Above. */
-			SEND_GUI_ACTION(code_edit, "ui_text_newline_above");
+			SEND_GUI_ACTION("ui_text_newline_above");
 			CHECK(code_edit->get_line_count() == 4);
 			CHECK_FALSE(code_edit->is_line_executing(2));
 			CHECK(code_edit->is_line_executing(3));
@@ -755,21 +755,21 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 			CHECK(code_edit->is_line_executing(0));
 
 			/* Normal. */
-			SEND_GUI_ACTION(code_edit, "ui_text_newline");
+			SEND_GUI_ACTION("ui_text_newline");
 			CHECK(code_edit->get_line_count() == 2);
 			CHECK(code_edit->is_line_executing(0));
 			CHECK_FALSE(code_edit->is_line_executing(1));
 
 			/* Non-Breaking. */
 			code_edit->set_caret_line(0);
-			SEND_GUI_ACTION(code_edit, "ui_text_newline_blank");
+			SEND_GUI_ACTION("ui_text_newline_blank");
 			CHECK(code_edit->get_line_count() == 3);
 			CHECK(code_edit->is_line_executing(0));
 			CHECK_FALSE(code_edit->is_line_executing(1));
 
 			/* Above does move. */
 			code_edit->set_caret_line(0);
-			SEND_GUI_ACTION(code_edit, "ui_text_newline_above");
+			SEND_GUI_ACTION("ui_text_newline_above");
 			CHECK(code_edit->get_line_count() == 4);
 			CHECK_FALSE(code_edit->is_line_executing(0));
 			CHECK(code_edit->is_line_executing(1));
@@ -783,11 +783,11 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 			code_edit->set_caret_line(2);
 
 			/* backspace onto line does not remove executing lines. */
-			SEND_GUI_ACTION(code_edit, "ui_text_backspace");
+			SEND_GUI_ACTION("ui_text_backspace");
 			CHECK(code_edit->is_line_executing(1));
 
 			/* backspace on executing line removes it */
-			SEND_GUI_ACTION(code_edit, "ui_text_backspace");
+			SEND_GUI_ACTION("ui_text_backspace");
 			CHECK_FALSE(code_edit->is_line_executing(0));
 			ERR_PRINT_OFF;
 			CHECK_FALSE(code_edit->is_line_executing(1));
@@ -801,13 +801,13 @@ TEST_CASE("[SceneTree][CodeEdit] line gutters") {
 			code_edit->set_caret_line(1);
 
 			/* Delete onto executing lines does not remove it. */
-			SEND_GUI_ACTION(code_edit, "ui_text_delete");
+			SEND_GUI_ACTION("ui_text_delete");
 			CHECK(code_edit->get_line_count() == 2);
 			CHECK(code_edit->is_line_executing(1));
 
 			/* Delete moving executing line up removes it. */
 			code_edit->set_caret_line(0);
-			SEND_GUI_ACTION(code_edit, "ui_text_delete");
+			SEND_GUI_ACTION("ui_text_delete");
 			CHECK(code_edit->get_line_count() == 1);
 			ERR_PRINT_OFF;
 			CHECK_FALSE(code_edit->is_line_executing(1));
@@ -1814,7 +1814,7 @@ TEST_CASE("[SceneTree][CodeEdit] indent") {
 		CHECK(code_edit->get_line(0) == "\t");
 
 		/* Check input action. */
-		SEND_GUI_ACTION(code_edit, "ui_text_indent");
+		SEND_GUI_ACTION("ui_text_indent");
 		CHECK(code_edit->get_line(0) == "\t\t");
 
 		/* Insert in place. */
@@ -1887,7 +1887,7 @@ TEST_CASE("[SceneTree][CodeEdit] indent") {
 		CHECK(code_edit->get_line(0) == "    ");
 
 		/* Check input action. */
-		SEND_GUI_ACTION(code_edit, "ui_text_indent");
+		SEND_GUI_ACTION("ui_text_indent");
 		CHECK(code_edit->get_line(0) == "        ");
 
 		/* Insert in place. */
@@ -1985,7 +1985,7 @@ TEST_CASE("[SceneTree][CodeEdit] indent") {
 
 		/* Check input action. */
 		code_edit->set_text("\t\ttest");
-		SEND_GUI_ACTION(code_edit, "ui_text_dedent");
+		SEND_GUI_ACTION("ui_text_dedent");
 		CHECK(code_edit->get_line(0) == "\ttest");
 
 		/* Selection does entire line. */
@@ -2076,7 +2076,7 @@ TEST_CASE("[SceneTree][CodeEdit] indent") {
 
 		/* Check input action. */
 		code_edit->set_text("        test");
-		SEND_GUI_ACTION(code_edit, "ui_text_dedent");
+		SEND_GUI_ACTION("ui_text_dedent");
 		CHECK(code_edit->get_line(0) == "    test");
 
 		/* Selection does entire line. */
@@ -2124,28 +2124,28 @@ TEST_CASE("[SceneTree][CodeEdit] indent") {
 			/* Simple indent on new line. */
 			code_edit->set_text("");
 			code_edit->insert_text_at_caret("test:");
-			SEND_GUI_ACTION(code_edit, "ui_text_newline");
+			SEND_GUI_ACTION("ui_text_newline");
 			CHECK(code_edit->get_line(0) == "test:");
 			CHECK(code_edit->get_line(1) == "\t");
 
 			/* new blank line should still indent. */
 			code_edit->set_text("");
 			code_edit->insert_text_at_caret("test:");
-			SEND_GUI_ACTION(code_edit, "ui_text_newline_blank");
+			SEND_GUI_ACTION("ui_text_newline_blank");
 			CHECK(code_edit->get_line(0) == "test:");
 			CHECK(code_edit->get_line(1) == "\t");
 
 			/* new line above should not indent. */
 			code_edit->set_text("");
 			code_edit->insert_text_at_caret("test:");
-			SEND_GUI_ACTION(code_edit, "ui_text_newline_above");
+			SEND_GUI_ACTION("ui_text_newline_above");
 			CHECK(code_edit->get_line(0) == "");
 			CHECK(code_edit->get_line(1) == "test:");
 
 			/* Whitespace between symbol and caret is okay. */
 			code_edit->set_text("");
 			code_edit->insert_text_at_caret("test:  ");
-			SEND_GUI_ACTION(code_edit, "ui_text_newline");
+			SEND_GUI_ACTION("ui_text_newline");
 			CHECK(code_edit->get_line(0) == "test:  ");
 			CHECK(code_edit->get_line(1) == "\t");
 
@@ -2153,7 +2153,7 @@ TEST_CASE("[SceneTree][CodeEdit] indent") {
 			code_edit->add_comment_delimiter("#", "");
 			code_edit->set_text("");
 			code_edit->insert_text_at_caret("test: # comment");
-			SEND_GUI_ACTION(code_edit, "ui_text_newline");
+			SEND_GUI_ACTION("ui_text_newline");
 			CHECK(code_edit->get_line(0) == "test: # comment");
 			CHECK(code_edit->get_line(1) == "\t");
 			code_edit->remove_comment_delimiter("#");
@@ -2162,7 +2162,7 @@ TEST_CASE("[SceneTree][CodeEdit] indent") {
 			code_edit->add_string_delimiter("#", "");
 			code_edit->set_text("");
 			code_edit->insert_text_at_caret("test: # string");
-			SEND_GUI_ACTION(code_edit, "ui_text_newline");
+			SEND_GUI_ACTION("ui_text_newline");
 			CHECK(code_edit->get_line(0) == "test: # string");
 			CHECK(code_edit->get_line(1) == "");
 			code_edit->remove_string_delimiter("#");
@@ -2171,7 +2171,7 @@ TEST_CASE("[SceneTree][CodeEdit] indent") {
 			code_edit->add_comment_delimiter("#", "");
 			code_edit->set_text("");
 			code_edit->insert_text_at_caret("test := 0 # comment");
-			SEND_GUI_ACTION(code_edit, "ui_text_newline");
+			SEND_GUI_ACTION("ui_text_newline");
 			CHECK(code_edit->get_line(0) == "test := 0 # comment");
 			CHECK(code_edit->get_line(1) == "");
 			code_edit->remove_comment_delimiter("#");
@@ -2179,7 +2179,7 @@ TEST_CASE("[SceneTree][CodeEdit] indent") {
 			/* Even when there's no comments. */
 			code_edit->set_text("");
 			code_edit->insert_text_at_caret("test := 0");
-			SEND_GUI_ACTION(code_edit, "ui_text_newline");
+			SEND_GUI_ACTION("ui_text_newline");
 			CHECK(code_edit->get_line(0) == "test := 0");
 			CHECK(code_edit->get_line(1) == "");
 
@@ -2187,7 +2187,7 @@ TEST_CASE("[SceneTree][CodeEdit] indent") {
 			code_edit->set_text("");
 			code_edit->insert_text_at_caret("test{}");
 			code_edit->set_caret_column(5);
-			SEND_GUI_ACTION(code_edit, "ui_text_newline");
+			SEND_GUI_ACTION("ui_text_newline");
 			CHECK(code_edit->get_line(0) == "test{");
 			CHECK(code_edit->get_line(1) == "\t");
 			CHECK(code_edit->get_line(2) == "}");
@@ -2196,7 +2196,7 @@ TEST_CASE("[SceneTree][CodeEdit] indent") {
 			code_edit->set_text("");
 			code_edit->insert_text_at_caret("test{}");
 			code_edit->set_caret_column(5);
-			SEND_GUI_ACTION(code_edit, "ui_text_newline_above");
+			SEND_GUI_ACTION("ui_text_newline_above");
 			CHECK(code_edit->get_line(0) == "");
 			CHECK(code_edit->get_line(1) == "test{}");
 
@@ -2204,7 +2204,7 @@ TEST_CASE("[SceneTree][CodeEdit] indent") {
 			code_edit->set_text("");
 			code_edit->insert_text_at_caret("test{}");
 			code_edit->set_caret_column(5);
-			SEND_GUI_ACTION(code_edit, "ui_text_newline_blank");
+			SEND_GUI_ACTION("ui_text_newline_blank");
 			CHECK(code_edit->get_line(0) == "test{}");
 			CHECK(code_edit->get_line(1) == "");
 		}
@@ -2217,28 +2217,28 @@ TEST_CASE("[SceneTree][CodeEdit] indent") {
 			/* Simple indent on new line. */
 			code_edit->set_text("");
 			code_edit->insert_text_at_caret("test:");
-			SEND_GUI_ACTION(code_edit, "ui_text_newline");
+			SEND_GUI_ACTION("ui_text_newline");
 			CHECK(code_edit->get_line(0) == "test:");
 			CHECK(code_edit->get_line(1) == "    ");
 
 			/* new blank line should still indent. */
 			code_edit->set_text("");
 			code_edit->insert_text_at_caret("test:");
-			SEND_GUI_ACTION(code_edit, "ui_text_newline_blank");
+			SEND_GUI_ACTION("ui_text_newline_blank");
 			CHECK(code_edit->get_line(0) == "test:");
 			CHECK(code_edit->get_line(1) == "    ");
 
 			/* new line above should not indent. */
 			code_edit->set_text("");
 			code_edit->insert_text_at_caret("test:");
-			SEND_GUI_ACTION(code_edit, "ui_text_newline_above");
+			SEND_GUI_ACTION("ui_text_newline_above");
 			CHECK(code_edit->get_line(0) == "");
 			CHECK(code_edit->get_line(1) == "test:");
 
 			/* Whitespace between symbol and caret is okay. */
 			code_edit->set_text("");
 			code_edit->insert_text_at_caret("test:  ");
-			SEND_GUI_ACTION(code_edit, "ui_text_newline");
+			SEND_GUI_ACTION("ui_text_newline");
 			CHECK(code_edit->get_line(0) == "test:  ");
 			CHECK(code_edit->get_line(1) == "    ");
 
@@ -2246,7 +2246,7 @@ TEST_CASE("[SceneTree][CodeEdit] indent") {
 			code_edit->add_comment_delimiter("#", "");
 			code_edit->set_text("");
 			code_edit->insert_text_at_caret("test: # comment");
-			SEND_GUI_ACTION(code_edit, "ui_text_newline");
+			SEND_GUI_ACTION("ui_text_newline");
 			CHECK(code_edit->get_line(0) == "test: # comment");
 			CHECK(code_edit->get_line(1) == "    ");
 			code_edit->remove_comment_delimiter("#");
@@ -2255,7 +2255,7 @@ TEST_CASE("[SceneTree][CodeEdit] indent") {
 			code_edit->add_string_delimiter("#", "");
 			code_edit->set_text("");
 			code_edit->insert_text_at_caret("test: # string");
-			SEND_GUI_ACTION(code_edit, "ui_text_newline");
+			SEND_GUI_ACTION("ui_text_newline");
 			CHECK(code_edit->get_line(0) == "test: # string");
 			CHECK(code_edit->get_line(1) == "");
 			code_edit->remove_string_delimiter("#");
@@ -2264,7 +2264,7 @@ TEST_CASE("[SceneTree][CodeEdit] indent") {
 			code_edit->add_comment_delimiter("#", "");
 			code_edit->set_text("");
 			code_edit->insert_text_at_caret("test := 0 # comment");
-			SEND_GUI_ACTION(code_edit, "ui_text_newline");
+			SEND_GUI_ACTION("ui_text_newline");
 			CHECK(code_edit->get_line(0) == "test := 0 # comment");
 			CHECK(code_edit->get_line(1) == "");
 			code_edit->remove_comment_delimiter("#");
@@ -2272,7 +2272,7 @@ TEST_CASE("[SceneTree][CodeEdit] indent") {
 			/* Even when there's no comments. */
 			code_edit->set_text("");
 			code_edit->insert_text_at_caret("test := 0");
-			SEND_GUI_ACTION(code_edit, "ui_text_newline");
+			SEND_GUI_ACTION("ui_text_newline");
 			CHECK(code_edit->get_line(0) == "test := 0");
 			CHECK(code_edit->get_line(1) == "");
 
@@ -2280,7 +2280,7 @@ TEST_CASE("[SceneTree][CodeEdit] indent") {
 			code_edit->set_text("");
 			code_edit->insert_text_at_caret("test{}");
 			code_edit->set_caret_column(5);
-			SEND_GUI_ACTION(code_edit, "ui_text_newline");
+			SEND_GUI_ACTION("ui_text_newline");
 			CHECK(code_edit->get_line(0) == "test{");
 			CHECK(code_edit->get_line(1) == "    ");
 			CHECK(code_edit->get_line(2) == "}");
@@ -2289,7 +2289,7 @@ TEST_CASE("[SceneTree][CodeEdit] indent") {
 			code_edit->set_text("");
 			code_edit->insert_text_at_caret("test{}");
 			code_edit->set_caret_column(5);
-			SEND_GUI_ACTION(code_edit, "ui_text_newline_above");
+			SEND_GUI_ACTION("ui_text_newline_above");
 			CHECK(code_edit->get_line(0) == "");
 			CHECK(code_edit->get_line(1) == "test{}");
 
@@ -2297,7 +2297,7 @@ TEST_CASE("[SceneTree][CodeEdit] indent") {
 			code_edit->set_text("");
 			code_edit->insert_text_at_caret("test{}");
 			code_edit->set_caret_column(5);
-			SEND_GUI_ACTION(code_edit, "ui_text_newline_blank");
+			SEND_GUI_ACTION("ui_text_newline_blank");
 			CHECK(code_edit->get_line(0) == "test{}");
 			CHECK(code_edit->get_line(1) == "");
 		}
@@ -2764,57 +2764,57 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 
 		/* Check typing inserts closing pair. */
 		code_edit->clear();
-		SEND_GUI_KEY_EVENT(code_edit, Key::BRACKETLEFT);
+		SEND_GUI_KEY_EVENT(Key::BRACKETLEFT);
 		CHECK(code_edit->get_line(0) == "[]");
 
 		/* Should first match and insert smaller key. */
 		code_edit->clear();
-		SEND_GUI_KEY_EVENT(code_edit, Key::APOSTROPHE);
+		SEND_GUI_KEY_EVENT(Key::APOSTROPHE);
 		CHECK(code_edit->get_line(0) == "''");
 		CHECK(code_edit->get_caret_column() == 1);
 
 		/* Move out from center, Should match and insert larger key. */
-		SEND_GUI_ACTION(code_edit, "ui_text_caret_right");
-		SEND_GUI_KEY_EVENT(code_edit, Key::APOSTROPHE);
+		SEND_GUI_ACTION("ui_text_caret_right");
+		SEND_GUI_KEY_EVENT(Key::APOSTROPHE);
 		CHECK(code_edit->get_line(0) == "''''''");
 		CHECK(code_edit->get_caret_column() == 3);
 
 		/* Backspace should remove all. */
-		SEND_GUI_ACTION(code_edit, "ui_text_backspace");
+		SEND_GUI_ACTION("ui_text_backspace");
 		CHECK(code_edit->get_line(0).is_empty());
 
 		/* If in between and typing close key should "skip". */
-		SEND_GUI_KEY_EVENT(code_edit, Key::BRACKETLEFT);
+		SEND_GUI_KEY_EVENT(Key::BRACKETLEFT);
 		CHECK(code_edit->get_line(0) == "[]");
 		CHECK(code_edit->get_caret_column() == 1);
-		SEND_GUI_KEY_EVENT(code_edit, Key::BRACKETRIGHT);
+		SEND_GUI_KEY_EVENT(Key::BRACKETRIGHT);
 		CHECK(code_edit->get_line(0) == "[]");
 		CHECK(code_edit->get_caret_column() == 2);
 
 		/* If current is char and inserting a string, do not autocomplete. */
 		code_edit->clear();
-		SEND_GUI_KEY_EVENT(code_edit, Key::A);
-		SEND_GUI_KEY_EVENT(code_edit, Key::APOSTROPHE);
+		SEND_GUI_KEY_EVENT(Key::A);
+		SEND_GUI_KEY_EVENT(Key::APOSTROPHE);
 		CHECK(code_edit->get_line(0) == "A'");
 
 		/* If in comment, do not complete. */
 		code_edit->add_comment_delimiter("#", "");
 		code_edit->clear();
-		SEND_GUI_KEY_EVENT(code_edit, Key::NUMBERSIGN);
-		SEND_GUI_KEY_EVENT(code_edit, Key::APOSTROPHE);
+		SEND_GUI_KEY_EVENT(Key::NUMBERSIGN);
+		SEND_GUI_KEY_EVENT(Key::APOSTROPHE);
 		CHECK(code_edit->get_line(0) == "#'");
 
 		/* If in string, and inserting string do not complete. */
 		code_edit->clear();
-		SEND_GUI_KEY_EVENT(code_edit, Key::APOSTROPHE);
-		SEND_GUI_KEY_EVENT(code_edit, Key::QUOTEDBL);
+		SEND_GUI_KEY_EVENT(Key::APOSTROPHE);
+		SEND_GUI_KEY_EVENT(Key::QUOTEDBL);
 		CHECK(code_edit->get_line(0) == "'\"'");
 
 		/* Wrap single line selection with brackets */
 		code_edit->clear();
 		code_edit->insert_text_at_caret("abc");
 		code_edit->select_all();
-		SEND_GUI_KEY_EVENT(code_edit, Key::BRACKETLEFT);
+		SEND_GUI_KEY_EVENT(Key::BRACKETLEFT);
 		CHECK(code_edit->get_line(0) == "[abc]");
 
 		/* Caret should be after the last character of the single line selection */
@@ -2824,7 +2824,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 		code_edit->clear();
 		code_edit->insert_text_at_caret("abc\nabc");
 		code_edit->select_all();
-		SEND_GUI_KEY_EVENT(code_edit, Key::BRACKETLEFT);
+		SEND_GUI_KEY_EVENT(Key::BRACKETLEFT);
 		CHECK(code_edit->get_text() == "[abc\nabc]");
 
 		/* Caret should be after the last character of the multi line selection */
@@ -2835,14 +2835,14 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 		code_edit->clear();
 		code_edit->insert_text_at_caret("abc");
 		code_edit->select_all();
-		SEND_GUI_KEY_EVENT(code_edit, Key::KEY_1);
+		SEND_GUI_KEY_EVENT(Key::KEY_1);
 		CHECK(code_edit->get_text() == "1");
 
 		/* If potential multichar and single brace completion is matched, it should wrap the single.  */
 		code_edit->clear();
 		code_edit->insert_text_at_caret("\'\'abc");
 		code_edit->select(0, 2, 0, 5);
-		SEND_GUI_KEY_EVENT(code_edit, Key::APOSTROPHE);
+		SEND_GUI_KEY_EVENT(Key::APOSTROPHE);
 		CHECK(code_edit->get_text() == "\'\'\'abc\'");
 
 		/* If only the potential multichar brace completion is matched, it does not wrap or complete. */
@@ -2853,7 +2853,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 		code_edit->clear();
 		code_edit->insert_text_at_caret("\'\'abc");
 		code_edit->select(0, 2, 0, 5);
-		SEND_GUI_KEY_EVENT(code_edit, Key::APOSTROPHE);
+		SEND_GUI_KEY_EVENT(Key::APOSTROPHE);
 		CHECK(code_edit->get_text() == "\'\'\'");
 	}
 
@@ -2977,7 +2977,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 		SIGNAL_CHECK("code_completion_requested", signal_args);
 
 		/* Manual request should force. */
-		SEND_GUI_ACTION(code_edit, "ui_text_completion_query");
+		SEND_GUI_ACTION("ui_text_completion_query");
 		SIGNAL_CHECK("code_completion_requested", signal_args);
 
 		/* Insert prefix. */
@@ -3042,7 +3042,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 			CHECK(code_edit->get_code_completion_options().size() == 1);
 
 			/* Check cancel closes completion. */
-			SEND_GUI_ACTION(code_edit, "ui_cancel");
+			SEND_GUI_ACTION("ui_cancel");
 			CHECK(code_edit->get_code_completion_selected_index() == -1);
 
 			code_edit->update_code_completion_options();
@@ -3065,51 +3065,51 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 			code_edit->set_size(Size2(100, 100));
 
 			/* Check input. */
-			SEND_GUI_ACTION(code_edit, "ui_end");
+			SEND_GUI_ACTION("ui_end");
 			CHECK(code_edit->get_code_completion_selected_index() == 2);
 
-			SEND_GUI_ACTION(code_edit, "ui_home");
+			SEND_GUI_ACTION("ui_home");
 			CHECK(code_edit->get_code_completion_selected_index() == 0);
 
-			SEND_GUI_ACTION(code_edit, "ui_page_down");
+			SEND_GUI_ACTION("ui_page_down");
 			CHECK(code_edit->get_code_completion_selected_index() == 2);
 
-			SEND_GUI_ACTION(code_edit, "ui_page_up");
+			SEND_GUI_ACTION("ui_page_up");
 			CHECK(code_edit->get_code_completion_selected_index() == 0);
 
-			SEND_GUI_ACTION(code_edit, "ui_up");
+			SEND_GUI_ACTION("ui_up");
 			CHECK(code_edit->get_code_completion_selected_index() == 2);
 
-			SEND_GUI_ACTION(code_edit, "ui_down");
+			SEND_GUI_ACTION("ui_down");
 			CHECK(code_edit->get_code_completion_selected_index() == 0);
 
-			SEND_GUI_KEY_EVENT(code_edit, Key::T);
+			SEND_GUI_KEY_EVENT(Key::T);
 			CHECK(code_edit->get_code_completion_selected_index() == 0);
 
-			SEND_GUI_ACTION(code_edit, "ui_left");
+			SEND_GUI_ACTION("ui_left");
 			CHECK(code_edit->get_code_completion_selected_index() == 0);
 
-			SEND_GUI_ACTION(code_edit, "ui_right");
+			SEND_GUI_ACTION("ui_right");
 			CHECK(code_edit->get_code_completion_selected_index() == 0);
 
-			SEND_GUI_ACTION(code_edit, "ui_text_backspace");
+			SEND_GUI_ACTION("ui_text_backspace");
 			CHECK(code_edit->get_code_completion_selected_index() == 0);
 
 			Point2 caret_pos = code_edit->get_caret_draw_pos();
 			caret_pos.y += code_edit->get_line_height();
-			SEND_GUI_MOUSE_BUTTON_EVENT(code_edit, caret_pos, MouseButton::WHEEL_DOWN, 0, Key::NONE);
+			SEND_GUI_MOUSE_BUTTON_EVENT(caret_pos, MouseButton::WHEEL_DOWN, 0, Key::NONE);
 			CHECK(code_edit->get_code_completion_selected_index() == 1);
 
-			SEND_GUI_MOUSE_BUTTON_EVENT(code_edit, caret_pos, MouseButton::WHEEL_UP, 0, Key::NONE);
+			SEND_GUI_MOUSE_BUTTON_EVENT(caret_pos, MouseButton::WHEEL_UP, 0, Key::NONE);
 			CHECK(code_edit->get_code_completion_selected_index() == 0);
 
 			/* Single click selects. */
 			caret_pos.y += code_edit->get_line_height() * 2;
-			SEND_GUI_MOUSE_BUTTON_EVENT(code_edit, caret_pos, MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
+			SEND_GUI_MOUSE_BUTTON_EVENT(caret_pos, MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
 			CHECK(code_edit->get_code_completion_selected_index() == 2);
 
 			/* Double click inserts. */
-			SEND_GUI_DOUBLE_CLICK(code_edit, caret_pos, Key::NONE);
+			SEND_GUI_DOUBLE_CLICK(caret_pos, Key::NONE);
 			CHECK(code_edit->get_code_completion_selected_index() == -1);
 			CHECK(code_edit->get_line(0) == "item_2");
 
@@ -3130,7 +3130,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 			code_edit->set_caret_column(2);
 			code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_CLASS, "item_0.", "item_0");
 			code_edit->update_code_completion_options();
-			SEND_GUI_ACTION(code_edit, "ui_text_completion_replace");
+			SEND_GUI_ACTION("ui_text_completion_replace");
 			CHECK(code_edit->get_line(0) == "item_0 test");
 
 			/* Replace string. */
@@ -3139,7 +3139,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 			code_edit->set_caret_column(2);
 			code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_CLASS, "item_0.", "item_0");
 			code_edit->update_code_completion_options();
-			SEND_GUI_ACTION(code_edit, "ui_text_completion_replace");
+			SEND_GUI_ACTION("ui_text_completion_replace");
 			CHECK(code_edit->get_line(0) == "\"item_0\"");
 
 			/* Normal replace if no end is given. */
@@ -3148,7 +3148,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 			code_edit->set_caret_column(2);
 			code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_CLASS, "item_0.", "item_0");
 			code_edit->update_code_completion_options();
-			SEND_GUI_ACTION(code_edit, "ui_text_completion_replace");
+			SEND_GUI_ACTION("ui_text_completion_replace");
 			CHECK(code_edit->get_line(0) == "\"item_0\" test");
 
 			/* Insert at completion. */
@@ -3157,7 +3157,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 			code_edit->set_caret_column(2);
 			code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_CLASS, "item_0.", "item_0");
 			code_edit->update_code_completion_options();
-			SEND_GUI_ACTION(code_edit, "ui_text_completion_accept");
+			SEND_GUI_ACTION("ui_text_completion_accept");
 			CHECK(code_edit->get_line(0) == "item_01 test");
 
 			/* Insert at completion with string should have same output. */
@@ -3166,7 +3166,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 			code_edit->set_caret_column(2);
 			code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_CLASS, "item_0.", "item_0");
 			code_edit->update_code_completion_options();
-			SEND_GUI_ACTION(code_edit, "ui_text_completion_accept");
+			SEND_GUI_ACTION("ui_text_completion_accept");
 			CHECK(code_edit->get_line(0) == "\"item_0\"1 test\"");
 
 			/* Merge symbol at end on insert text. */
@@ -3176,7 +3176,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 			code_edit->set_caret_column(2);
 			code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_CLASS, "item_0(", "item_0(");
 			code_edit->update_code_completion_options();
-			SEND_GUI_ACTION(code_edit, "ui_text_completion_replace");
+			SEND_GUI_ACTION("ui_text_completion_replace");
 			CHECK(code_edit->get_line(0) == "item_0( test");
 			CHECK(code_edit->get_caret_column() == 7);
 
@@ -3186,7 +3186,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 			code_edit->set_caret_column(2);
 			code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_CLASS, "item_0", "item_0");
 			code_edit->update_code_completion_options();
-			SEND_GUI_ACTION(code_edit, "ui_text_completion_replace");
+			SEND_GUI_ACTION("ui_text_completion_replace");
 			CHECK(code_edit->get_line(0) == "item_0( test");
 			CHECK(code_edit->get_caret_column() == 6);
 
@@ -3196,7 +3196,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 			code_edit->set_caret_column(2);
 			code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_CLASS, "item_0(", "item_0(");
 			code_edit->update_code_completion_options();
-			SEND_GUI_ACTION(code_edit, "ui_text_completion_replace");
+			SEND_GUI_ACTION("ui_text_completion_replace");
 			CHECK(code_edit->get_line(0) == "item_0( test");
 			CHECK(code_edit->get_caret_column() == 7);
 
@@ -3207,7 +3207,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 			code_edit->set_caret_column(2);
 			code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_CLASS, "item_0()", "item_0()");
 			code_edit->update_code_completion_options();
-			SEND_GUI_ACTION(code_edit, "ui_text_completion_replace");
+			SEND_GUI_ACTION("ui_text_completion_replace");
 			CHECK(code_edit->get_line(0) == "item_0() test");
 			CHECK(code_edit->get_caret_column() == 8);
 
@@ -3217,7 +3217,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 			code_edit->set_caret_column(2);
 			code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_CLASS, "item_0", "item_0");
 			code_edit->update_code_completion_options();
-			SEND_GUI_ACTION(code_edit, "ui_text_completion_replace");
+			SEND_GUI_ACTION("ui_text_completion_replace");
 			CHECK(code_edit->get_line(0) == "item_0() test");
 			CHECK(code_edit->get_caret_column() == 6);
 
@@ -3227,7 +3227,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 			code_edit->set_caret_column(2);
 			code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_CLASS, "item_0()", "item_0()");
 			code_edit->update_code_completion_options();
-			SEND_GUI_ACTION(code_edit, "ui_text_completion_replace");
+			SEND_GUI_ACTION("ui_text_completion_replace");
 			CHECK(code_edit->get_line(0) == "item_0() test");
 			CHECK(code_edit->get_caret_column() == 8);
 
@@ -3240,7 +3240,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 			code_edit->set_caret_column(2);
 			code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_CLASS, "item_0(", "item_0(");
 			code_edit->update_code_completion_options();
-			SEND_GUI_ACTION(code_edit, "ui_text_completion_replace");
+			SEND_GUI_ACTION("ui_text_completion_replace");
 			CHECK(code_edit->get_line(0) == "item_0() test");
 			CHECK(code_edit->get_caret_column() == 7);
 
@@ -3250,7 +3250,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 			code_edit->set_caret_column(2);
 			code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_CLASS, "item_0", "item_0");
 			code_edit->update_code_completion_options();
-			SEND_GUI_ACTION(code_edit, "ui_text_completion_replace");
+			SEND_GUI_ACTION("ui_text_completion_replace");
 			CHECK(code_edit->get_line(0) == "item_0( test");
 			CHECK(code_edit->get_caret_column() == 6);
 
@@ -3260,7 +3260,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 			code_edit->set_caret_column(2);
 			code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_CLASS, "item_0(", "item_0(");
 			code_edit->update_code_completion_options();
-			SEND_GUI_ACTION(code_edit, "ui_text_completion_replace");
+			SEND_GUI_ACTION("ui_text_completion_replace");
 			CHECK(code_edit->get_line(0) == "item_0( test");
 			CHECK(code_edit->get_caret_column() == 7);
 
@@ -3271,7 +3271,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 			code_edit->set_caret_column(2);
 			code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_CLASS, "item_0()", "item_0()");
 			code_edit->update_code_completion_options();
-			SEND_GUI_ACTION(code_edit, "ui_text_completion_replace");
+			SEND_GUI_ACTION("ui_text_completion_replace");
 			CHECK(code_edit->get_line(0) == "item_0() test");
 			CHECK(code_edit->get_caret_column() == 8);
 
@@ -3281,7 +3281,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 			code_edit->set_caret_column(2);
 			code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_CLASS, "item_0", "item_0");
 			code_edit->update_code_completion_options();
-			SEND_GUI_ACTION(code_edit, "ui_text_completion_replace");
+			SEND_GUI_ACTION("ui_text_completion_replace");
 			CHECK(code_edit->get_line(0) == "item_0() test");
 			CHECK(code_edit->get_caret_column() == 6);
 
@@ -3291,7 +3291,7 @@ TEST_CASE("[SceneTree][CodeEdit] completion") {
 			code_edit->set_caret_column(2);
 			code_edit->add_code_completion_option(CodeEdit::CodeCompletionKind::KIND_CLASS, "item_0()", "item_0()");
 			code_edit->update_code_completion_options();
-			SEND_GUI_ACTION(code_edit, "ui_text_completion_replace");
+			SEND_GUI_ACTION("ui_text_completion_replace");
 			CHECK(code_edit->get_line(0) == "item_0() test");
 			CHECK(code_edit->get_caret_column() == 8);
 		}
@@ -3316,15 +3316,15 @@ TEST_CASE("[SceneTree][CodeEdit] symbol lookup") {
 
 		Point2 caret_pos = code_edit->get_caret_draw_pos();
 		caret_pos.x += 60;
-		SEND_GUI_MOUSE_BUTTON_EVENT(code_edit, caret_pos, MouseButton::NONE, 0, Key::NONE);
+		SEND_GUI_MOUSE_BUTTON_EVENT(caret_pos, MouseButton::NONE, 0, Key::NONE);
 		CHECK(code_edit->get_text_for_symbol_lookup() == "this is s" + String::chr(0xFFFF) + "ome text");
 
 		SIGNAL_WATCH(code_edit, "symbol_validate");
 
 #ifdef MACOS_ENABLED
-		SEND_GUI_KEY_EVENT(code_edit, Key::META);
+		SEND_GUI_KEY_EVENT(Key::META);
 #else
-		SEND_GUI_KEY_EVENT(code_edit, Key::CTRL);
+		SEND_GUI_KEY_EVENT(Key::CTRL);
 #endif
 
 		Array signal_args;
@@ -3418,7 +3418,7 @@ TEST_CASE("[SceneTree][CodeEdit] New Line") {
 	code_edit->insert_text_at_caret("test new line");
 	code_edit->set_caret_line(0);
 	code_edit->set_caret_column(13);
-	SEND_GUI_ACTION(code_edit, "ui_text_newline");
+	SEND_GUI_ACTION("ui_text_newline");
 	CHECK(code_edit->get_line(0) == "test new line");
 	CHECK(code_edit->get_line(1) == "");
 
@@ -3427,7 +3427,7 @@ TEST_CASE("[SceneTree][CodeEdit] New Line") {
 	code_edit->insert_text_at_caret("test new line");
 	code_edit->set_caret_line(0);
 	code_edit->set_caret_column(5);
-	SEND_GUI_ACTION(code_edit, "ui_text_newline");
+	SEND_GUI_ACTION("ui_text_newline");
 	CHECK(code_edit->get_line(0) == "test ");
 	CHECK(code_edit->get_line(1) == "new line");
 
@@ -3435,7 +3435,7 @@ TEST_CASE("[SceneTree][CodeEdit] New Line") {
 	code_edit->set_text("");
 	code_edit->insert_text_at_caret("test new line");
 	code_edit->select(0, 0, 0, 5);
-	SEND_GUI_ACTION(code_edit, "ui_text_newline");
+	SEND_GUI_ACTION("ui_text_newline");
 	CHECK(code_edit->get_line(0) == "");
 	CHECK(code_edit->get_line(1) == "new line");
 
@@ -3443,7 +3443,7 @@ TEST_CASE("[SceneTree][CodeEdit] New Line") {
 	code_edit->set_text("");
 	code_edit->insert_text_at_caret("test new line");
 	code_edit->select(0, 0, 0, 5);
-	SEND_GUI_ACTION(code_edit, "ui_text_newline_blank");
+	SEND_GUI_ACTION("ui_text_newline_blank");
 	CHECK(code_edit->get_line(0) == "test new line");
 	CHECK(code_edit->get_line(1) == "");
 
@@ -3451,7 +3451,7 @@ TEST_CASE("[SceneTree][CodeEdit] New Line") {
 	code_edit->set_text("");
 	code_edit->insert_text_at_caret("test new line");
 	code_edit->select(0, 0, 0, 5);
-	SEND_GUI_ACTION(code_edit, "ui_text_newline_above");
+	SEND_GUI_ACTION("ui_text_newline_above");
 	CHECK(code_edit->get_line(0) == "");
 	CHECK(code_edit->get_line(1) == "test new line");
 
