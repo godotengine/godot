@@ -201,6 +201,10 @@ func test():
 	assert(str(typed_enums) == '[391]')
 	assert(typed_enums.get_typed_builtin() == TYPE_INT)
 
+	const const_enums: Array[E] = []
+	assert(const_enums.get_typed_builtin() == TYPE_INT)
+	assert(const_enums.get_typed_class_name() == &'')
+
 
 	var a := A.new()
 	var typed_natives: Array[RefCounted] = [a]
