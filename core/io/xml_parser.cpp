@@ -203,7 +203,7 @@ void XMLParser::_parse_opening_xml_element() {
 		if (_is_white_space(*P)) {
 			next_char();
 		} else {
-			if (*P != '/' and *P != '?') {
+			if (*P != '/' && *P != '?') {
 				// we've got an attribute
 
 				// read the attribute names
