@@ -2,13 +2,17 @@
 #ifdef USE_GLES_OVER_GL
 // Floating point pack/unpack functions are part of the GLSL ES 300 specification used by web and mobile.
 uint float2half(uint f) {
-	return ((f >> uint(16)) & uint(0x8000)) |
-			((((f & uint(0x7f800000)) - uint(0x38000000)) >> uint(13)) & uint(0x7c00)) |
-			((f >> uint(13)) & uint(0x03ff));
+	uint b = f + uint(0x00001000); // round-to-nearest-even: add last bit after truncated mantissa
+    uint e = (b & uint(0x7f800000))>>uint(23); // exponent
+    uint m = b & uint(0x007fffff); // mantissa; in line below: 0x007FF000 = 0x00800000-0x00001000 = decimal indicator flag - initial rounding
+    return (b & uint(0x80000000))>>uint(16) | uint(e > uint(112)) * ((((e-uint(112))<<uint(10))& uint(0x7C00))|m>>uint(13)) | (uint(e<uint(113))&uint(e>uint(101)))*((((uint(0x007ff000)+m)>>(uint(125)-e))+uint(1))>>uint(1)) | uint(e>uint(143))*uint(0x7fff); // sign : normalized : denormalized : saturate
 }
 
 uint half2float(uint h) {
-	return ((h & uint(0x8000)) << uint(16)) | (((h & uint(0x7c00)) + uint(0x1c000)) << uint(13)) | ((h & uint(0x03ff)) << uint(13));
+	uint e = (h & uint(0x7c00)) >> uint(10); // exponent
+    uint m = (h & uint(0x03ff)) << uint(13); // mantissa
+    uint v = uint(float(m)) >> uint(23); // evil log2 bit hack to count leading zeros in denormalized format
+    return (h & uint(0x8000)) << uint(16) | uint(e != uint(0)) * ((e + uint(112)) << uint(23) | m) | (uint(e==uint(0)) & uint(m!=uint(0))) * ((v-uint(37)) << uint(23) | ((m<<(uint(150)-v)) & uint(0x007fe000))); // sign : normalized : denormalized
 }
 
 uint packHalf2x16(vec2 v) {
