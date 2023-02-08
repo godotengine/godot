@@ -81,7 +81,7 @@ void OS_LinuxBSD::alert(const String &p_alert, const String &p_title) {
 	List<String> args;
 
 	if (program.ends_with("zenity")) {
-		args.push_back("--error");
+		args.push_back("--warning");
 		args.push_back("--width");
 		args.push_back("500");
 		args.push_back("--title");
@@ -91,7 +91,9 @@ void OS_LinuxBSD::alert(const String &p_alert, const String &p_title) {
 	}
 
 	if (program.ends_with("kdialog")) {
-		args.push_back("--error");
+		// `--sorry` uses the same icon as `--warning` in Zenity.
+		// As of KDialog 22.12.1, its `--warning` options are only available for yes/no questions.
+		args.push_back("--sorry");
 		args.push_back(p_alert);
 		args.push_back("--title");
 		args.push_back(p_title);

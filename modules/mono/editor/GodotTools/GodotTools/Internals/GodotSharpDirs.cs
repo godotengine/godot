@@ -115,5 +115,11 @@ namespace GodotTools.Internals
                 return _projectCsProjPath;
             }
         }
+
+        public static string LogsDirPathFor(string solution, string configuration)
+            => Path.Combine(BuildLogsDirs, $"{solution.Md5Text()}_{configuration}");
+
+        public static string LogsDirPathFor(string configuration)
+            => LogsDirPathFor(ProjectSlnPath, configuration);
     }
 }

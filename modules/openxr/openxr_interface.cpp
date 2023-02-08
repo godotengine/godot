@@ -870,6 +870,60 @@ void OpenXRInterface::stop_passthrough() {
 	}
 }
 
+Array OpenXRInterface::get_supported_environment_blend_modes() {
+	Array modes;
+
+	if (!openxr_api) {
+		return modes;
+	}
+
+	uint32_t count = 0;
+	const XrEnvironmentBlendMode *env_blend_modes = openxr_api->get_supported_environment_blend_modes(count);
+
+	if (!env_blend_modes) {
+		return modes;
+	}
+
+	for (uint32_t i = 0; i < count; i++) {
+		switch (env_blend_modes[i]) {
+			case XR_ENVIRONMENT_BLEND_MODE_OPAQUE:
+				modes.push_back(XR_ENV_BLEND_MODE_OPAQUE);
+				break;
+			case XR_ENVIRONMENT_BLEND_MODE_ADDITIVE:
+				modes.push_back(XR_ENV_BLEND_MODE_ADDITIVE);
+				break;
+			case XR_ENVIRONMENT_BLEND_MODE_ALPHA_BLEND:
+				modes.push_back(XR_ENV_BLEND_MODE_ALPHA_BLEND);
+				break;
+			default:
+				WARN_PRINT("Unsupported blend mode found: " + String::num_int64(int64_t(env_blend_modes[i])));
+		}
+	}
+	return modes;
+}
+
+bool OpenXRInterface::set_environment_blend_mode(XRInterface::EnvironmentBlendMode mode) {
+	if (openxr_api) {
+		XrEnvironmentBlendMode oxr_blend_mode;
+		switch (mode) {
+			case XR_ENV_BLEND_MODE_OPAQUE:
+				oxr_blend_mode = XR_ENVIRONMENT_BLEND_MODE_OPAQUE;
+				break;
+			case XR_ENV_BLEND_MODE_ADDITIVE:
+				oxr_blend_mode = XR_ENVIRONMENT_BLEND_MODE_ADDITIVE;
+				break;
+			case XR_ENV_BLEND_MODE_ALPHA_BLEND:
+				oxr_blend_mode = XR_ENVIRONMENT_BLEND_MODE_ALPHA_BLEND;
+				break;
+			default:
+				WARN_PRINT("Unknown blend mode requested: " + String::num_int64(int64_t(mode)));
+				oxr_blend_mode = XR_ENVIRONMENT_BLEND_MODE_OPAQUE;
+		}
+		return openxr_api->set_environment_blend_mode(oxr_blend_mode);
+	}
+	return false;
+}
+
 void OpenXRInterface::on_state_ready() {
 	emit_signal(SNAME("session_begun"));
 }

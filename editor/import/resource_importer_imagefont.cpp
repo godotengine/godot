@@ -147,6 +147,7 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 			continue;
 		}
 		for (int32_t idx = start; idx <= end; idx++) {
+			ERR_FAIL_COND_V_MSG(pos >= count, ERR_CANT_CREATE, "Too many characters in range, should be " + itos(columns * rows));
 			int x = pos % columns;
 			int y = pos / columns;
 			font->set_glyph_advance(0, chr_height, idx, Vector2(chr_width, 0));
@@ -155,7 +156,6 @@ Error ResourceImporterImageFont::import(const String &p_source_file, const Strin
 			font->set_glyph_uv_rect(0, Vector2i(chr_height, 0), idx, Rect2(img_margin.position.x + chr_cell_width * x + char_margin.position.x, img_margin.position.y + chr_cell_height * y + char_margin.position.y, chr_width, chr_height));
 			font->set_glyph_texture_idx(0, Vector2i(chr_height, 0), idx, 0);
 			pos++;
-			ERR_FAIL_COND_V_MSG(pos >= count, ERR_CANT_CREATE, "Too many characters in range, should be " + itos(columns * rows));
 		}
 	}
 	font->set_cache_ascent(0, chr_height, 0.5 * chr_height);

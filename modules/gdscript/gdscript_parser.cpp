@@ -109,7 +109,7 @@ GDScriptParser::GDScriptParser() {
 	// Warning annotations.
 	register_annotation(MethodInfo("@warning_ignore", PropertyInfo(Variant::STRING, "warning")), AnnotationInfo::CLASS | AnnotationInfo::VARIABLE | AnnotationInfo::SIGNAL | AnnotationInfo::CONSTANT | AnnotationInfo::FUNCTION | AnnotationInfo::STATEMENT, &GDScriptParser::warning_annotations, varray(), true);
 	// Networking.
-	register_annotation(MethodInfo("@rpc", PropertyInfo(Variant::STRING, "mode"), PropertyInfo(Variant::STRING, "sync"), PropertyInfo(Variant::STRING, "transfer_mode"), PropertyInfo(Variant::INT, "transfer_channel")), AnnotationInfo::FUNCTION, &GDScriptParser::rpc_annotation, varray("", "", "", 0), true);
+	register_annotation(MethodInfo("@rpc", PropertyInfo(Variant::STRING, "mode"), PropertyInfo(Variant::STRING, "sync"), PropertyInfo(Variant::STRING, "transfer_mode"), PropertyInfo(Variant::INT, "transfer_channel")), AnnotationInfo::FUNCTION, &GDScriptParser::rpc_annotation, varray("authority", "call_remote", "unreliable", 0), true);
 
 #ifdef DEBUG_ENABLED
 	is_ignoring_warnings = !(bool)GLOBAL_GET("debug/gdscript/warnings/enable");
@@ -158,14 +158,10 @@ void GDScriptParser::push_warning(const Node *p_source, GDScriptWarning::Code p_
 		return;
 	}
 
-	if (ignored_warning_codes.has(p_code)) {
+	if (ignored_warnings.has(p_code)) {
 		return;
 	}
 
-	String warn_name = GDScriptWarning::get_name_from_code((GDScriptWarning::Code)p_code).to_lower();
-	if (ignored_warnings.has(warn_name)) {
-		return;
-	}
 	int warn_level = (int)GLOBAL_GET(GDScriptWarning::get_settings_path_from_code(p_code));
 	if (!warn_level) {
 		return;
@@ -180,7 +176,7 @@ void GDScriptParser::push_warning(const Node *p_source, GDScriptWarning::Code p_
 	warning.rightmost_column = p_source->rightmost_column;
 
 	if (warn_level == GDScriptWarning::WarnLevel::ERROR || bool(GLOBAL_GET("debug/gdscript/warnings/treat_warnings_as_errors"))) {
-		push_error(warning.get_message(), p_source);
+		push_error(warning.get_message() + String(" (Warning treated as error.)"), p_source);
 		return;
 	}
 
@@ -1837,10 +1833,18 @@ GDScriptParser::IfNode *GDScriptParser::parse_if(const String &p_token) {
 
 	if (match(GDScriptTokenizer::Token::ELIF)) {
 		SuiteNode *else_block = alloc_node<SuiteNode>();
+		else_block->parent_function = current_function;
+		else_block->parent_block = current_suite;
+
+		SuiteNode *previous_suite = current_suite;
+		current_suite = else_block;
+
 		IfNode *elif = parse_if("elif");
 		else_block->statements.push_back(elif);
 		complete_extents(else_block);
 		n_if->false_block = else_block;
+
+		current_suite = previous_suite;
 	} else if (match(GDScriptTokenizer::Token::ELSE)) {
 		consume(GDScriptTokenizer::Token::COLON, R"(Expected ":" after "else".)");
 		n_if->false_block = parse_suite(R"("else" block)");
@@ -3548,7 +3552,11 @@ const GDScriptParser::SuiteNode::Local &GDScriptParser::SuiteNode::get_local(con
 	return empty;
 }
 
-bool GDScriptParser::AnnotationNode::apply(GDScriptParser *p_this, Node *p_target) const {
+bool GDScriptParser::AnnotationNode::apply(GDScriptParser *p_this, Node *p_target) {
+	if (is_applied) {
+		return true;
+	}
+	is_applied = true;
 	return (p_this->*(p_this->valid_annotations[name].apply))(this, p_target);
 }
 
@@ -3602,6 +3610,7 @@ bool GDScriptParser::tool_annotation(const AnnotationNode *p_annotation, Node *p
 
 bool GDScriptParser::icon_annotation(const AnnotationNode *p_annotation, Node *p_node) {
 	ERR_FAIL_COND_V_MSG(p_node->type != Node::CLASS, false, R"("@icon" annotation can only be applied to classes.)");
+	ERR_FAIL_COND_V(p_annotation->resolved_arguments.is_empty(), false);
 	ClassNode *p_class = static_cast<ClassNode *>(p_node);
 	p_class->icon_path = p_annotation->resolved_arguments[0];
 	return true;
@@ -3609,6 +3618,10 @@ bool GDScriptParser::icon_annotation(const AnnotationNode *p_annotation, Node *p
 
 bool GDScriptParser::onready_annotation(const AnnotationNode *p_annotation, Node *p_node) {
 	ERR_FAIL_COND_V_MSG(p_node->type != Node::VARIABLE, false, R"("@onready" annotation can only be applied to class variables.)");
+
+	if (current_class && !ClassDB::is_parent_class(current_class->get_datatype().native_type, SNAME("Node"))) {
+		push_error(R"("@onready" can only be used in classes that inherit "Node".)", p_annotation);
+	}
 
 	VariableNode *variable = static_cast<VariableNode *>(p_node);
 	if (variable->onready) {
@@ -3624,15 +3637,6 @@ template <PropertyHint t_hint, Variant::Type t_type>
 bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node *p_node) {
 	ERR_FAIL_COND_V_MSG(p_node->type != Node::VARIABLE, false, vformat(R"("%s" annotation can only be applied to variables.)", p_annotation->name));
 
-	{
-		const int max_flags = 32;
-
-		if (t_hint == PropertyHint::PROPERTY_HINT_FLAGS && p_annotation->resolved_arguments.size() > max_flags) {
-			push_error(vformat(R"(The argument count limit for "@export_flags" is exceeded (%d/%d).)", p_annotation->resolved_arguments.size(), max_flags), p_annotation);
-			return false;
-		}
-	}
-
 	VariableNode *variable = static_cast<VariableNode *>(p_node);
 	if (variable->exported) {
 		push_error(vformat(R"(Annotation "%s" cannot be used with another "@export" annotation.)", p_annotation->name), p_annotation);
@@ -3646,14 +3650,50 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 
 	String hint_string;
 	for (int i = 0; i < p_annotation->resolved_arguments.size(); i++) {
-		if (p_annotation->name != SNAME("@export_placeholder") && String(p_annotation->resolved_arguments[i]).contains(",")) {
-			push_error(vformat(R"(Argument %d of annotation "%s" contains a comma. Use separate arguments instead.)", i + 1, p_annotation->name), p_annotation->arguments[i]);
-			return false;
+		String arg_string = String(p_annotation->resolved_arguments[i]);
+
+		if (p_annotation->name != SNAME("@export_placeholder")) {
+			if (arg_string.is_empty()) {
+				push_error(vformat(R"(Argument %d of annotation "%s" is empty.)", i + 1, p_annotation->name), p_annotation->arguments[i]);
+				return false;
+			}
+			if (arg_string.contains(",")) {
+				push_error(vformat(R"(Argument %d of annotation "%s" contains a comma. Use separate arguments instead.)", i + 1, p_annotation->name), p_annotation->arguments[i]);
+				return false;
+			}
 		}
+
+		if (p_annotation->name == SNAME("@export_flags")) {
+			const int64_t max_flags = 32;
+			Vector<String> t = arg_string.split(":", true, 1);
+			if (t[0].is_empty()) {
+				push_error(vformat(R"(Invalid argument %d of annotation "@export_flags": Expected flag name.)", i + 1), p_annotation->arguments[i]);
+				return false;
+			}
+			if (t.size() == 2) {
+				if (t[1].is_empty()) {
+					push_error(vformat(R"(Invalid argument %d of annotation "@export_flags": Expected flag value.)", i + 1), p_annotation->arguments[i]);
+					return false;
+				}
+				if (!t[1].is_valid_int()) {
+					push_error(vformat(R"(Invalid argument %d of annotation "@export_flags": The flag value must be a valid integer.)", i + 1), p_annotation->arguments[i]);
+					return false;
+				}
+				int64_t value = t[1].to_int();
+				if (value < 1 || value >= (1LL << max_flags)) {
+					push_error(vformat(R"(Invalid argument %d of annotation "@export_flags": The flag value must be at least 1 and at most 2 ** %d - 1.)", i + 1, max_flags), p_annotation->arguments[i]);
+					return false;
+				}
+			} else if (i >= max_flags) {
+				push_error(vformat(R"(Invalid argument %d of annotation "@export_flags": Starting from argument %d, the flag value must be specified explicitly.)", i + 1, max_flags + 1), p_annotation->arguments[i]);
+				return false;
+			}
+		}
+
 		if (i > 0) {
 			hint_string += ",";
 		}
-		hint_string += String(p_annotation->resolved_arguments[i]);
+		hint_string += arg_string;
 	}
 
 	variable->export_info.hint_string = hint_string;
@@ -3682,6 +3722,13 @@ bool GDScriptParser::export_annotations(const AnnotationNode *p_annotation, Node
 			return true;
 		} else if (export_type.builtin_type == Variant::DICTIONARY) {
 			variable->export_info.type = Variant::DICTIONARY;
+
+			return true;
+		} else if (export_type.builtin_type == Variant::PACKED_STRING_ARRAY) {
+			String hint_prefix = itos(Variant::STRING) + "/" + itos(variable->export_info.hint);
+			variable->export_info.hint = PROPERTY_HINT_TYPE_STRING;
+			variable->export_info.hint_string = hint_prefix + ":" + variable->export_info.hint_string;
+			variable->export_info.type = Variant::PACKED_STRING_ARRAY;
 
 			return true;
 		}
@@ -3830,6 +3877,10 @@ template <PropertyUsageFlags t_usage>
 bool GDScriptParser::export_group_annotations(const AnnotationNode *p_annotation, Node *p_node) {
 	AnnotationNode *annotation = const_cast<AnnotationNode *>(p_annotation);
 
+	if (annotation->resolved_arguments.is_empty()) {
+		return false;
+	}
+
 	annotation->export_info.name = annotation->resolved_arguments[0];
 
 	switch (t_usage) {
@@ -3887,7 +3938,7 @@ bool GDScriptParser::rpc_annotation(const AnnotationNode *p_annotation, Node *p_
 
 	Dictionary rpc_config;
 	rpc_config["rpc_mode"] = MultiplayerAPI::RPC_MODE_AUTHORITY;
-	if (p_annotation->resolved_arguments.size()) {
+	if (!p_annotation->resolved_arguments.is_empty()) {
 		int last = p_annotation->resolved_arguments.size() - 1;
 		if (p_annotation->resolved_arguments[last].get_type() == Variant::INT) {
 			rpc_config["channel"] = p_annotation->resolved_arguments[last].operator int();
@@ -3897,25 +3948,45 @@ bool GDScriptParser::rpc_annotation(const AnnotationNode *p_annotation, Node *p_
 			push_error(R"(Invalid RPC arguments. At most 4 arguments are allowed, where only the last argument can be an integer to specify the channel.')", p_annotation);
 			return false;
 		}
+
+		unsigned char locality_args = 0;
+		unsigned char permission_args = 0;
+		unsigned char transfer_mode_args = 0;
+
 		for (int i = last; i >= 0; i--) {
-			String mode = p_annotation->resolved_arguments[i].operator String();
-			if (mode == "any_peer") {
-				rpc_config["rpc_mode"] = MultiplayerAPI::RPC_MODE_ANY_PEER;
-			} else if (mode == "authority") {
-				rpc_config["rpc_mode"] = MultiplayerAPI::RPC_MODE_AUTHORITY;
-			} else if (mode == "call_local") {
+			String arg = p_annotation->resolved_arguments[i].operator String();
+			if (arg == "call_local") {
+				locality_args++;
 				rpc_config["call_local"] = true;
-			} else if (mode == "call_remote") {
+			} else if (arg == "call_remote") {
+				locality_args++;
 				rpc_config["call_local"] = false;
-			} else if (mode == "reliable") {
+			} else if (arg == "any_peer") {
+				permission_args++;
+				rpc_config["rpc_mode"] = MultiplayerAPI::RPC_MODE_ANY_PEER;
+			} else if (arg == "authority") {
+				permission_args++;
+				rpc_config["rpc_mode"] = MultiplayerAPI::RPC_MODE_AUTHORITY;
+			} else if (arg == "reliable") {
+				transfer_mode_args++;
 				rpc_config["transfer_mode"] = MultiplayerPeer::TRANSFER_MODE_RELIABLE;
-			} else if (mode == "unreliable") {
+			} else if (arg == "unreliable") {
+				transfer_mode_args++;
 				rpc_config["transfer_mode"] = MultiplayerPeer::TRANSFER_MODE_UNRELIABLE;
-			} else if (mode == "unreliable_ordered") {
+			} else if (arg == "unreliable_ordered") {
+				transfer_mode_args++;
 				rpc_config["transfer_mode"] = MultiplayerPeer::TRANSFER_MODE_UNRELIABLE_ORDERED;
 			} else {
-				push_error(R"(Invalid RPC argument. Must be one of: 'call_local'/'call_remote' (local calls), 'any_peer'/'authority' (permission), 'reliable'/'unreliable'/'unreliable_ordered' (transfer mode).)", p_annotation);
+				push_error(R"(Invalid RPC argument. Must be one of: "call_local"/"call_remote" (local calls), "any_peer"/"authority" (permission), "reliable"/"unreliable"/"unreliable_ordered" (transfer mode).)", p_annotation);
 			}
+		}
+
+		if (locality_args > 1) {
+			push_error(R"(Invalid RPC config. The locality ("call_local"/"call_remote") must be specified no more than once.)", p_annotation);
+		} else if (permission_args > 1) {
+			push_error(R"(Invalid RPC config. The permission ("any_peer"/"authority") must be specified no more than once.)", p_annotation);
+		} else if (transfer_mode_args > 1) {
+			push_error(R"(Invalid RPC config. The transfer mode ("reliable"/"unreliable"/"unreliable_ordered") must be specified no more than once.)", p_annotation);
 		}
 	}
 	function->rpc_config = rpc_config;

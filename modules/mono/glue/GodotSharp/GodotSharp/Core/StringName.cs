@@ -10,7 +10,7 @@ namespace Godot
     /// Comparing them is much faster than with regular strings, because only the pointers are compared,
     /// not the whole strings.
     /// </summary>
-    public sealed class StringName : IDisposable
+    public sealed class StringName : IDisposable, IEquatable<StringName>
     {
         internal godot_string_name.movable NativeValue;
 

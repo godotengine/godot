@@ -162,12 +162,10 @@ void AudioStreamPlayer3D::_calc_reverb_vol(Area3D *area, Vector3 listener_area_p
 			rev_pos.y = 0;
 			rev_pos.normalize();
 
-			if (channel_count >= 1) {
-				// Stereo pair
-				float c = rev_pos.x * 0.5 + 0.5;
-				reverb_vol.write[0].l = 1.0 - c;
-				reverb_vol.write[0].r = c;
-			}
+			// Stereo pair.
+			float c = rev_pos.x * 0.5 + 0.5;
+			reverb_vol.write[0].l = 1.0 - c;
+			reverb_vol.write[0].r = c;
 
 			if (channel_count >= 3) {
 				// Center pair + Side pair
@@ -183,7 +181,6 @@ void AudioStreamPlayer3D::_calc_reverb_vol(Area3D *area, Vector3 listener_area_p
 			if (channel_count >= 4) {
 				// Rear pair
 				// FIXME: Not sure what math should be done here
-				float c = rev_pos.x * 0.5 + 0.5;
 				reverb_vol.write[3].l = 1.0 - c;
 				reverb_vol.write[3].r = c;
 			}

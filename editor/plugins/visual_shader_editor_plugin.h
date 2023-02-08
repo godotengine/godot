@@ -120,7 +120,7 @@ public:
 	void remove_node(VisualShader::Type p_type, int p_id, bool p_just_update);
 	void connect_nodes(VisualShader::Type p_type, int p_from_node, int p_from_port, int p_to_node, int p_to_port);
 	void disconnect_nodes(VisualShader::Type p_type, int p_from_node, int p_from_port, int p_to_node, int p_to_port);
-	void show_port_preview(VisualShader::Type p_type, int p_node_id, int p_port_id);
+	void show_port_preview(VisualShader::Type p_type, int p_node_id, int p_port_id, bool p_is_valid);
 	void set_node_position(VisualShader::Type p_type, int p_id, const Vector2 &p_position);
 	void refresh_node_ports(VisualShader::Type p_type, int p_node);
 	void set_input_port_default_value(VisualShader::Type p_type, int p_node_id, int p_port_id, Variant p_value);
@@ -133,6 +133,7 @@ public:
 	Ref<Script> get_node_script(int p_node_id) const;
 	void update_node_size(int p_node_id);
 	void update_theme();
+	bool is_node_has_parameter_instances_relatively(VisualShader::Type p_type, int p_node) const;
 	VisualShader::Type get_shader_type() const;
 
 	VisualShaderGraphPlugin();
@@ -354,6 +355,8 @@ class VisualShaderEditor : public VBoxContainer {
 	void _preview_close_requested();
 	void _preview_size_changed();
 	void _update_preview();
+	void _update_next_previews(int p_node_id);
+	void _get_next_nodes_recursively(VisualShader::Type p_type, int p_node_id, LocalVector<int> &r_nodes) const;
 	String _get_description(int p_idx);
 
 	struct DragOp {
@@ -570,6 +573,7 @@ class VisualShaderNodePortPreview : public Control {
 	VisualShader::Type type = VisualShader::Type::TYPE_MAX;
 	int node = 0;
 	int port = 0;
+	bool is_valid = false;
 	void _shader_changed(); //must regen
 protected:
 	void _notification(int p_what);
@@ -577,7 +581,7 @@ protected:
 
 public:
 	virtual Size2 get_minimum_size() const override;
-	void setup(const Ref<VisualShader> &p_shader, VisualShader::Type p_type, int p_node, int p_port);
+	void setup(const Ref<VisualShader> &p_shader, VisualShader::Type p_type, int p_node, int p_port, bool p_is_valid);
 };
 
 class VisualShaderConversionPlugin : public EditorResourceConversionPlugin {

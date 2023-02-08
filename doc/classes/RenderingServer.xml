@@ -630,6 +630,14 @@
 				Sets a light occluder's [Transform2D].
 			</description>
 		</method>
+		<method name="canvas_light_set_blend_mode">
+			<return type="void" />
+			<param index="0" name="light" type="RID" />
+			<param index="1" name="mode" type="int" enum="RenderingServer.CanvasLightBlendMode" />
+			<description>
+				Sets the blend mode for the given canvas light. See [enum CanvasLightBlendMode] for options. Equivalent to [member Light2D.blend_mode].
+			</description>
+		</method>
 		<method name="canvas_light_set_color">
 			<return type="void" />
 			<param index="0" name="light" type="RID" />

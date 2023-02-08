@@ -453,6 +453,8 @@ void AnimationNode::_bind_methods() {
 	GDVIRTUAL_BIND(_has_filter);
 
 	ADD_SIGNAL(MethodInfo("tree_changed"));
+	ADD_SIGNAL(MethodInfo("animation_node_renamed", PropertyInfo(Variant::INT, "object_id"), PropertyInfo(Variant::STRING, "old_name"), PropertyInfo(Variant::STRING, "new_name")));
+	ADD_SIGNAL(MethodInfo("animation_node_removed", PropertyInfo(Variant::INT, "object_id"), PropertyInfo(Variant::STRING, "name")));
 
 	BIND_ENUM_CONSTANT(FILTER_IGNORE);
 	BIND_ENUM_CONSTANT(FILTER_PASS);
@@ -465,15 +467,33 @@ AnimationNode::AnimationNode() {
 
 ////////////////////
 
+void AnimationRootNode::_tree_changed() {
+	emit_signal(SNAME("tree_changed"));
+}
+
+void AnimationRootNode::_animation_node_renamed(const ObjectID &p_oid, const String &p_old_name, const String &p_new_name) {
+	emit_signal(SNAME("animation_node_renamed"), p_oid, p_old_name, p_new_name);
+}
+
+void AnimationRootNode::_animation_node_removed(const ObjectID &p_oid, const StringName &p_node) {
+	emit_signal(SNAME("animation_node_removed"), p_oid, p_node);
+}
+
+////////////////////
+
 void AnimationTree::set_tree_root(const Ref<AnimationNode> &p_root) {
 	if (root.is_valid()) {
 		root->disconnect("tree_changed", callable_mp(this, &AnimationTree::_tree_changed));
+		root->disconnect("animation_node_renamed", callable_mp(this, &AnimationTree::_animation_node_renamed));
+		root->disconnect("animation_node_removed", callable_mp(this, &AnimationTree::_animation_node_removed));
 	}
 
 	root = p_root;
 
 	if (root.is_valid()) {
 		root->connect("tree_changed", callable_mp(this, &AnimationTree::_tree_changed));
+		root->connect("animation_node_renamed", callable_mp(this, &AnimationTree::_animation_node_renamed));
+		root->connect("animation_node_removed", callable_mp(this, &AnimationTree::_animation_node_removed));
 	}
 
 	properties_dirty = true;
@@ -1546,6 +1566,10 @@ void AnimationTree::_process_graph(double p_delta) {
 							double end_ofs = a->audio_track_get_key_end_offset(i, idx);
 							double len = stream->get_length();
 
+							if (seeked) {
+								start_ofs += time - a->track_get_key_time(i, idx);
+							}
+
 							if (t->object->call(SNAME("get_stream")) != t->audio_stream) {
 								t->object->call(SNAME("set_stream"), t->audio_stream);
 								t->audio_stream_playback.unref();
@@ -1982,10 +2006,45 @@ void AnimationTree::_tree_changed() {
 	properties_dirty = true;
 }
 
+void AnimationTree::_animation_node_renamed(const ObjectID &p_oid, const String &p_old_name, const String &p_new_name) {
+	ERR_FAIL_COND(!property_reference_map.has(p_oid));
+	String base_path = property_reference_map[p_oid];
+	String old_base = base_path + p_old_name;
+	String new_base = base_path + p_new_name;
+	for (const PropertyInfo &E : properties) {
+		if (E.name.begins_with(old_base)) {
+			String new_name = E.name.replace_first(old_base, new_base);
+			property_map[new_name] = property_map[E.name];
+			property_map.erase(E.name);
+		}
+	}
+
+	//update tree second
+	properties_dirty = true;
+	_update_properties();
+}
+
+void AnimationTree::_animation_node_removed(const ObjectID &p_oid, const StringName &p_node) {
+	ERR_FAIL_COND(!property_reference_map.has(p_oid));
+	String base_path = String(property_reference_map[p_oid]) + String(p_node);
+	for (const PropertyInfo &E : properties) {
+		if (E.name.begins_with(base_path)) {
+			property_map.erase(E.name);
+		}
+	}
+
+	//update tree second
+	properties_dirty = true;
+	_update_properties();
+}
+
 void AnimationTree::_update_properties_for_node(const String &p_base_path, Ref<AnimationNode> node) {
 	ERR_FAIL_COND(node.is_null());
 	if (!property_parent_map.has(p_base_path)) {
 		property_parent_map[p_base_path] = HashMap<StringName, StringName>();
+	}
+	if (!property_reference_map.has(node->get_instance_id())) {
+		property_reference_map[node->get_instance_id()] = p_base_path;
 	}
 
 	if (node->get_input_count() && !input_activity_map.has(p_base_path)) {
@@ -2032,6 +2091,7 @@ void AnimationTree::_update_properties() {
 	}
 
 	properties.clear();
+	property_reference_map.clear();
 	property_parent_map.clear();
 	input_activity_map.clear();
 	input_activity_map_get.clear();
@@ -2084,20 +2144,6 @@ void AnimationTree::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 }
 
-void AnimationTree::rename_parameter(const String &p_base, const String &p_new_base) {
-	//rename values first
-	for (const PropertyInfo &E : properties) {
-		if (E.name.begins_with(p_base)) {
-			String new_name = E.name.replace_first(p_base, p_new_base);
-			property_map[new_name] = property_map[E.name];
-		}
-	}
-
-	//update tree second
-	properties_dirty = true;
-	_update_properties();
-}
-
 real_t AnimationTree::get_connection_activity(const StringName &p_path, int p_connection) const {
 	if (!input_activity_map_get.has(p_path)) {
 		return 0;
@@ -2142,8 +2188,6 @@ void AnimationTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_root_motion_scale"), &AnimationTree::get_root_motion_scale);
 
 	ClassDB::bind_method(D_METHOD("_update_properties"), &AnimationTree::_update_properties);
-
-	ClassDB::bind_method(D_METHOD("rename_parameter", "old_name", "new_name"), &AnimationTree::rename_parameter);
 
 	ClassDB::bind_method(D_METHOD("advance", "delta"), &AnimationTree::advance);
 

@@ -83,6 +83,7 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.CallSuper;
 import androidx.annotation.Keep;
@@ -258,13 +259,13 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 	 */
 	@Keep
 	private boolean onVideoInit() {
-		final Activity activity = getActivity();
+		final Activity activity = requireActivity();
 		containerLayout = new FrameLayout(activity);
 		containerLayout.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 
 		// GodotEditText layout
 		GodotEditText editText = new GodotEditText(activity);
-		editText.setLayoutParams(new ViewGroup.LayoutParams(LayoutParams.MATCH_PARENT,
+		editText.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT,
 				(int)getResources().getDimension(R.dimen.text_edit_height)));
 		// ...add to FrameLayout
 		containerLayout.addView(editText);
@@ -275,11 +276,14 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 			return false;
 		}
 
-		final String renderer = GodotLib.getGlobal("rendering/renderer/rendering_method");
-		if (renderer.equals("gl_compatibility")) {
-			mRenderView = new GodotGLRenderView(activity, this, xrMode, use_debug_opengl);
-		} else {
+		if (usesVulkan()) {
+			if (!meetsVulkanRequirements(activity.getPackageManager())) {
+				Log.w(TAG, "Missing requirements for vulkan support!");
+			}
 			mRenderView = new GodotVulkanRenderView(activity, this);
+		} else {
+			// Fallback to openGl
+			mRenderView = new GodotGLRenderView(activity, this, xrMode, use_debug_opengl);
 		}
 
 		View view = mRenderView.getView();
@@ -315,6 +319,26 @@ public class Godot extends Fragment implements SensorEventListener, IDownloaderC
 			}
 		}
 		return true;
+	}
+
+	/**
+	 * Returns true if `Vulkan` is used for rendering.
+	 */
+	private boolean usesVulkan() {
+		final String renderer = GodotLib.getGlobal("rendering/renderer/rendering_method");
+		final String renderingDevice = GodotLib.getGlobal("rendering/rendering_device/driver");
+		return ("forward_plus".equals(renderer) || "mobile".equals(renderer)) && "vulkan".equals(renderingDevice);
+	}
+
+	/**
+	 * Returns true if the device meets the base requirements for Vulkan support, false otherwise.
+	 */
+	private boolean meetsVulkanRequirements(@Nullable PackageManager packageManager) {
+		if (packageManager == null) {
+			return false;
+		}
+
+		return Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && packageManager.hasSystemFeature(PackageManager.FEATURE_VULKAN_HARDWARE_LEVEL, 1);
 	}
 
 	public void setKeepScreenOn(final boolean p_enabled) {

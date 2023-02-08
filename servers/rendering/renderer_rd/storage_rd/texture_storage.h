@@ -638,6 +638,7 @@ public:
 	}
 
 	virtual AABB decal_get_aabb(RID p_decal) const override;
+	virtual uint32_t decal_get_cull_mask(RID p_decal) const override;
 	Dependency *decal_get_dependency(RID p_decal);
 
 	/* DECAL INSTANCE API */

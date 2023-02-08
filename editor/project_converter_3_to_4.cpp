@@ -30,12 +30,13 @@
 
 #include "project_converter_3_to_4.h"
 
-#include "modules/modules_enabled.gen.h"
-
 #ifndef DISABLE_DEPRECATED
-#ifdef MODULE_REGEX_ENABLED
 
 const int ERROR_CODE = 77;
+
+#include "modules/modules_enabled.gen.h" // For regex.
+
+#ifdef MODULE_REGEX_ENABLED
 
 #include "modules/regex/regex.h"
 
@@ -2404,7 +2405,7 @@ Vector<String> ProjectConverter3To4::check_for_files() {
 					directories_to_check.append(current_dir.path_join(file_name) + "/");
 				} else {
 					bool proper_extension = false;
-					if (file_name.ends_with(".gd") || file_name.ends_with(".shader") || file_name.ends_with(".tscn") || file_name.ends_with(".tres") || file_name.ends_with(".godot") || file_name.ends_with(".cs") || file_name.ends_with(".csproj"))
+					if (file_name.ends_with(".gd") || file_name.ends_with(".shader") || file_name.ends_with(".gdshader") || file_name.ends_with(".tscn") || file_name.ends_with(".tres") || file_name.ends_with(".godot") || file_name.ends_with(".cs") || file_name.ends_with(".csproj"))
 						proper_extension = true;
 
 					if (proper_extension) {

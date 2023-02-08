@@ -75,10 +75,7 @@ if env.editor_build:
     # Generated with `make include-list` for each resource.
 
     # Editor translations
-    to_include = (
-        "ar,bg,ca,cs,de,el,eo,es_AR,es,fi,fr,gl,he,hu,id,it,ja,ko,lv,ms,nb,nl,pl,pt_BR,pt,ro,ru,sk,sv,th,tr,uk,vi,zh_CN,zh_TW"
-    ).split(",")
-    tlist = [env.Dir("#editor/translations").abspath + "/" + f + ".po" for f in to_include]
+    tlist = glob.glob(env.Dir("#editor/translations/editor").abspath + "/*.po")
     env.Depends("#editor/editor_translations.gen.h", tlist)
     env.CommandNoCache(
         "#editor/editor_translations.gen.h",
@@ -86,9 +83,17 @@ if env.editor_build:
         env.Run(editor_builders.make_editor_translations_header, "Generating editor translations header."),
     )
 
+    # Property translations
+    tlist = glob.glob(env.Dir("#editor/translations/properties").abspath + "/*.po")
+    env.Depends("#editor/property_translations.gen.h", tlist)
+    env.CommandNoCache(
+        "#editor/property_translations.gen.h",
+        tlist,
+        env.Run(editor_builders.make_property_translations_header, "Generating property translations header."),
+    )
+
     # Documentation translations
-    to_include = "de,es,fr,ja,zh_CN".split(",")
-    tlist = [env.Dir("#doc/translations").abspath + "/" + f + ".po" for f in to_include]
+    tlist = glob.glob(env.Dir("#doc/translations").abspath + "/*.po")
     env.Depends("#editor/doc_translations.gen.h", tlist)
     env.CommandNoCache(
         "#editor/doc_translations.gen.h",

@@ -229,6 +229,7 @@ void EditorExportPlugin::_bind_methods() {
 	GDVIRTUAL_BIND(_end_customize_scenes);
 	GDVIRTUAL_BIND(_end_customize_resources);
 
+	GDVIRTUAL_BIND(_get_export_features, "platform", "debug");
 	GDVIRTUAL_BIND(_get_name);
 }
 

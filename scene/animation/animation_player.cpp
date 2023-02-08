@@ -857,7 +857,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 				HashMap<int, TrackNodeCache::PlayingAudioStreamInfo> &map = aa->playing_streams;
 				// Find stream.
 				int idx = -1;
-				if (p_seeked) {
+				if (p_seeked || p_started) {
 					idx = a->track_find_key(i, p_time);
 					// Discard previous stream when seeking.
 					if (map.has(idx)) {
@@ -866,12 +866,7 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 					}
 				} else {
 					List<int> to_play;
-					if (p_started) {
-						int first_key = a->track_find_key(i, p_prev_time, Animation::FIND_MODE_EXACT);
-						if (first_key >= 0) {
-							to_play.push_back(first_key);
-						}
-					}
+
 					a->track_get_key_indices_in_range(i, p_time, p_delta, &to_play, p_looped_flag);
 					if (to_play.size()) {
 						idx = to_play.back()->get();
@@ -887,6 +882,10 @@ void AnimationPlayer::_animation_process_animation(AnimationData *p_anim, double
 					double start_ofs = a->audio_track_get_key_start_offset(i, idx);
 					double end_ofs = a->audio_track_get_key_end_offset(i, idx);
 					double len = stream->get_length();
+
+					if (p_seeked || p_started) {
+						start_ofs += p_time - a->track_get_key_time(i, idx);
+					}
 
 					if (aa->object->call(SNAME("get_stream")) != aa->audio_stream) {
 						aa->object->call(SNAME("set_stream"), aa->audio_stream);
@@ -1234,7 +1233,7 @@ void AnimationPlayer::_animation_update_transforms() {
 					if (aa->time < pasi.start) {
 						stop = true;
 					}
-				} else if (aa->backward) {
+				} else {
 					if (aa->time > pasi.start) {
 						stop = true;
 					}
@@ -1286,6 +1285,8 @@ void AnimationPlayer::_animation_process(double p_delta) {
 		_animation_update_transforms();
 
 		if (end_reached) {
+			_clear_audio_streams();
+			_stop_playing_caches(false);
 			if (queued.size()) {
 				String old = playback.assigned;
 				play(queued.front()->get());

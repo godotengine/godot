@@ -40,6 +40,7 @@
 #include "core/io/file_access_pack.h"
 #include "core/io/marshalls.h"
 #include "core/os/keyboard.h"
+#include "core/variant/typed_array.h"
 #include "core/variant/variant_parser.h"
 #include "core/version.h"
 
@@ -1136,20 +1137,27 @@ Variant ProjectSettings::get_setting(const String &p_setting, const Variant &p_d
 	}
 }
 
-Array ProjectSettings::get_global_class_list() {
-	Array script_classes;
+TypedArray<Dictionary> ProjectSettings::get_global_class_list() {
+	if (is_global_class_list_loaded) {
+		return global_class_list;
+	}
 
 	Ref<ConfigFile> cf;
 	cf.instantiate();
 	if (cf->load(get_global_class_list_path()) == OK) {
-		script_classes = cf->get_value("", "list", Array());
+		global_class_list = cf->get_value("", "list", Array());
 	} else {
 #ifndef TOOLS_ENABLED
 		// Script classes can't be recreated in exported project, so print an error.
 		ERR_PRINT("Could not load global script cache.");
 #endif
 	}
-	return script_classes;
+
+	// File read succeeded or failed. If it failed, assume everything is still okay.
+	// We will later receive updated class data in store_global_class_list().
+	is_global_class_list_loaded = true;
+
+	return global_class_list;
 }
 
 String ProjectSettings::get_global_class_list_path() const {
@@ -1161,6 +1169,8 @@ void ProjectSettings::store_global_class_list(const Array &p_classes) {
 	cf.instantiate();
 	cf->set_value("", "list", p_classes);
 	cf->save(get_global_class_list_path());
+
+	global_class_list = p_classes;
 }
 
 bool ProjectSettings::has_custom_feature(const String &p_feature) const {
@@ -1195,6 +1205,7 @@ void ProjectSettings::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_setting", "name", "value"), &ProjectSettings::set_setting);
 	ClassDB::bind_method(D_METHOD("get_setting", "name", "default_value"), &ProjectSettings::get_setting, DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("get_setting_with_override", "name"), &ProjectSettings::get_setting_with_override);
+	ClassDB::bind_method(D_METHOD("get_global_class_list"), &ProjectSettings::get_global_class_list);
 	ClassDB::bind_method(D_METHOD("set_order", "name", "position"), &ProjectSettings::set_order);
 	ClassDB::bind_method(D_METHOD("get_order", "name"), &ProjectSettings::get_order);
 	ClassDB::bind_method(D_METHOD("set_initial_value", "name", "value"), &ProjectSettings::set_initial_value);

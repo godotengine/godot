@@ -214,7 +214,7 @@
 				[b]Note:[/b] Calling this function is not the same as writing [code]array[-1][/code]. If the array is empty, accessing by index will pause project execution when running from the editor.
 			</description>
 		</method>
-		<method name="bsearch">
+		<method name="bsearch" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="value" type="Variant" />
 			<param index="1" name="before" type="bool" default="true" />
@@ -223,7 +223,7 @@
 				[b]Note:[/b] Calling [method bsearch] on an unsorted array results in unexpected behavior.
 			</description>
 		</method>
-		<method name="bsearch_custom">
+		<method name="bsearch_custom" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="value" type="Variant" />
 			<param index="1" name="func" type="Callable" />
@@ -276,7 +276,7 @@
 				array.fill(0) # Initialize the 10 elements to 0.
 				[/gdscript]
 				[csharp]
-				var array = new Godot.Collections.Array{};
+				var array = new Godot.Collections.Array();
 				array.Resize(10);
 				array.Fill(0); // Initialize the 10 elements to 0.
 				[/csharp]
@@ -347,7 +347,7 @@
 				print(["inside", 7].has("7")) # False
 				[/gdscript]
 				[csharp]
-				var arr = new Godot.Collections.Array{"inside", 7};
+				var arr = new Godot.Collections.Array { "inside", 7 };
 				// has is renamed to Contains
 				GD.Print(arr.Contains("inside")); // True
 				GD.Print(arr.Contains("outside")); // False
@@ -364,7 +364,7 @@
 				[/gdscript]
 				[csharp]
 				// As there is no "in" keyword in C#, you have to use Contains
-				var array = new Godot.Collections.Array{2, 4, 6, 8};
+				var array = new Godot.Collections.Array { 2, 4, 6, 8 };
 				if (array.Contains(2))
 				{
 				    GD.Print("Contains!");
@@ -454,10 +454,16 @@
 			<return type="Variant" />
 			<description>
 				Returns a random value from the target array.
-				[codeblock]
+				[codeblocks]
+				[gdscript]
 				var array: Array[int] = [1, 2, 3, 4]
 				print(array.pick_random())  # Prints either of the four numbers.
-				[/codeblock]
+				[/gdscript]
+				[csharp]
+				var array = new Godot.Collections.Array { 1, 2, 3, 4 };
+				GD.Print(array.PickRandom()); // Prints either of the four numbers.
+				[/csharp]
+				[/codeblocks]
 			</description>
 		</method>
 		<method name="pop_at">
@@ -566,7 +572,7 @@
 				Returns the slice of the [Array], from [param begin] (inclusive) to [param end] (exclusive), as a new [Array].
 				The absolute value of [param begin] and [param end] will be clamped to the array size, so the default value for [param end] makes it slice to the size of the array by default (i.e. [code]arr.slice(1)[/code] is a shorthand for [code]arr.slice(1, arr.size())[/code]).
 				If either [param begin] or [param end] are negative, they will be relative to the end of the array (i.e. [code]arr.slice(0, -2)[/code] is a shorthand for [code]arr.slice(0, arr.size() - 2)[/code]).
-				If specified, [param step] is the relative index between source elements. It can be negative, then [param begin] must be higher than [param end]. For example, [code][0, 1, 2, 3, 4, 5].slice(5, 1, -2)[/code] returns [code][5, 3][/code]).
+				If specified, [param step] is the relative index between source elements. It can be negative, then [param begin] must be higher than [param end]. For example, [code][0, 1, 2, 3, 4, 5].slice(5, 1, -2)[/code] returns [code][5, 3][/code].
 				If [param deep] is true, each element will be copied by value rather than by reference.
 			</description>
 		</method>
@@ -583,7 +589,9 @@
 				print(strings) # Prints [string1, string10, string11, string2]
 				[/gdscript]
 				[csharp]
-				// There is no sort support for Godot.Collections.Array
+				var strings = new Godot.Collections.Array { "string1", "string2", "string10", "string11" };
+				strings.Sort();
+				GD.Print(strings); // Prints [string1, string10, string11, string2]
 				[/csharp]
 				[/codeblocks]
 				To perform natural order sorting, you can use [method sort_custom] with [method String.naturalnocasecmp_to] as follows:

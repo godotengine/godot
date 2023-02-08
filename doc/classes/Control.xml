@@ -144,11 +144,11 @@
 		</method>
 		<method name="_has_point" qualifiers="virtual const">
 			<return type="bool" />
-			<param index="0" name="position" type="Vector2" />
+			<param index="0" name="point" type="Vector2" />
 			<description>
-				Virtual method to be implemented by the user. Returns whether the given [param position] is inside this control.
+				Virtual method to be implemented by the user. Returns whether the given [param point] is inside this control.
 				If not overridden, default behavior is checking if the point is within control's Rect.
-				[b]Note:[/b] If you want to check if a point is inside the control, you can use [code]get_rect().has_point(point)[/code].
+				[b]Note:[/b] If you want to check if a point is inside the control, you can use [code]Rect2(Vector2.ZERO, size).has_point(point)[/code].
 			</description>
 		</method>
 		<method name="_make_custom_tooltip" qualifiers="virtual const">

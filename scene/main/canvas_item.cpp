@@ -185,7 +185,7 @@ void CanvasItem::_top_level_raise_self() {
 }
 
 void CanvasItem::_enter_canvas() {
-	// Resolves to nullptr if the node is toplevel.
+	// Resolves to nullptr if the node is top_level.
 	CanvasItem *parent_item = get_parent_item();
 
 	if (parent_item) {
@@ -400,26 +400,26 @@ void CanvasItem::set_as_top_level(bool p_top_level) {
 
 	_exit_canvas();
 	top_level = p_top_level;
-	_toplevel_changed();
+	_top_level_changed();
 	_enter_canvas();
 
 	_notify_transform();
 }
 
-void CanvasItem::_toplevel_changed() {
-	// Inform children that toplevel status has changed on a parent.
+void CanvasItem::_top_level_changed() {
+	// Inform children that top_level status has changed on a parent.
 	int children = get_child_count();
 	for (int i = 0; i < children; i++) {
 		CanvasItem *child = Object::cast_to<CanvasItem>(get_child(i));
 		if (child) {
-			child->_toplevel_changed_on_parent();
+			child->_top_level_changed_on_parent();
 		}
 	}
 }
 
-void CanvasItem::_toplevel_changed_on_parent() {
-	// Inform children that toplevel status has changed on a parent.
-	_toplevel_changed();
+void CanvasItem::_top_level_changed_on_parent() {
+	// Inform children that top_level status has changed on a parent.
+	_top_level_changed();
 }
 
 bool CanvasItem::is_set_as_top_level() const {
@@ -491,6 +491,17 @@ int CanvasItem::get_z_index() const {
 	return z_index;
 }
 
+int CanvasItem::get_effective_z_index() const {
+	int effective_z_index = z_index;
+	if (is_z_relative()) {
+		CanvasItem *p = get_parent_item();
+		if (p) {
+			effective_z_index += p->get_effective_z_index();
+		}
+	}
+	return effective_z_index;
+}
+
 void CanvasItem::set_y_sort_enabled(bool p_enabled) {
 	y_sort_enabled = p_enabled;
 	RS::get_singleton()->canvas_item_set_sort_children_by_y(canvas_item, y_sort_enabled);
@@ -519,10 +530,18 @@ void CanvasItem::draw_dashed_line(const Point2 &p_from, const Point2 &p_to, cons
 	if (p_aligned) {
 		off += (p_to - p_from).normalized() * (length - steps * p_dash) / 2.0;
 	}
+
+	Vector<Vector2> points;
+	points.resize(steps + 1);
 	for (int i = 0; i < steps; i += 2) {
-		RenderingServer::get_singleton()->canvas_item_add_line(canvas_item, (i == 0) ? p_from : off, (p_aligned && i == steps - 1) ? p_to : (off + step), p_color, p_width);
+		points.write[i] = (i == 0) ? p_from : off;
+		points.write[i + 1] = (p_aligned && i == steps - 1) ? p_to : (off + step);
 		off += step * 2;
 	}
+
+	Vector<Color> colors = { p_color };
+
+	RenderingServer::get_singleton()->canvas_item_add_multiline(canvas_item, points, colors, p_width);
 }
 
 void CanvasItem::draw_line(const Point2 &p_from, const Point2 &p_to, const Color &p_color, real_t p_width, bool p_antialiased) {
@@ -588,38 +607,17 @@ void CanvasItem::draw_rect(const Rect2 &p_rect, const Color &p_color, bool p_fil
 	} else if (p_width >= rect.size.width || p_width >= rect.size.height) {
 		RenderingServer::get_singleton()->canvas_item_add_rect(canvas_item, rect.grow(0.5f * p_width), p_color);
 	} else {
-		// Thick lines are offset depending on their width to avoid partial overlapping.
-		// Thin lines are drawn without offset. The result may not be perfect.
-		real_t offset = (p_width >= 0) ? 0.5f * p_width : 0.0f;
+		Vector<Vector2> points;
+		points.resize(5);
+		points.write[0] = rect.position;
+		points.write[1] = rect.position + Vector2(rect.size.x, 0);
+		points.write[2] = rect.position + rect.size;
+		points.write[3] = rect.position + Vector2(0, rect.size.y);
+		points.write[4] = rect.position;
 
-		// Top line.
-		RenderingServer::get_singleton()->canvas_item_add_line(
-				canvas_item,
-				rect.position + Size2(-offset, 0),
-				rect.position + Size2(-offset + rect.size.width, 0),
-				p_color,
-				p_width);
-		// Right line.
-		RenderingServer::get_singleton()->canvas_item_add_line(
-				canvas_item,
-				rect.position + Size2(rect.size.width, -offset),
-				rect.position + Size2(rect.size.width, -offset + rect.size.height),
-				p_color,
-				p_width);
-		// Bottom line.
-		RenderingServer::get_singleton()->canvas_item_add_line(
-				canvas_item,
-				rect.position + Size2(offset + rect.size.width, rect.size.height),
-				rect.position + Size2(offset, rect.size.height),
-				p_color,
-				p_width);
-		// Left line.
-		RenderingServer::get_singleton()->canvas_item_add_line(
-				canvas_item,
-				rect.position + Size2(0, offset + rect.size.height),
-				rect.position + Size2(0, offset),
-				p_color,
-				p_width);
+		Vector<Color> colors = { p_color };
+
+		RenderingServer::get_singleton()->canvas_item_add_polyline(canvas_item, points, colors, p_width);
 	}
 }
 

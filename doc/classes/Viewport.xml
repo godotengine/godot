@@ -277,6 +277,10 @@
 		<member name="physics_object_picking" type="bool" setter="set_physics_object_picking" getter="get_physics_object_picking" default="false">
 			If [code]true[/code], the objects rendered by viewport become subjects of mouse picking process.
 		</member>
+		<member name="physics_object_picking_sort" type="bool" setter="set_physics_object_picking_sort" getter="get_physics_object_picking_sort" default="false">
+			If [code]true[/code], objects receive mouse picking events sorted primarily by their [member CanvasItem.z_index] and secondarily by their position in the scene tree. If [code]false[/code], the order is undetermined.
+			[b]Note:[/b] This setting is disabled by default because of its potential expensive computational cost.
+		</member>
 		<member name="positional_shadow_atlas_16_bits" type="bool" setter="set_positional_shadow_atlas_16_bits" getter="get_positional_shadow_atlas_16_bits" default="true">
 		</member>
 		<member name="positional_shadow_atlas_quad_0" type="int" setter="set_positional_shadow_atlas_quadrant_subdiv" getter="get_positional_shadow_atlas_quadrant_subdiv" enum="Viewport.PositionalShadowAtlasQuadrantSubdiv" default="2">

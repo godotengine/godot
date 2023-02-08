@@ -14,6 +14,7 @@
     <string name="text_button_cancel_verify">Cancel Verification</string>
     <string name="text_error_title">Error!</string>
     <string name="error_engine_setup_message">Unable to setup the Godot Engine! Aborting…</string>
+    <string name="error_missing_vulkan_requirements_message">Warning - this device does not meet the requirements for Vulkan support</string>
 
     <!-- APK Expansion Strings -->
 

@@ -92,13 +92,6 @@
 				[/codeblocks]
 			</description>
 		</method>
-		<method name="rename_parameter">
-			<return type="void" />
-			<param index="0" name="old_name" type="String" />
-			<param index="1" name="new_name" type="String" />
-			<description>
-			</description>
-		</method>
 	</methods>
 	<members>
 		<member name="active" type="bool" setter="set_active" getter="is_active" default="false">

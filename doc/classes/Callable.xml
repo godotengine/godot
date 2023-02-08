@@ -173,14 +173,14 @@
 		<method name="rpc" qualifiers="vararg const">
 			<return type="void" />
 			<description>
-				Perform an RPC (Remote Procedure Call). This is used for multiplayer and is normally not available, unless the function being called has been marked as [i]RPC[/i]. Calling this method on unsupported functions will result in an error.
+				Perform an RPC (Remote Procedure Call). This is used for multiplayer and is normally not available, unless the function being called has been marked as [i]RPC[/i]. Calling this method on unsupported functions will result in an error. See [method Node.rpc].
 			</description>
 		</method>
 		<method name="rpc_id" qualifiers="vararg const">
 			<return type="void" />
 			<param index="0" name="peer_id" type="int" />
 			<description>
-				Perform an RPC (Remote Procedure Call) on a specific peer ID (see multiplayer documentation for reference). This is used for multiplayer and is normally not available unless the function being called has been marked as [i]RPC[/i]. Calling this method on unsupported functions will result in an error.
+				Perform an RPC (Remote Procedure Call) on a specific peer ID (see multiplayer documentation for reference). This is used for multiplayer and is normally not available unless the function being called has been marked as [i]RPC[/i]. Calling this method on unsupported functions will result in an error. See [method Node.rpc_id].
 			</description>
 		</method>
 		<method name="unbind" qualifiers="const">

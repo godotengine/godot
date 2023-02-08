@@ -168,6 +168,17 @@ void NavigationAgent2D::_notification(int p_what) {
 			set_physics_process_internal(false);
 		} break;
 
+		case NOTIFICATION_EXIT_TREE: {
+			set_agent_parent(nullptr);
+			set_physics_process_internal(false);
+
+#ifdef DEBUG_ENABLED
+			if (debug_path_instance.is_valid()) {
+				RenderingServer::get_singleton()->canvas_item_set_visible(debug_path_instance, false);
+			}
+#endif // DEBUG_ENABLED
+		} break;
+
 		case NOTIFICATION_PAUSED: {
 			if (agent_parent && !agent_parent->can_process()) {
 				map_before_pause = NavigationServer2D::get_singleton()->agent_get_map(get_rid());
@@ -188,17 +199,6 @@ void NavigationAgent2D::_notification(int p_what) {
 			}
 		} break;
 
-		case NOTIFICATION_EXIT_TREE: {
-			agent_parent = nullptr;
-			set_physics_process_internal(false);
-
-#ifdef DEBUG_ENABLED
-			if (debug_path_instance.is_valid()) {
-				RenderingServer::get_singleton()->canvas_item_set_visible(debug_path_instance, false);
-			}
-#endif // DEBUG_ENABLED
-		} break;
-
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			if (agent_parent && target_position_submitted) {
 				if (avoidance_enabled) {
@@ -208,7 +208,6 @@ void NavigationAgent2D::_notification(int p_what) {
 				}
 				_check_distance_to_target();
 			}
-
 #ifdef DEBUG_ENABLED
 			if (debug_path_dirty) {
 				_update_debug_path();
@@ -220,11 +219,11 @@ void NavigationAgent2D::_notification(int p_what) {
 
 NavigationAgent2D::NavigationAgent2D() {
 	agent = NavigationServer2D::get_singleton()->agent_create();
-	set_neighbor_distance(neighbor_distance);
-	set_max_neighbors(max_neighbors);
-	set_time_horizon(time_horizon);
-	set_radius(radius);
-	set_max_speed(max_speed);
+	NavigationServer2D::get_singleton()->agent_set_neighbor_distance(agent, neighbor_distance);
+	NavigationServer2D::get_singleton()->agent_set_max_neighbors(agent, max_neighbors);
+	NavigationServer2D::get_singleton()->agent_set_time_horizon(agent, time_horizon);
+	NavigationServer2D::get_singleton()->agent_set_radius(agent, radius);
+	NavigationServer2D::get_singleton()->agent_set_max_speed(agent, max_speed);
 
 	// Preallocate query and result objects to improve performance.
 	navigation_query = Ref<NavigationPathQueryParameters2D>();
@@ -254,7 +253,12 @@ NavigationAgent2D::~NavigationAgent2D() {
 }
 
 void NavigationAgent2D::set_avoidance_enabled(bool p_enabled) {
+	if (avoidance_enabled == p_enabled) {
+		return;
+	}
+
 	avoidance_enabled = p_enabled;
+
 	if (avoidance_enabled) {
 		NavigationServer2D::get_singleton()->agent_set_callback(agent, callable_mp(this, &NavigationAgent2D::_avoidance_done));
 	} else {
@@ -267,6 +271,10 @@ bool NavigationAgent2D::get_avoidance_enabled() const {
 }
 
 void NavigationAgent2D::set_agent_parent(Node *p_agent_parent) {
+	if (agent_parent == p_agent_parent) {
+		return;
+	}
+
 	// remove agent from any avoidance map before changing parent or there will be leftovers on the RVO map
 	NavigationServer2D::get_singleton()->agent_set_callback(agent, Callable());
 
@@ -280,7 +288,9 @@ void NavigationAgent2D::set_agent_parent(Node *p_agent_parent) {
 		}
 
 		// create new avoidance callback if enabled
-		set_avoidance_enabled(avoidance_enabled);
+		if (avoidance_enabled) {
+			NavigationServer2D::get_singleton()->agent_set_callback(agent, callable_mp(this, &NavigationAgent2D::_avoidance_done));
+		}
 	} else {
 		agent_parent = nullptr;
 		NavigationServer2D::get_singleton()->agent_set_map(get_rid(), RID());
@@ -288,11 +298,13 @@ void NavigationAgent2D::set_agent_parent(Node *p_agent_parent) {
 }
 
 void NavigationAgent2D::set_navigation_layers(uint32_t p_navigation_layers) {
-	bool navigation_layers_changed = navigation_layers != p_navigation_layers;
-	navigation_layers = p_navigation_layers;
-	if (navigation_layers_changed) {
-		_request_repath();
+	if (navigation_layers == p_navigation_layers) {
+		return;
 	}
+
+	navigation_layers = p_navigation_layers;
+
+	_request_repath();
 }
 
 uint32_t NavigationAgent2D::get_navigation_layers() const {
@@ -326,7 +338,12 @@ void NavigationAgent2D::set_path_metadata_flags(BitField<NavigationPathQueryPara
 }
 
 void NavigationAgent2D::set_navigation_map(RID p_navigation_map) {
+	if (map_override == p_navigation_map) {
+		return;
+	}
+
 	map_override = p_navigation_map;
+
 	NavigationServer2D::get_singleton()->agent_set_map(agent, map_override);
 	_request_repath();
 }
@@ -340,41 +357,78 @@ RID NavigationAgent2D::get_navigation_map() const {
 	return RID();
 }
 
-void NavigationAgent2D::set_path_desired_distance(real_t p_dd) {
-	path_desired_distance = p_dd;
+void NavigationAgent2D::set_path_desired_distance(real_t p_path_desired_distance) {
+	if (Math::is_equal_approx(path_desired_distance, p_path_desired_distance)) {
+		return;
+	}
+
+	path_desired_distance = p_path_desired_distance;
 }
 
-void NavigationAgent2D::set_target_desired_distance(real_t p_dd) {
-	target_desired_distance = p_dd;
+void NavigationAgent2D::set_target_desired_distance(real_t p_target_desired_distance) {
+	if (Math::is_equal_approx(target_desired_distance, p_target_desired_distance)) {
+		return;
+	}
+
+	target_desired_distance = p_target_desired_distance;
 }
 
 void NavigationAgent2D::set_radius(real_t p_radius) {
+	if (Math::is_equal_approx(radius, p_radius)) {
+		return;
+	}
+
 	radius = p_radius;
+
 	NavigationServer2D::get_singleton()->agent_set_radius(agent, radius);
 }
 
 void NavigationAgent2D::set_neighbor_distance(real_t p_distance) {
+	if (Math::is_equal_approx(neighbor_distance, p_distance)) {
+		return;
+	}
+
 	neighbor_distance = p_distance;
+
 	NavigationServer2D::get_singleton()->agent_set_neighbor_distance(agent, neighbor_distance);
 }
 
 void NavigationAgent2D::set_max_neighbors(int p_count) {
+	if (max_neighbors == p_count) {
+		return;
+	}
+
 	max_neighbors = p_count;
+
 	NavigationServer2D::get_singleton()->agent_set_max_neighbors(agent, max_neighbors);
 }
 
 void NavigationAgent2D::set_time_horizon(real_t p_time) {
+	if (Math::is_equal_approx(time_horizon, p_time)) {
+		return;
+	}
+
 	time_horizon = p_time;
+
 	NavigationServer2D::get_singleton()->agent_set_time_horizon(agent, time_horizon);
 }
 
 void NavigationAgent2D::set_max_speed(real_t p_max_speed) {
+	if (Math::is_equal_approx(max_speed, p_max_speed)) {
+		return;
+	}
+
 	max_speed = p_max_speed;
+
 	NavigationServer2D::get_singleton()->agent_set_max_speed(agent, max_speed);
 }
 
-void NavigationAgent2D::set_path_max_distance(real_t p_pmd) {
-	path_max_distance = p_pmd;
+void NavigationAgent2D::set_path_max_distance(real_t p_path_max_distance) {
+	if (Math::is_equal_approx(path_max_distance, p_path_max_distance)) {
+		return;
+	}
+
+	path_max_distance = p_path_max_distance;
 }
 
 real_t NavigationAgent2D::get_path_max_distance() {
@@ -382,8 +436,13 @@ real_t NavigationAgent2D::get_path_max_distance() {
 }
 
 void NavigationAgent2D::set_target_position(Vector2 p_position) {
+	if (target_position.is_equal_approx(p_position)) {
+		return;
+	}
+
 	target_position = p_position;
 	target_position_submitted = true;
+
 	_request_repath();
 }
 
@@ -432,10 +491,15 @@ Vector2 NavigationAgent2D::get_final_position() {
 }
 
 void NavigationAgent2D::set_velocity(Vector2 p_velocity) {
+	if (target_velocity.is_equal_approx(p_velocity)) {
+		return;
+	}
+
 	target_velocity = p_velocity;
+	velocity_submitted = true;
+
 	NavigationServer2D::get_singleton()->agent_set_target_velocity(agent, target_velocity);
 	NavigationServer2D::get_singleton()->agent_set_velocity(agent, prev_safe_velocity);
-	velocity_submitted = true;
 }
 
 void NavigationAgent2D::_avoidance_done(Vector3 p_new_velocity) {
@@ -608,6 +672,10 @@ void NavigationAgent2D::_check_distance_to_target() {
 
 #ifdef DEBUG_ENABLED
 void NavigationAgent2D::set_debug_enabled(bool p_enabled) {
+	if (debug_enabled == p_enabled) {
+		return;
+	}
+
 	debug_enabled = p_enabled;
 	debug_path_dirty = true;
 }
@@ -617,6 +685,10 @@ bool NavigationAgent2D::get_debug_enabled() const {
 }
 
 void NavigationAgent2D::set_debug_use_custom(bool p_enabled) {
+	if (debug_use_custom == p_enabled) {
+		return;
+	}
+
 	debug_use_custom = p_enabled;
 	debug_path_dirty = true;
 }
@@ -626,6 +698,10 @@ bool NavigationAgent2D::get_debug_use_custom() const {
 }
 
 void NavigationAgent2D::set_debug_path_custom_color(Color p_color) {
+	if (debug_path_custom_color == p_color) {
+		return;
+	}
+
 	debug_path_custom_color = p_color;
 	debug_path_dirty = true;
 }
@@ -635,6 +711,10 @@ Color NavigationAgent2D::get_debug_path_custom_color() const {
 }
 
 void NavigationAgent2D::set_debug_path_custom_point_size(float p_point_size) {
+	if (Math::is_equal_approx(debug_path_custom_point_size, p_point_size)) {
+		return;
+	}
+
 	debug_path_custom_point_size = MAX(0.1, p_point_size);
 	debug_path_dirty = true;
 }
@@ -644,6 +724,10 @@ float NavigationAgent2D::get_debug_path_custom_point_size() const {
 }
 
 void NavigationAgent2D::set_debug_path_custom_line_width(float p_line_width) {
+	if (Math::is_equal_approx(debug_path_custom_line_width, p_line_width)) {
+		return;
+	}
+
 	debug_path_custom_line_width = p_line_width;
 	debug_path_dirty = true;
 }

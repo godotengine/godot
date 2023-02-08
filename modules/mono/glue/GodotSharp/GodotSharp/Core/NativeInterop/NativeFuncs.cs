@@ -365,20 +365,43 @@ namespace Godot.NativeInterop
 
         public static partial int godotsharp_array_add(ref godot_array p_self, in godot_variant p_item);
 
+        public static partial int godotsharp_array_add_range(ref godot_array p_self, in godot_array p_collection);
+
+        public static partial int godotsharp_array_binary_search(ref godot_array p_self, int p_index, int p_count, in godot_variant p_value);
+
         public static partial void
             godotsharp_array_duplicate(ref godot_array p_self, godot_bool p_deep, out godot_array r_dest);
 
-        public static partial int godotsharp_array_index_of(ref godot_array p_self, in godot_variant p_item);
+        public static partial void godotsharp_array_fill(ref godot_array p_self, in godot_variant p_value);
+
+        public static partial int godotsharp_array_index_of(ref godot_array p_self, in godot_variant p_item, int p_index = 0);
 
         public static partial void godotsharp_array_insert(ref godot_array p_self, int p_index, in godot_variant p_item);
+
+        public static partial int godotsharp_array_last_index_of(ref godot_array p_self, in godot_variant p_item, int p_index);
+
+        public static partial void godotsharp_array_make_read_only(ref godot_array p_self);
+
+        public static partial void godotsharp_array_max(ref godot_array p_self, out godot_variant r_value);
+
+        public static partial void godotsharp_array_min(ref godot_array p_self, out godot_variant r_value);
+
+        public static partial void godotsharp_array_pick_random(ref godot_array p_self, out godot_variant r_value);
+
+        public static partial godot_bool godotsharp_array_recursive_equal(ref godot_array p_self, in godot_array p_other);
 
         public static partial void godotsharp_array_remove_at(ref godot_array p_self, int p_index);
 
         public static partial Error godotsharp_array_resize(ref godot_array p_self, int p_new_size);
 
-        public static partial void godotsharp_array_make_read_only(ref godot_array p_self);
+        public static partial void godotsharp_array_reverse(ref godot_array p_self);
 
         public static partial void godotsharp_array_shuffle(ref godot_array p_self);
+
+        public static partial void godotsharp_array_slice(ref godot_array p_self, int p_start, int p_end,
+            int p_step, godot_bool p_deep, out godot_array r_dest);
+
+        public static partial void godotsharp_array_sort(ref godot_array p_self);
 
         public static partial void godotsharp_array_to_string(ref godot_array p_self, out godot_string r_str);
 
@@ -458,6 +481,10 @@ namespace Godot.NativeInterop
         public static partial int godotsharp_node_path_get_subname_count(in godot_node_path p_self);
 
         public static partial godot_bool godotsharp_node_path_is_absolute(in godot_node_path p_self);
+
+        public static partial godot_bool godotsharp_node_path_equals(in godot_node_path p_self, in godot_node_path p_other);
+
+        public static partial int godotsharp_node_path_hash(in godot_node_path p_self);
 
         // GD, etc
 

@@ -125,8 +125,8 @@ private:
 	void _propagate_visibility_changed(bool p_parent_visible_in_tree);
 	void _handle_visibility_change(bool p_visible);
 
-	virtual void _toplevel_changed();
-	virtual void _toplevel_changed_on_parent();
+	virtual void _top_level_changed();
+	virtual void _top_level_changed_on_parent();
 
 	void _redraw_callback();
 
@@ -246,6 +246,7 @@ public:
 
 	void set_z_index(int p_z);
 	int get_z_index() const;
+	int get_effective_z_index() const;
 
 	void set_z_as_relative(bool p_enabled);
 	bool is_z_relative() const;

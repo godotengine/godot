@@ -992,16 +992,76 @@ int32_t godotsharp_array_add(Array *p_self, const Variant *p_item) {
 	return p_self->size();
 }
 
+int32_t godotsharp_array_add_range(Array *p_self, const Array *p_collection) {
+	p_self->append_array(*p_collection);
+	return p_self->size();
+}
+
+int32_t godotsharp_array_binary_search(const Array *p_self, int32_t p_index, int32_t p_length, const Variant *p_value) {
+	ERR_FAIL_COND_V(p_index < 0, -1);
+	ERR_FAIL_COND_V(p_length < 0, -1);
+	ERR_FAIL_COND_V(p_self->size() - p_index < p_length, -1);
+
+	const Variant &value = *p_value;
+	const Array &array = *p_self;
+
+	int lo = p_index;
+	int hi = p_index + p_length - 1;
+	while (lo <= hi) {
+		int mid = lo + ((hi - lo) >> 1);
+		const Variant &mid_item = array[mid];
+
+		if (mid_item == value) {
+			return mid;
+		}
+		if (mid_item < value) {
+			lo = mid + 1;
+		} else {
+			hi = mid - 1;
+		}
+	}
+
+	return ~lo;
+}
+
 void godotsharp_array_duplicate(const Array *p_self, bool p_deep, Array *r_dest) {
 	memnew_placement(r_dest, Array(p_self->duplicate(p_deep)));
 }
 
-int32_t godotsharp_array_index_of(const Array *p_self, const Variant *p_item) {
-	return p_self->find(*p_item);
+void godotsharp_array_fill(Array *p_self, const Variant *p_value) {
+	p_self->fill(*p_value);
+}
+
+int32_t godotsharp_array_index_of(const Array *p_self, const Variant *p_item, int32_t p_index = 0) {
+	return p_self->find(*p_item, p_index);
 }
 
 void godotsharp_array_insert(Array *p_self, int32_t p_index, const Variant *p_item) {
 	p_self->insert(p_index, *p_item);
+}
+
+int32_t godotsharp_array_last_index_of(const Array *p_self, const Variant *p_item, int32_t p_index) {
+	return p_self->rfind(*p_item, p_index);
+}
+
+void godotsharp_array_make_read_only(Array *p_self) {
+	p_self->make_read_only();
+}
+
+void godotsharp_array_max(const Array *p_self, Variant *r_value) {
+	*r_value = p_self->max();
+}
+
+void godotsharp_array_min(const Array *p_self, Variant *r_value) {
+	*r_value = p_self->min();
+}
+
+void godotsharp_array_pick_random(const Array *p_self, Variant *r_value) {
+	*r_value = p_self->pick_random();
+}
+
+bool godotsharp_array_recursive_equal(const Array *p_self, const Array *p_other) {
+	return p_self->recursive_equal(*p_other, 0);
 }
 
 void godotsharp_array_remove_at(Array *p_self, int32_t p_index) {
@@ -1012,12 +1072,20 @@ int32_t godotsharp_array_resize(Array *p_self, int32_t p_new_size) {
 	return (int32_t)p_self->resize(p_new_size);
 }
 
-void godotsharp_array_make_read_only(Array *p_self) {
-	p_self->make_read_only();
+void godotsharp_array_reverse(Array *p_self) {
+	p_self->reverse();
 }
 
 void godotsharp_array_shuffle(Array *p_self) {
 	p_self->shuffle();
+}
+
+void godotsharp_array_slice(Array *p_self, int32_t p_start, int32_t p_end, int32_t p_step, bool p_deep, Array *r_dest) {
+	memnew_placement(r_dest, Array(p_self->slice(p_start, p_end, p_step, p_deep)));
+}
+
+void godotsharp_array_sort(Array *p_self) {
+	p_self->sort();
 }
 
 void godotsharp_array_to_string(const Array *p_self, String *r_str) {
@@ -1139,6 +1207,14 @@ int32_t godotsharp_node_path_get_subname_count(const NodePath *p_self) {
 
 bool godotsharp_node_path_is_absolute(const NodePath *p_self) {
 	return p_self->is_absolute();
+}
+
+bool godotsharp_node_path_equals(const NodePath *p_self, const NodePath *p_other) {
+	return *p_self == *p_other;
+}
+
+int godotsharp_node_path_hash(const NodePath *p_self) {
+	return p_self->hash();
 }
 
 void godotsharp_randomize() {
@@ -1442,13 +1518,24 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_array_destroy,
 	(void *)godotsharp_dictionary_destroy,
 	(void *)godotsharp_array_add,
+	(void *)godotsharp_array_add_range,
+	(void *)godotsharp_array_binary_search,
 	(void *)godotsharp_array_duplicate,
+	(void *)godotsharp_array_fill,
 	(void *)godotsharp_array_index_of,
 	(void *)godotsharp_array_insert,
+	(void *)godotsharp_array_last_index_of,
+	(void *)godotsharp_array_make_read_only,
+	(void *)godotsharp_array_max,
+	(void *)godotsharp_array_min,
+	(void *)godotsharp_array_pick_random,
+	(void *)godotsharp_array_recursive_equal,
 	(void *)godotsharp_array_remove_at,
 	(void *)godotsharp_array_resize,
-	(void *)godotsharp_array_make_read_only,
+	(void *)godotsharp_array_reverse,
 	(void *)godotsharp_array_shuffle,
+	(void *)godotsharp_array_slice,
+	(void *)godotsharp_array_sort,
 	(void *)godotsharp_array_to_string,
 	(void *)godotsharp_dictionary_try_get_value,
 	(void *)godotsharp_dictionary_set_value,
@@ -1477,6 +1564,8 @@ static const void *unmanaged_callbacks[]{
 	(void *)godotsharp_node_path_get_subname,
 	(void *)godotsharp_node_path_get_subname_count,
 	(void *)godotsharp_node_path_is_absolute,
+	(void *)godotsharp_node_path_equals,
+	(void *)godotsharp_node_path_hash,
 	(void *)godotsharp_bytes_to_var,
 	(void *)godotsharp_convert,
 	(void *)godotsharp_hash,

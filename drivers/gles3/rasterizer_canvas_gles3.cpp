@@ -920,7 +920,7 @@ void RasterizerCanvasGLES3::_record_item_commands(const Item *p_item, RID p_rend
 					}
 
 					if (rect->flags & CANVAS_RECT_TRANSPOSE) {
-						dst_rect.size.x *= -1; // Encoding in the dst_rect.z uniform
+						state.instance_data_array[r_index].flags |= FLAGS_TRANSPOSE_RECT;
 					}
 
 					if (rect->flags & CANVAS_RECT_CLIP_UV) {
@@ -1128,6 +1128,12 @@ void RasterizerCanvasGLES3::_record_item_commands(const Item *p_item, RID p_rend
 					state.canvas_instance_batches[state.current_batch_index].tex = mm->texture;
 					state.canvas_instance_batches[state.current_batch_index].shader_variant = CanvasShaderGLES3::MODE_INSTANCED;
 
+					if (GLES3::MeshStorage::get_singleton()->multimesh_uses_colors(mm->multimesh)) {
+						state.instance_data_array[r_index].flags |= FLAGS_INSTANCING_HAS_COLORS;
+					}
+					if (GLES3::MeshStorage::get_singleton()->multimesh_uses_custom_data(mm->multimesh)) {
+						state.instance_data_array[r_index].flags |= FLAGS_INSTANCING_HAS_CUSTOM_DATA;
+					}
 				} else if (c->type == Item::Command::TYPE_PARTICLES) {
 					GLES3::ParticlesStorage *particles_storage = GLES3::ParticlesStorage::get_singleton();
 					GLES3::TextureStorage *texture_storage = GLES3::TextureStorage::get_singleton();
@@ -1136,6 +1142,8 @@ void RasterizerCanvasGLES3::_record_item_commands(const Item *p_item, RID p_rend
 					RID particles = pt->particles;
 					state.canvas_instance_batches[state.current_batch_index].tex = pt->texture;
 					state.canvas_instance_batches[state.current_batch_index].shader_variant = CanvasShaderGLES3::MODE_INSTANCED;
+					state.instance_data_array[r_index].flags |= FLAGS_INSTANCING_HAS_COLORS;
+					state.instance_data_array[r_index].flags |= FLAGS_INSTANCING_HAS_CUSTOM_DATA;
 
 					if (particles_storage->particles_has_collision(particles) && texture_storage->render_target_is_sdf_enabled(p_render_target)) {
 						// Pass collision information.
@@ -2684,6 +2692,7 @@ RasterizerCanvasGLES3::RasterizerCanvasGLES3() {
 // Default CanvasGroup shader.
 
 shader_type canvas_item;
+render_mode unshaded;
 
 uniform sampler2D screen_texture : hint_screen_texture, repeat_disable, filter_nearest;
 
@@ -2711,6 +2720,7 @@ void fragment() {
 // Default clip children shader.
 
 shader_type canvas_item;
+render_mode unshaded;
 
 uniform sampler2D screen_texture : hint_screen_texture, repeat_disable, filter_nearest;
 

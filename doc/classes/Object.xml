@@ -639,7 +639,7 @@
 			<description>
 				Returns an [Array] of connections for the given [param signal] name. Each connection is represented as a [Dictionary] that contains three entries:
 				- [code]signal[/code] is a reference to the [Signal];
-				- [code]callable[/code] is a reference to the [Callable];
+				- [code]callable[/code] is a reference to the connected [Callable];
 				- [code]flags[/code] is a combination of [enum ConnectFlags].
 			</description>
 		</method>

@@ -52,6 +52,7 @@
 #include "extensions/openxr_htc_controller_extension.h"
 #include "extensions/openxr_htc_vive_tracker_extension.h"
 #include "extensions/openxr_huawei_controller_extension.h"
+#include "extensions/openxr_ml2_controller_extension.h"
 #include "extensions/openxr_palm_pose_extension.h"
 #include "extensions/openxr_pico_controller_extension.h"
 #include "extensions/openxr_wmr_controller_extension.h"
@@ -102,6 +103,7 @@ void initialize_openxr_module(ModuleInitializationLevel p_level) {
 			OpenXRAPI::register_extension_wrapper(memnew(OpenXRFbPassthroughExtensionWrapper));
 			OpenXRAPI::register_extension_wrapper(memnew(OpenXRDisplayRefreshRateExtension));
 			OpenXRAPI::register_extension_wrapper(memnew(OpenXRWMRControllerExtension));
+			OpenXRAPI::register_extension_wrapper(memnew(OpenXRML2ControllerExtension));
 		}
 
 		if (OpenXRAPI::openxr_is_enabled()) {

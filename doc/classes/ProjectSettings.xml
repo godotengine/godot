@@ -60,6 +60,18 @@
 				Clears the whole configuration (not recommended, may break things).
 			</description>
 		</method>
+		<method name="get_global_class_list">
+			<return type="Dictionary[]" />
+			<description>
+				Returns an [Array] of registered global classes. Each global class is represented as a [Dictionary] that contains the following entries:
+				- [code]base[/code] is a name of the base class;
+				- [code]class[/code] is a name of the registered global class;
+				- [code]icon[/code] is a path to a custom icon of the global class, if it has any;
+				- [code]language[/code] is a name of a programming language in which the global class is written;
+				- [code]path[/code] is a path to a file containing the global class.
+				[b]Note:[/b] Both the script and the icon paths are local to the project filesystem, i.e. they start with [code]res://[/code].
+			</description>
+		</method>
 		<method name="get_order" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="name" type="String" />
@@ -405,8 +417,14 @@
 		<member name="debug/gdscript/warnings/function_used_as_property" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when using a function as if it is a property.
 		</member>
+		<member name="debug/gdscript/warnings/get_node_default_without_onready" type="int" setter="" getter="" default="2">
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when [method Node.get_node] (or the shorthand [code]$[/code]) is used as default value of a class variable without the [code]@onready[/code] annotation.
+		</member>
 		<member name="debug/gdscript/warnings/incompatible_ternary" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a ternary operator may emit values with incompatible types.
+		</member>
+		<member name="debug/gdscript/warnings/inference_on_variant" type="int" setter="" getter="" default="2">
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a static inferred type uses a [Variant] as initial value, which makes the static type to also be Variant.
 		</member>
 		<member name="debug/gdscript/warnings/int_as_enum_without_cast" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when trying to use an integer as an enum without an explicit cast.
@@ -419,6 +437,12 @@
 		</member>
 		<member name="debug/gdscript/warnings/narrowing_conversion" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when passing a floating-point value to a function that expects an integer (it will be converted and lose precision).
+		</member>
+		<member name="debug/gdscript/warnings/native_method_override" type="int" setter="" getter="" default="2">
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when a method in the script overrides a native method, because it may not behave as expected.
+		</member>
+		<member name="debug/gdscript/warnings/onready_with_export" type="int" setter="" getter="" default="2">
+			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when the [code]@onready[/code] annotation is used together with the [code]@export[/code] annotation, since it may not behave as expected.
 		</member>
 		<member name="debug/gdscript/warnings/property_used_as_function" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when using a property as if it is a function.
@@ -477,7 +501,7 @@
 		<member name="debug/gdscript/warnings/unsafe_property_access" type="int" setter="" getter="" default="0">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when accessing a property whose presence is not guaranteed at compile-time in the class.
 		</member>
-		<member name="debug/gdscript/warnings/unsafe_void_return" type="int" setter="" getter="" default="0">
+		<member name="debug/gdscript/warnings/unsafe_void_return" type="int" setter="" getter="" default="1">
 			When set to [code]warn[/code] or [code]error[/code], produces a warning or an error respectively when returning a call from a [code]void[/code] function when such call cannot be guaranteed to be also [code]void[/code].
 		</member>
 		<member name="debug/gdscript/warnings/unused_local_constant" type="int" setter="" getter="" default="1">

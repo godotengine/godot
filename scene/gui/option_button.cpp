@@ -491,9 +491,11 @@ void OptionButton::show_popup() {
 		return;
 	}
 
-	Size2 button_size = get_global_transform_with_canvas().get_scale() * get_size();
-	popup->set_position(get_screen_position() + Size2(0, button_size.height));
-	popup->set_size(Size2i(button_size.width, 0));
+	Rect2 rect = get_screen_rect();
+	rect.position.y += rect.size.height;
+	rect.size.height = 0;
+	popup->set_position(rect.position);
+	popup->set_size(rect.size);
 
 	// If not triggered by the mouse, start the popup with the checked item (or the first enabled one) focused.
 	if (current != NONE_SELECTED && !popup->is_item_disabled(current)) {
