@@ -121,7 +121,6 @@ void NavigationAgent3D::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("navigation_finished"));
 	ADD_SIGNAL(MethodInfo("velocity_computed", PropertyInfo(Variant::VECTOR3, "safe_velocity")));
 
-#ifdef DEBUG_ENABLED
 	ClassDB::bind_method(D_METHOD("set_debug_enabled", "enabled"), &NavigationAgent3D::set_debug_enabled);
 	ClassDB::bind_method(D_METHOD("get_debug_enabled"), &NavigationAgent3D::get_debug_enabled);
 	ClassDB::bind_method(D_METHOD("set_debug_use_custom", "enabled"), &NavigationAgent3D::set_debug_use_custom);
@@ -136,7 +135,6 @@ void NavigationAgent3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_use_custom"), "set_debug_use_custom", "get_debug_use_custom");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "debug_path_custom_color"), "set_debug_path_custom_color", "get_debug_path_custom_color");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "debug_path_custom_point_size", PROPERTY_HINT_RANGE, "1,50,1,suffix:px"), "set_debug_path_custom_point_size", "get_debug_path_custom_point_size");
-#endif // DEBUG_ENABLED
 }
 
 void NavigationAgent3D::_notification(int p_what) {
@@ -696,14 +694,15 @@ void NavigationAgent3D::_check_distance_to_target() {
 
 ////////DEBUG////////////////////////////////////////////////////////////
 
-#ifdef DEBUG_ENABLED
 void NavigationAgent3D::set_debug_enabled(bool p_enabled) {
+#ifdef DEBUG_ENABLED
 	if (debug_enabled == p_enabled) {
 		return;
 	}
 
 	debug_enabled = p_enabled;
 	debug_path_dirty = true;
+#endif // DEBUG_ENABLED
 }
 
 bool NavigationAgent3D::get_debug_enabled() const {
@@ -711,12 +710,14 @@ bool NavigationAgent3D::get_debug_enabled() const {
 }
 
 void NavigationAgent3D::set_debug_use_custom(bool p_enabled) {
+#ifdef DEBUG_ENABLED
 	if (debug_use_custom == p_enabled) {
 		return;
 	}
 
 	debug_use_custom = p_enabled;
 	debug_path_dirty = true;
+#endif // DEBUG_ENABLED
 }
 
 bool NavigationAgent3D::get_debug_use_custom() const {
@@ -724,12 +725,14 @@ bool NavigationAgent3D::get_debug_use_custom() const {
 }
 
 void NavigationAgent3D::set_debug_path_custom_color(Color p_color) {
+#ifdef DEBUG_ENABLED
 	if (debug_path_custom_color == p_color) {
 		return;
 	}
 
 	debug_path_custom_color = p_color;
 	debug_path_dirty = true;
+#endif // DEBUG_ENABLED
 }
 
 Color NavigationAgent3D::get_debug_path_custom_color() const {
@@ -737,18 +740,21 @@ Color NavigationAgent3D::get_debug_path_custom_color() const {
 }
 
 void NavigationAgent3D::set_debug_path_custom_point_size(float p_point_size) {
+#ifdef DEBUG_ENABLED
 	if (Math::is_equal_approx(debug_path_custom_point_size, p_point_size)) {
 		return;
 	}
 
 	debug_path_custom_point_size = p_point_size;
 	debug_path_dirty = true;
+#endif // DEBUG_ENABLED
 }
 
 float NavigationAgent3D::get_debug_path_custom_point_size() const {
 	return debug_path_custom_point_size;
 }
 
+#ifdef DEBUG_ENABLED
 void NavigationAgent3D::_navigation_debug_changed() {
 	debug_path_dirty = true;
 }
