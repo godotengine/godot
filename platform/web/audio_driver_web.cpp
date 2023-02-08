@@ -166,18 +166,18 @@ void AudioDriverWeb::finish() {
 	}
 }
 
-Error AudioDriverWeb::capture_start() {
+Error AudioDriverWeb::input_start() {
 	lock();
 	input_buffer_init(buffer_length);
 	unlock();
-	if (godot_audio_capture_start()) {
+	if (godot_audio_input_start()) {
 		return FAILED;
 	}
 	return OK;
 }
 
-Error AudioDriverWeb::capture_stop() {
-	godot_audio_capture_stop();
+Error AudioDriverWeb::input_stop() {
+	godot_audio_input_stop();
 	lock();
 	input_buffer.clear();
 	unlock();

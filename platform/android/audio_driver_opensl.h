@@ -84,23 +84,26 @@ class AudioDriverOpenSL : public AudioDriver {
 			SLAndroidSimpleBufferQueueItf queueItf,
 			void *pContext);
 
-	virtual Error capture_init_device();
+	Error init_input_device();
 
 public:
-	virtual const char *get_name() const;
+	virtual const char *get_name() const override {
+		return "Android";
+	}
 
-	virtual Error init();
-	virtual void start();
-	virtual int get_mix_rate() const;
-	virtual SpeakerMode get_speaker_mode() const;
-	virtual void lock();
-	virtual void unlock();
-	virtual void finish();
+	virtual Error init() override;
+	virtual void start() override;
+	virtual int get_mix_rate() const override;
+	virtual SpeakerMode get_speaker_mode() const override;
 
-	virtual void set_pause(bool p_pause);
+	virtual void lock() override;
+	virtual void unlock() override;
+	virtual void finish() override;
 
-	virtual Error capture_start();
-	virtual Error capture_stop();
+	virtual Error input_start() override;
+	virtual Error input_stop() override;
+
+	void set_pause(bool p_pause);
 
 	AudioDriverOpenSL();
 };

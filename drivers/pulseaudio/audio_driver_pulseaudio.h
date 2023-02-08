@@ -94,31 +94,30 @@ class AudioDriverPulseAudio : public AudioDriver {
 	static void thread_func(void *p_udata);
 
 public:
-	const char *get_name() const {
+	virtual const char *get_name() const override {
 		return "PulseAudio";
 	};
 
-	virtual Error init();
-	virtual void start();
-	virtual int get_mix_rate() const;
-	virtual SpeakerMode get_speaker_mode() const;
+	virtual Error init() override;
+	virtual void start() override;
+	virtual int get_mix_rate() const override;
+	virtual SpeakerMode get_speaker_mode() const override;
+	virtual float get_latency() override;
 
-	virtual PackedStringArray get_output_device_list();
-	virtual String get_output_device();
-	virtual void set_output_device(String output_device);
+	virtual void lock() override;
+	virtual void unlock() override;
+	virtual void finish() override;
 
-	virtual PackedStringArray get_input_device_list();
-	virtual void set_input_device(const String &p_name);
-	virtual String get_input_device();
+	virtual PackedStringArray get_output_device_list() override;
+	virtual String get_output_device() override;
+	virtual void set_output_device(const String &p_name) override;
 
-	virtual void lock();
-	virtual void unlock();
-	virtual void finish();
+	virtual Error input_start() override;
+	virtual Error input_stop() override;
 
-	virtual float get_latency();
-
-	virtual Error input_start();
-	virtual Error input_stop();
+	virtual PackedStringArray get_input_device_list() override;
+	virtual String get_input_device() override;
+	virtual void set_input_device(const String &p_name) override;
 
 	AudioDriverPulseAudio();
 	~AudioDriverPulseAudio() {}
