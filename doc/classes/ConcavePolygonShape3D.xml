@@ -18,6 +18,19 @@
 			<return type="PackedVector3Array" />
 			<description>
 				Returns the faces of the trimesh shape as an array of vertices. The array (of length divisible by three) is naturally divided into triples; each triple of vertices defines a triangle.
+				[b]Note:[/b] This array is computed based on the shape's vertices and indices.
+			</description>
+		</method>
+		<method name="get_indices" qualifiers="const">
+			<return type="PackedInt32Array" />
+			<description>
+				Returns the array of indices of the trimesh shape. The array (of length divisible by three) is naturally divided into triples; the elements of each triple are indices into the array of vertices (see [method get_vertices]), hence each triple defines a triangle.
+			</description>
+		</method>
+		<method name="get_vertices" qualifiers="const">
+			<return type="PackedVector3Array" />
+			<description>
+				Returns the array of points which appear as vertices of the triangles in the trimesh shape. To get the actual triangles, see [method get_indices] and [method get_faces].
 			</description>
 		</method>
 		<method name="set_faces">
@@ -25,6 +38,22 @@
 			<param index="0" name="faces" type="PackedVector3Array" />
 			<description>
 				Sets the faces of the trimesh shape from an array of vertices. The [param faces] array should be composed of triples such that each triple of vertices defines a triangle.
+				[b]Note:[/b] This method sets the shape's vertices and indices in a maximally inefficient way (one index for each vertex). If possible, use [method set_vertices] followed by [method set_indices] instead.
+			</description>
+		</method>
+		<method name="set_indices">
+			<return type="void" />
+			<param index="0" name="indices" type="PackedInt32Array" />
+			<description>
+				Sets the array of indices of the trimesh shape. The [param indices] array should be composed of triples such that each element is an index into the array of vertices (see [method get_vertices]), hence each triple defines a triangle.
+			</description>
+		</method>
+		<method name="set_vertices">
+			<return type="void" />
+			<param index="0" name="vertices" type="PackedVector3Array" />
+			<description>
+				Sets the points of the trimesh shape which can appear as triangle vertices. To set the actual triangles, see [method set_indices] and [method set_faces].
+				[b]Note:[/b] This method resets the indices of the trimesh shape to an empty array.
 			</description>
 		</method>
 	</methods>

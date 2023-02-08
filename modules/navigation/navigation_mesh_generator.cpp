@@ -264,6 +264,7 @@ void NavigationMeshGenerator::_parse_geometry(const Transform3D &p_navmesh_trans
 
 					ConcavePolygonShape3D *concave_polygon = Object::cast_to<ConcavePolygonShape3D>(*s);
 					if (concave_polygon) {
+						// TODO: Use _add_mesh_array instead of _add_faces in this case.
 						_add_faces(concave_polygon->get_faces(), transform, p_vertices, p_indices);
 					}
 
@@ -414,7 +415,15 @@ void NavigationMeshGenerator::_parse_geometry(const Transform3D &p_navmesh_trans
 					} break;
 					case PhysicsServer3D::SHAPE_CONCAVE_POLYGON: {
 						Dictionary dict = data;
-						PackedVector3Array faces = Variant(dict["faces"]);
+						Vector<Vector3> vertices = dict["vertices"];
+						Vector<int> indices = dict["indices"];
+						// TODO: Use _add_mesh_array instead of _add_faces in this case.
+						Vector<Vector3> faces;
+						faces.resize(indices.size());
+						Vector3 *facesw = faces.ptrw();
+						for (int j = 0; j < indices.size(); j++) {
+							facesw[j] = vertices[indices[j]];
+						}
 						_add_faces(faces, shapes[i], p_vertices, p_indices);
 					} break;
 					case PhysicsServer3D::SHAPE_HEIGHTMAP: {

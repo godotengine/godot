@@ -358,7 +358,7 @@ struct GodotConcavePolygonShape3D : public GodotConcaveShape3D {
 
 	void _fill_bvh(_Volume_BVH *p_bvh_tree, BVH *p_bvh_array, int &p_idx);
 
-	void _setup(const Vector<Vector3> &p_faces, bool p_backface_collision);
+	void _setup(const Vector<Vector3> &p_vertices, const Vector<int> &p_indices, bool p_backface_collision);
 
 public:
 	Vector<Vector3> get_faces() const;

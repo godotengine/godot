@@ -1606,44 +1606,46 @@ void GodotConcavePolygonShape3D::_fill_bvh(_Volume_BVH *p_bvh_tree, BVH *p_bvh_a
 	memdelete(p_bvh_tree);
 }
 
-void GodotConcavePolygonShape3D::_setup(const Vector<Vector3> &p_faces, bool p_backface_collision) {
-	int src_face_count = p_faces.size();
-	if (src_face_count == 0) {
+void GodotConcavePolygonShape3D::_setup(const Vector<Vector3> &p_vertices, const Vector<int> &p_indices, bool p_backface_collision) {
+	vertices = p_vertices;
+
+	int src_index_count = p_indices.size();
+
+	if (src_index_count == 0) {
 		configure(AABB());
 		return;
 	}
-	ERR_FAIL_COND(src_face_count % 3);
-	src_face_count /= 3;
 
-	const Vector3 *facesr = p_faces.ptr();
+	ERR_FAIL_COND(src_index_count % 3);
 
-	Vector<_Volume_BVH_Element> bvh_array;
-	bvh_array.resize(src_face_count);
-
-	_Volume_BVH_Element *bvh_arrayw = bvh_array.ptrw();
-
+	int src_face_count = src_index_count / 3;
 	faces.resize(src_face_count);
 	Face *facesw = faces.ptrw();
 
-	vertices.resize(src_face_count * 3);
+	Vector<_Volume_BVH_Element> bvh_array;
+	bvh_array.resize(src_face_count);
+	_Volume_BVH_Element *bvh_arrayw = bvh_array.ptrw();
 
-	Vector3 *verticesw = vertices.ptrw();
+	const int *indices = p_indices.ptr();
 
 	AABB _aabb;
 
 	for (int i = 0; i < src_face_count; i++) {
-		Face3 face(facesr[i * 3 + 0], facesr[i * 3 + 1], facesr[i * 3 + 2]);
+		Face3 face(vertices[indices[i * 3 + 0]], vertices[indices[i * 3 + 1]], vertices[indices[i * 3 + 2]]);
+
+#ifdef DEBUG_ENABLED
+		if (unlikely(face.is_degenerate())) {
+			ERR_PRINT_ONCE("Found degenerate triangle face in concave polygon shape data; this will cause collision issues.");
+		}
+#endif
 
 		bvh_arrayw[i].aabb = face.get_aabb();
 		bvh_arrayw[i].center = bvh_arrayw[i].aabb.get_center();
 		bvh_arrayw[i].face_index = i;
-		facesw[i].indices[0] = i * 3 + 0;
-		facesw[i].indices[1] = i * 3 + 1;
-		facesw[i].indices[2] = i * 3 + 2;
+		facesw[i].indices[0] = indices[i * 3 + 0];
+		facesw[i].indices[1] = indices[i * 3 + 1];
+		facesw[i].indices[2] = indices[i * 3 + 2];
 		facesw[i].normal = face.get_plane().normal;
-		verticesw[i * 3 + 0] = face.vertex[0];
-		verticesw[i * 3 + 1] = face.vertex[1];
-		verticesw[i * 3 + 2] = face.vertex[2];
 		if (i == 0) {
 			_aabb = bvh_arrayw[i].aabb;
 		} else {
@@ -1668,14 +1670,27 @@ void GodotConcavePolygonShape3D::_setup(const Vector<Vector3> &p_faces, bool p_b
 
 void GodotConcavePolygonShape3D::set_data(const Variant &p_data) {
 	Dictionary d = p_data;
-	ERR_FAIL_COND(!d.has("faces"));
+	ERR_FAIL_COND(!(d.has("vertices") && d.has("indices")));
 
-	_setup(d["faces"], d["backface_collision"]);
+	Vector<Vector3> new_vertices = d["vertices"];
+	Vector<int> new_indices = d["indices"];
+
+	bool new_backface_collision = d["backface_collision"];
+	_setup(new_vertices, new_indices, new_backface_collision);
 }
 
 Variant GodotConcavePolygonShape3D::get_data() const {
 	Dictionary d;
-	d["faces"] = get_faces();
+	d["vertices"] = vertices;
+	Vector<int> indices;
+	indices.resize(faces.size() * 3);
+	int *indices_w = indices.ptrw();
+	for (int i = 0; i < faces.size(); i++) {
+		indices_w[3 * i + 0] = faces[i].indices[0];
+		indices_w[3 * i + 1] = faces[i].indices[1];
+		indices_w[3 * i + 2] = faces[i].indices[2];
+	}
+	d["indices"] = indices;
 	d["backface_collision"] = backface_collision;
 
 	return d;

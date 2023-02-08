@@ -31,6 +31,7 @@
 #include "csg_shape.h"
 
 #include "core/math/geometry_2d.h"
+#include "scene/resources/surface_tool.h"
 
 void CSGShape3D::set_use_collision(bool p_enable) {
 	if (use_collision == p_enable) {
@@ -459,23 +460,30 @@ void CSGShape3D::_update_collision_faces() {
 	if (use_collision && is_root_shape() && root_collision_shape.is_valid()) {
 		CSGBrush *n = _get_brush();
 		ERR_FAIL_COND_MSG(!n, "Cannot get CSGBrush.");
-		Vector<Vector3> physics_faces;
-		physics_faces.resize(n->faces.size() * 3);
-		Vector3 *physicsw = physics_faces.ptrw();
+		Vector<Vector3> physics_vertices;
+		physics_vertices.resize(n->faces.size() * 3);
+		Vector3 *physics_vertices_w = physics_vertices.ptrw();
+		Vector<int> physics_indices;
+		physics_indices.resize(n->faces.size() * 3);
+		int *physics_indices_w = physics_indices.ptrw();
 
 		for (int i = 0; i < n->faces.size(); i++) {
-			int order[3] = { 0, 1, 2 };
+			physics_vertices_w[i * 3 + 0] = n->faces[i].vertices[0];
+			physics_vertices_w[i * 3 + 1] = n->faces[i].vertices[1];
+			physics_vertices_w[i * 3 + 2] = n->faces[i].vertices[2];
+			physics_indices_w[i * 3 + 0] = i * 3 + 0;
+			physics_indices_w[i * 3 + 1] = i * 3 + 1;
+			physics_indices_w[i * 3 + 2] = i * 3 + 2;
 
 			if (n->faces[i].invert) {
-				SWAP(order[1], order[2]);
+				SWAP(physics_indices_w[i * 3 + 1], physics_indices_w[i * 3 + 2]);
 			}
-
-			physicsw[i * 3 + 0] = n->faces[i].vertices[order[0]];
-			physicsw[i * 3 + 1] = n->faces[i].vertices[order[1]];
-			physicsw[i * 3 + 2] = n->faces[i].vertices[order[2]];
 		}
 
-		root_collision_shape->set_faces(physics_faces);
+		SurfaceTool::strip_mesh_arrays(physics_vertices, physics_indices);
+
+		root_collision_shape->set_vertices(physics_vertices);
+		root_collision_shape->set_indices(physics_indices);
 
 		if (_is_debug_collision_shape_visible()) {
 			_update_debug_collision_shape();

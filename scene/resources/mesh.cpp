@@ -559,23 +559,16 @@ Ref<ConvexPolygonShape3D> Mesh::create_convex_shape(bool p_clean, bool p_simplif
 }
 
 Ref<ConcavePolygonShape3D> Mesh::create_trimesh_shape() const {
-	Vector<Face3> faces = get_faces();
-	if (faces.size() == 0) {
-		return Ref<ConcavePolygonShape3D>();
-	}
+	Ref<TriangleMesh> tm = generate_triangle_mesh();
+	ERR_FAIL_COND_V(!tm.is_valid(), Ref<ConcavePolygonShape3D>());
 
-	Vector<Vector3> face_points;
-	face_points.resize(faces.size() * 3);
-
-	for (int i = 0; i < face_points.size(); i += 3) {
-		Face3 f = faces.get(i / 3);
-		face_points.set(i, f.vertex[0]);
-		face_points.set(i + 1, f.vertex[1]);
-		face_points.set(i + 2, f.vertex[2]);
-	}
+	Vector<Vector3> vertices = tm->get_vertices();
+	Vector<int> indices;
+	tm->get_indices(&indices);
 
 	Ref<ConcavePolygonShape3D> shape = memnew(ConcavePolygonShape3D);
-	shape->set_faces(face_points);
+	shape->set_vertices(vertices);
+	shape->set_indices(indices);
 	return shape;
 }
 
