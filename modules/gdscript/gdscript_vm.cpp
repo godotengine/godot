@@ -3427,7 +3427,10 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					String message_str;
 					if (_code_ptr[ip + 2] != 0) {
 						GET_VARIANT_PTR(message, 1);
-						message_str = *message;
+						Variant message_var = *message;
+						if (message->get_type() != Variant::NIL) {
+							message_str = message_var;
+						}
 					}
 					if (message_str.is_empty()) {
 						err_text = "Assertion failed.";
