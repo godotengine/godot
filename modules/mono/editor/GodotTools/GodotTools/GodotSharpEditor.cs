@@ -594,7 +594,6 @@ namespace GodotTools
             // Export plugin
             var exportPlugin = new ExportPlugin();
             AddExportPlugin(exportPlugin);
-            exportPlugin.RegisterExportSettings();
             _exportPluginWeak = WeakRef(exportPlugin);
 
             BuildManager.Initialize();

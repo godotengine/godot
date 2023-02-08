@@ -21,10 +21,22 @@ namespace GodotTools.Export
 
         private List<string> _tempFolders = new List<string>();
 
-        public void RegisterExportSettings()
+        public override Godot.Collections.Array<Godot.Collections.Dictionary> _GetExportOptions(EditorExportPlatform platform)
         {
-            // TODO: These would be better as export preset options, but that doesn't seem to be supported yet
-            GlobalDef("dotnet/export/include_scripts_content", false);
+            return new Godot.Collections.Array<Godot.Collections.Dictionary>()
+            {
+                new Godot.Collections.Dictionary()
+                {
+                    {
+                        "option", new Godot.Collections.Dictionary()
+                        {
+                            { "name", "dotnet/include_scripts_content" },
+                            { "type", (int)Variant.Type.Bool }
+                        }
+                    },
+                    { "default_value", false }
+                }
+            };
         }
 
         private string _maybeLastExportError;
@@ -44,7 +56,7 @@ namespace GodotTools.Export
 
             // TODO What if the source file is not part of the game's C# project
 
-            bool includeScriptsContent = (bool)ProjectSettings.GetSetting("dotnet/export/include_scripts_content");
+            bool includeScriptsContent = (bool)GetOption("dotnet/include_scripts_content");
 
             if (!includeScriptsContent)
             {
