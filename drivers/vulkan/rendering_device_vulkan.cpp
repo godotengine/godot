@@ -5072,6 +5072,9 @@ RID RenderingDeviceVulkan::shader_create_from_bytecode(const Vector<uint8_t> &p_
 		pipeline_layout_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
 		pipeline_layout_create_info.pNext = nullptr;
 		pipeline_layout_create_info.flags = 0;
+		if(context->get_graphics_pipeline_library_capabilities().graphics_pipeline_library_supported && GLOBAL_GET("rendering/rendering_device/vulkan/use_graphics_pipeline_library")){
+			pipeline_layout_create_info.flags = VK_PIPELINE_LAYOUT_CREATE_INDEPENDENT_SETS_BIT_EXT;
+		}
 		pipeline_layout_create_info.setLayoutCount = shader.sets.size();
 
 		Vector<VkDescriptorSetLayout> layouts;

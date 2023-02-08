@@ -845,9 +845,9 @@ class RenderingDeviceVulkan : public RenderingDevice {
 					if(pci.pStages->pSpecializationInfo->pData != pcik.pStages->pSpecializationInfo->pData){
 						return false;
 					}
-				}else{
-					return false;
 				}
+			}else {
+				return false;
 			}
 			if(pcik.pVertexInputState != nullptr){
 				if(pci.pVertexInputState->flags != pcik.pVertexInputState->flags){
@@ -878,6 +878,8 @@ class RenderingDeviceVulkan : public RenderingDevice {
 						return false;
 					}
 				}
+			}else {
+				return false;
 			}
 			if(pcik.pInputAssemblyState != nullptr){
 				if(pci.pInputAssemblyState->flags != pcik.pInputAssemblyState->flags){
@@ -912,6 +914,8 @@ class RenderingDeviceVulkan : public RenderingDevice {
 				if(pci.pViewportState->scissorCount != pcik.pViewportState->scissorCount){
 					return false;
 				}
+			}else {
+				return false;
 			}
 			if(pcik.pRasterizationState != nullptr){
 				if(pci.pRasterizationState->flags != pcik.pRasterizationState->flags){
@@ -947,6 +951,8 @@ class RenderingDeviceVulkan : public RenderingDevice {
 				if(pci.pRasterizationState->rasterizerDiscardEnable != pcik.pRasterizationState->rasterizerDiscardEnable){
 					return false;
 				}
+			}else {
+				return false;
 			}
 			if(pcik.pMultisampleState != nullptr){
 				if(pci.pMultisampleState->flags != pcik.pMultisampleState->flags){
@@ -970,6 +976,8 @@ class RenderingDeviceVulkan : public RenderingDevice {
 				if(pci.pMultisampleState->sampleShadingEnable != pcik.pMultisampleState->sampleShadingEnable){
 					return false;
 				}
+			}else {
+				return false;
 			}
 			if(pcik.pDepthStencilState != nullptr){
 				if(pci.pDepthStencilState->flags != pcik.pDepthStencilState->flags){
@@ -1014,6 +1022,8 @@ class RenderingDeviceVulkan : public RenderingDevice {
 				if(pci.pDepthStencilState->stencilTestEnable != pcik.pDepthStencilState->stencilTestEnable){
 					return false;
 				}
+			}else {
+				return false;
 			}
 			if(pcik.pColorBlendState != nullptr){
 				if(pci.pColorBlendState->flags != pcik.pColorBlendState->flags){
@@ -1056,6 +1066,8 @@ class RenderingDeviceVulkan : public RenderingDevice {
 				if(pci.pColorBlendState->logicOpEnable != pcik.pColorBlendState->logicOpEnable){
 					return false;
 				}
+			}else {
+				return false;
 			}
 			if(pcik.pDynamicState != nullptr){
 				if(pci.pDynamicState->flags != pcik.pDynamicState->flags){
@@ -1064,6 +1076,8 @@ class RenderingDeviceVulkan : public RenderingDevice {
 				if(pci.pDynamicState->dynamicStateCount != pcik.pDynamicState->dynamicStateCount){
 					return false;
 				}
+			}else {
+				return false;
 			}
 			if(pci.layout != pcik.layout){
 				return false;
