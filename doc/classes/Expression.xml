@@ -51,6 +51,12 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="duplicate" qualifiers="const">
+			<return type="Expression" />
+			<description>
+				Creates and returns a new copy of the expression.
+			</description>
+		</method>
 		<method name="execute">
 			<return type="Variant" />
 			<param index="0" name="inputs" type="Array" default="[]" />

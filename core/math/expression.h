@@ -44,16 +44,9 @@ private:
 		Input() {}
 	};
 
-	Vector<Input> inputs;
-	Variant::Type output_type = Variant::NIL;
-
 	String expression;
 
-	bool sequenced = false;
 	int str_ofs = 0;
-	bool expression_dirty = false;
-
-	bool _compile_expression();
 
 	enum TokenType {
 		TK_CURLY_BRACKET_OPEN,
@@ -246,18 +239,27 @@ private:
 	template <class T>
 	T *alloc_node() {
 		T *node = memnew(T);
-		node->next = nodes;
-		nodes = node;
+		node->next = tree->nodes;
+		tree->nodes = node;
 		return node;
 	}
 
-	ENode *root = nullptr;
-	ENode *nodes = nullptr;
+	struct ETree : public RefCounted {
+		ENode *root = nullptr;
+		ENode *nodes = nullptr;
+
+		~ETree() {
+			if (nodes) {
+				memdelete(nodes);
+			}
+		}
+	};
+	Ref<ETree> tree;
 
 	Vector<String> input_names;
 
 	bool execution_error = false;
-	bool _execute(const Array &p_inputs, Object *p_instance, Expression::ENode *p_node, Variant &r_ret, bool p_const_calls_only, String &r_error_str);
+	bool _execute(const Array &p_inputs, Object *p_instance, Expression::ENode *p_node, Variant &r_ret, bool p_const_calls_only, String &r_error_str) const;
 
 protected:
 	static void _bind_methods();
@@ -267,9 +269,9 @@ public:
 	Variant execute(Array p_inputs = Array(), Object *p_base = nullptr, bool p_show_error = true, bool p_const_calls_only = false);
 	bool has_execute_failed() const;
 	String get_error_text() const;
+	Ref<Expression> duplicate() const;
 
 	Expression() {}
-	~Expression();
 };
 
 #endif // EXPRESSION_H

@@ -1209,37 +1209,7 @@ Expression::ENode *Expression::_parse_expression() {
 	return expression_nodes[0].node;
 }
 
-bool Expression::_compile_expression() {
-	if (!expression_dirty) {
-		return error_set;
-	}
-
-	if (nodes) {
-		memdelete(nodes);
-		nodes = nullptr;
-		root = nullptr;
-	}
-
-	error_str = String();
-	error_set = false;
-	str_ofs = 0;
-
-	root = _parse_expression();
-
-	if (error_set) {
-		root = nullptr;
-		if (nodes) {
-			memdelete(nodes);
-		}
-		nodes = nullptr;
-		return true;
-	}
-
-	expression_dirty = false;
-	return false;
-}
-
-bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression::ENode *p_node, Variant &r_ret, bool p_const_calls_only, String &r_error_str) {
+bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression::ENode *p_node, Variant &r_ret, bool p_const_calls_only, String &r_error_str) const {
 	switch (p_node->type) {
 		case Expression::ENode::TYPE_INPUT: {
 			const Expression::InputNode *in = static_cast<const Expression::InputNode *>(p_node);
@@ -1468,11 +1438,7 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 }
 
 Error Expression::parse(const String &p_expression, const Vector<String> &p_input_names) {
-	if (nodes) {
-		memdelete(nodes);
-		nodes = nullptr;
-		root = nullptr;
-	}
+	tree.instantiate();
 
 	error_str = String();
 	error_set = false;
@@ -1480,14 +1446,10 @@ Error Expression::parse(const String &p_expression, const Vector<String> &p_inpu
 	input_names = p_input_names;
 
 	expression = p_expression;
-	root = _parse_expression();
+	tree->root = _parse_expression();
 
 	if (error_set) {
-		root = nullptr;
-		if (nodes) {
-			memdelete(nodes);
-		}
-		nodes = nullptr;
+		tree.unref();
 		return ERR_INVALID_PARAMETER;
 	}
 
@@ -1500,7 +1462,7 @@ Variant Expression::execute(Array p_inputs, Object *p_base, bool p_show_error, b
 	execution_error = false;
 	Variant output;
 	String error_txt;
-	bool err = _execute(p_inputs, p_base, root, output, p_const_calls_only, error_txt);
+	bool err = _execute(p_inputs, p_base, tree->root, output, p_const_calls_only, error_txt);
 	if (err) {
 		execution_error = true;
 		error_str = error_txt;
@@ -1518,15 +1480,30 @@ String Expression::get_error_text() const {
 	return error_str;
 }
 
+Ref<Expression> Expression::duplicate() const {
+	Ref<Expression> clone;
+	clone.instantiate();
+
+	clone->expression = expression;
+
+	clone->str_ofs = str_ofs;
+
+	clone->tree = tree;
+
+	clone->input_names = input_names;
+
+	clone->error_str = error_str;
+	clone->error_set = error_set;
+
+	clone->execution_error = execution_error;
+
+	return clone;
+}
+
 void Expression::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("parse", "expression", "input_names"), &Expression::parse, DEFVAL(Vector<String>()));
 	ClassDB::bind_method(D_METHOD("execute", "inputs", "base_instance", "show_error", "const_calls_only"), &Expression::execute, DEFVAL(Array()), DEFVAL(Variant()), DEFVAL(true), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("has_execute_failed"), &Expression::has_execute_failed);
 	ClassDB::bind_method(D_METHOD("get_error_text"), &Expression::get_error_text);
-}
-
-Expression::~Expression() {
-	if (nodes) {
-		memdelete(nodes);
-	}
+	ClassDB::bind_method(D_METHOD("duplicate"), &Expression::duplicate);
 }
