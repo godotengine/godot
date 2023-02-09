@@ -528,7 +528,7 @@ void DynamicFontImportSettings::_variation_selected() {
 		inspector_vars->edit(import_variation_data.ptr());
 		import_variation_data->notify_property_list_changed();
 
-		label_glyphs->set_text(TTR("Preloaded glyphs: ") + itos(import_variation_data->selected_glyphs.size()));
+		label_glyphs->set_text(vformat(TTR("Preloaded glyphs: %d"), import_variation_data->selected_glyphs.size()));
 		_range_selected();
 		_change_text_opts();
 
@@ -659,7 +659,7 @@ void DynamicFontImportSettings::_glyph_update_lbl() {
 		}
 	}
 	int unlinked_glyphs = import_variation_data->selected_glyphs.size() - linked_glyphs;
-	label_glyphs->set_text(TTR("Preloaded glyphs:") + " " + itos(unlinked_glyphs + import_variation_data->selected_chars.size()));
+	label_glyphs->set_text(vformat(TTR("Preloaded glyphs: %d"), unlinked_glyphs + import_variation_data->selected_chars.size()));
 }
 
 void DynamicFontImportSettings::_glyph_clear() {
@@ -1403,7 +1403,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 
 	label_glyphs = memnew(Label);
 	gl_hb->add_child(label_glyphs);
-	label_glyphs->set_text(TTR("Preloaded glyphs:") + " " + itos(0));
+	label_glyphs->set_text(vformat(TTR("Preloaded glyphs: %d"), 0));
 	label_glyphs->set_custom_minimum_size(Size2(50 * EDSCALE, 0));
 
 	Button *btn_clear = memnew(Button);
