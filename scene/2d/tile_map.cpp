@@ -752,6 +752,20 @@ TileMap::VisibilityMode TileMap::get_navigation_visibility_mode() {
 	return navigation_visibility_mode;
 }
 
+void TileMap::set_navigation_map(int p_layer, RID p_map) {
+	ERR_FAIL_INDEX(p_layer, (int)layers.size());
+
+	layers[p_layer].navigation_map = p_map;
+}
+
+RID TileMap::get_navigation_map(int p_layer) const {
+	ERR_FAIL_INDEX_V(p_layer, (int)layers.size(), RID());
+	if (layers[p_layer].navigation_map.is_valid()) {
+		return layers[p_layer].navigation_map;
+	}
+	return RID();
+}
+
 void TileMap::set_y_sort_enabled(bool p_enable) {
 	Node2D::set_y_sort_enabled(p_enable);
 	_clear_internals();
@@ -897,6 +911,9 @@ void TileMap::_recreate_layer_internals(int p_layer) {
 	// Update the layer internals.
 	_rendering_update_layer(p_layer);
 
+	// Update the layer internal navigation maps.
+	_navigation_update_layer(p_layer);
+
 	// Recreate the quadrants.
 	const HashMap<Vector2i, TileMapCell> &tile_map = layers[p_layer].tile_map;
 	for (const KeyValue<Vector2i, TileMapCell> &E : tile_map) {
@@ -958,6 +975,9 @@ void TileMap::_clear_layer_internals(int p_layer) {
 
 	// Clear the layers internals.
 	_rendering_cleanup_layer(p_layer);
+
+	// Clear the layers internal navigation maps.
+	_navigation_cleanup_layer(p_layer);
 
 	// Clear the dirty quadrants list.
 	while (layers[p_layer].dirty_quadrant_list.first()) {
@@ -1080,6 +1100,36 @@ void TileMap::_rendering_notification(int p_what) {
 				}
 			}
 		} break;
+	}
+}
+
+void TileMap::_navigation_update_layer(int p_layer) {
+	ERR_FAIL_INDEX(p_layer, (int)layers.size());
+	ERR_FAIL_NULL(NavigationServer2D::get_singleton());
+
+	if (!layers[p_layer].navigation_map.is_valid()) {
+		if (p_layer == 0 && is_inside_tree()) {
+			// Use the default World2D navigation map for the first layer when empty.
+			layers[p_layer].navigation_map = get_world_2d()->get_navigation_map();
+		} else {
+			RID new_layer_map = NavigationServer2D::get_singleton()->map_create();
+			NavigationServer2D::get_singleton()->map_set_active(new_layer_map, true);
+			layers[p_layer].navigation_map = new_layer_map;
+		}
+	}
+}
+
+void TileMap::_navigation_cleanup_layer(int p_layer) {
+	ERR_FAIL_INDEX(p_layer, (int)layers.size());
+	ERR_FAIL_NULL(NavigationServer2D::get_singleton());
+
+	if (layers[p_layer].navigation_map.is_valid()) {
+		if (is_inside_tree() && layers[p_layer].navigation_map == get_world_2d()->get_navigation_map()) {
+			// Do not delete the World2D default navigation map.
+			return;
+		}
+		NavigationServer2D::get_singleton()->free(layers[p_layer].navigation_map);
+		layers[p_layer].navigation_map = RID();
 	}
 }
 
@@ -1732,6 +1782,9 @@ void TileMap::_navigation_update_dirty_quadrants(SelfList<TileMapQuadrant>::List
 					q.navigation_regions[E_cell].resize(tile_set->get_navigation_layers_count());
 
 					for (int layer_index = 0; layer_index < tile_set->get_navigation_layers_count(); layer_index++) {
+						if (layer_index >= (int)layers.size() || !layers[layer_index].navigation_map.is_valid()) {
+							continue;
+						}
 						Ref<NavigationPolygon> navigation_polygon;
 						navigation_polygon = tile_data->get_navigation_polygon(layer_index);
 
@@ -1741,7 +1794,7 @@ void TileMap::_navigation_update_dirty_quadrants(SelfList<TileMapQuadrant>::List
 
 							RID region = NavigationServer2D::get_singleton()->region_create();
 							NavigationServer2D::get_singleton()->region_set_owner_id(region, get_instance_id());
-							NavigationServer2D::get_singleton()->region_set_map(region, get_world_2d()->get_navigation_map());
+							NavigationServer2D::get_singleton()->region_set_map(region, layers[layer_index].navigation_map);
 							NavigationServer2D::get_singleton()->region_set_transform(region, tilemap_xform * tile_transform);
 							NavigationServer2D::get_singleton()->region_set_navigation_layers(region, tile_set->get_navigation_layer_layers(layer_index));
 							NavigationServer2D::get_singleton()->region_set_navigation_polygon(region, navigation_polygon);
@@ -4050,6 +4103,9 @@ void TileMap::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_navigation_visibility_mode", "navigation_visibility_mode"), &TileMap::set_navigation_visibility_mode);
 	ClassDB::bind_method(D_METHOD("get_navigation_visibility_mode"), &TileMap::get_navigation_visibility_mode);
+
+	ClassDB::bind_method(D_METHOD("set_navigation_map", "layer", "map"), &TileMap::set_navigation_map);
+	ClassDB::bind_method(D_METHOD("get_navigation_map", "layer"), &TileMap::get_navigation_map);
 
 	ClassDB::bind_method(D_METHOD("set_cell", "layer", "coords", "source_id", "atlas_coords", "alternative_tile"), &TileMap::set_cell, DEFVAL(TileSet::INVALID_SOURCE), DEFVAL(TileSetSource::INVALID_ATLAS_COORDS), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("erase_cell", "layer", "coords"), &TileMap::erase_cell);
