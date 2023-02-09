@@ -961,8 +961,8 @@ public:
 		default_files_container->add_child(l);
 		vcs_metadata_selection = memnew(OptionButton);
 		vcs_metadata_selection->set_custom_minimum_size(Size2(100, 20));
-		vcs_metadata_selection->add_item("None", (int)EditorVCSInterface::VCSMetadata::NONE);
-		vcs_metadata_selection->add_item("Git", (int)EditorVCSInterface::VCSMetadata::GIT);
+		vcs_metadata_selection->add_item(TTR("None"), (int)EditorVCSInterface::VCSMetadata::NONE);
+		vcs_metadata_selection->add_item(TTR("Git"), (int)EditorVCSInterface::VCSMetadata::GIT);
 		vcs_metadata_selection->select((int)EditorVCSInterface::VCSMetadata::GIT);
 		default_files_container->add_child(vcs_metadata_selection);
 		Control *spacer = memnew(Control);
