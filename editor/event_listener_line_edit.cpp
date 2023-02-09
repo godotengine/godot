@@ -105,7 +105,8 @@ String EventListenerLineEdit::get_event_text(const Ref<InputEvent> &p_event, boo
 			desc = RTR(_joy_axis_descriptions[2 * (size_t)jp_motion->get_axis() + (jp_motion->get_axis_value() < 0 ? 0 : 1)]);
 		}
 
-		text = vformat("Joypad Axis %s %s (%s)", itos((int64_t)jp_motion->get_axis()), jp_motion->get_axis_value() < 0 ? "-" : "+", desc);
+		// TRANSLATORS: %d is the axis number, the first %s is either "-" or "+", and the second %s is the description of the axis.
+		text = vformat(TTR("Joypad Axis %d %s (%s)"), (int64_t)jp_motion->get_axis(), jp_motion->get_axis_value() < 0 ? "-" : "+", desc);
 	}
 	if (p_include_device && (mouse.is_valid() || jp_button.is_valid() || jp_motion.is_valid())) {
 		String device_string = get_device_string(p_event->get_device());

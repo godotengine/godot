@@ -36,7 +36,9 @@
 #include "editor/editor_inspector.h"
 #include "editor/editor_locale_dialog.h"
 #include "editor/editor_node.h"
+#include "editor/editor_property_name_processor.h"
 #include "editor/editor_scale.h"
+#include "editor/editor_settings.h"
 
 /*************************************************************************/
 /* Settings data                                                         */
@@ -926,6 +928,15 @@ void DynamicFontImportSettings::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			add_var->set_icon(get_theme_icon(SNAME("Add"), SNAME("EditorIcons")));
 		} break;
+
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/localize_settings")) {
+				EditorPropertyNameProcessor::Style style = EditorPropertyNameProcessor::get_singleton()->get_settings_style();
+				inspector_general->set_property_name_style(style);
+				inspector_vars->set_property_name_style(style);
+				inspector_text->set_property_name_style(style);
+			}
+		} break;
 	}
 }
 
@@ -1334,6 +1345,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	inspector_general->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	inspector_general->set_custom_minimum_size(Size2(300 * EDSCALE, 250 * EDSCALE));
 	inspector_general->connect("property_edited", callable_mp(this, &DynamicFontImportSettings::_main_prop_changed));
+	inspector_general->set_property_name_style(EditorPropertyNameProcessor::get_singleton()->get_settings_style());
 	page1_hb->add_child(inspector_general);
 
 	// Page 2 layout: Configurations
@@ -1386,6 +1398,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	inspector_vars = memnew(EditorInspector);
 	inspector_vars->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	inspector_vars->connect("property_edited", callable_mp(this, &DynamicFontImportSettings::_variation_changed));
+	inspector_vars->set_property_name_style(EditorPropertyNameProcessor::get_singleton()->get_settings_style());
 	page2_side_vb->add_child(inspector_vars);
 
 	VBoxContainer *preload_pages_vb = memnew(VBoxContainer);
@@ -1461,6 +1474,7 @@ DynamicFontImportSettings::DynamicFontImportSettings() {
 	inspector_text->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	inspector_text->set_custom_minimum_size(Size2(300 * EDSCALE, 250 * EDSCALE));
 	inspector_text->connect("property_edited", callable_mp(this, &DynamicFontImportSettings::_change_text_opts));
+	inspector_text->set_property_name_style(EditorPropertyNameProcessor::get_singleton()->get_settings_style());
 	page2_1_hb->add_child(inspector_text);
 
 	text_edit = memnew(TextEdit);
