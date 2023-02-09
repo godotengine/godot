@@ -1439,27 +1439,32 @@ GDScriptParser::AnnotationNode *GDScriptParser::parse_annotation(uint32_t p_vali
 		valid = false;
 	}
 
-	if (match(GDScriptTokenizer::Token::PARENTHESIS_OPEN)) {
+	if (check(GDScriptTokenizer::Token::PARENTHESIS_OPEN)) {
+		push_multiline(true);
+		advance();
 		// Arguments.
 		push_completion_call(annotation);
 		make_completion_context(COMPLETION_ANNOTATION_ARGUMENTS, annotation, 0, true);
-		if (!check(GDScriptTokenizer::Token::PARENTHESIS_CLOSE) && !is_at_end()) {
-			push_multiline(true);
-			int argument_index = 0;
-			do {
-				make_completion_context(COMPLETION_ANNOTATION_ARGUMENTS, annotation, argument_index, true);
-				set_last_completion_call_arg(argument_index++);
-				ExpressionNode *argument = parse_expression(false);
-				if (argument == nullptr) {
-					valid = false;
-					continue;
-				}
-				annotation->arguments.push_back(argument);
-			} while (match(GDScriptTokenizer::Token::COMMA));
-			pop_multiline();
+		int argument_index = 0;
+		do {
+			if (check(GDScriptTokenizer::Token::PARENTHESIS_CLOSE)) {
+				// Allow for trailing comma.
+				break;
+			}
 
-			consume(GDScriptTokenizer::Token::PARENTHESIS_CLOSE, R"*(Expected ")" after annotation arguments.)*");
-		}
+			make_completion_context(COMPLETION_ANNOTATION_ARGUMENTS, annotation, argument_index, true);
+			set_last_completion_call_arg(argument_index++);
+			ExpressionNode *argument = parse_expression(false);
+			if (argument == nullptr) {
+				push_error("Expected expression as the annotation argument.");
+				valid = false;
+				continue;
+			}
+			annotation->arguments.push_back(argument);
+		} while (match(GDScriptTokenizer::Token::COMMA) && !is_at_end());
+
+		pop_multiline();
+		consume(GDScriptTokenizer::Token::PARENTHESIS_CLOSE, R"*(Expected ")" after annotation arguments.)*");
 		pop_completion_call();
 	}
 	complete_extents(annotation);
