@@ -2145,7 +2145,12 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_precedence(Precedence p_pr
 	make_completion_context(COMPLETION_IDENTIFIER, nullptr);
 
 	GDScriptTokenizer::Token token = current;
-	ParseFunction prefix_rule = get_rule(token.type)->prefix;
+	GDScriptTokenizer::Token::Type token_type = token.type;
+	if (token.is_identifier()) {
+		// Allow keywords that can be treated as identifiers.
+		token_type = GDScriptTokenizer::Token::IDENTIFIER;
+	}
+	ParseFunction prefix_rule = get_rule(token_type)->prefix;
 
 	if (prefix_rule == nullptr) {
 		// Expected expression. Let the caller give the proper error message.
@@ -3010,7 +3015,14 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_get_node(ExpressionNode *p
 			path_state = PATH_STATE_NODE_NAME;
 		} else if (current.is_node_name()) {
 			advance();
-			get_node->full_path += previous.get_identifier();
+			String identifier = previous.get_identifier();
+#ifdef DEBUG_ENABLED
+			// Check spoofing.
+			if (TS->has_feature(TextServer::FEATURE_UNICODE_SECURITY) && TS->spoof_check(identifier)) {
+				push_warning(get_node, GDScriptWarning::CONFUSABLE_IDENTIFIER, identifier);
+			}
+#endif
+			get_node->full_path += identifier;
 
 			path_state = PATH_STATE_NODE_NAME;
 		} else if (!check(GDScriptTokenizer::Token::SLASH) && !check(GDScriptTokenizer::Token::PERCENT)) {
