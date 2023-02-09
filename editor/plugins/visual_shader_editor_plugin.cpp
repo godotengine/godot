@@ -4929,8 +4929,8 @@ void VisualShaderEditor::_show_preview_text() {
 	preview_showed = !preview_showed;
 	if (preview_showed) {
 		if (preview_first) {
-			preview_window->set_size(Size2(400 * EDSCALE, 600 * EDSCALE));
 			preview_window->popup_centered();
+			preview_window->set_size(Size2(400 * EDSCALE, 600 * EDSCALE));
 			preview_first = false;
 		} else {
 			preview_window->popup();
