@@ -1134,7 +1134,6 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 		SUBCASE("[TextEdit] text drag") {
 			TextEdit *target_text_edit = memnew(TextEdit);
 			SceneTree::get_singleton()->get_root()->add_child(target_text_edit);
-			text_edit->get_viewport()->set_embedding_subwindows(true); // Bypass display server for drop handling.
 
 			target_text_edit->set_size(Size2(200, 200));
 			target_text_edit->set_position(Point2(400, 0));
@@ -3082,8 +3081,6 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 TEST_CASE("[SceneTree][TextEdit] context menu") {
 	TextEdit *text_edit = memnew(TextEdit);
 	SceneTree::get_singleton()->get_root()->add_child(text_edit);
-
-	text_edit->get_viewport()->set_embedding_subwindows(true); // Bypass display server for drop handling.
 
 	text_edit->set_size(Size2(800, 200));
 	text_edit->set_line(0, "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec vasius mattis leo, sed porta ex lacinia bibendum. Nunc bibendum pellentesque.");
