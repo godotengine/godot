@@ -446,7 +446,8 @@ EditorLocaleDialog::EditorLocaleDialog() {
 			vb_script_list->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 			{
 				Label *script_lbl = memnew(Label);
-				script_lbl->set_text(TTR("Script:"));
+				// TRANSLATORS: This is the label for a list of writing systems.
+				script_lbl->set_text(TTR("Script:", "Locale"));
 				vb_script_list->add_child(script_lbl);
 			}
 			{
@@ -504,7 +505,8 @@ EditorLocaleDialog::EditorLocaleDialog() {
 				vb_script->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 				{
 					Label *script_lbl = memnew(Label);
-					script_lbl->set_text(TTR("Script"));
+					// TRANSLATORS: This refers to a writing system.
+					script_lbl->set_text(TTR("Script", "Locale"));
 					vb_script->add_child(script_lbl);
 				}
 				{

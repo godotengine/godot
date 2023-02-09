@@ -182,7 +182,7 @@ private:
 	}
 
 	void _set_unexpected_token_error(const String &p_what, int p_line) {
-		set_error(vformat(RTR("Unexpected token '%s'."), p_what), p_line);
+		set_error(vformat(RTR("Unexpected token: '%s'."), p_what), p_line);
 	}
 
 	void process_directive(Tokenizer *p_tokenizer);
