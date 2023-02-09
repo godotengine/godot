@@ -43,8 +43,8 @@ extern int godot_audio_has_script_processor();
 extern int godot_audio_init(int *p_mix_rate, int p_latency, void (*_state_cb)(int), void (*_latency_cb)(float));
 extern void godot_audio_resume();
 
-extern int godot_audio_capture_start();
-extern void godot_audio_capture_stop();
+extern int godot_audio_input_start();
+extern void godot_audio_input_stop();
 
 // Worklet
 typedef int32_t GodotAudioState[4];
