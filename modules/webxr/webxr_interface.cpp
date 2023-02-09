@@ -46,6 +46,9 @@ void WebXRInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_input_source_tracker", "input_source_id"), &WebXRInterface::get_input_source_tracker);
 	ClassDB::bind_method(D_METHOD("get_input_source_target_ray_mode", "input_source_id"), &WebXRInterface::get_input_source_target_ray_mode);
 	ClassDB::bind_method(D_METHOD("get_visibility_state"), &WebXRInterface::get_visibility_state);
+	ClassDB::bind_method(D_METHOD("get_display_refresh_rate"), &WebXRInterface::get_display_refresh_rate);
+	ClassDB::bind_method(D_METHOD("set_display_refresh_rate", "refresh_rate"), &WebXRInterface::set_display_refresh_rate);
+	ClassDB::bind_method(D_METHOD("get_available_display_refresh_rates"), &WebXRInterface::get_available_display_refresh_rates);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "session_mode", PROPERTY_HINT_NONE), "set_session_mode", "get_session_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "required_features", PROPERTY_HINT_NONE), "set_required_features", "get_required_features");
@@ -68,6 +71,7 @@ void WebXRInterface::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("visibility_state_changed"));
 	ADD_SIGNAL(MethodInfo("reference_space_reset"));
+	ADD_SIGNAL(MethodInfo("display_refresh_rate_changed"));
 
 	BIND_ENUM_CONSTANT(TARGET_RAY_MODE_UNKNOWN);
 	BIND_ENUM_CONSTANT(TARGET_RAY_MODE_GAZE);

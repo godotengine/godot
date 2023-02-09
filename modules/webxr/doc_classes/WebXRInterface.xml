@@ -93,6 +93,18 @@
 		<link title="How to make a VR game for WebXR with Godot 4">https://www.snopekgames.com/tutorial/2023/how-make-vr-game-webxr-godot-4</link>
 	</tutorials>
 	<methods>
+		<method name="get_available_display_refresh_rates" qualifiers="const">
+			<return type="Array" />
+			<description>
+				Returns display refresh rates supported by the current HMD. Only returned if this feature is supported by the web browser and after the interface has been initialized.
+			</description>
+		</method>
+		<method name="get_display_refresh_rate" qualifiers="const">
+			<return type="float" />
+			<description>
+				Returns the display refresh rate for the current HMD. Not supported on all HMDs and browsers. It may not report an accurate value until after using [method set_display_refresh_rate].
+			</description>
+		</method>
 		<method name="get_input_source_target_ray_mode" qualifiers="const">
 			<return type="int" enum="WebXRInterface.TargetRayMode" />
 			<param index="0" name="input_source_id" type="int" />
@@ -132,6 +144,13 @@
 				This method returns nothing, instead it emits the [signal session_supported] signal with the result.
 			</description>
 		</method>
+		<method name="set_display_refresh_rate">
+			<return type="void" />
+			<param index="0" name="refresh_rate" type="float" />
+			<description>
+				Sets the display refresh rate for the current HMD. Not supported on all HMDs and browsers. It won't take effect right away until after [signal display_refresh_rate_changed] is emitted.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="optional_features" type="String" setter="set_optional_features" getter="get_optional_features">
@@ -167,6 +186,11 @@
 		</member>
 	</members>
 	<signals>
+		<signal name="display_refresh_rate_changed">
+			<description>
+				Emitted after the display's refresh rate has changed.
+			</description>
+		</signal>
 		<signal name="reference_space_reset">
 			<description>
 				Emitted to indicate that the reference space has been reset or reconfigured.
