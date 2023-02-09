@@ -401,7 +401,7 @@
 			<param index="1" name="grayscale" type="bool" default="false" />
 			<description>
 				Saves the image as an EXR file to [param path]. If [param grayscale] is [code]true[/code] and the image has only one channel, it will be saved explicitly as monochrome rather than one red channel. This function will return [constant ERR_UNAVAILABLE] if Godot was compiled without the TinyEXR module.
-				[b]Note:[/b] The TinyEXR module is disabled in non-editor builds, which means [method save_exr] will return [constant ERR_UNAVAILABLE] when it is called from an exported project.
+				[b]Note:[/b] The TinyEXR module is disabled in official non-editor builds, which means [method save_exr] will return [constant ERR_UNAVAILABLE] when it is called from an exported project. In self-compiled export template builds, [method save_exr] will be functional if the export template was compiled with the [code]tinyexr_export_templates=yes[/code] SCons option.
 			</description>
 		</method>
 		<method name="save_exr_to_buffer" qualifiers="const">
@@ -409,7 +409,7 @@
 			<param index="0" name="grayscale" type="bool" default="false" />
 			<description>
 				Saves the image as an EXR file to a byte array. If [param grayscale] is [code]true[/code] and the image has only one channel, it will be saved explicitly as monochrome rather than one red channel. This function will return an empty byte array if Godot was compiled without the TinyEXR module.
-				[b]Note:[/b] The TinyEXR module is disabled in non-editor builds, which means [method save_exr] will return an empty byte array when it is called from an exported project.
+				[b]Note:[/b] The TinyEXR module is disabled in official non-editor builds, which means [method save_exr] will return an empty byte array when it is called from an exported project. In self-compiled export template builds, [method save_exr_to_buffer] will be functional if the export template was compiled with the [code]tinyexr_export_templates=yes[/code] SCons option.
 			</description>
 		</method>
 		<method name="save_jpg" qualifiers="const">
@@ -448,7 +448,7 @@
 			<param index="1" name="lossy" type="bool" default="false" />
 			<param index="2" name="quality" type="float" default="0.75" />
 			<description>
-				Saves the image as a WebP (Web Picture) file to the file at [param path]. By default it will save lossless. If [param lossy] is true, the image will be saved lossy, using the [param quality] setting between 0.0 and 1.0 (inclusive).
+				Saves the image as a WebP (Web Picture) file to the file at [param path]. This format generally provides a better file-size-to-quality ratio compared to JPEG and PNG, but is slower to write. By default, [method save_webp] saves with lossless compression. If [param lossy] is [code]true[/code], the image will be saved with lossy compression using the specified [param quality] between [code]0.0[/code] and [code]1.0[/code] (inclusive). Note that lossy compression at quality [code]1.0[/code] still has visible degradation, unlike lossless compression.
 			</description>
 		</method>
 		<method name="save_webp_to_buffer" qualifiers="const">
@@ -456,7 +456,7 @@
 			<param index="0" name="lossy" type="bool" default="false" />
 			<param index="1" name="quality" type="float" default="0.75" />
 			<description>
-				Saves the image as a WebP (Web Picture) file to a byte array. By default it will save lossless. If [param lossy] is true, the image will be saved lossy, using the [param quality] setting between 0.0 and 1.0 (inclusive).
+				Saves the image as a WebP (Web Picture) file to a byte array. This format generally provides a better file-size-to-quality ratio compared to JPEG and PNG. By default, [method save_webp_to_buffer] saves with lossless compression. If [param lossy] is [code]true[/code], the image will be saved with lossy compression using the specified [param quality] between [code]0.0[/code] and [code]1.0[/code] (inclusive). Note that lossy compression at quality [code]1.0[/code] still has visible degradation, unlike lossless compression.
 			</description>
 		</method>
 		<method name="set_data">
