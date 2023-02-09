@@ -2635,9 +2635,18 @@ void Node::_set_tree(SceneTree *p_tree) {
 	if (data.tree) {
 		// split autoload nodes and normal nodes to ensure correct initialization order
 		_do_enter_tree();
-		_propagate_enter_tree(PropagateNodeType::AUTOLOAD);
-		if (!data.parent || data.parent->data.ready_notified) { // No parent (root) or parent ready
-			_propagate_ready(PropagateNodeType::AUTOLOAD); //reverse_notification(NOTIFICATION_READY);
+
+		// separately init autoload nodes to ensure that each next autoload can access previous autoloads in completely initialized state
+		Vector<Node *> autoloads = _get_children_to_propagate(PropagateNodeType::AUTOLOAD);
+		for (Node *node : autoloads) {
+			if (!node->is_inside_tree()) { // could have been added in enter_tree
+				node->_do_enter_tree();
+				node->_propagate_enter_tree(PropagateNodeType::EVERYONE);
+				if (!data.parent || data.parent->data.ready_notified) {
+					node->_propagate_ready(PropagateNodeType::EVERYONE);
+					node->_do_ready();
+				}
+			}
 		}
 
 		_propagate_enter_tree(PropagateNodeType::NORMAL_NODE);
