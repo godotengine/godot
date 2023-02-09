@@ -1462,7 +1462,7 @@ void Window::popup_centered(const Size2i &p_minsize) {
 	}
 
 	Rect2i popup_rect;
-	popup_rect.size = _clamp_window_size(p_minsize);
+	popup_rect.size = _clamp_window_size(get_size().max(p_minsize));
 
 	if (parent_rect != Rect2()) {
 		popup_rect.position = parent_rect.position + (parent_rect.size - popup_rect.size) / 2;
