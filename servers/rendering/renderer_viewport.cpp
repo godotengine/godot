@@ -844,7 +844,7 @@ void RendererViewport::viewport_set_scaling_3d_scale(RID p_viewport, float p_sca
 }
 
 void RendererViewport::viewport_set_size(RID p_viewport, int p_width, int p_height) {
-	ERR_FAIL_COND(p_width < 0 && p_height < 0);
+	ERR_FAIL_COND(p_width < 0 || p_height < 0);
 
 	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_COND(!viewport);
