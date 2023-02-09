@@ -49,6 +49,11 @@ class Slider : public Range {
 	bool editable = true;
 	bool scrollable = true;
 
+	const int DEFAULT_GAMEPAD_EVENT_REPEAT_RATE = 20;
+	const float DEFAULT_GAMEPAD_EVENT_DELAY_MS = 0.5;
+	float gamepad_event_repeat_rate_ms = 0.25;
+	float gamepad_event_delay_ms = 0.5;
+
 	struct ThemeCache {
 		Ref<StyleBox> slider_style;
 		Ref<StyleBox> grabber_area_style;

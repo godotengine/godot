@@ -131,6 +131,11 @@ class PopupMenu : public Popup {
 	ScrollContainer *scroll_container = nullptr;
 	Control *control = nullptr;
 
+	const int DEFAULT_GAMEPAD_EVENT_REPEAT_RATE = 20;
+	const float DEFAULT_GAMEPAD_EVENT_DELAY_MS = 0.5;
+	float gamepad_event_repeat_rate_ms = 0.25;
+	float gamepad_event_delay_ms = 0.5;
+
 	struct ThemeCache {
 		Ref<StyleBox> panel_style;
 		Ref<StyleBox> hover_style;
