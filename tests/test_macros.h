@@ -209,7 +209,6 @@ int register_test_command(String p_command, TestFunc p_function);
 		event.instantiate();                                          \
 		event->set_position(m_screen_pos);                            \
 		event->set_button_mask(m_mask);                               \
-		event->set_relative(Vector2(10, 10));                         \
 		_UPDATE_EVENT_MODIFERS(event, m_modifers);                    \
 		_SEND_DISPLAYSERVER_EVENT(event);                             \
 		MessageQueue::get_singleton()->flush();                       \
