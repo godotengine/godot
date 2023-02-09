@@ -459,9 +459,8 @@ real_t NavigationAgent3D::get_path_max_distance() {
 }
 
 void NavigationAgent3D::set_target_position(Vector3 p_position) {
-	if (target_position.is_equal_approx(p_position)) {
-		return;
-	}
+	// Intentionally not checking for equality of the parameter, as we want to update the path even if the target position is the same in case the world changed.
+	// Revisit later when the navigation server can update the path without requesting a new path.
 
 	target_position = p_position;
 	target_position_submitted = true;
@@ -514,9 +513,9 @@ Vector3 NavigationAgent3D::get_final_position() {
 }
 
 void NavigationAgent3D::set_velocity(Vector3 p_velocity) {
-	if (target_velocity.is_equal_approx(p_velocity)) {
-		return;
-	}
+	// Intentionally not checking for equality of the parameter.
+	// We need to always submit the velocity to the navigation server, even when it is the same, in order to run avoidance every frame.
+	// Revisit later when the navigation server can update avoidance without users resubmitting the velocity.
 
 	target_velocity = p_velocity;
 	velocity_submitted = true;
