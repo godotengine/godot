@@ -4434,7 +4434,7 @@ GDScriptParser::DataType GDScriptAnalyzer::type_from_property(const PropertyInfo
 			// Check if it's enum.
 			if (p_property.class_name != StringName()) {
 				Vector<String> names = String(p_property.class_name).split(".");
-				if (names.size() == 2) {
+				if (names.size() == 2 && names[0] != "Variant") {
 					result = make_native_enum_type(names[1], names[0], false);
 					result.is_constant = false;
 				}
