@@ -253,7 +253,8 @@ EditorNetworkProfiler::EditorNetworkProfiler() {
 	hb->add_spacer();
 
 	Label *lb = memnew(Label);
-	lb->set_text(TTR("Down"));
+	// TRANSLATORS: This is the label for the network profiler's incoming bandwidth.
+	lb->set_text(TTR("Down", "Network"));
 	hb->add_child(lb);
 
 	incoming_bandwidth_text = memnew(LineEdit);
@@ -267,7 +268,8 @@ EditorNetworkProfiler::EditorNetworkProfiler() {
 	hb->add_child(down_up_spacer);
 
 	lb = memnew(Label);
-	lb->set_text(TTR("Up"));
+	// TRANSLATORS: This is the label for the network profiler's outgoing bandwidth.
+	lb->set_text(TTR("Up", "Network"));
 	hb->add_child(lb);
 
 	outgoing_bandwidth_text = memnew(LineEdit);
