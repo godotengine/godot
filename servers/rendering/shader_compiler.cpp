@@ -1151,6 +1151,9 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 
 					bool is_texture_func = false;
 					bool is_screen_texture = false;
+					bool texture_func_no_uv = false;
+					bool texture_func_returns_data = false;
+
 					if (onode->op == SL::OP_STRUCT) {
 						code += _mkid(vnode->name);
 					} else if (onode->op == SL::OP_CONSTRUCT) {
@@ -1164,6 +1167,8 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 						if (is_internal_func) {
 							code += vnode->name;
 							is_texture_func = texture_functions.has(vnode->name);
+							texture_func_no_uv = (vnode->name == "textureSize" || vnode->name == "textureQueryLevels");
+							texture_func_returns_data = texture_func_no_uv || vnode->name == "textureQueryLod";
 						} else if (p_default_actions.renames.has(vnode->name)) {
 							code += p_default_actions.renames[vnode->name];
 						} else {
@@ -1313,7 +1318,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 							} else {
 								code += node_code;
 							}
-						} else if (multiview_uv_needed && i == 2) {
+						} else if (multiview_uv_needed && !texture_func_no_uv && i == 2) {
 							// UV coordinate after using color, depth or normal roughness texture.
 							node_code = "multiview_uv(" + node_code + ".xy)";
 
@@ -1323,7 +1328,7 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 						}
 					}
 					code += ")";
-					if (is_screen_texture && actions.apply_luminance_multiplier) {
+					if (is_screen_texture && !texture_func_returns_data && actions.apply_luminance_multiplier) {
 						code = "(" + code + " * vec4(vec3(sc_luminance_multiplier), 1.0))";
 					}
 				} break;
