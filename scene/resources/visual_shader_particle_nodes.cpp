@@ -1392,7 +1392,15 @@ String VisualShaderNodeParticleOutput::generate_code(Shader::Mode p_mode, Visual
 
 		// position
 		if (shader_type == VisualShader::TYPE_START) {
-			code += tab + "CUSTOM.x = TIME;\n";
+			// By convention (as established by the default ParticlesProcessMaterial shader code),
+			// `CUSTOM.y` holds the progress of the particle over the default lifetime configured
+			// for the particle system.
+			code += tab + "CUSTOM.y = 0.0;\n";
+
+			// In ParticlesProcessMaterial's shader code, `CUSTOM.w` is set to the randomized lifetime
+			// ratio of the particle (a 0.0-1.0 value.)
+			code += tab + "CUSTOM.w = 1.0;\n";
+
 			code += tab + "if (RESTART_POSITION) {\n";
 			if (!p_input_vars[4].is_empty()) {
 				code += tab + "	TRANSFORM = mat4(vec4(1.0, 0.0, 0.0, 0.0), vec4(0.0, 1.0, 0.0, 0.0), vec4(0.0, 0.0, 1.0, 0.0), vec4(" + p_input_vars[4] + ", 1.0));\n";
@@ -1408,6 +1416,10 @@ String VisualShaderNodeParticleOutput::generate_code(Shader::Mode p_mode, Visual
 			if (!p_input_vars[4].is_empty()) {
 				code += tab + "TRANSFORM = " + p_input_vars[4] + ";\n";
 			}
+		}
+
+		if (shader_type == VisualShader::TYPE_PROCESS) {
+			code += tab + "CUSTOM.y += DELTA / (LIFETIME * CUSTOM.w);\n\n";
 		}
 
 		if (shader_type == VisualShader::TYPE_START || shader_type == VisualShader::TYPE_PROCESS) {
