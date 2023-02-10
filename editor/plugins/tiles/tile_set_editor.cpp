@@ -687,7 +687,7 @@ void TileSetEditor::_undo_redo_inspector_callback(Object *p_undo_redo, Object *p
 
 void TileSetEditor::edit(Ref<TileSet> p_tile_set) {
 	bool new_read_only_state = false;
-	if (tile_set.is_valid()) {
+	if (p_tile_set.is_valid()) {
 		new_read_only_state = EditorNode::get_singleton()->is_resource_read_only(p_tile_set);
 	}
 
