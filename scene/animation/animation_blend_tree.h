@@ -111,9 +111,9 @@ private:
 	double fade_in = 0.0;
 	double fade_out = 0.0;
 
-	bool autorestart = false;
-	double autorestart_delay = 1.0;
-	double autorestart_random_delay = 0.0;
+	bool auto_restart = false;
+	double auto_restart_delay = 1.0;
+	double auto_restart_random_delay = 0.0;
 	MixMode mix = MIX_MODE_BLEND;
 
 	StringName request = PNAME("request");
@@ -123,6 +123,10 @@ private:
 	StringName time_to_restart = "time_to_restart";
 
 protected:
+#ifndef DISABLE_DEPRECATED
+	bool _get(const StringName &p_path, Variant &r_ret) const;
+	bool _set(const StringName &p_path, const Variant &p_value);
+#endif
 	static void _bind_methods();
 
 public:
@@ -132,19 +136,19 @@ public:
 
 	virtual String get_caption() const override;
 
-	void set_fadein_time(double p_time);
-	void set_fadeout_time(double p_time);
+	void set_fade_in_time(double p_time);
+	void set_fade_out_time(double p_time);
 
-	double get_fadein_time() const;
-	double get_fadeout_time() const;
+	double get_fade_in_time() const;
+	double get_fade_out_time() const;
 
-	void set_autorestart(bool p_active);
-	void set_autorestart_delay(double p_time);
-	void set_autorestart_random_delay(double p_time);
+	void set_auto_restart_enabled(bool p_enabled);
+	void set_auto_restart_delay(double p_time);
+	void set_auto_restart_random_delay(double p_time);
 
-	bool has_autorestart() const;
-	double get_autorestart_delay() const;
-	double get_autorestart_random_delay() const;
+	bool is_auto_restart_enabled() const;
+	double get_auto_restart_delay() const;
+	double get_auto_restart_random_delay() const;
 
 	void set_mix_mode(MixMode p_mix);
 	MixMode get_mix_mode() const;
