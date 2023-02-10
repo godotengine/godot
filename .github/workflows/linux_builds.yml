@@ -78,8 +78,8 @@ jobs:
       - name: Linux dependencies for tests
         if: ${{ matrix.proj-test }}
         run: |
+          sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list
           sudo add-apt-repository ppa:kisak/kisak-mesa
-          sudo apt-get update
           sudo apt-get install -qq mesa-vulkan-drivers
 
       - name: Setup Godot build cache
