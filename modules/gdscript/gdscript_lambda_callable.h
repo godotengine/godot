@@ -40,21 +40,33 @@ class GDScript;
 class GDScriptFunction;
 class GDScriptInstance;
 
-class GDScriptLambdaCallable : public CallableCustom {
-	GDScriptFunction *function = nullptr;
-	Ref<GDScript> script;
+class GDScriptLambdaCallableBase : public CallableCustom {
+
+protected:
+	GDScriptFunction* function = nullptr;
+
+private:
 	uint32_t h;
 
-	Vector<Variant> captures;
-
-	static bool compare_equal(const CallableCustom *p_a, const CallableCustom *p_b);
-	static bool compare_less(const CallableCustom *p_a, const CallableCustom *p_b);
+	static bool compare_equal(const CallableCustom* p_a, const CallableCustom* p_b);
+	static bool compare_less(const CallableCustom* p_a, const CallableCustom* p_b);
 
 public:
 	uint32_t hash() const override;
 	String get_as_text() const override;
 	CompareEqualFunc get_compare_equal_func() const override;
 	CompareLessFunc get_compare_less_func() const override;
+	StringName get_method() const override;
+
+	GDScriptLambdaCallableBase(GDScriptFunction* p_function);
+	virtual ~GDScriptLambdaCallableBase() = default;
+};
+
+class GDScriptLambdaCallable : public GDScriptLambdaCallableBase {
+	Ref<GDScript> script;
+	Vector<Variant> captures;
+
+public:
 	ObjectID get_object() const override;
 	void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override;
 
@@ -63,22 +75,12 @@ public:
 };
 
 // Lambda callable that references a particular object, so it can use `self` in the body.
-class GDScriptLambdaSelfCallable : public CallableCustom {
-	GDScriptFunction *function = nullptr;
+class GDScriptLambdaSelfCallable : public GDScriptLambdaCallableBase {
 	Ref<RefCounted> reference; // For objects that are RefCounted, keep a reference.
 	Object *object = nullptr; // For non RefCounted objects, use a direct pointer.
-	uint32_t h;
-
 	Vector<Variant> captures;
 
-	static bool compare_equal(const CallableCustom *p_a, const CallableCustom *p_b);
-	static bool compare_less(const CallableCustom *p_a, const CallableCustom *p_b);
-
 public:
-	uint32_t hash() const override;
-	String get_as_text() const override;
-	CompareEqualFunc get_compare_equal_func() const override;
-	CompareLessFunc get_compare_less_func() const override;
 	ObjectID get_object() const override;
 	void call(const Variant **p_arguments, int p_argcount, Variant &r_return_value, Callable::CallError &r_call_error) const override;
 

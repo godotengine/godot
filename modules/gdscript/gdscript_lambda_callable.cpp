@@ -33,33 +33,45 @@
 #include "core/templates/hashfuncs.h"
 #include "gdscript.h"
 
-bool GDScriptLambdaCallable::compare_equal(const CallableCustom *p_a, const CallableCustom *p_b) {
+bool GDScriptLambdaCallableBase::compare_equal(const CallableCustom *p_a, const CallableCustom *p_b) {
 	// Lambda callables are only compared by reference.
 	return p_a == p_b;
 }
 
-bool GDScriptLambdaCallable::compare_less(const CallableCustom *p_a, const CallableCustom *p_b) {
+bool GDScriptLambdaCallableBase::compare_less(const CallableCustom *p_a, const CallableCustom *p_b) {
 	// Lambda callables are only compared by reference.
 	return p_a < p_b;
 }
 
-uint32_t GDScriptLambdaCallable::hash() const {
+uint32_t GDScriptLambdaCallableBase::hash() const {
 	return h;
 }
 
-String GDScriptLambdaCallable::get_as_text() const {
-	if (function->get_name() != StringName()) {
+String GDScriptLambdaCallableBase::get_as_text() const {
+	if (function->get_name() != "<anonymous lambda>") {
 		return function->get_name().operator String() + "(lambda)";
 	}
 	return "(anonymous lambda)";
 }
 
-CallableCustom::CompareEqualFunc GDScriptLambdaCallable::get_compare_equal_func() const {
+CallableCustom::CompareEqualFunc GDScriptLambdaCallableBase::get_compare_equal_func() const {
 	return compare_equal;
 }
 
-CallableCustom::CompareLessFunc GDScriptLambdaCallable::get_compare_less_func() const {
+CallableCustom::CompareLessFunc GDScriptLambdaCallableBase::get_compare_less_func() const {
 	return compare_less;
+}
+
+StringName GDScriptLambdaCallableBase::get_method() const {
+	if (function->get_name() != "<anonymous lambda>") {
+		return function->get_name();
+	}
+	return StringName();
+}
+
+GDScriptLambdaCallableBase::GDScriptLambdaCallableBase(GDScriptFunction* p_function) {
+	function = p_function;
+	h = (uint32_t)hash_murmur3_one_64((uint64_t)this);
 }
 
 ObjectID GDScriptLambdaCallable::get_object() const {
@@ -86,41 +98,10 @@ void GDScriptLambdaCallable::call(const Variant **p_arguments, int p_argcount, V
 	}
 }
 
-GDScriptLambdaCallable::GDScriptLambdaCallable(Ref<GDScript> p_script, GDScriptFunction *p_function, const Vector<Variant> &p_captures) {
+GDScriptLambdaCallable::GDScriptLambdaCallable(Ref<GDScript> p_script, GDScriptFunction *p_function, const Vector<Variant> &p_captures)
+	: GDScriptLambdaCallableBase(p_function) {
 	script = p_script;
-	function = p_function;
 	captures = p_captures;
-
-	h = (uint32_t)hash_murmur3_one_64((uint64_t)this);
-}
-
-bool GDScriptLambdaSelfCallable::compare_equal(const CallableCustom *p_a, const CallableCustom *p_b) {
-	// Lambda callables are only compared by reference.
-	return p_a == p_b;
-}
-
-bool GDScriptLambdaSelfCallable::compare_less(const CallableCustom *p_a, const CallableCustom *p_b) {
-	// Lambda callables are only compared by reference.
-	return p_a < p_b;
-}
-
-uint32_t GDScriptLambdaSelfCallable::hash() const {
-	return h;
-}
-
-String GDScriptLambdaSelfCallable::get_as_text() const {
-	if (function->get_name() != StringName()) {
-		return function->get_name().operator String() + "(lambda)";
-	}
-	return "(anonymous lambda)";
-}
-
-CallableCustom::CompareEqualFunc GDScriptLambdaSelfCallable::get_compare_equal_func() const {
-	return compare_equal;
-}
-
-CallableCustom::CompareLessFunc GDScriptLambdaSelfCallable::get_compare_less_func() const {
-	return compare_less;
 }
 
 ObjectID GDScriptLambdaSelfCallable::get_object() const {
@@ -155,19 +136,15 @@ void GDScriptLambdaSelfCallable::call(const Variant **p_arguments, int p_argcoun
 	}
 }
 
-GDScriptLambdaSelfCallable::GDScriptLambdaSelfCallable(Ref<RefCounted> p_self, GDScriptFunction *p_function, const Vector<Variant> &p_captures) {
+GDScriptLambdaSelfCallable::GDScriptLambdaSelfCallable(Ref<RefCounted> p_self, GDScriptFunction *p_function, const Vector<Variant> &p_captures)
+	: GDScriptLambdaCallableBase(p_function) {
 	reference = p_self;
 	object = p_self.ptr();
-	function = p_function;
 	captures = p_captures;
-
-	h = (uint32_t)hash_murmur3_one_64((uint64_t)this);
 }
 
-GDScriptLambdaSelfCallable::GDScriptLambdaSelfCallable(Object *p_self, GDScriptFunction *p_function, const Vector<Variant> &p_captures) {
+GDScriptLambdaSelfCallable::GDScriptLambdaSelfCallable(Object *p_self, GDScriptFunction *p_function, const Vector<Variant> &p_captures)
+	: GDScriptLambdaCallableBase(p_function) {
 	object = p_self;
-	function = p_function;
 	captures = p_captures;
-
-	h = (uint32_t)hash_murmur3_one_64((uint64_t)this);
 }
