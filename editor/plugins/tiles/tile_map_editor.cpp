@@ -1277,7 +1277,7 @@ void TileMapEditorTilesPlugin::_stop_dragging() {
 					tile_map->set_cell(tile_map_layer, kv.key, kv.value.source_id, kv.value.get_atlas_coords(), kv.value.alternative_tile);
 				}
 
-				if (EditorNode::get_singleton()->is_resource_read_only(tile_set)) {
+				if (!EditorNode::get_singleton()->is_resource_read_only(tile_set)) {
 					// Creating a pattern in the pattern list.
 					select_last_pattern = true;
 					int new_pattern_index = tile_set->get_patterns_count();
