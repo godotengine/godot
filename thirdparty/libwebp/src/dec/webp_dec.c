@@ -179,7 +179,7 @@ static VP8StatusCode ParseOptionalChunks(const uint8_t** const data,
       return VP8_STATUS_BITSTREAM_ERROR;          // Not a valid chunk size.
     }
     // For odd-sized chunk-payload, there's one byte padding at the end.
-    disk_chunk_size = (CHUNK_HEADER_SIZE + chunk_size + 1) & ~1;
+    disk_chunk_size = (CHUNK_HEADER_SIZE + chunk_size + 1) & ~1u;
     total_size += disk_chunk_size;
 
     // Check that total bytes skipped so far does not exceed riff_size.
