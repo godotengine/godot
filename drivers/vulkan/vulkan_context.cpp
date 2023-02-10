@@ -741,6 +741,8 @@ Error VulkanContext::_check_capabilities() {
 	storage_buffer_capabilities.storage_push_constant_16_is_supported = false;
 	storage_buffer_capabilities.storage_input_output_16 = false;
 	graphics_pipeline_library_capabilities.graphics_pipeline_library_supported = false;
+	graphics_pipeline_library_capabilities.fast_link = false;
+	graphics_pipeline_library_capabilities.independent_interpolation_decoration = false;
 
 	if (is_instance_extension_enabled(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME)) {
 		// Check for extended features.
@@ -876,6 +878,7 @@ Error VulkanContext::_check_capabilities() {
 			device_properties_func = (PFN_vkGetPhysicalDeviceProperties2)vkGetInstanceProcAddr(inst, "vkGetPhysicalDeviceProperties2KHR");
 		}
 		if (device_properties_func != nullptr) {
+			VkPhysicalDeviceGraphicsPipelineLibraryPropertiesEXT gplProperties{};
 			VkPhysicalDeviceFragmentShadingRatePropertiesKHR vrsProperties{};
 			VkPhysicalDeviceMultiviewProperties multiviewProperties{};
 			VkPhysicalDeviceSubgroupProperties subgroupProperties{};
@@ -901,6 +904,13 @@ Error VulkanContext::_check_capabilities() {
 				vrsProperties.pNext = nextptr;
 
 				nextptr = &vrsProperties;
+			}
+
+			if(graphics_pipeline_library_capabilities.graphics_pipeline_library_supported){
+				gplProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_GRAPHICS_PIPELINE_LIBRARY_PROPERTIES_EXT;
+				gplProperties.pNext = nextptr;
+
+				nextptr = & gplProperties;
 			}
 
 			physicalDeviceProperties.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2;
@@ -951,6 +961,13 @@ Error VulkanContext::_check_capabilities() {
 				print_verbose("  max instances: " + itos(multiview_capabilities.max_instance_count));
 			} else {
 				print_verbose("- Vulkan multiview not supported");
+			}
+
+			if(graphics_pipeline_library_capabilities.graphics_pipeline_library_supported){
+				graphics_pipeline_library_capabilities.fast_link = gplProperties.graphicsPipelineLibraryFastLinking;
+				graphics_pipeline_library_capabilities.independent_interpolation_decoration = gplProperties.graphicsPipelineLibraryIndependentInterpolationDecoration;
+			} else {
+				print_verbose("- Vulkan graphics pipeline library not supported");
 			}
 
 			print_verbose("- Vulkan subgroup:");

@@ -95,6 +95,8 @@ public:
 
 	struct GPLCapabilities {
 		bool graphics_pipeline_library_supported;
+		bool fast_link;
+		bool independent_interpolation_decoration;
 	};
 
 private:
