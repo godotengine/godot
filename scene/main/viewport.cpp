@@ -823,11 +823,12 @@ void Viewport::_set_size(const Size2i &p_size, const Size2i &p_size_2d_override,
 		stretch_transform_new.scale(scale);
 	}
 
-	if (size == p_size && size_allocated == p_allocated && stretch_transform == stretch_transform_new && p_size_2d_override == size_2d_override) {
+	Size2i new_size = p_size.max(Size2i(2, 2));
+	if (size == new_size && size_allocated == p_allocated && stretch_transform == stretch_transform_new && p_size_2d_override == size_2d_override) {
 		return;
 	}
 
-	size = p_size;
+	size = new_size;
 	size_allocated = p_allocated;
 	size_2d_override = p_size_2d_override;
 	stretch_transform = stretch_transform_new;
