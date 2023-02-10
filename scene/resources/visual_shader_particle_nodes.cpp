@@ -1422,14 +1422,9 @@ String VisualShaderNodeParticleOutput::generate_code(Shader::Mode p_mode, Visual
 				position = 7;
 			}
 
-			code += tab + "mat4 current = TRANSFORM;\n";
+			code += tab + "vec3 currentPosition = TRANSFORM[3].xyz;\n";
+			code += tab + "vec3 currentScale = vec3(length(TRANSFORM[0].xyz), length(TRANSFORM[1].xyz), length(TRANSFORM[2].xyz));\n";
 			code += tab + "TRANSFORM = mat4(1.0);\n";
-
-			if (!p_input_vars[scale].is_empty()) { // scale
-				code += tab + "TRANSFORM[0].x = " + p_input_vars[scale] + ".x;\n";
-				code += tab + "TRANSFORM[1].y = " + p_input_vars[scale] + ".y;\n";
-				code += tab + "TRANSFORM[2].z = " + p_input_vars[scale] + ".z;\n";
-			}
 
 			if (!p_input_vars[rotation].is_empty()) { // rotation_axis & angle_in_radians
 				String axis;
@@ -1441,10 +1436,22 @@ String VisualShaderNodeParticleOutput::generate_code(Shader::Mode p_mode, Visual
 				code += tab + "TRANSFORM *= __build_rotation_mat4(" + axis + ", " + p_input_vars[rotation] + ");\n";
 			}
 
+			code += tab + "mat4 scaleMatrix = mat4(1.0);";
+			if (!p_input_vars[scale].is_empty()) { // scale
+				code += tab + "scaleMatrix[0].x = " + p_input_vars[scale] + ".x;\n";
+				code += tab + "scaleMatrix[1].y = " + p_input_vars[scale] + ".y;\n";
+				code += tab + "scaleMatrix[2].z = " + p_input_vars[scale] + ".z;\n";
+			} else {
+				code += tab + "scaleMatrix[0].x = currentScale.x;\n";
+				code += tab + "scaleMatrix[1].y = currentScale.y;\n";
+				code += tab + "scaleMatrix[2].z = currentScale.z;\n";
+			}
+			code += tab + "TRANSFORM *= scaleMatrix;\n";
+
 			if (!p_input_vars[position].is_empty()) { // position
 				code += tab + "TRANSFORM[3].xyz = " + p_input_vars[position] + ";\n";
 			} else {
-				code += tab + "TRANSFORM[3].xyz = current[3].xyz;\n";
+				code += tab + "TRANSFORM[3].xyz = currentPosition;\n";
 			}
 		}
 		if (!p_input_vars[0].is_empty()) { // Active (end).
