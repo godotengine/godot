@@ -175,7 +175,7 @@ void GDScriptParser::push_warning(const Node *p_source, GDScriptWarning::Code p_
 	warning.leftmost_column = p_source->leftmost_column;
 	warning.rightmost_column = p_source->rightmost_column;
 
-	if (warn_level == GDScriptWarning::WarnLevel::ERROR || bool(GLOBAL_GET("debug/gdscript/warnings/treat_warnings_as_errors"))) {
+	if (warn_level == GDScriptWarning::WarnLevel::ERROR) {
 		push_error(warning.get_message() + String(" (Warning treated as error.)"), p_source);
 		return;
 	}
