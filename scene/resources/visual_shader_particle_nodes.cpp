@@ -1422,7 +1422,7 @@ String VisualShaderNodeParticleOutput::generate_code(Shader::Mode p_mode, Visual
 				position = 7;
 			}
 
-			code += tab + "mat4 backup = TRANSFORM;\n";
+			code += tab + "mat4 current = TRANSFORM;\n";
 			code += tab + "TRANSFORM = mat4(1.0);\n";
 
 			if (!p_input_vars[scale].is_empty()) { // scale
@@ -1441,10 +1441,10 @@ String VisualShaderNodeParticleOutput::generate_code(Shader::Mode p_mode, Visual
 				code += tab + "TRANSFORM *= __build_rotation_mat4(" + axis + ", " + p_input_vars[rotation] + ");\n";
 			}
 
-			if (p_input_vars[position].is_empty()) { // position
-				code += tab + "TRANSFORM[3].xyz = backup[3].xyz;\n";
-			} else {
+			if (!p_input_vars[position].is_empty()) { // position
 				code += tab + "TRANSFORM[3].xyz = " + p_input_vars[position] + ";\n";
+			} else {
+				code += tab + "TRANSFORM[3].xyz = current[3].xyz;\n";
 			}
 		}
 		if (!p_input_vars[0].is_empty()) { // Active (end).
