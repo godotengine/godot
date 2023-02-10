@@ -31,10 +31,13 @@
 #ifndef TEST_VIEWPORT_H
 #define TEST_VIEWPORT_H
 
-#include "scene/2d/node_2d.h"
+#include "scene/2d/area_2d.h"
+#include "scene/2d/collision_shape_2d.h"
 #include "scene/gui/control.h"
 #include "scene/gui/subviewport_container.h"
+#include "scene/main/canvas_layer.h"
 #include "scene/main/window.h"
+#include "scene/resources/rectangle_shape_2d.h"
 
 #include "tests/test_macros.h"
 
@@ -753,6 +756,408 @@ TEST_CASE("[SceneTree][Viewport] Control mouse cursor shape") {
 		memdelete(node_c);
 		memdelete(node_b);
 		memdelete(node_a);
+	}
+}
+
+class TestArea2D : public Area2D {
+	GDCLASS(TestArea2D, Area2D);
+
+	void _on_mouse_entered() {
+		enter_id = ++TestArea2D::counter; // > 0, if activated.
+	}
+
+	void _on_mouse_exited() {
+		exit_id = ++TestArea2D::counter; // > 0, if activated.
+	}
+
+	void _on_input_event(Node *p_vp, Ref<InputEvent> p_ev, int p_shape) {
+		last_input_event = p_ev;
+	}
+
+public:
+	static int counter;
+	int enter_id = 0;
+	int exit_id = 0;
+	Ref<InputEvent> last_input_event;
+
+	void init_signals() {
+		connect(SNAME("mouse_entered"), callable_mp(this, &TestArea2D::_on_mouse_entered));
+		connect(SNAME("mouse_exited"), callable_mp(this, &TestArea2D::_on_mouse_exited));
+		connect(SNAME("input_event"), callable_mp(this, &TestArea2D::_on_input_event));
+	}
+
+	void test_reset() {
+		enter_id = 0;
+		exit_id = 0;
+		last_input_event.unref();
+	}
+};
+
+int TestArea2D::counter = 0;
+
+TEST_CASE("[SceneTree][Viewport] Physics Picking 2D") {
+	// FIXME: MOUSE_MODE_CAPTURED if-conditions are not testable, because DisplayServerMock doesn't support it.
+
+	struct PickingCollider {
+		TestArea2D *a;
+		CollisionShape2D *c;
+		Ref<RectangleShape2D> r;
+	};
+
+	SceneTree *tree = SceneTree::get_singleton();
+	Window *root = tree->get_root();
+	root->set_physics_object_picking(true);
+
+	Point2i on_background = Point2i(800, 800);
+	Point2i on_outside = Point2i(-1, -1);
+	SEND_GUI_MOUSE_MOTION_EVENT(on_background, MouseButtonMask::NONE, Key::NONE);
+	tree->physics_process(1);
+
+	Vector<PickingCollider> v;
+	for (int i = 0; i < 4; i++) {
+		PickingCollider pc;
+		pc.a = memnew(TestArea2D);
+		pc.c = memnew(CollisionShape2D);
+		pc.r = Ref<RectangleShape2D>(memnew(RectangleShape2D));
+		pc.r->set_size(Size2(150, 150));
+		pc.c->set_shape(pc.r);
+		pc.a->add_child(pc.c);
+		pc.a->set_name("A" + itos(i));
+		pc.c->set_name("C" + itos(i));
+		v.push_back(pc);
+		SIGNAL_WATCH(pc.a, SNAME("mouse_entered"));
+		SIGNAL_WATCH(pc.a, SNAME("mouse_exited"));
+	}
+
+	Node2D *node_a = memnew(Node2D);
+	node_a->set_position(Point2i(0, 0));
+	v[0].a->set_position(Point2i(0, 0));
+	v[1].a->set_position(Point2i(0, 100));
+	node_a->add_child(v[0].a);
+	node_a->add_child(v[1].a);
+	Node2D *node_b = memnew(Node2D);
+	node_b->set_position(Point2i(100, 0));
+	v[2].a->set_position(Point2i(0, 0));
+	v[3].a->set_position(Point2i(0, 100));
+	node_b->add_child(v[2].a);
+	node_b->add_child(v[3].a);
+	root->add_child(node_a);
+	root->add_child(node_b);
+	Point2i on_all = Point2i(50, 50);
+	Point2i on_0 = Point2i(10, 10);
+	Point2i on_01 = Point2i(10, 50);
+	Point2i on_02 = Point2i(50, 10);
+
+	Array empty_signal_args_2;
+	empty_signal_args_2.push_back(Array());
+	empty_signal_args_2.push_back(Array());
+
+	Array empty_signal_args_4;
+	empty_signal_args_4.push_back(Array());
+	empty_signal_args_4.push_back(Array());
+	empty_signal_args_4.push_back(Array());
+	empty_signal_args_4.push_back(Array());
+
+	for (PickingCollider E : v) {
+		E.a->init_signals();
+	}
+
+	SUBCASE("[Viewport][Picking2D] Mouse Motion") {
+		SEND_GUI_MOUSE_MOTION_EVENT(on_all, MouseButtonMask::NONE, Key::NONE);
+		tree->physics_process(1);
+		SIGNAL_CHECK(SNAME("mouse_entered"), empty_signal_args_4);
+		SIGNAL_CHECK_FALSE(SNAME("mouse_exited"));
+		for (PickingCollider E : v) {
+			CHECK(E.a->enter_id);
+			CHECK_FALSE(E.a->exit_id);
+			E.a->test_reset();
+		}
+
+		SEND_GUI_MOUSE_MOTION_EVENT(on_01, MouseButtonMask::NONE, Key::NONE);
+		tree->physics_process(1);
+		SIGNAL_CHECK_FALSE(SNAME("mouse_entered"));
+		SIGNAL_CHECK(SNAME("mouse_exited"), empty_signal_args_2);
+
+		for (int i = 0; i < v.size(); i++) {
+			CHECK_FALSE(v[i].a->enter_id);
+			if (i < 2) {
+				CHECK_FALSE(v[i].a->exit_id);
+			} else {
+				CHECK(v[i].a->exit_id);
+			}
+			v[i].a->test_reset();
+		}
+
+		SEND_GUI_MOUSE_MOTION_EVENT(on_outside, MouseButtonMask::NONE, Key::NONE);
+		tree->physics_process(1);
+		SIGNAL_CHECK_FALSE(SNAME("mouse_entered"));
+		SIGNAL_CHECK(SNAME("mouse_exited"), empty_signal_args_2);
+		for (int i = 0; i < v.size(); i++) {
+			CHECK_FALSE(v[i].a->enter_id);
+			if (i < 2) {
+				CHECK(v[i].a->exit_id);
+			} else {
+				CHECK_FALSE(v[i].a->exit_id);
+			}
+			v[i].a->test_reset();
+		}
+	}
+
+	SUBCASE("[Viewport][Picking2D] Object moved / passive hovering") {
+		SEND_GUI_MOUSE_MOTION_EVENT(on_all, MouseButtonMask::NONE, Key::NONE);
+		tree->physics_process(1);
+		for (int i = 0; i < v.size(); i++) {
+			CHECK(v[i].a->enter_id);
+			CHECK_FALSE(v[i].a->exit_id);
+			v[i].a->test_reset();
+		}
+
+		node_b->set_position(Point2i(200, 0));
+		tree->physics_process(1);
+		for (int i = 0; i < v.size(); i++) {
+			CHECK_FALSE(v[i].a->enter_id);
+			if (i < 2) {
+				CHECK_FALSE(v[i].a->exit_id);
+			} else {
+				CHECK(v[i].a->exit_id);
+			}
+			v[i].a->test_reset();
+		}
+
+		node_b->set_position(Point2i(100, 0));
+		tree->physics_process(1);
+		for (int i = 0; i < v.size(); i++) {
+			if (i < 2) {
+				CHECK_FALSE(v[i].a->enter_id);
+			} else {
+				CHECK(v[i].a->enter_id);
+			}
+			CHECK_FALSE(v[i].a->exit_id);
+			v[i].a->test_reset();
+		}
+	}
+
+	SUBCASE("[Viewport][Picking2D] No Processing") {
+		SEND_GUI_MOUSE_MOTION_EVENT(on_background, MouseButtonMask::NONE, Key::NONE);
+		tree->physics_process(1);
+		for (PickingCollider E : v) {
+			E.a->test_reset();
+		}
+
+		v[0].a->set_process_mode(Node::PROCESS_MODE_DISABLED);
+		v[0].c->set_process_mode(Node::PROCESS_MODE_DISABLED);
+		SEND_GUI_MOUSE_MOTION_EVENT(on_02, MouseButtonMask::NONE, Key::NONE);
+		tree->physics_process(1);
+		CHECK_FALSE(v[0].a->enter_id);
+		CHECK_FALSE(v[0].a->exit_id);
+		CHECK(v[2].a->enter_id);
+		CHECK_FALSE(v[2].a->exit_id);
+		for (PickingCollider E : v) {
+			E.a->test_reset();
+		}
+
+		SEND_GUI_MOUSE_MOTION_EVENT(on_background, MouseButtonMask::NONE, Key::NONE);
+		tree->physics_process(1);
+		CHECK_FALSE(v[0].a->enter_id);
+		CHECK_FALSE(v[0].a->exit_id);
+		CHECK_FALSE(v[2].a->enter_id);
+		CHECK(v[2].a->exit_id);
+
+		for (PickingCollider E : v) {
+			E.a->test_reset();
+		}
+		v[0].a->set_process_mode(Node::PROCESS_MODE_ALWAYS);
+		v[0].c->set_process_mode(Node::PROCESS_MODE_ALWAYS);
+	}
+
+	SUBCASE("[Viewport][Picking2D] Multiple events in series") {
+		SEND_GUI_MOUSE_MOTION_EVENT(on_0, MouseButtonMask::NONE, Key::NONE);
+		SEND_GUI_MOUSE_MOTION_EVENT(on_0 + Point2i(10, 0), MouseButtonMask::NONE, Key::NONE);
+		tree->physics_process(1);
+
+		for (int i = 0; i < v.size(); i++) {
+			if (i < 1) {
+				CHECK(v[i].a->enter_id);
+			} else {
+				CHECK_FALSE(v[i].a->enter_id);
+			}
+			CHECK_FALSE(v[i].a->exit_id);
+			v[i].a->test_reset();
+		}
+
+		SEND_GUI_MOUSE_MOTION_EVENT(on_background, MouseButtonMask::NONE, Key::NONE);
+		SEND_GUI_MOUSE_MOTION_EVENT(on_background + Point2i(10, 10), MouseButtonMask::NONE, Key::NONE);
+		tree->physics_process(1);
+
+		for (int i = 0; i < v.size(); i++) {
+			CHECK_FALSE(v[i].a->enter_id);
+			if (i < 1) {
+				CHECK(v[i].a->exit_id);
+			} else {
+				CHECK_FALSE(v[i].a->exit_id);
+			}
+			v[i].a->test_reset();
+		}
+	}
+
+	SUBCASE("[Viewport][Picking2D] Disable Picking") {
+		SEND_GUI_MOUSE_MOTION_EVENT(on_02, MouseButtonMask::NONE, Key::NONE);
+
+		root->set_physics_object_picking(false);
+		CHECK_FALSE(root->get_physics_object_picking());
+
+		tree->physics_process(1);
+
+		for (int i = 0; i < v.size(); i++) {
+			CHECK_FALSE(v[i].a->enter_id);
+			v[i].a->test_reset();
+		}
+
+		root->set_physics_object_picking(true);
+		CHECK(root->get_physics_object_picking());
+	}
+
+	SUBCASE("[Viewport][Picking2D] CollisionObject in CanvasLayer") {
+		CanvasLayer *node_c = memnew(CanvasLayer);
+		node_c->set_rotation(Math_PI);
+		node_c->set_offset(Point2i(100, 100));
+		root->add_child(node_c);
+
+		v[2].a->reparent(node_c, false);
+		v[3].a->reparent(node_c, false);
+
+		SEND_GUI_MOUSE_MOTION_EVENT(on_02, MouseButtonMask::NONE, Key::NONE);
+		tree->physics_process(1);
+
+		for (int i = 0; i < v.size(); i++) {
+			if (i == 0 || i == 3) {
+				CHECK(v[i].a->enter_id);
+			} else {
+				CHECK_FALSE(v[i].a->enter_id);
+			}
+			v[i].a->test_reset();
+		}
+
+		v[2].a->reparent(node_b, false);
+		v[3].a->reparent(node_b, false);
+		root->remove_child(node_c);
+		memdelete(node_c);
+	}
+
+	SUBCASE("[Viewport][Picking2D] Picking Sort") {
+		root->set_physics_object_picking_sort(true);
+		CHECK(root->get_physics_object_picking_sort());
+
+		SUBCASE("[Viewport][Picking2D] Picking Sort Z-Index") {
+			node_a->set_z_index(10);
+			v[0].a->set_z_index(0);
+			v[1].a->set_z_index(2);
+			node_b->set_z_index(5);
+			v[2].a->set_z_index(8);
+			v[3].a->set_z_index(11);
+			v[3].a->set_z_as_relative(false);
+
+			TestArea2D::counter = 0;
+			SEND_GUI_MOUSE_MOTION_EVENT(on_all, MouseButtonMask::NONE, Key::NONE);
+			tree->physics_process(1);
+
+			CHECK(v[0].a->enter_id == 4);
+			CHECK(v[1].a->enter_id == 2);
+			CHECK(v[2].a->enter_id == 1);
+			CHECK(v[3].a->enter_id == 3);
+			for (int i = 0; i < v.size(); i++) {
+				CHECK_FALSE(v[i].a->exit_id);
+				v[i].a->test_reset();
+			}
+
+			TestArea2D::counter = 0;
+			SEND_GUI_MOUSE_MOTION_EVENT(on_background, MouseButtonMask::NONE, Key::NONE);
+			tree->physics_process(1);
+
+			CHECK(v[0].a->exit_id == 4);
+			CHECK(v[1].a->exit_id == 2);
+			CHECK(v[2].a->exit_id == 1);
+			CHECK(v[3].a->exit_id == 3);
+			for (int i = 0; i < v.size(); i++) {
+				CHECK_FALSE(v[i].a->enter_id);
+				v[i].a->set_z_as_relative(true);
+				v[i].a->set_z_index(0);
+				v[i].a->test_reset();
+			}
+
+			node_a->set_z_index(0);
+			node_b->set_z_index(0);
+		}
+
+		SUBCASE("[Viewport][Picking2D] Picking Sort Scene Tree Location") {
+			TestArea2D::counter = 0;
+			SEND_GUI_MOUSE_MOTION_EVENT(on_all, MouseButtonMask::NONE, Key::NONE);
+			tree->physics_process(1);
+
+			for (int i = 0; i < v.size(); i++) {
+				CHECK(v[i].a->enter_id == 4 - i);
+				CHECK_FALSE(v[i].a->exit_id);
+				v[i].a->test_reset();
+			}
+
+			TestArea2D::counter = 0;
+			SEND_GUI_MOUSE_MOTION_EVENT(on_background, MouseButtonMask::NONE, Key::NONE);
+			tree->physics_process(1);
+
+			for (int i = 0; i < v.size(); i++) {
+				CHECK_FALSE(v[i].a->enter_id);
+				CHECK(v[i].a->exit_id == 4 - i);
+				v[i].a->test_reset();
+			}
+		}
+
+		root->set_physics_object_picking_sort(false);
+		CHECK_FALSE(root->get_physics_object_picking_sort());
+	}
+
+	SUBCASE("[Viewport][Picking2D] Mouse Button") {
+		SEND_GUI_MOUSE_BUTTON_EVENT(on_0, MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
+		tree->physics_process(1);
+
+		for (int i = 0; i < v.size(); i++) {
+			if (i == 0) {
+				CHECK(v[i].a->enter_id);
+			} else {
+				CHECK_FALSE(v[i].a->enter_id);
+			}
+			CHECK_FALSE(v[i].a->exit_id);
+			v[i].a->test_reset();
+		}
+
+		SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(on_0, MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
+		tree->physics_process(1);
+
+		for (int i = 0; i < v.size(); i++) {
+			CHECK_FALSE(v[i].a->enter_id);
+			CHECK_FALSE(v[i].a->exit_id);
+			v[i].a->test_reset();
+		}
+	}
+
+	SUBCASE("[Viewport][Picking2D] Screen Touch") {
+		SEND_GUI_TOUCH_EVENT(on_01, true, false);
+		tree->physics_process(1);
+		for (int i = 0; i < v.size(); i++) {
+			if (i < 2) {
+				Ref<InputEventScreenTouch> st = v[i].a->last_input_event;
+				CHECK(st.is_valid());
+			} else {
+				CHECK(v[i].a->last_input_event.is_null());
+			}
+			v[i].a->test_reset();
+		}
+	}
+
+	for (PickingCollider E : v) {
+		SIGNAL_UNWATCH(E.a, SNAME("mouse_entered"));
+		SIGNAL_UNWATCH(E.a, SNAME("mouse_exited"));
+		memdelete(E.c);
+		memdelete(E.a);
 	}
 }
 
