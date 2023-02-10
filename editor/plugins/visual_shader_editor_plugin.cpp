@@ -859,11 +859,11 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 		}
 
 		if (valid_right) {
-			if (vsnode->is_output_port_expandable(i)) {
+			if (expanded_port_counter == 0 && vsnode->is_output_port_expandable(i)) {
 				TextureButton *expand = memnew(TextureButton);
 				expand->set_toggle_mode(true);
-				expand->set_texture_normal(editor->get_editor_theme_icon(SNAME("GuiTreeArrowDown")));
-				expand->set_texture_pressed(editor->get_editor_theme_icon(SNAME("GuiTreeArrowRight")));
+				expand->set_texture_normal(editor->get_editor_theme_icon(SNAME("GuiTreeArrowRight")));
+				expand->set_texture_pressed(editor->get_editor_theme_icon(SNAME("GuiTreeArrowDown")));
 				expand->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
 				expand->set_pressed(vsnode->_is_output_port_expanded(i));
 				expand->connect("pressed", callable_mp(editor, &VisualShaderEditor::_expand_output_port).bind(p_id, i, !vsnode->_is_output_port_expanded(i)), CONNECT_DEFERRED);
@@ -892,6 +892,9 @@ void VisualShaderGraphPlugin::add_node(VisualShader::Type p_type, int p_id, bool
 
 		if (!is_first_hbox) {
 			node->add_child(hb);
+			if (curve_xyz.is_valid()) {
+				node->move_child(hb, 1 + expanded_port_counter);
+			}
 		}
 
 		if (expanded_type != VisualShaderNode::PORT_TYPE_SCALAR) {
