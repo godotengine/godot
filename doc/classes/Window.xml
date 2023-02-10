@@ -358,6 +358,7 @@
 			<description>
 				Popups the [Window] at the center of the current screen, with optionally given minimum size.
 				If the [Window] is embedded, it will be centered in the parent [Viewport] instead.
+				[b]Note:[/b] Calling it with the default value of [param minsize] is equivalent to calling it with [member size].
 			</description>
 		</method>
 		<method name="popup_centered_clamped">
@@ -367,6 +368,7 @@
 			<description>
 				Popups the [Window] centered inside its parent [Window].
 				[code]fallback_ratio[/code] determines the maximum size of the [Window], in relation to its parent.
+				[b]Note:[/b] Calling it with the default value of [param minsize] is equivalent to calling it with [member size].
 			</description>
 		</method>
 		<method name="popup_centered_ratio">
