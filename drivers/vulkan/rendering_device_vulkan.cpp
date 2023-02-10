@@ -8462,14 +8462,17 @@ void RenderingDeviceVulkan::set_resource_name(RID p_id, const String p_name) {
 }
 
 void RenderingDeviceVulkan::draw_command_begin_label(String p_label_name, const Color p_color) {
+	_THREAD_SAFE_METHOD_
 	context->command_begin_label(frames[frame].draw_command_buffer, p_label_name, p_color);
 }
 
 void RenderingDeviceVulkan::draw_command_insert_label(String p_label_name, const Color p_color) {
+	_THREAD_SAFE_METHOD_
 	context->command_insert_label(frames[frame].draw_command_buffer, p_label_name, p_color);
 }
 
 void RenderingDeviceVulkan::draw_command_end_label() {
+	_THREAD_SAFE_METHOD_
 	context->command_end_label(frames[frame].draw_command_buffer);
 }
 
