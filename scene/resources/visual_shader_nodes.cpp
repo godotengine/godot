@@ -377,13 +377,6 @@ String VisualShaderNodeColorConstant::get_output_port_name(int p_port) const {
 	return "";
 }
 
-bool VisualShaderNodeColorConstant::is_output_port_expandable(int p_port) const {
-	if (p_port == 0) {
-		return true;
-	}
-	return false;
-}
-
 String VisualShaderNodeColorConstant::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
 	return "	" + p_output_vars[0] + " = " + vformat("vec4(%.6f, %.6f, %.6f, %.6f)", constant.r, constant.g, constant.b, constant.a) + ";\n";
 }
@@ -728,13 +721,6 @@ String VisualShaderNodeTexture::get_output_port_name(int p_port) const {
 		default:
 			return "";
 	}
-}
-
-bool VisualShaderNodeTexture::is_output_port_expandable(int p_port) const {
-	if (p_port == 0) {
-		return true;
-	}
-	return false;
 }
 
 bool VisualShaderNodeTexture::is_input_port_default(int p_port, Shader::Mode p_mode) const {
@@ -1269,13 +1255,6 @@ String VisualShaderNodeSample3D::get_output_port_name(int p_port) const {
 	return "color";
 }
 
-bool VisualShaderNodeSample3D::is_output_port_expandable(int p_port) const {
-	if (p_port == 0) {
-		return true;
-	}
-	return false;
-}
-
 bool VisualShaderNodeSample3D::is_input_port_default(int p_port, Shader::Mode p_mode) const {
 	if (p_mode == Shader::MODE_CANVAS_ITEM || p_mode == Shader::MODE_SPATIAL) {
 		if (p_port == 0) {
@@ -1508,13 +1487,6 @@ VisualShaderNodeCubemap::PortType VisualShaderNodeCubemap::get_output_port_type(
 
 String VisualShaderNodeCubemap::get_output_port_name(int p_port) const {
 	return "color";
-}
-
-bool VisualShaderNodeCubemap::is_output_port_expandable(int p_port) const {
-	if (p_port == 0) {
-		return true;
-	}
-	return false;
 }
 
 Vector<VisualShader::DefaultTextureParam> VisualShaderNodeCubemap::get_default_texture_parameters(VisualShader::Type p_type, int p_id) const {
@@ -5667,13 +5639,6 @@ VisualShaderNodeColorParameter::PortType VisualShaderNodeColorParameter::get_out
 
 String VisualShaderNodeColorParameter::get_output_port_name(int p_port) const {
 	return "color";
-}
-
-bool VisualShaderNodeColorParameter::is_output_port_expandable(int p_port) const {
-	if (p_port == 0) {
-		return true;
-	}
-	return false;
 }
 
 void VisualShaderNodeColorParameter::set_default_value_enabled(bool p_enabled) {
