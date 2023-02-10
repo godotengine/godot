@@ -2343,19 +2343,19 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 					 << ", Callable.CreateWithUnsafeTrampoline(value, &" << p_isignal.proxy_name << "Trampoline));\n";
 		}
 
-		if (p_itype.is_singleton) {
-			p_output.append(INDENT2 "remove => " CS_PROPERTY_SINGLETON ".Disconnect(SignalName.");
-		} else {
-			p_output.append(INDENT2 "remove => Disconnect(SignalName.");
-		}
-
+		String prefix = p_itype.is_singleton ? CS_PROPERTY_SINGLETON "." : "";
+		p_output << INDENT2 "remove\n";
+		p_output << OPEN_BLOCK_L2;
+		p_output << INDENT3 "Callable callable = ";
 		if (is_parameterless) {
 			// Delegate type is Action. No need for custom trampoline.
-			p_output << p_isignal.proxy_name << ", Callable.From(value));\n";
+			p_output << "Callable.From(value);\n";
 		} else {
-			p_output << p_isignal.proxy_name
-					 << ", Callable.CreateWithUnsafeTrampoline(value, &" << p_isignal.proxy_name << "Trampoline));\n";
+			p_output << "Callable.CreateWithUnsafeTrampoline(value, &" << p_isignal.proxy_name << "Trampoline);\n";
 		}
+		p_output << INDENT3 "if (" << prefix << "IsConnected(SignalName." << p_isignal.proxy_name << ", callable))\n";
+		p_output << INDENT4 << prefix << "Disconnect(SignalName." << p_isignal.proxy_name << ", callable);\n";
+		p_output << CLOSE_BLOCK_L2;
 
 		p_output.append(CLOSE_BLOCK_L1);
 	}
