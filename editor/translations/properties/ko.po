@@ -47,16 +47,16 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-01-20 10:19+0000\n"
-"Last-Translator: 오지훈 <jule1130@naver.com>\n"
+"PO-Revision-Date: 2023-02-09 15:26+0000\n"
+"Last-Translator: 이정희 <daemul72@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
-"godot/ko/>\n"
+"godot-properties/ko/>\n"
 "Language: ko\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.15.1\n"
+"X-Generator: Weblate 4.16-dev\n"
 
 msgid "Application"
 msgstr "어플리케이션"
@@ -67,8 +67,14 @@ msgstr "구성"
 msgid "Name"
 msgstr "이름"
 
+msgid "Description"
+msgstr "설명"
+
 msgid "Run"
 msgstr "실행"
+
+msgid "Main Scene"
+msgstr "메인 씬"
 
 msgid "Disable stdout"
 msgstr "표준 출력 비활성화"
@@ -97,6 +103,9 @@ msgstr "창"
 msgid "Size"
 msgstr "크기"
 
+msgid "Mode"
+msgstr "모드"
+
 msgid "Resizable"
 msgstr "크기 조절 가능한"
 
@@ -108,6 +117,9 @@ msgstr "에너지 절약"
 
 msgid "Keep Screen On"
 msgstr "화면 항상 활성화"
+
+msgid "Audio"
+msgstr "오디오"
 
 msgid "Editor"
 msgstr "에디터"
@@ -130,6 +142,9 @@ msgstr "디버그"
 msgid "Settings"
 msgstr "설정"
 
+msgid "Compression"
+msgstr "압축"
+
 msgid "Crash Handler"
 msgstr "충돌 처리기"
 
@@ -138,6 +153,12 @@ msgstr "메시지"
 
 msgid "Rendering"
 msgstr "렌더링"
+
+msgid "Limits"
+msgstr "제한"
+
+msgid "GUI"
+msgstr "GUI"
 
 msgid "Low Processor Usage Mode"
 msgstr "저사양 모드"
@@ -238,6 +259,12 @@ msgstr "컨트롤러 값"
 msgid "Big Endian"
 msgstr "빅 엔디안"
 
+msgid "Network"
+msgstr "네트워크"
+
+msgid "Page Size"
+msgstr "페이지 크기"
+
 msgid "Blocking Mode Enabled"
 msgstr "Blocking 모드 활성화"
 
@@ -273,9 +300,6 @@ msgstr "경로"
 
 msgid "Data Array"
 msgstr "데이터 배열"
-
-msgid "Blocking Handshake"
-msgstr "Handshake 차단"
 
 msgid "Max Pending Connections"
 msgstr "최대 대기 중인 연결 수"
@@ -342,15 +366,6 @@ msgstr "애니메이션"
 
 msgid "Easing"
 msgstr "속도 완화"
-
-msgid "Interface"
-msgstr "인터페이스"
-
-msgid "Editors"
-msgstr "에디터"
-
-msgid "Network"
-msgstr "네트워크"
 
 msgid "Remote Port"
 msgstr "원격 포트"
@@ -421,8 +436,8 @@ msgstr "확인됨"
 msgid "Keying"
 msgstr "키 값 생성"
 
-msgid "Main Scene"
-msgstr "메인 씬"
+msgid "Interface"
+msgstr "인터페이스"
 
 msgid "Show Update Spinner"
 msgstr "업데이트 스피너 표시"
@@ -723,6 +738,9 @@ msgstr "소스 폰트 크기 도우미"
 
 msgid "Help Title Font Size"
 msgstr "제목 폰트 크기 도우미"
+
+msgid "Editors"
+msgstr "에디터"
 
 msgid "Grid Map"
 msgstr "그리드맵"
@@ -1126,6 +1144,9 @@ msgstr "비밀번호"
 msgid "Compress"
 msgstr "컴프레스"
 
+msgid "Transform"
+msgstr "변형"
+
 msgid "Collada"
 msgstr "COLLADA"
 
@@ -1150,14 +1171,8 @@ msgstr "다음에서 만들기"
 msgid "Delimiter"
 msgstr "디리미터"
 
-msgid "Mode"
-msgstr "모드"
-
 msgid "Lossy Quality"
 msgstr "손실 품질"
-
-msgid "BPTC LDR"
-msgstr "BPTC LDR"
 
 msgid "Mipmaps"
 msgstr "밉맵"
@@ -1201,6 +1216,9 @@ msgstr "오클루더"
 msgid "Enabled"
 msgstr "활성화됨"
 
+msgid "Normal Merge Angle"
+msgstr "정상적인 병합 각도"
+
 msgid "Loop Mode"
 msgstr "루프 모드"
 
@@ -1212,12 +1230,6 @@ msgstr "최적화 도구"
 
 msgid "Max Angular Error"
 msgstr "최대 각도 오류"
-
-msgid "Compression"
-msgstr "압축"
-
-msgid "Page Size"
-msgstr "페이지 크기"
 
 msgid "Nodes"
 msgstr "노드"
@@ -1441,9 +1453,6 @@ msgstr "스레드"
 msgid "Thread Model"
 msgstr "스레드 모델"
 
-msgid "Audio"
-msgstr "오디오"
-
 msgid "Handheld"
 msgstr "휴대용"
 
@@ -1474,14 +1483,17 @@ msgstr "iOS"
 msgid "Hide Home Indicator"
 msgstr "홈 표시기 숨기기"
 
+msgid "Input Devices"
+msgstr "입력 장치"
+
+msgid "Pointing"
+msgstr "포인팅"
+
 msgid "Boot Splash"
 msgstr "부트 스플래쉬"
 
 msgid "BG Color"
 msgstr "배경색"
-
-msgid "Input Devices"
-msgstr "입력 장치"
 
 msgid "Environment"
 msgstr "환경"
@@ -1492,20 +1504,23 @@ msgstr "기본 클리어 컬러"
 msgid "Show Image"
 msgstr "이미지 표시"
 
+msgid "Image"
+msgstr "영상"
+
 msgid "Fullsize"
 msgstr "전체 크기"
 
 msgid "Use Filter"
 msgstr "필터 사용"
 
+msgid "Icon"
+msgstr "아이콘"
+
 msgid "Buffering"
 msgstr "버퍼링"
 
 msgid "Agile Event Flushing"
 msgstr "애자일 이벤트 플러싱"
-
-msgid "Pointing"
-msgstr "포인팅"
 
 msgid "Emulate Touch From Mouse"
 msgstr "마우스 터치 에뮬레이트"
@@ -1534,11 +1549,14 @@ msgstr "솔루션 디렉토리"
 msgid "Main Loop Type"
 msgstr "메인 루프 유형"
 
+msgid "Stretch"
+msgstr "스트레치"
+
+msgid "Aspect"
+msgstr "양상"
+
 msgid "Auto Accept Quit"
 msgstr "자동 수락 종료"
-
-msgid "GUI"
-msgstr "GUI"
 
 msgid "Fonts"
 msgstr "글꼴"
@@ -1548,6 +1566,9 @@ msgstr "동적 글꼴"
 
 msgid "Use Oversampling"
 msgstr "오버샘플링 사용"
+
+msgid "Textures"
+msgstr "텍스처"
 
 msgid "Operation"
 msgstr "오퍼레이션"
@@ -1725,9 +1746,6 @@ msgstr "씬 이름"
 
 msgid "Root Nodes"
 msgstr "루트 노드"
-
-msgid "Textures"
-msgstr "텍스처"
 
 msgid "Images"
 msgstr "이미지"
@@ -1957,6 +1975,9 @@ msgstr "세심함"
 msgid "Return Type"
 msgstr "반환 유형"
 
+msgid "Fractal Octaves"
+msgstr "프랙털 옥타브"
+
 msgid "Width"
 msgstr "너비"
 
@@ -2008,9 +2029,6 @@ msgstr "IGD 우리의 주소"
 msgid "IGD Status"
 msgstr "IGD 상태"
 
-msgid "Limits"
-msgstr "제한"
-
 msgid "WebRTC"
 msgstr "WebRTC"
 
@@ -2056,14 +2074,8 @@ msgstr "Wi-Fi 연결"
 msgid "Push Notifications"
 msgstr "푸시 알림"
 
-msgid "Icon"
-msgstr "아이콘"
-
 msgid "Location"
 msgstr "위치"
-
-msgid "Description"
-msgstr "설명"
 
 msgid "Algorithm"
 msgstr "알고리즘"
@@ -2128,6 +2140,12 @@ msgstr "색상"
 msgid "Angular Velocity"
 msgstr "각속도"
 
+msgid "Accel Min"
+msgstr "최소 가속도"
+
+msgid "Accel Max"
+msgstr "최대 가속도"
+
 msgid "Path Max Distance"
 msgstr "경로 최대 거리"
 
@@ -2136,9 +2154,6 @@ msgstr "내비게이션 레이어"
 
 msgid "Max Speed"
 msgstr "최대 속도"
-
-msgid "Transform"
-msgstr "변형"
 
 msgid "Rotation Degrees"
 msgstr "회전 각도"
@@ -2266,6 +2281,9 @@ msgstr "버튼 그룹"
 msgid "Localization"
 msgstr "현지화"
 
+msgid "Auto Translate"
+msgstr "자동 옮기기"
+
 msgid "Next"
 msgstr "다음"
 
@@ -2289,9 +2307,6 @@ msgstr "아이콘 모드"
 
 msgid "Step"
 msgstr "단계"
-
-msgid "Stretch"
-msgstr "스트레치"
 
 msgid "Syntax Highlighter"
 msgstr "구문 강조"
@@ -2323,8 +2338,11 @@ msgstr "현재 화면"
 msgid "Max Size"
 msgstr "최대 크기"
 
-msgid "Aspect"
-msgstr "양상"
+msgid "2D Physics"
+msgstr "2D 물리"
+
+msgid "3D Physics"
+msgstr "3D 물리"
 
 msgid "Format"
 msgstr "형식"
@@ -2412,9 +2430,6 @@ msgstr "오른쪽 아래"
 
 msgid "Bottom Left"
 msgstr "왼쪽 아래"
-
-msgid "Image"
-msgstr "영상"
 
 msgid "Transpose"
 msgstr "행렬 맞바꾸기"

@@ -605,18 +605,6 @@ msgstr "Advarsel:"
 msgid "Error:"
 msgstr "Feil:"
 
-msgid "C++ Error"
-msgstr "C++-feil"
-
-msgid "C++ Error:"
-msgstr "C++-feil:"
-
-msgid "Source"
-msgstr "Kilde"
-
-msgid "Source:"
-msgstr "Kildekode:"
-
 msgid "Copy Error"
 msgstr "Feil ved kopiering"
 
@@ -1179,11 +1167,11 @@ msgstr "Endre størrelsen på Array"
 msgid "Set Multiple:"
 msgstr "Sett mange:"
 
+msgid "Edit Filters"
+msgstr "Rediger filtere"
+
 msgid "Language:"
 msgstr "Språk:"
-
-msgid "Script"
-msgstr "Skript"
 
 msgid "Clear Output"
 msgstr "Nullstill Resultat"
@@ -2075,9 +2063,6 @@ msgstr "Punkt"
 msgid "Triangle already exists."
 msgstr "Triangelet finnes allerede."
 
-msgid "Edit Filters"
-msgstr "Rediger filtere"
-
 msgid "Functions"
 msgstr "Funksjoner"
 
@@ -2119,9 +2104,6 @@ msgstr "Spill av valgte animasjon baklengs fra gjeldende posisjon. (A)"
 
 msgid "Play selected animation backwards from end. (Shift+A)"
 msgstr "Spill av valgte animasjon baklengs fra slutten. (Shift+A)"
-
-msgid "Stop animation playback. (S)"
-msgstr "Stopp avspilling av animasjon. (S)"
 
 msgid "Play selected animation from start. (Shift+D)"
 msgstr "Spill av valgte animasjon fra start. (Shift+D)"
@@ -2807,6 +2789,9 @@ msgstr "Søkeresultater"
 msgid "Standard"
 msgstr "Standard"
 
+msgid "Source"
+msgstr "Kilde"
+
 msgid "Target"
 msgstr "Mål"
 
@@ -2884,9 +2869,6 @@ msgstr "Fjern Animasjon?"
 
 msgid "(empty)"
 msgstr "(tom)"
-
-msgid "Loop"
-msgstr "Repeter"
 
 msgid "Zoom Reset"
 msgstr "Tilbakestill forstørring"

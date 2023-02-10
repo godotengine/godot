@@ -594,9 +594,6 @@ msgstr "Putuskan sambungan"
 msgid "Connect a Signal to a Method"
 msgstr "Sambungkan Isyarat ke Kaedah"
 
-msgid "Edit Connection:"
-msgstr "Edit Sambungan:"
-
 msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
 msgstr ""
 "Adakah anda pasti anda mahu mengeluarkan semua sambungan dari isyarat \"% "
@@ -708,6 +705,9 @@ msgstr "Masa"
 
 msgid "Calls"
 msgstr "Panggilan"
+
+msgid "%s Error"
+msgstr "%s Ralat"
 
 msgid "Expand All"
 msgstr "Kembangkan Semua"
@@ -1577,6 +1577,9 @@ msgstr "%s tidak dipinkan"
 msgid "Copy Property Path"
 msgstr "Salin Laluan Sifat"
 
+msgid "Edit Filters"
+msgstr "Sunting Filters"
+
 msgid "Language:"
 msgstr "Bahasa:"
 
@@ -2107,24 +2110,6 @@ msgid "Install from file"
 msgstr "Pasang dari fail"
 
 msgid ""
-"This will set up your project for custom Android builds by installing the "
-"source template to \"res://android/build\".\n"
-"You can then apply modifications and build your own custom APK on export "
-"(adding modules, changing the AndroidManifest.xml, etc.).\n"
-"Note that in order to make custom builds instead of using pre-built APKs, "
-"the \"Use Custom Build\" option should be enabled in the Android export "
-"preset."
-msgstr ""
-"Ini akan menyiapkan projek anda untuk binaan Android khas dengan memasang "
-"templat sumber pada \"res://android/build\".\n"
-"Anda kemudian boleh menerapkan pengubahsuaian dan membina APK tersuai anda "
-"sendiri pada eksport (menambah modul, menukar AndroidManifest.xml, dan lain-"
-"lain).\n"
-"Perhatikan bahawa untuk membuat binaan tersuai dan bukannya menggunakan APK "
-"pra-dibina, pilihan \"Gunakan Bina Tersuai\" harus diaktifkan dalam pratetap "
-"eksport Android."
-
-msgid ""
 "The Android build template is already installed in this project and it won't "
 "be overwritten.\n"
 "Remove the \"res://android/build\" directory manually before attempting this "
@@ -2332,9 +2317,6 @@ msgstr "Sudah ada adegan yang diedit."
 
 msgid "General"
 msgstr "Am"
-
-msgid "%s Error"
-msgstr "%s Ralat"
 
 msgid "Device"
 msgstr "Peranti"
@@ -3005,6 +2987,9 @@ msgstr "Pilih dan pindahkan titik-titik, cipta titik-titik dengan RMB."
 msgid "Enable snap and show grid."
 msgstr "Aktifkan snap dan tunjukkan grid."
 
+msgid "Blend:"
+msgstr "Adun:"
+
 msgid "Point"
 msgstr "Titik"
 
@@ -3048,14 +3033,8 @@ msgid "Generate blend triangles automatically (instead of manually)"
 msgstr ""
 "Jana segi tiga-segi tiga campuran secara automatik (bukan secara manual)"
 
-msgid "Blend:"
-msgstr "Adun:"
-
 msgid "Parameter Changed:"
 msgstr "Parameter Berubah:"
-
-msgid "Edit Filters"
-msgstr "Sunting Filters"
 
 msgid "Output node can't be added to the blend tree."
 msgstr "Nod keluaran tidak boleh ditambah ke pokok adunan."
@@ -3176,9 +3155,6 @@ msgstr "Mainkan animasi terpilih ke belakang dari pos semasa. (A)"
 
 msgid "Play selected animation backwards from end. (Shift+A)"
 msgstr "Mainkan animasi terpillih ke belakang dari hujung. (Shift+A)"
-
-msgid "Stop animation playback. (S)"
-msgstr "Hentikan playback animasi. (S)"
 
 msgid "Play selected animation from start. (Shift+D)"
 msgstr "Mainkan animasi terpilih dari awal. (Shift+D)"

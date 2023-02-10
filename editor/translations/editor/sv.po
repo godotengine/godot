@@ -3,12 +3,12 @@
 # Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
 # This file is distributed under the same license as the Godot source code.
 # bergmarklund <davemcgroin@gmail.com>, 2017, 2018.
-# Christoffer Sundbom <christoffer_karlsson@live.se>, 2017, 2021.
+# Christoffer Sundbom <christoffer_karlsson@live.se>, 2017, 2021, 2023.
 # Jakob Sinclair <sinclair.jakob@mailbox.org>, 2018.
 # . <grenoscar@gmail.com>, 2018, 2020.
 # Kristoffer Grundström <kristoffer.grundstrom1983@gmail.com>, 2018.
 # Magnus Helander <helander@fastmail.net>, 2018.
-# Daniel K <danielkimblad@hotmail.com>, 2018.
+# Daniel K <danielkimblad@hotmail.com>, 2018, 2023.
 # Toiya <elviraa98@gmail.com>, 2019.
 # Fredrik Welin <figgemail@gmail.com>, 2019.
 # Mattias Münster <mattiasmun@gmail.com>, 2019.
@@ -33,8 +33,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-01-20 11:20+0000\n"
-"Last-Translator: Ludvig Svenonius <ludvig.svenonius@protonmail.com>\n"
+"PO-Revision-Date: 2023-02-09 18:26+0000\n"
+"Last-Translator: Daniel K <danielkimblad@hotmail.com>\n"
 "Language-Team: Swedish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/sv/>\n"
 "Language: sv\n"
@@ -42,10 +42,171 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.15.1\n"
+"X-Generator: Weblate 4.16-dev\n"
+
+msgid "Unset"
+msgstr "Nollställ"
+
+msgid "Left Mouse Button"
+msgstr "Vänster Musknapp"
+
+msgid "Right Mouse Button"
+msgstr "Höger Musknapp"
+
+msgid "Middle Mouse Button"
+msgstr "Mitten Musknapp"
+
+msgid "Mouse Wheel Up"
+msgstr "Mus Scrollhjul Upp"
+
+msgid "Mouse Wheel Down"
+msgstr "Mus Scrollhjul Ner"
+
+msgid "Mouse Wheel Left"
+msgstr "Mus Scrollhjul Vänster"
+
+msgid "Mouse Wheel Right"
+msgstr "Mus Scrollhjul Höger"
+
+msgid "Mouse Thumb Button 1"
+msgstr "Tum Knapp Mus 1"
+
+msgid "Mouse Thumb Button 2"
+msgstr "Tum Knapp Mus 2"
 
 msgid "Button"
 msgstr "Knapp"
+
+msgid "Double Click"
+msgstr "Dubbelklick"
+
+msgid "Mouse motion at position (%s) with velocity (%s)"
+msgstr "Musrörelse på plats (%s) med hastighet (%s)"
+
+msgid "Left Stick X-Axis, Joystick 0 X-Axis"
+msgstr "Vänster Spak X-Axel, Joystick 0 X-Axel"
+
+msgid "Left Stick Y-Axis, Joystick 0 Y-Axis"
+msgstr "Vänster Spak Y-Axel, Joystick 0 Y-Axel"
+
+msgid "Right Stick X-Axis, Joystick 1 X-Axis"
+msgstr "Höger Spak X-Axel, Joystick 1 X-Axel"
+
+msgid "Right Stick Y-Axis, Joystick 1 Y-Axis"
+msgstr "Höger Spak Y-Axel, Joystick 1 Y-Axel"
+
+msgid "Joystick 2 X-Axis, Left Trigger, Sony L2, Xbox LT"
+msgstr "Joystick 2 X-Axel, Vänster avtryckare, Sony L2, Xbox LT"
+
+msgid "Joystick 2 Y-Axis, Right Trigger, Sony R2, Xbox RT"
+msgstr "Joystick 2 Y-Axel, Höger Avtryckare, Sony R2, Xbox RT"
+
+msgid "Joystick 3 X-Axis"
+msgstr "Joystick 3 X-Axel"
+
+msgid "Joystick 3 Y-Axis"
+msgstr "Joystick 3 Y-Axel"
+
+msgid "Joystick 4 X-Axis"
+msgstr "Joystick 4 X-Axel"
+
+msgid "Joystick 4 Y-Axis"
+msgstr "Joystick 4 Y-Axel"
+
+msgid "Unknown Joypad Axis"
+msgstr "Okänd Joypad Axel"
+
+msgid "Joypad Motion on Axis %d (%s) with Value %.2f"
+msgstr "Joypadrörelse på axel %d (%s) med värde %.2f"
+
+msgid "Bottom Action, Sony Cross, Xbox A, Nintendo B"
+msgstr "Nedre Action, Sony Kryss, Xbox A, Nintendo B"
+
+msgid "Right Action, Sony Circle, Xbox B, Nintendo A"
+msgstr "Höger Action, Sony Cirkel, Xbox B, Nintendo A"
+
+msgid "Left Action, Sony Square, Xbox X, Nintendo Y"
+msgstr "Vänster Action, Sony Fyrkant, Xbox X, Nintendo Y"
+
+msgid "Top Action, Sony Triangle, Xbox Y, Nintendo X"
+msgstr "Övre Action, Sony Triangel, Xbox Y, Nintendo X"
+
+msgid "Back, Sony Select, Xbox Back, Nintendo -"
+msgstr "Tillbaka, Sony Select, XBox Back, Nintendo -"
+
+msgid "Guide, Sony PS, Xbox Home"
+msgstr "Guide, Sony PS, Xbox Home"
+
+msgid "Start, Nintendo +"
+msgstr "Start, Nintendo +"
+
+msgid "Left Stick, Sony L3, Xbox L/LS"
+msgstr "Vänster Spak, Sony L3, XBox L/LS"
+
+msgid "Right Stick, Sony R3, Xbox R/RS"
+msgstr "Höger Spak, Sony R3, Xbox R/RS"
+
+msgid "Left Shoulder, Sony L1, Xbox LB"
+msgstr "Vänster Kantknapp, Sony L1, Xbox LB"
+
+msgid "Right Shoulder, Sony R1, Xbox RB"
+msgstr "Höger Kantknapp, Sony R1, Xbox RB"
+
+msgid "D-pad Up"
+msgstr "Styrknapp Upp"
+
+msgid "D-pad Down"
+msgstr "Styrknapp Ner"
+
+msgid "D-pad Left"
+msgstr "Styrknapp Vänster"
+
+msgid "D-pad Right"
+msgstr "Styrknapp Höger"
+
+msgid "Xbox Share, PS5 Microphone, Nintendo Capture"
+msgstr "Xbox Dela-knappen, PS5 Mikrofon, Nintendo Capture"
+
+msgid "Xbox Paddle 1"
+msgstr "Xbox Paddelknapp 1"
+
+msgid "Xbox Paddle 2"
+msgstr "Xbox Paddelknapp 2"
+
+msgid "Xbox Paddle 3"
+msgstr "Xbox Paddelknapp 3"
+
+msgid "Xbox Paddle 4"
+msgstr "Xbox Paddelknapp 4"
+
+msgid "PS4/5 Touchpad"
+msgstr "PS4/5 Pekplatta"
+
+msgid "touched"
+msgstr "berörd"
+
+msgid "released"
+msgstr "släppt"
+
+msgid "Screen %s at (%s) with %s touch points"
+msgstr "Skärm %s vid (%s) med %s beröringspunkter"
+
+msgid ""
+"Screen dragged with %s touch points at position (%s) with velocity of (%s)"
+msgstr ""
+"Skärm dragen med %s beröringspunkter på position (%s) med hastighet (%s)"
+
+msgid "Magnify Gesture at (%s) with factor %s"
+msgstr "Förstoringsgest vid (%s) med faktor %s"
+
+msgid "Pan Gesture at (%s) with delta (%s)"
+msgstr "Panoreringsgest vid (%s) med delta (%s)"
+
+msgid "MIDI Input on Channel=%s Message=%s"
+msgstr "MIDI Inmatning på Kanel=%s Meddelande=%s"
+
+msgid "Input Event with Shortcut=%s"
+msgstr "Inmatningshändelse med Genväg=%s"
 
 msgid "Select"
 msgstr "Välj"
@@ -55,6 +216,21 @@ msgstr "Avbryt"
 
 msgid "Up"
 msgstr "Upp"
+
+msgid "Down"
+msgstr "Ner"
+
+msgid "Page Up"
+msgstr "Page Up"
+
+msgid "Page Down"
+msgstr "Page Down"
+
+msgid "Home"
+msgstr "Home"
+
+msgid "End"
+msgstr "End"
 
 msgid "Cut"
 msgstr "Klipp"
@@ -71,14 +247,113 @@ msgstr "Ångra"
 msgid "Redo"
 msgstr "Återställ"
 
+msgid "New Line"
+msgstr "Ny Rad"
+
+msgid "New Blank Line"
+msgstr "Ny Blank Rad"
+
+msgid "New Line Above"
+msgstr "Ny Rad Ovanför"
+
+msgid "Backspace"
+msgstr "Backsteg"
+
+msgid "Backspace Word"
+msgstr "Backsteg Ord"
+
+msgid "Backspace all to Left"
+msgstr "Backsteg alla till Vänster"
+
 msgid "Delete"
 msgstr "Ta bort"
+
+msgid "Delete Word"
+msgstr "Ta bort Ord"
+
+msgid "Delete all to Right"
+msgstr "Ta bort alla till Höger"
+
+msgid "Caret Left"
+msgstr "Markör Vänster"
+
+msgid "Caret Word Left"
+msgstr "Markör Ord Vänster"
+
+msgid "Caret Right"
+msgstr "Markör Höger"
+
+msgid "Caret Word Right"
+msgstr "Markör Ord Höger"
+
+msgid "Caret Up"
+msgstr "Markör Upp"
+
+msgid "Caret Down"
+msgstr "Markör Ner"
+
+msgid "Caret Line Start"
+msgstr "Markör Rad Början"
+
+msgid "Caret Line End"
+msgstr "Markör Rad Slut"
+
+msgid "Caret Page Up"
+msgstr "Markör Sida Upp"
+
+msgid "Caret Page Down"
+msgstr "Markör Sida Ner"
+
+msgid "Caret Document Start"
+msgstr "Markör Dokument Början"
+
+msgid "Caret Document End"
+msgstr "Markör Dokument Slut"
+
+msgid "Caret Add Below"
+msgstr "Markör Lägg till Under"
+
+msgid "Caret Add Above"
+msgstr "Markör Lägg till Ovan"
+
+msgid "Scroll Up"
+msgstr "Rulla Upp"
+
+msgid "Scroll Down"
+msgstr "Rulla Ner"
 
 msgid "Select All"
 msgstr "Välj Alla"
 
+msgid "Select Word Under Caret"
+msgstr "Välj Ord Under Markör"
+
+msgid "Add Selection for Next Occurrence"
+msgstr "Lägg till Val för Nästa Förekomst"
+
+msgid "Toggle Insert Mode"
+msgstr "Växla Läge Infoga"
+
+msgid "Text Submitted"
+msgstr "Text Skickad"
+
+msgid "Duplicate Nodes"
+msgstr "Dubblerade Noder"
+
+msgid "Delete Nodes"
+msgstr "Ta bort Noder"
+
+msgid "Go Up One Level"
+msgstr "Gå Upp En Nivå"
+
 msgid "Refresh"
 msgstr "Uppdatera"
+
+msgid "Show Hidden"
+msgstr "Visa Dolda"
+
+msgid "Swap Input Direction"
+msgstr "Växla Inmatnings-riktning"
 
 msgid "Invalid input %d (not passed) in expression"
 msgstr "Ogiltig inmatning %d (ej överförd) i uttrycket"
@@ -122,11 +397,53 @@ msgstr "PiB"
 msgid "EiB"
 msgstr "EiB"
 
+msgid "Example: %s"
+msgstr "Exempel: %s"
+
+msgid "%d item"
+msgid_plural "%d items"
+msgstr[0] "%d föremål"
+msgstr[1] "%d föremål"
+
+msgid ""
+"Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
+"'\"'"
+msgstr ""
+"Ogiltigt namn på handling. Det får inte vara tomt eller innehålla '/', ':', "
+"'=', '\\' or '\"'"
+
 msgid "An action with the name '%s' already exists."
-msgstr "En process med namnet '%s' existerar redan."
+msgstr "En Handling med namnet '%s' finns redan."
+
+msgid "Add Event"
+msgstr "Lägg till Händelse"
+
+msgid "Remove Action"
+msgstr "Ta bort Handling"
+
+msgid "Cannot Remove Action"
+msgstr "Kan inte ta bort Handling"
+
+msgid "Edit Event"
+msgstr "Redigera Händelse"
+
+msgid "Remove Event"
+msgstr "Ta bort Händelse"
+
+msgid "Filter by name..."
+msgstr "Filtrera efter namn..."
+
+msgid "Clear All"
+msgstr "Rensa Alla"
+
+msgid "Add New Action"
+msgstr "Lägg till ny Handling"
 
 msgid "Add"
 msgstr "Lägg till"
+
+msgid "Show Built-in Actions"
+msgstr "Visa Inbyggda Handlingar"
 
 msgid "Action"
 msgstr "Åtgärd"
@@ -269,11 +586,28 @@ msgstr "Ändra Animationsinterpoleringsläge"
 msgid "Change Animation Loop Mode"
 msgstr "Ändra Animationsslingläge"
 
+msgid ""
+"Compressed tracks can't be edited or removed. Re-import the animation with "
+"compression disabled in order to edit."
+msgstr ""
+"Komprimerade spår kan inte redigeras eller tas bort. Du måste importera "
+"animationen på nytt med komprimeringen inaktiverad för att kunna redigera "
+"den."
+
 msgid "Remove Anim Track"
 msgstr "Ta bort Anim spår"
 
+msgid "Create new track for %s and insert key?"
+msgstr "Skapa ett nytt spår för %s och infoga nyckel?"
+
+msgid "Create %d new tracks and insert keys?"
+msgstr "Skapa %d nya spår och infoga nycklar?"
+
 msgid "Create"
 msgstr "Skapa"
+
+msgid "Animation Insert Key"
+msgstr "Infoga animeringsnyckel"
 
 msgid "node '%s'"
 msgstr "nod '%s'"
@@ -293,6 +627,10 @@ msgstr "Ändra Animationssteg"
 
 msgid "Rearrange Tracks"
 msgstr "Ändra ordning på spår"
+
+msgid "Position/Rotation/Scale 3D tracks only apply to 3D-based nodes."
+msgstr ""
+"3D-spår för position/rotation/skala gäller endast för 3D-baserade noder."
 
 msgid ""
 "Audio tracks can only point to nodes of type:\n"
@@ -320,6 +658,18 @@ msgstr "Lägg till Bezier-spår"
 msgid "Track path is invalid, so can't add a key."
 msgstr "Kurva är felaktig så det går inte att skapa en nyckel."
 
+msgid "Track is not of type Node3D, can't insert key"
+msgstr "Spåret är inte av typen Node3D, kan inte infoga nyckel"
+
+msgid "Add Position Key"
+msgstr "Lägg till positionsnyckel"
+
+msgid "Add Rotation Key"
+msgstr "Lägg till Rotation Key"
+
+msgid "Add Scale Key"
+msgstr "Lägg till skalningsnyckel"
+
 msgid "Add Track Key"
 msgstr "Lägg till spårnyckel"
 
@@ -329,8 +679,14 @@ msgstr "Spårväg ogiltig, kan således inte lägga till en metod nyckel."
 msgid "Add Method Track Key"
 msgstr "Lägg till metodspårnyckel"
 
+msgid "Animation Move Keys"
+msgstr "Animation Flyttknappar"
+
 msgid "Scale"
 msgstr "Skala"
+
+msgid "BlendShape"
+msgstr "BlendShape"
 
 msgid "Methods"
 msgstr "Metoder"
@@ -344,17 +700,55 @@ msgstr "Klippbordet är tomt!"
 msgid "Paste Tracks"
 msgstr "Klistra in spår"
 
+msgid "Animation Scale Keys"
+msgstr "Tangenter för animerade skalor"
+
+msgid "Make Easing Keys"
+msgstr "Gör lättnadstangenter"
+
 msgid ""
 "This option does not work for Bezier editing, as it's only a single track."
 msgstr ""
 "Detta alternativ fungerar ej för att redigera Bezier, då det enbart är ett "
 "spår."
 
+msgid "Animation Add RESET Keys"
+msgstr "Animering Lägg till RESET-tangenter"
+
+msgid "Bake Animation as Linear keys."
+msgstr "Bake Animation som linjära nycklar."
+
+msgid ""
+"This animation belongs to an imported scene, so changes to imported tracks "
+"will not be saved.\n"
+"\n"
+"To modify this animation, navigate to the scene's Advanced Import settings "
+"and select the animation.\n"
+"Some options, including looping, are available here. To add custom tracks, "
+"enable \"Save To File\" and\n"
+"\"Keep Custom Tracks\"."
+msgstr ""
+"Denna animationen tillhör en importerad scen, så ändringar i de importerade "
+"spåren kommer inte sparas.\n"
+"\n"
+"För att aktivera förmågan att lägga till anpassade spår, navigera till "
+"scenens import inställningar och ställ in\n"
+"\"Animation > Lagring\" till \"Filer\", aktivera \"Animation > Behåll "
+"Anpassade Spår\", sedan importera om.\n"
+"Alternativt, använd en importförinställning som importerar animationer till "
+"separata filer."
+
 msgid "Warning: Editing imported animation"
 msgstr "Varning: Redigerar importerad animation"
 
 msgid "Select an AnimationPlayer node to create and edit animations."
 msgstr "Välj en AnimationsSpelar-nod för att skapa och redigera animationer."
+
+msgid "Imported Scene"
+msgstr "Importerad Scen"
+
+msgid "Toggle between the bezier curve editor and track editor."
+msgstr "Växla mellan redigeringen av bezierkurvor och spårredigeringen."
 
 msgid "Only show tracks from nodes selected in tree."
 msgstr "Visa enbart spår från valda noder i trädet."
@@ -389,6 +783,9 @@ msgstr "Skala urval"
 msgid "Scale From Cursor"
 msgstr "Skala Från Muspekare"
 
+msgid "Make Easing Selection"
+msgstr "Gör ett val för lättnader"
+
 msgid "Duplicate Selection"
 msgstr "Fördubbla val"
 
@@ -407,14 +804,29 @@ msgstr "Gå till Föregående Steg"
 msgid "Apply Reset"
 msgstr "Verkställ återställning"
 
+msgid "Bake Animation"
+msgstr "Baka Animering"
+
+msgid "Optimize Animation (no undo)"
+msgstr "Optimera Animering (ingen ångra)"
+
+msgid "Clean-Up Animation (no undo)"
+msgstr "Uppstädning av Animation (inget att ångra)"
+
 msgid "Use Bezier Curves"
 msgstr "Använd Bezier-kurvor"
 
 msgid "Anim. Optimizer"
 msgstr "Anim. Optimerare"
 
+msgid "Max. Velocity Error:"
+msgstr "Max. Hastighetsfel:"
+
 msgid "Max. Angular Error:"
 msgstr "Max. Vinkel-fel:"
+
+msgid "Max. Precision Error:"
+msgstr "Max. Precisionsfel:"
 
 msgid "Optimize"
 msgstr "Optimera"
@@ -437,11 +849,20 @@ msgstr "Städa upp"
 msgid "Scale Ratio:"
 msgstr "Skalnings förhållande:"
 
+msgid "Select Transition and Easing"
+msgstr "Välj Övergång och Lättnad"
+
+msgid "Anim. Baker"
+msgstr "Anim. Bakare"
+
 msgid "Select Tracks to Copy"
 msgstr "Välj Spår att Kopiera"
 
 msgid "Select All/None"
 msgstr "Välj Alla/Inga"
+
+msgid "Animation Change Keyframe Time"
+msgstr "Ändra Tidsnyckelns Tid på Animationen"
 
 msgid "Add Audio Track Clip"
 msgstr "Lägg till Ljudspårsklipp"
@@ -460,6 +881,16 @@ msgstr "Radnummer:"
 
 msgid "%d replaced."
 msgstr "%d ersatt."
+
+msgid "%d match"
+msgid_plural "%d matches"
+msgstr[0] "%d matcha"
+msgstr[1] "%d matchar"
+
+msgid "%d of %d match"
+msgid_plural "%d of %d matches"
+msgstr[0] "%d av %d matcha"
+msgstr[1] "%d av %d matchar"
 
 msgid "Match Case"
 msgstr "Matcha gemener/versaler"
@@ -531,6 +962,12 @@ msgstr "Lägg till extra Call Argument:"
 msgid "Extra Call Arguments:"
 msgstr "Extra Call Argument:"
 
+msgid "Allows to drop arguments sent by signal emitter."
+msgstr "Gör det möjligt att släppa argument som skickas av signalgivaren."
+
+msgid "Unbind Signal Arguments:"
+msgstr "Koppla bort signalargument:"
+
 msgid "Receiver Method:"
 msgstr "Mottagarmetod:"
 
@@ -561,6 +998,9 @@ msgstr "Anslut"
 msgid "Signal:"
 msgstr "Signal:"
 
+msgid "No description."
+msgstr "Ingen beskrivning."
+
 msgid "Connect '%s' to '%s'"
 msgstr "Anslut '%s' till '%s'"
 
@@ -579,14 +1019,14 @@ msgstr "Koppla från"
 msgid "Connect a Signal to a Method"
 msgstr "Anslut en Signal till en Metod"
 
-msgid "Edit Connection:"
-msgstr "Redigera Koppling:"
-
 msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
 msgstr "Är du säker att du vill ta bort alla kopplingar från \"%s\" signalen?"
 
 msgid "Signals"
 msgstr "Signaler"
+
+msgid "Filter Signals"
+msgstr "Filtersignaler"
 
 msgid "Are you sure you want to remove all connections from this signal?"
 msgstr "Är du säker att du vill ta bort alla kopplingar från denna signal?"
@@ -594,11 +1034,17 @@ msgstr "Är du säker att du vill ta bort alla kopplingar från denna signal?"
 msgid "Disconnect All"
 msgstr "Koppla av alla"
 
+msgid "Copy Name"
+msgstr "Kopiera namn"
+
 msgid "Edit..."
 msgstr "Ändra..."
 
 msgid "Go to Method"
 msgstr "Gå till metod"
+
+msgid "Change Type of \"%s\""
+msgstr "Ändra typ av \"%s\""
 
 msgid "Change"
 msgstr "Ändra"
@@ -609,6 +1055,12 @@ msgstr "Skapa Ny %s"
 msgid "No results for \"%s\"."
 msgstr "Inga resultat för \"%s\"."
 
+msgid "This class is marked as deprecated."
+msgstr "Den här klassen är markerad som inaktuell."
+
+msgid "This class is marked as experimental."
+msgstr "Denna klass är markerad som experimentell."
+
 msgid "No description available for %s."
 msgstr "Ingen beskrivning tillgänglig för %s."
 
@@ -617,6 +1069,9 @@ msgstr "Favoriter:"
 
 msgid "Recent:"
 msgstr "Senaste:"
+
+msgid "(Un)favorite selected item."
+msgstr "(Av)favoritmarkerat objekt."
 
 msgid "Search:"
 msgstr "Sök:"
@@ -635,6 +1090,18 @@ msgstr "Kopiera Nod-Sökväg"
 
 msgid "Instance:"
 msgstr "Instans:"
+
+msgid ""
+"This node has been instantiated from a PackedScene file:\n"
+"%s\n"
+"Click to open the original file in the Editor."
+msgstr ""
+"Den här noden har installerats från en PackedScene-fil:\n"
+"%s\n"
+"Klicka för att öppna originalfilen i redigeraren."
+
+msgid "ms"
+msgstr "ms"
 
 msgid "Value"
 msgstr "Värde"
@@ -672,17 +1139,56 @@ msgstr "Namn"
 msgid "Time"
 msgstr "Tid"
 
+msgid "Fit to Frame"
+msgstr "Anpassa till ram"
+
+msgid "Linked"
+msgstr "Länkad"
+
+msgid "CPU"
+msgstr "PROCESSOR"
+
+msgid "GPU"
+msgstr "GPU"
+
+msgid "Execution resumed."
+msgstr "Utförandet har återupptagits."
+
 msgid "Warning:"
 msgstr "Varning:"
 
 msgid "Error:"
 msgstr "Fel:"
 
-msgid "Source"
-msgstr "Källa"
+msgid "Stack Trace:"
+msgstr "Stackspårning:"
+
+msgid "Debug session started."
+msgstr "Felsökningssessionen har påbörjats."
+
+msgid "Debug session closed."
+msgstr "Felsökningssessionen är avslutad."
+
+msgid "Line %d"
+msgstr "Linje %d"
+
+msgid "Delete Breakpoint"
+msgstr "Ta bort brytpunkt"
+
+msgid "Delete All Breakpoints in:"
+msgstr "Ta bort alla brytpunkter i:"
+
+msgid "Delete All Breakpoints"
+msgstr "Ta bort alla brytpunkter"
 
 msgid "C++ Source"
 msgstr "C++ Källa"
+
+msgid "Filter Stack Variables"
+msgstr "Filtrera stackvariabler"
+
+msgid "Visual Profiler"
+msgstr "Visuell profilering"
 
 msgid "Total:"
 msgstr "Totalt:"
@@ -742,6 +1248,12 @@ msgstr "Öppna Scen"
 
 msgid "Owners of: %s (Total: %d)"
 msgstr "Ägare av: %s (Totalt: %d)"
+
+msgid "Localization remap"
+msgstr "Ommappning av lokalisering"
+
+msgid "Localization remap for path '%s' and locale '%s'."
+msgstr "Lokaliseringsomvandling för sökvägen %s och språket %s."
 
 msgid ""
 "Remove the selected files from the project? (Cannot be undone.)\n"
@@ -946,6 +1458,12 @@ msgstr "Dämpa"
 msgid "Bypass"
 msgstr "Gå förbi"
 
+msgid "Duplicate Bus"
+msgstr "Duplicera buss"
+
+msgid "Delete Bus"
+msgstr "Radera buss"
+
 msgid "Reset Volume"
 msgstr "Återställ Volym"
 
@@ -1024,17 +1542,26 @@ msgstr "Giltiga tecken:"
 msgid "Must not collide with an existing engine class name."
 msgstr "Får inte vara samma som ett befintligt engine class-namn."
 
+msgid "Must not collide with an existing global script class name."
+msgstr "Får inte vara samma som ett befintligt globalt konstant-namn."
+
 msgid "Must not collide with an existing built-in type name."
 msgstr "Får inte vara samma som ett befintligt inbyggt typ-namn."
 
 msgid "Must not collide with an existing global constant name."
 msgstr "Får inte vara samma som ett befintligt globalt konstant-namn."
 
+msgid "Keyword cannot be used as an Autoload name."
+msgstr "Nyckelord kan inte användas som ett autoladdningsnamn."
+
 msgid "Autoload '%s' already exists!"
 msgstr "Autoload '%s' finns redan!"
 
 msgid "Rename Autoload"
 msgstr "Byt namn på Autload"
+
+msgid "Toggle Autoload Globals"
+msgstr "Växla AutoLoad Globals"
 
 msgid "Move Autoload"
 msgstr "Flytta Autoload"
@@ -1048,11 +1575,17 @@ msgstr "Aktivera"
 msgid "Rearrange Autoloads"
 msgstr "Ändra ordning på Autoloads"
 
+msgid "Can't add Autoload:"
+msgstr "Kunde inte lägga till Auto laddning:"
+
 msgid "%s is an invalid path. File does not exist."
 msgstr "%s är en ogiltig genväg. Filen existerar inte."
 
 msgid "%s is an invalid path. Not in resource path (res://)."
 msgstr "%s är en ogiltig genväg. Inte i resurs-genväg (res://)."
+
+msgid "Add Autoload"
+msgstr "Lägg till Auto laddning"
 
 msgid "Path:"
 msgstr "Sökväg:"
@@ -1063,11 +1596,70 @@ msgstr "Node Namn:"
 msgid "Global Variable"
 msgstr "Global variabel"
 
+msgid "3D Engine"
+msgstr "3D motor"
+
 msgid "2D Physics"
 msgstr "2D-Fysik"
 
 msgid "3D Physics"
 msgstr "3D-Fysik"
+
+msgid "XR"
+msgstr "XR"
+
+msgid "RenderingDevice"
+msgstr "Renderare"
+
+msgid "Vulkan"
+msgstr "Vulkan"
+
+msgid "Text Server: Fallback"
+msgstr "Textserver: Fallback"
+
+msgid "Text Server: Advanced"
+msgstr "Textserver: Avancerad"
+
+msgid "TTF, OTF, Type 1, WOFF1 Fonts"
+msgstr "TTF, OTF, Typ 1, WOFF1-teckensnitt"
+
+msgid "WOFF2 Fonts"
+msgstr "WOFF2-teckensnitt"
+
+msgid "SIL Graphite Fonts"
+msgstr "SIL Graphite-teckensnitt"
+
+msgid "Multi-channel Signed Distance Field Font Rendering"
+msgstr "Rendering av tecknade distansfält med flera kanaler för teckensnitt"
+
+msgid "3D Nodes as well as RenderingServer access to 3D features."
+msgstr "3D Noder samt RenderingServer tillgång till 3D-funktioner."
+
+msgid "2D Physics nodes and PhysicsServer2D."
+msgstr "2D-fysiknoder och PhysicsServer2D."
+
+msgid "3D Physics nodes and PhysicsServer3D."
+msgstr "3D-fysiknoder och PhysicsServer3D."
+
+msgid "Navigation, both 2D and 3D."
+msgstr "Navigering, både 2D och 3D."
+
+msgid "XR (AR and VR)."
+msgstr "XR (AR och VR)."
+
+msgid ""
+"RenderingDevice based rendering (if disabled, the OpenGL back-end is "
+"required)."
+msgstr ""
+"RenderingDevice-baserad rendering (om den är inaktiverad krävs OpenGL-"
+"serverdelen)."
+
+msgid ""
+"OpenGL back-end (if disabled, the RenderingDevice back-end is required)."
+msgstr "OpenGL-backend (om den är inaktiverad krävs RenderingDevice-backend)."
+
+msgid "Vulkan back-end of RenderingDevice."
+msgstr "Vulkan-back-end av RenderingDevice."
 
 msgid "File '%s' format is invalid, import aborted."
 msgstr "Fil '%s''s format är ogiltig, import avbruten."
@@ -1350,6 +1942,12 @@ msgstr "Egenskaper"
 msgid "default:"
 msgstr "standard:"
 
+msgid "Constructors"
+msgstr "Konstruktör"
+
+msgid "Operators"
+msgstr "Operatorer"
+
 msgid "Theme Properties"
 msgstr "Tema Egenskaper"
 
@@ -1360,7 +1958,7 @@ msgid "Enumerations"
 msgstr "Uppräkningar"
 
 msgid "Property Descriptions"
-msgstr "Egenskapsbeskrivningar"
+msgstr "Egendomsbeskrivning"
 
 msgid ""
 "There is currently no description for this property. Please help us by "
@@ -1369,8 +1967,14 @@ msgstr ""
 "Det finns för närvarande ingen beskrivning för denna egenskap. Snälla hjälp "
 "oss genom att [color=$color][url=$url]bidra med en[/url][/color]!"
 
+msgid "Constructor Descriptions"
+msgstr "Konstruktör beskrivning"
+
 msgid "Method Descriptions"
 msgstr "Metodbeskrivning"
+
+msgid "Operator Descriptions"
+msgstr "Operator beskrivning"
 
 msgid "%d match."
 msgstr "%d matcha."
@@ -1401,6 +2005,9 @@ msgstr "Ändra storlek på Array"
 
 msgid "Set Multiple:"
 msgstr "Sätt Flera:"
+
+msgid "Edit Filters"
+msgstr "Redigera Filter"
 
 msgid "Language:"
 msgstr "Språk:"
@@ -2207,9 +2814,6 @@ msgstr "Triangel existerar redan."
 msgid "Parameter Changed:"
 msgstr "Parameter ändrad:"
 
-msgid "Edit Filters"
-msgstr "Redigera Filter"
-
 msgid "Node Moved"
 msgstr "Nod Flyttad"
 
@@ -2598,6 +3202,9 @@ msgstr "Kasta"
 msgid "Standard"
 msgstr "Standard"
 
+msgid "Source"
+msgstr "Källa"
+
 msgid ""
 "Missing connected method '%s' for signal '%s' from node '%s' to node '%s'."
 msgstr ""
@@ -2647,9 +3254,6 @@ msgstr "(tom)"
 
 msgid "Animations:"
 msgstr "Animationer:"
-
-msgid "Loop"
-msgstr "Slinga"
 
 msgid "Updating the editor"
 msgstr "Uppdaterar editorn"

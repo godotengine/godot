@@ -496,6 +496,9 @@ msgstr "จากสัญญาณ:"
 msgid "Scene does not contain any script."
 msgstr "ไม่มีสคริปต์ในฉาก"
 
+msgid "Select Method"
+msgstr "เลือกเมท็อด"
+
 msgid "Remove"
 msgstr "ลบ"
 
@@ -550,9 +553,6 @@ msgstr "ลบการเชื่อมโยง"
 
 msgid "Connect a Signal to a Method"
 msgstr "เชื่อมต่อสัญญาณไปยังเมธอด"
-
-msgid "Edit Connection:"
-msgstr "แก้ไขการเชื่อมต่อ:"
 
 msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
 msgstr "คุณแน่ใจหรือว่าจะลบการเชื่อมต่อทั้งหมดจากสัญญาณ \"%s\"?"
@@ -674,29 +674,14 @@ msgstr "คำเตือน:"
 msgid "Error:"
 msgstr "ผิดพลาด:"
 
-msgid "C++ Error"
-msgstr "C++ ผิดพลาด"
-
-msgid "C++ Error:"
-msgstr "C++ ผิดพลาด:"
-
-msgid "Source"
-msgstr "ต้นฉบับ"
-
-msgid "C++ Source"
-msgstr "C++ ต้นฉบับ"
-
-msgid "Source:"
-msgstr "ต้นฉบับ:"
-
-msgid "C++ Source:"
-msgstr "C++ ต้นฉบับ:"
-
 msgid "Stack Trace"
 msgstr "แทร็กสแตค"
 
 msgid "Copy Error"
 msgstr "คัดลอกผิดพลาด"
+
+msgid "C++ Source"
+msgstr "C++ ต้นฉบับ"
 
 msgid "Video RAM"
 msgstr "หน่วยความจำวีดีโอ"
@@ -1514,11 +1499,11 @@ msgstr "แสดงทุกภูมิภาค"
 msgid "Show Selected Locales Only"
 msgstr "แสดงเฉพาะภภายในเท่านั้น"
 
+msgid "Edit Filters"
+msgstr "แก้ไขตัวกรอง"
+
 msgid "Language:"
 msgstr "ภาษา:"
-
-msgid "Script"
-msgstr "สคริปต์"
 
 msgid "Clear Output"
 msgstr "เคลียร์เอาต์พุต"
@@ -1960,22 +1945,6 @@ msgstr "เทมเพลตการสร้างบนแอนดรอย
 
 msgid "Manage Templates"
 msgstr "จัดการเทมเพลต"
-
-msgid ""
-"This will set up your project for custom Android builds by installing the "
-"source template to \"res://android/build\".\n"
-"You can then apply modifications and build your own custom APK on export "
-"(adding modules, changing the AndroidManifest.xml, etc.).\n"
-"Note that in order to make custom builds instead of using pre-built APKs, "
-"the \"Use Custom Build\" option should be enabled in the Android export "
-"preset."
-msgstr ""
-"นี่จะตั้งค่าโปรเจคต์ของคุณสำหรับการสร้างสำหรับ Android ที่กำหนดเอง "
-"โดยการติดตั้งเทมเพลตต้นฉบับไปยัง \"res: // android / build\"\n"
-"คุณสามารถปรับเปลี่ยนและสร้าง APK แบบกำหนดเองสำหรับส่งออก (เพิ่มโมดูล, เปลี่ยน "
-"AndroidManifest.xml เป็นต้น)\n"
-"โปรดทราบว่าในการสร้างแบบกำหนดเองแทนที่จะใช้ APK ที่สร้างไว้ล่วงหน้า ควรเปิดใช้ตัวเลือก "
-"\"Use Custom Build\" ในพรีเซ็ตการส่งออกของ Android"
 
 msgid ""
 "The Android build template is already installed in this project and it won't "
@@ -2766,6 +2735,9 @@ msgstr "เลือกหรือเลื่อนจุด สร้าง�
 msgid "Enable snap and show grid."
 msgstr "เปิกการใช้งานการเข้าหาแลแสดงเส้นกริด"
 
+msgid "Blend:"
+msgstr "ผสม:"
+
 msgid "Point"
 msgstr "จุด"
 
@@ -2807,12 +2779,6 @@ msgstr "ลบจุดและสามเหลี่ยม"
 
 msgid "Generate blend triangles automatically (instead of manually)"
 msgstr "สร้างสามเหลี่ยม blend อัตโนมัติ (แทนที่การสร้างแบบปกติ)"
-
-msgid "Blend:"
-msgstr "ผสม:"
-
-msgid "Edit Filters"
-msgstr "แก้ไขตัวกรอง"
 
 msgid "Output node can't be added to the blend tree."
 msgstr "โหนดเอาซ์พุตไม่สามารถเพิ่มไปยัง blend tree"
@@ -2926,9 +2892,6 @@ msgstr "เล่นแอนิเมชันที่เลือกย้อ
 
 msgid "Play selected animation backwards from end. (Shift+A)"
 msgstr "เล่นแอนิเมชันที่เลือกย้อนหลังจากท้ายสุด (Shift+A)"
-
-msgid "Stop animation playback. (S)"
-msgstr "หยุดการเล่นแอนิเมชัน (S)"
 
 msgid "Play selected animation from start. (Shift+D)"
 msgstr "เล่นแอนิเมชันที่เลือกจากเริ่มต้น (Shift+D)"
@@ -3950,12 +3913,6 @@ msgstr "แก้ไข Notifier AABB"
 msgid "Change Particles AABB"
 msgstr "แก้ไข Particles AABB"
 
-msgid "Change Box Shape Extents"
-msgstr "ปรับขนาดทรงสี่เหลี่ยม"
-
-msgid "Change Probe Extents"
-msgstr "แก้ไขขนาด Probe"
-
 msgid "Change Capsule Shape Radius"
 msgstr "ปรับรัศมีทรงแคปซูล"
 
@@ -4671,6 +4628,9 @@ msgstr "มาตรฐาน"
 msgid "Connections to method:"
 msgstr "เชื่อมไปยังเมธอด:"
 
+msgid "Source"
+msgstr "ต้นฉบับ"
+
 msgid "Target"
 msgstr "เป้าหมาย"
 
@@ -4890,12 +4850,6 @@ msgstr "(ว่างเปล่า)"
 
 msgid "Animations:"
 msgstr "แอนิเมชัน:"
-
-msgid "Speed:"
-msgstr "ความเร็ว:"
-
-msgid "Loop"
-msgstr "วน"
 
 msgid "Animation Frames:"
 msgstr "เฟรมแอนิเมชัน:"
@@ -5743,9 +5697,6 @@ msgstr "เพิ่มการกระทำ"
 msgid "Change Action deadzone"
 msgstr "เปลี่ยน Action deadzone"
 
-msgid "Add Input Action Event"
-msgstr "เพิ่มปุ่มกดของการกระทำ"
-
 msgid "Erase Input Action"
 msgstr "ลบการกระทำ"
 
@@ -5771,9 +5722,6 @@ msgid "Select Property"
 msgstr "เลือกคุณสมบัติ"
 
 msgid "Select Virtual Method"
-msgstr "เลือกเมท็อด"
-
-msgid "Select Method"
 msgstr "เลือกเมท็อด"
 
 msgid "Batch Rename"
@@ -6426,12 +6374,6 @@ msgstr "public key ผิดพลาดสำหรับ APK expansion"
 msgid "Invalid package name:"
 msgstr "ชื่อแพ็คเกจผิดพลาด:"
 
-msgid "\"Use Custom Build\" must be enabled to use the plugins."
-msgstr "\"Use Custom Build\" จำเป็นต้องเปิดการใช้งานหากจะใช้ปลั๊กอิน"
-
-msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
-msgstr "\"Export AAB\" จะใช้ได้เฉพาะเมื่อเปิดใช้งาน \"Use Custom Build\""
-
 msgid "Invalid filename! Android App Bundle requires the *.aab extension."
 msgstr "ชื่อไฟล์ผิดพลาด! แอนดรอยด์แอปบันเดิลจำเป็นต้องมีนามสกุล *.aab"
 
@@ -6440,12 +6382,6 @@ msgstr "การขยาย APK เข้ากันไม่ได้กั�
 
 msgid "Invalid filename! Android APK requires the *.apk extension."
 msgstr "ชื่อไฟล์ผิดพลาด! แอนดรอยด์ APK จำเป็นต้องมีนามสกุล *.apk"
-
-msgid ""
-"Trying to build from a custom built template, but no version info for it "
-"exists. Please reinstall from the 'Project' menu."
-msgstr ""
-"พยายามสร้างจากเทมเพลตที่สร้างขึ้นเอง แต่ไม่มีข้อมูลเวอร์ชัน โปรดติดตั้งใหม่จากเมนู \"โปรเจกต์\""
 
 msgid "Building Android Project (gradle)"
 msgstr "กำลังสร้างโปรเจคแอนดรอยด์ (gradle)"

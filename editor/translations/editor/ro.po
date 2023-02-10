@@ -569,9 +569,6 @@ msgstr "Deconectați"
 msgid "Connect a Signal to a Method"
 msgstr "Conectați Semnal la o Metodă"
 
-msgid "Edit Connection:"
-msgstr "Modifică Conexiunea:"
-
 msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
 msgstr "Ești sigur că vrei să ștergi toate conexiunile de la semnalul \"%s\"?"
 
@@ -661,18 +658,6 @@ msgstr "Apeluri"
 
 msgid "Error:"
 msgstr "Eroare:"
-
-msgid "C++ Error"
-msgstr "Eroare C++"
-
-msgid "C++ Error:"
-msgstr "Eroare C++:"
-
-msgid "Source:"
-msgstr "Sursă:"
-
-msgid "C++ Source:"
-msgstr "Sursă C++:"
 
 msgid "Expand All"
 msgstr "Extinde Toate"
@@ -1477,6 +1462,9 @@ msgstr "Redimensionați Array-ul"
 
 msgid "Set Multiple:"
 msgstr "Seteaza Multiple:"
+
+msgid "Edit Filters"
+msgstr "Editează Filtrele"
 
 msgid "Clear Output"
 msgstr "Curăță Afișarea"
@@ -2418,17 +2406,14 @@ msgstr "Mută punct nod"
 msgid "Change BlendSpace1D Labels"
 msgstr "Modifică etichetele BlendSpace1D"
 
-msgid "Triangle already exists."
-msgstr "Triunghiul există deja."
-
 msgid "Blend:"
 msgstr "Amestec:"
 
+msgid "Triangle already exists."
+msgstr "Triunghiul există deja."
+
 msgid "Parameter Changed:"
 msgstr "Parametru modificat:"
-
-msgid "Edit Filters"
-msgstr "Editează Filtrele"
 
 msgid "Toggle Filter On/Off"
 msgstr "Comutare filtru activat/dezactivat"
@@ -2486,9 +2471,6 @@ msgstr "Rulează animația selectată în sens invers de la poziția curentă. (
 
 msgid "Play selected animation backwards from end. (Shift+A)"
 msgstr "Rulează animația selectată în sens invers de la sfârșit. (Shift+A)"
-
-msgid "Stop animation playback. (S)"
-msgstr "Oprește rularea animației. (S)"
 
 msgid "Play selected animation from start. (Shift+D)"
 msgstr "Rulează animația selectată de la început. (Shift+D)"

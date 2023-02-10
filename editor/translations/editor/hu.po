@@ -509,6 +509,9 @@ msgstr "Jelzésből:"
 msgid "Scene does not contain any script."
 msgstr "A jelenet nem tartalmaz szkriptet."
 
+msgid "Select Method"
+msgstr "Metódus kiválasztása"
+
 msgid "Remove"
 msgstr "Eltávolítás"
 
@@ -564,9 +567,6 @@ msgstr "Leválasztás"
 
 msgid "Connect a Signal to a Method"
 msgstr "Jelzés csatlakoztatása metódushoz"
-
-msgid "Edit Connection:"
-msgstr "Kapcsolat szerkesztése:"
 
 msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
 msgstr "Biztosan eltávolítja az összes kapcsolatot a(z) \"%s\" jelzésről?"
@@ -664,26 +664,11 @@ msgstr "Hívások"
 msgid "Error:"
 msgstr "Hiba:"
 
-msgid "C++ Error"
-msgstr "C++ hiba"
-
-msgid "C++ Error:"
-msgstr "C++ hiba:"
-
-msgid "Source"
-msgstr "Forrás"
+msgid "Copy Error"
+msgstr "Hiba Másolása"
 
 msgid "C++ Source"
 msgstr "C++ forrás"
-
-msgid "Source:"
-msgstr "Forrás:"
-
-msgid "C++ Source:"
-msgstr "C++ forrás:"
-
-msgid "Copy Error"
-msgstr "Hiba Másolása"
 
 msgid "Skip Breakpoints"
 msgstr "Töréspontok kihagyása"
@@ -1474,11 +1459,11 @@ msgstr "Tömb átméretezése"
 msgid "Set Multiple:"
 msgstr "Többszörös beállítása:"
 
+msgid "Edit Filters"
+msgstr "Szűrők Szerkesztése"
+
 msgid "Language:"
 msgstr "Nyelv:"
-
-msgid "Script"
-msgstr "Szkript"
 
 msgid "Clear Output"
 msgstr "Kimenet törlése"
@@ -2536,6 +2521,9 @@ msgstr "Betöltés..."
 msgid "Enable snap and show grid."
 msgstr "Illesztés engedélyezése és rács megjelenítése."
 
+msgid "Blend:"
+msgstr "Keverés:"
+
 msgid "Point"
 msgstr "Pont"
 
@@ -2556,12 +2544,6 @@ msgstr "Automatikus háromszögek be- és kikapcsolása"
 
 msgid "Erase points and triangles."
 msgstr "Pontok és háromszögek törlése."
-
-msgid "Blend:"
-msgstr "Keverés:"
-
-msgid "Edit Filters"
-msgstr "Szűrők Szerkesztése"
 
 msgid "Set Animation"
 msgstr "Animáció beállítása"
@@ -2641,9 +2623,6 @@ msgstr ""
 
 msgid "Play selected animation backwards from end. (Shift+A)"
 msgstr "A kiválasztott animáció lejátszása visszafelé a végétől. (Shift + A)"
-
-msgid "Stop animation playback. (S)"
-msgstr "Animáció lejátszásának leállítása. (S)"
 
 msgid "Play selected animation from start. (Shift+D)"
 msgstr "A kiválasztott animáció lejátszása az elejétől. (Shift + D)"
@@ -3862,6 +3841,9 @@ msgstr "Alapértelmezett"
 msgid "Connections to method:"
 msgstr "Kapcsolatok a metódushoz:"
 
+msgid "Source"
+msgstr "Forrás"
+
 msgid "Go to Function"
 msgstr "Ugrás függvényre"
 
@@ -3972,9 +3954,6 @@ msgstr "Animáció Törlése?"
 
 msgid "Animations:"
 msgstr "Animációk:"
-
-msgid "Loop"
-msgstr "Ciklus"
 
 msgid "Animation Frames:"
 msgstr "Animációs Képkockák:"
@@ -4158,9 +4137,6 @@ msgstr "Bővítmények"
 
 msgid "Select Virtual Method"
 msgstr "Virtuális metódus kiválasztása"
-
-msgid "Select Method"
-msgstr "Metódus kiválasztása"
 
 msgid "Batch Rename"
 msgstr "Csoportos átnevezés"
