@@ -11,7 +11,7 @@
 # Whod <whodizhod@gmail.com>, 2020.
 # Stoyan <stoyan.stoyanov99@protonmail.com>, 2020.
 # zooid <the.zooid@gmail.com>, 2020, 2022.
-# Любомир Василев <lyubomirv@gmx.com>, 2020, 2021, 2022.
+# Любомир Василев <lyubomirv@gmx.com>, 2020, 2021, 2022, 2023.
 # Ziv D <wizdavid@gmail.com>, 2020.
 # Violin Iliev <violin.developer@gmail.com>, 2021.
 # Ivan Gechev <ivan_banov@abv.bg>, 2022.
@@ -23,8 +23,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-10-25 15:43+0000\n"
-"Last-Translator: Vosh <vosh4k@gmail.com>\n"
+"PO-Revision-Date: 2023-02-10 14:12+0000\n"
+"Last-Translator: Любомир Василев <lyubomirv@gmx.com>\n"
 "Language-Team: Bulgarian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/bg/>\n"
 "Language: bg\n"
@@ -32,7 +32,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.14.2-dev\n"
+"X-Generator: Weblate 4.16-dev\n"
 
 msgid "Physical"
 msgstr "Физически"
@@ -363,6 +363,16 @@ msgstr "Номер на реда:"
 msgid "%d replaced."
 msgstr "%d заменени."
 
+msgid "%d match"
+msgid_plural "%d matches"
+msgstr[0] "%d съвпадение"
+msgstr[1] "%d съвпадения"
+
+msgid "%d of %d match"
+msgid_plural "%d of %d matches"
+msgstr[0] "%d от %d съвпадение"
+msgstr[1] "%d от %d съвпадения"
+
 msgid "Match Case"
 msgstr "Различаване на малки и главни букви"
 
@@ -402,6 +412,9 @@ msgstr "От сигнал:"
 msgid "Scene does not contain any script."
 msgstr "Сцената не съдържа скриптове."
 
+msgid "Select Method"
+msgstr "Избиране на метод"
+
 msgid "Remove"
 msgstr "Премахване"
 
@@ -437,9 +450,6 @@ msgstr "Разкачване"
 
 msgid "Connect a Signal to a Method"
 msgstr "Свързване на сигнала към метод"
-
-msgid "Edit Connection:"
-msgstr "Редактиране на Връзката:"
 
 msgid "Signals"
 msgstr "Сигнали"
@@ -498,11 +508,8 @@ msgstr "Предупреждение:"
 msgid "Error:"
 msgstr "Грешка:"
 
-msgid "C++ Error"
-msgstr "Грешка в C++"
-
-msgid "C++ Error:"
-msgstr "Грешка в C++:"
+msgid "%s Error"
+msgstr "Грешка от %s"
 
 msgid "Copy Error"
 msgstr "Копиране на грешката"
@@ -1050,11 +1057,11 @@ msgstr "Показване на всички езици"
 msgid "Show Selected Locales Only"
 msgstr "Показване само на избраните езици"
 
+msgid "Edit Filters"
+msgstr "Редактиране на филтрите"
+
 msgid "Language:"
 msgstr "Език:"
-
-msgid "Script"
-msgstr "Скрипт"
 
 msgid "Clear Output"
 msgstr "Изчистване на изхода"
@@ -1332,24 +1339,6 @@ msgstr "Управление на шаблоните"
 msgid "Install from file"
 msgstr "Инсталиране от файл"
 
-msgid ""
-"This will set up your project for custom Android builds by installing the "
-"source template to \"res://android/build\".\n"
-"You can then apply modifications and build your own custom APK on export "
-"(adding modules, changing the AndroidManifest.xml, etc.).\n"
-"Note that in order to make custom builds instead of using pre-built APKs, "
-"the \"Use Custom Build\" option should be enabled in the Android export "
-"preset."
-msgstr ""
-"Това ще настрои проекта Ви за персонализирано компилиране за Android, като "
-"инсталира изходния шаблон в „res://android/build“.\n"
-"След това ще можете да го промените (като добавите модули, промените файла "
-"„AndroidManifest.xml“ и т.н.) и да създадете свой собствен APK за "
-"изнасянето.\n"
-"Имайте предвид, че за да ползвате персонализирани файлове APK, вместо "
-"предварително готовите, в конфигурацията за изнасяне за Android трябва да "
-"поставена отметка в „Използване на собствена компилация“."
-
 msgid "Import Templates From ZIP File"
 msgstr "Внасяне на шаблони от архив във формат ZIP"
 
@@ -1428,9 +1417,6 @@ msgstr "Настройки на редактора"
 
 msgid "General"
 msgstr "Общи"
-
-msgid "%s Error"
-msgstr "Грешка от %s"
 
 msgid "All Devices"
 msgstr "Всички устройства"
@@ -1745,14 +1731,26 @@ msgstr "Допълнителни настройки на ресурса."
 msgid "Edit Resource from Clipboard"
 msgstr "Редактиране на ресурс от буфера за обмен"
 
+msgid "Go to previous edited object in history."
+msgstr "Преминаване към предходния редактиран обект в историята."
+
+msgid "Go to next edited object in history."
+msgstr "Преминаване към следващия редактиран обект в историята."
+
 msgid "History of recently edited objects."
 msgstr "История на последно редактираните обекти."
 
 msgid "Open documentation for this object."
 msgstr "Отваряне на документацията за този обект."
 
+msgid "Filter Properties"
+msgstr "Филтриране на свойствата"
+
 msgid "Manage object properties."
 msgstr "Управление на свойствата на обекта."
+
+msgid "This cannot be undone. Are you sure?"
+msgstr "Това действие е необратимо. Наистина ли го искате?"
 
 msgid "Add %d Translations"
 msgstr "Добавяне на %d превода"
@@ -1760,11 +1758,61 @@ msgstr "Добавяне на %d превода"
 msgid "Remove Translation"
 msgstr "Премахване на превода"
 
+msgid "Add %d file(s) for POT generation"
+msgstr "Добавяне на %d файл(а) за създаване на POT"
+
+msgid "Remove file from POT generation"
+msgstr "Премахване на файла от процеса за създаване на POT"
+
+msgid "Removed"
+msgstr "Премахнато"
+
+msgid "%s cannot be found."
+msgstr "%s не може да бъде намерено."
+
+msgid "Translations"
+msgstr "Преводи"
+
+msgid "Translations:"
+msgstr "Преводи:"
+
+msgid "Resources:"
+msgstr "Ресурси:"
+
 msgid "Locale"
 msgstr "Локал"
 
+msgid "POT Generation"
+msgstr "Създаване на POT"
+
+msgid "Files with translation strings:"
+msgstr "Файлове с низове за превод:"
+
+msgid "Generate POT"
+msgstr "Създаване на POT"
+
+msgid "Set %s on %d nodes"
+msgstr "Задаване на %s на %d обекта"
+
+msgid "%s (%d Selected)"
+msgstr "%s (%d избран(и))"
+
 msgid "Select a single node to edit its signals and groups."
 msgstr "Изберете един обект, за да редактирате сигналите и групите му."
+
+msgid "Plugin name cannot be blank."
+msgstr "Името на приставката не може да бъде празно."
+
+msgid "Script extension must match chosen language extension (.%s)."
+msgstr ""
+"Разширението на скрипта трябва да съвпада с разширението на избрания език (."
+"%s)."
+
+msgid "Subfolder name is not a valid folder name."
+msgstr "Името на подпапката не е правилно име на папка."
+
+msgid "Subfolder cannot be one which already exists."
+msgstr "Вече съществува подпапка с това име."
 
 msgid "Edit a Plugin"
 msgstr "Редактиране на приставка"
@@ -1772,11 +1820,17 @@ msgstr "Редактиране на приставка"
 msgid "Create a Plugin"
 msgstr "Създаване на приставка"
 
+msgid "Update"
+msgstr "Обновяване"
+
 msgid "Plugin Name:"
 msgstr "Име на приставката:"
 
 msgid "Subfolder:"
 msgstr "Подпапка:"
+
+msgid "Author:"
+msgstr "Автор:"
 
 msgid "Version:"
 msgstr "Версия:"
@@ -1829,6 +1883,17 @@ msgstr "Зареждане..."
 msgid "Move Node Point"
 msgstr "Преместване на точката на обекта"
 
+msgid "Change BlendSpace1D Config"
+msgstr "Промяна на конфигурацията на BlendSpace1D"
+
+msgid "Change BlendSpace1D Labels"
+msgstr "Промяна на етикетите на BlendSpace1D"
+
+msgid "This type of node can't be used. Only animation nodes are allowed."
+msgstr ""
+"Този тип обект не може да бъде използван. Разрешени са само обекти за "
+"анимиране."
+
 msgid "This type of node can't be used. Only root nodes are allowed."
 msgstr ""
 "Този тип обект не може да бъде използван. Разрешени са само коренни обекти."
@@ -1841,6 +1906,9 @@ msgstr "Добавяне на точки за анимация"
 
 msgid "Remove BlendSpace1D Point"
 msgstr "Премахване на точка на BlendSpace1D"
+
+msgid "Move BlendSpace1D Node Point"
+msgstr "Преместване на точката на обекта за BlendSpace1D"
 
 msgid ""
 "AnimationTree is inactive.\n"
@@ -1859,6 +1927,12 @@ msgstr "Избиране и преместване на точки; създав
 msgid "Enable snap and show grid."
 msgstr "Включване на прилепването и показване на решетката."
 
+msgid "Sync:"
+msgstr "Синхронизиране:"
+
+msgid "Blend:"
+msgstr "Смесване:"
+
 msgid "Point"
 msgstr "Точка"
 
@@ -1874,8 +1948,17 @@ msgstr "Триъгълникът вече съществува."
 msgid "Add Triangle"
 msgstr "Добавяне на триъгълник"
 
+msgid "Change BlendSpace2D Config"
+msgstr "Промяна на конфигурацията на BlendSpace2D"
+
+msgid "Change BlendSpace2D Labels"
+msgstr "Промяна на етикетите на BlendSpace2D"
+
 msgid "Remove BlendSpace2D Point"
-msgstr "Преместване на точка на BlendSpace2D"
+msgstr "Премахване на точката на BlendSpace2D"
+
+msgid "Remove BlendSpace2D Triangle"
+msgstr "Премахване на триъгълника на BlendSpace2D"
 
 msgid "BlendSpace2D does not belong to an AnimationTree node."
 msgstr "BlendSpace2D не принадлежи на обект от тип AnimationTree."
@@ -1895,14 +1978,14 @@ msgstr "Изтриване на точки и триъгълници."
 msgid "Generate blend triangles automatically (instead of manually)"
 msgstr "Създаване на триъгълници за смесване автоматично (а не ръчно)"
 
-msgid "Blend:"
-msgstr "Смесване:"
-
 msgid "Parameter Changed:"
 msgstr "Параметърът е променен:"
 
-msgid "Edit Filters"
-msgstr "Редактиране на филтрите"
+msgid "Inspect Filters"
+msgstr "Разглеждане на филтрите"
+
+msgid "Output node can't be added to the blend tree."
+msgstr "Резултатният обект не може да бъде добавен към дървото за смесване."
 
 msgid "Add Node to BlendTree"
 msgstr "Добавяне на обекта към BlendTree"
@@ -1945,6 +2028,9 @@ msgstr "Аудио клипове"
 msgid "Functions"
 msgstr "Функции"
 
+msgid "Inspect Filtered Tracks:"
+msgstr "Разглеждане на филтрираните пътечки:"
+
 msgid "Edit Filtered Tracks:"
 msgstr "Редактиране на филтрираните пътечки:"
 
@@ -1957,8 +2043,85 @@ msgstr "Добавяне на обект…"
 msgid "Enable Filtering"
 msgstr "Включване на филтрирането"
 
+msgid "Library Name:"
+msgstr "Име на библиотеката:"
+
+msgid "Animation name can't be empty."
+msgstr "Името на анимацията не може да бъде празно."
+
+msgid "Animation name contains invalid characters: '/', ':', ',' or '['."
+msgstr ""
+"Името на анимацията съдържа някой/и от следните непозволени знаци: / : , или "
+"[."
+
+msgid "Animation with the same name already exists."
+msgstr "Вече съществува анимация с това име."
+
+msgid "Enter a library name."
+msgstr "Въведете име за библиотеката."
+
+msgid "Library name contains invalid characters: '/', ':', ',' or '['."
+msgstr ""
+"Името на библиотеката съдържа някой/и от следните непозволени знаци: / : , "
+"или [."
+
+msgid "Library with the same name already exists."
+msgstr "Вече съществува библиотека с това име."
+
+msgid "Animation name is valid."
+msgstr "Името на анимацията отговаря на изискванията."
+
+msgid "Global library will be created."
+msgstr "Ще бъде създадена глобална библиотека."
+
+msgid "Library name is valid."
+msgstr "Името на библиотеката отговаря на изискванията."
+
+msgid "Add Animation to Library: %s"
+msgstr "Добавяне на анимация към библиотеката: %s"
+
+msgid "Add Animation Library: %s"
+msgstr "Добавяне на анимационна библиотека: %s"
+
 msgid "Load Animation"
 msgstr "Зареждане на анимация"
+
+msgid ""
+"This animation library can't be saved because it does not belong to the "
+"edited scene. Make it unique first."
+msgstr ""
+"Тази анимационна библиотека не може да бъде запазена, тъй като не принадлежи "
+"на редактираната сцена. Направете я уникална първо."
+
+msgid ""
+"This animation library can't be saved because it was imported from another "
+"file. Make it unique first."
+msgstr ""
+"Тази анимационна библиотека не може да бъде запазена, тъй като е била "
+"внесена от друг файл. Направете я уникална първо."
+
+msgid "Save Library"
+msgstr "Запазване на библиотеката"
+
+msgid "Make Animation Library Unique: %s"
+msgstr "Превръщане на анимационна библиотека в уникална: %s"
+
+msgid ""
+"This animation can't be saved because it does not belong to the edited "
+"scene. Make it unique first."
+msgstr ""
+"Тази анимация не може да бъде запазена, тъй като не принадлежи на "
+"редактираната сцена. Направете я уникална първо."
+
+msgid ""
+"This animation can't be saved because it was imported from another file. "
+"Make it unique first."
+msgstr ""
+"Тази анимация не може да бъде запазена, тъй като е била внесена от друг "
+"файл. Направете я уникална първо."
+
+msgid "Save Animation"
+msgstr "Запазване на анимацията"
 
 msgid "Animation Name:"
 msgstr "Име на анимацията:"
@@ -2002,9 +2165,6 @@ msgstr ""
 
 msgid "Play selected animation backwards from end. (Shift+A)"
 msgstr "Възпроизвеждане на избраната анимация наобратно от края. (Shift+A)"
-
-msgid "Stop animation playback. (S)"
-msgstr "Спиране на възпроизвеждането на анимацията. (S)"
 
 msgid "Play selected animation from start. (Shift+D)"
 msgstr "Възпроизвеждане на избраната анимация от началото. (Shift+D)"
@@ -2130,8 +2290,23 @@ msgstr "Съдържание:"
 msgid "View Files"
 msgstr "Преглед на файловете"
 
+msgid "Download"
+msgstr "Сваляне"
+
 msgid "Connection error, please try again."
 msgstr "Грешка във връзката. Моля, опитайте отново."
+
+msgid "Can't connect."
+msgstr "Не може да се осъществи връзка."
+
+msgid "Can't connect to host:"
+msgstr "Не може да се осъществи връзка със сървъра:"
+
+msgid "No response from host:"
+msgstr "Няма отговор от сървъра:"
+
+msgid "No response."
+msgstr "Няма отговор."
 
 msgid "Request failed, return code:"
 msgstr "Заявката беше неуспешна. Код:"
@@ -2139,11 +2314,26 @@ msgstr "Заявката беше неуспешна. Код:"
 msgid "Cannot save response to:"
 msgstr "Отговорът не може да бъде запазен в:"
 
+msgid "Write error."
+msgstr "Грешка при запис."
+
 msgid "Request failed, too many redirects"
 msgstr "Заявката се провали. Твърде много пренасочвания"
 
+msgid "Redirect loop."
+msgstr "Цикъл от пренасочвания."
+
 msgid "Request failed, timeout"
 msgstr "Заявката е неуспешна, изчакването е неуспешно"
+
+msgid "Timeout."
+msgstr "Изтекло време."
+
+msgid "Failed:"
+msgstr "Неуспешно:"
+
+msgid "Bad download hash, assuming file has been tampered with."
+msgstr "Неправилна хеш-сума на сваления файл. Приема се, че той е бил увреден."
 
 msgid "Expected:"
 msgstr "Очаквано:"
@@ -2153,6 +2343,9 @@ msgstr "Получено:"
 
 msgid "Failed SHA-256 hash check"
 msgstr "Неуспешна проверка на хеш от вид SHA-256"
+
+msgid "Ready to install!"
+msgstr "Готово за инсталиране!"
 
 msgid "Downloading (%s / %s)..."
 msgstr "Сваляне (%s / %s)..."
@@ -2181,6 +2374,12 @@ msgstr "Последно обновени"
 msgid "Least Recently Updated"
 msgstr "Обновени отдавна"
 
+msgid "Name (A-Z)"
+msgstr "Име (А-Я)"
+
+msgid "Name (Z-A)"
+msgstr "Име (Я-А)"
+
 msgid "License (A-Z)"
 msgstr "Лиценз (А-Я)"
 
@@ -2196,8 +2395,42 @@ msgstr "Тестово"
 msgid "Loading..."
 msgstr "Зареждане…"
 
+msgctxt "Pagination"
+msgid "First"
+msgstr "Първа"
+
+msgctxt "Pagination"
+msgid "Previous"
+msgstr "Предишна"
+
+msgctxt "Pagination"
+msgid "Next"
+msgstr "Следваща"
+
+msgctxt "Pagination"
+msgid "Last"
+msgstr "Последна"
+
 msgid "All"
 msgstr "Всички"
+
+msgid "No results for \"%s\" for support level(s): %s."
+msgstr "Няма резултати за „%s“ за нивото/нивата на поддръжка: %s."
+
+msgid ""
+"No results compatible with %s %s for support level(s): %s.\n"
+"Check the enabled support levels using the 'Support' button in the top-right "
+"corner."
+msgstr ""
+"Няма резултати съвместими с „%s“ за нивото/нивата на поддръжка: %s.\n"
+"Проверете включените нива на поддръжка чрез бутона „Поддръжка“ в горния "
+"десен ъгъл."
+
+msgid "Search Templates, Projects, and Demos"
+msgstr "Търсене на шаблони, проекти и демота"
+
+msgid "Search Assets (Excluding Templates, Projects, and Demos)"
+msgstr "Търсене на материали (изключвайки шаблони, проекти и демота)"
 
 msgid "Import..."
 msgstr "Внасяне…"
@@ -2436,6 +2669,9 @@ msgstr ""
 "Ако тази настройка е включено, навигационните полигони и мрежи ще бъдат "
 "видими в изпълняващия се проект."
 
+msgid " - Variation"
+msgstr " – Вариация"
+
 msgid "Convert to CPUParticles2D"
 msgstr "Преобразуване в CPUParticles2D"
 
@@ -2573,6 +2809,9 @@ msgstr "Източник за полигонна мрежа:"
 
 msgid "Mesh Up Axis:"
 msgstr "Ос сочеща нагоре за полигонната мрежа:"
+
+msgid "Objects: %d\n"
+msgstr "Обекти: %d\n"
 
 msgid "Top View."
 msgstr "Изглед отгоре."
@@ -3159,11 +3398,8 @@ msgstr "(празно)"
 msgid "Animations:"
 msgstr "Анимации:"
 
-msgid "Speed:"
-msgstr "Скорост:"
-
-msgid "Loop"
-msgstr "Повтаряне"
+msgid "Delete Animation"
+msgstr "Изтриване на анимацията"
 
 msgid "Animation Frames:"
 msgstr "Кадри на анимацията:"
@@ -3207,8 +3443,28 @@ msgstr "Стъпка:"
 msgid "Styleboxes"
 msgstr "Стилове"
 
+msgid "1 color"
+msgid_plural "{num} colors"
+msgstr[0] "1 цвят"
+msgstr[1] "{num} цвята"
+
+msgid "1 constant"
+msgid_plural "{num} constants"
+msgstr[0] "константа"
+msgstr[1] "{num} константи"
+
 msgid "No constants found."
 msgstr "Няма намерени константи."
+
+msgid "1 font size"
+msgid_plural "{num} font sizes"
+msgstr[0] "1 размер на шрифт"
+msgstr[1] "{num} размера на шрифт"
+
+msgid "1 stylebox"
+msgid_plural "{num} styleboxes"
+msgstr[0] "1 стилова кутия"
+msgstr[1] "{num} стилови кутии"
 
 msgid "Importing Theme Items"
 msgstr "Внасяне на елементите на темата"
@@ -3728,9 +3984,6 @@ msgstr "Избиране на свойство"
 msgid "Select Virtual Method"
 msgstr "Избиране на виртуален метод"
 
-msgid "Select Method"
-msgstr "Избиране на метод"
-
 msgid "Batch Rename"
 msgstr "Масово преименуване"
 
@@ -3867,6 +4120,11 @@ msgstr "Група бутони"
 
 msgid "(Connecting From)"
 msgstr "(Свързване от)"
+
+msgid "Node has one connection."
+msgid_plural "Node has {num} connections."
+msgstr[0] "Обектът има една връзка."
+msgstr[1] "Обектът има {num} връзки."
 
 msgid "Open Script:"
 msgstr "Отваряне на скрипт:"
@@ -4013,6 +4271,9 @@ msgstr "Размер"
 msgid "Network Profiler"
 msgstr "Профилиране на мрежата"
 
+msgid "Delete Property?"
+msgstr "Изтриване на свойството?"
+
 msgid "A NavigationMesh resource must be set or created for this node to work."
 msgstr ""
 "Трябва да се зададе или създаде ресурс от тип NavigationMesh, за може да "
@@ -4110,16 +4371,6 @@ msgstr "Неправилен публичен ключ за разширение
 msgid "Invalid package name:"
 msgstr "Неправилно име на пакет:"
 
-msgid "\"Use Custom Build\" must be enabled to use the plugins."
-msgstr ""
-"„Използване на собствена компилация“ трябва да е включено, за да могат да се "
-"използват приставките."
-
-msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
-msgstr ""
-"„Изнасяне на AAB“ може да се ползва само когато е включено „Използване на "
-"собствена компилация“."
-
 msgid ""
 "'apksigner' could not be found. Please check that the command is available "
 "in the Android SDK build-tools directory. The resulting %s is unsigned."
@@ -4180,7 +4431,7 @@ msgid "Creating APK..."
 msgstr "Създаване на APK…"
 
 msgid "Could not find template APK to export: \"%s\"."
-msgstr "Не е намерен шаблонен файл APK за изнасяне: %s"
+msgstr "Не е намерен шаблонен файл APK за изнасяне: „%s“."
 
 msgid ""
 "Missing libraries in the export template for the selected architectures: %s. "
@@ -4227,8 +4478,26 @@ msgstr "Неправилна версия на файла:"
 msgid "Invalid product version:"
 msgstr "Неправилна версия на продукта:"
 
+msgid ""
+"CollisionPolygon2D only serves to provide a collision shape to a "
+"CollisionObject2D derived node. Please only use it as a child of Area2D, "
+"StaticBody2D, RigidBody2D, CharacterBody2D, etc. to give them a shape."
+msgstr ""
+"CollisionPolygon2D служи само, за да даде форма за колизии на обект основан "
+"на CollisionObject2D. Използвайте го само като под-обект на Area2D, "
+"StaticBody2D, RigidBody2D, KinematicBody2D и т.н., за да им дадете форма."
+
 msgid "An empty CollisionPolygon2D has no effect on collision."
 msgstr "Празен CollisionPolygon2D не влияе на колизиите."
+
+msgid ""
+"CollisionShape2D only serves to provide a collision shape to a "
+"CollisionObject2D derived node. Please only use it as a child of Area2D, "
+"StaticBody2D, RigidBody2D, CharacterBody2D, etc. to give them a shape."
+msgstr ""
+"CollisionShape2D служи само, за да даде форма за колизии на обект основан на "
+"CollisionObject2D. Използвайте го само като наследник на Area2D, "
+"StaticBody2D, RigidBody2D, KinematicBody2D, и т.н., за да им дадете форма."
 
 msgid ""
 "A shape must be provided for CollisionShape2D to function. Please create a "
@@ -4269,6 +4538,17 @@ msgstr ""
 "Свойството „Path“ трябва да сочи към действителен обект от тип Node2D, за да "
 "работи."
 
+msgid ""
+"CollisionPolygon3D only serves to provide a collision shape to a "
+"CollisionObject3D derived node.\n"
+"Please only use it as a child of Area3D, StaticBody3D, RigidBody3D, "
+"CharacterBody3D, etc. to give them a shape."
+msgstr ""
+"CollisionPolygon3D служи само, за да даде форма за колизии на обект основан "
+"на CollisionObject3D.\n"
+"Използвайте го само като под-обект на Area3D, StaticBody3D, RigidBody3D, "
+"KinematicBody3D и т.н., за да им дадете форма."
+
 msgid "Nothing is visible because no mesh has been assigned."
 msgstr "Не се вижда нищо, той като няма зададена полигонна мрежа."
 
@@ -4302,6 +4582,13 @@ msgstr "Трябва да се използва правилно разшире�
 
 msgid "(Other)"
 msgstr "(Други)"
+
+msgid ""
+"Shader keywords cannot be used as parameter names.\n"
+"Choose another name."
+msgstr ""
+"Шейдърните служебни думи не могат да се ползват като имена на свойства.\n"
+"Изберете друго име."
 
 msgid "Constants cannot be modified."
 msgstr "Константите не могат да бъдат променени."

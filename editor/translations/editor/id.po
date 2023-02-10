@@ -24,7 +24,7 @@
 # Modeus Darksono <garuga17@gmail.com>, 2019.
 # Akhmad Zulfikar <azuldegratz@gmail.com>, 2020.
 # Ade Fikri Malihuddin <ade.fm97@gmail.com>, 2020.
-# zephyroths <ridho.hikaru@gmail.com>, 2020, 2021, 2022.
+# zephyroths <ridho.hikaru@gmail.com>, 2020, 2021, 2022, 2023.
 # Richard Urban <redasuio1@gmail.com>, 2020.
 # yusuf afandi <afandi.yusuf.04@gmail.com>, 2020, 2022.
 # Habib Rohman <revolusi147id@gmail.com>, 2020.
@@ -42,13 +42,14 @@
 # FellowMustard <rachmawanng33@gmail.com>, 2022.
 # Muhammad Zainal Abidin <eviepk12@gmail.com>, 2022.
 # adfriz <aditiyaafrizal2@gmail.com>, 2023.
+# Taufiq Rahman <pxpiksy@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-01-04 10:47+0000\n"
-"Last-Translator: adfriz <aditiyaafrizal2@gmail.com>\n"
+"PO-Revision-Date: 2023-02-09 09:37+0000\n"
+"Last-Translator: zephyroths <ridho.hikaru@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
 "Language: id\n"
@@ -56,13 +57,67 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.15.1-dev\n"
+"X-Generator: Weblate 4.16-dev\n"
+
+msgid "Unset"
+msgstr "Batal disetel"
 
 msgid "Physical"
 msgstr "(Secara fisik)"
 
+msgid "Left Mouse Button"
+msgstr "Tombol kiri Mouse"
+
+msgid "Right Mouse Button"
+msgstr "Tombol kanan Mouse"
+
 msgid "Button"
 msgstr "Tombol"
+
+msgid "Left Stick X-Axis, Joystick 0 X-Axis"
+msgstr "Stick Kiri Sumbu X, Joystick 0 Sumbu X"
+
+msgid "Joystick 3 X-Axis"
+msgstr "Joystick 3 Sumbu X"
+
+msgid "Joystick 3 Y-Axis"
+msgstr "Joystick 3 Sumbu Y"
+
+msgid "Joystick 4 X-Axis"
+msgstr "Joystick 4 Sumbu X"
+
+msgid "Joystick 4 Y-Axis"
+msgstr "Joystick 4 Sumbu Y"
+
+msgid "Unknown Joypad Axis"
+msgstr "Sumbu Joypad Tidak Dikenal"
+
+msgid "Joypad Motion on Axis %d (%s) with Value %.2f"
+msgstr "Gerakan Joypad pada Sumbu %d (%s) dengan Nilai %.2f"
+
+msgid "Bottom Action, Sony Cross, Xbox A, Nintendo B"
+msgstr "Aksi Bawah, Sony Cross, Xbox A, Nintendo B"
+
+msgid "Right Action, Sony Circle, Xbox B, Nintendo A"
+msgstr "Tindakan Benar, Sony Circle, Xbox B, Nintendo A"
+
+msgid "Left Action, Sony Square, Xbox X, Nintendo Y"
+msgstr "Aksi Kiri, Sony Square, Xbox X, Nintendo Y"
+
+msgid "Top Action, Sony Triangle, Xbox Y, Nintendo X"
+msgstr "Aksi Teratas, Segitiga Sony, Xbox Y, Nintendo X"
+
+msgid "Back, Sony Select, Xbox Back, Nintendo -"
+msgstr "Kembali, Sony Select, Xbox Kembali, Nintendo -"
+
+msgid "Guide, Sony PS, Xbox Home"
+msgstr "Panduan, Sony PS, Xbox Home"
+
+msgid "Start, Nintendo +"
+msgstr "Mulai, Nintendo +"
+
+msgid "Right Shoulder, Sony R1, Xbox RB"
+msgstr "Bahu Kanan, Sony R1, Xbox RB"
 
 msgid "Select"
 msgstr "Pilih"
@@ -577,6 +632,9 @@ msgstr "Dari Sinyal:"
 msgid "Scene does not contain any script."
 msgstr "Skena tidak berisi skrip apapun."
 
+msgid "Select Method"
+msgstr "Pilih Method/Fungsi"
+
 msgid "Remove"
 msgstr "Hapus"
 
@@ -632,9 +690,6 @@ msgstr "Putuskan"
 
 msgid "Connect a Signal to a Method"
 msgstr "Hubungkan Sinyal ke Method"
-
-msgid "Edit Connection:"
-msgstr "Sunting Koneksi:"
 
 msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
 msgstr "Anda yakin ingin menghapus semua hubungan dari sinyal '%s'?"
@@ -777,23 +832,8 @@ msgstr "Peringatan:"
 msgid "Error:"
 msgstr "Error:"
 
-msgid "C++ Error"
-msgstr "Error C++"
-
-msgid "C++ Error:"
-msgstr "Error C++ :"
-
-msgid "Source"
-msgstr "Sumber"
-
-msgid "C++ Source"
-msgstr "Kode Sumber C++"
-
-msgid "Source:"
-msgstr "Sumber:"
-
-msgid "C++ Source:"
-msgstr "Sumber C++ :"
+msgid "%s Error"
+msgstr "%s Error"
 
 msgid "Stack Trace"
 msgstr "Jejak Tumpukan"
@@ -803,6 +843,9 @@ msgstr "Salin Error"
 
 msgid "Open C++ Source on GitHub"
 msgstr "Buka Sumber C++ di GitHub"
+
+msgid "C++ Source"
+msgstr "Kode Sumber C++"
 
 msgid "Video RAM"
 msgstr "RAM Video"
@@ -1608,6 +1651,9 @@ msgstr "Properti"
 msgid "default:"
 msgstr "baku:"
 
+msgid "Operators"
+msgstr "Operato."
+
 msgid "Theme Properties"
 msgstr "Properti Tema"
 
@@ -1630,8 +1676,14 @@ msgstr ""
 "Untuk saat ini tidak ada deskripsi properti ini. Tolong bantu kita "
 "dengan[color=$color][url=$url]kontribusi[/url][/color]!"
 
+msgid "Constructor Descriptions"
+msgstr "Deskripsi Konstruktor"
+
 msgid "Method Descriptions"
 msgstr "Deskripsi Method"
+
+msgid "Operator Descriptions"
+msgstr "Deskripsi Operator"
 
 msgid "%d match."
 msgstr "Ditemukan %d kecocokan."
@@ -1735,11 +1787,11 @@ msgstr "Tampilkan Semua Pelokalan"
 msgid "Show Selected Locales Only"
 msgstr "Tampilkan Hanya Pelokalan yang Dipilih"
 
+msgid "Edit Filters"
+msgstr "Sunting Filter"
+
 msgid "Language:"
 msgstr "Bahasa:"
-
-msgid "Script"
-msgstr "Skrip"
 
 msgid "Variant"
 msgstr "Varian"
@@ -2160,6 +2212,9 @@ msgstr "Proyek"
 msgid "Project Settings..."
 msgstr "Pengaturan Proyek…"
 
+msgid "Project Settings"
+msgstr "Pengaturan Proyek"
+
 msgid "Version Control"
 msgstr "Kontrol Versi"
 
@@ -2276,24 +2331,6 @@ msgstr "Kelola Templat"
 
 msgid "Install from file"
 msgstr "Install dari file"
-
-msgid ""
-"This will set up your project for custom Android builds by installing the "
-"source template to \"res://android/build\".\n"
-"You can then apply modifications and build your own custom APK on export "
-"(adding modules, changing the AndroidManifest.xml, etc.).\n"
-"Note that in order to make custom builds instead of using pre-built APKs, "
-"the \"Use Custom Build\" option should be enabled in the Android export "
-"preset."
-msgstr ""
-"Ini akan mengatur proyek Anda untuk build Android khusus dengan memasang "
-"templat sumber ke \"res://android/build\".\n"
-"Anda kemudian dapat menerapkan modifikasi dan membangun APK khusus Anda "
-"sendiri pada saat ekspor (menambahkan modul, mengubah AndroidManifest.xml, "
-"dll.).\n"
-"Perhatikan bahwa untuk membuat build khusus alih-alih menggunakan APK yang "
-"sudah dibuat sebelumnya, opsi \"Use Custom Build\" harus diaktifkan di "
-"preset ekspor Android."
 
 msgid ""
 "The Android build template is already installed in this project and it won't "
@@ -2513,9 +2550,6 @@ msgstr "Tombol Pintasan"
 
 msgid "Binding"
 msgstr "Mengikat"
-
-msgid "%s Error"
-msgstr "%s Error"
 
 msgid "All Devices"
 msgstr "Semua Perangkat"
@@ -3344,6 +3378,9 @@ msgstr "Pilih dan gerakkan titik-titik, buat titik dengan RMB."
 msgid "Enable snap and show grid."
 msgstr "Izinkan snap dan tampilkan garis-garis kotak."
 
+msgid "Blend:"
+msgstr "Campur:"
+
 msgid "Point"
 msgstr "Titik"
 
@@ -3386,14 +3423,8 @@ msgstr "Hapus titik-titik dan segi tiga."
 msgid "Generate blend triangles automatically (instead of manually)"
 msgstr "Buat segi tiga pembauran secara otomatis (sebagai ganti cara manual)"
 
-msgid "Blend:"
-msgstr "Campur:"
-
 msgid "Parameter Changed:"
 msgstr "Parameter Berubah:"
-
-msgid "Edit Filters"
-msgstr "Sunting Filter"
 
 msgid "Output node can't be added to the blend tree."
 msgstr "Node keluaran tidak bisa ditambahkan ke pohon campur."
@@ -3512,9 +3543,6 @@ msgstr "Mainkan mundur animasi terpilih dari lokasi sekarang. (A)"
 
 msgid "Play selected animation backwards from end. (Shift+A)"
 msgstr "Mainkan mundur animasi terpilih dari akhir. (Shift+A)"
-
-msgid "Stop animation playback. (S)"
-msgstr "Hentikan playback animasi. (S)"
 
 msgid "Play selected animation from start. (Shift+D)"
 msgstr "Mainkan animasi terpilih dari awal. (Shift+D)"
@@ -4664,12 +4692,6 @@ msgstr "Ubah AABB Notifier"
 msgid "Change Particles AABB"
 msgstr "Ubah Partikel AABB"
 
-msgid "Change Box Shape Extents"
-msgstr "Ubah Batas Box Shape"
-
-msgid "Change Probe Extents"
-msgstr "Ubah Batas Probe"
-
 msgid "Change Capsule Shape Radius"
 msgstr "Ubah Radius Shape Kapsul"
 
@@ -5470,6 +5492,9 @@ msgstr "Standar"
 msgid "Connections to method:"
 msgstr "Hubungan dengan fungsi:"
 
+msgid "Source"
+msgstr "Sumber"
+
 msgid "Target"
 msgstr "Sasaran"
 
@@ -5700,12 +5725,6 @@ msgstr "(kosong)"
 
 msgid "Animations:"
 msgstr "Animasi:"
-
-msgid "Speed:"
-msgstr "Kecepatan:"
-
-msgid "Loop"
-msgstr "Pengulangan"
 
 msgid "Animation Frames:"
 msgstr "Frame Animasi:"
@@ -6833,6 +6852,28 @@ msgstr "Hapus semua"
 msgid "Also delete project contents (no undo!)"
 msgstr "Hapus juga konten proyek (tidak dapat dibatalkan!)"
 
+msgid ""
+"This option will perform full project conversion, updating scenes, resources "
+"and scripts from Godot 3.x to work in Godot 4.0.\n"
+"\n"
+"Note that this is a best-effort conversion, i.e. it makes upgrading the "
+"project easier, but it will not open out-of-the-box and will still require "
+"manual adjustments.\n"
+"\n"
+"IMPORTANT: Make sure to backup your project before converting, as this "
+"operation makes it impossible to open it in older versions of Godot."
+msgstr ""
+"Opsi ini akan melakukan konversi proyek menyeluruh, pembaharuan scene, "
+"resource, dan script dari Godot 3.x agar dapat bekerja di Godot 4.0.\n"
+"\n"
+"Catat bahwa ini adalah usaha terbaik untuk mengonversi, seperti mempermudah "
+"upgrade proyek, tapi tidak berarti out-of-the-box dan masih memerlukan "
+"pengaturan manual.\n"
+"\n"
+"PENTING: Pastikan untuk membackup proyek anda sebelum konversi, karena "
+"tindakan ini akan membuat proyek tidak dapat dibuka pada versi Godot yang "
+"lebih lama."
+
 msgid "Can't run project"
 msgstr "Tidak dapat menjalankan proyek"
 
@@ -6843,17 +6884,20 @@ msgstr ""
 "Saat ini Anda tidak memiliki proyek apa pun.\n"
 "Apakah Anda ingin menjelajahi contoh proyek resmi di Perpustakaan Aset?"
 
+msgid "Add Project Setting"
+msgstr "Tambahkan Setelan Proyek"
+
 msgid "Delete Item"
 msgstr "Hapus Item"
+
+msgid "(All)"
+msgstr "(Semua)"
 
 msgid "Add Input Action"
 msgstr "Tampah Aksi Input"
 
 msgid "Change Action deadzone"
 msgstr "Ubah deadzone Aksi"
-
-msgid "Add Input Action Event"
-msgstr "Tambah Input Action Event"
 
 msgid "Erase Input Action"
 msgstr "Hapus Aksi Input"
@@ -6881,9 +6925,6 @@ msgstr "Pilih Properti"
 
 msgid "Select Virtual Method"
 msgstr "Pilih Method/Fungsi Virtual"
-
-msgid "Select Method"
-msgstr "Pilih Method/Fungsi"
 
 msgid "Batch Rename"
 msgstr "Ubah Nama Massal"
@@ -7625,13 +7666,6 @@ msgstr "Kunci Publik untuk ekspansi APK tidak valid."
 msgid "Invalid package name:"
 msgstr "Nama paket tidak valid:"
 
-msgid "\"Use Custom Build\" must be enabled to use the plugins."
-msgstr "\"Gunakan Build Custom\" harus diaktifkan untuk menggunakan plugin."
-
-msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
-msgstr ""
-"\"Expor AAB\" hanya bisa valid ketika \"Gunakan Build Custom\" diaktifkan."
-
 msgid "Signing release %s..."
 msgstr "Menandatangani rilis %s..."
 
@@ -7652,13 +7686,6 @@ msgstr "Nama berkas tidak valid! APK Android memerlukan ekstensi *.apk ."
 
 msgid "Unsupported export format!"
 msgstr "Format ekspor tidak didukung!"
-
-msgid ""
-"Trying to build from a custom built template, but no version info for it "
-"exists. Please reinstall from the 'Project' menu."
-msgstr ""
-"Mencoba untuk membangun dari templat build khusus, tapi tidak ada informasi "
-"versinya. Silakan pasang ulang dari menu 'Proyek'."
 
 msgid ""
 "Android build version mismatch: Template installed: %s, Godot version: %s. "

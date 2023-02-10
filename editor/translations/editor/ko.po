@@ -42,13 +42,14 @@
 # Godoto <aicompose@gmail.com>, 2022.
 # gaenyang <gaenyang@outlook.com>, 2022.
 # 오지훈 <jule1130@naver.com>, 2023.
+# 이정희 <daemul72@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-01-20 10:19+0000\n"
-"Last-Translator: 오지훈 <jule1130@naver.com>\n"
+"PO-Revision-Date: 2023-02-09 15:26+0000\n"
+"Last-Translator: 이정희 <daemul72@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
 "Language: ko\n"
@@ -56,7 +57,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.15.1\n"
+"X-Generator: Weblate 4.16-dev\n"
 
 msgid "Physical"
 msgstr "물리"
@@ -609,6 +610,9 @@ msgstr "이 시그널에서:"
 msgid "Scene does not contain any script."
 msgstr "씬에 스크립트가 없습니다."
 
+msgid "Select Method"
+msgstr "메서드 선택"
+
 msgid "Remove"
 msgstr "제거"
 
@@ -665,9 +669,6 @@ msgstr "연결 끊기"
 
 msgid "Connect a Signal to a Method"
 msgstr "시그널을 메서드에 연결"
-
-msgid "Edit Connection:"
-msgstr "연결 변경:"
 
 msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
 msgstr "\"%s\" 시그널의 모든 연결을 제거하시겠습니까?"
@@ -813,23 +814,8 @@ msgstr "경고:"
 msgid "Error:"
 msgstr "오류:"
 
-msgid "C++ Error"
-msgstr "C++ 오류"
-
-msgid "C++ Error:"
-msgstr "C++ 오류:"
-
-msgid "Source"
-msgstr "소스"
-
-msgid "C++ Source"
-msgstr "C++ 소스"
-
-msgid "Source:"
-msgstr "소스:"
-
-msgid "C++ Source:"
-msgstr "C++ 소스:"
+msgid "%s Error"
+msgstr "%s 오류"
 
 msgid "Stack Trace"
 msgstr "스택 추적"
@@ -839,6 +825,9 @@ msgstr "오류 복사"
 
 msgid "Open C++ Source on GitHub"
 msgstr "GitHub에서 C++ 소스 열기"
+
+msgid "C++ Source"
+msgstr "C++ 소스"
 
 msgid "Video RAM"
 msgstr "비디오 RAM"
@@ -1302,6 +1291,12 @@ msgstr "노드 이름:"
 msgid "Global Variable"
 msgstr "전역 변수"
 
+msgid "2D Physics"
+msgstr "2D 물리"
+
+msgid "3D Physics"
+msgstr "3D 물리"
+
 msgid "Navigation"
 msgstr "네비게이션"
 
@@ -1652,6 +1647,9 @@ msgstr "%s 오버라이드:"
 msgid "default:"
 msgstr "디폴트:"
 
+msgid "Operators"
+msgstr "연산자"
+
 msgid "Theme Properties"
 msgstr "테마 속성들"
 
@@ -1789,11 +1787,11 @@ msgstr "모든 로케일 보이기"
 msgid "Show Selected Locales Only"
 msgstr "선택한 로케일만 보이기"
 
+msgid "Edit Filters"
+msgstr "필터 편집"
+
 msgid "Language:"
 msgstr "언어:"
-
-msgid "Script"
-msgstr "스크립트"
 
 msgid "Variant"
 msgstr "변종"
@@ -2341,22 +2339,6 @@ msgid "Install from file"
 msgstr "파일에서 설치"
 
 msgid ""
-"This will set up your project for custom Android builds by installing the "
-"source template to \"res://android/build\".\n"
-"You can then apply modifications and build your own custom APK on export "
-"(adding modules, changing the AndroidManifest.xml, etc.).\n"
-"Note that in order to make custom builds instead of using pre-built APKs, "
-"the \"Use Custom Build\" option should be enabled in the Android export "
-"preset."
-msgstr ""
-"\"res://android/build\"에 소스 템플릿을 설치해서 프로젝트를 커스텀 Android 빌"
-"드에 맞게 설정합니다.\n"
-"그런 다음 수정 사항을 적용하고 커스텀 APK를 빌드해서 내보낼 수 있습니다(모듈 "
-"추가, AndroidManifest.xml 변경 등).\n"
-"미리 빌드된 APK를 사용하는 대신 커스텀 빌드를 만들려면, Android 내보내기 프리"
-"셋에서 \"커스텀 빌드 사용(Use Custom Build)\" 설정을 활성화해야 합니다."
-
-msgid ""
 "The Android build template is already installed in this project and it won't "
 "be overwritten.\n"
 "Remove the \"res://android/build\" directory manually before attempting this "
@@ -2578,9 +2560,6 @@ msgstr "단축키"
 
 msgid "Binding"
 msgstr "바인딩"
-
-msgid "%s Error"
-msgstr "%s 오류"
 
 msgid "All Devices"
 msgstr "모든 기기"
@@ -3498,6 +3477,9 @@ msgstr "점을 선택하고 이동합니다. 우클릭으로 점을 만드세요
 msgid "Enable snap and show grid."
 msgstr "스냅을 활성화하고 격자를 보이게 합니다."
 
+msgid "Blend:"
+msgstr "혼합:"
+
 msgid "Point"
 msgstr "점"
 
@@ -3540,14 +3522,8 @@ msgstr "점과 삼각형 지우기."
 msgid "Generate blend triangles automatically (instead of manually)"
 msgstr "(수동 대신) 자동으로 혼합 삼각형 만들기"
 
-msgid "Blend:"
-msgstr "혼합:"
-
 msgid "Parameter Changed:"
 msgstr "매개변수 변경됨:"
-
-msgid "Edit Filters"
-msgstr "필터 편집"
 
 msgid "Output node can't be added to the blend tree."
 msgstr "출력 노드를 혼합 트리에 추가할 수 없습니다."
@@ -3669,9 +3645,6 @@ msgstr "선택한 애니메이션을 현재 위치에서 거꾸로 재생합니�
 
 msgid "Play selected animation backwards from end. (Shift+A)"
 msgstr "선택한 애니메이션을 끝에서 거꾸로 재생합니다. (Shift+A)"
-
-msgid "Stop animation playback. (S)"
-msgstr "애니메이션 재생을 중단합니다. (S)"
 
 msgid "Play selected animation from start. (Shift+D)"
 msgstr "선택한 애니메이션을 처음부터 재생합니다. (Shift+D)"
@@ -4888,12 +4861,6 @@ msgstr "알림 AABB 바꾸기"
 msgid "Change Particles AABB"
 msgstr "파티클 AABB 바꾸기"
 
-msgid "Change Box Shape Extents"
-msgstr "박스 모양 범위 바꾸기"
-
-msgid "Change Probe Extents"
-msgstr "프로브 범위 바꾸기"
-
 msgid "Change Capsule Shape Radius"
 msgstr "캡슐 모양 반경 바꾸기"
 
@@ -5003,7 +4970,7 @@ msgid "Rotate"
 msgstr "회전"
 
 msgid "Translate"
-msgstr "이동"
+msgstr "옮기기"
 
 msgid "Translating:"
 msgstr "번역 중:"
@@ -5695,6 +5662,9 @@ msgstr "표준"
 msgid "Connections to method:"
 msgstr "메서드에 연결:"
 
+msgid "Source"
+msgstr "소스"
+
 msgid "Target"
 msgstr "Target(대상)"
 
@@ -5938,12 +5908,6 @@ msgstr "(비었음)"
 
 msgid "Animations:"
 msgstr "애니메이션:"
-
-msgid "Speed:"
-msgstr "속도:"
-
-msgid "Loop"
-msgstr "루프"
 
 msgid "Animation Frames:"
 msgstr "애니메이션 프레임:"
@@ -7329,9 +7293,6 @@ msgstr "입력 액션 추가"
 msgid "Change Action deadzone"
 msgstr "액션 데드존 바꾸기"
 
-msgid "Add Input Action Event"
-msgstr "입력 액션 이벤트 추가"
-
 msgid "Erase Input Action"
 msgstr "입력 액션 지우기"
 
@@ -7358,9 +7319,6 @@ msgstr "속성 선택"
 
 msgid "Select Virtual Method"
 msgstr "가상 메서드 선택"
-
-msgid "Select Method"
-msgstr "메서드 선택"
 
 msgid "Batch Rename"
 msgstr "일괄 이름 바꾸기"
@@ -8133,12 +8091,6 @@ msgstr "APK 확장에 잘못된 공개 키입니다."
 msgid "Invalid package name:"
 msgstr "잘못된 패키지 이름:"
 
-msgid "\"Use Custom Build\" must be enabled to use the plugins."
-msgstr "플러그인을 사용하려면 \"Use Custom Build\"가 활성화되어야 합니다."
-
-msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
-msgstr "\"Export AAB\"는 \"Use Custom Build\"가 활성화된 경우에만 유효합니다."
-
 msgid ""
 "'apksigner' could not be found. Please check that the command is available "
 "in the Android SDK build-tools directory. The resulting %s is unsigned."
@@ -8181,13 +8133,6 @@ msgstr "잘못된 파일이름입니다! Android APK는 *.apk 확장자가 필�
 
 msgid "Unsupported export format!"
 msgstr "지원되지 않는 내보내기 형식입니다!"
-
-msgid ""
-"Trying to build from a custom built template, but no version info for it "
-"exists. Please reinstall from the 'Project' menu."
-msgstr ""
-"커스텀 빌드 템플릿으로 빌드하려 했으나, 버전 정보가 없습니다. '프로젝트"
-"(Project)' 메뉴에서 다시 설치해주세요."
 
 msgid ""
 "Android build version mismatch: Template installed: %s, Godot version: %s. "

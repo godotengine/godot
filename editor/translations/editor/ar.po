@@ -34,7 +34,7 @@
 # Ahmed Shahwan <dev.ahmed.shahwan@gmail.com>, 2019.
 # hshw <shw@tutanota.com>, 2020.
 # Youssef Harmal <the.coder.crab@gmail.com>, 2020.
-# Nabeel20 <nabeelandnizam@gmail.com>, 2020, 2021, 2022.
+# Nabeel20 <nabeelandnizam@gmail.com>, 2020, 2021, 2022, 2023.
 # merouche djallal <kbordora@gmail.com>, 2020.
 # Airbus5717 <Abdussamadf350@gmail.com>, 2020.
 # tamsamani mohamed <tamsmoha@gmail.com>, 2020.
@@ -76,8 +76,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-12-21 07:01+0000\n"
-"Last-Translator: Abdulrahman <abdelrahman.ramadan686@gmail.com>\n"
+"PO-Revision-Date: 2023-02-09 09:37+0000\n"
+"Last-Translator: Nabeel20 <nabeelandnizam@gmail.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ar/>\n"
 "Language: ar\n"
@@ -86,13 +86,65 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
 "&& n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
-"X-Generator: Weblate 4.15.1-dev\n"
+"X-Generator: Weblate 4.16-dev\n"
+
+msgid "Unset"
+msgstr "غير محدد"
 
 msgid "Physical"
 msgstr "فيزيائي"
 
+msgid "Left Mouse Button"
+msgstr "زر الفأرة الأيسر"
+
+msgid "Right Mouse Button"
+msgstr "زر الفأرة الأيمن"
+
+msgid "Middle Mouse Button"
+msgstr "عجلة الفأرة (الزر الأوسط)"
+
+msgid "Mouse Wheel Up"
+msgstr "تحريك عجلة الفأرة للأعلى"
+
+msgid "Mouse Wheel Down"
+msgstr "تحريك عجلة الفأرة للأسفل"
+
+msgid "Mouse Wheel Left"
+msgstr "زر العجلة يساراً"
+
+msgid "Mouse Wheel Right"
+msgstr "زر العجلة يميناً"
+
+msgid "Mouse Thumb Button 1"
+msgstr "زر الفأرة الأول الخاص بالإبهام"
+
+msgid "Mouse Thumb Button 2"
+msgstr "زر الفأرة الثاني الخاص بالإبهام"
+
 msgid "Button"
 msgstr "زر"
+
+msgid "Double Click"
+msgstr "نقرة مضاعفة"
+
+msgid "Mouse motion at position (%s) with velocity (%s)"
+msgstr "حركة الفأرة بالموضع (%s) بالسرعة (%s)"
+
+msgid "Left Stick X-Axis, Joystick 0 X-Axis"
+msgstr "المحور الأفقي لعصا التحكم اليسرى، محور التحكمJoystick الأفقي 0"
+
+msgid "Left Stick Y-Axis, Joystick 0 Y-Axis"
+msgstr "المحور العمودي لعصا التحكم اليسرى، محور التحكم Joystick العمودي 0"
+
+msgid "Right Stick X-Axis, Joystick 1 X-Axis"
+msgstr "المحور الأفقي لعصا التحكم اليمنى، محور التحكم Joystick الأفقي 1"
+
+msgid "Right Stick Y-Axis, Joystick 1 Y-Axis"
+msgstr "المحور العمودي لعصا التحكم اليمنى، محور التحكم Joystickالعمودي 1"
+
+msgid "Joystick 2 X-Axis, Left Trigger, Sony L2, Xbox LT"
+msgstr ""
+"المحور الأفقي لمركز التحكم Joystick الثاني، المُطلق الأيسر، Sony L2، Xbox LT"
 
 msgid "Select"
 msgstr "حدد"
@@ -601,6 +653,9 @@ msgstr "من إشارة:"
 msgid "Scene does not contain any script."
 msgstr "لا يحتوي المشهد علي اي برنامج نصي."
 
+msgid "Select Method"
+msgstr "إختر طريقة"
+
 msgid "Remove"
 msgstr "إمسح"
 
@@ -655,9 +710,6 @@ msgstr "قطع الاتصال"
 
 msgid "Connect a Signal to a Method"
 msgstr "قم بوصل الإشارة إلى الدالة"
-
-msgid "Edit Connection:"
-msgstr "تعديل الإتصال:"
 
 msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
 msgstr "هل أنت متأكد أنك تود إزالة كل الإتصالات من الإشارة \"%s\"؟"
@@ -803,23 +855,8 @@ msgstr "تحذير:"
 msgid "Error:"
 msgstr "خطأ:"
 
-msgid "C++ Error"
-msgstr "خطأ في C++"
-
-msgid "C++ Error:"
-msgstr "خطأ C++ :"
-
-msgid "Source"
-msgstr "مصدر"
-
-msgid "C++ Source"
-msgstr "مصدر C++"
-
-msgid "Source:"
-msgstr "مصدر:"
-
-msgid "C++ Source:"
-msgstr "مصدر C++:"
+msgid "%s Error"
+msgstr "٪s خطأ"
 
 msgid "Stack Trace"
 msgstr "تتبع المُكدس Stack Trace"
@@ -829,6 +866,9 @@ msgstr "خطأ في نسخ"
 
 msgid "Open C++ Source on GitHub"
 msgstr "افتح مصدر ++C على GitHub"
+
+msgid "C++ Source"
+msgstr "مصدر C++"
 
 msgid "Video RAM"
 msgstr "الذاكرة العشوائية للفيديو"
@@ -1658,7 +1698,7 @@ msgid "Styles"
 msgstr "مظاهر"
 
 msgid "Enumerations"
-msgstr "تعداد"
+msgstr "تعدادات"
 
 msgid "Property Descriptions"
 msgstr "أوصاف المُلكية"
@@ -1776,11 +1816,11 @@ msgstr "إظهار جميع المَحليّات Locales"
 msgid "Show Selected Locales Only"
 msgstr "إظهار المَحليّات المُختارة فحسب"
 
+msgid "Edit Filters"
+msgstr "تعديل المُرشحات"
+
 msgid "Language:"
 msgstr "اللغة:"
-
-msgid "Script"
-msgstr "النص البرمجي"
 
 msgid "Clear Output"
 msgstr "مسح المُخرجات"
@@ -2287,7 +2327,7 @@ msgid "FileSystem"
 msgstr "نظام الملفات"
 
 msgid "Inspector"
-msgstr "مُتفحص"
+msgstr "الفاحص"
 
 msgid "Node"
 msgstr "وحدة"
@@ -2309,23 +2349,6 @@ msgstr "إدارة القوالب"
 
 msgid "Install from file"
 msgstr "تثبيت من ملف"
-
-msgid ""
-"This will set up your project for custom Android builds by installing the "
-"source template to \"res://android/build\".\n"
-"You can then apply modifications and build your own custom APK on export "
-"(adding modules, changing the AndroidManifest.xml, etc.).\n"
-"Note that in order to make custom builds instead of using pre-built APKs, "
-"the \"Use Custom Build\" option should be enabled in the Android export "
-"preset."
-msgstr ""
-"بهذه الطريقة سيتم إعداد المشروع الخاص بك لأجل نسخ بناء أندرويد مخصص عن طريق "
-"تثبيت قوالب المصدر البرمجي في \"res://android/build\".\n"
-"يمكنك تطبيق تعديلات الخاصة على نسخة البناء للحصول على حزمة تطبيق أندرويد APK "
-"معدّلة عند التصدير (زيادة مُلحقات، تعديل ملف AndroidManifest.xml إلخ..).\n"
-"ضع في بالك أنه من أجل إنشاء نسخ بناء مخصوصة بدلاً من الحزم APKs المبنية سلفاً، "
-"ينبغي أن يكون إعداد \"استخدام بناء مخصص\" ممكناً في إعدادات تصدير الأندرويد "
-"Android export preset."
 
 msgid ""
 "The Android build template is already installed in this project and it won't "
@@ -2547,9 +2570,6 @@ msgstr "الاختصارات"
 
 msgid "Binding"
 msgstr "الربط"
-
-msgid "%s Error"
-msgstr "٪s خطأ"
 
 msgid "All Devices"
 msgstr "جميع الأجهزة"
@@ -3365,6 +3385,9 @@ msgstr "حدد وحرك النقاط، أنشئ النقاط باستخدام RM
 msgid "Enable snap and show grid."
 msgstr "تمكين المحاذاة وإظهار الشبكة."
 
+msgid "Blend:"
+msgstr "الدمج:"
+
 msgid "Point"
 msgstr "نقطة"
 
@@ -3408,14 +3431,8 @@ msgstr "مسح النقط والمثلثات."
 msgid "Generate blend triangles automatically (instead of manually)"
 msgstr "توليد مثلثات دمج بصورة تلقائية (بدلاً من اليدوية)"
 
-msgid "Blend:"
-msgstr "الدمج:"
-
 msgid "Parameter Changed:"
 msgstr "لقد تم تغيير المَعلم:"
-
-msgid "Edit Filters"
-msgstr "تعديل المُرشحات"
 
 msgid "Output node can't be added to the blend tree."
 msgstr "لا يمكن إضافة مخرجات الوحدة إلى شجرة الدمج."
@@ -3534,9 +3551,6 @@ msgstr "تشغيل الرسم المتحرك المختار بشكل عكسي م
 
 msgid "Play selected animation backwards from end. (Shift+A)"
 msgstr "تشغيل الرسم المتحرك المختار بشكل عكسي من النهاية. (Shift+A)"
-
-msgid "Stop animation playback. (S)"
-msgstr "إيقاف تشغيل الرسم المتحرك. (S)"
 
 msgid "Play selected animation from start. (Shift+D)"
 msgstr "تشغيل الرسم المتحرك المحدد من البداية. (Shift+D)"
@@ -4710,12 +4724,6 @@ msgstr "تعديل Notifier AABB"
 msgid "Change Particles AABB"
 msgstr "تعديل جُزيئات AABB"
 
-msgid "Change Box Shape Extents"
-msgstr "تعديل حجم الشكل الصندوقي"
-
-msgid "Change Probe Extents"
-msgstr "تعديل نطاقات المسبر Probe Extents"
-
 msgid "Change Capsule Shape Radius"
 msgstr "تعديل نصف قطر الشكل الكبسولي Capsule Shape"
 
@@ -5522,6 +5530,9 @@ msgstr "معياري"
 msgid "Connections to method:"
 msgstr "الاتصالات لدالة:"
 
+msgid "Source"
+msgstr "مصدر"
+
 msgid "Target"
 msgstr "الهدف"
 
@@ -5762,12 +5773,6 @@ msgstr "(فارغ)"
 
 msgid "Animations:"
 msgstr "الرسومات المتحركة:"
-
-msgid "Speed:"
-msgstr "السرعة:"
-
-msgid "Loop"
-msgstr "حلقة Loop"
 
 msgid "Animation Frames:"
 msgstr "إطارات الرسومات المتحركة:"
@@ -7045,9 +7050,6 @@ msgstr "إضافة إجراء إدخال"
 msgid "Change Action deadzone"
 msgstr "تغيير المنطقة الميتة للفعالية Action deadzone"
 
-msgid "Add Input Action Event"
-msgstr "إضافة حدث فعالية الإدخال"
-
 msgid "Erase Input Action"
 msgstr "مسح إجراء الإدخال"
 
@@ -7071,9 +7073,6 @@ msgstr "انتقاء الخاصية"
 
 msgid "Select Virtual Method"
 msgstr "اختر الطريقة الإفتراضية"
-
-msgid "Select Method"
-msgstr "إختر طريقة"
 
 msgid "Batch Rename"
 msgstr "إعادة تسمية الدفعة"
@@ -7775,14 +7774,6 @@ msgstr "مفتاح عام غير صالح لأجل تصدير حزمة تطبي�
 msgid "Invalid package name:"
 msgstr "اسم رُزمة غير صالح:"
 
-msgid "\"Use Custom Build\" must be enabled to use the plugins."
-msgstr "يجب تفعيل \"Use Custom Build\" لإستخدام الإضافات."
-
-msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
-msgstr ""
-"يصبح خيار \"تصدير ABB\" صالحاً فقط عندما يتم اختيار \"استعمال تصدير مخصص "
-"Custom Build\"."
-
 msgid ""
 "'apksigner' could not be found. Please check that the command is available "
 "in the Android SDK build-tools directory. The resulting %s is unsigned."
@@ -7824,13 +7815,6 @@ msgstr "أسم الملف غير صالح! يتطلب ملف اندرويد APK 
 
 msgid "Unsupported export format!"
 msgstr "تنسيق تصدير غير مدعوم!"
-
-msgid ""
-"Trying to build from a custom built template, but no version info for it "
-"exists. Please reinstall from the 'Project' menu."
-msgstr ""
-"تتم محاولة البناء من قالب بناء مُخصص، ولكن لا تتواجد معلومات النسخة. من فضلك "
-"أعد التحميل من قائمة \"المشروع\"."
 
 msgid ""
 "Android build version mismatch: Template installed: %s, Godot version: %s. "
@@ -8205,6 +8189,9 @@ msgstr "مصدر غير صالح للمعاينة."
 
 msgid "Invalid source for shader."
 msgstr "مصدر غير صالح لتظليل."
+
+msgid "Filter"
+msgstr "المُرشح"
 
 msgid "Repeat"
 msgstr "كرر"

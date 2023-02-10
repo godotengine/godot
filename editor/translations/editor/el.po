@@ -19,13 +19,14 @@
 # Anthony V. <batmanplayer123@gmail.com>, 2022.
 # Anthony V. <anthonyv156@outlook.com>, 2022.
 # Ilias Vasilakis <vaselas99@gmail.com>, 2023.
+# "Overloaded @ Orama Interactive" <manoschool@yahoo.gr>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-01-15 13:34+0000\n"
-"Last-Translator: Ilias Vasilakis <vaselas99@gmail.com>\n"
+"PO-Revision-Date: 2023-02-08 18:01+0000\n"
+"Last-Translator: \"Overloaded @ Orama Interactive\" <manoschool@yahoo.gr>\n"
 "Language-Team: Greek <https://hosted.weblate.org/projects/godot-engine/godot/"
 "el/>\n"
 "Language: el\n"
@@ -33,10 +34,95 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.15.1-dev\n"
+"X-Generator: Weblate 4.16-dev\n"
+
+msgid "Physical"
+msgstr "Φυσικό"
+
+msgid "Left Mouse Button"
+msgstr "Αριστερό κουμπί ποντικιού"
+
+msgid "Right Mouse Button"
+msgstr "Δεξί κουμπί ποντικιού"
+
+msgid "Middle Mouse Button"
+msgstr "Μεσαίο κουμπί ποντικιού"
+
+msgid "Mouse Wheel Up"
+msgstr "Ροδέλα ποντικιού πάνω"
+
+msgid "Mouse Wheel Down"
+msgstr "Ροδέλα ποντικιού κάτω"
+
+msgid "Mouse Wheel Left"
+msgstr "Ροδέλα ποντικιού αριστερά"
+
+msgid "Mouse Wheel Right"
+msgstr "Ροδέλα ποντικιού δεξιά"
+
+msgid "Mouse Thumb Button 1"
+msgstr "Κουμπί ποντικιού αντίχειρα 1"
+
+msgid "Mouse Thumb Button 2"
+msgstr "Κουμπί ποντικιού αντίχειρα 2"
 
 msgid "Button"
 msgstr "Κουμπί"
+
+msgid "Mouse motion at position (%s) with velocity (%s)"
+msgstr "Κίνηση ποντικιού στη θέση (%s) με ταχύτητα (%s)"
+
+msgid "Unknown Joypad Axis"
+msgstr "Άγνωστος άξονας χειριστηρίου"
+
+msgid "Joypad Motion on Axis %d (%s) with Value %.2f"
+msgstr "Κίνηση χειριστηρίου στον άξονα %d (%s) με τιμή %.2f"
+
+msgid "Bottom Action, Sony Cross, Xbox A, Nintendo B"
+msgstr "Κάτω πλήκτρο, Sony σταυρός, Xbox A, Nintendo B"
+
+msgid "Right Action, Sony Circle, Xbox B, Nintendo A"
+msgstr "Δεξί πλήκτρο, Sony κύκλος, Xbox B, Nintendo A"
+
+msgid "Left Action, Sony Square, Xbox X, Nintendo Y"
+msgstr "Αριστερό πλήκτρο, Sony τετράγωνο, Xbox X, Nintendo Y"
+
+msgid "Top Action, Sony Triangle, Xbox Y, Nintendo X"
+msgstr "Πάνω πλήκτρο, Sony τρίγωνο, Xbox Y, Nintendo X"
+
+msgid "Back, Sony Select, Xbox Back, Nintendo -"
+msgstr "Πίσω, Sony Select, Xbox Back, Nintendo -"
+
+msgid "D-pad Up"
+msgstr "D-pad πάνω"
+
+msgid "D-pad Down"
+msgstr "D-pad κάτω"
+
+msgid "D-pad Left"
+msgstr "D-pad αριστερά"
+
+msgid "D-pad Right"
+msgstr "D-pad δεξιά"
+
+msgid "Xbox Share, PS5 Microphone, Nintendo Capture"
+msgstr "Xbox Share, PS5 μικρόφωνο, Nintendo Capture"
+
+msgid "PS4/5 Touchpad"
+msgstr "PS4/5 επιφάνεια αφής"
+
+msgid "touched"
+msgstr "ακουμπήθηκε"
+
+msgid "released"
+msgstr "αφέθηκε"
+
+msgid "Screen %s at (%s) with %s touch points"
+msgstr "Η οθόνη %s στη θέση (%s) με %s σημεία αφής"
+
+msgid ""
+"Screen dragged with %s touch points at position (%s) with velocity of (%s)"
+msgstr "Η οθόνη σύρθηκε με %s σημεία αφής στη θέση (%s) με ταχύτητα (%s)"
 
 msgid "Select"
 msgstr "Επιλογή"
@@ -523,6 +609,9 @@ msgstr "Από Σήμα:"
 msgid "Scene does not contain any script."
 msgstr "Η σκηνή δεν περιέχει δέσμη ενεργειών."
 
+msgid "Select Method"
+msgstr "Επιλογή μεθόδου"
+
 msgid "Remove"
 msgstr "Αφαίρεση"
 
@@ -579,9 +668,6 @@ msgstr "Αποσύνδεση"
 
 msgid "Connect a Signal to a Method"
 msgstr "Σύνδεση Σήματος σε Μέθοδο"
-
-msgid "Edit Connection:"
-msgstr "Επεξεργασία Σύνδεσης:"
 
 msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
 msgstr ""
@@ -704,29 +790,14 @@ msgstr "Προειδοποίηση:"
 msgid "Error:"
 msgstr "Σφάλμα:"
 
-msgid "C++ Error"
-msgstr "Σφάλμα C++"
-
-msgid "C++ Error:"
-msgstr "Σφάλμα C++:"
-
-msgid "Source"
-msgstr "Πηγή"
-
-msgid "C++ Source"
-msgstr "Πηγή C++"
-
-msgid "Source:"
-msgstr "Πηγή:"
-
-msgid "C++ Source:"
-msgstr "Πηγή C++:"
-
 msgid "Stack Trace"
 msgstr "Ίχνος Σωρός"
 
 msgid "Copy Error"
 msgstr "Αντιγραφή σφάλματος"
+
+msgid "C++ Source"
+msgstr "Πηγή C++"
 
 msgid "Video RAM"
 msgstr "Βίντεο RAM"
@@ -1535,11 +1606,11 @@ msgstr "Εμφάνιση Όλων των Τοπικών Ρυθμίσεων"
 msgid "Show Selected Locales Only"
 msgstr "Εμφάνιση Μόνο Επιλεγμένων Τοπικών Ρυθμίσεων"
 
+msgid "Edit Filters"
+msgstr "Επεξεργασία φίλτρων"
+
 msgid "Language:"
 msgstr "Γλώσσα:"
-
-msgid "Script"
-msgstr "Γραφή"
 
 msgid "Clear Output"
 msgstr "Εκκαθάριση εξόδου"
@@ -2024,24 +2095,6 @@ msgstr ""
 
 msgid "Manage Templates"
 msgstr "Διαχείριση Προτύπων"
-
-msgid ""
-"This will set up your project for custom Android builds by installing the "
-"source template to \"res://android/build\".\n"
-"You can then apply modifications and build your own custom APK on export "
-"(adding modules, changing the AndroidManifest.xml, etc.).\n"
-"Note that in order to make custom builds instead of using pre-built APKs, "
-"the \"Use Custom Build\" option should be enabled in the Android export "
-"preset."
-msgstr ""
-"Αυτό θα ετοιμάσει το έργο σας για προσαρμοσμένες δομήσεις Android "
-"εγκαθιστώντας το πρότυπο πηγών στο «res://android/build».\n"
-"Μπορείτε μετά να κάνετε αλλαγές και να δομήσετε το δικό σας προσαρμοσμένο "
-"APK στην εξαγωγή (προσθέτοντας λειτουργικές μονάδες - modules, αλλάζοντας το "
-"AndroidManifest.xml, κλπ.).\n"
-"Σημειώστε πως για να γίνουν προσαρμοσμένες δομήσεις αντί της χρήσεις των "
-"έτοιμων APK, η επιλογή «Use Custom Build» πρέπει να ενεργοποιηθεί στο "
-"πρότυπο εξαγωγής για Android."
 
 msgid ""
 "The Android build template is already installed in this project and it won't "
@@ -2885,6 +2938,9 @@ msgstr "Επιλογή και μετακίνηση σημείων, δημιου�
 msgid "Enable snap and show grid."
 msgstr "Ενεργοποίηση κουμπώματος και εμφάνιση πλέγματος."
 
+msgid "Blend:"
+msgstr "Ανάμειξη:"
+
 msgid "Point"
 msgstr "Σημείο"
 
@@ -2926,12 +2982,6 @@ msgstr "Διαγραφή σημείων και τριγώνων."
 
 msgid "Generate blend triangles automatically (instead of manually)"
 msgstr "Δημιουργία τριγώνων μίξης αυτόματα (αντι για χειροκινητα)"
-
-msgid "Blend:"
-msgstr "Ανάμειξη:"
-
-msgid "Edit Filters"
-msgstr "Επεξεργασία φίλτρων"
 
 msgid "Output node can't be added to the blend tree."
 msgstr "Ο κόμβος εξόδου δεν μπορεί να προστεθεί στο δέντρο μίξης."
@@ -3053,9 +3103,6 @@ msgstr "Αναπαραγωγή της επιλεγμένης κίνησης αν
 
 msgid "Play selected animation backwards from end. (Shift+A)"
 msgstr "Αναπαραγωγή της επιλεγμένης κίνησης ανάποδα από το τέλος. (Shift + A)"
-
-msgid "Stop animation playback. (S)"
-msgstr "Πάυση αναπαργωγής κίνησης. (S)"
 
 msgid "Play selected animation from start. (Shift+D)"
 msgstr "Αναπαραγωγή της επιλεγμένης κίνησης από την αρχή. (Shift + D)"
@@ -4083,12 +4130,6 @@ msgstr "Ειδοποιητής Αλλαγής AABB"
 msgid "Change Particles AABB"
 msgstr "Αλλαγή AABB σωματιδίων"
 
-msgid "Change Box Shape Extents"
-msgstr "Αλλαγή διαστάσεων κυβικού σχήματος"
-
-msgid "Change Probe Extents"
-msgstr "Αλλαγή διαστάσεων αισθητήρα"
-
 msgid "Change Capsule Shape Radius"
 msgstr "Αλλαγή ακτίνας κάψουλας"
 
@@ -4806,6 +4847,9 @@ msgstr "Τυπική"
 msgid "Connections to method:"
 msgstr "Σύνδεση σε μέθοδο:"
 
+msgid "Source"
+msgstr "Πηγή"
+
 msgid "Target"
 msgstr "Στόχος"
 
@@ -5030,12 +5074,6 @@ msgstr "(άδειο)"
 
 msgid "Animations:"
 msgstr "Κινήσεις:"
-
-msgid "Speed:"
-msgstr "Ταχύτητα:"
-
-msgid "Loop"
-msgstr "Επανάληψη"
 
 msgid "Animation Frames:"
 msgstr "Καρέ Κίνησης:"
@@ -6037,9 +6075,6 @@ msgstr "Προσθήκη Ενέργειας Εισόδου"
 msgid "Change Action deadzone"
 msgstr "Αλλαγή Νεκρής Ζώνης Ενέργειας"
 
-msgid "Add Input Action Event"
-msgstr "Προσθήκη συμβάντος εισόδου"
-
 msgid "Erase Input Action"
 msgstr "Διαγραφή ενέργειας εισόδου"
 
@@ -6063,9 +6098,6 @@ msgstr "Επιλογή ιδιότητας"
 
 msgid "Select Virtual Method"
 msgstr "Επιλογή εικονικής μεθόδου"
-
-msgid "Select Method"
-msgstr "Επιλογή μεθόδου"
 
 msgid "Batch Rename"
 msgstr "Ομαδική Μετονομασία"
@@ -6709,10 +6741,6 @@ msgstr "Μη έγκυρο δημόσιο κλειδί (public key) για επέ
 msgid "Invalid package name:"
 msgstr "Άκυρο όνομα πακέτου:"
 
-msgid "\"Use Custom Build\" must be enabled to use the plugins."
-msgstr ""
-"Η επιλογή «Use Custom Build» πρέπει να ενεργοποιηθεί για χρήση προσθέτων."
-
 msgid "Signing release %s..."
 msgstr "Υπογραφή έκδοσης %s..."
 
@@ -6722,13 +6750,6 @@ msgstr ""
 
 msgid "Unsupported export format!"
 msgstr "Μη αποδεκτή μορφή εξαγωγής!"
-
-msgid ""
-"Trying to build from a custom built template, but no version info for it "
-"exists. Please reinstall from the 'Project' menu."
-msgstr ""
-"Δοκιμή δόμησης από προσαρμοσμένο πρότυπο δόμησης, αλλά δεν υπάρχουν "
-"πληροφορίες έκδοσης. Παρακαλούμε κάντε επανεγκατάσταση από το μενού «Έργο»."
 
 msgid "Building Android Project (gradle)"
 msgstr "Δόμηση Έργου Android (gradle)"

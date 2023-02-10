@@ -82,16 +82,16 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-01-15 13:34+0000\n"
-"Last-Translator: Damiano Guida <damiano.guida22@gmail.com>\n"
+"PO-Revision-Date: 2023-02-10 00:55+0000\n"
+"Last-Translator: gianmarco malandra <giamminho12@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
-"godot/it/>\n"
+"godot-properties/it/>\n"
 "Language: it\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.15.1-dev\n"
+"X-Generator: Weblate 4.16-dev\n"
 
 msgid "Application"
 msgstr "Applicazione"
@@ -102,8 +102,14 @@ msgstr "Configurazione"
 msgid "Name"
 msgstr "Nome"
 
+msgid "Description"
+msgstr "Descrizione"
+
 msgid "Run"
 msgstr "Esegui"
+
+msgid "Main Scene"
+msgstr "Scena Principale"
 
 msgid "Disable stdout"
 msgstr "Disabilita stdout"
@@ -124,13 +130,16 @@ msgid "Project Settings Override"
 msgstr "Sovrascrittura Impostazioni del Progetto"
 
 msgid "Display"
-msgstr "Display"
+msgstr "Schermo"
 
 msgid "Window"
 msgstr "Finestra"
 
 msgid "Size"
 msgstr "Dimensione"
+
+msgid "Mode"
+msgstr "Modalità"
 
 msgid "Resizable"
 msgstr "Ridimensionabile"
@@ -143,6 +152,9 @@ msgstr "Risparmio Energia"
 
 msgid "Keep Screen On"
 msgstr "Mantieni lo Schermo Acceso"
+
+msgid "Audio"
+msgstr "Audio"
 
 msgid "Editor"
 msgstr "Editor"
@@ -165,6 +177,9 @@ msgstr "Debug"
 msgid "Settings"
 msgstr "Impostazioni"
 
+msgid "Compression"
+msgstr "Compressione"
+
 msgid "Crash Handler"
 msgstr "Gestore di Crash"
 
@@ -173,6 +188,12 @@ msgstr "Messaggio"
 
 msgid "Rendering"
 msgstr "Renderer"
+
+msgid "Limits"
+msgstr "Limiti"
+
+msgid "GUI"
+msgstr "Interfaccia Grafica"
 
 msgid "Low Processor Usage Mode"
 msgstr "Modalità Processore a Basso Consumo"
@@ -273,6 +294,12 @@ msgstr "Valore Controller"
 msgid "Big Endian"
 msgstr "Big Endian"
 
+msgid "Network"
+msgstr "Reti"
+
+msgid "Page Size"
+msgstr "Dimensione Pagina"
+
 msgid "Blocking Mode Enabled"
 msgstr "Modalità Blocco Attivata"
 
@@ -309,14 +336,14 @@ msgstr "Percorso"
 msgid "Data Array"
 msgstr "Array di Dati"
 
-msgid "Blocking Handshake"
-msgstr "Blocco Handshake"
-
 msgid "Max Pending Connections"
 msgstr "Quantità Massima Connessioni in Attesa"
 
 msgid "Offset"
 msgstr "Scostamento"
+
+msgid "Cell Size"
+msgstr "Dimensione Cella"
 
 msgid "Seed"
 msgstr "Seme"
@@ -374,15 +401,6 @@ msgstr "Animazione"
 
 msgid "Easing"
 msgstr "Allentamento"
-
-msgid "Interface"
-msgstr "Interfaccia Utente"
-
-msgid "Editors"
-msgstr "Editori"
-
-msgid "Network"
-msgstr "Reti"
 
 msgid "Remote Port"
 msgstr "Porta Remota"
@@ -453,8 +471,8 @@ msgstr "Selezionato"
 msgid "Keying"
 msgstr "Tasti"
 
-msgid "Main Scene"
-msgstr "Scena Principale"
+msgid "Interface"
+msgstr "Interfaccia Utente"
 
 msgid "Show Update Spinner"
 msgstr "Mostra Rotella di Caricamento dell'Update"
@@ -752,6 +770,9 @@ msgstr "Dimensione dei caratteri della sezione d'assistenza codice sorgente"
 
 msgid "Help Title Font Size"
 msgstr "Dimensione Carattere Titolo della Guida"
+
+msgid "Editors"
+msgstr "Editori"
 
 msgid "Grid Map"
 msgstr "Mappa di Griglia"
@@ -1152,6 +1173,9 @@ msgstr "Password"
 msgid "Compress"
 msgstr "Comprimi"
 
+msgid "Transform"
+msgstr "Trasformazione"
+
 msgid "Collada"
 msgstr "Collada"
 
@@ -1178,9 +1202,6 @@ msgstr "Delimitatore"
 
 msgid "Preload"
 msgstr "Pre-carica"
-
-msgid "Mode"
-msgstr "Modalità"
 
 msgid "Lossy Quality"
 msgstr "Qualità Lossy"
@@ -1241,12 +1262,6 @@ msgstr "Ottimizzatore"
 
 msgid "Max Angular Error"
 msgstr "Errore Angolare Max"
-
-msgid "Compression"
-msgstr "Compressione"
-
-msgid "Page Size"
-msgstr "Dimensione Pagina"
 
 msgid "Nodes"
 msgstr "Nodi"
@@ -1352,6 +1367,9 @@ msgstr "Utilizza Threads"
 
 msgid "Available URLs"
 msgstr "URLs Disponibili"
+
+msgid "Unset"
+msgstr "Non Impostato"
 
 msgid "Error"
 msgstr "Errore"
@@ -1464,9 +1482,6 @@ msgstr "Threads"
 msgid "Thread Model"
 msgstr "Modello Thread"
 
-msgid "Audio"
-msgstr "Audio"
-
 msgid "Handheld"
 msgstr "Maneggiato"
 
@@ -1497,14 +1512,17 @@ msgstr "iOS"
 msgid "Hide Home Indicator"
 msgstr "Nascondi Indicatore Home"
 
+msgid "Input Devices"
+msgstr "Dispositivi Input"
+
+msgid "Pointing"
+msgstr "Puntamento"
+
 msgid "Boot Splash"
 msgstr "Sfondo Di Avvio"
 
 msgid "BG Color"
 msgstr "Colore Sfondo"
-
-msgid "Input Devices"
-msgstr "Dispositivi Input"
 
 msgid "Environment"
 msgstr "Ambiente"
@@ -1515,20 +1533,23 @@ msgstr "Colore Di Sfondo Di Default"
 msgid "Show Image"
 msgstr "Mostra Immagine"
 
+msgid "Image"
+msgstr "Immagine"
+
 msgid "Fullsize"
 msgstr "Dimensione Massima"
 
 msgid "Use Filter"
 msgstr "Usa Filtro"
 
+msgid "Icon"
+msgstr "Icona"
+
 msgid "Buffering"
 msgstr "Buffering"
 
 msgid "Agile Event Flushing"
 msgstr "Svuotamento degli eventi usando l'algoritmo Agile"
-
-msgid "Pointing"
-msgstr "Puntamento"
 
 msgid "Emulate Touch From Mouse"
 msgstr "Emula Tocco Da Mouse"
@@ -1554,11 +1575,14 @@ msgstr "Cartella di Soluzione"
 msgid "Main Loop Type"
 msgstr "Tipo di Loop Principale"
 
+msgid "Stretch"
+msgstr "Allarga"
+
+msgid "Aspect"
+msgstr "Aspetto"
+
 msgid "Auto Accept Quit"
 msgstr "Auto-Accetta Uscita"
-
-msgid "GUI"
-msgstr "Interfaccia Grafica"
 
 msgid "Fonts"
 msgstr "Font"
@@ -1568,6 +1592,9 @@ msgstr "Font Dinamici"
 
 msgid "Use Oversampling"
 msgstr "Usa Oversampling"
+
+msgid "Textures"
+msgstr "Textures"
 
 msgid "Operation"
 msgstr "Operazione"
@@ -1736,9 +1763,6 @@ msgstr "Nome Scena"
 
 msgid "Root Nodes"
 msgstr "Nodi Radice"
-
-msgid "Textures"
-msgstr "Textures"
 
 msgid "Images"
 msgstr "Immagini"
@@ -2013,9 +2037,6 @@ msgstr "Indirizzo locale IGD"
 msgid "IGD Status"
 msgstr "Stato IGD"
 
-msgid "Limits"
-msgstr "Limiti"
-
 msgid "Handshake Timeout"
 msgstr "Timeout Handshake"
 
@@ -2057,12 +2078,6 @@ msgstr "Primo Piano Adattivo 432 X 432"
 
 msgid "Adaptive Background 432 X 432"
 msgstr "Sfondo Adattivo 432 X 432"
-
-msgid "Custom Build"
-msgstr "Build Personalizzata"
-
-msgid "Use Custom Build"
-msgstr "Utilizza Build Personalizzata"
 
 msgid "Export Format"
 msgstr "Formato Esportazione"
@@ -2319,9 +2334,6 @@ msgstr "Architettura"
 msgid "macOS"
 msgstr "macOS"
 
-msgid "Icon"
-msgstr "Icona"
-
 msgid "Copyright"
 msgstr "Copyright"
 
@@ -2439,9 +2451,6 @@ msgstr "UWP"
 msgid "Short Name"
 msgstr "Nome Corto"
 
-msgid "Description"
-msgstr "Descrizione"
-
 msgid "Publisher"
 msgstr "Publisher"
 
@@ -2558,9 +2567,6 @@ msgstr "Multimesh"
 
 msgid "Navigation Layers"
 msgstr "Livelli Navigazione"
-
-msgid "Transform"
-msgstr "Trasformazione"
 
 msgid "Rotation Degrees"
 msgstr "Rotazione in Gradi"
@@ -2784,9 +2790,6 @@ msgstr "Passo"
 msgid "Page"
 msgstr "Pagina"
 
-msgid "Stretch"
-msgstr "Allarga"
-
 msgid "Current Tab"
 msgstr "Scheda Attuale"
 
@@ -2841,9 +2844,6 @@ msgstr "Schermo Attuale"
 msgid "Min Size"
 msgstr "Dimensione Min"
 
-msgid "Aspect"
-msgstr "Aspetto"
-
 msgid "Format"
 msgstr "Formato"
 
@@ -2873,6 +2873,12 @@ msgstr "Cursore"
 
 msgid "Node"
 msgstr "Nodo"
+
+msgid "Sky"
+msgstr "Cielo"
+
+msgid "Ambient Light"
+msgstr "Luce Ambientale"
 
 msgid "Source"
 msgstr "Sorgente"
@@ -2945,9 +2951,6 @@ msgstr "In Basso A Destra"
 
 msgid "Bottom Left"
 msgstr "In Basso A Sinistra"
-
-msgid "Image"
-msgstr "Immagine"
 
 msgid "Atlas"
 msgstr "Atlas"

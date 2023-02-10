@@ -553,9 +553,6 @@ msgstr "Atvienot"
 msgid "Connect a Signal to a Method"
 msgstr "Savienot Signālu ar Metodi"
 
-msgid "Edit Connection:"
-msgstr "Izmainīt Savienojumu:"
-
 msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
 msgstr ""
 "Vai esat drošs(ša), ka vēlaties noņemt visus savienojumus no \"%s\" signāla?"
@@ -663,17 +660,11 @@ msgstr "Izsaukumi"
 msgid "Error:"
 msgstr "Kļūda:"
 
-msgid "Source"
-msgstr "Avots"
+msgid "%s Error"
+msgstr "%s Kļūda"
 
 msgid "C++ Source"
 msgstr "C++ avots"
-
-msgid "Source:"
-msgstr "Avots:"
-
-msgid "C++ Source:"
-msgstr "C++ Avots:"
 
 msgid "Skip Breakpoints"
 msgstr "Izlaist pārrāvumpunktus"
@@ -2067,22 +2058,6 @@ msgstr "Pārvaldīt šablonus"
 msgid "Install from file"
 msgstr "Instalēt no faila"
 
-msgid ""
-"This will set up your project for custom Android builds by installing the "
-"source template to \"res://android/build\".\n"
-"You can then apply modifications and build your own custom APK on export "
-"(adding modules, changing the AndroidManifest.xml, etc.).\n"
-"Note that in order to make custom builds instead of using pre-built APKs, "
-"the \"Use Custom Build\" option should be enabled in the Android export "
-"preset."
-msgstr ""
-"Šis iestatīs jūsu projektu priekš pielāgotām Android būvēm, ieinstalējot "
-"avota šablonu uz \"res://android/build\".\n"
-"Jūs varat veikt izmaiņas un uzbūvēt paši savu pielāgoto APK pie "
-"eksportēšanas (pievienot moduļus, mainīt AndroidManifest.xml, utt.).\n"
-"Piezīme - lai veiktu pielāgotās būves jau iebūvēto APK vietā, opcijai "
-"\"Izmantot Pielāgotu būvi\" jābūt ieslēgtai pie Android eksporta šablona."
-
 msgid "Import Templates From ZIP File"
 msgstr "Importēr šablonus no ZIP faila"
 
@@ -2206,9 +2181,6 @@ msgstr "Jau ir rediģēta aina."
 
 msgid "General"
 msgstr "Vispārēji"
-
-msgid "%s Error"
-msgstr "%s Kļūda"
 
 msgid "Storing File:"
 msgstr "Faila saglabāšana:"
@@ -2487,14 +2459,14 @@ msgstr "Pievienot Mezgla Punktu"
 msgid "Add Animation Point"
 msgstr "Pievienot Animācijas Punktu"
 
+msgid "Blend:"
+msgstr "Sapludināt:"
+
 msgid "Open Animation Node"
 msgstr "Atvērt Animācijas Mezglu"
 
 msgid "Add Triangle"
 msgstr "Pievienot Trijstūri"
-
-msgid "Blend:"
-msgstr "Sapludināt:"
 
 msgid "Nodes Connected"
 msgstr "Mezgli Savienoti"
@@ -2951,6 +2923,9 @@ msgstr "Notīrīt nesenos skriptus"
 msgid "Standard"
 msgstr "Standarts"
 
+msgid "Source"
+msgstr "Avots"
+
 msgid ""
 "Missing connected method '%s' for signal '%s' from node '%s' to node '%s'."
 msgstr ""
@@ -3024,9 +2999,6 @@ msgstr "Nav izvēlēti kadri"
 
 msgid "Animations:"
 msgstr "Animācijas:"
-
-msgid "Loop"
-msgstr "Cilpa"
 
 msgid "Animation Frames:"
 msgstr "Animācijas Kadri:"
