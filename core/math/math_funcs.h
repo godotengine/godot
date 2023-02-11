@@ -31,6 +31,7 @@
 #ifndef MATH_FUNCS_H
 #define MATH_FUNCS_H
 
+#include "core/error_macros.h"
 #include "core/math/math_defs.h"
 #include "core/math/random_pcg.h"
 #include "core/typedefs.h"
@@ -200,6 +201,7 @@ public:
 		return value;
 	}
 	static _ALWAYS_INLINE_ int64_t posmod(int64_t p_x, int64_t p_y) {
+		ERR_FAIL_COND_V_MSG(p_y == 0, 0, "Division by zero in posmod is undefined. Returning 0 as fallback.");
 		int64_t value = p_x % p_y;
 		if (((value < 0) && (p_y > 0)) || ((value > 0) && (p_y < 0))) {
 			value += p_y;
