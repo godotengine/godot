@@ -49,6 +49,7 @@ class MethodBind {
 	bool _static = false;
 	bool _const = false;
 	bool _returns = false;
+	bool _returns_raw_obj_ptr = false;
 
 protected:
 	Variant::Type *argument_types = nullptr;
@@ -120,6 +121,9 @@ public:
 	_FORCE_INLINE_ bool is_static() const { return _static; }
 	_FORCE_INLINE_ bool has_return() const { return _returns; }
 	virtual bool is_vararg() const { return false; }
+
+	_FORCE_INLINE_ bool is_return_type_raw_object_ptr() { return _returns_raw_obj_ptr; }
+	_FORCE_INLINE_ void set_return_type_is_raw_object_ptr(bool p_returns_raw_obj) { _returns_raw_obj_ptr = p_returns_raw_obj; }
 
 	void set_default_arguments(const Vector<Variant> &p_defargs);
 
