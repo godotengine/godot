@@ -1276,8 +1276,6 @@ int Skeleton3DGizmoPlugin::subgizmos_intersect_ray(const EditorNode3DGizmo *p_gi
 	}
 
 	if (closest_idx >= 0) {
-		WARN_PRINT("ray:");
-		WARN_PRINT(itos(closest_idx));
 		se->select_bone(closest_idx);
 		return closest_idx;
 	}
