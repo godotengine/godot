@@ -3685,7 +3685,7 @@ void EditorNode::_set_main_scene_state(Dictionary p_state, Node *p_for_scene) {
 			Node *editor_node = SceneTreeDock::get_singleton()->get_tree_editor()->get_selected();
 			editor_node = editor_node == nullptr ? get_edited_scene() : editor_node;
 
-			if (Object::cast_to<Node2D>(editor_node) || Object::cast_to<Control>(editor_node)) {
+			if (Object::cast_to<CanvasItem>(editor_node)) {
 				editor_select(EDITOR_2D);
 			} else if (Object::cast_to<Node3D>(editor_node)) {
 				editor_select(EDITOR_3D);
