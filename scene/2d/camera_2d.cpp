@@ -266,6 +266,8 @@ void Camera2D::_notification(int p_what) {
 				clear_current();
 			}
 			viewport = nullptr;
+			just_exited_tree = true;
+			callable_mp(this, &Camera2D::_reset_just_exited).call_deferred();
 		} break;
 
 #ifdef TOOLS_ENABLED
@@ -438,6 +440,10 @@ void Camera2D::_update_process_internal_for_smoothing() {
 void Camera2D::make_current() {
 	ERR_FAIL_COND(!enabled || !is_inside_tree());
 	get_tree()->call_group(group_name, "_make_current", this);
+	if (just_exited_tree) {
+		// If camera exited the scene tree in the same frame, group call will skip it, so this needs to be called manually.
+		_make_current(this);
+	}
 	_update_scroll();
 }
 
