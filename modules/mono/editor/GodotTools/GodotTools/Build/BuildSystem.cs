@@ -139,8 +139,8 @@ namespace GodotTools.Build
             // `dotnet clean` / `dotnet build` commands
             arguments.Add(buildInfo.OnlyClean ? "clean" : "build");
 
-            // Solution
-            arguments.Add(buildInfo.Solution);
+            // C# Project
+            arguments.Add(buildInfo.Project);
 
             // `dotnet clean` doesn't recognize these options
             if (!buildInfo.OnlyClean)
@@ -180,8 +180,8 @@ namespace GodotTools.Build
         {
             arguments.Add("publish"); // `dotnet publish` command
 
-            // Solution
-            arguments.Add(buildInfo.Solution);
+            // C# Project
+            arguments.Add(buildInfo.Project);
 
             // Restore
             // `dotnet publish` restores by default, unless requested not to
