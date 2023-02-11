@@ -165,22 +165,30 @@ ScriptLanguage *ScriptServer::get_language(int p_idx) {
 	return _languages[p_idx];
 }
 
-void ScriptServer::register_language(ScriptLanguage *p_language) {
-	ERR_FAIL_NULL(p_language);
-	ERR_FAIL_COND(_language_count >= MAX_LANGUAGES);
+Error ScriptServer::register_language(ScriptLanguage *p_language) {
+	ERR_FAIL_NULL_V(p_language, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V_MSG(_language_count >= MAX_LANGUAGES, ERR_UNAVAILABLE, "Script languages limit has been reach, cannot register more.");
+	for (int i = 0; i < _language_count; i++) {
+		const ScriptLanguage *other_language = _languages[i];
+		ERR_FAIL_COND_V_MSG(other_language->get_extension() == p_language->get_extension(), ERR_ALREADY_EXISTS, "A script language with extension '" + p_language->get_extension() + "' is already registered.");
+		ERR_FAIL_COND_V_MSG(other_language->get_name() == p_language->get_name(), ERR_ALREADY_EXISTS, "A script language with name '" + p_language->get_name() + "' is already registered.");
+		ERR_FAIL_COND_V_MSG(other_language->get_type() == p_language->get_type(), ERR_ALREADY_EXISTS, "A script language with type '" + p_language->get_type() + "' is already registered.");
+	}
 	_languages[_language_count++] = p_language;
+	return OK;
 }
 
-void ScriptServer::unregister_language(const ScriptLanguage *p_language) {
+Error ScriptServer::unregister_language(const ScriptLanguage *p_language) {
 	for (int i = 0; i < _language_count; i++) {
 		if (_languages[i] == p_language) {
 			_language_count--;
 			if (i < _language_count) {
 				SWAP(_languages[i], _languages[_language_count]);
 			}
-			return;
+			return OK;
 		}
 	}
+	return ERR_DOES_NOT_EXIST;
 }
 
 void ScriptServer::init_languages() {
