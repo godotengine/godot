@@ -139,6 +139,7 @@ class EditorHelp : public VBoxContainer {
 
 		Ref<Font> doc_font;
 		Ref<Font> doc_bold_font;
+		Ref<Font> doc_italic_font;
 		Ref<Font> doc_title_font;
 		Ref<Font> doc_code_font;
 		Ref<Font> doc_kbd_font;
@@ -162,6 +163,13 @@ class EditorHelp : public VBoxContainer {
 	void _add_method(const DocData::MethodDoc &p_method, bool p_overview = true);
 
 	void _add_bulletpoint();
+
+	void _push_normal_font();
+	void _pop_normal_font();
+	void _push_title_font();
+	void _pop_title_font();
+	void _push_code_font();
+	void _pop_code_font();
 
 	void _class_desc_finished();
 	void _class_list_select(const String &p_select);
