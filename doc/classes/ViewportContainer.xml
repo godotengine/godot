@@ -4,7 +4,7 @@
 		Control for holding [Viewport]s.
 	</brief_description>
 	<description>
-		A [Container] node that holds a [Viewport], automatically setting its size.
+		A [Container] node that holds a [Viewport], automatically setting the viewport's size.
 		[b]Note:[/b] Changing a ViewportContainer's [member Control.rect_scale] will cause its contents to appear distorted. To change its visual size without causing distortion, adjust the node's margins instead (if it's not already in a container).
 	</description>
 	<tutorials>
