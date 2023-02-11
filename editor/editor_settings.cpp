@@ -586,9 +586,9 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 
 	// Help
 	_initial_set("text_editor/help/show_help_index", true);
-	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "text_editor/help/help_font_size", 15, "8,48,1")
-	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "text_editor/help/help_source_font_size", 14, "8,48,1")
-	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "text_editor/help/help_title_font_size", 23, "8,48,1")
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "text_editor/help/help_font_size", 16, "8,48,1")
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "text_editor/help/help_source_font_size", 15, "8,48,1")
+	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_RANGE, "text_editor/help/help_title_font_size", 23, "8,64,1")
 	EDITOR_SETTING(Variant::INT, PROPERTY_HINT_ENUM, "text_editor/help/class_reference_examples", 0, "GDScript,C#,GDScript and C#")
 
 	/* Editors */
@@ -922,6 +922,7 @@ void EditorSettings::setup_language() {
 	}
 	// Load editor translation for configured/detected locale.
 	load_editor_translations(lang);
+	load_property_translations(lang);
 
 	// Load class reference translation.
 	load_doc_translations(lang);

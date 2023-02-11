@@ -121,7 +121,6 @@ void NavigationAgent3D::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("navigation_finished"));
 	ADD_SIGNAL(MethodInfo("velocity_computed", PropertyInfo(Variant::VECTOR3, "safe_velocity")));
 
-#ifdef DEBUG_ENABLED
 	ClassDB::bind_method(D_METHOD("set_debug_enabled", "enabled"), &NavigationAgent3D::set_debug_enabled);
 	ClassDB::bind_method(D_METHOD("get_debug_enabled"), &NavigationAgent3D::get_debug_enabled);
 	ClassDB::bind_method(D_METHOD("set_debug_use_custom", "enabled"), &NavigationAgent3D::set_debug_use_custom);
@@ -131,12 +130,11 @@ void NavigationAgent3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_debug_path_custom_point_size", "point_size"), &NavigationAgent3D::set_debug_path_custom_point_size);
 	ClassDB::bind_method(D_METHOD("get_debug_path_custom_point_size"), &NavigationAgent3D::get_debug_path_custom_point_size);
 
-	ADD_GROUP("Debug", "");
+	ADD_GROUP("Debug", "debug_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_enabled"), "set_debug_enabled", "get_debug_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_use_custom"), "set_debug_use_custom", "get_debug_use_custom");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "debug_path_custom_color"), "set_debug_path_custom_color", "get_debug_path_custom_color");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "debug_path_custom_point_size", PROPERTY_HINT_RANGE, "1,50,1,suffix:px"), "set_debug_path_custom_point_size", "get_debug_path_custom_point_size");
-#endif // DEBUG_ENABLED
 }
 
 void NavigationAgent3D::_notification(int p_what) {
@@ -207,7 +205,7 @@ void NavigationAgent3D::_notification(int p_what) {
 				if (avoidance_enabled) {
 					// agent_position on NavigationServer is avoidance only and has nothing to do with pathfinding
 					// no point in flooding NavigationServer queue with agent position updates that get send to the void if avoidance is not used
-					NavigationServer3D::get_singleton()->agent_set_position(agent, agent_parent->get_global_transform().origin);
+					NavigationServer3D::get_singleton()->agent_set_position(agent, agent_parent->get_global_position());
 				}
 				_check_distance_to_target();
 			}
@@ -222,12 +220,12 @@ void NavigationAgent3D::_notification(int p_what) {
 
 NavigationAgent3D::NavigationAgent3D() {
 	agent = NavigationServer3D::get_singleton()->agent_create();
-	set_neighbor_distance(50.0);
-	set_max_neighbors(10);
-	set_time_horizon(5.0);
-	set_radius(1.0);
-	set_max_speed(10.0);
-	set_ignore_y(true);
+	NavigationServer3D::get_singleton()->agent_set_neighbor_distance(agent, neighbor_distance);
+	NavigationServer3D::get_singleton()->agent_set_max_neighbors(agent, max_neighbors);
+	NavigationServer3D::get_singleton()->agent_set_time_horizon(agent, time_horizon);
+	NavigationServer3D::get_singleton()->agent_set_radius(agent, radius);
+	NavigationServer3D::get_singleton()->agent_set_max_speed(agent, max_speed);
+	NavigationServer3D::get_singleton()->agent_set_ignore_y(agent, ignore_y);
 
 	// Preallocate query and result objects to improve performance.
 	navigation_query = Ref<NavigationPathQueryParameters3D>();
@@ -260,7 +258,12 @@ NavigationAgent3D::~NavigationAgent3D() {
 }
 
 void NavigationAgent3D::set_avoidance_enabled(bool p_enabled) {
+	if (avoidance_enabled == p_enabled) {
+		return;
+	}
+
 	avoidance_enabled = p_enabled;
+
 	if (avoidance_enabled) {
 		NavigationServer3D::get_singleton()->agent_set_callback(agent, callable_mp(this, &NavigationAgent3D::_avoidance_done));
 	} else {
@@ -273,6 +276,10 @@ bool NavigationAgent3D::get_avoidance_enabled() const {
 }
 
 void NavigationAgent3D::set_agent_parent(Node *p_agent_parent) {
+	if (agent_parent == p_agent_parent) {
+		return;
+	}
+
 	// remove agent from any avoidance map before changing parent or there will be leftovers on the RVO map
 	NavigationServer3D::get_singleton()->agent_set_callback(agent, Callable());
 
@@ -286,7 +293,9 @@ void NavigationAgent3D::set_agent_parent(Node *p_agent_parent) {
 		}
 
 		// create new avoidance callback if enabled
-		set_avoidance_enabled(avoidance_enabled);
+		if (avoidance_enabled) {
+			NavigationServer3D::get_singleton()->agent_set_callback(agent, callable_mp(this, &NavigationAgent3D::_avoidance_done));
+		}
 	} else {
 		agent_parent = nullptr;
 		NavigationServer3D::get_singleton()->agent_set_map(get_rid(), RID());
@@ -294,11 +303,13 @@ void NavigationAgent3D::set_agent_parent(Node *p_agent_parent) {
 }
 
 void NavigationAgent3D::set_navigation_layers(uint32_t p_navigation_layers) {
-	bool navigation_layers_changed = navigation_layers != p_navigation_layers;
-	navigation_layers = p_navigation_layers;
-	if (navigation_layers_changed) {
-		_request_repath();
+	if (navigation_layers == p_navigation_layers) {
+		return;
 	}
+
+	navigation_layers = p_navigation_layers;
+
+	_request_repath();
 }
 
 uint32_t NavigationAgent3D::get_navigation_layers() const {
@@ -332,7 +343,12 @@ void NavigationAgent3D::set_path_metadata_flags(BitField<NavigationPathQueryPara
 }
 
 void NavigationAgent3D::set_navigation_map(RID p_navigation_map) {
+	if (map_override == p_navigation_map) {
+		return;
+	}
+
 	map_override = p_navigation_map;
+
 	NavigationServer3D::get_singleton()->agent_set_map(agent, map_override);
 	_request_repath();
 }
@@ -346,50 +362,96 @@ RID NavigationAgent3D::get_navigation_map() const {
 	return RID();
 }
 
-void NavigationAgent3D::set_path_desired_distance(real_t p_dd) {
-	path_desired_distance = p_dd;
+void NavigationAgent3D::set_path_desired_distance(real_t p_path_desired_distance) {
+	if (Math::is_equal_approx(path_desired_distance, p_path_desired_distance)) {
+		return;
+	}
+
+	path_desired_distance = p_path_desired_distance;
 }
 
-void NavigationAgent3D::set_target_desired_distance(real_t p_dd) {
-	target_desired_distance = p_dd;
+void NavigationAgent3D::set_target_desired_distance(real_t p_target_desired_distance) {
+	if (Math::is_equal_approx(target_desired_distance, p_target_desired_distance)) {
+		return;
+	}
+
+	target_desired_distance = p_target_desired_distance;
 }
 
 void NavigationAgent3D::set_radius(real_t p_radius) {
+	if (Math::is_equal_approx(radius, p_radius)) {
+		return;
+	}
+
 	radius = p_radius;
+
 	NavigationServer3D::get_singleton()->agent_set_radius(agent, radius);
 }
 
-void NavigationAgent3D::set_agent_height_offset(real_t p_hh) {
-	navigation_height_offset = p_hh;
+void NavigationAgent3D::set_agent_height_offset(real_t p_agent_height_offset) {
+	if (Math::is_equal_approx(navigation_height_offset, p_agent_height_offset)) {
+		return;
+	}
+
+	navigation_height_offset = p_agent_height_offset;
 }
 
 void NavigationAgent3D::set_ignore_y(bool p_ignore_y) {
+	if (ignore_y == p_ignore_y) {
+		return;
+	}
+
 	ignore_y = p_ignore_y;
+
 	NavigationServer3D::get_singleton()->agent_set_ignore_y(agent, ignore_y);
 }
 
 void NavigationAgent3D::set_neighbor_distance(real_t p_distance) {
+	if (Math::is_equal_approx(neighbor_distance, p_distance)) {
+		return;
+	}
+
 	neighbor_distance = p_distance;
+
 	NavigationServer3D::get_singleton()->agent_set_neighbor_distance(agent, neighbor_distance);
 }
 
 void NavigationAgent3D::set_max_neighbors(int p_count) {
+	if (max_neighbors == p_count) {
+		return;
+	}
+
 	max_neighbors = p_count;
+
 	NavigationServer3D::get_singleton()->agent_set_max_neighbors(agent, max_neighbors);
 }
 
 void NavigationAgent3D::set_time_horizon(real_t p_time) {
+	if (Math::is_equal_approx(time_horizon, p_time)) {
+		return;
+	}
+
 	time_horizon = p_time;
+
 	NavigationServer3D::get_singleton()->agent_set_time_horizon(agent, time_horizon);
 }
 
 void NavigationAgent3D::set_max_speed(real_t p_max_speed) {
+	if (Math::is_equal_approx(max_speed, p_max_speed)) {
+		return;
+	}
+
 	max_speed = p_max_speed;
+
 	NavigationServer3D::get_singleton()->agent_set_max_speed(agent, max_speed);
 }
 
-void NavigationAgent3D::set_path_max_distance(real_t p_pmd) {
-	path_max_distance = p_pmd;
+void NavigationAgent3D::set_path_max_distance(real_t p_path_max_distance) {
+	if (Math::is_equal_approx(path_max_distance, p_path_max_distance)) {
+		return;
+	}
+
+	path_max_distance = p_path_max_distance;
 }
 
 real_t NavigationAgent3D::get_path_max_distance() {
@@ -397,8 +459,12 @@ real_t NavigationAgent3D::get_path_max_distance() {
 }
 
 void NavigationAgent3D::set_target_position(Vector3 p_position) {
+	// Intentionally not checking for equality of the parameter, as we want to update the path even if the target position is the same in case the world changed.
+	// Revisit later when the navigation server can update the path without requesting a new path.
+
 	target_position = p_position;
 	target_position_submitted = true;
+
 	_request_repath();
 }
 
@@ -412,7 +478,7 @@ Vector3 NavigationAgent3D::get_next_path_position() {
 	const Vector<Vector3> &navigation_path = navigation_result->get_path();
 	if (navigation_path.size() == 0) {
 		ERR_FAIL_COND_V_MSG(agent_parent == nullptr, Vector3(), "The agent has no parent.");
-		return agent_parent->get_global_transform().origin;
+		return agent_parent->get_global_position();
 	} else {
 		return navigation_path[navigation_path_index] - Vector3(0, navigation_height_offset, 0);
 	}
@@ -420,7 +486,7 @@ Vector3 NavigationAgent3D::get_next_path_position() {
 
 real_t NavigationAgent3D::distance_to_target() const {
 	ERR_FAIL_COND_V_MSG(agent_parent == nullptr, 0.0, "The agent has no parent.");
-	return agent_parent->get_global_transform().origin.distance_to(target_position);
+	return agent_parent->get_global_position().distance_to(target_position);
 }
 
 bool NavigationAgent3D::is_target_reached() const {
@@ -447,10 +513,15 @@ Vector3 NavigationAgent3D::get_final_position() {
 }
 
 void NavigationAgent3D::set_velocity(Vector3 p_velocity) {
+	// Intentionally not checking for equality of the parameter.
+	// We need to always submit the velocity to the navigation server, even when it is the same, in order to run avoidance every frame.
+	// Revisit later when the navigation server can update avoidance without users resubmitting the velocity.
+
 	target_velocity = p_velocity;
+	velocity_submitted = true;
+
 	NavigationServer3D::get_singleton()->agent_set_target_velocity(agent, target_velocity);
 	NavigationServer3D::get_singleton()->agent_set_velocity(agent, prev_safe_velocity);
-	velocity_submitted = true;
 }
 
 void NavigationAgent3D::_avoidance_done(Vector3 p_new_velocity) {
@@ -491,7 +562,7 @@ void NavigationAgent3D::update_navigation() {
 
 	update_frame_id = Engine::get_singleton()->get_physics_frames();
 
-	Vector3 origin = agent_parent->get_global_transform().origin;
+	Vector3 origin = agent_parent->get_global_position();
 
 	bool reload_path = false;
 
@@ -622,10 +693,15 @@ void NavigationAgent3D::_check_distance_to_target() {
 
 ////////DEBUG////////////////////////////////////////////////////////////
 
-#ifdef DEBUG_ENABLED
 void NavigationAgent3D::set_debug_enabled(bool p_enabled) {
+#ifdef DEBUG_ENABLED
+	if (debug_enabled == p_enabled) {
+		return;
+	}
+
 	debug_enabled = p_enabled;
 	debug_path_dirty = true;
+#endif // DEBUG_ENABLED
 }
 
 bool NavigationAgent3D::get_debug_enabled() const {
@@ -633,8 +709,14 @@ bool NavigationAgent3D::get_debug_enabled() const {
 }
 
 void NavigationAgent3D::set_debug_use_custom(bool p_enabled) {
+#ifdef DEBUG_ENABLED
+	if (debug_use_custom == p_enabled) {
+		return;
+	}
+
 	debug_use_custom = p_enabled;
 	debug_path_dirty = true;
+#endif // DEBUG_ENABLED
 }
 
 bool NavigationAgent3D::get_debug_use_custom() const {
@@ -642,8 +724,14 @@ bool NavigationAgent3D::get_debug_use_custom() const {
 }
 
 void NavigationAgent3D::set_debug_path_custom_color(Color p_color) {
+#ifdef DEBUG_ENABLED
+	if (debug_path_custom_color == p_color) {
+		return;
+	}
+
 	debug_path_custom_color = p_color;
 	debug_path_dirty = true;
+#endif // DEBUG_ENABLED
 }
 
 Color NavigationAgent3D::get_debug_path_custom_color() const {
@@ -651,14 +739,21 @@ Color NavigationAgent3D::get_debug_path_custom_color() const {
 }
 
 void NavigationAgent3D::set_debug_path_custom_point_size(float p_point_size) {
+#ifdef DEBUG_ENABLED
+	if (Math::is_equal_approx(debug_path_custom_point_size, p_point_size)) {
+		return;
+	}
+
 	debug_path_custom_point_size = p_point_size;
 	debug_path_dirty = true;
+#endif // DEBUG_ENABLED
 }
 
 float NavigationAgent3D::get_debug_path_custom_point_size() const {
 	return debug_path_custom_point_size;
 }
 
+#ifdef DEBUG_ENABLED
 void NavigationAgent3D::_navigation_debug_changed() {
 	debug_path_dirty = true;
 }

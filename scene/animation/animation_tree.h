@@ -167,6 +167,11 @@ VARIANT_ENUM_CAST(AnimationNode::FilterAction)
 class AnimationRootNode : public AnimationNode {
 	GDCLASS(AnimationRootNode, AnimationNode);
 
+protected:
+	virtual void _tree_changed();
+	virtual void _animation_node_renamed(const ObjectID &p_oid, const String &p_old_name, const String &p_new_name);
+	virtual void _animation_node_removed(const ObjectID &p_oid, const StringName &p_node);
+
 public:
 	AnimationRootNode() {}
 };
@@ -221,6 +226,12 @@ private:
 		TrackCacheTransform() {
 			type = Animation::TYPE_POSITION_3D;
 		}
+	};
+
+	struct RootMotionCache {
+		Vector3 loc = Vector3(0, 0, 0);
+		Quaternion rot = Quaternion(0, 0, 0, 1);
+		Vector3 scale = Vector3(1, 1, 1);
 	};
 
 	struct TrackCacheBlendShape : public TrackCache {
@@ -289,6 +300,7 @@ private:
 		}
 	};
 
+	RootMotionCache root_motion_cache;
 	HashMap<NodePath, TrackCache *> track_cache;
 	HashSet<TrackCache *> playing_caches;
 	Vector<Node *> playing_audio_stream_players;
@@ -322,13 +334,19 @@ private:
 	Vector3 root_motion_position = Vector3(0, 0, 0);
 	Quaternion root_motion_rotation = Quaternion(0, 0, 0, 1);
 	Vector3 root_motion_scale = Vector3(0, 0, 0);
+	Vector3 root_motion_position_accumulator = Vector3(0, 0, 0);
+	Quaternion root_motion_rotation_accumulator = Quaternion(0, 0, 0, 1);
+	Vector3 root_motion_scale_accumulator = Vector3(1, 1, 1);
 
 	friend class AnimationNode;
 	bool properties_dirty = true;
 	void _tree_changed();
+	void _animation_node_renamed(const ObjectID &p_oid, const String &p_old_name, const String &p_new_name);
+	void _animation_node_removed(const ObjectID &p_oid, const StringName &p_node);
 	void _update_properties();
 	List<PropertyInfo> properties;
 	HashMap<StringName, HashMap<StringName, StringName>> property_parent_map;
+	HashMap<ObjectID, StringName> property_reference_map;
 	HashMap<StringName, Pair<Variant, bool>> property_map; // Property value and read-only flag.
 
 	struct Activity {
@@ -386,10 +404,12 @@ public:
 	Quaternion get_root_motion_rotation() const;
 	Vector3 get_root_motion_scale() const;
 
+	Vector3 get_root_motion_position_accumulator() const;
+	Quaternion get_root_motion_rotation_accumulator() const;
+	Vector3 get_root_motion_scale_accumulator() const;
+
 	real_t get_connection_activity(const StringName &p_path, int p_connection) const;
 	void advance(double p_time);
-
-	void rename_parameter(const String &p_base, const String &p_new_base);
 
 	uint64_t get_last_process_pass() const;
 	AnimationTree();

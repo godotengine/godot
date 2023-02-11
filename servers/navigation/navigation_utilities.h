@@ -69,10 +69,10 @@ struct PathQueryParameters {
 };
 
 struct PathQueryResult {
-	Vector<Vector3> path;
-	Vector<int32_t> path_types;
+	PackedVector3Array path;
+	PackedInt32Array path_types;
 	TypedArray<RID> path_rids;
-	Vector<int64_t> path_owner_ids;
+	PackedInt64Array path_owner_ids;
 };
 
 } //namespace NavigationUtilities

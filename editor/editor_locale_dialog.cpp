@@ -294,7 +294,7 @@ void EditorLocaleDialog::_update_tree() {
 
 	if (!is_edit_mode) {
 		TreeItem *t = script_list->create_item(s_root);
-		t->set_text(0, "[Default]");
+		t->set_text(0, TTR("[Default]"));
 		t->set_metadata(0, "");
 	}
 
@@ -404,7 +404,7 @@ EditorLocaleDialog::EditorLocaleDialog() {
 		}
 		{
 			edit_filters = memnew(CheckButton);
-			edit_filters->set_text("Edit Filters");
+			edit_filters->set_text(TTR("Edit Filters"));
 			edit_filters->set_toggle_mode(true);
 			edit_filters->set_pressed(false);
 			edit_filters->connect("toggled", callable_mp(this, &EditorLocaleDialog::_edit_filters));
@@ -412,7 +412,7 @@ EditorLocaleDialog::EditorLocaleDialog() {
 		}
 		{
 			advanced = memnew(CheckButton);
-			advanced->set_text("Advanced");
+			advanced->set_text(TTR("Advanced"));
 			advanced->set_toggle_mode(true);
 			advanced->set_pressed(false);
 			advanced->connect("toggled", callable_mp(this, &EditorLocaleDialog::_toggle_advanced));
@@ -446,7 +446,8 @@ EditorLocaleDialog::EditorLocaleDialog() {
 			vb_script_list->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 			{
 				Label *script_lbl = memnew(Label);
-				script_lbl->set_text(TTR("Script:"));
+				// TRANSLATORS: This is the label for a list of writing systems.
+				script_lbl->set_text(TTR("Script:", "Locale"));
 				vb_script_list->add_child(script_lbl);
 			}
 			{
@@ -504,7 +505,8 @@ EditorLocaleDialog::EditorLocaleDialog() {
 				vb_script->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 				{
 					Label *script_lbl = memnew(Label);
-					script_lbl->set_text(TTR("Script"));
+					// TRANSLATORS: This refers to a writing system.
+					script_lbl->set_text(TTR("Script", "Locale"));
 					vb_script->add_child(script_lbl);
 				}
 				{

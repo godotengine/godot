@@ -81,6 +81,7 @@ public:
 	enum MenuItems {
 		MENU_COPY,
 		MENU_SELECT_ALL,
+		MENU_MAX
 	};
 
 	enum DefaultFont {
@@ -454,8 +455,8 @@ private:
 	// Context menu.
 	PopupMenu *menu = nullptr;
 	void _generate_context_menu();
+	void _update_context_menu();
 	Key _get_menu_action_accelerator(const String &p_action);
-	void _menu_option(int p_option);
 
 	int visible_characters = -1;
 	float visible_ratio = 1.0;
@@ -688,6 +689,7 @@ public:
 	// Context menu.
 	PopupMenu *get_menu() const;
 	bool is_menu_visible() const;
+	void menu_option(int p_option);
 
 	void parse_bbcode(const String &p_bbcode);
 	void append_text(const String &p_bbcode);
@@ -739,5 +741,6 @@ public:
 
 VARIANT_ENUM_CAST(RichTextLabel::ListType);
 VARIANT_ENUM_CAST(RichTextLabel::ItemType);
+VARIANT_ENUM_CAST(RichTextLabel::MenuItems);
 
 #endif // RICH_TEXT_LABEL_H

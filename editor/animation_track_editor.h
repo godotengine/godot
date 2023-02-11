@@ -399,6 +399,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _update_tracks();
 	void _redraw_tracks();
 	void _redraw_groups();
+	void _check_bezier_exist();
 
 	void _name_limit_changed();
 	void _timeline_changed(float p_new_pos, bool p_drag, bool p_timeline_only);

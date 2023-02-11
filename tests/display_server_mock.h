@@ -42,6 +42,7 @@ private:
 	friend class DisplayServer;
 
 	Point2i mouse_position = Point2i(-1, -1); // Outside of Window.
+	CursorShape cursor_shape = CursorShape::CURSOR_ARROW;
 	bool window_over = false;
 	Callable event_callback;
 	Callable input_event_callback;
@@ -103,6 +104,7 @@ public:
 	bool has_feature(Feature p_feature) const override {
 		switch (p_feature) {
 			case FEATURE_MOUSE:
+			case FEATURE_CURSOR_SHAPE:
 				return true;
 			default: {
 			}
@@ -115,18 +117,34 @@ public:
 	// You can simulate DisplayServer-events by calling this function.
 	// The events will be deliverd to Godot's Input-system.
 	// Mouse-events (Button & Motion) will additionally update the DisplayServer's mouse position.
+	// For Mouse motion events, the `relative`-property is set based on the distance to the previous mouse position.
 	void simulate_event(Ref<InputEvent> p_event) {
+		Ref<InputEvent> event = p_event;
 		Ref<InputEventMouse> me = p_event;
 		if (me.is_valid()) {
+			Ref<InputEventMouseMotion> mm = p_event;
+			if (mm.is_valid()) {
+				mm->set_relative(mm->get_position() - mouse_position);
+				event = mm;
+			}
 			_set_mouse_position(me->get_position());
 		}
-		Input::get_singleton()->parse_input_event(p_event);
+		Input::get_singleton()->parse_input_event(event);
+	}
+
+	// Returns the current cursor shape.
+	CursorShape get_cursor_shape() {
+		return cursor_shape;
 	}
 
 	virtual Point2i mouse_get_position() const override { return mouse_position; }
 
 	virtual Size2i window_get_size(WindowID p_window = MAIN_WINDOW_ID) const override {
 		return Size2i(1920, 1080);
+	}
+
+	virtual void cursor_set_shape(CursorShape p_shape) override {
+		cursor_shape = p_shape;
 	}
 
 	virtual void window_set_window_event_callback(const Callable &p_callable, WindowID p_window = MAIN_WINDOW_ID) override {

@@ -253,12 +253,12 @@ public:
 	virtual void process(real_t delta_time) = 0;
 
 	/// Returns a customized navigation path using a query parameters object
-	void query_path(const Ref<NavigationPathQueryParameters3D> &p_query_parameters, Ref<NavigationPathQueryResult3D> p_query_result) const;
+	virtual void query_path(const Ref<NavigationPathQueryParameters3D> &p_query_parameters, Ref<NavigationPathQueryResult3D> p_query_result) const;
 
 	virtual NavigationUtilities::PathQueryResult _query_path(const NavigationUtilities::PathQueryParameters &p_parameters) const = 0;
 
 	NavigationServer3D();
-	virtual ~NavigationServer3D();
+	~NavigationServer3D() override;
 
 	enum ProcessInfo {
 		INFO_ACTIVE_MAPS,

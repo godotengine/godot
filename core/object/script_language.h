@@ -70,8 +70,8 @@ public:
 	static bool is_scripting_enabled();
 	_FORCE_INLINE_ static int get_language_count() { return _language_count; }
 	static ScriptLanguage *get_language(int p_idx);
-	static void register_language(ScriptLanguage *p_language);
-	static void unregister_language(const ScriptLanguage *p_language);
+	static Error register_language(ScriptLanguage *p_language);
+	static Error unregister_language(const ScriptLanguage *p_language);
 
 	static void set_reload_scripts_on_save(bool p_enable);
 	static bool is_reload_scripts_on_save_enabled();
@@ -91,7 +91,6 @@ public:
 	static void get_global_class_list(List<StringName> *r_global_classes);
 	static void get_inheriters_list(const StringName &p_base_type, List<StringName> *r_classes);
 	static void save_global_classes();
-	static bool has_global_classes();
 	static String get_global_class_cache_file_path();
 
 	static void init_languages();

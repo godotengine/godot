@@ -249,6 +249,7 @@
 			<param index="0" name="allow_objects" type="bool" default="false" />
 			<description>
 				Returns the next [Variant] value from the file. If [param allow_objects] is [code]true[/code], decoding objects is allowed.
+				Internally, this uses the same decoding mechanism as the [method @GlobalScope.bytes_to_var] method.
 				[b]Warning:[/b] Deserialized objects can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats such as remote code execution.
 			</description>
 		</method>
@@ -447,6 +448,7 @@
 			<param index="1" name="full_objects" type="bool" default="false" />
 			<description>
 				Stores any Variant value in the file. If [param full_objects] is [code]true[/code], encoding objects is allowed (and can potentially include code).
+				Internally, this uses the same encoding mechanism as the [method @GlobalScope.var_to_bytes] method.
 				[b]Note:[/b] Not all properties are included. Only properties that are configured with the [constant PROPERTY_USAGE_STORAGE] flag set will be serialized. You can add a new usage flag to a property by overriding the [method Object._get_property_list] method in your class. You can also check how property usage is configured by calling [method Object._get_property_list]. See [enum PropertyUsageFlags] for the possible usage flags.
 			</description>
 		</method>

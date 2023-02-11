@@ -54,14 +54,23 @@ static void gdextension_free(void *p_mem) {
 }
 
 // Helper print functions.
-static void gdextension_print_error(const char *p_description, const char *p_function, const char *p_file, int32_t p_line) {
-	_err_print_error(p_function, p_file, p_line, p_description, false, ERR_HANDLER_ERROR);
+static void gdextension_print_error(const char *p_description, const char *p_function, const char *p_file, int32_t p_line, GDExtensionBool p_editor_notify) {
+	_err_print_error(p_function, p_file, p_line, p_description, p_editor_notify, ERR_HANDLER_ERROR);
 }
-static void gdextension_print_warning(const char *p_description, const char *p_function, const char *p_file, int32_t p_line) {
-	_err_print_error(p_function, p_file, p_line, p_description, false, ERR_HANDLER_WARNING);
+static void gdextension_print_error_with_message(const char *p_description, const char *p_message, const char *p_function, const char *p_file, int32_t p_line, GDExtensionBool p_editor_notify) {
+	_err_print_error(p_function, p_file, p_line, p_description, p_message, p_editor_notify, ERR_HANDLER_ERROR);
 }
-static void gdextension_print_script_error(const char *p_description, const char *p_function, const char *p_file, int32_t p_line) {
-	_err_print_error(p_function, p_file, p_line, p_description, false, ERR_HANDLER_SCRIPT);
+static void gdextension_print_warning(const char *p_description, const char *p_function, const char *p_file, int32_t p_line, GDExtensionBool p_editor_notify) {
+	_err_print_error(p_function, p_file, p_line, p_description, p_editor_notify, ERR_HANDLER_WARNING);
+}
+static void gdextension_print_warning_with_message(const char *p_description, const char *p_message, const char *p_function, const char *p_file, int32_t p_line, GDExtensionBool p_editor_notify) {
+	_err_print_error(p_function, p_file, p_line, p_description, p_message, p_editor_notify, ERR_HANDLER_WARNING);
+}
+static void gdextension_print_script_error(const char *p_description, const char *p_function, const char *p_file, int32_t p_line, GDExtensionBool p_editor_notify) {
+	_err_print_error(p_function, p_file, p_line, p_description, p_editor_notify, ERR_HANDLER_SCRIPT);
+}
+static void gdextension_print_script_error_with_message(const char *p_description, const char *p_message, const char *p_function, const char *p_file, int32_t p_line, GDExtensionBool p_editor_notify) {
+	_err_print_error(p_function, p_file, p_line, p_description, p_message, p_editor_notify, ERR_HANDLER_SCRIPT);
 }
 
 uint64_t gdextension_get_native_struct_size(GDExtensionConstStringNamePtr p_name) {
@@ -862,11 +871,11 @@ void gdextension_array_ref(GDExtensionTypePtr p_self, GDExtensionConstTypePtr p_
 	self->_ref(*from);
 }
 
-void gdextension_array_set_typed(GDExtensionTypePtr p_self, uint32_t p_type, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstVariantPtr p_script) {
+void gdextension_array_set_typed(GDExtensionTypePtr p_self, GDExtensionVariantType p_type, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstVariantPtr p_script) {
 	Array *self = reinterpret_cast<Array *>(p_self);
 	const StringName *class_name = reinterpret_cast<const StringName *>(p_class_name);
 	const Variant *script = reinterpret_cast<const Variant *>(p_script);
-	self->set_typed(p_type, *class_name, *script);
+	self->set_typed((uint32_t)p_type, *class_name, *script);
 }
 
 /* Dictionary functions */
@@ -1014,8 +1023,11 @@ void gdextension_setup_interface(GDExtensionInterface *p_interface) {
 	gde_interface.mem_free = gdextension_free;
 
 	gde_interface.print_error = gdextension_print_error;
+	gde_interface.print_error_with_message = gdextension_print_error_with_message;
 	gde_interface.print_warning = gdextension_print_warning;
+	gde_interface.print_warning_with_message = gdextension_print_warning_with_message;
 	gde_interface.print_script_error = gdextension_print_script_error;
+	gde_interface.print_script_error_with_message = gdextension_print_script_error_with_message;
 
 	gde_interface.get_native_struct_size = gdextension_get_native_struct_size;
 

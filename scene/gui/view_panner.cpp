@@ -125,7 +125,7 @@ bool ViewPanner::gui_input(const Ref<InputEvent> &p_event, Rect2 p_canvas_rect) 
 
 	Ref<InputEventPanGesture> pan_gesture = p_event;
 	if (pan_gesture.is_valid()) {
-		callback_helper(pan_callback, varray(-pan_gesture->get_delta(), p_event));
+		callback_helper(pan_callback, varray(-pan_gesture->get_delta() * scroll_speed, p_event));
 	}
 
 	Ref<InputEventScreenDrag> screen_drag = p_event;

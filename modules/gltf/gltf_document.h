@@ -364,8 +364,7 @@ public:
 			Ref<GLTFNode> p_gltf_node);
 	GLTFMeshIndex _convert_mesh_to_gltf(Ref<GLTFState> p_state,
 			MeshInstance3D *p_mesh_instance);
-	void _convert_animation(Ref<GLTFState> p_state, AnimationPlayer *p_animation_player,
-			String p_animation_track_name);
+	void _convert_animation(Ref<GLTFState> p_state, AnimationPlayer *p_animation_player, String p_animation_track_name);
 	Error _serialize(Ref<GLTFState> p_state, const String &p_path);
 	Error _parse(Ref<GLTFState> p_state, String p_path, Ref<FileAccess> p_file);
 };

@@ -76,6 +76,14 @@ struct _NO_DISCARD_ Vector3 {
 		return x < y ? (y < z ? Vector3::AXIS_Z : Vector3::AXIS_Y) : (x < z ? Vector3::AXIS_Z : Vector3::AXIS_X);
 	}
 
+	Vector3 min(const Vector3 &p_vector3) const {
+		return Vector3(MIN(x, p_vector3.x), MIN(y, p_vector3.y), MIN(z, p_vector3.z));
+	}
+
+	Vector3 max(const Vector3 &p_vector3) const {
+		return Vector3(MAX(x, p_vector3.x), MAX(y, p_vector3.y), MAX(z, p_vector3.z));
+	}
+
 	_FORCE_INLINE_ real_t length() const;
 	_FORCE_INLINE_ real_t length_squared() const;
 

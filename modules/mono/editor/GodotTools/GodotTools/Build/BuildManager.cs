@@ -262,7 +262,7 @@ namespace GodotTools.Build
             bool onlyClean = false
         )
         {
-            var buildInfo = new BuildInfo(GodotSharpDirs.ProjectSlnPath, configuration,
+            var buildInfo = new BuildInfo(GodotSharpDirs.ProjectSlnPath, GodotSharpDirs.ProjectCsProjPath, configuration,
                 restore: true, rebuild, onlyClean);
 
             // If a platform was not specified, try determining the current one. If that fails, let MSBuild auto-detect it.
@@ -282,7 +282,7 @@ namespace GodotTools.Build
             [DisallowNull] string publishOutputDir
         )
         {
-            var buildInfo = new BuildInfo(GodotSharpDirs.ProjectSlnPath, configuration,
+            var buildInfo = new BuildInfo(GodotSharpDirs.ProjectSlnPath, GodotSharpDirs.ProjectCsProjPath, configuration,
                 runtimeIdentifier, publishOutputDir, restore: true, rebuild: false, onlyClean: false);
 
             buildInfo.CustomProperties.Add($"GodotTargetPlatform={platform}");

@@ -393,6 +393,8 @@ void LineBuilder::build() {
 	if (end_cap_mode == Line2D::LINE_CAP_BOX) {
 		pos_up1 += f0 * hw * width_factor;
 		pos_down1 += f0 * hw * width_factor;
+
+		current_distance1 += hw * width_factor;
 	}
 
 	if (texture_mode == Line2D::LINE_TEXTURE_TILE) {

@@ -829,6 +829,10 @@ void DisplayServerWindows::delete_sub_window(WindowID p_window) {
 	}
 	DestroyWindow(windows[p_window].hWnd);
 	windows.erase(p_window);
+
+	if (last_focused_window == p_window) {
+		last_focused_window = INVALID_WINDOW_ID;
+	}
 }
 
 void DisplayServerWindows::gl_window_make_current(DisplayServer::WindowID p_window_id) {
@@ -3959,10 +3963,19 @@ DisplayServer::WindowID DisplayServerWindows::_create_window(WindowMode p_mode, 
 
 		wd.im_position = Vector2();
 
-		// FIXME this is wrong in cases where the window coordinates were changed due to full screen mode; use WindowRect
-		wd.last_pos = p_rect.position;
-		wd.width = p_rect.size.width;
-		wd.height = p_rect.size.height;
+		if (p_mode == WINDOW_MODE_FULLSCREEN || p_mode == WINDOW_MODE_EXCLUSIVE_FULLSCREEN || p_mode == WINDOW_MODE_MAXIMIZED) {
+			RECT r;
+			GetClientRect(wd.hWnd, &r);
+			ClientToScreen(wd.hWnd, (POINT *)&r.left);
+			ClientToScreen(wd.hWnd, (POINT *)&r.right);
+			wd.last_pos = Point2i(r.left, r.top) - _get_screens_origin();
+			wd.width = r.right - r.left;
+			wd.height = r.bottom - r.top;
+		} else {
+			wd.last_pos = p_rect.position;
+			wd.width = p_rect.size.width;
+			wd.height = p_rect.size.height;
+		}
 
 		window_id_counter++;
 	}

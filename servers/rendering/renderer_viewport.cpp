@@ -229,6 +229,7 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 
 	bool scenario_draw_canvas_bg = false; //draw canvas, or some layer of it, as BG for 3D instead of in front
 	int scenario_canvas_max_layer = 0;
+	bool force_clear_render_target = false;
 
 	for (int i = 0; i < RS::VIEWPORT_RENDER_INFO_TYPE_MAX; i++) {
 		for (int j = 0; j < RS::VIEWPORT_RENDER_INFO_MAX; j++) {
@@ -236,11 +237,16 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 		}
 	}
 
-	if (!p_viewport->disable_2d && !viewport_is_environment_disabled(p_viewport) && RSG::scene->is_scenario(p_viewport->scenario)) {
+	if (RSG::scene->is_scenario(p_viewport->scenario)) {
 		RID environment = RSG::scene->scenario_get_environment(p_viewport->scenario);
 		if (RSG::scene->is_environment(environment)) {
-			scenario_draw_canvas_bg = RSG::scene->environment_get_background(environment) == RS::ENV_BG_CANVAS;
-			scenario_canvas_max_layer = RSG::scene->environment_get_canvas_max_layer(environment);
+			if (!p_viewport->disable_2d && !viewport_is_environment_disabled(p_viewport)) {
+				scenario_draw_canvas_bg = RSG::scene->environment_get_background(environment) == RS::ENV_BG_CANVAS;
+				scenario_canvas_max_layer = RSG::scene->environment_get_canvas_max_layer(environment);
+			} else if (RSG::scene->environment_get_background(environment) == RS::ENV_BG_CANVAS) {
+				// The scene renderer will still copy over the last frame, so we need to clear the render target.
+				force_clear_render_target = true;
+			}
 		}
 	}
 
@@ -263,6 +269,9 @@ void RendererViewport::_draw_viewport(Viewport *p_viewport) {
 	}
 
 	if (!scenario_draw_canvas_bg && can_draw_3d) {
+		if (force_clear_render_target) {
+			RSG::texture_storage->render_target_do_clear_request(p_viewport->render_target);
+		}
 		_draw_3d(p_viewport);
 	}
 
@@ -844,7 +853,7 @@ void RendererViewport::viewport_set_scaling_3d_scale(RID p_viewport, float p_sca
 }
 
 void RendererViewport::viewport_set_size(RID p_viewport, int p_width, int p_height) {
-	ERR_FAIL_COND(p_width < 0 && p_height < 0);
+	ERR_FAIL_COND(p_width < 0 || p_height < 0);
 
 	Viewport *viewport = viewport_owner.get_or_null(p_viewport);
 	ERR_FAIL_COND(!viewport);

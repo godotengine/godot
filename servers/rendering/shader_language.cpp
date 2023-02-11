@@ -1225,7 +1225,7 @@ void ShaderLanguage::clear() {
 	char_idx = 0;
 	error_set = false;
 	error_str = "";
-	last_const = false;
+	is_const_decl = false;
 	while (nodes) {
 		Node *n = nodes;
 		nodes = nodes->next;
@@ -2901,10 +2901,10 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 	// Modern functions.
 	// fma
 
-	{ "fma", TYPE_FLOAT, { TYPE_FLOAT, TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID }, { "a", "b", "c" }, TAG_GLOBAL, false },
-	{ "fma", TYPE_VEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, { "a", "b", "c" }, TAG_GLOBAL, false },
-	{ "fma", TYPE_VEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, { "a", "b", "c" }, TAG_GLOBAL, false },
-	{ "fma", TYPE_VEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_VEC4, TYPE_VOID }, { "a", "b", "c" }, TAG_GLOBAL, false },
+	{ "fma", TYPE_FLOAT, { TYPE_FLOAT, TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID }, { "a", "b", "c" }, TAG_GLOBAL, true },
+	{ "fma", TYPE_VEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, { "a", "b", "c" }, TAG_GLOBAL, true },
+	{ "fma", TYPE_VEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, { "a", "b", "c" }, TAG_GLOBAL, true },
+	{ "fma", TYPE_VEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_VEC4, TYPE_VOID }, { "a", "b", "c" }, TAG_GLOBAL, true },
 
 	// Packing/Unpacking functions.
 
@@ -3559,6 +3559,14 @@ bool ShaderLanguage::_parse_function_arguments(BlockNode *p_block, const Functio
 
 		if (!arg) {
 			return false;
+		}
+
+		if (is_const_decl && arg->type == Node::TYPE_VARIABLE) {
+			const VariableNode *var = static_cast<const VariableNode *>(arg);
+			if (!var->is_const) {
+				_set_error(RTR("Expected constant expression."));
+				return false;
+			}
 		}
 
 		p_func->arguments.push_back(arg);
@@ -5184,6 +5192,12 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 					expr = func;
 
 				} else { //a function call
+					if (p_block == nullptr) { // Non-constructor function call in global space is forbidden.
+						if (is_const_decl) {
+							_set_error(RTR("Expected constant expression."));
+						}
+						return nullptr;
+					}
 
 					const StringName &name = identifier;
 
@@ -5458,6 +5472,10 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 							return nullptr;
 						}
 						_set_error(vformat(RTR("Unknown identifier in expression: '%s'."), String(identifier)));
+						return nullptr;
+					}
+					if (is_const_decl && !is_const) {
+						_set_error(RTR("Expected constant expression."));
 						return nullptr;
 					}
 					if (ident_type == IDENTIFIER_VARYING) {
@@ -6535,7 +6553,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 				OperatorNode *op = alloc_node<OperatorNode>();
 				op->op = expression[i].op;
 				if ((op->op == OP_INCREMENT || op->op == OP_DECREMENT) && !_validate_assign(expression[i + 1].node, p_function_info)) {
-					_set_error(RTR("Can't use increment/decrement operator in a constant expression."));
+					_set_error(RTR("Invalid use of increment/decrement operator in a constant expression."));
 					return nullptr;
 				}
 				op->arguments.push_back(expression[i + 1].node);
@@ -6977,6 +6995,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 					}
 				}
 #endif // DEBUG_ENABLED
+				is_const_decl = is_const;
 
 				BlockNode::Variable var;
 				var.type = type;
@@ -7233,6 +7252,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const FunctionInfo &p_fun
 
 				vdnode->declarations.push_back(decl);
 				p_block->variables[name] = var;
+				is_const_decl = false;
 
 				if (!fixed_array_size) {
 					array_size = 0;
@@ -8401,7 +8421,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 						_set_error(vformat(RTR("The '%s' data type is not supported for uniforms."), "struct"));
 						return ERR_PARSE_ERROR;
 					} else {
-						_set_error(vformat(RTR("The '%s' data type not allowed here."), "struct"));
+						_set_error(vformat(RTR("The '%s' data type is not allowed here."), "struct"));
 						return ERR_PARSE_ERROR;
 					}
 				}
@@ -9101,6 +9121,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 						constant.precision = precision;
 						constant.initializer = nullptr;
 						constant.array_size = array_size;
+						is_const_decl = true;
 
 						if (tk.type == TK_BRACKET_OPEN) {
 							Error error = _parse_array_size(nullptr, constants, false, nullptr, &constant.array_size, &unknown_size);
@@ -9360,6 +9381,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 							unknown_size = false;
 
 						} else if (tk.type == TK_SEMICOLON) {
+							is_const_decl = false;
 							break;
 						} else {
 							_set_expected_error(",", ";");

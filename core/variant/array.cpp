@@ -225,6 +225,9 @@ void Array::assign(const Array &p_array) {
 		_p->array = p_array._p->array;
 		return;
 	}
+	if (typed.type == Variant::OBJECT || source_typed.type == Variant::OBJECT) {
+		ERR_FAIL_MSG(vformat(R"(Cannot assign contents of "Array[%s]" to "Array[%s]".)", Variant::get_type_name(source_typed.type), Variant::get_type_name(typed.type)));
+	}
 
 	Vector<Variant> array;
 	array.resize(size);
@@ -629,14 +632,14 @@ void Array::shuffle() {
 	}
 }
 
-int Array::bsearch(const Variant &p_value, bool p_before) {
+int Array::bsearch(const Variant &p_value, bool p_before) const {
 	Variant value = p_value;
 	ERR_FAIL_COND_V(!_p->typed.validate(value, "binary search"), -1);
 	SearchArray<Variant, _ArrayVariantSort> avs;
 	return avs.bisect(_p->array.ptrw(), _p->array.size(), value, p_before);
 }
 
-int Array::bsearch_custom(const Variant &p_value, const Callable &p_callable, bool p_before) {
+int Array::bsearch_custom(const Variant &p_value, const Callable &p_callable, bool p_before) const {
 	Variant value = p_value;
 	ERR_FAIL_COND_V(!_p->typed.validate(value, "custom binary search"), -1);
 

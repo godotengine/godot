@@ -601,9 +601,11 @@ Error ResourceLoaderText::load() {
 			*progress = resource_current / float(resources_total);
 		}
 
-		int_resources[id] = res; //always assign int resources
-		if (do_assign && cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE) {
-			res->set_path(path, cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE);
+		int_resources[id] = res; // Always assign int resources.
+		if (do_assign) {
+			if (cache_mode != ResourceFormatLoader::CACHE_MODE_IGNORE) {
+				res->set_path(path, cache_mode == ResourceFormatLoader::CACHE_MODE_REPLACE);
+			}
 			res->set_scene_unique_id(id);
 		}
 

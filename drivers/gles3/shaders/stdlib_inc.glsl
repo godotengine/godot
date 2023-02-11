@@ -2,13 +2,23 @@
 #ifdef USE_GLES_OVER_GL
 // Floating point pack/unpack functions are part of the GLSL ES 300 specification used by web and mobile.
 uint float2half(uint f) {
-	return ((f >> uint(16)) & uint(0x8000)) |
-			((((f & uint(0x7f800000)) - uint(0x38000000)) >> uint(13)) & uint(0x7c00)) |
-			((f >> uint(13)) & uint(0x03ff));
+	uint e = f & uint(0x7f800000);
+	if (e <= uint(0x38000000)) {
+		return uint(0);
+	} else {
+		return ((f >> uint(16)) & uint(0x8000)) |
+				(((e - uint(0x38000000)) >> uint(13)) & uint(0x7c00)) |
+				((f >> uint(13)) & uint(0x03ff));
+	}
 }
 
 uint half2float(uint h) {
-	return ((h & uint(0x8000)) << uint(16)) | (((h & uint(0x7c00)) + uint(0x1c000)) << uint(13)) | ((h & uint(0x03ff)) << uint(13));
+	uint h_e = h & uint(0x7c00);
+	if (h_e == uint(0x0000)) {
+		return uint(0);
+	} else {
+		return ((h & uint(0x8000)) << uint(16)) | ((h_e + uint(0x1c000)) << uint(13)) | ((h & uint(0x03ff)) << uint(13));
+	}
 }
 
 uint packHalf2x16(vec2 v) {

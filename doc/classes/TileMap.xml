@@ -205,7 +205,7 @@
 			<param index="2" name="atlas_coords" type="Vector2i" default="Vector2i(-1, -1)" />
 			<param index="3" name="alternative_tile" type="int" default="-1" />
 			<description>
-				Returns a [Vector2i] array with the positions of all cells containing a tile in the given layer. Tiles may be filtered according to their source ([param source_id]), their atlas coordinates ([param atlas_coords]) or alternative id ([param source_id]).
+				Returns a [Vector2i] array with the positions of all cells containing a tile in the given layer. Tiles may be filtered according to their source ([param source_id]), their atlas coordinates ([param atlas_coords]) or alternative id ([param alternative_tile]).
 				If a parameter has it's value set to the default one, this parameter is not used to filter a cell. Thus, if all parameters have their respective default value, this method returns the same result as [method get_used_cells].
 				A cell is considered empty if its source identifier equals -1, its atlas coordinates identifiers is [code]Vector2(-1, -1)[/code] and its alternative identifier is -1.
 			</description>
@@ -279,8 +279,8 @@
 			<description>
 				Sets the tile indentifiers for the cell on layer [param layer] at coordinates [param coords]. Each tile of the [TileSet] is identified using three parts:
 				- The source identifier [param source_id] identifies a [TileSetSource] identifier. See [method TileSet.set_source_id],
-				- The atlas coordinates identifier [param atlas_coords] identifies a tile coordinates in the atlas (if the source is a [TileSetAtlasSource]. For [TileSetScenesCollectionSource] it should always be [code]Vector2i(0, 0)[/code]),
-				- The alternative tile identifier [param alternative_tile] identifies a tile alternative the source is a [TileSetAtlasSource], and the scene for a [TileSetScenesCollectionSource].
+				- The atlas coordinates identifier [param atlas_coords] identifies a tile coordinates in the atlas (if the source is a [TileSetAtlasSource]). For [TileSetScenesCollectionSource] it should always be [code]Vector2i(0, 0)[/code]),
+				- The alternative tile identifier [param alternative_tile] identifies a tile alternative in the atlas (if the source is a [TileSetAtlasSource]), and the scene for a [TileSetScenesCollectionSource].
 				If [param source_id] is set to [code]-1[/code], [param atlas_coords] to [code]Vector2i(-1, -1)[/code] or [param alternative_tile] to [code]-1[/code], the cell will be erased. An erased cell gets [b]all[/b] its identifiers automatically set to their respective invalid values, namely [code]-1[/code], [code]Vector2i(-1, -1)[/code] and [code]-1[/code].
 			</description>
 		</method>

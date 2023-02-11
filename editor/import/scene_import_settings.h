@@ -191,6 +191,7 @@ class SceneImportSettings : public ConfirmationDialog {
 	void _load_default_subresource_settings(HashMap<StringName, Variant> &settings, const String &p_type, const String &p_import_id, ResourceImporterScene::InternalImportCategory p_category);
 
 	bool editing_animation = false;
+	bool generate_collider = false;
 
 	Timer *update_view_timer = nullptr;
 
@@ -199,6 +200,7 @@ protected:
 
 public:
 	bool is_editing_animation() const { return editing_animation; }
+	void request_generate_collider();
 	void update_view();
 	void open_settings(const String &p_path, bool p_for_animation = false);
 	static SceneImportSettings *get_singleton();

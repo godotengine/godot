@@ -87,6 +87,14 @@
 				Return a hash based on the configuration passed (for both scenes and resources). This helps keep separate caches for separate export configurations.
 			</description>
 		</method>
+		<method name="_get_export_features" qualifiers="virtual const">
+			<return type="PackedStringArray" />
+			<param index="0" name="platform" type="EditorExportPlatform" />
+			<param index="1" name="debug" type="bool" />
+			<description>
+				Return a [PackedStringArray] of additional features this preset, for the given [param platform], should have.
+			</description>
+		</method>
 		<method name="_get_name" qualifiers="virtual const">
 			<return type="String" />
 			<description>

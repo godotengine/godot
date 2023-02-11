@@ -4,7 +4,7 @@
 		Plays positional sound in 2D space.
 	</brief_description>
 	<description>
-		Plays audio that dampens with distance from a given position.
+		Plays audio that is attenuated with distance to the listener.
 		By default, audio is heard from the screen center. This can be changed by adding an [AudioListener2D] node to the scene and enabling it by calling [method AudioListener2D.make_current] on it.
 		See also [AudioStreamPlayer] to play a sound non-positionally.
 		[b]Note:[/b] Hiding an [AudioStreamPlayer2D] node does not disable its audio output. To temporarily disable an [AudioStreamPlayer2D]'s audio output, set [member volume_db] to a very low value like [code]-100[/code] (which isn't audible to human hearing).
@@ -57,7 +57,7 @@
 			Determines which [Area2D] layers affect the sound for reverb and audio bus effects. Areas can be used to redirect [AudioStream]s so that they play in a certain audio bus. An example of how you might use this is making a "water" area so that sounds played in the water are redirected through an audio bus to make them sound like they are being played underwater.
 		</member>
 		<member name="attenuation" type="float" setter="set_attenuation" getter="get_attenuation" default="1.0">
-			Dampens audio over distance with this as an exponent.
+			The volume is attenuated over distance with this as an exponent.
 		</member>
 		<member name="autoplay" type="bool" setter="set_autoplay" getter="is_autoplay_enabled" default="false">
 			If [code]true[/code], audio plays when added to scene tree.
@@ -88,7 +88,7 @@
 			If [code]true[/code], the playback is paused. You can resume it by setting [code]stream_paused[/code] to [code]false[/code].
 		</member>
 		<member name="volume_db" type="float" setter="set_volume_db" getter="get_volume_db" default="0.0">
-			Base volume without dampening.
+			Base volume before attenuation.
 		</member>
 	</members>
 	<signals>

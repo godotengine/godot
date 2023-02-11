@@ -346,7 +346,7 @@ Files extracted from upstream source:
 ## libwebp
 
 - Upstream: https://chromium.googlesource.com/webm/libwebp/
-- Version: 1.2.4 (0d1f12546bd803099a60c070517a552483f3790e, 2022)
+- Version: 1.3.0 (b557776962a3dcc985d83bd4ed94e1e2e50d0fa2, 2022)
 - License: BSD-3-Clause
 
 Files extracted from upstream source:

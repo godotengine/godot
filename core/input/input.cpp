@@ -231,14 +231,17 @@ Input::VelocityTrack::VelocityTrack() {
 bool Input::is_anything_pressed() const {
 	_THREAD_SAFE_METHOD_
 
+	if (!keys_pressed.is_empty() || !joy_buttons_pressed.is_empty() || !mouse_button_mask.is_empty()) {
+		return true;
+	}
+
 	for (const KeyValue<StringName, Input::Action> &E : action_state) {
 		if (E.value.pressed) {
 			return true;
 		}
 	}
-	return !keys_pressed.is_empty() ||
-			!joy_buttons_pressed.is_empty() ||
-			!mouse_button_mask.is_empty();
+
+	return false;
 }
 
 bool Input::is_key_pressed(Key p_keycode) const {
@@ -533,6 +536,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 			touch_event->set_pressed(mb->is_pressed());
 			touch_event->set_position(mb->get_position());
 			touch_event->set_double_tap(mb->is_double_click());
+			touch_event->set_device(InputEvent::DEVICE_ID_EMULATION);
 			event_dispatch_function(touch_event);
 		}
 	}
@@ -557,6 +561,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 			drag_event->set_pen_inverted(mm->get_pen_inverted());
 			drag_event->set_pressure(mm->get_pressure());
 			drag_event->set_velocity(get_last_mouse_velocity());
+			drag_event->set_device(InputEvent::DEVICE_ID_EMULATION);
 
 			event_dispatch_function(drag_event);
 		}
@@ -592,7 +597,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 				Ref<InputEventMouseButton> button_event;
 				button_event.instantiate();
 
-				button_event->set_device(InputEvent::DEVICE_ID_TOUCH_MOUSE);
+				button_event->set_device(InputEvent::DEVICE_ID_EMULATION);
 				button_event->set_position(st->get_position());
 				button_event->set_global_position(st->get_position());
 				button_event->set_pressed(st->is_pressed());
@@ -623,7 +628,7 @@ void Input::_parse_input_event_impl(const Ref<InputEvent> &p_event, bool p_is_em
 			Ref<InputEventMouseMotion> motion_event;
 			motion_event.instantiate();
 
-			motion_event->set_device(InputEvent::DEVICE_ID_TOUCH_MOUSE);
+			motion_event->set_device(InputEvent::DEVICE_ID_EMULATION);
 			motion_event->set_tilt(sd->get_tilt());
 			motion_event->set_pen_inverted(sd->get_pen_inverted());
 			motion_event->set_pressure(sd->get_pressure());
@@ -832,7 +837,7 @@ void Input::ensure_touch_mouse_raised() {
 		Ref<InputEventMouseButton> button_event;
 		button_event.instantiate();
 
-		button_event->set_device(InputEvent::DEVICE_ID_TOUCH_MOUSE);
+		button_event->set_device(InputEvent::DEVICE_ID_EMULATION);
 		button_event->set_position(mouse_pos);
 		button_event->set_global_position(mouse_pos);
 		button_event->set_pressed(false);
@@ -869,6 +874,7 @@ void Input::set_default_cursor_shape(CursorShape p_shape) {
 	mm.instantiate();
 	mm->set_position(mouse_pos);
 	mm->set_global_position(mouse_pos);
+	mm->set_device(InputEvent::DEVICE_ID_INTERNAL);
 	parse_input_event(mm);
 }
 

@@ -811,13 +811,22 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 #ifdef DEBUG_ENABLED
 				if (!valid) {
+					Object *obj = dst->get_validated_object();
 					String v = index->operator String();
-					if (!v.is_empty()) {
-						v = "'" + v + "'";
-					} else {
-						v = "of type '" + _get_var_type(index) + "'";
+					bool read_only_property = false;
+					if (obj) {
+						read_only_property = ClassDB::has_property(obj->get_class_name(), v) && (ClassDB::get_property_setter(obj->get_class_name(), v) == StringName());
 					}
-					err_text = "Invalid set index " + v + " (on base: '" + _get_var_type(dst) + "') with value of type '" + _get_var_type(value) + "'";
+					if (read_only_property) {
+						err_text = vformat(R"(Cannot set value into property "%s" (on base "%s") because it is read-only.)", v, _get_var_type(dst));
+					} else {
+						if (!v.is_empty()) {
+							v = "'" + v + "'";
+						} else {
+							v = "of type '" + _get_var_type(index) + "'";
+						}
+						err_text = "Invalid set index " + v + " (on base: '" + _get_var_type(dst) + "') with value of type '" + _get_var_type(value) + "'";
+					}
 					OPCODE_BREAK;
 				}
 #endif
@@ -1003,8 +1012,16 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 #ifdef DEBUG_ENABLED
 				if (!valid) {
-					String err_type;
-					err_text = "Invalid set index '" + String(*index) + "' (on base: '" + _get_var_type(dst) + "') with value of type '" + _get_var_type(value) + "'.";
+					Object *obj = dst->get_validated_object();
+					bool read_only_property = false;
+					if (obj) {
+						read_only_property = ClassDB::has_property(obj->get_class_name(), *index) && (ClassDB::get_property_setter(obj->get_class_name(), *index) == StringName());
+					}
+					if (read_only_property) {
+						err_text = vformat(R"(Cannot set value into property "%s" (on base "%s") because it is read-only.)", String(*index), _get_var_type(dst));
+					} else {
+						err_text = "Invalid set index '" + String(*index) + "' (on base: '" + _get_var_type(dst) + "') with value of type '" + _get_var_type(value) + "'.";
+					}
 					OPCODE_BREAK;
 				}
 #endif
@@ -1952,7 +1969,13 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				VariantInternal::initialize(ret, Variant::OBJECT);
 				Object **ret_opaque = VariantInternal::get_object(ret);
 				method->ptrcall(base_obj, argptrs, ret_opaque);
-				VariantInternal::update_object_id(ret);
+				if (method->is_return_type_raw_object_ptr()) {
+					// The Variant has to participate in the ref count since the method returns a raw Object *.
+					VariantInternal::object_assign(ret, *ret_opaque);
+				} else {
+					// The method, in case it returns something, returns an already encapsulated object.
+					VariantInternal::update_object_id(ret);
+				}
 
 #ifdef DEBUG_ENABLED
 				if (GDScriptLanguage::get_singleton()->profiling) {
@@ -3410,7 +3433,10 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					String message_str;
 					if (_code_ptr[ip + 2] != 0) {
 						GET_VARIANT_PTR(message, 1);
-						message_str = *message;
+						Variant message_var = *message;
+						if (message->get_type() != Variant::NIL) {
+							message_str = message_var;
+						}
 					}
 					if (message_str.is_empty()) {
 						err_text = "Assertion failed.";

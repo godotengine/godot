@@ -37,10 +37,6 @@
 #include "gdscript_cache.h"
 #include "gdscript_parser.h"
 
-#ifdef TOOLS_ENABLED
-#include "editor/project_converter_3_to_4.h"
-#endif
-
 class GDScriptAnalyzer {
 	GDScriptParser *parser = nullptr;
 	HashMap<String, Ref<GDScriptParserRef>> depended_parsers;
@@ -115,9 +111,9 @@ class GDScriptAnalyzer {
 	Array make_array_from_element_datatype(const GDScriptParser::DataType &p_element_datatype, const GDScriptParser::Node *p_source_node = nullptr);
 	GDScriptParser::DataType type_from_variant(const Variant &p_value, const GDScriptParser::Node *p_source);
 	static GDScriptParser::DataType type_from_metatype(const GDScriptParser::DataType &p_meta_type);
-	GDScriptParser::DataType type_from_property(const PropertyInfo &p_property, bool p_is_arg = false) const;
+	GDScriptParser::DataType type_from_property(const PropertyInfo &p_property, bool p_is_arg = false, bool p_is_readonly = false) const;
 	GDScriptParser::DataType make_global_class_meta_type(const StringName &p_class_name, const GDScriptParser::Node *p_source);
-	bool get_function_signature(GDScriptParser::Node *p_source, bool p_is_constructor, GDScriptParser::DataType base_type, const StringName &p_function, GDScriptParser::DataType &r_return_type, List<GDScriptParser::DataType> &r_par_types, int &r_default_arg_count, bool &r_static, bool &r_vararg);
+	bool get_function_signature(GDScriptParser::Node *p_source, bool p_is_constructor, GDScriptParser::DataType base_type, const StringName &p_function, GDScriptParser::DataType &r_return_type, List<GDScriptParser::DataType> &r_par_types, int &r_default_arg_count, bool &r_static, bool &r_vararg, StringName *r_native_class = nullptr);
 	bool function_signature_from_info(const MethodInfo &p_info, GDScriptParser::DataType &r_return_type, List<GDScriptParser::DataType> &r_par_types, int &r_default_arg_count, bool &r_static, bool &r_vararg);
 	void validate_call_arg(const List<GDScriptParser::DataType> &p_par_types, int p_default_args_count, bool p_is_vararg, const GDScriptParser::CallNode *p_call);
 	void validate_call_arg(const MethodInfo &p_method, const GDScriptParser::CallNode *p_call);
@@ -136,13 +132,6 @@ class GDScriptAnalyzer {
 #ifdef DEBUG_ENABLED
 	bool is_shadowing(GDScriptParser::IdentifierNode *p_local, const String &p_context);
 #endif
-
-#ifdef TOOLS_ENABLED
-#ifndef DISABLE_DEPRECATED
-	const char *get_rename_from_map(const char *map[][2], String key);
-	const char *check_for_renamed_identifier(String identifier, GDScriptParser::Node::Type type);
-#endif // DISABLE_DEPRECATED
-#endif // TOOLS_ENABLED
 
 public:
 	Error resolve_inheritance();

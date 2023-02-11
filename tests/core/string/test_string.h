@@ -512,6 +512,14 @@ TEST_CASE("[String] Splitting") {
 		CHECK(l[i] == slices_3[i]);
 	}
 
+	s = "";
+	l = s.split();
+	CHECK(l.size() == 1);
+	CHECK(l[0] == "");
+
+	l = s.split("", false);
+	CHECK(l.size() == 0);
+
 	s = "Mars Jupiter Saturn Uranus";
 	const char *slices_s[4] = { "Mars", "Jupiter", "Saturn", "Uranus" };
 	l = s.split_spaces();

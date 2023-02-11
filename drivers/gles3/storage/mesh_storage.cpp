@@ -491,6 +491,8 @@ void MeshStorage::mesh_set_custom_aabb(RID p_mesh, const AABB &p_aabb) {
 	Mesh *mesh = mesh_owner.get_or_null(p_mesh);
 	ERR_FAIL_COND(!mesh);
 	mesh->custom_aabb = p_aabb;
+
+	mesh->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_AABB);
 }
 
 AABB MeshStorage::mesh_get_custom_aabb(RID p_mesh) const {
@@ -1833,8 +1835,12 @@ void MeshStorage::multimesh_set_visible_instances(RID p_multimesh, int p_visible
 	}
 
 	if (multimesh->data_cache.size()) {
-		//there is a data cache..
+		// There is a data cache, but we may need to update some sections.
 		_multimesh_mark_all_dirty(multimesh, false, true);
+		int start = multimesh->visible_instances >= 0 ? multimesh->visible_instances : multimesh->instances;
+		for (int i = start; i < p_visible; i++) {
+			_multimesh_mark_dirty(multimesh, i, true);
+		}
 	}
 
 	multimesh->visible_instances = p_visible;
@@ -1866,7 +1872,7 @@ void MeshStorage::_update_dirty_multimeshes() {
 				if (multimesh->data_cache_used_dirty_regions > 32 || multimesh->data_cache_used_dirty_regions > visible_region_count / 2) {
 					// If there too many dirty regions, or represent the majority of regions, just copy all, else transfer cost piles up too much
 					glBindBuffer(GL_ARRAY_BUFFER, multimesh->buffer);
-					glBufferData(GL_ARRAY_BUFFER, MIN(visible_region_count * region_size, multimesh->instances * multimesh->stride_cache * sizeof(float)), data, GL_STATIC_DRAW);
+					glBufferSubData(GL_ARRAY_BUFFER, 0, MIN(visible_region_count * region_size, multimesh->instances * multimesh->stride_cache * sizeof(float)), data);
 					glBindBuffer(GL_ARRAY_BUFFER, 0);
 				} else {
 					// Not that many regions? update them all

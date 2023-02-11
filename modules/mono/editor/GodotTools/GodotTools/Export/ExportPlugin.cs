@@ -24,19 +24,7 @@ namespace GodotTools.Export
         public void RegisterExportSettings()
         {
             // TODO: These would be better as export preset options, but that doesn't seem to be supported yet
-
-            GlobalDef("mono/export/include_scripts_content", false);
-
-            GlobalDef("mono/export/aot/enabled", false);
-            GlobalDef("mono/export/aot/full_aot", false);
-            GlobalDef("mono/export/aot/use_interpreter", true);
-
-            // --aot or --aot=opt1,opt2 (use 'mono --aot=help AuxAssembly.dll' to list AOT options)
-            GlobalDef("mono/export/aot/extra_aot_options", Array.Empty<string>());
-            // --optimize/-O=opt1,opt2 (use 'mono --list-opt'' to list optimize options)
-            GlobalDef("mono/export/aot/extra_optimizer_options", Array.Empty<string>());
-
-            GlobalDef("mono/export/aot/android_toolchain_path", "");
+            GlobalDef("dotnet/export/include_scripts_content", false);
         }
 
         private string _maybeLastExportError;
@@ -56,7 +44,7 @@ namespace GodotTools.Export
 
             // TODO What if the source file is not part of the game's C# project
 
-            bool includeScriptsContent = (bool)ProjectSettings.GetSetting("mono/export/include_scripts_content");
+            bool includeScriptsContent = (bool)ProjectSettings.GetSetting("dotnet/export/include_scripts_content");
 
             if (!includeScriptsContent)
             {
@@ -185,7 +173,9 @@ namespace GodotTools.Export
 
                 foreach (string file in Directory.GetFiles(publishOutputTempDir, "*", SearchOption.AllDirectories))
                 {
-                    AddSharedObject(file, tags: null, projectDataDirName);
+                    AddSharedObject(file, tags: null,
+                        Path.Join(projectDataDirName,
+                            Path.GetRelativePath(publishOutputTempDir, Path.GetDirectoryName(file))));
                 }
             }
         }

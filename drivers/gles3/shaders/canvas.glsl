@@ -162,9 +162,13 @@ void main() {
 	vec2 uv = uv_attrib;
 
 #ifdef USE_INSTANCING
-	vec4 instance_color = vec4(unpackHalf2x16(instance_color_custom_data.x), unpackHalf2x16(instance_color_custom_data.y));
-	color *= instance_color;
-	instance_custom = vec4(unpackHalf2x16(instance_color_custom_data.z), unpackHalf2x16(instance_color_custom_data.w));
+	if (bool(read_draw_data_flags & FLAGS_INSTANCING_HAS_COLORS)) {
+		vec4 instance_color = vec4(unpackHalf2x16(instance_color_custom_data.x), unpackHalf2x16(instance_color_custom_data.y));
+		color *= instance_color;
+	}
+	if (bool(read_draw_data_flags & FLAGS_INSTANCING_HAS_CUSTOM_DATA)) {
+		instance_custom = vec4(unpackHalf2x16(instance_color_custom_data.z), unpackHalf2x16(instance_color_custom_data.w));
+	}
 #endif
 
 #else
@@ -645,7 +649,7 @@ void main() {
 
 #ifdef MODE_LIGHT_ONLY
 	color = vec4(0.0);
-#else
+#elif !defined(MODE_UNSHADED)
 	color *= canvas_modulation;
 #endif
 

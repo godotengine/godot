@@ -648,7 +648,7 @@
 			<return type="int" enum="Error" />
 			<param index="0" name="method" type="StringName" />
 			<description>
-				Sends a remote procedure call request for the given [param method] to peers on the network (and locally), optionally sending all additional arguments as arguments to the method called by the RPC. The call request will only be received by nodes with the same [NodePath], including the exact same node name. Behavior depends on the RPC configuration for the given method, see [method rpc_config]. Methods are not exposed to RPCs by default. Returns [code]null[/code].
+				Sends a remote procedure call request for the given [param method] to peers on the network (and locally), optionally sending all additional arguments as arguments to the method called by the RPC. The call request will only be received by nodes with the same [NodePath], including the exact same node name. Behavior depends on the RPC configuration for the given method, see [method rpc_config] and [annotation @GDScript.@rpc]. Methods are not exposed to RPCs by default. Returns [code]null[/code].
 				[b]Note:[/b] You can only safely use RPCs on clients after you received the [code]connected_to_server[/code] signal from the [MultiplayerAPI]. You also need to keep track of the connection state, either by the [MultiplayerAPI] signals like [code]server_disconnected[/code] or by checking [code]get_multiplayer().peer.get_connection_status() == CONNECTION_CONNECTED[/code].
 			</description>
 		</method>
@@ -666,7 +666,7 @@
 				    channel = 0,
 				}
 				[/codeblock]
-				See [enum MultiplayerAPI.RPCMode] and [enum MultiplayerPeer.TransferMode]. An alternative is annotating methods and properties with the corresponding annotation ([code]@rpc("any")[/code], [code]@rpc("authority")[/code]). By default, methods are not exposed to networking (and RPCs).
+				See [enum MultiplayerAPI.RPCMode] and [enum MultiplayerPeer.TransferMode]. An alternative is annotating methods and properties with the corresponding [annotation @GDScript.@rpc] annotation ([code]@rpc("any_peer")[/code], [code]@rpc("authority")[/code]). By default, methods are not exposed to networking (and RPCs).
 			</description>
 		</method>
 		<method name="rpc_id" qualifiers="vararg">

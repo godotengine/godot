@@ -69,6 +69,14 @@ struct _NO_DISCARD_ Vector3i {
 	Vector3i::Axis min_axis_index() const;
 	Vector3i::Axis max_axis_index() const;
 
+	Vector3i min(const Vector3i &p_vector3i) const {
+		return Vector3i(MIN(x, p_vector3i.x), MIN(y, p_vector3i.y), MIN(z, p_vector3i.z));
+	}
+
+	Vector3i max(const Vector3i &p_vector3i) const {
+		return Vector3i(MAX(x, p_vector3i.x), MAX(y, p_vector3i.y), MAX(z, p_vector3i.z));
+	}
+
 	_FORCE_INLINE_ int64_t length_squared() const;
 	_FORCE_INLINE_ double length() const;
 

@@ -226,19 +226,16 @@ StringName::StringName(const char *p_name, bool p_static) {
 		_data = _data->next;
 	}
 
-	if (_data) {
-		if (_data->refcount.ref()) {
-			// exists
-			if (p_static) {
-				_data->static_count.increment();
-			}
-#ifdef DEBUG_ENABLED
-			if (unlikely(debug_stringname)) {
-				_data->debug_references++;
-			}
-#endif
+	if (_data && _data->refcount.ref()) {
+		// exists
+		if (p_static) {
+			_data->static_count.increment();
 		}
-
+#ifdef DEBUG_ENABLED
+		if (unlikely(debug_stringname)) {
+			_data->debug_references++;
+		}
+#endif
 		return;
 	}
 
@@ -288,19 +285,17 @@ StringName::StringName(const StaticCString &p_static_string, bool p_static) {
 		_data = _data->next;
 	}
 
-	if (_data) {
-		if (_data->refcount.ref()) {
-			// exists
-			if (p_static) {
-				_data->static_count.increment();
-			}
-#ifdef DEBUG_ENABLED
-			if (unlikely(debug_stringname)) {
-				_data->debug_references++;
-			}
-#endif
-			return;
+	if (_data && _data->refcount.ref()) {
+		// exists
+		if (p_static) {
+			_data->static_count.increment();
 		}
+#ifdef DEBUG_ENABLED
+		if (unlikely(debug_stringname)) {
+			_data->debug_references++;
+		}
+#endif
+		return;
 	}
 
 	_data = memnew(_Data);
@@ -348,19 +343,17 @@ StringName::StringName(const String &p_name, bool p_static) {
 		_data = _data->next;
 	}
 
-	if (_data) {
-		if (_data->refcount.ref()) {
-			// exists
-			if (p_static) {
-				_data->static_count.increment();
-			}
-#ifdef DEBUG_ENABLED
-			if (unlikely(debug_stringname)) {
-				_data->debug_references++;
-			}
-#endif
-			return;
+	if (_data && _data->refcount.ref()) {
+		// exists
+		if (p_static) {
+			_data->static_count.increment();
 		}
+#ifdef DEBUG_ENABLED
+		if (unlikely(debug_stringname)) {
+			_data->debug_references++;
+		}
+#endif
+		return;
 	}
 
 	_data = memnew(_Data);

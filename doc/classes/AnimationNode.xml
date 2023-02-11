@@ -187,9 +187,24 @@
 		</member>
 	</members>
 	<signals>
+		<signal name="animation_node_removed">
+			<param index="0" name="object_id" type="int" />
+			<param index="1" name="name" type="String" />
+			<description>
+				Emitted by nodes that inherit from this class and that have an internal tree when one of their nodes removes. The nodes that emit this signal are [AnimationNodeBlendSpace1D], [AnimationNodeBlendSpace2D], [AnimationNodeStateMachine], and [AnimationNodeBlendTree].
+			</description>
+		</signal>
+		<signal name="animation_node_renamed">
+			<param index="0" name="object_id" type="int" />
+			<param index="1" name="old_name" type="String" />
+			<param index="2" name="new_name" type="String" />
+			<description>
+				Emitted by nodes that inherit from this class and that have an internal tree when one of their node names changes. The nodes that emit this signal are [AnimationNodeBlendSpace1D], [AnimationNodeBlendSpace2D], [AnimationNodeStateMachine], and [AnimationNodeBlendTree].
+			</description>
+		</signal>
 		<signal name="tree_changed">
 			<description>
-				Emitted by nodes that inherit from this class and that have an internal tree when one of their nodes changes. The nodes that emit this signal are [AnimationNodeBlendSpace1D], [AnimationNodeBlendSpace2D], [AnimationNodeStateMachine], and [AnimationNodeBlendTree].
+				Emitted by nodes that inherit from this class and that have an internal tree when one of their nodes changes. The nodes that emit this signal are [AnimationNodeBlendSpace1D], [AnimationNodeBlendSpace2D], [AnimationNodeStateMachine], [AnimationNodeBlendTree] and [AnimationNodeTransition].
 			</description>
 		</signal>
 	</signals>

@@ -74,17 +74,18 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Linux dependencies
-        shell: bash
+      # Need newer mesa for lavapipe to work properly.
+      - name: Linux dependencies for tests
+        if: ${{ matrix.proj-test }}
         run: |
-          # Azure repositories are not reliable, we need to prevent azure giving us packages.
-          sudo rm -f /etc/apt/sources.list.d/*
-          sudo cp -f misc/ci/sources.list /etc/apt/sources.list
-          sudo apt-get update
-          # The actual dependencies
-          # libwayland-bin is needed to generate the protocol bindings through wayland-scanner.
-          sudo apt-get install build-essential pkg-config libgl1-mesa-dev libglu-dev \
-              xvfb wget unzip llvm libwayland-bin
+          sudo rm -f /etc/apt/sources.list.d/microsoft-prod.list
+          sudo add-apt-repository ppa:kisak/kisak-mesa
+          sudo apt-get install -qq mesa-vulkan-drivers
+
+      # TODO: Figure out somehow how to embed this one.
+      - name: wayland-scanner dependency
+        run: |
+          sudo apt-get install libwayland-bin
 
       - name: Setup Godot build cache
         uses: ./.github/actions/godot-cache
@@ -139,16 +140,6 @@ jobs:
           ${{ matrix.bin }} --doctool --headless 2>&1 > /dev/null || true
           git diff --color --exit-code && ! git ls-files --others --exclude-standard | sed -e 's/^/New doc file missing in PR: /' | grep 'xml$'
 
-      # Download, unzip and setup SwiftShader library
-      # See https://github.com/godotengine/regression-test-project/releases/tag/_ci-deps for details
-      - name: Download SwiftShader
-        if: ${{ matrix.tests }}
-        run: |
-          wget https://github.com/godotengine/regression-test-project/releases/download/_ci-deps/swiftshader-ubuntu20.04-20211002.zip
-          unzip swiftshader-ubuntu20.04-20211002.zip
-          curr="$(pwd)/libvk_swiftshader.so"
-          sed -i "s|PATH_TO_CHANGE|$curr|" vk_swiftshader_icd.json
-
       # Test 3.x -> 4.x project converter
       - name: Test project converter
         if: ${{ matrix.proj-conv }}
@@ -156,7 +147,7 @@ jobs:
           mkdir converter_test
           cd converter_test
           touch project.godot
-          ../${{ matrix.bin }} --headless --audio-driver Dummy --validate-conversion-3to4
+          ../${{ matrix.bin }} --headless --validate-conversion-3to4
           cd ..
           rm converter_test -rf
 
@@ -172,7 +163,7 @@ jobs:
       - name: Open and close editor (Vulkan)
         if: ${{ matrix.proj-test }}
         run: |
-          VK_ICD_FILENAMES=$(pwd)/vk_swiftshader_icd.json DRI_PRIME=0 xvfb-run ${{ matrix.bin }} --audio-driver Dummy --editor --quit --path test_project 2>&1 | tee sanitizers_log.txt || true
+          xvfb-run ${{ matrix.bin }} --audio-driver Dummy --editor --quit --path test_project 2>&1 | tee sanitizers_log.txt || true
           misc/scripts/check_ci_log.py sanitizers_log.txt
 
       - name: Open and close editor (GLES3)
@@ -185,7 +176,7 @@ jobs:
       - name: Run project
         if: ${{ matrix.proj-test }}
         run: |
-          VK_ICD_FILENAMES=$(pwd)/vk_swiftshader_icd.json DRI_PRIME=0 xvfb-run ${{ matrix.bin }} 40 --audio-driver Dummy --path test_project 2>&1 | tee sanitizers_log.txt || true
+          xvfb-run ${{ matrix.bin }} 40 --audio-driver Dummy --path test_project 2>&1 | tee sanitizers_log.txt || true
           misc/scripts/check_ci_log.py sanitizers_log.txt
 
       # Checkout godot-cpp

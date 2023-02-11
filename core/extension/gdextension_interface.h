@@ -37,7 +37,6 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <stdio.h>
 
 #ifndef __cplusplus
 typedef uint32_t char32_t;
@@ -415,9 +414,12 @@ typedef struct {
 	void *(*mem_realloc)(void *p_ptr, size_t p_bytes);
 	void (*mem_free)(void *p_ptr);
 
-	void (*print_error)(const char *p_description, const char *p_function, const char *p_file, int32_t p_line);
-	void (*print_warning)(const char *p_description, const char *p_function, const char *p_file, int32_t p_line);
-	void (*print_script_error)(const char *p_description, const char *p_function, const char *p_file, int32_t p_line);
+	void (*print_error)(const char *p_description, const char *p_function, const char *p_file, int32_t p_line, GDExtensionBool p_editor_notify);
+	void (*print_error_with_message)(const char *p_description, const char *p_message, const char *p_function, const char *p_file, int32_t p_line, GDExtensionBool p_editor_notify);
+	void (*print_warning)(const char *p_description, const char *p_function, const char *p_file, int32_t p_line, GDExtensionBool p_editor_notify);
+	void (*print_warning_with_message)(const char *p_description, const char *p_message, const char *p_function, const char *p_file, int32_t p_line, GDExtensionBool p_editor_notify);
+	void (*print_script_error)(const char *p_description, const char *p_function, const char *p_file, int32_t p_line, GDExtensionBool p_editor_notify);
+	void (*print_script_error_with_message)(const char *p_description, const char *p_message, const char *p_function, const char *p_file, int32_t p_line, GDExtensionBool p_editor_notify);
 
 	uint64_t (*get_native_struct_size)(GDExtensionConstStringNamePtr p_name);
 
@@ -552,7 +554,7 @@ typedef struct {
 	GDExtensionVariantPtr (*array_operator_index)(GDExtensionTypePtr p_self, GDExtensionInt p_index); // p_self should be an Array ptr
 	GDExtensionVariantPtr (*array_operator_index_const)(GDExtensionConstTypePtr p_self, GDExtensionInt p_index); // p_self should be an Array ptr
 	void (*array_ref)(GDExtensionTypePtr p_self, GDExtensionConstTypePtr p_from); // p_self should be an Array ptr
-	void (*array_set_typed)(GDExtensionTypePtr p_self, uint32_t p_type, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstVariantPtr p_script); // p_self should be an Array ptr
+	void (*array_set_typed)(GDExtensionTypePtr p_self, GDExtensionVariantType p_type, GDExtensionConstStringNamePtr p_class_name, GDExtensionConstVariantPtr p_script); // p_self should be an Array ptr
 
 	/* Dictionary functions */
 

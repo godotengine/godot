@@ -631,9 +631,9 @@ String AudioDriverPulseAudio::get_output_device() {
 	return output_device_name;
 }
 
-void AudioDriverPulseAudio::set_output_device(String output_device) {
+void AudioDriverPulseAudio::set_output_device(const String &p_name) {
 	lock();
-	new_output_device = output_device;
+	new_output_device = p_name;
 	unlock();
 }
 
@@ -761,12 +761,6 @@ Error AudioDriverPulseAudio::input_stop() {
 	return OK;
 }
 
-void AudioDriverPulseAudio::set_input_device(const String &p_name) {
-	lock();
-	new_input_device = p_name;
-	unlock();
-}
-
 void AudioDriverPulseAudio::pa_sourcelist_cb(pa_context *c, const pa_source_info *l, int eol, void *userdata) {
 	AudioDriverPulseAudio *ad = static_cast<AudioDriverPulseAudio *>(userdata);
 
@@ -819,6 +813,12 @@ String AudioDriverPulseAudio::get_input_device() {
 	unlock();
 
 	return name;
+}
+
+void AudioDriverPulseAudio::set_input_device(const String &p_name) {
+	lock();
+	new_input_device = p_name;
+	unlock();
 }
 
 AudioDriverPulseAudio::AudioDriverPulseAudio() {

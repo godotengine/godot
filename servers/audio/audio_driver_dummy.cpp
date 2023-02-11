@@ -52,7 +52,7 @@ Error AudioDriverDummy::init() {
 	}
 
 	return OK;
-};
+}
 
 void AudioDriverDummy::thread_func(void *p_udata) {
 	AudioDriverDummy *ad = static_cast<AudioDriverDummy *>(p_udata);
@@ -68,31 +68,31 @@ void AudioDriverDummy::thread_func(void *p_udata) {
 
 			ad->stop_counting_ticks();
 			ad->unlock();
-		};
+		}
 
 		OS::get_singleton()->delay_usec(usdelay);
-	};
-};
+	}
+}
 
 void AudioDriverDummy::start() {
 	active.set();
-};
+}
 
 int AudioDriverDummy::get_mix_rate() const {
 	return mix_rate;
-};
+}
 
 AudioDriver::SpeakerMode AudioDriverDummy::get_speaker_mode() const {
 	return speaker_mode;
-};
+}
 
 void AudioDriverDummy::lock() {
 	mutex.lock();
-};
+}
 
 void AudioDriverDummy::unlock() {
 	mutex.unlock();
-};
+}
 
 void AudioDriverDummy::set_use_threads(bool p_use_threads) {
 	use_threads = p_use_threads;
@@ -141,7 +141,7 @@ void AudioDriverDummy::finish() {
 
 	if (samples_in) {
 		memdelete_arr(samples_in);
-	};
+	}
 }
 
 AudioDriverDummy::AudioDriverDummy() {

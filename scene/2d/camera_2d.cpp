@@ -250,7 +250,7 @@ void Camera2D::_notification(int p_what) {
 			add_to_group(group_name);
 			add_to_group(canvas_group_name);
 
-			if (enabled && !viewport->get_camera_2d()) {
+			if (!Engine::get_singleton()->is_editor_hint() && enabled && !viewport->get_camera_2d()) {
 				make_current();
 			}
 
@@ -260,12 +260,14 @@ void Camera2D::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
+			remove_from_group(group_name);
+			remove_from_group(canvas_group_name);
 			if (is_current()) {
 				clear_current();
 			}
-			remove_from_group(group_name);
-			remove_from_group(canvas_group_name);
 			viewport = nullptr;
+			just_exited_tree = true;
+			callable_mp(this, &Camera2D::_reset_just_exited).call_deferred();
 		} break;
 
 #ifdef TOOLS_ENABLED
@@ -438,6 +440,10 @@ void Camera2D::_update_process_internal_for_smoothing() {
 void Camera2D::make_current() {
 	ERR_FAIL_COND(!enabled || !is_inside_tree());
 	get_tree()->call_group(group_name, "_make_current", this);
+	if (just_exited_tree) {
+		// If camera exited the scene tree in the same frame, group call will skip it, so this needs to be called manually.
+		_make_current(this);
+	}
 	_update_scroll();
 }
 

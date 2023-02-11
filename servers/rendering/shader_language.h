@@ -953,7 +953,7 @@ private:
 
 	StringName shader_type_identifier;
 	StringName current_function;
-	bool last_const = false;
+	bool is_const_decl = false;
 	StringName last_name;
 	bool is_shader_inc = false;
 

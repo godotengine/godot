@@ -192,6 +192,10 @@ real_t NavigationObstacle3D::estimate_agent_radius() const {
 }
 
 void NavigationObstacle3D::set_agent_parent(Node *p_agent_parent) {
+	if (parent_node3d == p_agent_parent) {
+		return;
+	}
+
 	if (Object::cast_to<Node3D>(p_agent_parent) != nullptr) {
 		parent_node3d = Object::cast_to<Node3D>(p_agent_parent);
 		if (map_override.is_valid()) {
@@ -207,7 +211,12 @@ void NavigationObstacle3D::set_agent_parent(Node *p_agent_parent) {
 }
 
 void NavigationObstacle3D::set_navigation_map(RID p_navigation_map) {
+	if (map_override == p_navigation_map) {
+		return;
+	}
+
 	map_override = p_navigation_map;
+
 	NavigationServer3D::get_singleton()->agent_set_map(agent, map_override);
 }
 
@@ -221,13 +230,23 @@ RID NavigationObstacle3D::get_navigation_map() const {
 }
 
 void NavigationObstacle3D::set_estimate_radius(bool p_estimate_radius) {
+	if (estimate_radius == p_estimate_radius) {
+		return;
+	}
+
 	estimate_radius = p_estimate_radius;
+
 	notify_property_list_changed();
 	reevaluate_agent_radius();
 }
 
 void NavigationObstacle3D::set_radius(real_t p_radius) {
 	ERR_FAIL_COND_MSG(p_radius <= 0.0, "Radius must be greater than 0.");
+	if (Math::is_equal_approx(radius, p_radius)) {
+		return;
+	}
+
 	radius = p_radius;
+
 	reevaluate_agent_radius();
 }

@@ -1415,9 +1415,6 @@ Transform3D Node3DEditorViewport::_compute_transform(TransformMode p_mode, const
 				// Recalculate orthogonalized scale without moving origin.
 				if (p_orthogonal) {
 					s.basis = p_original.basis.scaled_orthogonal(p_motion + Vector3(1, 1, 1));
-					// The scaled_orthogonal() does not require orthogonal Basis,
-					// but it may make a bit skew by precision problems.
-					s.basis.orthogonalize();
 				}
 			}
 
@@ -4634,7 +4631,7 @@ void Node3DEditorViewport::update_transform(Point2 p_mousepos, bool p_shift) {
 				if (se->gizmo.is_valid()) {
 					for (KeyValue<int, Transform3D> &GE : se->subgizmos) {
 						Transform3D xform = GE.value;
-						Transform3D new_xform = _compute_transform(TRANSFORM_SCALE, se->original * xform, xform, motion, snap, local_coords, true); // Force orthogonal with subgizmo.
+						Transform3D new_xform = _compute_transform(TRANSFORM_SCALE, se->original * xform, xform, motion, snap, local_coords, _edit.plane != TRANSFORM_VIEW); // Force orthogonal with subgizmo.
 						if (!local_coords) {
 							new_xform = se->original.affine_inverse() * new_xform;
 						}

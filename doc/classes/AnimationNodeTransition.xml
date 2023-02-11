@@ -5,6 +5,35 @@
 	</brief_description>
 	<description>
 		Simple state machine for cases which don't require a more advanced [AnimationNodeStateMachine]. Animations can be connected to the inputs and transition times can be specified.
+		After setting the request and changing the animation playback, the transition node automatically clears the request on the next process frame by setting its [code]transition_request[/code] value to empty.
+		[codeblocks]
+		[gdscript]
+		# Play child animation connected to "state_2" port.
+		animation_tree.set("parameters/Transition/transition_request", "state_2")
+		# Alternative syntax (same result as above).
+		animation_tree["parameters/Transition/transition_request"] = "state_2"
+
+		# Get current state name.
+		animation_tree.get("parameters/Transition/current_state")
+		# Alternative syntax (same result as above).
+		animation_tree["parameters/Transition/current_state"]
+
+		# Get current state index.
+		animation_tree.get("parameters/Transition/current_index"))
+		# Alternative syntax (same result as above).
+		animation_tree["parameters/Transition/current_index"]
+		[/gdscript]
+		[csharp]
+		// Play child animation connected to "state_2" port.
+		animationTree.Set("parameters/Transition/transition_request", "state_2");
+
+		// Get current state name.
+		animationTree.Get("parameters/Transition/current_state");
+
+		// Get current state index.
+		animationTree.Get("parameters/Transition/current_index");
+		[/csharp]
+		[/codeblocks]
 	</description>
 	<tutorials>
 		<link title="AnimationTree">$DOCS_URL/tutorials/animation/animation_tree.html</link>

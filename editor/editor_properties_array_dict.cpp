@@ -574,7 +574,7 @@ void EditorPropertyArray::setup(Variant::Type p_array_type, const String &p_hint
 
 	// The format of p_hint_string is:
 	// subType/subTypeHint:nextSubtype ... etc.
-	if (array_type == Variant::ARRAY && !p_hint_string.is_empty()) {
+	if (!p_hint_string.is_empty()) {
 		int hint_subtype_separator = p_hint_string.find(":");
 		if (hint_subtype_separator >= 0) {
 			String subtype_string = p_hint_string.substr(0, hint_subtype_separator);
@@ -1007,6 +1007,14 @@ void EditorPropertyDictionary::update_property() {
 				} break;
 				case Variant::RID: {
 					prop = memnew(EditorPropertyRID);
+
+				} break;
+				case Variant::SIGNAL: {
+					prop = memnew(EditorPropertySignal);
+
+				} break;
+				case Variant::CALLABLE: {
+					prop = memnew(EditorPropertyCallable);
 
 				} break;
 				case Variant::OBJECT: {

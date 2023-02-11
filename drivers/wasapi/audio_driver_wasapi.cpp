@@ -634,9 +634,9 @@ String AudioDriverWASAPI::get_output_device() {
 	return name;
 }
 
-void AudioDriverWASAPI::set_output_device(String output_device) {
+void AudioDriverWASAPI::set_output_device(const String &p_name) {
 	lock();
-	audio_output.new_device = output_device;
+	audio_output.new_device = p_name;
 	unlock();
 }
 
@@ -964,12 +964,6 @@ Error AudioDriverWASAPI::input_stop() {
 	return FAILED;
 }
 
-void AudioDriverWASAPI::set_input_device(const String &p_name) {
-	lock();
-	audio_input.new_device = p_name;
-	unlock();
-}
-
 PackedStringArray AudioDriverWASAPI::get_input_device_list() {
 	return audio_device_get_list(true);
 }
@@ -980,6 +974,12 @@ String AudioDriverWASAPI::get_input_device() {
 	unlock();
 
 	return name;
+}
+
+void AudioDriverWASAPI::set_input_device(const String &p_name) {
+	lock();
+	audio_input.new_device = p_name;
+	unlock();
 }
 
 AudioDriverWASAPI::AudioDriverWASAPI() {

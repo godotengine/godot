@@ -34,7 +34,7 @@
 #include "core/input/shortcut.h"
 #include "core/os/keyboard.h"
 
-const int InputEvent::DEVICE_ID_TOUCH_MOUSE = -1;
+const int InputEvent::DEVICE_ID_EMULATION = -1;
 const int InputEvent::DEVICE_ID_INTERNAL = -2;
 
 void InputEvent::set_device(int p_device) {
@@ -1186,14 +1186,14 @@ static const char *_joy_button_descriptions[(size_t)JoyButton::SDL_MAX] = {
 };
 
 String InputEventJoypadButton::as_text() const {
-	String text = "Joypad Button " + itos((int64_t)button_index);
+	String text = vformat(RTR("Joypad Button %d"), (int64_t)button_index);
 
 	if (button_index > JoyButton::INVALID && button_index < JoyButton::SDL_MAX) {
-		text += vformat(" (%s)", _joy_button_descriptions[(size_t)button_index]);
+		text += vformat(" (%s)", TTRGET(_joy_button_descriptions[(size_t)button_index]));
 	}
 
 	if (pressure != 0) {
-		text += ", Pressure:" + String(Variant(pressure));
+		text += ", " + RTR("Pressure:") + " " + String(Variant(pressure));
 	}
 
 	return text;

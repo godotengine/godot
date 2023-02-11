@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using Godot;
 using GodotTools.Internals;
 using static GodotTools.Internals.Globals;
@@ -14,6 +15,7 @@ namespace GodotTools.Build
         private Button _errorsBtn;
         private Button _warningsBtn;
         private Button _viewLogBtn;
+        private Button _openLogsFolderBtn;
 
         private void WarningsToggled(bool pressed)
         {
@@ -93,6 +95,10 @@ namespace GodotTools.Build
 
         private void ViewLogToggled(bool pressed) => BuildOutputView.LogVisible = pressed;
 
+        private void OpenLogsFolderPressed() => OS.ShellOpen(
+            $"file://{GodotSharpDirs.LogsDirPathFor("Debug")}"
+        );
+
         private void BuildMenuOptionPressed(long id)
         {
             switch ((BuildMenuOptions)id)
@@ -170,6 +176,22 @@ namespace GodotTools.Build
             };
             _viewLogBtn.Toggled += ViewLogToggled;
             toolBarHBox.AddChild(_viewLogBtn);
+
+            // Horizontal spacer, push everything to the right.
+            toolBarHBox.AddChild(new Control
+            {
+                SizeFlagsHorizontal = SizeFlags.ExpandFill,
+            });
+
+            _openLogsFolderBtn = new Button
+            {
+                Text = "Show Logs in File Manager".TTR(),
+                Icon = GetThemeIcon("Filesystem", "EditorIcons"),
+                ExpandIcon = false,
+                FocusMode = FocusModeEnum.None,
+            };
+            _openLogsFolderBtn.Pressed += OpenLogsFolderPressed;
+            toolBarHBox.AddChild(_openLogsFolderBtn);
 
             BuildOutputView = new BuildOutputView();
             AddChild(BuildOutputView);

@@ -1640,8 +1640,8 @@ String AudioServer::get_output_device() {
 	return AudioDriver::get_singleton()->get_output_device();
 }
 
-void AudioServer::set_output_device(String output_device) {
-	AudioDriver::get_singleton()->set_output_device(output_device);
+void AudioServer::set_output_device(const String &p_name) {
+	AudioDriver::get_singleton()->set_output_device(p_name);
 }
 
 PackedStringArray AudioServer::get_input_device_list() {
@@ -1711,9 +1711,10 @@ void AudioServer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_speaker_mode"), &AudioServer::get_speaker_mode);
 	ClassDB::bind_method(D_METHOD("get_mix_rate"), &AudioServer::get_mix_rate);
+
 	ClassDB::bind_method(D_METHOD("get_output_device_list"), &AudioServer::get_output_device_list);
 	ClassDB::bind_method(D_METHOD("get_output_device"), &AudioServer::get_output_device);
-	ClassDB::bind_method(D_METHOD("set_output_device", "output_device"), &AudioServer::set_output_device);
+	ClassDB::bind_method(D_METHOD("set_output_device", "name"), &AudioServer::set_output_device);
 
 	ClassDB::bind_method(D_METHOD("get_time_to_next_mix"), &AudioServer::get_time_to_next_mix);
 	ClassDB::bind_method(D_METHOD("get_time_since_last_mix"), &AudioServer::get_time_since_last_mix);

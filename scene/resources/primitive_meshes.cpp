@@ -257,7 +257,7 @@ void PrimitiveMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::AABB, "custom_aabb", PROPERTY_HINT_NONE, "suffix:m"), "set_custom_aabb", "get_custom_aabb");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_faces"), "set_flip_faces", "get_flip_faces");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "add_uv2"), "set_add_uv2", "get_add_uv2");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "uv2_padding"), "set_uv2_padding", "get_uv2_padding");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "uv2_padding", PROPERTY_HINT_RANGE, "0,10,0.01,or_greater"), "set_uv2_padding", "get_uv2_padding");
 
 	GDVIRTUAL_BIND(_create_mesh_array);
 }
