@@ -94,6 +94,8 @@
 #include "tests/scene/test_curve.h"
 #include "tests/scene/test_curve_2d.h"
 #include "tests/scene/test_gradient.h"
+#include "tests/scene/test_navigation_agent_2d.h"
+#include "tests/scene/test_navigation_agent_3d.h"
 #include "tests/scene/test_node.h"
 #include "tests/scene/test_path_2d.h"
 #include "tests/scene/test_path_3d.h"
@@ -103,6 +105,8 @@
 #include "tests/scene/test_theme.h"
 #include "tests/scene/test_viewport.h"
 #include "tests/scene/test_visual_shader.h"
+#include "tests/servers/test_navigation_server_2d.h"
+#include "tests/servers/test_navigation_server_3d.h"
 #include "tests/servers/test_text_server.h"
 #include "tests/test_validate_testing.h"
 
@@ -198,6 +202,7 @@ struct GodotTestCaseListener : public doctest::IReporter {
 		SignalWatcher::get_singleton()->_clear_signals();
 
 		String name = String(p_in.m_name);
+		String suite_name = String(p_in.m_test_suite);
 
 		if (name.find("[SceneTree]") != -1) {
 			memnew(MessageQueue);
@@ -246,6 +251,12 @@ struct GodotTestCaseListener : public doctest::IReporter {
 			AudioDriverManager::initialize(dummy_idx);
 			AudioServer *audio_server = memnew(AudioServer);
 			audio_server->init();
+			return;
+		}
+
+		if (suite_name.find("[Navigation]") != -1 && navigation_server_2d == nullptr && navigation_server_3d == nullptr) {
+			navigation_server_2d = memnew(NavigationServer2D);
+			navigation_server_3d = NavigationServer3DManager::new_default_server();
 			return;
 		}
 	}
