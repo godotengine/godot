@@ -125,25 +125,32 @@ class EditorHelp : public VBoxContainer {
 
 	String base_path;
 
-	Color text_color;
-	Color title_color;
-	Color headline_color;
-	Color comment_color;
-	Color symbol_color;
-	Color value_color;
-	Color qualifier_color;
-	Color type_color;
+	struct ThemeCache {
+		Ref<StyleBox> background_style;
 
-	Ref<Font> doc_font;
-	Ref<Font> doc_bold_font;
-	Ref<Font> doc_title_font;
-	Ref<Font> doc_code_font;
+		Color text_color;
+		Color title_color;
+		Color headline_color;
+		Color comment_color;
+		Color symbol_color;
+		Color value_color;
+		Color qualifier_color;
+		Color type_color;
 
-	int doc_title_font_size;
+		Ref<Font> doc_font;
+		Ref<Font> doc_bold_font;
+		Ref<Font> doc_title_font;
+		Ref<Font> doc_code_font;
+		Ref<Font> doc_kbd_font;
+
+		int doc_font_size = 0;
+		int doc_title_font_size = 0;
+		int doc_code_font_size = 0;
+		int doc_kbd_font_size = 0;
+	} theme_cache;
 
 	int scroll_to = -1;
 
-	void _update_theme();
 	void _help_callback(const String &p_topic);
 
 	void _add_text(const String &p_bbcode);
@@ -181,6 +188,8 @@ class EditorHelp : public VBoxContainer {
 	static void _gen_doc_thread(void *p_udata);
 
 protected:
+	virtual void _update_theme_item_cache() override;
+
 	void _notification(int p_what);
 	static void _bind_methods();
 
