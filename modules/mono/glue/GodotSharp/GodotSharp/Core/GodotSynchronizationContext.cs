@@ -1,17 +1,44 @@
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Godot
 {
     public sealed class GodotSynchronizationContext : SynchronizationContext, IDisposable
     {
-        private readonly BlockingCollection<KeyValuePair<SendOrPostCallback, object>> _queue = new();
+        private readonly BlockingCollection<(SendOrPostCallback Callback, object State)> _queue = new();
+
+        public override void Send(SendOrPostCallback d, object state)
+        {
+            // Shortcut if we're already on this context
+            // Also necessary to avoid a deadlock, since Send is blocking
+            if (Current == this)
+            {
+                d(state);
+                return;
+            }
+
+            var source = new TaskCompletionSource();
+
+            _queue.Add((st =>
+            {
+                try
+                {
+                    d(st);
+                }
+                finally
+                {
+                    source.SetResult();
+                }
+            }, state));
+
+            source.Task.Wait();
+        }
 
         public override void Post(SendOrPostCallback d, object state)
         {
-            _queue.Add(new KeyValuePair<SendOrPostCallback, object>(d, state));
+            _queue.Add((d, state));
         }
 
         /// <summary>
@@ -21,7 +48,7 @@ namespace Godot
         {
             while (_queue.TryTake(out var workItem))
             {
-                workItem.Key(workItem.Value);
+                workItem.Callback(workItem.State);
             }
         }
 
