@@ -29,7 +29,6 @@
 /**************************************************************************/
 
 #include "navigation_server_3d.h"
-
 #include "core/config/project_settings.h"
 
 NavigationServer3D *NavigationServer3D::singleton = nullptr;
@@ -184,17 +183,6 @@ NavigationServer3D::NavigationServer3D() {
 
 NavigationServer3D::~NavigationServer3D() {
 	singleton = nullptr;
-}
-
-NavigationServer3DCallback NavigationServer3DManager::create_callback = nullptr;
-
-void NavigationServer3DManager::set_default_server(NavigationServer3DCallback p_callback) {
-	create_callback = p_callback;
-}
-
-NavigationServer3D *NavigationServer3DManager::new_default_server() {
-	ERR_FAIL_COND_V(create_callback == nullptr, nullptr);
-	return create_callback();
 }
 
 #ifdef DEBUG_ENABLED
@@ -594,8 +582,6 @@ bool NavigationServer3D::get_debug_navigation_enable_agent_paths_xray() const {
 
 #endif // DEBUG_ENABLED
 
-///////////////////////////////////////////////////////
-
 void NavigationServer3D::query_path(const Ref<NavigationPathQueryParameters3D> &p_query_parameters, Ref<NavigationPathQueryResult3D> p_query_result) const {
 	ERR_FAIL_COND(!p_query_parameters.is_valid());
 	ERR_FAIL_COND(!p_query_result.is_valid());
@@ -606,4 +592,20 @@ void NavigationServer3D::query_path(const Ref<NavigationPathQueryParameters3D> &
 	p_query_result->set_path_types(_query_result.path_types);
 	p_query_result->set_path_rids(_query_result.path_rids);
 	p_query_result->set_path_owner_ids(_query_result.path_owner_ids);
+}
+
+///////////////////////////////////////////////////////
+
+NavigationServer3DCallback NavigationServer3DManager::create_callback = nullptr;
+
+void NavigationServer3DManager::set_default_server(NavigationServer3DCallback p_callback) {
+	create_callback = p_callback;
+}
+
+NavigationServer3D *NavigationServer3DManager::new_default_server() {
+	if (create_callback == nullptr) {
+		return nullptr;
+	}
+
+	return create_callback();
 }
