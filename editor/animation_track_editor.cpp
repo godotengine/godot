@@ -2003,7 +2003,6 @@ void AnimationTrackEdit::_notification(int p_what) {
 							draw_texture(down_icon, Vector2(ofs, int(get_size().height - down_icon->get_height()) / 2));
 							update_mode_rect.size.x += down_icon->get_width();
 						} else if (animation->track_get_type(track) == Animation::TYPE_BEZIER) {
-							Ref<Texture2D> bezier_icon = get_theme_icon(SNAME("EditBezier"), SNAME("EditorIcons"));
 							update_mode_rect.size.x += down_icon->get_width();
 							update_mode_rect = Rect2();
 						} else {
@@ -3311,25 +3310,15 @@ void AnimationTrackEditor::set_animation(const Ref<Animation> &p_anim, bool p_re
 		snap->set_disabled(false);
 		snap_mode->set_disabled(false);
 
-		bezier_edit_icon->set_disabled(true);
-
 		imported_anim_warning->hide();
-		bool import_warning_done = false;
-		bool bezier_done = false;
 		for (int i = 0; i < animation->get_track_count(); i++) {
 			if (animation->track_is_imported(i)) {
 				imported_anim_warning->show();
-				import_warning_done = true;
-			}
-			if (animation->track_get_type(i) == Animation::TrackType::TYPE_BEZIER) {
-				bezier_edit_icon->set_disabled(false);
-				bezier_done = true;
-			}
-			if (import_warning_done && bezier_done) {
 				break;
 			}
 		}
 
+		_check_bezier_exist();
 	} else {
 		hscroll->hide();
 		edit->set_disabled(true);
@@ -3339,6 +3328,24 @@ void AnimationTrackEditor::set_animation(const Ref<Animation> &p_anim, bool p_re
 		step->set_read_only(true);
 		snap->set_disabled(true);
 		snap_mode->set_disabled(true);
+		bezier_edit_icon->set_disabled(true);
+	}
+}
+
+void AnimationTrackEditor::_check_bezier_exist() {
+	bool is_exist = false;
+	for (int i = 0; i < animation->get_track_count(); i++) {
+		if (animation->track_get_type(i) == Animation::TrackType::TYPE_BEZIER) {
+			is_exist = true;
+			break;
+		}
+	}
+	if (is_exist) {
+		bezier_edit_icon->set_disabled(false);
+	} else {
+		if (bezier_edit->is_visible()) {
+			_cancel_bezier_edit();
+		}
 		bezier_edit_icon->set_disabled(true);
 	}
 }
@@ -4490,6 +4497,8 @@ void AnimationTrackEditor::_animation_changed() {
 		return; // All will be updated, don't bother with anything.
 	}
 
+	_check_bezier_exist();
+
 	if (key_edit) {
 		if (key_edit->setting) {
 			// If editing a key, just redraw the edited track, makes refresh less costly.
@@ -4710,7 +4719,6 @@ void AnimationTrackEditor::_new_track_node_selected(NodePath p_path) {
 			adding_track_path = path_to;
 			prop_selector->set_type_filter(filter);
 			prop_selector->select_property_from_instance(node);
-			bezier_edit_icon->set_disabled(false);
 		} break;
 		case Animation::TYPE_AUDIO: {
 			if (!node->is_class("AudioStreamPlayer") && !node->is_class("AudioStreamPlayer2D") && !node->is_class("AudioStreamPlayer3D")) {
