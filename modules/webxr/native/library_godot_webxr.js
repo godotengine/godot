@@ -584,12 +584,11 @@ const GodotWebXR = {
 		}
 
 		const buf = GodotRuntime.malloc(point_count * 3 * 4);
-		GodotRuntime.setHeapValue(buf, point_count, 'i32');
 		for (let i = 0; i < point_count; i++) {
 			const point = GodotWebXR.space.boundsGeometry[i];
-			GodotRuntime.setHeapValue(buf + ((i * 3) + 1) * 4, point.x, 'float');
-			GodotRuntime.setHeapValue(buf + ((i * 3) + 2) * 4, point.y, 'float');
-			GodotRuntime.setHeapValue(buf + ((i * 3) + 3) * 4, point.z, 'float');
+			GodotRuntime.setHeapValue(buf + ((i * 3) + 0) * 4, point.x, 'float');
+			GodotRuntime.setHeapValue(buf + ((i * 3) + 1) * 4, point.y, 'float');
+			GodotRuntime.setHeapValue(buf + ((i * 3) + 2) * 4, point.z, 'float');
 		}
 		GodotRuntime.setHeapValue(r_points, buf, 'i32');
 
