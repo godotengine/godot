@@ -183,6 +183,28 @@
 		<member name="inertia" type="Vector3" setter="set_inertia" getter="get_inertia" default="Vector3(0, 0, 0)">
 			The body's moment of inertia. This is like mass, but for rotation: it determines how much torque it takes to rotate the body on each axis. The moment of inertia is usually computed automatically from the mass and the shapes, but this property allows you to set a custom value.
 			If set to [code]Vector3.ZERO[/code], inertia is automatically computed (default value).
+			[b]Note:[/b] This value does not change when inertia is automatically computed. Use [PhysicsServer3D] to get the computed inertia.
+			[codeblocks]
+			[gdscript]
+			@onready var ball = $Ball
+
+			func get_ball_inertia():
+			    return PhysicsServer3D.body_get_direct_state(ball.get_rid()).inverse_inertia.inverse()
+			[/gdscript]
+			[csharp]
+			private RigidBody3D _ball;
+
+			public override void _Ready()
+			{
+			    _ball = GetNode&lt;RigidBody3D&gt;("Ball");
+			}
+
+			private Vector3 GetBallInertia()
+			{
+			    return PhysicsServer3D.BodyGetDirectState(_ball.GetRid()).InverseInertia.Inverse();
+			}
+			[/csharp]
+			[/codeblocks]
 		</member>
 		<member name="linear_damp" type="float" setter="set_linear_damp" getter="get_linear_damp" default="0.0">
 			Damps the body's movement. By default, the body will use the [b]Default Linear Damp[/b] in [b]Project &gt; Project Settings &gt; Physics &gt; 3d[/b] or any value override set by an [Area3D] the body is in. Depending on [member linear_damp_mode], you can set [member linear_damp] to be added to or to replace the body's damping value.
