@@ -46,7 +46,7 @@
 			The fade-in duration. For example, setting this to [code]1.0[/code] for a 5 second length animation will produce a crossfade that starts at 0 second and ends at 1 second during the animation.
 		</member>
 		<member name="fadeout_time" type="float" setter="set_fadeout_time" getter="get_fadeout_time" default="0.0">
-			The fade-in duration. For example, setting this to [code]1.0[/code] for a 5 second length animation will produce a crossfade that starts at 4 second and ends at 5 second during the animation.
+			The fade-out duration. For example, setting this to [code]1.0[/code] for a 5 second length animation will produce a crossfade that starts at 4 second and ends at 5 second during the animation.
 		</member>
 		<member name="mix_mode" type="int" setter="set_mix_mode" getter="get_mix_mode" enum="AnimationNodeOneShot.MixMode" default="0">
 			The blend type.
