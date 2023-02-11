@@ -200,6 +200,12 @@ bool ShaderMaterial::_get(const StringName &p_name, Variant &r_ret) const {
 			r_ret = get_shader_parameter(*sn);
 			return true;
 		}
+		String s = p_name;
+		if (s.begins_with("shader_parameter/")) {
+			String param = s.replace_first("shader_parameter/", "");
+			r_ret = get_shader_parameter(param);
+			return true;
+		}
 	}
 
 	return false;
