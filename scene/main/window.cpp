@@ -1422,6 +1422,9 @@ void Window::popup_centered_clamped(const Size2i &p_size, float p_fallback_ratio
 	ERR_FAIL_COND(!is_inside_tree());
 	ERR_FAIL_COND_MSG(window_id == DisplayServer::MAIN_WINDOW_ID, "Can't popup the main window.");
 
+	// Consider the current size when calling with the default value.
+	Size2i expected_size = p_size == Size2i() ? size : p_size;
+
 	Rect2 parent_rect;
 
 	if (is_embedded()) {
@@ -1436,7 +1439,7 @@ void Window::popup_centered_clamped(const Size2i &p_size, float p_fallback_ratio
 	Vector2i size_ratio = parent_rect.size * p_fallback_ratio;
 
 	Rect2i popup_rect;
-	popup_rect.size = Vector2i(MIN(size_ratio.x, p_size.x), MIN(size_ratio.y, p_size.y));
+	popup_rect.size = Vector2i(MIN(size_ratio.x, expected_size.x), MIN(size_ratio.y, expected_size.y));
 	popup_rect.size = _clamp_window_size(popup_rect.size);
 
 	if (parent_rect != Rect2()) {
@@ -1450,6 +1453,9 @@ void Window::popup_centered(const Size2i &p_minsize) {
 	ERR_FAIL_COND(!is_inside_tree());
 	ERR_FAIL_COND_MSG(window_id == DisplayServer::MAIN_WINDOW_ID, "Can't popup the main window.");
 
+	// Consider the current size when calling with the default value.
+	Size2i expected_size = p_minsize == Size2i() ? size : p_minsize;
+
 	Rect2 parent_rect;
 
 	if (is_embedded()) {
@@ -1462,7 +1468,7 @@ void Window::popup_centered(const Size2i &p_minsize) {
 	}
 
 	Rect2i popup_rect;
-	popup_rect.size = _clamp_window_size(get_size().max(p_minsize));
+	popup_rect.size = _clamp_window_size(expected_size);
 
 	if (parent_rect != Rect2()) {
 		popup_rect.position = parent_rect.position + (parent_rect.size - popup_rect.size) / 2;
