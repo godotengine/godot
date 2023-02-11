@@ -21,8 +21,10 @@
 	</members>
 	<constants>
 		<constant name="PLAY_MODE_FORWARD" value="0" enum="PlayMode">
+			Plays animation in forward direction.
 		</constant>
 		<constant name="PLAY_MODE_BACKWARD" value="1" enum="PlayMode">
+			Plays animation in backward direction.
 		</constant>
 	</constants>
 </class>
