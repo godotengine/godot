@@ -451,7 +451,7 @@ class EditorInspector : public ScrollContainer {
 	List<EditorInspectorSection *> sections;
 	HashSet<StringName> pending;
 
-	void _clear();
+	void _clear(bool p_hide_plugins = true);
 	Object *object = nullptr;
 
 	//
