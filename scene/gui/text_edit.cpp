@@ -1649,9 +1649,6 @@ bool TextEdit::alt_input(const Ref<InputEvent> &p_gui_input) {
 	return false;
 }
 
-
-
-
 void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 	ERR_FAIL_COND(p_gui_input.is_null());
 
@@ -1688,7 +1685,7 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 	Ref<InputEventKey> key = p_gui_input;
 
 	if (key.is_valid()) {
-		handle_gui_key(key);
+		handle_gui_key(key); // this one will be discarded bu we'll use the return type in CodeEdit.
 	}
 }
 
@@ -1932,7 +1929,7 @@ bool TextEdit::handle_gui_mouse_button(const Ref<InputEventMouseButton> &p_mouse
 	return false; // gui_input can go on.
 }
 
-void TextEdit::handle_gui_pan_gesture(const Ref<InputEventPanGesture> &p_pan_gesture) {
+bool TextEdit::handle_gui_pan_gesture(const Ref<InputEventPanGesture> &p_pan_gesture) {
 	double prev_v_scroll = v_scroll->get_value();
 	double prev_h_scroll = h_scroll->get_value();
 	const real_t delta = p_pan_gesture->get_delta().y;
@@ -1945,9 +1942,10 @@ void TextEdit::handle_gui_pan_gesture(const Ref<InputEventPanGesture> &p_pan_ges
 	if (v_scroll->get_value() != prev_v_scroll || h_scroll->get_value() != prev_h_scroll) {
 		accept_event(); // Accept event if scroll changed.
 	}
+	return false;
 }
 
-void TextEdit::handle_gui_mouse_motion(const Ref<InputEventMouseMotion> &p_mouse_motion) {
+bool TextEdit::handle_gui_mouse_motion(const Ref<InputEventMouseMotion> &p_mouse_motion) {
 	Vector2i mpos = p_mouse_motion->get_position();
 	if (is_layout_rtl()) {
 		mpos.x = get_size().x - mpos.x;
@@ -2011,20 +2009,21 @@ void TextEdit::handle_gui_mouse_motion(const Ref<InputEventMouseMotion> &p_mouse
 		set_caret_column(pos.x, true, 0);
 		dragging_selection = true;
 	}
+	return false;
 }
 
-void TextEdit::handle_gui_key(const Ref<InputEventKey> &p_key) {
+bool TextEdit::handle_gui_key(const Ref<InputEventKey> &p_key) {
 	if (alt_input(p_key)) {
 		accept_event();
-		return;
+		return true;
 	}
 	if (!p_key->is_pressed()) {
-		return;
+		return true;
 	}
 
 	// If a modifier has been pressed, and nothing else, return.
 	if (p_key->get_keycode() == Key::CTRL || p_key->get_keycode() == Key::ALT || p_key->get_keycode() == Key::SHIFT || p_key->get_keycode() == Key::META) {
-		return;
+		return true;
 	}
 
 	_reset_caret_blink_timer();
@@ -2091,7 +2090,7 @@ void TextEdit::handle_gui_key(const Ref<InputEventKey> &p_key) {
 	}
 
 	if (!keep_going) {
-		return;
+		return true;
 	}
 
 	if (is_shortcut_keys_enabled()) {
@@ -2154,7 +2153,7 @@ void TextEdit::handle_gui_key(const Ref<InputEventKey> &p_key) {
 	}
 
 	if (!keep_going) {
-		return;
+		return true;
 	}
 
 	keep_going = false;
@@ -2184,7 +2183,7 @@ void TextEdit::handle_gui_key(const Ref<InputEventKey> &p_key) {
 	}
 
 	if (!keep_going) {
-		return;
+		return true;
 	}
 
 	// CARET MOVEMENT
@@ -2265,6 +2264,7 @@ void TextEdit::handle_gui_key(const Ref<InputEventKey> &p_key) {
 		handle_unicode_input(duplicated_key->get_unicode());
 		accept_event();
 	}
+	return false;
 }
 
 /* Input actions. */

@@ -668,9 +668,9 @@ public:
 	virtual void gui_input(const Ref<InputEvent> &p_gui_input) override;
 
 	virtual bool handle_gui_mouse_button(const Ref<InputEventMouseButton> &p_mouse_button);
-	virtual void handle_gui_pan_gesture(const Ref<InputEventPanGesture> &p_pan_gesture);
-	virtual void handle_gui_mouse_motion(const Ref<InputEventMouseMotion> &p_mouse_motion);
-	virtual void handle_gui_key(const Ref<InputEventKey> &p_key);
+	virtual bool handle_gui_pan_gesture(const Ref<InputEventPanGesture> &p_pan_gesture);
+	virtual bool handle_gui_mouse_motion(const Ref<InputEventMouseMotion> &p_mouse_motion);
+	virtual bool handle_gui_key(const Ref<InputEventKey> &p_key);
 
 	bool alt_input(const Ref<InputEvent> &p_gui_input);
 	virtual Size2 get_minimum_size() const override;

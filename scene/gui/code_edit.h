@@ -273,6 +273,11 @@ protected:
 public:
 	/* General overrides */
 	virtual void gui_input(const Ref<InputEvent> &p_gui_input) override;
+
+	virtual bool handle_gui_mouse_button(const Ref<InputEventMouseButton> &p_mouse_button);
+	virtual bool handle_gui_mouse_motion(const Ref<InputEventMouseMotion> &p_mouse_motion);
+	virtual bool handle_gui_key(const Ref<InputEventKey> &p_key);
+
 	virtual CursorShape get_cursor_shape(const Point2 &p_pos = Point2i()) const override;
 
 	/* Indent management */
