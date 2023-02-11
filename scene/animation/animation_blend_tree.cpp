@@ -826,6 +826,7 @@ double AnimationNodeTransition::process(double p_time, bool p_seek, bool p_is_ex
 
 	bool switched = false;
 	bool restart = false;
+	bool clear_remaining_fade = false;
 
 	if (pending_update) {
 		if (cur_current_index < 0 || cur_current_index >= get_input_count()) {
@@ -843,6 +844,10 @@ double AnimationNodeTransition::process(double p_time, bool p_seek, bool p_is_ex
 		pending_update = false;
 	}
 
+	if (p_time == 0 && p_seek && !p_is_external_seeking) {
+		clear_remaining_fade = true; // Reset occurs.
+	}
+
 	if (!cur_transition_request.is_empty()) {
 		int new_idx = find_input(cur_transition_request);
 		if (new_idx >= 0) {
@@ -850,10 +855,7 @@ double AnimationNodeTransition::process(double p_time, bool p_seek, bool p_is_ex
 				if (allow_transition_to_self) {
 					// Transition to same state.
 					restart = input_data[cur_current_index].reset;
-					cur_prev_xfading = 0;
-					set_parameter(prev_xfading, 0);
-					cur_prev_index = -1;
-					set_parameter(prev_index, -1);
+					clear_remaining_fade = true;
 				}
 			} else {
 				switched = true;
@@ -868,6 +870,13 @@ double AnimationNodeTransition::process(double p_time, bool p_seek, bool p_is_ex
 		}
 		cur_transition_request = String();
 		set_parameter(transition_request, cur_transition_request);
+	}
+
+	if (clear_remaining_fade) {
+		cur_prev_xfading = 0;
+		set_parameter(prev_xfading, 0);
+		cur_prev_index = -1;
+		set_parameter(prev_index, -1);
 	}
 
 	// Special case for restart.
