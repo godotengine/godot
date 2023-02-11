@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="NavigationServer3D" inherits="Object" is_experimental="true" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Server interface for low-level 3D navigation access
+		Server interface for low-level 3D navigation access.
 	</brief_description>
 	<description>
 		NavigationServer3D is the server responsible for all 3D navigation. It handles several objects, namely maps, regions and agents.

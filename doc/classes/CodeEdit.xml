@@ -486,7 +486,7 @@
 			Sets whether line folding is allowed.
 		</member>
 		<member name="line_length_guidelines" type="int[]" setter="set_line_length_guidelines" getter="get_line_length_guidelines" default="[]">
-			Draws vertical lines at the provided columns. The first entry is considered a main hard guideline and is draw more prominently
+			Draws vertical lines at the provided columns. The first entry is considered a main hard guideline and is draw more prominently.
 		</member>
 		<member name="symbol_lookup_on_click" type="bool" setter="set_symbol_lookup_on_click_enabled" getter="is_symbol_lookup_on_click_enabled" default="false">
 			Set when a validated word from [signal symbol_validate] is clicked, the [signal symbol_lookup] should be emitted.
