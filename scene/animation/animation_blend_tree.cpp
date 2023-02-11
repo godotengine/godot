@@ -351,14 +351,15 @@ double AnimationNodeOneShot::process(double p_time, bool p_seek, bool p_is_exter
 	}
 
 	real_t blend;
-	bool use_fade_in = fade_in > 0;
+	bool use_blend = fade_in > 0;
 	if (cur_time < fade_in) {
-		if (use_fade_in) {
+		if (use_blend) {
 			blend = cur_time / fade_in;
 		} else {
 			blend = 0; // Should not happen.
 		}
 	} else if (!do_start && cur_remaining <= fade_out) {
+		use_blend = true;
 		if (fade_out > 0) {
 			blend = (cur_remaining / fade_out);
 		} else {
@@ -371,7 +372,7 @@ double AnimationNodeOneShot::process(double p_time, bool p_seek, bool p_is_exter
 	double main_rem = 0.0;
 	if (mix == MIX_MODE_ADD) {
 		main_rem = blend_input(0, p_time, p_seek, p_is_external_seeking, 1.0, FILTER_IGNORE, sync);
-	} else if (use_fade_in) {
+	} else if (use_blend) {
 		main_rem = blend_input(0, p_time, p_seek, p_is_external_seeking, 1.0 - blend, FILTER_BLEND, sync); // Unlike below, processing this edge is a corner case.
 	}
 	double os_rem = blend_input(1, os_seek ? cur_time : p_time, os_seek, p_is_external_seeking, Math::is_zero_approx(blend) ? CMP_EPSILON : blend, FILTER_PASS, true); // Blend values must be more than CMP_EPSILON to process discrete keys in edge.
