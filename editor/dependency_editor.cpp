@@ -191,10 +191,16 @@ void DependencyEditor::_update_list() {
 
 		ResourceUID::ID uid = ResourceUID::get_singleton()->text_to_id(path);
 		if (uid != ResourceUID::INVALID_ID) {
-			// dependency is in uid format, obtain proper path
-			ERR_CONTINUE(!ResourceUID::get_singleton()->has_id(uid));
-
-			path = ResourceUID::get_singleton()->get_id_path(uid);
+			// Dependency is in uid format, obtain proper path.
+			if (ResourceUID::get_singleton()->has_id(uid)) {
+				path = ResourceUID::get_singleton()->get_id_path(uid);
+			} else if (n.get_slice_count("::") >= 3) {
+				// If uid can't be found, try to use fallback path.
+				path = n.get_slice("::", 2);
+			} else {
+				ERR_PRINT("Invalid dependency UID and fallback path.");
+				continue;
+			}
 		}
 
 		String name = path.get_file();
