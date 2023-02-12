@@ -286,6 +286,15 @@ void Button::_notification(int p_what) {
 					icon_size = Size2(icon_width, icon_height);
 				}
 
+				if (icon_set_height > 0) {
+					if (expand_icon) {
+						float icon_new_height = MIN(icon_size.height, icon_set_height);
+						icon_size = Size2(icon_new_height * icon_size.aspect(), icon_new_height);
+					} else {
+						icon_size = Size2(icon_set_height * icon_size.aspect(), icon_set_height);
+					}
+				}
+
 				if (icon_align_rtl_checked == HORIZONTAL_ALIGNMENT_LEFT) {
 					icon_region = Rect2(style_offset + Point2(icon_ofs_region, Math::floor((valign - icon_size.y) * 0.5)), icon_size);
 				} else if (icon_align_rtl_checked == HORIZONTAL_ALIGNMENT_CENTER) {
@@ -380,15 +389,16 @@ Size2 Button::get_minimum_size_for_text_and_icon(const String &p_text, Ref<Textu
 	}
 
 	if (!expand_icon && p_icon.is_valid()) {
-		minsize.height = MAX(minsize.height, p_icon->get_height());
+		Size2 icon_size = icon_set_height <= 0 ? p_icon->get_size() : Size2(icon_set_height * p_icon->get_size().aspect(), icon_set_height);
+		minsize.height = MAX(minsize.height, icon_size.height);
 
 		if (icon_alignment != HORIZONTAL_ALIGNMENT_CENTER) {
-			minsize.width += p_icon->get_width();
+			minsize.width += icon_size.width;
 			if (!xl_text.is_empty() || !p_text.is_empty()) {
 				minsize.width += MAX(0, theme_cache.h_separation);
 			}
 		} else {
-			minsize.width = MAX(minsize.width, p_icon->get_width());
+			minsize.width = MAX(minsize.width, icon_size.width);
 		}
 	}
 
@@ -433,8 +443,8 @@ void Button::set_text_overrun_behavior(TextServer::OverrunBehavior p_behavior) {
 		overrun_behavior = p_behavior;
 		_shape();
 
-		queue_redraw();
 		update_minimum_size();
+		queue_redraw();
 	}
 }
 
@@ -448,8 +458,8 @@ void Button::set_text(const String &p_text) {
 		xl_text = atr(text);
 		_shape();
 
-		queue_redraw();
 		update_minimum_size();
+		queue_redraw();
 	}
 }
 
@@ -485,8 +495,8 @@ String Button::get_language() const {
 void Button::set_icon(const Ref<Texture2D> &p_icon) {
 	if (icon != p_icon) {
 		icon = p_icon;
-		queue_redraw();
 		update_minimum_size();
+		queue_redraw();
 	}
 }
 
@@ -497,8 +507,8 @@ Ref<Texture2D> Button::get_icon() const {
 void Button::set_expand_icon(bool p_enabled) {
 	if (expand_icon != p_enabled) {
 		expand_icon = p_enabled;
-		queue_redraw();
 		update_minimum_size();
+		queue_redraw();
 	}
 }
 
@@ -520,8 +530,8 @@ bool Button::is_flat() const {
 void Button::set_clip_text(bool p_enabled) {
 	if (clip_text != p_enabled) {
 		clip_text = p_enabled;
-		queue_redraw();
 		update_minimum_size();
+		queue_redraw();
 	}
 }
 
@@ -550,6 +560,16 @@ HorizontalAlignment Button::get_icon_alignment() const {
 	return icon_alignment;
 }
 
+void Button::set_icon_height(int p_height) {
+	icon_set_height = p_height;
+	update_minimum_size();
+	queue_redraw();
+}
+
+int Button::get_icon_height() const {
+	return icon_set_height;
+}
+
 void Button::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_text", "text"), &Button::set_text);
 	ClassDB::bind_method(D_METHOD("get_text"), &Button::get_text);
@@ -571,6 +591,8 @@ void Button::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_icon_alignment"), &Button::get_icon_alignment);
 	ClassDB::bind_method(D_METHOD("set_expand_icon", "enabled"), &Button::set_expand_icon);
 	ClassDB::bind_method(D_METHOD("is_expand_icon"), &Button::is_expand_icon);
+	ClassDB::bind_method(D_METHOD("set_icon_height", "icon_height"), &Button::set_icon_height);
+	ClassDB::bind_method(D_METHOD("get_icon_height"), &Button::get_icon_height);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_MULTILINE_TEXT), "set_text", "get_text");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"), "set_button_icon", "get_button_icon");
@@ -584,6 +606,7 @@ void Button::_bind_methods() {
 	ADD_GROUP("Icon Behavior", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "icon_alignment", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_icon_alignment", "get_icon_alignment");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "expand_icon"), "set_expand_icon", "is_expand_icon");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "icon_height", PROPERTY_HINT_NONE, "suffix:px"), "set_icon_height", "get_icon_height");
 
 	ADD_GROUP("BiDi", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "text_direction", PROPERTY_HINT_ENUM, "Auto,Left-to-Right,Right-to-Left,Inherited"), "set_text_direction", "get_text_direction");

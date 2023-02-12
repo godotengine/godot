@@ -60,6 +60,10 @@
 		<member name="icon_alignment" type="int" setter="set_icon_alignment" getter="get_icon_alignment" enum="HorizontalAlignment" default="0">
 			Specifies if the icon should be aligned to the left, right, or center of a button. Uses the same [enum HorizontalAlignment] constants as the text alignment. If centered, text will draw on top of the icon.
 		</member>
+		<member name="icon_height" type="int" setter="set_icon_height" getter="get_icon_height" default="0">
+			When set to greater than [code]0[/code], sets the icon maximum height if [member expand_icon] is enabled, or the icon fixed height (max and min) if [member expand_icon] is not enabled.
+			To create a button that looks the same on a standard display and an HiDPI display but with a higher, 2X resolution, use an icon that's twice the standard display resolution, for example, 32x32 for a 16x16 target icon size, then set the [member icon_height] to 16px, and disable [member expand_icon].
+		</member>
 		<member name="language" type="String" setter="set_language" getter="get_language" default="&quot;&quot;">
 			Language code used for line-breaking and text shaping algorithms, if left empty current locale is used instead.
 		</member>

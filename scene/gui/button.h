@@ -49,6 +49,7 @@ private:
 
 	Ref<Texture2D> icon;
 	bool expand_icon = false;
+	int icon_set_height = 0;
 	bool clip_text = false;
 	HorizontalAlignment alignment = HORIZONTAL_ALIGNMENT_CENTER;
 	HorizontalAlignment icon_alignment = HORIZONTAL_ALIGNMENT_LEFT;
@@ -121,6 +122,9 @@ public:
 
 	void set_expand_icon(bool p_enabled);
 	bool is_expand_icon() const;
+
+	void set_icon_height(int p_height);
+	int get_icon_height() const;
 
 	void set_flat(bool p_enabled);
 	bool is_flat() const;
