@@ -860,7 +860,7 @@ bool GraphEdit::is_in_port_hotzone(const Vector2 &pos, const Vector2 &p_mouse_po
 	}
 
 	for (int i = 0; i < get_child_count(); i++) {
-		Control *child = Object::cast_to<Control>(get_child(i));
+		GraphNode *child = Object::cast_to<GraphNode>(get_child(i));
 		if (!child) {
 			continue;
 		}
