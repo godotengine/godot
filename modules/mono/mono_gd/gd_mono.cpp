@@ -55,9 +55,7 @@
 
 // TODO mobile
 #if 0
-#ifdef ANDROID_ENABLED
-#include "support/android_support.h"
-#elif defined(IOS_ENABLED)
+#ifdef IOS_ENABLED
 #include "support/ios_support.h"
 #endif
 #endif
@@ -553,10 +551,6 @@ GDMono::~GDMono() {
 
 	finalizing_scripts_domain = false;
 	runtime_initialized = false;
-
-#if defined(ANDROID_ENABLED)
-	gdmono::android::support::cleanup();
-#endif
 
 	singleton = nullptr;
 }
