@@ -1829,6 +1829,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	GLOBAL_DEF_BASIC(PropertyInfo(Variant::INT, "xr/openxr/reference_space", PROPERTY_HINT_ENUM, "Local,Stage"), "1");
 
 	GLOBAL_DEF_BASIC("xr/openxr/submit_depth_buffer", false);
+	GLOBAL_DEF_BASIC("xr/openxr/startup_alert", true);
 
 #ifdef TOOLS_ENABLED
 	// Disabled for now, using XR inside of the editor we'll be working on during the coming months.
