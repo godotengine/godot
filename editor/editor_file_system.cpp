@@ -569,10 +569,16 @@ bool EditorFileSystem::_update_scan_actions() {
 	Vector<String> reimports;
 	Vector<String> reloads;
 
-	for (const ItemAction &ia : scan_actions) {
+	for (ItemAction &ia : scan_actions) {
+		if (ia.processing) {
+			continue; // Don't process the same action twice.
+		}
+		ia.processing = true;
+
 		switch (ia.action) {
 			case ItemAction::ACTION_NONE: {
 			} break;
+
 			case ItemAction::ACTION_DIR_ADD: {
 				int idx = 0;
 				for (int i = 0; i < ia.dir->subdirs.size(); i++) {
@@ -589,12 +595,15 @@ bool EditorFileSystem::_update_scan_actions() {
 
 				fs_changed = true;
 			} break;
+
 			case ItemAction::ACTION_DIR_REMOVE: {
 				ERR_CONTINUE(!ia.dir->parent);
 				ia.dir->parent->subdirs.erase(ia.dir);
 				memdelete(ia.dir);
+
 				fs_changed = true;
 			} break;
+
 			case ItemAction::ACTION_FILE_ADD: {
 				int idx = 0;
 				for (int i = 0; i < ia.dir->files.size(); i++) {
@@ -614,8 +623,8 @@ bool EditorFileSystem::_update_scan_actions() {
 				if (ClassDB::is_parent_class(ia.new_file->type, SNAME("Script"))) {
 					_queue_update_script_class(ia.dir->get_file_path(idx));
 				}
-
 			} break;
+
 			case ItemAction::ACTION_FILE_REMOVE: {
 				int idx = ia.dir->find_file_index(ia.file);
 				ERR_CONTINUE(idx == -1);
@@ -629,8 +638,8 @@ bool EditorFileSystem::_update_scan_actions() {
 				ia.dir->files.remove_at(idx);
 
 				fs_changed = true;
-
 			} break;
+
 			case ItemAction::ACTION_FILE_TEST_REIMPORT: {
 				int idx = ia.dir->find_file_index(ia.file);
 				ERR_CONTINUE(idx == -1);
@@ -653,6 +662,7 @@ bool EditorFileSystem::_update_scan_actions() {
 
 				fs_changed = true;
 			} break;
+
 			case ItemAction::ACTION_FILE_RELOAD: {
 				int idx = ia.dir->find_file_index(ia.file);
 				ERR_CONTINUE(idx == -1);
@@ -663,7 +673,6 @@ bool EditorFileSystem::_update_scan_actions() {
 				}
 
 				reloads.push_back(full_path);
-
 			} break;
 		}
 	}

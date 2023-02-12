@@ -163,6 +163,7 @@ class EditorFileSystem : public Node {
 		String file;
 		EditorFileSystemDirectory *new_dir = nullptr;
 		EditorFileSystemDirectory::FileInfo *new_file = nullptr;
+		bool processing = false;
 	};
 
 	bool use_threads = true;
