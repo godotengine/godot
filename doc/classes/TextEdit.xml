@@ -436,7 +436,7 @@
 			<return type="int" />
 			<param index="0" name="position" type="Vector2i" />
 			<description>
-				Returns the equivalent minimap line at [param position]
+				Returns the equivalent minimap line at [param position].
 			</description>
 		</method>
 		<method name="get_minimap_visible_lines" qualifiers="const">
@@ -483,7 +483,7 @@
 		<method name="get_saved_version" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the last tagged saved version from [method tag_saved_version]
+				Returns the last tagged saved version from [method tag_saved_version].
 			</description>
 		</method>
 		<method name="get_scroll_pos_for_line" qualifiers="const">
@@ -1054,7 +1054,7 @@
 			<return type="void" />
 			<param index="0" name="callback" type="Callable" />
 			<description>
-				Provide custom tooltip text. The callback method must take the following args: [code]hovered_word: String[/code]
+				Provide custom tooltip text. The callback method must take the following args: [code]hovered_word: String[/code].
 			</description>
 		</method>
 		<method name="start_action">

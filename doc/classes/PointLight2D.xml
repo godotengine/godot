@@ -4,7 +4,7 @@
 		Positional 2D light source.
 	</brief_description>
 	<description>
-		Casts light in a 2D environment. This light's shape is defined by a (usually grayscale) texture
+		Casts light in a 2D environment. This light's shape is defined by a (usually grayscale) texture.
 	</description>
 	<tutorials>
 		<link title="2D lights and shadows">$DOCS_URL/tutorials/2d/2d_lights_and_shadows.html</link>
