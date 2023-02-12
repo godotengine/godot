@@ -140,6 +140,79 @@ Rect2 RichTextLabel::_get_text_rect() {
 	return Rect2(style->get_offset(), get_size() - style->get_minimum_size());
 }
 
+float RichTextLabel::_get_text_length(Item *p_item, const Ref<Font> &p_base_font) {
+	float length = 0;
+
+	if (!p_item) {
+		return 0;
+	}
+
+	switch (p_item->type) {
+		case ITEM_ALIGN:
+		case ITEM_FADE:
+		case ITEM_FONT:
+		case ITEM_STRIKETHROUGH:
+		case ITEM_UNDERLINE:
+		case ITEM_META:
+		case ITEM_COLOR: {
+			for (int i = 0; i < p_item->subitems.size(); i++) {
+				length += _get_text_length(p_item->subitems[i], p_base_font);
+			}
+			break;
+		}
+		case ITEM_TEXT: {
+			ItemText* text = static_cast<ItemText*>(p_item);
+			const CharType* c = text->text.c_str();
+
+			float margin = _find_margin(p_item, p_base_font);
+			float begin = margin;
+
+			int end = 0;
+			float w = 0.0f;
+			Ref<Font> font = _find_font(p_item);
+			if (font.is_null()) {
+				font = p_base_font;
+			}
+
+			bool can_break = false;
+
+			while (c[end] != 0 && !(end && c[end - 1] == ' ' && c[end] != ' ')) {
+				can_break = false;
+				float cw = font->get_char_size(c[end], c[end + 1]).width;
+				if (c[end] == '\t') {
+					cw = tab_size * font->get_char_size(' ').width;
+					can_break = true;
+				}
+
+				const CharType current = c[end];
+				const bool separatable = (current >= 0x2E08 && current <= 0x9FFF) || // CJK scripts and symbols.
+					(current >= 0xAC00 && current <= 0xD7FF) || // Hangul Syllables and Hangul Jamo Extended-B.
+					(current >= 0xF900 && current <= 0xFAFF) || // CJK Compatibility Ideographs.
+					(current >= 0xFE30 && current <= 0xFE4F) || // CJK Compatibility Forms.
+					(current >= 0xFF65 && current <= 0xFF9F) || // Halfwidth forms of katakana
+					(current >= 0xFFA0 && current <= 0xFFDC) || // Halfwidth forms of compatibility jamo characters for Hangul
+					(current >= 0x20000 && current <= 0x2FA1F) || // CJK Unified Ideographs Extension B ~ F and CJK Compatibility Ideographs Supplement.
+					(current >= 0x30000 && current <= 0x3134F); // CJK Unified Ideographs Extension G.
+				can_break |= separatable || c[end] == ' ';
+
+				w += cw;
+
+				end++;
+			}
+
+			if (!can_break) {
+				w += _get_text_length(_get_next_item(p_item), p_base_font);
+			}
+
+			return w;
+		}
+		default: {}
+	}
+	return length;
+}
+
+
+
 int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &y, int p_width, int p_line, ProcessMode p_mode, const Ref<Font> &p_base_font, const Color &p_base_color, const Color &p_font_color_shadow, bool p_shadow_as_outline, const Point2 &shadow_ofs, const Point2i &p_click_pos, Item **r_click_item, int *r_click_char, bool *r_outside, int p_char_count) {
 	ERR_FAIL_INDEX_V((int)p_mode, 3, 0);
 
@@ -403,6 +476,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 					float w = 0.0f;
 					float fw = 0.0f;
 					bool was_separatable = false;
+					bool can_break = false;
 
 					lh = 0;
 
@@ -412,9 +486,11 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 						line_descent = line < l.descent_caches.size() ? l.descent_caches[line] : 1;
 					}
 					while (c[end] != 0 && !(end && c[end - 1] == ' ' && c[end] != ' ')) {
+						can_break = false;
 						float cw = font->get_char_size(c[end], c[end + 1]).width;
 						if (c[end] == '\t') {
 							cw = tab_size * font->get_char_size(' ').width;
+							can_break = true;
 						}
 
 						if (end > 0 && w + cw + begin > p_width) {
@@ -440,13 +516,16 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 						was_separatable = separatable;
 						just_breaked_in_middle = false;
 
+						can_break |= separatable || c[end] == ' ';
+
 						w += cw;
 						fw += cw;
 
 						end++;
 					}
 					CHECK_HEIGHT(fh);
-					ENSURE_WIDTH(w);
+					float next_item_width = can_break ? 0 : _get_text_length(_get_next_item(it), p_base_font);
+					ENSURE_WIDTH(w + next_item_width);
 
 					line_ascent = MAX(line_ascent, ascent);
 					line_descent = MAX(line_descent, descent);
