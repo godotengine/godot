@@ -8,8 +8,6 @@
 
 ## <center> A 2D and 3D Cross-Platform Game Engine </center>
 
----
-
 ### <u> Description </u>
 
 #### What Is Godot?
@@ -72,10 +70,12 @@ To verify that Godot has been installed correctly and see how simple it is to ge
 #### 1) Verify Godot Is Installed
 
 <center>
-In your terminal, type in:
+In your terminal, type in the following command to see if Godot was successfully installed:
 
 ``` godot --version ```
-to see if Godot was successfully installed.
+
+<br>
+
 </center>
 
 <center>
