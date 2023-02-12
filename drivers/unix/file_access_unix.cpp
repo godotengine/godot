@@ -100,6 +100,11 @@ Error FileAccessUnix::open_internal(const String &p_path, int p_mode_flags) {
 
 	if (is_backup_save_enabled() && (p_mode_flags == WRITE)) {
 		save_path = path;
+		// Create a temporary file in the same directory as the target file.
+		path = path + "-XXXXXX";
+		if (!mkstemp(path.utf8().ptrw())) {
+			return ERR_FILE_CANT_OPEN;
+		}
 		path = path + ".tmp";
 	}
 
@@ -143,7 +148,7 @@ void FileAccessUnix::_close() {
 	}
 
 	if (!save_path.is_empty()) {
-		int rename_error = rename((save_path + ".tmp").utf8().get_data(), save_path.utf8().get_data());
+		int rename_error = rename(path.utf8().get_data(), save_path.utf8().get_data());
 
 		if (rename_error && close_fail_notify) {
 			close_fail_notify(save_path);
