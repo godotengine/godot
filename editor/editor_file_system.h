@@ -247,6 +247,8 @@ class EditorFileSystem : public Node {
 
 	bool _test_for_reimport(const String &p_path, bool p_only_imported_files);
 
+	bool _is_marked_for_reimport(EditorFileSystemDirectory *p_dir, const String &p_file);
+
 	bool reimport_on_missing_imported_files;
 
 	Vector<String> _get_dependencies(const String &p_path);

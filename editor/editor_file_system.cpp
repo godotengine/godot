@@ -875,7 +875,7 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, Ref<DirAc
 				fi->script_class_extends = fc->script_class_extends;
 				fi->script_class_icon_path = fc->script_class_icon_path;
 
-				if (revalidate_import_files && !ResourceFormatImporter::get_singleton()->are_import_settings_valid(path)) {
+				if (revalidate_import_files && !ResourceFormatImporter::get_singleton()->are_import_settings_valid(path) && !_is_marked_for_reimport(p_dir, E->get())) {
 					ItemAction ia;
 					ia.action = ItemAction::ACTION_FILE_TEST_REIMPORT;
 					ia.dir = p_dir;
@@ -905,11 +905,13 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, Ref<DirAc
 				fi->import_modified_time = 0;
 				fi->import_valid = fi->type == "TextFile" ? true : ResourceLoader::is_import_valid(path);
 
-				ItemAction ia;
-				ia.action = ItemAction::ACTION_FILE_TEST_REIMPORT;
-				ia.dir = p_dir;
-				ia.file = E->get();
-				scan_actions.push_back(ia);
+				if (!_is_marked_for_reimport(p_dir, E->get())) {
+					ItemAction ia;
+					ia.action = ItemAction::ACTION_FILE_TEST_REIMPORT;
+					ia.dir = p_dir;
+					ia.file = E->get();
+					scan_actions.push_back(ia);
+				}
 			}
 		} else {
 			if (fc && fc->modification_time == mt) {
@@ -1059,7 +1061,7 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const 
 						scan_actions.push_back(ia);
 					}
 
-					if (import_extensions.has(ext)) {
+					if (import_extensions.has(ext) && !_is_marked_for_reimport(p_dir, f)) {
 						//if it can be imported, and it was added, it needs to be reimported
 						ItemAction ia;
 						ia.action = ItemAction::ACTION_FILE_TEST_REIMPORT;
@@ -1110,7 +1112,7 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const 
 				}
 			}
 
-			if (reimport) {
+			if (reimport && !_is_marked_for_reimport(p_dir, p_dir->files[i]->file)) {
 				ItemAction ia;
 				ia.action = ItemAction::ACTION_FILE_TEST_REIMPORT;
 				ia.dir = p_dir;
@@ -1706,6 +1708,19 @@ void EditorFileSystem::update_file(const String &p_file) {
 
 HashSet<String> EditorFileSystem::get_valid_extensions() const {
 	return valid_extensions;
+}
+
+bool EditorFileSystem::_is_marked_for_reimport(EditorFileSystemDirectory *p_dir, const String &p_file) {
+	bool marked = false;
+
+	for (const ItemAction &ia : scan_actions) {
+		if (ia.action == ItemAction::ACTION_FILE_TEST_REIMPORT && ia.dir == p_dir && ia.file == p_file) {
+			marked = true;
+			break;
+		}
+	}
+
+	return marked;
 }
 
 Error EditorFileSystem::_reimport_group(const String &p_group_file, const Vector<String> &p_files) {
