@@ -4281,6 +4281,11 @@ void SubViewport::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			RS::get_singleton()->viewport_set_active(get_viewport_rid(), true);
+
+			SubViewportContainer *parent_svc = Object::cast_to<SubViewportContainer>(get_parent());
+			if (parent_svc) {
+				parent_svc->recalc_force_viewport_sizes();
+			}
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -4321,6 +4326,17 @@ void SubViewport::_bind_methods() {
 	BIND_ENUM_CONSTANT(UPDATE_WHEN_VISIBLE);
 	BIND_ENUM_CONSTANT(UPDATE_WHEN_PARENT_VISIBLE);
 	BIND_ENUM_CONSTANT(UPDATE_ALWAYS);
+}
+
+void SubViewport::_validate_property(PropertyInfo &p_property) const {
+	if (p_property.name == "size") {
+		SubViewportContainer *parent_svc = Object::cast_to<SubViewportContainer>(get_parent());
+		if (parent_svc && parent_svc->is_stretch_enabled()) {
+			p_property.usage = PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY;
+		} else {
+			p_property.usage = PROPERTY_USAGE_DEFAULT;
+		}
+	}
 }
 
 SubViewport::SubViewport() {
