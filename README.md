@@ -6,11 +6,11 @@
   </a>
 </p>
 
-## <center> A 2D and 3D Cross-Platform Game Engine </center>
+## <p align="center"> A 2D and 3D Cross-Platform Game Engine </p>
 
-### <u> Description </u>
+## <u> Description </u>
 
-#### What Is Godot?
+### What Is Godot?
 **[Godot Engine](https://godotengine.org) is a feature-packed, cross-platform
 game engine made largely in C++ that can create 2D and 3D games from a unified interface.** It provides a
 comprehensive set of [common tools](https://godotengine.org/features), so that users can focus on making games
@@ -21,13 +21,13 @@ and [consoles](https://docs.godotengine.org/en/latest/tutorials/platform/console
 
 ---
 
-### <u> Q&A </u>
+## <u> Q&A </u>
 
-#### <em> "Why C++?" </em>
+### <em> "Why C++?" </em>
 
 Godot engine is primarily built using C++ as the language's structure is <strong> suitable for handling the performance aspect of game development</strong>. In terms of efficiency, C++ supports strong memory management systems and is typically low latency. Furthermore, C++ is able to develop games that can run on different platforms or systems, an important attribute for a Godot's cross platform functionality.
 
-#### <em> "How does Godot stand out from other game engines?" </em>
+### <em> "How does Godot stand out from other game engines?" </em>
 
 Godot stands out from other game engines in the sense that it is focused on making the game development process as easy as possible. Godot engine's user interface can be quickly picked up and the use of a node-based scene system gives game developers a clean, organized way of managing game objects.
 
@@ -35,7 +35,7 @@ Furthermore, Godot has its own scripting language, [GDScript](https://gdscript.c
 
 ---
 
-### <u> Free, Open Source and Community-Driven </u>
+## <u> Free, Open Source and Community-Driven </u>
 
 Godot is completely <strong> free and open source </strong> under the very permissive [MIT license](https://godotengine.org/license).
 No strings attached, no royalties, nothing. The users' games are theirs, down
@@ -53,21 +53,21 @@ years as an in-house engine, used to publish several work-for-hire titles.
 
 ---
 
-### <u> Downloading the Engine </u>
+## <u> Downloading the Engine </u>
 
-#### Binary Downloads
+### Binary Downloads
 
 Official binaries for the Godot editor and the export templates can be found
 [on the homepage](https://godotengine.org/download).
 
-#### Compiling From Source
+### Compiling From Source
 
 [See the official docs](https://docs.godotengine.org/en/latest/contributing/development/compiling)
 for compilation instructions for every supported platform.
 
 ---
 
-### <u> Getting Started </u>
+## <u> Getting Started </u>
 
 ### Running a Demo
 
@@ -75,22 +75,15 @@ To verify that Godot has been installed correctly and see how simple it is to ge
 
 ### 1) Verify Godot Is Installed
 
-<center>
 In your terminal, type in the following command to see if Godot was successfully installed:
 
 ``` godot --version ```
 
 <br>
 
-</center>
-
-<center>
-
 ![Screenshot of the command line and the command "godot --version" to verify if Godot was installed correctly.](https://i.imgur.com/AItmgLA.png)
 
-</center>
-
-<center> <em> <p style="font-size: smaller"> Above is an example of running the command in Windows Command Line. </p> </em> </center> <br>
+ <p style="font-size: smaller"> <em> Above is an example of running the command in Windows Command Line. </em> </p> <br>
 
 After installing the Godot engine, you can verify that it was installed correctly by using a command-line command such as "--version" which, if Godot was correctly installed, should print out the version number.
 
@@ -106,7 +99,9 @@ The "Projects" tab includes all the current projects in your Godot directory. Se
 
 From the "Projects" tab at the top of the menu, click on the "Templates" tab. To get a feel for how Godot is structured, a template is an efficient way to understand its user-friendly interface.
 
-![Screenshot of Godot's project manager page that appears upon opening the program](https://i.imgur.com/u2jxmwt.png)
+Below is an annotated image displaying the major components of the Godot interface.
+
+![Screenshot of a Godot template with annotations showing the different parts of the interface.](https://i.imgur.com/rrzNAZs.png)
 
 From here, you can play around with assets, scenes, and nodes that have already been developed for you. This hands-on experience will help build a foundational understanding of Godot, benefiting both users who wish to build a functional game and contributors who want to comprehend how Godot's software operates.
 
@@ -114,7 +109,7 @@ For more information on learning Godot, please visit the [documentation site](ht
 
 ---
 
-### <u> Documentation and Demos </u>
+## <u> Documentation and Demos </u>
 
 The official documentation is hosted on [ReadTheDocs](https://docs.godotengine.org).
 It is maintained by the Godot community in its own [GitHub repository](https://github.com/godotengine/godot-docs).
@@ -137,7 +132,7 @@ for more information.
 
 ---
 
-### <u> Community and Contributing </u>
+## <u> Community and Contributing </u>
 
 Godot is not only an engine but an ever-growing community of users and engine
 developers. The main community channels are listed [on the homepage](https://godotengine.org/community).
@@ -147,20 +142,24 @@ The best way to get in touch with the core engine developers is to join the
 
 To get started contributing to the project, see the [contributing guide](CONTRIBUTING.md).
 
-#### FOR NEW CONTRIBUTORS:
+### FOR NEW CONTRIBUTORS:
 
 For new contributors who would like to <strong> quickly gauge the priority tasks or areas that should be focused on</strong>, below are some features:
 
 <ul>
-  <li>
-    Working on combatting <strong> visual displays </strong> becoming unreadable in certain instances. 
-  </li>
-   <li>
-    Improve <strong> usability </strong> in terms of how scenes should be opened or updated when the user interacts with a tool.
-  </li>
-    <li>
-    Creating or updating <strong> unit tests </strong> to provide an easy way of maintaining or verifying the functionality of features.
-  </li>
+  <li> Working on combatting <strong> visual displays </strong> becoming unreadable in certain instances. </li>
+   <li> Improve <strong> usability </strong> in terms of how scenes should be opened or updated when the user interacts with a tool. </li>
+    <li> Creating or updating <strong> unit tests </strong> to provide an easy way of maintaining or verifying the functionality of features. </li>
+</ul>
+
+There are few major areas that Godot contributors tend to specialize in:
+
+<ul>
+	<li> Graphics </li>
+	<li> Asset Importing </li>
+	<li> Physics </li>
+	<li> User Interface </li>
+	<li> Rendering </li>
 </ul>
 
 To see more issues for contributors who want to make a "first contribution" please see the issues tab [here](https://github.com/godotengine/godot/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22).
