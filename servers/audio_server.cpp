@@ -354,7 +354,7 @@ void AudioServer::_mix_step() {
 			playback->stream_playback->tag_used_streams();
 		}
 
-		if (mixed_frames != buffer_size) {
+		if (!playback->stream_playback->is_playing()) {
 			// We know we have at least the size of our lookahead buffer for fade-out purposes.
 
 			float fadeout_base = 0.94;
