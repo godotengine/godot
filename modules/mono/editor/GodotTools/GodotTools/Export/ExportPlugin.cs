@@ -127,7 +127,7 @@ namespace GodotTools.Export
             if (!DeterminePlatformFromFeatures(features, out string platform))
                 throw new NotSupportedException("Target platform not supported.");
 
-            if (!new[] { OS.Platforms.Windows, OS.Platforms.LinuxBSD, OS.Platforms.MacOS }
+            if (!new[] { OS.Platforms.Windows, OS.Platforms.LinuxBSD, OS.Platforms.MacOS, OS.Platforms.Android }
                     .Contains(platform))
             {
                 throw new NotImplementedException("Target platform not yet implemented.");
@@ -142,15 +142,19 @@ namespace GodotTools.Export
             {
                 archs.Add("x86_64");
             }
-            else if (features.Contains("x86_32"))
+            if (features.Contains("x86_32"))
             {
                 archs.Add("x86_32");
             }
-            else if (features.Contains("arm64"))
+            if (features.Contains("arm64"))
             {
                 archs.Add("arm64");
             }
-            else if (features.Contains("universal"))
+            if (features.Contains("arm32"))
+            {
+                archs.Add("arm32");
+            }
+            if (features.Contains("universal"))
             {
                 if (platform == OS.Platforms.MacOS)
                 {
@@ -159,7 +163,7 @@ namespace GodotTools.Export
                 }
             }
 
-            bool embedBuildResults = (bool)GetOption("dotnet/embed_build_outputs");
+            bool embedBuildResults = (bool)GetOption("dotnet/embed_build_outputs") || features.Contains("android");
 
             foreach (var arch in archs)
             {
@@ -256,7 +260,7 @@ namespace GodotTools.Export
                 "x86_64" => "x64",
                 "armeabi-v7a" => "arm",
                 "arm64-v8a" => "arm64",
-                "armv7" => "arm",
+                "arm32" => "arm",
                 "arm64" => "arm64",
                 _ => throw new ArgumentOutOfRangeException(nameof(arch), arch, "Unexpected architecture")
             };
