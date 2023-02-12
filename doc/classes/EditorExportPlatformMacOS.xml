@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorExportPlatformMacOS" inherits="EditorExportPlatform" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Identifies the MacOS export platform.
+	</brief_description>
+	<description>
+		Resource that provides the functionality of exporting a release build of a project to the MacOS platform, from the editor.
+	</description>
+	<tutorials>
+	</tutorials>
+</class>

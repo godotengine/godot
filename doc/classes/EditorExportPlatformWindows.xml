@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="EditorExportPlatformWindows" inherits="EditorExportPlatformPC" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+	<brief_description>
+		Identifies the Windows export platform.
+	</brief_description>
+	<description>
+		Resource that provides the functionality of exporting a release build of a project to the Windows platform, from the editor.
+	</description>
+	<tutorials>
+	</tutorials>
+</class>

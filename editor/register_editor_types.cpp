@@ -106,6 +106,14 @@
 #include "editor/plugins/version_control_editor_plugin.h"
 #include "editor/plugins/visual_shader_editor_plugin.h"
 #include "editor/plugins/voxel_gi_editor_plugin.h"
+#include "export/export_plugin.h"
+#include "platform/android/export/export_plugin.h"
+#include "platform/ios/export/export_plugin.h"
+#include "platform/linuxbsd/export/export_plugin.h"
+#include "platform/macos/export/export_plugin.h"
+#include "platform/uwp/export/export_plugin.h"
+#include "platform/web/export/export_plugin.h"
+#include "platform/windows/export/export_plugin.h"
 
 void register_editor_types() {
 	ResourceLoader::set_timestamp_on_load(true);
@@ -132,6 +140,14 @@ void register_editor_types() {
 	GDREGISTER_ABSTRACT_CLASS(EditorInterface);
 	GDREGISTER_CLASS(EditorExportPlugin);
 	GDREGISTER_ABSTRACT_CLASS(EditorExportPlatform);
+	GDREGISTER_ABSTRACT_CLASS(EditorExportPlatformAndroid);
+	GDREGISTER_ABSTRACT_CLASS(EditorExportPlatformIOS);
+	GDREGISTER_ABSTRACT_CLASS(EditorExportPlatformMacOS);
+	GDREGISTER_ABSTRACT_CLASS(EditorExportPlatformUWP);
+	GDREGISTER_ABSTRACT_CLASS(EditorExportPlatformWeb);
+	GDREGISTER_ABSTRACT_CLASS(EditorExportPlatformPC);
+	GDREGISTER_ABSTRACT_CLASS(EditorExportPlatformLinuxBSD);
+	GDREGISTER_ABSTRACT_CLASS(EditorExportPlatformWindows);
 	GDREGISTER_CLASS(EditorResourceConversionPlugin);
 	GDREGISTER_CLASS(EditorSceneFormatImporter);
 	GDREGISTER_CLASS(EditorScenePostImportPlugin);

@@ -37,6 +37,8 @@
 #include "editor/export/editor_export_platform_pc.h"
 
 class EditorExportPlatformWindows : public EditorExportPlatformPC {
+	GDCLASS(EditorExportPlatformWindows, EditorExportPlatformPC);
+
 	struct SSHCleanupCommand {
 		String host;
 		String port;

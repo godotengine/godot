@@ -37,6 +37,8 @@
 #include "scene/resources/texture.h"
 
 class EditorExportPlatformLinuxBSD : public EditorExportPlatformPC {
+	GDCLASS(EditorExportPlatformLinuxBSD, EditorExportPlatformPC);
+
 	HashMap<String, String> extensions;
 
 	struct SSHCleanupCommand {
