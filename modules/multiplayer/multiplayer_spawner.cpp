@@ -103,6 +103,15 @@ void MultiplayerSpawner::add_spawnable_scene(const String &p_path) {
 		ERR_FAIL_COND(!FileAccess::exists(p_path));
 	}
 	spawnable_scenes.push_back(sc);
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
+#endif
+	Node *node = get_spawn_node();
+	if (spawnable_scenes.size() == 1 && node && !node->is_connected("child_entered_tree", callable_mp(this, &MultiplayerSpawner::_node_added))) {
+		node->connect("child_entered_tree", callable_mp(this, &MultiplayerSpawner::_node_added));
+	}
 }
 
 int MultiplayerSpawner::get_spawnable_scene_count() const {
@@ -116,6 +125,15 @@ String MultiplayerSpawner::get_spawnable_scene(int p_idx) const {
 
 void MultiplayerSpawner::clear_spawnable_scenes() {
 	spawnable_scenes.clear();
+#ifdef TOOLS_ENABLED
+	if (Engine::get_singleton()->is_editor_hint()) {
+		return;
+	}
+#endif
+	Node *node = get_spawn_node();
+	if (node && node->is_connected("child_entered_tree", callable_mp(this, &MultiplayerSpawner::_node_added))) {
+		node->disconnect("child_entered_tree", callable_mp(this, &MultiplayerSpawner::_node_added));
+	}
 }
 
 Vector<String> MultiplayerSpawner::_get_spawnable_scenes() const {
