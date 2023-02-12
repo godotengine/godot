@@ -58,6 +58,7 @@ void SubViewportContainer::set_stretch(bool p_enable) {
 	}
 
 	stretch = p_enable;
+	recalc_force_viewport_sizes();
 	update_minimum_size();
 	queue_sort();
 	queue_redraw();
@@ -75,10 +76,16 @@ void SubViewportContainer::set_stretch_shrink(int p_shrink) {
 
 	shrink = p_shrink;
 
+	recalc_force_viewport_sizes();
+	queue_redraw();
+}
+
+void SubViewportContainer::recalc_force_viewport_sizes() {
 	if (!stretch) {
 		return;
 	}
 
+	// If stretch is enabled, make sure that all child SubViwewports have the correct size.
 	for (int i = 0; i < get_child_count(); i++) {
 		SubViewport *c = Object::cast_to<SubViewport>(get_child(i));
 		if (!c) {
@@ -87,8 +94,6 @@ void SubViewportContainer::set_stretch_shrink(int p_shrink) {
 
 		c->set_size_force(get_size() / shrink);
 	}
-
-	queue_redraw();
 }
 
 int SubViewportContainer::get_stretch_shrink() const {
@@ -106,18 +111,7 @@ Vector<int> SubViewportContainer::get_allowed_size_flags_vertical() const {
 void SubViewportContainer::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_RESIZED: {
-			if (!stretch) {
-				return;
-			}
-
-			for (int i = 0; i < get_child_count(); i++) {
-				SubViewport *c = Object::cast_to<SubViewport>(get_child(i));
-				if (!c) {
-					continue;
-				}
-
-				c->set_size_force(get_size() / shrink);
-			}
+			recalc_force_viewport_sizes();
 		} break;
 
 		case NOTIFICATION_ENTER_TREE:

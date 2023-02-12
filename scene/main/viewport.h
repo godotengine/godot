@@ -784,6 +784,7 @@ public:
 	virtual Transform2D get_screen_transform_internal(bool p_absolute_position = false) const override;
 	virtual Transform2D get_popup_base_transform() const override;
 
+	void _validate_property(PropertyInfo &p_property) const;
 	SubViewport();
 	~SubViewport();
 };
