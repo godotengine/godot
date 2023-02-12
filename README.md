@@ -19,6 +19,8 @@ number of platforms, including the major desktop platforms (Linux, macOS,
 Windows), mobile platforms (Android, iOS), as well as Web-based platforms
 and [consoles](https://docs.godotengine.org/en/latest/tutorials/platform/consoles.html).
 
+---
+
 ### <u> Q&A </u>
 
 #### <em> "Why C++?" </em>
@@ -30,6 +32,8 @@ Godot engine is primarily built using C++ as the language's structure is <strong
 Godot stands out from other game engines in the sense that it is focused on making the game development process as easy as possible. Godot engine's user interface can be quickly picked up and the use of a node-based scene system gives game developers a clean, organized way of managing game objects.
 
 Furthermore, Godot has its own scripting language, [GDScript](https://gdscript.com), whose simple syntax and dynamically typed nature makes it <strong> easy to pick up for beginning game developers and allows for projects to be developed at a much faster pace </strong>. Godot prioritizes making the game development process accessible to people regardless of their experience.
+
+---
 
 ### <u> Free, Open Source and Community-Driven </u>
 
@@ -47,6 +51,8 @@ years as an in-house engine, used to publish several work-for-hire titles.
 
 ![Screenshot of a 3D scene in the Godot Engine editor](https://raw.githubusercontent.com/godotengine/godot-design/master/screenshots/editor_tps_demo_1920x1080.jpg)
 
+---
+
 ### <u> Downloading the Engine </u>
 
 #### Binary Downloads
@@ -59,15 +65,15 @@ Official binaries for the Godot editor and the export templates can be found
 [See the official docs](https://docs.godotengine.org/en/latest/contributing/development/compiling)
 for compilation instructions for every supported platform.
 
+---
+
 ### <u> Getting Started </u>
 
-#### Running a Demo
+### Running a Demo
 
 To verify that Godot has been installed correctly and see how simple it is to get started, please follow the steps below:
 
----
-
-#### 1) Verify Godot Is Installed
+### 1) Verify Godot Is Installed
 
 <center>
 In your terminal, type in the following command to see if Godot was successfully installed:
@@ -88,17 +94,13 @@ In your terminal, type in the following command to see if Godot was successfully
 
 After installing the Godot engine, you can verify that it was installed correctly by using a command-line command such as "--version" which, if Godot was correctly installed, should print out the version number.
 
----
-
-#### 2) Run Godot and View the Project Manager
+### 2) Run Godot and View the Project Manager
 
 ![Screenshot of Godot's project manager page that appears upon opening the program](https://i.imgur.com/yp38L5Y.png)
 
 The "Projects" tab includes all the current projects in your Godot directory. Select "New Project" to create a new project, or select an existing one from the list.
 
----
-
-#### 3) Previewing the Interface with a Template
+### 3) Previewing the Interface with a Template
 
 ![Screenshot of Godot's project manager page that appears upon opening the program](https://i.imgur.com/0inQ6Rg.png)
 
@@ -107,8 +109,6 @@ From the "Projects" tab at the top of the menu, click on the "Templates" tab. To
 ![Screenshot of Godot's project manager page that appears upon opening the program](https://i.imgur.com/u2jxmwt.png)
 
 From here, you can play around with assets, scenes, and nodes that have already been developed for you. This hands-on experience will help build a foundational understanding of Godot, benefiting both users who wish to build a functional game and contributors who want to comprehend how Godot's software operates.
-
----
 
 For more information on learning Godot, please visit the [documentation site](https://docs.godotengine.org/en/stable/).
 
@@ -134,6 +134,8 @@ for more information.
 [![Code Triagers Badge](https://www.codetriage.com/godotengine/godot/badges/users.svg)](https://www.codetriage.com/godotengine/godot)
 [![Translate on Weblate](https://hosted.weblate.org/widgets/godot-engine/-/godot/svg-badge.svg)](https://hosted.weblate.org/engage/godot-engine/?utm_source=widget)
 [![TODOs](https://badgen.net/https/api.tickgit.com/badgen/github.com/godotengine/godot)](https://www.tickgit.com/browse?repo=github.com/godotengine/godot)
+
+---
 
 ### <u> Community and Contributing </u>
 
