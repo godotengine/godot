@@ -1871,7 +1871,10 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 
 	// Set the windows present mode if it is available, otherwise FIFO is used (guaranteed supported).
 	if (present_mode_available) {
-		window->presentMode = requested_present_mode;
+		if (window->presentMode != requested_present_mode) {
+			window->presentMode = requested_present_mode;
+			print_verbose("Using present mode: " + String(string_VkPresentModeKHR(window->presentMode)));
+		}
 	} else {
 		String present_mode_string;
 		switch (window->vsync_mode) {
@@ -1891,8 +1894,6 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 		WARN_PRINT(vformat("The requested V-Sync mode %s is not available. Falling back to V-Sync mode Enabled.", present_mode_string));
 		window->vsync_mode = DisplayServer::VSYNC_ENABLED; // Set to default.
 	}
-
-	print_verbose("Using present mode: " + String(string_VkPresentModeKHR(window->presentMode)));
 
 	free(presentModes);
 
