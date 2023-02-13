@@ -116,6 +116,9 @@ void NavigationServer3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_active", "active"), &NavigationServer3D::set_active);
 
+	ClassDB::bind_method(D_METHOD("set_debug_enabled", "enabled"), &NavigationServer3D::set_debug_enabled);
+	ClassDB::bind_method(D_METHOD("get_debug_enabled"), &NavigationServer3D::get_debug_enabled);
+
 	ADD_SIGNAL(MethodInfo("map_changed", PropertyInfo(Variant::RID, "map")));
 
 	ADD_SIGNAL(MethodInfo("navigation_debug_changed"));
@@ -182,6 +185,24 @@ NavigationServer3D::NavigationServer3D() {
 
 NavigationServer3D::~NavigationServer3D() {
 	singleton = nullptr;
+}
+
+void NavigationServer3D::set_debug_enabled(bool p_enabled) {
+#ifdef DEBUG_ENABLED
+	if (debug_enabled != p_enabled) {
+		debug_dirty = true;
+	}
+
+	debug_enabled = p_enabled;
+
+	if (debug_dirty) {
+		call_deferred("_emit_navigation_debug_changed_signal");
+	}
+#endif // DEBUG_ENABLED
+}
+
+bool NavigationServer3D::get_debug_enabled() const {
+	return debug_enabled;
 }
 
 #ifdef DEBUG_ENABLED
@@ -531,22 +552,6 @@ void NavigationServer3D::set_debug_navigation_enable_link_connections_xray(const
 
 bool NavigationServer3D::get_debug_navigation_enable_link_connections_xray() const {
 	return debug_navigation_enable_link_connections_xray;
-}
-
-void NavigationServer3D::set_debug_enabled(bool p_enabled) {
-	if (debug_enabled != p_enabled) {
-		debug_dirty = true;
-	}
-
-	debug_enabled = p_enabled;
-
-	if (debug_dirty) {
-		call_deferred("_emit_navigation_debug_changed_signal");
-	}
-}
-
-bool NavigationServer3D::get_debug_enabled() const {
-	return debug_enabled;
 }
 
 void NavigationServer3D::set_debug_navigation_enable_agent_paths(const bool p_value) {

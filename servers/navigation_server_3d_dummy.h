@@ -112,6 +112,8 @@ public:
 	void process(real_t delta_time) override {}
 	NavigationUtilities::PathQueryResult _query_path(const NavigationUtilities::PathQueryParameters &p_parameters) const override { return NavigationUtilities::PathQueryResult(); }
 	int get_process_info(ProcessInfo p_info) const override { return 0; }
+	void set_debug_enabled(bool p_enabled) {}
+	bool get_debug_enabled() const { return false; }
 };
 
 #endif // NAVIGATION_SERVER_3D_DUMMY_H
