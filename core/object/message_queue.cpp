@@ -55,9 +55,9 @@ Error MessageQueue::push_set(ObjectID p_id, const StringName &p_prop, const Vari
 		if (ObjectDB::get_instance(p_id)) {
 			type = ObjectDB::get_instance(p_id)->get_class();
 		}
-		print_line("Failed set: " + type + ":" + p_prop + " target ID: " + itos(p_id));
+		ERR_PRINT("Failed set: " + type + ":" + p_prop + " target ID: " + itos(p_id) + ". Message queue out of memory. Try increasing 'memory/limits/message_queue/max_size_kb' in project settings.");
 		statistics();
-		ERR_FAIL_V_MSG(ERR_OUT_OF_MEMORY, "Message queue out of memory. Try increasing 'memory/limits/message_queue/max_size_kb' in project settings.");
+		return ERR_OUT_OF_MEMORY;
 	}
 
 	Message *msg = memnew_placement(&buffer[buffer_end], Message);
@@ -82,9 +82,9 @@ Error MessageQueue::push_notification(ObjectID p_id, int p_notification) {
 	uint8_t room_needed = sizeof(Message);
 
 	if ((buffer_end + room_needed) >= buffer_size) {
-		print_line("Failed notification: " + itos(p_notification) + " target ID: " + itos(p_id));
+		ERR_PRINT("Failed notification: " + itos(p_notification) + " target ID: " + itos(p_id) + ". Message queue out of memory. Try increasing 'memory/limits/message_queue/max_size_kb' in project settings.");
 		statistics();
-		ERR_FAIL_V_MSG(ERR_OUT_OF_MEMORY, "Message queue out of memory. Try increasing 'memory/limits/message_queue/max_size_kb' in project settings.");
+		return ERR_OUT_OF_MEMORY;
 	}
 
 	Message *msg = memnew_placement(&buffer[buffer_end], Message);
@@ -117,9 +117,9 @@ Error MessageQueue::push_callablep(const Callable &p_callable, const Variant **p
 	int room_needed = sizeof(Message) + sizeof(Variant) * p_argcount;
 
 	if ((buffer_end + room_needed) >= buffer_size) {
-		print_line("Failed method: " + p_callable);
+		ERR_PRINT("Failed method: " + p_callable + ". Message queue out of memory. Try increasing 'memory/limits/message_queue/max_size_kb' in project settings.");
 		statistics();
-		ERR_FAIL_V_MSG(ERR_OUT_OF_MEMORY, "Message queue out of memory. Try increasing 'memory/limits/message_queue/max_size_kb' in project settings.");
+		return ERR_OUT_OF_MEMORY;
 	}
 
 	Message *msg = memnew_placement(&buffer[buffer_end], Message);
