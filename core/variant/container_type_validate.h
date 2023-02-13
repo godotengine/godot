@@ -73,7 +73,7 @@ struct ContainerTypeValidate {
 		return type != p_type.type || class_name != p_type.class_name || script != p_type.script;
 	}
 
-	// Coerces String and StringName into each other when needed.
+	// Coerces String and StringName into each other and int into float when needed.
 	_FORCE_INLINE_ bool validate(Variant &inout_variant, const char *p_operation = "use") const {
 		if (type == Variant::NIL) {
 			return true;
@@ -88,6 +88,9 @@ struct ContainerTypeValidate {
 				return true;
 			} else if (type == Variant::STRING_NAME && inout_variant.get_type() == Variant::STRING) {
 				inout_variant = StringName(inout_variant);
+				return true;
+			} else if (type == Variant::FLOAT && inout_variant.get_type() == Variant::INT) {
+				inout_variant = (float)inout_variant;
 				return true;
 			}
 
