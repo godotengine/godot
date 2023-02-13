@@ -31,6 +31,7 @@
 #include "renderer_viewport.h"
 
 #include "core/config/project_settings.h"
+#include "core/object/worker_thread_pool.h"
 #include "renderer_canvas_cull.h"
 #include "renderer_scene_cull.h"
 #include "rendering_server_globals.h"

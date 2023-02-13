@@ -35,7 +35,6 @@
 #include "core/math/geometry_3d.h"
 #include "core/math/transform_2d.h"
 #include "core/object/class_db.h"
-#include "core/object/worker_thread_pool.h"
 #include "core/templates/rid.h"
 #include "core/variant/typed_array.h"
 #include "core/variant/variant.h"
