@@ -1795,12 +1795,16 @@ void TileMap::_navigation_draw_quadrant_debug(TileMapQuadrant *p_quadrant) {
 		return;
 	}
 
-	RenderingServer *rs = RenderingServer::get_singleton();
-
-	Color color = Color(0.5, 1.0, 1.0, 1.0);
 #ifdef DEBUG_ENABLED
-	color = NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_color();
-#endif // DEBUG_ENABLED
+	RenderingServer *rs = RenderingServer::get_singleton();
+	const NavigationServer2D *ns2d = NavigationServer2D::get_singleton();
+
+	bool enabled_geometry_face_random_color = ns2d->get_debug_navigation_enable_geometry_face_random_color();
+	bool enabled_edge_lines = ns2d->get_debug_navigation_enable_edge_lines();
+
+	Color debug_face_color = ns2d->get_debug_navigation_geometry_face_color();
+	Color debug_edge_color = ns2d->get_debug_navigation_geometry_edge_color();
+
 	RandomPCG rand;
 
 	Vector2 quadrant_pos = map_to_local(p_quadrant->coords * get_effective_quadrant_size(p_quadrant->layer));
@@ -1830,34 +1834,50 @@ void TileMap::_navigation_draw_quadrant_debug(TileMapQuadrant *p_quadrant) {
 				rs->canvas_item_add_set_transform(p_quadrant->debug_canvas_item, cell_to_quadrant);
 
 				for (int layer_index = 0; layer_index < tile_set->get_navigation_layers_count(); layer_index++) {
-					Ref<NavigationPolygon> navpoly = tile_data->get_navigation_polygon(layer_index);
-					if (navpoly.is_valid()) {
-						PackedVector2Array navigation_polygon_vertices = navpoly->get_vertices();
+					Ref<NavigationPolygon> navigation_polygon = tile_data->get_navigation_polygon(layer_index);
+					if (navigation_polygon.is_valid()) {
+						Vector<Vector2> navigation_polygon_vertices = navigation_polygon->get_vertices();
+						if (navigation_polygon_vertices.size() < 3) {
+							continue;
+						}
 
-						for (int i = 0; i < navpoly->get_polygon_count(); i++) {
+						for (int i = 0; i < navigation_polygon->get_polygon_count(); i++) {
 							// An array of vertices for this polygon.
-							Vector<int> polygon = navpoly->get_polygon(i);
-							Vector<Vector2> vertices;
-							vertices.resize(polygon.size());
+							Vector<int> polygon = navigation_polygon->get_polygon(i);
+							Vector<Vector2> debug_polygon_vertices;
+							debug_polygon_vertices.resize(polygon.size());
 							for (int j = 0; j < polygon.size(); j++) {
 								ERR_FAIL_INDEX(polygon[j], navigation_polygon_vertices.size());
-								vertices.write[j] = navigation_polygon_vertices[polygon[j]];
+								debug_polygon_vertices.write[j] = navigation_polygon_vertices[polygon[j]];
 							}
 
 							// Generate the polygon color, slightly randomly modified from the settings one.
-							Color random_variation_color;
-							random_variation_color.set_hsv(color.get_h() + rand.random(-1.0, 1.0) * 0.05, color.get_s(), color.get_v() + rand.random(-1.0, 1.0) * 0.1);
-							random_variation_color.a = color.a;
-							Vector<Color> colors;
-							colors.push_back(random_variation_color);
+							Color random_variation_color = debug_face_color;
+							if (enabled_geometry_face_random_color) {
+								random_variation_color.set_hsv(
+										debug_face_color.get_h() + rand.random(-1.0, 1.0) * 0.1,
+										debug_face_color.get_s(),
+										debug_face_color.get_v() + rand.random(-1.0, 1.0) * 0.2);
+							}
+							random_variation_color.a = debug_face_color.a;
 
-							rs->canvas_item_add_polygon(p_quadrant->debug_canvas_item, vertices, colors);
+							Vector<Color> debug_face_colors;
+							debug_face_colors.push_back(random_variation_color);
+							rs->canvas_item_add_polygon(p_quadrant->debug_canvas_item, debug_polygon_vertices, debug_face_colors);
+
+							if (enabled_edge_lines) {
+								Vector<Color> debug_edge_colors;
+								debug_edge_colors.push_back(debug_edge_color);
+								debug_polygon_vertices.push_back(debug_polygon_vertices[0]); // Add first again for closing polyline.
+								rs->canvas_item_add_polyline(p_quadrant->debug_canvas_item, debug_polygon_vertices, debug_edge_colors);
+							}
 						}
 					}
 				}
 			}
 		}
 	}
+#endif // DEBUG_ENABLED
 }
 
 /////////////////////////////// Scenes //////////////////////////////////////
