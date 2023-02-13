@@ -101,6 +101,11 @@ void TextLine::_bind_methods() {
 }
 
 void TextLine::_shape() {
+	// When a shaped text is invalidated by an external source, we want to reshape it.
+	if (!TS->shaped_text_is_ready(rid)) {
+		dirty = true;
+	}
+
 	if (dirty) {
 		if (!tab_stops.is_empty()) {
 			TS->shaped_text_tab_align(rid, tab_stops);
