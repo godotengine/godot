@@ -177,6 +177,10 @@ void Label::_shape() {
 				minsize.width = TS->shaped_text_get_size(lines_rid[i]).x;
 			}
 		}
+
+		// With autowrap off, by now we already know the width the label will take.
+		width = (minsize.width - style->get_minimum_size().width);
+		width_stabilized = true;
 	}
 
 	if (lines_dirty && width_stabilized) {
