@@ -268,13 +268,15 @@ Files extracted from upstream source:
 ## harfbuzz
 
 - Upstream: https://github.com/harfbuzz/harfbuzz
-- Version: 6.0.0 (afcae83a064843d71d47624bc162e121cc56c08b, 2022)
+- Version: 7.0.0 (8bdaeddfcd86aa66f560ff1ae1ae71b1e1723463, 2023)
 - License: MIT
 
 Files extracted from upstream source:
 
-- the `src` folder
 - `AUTHORS`, `COPYING`, `THANKS`
+- from the `src` folder, recursively
+  - all the `*.c`, `*.cc`, `*.h`, `*.hh` files
+  - _except_ `main.cc`, `harfbuzz*.cc`, `failing-alloc.c`, `test*.cc`
 
 
 ## icu4c

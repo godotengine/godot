@@ -223,6 +223,7 @@ struct flatten_param_t
 {
   str_buff_t     &flatStr;
   bool	drop_hints;
+  const hb_subset_plan_t *plan;
 };
 
 template <typename ACC, typename ENV, typename OPSET, op_code_t endchar_op=OpCode_Invalid>
@@ -235,7 +236,7 @@ struct subr_flattener_t
   bool flatten (str_buff_vec_t &flat_charstrings)
   {
     unsigned count = plan->num_output_glyphs ();
-    if (!flat_charstrings.resize (count))
+    if (!flat_charstrings.resize_exact (count))
       return false;
     for (unsigned int i = 0; i < count; i++)
     {
@@ -250,11 +251,15 @@ struct subr_flattener_t
       unsigned int fd = acc.fdSelect->get_fd (glyph);
       if (unlikely (fd >= acc.fdCount))
 	return false;
-      ENV env (str, acc, fd);
+
+
+      ENV env (str, acc, fd,
+	       plan->normalized_coords.arrayZ, plan->normalized_coords.length);
       cs_interpreter_t<ENV, OPSET, flatten_param_t> interp (env);
       flatten_param_t  param = {
         flat_charstrings.arrayZ[i],
-        (bool) (plan->flags & HB_SUBSET_FLAGS_NO_HINTING)
+        (bool) (plan->flags & HB_SUBSET_FLAGS_NO_HINTING),
+	plan
       };
       if (unlikely (!interp.interpret (param)))
 	return false;
@@ -270,7 +275,7 @@ struct subr_closures_t
 {
   subr_closures_t (unsigned int fd_count) : global_closure (), local_closures ()
   {
-    local_closures.resize (fd_count);
+    local_closures.resize_exact (fd_count);
   }
 
   void reset ()
@@ -360,6 +365,35 @@ struct parsed_cs_str_t : parsed_values_t<parsed_cs_op_t>
   const number_t &prefix_num () const { return prefix_num_; }
 
   bool has_calls () const          { return has_calls_; }
+
+  void compact ()
+  {
+    unsigned count = values.length;
+    if (!count) return;
+    auto &opstr = values.arrayZ;
+    unsigned j = 0;
+    for (unsigned i = 1; i < count; i++)
+    {
+      /* See if we can combine op j and op i. */
+      bool combine =
+        (opstr[j].op != OpCode_callsubr && opstr[j].op != OpCode_callgsubr) &&
+        (opstr[i].op != OpCode_callsubr && opstr[i].op != OpCode_callgsubr) &&
+        (opstr[j].is_hinting () == opstr[i].is_hinting ()) &&
+        (opstr[j].ptr + opstr[j].length == opstr[i].ptr) &&
+        (opstr[j].length + opstr[i].length <= 255);
+
+      if (combine)
+      {
+	opstr[j].length += opstr[i].length;
+	opstr[j].op = OpCode_Invalid;
+      }
+      else
+      {
+	opstr[++j] = opstr[i];
+      }
+    }
+    values.shrink (j + 1);
+  }
 
   protected:
   bool    parsed : 1;
@@ -486,7 +520,7 @@ struct subr_subset_param_t
     else
     {
       if (!parsed_str->is_parsed ())
-        parsed_str->alloc (env.str_ref.total_size () / 2);
+        parsed_str->alloc (env.str_ref.total_size ());
       current_parsed_str = parsed_str;
     }
   }
@@ -589,12 +623,12 @@ struct subr_subsetter_t
     if (cff_accelerator) {
       // If we are not dropping hinting then charstrings are not modified so we can
       // just use a reference to the cached copies.
-      cached_charstrings.resize (plan->num_output_glyphs ());
+      cached_charstrings.resize_exact (plan->num_output_glyphs ());
       parsed_global_subrs = &cff_accelerator->parsed_global_subrs;
       parsed_local_subrs = &cff_accelerator->parsed_local_subrs;
     } else {
-      parsed_charstrings.resize (plan->num_output_glyphs ());
-      parsed_global_subrs_storage.resize (acc.globalSubrs->count);
+      parsed_charstrings.resize_exact (plan->num_output_glyphs ());
+      parsed_global_subrs_storage.resize_exact (acc.globalSubrs->count);
 
       if (unlikely (!parsed_local_subrs_storage.resize (fd_count))) return false;
 
@@ -644,7 +678,7 @@ struct subr_subsetter_t
       ENV env (str, acc, fd);
       cs_interpreter_t<ENV, OPSET, subr_subset_param_t> interp (env);
 
-      parsed_charstrings[i].alloc (str.length / 2);
+      parsed_charstrings[i].alloc (str.length);
       subr_subset_param_t  param (&parsed_charstrings[i],
                                   &parsed_global_subrs_storage,
                                   &parsed_local_subrs_storage[fd],
@@ -657,28 +691,10 @@ struct subr_subsetter_t
 
       /* complete parsed string esp. copy CFF1 width or CFF2 vsindex to the parsed charstring for encoding */
       SUBSETTER::complete_parsed_str (interp.env, param, parsed_charstrings[i]);
-    }
 
-    // Since parsed strings were loaded from accelerator, we still need
-    // to compute the subroutine closures which would have normally happened during
-    // parsing.
-    if (cff_accelerator &&
-        !closure_subroutines(*parsed_global_subrs,
-                             *parsed_local_subrs))
-      return false;
-
-    if ((plan->flags & HB_SUBSET_FLAGS_NO_HINTING && !cff_accelerator) ||
-	plan->inprogress_accelerator)
-    {
       /* mark hint ops and arguments for drop */
-      for (unsigned int i = 0; i < plan->num_output_glyphs (); i++)
+      if ((plan->flags & HB_SUBSET_FLAGS_NO_HINTING) || plan->inprogress_accelerator)
       {
-	hb_codepoint_t  glyph;
-	if (!plan->old_gid_for_new_gid (i, &glyph))
-	  continue;
-	unsigned int fd = acc.fdSelect->get_fd (glyph);
-	if (unlikely (fd >= acc.fdCount))
-	  return false;
 	subr_subset_param_t  param (&parsed_charstrings[i],
 				    &parsed_global_subrs_storage,
 				    &parsed_local_subrs_storage[fd],
@@ -695,11 +711,26 @@ struct subr_subsetter_t
 	}
       }
 
-      /* after dropping hints recreate closures of actually used subrs */
-      if (plan->flags & HB_SUBSET_FLAGS_NO_HINTING &&
-	  !cff_accelerator &&
-	  !closure_subroutines(*parsed_global_subrs, *parsed_local_subrs)) return false;
+      /* Doing this here one by one instead of compacting all at the en
+       * has massive peak-memory saving.
+       *
+       * The compacting both saves memory and makes further operations
+       * faster.
+       */
+      parsed_charstrings[i].compact ();
     }
+
+    /* Since parsed strings were loaded from accelerator, we still need
+     * to compute the subroutine closures which would have normally happened during
+     * parsing.
+     *
+     * Or if we are dropping hinting, redo closure to get actually used subrs.
+     */
+    if ((cff_accelerator ||
+	(!cff_accelerator && plan->flags & HB_SUBSET_FLAGS_NO_HINTING)) &&
+        !closure_subroutines(*parsed_global_subrs,
+                             *parsed_local_subrs))
+      return false;
 
     remaps.create (closures);
 
@@ -709,7 +740,7 @@ struct subr_subsetter_t
 
   bool encode_charstrings (str_buff_vec_t &buffArray) const
   {
-    if (unlikely (!buffArray.resize (plan->num_output_glyphs ())))
+    if (unlikely (!buffArray.resize_exact (plan->num_output_glyphs ())))
       return false;
     for (unsigned int i = 0; i < plan->num_output_glyphs (); i++)
     {
@@ -733,7 +764,7 @@ struct subr_subsetter_t
   {
     unsigned int  count = remap.get_population ();
 
-    if (unlikely (!buffArray.resize (count)))
+    if (unlikely (!buffArray.resize_exact (count)))
       return false;
     for (unsigned int new_num = 0; new_num < count; new_num++)
     {
@@ -974,7 +1005,7 @@ struct subr_subsetter_t
       if (opstr.op == OpCode_callsubr || opstr.op == OpCode_callgsubr)
         size += 3;
     }
-    if (!buff.alloc (buff.length + size))
+    if (!buff.alloc (buff.length + size, true))
       return false;
 
     for (auto &opstr : str.values)
@@ -1002,51 +1033,20 @@ struct subr_subsetter_t
     return !encoder.in_error ();
   }
 
-  void compact_parsed_strings () const
+  void compact_parsed_subrs () const
   {
-    for (auto &cs : parsed_charstrings)
-      compact_string (cs);
     for (auto &cs : parsed_global_subrs_storage)
-      compact_string (cs);
+      cs.compact ();
     for (auto &vec : parsed_local_subrs_storage)
       for (auto &cs : vec)
-	compact_string (cs);
-  }
-
-  static void compact_string (parsed_cs_str_t &str)
-  {
-    unsigned count = str.values.length;
-    if (unlikely (!count)) return;
-    auto &opstr = str.values.arrayZ;
-    unsigned j = 0;
-    for (unsigned i = 1; i < count; i++)
-    {
-      /* See if we can combine op j and op i. */
-      bool combine =
-        (opstr[j].op != OpCode_callsubr && opstr[j].op != OpCode_callgsubr) &&
-        (opstr[i].op != OpCode_callsubr && opstr[i].op != OpCode_callgsubr) &&
-        (opstr[j].is_hinting () == opstr[i].is_hinting ()) &&
-        (opstr[j].ptr + opstr[j].length == opstr[i].ptr) &&
-        (opstr[j].length + opstr[i].length <= 255);
-
-      if (combine)
-      {
-	opstr[j].length += opstr[i].length;
-	opstr[j].op = OpCode_Invalid;
-      }
-      else
-      {
-	opstr[++j] = opstr[i];
-      }
-    }
-    str.values.shrink (j + 1);
+	cs.compact ();
   }
 
   void populate_subset_accelerator () const
   {
     if (!plan->inprogress_accelerator) return;
 
-    compact_parsed_strings ();
+    compact_parsed_subrs ();
 
     plan->inprogress_accelerator->cff_accelerator =
         cff_subset_accelerator_t::create(acc.blob,
