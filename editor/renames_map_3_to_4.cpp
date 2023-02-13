@@ -595,6 +595,7 @@ const char *RenamesMap3To4::gdscript_function_renames[][2] = {
 	{ "find_last", "rfind" }, // Array, String
 	{ "to_ascii", "to_ascii_buffer" }, // String
 	{ "to_utf8", "to_utf8_buffer" }, // String
+	{ "to_wchar", "to_wchar_buffer" }, // String
 
 	// @GlobalScope
 	// Remember to add them to the builtin_types_excluded_functions variable, because for now these functions cannot be listed.

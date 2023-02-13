@@ -1123,7 +1123,7 @@ bool ProjectConverter3To4::test_array_names() {
 
 		// List of excluded functions from builtin types and global namespace, because currently it is not possible to get list of functions from them.
 		// This will be available when https://github.com/godotengine/godot/pull/49053 or similar will be included into Godot.
-		static const char *builtin_types_excluded_functions[] = { "dict_to_inst", "inst_to_dict", "bytes_to_var", "bytes_to_var_with_objects", "db_to_linear", "deg_to_rad", "linear_to_db", "rad_to_deg", "randf_range", "snapped", "str_to_var", "var_to_str", "var_to_bytes", "var_to_bytes_with_objects", "move_toward", "uri_encode", "uri_decode", "remove_at", "get_rotation_quaternion", "limit_length", "grow_side", "is_absolute_path", "is_valid_int", "lerp", "to_ascii_buffer", "to_utf8_buffer", "to_utf32_buffer", "snapped", "remap", "rfind", nullptr };
+		static const char *builtin_types_excluded_functions[] = { "dict_to_inst", "inst_to_dict", "bytes_to_var", "bytes_to_var_with_objects", "db_to_linear", "deg_to_rad", "linear_to_db", "rad_to_deg", "randf_range", "snapped", "str_to_var", "var_to_str", "var_to_bytes", "var_to_bytes_with_objects", "move_toward", "uri_encode", "uri_decode", "remove_at", "get_rotation_quaternion", "limit_length", "grow_side", "is_absolute_path", "is_valid_int", "lerp", "to_ascii_buffer", "to_utf8_buffer", "to_utf32_buffer", "to_wchar_buffer", "snapped", "remap", "rfind", nullptr };
 		for (int current_index = 0; builtin_types_excluded_functions[current_index]; current_index++) {
 			all_functions.insert(builtin_types_excluded_functions[current_index]);
 		}
