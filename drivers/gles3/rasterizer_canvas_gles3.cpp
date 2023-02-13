@@ -566,6 +566,7 @@ void RasterizerCanvasGLES3::_render_items(RID p_to_render_target, int p_item_cou
 
 	uint32_t index = 0;
 	Item *current_clip = nullptr;
+	GLES3::CanvasShaderData *shader_data_cache = nullptr;
 
 	// Record Batches.
 	// First item always forms its own batch.
@@ -602,7 +603,6 @@ void RasterizerCanvasGLES3::_render_items(RID p_to_render_target, int p_item_cou
 			}
 		}
 
-		GLES3::CanvasShaderData *shader_data_cache = nullptr;
 		if (material != state.canvas_instance_batches[state.current_batch_index].material) {
 			_new_batch(batch_broken);
 
