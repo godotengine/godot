@@ -558,7 +558,7 @@
 			<return type="void" />
 			<description>
 				Steal the focus from another control and become the focused control (see [member focus_mode]).
-				[b]Note[/b]: Using this method together with [method Callable.call_deferred] makes it more reliable, especially when called inside [method Node._ready].
+				[b]Note:[/b] Using this method together with [method Callable.call_deferred] makes it more reliable, especially when called inside [method Node._ready].
 			</description>
 		</method>
 		<method name="has_focus" qualifiers="const">
