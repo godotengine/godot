@@ -1742,6 +1742,7 @@ void GDScriptAnalyzer::resolve_assignable(GDScriptParser::AssignableNode *p_assi
 	}
 
 	type.is_constant = is_constant;
+	type.is_read_only = false;
 	p_assignable->set_datatype(type);
 }
 
