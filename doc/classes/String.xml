@@ -193,8 +193,8 @@
 				GD.Print("Team".Find("I")); // Prints -1
 
 				GD.Print("Potato".Find("t"));    // Prints 2
-				GD.print("Potato".Find("t", 3)); // Prints 4
-				GD.print("Potato".Find("t", 5)); // Prints -1
+				GD.Print("Potato".Find("t", 3)); // Prints 4
+				GD.Print("Potato".Find("t", 5)); // Prints -1
 				[/csharp]
 				[/codeblocks]
 				[b]Note:[/b] If you just want to know whether the string contains [param what], use [method contains]. In GDScript, you may also use the [code]in[/code] operator.
@@ -230,6 +230,7 @@
 				print("User {id} is {name}.".format([["id", 42], ["name", "Godot"]]))
 				[/codeblock]
 				See also the [url=$DOCS_URL/tutorials/scripting/gdscript/gdscript_format_string.html]GDScript format string[/url] tutorial.
+				[b]Note:[/b] In C#, it's recommended to [url=https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/tokens/interpolated]interpolate strings with "$"[/url], instead.
 			</description>
 		</method>
 		<method name="get_base_dir" qualifiers="const">
@@ -480,7 +481,7 @@
 				var fruits = new string[] {"Apple", "Orange", "Pear", "Kiwi"};
 
 				// In C#, this method is static.
-				GD.Print(string.Join(", ", fruits);   // Prints "Apple, Orange, Pear, Kiwi"
+				GD.Print(string.Join(", ", fruits));  // Prints "Apple, Orange, Pear, Kiwi"
 				GD.Print(string.Join("---", fruits)); // Prints "Apple---Orange---Pear---Kiwi"
 				[/csharp]
 				[/codeblocks]
@@ -1047,8 +1048,7 @@
 			<return type="String" />
 			<param index="0" name="right" type="Variant" />
 			<description>
-				Formats the [String], replacing the placeholders with one or more parameters.
-				To pass multiple parameters, [param right] needs to be an [Array].
+				Formats the [String], replacing the placeholders with one or more parameters. To pass multiple parameters, [param right] needs to be an [Array].
 				[codeblock]
 				print("I caught %d fishes!" % 2) # Prints "I caught 2 fishes!"
 
@@ -1057,8 +1057,8 @@
 				var speed = 40.3485
 				print(my_message % [location, speed]) # Prints "Travelling to Deep Valley, at 40.35 km/h."
 				[/codeblock]
-				In C#, there is no direct equivalent to this operator. Use the [method format] method, instead.
 				For more information, see the [url=$DOCS_URL/tutorials/scripting/gdscript/gdscript_format_string.html]GDScript format strings[/url] tutorial.
+				[b]Note:[/b] In C#, this operator is not available. Instead, see [url=https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/tokens/interpolated]how to interpolate strings with "$"[/url].
 			</description>
 		</operator>
 		<operator name="operator +">
@@ -1072,6 +1072,7 @@
 			<return type="String" />
 			<param index="0" name="right" type="StringName" />
 			<description>
+				Appends [param right] at the end of this [String], returning a [String]. This is also known as a string concatenation.
 			</description>
 		</operator>
 		<operator name="operator &lt;">
