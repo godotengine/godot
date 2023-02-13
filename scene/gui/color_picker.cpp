@@ -1197,11 +1197,11 @@ void ColorPicker::_uv_input(const Ref<InputEvent> &p_event, Control *c) {
 				}
 
 				if (!spinning) {
-					real_t x = CLAMP(bev->get_position().x, corner_x, c->get_size().x - corner_x);
-					real_t y = CLAMP(bev->get_position().y, corner_x, c->get_size().y - corner_y);
+					real_t x = CLAMP(bev->get_position().x - corner_x, 0, real_size.x);
+					real_t y = CLAMP(bev->get_position().y - corner_y, 0, real_size.y);
 
-					s = (x - c->get_position().x - corner_x) / real_size.x;
-					v = 1.0 - (y - c->get_position().y - corner_y) / real_size.y;
+					s = x / real_size.x;
+					v = 1.0 - y / real_size.y;
 				}
 			}
 
@@ -1250,11 +1250,11 @@ void ColorPicker::_uv_input(const Ref<InputEvent> &p_event, Control *c) {
 				real_t corner_y = (c == wheel_uv) ? center.y - Math_SQRT12 * c->get_size().height * 0.42 : 0;
 				Size2 real_size(c->get_size().x - corner_x * 2, c->get_size().y - corner_y * 2);
 
-				real_t x = CLAMP(mev->get_position().x, corner_x, c->get_size().x - corner_x);
-				real_t y = CLAMP(mev->get_position().y, corner_x, c->get_size().y - corner_y);
+				real_t x = CLAMP(mev->get_position().x - corner_x, 0, real_size.x);
+				real_t y = CLAMP(mev->get_position().y - corner_y, 0, real_size.y);
 
-				s = (x - corner_x) / real_size.x;
-				v = 1.0 - (y - corner_y) / real_size.y;
+				s = x / real_size.x;
+				v = 1.0 - y / real_size.y;
 			}
 		}
 
