@@ -1028,6 +1028,10 @@ int DynamicFont::get_spacing(int p_type) const {
 	return 0;
 }
 
+int DynamicFont::get_spacing_char() const {
+	return spacing_char;
+}
+
 void DynamicFont::set_spacing(int p_type, int p_value) {
 	if (p_type == SPACING_TOP) {
 		spacing_top = p_value;
