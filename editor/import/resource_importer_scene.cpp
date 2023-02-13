@@ -2267,6 +2267,7 @@ Node *ResourceImporterScene::pre_import(const String &p_source_file, const HashM
 	Ref<EditorSceneFormatImporter> importer;
 	String ext = p_source_file.get_extension().to_lower();
 
+	// TRANSLATORS: This is an editor progress label.
 	EditorProgress progress("pre-import", TTR("Pre-Import Scene"), 0);
 	progress.step(TTR("Importing Scene..."), 0);
 

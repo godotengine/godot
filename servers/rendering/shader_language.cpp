@@ -8780,7 +8780,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 									--texture_uniforms;
 									--texture_binding;
 									if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
-										_set_error(RTR("'hint_normal_roughness_texture is not supported in gl_compatibility shaders."));
+										_set_error(RTR("'hint_normal_roughness_texture' is not supported in gl_compatibility shaders."));
 										return ERR_PARSE_ERROR;
 									}
 								} break;
