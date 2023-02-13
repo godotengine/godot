@@ -2664,6 +2664,9 @@ Error CSharpScript::load_source_code(const String &p_path) {
 
 #ifdef TOOLS_ENABLED
 	source_changed_cache = true;
+	if (ResourceLoader::get_timestamp_on_load()) {
+		set_last_modified_time(FileAccess::get_modified_time(p_path));
+	}
 #endif
 
 	return OK;
