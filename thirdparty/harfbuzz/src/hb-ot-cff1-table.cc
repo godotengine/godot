@@ -422,8 +422,8 @@ bool OT::cff1::accelerator_t::get_extents (hb_font_t *font, hb_codepoint_t glyph
   }
   else
   {
-    extents->x_bearing = font->em_scalef_x (bounds.min.x.to_real ());
-    extents->width = font->em_scalef_x (bounds.max.x.to_real ()) - extents->x_bearing;
+    extents->x_bearing = roundf (bounds.min.x.to_real ());
+    extents->width = roundf (bounds.max.x.to_real () - extents->x_bearing);
   }
   if (bounds.min.y >= bounds.max.y)
   {
@@ -432,9 +432,11 @@ bool OT::cff1::accelerator_t::get_extents (hb_font_t *font, hb_codepoint_t glyph
   }
   else
   {
-    extents->y_bearing = font->em_scalef_y (bounds.max.y.to_real ());
-    extents->height = font->em_scalef_y (bounds.min.y.to_real ()) - extents->y_bearing;
+    extents->y_bearing = roundf (bounds.max.y.to_real ());
+    extents->height = roundf (bounds.min.y.to_real () - extents->y_bearing);
   }
+
+  font->scale_glyph_extents (extents);
 
   return true;
 }
@@ -547,6 +549,15 @@ bool _get_path (const OT::cff1::accelerator_t *cff, hb_font_t *font, hb_codepoin
 
   /* Let's end the path specially since it is called inside seac also */
   param.end_path ();
+
+  return true;
+}
+
+bool OT::cff1::accelerator_t::paint_glyph (hb_font_t *font, hb_codepoint_t glyph, hb_paint_funcs_t *funcs, void *data, hb_color_t foreground) const
+{
+  funcs->push_clip_glyph (data, glyph, font);
+  funcs->color (data, true, foreground);
+  funcs->pop_clip (data);
 
   return true;
 }

@@ -59,7 +59,10 @@ struct cff2_top_dict_op_serializer_t : cff_top_dict_op_serializer_t<>
     switch (opstr.op)
     {
       case OpCode_vstore:
-	return_trace (FontDict::serialize_link4_op(c, opstr.op, info.var_store_link));
+        if (info.var_store_link)
+	  return_trace (FontDict::serialize_link4_op(c, opstr.op, info.var_store_link));
+	else
+	  return_trace (true);
 
       default:
 	return_trace (cff_top_dict_op_serializer_t<>::serialize (c, opstr, info));
@@ -115,7 +118,7 @@ struct cff2_cs_opset_flatten_t : cff2_cs_opset_t<cff2_cs_opset_flatten_t, flatte
       else
       {
 	str_encoder_t  encoder (param.flatStr);
-	encoder.encode_num (arg);
+	encoder.encode_num_cs (arg);
 	i++;
       }
     }
@@ -135,14 +138,14 @@ struct cff2_cs_opset_flatten_t : cff2_cs_opset_t<cff2_cs_opset_flatten_t, flatte
 	env.set_error ();
 	return;
       }
-      encoder.encode_num (arg1);
+      encoder.encode_num_cs (arg1);
     }
     /* flatten deltas for each value */
     for (unsigned int j = 0; j < arg.numValues; j++)
     {
       const blend_arg_t &arg1 = env.argStack[i + j];
       for (unsigned int k = 0; k < arg1.deltas.length; k++)
-	encoder.encode_num (arg1.deltas[k]);
+	encoder.encode_num_cs (arg1.deltas[k]);
     }
     /* flatten the number of values followed by blend operator */
     encoder.encode_int (arg.numValues);
@@ -159,6 +162,17 @@ struct cff2_cs_opset_flatten_t : cff2_cs_opset_t<cff2_cs_opset_flatten_t, flatte
       default:
 	str_encoder_t  encoder (param.flatStr);
 	encoder.encode_op (op);
+    }
+  }
+
+  static void flush_hintmask (op_code_t op, cff2_cs_interp_env_t<blend_arg_t> &env, flatten_param_t& param)
+  {
+    SUPER::flush_hintmask (op, env, param);
+    if (!param.drop_hints)
+    {
+      str_encoder_t  encoder (param.flatStr);
+      for (unsigned int i = 0; i < env.hintmask_size; i++)
+	encoder.encode_byte (env.str_ref[i]);
     }
   }
 
@@ -232,15 +246,193 @@ struct cff2_subr_subsetter_t : subr_subsetter_t<cff2_subr_subsetter_t, CFF2Subrs
   }
 };
 
-struct cff2_subset_plan {
+struct cff2_private_blend_encoder_param_t
+{
+  cff2_private_blend_encoder_param_t (hb_serialize_context_t *c,
+				      const CFF2VariationStore *varStore,
+				      hb_array_t<int> normalized_coords) :
+    c (c), varStore (varStore), normalized_coords (normalized_coords) {}
 
+  void init () {}
+
+  void process_blend ()
+  {
+    if (!seen_blend)
+    {
+      region_count = varStore->varStore.get_region_index_count (ivs);
+      scalars.resize_exact (region_count);
+      varStore->varStore.get_region_scalars (ivs, normalized_coords.arrayZ, normalized_coords.length,
+					     &scalars[0], region_count);
+      seen_blend = true;
+    }
+  }
+
+  double blend_deltas (hb_array_t<const number_t> deltas) const
+  {
+    double v = 0;
+    if (likely (scalars.length == deltas.length))
+    {
+      unsigned count = scalars.length;
+      for (unsigned i = 0; i < count; i++)
+	v += (double) scalars.arrayZ[i] * deltas.arrayZ[i].to_real ();
+    }
+    return v;
+  }
+
+
+  hb_serialize_context_t *c = nullptr;
+  bool seen_blend = false;
+  unsigned ivs = 0;
+  unsigned region_count = 0;
+  hb_vector_t<float> scalars;
+  const	 CFF2VariationStore *varStore = nullptr;
+  hb_array_t<int> normalized_coords;
+};
+
+struct cff2_private_dict_blend_opset_t : dict_opset_t
+{
+  static void process_arg_blend (cff2_private_blend_encoder_param_t& param,
+				 number_t &arg,
+				 const hb_array_t<const number_t> blends,
+				 unsigned n, unsigned i)
+  {
+    arg.set_int (round (arg.to_real () + param.blend_deltas (blends)));
+  }
+
+  static void process_blend (cff2_priv_dict_interp_env_t& env, cff2_private_blend_encoder_param_t& param)
+  {
+    unsigned int n, k;
+
+    param.process_blend ();
+    k = param.region_count;
+    n = env.argStack.pop_uint ();
+    /* copy the blend values into blend array of the default values */
+    unsigned int start = env.argStack.get_count () - ((k+1) * n);
+    /* let an obvious error case fail, but note CFF2 spec doesn't forbid n==0 */
+    if (unlikely (start > env.argStack.get_count ()))
+    {
+      env.set_error ();
+      return;
+    }
+    for (unsigned int i = 0; i < n; i++)
+    {
+      const hb_array_t<const number_t> blends = env.argStack.sub_array (start + n + (i * k), k);
+      process_arg_blend (param, env.argStack[start + i], blends, n, i);
+    }
+
+    /* pop off blend values leaving default values now adorned with blend values */
+    env.argStack.pop (k * n);
+  }
+
+  static void process_op (op_code_t op, cff2_priv_dict_interp_env_t& env, cff2_private_blend_encoder_param_t& param)
+  {
+    switch (op) {
+      case OpCode_StdHW:
+      case OpCode_StdVW:
+      case OpCode_BlueScale:
+      case OpCode_BlueShift:
+      case OpCode_BlueFuzz:
+      case OpCode_ExpansionFactor:
+      case OpCode_LanguageGroup:
+      case OpCode_BlueValues:
+      case OpCode_OtherBlues:
+      case OpCode_FamilyBlues:
+      case OpCode_FamilyOtherBlues:
+      case OpCode_StemSnapH:
+      case OpCode_StemSnapV:
+	break;
+      case OpCode_vsindexdict:
+	env.process_vsindex ();
+	param.ivs = env.get_ivs ();
+	env.clear_args ();
+	return;
+      case OpCode_blenddict:
+	process_blend (env, param);
+	return;
+
+      default:
+	dict_opset_t::process_op (op, env);
+	if (!env.argStack.is_empty ()) return;
+	break;
+    }
+
+    if (unlikely (env.in_error ())) return;
+
+    // Write args then op
+
+    str_buff_t str;
+    str_encoder_t encoder (str);
+
+    unsigned count = env.argStack.get_count ();
+    for (unsigned i = 0; i < count; i++)
+      encoder.encode_num_tp (env.argStack[i]);
+
+    encoder.encode_op (op);
+
+    auto bytes = str.as_bytes ();
+    param.c->embed (&bytes, bytes.length);
+
+    env.clear_args ();
+  }
+};
+
+struct cff2_private_dict_op_serializer_t : op_serializer_t
+{
+  cff2_private_dict_op_serializer_t (bool desubroutinize_, bool drop_hints_, bool pinned_,
+				     const CFF::CFF2VariationStore* varStore_,
+				     hb_array_t<int> normalized_coords_)
+    : desubroutinize (desubroutinize_), drop_hints (drop_hints_), pinned (pinned_),
+      varStore (varStore_), normalized_coords (normalized_coords_) {}
+
+  bool serialize (hb_serialize_context_t *c,
+		  const op_str_t &opstr,
+		  objidx_t subrs_link) const
+  {
+    TRACE_SERIALIZE (this);
+
+    if (drop_hints && dict_opset_t::is_hint_op (opstr.op))
+      return_trace (true);
+
+    if (opstr.op == OpCode_Subrs)
+    {
+      if (desubroutinize || !subrs_link)
+	return_trace (true);
+      else
+	return_trace (FontDict::serialize_link2_op (c, opstr.op, subrs_link));
+    }
+
+    if (pinned)
+    {
+      // Reinterpret opstr and process blends.
+      cff2_priv_dict_interp_env_t env {hb_ubytes_t (opstr.ptr, opstr.length)};
+      cff2_private_blend_encoder_param_t param (c, varStore, normalized_coords);
+      dict_interpreter_t<cff2_private_dict_blend_opset_t, cff2_private_blend_encoder_param_t, cff2_priv_dict_interp_env_t> interp (env);
+      return_trace (interp.interpret (param));
+    }
+
+    return_trace (copy_opstr (c, opstr));
+  }
+
+  protected:
+  const bool desubroutinize;
+  const bool drop_hints;
+  const bool pinned;
+  const CFF::CFF2VariationStore* varStore;
+  hb_array_t<int> normalized_coords;
+};
+
+
+struct cff2_subset_plan
+{
   bool create (const OT::cff2::accelerator_subset_t &acc,
 	      hb_subset_plan_t *plan)
   {
     orig_fdcount = acc.fdArray->count;
 
     drop_hints = plan->flags & HB_SUBSET_FLAGS_NO_HINTING;
-    desubroutinize = plan->flags & HB_SUBSET_FLAGS_DESUBROUTINIZE;
+    pinned = (bool) plan->normalized_coords;
+    desubroutinize = plan->flags & HB_SUBSET_FLAGS_DESUBROUTINIZE ||
+		     pinned; // For instancing we need this path
 
     if (desubroutinize)
     {
@@ -259,7 +451,7 @@ struct cff2_subset_plan {
 	return false;
 
       /* encode charstrings, global subrs, local subrs with new subroutine numbers */
-      if (!subr_subsetter.encode_charstrings (subset_charstrings))
+      if (!subr_subsetter.encode_charstrings (subset_charstrings, !pinned))
 	return false;
 
       if (!subr_subsetter.encode_globalsubrs (subset_globalsubrs))
@@ -299,8 +491,9 @@ struct cff2_subset_plan {
 
   unsigned int    orig_fdcount = 0;
   unsigned int    subset_fdcount = 1;
-  unsigned int	  subset_fdselect_size = 0;
+  unsigned int    subset_fdselect_size = 0;
   unsigned int    subset_fdselect_format = 0;
+  bool            pinned = false;
   hb_vector_t<code_pair_t>   subset_fdselect_ranges;
 
   hb_inc_bimap_t   fdmap;
@@ -316,7 +509,8 @@ struct cff2_subset_plan {
 static bool _serialize_cff2 (hb_serialize_context_t *c,
 			     cff2_subset_plan &plan,
 			     const OT::cff2::accelerator_subset_t  &acc,
-			     unsigned int num_glyphs)
+			     unsigned int num_glyphs,
+			     hb_array_t<int> normalized_coords)
 {
   /* private dicts & local subrs */
   hb_vector_t<table_info_t>  private_dict_infos;
@@ -344,7 +538,8 @@ static bool _serialize_cff2 (hb_serialize_context_t *c,
       PrivateDict *pd = c->start_embed<PrivateDict> ();
       if (unlikely (!pd)) return false;
       c->push ();
-      cff_private_dict_op_serializer_t privSzr (plan.desubroutinize, plan.drop_hints);
+      cff2_private_dict_op_serializer_t privSzr (plan.desubroutinize, plan.drop_hints, plan.pinned,
+						 acc.varStore, normalized_coords);
       if (likely (pd->serialize (c, acc.privateDicts[i], privSzr, subrs_link)))
       {
 	unsigned fd = plan.fdmap[i];
@@ -412,7 +607,8 @@ static bool _serialize_cff2 (hb_serialize_context_t *c,
   }
 
   /* variation store */
-  if (acc.varStore != &Null (CFF2VariationStore))
+  if (acc.varStore != &Null (CFF2VariationStore) &&
+      !plan.pinned)
   {
     c->push ();
     CFF2VariationStore *dest = c->start_embed<CFF2VariationStore> ();
@@ -451,7 +647,8 @@ _hb_subset_cff2 (const OT::cff2::accelerator_subset_t  &acc,
   cff2_subset_plan cff2_plan;
 
   if (unlikely (!cff2_plan.create (acc, c->plan))) return false;
-  return _serialize_cff2 (c->serializer, cff2_plan, acc, c->plan->num_output_glyphs ());
+  return _serialize_cff2 (c->serializer, cff2_plan, acc, c->plan->num_output_glyphs (),
+			  c->plan->normalized_coords.as_array ());
 }
 
 bool

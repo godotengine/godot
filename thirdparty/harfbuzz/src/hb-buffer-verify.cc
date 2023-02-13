@@ -150,7 +150,7 @@ buffer_verify_unsafe_to_break (hb_buffer_t  *buffer,
     assert (text_start < text_end);
 
     if (0)
-      printf("start %d end %d text start %d end %d\n", start, end, text_start, text_end);
+      printf("start %u end %u text start %u end %u\n", start, end, text_start, text_end);
 
     hb_buffer_clear_contents (fragment);
 
@@ -292,7 +292,7 @@ buffer_verify_unsafe_to_concat (hb_buffer_t        *buffer,
       assert (text_start < text_end);
 
       if (0)
-	printf("start %d end %d text start %d end %d\n", start, end, text_start, text_end);
+	printf("start %u end %u text start %u end %u\n", start, end, text_start, text_end);
 
 #if 0
       hb_buffer_flags_t flags = hb_buffer_get_flags (fragment);

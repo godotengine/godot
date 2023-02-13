@@ -109,9 +109,22 @@ struct maxp
 
       if (c->plan->flags & HB_SUBSET_FLAGS_NO_HINTING)
 	drop_hint_fields (dest_v1);
+
+      if (c->plan->normalized_coords)
+        instancing_update_fields (c->plan->head_maxp_info, dest_v1);
     }
 
     return_trace (true);
+  }
+
+  void instancing_update_fields (head_maxp_info_t& maxp_info, maxpV1Tail* dest_v1) const
+  {
+    dest_v1->maxPoints = maxp_info.maxPoints;
+    dest_v1->maxContours = maxp_info.maxContours;
+    dest_v1->maxCompositePoints = maxp_info.maxCompositePoints;
+    dest_v1->maxCompositeContours = maxp_info.maxCompositeContours;
+    dest_v1->maxComponentElements = maxp_info.maxComponentElements;
+    dest_v1->maxComponentDepth = maxp_info.maxComponentDepth;
   }
 
   static void drop_hint_fields (maxpV1Tail* dest_v1)

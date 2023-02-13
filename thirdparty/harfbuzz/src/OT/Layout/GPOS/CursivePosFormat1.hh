@@ -143,7 +143,7 @@ struct CursivePosFormat1
     if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())
     {
       c->buffer->message (c->font,
-			  "cursive attaching glyph at %d to glyph at %d",
+			  "cursive attaching glyph at %u to glyph at %u",
 			  i, j);
     }
 
@@ -241,7 +241,7 @@ struct CursivePosFormat1
     if (HB_BUFFER_MESSAGE_MORE && c->buffer->messaging ())
     {
       c->buffer->message (c->font,
-			  "cursive attached glyph at %d to glyph at %d",
+			  "cursive attached glyph at %u to glyph at %u",
 			  i, j);
     }
 

@@ -25,12 +25,12 @@
  * Google Author(s): Sascha Brawer
  */
 
-#ifndef HB_OT_COLOR_CPAL_TABLE_HH
-#define HB_OT_COLOR_CPAL_TABLE_HH
+#ifndef OT_COLOR_CPAL_CPAL_HH
+#define OT_COLOR_CPAL_CPAL_HH
 
-#include "hb-open-type.hh"
-#include "hb-ot-color.h"
-#include "hb-ot-name.h"
+#include "../../../hb-open-type.hh"
+#include "../../../hb-ot-color.h"
+#include "../../../hb-ot-name.h"
 
 
 /*
@@ -239,7 +239,7 @@ struct CPAL
     TRACE_SUBSET (this);
     if (!numPalettes) return_trace (false);
 
-    const hb_map_t *color_index_map = c->plan->colr_palettes;
+    const hb_map_t *color_index_map = &c->plan->colr_palettes;
     if (color_index_map->is_empty ()) return_trace (false);
 
     hb_set_t retained_color_indices;
@@ -319,4 +319,4 @@ struct CPAL
 } /* namespace OT */
 
 
-#endif /* HB_OT_COLOR_CPAL_TABLE_HH */
+#endif /* OT_COLOR_CPAL_CPAL_HH */

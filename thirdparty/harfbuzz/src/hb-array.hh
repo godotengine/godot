@@ -304,6 +304,9 @@ struct hb_array_t : hb_iter_with_fallback_t<hb_array_t<Type>, Type&>
   unsigned int backwards_length = 0;
 };
 template <typename T> inline hb_array_t<T>
+hb_array ()
+{ return hb_array_t<T> (); }
+template <typename T> inline hb_array_t<T>
 hb_array (T *array, unsigned int length)
 { return hb_array_t<T> (array, length); }
 template <typename T, unsigned int length_> inline hb_array_t<T>

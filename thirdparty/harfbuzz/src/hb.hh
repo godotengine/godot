@@ -103,20 +103,20 @@
 #pragma GCC diagnostic warning "-Wdisabled-optimization"
 #pragma GCC diagnostic warning "-Wdouble-promotion"
 #pragma GCC diagnostic warning "-Wformat=2"
+#pragma GCC diagnostic warning "-Wformat-signedness"
 #pragma GCC diagnostic warning "-Wignored-pragma-optimize"
 #pragma GCC diagnostic warning "-Wlogical-op"
 #pragma GCC diagnostic warning "-Wmaybe-uninitialized"
 #pragma GCC diagnostic warning "-Wmissing-format-attribute"
 #pragma GCC diagnostic warning "-Wundef"
+#pragma GCC diagnostic warning "-Wunsafe-loop-optimizations"
 #pragma GCC diagnostic warning "-Wunused-but-set-variable"
 #endif
 
 /* Ignored currently, but should be fixed at some point. */
 #ifndef HB_NO_PRAGMA_GCC_DIAGNOSTIC_IGNORED
 #pragma GCC diagnostic ignored "-Wconversion"			// TODO fix
-#pragma GCC diagnostic ignored "-Wformat-signedness"		// TODO fix
 #pragma GCC diagnostic ignored "-Wshadow"			// TODO fix
-#pragma GCC diagnostic ignored "-Wunsafe-loop-optimizations"	// TODO fix
 #pragma GCC diagnostic ignored "-Wunused-parameter"		// TODO fix
 #if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic ignored "-Wunused-result"		// TODO fix
@@ -127,6 +127,7 @@
 #ifndef HB_NO_PRAGMA_GCC_DIAGNOSTIC_IGNORED
 #pragma GCC diagnostic ignored "-Wclass-memaccess"
 #pragma GCC diagnostic ignored "-Wcast-function-type-strict" // https://github.com/harfbuzz/harfbuzz/pull/3859#issuecomment-1295409126
+#pragma GCC diagnostic ignored "-Wdangling-reference" // https://github.com/harfbuzz/harfbuzz/issues/4043
 #pragma GCC diagnostic ignored "-Wformat-nonliteral"
 #pragma GCC diagnostic ignored "-Wformat-zero-length"
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
@@ -142,6 +143,7 @@
 
 
 #include "hb-config.hh"
+#include "hb-limits.hh"
 
 
 /*
@@ -244,7 +246,15 @@ extern "C" void  hb_free_impl(void *ptr);
  * Compiler attributes
  */
 
-#if (defined(__GNUC__) || defined(__clang__)) && defined(__OPTIMIZE__)
+// gcc 10 has __has_builtin but not earlier versions. Sanction any gcc >= 5
+// clang defines it so no need.
+#ifdef __has_builtin
+#define hb_has_builtin __has_builtin
+#else
+#define hb_has_builtin(x) ((defined(__GNUC__) && __GNUC__ >= 5))
+#endif
+
+#if defined(__OPTIMIZE__) && hb_has_builtin(__builtin_expect)
 #define likely(expr) (__builtin_expect (!!(expr), 1))
 #define unlikely(expr) (__builtin_expect (!!(expr), 0))
 #else
@@ -460,6 +470,37 @@ static int HB_UNUSED _hb_errno = 0;
 #  endif
 #endif
 #endif
+
+
+// Locale business
+
+#if !defined(HB_NO_SETLOCALE) && (!defined(HAVE_NEWLOCALE) || !defined(HAVE_USELOCALE))
+#define HB_NO_SETLOCALE 1
+#endif
+
+#ifndef HB_NO_SETLOCALE
+
+#include <locale.h>
+#ifdef HAVE_XLOCALE_H
+#include <xlocale.h> // Needed on BSD/OS X for uselocale
+#endif
+
+#ifdef WIN32
+#define hb_locale_t _locale_t
+#else
+#define hb_locale_t locale_t
+#endif
+#define hb_setlocale setlocale
+#define hb_uselocale uselocale
+
+#else
+
+#define hb_locale_t void *
+#define hb_setlocale(Category, Locale) "C"
+#define hb_uselocale(Locale) ((hb_locale_t) 0)
+
+#endif
+
 
 /* Lets assert int types.  Saves trouble down the road. */
 static_assert ((sizeof (hb_codepoint_t) == 4), "");
