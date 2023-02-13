@@ -3993,55 +3993,44 @@ void CanvasItemEditor::_update_scrollbars() {
 		canvas_item_rect.expand_to(content_rect.position);
 		canvas_item_rect.expand_to(content_rect.position + content_rect.size);
 	}
-	canvas_item_rect.size += screen_rect * 2;
-	canvas_item_rect.position -= screen_rect;
+
+	// Add a dynamically adjusted border around the scrollable area
+	// The border is the larger of 1) the project's window size or 2) half of the editor's visible area
+	Point2 zoom_adjusted_border = local_rect.size / 2 / zoom;
+	zoom_adjusted_border.x = MAX(zoom_adjusted_border.x, screen_rect.x);
+	zoom_adjusted_border.y = MAX(zoom_adjusted_border.y, screen_rect.y);
+	canvas_item_rect.size += zoom_adjusted_border * 2;
+	canvas_item_rect.position -= zoom_adjusted_border;
 
 	// Constraints the view offset and updates the scrollbars.
 	Size2 size = viewport->get_size();
 	Point2 begin = canvas_item_rect.position;
 	Point2 end = canvas_item_rect.position + canvas_item_rect.size - local_rect.size / zoom;
+	end.x = MAX(begin.x, end.x);
+	end.y = MAX(begin.y, end.y);
+
 	bool constrain_editor_view = bool(EDITOR_GET("editors/2d/constrain_editor_view"));
+	if (constrain_editor_view) {
+		view_offset.x = CLAMP(view_offset.x, begin.x, end.x);
+		view_offset.y = CLAMP(view_offset.y, begin.y, end.y);
+	}
 
 	if (canvas_item_rect.size.height <= (local_rect.size.y / zoom)) {
-		real_t centered = -(size.y / 2) / zoom + screen_rect.y / 2;
-		if (constrain_editor_view && ABS(centered - previous_update_view_offset.y) < ABS(centered - view_offset.y)) {
-			view_offset.y = previous_update_view_offset.y;
-		}
-
 		v_scroll->hide();
 	} else {
-		if (constrain_editor_view && view_offset.y > end.y && view_offset.y > previous_update_view_offset.y) {
-			view_offset.y = MAX(end.y, previous_update_view_offset.y);
-		}
-		if (constrain_editor_view && view_offset.y < begin.y && view_offset.y < previous_update_view_offset.y) {
-			view_offset.y = MIN(begin.y, previous_update_view_offset.y);
-		}
-
 		v_scroll->show();
 		v_scroll->set_min(MIN(view_offset.y, begin.y));
-		v_scroll->set_max(MAX(view_offset.y, end.y) + screen_rect.y);
-		v_scroll->set_page(screen_rect.y);
+		v_scroll->set_max(MAX(view_offset.y, end.y) + zoom_adjusted_border.y);
+		v_scroll->set_page(zoom_adjusted_border.y);
 	}
 
 	if (canvas_item_rect.size.width <= (local_rect.size.x / zoom)) {
-		real_t centered = -(size.x / 2) / zoom + screen_rect.x / 2;
-		if (constrain_editor_view && ABS(centered - previous_update_view_offset.x) < ABS(centered - view_offset.x)) {
-			view_offset.x = previous_update_view_offset.x;
-		}
-
 		h_scroll->hide();
 	} else {
-		if (constrain_editor_view && view_offset.x > end.x && view_offset.x > previous_update_view_offset.x) {
-			view_offset.x = MAX(end.x, previous_update_view_offset.x);
-		}
-		if (constrain_editor_view && view_offset.x < begin.x && view_offset.x < previous_update_view_offset.x) {
-			view_offset.x = MIN(begin.x, previous_update_view_offset.x);
-		}
-
 		h_scroll->show();
 		h_scroll->set_min(MIN(view_offset.x, begin.x));
-		h_scroll->set_max(MAX(view_offset.x, end.x) + screen_rect.x);
-		h_scroll->set_page(screen_rect.x);
+		h_scroll->set_max(MAX(view_offset.x, end.x) + zoom_adjusted_border.x);
+		h_scroll->set_page(zoom_adjusted_border.x);
 	}
 
 	// Move and resize the scrollbars, avoiding overlap.
