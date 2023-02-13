@@ -87,9 +87,13 @@ private:
 
 	void _release_mouse_event_info(bool p_source_mouse_relative = false);
 
-	void _parse_all_touch(bool p_pressed, bool p_double_tap);
+	void _cancel_mouse_event_info(bool p_source_mouse_relative = false);
+
+	void _parse_all_touch(bool p_pressed, bool p_double_tap, bool reset_index = false);
 
 	void _release_all_touch();
+
+	void _cancel_all_touch();
 
 public:
 	void process_mouse_event(int p_event_action, int p_event_android_buttons_mask, Point2 p_event_pos, Vector2 p_delta, bool p_double_click, bool p_source_mouse_relative);
