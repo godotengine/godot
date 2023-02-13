@@ -87,6 +87,8 @@ int Label::get_line_height(int p_line) const {
 }
 
 void Label::_shape() {
+	bool font_was_dirty = font_dirty;
+
 	Ref<StyleBox> style = theme_cache.normal_style;
 	int width = (get_size().width - style->get_minimum_size().width);
 
@@ -128,7 +130,24 @@ void Label::_shape() {
 			TS->free_rid(lines_rid[i]);
 		}
 		lines_rid.clear();
+	}
 
+	Size2i prev_minsize = minsize;
+	minsize = Size2();
+
+	if (xl_text.length() == 0) {
+		lines_dirty = false;
+		return;
+	}
+
+	// Don't compute minimum size until width is stable (two shape requests in a row with the same width.)
+	// This avoids situations in which the initial width is very narrow and the label would break text
+	// into many very short lines, causing a very tall label that can leave a deformed container.
+	bool width_stabilized = get_size().width == stable_width;
+	stable_width = get_size().width;
+
+	// With autowrap off, there's still a point in shaping before width is stable: to contribute a min width.
+	if (lines_dirty && (width_stabilized || autowrap_mode == TextServer::AUTOWRAP_OFF)) {
 		BitField<TextServer::LineBreakFlag> autowrap_flags = TextServer::BREAK_MANDATORY;
 		switch (autowrap_mode) {
 			case TextServer::AUTOWRAP_WORD_SMART:
@@ -152,13 +171,7 @@ void Label::_shape() {
 		}
 	}
 
-	if (xl_text.length() == 0) {
-		minsize = Size2(1, get_line_height());
-		return;
-	}
-
 	if (autowrap_mode == TextServer::AUTOWRAP_OFF) {
-		minsize.width = 0.0f;
 		for (int i = 0; i < lines_rid.size(); i++) {
 			if (minsize.width < TS->shaped_text_get_size(lines_rid[i]).x) {
 				minsize.width = TS->shaped_text_get_size(lines_rid[i]).x;
@@ -166,7 +179,7 @@ void Label::_shape() {
 		}
 	}
 
-	if (lines_dirty) {
+	if (lines_dirty && width_stabilized) {
 		BitField<TextServer::TextOverrunFlag> overrun_flags = TextServer::OVERRUN_NO_TRIM;
 		switch (overrun_behavior) {
 			case TextServer::OVERRUN_TRIM_WORD_ELLIPSIS:
@@ -191,8 +204,11 @@ void Label::_shape() {
 
 		// Fill after min_size calculation.
 
+		int visible_lines = lines_rid.size();
+		if (max_lines_visible >= 0 && visible_lines > max_lines_visible) {
+			visible_lines = max_lines_visible;
+		}
 		if (autowrap_mode != TextServer::AUTOWRAP_OFF) {
-			int visible_lines = get_visible_line_count();
 			bool lines_hidden = visible_lines > 0 && visible_lines < lines_rid.size();
 			if (lines_hidden) {
 				overrun_flags.set_flag(TextServer::OVERRUN_ENFORCE_ELLIPSIS);
@@ -221,33 +237,22 @@ void Label::_shape() {
 				}
 			}
 		}
+
+		int last_line = MIN(lines_rid.size(), visible_lines + lines_skipped);
+		int line_spacing = settings.is_valid() ? settings->get_line_spacing() : theme_cache.line_spacing;
+		for (int64_t i = lines_skipped; i < last_line; i++) {
+			minsize.height += TS->shaped_text_get_size(lines_rid[i]).y + line_spacing;
+		}
+
 		lines_dirty = false;
-		lines_shaped_last_width = get_size().width;
 	}
 
-	_update_visible();
-
-	if (autowrap_mode == TextServer::AUTOWRAP_OFF || !clip || overrun_behavior == TextServer::OVERRUN_NO_TRIMMING) {
+	if (minsize != prev_minsize || font_was_dirty) {
 		update_minimum_size();
 	}
-}
 
-void Label::_update_visible() {
-	int line_spacing = settings.is_valid() ? settings->get_line_spacing() : theme_cache.line_spacing;
-	Ref<StyleBox> style = theme_cache.normal_style;
-	int lines_visible = lines_rid.size();
-
-	if (max_lines_visible >= 0 && lines_visible > max_lines_visible) {
-		lines_visible = max_lines_visible;
-	}
-
-	minsize.height = 0;
-	int last_line = MIN(lines_rid.size(), lines_visible + lines_skipped);
-	for (int64_t i = lines_skipped; i < last_line; i++) {
-		minsize.height += TS->shaped_text_get_size(lines_rid[i]).y + line_spacing;
-		if (minsize.height > (get_size().height - style->get_minimum_size().height + line_spacing)) {
-			break;
-		}
+	if (!width_stabilized) {
+		callable_mp(this, &Label::_shape).call_deferred();
 	}
 }
 
@@ -347,6 +352,11 @@ void Label::_notification(int p_what) {
 
 			if (dirty || font_dirty || lines_dirty) {
 				_shape();
+				if (lines_dirty) {
+					// There will be another pass.
+					queue_redraw();
+					break;
+				}
 			}
 
 			RID ci = get_canvas_item();
@@ -370,7 +380,7 @@ void Label::_notification(int p_what) {
 			style->draw(ci, Rect2(Point2(0, 0), get_size()));
 
 			float total_h = 0.0;
-			int lines_visible = 0;
+			int visible_lines = 0;
 
 			// Get number of lines to fit to the height.
 			for (int64_t i = lines_skipped; i < lines_rid.size(); i++) {
@@ -378,14 +388,14 @@ void Label::_notification(int p_what) {
 				if (total_h > (get_size().height - style->get_minimum_size().height + line_spacing)) {
 					break;
 				}
-				lines_visible++;
+				visible_lines++;
 			}
 
-			if (max_lines_visible >= 0 && lines_visible > max_lines_visible) {
-				lines_visible = max_lines_visible;
+			if (max_lines_visible >= 0 && visible_lines > max_lines_visible) {
+				visible_lines = max_lines_visible;
 			}
 
-			int last_line = MIN(lines_rid.size(), lines_visible + lines_skipped);
+			int last_line = MIN(lines_rid.size(), visible_lines + lines_skipped);
 			bool trim_chars = (visible_chars >= 0) && (visible_chars_behavior == TextServer::VC_CHARS_AFTER_SHAPING);
 			bool trim_glyphs_ltr = (visible_chars >= 0) && ((visible_chars_behavior == TextServer::VC_GLYPHS_LTR) || ((visible_chars_behavior == TextServer::VC_GLYPHS_AUTO) && !rtl_layout));
 			bool trim_glyphs_rtl = (visible_chars >= 0) && ((visible_chars_behavior == TextServer::VC_GLYPHS_RTL) || ((visible_chars_behavior == TextServer::VC_GLYPHS_AUTO) && rtl_layout));
@@ -402,7 +412,7 @@ void Label::_notification(int p_what) {
 			total_h += style->get_margin(SIDE_TOP) + style->get_margin(SIDE_BOTTOM);
 
 			int vbegin = 0, vsep = 0;
-			if (lines_visible > 0) {
+			if (visible_lines > 0) {
 				switch (vertical_alignment) {
 					case VERTICAL_ALIGNMENT_TOP: {
 						// Nothing.
@@ -419,8 +429,8 @@ void Label::_notification(int p_what) {
 					} break;
 					case VERTICAL_ALIGNMENT_FILL: {
 						vbegin = 0;
-						if (lines_visible > 1) {
-							vsep = (size.y - (total_h - line_spacing)) / (lines_visible - 1);
+						if (visible_lines > 1) {
+							vsep = (size.y - (total_h - line_spacing)) / (visible_lines - 1);
 						} else {
 							vsep = 0;
 						}
@@ -597,13 +607,7 @@ void Label::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_RESIZED: {
-			// It may happen that the reshaping due to this size change triggers a cascade of re-layout
-			// across the hierarchy where this label belongs to in a way that its size changes multiple
-			// times, but ending up with the original size it was already shaped for.
-			// This check prevents the catastrophic, freezing infinite cascade of re-layout.
-			if (lines_shaped_last_width != get_size().width) {
-				lines_dirty = true;
-			}
+			lines_dirty = true;
 		} break;
 	}
 }
@@ -646,25 +650,25 @@ int Label::get_line_count() const {
 int Label::get_visible_line_count() const {
 	Ref<StyleBox> style = theme_cache.normal_style;
 	int line_spacing = settings.is_valid() ? settings->get_line_spacing() : theme_cache.line_spacing;
-	int lines_visible = 0;
+	int visible_lines = 0;
 	float total_h = 0.0;
 	for (int64_t i = lines_skipped; i < lines_rid.size(); i++) {
 		total_h += TS->shaped_text_get_size(lines_rid[i]).y + line_spacing;
 		if (total_h > (get_size().height - style->get_minimum_size().height + line_spacing)) {
 			break;
 		}
-		lines_visible++;
+		visible_lines++;
 	}
 
-	if (lines_visible > lines_rid.size()) {
-		lines_visible = lines_rid.size();
+	if (visible_lines > lines_rid.size()) {
+		visible_lines = lines_rid.size();
 	}
 
-	if (max_lines_visible >= 0 && lines_visible > max_lines_visible) {
-		lines_visible = max_lines_visible;
+	if (max_lines_visible >= 0 && visible_lines > max_lines_visible) {
+		visible_lines = max_lines_visible;
 	}
 
-	return lines_visible;
+	return visible_lines;
 }
 
 void Label::set_horizontal_alignment(HorizontalAlignment p_alignment) {
@@ -886,7 +890,7 @@ void Label::set_lines_skipped(int p_lines) {
 	}
 
 	lines_skipped = p_lines;
-	_update_visible();
+	lines_dirty = true;
 	queue_redraw();
 }
 
@@ -900,7 +904,7 @@ void Label::set_max_lines_visible(int p_lines) {
 	}
 
 	max_lines_visible = p_lines;
-	_update_visible();
+	lines_dirty = true;
 	queue_redraw();
 }
 
@@ -949,7 +953,7 @@ void Label::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_visible_ratio"), &Label::get_visible_ratio);
 	ClassDB::bind_method(D_METHOD("set_lines_skipped", "lines_skipped"), &Label::set_lines_skipped);
 	ClassDB::bind_method(D_METHOD("get_lines_skipped"), &Label::get_lines_skipped);
-	ClassDB::bind_method(D_METHOD("set_max_lines_visible", "lines_visible"), &Label::set_max_lines_visible);
+	ClassDB::bind_method(D_METHOD("set_max_lines_visible", "visible_lines"), &Label::set_max_lines_visible);
 	ClassDB::bind_method(D_METHOD("get_max_lines_visible"), &Label::get_max_lines_visible);
 	ClassDB::bind_method(D_METHOD("set_structured_text_bidi_override", "parser"), &Label::set_structured_text_bidi_override);
 	ClassDB::bind_method(D_METHOD("get_structured_text_bidi_override"), &Label::get_structured_text_bidi_override);
