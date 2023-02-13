@@ -670,6 +670,8 @@ public:
 	virtual bool handle_gui_mouse_button(const Ref<InputEventMouseButton> &p_mouse_button);
 	virtual bool handle_gui_pan_gesture(const Ref<InputEventPanGesture> &p_pan_gesture);
 	virtual bool handle_gui_mouse_motion(const Ref<InputEventMouseMotion> &p_mouse_motion);
+	void handle_gui_scroll(const double p_v_scroll, const double p_h_scroll);
+	void handle_gui_minimap_hover();
 	virtual bool handle_gui_key(const Ref<InputEventKey> &p_key);
 
 	bool alt_input(const Ref<InputEvent> &p_gui_input);

@@ -198,6 +198,7 @@ private:
 	/* Code Completion */
 	bool code_completion_enabled = false;
 	bool code_completion_forced = false;
+	bool update_code_completion = false;
 
 	int code_completion_max_width = 0;
 	int code_completion_max_lines = 7;
@@ -275,6 +276,7 @@ public:
 	virtual void gui_input(const Ref<InputEvent> &p_gui_input) override;
 
 	virtual bool handle_gui_mouse_button(const Ref<InputEventMouseButton> &p_mouse_button);
+	/* virtual bool handle_gui_pan_gesture(const Ref<InputEventPanGesture> &p_pan_gesture); */
 	virtual bool handle_gui_mouse_motion(const Ref<InputEventMouseMotion> &p_mouse_motion);
 	virtual bool handle_gui_key(const Ref<InputEventKey> &p_key);
 

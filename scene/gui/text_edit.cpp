@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
+#include <iostream>
 
 #include "text_edit.h"
 
@@ -1656,7 +1657,6 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 	double prev_h_scroll = h_scroll->get_value();
 
 	Ref<InputEventMouseButton> mouse_button = p_gui_input;
-
 	if (mouse_button.is_valid()) {
 		if (handle_gui_mouse_button(mouse_button)) {
 			return;
@@ -1670,22 +1670,16 @@ void TextEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 	}
 
 	Ref<InputEventMouseMotion> mouse_motion = p_gui_input;
-
 	if (mouse_motion.is_valid()) {
 		handle_gui_mouse_motion(mouse_motion);
 	}
-	if (draw_minimap && !dragging_selection) {
-		_update_minimap_hover();
-	}
 
-	if (v_scroll->get_value() != prev_v_scroll || h_scroll->get_value() != prev_h_scroll) {
-		accept_event(); // Accept event if scroll changed.
-	}
+	handle_gui_minimap_hover();
+	handle_gui_scroll(prev_v_scroll, prev_h_scroll);
 
 	Ref<InputEventKey> key = p_gui_input;
-
 	if (key.is_valid()) {
-		handle_gui_key(key); // this one will be discarded bu we'll use the return type in CodeEdit.
+		handle_gui_key(key); // this one will be discarded but we'll use the return type in CodeEdit.
 	}
 }
 
@@ -2012,6 +2006,21 @@ bool TextEdit::handle_gui_mouse_motion(const Ref<InputEventMouseMotion> &p_mouse
 	return false;
 }
 
+void handle_gui_minimap_hover() {
+	if (draw_minimap) {
+		_update_minimap_click();
+		if (dragging_minimap) {
+			return;
+		}
+	}
+}
+
+void handle_gui_scroll(const double p_prev_v_scroll, const double p_prev_h_scroll) {
+	if (v_scroll->get_value() != p_prev_v_scroll || h_scroll->get_value() != p_prev_h_scroll) {
+		accept_event(); // Accept event if scroll changed.
+	}
+}
+
 bool TextEdit::handle_gui_key(const Ref<InputEventKey> &p_key) {
 	if (alt_input(p_key)) {
 		accept_event();
@@ -2033,9 +2042,8 @@ bool TextEdit::handle_gui_key(const Ref<InputEventKey> &p_key) {
 	bool allow_unicode_handling = !(p_key->is_command_or_control_pressed() || p_key->is_ctrl_pressed() || p_key->is_alt_pressed() || p_key->is_meta_pressed());
 
 	// Check and handle all built in shortcuts.
-	
 	bool keep_going = false;
-
+	
 	// NEWLINES.
 	if (p_key->is_action("ui_text_newline_above", true)) {
 		_new_line(false, true);
@@ -6160,6 +6168,7 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_minimap_line_at_pos", "position"), &TextEdit::get_minimap_line_at_pos);
 
 	ClassDB::bind_method(D_METHOD("is_dragging_cursor"), &TextEdit::is_dragging_cursor);
+	ClassDB::bind_method(D_METHOD("is_dragging_selection"), &TextEdit::is_dragging_selection);
 	ClassDB::bind_method(D_METHOD("is_mouse_over_selection", "edges", "caret_index"), &TextEdit::is_mouse_over_selection, DEFVAL(-1));
 
 	/* Caret. */

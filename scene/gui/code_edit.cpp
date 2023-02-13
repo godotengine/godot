@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE      */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
+#include <iostream>
 
 #include "code_edit.h"
 
@@ -260,147 +261,164 @@ void CodeEdit::_notification(int p_what) {
 }
 
 void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
+	ERR_FAIL_COND(p_gui_input.is_null());
+
+	double prev_v_scroll = get_v_scroll_bar()->get_value();
+	double prev_h_scroll = get_h_scroll_bar()->get_value();
+
 	Ref<InputEventMouseButton> mouse_button = p_gui_input;
-
 	if (mouse_button.is_valid()) {
-		if (CodeEdit::handle_gui_mouse_button(mouse_button)) {
+		if (handle_gui_mouse_button(mouse_button)) {
+			TextEdit::handle_gui_mouse_button(mouse_button);
 			return;
 		}
-	}
 
-	Ref<InputEventMouseMotion> mouse_motion = p_gui_input;
-	if (mouse_motion.is_valid()) {
-		if (CodeEdit::handle_gui_mouse_motion(mouse_motion)) {
+		const Ref<InputEventPanGesture> pan_gesture = p_gui_input;
+		if (pan_gesture.is_valid()) {
+			TextEdit::handle_gui_pan_gesture(pan_gesture);
 			return;
 		}
-	}
 
-	Ref<InputEventKey> key = p_gui_input;
-	if (TextEdit::alt_input(p_gui_input)) {
-		accept_event();
-		return;
-	}
+		Ref<InputEventMouseMotion> mouse_motion = p_gui_input;
+		if (mouse_motion.is_valid()) {
+			if (handle_gui_mouse_motion(mouse_motion)) {
+				TextEdit::handle_gui_mouse_motion(mouse_motion);
+				return;
+			}
+		}
 
-	if (!key.is_valid()) {
-		TextEdit::gui_input(p_gui_input);
-		return;
-	}
+		TextEdit::handle_gui_minimap_hover();
+		TextEdit::handle_gui_scroll(prev_v_scroll, prev_h_scroll);
 
-		if (CodeEdit::handle_gui_key(key)) {
+		Ref<InputEventKey> key = p_gui_input;
+		if (TextEdit::alt_input(p_gui_input)) {
+			accept_event();
 			return;
+		}
+
+		if (key.is_valid()) {
+			if (handle_gui_key(key)) {
+				TextEdit::handle_gui_key(key);
+				return;
+			}
+		}
+
+		if (update_code_completion) {
+			_filter_code_completion_candidates_impl();
+		}
 	}
 }
 
 bool CodeEdit::handle_gui_mouse_button(const Ref<InputEventMouseButton> &p_mouse_button) {
-	/* Ignore mouse clicks in IME input mode. */
-	if (has_ime_text()) {
-		return true;
-	}
-
-	if (is_code_completion_scroll_pressed && p_mouse_button->get_button_index() == MouseButton::LEFT) {
-		is_code_completion_scroll_pressed = false;
-		queue_redraw();
-		return true;
-	}
-
-	if (code_completion_active && code_completion_rect.has_point(p_mouse_button->get_position())) {
-		if (!p_mouse_button->is_pressed()) {
+		/* Ignore mouse clicks in IME input mode. */
+		if (has_ime_text()) {
 			return true;
 		}
 
-		switch (p_mouse_button->get_button_index()) {
-			case MouseButton::WHEEL_UP: {
-				if (code_completion_current_selected > 0) {
-					code_completion_current_selected--;
-					code_completion_force_item_center = -1;
-					queue_redraw();
-				}
-			} break;
-			case MouseButton::WHEEL_DOWN: {
-				if (code_completion_current_selected < code_completion_options.size() - 1) {
-					code_completion_current_selected++;
-					code_completion_force_item_center = -1;
-					queue_redraw();
-				}
-			} break;
-			case MouseButton::LEFT: {
-				if (code_completion_force_item_center == -1) {
-					code_completion_force_item_center = code_completion_current_selected;
-				}
+		if (is_code_completion_scroll_pressed && p_mouse_button->get_button_index() == MouseButton::LEFT) {
+			is_code_completion_scroll_pressed = false;
+			queue_redraw();
+			return true;
+		}
 
-				code_completion_current_selected = CLAMP(code_completion_line_ofs + (p_mouse_button->get_position().y - code_completion_rect.position.y) / get_line_height(), 0, code_completion_options.size() - 1);
-				if (p_mouse_button->is_double_click()) {
-					confirm_code_completion();
-				}
+		if (code_completion_active && code_completion_rect.has_point(p_mouse_button->get_position())) {
+			if (!p_mouse_button->is_pressed()) {
+				return true;
+			}
+
+			switch (p_mouse_button->get_button_index()) {
+				case MouseButton::WHEEL_UP: {
+					if (code_completion_current_selected > 0) {
+						code_completion_current_selected--;
+						code_completion_force_item_center = -1;
+						queue_redraw();
+					}
+				} break;
+				case MouseButton::WHEEL_DOWN: {
+					if (code_completion_current_selected < code_completion_options.size() - 1) {
+						code_completion_current_selected++;
+						code_completion_force_item_center = -1;
+						queue_redraw();
+					}
+				} break;
+				case MouseButton::LEFT: {
+					if (code_completion_force_item_center == -1) {
+						code_completion_force_item_center = code_completion_current_selected;
+					}
+
+					code_completion_current_selected = CLAMP(code_completion_line_ofs + (p_mouse_button->get_position().y - code_completion_rect.position.y) / get_line_height(), 0, code_completion_options.size() - 1);
+					if (p_mouse_button->is_double_click()) {
+						confirm_code_completion();
+					}
+					queue_redraw();
+				} break;
+				default:
+					break;
+			}
+
+			return true;
+		} else if (code_completion_active && code_completion_scroll_rect.has_point(p_mouse_button->get_position())) {
+			if (p_mouse_button->get_button_index() != MouseButton::LEFT) {
+				return true;
+			}
+
+			if (p_mouse_button->is_pressed()) {
+				is_code_completion_scroll_pressed = true;
+
+				_update_scroll_selected_line(p_mouse_button->get_position().y);
 				queue_redraw();
-			} break;
-			default:
-				break;
-		}
+			}
 
-		return true;
-	} else if (code_completion_active && code_completion_scroll_rect.has_point(p_mouse_button->get_position())) {
-		if (p_mouse_button->get_button_index() != MouseButton::LEFT) {
 			return true;
 		}
+
+		cancel_code_completion();
+		set_code_hint("");
 
 		if (p_mouse_button->is_pressed()) {
-			is_code_completion_scroll_pressed = true;
+			Vector2i mpos = p_mouse_button->get_position();
+			if (is_layout_rtl()) {
+				mpos.x = get_size().x - mpos.x;
+			}
 
-			_update_scroll_selected_line(p_mouse_button->get_position().y);
-			queue_redraw();
-		}
+			Point2i pos = get_line_column_at_pos(mpos, false);
+			int line = pos.y;
+			int col = pos.x;
 
-		return true;
-	}
-
-	cancel_code_completion();
-	set_code_hint("");
-
-	if (p_mouse_button->is_pressed()) {
-		Vector2i mpos = p_mouse_button->get_position();
-		if (is_layout_rtl()) {
-			mpos.x = get_size().x - mpos.x;
-		}
-
-		Point2i pos = get_line_column_at_pos(mpos, false);
-		int line = pos.y;
-		int col = pos.x;
-
-		if (line != -1 && p_mouse_button->get_button_index() == MouseButton::LEFT) {
-			if (is_line_folded(line)) {
-				int wrap_index = get_line_wrap_index_at_column(line, col);
-				if (wrap_index == get_line_wrap_count(line)) {
-					int eol_icon_width = folded_eol_icon->get_width();
-					int left_margin = get_total_gutter_width() + eol_icon_width + get_line_width(line, wrap_index) - get_h_scroll();
-					if (mpos.x > left_margin && mpos.x <= left_margin + eol_icon_width + 3) {
-						unfold_line(line);
-						return true;
+			if (line != -1 && p_mouse_button->get_button_index() == MouseButton::LEFT) {
+				if (is_line_folded(line)) {
+					int wrap_index = get_line_wrap_index_at_column(line, col);
+					if (wrap_index == get_line_wrap_count(line)) {
+						int eol_icon_width = folded_eol_icon->get_width();
+						int left_margin = get_total_gutter_width() + eol_icon_width + get_line_width(line, wrap_index) - get_h_scroll();
+						if (mpos.x > left_margin && mpos.x <= left_margin + eol_icon_width + 3) {
+							unfold_line(line);
+							return true;
+						}
 					}
 				}
 			}
-		}
-	} else {
-		if (p_mouse_button->get_button_index() == MouseButton::LEFT) {
-			if (p_mouse_button->is_command_or_control_pressed() && !symbol_lookup_word.is_empty()) {
-				Vector2i mpos = p_mouse_button->get_position();
-				if (is_layout_rtl()) {
-					mpos.x = get_size().x - mpos.x;
-				}
+		} else {
+			if (p_mouse_button->get_button_index() == MouseButton::LEFT) {
+				if (p_mouse_button->is_command_or_control_pressed() && !symbol_lookup_word.is_empty()) {
+					Vector2i mpos = p_mouse_button->get_position();
+					if (is_layout_rtl()) {
+						mpos.x = get_size().x - mpos.x;
+					}
 
-				Point2i pos = get_line_column_at_pos(mpos, false);
-				int line = pos.y;
-				int col = pos.x;
+					Point2i pos = get_line_column_at_pos(mpos, false);
+					int line = pos.y;
+					int col = pos.x;
 
-				if (line != -1) {
-					emit_signal(SNAME("symbol_lookup"), symbol_lookup_word, line, col);
+					if (line != -1) {
+						emit_signal(SNAME("symbol_lookup"), symbol_lookup_word, line, col);
+					}
+					return true;
 				}
-				return true;
 			}
 		}
+		return false;
 	}
-	return false; // CodeEdit gui_input can go on.
-}
 
 bool CodeEdit::handle_gui_mouse_motion(const Ref<InputEventMouseMotion> &p_mouse_motion) {
 	Vector2i mpos = p_mouse_motion->get_position();
@@ -419,6 +437,7 @@ bool CodeEdit::handle_gui_mouse_motion(const Ref<InputEventMouseMotion> &p_mouse
 			set_symbol_lookup_word_as_valid(false);
 		}
 	}
+
 	bool scroll_hovered = code_completion_scroll_rect.has_point(mpos);
 	if (is_code_completion_scroll_hovered != scroll_hovered) {
 		is_code_completion_scroll_hovered = scroll_hovered;
@@ -430,10 +449,11 @@ bool CodeEdit::handle_gui_mouse_motion(const Ref<InputEventMouseMotion> &p_mouse
 		queue_redraw();
 		return true;
 	}
-return false;
+	return false;
 }
 
 bool CodeEdit::handle_gui_key(const Ref<InputEventKey> &p_key) {
+	bool update_code_completion = false;
 	/* Ctrl + Hover symbols */
 #ifdef MACOS_ENABLED
 	if (p_key->get_keycode() == Key::META) {
@@ -453,11 +473,10 @@ bool CodeEdit::handle_gui_key(const Ref<InputEventKey> &p_key) {
 		return true;
 	}
 
-	/* If a modifier has been pressed, and nothing else, return. */
+	/* If a modifier has been pressed, and nothing else, return true. */
 	if (!p_key->is_pressed() || p_key->get_keycode() == Key::CTRL || p_key->get_keycode() == Key::ALT || p_key->get_keycode() == Key::SHIFT || p_key->get_keycode() == Key::META) {
 		return true;
 	}
-	bool update_code_completion = false;
 
 	/* Allow unicode handling if:              */
 	/* No Modifiers are pressed (except shift) */
@@ -470,8 +489,6 @@ bool CodeEdit::handle_gui_key(const Ref<InputEventKey> &p_key) {
 		return true;
 	}
 
-	bool keep_going = false;
-
 	if (code_completion_active) {
 		if (p_key->is_action("ui_up", true)) {
 			if (code_completion_current_selected > 0) {
@@ -482,8 +499,9 @@ bool CodeEdit::handle_gui_key(const Ref<InputEventKey> &p_key) {
 			code_completion_force_item_center = -1;
 			queue_redraw();
 			accept_event();
+			return true;
 		}
-		else if (p_key->is_action("ui_down", true)) {
+		if (p_key->is_action("ui_down", true)) {
 			if (code_completion_current_selected < code_completion_options.size() - 1) {
 				code_completion_current_selected++;
 			} else {
@@ -492,52 +510,53 @@ bool CodeEdit::handle_gui_key(const Ref<InputEventKey> &p_key) {
 			code_completion_force_item_center = -1;
 			queue_redraw();
 			accept_event();
+			return true;
 		}
-		else if (p_key->is_action("ui_page_up", true)) {
+		if (p_key->is_action("ui_page_up", true)) {
 			code_completion_current_selected = MAX(0, code_completion_current_selected - code_completion_max_lines);
 			code_completion_force_item_center = -1;
 			queue_redraw();
 			accept_event();
+			return true;
 		}
-		else if (p_key->is_action("ui_page_down", true)) {
+		if (p_key->is_action("ui_page_down", true)) {
 			code_completion_current_selected = MIN(code_completion_options.size() - 1, code_completion_current_selected + code_completion_max_lines);
 			code_completion_force_item_center = -1;
 			queue_redraw();
 			accept_event();
+			return true;
 		}
-		else if (p_key->is_action("ui_home", true)) {
+		if (p_key->is_action("ui_home", true)) {
 			code_completion_current_selected = 0;
 			code_completion_force_item_center = -1;
 			queue_redraw();
 			accept_event();
+			return true;
 		}
-		else if (p_key->is_action("ui_end", true)) {
+		if (p_key->is_action("ui_end", true)) {
 			code_completion_current_selected = code_completion_options.size() - 1;
 			code_completion_force_item_center = -1;
 			queue_redraw();
 			accept_event();
+			return true;
 		}
-		else if (p_key->is_action("ui_text_completion_replace", true) || p_key->is_action("ui_text_completion_accept", true)) {
+		if (p_key->is_action("ui_text_completion_replace", true) || p_key->is_action("ui_text_completion_accept", true)) {
 			confirm_code_completion(p_key->is_action("ui_text_completion_replace", true));
 			accept_event();
+			return true;
 		}
-		else if (p_key->is_action("ui_cancel", true)) {
+		if (p_key->is_action("ui_cancel", true)) {
 			cancel_code_completion();
 			accept_event();
+			return true;
 		}
-		else if (p_key->is_action("ui_text_backspace", true)) {
+		if (p_key->is_action("ui_text_backspace", true)) {
 			backspace();
 			_filter_code_completion_candidates_impl();
 			accept_event();
-		}
-		else {
-			keep_going = true;
-	}
-		if (!keep_going) {
 			return true;
 		}
-		keep_going = false;
-		
+
 		if (p_key->is_action("ui_left", true) || p_key->is_action("ui_right", true)) {
 			update_code_completion = true;
 		} else {
@@ -563,30 +582,29 @@ bool CodeEdit::handle_gui_key(const Ref<InputEventKey> &p_key) {
 	if (p_key->is_action("ui_text_indent", true)) {
 		do_indent();
 		accept_event();
+		return true;
 	}
 
-	else if (p_key->is_action("ui_text_dedent", true)) {
+	if (p_key->is_action("ui_text_dedent", true)) {
 		unindent_lines();
 		accept_event();
+		return true;
 	}
 
 	// Override new line actions, for auto indent
-	else if (p_key->is_action("ui_text_newline_above", true)) {
+	if (p_key->is_action("ui_text_newline_above", true)) {
 		_new_line(false, true);
 		accept_event();
+		return true;
 	}
-	else if (p_key->is_action("ui_text_newline_blank", true)) {
+	if (p_key->is_action("ui_text_newline_blank", true)) {
 		_new_line(false);
 		accept_event();
+		return true;
 	}
-	else if (p_key->is_action("ui_text_newline", true)) {
+	if (p_key->is_action("ui_text_newline", true)) {
 		_new_line();
 		accept_event();
-	}
-	else {
-		keep_going = true;
-	}
-	if (!keep_going) {
 		return true;
 	}
 
@@ -602,13 +620,10 @@ bool CodeEdit::handle_gui_key(const Ref<InputEventKey> &p_key) {
 			duplicated_key->is_action("ui_text_caret_page_down", true)) {
 		set_code_hint("");
 	}
-	TextEdit::gui_input(p_key);
 
-	if (update_code_completion) {
-		_filter_code_completion_candidates_impl();
-	}
-	return false; // CodeEdit gui_input can go on.
+	return false;
 }
+	
 
 /* General overrides */
 Control::CursorShape CodeEdit::get_cursor_shape(const Point2 &p_pos) const {
