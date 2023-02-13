@@ -412,7 +412,7 @@ void ProjectSettingsEditor::_action_renamed(const String &p_old_name, const Stri
 	Dictionary action = GLOBAL_GET(old_property_name);
 
 	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Rename Input Action Event"));
+	undo_redo->create_action(TTR("Rename Input Action"));
 	// Do: clear old, set new
 	undo_redo->add_do_method(ProjectSettings::get_singleton(), "clear", old_property_name);
 	undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", new_property_name, action);

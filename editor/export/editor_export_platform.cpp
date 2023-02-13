@@ -247,7 +247,8 @@ Error EditorExportPlatform::_save_pack_file(void *p_userdata, const String &p_pa
 
 	pd->file_ofs.push_back(sd);
 
-	if (pd->ep->step(TTR("Storing File:") + " " + p_path, 2 + p_file * 100 / p_total, false)) {
+	// TRANSLATORS: This is an editor progress label describing the storing of a file.
+	if (pd->ep->step(vformat(TTR("Storing File: %s"), p_path), 2 + p_file * 100 / p_total, false)) {
 		return ERR_SKIP;
 	}
 

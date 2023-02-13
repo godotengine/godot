@@ -344,7 +344,7 @@ static const _BuiltinActionDisplayName _builtin_action_display_names[] = {
     { "ui_text_add_selection_for_next_occurrence",     TTRC("Add Selection for Next Occurrence") },
     { "ui_text_clear_carets_and_selection",            TTRC("Clear Carets and Selection") },
     { "ui_text_toggle_insert_mode",                    TTRC("Toggle Insert Mode") },
-    { "ui_text_submit",                                TTRC("Text Submitted") },
+    { "ui_text_submit",                                TTRC("Submit Text") },
     { "ui_graph_duplicate",                            TTRC("Duplicate Nodes") },
     { "ui_graph_delete",                               TTRC("Delete Nodes") },
     { "ui_filedialog_up_one_level",                    TTRC("Go Up One Level") },

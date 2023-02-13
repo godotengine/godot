@@ -1134,6 +1134,7 @@ void AnimationPlayerEditor::_animation_duplicate() {
 
 	name_dialog_op = TOOL_DUPLICATE_ANIM;
 	name_dialog->set_title(TTR("Duplicate Animation"));
+	// TRANSLATORS: This is a label for the new name field in the "Duplicate Animation" dialog.
 	name_title->set_text(TTR("Duplicated Animation Name:"));
 	name->set_text(new_name);
 	name_dialog->popup_centered(Size2(300, 90));
