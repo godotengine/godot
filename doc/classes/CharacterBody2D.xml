@@ -71,10 +71,10 @@
 				print("Collided with: ", collision.collider.name)
 				[/gdscript]
 				[csharp]
-				for (int i = 0; i &lt; GetSlideCount(); i++)
+				for (int i = 0; i &lt; GetSlideCollisionCount(); i++)
 				{
 				    KinematicCollision2D collision = GetSlideCollision(i);
-				    GD.Print("Collided with: ", (collision.Collider as Node).Name);
+				    GD.Print("Collided with: ", (collision.GetCollider() as Node).Name);
 				}
 				[/csharp]
 				[/codeblocks]
