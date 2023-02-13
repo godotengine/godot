@@ -404,13 +404,16 @@ void TileAtlasView::_draw_background_right() {
 }
 
 void TileAtlasView::set_atlas_source(TileSet *p_tile_set, TileSetAtlasSource *p_tile_set_atlas_source, int p_source_id) {
-	ERR_FAIL_COND(!p_tile_set);
-	ERR_FAIL_COND(!p_tile_set_atlas_source);
+	tile_set = p_tile_set;
+	tile_set_atlas_source = p_tile_set_atlas_source;
+
+	if (!tile_set) {
+		return;
+	}
+
 	ERR_FAIL_COND(p_source_id < 0);
 	ERR_FAIL_COND(p_tile_set->get_source(p_source_id) != p_tile_set_atlas_source);
 
-	tile_set = p_tile_set;
-	tile_set_atlas_source = p_tile_set_atlas_source;
 	source_id = p_source_id;
 
 	// Show or hide the view.
