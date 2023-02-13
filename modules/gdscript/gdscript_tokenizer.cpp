@@ -659,12 +659,20 @@ GDScriptTokenizer::Token GDScriptTokenizer::number() {
 		}
 	}
 
-	// Allow '_' to be used in a number, for readability.
-	bool previous_was_underscore = false;
+	if (base != 10 && is_underscore(_peek())) { // Disallow `0x_` and `0b_`.
+		Token error = make_error(vformat(R"(Unexpected underscore after "0%c".)", _peek(-1)));
+		error.start_column = column;
+		error.leftmost_column = column;
+		error.end_column = column + 1;
+		error.rightmost_column = column + 1;
+		push_error(error);
+		has_error = true;
+	}
+	bool previous_was_underscore = false; // Allow `_` to be used in a number, for readability.
 	while (digit_check_func(_peek()) || is_underscore(_peek())) {
 		if (is_underscore(_peek())) {
 			if (previous_was_underscore) {
-				Token error = make_error(R"(Only one underscore can be used as a numeric separator.)");
+				Token error = make_error(R"(Multiple underscores cannot be adjacent in a numeric literal.)");
 				error.start_column = column;
 				error.leftmost_column = column;
 				error.end_column = column + 1;
@@ -711,7 +719,30 @@ GDScriptTokenizer::Token GDScriptTokenizer::number() {
 			_advance();
 
 			// Consume decimal digits.
+			if (is_underscore(_peek())) { // Disallow `10._`, but allow `10.`.
+				Token error = make_error(R"(Unexpected underscore after decimal point.)");
+				error.start_column = column;
+				error.leftmost_column = column;
+				error.end_column = column + 1;
+				error.rightmost_column = column + 1;
+				push_error(error);
+				has_error = true;
+			}
+			previous_was_underscore = false;
 			while (is_digit(_peek()) || is_underscore(_peek())) {
+				if (is_underscore(_peek())) {
+					if (previous_was_underscore) {
+						Token error = make_error(R"(Multiple underscores cannot be adjacent in a numeric literal.)");
+						error.start_column = column;
+						error.leftmost_column = column;
+						error.end_column = column + 1;
+						error.rightmost_column = column + 1;
+						push_error(error);
+					}
+					previous_was_underscore = true;
+				} else {
+					previous_was_underscore = false;
+				}
 				_advance();
 			}
 		}
@@ -737,7 +768,7 @@ GDScriptTokenizer::Token GDScriptTokenizer::number() {
 			while (is_digit(_peek()) || is_underscore(_peek())) {
 				if (is_underscore(_peek())) {
 					if (previous_was_underscore) {
-						Token error = make_error(R"(Only one underscore can be used as a numeric separator.)");
+						Token error = make_error(R"(Multiple underscores cannot be adjacent in a numeric literal.)");
 						error.start_column = column;
 						error.leftmost_column = column;
 						error.end_column = column + 1;
