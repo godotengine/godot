@@ -59,6 +59,7 @@ Size2 PopupMenu::_get_contents_minimum_size() const {
 
 	for (int i = 0; i < items.size(); i++) {
 		Size2 item_size;
+		const_cast<PopupMenu *>(this)->_shape_item(i);
 
 		Size2 icon_size = items[i].get_icon_size();
 		item_size.height = _get_item_height(i);
