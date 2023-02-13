@@ -30,6 +30,7 @@
 
 #include "navigation_agent_3d.h"
 
+#include "scene/3d/navigation_link_3d.h"
 #include "servers/navigation_server_3d.h"
 
 void NavigationAgent3D::_bind_methods() {
@@ -649,6 +650,21 @@ void NavigationAgent3D::update_navigation() {
 				}
 
 				details[SNAME("owner")] = owner;
+
+				if (waypoint_type == NavigationPathQueryResult3D::PATH_SEGMENT_TYPE_LINK) {
+					const NavigationLink3D *navlink = Object::cast_to<NavigationLink3D>(owner);
+					if (navlink) {
+						Vector3 link_global_start_position = navlink->get_global_start_position();
+						Vector3 link_global_end_position = navlink->get_global_end_position();
+						if (waypoint.distance_to(link_global_start_position) < waypoint.distance_to(link_global_end_position)) {
+							details[SNAME("link_entry_position")] = link_global_start_position;
+							details[SNAME("link_exit_position")] = link_global_end_position;
+						} else {
+							details[SNAME("link_entry_position")] = link_global_end_position;
+							details[SNAME("link_exit_position")] = link_global_start_position;
+						}
+					}
+				}
 			}
 
 			// Emit a signal for the waypoint
