@@ -100,13 +100,22 @@ void AndroidInputHandler::process_key_event(int p_scancode, int p_physical_scanc
 	input->parse_input_event(ev);
 }
 
-void AndroidInputHandler::_parse_all_touch(bool p_pressed, bool p_double_tap) {
+void AndroidInputHandler::_cancel_all_touch() {
+	_parse_all_touch(false, false, true);
+	touch.clear();
+}
+
+void AndroidInputHandler::_parse_all_touch(bool p_pressed, bool p_double_tap, bool reset_index) {
 	if (touch.size()) {
 		//end all if exist
 		for (int i = 0; i < touch.size(); i++) {
 			Ref<InputEventScreenTouch> ev;
 			ev.instance();
-			ev->set_index(touch[i].id);
+			if (reset_index) {
+				ev->set_index(-1);
+			} else {
+				ev->set_index(touch[i].id);
+			}
 			ev->set_pressed(p_pressed);
 			ev->set_position(touch[i].pos);
 			ev->set_double_tap(p_double_tap);
@@ -167,7 +176,9 @@ void AndroidInputHandler::process_touch_event(int p_event, int p_pointer, const 
 			}
 
 		} break;
-		case AMOTION_EVENT_ACTION_CANCEL:
+		case AMOTION_EVENT_ACTION_CANCEL: {
+			_cancel_all_touch();
+		} break;
 		case AMOTION_EVENT_ACTION_UP: { //release
 			_release_all_touch();
 		} break;
@@ -205,6 +216,12 @@ void AndroidInputHandler::process_touch_event(int p_event, int p_pointer, const 
 			}
 		} break;
 	}
+}
+
+void AndroidInputHandler::_cancel_mouse_event_info(bool p_source_mouse_relative) {
+	buttons_state = 0;
+	_parse_mouse_event_info(0, false, false, p_source_mouse_relative);
+	mouse_event_info.valid = false;
 }
 
 void AndroidInputHandler::_parse_mouse_event_info(int buttons_mask, bool p_pressed, bool p_double_click, bool p_source_mouse_relative) {
@@ -267,8 +284,11 @@ void AndroidInputHandler::process_mouse_event(int p_event_action, int p_event_an
 			_parse_mouse_event_info(event_buttons_mask, true, p_double_click, p_source_mouse_relative);
 		} break;
 
+		case AMOTION_EVENT_ACTION_CANCEL: {
+			_cancel_mouse_event_info(p_source_mouse_relative);
+		} break;
+
 		case AMOTION_EVENT_ACTION_UP:
-		case AMOTION_EVENT_ACTION_CANCEL:
 		case AMOTION_EVENT_ACTION_BUTTON_RELEASE: {
 			_release_mouse_event_info(p_source_mouse_relative);
 		} break;
