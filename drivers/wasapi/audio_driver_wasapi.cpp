@@ -206,7 +206,9 @@ Error AudioDriverWASAPI::audio_device_init(AudioDeviceWASAPI *p_device, bool p_i
 	IMMDeviceEnumerator *enumerator = nullptr;
 	IMMDevice *output_device = nullptr;
 
+#if !WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_GAMES)
 	CoInitialize(nullptr);
+#endif
 
 	HRESULT hr = CoCreateInstance(CLSID_MMDeviceEnumerator, nullptr, CLSCTX_ALL, IID_IMMDeviceEnumerator, (void **)&enumerator);
 	ERR_FAIL_COND_V(hr != S_OK, ERR_CANT_OPEN);
@@ -582,7 +584,9 @@ PackedStringArray AudioDriverWASAPI::audio_device_get_list(bool p_input) {
 
 	list.push_back(String("Default"));
 
+#if !WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_GAMES)
 	CoInitialize(nullptr);
+#endif
 
 	HRESULT hr = CoCreateInstance(CLSID_MMDeviceEnumerator, nullptr, CLSCTX_ALL, IID_IMMDeviceEnumerator, (void **)&enumerator);
 	ERR_FAIL_COND_V(hr != S_OK, PackedStringArray());

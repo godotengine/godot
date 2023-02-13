@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import methods
+
 Import("env")
 Import("env_modules")
 
@@ -494,6 +496,10 @@ if env["builtin_icu"]:
             "-DICU_DATA_NAME=" + icu_data_name,
         ]
     )
+    # Flavors of Win32 other than pure Windows (i.e., Microsoft GDK) doesn't provide _tzset).
+    if methods.get_env_dict_like_value(env["CPPDEFINES"], "WIN32") is not None and env["platform"] != "windows":
+        env_icu.Append(CPPDEFINES=[("U_TZSET", "[](){}")])
+        env_text_server_adv.Append(CPPDEFINES=[("U_TZSET", "[](){}")])
     if env.editor_build:
         env_text_server_adv.Append(CXXFLAGS=["-DICU_STATIC_DATA"])
 

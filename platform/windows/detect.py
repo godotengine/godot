@@ -56,6 +56,9 @@ def try_cmd(test, prefix, arch):
 def can_build():
     if os.name == "nt":
         # Building natively on Windows
+        # Avoid confusing GDK environment with pure Windows.
+        if os.getenv("Platform", "").startswith("Gaming."):
+            return False
         # If VCINSTALLDIR is set in the OS environ, use traditional Godot logic to set up MSVC
         if os.getenv("VCINSTALLDIR"):  # MSVC, manual setup
             return True
@@ -373,6 +376,7 @@ def configure_msvc(env, vcvars_msvc_config):
             "WINDOWS_ENABLED",
             "WASAPI_ENABLED",
             "WINMIDI_ENABLED",
+            "DWRITE_ENABLED",
             "TYPED_METHOD_BIND",
             "WIN32",
             "MSVC",

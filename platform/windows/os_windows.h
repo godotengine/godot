@@ -59,8 +59,10 @@
 #include <stdio.h>
 
 #define WIN32_LEAN_AND_MEAN
+#if DWRITE_ENABLED
 #include <dwrite.h>
 #include <dwrite_2.h>
+#endif
 #include <windows.h>
 #include <windowsx.h>
 
@@ -96,7 +98,9 @@ public:
 	}
 };
 
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 class JoypadWindows;
+#endif
 
 class OS_Windows : public OS {
 	uint64_t ticks_start = 0;
@@ -123,6 +127,7 @@ class OS_Windows : public OS {
 
 	HWND main_window;
 
+#if DWRITE_ENABLED
 	IDWriteFactory *dwrite_factory = nullptr;
 	IDWriteFactory2 *dwrite_factory2 = nullptr;
 	IDWriteFontCollection *font_collection = nullptr;
@@ -134,6 +139,7 @@ class OS_Windows : public OS {
 	String _get_default_fontname(const String &p_font_name) const;
 	DWRITE_FONT_WEIGHT _weight_to_dw(int p_weight) const;
 	DWRITE_FONT_STRETCH _stretch_to_dw(int p_stretch) const;
+#endif
 
 	// functions used by main to initialize/deinitialize the OS
 protected:
@@ -159,9 +165,11 @@ public:
 
 	virtual Error get_entropy(uint8_t *r_buffer, int p_bytes) override;
 
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false, String *r_resolved_path = nullptr) override;
 	virtual Error close_dynamic_library(void *p_library_handle) override;
 	virtual Error get_dynamic_library_symbol_handle(void *p_library_handle, const String p_name, void *&p_symbol_handle, bool p_optional = false) override;
+#endif
 
 	virtual MainLoop *get_main_loop() const override;
 
@@ -199,11 +207,15 @@ public:
 
 	virtual String get_executable_path() const override;
 
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 	virtual String get_locale() const override;
+#endif
 
 	virtual String get_processor_name() const override;
 
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 	virtual uint64_t get_embedded_pck_offset() const override;
+#endif
 
 	virtual String get_config_path() const override;
 	virtual String get_data_path() const override;
@@ -213,19 +225,23 @@ public:
 	virtual String get_system_dir(SystemDir p_dir, bool p_shared_storage = true) const override;
 	virtual String get_user_data_dir() const override;
 
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 	virtual String get_unique_id() const override;
 
 	virtual Error shell_open(String p_uri) override;
+#endif
 
 	void run();
 
 	virtual bool _check_internal_feature_support(const String &p_feature) override;
 
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 	virtual void disable_crash_handler() override;
 	virtual bool is_disable_crash_handler() const override;
 	virtual void initialize_debugging() override;
 
 	virtual Error move_to_trash(const String &p_path) override;
+#endif
 
 	void set_main_window(HWND p_main_window) { main_window = p_main_window; }
 

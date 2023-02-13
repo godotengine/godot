@@ -717,6 +717,10 @@ env.Append(
         "-DICU_DATA_NAME=" + icu_data_name,
     ]
 )
+# Flavors of Win32 other than pure Windows (i.e., Microsoft GDK) doesn't provide _tzset).
+if methods.get_env_dict_like_value(env["CPPDEFINES"], "WIN32") is not None and env["platform"] != "windows":
+    env_icu.Append(CPPDEFINES=[("U_TZSET", "[](){}")])
+    env.Append(CPPDEFINES=[("U_TZSET", "[](){}")])
 env.Append(CPPPATH=["../../../thirdparty/icu4c/common/", "../../../thirdparty/icu4c/i18n/"])
 
 if env["platform"] == "windows":

@@ -37,14 +37,19 @@
 #include "drivers/unix/net_socket_posix.h"
 #include "drivers/windows/dir_access_windows.h"
 #include "drivers/windows/file_access_windows.h"
-#include "joypad_windows.h"
 #include "lang_table.h"
 #include "main/main.h"
-#include "platform/windows/display_server_windows.h"
 #include "servers/audio_server.h"
 #include "servers/rendering/rendering_server_default.h"
 #include "servers/text_server.h"
 #include "windows_terminal_logger.h"
+
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
+#include "joypad_windows.h"
+#include "platform/windows/display_server_windows.h"
+#elif WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_GAMES)
+#include "servrers/display_server_headless.h"
+#endif
 
 #include <avrt.h>
 #include <bcrypt.h>
@@ -86,6 +91,7 @@ static String format_error_message(DWORD id) {
 	return msg;
 }
 
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 void RedirectStream(const char *p_file_name, const char *p_mode, FILE *p_cpp_stream, const DWORD p_std_handle) {
 	const HANDLE h_existing = GetStdHandle(p_std_handle);
 	if (h_existing != INVALID_HANDLE_VALUE) { // Redirect only if attached console have a valid handle.
@@ -120,14 +126,22 @@ BOOL WINAPI HandlerRoutine(_In_ DWORD dwCtrlType) {
 			return FALSE;
 	}
 }
+#endif
 
 void OS_Windows::alert(const String &p_alert, const String &p_title) {
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 	MessageBoxW(nullptr, (LPCWSTR)(p_alert.utf16().get_data()), (LPCWSTR)(p_title.utf16().get_data()), MB_OK | MB_ICONEXCLAMATION | MB_TASKMODAL);
+#elif WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_GAMES)
+	// https://developer.microsoft.com/en-us/games/xbox/docs/gdk/xgameuishowmessagedialogasync
+	OS::alert(p_alert, p_title);
+#endif
 }
 
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 void OS_Windows::initialize_debugging() {
 	SetConsoleCtrlHandler(HandlerRoutine, TRUE);
 }
+#endif
 
 #ifdef WINDOWS_DEBUG_OUTPUT_ENABLED
 static void _error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, bool p_editor_notify, ErrorHandlerType p_type) {
@@ -149,7 +163,9 @@ static void _error_handler(void *p_self, const char *p_func, const char *p_file,
 #endif
 
 void OS_Windows::initialize() {
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 	crash_handler.initialize();
+#endif
 
 #ifdef WINDOWS_DEBUG_OUTPUT_ENABLED
 	error_handlers.errfunc = _error_handler;
@@ -157,16 +173,20 @@ void OS_Windows::initialize() {
 	add_error_handler(&error_handlers);
 #endif
 
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 #ifndef WINDOWS_SUBSYSTEM_CONSOLE
 	RedirectIOToConsole();
 #endif
+#endif
 
+#if 0
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_RESOURCES);
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_USERDATA);
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_FILESYSTEM);
 	DirAccess::make_default<DirAccessWindows>(DirAccess::ACCESS_RESOURCES);
 	DirAccess::make_default<DirAccessWindows>(DirAccess::ACCESS_USERDATA);
 	DirAccess::make_default<DirAccessWindows>(DirAccess::ACCESS_FILESYSTEM);
+#endif
 
 	NetSocketPosix::make_default();
 
@@ -174,9 +194,11 @@ void OS_Windows::initialize() {
 	QueryPerformanceFrequency((LARGE_INTEGER *)&ticks_per_second);
 	QueryPerformanceCounter((LARGE_INTEGER *)&ticks_start);
 
+#if 0
 	// set minimum resolution for periodic timers, otherwise Sleep(n) may wait at least as
 	//  long as the windows scheduler resolution (~16-30ms) even for calls like Sleep(1)
 	timeBeginPeriod(1);
+#endif
 
 	process_map = memnew((HashMap<ProcessID, ProcessInfo>));
 
@@ -190,6 +212,7 @@ void OS_Windows::initialize() {
 	IPUnix::make_default();
 	main_loop = nullptr;
 
+#if DWRITE_ENABLED
 	CoInitialize(nullptr);
 	HRESULT hr = DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED, __uuidof(IDWriteFactory), reinterpret_cast<IUnknown **>(&dwrite_factory));
 	if (SUCCEEDED(hr)) {
@@ -210,8 +233,11 @@ void OS_Windows::initialize() {
 	} else if (!dwrite2_init) {
 		print_verbose("Unable to load IDWriteFactory2, automatic system font fallback is disabled.");
 	}
+#endif
 
+#if 0
 	FileAccessWindows::initialize();
+#endif
 }
 
 void OS_Windows::delete_main_loop() {
@@ -226,6 +252,7 @@ void OS_Windows::set_main_loop(MainLoop *p_main_loop) {
 }
 
 void OS_Windows::finalize() {
+#if DWRITE_ENABLED
 	if (dwrite_factory2) {
 		dwrite_factory2->Release();
 		dwrite_factory2 = nullptr;
@@ -242,6 +269,7 @@ void OS_Windows::finalize() {
 		dwrite_factory->Release();
 		dwrite_factory = nullptr;
 	}
+#endif
 #ifdef WINMIDI_ENABLED
 	driver_midi.close();
 #endif
@@ -254,9 +282,11 @@ void OS_Windows::finalize() {
 }
 
 void OS_Windows::finalize_core() {
+#if 0
 	FileAccessWindows::finalize();
 
 	timeEndPeriod(1);
+#endif
 
 	memdelete(process_map);
 	NetSocketPosix::cleanup();
@@ -272,6 +302,7 @@ Error OS_Windows::get_entropy(uint8_t *r_buffer, int p_bytes) {
 	return OK;
 }
 
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 Error OS_Windows::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path, String *r_resolved_path) {
 	String path = p_path.replace("/", "\\");
 
@@ -325,16 +356,26 @@ Error OS_Windows::get_dynamic_library_symbol_handle(void *p_library_handle, cons
 	}
 	return OK;
 }
+#endif
 
 String OS_Windows::get_name() const {
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 	return "Windows";
+#elif WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_GAMES)
+	return "GDK";
+#endif
 }
 
 String OS_Windows::get_distribution_name() const {
-	return get_name();
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
+	return "Desktop";
+#elif WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_GAMES)
+	return "Games";
+#endif
 }
 
 String OS_Windows::get_version() const {
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 	typedef LONG NTSTATUS;
 	typedef NTSTATUS(WINAPI * RtlGetVersionPtr)(PRTL_OSVERSIONINFOW);
 	RtlGetVersionPtr version_ptr = (RtlGetVersionPtr)GetProcAddress(GetModuleHandle("ntdll.dll"), "RtlGetVersion");
@@ -347,6 +388,9 @@ String OS_Windows::get_version() const {
 		}
 	}
 	return "";
+#elif WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_GAMES)
+	return "GDK.0";
+#endif
 }
 
 Vector<String> OS_Windows::get_video_adapter_driver_info() const {
@@ -354,6 +398,7 @@ Vector<String> OS_Windows::get_video_adapter_driver_info() const {
 		return Vector<String>();
 	}
 
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 	REFCLSID clsid = CLSID_WbemLocator; // Unmarshaler CLSID
 	REFIID uuid = IID_IWbemLocator; // Interface UUID
 	IWbemLocator *wbemLocator = NULL; // to get the services
@@ -444,6 +489,9 @@ Vector<String> OS_Windows::get_video_adapter_driver_info() const {
 	info.push_back(driver_version);
 
 	return info;
+#elif WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_GAMES)
+	return Vector<String>();
+#endif
 }
 
 OS::DateTime OS_Windows::get_datetime(bool p_utc) const {
@@ -587,6 +635,7 @@ static void _append_to_pipe(char *p_bytes, int p_size, String *r_pipe, Mutex *p_
 }
 
 Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex, bool p_open_console) {
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 	String path = p_path.replace("/", "\\");
 	String command = _quote_command_line_argument(path);
 	for (const String &E : p_arguments) {
@@ -687,9 +736,13 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 	CloseHandle(pi.pi.hThread);
 
 	return OK;
+#elif WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_GAMES)
+	return ERR_UNAVAILABLE;
+#endif
 }
 
 Error OS_Windows::create_process(const String &p_path, const List<String> &p_arguments, ProcessID *r_child_id, bool p_open_console) {
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 	String path = p_path.replace("/", "\\");
 	String command = _quote_command_line_argument(path);
 	for (const String &E : p_arguments) {
@@ -719,9 +772,13 @@ Error OS_Windows::create_process(const String &p_path, const List<String> &p_arg
 	process_map->insert(pid, pi);
 
 	return OK;
+#elif WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_GAMES)
+	return ERR_UNAVAILABLE;
+#endif
 }
 
 Error OS_Windows::kill(const ProcessID &p_pid) {
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 	int ret = 0;
 	if (process_map->has(p_pid)) {
 		const PROCESS_INFORMATION pi = (*process_map)[p_pid].pi;
@@ -741,10 +798,13 @@ Error OS_Windows::kill(const ProcessID &p_pid) {
 	}
 
 	return ret != 0 ? OK : FAILED;
+#elif WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_GAMES)
+	return ERR_UNAVAILABLE;
+#endif
 }
 
 int OS_Windows::get_process_id() const {
-	return _getpid();
+	return GetCurrentProcessId();
 }
 
 bool OS_Windows::is_process_running(const ProcessID &p_pid) const {
@@ -752,6 +812,7 @@ bool OS_Windows::is_process_running(const ProcessID &p_pid) const {
 		return false;
 	}
 
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 	const PROCESS_INFORMATION &pi = (*process_map)[p_pid].pi;
 
 	DWORD dw_exit_code = 0;
@@ -764,6 +825,9 @@ bool OS_Windows::is_process_running(const ProcessID &p_pid) const {
 	}
 
 	return true;
+#elif WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_GAMES)
+	return false;
+#endif
 }
 
 Error OS_Windows::set_cwd(const String &p_cwd) {
@@ -774,6 +838,7 @@ Error OS_Windows::set_cwd(const String &p_cwd) {
 	return OK;
 }
 
+#if DWRITE_ENABLED
 Vector<String> OS_Windows::get_system_fonts() const {
 	if (!dwrite_init) {
 		return Vector<String>();
@@ -1140,6 +1205,7 @@ String OS_Windows::get_system_font_path(const String &p_font_name, int p_weight,
 	}
 	return String();
 }
+#endif
 
 String OS_Windows::get_executable_path() const {
 	WCHAR bufname[4096];
@@ -1184,15 +1250,18 @@ void OS_Windows::unset_environment(const String &p_var) const {
 }
 
 String OS_Windows::get_stdin_string() {
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 	WCHAR buff[1024];
 	DWORD count = 0;
 	if (ReadConsoleW(GetStdHandle(STD_INPUT_HANDLE), buff, 1024, &count, nullptr)) {
 		return String::utf16((const char16_t *)buff, count);
 	}
+#endif
 
 	return String();
 }
 
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 Error OS_Windows::shell_open(String p_uri) {
 	INT_PTR ret = (INT_PTR)ShellExecuteW(nullptr, nullptr, (LPCWSTR)(p_uri.utf16().get_data()), nullptr, nullptr, SW_SHOWNORMAL);
 	if (ret > 32) {
@@ -1243,6 +1312,7 @@ String OS_Windows::get_locale() const {
 
 	return "en";
 }
+#endif
 
 // We need this because GetSystemInfo() is unreliable on WOW64
 // see https://msdn.microsoft.com/en-us/library/windows/desktop/ms724381(v=vs.85).aspx
@@ -1305,6 +1375,7 @@ MainLoop *OS_Windows::get_main_loop() const {
 	return main_loop;
 }
 
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 uint64_t OS_Windows::get_embedded_pck_offset() const {
 	Ref<FileAccess> f = FileAccess::open(get_executable_path(), FileAccess::READ);
 	if (f.is_null()) {
@@ -1356,6 +1427,7 @@ uint64_t OS_Windows::get_embedded_pck_offset() const {
 
 	return off;
 }
+#endif
 
 String OS_Windows::get_config_path() const {
 	if (has_environment("APPDATA")) {
@@ -1390,6 +1462,7 @@ String OS_Windows::get_godot_dir_name() const {
 }
 
 String OS_Windows::get_system_dir(SystemDir p_dir, bool p_shared_storage) const {
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 	KNOWNFOLDERID id;
 
 	switch (p_dir) {
@@ -1425,6 +1498,9 @@ String OS_Windows::get_system_dir(SystemDir p_dir, bool p_shared_storage) const 
 	String path = String::utf16((const char16_t *)szPath).replace("\\", "/");
 	CoTaskMemFree(szPath);
 	return path;
+#elif WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_GAMES)
+	return "";
+#endif
 }
 
 String OS_Windows::get_user_data_dir() const {
@@ -1445,23 +1521,30 @@ String OS_Windows::get_user_data_dir() const {
 	return get_data_path().path_join(get_godot_dir_name()).path_join("app_userdata").path_join("[unnamed project]");
 }
 
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 String OS_Windows::get_unique_id() const {
 	HW_PROFILE_INFOA HwProfInfo;
 	ERR_FAIL_COND_V(!GetCurrentHwProfileA(&HwProfInfo), "");
 	return String((HwProfInfo.szHwProfileGuid), HW_PROFILE_GUIDLEN);
 }
+#endif
 
 bool OS_Windows::_check_internal_feature_support(const String &p_feature) {
+#if DWRITE_ENABLED
 	if (p_feature == "system_fonts") {
 		return dwrite_init;
 	}
+#endif
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP) || defined(_GAMING_DESKTOP)
 	if (p_feature == "pc") {
 		return true;
 	}
+#endif
 
 	return false;
 }
 
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 void OS_Windows::disable_crash_handler() {
 	crash_handler.disable();
 }
@@ -1497,6 +1580,7 @@ Error OS_Windows::move_to_trash(const String &p_path) {
 
 	return OK;
 }
+#endif
 
 OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 	hInstance = _hInstance;
@@ -1508,7 +1592,11 @@ OS_Windows::OS_Windows(HINSTANCE _hInstance) {
 	AudioDriverManager::add_driver(&driver_xaudio2);
 #endif
 
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 	DisplayServerWindows::register_windows_driver();
+#elif WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_GAMES)
+	DisplayServerHeadless::
+#endif
 
 	// Enable ANSI escape code support on Windows 10 v1607 (Anniversary Update) and later.
 	// This lets the engine and projects use ANSI escape codes to color text just like on macOS and Linux.

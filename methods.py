@@ -1137,3 +1137,14 @@ def dump(env):
 
     with open(".scons_env.json", "w") as f:
         dump(env.Dictionary(), f, indent=4, default=non_serializable)
+
+
+def get_env_dict_like_value(dict_like, key):
+    for x in dict_like:
+        if type(x) is tuple:
+            if x[0] == key:
+                return x[0] if len(x) == 1 else x[1]
+        else:
+            if x == key:
+                return ""
+    return None
