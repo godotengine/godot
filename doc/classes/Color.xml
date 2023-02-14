@@ -203,18 +203,18 @@
 			<return type="Color" />
 			<param index="0" name="hex" type="int" />
 			<description>
-				Returns the [Color] associated with the provided [param hex] integer in 32-bit ARGB format (8 bits per channel, alpha channel first).
+				Returns the [Color] associated with the provided [param hex] integer in 32-bit RGBA format (8 bits per channel, alpha channel first).
 				In GDScript and C#, the [int] is best visualized with hexadecimal notation ([code]"0x"[/code] prefix).
 				[codeblocks]
 				[gdscript]
-				var red = Color.hex(0xffff0000)
-				var dark_cyan = Color.hex(0xff008b8b)
-				var my_color = Color.hex(0xa4bbefd2)
+				var red = Color.hex(0xff0000ff)
+				var dark_cyan = Color.hex(0x008b8bff)
+				var my_color = Color.hex(0xbbefd2a4)
 				[/gdscript]
 				[csharp]
-				var red = new Color(0xffff0000);
-				var dark_cyan = new Color(0xff008b8b);
-				var my_color = new Color(0xa4bbefd2);
+				var red = new Color(0xff0000ff);
+				var dark_cyan = new Color(0x008b8bff);
+				var my_color = new Color(0xbbefd2a4);
 				[/csharp]
 				[/codeblocks]
 			</description>
@@ -223,7 +223,7 @@
 			<return type="Color" />
 			<param index="0" name="hex" type="int" />
 			<description>
-				Returns the [Color] associated with the provided [param hex] integer in 64-bit ARGB format (16 bits per channel, alpha channel first).
+				Returns the [Color] associated with the provided [param hex] integer in 64-bit RGBA format (16 bits per channel, alpha channel first).
 				In GDScript and C#, the [int] is best visualized with hexadecimal notation ([code]"0x"[/code] prefix).
 			</description>
 		</method>
