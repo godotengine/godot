@@ -1540,6 +1540,10 @@ void EditorHelp::_update_doc() {
 			if (cd.properties[i].overridden) {
 				continue;
 			}
+			// Ignore undocumented private.
+			if (cd.properties[i].name.begins_with("_") && cd.properties[i].description.strip_edges().is_empty()) {
+				continue;
+			}
 
 			property_line[cd.properties[i].name] = class_desc->get_paragraph_count() - 2;
 
