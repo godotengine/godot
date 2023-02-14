@@ -212,6 +212,7 @@ private:
 		HashMap<Vector2i, TileMapQuadrant> quadrant_map;
 		SelfList<TileMapQuadrant>::List dirty_quadrant_list;
 		RID navigation_map;
+		bool uses_world_navigation_map = false;
 	};
 	LocalVector<TileMapLayer> layers;
 	int selected_layer = -1;
