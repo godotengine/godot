@@ -115,7 +115,6 @@ void NavigationServer3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("free_rid", "rid"), &NavigationServer3D::free);
 
 	ClassDB::bind_method(D_METHOD("set_active", "active"), &NavigationServer3D::set_active);
-	ClassDB::bind_method(D_METHOD("process", "delta_time"), &NavigationServer3D::process);
 
 	ADD_SIGNAL(MethodInfo("map_changed", PropertyInfo(Variant::RID, "map")));
 
