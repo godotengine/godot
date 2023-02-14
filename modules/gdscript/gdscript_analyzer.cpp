@@ -4278,11 +4278,15 @@ Variant GDScriptAnalyzer::make_variable_default_value(GDScriptParser::VariableNo
 		}
 	} else {
 		GDScriptParser::DataType datatype = p_variable->get_datatype();
-		if (datatype.is_hard_type() && datatype.kind == GDScriptParser::DataType::BUILTIN && datatype.builtin_type != Variant::OBJECT) {
-			if (datatype.builtin_type == Variant::ARRAY && datatype.has_container_element_type()) {
-				result = make_array_from_element_datatype(datatype.get_container_element_type());
-			} else {
-				VariantInternal::initialize(&result, datatype.builtin_type);
+		if (datatype.is_hard_type()) {
+			if (datatype.kind == GDScriptParser::DataType::BUILTIN && datatype.builtin_type != Variant::OBJECT) {
+				if (datatype.builtin_type == Variant::ARRAY && datatype.has_container_element_type()) {
+					result = make_array_from_element_datatype(datatype.get_container_element_type());
+				} else {
+					VariantInternal::initialize(&result, datatype.builtin_type);
+				}
+			} else if (datatype.kind == GDScriptParser::DataType::ENUM) {
+				result = 0;
 			}
 		}
 	}
