@@ -742,6 +742,7 @@ Error SceneReplicationInterface::on_sync_receive(int p_from, const uint8_t *p_bu
 		ofs += 4;
 		uint32_t size = decode_uint32(&p_buffer[ofs]);
 		ofs += 4;
+		ERR_FAIL_COND_V(size > uint32_t(p_buffer_len - ofs), ERR_INVALID_DATA);
 		MultiplayerSynchronizer *sync = nullptr;
 		if (net_id & 0x80000000) {
 			sync = Object::cast_to<MultiplayerSynchronizer>(multiplayer->get_path_cache()->get_cached_object(p_from, net_id & 0x7FFFFFFF));
@@ -756,14 +757,15 @@ Error SceneReplicationInterface::on_sync_receive(int p_from, const uint8_t *p_bu
 		}
 		Node *node = sync->get_root_node();
 		if (sync->get_multiplayer_authority() != p_from || !node) {
-			ERR_CONTINUE(true);
+			// Not valid for me.
+			ofs += size;
+			ERR_CONTINUE_MSG(true, "Ignoring sync data from non-authority or for missing node.");
 		}
 		if (!sync->update_inbound_sync_time(time)) {
 			// State is too old.
 			ofs += size;
 			continue;
 		}
-		ERR_FAIL_COND_V(size > uint32_t(p_buffer_len - ofs), ERR_BUG);
 		const List<NodePath> props = sync->get_replication_config()->get_sync_properties();
 		Vector<Variant> vars;
 		vars.resize(props.size());
