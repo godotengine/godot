@@ -526,6 +526,9 @@ Ref<Mesh> Mesh::create_outline(float p_margin) const {
 			vc = indices.size();
 			ir = indices.ptrw();
 			has_indices = true;
+		} else {
+			// Ensure there are enough vertices to construct at least one triangle.
+			ERR_FAIL_COND_V(vertices.size() % 3 != 0, Ref<ArrayMesh>());
 		}
 
 		HashMap<Vector3, Vector3> normal_accum;
