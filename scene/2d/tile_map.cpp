@@ -754,8 +754,9 @@ TileMap::VisibilityMode TileMap::get_navigation_visibility_mode() {
 
 void TileMap::set_navigation_map(int p_layer, RID p_map) {
 	ERR_FAIL_INDEX(p_layer, (int)layers.size());
-
+	ERR_FAIL_COND_MSG(!is_inside_tree(), "A TileMap navigation map can only be changed while inside the SceneTree.");
 	layers[p_layer].navigation_map = p_map;
+	layers[p_layer].uses_world_navigation_map = p_map == get_world_2d()->get_navigation_map();
 }
 
 RID TileMap::get_navigation_map(int p_layer) const {
@@ -1111,10 +1112,12 @@ void TileMap::_navigation_update_layer(int p_layer) {
 		if (p_layer == 0 && is_inside_tree()) {
 			// Use the default World2D navigation map for the first layer when empty.
 			layers[p_layer].navigation_map = get_world_2d()->get_navigation_map();
+			layers[p_layer].uses_world_navigation_map = true;
 		} else {
 			RID new_layer_map = NavigationServer2D::get_singleton()->map_create();
 			NavigationServer2D::get_singleton()->map_set_active(new_layer_map, true);
 			layers[p_layer].navigation_map = new_layer_map;
+			layers[p_layer].uses_world_navigation_map = false;
 		}
 	}
 }
@@ -1124,7 +1127,7 @@ void TileMap::_navigation_cleanup_layer(int p_layer) {
 	ERR_FAIL_NULL(NavigationServer2D::get_singleton());
 
 	if (layers[p_layer].navigation_map.is_valid()) {
-		if (is_inside_tree() && layers[p_layer].navigation_map == get_world_2d()->get_navigation_map()) {
+		if (layers[p_layer].uses_world_navigation_map) {
 			// Do not delete the World2D default navigation map.
 			return;
 		}
