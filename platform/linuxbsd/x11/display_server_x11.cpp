@@ -4936,6 +4936,11 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 		win_rect.position = wpos;
 	}
 
+	// Position and size hints are set from these values before they are updated to the actual
+	// window size, so we need to initialize them here.
+	wd.position = win_rect.position;
+	wd.size = win_rect.size;
+
 	{
 		wd.x11_window = XCreateWindow(x11_display, RootWindow(x11_display, visualInfo.screen), win_rect.position.x, win_rect.position.y, win_rect.size.width > 0 ? win_rect.size.width : 1, win_rect.size.height > 0 ? win_rect.size.height : 1, 0, visualInfo.depth, InputOutput, visualInfo.visual, valuemask, &windowAttributes);
 
