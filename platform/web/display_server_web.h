@@ -81,7 +81,7 @@ private:
 	bool swap_cancel_ok = false;
 
 	// utilities
-	static void dom2godot_mod(Ref<InputEventWithModifiers> ev, int p_mod);
+	static void dom2godot_mod(Ref<InputEventWithModifiers> ev, int p_mod, Key p_keycode);
 	static const char *godot2dom_cursor(DisplayServer::CursorShape p_shape);
 
 	// events
