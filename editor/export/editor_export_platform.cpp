@@ -1513,7 +1513,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 		f = FileAccess::open(p_path, FileAccess::WRITE);
 		if (f.is_null()) {
 			DirAccess::remove_file_or_error(tmppath);
-			add_message(EXPORT_MESSAGE_ERROR, TTR("Save PCK"), vformat(TTR("Can't open file to read from path \"%s\"."), tmppath));
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Save PCK"), vformat(TTR("Can't open file for writing at path \"%s\"."), p_path));
 			return ERR_CANT_CREATE;
 		}
 	} else {
@@ -1521,7 +1521,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, b
 		f = FileAccess::open(p_path, FileAccess::READ_WRITE);
 		if (f.is_null()) {
 			DirAccess::remove_file_or_error(tmppath);
-			add_message(EXPORT_MESSAGE_ERROR, TTR("Save PCK"), vformat(TTR("Can't open executable file from path \"%s\"."), tmppath));
+			add_message(EXPORT_MESSAGE_ERROR, TTR("Save PCK"), vformat(TTR("Can't open file for reading-writing at path \"%s\"."), p_path));
 			return ERR_FILE_CANT_OPEN;
 		}
 
