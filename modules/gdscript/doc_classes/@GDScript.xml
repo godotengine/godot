@@ -4,7 +4,7 @@
 		Built-in GDScript functions.
 	</brief_description>
 	<description>
-		A list of GDScript-specific utility functions accessed in any script.
+		A list of GDScript-specific utility functions and annotations accessible from any script.
 		For the list of the global functions and constants see [@GlobalScope].
 	</description>
 	<tutorials>
@@ -20,7 +20,7 @@
 			<description>
 				Returns a [Color] constructed from red ([param r8]), green ([param g8]), blue ([param b8]), and optionally alpha ([param a8]) integer channels, each divided by [code]255.0[/code] for their final value.
 				[codeblock]
-				var red = Color8(255, 0, 0)             # Same as Color(1, 0, 0)
+				var red = Color8(255, 0, 0)             # Same as Color(1, 0, 0).
 				var dark_blue = Color8(0, 0, 51)        # Same as Color(0, 0, 0.2).
 				var my_color = Color8(306, 255, 0, 102) # Same as Color(1.2, 1, 0, 0.4).
 				[/codeblock]
@@ -37,10 +37,10 @@
 				[codeblock]
 				# Imagine we always want speed to be between 0 and 20.
 				var speed = -10
-				assert(speed &lt; 20) # True, the program will continue
-				assert(speed &gt;= 0) # False, the program will stop
-				assert(speed &gt;= 0 and speed &lt; 20) # You can also combine the two conditional statements in one check
-				assert(speed &lt; 20, "the speed limit is 20") # Show a message
+				assert(speed &lt; 20) # True, the program will continue.
+				assert(speed &gt;= 0) # False, the program will stop.
+				assert(speed &gt;= 0 and speed &lt; 20) # You can also combine the two conditional statements in one check.
+				assert(speed &lt; 20, "the speed limit is 20") # Show a message.
 				[/codeblock]
 			</description>
 		</method>
@@ -140,7 +140,7 @@
 			<param index="0" name="path" type="String" />
 			<description>
 				Returns a [Resource] from the filesystem located at the absolute [param path]. Unless it's already referenced elsewhere (such as in another script or in the scene), the resource is loaded from disk on function call, which might cause a slight delay, especially when loading large scenes. To avoid unnecessary delays when loading something multiple times, either store the resource in a variable or use [method preload].
-				[b]Note:[/b] Resource paths can be obtained by right-clicking on a resource in the FileSystem dock and choosing "Copy Path" or by dragging the file from the FileSystem dock into the script.
+				[b]Note:[/b] Resource paths can be obtained by right-clicking on a resource in the FileSystem dock and choosing "Copy Path", or by dragging the file from the FileSystem dock into the current script.
 				[codeblock]
 				# Load a scene called "main" located in the root of the project directory and cache it in a variable.
 				var main = load("res://main.tscn") # main will contain a PackedScene resource.
@@ -155,7 +155,7 @@
 			<param index="0" name="path" type="String" />
 			<description>
 				Returns a [Resource] from the filesystem located at [param path]. During run-time, the resource is loaded when the script is being parsed. This function effectively acts as a reference to that resource. Note that this function requires [param path] to be a constant [String]. If you want to load a resource from a dynamic/variable path, use [method load].
-				[b]Note:[/b] Resource paths can be obtained by right clicking on a resource in the Assets Panel and choosing "Copy Path" or by dragging the file from the FileSystem dock into the script.
+				[b]Note:[/b] Resource paths can be obtained by right-clicking on a resource in the Assets Panel and choosing "Copy Path", or by dragging the file from the FileSystem dock into the current script.
 				[codeblock]
 				# Create instance of a scene.
 				var diamond = preload("res://diamond.tscn").instantiate()
@@ -259,10 +259,12 @@
 		<annotation name="@export">
 			<return type="void" />
 			<description>
-				Mark the following property as exported (editable in the Inspector dock and saved to disk). To control the type of the exported property use the type hint notation.
+				Mark the following property as exported (editable in the Inspector dock and saved to disk). To control the type of the exported property, use the type hint notation.
 				[codeblock]
+				@export var string = ""
 				@export var int_number = 5
 				@export var float_number: float = 5
+				@export var image : Image
 				[/codeblock]
 			</description>
 		</annotation>
@@ -273,20 +275,20 @@
 				Define a new category for the following exported properties. This helps to organize properties in the Inspector dock.
 				See also [constant PROPERTY_USAGE_CATEGORY].
 				[codeblock]
-				@export_category("My Properties")
-				@export var number = 3
-				@export var string = ""
+				@export_category("Statistics")
+				@export var hp = 30
+				@export var speed = 1.25
 				[/codeblock]
-				[b]Note:[/b] Categories in the property list are supposed to indicate different base types, so the use of this annotation is not encouraged. See [annotation @export_group] and [annotation @export_subgroup] instead.
+				[b]Note:[/b] Categories in the Inspector dock's list usually divide properties coming from different classes (Node, Node2D, Sprite, etc.). For better clarity, it's recommended to use [annotation @export_group] and [annotation @export_subgroup], instead.
 			</description>
 		</annotation>
 		<annotation name="@export_color_no_alpha">
 			<return type="void" />
 			<description>
-				Export a [Color] property without transparency (its alpha fixed as [code]1.0[/code]).
+				Export a [Color] property without allowing its transparency ([member Color.a]) to be edited.
 				See also [constant PROPERTY_HINT_COLOR_NO_ALPHA].
 				[codeblock]
-				@export_color_no_alpha var modulate_color: Color
+				@export_color_no_alpha var dye_color : Color
 				[/codeblock]
 			</description>
 		</annotation>
@@ -296,7 +298,7 @@
 				Export a [String] property as a path to a directory. The path will be limited to the project folder and its subfolders. See [annotation @export_global_dir] to allow picking from the entire filesystem.
 				See also [constant PROPERTY_HINT_DIR].
 				[codeblock]
-				@export_dir var sprite_folder: String
+				@export_dir var sprite_folder_path: String
 				[/codeblock]
 			</description>
 		</annotation>
@@ -343,8 +345,8 @@
 				If [param filter] is provided, only matching files will be available for picking.
 				See also [constant PROPERTY_HINT_FILE].
 				[codeblock]
-				@export_file var sound_effect_file: String
-				@export_file("*.txt") var notes_file: String
+				@export_file var sound_effect_path: String
+				@export_file("*.txt") var notes_path: String
 				[/codeblock]
 			</description>
 		</annotation>
@@ -436,10 +438,10 @@
 		<annotation name="@export_global_dir">
 			<return type="void" />
 			<description>
-				Export a [String] property as a path to a directory. The path can be picked from the entire filesystem. See [annotation @export_dir] to limit it to the project folder and its subfolders.
+				Export a [String] property as an absolute path to a directory. The path can be picked from the entire filesystem. See [annotation @export_dir] to limit it to the project folder and its subfolders.
 				See also [constant PROPERTY_HINT_GLOBAL_DIR].
 				[codeblock]
-				@export_global_dir var sprite_folder: String
+				@export_global_dir var sprite_folder_path: String
 				[/codeblock]
 			</description>
 		</annotation>
@@ -447,12 +449,12 @@
 			<return type="void" />
 			<param index="0" name="filter" type="String" default="&quot;&quot;" />
 			<description>
-				Export a [String] property as a path to a file. The path can be picked from the entire filesystem. See [annotation @export_file] to limit it to the project folder and its subfolders.
+				Export a [String] property as an absolute path to a file. The path can be picked from the entire filesystem. See [annotation @export_file] to limit it to the project folder and its subfolders.
 				If [param filter] is provided, only matching files will be available for picking.
 				See also [constant PROPERTY_HINT_GLOBAL_FILE].
 				[codeblock]
-				@export_global_file var sound_effect_file: String
-				@export_global_file("*.txt") var notes_file: String
+				@export_global_file var sound_effect_path: String
+				@export_global_file("*.txt") var notes_path: String
 				[/codeblock]
 			</description>
 		</annotation>
@@ -466,13 +468,13 @@
 				Groups cannot be nested, use [annotation @export_subgroup] to add subgroups within groups.
 				See also [constant PROPERTY_USAGE_GROUP].
 				[codeblock]
-				@export_group("My Properties")
-				@export var number = 3
-				@export var string = ""
+				@export_group("Racer Properties")
+				@export var nickname = "Nick"
+				@export var age = 26
 
-				@export_group("Prefixed Properties", "prefix_")
-				@export var prefix_number = 3
-				@export var prefix_string = ""
+				@export_group("Car Properties", "car_")
+				@export var car_label = "Speedy"
+				@export var car_number = 3
 
 				@export_group("", "")
 				@export var ungrouped_number = 3
@@ -544,13 +546,13 @@
 				Define a new subgroup for the following exported properties. This helps to organize properties in the Inspector dock. Subgroups work exactly like groups, except they need a parent group to exist. See [annotation @export_group].
 				See also [constant PROPERTY_USAGE_SUBGROUP].
 				[codeblock]
-				@export_group("My Properties")
-				@export var number = 3
-				@export var string = ""
+				@export_group("Racer Properties")
+				@export var nickname = "Nick"
+				@export var age = 26
 
-				@export_subgroup("My Prefixed Properties", "prefix_")
-				@export var prefix_number = 3
-				@export var prefix_string = ""
+				@export_subgroup("Car Properties", "car_")
+				@export var car_label = "Speedy"
+				@export var car_number = 3
 				[/codeblock]
 				[b]Note:[/b] Subgroups cannot be nested, they only provide one extra level of depth. Just like the next group ends the previous group, so do the subsequent subgroups.
 			</description>
@@ -571,7 +573,7 @@
 		<annotation name="@onready">
 			<return type="void" />
 			<description>
-				Mark the following property as assigned on [Node]'s ready state change. Values for these properties are not assigned immediately upon the node's creation, and instead are computed and stored right before [method Node._ready].
+				Mark the following property as assigned when the [Node] is ready. Values for these properties are not assigned immediately when the node is initialized ([method Object._init]), and instead are computed and stored right before [method Node._ready].
 				[codeblock]
 				@onready var character_name: Label = $Label
 				[/codeblock]
