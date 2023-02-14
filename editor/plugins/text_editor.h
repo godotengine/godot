@@ -41,7 +41,7 @@ class TextEditor : public ScriptEditorBase {
 private:
 	CodeTextEditor *code_editor = nullptr;
 
-	Ref<TextFile> text_file;
+	Ref<Resource> edited_res;
 	bool editor_enabled = false;
 
 	HBoxContainer *edit_hb = nullptr;

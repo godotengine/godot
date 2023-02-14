@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/input/input.h"
 #include "core/io/file_access.h"
+#include "core/io/json.h"
 #include "core/io/resource_loader.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
@@ -205,6 +206,27 @@ Ref<EditorSyntaxHighlighter> EditorStandardSyntaxHighlighter::_create() const {
 
 Ref<EditorSyntaxHighlighter> EditorPlainTextSyntaxHighlighter::_create() const {
 	Ref<EditorPlainTextSyntaxHighlighter> syntax_highlighter;
+	syntax_highlighter.instantiate();
+	return syntax_highlighter;
+}
+
+////
+
+void EditorJSONSyntaxHighlighter::_update_cache() {
+	highlighter->set_text_edit(text_edit);
+	highlighter->clear_keyword_colors();
+	highlighter->clear_member_keyword_colors();
+	highlighter->clear_color_regions();
+
+	highlighter->set_symbol_color(EDITOR_GET("text_editor/theme/highlighting/symbol_color"));
+	highlighter->set_number_color(EDITOR_GET("text_editor/theme/highlighting/number_color"));
+
+	const Color string_color = EDITOR_GET("text_editor/theme/highlighting/string_color");
+	highlighter->add_color_region("\"", "\"", string_color);
+}
+
+Ref<EditorSyntaxHighlighter> EditorJSONSyntaxHighlighter::_create() const {
+	Ref<EditorJSONSyntaxHighlighter> syntax_highlighter;
 	syntax_highlighter.instantiate();
 	return syntax_highlighter;
 }
@@ -702,9 +724,10 @@ void ScriptEditor::_open_recent_script(int p_idx) {
 	if (FileAccess::exists(path)) {
 		List<String> extensions;
 		ResourceLoader::get_recognized_extensions_for_type("Script", &extensions);
+		ResourceLoader::get_recognized_extensions_for_type("JSON", &extensions);
 
 		if (extensions.find(path.get_extension())) {
-			Ref<Script> scr = ResourceLoader::load(path);
+			Ref<Resource> scr = ResourceLoader::load(path);
 			if (scr.is_valid()) {
 				edit(scr, true);
 				return;
@@ -1182,6 +1205,7 @@ void ScriptEditor::_menu_option(int p_option) {
 
 			List<String> extensions;
 			ResourceLoader::get_recognized_extensions_for_type("Script", &extensions);
+			ResourceLoader::get_recognized_extensions_for_type("JSON", &extensions);
 			bool built_in = !path.is_resource_file();
 
 			if (extensions.find(path.get_extension()) || built_in) {
@@ -1196,7 +1220,7 @@ void ScriptEditor::_menu_option(int p_option) {
 					}
 				}
 
-				Ref<Script> scr = ResourceLoader::load(path);
+				Ref<Resource> scr = ResourceLoader::load(path);
 				if (!scr.is_valid()) {
 					EditorNode::get_singleton()->show_warning(TTR("Could not load file at:") + "\n\n" + path, TTR("Error!"));
 					file_dialog_option = -1;
@@ -2319,12 +2343,23 @@ bool ScriptEditor::edit(const Ref<Resource> &p_resource, int p_line, int p_col, 
 		}
 		se->add_syntax_highlighter(highlighter);
 
-		if (scr != nullptr && !highlighter_set) {
-			PackedStringArray languages = highlighter->_get_supported_languages();
+		if (highlighter_set) {
+			continue;
+		}
+
+		PackedStringArray languages = highlighter->_get_supported_languages();
+		// If script try language, else use extension.
+		if (scr != nullptr) {
 			if (languages.has(scr->get_language()->get_name())) {
 				se->set_syntax_highlighter(highlighter);
 				highlighter_set = true;
 			}
+			continue;
+		}
+
+		if (languages.has(p_resource->get_path().get_extension())) {
+			se->set_syntax_highlighter(highlighter);
+			highlighter_set = true;
 		}
 	}
 
@@ -2536,6 +2571,14 @@ void ScriptEditor::reload_scripts(bool p_refresh_only) {
 				scr->reload(true);
 			}
 
+			Ref<JSON> json = edited_res;
+			if (json != nullptr) {
+				Ref<JSON> rel_json = ResourceLoader::load(json->get_path(), json->get_class(), ResourceFormatLoader::CACHE_MODE_IGNORE);
+				ERR_CONTINUE(!rel_json.is_valid());
+				json->parse(rel_json->get_parsed_text(), true);
+				json->set_last_modified_time(rel_json->get_last_modified_time());
+			}
+
 			Ref<TextFile> text_file = edited_res;
 			if (text_file.is_valid()) {
 				text_file->reload_from_file();
@@ -2564,8 +2607,9 @@ void ScriptEditor::open_text_file_create_dialog(const String &p_base_path, const
 Ref<Resource> ScriptEditor::open_file(const String &p_file) {
 	List<String> extensions;
 	ResourceLoader::get_recognized_extensions_for_type("Script", &extensions);
+	ResourceLoader::get_recognized_extensions_for_type("JSON", &extensions);
 	if (extensions.find(p_file.get_extension())) {
-		Ref<Script> scr = ResourceLoader::load(p_file);
+		Ref<Resource> scr = ResourceLoader::load(p_file);
 		if (!scr.is_valid()) {
 			EditorNode::get_singleton()->show_warning(TTR("Could not load file at:") + "\n\n" + p_file, TTR("Error!"));
 			return Ref<Resource>();
@@ -2866,8 +2910,8 @@ bool ScriptEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_data
 			if (file.is_empty() || !FileAccess::exists(file)) {
 				continue;
 			}
-			if (ResourceLoader::exists(file, "Script")) {
-				Ref<Script> scr = ResourceLoader::load(file);
+			if (ResourceLoader::exists(file, "Script") || ResourceLoader::exists(file, "JSON")) {
+				Ref<Resource> scr = ResourceLoader::load(file);
 				if (scr.is_valid()) {
 					return true;
 				}
@@ -2947,7 +2991,7 @@ void ScriptEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Co
 				continue;
 			}
 
-			if (!ResourceLoader::exists(file, "Script") && !textfile_extensions.has(file.get_extension())) {
+			if (!ResourceLoader::exists(file, "Script") && !ResourceLoader::exists(file, "JSON") && !textfile_extensions.has(file.get_extension())) {
 				continue;
 			}
 
@@ -3105,6 +3149,7 @@ void ScriptEditor::set_window_layout(Ref<ConfigFile> p_layout) {
 	HashSet<String> loaded_scripts;
 	List<String> extensions;
 	ResourceLoader::get_recognized_extensions_for_type("Script", &extensions);
+	ResourceLoader::get_recognized_extensions_for_type("JSON", &extensions);
 
 	for (int i = 0; i < scripts.size(); i++) {
 		String path = scripts[i];
@@ -3123,7 +3168,7 @@ void ScriptEditor::set_window_layout(Ref<ConfigFile> p_layout) {
 		loaded_scripts.insert(path);
 
 		if (extensions.find(path.get_extension())) {
-			Ref<Script> scr = ResourceLoader::load(path);
+			Ref<Resource> scr = ResourceLoader::load(path);
 			if (!scr.is_valid()) {
 				continue;
 			}
@@ -3477,6 +3522,12 @@ void ScriptEditor::_open_script_request(const String &p_path) {
 		return;
 	}
 
+	Ref<JSON> json = ResourceLoader::load(p_path);
+	if (json.is_valid()) {
+		script_editor->edit(json, false);
+		return;
+	}
+
 	Error err;
 	Ref<TextFile> text_file = script_editor->_load_text_file(p_path, &err);
 	if (text_file.is_valid()) {
@@ -3539,7 +3590,8 @@ void ScriptEditor::_on_find_in_files_result_selected(String fpath, int line_numb
 			return;
 		} else {
 			Ref<Script> scr = res;
-			if (scr.is_valid()) {
+			Ref<JSON> json = res;
+			if (scr.is_valid() || json.is_valid()) {
 				edit(scr);
 
 				ScriptTextEditor *ste = Object::cast_to<ScriptTextEditor>(_get_current_editor());
@@ -3942,6 +3994,10 @@ ScriptEditor::ScriptEditor() {
 
 	add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("ScriptEditorPanel"), SNAME("EditorStyles")));
 	tab_container->add_theme_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_theme_stylebox(SNAME("ScriptEditor"), SNAME("EditorStyles")));
+
+	Ref<EditorJSONSyntaxHighlighter> json_syntax_highlighter;
+	json_syntax_highlighter.instantiate();
+	register_syntax_highlighter(json_syntax_highlighter);
 }
 
 ScriptEditor::~ScriptEditor() {
@@ -3963,6 +4019,8 @@ void ScriptEditorPlugin::edit(Object *p_object) {
 			}
 		}
 		script_editor->edit(p_script);
+	} else if (Object::cast_to<JSON>(p_object)) {
+		script_editor->edit(Object::cast_to<JSON>(p_object));
 	} else if (Object::cast_to<TextFile>(p_object)) {
 		script_editor->edit(Object::cast_to<TextFile>(p_object));
 	}
@@ -3974,6 +4032,10 @@ bool ScriptEditorPlugin::handles(Object *p_object) const {
 	}
 
 	if (Object::cast_to<Script>(p_object)) {
+		return true;
+	}
+
+	if (Object::cast_to<JSON>(p_object)) {
 		return true;
 	}
 
