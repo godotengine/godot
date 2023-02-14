@@ -36,7 +36,7 @@
 
 void Popup::_input_from_window(const Ref<InputEvent> &p_event) {
 	Ref<InputEventKey> key = p_event;
-	if (key.is_valid() && key->is_pressed() && key->get_keycode() == Key::ESCAPE) {
+	if (get_flag(FLAG_POPUP) && key.is_valid() && key->is_pressed() && key->get_keycode() == Key::ESCAPE) {
 		_close_pressed();
 	}
 }
@@ -102,9 +102,14 @@ void Popup::_notification(int p_what) {
 			}
 		} break;
 
-		case NOTIFICATION_WM_CLOSE_REQUEST:
-		case NOTIFICATION_APPLICATION_FOCUS_OUT: {
+		case NOTIFICATION_WM_CLOSE_REQUEST: {
 			if (!is_in_edited_scene_root()) {
+				_close_pressed();
+			}
+		} break;
+
+		case NOTIFICATION_APPLICATION_FOCUS_OUT: {
+			if (!is_in_edited_scene_root() && get_flag(FLAG_POPUP)) {
 				_close_pressed();
 			}
 		} break;
