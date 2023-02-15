@@ -3285,7 +3285,6 @@ Error GLTFDocument::_parse_images(Ref<GLTFState> p_state, const String &p_base_p
 			tex.instantiate();
 			tex->set_name(img->get_name());
 			tex->set_keep_compressed_buffer(true);
-			p_state->source_images.push_back(img);
 			tex->create_from_image(img, PortableCompressedTexture2D::COMPRESSION_MODE_BASIS_UNIVERSAL);
 			p_state->images.push_back(tex);
 			p_state->source_images.push_back(img);
