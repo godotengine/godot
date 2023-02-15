@@ -306,6 +306,15 @@ void RasterizerGLES3::_blit_render_target_to_screen(RID p_render_target, Display
 
 	glReadBuffer(GL_COLOR_ATTACHMENT0);
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
+
+	if (p_screen_rect.position != Vector2()) {
+		// Viewport doesn't cover entire window so clear window to black before blitting.
+		Size2i win_size = DisplayServer::get_singleton()->window_get_size();
+		glViewport(0, 0, win_size.width, win_size.height);
+		glClearColor(0.0, 0.0, 0.0, 1.0);
+		glClear(GL_COLOR_BUFFER_BIT);
+	}
+
 	Vector2i screen_rect_end = p_screen_rect.get_end();
 	glBlitFramebuffer(0, 0, rt->size.x, rt->size.y,
 			p_screen_rect.position.x, flip_y ? screen_rect_end.y : p_screen_rect.position.y, screen_rect_end.x, flip_y ? p_screen_rect.position.y : screen_rect_end.y,

@@ -984,17 +984,13 @@ void Window::_update_viewport_size() {
 
 		Size2 margin;
 		Size2 offset;
-		//black bars and margin
+
 		if (content_scale_aspect != CONTENT_SCALE_ASPECT_EXPAND && screen_size.x < video_mode.x) {
 			margin.x = Math::round((video_mode.x - screen_size.x) / 2.0);
-			//RenderingServer::get_singleton()->black_bars_set_margins(margin.x, 0, margin.x, 0);
 			offset.x = Math::round(margin.x * viewport_size.y / screen_size.y);
 		} else if (content_scale_aspect != CONTENT_SCALE_ASPECT_EXPAND && screen_size.y < video_mode.y) {
 			margin.y = Math::round((video_mode.y - screen_size.y) / 2.0);
-			//RenderingServer::get_singleton()->black_bars_set_margins(0, margin.y, 0, margin.y);
 			offset.y = Math::round(margin.y * viewport_size.x / screen_size.x);
-		} else {
-			//RenderingServer::get_singleton()->black_bars_set_margins(0, 0, 0, 0);
 		}
 
 		switch (content_scale_mode) {
