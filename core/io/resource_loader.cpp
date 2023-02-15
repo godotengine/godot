@@ -237,7 +237,15 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 		//this is an actual thread, so wait for Ok from semaphore
 		thread_load_semaphore->wait(); //wait until its ok to start loading
 	}
-	load_task.resource = _load(load_task.remapped_path, load_task.remapped_path != load_task.local_path ? load_task.local_path : String(), load_task.type_hint, load_task.cache_mode, &load_task.error, load_task.use_sub_threads, &load_task.progress);
+	// it is totally possible that another thread has loaded the resource
+	// in the meantime! so we check that right before loading here:
+	Ref<Resource> existing = ResourceCache::get_ref(load_task.local_path);
+	if (existing.is_valid()) {
+		load_task.resource = existing;
+	}
+	else {
+		load_task.resource = _load(load_task.remapped_path, load_task.remapped_path != load_task.local_path ? load_task.local_path : String(), load_task.type_hint, load_task.cache_mode, &load_task.error, load_task.use_sub_threads, &load_task.progress);
+	}
 
 	load_task.progress = 1.0; //it was fully loaded at this point, so force progress to 1.0
 
@@ -272,7 +280,9 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 	}
 
 	if (load_task.resource.is_valid()) {
-		load_task.resource->set_path(load_task.local_path);
+		if(!existing.is_valid()) {
+			load_task.resource->set_path(load_task.local_path);
+		}
 
 		if (load_task.xl_remapped) {
 			load_task.resource->set_as_translation_remapped(true);
