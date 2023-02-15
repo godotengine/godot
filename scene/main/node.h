@@ -158,8 +158,8 @@ private:
 
 	Ref<MultiplayerAPI> multiplayer;
 
-	void _print_tree_pretty(const String &prefix, const bool last);
-	void _print_tree(const Node *p_node);
+	String _get_tree_string_pretty(const String &prefix, const bool last);
+	String _get_tree_string(const Node *p_node);
 
 	Node *_get_child_by_name(const StringName &p_name) const;
 
@@ -367,6 +367,8 @@ public:
 
 	void print_tree();
 	void print_tree_pretty();
+	String get_tree_string();
+	String get_tree_string_pretty();
 
 	void set_scene_file_path(const String &p_scene_file_path);
 	String get_scene_file_path() const;
