@@ -740,7 +740,6 @@ public:
 };
 
 VARIANT_ENUM_CAST(RichTextLabel::ListType);
-VARIANT_ENUM_CAST(RichTextLabel::ItemType);
 VARIANT_ENUM_CAST(RichTextLabel::MenuItems);
 
 #endif // RICH_TEXT_LABEL_H
