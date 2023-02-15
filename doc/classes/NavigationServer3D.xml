@@ -422,15 +422,6 @@
 				Sets the map up direction.
 			</description>
 		</method>
-		<method name="process">
-			<return type="void" />
-			<param index="0" name="delta_time" type="float" />
-			<description>
-				Process the collision avoidance agents.
-				The result of this process is needed by the physics server, so this must be called in the main thread.
-				[b]Note:[/b] This function is not thread safe.
-			</description>
-		</method>
 		<method name="query_path" qualifiers="const">
 			<return type="void" />
 			<param index="0" name="parameters" type="NavigationPathQueryParameters3D" />
