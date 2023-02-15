@@ -538,12 +538,6 @@ String OS_Unix::get_executable_path() const {
 		return OS::get_executable_path();
 	}
 	return b;
-#elif defined(__OpenBSD__) || defined(__NetBSD__)
-	char resolved_path[MAXPATHLEN];
-
-	realpath(OS::get_executable_path().utf8().get_data(), resolved_path);
-
-	return String(resolved_path);
 #elif defined(__FreeBSD__)
 	int mib[4] = { CTL_KERN, KERN_PROC, KERN_PROC_PATHNAME, -1 };
 	char buf[MAXPATHLEN];
@@ -571,8 +565,41 @@ String OS_Unix::get_executable_path() const {
 
 	return path;
 #else
-	ERR_PRINT("Warning, don't know how to obtain executable path on this OS! Please override this function properly.");
-	return OS::get_executable_path();
+	char path[PATH_MAX];
+	String prog;
+	const char *argv0;
+	char *e, *dup, *t, *entry;
+
+	prog = OS::get_executable_path();
+	argv0 = prog.utf8().get_data(); // XXX what if it's not utf8?
+
+	if (*argv0 == '/' || strncmp(argv0, "./", 2) == 0) {
+		if (realpath(argv0, path) != NULL)
+			return String(path);
+	}
+
+	if ((e = getenv("PATH")) == NULL) {
+		WARN_PRINT("PATH not defined and argv[0] doesn't seem a path");
+		return prog;
+	}
+
+	if ((dup = strdup(e)) == NULL)
+		return prog;
+
+	t = dup;
+	while ((entry = strsep(&t, ":")) != NULL) {
+		int r = snprintf(path, sizeof(path), "%s/%s", entry, argv0);
+		if (r < 0 || (size_t)r >= sizeof(path))
+			continue;
+		if (access(path, X_OK) == 0) {
+			free(dup);
+			return String(path);
+		}
+	}
+	free(dup);
+
+	WARN_PRINT("executable path not found!");
+	return prog;
 #endif
 }
 
