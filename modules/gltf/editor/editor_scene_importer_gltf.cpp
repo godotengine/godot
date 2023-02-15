@@ -47,15 +47,15 @@ void EditorSceneFormatImporterGLTF::get_extensions(List<String> *r_extensions) c
 Node *EditorSceneFormatImporterGLTF::import_scene(const String &p_path, uint32_t p_flags,
 		const HashMap<StringName, Variant> &p_options,
 		List<String> *r_missing_deps, Error *r_err) {
-	Ref<GLTFDocument> doc;
-	doc.instantiate();
+	Ref<GLTFDocument> gltf;
+	gltf.instantiate();
 	Ref<GLTFState> state;
 	state.instantiate();
 	if (p_options.has("gltf/embedded_image_handling")) {
 		int32_t enum_option = p_options["gltf/embedded_image_handling"];
 		state->set_handle_binary_image(enum_option);
 	}
-	Error err = doc->append_from_file(p_path, state, p_flags);
+	Error err = gltf->append_from_file(p_path, state, p_flags);
 	if (err != OK) {
 		if (r_err) {
 			*r_err = err;
@@ -67,21 +67,11 @@ Node *EditorSceneFormatImporterGLTF::import_scene(const String &p_path, uint32_t
 	}
 
 #ifndef DISABLE_DEPRECATED
-	if (p_options.has("animation/trimming")) {
-		if (p_options.has("animation/remove_immutable_tracks")) {
-			return doc->generate_scene(state, (float)p_options["animation/fps"], (bool)p_options["animation/trimming"], (bool)p_options["animation/remove_immutable_tracks"]);
-		} else {
-			return doc->generate_scene(state, (float)p_options["animation/fps"], (bool)p_options["animation/trimming"], true);
-		}
-	} else {
-		if (p_options.has("animation/remove_immutable_tracks")) {
-			return doc->generate_scene(state, (float)p_options["animation/fps"], false, (bool)p_options["animation/remove_immutable_tracks"]);
-		} else {
-			return doc->generate_scene(state, (float)p_options["animation/fps"], false, true);
-		}
-	}
+	bool trimming = p_options.has("animation/trimming") ? (bool)p_options["animation/trimming"] : false;
+	bool remove_immutable = p_options.has("animation/remove_immutable_tracks") ? (bool)p_options["animation/remove_immutable_tracks"] : true;
+	return gltf->generate_scene(state, (float)p_options["animation/fps"], trimming, remove_immutable);
 #else
-	return doc->generate_scene(state, (float)p_options["animation/fps"], (bool)p_options["animation/trimming"], (bool)p_options["animation/remove_immutable_tracks"]);
+	return gltf->generate_scene(state, (float)p_options["animation/fps"], (bool)p_options["animation/trimming"], (bool)p_options["animation/remove_immutable_tracks"]);
 #endif
 }
 
