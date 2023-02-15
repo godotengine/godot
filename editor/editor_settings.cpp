@@ -384,9 +384,6 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 			if (score > 0 && score >= best_score) {
 				best = locale;
 				best_score = score;
-				if (score == 10) {
-					break; // Exact match, skip the rest.
-				}
 			}
 		}
 		if (best_score == 0) {
