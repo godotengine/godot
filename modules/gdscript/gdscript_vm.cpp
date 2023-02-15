@@ -1244,7 +1244,17 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 							"' to a variable of type '" + nc->get_name() + "'.";
 					OPCODE_BREAK;
 				}
-				Object *src_obj = src->operator Object *();
+
+				bool was_freed = false;
+				Object *src_obj = src->get_validated_object_with_check(was_freed);
+				if (!src_obj) {
+					if (was_freed) {
+						err_text = "Trying to assign invalid previously freed instance.";
+					} else {
+						err_text = "Trying to assign invalid null variable.";
+					}
+					OPCODE_BREAK;
+				}
 
 				if (src_obj && !ClassDB::is_parent_class(src_obj->get_class_name(), nc->get_name())) {
 					err_text = "Trying to assign value of type '" + src_obj->get_class_name() +
@@ -1274,15 +1284,26 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					OPCODE_BREAK;
 				}
 
-				if (src->get_type() != Variant::NIL && src->operator Object *() != nullptr) {
-					ScriptInstance *scr_inst = src->operator Object *()->get_script_instance();
+				if (src->get_type() != Variant::NIL) {
+					bool was_freed = false;
+					Object *val_obj = src->get_validated_object_with_check(was_freed);
+					if (!val_obj) {
+						if (was_freed) {
+							err_text = "Trying to assign invalid previously freed instance.";
+						} else {
+							err_text = "Trying to assign invalid null variable.";
+						}
+						OPCODE_BREAK;
+					}
+
+					ScriptInstance *scr_inst = val_obj->get_script_instance();
 					if (!scr_inst) {
-						err_text = "Trying to assign value of type '" + src->operator Object *()->get_class_name() +
+						err_text = "Trying to assign value of type '" + val_obj->get_class_name() +
 								"' to a variable of type '" + base_type->get_path().get_file() + "'.";
 						OPCODE_BREAK;
 					}
 
-					Script *src_type = src->operator Object *()->get_script_instance()->get_script().ptr();
+					Script *src_type = val_obj->get_script_instance()->get_script().ptr();
 					bool valid = false;
 
 					while (src_type) {
@@ -1294,7 +1315,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					}
 
 					if (!valid) {
-						err_text = "Trying to assign value of type '" + src->operator Object *()->get_script_instance()->get_script()->get_path().get_file() +
+						err_text = "Trying to assign value of type '" + val_obj->get_script_instance()->get_script()->get_path().get_file() +
 								"' to a variable of type '" + base_type->get_path().get_file() + "'.";
 						OPCODE_BREAK;
 					}
