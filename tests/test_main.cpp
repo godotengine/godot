@@ -202,7 +202,7 @@ struct GodotTestCaseListener : public doctest::IReporter {
 	ThemeDB *theme_db = nullptr;
 
 	void test_case_start(const doctest::TestCaseData &p_in) override {
-		SignalWatcher::get_singleton()->_clear_signals();
+		reinitialize();
 
 		String name = String(p_in.m_name);
 		String suite_name = String(p_in.m_test_suite);
@@ -343,11 +343,11 @@ struct GodotTestCaseListener : public doctest::IReporter {
 	}
 
 	void test_case_reenter(const doctest::TestCaseData &) override {
-		SignalWatcher::get_singleton()->_clear_signals();
+		reinitialize();
 	}
 
 	void subcase_start(const doctest::SubcaseSignature &) override {
-		SignalWatcher::get_singleton()->_clear_signals();
+		reinitialize();
 	}
 
 	void report_query(const doctest::QueryData &) override {}
@@ -357,6 +357,12 @@ struct GodotTestCaseListener : public doctest::IReporter {
 	void log_assert(const doctest::AssertData &in) override {}
 	void log_message(const doctest::MessageData &) override {}
 	void test_case_skipped(const doctest::TestCaseData &) override {}
+
+private:
+	void reinitialize() {
+		Math::seed(0x60d07);
+		SignalWatcher::get_singleton()->_clear_signals();
+	}
 };
 
 REGISTER_LISTENER("GodotTestCaseListener", 1, GodotTestCaseListener);
