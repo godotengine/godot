@@ -14,11 +14,7 @@ uint float2half(uint f) {
 
 uint half2float(uint h) {
 	uint h_e = h & uint(0x7c00);
-	if (h_e == uint(0x0000)) {
-		return uint(0);
-	} else {
-		return ((h & uint(0x8000)) << uint(16)) | ((h_e + uint(0x1c000)) << uint(13)) | ((h & uint(0x03ff)) << uint(13));
-	}
+	return ((h & uint(0x8000)) << uint(16)) | uint((h_e >> uint(10)) != uint(0)) * (((h_e + uint(0x1c000)) << uint(13)) | ((h & uint(0x03ff)) << uint(13)));
 }
 
 uint packHalf2x16(vec2 v) {
