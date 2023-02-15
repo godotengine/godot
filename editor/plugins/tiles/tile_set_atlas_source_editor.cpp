@@ -34,6 +34,7 @@
 
 #include "editor/editor_inspector.h"
 #include "editor/editor_node.h"
+#include "editor/editor_property_name_processor.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
@@ -106,13 +107,13 @@ bool TileSetAtlasSourceEditor::TileSetAtlasSourceProxyObject::_get(const StringN
 
 void TileSetAtlasSourceEditor::TileSetAtlasSourceProxyObject::_get_property_list(List<PropertyInfo> *p_list) const {
 	p_list->push_back(PropertyInfo(Variant::NIL, TTR("Atlas"), PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_CATEGORY));
-	p_list->push_back(PropertyInfo(Variant::INT, "id", PROPERTY_HINT_RANGE, "0," + itos(INT_MAX) + ",1"));
-	p_list->push_back(PropertyInfo(Variant::STRING, "name", PROPERTY_HINT_NONE, ""));
-	p_list->push_back(PropertyInfo(Variant::OBJECT, "texture", PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"));
-	p_list->push_back(PropertyInfo(Variant::VECTOR2I, "margins", PROPERTY_HINT_NONE, "suffix:px"));
-	p_list->push_back(PropertyInfo(Variant::VECTOR2I, "separation", PROPERTY_HINT_NONE));
-	p_list->push_back(PropertyInfo(Variant::VECTOR2I, "texture_region_size", PROPERTY_HINT_NONE, "suffix:px"));
-	p_list->push_back(PropertyInfo(Variant::BOOL, "use_texture_padding", PROPERTY_HINT_NONE, ""));
+	p_list->push_back(PropertyInfo(Variant::INT, PNAME("id"), PROPERTY_HINT_RANGE, "0," + itos(INT_MAX) + ",1"));
+	p_list->push_back(PropertyInfo(Variant::STRING, PNAME("name")));
+	p_list->push_back(PropertyInfo(Variant::OBJECT, PNAME("texture"), PROPERTY_HINT_RESOURCE_TYPE, "Texture2D"));
+	p_list->push_back(PropertyInfo(Variant::VECTOR2I, PNAME("margins"), PROPERTY_HINT_NONE, "suffix:px"));
+	p_list->push_back(PropertyInfo(Variant::VECTOR2I, PNAME("separation")));
+	p_list->push_back(PropertyInfo(Variant::VECTOR2I, PNAME("texture_region_size"), PROPERTY_HINT_NONE, "suffix:px"));
+	p_list->push_back(PropertyInfo(Variant::BOOL, PNAME("use_texture_padding")));
 }
 
 void TileSetAtlasSourceEditor::TileSetAtlasSourceProxyObject::_bind_methods() {
@@ -392,11 +393,11 @@ void TileSetAtlasSourceEditor::AtlasTileProxyObject::_get_property_list(List<Pro
 	if (tiles.size() == 1) {
 		if (tiles.front()->get().alternative == 0) {
 			p_list->push_back(PropertyInfo(Variant::NIL, TTR("Base Tile"), PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_CATEGORY));
-			p_list->push_back(PropertyInfo(Variant::VECTOR2I, "atlas_coords"));
-			p_list->push_back(PropertyInfo(Variant::VECTOR2I, "size_in_atlas"));
+			p_list->push_back(PropertyInfo(Variant::VECTOR2I, PNAME("atlas_coords")));
+			p_list->push_back(PropertyInfo(Variant::VECTOR2I, PNAME("size_in_atlas")));
 		} else {
 			p_list->push_back(PropertyInfo(Variant::NIL, TTR("Alternative Tile"), PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_CATEGORY));
-			p_list->push_back(PropertyInfo(Variant::INT, "alternative_id"));
+			p_list->push_back(PropertyInfo(Variant::INT, PNAME("alternative_id")));
 		}
 	} else {
 		p_list->push_back(PropertyInfo(Variant::NIL, TTR("Tiles"), PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_CATEGORY));
@@ -413,17 +414,17 @@ void TileSetAtlasSourceEditor::AtlasTileProxyObject::_get_property_list(List<Pro
 	}
 
 	if (all_alternatve_id_zero) {
-		p_list->push_back(PropertyInfo(Variant::NIL, "Animation", PROPERTY_HINT_NONE, "animation_", PROPERTY_USAGE_GROUP));
-		p_list->push_back(PropertyInfo(Variant::INT, "animation_columns", PROPERTY_HINT_NONE, ""));
-		p_list->push_back(PropertyInfo(Variant::VECTOR2I, "animation_separation", PROPERTY_HINT_NONE, ""));
-		p_list->push_back(PropertyInfo(Variant::FLOAT, "animation_speed", PROPERTY_HINT_NONE, ""));
-		p_list->push_back(PropertyInfo(Variant::INT, "animation_frames_count", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_ARRAY, "Frames,animation_frame_"));
+		p_list->push_back(PropertyInfo(Variant::NIL, GNAME("Animation", "animation_"), PROPERTY_HINT_NONE, "animation_", PROPERTY_USAGE_GROUP));
+		p_list->push_back(PropertyInfo(Variant::INT, PNAME("animation_columns")));
+		p_list->push_back(PropertyInfo(Variant::VECTOR2I, PNAME("animation_separation")));
+		p_list->push_back(PropertyInfo(Variant::FLOAT, PNAME("animation_speed")));
+		p_list->push_back(PropertyInfo(Variant::INT, PNAME("animation_frames_count"), PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_ARRAY, "Frames,animation_frame_"));
 		// Not optimal, but returns value for the first tile. This is similar to what MultiNodeEdit does.
 		if (tile_set_atlas_source->get_tile_animation_frames_count(tiles.front()->get().tile) == 1) {
 			p_list->push_back(PropertyInfo(Variant::FLOAT, "animation_frame_0/duration", PROPERTY_HINT_NONE, "suffix:s", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_READ_ONLY));
 		} else {
 			for (int i = 0; i < tile_set_atlas_source->get_tile_animation_frames_count(tiles.front()->get().tile); i++) {
-				p_list->push_back(PropertyInfo(Variant::FLOAT, vformat("animation_frame_%d/duration", i), PROPERTY_HINT_NONE, "suffix:s"));
+				p_list->push_back(PropertyInfo(Variant::FLOAT, vformat("animation_frame_%d/%s", i, PNAME("duration")), PROPERTY_HINT_NONE, "suffix:s"));
 			}
 		}
 	}
@@ -641,9 +642,9 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 
 	// List of editors.
 	// --- Rendering ---
-	ADD_TILE_DATA_EDITOR_GROUP("Rendering");
+	ADD_TILE_DATA_EDITOR_GROUP(TTR("Rendering"));
 
-	ADD_TILE_DATA_EDITOR(group, "Texture Origin", "texture_origin");
+	ADD_TILE_DATA_EDITOR(group, TTR("Texture Origin"), "texture_origin");
 	if (!tile_data_editors.has("texture_origin")) {
 		TileDataTextureOriginEditor *tile_data_texture_origin_editor = memnew(TileDataTextureOriginEditor);
 		tile_data_texture_origin_editor->hide();
@@ -653,7 +654,7 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 		tile_data_editors["texture_origin"] = tile_data_texture_origin_editor;
 	}
 
-	ADD_TILE_DATA_EDITOR(group, "Modulate", "modulate");
+	ADD_TILE_DATA_EDITOR(group, TTR("Modulate"), "modulate");
 	if (!tile_data_editors.has("modulate")) {
 		TileDataDefaultEditor *tile_data_modulate_editor = memnew(TileDataDefaultEditor());
 		tile_data_modulate_editor->hide();
@@ -663,7 +664,7 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 		tile_data_editors["modulate"] = tile_data_modulate_editor;
 	}
 
-	ADD_TILE_DATA_EDITOR(group, "Z Index", "z_index");
+	ADD_TILE_DATA_EDITOR(group, TTR("Z Index"), "z_index");
 	if (!tile_data_editors.has("z_index")) {
 		TileDataDefaultEditor *tile_data_z_index_editor = memnew(TileDataDefaultEditor());
 		tile_data_z_index_editor->hide();
@@ -673,7 +674,7 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 		tile_data_editors["z_index"] = tile_data_z_index_editor;
 	}
 
-	ADD_TILE_DATA_EDITOR(group, "Y Sort Origin", "y_sort_origin");
+	ADD_TILE_DATA_EDITOR(group, TTR("Y Sort Origin"), "y_sort_origin");
 	if (!tile_data_editors.has("y_sort_origin")) {
 		TileDataYSortEditor *tile_data_y_sort_editor = memnew(TileDataYSortEditor);
 		tile_data_y_sort_editor->hide();
@@ -684,7 +685,7 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 	}
 
 	for (int i = 0; i < tile_set->get_occlusion_layers_count(); i++) {
-		ADD_TILE_DATA_EDITOR(group, vformat("Occlusion Layer %d", i), vformat("occlusion_layer_%d", i));
+		ADD_TILE_DATA_EDITOR(group, vformat(TTR("Occlusion Layer %d"), i), vformat("occlusion_layer_%d", i));
 		if (!tile_data_editors.has(vformat("occlusion_layer_%d", i))) {
 			TileDataOcclusionShapeEditor *tile_data_occlusion_shape_editor = memnew(TileDataOcclusionShapeEditor());
 			tile_data_occlusion_shape_editor->hide();
@@ -700,7 +701,7 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 	}
 
 	// --- Rendering ---
-	ADD_TILE_DATA_EDITOR(root, "Terrains", "terrain_set");
+	ADD_TILE_DATA_EDITOR(root, TTR("Terrains"), "terrain_set");
 	if (!tile_data_editors.has("terrain_set")) {
 		TileDataTerrainsEditor *tile_data_terrains_editor = memnew(TileDataTerrainsEditor);
 		tile_data_terrains_editor->hide();
@@ -710,7 +711,7 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 	}
 
 	// --- Miscellaneous ---
-	ADD_TILE_DATA_EDITOR(root, "Probability", "probability");
+	ADD_TILE_DATA_EDITOR(root, TTR("Probability"), "probability");
 	if (!tile_data_editors.has("probability")) {
 		TileDataDefaultEditor *tile_data_probability_editor = memnew(TileDataDefaultEditor());
 		tile_data_probability_editor->hide();
@@ -721,9 +722,9 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 	}
 
 	// --- Physics ---
-	ADD_TILE_DATA_EDITOR_GROUP("Physics");
+	ADD_TILE_DATA_EDITOR_GROUP(TTR("Physics"));
 	for (int i = 0; i < tile_set->get_physics_layers_count(); i++) {
-		ADD_TILE_DATA_EDITOR(group, vformat("Physics Layer %d", i), vformat("physics_layer_%d", i));
+		ADD_TILE_DATA_EDITOR(group, vformat(TTR("Physics Layer %d"), i), vformat("physics_layer_%d", i));
 		if (!tile_data_editors.has(vformat("physics_layer_%d", i))) {
 			TileDataCollisionEditor *tile_data_collision_editor = memnew(TileDataCollisionEditor());
 			tile_data_collision_editor->hide();
@@ -739,9 +740,9 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 	}
 
 	// --- Navigation ---
-	ADD_TILE_DATA_EDITOR_GROUP("Navigation");
+	ADD_TILE_DATA_EDITOR_GROUP(TTR("Navigation"));
 	for (int i = 0; i < tile_set->get_navigation_layers_count(); i++) {
-		ADD_TILE_DATA_EDITOR(group, vformat("Navigation Layer %d", i), vformat("navigation_layer_%d", i));
+		ADD_TILE_DATA_EDITOR(group, vformat(TTR("Navigation Layer %d"), i), vformat("navigation_layer_%d", i));
 		if (!tile_data_editors.has(vformat("navigation_layer_%d", i))) {
 			TileDataNavigationEditor *tile_data_navigation_editor = memnew(TileDataNavigationEditor());
 			tile_data_navigation_editor->hide();
@@ -757,14 +758,14 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 	}
 
 	// --- Custom Data ---
-	ADD_TILE_DATA_EDITOR_GROUP("Custom Data");
+	ADD_TILE_DATA_EDITOR_GROUP(TTR("Custom Data"));
 	for (int i = 0; i < tile_set->get_custom_data_layers_count(); i++) {
 		String editor_name = vformat("custom_data_%d", i);
 		String prop_name = tile_set->get_custom_data_layer_name(i);
 		Variant::Type prop_type = tile_set->get_custom_data_layer_type(i);
 
 		if (prop_name.is_empty()) {
-			ADD_TILE_DATA_EDITOR(group, vformat("Custom Data %d", i), editor_name);
+			ADD_TILE_DATA_EDITOR(group, vformat(TTR("Custom Data %d"), i), editor_name);
 		} else {
 			ADD_TILE_DATA_EDITOR(group, prop_name, editor_name);
 		}
@@ -2414,6 +2415,14 @@ void TileSetAtlasSourceEditor::_notification(int p_what) {
 				}
 			}
 		} break;
+
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			if (EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/localize_settings")) {
+				EditorPropertyNameProcessor::Style style = EditorPropertyNameProcessor::get_singleton()->get_settings_style();
+				atlas_source_inspector->set_property_name_style(style);
+				tile_inspector->set_property_name_style(style);
+			}
+		} break;
 	}
 }
 
@@ -2483,6 +2492,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	tile_inspector->edit(tile_proxy_object);
 	tile_inspector->set_use_folding(true);
 	tile_inspector->connect("property_selected", callable_mp(this, &TileSetAtlasSourceEditor::_inspector_property_selected));
+	tile_inspector->set_property_name_style(EditorPropertyNameProcessor::get_singleton()->get_settings_style());
 	middle_vbox_container->add_child(tile_inspector);
 
 	tile_inspector_no_tile_selected_label = memnew(Label);
@@ -2534,6 +2544,7 @@ TileSetAtlasSourceEditor::TileSetAtlasSourceEditor() {
 	atlas_source_inspector->set_v_size_flags(SIZE_EXPAND_FILL);
 	atlas_source_inspector->set_show_categories(true);
 	atlas_source_inspector->edit(atlas_source_proxy_object);
+	atlas_source_inspector->set_property_name_style(EditorPropertyNameProcessor::get_singleton()->get_settings_style());
 	middle_vbox_container->add_child(atlas_source_inspector);
 
 	// -- Right side --
