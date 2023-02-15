@@ -245,32 +245,40 @@ namespace Godot.SourceGenerators
             foreach (var signalDelegate in godotSignalDelegates)
             {
                 string signalName = signalDelegate.Name;
+                var invokeMethodData = signalDelegate.InvokeMethodData;
 
-                // TODO: Hide backing event from code-completion and debugger
-                // The reason we have a backing field is to hide the invoke method from the event,
-                // as it doesn't emit the signal, only the event delegates. This can confuse users.
-                // Maybe we should directly connect the delegates, as we do with native signals?
-                source.Append("    private ")
+                source.Append("    [global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n")
+                    .Append("    [global::System.Diagnostics.DebuggerBrowsable(global::System.Diagnostics.DebuggerBrowsableState.Never)]\n")
+                    .Append("    private global::Godot.GodotWeakEvent<")
                     .Append(signalDelegate.DelegateSymbol.FullQualifiedNameIncludeGlobal())
-                    .Append(" backing_")
+                    .Append("> backing_")
                     .Append(signalName)
-                    .Append(";\n");
+                    .Append(";\n\n");
 
                 source.Append(
                     $"    /// <inheritdoc cref=\"{signalDelegate.DelegateSymbol.FullQualifiedNameIncludeGlobal()}\"/>\n");
 
                 source.Append("    public event ")
                     .Append(signalDelegate.DelegateSymbol.FullQualifiedNameIncludeGlobal())
-                    .Append(" ")
+                    .Append(' ')
                     .Append(signalName)
-                    .Append(" {\n")
-                    .Append("        add => backing_")
+                    .Append('\n')
+                    .Append("    {\n");
+
+                source.Append("        add\n")
+                    .Append("        {\n")
+                    .Append("            backing_")
                     .Append(signalName)
-                    .Append(" += value;\n")
-                    .Append("        remove => backing_")
+                    .Append(" ??= new();\n")
+                    .Append("            backing_")
                     .Append(signalName)
-                    .Append(" -= value;\n")
-                    .Append("}\n");
+                    .Append(".AddEventHandler(value);\n")
+                    .Append("        }\n");
+
+                source.Append("        remove => backing_")
+                    .Append(signalName)
+                    .Append("?.RemoveEventHandler(value);\n")
+                    .Append("    }\n\n");
             }
 
             // Generate RaiseGodotClassSignalCallbacks
@@ -290,7 +298,7 @@ namespace Godot.SourceGenerators
 
                 source.Append("        base.RaiseGodotClassSignalCallbacks(signal, args);\n");
 
-                source.Append("    }\n");
+                source.Append("    }\n\n");
             }
 
             // Generate HasGodotClassSignal
@@ -483,7 +491,7 @@ namespace Godot.SourceGenerators
             source.Append(") {\n");
             source.Append("            backing_");
             source.Append(signalName);
-            source.Append("?.Invoke(");
+            source.Append("?.RaiseEvent(");
 
             for (int i = 0; i < invokeMethodData.ParamTypes.Length; i++)
             {

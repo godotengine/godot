@@ -86,6 +86,7 @@ StringBuilder &operator<<(StringBuilder &r_sb, const char *p_cstring) {
 #define CS_METHOD_INVOKE_GODOT_CLASS_METHOD "InvokeGodotClassMethod"
 #define CS_METHOD_HAS_GODOT_CLASS_METHOD "HasGodotClassMethod"
 #define CS_METHOD_HAS_GODOT_CLASS_SIGNAL "HasGodotClassSignal"
+#define CS_METHOD_RAISE_GODOT_CLASS_SIGNAL_CALLBACKS "RaiseGodotClassSignalCallbacks"
 
 #define CS_STATIC_FIELD_NATIVE_CTOR "NativeCtor"
 #define CS_STATIC_FIELD_METHOD_BIND_PREFIX "MethodBind"
@@ -1618,6 +1619,13 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 				"Failed to generate signal '" + isignal.name + "' for class '" + itype.name + "'.");
 	}
 
+	bool type_is_object = itype.name == "Object";
+	if (type_is_object || (!itype.is_singleton && itype.signals_.size() > 0)) {
+		Error method_err = _generate_cs_signal_raise_method(itype, output, type_is_object);
+		ERR_FAIL_COND_V_MSG(method_err != OK, method_err,
+				"Failed to generate raise method for class '" + itype.name + "'.");
+	}
+
 	// Script members look-up
 
 	if (!itype.is_singleton && (is_derived_type || itype.has_virtual_methods)) {
@@ -2351,59 +2359,55 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 		String delegate_name = is_parameterless ? "Action" : p_isignal.proxy_name + "EventHandler";
 
 		if (!is_parameterless) {
-			p_output.append(MEMBER_BEGIN "/// <summary>\n");
-			p_output.append(INDENT1 "/// ");
-			p_output.append("Represents the method that handles the ");
-			p_output.append("<see cref=\"" BINDINGS_NAMESPACE "." + p_itype.proxy_name + "." + p_isignal.proxy_name + "\"/>");
-			p_output.append(" event of a ");
-			p_output.append("<see cref=\"" BINDINGS_NAMESPACE "." + p_itype.proxy_name + "\"/>");
-			p_output.append(" class.\n");
-			p_output.append(INDENT1 "/// </summary>");
+			if (!p_itype.is_singleton_instance) {
+				// Generate delegate
+				p_output.append(MEMBER_BEGIN "/// <summary>\n");
+				p_output.append(INDENT1 "/// ");
+				p_output.append("Represents the method that handles the ");
+				p_output.append("<see cref=\"" BINDINGS_NAMESPACE "." + p_itype.proxy_name + "." + p_isignal.proxy_name + "\"/>");
+				p_output.append(" event of a ");
+				p_output.append("<see cref=\"" BINDINGS_NAMESPACE "." + p_itype.proxy_name + "\"/>");
+				p_output.append(" class.\n");
+				p_output.append(INDENT1 "/// </summary>");
 
-			if (p_isignal.is_deprecated) {
-				if (p_isignal.deprecation_message.is_empty()) {
-					WARN_PRINT("An empty deprecation message is discouraged. Signal: '" + p_isignal.proxy_name + "'.");
+				if (p_isignal.is_deprecated) {
+					p_output.append(MEMBER_BEGIN "[Obsolete(\"");
+					p_output.append(p_isignal.deprecation_message);
+					p_output.append("\")]");
 				}
 
+				p_output.append(MEMBER_BEGIN "public delegate void ");
+				p_output.append(delegate_name);
+				p_output.append("(");
+				p_output.append(arguments_sig);
+				p_output.append(");\n");
+			} else {
+				// The delegate is generated in the static singleton class, if we're
+				// generating the instance class we need to reference it correctly.
+				delegate_name = BINDINGS_NAMESPACE "." + p_itype.proxy_name.trim_suffix(CS_SINGLETON_INSTANCE_SUFFIX) + "." + delegate_name;
+			}
+		}
+
+		// Generate backing weak event
+		if (!p_itype.is_singleton) {
+			if (p_isignal.is_deprecated) {
 				p_output.append(MEMBER_BEGIN "[Obsolete(\"");
 				p_output.append(p_isignal.deprecation_message);
 				p_output.append("\")]");
 			}
 
-			// Generate delegate
-			p_output.append(MEMBER_BEGIN "public delegate void ");
+			p_output.append(MEMBER_BEGIN "[global::System.Diagnostics.DebuggerBrowsable(global::System.Diagnostics.DebuggerBrowsableState.Never)]");
+			p_output.append(MEMBER_BEGIN "private ");
+
+			p_output.append("global::Godot.GodotWeakEvent<");
 			p_output.append(delegate_name);
-			p_output.append("(");
-			p_output.append(arguments_sig);
-			p_output.append(");\n");
-
-			// Generate Callable trampoline for the delegate
-			p_output << MEMBER_BEGIN "private static void " << p_isignal.proxy_name << "Trampoline"
-					 << "(object delegateObj, NativeVariantPtrArgs args, out godot_variant ret)\n"
-					 << INDENT1 "{\n"
-					 << INDENT2 "Callable.ThrowIfArgCountMismatch(args, " << itos(p_isignal.arguments.size()) << ");\n"
-					 << INDENT2 "((" << delegate_name << ")delegateObj)(";
-
-			int idx = 0;
-			for (const ArgumentInterface &iarg : p_isignal.arguments) {
-				const TypeInterface *arg_type = _get_type_or_null(iarg.type);
-				ERR_FAIL_NULL_V(arg_type, ERR_BUG); // Argument type not found
-
-				if (idx != 0) {
-					p_output << ",";
-				}
-
-				p_output << sformat(arg_type->cs_variant_to_managed,
-						"args[" + itos(idx) + "]", arg_type->cs_type, arg_type->name);
-
-				idx++;
-			}
-
-			p_output << ");\n"
-					 << INDENT2 "ret = default;\n"
-					 << INDENT1 "}\n";
+			p_output.append("> ");
+			p_output.append("backing_");
+			p_output.append(p_isignal.proxy_name);
+			p_output.append(";\n");
 		}
 
+		// Generate event
 		if (p_isignal.method_doc && p_isignal.method_doc->description.size()) {
 			String xml_summary = bbcode_to_xml(fix_doc_description(p_isignal.method_doc->description), &p_itype, true);
 			Vector<String> summary_lines = xml_summary.length() ? xml_summary.split("\n") : Vector<String>();
@@ -2426,25 +2430,19 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 		}
 
 		if (p_isignal.is_deprecated) {
+			if (p_isignal.deprecation_message.is_empty()) {
+				WARN_PRINT("An empty deprecation message is discouraged. Signal: '" + p_isignal.proxy_name + "'.");
+			}
+
 			p_output.append(MEMBER_BEGIN "[Obsolete(\"");
 			p_output.append(p_isignal.deprecation_message);
 			p_output.append("\")]");
 		}
 
-		// TODO:
-		// Could we assume the StringName instance of signal name will never be freed (it's stored in ClassDB) before the managed world is unloaded?
-		// If so, we could store the pointer we get from `data_unique_pointer()` instead of allocating StringName here.
-
-		// Generate event
 		p_output.append(MEMBER_BEGIN "public ");
 
 		if (p_itype.is_singleton) {
 			p_output.append("static ");
-		}
-
-		if (!is_parameterless) {
-			// `unsafe` is needed for taking the trampoline's function pointer
-			p_output << "unsafe ";
 		}
 
 		p_output.append("event ");
@@ -2454,35 +2452,83 @@ Error BindingsGenerator::_generate_cs_signal(const BindingsGenerator::TypeInterf
 		p_output.append("\n" OPEN_BLOCK_L1 INDENT2);
 
 		if (p_itype.is_singleton) {
-			p_output.append("add => " CS_PROPERTY_SINGLETON ".Connect(SignalName.");
-		} else {
-			p_output.append("add => Connect(SignalName.");
-		}
+			p_output.append("add => " CS_PROPERTY_SINGLETON ".");
+			p_output.append(p_isignal.proxy_name);
+			p_output.append(" += value;\n");
 
-		if (is_parameterless) {
-			// Delegate type is Action. No need for custom trampoline.
-			p_output << p_isignal.proxy_name << ", Callable.From(value));\n";
+			p_output.append(INDENT2 "remove => " CS_PROPERTY_SINGLETON ".");
+			p_output.append(p_isignal.proxy_name);
+			p_output.append(" -= value;\n");
 		} else {
-			p_output << p_isignal.proxy_name
-					 << ", Callable.CreateWithUnsafeTrampoline(value, &" << p_isignal.proxy_name << "Trampoline));\n";
-		}
+			p_output.append("add\n" OPEN_BLOCK_L2);
+			p_output.append(INDENT3 "backing_");
+			p_output.append(p_isignal.proxy_name);
+			p_output.append(" \?\?= new();\n");
+			p_output.append(INDENT3 "backing_");
+			p_output.append(p_isignal.proxy_name);
+			p_output.append(".AddEventHandler(value);\n");
+			p_output.append(CLOSE_BLOCK_L2);
 
-		if (p_itype.is_singleton) {
-			p_output.append(INDENT2 "remove => " CS_PROPERTY_SINGLETON ".Disconnect(SignalName.");
-		} else {
-			p_output.append(INDENT2 "remove => Disconnect(SignalName.");
-		}
-
-		if (is_parameterless) {
-			// Delegate type is Action. No need for custom trampoline.
-			p_output << p_isignal.proxy_name << ", Callable.From(value));\n";
-		} else {
-			p_output << p_isignal.proxy_name
-					 << ", Callable.CreateWithUnsafeTrampoline(value, &" << p_isignal.proxy_name << "Trampoline));\n";
+			p_output.append(INDENT2 "remove => backing_");
+			p_output.append(p_isignal.proxy_name);
+			p_output.append("?.RemoveEventHandler(value);\n");
 		}
 
 		p_output.append(CLOSE_BLOCK_L1);
 	}
+
+	return OK;
+}
+
+Error BindingsGenerator::_generate_cs_signal_raise_method(const BindingsGenerator::TypeInterface &p_itype, StringBuilder &p_output, bool p_type_is_base) {
+	p_output << MEMBER_BEGIN "/// <summary>\n"
+			 << INDENT1 "/// Raises the signal with the given name, using the given arguments.\n"
+			 << INDENT1 "/// This method is used by Godot to raise signals from the engine side.\n"
+			 << INDENT1 "/// Do not call or override this method.\n"
+			 << INDENT1 "/// </summary>\n"
+			 << INDENT1 "/// <param name=\"signal\">Name of the signal to raise.</param>\n"
+			 << INDENT1 "/// <param name=\"args\">Arguments to use with the raised signal.</param>\n";
+
+	p_output << INDENT1 "[global::System.ComponentModel.EditorBrowsable(global::System.ComponentModel.EditorBrowsableState.Never)]\n";
+
+	p_output.append(INDENT1 "protected internal ");
+	if (p_type_is_base) {
+		p_output.append("virtual ");
+	} else {
+		p_output.append("override ");
+	}
+	p_output.append("void " CS_METHOD_RAISE_GODOT_CLASS_SIGNAL_CALLBACKS "("
+					"in godot_string_name signal, NativeVariantPtrArgs args)\n" OPEN_BLOCK_L1);
+
+	for (const SignalInterface &isignal : p_itype.signals_) {
+		p_output.append(INDENT2 "if (signal == SignalName." + isignal.proxy_name);
+		p_output.append(" && args.Count == " + itos(isignal.arguments.size()) + ")\n");
+		p_output.append(OPEN_BLOCK_L2);
+		p_output.append(INDENT3 "backing_" + isignal.proxy_name + "?.RaiseEvent(");
+
+		int idx = 0;
+		for (const ArgumentInterface &iarg : isignal.arguments) {
+			const TypeInterface *arg_type = _get_type_or_null(iarg.type);
+			ERR_FAIL_NULL_V(arg_type, ERR_BUG); // Argument type not found
+
+			if (idx != 0) {
+				p_output.append(", ");
+			}
+
+			p_output.append(sformat(arg_type->cs_variant_to_managed,
+					"args[" + itos(idx) + "]", arg_type->cs_type, arg_type->name));
+
+			idx++;
+		}
+
+		p_output.append(");\n");
+		p_output.append(CLOSE_BLOCK_L2);
+	}
+
+	if (!p_type_is_base) {
+		p_output.append(INDENT2 "base." CS_METHOD_RAISE_GODOT_CLASS_SIGNAL_CALLBACKS "(signal, args);\n");
+	}
+	p_output.append(CLOSE_BLOCK_L1);
 
 	return OK;
 }

@@ -302,6 +302,8 @@ struct CSharpScriptBinding {
 	MonoGCHandleData gchandle;
 	Object *owner = nullptr;
 
+	List<Callable> connected_event_signals;
+
 	CSharpScriptBinding() {}
 };
 
@@ -355,6 +357,9 @@ class CSharpLanguage : public ScriptLanguage {
 	static GDExtensionBool _instance_binding_reference_callback(void *p_token, void *p_binding, GDExtensionBool p_reference);
 
 	static GDExtensionInstanceBindingCallbacks _instance_binding_callbacks;
+
+	static void connect_event_signals(Vector<StringName> p_signals, Object *p_owner, List<Callable> &r_connected_event_signals);
+	static void disconnect_event_signals(Object *p_owner, List<Callable> &p_connected_event_signals);
 
 public:
 	static void *get_instance_binding(Object *p_object);

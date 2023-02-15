@@ -1299,6 +1299,17 @@ bool CSharpLanguage::setup_csharp_script_binding(CSharpScriptBinding &r_script_b
 		CSharpLanguage::get_singleton()->post_unsafe_reference(rc);
 	}
 
+	// connect_event_signals
+	{
+		List<MethodInfo> signals;
+		p_object->get_signal_list(&signals);
+		Vector<StringName> signal_names;
+		for (const MethodInfo &signal : signals) {
+			signal_names.push_back(signal.name);
+		}
+		connect_event_signals(signal_names, r_script_binding.owner, r_script_binding.connected_event_signals);
+	}
+
 	return true;
 }
 
@@ -1344,6 +1355,8 @@ void CSharpLanguage::_instance_binding_free_callback(void *, void *, void *p_bin
 		CSharpScriptBinding &script_binding = data->value();
 
 		if (script_binding.inited) {
+			disconnect_event_signals(script_binding.owner, script_binding.connected_event_signals);
+
 			// Set the native instance field to IntPtr.Zero, if not yet garbage collected.
 			// This is done to avoid trying to dispose the native instance from Dispose(bool).
 			GDMonoCache::managed_callbacks.ScriptManagerBridge_SetGodotObjectPtr(
@@ -1430,6 +1443,26 @@ GDExtensionBool CSharpLanguage::_instance_binding_reference_callback(void *p_tok
 	}
 }
 
+void CSharpLanguage::connect_event_signals(Vector<StringName> p_signals, Object *p_owner, List<Callable> &r_connected_event_signals) {
+	for (const StringName &signal_name : p_signals) {
+		// TODO: Use pooling for ManagedCallable instances.
+		EventSignalCallable *event_signal_callable = memnew(EventSignalCallable(p_owner, signal_name));
+
+		Callable callable(event_signal_callable);
+		r_connected_event_signals.push_back(callable);
+		p_owner->connect(signal_name, callable);
+	}
+}
+
+void CSharpLanguage::disconnect_event_signals(Object *p_owner, List<Callable> &p_connected_event_signals) {
+	for (const Callable &callable : p_connected_event_signals) {
+		const EventSignalCallable *event_signal_callable = static_cast<const EventSignalCallable *>(callable.get_custom());
+		p_owner->disconnect(event_signal_callable->get_signal(), callable);
+	}
+
+	p_connected_event_signals.clear();
+}
+
 void *CSharpLanguage::get_instance_binding(Object *p_object) {
 	void *binding = p_object->get_instance_binding(get_singleton(), &_instance_binding_callbacks);
 
@@ -1466,6 +1499,7 @@ void CSharpLanguage::set_instance_binding(Object *p_object, void *p_binding) {
 bool CSharpLanguage::has_instance_binding(Object *p_object) {
 	return p_object->has_instance_binding(get_singleton());
 }
+
 void CSharpLanguage::tie_native_managed_to_unmanaged(GCHandleIntPtr p_gchandle_intptr, Object *p_unmanaged, const StringName *p_native_name, bool p_ref_counted) {
 	// This method should not fail
 
@@ -1517,6 +1551,17 @@ void CSharpLanguage::tie_native_managed_to_unmanaged(GCHandleIntPtr p_gchandle_i
 
 	// Should be thread safe because the object was just created and nothing else should be referencing it
 	CSharpLanguage::set_instance_binding(p_unmanaged, data);
+
+	// connect_event_signals
+	{
+		List<MethodInfo> signals;
+		p_unmanaged->get_signal_list(&signals);
+		Vector<StringName> signal_names;
+		for (const MethodInfo &signal : signals) {
+			signal_names.push_back(signal.name);
+		}
+		connect_event_signals(signal_names, script_binding.owner, script_binding.connected_event_signals);
+	}
 }
 
 void CSharpLanguage::tie_user_managed_to_unmanaged(GCHandleIntPtr p_gchandle_intptr, Object *p_unmanaged, Ref<CSharpScript> *p_script, bool p_ref_counted) {
@@ -1882,25 +1927,15 @@ void CSharpInstance::mono_object_disposed_baseref(GCHandleIntPtr p_gchandle_to_f
 
 void CSharpInstance::connect_event_signals() {
 	// The script signals list includes the signals declared in base scripts.
-	for (CSharpScript::EventSignalInfo &signal : script->get_script_event_signals()) {
-		String signal_name = signal.name;
-
-		// TODO: Use pooling for ManagedCallable instances.
-		EventSignalCallable *event_signal_callable = memnew(EventSignalCallable(owner, signal_name));
-
-		Callable callable(event_signal_callable);
-		connected_event_signals.push_back(callable);
-		owner->connect(signal_name, callable);
+	Vector<StringName> signal_names;
+	for (const CSharpScript::EventSignalInfo &signal : script->get_script_event_signals()) {
+		signal_names.push_back(signal.name);
 	}
+	CSharpLanguage::connect_event_signals(signal_names, owner, connected_event_signals);
 }
 
 void CSharpInstance::disconnect_event_signals() {
-	for (const Callable &callable : connected_event_signals) {
-		const EventSignalCallable *event_signal_callable = static_cast<const EventSignalCallable *>(callable.get_custom());
-		owner->disconnect(event_signal_callable->get_signal(), callable);
-	}
-
-	connected_event_signals.clear();
+	CSharpLanguage::disconnect_event_signals(owner, connected_event_signals);
 }
 
 void CSharpInstance::refcount_incremented() {

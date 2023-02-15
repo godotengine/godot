@@ -792,6 +792,7 @@ class BindingsGenerator {
 	Error _generate_cs_property(const TypeInterface &p_itype, const PropertyInterface &p_iprop, StringBuilder &p_output);
 	Error _generate_cs_method(const TypeInterface &p_itype, const MethodInterface &p_imethod, int &p_method_bind_count, StringBuilder &p_output);
 	Error _generate_cs_signal(const BindingsGenerator::TypeInterface &p_itype, const BindingsGenerator::SignalInterface &p_isignal, StringBuilder &p_output);
+	Error _generate_cs_signal_raise_method(const BindingsGenerator::TypeInterface &p_itype, StringBuilder &p_output, bool p_type_is_base);
 
 	Error _generate_cs_native_calls(const InternalCall &p_icall, StringBuilder &r_output);
 
