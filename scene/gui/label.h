@@ -50,7 +50,6 @@ private:
 	bool uppercase = false;
 
 	bool lines_dirty = true;
-
 	bool dirty = true;
 	bool font_dirty = true;
 	RID text_rid;
@@ -66,6 +65,7 @@ private:
 	float visible_ratio = 1.0;
 	int lines_skipped = 0;
 	int max_lines_visible = -1;
+	bool draw_pending = false;
 
 	Ref<LabelSettings> settings;
 
@@ -83,7 +83,7 @@ private:
 		int font_shadow_outline_size;
 	} theme_cache;
 
-	void _shape();
+	bool _shape();
 	void _invalidate();
 
 protected:
