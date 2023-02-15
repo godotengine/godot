@@ -943,8 +943,8 @@ void ProjectExportDialog::_export_pck_zip_selected(const String &p_path) {
 }
 
 void ProjectExportDialog::_open_export_template_manager() {
-	EditorNode::get_singleton()->open_export_template_manager();
 	hide();
+	EditorNode::get_singleton()->open_export_template_manager();
 }
 
 void ProjectExportDialog::_validate_export_path(const String &p_path) {
