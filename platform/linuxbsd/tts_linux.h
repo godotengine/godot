@@ -39,7 +39,11 @@
 #include "core/variant/array.h"
 #include "servers/display_server.h"
 
+#ifdef SOWRAP_ENABLED
 #include "speechd-so_wrap.h"
+#else
+#include <libspeechd.h>
+#endif
 
 class TTS_Linux {
 	_THREAD_SAFE_CLASS_

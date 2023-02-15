@@ -39,12 +39,18 @@ void TTS_Linux::speech_init_thread_func(void *p_userdata) {
 	TTS_Linux *tts = (TTS_Linux *)p_userdata;
 	if (tts) {
 		MutexLock thread_safe_method(tts->_thread_safe_);
+#ifdef SOWRAP_ENABLED
 #ifdef DEBUG_ENABLED
 		int dylibloader_verbose = 1;
 #else
 		int dylibloader_verbose = 0;
 #endif
-		if (initialize_speechd(dylibloader_verbose) == 0) {
+		if (initialize_speechd(dylibloader_verbose) != 0) {
+			print_verbose("Text-to-Speech: Cannot load Speech Dispatcher library!");
+		} else {
+#else
+		{
+#endif
 			CharString class_str;
 			String config_name = GLOBAL_GET("application/config/name");
 			if (config_name.length() == 0) {
@@ -64,8 +70,6 @@ void TTS_Linux::speech_init_thread_func(void *p_userdata) {
 			} else {
 				print_verbose("Text-to-Speech: Cannot initialize Speech Dispatcher synthesizer!");
 			}
-		} else {
-			print_verbose("Text-to-Speech: Cannot load Speech Dispatcher library!");
 		}
 	}
 }

@@ -11,23 +11,30 @@ common_linuxbsd = [
     "joypad_linux.cpp",
     "freedesktop_portal_desktop.cpp",
     "freedesktop_screensaver.cpp",
-    "xkbcommon-so_wrap.c",
 ]
+
+if env["use_sowrap"]:
+    common_linuxbsd.append("xkbcommon-so_wrap.c")
 
 if env["x11"]:
     common_linuxbsd += SConscript("x11/SCsub")
 
 if env["speechd"]:
-    common_linuxbsd.append(["speechd-so_wrap.c", "tts_linux.cpp"])
+    common_linuxbsd.append("tts_linux.cpp")
+    if env["use_sowrap"]:
+        common_linuxbsd.append("speechd-so_wrap.c")
 
 if env["fontconfig"]:
-    common_linuxbsd.append("fontconfig-so_wrap.c")
+    if env["use_sowrap"]:
+        common_linuxbsd.append("fontconfig-so_wrap.c")
 
 if env["udev"]:
-    common_linuxbsd.append("libudev-so_wrap.c")
+    if env["use_sowrap"]:
+        common_linuxbsd.append("libudev-so_wrap.c")
 
 if env["dbus"]:
-    common_linuxbsd.append("dbus-so_wrap.c")
+    if env["use_sowrap"]:
+        common_linuxbsd.append("dbus-so_wrap.c")
 
 prog = env.add_program("#bin/godot", ["godot_linuxbsd.cpp"] + common_linuxbsd)
 

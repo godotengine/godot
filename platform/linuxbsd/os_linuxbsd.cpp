@@ -1083,12 +1083,16 @@ OS_LinuxBSD::OS_LinuxBSD() {
 #endif
 
 #ifdef FONTCONFIG_ENABLED
+#ifdef SOWRAP_ENABLED
 #ifdef DEBUG_ENABLED
 	int dylibloader_verbose = 1;
 #else
 	int dylibloader_verbose = 0;
 #endif
 	font_config_initialized = (initialize_fontconfig(dylibloader_verbose) == 0);
+#else
+	font_config_initialized = true;
+#endif
 	if (font_config_initialized) {
 		config = FcInitLoadConfigAndFonts();
 		if (!config) {

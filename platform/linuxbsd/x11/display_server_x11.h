@@ -36,6 +36,8 @@
 #include "servers/display_server.h"
 
 #include "core/input/input.h"
+#include "core/os/mutex.h"
+#include "core/os/thread.h"
 #include "core/templates/local_vector.h"
 #include "drivers/alsa/audio_driver_alsa.h"
 #include "drivers/alsamidi/midi_driver_alsamidi.h"
@@ -69,6 +71,7 @@
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
 
+#ifdef SOWRAP_ENABLED
 #include "dynwrappers/xlib-so_wrap.h"
 
 #include "dynwrappers/xcursor-so_wrap.h"
@@ -79,6 +82,25 @@
 #include "dynwrappers/xrender-so_wrap.h"
 
 #include "../xkbcommon-so_wrap.h"
+#else
+#include <X11/XKBlib.h>
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+
+#include <X11/Xcursor/Xcursor.h>
+#include <X11/extensions/XInput2.h>
+#include <X11/extensions/Xext.h>
+#include <X11/extensions/Xinerama.h>
+#include <X11/extensions/Xrandr.h>
+#include <X11/extensions/Xrender.h>
+#include <X11/extensions/shape.h>
+
+#ifdef XKB_ENABLED
+#include <xkbcommon/xkbcommon-compose.h>
+#include <xkbcommon/xkbcommon-keysyms.h>
+#include <xkbcommon/xkbcommon.h>
+#endif
+#endif
 
 typedef struct _xrr_monitor_info {
 	Atom name;
@@ -142,7 +164,9 @@ class DisplayServerX11 : public DisplayServer {
 		bool ime_active = false;
 		bool ime_in_progress = false;
 		bool ime_suppress_next_keyup = false;
+#ifdef XKB_ENABLED
 		xkb_compose_state *xkb_state = nullptr;
+#endif
 
 		Size2i min_size;
 		Size2i max_size;
@@ -186,9 +210,11 @@ class DisplayServerX11 : public DisplayServer {
 	Point2i im_selection;
 	String im_text;
 
+#ifdef XKB_ENABLED
 	bool xkb_loaded = false;
 	xkb_context *xkb_ctx = nullptr;
 	xkb_compose_table *dead_tbl = nullptr;
+#endif
 
 	HashMap<WindowID, WindowData> windows;
 
