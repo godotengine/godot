@@ -1522,6 +1522,8 @@ void AnimationTimelineEdit::set_animation(const Ref<Animation> &p_animation, boo
 	animation = p_animation;
 	read_only = p_read_only;
 
+	length->set_read_only(read_only);
+
 	if (animation.is_valid()) {
 		len_hb->show();
 		if (read_only) {
