@@ -254,7 +254,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 				if (codegen.script->member_indices.has(identifier)) {
 					if (codegen.script->member_indices[identifier].getter != StringName() && codegen.script->member_indices[identifier].getter != codegen.function_name) {
 						// Perform getter.
-						GDScriptCodeGenerator::Address temp = codegen.add_temporary();
+						GDScriptCodeGenerator::Address temp = codegen.add_temporary(codegen.script->member_indices[identifier].data_type);
 						Vector<GDScriptCodeGenerator::Address> args; // No argument needed.
 						gen->write_call_self(temp, codegen.script->member_indices[identifier].getter, args);
 						return temp;
