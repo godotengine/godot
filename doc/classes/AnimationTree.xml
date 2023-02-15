@@ -30,6 +30,14 @@
 				Manually advance the animations by the specified time (in seconds).
 			</description>
 		</method>
+		<method name="get_property_base_path" qualifiers="const">
+			<return type="StringName" />
+			<param index="0" name="animation_node" type="AnimationNode" />
+			<description>
+				Returns the base path of the properties that [AnimationTree] assigns to manage the state of each animation node.
+				[b]Note:[/b] The path is returned only if the object's instance ID matches the map key for the property that [AnimationTree] has internally.
+			</description>
+		</method>
 		<method name="get_root_motion_position" qualifiers="const">
 			<return type="Vector3" />
 			<description>
@@ -198,9 +206,10 @@
 	</members>
 	<signals>
 		<signal name="animation_finished">
-			<param index="0" name="anim_name" type="StringName" />
+			<param index="0" name="animation_name" type="StringName" />
+			<param index="1" name="animation_node" type="Object" />
 			<description>
-				Notifies when an animation finished playing.
+				Notifies when an animation finished playing. You can get the actual path of the animation node as the property base path by passing [param animation_node] to [method get_property_base_path].
 				[b]Note:[/b] This signal is not emitted if an animation is looping or aborted. Also be aware of the possibility of unseen playback by sync and xfade.
 			</description>
 		</signal>
@@ -210,9 +219,10 @@
 			</description>
 		</signal>
 		<signal name="animation_started">
-			<param index="0" name="anim_name" type="StringName" />
+			<param index="0" name="animation_name" type="StringName" />
+			<param index="1" name="animation_node" type="Object" />
 			<description>
-				Notifies when an animation starts playing.
+				Notifies when an animation starts playing. You can get the actual path of the animation node as the property base path by passing [param animation_node] to [method get_property_base_path].
 				[b]Note:[/b] This signal is not emitted if an animation is looping or playbacked from the middle. Also be aware of the possibility of unseen playback by sync and xfade.
 			</description>
 		</signal>

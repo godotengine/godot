@@ -287,7 +287,7 @@
 			</description>
 		</signal>
 		<signal name="animation_finished">
-			<param index="0" name="anim_name" type="StringName" />
+			<param index="0" name="animation_name" type="StringName" />
 			<description>
 				Notifies when an animation finished playing.
 				[b]Note:[/b] This signal is not emitted if an animation is looping.
@@ -304,7 +304,7 @@
 			</description>
 		</signal>
 		<signal name="animation_started">
-			<param index="0" name="anim_name" type="StringName" />
+			<param index="0" name="animation_name" type="StringName" />
 			<description>
 				Notifies when an animation starts playing.
 			</description>

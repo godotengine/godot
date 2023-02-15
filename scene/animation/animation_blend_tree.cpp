@@ -150,11 +150,11 @@ double AnimationNodeAnimation::process(double p_time, bool p_seek, bool p_is_ext
 		if (state->tree) {
 			// AnimationTree uses seek to 0 "internally" to process the first key of the animation, which is used as the start detection.
 			if (p_seek && !p_is_external_seeking && cur_time == 0) {
-				state->tree->call_deferred(SNAME("emit_signal"), "animation_started", animation);
+				state->tree->call_deferred(SNAME("emit_signal"), "animation_started", animation, this);
 			}
 			// Finished.
 			if (prev_time < anim_size && cur_time >= anim_size) {
-				state->tree->call_deferred(SNAME("emit_signal"), "animation_finished", animation);
+				state->tree->call_deferred(SNAME("emit_signal"), "animation_finished", animation, this);
 			}
 		}
 	}

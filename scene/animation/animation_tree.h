@@ -187,6 +187,8 @@ class AnimationNodeEndState : public AnimationRootNode {
 class AnimationTree : public Node {
 	GDCLASS(AnimationTree, Node);
 
+	friend class AnimationNodeAnimation;
+
 public:
 	enum AnimationProcessCallback {
 		ANIMATION_PROCESS_PHYSICS,
@@ -410,6 +412,8 @@ public:
 
 	real_t get_connection_activity(const StringName &p_path, int p_connection) const;
 	void advance(double p_time);
+
+	StringName get_property_base_path(const Ref<AnimationNode> &p_animation_node) const;
 
 	uint64_t get_last_process_pass() const;
 	AnimationTree();

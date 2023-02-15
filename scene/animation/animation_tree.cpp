@@ -2019,6 +2019,12 @@ Vector3 AnimationTree::get_root_motion_scale_accumulator() const {
 	return root_motion_scale_accumulator;
 }
 
+StringName AnimationTree::get_property_base_path(const Ref<AnimationNode> &p_animation_node) const {
+	ObjectID oid = p_animation_node->get_instance_id();
+	ERR_FAIL_COND_V(!property_reference_map.has(oid), StringName());
+	return property_reference_map[oid];
+}
+
 void AnimationTree::_tree_changed() {
 	if (properties_dirty) {
 		return;
@@ -2212,6 +2218,8 @@ void AnimationTree::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_root_motion_rotation_accumulator"), &AnimationTree::get_root_motion_rotation_accumulator);
 	ClassDB::bind_method(D_METHOD("get_root_motion_scale_accumulator"), &AnimationTree::get_root_motion_scale_accumulator);
 
+	ClassDB::bind_method(D_METHOD("get_property_base_path", "animation_node"), &AnimationTree::get_property_base_path);
+
 	ClassDB::bind_method(D_METHOD("_update_properties"), &AnimationTree::_update_properties);
 
 	ClassDB::bind_method(D_METHOD("advance", "delta"), &AnimationTree::advance);
@@ -2236,8 +2244,8 @@ void AnimationTree::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("animation_player_changed"));
 
 	// Signals from AnimationNodes.
-	ADD_SIGNAL(MethodInfo("animation_started", PropertyInfo(Variant::STRING_NAME, "anim_name")));
-	ADD_SIGNAL(MethodInfo("animation_finished", PropertyInfo(Variant::STRING_NAME, "anim_name")));
+	ADD_SIGNAL(MethodInfo("animation_started", PropertyInfo(Variant::STRING_NAME, "animation_name"), PropertyInfo(Variant::OBJECT, "animation_node")));
+	ADD_SIGNAL(MethodInfo("animation_finished", PropertyInfo(Variant::STRING_NAME, "animation_name"), PropertyInfo(Variant::OBJECT, "animation_node")));
 }
 
 AnimationTree::AnimationTree() {
