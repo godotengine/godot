@@ -171,6 +171,7 @@ public:
 		String source;
 
 		const char *get_name() const;
+		bool can_precede_bin_op() const;
 		bool is_identifier() const;
 		bool is_node_name() const;
 		StringName get_identifier() const { return source; }
@@ -216,6 +217,7 @@ private:
 	bool multiline_mode = false;
 	List<Token> error_stack;
 	bool pending_newline = false;
+	Token last_token;
 	Token last_newline;
 	int pending_indents = 0;
 	List<int> indent_stack;
