@@ -233,7 +233,7 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 	ThreadLoadTask &load_task = *(ThreadLoadTask *)p_userdata;
 	load_task.loader_id = Thread::get_caller_id();
 
-	if (load_task.semaphore) {
+	if (load_task.thread) {
 		//this is an actual thread, so wait for Ok from semaphore
 		thread_load_semaphore->wait(); //wait until its ok to start loading
 	}
@@ -247,7 +247,7 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 	} else {
 		load_task.status = THREAD_LOAD_LOADED;
 	}
-	if (load_task.semaphore) {
+	if (load_task.thread) {
 		if (load_task.start_next && thread_waiting_count > 0) {
 			thread_waiting_count--;
 			//thread loading count remains constant, this ends but another one begins
@@ -255,8 +255,14 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 		} else {
 			thread_loading_count--; //no threads waiting, just reduce loading count
 		}
-
 		print_lt("END: load count: " + itos(thread_loading_count) + " / wait count: " + itos(thread_waiting_count) + " / suspended count: " + itos(thread_suspended_count) + " / active: " + itos(thread_loading_count - thread_suspended_count));
+	}
+	if (load_task.semaphore) {
+		if(load_task.poll_requests > 0) {
+			// make sure that we don't slip between the thread_load_mutex->unlock()
+			// and semaphore->wait() of someone waiting for this task
+			OS::get_singleton()->delay_usec(1);
+		}
 
 		for (int i = 0; i < load_task.poll_requests; i++) {
 			load_task.semaphore->post();
@@ -560,6 +566,12 @@ Ref<Resource> ResourceLoader::load(const String &p_path, const String &p_type_hi
 		load_task.type_hint = p_type_hint;
 		load_task.cache_mode = p_cache_mode; //ignore
 		load_task.loader_id = Thread::get_caller_id();
+
+		// we are loading in this thread, but in order for other
+		// threads to know that we are loading this resource (and
+		// wait for the loading to finish), we still have to
+		// create a semaphore!
+		load_task.semaphore = memnew(Semaphore);
 
 		thread_load_tasks[local_path] = load_task;
 
