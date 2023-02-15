@@ -4141,6 +4141,13 @@ void EditorPropertyResource::_notification(int p_what) {
 				_update_property_bg();
 			}
 		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			const EditorInspector *ei = get_parent_inspector();
+			if (ei && !ei->is_main_editor_inspector()) {
+				fold_resource();
+			}
+		} break;
 	}
 }
 
