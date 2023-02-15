@@ -34,7 +34,11 @@
 
 #include "core/config/project_settings.h"
 
+#ifdef SOWRAP_ENABLED
 #include "dbus-so_wrap.h"
+#else
+#include <dbus/dbus.h>
+#endif
 
 #define BUS_OBJECT_NAME "org.freedesktop.ScreenSaver"
 #define BUS_OBJECT_PATH "/org/freedesktop/ScreenSaver"
@@ -127,12 +131,16 @@ void FreeDesktopScreenSaver::uninhibit() {
 }
 
 FreeDesktopScreenSaver::FreeDesktopScreenSaver() {
+#ifdef SOWRAP_ENABLED
 #ifdef DEBUG_ENABLED
 	int dylibloader_verbose = 1;
 #else
 	int dylibloader_verbose = 0;
 #endif
 	unsupported = (initialize_dbus(dylibloader_verbose) != 0);
+#else
+	unsupported = false;
+#endif
 }
 
 #endif // DBUS_ENABLED

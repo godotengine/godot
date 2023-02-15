@@ -41,7 +41,13 @@
 #include "thirdparty/glad/glad/gl.h"
 #include "thirdparty/glad/glad/glx.h"
 
+#ifdef SOWRAP_ENABLED
 #include "dynwrappers/xlib-so_wrap.h"
+#else
+#include <X11/XKBlib.h>
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#endif
 
 #include <cstring>
 

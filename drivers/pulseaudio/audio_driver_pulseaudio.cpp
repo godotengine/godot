@@ -37,7 +37,11 @@
 #include "core/version.h"
 
 #ifdef ALSAMIDI_ENABLED
+#ifdef SOWRAP_ENABLED
 #include "drivers/alsa/asound-so_wrap.h"
+#else
+#include <alsa/asoundlib.h>
+#endif
 #endif
 
 void AudioDriverPulseAudio::pa_state_cb(pa_context *c, void *userdata) {
@@ -272,6 +276,7 @@ Error AudioDriverPulseAudio::init_output_device() {
 }
 
 Error AudioDriverPulseAudio::init() {
+#ifdef SOWRAP_ENABLED
 #ifdef DEBUG_ENABLED
 	int dylibloader_verbose = 1;
 #else
@@ -284,7 +289,7 @@ Error AudioDriverPulseAudio::init() {
 	if (initialize_pulse(dylibloader_verbose)) {
 		return ERR_CANT_OPEN;
 	}
-
+#endif
 	active.clear();
 	exit_thread.clear();
 
