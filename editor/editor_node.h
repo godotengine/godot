@@ -45,6 +45,7 @@ typedef void (*EditorPluginInitializeCallback)();
 typedef bool (*EditorBuildCallback)();
 
 class AcceptDialog;
+class AcceptDialogAutoReparent;
 class AudioStreamPreviewGenerator;
 class BackgroundProgress;
 class CenterContainer;
@@ -370,10 +371,10 @@ private:
 	PluginConfigDialog *plugin_config_dialog = nullptr;
 
 	RichTextLabel *load_errors = nullptr;
-	AcceptDialog *load_error_dialog = nullptr;
+	AcceptDialogAutoReparent *load_error_dialog = nullptr;
 
 	RichTextLabel *execute_outputs = nullptr;
-	AcceptDialog *execute_output_dialog = nullptr;
+	AcceptDialogAutoReparent *execute_output_dialog = nullptr;
 
 	Ref<Theme> theme;
 
@@ -388,10 +389,10 @@ private:
 	ConfirmationDialog *import_confirmation = nullptr;
 	ConfirmationDialog *pick_main_scene = nullptr;
 	Button *select_current_scene_button = nullptr;
-	AcceptDialog *accept = nullptr;
-	AcceptDialog *save_accept = nullptr;
+	AcceptDialogAutoReparent *accept = nullptr;
+	AcceptDialogAutoReparent *save_accept = nullptr;
 	EditorAbout *about = nullptr;
-	AcceptDialog *warning = nullptr;
+	AcceptDialogAutoReparent *warning = nullptr;
 
 	int overridden_default_layout = -1;
 	Ref<ConfigFile> default_layout;
