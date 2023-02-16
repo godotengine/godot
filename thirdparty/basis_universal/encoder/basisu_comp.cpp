@@ -28,7 +28,7 @@
 #endif
 
 #if BASISD_SUPPORT_KTX2_ZSTD
-#include "../zstd/zstd.h"
+#include <zstd.h>
 #endif
 
 // Set to 1 to disable the mipPadding alignment workaround (which only seems to be needed when no key-values are written at all)

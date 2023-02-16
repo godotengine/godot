@@ -10,7 +10,7 @@ env_navigation = env_modules.Clone()
 thirdparty_obj = []
 
 # Recast Thirdparty source files
-if env["builtin_recast"]:
+if env["builtin_recastnavigation"]:
     thirdparty_dir = "#thirdparty/recastnavigation/Recast/"
     thirdparty_sources = [
         "Source/Recast.cpp",
