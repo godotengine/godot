@@ -112,7 +112,7 @@
 		<method name="regen_normal_maps">
 			<return type="void" />
 			<description>
-				Regenerates tangents for each of the [ArrayMesh]'s surfaces.
+				Regenerates normals for each of the [ArrayMesh]'s surfaces.
 			</description>
 		</method>
 		<method name="set_blend_shape_name">
