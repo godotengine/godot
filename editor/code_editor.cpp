@@ -1629,14 +1629,15 @@ void CodeTextEditor::toggle_inline_comment(const String &delimiter) {
 		int selection_i = 0;
 		int offset = (is_commented ? -1 : 1) * delimiter.length();
 		for (const int &c2 : caret_edit_order) {
+			bool is_line_selection = text_editor->has_selection(c2) && text_editor->get_selection_from_line(c2) < text_editor->get_selection_to_line(c2);
 			if (text_editor->get_caret_line(c2) >= from && text_editor->get_caret_line(c2) <= to) {
 				int caret_col = caret_cols[caret_i++];
-				caret_col += (caret_col == 0) ? 0 : offset;
+				caret_col += (is_line_selection && caret_col == 0) ? 0 : offset;
 				text_editor->set_caret_column(caret_col, c2 == 0, c2);
 			}
 			if (text_editor->has_selection(c2) && text_editor->get_selection_to_line(c2) >= from && text_editor->get_selection_to_line(c2) <= to) {
 				int from_col = text_editor->get_selection_from_column(c2);
-				from_col += (from_col == 0) ? 0 : offset;
+				from_col += (is_line_selection && from_col == 0) ? 0 : offset;
 				int to_col = selection_to_cols[selection_i++];
 				to_col += (to_col == 0) ? 0 : offset;
 				text_editor->select(
