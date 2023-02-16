@@ -992,6 +992,19 @@ static GDExtensionObjectPtr gdextension_object_get_instance_from_id(GDObjectInst
 	return (GDExtensionObjectPtr)ObjectDB::get_instance(ObjectID(p_instance_id));
 }
 
+static GDExtensionBool gdextension_object_get_class_name(GDExtensionConstObjectPtr p_object, GDExtensionClassLibraryPtr p_library, GDExtensionUninitializedStringNamePtr r_class_name) {
+	if (!p_object) {
+		return false;
+	}
+	const Object *o = (const Object *)p_object;
+
+	memnew_placement(r_class_name, StringName);
+	StringName *class_name = reinterpret_cast<StringName *>(r_class_name);
+	*class_name = o->get_class_name_for_extension((GDExtension *)p_library);
+
+	return true;
+}
+
 static GDExtensionObjectPtr gdextension_object_cast_to(GDExtensionConstObjectPtr p_object, void *p_class_tag) {
 	if (!p_object) {
 		return nullptr;
@@ -1176,6 +1189,7 @@ void gdextension_setup_interface() {
 	REGISTER_INTERFACE_FUNC(object_get_instance_binding);
 	REGISTER_INTERFACE_FUNC(object_set_instance_binding);
 	REGISTER_INTERFACE_FUNC(object_set_instance);
+	REGISTER_INTERFACE_FUNC(object_get_class_name);
 	REGISTER_INTERFACE_FUNC(object_cast_to);
 	REGISTER_INTERFACE_FUNC(object_get_instance_from_id);
 	REGISTER_INTERFACE_FUNC(object_get_instance_id);
