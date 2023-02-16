@@ -45,12 +45,12 @@ namespace
 
 	// ---------------------------------------------------------------------------------------------------------------------
 	// ---------------------------------------------------------------------------------------------------------------------
-	static int64_t ReadMaskRectangle(SyncFileReader& reader, MaskData& maskData)
+	static int64_t ReadMaskRectangle(Ref<StreamPeerBuffer> reader, MaskData& maskData)
 	{
-		maskData.top = fileUtil::ReadFromFileBE<int32_t>(reader);
-		maskData.left = fileUtil::ReadFromFileBE<int32_t>(reader);
-		maskData.bottom = fileUtil::ReadFromFileBE<int32_t>(reader);
-		maskData.right = fileUtil::ReadFromFileBE<int32_t>(reader);
+		maskData.top = reader->get_32();
+		maskData.left = reader->get_32();
+		maskData.bottom = reader->get_32();
+		maskData.right = reader->get_32();
 
 		return 4u*sizeof(int32_t);
 	}
@@ -58,29 +58,29 @@ namespace
 
 	// ---------------------------------------------------------------------------------------------------------------------
 	// ---------------------------------------------------------------------------------------------------------------------
-	static int64_t ReadMaskDensity(SyncFileReader& reader, uint8_t& density)
+	static int64_t ReadMaskDensity(Ref<StreamPeerBuffer> reader, uint8_t& density)
 	{
-		density = fileUtil::ReadFromFileBE<uint8_t>(reader);
+		density = reader->get_u8();
 		return sizeof(uint8_t);
 	}
 
 
 	// ---------------------------------------------------------------------------------------------------------------------
 	// ---------------------------------------------------------------------------------------------------------------------
-	static int64_t ReadMaskFeather(SyncFileReader& reader, float64_t& feather)
+	static int64_t ReadMaskFeather(Ref<StreamPeerBuffer> reader, float64_t& feather)
 	{
-		feather = fileUtil::ReadFromFileBE<float64_t>(reader);
+		feather = reader->get_double();
 		return sizeof(float64_t);
 	}
 
 
 	// ---------------------------------------------------------------------------------------------------------------------
 	// ---------------------------------------------------------------------------------------------------------------------
-	static int64_t ReadMaskParameters(SyncFileReader& reader, uint8_t& layerDensity, float64_t& layerFeather, uint8_t& vectorDensity, float64_t& vectorFeather)
+	static int64_t ReadMaskParameters(Ref<StreamPeerBuffer> reader, uint8_t& layerDensity, float64_t& layerFeather, uint8_t& vectorDensity, float64_t& vectorFeather)
 	{
 		int64_t bytesRead = 0;
 
-		const uint8_t flags = fileUtil::ReadFromFileBE<uint8_t>(reader);
+		const uint8_t flags = reader->get_u8();
 		bytesRead += sizeof(uint8_t);
 
 		const bool hasUserDensity = (flags & (1u << 0)) != 0;
@@ -261,13 +261,13 @@ namespace
 	// ---------------------------------------------------------------------------------------------------------------------
 	// ---------------------------------------------------------------------------------------------------------------------
 	template <typename T>
-	static void* ReadChannelDataRaw(SyncFileReader& reader, Allocator* allocator, unsigned int width, unsigned int height)
+	static void* ReadChannelDataRaw(Ref<StreamPeerBuffer> reader, Allocator* allocator, unsigned int width, unsigned int height)
 	{
 		const unsigned int size = width*height;
 		if (size > 0)
 		{
 			void* planarData = allocator->Allocate(size*sizeof(T), 16u);
-			reader.Read(planarData, size*sizeof(T));
+			reader->get_data((uint8_t *)planarData, size*sizeof(T));
 
 			EndianConvert<T>(planarData, width, height);
 
@@ -281,7 +281,7 @@ namespace
 	// ---------------------------------------------------------------------------------------------------------------------
 	// ---------------------------------------------------------------------------------------------------------------------
 	template <typename T>
-	static void* ReadChannelDataRLE(SyncFileReader& reader, Allocator* allocator, unsigned int width, unsigned int height)
+	static void* ReadChannelDataRLE(Ref<StreamPeerBuffer> reader, Allocator* allocator, unsigned int width, unsigned int height)
 	{
 		// the RLE-compressed data is preceded by a 2-byte data count for each scan line
 		const unsigned int size = width*height;
@@ -289,7 +289,7 @@ namespace
 		unsigned int rleDataSize = 0u;
 		for (unsigned int i=0; i < height; ++i)
 		{
-			const uint16_t dataCount = fileUtil::ReadFromFileBE<uint16_t>(reader);
+			const uint16_t dataCount = reader->get_u16();
 			rleDataSize += dataCount;
 		}
 
@@ -300,7 +300,7 @@ namespace
 			// decompress RLE
 			void* rleData = allocator->Allocate(rleDataSize, 4u);
 			{
-				reader.Read(rleData, rleDataSize);
+				reader->get_data((uint8_t *)rleData, rleDataSize);
 				imageUtil::DecompressRle(static_cast<const uint8_t*>(rleData), rleDataSize, static_cast<uint8_t*>(planarData), width*height*sizeof(T));
 			}
 			allocator->Free(rleData);
@@ -317,7 +317,7 @@ namespace
 	// ---------------------------------------------------------------------------------------------------------------------
 	// ---------------------------------------------------------------------------------------------------------------------
 	template <typename T>
-	static void* ReadChannelDataZip(SyncFileReader& reader, Allocator* allocator, unsigned int width, unsigned int height, uint32_t channelSize)
+	static void* ReadChannelDataZip(Ref<StreamPeerBuffer> reader, Allocator* allocator, unsigned int width, unsigned int height, uint32_t channelSize)
 	{
 		if (channelSize > 0)
 		{
@@ -326,7 +326,7 @@ namespace
 			T* planarData = static_cast<T*>(allocator->Allocate(size*sizeof(T), 16));
 
 			void* zipData = allocator->Allocate(channelSize, 4u);
-			reader.Read(zipData, channelSize);
+			reader->get_data((uint8_t *)zipData, channelSize);
 
 			// the zipped data stream has a zlib-header
 			const size_t status = tinfl_decompress_mem_to_mem(planarData, size*sizeof(T), zipData, channelSize, TINFL_FLAG_PARSE_ZLIB_HEADER);
@@ -463,7 +463,7 @@ namespace
 	// ---------------------------------------------------------------------------------------------------------------------
 	// ---------------------------------------------------------------------------------------------------------------------
 	template <typename T>
-	static void* ReadChannelDataZipPrediction(SyncFileReader& reader, Allocator* allocator, unsigned int width, unsigned int height, uint32_t channelSize)
+	static void* ReadChannelDataZipPrediction(Ref<StreamPeerBuffer> reader, Allocator* allocator, unsigned int width, unsigned int height, uint32_t channelSize)
 	{
 		if (channelSize > 0)
 		{
@@ -472,7 +472,7 @@ namespace
 			T* planarData = static_cast<T*>(allocator->Allocate(size*sizeof(T), 16));
 
 			void* zipData = allocator->Allocate(channelSize, 4u);
-			reader.Read(zipData, channelSize);
+			reader->get_data((uint8_t *)zipData, channelSize);
 
 			// the zipped data stream has a zlib-header
 			const size_t status = tinfl_decompress_mem_to_mem(planarData, size*sizeof(T), zipData, channelSize, TINFL_FLAG_PARSE_ZLIB_HEADER);
@@ -496,7 +496,7 @@ namespace
 
 	// ---------------------------------------------------------------------------------------------------------------------
 	// ---------------------------------------------------------------------------------------------------------------------
-	static LayerMaskSection* ParseLayer(const Document* document, SyncFileReader& reader, Allocator* allocator, uint64_t sectionOffset, uint32_t sectionLength, uint32_t layerLength)
+	static LayerMaskSection* ParseLayer(const Document* document, Ref<StreamPeerBuffer> reader, Allocator* allocator, uint64_t sectionOffset, uint32_t sectionLength, uint32_t layerLength)
 	{
 		LayerMaskSection* layerMaskSection = memoryUtil::Allocate<LayerMaskSection>(allocator);
 		layerMaskSection->layers = nullptr;
@@ -511,7 +511,7 @@ namespace
 			// read the layer count. if it is a negative number, its absolute value is the number of layers and the 
 			// first alpha channel contains the transparency data for the merged result.
 			// this will also be reflected in the channelCount of the document.
-			int16_t layerCount = fileUtil::ReadFromFileBE<int16_t>(reader);
+			int16_t layerCount = reader->get_16();
 			layerMaskSection->hasTransparencyMask = (layerCount < 0);
 			if (layerCount < 0)
 				layerCount = -layerCount;
@@ -529,14 +529,14 @@ namespace
 				layer->vectorMask = nullptr;
 				layer->type = layerType::ANY;
 
-				layer->top = fileUtil::ReadFromFileBE<int32_t>(reader);
-				layer->left = fileUtil::ReadFromFileBE<int32_t>(reader);
-				layer->bottom = fileUtil::ReadFromFileBE<int32_t>(reader);
-				layer->right = fileUtil::ReadFromFileBE<int32_t>(reader);
+				layer->top = reader->get_32();
+				layer->left = reader->get_32();
+				layer->bottom = reader->get_32();
+				layer->right = reader->get_32();
 
 				// number of channels in the layer.
 				// this includes channels for transparency, layer, and vector masks, if any.
-				const uint16_t channelCount = fileUtil::ReadFromFileBE<uint16_t>(reader);
+				const uint16_t channelCount = reader->get_u16();
 				layer->channelCount = channelCount;
 				layer->channels = memoryUtil::AllocateArray<Channel>(allocator, channelCount);
 
@@ -546,36 +546,36 @@ namespace
 					Channel* channel = &layer->channels[j];
 					channel->fileOffset = 0ull;
 					channel->data = nullptr;
-					channel->type = fileUtil::ReadFromFileBE<int16_t>(reader);
-					channel->size = fileUtil::ReadFromFileBE<uint32_t>(reader);
+					channel->type = reader->get_16();
+					channel->size = reader->get_u32();
 				}
 
 				// blend mode signature must be '8BIM'
-				const uint32_t blendModeSignature = fileUtil::ReadFromFileBE<uint32_t>(reader);
+				const uint32_t blendModeSignature = reader->get_u32();
 				if (blendModeSignature != util::Key<'8', 'B', 'I', 'M'>::VALUE)
 				{
 					PSD_ERROR("LayerMaskSection", "Layer mask info section seems to be corrupt, signature does not match \"8BIM\".");
 					return layerMaskSection;
 				}
 
-				layer->blendModeKey = fileUtil::ReadFromFileBE<uint32_t>(reader);
-				layer->opacity = fileUtil::ReadFromFileBE<uint8_t>(reader);
-				layer->clipping = fileUtil::ReadFromFileBE<uint8_t>(reader);
+				layer->blendModeKey = reader->get_u32();
+				layer->opacity = reader->get_u8();
+				layer->clipping = reader->get_u8();
 
 				// extract flag information into layer struct
 				{
-					const uint8_t flags = fileUtil::ReadFromFileBE<uint8_t>(reader);
+					const uint8_t flags = reader->get_u8();
 					layer->isVisible = !((flags & (1u << 1)) != 0);
 				}
 
 				// skip filler byte
 				{
-					const uint8_t filler = fileUtil::ReadFromFileBE<uint8_t>(reader);
+					const uint8_t filler = reader->get_u8();
 					PSD_UNUSED(filler);
 				}
 
-				const uint32_t extraDataLength = fileUtil::ReadFromFileBE<uint32_t>(reader);
-				const uint32_t layerMaskDataLength = fileUtil::ReadFromFileBE<uint32_t>(reader);
+				const uint32_t extraDataLength = reader->get_u32();
+				const uint32_t layerMaskDataLength = reader->get_u32();
 
 				// the layer mask data section is weird. it may contain extra data for masks, such as density and feather parameters.
 				// there are 3 main possibilities:
@@ -602,10 +602,10 @@ namespace
 					// enclosing rectangle
 					toRead -= ReadMaskRectangle(reader, maskData[0]);
 
-					maskData[0].defaultColor = fileUtil::ReadFromFileBE<uint8_t>(reader);
+					maskData[0].defaultColor = reader->get_u8();
 					toRead -= sizeof(uint8_t);
 
-					const uint8_t maskFlags = fileUtil::ReadFromFileBE<uint8_t>(reader);
+					const uint8_t maskFlags = reader->get_u8();
 					toRead -= sizeof(uint8_t);
 
 					maskData[0].isVectorMask = (maskFlags & (1u << 3)) != 0;
@@ -622,10 +622,10 @@ namespace
 						// the data we just read was for the vector mask.
 						maskCount = 2u;
 
-						const uint8_t realFlags = fileUtil::ReadFromFileBE<uint8_t>(reader);
+						const uint8_t realFlags = reader->get_u8();
 						toRead -= sizeof(uint8_t);
 
-						maskData[1].defaultColor = fileUtil::ReadFromFileBE<uint8_t>(reader);
+						maskData[1].defaultColor = reader->get_u8();
 						toRead -= sizeof(uint8_t);
 
 						toRead -= ReadMaskRectangle(reader, maskData[1]);
@@ -643,7 +643,7 @@ namespace
 
 					// skip the remaining padding bytes, if any
 					PSD_ASSERT(toRead >= 0, "Parsing failed, %" PRId64 "bytes left.", toRead);
-					reader.Skip(static_cast<uint64_t>(toRead));
+					reader->seek(reader->get_position() + static_cast<uint64_t>(toRead));
 
 					// apply mask data to our own data structures
 					for (unsigned int mask=0; mask < maskCount; ++mask)
@@ -670,13 +670,13 @@ namespace
 
 				// skip blending ranges data, we are not interested in that for now
 				const uint32_t layerBlendingRangesDataLength = fileUtil::ReadFromFileBE<uint32_t>(reader);
-				reader.Skip(layerBlendingRangesDataLength);
+				reader->seek(reader->get_position() + layerBlendingRangesDataLength);
 
 				// the layer name is stored as pascal string, padded to a multiple of 4
 				char layerName[512] = {};
-				const uint8_t nameLength = fileUtil::ReadFromFileBE<uint8_t>(reader);
+				const uint8_t nameLength = reader->get_u8();
 				const uint32_t paddedNameLength = bitUtil::RoundUpToMultiple(nameLength + 1u, 4u);
-				reader.Read(layerName, paddedNameLength - 1u);
+				reader->get_data((uint8_t *)layerName, paddedNameLength - 1u);
 
 				layer->name.Assign(layerName);
 
@@ -687,26 +687,26 @@ namespace
 				int64_t toRead = additionalLayerInfoSize;
 				while (toRead > 0)
 				{
-					const uint32_t signature = fileUtil::ReadFromFileBE<uint32_t>(reader);
+					const uint32_t signature = reader->get_u32();
 					if (signature != util::Key<'8', 'B', 'I', 'M'>::VALUE)
 					{
 						PSD_ERROR("LayerMaskSection", "Additional Layer Information section seems to be corrupt, signature does not match \"8BIM\".");
 						return layerMaskSection;
 					}
 
-					const uint32_t key = fileUtil::ReadFromFileBE<uint32_t>(reader);
+					const uint32_t key = reader->get_u32();
 
 					// length needs to be rounded to an even number
-					uint32_t length = fileUtil::ReadFromFileBE<uint32_t>(reader);
+					uint32_t length = reader->get_u32();
 					length = bitUtil::RoundUpToMultiple(length, 2u);
 
 					// read "Section divider setting" to identify whether a layer is a group, or a section divider
 					if (key == util::Key<'l', 's', 'c', 't'>::VALUE)
 					{
-						layer->type = fileUtil::ReadFromFileBE<uint32_t>(reader);
+						layer->type = reader->get_u32();
 
 						// skip the rest of the data
-						reader.Skip(length - 4u);
+						reader->seek(reader->get_position() + length - 4u);
 					}
 					// read Unicode layer name
 					else if (key == util::Key<'l', 'u', 'n', 'i'>::VALUE)
@@ -718,16 +718,16 @@ namespace
 
 						for (uint32_t c = 0u; c < characterCountWithoutNull; ++c)
 						{
-							layer->utf16Name[c] = fileUtil::ReadFromFileBE<uint16_t>(reader);
+							layer->utf16Name[c] = reader->get_u16();
 						}
 						layer->utf16Name[characterCountWithoutNull] = 0u;
 
 						// skip possible padding bytes
-						reader.Skip(length - 4u - characterCountWithoutNull * sizeof(uint16_t));
+						reader->seek(reader->get_position() + length - 4u - characterCountWithoutNull * sizeof(uint16_t));
 					}
 					else
 					{
-						reader.Skip(length);
+						reader->seek(reader->get_position() + length);
 					}
 
 					toRead -= 3*sizeof(uint32_t) + length;
@@ -743,8 +743,8 @@ namespace
 				for (unsigned int j=0; j < channelCount; ++j)
 				{
 					Channel* channel = &layer->channels[j];
-					channel->fileOffset = reader.GetPosition();
-					reader.Skip(channel->size);
+					channel->fileOffset = reader->get_position();
+					reader->seek(reader->get_position() + channel->size);
 				}
 			}
 		}
@@ -754,7 +754,7 @@ namespace
 			// start loading at the global layer mask info section, located after the Layer Information Section.
 			// note that the 4 bytes that stored the length of the section are not included in the length itself.
 			const uint64_t globalInfoSectionOffset = sectionOffset + layerLength + 4u;
-			reader.SetPosition(globalInfoSectionOffset);
+			reader->seek(globalInfoSectionOffset);
 
 			// work out how many bytes are left to read at this point. we need that to figure out the size of the last
 			// optional section, the Additional Layer Information.
@@ -769,7 +769,7 @@ namespace
 					layerMaskSection->overlayColorSpace = fileUtil::ReadFromFileBE<uint16_t>(reader);
 
 					// 4*2 byte color components
-					reader.Skip(8);
+					reader->seek(reader->get_position() + 8);
 
 					layerMaskSection->opacity = fileUtil::ReadFromFileBE<uint16_t>(reader);
 					layerMaskSection->kind = fileUtil::ReadFromFileBE<uint8_t>(reader);
@@ -778,7 +778,7 @@ namespace
 
 					// filler bytes (zeroes)
 					const uint32_t remaining = globalLayerMaskLength - 2u*sizeof(uint16_t) - sizeof(uint8_t) - 8u;
-					reader.Skip(remaining);
+					reader->seek(reader->get_position() + remaining);
 
 					toRead -= remaining;
 				}
@@ -801,31 +801,31 @@ namespace
 
 					if (key == util::Key<'L', 'r', '1', '6'>::VALUE)
 					{
-						const uint64_t offset = reader.GetPosition();
+						const uint64_t offset = reader->get_position();
 						DestroyLayerMaskSection(layerMaskSection, allocator);
 						layerMaskSection = ParseLayer(document, reader, allocator, 0u, 0u, length);
-						reader.SetPosition(offset + length);
+						reader->seek(offset + length);
 					}
 					else if (key == util::Key<'L', 'r', '3', '2'>::VALUE)
 					{
-						const uint64_t offset = reader.GetPosition();
+						const uint64_t offset = reader->get_position();
 						DestroyLayerMaskSection(layerMaskSection, allocator);
 						layerMaskSection = ParseLayer(document, reader, allocator, 0u, 0u, length);
-						reader.SetPosition(offset + length);
+						reader->seek(offset + length);
 					}
 					else if (key == util::Key<'v', 'm', 's', 'k'>::VALUE)
 					{
 						// TODO: could read extra vector mask data here
-						reader.Skip(length);
+						reader->seek(reader->get_position() + length);
 					}
 					else if (key == util::Key<'l', 'n', 'k', '2'>::VALUE)
 					{
 						// TODO: could read individual smart object layer data here
-						reader.Skip(length);
+						reader->seek(reader->get_position() + length);
 					}
 					else
 					{
-						reader.Skip(length);
+						reader->seek(reader->get_position() + length);
 					}
 
 					toRead -= 3u*sizeof(uint32_t) + length;
@@ -840,7 +840,7 @@ namespace
 
 // ---------------------------------------------------------------------------------------------------------------------
 // ---------------------------------------------------------------------------------------------------------------------
-LayerMaskSection* ParseLayerMaskSection(const Document* document, File* file, Allocator* allocator)
+LayerMaskSection* ParseLayerMaskSection(const Document* document, Ref<StreamPeerBuffer> file, Allocator* allocator)
 {
 	PSD_ASSERT_NOT_NULL(file);
 	PSD_ASSERT_NOT_NULL(allocator);
@@ -853,11 +853,10 @@ LayerMaskSection* ParseLayerMaskSection(const Document* document, File* file, Al
 		return nullptr;
 	}
 
-	SyncFileReader reader(file);
-	reader.SetPosition(section.offset);
+	file->seek(section.offset);
 
-	const uint32_t layerInfoSectionLength = fileUtil::ReadFromFileBE<uint32_t>(reader);
-	LayerMaskSection* layerMaskSection = ParseLayer(document, reader, allocator, section.offset, section.length, layerInfoSectionLength);
+	const uint32_t layerInfoSectionLength = file->get_u32();
+	LayerMaskSection* layerMaskSection = ParseLayer(document, file, allocator, section.offset, section.length, layerInfoSectionLength);
 
 	// build the layer hierarchy
 	if (layerMaskSection && layerMaskSection->layers)
@@ -898,19 +897,17 @@ LayerMaskSection* ParseLayerMaskSection(const Document* document, File* file, Al
 
 // ---------------------------------------------------------------------------------------------------------------------
 // ---------------------------------------------------------------------------------------------------------------------
-void ExtractLayer(const Document* document, File* file, Allocator* allocator, Layer* layer)
+void ExtractLayer(const Document* document, Ref<StreamPeerBuffer> file, Allocator* allocator, Layer* layer)
 {
 	PSD_ASSERT_NOT_NULL(file);
 	PSD_ASSERT_NOT_NULL(allocator);
 	PSD_ASSERT_NOT_NULL(layer);
 
-	SyncFileReader reader(file);
-
 	const unsigned int channelCount = layer->channelCount;
 	for (unsigned int i=0; i < channelCount; ++i)
 	{
 		Channel* channel = &layer->channels[i];
-		reader.SetPosition(channel->fileOffset);
+		file->seek(channel->fileOffset);
 
 		unsigned int width = 0u;
 		unsigned int height = 0u;
@@ -918,35 +915,35 @@ void ExtractLayer(const Document* document, File* file, Allocator* allocator, La
 
 		// channel data is stored in 4 different formats, which is denoted by a 2-byte integer
 		PSD_ASSERT(channel->data == nullptr, "Channel data has already been loaded.");
-		const uint16_t compressionType = fileUtil::ReadFromFileBE<uint16_t>(reader);
+		const uint16_t compressionType = file->get_u16();
 		if (compressionType == compressionType::RAW)
 		{
 			if (document->bitsPerChannel == 8)
 			{
-				channel->data = ReadChannelDataRaw<uint8_t>(reader, allocator, width, height);
+				channel->data = ReadChannelDataRaw<uint8_t>(file, allocator, width, height);
 			}
 			else if (document->bitsPerChannel == 16)
 			{
-				channel->data = ReadChannelDataRaw<uint16_t>(reader, allocator, width, height);
+				channel->data = ReadChannelDataRaw<uint16_t>(file, allocator, width, height);
 			}
 			else if (document->bitsPerChannel == 32)
 			{
-				channel->data = ReadChannelDataRaw<float32_t>(reader, allocator, width, height);
+				channel->data = ReadChannelDataRaw<float32_t>(file, allocator, width, height);
 			}
 		}
 		else if (compressionType == compressionType::RLE)
 		{
 			if (document->bitsPerChannel == 8)
 			{
-				channel->data = ReadChannelDataRLE<uint8_t>(reader, allocator, width, height);
+				channel->data = ReadChannelDataRLE<uint8_t>(file, allocator, width, height);
 			}
 			else if (document->bitsPerChannel == 16)
 			{
-				channel->data = ReadChannelDataRLE<uint16_t>(reader, allocator, width, height);
+				channel->data = ReadChannelDataRLE<uint16_t>(file, allocator, width, height);
 			}
 			else if (document->bitsPerChannel == 32)
 			{
-				channel->data = ReadChannelDataRLE<float32_t>(reader, allocator, width, height);
+				channel->data = ReadChannelDataRLE<float32_t>(file, allocator, width, height);
 			}
 		}
 		else if (compressionType == compressionType::ZIP)
@@ -957,17 +954,17 @@ void ExtractLayer(const Document* document, File* file, Allocator* allocator, La
 			const uint32_t channelDataSize = channel->size - 2u;
 			if (document->bitsPerChannel == 8)
 			{
-				channel->data = ReadChannelDataZip<uint8_t>(reader, allocator, width, height, channelDataSize);
+				channel->data = ReadChannelDataZip<uint8_t>(file, allocator, width, height, channelDataSize);
 			}
 			else if (document->bitsPerChannel == 16)
 			{
-				channel->data = ReadChannelDataZip<uint16_t>(reader, allocator, width, height, channelDataSize);
+				channel->data = ReadChannelDataZip<uint16_t>(file, allocator, width, height, channelDataSize);
 			}
 			else if (document->bitsPerChannel == 32)
 			{
 				// note that this is NOT a bug.
 				// in 32-bit mode, Photoshop always interprets ZIP compression as being ZIP_WITH_PREDICTION, presumably to get better compression when writing files.
-				channel->data = ReadChannelDataZipPrediction<float32_t>(reader, allocator, width, height, channelDataSize);
+				channel->data = ReadChannelDataZipPrediction<float32_t>(file, allocator, width, height, channelDataSize);
 			}
 		}
 		else if (compressionType == compressionType::ZIP_WITH_PREDICTION)
@@ -978,15 +975,15 @@ void ExtractLayer(const Document* document, File* file, Allocator* allocator, La
 			const uint32_t channelDataSize = channel->size - 2u;
 			if (document->bitsPerChannel == 8)
 			{
-				channel->data = ReadChannelDataZipPrediction<uint8_t>(reader, allocator, width, height, channelDataSize);
+				channel->data = ReadChannelDataZipPrediction<uint8_t>(file, allocator, width, height, channelDataSize);
 			}
 			else if (document->bitsPerChannel == 16)
 			{
-				channel->data = ReadChannelDataZipPrediction<uint16_t>(reader, allocator, width, height, channelDataSize);
+				channel->data = ReadChannelDataZipPrediction<uint16_t>(file, allocator, width, height, channelDataSize);
 			}
 			else if (document->bitsPerChannel == 32)
 			{
-				channel->data = ReadChannelDataZipPrediction<float32_t>(reader, allocator, width, height, channelDataSize);
+				channel->data = ReadChannelDataZipPrediction<float32_t>(file, allocator, width, height, channelDataSize);
 			}
 		}
 		else

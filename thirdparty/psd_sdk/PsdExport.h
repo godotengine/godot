@@ -8,6 +8,7 @@
 #include "PsdCompressionType.h"
 #include "PsdAlphaChannel.h"
 
+#include "core/io/stream_peer.h"
 
 PSD_NAMESPACE_BEGIN
 
@@ -110,6 +111,6 @@ void UpdateMergedImage(ExportDocument* document, Allocator* allocator, const flo
 
 /// \ingroup Exporter
 /// Exports a document to the given file.
-void WriteDocument(ExportDocument* document, Allocator* allocator, File* file);
+void WriteDocument(ExportDocument* document, Allocator* allocator, Ref<StreamPeerBuffer> file);
 
 PSD_NAMESPACE_END

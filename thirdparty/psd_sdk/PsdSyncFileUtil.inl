@@ -6,10 +6,10 @@ namespace fileUtil
 	// ---------------------------------------------------------------------------------------------------------------------
 	// ---------------------------------------------------------------------------------------------------------------------
 	template <typename T>
-	inline T ReadFromFile(SyncFileReader& reader)
+	inline T ReadFromFile(Ref<StreamPeerBuffer> reader)
 	{
 		T value = 0;
-		reader.Read(&value, sizeof(T));
+		reader->get_data((uint8_t *)&value, sizeof(T));
 		return value;
 	}
 
@@ -17,7 +17,7 @@ namespace fileUtil
 	// ---------------------------------------------------------------------------------------------------------------------
 	// ---------------------------------------------------------------------------------------------------------------------
 	template <typename T>
-	inline T ReadFromFileBE(SyncFileReader& reader)
+	inline T ReadFromFileBE(Ref<StreamPeerBuffer> reader)
 	{
 		T value = ReadFromFile<T>(reader);
 		value = endianUtil::BigEndianToNative(value);
@@ -28,18 +28,18 @@ namespace fileUtil
 	// ---------------------------------------------------------------------------------------------------------------------
 	// ---------------------------------------------------------------------------------------------------------------------
 	template <typename T>
-	inline void WriteToFile(SyncFileWriter& writer, const T& data)
+	inline void WriteToFile(Ref<StreamPeerBuffer> writer, const T& data)
 	{
-		writer.Write(&data, sizeof(T));
+		writer->put_data((const uint8_t *)&data, sizeof(T));
 	}
 
 
 	// ---------------------------------------------------------------------------------------------------------------------
 	// ---------------------------------------------------------------------------------------------------------------------
 	template <typename T>
-	inline void WriteToFileBE(SyncFileWriter& writer, const T& data)
+	inline void WriteToFileBE(Ref<StreamPeerBuffer> writer, const T& data)
 	{
 		const T dataBE = endianUtil::NativeToBigEndian(data);
-		writer.Write(&dataBE, sizeof(T));
+		writer->put_data((const uint8_t *)&dataBE, sizeof(T));
 	}
 }
