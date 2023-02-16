@@ -1490,11 +1490,11 @@ void ED_SHORTCUT_OVERRIDE_ARRAY(const String &p_path, const String &p_feature, c
 	}
 
 	// Override the existing shortcut only if it wasn't customized by the user (i.e. still "original").
-	sc->set_meta("original", events.duplicate(true));
-
-	if (Shortcut::is_event_array_equal(sc->get_events(), sc->get_meta("original"))) {
+	if (sc->has_meta("original") && Shortcut::is_event_array_equal(sc->get_events(), sc->get_meta("original"))) {
 		sc->set_events(events);
 	}
+
+	sc->set_meta("original", events.duplicate(true));
 }
 
 Ref<Shortcut> ED_SHORTCUT(const String &p_path, const String &p_name, Key p_keycode) {
@@ -1535,7 +1535,6 @@ Ref<Shortcut> ED_SHORTCUT_ARRAY(const String &p_path, const String &p_name, cons
 	Ref<Shortcut> sc = EditorSettings::get_singleton()->get_shortcut(p_path);
 	if (sc.is_valid()) {
 		sc->set_name(p_name); //keep name (the ones that come from disk have no name)
-		sc->set_meta("original", events.duplicate(true)); //to compare against changes
 		return sc;
 	}
 

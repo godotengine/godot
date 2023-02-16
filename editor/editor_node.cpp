@@ -7203,6 +7203,7 @@ EditorNode::EditorNode() {
 	file_menu->add_separator();
 
 	file_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/quick_open", TTR("Quick Open..."), KeyModifierMask::SHIFT + KeyModifierMask::ALT + Key::O), FILE_QUICK_OPEN);
+	ED_SHORTCUT_OVERRIDE("editor/quick_open", "macos", KeyModifierMask::META + KeyModifierMask::CTRL + Key::O);
 	file_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/quick_open_scene", TTR("Quick Open Scene..."), KeyModifierMask::CMD_OR_CTRL + KeyModifierMask::SHIFT + Key::O), FILE_QUICK_OPEN_SCENE);
 	file_menu->add_shortcut(ED_SHORTCUT_AND_COMMAND("editor/quick_open_script", TTR("Quick Open Script..."), KeyModifierMask::CMD_OR_CTRL + KeyModifierMask::ALT + Key::O), FILE_QUICK_OPEN_SCRIPT);
 
@@ -7274,7 +7275,7 @@ EditorNode::EditorNode() {
 	project_menu->add_separator();
 	project_menu->add_shortcut(ED_SHORTCUT("editor/reload_current_project", TTR("Reload Current Project")), RELOAD_CURRENT_PROJECT);
 	ED_SHORTCUT_AND_COMMAND("editor/quit_to_project_list", TTR("Quit to Project List"), KeyModifierMask::CTRL + KeyModifierMask::SHIFT + Key::Q);
-	ED_SHORTCUT_OVERRIDE("editor/quit_to_project_list", "macos", KeyModifierMask::SHIFT + KeyModifierMask::ALT + Key::Q);
+	ED_SHORTCUT_OVERRIDE("editor/quit_to_project_list", "macos", KeyModifierMask::META + KeyModifierMask::CTRL + KeyModifierMask::ALT + Key::Q);
 	project_menu->add_shortcut(ED_GET_SHORTCUT("editor/quit_to_project_list"), RUN_PROJECT_MANAGER, true);
 
 	// Spacer to center 2D / 3D / Script buttons.
@@ -7996,10 +7997,10 @@ EditorNode::EditorNode() {
 	ED_SHORTCUT_AND_COMMAND("editor/editor_script", TTR("Open Script Editor"), KeyModifierMask::CTRL | Key::F3);
 	ED_SHORTCUT_AND_COMMAND("editor/editor_assetlib", TTR("Open Asset Library"), KeyModifierMask::CTRL | Key::F4);
 
-	ED_SHORTCUT_OVERRIDE("editor/editor_2d", "macos", KeyModifierMask::ALT | Key::KEY_1);
-	ED_SHORTCUT_OVERRIDE("editor/editor_3d", "macos", KeyModifierMask::ALT | Key::KEY_2);
-	ED_SHORTCUT_OVERRIDE("editor/editor_script", "macos", KeyModifierMask::ALT | Key::KEY_3);
-	ED_SHORTCUT_OVERRIDE("editor/editor_assetlib", "macos", KeyModifierMask::ALT | Key::KEY_4);
+	ED_SHORTCUT_OVERRIDE("editor/editor_2d", "macos", KeyModifierMask::META | KeyModifierMask::CTRL | Key::KEY_1);
+	ED_SHORTCUT_OVERRIDE("editor/editor_3d", "macos", KeyModifierMask::META | KeyModifierMask::CTRL | Key::KEY_2);
+	ED_SHORTCUT_OVERRIDE("editor/editor_script", "macos", KeyModifierMask::META | KeyModifierMask::CTRL | Key::KEY_3);
+	ED_SHORTCUT_OVERRIDE("editor/editor_assetlib", "macos", KeyModifierMask::META | KeyModifierMask::CTRL | Key::KEY_4);
 
 	ED_SHORTCUT_AND_COMMAND("editor/editor_next", TTR("Open the next Editor"));
 	ED_SHORTCUT_AND_COMMAND("editor/editor_prev", TTR("Open the previous Editor"));
