@@ -36,7 +36,11 @@
 #include "core/os/os.h"
 #include "core/string/ustring.h"
 
+#ifdef SOWRAP_ENABLED
 #include "dbus-so_wrap.h"
+#else
+#include <dbus/dbus.h>
+#endif
 
 #include "core/variant/variant.h"
 
@@ -124,12 +128,16 @@ uint32_t FreeDesktopPortalDesktop::get_appearance_color_scheme() {
 }
 
 FreeDesktopPortalDesktop::FreeDesktopPortalDesktop() {
+#ifdef SOWRAP_ENABLED
 #ifdef DEBUG_ENABLED
 	int dylibloader_verbose = 1;
 #else
 	int dylibloader_verbose = 0;
 #endif
 	unsupported = (initialize_dbus(dylibloader_verbose) != 0);
+#else
+	unsupported = false;
+#endif
 }
 
 #endif // DBUS_ENABLED

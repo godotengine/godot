@@ -43,6 +43,7 @@ def get_opts():
         BoolVariable("use_lsan", "Use LLVM/GCC compiler leak sanitizer (LSAN)", False),
         BoolVariable("use_tsan", "Use LLVM/GCC compiler thread sanitizer (TSAN)", False),
         BoolVariable("use_msan", "Use LLVM compiler memory sanitizer (MSAN)", False),
+        BoolVariable("use_sowrap", "Dynamically load system libraries", True),
         BoolVariable("alsa", "Use ALSA", True),
         BoolVariable("pulseaudio", "Use PulseAudio", True),
         BoolVariable("dbus", "Use D-Bus to handle screensaver and portal desktop settings", True),
@@ -184,6 +185,9 @@ def configure(env: "Environment"):
 
     ## Dependencies
 
+    if env["use_sowrap"]:
+        env.Append(CPPDEFINES=["SOWRAP_ENABLED"])
+
     if env["touch"]:
         env.Append(CPPDEFINES=["TOUCH_ENABLED"])
 
@@ -271,26 +275,83 @@ def configure(env: "Environment"):
         env.Append(LIBS=["embree3"])
 
     ## Flags
-
     if env["fontconfig"]:
-        env.Append(CPPDEFINES=["FONTCONFIG_ENABLED"])
+        if not env["use_sowrap"]:
+            if os.system("pkg-config --exists fontconfig") == 0:  # 0 means found
+                env.ParseConfig("pkg-config fontconfig --cflags --libs")
+                env.Append(CPPDEFINES=["FONTCONFIG_ENABLED"])
+            else:
+                print("Warning: fontconfig development libraries not found. Disabling the system fonts support.")
+                env["fontconfig"] = False
+        else:
+            env.Append(CPPDEFINES=["FONTCONFIG_ENABLED"])
 
     if env["alsa"]:
-        env.Append(CPPDEFINES=["ALSA_ENABLED", "ALSAMIDI_ENABLED"])
+        if not env["use_sowrap"]:
+            if os.system("pkg-config --exists alsa") == 0:  # 0 means found
+                env.ParseConfig("pkg-config alsa --cflags --libs")
+                env.Append(CPPDEFINES=["ALSA_ENABLED", "ALSAMIDI_ENABLED"])
+            else:
+                print("Warning: ALSA development libraries not found. Disabling the ALSA audio driver.")
+                env["alsa"] = False
+        else:
+            env.Append(CPPDEFINES=["ALSA_ENABLED", "ALSAMIDI_ENABLED"])
 
     if env["pulseaudio"]:
+        if not env["use_sowrap"]:
+            if os.system("pkg-config --exists libpulse") == 0:  # 0 means found
+                env.ParseConfig("pkg-config libpulse --cflags --libs")
+                env.Append(CPPDEFINES=["PULSEAUDIO_ENABLED", "_REENTRANT"])
+            else:
+                print("Warning: PulseAudio development libraries not found. Disabling the PulseAudio audio driver.")
+                env["pulseaudio"] = False
         env.Append(CPPDEFINES=["PULSEAUDIO_ENABLED", "_REENTRANT"])
 
     if env["dbus"]:
-        env.Append(CPPDEFINES=["DBUS_ENABLED"])
+        if not env["use_sowrap"]:
+            if os.system("pkg-config --exists dbus-1") == 0:  # 0 means found
+                env.ParseConfig("pkg-config dbus-1 --cflags --libs")
+                env.Append(CPPDEFINES=["DBUS_ENABLED"])
+            else:
+                print("Warning: D-Bus development libraries not found. Disabling screensaver prevention.")
+                env["dbus"] = False
+        else:
+            env.Append(CPPDEFINES=["DBUS_ENABLED"])
 
     if env["speechd"]:
-        env.Append(CPPDEFINES=["SPEECHD_ENABLED"])
+        if not env["use_sowrap"]:
+            if os.system("pkg-config --exists speech-dispatcher") == 0:  # 0 means found
+                env.ParseConfig("pkg-config speech-dispatcher --cflags --libs")
+                env.Append(CPPDEFINES=["SPEECHD_ENABLED"])
+            else:
+                print("Warning: speech-dispatcher development libraries not found. Disabling text to speech support.")
+                env["speechd"] = False
+        else:
+            env.Append(CPPDEFINES=["SPEECHD_ENABLED"])
+
+    if not env["use_sowrap"]:
+        if os.system("pkg-config --exists xkbcommon") == 0:  # 0 means found
+            env.ParseConfig("pkg-config xkbcommon --cflags --libs")
+            env.Append(CPPDEFINES=["XKB_ENABLED"])
+        else:
+            print(
+                "Warning: libxkbcommon development libraries not found. Disabling dead key composition and key label support."
+            )
+    else:
+        env.Append(CPPDEFINES=["XKB_ENABLED"])
 
     if platform.system() == "Linux":
         env.Append(CPPDEFINES=["JOYDEV_ENABLED"])
         if env["udev"]:
-            env.Append(CPPDEFINES=["UDEV_ENABLED"])
+            if not env["use_sowrap"]:
+                if os.system("pkg-config --exists libudev") == 0:  # 0 means found
+                    env.ParseConfig("pkg-config libudev --cflags --libs")
+                    env.Append(CPPDEFINES=["UDEV_ENABLED"])
+                else:
+                    print("Warning: libudev development libraries not found. Disabling controller hotplugging support.")
+                    env["udev"] = False
+            else:
+                env.Append(CPPDEFINES=["UDEV_ENABLED"])
     else:
         env["udev"] = False  # Linux specific
 
@@ -298,7 +359,9 @@ def configure(env: "Environment"):
     if not env["builtin_zlib"]:
         env.ParseConfig("pkg-config zlib --cflags --libs")
 
-    env.Prepend(CPPPATH=["#platform/linuxbsd", "#thirdparty/linuxbsd_headers"])
+    env.Prepend(CPPPATH=["#platform/linuxbsd"])
+    if env["use_sowrap"]:
+        env.Prepend(CPPPATH=["#thirdparty/linuxbsd_headers"])
 
     env.Append(
         CPPDEFINES=[
@@ -309,6 +372,35 @@ def configure(env: "Environment"):
     )
 
     if env["x11"]:
+        if not env["use_sowrap"]:
+            if os.system("pkg-config --exists x11"):
+                print("Error: X11 libraries not found. Aborting.")
+                sys.exit(255)
+            env.ParseConfig("pkg-config x11 --cflags --libs")
+            if os.system("pkg-config --exists xcursor"):
+                print("Error: Xcursor library not found. Aborting.")
+                sys.exit(255)
+            env.ParseConfig("pkg-config xcursor --cflags --libs")
+            if os.system("pkg-config --exists xinerama"):
+                print("Error: Xinerama library not found. Aborting.")
+                sys.exit(255)
+            env.ParseConfig("pkg-config xinerama --cflags --libs")
+            if os.system("pkg-config --exists xext"):
+                print("Error: Xext library not found. Aborting.")
+                sys.exit(255)
+            env.ParseConfig("pkg-config xext --cflags --libs")
+            if os.system("pkg-config --exists xrandr"):
+                print("Error: XrandR library not found. Aborting.")
+                sys.exit(255)
+            env.ParseConfig("pkg-config xrandr --cflags --libs")
+            if os.system("pkg-config --exists xrender"):
+                print("Error: XRender library not found. Aborting.")
+                sys.exit(255)
+            env.ParseConfig("pkg-config xrender --cflags --libs")
+            if os.system("pkg-config --exists xi"):
+                print("Error: Xi library not found. Aborting.")
+                sys.exit(255)
+            env.ParseConfig("pkg-config xi --cflags --libs")
         env.Append(CPPDEFINES=["X11_ENABLED"])
 
     if env["vulkan"]:

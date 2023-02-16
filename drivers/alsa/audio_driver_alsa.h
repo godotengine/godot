@@ -38,7 +38,11 @@
 #include "core/templates/safe_refcount.h"
 #include "servers/audio_server.h"
 
+#ifdef SOWRAP_ENABLED
 #include "asound-so_wrap.h"
+#else
+#include <alsa/asoundlib.h>
+#endif
 
 class AudioDriverALSA : public AudioDriver {
 	Thread thread;
