@@ -26,7 +26,7 @@ void* MallocAllocator::DoAllocate(size_t size, size_t alignment)
     }
     errno = posix_memalign(&m, minAlignment, size);
     return errno ? NULL : m;
-#elif defined(__GNUG__)
+#elif defined(__GNUG__) && !defined(__MINGW32__) 
 	return memalign(alignment, size);
 #else
 	return _aligned_malloc(size, alignment);

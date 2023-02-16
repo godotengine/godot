@@ -35,61 +35,56 @@
 
 
 #include "Psd.h"
-#include "PsdNativeFile_Godot.h"
+
 #include "PsdMallocAllocator.h"
-#include "PsdDocument.h"
-#include "PsdColorMode.h"
-#include "PsdLayer.h"
+
 #include "PsdChannel.h"
 #include "PsdChannelType.h"
-#include "PsdLayerMask.h"
-#include "PsdVectorMask.h"
-#include "PsdLayerMaskSection.h"
-#include "PsdImageDataSection.h"
-#include "PsdImageResourcesSection.h"
-#include "PsdParseDocument.h"
-#include "PsdParseLayerMaskSection.h"
-#include "PsdParseImageDataSection.h"
-#include "PsdParseImageResourcesSection.h"
-#include "PsdLayerCanvasCopy.h"
-#include "PsdInterleave.h"
-#include "PsdPlanarImage.h"
+#include "PsdColorMode.h"
+#include "PsdDocument.h"
 #include "PsdExport.h"
 #include "PsdExportDocument.h"
+#include "PsdImageDataSection.h"
+#include "PsdImageResourcesSection.h"
+#include "PsdInterleave.h"
+#include "PsdLayer.h"
+#include "PsdLayerCanvasCopy.h"
+#include "PsdLayerMask.h"
+#include "PsdLayerMaskSection.h"
 #include "PsdLayerType.h"
-
+#include "PsdParseDocument.h"
+#include "PsdParseImageDataSection.h"
+#include "PsdParseImageResourcesSection.h"
+#include "PsdParseLayerMaskSection.h"
+#include "PsdPlanarImage.h"
+#include "PsdVectorMask.h"
 
 #include "core/io/image.h"
 #include "scene/resources/texture.h"
 
-#include <string>
 #include <sstream>
+#include <string>
 
 class PSDTexture;
-
 
 class PSDTexture : public Resource {
 	GDCLASS(PSDTexture, Resource);
 	OBJ_SAVE_TYPE(PSDTexture)
 	RES_BASE_EXTENSION("psdstr");
 
-
 	PackedByteArray data;
 	uint32_t data_len = 0;
 
 	bool cropToCanvas = true;
 
-
 	Dictionary layers;
 
-	typedef enum
-	{
+	typedef enum {
 		KRA,
 		PSD
 	} IMPORT_TYPE;
 
-	typedef enum
-	{
+	typedef enum {
 		MONOCHROME,
 		RGB,
 		RGBA
@@ -105,13 +100,11 @@ protected:
 	void clear_data();
 
 public:
-
 	Array get_layer_names() const;
 	Ref<ImageTexture> get_texture_layer(String p_name) const;
 
 	void set_data(const Vector<uint8_t> &p_data);
 	Vector<uint8_t> get_data() const;
-
 
 	PSDTexture();
 	virtual ~PSDTexture();

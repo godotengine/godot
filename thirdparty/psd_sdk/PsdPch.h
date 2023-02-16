@@ -6,11 +6,11 @@
 
 // This file is used internally by all translation units in the PSD library.
 // First work out which compiler we are using.
-#if defined(__clang__)
+#if defined(__clang__) && !defined(__MINGW32__)
 	#define PSD_USE_CLANG 1
 	#define PSD_USE_GCC 0
 	#define PSD_USE_MSVC 0
-#elif defined(__GNUG__)
+#elif defined(__GNUG__) && !defined(__MINGW32__)
 	#define PSD_USE_CLANG 0
 	#define PSD_USE_GCC 1
 	#define PSD_USE_MSVC 0
