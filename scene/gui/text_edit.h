@@ -839,6 +839,8 @@ public:
 
 	int get_caret_wrap_index(int p_caret = 0) const;
 
+	HashSet<int> get_caret_lines() const;
+
 	String get_word_under_caret(int p_caret = -1) const;
 
 	/* Selection. */

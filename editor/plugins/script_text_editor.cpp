@@ -1225,8 +1225,8 @@ void ScriptTextEditor::_edit_option(int p_op) {
 			code_editor->duplicate_selection();
 		} break;
 		case EDIT_TOGGLE_FOLD_LINE: {
-			for (int caret_idx = 0; caret_idx < tx->get_caret_count(); caret_idx++) {
-				tx->toggle_foldable_line(tx->get_caret_line(caret_idx));
+			for (int caret_line : tx->get_caret_lines()) {
+				tx->toggle_foldable_line(caret_line);
 			}
 			tx->queue_redraw();
 		} break;

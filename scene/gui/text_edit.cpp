@@ -4889,6 +4889,14 @@ String TextEdit::get_word_under_caret(int p_caret) const {
 	return selected_text.as_string();
 }
 
+HashSet<int> TextEdit::get_caret_lines() const {
+	HashSet<int> caret_lines;
+	for (int caret_idx = 0; caret_idx < get_caret_count(); caret_idx++) {
+		caret_lines.insert(get_caret_line(caret_idx));
+	}
+	return caret_lines;
+}
+
 /* Selection. */
 void TextEdit::set_selecting_enabled(const bool p_enabled) {
 	if (selecting_enabled == p_enabled) {
