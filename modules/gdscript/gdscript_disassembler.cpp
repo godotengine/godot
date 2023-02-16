@@ -135,23 +135,56 @@ void GDScriptFunction::disassemble(const Vector<String> &p_code_lines) const {
 
 				incr += 5;
 			} break;
-			case OPCODE_EXTENDS_TEST: {
-				text += "is object ";
-				text += DADDR(3);
-				text += " = ";
+			case OPCODE_TYPE_TEST_BUILTIN: {
+				text += "type test ";
 				text += DADDR(1);
-				text += " is ";
+				text += " = ";
 				text += DADDR(2);
+				text += " is ";
+				text += Variant::get_type_name(Variant::Type(_code_ptr[ip + 3]));
 
 				incr += 4;
 			} break;
-			case OPCODE_IS_BUILTIN: {
-				text += "is builtin ";
-				text += DADDR(2);
-				text += " = ";
+			case OPCODE_TYPE_TEST_ARRAY: {
+				text += "type test ";
 				text += DADDR(1);
+				text += " = ";
+				text += DADDR(2);
+				text += " is Array[";
+
+				Ref<Script> script_type = get_constant(_code_ptr[ip + 3] & GDScriptFunction::ADDR_MASK);
+				Variant::Type builtin_type = (Variant::Type)_code_ptr[ip + 4];
+				StringName native_type = get_global_name(_code_ptr[ip + 5]);
+
+				if (script_type.is_valid() && script_type->is_valid()) {
+					text += script_type->get_path();
+				} else if (native_type != StringName()) {
+					text += native_type;
+				} else {
+					text += Variant::get_type_name(builtin_type);
+				}
+
+				text += "]";
+
+				incr += 6;
+			} break;
+			case OPCODE_TYPE_TEST_NATIVE: {
+				text += "type test ";
+				text += DADDR(1);
+				text += " = ";
+				text += DADDR(2);
 				text += " is ";
-				text += Variant::get_type_name(Variant::Type(_code_ptr[ip + 3]));
+				text += get_global_name(_code_ptr[ip + 3]);
+
+				incr += 4;
+			} break;
+			case OPCODE_TYPE_TEST_SCRIPT: {
+				text += "type test ";
+				text += DADDR(1);
+				text += " = ";
+				text += DADDR(2);
+				text += " is ";
+				text += DADDR(3);
 
 				incr += 4;
 			} break;

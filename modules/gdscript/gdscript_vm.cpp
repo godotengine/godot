@@ -201,8 +201,10 @@ void (*type_init_function_table[])(Variant *) = {
 	static const void *switch_table_ops[] = {        \
 		&&OPCODE_OPERATOR,                           \
 		&&OPCODE_OPERATOR_VALIDATED,                 \
-		&&OPCODE_EXTENDS_TEST,                       \
-		&&OPCODE_IS_BUILTIN,                         \
+		&&OPCODE_TYPE_TEST_BUILTIN,                  \
+		&&OPCODE_TYPE_TEST_ARRAY,                    \
+		&&OPCODE_TYPE_TEST_NATIVE,                   \
+		&&OPCODE_TYPE_TEST_SCRIPT,                   \
 		&&OPCODE_SET_KEYED,                          \
 		&&OPCODE_SET_KEYED_VALIDATED,                \
 		&&OPCODE_SET_INDEXED_VALIDATED,              \
@@ -743,91 +745,95 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			}
 			DISPATCH_OPCODE;
 
-			OPCODE(OPCODE_EXTENDS_TEST) {
+			OPCODE(OPCODE_TYPE_TEST_BUILTIN) {
 				CHECK_SPACE(4);
 
-				GET_VARIANT_PTR(a, 0);
-				GET_VARIANT_PTR(b, 1);
-				GET_VARIANT_PTR(dst, 2);
+				GET_VARIANT_PTR(dst, 0);
+				GET_VARIANT_PTR(value, 1);
 
-#ifdef DEBUG_ENABLED
-				if (b->get_type() != Variant::OBJECT || b->operator Object *() == nullptr) {
-					err_text = "Right operand of 'is' is not a class.";
-					OPCODE_BREAK;
-				}
-#endif
+				Variant::Type builtin_type = (Variant::Type)_code_ptr[ip + 3];
+				GD_ERR_BREAK(builtin_type < 0 || builtin_type >= Variant::VARIANT_MAX);
 
-				bool extends_ok = false;
-				if (a->get_type() == Variant::OBJECT && a->operator Object *() != nullptr) {
-#ifdef DEBUG_ENABLED
-					bool was_freed;
-					Object *obj_A = a->get_validated_object_with_check(was_freed);
-
-					if (was_freed) {
-						err_text = "Left operand of 'is' is a previously freed instance.";
-						OPCODE_BREAK;
-					}
-
-					Object *obj_B = b->get_validated_object_with_check(was_freed);
-
-					if (was_freed) {
-						err_text = "Right operand of 'is' is a previously freed instance.";
-						OPCODE_BREAK;
-					}
-#else
-
-					Object *obj_A = *a;
-					Object *obj_B = *b;
-#endif // DEBUG_ENABLED
-
-					GDScript *scr_B = Object::cast_to<GDScript>(obj_B);
-
-					if (scr_B) {
-						//if B is a script, the only valid condition is that A has an instance which inherits from the script
-						//in other situation, this should return false.
-
-						if (obj_A->get_script_instance() && obj_A->get_script_instance()->get_language() == GDScriptLanguage::get_singleton()) {
-							GDScript *cmp = static_cast<GDScript *>(obj_A->get_script_instance()->get_script().ptr());
-							//bool found=false;
-							while (cmp) {
-								if (cmp == scr_B) {
-									//inherits from script, all ok
-									extends_ok = true;
-									break;
-								}
-
-								cmp = cmp->_base;
-							}
-						}
-
-					} else {
-						GDScriptNativeClass *nc = Object::cast_to<GDScriptNativeClass>(obj_B);
-
-#ifdef DEBUG_ENABLED
-						if (!nc) {
-							err_text = "Right operand of 'is' is not a class (type: '" + obj_B->get_class() + "').";
-							OPCODE_BREAK;
-						}
-#endif
-						extends_ok = ClassDB::is_parent_class(obj_A->get_class_name(), nc->get_name());
-					}
-				}
-
-				*dst = extends_ok;
+				*dst = value->get_type() == builtin_type;
 				ip += 4;
 			}
 			DISPATCH_OPCODE;
 
-			OPCODE(OPCODE_IS_BUILTIN) {
+			OPCODE(OPCODE_TYPE_TEST_ARRAY) {
+				CHECK_SPACE(6);
+
+				GET_VARIANT_PTR(dst, 0);
+				GET_VARIANT_PTR(value, 1);
+
+				GET_VARIANT_PTR(script_type, 2);
+				Variant::Type builtin_type = (Variant::Type)_code_ptr[ip + 4];
+				int native_type_idx = _code_ptr[ip + 5];
+				GD_ERR_BREAK(native_type_idx < 0 || native_type_idx >= _global_names_count);
+				const StringName native_type = _global_names_ptr[native_type_idx];
+
+				bool result = false;
+				if (value->get_type() == Variant::ARRAY) {
+					Array *array = VariantInternal::get_array(value);
+					result = array->get_typed_builtin() == ((uint32_t)builtin_type) && array->get_typed_class_name() == native_type && array->get_typed_script() == *script_type && array->get_typed_class_name() == native_type;
+				}
+
+				*dst = result;
+				ip += 6;
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_TYPE_TEST_NATIVE) {
 				CHECK_SPACE(4);
 
-				GET_VARIANT_PTR(value, 0);
-				GET_VARIANT_PTR(dst, 1);
-				Variant::Type var_type = (Variant::Type)_code_ptr[ip + 3];
+				GET_VARIANT_PTR(dst, 0);
+				GET_VARIANT_PTR(value, 1);
 
-				GD_ERR_BREAK(var_type < 0 || var_type >= Variant::VARIANT_MAX);
+				int native_type_idx = _code_ptr[ip + 3];
+				GD_ERR_BREAK(native_type_idx < 0 || native_type_idx >= _global_names_count);
+				const StringName native_type = _global_names_ptr[native_type_idx];
 
-				*dst = value->get_type() == var_type;
+				bool was_freed = false;
+				Object *object = value->get_validated_object_with_check(was_freed);
+				if (was_freed) {
+					err_text = "Left operand of 'is' is a previously freed instance.";
+					OPCODE_BREAK;
+				}
+
+				*dst = object && ClassDB::is_parent_class(object->get_class_name(), native_type);
+				ip += 4;
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_TYPE_TEST_SCRIPT) {
+				CHECK_SPACE(4);
+
+				GET_VARIANT_PTR(dst, 0);
+				GET_VARIANT_PTR(value, 1);
+
+				GET_VARIANT_PTR(type, 2);
+				Script *script_type = Object::cast_to<Script>(type->operator Object *());
+				GD_ERR_BREAK(!script_type);
+
+				bool was_freed = false;
+				Object *object = value->get_validated_object_with_check(was_freed);
+				if (was_freed) {
+					err_text = "Left operand of 'is' is a previously freed instance.";
+					OPCODE_BREAK;
+				}
+
+				bool result = false;
+				if (object && object->get_script_instance()) {
+					Script *script_ptr = object->get_script_instance()->get_script().ptr();
+					while (script_ptr) {
+						if (script_ptr == script_type) {
+							result = true;
+							break;
+						}
+						script_ptr = script_ptr->get_base_script().ptr();
+					}
+				}
+
+				*dst = result;
 				ip += 4;
 			}
 			DISPATCH_OPCODE;
