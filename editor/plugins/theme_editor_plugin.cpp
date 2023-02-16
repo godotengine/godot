@@ -3223,6 +3223,7 @@ void ThemeTypeEditor::_update_stylebox_from_leading() {
 	if (!leading_stylebox.pinned || leading_stylebox.stylebox.is_null()) {
 		return;
 	}
+	ERR_FAIL_COND_MSG(edited_theme.is_null(), "Leading stylebox does not have an edited theme to update");
 
 	// Prevent changes from immediately being reported while the operation is still ongoing.
 	edited_theme->_freeze_change_propagation();
@@ -3706,7 +3707,11 @@ void ThemeEditorPlugin::edit(Object *p_node) {
 	if (Object::cast_to<Theme>(p_node)) {
 		theme_editor->edit(Object::cast_to<Theme>(p_node));
 	} else {
-		theme_editor->edit(Ref<Theme>());
+		// We intentionally keep a reference to the last used theme to work around
+		// the the editor being hidden while base resources are edited. Uncomment
+		// the following line again and remove this comment once that bug has been
+		// fixed (scheduled for Godot 4.1 in PR 73098):
+		// theme_editor->edit(Ref<Theme>());
 	}
 }
 
