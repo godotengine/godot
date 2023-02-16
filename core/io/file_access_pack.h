@@ -178,6 +178,8 @@ public:
 
 	virtual bool file_exists(const String &p_name) override;
 
+	virtual void close() override;
+
 	FileAccessPack(const String &p_path, const PackedData::PackedFile &p_file);
 };
 

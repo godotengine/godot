@@ -336,6 +336,10 @@ bool FileAccessZip::file_exists(const String &p_name) {
 	return false;
 }
 
+void FileAccessZip::close() {
+	_close();
+}
+
 FileAccessZip::FileAccessZip(const String &p_path, const PackedData::PackedFile &p_file) {
 	open_internal(p_path, FileAccess::READ);
 }
