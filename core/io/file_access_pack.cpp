@@ -366,6 +366,10 @@ bool FileAccessPack::file_exists(const String &p_name) {
 	return false;
 }
 
+void FileAccessPack::close() {
+	f = Ref<FileAccess>();
+}
+
 FileAccessPack::FileAccessPack(const String &p_path, const PackedData::PackedFile &p_file) :
 		pf(p_file),
 		f(FileAccess::open(pf.pack, FileAccess::READ)) {
