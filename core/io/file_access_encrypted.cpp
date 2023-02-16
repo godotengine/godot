@@ -294,6 +294,10 @@ Error FileAccessEncrypted::_set_unix_permissions(const String &p_file, uint32_t 
 	return ERR_UNAVAILABLE;
 }
 
+void FileAccessEncrypted::close() {
+	_close();
+}
+
 FileAccessEncrypted::~FileAccessEncrypted() {
 	_close();
 }

@@ -333,6 +333,12 @@ void FileAccessFilesystemJAndroid::setup(jobject p_file_access_handler) {
 	_file_last_modified = env->GetMethodID(cls, "fileLastModified", "(Ljava/lang/String;)J");
 }
 
+void FileAccessFilesystemJAndroid::close() {
+	if (is_open()) {
+		_close();
+	}
+}
+
 FileAccessFilesystemJAndroid::FileAccessFilesystemJAndroid() {
 	id = 0;
 }

@@ -385,6 +385,10 @@ Error FileAccessCompressed::_set_unix_permissions(const String &p_file, uint32_t
 	return FAILED;
 }
 
+void FileAccessCompressed::close() {
+	_close();
+}
+
 FileAccessCompressed::~FileAccessCompressed() {
 	_close();
 }
