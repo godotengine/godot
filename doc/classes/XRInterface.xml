@@ -210,7 +210,7 @@
 			This interface supports quad rendering (not yet supported by Godot).
 		</constant>
 		<constant name="XR_VR" value="8" enum="Capabilities">
-			this interface supports VR.
+			This interface supports VR.
 		</constant>
 		<constant name="XR_AR" value="16" enum="Capabilities">
 			This interface supports AR (video background and real world tracking).

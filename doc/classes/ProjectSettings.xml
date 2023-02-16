@@ -667,7 +667,7 @@
 			Main window initial position.
 			[code]0[/code] - "Absolute", [member display/window/size/initial_position] is used to set window position.
 			[code]1[/code] - "Primary Screen Center".
-			[code]2[/code] - "Other Screen Center", [member display/window/size/initial_screen] is used to set window position.
+			[code]2[/code] - "Other Screen Center", [member display/window/size/initial_screen] is used to set the screen.
 		</member>
 		<member name="display/window/size/initial_screen" type="int" setter="" getter="" default="0">
 			Main window initial screen, this settings is used only if [member display/window/size/initial_position_type] is set to "Other Screen Center" ([code]2[/code]).
