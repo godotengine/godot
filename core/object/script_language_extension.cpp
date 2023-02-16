@@ -36,6 +36,7 @@ void ScriptExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_can_instantiate);
 	GDVIRTUAL_BIND(_get_base_script);
+	GDVIRTUAL_BIND(_get_global_name);
 	GDVIRTUAL_BIND(_inherits_script, "script");
 
 	GDVIRTUAL_BIND(_get_instance_base_type);
