@@ -171,6 +171,8 @@
 				- [code]type[/code]: Always [constant NavigationPathQueryResult2D.PATH_SEGMENT_TYPE_LINK].
 				- [code]rid[/code]: The [RID] of the link.
 				- [code]owner[/code]: The object which manages the link (usually [NavigationLink2D]).
+				- [code]link_entry_position[/code]: If [code]owner[/code] is available and the owner is a [NavigationLink2D], it will contain the global position of the link's point the agent is entering.
+				- [code]link_exit_position[/code]: If [code]owner[/code] is available and the owner is a [NavigationLink2D], it will contain the global position of the link's point which the agent is exiting.
 			</description>
 		</signal>
 		<signal name="navigation_finished">
