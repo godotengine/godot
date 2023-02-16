@@ -168,7 +168,9 @@ using Godot.NativeInterop;
             {
                 var parameter = callback.Parameters[i];
 
-                source.Append(parameter.ToDisplayString());
+                AppendRefKind(source, parameter.RefKind);
+                source.Append(' ');
+                source.Append(parameter.Type.FullQualifiedNameIncludeGlobal());
                 source.Append(' ');
                 source.Append(parameter.Name);
 
