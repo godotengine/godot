@@ -2901,10 +2901,10 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 	// Modern functions.
 	// fma
 
-	{ "fma", TYPE_FLOAT, { TYPE_FLOAT, TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID }, { "a", "b", "c" }, TAG_GLOBAL, false },
-	{ "fma", TYPE_VEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, { "a", "b", "c" }, TAG_GLOBAL, false },
-	{ "fma", TYPE_VEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, { "a", "b", "c" }, TAG_GLOBAL, false },
-	{ "fma", TYPE_VEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_VEC4, TYPE_VOID }, { "a", "b", "c" }, TAG_GLOBAL, false },
+	{ "fma", TYPE_FLOAT, { TYPE_FLOAT, TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID }, { "a", "b", "c" }, TAG_GLOBAL, true },
+	{ "fma", TYPE_VEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VEC2, TYPE_VOID }, { "a", "b", "c" }, TAG_GLOBAL, true },
+	{ "fma", TYPE_VEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VEC3, TYPE_VOID }, { "a", "b", "c" }, TAG_GLOBAL, true },
+	{ "fma", TYPE_VEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_VEC4, TYPE_VOID }, { "a", "b", "c" }, TAG_GLOBAL, true },
 
 	// Packing/Unpacking functions.
 
@@ -6553,7 +6553,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 				OperatorNode *op = alloc_node<OperatorNode>();
 				op->op = expression[i].op;
 				if ((op->op == OP_INCREMENT || op->op == OP_DECREMENT) && !_validate_assign(expression[i + 1].node, p_function_info)) {
-					_set_error(RTR("Can't use increment/decrement operator in a constant expression."));
+					_set_error(RTR("Invalid use of increment/decrement operator in a constant expression."));
 					return nullptr;
 				}
 				op->arguments.push_back(expression[i + 1].node);
@@ -8421,7 +8421,7 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 						_set_error(vformat(RTR("The '%s' data type is not supported for uniforms."), "struct"));
 						return ERR_PARSE_ERROR;
 					} else {
-						_set_error(vformat(RTR("The '%s' data type not allowed here."), "struct"));
+						_set_error(vformat(RTR("The '%s' data type is not allowed here."), "struct"));
 						return ERR_PARSE_ERROR;
 					}
 				}

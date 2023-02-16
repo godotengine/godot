@@ -310,7 +310,8 @@ void EditorPropertyFontMetaOverride::update_property() {
 		}
 
 		if (script_editor) {
-			button_add = EditorInspector::create_inspector_action_button(TTR("Add Script"));
+			// TRANSLATORS: Script refers to a writing system.
+			button_add = EditorInspector::create_inspector_action_button(TTR("Add Script", "Locale"));
 		} else {
 			button_add = EditorInspector::create_inspector_action_button(TTR("Add Locale"));
 		}

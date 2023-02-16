@@ -59,17 +59,18 @@ class AudioDriverDummy : public AudioDriver {
 	static AudioDriverDummy *singleton;
 
 public:
-	const char *get_name() const {
+	virtual const char *get_name() const override {
 		return "Dummy";
 	};
 
-	virtual Error init();
-	virtual void start();
-	virtual int get_mix_rate() const;
-	virtual SpeakerMode get_speaker_mode() const;
-	virtual void lock();
-	virtual void unlock();
-	virtual void finish();
+	virtual Error init() override;
+	virtual void start() override;
+	virtual int get_mix_rate() const override;
+	virtual SpeakerMode get_speaker_mode() const override;
+
+	virtual void lock() override;
+	virtual void unlock() override;
+	virtual void finish() override;
 
 	void set_use_threads(bool p_use_threads);
 	void set_speaker_mode(SpeakerMode p_mode);

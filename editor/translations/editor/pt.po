@@ -605,6 +605,9 @@ msgstr "Do Sinal:"
 msgid "Scene does not contain any script."
 msgstr "A cena não contém qualquer script."
 
+msgid "Select Method"
+msgstr "Selecione Método"
+
 msgid "Remove"
 msgstr "Remover"
 
@@ -661,9 +664,6 @@ msgstr "Desligar"
 
 msgid "Connect a Signal to a Method"
 msgstr "Conectar Sinal a Método"
-
-msgid "Edit Connection:"
-msgstr "Editar Conexão:"
 
 msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
 msgstr "Deseja remover todas as conexões do sinal \"%s\"?"
@@ -809,23 +809,8 @@ msgstr "Aviso:"
 msgid "Error:"
 msgstr "Erro:"
 
-msgid "C++ Error"
-msgstr "Erro C++"
-
-msgid "C++ Error:"
-msgstr "Erro C++:"
-
-msgid "Source"
-msgstr "Fonte"
-
-msgid "C++ Source"
-msgstr "Código-fonte C++"
-
-msgid "Source:"
-msgstr "Código-fonte:"
-
-msgid "C++ Source:"
-msgstr "Código-fonte C++:"
+msgid "%s Error"
+msgstr "%s Erro"
 
 msgid "Stack Trace"
 msgstr "Rastreamento de Pilha"
@@ -835,6 +820,9 @@ msgstr "Copiar Erro"
 
 msgid "Open C++ Source on GitHub"
 msgstr "Abrir Código C++ no GitHub"
+
+msgid "C++ Source"
+msgstr "Código-fonte C++"
 
 msgid "Video RAM"
 msgstr "Memória Vídeo"
@@ -1796,11 +1784,11 @@ msgstr "Mostrar Todos os Idiomas"
 msgid "Show Selected Locales Only"
 msgstr "Mostrar Apenas Idiomas Selecionados"
 
+msgid "Edit Filters"
+msgstr "Editar filtros"
+
 msgid "Language:"
 msgstr "Linguagem:"
-
-msgid "Script"
-msgstr "Script"
 
 msgid "Variant"
 msgstr "Variante"
@@ -2356,23 +2344,6 @@ msgid "Install from file"
 msgstr "Instalar do ficheiro"
 
 msgid ""
-"This will set up your project for custom Android builds by installing the "
-"source template to \"res://android/build\".\n"
-"You can then apply modifications and build your own custom APK on export "
-"(adding modules, changing the AndroidManifest.xml, etc.).\n"
-"Note that in order to make custom builds instead of using pre-built APKs, "
-"the \"Use Custom Build\" option should be enabled in the Android export "
-"preset."
-msgstr ""
-"O projeto será preparado para compilações personalizadas Android com a "
-"instalação do modelo fonte em \"res://android/build\".\n"
-"Poderá depois aplicar modificações e compilar o seu APK personalizado a "
-"exportar (com adição de módulos, a alterar AndroidManifest.xml, etc.).\n"
-"Repare que de forma a criar compilações personalizadas em vez de usar APKs "
-"pré-compilados, a opção \"Use Custom Build\" deve ser ativada na "
-"predefinição da exportação Android."
-
-msgid ""
 "The Android build template is already installed in this project and it won't "
 "be overwritten.\n"
 "Remove the \"res://android/build\" directory manually before attempting this "
@@ -2598,9 +2569,6 @@ msgstr "Atalhos"
 
 msgid "Binding"
 msgstr "Ligação"
-
-msgid "%s Error"
-msgstr "%s Erro"
 
 msgid "All Devices"
 msgstr "Todos os Aparelhos"
@@ -3538,6 +3506,9 @@ msgstr "Selecionar e mover pontos, criar pontos com RMB."
 msgid "Enable snap and show grid."
 msgstr "Ativar ajuste e mostrar a grelha."
 
+msgid "Blend:"
+msgstr "Mistura:"
+
 msgid "Point"
 msgstr "Ponto"
 
@@ -3580,14 +3551,8 @@ msgstr "Apagar pontos e triângulos."
 msgid "Generate blend triangles automatically (instead of manually)"
 msgstr "Gera triângulos automaticamente (em vez de manual)"
 
-msgid "Blend:"
-msgstr "Mistura:"
-
 msgid "Parameter Changed:"
 msgstr "Parâmetro Alterado:"
-
-msgid "Edit Filters"
-msgstr "Editar filtros"
 
 msgid "Output node can't be added to the blend tree."
 msgstr "Saída do nó não pode ser adicionada à árvore de mistura."
@@ -3711,9 +3676,6 @@ msgstr ""
 
 msgid "Play selected animation backwards from end. (Shift+A)"
 msgstr "Reproduzir a Animação selecionada para trás a partir do fim. (Shift+A)"
-
-msgid "Stop animation playback. (S)"
-msgstr "Parar reprodução da Animação. (S)"
 
 msgid "Play selected animation from start. (Shift+D)"
 msgstr "Reproduzir a Animação selecionada a partir do início. (Shift+D)"
@@ -4938,12 +4900,6 @@ msgstr "Mudar Notificador AABB"
 msgid "Change Particles AABB"
 msgstr "Mudar partículas AABB"
 
-msgid "Change Box Shape Extents"
-msgstr "Mudar medidas da forma caixa"
-
-msgid "Change Probe Extents"
-msgstr "Mudar Extensões de Sonda"
-
 msgid "Change Capsule Shape Radius"
 msgstr "Mudar raio da forma cápsula"
 
@@ -5758,6 +5714,9 @@ msgstr "Padrão"
 msgid "Connections to method:"
 msgstr "Conexões ao método:"
 
+msgid "Source"
+msgstr "Fonte"
+
 msgid "Target"
 msgstr "Alvo"
 
@@ -5998,12 +5957,6 @@ msgstr "(vazio)"
 
 msgid "Animations:"
 msgstr "Animações:"
-
-msgid "Speed:"
-msgstr "Velocidade:"
-
-msgid "Loop"
-msgstr "Ciclo"
 
 msgid "Animation Frames:"
 msgstr "Frames da Animação:"
@@ -7430,9 +7383,6 @@ msgstr "Adicionar ação de entrada"
 msgid "Change Action deadzone"
 msgstr "Mudar a zona morta da Ação"
 
-msgid "Add Input Action Event"
-msgstr "Adicionar evento ação de entrada"
-
 msgid "Erase Input Action"
 msgstr "Apagar Ação de Entrada"
 
@@ -7459,9 +7409,6 @@ msgstr "Selecionar Propriedade"
 
 msgid "Select Virtual Method"
 msgstr "Selecione Método virtual"
-
-msgid "Select Method"
-msgstr "Selecione Método"
 
 msgid "Batch Rename"
 msgstr "Renomear em Massa"
@@ -8249,20 +8196,8 @@ msgstr "Chave pública inválida para expansão APK."
 msgid "Invalid package name:"
 msgstr "Nome de pacote inválido:"
 
-msgid "\"Use Custom Build\" must be enabled to use the plugins."
-msgstr "\"Use Custom Build\" têm de estar ativa para usar os plugins."
-
 msgid "\"Passthrough\" is only valid when \"XR Mode\" is \"OpenXR\"."
 msgstr "\"Passthrough\" só é válido quando o \"XR Mode\" é \"OpenXR\"."
-
-msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
-msgstr "\"Exportar AAB\" só é válido quando \"Use Custom Build\" está ativa."
-
-msgid ""
-"\"Min SDK\" can only be overridden when \"Use Custom Build\" is enabled."
-msgstr ""
-"\"Min SDK\" só pode ser substituído quando \"Usar Compilação Customizada\" "
-"está ativado."
 
 msgid "\"Min SDK\" should be a valid integer, but got \"%s\" which is invalid."
 msgstr ""
@@ -8275,12 +8210,6 @@ msgid ""
 msgstr ""
 "\"Min SDK\" não pode ser inferior a %d, que é a versão necessária para a "
 "biblioteca Godot."
-
-msgid ""
-"\"Target SDK\" can only be overridden when \"Use Custom Build\" is enabled."
-msgstr ""
-"\"Target SDK\" só pode ser substituído quando \"Usar Compilação "
-"Customizada\" está ativado."
 
 msgid ""
 "\"Target SDK\" should be a valid integer, but got \"%s\" which is invalid."
@@ -8346,13 +8275,6 @@ msgstr "Nome de ficheiro inválido! APK Android exige a extensão *.apk."
 
 msgid "Unsupported export format!"
 msgstr "Formato de exportação não suportado!"
-
-msgid ""
-"Trying to build from a custom built template, but no version info for it "
-"exists. Please reinstall from the 'Project' menu."
-msgstr ""
-"A tentar compilar a partir de um modelo personalizado, mas sem informação de "
-"versão. Reinstale no menu 'Projeto'."
 
 msgid ""
 "Android build version mismatch: Template installed: %s, Godot version: %s. "

@@ -255,6 +255,14 @@ TEST_CASE("[Vector4] Other methods") {
 	CHECK_MESSAGE(
 			vector.snapped(Vector4(0.25, 0.25, 0.25, 0.25)) == Vector4(1.25, 3.5, 5.5, 1.5),
 			"Vector4 snapped to 0.25 should give exact results.");
+
+	CHECK_MESSAGE(
+			Vector4(1.2, 2.5, 2.0, 1.6).is_equal_approx(vector.min(Vector4(3.0, 2.5, 2.0, 3.4))),
+			"Vector4 min should return expected value.");
+
+	CHECK_MESSAGE(
+			Vector4(5.3, 3.4, 5.6, 4.2).is_equal_approx(vector.max(Vector4(5.3, 2.0, 3.0, 4.2))),
+			"Vector4 max should return expected value.");
 }
 
 TEST_CASE("[Vector4] Rounding methods") {

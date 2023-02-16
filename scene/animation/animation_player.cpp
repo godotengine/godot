@@ -199,7 +199,7 @@ void AnimationPlayer::_validate_property(PropertyInfo &p_property) const {
 void AnimationPlayer::_get_property_list(List<PropertyInfo> *p_list) const {
 	List<PropertyInfo> anim_names;
 
-	anim_names.push_back(PropertyInfo(Variant::DICTIONARY, "libraries"));
+	anim_names.push_back(PropertyInfo(Variant::DICTIONARY, PNAME("libraries")));
 
 	for (const KeyValue<StringName, AnimationData> &E : animation_set) {
 		if (E.value.next != StringName()) {

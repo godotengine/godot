@@ -97,14 +97,10 @@ DebuggerEditorPlugin::DebuggerEditorPlugin(PopupMenu *p_debug_menu) {
 	debug_menu->add_separator();
 	debug_menu->add_submenu_item(TTR("Run Multiple Instances"), "run_instances");
 
-	instances_menu->add_radio_check_item(TTR("Run 1 Instance"));
-	instances_menu->set_item_metadata(0, 1);
-	instances_menu->add_radio_check_item(TTR("Run 2 Instances"));
-	instances_menu->set_item_metadata(1, 2);
-	instances_menu->add_radio_check_item(TTR("Run 3 Instances"));
-	instances_menu->set_item_metadata(2, 3);
-	instances_menu->add_radio_check_item(TTR("Run 4 Instances"));
-	instances_menu->set_item_metadata(3, 4);
+	for (int i = 1; i <= 4; i++) {
+		instances_menu->add_radio_check_item(vformat(TTRN("Run %d Instance", "Run %d Instances", i), i));
+		instances_menu->set_item_metadata(i - 1, i);
+	}
 	instances_menu->set_item_checked(0, true);
 	instances_menu->connect("index_pressed", callable_mp(this, &DebuggerEditorPlugin::_select_run_count));
 	debug_menu->connect("id_pressed", callable_mp(this, &DebuggerEditorPlugin::_menu_option));

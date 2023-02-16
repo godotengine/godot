@@ -162,16 +162,16 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2023-01-14 00:01+0000\n"
-"Last-Translator: Levi Ferreira <leviferreiramorais@gmail.com>\n"
+"PO-Revision-Date: 2023-02-08 18:01+0000\n"
+"Last-Translator: Leonardo <leotada523@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
-"godot-engine/godot/pt_BR/>\n"
+"godot-engine/godot-properties/pt_BR/>\n"
 "Language: pt_BR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.15.1-dev\n"
+"X-Generator: Weblate 4.16-dev\n"
 
 msgid "Application"
 msgstr "Aplicação"
@@ -182,8 +182,14 @@ msgstr "Configuração"
 msgid "Name"
 msgstr "Nome"
 
+msgid "Description"
+msgstr "Descrição"
+
 msgid "Run"
 msgstr "Rodar"
+
+msgid "Main Scene"
+msgstr "Cena Principal"
 
 msgid "Disable stdout"
 msgstr "Desativar stdout"
@@ -212,6 +218,9 @@ msgstr "Janela"
 msgid "Size"
 msgstr "Tamanho"
 
+msgid "Mode"
+msgstr "Modo"
+
 msgid "Resizable"
 msgstr "Redimensionável"
 
@@ -226,6 +235,9 @@ msgstr "Economia de Energia"
 
 msgid "Keep Screen On"
 msgstr "Manter a Tela Ligada"
+
+msgid "Audio"
+msgstr "Áudio"
 
 msgid "Editor"
 msgstr "Editor"
@@ -248,6 +260,9 @@ msgstr "Depuração"
 msgid "Settings"
 msgstr "Configurações"
 
+msgid "Compression"
+msgstr "Compressão"
+
 msgid "Crash Handler"
 msgstr "Gerenciador de Falhas"
 
@@ -256,6 +271,12 @@ msgstr "Mensagem"
 
 msgid "Rendering"
 msgstr "Renderização"
+
+msgid "Limits"
+msgstr "Limites"
+
+msgid "GUI"
+msgstr "GUI (Interface Gráfica de Usuário)"
 
 msgid "Low Processor Usage Mode"
 msgstr "Modo de Baixo Uso de Processador"
@@ -304,6 +325,9 @@ msgstr "Fator"
 
 msgid "Button Index"
 msgstr "Índice do Botão"
+
+msgid "Double Click"
+msgstr "Clique Duplo"
 
 msgid "Tilt"
 msgstr "Inclinar"
@@ -356,6 +380,12 @@ msgstr "Valor do Controlador"
 msgid "Big Endian"
 msgstr "Big Endian"
 
+msgid "Network"
+msgstr "Rede"
+
+msgid "Page Size"
+msgstr "Tamanho da Página"
+
 msgid "Blocking Mode Enabled"
 msgstr "Modo de bloqueio Ativado"
 
@@ -391,9 +421,6 @@ msgstr "Caminho"
 
 msgid "Data Array"
 msgstr "Matriz de Dados"
-
-msgid "Blocking Handshake"
-msgstr "Handshake bloqueante"
 
 msgid "Max Pending Connections"
 msgstr "Conexões Pendentes Máximas"
@@ -467,15 +494,6 @@ msgstr "Animação"
 msgid "Easing"
 msgstr "Suavização"
 
-msgid "Interface"
-msgstr "Interface"
-
-msgid "Editors"
-msgstr "Editores"
-
-msgid "Network"
-msgstr "Rede"
-
 msgid "Remote Port"
 msgstr "Porta Remota"
 
@@ -545,8 +563,8 @@ msgstr "Checado"
 msgid "Keying"
 msgstr "Chaveamento"
 
-msgid "Main Scene"
-msgstr "Cena Principal"
+msgid "Interface"
+msgstr "Interface"
 
 msgid "Show Update Spinner"
 msgstr "Mostrar Spinner de Atualização"
@@ -850,6 +868,9 @@ msgstr "Tamanho da Fonte de Ajuda Principal"
 
 msgid "Help Title Font Size"
 msgstr "Tamanho da Fonte de Ajuda para Títulos"
+
+msgid "Editors"
+msgstr "Editores"
 
 msgid "Grid Map"
 msgstr "Mapa de Grade"
@@ -1262,6 +1283,9 @@ msgstr "Tamanho do Contorno"
 msgid "Variation"
 msgstr "Variação"
 
+msgid "Transform"
+msgstr "Transformação"
+
 msgid "Collada"
 msgstr "Collada"
 
@@ -1289,14 +1313,8 @@ msgstr "Delimitador"
 msgid "Preload"
 msgstr "Pré Carregar"
 
-msgid "Mode"
-msgstr "Modo"
-
 msgid "Lossy Quality"
 msgstr "Com Perda de Qualidade"
-
-msgid "BPTC LDR"
-msgstr "BPTC LDR"
 
 msgid "Mipmaps"
 msgstr "Mipmaps"
@@ -1360,12 +1378,6 @@ msgstr "Otimizador"
 
 msgid "Max Angular Error"
 msgstr "Erro Angular Máximo"
-
-msgid "Compression"
-msgstr "Compressão"
-
-msgid "Page Size"
-msgstr "Tamanho da Página"
 
 msgid "Nodes"
 msgstr "Nós"
@@ -1592,9 +1604,6 @@ msgstr "Threads"
 msgid "Thread Model"
 msgstr "Modelo de Thread"
 
-msgid "Audio"
-msgstr "Áudio"
-
 msgid "Handheld"
 msgstr "Portátil (Handheld)"
 
@@ -1625,14 +1634,17 @@ msgstr "iOS"
 msgid "Hide Home Indicator"
 msgstr "Esconder Indicador de Home"
 
+msgid "Input Devices"
+msgstr "Dispositivos de Entrada"
+
+msgid "Pointing"
+msgstr "Apontando"
+
 msgid "Boot Splash"
 msgstr "Imagem de Exibição ao Iniciar"
 
 msgid "BG Color"
 msgstr "Cor do Plano de Fundo"
-
-msgid "Input Devices"
-msgstr "Dispositivos de Entrada"
 
 msgid "Environment"
 msgstr "Ambiente"
@@ -1643,20 +1655,23 @@ msgstr "Cor Limpa Padrão"
 msgid "Show Image"
 msgstr "Mostrar Imagem"
 
+msgid "Image"
+msgstr "Imagem"
+
 msgid "Fullsize"
 msgstr "Tamanho Inteiro"
 
 msgid "Use Filter"
 msgstr "Usar Filtro"
 
+msgid "Icon"
+msgstr "Ícone"
+
 msgid "Buffering"
 msgstr "Buffering"
 
 msgid "Agile Event Flushing"
 msgstr "Limpeza de Eventos Agil"
-
-msgid "Pointing"
-msgstr "Apontando"
 
 msgid "Emulate Touch From Mouse"
 msgstr "Simular Toque à Partir do Mouse"
@@ -1685,11 +1700,14 @@ msgstr "Diretório da Solução"
 msgid "Main Loop Type"
 msgstr "Tipo de Loop Principal"
 
+msgid "Stretch"
+msgstr "Esticar"
+
+msgid "Aspect"
+msgstr "Aspecto"
+
 msgid "Auto Accept Quit"
 msgstr "Aceitar Sair Automaticamente"
-
-msgid "GUI"
-msgstr "GUI (Interface Gráfica de Usuário)"
 
 msgid "Fonts"
 msgstr "Fontes"
@@ -1699,6 +1717,9 @@ msgstr "Fontes Dinâmicas"
 
 msgid "Use Oversampling"
 msgstr "Utilizar Oversampling"
+
+msgid "Textures"
+msgstr "Texturas"
 
 msgid "Operation"
 msgstr "Operação"
@@ -1876,9 +1897,6 @@ msgstr "Nome da Cena"
 
 msgid "Root Nodes"
 msgstr "Nós Raízes"
-
-msgid "Textures"
-msgstr "Texturas"
 
 msgid "Images"
 msgstr "Imagens"
@@ -2165,9 +2183,6 @@ msgstr "Estado do IGD"
 msgid "Write Mode"
 msgstr "Modo de Escrita"
 
-msgid "Limits"
-msgstr "Limites"
-
 msgid "WebRTC"
 msgstr "WebRTC"
 
@@ -2221,12 +2236,6 @@ msgstr "Primeiro Plano Adaptável 432 X 432"
 
 msgid "Adaptive Background 432 X 432"
 msgstr "Fundo Adaptável 432 X 432"
-
-msgid "Custom Build"
-msgstr "Build Personalizada"
-
-msgid "Use Custom Build"
-msgstr "Usar Build Personalizada"
 
 msgid "Export Format"
 msgstr "Exportar Formato"
@@ -2423,9 +2432,6 @@ msgstr "Arquitetura"
 msgid "macOS"
 msgstr "macOS"
 
-msgid "Icon"
-msgstr "Ícone"
-
 msgid "Copyright"
 msgstr "Direitos Autorais"
 
@@ -2521,9 +2527,6 @@ msgstr "Nome de Exibição"
 
 msgid "Short Name"
 msgstr "Nome Curto"
-
-msgid "Description"
-msgstr "Descrição"
 
 msgid "Publisher"
 msgstr "Publicadora"
@@ -2648,17 +2651,11 @@ msgstr "Descrição do Arquivo"
 msgid "Trademarks"
 msgstr "Marca Registrada (Trademarks)"
 
-msgid "Frames"
-msgstr "Quadros"
-
 msgid "Frame"
 msgstr "Quadro"
 
 msgid "Speed Scale"
 msgstr "Escalonamento da Velocidade"
-
-msgid "Playing"
-msgstr "Rodando"
 
 msgid "Centered"
 msgstr "Centralizado"
@@ -2689,6 +2686,9 @@ msgstr "Volume dB (decibéis)"
 
 msgid "Pitch Scale"
 msgstr "Escalonamento de Pitch"
+
+msgid "Playing"
+msgstr "Rodando"
 
 msgid "Autoplay"
 msgstr "Rodar automaticamente"
@@ -2896,9 +2896,6 @@ msgstr "Velocidade Máxima"
 
 msgid "Estimate Radius"
 msgstr "Raio Estimado"
-
-msgid "Transform"
-msgstr "Transformação"
 
 msgid "Rotation Degrees"
 msgstr "Graus de Rotação"
@@ -3356,11 +3353,11 @@ msgstr "Atraso Aleatório"
 msgid "Xfade Time"
 msgstr "Tempo do Esmaecer Cruzado"
 
-msgid "Reset"
-msgstr "Recompor"
-
 msgid "Active"
 msgstr "Ativo"
+
+msgid "Reset"
+msgstr "Recompor"
 
 msgid "Switch"
 msgstr "Switch"
@@ -3460,9 +3457,6 @@ msgstr "Tamanho da Tabulação"
 
 msgid "Split Offset"
 msgstr "Deslocamento de Divisão"
-
-msgid "Stretch"
-msgstr "Esticar"
 
 msgid "Current Tab"
 msgstr "Aba Atual"
@@ -3565,9 +3559,6 @@ msgstr "Tamanho Mínimo"
 
 msgid "Max Size"
 msgstr "Tamanho Máximo"
-
-msgid "Aspect"
-msgstr "Aspecto"
 
 msgid "Format"
 msgstr "Formato"
@@ -3818,9 +3809,6 @@ msgstr "Inferior direita"
 msgid "Bottom Left"
 msgstr "Inferior Esquerda"
 
-msgid "Image"
-msgstr "Imagem"
-
 msgid "Atlas"
 msgstr "Atlas"
 
@@ -3833,6 +3821,9 @@ msgstr "Usar HDR"
 msgid "From"
 msgstr "À Partir de"
 
+msgid "Frames"
+msgstr "Quadros"
+
 msgid "Transpose"
 msgstr "Transpor"
 
@@ -3844,9 +3835,6 @@ msgstr "Função"
 
 msgid "Canvas"
 msgstr "Tela"
-
-msgid "Default Gravity"
-msgstr "Gravidade Padrão"
 
 msgid "Plane"
 msgstr "Plano"
@@ -3904,6 +3892,9 @@ msgstr "Excluir"
 
 msgid "Collide With Areas"
 msgstr "Colidir com Áreas"
+
+msgid "Default Gravity"
+msgstr "Gravidade Padrão"
 
 msgid "Vertex"
 msgstr "Vértice"

@@ -163,7 +163,8 @@ Array LightmapGIData::_get_light_textures_data() const {
 		config->set_value("remap", "importer", "2d_array_texture");
 		config->set_value("remap", "type", "CompressedTexture2DArray");
 		if (!config->has_section_key("params", "compress/mode")) {
-			config->set_value("params", "compress/mode", 2); //user may want another compression, so leave it be
+			// User may want another compression, so leave it be, but default to VRAM uncompressed.
+			config->set_value("params", "compress/mode", 3);
 		}
 		config->set_value("params", "compress/channel_pack", 1);
 		config->set_value("params", "mipmaps/generate", false);

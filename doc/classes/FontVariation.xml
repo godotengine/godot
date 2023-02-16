@@ -49,7 +49,7 @@
 			Extra spacing at the bottom of the line in pixels.
 		</member>
 		<member name="spacing_glyph" type="int" setter="set_spacing" getter="get_spacing" default="0">
-			Extra spacing between graphical glyphs
+			Extra spacing between graphical glyphs.
 		</member>
 		<member name="spacing_space" type="int" setter="set_spacing" getter="get_spacing" default="0">
 			Extra width of the space glyphs.

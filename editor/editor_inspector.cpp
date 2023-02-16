@@ -2566,12 +2566,13 @@ bool EditorInspector::_is_property_disabled_by_feature_profile(const StringName 
 }
 
 void EditorInspector::update_tree() {
-	//to update properly if all is refreshed
+	// Store currently selected and focused elements to restore after the update.
+	// TODO: Can be useful to store more context for the focusable, such as the caret position in LineEdit.
 	StringName current_selected = property_selected;
 	int current_focusable = -1;
 
 	if (property_focusable != -1) {
-		//check focusable is really focusable
+		// Check that focusable is actually focusable.
 		bool restore_focus = false;
 		Control *focused = get_viewport() ? get_viewport()->gui_get_focus_owner() : nullptr;
 		if (focused) {
@@ -2579,8 +2580,8 @@ void EditorInspector::update_tree() {
 			while (parent) {
 				EditorInspector *inspector = Object::cast_to<EditorInspector>(parent);
 				if (inspector) {
-					restore_focus = inspector == this; //may be owned by another inspector
-					break; //exit after the first inspector is found, since there may be nested ones
+					restore_focus = inspector == this; // May be owned by another inspector.
+					break; // Exit after the first inspector is found, since there may be nested ones.
 				}
 				parent = parent->get_parent();
 			}
@@ -2591,7 +2592,9 @@ void EditorInspector::update_tree() {
 		}
 	}
 
-	_clear();
+	// Only hide plugins if we are not editing any object.
+	// This should be handled outside of the update_tree call anyway (see EditorInspector::edit), but might as well keep it safe.
+	_clear(!object);
 
 	if (!object) {
 		return;
@@ -3301,17 +3304,19 @@ void EditorInspector::update_property(const String &p_prop) {
 	}
 }
 
-void EditorInspector::_clear() {
+void EditorInspector::_clear(bool p_hide_plugins) {
 	while (main_vbox->get_child_count()) {
 		memdelete(main_vbox->get_child(0));
 	}
+
 	property_selected = StringName();
 	property_focusable = -1;
 	editor_property_map.clear();
 	sections.clear();
 	pending.clear();
 	restart_request_props.clear();
-	if (_is_main_editor_inspector()) {
+
+	if (p_hide_plugins && _is_main_editor_inspector()) {
 		EditorNode::get_singleton()->hide_unused_editors(this);
 	}
 }
@@ -3405,7 +3410,6 @@ void EditorInspector::register_text_enter(Node *p_line_edit) {
 }
 
 void EditorInspector::_filter_changed(const String &p_text) {
-	_clear();
 	update_tree();
 }
 

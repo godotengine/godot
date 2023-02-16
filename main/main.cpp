@@ -72,6 +72,7 @@
 #include "servers/movie_writer/movie_writer_mjpeg.h"
 #include "servers/navigation_server_2d.h"
 #include "servers/navigation_server_3d.h"
+#include "servers/navigation_server_3d_dummy.h"
 #include "servers/physics_server_2d.h"
 #include "servers/physics_server_3d.h"
 #include "servers/register_server_types.h"
@@ -93,13 +94,17 @@
 #include "editor/editor_settings.h"
 #include "editor/editor_translation.h"
 #include "editor/progress_dialog.h"
-#include "editor/project_converter_3_to_4.h"
 #include "editor/project_manager.h"
 #include "editor/register_editor_types.h"
+
 #ifndef NO_EDITOR_SPLASH
 #include "main/splash_editor.gen.h"
 #endif
-#endif
+
+#ifndef DISABLE_DEPRECATED
+#include "editor/project_converter_3_to_4.h"
+#endif // DISABLE_DEPRECATED
+#endif // TOOLS_ENABLED
 
 #include "modules/modules_enabled.gen.h" // For mono.
 
@@ -163,8 +168,10 @@ static OS::ProcessID editor_pid = 0;
 static bool found_project = false;
 static bool auto_build_solutions = false;
 static String debug_server_uri;
+#ifndef DISABLE_DEPRECATED
 static int converter_max_kb_file = 4 * 1024; // 4MB
 static int converter_max_line_length = 100000;
+#endif // DISABLE_DEPRECATED
 
 HashMap<Main::CLIScope, Vector<String>> forwardable_cli_arguments;
 #endif
@@ -278,8 +285,21 @@ void finalize_display() {
 void initialize_navigation_server() {
 	ERR_FAIL_COND(navigation_server_3d != nullptr);
 
+	// Init 3D Navigation Server
 	navigation_server_3d = NavigationServer3DManager::new_default_server();
+
+	// Fall back to dummy if no default server has been registered.
+	if (!navigation_server_3d) {
+		WARN_PRINT_ONCE("No NavigationServer3D implementation has been registered! Falling back to a dummy implementation: navigation features will be unavailable.");
+		navigation_server_3d = memnew(NavigationServer3DDummy);
+	}
+
+	// Should be impossible, but make sure it's not null.
+	ERR_FAIL_NULL_MSG(navigation_server_3d, "Failed to initialize NavigationServer3D.");
+
+	// Init 2D Navigation Server
 	navigation_server_2d = memnew(NavigationServer2D);
+	ERR_FAIL_NULL_MSG(navigation_server_2d, "Failed to initialize NavigationServer2D.");
 }
 
 void finalize_navigation_server() {
@@ -423,10 +443,12 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("                                    The target directory must exist.\n");
 	OS::get_singleton()->print("  --export-debug <preset> <path>    Export the project in debug mode using the given preset and output path. See --export-release description for other considerations.\n");
 	OS::get_singleton()->print("  --export-pack <preset> <path>     Export the project data only using the given preset and output path. The <path> extension determines whether it will be in PCK or ZIP format.\n");
+#ifndef DISABLE_DEPRECATED
 	OS::get_singleton()->print("  --convert-3to4 [<max_file_kb>] [<max_line_size>]\n");
 	OS::get_singleton()->print("                                    Converts project from Godot 3.x to Godot 4.x.\n");
 	OS::get_singleton()->print("  --validate-conversion-3to4 [<max_file_kb>] [<max_line_size>]\n");
 	OS::get_singleton()->print("                                    Shows what elements will be renamed when converting project from Godot 3.x to Godot 4.x.\n");
+#endif // DISABLE_DEPRECATED
 	OS::get_singleton()->print("  --doctool [<path>]                Dump the engine API reference to the given <path> (defaults to current dir) in XML format, merging if existing files are found.\n");
 	OS::get_singleton()->print("  --no-docbase                      Disallow dumping the base types (used with --doctool).\n");
 	OS::get_singleton()->print("  --build-solutions                 Build the scripting solutions (e.g. for C# projects). Implies --editor and requires a valid project to edit.\n");
@@ -1108,6 +1130,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			editor = true;
 			cmdline_tool = true;
 			main_args.push_back(I->get());
+#ifndef DISABLE_DEPRECATED
 		} else if (I->get() == "--convert-3to4") {
 			// Actually handling is done in start().
 			cmdline_tool = true;
@@ -1138,6 +1161,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 					}
 				}
 			}
+#endif // DISABLE_DEPRECATED
 		} else if (I->get() == "--doctool") {
 			// Actually handling is done in start().
 			cmdline_tool = true;
@@ -1147,7 +1171,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			audio_driver = NULL_AUDIO_DRIVER;
 			display_driver = NULL_DISPLAY_DRIVER;
 			main_args.push_back(I->get());
-#endif
+#endif // TOOLS_ENABLED
 		} else if (I->get() == "--path") { // set path of project to start or edit
 
 			if (I->next()) {
@@ -2370,7 +2394,7 @@ bool Main::start() {
 	bool converting_project = false;
 	bool validating_converting_project = false;
 #endif // DISABLE_DEPRECATED
-#endif
+#endif // TOOLS_ENABLED
 
 	main_timer_sync.init(OS::get_singleton()->get_ticks_usec());
 	List<String> args = OS::get_singleton()->get_cmdline_args();
@@ -2395,7 +2419,7 @@ bool Main::start() {
 			editor = true;
 		} else if (args[i] == "-p" || args[i] == "--project-manager") {
 			project_manager = true;
-#endif
+#endif // TOOLS_ENABLED
 		} else if (args[i].length() && args[i][0] != '-' && positional_arg.is_empty()) {
 			positional_arg = args[i];
 
@@ -2553,18 +2577,22 @@ bool Main::start() {
 
 #ifndef DISABLE_DEPRECATED
 	if (converting_project) {
-		int exit_code = ProjectConverter3To4(converter_max_kb_file, converter_max_line_length).convert();
-		OS::get_singleton()->set_exit_code(exit_code);
+		int ret = ProjectConverter3To4(converter_max_kb_file, converter_max_line_length).convert();
+		if (ret) {
+			OS::get_singleton()->set_exit_code(EXIT_SUCCESS);
+		}
 		return false;
 	}
 	if (validating_converting_project) {
-		int exit_code = ProjectConverter3To4(converter_max_kb_file, converter_max_line_length).validate_conversion();
-		OS::get_singleton()->set_exit_code(exit_code);
+		bool ret = ProjectConverter3To4(converter_max_kb_file, converter_max_line_length).validate_conversion();
+		if (ret) {
+			OS::get_singleton()->set_exit_code(EXIT_SUCCESS);
+		}
 		return false;
 	}
 #endif // DISABLE_DEPRECATED
 
-#endif
+#endif // TOOLS_ENABLED
 
 	if (script.is_empty() && game_path.is_empty() && String(GLOBAL_GET("application/run/main_scene")) != "") {
 		game_path = GLOBAL_GET("application/run/main_scene");

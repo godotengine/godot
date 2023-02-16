@@ -120,10 +120,9 @@ void TileSetAtlasSourceEditor::TileSetAtlasSourceProxyObject::_bind_methods() {
 }
 
 void TileSetAtlasSourceEditor::TileSetAtlasSourceProxyObject::edit(Ref<TileSet> p_tile_set, TileSetAtlasSource *p_tile_set_atlas_source, int p_source_id) {
-	ERR_FAIL_COND(!p_tile_set.is_valid());
 	ERR_FAIL_COND(!p_tile_set_atlas_source);
 	ERR_FAIL_COND(p_source_id < 0);
-	ERR_FAIL_COND(p_tile_set->get_source(p_source_id) != p_tile_set_atlas_source);
+	ERR_FAIL_COND(p_tile_set.is_valid() && p_tile_set->get_source(p_source_id) != p_tile_set_atlas_source);
 
 	if (p_tile_set == tile_set && p_tile_set_atlas_source == tile_set_atlas_source && p_source_id == source_id) {
 		return;
@@ -611,6 +610,10 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 
 	tile_data_editors_tree->clear();
 
+	if (tile_set.is_null()) {
+		return;
+	}
+
 	TreeItem *root = tile_data_editors_tree->create_item();
 
 	TreeItem *group;
@@ -917,6 +920,10 @@ void TileSetAtlasSourceEditor::_update_atlas_view() {
 	// Create a bunch of buttons to add alternative tiles.
 	for (int i = 0; i < alternative_tiles_control->get_child_count(); i++) {
 		alternative_tiles_control->get_child(i)->queue_free();
+	}
+
+	if (tile_set.is_null()) {
+		return;
 	}
 
 	Vector2i pos;

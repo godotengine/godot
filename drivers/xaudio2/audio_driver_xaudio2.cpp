@@ -33,10 +33,6 @@
 #include "core/config/project_settings.h"
 #include "core/os/os.h"
 
-const char *AudioDriverXAudio2::get_name() const {
-	return "XAudio2";
-}
-
 Error AudioDriverXAudio2::init() {
 	active.clear();
 	exit_thread.clear();

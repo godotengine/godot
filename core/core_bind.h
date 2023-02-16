@@ -499,7 +499,8 @@ public:
 	void unregister_singleton(const StringName &p_name);
 	Vector<String> get_singleton_list() const;
 
-	void register_script_language(ScriptLanguage *p_language);
+	Error register_script_language(ScriptLanguage *p_language);
+	Error unregister_script_language(const ScriptLanguage *p_language);
 	int get_script_language_count();
 	ScriptLanguage *get_script_language(int p_index) const;
 

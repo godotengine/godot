@@ -168,6 +168,15 @@
 				Returns the number of layers in the TileMap.
 			</description>
 		</method>
+		<method name="get_navigation_map" qualifiers="const">
+			<return type="RID" />
+			<param index="0" name="layer" type="int" />
+			<description>
+				Returns the [NavigationServer2D] navigation map [RID] currently assigned to the specified TileMap [param layer].
+				By default the TileMap uses the default [World2D] navigation map for the first TileMap layer. For each additional TileMap layer a new navigation map is created for the additional layer.
+				In order to make [NavigationAgent2D] switch between TileMap layer navigation maps use [method NavigationAgent2D.set_navigation_map] with the navigation map received from [method get_navigation_map].
+			</description>
+		</method>
 		<method name="get_neighbor_cell" qualifiers="const">
 			<return type="Vector2i" />
 			<param index="0" name="coords" type="Vector2i" />
@@ -188,7 +197,7 @@
 			<return type="Vector2i[]" />
 			<param index="0" name="coords" type="Vector2i" />
 			<description>
-				Returns the list of all neighbourings cells to the one at [param coords]
+				Returns the list of all neighbourings cells to the one at [param coords].
 			</description>
 		</method>
 		<method name="get_used_cells" qualifiers="const">
@@ -243,7 +252,7 @@
 			<param index="1" name="coords_in_pattern" type="Vector2i" />
 			<param index="2" name="pattern" type="TileMapPattern" />
 			<description>
-				Returns for the given coordinate [param coords_in_pattern] in a [TileMapPattern] the corresponding cell coordinates if the pattern was pasted at the [param position_in_tilemap] coordinates (see [method set_pattern]). This mapping is required as in half-offset tile shapes, the mapping might not work by calculating [code]position_in_tile_map + coords_in_pattern[/code]
+				Returns for the given coordinate [param coords_in_pattern] in a [TileMapPattern] the corresponding cell coordinates if the pattern was pasted at the [param position_in_tilemap] coordinates (see [method set_pattern]). This mapping is required as in half-offset tile shapes, the mapping might not work by calculating [code]position_in_tile_map + coords_in_pattern[/code].
 			</description>
 		</method>
 		<method name="map_to_local" qualifiers="const">
@@ -364,6 +373,16 @@
 			<description>
 				Sets a layers Z-index value. This Z-index is added to each tile's Z-index value.
 				If [code]layer[/code] is negative, the layers are accessed from the last one.
+			</description>
+		</method>
+		<method name="set_navigation_map">
+			<return type="void" />
+			<param index="0" name="layer" type="int" />
+			<param index="1" name="map" type="RID" />
+			<description>
+				Assigns a [NavigationServer2D] navigation map [RID] to the specified TileMap [param layer].
+				By default the TileMap uses the default [World2D] navigation map for the first TileMap layer. For each additional TileMap layer a new navigation map is created for the additional layer.
+				In order to make [NavigationAgent2D] switch between TileMap layer navigation maps use [method NavigationAgent2D.set_navigation_map] with the navigation map received from [method get_navigation_map].
 			</description>
 		</method>
 		<method name="set_pattern">

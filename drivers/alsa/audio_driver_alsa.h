@@ -46,14 +46,14 @@ class AudioDriverALSA : public AudioDriver {
 
 	snd_pcm_t *pcm_handle = nullptr;
 
-	String device_name = "Default";
-	String new_device = "Default";
+	String output_device_name = "Default";
+	String new_output_device = "Default";
 
 	Vector<int32_t> samples_in;
 	Vector<int16_t> samples_out;
 
-	Error init_device();
-	void finish_device();
+	Error init_output_device();
+	void finish_output_device();
 
 	static void thread_func(void *p_udata);
 
@@ -69,20 +69,22 @@ class AudioDriverALSA : public AudioDriver {
 	SafeFlag exit_thread;
 
 public:
-	const char *get_name() const {
+	virtual const char *get_name() const override {
 		return "ALSA";
-	};
+	}
 
-	virtual Error init();
-	virtual void start();
-	virtual int get_mix_rate() const;
-	virtual SpeakerMode get_speaker_mode() const;
-	virtual PackedStringArray get_device_list();
-	virtual String get_device();
-	virtual void set_device(String device);
-	virtual void lock();
-	virtual void unlock();
-	virtual void finish();
+	virtual Error init() override;
+	virtual void start() override;
+	virtual int get_mix_rate() const override;
+	virtual SpeakerMode get_speaker_mode() const override;
+
+	virtual void lock() override;
+	virtual void unlock() override;
+	virtual void finish() override;
+
+	virtual PackedStringArray get_output_device_list() override;
+	virtual String get_output_device() override;
+	virtual void set_output_device(const String &p_name) override;
 
 	AudioDriverALSA() {}
 	~AudioDriverALSA() {}

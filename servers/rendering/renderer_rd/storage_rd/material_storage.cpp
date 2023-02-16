@@ -2803,6 +2803,7 @@ void MaterialStorage::material_set_render_priority(RID p_material, int priority)
 	if (material->data) {
 		material->data->set_render_priority(priority);
 	}
+	material->dependency.changed_notify(Dependency::DEPENDENCY_CHANGED_MATERIAL);
 }
 
 bool MaterialStorage::material_is_animated(RID p_material) {

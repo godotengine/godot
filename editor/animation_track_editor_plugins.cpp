@@ -847,9 +847,14 @@ bool AnimationTrackEditTypeAudio::is_key_selectable_by_distance() const {
 
 void AnimationTrackEditTypeAudio::draw_key(int p_index, float p_pixels_sec, int p_x, bool p_selected, int p_clip_left, int p_clip_right) {
 	Ref<AudioStream> stream = get_animation()->audio_track_get_key_stream(get_track(), p_index);
-
 	if (!stream.is_valid()) {
-		AnimationTrackEdit::draw_key(p_index, p_pixels_sec, p_x, p_selected, p_clip_left, p_clip_right);
+		AnimationTrackEdit::draw_key(p_index, p_pixels_sec, p_x, p_selected, p_clip_left, p_clip_right); // Draw diamond.
+		return;
+	}
+
+	float len = stream->get_length();
+	if (len == 0) {
+		AnimationTrackEdit::draw_key(p_index, p_pixels_sec, p_x, p_selected, p_clip_left, p_clip_right); // Draw diamond.
 		return;
 	}
 
@@ -871,15 +876,9 @@ void AnimationTrackEditTypeAudio::draw_key(int p_index, float p_pixels_sec, int 
 	int font_size = get_theme_font_size(SNAME("font_size"), SNAME("Label"));
 	float fh = int(font->get_height(font_size) * 1.5);
 
-	float len = stream->get_length();
-
 	Ref<AudioStreamPreview> preview = AudioStreamPreviewGenerator::get_singleton()->generate_preview(stream);
 
 	float preview_len = preview->get_length();
-
-	if (len == 0) {
-		len = preview_len;
-	}
 
 	int pixel_total_len = len * p_pixels_sec;
 
@@ -1044,16 +1043,13 @@ void AnimationTrackEditTypeAudio::gui_input(const Ref<InputEvent> &p_event) {
 				continue;
 			}
 
-			float start_ofs = get_animation()->audio_track_get_key_start_offset(get_track(), i);
-			float end_ofs = get_animation()->audio_track_get_key_end_offset(get_track(), i);
 			float len = stream->get_length();
-
 			if (len == 0) {
-				Ref<AudioStreamPreview> preview = AudioStreamPreviewGenerator::get_singleton()->generate_preview(stream);
-				float preview_len = preview->get_length();
-				len = preview_len;
+				continue;
 			}
 
+			float start_ofs = get_animation()->audio_track_get_key_start_offset(get_track(), i);
+			float end_ofs = get_animation()->audio_track_get_key_end_offset(get_track(), i);
 			len -= end_ofs;
 			len -= start_ofs;
 

@@ -557,6 +557,9 @@ msgstr "Des del Senyal:"
 msgid "Scene does not contain any script."
 msgstr "L'escena no conté cap script."
 
+msgid "Select Method"
+msgstr "Selecciona un Mètode"
+
 msgid "Remove"
 msgstr "Treu"
 
@@ -613,9 +616,6 @@ msgstr "Desconnectar"
 
 msgid "Connect a Signal to a Method"
 msgstr "Connectar un Senyal a un Mètode"
-
-msgid "Edit Connection:"
-msgstr "Editar Connexió:"
 
 msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
 msgstr ""
@@ -734,12 +734,6 @@ msgstr "Bytes:"
 
 msgid "Error:"
 msgstr "Error:"
-
-msgid "Source"
-msgstr "Font"
-
-msgid "Source:"
-msgstr "Font:"
 
 msgid "Copy Error"
 msgstr "Copia l'error"
@@ -1645,11 +1639,11 @@ msgstr "Mostrar tots els idiomes"
 msgid "Show Selected Locales Only"
 msgstr "Mostrar només els idiomes seleccionats"
 
+msgid "Edit Filters"
+msgstr "Edita Filtres"
+
 msgid "Language:"
 msgstr "Llengua:"
-
-msgid "Script"
-msgstr "Script"
 
 msgid "Clear Output"
 msgstr "Buida la Sortida"
@@ -2173,22 +2167,6 @@ msgstr "Administrar Plantilles"
 
 msgid "Install from file"
 msgstr "Instal·la des d'un fitxer"
-
-msgid ""
-"This will set up your project for custom Android builds by installing the "
-"source template to \"res://android/build\".\n"
-"You can then apply modifications and build your own custom APK on export "
-"(adding modules, changing the AndroidManifest.xml, etc.).\n"
-"Note that in order to make custom builds instead of using pre-built APKs, "
-"the \"Use Custom Build\" option should be enabled in the Android export "
-"preset."
-msgstr ""
-"S'inicialitzarà el projecte per a compilar per Android. La plantilla "
-"s'instal·larà a \"res://android/build\".\n"
-"Pots aplicar modificacions i generar el teu propi APK en exportar ( afegir "
-"mòduls, canviar el manifest AndroidManifest.xml, etc.).\n"
-"Habilita l'opció \"Utilitza Compilació Personalitzada\" en la configuració "
-"d'exportació per a Android per personalitzar la compilació."
 
 msgid ""
 "The Android build template is already installed in this project and it won't "
@@ -3074,6 +3052,9 @@ msgstr "Selecciona i mou els punts, crea punts fent clic dret."
 msgid "Enable snap and show grid."
 msgstr "Habilitar ajustament i mostrar quadrícula."
 
+msgid "Blend:"
+msgstr "Mescla:"
+
 msgid "Point"
 msgstr "Punt"
 
@@ -3116,14 +3097,8 @@ msgstr "Elimina punts i triangles."
 msgid "Generate blend triangles automatically (instead of manually)"
 msgstr "Genera automàticament triangles de mescla (en comptes d'a mà)"
 
-msgid "Blend:"
-msgstr "Mescla:"
-
 msgid "Parameter Changed:"
 msgstr "Paràmetre canviat:"
-
-msgid "Edit Filters"
-msgstr "Edita Filtres"
 
 msgid "Output node can't be added to the blend tree."
 msgstr "No es pot afegir el node de sortida a l'arbre de mescla."
@@ -3244,9 +3219,6 @@ msgstr ""
 
 msgid "Play selected animation backwards from end. (Shift+A)"
 msgstr "Reprodueix enrera l'animació seleccionada des del final. (Maj+A)"
-
-msgid "Stop animation playback. (S)"
-msgstr "Aturar la reproducció de l'animació. (S)"
 
 msgid "Play selected animation from start. (Shift+D)"
 msgstr "Reproduir l'animació seleccionada des de l'inici. (Maj+D)"
@@ -4116,12 +4088,6 @@ msgstr "Canviar Notificador AABB"
 msgid "Change Particles AABB"
 msgstr "Modifica les Partícules AABB"
 
-msgid "Change Box Shape Extents"
-msgstr "Modifica l'abast de la Forma Caixa"
-
-msgid "Change Probe Extents"
-msgstr "Modifica l'abast de la Sonda"
-
 msgid "Change Capsule Shape Radius"
 msgstr "Modifica el radi d'una Forma Càpsula"
 
@@ -4804,6 +4770,9 @@ msgstr "Estàndard"
 msgid "Connections to method:"
 msgstr "Connexions al mètode:"
 
+msgid "Source"
+msgstr "Font"
+
 msgid "Target"
 msgstr "Objectiu"
 
@@ -5009,9 +4978,6 @@ msgstr "(buit)"
 
 msgid "Animations:"
 msgstr "Animacions:"
-
-msgid "Loop"
-msgstr "Bucle"
 
 msgid "Animation Frames:"
 msgstr "Fotogrames d'Animació:"
@@ -5666,9 +5632,6 @@ msgstr "Afegeix una Acció d'Entrada"
 msgid "Change Action deadzone"
 msgstr "Canviar zona morta de l'acció"
 
-msgid "Add Input Action Event"
-msgstr "Afegeix un Incidència d'Acció de Entrada"
-
 msgid "Erase Input Action"
 msgstr "Elimina l'Acció d'Entrada"
 
@@ -5692,9 +5655,6 @@ msgstr "Selecciona una Propietat"
 
 msgid "Select Virtual Method"
 msgstr "Selecciona un Mètode Virtual"
-
-msgid "Select Method"
-msgstr "Selecciona un Mètode"
 
 msgid "Batch Rename"
 msgstr "Reanomena en lot"

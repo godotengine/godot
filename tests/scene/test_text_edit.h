@@ -607,7 +607,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			ERR_PRINT_ON;
 
 			text_edit->set_text("test\nselection");
-			SEND_GUI_ACTION(text_edit, "ui_text_select_all");
+			SEND_GUI_ACTION("ui_text_select_all");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			MessageQueue::get_singleton()->flush();
 			CHECK(text_edit->get_selected_text() == "test\nselection");
@@ -678,7 +678,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK_FALSE(text_edit->has_selection());
 			CHECK(text_edit->get_selected_text() == "");
 
-			SEND_GUI_ACTION(text_edit, "ui_text_select_word_under_caret");
+			SEND_GUI_ACTION("ui_text_select_word_under_caret");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			MessageQueue::get_singleton()->flush();
 			CHECK(text_edit->has_selection(0));
@@ -836,48 +836,48 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			text_edit->set_text("test");
 
 			text_edit->grab_focus();
-			SEND_GUI_KEY_EVENT(text_edit, Key::RIGHT | KeyModifierMask::SHIFT)
+			SEND_GUI_KEY_EVENT(Key::RIGHT | KeyModifierMask::SHIFT)
 			CHECK(text_edit->has_selection());
 			CHECK(text_edit->get_selected_text() == "t");
 
 #ifdef MACOS_ENABLED
-			SEND_GUI_KEY_EVENT(text_edit, Key::RIGHT | KeyModifierMask::SHIFT | KeyModifierMask::ALT)
+			SEND_GUI_KEY_EVENT(Key::RIGHT | KeyModifierMask::SHIFT | KeyModifierMask::ALT)
 #else
-			SEND_GUI_KEY_EVENT(text_edit, Key::RIGHT | KeyModifierMask::SHIFT | KeyModifierMask::CMD_OR_CTRL)
+			SEND_GUI_KEY_EVENT(Key::RIGHT | KeyModifierMask::SHIFT | KeyModifierMask::CMD_OR_CTRL)
 #endif
 			CHECK(text_edit->has_selection());
 			CHECK(text_edit->get_selected_text() == "test");
 
-			SEND_GUI_KEY_EVENT(text_edit, Key::LEFT | KeyModifierMask::SHIFT)
+			SEND_GUI_KEY_EVENT(Key::LEFT | KeyModifierMask::SHIFT)
 			CHECK(text_edit->has_selection());
 			CHECK(text_edit->get_selected_text() == "tes");
 
 #ifdef MACOS_ENABLED
-			SEND_GUI_KEY_EVENT(text_edit, Key::LEFT | KeyModifierMask::SHIFT | KeyModifierMask::ALT)
+			SEND_GUI_KEY_EVENT(Key::LEFT | KeyModifierMask::SHIFT | KeyModifierMask::ALT)
 #else
-			SEND_GUI_KEY_EVENT(text_edit, Key::LEFT | KeyModifierMask::SHIFT | KeyModifierMask::CMD_OR_CTRL)
+			SEND_GUI_KEY_EVENT(Key::LEFT | KeyModifierMask::SHIFT | KeyModifierMask::CMD_OR_CTRL)
 #endif
 			CHECK_FALSE(text_edit->has_selection());
 			CHECK(text_edit->get_selected_text() == "");
 
-			SEND_GUI_KEY_EVENT(text_edit, Key::RIGHT | KeyModifierMask::SHIFT)
+			SEND_GUI_KEY_EVENT(Key::RIGHT | KeyModifierMask::SHIFT)
 			CHECK(text_edit->has_selection());
 			CHECK(text_edit->get_selected_text() == "t");
 
-			SEND_GUI_KEY_EVENT(text_edit, Key::RIGHT)
+			SEND_GUI_KEY_EVENT(Key::RIGHT)
 			CHECK_FALSE(text_edit->has_selection());
 			CHECK(text_edit->get_selected_text() == "");
 
-			SEND_GUI_KEY_EVENT(text_edit, Key::LEFT | KeyModifierMask::SHIFT)
+			SEND_GUI_KEY_EVENT(Key::LEFT | KeyModifierMask::SHIFT)
 			CHECK(text_edit->has_selection());
 			CHECK(text_edit->get_selected_text() == "t");
 
-			SEND_GUI_KEY_EVENT(text_edit, Key::LEFT)
+			SEND_GUI_KEY_EVENT(Key::LEFT)
 			CHECK_FALSE(text_edit->has_selection());
 			CHECK(text_edit->get_selected_text() == "");
 
 			text_edit->set_selecting_enabled(false);
-			SEND_GUI_KEY_EVENT(text_edit, Key::RIGHT | KeyModifierMask::SHIFT)
+			SEND_GUI_KEY_EVENT(Key::RIGHT | KeyModifierMask::SHIFT)
 			CHECK_FALSE(text_edit->has_selection());
 			CHECK(text_edit->get_selected_text() == "");
 			text_edit->set_selecting_enabled(true);
@@ -891,8 +891,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			text_edit->grab_focus();
 			MessageQueue::get_singleton()->flush();
 
-			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, text_edit->get_pos_at_line_column(0, 1), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
-			SEND_GUI_MOUSE_MOTION_EVENT(text_edit, text_edit->get_pos_at_line_column(0, 7), MouseButtonMask::LEFT, Key::NONE);
+			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit->get_pos_at_line_column(0, 1), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
+			SEND_GUI_MOUSE_MOTION_EVENT(text_edit->get_pos_at_line_column(0, 7), MouseButtonMask::LEFT, Key::NONE);
 			CHECK(text_edit->has_selection());
 			CHECK(text_edit->get_selected_text() == "for s");
 			CHECK(text_edit->get_selection_mode() == TextEdit::SELECTION_MODE_POINTER);
@@ -903,12 +903,12 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_line() == 1);
 			CHECK(text_edit->get_caret_column() == 5);
 
-			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, text_edit->get_pos_at_line_column(0, 9), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
+			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit->get_pos_at_line_column(0, 9), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
 			CHECK_FALSE(text_edit->has_selection());
 
 			text_edit->set_selecting_enabled(false);
-			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, text_edit->get_pos_at_line_column(0, 1), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
-			SEND_GUI_MOUSE_MOTION_EVENT(text_edit, text_edit->get_pos_at_line_column(0, 7), MouseButtonMask::LEFT, Key::NONE);
+			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit->get_pos_at_line_column(0, 1), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
+			SEND_GUI_MOUSE_MOTION_EVENT(text_edit->get_pos_at_line_column(0, 7), MouseButtonMask::LEFT, Key::NONE);
 			CHECK_FALSE(text_edit->has_selection());
 			CHECK(text_edit->get_caret_line() == 1);
 			CHECK(text_edit->get_caret_column() == 5);
@@ -923,7 +923,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			MessageQueue::get_singleton()->flush();
 			SIGNAL_DISCARD("caret_changed");
 
-			SEND_GUI_DOUBLE_CLICK(text_edit, text_edit->get_pos_at_line_column(0, 2), Key::NONE);
+			SEND_GUI_DOUBLE_CLICK(text_edit->get_pos_at_line_column(0, 2), Key::NONE);
 			CHECK(text_edit->has_selection());
 			CHECK(text_edit->get_selected_text() == "for");
 			CHECK(text_edit->get_selection_mode() == TextEdit::SELECTION_MODE_WORD);
@@ -935,7 +935,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_column() == 3);
 			SIGNAL_CHECK("caret_changed", empty_signal_args);
 
-			SEND_GUI_MOUSE_MOTION_EVENT(text_edit, text_edit->get_pos_at_line_column(0, 7), MouseButtonMask::LEFT, Key::NONE);
+			SEND_GUI_MOUSE_MOTION_EVENT(text_edit->get_pos_at_line_column(0, 7), MouseButtonMask::LEFT, Key::NONE);
 			CHECK(text_edit->has_selection());
 			CHECK(text_edit->get_selected_text() == "for selection");
 			CHECK(text_edit->get_selection_mode() == TextEdit::SELECTION_MODE_WORD);
@@ -949,11 +949,11 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 
 			Point2i line_0 = text_edit->get_pos_at_line_column(0, 0);
 			line_0.y /= 2;
-			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, line_0, MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
+			SEND_GUI_MOUSE_BUTTON_EVENT(line_0, MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
 			CHECK_FALSE(text_edit->has_selection());
 
 			text_edit->set_selecting_enabled(false);
-			SEND_GUI_DOUBLE_CLICK(text_edit, text_edit->get_pos_at_line_column(0, 2), Key::NONE);
+			SEND_GUI_DOUBLE_CLICK(text_edit->get_pos_at_line_column(0, 2), Key::NONE);
 			CHECK_FALSE(text_edit->has_selection());
 			CHECK(text_edit->get_caret_line() == 1);
 			CHECK(text_edit->get_caret_column() == 3);
@@ -967,8 +967,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			text_edit->set_text("this is some text\nfor selection");
 			MessageQueue::get_singleton()->flush();
 
-			SEND_GUI_DOUBLE_CLICK(text_edit, text_edit->get_pos_at_line_column(0, 2), Key::NONE);
-			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, text_edit->get_pos_at_line_column(0, 2), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
+			SEND_GUI_DOUBLE_CLICK(text_edit->get_pos_at_line_column(0, 2), Key::NONE);
+			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit->get_pos_at_line_column(0, 2), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
 			CHECK(text_edit->has_selection());
 			CHECK(text_edit->get_selected_text() == "for selection");
 			CHECK(text_edit->get_selection_mode() == TextEdit::SELECTION_MODE_LINE);
@@ -981,12 +981,12 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 
 			Point2i line_0 = text_edit->get_pos_at_line_column(0, 0);
 			line_0.y /= 2;
-			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, line_0, MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
+			SEND_GUI_MOUSE_BUTTON_EVENT(line_0, MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
 			CHECK_FALSE(text_edit->has_selection());
 
 			text_edit->set_selecting_enabled(false);
-			SEND_GUI_DOUBLE_CLICK(text_edit, text_edit->get_pos_at_line_column(0, 2), Key::NONE);
-			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, text_edit->get_pos_at_line_column(0, 2), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
+			SEND_GUI_DOUBLE_CLICK(text_edit->get_pos_at_line_column(0, 2), Key::NONE);
+			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit->get_pos_at_line_column(0, 2), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
 			CHECK_FALSE(text_edit->has_selection());
 			CHECK(text_edit->get_caret_line() == 1);
 			CHECK(text_edit->get_caret_column() == 0);
@@ -1000,8 +1000,8 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			text_edit->set_text("this is some text\nfor selection");
 			MessageQueue::get_singleton()->flush();
 
-			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, text_edit->get_pos_at_line_column(0, 0), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
-			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, text_edit->get_pos_at_line_column(0, 7), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE | KeyModifierMask::SHIFT);
+			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit->get_pos_at_line_column(0, 0), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
+			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit->get_pos_at_line_column(0, 7), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE | KeyModifierMask::SHIFT);
 			CHECK(text_edit->has_selection());
 			CHECK(text_edit->get_selected_text() == "for s");
 			CHECK(text_edit->get_selection_mode() == TextEdit::SELECTION_MODE_POINTER);
@@ -1012,12 +1012,12 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			CHECK(text_edit->get_caret_line() == 1);
 			CHECK(text_edit->get_caret_column() == 5);
 
-			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, text_edit->get_pos_at_line_column(0, 9), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
+			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit->get_pos_at_line_column(0, 9), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
 			CHECK_FALSE(text_edit->has_selection());
 
 			text_edit->set_selecting_enabled(false);
-			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, text_edit->get_pos_at_line_column(0, 0), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
-			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, text_edit->get_pos_at_line_column(0, 7), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE | KeyModifierMask::SHIFT);
+			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit->get_pos_at_line_column(0, 0), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
+			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit->get_pos_at_line_column(0, 7), MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE | KeyModifierMask::SHIFT);
 			CHECK_FALSE(text_edit->has_selection());
 			CHECK(text_edit->get_caret_line() == 1);
 			CHECK(text_edit->get_caret_column() == 5);
@@ -1061,7 +1061,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 
 			text_edit->select(0, 8, 0, 4);
 			CHECK(text_edit->has_selection());
-			SEND_GUI_ACTION(text_edit, "ui_text_caret_right");
+			SEND_GUI_ACTION("ui_text_caret_right");
 			CHECK_FALSE(text_edit->has_selection());
 
 			text_edit->delete_selection();
@@ -1071,7 +1071,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 
 			text_edit->select(0, 8, 0, 4);
 			CHECK(text_edit->has_selection());
-			SEND_GUI_ACTION(text_edit, "ui_text_backspace");
+			SEND_GUI_ACTION("ui_text_backspace");
 			CHECK(text_edit->get_text() == "thissome text\nfor selection");
 			CHECK(text_edit->get_caret_line() == 0);
 			CHECK(text_edit->get_caret_column() == 4);
@@ -1134,7 +1134,6 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 		SUBCASE("[TextEdit] text drag") {
 			TextEdit *target_text_edit = memnew(TextEdit);
 			SceneTree::get_singleton()->get_root()->add_child(target_text_edit);
-			text_edit->get_viewport()->set_embedding_subwindows(true); // Bypass display server for drop handling.
 
 			target_text_edit->set_size(Size2(200, 200));
 			target_text_edit->set_position(Point2(400, 0));
@@ -1149,19 +1148,19 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 
 			Point2i line_0 = text_edit->get_pos_at_line_column(0, 0);
 			line_0.y /= 2;
-			SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, line_0, MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
+			SEND_GUI_MOUSE_BUTTON_EVENT(line_0, MouseButton::LEFT, MouseButtonMask::LEFT, Key::NONE);
 			CHECK(text_edit->is_mouse_over_selection());
-			SEND_GUI_MOUSE_MOTION_EVENT(text_edit, text_edit->get_pos_at_line_column(0, 7), MouseButtonMask::LEFT, Key::NONE);
+			SEND_GUI_MOUSE_MOTION_EVENT(text_edit->get_pos_at_line_column(0, 7), MouseButtonMask::LEFT, Key::NONE);
 			CHECK(text_edit->get_viewport()->gui_is_dragging());
 			CHECK(text_edit->get_viewport()->gui_get_drag_data() == "drag me");
 
 			line_0 = target_text_edit->get_pos_at_line_column(0, 0);
 			line_0.y /= 2;
 			line_0.x += 401; // As empty add one.
-			SEND_GUI_MOUSE_MOTION_EVENT(target_text_edit, line_0, MouseButtonMask::LEFT, Key::NONE);
+			SEND_GUI_MOUSE_MOTION_EVENT(line_0, MouseButtonMask::LEFT, Key::NONE);
 			CHECK(text_edit->get_viewport()->gui_is_dragging());
 
-			SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(target_text_edit, line_0, MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
+			SEND_GUI_MOUSE_BUTTON_RELEASED_EVENT(line_0, MouseButton::LEFT, MouseButtonMask::NONE, Key::NONE);
 
 			CHECK_FALSE(text_edit->get_viewport()->gui_is_dragging());
 			CHECK(text_edit->get_text() == "");
@@ -1324,7 +1323,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			((Array)lines_edited_args[0])[0] = 0;
 			text_edit->select(0, 5, 0, 7);
 			ERR_PRINT_OFF;
-			SEND_GUI_ACTION(text_edit, "ui_cut");
+			SEND_GUI_ACTION("ui_cut");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			MessageQueue::get_singleton()->flush();
 			ERR_PRINT_ON; // Can't check display server content.
@@ -1401,7 +1400,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			lines_edited_args.push_front(args2);
 
 			((Array)lines_edited_args[1])[1] = 1;
-			SEND_GUI_ACTION(text_edit, "ui_text_newline_above");
+			SEND_GUI_ACTION("ui_text_newline_above");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_text() == "\nthis is some test text.\n\nthis is some test text.");
 			CHECK(text_edit->get_caret_line() == 0);
@@ -1424,7 +1423,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_DISCARD("caret_changed");
 
 			text_edit->set_editable(false);
-			SEND_GUI_ACTION(text_edit, "ui_text_newline_above");
+			SEND_GUI_ACTION("ui_text_newline_above");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_text() == "\nthis is some test text.\n\nthis is some test text.");
 			CHECK(text_edit->get_caret_line() == 1);
@@ -1442,7 +1441,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			((Array)lines_edited_args[0])[0] = 2;
 			((Array)lines_edited_args[0])[1] = 3;
 
-			SEND_GUI_ACTION(text_edit, "ui_text_newline_above");
+			SEND_GUI_ACTION("ui_text_newline_above");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_text() == "\n\nthis is some test text.\n\n\nthis is some test text.");
 			CHECK(text_edit->get_caret_line() == 1);
@@ -1480,7 +1479,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			lines_edited_args.push_front(args2);
 
 			((Array)lines_edited_args[1])[1] = 1;
-			SEND_GUI_ACTION(text_edit, "ui_text_newline_blank");
+			SEND_GUI_ACTION("ui_text_newline_blank");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_text() == "this is some test text.\n\nthis is some test text.\n");
 			CHECK(text_edit->get_caret_line() == 1);
@@ -1495,7 +1494,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
 
 			text_edit->set_editable(false);
-			SEND_GUI_ACTION(text_edit, "ui_text_newline_blank");
+			SEND_GUI_ACTION("ui_text_newline_blank");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_text() == "this is some test text.\n\nthis is some test text.\n");
 			CHECK(text_edit->get_caret_line() == 1);
@@ -1538,7 +1537,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			lines_edited_args.push_back(lines_edited_args[2].duplicate());
 			((Array)lines_edited_args[3])[1] = 1;
 
-			SEND_GUI_ACTION(text_edit, "ui_text_newline");
+			SEND_GUI_ACTION("ui_text_newline");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_text() == "\n is some test text.\n\n is some test text.");
 			CHECK(text_edit->get_caret_line() == 1);
@@ -1553,7 +1552,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
 
 			text_edit->set_editable(false);
-			SEND_GUI_ACTION(text_edit, "ui_text_newline");
+			SEND_GUI_ACTION("ui_text_newline");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_text() == "\n is some test text.\n\n is some test text.");
 			CHECK(text_edit->get_caret_line() == 1);
@@ -1599,7 +1598,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			((Array)lines_edited_args[1])[0] = 1;
 			((Array)lines_edited_args[1])[1] = 1;
 
-			SEND_GUI_ACTION(text_edit, "ui_text_backspace_all_to_left");
+			SEND_GUI_ACTION("ui_text_backspace_all_to_left");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_text() == "\n is some test text.\n\n is some test text.");
 			CHECK(text_edit->get_caret_line() == 1);
@@ -1617,7 +1616,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			((Array)lines_edited_args[1])[1] = 0;
 
 			// Start of line should also be a normal backspace.
-			SEND_GUI_ACTION(text_edit, "ui_text_backspace_all_to_left");
+			SEND_GUI_ACTION("ui_text_backspace_all_to_left");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_text() == " is some test text.\n is some test text.");
 			CHECK(text_edit->get_caret_line() == 0);
@@ -1641,7 +1640,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_DISCARD("caret_changed");
 
 			text_edit->set_editable(false);
-			SEND_GUI_ACTION(text_edit, "ui_text_backspace_all_to_left");
+			SEND_GUI_ACTION("ui_text_backspace_all_to_left");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_text() == " is some test text.\n is some test text.");
 			CHECK(text_edit->get_caret_line() == 0);
@@ -1660,7 +1659,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			((Array)lines_edited_args[0])[1] = 1;
 			((Array)lines_edited_args[1])[0] = 0;
 
-			SEND_GUI_ACTION(text_edit, "ui_text_backspace_all_to_left");
+			SEND_GUI_ACTION("ui_text_backspace_all_to_left");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_text() == "\n");
 			CHECK(text_edit->get_caret_line() == 0);
@@ -1703,7 +1702,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			((Array)lines_edited_args[1])[0] = 1;
 			((Array)lines_edited_args[1])[1] = 1;
 
-			SEND_GUI_ACTION(text_edit, "ui_text_backspace_word");
+			SEND_GUI_ACTION("ui_text_backspace_word");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_text() == "\n is some test text.\n\n is some test text.");
 			CHECK(text_edit->get_caret_line() == 1);
@@ -1722,7 +1721,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			((Array)lines_edited_args[1])[1] = 0;
 
 			// Start of line should also be a normal backspace.
-			SEND_GUI_ACTION(text_edit, "ui_text_backspace_word");
+			SEND_GUI_ACTION("ui_text_backspace_word");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_text() == " is some test text.\n is some test text.");
 			CHECK(text_edit->get_caret_line() == 0);
@@ -1737,7 +1736,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
 
 			text_edit->set_editable(false);
-			SEND_GUI_ACTION(text_edit, "ui_text_backspace_word");
+			SEND_GUI_ACTION("ui_text_backspace_word");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_text() == " is some test text.\n is some test text.");
 			CHECK(text_edit->get_caret_line() == 0);
@@ -1765,7 +1764,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			((Array)lines_edited_args[0])[1] = 1;
 			((Array)lines_edited_args[1])[0] = 0;
 
-			SEND_GUI_ACTION(text_edit, "ui_text_backspace_word");
+			SEND_GUI_ACTION("ui_text_backspace_word");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_text() == " is some test \n is some test ");
 			CHECK(text_edit->get_caret_line() == 0);
@@ -1807,7 +1806,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			((Array)lines_edited_args[1])[0] = 1;
 			((Array)lines_edited_args[1])[1] = 1;
 
-			SEND_GUI_ACTION(text_edit, "ui_text_backspace");
+			SEND_GUI_ACTION("ui_text_backspace");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_text() == "\n is some test text.\n\n is some test text.");
 			CHECK(text_edit->get_caret_line() == 1);
@@ -1825,7 +1824,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			((Array)lines_edited_args[1])[1] = 0;
 
 			// Start of line should also be a normal backspace.
-			SEND_GUI_ACTION(text_edit, "ui_text_backspace");
+			SEND_GUI_ACTION("ui_text_backspace");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_text() == " is some test text.\n is some test text.");
 			CHECK(text_edit->get_caret_line() == 0);
@@ -1849,7 +1848,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_DISCARD("caret_changed");
 
 			text_edit->set_editable(false);
-			SEND_GUI_ACTION(text_edit, "ui_text_backspace");
+			SEND_GUI_ACTION("ui_text_backspace");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_text() == " is some test text.\n is some test text.");
 			CHECK(text_edit->get_caret_line() == 0);
@@ -1868,7 +1867,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			((Array)lines_edited_args[0])[1] = 1;
 			((Array)lines_edited_args[1])[0] = 0;
 
-			SEND_GUI_ACTION(text_edit, "ui_text_backspace");
+			SEND_GUI_ACTION("ui_text_backspace");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_text() == " is some test text\n is some test text");
 			CHECK(text_edit->get_caret_line() == 0);
@@ -1897,7 +1896,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_DISCARD("lines_edited_from");
 			SIGNAL_DISCARD("caret_changed");
 
-			SEND_GUI_ACTION(text_edit, "ui_text_backspace");
+			SEND_GUI_ACTION("ui_text_backspace");
 			CHECK(text_edit->get_text() == "\n");
 			CHECK(text_edit->get_caret_line() == 0);
 			CHECK(text_edit->get_caret_column() == 0);
@@ -1935,7 +1934,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			lines_edited_args.push_front(args2);
 
 			// With selection should be a normal delete.
-			SEND_GUI_ACTION(text_edit, "ui_text_delete_all_to_right");
+			SEND_GUI_ACTION("ui_text_delete_all_to_right");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_text() == " is some test text.\n is some test text.\n");
 			CHECK(text_edit->get_caret_line() == 0);
@@ -1959,7 +1958,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_DISCARD("lines_edited_from");
 			SIGNAL_DISCARD("caret_changed");
 
-			SEND_GUI_ACTION(text_edit, "ui_text_delete_all_to_right");
+			SEND_GUI_ACTION("ui_text_delete_all_to_right");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_text() == " is some test text.\n is some test text.\n");
 			CHECK(text_edit->get_caret_line() == 0);
@@ -1983,7 +1982,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_DISCARD("caret_changed");
 
 			text_edit->set_editable(false);
-			SEND_GUI_ACTION(text_edit, "ui_text_delete_all_to_right");
+			SEND_GUI_ACTION("ui_text_delete_all_to_right");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_text() == " is some test text.\n is some test text.\n");
 			CHECK(text_edit->get_caret_line() == 0);
@@ -1998,7 +1997,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_CHECK_FALSE("lines_edited_from");
 			text_edit->set_editable(true);
 
-			SEND_GUI_ACTION(text_edit, "ui_text_delete_all_to_right");
+			SEND_GUI_ACTION("ui_text_delete_all_to_right");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_text() == "\n\n");
 			CHECK(text_edit->get_caret_line() == 0);
@@ -2042,7 +2041,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			lines_edited_args.push_front(args2);
 
 			// With selection should be a normal delete.
-			SEND_GUI_ACTION(text_edit, "ui_text_delete_word");
+			SEND_GUI_ACTION("ui_text_delete_word");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_text() == " ffi some test text.\n\n ffi some test text.\n");
 			CHECK(text_edit->get_caret_line() == 0);
@@ -2068,7 +2067,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_DISCARD("lines_edited_from");
 			SIGNAL_DISCARD("caret_changed");
 
-			SEND_GUI_ACTION(text_edit, "ui_text_delete_word");
+			SEND_GUI_ACTION("ui_text_delete_word");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_text() == " ffi some test text.\n ffi some test text.");
 			CHECK(text_edit->get_caret_line() == 0);
@@ -2095,7 +2094,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_DISCARD("caret_changed");
 
 			text_edit->set_editable(false);
-			SEND_GUI_ACTION(text_edit, "ui_text_delete_word");
+			SEND_GUI_ACTION("ui_text_delete_word");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_text() == " ffi some test text.\n ffi some test text.");
 			CHECK(text_edit->get_caret_line() == 0);
@@ -2110,7 +2109,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_CHECK_FALSE("lines_edited_from");
 			text_edit->set_editable(true);
 
-			SEND_GUI_ACTION(text_edit, "ui_text_delete_word");
+			SEND_GUI_ACTION("ui_text_delete_word");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_text() == " some test text.\n some test text.");
 			CHECK(text_edit->get_caret_line() == 0);
@@ -2152,7 +2151,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			lines_edited_args.push_front(args2);
 
 			// With selection should be a normal delete.
-			SEND_GUI_ACTION(text_edit, "ui_text_delete");
+			SEND_GUI_ACTION("ui_text_delete");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_text() == " ffi some test text.\n ffi some test text.");
 			CHECK(text_edit->get_caret_line() == 0);
@@ -2178,7 +2177,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_DISCARD("lines_edited_from");
 			SIGNAL_DISCARD("caret_changed");
 
-			SEND_GUI_ACTION(text_edit, "ui_text_delete");
+			SEND_GUI_ACTION("ui_text_delete");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_text() == " ffi some test text. ffi some test text.");
 			CHECK(text_edit->get_caret_line() == 0);
@@ -2207,7 +2206,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_DISCARD("caret_changed");
 
 			text_edit->set_editable(false);
-			SEND_GUI_ACTION(text_edit, "ui_text_delete");
+			SEND_GUI_ACTION("ui_text_delete");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_text() == " ffi some test text. ffi some test text.");
 			CHECK(text_edit->get_caret_line() == 0);
@@ -2224,7 +2223,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 
 			text_edit->start_action(TextEdit::EditAction::ACTION_NONE);
 
-			SEND_GUI_ACTION(text_edit, "ui_text_delete");
+			SEND_GUI_ACTION("ui_text_delete");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_text() == "ffi some test text.ffi some test text.");
 			CHECK(text_edit->get_caret_line() == 0);
@@ -2240,7 +2239,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 
 			text_edit->start_action(TextEdit::EditAction::ACTION_NONE);
 
-			SEND_GUI_ACTION(text_edit, "ui_text_delete");
+			SEND_GUI_ACTION("ui_text_delete");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_text() == "fi some test text.fi some test text.");
 			CHECK(text_edit->get_caret_line() == 0);
@@ -2268,7 +2267,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_DISCARD("lines_edited_from");
 			SIGNAL_DISCARD("caret_changed");
 
-			SEND_GUI_ACTION(text_edit, "ui_text_delete");
+			SEND_GUI_ACTION("ui_text_delete");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_text() == " some test text. some test text.");
 			CHECK(text_edit->get_caret_line() == 0);
@@ -2299,9 +2298,9 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 
 			// Shift should select.
 #ifdef MACOS_ENABLED
-			SEND_GUI_KEY_EVENT(text_edit, Key::LEFT | KeyModifierMask::ALT | KeyModifierMask::SHIFT);
+			SEND_GUI_KEY_EVENT(Key::LEFT | KeyModifierMask::ALT | KeyModifierMask::SHIFT);
 #else
-			SEND_GUI_KEY_EVENT(text_edit, Key::LEFT | KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT);
+			SEND_GUI_KEY_EVENT(Key::LEFT | KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT);
 #endif
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_caret_line() == 1);
@@ -2319,7 +2318,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_CHECK_FALSE("lines_edited_from");
 
 			// Should still move caret with selection.
-			SEND_GUI_ACTION(text_edit, "ui_text_caret_word_left");
+			SEND_GUI_ACTION("ui_text_caret_word_left");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_caret_line() == 1);
 			CHECK(text_edit->get_caret_column() == 0);
@@ -2334,7 +2333,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_CHECK_FALSE("lines_edited_from");
 
 			// Normal word left.
-			SEND_GUI_ACTION(text_edit, "ui_text_caret_word_left");
+			SEND_GUI_ACTION("ui_text_caret_word_left");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_caret_line() == 0);
 			CHECK(text_edit->get_caret_column() == 0);
@@ -2366,7 +2365,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_DISCARD("caret_changed");
 
 			// Normal left should deselect and place at selection start.
-			SEND_GUI_ACTION(text_edit, "ui_text_caret_left");
+			SEND_GUI_ACTION("ui_text_caret_left");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 
 			CHECK(text_edit->get_caret_line() == 1);
@@ -2382,7 +2381,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_CHECK_FALSE("lines_edited_from");
 
 			// With shift should select.
-			SEND_GUI_KEY_EVENT(text_edit, Key::LEFT | KeyModifierMask::SHIFT);
+			SEND_GUI_KEY_EVENT(Key::LEFT | KeyModifierMask::SHIFT);
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_caret_line() == 1);
 			CHECK(text_edit->get_caret_column() == 1);
@@ -2399,7 +2398,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_CHECK_FALSE("lines_edited_from");
 
 			// All ready at select left, should only deselect.
-			SEND_GUI_ACTION(text_edit, "ui_text_caret_left");
+			SEND_GUI_ACTION("ui_text_caret_left");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_caret_line() == 1);
 			CHECK(text_edit->get_caret_column() == 1);
@@ -2414,7 +2413,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_CHECK_FALSE("lines_edited_from");
 
 			// Normal left.
-			SEND_GUI_ACTION(text_edit, "ui_text_caret_left");
+			SEND_GUI_ACTION("ui_text_caret_left");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_caret_line() == 1);
 			CHECK(text_edit->get_caret_column() == 0);
@@ -2428,7 +2427,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_CHECK_FALSE("lines_edited_from");
 
 			// Left at col 0 should go up a line.
-			SEND_GUI_ACTION(text_edit, "ui_text_caret_left");
+			SEND_GUI_ACTION("ui_text_caret_left");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_caret_line() == 0);
 			CHECK(text_edit->get_caret_column() == 0);
@@ -2459,9 +2458,9 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 
 			// Shift should select.
 #ifdef MACOS_ENABLED
-			SEND_GUI_KEY_EVENT(text_edit, Key::RIGHT | KeyModifierMask::ALT | KeyModifierMask::SHIFT);
+			SEND_GUI_KEY_EVENT(Key::RIGHT | KeyModifierMask::ALT | KeyModifierMask::SHIFT);
 #else
-			SEND_GUI_KEY_EVENT(text_edit, Key::RIGHT | KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT);
+			SEND_GUI_KEY_EVENT(Key::RIGHT | KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT);
 #endif
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_caret_line() == 0);
@@ -2479,7 +2478,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_CHECK_FALSE("lines_edited_from");
 
 			// Should still move caret with selection.
-			SEND_GUI_ACTION(text_edit, "ui_text_caret_word_right");
+			SEND_GUI_ACTION("ui_text_caret_word_right");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_caret_line() == 0);
 			CHECK(text_edit->get_caret_column() == 22);
@@ -2494,7 +2493,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_CHECK_FALSE("lines_edited_from");
 
 			// Normal word right.
-			SEND_GUI_ACTION(text_edit, "ui_text_caret_word_right");
+			SEND_GUI_ACTION("ui_text_caret_word_right");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_caret_line() == 1);
 			CHECK(text_edit->get_caret_column() == 0);
@@ -2526,7 +2525,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_DISCARD("caret_changed");
 
 			// Normal right should deselect and place at selection start.
-			SEND_GUI_ACTION(text_edit, "ui_text_caret_right");
+			SEND_GUI_ACTION("ui_text_caret_right");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_caret_line() == 0);
 			CHECK(text_edit->get_caret_column() == 20);
@@ -2541,7 +2540,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_CHECK_FALSE("lines_edited_from");
 
 			// With shift should select.
-			SEND_GUI_KEY_EVENT(text_edit, Key::RIGHT | KeyModifierMask::SHIFT);
+			SEND_GUI_KEY_EVENT(Key::RIGHT | KeyModifierMask::SHIFT);
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_caret_line() == 0);
 			CHECK(text_edit->get_caret_column() == 21);
@@ -2558,7 +2557,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_CHECK_FALSE("lines_edited_from");
 
 			// All ready at select right, should only deselect.
-			SEND_GUI_ACTION(text_edit, "ui_text_caret_right");
+			SEND_GUI_ACTION("ui_text_caret_right");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_caret_line() == 0);
 			CHECK(text_edit->get_caret_column() == 21);
@@ -2572,7 +2571,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_CHECK_FALSE("lines_edited_from");
 
 			// Normal right.
-			SEND_GUI_ACTION(text_edit, "ui_text_caret_right");
+			SEND_GUI_ACTION("ui_text_caret_right");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_caret_line() == 0);
 			CHECK(text_edit->get_caret_column() == 22);
@@ -2586,7 +2585,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_CHECK_FALSE("lines_edited_from");
 
 			// Right at end col should go down a line.
-			SEND_GUI_ACTION(text_edit, "ui_text_caret_right");
+			SEND_GUI_ACTION("ui_text_caret_right");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_caret_line() == 1);
 			CHECK(text_edit->get_caret_column() == 0);
@@ -2620,7 +2619,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_DISCARD("caret_changed");
 
 			// Select + up should select everything to the left on that line.
-			SEND_GUI_KEY_EVENT(text_edit, Key::UP | KeyModifierMask::SHIFT);
+			SEND_GUI_KEY_EVENT(Key::UP | KeyModifierMask::SHIFT);
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_caret_line() == 2);
 			CHECK(text_edit->get_caret_column() == 5);
@@ -2636,7 +2635,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_CHECK_FALSE("lines_edited_from");
 
 			// Should deselect and move up.
-			SEND_GUI_ACTION(text_edit, "ui_text_caret_up");
+			SEND_GUI_ACTION("ui_text_caret_up");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_caret_line() == 1);
 			CHECK(text_edit->get_caret_column() == 8);
@@ -2650,7 +2649,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_CHECK_FALSE("lines_edited_from");
 
 			// Normal up over wrapped line.
-			SEND_GUI_ACTION(text_edit, "ui_text_caret_up");
+			SEND_GUI_ACTION("ui_text_caret_up");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_caret_line() == 0);
 			CHECK(text_edit->get_caret_column() == 12);
@@ -2665,7 +2664,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			text_edit->set_caret_column(12, false);
 
 			// Normal up over wrapped line to line 0.
-			SEND_GUI_ACTION(text_edit, "ui_text_caret_up");
+			SEND_GUI_ACTION("ui_text_caret_up");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_caret_line() == 0);
 			CHECK(text_edit->get_caret_column() == 7);
@@ -2699,7 +2698,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_DISCARD("caret_changed");
 
 			// Select + down should select everything to the right on that line.
-			SEND_GUI_KEY_EVENT(text_edit, Key::DOWN | KeyModifierMask::SHIFT);
+			SEND_GUI_KEY_EVENT(Key::DOWN | KeyModifierMask::SHIFT);
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_caret_line() == 1);
 			CHECK(text_edit->get_caret_column() == 5);
@@ -2715,7 +2714,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_CHECK_FALSE("lines_edited_from");
 
 			// Should deselect and move down.
-			SEND_GUI_ACTION(text_edit, "ui_text_caret_down");
+			SEND_GUI_ACTION("ui_text_caret_down");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_caret_line() == 2);
 			CHECK(text_edit->get_caret_column() == 8);
@@ -2729,7 +2728,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_CHECK_FALSE("lines_edited_from");
 
 			// Normal down over wrapped line.
-			SEND_GUI_ACTION(text_edit, "ui_text_caret_down");
+			SEND_GUI_ACTION("ui_text_caret_down");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_caret_line() == 3);
 			CHECK(text_edit->get_caret_column() == 7);
@@ -2744,7 +2743,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			text_edit->set_caret_column(7, false);
 
 			// Normal down over wrapped line to last wrapped line.
-			SEND_GUI_ACTION(text_edit, "ui_text_caret_down");
+			SEND_GUI_ACTION("ui_text_caret_down");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_caret_line() == 3);
 			CHECK(text_edit->get_caret_column() == 12);
@@ -2778,9 +2777,9 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_DISCARD("caret_changed");
 
 #ifdef MACOS_ENABLED
-			SEND_GUI_KEY_EVENT(text_edit, Key::UP | KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT);
+			SEND_GUI_KEY_EVENT(Key::UP | KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT);
 #else
-			SEND_GUI_KEY_EVENT(text_edit, Key::HOME | KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT);
+			SEND_GUI_KEY_EVENT(Key::HOME | KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT);
 #endif
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_text() == "this is some\nother test\nlines\ngo here");
@@ -2793,7 +2792,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_CHECK_FALSE("lines_edited_from");
 			CHECK(text_edit->get_caret_count() == 1);
 
-			SEND_GUI_ACTION(text_edit, "ui_text_caret_document_start");
+			SEND_GUI_ACTION("ui_text_caret_document_start");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_text() == "this is some\nother test\nlines\ngo here");
 			CHECK(text_edit->get_caret_line() == 0);
@@ -2823,9 +2822,9 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_DISCARD("caret_changed");
 
 #ifdef MACOS_ENABLED
-			SEND_GUI_KEY_EVENT(text_edit, Key::DOWN | KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT);
+			SEND_GUI_KEY_EVENT(Key::DOWN | KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT);
 #else
-			SEND_GUI_KEY_EVENT(text_edit, Key::END | KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT);
+			SEND_GUI_KEY_EVENT(Key::END | KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT);
 #endif
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_text() == "go here\nlines\nother test\nthis is some");
@@ -2838,7 +2837,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_CHECK_FALSE("lines_edited_from");
 			CHECK(text_edit->get_caret_count() == 1);
 
-			SEND_GUI_ACTION(text_edit, "ui_text_caret_document_end");
+			SEND_GUI_ACTION("ui_text_caret_document_end");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_text() == "go here\nlines\nother test\nthis is some");
 			CHECK(text_edit->get_caret_line() == 3);
@@ -2868,9 +2867,9 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_DISCARD("caret_changed");
 
 #ifdef MACOS_ENABLED
-			SEND_GUI_KEY_EVENT(text_edit, Key::LEFT | KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT);
+			SEND_GUI_KEY_EVENT(Key::LEFT | KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT);
 #else
-			SEND_GUI_KEY_EVENT(text_edit, Key::HOME | KeyModifierMask::SHIFT);
+			SEND_GUI_KEY_EVENT(Key::HOME | KeyModifierMask::SHIFT);
 #endif
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_caret_line() == 0);
@@ -2886,7 +2885,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_CHECK_FALSE("text_changed");
 			SIGNAL_CHECK_FALSE("lines_edited_from");
 
-			SEND_GUI_ACTION(text_edit, "ui_text_caret_line_start");
+			SEND_GUI_ACTION("ui_text_caret_line_start");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_caret_line() == 0);
 			CHECK(text_edit->get_caret_column() == 2);
@@ -2899,7 +2898,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_CHECK_FALSE("text_changed");
 			SIGNAL_CHECK_FALSE("lines_edited_from");
 
-			SEND_GUI_ACTION(text_edit, "ui_text_caret_line_start");
+			SEND_GUI_ACTION("ui_text_caret_line_start");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_caret_line() == 0);
 			CHECK(text_edit->get_caret_column() == 0);
@@ -2912,7 +2911,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_CHECK_FALSE("text_changed");
 			SIGNAL_CHECK_FALSE("lines_edited_from");
 
-			SEND_GUI_ACTION(text_edit, "ui_text_caret_line_start");
+			SEND_GUI_ACTION("ui_text_caret_line_start");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_caret_line() == 0);
 			CHECK(text_edit->get_caret_column() == 2);
@@ -2945,9 +2944,9 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_DISCARD("caret_changed");
 
 #ifdef MACOS_ENABLED
-			SEND_GUI_KEY_EVENT(text_edit, Key::RIGHT | KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT);
+			SEND_GUI_KEY_EVENT(Key::RIGHT | KeyModifierMask::CMD_OR_CTRL | KeyModifierMask::SHIFT);
 #else
-			SEND_GUI_KEY_EVENT(text_edit, Key::END | KeyModifierMask::SHIFT);
+			SEND_GUI_KEY_EVENT(Key::END | KeyModifierMask::SHIFT);
 #endif
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_caret_line() == 0);
@@ -2963,7 +2962,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_CHECK_FALSE("text_changed");
 			SIGNAL_CHECK_FALSE("lines_edited_from");
 
-			SEND_GUI_ACTION(text_edit, "ui_text_caret_line_end");
+			SEND_GUI_ACTION("ui_text_caret_line_end");
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_caret_line() == 0);
 			CHECK(text_edit->get_caret_column() == text_edit->get_line(0).length());
@@ -2999,7 +2998,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			args2.push_back(1);
 			lines_edited_args.push_front(args2);
 
-			SEND_GUI_KEY_EVENT(text_edit, Key::A);
+			SEND_GUI_KEY_EVENT(Key::A);
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_text() == "aA\naA");
 			CHECK(text_edit->get_caret_column() == 2);
@@ -3009,7 +3008,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
 
 			text_edit->set_editable(false);
-			SEND_GUI_KEY_EVENT(text_edit, Key::A);
+			SEND_GUI_KEY_EVENT(Key::A);
 			CHECK_FALSE(text_edit->get_viewport()->is_input_handled()); // Should this be handled?
 			CHECK(text_edit->get_text() == "aA\naA");
 			CHECK(text_edit->get_caret_column() == 2);
@@ -3024,7 +3023,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 
 			text_edit->select(0, 0, 0, 1);
 			text_edit->select(1, 0, 1, 1, 1);
-			SEND_GUI_KEY_EVENT(text_edit, Key::B);
+			SEND_GUI_KEY_EVENT(Key::B);
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_text() == "BA\nBA");
 			CHECK(text_edit->get_caret_column() == 1);
@@ -3033,10 +3032,10 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			SIGNAL_CHECK("text_changed", empty_signal_args);
 			SIGNAL_CHECK("lines_edited_from", lines_edited_args);
 
-			SEND_GUI_ACTION(text_edit, "ui_text_toggle_insert_mode");
+			SEND_GUI_ACTION("ui_text_toggle_insert_mode");
 			CHECK(text_edit->is_overtype_mode_enabled());
 
-			SEND_GUI_KEY_EVENT(text_edit, Key::B);
+			SEND_GUI_KEY_EVENT(Key::B);
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_text() == "BB\nBB");
 			CHECK(text_edit->get_caret_column() == 2);
@@ -3046,7 +3045,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 
 			text_edit->select(0, 0, 0, 1);
 			text_edit->select(1, 0, 1, 1, 1);
-			SEND_GUI_KEY_EVENT(text_edit, Key::A);
+			SEND_GUI_KEY_EVENT(Key::A);
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_text() == "AB\nAB");
 			CHECK(text_edit->get_caret_column() == 1);
@@ -3060,7 +3059,7 @@ TEST_CASE("[SceneTree][TextEdit] text entry") {
 			lines_edited_args.remove_at(0);
 			lines_edited_args.remove_at(1);
 
-			SEND_GUI_KEY_EVENT(text_edit, Key::TAB);
+			SEND_GUI_KEY_EVENT(Key::TAB);
 			CHECK(text_edit->get_viewport()->is_input_handled());
 			CHECK(text_edit->get_text() == "A\tB\nA\tB");
 			CHECK(text_edit->get_caret_column() == 2);
@@ -3083,8 +3082,6 @@ TEST_CASE("[SceneTree][TextEdit] context menu") {
 	TextEdit *text_edit = memnew(TextEdit);
 	SceneTree::get_singleton()->get_root()->add_child(text_edit);
 
-	text_edit->get_viewport()->set_embedding_subwindows(true); // Bypass display server for drop handling.
-
 	text_edit->set_size(Size2(800, 200));
 	text_edit->set_line(0, "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec vasius mattis leo, sed porta ex lacinia bibendum. Nunc bibendum pellentesque.");
 	MessageQueue::get_singleton()->flush();
@@ -3093,14 +3090,14 @@ TEST_CASE("[SceneTree][TextEdit] context menu") {
 	CHECK_FALSE(text_edit->is_context_menu_enabled());
 
 	CHECK_FALSE(text_edit->is_menu_visible());
-	SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, Point2i(600, 10), MouseButton::RIGHT, MouseButtonMask::RIGHT, Key::NONE);
+	SEND_GUI_MOUSE_BUTTON_EVENT(Point2i(600, 10), MouseButton::RIGHT, MouseButtonMask::RIGHT, Key::NONE);
 	CHECK_FALSE(text_edit->is_menu_visible());
 
 	text_edit->set_context_menu_enabled(true);
 	CHECK(text_edit->is_context_menu_enabled());
 
 	CHECK_FALSE(text_edit->is_menu_visible());
-	SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, Point2i(700, 10), MouseButton::RIGHT, MouseButtonMask::RIGHT, Key::NONE);
+	SEND_GUI_MOUSE_BUTTON_EVENT(Point2i(700, 10), MouseButton::RIGHT, MouseButtonMask::RIGHT, Key::NONE);
 	CHECK(text_edit->is_menu_visible());
 
 	memdelete(text_edit);
@@ -3281,28 +3278,28 @@ TEST_CASE("[SceneTree][TextEdit] caret") {
 	text_edit->set_caret_mid_grapheme_enabled(true);
 	CHECK(text_edit->is_caret_mid_grapheme_enabled());
 
-	SEND_GUI_ACTION(text_edit, "ui_text_caret_right");
+	SEND_GUI_ACTION("ui_text_caret_right");
 	CHECK(text_edit->get_caret_column() == 1);
 
-	SEND_GUI_ACTION(text_edit, "ui_text_caret_right");
+	SEND_GUI_ACTION("ui_text_caret_right");
 	CHECK(text_edit->get_caret_column() == 2);
 
-	SEND_GUI_ACTION(text_edit, "ui_text_caret_right");
+	SEND_GUI_ACTION("ui_text_caret_right");
 	CHECK(text_edit->get_caret_column() == 3);
 
-	SEND_GUI_ACTION(text_edit, "ui_text_caret_left");
+	SEND_GUI_ACTION("ui_text_caret_left");
 	CHECK(text_edit->get_caret_column() == 2);
 
 	text_edit->set_caret_mid_grapheme_enabled(false);
 	CHECK_FALSE(text_edit->is_caret_mid_grapheme_enabled());
 
-	SEND_GUI_ACTION(text_edit, "ui_text_caret_left");
+	SEND_GUI_ACTION("ui_text_caret_left");
 	CHECK(text_edit->get_caret_column() == 0);
 
-	SEND_GUI_ACTION(text_edit, "ui_text_caret_right");
+	SEND_GUI_ACTION("ui_text_caret_right");
 	CHECK(text_edit->get_caret_column() == 3);
 
-	SEND_GUI_ACTION(text_edit, "ui_text_caret_left");
+	SEND_GUI_ACTION("ui_text_caret_left");
 	CHECK(text_edit->get_caret_column() == 0);
 
 	text_edit->set_line(0, "Lorem  ipsum dolor sit amet, consectetur adipiscing elit. Donec vasius mattis leo, sed porta ex lacinia bibendum. Nunc bibendum pellentesque.");
@@ -3341,13 +3338,13 @@ TEST_CASE("[SceneTree][TextEdit] caret") {
 	text_edit->set_move_caret_on_right_click_enabled(false);
 	CHECK_FALSE(text_edit->is_move_caret_on_right_click_enabled());
 
-	SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, Point2i(100, 1), MouseButton::RIGHT, MouseButtonMask::RIGHT, Key::NONE);
+	SEND_GUI_MOUSE_BUTTON_EVENT(Point2i(100, 1), MouseButton::RIGHT, MouseButtonMask::RIGHT, Key::NONE);
 	CHECK(text_edit->get_caret_column() == caret_col);
 
 	text_edit->set_move_caret_on_right_click_enabled(true);
 	CHECK(text_edit->is_move_caret_on_right_click_enabled());
 
-	SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, Point2i(100, 1), MouseButton::RIGHT, MouseButtonMask::RIGHT, Key::NONE);
+	SEND_GUI_MOUSE_BUTTON_EVENT(Point2i(100, 1), MouseButton::RIGHT, MouseButtonMask::RIGHT, Key::NONE);
 	CHECK(text_edit->get_caret_column() != caret_col);
 
 	text_edit->set_move_caret_on_right_click_enabled(false);
@@ -3861,28 +3858,28 @@ TEST_CASE("[SceneTree][TextEdit] viewport") {
 
 	// Scroll.
 	int v_scroll = text_edit->get_v_scroll();
-	SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, Point2i(10, 10), MouseButton::WHEEL_DOWN, 0, Key::NONE);
+	SEND_GUI_MOUSE_BUTTON_EVENT(Point2i(10, 10), MouseButton::WHEEL_DOWN, 0, Key::NONE);
 	CHECK(text_edit->get_v_scroll() > v_scroll);
-	SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, Point2i(10, 10), MouseButton::WHEEL_UP, 0, Key::NONE);
+	SEND_GUI_MOUSE_BUTTON_EVENT(Point2i(10, 10), MouseButton::WHEEL_UP, 0, Key::NONE);
 	CHECK(text_edit->get_v_scroll() == v_scroll);
 
 	// smooth scroll speed.
 	text_edit->set_smooth_scroll_enabled(true);
 
 	v_scroll = text_edit->get_v_scroll();
-	SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, Point2i(10, 10), MouseButton::WHEEL_DOWN, 0, Key::NONE);
+	SEND_GUI_MOUSE_BUTTON_EVENT(Point2i(10, 10), MouseButton::WHEEL_DOWN, 0, Key::NONE);
 	text_edit->notification(TextEdit::NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
 	CHECK(text_edit->get_v_scroll() >= v_scroll);
-	SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, Point2i(10, 10), MouseButton::WHEEL_UP, 0, Key::NONE);
+	SEND_GUI_MOUSE_BUTTON_EVENT(Point2i(10, 10), MouseButton::WHEEL_UP, 0, Key::NONE);
 	text_edit->notification(TextEdit::NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
 	CHECK(text_edit->get_v_scroll() == v_scroll);
 
 	v_scroll = text_edit->get_v_scroll();
 	text_edit->set_v_scroll_speed(10000);
-	SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, Point2i(10, 10), MouseButton::WHEEL_DOWN, 0, Key::NONE);
+	SEND_GUI_MOUSE_BUTTON_EVENT(Point2i(10, 10), MouseButton::WHEEL_DOWN, 0, Key::NONE);
 	text_edit->notification(TextEdit::NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
 	CHECK(text_edit->get_v_scroll() >= v_scroll);
-	SEND_GUI_MOUSE_BUTTON_EVENT(text_edit, Point2i(10, 10), MouseButton::WHEEL_UP, 0, Key::NONE);
+	SEND_GUI_MOUSE_BUTTON_EVENT(Point2i(10, 10), MouseButton::WHEEL_UP, 0, Key::NONE);
 	text_edit->notification(TextEdit::NOTIFICATION_INTERNAL_PHYSICS_PROCESS);
 	CHECK(text_edit->get_v_scroll() == v_scroll);
 
@@ -3910,7 +3907,7 @@ TEST_CASE("[SceneTree][TextEdit] viewport") {
 	CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
 
 	text_edit->grab_focus();
-	SEND_GUI_ACTION(text_edit, "ui_text_scroll_down");
+	SEND_GUI_ACTION("ui_text_scroll_down");
 	CHECK(text_edit->get_viewport()->is_input_handled());
 	CHECK(text_edit->get_caret_line() == 1);
 	CHECK(text_edit->get_first_visible_line() == 1);
@@ -3919,7 +3916,7 @@ TEST_CASE("[SceneTree][TextEdit] viewport") {
 	CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
 	CHECK(text_edit->get_caret_wrap_index() == 0);
 
-	SEND_GUI_ACTION(text_edit, "ui_text_scroll_up");
+	SEND_GUI_ACTION("ui_text_scroll_up");
 	CHECK(text_edit->get_viewport()->is_input_handled());
 	CHECK(text_edit->get_caret_line() == 1);
 	CHECK(text_edit->get_first_visible_line() == 0);
@@ -3929,7 +3926,7 @@ TEST_CASE("[SceneTree][TextEdit] viewport") {
 	CHECK(text_edit->get_caret_wrap_index() == 0);
 
 	// Page down, similar to VSCode, to end of page then scroll.
-	SEND_GUI_ACTION(text_edit, "ui_text_caret_page_down");
+	SEND_GUI_ACTION("ui_text_caret_page_down");
 	CHECK(text_edit->get_viewport()->is_input_handled());
 	CHECK(text_edit->get_caret_line() == 21);
 	CHECK(text_edit->get_first_visible_line() == 0);
@@ -3938,7 +3935,7 @@ TEST_CASE("[SceneTree][TextEdit] viewport") {
 	CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
 	CHECK(text_edit->get_caret_wrap_index() == 0);
 
-	SEND_GUI_ACTION(text_edit, "ui_text_caret_page_down");
+	SEND_GUI_ACTION("ui_text_caret_page_down");
 	CHECK(text_edit->get_viewport()->is_input_handled());
 	CHECK(text_edit->get_caret_line() == 41);
 	CHECK(text_edit->get_first_visible_line() == 20);
@@ -3947,7 +3944,7 @@ TEST_CASE("[SceneTree][TextEdit] viewport") {
 	CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
 	CHECK(text_edit->get_caret_wrap_index() == 0);
 
-	SEND_GUI_ACTION(text_edit, "ui_text_caret_page_up");
+	SEND_GUI_ACTION("ui_text_caret_page_up");
 	CHECK(text_edit->get_viewport()->is_input_handled());
 	CHECK(text_edit->get_caret_line() == 21);
 	CHECK(text_edit->get_first_visible_line() == 20);
@@ -3956,7 +3953,7 @@ TEST_CASE("[SceneTree][TextEdit] viewport") {
 	CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
 	CHECK(text_edit->get_caret_wrap_index() == 0);
 
-	SEND_GUI_ACTION(text_edit, "ui_text_caret_page_up");
+	SEND_GUI_ACTION("ui_text_caret_page_up");
 	CHECK(text_edit->get_viewport()->is_input_handled());
 	CHECK(text_edit->get_caret_line() == 1);
 	CHECK(text_edit->get_first_visible_line() == 1);
@@ -3969,7 +3966,7 @@ TEST_CASE("[SceneTree][TextEdit] viewport") {
 	MessageQueue::get_singleton()->flush();
 
 	text_edit->grab_focus();
-	SEND_GUI_ACTION(text_edit, "ui_text_scroll_down");
+	SEND_GUI_ACTION("ui_text_scroll_down");
 	CHECK(text_edit->get_viewport()->is_input_handled());
 	CHECK(text_edit->get_caret_line() == 2);
 	CHECK(text_edit->get_first_visible_line() == 2);
@@ -3978,7 +3975,7 @@ TEST_CASE("[SceneTree][TextEdit] viewport") {
 	CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
 	CHECK(text_edit->get_caret_wrap_index() == 0);
 
-	SEND_GUI_ACTION(text_edit, "ui_text_scroll_up");
+	SEND_GUI_ACTION("ui_text_scroll_up");
 	CHECK(text_edit->get_viewport()->is_input_handled());
 	CHECK(text_edit->get_caret_line() == 2);
 	CHECK(text_edit->get_first_visible_line() == 1);
@@ -3988,7 +3985,7 @@ TEST_CASE("[SceneTree][TextEdit] viewport") {
 	CHECK(text_edit->get_caret_wrap_index() == 0);
 
 	// Page down, similar to VSCode, to end of page then scroll.
-	SEND_GUI_ACTION(text_edit, "ui_text_caret_page_down");
+	SEND_GUI_ACTION("ui_text_caret_page_down");
 	CHECK(text_edit->get_viewport()->is_input_handled());
 	CHECK(text_edit->get_caret_line() == 22);
 	CHECK(text_edit->get_first_visible_line() == 1);
@@ -3997,7 +3994,7 @@ TEST_CASE("[SceneTree][TextEdit] viewport") {
 	CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
 	CHECK(text_edit->get_caret_wrap_index() == 0);
 
-	SEND_GUI_ACTION(text_edit, "ui_text_caret_page_down");
+	SEND_GUI_ACTION("ui_text_caret_page_down");
 	CHECK(text_edit->get_viewport()->is_input_handled());
 	CHECK(text_edit->get_caret_line() == 42);
 	CHECK(text_edit->get_first_visible_line() == 21);
@@ -4006,7 +4003,7 @@ TEST_CASE("[SceneTree][TextEdit] viewport") {
 	CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
 	CHECK(text_edit->get_caret_wrap_index() == 0);
 
-	SEND_GUI_ACTION(text_edit, "ui_text_caret_page_up");
+	SEND_GUI_ACTION("ui_text_caret_page_up");
 	CHECK(text_edit->get_viewport()->is_input_handled());
 	CHECK(text_edit->get_caret_line() == 22);
 	CHECK(text_edit->get_first_visible_line() == 21);
@@ -4015,7 +4012,7 @@ TEST_CASE("[SceneTree][TextEdit] viewport") {
 	CHECK(text_edit->get_last_full_visible_line_wrap_index() == 0);
 	CHECK(text_edit->get_caret_wrap_index() == 0);
 
-	SEND_GUI_ACTION(text_edit, "ui_text_caret_page_up");
+	SEND_GUI_ACTION("ui_text_caret_page_up");
 	CHECK(text_edit->get_viewport()->is_input_handled());
 	CHECK(text_edit->get_caret_line() == 2);
 	CHECK(text_edit->get_first_visible_line() == 2);
@@ -4031,7 +4028,7 @@ TEST_CASE("[SceneTree][TextEdit] viewport") {
 	MessageQueue::get_singleton()->flush();
 	CHECK(text_edit->get_first_visible_line() == 5);
 
-	SEND_GUI_KEY_EVENT(text_edit, Key::A);
+	SEND_GUI_KEY_EVENT(Key::A);
 	CHECK(text_edit->get_first_visible_line() == 0);
 
 	text_edit->set_line_as_first_visible(5);

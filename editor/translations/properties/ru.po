@@ -132,17 +132,17 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-11-25 12:13+0000\n"
-"Last-Translator: Vladimir Kirillovskiy <vladimir.kirillovskiy@gmail.com>\n"
+"PO-Revision-Date: 2023-02-10 10:44+0000\n"
+"Last-Translator: Danil Alexeev <danil@alexeev.xyz>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
-"godot/ru/>\n"
+"godot-properties/ru/>\n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.15-dev\n"
+"X-Generator: Weblate 4.16-dev\n"
 
 msgid "Application"
 msgstr "Приложение"
@@ -153,8 +153,14 @@ msgstr "Конфигурация"
 msgid "Name"
 msgstr "Название"
 
+msgid "Description"
+msgstr "Описание"
+
 msgid "Run"
 msgstr "Запустить"
+
+msgid "Main Scene"
+msgstr "Главная сцена"
 
 msgid "Disable stdout"
 msgstr "Отключить стандартный вывод"
@@ -183,6 +189,9 @@ msgstr "Окно"
 msgid "Size"
 msgstr "Размер"
 
+msgid "Mode"
+msgstr "Режим"
+
 msgid "Resizable"
 msgstr "Изменяемый размер"
 
@@ -197,6 +206,9 @@ msgstr "Энергосбережение"
 
 msgid "Keep Screen On"
 msgstr "Не выключать экран"
+
+msgid "Audio"
+msgstr "Аудио"
 
 msgid "Editor"
 msgstr "Редактор"
@@ -219,6 +231,9 @@ msgstr "Отладка"
 msgid "Settings"
 msgstr "Настройки"
 
+msgid "Compression"
+msgstr "Сжатие"
+
 msgid "Crash Handler"
 msgstr "Обработчик падений"
 
@@ -227,6 +242,15 @@ msgstr "Сообщение"
 
 msgid "Rendering"
 msgstr "Рендеринг"
+
+msgid "Limits"
+msgstr "Лимиты"
+
+msgid "GUI"
+msgstr "GUI"
+
+msgid "Vulkan"
+msgstr "Vulkan"
 
 msgid "Low Processor Usage Mode"
 msgstr "Режим низкой нагрузки процессора"
@@ -275,6 +299,9 @@ msgstr "Множитель"
 
 msgid "Button Index"
 msgstr "Индекс кнопки"
+
+msgid "Double Click"
+msgstr "Двойной щелчок"
 
 msgid "Tilt"
 msgstr "Наклон"
@@ -330,6 +357,12 @@ msgstr "Ярлык"
 msgid "Big Endian"
 msgstr "Прямой порядок байтов"
 
+msgid "Network"
+msgstr "Сеть"
+
+msgid "Page Size"
+msgstr "Размер страницы"
+
 msgid "Blocking Mode Enabled"
 msgstr "Блокирующий режим включён"
 
@@ -365,9 +398,6 @@ msgstr "Путь"
 
 msgid "Data Array"
 msgstr "Массив данных"
-
-msgid "Blocking Handshake"
-msgstr "Блокировать Handshake"
 
 msgid "Max Pending Connections"
 msgstr "Максимальное количество ожидающих подключений"
@@ -441,15 +471,6 @@ msgstr "Анимация"
 msgid "Easing"
 msgstr "Облегчение"
 
-msgid "Interface"
-msgstr "Интерфейс"
-
-msgid "Editors"
-msgstr "Редакторы"
-
-msgid "Network"
-msgstr "Сеть"
-
 msgid "Remote Port"
 msgstr "Удалённый порт"
 
@@ -519,8 +540,8 @@ msgstr "Отмеченный"
 msgid "Keying"
 msgstr "Вставка ключей"
 
-msgid "Main Scene"
-msgstr "Главная сцена"
+msgid "Interface"
+msgstr "Интерфейс"
 
 msgid "Show Update Spinner"
 msgstr "Показывать индикатор обновления"
@@ -824,6 +845,9 @@ msgstr "Размер шрифта исходного кода в справке"
 
 msgid "Help Title Font Size"
 msgstr "Размер шрифта заголовков справки"
+
+msgid "Editors"
+msgstr "Редакторы"
 
 msgid "Grid Map"
 msgstr "Сеточная карта"
@@ -1227,8 +1251,14 @@ msgstr "Пароль"
 msgid "Compress"
 msgstr "Сжатие"
 
+msgid "Language"
+msgstr "Язык"
+
 msgid "Variation"
 msgstr "Вариация"
+
+msgid "Transform"
+msgstr "Преобразование"
 
 msgid "Collada"
 msgstr "ColladA"
@@ -1260,14 +1290,8 @@ msgstr "Предзагрузить"
 msgid "Columns"
 msgstr "Колонки"
 
-msgid "Mode"
-msgstr "Режим"
-
 msgid "Lossy Quality"
 msgstr "Качество с потерями"
-
-msgid "BPTC LDR"
-msgstr "BPTC LDR"
 
 msgid "Mipmaps"
 msgstr "Мип-карты"
@@ -1331,12 +1355,6 @@ msgstr "Оптимизировать"
 
 msgid "Max Angular Error"
 msgstr "Максимальная угловая погрешность"
-
-msgid "Compression"
-msgstr "Сжатие"
-
-msgid "Page Size"
-msgstr "Размер страницы"
 
 msgid "Nodes"
 msgstr "Узлы"
@@ -1442,6 +1460,9 @@ msgstr "Использовать потоки"
 
 msgid "Available URLs"
 msgstr "Доступные URL"
+
+msgid "Unset"
+msgstr "Сбросить"
 
 msgid "Error"
 msgstr "Ошибка"
@@ -1560,9 +1581,6 @@ msgstr "Потоки"
 msgid "Thread Model"
 msgstr "Модель потоков"
 
-msgid "Audio"
-msgstr "Аудио"
-
 msgid "Handheld"
 msgstr "Портативный"
 
@@ -1593,14 +1611,17 @@ msgstr "iOS"
 msgid "Hide Home Indicator"
 msgstr "Скрыть индикатор «Домой»"
 
+msgid "Input Devices"
+msgstr "Устройства ввода"
+
+msgid "Pointing"
+msgstr "Указывающие"
+
 msgid "Boot Splash"
 msgstr "Загрузочная заставка"
 
 msgid "BG Color"
 msgstr "Цвет фона"
-
-msgid "Input Devices"
-msgstr "Устройства ввода"
 
 msgid "Environment"
 msgstr "Окружение"
@@ -1611,20 +1632,23 @@ msgstr "Чистый цвет по умолчанию"
 msgid "Show Image"
 msgstr "Показать изображение"
 
+msgid "Image"
+msgstr "Изображение"
+
 msgid "Fullsize"
 msgstr "Полноразмерный"
 
 msgid "Use Filter"
 msgstr "Использовать фильтр"
 
+msgid "Icon"
+msgstr "Иконка"
+
 msgid "Buffering"
 msgstr "Буферизация"
 
 msgid "Agile Event Flushing"
 msgstr "Быстрая отправка событий"
-
-msgid "Pointing"
-msgstr "Указывающие"
 
 msgid "Emulate Touch From Mouse"
 msgstr "Эмулировать сенсорный ввод мышью"
@@ -1647,11 +1671,14 @@ msgstr "Проект"
 msgid "Main Loop Type"
 msgstr "Тип основного цикла"
 
+msgid "Stretch"
+msgstr "Растяжение"
+
+msgid "Aspect"
+msgstr "Соотношение"
+
 msgid "Auto Accept Quit"
 msgstr "Автоподтверждение выхода"
-
-msgid "GUI"
-msgstr "GUI"
 
 msgid "Fonts"
 msgstr "Шрифты"
@@ -1661,6 +1688,9 @@ msgstr "Динамические шрифты"
 
 msgid "Use Oversampling"
 msgstr "Использовать передискретизацию"
+
+msgid "Textures"
+msgstr "Текстуры"
 
 msgid "Operation"
 msgstr "Операция"
@@ -1829,9 +1859,6 @@ msgstr "Имя сцены"
 
 msgid "Root Nodes"
 msgstr "Корневые узлы"
-
-msgid "Textures"
-msgstr "Текстуры"
 
 msgid "Images"
 msgstr "Изображения"
@@ -2088,9 +2115,6 @@ msgstr "IGD Статус"
 msgid "Write Mode"
 msgstr "Режим записи"
 
-msgid "Limits"
-msgstr "Лимиты"
-
 msgid "WebRTC"
 msgstr "WebRTC"
 
@@ -2123,12 +2147,6 @@ msgstr "Адаптивный Передний Фон 432 X 432"
 
 msgid "Adaptive Background 432 X 432"
 msgstr "Адаптивный Задний Фон 432 X 432"
-
-msgid "Custom Build"
-msgstr "Настраиваемая Сборка"
-
-msgid "Use Custom Build"
-msgstr "Использовать Настраиваемую Сборку"
 
 msgid "Export Format"
 msgstr "Формат Экспорта"
@@ -2256,9 +2274,6 @@ msgstr "Архитектура"
 msgid "macOS"
 msgstr "macOS"
 
-msgid "Icon"
-msgstr "Иконка"
-
 msgid "Copyright"
 msgstr "Авторские права"
 
@@ -2358,9 +2373,6 @@ msgstr "Алгоритм отладчика"
 msgid "Short Name"
 msgstr "Короткое имя"
 
-msgid "Description"
-msgstr "Описание"
-
 msgid "Publisher"
 msgstr "Издатель"
 
@@ -2411,6 +2423,9 @@ msgstr "HTTP-хост"
 
 msgid "HTTP Port"
 msgstr "HTTP-порт"
+
+msgid "Variant"
+msgstr "Вариант"
 
 msgid "VRAM Texture Compression"
 msgstr "VRAM компрессия текстуры"
@@ -2469,17 +2484,11 @@ msgstr "Описание файла"
 msgid "Trademarks"
 msgstr "Торговые марки"
 
-msgid "Frames"
-msgstr "Кадры"
-
 msgid "Frame"
 msgstr "Кадр"
 
 msgid "Speed Scale"
 msgstr "Масштаб скорости"
-
-msgid "Playing"
-msgstr "Проигрывается"
 
 msgid "Centered"
 msgstr "Центрированный"
@@ -2511,6 +2520,9 @@ msgstr "Текущая"
 msgid "Volume dB"
 msgstr "Громкость dB"
 
+msgid "Playing"
+msgstr "Проигрывается"
+
 msgid "Autoplay"
 msgstr "Автовоспроизведение"
 
@@ -2539,13 +2551,13 @@ msgid "Custom Viewport"
 msgstr "Пользовательское окно просмотра"
 
 msgid "Left"
-msgstr "Лево"
+msgstr "Влево"
 
 msgid "Top"
 msgstr "Верх"
 
 msgid "Right"
-msgstr "Право"
+msgstr "Вправо"
 
 msgid "Bottom"
 msgstr "Внизу"
@@ -2748,9 +2760,6 @@ msgstr "Включить уклонение"
 msgid "Max Speed"
 msgstr "Макс скорость"
 
-msgid "Transform"
-msgstr "Преобразование"
-
 msgid "Global Rotation"
 msgstr "Глобальный поворот"
 
@@ -2848,7 +2857,7 @@ msgid "Use Global Coordinates"
 msgstr "Использовать глобальные координаты"
 
 msgid "Update"
-msgstr "Обновление"
+msgstr "Обновить"
 
 msgid "Margin"
 msgstr "Отступ"
@@ -3252,9 +3261,6 @@ msgstr "Случайная задержка"
 msgid "Xfade Time"
 msgstr "Время Xfade"
 
-msgid "Reset"
-msgstr "Сбросить"
-
 msgid "Active"
 msgstr "Активный"
 
@@ -3263,6 +3269,9 @@ msgstr "Добавить количество"
 
 msgid "Blend Amount"
 msgstr "Количество смешивания"
+
+msgid "Reset"
+msgstr "Сбросить"
 
 msgid "Switch"
 msgstr "Множественный выбор"
@@ -3489,9 +3498,6 @@ msgstr "Среда"
 msgid "Relative Index"
 msgstr "Относительный индекс"
 
-msgid "Fit Content Height"
-msgstr "Вместить по высоте контента"
-
 msgid "Scroll Active"
 msgstr "Активная прокрутка"
 
@@ -3516,9 +3522,6 @@ msgstr "Счетчик галочек"
 msgid "Collapsed"
 msgstr "Свернуто"
 
-msgid "Stretch"
-msgstr "Растяжение"
-
 msgid "Stretch Shrink"
 msgstr "Растянуть сжать"
 
@@ -3530,6 +3533,9 @@ msgstr "Видимость вкладок"
 
 msgid "Syntax Highlighter"
 msgstr "Подсветка синтаксиса"
+
+msgid "Fit Content Height"
+msgstr "Вместить по высоте контента"
 
 msgid "Focused"
 msgstr "Сфокусировано"
@@ -3677,9 +3683,6 @@ msgstr "Минимальный размер"
 
 msgid "Max Size"
 msgstr "Максимальный размер"
-
-msgid "Aspect"
-msgstr "Соотношение"
 
 msgid "Layer Names"
 msgstr "Имена слоя"
@@ -4086,9 +4089,6 @@ msgstr "Справа внизу"
 msgid "Bottom Left"
 msgstr "Слева внизу"
 
-msgid "Image"
-msgstr "Изображение"
-
 msgid "Load Path"
 msgstr "Загрузить путь"
 
@@ -4109,6 +4109,9 @@ msgstr "От"
 
 msgid "To"
 msgstr "До"
+
+msgid "Frames"
+msgstr "Кадры"
 
 msgid "Current Frame"
 msgstr "Текущий кадр"
@@ -4154,15 +4157,6 @@ msgstr "Холст"
 
 msgid "Navigation Map"
 msgstr "Карта навигации"
-
-msgid "Default Gravity"
-msgstr "Гравитация по умолчанию"
-
-msgid "Default Gravity Vector"
-msgstr "Вектор гравитации по умолчанию"
-
-msgid "Default Cell Size"
-msgstr "Размер ячейки по умолчанию"
 
 msgid "Plane"
 msgstr "Плоскость"
@@ -4212,11 +4206,11 @@ msgstr "Порог Отключения Канала, дБ"
 msgid "Video Delay Compensation (ms)"
 msgstr "Компенсация Задержки Видео (мс)"
 
-msgid "Capture Device"
-msgstr "Устройство захвата"
-
 msgid "Is Active"
 msgstr "Активен"
+
+msgid "Default Cell Size"
+msgstr "Размер ячейки по умолчанию"
 
 msgid "Inverse Mass"
 msgstr "Инвертированная масса"
@@ -4236,6 +4230,12 @@ msgstr "Сталкивать с телами"
 msgid "Collide With Areas"
 msgstr "Сталкивать с областями"
 
+msgid "Default Gravity"
+msgstr "Гравитация по умолчанию"
+
+msgid "Default Gravity Vector"
+msgstr "Вектор гравитации по умолчанию"
+
 msgid "Physics Engine"
 msgstr "Физический движек"
 
@@ -4250,18 +4250,6 @@ msgstr "Включить цикл рендера"
 
 msgid "VRAM Compression"
 msgstr "Сжатие VRAM"
-
-msgid "Import BPTC"
-msgstr "Импорт BPTC"
-
-msgid "Import S3TC"
-msgstr "Импорт S3TC"
-
-msgid "Import ETC"
-msgstr "Импортировать ETC"
-
-msgid "Import ETC2"
-msgstr "Импортировать ETC2"
 
 msgid "Lossless Compression"
 msgstr "Сжатие без потерь"

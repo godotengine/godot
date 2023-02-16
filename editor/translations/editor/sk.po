@@ -517,9 +517,6 @@ msgstr "Odpojiť"
 msgid "Connect a Signal to a Method"
 msgstr "Pripojiť Signál k Metóde"
 
-msgid "Edit Connection:"
-msgstr "Upraviť Pripojenie:"
-
 msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
 msgstr "Naozaj chcete odstrániť všetky pripojenia z \"%s\" signálu?"
 
@@ -1289,6 +1286,9 @@ msgstr "Zmeniť veľkosť Array-u"
 msgid "Set Multiple:"
 msgstr "Nastaviť Viac:"
 
+msgid "Edit Filters"
+msgstr "Upraviť Filtre"
+
 msgid "Language:"
 msgstr "Jazyk:"
 
@@ -1751,23 +1751,6 @@ msgstr "Android build template chýba, prosím nainštalujte príslušné šabl�
 
 msgid "Manage Templates"
 msgstr "Spravovať Šablóny"
-
-msgid ""
-"This will set up your project for custom Android builds by installing the "
-"source template to \"res://android/build\".\n"
-"You can then apply modifications and build your own custom APK on export "
-"(adding modules, changing the AndroidManifest.xml, etc.).\n"
-"Note that in order to make custom builds instead of using pre-built APKs, "
-"the \"Use Custom Build\" option should be enabled in the Android export "
-"preset."
-msgstr ""
-"Toto pripraví vás projekt pre vlastný Android builds keď inštalujete source "
-"template do \"res://android/build\".\n"
-"Teraz môžete pridať modifikácie a tak vytvoriť vlastné APK na export "
-"(pridávanie modulov, zmeniť AndroidManifest.xml, atď.).\n"
-"Poznámka že v záujme vytvorenia vlastných zostavení namiesto použitia vopred "
-"vytvorených súborov APK by mala byť v predvoľbe exportu systému Android "
-"povolená možnosť \"Use Costom Build\"."
 
 msgid ""
 "The Android build template is already installed in this project and it won't "
@@ -2430,6 +2413,9 @@ msgstr "Vyberte a premiestnite body, vytvorte body z RMB."
 msgid "Enable snap and show grid."
 msgstr "Povoliť prichytenie a zobraziť mriežku."
 
+msgid "Blend:"
+msgstr "Blend:"
+
 msgid "Point"
 msgstr "Bod"
 
@@ -2473,12 +2459,6 @@ msgstr "Vymazať body a trojuholníky."
 
 msgid "Generate blend triangles automatically (instead of manually)"
 msgstr "Vygenerovať blend trojuholníky Automaticky (nie manuálne)"
-
-msgid "Blend:"
-msgstr "Blend:"
-
-msgid "Edit Filters"
-msgstr "Upraviť Filtre"
 
 msgid "Output node can't be added to the blend tree."
 msgstr "Nemôžete pridať output node do blend tree."
@@ -2595,9 +2575,6 @@ msgstr "Spusťiť vybranú animáciu odzadu z aktuálnej pozície. (A)"
 
 msgid "Play selected animation backwards from end. (Shift+A)"
 msgstr "Spustiť vybranú animáciu odzadu z konca. (Shift+A)"
-
-msgid "Stop animation playback. (S)"
-msgstr "Zastaviť playback animácie. (S)"
 
 msgid "Play selected animation from start. (Shift+D)"
 msgstr "Spustiť vybranú animáciu od začiatku. (Shift+D)"

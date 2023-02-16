@@ -89,13 +89,14 @@
 # Dream Drunk <myemailpoly149@gmail.com>, 2022.
 # alpdenthedev <ekrem_ekrem_45@hotmail.com>, 2022.
 # Muhammed Said Gülberk <msgulberk@gmail.com>, 2022.
+# Cave Johnson <aperturelabs123@proton.me>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-12-05 10:16+0000\n"
-"Last-Translator: Muhammed Said Gülberk <msgulberk@gmail.com>\n"
+"PO-Revision-Date: 2023-02-09 09:37+0000\n"
+"Last-Translator: Cave Johnson <aperturelabs123@proton.me>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
 "Language: tr\n"
@@ -103,10 +104,34 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.15-dev\n"
+"X-Generator: Weblate 4.16-dev\n"
+
+msgid "Unset"
+msgstr "Belirtilmemiş"
 
 msgid "Physical"
 msgstr "Fiziksel"
+
+msgid "Left Mouse Button"
+msgstr "Sol Fare Düğmesi"
+
+msgid "Right Mouse Button"
+msgstr "Sağ Fare Düğmesi"
+
+msgid "Middle Mouse Button"
+msgstr "Orta Fare Düğmesi"
+
+msgid "Mouse Wheel Up"
+msgstr "Fare Tekerleği Yukarı"
+
+msgid "Mouse Wheel Down"
+msgstr "Fare Tekerleği Aşağı."
+
+msgid "Mouse Wheel Left"
+msgstr "Sol Fare Tekerlek Düğmesi"
+
+msgid "Mouse Wheel Right"
+msgstr "Sağ Fare Tekerlek Düğmesi"
 
 msgid "Button"
 msgstr "Düğme"
@@ -655,6 +680,9 @@ msgstr "Sinyaller:"
 msgid "Scene does not contain any script."
 msgstr "Sahne hiç komut içermiyor."
 
+msgid "Select Method"
+msgstr "Metot Seç"
+
 msgid "Remove"
 msgstr "Kaldır"
 
@@ -709,9 +737,6 @@ msgstr "Bağlantıyı kes"
 
 msgid "Connect a Signal to a Method"
 msgstr "Bir Yönteme Bir Sinyal Bağlayın"
-
-msgid "Edit Connection:"
-msgstr "Bağlantıyı Düzenle:"
 
 msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
 msgstr ""
@@ -855,23 +880,8 @@ msgstr "Uyarılar:"
 msgid "Error:"
 msgstr "Hata:"
 
-msgid "C++ Error"
-msgstr "C++ Hatası"
-
-msgid "C++ Error:"
-msgstr "C++ Hatası:"
-
-msgid "Source"
-msgstr "Kaynak"
-
-msgid "C++ Source"
-msgstr "C++ Kaynağı"
-
-msgid "Source:"
-msgstr "Kaynak:"
-
-msgid "C++ Source:"
-msgstr "C++ Kaynak:"
+msgid "%s Error"
+msgstr "%s Hatası"
 
 msgid "Stack Trace"
 msgstr "Bellek Dökümü"
@@ -881,6 +891,9 @@ msgstr "Hatayı Kopyala"
 
 msgid "Open C++ Source on GitHub"
 msgstr "GitHub'da C++ Kaynağını Açın"
+
+msgid "C++ Source"
+msgstr "C++ Kaynağı"
 
 msgid "Video RAM"
 msgstr "Görüntü Belleği"
@@ -1847,11 +1860,11 @@ msgstr "Tüm Dilleri Göster"
 msgid "Show Selected Locales Only"
 msgstr "Sadece Seçili Dilleri Göster"
 
+msgid "Edit Filters"
+msgstr "Süzgeçleri Düzenle"
+
 msgid "Language:"
 msgstr "Dil:"
-
-msgid "Script"
-msgstr "Betik"
 
 msgid "Variant"
 msgstr "Varyant"
@@ -2406,24 +2419,6 @@ msgid "Install from file"
 msgstr "Dosyadan Kur"
 
 msgid ""
-"This will set up your project for custom Android builds by installing the "
-"source template to \"res://android/build\".\n"
-"You can then apply modifications and build your own custom APK on export "
-"(adding modules, changing the AndroidManifest.xml, etc.).\n"
-"Note that in order to make custom builds instead of using pre-built APKs, "
-"the \"Use Custom Build\" option should be enabled in the Android export "
-"preset."
-msgstr ""
-"Bu, kaynak şablonunu \"res://android/build\" dizinine kurarak projenizi özel "
-"Android derlemeleri için ayarlayacaktır.\n"
-"Daha sonra dışa aktarırken değişiklikleri uygulayabilir ve kendi özel "
-"APK'nızı oluşturabilirsiniz (modül ekleme, AndroidManifest.xml dosyasını "
-"değiştirme vb.).\n"
-"Önceden oluşturulmuş APK'ları kullanmak yerine özel derlemeler yapmak için "
-"Android dışa aktarma ön ayarında \"Özel Derleme Kullan\" seçeneğinin "
-"etkinleştirilmesi gerektiğini unutmayın."
-
-msgid ""
 "The Android build template is already installed in this project and it won't "
 "be overwritten.\n"
 "Remove the \"res://android/build\" directory manually before attempting this "
@@ -2647,9 +2642,6 @@ msgstr "Kısayollar"
 
 msgid "Binding"
 msgstr "Bağlayıcı"
-
-msgid "%s Error"
-msgstr "%s Hatası"
 
 msgid "All Devices"
 msgstr "Tüm Aygıtlar"
@@ -3565,6 +3557,9 @@ msgstr "Noktaları seç ve taşı. Sağ fare düğmesi ile yeni noktalar oluştu
 msgid "Enable snap and show grid."
 msgstr "Yapıştırmayı etkinleştir ve ızgarayı göster."
 
+msgid "Blend:"
+msgstr "Karışma:"
+
 msgid "Point"
 msgstr "Nokta"
 
@@ -3607,14 +3602,8 @@ msgstr "Noktaları ve üçgenleri sil."
 msgid "Generate blend triangles automatically (instead of manually)"
 msgstr "Otomatik üçgen harmanlayıcı oluştur (el ile)"
 
-msgid "Blend:"
-msgstr "Karışma:"
-
 msgid "Parameter Changed:"
 msgstr "Parametre Değiştirildi:"
-
-msgid "Edit Filters"
-msgstr "Süzgeçleri Düzenle"
 
 msgid "Output node can't be added to the blend tree."
 msgstr "Çıktı düğümü işleme ağacına eklenemiyor."
@@ -3734,9 +3723,6 @@ msgstr "Seçilen animasyonu geçerli konumdan geriye doğru oynat. (A)"
 
 msgid "Play selected animation backwards from end. (Shift+A)"
 msgstr "Seçilen animasyonu geriye doğru oynat. (Shift + A)"
-
-msgid "Stop animation playback. (S)"
-msgstr "Animasyonu oynatmayı durdur. (S)"
 
 msgid "Play selected animation from start. (Shift+D)"
 msgstr "Seçilen animasyonu başlangıç anından oynat. (ÜstKrkt + D)"
@@ -4942,12 +4928,6 @@ msgstr "Bildirici Değiştir AABB"
 msgid "Change Particles AABB"
 msgstr "Parçacık AABB Değişimi"
 
-msgid "Change Box Shape Extents"
-msgstr "Kübik Şekli Genişlet"
-
-msgid "Change Probe Extents"
-msgstr "Deşme Genişlemesini Değiştir"
-
 msgid "Change Capsule Shape Radius"
 msgstr "Kapsülün Çapını Değiştir"
 
@@ -5755,6 +5735,9 @@ msgstr "Standart"
 msgid "Connections to method:"
 msgstr "Metotlara bağlantılar:"
 
+msgid "Source"
+msgstr "Kaynak"
+
 msgid "Target"
 msgstr "Hedef"
 
@@ -5992,12 +5975,6 @@ msgstr "(boş)"
 
 msgid "Animations:"
 msgstr "Animasyonlar:"
-
-msgid "Speed:"
-msgstr "Hız:"
-
-msgid "Loop"
-msgstr "Döngü"
 
 msgid "Animation Frames:"
 msgstr "Animasyon Çerçeveleri:"
@@ -7364,9 +7341,6 @@ msgstr "Giriş Eylemi Ekle"
 msgid "Change Action deadzone"
 msgstr "Eylem Değiştir ölübölgesi"
 
-msgid "Add Input Action Event"
-msgstr "Giriş İşlem Olayı Ekle"
-
 msgid "Erase Input Action"
 msgstr "Girdi Eylemini Sil"
 
@@ -7393,9 +7367,6 @@ msgstr "Özellik Seç"
 
 msgid "Select Virtual Method"
 msgstr "Sanal Metot Seç"
-
-msgid "Select Method"
-msgstr "Metot Seç"
 
 msgid "Batch Rename"
 msgstr "Tümden Yeniden Adlandır"
@@ -8162,15 +8133,6 @@ msgstr "APK genişletmesi için geçersiz ortak anahtar."
 msgid "Invalid package name:"
 msgstr "Geçersiz paket ismi:"
 
-msgid "\"Use Custom Build\" must be enabled to use the plugins."
-msgstr ""
-"Eklentileri kullanabilmek için \"Özel Derleme Kullan\" seçeneği aktif olmalı."
-
-msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
-msgstr ""
-"\"AAB Dışa Aktar\" yalnızca \"Özel Yapı Kullan\" etkinleştirildiğinde "
-"geçerlidir."
-
 msgid "Signing debug %s..."
 msgstr "%s hata ayıklaması imzalanıyor..."
 
@@ -8206,13 +8168,6 @@ msgstr "Geçersiz dosya adı! Android APK, * .apk uzantısını gerektirir."
 
 msgid "Unsupported export format!"
 msgstr "Desteklenmeyen dışa aktarım biçimi!"
-
-msgid ""
-"Trying to build from a custom built template, but no version info for it "
-"exists. Please reinstall from the 'Project' menu."
-msgstr ""
-"Özel olarak oluşturulmuş bir şablondan oluşturmaya çalışılıyor, ancak bunun "
-"için sürüm bilgisi yok. Lütfen 'Proje' menüsünden yeniden yükleyin."
 
 msgid ""
 "Android build version mismatch: Template installed: %s, Godot version: %s. "

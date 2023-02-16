@@ -5930,7 +5930,7 @@ Error RenderingDeviceVulkan::buffer_clear(RID p_buffer, uint32_t p_offset, uint3
 	return OK;
 }
 
-Vector<uint8_t> RenderingDeviceVulkan::buffer_get_data(RID p_buffer) {
+Vector<uint8_t> RenderingDeviceVulkan::buffer_get_data(RID p_buffer, uint32_t p_offset, uint32_t p_size) {
 	_THREAD_SAFE_METHOD_
 
 	// It could be this buffer was just created.
@@ -5947,12 +5947,20 @@ Vector<uint8_t> RenderingDeviceVulkan::buffer_get_data(RID p_buffer) {
 
 	VkCommandBuffer command_buffer = frames[frame].setup_command_buffer;
 
+	// Size of buffer to retrieve.
+	if (!p_size) {
+		p_size = buffer->size;
+	} else {
+		ERR_FAIL_COND_V_MSG(p_size + p_offset > buffer->size, Vector<uint8_t>(),
+				"Size is larger than the buffer.");
+	}
+
 	Buffer tmp_buffer;
-	_buffer_allocate(&tmp_buffer, buffer->size, VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_AUTO_PREFER_HOST, VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT);
+	_buffer_allocate(&tmp_buffer, p_size, VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_AUTO_PREFER_HOST, VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT);
 	VkBufferCopy region;
-	region.srcOffset = 0;
+	region.srcOffset = p_offset;
 	region.dstOffset = 0;
-	region.size = buffer->size;
+	region.size = p_size;
 	vkCmdCopyBuffer(command_buffer, buffer->buffer, tmp_buffer.buffer, 1, &region); // Dst buffer is in CPU, but I wonder if src buffer needs a barrier for this.
 	// Flush everything so memory can be safely mapped.
 	_flush(true);
@@ -5963,9 +5971,9 @@ Vector<uint8_t> RenderingDeviceVulkan::buffer_get_data(RID p_buffer) {
 
 	Vector<uint8_t> buffer_data;
 	{
-		buffer_data.resize(buffer->size);
+		buffer_data.resize(p_size);
 		uint8_t *w = buffer_data.ptrw();
-		memcpy(w, buffer_mem, buffer->size);
+		memcpy(w, buffer_mem, p_size);
 	}
 
 	vmaUnmapMemory(allocator, tmp_buffer.allocation);
@@ -8609,14 +8617,17 @@ void RenderingDeviceVulkan::set_resource_name(RID p_id, const String p_name) {
 }
 
 void RenderingDeviceVulkan::draw_command_begin_label(String p_label_name, const Color p_color) {
+	_THREAD_SAFE_METHOD_
 	context->command_begin_label(frames[frame].draw_command_buffer, p_label_name, p_color);
 }
 
 void RenderingDeviceVulkan::draw_command_insert_label(String p_label_name, const Color p_color) {
+	_THREAD_SAFE_METHOD_
 	context->command_insert_label(frames[frame].draw_command_buffer, p_label_name, p_color);
 }
 
 void RenderingDeviceVulkan::draw_command_end_label() {
+	_THREAD_SAFE_METHOD_
 	context->command_end_label(frames[frame].draw_command_buffer);
 }
 

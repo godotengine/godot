@@ -1157,6 +1157,14 @@ Vector<String> String::split_spaces() const {
 
 Vector<String> String::split(const String &p_splitter, bool p_allow_empty, int p_maxsplit) const {
 	Vector<String> ret;
+
+	if (is_empty()) {
+		if (p_allow_empty) {
+			ret.push_back("");
+		}
+		return ret;
+	}
+
 	int from = 0;
 	int len = length();
 

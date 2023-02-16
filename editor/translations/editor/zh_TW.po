@@ -12,7 +12,7 @@
 # Qing <icinriiq@gmail.com>, 2018.
 # Sam Pan <sampan66@gmail.com>, 2016.
 # ken l <macauhome@gmail.com>, 2018.
-# Eric K <eric900601@gmail.com>, 2019.
+# Eric K <eric900601@gmail.com>, 2019, 2023.
 # cnieFIT <dtotncq@gmail.com>, 2019.
 # Bluesir Bruce <a5566740293@gmail.com>, 2019, 2020.
 # leela <53352@protonmail.com>, 2019.
@@ -39,13 +39,14 @@
 # Hugel <qihu@nfschina.com>, 2022.
 # nitenook <admin@alterbaum.net>, 2022.
 # Edison Lee <edisonlee@edisonlee55.com>, 2023.
+# abcabcc <xmmandxpp@outlook.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-01-14 10:06+0000\n"
-"Last-Translator: Edison Lee <edisonlee@edisonlee55.com>\n"
+"PO-Revision-Date: 2023-02-10 10:44+0000\n"
+"Last-Translator: abcabcc <xmmandxpp@outlook.com>\n"
 "Language-Team: Chinese (Traditional) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hant/>\n"
 "Language: zh_TW\n"
@@ -53,10 +54,34 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.15.1-dev\n"
+"X-Generator: Weblate 4.16-dev\n"
+
+msgid "Unset"
+msgstr "未設置"
 
 msgid "Physical"
 msgstr "物理"
+
+msgid "Left Mouse Button"
+msgstr "滑鼠左鍵"
+
+msgid "Right Mouse Button"
+msgstr "滑鼠右鍵"
+
+msgid "Middle Mouse Button"
+msgstr "滑鼠中鍵"
+
+msgid "Mouse Wheel Up"
+msgstr "滾輪向上"
+
+msgid "Mouse Wheel Down"
+msgstr "滾輪向下"
+
+msgid "Mouse Wheel Left"
+msgstr "滑鼠滾輪向左"
+
+msgid "Mouse Wheel Right"
+msgstr "滑鼠滾輪向右"
 
 msgid "Button"
 msgstr "按鈕"
@@ -599,6 +624,9 @@ msgstr "自訊號："
 msgid "Scene does not contain any script."
 msgstr "場景中無任何腳本。"
 
+msgid "Select Method"
+msgstr "選擇方法"
+
 msgid "Remove"
 msgstr "移除"
 
@@ -653,9 +681,6 @@ msgstr "斷開訊號連接"
 
 msgid "Connect a Signal to a Method"
 msgstr "連接訊號至方法"
-
-msgid "Edit Connection:"
-msgstr "編輯連接內容："
 
 msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
 msgstr "確定要删除所有來自訊號「%s」的連接嗎？"
@@ -800,23 +825,8 @@ msgstr "警告："
 msgid "Error:"
 msgstr "錯誤："
 
-msgid "C++ Error"
-msgstr "C++ 錯誤"
-
-msgid "C++ Error:"
-msgstr "C++ 錯誤："
-
-msgid "Source"
-msgstr "來源"
-
-msgid "C++ Source"
-msgstr "C++ 原始檔"
-
-msgid "Source:"
-msgstr "原始檔："
-
-msgid "C++ Source:"
-msgstr "C++ 原始檔："
+msgid "%s Error"
+msgstr "%s 錯誤"
 
 msgid "Stack Trace"
 msgstr "堆疊回溯"
@@ -826,6 +836,9 @@ msgstr "複製錯誤"
 
 msgid "Open C++ Source on GitHub"
 msgstr "於GitHub開啟C++原始碼"
+
+msgid "C++ Source"
+msgstr "C++ 原始檔"
 
 msgid "Video RAM"
 msgstr "視訊記憶體"
@@ -1289,6 +1302,9 @@ msgstr "全域變數"
 
 msgid "Navigation"
 msgstr "導航"
+
+msgid "Vulkan"
+msgstr "Vulkan"
 
 msgid "Nodes and Classes:"
 msgstr "節點與類別："
@@ -1767,11 +1783,11 @@ msgstr "顯示所有地區"
 msgid "Show Selected Locales Only"
 msgstr "僅顯示選定的地區"
 
+msgid "Edit Filters"
+msgstr "編輯篩選條件"
+
 msgid "Language:"
 msgstr "語言："
-
-msgid "Script"
-msgstr "腳本"
 
 msgid "Variant"
 msgstr "變體"
@@ -2295,22 +2311,6 @@ msgid "Install from file"
 msgstr "自檔案安裝"
 
 msgid ""
-"This will set up your project for custom Android builds by installing the "
-"source template to \"res://android/build\".\n"
-"You can then apply modifications and build your own custom APK on export "
-"(adding modules, changing the AndroidManifest.xml, etc.).\n"
-"Note that in order to make custom builds instead of using pre-built APKs, "
-"the \"Use Custom Build\" option should be enabled in the Android export "
-"preset."
-msgstr ""
-"將於「res://android/build」安裝原始樣板以為該項目設定自定 Android 建置樣"
-"板。\n"
-"輸出時可套用修改並建置自定 APK（如新增模組、修改 AndroidManifest.xml …"
-"等）。\n"
-"請注意，若要使用自定建置而非使用預先建置之 APK，請啟用 Android 匯出預設設定中"
-"的 [Use Custom Build] 選項。"
-
-msgid ""
 "The Android build template is already installed in this project and it won't "
 "be overwritten.\n"
 "Remove the \"res://android/build\" directory manually before attempting this "
@@ -2528,9 +2528,6 @@ msgstr "快捷鍵"
 
 msgid "Binding"
 msgstr "綁定"
-
-msgid "%s Error"
-msgstr "%s 錯誤"
 
 msgid "All Devices"
 msgstr "所有裝置"
@@ -3434,6 +3431,9 @@ msgstr "選擇並移動頂點，使用滑鼠右鍵建立頂點。"
 msgid "Enable snap and show grid."
 msgstr "啟用吸附並顯示網格。"
 
+msgid "Blend:"
+msgstr "混合："
+
 msgid "Point"
 msgstr "點"
 
@@ -3476,14 +3476,8 @@ msgstr "刪除頂點與三角形。"
 msgid "Generate blend triangles automatically (instead of manually)"
 msgstr "自動產生混合三角形（而非手動）"
 
-msgid "Blend:"
-msgstr "混合："
-
 msgid "Parameter Changed:"
 msgstr "已更改參數："
-
-msgid "Edit Filters"
-msgstr "編輯篩選條件"
 
 msgid "Output node can't be added to the blend tree."
 msgstr "輸出節點無法被新增至混合樹。"
@@ -3600,9 +3594,6 @@ msgstr "自目前位置開始倒放所選的動畫。 (A)"
 
 msgid "Play selected animation backwards from end. (Shift+A)"
 msgstr "自結尾倒放所選動畫。(Shift+A)"
-
-msgid "Stop animation playback. (S)"
-msgstr "停止播放動畫。(S)"
 
 msgid "Play selected animation from start. (Shift+D)"
 msgstr "從頭播放所選動畫。(Shift+D)"
@@ -4802,12 +4793,6 @@ msgstr "更改通知器 AABB"
 msgid "Change Particles AABB"
 msgstr "更改粒子 AABB"
 
-msgid "Change Box Shape Extents"
-msgstr "更改框形範圍"
-
-msgid "Change Probe Extents"
-msgstr "更改探查範圍"
-
 msgid "Change Capsule Shape Radius"
 msgstr "更改楕圓形半徑"
 
@@ -5607,6 +5592,9 @@ msgstr "標準"
 msgid "Connections to method:"
 msgstr "連接至方法："
 
+msgid "Source"
+msgstr "來源"
+
 msgid "Target"
 msgstr "目標"
 
@@ -5844,12 +5832,6 @@ msgstr "(空)"
 
 msgid "Animations:"
 msgstr "動畫："
-
-msgid "Speed:"
-msgstr "速度："
-
-msgid "Loop"
-msgstr "循環"
 
 msgid "Animation Frames:"
 msgstr "動畫幀："
@@ -7210,9 +7192,6 @@ msgstr "新增輸入操作"
 msgid "Change Action deadzone"
 msgstr "修改操作盲區"
 
-msgid "Add Input Action Event"
-msgstr "新增輸入操作事件"
-
 msgid "Erase Input Action"
 msgstr "清除輸入操作"
 
@@ -7239,9 +7218,6 @@ msgstr "選擇屬性"
 
 msgid "Select Virtual Method"
 msgstr "選擇虛擬方法"
-
-msgid "Select Method"
-msgstr "選擇方法"
 
 msgid "Batch Rename"
 msgstr "批次重新命名"
@@ -7986,12 +7962,6 @@ msgstr "無效的 APK Expansion 公鑰。"
 msgid "Invalid package name:"
 msgstr "無效的套件名稱："
 
-msgid "\"Use Custom Build\" must be enabled to use the plugins."
-msgstr "「使用自定建置」必須啟用以使用本外掛。"
-
-msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
-msgstr "「Export AAB」僅於「Use Custom Build」啟用時可用。"
-
 msgid "\"Min SDK\" should be a valid integer, but got \"%s\" which is invalid."
 msgstr "「最小 SDK」應為有效整數，但目前值為無效的「%s」。"
 
@@ -8045,12 +8015,6 @@ msgstr "無效的檔案名稱！Android APK 必須要有 *.apk 副檔名。"
 
 msgid "Unsupported export format!"
 msgstr "不支援的匯出格式！"
-
-msgid ""
-"Trying to build from a custom built template, but no version info for it "
-"exists. Please reinstall from the 'Project' menu."
-msgstr ""
-"嘗試自自定建置樣板進行建置，但無版本資訊可用。請自「專案」選單中重新安裝。"
 
 msgid ""
 "Android build version mismatch: Template installed: %s, Godot version: %s. "

@@ -552,6 +552,9 @@ msgstr "Desde la Señal:"
 msgid "Scene does not contain any script."
 msgstr "La escena no contiene ningún script."
 
+msgid "Select Method"
+msgstr "Seleccionar Método"
+
 msgid "Remove"
 msgstr "Quitar"
 
@@ -608,9 +611,6 @@ msgstr "Desconectar"
 
 msgid "Connect a Signal to a Method"
 msgstr "Conectar una Señal a un Método"
-
-msgid "Edit Connection:"
-msgstr "Editar Conexión:"
 
 msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
 msgstr ""
@@ -754,23 +754,8 @@ msgstr "Advertencia:"
 msgid "Error:"
 msgstr "Error:"
 
-msgid "C++ Error"
-msgstr "Error de C++"
-
-msgid "C++ Error:"
-msgstr "Error de C++:"
-
-msgid "Source"
-msgstr "Fuente"
-
-msgid "C++ Source"
-msgstr "Fuente C++"
-
-msgid "Source:"
-msgstr "Fuente:"
-
-msgid "C++ Source:"
-msgstr "Fuente C++:"
+msgid "%s Error"
+msgstr "Error de %s"
 
 msgid "Stack Trace"
 msgstr "Stack Trace"
@@ -780,6 +765,9 @@ msgstr "Copiar Error"
 
 msgid "Open C++ Source on GitHub"
 msgstr "Abrir Fuente C++ en GitHub"
+
+msgid "C++ Source"
+msgstr "Fuente C++"
 
 msgid "Video RAM"
 msgstr "Mem. de Video"
@@ -1737,11 +1725,11 @@ msgstr "Mostrar Todas las Localizaciones"
 msgid "Show Selected Locales Only"
 msgstr "Mostrar Sólo las Localizaciones Seleccionadas"
 
+msgid "Edit Filters"
+msgstr "Editar Filtros"
+
 msgid "Language:"
 msgstr "Lenguaje:"
-
-msgid "Script"
-msgstr "Script"
 
 msgid "Clear Output"
 msgstr "Limpiar Salida"
@@ -2285,24 +2273,6 @@ msgid "Install from file"
 msgstr "Instalar desde archivo"
 
 msgid ""
-"This will set up your project for custom Android builds by installing the "
-"source template to \"res://android/build\".\n"
-"You can then apply modifications and build your own custom APK on export "
-"(adding modules, changing the AndroidManifest.xml, etc.).\n"
-"Note that in order to make custom builds instead of using pre-built APKs, "
-"the \"Use Custom Build\" option should be enabled in the Android export "
-"preset."
-msgstr ""
-"Esto va a inicializar tu proyecto para builds de Android personalizados, "
-"instalando la plantilla de origen en \"res://android/build\".\n"
-"Una vez hecho ésto podés aplicar modificaciones y generar tu propio APK "
-"personalizado al exportar (agregar módulos, cambiar el AndroidManifest.xml, "
-"etc.).\n"
-"Tené en cuenta que para generar builds personalizados en vez de usar los "
-"APKs pregenerados, la opcion \"Usar Build Personalizado\" debería estar "
-"activada en el preset de exportación de Android."
-
-msgid ""
 "The Android build template is already installed in this project and it won't "
 "be overwritten.\n"
 "Remove the \"res://android/build\" directory manually before attempting this "
@@ -2522,9 +2492,6 @@ msgstr "Atajos"
 
 msgid "Binding"
 msgstr "Binding"
-
-msgid "%s Error"
-msgstr "Error de %s"
 
 msgid "All Devices"
 msgstr "Todos los Dispositivos"
@@ -3367,6 +3334,9 @@ msgstr "Seleccionar y mover puntos, crear puntos con click derecho."
 msgid "Enable snap and show grid."
 msgstr "Activar ajuste y mostrar grilla."
 
+msgid "Blend:"
+msgstr "Blend:"
+
 msgid "Point"
 msgstr "Punto"
 
@@ -3409,14 +3379,8 @@ msgstr "Borrar puntos y triángulos."
 msgid "Generate blend triangles automatically (instead of manually)"
 msgstr "Generar triángulos de blending automáticamente (en vez de manualmente)"
 
-msgid "Blend:"
-msgstr "Blend:"
-
 msgid "Parameter Changed:"
 msgstr "Parámetro Modificado:"
-
-msgid "Edit Filters"
-msgstr "Editar Filtros"
 
 msgid "Output node can't be added to the blend tree."
 msgstr "El nodo de salida no puede ser agregado al blend tree."
@@ -3540,9 +3504,6 @@ msgstr ""
 msgid "Play selected animation backwards from end. (Shift+A)"
 msgstr ""
 "Reproducir hacia atrás la animación seleccionada desde el final. (Shift+A)"
-
-msgid "Stop animation playback. (S)"
-msgstr "Detener la reproducción de la animación. (S)"
 
 msgid "Play selected animation from start. (Shift+D)"
 msgstr "Reproducir animación seleccinada desde el principio. (Shift + D)"
@@ -4708,12 +4669,6 @@ msgstr "Cambiar Notificador AABB"
 msgid "Change Particles AABB"
 msgstr "Cambiar Particulas AABB"
 
-msgid "Change Box Shape Extents"
-msgstr "Cambiar Radio de Shape Caja"
-
-msgid "Change Probe Extents"
-msgstr "Cambiar Extensión de Sonda"
-
 msgid "Change Capsule Shape Radius"
 msgstr "Cambiar Radio de Shape Cápsula"
 
@@ -5519,6 +5474,9 @@ msgstr "Estándar"
 msgid "Connections to method:"
 msgstr "Conexiones al método:"
 
+msgid "Source"
+msgstr "Fuente"
+
 msgid "Target"
 msgstr "Objetivo"
 
@@ -5750,12 +5708,6 @@ msgstr "(vacío)"
 
 msgid "Animations:"
 msgstr "Animaciones:"
-
-msgid "Speed:"
-msgstr "Velocidad:"
-
-msgid "Loop"
-msgstr "Loop"
 
 msgid "Animation Frames:"
 msgstr "Fotogramas de animación:"
@@ -7138,9 +7090,6 @@ msgstr "Agregar Acción de Entrada"
 msgid "Change Action deadzone"
 msgstr "Cambiar zona muerta de la Acción"
 
-msgid "Add Input Action Event"
-msgstr "Agregar Evento de Acción de Entrada"
-
 msgid "Erase Input Action"
 msgstr "Borrar Acción de Entrada"
 
@@ -7167,9 +7116,6 @@ msgstr "Seleccionar Propiedad"
 
 msgid "Select Virtual Method"
 msgstr "Seleccionar Método Virtual"
-
-msgid "Select Method"
-msgstr "Seleccionar Método"
 
 msgid "Batch Rename"
 msgstr "Renombrar en Masa"
@@ -7937,13 +7883,6 @@ msgstr "Clave pública inválida para la expansión de APK."
 msgid "Invalid package name:"
 msgstr "Nombre de paquete inválido:"
 
-msgid "\"Use Custom Build\" must be enabled to use the plugins."
-msgstr "\"Use Custom Build\" debe estar activado para usar los plugins."
-
-msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
-msgstr ""
-"\"Export AAB\" sólo es válido cuando \"Use Custom Build\" está activado."
-
 msgid ""
 "'apksigner' could not be found. Please check that the command is available "
 "in the Android SDK build-tools directory. The resulting %s is unsigned."
@@ -7985,14 +7924,6 @@ msgstr "¡Nombre de archivo inválido! Android APK requiere la extensión *.apk.
 
 msgid "Unsupported export format!"
 msgstr "¡Formato de exportación no soportado!"
-
-msgid ""
-"Trying to build from a custom built template, but no version info for it "
-"exists. Please reinstall from the 'Project' menu."
-msgstr ""
-"Intentando construir a partir de una plantilla personalizada, pero no existe "
-"información de la versión para ello. Por favor, reinstalá desde el menú "
-"'Proyecto'."
 
 msgid ""
 "Android build version mismatch: Template installed: %s, Godot version: %s. "

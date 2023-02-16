@@ -32,17 +32,17 @@ msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-01-08 09:47+0000\n"
-"Last-Translator: KazanskiyMaks <kazanskiy.maks@gmail.com>\n"
+"PO-Revision-Date: 2023-02-09 01:12+0000\n"
+"Last-Translator: Богдан Матвіїв <bomtvv@gmail.com>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
-"godot/uk/>\n"
+"godot-properties/uk/>\n"
 "Language: uk\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.15.1-dev\n"
+"X-Generator: Weblate 4.16-dev\n"
 
 msgid "Application"
 msgstr "Програма"
@@ -53,8 +53,14 @@ msgstr "Налаштування"
 msgid "Name"
 msgstr "Назва"
 
+msgid "Description"
+msgstr "Опис"
+
 msgid "Run"
 msgstr "Запустити"
+
+msgid "Main Scene"
+msgstr "Головна сцена"
 
 msgid "Disable stdout"
 msgstr "Вимкнути stdout"
@@ -83,6 +89,9 @@ msgstr "Вікно"
 msgid "Size"
 msgstr "Розмір"
 
+msgid "Mode"
+msgstr "Режим"
+
 msgid "Resizable"
 msgstr "Зі зміною розміру"
 
@@ -97,6 +106,9 @@ msgstr "Заощадження енергії"
 
 msgid "Keep Screen On"
 msgstr "Не вимикати екран"
+
+msgid "Audio"
+msgstr "Аудіо"
 
 msgid "Editor"
 msgstr "Редактор"
@@ -119,6 +131,9 @@ msgstr "Діагностика"
 msgid "Settings"
 msgstr "Параметри"
 
+msgid "Compression"
+msgstr "Стиснення"
+
 msgid "Crash Handler"
 msgstr "Обробник аварій"
 
@@ -127,6 +142,15 @@ msgstr "Повідомлення"
 
 msgid "Rendering"
 msgstr "Обробка"
+
+msgid "Occlusion Culling"
+msgstr "Переглянути відбраковування замикання"
+
+msgid "Limits"
+msgstr "Обмеження"
+
+msgid "GUI"
+msgstr "Інтерфейс"
 
 msgid "Low Processor Usage Mode"
 msgstr "Режим низького використання процесора"
@@ -230,6 +254,12 @@ msgstr "Скорочення"
 msgid "Big Endian"
 msgstr "Зворотний"
 
+msgid "Network"
+msgstr "Мережа"
+
+msgid "Page Size"
+msgstr "Розмір сторінки"
+
 msgid "Blocking Mode Enabled"
 msgstr "Увімкнено режим блокування"
 
@@ -265,9 +295,6 @@ msgstr "Шлях"
 
 msgid "Data Array"
 msgstr "Масив даних"
-
-msgid "Blocking Handshake"
-msgstr "Узгодження блокування"
 
 msgid "Max Pending Connections"
 msgstr "Макс. к-ть з'єднань у черзі"
@@ -344,15 +371,6 @@ msgstr "Анімація"
 msgid "Easing"
 msgstr "Пом'якшення"
 
-msgid "Interface"
-msgstr "Інтерфейс"
-
-msgid "Editors"
-msgstr "Редактори"
-
-msgid "Network"
-msgstr "Мережа"
-
 msgid "Remote Port"
 msgstr "Віддалений порт"
 
@@ -422,8 +440,8 @@ msgstr "Позначено"
 msgid "Keying"
 msgstr "Набір"
 
-msgid "Main Scene"
-msgstr "Головна сцена"
+msgid "Interface"
+msgstr "Інтерфейс"
 
 msgid "Show Update Spinner"
 msgstr "Показувати індикатор оновлення"
@@ -732,6 +750,9 @@ msgstr "Розмір шрифту коду у довідці"
 
 msgid "Help Title Font Size"
 msgstr "Розмір шрифту заголовків у довідці"
+
+msgid "Editors"
+msgstr "Редактори"
 
 msgid "Grid Map"
 msgstr "Карта сітки"
@@ -1147,6 +1168,9 @@ msgstr "Розмір обведення"
 msgid "Variation"
 msgstr "Дисперсія"
 
+msgid "Transform"
+msgstr "Перетворення"
+
 msgid "Collada"
 msgstr "Collada"
 
@@ -1177,14 +1201,8 @@ msgstr "Попередньо завантажити"
 msgid "Columns"
 msgstr "Стовпчики"
 
-msgid "Mode"
-msgstr "Режим"
-
 msgid "Lossy Quality"
 msgstr "Із втратою якості"
-
-msgid "BPTC LDR"
-msgstr "BPTC LDR"
 
 msgid "Mipmaps"
 msgstr "Множинне відтворення"
@@ -1251,12 +1269,6 @@ msgstr "Optimizer (Оптимізатор)"
 
 msgid "Max Angular Error"
 msgstr "Макс. кутова похибка"
-
-msgid "Compression"
-msgstr "Стиснення"
-
-msgid "Page Size"
-msgstr "Розмір сторінки"
 
 msgid "Nodes"
 msgstr "Вузли"
@@ -1483,9 +1495,6 @@ msgstr "Потоки"
 msgid "Thread Model"
 msgstr "Модель потоків"
 
-msgid "Audio"
-msgstr "Аудіо"
-
 msgid "Handheld"
 msgstr "Кишеньковий пристрій"
 
@@ -1516,14 +1525,17 @@ msgstr "iOS"
 msgid "Hide Home Indicator"
 msgstr "Приховати індикатор домівки"
 
+msgid "Input Devices"
+msgstr "Пристрої вводу"
+
+msgid "Pointing"
+msgstr "Фокус"
+
 msgid "Boot Splash"
 msgstr "Вітання системи"
 
 msgid "BG Color"
 msgstr "Колір тла"
-
-msgid "Input Devices"
-msgstr "Пристрої вводу"
 
 msgid "Environment"
 msgstr "Середовище"
@@ -1534,20 +1546,23 @@ msgstr "Типовий чистий колір"
 msgid "Show Image"
 msgstr "Показати зображення"
 
+msgid "Image"
+msgstr "Зображення"
+
 msgid "Fullsize"
 msgstr "Повний розмір"
 
 msgid "Use Filter"
 msgstr "Фільтрування"
 
+msgid "Icon"
+msgstr "Піктограма"
+
 msgid "Buffering"
 msgstr "Буферизація"
 
 msgid "Agile Event Flushing"
 msgstr "Зріле витирання подій"
-
-msgid "Pointing"
-msgstr "Фокус"
 
 msgid "Emulate Touch From Mouse"
 msgstr "Емулювати дотик з миші"
@@ -1576,11 +1591,14 @@ msgstr "Каталог проєкту"
 msgid "Main Loop Type"
 msgstr "Знайти тип вузла"
 
+msgid "Stretch"
+msgstr "Розтягнути"
+
+msgid "Aspect"
+msgstr "Аспект"
+
 msgid "Auto Accept Quit"
 msgstr "Автоматично виходити"
-
-msgid "GUI"
-msgstr "Інтерфейс"
 
 msgid "Fonts"
 msgstr "Шрифти"
@@ -1590,6 +1608,9 @@ msgstr "Динамічні шрифти"
 
 msgid "Use Oversampling"
 msgstr "Передискретизація"
+
+msgid "Textures"
+msgstr "Текстури"
 
 msgid "Operation"
 msgstr "Дія"
@@ -1767,9 +1788,6 @@ msgstr "Базовий шлях"
 
 msgid "Root Nodes"
 msgstr "Кореневі вузли"
-
-msgid "Textures"
-msgstr "Текстури"
 
 msgid "Images"
 msgstr "Зображення"
@@ -2056,9 +2074,6 @@ msgstr "Стан IGD"
 msgid "Write Mode"
 msgstr "Режим пріоритетності"
 
-msgid "Limits"
-msgstr "Обмеження"
-
 msgid "WebRTC"
 msgstr "WebRTC"
 
@@ -2085,9 +2100,6 @@ msgstr "Шлях Android SDK"
 
 msgid "Debug Keystore"
 msgstr "Зневаджувач"
-
-msgid "Use Custom Build"
-msgstr "Нетипова збірка"
 
 msgid "Export Format"
 msgstr "Формат експортування"
@@ -2287,9 +2299,6 @@ msgstr "Архітектура"
 msgid "macOS"
 msgstr "macOS"
 
-msgid "Icon"
-msgstr "Піктограма"
-
 msgid "Copyright"
 msgstr "Авторські права"
 
@@ -2412,9 +2421,6 @@ msgstr "Показана назва"
 
 msgid "Short Name"
 msgstr "Коротка назва"
-
-msgid "Description"
-msgstr "Опис"
 
 msgid "Publisher"
 msgstr "Видавець"
@@ -2551,17 +2557,11 @@ msgstr "Опис файла"
 msgid "Trademarks"
 msgstr "Торгівельні марки"
 
-msgid "Frames"
-msgstr "Кадри"
-
 msgid "Frame"
 msgstr "Кадр"
 
 msgid "Speed Scale"
 msgstr "Масштаб"
-
-msgid "Playing"
-msgstr "Відтворення"
 
 msgid "Centered"
 msgstr "За центром"
@@ -2607,6 +2607,9 @@ msgstr "Гучність (дБ)"
 
 msgid "Pitch Scale"
 msgstr "Масштаб"
+
+msgid "Playing"
+msgstr "Відтворення"
 
 msgid "Autoplay"
 msgstr "Перемкнути автовідтворення"
@@ -2938,9 +2941,6 @@ msgstr "Макс. швидкість"
 msgid "Estimate Radius"
 msgstr "Оцінка радіуса"
 
-msgid "Transform"
-msgstr "Перетворення"
-
 msgid "Rotation Degrees"
 msgstr "Грудуси обертання"
 
@@ -3193,9 +3193,6 @@ msgstr "Вимкнути Z"
 msgid "Flatness"
 msgstr "Пласкість"
 
-msgid "Extents"
-msgstr "Розміри"
-
 msgid "Albedo"
 msgstr "Альбедо"
 
@@ -3350,7 +3347,7 @@ msgid "Opacity"
 msgstr "Непрозорість"
 
 msgid "Blur"
-msgstr "Розмивання"
+msgstr "Розмиття"
 
 msgid "Directional Shadow"
 msgstr "Спрямована тінь"
@@ -3592,11 +3589,11 @@ msgstr "Випадкова затримка"
 msgid "Xfade Time"
 msgstr "Час X-Fade"
 
-msgid "Reset"
-msgstr "Скинути"
-
 msgid "Active"
 msgstr "Активний"
+
+msgid "Reset"
+msgstr "Скинути"
 
 msgid "Switch"
 msgstr "Перемкнутися"
@@ -3910,9 +3907,6 @@ msgstr "Сер."
 msgid "Relative Index"
 msgstr "Відносний індекс"
 
-msgid "Fit Content Height"
-msgstr "Висота підбирання за вмістом"
-
 msgid "Scroll Active"
 msgstr "Активне гортання"
 
@@ -3949,9 +3943,6 @@ msgstr "Згорнуто"
 msgid "Dragger Visibility"
 msgstr "Перемкнути видимість"
 
-msgid "Stretch"
-msgstr "Розтягнути"
-
 msgid "Stretch Shrink"
 msgstr "Стягування розтягування"
 
@@ -3969,6 +3960,9 @@ msgstr "Вкладки видимі"
 
 msgid "Syntax Highlighter"
 msgstr "Засіб підсвічування синтаксису"
+
+msgid "Fit Content Height"
+msgstr "Висота підбирання за вмістом"
 
 msgid "Draw"
 msgstr "Креслення"
@@ -4126,9 +4120,6 @@ msgstr "Створити контур"
 msgid "Anti Aliasing"
 msgstr "Згладжування"
 
-msgid "Occlusion Culling"
-msgstr "Переглянути відбраковування замикання"
-
 msgid "Atlas Size"
 msgstr "Розмір атласу"
 
@@ -4194,9 +4185,6 @@ msgstr "Мін. розмір"
 
 msgid "Max Size"
 msgstr "Макс. розмір"
-
-msgid "Aspect"
-msgstr "Аспект"
 
 msgid "Layer Names"
 msgstr "Назви шарів"
@@ -4876,9 +4864,6 @@ msgstr "Внизу праворуч"
 msgid "Bottom Left"
 msgstr "Внизу ліворуч"
 
-msgid "Image"
-msgstr "Зображення"
-
 msgid "Load Path"
 msgstr "Завантажити шаблон"
 
@@ -4896,6 +4881,9 @@ msgstr "Розмір зображення"
 
 msgid "Use HDR"
 msgstr "HDR"
+
+msgid "Frames"
+msgstr "Кадри"
 
 msgid "Current Frame"
 msgstr "Поточний кадр"
@@ -4938,12 +4926,6 @@ msgstr "Завантажити типовий"
 
 msgid "Canvas"
 msgstr "Полотно"
-
-msgid "Default Gravity"
-msgstr "Типове зображення перегляду"
-
-msgid "Default Gravity Vector"
-msgstr "Типове зображення перегляду"
 
 msgid "Fallback Environment"
 msgstr "Перегляд середовища"
@@ -5029,9 +5011,6 @@ msgstr "Результат"
 msgid "Bus Count"
 msgstr "Кількість шин"
 
-msgid "Capture Device"
-msgstr "Пристрій захоплення"
-
 msgid "Feed"
 msgstr "Подача"
 
@@ -5056,6 +5035,12 @@ msgstr "Режим перешкоди"
 msgid "Shape RID"
 msgstr "RID форми"
 
+msgid "Default Gravity"
+msgstr "Типове зображення перегляду"
+
+msgid "Default Gravity Vector"
+msgstr "Типове зображення перегляду"
+
 msgid "Principal Inertia Axes"
 msgstr "Головні вісі інерції"
 
@@ -5076,18 +5061,6 @@ msgstr "Увімкнено цикл обробки"
 
 msgid "VRAM Compression"
 msgstr "Вираз"
-
-msgid "Import BPTC"
-msgstr "Імпорт"
-
-msgid "Import S3TC"
-msgstr "Імпорт"
-
-msgid "Import ETC"
-msgstr "Імпорт"
-
-msgid "Import ETC2"
-msgstr "Імпорт"
 
 msgid "Lossless Compression"
 msgstr "Стискання без втрат"

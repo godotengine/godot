@@ -19,7 +19,7 @@
 # Pieter-Jan Briers <pieterjan.briers@gmail.com>, 2017-2018.
 # Robin Arys <robinarys@hotmail.com>, 2017.
 # Senno Kaasjager <senno.kaasjager@gmail.com>, 2017.
-# Uxilo <jmolendijk93@gmail.com>, 2017-2018.
+# Uxilo <jmolendijk93@gmail.com>, 2017-2018, 2023.
 # Willem <studiebolmail@gmail.com>, 2018.
 # Wout Standaert <wout@blobkat.com>, 2017.
 # Zatherz <zatherz@linux.pl>, 2017.
@@ -65,8 +65,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-09-23 04:16+0000\n"
-"Last-Translator: Nnn <irri2020@outlook.com>\n"
+"PO-Revision-Date: 2023-02-08 12:14+0000\n"
+"Last-Translator: Uxilo <jmolendijk93@gmail.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
 "Language: nl\n"
@@ -74,13 +74,34 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.14.1\n"
+"X-Generator: Weblate 4.16-dev\n"
 
 msgid "Physical"
 msgstr "Fysiek"
 
+msgid "Left Mouse Button"
+msgstr "Linker Muis Knop"
+
+msgid "Right Mouse Button"
+msgstr "Rechter Muis Knop"
+
+msgid "Middle Mouse Button"
+msgstr "Middelste Muis Knop"
+
+msgid "Mouse Wheel Up"
+msgstr "Scrollwiel Omhoog"
+
+msgid "Mouse Wheel Down"
+msgstr "Scrollwiel Omlaag"
+
 msgid "Button"
 msgstr "Button (Knop)"
+
+msgid "Double Click"
+msgstr "Dubbel Klik"
+
+msgid "Mouse motion at position (%s) with velocity (%s)"
+msgstr "Muis beweging op positie (%s) met snelheid (%s)"
 
 msgid "Select"
 msgstr "Selecteer"
@@ -181,8 +202,23 @@ msgstr "Action '%s' bestaat al."
 msgid "Add Event"
 msgstr "Event Toevoegen"
 
+msgid "Remove Action"
+msgstr "Verwijder Actie"
+
+msgid "Cannot Remove Action"
+msgstr "Kan Actie Niet Verwijderen"
+
+msgid "Filter by name..."
+msgstr "Filter op naam..."
+
+msgid "Add New Action"
+msgstr "Nieuwe Actie Toevoegen"
+
 msgid "Add"
 msgstr "Toevoegen"
+
+msgid "Show Built-in Actions"
+msgstr "Weergeef Ingebouwde Acties"
 
 msgid "Action"
 msgstr "Actie"
@@ -210,6 +246,9 @@ msgstr "Bézierpunt toevoegen"
 
 msgid "Move Bezier Points"
 msgstr "Beweeg Bézierpunten"
+
+msgid "Focus"
+msgstr "Focus"
 
 msgid "Change Animation Length"
 msgstr "Verander Animatielengte"
@@ -250,6 +289,9 @@ msgstr "Functies:"
 msgid "Audio Clips:"
 msgstr "Audioclips:"
 
+msgid "Animation Clips:"
+msgstr "Animatieclips:"
+
 msgid "Change Track Path"
 msgstr "Verander Track pad"
 
@@ -268,11 +310,32 @@ msgstr "Naadloze-lusmodus (interpoleert einde met begin van lus)"
 msgid "Remove this track."
 msgstr "Verwijder deze track."
 
+msgid "Time (s):"
+msgstr "Tijd (s):"
+
+msgid "Position:"
+msgstr "Positie:"
+
+msgid "Rotation:"
+msgstr "Rotatie:"
+
 msgid "Scale:"
 msgstr "Schaal:"
 
 msgid "Type:"
 msgstr "Type:"
+
+msgid "(Invalid, expected type: %s)"
+msgstr "(Ongeldig, verwachtte type: %s)"
+
+msgid "Start (s):"
+msgstr "Start (s):"
+
+msgid "End (s):"
+msgstr "Eind (s):"
+
+msgid "Animation Clip:"
+msgstr "Animatie Clip:"
 
 msgid "Toggle Track Enabled"
 msgstr "Track in-/uit schakelen"
@@ -381,11 +444,23 @@ msgstr "Track path is niet geldig, dus kan geen methode key toevoegen."
 msgid "Add Method Track Key"
 msgstr "Voeg Methode Track sleutel toe"
 
+msgid "Method not found in object:"
+msgstr "Methode niet gevonden in object:"
+
 msgid "Position"
 msgstr "Positie"
 
+msgid "Rotation"
+msgstr "Rotatie"
+
+msgid "Scale"
+msgstr "Schaal"
+
 msgid "Methods"
 msgstr "Methoden"
+
+msgid "Bezier"
+msgstr "Bezier"
 
 msgid "Audio"
 msgstr "Audio"
@@ -408,6 +483,9 @@ msgstr "Waarschuwing: Er wordt een geïmporteerde animatie bewerkt"
 msgid "Select an AnimationPlayer node to create and edit animations."
 msgstr ""
 "Selecteer een AnimationPlayer uit de Scene Tree om animaties te wijzigen."
+
+msgid "Imported Scene"
+msgstr "Geïmporteerde Scene"
 
 msgid "Only show tracks from nodes selected in tree."
 msgstr "Alleen sporen van geselecteerde knopen tonen."
@@ -459,6 +537,15 @@ msgstr "Ga naar Vorige Stap"
 
 msgid "Apply Reset"
 msgstr "Reset"
+
+msgid "Optimize Animation (no undo)"
+msgstr "Optimaliseer Animatie (Onomkeerbaar)"
+
+msgid "Clean-Up Animation (no undo)"
+msgstr "Animatie Opschonen (Onomkeerbaar)"
+
+msgid "Pick a node to animate:"
+msgstr "Kies een node om te animeren:"
 
 msgid "Use Bezier Curves"
 msgstr "Gebruik Bezier Curves"
@@ -517,6 +604,16 @@ msgstr "Regelnummer:"
 msgid "%d replaced."
 msgstr "%d vervangingen."
 
+msgid "%d match"
+msgid_plural "%d matches"
+msgstr[0] "%d overeenkomst gevonden"
+msgstr[1] "%d overeenkomsten gevonden"
+
+msgid "%d of %d match"
+msgid_plural "%d of %d matches"
+msgstr[0] "%d overeenkomst gevonden"
+msgstr[1] "%d overeenkomsten gevonden"
+
 msgid "Match Case"
 msgstr "Hoofdlettergevoelig"
 
@@ -567,7 +664,7 @@ msgstr ""
 "script aan de doelknoop."
 
 msgid "Connect to Node:"
-msgstr "Aan knoop verbinden:"
+msgstr "Aan Node verbinden:"
 
 msgid "Connect to Script:"
 msgstr "Met script verbinden:"
@@ -577,6 +674,9 @@ msgstr "Vanuit signaal:"
 
 msgid "Scene does not contain any script."
 msgstr "Scene bevat geen script."
+
+msgid "Select Method"
+msgstr "Selecteer Method"
 
 msgid "Remove"
 msgstr "Verwijderen"
@@ -602,6 +702,9 @@ msgstr ""
 "Stelt het signaal uit, bewaart het in een wachtrij en activeert het pas op "
 "een dood moment."
 
+msgid "One Shot"
+msgstr "Eenmalig"
+
 msgid "Disconnects the signal after its first emission."
 msgstr "Koppelt het signaal automatisch los na de eerste uitzending."
 
@@ -616,6 +719,9 @@ msgstr "Verbinden"
 
 msgid "Signal:"
 msgstr "Signaal:"
+
+msgid "No description."
+msgstr "Geen omschrijving."
 
 msgid "Connect '%s' to '%s'"
 msgstr "Verbind '%s' met '%s'"
@@ -635,15 +741,15 @@ msgstr "Loskoppelen"
 msgid "Connect a Signal to a Method"
 msgstr "Verbind een signaal met een methode"
 
-msgid "Edit Connection:"
-msgstr "Verbinding bewerken:"
-
 msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
 msgstr ""
 "Weet je zeker dat je alle verbindingen met signaal \"%s\" wilt verwijderen?"
 
 msgid "Signals"
 msgstr "Signalen"
+
+msgid "Filter Signals"
+msgstr "Filter Signalen"
 
 msgid "Are you sure you want to remove all connections from this signal?"
 msgstr ""
@@ -652,11 +758,17 @@ msgstr ""
 msgid "Disconnect All"
 msgstr "Alles loskoppelen"
 
+msgid "Copy Name"
+msgstr "Kopieer Naam"
+
 msgid "Edit..."
 msgstr "Bewerken..."
 
 msgid "Go to Method"
 msgstr "Ga naar Methode"
+
+msgid "Change Type of \"%s\""
+msgstr "Wijzig Type van \"%s\""
 
 msgid "Change"
 msgstr "Wijzig"
@@ -666,6 +778,12 @@ msgstr "%s opstellen"
 
 msgid "No results for \"%s\"."
 msgstr "Geen resultaten voor \"%s\"."
+
+msgid "This class is marked as deprecated."
+msgstr "Deze klasse is gemarkeerd als verouderd."
+
+msgid "This class is marked as experimental."
+msgstr "Deze klasse is gemarkeerd als experimenteel."
 
 msgid "No description available for %s."
 msgstr "Geen beschrijving beschikbaar voor %s."
@@ -757,6 +875,18 @@ msgstr "Tijd"
 msgid "Calls"
 msgstr "Aanroepen"
 
+msgid "Linked"
+msgstr "Gekoppeld"
+
+msgid "CPU"
+msgstr "CPU"
+
+msgid "GPU"
+msgstr "GPU"
+
+msgid "Execution resumed."
+msgstr "Uitvoering hervat."
+
 msgid "Bytes:"
 msgstr "Bytes:"
 
@@ -766,29 +896,35 @@ msgstr "Waarschuwing:"
 msgid "Error:"
 msgstr "Fout:"
 
-msgid "C++ Error"
-msgstr "C++ Fout"
-
-msgid "C++ Error:"
-msgstr "C++ Fout:"
-
-msgid "Source"
-msgstr "Bron"
-
-msgid "C++ Source"
-msgstr "C++ Bron"
-
-msgid "Source:"
-msgstr "Bron:"
-
-msgid "C++ Source:"
-msgstr "C++ Bron:"
+msgid "%s Error"
+msgstr "%s Fout"
 
 msgid "Stack Trace"
 msgstr "Stack Trace"
 
+msgid "Stack Trace:"
+msgstr "Stack Trace:"
+
+msgid "Line %d"
+msgstr "Regel %d"
+
+msgid "Delete Breakpoint"
+msgstr "Verwijder Breekpunt"
+
+msgid "Delete All Breakpoints in:"
+msgstr "Verwijder Alle Breekpunten in:"
+
+msgid "Delete All Breakpoints"
+msgstr "Verwijder Alle Breekpunten"
+
 msgid "Copy Error"
 msgstr "Kopieer Fout"
+
+msgid "Open C++ Source on GitHub"
+msgstr "Open C++ Bron op GitHub"
+
+msgid "C++ Source"
+msgstr "C++ Bron"
 
 msgid "Video RAM"
 msgstr "Videogeheugen"
@@ -811,6 +947,9 @@ msgstr "Vervolg"
 msgid "Stack Frames"
 msgstr "Stack Frames"
 
+msgid "Filter Stack Variables"
+msgstr "Filter Stack Variablen"
+
 msgid "Breakpoints"
 msgstr "Breekpunten"
 
@@ -822,6 +961,9 @@ msgstr "Alles inklappen"
 
 msgid "Profiler"
 msgstr "Profiler"
+
+msgid "Visual Profiler"
+msgstr "Visuele Profiler"
 
 msgid "List of Video Memory Usage by Resource:"
 msgstr "Lijst van videogeheugengebruik per bron:"
@@ -1746,11 +1888,11 @@ msgstr "Laat alle lokalen zien"
 msgid "Show Selected Locales Only"
 msgstr "Alleen geselecteerde talen tonen"
 
+msgid "Edit Filters"
+msgstr "Filters berwerken"
+
 msgid "Language:"
 msgstr "Taal:"
-
-msgid "Script"
-msgstr "Script"
 
 msgid "Clear Output"
 msgstr "Uitvoer wissen"
@@ -2270,23 +2412,6 @@ msgid "Install from file"
 msgstr "Installeer Vanuit Bestand"
 
 msgid ""
-"This will set up your project for custom Android builds by installing the "
-"source template to \"res://android/build\".\n"
-"You can then apply modifications and build your own custom APK on export "
-"(adding modules, changing the AndroidManifest.xml, etc.).\n"
-"Note that in order to make custom builds instead of using pre-built APKs, "
-"the \"Use Custom Build\" option should be enabled in the Android export "
-"preset."
-msgstr ""
-"Hiermee wordt je project ingesteld voor aangepaste Android-builds door de "
-"bronsjabloon te installeren naar \"res://android/build\".\n"
-"Je kan vervolgens wijzigingen toepassen en je eigen aangepaste APK maken bij "
-"export (modules toevoegen, de AndroidManifest.xml aanpassen, enz.).\n"
-"Houd er rekening mee dat om aangepaste builds te maken in plaats van vooraf "
-"gebouwde APK's te gebruiken, de optie \"Use Custom Build\" moet ingeschakeld "
-"zijn in de Android-export preset."
-
-msgid ""
 "The Android build template is already installed in this project and it won't "
 "be overwritten.\n"
 "Remove the \"res://android/build\" directory manually before attempting this "
@@ -2496,9 +2621,6 @@ msgstr "Sneltoetsen"
 
 msgid "Binding"
 msgstr "Binding"
-
-msgid "%s Error"
-msgstr "%s Fout"
 
 msgid "All Devices"
 msgstr "Alle Apparaten"
@@ -3219,6 +3341,9 @@ msgstr "Selecteer en verplaats punten, maak punten aan met RMK."
 msgid "Enable snap and show grid."
 msgstr "Kleven inschakelen en raster weergeven."
 
+msgid "Blend:"
+msgstr "Mengen:"
+
 msgid "Point"
 msgstr "Punt"
 
@@ -3261,14 +3386,8 @@ msgstr "Punten en driehoeken wissen."
 msgid "Generate blend triangles automatically (instead of manually)"
 msgstr "Genereer geblende driehoeken automatisch (in plaats van handmatig)"
 
-msgid "Blend:"
-msgstr "Mengen:"
-
 msgid "Parameter Changed:"
 msgstr "Parameter veranderd:"
-
-msgid "Edit Filters"
-msgstr "Filters berwerken"
 
 msgid "Output node can't be added to the blend tree."
 msgstr "Uitvoerknoop kan niet worden toegevoegd aan de overgangsboom."
@@ -3386,9 +3505,6 @@ msgstr "Speel geselecteerde animatie achterwaarts vanaf huidige positie. (A)"
 
 msgid "Play selected animation backwards from end. (Shift+A)"
 msgstr "Speel geselecteerde animatie achterwaarts vanaf het einde. (Shift+A)"
-
-msgid "Stop animation playback. (S)"
-msgstr "Stop animatie opname. (S)"
 
 msgid "Play selected animation from start. (Shift+D)"
 msgstr "Speel geselecteerde animatie vanaf het begin. (Shift+D)"
@@ -4439,12 +4555,6 @@ msgstr "Verander Notifier AABB"
 msgid "Change Particles AABB"
 msgstr "Verander Particles AABB"
 
-msgid "Change Box Shape Extents"
-msgstr "Wijzig Box Vorm Extents"
-
-msgid "Change Probe Extents"
-msgstr "Verander Probe Extents"
-
 msgid "Change Capsule Shape Radius"
 msgstr "Wijzig Capsule Vorm Straal"
 
@@ -4483,6 +4593,9 @@ msgstr "Sleutelinvoer is uitgeschakeld (geen sleutel ingevoegd)."
 
 msgid "Animation Key Inserted."
 msgstr "Animatiesleutel Ingevoegd."
+
+msgid "Objects: %d\n"
+msgstr "Objecten: %d\n"
 
 msgid "Top View."
 msgstr "Bovenaanzicht."
@@ -5173,6 +5286,9 @@ msgstr "Standaard"
 msgid "Connections to method:"
 msgstr "Verbindingen aan methode:"
 
+msgid "Source"
+msgstr "Bron"
+
 msgid "Target"
 msgstr "Doel"
 
@@ -5395,12 +5511,6 @@ msgstr "(leeg)"
 
 msgid "Animations:"
 msgstr "Animaties:"
-
-msgid "Speed:"
-msgstr "Snelheid:"
-
-msgid "Loop"
-msgstr "Lus"
 
 msgid "Animation Frames:"
 msgstr "Animatiebeelden:"
@@ -6323,9 +6433,6 @@ msgstr "Toevoegen Input Action"
 msgid "Change Action deadzone"
 msgstr "Wijzig Action Deadzone"
 
-msgid "Add Input Action Event"
-msgstr "Toevoegen Input Action Event"
-
 msgid "Erase Input Action"
 msgstr "Verwijder Input Actie"
 
@@ -6352,9 +6459,6 @@ msgstr "Selecteer Eigenschap"
 
 msgid "Select Virtual Method"
 msgstr "Selecteer Virtuele Method"
-
-msgid "Select Method"
-msgstr "Selecteer Method"
 
 msgid "Batch Rename"
 msgstr "Bulk hernoemen"
@@ -7012,12 +7116,6 @@ msgstr "Ongeldige publieke sleutel voor APK -uitbreiding."
 msgid "Invalid package name:"
 msgstr "Ongeldige pakketnaam:"
 
-msgid "\"Use Custom Build\" must be enabled to use the plugins."
-msgstr "\"Use Custom Build\" moet geactiveerd zijn om plugins te gebruiken."
-
-msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
-msgstr "\"Export AAB\" is alleen geldig als \"Use Custom Build\" aan staat."
-
 msgid "Invalid filename! Android App Bundle requires the *.aab extension."
 msgstr ""
 "Bestandsnaam niet toegestaan! Android App Bundle vereist een *.aab extensie."
@@ -7027,13 +7125,6 @@ msgstr "APK Expansion werkt niet samen met Android App Bundle."
 
 msgid "Invalid filename! Android APK requires the *.apk extension."
 msgstr "Bestandsnaam niet toegestaan! Android APK vereist een *.apk extensie."
-
-msgid ""
-"Trying to build from a custom built template, but no version info for it "
-"exists. Please reinstall from the 'Project' menu."
-msgstr ""
-"Geprobeerd met een eigen bouwsjabloon te bouwen, maar versie info ontbreekt. "
-"Installeer alstublieft opnieuw vanuit het 'Project' menu."
 
 msgid "Building Android Project (gradle)"
 msgstr "Bouwen van Android Project (gradle)"

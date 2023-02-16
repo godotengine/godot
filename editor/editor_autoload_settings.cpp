@@ -890,7 +890,7 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 	hbc->add_child(autoload_add_path);
 	autoload_add_path->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	autoload_add_path->set_clear_button_enabled(true);
-	autoload_add_path->set_placeholder(vformat(TTR(R"(Set path or press "%s" to create a script.)"), TTR("Add")));
+	autoload_add_path->set_placeholder(vformat(TTR("Set path or press \"%s\" to create a script."), TTR("Add")));
 	autoload_add_path->connect("text_changed", callable_mp(this, &EditorAutoloadSettings::_autoload_path_text_changed));
 
 	browse_button = memnew(Button);

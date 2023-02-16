@@ -566,6 +566,7 @@ void RasterizerCanvasGLES3::_render_items(RID p_to_render_target, int p_item_cou
 
 	uint32_t index = 0;
 	Item *current_clip = nullptr;
+	GLES3::CanvasShaderData *shader_data_cache = nullptr;
 
 	// Record Batches.
 	// First item always forms its own batch.
@@ -602,7 +603,6 @@ void RasterizerCanvasGLES3::_render_items(RID p_to_render_target, int p_item_cou
 			}
 		}
 
-		GLES3::CanvasShaderData *shader_data_cache = nullptr;
 		if (material != state.canvas_instance_batches[state.current_batch_index].material) {
 			_new_batch(batch_broken);
 
@@ -2259,6 +2259,7 @@ void RasterizerCanvasGLES3::reset_canvas() {
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_SCISSOR_TEST);
 	glEnable(GL_BLEND);
+	glBlendEquation(GL_FUNC_ADD);
 	glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ZERO, GL_ONE);
 
 	glActiveTexture(GL_TEXTURE0 + GLES3::Config::get_singleton()->max_texture_image_units - 2);

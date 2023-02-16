@@ -101,6 +101,7 @@
 #include "tests/scene/test_sprite_frames.h"
 #include "tests/scene/test_text_edit.h"
 #include "tests/scene/test_theme.h"
+#include "tests/scene/test_viewport.h"
 #include "tests/scene/test_visual_shader.h"
 #include "tests/servers/test_text_server.h"
 #include "tests/test_validate_testing.h"
@@ -233,6 +234,9 @@ struct GodotTestCaseListener : public doctest::IReporter {
 
 			memnew(SceneTree);
 			SceneTree::get_singleton()->initialize();
+			if (!DisplayServer::get_singleton()->has_feature(DisplayServer::Feature::FEATURE_SUBWINDOWS)) {
+				SceneTree::get_singleton()->get_root()->set_embedding_subwindows(true);
+			}
 			return;
 		}
 

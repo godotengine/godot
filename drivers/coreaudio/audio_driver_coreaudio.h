@@ -83,38 +83,38 @@ class AudioDriverCoreAudio : public AudioDriver {
 			UInt32 inBusNumber, UInt32 inNumberFrames,
 			AudioBufferList *ioData);
 
-	Error capture_init();
-	void capture_finish();
+	Error init_input_device();
+	void finish_input_device();
 
 public:
-	const char *get_name() const {
+	virtual const char *get_name() const override {
 		return "CoreAudio";
 	};
 
-	virtual Error init();
-	virtual void start();
-	virtual int get_mix_rate() const;
-	virtual SpeakerMode get_speaker_mode() const;
+	virtual Error init() override;
+	virtual void start() override;
+	virtual int get_mix_rate() const override;
+	virtual SpeakerMode get_speaker_mode() const override;
 
-	virtual void lock();
-	virtual void unlock();
-	virtual void finish();
+	virtual void lock() override;
+	virtual void unlock() override;
+	virtual void finish() override;
 
-	virtual Error capture_start();
-	virtual Error capture_stop();
+#ifdef MACOS_ENABLED
+	virtual PackedStringArray get_output_device_list() override;
+	virtual String get_output_device() override;
+	virtual void set_output_device(const String &p_name) override;
+
+	virtual PackedStringArray get_input_device_list() override;
+	virtual String get_input_device() override;
+	virtual void set_input_device(const String &p_name) override;
+#endif
+
+	virtual Error input_start() override;
+	virtual Error input_stop() override;
 
 	bool try_lock();
 	void stop();
-
-#ifdef MACOS_ENABLED
-	virtual PackedStringArray get_output_device_list();
-	virtual String get_output_device();
-	virtual void set_output_device(String output_device);
-
-	virtual PackedStringArray get_input_device_list();
-	virtual void set_input_device(const String &p_name);
-	virtual String get_input_device();
-#endif
 
 	AudioDriverCoreAudio();
 	~AudioDriverCoreAudio() {}

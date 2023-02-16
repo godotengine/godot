@@ -158,7 +158,7 @@ Error AudioDriverCoreAudio::init() {
 	ERR_FAIL_COND_V(result != noErr, FAILED);
 
 	if (GLOBAL_GET("audio/driver/enable_input")) {
-		return capture_init();
+		return init_input_device();
 	}
 	return OK;
 }
@@ -287,7 +287,7 @@ bool AudioDriverCoreAudio::try_lock() {
 }
 
 void AudioDriverCoreAudio::finish() {
-	capture_finish();
+	finish_input_device();
 
 	if (audio_unit) {
 		OSStatus result;
@@ -337,7 +337,7 @@ void AudioDriverCoreAudio::finish() {
 	}
 }
 
-Error AudioDriverCoreAudio::capture_init() {
+Error AudioDriverCoreAudio::init_input_device() {
 	AudioComponentDescription desc;
 	memset(&desc, 0, sizeof(desc));
 	desc.componentType = kAudioUnitType_Output;
@@ -433,7 +433,7 @@ Error AudioDriverCoreAudio::capture_init() {
 	return OK;
 }
 
-void AudioDriverCoreAudio::capture_finish() {
+void AudioDriverCoreAudio::finish_input_device() {
 	if (input_unit) {
 		lock();
 
@@ -471,7 +471,7 @@ void AudioDriverCoreAudio::capture_finish() {
 	}
 }
 
-Error AudioDriverCoreAudio::capture_start() {
+Error AudioDriverCoreAudio::input_start() {
 	input_buffer_init(buffer_frames);
 
 	OSStatus result = AudioOutputUnitStart(input_unit);
@@ -482,7 +482,7 @@ Error AudioDriverCoreAudio::capture_start() {
 	return OK;
 }
 
-Error AudioDriverCoreAudio::capture_stop() {
+Error AudioDriverCoreAudio::input_stop() {
 	if (input_unit) {
 		OSStatus result = AudioOutputUnitStop(input_unit);
 		if (result != noErr) {
@@ -647,17 +647,10 @@ String AudioDriverCoreAudio::get_output_device() {
 	return output_device_name;
 }
 
-void AudioDriverCoreAudio::set_output_device(String output_device) {
-	output_device_name = output_device;
+void AudioDriverCoreAudio::set_output_device(const String &p_name) {
+	output_device_name = p_name;
 	if (active) {
 		_set_device(output_device_name);
-	}
-}
-
-void AudioDriverCoreAudio::set_input_device(const String &p_name) {
-	input_device_name = p_name;
-	if (active) {
-		_set_device(input_device_name, true);
 	}
 }
 
@@ -667,6 +660,13 @@ PackedStringArray AudioDriverCoreAudio::get_input_device_list() {
 
 String AudioDriverCoreAudio::get_input_device() {
 	return input_device_name;
+}
+
+void AudioDriverCoreAudio::set_input_device(const String &p_name) {
+	input_device_name = p_name;
+	if (active) {
+		_set_device(input_device_name, true);
+	}
 }
 
 #endif

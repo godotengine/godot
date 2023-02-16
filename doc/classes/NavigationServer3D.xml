@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="NavigationServer3D" inherits="Object" is_experimental="true" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
-		Server interface for low-level 3D navigation access
+		Server interface for low-level 3D navigation access.
 	</brief_description>
 	<description>
 		NavigationServer3D is the server responsible for all 3D navigation. It handles several objects, namely maps, regions and agents.
@@ -420,15 +420,6 @@
 			<param index="1" name="up" type="Vector3" />
 			<description>
 				Sets the map up direction.
-			</description>
-		</method>
-		<method name="process">
-			<return type="void" />
-			<param index="0" name="delta_time" type="float" />
-			<description>
-				Process the collision avoidance agents.
-				The result of this process is needed by the physics server, so this must be called in the main thread.
-				[b]Note:[/b] This function is not thread safe.
 			</description>
 		</method>
 		<method name="query_path" qualifiers="const">

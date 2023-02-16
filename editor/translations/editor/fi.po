@@ -533,6 +533,9 @@ msgstr "Signaalista:"
 msgid "Scene does not contain any script."
 msgstr "Kohtaus ei sisällä skriptiä."
 
+msgid "Select Method"
+msgstr "Valitse metodi"
+
 msgid "Remove"
 msgstr "Poista"
 
@@ -588,9 +591,6 @@ msgstr "Katkaise yhteys"
 
 msgid "Connect a Signal to a Method"
 msgstr "Yhdistä signaali metodiin"
-
-msgid "Edit Connection:"
-msgstr "Muokkaa yhteyttä:"
 
 msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
 msgstr "Oletko varma, että haluat poistaa kaikki kytkennät signaalilta \"%s\"?"
@@ -734,23 +734,8 @@ msgstr "Varoitus:"
 msgid "Error:"
 msgstr "Virhe:"
 
-msgid "C++ Error"
-msgstr "C++ virhe"
-
-msgid "C++ Error:"
-msgstr "C++ virhe:"
-
-msgid "Source"
-msgstr "Lähde"
-
-msgid "C++ Source"
-msgstr "C++ lähdekoodi"
-
-msgid "Source:"
-msgstr "Lähdekoodi:"
-
-msgid "C++ Source:"
-msgstr "C++ lähdekoodi:"
+msgid "%s Error"
+msgstr "%s virhe"
 
 msgid "Stack Trace"
 msgstr "Pinojäljitys"
@@ -760,6 +745,9 @@ msgstr "Kopioi virhe"
 
 msgid "Open C++ Source on GitHub"
 msgstr "Avaa C++ lähdekoodi GitHubissa"
+
+msgid "C++ Source"
+msgstr "C++ lähdekoodi"
 
 msgid "Video RAM"
 msgstr "Näyttömuisti"
@@ -1714,11 +1702,11 @@ msgstr "Näytä kaikki kielialueet"
 msgid "Show Selected Locales Only"
 msgstr "Näytä vain valitut kielialueet"
 
+msgid "Edit Filters"
+msgstr "Muokkaa suodattimia"
+
 msgid "Language:"
 msgstr "Kieli:"
-
-msgid "Script"
-msgstr "Skripti"
 
 msgid "Clear Output"
 msgstr "Tyhjennä tuloste"
@@ -2252,23 +2240,6 @@ msgid "Install from file"
 msgstr "Asenna tiedostosta"
 
 msgid ""
-"This will set up your project for custom Android builds by installing the "
-"source template to \"res://android/build\".\n"
-"You can then apply modifications and build your own custom APK on export "
-"(adding modules, changing the AndroidManifest.xml, etc.).\n"
-"Note that in order to make custom builds instead of using pre-built APKs, "
-"the \"Use Custom Build\" option should be enabled in the Android export "
-"preset."
-msgstr ""
-"Tämä valmistelee projektisi mukautettuja Android-käännöksiä varten "
-"asentamalla lähdemallin hakemistoon \"res://android/build\".\n"
-"Voit sen jälkeen soveltaa muunnoksia ja kääntää oman räätälöidyn APK:n "
-"vientiin (lisäten moduuleja, muuttaen AndroidManifest.xml tiedostoa, jne.)\n"
-"Huomaa, että tehdäksesi mukautettuja käännöksiä esikäännetyn APK:n "
-"käyttämisen sijaan, \"Use Custom Build\" valinnan tulee olla päällä Android-"
-"viennin esiasetuksissa."
-
-msgid ""
 "The Android build template is already installed in this project and it won't "
 "be overwritten.\n"
 "Remove the \"res://android/build\" directory manually before attempting this "
@@ -2487,9 +2458,6 @@ msgstr "Pikanäppäimet"
 
 msgid "Binding"
 msgstr "Sidonta"
-
-msgid "%s Error"
-msgstr "%s virhe"
 
 msgid "All Devices"
 msgstr "Kaikki laitteet"
@@ -3352,6 +3320,9 @@ msgstr "Valitse ja siirrä pisteitä, luo pisteitä hiiren oikealla napilla."
 msgid "Enable snap and show grid."
 msgstr "Aseta tarttuminen ja näytä ruudukko."
 
+msgid "Blend:"
+msgstr "Sulautus:"
+
 msgid "Point"
 msgstr "Piste"
 
@@ -3394,14 +3365,8 @@ msgstr "Poista pisteet ja kolmiot."
 msgid "Generate blend triangles automatically (instead of manually)"
 msgstr "Luo sulautuskolmiot automaattisesti (manuaalisen sijaan)"
 
-msgid "Blend:"
-msgstr "Sulautus:"
-
 msgid "Parameter Changed:"
 msgstr "Parametri muutettu:"
-
-msgid "Edit Filters"
-msgstr "Muokkaa suodattimia"
 
 msgid "Output node can't be added to the blend tree."
 msgstr "Lähtösolmua ei voida lisätä sulautuspuuhun."
@@ -3520,9 +3485,6 @@ msgstr "Toista valittu animaatio takaperin nykyisestä kohdasta. (A)"
 
 msgid "Play selected animation backwards from end. (Shift+A)"
 msgstr "Toista valittu animaatio takaperin lopusta. (Shift+A)"
-
-msgid "Stop animation playback. (S)"
-msgstr "Lopeta animaation toisto. (S)"
 
 msgid "Play selected animation from start. (Shift+D)"
 msgstr "Toista valittu animaatio alusta. (Shift+D)"
@@ -4695,12 +4657,6 @@ msgstr "Muuta ilmoittajan AABB"
 msgid "Change Particles AABB"
 msgstr "Muuta partikkelien AABB"
 
-msgid "Change Box Shape Extents"
-msgstr "Muuta laatikkomuodon ulottuvuuksia"
-
-msgid "Change Probe Extents"
-msgstr "Muuta Proben ulottuvuuksia"
-
 msgid "Change Capsule Shape Radius"
 msgstr "Muuta kapselimuodon sädettä"
 
@@ -5505,6 +5461,9 @@ msgstr "Standardi"
 msgid "Connections to method:"
 msgstr "Yhteydet metodiin:"
 
+msgid "Source"
+msgstr "Lähde"
+
 msgid "Target"
 msgstr "Kohde"
 
@@ -5744,12 +5703,6 @@ msgstr "(tyhjä)"
 
 msgid "Animations:"
 msgstr "Animaatiot:"
-
-msgid "Speed:"
-msgstr "Nopeus:"
-
-msgid "Loop"
-msgstr "Toista"
 
 msgid "Animation Frames:"
 msgstr "Animaatioruudut:"
@@ -7143,9 +7096,6 @@ msgstr "Lisää syötetapahtuma"
 msgid "Change Action deadzone"
 msgstr "Vaihda toiminnon katvealue"
 
-msgid "Add Input Action Event"
-msgstr "Lisää syötetoiminnon tapahtuma"
-
 msgid "Erase Input Action"
 msgstr "Tyhjennä syötetoiminto"
 
@@ -7172,9 +7122,6 @@ msgstr "Valitse ominaisuus"
 
 msgid "Select Virtual Method"
 msgstr "Valitse virtuaalinen metodi"
-
-msgid "Select Method"
-msgstr "Valitse metodi"
 
 msgid "Batch Rename"
 msgstr "Niputettu uudelleennimeäminen"
@@ -7931,16 +7878,6 @@ msgstr "Virheellinen julkinen avain APK-laajennosta varten."
 msgid "Invalid package name:"
 msgstr "Virheellinen paketin nimi:"
 
-msgid "\"Use Custom Build\" must be enabled to use the plugins."
-msgstr ""
-"\"Use Custom Build\" asetuksen täytyy olla päällä, jotta liittännäisiä voi "
-"käyttää."
-
-msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
-msgstr ""
-"\"Export AAB\" on käyttökelpoinen vain, kun \"Use Custom Build\" asetus on "
-"päällä."
-
 msgid ""
 "'apksigner' could not be found. Please check that the command is available "
 "in the Android SDK build-tools directory. The resulting %s is unsigned."
@@ -7987,13 +7924,6 @@ msgstr ""
 
 msgid "Unsupported export format!"
 msgstr "Vientiformaatti ei ole tuettu!"
-
-msgid ""
-"Trying to build from a custom built template, but no version info for it "
-"exists. Please reinstall from the 'Project' menu."
-msgstr ""
-"Yritetään kääntää mukautetulla käännösmallilla, mutta sillä ei ole "
-"versiotietoa. Ole hyvä ja uudelleenasenna se 'Projekti'-valikosta."
 
 msgid ""
 "Android build version mismatch: Template installed: %s, Godot version: %s. "

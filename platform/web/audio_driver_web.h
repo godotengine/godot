@@ -77,12 +77,12 @@ public:
 	virtual void start() final;
 	virtual void finish() final;
 
-	virtual float get_latency() override;
 	virtual int get_mix_rate() const override;
 	virtual SpeakerMode get_speaker_mode() const override;
+	virtual float get_latency() override;
 
-	virtual Error capture_start() override;
-	virtual Error capture_stop() override;
+	virtual Error input_start() override;
+	virtual Error input_stop() override;
 
 	static void resume();
 
@@ -111,10 +111,12 @@ protected:
 	virtual void finish_driver() override;
 
 public:
-	virtual const char *get_name() const override { return "AudioWorklet"; }
+	virtual const char *get_name() const override {
+		return "AudioWorklet";
+	}
 
-	void lock() override;
-	void unlock() override;
+	virtual void lock() override;
+	virtual void unlock() override;
 };
 
 #endif // AUDIO_DRIVER_WEB_H

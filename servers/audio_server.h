@@ -88,26 +88,32 @@ public:
 	static AudioDriver *get_singleton();
 	void set_singleton();
 
+	// Virtual API to implement.
+
 	virtual const char *get_name() const = 0;
 
 	virtual Error init() = 0;
 	virtual void start() = 0;
 	virtual int get_mix_rate() const = 0;
 	virtual SpeakerMode get_speaker_mode() const = 0;
-	virtual PackedStringArray get_output_device_list();
-	virtual String get_output_device();
-	virtual void set_output_device(String output_device) {}
+	virtual float get_latency() { return 0; }
+
 	virtual void lock() = 0;
 	virtual void unlock() = 0;
 	virtual void finish() = 0;
 
-	virtual Error capture_start() { return FAILED; }
-	virtual Error capture_stop() { return FAILED; }
-	virtual void set_input_device(const String &p_name) {}
-	virtual String get_input_device() { return "Default"; }
-	virtual PackedStringArray get_input_device_list();
+	virtual PackedStringArray get_output_device_list();
+	virtual String get_output_device();
+	virtual void set_output_device(const String &p_name) {}
 
-	virtual float get_latency() { return 0; }
+	virtual Error input_start() { return FAILED; }
+	virtual Error input_stop() { return FAILED; }
+
+	virtual PackedStringArray get_input_device_list();
+	virtual String get_input_device() { return "Default"; }
+	virtual void set_input_device(const String &p_name) {}
+
+	//
 
 	SpeakerMode get_speaker_mode_by_total_channels(int p_channels) const;
 	int get_total_channels_by_speaker_mode(SpeakerMode) const;
@@ -421,7 +427,7 @@ public:
 
 	PackedStringArray get_output_device_list();
 	String get_output_device();
-	void set_output_device(String output_device);
+	void set_output_device(const String &p_name);
 
 	PackedStringArray get_input_device_list();
 	String get_input_device();

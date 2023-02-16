@@ -244,10 +244,14 @@
 			</description>
 		</method>
 		<method name="register_script_language">
-			<return type="void" />
+			<return type="int" enum="Error" />
 			<param index="0" name="language" type="ScriptLanguage" />
 			<description>
 				Registers a [ScriptLanguage] instance to be available with [code]ScriptServer[/code].
+				Returns:
+				- [constant OK] on success
+				- [constant ERR_UNAVAILABLE] if [code]ScriptServer[/code] has reached it limit and cannot register any new language
+				- [constant ERR_ALREADY_EXISTS] if [code]ScriptServer[/code] already contains a language with similar extension/name/type
 			</description>
 		</method>
 		<method name="register_singleton">
@@ -256,6 +260,16 @@
 			<param index="1" name="instance" type="Object" />
 			<description>
 				Registers the given object as a singleton, globally available under [param name].
+			</description>
+		</method>
+		<method name="unregister_script_language">
+			<return type="int" enum="Error" />
+			<param index="0" name="language" type="ScriptLanguage" />
+			<description>
+				Unregisters the [ScriptLanguage] instance from [code]ScriptServer[/code].
+				Returns:
+				- [constant OK] on success
+				- [constant ERR_DOES_NOT_EXIST] if the language is already not registered in [code]ScriptServer[/code]
 			</description>
 		</method>
 		<method name="unregister_singleton">

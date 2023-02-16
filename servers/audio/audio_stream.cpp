@@ -367,7 +367,7 @@ void AudioStreamPlaybackMicrophone::start(double p_from_pos) {
 
 	input_ofs = 0;
 
-	if (AudioDriver::get_singleton()->capture_start() == OK) {
+	if (AudioDriver::get_singleton()->input_start() == OK) {
 		active = true;
 		begin_resample();
 	}
@@ -375,7 +375,7 @@ void AudioStreamPlaybackMicrophone::start(double p_from_pos) {
 
 void AudioStreamPlaybackMicrophone::stop() {
 	if (active) {
-		AudioDriver::get_singleton()->capture_stop();
+		AudioDriver::get_singleton()->input_stop();
 		active = false;
 	}
 }

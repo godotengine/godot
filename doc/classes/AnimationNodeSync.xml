@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AnimationNodeSync" inherits="AnimationNode" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
+		The base class for [AnimationNode] which has more than two input ports and needs to synchronize them.
 	</brief_description>
 	<description>
 	</description>

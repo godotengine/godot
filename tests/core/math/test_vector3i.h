@@ -131,6 +131,13 @@ TEST_CASE("[Vector3i] Other methods") {
 	const Vector3i vector = Vector3i(1, 3, -7);
 
 	CHECK_MESSAGE(
+			vector.min(Vector3i(3, 2, 5)) == Vector3i(1, 2, -7),
+			"Vector3i min should return expected value.");
+	CHECK_MESSAGE(
+			vector.max(Vector3i(5, 2, 4)) == Vector3i(5, 3, 4),
+			"Vector3i max should return expected value.");
+
+	CHECK_MESSAGE(
 			vector.snapped(Vector3i(4, 2, 5)) == Vector3i(0, 4, -5),
 			"Vector3i snapped should work as expected.");
 }

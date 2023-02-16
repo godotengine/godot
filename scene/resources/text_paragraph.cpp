@@ -134,6 +134,18 @@ void TextParagraph::_bind_methods() {
 }
 
 void TextParagraph::_shape_lines() {
+	// When a shaped text is invalidated by an external source, we want to reshape it.
+	if (!TS->shaped_text_is_ready(rid) || !TS->shaped_text_is_ready(dropcap_rid)) {
+		lines_dirty = true;
+	}
+
+	for (const RID &line_rid : lines_rid) {
+		if (!TS->shaped_text_is_ready(line_rid)) {
+			lines_dirty = true;
+			break;
+		}
+	}
+
 	if (lines_dirty) {
 		for (const RID &line_rid : lines_rid) {
 			TS->free_rid(line_rid);

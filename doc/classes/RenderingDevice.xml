@@ -8,7 +8,7 @@
 		On startup, Godot creates a global [RenderingDevice] which can be retrieved using [method RenderingServer.get_rendering_device]. This global RenderingDevice performs drawing to the screen.
 		Internally, [RenderingDevice] is used in Godot to provide support for several modern low-level graphics APIs while reducing the amount of code duplication required.
 		[b]Local RenderingDevices:[/b] Using [method RenderingServer.create_local_rendering_device], you can create "secondary" rendering devices to perform drawing and GPU compute operations on separate threads.
-		[b]Note:[/b] [RenderingDevice] is not available when running in headless mode or when using the OpenGL renderer.
+		[b]Note:[/b] [RenderingDevice] is not available when running in headless mode or when using the Compatibility rendering method.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -32,7 +32,10 @@
 		<method name="buffer_get_data">
 			<return type="PackedByteArray" />
 			<param index="0" name="buffer" type="RID" />
+			<param index="1" name="offset_bytes" type="int" default="0" />
+			<param index="2" name="size_bytes" type="int" default="0" />
 			<description>
+				Returns a copy of the data of the specified [param buffer], optionally [param offset_bytes] and [param size_bytes] can be set to copy only a portion of the buffer.
 			</description>
 		</method>
 		<method name="buffer_update">

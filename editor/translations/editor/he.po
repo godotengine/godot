@@ -19,7 +19,7 @@
 # Guy Dadon <guydadon14@gmail.com>, 2020.
 # bruvzg <bruvzg13@gmail.com>, 2020.
 # Omer I.S. <omeritzicschwartz@gmail.com>, 2021.
-# Ram Tourgeman <ramtorgeman@gmail.com>, 2021.
+# Ram Tourgeman <ramtorgeman@gmail.com>, 2021, 2023.
 # Shailee Eliyahu <dev.sle.il@gmail.com>, 2021.
 # Mati Borlak <matiborlak@gmail.com>, 2022.
 # Tamir Livneh <fkeyzuwu@gmail.com>, 2022.
@@ -32,8 +32,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-01-01 05:48+0000\n"
-"Last-Translator: Yoni m <yoni.meirov08@gmail.com>\n"
+"PO-Revision-Date: 2023-02-08 07:34+0000\n"
+"Last-Translator: Ram Tourgeman <ramtorgeman@gmail.com>\n"
 "Language-Team: Hebrew <https://hosted.weblate.org/projects/godot-engine/"
 "godot/he/>\n"
 "Language: he\n"
@@ -42,10 +42,19 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=(n == 1) ? 0 : ((n == 2) ? 1 : ((n > 10 && "
 "n % 10 == 0) ? 2 : 3));\n"
-"X-Generator: Weblate 4.15.1-dev\n"
+"X-Generator: Weblate 4.16-dev\n"
+
+msgid "Unset"
+msgstr "ביטול הגדרה"
 
 msgid "Physical"
 msgstr "פיזי"
+
+msgid "Left Mouse Button"
+msgstr "לחצן עכבר שמאלי"
+
+msgid "Right Mouse Button"
+msgstr "כפתור עכבר ימני"
 
 msgid "Button"
 msgstr "כפתור"
@@ -587,9 +596,6 @@ msgstr "ניתוק"
 msgid "Connect a Signal to a Method"
 msgstr "חבר אות לשיטה (מתודה)"
 
-msgid "Edit Connection:"
-msgstr "עריכת חיבור:"
-
 msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
 msgstr "האם אתה בטוח שאתה רוצה להסיר את כל החיבורים מהאות \"%s\"?"
 
@@ -704,26 +710,14 @@ msgstr "אזהרה:"
 msgid "Error:"
 msgstr "שגיאה:"
 
-msgid "C++ Error"
-msgstr "שגיאת C++"
-
-msgid "C++ Error:"
-msgstr "שגיאת C++ :"
-
-msgid "C++ Source"
-msgstr "מקור C++"
-
-msgid "Source:"
-msgstr "מקור:"
-
-msgid "C++ Source:"
-msgstr "מקור C++ :"
-
 msgid "Stack Trace"
 msgstr "מחסנית מעקב"
 
 msgid "Copy Error"
 msgstr "שגיאת העתקה"
+
+msgid "C++ Source"
+msgstr "מקור C++"
 
 msgid "Video RAM"
 msgstr "זיכרון וידאו"
@@ -1617,8 +1611,8 @@ msgstr "הוצמד %s"
 msgid "Unpinned %s"
 msgstr "בוטלה ההצמדה של %s"
 
-msgid "Script"
-msgstr "סקריפט"
+msgid "Edit Filters"
+msgstr "עריכת מסננים"
 
 msgid "Clear Output"
 msgstr "ניקוי פלט"
@@ -2069,22 +2063,6 @@ msgstr "חסרה תבנית בנייה לאנדרואיד, נא להתקין ת�
 msgid "Manage Templates"
 msgstr "ניהול תבניות"
 
-msgid ""
-"This will set up your project for custom Android builds by installing the "
-"source template to \"res://android/build\".\n"
-"You can then apply modifications and build your own custom APK on export "
-"(adding modules, changing the AndroidManifest.xml, etc.).\n"
-"Note that in order to make custom builds instead of using pre-built APKs, "
-"the \"Use Custom Build\" option should be enabled in the Android export "
-"preset."
-msgstr ""
-"פעולה זו תגדיר את המיזם שלך לבניית אנדרואיד מותאמת אישית על ידי התקנת תבנית "
-"המקור ל- \"res://android/build\".\n"
-"לאחר מכן אפשר להחיל שינויים ולבנות APK מותאם אישית בייצוא (הוספת מודולים, "
-"שינוי AndroidManifest.xml, וכו').\n"
-"כדי לערוך בנייה מותאמת אישית במקום שימוש בתבנית קיימת, יש לאפשר את \"השתמש "
-"בבניה מותאמת אישית\" בהגדרות הייצוא לאנדרואיד."
-
 msgid "Import Templates From ZIP File"
 msgstr "ייבוא תבניות מקובץ ZIP"
 
@@ -2449,9 +2427,6 @@ msgstr "לא ניתן להשתמש בסוג מפרק זה. רק מפרקי שו�
 msgid "Triangle already exists."
 msgstr "המשולש כבר קיים."
 
-msgid "Edit Filters"
-msgstr "עריכת מסננים"
-
 msgid "Set Animation"
 msgstr "קביעת הנפשה"
 
@@ -2529,9 +2504,6 @@ msgstr "ניגון לאחור של ההנפשה שנבחרה מהמיקום הנ
 
 msgid "Play selected animation backwards from end. (Shift+A)"
 msgstr "ניגון לאחור של ההנפשה שנבחרה מהסוף. (Shift+A)"
-
-msgid "Stop animation playback. (S)"
-msgstr "עצירת ניגון ההנפשה. (S)"
 
 msgid "Play selected animation from start. (Shift+D)"
 msgstr "ניגון ההנפשה שנבחרה מההתחלה. (Shift+D)"
@@ -2881,12 +2853,6 @@ msgstr "שינוי מודיע AABB"
 msgid "Change Particles AABB"
 msgstr "שינוי חלקיקים AABB"
 
-msgid "Change Box Shape Extents"
-msgstr "שינוי הרחבות של צורת תיבה"
-
-msgid "Change Probe Extents"
-msgstr "שינוי הרחבות בדיקה"
-
 msgid "Change Capsule Shape Radius"
 msgstr "שינוי רדיוס לצורת קפסולה"
 
@@ -3220,9 +3186,6 @@ msgstr "הסרת כל נקודות העצירה"
 
 msgid "Delete Animation?"
 msgstr "מחיקת אנימציה?"
-
-msgid "Loop"
-msgstr "לולאה"
 
 msgid "Zoom Reset"
 msgstr "איפוס התקריב"
@@ -3824,16 +3787,6 @@ msgstr "מפתח ציבורי לא חוקי להרחבת APK."
 
 msgid "Invalid package name:"
 msgstr "שם חבילה לא חוקי:"
-
-msgid "\"Use Custom Build\" must be enabled to use the plugins."
-msgstr "חובה לאפשר ״שימוש בבניה מותאמת אישית״ כדי להשתמש בתוספים."
-
-msgid ""
-"Trying to build from a custom built template, but no version info for it "
-"exists. Please reinstall from the 'Project' menu."
-msgstr ""
-"מנסה לבנות מתבנית מותאמת אישית, אך לא קיים מידע על גירסת הבניה. נא להתקין "
-"מחדש מתפריט 'Project'."
 
 msgid "Building Android Project (gradle)"
 msgstr "בניית מיזם אנדרואיד (gradle)"

@@ -101,7 +101,7 @@
 # Arnaud Lier <arnaud@ric-rac.org>, 2022.
 # Jérémie Guegain <mirejai@orange.fr>, 2022.
 # cwulveryck <cwulveryck@online.fr>, 2022.
-# Helix Sir <vincentbarkmann@gmail.com>, 2022.
+# Helix Sir <vincentbarkmann@gmail.com>, 2022, 2023.
 # SCHUTZ Lucas <lucas.schutz0954@gmail.com>, 2022.
 # EGuillemot <Elouen.Guillemot@gmail.com>, 2022.
 # Entiz <maxime.salido@gmail.com>, 2022.
@@ -109,13 +109,17 @@
 # Hugo Berthet-Rambaud <hugoberthetrambaud@outlook.com>, 2023.
 # Nathan Chambrette <n.chambrette@gmail.com>, 2023.
 # slundi <slundi@gmail.com>, 2023.
+# Elouan MAILLY <leloupandco@gmail.com>, 2023.
+# nuclehon <benjamin.deslandes1@gmail.com>, 2023.
+# Siandfrance <Siandfrance@gmail.com>, 2023.
+# Thalya Gauvrit <skar0ps.dev@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-01-14 00:01+0000\n"
-"Last-Translator: slundi <slundi@gmail.com>\n"
+"PO-Revision-Date: 2023-02-10 14:12+0000\n"
+"Last-Translator: Siandfrance <Siandfrance@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
 "Language: fr\n"
@@ -123,19 +127,190 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.15.1-dev\n"
+"X-Generator: Weblate 4.16-dev\n"
+
+msgid "Unset"
+msgstr "Vider"
 
 msgid "Physical"
 msgstr "Physique"
 
+msgid "Left Mouse Button"
+msgstr "Bouton de souris gauche"
+
+msgid "Right Mouse Button"
+msgstr "Bouton de souris droit"
+
+msgid "Middle Mouse Button"
+msgstr "Clic molette de souris"
+
+msgid "Mouse Wheel Up"
+msgstr "Molette vers le haut"
+
+msgid "Mouse Wheel Down"
+msgstr "Molette vers le bas"
+
+msgid "Mouse Wheel Left"
+msgstr "Molette vers la gauche"
+
+msgid "Mouse Wheel Right"
+msgstr "Molette vers la droite"
+
+msgid "Mouse Thumb Button 1"
+msgstr "Bouton latéral de souris 1"
+
+msgid "Mouse Thumb Button 2"
+msgstr "Bouton latéral de souris 2"
+
 msgid "Button"
 msgstr "Bouton"
+
+msgid "Double Click"
+msgstr "Double clic"
+
+msgid "Mouse motion at position (%s) with velocity (%s)"
+msgstr "Mouvement de souris vers la position (%s) avec une vélocité de (%s)"
+
+msgid "Left Stick X-Axis, Joystick 0 X-Axis"
+msgstr "Axe X stick gauche , Axe X Joystick 0"
+
+msgid "Left Stick Y-Axis, Joystick 0 Y-Axis"
+msgstr "Axe Y stick gauche, Axe Y Joystick 0"
+
+msgid "Right Stick X-Axis, Joystick 1 X-Axis"
+msgstr "Axe X stick droit, Axe X Joystick 1"
+
+msgid "Right Stick Y-Axis, Joystick 1 Y-Axis"
+msgstr "Axe Y stick droit, Axe Y Joystick 1"
+
+msgid "Joystick 2 X-Axis, Left Trigger, Sony L2, Xbox LT"
+msgstr "Axe X Joystick 2, Gâchette gauche, L2 Sony, LT Xbox"
+
+msgid "Joystick 2 Y-Axis, Right Trigger, Sony R2, Xbox RT"
+msgstr "Axe Y Joystick 2, Gâchette droite, R2 Sony, RT Xbox"
+
+msgid "Joystick 3 X-Axis"
+msgstr "Axe X du Joystick 3"
+
+msgid "Joystick 3 Y-Axis"
+msgstr "Axe Y du Joystick 3"
+
+msgid "Joystick 4 X-Axis"
+msgstr "Axe X du Joystick 4"
+
+msgid "Joystick 4 Y-Axis"
+msgstr "Axe Y du Joystick 4"
+
+msgid "Unknown Joypad Axis"
+msgstr "Axe de contrôleur inconnu"
+
+msgid "Joypad Motion on Axis %d (%s) with Value %.2f"
+msgstr "Mouvement du contrôleur sur l'axe %d (%s) d'une valeur de %.2f"
+
+msgid "Bottom Action, Sony Cross, Xbox A, Nintendo B"
+msgstr "Action du bas, Croix Sony, A Xbox, B Nintendo"
+
+msgid "Right Action, Sony Circle, Xbox B, Nintendo A"
+msgstr "Action droite, Rond Sony, B Xbox, A Nintendo"
+
+msgid "Left Action, Sony Square, Xbox X, Nintendo Y"
+msgstr "Action gauche, Carré Sony, X Xbox, Y Nintendo"
+
+msgid "Top Action, Sony Triangle, Xbox Y, Nintendo X"
+msgstr "Action du haut, Triangle Sony, Y Xbox, X Nintendo"
+
+msgid "Back, Sony Select, Xbox Back, Nintendo -"
+msgstr "Retour, Select Sony, Back Xbox, - Nintendo"
+
+msgid "Guide, Sony PS, Xbox Home"
+msgstr "Guide, PS Sony, Home Xbox"
+
+msgid "Start, Nintendo +"
+msgstr "Start, + Nintendo"
+
+msgid "Left Stick, Sony L3, Xbox L/LS"
+msgstr "Stick gauche, L3 Sony, L/LS Xbox"
+
+msgid "Right Stick, Sony R3, Xbox R/RS"
+msgstr "Stick droit, R3 Sony, R/RS Xbox"
+
+msgid "Left Shoulder, Sony L1, Xbox LB"
+msgstr "Gâchette haute gauche, L1 Sony, LB Xbox"
+
+msgid "Right Shoulder, Sony R1, Xbox RB"
+msgstr "Gâchette haute droite, R1 Sony, RB Xbox"
+
+msgid "D-pad Up"
+msgstr "Flèche du haut"
+
+msgid "D-pad Down"
+msgstr "Flèche du bas"
+
+msgid "D-pad Left"
+msgstr "Flèche gauche"
+
+msgid "D-pad Right"
+msgstr "Flèche droite"
+
+msgid "Xbox Share, PS5 Microphone, Nintendo Capture"
+msgstr "Share Xbox, Microphone PS5, Capture Nintendo"
+
+msgid "Xbox Paddle 1"
+msgstr "Palette Xbox 1"
+
+msgid "Xbox Paddle 2"
+msgstr "Palette Xbox 2"
+
+msgid "Xbox Paddle 3"
+msgstr "Palette Xbox 3"
+
+msgid "Xbox Paddle 4"
+msgstr "Palette Xbox 4"
+
+msgid "PS4/5 Touchpad"
+msgstr "Pavé tactile PS4/5"
+
+msgid "touched"
+msgstr "Touché"
+
+msgid "released"
+msgstr "Relâché"
+
+msgid "Screen %s at (%s) with %s touch points"
+msgstr "Écran %s à (%s) avec %s points de contact"
+
+msgid ""
+"Screen dragged with %s touch points at position (%s) with velocity of (%s)"
+msgstr ""
+"Écran glissé avec %s points de contact vers la position (%s) avec une "
+"vélocité de (%s)"
+
+msgid "Magnify Gesture at (%s) with factor %s"
+msgstr "Geste d’agrandissement à (%s) avec un facteur de %s"
+
+msgid "Pan Gesture at (%s) with delta (%s)"
+msgstr "Geste de mouvement panoramique à (%s) avec un delta de (%s)"
+
+msgid "MIDI Input on Channel=%s Message=%s"
+msgstr "Entrée MIDI sur le canal=%s Message=%s"
+
+msgid "Input Event with Shortcut=%s"
+msgstr "Événement d’entrée avec raccourci=%s"
+
+msgid "Accept"
+msgstr "Accepter"
 
 msgid "Select"
 msgstr "Sélectionner"
 
 msgid "Cancel"
 msgstr "Annuler"
+
+msgid "Focus Next"
+msgstr "Cibler suivant"
+
+msgid "Focus Prev"
+msgstr "Cibler précédent"
 
 msgid "Left"
 msgstr "Gauche"
@@ -148,6 +323,15 @@ msgstr "Monter"
 
 msgid "Down"
 msgstr "Descendre"
+
+msgid "Page Up"
+msgstr "Page Haut"
+
+msgid "Page Down"
+msgstr "Page Bas"
+
+msgid "Home"
+msgstr "Accueil"
 
 msgid "End"
 msgstr "Fin"
@@ -167,23 +351,74 @@ msgstr "Annuler"
 msgid "Redo"
 msgstr "Refaire"
 
+msgid "Completion Query"
+msgstr "Requête de complétion"
+
+msgid "New Line"
+msgstr "Nouvelle ligne"
+
+msgid "New Blank Line"
+msgstr "Nouvelle ligne vide"
+
+msgid "New Line Above"
+msgstr "Nouvelle ligne au dessus"
+
 msgid "Indent"
 msgstr "Indentation"
+
+msgid "Dedent"
+msgstr "Désindenter"
+
+msgid "Backspace"
+msgstr "Effacer"
+
+msgid "Backspace Word"
+msgstr "Effacer mot"
+
+msgid "Backspace all to Left"
+msgstr "Effacer tout à gauche"
 
 msgid "Delete"
 msgstr "Supprimer"
 
+msgid "Delete Word"
+msgstr "Supprimer mot"
+
+msgid "Delete all to Right"
+msgstr "Tout supprimer à droite"
+
+msgid "Scroll Up"
+msgstr "Défilement vers le haut"
+
+msgid "Scroll Down"
+msgstr "Défilement vers le bas"
+
 msgid "Select All"
 msgstr "Tout sélectionner"
+
+msgid "Select Word Under Caret"
+msgstr "Sélectionner les mots sous le caret"
+
+msgid "Add Selection for Next Occurrence"
+msgstr "Ajouter la Sélection pour la Prochaine Occurence"
+
+msgid "Text Submitted"
+msgstr "Texte Proposé"
 
 msgid "Duplicate Nodes"
 msgstr "Dupliquer le(s) nœud(s)"
 
 msgid "Delete Nodes"
-msgstr "Supprimer des nœuds"
+msgstr "Supprimer le(s) nœud(s)"
+
+msgid "Go Up One Level"
+msgstr "Monter d'un Niveau"
 
 msgid "Refresh"
 msgstr "Rafraîchir"
+
+msgid "Swap Input Direction"
+msgstr "Échanger les Directions d'Entrée"
 
 msgid "Invalid input %d (not passed) in expression"
 msgstr "Entrée non valide %d (non transmise) dans l’expression"
@@ -206,6 +441,12 @@ msgstr "Arguments invalides pour construire '%s'"
 msgid "On call to '%s':"
 msgstr "Lors de l’appel à '%s' :"
 
+msgid "Built-in script"
+msgstr "Script intégré"
+
+msgid "Built-in"
+msgstr "Intégré"
+
 msgid "B"
 msgstr "o"
 
@@ -227,33 +468,68 @@ msgstr "Pio"
 msgid "EiB"
 msgstr "Eio"
 
+msgid "Example: %s"
+msgstr "Exemple : %s"
+
+msgid "%d item"
+msgid_plural "%d items"
+msgstr[0] "%d élément"
+msgstr[1] "%d éléments"
+
 msgid ""
 "Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'"
 msgstr ""
-"Nom d'action invalide. Il ne peut être vide ni contenir « / », « : », « = », "
-"« \\ » ou « \" »"
+"Nom d'action invalide. Elle ne peut être vide ni contenir «/», «:», «=», "
+"«\\» ou «\"»"
 
 msgid "An action with the name '%s' already exists."
 msgstr "Une action avec le nom « %s » existe déjà."
 
 msgid "Add Event"
-msgstr "Ajouter évènement"
+msgstr "Ajouter un évènement"
+
+msgid "Remove Action"
+msgstr "Supprimer l'action"
+
+msgid "Cannot Remove Action"
+msgstr "Impossible de Retirer l'Action"
+
+msgid "Edit Event"
+msgstr "Editer l'Évènement"
+
+msgid "Remove Event"
+msgstr "Supprimer l'Évènement"
+
+msgid "Filter by name..."
+msgstr "Filtrer par nom..."
+
+msgid "Clear All"
+msgstr "Tout Effacer"
+
+msgid "Add New Action"
+msgstr "Ajouter une Action"
 
 msgid "Add"
 msgstr "Ajouter"
+
+msgid "Show Built-in Actions"
+msgstr "Afficher les Actions Intégrées"
 
 msgid "Action"
 msgstr "Action"
 
 msgid "Deadzone"
-msgstr "Zone morte"
+msgstr "Zone Morte"
 
 msgid "Time:"
 msgstr "Temps :"
 
 msgid "Value:"
 msgstr "Valeur :"
+
+msgid "Update Selected Key Handles"
+msgstr "Dupliquer la(les) clé(s) sélectionnée(s)"
 
 msgid "Insert Key Here"
 msgstr "Insérer la clé ici"
@@ -691,6 +967,9 @@ msgstr "Depuis le signal :"
 msgid "Scene does not contain any script."
 msgstr "La scène ne comprend pas de script."
 
+msgid "Select Method"
+msgstr "Sélectionner une méthode"
+
 msgid "Remove"
 msgstr "Supprimer"
 
@@ -750,9 +1029,6 @@ msgstr "Déconnecter"
 
 msgid "Connect a Signal to a Method"
 msgstr "Connecter un signal à une méthode"
-
-msgid "Edit Connection:"
-msgstr "Modifier la connexion :"
 
 msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
 msgstr "Voulez-vous vraiment supprimer toutes les connexions de ce signal ?"
@@ -819,6 +1095,9 @@ msgstr "Instance :"
 
 msgid "Toggle Visibility"
 msgstr "Basculer la visibilité"
+
+msgid "ms"
+msgstr "ms"
 
 msgid "Monitors"
 msgstr "Moniteurs"
@@ -900,23 +1179,8 @@ msgstr "Avertissement :"
 msgid "Error:"
 msgstr "Erreur :"
 
-msgid "C++ Error"
-msgstr "Erreur C++"
-
-msgid "C++ Error:"
-msgstr "Erreur C++ :"
-
-msgid "Source"
-msgstr "Source"
-
-msgid "C++ Source"
-msgstr "Source C++"
-
-msgid "Source:"
-msgstr "Source :"
-
-msgid "C++ Source:"
-msgstr "Source C++ :"
+msgid "%s Error"
+msgstr "Erreur %s"
 
 msgid "Stack Trace"
 msgstr "Pile des appels"
@@ -926,6 +1190,9 @@ msgstr "Copier l'erreur"
 
 msgid "Open C++ Source on GitHub"
 msgstr "Ouvrir les sources C++ sur GitHub"
+
+msgid "C++ Source"
+msgstr "Source C++"
 
 msgid "Video RAM"
 msgstr "Mémoire vidéo"
@@ -1413,6 +1680,9 @@ msgstr "Navigation"
 msgid "OpenGL"
 msgstr "OpenGL"
 
+msgid "Vulkan"
+msgstr "Vulkan"
+
 msgid "Nodes and Classes:"
 msgstr "Nœuds et classes :"
 
@@ -1742,6 +2012,9 @@ msgstr ""
 msgid "(Re)Importing Assets"
 msgstr "Ré-importation des assets"
 
+msgid "Experimental"
+msgstr "Expérimental"
+
 msgid "Top"
 msgstr "Dessus"
 
@@ -1908,11 +2181,11 @@ msgstr "Afficher toutes les langues"
 msgid "Show Selected Locales Only"
 msgstr "Afficher uniquement les langues sélectionnées"
 
+msgid "Edit Filters"
+msgstr "Modifier les filtres"
+
 msgid "Language:"
 msgstr "Langage :"
-
-msgid "Script"
-msgstr "Script"
 
 msgid "Variant"
 msgstr "Variant"
@@ -2483,24 +2756,6 @@ msgid "Install from file"
 msgstr "Installer depuis un fichier"
 
 msgid ""
-"This will set up your project for custom Android builds by installing the "
-"source template to \"res://android/build\".\n"
-"You can then apply modifications and build your own custom APK on export "
-"(adding modules, changing the AndroidManifest.xml, etc.).\n"
-"Note that in order to make custom builds instead of using pre-built APKs, "
-"the \"Use Custom Build\" option should be enabled in the Android export "
-"preset."
-msgstr ""
-"Ceci configurera votre projet pour des compilations Android personnalisées "
-"en installant le modèle source dans \"res://android/build\".\n"
-"Vous pouvez ensuite appliquer des modifications et créer votre propre APK "
-"personnalisé à l'exportation (ajout de modules, modification du fichier "
-"AndroidManifest.xml, etc.).\n"
-"Notez que pour faire des compilations personnalisées au lieu d'utiliser des "
-"APKs préconstruits, l'option \"Use Custom Build\" doit être activée dans le "
-"Preset d'exportation Android."
-
-msgid ""
 "The Android build template is already installed in this project and it won't "
 "be overwritten.\n"
 "Remove the \"res://android/build\" directory manually before attempting this "
@@ -2724,9 +2979,6 @@ msgstr "Raccourcis"
 
 msgid "Binding"
 msgstr "Liaison"
-
-msgid "%s Error"
-msgstr "Erreur %s"
 
 msgid "All Devices"
 msgstr "Tous les périphérique"
@@ -3676,6 +3928,9 @@ msgstr ""
 msgid "Enable snap and show grid."
 msgstr "Activer l'aimantation et afficher la grille."
 
+msgid "Blend:"
+msgstr "Mélange :"
+
 msgid "Point"
 msgstr "Point"
 
@@ -3719,14 +3974,8 @@ msgid "Generate blend triangles automatically (instead of manually)"
 msgstr ""
 "Générer des triangles de mélange automatiquement (au lieu de manuellement)"
 
-msgid "Blend:"
-msgstr "Mélange :"
-
 msgid "Parameter Changed:"
 msgstr "Paramètre modifié :"
-
-msgid "Edit Filters"
-msgstr "Modifier les filtres"
 
 msgid "Output node can't be added to the blend tree."
 msgstr "Un nœud de sortie ne peut être ajouté à l'arborescence du mélange."
@@ -3852,9 +4101,6 @@ msgstr ""
 
 msgid "Play selected animation backwards from end. (Shift+A)"
 msgstr "Lire l'animation sélectionnée à rebours depuis la fin. (Maj+A)"
-
-msgid "Stop animation playback. (S)"
-msgstr "Arrêter la lecture de l'animation. (S)"
 
 msgid "Play selected animation from start. (Shift+D)"
 msgstr "Lire l'animation sélectionnée depuis le début. (Maj+D)"
@@ -5107,12 +5353,6 @@ msgstr "Changer le notificateur AABB"
 msgid "Change Particles AABB"
 msgstr "Changer particules AABB"
 
-msgid "Change Box Shape Extents"
-msgstr "Changer l'étendue de la forme rectangulaire"
-
-msgid "Change Probe Extents"
-msgstr "Changer les ampleurs de la sonde"
-
 msgid "Change Capsule Shape Radius"
 msgstr "Changer le rayon de la forme capsule"
 
@@ -5935,6 +6175,9 @@ msgstr "Standard"
 msgid "Connections to method:"
 msgstr "Connexions à la méthode :"
 
+msgid "Source"
+msgstr "Source"
+
 msgid "Target"
 msgstr "Cible"
 
@@ -6181,12 +6424,6 @@ msgstr "(vide)"
 
 msgid "Animations:"
 msgstr "Animations :"
-
-msgid "Speed:"
-msgstr "Vitesse :"
-
-msgid "Loop"
-msgstr "Boucle"
 
 msgid "Animation Frames:"
 msgstr "Trames d'animation :"
@@ -7639,9 +7876,6 @@ msgstr "Ajouter une action d'entrée"
 msgid "Change Action deadzone"
 msgstr "Modifier la zone morte de l'action"
 
-msgid "Add Input Action Event"
-msgstr "Ajouter un événement d'action d'entrée"
-
 msgid "Erase Input Action"
 msgstr "Effacer l'action d'entrée"
 
@@ -7668,9 +7902,6 @@ msgstr "Sélectionnez une propriété"
 
 msgid "Select Virtual Method"
 msgstr "Sélectionner une méthode virtuelle"
-
-msgid "Select Method"
-msgstr "Sélectionner une méthode"
 
 msgid "Batch Rename"
 msgstr "Renommer par lot"
@@ -7935,6 +8166,9 @@ msgstr "Enfants modifiables"
 
 msgid "Load As Placeholder"
 msgstr "Charger en tant qu'instance temporaire"
+
+msgid "Auto Expand to Selected"
+msgstr "Étirement auto à la sélection"
 
 msgid "Filters"
 msgstr "Filtres"
@@ -8480,23 +8714,9 @@ msgstr "Clé publique invalide pour l'expansion APK."
 msgid "Invalid package name:"
 msgstr "Nom de paquet invalide :"
 
-msgid "\"Use Custom Build\" must be enabled to use the plugins."
-msgstr "« Use Custom Build » doit être activé pour utiliser les plugins."
-
 msgid "\"Passthrough\" is only valid when \"XR Mode\" is \"OpenXR\"."
 msgstr ""
 "« Passthrough » est valide uniquement lorsque le « Mode XR » est « OpenXR »."
-
-msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
-msgstr ""
-"« Export AAB » est valide uniquement lorsque l'option « Use Custom Build » "
-"est activée."
-
-msgid ""
-"\"Min SDK\" can only be overridden when \"Use Custom Build\" is enabled."
-msgstr ""
-"Changer « Min SDK » est valide uniquement lorsque l'option « Use Custom "
-"Build » est activée."
 
 msgid "\"Min SDK\" should be a valid integer, but got \"%s\" which is invalid."
 msgstr ""
@@ -8509,12 +8729,6 @@ msgid ""
 msgstr ""
 "« Min SDK » ne peut être inférieur à %d, la version requise par la libraire "
 "de Godot."
-
-msgid ""
-"\"Target SDK\" can only be overridden when \"Use Custom Build\" is enabled."
-msgstr ""
-"Changer « Target SDK » est valide uniquement lorsque l'option « Use Custom "
-"Build » est activée."
 
 msgid ""
 "\"Target SDK\" should be a valid integer, but got \"%s\" which is invalid."
@@ -8586,14 +8800,6 @@ msgstr ""
 
 msgid "Unsupported export format!"
 msgstr "Format d'export non supporté !"
-
-msgid ""
-"Trying to build from a custom built template, but no version info for it "
-"exists. Please reinstall from the 'Project' menu."
-msgstr ""
-"A essayé de construire à partir d'un modèle personnalisé, mais aucune "
-"information de version n'existe pour lui. Veuillez réinstaller à partir du "
-"menu 'Projet'."
 
 msgid ""
 "Android build version mismatch: Template installed: %s, Godot version: %s. "

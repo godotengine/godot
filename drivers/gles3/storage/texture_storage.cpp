@@ -806,6 +806,7 @@ void TextureStorage::texture_2d_update(RID p_texture, const Ref<Image> &p_image,
 	texture_set_data(p_texture, p_image, p_layer);
 #ifdef TOOLS_ENABLED
 	Texture *tex = texture_owner.get_or_null(p_texture);
+	ERR_FAIL_COND(!tex);
 
 	tex->image_cache_2d.unref();
 #endif

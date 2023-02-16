@@ -528,6 +528,9 @@ msgstr "Từ tín hiệu:"
 msgid "Scene does not contain any script."
 msgstr "Cảnh không chứa tập lệnh nào cả."
 
+msgid "Select Method"
+msgstr "Chọn Phương thức"
+
 msgid "Remove"
 msgstr "Xóa"
 
@@ -583,9 +586,6 @@ msgstr "Hủy kết nối"
 
 msgid "Connect a Signal to a Method"
 msgstr "Kết nối tín hiệu vào một hàm"
-
-msgid "Edit Connection:"
-msgstr "Chỉnh sửa kết nối:"
 
 msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
 msgstr "Bạn muốn xoá tất cả kết nối từ tín hiệu \"%s\"?"
@@ -700,18 +700,6 @@ msgstr "Cảnh báo:"
 
 msgid "Error:"
 msgstr "Lỗi:"
-
-msgid "C++ Error"
-msgstr "Lỗi C++"
-
-msgid "C++ Error:"
-msgstr "Lỗi C++:"
-
-msgid "Source"
-msgstr "Nguồn"
-
-msgid "Source:"
-msgstr "Nguồn:"
 
 msgid "Copy Error"
 msgstr "Sao chép lỗi"
@@ -1534,11 +1522,11 @@ msgstr "Đã bỏ ghim %s"
 msgid "Copy Property Path"
 msgstr "Sao chép đường dẫn thuộc tính"
 
+msgid "Edit Filters"
+msgstr "Chỉnh sửa Lọc"
+
 msgid "Language:"
 msgstr "Ngôn ngữ:"
-
-msgid "Script"
-msgstr "Tệp lệnh"
 
 msgid "Clear Output"
 msgstr "Xoá đầu ra"
@@ -2039,23 +2027,6 @@ msgstr "Quản lý bản mẫu"
 
 msgid "Install from file"
 msgstr "Cài đặt từ tệp"
-
-msgid ""
-"This will set up your project for custom Android builds by installing the "
-"source template to \"res://android/build\".\n"
-"You can then apply modifications and build your own custom APK on export "
-"(adding modules, changing the AndroidManifest.xml, etc.).\n"
-"Note that in order to make custom builds instead of using pre-built APKs, "
-"the \"Use Custom Build\" option should be enabled in the Android export "
-"preset."
-msgstr ""
-"Việc này sẽ thiết lập dự án của bạn cho các bản dựng Android tùy chỉnh bằng "
-"cách cài đặt bản mẫu nguồn vào \"res://android/build\".\n"
-"Bạn có thể áp dụng các sửa đổi và dựng tệp APK tùy chỉnh khi xuất (thêm các "
-"mô đun, thay đổi AndroidManifest.xml, v.v.).\n"
-"Lưu ý rằng để tạo các bản dựng tùy chỉnh thay cho tệp APK dựng sẵn, tùy chọn "
-"\"Sử dụng bản dựng tùy chỉnh\" phải được bật trong thiết lập sẵn xuất sang "
-"Android."
 
 msgid ""
 "The Android build template is already installed in this project and it won't "
@@ -2874,6 +2845,9 @@ msgstr "Chọn và di chuyển các điểm, chuột phải để tạo điểm.
 msgid "Enable snap and show grid."
 msgstr "Bật Dính và hiện lưới."
 
+msgid "Blend:"
+msgstr "Trộn:"
+
 msgid "Point"
 msgstr "Điểm"
 
@@ -2915,12 +2889,6 @@ msgstr "Xóa tam giác và các điểm."
 
 msgid "Generate blend triangles automatically (instead of manually)"
 msgstr "Tự động tạo tam giác trộn (thay vì phải vất vả thủ công)"
-
-msgid "Blend:"
-msgstr "Trộn:"
-
-msgid "Edit Filters"
-msgstr "Chỉnh sửa Lọc"
 
 msgid "Output node can't be added to the blend tree."
 msgstr "Nút đầu ra không thể thêm vào Cây Trộn."
@@ -3030,9 +2998,6 @@ msgstr "Chạy hoạt ảnh đã chọn ngược lại từ vị trí hiện t�
 
 msgid "Play selected animation backwards from end. (Shift+A)"
 msgstr "Chạy hoạt ảnh đã chọn ngược lại từ cuối. (Shift+A)"
-
-msgid "Stop animation playback. (S)"
-msgstr "Dừng chạy lại hoạt ảnh. (S)"
 
 msgid "Play selected animation from start. (Shift+D)"
 msgstr "Chạy hoạt ảnh đã chọn từ đầu. (Shift+D)"
@@ -3800,9 +3765,6 @@ msgstr "Thay đổi bán kính ánh sáng"
 msgid "Change Sphere Shape Radius"
 msgstr "Thay Đổi Bán Kính Hình Cầu"
 
-msgid "Change Box Shape Extents"
-msgstr "Chỉnh chiều dài hình hộp"
-
 msgid "Change Capsule Shape Radius"
 msgstr "Chỉnh bán kính hình nhộng"
 
@@ -4281,6 +4243,9 @@ msgstr "Chuẩn"
 msgid "Connections to method:"
 msgstr "Kết nối đến phương thức:"
 
+msgid "Source"
+msgstr "Nguồn"
+
 msgid "Target"
 msgstr "Mục tiêu"
 
@@ -4483,12 +4448,6 @@ msgstr "(trống)"
 
 msgid "Animations:"
 msgstr "Các hoạt hình:"
-
-msgid "Speed:"
-msgstr "Tốc độ:"
-
-msgid "Loop"
-msgstr "Lặp"
 
 msgid "Animation Frames:"
 msgstr "Khung hình hoạt hình:"
@@ -5143,9 +5102,6 @@ msgstr "Tiện ích"
 msgid "Select Property"
 msgstr "Chọn Thuộc tính"
 
-msgid "Select Method"
-msgstr "Chọn Phương thức"
-
 msgid "Prefix:"
 msgstr "Tiền tố:"
 
@@ -5655,13 +5611,6 @@ msgstr "Khóa công khai của bộ APK mở rộng không hợp lệ."
 msgid "Invalid package name:"
 msgstr "Tên gói không hợp lệ:"
 
-msgid "\"Use Custom Build\" must be enabled to use the plugins."
-msgstr "\"Sử dụng Bản dựng tùy chỉnh\" phải được bật để sử dụng các tiện ích."
-
-msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
-msgstr ""
-"\"Xuất AAB\" chỉ dùng được khi \"Sử dụng Bản dựng tùy chỉnh\" được bật."
-
 msgid "Exporting for Android"
 msgstr "Đang xuất sang Android"
 
@@ -5670,13 +5619,6 @@ msgstr "Tên tệp không hợp lệ! Android App Bundle cần đuôi *.aab ở 
 
 msgid "Invalid filename! Android APK requires the *.apk extension."
 msgstr "Tên tệp không hợp lệ! Android APK cần đuôi *.apk ở cuối."
-
-msgid ""
-"Trying to build from a custom built template, but no version info for it "
-"exists. Please reinstall from the 'Project' menu."
-msgstr ""
-"Cố gắng dựng từ một bản mẫu được dựng tùy chỉnh, nhưng không có thông tin "
-"phiên bản nào tồn tại. Vui lòng cài đặt lại từ bảng chọn'Dự án'."
 
 msgid "Building Android Project (gradle)"
 msgstr "Đang dựng dự án Android (gradle)"

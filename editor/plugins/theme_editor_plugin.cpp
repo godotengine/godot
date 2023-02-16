@@ -3705,82 +3705,13 @@ ThemeEditor::ThemeEditor() {
 void ThemeEditorPlugin::edit(Object *p_node) {
 	if (Object::cast_to<Theme>(p_node)) {
 		theme_editor->edit(Object::cast_to<Theme>(p_node));
-	} else if (Object::cast_to<Font>(p_node) || Object::cast_to<StyleBox>(p_node) || Object::cast_to<Texture2D>(p_node)) {
-		// Do nothing, keep editing the existing theme.
 	} else {
 		theme_editor->edit(Ref<Theme>());
 	}
 }
 
 bool ThemeEditorPlugin::handles(Object *p_node) const {
-	if (Object::cast_to<Theme>(p_node)) {
-		return true;
-	}
-
-	Ref<Theme> edited_theme = theme_editor->get_edited_theme();
-	if (edited_theme.is_null()) {
-		return false;
-	}
-
-	// If we are editing a theme already and this particular resource happens to belong to it,
-	// then we just keep editing it, despite not being able to directly handle it.
-	// This only goes one layer deep, but if required this can be extended to support, say, Font inside of Font.
-	bool belongs_to_theme = false;
-
-	if (Object::cast_to<Font>(p_node)) {
-		Ref<Font> font_item = Object::cast_to<Font>(p_node);
-		List<StringName> types;
-		List<StringName> names;
-
-		edited_theme->get_font_type_list(&types);
-		for (const StringName &E : types) {
-			names.clear();
-			edited_theme->get_font_list(E, &names);
-
-			for (const StringName &F : names) {
-				if (font_item == edited_theme->get_font(F, E)) {
-					belongs_to_theme = true;
-					break;
-				}
-			}
-		}
-	} else if (Object::cast_to<StyleBox>(p_node)) {
-		Ref<StyleBox> stylebox_item = Object::cast_to<StyleBox>(p_node);
-		List<StringName> types;
-		List<StringName> names;
-
-		edited_theme->get_stylebox_type_list(&types);
-		for (const StringName &E : types) {
-			names.clear();
-			edited_theme->get_stylebox_list(E, &names);
-
-			for (const StringName &F : names) {
-				if (stylebox_item == edited_theme->get_stylebox(F, E)) {
-					belongs_to_theme = true;
-					break;
-				}
-			}
-		}
-	} else if (Object::cast_to<Texture2D>(p_node)) {
-		Ref<Texture2D> icon_item = Object::cast_to<Texture2D>(p_node);
-		List<StringName> types;
-		List<StringName> names;
-
-		edited_theme->get_icon_type_list(&types);
-		for (const StringName &E : types) {
-			names.clear();
-			edited_theme->get_icon_list(E, &names);
-
-			for (const StringName &F : names) {
-				if (icon_item == edited_theme->get_icon(F, E)) {
-					belongs_to_theme = true;
-					break;
-				}
-			}
-		}
-	}
-
-	return belongs_to_theme;
+	return Object::cast_to<Theme>(p_node) != nullptr;
 }
 
 void ThemeEditorPlugin::make_visible(bool p_visible) {

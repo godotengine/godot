@@ -121,7 +121,6 @@ void NavigationAgent3D::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("navigation_finished"));
 	ADD_SIGNAL(MethodInfo("velocity_computed", PropertyInfo(Variant::VECTOR3, "safe_velocity")));
 
-#ifdef DEBUG_ENABLED
 	ClassDB::bind_method(D_METHOD("set_debug_enabled", "enabled"), &NavigationAgent3D::set_debug_enabled);
 	ClassDB::bind_method(D_METHOD("get_debug_enabled"), &NavigationAgent3D::get_debug_enabled);
 	ClassDB::bind_method(D_METHOD("set_debug_use_custom", "enabled"), &NavigationAgent3D::set_debug_use_custom);
@@ -131,12 +130,11 @@ void NavigationAgent3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_debug_path_custom_point_size", "point_size"), &NavigationAgent3D::set_debug_path_custom_point_size);
 	ClassDB::bind_method(D_METHOD("get_debug_path_custom_point_size"), &NavigationAgent3D::get_debug_path_custom_point_size);
 
-	ADD_GROUP("Debug", "");
+	ADD_GROUP("Debug", "debug_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_enabled"), "set_debug_enabled", "get_debug_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_use_custom"), "set_debug_use_custom", "get_debug_use_custom");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "debug_path_custom_color"), "set_debug_path_custom_color", "get_debug_path_custom_color");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "debug_path_custom_point_size", PROPERTY_HINT_RANGE, "1,50,1,suffix:px"), "set_debug_path_custom_point_size", "get_debug_path_custom_point_size");
-#endif // DEBUG_ENABLED
 }
 
 void NavigationAgent3D::_notification(int p_what) {
@@ -461,9 +459,8 @@ real_t NavigationAgent3D::get_path_max_distance() {
 }
 
 void NavigationAgent3D::set_target_position(Vector3 p_position) {
-	if (target_position.is_equal_approx(p_position)) {
-		return;
-	}
+	// Intentionally not checking for equality of the parameter, as we want to update the path even if the target position is the same in case the world changed.
+	// Revisit later when the navigation server can update the path without requesting a new path.
 
 	target_position = p_position;
 	target_position_submitted = true;
@@ -516,9 +513,9 @@ Vector3 NavigationAgent3D::get_final_position() {
 }
 
 void NavigationAgent3D::set_velocity(Vector3 p_velocity) {
-	if (target_velocity.is_equal_approx(p_velocity)) {
-		return;
-	}
+	// Intentionally not checking for equality of the parameter.
+	// We need to always submit the velocity to the navigation server, even when it is the same, in order to run avoidance every frame.
+	// Revisit later when the navigation server can update avoidance without users resubmitting the velocity.
 
 	target_velocity = p_velocity;
 	velocity_submitted = true;
@@ -696,14 +693,15 @@ void NavigationAgent3D::_check_distance_to_target() {
 
 ////////DEBUG////////////////////////////////////////////////////////////
 
-#ifdef DEBUG_ENABLED
 void NavigationAgent3D::set_debug_enabled(bool p_enabled) {
+#ifdef DEBUG_ENABLED
 	if (debug_enabled == p_enabled) {
 		return;
 	}
 
 	debug_enabled = p_enabled;
 	debug_path_dirty = true;
+#endif // DEBUG_ENABLED
 }
 
 bool NavigationAgent3D::get_debug_enabled() const {
@@ -711,12 +709,14 @@ bool NavigationAgent3D::get_debug_enabled() const {
 }
 
 void NavigationAgent3D::set_debug_use_custom(bool p_enabled) {
+#ifdef DEBUG_ENABLED
 	if (debug_use_custom == p_enabled) {
 		return;
 	}
 
 	debug_use_custom = p_enabled;
 	debug_path_dirty = true;
+#endif // DEBUG_ENABLED
 }
 
 bool NavigationAgent3D::get_debug_use_custom() const {
@@ -724,12 +724,14 @@ bool NavigationAgent3D::get_debug_use_custom() const {
 }
 
 void NavigationAgent3D::set_debug_path_custom_color(Color p_color) {
+#ifdef DEBUG_ENABLED
 	if (debug_path_custom_color == p_color) {
 		return;
 	}
 
 	debug_path_custom_color = p_color;
 	debug_path_dirty = true;
+#endif // DEBUG_ENABLED
 }
 
 Color NavigationAgent3D::get_debug_path_custom_color() const {
@@ -737,18 +739,21 @@ Color NavigationAgent3D::get_debug_path_custom_color() const {
 }
 
 void NavigationAgent3D::set_debug_path_custom_point_size(float p_point_size) {
+#ifdef DEBUG_ENABLED
 	if (Math::is_equal_approx(debug_path_custom_point_size, p_point_size)) {
 		return;
 	}
 
 	debug_path_custom_point_size = p_point_size;
 	debug_path_dirty = true;
+#endif // DEBUG_ENABLED
 }
 
 float NavigationAgent3D::get_debug_path_custom_point_size() const {
 	return debug_path_custom_point_size;
 }
 
+#ifdef DEBUG_ENABLED
 void NavigationAgent3D::_navigation_debug_changed() {
 	debug_path_dirty = true;
 }

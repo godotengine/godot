@@ -80,10 +80,6 @@ void AudioDriverOpenSL::_buffer_callbacks(
 	ad->_buffer_callback(queueItf);
 }
 
-const char *AudioDriverOpenSL::get_name() const {
-	return "Android";
-}
-
 Error AudioDriverOpenSL::init() {
 	SLresult res;
 	SLEngineOption EngineOption[] = {
@@ -204,7 +200,7 @@ void AudioDriverOpenSL::_record_buffer_callbacks(SLAndroidSimpleBufferQueueItf q
 	ad->_record_buffer_callback(queueItf);
 }
 
-Error AudioDriverOpenSL::capture_init_device() {
+Error AudioDriverOpenSL::init_input_device() {
 	SLDataLocator_IODevice loc_dev = {
 		SL_DATALOCATOR_IODEVICE,
 		SL_IODEVICE_AUDIOINPUT,
@@ -271,15 +267,15 @@ Error AudioDriverOpenSL::capture_init_device() {
 	return OK;
 }
 
-Error AudioDriverOpenSL::capture_start() {
+Error AudioDriverOpenSL::input_start() {
 	if (OS::get_singleton()->request_permission("RECORD_AUDIO")) {
-		return capture_init_device();
+		return init_input_device();
 	}
 
 	return OK;
 }
 
-Error AudioDriverOpenSL::capture_stop() {
+Error AudioDriverOpenSL::input_stop() {
 	SLuint32 state;
 	SLresult res = (*recordItf)->GetRecordState(recordItf, &state);
 	ERR_FAIL_COND_V(res != SL_RESULT_SUCCESS, ERR_CANT_OPEN);

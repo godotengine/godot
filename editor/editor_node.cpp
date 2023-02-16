@@ -691,10 +691,11 @@ void EditorNode::_notification(int p_what) {
 
 			bool theme_changed =
 					EditorSettings::get_singleton()->check_changed_settings_in_group("interface/theme") ||
-					EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor/theme") ||
 					EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/font") ||
 					EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/main_font") ||
 					EditorSettings::get_singleton()->check_changed_settings_in_group("interface/editor/code_font") ||
+					EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor/theme") ||
+					EditorSettings::get_singleton()->check_changed_settings_in_group("text_editor/help/help") ||
 					EditorSettings::get_singleton()->check_changed_settings_in_group("filesystem/file_dialog/thumbnail_size");
 
 			if (theme_changed) {
@@ -3685,7 +3686,7 @@ void EditorNode::_set_main_scene_state(Dictionary p_state, Node *p_for_scene) {
 			Node *editor_node = SceneTreeDock::get_singleton()->get_tree_editor()->get_selected();
 			editor_node = editor_node == nullptr ? get_edited_scene() : editor_node;
 
-			if (Object::cast_to<Node2D>(editor_node) || Object::cast_to<Control>(editor_node)) {
+			if (Object::cast_to<CanvasItem>(editor_node)) {
 				editor_select(EDITOR_2D);
 			} else if (Object::cast_to<Node3D>(editor_node)) {
 				editor_select(EDITOR_3D);

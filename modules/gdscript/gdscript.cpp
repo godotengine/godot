@@ -2578,7 +2578,6 @@ GDScriptLanguage::GDScriptLanguage() {
 
 #ifdef DEBUG_ENABLED
 	GLOBAL_DEF("debug/gdscript/warnings/enable", true);
-	GLOBAL_DEF("debug/gdscript/warnings/treat_warnings_as_errors", false);
 	GLOBAL_DEF("debug/gdscript/warnings/exclude_addons", true);
 	for (int i = 0; i < (int)GDScriptWarning::WARNING_MAX; i++) {
 		GDScriptWarning::Code code = (GDScriptWarning::Code)i;

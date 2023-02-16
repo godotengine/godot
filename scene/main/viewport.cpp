@@ -166,6 +166,24 @@ ViewportTexture::~ViewportTexture() {
 }
 
 void Viewport::_sub_window_update_order() {
+	if (gui.sub_windows.size() < 2) {
+		return;
+	}
+
+	if (!gui.sub_windows[gui.sub_windows.size() - 1].window->get_flag(Window::FLAG_ALWAYS_ON_TOP)) {
+		int index = gui.sub_windows.size() - 1;
+
+		while (index > 0 && gui.sub_windows[index - 1].window->get_flag(Window::FLAG_ALWAYS_ON_TOP)) {
+			--index;
+		}
+
+		if (index != (gui.sub_windows.size() - 1)) {
+			SubWindow sw = gui.sub_windows[gui.sub_windows.size() - 1];
+			gui.sub_windows.remove_at(gui.sub_windows.size() - 1);
+			gui.sub_windows.insert(index, sw);
+		}
+	}
+
 	for (int i = 0; i < gui.sub_windows.size(); i++) {
 		RS::get_singleton()->canvas_item_set_draw_index(gui.sub_windows[i].canvas_item, i);
 	}
@@ -823,11 +841,12 @@ void Viewport::_set_size(const Size2i &p_size, const Size2i &p_size_2d_override,
 		stretch_transform_new.scale(scale);
 	}
 
-	if (size == p_size && size_allocated == p_allocated && stretch_transform == stretch_transform_new && p_size_2d_override == size_2d_override) {
+	Size2i new_size = p_size.max(Size2i(2, 2));
+	if (size == new_size && size_allocated == p_allocated && stretch_transform == stretch_transform_new && p_size_2d_override == size_2d_override) {
 		return;
 	}
 
-	size = p_size;
+	size = new_size;
 	size_allocated = p_allocated;
 	size_2d_override = p_size_2d_override;
 	stretch_transform = stretch_transform_new;

@@ -15,19 +15,20 @@
 # Manuel González <mgoopazo@gmail.com>, 2021.
 # Wang Tseryui <2251439097@qq.com>, 2021.
 # Kedr <lava20121991@gmail.com>, 2022.
+# Isaac Iverson <isaaciverson1024@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2022-08-21 06:01+0000\n"
-"Last-Translator: Kedr <lava20121991@gmail.com>\n"
+"PO-Revision-Date: 2023-02-10 00:54+0000\n"
+"Last-Translator: Isaac Iverson <isaaciverson1024@gmail.com>\n"
 "Language-Team: Esperanto <https://hosted.weblate.org/projects/godot-engine/"
 "godot/eo/>\n"
 "Language: eo\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.14-dev\n"
+"X-Generator: Weblate 4.16-dev\n"
 
 msgid "Button"
 msgstr "Butono"
@@ -531,6 +532,9 @@ msgstr "De Signalo:"
 msgid "Scene does not contain any script."
 msgstr "La sceno ne enhavas ajnan skriptojn."
 
+msgid "Select Method"
+msgstr "Elekti metodon"
+
 msgid "Remove"
 msgstr "Forigi"
 
@@ -587,9 +591,6 @@ msgstr "Malkonekti"
 
 msgid "Connect a Signal to a Method"
 msgstr "Konektu la signalo al metodo"
-
-msgid "Edit Connection:"
-msgstr "Redakti Konekton:"
 
 msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
 msgstr "Ĉu vi certe volas forigi ĉiajn konektojn el la \"%s\" signalo?"
@@ -705,29 +706,14 @@ msgstr "Averto:"
 msgid "Error:"
 msgstr "Eraro:"
 
-msgid "C++ Error"
-msgstr "C++ Eraro"
-
-msgid "C++ Error:"
-msgstr "C++ Eraro:"
-
-msgid "Source"
-msgstr "Fonto"
-
-msgid "C++ Source"
-msgstr "C++ Fonto"
-
-msgid "Source:"
-msgstr "Fonto:"
-
-msgid "C++ Source:"
-msgstr "C++ Fonto:"
-
 msgid "Stack Trace"
 msgstr "Stakspuro"
 
 msgid "Copy Error"
 msgstr "Kopii eraro"
+
+msgid "C++ Source"
+msgstr "C++ Fonto"
 
 msgid "Video RAM"
 msgstr "Videomemoro"
@@ -1347,7 +1333,7 @@ msgid "Make Current"
 msgstr "Farigi aktuale"
 
 msgid "Import"
-msgstr "Enporti"
+msgstr "Importi"
 
 msgid "Export"
 msgstr "Eksporti"
@@ -1625,11 +1611,11 @@ msgstr "Vidigi ĉiajn lokaĵarojn"
 msgid "Show Selected Locales Only"
 msgstr "Vidigi nur elektitajn lokaĵarojn"
 
+msgid "Edit Filters"
+msgstr "Redakti filtrojn"
+
 msgid "Language:"
 msgstr "Lingvo:"
-
-msgid "Script"
-msgstr "Skripto"
 
 msgid "Clear Output"
 msgstr "Vakigi eligon"
@@ -2822,6 +2808,9 @@ msgstr "Elekti kaj movi punktojn, krei punktojn per dekstra musbutono."
 msgid "Enable snap and show grid."
 msgstr "Ŝalti kradokapton kaj vidi kradon."
 
+msgid "Blend:"
+msgstr "Mikso:"
+
 msgid "Point"
 msgstr "Punkto"
 
@@ -2863,12 +2852,6 @@ msgstr "Forigi punktojn kaj triangulojn."
 
 msgid "Generate blend triangles automatically (instead of manually)"
 msgstr "Generi miksajn triangulojn aŭtomate (anstataŭ permane)"
-
-msgid "Blend:"
-msgstr "Mikso:"
-
-msgid "Edit Filters"
-msgstr "Redakti filtrojn"
 
 msgid "Output node can't be added to the blend tree."
 msgstr "Ne eblas aldoni eligan nodon al la miksan arbon."
@@ -2970,9 +2953,6 @@ msgstr "Ludi elektitan animacion retre el aktuala pozicio. (A)"
 
 msgid "Play selected animation backwards from end. (Shift+A)"
 msgstr "Ludi elektitan animacion retre el fino. (Majuskliga klavo+A)"
-
-msgid "Stop animation playback. (S)"
-msgstr "Halti reproduktadon de animacio. (S)"
 
 msgid "Play selected animation from start. (Shift+D)"
 msgstr "Ludi elektitan animacion el komenco. (Majuskliga klavo+D)"
@@ -3911,6 +3891,9 @@ msgstr "Norma"
 msgid "Connections to method:"
 msgstr "Konektoj al metodo:"
 
+msgid "Source"
+msgstr "Fonto"
+
 msgid "Target"
 msgstr "Celo"
 
@@ -4125,9 +4108,6 @@ msgstr "Aldoni enigan faron"
 msgid "Change Action deadzone"
 msgstr "Ŝanĝi mortzonon de faro"
 
-msgid "Add Input Action Event"
-msgstr "Aldoni eventon de eniga faro"
-
 msgid "Erase Input Action"
 msgstr "Forigi enigan faron"
 
@@ -4154,9 +4134,6 @@ msgstr "Elekti atributon"
 
 msgid "Select Virtual Method"
 msgstr "Elekti virtualan metodon"
-
-msgid "Select Method"
-msgstr "Elekti metodon"
 
 msgid "Batch Rename"
 msgstr "Renomi staple"

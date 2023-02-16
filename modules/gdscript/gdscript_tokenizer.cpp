@@ -168,7 +168,11 @@ bool GDScriptTokenizer::Token::is_identifier() const {
 	switch (type) {
 		case IDENTIFIER:
 		case MATCH: // Used in String.match().
-		case CONST_INF: // Used in Vector{2,3,4}.INF
+		// Allow constants to be treated as regular identifiers.
+		case CONST_PI:
+		case CONST_INF:
+		case CONST_NAN:
+		case CONST_TAU:
 			return true;
 		default:
 			return false;
@@ -188,6 +192,10 @@ bool GDScriptTokenizer::Token::is_node_name() const {
 		case CLASS_NAME:
 		case CLASS:
 		case CONST:
+		case CONST_PI:
+		case CONST_INF:
+		case CONST_NAN:
+		case CONST_TAU:
 		case CONTINUE:
 		case ELIF:
 		case ELSE:
@@ -530,9 +538,12 @@ void GDScriptTokenizer::make_keyword_list() {
 #endif // DEBUG_ENABLED
 
 GDScriptTokenizer::Token GDScriptTokenizer::potential_identifier() {
+	bool only_ascii = _peek(-1) < 128;
+
 	// Consume all identifier characters.
 	while (is_unicode_identifier_continue(_peek())) {
-		_advance();
+		char32_t c = _advance();
+		only_ascii = only_ascii && c < 128;
 	}
 
 	int len = _current - _start;
@@ -587,7 +598,7 @@ GDScriptTokenizer::Token GDScriptTokenizer::potential_identifier() {
 
 #ifdef DEBUG_ENABLED
 	// Additional checks for identifiers but only in debug and if it's available in TextServer.
-	if (TS->has_feature(TextServer::FEATURE_UNICODE_SECURITY)) {
+	if (!only_ascii && TS->has_feature(TextServer::FEATURE_UNICODE_SECURITY)) {
 		int64_t confusable = TS->is_confusable(name, keyword_list);
 		if (confusable >= 0) {
 			push_error(vformat(R"(Identifier "%s" is visually similar to the GDScript keyword "%s" and thus not allowed.)", name, keyword_list[confusable]));

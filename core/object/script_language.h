@@ -70,8 +70,8 @@ public:
 	static bool is_scripting_enabled();
 	_FORCE_INLINE_ static int get_language_count() { return _language_count; }
 	static ScriptLanguage *get_language(int p_idx);
-	static void register_language(ScriptLanguage *p_language);
-	static void unregister_language(const ScriptLanguage *p_language);
+	static Error register_language(ScriptLanguage *p_language);
+	static Error unregister_language(const ScriptLanguage *p_language);
 
 	static void set_reload_scripts_on_save(bool p_enable);
 	static bool is_reload_scripts_on_save_enabled();

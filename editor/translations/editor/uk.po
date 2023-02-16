@@ -608,6 +608,9 @@ msgstr "З сигналу:"
 msgid "Scene does not contain any script."
 msgstr "У сцені немає жодного скрипту."
 
+msgid "Select Method"
+msgstr "Вибір методу"
+
 msgid "Remove"
 msgstr "Вилучити"
 
@@ -667,9 +670,6 @@ msgstr "Роз'єднати"
 
 msgid "Connect a Signal to a Method"
 msgstr "З'єднати сигнал із методом"
-
-msgid "Edit Connection:"
-msgstr "Редагувати з’єднання:"
 
 msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
 msgstr "Ви справді хочете вилучити усі з'єднання з сигналу «%s»?"
@@ -815,23 +815,8 @@ msgstr "Попередження:"
 msgid "Error:"
 msgstr "Помилка:"
 
-msgid "C++ Error"
-msgstr "Помилка C++"
-
-msgid "C++ Error:"
-msgstr "Помилка C++:"
-
-msgid "Source"
-msgstr "Джерело"
-
-msgid "C++ Source"
-msgstr "Код C++"
-
-msgid "Source:"
-msgstr "Код:"
-
-msgid "C++ Source:"
-msgstr "Код C++:"
+msgid "%s Error"
+msgstr "Помилка %s"
 
 msgid "Stack Trace"
 msgstr "Трасування стека"
@@ -841,6 +826,9 @@ msgstr "Помилка копіювання"
 
 msgid "Open C++ Source on GitHub"
 msgstr "Відкрити початковий код C++ на GitHub"
+
+msgid "C++ Source"
+msgstr "Код C++"
 
 msgid "Video RAM"
 msgstr "Відеопам'ять"
@@ -1814,11 +1802,11 @@ msgstr "Показати усі локалізації"
 msgid "Show Selected Locales Only"
 msgstr "Показати лише позначені локалізації"
 
+msgid "Edit Filters"
+msgstr "Редагувати фільтри"
+
 msgid "Language:"
 msgstr "Мова:"
-
-msgid "Script"
-msgstr "Скрипт"
 
 msgid "Variant"
 msgstr "Варіант"
@@ -2378,23 +2366,6 @@ msgid "Install from file"
 msgstr "Встановити з файла"
 
 msgid ""
-"This will set up your project for custom Android builds by installing the "
-"source template to \"res://android/build\".\n"
-"You can then apply modifications and build your own custom APK on export "
-"(adding modules, changing the AndroidManifest.xml, etc.).\n"
-"Note that in order to make custom builds instead of using pre-built APKs, "
-"the \"Use Custom Build\" option should be enabled in the Android export "
-"preset."
-msgstr ""
-"Це налаштує ваш проєкт на використання нетипових збірок Android шляхом "
-"встановлення шаблона джерела до «res://android/build».\n"
-"Далі, ви можете внести зміни і зібрати власний нетиповий APK при "
-"експортуванні (додаючи модулі, змінюючи AndroidManifest.xml тощо).\n"
-"Зауважте, що з метою створення нетипових збірок, замість використання "
-"попередньо зібраних APK, слід позначити пункт «Скористатися нетиповою "
-"збіркою» у шаблоні експортування Android."
-
-msgid ""
 "The Android build template is already installed in this project and it won't "
 "be overwritten.\n"
 "Remove the \"res://android/build\" directory manually before attempting this "
@@ -2620,9 +2591,6 @@ msgstr "Клавіатурні скорочення"
 
 msgid "Binding"
 msgstr "Палітурка"
-
-msgid "%s Error"
-msgstr "Помилка %s"
 
 msgid "All Devices"
 msgstr "Усі пристрої"
@@ -3558,6 +3526,9 @@ msgstr ""
 msgid "Enable snap and show grid."
 msgstr "Увімкнути прилипання і показати сітку."
 
+msgid "Blend:"
+msgstr "Змішувати:"
+
 msgid "Point"
 msgstr "Точка"
 
@@ -3600,14 +3571,8 @@ msgstr "Вилучити точки і трикутники."
 msgid "Generate blend triangles automatically (instead of manually)"
 msgstr "Створити трикутники злиття автоматично (а не вручну)"
 
-msgid "Blend:"
-msgstr "Змішувати:"
-
 msgid "Parameter Changed:"
 msgstr "Змінено параметр:"
-
-msgid "Edit Filters"
-msgstr "Редагувати фільтри"
 
 msgid "Output node can't be added to the blend tree."
 msgstr "Вузол виведення не можна додавати до дерева злиття."
@@ -3732,9 +3697,6 @@ msgstr ""
 
 msgid "Play selected animation backwards from end. (Shift+A)"
 msgstr "Відтворити вибрану анімацію назад з кінця. (Shift+A)"
-
-msgid "Stop animation playback. (S)"
-msgstr "Зупинити відтворення анімації. (S)"
 
 msgid "Play selected animation from start. (Shift+D)"
 msgstr "Відтворити вибрану анімацію від початку. (Shift+D)"
@@ -4969,12 +4931,6 @@ msgstr "Змінити AABB сповіщення"
 msgid "Change Particles AABB"
 msgstr "Змінити AABB часток"
 
-msgid "Change Box Shape Extents"
-msgstr "Змінити розміри кубічної форми"
-
-msgid "Change Probe Extents"
-msgstr "Змінити розміри зонду"
-
 msgid "Change Capsule Shape Radius"
 msgstr "Змінити радіус форми капсули"
 
@@ -5794,6 +5750,9 @@ msgstr "Стандартний"
 msgid "Connections to method:"
 msgstr "З'єднання з методом:"
 
+msgid "Source"
+msgstr "Джерело"
+
 msgid "Target"
 msgstr "Призначення"
 
@@ -6040,12 +5999,6 @@ msgstr "(порожньо)"
 
 msgid "Animations:"
 msgstr "Анімації:"
-
-msgid "Speed:"
-msgstr "Швидкість:"
-
-msgid "Loop"
-msgstr "Зациклити"
 
 msgid "Animation Frames:"
 msgstr "Кадри анімації:"
@@ -7481,9 +7434,6 @@ msgstr "Додати дію"
 msgid "Change Action deadzone"
 msgstr "Змінити «мертву» зону дії"
 
-msgid "Add Input Action Event"
-msgstr "Додати подію за вхідною дією"
-
 msgid "Erase Input Action"
 msgstr "Витерти запис дії"
 
@@ -7510,9 +7460,6 @@ msgstr "Вибір властивості"
 
 msgid "Select Virtual Method"
 msgstr "Вибір віртуального методу"
-
-msgid "Select Method"
-msgstr "Вибір методу"
 
 msgid "Batch Rename"
 msgstr "Пакетне перейменування"
@@ -8310,16 +8257,6 @@ msgstr "Некоректний відкритий ключ для розгорт
 msgid "Invalid package name:"
 msgstr "Некоректна назва пакунка:"
 
-msgid "\"Use Custom Build\" must be enabled to use the plugins."
-msgstr ""
-"Щоб можна було користуватися додатками, слід позначити пункт "
-"«Використовувати нетипову збірку»."
-
-msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
-msgstr ""
-"Пункт «Експортувати AAB» є чинним, лише якщо увімкнено «Використовувати "
-"нетипове збирання»."
-
 msgid ""
 "\"Target SDK\" %d is higher than the default version %d. This may work, but "
 "wasn't tested and may be unstable."
@@ -8362,14 +8299,6 @@ msgstr ""
 
 msgid "Unsupported export format!"
 msgstr "Непідтримуваний формат експортування!"
-
-msgid ""
-"Trying to build from a custom built template, but no version info for it "
-"exists. Please reinstall from the 'Project' menu."
-msgstr ""
-"Намагаємося виконати збирання на основі нетипового шаблона збирання, але не "
-"виявлено даних щодо версії. Будь ласка, повторно встановіть шаблон за "
-"допомогою меню «Проєкт»."
 
 msgid ""
 "Android build version mismatch: Template installed: %s, Godot version: %s. "

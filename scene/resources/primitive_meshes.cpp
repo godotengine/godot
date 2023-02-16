@@ -2890,6 +2890,18 @@ void TextMesh::_create_mesh_array(Array &p_arr) const {
 		dirty_cache = false;
 	}
 
+	// When a shaped text is invalidated by an external source, we want to reshape it.
+	if (!TS->shaped_text_is_ready(text_rid)) {
+		dirty_text = true;
+	}
+
+	for (const RID &line_rid : lines_rid) {
+		if (!TS->shaped_text_is_ready(line_rid)) {
+			dirty_lines = true;
+			break;
+		}
+	}
+
 	// Update text buffer.
 	if (dirty_text) {
 		TS->shaped_text_clear(text_rid);
@@ -3328,7 +3340,7 @@ void TextMesh::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "pixel_size", PROPERTY_HINT_RANGE, "0.0001,128,0.0001,suffix:m"), "set_pixel_size", "get_pixel_size");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "curve_step", PROPERTY_HINT_RANGE, "0.1,10,0.1,suffix:px"), "set_curve_step", "get_curve_step");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "depth", PROPERTY_HINT_RANGE, "0.0,100.0,0.001,or_greater,suffix:m"), "set_depth", "get_depth");
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "width", PROPERTY_HINT_NONE, "suffix:m"), "set_width", "get_width");
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "width", PROPERTY_HINT_NONE, "suffix:px"), "set_width", "get_width");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset", PROPERTY_HINT_NONE, "suffix:px"), "set_offset", "get_offset");
 
 	ADD_GROUP("BiDi", "");

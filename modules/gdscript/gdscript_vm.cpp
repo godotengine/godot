@@ -447,6 +447,9 @@ void (*type_init_function_table[])(Variant *) = {
 #define OP_GET_BASIS get_basis
 #define OP_GET_RID get_rid
 
+#define METHOD_CALL_ON_NULL_VALUE_ERROR(method_pointer) "Cannot call method '" + (method_pointer)->get_name() + "' on a null value."
+#define METHOD_CALL_ON_FREED_INSTANCE_ERROR(method_pointer) "Cannot call method '" + (method_pointer)->get_name() + "' on a previously freed instance."
+
 Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_args, int p_argcount, Callable::CallError &r_err, CallState *p_state) {
 	OPCODES_TABLE;
 
@@ -1675,10 +1678,10 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				bool freed = false;
 				Object *base_obj = base->get_validated_object_with_check(freed);
 				if (freed) {
-					err_text = "Trying to call a function on a previously freed instance.";
+					err_text = METHOD_CALL_ON_FREED_INSTANCE_ERROR(method);
 					OPCODE_BREAK;
 				} else if (!base_obj) {
-					err_text = "Trying to call a function on a null value.";
+					err_text = METHOD_CALL_ON_NULL_VALUE_ERROR(method);
 					OPCODE_BREAK;
 				}
 #else
@@ -1839,10 +1842,10 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		bool freed = false;                                                          \
 		Object *base_obj = base->get_validated_object_with_check(freed);             \
 		if (freed) {                                                                 \
-			err_text = "Trying to call a function on a previously freed instance.";  \
+			err_text = METHOD_CALL_ON_FREED_INSTANCE_ERROR(method);                  \
 			OPCODE_BREAK;                                                            \
 		} else if (!base_obj) {                                                      \
-			err_text = "Trying to call a function on a null value.";                 \
+			err_text = METHOD_CALL_ON_NULL_VALUE_ERROR(method);                      \
 			OPCODE_BREAK;                                                            \
 		}                                                                            \
 		const void **argptrs = call_args_ptr;                                        \
@@ -1941,10 +1944,10 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				bool freed = false;
 				Object *base_obj = base->get_validated_object_with_check(freed);
 				if (freed) {
-					err_text = "Trying to call a function on a previously freed instance.";
+					err_text = METHOD_CALL_ON_FREED_INSTANCE_ERROR(method);
 					OPCODE_BREAK;
 				} else if (!base_obj) {
-					err_text = "Trying to call a function on a null value.";
+					err_text = METHOD_CALL_ON_NULL_VALUE_ERROR(method);
 					OPCODE_BREAK;
 				}
 #else
@@ -1969,7 +1972,13 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				VariantInternal::initialize(ret, Variant::OBJECT);
 				Object **ret_opaque = VariantInternal::get_object(ret);
 				method->ptrcall(base_obj, argptrs, ret_opaque);
-				VariantInternal::update_object_id(ret);
+				if (method->is_return_type_raw_object_ptr()) {
+					// The Variant has to participate in the ref count since the method returns a raw Object *.
+					VariantInternal::object_assign(ret, *ret_opaque);
+				} else {
+					// The method, in case it returns something, returns an already encapsulated object.
+					VariantInternal::update_object_id(ret);
+				}
 
 #ifdef DEBUG_ENABLED
 				if (GDScriptLanguage::get_singleton()->profiling) {
@@ -1996,10 +2005,10 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				bool freed = false;
 				Object *base_obj = base->get_validated_object_with_check(freed);
 				if (freed) {
-					err_text = "Trying to call a function on a previously freed instance.";
+					err_text = METHOD_CALL_ON_FREED_INSTANCE_ERROR(method);
 					OPCODE_BREAK;
 				} else if (!base_obj) {
-					err_text = "Trying to call a function on a null value.";
+					err_text = METHOD_CALL_ON_NULL_VALUE_ERROR(method);
 					OPCODE_BREAK;
 				}
 #else
@@ -3427,7 +3436,10 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					String message_str;
 					if (_code_ptr[ip + 2] != 0) {
 						GET_VARIANT_PTR(message, 1);
-						message_str = *message;
+						Variant message_var = *message;
+						if (message->get_type() != Variant::NIL) {
+							message_str = message_var;
+						}
 					}
 					if (message_str.is_empty()) {
 						err_text = "Assertion failed.";

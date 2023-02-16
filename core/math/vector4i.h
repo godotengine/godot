@@ -71,6 +71,14 @@ struct _NO_DISCARD_ Vector4i {
 	Vector4i::Axis min_axis_index() const;
 	Vector4i::Axis max_axis_index() const;
 
+	Vector4i min(const Vector4i &p_vector4i) const {
+		return Vector4i(MIN(x, p_vector4i.x), MIN(y, p_vector4i.y), MIN(z, p_vector4i.z), MIN(w, p_vector4i.w));
+	}
+
+	Vector4i max(const Vector4i &p_vector4i) const {
+		return Vector4i(MAX(x, p_vector4i.x), MAX(y, p_vector4i.y), MAX(z, p_vector4i.z), MAX(w, p_vector4i.w));
+	}
+
 	_FORCE_INLINE_ int64_t length_squared() const;
 	_FORCE_INLINE_ double length() const;
 

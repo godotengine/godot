@@ -141,8 +141,7 @@
 		        GD.PushError("Couldn't load the image.");
 		    }
 
-		    var texture = new ImageTexture();
-		    texture.CreateFromImage(image);
+		    var texture = ImageTexture.CreateFromImage(image);
 
 		    // Display the image in a TextureRect node.
 		    var textureRect = new TextureRect();

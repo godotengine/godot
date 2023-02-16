@@ -51,6 +51,7 @@ protected:
 	Point2 camera_pos;
 	Point2 smoothed_camera_pos;
 	bool first = true;
+	bool just_exited_tree = false;
 
 	ObjectID custom_viewport_id; // to check validity
 	Viewport *custom_viewport = nullptr;
@@ -88,6 +89,7 @@ protected:
 	void _update_scroll();
 
 	void _make_current(Object *p_which);
+	void _reset_just_exited() { just_exited_tree = false; }
 
 	void _set_old_smoothing(real_t p_enable);
 

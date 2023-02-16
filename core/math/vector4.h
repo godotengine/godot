@@ -68,6 +68,14 @@ struct _NO_DISCARD_ Vector4 {
 	Vector4::Axis min_axis_index() const;
 	Vector4::Axis max_axis_index() const;
 
+	Vector4 min(const Vector4 &p_vector4) const {
+		return Vector4(MIN(x, p_vector4.x), MIN(y, p_vector4.y), MIN(z, p_vector4.z), MIN(w, p_vector4.w));
+	}
+
+	Vector4 max(const Vector4 &p_vector4) const {
+		return Vector4(MAX(x, p_vector4.x), MAX(y, p_vector4.y), MAX(z, p_vector4.z), MAX(w, p_vector4.w));
+	}
+
 	_FORCE_INLINE_ real_t length_squared() const;
 	bool is_equal_approx(const Vector4 &p_vec4) const;
 	bool is_zero_approx() const;

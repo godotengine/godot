@@ -3668,10 +3668,18 @@ void DisplayServerWindows::_process_key_events() {
 					}
 
 					k->set_window_id(ke.window_id);
-					k->set_shift_pressed(ke.shift);
-					k->set_alt_pressed(ke.alt);
-					k->set_ctrl_pressed(ke.control);
-					k->set_meta_pressed(ke.meta);
+					if (keycode != Key::SHIFT) {
+						k->set_shift_pressed(ke.shift);
+					}
+					if (keycode != Key::ALT) {
+						k->set_alt_pressed(ke.alt);
+					}
+					if (keycode != Key::CTRL) {
+						k->set_ctrl_pressed(ke.control);
+					}
+					if (keycode != Key::META) {
+						k->set_meta_pressed(ke.meta);
+					}
 					k->set_pressed(true);
 					k->set_keycode(keycode);
 					k->set_physical_keycode(physical_keycode);
@@ -3693,11 +3701,6 @@ void DisplayServerWindows::_process_key_events() {
 				k.instantiate();
 
 				k->set_window_id(ke.window_id);
-				k->set_shift_pressed(ke.shift);
-				k->set_alt_pressed(ke.alt);
-				k->set_ctrl_pressed(ke.control);
-				k->set_meta_pressed(ke.meta);
-
 				k->set_pressed(ke.uMsg == WM_KEYDOWN);
 
 				Key keycode = KeyMappingWindows::get_keysym(ke.wParam);
@@ -3719,6 +3722,18 @@ void DisplayServerWindows::_process_key_events() {
 					}
 				}
 
+				if (keycode != Key::SHIFT) {
+					k->set_shift_pressed(ke.shift);
+				}
+				if (keycode != Key::ALT) {
+					k->set_alt_pressed(ke.alt);
+				}
+				if (keycode != Key::CTRL) {
+					k->set_ctrl_pressed(ke.control);
+				}
+				if (keycode != Key::META) {
+					k->set_meta_pressed(ke.meta);
+				}
 				k->set_keycode(keycode);
 				k->set_physical_keycode(physical_keycode);
 				k->set_key_label(key_label);

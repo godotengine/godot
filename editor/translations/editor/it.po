@@ -37,9 +37,9 @@
 # Stefano Merazzi <asso99@hotmail.com>, 2019.
 # Sinapse X <sinapsex13@gmail.com>, 2019.
 # Micila Micillotto <micillotto@gmail.com>, 2019, 2020, 2021, 2022.
-# Mirko Soppelsa <miknsop@gmail.com>, 2019, 2020, 2021, 2022.
+# Mirko Soppelsa <miknsop@gmail.com>, 2019, 2020, 2021, 2022, 2023.
 # No <kingofwizards.kw7@gmail.com>, 2019.
-# StarFang208 <polaritymanx@yahoo.it>, 2019.
+# StarFang208 <polaritymanx@yahoo.it>, 2019, 2023.
 # Katia Piazza <gydey@ridiculousglitch.com>, 2019, 2021.
 # nickfla1 <lanterniniflavio@gmail.com>, 2019.
 # Fabio Iotti <fabiogiopla@gmail.com>, 2020.
@@ -77,13 +77,16 @@
 # Silvia Scaglione <sissisoad@gmail.com>, 2022.
 # Cosimo Davide Viggiano <cosimod089@gmail.com>, 2022.
 # Francesco Cammarata <francescocammarata.fr@gmail.com>, 2022.
+# enzo cocca <enzo.ccc@gmail.com>, 2023.
+# Andrea Migliaccio <andrea.migliaccio@gmail.com>, 2023.
+# gianmarco malandra <giamminho12@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-01-15 13:34+0000\n"
-"Last-Translator: Damiano Guida <damiano.guida22@gmail.com>\n"
+"PO-Revision-Date: 2023-02-10 00:54+0000\n"
+"Last-Translator: gianmarco malandra <giamminho12@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
 "Language: it\n"
@@ -91,13 +94,58 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.15.1-dev\n"
+"X-Generator: Weblate 4.16-dev\n"
+
+msgid "Unset"
+msgstr "Non Impostato"
 
 msgid "Physical"
 msgstr "Fisico"
 
+msgid "Left Mouse Button"
+msgstr "Tasto sinistro Mouse"
+
+msgid "Right Mouse Button"
+msgstr "Tasto Destro Mouse"
+
+msgid "Middle Mouse Button"
+msgstr "Tasto centrale Mouse"
+
+msgid "Mouse Wheel Up"
+msgstr "Rotellina Mouse Su."
+
+msgid "Mouse Wheel Down"
+msgstr "Rotellina Mouse Giù."
+
+msgid "Mouse Wheel Left"
+msgstr "Pulsante Rotellina a Sinistra"
+
+msgid "Mouse Wheel Right"
+msgstr "Pulsante Rotellina a Destra"
+
+msgid "Mouse Thumb Button 1"
+msgstr "Pulsante Laterale del Mouse 1"
+
+msgid "Mouse Thumb Button 2"
+msgstr "Pulsante Laterale del Mouse 2"
+
 msgid "Button"
 msgstr "Pulsante"
+
+msgid "Mouse motion at position (%s) with velocity (%s)"
+msgstr "Movimento del mouse in posizione (%s) con velocità (%s)"
+
+msgid "Left Stick X-Axis, Joystick 0 X-Axis"
+msgstr "Levetta sinistra asse X, joystick 0 asse X"
+
+msgid "Left Stick Y-Axis, Joystick 0 Y-Axis"
+msgstr "Levetta sinistra asse Y, joystick 0 asse y"
+
+msgid "Right Stick X-Axis, Joystick 1 X-Axis"
+msgstr "Levetta destra asse X, joystick 1 asse x"
+
+msgid "Right Stick Y-Axis, Joystick 1 Y-Axis"
+msgstr "Levetta destra Asse-Y, Joystick 1 Asse-Y"
 
 msgid "Select"
 msgstr "Seleziona"
@@ -648,6 +696,9 @@ msgstr "Dal segnale:"
 msgid "Scene does not contain any script."
 msgstr "La scena non contiene alcuno script."
 
+msgid "Select Method"
+msgstr "Seleziona Metodo"
+
 msgid "Remove"
 msgstr "Rimuovi"
 
@@ -704,9 +755,6 @@ msgstr "Disconnetti"
 
 msgid "Connect a Signal to a Method"
 msgstr "Connetti un segnale a un metodo"
-
-msgid "Edit Connection:"
-msgstr "Modifica una connessione:"
 
 msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
 msgstr "Sei sicuro di voler rimuovere tutte le connessioni dal segnale \"%s\"?"
@@ -852,23 +900,8 @@ msgstr "Attenzione:"
 msgid "Error:"
 msgstr "Errore:"
 
-msgid "C++ Error"
-msgstr "Errore C++"
-
-msgid "C++ Error:"
-msgstr "Errore C++:"
-
-msgid "Source"
-msgstr "Sorgente"
-
-msgid "C++ Source"
-msgstr "Sorgente C++"
-
-msgid "Source:"
-msgstr "Sorgente:"
-
-msgid "C++ Source:"
-msgstr "Sorgente C++:"
+msgid "%s Error"
+msgstr "Errore %s"
 
 msgid "Stack Trace"
 msgstr "Analisi dello stack"
@@ -878,6 +911,9 @@ msgstr "Copia Errore"
 
 msgid "Open C++ Source on GitHub"
 msgstr "Apri Sorgente C++ su Github"
+
+msgid "C++ Source"
+msgstr "Sorgente C++"
 
 msgid "Video RAM"
 msgstr "RAM Video"
@@ -1705,6 +1741,12 @@ msgstr "sovrascrive %s:"
 msgid "default:"
 msgstr "predefinito:"
 
+msgid "Constructors"
+msgstr "Costruttori"
+
+msgid "Operators"
+msgstr "Operatori"
+
 msgid "Theme Properties"
 msgstr "Proprietà del tema"
 
@@ -1739,8 +1781,14 @@ msgstr ""
 "Al momento non esiste alcuna descrizione per questa proprietà. Aiutaci "
 "[color=$color][url=$url]aggiungendone una[/url][/color]!"
 
+msgid "Constructor Descriptions"
+msgstr "Descrizione del costruttore"
+
 msgid "Method Descriptions"
 msgstr "Descrizioni del metodo"
+
+msgid "Operator Descriptions"
+msgstr "Descrizione degli operatori"
 
 msgid "%d match."
 msgstr "%d corrispondenze."
@@ -1844,11 +1892,11 @@ msgstr "Mostra tutte le lingue"
 msgid "Show Selected Locales Only"
 msgstr "Mostra solo le lingue selezionate"
 
+msgid "Edit Filters"
+msgstr "Modifica Filtri"
+
 msgid "Language:"
 msgstr "Lingua:"
-
-msgid "Script"
-msgstr "Script"
 
 msgid "Variant"
 msgstr "Variante"
@@ -2413,24 +2461,6 @@ msgid "Install from file"
 msgstr "Installa da un file"
 
 msgid ""
-"This will set up your project for custom Android builds by installing the "
-"source template to \"res://android/build\".\n"
-"You can then apply modifications and build your own custom APK on export "
-"(adding modules, changing the AndroidManifest.xml, etc.).\n"
-"Note that in order to make custom builds instead of using pre-built APKs, "
-"the \"Use Custom Build\" option should be enabled in the Android export "
-"preset."
-msgstr ""
-"Questo predisporrà il progetto alle costruzioni personalizzate per Android "
-"installando il modello di sorgente in \"res://android/build\".\n"
-"Sarà allora possibile applicare delle modifiche e costruire un APK "
-"personalizzato durante l'esportazione (aggiungere moduli, cambiare "
-"l'AndroidManifest.xml, eccetera).\n"
-"Va notato che per creare delle costruzioni personalizzate, invece di usare "
-"gli APK pre-costruiti, va attivata l'opzione \"Use Custom Build\" nella "
-"preimpostazione d'esportazione per Android."
-
-msgid ""
 "The Android build template is already installed in this project and it won't "
 "be overwritten.\n"
 "Remove the \"res://android/build\" directory manually before attempting this "
@@ -2656,9 +2686,6 @@ msgstr "Scorciatoie"
 
 msgid "Binding"
 msgstr "Associazione"
-
-msgid "%s Error"
-msgstr "Errore %s"
 
 msgid "All Devices"
 msgstr "Tutti i Dispositivi"
@@ -3600,6 +3627,9 @@ msgstr ""
 msgid "Enable snap and show grid."
 msgstr "Abilita lo scatto e mostra la griglia."
 
+msgid "Blend:"
+msgstr "Blend:"
+
 msgid "Point"
 msgstr "Punto"
 
@@ -3642,14 +3672,8 @@ msgstr "Cancella punti e triangoli."
 msgid "Generate blend triangles automatically (instead of manually)"
 msgstr "Genera i triangoli di fusione automaticamente (anziché manualmente)"
 
-msgid "Blend:"
-msgstr "Blend:"
-
 msgid "Parameter Changed:"
 msgstr "Parametro modificato:"
-
-msgid "Edit Filters"
-msgstr "Modifica Filtri"
 
 msgid "Output node can't be added to the blend tree."
 msgstr "Il nodo in output non può essere aggiunto al BlendTree."
@@ -3775,9 +3799,6 @@ msgstr ""
 
 msgid "Play selected animation backwards from end. (Shift+A)"
 msgstr "Esegui la seguente animazione al contrario dalla fine. (Shift+A)"
-
-msgid "Stop animation playback. (S)"
-msgstr "Ferma il playback dell'animazione. (S)"
 
 msgid "Play selected animation from start. (Shift+D)"
 msgstr "Esegui la seguente l'animazione dall'inizio. (Shift+D)"
@@ -5011,12 +5032,6 @@ msgstr "Cambia notificatore AABB"
 msgid "Change Particles AABB"
 msgstr "Cambia AABB Particelle"
 
-msgid "Change Box Shape Extents"
-msgstr "Cambia Ampiezza Box Shape"
-
-msgid "Change Probe Extents"
-msgstr "Cambia Estensione Probe"
-
 msgid "Change Capsule Shape Radius"
 msgstr "Cambia Raggio Capsule Shape"
 
@@ -5828,6 +5843,9 @@ msgstr "Standard"
 msgid "Connections to method:"
 msgstr "Connessioni al metodo:"
 
+msgid "Source"
+msgstr "Sorgente"
+
 msgid "Target"
 msgstr "Target"
 
@@ -6074,12 +6092,6 @@ msgstr "(vuoto)"
 
 msgid "Animations:"
 msgstr "Animazioni:"
-
-msgid "Speed:"
-msgstr "Velocità:"
-
-msgid "Loop"
-msgstr "Loop"
 
 msgid "Animation Frames:"
 msgstr "Frame Animazione:"
@@ -6795,6 +6807,9 @@ msgstr "Luce"
 msgid "Process"
 msgstr "Processa"
 
+msgid "Sky"
+msgstr "Cielo"
+
 msgid "Fog"
 msgstr "Nebbia"
 
@@ -7503,9 +7518,6 @@ msgstr "Aggiungi Azione di Input"
 msgid "Change Action deadzone"
 msgstr "Cambia la zona morta d'azione"
 
-msgid "Add Input Action Event"
-msgstr "Aggiungi Evento di Azione Input"
-
 msgid "Erase Input Action"
 msgstr "Cancella Azione di Input"
 
@@ -7532,9 +7544,6 @@ msgstr "Seleziona Proprietà"
 
 msgid "Select Virtual Method"
 msgstr "Seleziona Metodo Virtuale"
-
-msgid "Select Method"
-msgstr "Seleziona Metodo"
 
 msgid "Batch Rename"
 msgstr "Rinomina in blocco"
@@ -8324,23 +8333,10 @@ msgstr "Chiave pubblica non valida per l'espansione dell'APK."
 msgid "Invalid package name:"
 msgstr "Nome del pacchetto non valido:"
 
-msgid "\"Use Custom Build\" must be enabled to use the plugins."
-msgstr "Per utilizzare i plugin \"Use Custom Build\" deve essere abilitato."
-
 msgid "\"Passthrough\" is only valid when \"XR Mode\" is \"OpenXR\"."
 msgstr ""
 "\"Oltrepassaggio\" è valido solo quando \"Modalità XR\" è impostato su "
 "\"OpenXR\"."
-
-msgid "\"Export AAB\" is only valid when \"Use Custom Build\" is enabled."
-msgstr ""
-"\"Export AAB\" è valido soltanto quanto \"Use Custom Build\" è abilitato."
-
-msgid ""
-"\"Min SDK\" can only be overridden when \"Use Custom Build\" is enabled."
-msgstr ""
-"\"Min SDK\" può essere sovrascritto solo se \"Utilizza Build "
-"Personalizzata\" è abilitato."
 
 msgid "\"Min SDK\" should be a valid integer, but got \"%s\" which is invalid."
 msgstr ""
@@ -8353,12 +8349,6 @@ msgid ""
 msgstr ""
 "\"Min SDK\" non può essere più basso di %d, che è la versione richiesta "
 "dalla libreria Godot."
-
-msgid ""
-"\"Target SDK\" can only be overridden when \"Use Custom Build\" is enabled."
-msgstr ""
-"\"Target SDK\" può essere sovrascritto solo se \"Utilizza Build "
-"Personalizzata\" è abilitato."
 
 msgid ""
 "\"Target SDK\" should be a valid integer, but got \"%s\" which is invalid."
@@ -8424,14 +8414,6 @@ msgstr "Nome file non valido! L'APK Android richiede l'estensione *.apk."
 
 msgid "Unsupported export format!"
 msgstr "Formato d'esportazione non supportato!"
-
-msgid ""
-"Trying to build from a custom built template, but no version info for it "
-"exists. Please reinstall from the 'Project' menu."
-msgstr ""
-"Tentato di costruire da un template build personalizzato, ma nessuna "
-"informazione sulla sua versione esiste. Per favore, reinstallalo dal menu "
-"\"Progetto\"."
 
 msgid ""
 "Android build version mismatch: Template installed: %s, Godot version: %s. "

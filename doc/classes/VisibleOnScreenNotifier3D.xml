@@ -6,7 +6,7 @@
 	<description>
 		The VisibleOnScreenNotifier3D detects when it is visible on the screen. It also notifies when its bounding rectangle enters or exits the screen or a [Camera3D]'s view.
 		If you want nodes to be disabled automatically when they exit the screen, use [VisibleOnScreenEnabler3D] instead.
-		[b]Note:[/b] VisibleOnScreenNotifier3D uses an approximate heuristic for performance reasons. It doesn't take walls and other occlusion into account. The heuristic is an implementation detail and may change in future versions. If you need precise visibility checking, use another method such as adding an [Area3D] node as a child of a [Camera3D] node and/or [method Vector3.dot].
+		[b]Note:[/b] VisibleOnScreenNotifier3D uses the render culling code to determine whether it's visible on screen, which also means that its [member Node3D.visible] must be [code]true[/code] to work correctly.
 	</description>
 	<tutorials>
 	</tutorials>

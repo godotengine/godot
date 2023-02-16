@@ -175,7 +175,7 @@ void GDScriptParser::push_warning(const Node *p_source, GDScriptWarning::Code p_
 	warning.leftmost_column = p_source->leftmost_column;
 	warning.rightmost_column = p_source->rightmost_column;
 
-	if (warn_level == GDScriptWarning::WarnLevel::ERROR || bool(GLOBAL_GET("debug/gdscript/warnings/treat_warnings_as_errors"))) {
+	if (warn_level == GDScriptWarning::WarnLevel::ERROR) {
 		push_error(warning.get_message() + String(" (Warning treated as error.)"), p_source);
 		return;
 	}
@@ -483,24 +483,34 @@ void GDScriptParser::parse_program() {
 	current_class = head;
 	bool can_have_class_or_extends = true;
 
-	while (match(GDScriptTokenizer::Token::ANNOTATION)) {
-		AnnotationNode *annotation = parse_annotation(AnnotationInfo::SCRIPT | AnnotationInfo::STANDALONE | AnnotationInfo::CLASS_LEVEL);
-		if (annotation != nullptr) {
-			if (annotation->applies_to(AnnotationInfo::SCRIPT)) {
-				// `@icon` needs to be applied in the parser. See GH-72444.
-				if (annotation->name == SNAME("@icon")) {
-					annotation->apply(this, head);
+	while (!check(GDScriptTokenizer::Token::TK_EOF)) {
+		if (match(GDScriptTokenizer::Token::ANNOTATION)) {
+			AnnotationNode *annotation = parse_annotation(AnnotationInfo::SCRIPT | AnnotationInfo::STANDALONE | AnnotationInfo::CLASS_LEVEL);
+			if (annotation != nullptr) {
+				if (annotation->applies_to(AnnotationInfo::SCRIPT)) {
+					// `@icon` needs to be applied in the parser. See GH-72444.
+					if (annotation->name == SNAME("@icon")) {
+						annotation->apply(this, head);
+					} else {
+						head->annotations.push_back(annotation);
+					}
 				} else {
-					head->annotations.push_back(annotation);
+					annotation_stack.push_back(annotation);
+					// This annotation must appear after script-level annotations
+					// and class_name/extends (ex: could be @onready or @export),
+					// so we stop looking for script-level stuff.
+					can_have_class_or_extends = false;
+					break;
 				}
-			} else {
-				annotation_stack.push_back(annotation);
-				// This annotation must appear after script-level annotations
-				// and class_name/extends (ex: could be @onready or @export),
-				// so we stop looking for script-level stuff.
-				can_have_class_or_extends = false;
-				break;
 			}
+		} else if (check(GDScriptTokenizer::Token::LITERAL) && current.literal.get_type() == Variant::STRING) {
+			// Allow strings in class body as multiline comments.
+			advance();
+			if (!match(GDScriptTokenizer::Token::NEWLINE)) {
+				push_error("Expected newline after comment string.");
+			}
+		} else {
+			break;
 		}
 	}
 
@@ -524,6 +534,16 @@ void GDScriptParser::parse_program() {
 					end_statement("superclass");
 				}
 				break;
+			case GDScriptTokenizer::Token::LITERAL:
+				if (current.literal.get_type() == Variant::STRING) {
+					// Allow strings in class body as multiline comments.
+					advance();
+					if (!match(GDScriptTokenizer::Token::NEWLINE)) {
+						push_error("Expected newline after comment string.");
+					}
+					break;
+				}
+				[[fallthrough]];
 			default:
 				// No tokens are allowed between script annotations and class/extends.
 				can_have_class_or_extends = false;
@@ -829,6 +849,16 @@ void GDScriptParser::parse_class_body(bool p_is_multiline) {
 			case GDScriptTokenizer::Token::DEDENT:
 				class_end = true;
 				break;
+			case GDScriptTokenizer::Token::LITERAL:
+				if (current.literal.get_type() == Variant::STRING) {
+					// Allow strings in class body as multiline comments.
+					advance();
+					if (!match(GDScriptTokenizer::Token::NEWLINE)) {
+						push_error("Expected newline after comment string.");
+					}
+					break;
+				}
+				[[fallthrough]];
 			default:
 				// Display a completion with identifiers.
 				make_completion_context(COMPLETION_IDENTIFIER, nullptr);
@@ -1675,6 +1705,12 @@ GDScriptParser::Node *GDScriptParser::parse_statement() {
 						// Standalone lambdas can't be used, so make this an error.
 						push_error("Standalone lambdas cannot be accessed. Consider assigning it to a variable.", expression);
 						break;
+					case Node::LITERAL:
+						if (static_cast<GDScriptParser::LiteralNode *>(expression)->value.get_type() == Variant::STRING) {
+							// Allow strings as multiline comments.
+							break;
+						}
+						[[fallthrough]];
 					default:
 						push_warning(expression, GDScriptWarning::STANDALONE_EXPRESSION);
 				}
@@ -2145,7 +2181,12 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_precedence(Precedence p_pr
 	make_completion_context(COMPLETION_IDENTIFIER, nullptr);
 
 	GDScriptTokenizer::Token token = current;
-	ParseFunction prefix_rule = get_rule(token.type)->prefix;
+	GDScriptTokenizer::Token::Type token_type = token.type;
+	if (token.is_identifier()) {
+		// Allow keywords that can be treated as identifiers.
+		token_type = GDScriptTokenizer::Token::IDENTIFIER;
+	}
+	ParseFunction prefix_rule = get_rule(token_type)->prefix;
 
 	if (prefix_rule == nullptr) {
 		// Expected expression. Let the caller give the proper error message.
@@ -3010,7 +3051,14 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_get_node(ExpressionNode *p
 			path_state = PATH_STATE_NODE_NAME;
 		} else if (current.is_node_name()) {
 			advance();
-			get_node->full_path += previous.get_identifier();
+			String identifier = previous.get_identifier();
+#ifdef DEBUG_ENABLED
+			// Check spoofing.
+			if (TS->has_feature(TextServer::FEATURE_UNICODE_SECURITY) && TS->spoof_check(identifier)) {
+				push_warning(get_node, GDScriptWarning::CONFUSABLE_IDENTIFIER, identifier);
+			}
+#endif
+			get_node->full_path += identifier;
 
 			path_state = PATH_STATE_NODE_NAME;
 		} else if (!check(GDScriptTokenizer::Token::SLASH) && !check(GDScriptTokenizer::Token::PERCENT)) {

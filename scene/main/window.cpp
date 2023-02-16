@@ -569,6 +569,12 @@ void Window::_update_from_window() {
 void Window::_clear_window() {
 	ERR_FAIL_COND(window_id == DisplayServer::INVALID_WINDOW_ID);
 
+	DisplayServer::get_singleton()->window_set_rect_changed_callback(Callable(), window_id);
+	DisplayServer::get_singleton()->window_set_window_event_callback(Callable(), window_id);
+	DisplayServer::get_singleton()->window_set_input_event_callback(Callable(), window_id);
+	DisplayServer::get_singleton()->window_set_input_text_callback(Callable(), window_id);
+	DisplayServer::get_singleton()->window_set_drop_files_callback(Callable(), window_id);
+
 	if (transient_parent && transient_parent->window_id != DisplayServer::INVALID_WINDOW_ID) {
 		DisplayServer::get_singleton()->window_set_transient(window_id, DisplayServer::INVALID_WINDOW_ID);
 	}
@@ -978,17 +984,13 @@ void Window::_update_viewport_size() {
 
 		Size2 margin;
 		Size2 offset;
-		//black bars and margin
+
 		if (content_scale_aspect != CONTENT_SCALE_ASPECT_EXPAND && screen_size.x < video_mode.x) {
 			margin.x = Math::round((video_mode.x - screen_size.x) / 2.0);
-			//RenderingServer::get_singleton()->black_bars_set_margins(margin.x, 0, margin.x, 0);
 			offset.x = Math::round(margin.x * viewport_size.y / screen_size.y);
 		} else if (content_scale_aspect != CONTENT_SCALE_ASPECT_EXPAND && screen_size.y < video_mode.y) {
 			margin.y = Math::round((video_mode.y - screen_size.y) / 2.0);
-			//RenderingServer::get_singleton()->black_bars_set_margins(0, margin.y, 0, margin.y);
 			offset.y = Math::round(margin.y * viewport_size.x / screen_size.x);
-		} else {
-			//RenderingServer::get_singleton()->black_bars_set_margins(0, 0, 0, 0);
 		}
 
 		switch (content_scale_mode) {
@@ -1115,6 +1117,7 @@ void Window::_notification(int p_what) {
 						position = DisplayServer::get_singleton()->window_get_position(window_id);
 						size = DisplayServer::get_singleton()->window_get_size(window_id);
 					}
+					_update_window_size(); // Inform DisplayServer of minimum and maximum size.
 					_update_viewport_size(); // Then feed back to the viewport.
 					_update_window_callbacks();
 					RS::get_singleton()->viewport_set_update_mode(get_viewport_rid(), RS::VIEWPORT_UPDATE_WHEN_VISIBLE);
@@ -1422,6 +1425,9 @@ void Window::popup_centered_clamped(const Size2i &p_size, float p_fallback_ratio
 	ERR_FAIL_COND(!is_inside_tree());
 	ERR_FAIL_COND_MSG(window_id == DisplayServer::MAIN_WINDOW_ID, "Can't popup the main window.");
 
+	// Consider the current size when calling with the default value.
+	Size2i expected_size = p_size == Size2i() ? size : p_size;
+
 	Rect2 parent_rect;
 
 	if (is_embedded()) {
@@ -1436,7 +1442,7 @@ void Window::popup_centered_clamped(const Size2i &p_size, float p_fallback_ratio
 	Vector2i size_ratio = parent_rect.size * p_fallback_ratio;
 
 	Rect2i popup_rect;
-	popup_rect.size = Vector2i(MIN(size_ratio.x, p_size.x), MIN(size_ratio.y, p_size.y));
+	popup_rect.size = Vector2i(MIN(size_ratio.x, expected_size.x), MIN(size_ratio.y, expected_size.y));
 	popup_rect.size = _clamp_window_size(popup_rect.size);
 
 	if (parent_rect != Rect2()) {
@@ -1450,6 +1456,9 @@ void Window::popup_centered(const Size2i &p_minsize) {
 	ERR_FAIL_COND(!is_inside_tree());
 	ERR_FAIL_COND_MSG(window_id == DisplayServer::MAIN_WINDOW_ID, "Can't popup the main window.");
 
+	// Consider the current size when calling with the default value.
+	Size2i expected_size = p_minsize == Size2i() ? size : p_minsize;
+
 	Rect2 parent_rect;
 
 	if (is_embedded()) {
@@ -1462,7 +1471,7 @@ void Window::popup_centered(const Size2i &p_minsize) {
 	}
 
 	Rect2i popup_rect;
-	popup_rect.size = _clamp_window_size(p_minsize);
+	popup_rect.size = _clamp_window_size(expected_size);
 
 	if (parent_rect != Rect2()) {
 		popup_rect.position = parent_rect.position + (parent_rect.size - popup_rect.size) / 2;
