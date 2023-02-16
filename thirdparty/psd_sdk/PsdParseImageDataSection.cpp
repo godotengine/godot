@@ -18,6 +18,7 @@
 #include "PsdAssert.h"
 #include "PsdLog.h"
 
+#include "core/io/stream_peer.h"
 
 PSD_NAMESPACE_BEGIN
 
@@ -44,7 +45,7 @@ namespace
 
 	// ---------------------------------------------------------------------------------------------------------------------
 	// ---------------------------------------------------------------------------------------------------------------------
-	static ImageDataSection* ReadImageDataSectionRaw(SyncFileReader& reader, Allocator* allocator, unsigned int width, unsigned int height, unsigned int channelCount, unsigned int bytesPerPixel)
+	static ImageDataSection* ReadImageDataSectionRaw(Ref<StreamPeerBuffer> reader, Allocator* allocator, unsigned int width, unsigned int height, unsigned int channelCount, unsigned int bytesPerPixel)
 	{
 		const unsigned int size = width*height;
 		if (size == 0)
@@ -60,7 +61,7 @@ namespace
 			void* planarData = allocator->Allocate(size*bytesPerPixel, 16u);
 			imageData->images[i].data = planarData;
 
-			reader.Read(planarData, size*bytesPerPixel);
+			reader->get_data((uint8_t *)planarData, size*bytesPerPixel);
 		}
 
 		return imageData;
@@ -69,7 +70,7 @@ namespace
 
 	// ---------------------------------------------------------------------------------------------------------------------
 	// ---------------------------------------------------------------------------------------------------------------------
-	static ImageDataSection* ReadImageDataSectionRLE(SyncFileReader& reader, Allocator* allocator, unsigned int width, unsigned int height, unsigned int channelCount, unsigned int bytesPerPixel)
+	static ImageDataSection* ReadImageDataSectionRLE(Ref<StreamPeerBuffer> reader, Allocator* allocator, unsigned int width, unsigned int height, unsigned int channelCount, unsigned int bytesPerPixel)
 	{
 		// the RLE-compressed data is preceded by a 2-byte data count for each scan line, per channel.
 		// we store the size of the RLE data per channel, and assume a maximum of 256 channels.
@@ -81,7 +82,7 @@ namespace
 			unsigned int size = 0u;
 			for (unsigned int j=0; j < height; ++j)
 			{
-				const uint16_t dataCount = fileUtil::ReadFromFileBE<uint16_t>(reader);
+				const uint16_t dataCount = reader->get_u16();
 				size += dataCount;
 			}
 
@@ -105,7 +106,7 @@ namespace
 			// read RLE data, and uncompress into planar buffer
 			const unsigned int rleSize = channelSize[i];
 			uint8_t* rleData = static_cast<uint8_t*>(allocator->Allocate(rleSize, 4u));
-			reader.Read(rleData, rleSize);
+			reader->get_data(rleData, rleSize);
 
 			imageUtil::DecompressRle(rleData, rleSize, static_cast<uint8_t*>(planarData), width*height*bytesPerPixel);
 
@@ -119,7 +120,7 @@ namespace
 
 // ---------------------------------------------------------------------------------------------------------------------
 // ---------------------------------------------------------------------------------------------------------------------
-ImageDataSection* ParseImageDataSection(const Document* document, File* file, Allocator* allocator)
+ImageDataSection* ParseImageDataSection(const Document* document, Ref<StreamPeerBuffer> file, Allocator* allocator)
 {
 	PSD_ASSERT_NOT_NULL(file);
 	PSD_ASSERT_NOT_NULL(allocator);
@@ -139,22 +140,21 @@ ImageDataSection* ParseImageDataSection(const Document* document, File* file, Al
 		return nullptr;
 	}
 
-	SyncFileReader reader(file);
-	reader.SetPosition(section.offset);
+	file->seek(section.offset);
 
 	ImageDataSection* imageData = nullptr;
 	const unsigned int width = document->width;
 	const unsigned int height = document->height;
 	const unsigned int bitsPerChannel = document->bitsPerChannel;
 	const unsigned int channelCount = document->channelCount;
-	const uint16_t compressionType = fileUtil::ReadFromFileBE<uint16_t>(reader);
+	const uint16_t compressionType = file->get_u16();
 	if (compressionType == compressionType::RAW)
 	{
-		imageData = ReadImageDataSectionRaw(reader, allocator, width, height, channelCount, bitsPerChannel / 8u);
+		imageData = ReadImageDataSectionRaw(file, allocator, width, height, channelCount, bitsPerChannel / 8u);
 	}
 	else if (compressionType == compressionType::RLE)
 	{
-		imageData = ReadImageDataSectionRLE(reader, allocator, width, height, channelCount, bitsPerChannel / 8u);
+		imageData = ReadImageDataSectionRLE(file, allocator, width, height, channelCount, bitsPerChannel / 8u);
 	}
 	else
 	{

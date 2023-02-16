@@ -143,14 +143,7 @@ void PSDTexture::parse() {
 	const std::wstring rawFile = L"";
 	Ref<StreamPeerBuffer> file;
 	file.instantiate();
-	Error err = file->put_data(data.ptr(), data_len);
-
-	// try opening the file. if it fails, bail out.
-	if (err != OK)
-	{
-		ERR_FAIL();
-	}
-
+	file->set_data_array(data);
 	MallocAllocator allocator;
 
 	// create a new document that can be used for extracting different sections from the PSD.

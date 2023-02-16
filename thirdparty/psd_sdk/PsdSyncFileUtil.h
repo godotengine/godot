@@ -7,6 +7,7 @@
 #include "PsdSyncFileReader.h"
 #include "PsdSyncFileWriter.h"
 
+#include "core/io/stream_peer.h"
 
 PSD_NAMESPACE_BEGIN
 
@@ -17,21 +18,21 @@ namespace fileUtil
 {
 	/// Reads built-in data types from a file.
 	template <typename T>
-	inline T ReadFromFile(SyncFileReader& reader);
+	inline T ReadFromFile(Ref<StreamPeerBuffer> reader);
 
 	/// Reads built-in data types from a file, assuming they are stored as big-endian data.
 	/// The read value is automatically converted to the native endianness.
 	template <typename T>
-	inline T ReadFromFileBE(SyncFileReader& reader);
+	inline T ReadFromFileBE(Ref<StreamPeerBuffer> reader);
 
 	/// Writes built-in data types to a file.
 	template <typename T>
-	inline void WriteToFile(SyncFileWriter& writer, const T& data);
+	inline void WriteToFile(Ref<StreamPeerBuffer> writer, const T& data);
 
 	/// Writes built-in data types to a file, assuming they are to be stored as big-endian data.
 	/// The write value is automatically converted to the native endianness.
 	template <typename T>
-	inline void WriteToFileBE(SyncFileWriter& writer, const T& data);
+	inline void WriteToFileBE(Ref<StreamPeerBuffer> writer, const T& data);
 }
 
 #include "PsdSyncFileUtil.inl"

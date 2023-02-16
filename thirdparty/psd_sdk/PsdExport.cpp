@@ -17,6 +17,7 @@
 #include "Psdminiz.h"
 #include <string.h>
 
+#include "core/io/stream_peer.h"
 
 PSD_NAMESPACE_BEGIN
 
@@ -300,7 +301,7 @@ namespace
 
 	// ---------------------------------------------------------------------------------------------------------------------
 	// ---------------------------------------------------------------------------------------------------------------------
-	static void WriteImageResource(SyncFileWriter& writer, uint16_t id, uint32_t resourceSize)
+	static void WriteImageResource(Ref<StreamPeerBuffer> writer, uint16_t id, uint32_t resourceSize)
 	{
 		const uint32_t signature = util::Key<'8', 'B', 'I', 'M'>::VALUE;
 		fileUtil::WriteToFileBE(writer, signature);
@@ -887,10 +888,8 @@ void UpdateMergedImage(ExportDocument* document, Allocator* allocator, const flo
 
 // ---------------------------------------------------------------------------------------------------------------------
 // ---------------------------------------------------------------------------------------------------------------------
-void WriteDocument(ExportDocument* document, Allocator* allocator, File* file)
+void WriteDocument(ExportDocument* document, Allocator* allocator, Ref<StreamPeerBuffer> writer)
 {
-	SyncFileWriter writer(file);
-
 	// signature
 	fileUtil::WriteToFileBE(writer, util::Key<'8', 'B', 'P', 'S'>::VALUE);
 
@@ -1014,22 +1013,22 @@ void WriteDocument(ExportDocument* document, Allocator* allocator, File* file)
 			{
 				WriteImageResource(writer, imageResource::XMP_METADATA, metaDataSize);
 
-				const uint64_t start = writer.GetPosition();
+				const uint64_t start = writer->get_position();
 				{
-					writer.Write(XMP_HEADER, sizeof(XMP_HEADER)-1u);
+					writer->put_data((const uint8_t *)XMP_HEADER, sizeof(XMP_HEADER)-1u);
 					for (unsigned int i = 0u; i < document->attributeCount; ++i)
 					{
-						writer.Write("<xmp:", 5u);
-						writer.Write(document->attributes[i].name, static_cast<uint32_t>(strlen(document->attributes[i].name)));
-						writer.Write(">", 1u);
-						writer.Write(document->attributes[i].value, static_cast<uint32_t>(strlen(document->attributes[i].value)));
-						writer.Write("</xmp:", 6u);
-						writer.Write(document->attributes[i].name, static_cast<uint32_t>(strlen(document->attributes[i].name)));
-						writer.Write(">\n", 2u);
+						writer->put_data((const uint8_t *)"<xmp:", 5u);
+						writer->put_data((uint8_t *)document->attributes[i].name, static_cast<uint32_t>(strlen(document->attributes[i].name)));
+						writer->put_data((const uint8_t *)">", 1u);
+						writer->put_data((uint8_t *)document->attributes[i].value, static_cast<uint32_t>(strlen(document->attributes[i].value)));
+						writer->put_data((const uint8_t *)"</xmp:", 6u);
+						writer->put_data((uint8_t *)document->attributes[i].name, static_cast<uint32_t>(strlen(document->attributes[i].name)));
+						writer->put_data((const uint8_t *)">\n", 2u);
 					}
-					writer.Write(XMP_FOOTER, sizeof(XMP_FOOTER)-1u);
+					writer->put_data((const uint8_t *)XMP_FOOTER, sizeof(XMP_FOOTER)-1u);
 				}
-				const uint64_t bytesWritten = writer.GetPosition() - start;
+				const uint64_t bytesWritten = writer->get_position() - start;
 				if (bytesWritten & 1ull)
 				{
 					// write padding byte
@@ -1041,11 +1040,11 @@ void WriteDocument(ExportDocument* document, Allocator* allocator, File* file)
 			{
 				WriteImageResource(writer, imageResource::ICC_PROFILE, iccProfileSize);
 
-				const uint64_t start = writer.GetPosition();
+				const uint64_t start = writer->get_position();
 				{
-					writer.Write(document->iccProfile, document->sizeOfICCProfile);
+					writer->put_data(document->iccProfile, document->sizeOfICCProfile);
 				}
-				const uint64_t bytesWritten = writer.GetPosition() - start;
+				const uint64_t bytesWritten =  writer->get_position() - start;
 				if (bytesWritten & 1ull)
 				{
 					// write padding byte
@@ -1057,11 +1056,11 @@ void WriteDocument(ExportDocument* document, Allocator* allocator, File* file)
 			{
 				WriteImageResource(writer, imageResource::EXIF_DATA, exifDataSize);
 
-				const uint64_t start = writer.GetPosition();
+				const uint64_t start = writer->get_position();
 				{
-					writer.Write(document->exifData, document->sizeOfExifData);
+					writer->put_data(document->exifData, document->sizeOfExifData);
 				}
-				const uint64_t bytesWritten = writer.GetPosition() - start;
+				const uint64_t bytesWritten = writer->get_position() - start;
 				if (bytesWritten & 1ull)
 				{
 					// write padding byte
@@ -1073,7 +1072,7 @@ void WriteDocument(ExportDocument* document, Allocator* allocator, File* file)
 			{
 				WriteImageResource(writer, imageResource::THUMBNAIL_RESOURCE, thumbnailSize);
 
-				const uint64_t start = writer.GetPosition();
+				const uint64_t start = writer->get_position();
 				{
 					const uint32_t format = 1u;				// format = kJpegRGB
 					const uint16_t bitsPerPixel = 24u;
@@ -1090,9 +1089,9 @@ void WriteDocument(ExportDocument* document, Allocator* allocator, File* file)
 					fileUtil::WriteToFileBE(writer, bitsPerPixel);
 					fileUtil::WriteToFileBE(writer, planeCount);
 
-					writer.Write(document->thumbnail->binaryJpeg, document->thumbnail->binaryJpegSize);
+					writer->put_data(document->thumbnail->binaryJpeg, document->thumbnail->binaryJpegSize);
 				}
-				const uint64_t bytesWritten = writer.GetPosition() - start;
+				const uint64_t bytesWritten = writer->get_position() - start;
 				if (bytesWritten & 1ull)
 				{
 					// write padding byte
@@ -1106,7 +1105,7 @@ void WriteDocument(ExportDocument* document, Allocator* allocator, File* file)
 				{
 					WriteImageResource(writer, imageResource::DISPLAY_INFO, displayInfoSize);
 
-					const uint64_t start = writer.GetPosition();
+					const uint64_t start = writer->get_position();
 
 					// version
 					fileUtil::WriteToFileBE(writer, static_cast<uint32_t>(1u));
@@ -1124,7 +1123,7 @@ void WriteDocument(ExportDocument* document, Allocator* allocator, File* file)
 						fileUtil::WriteToFileBE(writer, channel->mode);
 					}
 
-					const uint64_t bytesWritten = writer.GetPosition() - start;
+					const uint64_t bytesWritten = writer->get_position() - start;
 					if (bytesWritten & 1ull)
 					{
 						// write padding byte
@@ -1136,15 +1135,15 @@ void WriteDocument(ExportDocument* document, Allocator* allocator, File* file)
 				{
 					WriteImageResource(writer, imageResource::ALPHA_CHANNEL_ASCII_NAMES, channelNamesSize);
 
-					const uint64_t start = writer.GetPosition();
+					const uint64_t start = writer->get_position();
 
 					for (unsigned int i = 0u; i < document->alphaChannelCount; ++i)
 					{
 						fileUtil::WriteToFileBE(writer, static_cast<uint8_t>(document->alphaChannels[i].asciiName.GetLength()));
-						writer.Write(document->alphaChannels[i].asciiName.c_str(), static_cast<uint32_t>(document->alphaChannels[i].asciiName.GetLength()));
+						writer->put_data((const uint8_t *)document->alphaChannels[i].asciiName.c_str(), static_cast<uint32_t>(document->alphaChannels[i].asciiName.GetLength()));
 					}
 
-					const uint64_t bytesWritten = writer.GetPosition() - start;
+					const uint64_t bytesWritten = writer->get_position() - start;
 					if (bytesWritten & 1ull)
 					{
 						// write padding byte
@@ -1156,7 +1155,7 @@ void WriteDocument(ExportDocument* document, Allocator* allocator, File* file)
 				{
 					WriteImageResource(writer, imageResource::ALPHA_CHANNEL_UNICODE_NAMES, unicodeChannelNamesSize);
 
-					const uint64_t start = writer.GetPosition();
+					const uint64_t start = writer->get_position();
 
 					for (unsigned int i = 0u; i < document->alphaChannelCount; ++i)
 					{
@@ -1174,7 +1173,7 @@ void WriteDocument(ExportDocument* document, Allocator* allocator, File* file)
 						fileUtil::WriteToFileBE(writer, uint16_t(0u));
 					}
 
-					const uint64_t bytesWritten = writer.GetPosition() - start;
+					const uint64_t bytesWritten = writer->get_position() - start;
 					if (bytesWritten & 1ull)
 					{
 						// write padding byte
@@ -1292,7 +1291,7 @@ void WriteDocument(ExportDocument* document, Allocator* allocator, File* file)
 		const uint8_t nameLength = static_cast<uint8_t>(strlen(layer->name));
 		const uint32_t paddedNameLength = bitUtil::RoundUpToMultiple(nameLength + 1u, 4u);
 		fileUtil::WriteToFileBE(writer, nameLength);
-		writer.Write(layer->name, paddedNameLength - 1u);
+		writer->put_data((const uint8_t *)layer->name, paddedNameLength - 1u);
 	}
 
 	// per-layer data
@@ -1306,7 +1305,7 @@ void WriteDocument(ExportDocument* document, Allocator* allocator, File* file)
 			if (layer->channelData[j])
 			{
 				fileUtil::WriteToFileBE(writer, layer->channelCompression[j]);
-				writer.Write(layer->channelData[j], layer->channelSize[j]);
+				writer->put_data((const uint8_t *)layer->channelData[j], layer->channelSize[j]);
 			}
 		}
 	}
@@ -1314,7 +1313,7 @@ void WriteDocument(ExportDocument* document, Allocator* allocator, File* file)
 	// add padding to align layer info section to multiple of 4
 	if (paddingNeeded != 0u)
 	{
-		writer.Write(zeroes, paddingNeeded);
+		writer->put_data(zeroes, paddingNeeded);
 	}
 
 	// global layer mask info
@@ -1337,22 +1336,22 @@ void WriteDocument(ExportDocument* document, Allocator* allocator, File* file)
 		if (document->colorMode == exportColorMode::GRAYSCALE)
 		{
 			const void* dataGray = document->mergedImageData[0] ? document->mergedImageData[0] : emptyMemory;
-			writer.Write(dataGray, size);
+			writer->put_data((uint8_t *)dataGray, size);
 		}
 		else if (document->colorMode == exportColorMode::RGB)
 		{
 			const void* dataR = document->mergedImageData[0] ? document->mergedImageData[0] : emptyMemory;
 			const void* dataG = document->mergedImageData[1] ? document->mergedImageData[1] : emptyMemory;
 			const void* dataB = document->mergedImageData[2] ? document->mergedImageData[2] : emptyMemory;
-			writer.Write(dataR, size);
-			writer.Write(dataG, size);
-			writer.Write(dataB, size);
+			writer->put_data((const uint8_t *)dataR, size);
+			writer->put_data((const uint8_t *)dataG, size);
+			writer->put_data((const uint8_t *)dataB, size);
 		}
 
 		// write alpha channels
 		for (unsigned int i = 0u; i < document->alphaChannelCount; ++i)
 		{
-			writer.Write(document->alphaChannelData[i], size);
+			writer->put_data((const uint8_t *)document->alphaChannelData[i], size);
 		}
 
 		memoryUtil::FreeArray(allocator, emptyMemory);
