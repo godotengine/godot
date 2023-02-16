@@ -70,4 +70,4 @@ public:
 	PSDLayer();
 };
 
-#endif
+#endif // PSD_LAYER_H
