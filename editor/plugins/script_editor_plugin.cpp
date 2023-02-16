@@ -2518,7 +2518,7 @@ void ScriptEditor::save_all_scripts() {
 		} else {
 			// For built-in scripts, save their scenes instead.
 			const String scene_path = edited_res->get_path().get_slice("::", 0);
-			if (!scenes_to_save.has(scene_path)) {
+			if (!scene_path.is_empty() && !scenes_to_save.has(scene_path)) {
 				scenes_to_save.push_back(scene_path);
 			}
 		}
