@@ -33,13 +33,10 @@
 
 #include "core/io/resource_loader.h"
 
+
 #include "Psd.h"
 #include "PsdNativeFile_Godot.h"
-
-//#include "Psd/PsdPlatform.h"
-
 #include "PsdMallocAllocator.h"
-
 #include "PsdDocument.h"
 #include "PsdColorMode.h"
 #include "PsdLayer.h"
@@ -103,7 +100,7 @@ protected:
 
 	void parse();
 
-	void ExportLayer(const wchar_t* name, unsigned int width, unsigned int height, const uint8_t *data, int channelType);
+	void ExportLayer(const wchar_t* p_name, unsigned int p_width, unsigned int p_height, const uint8_t* p_data, int p_channel_type);
 
 	void clear_data();
 

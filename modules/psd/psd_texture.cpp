@@ -352,41 +352,41 @@ void PSDTexture::set_data(const Vector<uint8_t> &p_data) {
 
 }
 
-void PSDTexture::ExportLayer(const wchar_t* name, unsigned int width, unsigned int height, const uint8_t *data, int channelType )
+void PSDTexture::ExportLayer(const wchar_t* p_name, unsigned int p_width, unsigned int p_height, const uint8_t* p_data, int p_channel_type)
 {
-	if (channelType == -1) {
-		layers[String(name)] = Ref<Texture>();
+	if (p_channel_type == -1) {
+		layers[String(p_name)] = Ref<Texture>();
 
 		return;
 	}
 
 	Vector<uint8_t> data_vector;
 
-	int bytesPerPixel = 4;
-	Image::Format imageFormat = Image::FORMAT_RGBA8;
+	int bytes_per_pixel = 4;
+	Image::Format image_format = Image::FORMAT_RGBA8;
 
-	if (channelType == COLOR_SPACE_NAME::RGB) {
-		bytesPerPixel = 3;
-		imageFormat = Image::FORMAT_RGB8;
+	if (p_channel_type == COLOR_SPACE_NAME::RGB) {
+		bytes_per_pixel = 3;
+		image_format = Image::FORMAT_RGB8;
 	}
-	else if (channelType == COLOR_SPACE_NAME::RGBA) {
-		bytesPerPixel = 4;
-		imageFormat = Image::FORMAT_RGBA8;
+	else if (p_channel_type == COLOR_SPACE_NAME::RGBA) {
+		bytes_per_pixel = 4;
+		image_format = Image::FORMAT_RGBA8;
 	}
-	else if (channelType == COLOR_SPACE_NAME::MONOCHROME) {
-		bytesPerPixel = 1;
-		imageFormat = Image::FORMAT_L8;
-	}
-
-	for (unsigned int i = 0; i < width * height * bytesPerPixel; i++) {
-		data_vector.push_back(data[i]);
+	else if (p_channel_type == COLOR_SPACE_NAME::MONOCHROME) {
+		bytes_per_pixel = 1;
+		image_format = Image::FORMAT_L8;
 	}
 
-	Ref<Image> image_layer = Image::create_from_data(width, height, false, imageFormat, data_vector);
+	for (unsigned int i = 0; i < p_width * p_height * bytes_per_pixel; i++) {
+		data_vector.push_back(p_data[i]);
+	}
+
+	Ref<Image> image_layer = Image::create_from_data(p_width, p_height, false, image_format, data_vector);
 
 	Ref<Texture> texture_layer = ImageTexture::create_from_image(image_layer);
 
-	layers[String(name)] = texture_layer;
+	layers[String(p_name)] = texture_layer;
 
 }
 

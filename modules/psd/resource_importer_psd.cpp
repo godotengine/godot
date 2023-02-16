@@ -71,11 +71,7 @@ String ResourceImporterPSD::get_preset_name(int p_idx) const {
 }
 
 void ResourceImporterPSD::get_import_options(const String &p_path, List<ImportOption> *r_options, int p_preset) const {
-    /*r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "loop"), false));
-    r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "loop_offset"), 0));
-    r_options->push_back(ImportOption(PropertyInfo(Variant::FLOAT, "bpm", PROPERTY_HINT_RANGE, "0,400,0.01,or_greater"), 0));
-    r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "beat_count", PROPERTY_HINT_RANGE, "0,512,or_greater"), 0));
-    r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "bar_beats", PROPERTY_HINT_RANGE, "2,32,or_greater"), 4));*/
+    
 }
 
 
@@ -84,10 +80,7 @@ bool ResourceImporterPSD::has_advanced_options() const {
     return true;
 }
 void ResourceImporterPSD::show_advanced_options(const String &p_path) {
-    /*Ref<AudioStreamMP3> mp3_stream = import_mp3(p_path);
-    if (mp3_stream.is_valid()) {
-        AudioStreamImportSettings::get_singleton()->edit(p_path, "mp3", mp3_stream);
-    }*/
+    
 }
 #endif
 
@@ -114,23 +107,8 @@ Ref<PSDTexture> ResourceImporterPSD::import_psd(const String &p_path) {
 }
 
 Error ResourceImporterPSD::import(const String &p_source_file, const String &p_save_path, const HashMap<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
-    /*bool loop = p_options["loop"];
-    float loop_offset = p_options["loop_offset"];
-    double bpm = p_options["bpm"];
-    float beat_count = p_options["beat_count"];
-    float bar_beats = p_options["bar_beats"];*/
-
     Ref<PSDTexture> psd_texture = import_psd(p_source_file);
-    
-    /*if (psd_texture.is_null()) {
-        return ERR_CANT_OPEN;
-    }
 
-    mp3_stream->set_loop(loop);
-    mp3_stream->set_loop_offset(loop_offset);
-    mp3_stream->set_bpm(bpm);
-    mp3_stream->set_beat_count(beat_count);
-    mp3_stream->set_bar_beats(bar_beats);*/
 
     return ResourceSaver::save(psd_texture, p_save_path + ".psdstr");
 }

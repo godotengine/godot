@@ -40,7 +40,6 @@
 #define NOMB
 #define NOMEMMGR
 #define NOMETAFILE
-#define NOMINMAX
 #define NOMSG
 #define NOOPENFILE
 #define NOSCROLL
