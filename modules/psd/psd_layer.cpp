@@ -32,13 +32,13 @@
 #include <core\core_string_names.h>
 
 int PSDLayer::get_width() const {
-	
+
 	if (psd.is_valid() && psd->get_texture_layer(layer).is_valid()) {
 		return psd->get_texture_layer(layer)->get_image()->get_width();
 	}
 
 	return 1;
-	
+
 }
 
 int PSDLayer::get_height() const {
@@ -70,7 +70,7 @@ void PSDLayer::set_psd_texture(const Ref<PSDTexture>& p_psd) {
 	if (psd == p_psd) {
 		return;
 	}
-	
+
 	if (psd.is_valid()) {
 		psd->disconnect(CoreStringNames::get_singleton()->changed, callable_mp((Resource*)this, &PSDLayer::emit_changed));
 	}

@@ -88,9 +88,9 @@ File::ReadOperation NativeFile::DoRead(void* buffer, uint32_t count, uint64_t po
 	operation->Offset = static_cast<DWORD>(position & 0xFFFFFFFFull);
 	operation->OffsetHigh = static_cast<DWORD>((position >> 32u) & 0xFFFFFFFFull);
 
-	
+
     memcpy(buffer, buf + position, count);
-    
+
 	return static_cast<File::ReadOperation>(operation);
 }
 
@@ -100,7 +100,7 @@ File::ReadOperation NativeFile::DoRead(void* buffer, uint32_t count, uint64_t po
 bool NativeFile::DoWaitForRead(File::ReadOperation& operation)
 {
 	OVERLAPPED* overlapped = static_cast<OVERLAPPED*>(operation);
-	
+
 	memoryUtil::Free(m_allocator, overlapped);
 
 	return true;

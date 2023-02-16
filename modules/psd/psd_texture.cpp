@@ -154,7 +154,7 @@ void PSDTexture::parse() {
 	// try opening the file. if it fails, bail out.
 	if (!file.OpenRead(rawFile.c_str()))
 	{
-		
+
 		//ERR_FAIL_COND_V_MSG
 	}
 
@@ -252,7 +252,7 @@ void PSDTexture::parse() {
 					channelType = COLOR_SPACE_NAME::RGBA;
 				}
 			}
-			
+
 
 			// interleave the different pieces of planar canvas data into one RGB or RGBA image, depending on what channels
 			// we found, and what color mode the document is stored in.
@@ -321,7 +321,7 @@ void PSDTexture::parse() {
 
 			if (document->bitsPerChannel == 8u)
 			{
-				
+
 				ExportLayer(layerName, layerWidth, layerHeight, image8, channelType);
 			}
 
@@ -347,7 +347,7 @@ void PSDTexture::set_data(const Vector<uint8_t> &p_data) {
     data.resize(src_data_len);
     memcpy(data.ptrw(), src_datar, src_data_len);
     data_len = src_data_len;
-	
+
 	parse();
 
 }
@@ -413,7 +413,7 @@ void PSDTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_texture_layer"), &PSDTexture::get_texture_layer);
 
     ADD_PROPERTY(PropertyInfo(Variant::PACKED_BYTE_ARRAY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NO_EDITOR), "set_data", "get_data");
-    
+
 }
 
 PSDTexture::PSDTexture() {

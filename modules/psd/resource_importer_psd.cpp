@@ -121,7 +121,7 @@ Error ResourceImporterPSD::import(const String &p_source_file, const String &p_s
     float bar_beats = p_options["bar_beats"];*/
 
     Ref<PSDTexture> psd_texture = import_psd(p_source_file);
-    
+
     /*if (psd_texture.is_null()) {
         return ERR_CANT_OPEN;
     }
