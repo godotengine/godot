@@ -1,2 +1,2 @@
 GDTEST_ANALYZER_ERROR
-Identifier "defc" not declared in the current scope.
+Cannot use local parameter "defc" before it was declared.

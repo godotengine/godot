@@ -839,6 +839,7 @@ public:
 
 	struct IdentifierNode : public ExpressionNode {
 		StringName name;
+		SuiteNode *suite = nullptr; // The block in which the identifier is used.
 
 		enum Source {
 			UNDEFINED_SOURCE,

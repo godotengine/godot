@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+There is already a variable named "foo" declared in this scope.

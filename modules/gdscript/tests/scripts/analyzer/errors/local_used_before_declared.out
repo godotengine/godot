@@ -1,0 +1,2 @@
+GDTEST_ANALYZER_ERROR
+Cannot use local variable "x" before it was declared.

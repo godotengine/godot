@@ -1772,6 +1772,16 @@ void GDScriptAnalyzer::resolve_assignable(GDScriptParser::AssignableNode *p_assi
 
 	bool is_constant = p_assignable->type == GDScriptParser::Node::CONSTANT;
 
+	// The parser cannot check the locals declared below.
+	if (p_assignable->identifier != nullptr && p_assignable->identifier->suite != nullptr && p_assignable->identifier->suite->parent_block != nullptr) {
+		if (p_assignable->identifier->suite->parent_block->has_local(p_assignable->identifier->name)) {
+			const GDScriptParser::SuiteNode::Local &local = p_assignable->identifier->suite->parent_block->get_local(p_assignable->identifier->name);
+			push_error(vformat(R"(There is already a %s named "%s" declared in this scope.)", local.get_name(), p_assignable->identifier->name), p_assignable->identifier);
+			p_assignable->set_datatype(type);
+			return;
+		}
+	}
+
 	GDScriptParser::DataType specified_type;
 	bool has_specified_type = p_assignable->datatype_specifier != nullptr;
 	if (has_specified_type) {
@@ -3651,6 +3661,15 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 		} break;
 		case GDScriptParser::IdentifierNode::UNDEFINED_SOURCE:
 			break;
+	}
+
+	if (!found_source && p_identifier->suite != nullptr && p_identifier->suite->has_local(p_identifier->name)) {
+		const GDScriptParser::SuiteNode::Local &local = p_identifier->suite->get_local(p_identifier->name);
+		push_error(vformat(R"(Cannot use local %s "%s" before it was declared.)", local.get_name(), p_identifier->name), p_identifier);
+		GDScriptParser::DataType dummy;
+		dummy.kind = GDScriptParser::DataType::VARIANT;
+		p_identifier->set_datatype(dummy); // Just so type is set to something.
+		return;
 	}
 
 	// Not a local, so check members.
