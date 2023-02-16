@@ -126,6 +126,12 @@
 				Destroys the given RID.
 			</description>
 		</method>
+		<method name="get_debug_enabled" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] when the NavigationServer has debug enabled.
+			</description>
+		</method>
 		<method name="get_maps" qualifiers="const">
 			<return type="RID[]" />
 			<description>
@@ -573,6 +579,13 @@
 			<param index="0" name="active" type="bool" />
 			<description>
 				Control activation of this server.
+			</description>
+		</method>
+		<method name="set_debug_enabled">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				If [code]true[/code] enables debug mode on the NavigationServer.
 			</description>
 		</method>
 	</methods>

@@ -126,6 +126,12 @@
 				Destroys the given RID.
 			</description>
 		</method>
+		<method name="get_debug_enabled" qualifiers="const">
+			<return type="bool" />
+			<description>
+				Returns [code]true[/code] when the NavigationServer has debug enabled.
+			</description>
+		</method>
 		<method name="get_maps" qualifiers="const">
 			<return type="RID[]" />
 			<description>
@@ -518,6 +524,13 @@
 			<param index="1" name="travel_cost" type="float" />
 			<description>
 				Sets the [param travel_cost] for this [param region].
+			</description>
+		</method>
+		<method name="set_debug_enabled">
+			<return type="void" />
+			<param index="0" name="enabled" type="bool" />
+			<description>
+				If [code]true[/code] enables debug mode on the NavigationServer.
 			</description>
 		</method>
 	</methods>
