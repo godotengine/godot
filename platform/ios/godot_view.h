@@ -59,9 +59,4 @@ class String;
 - (void)stopRendering;
 - (void)startRendering;
 
-- (void)godotTouchesBegan:(NSSet *)touches withEvent:(UIEvent *)event;
-- (void)godotTouchesMoved:(NSSet *)touches withEvent:(UIEvent *)event;
-- (void)godotTouchesEnded:(NSSet *)touches withEvent:(UIEvent *)event;
-- (void)godotTouchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event;
-
 @end
