@@ -33,8 +33,9 @@
 #include "core/io/file_access.h"
 #include "core/io/resource_saver.h"
 #include "scene/resources/texture.h"
-#include "thirdparty/libogg/ogg/ogg.h"
-#include "thirdparty/libvorbis/vorbis/codec.h"
+
+#include <ogg/ogg.h>
+#include <vorbis/codec.h>
 
 #ifdef TOOLS_ENABLED
 #include "editor/import/audio_stream_import_settings.h"

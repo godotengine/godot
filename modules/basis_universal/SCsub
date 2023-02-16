@@ -40,6 +40,9 @@ if not env.msvc:
 else:
     env_basisu.Prepend(CPPPATH=[thirdparty_dir])
 
+if env["builtin_zstd"]:
+    env_basisu.Prepend(CPPPATH=["#thirdparty/zstd"])
+
 if env.dev_build:
     env_basisu.Append(CPPDEFINES=[("BASISU_DEVEL_MESSAGES", 1), ("BASISD_ENABLE_DEBUG_FLAGS", 1)])
 
