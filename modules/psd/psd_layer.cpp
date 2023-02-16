@@ -29,7 +29,7 @@
 /**************************************************************************/
 
 #include "psd_layer.h"
-#include <core\core_string_names.h>
+#include "core/core_string_names.h"
 
 int PSDLayer::get_width() const {
 
