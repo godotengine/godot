@@ -1096,6 +1096,7 @@ void CodeTextEditor::trim_trailing_whitespace() {
 	for (int i = 0; i < text_editor->get_line_count(); i++) {
 		String line = text_editor->get_line(i);
 		if (line.ends_with(" ") || line.ends_with("\t")) {
+			if (line.rstrip("\t").is_empty()) continue;
 			if (!trimed_whitespace) {
 				text_editor->begin_complex_operation();
 				trimed_whitespace = true;
