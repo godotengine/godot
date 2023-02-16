@@ -538,6 +538,8 @@ void InputEventConfigurationDialog::_notification(int p_what) {
 			icon_cache.joypad_button = get_theme_icon(SNAME("JoyButton"), SNAME("EditorIcons"));
 			icon_cache.joypad_axis = get_theme_icon(SNAME("JoyAxis"), SNAME("EditorIcons"));
 
+			event_as_text->add_theme_font_override("font", get_theme_font(SNAME("bold"), SNAME("EditorFonts")));
+
 			_update_input_list();
 		} break;
 	}
@@ -591,7 +593,6 @@ InputEventConfigurationDialog::InputEventConfigurationDialog() {
 	event_as_text = memnew(Label);
 	event_as_text->set_autowrap_mode(TextServer::AUTOWRAP_WORD_SMART);
 	event_as_text->set_horizontal_alignment(HORIZONTAL_ALIGNMENT_CENTER);
-	event_as_text->add_theme_font_override("font", get_theme_font(SNAME("bold"), SNAME("EditorFonts")));
 	event_as_text->add_theme_font_size_override("font_size", 18 * EDSCALE);
 	main_vbox->add_child(event_as_text);
 
