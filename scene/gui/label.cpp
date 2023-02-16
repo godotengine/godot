@@ -139,11 +139,14 @@ bool Label::_shape() {
 		can_process_lines = true;
 		lines_dirty = false;
 	} else {
-		// With autowrap on, we won't compute the minimum size until width is stable (two shape requests in a
-		// row with the same width.) This avoids situations in which the initial width is very narrow and the label
-		// would break text into many very short lines, causing a very tall label that can leave a deformed container.
-
-		can_process_lines = get_size().width == stable_width || autowrap_mode == TextServer::AUTOWRAP_OFF;
+		// With autowrap on or off with trimming enabled, we won't compute the minimum size until width is stable
+		// (two shape requests in a row with the same width.) This avoids situations in which the initial width is
+		// very narrow and the label would break text into many very short lines, causing a very tall label that can
+		// leave a deformed container. In the remaining case (namely, autowrap off and no trimming), the label is
+		// free to dictate its own width, something that will be taken advtantage of.
+		bool can_dictate_width = autowrap_mode == TextServer::AUTOWRAP_OFF && overrun_behavior == TextServer::OVERRUN_NO_TRIMMING;
+		bool is_width_stable = get_size().width == stable_width;
+		can_process_lines = can_dictate_width || is_width_stable;
 		stable_width = get_size().width;
 
 		if (can_process_lines) {
@@ -171,14 +174,13 @@ bool Label::_shape() {
 				}
 			}
 
-			if (autowrap_mode == TextServer::AUTOWRAP_OFF) {
+			if (can_dictate_width) {
 				for (int i = 0; i < lines_rid.size(); i++) {
 					if (minsize.width < TS->shaped_text_get_size(lines_rid[i]).x) {
 						minsize.width = TS->shaped_text_get_size(lines_rid[i]).x;
 					}
 				}
 
-				// With autowrap off, by now we already know the width the label will take.
 				width = (minsize.width - style->get_minimum_size().width);
 			}
 
