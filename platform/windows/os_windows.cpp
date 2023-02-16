@@ -156,6 +156,11 @@ static void _error_handler(void *p_self, const char *p_func, const char *p_file,
 void OS_Windows::initialize() {
 	crash_handler.initialize();
 
+	// Workaround for Vulkan not working on setups with AMD integrated graphics + NVIDIA dedicated GPU (GH-57708).
+	// This prevents using AMD integrated graphics with Vulkan entirely, but it allows the engine to start
+	// even on outdated/broken driver setups.
+	OS::get_singleton()->set_environment("DISABLE_LAYER_AMD_SWITCHABLE_GRAPHICS_1", "1");
+
 #ifdef WINDOWS_DEBUG_OUTPUT_ENABLED
 	error_handlers.errfunc = _error_handler;
 	error_handlers.userdata = this;
