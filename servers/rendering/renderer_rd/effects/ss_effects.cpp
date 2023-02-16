@@ -484,7 +484,7 @@ void SSEffects::downsample_depth(Ref<RenderSceneBuffersRD> p_render_buffers, uin
 		downsample_uniform_set = uniform_set_cache->get_cache_vec(shader, 2, u_depths);
 	}
 
-	float depth_linearize_mul = -p_projection.columns[3][2];
+	float depth_linearize_mul = -p_projection.columns[3][2] * 0.5;
 	float depth_linearize_add = p_projection.columns[2][2];
 	if (depth_linearize_mul * depth_linearize_add < 0) {
 		depth_linearize_add = -depth_linearize_add;
@@ -668,8 +668,14 @@ void SSEffects::screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_rende
 		ssil.gather_push_constant.screen_size[0] = p_settings.full_screen_size.x;
 		ssil.gather_push_constant.screen_size[1] = p_settings.full_screen_size.y;
 
-		ssil.gather_push_constant.half_screen_pixel_size[0] = 1.0 / p_ssil_buffers.buffer_width;
-		ssil.gather_push_constant.half_screen_pixel_size[1] = 1.0 / p_ssil_buffers.buffer_height;
+		ssil.gather_push_constant.half_screen_pixel_size[0] = 2.0 / p_settings.full_screen_size.x;
+		ssil.gather_push_constant.half_screen_pixel_size[1] = 2.0 / p_settings.full_screen_size.y;
+		if (ssil_half_size) {
+			ssil.gather_push_constant.half_screen_pixel_size[0] *= 2.0;
+			ssil.gather_push_constant.half_screen_pixel_size[1] *= 2.0;
+		}
+		ssil.gather_push_constant.half_screen_pixel_size_x025[0] = ssil.gather_push_constant.half_screen_pixel_size[0] * 0.75;
+		ssil.gather_push_constant.half_screen_pixel_size_x025[1] = ssil.gather_push_constant.half_screen_pixel_size[1] * 0.75;
 		float tan_half_fov_x = 1.0 / p_projection.columns[0][0];
 		float tan_half_fov_y = 1.0 / p_projection.columns[1][1];
 		ssil.gather_push_constant.NDC_to_view_mul[0] = tan_half_fov_x * 2.0;
@@ -679,9 +685,6 @@ void SSEffects::screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_rende
 		ssil.gather_push_constant.z_near = p_projection.get_z_near();
 		ssil.gather_push_constant.z_far = p_projection.get_z_far();
 		ssil.gather_push_constant.is_orthogonal = p_projection.is_orthogonal();
-
-		ssil.gather_push_constant.half_screen_pixel_size_x025[0] = ssil.gather_push_constant.half_screen_pixel_size[0] * 0.25;
-		ssil.gather_push_constant.half_screen_pixel_size_x025[1] = ssil.gather_push_constant.half_screen_pixel_size[1] * 0.25;
 
 		ssil.gather_push_constant.radius = p_settings.radius;
 		float radius_near_limit = (p_settings.radius * 1.2f);
@@ -733,7 +736,7 @@ void SSEffects::screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_rende
 			RD::Uniform u_depth_texture_view;
 			u_depth_texture_view.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
 			u_depth_texture_view.binding = 0;
-			u_depth_texture_view.append_id(default_sampler);
+			u_depth_texture_view.append_id(ss_effects.mirror_sampler);
 			u_depth_texture_view.append_id(depth_texture_view);
 
 			RD::Uniform u_normal_buffer;
@@ -1056,8 +1059,14 @@ void SSEffects::generate_ssao(Ref<RenderSceneBuffersRD> p_render_buffers, SSAORe
 		ssao.gather_push_constant.screen_size[0] = p_settings.full_screen_size.x;
 		ssao.gather_push_constant.screen_size[1] = p_settings.full_screen_size.y;
 
-		ssao.gather_push_constant.half_screen_pixel_size[0] = 1.0 / p_ssao_buffers.buffer_width;
-		ssao.gather_push_constant.half_screen_pixel_size[1] = 1.0 / p_ssao_buffers.buffer_height;
+		ssao.gather_push_constant.half_screen_pixel_size[0] = 2.0 / p_settings.full_screen_size.x;
+		ssao.gather_push_constant.half_screen_pixel_size[1] = 2.0 / p_settings.full_screen_size.y;
+		if (ssao_half_size) {
+			ssao.gather_push_constant.half_screen_pixel_size[0] *= 2.0;
+			ssao.gather_push_constant.half_screen_pixel_size[1] *= 2.0;
+		}
+		ssao.gather_push_constant.half_screen_pixel_size_x025[0] = ssao.gather_push_constant.half_screen_pixel_size[0] * 0.75;
+		ssao.gather_push_constant.half_screen_pixel_size_x025[1] = ssao.gather_push_constant.half_screen_pixel_size[1] * 0.75;
 		float tan_half_fov_x = 1.0 / p_projection.columns[0][0];
 		float tan_half_fov_y = 1.0 / p_projection.columns[1][1];
 		ssao.gather_push_constant.NDC_to_view_mul[0] = tan_half_fov_x * 2.0;
@@ -1065,9 +1074,6 @@ void SSEffects::generate_ssao(Ref<RenderSceneBuffersRD> p_render_buffers, SSAORe
 		ssao.gather_push_constant.NDC_to_view_add[0] = tan_half_fov_x * -1.0;
 		ssao.gather_push_constant.NDC_to_view_add[1] = tan_half_fov_y;
 		ssao.gather_push_constant.is_orthogonal = p_projection.is_orthogonal();
-
-		ssao.gather_push_constant.half_screen_pixel_size_x025[0] = ssao.gather_push_constant.half_screen_pixel_size[0] * 0.25;
-		ssao.gather_push_constant.half_screen_pixel_size_x025[1] = ssao.gather_push_constant.half_screen_pixel_size[1] * 0.25;
 
 		ssao.gather_push_constant.radius = p_settings.radius;
 		float radius_near_limit = (p_settings.radius * 1.2f);
@@ -1105,7 +1111,7 @@ void SSEffects::generate_ssao(Ref<RenderSceneBuffersRD> p_render_buffers, SSAORe
 			RD::Uniform u_depth_texture_view;
 			u_depth_texture_view.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
 			u_depth_texture_view.binding = 0;
-			u_depth_texture_view.append_id(default_sampler);
+			u_depth_texture_view.append_id(ss_effects.mirror_sampler);
 			u_depth_texture_view.append_id(depth_texture_view);
 
 			RD::Uniform u_normal_buffer;
