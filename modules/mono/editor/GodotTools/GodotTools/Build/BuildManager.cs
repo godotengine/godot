@@ -302,7 +302,7 @@ namespace GodotTools.Build
         public static bool CleanProjectBlocking(
             [DisallowNull] string configuration,
             [AllowNull] string platform = null
-        ) => CleanProjectBlocking(CreateBuildInfo(configuration, platform, rebuild: false));
+        ) => CleanProjectBlocking(CreateBuildInfo(configuration, platform, rebuild: false, onlyClean: true));
 
         public static bool PublishProjectBlocking(
             [DisallowNull] string configuration,
