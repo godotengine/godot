@@ -14,19 +14,20 @@
 #include "PsdLog.h"
 #include <cstring>
 
+#include "core/io/stream_peer.h"
 
 PSD_NAMESPACE_BEGIN
 
 // ---------------------------------------------------------------------------------------------------------------------
 // ---------------------------------------------------------------------------------------------------------------------
-Document* CreateDocument(File* file, Allocator* allocator)
+Document* CreateDocument(Ref<StreamPeerBuffer> file, Allocator* allocator)
 {
-	SyncFileReader reader(file);
-	reader.SetPosition(0u);
+	ERR_FAIL_COND_V(file.is_null(), nullptr);
+	file->seek(0u);
 
 	// check signature, must be "8BPS"
 	{
-		const uint32_t signature = fileUtil::ReadFromFileBE<uint32_t>(reader);
+		const uint32_t signature = file->get_u32();
 		if (signature != util::Key<'8', 'B', 'P', 'S'>::VALUE)
 		{
 			PSD_ERROR("PsdExtract", "File seems to be corrupt, signature does not match \"8BPS\".");
@@ -36,7 +37,7 @@ Document* CreateDocument(File* file, Allocator* allocator)
 
 	// check version, must be 1
 	{
-		const uint16_t version = fileUtil::ReadFromFileBE<uint16_t>(reader);
+		const uint16_t version = file->get_u16();
 		if (version != 1)
 		{
 			PSD_ERROR("PsdExtract", "File seems to be corrupt, version does not match 1.");
@@ -48,7 +49,7 @@ Document* CreateDocument(File* file, Allocator* allocator)
 	{
 		const uint8_t expected[6] = { 0u, 0u, 0u, 0u, 0u, 0u };
 		uint8_t zeroes[6] = {};
-		reader.Read(zeroes, 6u);
+		file->get_data(zeroes, 6u);
 
 		if (memcmp(zeroes, expected, sizeof(uint8_t)*6) != 0)
 		{
@@ -64,43 +65,43 @@ Document* CreateDocument(File* file, Allocator* allocator)
 	// e.g. for an RGB document with 3 alpha channels, this would be 3 (RGB) + 3 (Alpha) = 6 channels.
 	// however, note that individual layers can have extra channels for transparency masks, vector masks, and user masks.
 	// this is different from layer to layer.
-	document->channelCount = fileUtil::ReadFromFileBE<uint16_t>(reader);
+	document->channelCount = file->get_u16();
 
 	// read rest of header information
-	document->height = fileUtil::ReadFromFileBE<uint32_t>(reader);
-	document->width = fileUtil::ReadFromFileBE<uint32_t>(reader);
-	document->bitsPerChannel = fileUtil::ReadFromFileBE<uint16_t>(reader);
-	document->colorMode = fileUtil::ReadFromFileBE<uint16_t>(reader);
+	document->height = file->get_u32();
+	document->width = file->get_u32();
+	document->bitsPerChannel = file->get_u16();
+	document->colorMode = file->get_u16();
 
 	// grab offsets into different sections
 	{
-		const uint32_t length = fileUtil::ReadFromFileBE<uint32_t>(reader);
+		const uint32_t length = file->get_u32();
 
-		document->colorModeDataSection.offset = reader.GetPosition();
+		document->colorModeDataSection.offset = file->get_position();
 		document->colorModeDataSection.length = length;
 
-		reader.Skip(length);
+		file->seek(file->get_position() + length);
 	}
 	{
-		const uint32_t length = fileUtil::ReadFromFileBE<uint32_t>(reader);
+		const uint32_t length = file->get_u32();
 
-		document->imageResourcesSection.offset = reader.GetPosition();
+		document->imageResourcesSection.offset = file->get_position();
 		document->imageResourcesSection.length = length;
 
-		reader.Skip(length);
+		file->seek(file->get_position() + length);
 	}
 	{
-		const uint32_t length = fileUtil::ReadFromFileBE<uint32_t>(reader);
+		const uint32_t length = file->get_u32();
 
-		document->layerMaskInfoSection.offset = reader.GetPosition();
+		document->layerMaskInfoSection.offset = file->get_position();
 		document->layerMaskInfoSection.length = length;
 
-		reader.Skip(length);
+		file->seek(file->get_position() + length);
 	}
 	{
 		// note that the image data section does NOT store its length in the first 4 bytes
-		document->imageDataSection.offset = reader.GetPosition();
-		document->imageDataSection.length = static_cast<uint32_t>(file->GetSize() - reader.GetPosition());
+		document->imageDataSection.offset = file->get_position();
+		document->imageDataSection.length = static_cast<uint32_t>(file->get_size() - file->get_position());
 	}
 
 	return document;

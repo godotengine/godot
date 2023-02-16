@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "core/io/stream_peer.h"
 
 PSD_NAMESPACE_BEGIN
 
@@ -10,11 +11,10 @@ struct Document;
 class File;
 class Allocator;
 
-
 /// \ingroup Parser
 /// Parses only the header and section offsets, and returns a newly created document that needs to be freed
 /// by a call to \ref DestroyDocument.
-Document* CreateDocument(File* file, Allocator* allocator);
+Document* CreateDocument(Ref<StreamPeerBuffer> file, Allocator* allocator);
 
 /// \ingroup Parser
 /// Destroys and nullifies the given \a document previously created by a call to \ref CreateDocument.
