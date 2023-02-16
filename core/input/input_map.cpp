@@ -669,6 +669,10 @@ const HashMap<String, List<Ref<InputEvent>>> &InputMap::get_builtins() {
 	default_builtin_cache.insert("ui_text_select_word_under_caret", inputs);
 
 	inputs = List<Ref<InputEvent>>();
+	inputs.push_back(InputEventKey::create_reference(Key::G | KeyModifierMask::CTRL | KeyModifierMask::META));
+	default_builtin_cache.insert("ui_text_select_word_under_caret.macos", inputs);
+
+	inputs = List<Ref<InputEvent>>();
 	inputs.push_back(InputEventKey::create_reference(Key::D | KeyModifierMask::CMD_OR_CTRL));
 	default_builtin_cache.insert("ui_text_add_selection_for_next_occurrence", inputs);
 
