@@ -612,18 +612,44 @@ void GDScriptByteCodeGenerator::write_binary_operator(const Address &p_target, V
 	append(p_operator);
 }
 
-void GDScriptByteCodeGenerator::write_type_test(const Address &p_target, const Address &p_source, const Address &p_type) {
-	append_opcode(GDScriptFunction::OPCODE_EXTENDS_TEST);
-	append(p_source);
-	append(p_type);
-	append(p_target);
-}
-
-void GDScriptByteCodeGenerator::write_type_test_builtin(const Address &p_target, const Address &p_source, Variant::Type p_type) {
-	append_opcode(GDScriptFunction::OPCODE_IS_BUILTIN);
-	append(p_source);
-	append(p_target);
-	append(p_type);
+void GDScriptByteCodeGenerator::write_type_test(const Address &p_target, const Address &p_source, const GDScriptDataType &p_type) {
+	switch (p_type.kind) {
+		case GDScriptDataType::BUILTIN: {
+			if (p_type.builtin_type == Variant::ARRAY && p_type.has_container_element_type()) {
+				const GDScriptDataType &element_type = p_type.get_container_element_type();
+				append_opcode(GDScriptFunction::OPCODE_TYPE_TEST_ARRAY);
+				append(p_target);
+				append(p_source);
+				append(get_constant_pos(element_type.script_type) | (GDScriptFunction::ADDR_TYPE_CONSTANT << GDScriptFunction::ADDR_BITS));
+				append(element_type.builtin_type);
+				append(element_type.native_type);
+			} else {
+				append_opcode(GDScriptFunction::OPCODE_TYPE_TEST_BUILTIN);
+				append(p_target);
+				append(p_source);
+				append(p_type.builtin_type);
+			}
+		} break;
+		case GDScriptDataType::NATIVE: {
+			append_opcode(GDScriptFunction::OPCODE_TYPE_TEST_NATIVE);
+			append(p_target);
+			append(p_source);
+			append(p_type.native_type);
+		} break;
+		case GDScriptDataType::SCRIPT:
+		case GDScriptDataType::GDSCRIPT: {
+			const Variant &script = p_type.script_type;
+			append_opcode(GDScriptFunction::OPCODE_TYPE_TEST_SCRIPT);
+			append(p_target);
+			append(p_source);
+			append(get_constant_pos(script) | (GDScriptFunction::ADDR_TYPE_CONSTANT << GDScriptFunction::ADDR_BITS));
+		} break;
+		default: {
+			ERR_PRINT("Compiler bug: unresolved type in type test.");
+			append_opcode(GDScriptFunction::OPCODE_ASSIGN_FALSE);
+			append(p_target);
+		}
+	}
 }
 
 void GDScriptByteCodeGenerator::write_and_left_operand(const Address &p_left_operand) {

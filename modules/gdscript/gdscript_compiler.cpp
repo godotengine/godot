@@ -148,13 +148,8 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 			}
 		} break;
 		case GDScriptParser::DataType::ENUM:
-			result.has_type = true;
 			result.kind = GDScriptDataType::BUILTIN;
-			if (p_datatype.is_meta_type) {
-				result.builtin_type = Variant::DICTIONARY;
-			} else {
-				result.builtin_type = Variant::INT;
-			}
+			result.builtin_type = p_datatype.builtin_type;
 			break;
 		case GDScriptParser::DataType::RESOLVING:
 		case GDScriptParser::DataType::UNRESOLVED: {
@@ -494,17 +489,10 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 		} break;
 		case GDScriptParser::Node::CAST: {
 			const GDScriptParser::CastNode *cn = static_cast<const GDScriptParser::CastNode *>(p_expression);
-			GDScriptParser::DataType og_cast_type = cn->get_datatype();
-			GDScriptDataType cast_type = _gdtype_from_datatype(og_cast_type, codegen.script);
+			GDScriptDataType cast_type = _gdtype_from_datatype(cn->get_datatype(), codegen.script);
 
 			GDScriptCodeGenerator::Address result;
 			if (cast_type.has_type) {
-				if (og_cast_type.kind == GDScriptParser::DataType::ENUM) {
-					// Enum types are usually treated as dictionaries, but in this case we want to cast to an integer.
-					cast_type.kind = GDScriptDataType::BUILTIN;
-					cast_type.builtin_type = Variant::INT;
-				}
-
 				// Create temporary for result first since it will be deleted last.
 				result = codegen.add_temporary(cast_type);
 
@@ -817,28 +805,6 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 						gen->pop_temporary();
 					}
 				} break;
-				case GDScriptParser::BinaryOpNode::OP_TYPE_TEST: {
-					GDScriptCodeGenerator::Address operand = _parse_expression(codegen, r_error, binary->left_operand);
-
-					if (binary->right_operand->type == GDScriptParser::Node::IDENTIFIER && GDScriptParser::get_builtin_type(static_cast<const GDScriptParser::IdentifierNode *>(binary->right_operand)->name) != Variant::VARIANT_MAX) {
-						// `is` with builtin type)
-						Variant::Type type = GDScriptParser::get_builtin_type(static_cast<const GDScriptParser::IdentifierNode *>(binary->right_operand)->name);
-						gen->write_type_test_builtin(result, operand, type);
-					} else {
-						GDScriptCodeGenerator::Address type = _parse_expression(codegen, r_error, binary->right_operand);
-						if (r_error) {
-							return GDScriptCodeGenerator::Address();
-						}
-						gen->write_type_test(result, operand, type);
-						if (type.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-							gen->pop_temporary();
-						}
-					}
-
-					if (operand.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-						gen->pop_temporary();
-					}
-				} break;
 				default: {
 					GDScriptCodeGenerator::Address left_operand = _parse_expression(codegen, r_error, binary->left_operand);
 					GDScriptCodeGenerator::Address right_operand = _parse_expression(codegen, r_error, binary->right_operand);
@@ -891,6 +857,28 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 			}
 
 			gen->write_end_ternary();
+
+			return result;
+		} break;
+		case GDScriptParser::Node::TYPE_TEST: {
+			const GDScriptParser::TypeTestNode *type_test = static_cast<const GDScriptParser::TypeTestNode *>(p_expression);
+			GDScriptCodeGenerator::Address result = codegen.add_temporary(_gdtype_from_datatype(type_test->get_datatype(), codegen.script));
+
+			GDScriptCodeGenerator::Address operand = _parse_expression(codegen, r_error, type_test->operand);
+			GDScriptDataType test_type = _gdtype_from_datatype(type_test->test_datatype, codegen.script);
+			if (r_error) {
+				return GDScriptCodeGenerator::Address();
+			}
+
+			if (test_type.has_type) {
+				gen->write_type_test(result, operand, test_type);
+			} else {
+				gen->write_assign_true(result);
+			}
+
+			if (operand.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
+				gen->pop_temporary();
+			}
 
 			return result;
 		} break;

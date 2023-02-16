@@ -562,7 +562,6 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 
 	GDScriptParser::DataType result;
 	result.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
-	result.builtin_type = Variant::OBJECT;
 
 	if (p_type->type_chain.is_empty()) {
 		// void.
@@ -584,6 +583,7 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 	} else if (first == SNAME("Object")) {
 		// Object is treated like a native type, not a built-in.
 		result.kind = GDScriptParser::DataType::NATIVE;
+		result.builtin_type = Variant::OBJECT;
 		result.native_type = SNAME("Object");
 	} else if (GDScriptParser::get_builtin_type(first) < Variant::VARIANT_MAX) {
 		// Built-in types.
@@ -604,6 +604,7 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 	} else if (class_exists(first)) {
 		// Native engine classes.
 		result.kind = GDScriptParser::DataType::NATIVE;
+		result.builtin_type = Variant::OBJECT;
 		result.native_type = first;
 	} else if (ScriptServer::is_global_class(first)) {
 		if (parser->script_path == ScriptServer::get_global_class_path(first)) {
@@ -1338,6 +1339,7 @@ void GDScriptAnalyzer::resolve_node(GDScriptParser::Node *p_node, bool p_is_root
 		case GDScriptParser::Node::SELF:
 		case GDScriptParser::Node::SUBSCRIPT:
 		case GDScriptParser::Node::TERNARY_OPERATOR:
+		case GDScriptParser::Node::TYPE_TEST:
 		case GDScriptParser::Node::UNARY_OPERATOR:
 			reduce_expression(static_cast<GDScriptParser::ExpressionNode *>(p_node), p_is_root);
 			break;
@@ -2196,6 +2198,9 @@ void GDScriptAnalyzer::reduce_expression(GDScriptParser::ExpressionNode *p_expre
 		case GDScriptParser::Node::TERNARY_OPERATOR:
 			reduce_ternary_op(static_cast<GDScriptParser::TernaryOpNode *>(p_expression), p_is_root);
 			break;
+		case GDScriptParser::Node::TYPE_TEST:
+			reduce_type_test(static_cast<GDScriptParser::TypeTestNode *>(p_expression));
+			break;
 		case GDScriptParser::Node::UNARY_OPERATOR:
 			reduce_unary_op(static_cast<GDScriptParser::UnaryOpNode *>(p_expression));
 			break;
@@ -2502,13 +2507,7 @@ void GDScriptAnalyzer::reduce_await(GDScriptParser::AwaitNode *p_await) {
 
 void GDScriptAnalyzer::reduce_binary_op(GDScriptParser::BinaryOpNode *p_binary_op) {
 	reduce_expression(p_binary_op->left_operand);
-
-	if (p_binary_op->operation == GDScriptParser::BinaryOpNode::OP_TYPE_TEST && p_binary_op->right_operand && p_binary_op->right_operand->type == GDScriptParser::Node::IDENTIFIER) {
-		reduce_identifier(static_cast<GDScriptParser::IdentifierNode *>(p_binary_op->right_operand), true);
-	} else {
-		reduce_expression(p_binary_op->right_operand);
-	}
-	// TODO: Right operand must be a valid type with the `is` operator. Need to check here.
+	reduce_expression(p_binary_op->right_operand);
 
 	GDScriptParser::DataType left_type;
 	if (p_binary_op->left_operand) {
@@ -2546,19 +2545,7 @@ void GDScriptAnalyzer::reduce_binary_op(GDScriptParser::BinaryOpNode *p_binary_o
 				}
 			}
 		} else {
-			if (p_binary_op->operation == GDScriptParser::BinaryOpNode::OP_TYPE_TEST) {
-				GDScriptParser::DataType test_type = right_type;
-				test_type.is_meta_type = false;
-
-				if (!is_type_compatible(test_type, left_type)) {
-					push_error(vformat(R"(Expression is of type "%s" so it can't be of type "%s".)"), p_binary_op->left_operand);
-					p_binary_op->reduced_value = false;
-				} else {
-					p_binary_op->reduced_value = true;
-				}
-			} else {
-				ERR_PRINT("Parser bug: unknown binary operation.");
-			}
+			ERR_PRINT("Parser bug: unknown binary operation.");
 		}
 		p_binary_op->set_datatype(type_from_variant(p_binary_op->reduced_value, p_binary_op));
 
@@ -2567,24 +2554,7 @@ void GDScriptAnalyzer::reduce_binary_op(GDScriptParser::BinaryOpNode *p_binary_o
 
 	GDScriptParser::DataType result;
 
-	if (p_binary_op->operation == GDScriptParser::BinaryOpNode::OP_TYPE_TEST) {
-		GDScriptParser::DataType test_type = right_type;
-		test_type.is_meta_type = false;
-
-		if (!is_type_compatible(test_type, left_type) && !is_type_compatible(left_type, test_type)) {
-			if (left_type.is_hard_type()) {
-				push_error(vformat(R"(Expression is of type "%s" so it can't be of type "%s".)", left_type.to_string(), test_type.to_string()), p_binary_op->left_operand);
-			} else {
-				// TODO: Warning.
-				mark_node_unsafe(p_binary_op);
-			}
-		}
-
-		// "is" operator is always a boolean anyway.
-		result.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
-		result.kind = GDScriptParser::DataType::BUILTIN;
-		result.builtin_type = Variant::BOOL;
-	} else if ((p_binary_op->variant_op == Variant::OP_EQUAL || p_binary_op->variant_op == Variant::OP_NOT_EQUAL) &&
+	if ((p_binary_op->variant_op == Variant::OP_EQUAL || p_binary_op->variant_op == Variant::OP_NOT_EQUAL) &&
 			((left_type.kind == GDScriptParser::DataType::BUILTIN && left_type.builtin_type == Variant::NIL) || (right_type.kind == GDScriptParser::DataType::BUILTIN && right_type.builtin_type == Variant::NIL))) {
 		// "==" and "!=" operators always return a boolean when comparing to null.
 		result.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
@@ -4107,6 +4077,48 @@ void GDScriptAnalyzer::reduce_ternary_op(GDScriptParser::TernaryOpNode *p_ternar
 	result.type_source = true_type.is_hard_type() && false_type.is_hard_type() ? GDScriptParser::DataType::ANNOTATED_INFERRED : GDScriptParser::DataType::INFERRED;
 
 	p_ternary_op->set_datatype(result);
+}
+
+void GDScriptAnalyzer::reduce_type_test(GDScriptParser::TypeTestNode *p_type_test) {
+	GDScriptParser::DataType result;
+	result.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
+	result.kind = GDScriptParser::DataType::BUILTIN;
+	result.builtin_type = Variant::BOOL;
+	p_type_test->set_datatype(result);
+
+	if (!p_type_test->operand || !p_type_test->test_type) {
+		return;
+	}
+
+	reduce_expression(p_type_test->operand);
+	GDScriptParser::DataType operand_type = p_type_test->operand->get_datatype();
+	GDScriptParser::DataType test_type = type_from_metatype(resolve_datatype(p_type_test->test_type));
+	p_type_test->test_datatype = test_type;
+
+	if (!operand_type.is_set() || !test_type.is_set()) {
+		return;
+	}
+
+	if (p_type_test->operand->is_constant) {
+		p_type_test->is_constant = true;
+		p_type_test->reduced_value = false;
+
+		if (!is_type_compatible(test_type, operand_type)) {
+			push_error(vformat(R"(Expression is of type "%s" so it can't be of type "%s".)", operand_type.to_string(), test_type.to_string()), p_type_test->operand);
+		} else if (is_type_compatible(test_type, type_from_variant(p_type_test->operand->reduced_value, p_type_test->operand))) {
+			p_type_test->reduced_value = test_type.builtin_type != Variant::OBJECT || !p_type_test->operand->reduced_value.is_null();
+		}
+
+		return;
+	}
+
+	if (!is_type_compatible(test_type, operand_type) && !is_type_compatible(operand_type, test_type)) {
+		if (operand_type.is_hard_type()) {
+			push_error(vformat(R"(Expression is of type "%s" so it can't be of type "%s".)", operand_type.to_string(), test_type.to_string()), p_type_test->operand);
+		} else {
+			downgrade_node_type_source(p_type_test->operand);
+		}
+	}
 }
 
 void GDScriptAnalyzer::reduce_unary_op(GDScriptParser::UnaryOpNode *p_unary_op) {

@@ -1918,21 +1918,19 @@ static bool _guess_identifier_type(GDScriptParser::CompletionContext &p_context,
 			}
 		}
 
-		if (suite->parent_if && suite->parent_if->condition && suite->parent_if->condition->type == GDScriptParser::Node::BINARY_OPERATOR && static_cast<const GDScriptParser::BinaryOpNode *>(suite->parent_if->condition)->operation == GDScriptParser::BinaryOpNode::OP_TYPE_TEST) {
+		if (suite->parent_if && suite->parent_if->condition && suite->parent_if->condition->type == GDScriptParser::Node::TYPE_TEST) {
 			// Operator `is` used, check if identifier is in there! this helps resolve in blocks that are (if (identifier is value)): which are very common..
 			// Super dirty hack, but very useful.
 			// Credit: Zylann.
 			// TODO: this could be hacked to detect ANDed conditions too...
-			const GDScriptParser::BinaryOpNode *op = static_cast<const GDScriptParser::BinaryOpNode *>(suite->parent_if->condition);
-			if (op->left_operand && op->right_operand && op->left_operand->type == GDScriptParser::Node::IDENTIFIER && static_cast<const GDScriptParser::IdentifierNode *>(op->left_operand)->name == p_identifier) {
+			const GDScriptParser::TypeTestNode *type_test = static_cast<const GDScriptParser::TypeTestNode *>(suite->parent_if->condition);
+			if (type_test->operand && type_test->test_type && type_test->operand->type == GDScriptParser::Node::IDENTIFIER && static_cast<const GDScriptParser::IdentifierNode *>(type_test->operand)->name == p_identifier) {
 				// Bingo.
 				GDScriptParser::CompletionContext c = p_context;
-				c.current_line = op->left_operand->start_line;
+				c.current_line = type_test->operand->start_line;
 				c.current_suite = suite;
-				GDScriptCompletionIdentifier is_type;
-				if (_guess_expression_type(c, op->right_operand, is_type)) {
-					id_type = is_type.type;
-					id_type.is_meta_type = false;
+				if ((!id_type.is_set() || id_type.is_variant()) && type_test->test_datatype.is_hard_type()) {
+					id_type = type_test->test_datatype;
 					if (last_assign_line < c.current_line) {
 						// Override last assignment.
 						last_assign_line = c.current_line;
