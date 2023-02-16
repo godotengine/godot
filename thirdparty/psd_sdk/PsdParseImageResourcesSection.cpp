@@ -22,7 +22,7 @@ PSD_NAMESPACE_BEGIN
 
 // ---------------------------------------------------------------------------------------------------------------------
 // ---------------------------------------------------------------------------------------------------------------------
-ImageResourcesSection* ParseImageResourcesSection(const Document* document, File* file, Allocator* allocator)
+ImageResourcesSection* ParseImageResourcesSection(const Document* document, Ref<StreamPeerBuffer> file, Allocator* allocator)
 {
 	PSD_ASSERT_NOT_NULL(file);
 	PSD_ASSERT_NOT_NULL(allocator);
@@ -38,33 +38,32 @@ ImageResourcesSection* ParseImageResourcesSection(const Document* document, File
 	imageResources->xmpMetadata = nullptr;
 	imageResources->thumbnail = nullptr;
 
-	SyncFileReader reader(file);
-	reader.SetPosition(document->imageResourcesSection.offset);
+	file->seek(document->imageResourcesSection.offset);
 
 	int64_t leftToRead = document->imageResourcesSection.length;
 	while (leftToRead > 0)
 	{
-		const uint32_t signature = fileUtil::ReadFromFileBE<uint32_t>(reader);
+		const uint32_t signature = file->get_u32();
 		if ((signature != util::Key<'8', 'B', 'I', 'M'>::VALUE) && (signature != util::Key<'p', 's', 'd', 'M'>::VALUE))
 		{
 			PSD_ERROR("ImageResources", "Image resources section seems to be corrupt, signature does not match \"8BIM\".");
 			return imageResources;
 		}
 
-		const uint16_t id = fileUtil::ReadFromFileBE<uint16_t>(reader);
+		const uint16_t id = file->get_u16();
 
 		// the resource name is stored as a Pascal string. note that the string is padded to make the size even.
-		char name[512] = {};
-		const uint8_t nameLength = fileUtil::ReadFromFileBE<uint8_t>(reader);
+		uint8_t name[512] = {};
+		const uint8_t nameLength = file->get_u8();
 		const uint32_t paddedNameLength = bitUtil::RoundUpToMultiple(nameLength+1u, 2u);
-		reader.Read(name, paddedNameLength - 1u);
+		file->get_data(name, paddedNameLength - 1u);
 
 		// the resource data size is also padded to make the size even
-		uint32_t resourceSize = fileUtil::ReadFromFileBE<uint32_t>(reader);
+		uint32_t resourceSize = file->get_u32();
 		resourceSize = bitUtil::RoundUpToMultiple(resourceSize, 2u);
 
 		// work out the next position we need to read from once, no matter which image resource we're going to read
-		const uint64_t nextReaderPosition = reader.GetPosition() + resourceSize;
+		const uint64_t nextReaderPosition = file->get_position() + resourceSize;
 
 		switch (id)
 		{
@@ -96,19 +95,19 @@ ImageResourcesSection* ParseImageResourcesSection(const Document* document, File
 					imageResources->alphaChannels = memoryUtil::AllocateArray<AlphaChannel>(allocator, channelCount);
 				}
 
-				const uint32_t version = fileUtil::ReadFromFileBE<uint32_t>(reader);
+				const uint32_t version = file->get_u32();
 				PSD_UNUSED(version);
 
 				for (unsigned int i = 0u; i < imageResources->alphaChannelCount; ++i)
 				{
 					AlphaChannel* channel = imageResources->alphaChannels + i;
-					channel->colorSpace = fileUtil::ReadFromFileBE<uint16_t>(reader);
-					channel->color[0] = fileUtil::ReadFromFileBE<uint16_t>(reader);
-					channel->color[1] = fileUtil::ReadFromFileBE<uint16_t>(reader);
-					channel->color[2] = fileUtil::ReadFromFileBE<uint16_t>(reader);
-					channel->color[3] = fileUtil::ReadFromFileBE<uint16_t>(reader);
-					channel->opacity = fileUtil::ReadFromFileBE<uint16_t>(reader);
-					channel->mode = fileUtil::ReadFromFileBE<uint8_t>(reader);
+					channel->colorSpace = file->get_u16();
+					channel->color[0] = file->get_u16();
+					channel->color[1] = file->get_u16();
+					channel->color[2] = file->get_u16();
+					channel->color[3] = file->get_u16();
+					channel->opacity = file->get_u16();
+					channel->mode = file->get_u8();
 				}
 			}
 			break;
@@ -145,10 +144,10 @@ ImageResourcesSection* ParseImageResourcesSection(const Document* document, File
 
 			case imageResource::VERSION_INFO:
 			{
-				const uint32_t version = fileUtil::ReadFromFileBE<uint32_t>(reader);
+				const uint32_t version = file->get_u32();
 				PSD_UNUSED(version);
 
-				const uint8_t hasRealMergedData = fileUtil::ReadFromFileBE<uint8_t>(reader);
+				const uint8_t hasRealMergedData = file->get_u8();
 				imageResources->containsRealMergedData = (hasRealMergedData != 0u);
 			}
 			break;
@@ -158,23 +157,23 @@ ImageResourcesSection* ParseImageResourcesSection(const Document* document, File
 				Thumbnail* thumbnail = memoryUtil::Allocate<Thumbnail>(allocator);
 				imageResources->thumbnail = thumbnail;
 
-				const uint32_t format = fileUtil::ReadFromFileBE<uint32_t>(reader);
+				const uint32_t format = file->get_u32();
 				PSD_UNUSED(format);
 
-				const uint32_t width = fileUtil::ReadFromFileBE<uint32_t>(reader);
-				const uint32_t height = fileUtil::ReadFromFileBE<uint32_t>(reader);
+				const uint32_t width = file->get_u32();
+				const uint32_t height = file->get_u32(); 
 
-				const uint32_t widthInBytes = fileUtil::ReadFromFileBE<uint32_t>(reader);
+				const uint32_t widthInBytes = file->get_u32();
 				PSD_UNUSED(widthInBytes);
 
-				const uint32_t totalSize = fileUtil::ReadFromFileBE<uint32_t>(reader);
+				const uint32_t totalSize = file->get_u32();
 				PSD_UNUSED(totalSize);
 
-				const uint32_t binaryJpegSize = fileUtil::ReadFromFileBE<uint32_t>(reader);
+				const uint32_t binaryJpegSize = file->get_u32();
 
-				const uint16_t bitsPerPixel = fileUtil::ReadFromFileBE<uint16_t>(reader);
+				const uint16_t bitsPerPixel = file->get_u16();
 				PSD_UNUSED(bitsPerPixel);
-				const uint16_t numberOfPlanes = fileUtil::ReadFromFileBE<uint16_t>(reader);
+				const uint16_t numberOfPlanes = file->get_u16();
 				PSD_UNUSED(numberOfPlanes);
 
 				thumbnail->width = width;
@@ -182,7 +181,7 @@ ImageResourcesSection* ParseImageResourcesSection(const Document* document, File
 				thumbnail->binaryJpegSize = binaryJpegSize;
 				thumbnail->binaryJpeg = memoryUtil::AllocateArray<uint8_t>(allocator, binaryJpegSize);
 
-				reader.Read(thumbnail->binaryJpeg, binaryJpegSize);
+				file->get_data(thumbnail->binaryJpeg, binaryJpegSize);
 			}
 			break;
 
@@ -191,7 +190,7 @@ ImageResourcesSection* ParseImageResourcesSection(const Document* document, File
 				// load the XMP metadata as raw data
 				PSD_ASSERT(!imageResources->xmpMetadata, "File contains more than one XMP metadata resource.");
 				imageResources->xmpMetadata = memoryUtil::AllocateArray<char>(allocator, resourceSize);
-				reader.Read(imageResources->xmpMetadata, resourceSize);
+				file->get_data((uint8_t *)imageResources->xmpMetadata, resourceSize);
 			}
 			break;
 
@@ -201,7 +200,7 @@ ImageResourcesSection* ParseImageResourcesSection(const Document* document, File
 				PSD_ASSERT(!imageResources->iccProfile, "File contains more than one ICC profile.");
 				imageResources->iccProfile = memoryUtil::AllocateArray<uint8_t>(allocator, resourceSize);
 				imageResources->sizeOfICCProfile = resourceSize;
-				reader.Read(imageResources->iccProfile, resourceSize);
+				file->get_data(imageResources->iccProfile, resourceSize);
 			}
 			break;
 
@@ -211,7 +210,7 @@ ImageResourcesSection* ParseImageResourcesSection(const Document* document, File
 				PSD_ASSERT(!imageResources->exifData, "File contains more than one EXIF data block.");
 				imageResources->exifData = memoryUtil::AllocateArray<uint8_t>(allocator, resourceSize);
 				imageResources->sizeOfExifData = resourceSize;
-				reader.Read(imageResources->exifData, resourceSize);
+				file->get_data(imageResources->exifData, resourceSize);
 			}
 			break;
 
@@ -233,10 +232,10 @@ ImageResourcesSection* ParseImageResourcesSection(const Document* document, File
 				while (remaining > 0)
 				{
 					char channelName[512] = {};
-					const uint8_t channelNameLength = fileUtil::ReadFromFileBE<uint8_t>(reader);
+					const uint8_t channelNameLength = file->get_u8();
 					if (channelNameLength > 0)
 					{
-						reader.Read(channelName, channelNameLength);
+						file->get_data((uint8_t *)channelName, channelNameLength);
 					}
 
 					remaining -= 1 + channelNameLength;
@@ -255,7 +254,7 @@ ImageResourcesSection* ParseImageResourcesSection(const Document* document, File
 				break;
 		};
 
-		reader.SetPosition(nextReaderPosition);
+		file->seek(nextReaderPosition);
 		leftToRead = static_cast<int64_t>(document->imageResourcesSection.offset + document->imageResourcesSection.length) - static_cast<int64_t>(nextReaderPosition);
 	}
 

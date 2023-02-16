@@ -30,8 +30,7 @@
 
 #include "psd_texture.h"
 
-#include "core/io/file_access.h"
-
+#include "core/io/stream_peer.h"
 
 PSD_USING_NAMESPACE;
 
@@ -142,26 +141,21 @@ void PSDTexture::parse() {
 	layers.clear();
 
 	const std::wstring rawFile = L"";
-
-	MallocAllocator allocator;
-	NativeFile file(&allocator);
-
-
-
-	file.OpenBuffer(data.ptr(), data_len);
-
+	Ref<StreamPeerBuffer> file;
+	file.instantiate();
+	Error err = file->put_data(data.ptr(), data_len);
 
 	// try opening the file. if it fails, bail out.
-	if (!file.OpenRead(rawFile.c_str()))
+	if (err != OK)
 	{
-
-		//ERR_FAIL_COND_V_MSG
+		ERR_FAIL();
 	}
 
+	MallocAllocator allocator;
 
 	// create a new document that can be used for extracting different sections from the PSD.
 	// additionally, the document stores information like width, height, bits per pixel, etc.
-	Document* document = CreateDocument(&file, &allocator);
+	Document* document = CreateDocument(file, &allocator);
 	if (!document)
 	{
 		ERR_FAIL_MSG("PSD document initialization failed.");
@@ -173,18 +167,18 @@ void PSDTexture::parse() {
 	// extract image resources section.
 	// this gives access to the ICC profile, EXIF data and XMP metadata.
 	{
-		ImageResourcesSection* imageResourcesSection = ParseImageResourcesSection(document, &file, &allocator);
+		ImageResourcesSection* imageResourcesSection = ParseImageResourcesSection(document, file, &allocator);
 
 		DestroyImageResourcesSection(imageResourcesSection, &allocator);
 	}
 
 
 	// extract all layers and masks.
-	bool hasTransparencyMask = false;
-	LayerMaskSection* layerMaskSection = ParseLayerMaskSection(document, &file, &allocator);
+	// bool hasTransparencyMask = false; // Not being used.
+	LayerMaskSection* layerMaskSection = ParseLayerMaskSection(document, file, &allocator);
 	if (layerMaskSection)
 	{
-		hasTransparencyMask = layerMaskSection->hasTransparencyMask;
+		// hasTransparencyMask = layerMaskSection->hasTransparencyMask; // Not being used.
 
 		// extract all layers one by one. this should be done in parallel for maximum efficiency.
 		for (unsigned int i = 0; i < layerMaskSection->layerCount; ++i)
@@ -194,7 +188,7 @@ void PSDTexture::parse() {
 			{
 				continue;
 			}
-			ExtractLayer(document, &file, &allocator, layer);
+			ExtractLayer(document, file, &allocator, layer);
 
 			// check availability of R, G, B, and A channels.
 			// we need to determine the indices of channels individually, because there is no guarantee that R is the first channel,
@@ -335,7 +329,6 @@ void PSDTexture::parse() {
 
 	// don't forget to destroy the document, and close the file.
 	DestroyDocument(document, &allocator);
-	file.Close();
 }
 
 void PSDTexture::set_data(const Vector<uint8_t> &p_data) {

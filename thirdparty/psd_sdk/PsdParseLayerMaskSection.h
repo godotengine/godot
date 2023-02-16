@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include "core/io/stream_peer.h"
 
 PSD_NAMESPACE_BEGIN
 
@@ -19,12 +20,12 @@ struct LayerMaskSection;
 /// by a call to \ref ExtractLayer for each layer.
 /// \remark It is valid to parse different sections of a document (e.g. using \ref ParseImageResourcesSection, \ref ParseImageDataSection,
 /// or \ref ParseLayerMaskSection) in parallel from different threads.
-LayerMaskSection* ParseLayerMaskSection(const Document* document, File* file, Allocator* allocator);
+LayerMaskSection* ParseLayerMaskSection(const Document* document, Ref<StreamPeerBuffer> file, Allocator* allocator);
 
 /// \ingroup Parser
 /// Extracts data for a given \a layer.
 /// \remark It is valid and suggested to extract the data of individual layers from multiple threads in parallel.
-void ExtractLayer(const Document* document, File* file, Allocator* allocator, Layer* layer);
+void ExtractLayer(const Document* document, Ref<StreamPeerBuffer> file, Allocator* allocator, Layer* layer);
 
 /// \ingroup Parser
 /// Destroys and nullifies the given \a section previously created by a call to \ref ParseLayerMaskSection.
