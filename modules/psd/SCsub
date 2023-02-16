@@ -1,0 +1,57 @@
+# SCsub
+
+Import("env")
+Import("env_modules")
+
+env_psd = env_modules.Clone()
+
+# Thirdparty source files
+
+thirdparty_obj = []
+
+thirdparty_dir = "#thirdparty/psd_sdk/"
+
+thirdparty_sources = [
+    "PsdParseLayerMaskSection.cpp",
+    "PsdAllocator.cpp",
+    "PsdBlendMode.cpp",
+    "PsdColorMode.cpp",
+    "PsdDecompressRle.cpp",
+    "PsdExport.cpp",
+    "PsdFile.cpp",
+    "PsdFixedSizeString.cpp",
+    "PsdInterleave.cpp",
+    "PsdLayerCanvasCopy.cpp",
+    "PsdMallocAllocator.cpp",
+    "PsdParseColorModeDataSection.cpp",
+    "PsdParseDocument.cpp",
+    "PsdParseImageDataSection.cpp",
+    "PsdParseImageResourcesSection.cpp",
+    "PsdPch.cpp",
+    "PsdStringUtil.cpp",
+    "PsdSyncFileReader.cpp",
+    "PsdSyncFileWriter.cpp",
+]
+
+thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
+
+# Treat headers as system headers to avoid raising warnings. Not supported on MSVC.
+if not env.msvc:
+    env_psd.Append(CPPFLAGS=["-isystem", Dir(thirdparty_dir).path])
+else:
+	env_psd.Prepend(CPPPATH=[thirdparty_dir])
+
+env_thirdparty = env_psd.Clone()
+env_thirdparty.disable_warnings()
+env_thirdparty.add_source_files(thirdparty_obj, thirdparty_sources)
+env.modules_sources += thirdparty_obj
+
+# Godot source files
+
+module_obj = []
+
+env_psd.add_source_files(module_obj, "*.cpp")
+env.modules_sources += module_obj
+
+# Needed to force rebuilding the module files when the thirdparty library is updated.
+env.Depends(module_obj, thirdparty_obj)

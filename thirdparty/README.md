@@ -601,6 +601,18 @@ A sljit patch from upstream was backported to fix macOS < 11.0 compilation
 in 10.40, it can be found in the `patches` folder.
 
 
+## psd_sdk
+
+- Upstream: https://github.com/MolecularMatters/psd_sdk
+- Version: git (8885b8eabece9afa9aa82a05c2b3895903bce34e, 2022)
+- License: BSD 2-Clause
+
+Files extracted from upstream source:
+
+- `src/Psd/`
+- `LICENSE`
+
+
 ## recastnavigation
 
 - Upstream: https://github.com/recastnavigation/recastnavigation
