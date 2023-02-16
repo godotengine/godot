@@ -192,7 +192,6 @@ private:
 	Ref<Shortcut> debugger_stop_shortcut;
 
 protected:
-	Viewport *_get_embedder() const;
 	virtual Rect2i _popup_adjust_rect() const { return Rect2i(); }
 
 	virtual void _update_theme_item_cache();
@@ -278,6 +277,7 @@ public:
 	void set_ime_position(const Point2i &p_pos);
 
 	bool is_embedded() const;
+	Viewport *get_embedder() const;
 
 	void set_content_scale_size(const Size2i &p_size);
 	Size2i get_content_scale_size() const;
