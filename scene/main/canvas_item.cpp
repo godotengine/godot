@@ -515,12 +515,13 @@ void CanvasItem::draw_dashed_line(const Point2 &p_from, const Point2 &p_to, cons
 	ERR_FAIL_COND_MSG(!drawing, "Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
 
 	float length = (p_to - p_from).length();
-	if (length < p_dash) {
+	Vector2 step = p_dash * (p_to - p_from).normalized();
+
+	if (length < p_dash || step == Vector2() || p_dash <= 0.0) {
 		RenderingServer::get_singleton()->canvas_item_add_line(canvas_item, p_from, p_to, p_color, p_width);
 		return;
 	}
 
-	Vector2 step = p_dash * (p_to - p_from).normalized();
 	int steps = (p_aligned) ? Math::ceil(length / p_dash) : Math::floor(length / p_dash);
 	if (steps % 2 == 0) {
 		steps--;
