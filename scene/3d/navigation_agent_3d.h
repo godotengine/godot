@@ -52,14 +52,14 @@ class NavigationAgent3D : public Node {
 
 	real_t path_desired_distance = 1.0;
 	real_t target_desired_distance = 1.0;
-	real_t radius = 1.0;
+	real_t radius = 0.5;
 	real_t navigation_height_offset = 0.0;
 	bool ignore_y = true;
 	real_t neighbor_distance = 50.0;
 	int max_neighbors = 10;
-	real_t time_horizon = 5.0;
+	real_t time_horizon = 1.0;
 	real_t max_speed = 10.0;
-	real_t path_max_distance = 3.0;
+	real_t path_max_distance = 5.0;
 
 	Vector3 target_position;
 	bool target_position_submitted = false;
