@@ -246,13 +246,19 @@ String OS_LinuxBSD::get_version() const {
 }
 
 Vector<String> OS_LinuxBSD::get_video_adapter_driver_info() const {
-	if (RenderingServer::get_singleton()->get_rendering_device() == nullptr) {
+	if (RenderingServer::get_singleton() == nullptr) {
 		return Vector<String>();
 	}
 
-	const String rendering_device_name = RenderingServer::get_singleton()->get_rendering_device()->get_device_name(); // e.g. `NVIDIA GeForce GTX 970`
-	const String rendering_device_vendor = RenderingServer::get_singleton()->get_rendering_device()->get_device_vendor_name(); // e.g. `NVIDIA`
-	const String card_name = rendering_device_name.trim_prefix(rendering_device_vendor).strip_edges(); // -> `GeForce GTX 970`
+	const String rendering_device_name = RenderingServer::get_singleton()->get_video_adapter_name(); // e.g. `NVIDIA GeForce GTX 970`
+	String rendering_device_vendor = RenderingServer::get_singleton()->get_video_adapter_vendor(); // e.g. `NVIDIA`
+	if (rendering_device_vendor == "NVIDIA Corporation") {
+		// Required to correctly match the lspci output when using OpenGL.
+		rendering_device_vendor = "NVIDIA";
+	}
+	// NVIDIA suffixes all GPU model names with "/PCIe/SSE2" in OpenGL (but not Vulkan).
+	// This suffix breaks parsing `lspci` output, so it must be trimmed.
+	const String card_name = rendering_device_name.trim_prefix(rendering_device_vendor).strip_edges().trim_suffix("/PCIe/SSE2"); // -> `GeForce GTX 970`
 
 	String vendor_device_id_mappings;
 	List<String> lspci_args;
