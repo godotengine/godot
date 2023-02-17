@@ -190,6 +190,7 @@
 			<description>
 				Adds a new checkable item with text [param label] to the global menu with ID [param menu_root].
 				Returns index of the inserted item, it's not guaranteed to be the same as [param index] value.
+				An [param accelerator] can optionally be defined, which is a keyboard shortcut that can be pressed to trigger the menu button even if it's not currently open. The [param accelerator] is generally a combination of [enum KeyModifierMask]s and [enum Key]s using boolean OR such as [code]KEY_MASK_CTRL | KEY_A[/code] ([kbd]Ctrl + A[/kbd]).
 				[b]Note:[/b] The [param callback] and [param key_callback] Callables need to accept exactly one Variant parameter, the parameter passed to the Callables will be the value passed to [param tag].
 				[b]Note:[/b] This method is implemented on macOS.
 				[b]Supported system menu IDs:[/b]
@@ -212,6 +213,7 @@
 			<description>
 				Adds a new checkable item with text [param label] and icon [param icon] to the global menu with ID [param menu_root].
 				Returns index of the inserted item, it's not guaranteed to be the same as [param index] value.
+				An [param accelerator] can optionally be defined, which is a keyboard shortcut that can be pressed to trigger the menu button even if it's not currently open. The [param accelerator] is generally a combination of [enum KeyModifierMask]s and [enum Key]s using boolean OR such as [code]KEY_MASK_CTRL | KEY_A[/code] ([kbd]Ctrl + A[/kbd]).
 				[b]Note:[/b] The [param callback] and [param key_callback] Callables need to accept exactly one Variant parameter, the parameter passed to the Callables will be the value passed to [param tag].
 				[b]Note:[/b] This method is implemented on macOS.
 				[b]Supported system menu IDs:[/b]
@@ -234,6 +236,7 @@
 			<description>
 				Adds a new item with text [param label] and icon [param icon] to the global menu with ID [param menu_root].
 				Returns index of the inserted item, it's not guaranteed to be the same as [param index] value.
+				An [param accelerator] can optionally be defined, which is a keyboard shortcut that can be pressed to trigger the menu button even if it's not currently open. The [param accelerator] is generally a combination of [enum KeyModifierMask]s and [enum Key]s using boolean OR such as [code]KEY_MASK_CTRL | KEY_A[/code] ([kbd]Ctrl + A[/kbd]).
 				[b]Note:[/b] The [param callback] and [param key_callback] Callables need to accept exactly one Variant parameter, the parameter passed to the Callables will be the value passed to [param tag].
 				[b]Note:[/b] This method is implemented on macOS.
 				[b]Supported system menu IDs:[/b]
@@ -256,6 +259,7 @@
 			<description>
 				Adds a new radio-checkable item with text [param label] and icon [param icon] to the global menu with ID [param menu_root].
 				Returns index of the inserted item, it's not guaranteed to be the same as [param index] value.
+				An [param accelerator] can optionally be defined, which is a keyboard shortcut that can be pressed to trigger the menu button even if it's not currently open. The [param accelerator] is generally a combination of [enum KeyModifierMask]s and [enum Key]s using boolean OR such as [code]KEY_MASK_CTRL | KEY_A[/code] ([kbd]Ctrl + A[/kbd]).
 				[b]Note:[/b] Radio-checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually. See [method global_menu_set_item_checked] for more info on how to control it.
 				[b]Note:[/b] The [param callback] and [param key_callback] Callables need to accept exactly one Variant parameter, the parameter passed to the Callables will be the value passed to [param tag].
 				[b]Note:[/b] This method is implemented on macOS.
@@ -278,6 +282,7 @@
 			<description>
 				Adds a new item with text [param label] to the global menu with ID [param menu_root].
 				Returns index of the inserted item, it's not guaranteed to be the same as [param index] value.
+				An [param accelerator] can optionally be defined, which is a keyboard shortcut that can be pressed to trigger the menu button even if it's not currently open. The [param accelerator] is generally a combination of [enum KeyModifierMask]s and [enum Key]s using boolean OR such as [code]KEY_MASK_CTRL | KEY_A[/code] ([kbd]Ctrl + A[/kbd]).
 				[b]Note:[/b] The [param callback] and [param key_callback] Callables need to accept exactly one Variant parameter, the parameter passed to the Callables will be the value passed to [param tag].
 				[b]Note:[/b] This method is implemented on macOS.
 				[b]Supported system menu IDs:[/b]
@@ -302,6 +307,7 @@
 				Adds a new item with text [param label] to the global menu with ID [param menu_root].
 				Contrarily to normal binary items, multistate items can have more than two states, as defined by [param max_states]. Each press or activate of the item will increase the state by one. The default value is defined by [param default_state].
 				Returns index of the inserted item, it's not guaranteed to be the same as [param index] value.
+				An [param accelerator] can optionally be defined, which is a keyboard shortcut that can be pressed to trigger the menu button even if it's not currently open. The [param accelerator] is generally a combination of [enum KeyModifierMask]s and [enum Key]s using boolean OR such as [code]KEY_MASK_CTRL | KEY_A[/code] ([kbd]Ctrl + A[/kbd]).
 				[b]Note:[/b] By default, there's no indication of the current item state, it should be changed manually.
 				[b]Note:[/b] The [param callback] and [param key_callback] Callables need to accept exactly one Variant parameter, the parameter passed to the Callables will be the value passed to [param tag].
 				[b]Note:[/b] This method is implemented on macOS.
@@ -324,6 +330,7 @@
 			<description>
 				Adds a new radio-checkable item with text [param label] to the global menu with ID [param menu_root].
 				Returns index of the inserted item, it's not guaranteed to be the same as [param index] value.
+				An [param accelerator] can optionally be defined, which is a keyboard shortcut that can be pressed to trigger the menu button even if it's not currently open. The [param accelerator] is generally a combination of [enum KeyModifierMask]s and [enum Key]s using boolean OR such as [code]KEY_MASK_CTRL | KEY_A[/code] ([kbd]Ctrl + A[/kbd]).
 				[b]Note:[/b] Radio-checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually. See [method global_menu_set_item_checked] for more info on how to control it.
 				[b]Note:[/b] The [param callback] and [param key_callback] Callables need to accept exactly one Variant parameter, the parameter passed to the Callables will be the value passed to [param tag].
 				[b]Note:[/b] This method is implemented on macOS.
@@ -558,7 +565,7 @@
 			<param index="1" name="idx" type="int" />
 			<param index="2" name="keycode" type="int" enum="Key" />
 			<description>
-				Sets the accelerator of the item at index [param idx].
+				Sets the accelerator of the item at index [param idx]. [param keycode] can be a single [enum Key], or a combination of [enum KeyModifierMask]s and [enum Key]s using boolean OR such as [code]KEY_MASK_CTRL | KEY_A[/code] ([kbd]Ctrl + A[/kbd]).
 				[b]Note:[/b] This method is implemented on macOS.
 			</description>
 		</method>

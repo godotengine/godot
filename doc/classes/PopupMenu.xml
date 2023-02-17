@@ -20,7 +20,7 @@
 			<param index="2" name="accel" type="int" enum="Key" default="0" />
 			<description>
 				Adds a new checkable item with text [param label].
-				An [param id] can optionally be provided, as well as an accelerator ([param accel]). If no [param id] is provided, one will be created from the index. If no [param accel] is provided then the default [code]0[/code] will be assigned to it. See [method get_item_accelerator] for more info on accelerators.
+				An [param id] can optionally be provided, as well as an accelerator ([param accel]). If no [param id] is provided, one will be created from the index. If no [param accel] is provided, then the default value of 0 (corresponding to [constant @GlobalScope.KEY_NONE]) will be assigned to the item (which means it won't have any accelerator). See [method get_item_accelerator] for more info on accelerators.
 				[b]Note:[/b] Checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually. See [method set_item_checked] for more info on how to control it.
 			</description>
 		</method>
@@ -43,7 +43,7 @@
 			<param index="3" name="accel" type="int" enum="Key" default="0" />
 			<description>
 				Adds a new checkable item with text [param label] and icon [param texture].
-				An [param id] can optionally be provided, as well as an accelerator ([param accel]). If no [param id] is provided, one will be created from the index. If no [param accel] is provided then the default [code]0[/code] will be assigned to it. See [method get_item_accelerator] for more info on accelerators.
+				An [param id] can optionally be provided, as well as an accelerator ([param accel]). If no [param id] is provided, one will be created from the index. If no [param accel] is provided, then the default value of 0 (corresponding to [constant @GlobalScope.KEY_NONE]) will be assigned to the item (which means it won't have any accelerator). See [method get_item_accelerator] for more info on accelerators.
 				[b]Note:[/b] Checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually. See [method set_item_checked] for more info on how to control it.
 			</description>
 		</method>
@@ -67,7 +67,7 @@
 			<param index="3" name="accel" type="int" enum="Key" default="0" />
 			<description>
 				Adds a new item with text [param label] and icon [param texture].
-				An [param id] can optionally be provided, as well as an accelerator ([param accel]). If no [param id] is provided, one will be created from the index. If no [param accel] is provided then the default [code]0[/code] will be assigned to it. See [method get_item_accelerator] for more info on accelerators.
+				An [param id] can optionally be provided, as well as an accelerator ([param accel]). If no [param id] is provided, one will be created from the index. If no [param accel] is provided, then the default value of 0 (corresponding to [constant @GlobalScope.KEY_NONE]) will be assigned to the item (which means it won't have any accelerator). See [method get_item_accelerator] for more info on accelerators.
 			</description>
 		</method>
 		<method name="add_icon_radio_check_item">
@@ -108,7 +108,7 @@
 			<param index="2" name="accel" type="int" enum="Key" default="0" />
 			<description>
 				Adds a new item with text [param label].
-				An [param id] can optionally be provided, as well as an accelerator ([param accel]). If no [param id] is provided, one will be created from the index. If no [param accel] is provided then the default [code]0[/code] will be assigned to it. See [method get_item_accelerator] for more info on accelerators.
+				An [param id] can optionally be provided, as well as an accelerator ([param accel]). If no [param id] is provided, one will be created from the index. If no [param accel] is provided, then the default value of 0 (corresponding to [constant @GlobalScope.KEY_NONE]) will be assigned to the item (which means it won't have any accelerator). See [method get_item_accelerator] for more info on accelerators.
 				[b]Note:[/b] The provided [param id] is used only in [signal id_pressed] and [signal id_focused] signals. It's not related to the [code]index[/code] arguments in e.g. [method set_item_checked].
 			</description>
 		</method>
@@ -122,7 +122,7 @@
 			<description>
 				Adds a new multistate item with text [param label].
 				Contrarily to normal binary items, multistate items can have more than two states, as defined by [param max_states]. Each press or activate of the item will increase the state by one. The default value is defined by [param default_state].
-				An [param id] can optionally be provided, as well as an accelerator ([param accel]). If no [param id] is provided, one will be created from the index. If no [param accel] is provided then the default [code]0[/code] will be assigned to it. See [method get_item_accelerator] for more info on accelerators.
+				An [param id] can optionally be provided, as well as an accelerator ([param accel]). If no [param id] is provided, one will be created from the index. If no [param accel] is provided, then the default value of 0 (corresponding to [constant @GlobalScope.KEY_NONE]) will be assigned to the item (which means it won't have any accelerator). See [method get_item_accelerator] for more info on accelerators.
 			</description>
 		</method>
 		<method name="add_radio_check_item">
@@ -132,7 +132,7 @@
 			<param index="2" name="accel" type="int" enum="Key" default="0" />
 			<description>
 				Adds a new radio check button with text [param label].
-				An [param id] can optionally be provided, as well as an accelerator ([param accel]). If no [param id] is provided, one will be created from the index. If no [param accel] is provided then the default [code]0[/code] will be assigned to it. See [method get_item_accelerator] for more info on accelerators.
+				An [param id] can optionally be provided, as well as an accelerator ([param accel]). If no [param id] is provided, one will be created from the index. If no [param accel] is provided, then the default value of 0 (corresponding to [constant @GlobalScope.KEY_NONE]) will be assigned to the item (which means it won't have any accelerator). See [method get_item_accelerator] for more info on accelerators.
 				[b]Note:[/b] Checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually. See [method set_item_checked] for more info on how to control it.
 			</description>
 		</method>
@@ -192,7 +192,7 @@
 			<return type="int" enum="Key" />
 			<param index="0" name="index" type="int" />
 			<description>
-				Returns the accelerator of the item at the given [param index]. Accelerators are special combinations of keys that activate the item, no matter which control is focused.
+				Returns the accelerator of the item at the given [param index]. An accelerator is a keyboard shortcut that can be pressed to trigger the menu button even if it's not currently open. The return value is an integer which is generally a combination of [enum KeyModifierMask]s and [enum Key]s using boolean OR such as [code]KEY_MASK_CTRL | KEY_A[/code] ([kbd]Ctrl + A[/kbd]). If no accelerator is defined for the specified [param index], [method get_item_accelerator] returns [code]0[/code] (corresponding to [constant @GlobalScope.KEY_NONE]).
 			</description>
 		</method>
 		<method name="get_item_icon" qualifiers="const">
@@ -345,7 +345,7 @@
 			<param index="0" name="index" type="int" />
 			<param index="1" name="accel" type="int" enum="Key" />
 			<description>
-				Sets the accelerator of the item at the given [param index]. Accelerators are special combinations of keys that activate the item, no matter which control is focused.
+				Sets the accelerator of the item at the given [param index]. An accelerator is a keyboard shortcut that can be pressed to trigger the menu button even if it's not currently open. [param accel] is generally a combination of [enum KeyModifierMask]s and [enum Key]s using boolean OR such as [code]KEY_MASK_CTRL | KEY_A[/code] ([kbd]Ctrl + A[/kbd]).
 			</description>
 		</method>
 		<method name="set_item_as_checkable">
