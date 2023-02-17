@@ -129,6 +129,170 @@ TEST_CASE("[Array] has() and count()") {
 	CHECK(arr.count(2) == 0);
 }
 
+TEST_CASE("[Array] find()") {
+	Array arr;
+	// Find on empty array returns nothing
+	CHECK(arr.find(1) == -1);
+
+	arr.push_back(1);
+	arr.push_back(3);
+	arr.push_back(1);
+	arr.push_back(4);
+	arr.push_back(3);
+	arr.push_back(5);
+
+	// Find at starting position
+	CHECK(arr.find(1) == 0);
+	// Find at later position
+	CHECK(arr.find(3) == 1);
+	// Find at last position
+	CHECK(arr.find(5) == 5);
+	// Find nonexistent
+	CHECK(arr.find(2) == -1);
+
+	// Find at starting position from an offset
+	CHECK(arr.find(3, 1) == 1);
+	// Find at later position from an offset
+	CHECK(arr.find(1, 1) == 2);
+	CHECK(arr.find(3, 2) == 4);
+	// Find at last position from an offset
+	CHECK(arr.find(5, 2) == 5);
+
+	// Find nonexistent from an offset
+	CHECK(arr.find(6, 2) == -1);
+	CHECK(arr.find(1, 3) == -1);
+}
+
+TEST_CASE("[Array] rfind()") {
+	Array arr;
+	// Search empty array returns nothing
+	CHECK(arr.rfind(1) == -1);
+
+	arr.push_back(0);
+	arr.push_back(3);
+	arr.push_back(1);
+	arr.push_back(4);
+	arr.push_back(3);
+
+	// Find at starting position
+	CHECK(arr.rfind(3) == 4);
+	// Find at later position
+	CHECK(arr.rfind(4) == 3);
+	// Find at last position
+	CHECK(arr.rfind(0) == 0);
+	// Find nonexistent
+	CHECK(arr.rfind(2) == -1);
+
+	// Find at starting position from an offset
+	CHECK(arr.rfind(1, 2) == 2);
+	// Find at later position from an offset
+	CHECK(arr.rfind(3, 3) == 1);
+	CHECK(arr.rfind(3, 2) == 1);
+	// Find at last position from an offset
+	CHECK(arr.rfind(0, 3) == 0);
+	// Find nonexistent from an offset
+	CHECK(arr.rfind(2, 3) == -1);
+
+	// Find at starting position from a negative offset
+	CHECK(arr.rfind(3, -1) == 4);
+	CHECK(arr.rfind(4, -2) == 3);
+	// Find at later position from a negative offset
+	CHECK(arr.rfind(1, -1) == 2);
+	// Find at last position from a negative offset
+	CHECK(arr.rfind(0, -2) == 0);
+
+	// Find nonexistent from a negative offset
+	CHECK(arr.rfind(4, -3) == -1);
+}
+
+template <typename R, typename... Args, typename F>
+Callable callable_lambda(F &&f) {
+	typedef CallableCustomStaticMethodPointerRet<R, Args...> CCMP;
+	CCMP *ccmp = memnew(CCMP(f));
+	return Callable(ccmp);
+}
+
+template <typename F>
+Callable predicate(F &&f) { return callable_lambda<bool, const Variant &>(f); }
+
+bool operator>(const Variant &l, const Variant &r) { return l != r && !(l < r); }
+
+inline bool operator<(const Variant &v, int x) { return v < Variant(x); }
+inline bool operator>(const Variant &v, int x) { return v > Variant(x); }
+
+TEST_CASE("[Array] find_if()") {
+	Callable less_than_3 = predicate([](auto &v) { return v < 3; });
+	Callable greater_than_3 = predicate([](auto &v) { return v > 3; });
+
+	Array arr;
+	// Searching empty array returns nothing
+	CHECK(arr.find_if(less_than_3) == -1);
+
+	arr.push_back(1);
+	arr.push_back(3);
+	arr.push_back(4);
+	arr.push_back(2);
+	arr.push_back(7);
+
+	// Find at first position
+	CHECK(arr.find_if(less_than_3) == 0);
+	// Find at later position
+	CHECK(arr.find_if(greater_than_3) == 2);
+	// Find at last position
+	CHECK(arr.find_if(predicate([](auto &v) { return v > 6; })) == 4);
+	// Find nothing
+	CHECK(arr.find_if(predicate([](auto &v) { return v > 7; })) == -1);
+
+	// Find at first position from an offset
+	CHECK(arr.find_if(greater_than_3, 2) == 2);
+	// Find at later position from an offset
+	CHECK(arr.find_if(greater_than_3, 3) == 4);
+	// Find nothing from an offset
+	CHECK(arr.find_if(predicate([](auto &v) { return v < 2; }), 1) == -1);
+}
+
+TEST_CASE("[Array] rfind_if()") {
+	Callable less_than_3 = predicate([](auto &v) { return v < 3; });
+	Callable greater_than_3 = predicate([](auto &v) { return v > 3; });
+
+	Array arr;
+	// Searching empty array returns nothing
+	CHECK(arr.rfind_if(less_than_3) == -1);
+
+	arr.push_back(1);
+	arr.push_back(3);
+	arr.push_back(4);
+	arr.push_back(2);
+	arr.push_back(7);
+
+	// Find at first position
+	CHECK(arr.rfind_if(predicate([](auto &v) { return v > 6; })) == 4);
+	// Find at later position
+	CHECK(arr.rfind_if(predicate([](auto &v) { return v < 7 && v > 3; })) == 2);
+	// Find at last position
+	CHECK(arr.rfind_if(predicate([](auto &v) { return v < 2; })) == 0);
+	// Find nonexistent
+	CHECK(arr.rfind_if(predicate([](auto &v) { return v > 7; })) == -1);
+
+	// Find at first position from an offset
+	CHECK(arr.rfind_if(greater_than_3, 2) == 2);
+	// Find at later position from an offset
+	CHECK(arr.rfind_if(greater_than_3, 3) == 2);
+	// Find at last position from an offset
+	CHECK(arr.rfind_if(less_than_3, 2) == 0);
+	// Find nothing from an offset
+	CHECK(arr.rfind_if(greater_than_3, 1) == -1);
+
+	// Find at first position from a negative offset
+	CHECK(arr.rfind_if(greater_than_3, -3) == 2);
+	// Find at later position from a negative offset
+	CHECK(arr.rfind_if(greater_than_3, -2) == 2);
+	// Find at last position from an offset
+	CHECK(arr.rfind_if(less_than_3, -3) == 0);
+	// Find nothing from a negative offset
+	CHECK(arr.rfind_if(greater_than_3, -4) == -1);
+}
+
 TEST_CASE("[Array] remove_at()") {
 	Array arr;
 	arr.push_back(1);
