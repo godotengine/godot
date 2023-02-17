@@ -13,7 +13,7 @@
 		<method name="reset">
 			<return type="void" />
 			<description>
-				Reset the result object to its initial state.  This is useful to reuse the object across multiple queries.
+				Reset the result object to its initial state. This is useful to reuse the object across multiple queries.
 			</description>
 		</method>
 	</methods>

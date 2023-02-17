@@ -34,7 +34,7 @@
 		<method name="get_default_length" qualifiers="const">
 			<return type="float" />
 			<description>
-				Deprecated. Please use  [code]get_length[/code] instead.
+				Deprecated. Please use [method get_length] instead.
 			</description>
 		</method>
 		<method name="get_index_in_skeleton" qualifiers="const">
@@ -74,7 +74,7 @@
 			<return type="void" />
 			<param index="0" name="default_length" type="float" />
 			<description>
-				Deprecated. Please use [code]set_length[/code] instead.
+				Deprecated. Please use [method set_length] instead.
 			</description>
 		</method>
 		<method name="set_length">
