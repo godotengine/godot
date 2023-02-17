@@ -33,14 +33,14 @@
 			<return type="void" />
 			<param index="0" name="external_skeleton" type="NodePath" />
 			<description>
-				Sets the [NodePath] to the external skeleton that the BoneAttachment3D node should use. The external [Skeleton3D] node is only used when [code]use_external_skeleton[/code] is set to [code]true[/code].
+				Sets the [NodePath] to the external skeleton that the BoneAttachment3D node should use. See [method set_use_external_skeleton] to enable the external [Skeleton3D] node.
 			</description>
 		</method>
 		<method name="set_use_external_skeleton">
 			<return type="void" />
 			<param index="0" name="use_external_skeleton" type="bool" />
 			<description>
-				Sets whether the BoneAttachment3D node will use an extenral [Skeleton3D] node rather than attenpting to use its parent node as the [Skeleton3D]. When set to [code]true[/code], the BoneAttachment3D node will use the external [Skeleton3D] node set in [code]set_external_skeleton[/code].
+				Sets whether the BoneAttachment3D node will use an extenral [Skeleton3D] node rather than attenpting to use its parent node as the [Skeleton3D]. When set to [code]true[/code], the BoneAttachment3D node will use the external [Skeleton3D] node set in [method set_external_skeleton].
 			</description>
 		</method>
 	</methods>

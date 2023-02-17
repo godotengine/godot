@@ -108,7 +108,7 @@
 			<return type="bool" />
 			<param index="0" name="track_idx" type="int" />
 			<description>
-				Returns [code]true[/code] if the track at [code]idx[/code] will be blended with other animations.
+				Returns [code]true[/code] if the track at [param track_idx] will be blended with other animations.
 			</description>
 		</method>
 		<method name="audio_track_set_key_end_offset">
