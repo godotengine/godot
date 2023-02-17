@@ -378,9 +378,6 @@ void Bone2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_skeleton_rest"), &Bone2D::get_skeleton_rest);
 	ClassDB::bind_method(D_METHOD("get_index_in_skeleton"), &Bone2D::get_index_in_skeleton);
 
-	ClassDB::bind_method(D_METHOD("set_default_length", "default_length"), &Bone2D::set_default_length);
-	ClassDB::bind_method(D_METHOD("get_default_length"), &Bone2D::get_default_length);
-
 	ClassDB::bind_method(D_METHOD("set_autocalculate_length_and_angle", "auto_calculate"), &Bone2D::set_autocalculate_length_and_angle);
 	ClassDB::bind_method(D_METHOD("get_autocalculate_length_and_angle"), &Bone2D::get_autocalculate_length_and_angle);
 	ClassDB::bind_method(D_METHOD("set_length", "length"), &Bone2D::set_length);
@@ -414,16 +411,6 @@ Transform2D Bone2D::get_skeleton_rest() const {
 
 void Bone2D::apply_rest() {
 	set_transform(rest);
-}
-
-void Bone2D::set_default_length(real_t p_length) {
-	WARN_DEPRECATED_MSG("set_default_length is deprecated. Please use set_length instead!");
-	set_length(p_length);
-}
-
-real_t Bone2D::get_default_length() const {
-	WARN_DEPRECATED_MSG("get_default_length is deprecated. Please use get_length instead!");
-	return get_length();
 }
 
 int Bone2D::get_index_in_skeleton() const {

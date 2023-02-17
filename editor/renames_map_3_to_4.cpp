@@ -291,6 +291,7 @@ const char *RenamesMap3To4::gdscript_function_renames[][2] = {
 	{ "get_cull_mask_bit", "get_cull_mask_value" }, // Camera3D
 	{ "get_cursor_position", "get_caret_column" }, // LineEdit
 	{ "get_d", "get_distance" }, // LineShape2D
+	{ "get_default_length", "get_length" }, // Bone2D
 	{ "get_depth_bias_enable", "get_depth_bias_enabled" }, // RDPipelineRasterizationState
 	{ "get_device", "get_output_device" }, // AudioServer
 	{ "get_device_list", "get_output_device_list" }, // AudioServer
@@ -490,6 +491,7 @@ const char *RenamesMap3To4::gdscript_function_renames[][2] = {
 	{ "set_cull_mask_bit", "set_cull_mask_value" }, // Camera3D
 	{ "set_cursor_position", "set_caret_column" }, // LineEdit
 	{ "set_d", "set_distance" }, // WorldMarginShape2D
+	{ "set_default_length", "set_length" }, // Bone2D
 	{ "set_depth_bias_enable", "set_depth_bias_enabled" }, // RDPipelineRasterizationState
 	{ "set_device", "set_output_device" }, // AudioServer
 	{ "set_doubleclick", "set_double_click" }, // InputEventMouseButton
@@ -749,6 +751,7 @@ const char *RenamesMap3To4::csharp_function_renames[][2] = {
 	{ "GetCullMaskBit", "GetCullMaskValue" }, // Camera3D
 	{ "GetCursorPosition", "GetCaretColumn" }, // LineEdit
 	{ "GetD", "GetDistance" }, // LineShape2D
+	{ "GetDefaultLength", "GetLength" }, // Bone2D
 	{ "GetDepthBiasEnable", "GetDepthBiasEnabled" }, // RDPipelineRasterizationState
 	{ "GetDevice", "GetOutputDevice" }, // AudioServer
 	{ "GetDeviceList", "GetOutputDeviceList" }, // AudioServer
@@ -938,6 +941,7 @@ const char *RenamesMap3To4::csharp_function_renames[][2] = {
 	{ "SetCullMaskBit", "SetCullMaskValue" }, // Camera3D
 	{ "SetCursorPosition", "SetCaretColumn" }, // LineEdit
 	{ "SetD", "SetDistance" }, // WorldMarginShape2D
+	{ "SetDefaultLength", "SetLength" }, // Bone2D
 	{ "SetDepthBiasEnable", "SetDepthBiasEnabled" }, // RDPipelineRasterizationState
 	{ "SetDevice", "SetOutputDevice" }, // AudioServer
 	{ "SetDoubleclick", "SetDoubleClick" }, // InputEventMouseButton
