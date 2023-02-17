@@ -18,7 +18,7 @@
 	<methods>
 		<method name="_can_handle" qualifiers="virtual const">
 			<return type="bool" />
-			<param index="0" name="object" type="Variant" />
+			<param index="0" name="object" type="Object" />
 			<description>
 				Returns [code]true[/code] if this object can be handled by this plugin.
 			</description>

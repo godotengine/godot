@@ -225,7 +225,7 @@ public:
 protected:
 	static void _bind_methods();
 
-	GDVIRTUAL1RC(bool, _can_handle, Variant)
+	GDVIRTUAL1RC(bool, _can_handle, Object *)
 	GDVIRTUAL1(_parse_begin, Object *)
 	GDVIRTUAL2(_parse_category, Object *, String)
 	GDVIRTUAL2(_parse_group, Object *, String)

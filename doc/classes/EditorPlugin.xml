@@ -38,7 +38,7 @@
 		</method>
 		<method name="_edit" qualifiers="virtual">
 			<return type="void" />
-			<param index="0" name="object" type="Variant" />
+			<param index="0" name="object" type="Object" />
 			<description>
 				This function is used for plugins that edit specific object types (nodes or resources). It requests the editor to edit the given object.
 				[param object] can be [code]null[/code] if the plugin was editing an object, but there is no longer any selected object handled by this plugin. It can be used to cleanup editing state.
@@ -295,7 +295,7 @@
 		</method>
 		<method name="_handles" qualifiers="virtual const">
 			<return type="bool" />
-			<param index="0" name="object" type="Variant" />
+			<param index="0" name="object" type="Object" />
 			<description>
 				Implement this function if your plugin edits a specific type of object (Resource or Node). If you return [code]true[/code], then you will get the functions [method _edit] and [method _make_visible] called when the editor requests them. If you have declared the methods [method _forward_canvas_gui_input] and [method _forward_3d_gui_input] these will be called too.
 			</description>
