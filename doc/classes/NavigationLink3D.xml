@@ -4,7 +4,7 @@
 		Creates a link between two positions that [NavigationServer3D] can route agents through.
 	</brief_description>
 	<description>
-		Creates a link between two positions that [NavigationServer3D] can route agents through.  Links can be used to express navigation methods that aren't just traveling along the surface of the navigation mesh, like zip-lines, teleporters, or jumping across gaps.
+		Creates a link between two positions that [NavigationServer3D] can route agents through. Links can be used to express navigation methods that aren't just traveling along the surface of the navigation mesh, like zip-lines, teleporters, or jumping across gaps.
 	</description>
 	<tutorials>
 		<link title="Using NavigationLinks">$DOCS_URL/tutorials/navigation/navigation_using_navigationlinks.html</link>
