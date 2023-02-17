@@ -453,6 +453,16 @@ String ShaderCompiler::_dump_node_code(const SL::Node *p_node, int p_level, Gene
 					Pair<int *, int> &p = p_actions.render_mode_values[pnode->render_modes[i]];
 					*p.first = p.second;
 				}
+
+				if (p_actions.render_mode_params.has(pnode->render_modes[i])) {
+					int *p = p_actions.render_mode_params[pnode->render_modes[i]];
+
+					if (pnode->render_mode_params.has(pnode->render_modes[i])) {
+						*p = pnode->render_mode_params[pnode->render_modes[i]];
+					} else {
+						*p = 0;
+					}
+				}
 			}
 
 			// structs

@@ -2833,6 +2833,7 @@ void SceneShaderData::set_code(const String &p_code) {
 
 	int blend_modei = BLEND_MODE_MIX;
 	int depth_testi = DEPTH_TEST_ENABLED;
+	int depth_functioni = DEPTH_FUNCTION_LESS_OR_EQUAL;
 	int alpha_antialiasing_modei = ALPHA_ANTIALIASING_OFF;
 	int cull_modei = CULL_BACK;
 	int depth_drawi = DEPTH_DRAW_OPAQUE;
@@ -2878,6 +2879,15 @@ void SceneShaderData::set_code(const String &p_code) {
 	actions.render_mode_values["depth_draw_always"] = Pair<int *, int>(&depth_drawi, DEPTH_DRAW_ALWAYS);
 
 	actions.render_mode_values["depth_test_disabled"] = Pair<int *, int>(&depth_testi, DEPTH_TEST_DISABLED);
+
+	actions.render_mode_values["depth_function_lequal"] = Pair<int *, int>(&depth_functioni, DEPTH_FUNCTION_LESS_OR_EQUAL);
+	actions.render_mode_values["depth_function_less"] = Pair<int *, int>(&depth_functioni, DEPTH_FUNCTION_LESS);
+	actions.render_mode_values["depth_function_gequal"] = Pair<int *, int>(&depth_functioni, DEPTH_FUNCTION_GREATER_OR_EQUAL);
+	actions.render_mode_values["depth_function_greater"] = Pair<int *, int>(&depth_functioni, DEPTH_FUNCTION_GREATER);
+	actions.render_mode_values["depth_function_equal"] = Pair<int *, int>(&depth_functioni, DEPTH_FUNCTION_EQUAL);
+	actions.render_mode_values["depth_function_notequal"] = Pair<int *, int>(&depth_functioni, DEPTH_FUNCTION_NOT_EQUAL);
+	actions.render_mode_values["depth_function_always"] = Pair<int *, int>(&depth_functioni, DEPTH_FUNCTION_ALWAYS);
+	actions.render_mode_values["depth_function_never"] = Pair<int *, int>(&depth_functioni, DEPTH_FUNCTION_NEVER);
 
 	actions.render_mode_values["cull_disabled"] = Pair<int *, int>(&cull_modei, CULL_DISABLED);
 	actions.render_mode_values["cull_front"] = Pair<int *, int>(&cull_modei, CULL_FRONT);
@@ -2934,6 +2944,7 @@ void SceneShaderData::set_code(const String &p_code) {
 
 	depth_draw = DepthDraw(depth_drawi);
 	depth_test = DepthTest(depth_testi);
+	depth_function = DepthFunction(depth_functioni);
 	cull_mode = Cull(cull_modei);
 	blend_mode = BlendMode(blend_modei);
 	alpha_antialiasing_mode = AlphaAntiAliasing(alpha_antialiasing_modei);

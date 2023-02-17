@@ -8108,6 +8108,12 @@ Error ShaderLanguage::_parse_shader(const HashMap<StringName, FunctionInfo> &p_f
 					shader->render_modes.push_back(mode);
 
 					tk = _get_token();
+
+					if (tk.is_integer_constant()) {
+						shader->render_mode_params.insert(mode, (int64_t)tk.constant);
+						tk = _get_token();
+					}
+
 					if (tk.type == TK_COMMA) {
 						//all good, do nothing
 					} else if (tk.type == TK_SEMICOLON) {

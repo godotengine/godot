@@ -113,6 +113,18 @@ public:
 			DEPTH_TEST_ENABLED
 		};
 
+		enum DepthFunction {
+			DEPTH_FUNCTION_LESS_OR_EQUAL,
+			DEPTH_FUNCTION_LESS,
+			DEPTH_FUNCTION_GREATER_OR_EQUAL,
+			DEPTH_FUNCTION_GREATER,
+			DEPTH_FUNCTION_EQUAL,
+			DEPTH_FUNCTION_NOT_EQUAL,
+			DEPTH_FUNCTION_ALWAYS,
+			DEPTH_FUNCTION_NEVER,
+			DEPTH_FUNCTION_MAX
+		};
+
 		enum Cull {
 			CULL_DISABLED,
 			CULL_FRONT,
@@ -133,6 +145,30 @@ public:
 			ALPHA_ANTIALIASING_ALPHA_TO_COVERAGE_AND_TO_ONE
 		};
 
+		enum StencilOperation {
+			STENCIL_OP_KEEP,
+			STENCIL_OP_ZERO,
+			STENCIL_OP_REPLACE,
+			STENCIL_OP_INCREMENT_AND_CLAMP,
+			STENCIL_OP_DECREMENT_AND_CLAMP,
+			STENCIL_OP_INVERT,
+			STENCIL_OP_INCREMENT_AND_WRAP,
+			STENCIL_OP_DECREMENT_AND_WRAP,
+			STENCIL_OP_MAX // not an actual operator, just the amount of operators
+		};
+
+		enum StencilCompareOperator {
+			STENCIL_COMPARE_OP_NEVER,
+			STENCIL_COMPARE_OP_LESS,
+			STENCIL_COMPARE_OP_EQUAL,
+			STENCIL_COMPARE_OP_LESS_OR_EQUAL,
+			STENCIL_COMPARE_OP_GREATER,
+			STENCIL_COMPARE_OP_NOT_EQUAL,
+			STENCIL_COMPARE_OP_GREATER_OR_EQUAL,
+			STENCIL_COMPARE_OP_ALWAYS,
+			STENCIL_COMPARE_OP_MAX // not an actual operator, just the amount of operators
+		};
+
 		bool valid = false;
 		RID version;
 		uint32_t vertex_input_mask = 0;
@@ -147,6 +183,7 @@ public:
 		String code;
 
 		DepthDraw depth_draw = DEPTH_DRAW_OPAQUE;
+		DepthFunction depth_function = DEPTH_FUNCTION_LESS_OR_EQUAL;
 		DepthTest depth_test = DEPTH_TEST_ENABLED;
 
 		bool uses_point_size = false;
@@ -175,6 +212,15 @@ public:
 		bool uses_world_coordinates = false;
 		bool uses_screen_texture_mipmaps = false;
 		Cull cull_mode = CULL_DISABLED;
+
+		bool stencil_enabled = false;
+		StencilOperation stencil_fail = STENCIL_OP_KEEP;
+		StencilOperation stencil_pass = STENCIL_OP_KEEP;
+		StencilOperation stencil_depth_fail = STENCIL_OP_KEEP;
+		StencilCompareOperator stencil_compare = STENCIL_COMPARE_OP_NEVER;
+		uint32_t stencil_compare_mask = 255;
+		uint32_t stencil_write_mask = 255;
+		uint32_t stencil_reference = 1;
 
 		uint64_t last_pass = 0;
 		uint32_t index = 0;

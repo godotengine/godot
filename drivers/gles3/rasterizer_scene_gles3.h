@@ -369,6 +369,7 @@ private:
 		GLES3::SceneShaderData::BlendMode current_blend_mode = GLES3::SceneShaderData::BLEND_MODE_MIX;
 		GLES3::SceneShaderData::DepthDraw current_depth_draw = GLES3::SceneShaderData::DEPTH_DRAW_OPAQUE;
 		GLES3::SceneShaderData::DepthTest current_depth_test = GLES3::SceneShaderData::DEPTH_TEST_DISABLED;
+		GLES3::SceneShaderData::DepthFunction current_depth_function = GLES3::SceneShaderData::DEPTH_FUNCTION_LESS_OR_EQUAL;
 		GLES3::SceneShaderData::Cull cull_mode = GLES3::SceneShaderData::CULL_BACK;
 
 		bool texscreen_copied = false;

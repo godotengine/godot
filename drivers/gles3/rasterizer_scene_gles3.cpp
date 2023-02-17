@@ -2007,6 +2007,8 @@ void RasterizerSceneGLES3::render_scene(const Ref<RenderSceneBuffers> &p_render_
 		RENDER_TIMESTAMP("Render Sky");
 
 		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_LEQUAL);
+		glDepthMask(GL_FALSE);
 		glDisable(GL_BLEND);
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
@@ -2161,6 +2163,22 @@ void RasterizerSceneGLES3::_render_list_template(RenderListParameters *p_params,
 				}
 				scene_state.current_depth_test = shader->depth_test;
 			}
+		}
+
+		if (scene_state.current_depth_function != shader->depth_function) {
+			GLenum depth_function_table[GLES3::SceneShaderData::DEPTH_FUNCTION_MAX] = {
+				GL_LEQUAL,
+				GL_LESS,
+				GL_GEQUAL,
+				GL_GREATER,
+				GL_EQUAL,
+				GL_NOTEQUAL,
+				GL_ALWAYS,
+				GL_NEVER,
+			};
+
+			glDepthFunc(depth_function_table[shader->depth_function]);
+			scene_state.current_depth_function = shader->depth_function;
 		}
 
 		if (scene_state.current_depth_draw != shader->depth_draw) {

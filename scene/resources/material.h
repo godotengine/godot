@@ -227,6 +227,18 @@ public:
 		DEPTH_DRAW_MAX
 	};
 
+	enum DepthFunction {
+		DEPTH_FUNCTION_LESS_OR_EQUAL,
+		DEPTH_FUNCTION_LESS,
+		DEPTH_FUNCTION_GREATER_OR_EQUAL,
+		DEPTH_FUNCTION_GREATER,
+		DEPTH_FUNCTION_EQUAL,
+		DEPTH_FUNCTION_NOT_EQUAL,
+		DEPTH_FUNCTION_ALWAYS,
+		DEPTH_FUNCTION_NEVER,
+		DEPTH_FUNCTION_MAX
+	};
+
 	enum CullMode {
 		CULL_BACK,
 		CULL_FRONT,
@@ -305,6 +317,30 @@ public:
 		DISTANCE_FADE_MAX
 	};
 
+	enum StencilOperation {
+		STENCIL_OP_KEEP,
+		STENCIL_OP_ZERO,
+		STENCIL_OP_REPLACE,
+		STENCIL_OP_INCREMENT_AND_CLAMP,
+		STENCIL_OP_DECREMENT_AND_CLAMP,
+		STENCIL_OP_INVERT,
+		STENCIL_OP_INCREMENT_AND_WRAP,
+		STENCIL_OP_DECREMENT_AND_WRAP,
+		STENCIL_OP_MAX // not an actual operator, just the amount of operators
+	};
+
+	enum StencilCompareOperator {
+		STENCIL_COMPARE_OP_NEVER,
+		STENCIL_COMPARE_OP_LESS,
+		STENCIL_COMPARE_OP_EQUAL,
+		STENCIL_COMPARE_OP_LESS_OR_EQUAL,
+		STENCIL_COMPARE_OP_GREATER,
+		STENCIL_COMPARE_OP_NOT_EQUAL,
+		STENCIL_COMPARE_OP_GREATER_OR_EQUAL,
+		STENCIL_COMPARE_OP_ALWAYS,
+		STENCIL_COMPARE_OP_MAX // not an actual operator, just the amount of operators
+	};
+
 private:
 	struct MaterialKey {
 		// enum values
@@ -315,6 +351,7 @@ private:
 		uint64_t shading_mode : get_num_bits(SHADING_MODE_MAX - 1);
 		uint64_t blend_mode : get_num_bits(BLEND_MODE_MAX - 1);
 		uint64_t depth_draw_mode : get_num_bits(DEPTH_DRAW_MAX - 1);
+		uint64_t depth_function : get_num_bits(DEPTH_FUNCTION_MAX - 1);
 		uint64_t cull_mode : get_num_bits(CULL_MAX - 1);
 		uint64_t diffuse_mode : get_num_bits(DIFFUSE_MAX - 1);
 		uint64_t specular_mode : get_num_bits(SPECULAR_MAX - 1);
@@ -323,11 +360,17 @@ private:
 		uint64_t roughness_channel : get_num_bits(TEXTURE_CHANNEL_MAX - 1);
 		uint64_t emission_op : get_num_bits(EMISSION_OP_MAX - 1);
 		uint64_t distance_fade : get_num_bits(DISTANCE_FADE_MAX - 1);
+		uint64_t stencil_fail : get_num_bits(STENCIL_OP_MAX - 1);
+		uint64_t stencil_pass : get_num_bits(STENCIL_OP_MAX - 1);
+		uint64_t stencil_depth_fail : get_num_bits(STENCIL_OP_MAX - 1);
+		uint64_t stencil_compare : get_num_bits(STENCIL_COMPARE_OP_MAX - 1);
+		uint64_t stencil_bit : 3;
 		// booleans
 		uint64_t deep_parallax : 1;
 		uint64_t grow : 1;
 		uint64_t proximity_fade : 1;
 		uint64_t orm : 1;
+		uint64_t stencil_enabled : 1;
 
 		// flag bitfield
 		uint32_t feature_mask;
@@ -364,6 +407,7 @@ private:
 		mk.detail_uv = detail_uv;
 		mk.blend_mode = blend_mode;
 		mk.depth_draw_mode = depth_draw_mode;
+		mk.depth_function = depth_function;
 		mk.cull_mode = cull_mode;
 		mk.texture_filter = texture_filter;
 		mk.transparency = transparency;
@@ -380,6 +424,13 @@ private:
 		mk.emission_op = emission_op;
 		mk.alpha_antialiasing_mode = alpha_antialiasing_mode;
 		mk.orm = orm;
+
+		mk.stencil_enabled = stencil_enabled;
+		mk.stencil_fail = stencil_fail;
+		mk.stencil_pass = stencil_pass;
+		mk.stencil_depth_fail = stencil_depth_fail;
+		mk.stencil_compare = stencil_compare;
+		mk.stencil_bit = stencil_bit;
 
 		for (int i = 0; i < FEATURE_MAX; i++) {
 			if (features[i]) {
@@ -531,6 +582,7 @@ private:
 	BlendMode blend_mode = BLEND_MODE_MIX;
 	BlendMode detail_blend_mode = BLEND_MODE_MIX;
 	DepthDrawMode depth_draw_mode = DEPTH_DRAW_OPAQUE_ONLY;
+	DepthFunction depth_function = DEPTH_FUNCTION_LESS_OR_EQUAL;
 	CullMode cull_mode = CULL_BACK;
 	bool flags[FLAG_MAX] = {};
 	SpecularMode specular_mode = SPECULAR_SCHLICK_GGX;
@@ -544,6 +596,14 @@ private:
 	TextureChannel refraction_texture_channel;
 
 	AlphaAntiAliasing alpha_antialiasing_mode = ALPHA_ANTIALIASING_OFF;
+
+	bool stencil_enabled = false;
+	StencilOperation stencil_fail = STENCIL_OP_KEEP;
+	StencilOperation stencil_pass = STENCIL_OP_KEEP;
+	StencilOperation stencil_depth_fail = STENCIL_OP_KEEP;
+	StencilCompareOperator stencil_compare = STENCIL_COMPARE_OP_NEVER;
+	int stencil_bit = 0;
+	int stencil_reference = 1;
 
 	bool features[FEATURE_MAX] = {};
 
@@ -560,6 +620,11 @@ protected:
 	virtual bool _can_use_render_priority() const override { return true; }
 
 public:
+	enum {
+		STENCIL_BIT_MAX = 7,
+		STENCIL_BIT_MIN = 0,
+	};
+
 	void set_albedo(const Color &p_albedo);
 	Color get_albedo() const;
 
@@ -665,6 +730,9 @@ public:
 	void set_depth_draw_mode(DepthDrawMode p_mode);
 	DepthDrawMode get_depth_draw_mode() const;
 
+	void set_depth_function(DepthFunction p_func);
+	DepthFunction get_depth_function() const;
+
 	void set_cull_mode(CullMode p_mode);
 	CullMode get_cull_mode() const;
 
@@ -755,6 +823,27 @@ public:
 	void set_emission_operator(EmissionOperator p_op);
 	EmissionOperator get_emission_operator() const;
 
+	void set_stencil_enabled(bool p_stencil_enabled);
+	bool is_stencil_enabled() const;
+
+	void set_stencil_fail(StencilOperation p_op);
+	StencilOperation get_stencil_fail() const;
+
+	void set_stencil_pass(StencilOperation p_op);
+	StencilOperation get_stencil_pass() const;
+
+	void set_stencil_depth_fail(StencilOperation p_op);
+	StencilOperation get_stencil_depth_fail() const;
+
+	void set_stencil_compare(StencilCompareOperator p_op);
+	StencilCompareOperator get_stencil_compare() const;
+
+	void set_stencil_bit(int p_bit);
+	int get_stencil_bit() const;
+
+	void set_stencil_reference(int p_reference);
+	int get_stencil_reference() const;
+
 	void set_metallic_texture_channel(TextureChannel p_channel);
 	TextureChannel get_metallic_texture_channel() const;
 	void set_roughness_texture_channel(TextureChannel p_channel);
@@ -787,6 +876,7 @@ VARIANT_ENUM_CAST(BaseMaterial3D::DetailUV)
 VARIANT_ENUM_CAST(BaseMaterial3D::Feature)
 VARIANT_ENUM_CAST(BaseMaterial3D::BlendMode)
 VARIANT_ENUM_CAST(BaseMaterial3D::DepthDrawMode)
+VARIANT_ENUM_CAST(BaseMaterial3D::DepthFunction)
 VARIANT_ENUM_CAST(BaseMaterial3D::CullMode)
 VARIANT_ENUM_CAST(BaseMaterial3D::Flags)
 VARIANT_ENUM_CAST(BaseMaterial3D::DiffuseMode)
@@ -795,6 +885,8 @@ VARIANT_ENUM_CAST(BaseMaterial3D::BillboardMode)
 VARIANT_ENUM_CAST(BaseMaterial3D::TextureChannel)
 VARIANT_ENUM_CAST(BaseMaterial3D::EmissionOperator)
 VARIANT_ENUM_CAST(BaseMaterial3D::DistanceFadeMode)
+VARIANT_ENUM_CAST(BaseMaterial3D::StencilOperation)
+VARIANT_ENUM_CAST(BaseMaterial3D::StencilCompareOperator)
 
 class StandardMaterial3D : public BaseMaterial3D {
 	GDCLASS(StandardMaterial3D, BaseMaterial3D)

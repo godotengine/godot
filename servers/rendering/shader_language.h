@@ -712,6 +712,7 @@ public:
 		HashMap<StringName, Uniform> uniforms;
 		HashMap<StringName, Struct> structs;
 		Vector<StringName> render_modes;
+		HashMap<StringName, int64_t> render_mode_params;
 
 		Vector<Function> functions;
 		Vector<Constant> vconstants;
@@ -873,6 +874,13 @@ public:
 			options.push_back(p_arg4);
 			options.push_back(p_arg5);
 			options.push_back(p_arg6);
+		}
+
+		ModeInfo(const StringName &p_name, std::initializer_list<StringName> p_args) :
+				name(p_name) {
+			for (const StringName &arg : p_args) {
+				options.push_back(arg);
+			}
 		}
 	};
 
