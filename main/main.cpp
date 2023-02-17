@@ -89,6 +89,7 @@
 #include "editor/debugger/editor_debugger_node.h"
 #include "editor/doc_data_class_path.gen.h"
 #include "editor/doc_tools.h"
+#include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
 #include "editor/editor_paths.h"
 #include "editor/editor_settings.h"
@@ -162,6 +163,7 @@ static bool project_manager = false;
 static bool cmdline_tool = false;
 static String locale;
 static bool show_help = false;
+static bool wait_for_import = false;
 static bool auto_quit = false;
 static OS::ProcessID editor_pid = 0;
 #ifdef TOOLS_ENABLED
@@ -349,6 +351,7 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  -e, --editor                      Start the editor instead of running the scene.\n");
 	OS::get_singleton()->print("  -p, --project-manager             Start the project manager, even if a project is auto-detected.\n");
 	OS::get_singleton()->print("  --debug-server <uri>              Start the editor debug server (<protocol>://<host/IP>[:<port>], e.g. tcp://127.0.0.1:6007)\n");
+	OS::get_singleton()->print("  --wait-for-import-and-quit		Quit after the scan thread completes\n");
 #endif
 	OS::get_singleton()->print("  --quit                            Quit after the first iteration.\n");
 	OS::get_singleton()->print("  -l, --language <locale>           Use a specific locale (<locale> being a two-letter code).\n");
@@ -1187,6 +1190,12 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			}
 		} else if (I->get() == "-u" || I->get() == "--upwards") { // scan folders upwards
 			upwards = true;
+		} else if (I->get() == "--wait-for-import-and-quit") { // Quit after the scan thread completes
+			OS::get_singleton()->print("We are importing assets and exiting the editor.\n");
+			audio_driver = NULL_AUDIO_DRIVER;
+			display_driver = NULL_DISPLAY_DRIVER;
+			wait_for_import = true;
+			editor = true;
 		} else if (I->get() == "--quit") { // Auto quit at the end of the first main loop iteration
 			auto_quit = true;
 		} else if (I->get().ends_with("project.godot")) {
@@ -3239,6 +3248,7 @@ bool Main::iteration() {
 
 	OS::get_singleton()->add_frame_delay(DisplayServer::get_singleton()->window_can_draw());
 
+	bool should_quit = (exit || auto_quit) && !wait_for_import;
 #ifdef TOOLS_ENABLED
 	if (auto_build_solutions) {
 		auto_build_solutions = false;
@@ -3254,9 +3264,15 @@ bool Main::iteration() {
 					"Command line option --build-solutions was passed, but the build callback failed. Aborting.");
 		}
 	}
+
+	if (wait_for_import) {
+		if (EditorFileSystem::get_singleton() && !EditorFileSystem::get_singleton()->is_first_scan() && !EditorFileSystem::get_singleton()->is_importing()) {
+			should_quit = true;
+		}
+	}
 #endif
 
-	return exit || auto_quit;
+	return should_quit;
 }
 
 void Main::force_redraw() {
