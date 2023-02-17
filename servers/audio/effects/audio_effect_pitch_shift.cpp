@@ -310,7 +310,7 @@ Ref<AudioEffectInstance> AudioEffectPitchShift::instance() {
 }
 
 void AudioEffectPitchShift::set_pitch_scale(float p_pitch_scale) {
-	ERR_FAIL_COND(p_pitch_scale <= 0.0);
+	ERR_FAIL_COND(!(p_pitch_scale > 0.0));
 	pitch_scale = p_pitch_scale;
 }
 
