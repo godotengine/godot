@@ -35,7 +35,6 @@
 #include "scene/gui/label.h"
 
 FileDialog::GetIconFunc FileDialog::get_icon_func = nullptr;
-FileDialog::GetIconFunc FileDialog::get_large_icon_func = nullptr;
 
 FileDialog::RegisterFunc FileDialog::register_func = nullptr;
 FileDialog::RegisterFunc FileDialog::unregister_func = nullptr;
