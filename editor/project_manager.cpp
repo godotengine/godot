@@ -2013,16 +2013,25 @@ void ProjectManager::_notification(int p_what) {
 }
 
 Ref<Texture2D> ProjectManager::_file_dialog_get_icon(const String &p_path) {
-	return singleton->icon_type_cache["ObjectHR"];
+	if (p_path.get_extension().to_lower() == "godot") {
+		return singleton->icon_type_cache["GodotMonochrome"];
+	}
+
+	return singleton->icon_type_cache["Object"];
+}
+
+Ref<Texture2D> ProjectManager::_file_dialog_get_thumbnail(const String &p_path) {
+	if (p_path.get_extension().to_lower() == "godot") {
+		return singleton->icon_type_cache["GodotFile"];
+	}
+
+	return Ref<Texture2D>();
 }
 
 void ProjectManager::_build_icon_type_cache(Ref<Theme> p_theme) {
 	List<StringName> tl;
 	p_theme->get_icon_list(SNAME("EditorIcons"), &tl);
 	for (List<StringName>::Element *E = tl.front(); E; E = E->next()) {
-		if (!ClassDB::class_exists(E->get())) {
-			continue;
-		}
 		icon_type_cache[E->get()] = p_theme->get_icon(E->get(), SNAME("EditorIcons"));
 	}
 }
@@ -2651,6 +2660,7 @@ ProjectManager::ProjectManager() {
 				break;
 		}
 		EditorFileDialog::get_icon_func = &ProjectManager::_file_dialog_get_icon;
+		EditorFileDialog::get_thumbnail_func = &ProjectManager::_file_dialog_get_thumbnail;
 	}
 
 	// TRANSLATORS: This refers to the application where users manage their Godot projects.
