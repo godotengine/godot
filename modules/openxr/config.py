@@ -1,9 +1,14 @@
 def can_build(env, platform):
-    if platform in ("linuxbsd", "windows", "android"):
-        return env["openxr"] and not env["disable_3d"]
-    else:
-        # not supported on these platforms
+    if not env["openxr"] or env["disable_3d"]:
         return False
+
+    if platform not in ("linuxbsd", "windows", "android"):
+        return False
+
+    if platform == "linuxbsd" and env["opengl3"] and not env["x11"]:  # Needs Xlib for OpenGL
+        return False
+
+    return True
 
 
 def configure(env):

@@ -33,6 +33,7 @@
 #include "core/io/dir_access.h"
 #include "main/main.h"
 #include "servers/display_server.h"
+#include "servers/rendering_server.h"
 
 #include "modules/modules_enabled.gen.h" // For regex.
 #ifdef MODULE_REGEX_ENABLED
