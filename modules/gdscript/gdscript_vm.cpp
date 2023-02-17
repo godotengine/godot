@@ -459,6 +459,33 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 	r_err.error = Callable::CallError::CALL_OK;
 
+	static thread_local int call_depth = 0;
+	if (unlikely(++call_depth > MAX_CALL_DEPTH)) {
+		call_depth--;
+#ifdef DEBUG_ENABLED
+		String err_file;
+		if (p_instance && ObjectDB::get_instance(p_instance->owner_id) != nullptr && p_instance->script->is_valid() && !p_instance->script->path.is_empty()) {
+			err_file = p_instance->script->path;
+		} else if (_script) {
+			err_file = _script->path;
+		}
+		if (err_file.is_empty()) {
+			err_file = "<built-in>";
+		}
+		String err_func = name;
+		if (p_instance && ObjectDB::get_instance(p_instance->owner_id) != nullptr && p_instance->script->is_valid() && !p_instance->script->name.is_empty()) {
+			err_func = p_instance->script->name + "." + err_func;
+		}
+		int err_line = _initial_line;
+		const char *err_text = "Stack overflow. Check for infinite recursion in your script.";
+		if (!GDScriptLanguage::get_singleton()->debug_break(err_text, false)) {
+			// Debugger break did not happen.
+			_err_print_error(err_func.utf8().get_data(), err_file.utf8().get_data(), err_line, err_text, false, ERR_HANDLER_SCRIPT);
+		}
+#endif
+		return _get_default_variant_for_data_type(return_type);
+	}
+
 	Variant retvalue;
 	Variant *stack = nullptr;
 	Variant **instruction_args = nullptr;
@@ -493,10 +520,12 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				r_err.error = Callable::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
 				r_err.argument = _argument_count;
 
+				call_depth--;
 				return _get_default_variant_for_data_type(return_type);
 			} else if (p_argcount < _argument_count - _default_arg_count) {
 				r_err.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
 				r_err.argument = _argument_count - _default_arg_count;
+				call_depth--;
 				return _get_default_variant_for_data_type(return_type);
 			} else {
 				defarg = _argument_count - p_argcount;
@@ -524,6 +553,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				r_err.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_err.argument = i;
 				r_err.expected = argument_types[i].builtin_type;
+				call_depth--;
 				return _get_default_variant_for_data_type(return_type);
 			}
 			if (argument_types[i].kind == GDScriptDataType::BUILTIN) {
@@ -3602,6 +3632,8 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 	for (int i = 0; i < 3; i++) {
 		stack[i].~Variant();
 	}
+
+	call_depth--;
 
 	return retvalue;
 }
