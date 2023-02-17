@@ -8116,6 +8116,7 @@ void EditorPluginList::forward_3d_force_draw_over_viewport(Control *p_overlay) {
 }
 
 void EditorPluginList::add_plugin(EditorPlugin *p_plugin) {
+	ERR_FAIL_COND(plugins_list.has(p_plugin));
 	plugins_list.push_back(p_plugin);
 }
 
