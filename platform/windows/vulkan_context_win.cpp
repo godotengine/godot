@@ -55,6 +55,10 @@ Error VulkanContextWindows::window_create(DisplayServer::WindowID p_window_id, D
 }
 
 VulkanContextWindows::VulkanContextWindows() {
+	// Workaround for Vulkan not working on setups with AMD integrated graphics + NVIDIA dedicated GPU (GH-57708).
+	// This prevents using AMD integrated graphics with Vulkan entirely, but it allows the engine to start
+	// even on outdated/broken driver setups.
+	OS::get_singleton()->set_environment("DISABLE_LAYER_AMD_SWITCHABLE_GRAPHICS_1", "1");
 }
 
 VulkanContextWindows::~VulkanContextWindows() {
