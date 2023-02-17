@@ -138,6 +138,10 @@ void RasterizerGLES3::clear_depth(float p_depth) {
 #endif // GLES_API_ENABLED
 }
 
+void RasterizerGLES3::clear_stencil(int32_t p_stencil) {
+	glClearStencil(p_stencil);
+}
+
 #ifdef CAN_DEBUG
 static void GLAPIENTRY _gl_debug_print(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const GLvoid *userParam) {
 	// These are ultimately annoying, so removing for now.
