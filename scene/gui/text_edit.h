@@ -500,8 +500,8 @@ private:
 	double _get_visible_lines_offset() const;
 	double _get_v_scroll_offset() const;
 
-	void _scroll_up(real_t p_delta);
-	void _scroll_down(real_t p_delta);
+	void _scroll_up(real_t p_delta, bool p_animate);
+	void _scroll_down(real_t p_delta, bool p_animate);
 
 	void _scroll_lines_up();
 	void _scroll_lines_down();
