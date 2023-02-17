@@ -1960,6 +1960,8 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant
 				return;
 			}
 
+			resource_set.insert(res);
+
 			List<PropertyInfo> property_list;
 
 			res->get_property_list(&property_list);
@@ -1983,7 +1985,6 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant
 				}
 			}
 
-			resource_set.insert(res);
 			saved_resources.push_back(res);
 
 		} break;
