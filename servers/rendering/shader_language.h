@@ -164,6 +164,7 @@ public:
 		TK_ARG_OUT,
 		TK_ARG_INOUT,
 		TK_RENDER_MODE,
+		TK_STENCIL_MODE,
 		TK_HINT_DEFAULT_WHITE_TEXTURE,
 		TK_HINT_DEFAULT_BLACK_TEXTURE,
 		TK_HINT_DEFAULT_TRANSPARENT_TEXTURE,
@@ -723,6 +724,8 @@ public:
 		HashMap<StringName, Struct> structs;
 		HashMap<StringName, Function> functions;
 		Vector<StringName> render_modes;
+		Vector<StringName> stencil_modes;
+		int stencil_reference = -1;
 
 		Vector<Function> vfunctions;
 		Vector<Constant> vconstants;
@@ -799,6 +802,7 @@ public:
 		COMPLETION_NONE,
 		COMPLETION_SHADER_TYPE,
 		COMPLETION_RENDER_MODE,
+		COMPLETION_STENCIL_MODE,
 		COMPLETION_MAIN_FUNCTION,
 		COMPLETION_IDENTIFIER,
 		COMPLETION_FUNCTION_CALL,
@@ -1222,10 +1226,12 @@ private:
 	String _get_qualifier_str(ArgumentQualifier p_qualifier) const;
 
 	bool _parse_numeric_constant_expression(const FunctionInfo &p_function_info, float &r_constant);
-	Error _parse_shader(const HashMap<StringName, FunctionInfo> &p_functions, const Vector<ModeInfo> &p_render_modes, const HashSet<String> &p_shader_types);
+	Error _parse_shader(const HashMap<StringName, FunctionInfo> &p_functions, const Vector<ModeInfo> &p_render_modes, const Vector<ModeInfo> &p_stencil_modes, const HashSet<String> &p_shader_types);
 
 	Error _find_last_flow_op_in_block(BlockNode *p_block, FlowOperation p_op);
 	Error _find_last_flow_op_in_op(ControlFlowNode *p_flow, FlowOperation p_op);
+
+	Error _parse_shader_mode(bool p_is_stencil, const Vector<ModeInfo> &p_modes, HashMap<String, String> &r_defined_modes);
 
 public:
 #ifdef DEBUG_ENABLED
@@ -1248,6 +1254,7 @@ public:
 	struct ShaderCompileInfo {
 		HashMap<StringName, FunctionInfo> functions;
 		Vector<ModeInfo> render_modes;
+		Vector<ModeInfo> stencil_modes;
 		VaryingFunctionNames varying_function_names;
 		HashSet<String> shader_types;
 		GlobalShaderUniformGetTypeFunc global_shader_uniform_type_func = nullptr;
