@@ -1275,21 +1275,19 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					OPCODE_BREAK;
 				}
 
-				bool was_freed = false;
-				Object *src_obj = src->get_validated_object_with_check(was_freed);
-				if (!src_obj) {
-					if (was_freed) {
+				if (src->get_type() == Variant::OBJECT) {
+					bool was_freed = false;
+					Object *src_obj = src->get_validated_object_with_check(was_freed);
+					if (!src_obj && was_freed) {
 						err_text = "Trying to assign invalid previously freed instance.";
-					} else {
-						err_text = "Trying to assign invalid null variable.";
+						OPCODE_BREAK;
 					}
-					OPCODE_BREAK;
-				}
 
-				if (src_obj && !ClassDB::is_parent_class(src_obj->get_class_name(), nc->get_name())) {
-					err_text = "Trying to assign value of type '" + src_obj->get_class_name() +
-							"' to a variable of type '" + nc->get_name() + "'.";
-					OPCODE_BREAK;
+					if (src_obj && !ClassDB::is_parent_class(src_obj->get_class_name(), nc->get_name())) {
+						err_text = "Trying to assign value of type '" + src_obj->get_class_name() +
+								"' to a variable of type '" + nc->get_name() + "'.";
+						OPCODE_BREAK;
+					}
 				}
 #endif // DEBUG_ENABLED
 				*dst = *src;
@@ -1314,15 +1312,11 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					OPCODE_BREAK;
 				}
 
-				if (src->get_type() != Variant::NIL) {
+				if (src->get_type() == Variant::OBJECT) {
 					bool was_freed = false;
 					Object *val_obj = src->get_validated_object_with_check(was_freed);
-					if (!val_obj) {
-						if (was_freed) {
-							err_text = "Trying to assign invalid previously freed instance.";
-						} else {
-							err_text = "Trying to assign invalid null variable.";
-						}
+					if (!val_obj && was_freed) {
+						err_text = "Trying to assign invalid previously freed instance.";
 						OPCODE_BREAK;
 					}
 
