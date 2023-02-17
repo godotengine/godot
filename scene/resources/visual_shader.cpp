@@ -1715,6 +1715,41 @@ bool VisualShader::_set(const StringName &p_name, const Variant &p_value) {
 		}
 		_queue_update();
 		return true;
+	} else if (prop_name == "stencil/enabled") {
+		stencil_enabled = bool(p_value);
+		_queue_update();
+		notify_property_list_changed();
+		return true;
+	} else if (prop_name == "stencil/reference") {
+		stencil_reference = int(p_value);
+		_queue_update();
+		return true;
+	} else if (prop_name.begins_with("stencil_flags/")) {
+		StringName flag = prop_name.get_slicec('/', 1);
+		bool enable = p_value;
+		if (enable) {
+			stencil_flags.insert(flag);
+			if (flag == "read") {
+				stencil_flags.erase("write");
+				stencil_flags.erase("write_depth_fail");
+			} else if (flag == "write" || flag == "write_depth_fail") {
+				stencil_flags.erase("read");
+			}
+		} else {
+			stencil_flags.erase(flag);
+		}
+		_queue_update();
+		return true;
+	} else if (prop_name.begins_with("stencil_modes/")) {
+		String mode_name = prop_name.get_slicec('/', 1);
+		int value = p_value;
+		if (value == 0) {
+			stencil_modes.erase(mode_name); // It's default anyway, so don't store it.
+		} else {
+			stencil_modes[mode_name] = value;
+		}
+		_queue_update();
+		return true;
 	} else if (prop_name.begins_with("varyings/")) {
 		String var_name = prop_name.get_slicec('/', 1);
 		Varying value = Varying();
@@ -1794,6 +1829,24 @@ bool VisualShader::_get(const StringName &p_name, Variant &r_ret) const {
 		String mode_name = prop_name.get_slicec('/', 1);
 		if (modes.has(mode_name)) {
 			r_ret = modes[mode_name];
+		} else {
+			r_ret = 0;
+		}
+		return true;
+	} else if (prop_name == "stencil/enabled") {
+		r_ret = stencil_enabled;
+		return true;
+	} else if (prop_name == "stencil/reference") {
+		r_ret = stencil_reference;
+		return true;
+	} else if (prop_name.begins_with("stencil_flags/")) {
+		StringName flag = prop_name.get_slicec('/', 1);
+		r_ret = stencil_flags.has(flag);
+		return true;
+	} else if (prop_name.begins_with("stencil_modes/")) {
+		String mode_name = prop_name.get_slicec('/', 1);
+		if (stencil_modes.has(mode_name)) {
+			r_ret = stencil_modes[mode_name];
 		} else {
 			r_ret = 0;
 		}
@@ -1932,6 +1985,45 @@ void VisualShader::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	for (const String &E : toggles) {
 		p_list->push_back(PropertyInfo(Variant::BOOL, vformat("%s/%s", PNAME("flags"), E)));
+	}
+
+	const Vector<ShaderLanguage::ModeInfo> &smodes = ShaderTypes::get_singleton()->get_stencil_modes(RenderingServer::ShaderMode(shader_mode));
+
+	if (smodes.size() > 0) {
+		p_list->push_back(PropertyInfo(Variant::BOOL, vformat("%s/%s", PNAME("stencil"), PNAME("enabled"))));
+
+		uint32_t stencil_prop_usage = stencil_enabled ? PROPERTY_USAGE_DEFAULT : PROPERTY_USAGE_STORAGE;
+
+		p_list->push_back(PropertyInfo(Variant::INT, vformat("%s/%s", PNAME("stencil"), PNAME("reference")), PROPERTY_HINT_RANGE, "0,255,1", stencil_prop_usage));
+
+		HashMap<String, String> stencil_enums;
+		HashSet<String> stencil_toggles;
+
+		for (const ShaderLanguage::ModeInfo &info : smodes) {
+			if (!info.options.is_empty()) {
+				const String begin = String(info.name);
+
+				for (int j = 0; j < info.options.size(); j++) {
+					const String option = String(info.options[j]).capitalize();
+
+					if (!stencil_enums.has(begin)) {
+						stencil_enums[begin] = option;
+					} else {
+						stencil_enums[begin] += "," + option;
+					}
+				}
+			} else {
+				stencil_toggles.insert(String(info.name));
+			}
+		}
+
+		for (const KeyValue<String, String> &E : stencil_enums) {
+			p_list->push_back(PropertyInfo(Variant::INT, vformat("%s/%s", PNAME("stencil_modes"), E.key), PROPERTY_HINT_ENUM, E.value, stencil_prop_usage));
+		}
+
+		for (const String &E : stencil_toggles) {
+			p_list->push_back(PropertyInfo(Variant::BOOL, vformat("%s/%s", PNAME("stencil_flags"), E), PROPERTY_HINT_NONE, "", stencil_prop_usage));
+		}
 	}
 
 	for (const KeyValue<String, Varying> &E : varyings) {
@@ -2619,6 +2711,46 @@ void VisualShader::_update_shader() const {
 
 	if (!render_mode.is_empty()) {
 		global_code += "render_mode " + render_mode + ";\n\n";
+	}
+
+	const Vector<ShaderLanguage::ModeInfo> &smodes = ShaderTypes::get_singleton()->get_stencil_modes(RenderingServer::ShaderMode(shader_mode));
+
+	if (stencil_enabled && smodes.size() > 0 && (stencil_flags.has("read") || stencil_flags.has("write") || stencil_flags.has("write_depth_fail"))) {
+		String stencil_mode;
+
+		Vector<String> flag_names;
+
+		// Add enum modes first.
+		for (const ShaderLanguage::ModeInfo &info : smodes) {
+			const String temp = String(info.name);
+
+			if (!info.options.is_empty()) {
+				if (stencil_modes.has(temp) && stencil_modes[temp] < info.options.size()) {
+					if (!stencil_mode.is_empty()) {
+						stencil_mode += ", ";
+					}
+					stencil_mode += temp + "_" + info.options[stencil_modes[temp]];
+				}
+			} else if (stencil_flags.has(temp)) {
+				flag_names.push_back(temp);
+			}
+		}
+
+		// Add flags afterward.
+		for (const String &flag_name : flag_names) {
+			if (!stencil_mode.is_empty()) {
+				stencil_mode += ", ";
+			}
+			stencil_mode += flag_name;
+		}
+
+		// Add reference value.
+		if (!stencil_mode.is_empty()) {
+			stencil_mode += ", ";
+		}
+		stencil_mode += itos(stencil_reference);
+
+		global_code += "stencil_mode " + stencil_mode + ";\n\n";
 	}
 
 	static const char *func_name[TYPE_MAX] = { "vertex", "fragment", "light", "start", "process", "collide", "start_custom", "process_custom", "sky", "fog" };
