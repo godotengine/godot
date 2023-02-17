@@ -3284,6 +3284,8 @@ DisplayServerMacOS::CursorShape DisplayServerMacOS::cursor_get_shape() const {
 void DisplayServerMacOS::cursor_set_custom_image(const Ref<Resource> &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
 	_THREAD_SAFE_METHOD_
 
+	ERR_FAIL_INDEX(p_shape, CURSOR_MAX);
+
 	if (p_cursor.is_valid()) {
 		HashMap<CursorShape, Vector<Variant>>::Iterator cursor_c = cursors_cache.find(p_shape);
 
