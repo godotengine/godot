@@ -378,6 +378,24 @@
 			The method for rendering the specular blob.
 			[b]Note:[/b] [member specular_mode] only applies to the specular blob. It does not affect specular reflections from the sky, screen-space reflections, [VoxelGI], SDFGI or [ReflectionProbe]s. To disable reflections from these sources as well, set [member metallic_specular] to [code]0.0[/code] instead.
 		</member>
+		<member name="stencil_color" type="Color" setter="set_stencil_effect_color" getter="get_stencil_effect_color" default="Color(0, 0, 0, 1)" experimental="May be affected by future rendering pipeline changes.">
+			The primary color of the stencil effect.
+		</member>
+		<member name="stencil_compare" type="int" setter="set_stencil_compare" getter="get_stencil_compare" enum="BaseMaterial3D.StencilCompare" default="0" experimental="May be affected by future rendering pipeline changes.">
+			The comparison operator to use for stencil masking operations. See [enum StencilCompare].
+		</member>
+		<member name="stencil_flags" type="int" setter="set_stencil_flags" getter="get_stencil_flags" default="0" experimental="May be affected by future rendering pipeline changes.">
+			The flags dictating how the stencil operation behaves. See [enum StencilFlags].
+		</member>
+		<member name="stencil_mode" type="int" setter="set_stencil_mode" getter="get_stencil_mode" enum="BaseMaterial3D.StencilMode" default="0" experimental="May be affected by future rendering pipeline changes.">
+			The stencil effect mode. See [enum StencilMode].
+		</member>
+		<member name="stencil_outline_thickness" type="float" setter="set_stencil_effect_outline_thickness" getter="get_stencil_effect_outline_thickness" default="0.01" experimental="May be affected by future rendering pipeline changes.">
+			The outline thickness for [constant STENCIL_MODE_OUTLINE].
+		</member>
+		<member name="stencil_reference" type="int" setter="set_stencil_reference" getter="get_stencil_reference" default="1" experimental="May be affected by future rendering pipeline changes.">
+			The stencil reference value (0-255). Typically a power of 2.
+		</member>
 		<member name="subsurf_scatter_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
 			If [code]true[/code], subsurface scattering is enabled. Emulates light that penetrates an object's surface, is scattered, and then emerges. Subsurface scattering quality is controlled by [member ProjectSettings.rendering/environment/subsurface_scattering/subsurface_scattering_quality].
 		</member>
@@ -827,6 +845,50 @@
 		</constant>
 		<constant name="DISTANCE_FADE_OBJECT_DITHER" value="3" enum="DistanceFadeMode">
 			Smoothly fades the object out based on the object's distance from the camera using a dithering approach. Dithering discards pixels based on a set pattern to smoothly fade without enabling transparency. On certain hardware, this can be faster than [constant DISTANCE_FADE_PIXEL_ALPHA] and [constant DISTANCE_FADE_PIXEL_DITHER].
+		</constant>
+		<constant name="STENCIL_MODE_DISABLED" value="0" enum="StencilMode">
+			Disables stencil operations.
+		</constant>
+		<constant name="STENCIL_MODE_OUTLINE" value="1" enum="StencilMode">
+			Stencil preset which applies an outline to the object.
+			[b]Note:[/b] Requires a [member Material.next_pass] material which will be automatically applied. Any manual changes made to [member Material.next_pass] will be lost when the stencil properties are modified or the scene is reloaded. To safely apply a [member Material.next_pass] material on a material that uses stencil presets, use [member GeometryInstance3D.material_overlay] instead.
+		</constant>
+		<constant name="STENCIL_MODE_XRAY" value="2" enum="StencilMode">
+			Stencil preset which shows a silhouette of the object behind walls.
+			[b]Note:[/b] Requires a [member Material.next_pass] material which will be automatically applied. Any manual changes made to [member Material.next_pass] will be lost when the stencil properties are modified or the scene is reloaded. To safely apply a [member Material.next_pass] material on a material that uses stencil presets, use [member GeometryInstance3D.material_overlay] instead.
+		</constant>
+		<constant name="STENCIL_MODE_CUSTOM" value="3" enum="StencilMode">
+			Enables stencil operations without a preset.
+		</constant>
+		<constant name="STENCIL_FLAG_READ" value="1" enum="StencilFlags">
+			The material will only be rendered where it passes a stencil comparison with existing stencil buffer values. See [enum StencilCompare].
+		</constant>
+		<constant name="STENCIL_FLAG_WRITE" value="2" enum="StencilFlags">
+			The material will write the reference value to the stencil buffer where it passes the depth test.
+		</constant>
+		<constant name="STENCIL_FLAG_WRITE_DEPTH_FAIL" value="4" enum="StencilFlags">
+			The material will write the reference value to the stencil buffer where it fails the depth test.
+		</constant>
+		<constant name="STENCIL_COMPARE_ALWAYS" value="0" enum="StencilCompare">
+			Always passes the stencil test.
+		</constant>
+		<constant name="STENCIL_COMPARE_LESS" value="1" enum="StencilCompare">
+			Passes the stencil test when the reference value is less than the existing stencil value.
+		</constant>
+		<constant name="STENCIL_COMPARE_EQUAL" value="2" enum="StencilCompare">
+			Passes the stencil test when the reference value is equal to the existing stencil value.
+		</constant>
+		<constant name="STENCIL_COMPARE_LESS_OR_EQUAL" value="3" enum="StencilCompare">
+			Passes the stencil test when the reference value is less than or equal to the existing stencil value.
+		</constant>
+		<constant name="STENCIL_COMPARE_GREATER" value="4" enum="StencilCompare">
+			Passes the stencil test when the reference value is greater than the existing stencil value.
+		</constant>
+		<constant name="STENCIL_COMPARE_NOT_EQUAL" value="5" enum="StencilCompare">
+			Passes the stencil test when the reference value is not equal to the existing stencil value.
+		</constant>
+		<constant name="STENCIL_COMPARE_GREATER_OR_EQUAL" value="6" enum="StencilCompare">
+			Passes the stencil test when the reference value is greater than or equal to the existing stencil value.
 		</constant>
 	</constants>
 </class>
