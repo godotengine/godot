@@ -648,7 +648,7 @@ void TileSetAtlasSourceEditor::_update_tile_data_editors() {
 	if (!tile_data_editors.has("texture_origin")) {
 		TileDataTextureOriginEditor *tile_data_texture_origin_editor = memnew(TileDataTextureOriginEditor);
 		tile_data_texture_origin_editor->hide();
-		tile_data_texture_origin_editor->setup_property_editor(Variant::VECTOR2, "texture_origin");
+		tile_data_texture_origin_editor->setup_property_editor(Variant::VECTOR2I, "texture_origin");
 		tile_data_texture_origin_editor->connect("needs_redraw", callable_mp((CanvasItem *)tile_atlas_control_unscaled, &Control::queue_redraw));
 		tile_data_texture_origin_editor->connect("needs_redraw", callable_mp((CanvasItem *)alternative_tiles_control_unscaled, &Control::queue_redraw));
 		tile_data_editors["texture_origin"] = tile_data_texture_origin_editor;
