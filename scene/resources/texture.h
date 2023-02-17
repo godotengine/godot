@@ -892,29 +892,6 @@ public:
 VARIANT_ENUM_CAST(GradientTexture2D::Fill);
 VARIANT_ENUM_CAST(GradientTexture2D::Repeat);
 
-class ProxyTexture : public Texture2D {
-private:
-	mutable RID proxy_ph;
-	mutable RID proxy;
-	Ref<Texture2D> base;
-
-protected:
-	static void _bind_methods();
-
-public:
-	void set_base(const Ref<Texture2D> &p_texture);
-	Ref<Texture2D> get_base() const;
-
-	virtual int get_width() const override;
-	virtual int get_height() const override;
-	virtual RID get_rid() const override;
-
-	virtual bool has_alpha() const override;
-
-	ProxyTexture();
-	~ProxyTexture();
-};
-
 class AnimatedTexture : public Texture2D {
 	GDCLASS(AnimatedTexture, Texture2D);
 
