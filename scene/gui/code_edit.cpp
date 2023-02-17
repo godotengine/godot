@@ -553,7 +553,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 		return;
 	}
 
-	// Override new line actions, for auto indent
+	// Override new line actions, for auto indent.
 	if (k->is_action("ui_text_newline_above", true)) {
 		_new_line(false, true);
 		accept_event();
@@ -570,7 +570,7 @@ void CodeEdit::gui_input(const Ref<InputEvent> &p_gui_input) {
 		return;
 	}
 
-	/* Remove shift otherwise actions will not match. */
+	// Remove shift, otherwise actions will not match.
 	k = k->duplicate();
 	k->set_shift_pressed(false);
 
@@ -743,8 +743,7 @@ void CodeEdit::_backspace_internal(int p_caret) {
 			}
 		}
 
-		// For space indentation we need to do a simple unindent if there are no chars to the left, acting in the
-		// same way as tabs.
+		// For space indentation we need to do a basic unindent if there are no chars to the left, acting the same way as tabs.
 		if (indent_using_spaces && cc != 0) {
 			if (get_first_non_whitespace_column(cl) >= cc) {
 				prev_column = cc - _calculate_spaces_till_next_left_indent(cc);
@@ -896,6 +895,7 @@ void CodeEdit::indent_lines() {
 		set_caret_column(get_caret_column(c) + selection_offset, false, c);
 	}
 	end_complex_operation();
+	queue_redraw();
 }
 
 void CodeEdit::unindent_lines() {
@@ -973,6 +973,7 @@ void CodeEdit::unindent_lines() {
 		set_caret_column(initial_cursor_column - removed_characters, false, c);
 	}
 	end_complex_operation();
+	queue_redraw();
 }
 
 int CodeEdit::_calculate_spaces_till_next_left_indent(int p_column) const {
@@ -1336,7 +1337,7 @@ PackedInt32Array CodeEdit::get_bookmarked_lines() const {
 	return ret;
 }
 
-// executing lines
+// Executing lines
 void CodeEdit::set_line_as_executing(int p_line, bool p_executing) {
 	int mask = get_line_gutter_metadata(p_line, main_gutter);
 	set_line_gutter_metadata(p_line, main_gutter, p_executing ? mask | MAIN_GUTTER_EXECUTING : mask & ~MAIN_GUTTER_EXECUTING);
@@ -2028,7 +2029,7 @@ void CodeEdit::confirm_code_completion(bool p_replace) {
 			insert_text_at_caret(insert_text.substr(matching_chars), i);
 		}
 
-		//* Handle merging of symbols eg strings, brackets.
+		// Handle merging of symbols eg strings, brackets.
 		const String line = get_line(caret_line);
 		char32_t next_char = line[get_caret_column(i)];
 		char32_t last_completion_char = insert_text[insert_text.length() - 1];
@@ -2202,7 +2203,7 @@ void CodeEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("clear_bookmarked_lines"), &CodeEdit::clear_bookmarked_lines);
 	ClassDB::bind_method(D_METHOD("get_bookmarked_lines"), &CodeEdit::get_bookmarked_lines);
 
-	// executing lines
+	// Executing lines
 	ClassDB::bind_method(D_METHOD("set_line_as_executing", "line", "executing"), &CodeEdit::set_line_as_executing);
 	ClassDB::bind_method(D_METHOD("is_line_executing", "line"), &CodeEdit::is_line_executing);
 	ClassDB::bind_method(D_METHOD("clear_executing_lines"), &CodeEdit::clear_executing_lines);
@@ -2924,6 +2925,12 @@ void CodeEdit::_filter_code_completion_candidates_impl() {
 	code_completion_options.clear();
 	code_completion_base = string_to_complete;
 
+	/* Don't autocomplete setting numerical values. */
+	if (code_completion_base.is_numeric()) {
+		cancel_code_completion();
+		return;
+	}
+
 	Vector<ScriptLanguage::CodeCompletionOption> completion_options_casei;
 	Vector<ScriptLanguage::CodeCompletionOption> completion_options_substr;
 	Vector<ScriptLanguage::CodeCompletionOption> completion_options_substr_casei;
@@ -3233,3 +3240,4 @@ CodeEdit::CodeEdit() {
 
 CodeEdit::~CodeEdit() {
 }
+

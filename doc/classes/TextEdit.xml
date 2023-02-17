@@ -498,35 +498,35 @@
 			<return type="String" />
 			<param index="0" name="caret_index" type="int" default="-1" />
 			<description>
-				Returns the text inside the selection.
+				Returns the text inside the selection of a caret, or all the carets if [code]caret_index[/code] is its default value [code]-1[/code].
 			</description>
 		</method>
 		<method name="get_selection_column" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="caret_index" type="int" default="0" />
 			<description>
-				Returns the original start column of the selection.
+				Returns the selection pivot column of a caret.
 			</description>
 		</method>
 		<method name="get_selection_from_column" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="caret_index" type="int" default="0" />
 			<description>
-				Returns the selection begin column.
+				Returns the selection begin column of a caret.
 			</description>
 		</method>
 		<method name="get_selection_from_line" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="caret_index" type="int" default="0" />
 			<description>
-				Returns the selection begin line.
+				Returns the selection begin line of a caret.
 			</description>
 		</method>
 		<method name="get_selection_line" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="caret_index" type="int" default="0" />
 			<description>
-				Returns the original start line of the selection.
+				Returns the selection pivot line of a caret.
 			</description>
 		</method>
 		<method name="get_selection_mode" qualifiers="const">
@@ -539,14 +539,14 @@
 			<return type="int" />
 			<param index="0" name="caret_index" type="int" default="0" />
 			<description>
-				Returns the selection end column.
+				Returns the selection end column of a caret.
 			</description>
 		</method>
 		<method name="get_selection_to_line" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="caret_index" type="int" default="0" />
 			<description>
-				Returns the selection end line.
+				Returns the selection end line of a caret.
 			</description>
 		</method>
 		<method name="get_tab_size" qualifiers="const">
@@ -1375,7 +1375,7 @@
 			Select whole words as if the user double clicked.
 		</constant>
 		<constant name="SELECTION_MODE_LINE" value="4" enum="SelectionMode">
-			Select whole lines as if the user tripped clicked.
+			Select whole lines as if the user triple clicked.
 		</constant>
 		<constant name="LINE_WRAPPING_NONE" value="0" enum="LineWrappingMode">
 			Line wrapping is disabled.

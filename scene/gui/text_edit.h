@@ -383,16 +383,11 @@ private:
 		bool active = false;
 		bool shiftclick_left = false;
 
-		int selecting_line = 0;
-		int selecting_column = 0;
+		int origin_line = 0;
+		int origin_column = 0;
 		int selected_word_beg = 0;
 		int selected_word_end = 0;
 		int selected_word_origin = 0;
-
-		int from_line = 0;
-		int from_column = 0;
-		int to_line = 0;
-		int to_column = 0;
 	};
 
 	struct Caret {
