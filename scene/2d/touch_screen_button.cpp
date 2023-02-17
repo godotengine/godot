@@ -194,10 +194,6 @@ void TouchScreenButton::input(const Ref<InputEvent> &p_event) {
 		return;
 	}
 
-	if (p_event->get_device() != 0) {
-		return;
-	}
-
 	const InputEventScreenTouch *st = Object::cast_to<InputEventScreenTouch>(*p_event);
 
 	if (passby_press) {
