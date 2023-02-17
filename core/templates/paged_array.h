@@ -278,10 +278,10 @@ public:
 
 		count -= remainder;
 
-		uint32_t src_pages = p_array._get_pages_in_use();
+		uint32_t src_page_index = 0;
 		uint32_t page_size = page_size_mask + 1;
 
-		for (uint32_t i = 0; i < src_pages; i++) {
+		while (p_array.count > 0) {
 			uint32_t page_count = _get_pages_in_use();
 			uint32_t new_page_count = page_count + 1;
 
@@ -289,16 +289,14 @@ public:
 				_grow_page_array(); //keep out of inline
 			}
 
-			page_data[page_count] = p_array.page_data[i];
-			page_ids[page_count] = p_array.page_ids[i];
-			if (i == src_pages - 1) {
-				//last page, only increment with remainder
-				count += p_array.count & page_size_mask;
-			} else {
-				count += page_size;
-			}
+			page_data[page_count] = p_array.page_data[src_page_index];
+			page_ids[page_count] = p_array.page_ids[src_page_index];
+
+			uint32_t take = MIN(p_array.count, page_size); //pages to take away
+			p_array.count -= take;
+			count += take;
+			src_page_index++;
 		}
-		p_array.count = 0; //take away the other array pages
 
 		//handle the remainder page if exists
 		if (remainder_page) {
