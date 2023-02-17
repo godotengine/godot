@@ -194,19 +194,21 @@ def configure(env: "Environment"):
     # FIXME: Check for existence of the libs before parsing their flags with pkg-config
 
     # freetype depends on libpng and zlib, so bundling one of them while keeping others
-    # as shared libraries leads to weird issues
-    if (
-        env["builtin_freetype"]
-        or env["builtin_libpng"]
-        or env["builtin_zlib"]
-        or env["builtin_graphite"]
-        or env["builtin_harfbuzz"]
-    ):
-        env["builtin_freetype"] = True
-        env["builtin_libpng"] = True
-        env["builtin_zlib"] = True
-        env["builtin_graphite"] = True
-        env["builtin_harfbuzz"] = True
+    # as shared libraries leads to weird issues. And graphite and harfbuzz need freetype.
+    ft_linked_deps = [
+        env["builtin_freetype"],
+        env["builtin_libpng"],
+        env["builtin_zlib"],
+        env["builtin_graphite"],
+        env["builtin_harfbuzz"],
+    ]
+    if (not all(ft_linked_deps)) and any(ft_linked_deps):  # All or nothing.
+        print(
+            "These libraries should be either all builtin, or all system provided:\n"
+            "freetype, libpng, zlib, graphite, harfbuzz.\n"
+            "Please specify `builtin_<name>=no` for all of them, or none."
+        )
+        sys.exit()
 
     if not env["builtin_freetype"]:
         env.ParseConfig("pkg-config freetype2 --cflags --libs")
@@ -214,8 +216,8 @@ def configure(env: "Environment"):
     if not env["builtin_graphite"]:
         env.ParseConfig("pkg-config graphite2 --cflags --libs")
 
-    if not env["builtin_icu"]:
-        env.ParseConfig("pkg-config icu-uc --cflags --libs")
+    if not env["builtin_icu4c"]:
+        env.ParseConfig("pkg-config icu-i18n icu-uc --cflags --libs")
 
     if not env["builtin_harfbuzz"]:
         env.ParseConfig("pkg-config harfbuzz harfbuzz-icu --cflags --libs")
@@ -269,6 +271,11 @@ def configure(env: "Environment"):
     # 16-bit library shouldn't be required due to compiler optimizations
     if not env["builtin_pcre2"]:
         env.ParseConfig("pkg-config libpcre2-32 --cflags --libs")
+
+    if not env["builtin_recastnavigation"]:
+        # No pkgconfig file so far, hardcode default paths.
+        env.Prepend(CPPPATH=["/usr/include/recastnavigation"])
+        env.Append(LIBS=["Recast"])
 
     if not env["builtin_embree"]:
         # No pkgconfig file so far, hardcode expected lib name.
