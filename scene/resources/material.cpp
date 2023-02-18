@@ -369,7 +369,15 @@ void ShaderMaterial::set_shader_parameter(const StringName &p_param, const Varia
 		param_cache.erase(p_param);
 		RS::get_singleton()->material_set_param(_get_material(), p_param, Variant());
 	} else {
-		param_cache[p_param] = p_value;
+		Variant *v = param_cache.getptr(p_param);
+		if (!v) {
+			// Never assigned, also update the remap cache.
+			remap_cache["shader_parameter/" + p_param.operator String()] = p_param;
+			param_cache.insert(p_param, p_value);
+		} else {
+			*v = p_value;
+		}
+
 		if (p_value.get_type() == Variant::OBJECT) {
 			RID tex_rid = p_value;
 			if (tex_rid == RID()) {
