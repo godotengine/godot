@@ -202,14 +202,13 @@ private:
 
 	StringName playback = "playback";
 	StringName state_machine_name;
-	AnimationNodeStateMachine *prev_state_machine = nullptr;
 	bool updating_transitions = false;
 
 	Vector2 graph_offset;
 
 	void _remove_transition(const Ref<AnimationNodeStateMachineTransition> p_transition);
 	void _rename_transitions(const StringName &p_name, const StringName &p_new_name);
-	bool _can_connect(const StringName &p_name, Vector<AnimationNodeStateMachine *> p_parents = Vector<AnimationNodeStateMachine *>());
+	bool _can_connect(const StringName &p_name);
 	StringName _get_shortest_path(const StringName &p_path) const;
 
 protected:
@@ -262,8 +261,6 @@ public:
 	bool is_allow_transition_to_self() const;
 
 	bool can_edit_node(const StringName &p_name) const;
-
-	AnimationNodeStateMachine *get_prev_state_machine() const;
 
 	void set_graph_offset(const Vector2 &p_offset);
 	Vector2 get_graph_offset() const;

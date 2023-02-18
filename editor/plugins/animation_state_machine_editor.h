@@ -56,8 +56,6 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 	LineEdit *name_edit = nullptr;
 
 	HBoxContainer *selection_tools_hb = nullptr;
-	Button *tool_group = nullptr;
-	Button *tool_ungroup = nullptr;
 	Button *tool_erase = nullptr;
 
 	HBoxContainer *transition_tools_hb = nullptr;
@@ -196,12 +194,8 @@ class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 	void _erase_selected(const bool p_nested_action = false);
 	void _update_mode();
 	void _open_menu(const Vector2 &p_position);
-	void _open_connect_menu(const Vector2 &p_position);
-	bool _create_submenu(PopupMenu *p_menu, Ref<AnimationNodeStateMachine> p_nodesm, const StringName &p_name, const StringName &p_path, bool from_root = false, Vector<Ref<AnimationNodeStateMachine>> p_parents = Vector<Ref<AnimationNodeStateMachine>>());
+	bool _create_submenu(PopupMenu *p_menu, Ref<AnimationNodeStateMachine> p_nodesm, const StringName &p_name, const StringName &p_path);
 	void _stop_connecting();
-
-	void _group_selected_nodes();
-	void _ungroup_selected_nodes();
 
 	void _delete_selected();
 	void _delete_all();
