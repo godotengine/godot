@@ -41,9 +41,12 @@
 #include "editor/editor_settings.h"
 #include "editor/editor_undo_redo_manager.h"
 
+#include "scene/gui/control.h"
+#include "scene/gui/label.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/separator.h"
+#include "scene/gui/spin_box.h"
 
 #ifdef DEBUG_ENABLED
 #include "servers/navigation_server_3d.h"
@@ -195,8 +198,8 @@ void GenericTilePolygonEditor::_base_control_draw() {
 	Point2 in_creation_point = xform.affine_inverse().xform(base_control->get_local_mouse_position());
 	float in_creation_distance = grab_threshold * 2.0;
 	_snap_to_tile_shape(in_creation_point, in_creation_distance, grab_threshold / editor_zoom_widget->get_zoom());
-	if (button_pixel_snap->is_pressed()) {
-		_snap_to_half_pixel(in_creation_point);
+	if (button_grid_snap->is_pressed()) {
+		_snap_to_grid(in_creation_point);
 	}
 
 	if (drag_type == DRAG_TYPE_CREATE_POINT && !in_creation_polygon.is_empty()) {
@@ -443,8 +446,15 @@ void GenericTilePolygonEditor::_snap_to_tile_shape(Point2 &r_point, float &r_cur
 	r_point = snapped_point;
 }
 
-void GenericTilePolygonEditor::_snap_to_half_pixel(Point2 &r_point) {
-	r_point = (r_point * 2).round() / 2.0;
+void GenericTilePolygonEditor::_snap_to_grid(Point2 &r_point) {
+	float snap_x = tile_set->get_tile_size().x / grid_snap->get_value();
+	float snap_y = tile_set->get_tile_size().y / grid_snap->get_value();
+	r_point = r_point.snapped(Vector2(snap_x, snap_y));
+
+	// The snap will be offset if grid_snap is odd. This fixes that, but it's weird.
+	if (int(grid_snap->get_value()) % 2 != 0) {
+		r_point -= Vector2(snap_x / 2, snap_y / 2);
+	}
 }
 
 void GenericTilePolygonEditor::_base_control_gui_input(Ref<InputEvent> p_event) {
@@ -475,8 +485,8 @@ void GenericTilePolygonEditor::_base_control_gui_input(Ref<InputEvent> p_event) 
 			Point2 point = xform.affine_inverse().xform(mm->get_position());
 			float distance = grab_threshold * 2.0;
 			_snap_to_tile_shape(point, distance, grab_threshold / editor_zoom_widget->get_zoom());
-			if (button_pixel_snap->is_pressed()) {
-				_snap_to_half_pixel(point);
+			if (button_grid_snap->is_pressed()) {
+				_snap_to_grid(point);
 			}
 			polygons[drag_polygon_index].write[drag_point_index] = point;
 		} else if (drag_type == DRAG_TYPE_PAN) {
@@ -592,8 +602,8 @@ void GenericTilePolygonEditor::_base_control_gui_input(Ref<InputEvent> p_event) 
 					Point2 point = xform.affine_inverse().xform(mb->get_position());
 					float distance = grab_threshold * 2;
 					_snap_to_tile_shape(point, distance, grab_threshold / editor_zoom_widget->get_zoom());
-					if (button_pixel_snap->is_pressed()) {
-						_snap_to_half_pixel(point);
+					if (button_grid_snap->is_pressed()) {
+						_snap_to_grid(point);
 					}
 					in_creation_polygon.push_back(point);
 				}
@@ -766,7 +776,7 @@ void GenericTilePolygonEditor::_notification(int p_what) {
 			button_edit->set_icon(get_theme_icon(SNAME("CurveEdit"), SNAME("EditorIcons")));
 			button_delete->set_icon(get_theme_icon(SNAME("CurveDelete"), SNAME("EditorIcons")));
 			button_center_view->set_icon(get_theme_icon(SNAME("CenterView"), SNAME("EditorIcons")));
-			button_pixel_snap->set_icon(get_theme_icon(SNAME("Snap"), SNAME("EditorIcons")));
+			button_grid_snap->set_icon(get_theme_icon(SNAME("Snap"), SNAME("EditorIcons")));
 			button_advanced_menu->set_icon(get_theme_icon(SNAME("GuiTabMenuHl"), SNAME("EditorIcons")));
 
 			PopupMenu *p = button_advanced_menu->get_popup();
@@ -833,12 +843,22 @@ GenericTilePolygonEditor::GenericTilePolygonEditor() {
 
 	toolbar->add_child(memnew(VSeparator));
 
-	button_pixel_snap = memnew(Button);
-	button_pixel_snap->set_flat(true);
-	button_pixel_snap->set_toggle_mode(true);
-	button_pixel_snap->set_pressed(true);
-	button_pixel_snap->set_tooltip_text(TTR("Snap to half-pixel"));
-	toolbar->add_child(button_pixel_snap);
+	button_grid_snap = memnew(Button);
+	button_grid_snap->set_flat(true);
+	button_grid_snap->set_toggle_mode(true);
+	button_grid_snap->set_pressed(true);
+	button_grid_snap->set_tooltip_text(TTR("Snap to grid"));
+	toolbar->add_child(button_grid_snap);
+
+	grid_snap = memnew(SpinBox);
+	grid_snap->set_step(1);
+	grid_snap->set_min(1);
+	grid_snap->set_max(1024);
+	grid_snap->set_value(2);
+	grid_snap->set_select_all_on_focus(true);
+	grid_snap->set_tooltip_text(TTR("Subdivisions"));
+	button_grid_snap->connect("toggled", callable_mp((CanvasItem *)grid_snap, &CanvasItem::set_visible));
+	toolbar->add_child(grid_snap);
 
 	Control *root = memnew(Control);
 	root->set_h_size_flags(Control::SIZE_EXPAND_FILL);
