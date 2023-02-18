@@ -31,7 +31,7 @@
 			<param index="2" name="receiver_func" type="StringName" />
 			<param index="3" name="userdata" type="Variant" />
 			<description>
-				Queue the [param resource] being edited for preview. Once the preview is ready, the [param receiver]'s [param receiver_func] will be called. The [param receiver_func] must take the following four arguments: [String] path, [Texture2D] preview, [Texture2D] thumbnail_preview, [Variant] userdata. [param userdata] can be anything, and will be returned when [param receiver_func] is called.
+				Queue the [param resource] being edited for preview. Once the preview is ready, the [param receiver]'s [param receiver_func] will be called. The [param receiver_func] must take the following four arguments: [String] path, [Texture2D] preview, [Texture2D] thumbnail_preview, [Texture2D] custom_type_icon, [Variant] userdata. [param userdata] can be anything, and will be returned when [param receiver_func] is called. custom_type_icon is the custom icon of the resource if it has one.
 				[b]Note:[/b] If it was not possible to create the preview the [param receiver_func] will still be called, but the preview will be null.
 			</description>
 		</method>
@@ -42,7 +42,7 @@
 			<param index="2" name="receiver_func" type="StringName" />
 			<param index="3" name="userdata" type="Variant" />
 			<description>
-				Queue a resource file located at [param path] for preview. Once the preview is ready, the [param receiver]'s [param receiver_func] will be called. The [param receiver_func] must take the following four arguments: [String] path, [Texture2D] preview, [Texture2D] thumbnail_preview, [Variant] userdata. [param userdata] can be anything, and will be returned when [param receiver_func] is called.
+				Queue a resource file located at [param path] for preview. Once the preview is ready, the [param receiver]'s [param receiver_func] will be called. The [param receiver_func] must take the following four arguments: [String] path, [Texture2D] preview, [Texture2D] thumbnail_preview, [Texture2D] custom_type_icon, [Variant] userdata. [param userdata] can be anything, and will be returned when [param receiver_func] is called. custom_type_icon is the custom icon of the resource if it has one.
 				[b]Note:[/b] If it was not possible to create the preview the [param receiver_func] will still be called, but the preview will be null.
 			</description>
 		</method>

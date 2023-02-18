@@ -99,7 +99,7 @@ void EditorResourcePreview::_thread_func(void *ud) {
 	erp->_thread();
 }
 
-void EditorResourcePreview::_preview_ready(const String &p_str, const Ref<Texture2D> &p_texture, const Ref<Texture2D> &p_small_texture, ObjectID id, const StringName &p_func, const Variant &p_ud) {
+void EditorResourcePreview::_preview_ready(const String &p_str, const Ref<Texture2D> &p_texture, const Ref<Texture2D> &p_small_texture, const Ref<Texture2D> &p_custom_type_icon, ObjectID id, const StringName &p_func, const Variant &p_ud) {
 	String path = p_str;
 	{
 		MutexLock lock(preview_mutex);
@@ -118,16 +118,17 @@ void EditorResourcePreview::_preview_ready(const String &p_str, const Ref<Textur
 		item.order = order++;
 		item.preview = p_texture;
 		item.small_preview = p_small_texture;
+		item.custom_type_icon = p_custom_type_icon;
 		item.last_hash = hash;
 		item.modified_time = modified_time;
 
 		cache[path] = item;
 	}
 
-	MessageQueue::get_singleton()->push_call(id, p_func, path, p_texture, p_small_texture, p_ud);
+	MessageQueue::get_singleton()->push_call(id, p_func, path, p_texture, p_small_texture, p_custom_type_icon, p_ud);
 }
 
-void EditorResourcePreview::_generate_preview(Ref<ImageTexture> &r_texture, Ref<ImageTexture> &r_small_texture, const QueueItem &p_item, const String &cache_base) {
+void EditorResourcePreview::_generate_preview(Ref<ImageTexture> &r_texture, Ref<ImageTexture> &r_small_texture, Ref<ImageTexture> &r_custom_type_icon, const QueueItem &p_item, const String &cache_base) {
 	String type;
 
 	if (p_item.resource.is_valid()) {
@@ -184,11 +185,42 @@ void EditorResourcePreview::_generate_preview(Ref<ImageTexture> &r_texture, Ref<
 		break;
 	}
 
+	// Fetch custom type icon.
+	r_custom_type_icon = Ref<ImageTexture>();
+	Ref<Resource> res;
+	if (p_item.resource.is_valid()) {
+		res = p_item.resource;
+	} else {
+		res = ResourceLoader::load(p_item.path, "");
+	}
+	if (res.is_valid()) {
+		r_custom_type_icon = EditorNode::get_singleton()->get_object_icon(res.ptr(), "");
+	}
+
 	if (!p_item.resource.is_valid()) {
+		// Cache the preview in case it's a resource on disk
+		bool has_custom_type_icon = r_custom_type_icon.is_valid();
+		bool has_texture = r_texture.is_valid();
+		bool has_small_texture = r_small_texture.is_valid();
+		if (has_texture || has_custom_type_icon) {
+			// Preview is valid, saving the cache now...
+			if (has_texture) {
+				ResourceSaver::save(r_texture, cache_base + ".png");
+
+				// Small texture could only exist if the main texture exists.
+				if (has_small_texture) {
+					ResourceSaver::save(r_small_texture, cache_base + "_small.png");
+				}
+			}
+			if (has_custom_type_icon) {
+				ResourceSaver::save(r_custom_type_icon, cache_base + "_custom_type_icon.png");
+			}
+		}
+
 		// cache the preview in case it's a resource on disk
 		if (r_texture.is_valid()) {
 			//wow it generated a preview... save cache
-			bool has_small_texture = r_small_texture.is_valid();
+			has_small_texture = r_small_texture.is_valid();
 			ResourceSaver::save(r_texture, cache_base + ".png");
 			if (has_small_texture) {
 				ResourceSaver::save(r_small_texture, cache_base + "_small.png");
@@ -196,7 +228,9 @@ void EditorResourcePreview::_generate_preview(Ref<ImageTexture> &r_texture, Ref<
 			Ref<FileAccess> f = FileAccess::open(cache_base + ".txt", FileAccess::WRITE);
 			ERR_FAIL_COND_MSG(f.is_null(), "Cannot create file '" + cache_base + ".txt'. Check user write permissions.");
 			f->store_line(itos(thumbnail_size));
+			f->store_line(itos(has_texture));
 			f->store_line(itos(has_small_texture));
+			f->store_line(itos(has_custom_type_icon));
 			f->store_line(itos(FileAccess::get_modified_time(p_item.path)));
 			f->store_line(FileAccess::get_md5(p_item.path));
 		}
@@ -217,7 +251,7 @@ void EditorResourcePreview::_iterate() {
 				path += ":" + itos(cache[item.path].last_hash); //keep last hash (see description of what this is in condition below)
 			}
 
-			_preview_ready(path, cache[item.path].preview, cache[item.path].small_preview, item.id, item.function, item.userdata);
+			_preview_ready(path, cache[item.path].preview, cache[item.path].small_preview, cache[item.path].custom_type_icon, item.id, item.function, item.userdata);
 
 			preview_mutex.unlock();
 		} else {
@@ -225,15 +259,16 @@ void EditorResourcePreview::_iterate() {
 
 			Ref<ImageTexture> texture;
 			Ref<ImageTexture> small_texture;
+			Ref<ImageTexture> custom_type_icon_texture;
 
 			int thumbnail_size = EDITOR_GET("filesystem/file_dialog/thumbnail_size");
 			thumbnail_size *= EDSCALE;
 
 			if (item.resource.is_valid()) {
-				_generate_preview(texture, small_texture, item, String());
+				_generate_preview(texture, small_texture, custom_type_icon_texture, item, String());
 
 				//adding hash to the end of path (should be ID:<objid>:<hash>) because of 5 argument limit to call_deferred
-				_preview_ready(item.path + ":" + itos(item.resource->hash_edited_version()), texture, small_texture, item.id, item.function, item.userdata);
+				_preview_ready(item.path + ":" + itos(item.resource->hash_edited_version()), texture, small_texture, custom_type_icon_texture, item.id, item.function, item.userdata);
 
 			} else {
 				String temp_path = EditorPaths::get_singleton()->get_cache_dir();
@@ -246,11 +281,13 @@ void EditorResourcePreview::_iterate() {
 				Ref<FileAccess> f = FileAccess::open(file, FileAccess::READ);
 				if (f.is_null()) {
 					// No cache found, generate
-					_generate_preview(texture, small_texture, item, cache_base);
+					_generate_preview(texture, small_texture, custom_type_icon_texture, item, cache_base);
 				} else {
 					uint64_t modtime = FileAccess::get_modified_time(item.path);
 					int tsize = f->get_line().to_int();
+					bool has_texture = f->get_line().to_int();
 					bool has_small_texture = f->get_line().to_int();
+					bool has_custom_type_icon = f->get_line().to_int();
 					uint64_t last_modtime = f->get_line().to_int();
 
 					bool cache_valid = true;
@@ -275,7 +312,9 @@ void EditorResourcePreview::_iterate() {
 								ERR_PRINT("Cannot create file '" + file + "'. Check user write permissions.");
 							} else {
 								f2->store_line(itos(thumbnail_size));
+								f2->store_line(itos(has_texture));
 								f2->store_line(itos(has_small_texture));
+								f2->store_line(itos(has_custom_type_icon));
 								f2->store_line(itos(modtime));
 								f2->store_line(md5);
 							}
@@ -289,32 +328,44 @@ void EditorResourcePreview::_iterate() {
 						img.instantiate();
 						Ref<Image> small_img;
 						small_img.instantiate();
+						Ref<Image> custom_type_icon_img;
+						custom_type_icon_img.instantiate();
 
-						if (img->load(cache_base + ".png") != OK) {
-							cache_valid = false;
-						} else {
-							texture.instantiate();
-							texture->set_image(img);
+						if (has_texture) {
+							if (img->load(cache_base + ".png") != OK) {
+								cache_valid = false;
+							} else {
+								texture.instantiate();
+								texture->create_from_image(img);
 
-							if (has_small_texture) {
-								if (small_img->load(cache_base + "_small.png") != OK) {
-									cache_valid = false;
-								} else {
-									small_texture.instantiate();
-									small_texture->set_image(small_img);
+								if (has_small_texture) {
+									if (small_img->load(cache_base + "_small.png") != OK) {
+										cache_valid = false;
+									} else {
+										small_texture.instantiate();
+										small_texture->create_from_image(small_img);
+									}
 								}
+							}
+						}
+
+						if (has_custom_type_icon) {
+							if (custom_type_icon_img->load(cache_base + "_custom_type_icon.png") != OK) {
+								cache_valid = false;
+							} else {
+								custom_type_icon_texture.instantiate();
+								custom_type_icon_texture->create_from_image(custom_type_icon_img);
 							}
 						}
 					}
 
 					if (!cache_valid) {
-						_generate_preview(texture, small_texture, item, cache_base);
+						_generate_preview(texture, small_texture, custom_type_icon_texture, item, cache_base);
 					}
 				}
-				_preview_ready(item.path, texture, small_texture, item.id, item.function, item.userdata);
+				_preview_ready(item.path, texture, small_texture, custom_type_icon_texture, item.id, item.function, item.userdata);
 			}
 		}
-
 	} else {
 		preview_mutex.unlock();
 	}
@@ -340,7 +391,7 @@ void EditorResourcePreview::queue_edited_resource_preview(const Ref<Resource> &p
 
 		if (cache.has(path_id) && cache[path_id].last_hash == p_res->hash_edited_version()) {
 			cache[path_id].order = order++;
-			p_receiver->call(p_receiver_func, path_id, cache[path_id].preview, cache[path_id].small_preview, p_userdata);
+			p_receiver->call(p_receiver_func, path_id, cache[path_id].preview, cache[path_id].small_preview, cache[path_id].custom_type_icon, p_userdata);
 			return;
 		}
 
@@ -365,7 +416,7 @@ void EditorResourcePreview::queue_resource_preview(const String &p_path, Object 
 
 		if (cache.has(p_path)) {
 			cache[p_path].order = order++;
-			p_receiver->call(p_receiver_func, p_path, cache[p_path].preview, cache[p_path].small_preview, p_userdata);
+			p_receiver->call(p_receiver_func, p_path, cache[p_path].preview, cache[p_path].small_preview, cache[p_path].custom_type_icon, p_userdata);
 			return;
 		}
 
