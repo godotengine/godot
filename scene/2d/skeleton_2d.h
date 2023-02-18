@@ -80,9 +80,6 @@ public:
 
 	PackedStringArray get_configuration_warnings() const override;
 
-	void set_default_length(real_t p_length);
-	real_t get_default_length() const;
-
 	void set_autocalculate_length_and_angle(bool p_autocalculate);
 	bool get_autocalculate_length_and_angle() const;
 	void set_length(real_t p_length);
