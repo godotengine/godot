@@ -118,6 +118,14 @@ class AnimationNodeStateMachinePlayback : public Resource {
 		StringName next;
 	};
 
+	struct NextInfo {
+		StringName node;
+		double xfade;
+		Ref<Curve> curve;
+		AnimationNodeStateMachineTransition::SwitchMode switch_mode;
+		bool is_reset;
+	};
+
 	double len_fade_from = 0.0;
 	double pos_fade_from = 0.0;
 
@@ -151,6 +159,7 @@ class AnimationNodeStateMachinePlayback : public Resource {
 	double process(AnimationNodeStateMachine *p_state_machine, double p_time, bool p_seek, bool p_is_external_seeking);
 
 	bool _check_advance_condition(const Ref<AnimationNodeStateMachine> p_state_machine, const Ref<AnimationNodeStateMachineTransition> p_transition) const;
+	NextInfo _find_next(AnimationNodeStateMachine *p_state_machine);
 
 protected:
 	static void _bind_methods();
@@ -201,7 +210,6 @@ private:
 	Vector<Transition> transitions;
 
 	StringName playback = "playback";
-	StringName state_machine_name;
 	bool updating_transitions = false;
 
 	Vector2 graph_offset;

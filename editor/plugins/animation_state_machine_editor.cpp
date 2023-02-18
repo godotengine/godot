@@ -1447,8 +1447,12 @@ void AnimationNodeStateMachineEditor::_notification(int p_what) {
 
 					while (anodesm.is_valid()) {
 						current_node_playback = tree->get(AnimationTreeEditor::get_singleton()->get_base_path() + next + "/playback");
-						next += "/" + current_node_playback->get_current_node();
-						anodesm = anodesm->get_node(current_node_playback->get_current_node());
+						StringName cnode = current_node_playback->get_current_node();
+						next += "/" + cnode;
+						if (!anodesm->has_node(cnode)) {
+							break;
+						}
+						anodesm = anodesm->get_node(cnode);
 					}
 
 					// when current_node is a state machine, use playback of current_node to set play_pos
