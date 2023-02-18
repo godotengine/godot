@@ -281,17 +281,6 @@ struct GDScriptUtilityFunctionsDefinitions {
 				}
 				sname.reverse();
 
-				if (!path.is_resource_file()) {
-					r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
-					r_error.argument = 0;
-					r_error.expected = Variant::DICTIONARY;
-					*r_ret = Variant();
-
-					*r_ret = RTR("Not based on a resource file");
-
-					return;
-				}
-
 				NodePath cp(sname, Vector<StringName>(), false);
 
 				Dictionary d;
