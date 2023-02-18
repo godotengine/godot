@@ -396,6 +396,9 @@
 		</method>
 	</methods>
 	<members>
+		<member name="bake_navigation" type="bool" setter="set_bake_navigation" getter="is_baking_navigation" default="true">
+			If [code]true[/code], this TileMap creates a navigation region for each cell that uses a layer with a navigation polygon.
+		</member>
 		<member name="cell_quadrant_size" type="int" setter="set_quadrant_size" getter="get_quadrant_size" default="16">
 			The TileMap's quadrant size. Optimizes drawing by batching, using chunks of this size.
 		</member>
