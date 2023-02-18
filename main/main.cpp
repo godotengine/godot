@@ -463,7 +463,12 @@ void Main::print_help(const char *p_binary) {
 	OS::get_singleton()->print("  --debug-stringnames               Print all StringName allocations to stdout when the engine quits.\n");
 #endif
 	OS::get_singleton()->print("  --frame-delay <ms>                Simulate high CPU load (delay each frame by <ms> milliseconds).\n");
+
+#ifdef DEBUG_ENABLED
 	OS::get_singleton()->print("  --time-scale <scale>              Force time scale (higher values are faster, 1.0 is normal speed).\n");
+	OS::get_singleton()->print("  --random-seed <int>               Specify a fixed random number generation seed for better reproducibility.\n");
+#endif
+
 	OS::get_singleton()->print("  --disable-vsync                   Forces disabling of vertical synchronization, even if enabled in the project settings. Does not override driver-level V-Sync enforcement.\n");
 	OS::get_singleton()->print("  --disable-render-loop             Disable render loop so rendering only occurs when called explicitly from script.\n");
 	OS::get_singleton()->print("  --disable-crash-handler           Disable crash handler when supported by the platform code.\n");
@@ -812,6 +817,24 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 	packed_data->add_pack_source(zip_packed_data);
 #endif
+
+	{
+		uint64_t rand_seed = hash_murmur3_one_64(12345678);
+
+		// Current time in milliseconds
+		rand_seed = hash_murmur3_one_64(OS::get_singleton()->get_unix_time() * 1000, rand_seed);
+		// Microseconds since program start
+		rand_seed = hash_murmur3_one_64(OS::get_singleton()->get_ticks_usec(), rand_seed);
+		// Random stack pointer
+		rand_seed = hash_murmur3_one_64(uint64_t(&rand_seed), rand_seed);
+		// Random heap pointer
+		rand_seed = hash_murmur3_one_64(uint64_t(String("moooooooooo").ptr()), rand_seed);
+		// Random static pointer
+		rand_seed = hash_murmur3_one_64(uint64_t("baaaa"), rand_seed);
+
+		// Initialize rng before argument parsing so that --random-seed can override it
+		Math::seed(rand_seed);
+	}
 
 	// Default exit code, can be modified for certain errors.
 	Error exit_code = ERR_INVALID_PARAMETER;
@@ -1285,6 +1308,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				goto error;
 			}
 
+#ifdef DEBUG_ENABLED
 		} else if (I->get() == "--time-scale") { // force time scale
 
 			if (I->next()) {
@@ -1294,6 +1318,16 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 				OS::get_singleton()->print("Missing time scale argument, aborting.\n");
 				goto error;
 			}
+
+		} else if (I->get() == "--random-seed") {
+			if (I->next()) {
+				Math::seed(I->next()->get().to_int());
+				N = I->next()->next();
+			} else {
+				OS::get_singleton()->print("Missing random seed argument, aborting.\n");
+				goto error;
+			}
+#endif
 
 		} else if (I->get() == "--main-pack") {
 			if (I->next()) {

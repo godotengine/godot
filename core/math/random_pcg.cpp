@@ -39,7 +39,16 @@ RandomPCG::RandomPCG(uint64_t p_seed, uint64_t p_inc) :
 }
 
 void RandomPCG::randomize() {
-	seed(((uint64_t)OS::get_singleton()->get_unix_time() + OS::get_singleton()->get_ticks_usec()) * pcg.state + PCG_DEFAULT_INC_64);
+	// Not thread safe, but there probably isn't a way to get this function
+	// to behave deterministically from multithreaded code anyway.
+	union {
+		uint32_t seed32[2];
+		uint64_t seed64 = 0;
+	};
+
+	seed32[0] = hash_murmur3_one_32(Math::rand());
+	seed32[1] = hash_murmur3_one_32(Math::rand());
+	seed(seed64);
 }
 
 double RandomPCG::random(double p_from, double p_to) {
