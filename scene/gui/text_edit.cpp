@@ -2595,115 +2595,98 @@ void TextEdit::_do_backspace(bool p_word, bool p_all_to_left) {
 	}
 
 	start_action(EditAction::ACTION_BACKSPACE);
-	Vector<int> carets_to_remove;
 
+	// Do regular backspace.
+	if (!p_all_to_left && !p_word) {
+		backspace();
+		end_action();
+		queue_redraw();
+		return;
+	}
+
+	// Other backspace modes.
+	Vector<int> carets_to_remove;
 	Vector<int> caret_edit_order = get_caret_index_edit_order();
+
 	for (int i = 0; i < caret_edit_order.size(); i++) {
 		int caret_idx = caret_edit_order[i];
-		if (get_caret_column(caret_idx) == 0 && get_caret_line(caret_idx) == 0 && !has_selection(caret_idx)) {
+
+		if (has_selection(caret_idx)) {
+			delete_selection(caret_idx);
 			continue;
 		}
 
-		if (has_selection(caret_idx) || (!p_all_to_left && !p_word) || get_caret_column(caret_idx) == 0) {
-			backspace(caret_idx);
+		// First line, first column: Nothing to do.
+		if (get_caret_line(caret_idx) == 0 && get_caret_column(caret_idx) == 0) {
 			continue;
 		}
 
-		if (p_all_to_left) {
-			int caret_current_column = get_caret_column(caret_idx);
-			set_caret_column(0, caret_idx == 0, caret_idx);
-			_remove_text(get_caret_line(caret_idx), 0, get_caret_line(caret_idx), caret_current_column);
-			adjust_carets_after_edit(caret_idx, get_caret_line(caret_idx), caret_current_column, get_caret_line(caret_idx), get_caret_column(caret_idx));
+		int prev_line = get_caret_line(caret_idx);
+		int prev_column = get_caret_column(caret_idx);
 
-			// Check for any overlapping carets since we removed the entire line.
-			for (int j = i + 1; j < caret_edit_order.size(); j++) {
-				// Selection only end on this line, only the one as carets cannot overlap.
-				if (has_selection(caret_edit_order[j]) && get_selection_from_line(caret_edit_order[j]) != get_caret_line(caret_idx) && get_selection_to_line(caret_edit_order[j]) == get_caret_line(caret_idx)) {
-					carets.write[caret_edit_order[j]].selection.to_column = 0;
-					break;
-				}
+		if (p_all_to_left && get_caret_column(caret_idx) > 0) {
+			prev_column = 0;
 
-				// Check for caret.
-				if (get_caret_line(caret_edit_order[j]) != get_caret_line(caret_idx) || (has_selection(caret_edit_order[j]) && get_selection_from_line(caret_edit_order[j]) != get_caret_line(caret_idx))) {
-					break;
-				}
-
-				deselect(caret_edit_order[j]);
-				carets_to_remove.push_back(caret_edit_order[j]);
-				set_caret_column(0, caret_idx == 0, caret_idx);
-				i = j;
-			}
-			continue;
-		}
-
-		if (p_word) {
-			// Save here as the caret may change when resolving overlaps.
-			int from_column = get_caret_column(caret_idx);
-			int column = get_caret_column(caret_idx);
-			// Check for the case "<word><space><caret>" and ignore the space.
-			// No need to check for column being 0 since it is checked above.
+		} else if (p_word && get_caret_column(caret_idx) > 0) {
+			// In case of "[word][space][caret]" ignore the space.
 			if (is_whitespace(text[get_caret_line(caret_idx)][get_caret_column(caret_idx) - 1])) {
-				column -= 1;
+				prev_column -= 1;
 			}
-			// Get a list with the indices of the word bounds of the given text line.
-			const PackedInt32Array words = TS->shaped_text_get_word_breaks(text.get_line_data(get_caret_line(caret_idx))->get_rid());
-			if (words.is_empty() || column <= words[0]) {
-				// If "words" is empty, meaning no words are left, we can remove everything until the beginning of the line.
-				column = 0;
+
+			PackedInt32Array words = TS->shaped_text_get_word_breaks(text.get_line_data(get_caret_line(caret_idx))->get_rid());
+			if (words.is_empty() || prev_column <= words[0]) {
+				// No words to the left: We can remove everything until the beginning of the line.
+				prev_column = 0;
 			} else {
-				// Otherwise search for the first word break that is smaller than the index from we're currently deleting.
-				for (int c = words.size() - 2; c >= 0; c = c - 2) {
-					if (words[c] < column) {
-						column = words[c];
+				// Only go back one word if there are multiple whitespaces.
+				int chunk_size = get_caret_column(caret_idx) > 1 && is_whitespace(text[get_caret_line(caret_idx)][get_caret_column(caret_idx) - 2]) ? 1 : 2;
+				for (int j = words.size() - chunk_size; j >= 0; j -= chunk_size) {
+					if (words[j] < prev_column) {
+						prev_column = words[j];
 						break;
 					}
 				}
 			}
-
-			// Check for any other carets in this range.
-			int overlapping_caret_index = -1;
-			for (int j = i + 1; j < caret_edit_order.size(); j++) {
-				// Check caret and selection in on the right line.
-				if (get_caret_line(caret_edit_order[j]) != get_caret_line(caret_idx) && (!has_selection(caret_edit_order[j]) || get_selection_to_line(caret_edit_order[j]) != get_caret_line(caret_idx))) {
-					break;
-				}
-
-				// If it has a selection, check it ends with in the range.
-				if ((has_selection(caret_edit_order[j]) && get_selection_to_column(caret_edit_order[j]) < column)) {
-					break;
-				}
-
-				// If it has a selection and it starts outside our word, we need to adjust the selection, and handle it later to prevent overlap.
-				if ((has_selection(caret_edit_order[j]) && get_selection_from_column(caret_edit_order[j]) < column)) {
-					carets.write[caret_edit_order[j]].selection.to_column = column;
-					overlapping_caret_index = caret_edit_order[j];
-					break;
-				}
-
-				// Otherwise we can remove it.
-				if (get_caret_column(caret_edit_order[j]) > column || (has_selection(caret_edit_order[j]) && get_selection_from_column(caret_edit_order[j]) > column)) {
-					deselect(caret_edit_order[j]);
-					carets_to_remove.push_back(caret_edit_order[j]);
-					set_caret_column(0, caret_idx == 0, caret_idx);
-					i = j;
-				}
-			}
-
-			_remove_text(get_caret_line(caret_idx), column, get_caret_line(caret_idx), from_column);
-
-			set_caret_line(get_caret_line(caret_idx), false, true, 0, caret_idx);
-			set_caret_column(column, caret_idx == 0, caret_idx);
-			adjust_carets_after_edit(caret_idx, get_caret_line(caret_idx), column, get_caret_line(caret_idx), from_column);
-
-			// Now we can clean up the overlapping caret.
-			if (overlapping_caret_index != -1) {
-				backspace(overlapping_caret_index);
-				i++;
-				carets_to_remove.push_back(overlapping_caret_index);
-				set_caret_column(get_caret_column(overlapping_caret_index), caret_idx == 0, caret_idx);
-			}
-			continue;
+		} else if (get_caret_column(caret_idx) == 0) {
+			prev_line = get_caret_line(caret_idx) - 1;
+			prev_column = text[prev_line].length();
 		}
+
+		// Remove overlapping carets.
+		for (int j = i + 1; j < caret_edit_order.size(); j++) {
+			int prev_caret = caret_edit_order[j];
+
+			if (p_word) {
+				// If a selection started from a different word and ended to this word, move deletion to the selection's beginning.
+				if (has_selection(prev_caret) && get_selection_to_line(prev_caret) == get_caret_line(caret_idx) && get_selection_to_column(prev_caret) >= prev_column && (get_selection_from_line(prev_caret) < get_caret_line(caret_idx) || get_selection_from_column(prev_caret) <= prev_column)) {
+					prev_line = get_selection_from_line(prev_caret);
+					prev_column = get_selection_from_column(prev_caret);
+				} else if (get_caret_line(prev_caret) < prev_line || (get_caret_line(prev_caret) == prev_line && get_caret_column(prev_caret) <= prev_column)) {
+					// Outside of the word deleted by the current caret, so exit the loop.
+					break;
+				}
+			}
+
+			if (p_all_to_left) {
+				if (has_selection(prev_caret) && get_selection_to_line(prev_caret) == get_caret_line(caret_idx) && get_selection_from_line(prev_caret) < get_caret_line(caret_idx)) {
+					prev_line = get_selection_from_line(prev_caret);
+				} else if ((get_caret_line(prev_caret) != get_caret_line(caret_idx)) || (get_caret_line(prev_caret) == get_caret_line(caret_idx) && get_caret_column(prev_caret) == 0)) {
+					break;
+				}
+			}
+
+			carets_to_remove.push_back(prev_caret);
+			i = j; // Don't update caret_idx, just mark the next caret from which to continue the operation.
+		}
+
+		// Finish the operation.
+		if (_is_line_hidden(get_caret_line(caret_idx))) {
+			_set_line_as_hidden(prev_line, true);
+		}
+		_remove_text(prev_line, prev_column, get_caret_line(caret_idx), get_caret_column(caret_idx));
+		adjust_carets_after_edit(caret_idx, prev_line, prev_column, get_caret_line(caret_idx), get_caret_column(caret_idx));
+		set_caret_line(prev_line, false, true, 0, caret_idx);
+		set_caret_column(prev_column, caret_idx == 0, caret_idx);
 	}
 
 	// Sort and remove backwards to preserve indexes.
@@ -2711,7 +2694,10 @@ void TextEdit::_do_backspace(bool p_word, bool p_all_to_left) {
 	for (int i = carets_to_remove.size() - 1; i >= 0; i--) {
 		remove_caret(carets_to_remove[i]);
 	}
+
+	merge_overlapping_carets();
 	end_action();
+	queue_redraw();
 }
 
 void TextEdit::_delete(bool p_word, bool p_all_to_right) {
@@ -2725,21 +2711,23 @@ void TextEdit::_delete(bool p_word, bool p_all_to_right) {
 	Vector<int> caret_edit_order = get_caret_index_edit_order();
 	for (int i = 0; i < caret_edit_order.size(); i++) {
 		int caret_idx = caret_edit_order[i];
+
 		if (has_selection(caret_idx)) {
 			delete_selection(caret_idx);
 			continue;
 		}
-		int curline_len = text[get_caret_line(caret_idx)].length();
 
+		// Last line, last column: Nothing to do.
+		int curline_len = text[get_caret_line(caret_idx)].length();
 		if (get_caret_line(caret_idx) == text.size() - 1 && get_caret_column(caret_idx) == curline_len) {
-			continue; // Last line, last column: Nothing to do.
+			continue;
 		}
 
 		int next_line = get_caret_column(caret_idx) < curline_len ? get_caret_line(caret_idx) : get_caret_line(caret_idx) + 1;
 		int next_column;
 
 		if (p_all_to_right) {
-			// Get caret furthest to the left.
+			// Walk through the carets that are still to be passed, to find the one that's furthest to the left and remove the rest.
 			for (int j = i + 1; j < caret_edit_order.size(); j++) {
 				if (get_caret_line(caret_edit_order[j]) != get_caret_line(caret_idx)) {
 					break;
@@ -2755,11 +2743,12 @@ void TextEdit::_delete(bool p_word, bool p_all_to_right) {
 				}
 			}
 
+			// For this operation, don't allow the carets to move to a different line.
 			if (get_caret_column(caret_idx) == curline_len) {
 				continue;
 			}
 
-			// Delete everything to right of caret.
+			// Delete everything to the right of the caret.
 			next_column = curline_len;
 			next_line = get_caret_line(caret_idx);
 
@@ -2772,15 +2761,27 @@ void TextEdit::_delete(bool p_word, bool p_all_to_right) {
 			}
 
 		} else if (p_word && get_caret_column(caret_idx) < curline_len - 1) {
-			// Delete next word to right of caret.
+			// Delete next word to the right of the caret.
 			int line = get_caret_line(caret_idx);
 			int column = get_caret_column(caret_idx);
 
+			// In case of "[word][space][caret]" ignore the space.
+			if (is_whitespace(text[get_caret_line(caret_idx)][get_caret_column(caret_idx)])) {
+				column += 1;
+			}
+
 			PackedInt32Array words = TS->shaped_text_get_word_breaks(text.get_line_data(line)->get_rid());
-			for (int j = 1; j < words.size(); j = j + 2) {
-				if (words[j] > column) {
-					column = words[j];
-					break;
+			if (words.is_empty() || column >= words[words.size() - 1]) {
+				// No words to the right: We can remove everything until the end of the line.
+				column = curline_len;
+			} else {
+				// Only go forward one word if there are multiple whitespaces.
+				int chunk_size = get_caret_column(caret_idx) < curline_len - 2 && is_whitespace(text[get_caret_line(caret_idx)][get_caret_column(caret_idx) + 1]) ? 1 : 2;
+				for (int j = (chunk_size + 1) % 2; j < words.size(); j += chunk_size) {
+					if (words[j] > column) {
+						column = words[j];
+						break;
+					}
 				}
 			}
 
@@ -6554,11 +6555,6 @@ void TextEdit::_backspace_internal(int p_caret) {
 		return;
 	}
 
-	if (has_selection(p_caret)) {
-		delete_selection(p_caret);
-		return;
-	}
-
 	begin_complex_operation();
 	Vector<int> caret_edit_order = get_caret_index_edit_order();
 	for (const int &i : caret_edit_order) {
@@ -6566,28 +6562,32 @@ void TextEdit::_backspace_internal(int p_caret) {
 			continue;
 		}
 
-		int cc = get_caret_column(i);
-		int cl = get_caret_line(i);
-
-		if (cc == 0 && cl == 0) {
+		if (has_selection(i)) {
+			delete_selection(i);
 			continue;
 		}
 
-		int prev_line = cc ? cl : cl - 1;
-		int prev_column = cc ? (cc - 1) : (text[cl - 1].length());
+		int cl = get_caret_line(i);
+		int cc = get_caret_column(i);
+
+		// First line, first column: Nothing to do.
+		if (cl == 0 && cc == 0) {
+			continue;
+		}
+
+		int prev_line = cc > 0 ? cl : cl - 1;
+		int prev_column = cc > 0 ? cc - 1 : (text[cl - 1].length());
 
 		merge_gutters(prev_line, cl);
-
 		if (_is_line_hidden(cl)) {
 			_set_line_as_hidden(prev_line, true);
 		}
 		_remove_text(prev_line, prev_column, cl, cc);
-
+		adjust_carets_after_edit(i, prev_line, prev_column, cl, cc);
 		set_caret_line(prev_line, false, true, 0, i);
 		set_caret_column(prev_column, i == 0, i);
-
-		adjust_carets_after_edit(i, prev_line, prev_column, cl, cc);
 	}
+
 	merge_overlapping_carets();
 	end_complex_operation();
 }
