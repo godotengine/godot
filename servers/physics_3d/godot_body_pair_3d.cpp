@@ -416,11 +416,13 @@ bool GodotBodyPair3D::pre_solve(real_t p_step) {
 			Vector3 crA = A->get_angular_velocity().cross(c.rA) + A->get_linear_velocity();
 
 			if (A->can_report_contacts()) {
-				A->add_contact(global_A + offset_A, -c.normal, depth, shape_A, crA, global_B + offset_A, shape_B, B->get_instance_id(), B->get_self(), crB, c.acc_impulse);
+				int contact_index = A->add_contact(global_A + offset_A, -c.normal, depth, shape_A, crA, global_B + offset_A, shape_B, B->get_instance_id(), B->get_self(), crB, c.acc_impulse);
+				c.contact_index_A = contact_index;
 			}
 
 			if (B->can_report_contacts()) {
-				B->add_contact(global_B + offset_A, c.normal, depth, shape_B, crB, global_A + offset_A, shape_A, A->get_instance_id(), A->get_self(), crA, -c.acc_impulse);
+				int contact_index = B->add_contact(global_B + offset_A, c.normal, depth, shape_B, crB, global_A + offset_A, shape_A, A->get_instance_id(), A->get_self(), crA, -c.acc_impulse);
+				c.contact_index_B = contact_index;
 			}
 		}
 
@@ -591,6 +593,12 @@ void GodotBodyPair3D::solve(real_t p_step) {
 			c.acc_impulse -= jt;
 
 			c.active = true;
+		}
+		if (c.contact_index_A >= 0) {
+			A->update_contact_impulse(c.contact_index_A, c.acc_impulse);
+		}
+		if (c.contact_index_B >= 0) {
+			B->update_contact_impulse(c.contact_index_B, -c.acc_impulse);
 		}
 	}
 }
