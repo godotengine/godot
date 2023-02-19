@@ -95,6 +95,7 @@ protected:
 	String resource_path;
 	HashMap<StringName, PropertyInfo> custom_prop_info;
 	bool using_datapack = false;
+	bool project_loaded = false;
 	List<String> input_presets;
 
 	HashSet<String> custom_features;
@@ -190,6 +191,7 @@ public:
 	Variant get_setting_with_override(const StringName &p_name) const;
 
 	bool is_using_datapack() const;
+	bool is_project_loaded() const;
 
 	bool has_custom_feature(const String &p_feature) const;
 
