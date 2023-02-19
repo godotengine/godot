@@ -144,6 +144,7 @@ class ProjectManager : public Control {
 	void _on_search_term_changed(const String &p_term);
 
 	static Ref<Texture2D> _file_dialog_get_icon(const String &p_path);
+	static Ref<Texture2D> _file_dialog_get_thumbnail(const String &p_path);
 
 protected:
 	void _notification(int p_what);

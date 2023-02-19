@@ -50,7 +50,7 @@
 #include "servers/display_server.h"
 
 EditorFileDialog::GetIconFunc EditorFileDialog::get_icon_func = nullptr;
-EditorFileDialog::GetIconFunc EditorFileDialog::get_large_icon_func = nullptr;
+EditorFileDialog::GetIconFunc EditorFileDialog::get_thumbnail_func = nullptr;
 
 EditorFileDialog::RegisterFunc EditorFileDialog::register_func = nullptr;
 EditorFileDialog::RegisterFunc EditorFileDialog::unregister_func = nullptr;
@@ -902,7 +902,15 @@ void EditorFileDialog::update_file_list() {
 			if (get_icon_func) {
 				Ref<Texture2D> icon = get_icon_func(cdir.path_join(files.front()->get()));
 				if (display_mode == DISPLAY_THUMBNAILS) {
-					item_list->set_item_icon(-1, file_thumbnail);
+					Ref<Texture2D> thumbnail;
+					if (get_thumbnail_func) {
+						thumbnail = get_thumbnail_func(cdir.path_join(files.front()->get()));
+					}
+					if (thumbnail.is_null()) {
+						thumbnail = file_thumbnail;
+					}
+
+					item_list->set_item_icon(-1, thumbnail);
 					item_list->set_item_tag_icon(-1, icon);
 				} else {
 					item_list->set_item_icon(-1, icon);
