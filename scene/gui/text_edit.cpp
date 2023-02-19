@@ -2681,6 +2681,7 @@ void TextEdit::_do_backspace(bool p_word, bool p_all_to_left) {
 
 			set_caret_line(get_caret_line(caret_idx), false, true, 0, caret_idx);
 			set_caret_column(column, caret_idx == 0, caret_idx);
+			adjust_carets_after_edit(caret_idx, get_caret_line(caret_idx), column, get_caret_line(caret_idx), from_column);
 
 			// Now we can clean up the overlapping caret.
 			if (overlapping_caret_index != -1) {
