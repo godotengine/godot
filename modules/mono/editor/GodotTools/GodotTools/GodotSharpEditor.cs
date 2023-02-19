@@ -279,7 +279,7 @@ namespace GodotTools
                     if (line >= 0)
                     {
                         args.Add("-g");
-                        args.Add($"{scriptPath}:{line}:{col}");
+                        args.Add($"{scriptPath}:{line + 1}:{col + 1}");
                     }
                     else
                     {
