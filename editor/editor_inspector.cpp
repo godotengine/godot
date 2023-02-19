@@ -3374,6 +3374,9 @@ void EditorInspector::set_keying(bool p_active) {
 }
 
 void EditorInspector::set_read_only(bool p_read_only) {
+	if (p_read_only == read_only) {
+		return;
+	}
 	read_only = p_read_only;
 	update_tree();
 }
