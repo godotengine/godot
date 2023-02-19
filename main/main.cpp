@@ -194,6 +194,7 @@ static bool init_always_on_top = false;
 static bool init_use_custom_pos = false;
 static bool init_use_custom_screen = false;
 static Vector2 init_custom_pos;
+uint64_t time_before_splash = 0;
 
 // Debug
 
@@ -2193,6 +2194,11 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 
 	DisplayServer::set_early_window_clear_color_override(false);
 
+	// show the main window
+	DisplayServer::get_singleton()->show_window(DisplayServer::MAIN_WINDOW_ID);
+	DisplayServer::get_singleton()->force_process_and_drop_events();
+	time_before_splash = OS::get_singleton()->get_ticks_usec();
+
 	MAIN_PRINT("Main: DCC");
 	RenderingServer::get_singleton()->set_default_clear_color(
 			GLOBAL_GET("rendering/environment/defaults/default_clear_color"));
@@ -3020,7 +3026,7 @@ bool Main::start() {
 
 	if (minimum_time_msec) {
 		uint64_t minimum_time = 1000 * minimum_time_msec;
-		uint64_t elapsed_time = OS::get_singleton()->get_ticks_usec();
+		uint64_t elapsed_time = OS::get_singleton()->get_ticks_usec() - time_before_splash;
 		if (elapsed_time < minimum_time) {
 			OS::get_singleton()->delay_usec(minimum_time - elapsed_time);
 		}

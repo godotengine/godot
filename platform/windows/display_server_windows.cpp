@@ -4248,8 +4248,6 @@ DisplayServerWindows::DisplayServerWindows(const String &p_rendering_driver, Win
 		}
 	}
 
-	show_window(MAIN_WINDOW_ID);
-
 #if defined(VULKAN_ENABLED)
 
 	if (rendering_driver == "vulkan") {
