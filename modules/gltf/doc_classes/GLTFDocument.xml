@@ -56,6 +56,12 @@
 				Takes a [GLTFState] object through the [param state] parameter and returns a Godot Engine scene node.
 			</description>
 		</method>
+		<method name="list_all_gltf_documentation_extensions" qualifiers="static">
+			<return type="GLTFDocumentExtension[]" />
+			<description>
+				Lists all the [GLTFDocumentExtension] instances.
+			</description>
+		</method>
 		<method name="register_gltf_document_extension" qualifiers="static">
 			<return type="void" />
 			<param index="0" name="extension" type="GLTFDocumentExtension" />
@@ -63,6 +69,12 @@
 			<description>
 				Registers the given [GLTFDocumentExtension] instance with GLTFDocument. If [param first_priority] is true, this extension will be run first. Otherwise, it will be run last.
 				[b]Note:[/b] Like GLTFDocument itself, all GLTFDocumentExtension classes must be stateless in order to function properly. If you need to store data, use the [code]set_additional_data[/code] and [code]get_additional_data[/code] methods in [GLTFState] or [GLTFNode].
+			</description>
+		</method>
+		<method name="unregister_all_gltf_document_extensions" qualifiers="static">
+			<return type="void" />
+			<description>
+				Unregisters all [GLTFDocumentExtension] instances.
 			</description>
 		</method>
 		<method name="unregister_gltf_document_extension" qualifiers="static">

@@ -76,6 +76,7 @@ public:
 	static void register_gltf_document_extension(Ref<GLTFDocumentExtension> p_extension, bool p_first_priority = false);
 	static void unregister_gltf_document_extension(Ref<GLTFDocumentExtension> p_extension);
 	static void unregister_all_gltf_document_extensions();
+	static TypedArray<GLTFDocumentExtension> list_all_gltf_documentation_extensions();
 
 private:
 	void _build_parent_hierachy(Ref<GLTFState> p_state);

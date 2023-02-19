@@ -7123,6 +7123,10 @@ void GLTFDocument::_bind_methods() {
 			&GLTFDocument::register_gltf_document_extension, DEFVAL(false));
 	ClassDB::bind_static_method("GLTFDocument", D_METHOD("unregister_gltf_document_extension", "extension"),
 			&GLTFDocument::unregister_gltf_document_extension);
+	ClassDB::bind_static_method("GLTFDocument", D_METHOD("unregister_all_gltf_document_extensions"),
+			&GLTFDocument::unregister_all_gltf_document_extensions);
+	ClassDB::bind_static_method("GLTFDocument", D_METHOD("list_all_gltf_documentation_extensions"),
+			&GLTFDocument::list_all_gltf_documentation_extensions);
 }
 
 void GLTFDocument::_build_parent_hierachy(Ref<GLTFState> p_state) {
@@ -7455,4 +7459,12 @@ Error GLTFDocument::_parse_gltf_extensions(Ref<GLTFState> p_state) {
 		}
 	}
 	return ret;
+}
+
+TypedArray<GLTFDocumentExtension> GLTFDocument::list_all_gltf_documentation_extensions() {
+	TypedArray<GLTFDocumentExtension> extensions;
+	for (Ref<GLTFDocumentExtension> e : all_document_extensions) {
+		extensions.push_back(e);
+	}
+	return extensions;
 }
