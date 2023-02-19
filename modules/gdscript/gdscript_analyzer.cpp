@@ -32,6 +32,7 @@
 
 #include "core/config/engine.h"
 #include "core/config/project_settings.h"
+#include "core/core_constants.h"
 #include "core/core_string_names.h"
 #include "core/io/file_access.h"
 #include "core/io/resource_loader.h"
@@ -48,7 +49,7 @@
 #endif
 
 #define UNNAMED_ENUM "<anonymous enum>"
-#define ENUM_SEPARATOR "::"
+#define ENUM_SEPARATOR "."
 
 static MethodInfo info_from_utility_func(const StringName &p_function) {
 	ERR_FAIL_COND_V(!Variant::has_utility_function(p_function), MethodInfo());
@@ -137,12 +138,16 @@ static GDScriptParser::DataType make_enum_type(const StringName &p_enum_name, co
 
 	// For enums, native_type is only used to check compatibility in is_type_compatible()
 	// We can set anything readable here for error messages, as long as it uniquely identifies the type of the enum
-	type.native_type = p_base_name + ENUM_SEPARATOR + p_enum_name;
+	if (p_base_name.is_empty()) {
+		type.native_type = p_enum_name;
+	} else {
+		type.native_type = p_base_name + ENUM_SEPARATOR + p_enum_name;
+	}
 
 	return type;
 }
 
-static GDScriptParser::DataType make_native_enum_type(const StringName &p_enum_name, const StringName &p_native_class, const bool p_meta = true) {
+static GDScriptParser::DataType make_native_enum_type(const StringName &p_enum_name, const StringName &p_native_class, bool p_meta = true) {
 	// Find out which base class declared the enum, so the name is always the same even when coming from other contexts.
 	StringName native_base = p_native_class;
 	while (true && native_base != StringName()) {
@@ -154,7 +159,7 @@ static GDScriptParser::DataType make_native_enum_type(const StringName &p_enum_n
 
 	GDScriptParser::DataType type = make_enum_type(p_enum_name, native_base, p_meta);
 	if (p_meta) {
-		type.builtin_type = Variant::NIL; // Native enum types are not Dictionaries
+		type.builtin_type = Variant::NIL; // Native enum types are not Dictionaries.
 	}
 
 	List<StringName> enum_values;
@@ -162,6 +167,22 @@ static GDScriptParser::DataType make_native_enum_type(const StringName &p_enum_n
 
 	for (const StringName &E : enum_values) {
 		type.enum_values[E] = ClassDB::get_integer_constant(native_base, E);
+	}
+
+	return type;
+}
+
+static GDScriptParser::DataType make_global_enum_type(const StringName &p_enum_name, const StringName &p_base, bool p_meta = true) {
+	GDScriptParser::DataType type = make_enum_type(p_enum_name, p_base, p_meta);
+	if (p_meta) {
+		type.builtin_type = Variant::NIL; // Native enum types are not Dictionaries.
+		type.is_pseudo_type = true;
+	}
+
+	HashMap<StringName, int64_t> enum_values;
+	CoreConstants::get_enum_values(type.native_type, &enum_values);
+	for (const KeyValue<StringName, int64_t> &element : enum_values) {
+		type.enum_values[element.key] = element.value;
 	}
 
 	return type;
@@ -575,9 +596,19 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 	StringName first = p_type->type_chain[0]->name;
 
 	if (first == SNAME("Variant")) {
-		if (p_type->type_chain.size() > 1) {
-			// TODO: Variant does actually have a nested Type though.
-			push_error(R"(Variant doesn't contain nested types.)", p_type->type_chain[1]);
+		if (p_type->type_chain.size() == 2) {
+			// May be nested enum.
+			StringName enum_name = p_type->type_chain[1]->name;
+			StringName qualified_name = String(first) + ENUM_SEPARATOR + String(p_type->type_chain[1]->name);
+			if (CoreConstants::is_global_enum(qualified_name)) {
+				result = make_global_enum_type(enum_name, first, true);
+				return result;
+			} else {
+				push_error(vformat(R"(Name "%s" is not a nested type of "Variant".)", enum_name), p_type->type_chain[1]);
+				return bad_type;
+			}
+		} else if (p_type->type_chain.size() > 2) {
+			push_error(R"(Variant only contains enum types, which do not have nested types.)", p_type->type_chain[2]);
 			return bad_type;
 		}
 		result.kind = GDScriptParser::DataType::VARIANT;
@@ -633,6 +664,12 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 	} else if (ClassDB::has_enum(parser->current_class->base_type.native_type, first)) {
 		// Native enum in current class.
 		result = make_native_enum_type(first, parser->current_class->base_type.native_type);
+	} else if (CoreConstants::is_global_enum(first)) {
+		if (p_type->type_chain.size() > 1) {
+			push_error(R"(Enums cannot contain nested types.)", p_type->type_chain[1]);
+			return bad_type;
+		}
+		result = make_global_enum_type(first, StringName());
 	} else {
 		// Classes in current scope.
 		List<GDScriptParser::ClassNode *> script_classes;
@@ -3661,11 +3698,44 @@ void GDScriptAnalyzer::reduce_identifier(GDScriptParser::IdentifierNode *p_ident
 		}
 	}
 
+	if (CoreConstants::is_global_constant(name)) {
+		int index = CoreConstants::get_global_constant_index(name);
+		StringName enum_name = CoreConstants::get_global_constant_enum(index);
+		int64_t value = CoreConstants::get_global_constant_value(index);
+		if (enum_name != StringName()) {
+			p_identifier->set_datatype(make_global_enum_type(enum_name, StringName(), false));
+		} else {
+			p_identifier->set_datatype(type_from_variant(value, p_identifier));
+		}
+		p_identifier->is_constant = true;
+		p_identifier->reduced_value = value;
+		return;
+	}
+
 	if (GDScriptLanguage::get_singleton()->has_any_global_constant(name)) {
 		Variant constant = GDScriptLanguage::get_singleton()->get_any_global_constant(name);
 		p_identifier->set_datatype(type_from_variant(constant, p_identifier));
 		p_identifier->is_constant = true;
 		p_identifier->reduced_value = constant;
+		return;
+	}
+
+	if (CoreConstants::is_global_enum(name)) {
+		p_identifier->set_datatype(make_global_enum_type(name, StringName(), true));
+		if (!can_be_builtin) {
+			push_error(vformat(R"(Global enum "%s" cannot be used on its own.)", name), p_identifier);
+		}
+		return;
+	}
+
+	// Allow "Variant" here since it might be used for nested enums.
+	if (can_be_builtin && name == SNAME("Variant")) {
+		GDScriptParser::DataType variant;
+		variant.kind = GDScriptParser::DataType::VARIANT;
+		variant.type_source = GDScriptParser::DataType::ANNOTATED_EXPLICIT;
+		variant.is_meta_type = true;
+		variant.is_pseudo_type = true;
+		p_identifier->set_datatype(variant);
 		return;
 	}
 
@@ -3809,12 +3879,14 @@ void GDScriptAnalyzer::reduce_self(GDScriptParser::SelfNode *p_self) {
 	mark_lambda_use_self();
 }
 
-void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscript) {
+void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscript, bool p_can_be_pseudo_type) {
 	if (p_subscript->base == nullptr) {
 		return;
 	}
 	if (p_subscript->base->type == GDScriptParser::Node::IDENTIFIER) {
 		reduce_identifier(static_cast<GDScriptParser::IdentifierNode *>(p_subscript->base), true);
+	} else if (p_subscript->base->type == GDScriptParser::Node::SUBSCRIPT) {
+		reduce_subscript(static_cast<GDScriptParser::SubscriptNode *>(p_subscript->base), true);
 	} else {
 		reduce_expression(p_subscript->base);
 	}
@@ -3838,14 +3910,28 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 				result_type = type_from_variant(value, p_subscript);
 			}
 		} else if (base_type.is_variant() || !base_type.is_hard_type()) {
-			valid = true;
+			valid = !base_type.is_pseudo_type || p_can_be_pseudo_type;
 			result_type.kind = GDScriptParser::DataType::VARIANT;
-			mark_node_unsafe(p_subscript);
+			if (base_type.is_variant() && base_type.is_hard_type() && base_type.is_meta_type && base_type.is_pseudo_type) {
+				// Special case: it may be a global enum with pseudo base (e.g. Variant.Type).
+				String enum_name;
+				if (p_subscript->base->type == GDScriptParser::Node::IDENTIFIER) {
+					enum_name = String(static_cast<GDScriptParser::IdentifierNode *>(p_subscript->base)->name) + ENUM_SEPARATOR + String(p_subscript->attribute->name);
+				}
+				if (CoreConstants::is_global_enum(enum_name)) {
+					result_type = make_global_enum_type(enum_name, StringName());
+				} else {
+					valid = false;
+					mark_node_unsafe(p_subscript);
+				}
+			} else {
+				mark_node_unsafe(p_subscript);
+			}
 		} else {
 			reduce_identifier_from_base(p_subscript->attribute, &base_type);
 			GDScriptParser::DataType attr_type = p_subscript->attribute->get_datatype();
 			if (attr_type.is_set()) {
-				valid = true;
+				valid = !attr_type.is_pseudo_type || p_can_be_pseudo_type;
 				result_type = attr_type;
 				p_subscript->is_constant = p_subscript->attribute->is_constant;
 				p_subscript->reduced_value = p_subscript->attribute->reduced_value;
@@ -3861,7 +3947,12 @@ void GDScriptAnalyzer::reduce_subscript(GDScriptParser::SubscriptNode *p_subscri
 			}
 		}
 		if (!valid) {
-			push_error(vformat(R"(Cannot find member "%s" in base "%s".)", p_subscript->attribute->name, type_from_metatype(base_type).to_string()), p_subscript->attribute);
+			GDScriptParser::DataType attr_type = p_subscript->attribute->get_datatype();
+			if (!p_can_be_pseudo_type && (attr_type.is_pseudo_type || result_type.is_pseudo_type)) {
+				push_error(vformat(R"(Type "%s" in base "%s" cannot be used on its own.)", p_subscript->attribute->name, type_from_metatype(base_type).to_string()), p_subscript->attribute);
+			} else {
+				push_error(vformat(R"(Cannot find member "%s" in base "%s".)", p_subscript->attribute->name, type_from_metatype(base_type).to_string()), p_subscript->attribute);
+			}
 			result_type.kind = GDScriptParser::DataType::VARIANT;
 		}
 	} else {
@@ -4375,6 +4466,7 @@ GDScriptParser::DataType GDScriptAnalyzer::type_from_variant(const Variant &p_va
 GDScriptParser::DataType GDScriptAnalyzer::type_from_metatype(const GDScriptParser::DataType &p_meta_type) {
 	GDScriptParser::DataType result = p_meta_type;
 	result.is_meta_type = false;
+	result.is_pseudo_type = false;
 	if (p_meta_type.kind == GDScriptParser::DataType::ENUM) {
 		result.builtin_type = Variant::INT;
 	} else {
@@ -4428,11 +4520,16 @@ GDScriptParser::DataType GDScriptAnalyzer::type_from_property(const PropertyInfo
 			result.set_container_element_type(elem_type);
 		} else if (p_property.type == Variant::INT) {
 			// Check if it's enum.
-			if (p_property.class_name != StringName()) {
-				Vector<String> names = String(p_property.class_name).split(".");
-				if (names.size() == 2) {
-					result = make_native_enum_type(names[1], names[0], false);
+			if ((p_property.usage & (PROPERTY_USAGE_CLASS_IS_ENUM | PROPERTY_USAGE_CLASS_IS_BITFIELD)) && p_property.class_name != StringName()) {
+				if (CoreConstants::is_global_enum(p_property.class_name)) {
+					result = make_global_enum_type(p_property.class_name, StringName(), false);
 					result.is_constant = false;
+				} else {
+					Vector<String> names = String(p_property.class_name).split(ENUM_SEPARATOR);
+					if (names.size() == 2) {
+						result = make_native_enum_type(names[1], names[0], false);
+						result.is_constant = false;
+					}
 				}
 			}
 		}
