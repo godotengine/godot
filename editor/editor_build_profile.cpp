@@ -35,6 +35,7 @@
 #include "editor/editor_file_dialog.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
+#include "editor/editor_paths.h"
 #include "editor/editor_property_name_processor.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"
@@ -473,7 +474,7 @@ void EditorBuildProfileManager::_find_files(EditorFileSystemDirectory *p_dir, co
 void EditorBuildProfileManager::_detect_classes() {
 	HashMap<String, DetectedFile> previous_file_cache;
 
-	Ref<FileAccess> f = FileAccess::open("res://.godot/editor/used_class_cache", FileAccess::READ);
+	Ref<FileAccess> f = FileAccess::open(EditorPaths::get_singleton()->get_project_settings_dir().path_join("used_class_cache"), FileAccess::READ);
 	if (f.is_valid()) {
 		while (!f->eof_reached()) {
 			String l = f->get_line();
@@ -497,7 +498,7 @@ void EditorBuildProfileManager::_detect_classes() {
 	HashSet<StringName> used_classes;
 
 	// Find classes and update the disk cache in the process.
-	f = FileAccess::open("res://.godot/editor/used_class_cache", FileAccess::WRITE);
+	f = FileAccess::open(EditorPaths::get_singleton()->get_project_settings_dir().path_join("used_class_cache"), FileAccess::WRITE);
 
 	for (const KeyValue<String, DetectedFile> &E : updated_file_cache) {
 		String l = E.key + "::" + itos(E.value.timestamp) + "::" + E.value.md5 + "::";
