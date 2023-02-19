@@ -32,6 +32,7 @@
 #define CORE_CONSTANTS_H
 
 #include "core/string/string_name.h"
+#include "core/templates/hash_set.h"
 
 class CoreConstants {
 public:
@@ -41,6 +42,10 @@ public:
 	static bool get_ignore_value_in_docs(int p_idx);
 	static const char *get_global_constant_name(int p_idx);
 	static int64_t get_global_constant_value(int p_idx);
+	static bool is_global_constant(const StringName &p_name);
+	static int get_global_constant_index(const StringName &p_name);
+	static bool is_global_enum(const StringName &p_enum);
+	static void get_enum_values(StringName p_enum, HashMap<StringName, int64_t> *p_values);
 };
 
 #endif // CORE_CONSTANTS_H
