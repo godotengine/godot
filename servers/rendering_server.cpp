@@ -35,6 +35,7 @@
 #include "core/variant/typed_array.h"
 #include "servers/rendering/rendering_server_globals.h"
 #include "servers/rendering/shader_language.h"
+#include "servers/rendering/shader_warnings.h"
 
 RenderingServer *RenderingServer::singleton = nullptr;
 RenderingServer *(*RenderingServer::create_func)() = nullptr;
@@ -2978,6 +2979,15 @@ void RenderingServer::init() {
 	GLOBAL_DEF_RST(PropertyInfo(Variant::INT, "rendering/limits/opengl/max_lights_per_object", PROPERTY_HINT_RANGE, "2,1024,1"), 8);
 
 	GLOBAL_DEF_RST_BASIC("xr/shaders/enabled", false);
+
+	GLOBAL_DEF("debug/shader_language/warnings/enable", true);
+	GLOBAL_DEF("debug/shader_language/warnings/treat_warnings_as_errors", false);
+
+#ifdef DEBUG_ENABLED
+	for (int i = 0; i < (int)ShaderWarning::WARNING_MAX; i++) {
+		GLOBAL_DEF("debug/shader_language/warnings/" + ShaderWarning::get_name_from_code((ShaderWarning::Code)i).to_lower(), true);
+	}
+#endif
 }
 
 RenderingServer::~RenderingServer() {
