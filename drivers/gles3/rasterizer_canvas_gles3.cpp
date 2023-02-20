@@ -115,7 +115,7 @@ void RasterizerCanvasGLES3::canvas_render_items(RID p_to_render_target, Item *p_
 
 	if (state.canvas_instance_data_buffers[state.current_data_buffer_index].fence != GLsync()) {
 		GLint syncStatus;
-		glGetSynciv(state.canvas_instance_data_buffers[state.current_data_buffer_index].fence, GL_SYNC_STATUS, sizeof(GLint), nullptr, &syncStatus);
+		glGetSynciv(state.canvas_instance_data_buffers[state.current_data_buffer_index].fence, GL_SYNC_STATUS, 1, nullptr, &syncStatus);
 		if (syncStatus == GL_UNSIGNALED) {
 			// If older than 2 frames, wait for sync OpenGL can have up to 3 frames in flight, any more and we need to sync anyway.
 			if (state.canvas_instance_data_buffers[state.current_data_buffer_index].last_frame_used < RSG::rasterizer->get_frame_number() - 2) {
