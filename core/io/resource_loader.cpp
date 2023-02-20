@@ -242,8 +242,7 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 	Ref<Resource> existing = ResourceCache::get_ref(load_task.local_path);
 	if (existing.is_valid()) {
 		load_task.resource = existing;
-	}
-	else {
+	} else {
 		load_task.resource = _load(load_task.remapped_path, load_task.remapped_path != load_task.local_path ? load_task.local_path : String(), load_task.type_hint, load_task.cache_mode, &load_task.error, load_task.use_sub_threads, &load_task.progress);
 	}
 
@@ -266,7 +265,7 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 		print_lt("END: load count: " + itos(thread_loading_count) + " / wait count: " + itos(thread_waiting_count) + " / suspended count: " + itos(thread_suspended_count) + " / active: " + itos(thread_loading_count - thread_suspended_count));
 	}
 	if (load_task.semaphore) {
-		if(load_task.poll_requests > 0) {
+		if (load_task.poll_requests > 0) {
 			// make sure that we don't slip between the thread_load_mutex->unlock()
 			// and semaphore->wait() of someone waiting for this task
 			OS::get_singleton()->delay_usec(1);
@@ -280,7 +279,7 @@ void ResourceLoader::_thread_load_function(void *p_userdata) {
 	}
 
 	if (load_task.resource.is_valid()) {
-		if(!existing.is_valid()) {
+		if (!existing.is_valid()) {
 			load_task.resource->set_path(load_task.local_path);
 		}
 
