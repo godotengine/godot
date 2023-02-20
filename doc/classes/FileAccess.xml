@@ -55,7 +55,7 @@
 		<method name="close">
 			<return type="void" />
 			<description>
-				Closes the currently opened file and prevents subsequent read/write operations. Use flush to persist the data to disk without closing the file.
+				Closes the currently opened file and prevents subsequent read/write operations. Use [method flush] to persist the data to disk without closing the file.
 				[b]Note:[/b] [FileAccess] will automatically close when it's freed, which happens when it goes out of scope or when it gets assigned with [code]null[/code]. In C# the reference must be disposed after we are done using it, this can be done with the [code]using[/code] statement or calling the [code]Dispose[/code] method directly.
 			</description>
 		</method>
