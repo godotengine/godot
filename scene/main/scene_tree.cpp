@@ -78,7 +78,7 @@ void SceneTreeTimer::set_time_left(double p_time) {
 }
 
 double SceneTreeTimer::get_time_left() const {
-	return time_left;
+	return MAX(time_left, 0.0);
 }
 
 void SceneTreeTimer::set_process_always(bool p_process_always) {
