@@ -35,7 +35,7 @@
 			<return type="void" />
 			<param index="0" name="size" type="float" />
 			<description>
-				Sets the expand margin to [param size] pixels for all margins.
+				Sets the expand margin to [param size] pixels for all sides.
 			</description>
 		</method>
 		<method name="set_texture_margin">

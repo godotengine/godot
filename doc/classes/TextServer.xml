@@ -12,7 +12,7 @@
 		<method name="create_font">
 			<return type="RID" />
 			<description>
-				Creates new, empty font cache entry resource. To free the resulting resourec, use [method free_rid] method.
+				Creates new, empty font cache entry resource. To free the resulting resource, use [method free_rid] method.
 			</description>
 		</method>
 		<method name="create_shaped_text">

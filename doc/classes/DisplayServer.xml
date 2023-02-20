@@ -1678,7 +1678,7 @@
 			Minimized window mode, i.e. [Window] is not visible and available on window manager's window list. Normally happens when the minimize button is pressed.
 		</constant>
 		<constant name="WINDOW_MODE_MAXIMIZED" value="2" enum="WindowMode">
-			Maximized window mode, i.e. [Window] will occupy whole screen area except task bar and still display its borders. Normally happens when the minimize button is pressed.
+			Maximized window mode, i.e. [Window] will occupy whole screen area except task bar and still display its borders. Normally happens when the maximize button is pressed.
 		</constant>
 		<constant name="WINDOW_MODE_FULLSCREEN" value="3" enum="WindowMode">
 			Full screen mode with full multi-window support.

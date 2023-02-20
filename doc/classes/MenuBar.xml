@@ -4,7 +4,7 @@
 		A horizontal menu bar, which displays [PopupMenu]s or system global menu.
 	</brief_description>
 	<description>
-		New items can be created by adding [PopupMenu] nodes to his node.
+		New items can be created by adding [PopupMenu] nodes to this node.
 	</description>
 	<tutorials>
 	</tutorials>
