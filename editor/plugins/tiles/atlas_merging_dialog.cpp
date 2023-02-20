@@ -245,7 +245,9 @@ bool AtlasMergingDialog::_get(const StringName &p_name, Variant &r_ret) const {
 void AtlasMergingDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
-			_update_texture();
+			if (is_visible()) {
+				_update_texture();
+			}
 		} break;
 	}
 }
