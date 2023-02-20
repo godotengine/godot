@@ -1,6 +1,6 @@
 # French translation of the Godot Engine class reference.
-# Copyright (c) 2007-2022 Juan Linietsky, Ariel Manzur.
-# Copyright (c) 2014-2022 Godot Engine contributors (cf. AUTHORS.md).
+# Copyright (c) 2014-present Godot Engine contributors.
+# Copyright (c) 2007-2014 Juan Linietsky, Ariel Manzur.
 # This file is distributed under the same license as the Godot source code.
 #
 # Rémi Verschelde <remi@godotengine.org>, 2020, 2021.
@@ -61,13 +61,14 @@
 # Landry Simo <landrysimo99@gmail.com>, 2022.
 # Alexis Coudert <coudert.alex@gmail.com>, 2022.
 # Callim Ethee <callimethee@gmail.com>, 2023.
+# Thalya Gauvrit <skar0ps.dev@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine class reference\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-01-01 02:51+0000\n"
-"Last-Translator: Callim Ethee <callimethee@gmail.com>\n"
+"PO-Revision-Date: 2023-02-13 23:42+0000\n"
+"Last-Translator: Thalya Gauvrit <skar0ps.dev@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot-class-reference/fr/>\n"
 "Language: fr\n"
@@ -75,7 +76,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.15.1-dev\n"
+"X-Generator: Weblate 4.16-dev\n"
 
 msgid "Description"
 msgstr "Description"
@@ -88,6 +89,9 @@ msgstr "Propriétés"
 
 msgid "Methods"
 msgstr "Méthodes"
+
+msgid "Operators"
+msgstr "Opérateurs"
 
 msgid "Theme Properties"
 msgstr "Propriétés du thème"
@@ -169,6 +173,93 @@ msgstr ""
 
 msgid "Built-in GDScript functions."
 msgstr "Fonctions intégrées à GDScript."
+
+msgid ""
+"Returns an array of dictionaries representing the current call stack. See "
+"also [method print_stack].\n"
+"[codeblock]\n"
+"func _ready():\n"
+"    foo()\n"
+"\n"
+"func foo():\n"
+"    bar()\n"
+"\n"
+"func bar():\n"
+"    print(get_stack())\n"
+"[/codeblock]\n"
+"Starting from [code]_ready()[/code], [code]bar()[/code] would print:\n"
+"[codeblock]\n"
+"[{function:bar, line:12, source:res://script.gd}, {function:foo, line:9, "
+"source:res://script.gd}, {function:_ready, line:6, source:res://script.gd}]\n"
+"[/codeblock]\n"
+"[b]Note:[/b] This function only works if the running instance is connected "
+"to a debugging server (i.e. an editor instance). [method get_stack] will not "
+"work in projects exported in release mode, or in projects exported in debug "
+"mode if not connected to a debugging server.\n"
+"[b]Note:[/b] Calling this function from a [Thread] is not supported. Doing "
+"so will return an empty array."
+msgstr ""
+"Renvoie un tableau de dictionnaires représentant la pile d'appels courante. "
+"Voir aussi [method print_stack].\n"
+"[codeblock]\n"
+"func _ready() :\n"
+"    foo()\n"
+"\n"
+"func foo() :\n"
+"    bar()\n"
+"\n"
+"func bar() :\n"
+"    print(get_stack())\n"
+"[/codeblock]\n"
+"En partant de [code]_ready()[/code], [code]bar()[/code] imprimerait :\n"
+"[codeblock]\n"
+"[{fonction:bar, ligne:12, source:res://script.gd}, {fonction:foo, ligne:9, "
+"source:res://script.gd}, {fonction:_ready, ligne:6, source:res://script."
+"gd}]\n"
+"[/codeblock]\n"
+"[b]Note :[/b] Cette fonction ne fonctionne que si l'instance en cours "
+"d'exécution est connectée à un serveur de débogage (c'est-à-dire une "
+"instance d'éditeur). La [method get_stack] ne fonctionnera pas dans les "
+"projets exportés en mode release, ou dans les projets exportés en mode debug "
+"s'ils ne sont pas connectés à un serveur de débogage.\n"
+"[b]Note(bis) :[/b] L'appel de cette fonction depuis un [Thread] n'est pas "
+"pris en charge. Cela renverra un tableau vide."
+
+msgid ""
+"Returns the passed [param instance] converted to a Dictionary. Can be useful "
+"for serializing.\n"
+"[b]Note:[/b] Cannot be used to serialize objects with built-in scripts "
+"attached or objects allocated within built-in scripts.\n"
+"[codeblock]\n"
+"var foo = \"bar\"\n"
+"func _ready():\n"
+"    var d = inst_to_dict(self)\n"
+"    print(d.keys())\n"
+"    print(d.values())\n"
+"[/codeblock]\n"
+"Prints out:\n"
+"[codeblock]\n"
+"[@subpath, @path, foo]\n"
+"[, res://test.gd, bar]\n"
+"[/codeblock]"
+msgstr ""
+"Renvoie le [param instance] passé converti en un dictionnaire. Utile pour la "
+"sérialisation.\n"
+"[b]Remarque :[/b] Ne peut pas être utilisé pour sérialiser des objets "
+"auxquels sont attachés des scripts intégrés ou des objets alloués dans des "
+"scripts intégrés.\n"
+"[codeblock]\n"
+"var foo = \"bar\"\n"
+"func _ready() :\n"
+"    var d = inst_to_dict(self)\n"
+"    print(d.keys())\n"
+"    print(d.values())\n"
+"[/codeblock]\n"
+"Résultat :\n"
+"[codeblock]\n"
+"[@subpath, @path, foo]\n"
+"[, res://test.gd, bar]\n"
+"[/codeblock]"
 
 msgid ""
 "The circle constant, the circumference of the unit circle in radians. This "
@@ -769,9 +860,6 @@ msgstr "Masque de touche de modification."
 msgid "Shift key mask."
 msgstr "Masque de la touche Shift."
 
-msgid "Ctrl key mask."
-msgstr "Masque de la touche Ctrl."
-
 msgid "Keypad key mask."
 msgstr "Masque des touches du clavier."
 
@@ -780,12 +868,6 @@ msgstr "Masque de l'interrupteur groupe."
 
 msgid "Middle mouse button."
 msgstr "Bouton du milieu de la souris."
-
-msgid "Mouse wheel up."
-msgstr "Molette de la souris vers le haut."
-
-msgid "Mouse wheel down."
-msgstr "Molette de la souris vers le bas."
 
 msgid "Mouse wheel left button (only present on some mice)."
 msgstr ""
@@ -1491,9 +1573,6 @@ msgstr "L'animation des sprites 2D (et aussi 3D)"
 msgid "Proxy texture for simple frame-based animations."
 msgstr "Texture procuration pour des animations simples basés sur les trames."
 
-msgid "Sets the currently visible frame of the texture."
-msgstr "Définit le trame présentement visible de l'animation."
-
 msgid ""
 "Number of frames to use in the animation. While you can create the frames "
 "independently with [method set_frame_texture], you need to set this value "
@@ -2076,21 +2155,6 @@ msgstr "La connexion spécifiée existe déjà."
 msgid "Plays an animation once in [AnimationNodeBlendTree]."
 msgstr "Joue une animation une fois dans [AnimationNodeBlendTree]."
 
-msgid ""
-"A resource to add to an [AnimationNodeBlendTree]. This node will execute a "
-"sub-animation and return once it finishes. Blend times for fading in and out "
-"can be customized, as well as filters."
-msgstr ""
-"Une ressource à ajouter à un [AnimationNodeBlendTree]. Ce nœud exécutera une "
-"sous-animation et retournera quand il aura fini. Les temps de foudu entrant "
-"et sortant peuvent être personnalisés, ainsi que les filtres."
-
-msgid ""
-"If [code]true[/code], the sub-animation will restart automatically after "
-"finishing."
-msgstr ""
-"Si [code]true[/code], la sous-animation redémarrera automatiquement à la fin."
-
 msgid "The delay after which the automatic restart is triggered, in seconds."
 msgstr ""
 "Le délai après lequel le redémarrage automatique est déclenché, en secondes."
@@ -2173,9 +2237,6 @@ msgstr ""
 msgid "Playback control for [AnimationNodeStateMachine]."
 msgstr "Contrôle de la lecture des [AnimationNodeStateMachine]."
 
-msgid "Returns the currently playing animation state."
-msgstr "Retourne l'actuel état d'animation joué."
-
 msgid "Returns the playback position within the current animation state."
 msgstr "Retourne la position de lecture pour l'état actuel de l'animation."
 
@@ -2239,15 +2300,6 @@ msgstr ""
 
 msgid "A generic animation transition node for [AnimationTree]."
 msgstr "Une nœud d'animation de transition générique pour [AnimationTree]."
-
-msgid ""
-"Simple state machine for cases which don't require a more advanced "
-"[AnimationNodeStateMachine]. Animations can be connected to the inputs and "
-"transition times can be specified."
-msgstr ""
-"Une simple machine à états pour les cas qui n'exigent pas une "
-"[AnimationNodeStateMachine] plus avancée. Les animations peuvent être "
-"connectées aux entrées et les temps de transition peuvent être spécifiés."
 
 msgid ""
 "[AnimationPlayer] caches animated nodes. It may not notice if a node "
@@ -2390,9 +2442,6 @@ msgstr ""
 "Les animations devront être mises à jour manuellement (voir [method "
 "advance])."
 
-msgid "2D area for detection and physics and audio influence."
-msgstr "Une aire 2D pour la détection et les influences physiques et audio."
-
 msgid "Using Area2D"
 msgstr "Utiliser les Area2D"
 
@@ -2457,9 +2506,6 @@ msgstr ""
 
 msgid "This area does not affect gravity/damping."
 msgstr "Cette aire n'influe pas sur la gravité/amortissement."
-
-msgid "3D area for detection and physics and audio influence."
-msgstr "Une aire 3D pour la détection et les influences physiques et audio."
 
 msgid "GUI in 3D Demo"
 msgstr "Démo des interfaces en 3D"
@@ -2833,13 +2879,6 @@ msgstr ""
 "Retourne l'identifiant du point disponible suivant avec aucun point lui "
 "étant associé."
 
-msgid ""
-"Returns the capacity of the structure backing the points, useful in "
-"conjunction with [code]reserve_space[/code]."
-msgstr ""
-"Retourne la capacité de la structure qui garde les points en cache, utile "
-"avec [code]reserve_space[/code]."
-
 msgid "Returns the number of points currently in the points pool."
 msgstr "Retourne le nombre de points actuellement dans le tas de points."
 
@@ -2856,6 +2895,13 @@ msgid ""
 msgstr ""
 "Une implémentation de A* pour trouver les chemins les plus courts parmi les "
 "points connectés dans l'espace."
+
+msgid ""
+"Returns the capacity of the structure backing the points, useful in "
+"conjunction with [code]reserve_space[/code]."
+msgstr ""
+"Retourne la capacité de la structure qui garde les points en cache, utile "
+"avec [code]reserve_space[/code]."
 
 msgid "Stores information about the audio buses."
 msgstr "Stocke de l'information sur les bus audio."
@@ -3993,18 +4039,12 @@ msgstr ""
 "Si [code]true[/code], l'objet est affiché à la même taille indépendamment de "
 "sa distance à la caméra."
 
-msgid "Grows object vertices in the direction of their normals."
-msgstr "Agrandit les sommets des objets dans la direction de leurs normales."
-
 msgid ""
 "If [code]true[/code], depth testing is disabled and the object will be drawn "
 "in render order."
 msgstr ""
 "Si [code]true[/code], les tests de profondeur sont désactivés et l'objet "
 "sera dessiné suivant son ordre de rendu et non suivant sa distance."
-
-msgid "If [code]true[/code], normal mapping is enabled."
-msgstr "Si [code]true[/code], la carte normale est activée."
 
 msgid "The strength of the normal map's effect."
 msgstr "L'intensité de l'effet de la carte normale."
@@ -4167,9 +4207,6 @@ msgstr "La couleur de l'objet est soustraite à l'arrière-plan."
 msgid "The color of the object is multiplied by the background."
 msgstr "La couleur de l'objet est multipliée par l'arrière-plan."
 
-msgid "No culling is performed."
-msgstr "Aucun culling n’est effectué."
-
 msgid "Set [code]ALBEDO[/code] to the per-vertex color specified in the mesh."
 msgstr ""
 "Définit [code]ALBEDO[/code] par la couleur définie pour chaque sommet du "
@@ -4247,9 +4284,6 @@ msgstr "Blob spéculaire par défaut."
 
 msgid "Toon blob which changes size based on roughness."
 msgstr "Le reflet en mode cartoon change de taille suivant la rugosité."
-
-msgid "No specular blob."
-msgstr "Pas de blob spéculaire."
 
 msgid "Billboard mode is disabled."
 msgstr "Le mode d'affichage est désactivé."
@@ -4913,13 +4947,6 @@ msgstr ""
 "draw_polyline], [method draw_polygon], et [method draw_rect]."
 
 msgid ""
-"Sets a custom transform for drawing via components. Anything drawn "
-"afterwards will be transformed by this."
-msgstr ""
-"Définit une transformation personnalisée pour le dessin via des composants. "
-"Tout ce qui est dessiné par la suite sera transformé par cela."
-
-msgid ""
 "Sets a custom transform for drawing via matrix. Anything drawn afterwards "
 "will be transformed by this."
 msgstr ""
@@ -5166,11 +5193,6 @@ msgid ""
 msgstr ""
 "Le nœud [Viewport] personnalisé assigné au [CanvasLayer]. Si [code]null[/"
 "code], ça utilise la fenêtre d'affichage par défaut à la place."
-
-msgid "Layer index for draw order. Lower values are drawn first."
-msgstr ""
-"L'index des calques définit l'ordre d'affichage. Un index bas sera dessiné "
-"en premier."
 
 msgid "The layer's base offset."
 msgstr "Le décalage de base du calque."
@@ -11422,13 +11444,6 @@ msgstr "InputEvent"
 msgid "Returns a [String] representation of the event."
 msgstr "Retourne une représentation [String] de l'évènement."
 
-msgid ""
-"Returns [code]true[/code] if this input event is an echo event (only for "
-"events of type [InputEventKey])."
-msgstr ""
-"Retourne [code]true[/code] si cet événement d'entrée est un écho (uniquement "
-"pour les événements de type [InputEventKey])."
-
 msgid "Input event type for actions."
 msgstr "Type d’évènement d’entrée pour les actions."
 
@@ -12020,13 +12035,6 @@ msgstr ""
 "L'énergie de la Light2D. Plus la valeur est élevée, plus la lumière est "
 "forte."
 
-msgid ""
-"The layer mask. Only objects with a matching mask will be affected by the "
-"Light2D."
-msgstr ""
-"Le masque de calque. Seuls les objets avec un masque correspondant seront "
-"sous l'influence de ce Light2D."
-
 msgid "Maximum layer value of objects that are affected by the Light2D."
 msgstr ""
 "La niveau de calque maximum pour qu'un objet soit éclairé par la Light2D."
@@ -12057,14 +12065,6 @@ msgid "Shadow filter type. See [enum ShadowFilter] for possible values."
 msgstr ""
 "Le type de filtre pour les ombres. Voir [enum ShadowFilter] pour les valeurs "
 "possibles."
-
-msgid ""
-"The shadow mask. Used with [LightOccluder2D] to cast shadows. Only occluders "
-"with a matching light mask will cast shadows."
-msgstr ""
-"Le masque d'ombre. Utilisé avec [LightOccluder2D] pour lancer des ombres. "
-"Seuls les occulteurs avec un masque de lumière correspondant lanceront des "
-"ombres."
 
 msgid ""
 "Adds the value of pixels corresponding to the Light2D to the values of "
@@ -13593,17 +13593,6 @@ msgstr "Retourne la direction haut de la carte."
 msgid "Sets the map up direction."
 msgstr "Définit la direction haut de la carte."
 
-msgid ""
-"Process the collision avoidance agents.\n"
-"The result of this process is needed by the physics server, so this must be "
-"called in the main thread.\n"
-"[b]Note:[/b] This function is not thread safe."
-msgstr ""
-"Traite les agents d'évitement de collision.\n"
-"Le résultat de ce processus est nécessaire par le serveur de physique, de "
-"sorte que cela doit être appelé dans le fil d'exécution principal.\n"
-"[b]Note :[/b] Cette fonction n'est pas sûre entre plusieurs fils d'exécution."
-
 msgid "Sets the navigation mesh for the region."
 msgstr "Définit le polygone de navigation de la région."
 
@@ -15080,6 +15069,42 @@ msgstr "Si [code]true[/code], la requête prendra la [PhysicsBody2D] en compte."
 msgid "Server interface for low-level 2D physics access."
 msgstr "L'interface du serveur pour l'accès à la physique 2D en bas niveau."
 
+msgid "Represents the size of the [enum BodyParameter] enum."
+msgstr "Représente la taille de l'énumération [enum BodyParameter]."
+
+msgid "Constant to set/get the current transform matrix of the body."
+msgstr ""
+"La constante pour définir/obtenir la matrice de transformation actuelle du "
+"corps."
+
+msgid "Constant to set/get the current linear velocity of the body."
+msgstr ""
+"La constante pour définir/récupérer la vélocité linéaire actuelle de ce "
+"corps."
+
+msgid "Constant to set/get the current angular velocity of the body."
+msgstr ""
+"La constante pour définir/récupérer la vélocité angulaire actuelle de ce "
+"corps."
+
+msgid "Constant to set/get whether the body can sleep."
+msgstr "La constante pour définir/obtenir si le corps peut être au repos."
+
+msgid "Constant to create pin joints."
+msgstr "Constante pour créer des joints d’épingle."
+
+msgid "Constant to create groove joints."
+msgstr "Constante pour créer des joints de rainure."
+
+msgid "Constant to get the number of objects that are not sleeping."
+msgstr "La constante pour récupérer le nombre d'objets qui ne dorment pas."
+
+msgid "Constant to get the number of possible collisions."
+msgstr "La constante pour obtenir le nombre possible de collisions."
+
+msgid "Server interface for low-level physics access."
+msgstr "L'interface du serveur pour l'accès physique de bas niveau."
+
 msgid ""
 "Adds a shape to the area, along with a transform matrix. Shapes are usually "
 "referenced by their index, so you should track which shape has a given index."
@@ -15134,15 +15159,8 @@ msgstr "Affecte la zone à un ou plusieurs calques de physique."
 msgid "Sets which physics layers the area will monitor."
 msgstr "Définit les calques de physique que la zone surveillera."
 
-msgid ""
-"Sets the value for an area parameter. See [enum AreaParameter] for a list of "
-"available parameters."
-msgstr ""
-"Définit la valeur d’un paramètre de zone. Voir [enum AreaParameter] pour une "
-"liste de paramètres disponibles."
-
-msgid "Disables a given shape in an area."
-msgstr "Désactive une forme donnée dans une zone."
+msgid "Sets object pickable with rays."
+msgstr "Définit l'objet comme sélectionnable par les rayons."
 
 msgid "Sets the transform matrix for an area shape."
 msgstr "Définit la matrice de transformation pour la forme de l'aire."
@@ -15158,9 +15176,6 @@ msgstr "Ajoute un corps à la liste de ceux ignorés lors des collisions."
 
 msgid "Removes all shapes from a body."
 msgstr "Retire toutes les formes du corps."
-
-msgid "Creates a physics body."
-msgstr "Crée un corps physique."
 
 msgid "Returns the physics layer or layers a body belongs to."
 msgstr "Retourne le(s) calque(s) physique(s) auquel(s) ce corps appartient."
@@ -15194,9 +15209,6 @@ msgstr "Retourne le [RID] de la forme assignée à ce corps."
 msgid "Returns a body state."
 msgstr "Retourne un état du corps."
 
-msgid "Removes a body from the list of bodies exempt from collisions."
-msgstr "Retirer un corps de la liste de ceux ignorés lors des collisions."
-
 msgid "Sets the physics layer or layers a body belongs to."
 msgstr "Définit le(s) calque(s) physique(s) auquel(s) ce corps appartient."
 
@@ -15204,7 +15216,7 @@ msgid "Sets the physics layer or layers a body can collide with."
 msgstr ""
 "Définit le(s) calque(s) physique(s) où le corps peut entrer en collision."
 
-msgid "Sets the body mode using one of the [enum BodyMode] constants."
+msgid "Sets the body mode, from one of the [enum BodyMode] constants."
 msgstr ""
 "Définit le mode du corps, avec l'une des constantes de [enum BodyMode]."
 
@@ -15214,13 +15226,6 @@ msgid ""
 msgstr ""
 "Définit quand un corps utilise sa propre fonction pour calculer sa physique "
 "(voir [method body_set_force_integration_callback])."
-
-msgid ""
-"Sets a body parameter. See [enum BodyParameter] for a list of available "
-"parameters."
-msgstr ""
-"Définit un paramètre du corps. Voir [enum BodyParameter] pour la liste des "
-"paramètres disponibles."
 
 msgid ""
 "Substitutes a given body shape by another. The old shape is selected by its "
@@ -15235,119 +15240,23 @@ msgstr "Définit la matrice de transformation pour la forme du corps."
 msgid "Assigns a space to the body (see [method space_create])."
 msgstr "Assigne un espace au corps (voir [method space_create])."
 
-msgid "Returns the value of a joint parameter."
-msgstr "Retourne la valeur du paramètre du joint."
-
-msgid "Returns a joint's type (see [enum JointType])."
-msgstr "Retourne le type de joint (voir [enum JoinType])."
-
-msgid ""
-"Sets a joint parameter. See [enum JointParam] for a list of available "
-"parameters."
-msgstr ""
-"Définit un paramètre du joint. Voir [enum JointParam] pour la liste des "
-"paramètres disponibles."
-
-msgid "Activates or deactivates the 2D physics engine."
-msgstr "Active ou désactive le moteur physique 2D."
-
-msgid "Returns the shape data."
-msgstr "Retourne les données de forme."
-
-msgid "Returns a shape's type (see [enum ShapeType])."
-msgstr "Retourne le type de forme (voir [enum ShapeType])."
-
-msgid "Returns the value of a space parameter."
-msgstr "Retourne la valeur d'un paramètre de l'espace."
-
-msgid "Returns whether the space is active."
-msgstr "Retourne quand cet espace est actif."
-
-msgid ""
-"Sets the value for a space parameter. See [enum SpaceParameter] for a list "
-"of available parameters."
-msgstr ""
-"Définit la valeur pour le paramètre d'espace. Voir [enum SpaceParameter] "
-"pour la liste des paramètres possibles."
-
-msgid "Constant to set/get gravity strength in an area."
-msgstr "La constante pour définir/obtenir la force de gravité de l'aire."
-
-msgid "Constant to set/get gravity vector/center in an area."
-msgstr "La constante pour définir/obtenir le centre de gravité de l'aire."
-
-msgid "Constant to set/get the priority (order of processing) of an area."
-msgstr ""
-"La constant pour définir/obtenir la priorité (l'ordre de gestion) de l'aire."
-
-msgid "Constant to set/get a body's bounce factor."
-msgstr "La constante pour définir/obtenir le facteur de rebond."
-
-msgid "Constant to set/get a body's friction."
-msgstr "Constante pour définir/récupérer la friction du corps."
-
-msgid "Constant to set/get a body's mass."
-msgstr "La constante pour définir/obtenir la masse du corps."
-
-msgid "Constant to set/get a body's inertia."
-msgstr "La constante pour définir/obtenir l'inertie du corps."
-
-msgid "Constant to set/get a body's gravity multiplier."
-msgstr ""
-"La constante pour définir/obtenir le facteur de multiplication de la gravité "
-"du corps."
-
-msgid "Represents the size of the [enum BodyParameter] enum."
-msgstr "Représente la taille de l'énumération [enum BodyParameter]."
-
-msgid "Constant to set/get the current transform matrix of the body."
-msgstr ""
-"La constante pour définir/obtenir la matrice de transformation actuelle du "
-"corps."
-
-msgid "Constant to set/get the current linear velocity of the body."
-msgstr ""
-"La constante pour définir/récupérer la vélocité linéaire actuelle de ce "
-"corps."
-
-msgid "Constant to set/get the current angular velocity of the body."
-msgstr ""
-"La constante pour définir/récupérer la vélocité angulaire actuelle de ce "
-"corps."
-
-msgid "Constant to set/get whether the body can sleep."
-msgstr "La constante pour définir/obtenir si le corps peut être au repos."
-
-msgid "Constant to create pin joints."
-msgstr "Constante pour créer des joints d’épingle."
-
-msgid "Constant to create groove joints."
-msgstr "Constante pour créer des joints de rainure."
-
-msgid "Constant to get the number of objects that are not sleeping."
-msgstr "La constante pour récupérer le nombre d'objets qui ne dorment pas."
-
-msgid "Constant to get the number of possible collisions."
-msgstr "La constante pour obtenir le nombre possible de collisions."
-
-msgid "Server interface for low-level physics access."
-msgstr "L'interface du serveur pour l'accès physique de bas niveau."
-
-msgid "Sets object pickable with rays."
-msgstr "Définit l'objet comme sélectionnable par les rayons."
-
-msgid "Sets the body mode, from one of the [enum BodyMode] constants."
-msgstr ""
-"Définit le mode du corps, avec l'une des constantes de [enum BodyMode]."
-
 msgid "Sets a body state (see [enum BodyState] constants)."
 msgstr "Définit l'état du corps (voir les constantes [enum BodyState])."
 
 msgid "Activates or deactivates the 3D physics engine."
 msgstr "Active ou désactive le moteur physique 3D."
 
+msgid "Returns the shape data."
+msgstr "Retourne les données de forme."
+
 msgid "Returns the type of shape (see [enum ShapeType] constants)."
 msgstr "Retourne le type de forme (voir les constantes dans [enum ShapeType])."
+
+msgid "Returns the value of a space parameter."
+msgstr "Retourne la valeur d'un paramètre de l'espace."
+
+msgid "Returns whether the space is active."
+msgstr "Retourne quand cet espace est actif."
 
 msgid ""
 "The strength with which the pinned objects try to stay in velocity relation "
@@ -15391,6 +15300,33 @@ msgstr ""
 
 msgid "If set, rotational motion is possible."
 msgstr "Si définit, la rotation est possible."
+
+msgid "Constant to set/get gravity strength in an area."
+msgstr "La constante pour définir/obtenir la force de gravité de l'aire."
+
+msgid "Constant to set/get gravity vector/center in an area."
+msgstr "La constante pour définir/obtenir le centre de gravité de l'aire."
+
+msgid "Constant to set/get the priority (order of processing) of an area."
+msgstr ""
+"La constant pour définir/obtenir la priorité (l'ordre de gestion) de l'aire."
+
+msgid "Constant to set/get a body's bounce factor."
+msgstr "La constante pour définir/obtenir le facteur de rebond."
+
+msgid "Constant to set/get a body's friction."
+msgstr "Constante pour définir/récupérer la friction du corps."
+
+msgid "Constant to set/get a body's mass."
+msgstr "La constante pour définir/obtenir la masse du corps."
+
+msgid "Constant to set/get a body's inertia."
+msgstr "La constante pour définir/obtenir l'inertie du corps."
+
+msgid "Constant to set/get a body's gravity multiplier."
+msgstr ""
+"La constante pour définir/obtenir le facteur de multiplication de la gravité "
+"du corps."
 
 msgid "Parameters to be sent to a 2D shape physics query."
 msgstr "Les paramètres à passer à un requête physique d'une forme 2D."
@@ -15973,11 +15909,6 @@ msgid ""
 msgstr ""
 "Si [code]true[/code], envoie des événements d'entrée tactile lorsque vous "
 "cliquez ou faites glisser la souris."
-
-msgid "Default delay for touch events. This only affects iOS devices."
-msgstr ""
-"Un retard par défaut pour les événements tactiles. Cela n'affecte que les "
-"appareils iOS."
 
 msgid ""
 "The locale to fall back to if a translation isn't available in a given "
@@ -18138,12 +18069,6 @@ msgstr "Le dragueur fractionné n’est jamais visible."
 
 msgid "A spotlight, such as a reflector spotlight or a lantern."
 msgstr "Un projecteur, comme un projecteur de spectacle ou un lanterne."
-
-msgid "The spotlight's angular attenuation curve."
-msgstr "La courbe d’atténuation angulaire du projecteur."
-
-msgid "The spotlight's light energy attenuation curve."
-msgstr "La courbe d’atténuation de l'énergie de la lumière du projecteur."
 
 msgid "A helper node, mostly used in 3rd person cameras."
 msgstr ""

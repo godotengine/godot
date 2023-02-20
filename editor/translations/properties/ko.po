@@ -268,9 +268,6 @@ msgstr "페이지 크기"
 msgid "Blocking Mode Enabled"
 msgstr "Blocking 모드 활성화"
 
-msgid "Connection"
-msgstr "연결"
-
 msgid "Read Chunk Size"
 msgstr "청크 크기 읽기"
 
@@ -288,9 +285,6 @@ msgstr "입력 버퍼 최대 크기"
 
 msgid "Output Buffer Max Size"
 msgstr "출력 버퍼 최대 크기"
-
-msgid "Stream Peer"
-msgstr "스트림 피어"
 
 msgid "Resource"
 msgstr "리소스"
@@ -312,9 +306,6 @@ msgstr "시드"
 
 msgid "State"
 msgstr "상태"
-
-msgid "Source Code"
-msgstr "소스 코드"
 
 msgid "Locale"
 msgstr "위치"
@@ -390,15 +381,6 @@ msgstr "액세스"
 
 msgid "Display Mode"
 msgstr "표시 모드"
-
-msgid "Current Dir"
-msgstr "현재 디렉토리"
-
-msgid "Current File"
-msgstr "현재 파일"
-
-msgid "Current Path"
-msgstr "현재 경로"
 
 msgid "Show Hidden Files"
 msgstr "숨김 파일 표시"
@@ -481,17 +463,11 @@ msgstr "집중 모드"
 msgid "Base Type"
 msgstr "기본 타입"
 
-msgid "Edited Resource"
-msgstr "변경된 리소스"
-
 msgid "Editable"
 msgstr "편집 가능"
 
 msgid "Toggle Mode"
 msgstr "모드 토글"
-
-msgid "Script Owner"
-msgstr "스크립트 소유자"
 
 msgid "Editor Language"
 msgstr "에디터 언어"
@@ -1405,6 +1381,15 @@ msgstr "경고"
 msgid "ID"
 msgstr "ID"
 
+msgid "Texture"
+msgstr "텍스쳐"
+
+msgid "Separation"
+msgstr "분리"
+
+msgid "Speed"
+msgstr "속력"
+
 msgid "Version Control"
 msgstr "버전 컨트롤"
 
@@ -1483,17 +1468,14 @@ msgstr "iOS"
 msgid "Hide Home Indicator"
 msgstr "홈 표시기 숨기기"
 
-msgid "Input Devices"
-msgstr "입력 장치"
-
-msgid "Pointing"
-msgstr "포인팅"
-
 msgid "Boot Splash"
 msgstr "부트 스플래쉬"
 
 msgid "BG Color"
 msgstr "배경색"
+
+msgid "Input Devices"
+msgstr "입력 장치"
 
 msgid "Environment"
 msgstr "환경"
@@ -1521,6 +1503,9 @@ msgstr "버퍼링"
 
 msgid "Agile Event Flushing"
 msgstr "애자일 이벤트 플러싱"
+
+msgid "Pointing"
+msgstr "포인팅"
 
 msgid "Emulate Touch From Mouse"
 msgstr "마우스 터치 에뮬레이트"
@@ -1864,9 +1849,6 @@ msgstr "스킨 루트"
 msgid "Joints Original"
 msgstr "관절 원본"
 
-msgid "Inverse Binds"
-msgstr "역결합"
-
 msgid "Non Joints"
 msgstr "비 관절"
 
@@ -2116,9 +2098,6 @@ msgstr "최대 거리"
 msgid "Top"
 msgstr "맨 위"
 
-msgid "Speed"
-msgstr "속력"
-
 msgid "Input"
 msgstr "입력"
 
@@ -2127,9 +2106,6 @@ msgstr "시간"
 
 msgid "Randomness"
 msgstr "무작위성"
-
-msgid "Texture"
-msgstr "텍스쳐"
 
 msgid "Points"
 msgstr "점"
@@ -2154,15 +2130,6 @@ msgstr "내비게이션 레이어"
 
 msgid "Max Speed"
 msgstr "최대 속도"
-
-msgid "Rotation Degrees"
-msgstr "회전 각도"
-
-msgid "Global Rotation Degrees"
-msgstr "전역 회전 각도"
-
-msgid "Global Scale"
-msgstr "전역 스케일"
 
 msgid "Base Offset"
 msgstr "기본 오프셋"
@@ -2311,9 +2278,6 @@ msgstr "단계"
 msgid "Syntax Highlighter"
 msgstr "구문 강조"
 
-msgid "Volume"
-msgstr "볼륨"
-
 msgid "Z Index"
 msgstr "Z 인덱스"
 
@@ -2325,9 +2289,6 @@ msgstr "전송 모드"
 
 msgid "Transfer Channel"
 msgstr "전송 채널"
-
-msgid "Current Scene"
-msgstr "현재 씬"
 
 msgid "Audio Listener"
 msgstr "오디오 리스너"
@@ -2364,9 +2325,6 @@ msgstr "분리 기호"
 
 msgid "Submenu"
 msgstr "하위 메뉴"
-
-msgid "Separation"
-msgstr "분리"
 
 msgid "Cursor"
 msgstr "커서"

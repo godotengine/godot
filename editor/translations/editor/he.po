@@ -431,12 +431,6 @@ msgstr "שימוש בעקומות בזייה"
 msgid "Create RESET Track(s)"
 msgstr "יצירת רצועה(ות) איפוס"
 
-msgid "Anim. Optimizer"
-msgstr "ממטב הנפשה"
-
-msgid "Max. Angular Error:"
-msgstr "שגיאת זווית מקסימלית:"
-
 msgid "Optimize"
 msgstr "מיטוב"
 
@@ -1354,9 +1348,6 @@ msgstr "פתיחה"
 
 msgid "Select Current Folder"
 msgstr "נא לבחור את התיקייה הנוכחית"
-
-msgid "File exists, overwrite?"
-msgstr "הקובץ קיים, האם להחליף?"
 
 msgid "Copy Path"
 msgstr "העתקת נתיב"
@@ -3972,9 +3963,6 @@ msgstr "הנתיב שהוגדר ל-AnimationPlayer אינו מוביל למפר�
 msgid "The AnimationPlayer root node is not a valid node."
 msgstr "מפרק השורש AnimationPlayer אינו צומת חוקי."
 
-msgid "Pick a color from the editor window."
-msgstr "בחירת צבע מחלון העורך."
-
 msgid "Switch between hexadecimal and code values."
 msgstr "מעבר בין ערכים הקסדצימלים לערכי קוד."
 
@@ -4001,9 +3989,6 @@ msgstr "אזהרה!"
 
 msgid "Please Confirm..."
 msgstr "נא לאשר…"
-
-msgid "Must use a valid extension."
-msgstr "יש להשתמש בסיומת תקנית."
 
 msgid "If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0."
 msgstr "אם \"Exp Edit\" מאופשר, \"Min Value\" חייב להיות גדול מ-0."

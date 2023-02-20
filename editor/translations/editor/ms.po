@@ -428,12 +428,6 @@ msgstr "Guna Lengkung Bezier"
 msgid "Create RESET Track(s)"
 msgstr "Cipta Trek RESET"
 
-msgid "Anim. Optimizer"
-msgstr "Pengoptimum Anim."
-
-msgid "Max. Angular Error:"
-msgstr "Max. Ralat Sudut:"
-
 msgid "Optimize"
 msgstr "Mengoptimumkan"
 
@@ -1308,9 +1302,6 @@ msgstr "Buka"
 
 msgid "Select Current Folder"
 msgstr "Pilih Folder Semasa"
-
-msgid "File exists, overwrite?"
-msgstr "Fail wujud, tulis ganti?"
 
 msgid "Select This Folder"
 msgstr "Pilih Folder Ini"
@@ -4215,9 +4206,6 @@ msgstr "Nod A mestilah PhysicsBody2D"
 
 msgid "Node B must be a PhysicsBody2D"
 msgstr "Nod B mestilah PhysicsBody2D"
-
-msgid "Must use a valid extension."
-msgstr "Mesti menggunakan sambungan yang sah."
 
 msgid "Constants cannot be modified."
 msgstr "Pemalar tidak dapat diubah suai."

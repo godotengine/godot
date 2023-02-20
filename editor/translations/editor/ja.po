@@ -49,13 +49,15 @@
 # T K <kidaaam@gmail.com>, 2022, 2023.
 # MizunagiKB <mizukb@live.jp>, 2023.
 # Saitos <purifyzombie@gmail.com>, 2023.
+# UENO Masahiro <ueno.mshr@gmail.com>, 2023.
+# ueshita <nalto32@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-02-10 00:54+0000\n"
-"Last-Translator: Saitos <purifyzombie@gmail.com>\n"
+"PO-Revision-Date: 2023-02-18 07:45+0000\n"
+"Last-Translator: ueshita <nalto32@gmail.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
 "Language: ja\n"
@@ -141,40 +143,40 @@ msgid "Unknown Joypad Axis"
 msgstr "不明なジョイパッド軸"
 
 msgid "Joypad Motion on Axis %d (%s) with Value %.2f"
-msgstr "値 %.2f の軸 %d (%s) のジョイパッド モーション"
+msgstr "ジョイパッドモーション 軸:%d (%s) 値:%.2f"
 
 msgid "Bottom Action, Sony Cross, Xbox A, Nintendo B"
-msgstr "下アクション、ソニー✕、Xbox A、Nintendo B"
+msgstr "下アクション。Sony ✕、Xbox A、Nintendo B"
 
 msgid "Right Action, Sony Circle, Xbox B, Nintendo A"
-msgstr "右アクション、ソニー○、Xbox B，Nintendo A"
+msgstr "右アクション。Sony ○、Xbox B，Nintendo A"
 
 msgid "Left Action, Sony Square, Xbox X, Nintendo Y"
-msgstr "左アクション、ソニー□、Xbox X、Nintendo Y"
+msgstr "左アクション。Sony □、Xbox X、Nintendo Y"
 
 msgid "Top Action, Sony Triangle, Xbox Y, Nintendo X"
-msgstr "上アクション, ソニー△, Xbox Y, Nintendo X"
+msgstr "上アクション。Sony △、Xbox Y、Nintendo X"
 
 msgid "Back, Sony Select, Xbox Back, Nintendo -"
-msgstr "Back, ソニー Select, Xbox Back, Nintendo -"
+msgstr "Back。Sony Select、Xbox Back、Nintendo -"
 
 msgid "Guide, Sony PS, Xbox Home"
-msgstr "ガイド, Sony PS, Xbox Home"
+msgstr "Guide。Sony PS、Xbox Home"
 
 msgid "Start, Nintendo +"
-msgstr "スタート, Nintendo +"
+msgstr "Start。Nintendo +"
 
 msgid "Left Stick, Sony L3, Xbox L/LS"
-msgstr "左スティック, ソニー L3, Xbox L/LS"
+msgstr "左スティック。Sony L3、Xbox L/LS"
 
 msgid "Right Stick, Sony R3, Xbox R/RS"
-msgstr "右スティック, ソニー R3, Xbox R/RS"
+msgstr "右スティック。Sony R3、Xbox R/RS"
 
 msgid "Left Shoulder, Sony L1, Xbox LB"
-msgstr "左ショルダー, ソニー L1, Xbox LB"
+msgstr "左ショルダー。Sony L1、Xbox LB"
 
 msgid "Right Shoulder, Sony R1, Xbox RB"
-msgstr "右ショルダー, ソニー R1, Xbox RB"
+msgstr "右ショルダー。Sony R1。Xbox RB"
 
 msgid "D-pad Up"
 msgstr "D-pad 上"
@@ -206,6 +208,12 @@ msgstr "Xbox パドル 4"
 msgid "PS4/5 Touchpad"
 msgstr "PS4/5 タッチパッド"
 
+msgid "Joypad Button %d"
+msgstr "ジョイパッドのボタン %d"
+
+msgid "Pressure:"
+msgstr "圧力:"
+
 msgid "touched"
 msgstr "タッチ"
 
@@ -217,7 +225,7 @@ msgstr "画面 %s (%s) で %s 個のタッチポイント"
 
 msgid ""
 "Screen dragged with %s touch points at position (%s) with velocity of (%s)"
-msgstr "位置 (%s) で速度 (%s) の %s 個のタッチポイントで画面をドラッグしました"
+msgstr "%s個のタッチポイントで画面をドラッグしました。位置:(%s), 速度:(%s)"
 
 msgid "Magnify Gesture at (%s) with factor %s"
 msgstr "拡大ジェスチャー(%s)で倍率 %sにします"
@@ -253,10 +261,10 @@ msgid "Right"
 msgstr "右"
 
 msgid "Up"
-msgstr "上り"
+msgstr "上"
 
 msgid "Down"
-msgstr "下り"
+msgstr "下"
 
 msgid "Page Up"
 msgstr "Page Up"
@@ -268,7 +276,7 @@ msgid "Home"
 msgstr "Home"
 
 msgid "End"
-msgstr "終り"
+msgstr "End"
 
 msgid "Cut"
 msgstr "切り取り"
@@ -283,7 +291,7 @@ msgid "Undo"
 msgstr "元に戻す"
 
 msgid "Redo"
-msgstr "やり直す"
+msgstr "やり直し"
 
 msgid "Completion Query"
 msgstr "自動補完"
@@ -384,9 +392,6 @@ msgstr "キャレットと選択をクリア"
 msgid "Toggle Insert Mode"
 msgstr "インサートモードを切り替える"
 
-msgid "Text Submitted"
-msgstr "送信されたテキスト"
-
 msgid "Duplicate Nodes"
 msgstr "ノードを複製"
 
@@ -469,6 +474,12 @@ msgstr ""
 
 msgid "An action with the name '%s' already exists."
 msgstr "'%s' という名前のアクションがすでに存在します。"
+
+msgid "Cannot Revert - Action is same as initial"
+msgstr "元に戻すことはできません - アクションは初期と同じです"
+
+msgid "Revert Action"
+msgstr "アクションを元に戻す"
 
 msgid "Add Event"
 msgstr "イベントを追加"
@@ -655,6 +666,9 @@ msgstr "トラックパスを変更"
 msgid "Toggle this track on/off."
 msgstr "このトラックの オン/オフ を切り替え。"
 
+msgid "Use Blend"
+msgstr "ブレンドを使用"
+
 msgid "Update Mode (How this property is set)"
 msgstr "Update モード (このプロパティの設定方法)"
 
@@ -724,6 +738,9 @@ msgstr "アニメーションクリップ:"
 msgid "Toggle Track Enabled"
 msgstr "トラックを有効 / 無効"
 
+msgid "Don't Use Blend"
+msgstr "ブレンドを使用しない"
+
 msgid "Continuous"
 msgstr "継続的"
 
@@ -774,6 +791,9 @@ msgstr "アニメーション補間モードの変更"
 
 msgid "Change Animation Loop Mode"
 msgstr "アニメーションのループモードを変更"
+
+msgid "Change Animation Use Blend"
+msgstr "アニメーションのブレンドの使用を変更"
 
 msgid ""
 "Compressed tracks can't be edited or removed. Re-import the animation with "
@@ -1026,18 +1046,6 @@ msgstr "ベジェ曲線を使用"
 msgid "Create RESET Track(s)"
 msgstr "RESETトラックを作成"
 
-msgid "Anim. Optimizer"
-msgstr "アニメーションのオプティマイザー"
-
-msgid "Max. Velocity Error:"
-msgstr "最大ベロシティエラー:"
-
-msgid "Max. Angular Error:"
-msgstr "最大。角度エラー:"
-
-msgid "Max. Precision Error:"
-msgstr "最大精度エラー:"
-
 msgid "Optimize"
 msgstr "最適化"
 
@@ -1061,9 +1069,6 @@ msgstr "スケール比:"
 
 msgid "Select Transition and Easing"
 msgstr "トランジションとイージングを選択"
-
-msgid "Anim. Baker"
-msgstr "アニメーションベイカー"
 
 msgid "Select Tracks to Copy"
 msgstr "コピーするトラックを選択"
@@ -1149,6 +1154,9 @@ msgstr ""
 "対象のメソッドが見つかりません。有効なメソッドを指定するか、ターゲットノード"
 "にスクリプトをアタッチしてください。"
 
+msgid "Attached Script"
+msgstr "スクリプトを添付"
+
 msgid "Connect to Node:"
 msgstr "ノードへの接続:"
 
@@ -1161,11 +1169,26 @@ msgstr "シグナルから:"
 msgid "Filter Nodes"
 msgstr "ノードをフィルタ"
 
+msgid "Go to Source"
+msgstr "ソースに移動"
+
 msgid "Scene does not contain any script."
 msgstr "シーンにはスクリプトが含まれていません。"
 
 msgid "Select Method"
 msgstr "メソッドの選択"
+
+msgid "Filter Methods"
+msgstr "メソッドを絞り込む"
+
+msgid "No method found matching given filters."
+msgstr "指定されたフィルターに一致するメソッドが見つかりませんでした。"
+
+msgid "Script Methods Only"
+msgstr "スクリプト メソッドのみ"
+
+msgid "Compatible Methods Only"
+msgstr "互換性のあるメソッドのみ"
 
 msgid "Remove"
 msgstr "除去"
@@ -1233,6 +1256,9 @@ msgstr "切断"
 
 msgid "Connect a Signal to a Method"
 msgstr "メソッドにシグナルを接続"
+
+msgid "Edit Connection: '%s'"
+msgstr "接続を編集: '%s'"
 
 msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
 msgstr "シグナル %s からすべての接続を除去してもよろしいですか？"
@@ -1425,6 +1451,15 @@ msgstr "エラー:"
 
 msgid "%s Error"
 msgstr "%s エラー"
+
+msgid "%s Error:"
+msgstr "%s エラー:"
+
+msgid "%s Source"
+msgstr "%s ソース"
+
+msgid "%s Source:"
+msgstr "%s ソース:"
 
 msgid "Stack Trace"
 msgstr "スタックトレース"
@@ -1950,6 +1985,9 @@ msgstr "自動読み込みを追加"
 msgid "Path:"
 msgstr "パス:"
 
+msgid "Set path or press \"%s\" to create a script."
+msgstr "パスを設定するか、\"%s \"を押してスクリプトを作成してください。"
+
 msgid "Node Name:"
 msgstr "ノード名:"
 
@@ -2322,9 +2360,6 @@ msgstr "開く"
 
 msgid "Select Current Folder"
 msgstr "現在のフォルダーを選択"
-
-msgid "File exists, overwrite?"
-msgstr "ファイルがすでに存在します。上書きしますか？"
 
 msgid "Select This Folder"
 msgstr "このフォルダーを選択"
@@ -2819,6 +2854,9 @@ msgstr "ロケール国フィルターを変更"
 msgid "Changed Locale Filter Mode"
 msgstr "ロケールフィルターモードを変更"
 
+msgid "[Default]"
+msgstr "[デフォルト]"
+
 msgid "Select a Locale"
 msgstr "ロケールを選択"
 
@@ -2834,11 +2872,19 @@ msgstr "フィルターの編集"
 msgid "Language:"
 msgstr "言語:"
 
+msgctxt "Locale"
+msgid "Script:"
+msgstr "スクリプト:"
+
 msgid "Country:"
 msgstr "国:"
 
 msgid "Language"
 msgstr "言語:"
+
+msgctxt "Locale"
+msgid "Script"
+msgstr "スクリプト"
 
 msgid "Country"
 msgstr "国"
@@ -3621,6 +3667,23 @@ msgid "Select Android sources file"
 msgstr "Androidのソースファイルを選択"
 
 msgid ""
+"This will set up your project for gradle Android builds by installing the "
+"source template to \"res://android/build\".\n"
+"You can then apply modifications and build your own custom APK on export "
+"(adding modules, changing the AndroidManifest.xml, etc.).\n"
+"Note that in order to make gradle builds instead of using pre-built APKs, "
+"the \"Use Gradle Build\" option should be enabled in the Android export "
+"preset."
+msgstr ""
+"この操作は \"res://android/build\" にソーステンプレートをインストールし、"
+"gradle Android ビルドのためにプロジェクトをセットアップします。\n"
+"後から設定に変更を加えたり、エクスポート時にカスタムAPKをビルドできます (モ"
+"ジュールを追加する、AndroidManifest.xmlを変更するなど)。\n"
+"なお、ビルド済みのAPKを使用する代わりにgradleビルドを作成するには、Androidエ"
+"クスポートプリセットで \"Use Gradle Build\" オプションが有効になっている必要"
+"があります。"
+
+msgid ""
 "The Android build template is already installed in this project and it won't "
 "be overwritten.\n"
 "Remove the \"res://android/build\" directory manually before attempting this "
@@ -4014,6 +4077,9 @@ msgstr "ジョイスティック 4 上"
 msgid "Joystick 4 Down"
 msgstr "ジョイスティック 4 下"
 
+msgid "Joypad Axis %d %s (%s)"
+msgstr "ジョイパッドの軸 %d %s (%s)"
+
 msgid "All Devices"
 msgstr "すべてのデバイス"
 
@@ -4025,6 +4091,20 @@ msgstr "入力を確認しています..."
 
 msgid "Filter by event..."
 msgstr "イベントでフィルタ..."
+
+msgid ""
+"Target platform requires 'ETC2/ASTC' texture compression. Enable 'Import "
+"ETC2 ASTC' in Project Settings."
+msgstr ""
+"ターゲットプラットフォームは、'ETC2/ASTC'テクスチャ圧縮を必要とします。プロ"
+"ジェクト設定で 'Import ETC2 ASTC'を有効にします。"
+
+msgid ""
+"Target platform requires 'S3TC/BPTC' texture compression. Enable 'Import "
+"S3TC BPTC' in Project Settings."
+msgstr ""
+"ターゲットプラットフォームは、'S3TC/BPTC' テクスチャ圧縮を必要とします。プロ"
+"ジェクト設定で'Import S3TC BPTC' を有効にします。"
 
 msgid "Project export for platform:"
 msgstr "次のプラットフォーム向けにプロジェクトをエクスポート:"
@@ -4062,17 +4142,14 @@ msgstr "ファイル \"%s\" を作成できませんでした。"
 msgid "Failed to export project files."
 msgstr "プロジェクトファイルをエクスポートできませんでした。"
 
-msgid "Can't open file to read from path \"%s\"."
-msgstr "読み込むファイルをパス \"%s\" から開けません。"
-
-msgid "Can't open executable file from path \"%s\"."
-msgstr "パス \"%s\" から実行可能ファイルを開けません。"
-
 msgid "Can't create encrypted file."
 msgstr "暗号化されたファイルを作成できません。"
 
 msgid "Can't open encrypted file to write."
 msgstr "暗号化されたファイルを開いて書き込むことができません。"
+
+msgid "Can't open file to read from path \"%s\"."
+msgstr "読み込むファイルをパス \"%s\" から開けません。"
 
 msgid "Save ZIP"
 msgstr "ZIPを保存"
@@ -4861,6 +4938,9 @@ msgstr "新しい構成"
 msgid "Remove Variation"
 msgstr "バリエーションを削除"
 
+msgid "Preloaded glyphs: %d"
+msgstr "プリロードされたグリフ: %d"
+
 msgid ""
 "Warning: There are no configurations specified, no glyphs will be pre-"
 "rendered."
@@ -4941,6 +5021,35 @@ msgstr "テキストのシェイプとグリフを追加"
 msgid "Glyphs from the Character Map"
 msgstr "文字コード表のグリフ"
 
+msgid ""
+"Add or remove glyphs from the character map to pre-render list:\n"
+"Note: Some stylistic alternatives and glyph variants do not have one-to-one "
+"correspondence to character, and not shown in this map, use \"Glyphs from "
+"the text\" tab to add these."
+msgstr ""
+"プリレンダーリストに文字マップからグリフを追加または削除します。\n"
+"注意: 文体代替やグリフバリエーションの中には、文字と一対一に対応しておらず、"
+"このマップに表示されていないものがあります。これらを追加するには \"テキストか"
+"らグリフ\" タブを使用します。"
+
+msgid "Dynamically rendered TrueType/OpenType font"
+msgstr "動的にレンダリングされるTrueType/OpenTypeフォント"
+
+msgid "Prerendered multichannel(+true) signed distance field"
+msgstr "プリレンダリングされたマルチチャンネル(+true) 符号付き距離フィールド"
+
+msgid "Can't load font texture:"
+msgstr "フォントテクスチャを読み込むことができません。"
+
+msgid "Image margin too big."
+msgstr "画像の余白が大きすぎます。"
+
+msgid "Character margin too bit."
+msgstr "文字余白が多すぎます。"
+
+msgid "Pre-Import Scene"
+msgstr "シーンを事前インポート"
+
 msgid "Importing Scene..."
 msgstr "シーンをインポート中..."
 
@@ -4959,8 +5068,19 @@ msgstr "無効または壊れたインポート済スクリプト(コンソー�
 msgid "Error running post-import script:"
 msgstr "インポート済スクリプトの実行中にエラー:"
 
+msgid "Did you return a Node-derived object in the `_post_import()` method?"
+msgstr ""
+"`_post_import()` メソッド内で、Nodeを継承したオブジェクトを返しましたか？"
+
 msgid "Saving..."
 msgstr "保存中..."
+
+msgid ""
+"Error importing GLSL shader file: '%s'. Open the file in the filesystem dock "
+"in order to see the reason."
+msgstr ""
+"GLSLシェーダーファイルのインポート中にエラーが発生しました: '%s', ファイルシ"
+"ステムでファイルを開いて原因を確認してください。"
 
 msgid ""
 "%s: Texture detected as used as a normal map in 3D. Enabling red-green "
@@ -4970,11 +5090,21 @@ msgstr ""
 "クスチャ圧縮を有効にしてメモリ使用量を削減します（青チャンネルは破棄されま"
 "す）。"
 
+msgid "2D/3D (Auto-Detect)"
+msgstr "2D/3D (自動切換え)"
+
 msgid "2D"
 msgstr "2D"
 
 msgid "3D"
 msgstr "3D"
+
+msgid ""
+"Type: %s\n"
+"Import ID: %s"
+msgstr ""
+"型: %s\n"
+"インポートID: %s"
 
 msgid "Error opening scene"
 msgstr "シーンを開く際にエラーが発生しました"
@@ -5051,6 +5181,9 @@ msgid ""
 msgstr ""
 "ファイルシステムやインスペクターにあるリソースファイルを選択してインポート設"
 "定を調整します。"
+
+msgid "Joypad Buttons"
+msgstr "ジョイパッドのボタン"
 
 msgid "Device:"
 msgstr "デバイス:"
@@ -5852,6 +5985,12 @@ msgstr "グループ化済み"
 msgid "Add Node Here"
 msgstr "ここにノードを追加"
 
+msgid "Paste Node(s) Here"
+msgstr "ここにノードを貼り付け"
+
+msgid "Move Node(s) Here"
+msgstr "ここにノードを移動"
+
 msgid "Moving:"
 msgstr "移動:"
 
@@ -6352,6 +6491,23 @@ msgstr ""
 "読み込みされます。\n"
 "リモートのデバイス上で使用する場合、ネットワークファイルシステムのオプション"
 "も有効であればより効率的になります。"
+
+msgid ""
+"When this option is enabled, the editor debug server will stay open and "
+"listen for new sessions started outside of the editor itself."
+msgstr ""
+"このオプションを有効にすると、デバッガーは起動したままとなり、エディター以外"
+"で開始された新しい実行を監視するようになります。"
+
+msgid "Run Multiple Instances"
+msgstr "実行インスタンス数"
+
+msgid "Run %d Instance"
+msgid_plural "Run %d Instances"
+msgstr[0] "インスタンス %d個"
+
+msgid "Overrides (%d)"
+msgstr "上書き (%d)"
 
 msgid " - Variation"
 msgstr " - バリエーション"
@@ -9326,9 +9482,6 @@ msgstr "アクション デッドゾーンを変更"
 msgid "Erase Input Action"
 msgstr "入力アクションを消去"
 
-msgid "Rename Input Action Event"
-msgstr "入力アクションイベントの名前を変更する"
-
 msgid "Project Settings (project.godot)"
 msgstr "プロジェクト設定 (project.godot)"
 
@@ -10091,6 +10244,12 @@ msgstr "ジオメトリを解析しています..."
 msgid "Done!"
 msgstr "完了！"
 
+msgid "Rename Action"
+msgstr "アクション名を変更"
+
+msgid "Rename Actions Localized name"
+msgstr "ローカライズされるアクション名を変更"
+
 msgid "Error loading %s: %s."
 msgstr "%s のロード中にエラーが発生しました: %s"
 
@@ -10838,9 +10997,6 @@ msgstr ""
 "色: #%s\n"
 "左クリック: 色をセット"
 
-msgid "Pick a color from the editor window."
-msgstr "エディターウィンドウから色を選択。"
-
 msgid "Select a picker shape."
 msgstr "ピッカーシェイプを選択"
 
@@ -10876,9 +11032,6 @@ msgstr "警告！"
 
 msgid "Please Confirm..."
 msgstr "確認"
-
-msgid "Must use a valid extension."
-msgstr "有効な拡張子を使用する必要があります。"
 
 msgid "Enable grid minimap."
 msgstr "グリッドミニマップを有効にする。"

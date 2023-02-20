@@ -44,8 +44,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-02-10 10:44+0000\n"
-"Last-Translator: abcabcc <xmmandxpp@outlook.com>\n"
+"PO-Revision-Date: 2023-02-18 17:29+0000\n"
+"Last-Translator: Eric K <eric900601@gmail.com>\n"
 "Language-Team: Chinese (Traditional) <https://hosted.weblate.org/projects/"
 "godot-engine/godot-properties/zh_Hant/>\n"
 "Language: zh_TW\n"
@@ -226,6 +226,9 @@ msgstr "因素"
 msgid "Button Index"
 msgstr "按鍵索引"
 
+msgid "Double Click"
+msgstr "雙擊"
+
 msgid "Tilt"
 msgstr "傾斜"
 
@@ -289,9 +292,6 @@ msgstr "分頁大小"
 msgid "Blocking Mode Enabled"
 msgstr "啟用阻塞模式"
 
-msgid "Connection"
-msgstr "連接"
-
 msgid "Read Chunk Size"
 msgstr "讀取區塊大小"
 
@@ -309,9 +309,6 @@ msgstr "輸入緩衝區大小上限"
 
 msgid "Output Buffer Max Size"
 msgstr "輸出緩衝區大小上限"
-
-msgid "Stream Peer"
-msgstr "串流使用者"
 
 msgid "Resource"
 msgstr "資源"
@@ -336,9 +333,6 @@ msgstr "種子"
 
 msgid "State"
 msgstr "狀態"
-
-msgid "Source Code"
-msgstr "原始碼"
 
 msgid "Worker Pool"
 msgstr "工作池"
@@ -430,15 +424,6 @@ msgstr "存取"
 msgid "Display Mode"
 msgstr "顯示模式"
 
-msgid "Current Dir"
-msgstr "目前目錄"
-
-msgid "Current File"
-msgstr "所在檔案"
-
-msgid "Current Path"
-msgstr "所在目錄"
-
 msgid "Show Hidden Files"
 msgstr "顯示隱藏的檔案"
 
@@ -520,17 +505,11 @@ msgstr "專注模式"
 msgid "Base Type"
 msgstr "基礎型別"
 
-msgid "Edited Resource"
-msgstr "已經編輯資"
-
 msgid "Editable"
 msgstr "可編輯"
 
 msgid "Toggle Mode"
 msgstr "切換模式"
-
-msgid "Script Owner"
-msgstr "腳本所有者"
 
 msgid "Editor Language"
 msgstr "編輯器語言"
@@ -675,6 +654,9 @@ msgstr "顏色主題"
 
 msgid "Appearance"
 msgstr "外觀"
+
+msgid "Caret"
+msgstr "輸入指標"
 
 msgid "Caret Blink"
 msgstr "插入符閃爍"
@@ -1201,6 +1183,9 @@ msgstr "密碼"
 msgid "Compress"
 msgstr "壓縮"
 
+msgid "Language"
+msgstr "語言"
+
 msgid "Outline Size"
 msgstr "輪廓尺寸"
 
@@ -1397,7 +1382,7 @@ msgid "Available URLs"
 msgstr "可用 URL"
 
 msgid "Unset"
-msgstr "未設置"
+msgstr "未設定"
 
 msgid "Error"
 msgstr "錯誤"
@@ -1467,6 +1452,15 @@ msgstr "警告"
 
 msgid "ID"
 msgstr "ID"
+
+msgid "Texture"
+msgstr "紋理貼圖"
+
+msgid "Separation"
+msgstr "間距"
+
+msgid "Speed"
+msgstr "速度"
 
 msgid "Version Control"
 msgstr "版本控制"
@@ -1546,17 +1540,14 @@ msgstr "iOS"
 msgid "Hide Home Indicator"
 msgstr "隱藏 Home 橫條"
 
-msgid "Input Devices"
-msgstr "輸入裝置"
-
-msgid "Pointing"
-msgstr "指點"
-
 msgid "Boot Splash"
 msgstr "啟動畫面"
 
 msgid "BG Color"
 msgstr "背景顏色"
+
+msgid "Input Devices"
+msgstr "輸入裝置"
 
 msgid "Environment"
 msgstr "環境"
@@ -1584,6 +1575,9 @@ msgstr "緩衝"
 
 msgid "Agile Event Flushing"
 msgstr "敏捷事件刷新"
+
+msgid "Pointing"
+msgstr "指點"
 
 msgid "Emulate Touch From Mouse"
 msgstr "以滑鼠模擬觸控"
@@ -1952,7 +1946,7 @@ msgid "Reference Space Type"
 msgstr "參照空間類型"
 
 msgid "Android"
-msgstr "安卓"
+msgstr "Android"
 
 msgid "Android SDK Path"
 msgstr "Android SDK 路徑"
@@ -2128,6 +2122,9 @@ msgstr "憑證"
 msgid "Splash Screen"
 msgstr "啟動畫面"
 
+msgid "Web"
+msgstr "Web"
+
 msgid "HTTP Host"
 msgstr "HTTP 主機"
 
@@ -2167,11 +2164,14 @@ msgstr "目前"
 msgid "Max Distance"
 msgstr "最大距離"
 
+msgid "Left"
+msgstr "左"
+
 msgid "Top"
 msgstr "頂端"
 
-msgid "Speed"
-msgstr "速度"
+msgid "Right"
+msgstr "右"
 
 msgid "Horizontal Enabled"
 msgstr "已啟用水平"
@@ -2193,9 +2193,6 @@ msgstr "時間"
 
 msgid "Randomness"
 msgstr "隨機性"
-
-msgid "Texture"
-msgstr "紋理貼圖"
 
 msgid "Sphere Radius"
 msgstr "球體半徑"
@@ -2226,15 +2223,6 @@ msgstr "路徑最大距離"
 
 msgid "Max Speed"
 msgstr "最大速度"
-
-msgid "Rotation Degrees"
-msgstr "旋轉角度"
-
-msgid "Global Rotation Degrees"
-msgstr "全域旋轉角度"
-
-msgid "Global Scale"
-msgstr "全域縮放"
 
 msgid "Base Offset"
 msgstr "基礎偏移"
@@ -2378,7 +2366,7 @@ msgid "Extra Cull Margin"
 msgstr "額外剔除邊距"
 
 msgid "End"
-msgstr "結束"
+msgstr "頁尾"
 
 msgid "World Scale"
 msgstr "世界縮放"
@@ -2509,9 +2497,6 @@ msgstr "填充角度"
 msgid "Hide Root"
 msgstr "隱藏根節點"
 
-msgid "Volume"
-msgstr "體積"
-
 msgid "Z Index"
 msgstr "Z 索引"
 
@@ -2526,15 +2511,6 @@ msgstr "傳輸模式"
 
 msgid "Transfer Channel"
 msgstr "傳輸通道"
-
-msgid "Owner"
-msgstr "擁有者"
-
-msgid "Multiplayer"
-msgstr "多人"
-
-msgid "Current Scene"
-msgstr "目前場景"
 
 msgid "Autostart"
 msgstr "自動開始"
@@ -2601,9 +2577,6 @@ msgstr "分隔線字體"
 
 msgid "V Separation"
 msgstr "垂直分隔"
-
-msgid "Separation"
-msgstr "間距"
 
 msgid "Title Offset"
 msgstr "標題偏移量"

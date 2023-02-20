@@ -113,13 +113,18 @@
 # nuclehon <benjamin.deslandes1@gmail.com>, 2023.
 # Siandfrance <Siandfrance@gmail.com>, 2023.
 # Thalya Gauvrit <skar0ps.dev@gmail.com>, 2023.
+# Malo Barbot <moy_97@hotmail.fr>, 2023.
+# Quentin Franchi <general@quentinfranchi.com>, 2023.
+# Godot Trad FR <godottrad@mailo.com>, 2023.
+# Ponthieu <7hip.po6@orange.fr>, 2023.
+# Hipolyte Ponthieu <7hip.po6@orange.fr>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-02-10 14:12+0000\n"
-"Last-Translator: Siandfrance <Siandfrance@gmail.com>\n"
+"PO-Revision-Date: 2023-02-20 00:45+0000\n"
+"Last-Translator: Hipolyte Ponthieu <7hip.po6@orange.fr>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
 "Language: fr\n"
@@ -130,7 +135,7 @@ msgstr ""
 "X-Generator: Weblate 4.16-dev\n"
 
 msgid "Unset"
-msgstr "Vider"
+msgstr "Non défini"
 
 msgid "Physical"
 msgstr "Physique"
@@ -270,11 +275,17 @@ msgstr "Palette Xbox 4"
 msgid "PS4/5 Touchpad"
 msgstr "Pavé tactile PS4/5"
 
+msgid "Joypad Button %d"
+msgstr "Bouton de joystick %d"
+
+msgid "Pressure:"
+msgstr "Pression :"
+
 msgid "touched"
 msgstr "Touché"
 
 msgid "released"
-msgstr "Relâché"
+msgstr "relâché"
 
 msgid "Screen %s at (%s) with %s touch points"
 msgstr "Écran %s à (%s) avec %s points de contact"
@@ -387,6 +398,18 @@ msgstr "Supprimer mot"
 msgid "Delete all to Right"
 msgstr "Tout supprimer à droite"
 
+msgid "Caret Left"
+msgstr "Curseur à Gauche"
+
+msgid "Caret Word Right"
+msgstr "Curseur à droite du mot"
+
+msgid "Caret Up"
+msgstr "Déplacer le curseur vers le haut"
+
+msgid "Caret Add Above"
+msgstr "Ajouter un curseur au-dessus"
+
 msgid "Scroll Up"
 msgstr "Défilement vers le haut"
 
@@ -402,8 +425,8 @@ msgstr "Sélectionner les mots sous le caret"
 msgid "Add Selection for Next Occurrence"
 msgstr "Ajouter la Sélection pour la Prochaine Occurence"
 
-msgid "Text Submitted"
-msgstr "Texte Proposé"
+msgid "Toggle Insert Mode"
+msgstr "Basculer en mode insertion"
 
 msgid "Duplicate Nodes"
 msgstr "Dupliquer le(s) nœud(s)"
@@ -486,6 +509,11 @@ msgstr ""
 msgid "An action with the name '%s' already exists."
 msgstr "Une action avec le nom « %s » existe déjà."
 
+msgid "Cannot Revert - Action is same as initial"
+msgstr ""
+"Impossible de revenir en arrière - L'action est identique à ce qui était "
+"initialement"
+
 msgid "Add Event"
 msgstr "Ajouter un évènement"
 
@@ -539,6 +567,15 @@ msgstr "Dupliquer la(les) clé(s) sélectionnée(s)"
 
 msgid "Delete Selected Key(s)"
 msgstr "Supprimer (la)les clé(s) sélectionnée(s)"
+
+msgid "Make Handles Mirrored"
+msgstr "Inverser les Anses"
+
+msgid "Make Handles Balanced (Auto Tangent)"
+msgstr "Équilibrer les Anses (Tangente Automatique)"
+
+msgid "Make Handles Mirrored (Auto Tangent)"
+msgstr "Appliquer manipulations en miroir (Auto-Tangente)"
 
 msgid "Add Bezier Point"
 msgstr "Ajouter un point de Bézier"
@@ -633,6 +670,18 @@ msgstr "Poignée d'entrée :"
 msgid "Out-Handle:"
 msgstr "Poignée de sortie :"
 
+msgid "Handle mode: Free\n"
+msgstr "Mode de manipulation: Libre\n"
+
+msgid "Handle mode: Linear\n"
+msgstr "Mode de manipulation: Linéaire\n"
+
+msgid "Handle mode: Balanced\n"
+msgstr "Mode de manipulation: Équilibré\n"
+
+msgid "Handle mode: Mirrored\n"
+msgstr "Mode de manipulation: En miroir\n"
+
 msgid "Stream:"
 msgstr "Flux :"
 
@@ -647,6 +696,9 @@ msgstr "Clip d'animation :"
 
 msgid "Toggle Track Enabled"
 msgstr "Basculement de piste activé"
+
+msgid "Don't Use Blend"
+msgstr "Ne pas utiliser de transitions"
 
 msgid "Continuous"
 msgstr "Continu"
@@ -855,12 +907,6 @@ msgstr "Utiliser les courbes de Bézier"
 msgid "Create RESET Track(s)"
 msgstr "Créer des pistes RESET"
 
-msgid "Anim. Optimizer"
-msgstr "Optimiser l'animation"
-
-msgid "Max. Angular Error:"
-msgstr "Erreur angulaire max. :"
-
 msgid "Optimize"
 msgstr "Optimiser"
 
@@ -881,6 +927,9 @@ msgstr "Nettoyer"
 
 msgid "Scale Ratio:"
 msgstr "Ratio d'échelle :"
+
+msgid "Select Transition and Easing"
+msgstr "Sélectionner transition et fondu"
 
 msgid "Select Tracks to Copy"
 msgstr "Sélectionner les pistes à copier"
@@ -905,6 +954,16 @@ msgstr "Numéro de ligne :"
 
 msgid "%d replaced."
 msgstr "%d remplacé."
+
+msgid "%d match"
+msgid_plural "%d matches"
+msgstr[0] "%d correspondance trouvée"
+msgstr[1] "%d correspondances trouvées"
+
+msgid "%d of %d match"
+msgid_plural "%d of %d matches"
+msgstr[0] "%d de %d correspondance trouvée"
+msgstr[1] "%d de %d correspondances trouvées"
 
 msgid "Match Case"
 msgstr "Sensible à la casse"
@@ -969,6 +1028,9 @@ msgstr "La scène ne comprend pas de script."
 
 msgid "Select Method"
 msgstr "Sélectionner une méthode"
+
+msgid "No method found matching given filters."
+msgstr "Aucune méthode ne correspond aux filtres sélectionnés."
 
 msgid "Remove"
 msgstr "Supprimer"
@@ -1633,6 +1695,9 @@ msgstr ""
 msgid "Must not collide with an existing global constant name."
 msgstr "Ne doit pas entrer en collision avec une constante globale existante."
 
+msgid "Keyword cannot be used as an Autoload name."
+msgstr "Le mot-clé ne peut pas être utilisé comme nom d'Autoload."
+
 msgid "Autoload '%s' already exists!"
 msgstr "L'autoload « %s » existe déjà !"
 
@@ -1662,6 +1727,9 @@ msgstr ""
 msgid "Path:"
 msgstr "Chemin :"
 
+msgid "Set path or press \"%s\" to create a script."
+msgstr "Définir le chemin d'accès ou appuyer sur \"%s\" pour créer un script."
+
 msgid "Node Name:"
 msgstr "Nom de nœud :"
 
@@ -1683,6 +1751,59 @@ msgstr "OpenGL"
 msgid "Vulkan"
 msgstr "Vulkan"
 
+msgid "Multi-channel Signed Distance Field Font Rendering"
+msgstr "Rendu de police multicanal par champ de distance signée"
+
+msgid "3D Nodes as well as RenderingServer access to 3D features."
+msgstr "Accés de 3D Nodes et RenderingServer aux fonctionnalités 3D."
+
+msgid ""
+"OpenGL back-end (if disabled, the RenderingDevice back-end is required)."
+msgstr ""
+"Back-end OpenGL (si désactivé, le back-end RenderingDevice est nécessaire)."
+
+msgid ""
+"Fallback implementation of Text Server\n"
+"Supports basic text layouts."
+msgstr ""
+"Implémentation de secours du Serveur de Texte\n"
+"Prend en charge les mises en page de texte basiques."
+
+msgid ""
+"Text Server implementation powered by ICU and HarfBuzz libraries.\n"
+"Supports complex text layouts, BiDi, and contextual OpenType font features."
+msgstr ""
+"Implémentation Text Server au travers de ICU et des bibliothèques HarfBuzz.\n"
+"Prise en charge de mises en page de texte complexes, BiDi, et des "
+"fonctionnalités contextuelles des polices OpenType."
+
+msgid ""
+"TrueType, OpenType, Type 1, and WOFF1 font format support using FreeType "
+"library (if disabled, WOFF2 support is also disabled)."
+msgstr ""
+"Prise en charge des formats de polices TrueType, OpenType, Type 1 et WOFF1 "
+"par l'utilisation de la bibliothèque FreeType (si désactivé, la comptabilité "
+"du format WOFF2 l'est aussi)."
+
+msgid "WOFF2 font format support using FreeType and Brotli libraries."
+msgstr ""
+"Prise en charge du format de police WOFF2 par les bibliothèques FreeType et "
+"Brottli."
+
+msgid ""
+"Multi-channel signed distance field font rendering support using msdfgen "
+"library (pre-rendered MSDF fonts can be used even if this option disabled)."
+msgstr ""
+"Prise en charge du rendu multicanal des polices de champs de distance signée "
+"par la bibliothèque msdfgen (les polices MSDF pré-rendues peuvent être "
+"utilisées même si cette option est désactivée)."
+
+msgid "Text Rendering and Font Options:"
+msgstr "Options sur le Rendu du Texte et les Polices :"
+
+msgid "File saving failed."
+msgstr "Echec de l'enregistrement du fichier."
+
 msgid "Nodes and Classes:"
 msgstr "Nœuds et classes :"
 
@@ -1698,11 +1819,20 @@ msgstr "Nouveau"
 msgid "Save"
 msgstr "Enregistrer"
 
+msgid "Profile:"
+msgstr "Profil:"
+
 msgid "Reset to Defaults"
 msgstr "Réinitialiser"
 
+msgid "Please Confirm:"
+msgstr "Veuillez confirmer :"
+
 msgid "Export Profile"
 msgstr "Profil d'exportation"
+
+msgid "Edit Build Configuration Profile"
+msgstr "Modifier le profil de configuration de build"
 
 msgid "Paste Params"
 msgstr "Coller les paramètres"
@@ -1894,9 +2024,6 @@ msgstr "Ouvrir"
 msgid "Select Current Folder"
 msgstr "Sélectionner le dossier courant"
 
-msgid "File exists, overwrite?"
-msgstr "Le fichier existe, l'écraser ?"
-
 msgid "Select This Folder"
 msgstr "Sélectionner ce dossier"
 
@@ -2015,6 +2142,9 @@ msgstr "Ré-importation des assets"
 msgid "Experimental"
 msgstr "Expérimental"
 
+msgid "Error codes returned:"
+msgstr "Codes d'erreur renvoyés :"
+
 msgid "Top"
 msgstr "Dessus"
 
@@ -2041,6 +2171,9 @@ msgstr "écrase %s :"
 
 msgid "default:"
 msgstr "par défaut :"
+
+msgid "Operators"
+msgstr "Opérateurs"
 
 msgid "Theme Properties"
 msgstr "Propriétés du thème"
@@ -2980,6 +3113,13 @@ msgstr "Raccourcis"
 msgid "Binding"
 msgstr "Liaison"
 
+msgid ""
+"Hold %s to round to integers.\n"
+"Hold Shift for more precise changes."
+msgstr ""
+"Maintenir %s pour arrondir à l'entier près.\n"
+"Maintenir Maj. pour des changements plus précis."
+
 msgid "All Devices"
 msgstr "Tous les périphérique"
 
@@ -3615,6 +3755,9 @@ msgstr "Réimporter"
 msgid "Offset:"
 msgstr "Décalage :"
 
+msgid "Pre-render Configurations"
+msgstr "Configurations de pré-rendus"
+
 msgid "Importing Scene..."
 msgstr "Importation de la scène…"
 
@@ -3649,6 +3792,11 @@ msgstr "2D"
 
 msgid "3D"
 msgstr "3D"
+
+msgid "Set paths to save animations as resource files on Reimport"
+msgstr ""
+"Définir les chemins pour sauvegarder les animations en tant que fichiers de "
+"ressources lors de la réimportation"
 
 msgid "Meshes"
 msgstr "Maillages"
@@ -3817,6 +3965,9 @@ msgstr "Réaffectations (remaps) par langue :"
 
 msgid "Locale"
 msgstr "Localisation"
+
+msgid "Set %s on %d nodes"
+msgstr "Définir %s sur les nœuds %d"
 
 msgid "Select a single node to edit its signals and groups."
 msgstr "Sélectionnez un seul nœud pour éditer ses signaux et groupes."
@@ -4050,8 +4201,17 @@ msgstr "Ajouter un nœud..."
 msgid "Enable Filtering"
 msgstr "Activer le filtrage"
 
+msgid "Animation name can't be empty."
+msgstr "Le nom de l'animation ne peut pas être vide."
+
 msgid "Load Animation"
 msgstr "Charger l'animation"
+
+msgid "Invalid AnimationLibrary file."
+msgstr "Fichier AnimationLibrary non valide."
+
+msgid "Invalid Animation file."
+msgstr "Fichier d'animation non valide."
 
 msgid "Animation Name:"
 msgstr "Nom de l'animation :"
@@ -4061,6 +4221,19 @@ msgstr "Animation collée"
 
 msgid "Open in Inspector"
 msgstr "Ouvrir dans l'Inspecteur"
+
+msgid "Paste Animation to Library from clipboard"
+msgstr "Coller l'animation dans la Bibliothèque à partir du presse-papiers"
+
+msgid "Save animation library to resource on disk"
+msgstr ""
+"Sauvegarder la bibliothèque d'animations dans une ressource sur le disque"
+
+msgid "Copy animation to clipboard"
+msgstr "Copier l'animation dans le presse-papiers"
+
+msgid "Save animation to resource on disk"
+msgstr "Sauvegarder l'animation en tant que ressource sur le disque"
 
 msgid "Storage"
 msgstr "Stockage"
@@ -4313,6 +4486,9 @@ msgstr "Vérification du hachage SHA-256 échouée"
 msgid "Asset Download Error:"
 msgstr "Erreur dans le téléchargement d'une ressource :"
 
+msgid "Ready to install!"
+msgstr "Prêt à être installé !"
+
 msgid "Downloading (%s / %s)..."
 msgstr "Téléchargement (%s / %s)..."
 
@@ -4533,7 +4709,7 @@ msgid "Paste Pose"
 msgstr "Coller la pose"
 
 msgid "Clear Guides"
-msgstr "Effacé Guides"
+msgstr "Effacer les Guides"
 
 msgid "Zoom to 3.125%"
 msgstr "Zoomer à 3.125%"
@@ -5004,6 +5180,14 @@ msgstr ""
 "Quand elle est utilisée à distance sur un périphérique, cette option est "
 "plus efficace avec le système de fichiers réseau."
 
+msgid "Run %d Instance"
+msgid_plural "Run %d Instances"
+msgstr[0] "Exécuter une instance %d"
+msgstr[1] "Exécuter des instances %d"
+
+msgid " - Variation"
+msgstr " - Variation"
+
 msgid "Convert to CPUParticles2D"
 msgstr "Convertir en CPUParticles2D"
 
@@ -5141,6 +5325,19 @@ msgstr "Aucun maillage à déboguer."
 
 msgid "Mesh has no UV in layer %d."
 msgstr "Le maillage n'a pas d'UV dans la couche %d."
+
+msgid "MeshInstance3D lacks a Mesh."
+msgstr "Le MeshInstance3D n'a pas de maillage."
+
+msgid "Mesh has no surface to create outlines from."
+msgstr ""
+"Le maillage n'a pas de surfaces où des contours pourraient être créées."
+
+msgid "Mesh primitive type is not PRIMITIVE_TRIANGLES."
+msgstr "Le type de maillage primitif n'est pas PRIMITIVE_TRIANGLES."
+
+msgid "Could not create outline."
+msgstr "Impossible de créer le contour."
 
 msgid "Create Outline"
 msgstr "Créer le contour"
@@ -5430,6 +5627,9 @@ msgstr "L'insertion de clé est désactivée (pas de clé insérée)."
 
 msgid "Animation Key Inserted."
 msgstr "Clé d'animation insérée."
+
+msgid "Objects: %d\n"
+msgstr "Objets : %d\n"
 
 msgid "Top View."
 msgstr "Vue de dessus."
@@ -6342,6 +6542,9 @@ msgstr "Créer un LightOccluder2D"
 msgid "LightOccluder2D Preview"
 msgstr "Prévisualisation du LightOccluder2D"
 
+msgid "Can't convert a Sprite2D from a foreign scene."
+msgstr "Impossible de convertir un Sprite2D à partir d'une scène étrangère."
+
 msgid "Can't convert a sprite using animation frames to mesh."
 msgstr ""
 "Impossible de convertir un sprite en utilisant des images d'animation à "
@@ -6425,6 +6628,9 @@ msgstr "(vide)"
 msgid "Animations:"
 msgstr "Animations :"
 
+msgid "Delete Animation"
+msgstr "Supprimer l'animation"
+
 msgid "Animation Frames:"
 msgstr "Trames d'animation :"
 
@@ -6476,8 +6682,18 @@ msgstr "Pas (s) :"
 msgid "Styleboxes"
 msgstr "Styleboxes"
 
+msgid "1 color"
+msgid_plural "{num} colors"
+msgstr[0] "1 couleur"
+msgstr[1] "{num} couleurs"
+
 msgid "No colors found."
 msgstr "Pas de couleurs trouvées."
+
+msgid "1 constant"
+msgid_plural "{num} constants"
+msgstr[0] "1 constante"
+msgstr[1] "{num} constantes"
 
 msgid "No constants found."
 msgstr "Pas de constantes trouvées."
@@ -6485,11 +6701,26 @@ msgstr "Pas de constantes trouvées."
 msgid "No fonts found."
 msgstr "Pas de polices trouvées."
 
+msgid "1 font size"
+msgid_plural "{num} font sizes"
+msgstr[0] "1 taille de police"
+msgstr[1] "{num} tailles de police"
+
 msgid "No icons found."
 msgstr "Pas d'icônes trouvées."
 
+msgid "1 stylebox"
+msgid_plural "{num} styleboxes"
+msgstr[0] "1 boîte de style"
+msgstr[1] "{num} boîtes de style"
+
 msgid "No styleboxes found."
 msgstr "Pas de styleboxes trouvées."
+
+msgid "{num} currently selected"
+msgid_plural "{num} currently selected"
+msgstr[0] "{num} actuellement sélectionné(s)"
+msgstr[1] "{num} actuellement sélectionné(s)"
 
 msgid "Nothing was selected for the import."
 msgstr "Rien n'a été sélectionné pour l'importation."
@@ -7757,6 +7988,65 @@ msgid "Can't open project at '%s'."
 msgstr "Impossible d'ouvrir le projet à \"%s\"."
 
 msgid ""
+"The selected project \"%s\" does not specify its supported Godot version in "
+"its configuration file (\"project.godot\").\n"
+"\n"
+"Project path: %s\n"
+"\n"
+"If you proceed with opening it, it will be converted to Godot's current "
+"configuration file format.\n"
+"\n"
+"Warning: You won't be able to open the project with previous versions of the "
+"engine anymore."
+msgstr ""
+"Le fichier de configuration de projet ci-dessous n'indique pas par quelle "
+"version de Godot il a été généré.\n"
+"\n"
+"Chemin du projet : %s\n"
+"\n"
+"Si vous choisissez de l'ouvrir, il sera converti vers le format actuel de "
+"fichier de configuration de Godot.\n"
+"\n"
+"Attention : Il ne sera plus possible d'ouvrir ce projet avec les précédentes "
+"versions du moteur."
+
+msgid ""
+"The selected project \"%s\" was generated by an older engine version, and "
+"needs to be converted for this version.\n"
+"\n"
+"Project path: %s\n"
+"\n"
+"Do you want to convert it?\n"
+"\n"
+"Warning: You won't be able to open the project with previous versions of the "
+"engine anymore."
+msgstr ""
+"Le fichier de configuration de projet ci-dessous a été généré par une "
+"précédente version du moteur, et doit être mis à niveau pour cette version.\n"
+"\n"
+"Chemin du projet : %s\n"
+"\n"
+"Souhaitez-vous le convertir ?\n"
+"\n"
+"Attention : Il ne sera plus possible d'ouvrir ce projet avec les précédentes "
+"versions du moteur de jeu."
+
+msgid ""
+"Can't open project \"%s\" at the following path:\n"
+"\n"
+"%s\n"
+"\n"
+"The project settings were created by a newer engine version, whose settings "
+"are not compatible with this version."
+msgstr ""
+"Impossible d'ouvrir le projet \"%s\" au chemin suivant :\n"
+"\n"
+"%s\n"
+"\n"
+"Ce fichier de configuration de projet a été créé par une version ultérieure "
+"du moteur, dont les paramètres ne sont pas compatibles avec cette version."
+
+msgid ""
 "Can't run project: no main scene defined.\n"
 "Please edit the project and set the main scene in the Project Settings under "
 "the \"Application\" category."
@@ -7879,11 +8169,11 @@ msgstr "Modifier la zone morte de l'action"
 msgid "Erase Input Action"
 msgstr "Effacer l'action d'entrée"
 
-msgid "Rename Input Action Event"
-msgstr "Renommer l'événement d'action d'entrée"
-
 msgid "Project Settings (project.godot)"
 msgstr "Paramètres du projet (project.godot)"
+
+msgid "Select a Setting or Type its Name"
+msgstr "Sélectionnez un paramètre ou tapez son nom"
 
 msgid "Input Map"
 msgstr "Contrôles"
@@ -8255,6 +8545,19 @@ msgstr ""
 "dans un chemin de Nœud.\n"
 "Cliquer pour désactiver cela."
 
+msgid "Node has one connection."
+msgid_plural "Node has {num} connections."
+msgstr[0] "Le nœud a une connexion."
+msgstr[1] "Le nœud a {num} connexions."
+
+msgid "Node is in this group:"
+msgid_plural "Node is in the following groups:"
+msgstr[0] "Le nœud fait partie du groupe :"
+msgstr[1] "Le nœud fait partie des groupes :"
+
+msgid "Click to show signals dock."
+msgstr "Cliquez pour afficher le dock des signaux."
+
 msgid "Open Script:"
 msgstr "Ouvrir le script :"
 
@@ -8384,6 +8687,9 @@ msgstr "Chemin de base invalide."
 
 msgid "Wrong extension chosen."
 msgstr "Choix d'extension erroné."
+
+msgid "Global shader parameter '%s' already exists'"
+msgstr "Le paramètre global de shaders '%s' existe déjà"
 
 msgid "Change Cylinder Radius"
 msgstr "Changer le rayon du cylindre"
@@ -8549,6 +8855,9 @@ msgstr "Taille"
 
 msgid "Network Profiler"
 msgstr "Profileur réseau"
+
+msgid "Delete Property?"
+msgstr "Supprimer la propriété ?"
 
 msgid "A NavigationMesh resource must be set or created for this node to work."
 msgstr ""
@@ -8773,6 +9082,13 @@ msgstr "Impossible de le programme apksigner."
 
 msgid "'apksigner' returned with error #%d"
 msgstr "'apksigner' est retourné avec l'erreur #%d"
+
+msgid ""
+"output: \n"
+"%s"
+msgstr ""
+"Sortie : \n"
+"%s"
 
 msgid "Verifying %s..."
 msgstr "Vérification de %s..."
@@ -9414,6 +9730,13 @@ msgstr ""
 "Le nœud PathFollow2D ne fonctionne que s'il est défini en tant qu'enfant "
 "d'un nœud de type Path2D."
 
+msgid ""
+"A PhysicalBone2D only works with a Skeleton2D or another PhysicalBone2D as a "
+"parent node!"
+msgstr ""
+"Un nœud de type PhysicalBone2D ne fonctionne qu'avec un Skeleton2D ou un "
+"autre PhysicalBone2D en tant que nœud parent !"
+
 msgid "Path property must point to a valid Node2D node to work."
 msgstr ""
 "La propriété Path doit pointer vers un nœud de type Node2D valide pour "
@@ -9433,6 +9756,28 @@ msgstr ""
 "Cet os ne dispose pas d'une position de repos appropriée. Accédez au nœud "
 "Skeleton2D et définissez-en une."
 
+msgid ""
+"CollisionPolygon3D only serves to provide a collision shape to a "
+"CollisionObject3D derived node.\n"
+"Please only use it as a child of Area3D, StaticBody3D, RigidBody3D, "
+"CharacterBody3D, etc. to give them a shape."
+msgstr ""
+"CollisionPolygon3D sert uniquement à fournir une forme de collision à un "
+"nœud dérivé de CollisionObject3D.\n"
+"Veuillez l'utiliser uniquement comme enfant d'Area3D, StaticBody3D, "
+"RigidBody3D, CharacterBody3D, etc. pour leur donner une forme."
+
+msgid ""
+"CollisionShape3D only serves to provide a collision shape to a "
+"CollisionObject3D derived node.\n"
+"Please only use it as a child of Area3D, StaticBody3D, RigidBody3D, "
+"CharacterBody3D, etc. to give them a shape."
+msgstr ""
+"CollisionShape3D sert uniquement à fournir une forme de collision à un nœud "
+"dérivé de CollisionObject3D.\n"
+"Veuillez l'utiliser uniquement comme enfant d'Area3D, StaticBody3D, "
+"RigidBody3D, CharacterBody3D, etc. pour leur donner une forme."
+
 msgid "Nothing is visible because no mesh has been assigned."
 msgstr "Rien n'est visible car aucun maillage n'a été assigné."
 
@@ -9441,6 +9786,9 @@ msgid ""
 msgstr ""
 "Rien n'est visible car les maillages n'ont pas été assignés au tirage des "
 "passes."
+
+msgid "Creating probes"
+msgstr "Création d'un maillage de contour"
 
 msgid "This body will be ignored until you set a mesh."
 msgstr "Ce corps sera ignoré jusqu'à ce que vous définissiez un maillage."
@@ -9497,8 +9845,12 @@ msgstr ""
 "Clic gauche : Appliquer la couleur\n"
 "Clic droit : Supprimer le préréglage"
 
-msgid "Pick a color from the editor window."
-msgstr "Échantillonner une couleur depuis la fenêtre de l'éditeur."
+msgid ""
+"Color: #%s\n"
+"LMB: Apply color"
+msgstr ""
+"Couleur : #%s\n"
+"Clic gauche : Appliquer la couleur"
 
 msgid "Switch between hexadecimal and code values."
 msgstr "Alterner entre les valeurs hexadécimales ou brutes."
@@ -9533,9 +9885,6 @@ msgstr "Alerte !"
 msgid "Please Confirm..."
 msgstr "Veuillez confirmer…"
 
-msgid "Must use a valid extension."
-msgstr "Utilisez une extension valide."
-
 msgid "Enable grid minimap."
 msgstr "Activer l'alignement."
 
@@ -9556,6 +9905,15 @@ msgstr ""
 
 msgid "(Other)"
 msgstr "(Autre)"
+
+msgid ""
+"Setting node name '%s' to be unique within scene for '%s', but it's already "
+"claimed by '%s'.\n"
+"'%s' is no longer set as having a unique name."
+msgstr ""
+"Impossible de déclarer le nom de nœud '%s' comme unique dans la scène pour "
+"'%s', car ce nom est déjà attribué à '%s'.\n"
+"'%s' n'est plus considéré comme ayant un nom unique."
 
 msgid ""
 "Default Environment as specified in Project Settings (Rendering -> "
@@ -9581,6 +9939,17 @@ msgid ""
 msgstr ""
 "La taille de la fenêtre d'affichage doit être supérieure ou égale à 2 pixels "
 "dans les deux sens pour que le rendu soit possible."
+
+msgid "Unsupported BMFont texture format."
+msgstr "Format de texture BMFont non pris en charge."
+
+msgid ""
+"Shader keywords cannot be used as parameter names.\n"
+"Choose another name."
+msgstr ""
+"Les mots-clés de shader ne peuvent pas être utilisés comme noms de "
+"paramètres.\n"
+"Choisissez un autre nom."
 
 msgid ""
 "The sampler port is connected but not used. Consider changing the source to "
@@ -9618,3 +9987,12 @@ msgstr "Affectation à la variable uniform."
 
 msgid "Constants cannot be modified."
 msgstr "Les constantes ne peuvent être modifiées."
+
+msgid "The function '%s' is declared but never used."
+msgstr "La fonction '%s' est déclarée mais jamais appelée."
+
+msgid "The struct '%s' is declared but never used."
+msgstr "La structure '%s' est déclarée mais jamais utilisée."
+
+msgid "The local variable '%s' is declared but never used."
+msgstr "La variable locale '%s' est déclarée mais jamais utilisée."

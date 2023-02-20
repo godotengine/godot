@@ -261,9 +261,6 @@ msgstr "Tamanho da Página"
 msgid "Blocking Mode Enabled"
 msgstr "Modo de Bloqueio Ativado"
 
-msgid "Connection"
-msgstr "Conexão"
-
 msgid "Read Chunk Size"
 msgstr "Ler tamanho da parcela/pedaço"
 
@@ -281,9 +278,6 @@ msgstr "Tamanho máximo do Buffer de entrada"
 
 msgid "Output Buffer Max Size"
 msgstr "Tamanho Máximo do Amortecedor de OutPut"
-
-msgid "Stream Peer"
-msgstr "Fluxo de pares"
 
 msgid "Resource"
 msgstr "Recurso"
@@ -305,9 +299,6 @@ msgstr "Semente"
 
 msgid "State"
 msgstr "Estado"
-
-msgid "Source Code"
-msgstr "Código Fonte"
 
 msgid "Locale"
 msgstr "Localização"
@@ -390,15 +381,6 @@ msgstr "Acesso"
 msgid "Display Mode"
 msgstr "Modo de Visualização"
 
-msgid "Current Dir"
-msgstr "Dir Atual"
-
-msgid "Current File"
-msgstr "Ficheiro Atual"
-
-msgid "Current Path"
-msgstr "Caminho Atual"
-
 msgid "Show Hidden Files"
 msgstr "Mostrar arquivos ocultos"
 
@@ -480,17 +462,11 @@ msgstr "Modo Livre de Distrações"
 msgid "Base Type"
 msgstr "Mudar tipo base"
 
-msgid "Edited Resource"
-msgstr "Recurso Editado"
-
 msgid "Editable"
 msgstr "Item Editável"
 
 msgid "Toggle Mode"
 msgstr "Alternar Modo"
-
-msgid "Script Owner"
-msgstr "Dono do Script"
 
 msgid "Editor Language"
 msgstr "Linguagem do Editor"
@@ -1182,9 +1158,6 @@ msgstr "Criar à Partir de"
 msgid "Delimiter"
 msgstr "Delimitador"
 
-msgid "Preload"
-msgstr "Pré-carregar"
-
 msgid "Lossy Quality"
 msgstr "Qualidade com Perdas"
 
@@ -1428,6 +1401,15 @@ msgstr "Avisos"
 msgid "ID"
 msgstr "ID"
 
+msgid "Texture"
+msgstr "Textura"
+
+msgid "Separation"
+msgstr "Separação"
+
+msgid "Speed"
+msgstr "Velocidade"
+
 msgid "Version Control"
 msgstr "Controle de Versões"
 
@@ -1506,17 +1488,14 @@ msgstr "iOS"
 msgid "Hide Home Indicator"
 msgstr "Esconder Indicador de Home"
 
-msgid "Input Devices"
-msgstr "Dispositivos de Entrada"
-
-msgid "Pointing"
-msgstr "Pontuação"
-
 msgid "Boot Splash"
 msgstr "Plano de Fundo de Inicialização"
 
 msgid "BG Color"
 msgstr "Cor de Fundo"
+
+msgid "Input Devices"
+msgstr "Dispositivos de Entrada"
 
 msgid "Environment"
 msgstr "Ambiente"
@@ -1544,6 +1523,9 @@ msgstr "Buffering"
 
 msgid "Agile Event Flushing"
 msgstr "Liberação Ágil de Eventos"
+
+msgid "Pointing"
+msgstr "Pontuação"
 
 msgid "Emulate Touch From Mouse"
 msgstr "Emular Toque do Rato"
@@ -1886,9 +1868,6 @@ msgstr "Raiz da Skin"
 
 msgid "Joints Original"
 msgstr "Pontos Originais"
-
-msgid "Inverse Binds"
-msgstr "Inverter Ligações"
 
 msgid "Non Joints"
 msgstr "Não-Juntas"
@@ -2682,9 +2661,6 @@ msgstr "Embaixo"
 msgid "Smoothed"
 msgstr "Suavizado"
 
-msgid "Speed"
-msgstr "Velocidade"
-
 msgid "Horizontal Enabled"
 msgstr "Horizontal Ativado"
 
@@ -2732,9 +2708,6 @@ msgstr "Coordenadas Locais"
 
 msgid "Draw Order"
 msgstr "Ordem de Desenho"
-
-msgid "Texture"
-msgstr "Textura"
 
 msgid "Emission Shape"
 msgstr "Forma de Emissão"
@@ -2855,18 +2828,6 @@ msgstr "Velocidade Máxima"
 
 msgid "Estimate Radius"
 msgstr "Raio Estimado"
-
-msgid "Rotation Degrees"
-msgstr "Graus de Rotação"
-
-msgid "Global Rotation"
-msgstr "Rotação Global"
-
-msgid "Global Rotation Degrees"
-msgstr "Graus de Rotação Global"
-
-msgid "Global Scale"
-msgstr "Escala Global"
 
 msgid "Scroll"
 msgstr "Rolagem"
@@ -3432,9 +3393,6 @@ msgstr "Graus de Preenchimento"
 msgid "Hide Root"
 msgstr "Esconder Raiz"
 
-msgid "Volume"
-msgstr "Volume"
-
 msgid "Paused"
 msgstr "Pausado"
 
@@ -3465,18 +3423,6 @@ msgstr "Modo de Transferência"
 msgid "Transfer Channel"
 msgstr "Transferir Canal"
 
-msgid "Owner"
-msgstr "Dono"
-
-msgid "Multiplayer"
-msgstr "Multijogador"
-
-msgid "Current Scene"
-msgstr "Cena Atual"
-
-msgid "Root"
-msgstr "Raiz"
-
 msgid "Shapes"
 msgstr "Formas"
 
@@ -3497,9 +3443,6 @@ msgstr "Tempo de Espera"
 
 msgid "Autostart"
 msgstr "Início Automático"
-
-msgid "World 2D"
-msgstr "Mundo 2D"
 
 msgid "Transparent BG"
 msgstr "Fundo Transparente"
@@ -3575,9 +3518,6 @@ msgstr "Sub-menu"
 
 msgid "V Separation"
 msgstr "Separação Vertical"
-
-msgid "Separation"
-msgstr "Separação"
 
 msgid "Port Offset"
 msgstr "Deslocamento de Porta"
@@ -3791,9 +3731,6 @@ msgstr "Constante"
 
 msgid "Function"
 msgstr "Função"
-
-msgid "Canvas"
-msgstr "Tela"
 
 msgid "Plane"
 msgstr "Plano"

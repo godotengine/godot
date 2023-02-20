@@ -32,13 +32,15 @@
 # Thuany <thutymsoares@gmail.com>, 2022.
 # Isaque Mendes <isaquemendes405@gmail.com>, 2022.
 # Alex Bruno Boiniak <aboiniak@gmail.com>, 2022.
+# Breno Alves Sampaio <chibifoxdiscord@gmail.com>, 2023.
+# SamuelPatrickMeneses <samuelmeneses800@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-01-11 19:51+0000\n"
-"Last-Translator: ssantos <ssantos@web.de>\n"
+"PO-Revision-Date: 2023-02-16 05:26+0000\n"
+"Last-Translator: SamuelPatrickMeneses <samuelmeneses800@gmail.com>\n"
 "Language-Team: Portuguese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pt/>\n"
 "Language: pt\n"
@@ -46,10 +48,25 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.15.1-dev\n"
+"X-Generator: Weblate 4.16-dev\n"
 
 msgid "Physical"
 msgstr "Físico"
+
+msgid "Left Mouse Button"
+msgstr "Botão Esquerdo do Mouse"
+
+msgid "Right Mouse Button"
+msgstr "Botão Direito do Mouse"
+
+msgid "Middle Mouse Button"
+msgstr "Botão do meio"
+
+msgid "Mouse Wheel Up"
+msgstr "Roda do mouse para cima."
+
+msgid "Mouse Wheel Down"
+msgstr "Roda do mouse para baixo."
 
 msgid "Button"
 msgstr "Botão"
@@ -492,12 +509,6 @@ msgstr "Usar Curvas Bezier"
 
 msgid "Create RESET Track(s)"
 msgstr "Criar Pista(s) RESET"
-
-msgid "Anim. Optimizer"
-msgstr "Otimizador de Anim"
-
-msgid "Max. Angular Error:"
-msgstr "Máximo de Erros Angulares:"
 
 msgid "Optimize"
 msgstr "Otimizar"
@@ -1501,9 +1512,6 @@ msgstr "Abrir"
 msgid "Select Current Folder"
 msgstr "Selecionar pasta atual"
 
-msgid "File exists, overwrite?"
-msgstr "O ficheiro existe, sobrescrever?"
-
 msgid "Select This Folder"
 msgstr "Selecionar esta Pasta"
 
@@ -1667,21 +1675,40 @@ msgstr "Estilos"
 msgid "Enumerations"
 msgstr "Enumerações"
 
+msgid "There is currently no description for this annotation."
+msgstr "Atualmente não há descrição para esta anotação."
+
+msgid ""
+"There is currently no description for this annotation. Please help us by "
+"[color=$color][url=$url]contributing one[/url][/color]!"
+msgstr ""
+"Atualmente não existe descrição para este Método. Por favor nos ajude "
+"[color=$color][url=$url]contribuindo com uma[/url][/color]!"
+
 msgid "Property Descriptions"
 msgstr "Descrições da Propriedade"
 
 msgid "(value)"
 msgstr "(valor)"
 
+msgid "There is currently no description for this property."
+msgstr "Atualmente não há descrição para esta propriedade."
+
 msgid ""
 "There is currently no description for this property. Please help us by "
 "[color=$color][url=$url]contributing one[/url][/color]!"
 msgstr ""
-"Atualmente não existe descrição para esta Propriedade. Por favor ajude-nos "
-"[color=$color][url=$url]a contribuir com uma[/url][/color]!"
+"Atualmente não existe descrição para esta Propriedade. Por favor nos ajude "
+"[color=$color][url=$url]contribuindo com uma[/url][/color]!"
+
+msgid "Constructor Descriptions"
+msgstr "Descrições do Construtor"
 
 msgid "Method Descriptions"
-msgstr "Descrições do Método"
+msgstr "Descrições de Método"
+
+msgid "Operator Descriptions"
+msgstr "Descrições de Operadores"
 
 msgid "%d match."
 msgstr "%d correspondência."
@@ -1690,10 +1717,10 @@ msgid "%d matches."
 msgstr "%d correspondências."
 
 msgid "Search Help"
-msgstr "Procurar em Ajuda"
+msgstr "Procure em Ajuda"
 
 msgid "Case Sensitive"
-msgstr "Sensível a maiúsculas"
+msgstr "Com distinção entre maiúsculas e minúsculas"
 
 msgid "Show Hierarchy"
 msgstr "Mostrar Hierarquia"
@@ -1704,11 +1731,20 @@ msgstr "Mostrar Tudo"
 msgid "Classes Only"
 msgstr "Apenas Classes"
 
+msgid "Constructors Only"
+msgstr "Apenas Construtores"
+
 msgid "Methods Only"
 msgstr "Apenas Métodos"
 
+msgid "Operators Only"
+msgstr "Apenas Operadores"
+
 msgid "Signals Only"
 msgstr "Apenas Sinais"
+
+msgid "Annotations Only"
+msgstr "Apenas Anotações"
 
 msgid "Constants Only"
 msgstr "Apenas Constantes"
@@ -1722,6 +1758,9 @@ msgstr "Apenas Propriedades do Tema"
 msgid "Member Type"
 msgstr "Tipo do Membro"
 
+msgid "(constructors)"
+msgstr "(Construtores)"
+
 msgid "Class"
 msgstr "Classe"
 
@@ -1730,6 +1769,9 @@ msgstr "Método"
 
 msgid "Signal"
 msgstr "Sinal"
+
+msgid "Annotation"
+msgstr "Anotações"
 
 msgid "Constant"
 msgstr "Constante"
@@ -1740,13 +1782,25 @@ msgstr "Propriedade"
 msgid "Theme Property"
 msgstr "Propriedade do Tema"
 
+msgid "This member is marked as deprecated."
+msgstr "Este membro esta marcado como obsoleto."
+
+msgid "This member is marked as experimental."
+msgstr "Este membro está marcado como experimental."
+
 msgid "Property:"
 msgstr "Propriedade:"
+
+msgid "Pin Value"
+msgstr "Fixar valor"
+
+msgid "Pin Value [Disabled because '%s' is editor-only]"
+msgstr "Fixar Valor [Desativado porque '%s' é restrito(a) ao editor]"
 
 msgid ""
 "Pinning a value forces it to be saved even if it's equal to the default."
 msgstr ""
-"Fixar um valor força-o a ser guardado mesmo que seja igual à predefinição."
+"Fixar um valor força que ele seja salvo mesmo que ele seja igual ao padrão."
 
 msgid "Open Documentation"
 msgstr "Abrir documentação"
@@ -7386,9 +7440,6 @@ msgstr "Mudar a zona morta da Ação"
 msgid "Erase Input Action"
 msgstr "Apagar Ação de Entrada"
 
-msgid "Rename Input Action Event"
-msgstr "Renomear evento ação de entrada"
-
 msgid "Project Settings (project.godot)"
 msgstr "Configurações do Projeto (project.godot)"
 
@@ -8799,9 +8850,6 @@ msgstr ""
 msgid "The AnimationPlayer root node is not a valid node."
 msgstr "O nó raiz de AnimationPlayer não é um nó válido."
 
-msgid "Pick a color from the editor window."
-msgstr "Escolha uma cor através do editor."
-
 msgid "Switch between hexadecimal and code values."
 msgstr "Alternar valores entre hexadecimal e código."
 
@@ -8830,9 +8878,6 @@ msgstr "Alerta!"
 
 msgid "Please Confirm..."
 msgstr "Confirme por favor..."
-
-msgid "Must use a valid extension."
-msgstr "Deve usar uma extensão válida."
 
 msgid "Enable grid minimap."
 msgstr "Ativar grelha do minimapa."

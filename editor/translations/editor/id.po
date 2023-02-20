@@ -520,12 +520,6 @@ msgstr "Gunakan Lengkungan Bezier"
 msgid "Create RESET Track(s)"
 msgstr "Buat RESET Track"
 
-msgid "Anim. Optimizer"
-msgstr "Pengoptimal Animasi"
-
-msgid "Max. Angular Error:"
-msgstr "Error Angular Maksimum:"
-
 msgid "Optimize"
 msgstr "Optimalkan"
 
@@ -1508,9 +1502,6 @@ msgstr "Buka"
 
 msgid "Select Current Folder"
 msgstr "Pilih Folder Saat Ini"
-
-msgid "File exists, overwrite?"
-msgstr "File sudah ada, timpa?"
 
 msgid "Select This Folder"
 msgstr "Pilih Folder Ini"
@@ -6902,9 +6893,6 @@ msgstr "Ubah deadzone Aksi"
 msgid "Erase Input Action"
 msgstr "Hapus Aksi Input"
 
-msgid "Rename Input Action Event"
-msgstr "Ubah nama Input Action Event"
-
 msgid "Project Settings (project.godot)"
 msgstr "Pengaturan Proyek (project.godot)"
 
@@ -8087,9 +8075,6 @@ msgstr ""
 msgid "The AnimationPlayer root node is not a valid node."
 msgstr "Akar AnimationPlayer bukanlah node yang valid."
 
-msgid "Pick a color from the editor window."
-msgstr "Ambil warna dari layar editor."
-
 msgid "Switch between hexadecimal and code values."
 msgstr "Beralih antara nilai heksadesimal dan kode."
 
@@ -8119,9 +8104,6 @@ msgstr "Peringatan!"
 
 msgid "Please Confirm..."
 msgstr "Mohon konfirmasi..."
-
-msgid "Must use a valid extension."
-msgstr "Harus menggunakan ekstensi yang sah."
 
 msgid "Enable grid minimap."
 msgstr "Aktifkan peta mini grid."

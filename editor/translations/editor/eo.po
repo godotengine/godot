@@ -16,12 +16,13 @@
 # Wang Tseryui <2251439097@qq.com>, 2021.
 # Kedr <lava20121991@gmail.com>, 2022.
 # Isaac Iverson <isaaciverson1024@gmail.com>, 2023.
+# Blua Punkto <bluapunkto@proton.me>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
-"PO-Revision-Date: 2023-02-10 00:54+0000\n"
-"Last-Translator: Isaac Iverson <isaaciverson1024@gmail.com>\n"
+"PO-Revision-Date: 2023-02-11 01:21+0000\n"
+"Last-Translator: Blua Punkto <bluapunkto@proton.me>\n"
 "Language-Team: Esperanto <https://hosted.weblate.org/projects/godot-engine/"
 "godot/eo/>\n"
 "Language: eo\n"
@@ -30,8 +31,14 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 4.16-dev\n"
 
+msgid "Unset"
+msgstr "malŝalti"
+
 msgid "Button"
 msgstr "Butono"
+
+msgid "Double Click"
+msgstr "Duobla alklako"
 
 msgid "Select"
 msgstr "Elekti"
@@ -419,12 +426,6 @@ msgstr "Uzu Bezier-kurbojn"
 
 msgid "Create RESET Track(s)"
 msgstr "Krei RESET-trako(j)n"
-
-msgid "Anim. Optimizer"
-msgstr "Anim. Optimiganto"
-
-msgid "Max. Angular Error:"
-msgstr "Maks. Angula Eraro:"
 
 msgid "Optimize"
 msgstr "Optimigi"
@@ -1365,9 +1366,6 @@ msgstr "Malfermi"
 
 msgid "Select Current Folder"
 msgstr "Elekti kurantan dosierujon"
-
-msgid "File exists, overwrite?"
-msgstr "Dosiero ekzistas, superskribi?"
 
 msgid "Select This Folder"
 msgstr "Elekti ĉi tiun dosierujon"
@@ -4110,9 +4108,6 @@ msgstr "Ŝanĝi mortzonon de faro"
 
 msgid "Erase Input Action"
 msgstr "Forigi enigan faron"
-
-msgid "Rename Input Action Event"
-msgstr "Renomi eventon de eniga faro"
 
 msgid "Project Settings (project.godot)"
 msgstr "Projektaj agordoj (project.godot)"

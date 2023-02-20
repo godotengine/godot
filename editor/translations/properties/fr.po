@@ -114,8 +114,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-02-10 14:12+0000\n"
-"Last-Translator: Helix Sir <vincentbarkmann@gmail.com>\n"
+"PO-Revision-Date: 2023-02-11 13:25+0000\n"
+"Last-Translator: Thalya Gauvrit <skar0ps.dev@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/fr/>\n"
 "Language: fr\n"
@@ -428,9 +428,6 @@ msgstr "Taille de page"
 msgid "Blocking Mode Enabled"
 msgstr "Mode de blocage activé"
 
-msgid "Connection"
-msgstr "Connexion"
-
 msgid "Read Chunk Size"
 msgstr "Lire la taille des fragment(s)"
 
@@ -440,12 +437,6 @@ msgstr "Données"
 msgid "Object ID"
 msgstr "Identifiant de l'Objet"
 
-msgid "Original Class"
-msgstr "Classe originale"
-
-msgid "Recording Properties"
-msgstr "Propriétés d'enregistrement"
-
 msgid "Encode Buffer Max Size"
 msgstr "Taille maximale du tampon d'encodage"
 
@@ -454,9 +445,6 @@ msgstr "Taille maximale du tampon d'entrée"
 
 msgid "Output Buffer Max Size"
 msgstr "Taille maximale du tampon de sortie"
-
-msgid "Stream Peer"
-msgstr "Pair de flux"
 
 msgid "Resource"
 msgstr "Ressource"
@@ -496,9 +484,6 @@ msgstr "Graine"
 
 msgid "State"
 msgstr "État"
-
-msgid "Source Code"
-msgstr "Code Source"
 
 msgid "TLS"
 msgstr "TLS"
@@ -632,15 +617,6 @@ msgstr "Mode d'affichage"
 msgid "File Mode"
 msgstr "Mode fichier"
 
-msgid "Current Dir"
-msgstr "Répertoire Actuel"
-
-msgid "Current File"
-msgstr "Fichier Actuel"
-
-msgid "Current Path"
-msgstr "Chemin Actuel"
-
 msgid "Show Hidden Files"
 msgstr "Afficher les fichiers cachés"
 
@@ -746,17 +722,11 @@ msgstr "Mode Sans Distraction"
 msgid "Base Type"
 msgstr "Type de base"
 
-msgid "Edited Resource"
-msgstr "Ressource modifiée"
-
 msgid "Editable"
 msgstr "Modifiable"
 
 msgid "Toggle Mode"
 msgstr "Basculer le mode"
-
-msgid "Script Owner"
-msgstr "Propriétaire du Script"
 
 msgid "Editor Language"
 msgstr "Langue de l'éditeur"
@@ -1551,7 +1521,7 @@ msgid "Password"
 msgstr "Mot de passe"
 
 msgid "Hinting"
-msgstr "Optimisation de rendu (hinting)"
+msgstr "Suggestion"
 
 msgid "Oversampling"
 msgstr "Sur-échantillonnage"
@@ -1591,9 +1561,6 @@ msgstr "Créer à Partir de"
 
 msgid "Delimiter"
 msgstr "Délimiteur"
-
-msgid "Preload"
-msgstr "Précharger"
 
 msgid "Columns"
 msgstr "Colonnes"
@@ -1776,7 +1743,7 @@ msgid "Available URLs"
 msgstr "URLs disponibles"
 
 msgid "Unset"
-msgstr "Vider"
+msgstr "Non défini"
 
 msgid "Error"
 msgstr "Erreur"
@@ -1846,6 +1813,15 @@ msgstr "Avertissements"
 
 msgid "ID"
 msgstr "ID"
+
+msgid "Texture"
+msgstr "Texture"
+
+msgid "Separation"
+msgstr "Séparation"
+
+msgid "Speed"
+msgstr "Vitesse"
 
 msgid "Version Control"
 msgstr "Contrôle de version"
@@ -1925,17 +1901,14 @@ msgstr "iOS"
 msgid "Hide Home Indicator"
 msgstr "Masquer l'indicateur d’accueil"
 
-msgid "Input Devices"
-msgstr "Périphériques d'entrée"
-
-msgid "Pointing"
-msgstr "Pointage"
-
 msgid "Boot Splash"
 msgstr "Écran de démarrage"
 
 msgid "BG Color"
 msgstr "Couleur d'arrière-plan"
+
+msgid "Input Devices"
+msgstr "Périphériques d'entrée"
 
 msgid "Environment"
 msgstr "Environnement"
@@ -1963,6 +1936,9 @@ msgstr "Mise en mémoire tampon"
 
 msgid "Agile Event Flushing"
 msgstr "Purge d'événement agile"
+
+msgid "Pointing"
+msgstr "Pointage"
 
 msgid "Emulate Touch From Mouse"
 msgstr "Émuler le toucher tactile avec la souris"
@@ -2315,9 +2291,6 @@ msgstr "Racine de l'enveloppe"
 msgid "Joints Original"
 msgstr "Jointure à l'original"
 
-msgid "Inverse Binds"
-msgstr "Inverser les liens"
-
 msgid "Non Joints"
 msgstr "Non jointures"
 
@@ -2394,7 +2367,7 @@ msgid "Eye Height"
 msgstr "Hauteur de l’œil"
 
 msgid "IOD"
-msgstr "Distance interoculaire"
+msgstr "DP"
 
 msgid "Display Width"
 msgstr "Afficher la largeur"
@@ -3182,9 +3155,6 @@ msgstr "Mode copie"
 msgid "Anchor Mode"
 msgstr "Mode ancre"
 
-msgid "Custom Viewport"
-msgstr "Vue personnalisée"
-
 msgid "Left"
 msgstr "Gauche"
 
@@ -3199,9 +3169,6 @@ msgstr "Bas"
 
 msgid "Smoothed"
 msgstr "Adouci"
-
-msgid "Speed"
-msgstr "Vitesse"
 
 msgid "Horizontal Enabled"
 msgstr "Horizontal Activé"
@@ -3283,9 +3250,6 @@ msgstr "Coordonnées locales"
 
 msgid "Draw Order"
 msgstr "Ordre de rendu"
-
-msgid "Texture"
-msgstr "Texture"
 
 msgid "Emission Shape"
 msgstr "Forme d'émission"
@@ -3527,23 +3491,8 @@ msgstr "Coût de déplacement"
 msgid "Estimate Radius"
 msgstr "Estimer le rayon"
 
-msgid "Rotation Degrees"
-msgstr "Degrés de Rotation"
-
 msgid "Skew"
 msgstr "Biseau"
-
-msgid "Global Rotation"
-msgstr "Rotation Globale"
-
-msgid "Global Rotation Degrees"
-msgstr "Degrés de Rotation Globale"
-
-msgid "Global Scale"
-msgstr "Échelle Globale"
-
-msgid "Global Transform"
-msgstr "Transformation Globale"
 
 msgid "Scroll"
 msgstr "Défilement"
@@ -4397,15 +4346,6 @@ msgstr "Nœud Racine"
 msgid "Current Animation"
 msgstr "Animation actuelle"
 
-msgid "Assigned Animation"
-msgstr "Animation assignée"
-
-msgid "Current Animation Length"
-msgstr "Durée de l’animation actuelle"
-
-msgid "Current Animation Position"
-msgstr "Position dans l'animation actuelle"
-
 msgid "Playback Options"
 msgstr "Options de Lecture"
 
@@ -4820,9 +4760,6 @@ msgstr "Options du Mode Abandon"
 msgid "Audio Track"
 msgstr "Piste Audio"
 
-msgid "Volume"
-msgstr "Volume"
-
 msgid "Paused"
 msgstr "En Pause"
 
@@ -4831,9 +4768,6 @@ msgstr "Développer"
 
 msgid "Buffering Msec"
 msgstr "Mise en mémoire tampon ms"
-
-msgid "Stream Position"
-msgstr "Position Flux"
 
 msgid "Self Modulate"
 msgstr "Auto-modulation"
@@ -4883,12 +4817,6 @@ msgstr "Mode de Transfert"
 msgid "Transfer Channel"
 msgstr "Canal de transfert"
 
-msgid "Owner"
-msgstr "Propriétaire"
-
-msgid "Multiplayer"
-msgstr "Multijoueur"
-
 msgid "Editor Description"
 msgstr "Description de l'Editeur"
 
@@ -4900,15 +4828,6 @@ msgstr "Déboguer les indices de collision"
 
 msgid "Debug Navigation Hint"
 msgstr "Déboguer les indices de navigation"
-
-msgid "Edited Scene Root"
-msgstr "Racine de scène modifiée"
-
-msgid "Current Scene"
-msgstr "Scène actuelle"
-
-msgid "Root"
-msgstr "Racine"
 
 msgid "Multiplayer Poll"
 msgstr "Poll d'attente active (polling) multijoueur"
@@ -4952,9 +4871,6 @@ msgstr "Chemin de la fenêtre d'affichage"
 msgid "Disable 3D"
 msgstr "Désactiver 3D"
 
-msgid "World 2D"
-msgstr "Monde 2D"
-
 msgid "Transparent BG"
 msgstr "Arrière-plan transparent"
 
@@ -4990,12 +4906,6 @@ msgstr "Quad 2"
 
 msgid "Quad 3"
 msgstr "Quad 3"
-
-msgid "Canvas Transform"
-msgstr "Transformation du canevas"
-
-msgid "Global Canvas Transform"
-msgstr "Transformation du canevas global"
 
 msgid "Render Target"
 msgstr "Rendre la cible"
@@ -5275,9 +5185,6 @@ msgstr "Couleur du bouton Fermer"
 
 msgid "Resizer Color"
 msgstr "Couleur du redimensionneur"
-
-msgid "Separation"
-msgstr "Séparation"
 
 msgid "Title Offset"
 msgstr "Décalage du titre"
@@ -5939,9 +5846,6 @@ msgstr "À"
 msgid "Frames"
 msgstr "Trames"
 
-msgid "Current Frame"
-msgstr "Trame actuelle"
-
 msgid "Pause"
 msgstr "Pause"
 
@@ -5987,20 +5891,8 @@ msgstr "Valeur par défaut"
 msgid "Color Default"
 msgstr "Couleur par défaut"
 
-msgid "Canvas"
-msgstr "Canevas"
-
-msgid "Navigation Map"
-msgstr "Carte de navigation"
-
-msgid "Direct Space State"
-msgstr "Etat de l'espace direct"
-
 msgid "Fallback Environment"
 msgstr "Environnement de repli"
-
-msgid "Scenario"
-msgstr "Scénario"
 
 msgid "Plane"
 msgstr "Plan"
@@ -6048,10 +5940,10 @@ msgid "Sidechain"
 msgstr "Sidechain"
 
 msgid "Tap 1"
-msgstr "Tap 1"
+msgstr "Appuyez sur 1"
 
 msgid "Tap 2"
-msgstr "Tap 2"
+msgstr "Appuyez sur 2"
 
 msgid "Feedback"
 msgstr "Larsen"
@@ -6081,10 +5973,10 @@ msgid "Threshold dB"
 msgstr "Seuil de dB"
 
 msgid "Soft Clip dB"
-msgstr "dB de Coupure Douce"
+msgstr "Écrêtage Doux dB"
 
 msgid "Soft Clip Ratio"
-msgstr "Ratio de Coupure Douce"
+msgstr "Ratio Écrêtage Doux"
 
 msgid "Range Min Hz"
 msgstr "Borne inférieure de la plage (Hz)"

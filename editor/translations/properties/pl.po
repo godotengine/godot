@@ -75,17 +75,17 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-01-20 10:19+0000\n"
-"Last-Translator: RM <synaptykq@gmail.com>\n"
+"PO-Revision-Date: 2023-02-20 10:58+0000\n"
+"Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
-"godot/pl/>\n"
+"godot-properties/pl/>\n"
 "Language: pl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.15.1\n"
+"X-Generator: Weblate 4.16-dev\n"
 
 msgid "Application"
 msgstr "Aplikacja"
@@ -96,8 +96,17 @@ msgstr "Konfiguracja"
 msgid "Name"
 msgstr "Nazwa"
 
+msgid "Name Localized"
+msgstr "Nazwa lokalizowana"
+
+msgid "Description"
+msgstr "Opis"
+
 msgid "Run"
 msgstr "Uruchom"
+
+msgid "Main Scene"
+msgstr "Scena główna"
 
 msgid "Disable stdout"
 msgstr "Wyłączenie stdout"
@@ -126,14 +135,56 @@ msgstr "Okno"
 msgid "Size"
 msgstr "Rozmiar"
 
+msgid "Viewport Width"
+msgstr "Szerokość rzutni"
+
+msgid "Viewport Height"
+msgstr "Wysokość rzutni"
+
+msgid "Mode"
+msgstr "Tryb"
+
+msgid "Initial Position Type"
+msgstr "Typ początkowej pozycji"
+
+msgid "Initial Position"
+msgstr "Początkowa pozycja"
+
+msgid "Initial Screen"
+msgstr "Ekran początkowy"
+
 msgid "Resizable"
 msgstr "Zmienny rozmiar"
 
 msgid "Borderless"
 msgstr "Bez obramowania"
 
+msgid "Always on Top"
+msgstr "Zawsze na wierzchu"
+
+msgid "Transparent"
+msgstr "Przeźroczyste"
+
+msgid "Extend to Title"
+msgstr "Rozszerz do tytułu"
+
+msgid "No Focus"
+msgstr "Bez skupienia"
+
+msgid "Window Width Override"
+msgstr "Nadpisanie szerokości okna"
+
+msgid "Window Height Override"
+msgstr "Nadpisanie wysokości okna"
+
+msgid "Energy Saving"
+msgstr "Oszczędzanie energii"
+
 msgid "Keep Screen On"
 msgstr "Zachowaj włączony ekran"
+
+msgid "Audio"
+msgstr "Audio"
 
 msgid "Editor"
 msgstr "Edytor"
@@ -156,11 +207,32 @@ msgstr "Debugowanie"
 msgid "Settings"
 msgstr "Ustawienia"
 
+msgid "Compression"
+msgstr "Kompresja"
+
 msgid "Message"
 msgstr "Wiadomość"
 
 msgid "Rendering"
 msgstr "Renderowanie"
+
+msgid "Limits"
+msgstr "Limity"
+
+msgid "Internationalization"
+msgstr "Internacjonalizacja"
+
+msgid "Rendering Device"
+msgstr "Urządzenie renderujące"
+
+msgid "Block Size (KB)"
+msgstr "Rozmiar bloku (KB)"
+
+msgid "Max Size (MB)"
+msgstr "Maks. rozmiar (MB)"
+
+msgid "Vulkan"
+msgstr "Vulkan"
 
 msgid "Low Processor Usage Mode"
 msgstr "Tryb niskiego wykorzystania procesora"
@@ -186,6 +258,9 @@ msgstr "Użyj skumulowanego wejścia"
 msgid "Device"
 msgstr "Urządzenie"
 
+msgid "Window ID"
+msgstr "ID Okna"
+
 msgid "Pressed"
 msgstr "Wciśnięty"
 
@@ -209,6 +284,9 @@ msgstr "Czynnik"
 
 msgid "Button Index"
 msgstr "Indeks przycisków"
+
+msgid "Double Click"
+msgstr "Podwójne kliknięcie"
 
 msgid "Tilt"
 msgstr "Pochylenie"
@@ -261,11 +339,14 @@ msgstr "Wartość kontrolera"
 msgid "Big Endian"
 msgstr "Big endian"
 
+msgid "Network"
+msgstr "Sieć"
+
+msgid "Page Size"
+msgstr "Rozmiar strony"
+
 msgid "Blocking Mode Enabled"
 msgstr "Tryb blokowania włączony"
-
-msgid "Connection"
-msgstr "Połączenie"
 
 msgid "Read Chunk Size"
 msgstr "Odczytaj rozmiar fragmentu"
@@ -285,9 +366,6 @@ msgstr "Maks. rozmiar bufora wejściowego"
 msgid "Output Buffer Max Size"
 msgstr "Maksymalna wielkość bufora wyjściowego"
 
-msgid "Stream Peer"
-msgstr "Członek transmisji"
-
 msgid "Resource"
 msgstr "Zasób"
 
@@ -297,9 +375,6 @@ msgstr "Ścieżka"
 msgid "Data Array"
 msgstr "Tablica danych"
 
-msgid "Blocking Handshake"
-msgstr "Blokowanie uścisku dłoni"
-
 msgid "Max Pending Connections"
 msgstr "Maks. liczba połączeń oczekujących"
 
@@ -308,9 +383,6 @@ msgstr "Ziarno"
 
 msgid "State"
 msgstr "Stan"
-
-msgid "Source Code"
-msgstr "Kod źródłowy"
 
 msgid "Locale"
 msgstr "Ustawienia regionalne"
@@ -360,15 +432,6 @@ msgstr "Animacja"
 msgid "Easing"
 msgstr "Wygładzanie"
 
-msgid "Interface"
-msgstr "Interfejs"
-
-msgid "Editors"
-msgstr "Edytory"
-
-msgid "Network"
-msgstr "Sieć"
-
 msgid "Remote Port"
 msgstr "Zdalny port"
 
@@ -386,15 +449,6 @@ msgstr "Dostęp"
 
 msgid "Display Mode"
 msgstr "Tryb wyświetlania"
-
-msgid "Current Dir"
-msgstr "Bieżący katalog"
-
-msgid "Current File"
-msgstr "Bieżący Plik"
-
-msgid "Current Path"
-msgstr "Bieżąca ścieżka"
 
 msgid "Show Hidden Files"
 msgstr "Pokaż ukryte pliki"
@@ -432,14 +486,14 @@ msgstr "Sprawdzone"
 msgid "Keying"
 msgstr "Kluczowanie"
 
-msgid "Main Scene"
-msgstr "Scena główna"
+msgid "Interface"
+msgstr "Interfejs"
 
 msgid "Show Update Spinner"
 msgstr "Pokaż suwak aktualizacji"
 
 msgid "Update Continuously"
-msgstr "Aktualizuj ciągle"
+msgstr "Stale aktualizuj"
 
 msgid "Localize Settings"
 msgstr "Lokalizuj ustawienia"
@@ -477,17 +531,11 @@ msgstr "Tryb bez rozproszeń"
 msgid "Base Type"
 msgstr "Typ bazowy"
 
-msgid "Edited Resource"
-msgstr "Edytowany zasób"
-
 msgid "Editable"
 msgstr "Edytowalny"
 
 msgid "Toggle Mode"
 msgstr "Przełącz tryb"
-
-msgid "Script Owner"
-msgstr "Właściciel skryptu"
 
 msgid "Editor Language"
 msgstr "Język edytora"
@@ -535,7 +583,7 @@ msgid "Theme"
 msgstr "Motyw"
 
 msgid "Preset"
-msgstr "Profil"
+msgstr "Ustawienia wstępne"
 
 msgid "Base Color"
 msgstr "Kolor podstawowy"
@@ -700,7 +748,7 @@ msgid "Sort Members Outline Alphabetically"
 msgstr "Posortuj szkic członków alfabetycznie"
 
 msgid "Completion"
-msgstr "Ukończenie"
+msgstr "Uzupełnianie"
 
 msgid "Idle Parse Delay"
 msgstr "Opóźnienie interpretacji"
@@ -734,6 +782,9 @@ msgstr "Rozmiar czcionki kodu w pomocy"
 
 msgid "Help Title Font Size"
 msgstr "Rozmiar czcionki tytułu w pomocy"
+
+msgid "Editors"
+msgstr "Edytory"
 
 msgid "Grid Map"
 msgstr "Siatka"
@@ -1131,8 +1182,20 @@ msgstr "Serwer plików"
 msgid "Password"
 msgstr "Hasło"
 
+msgid "Hinting"
+msgstr "Hinting"
+
+msgid "Oversampling"
+msgstr "Nadpróbkowanie"
+
 msgid "Compress"
 msgstr "Skompresuj"
+
+msgid "Language"
+msgstr "Język"
+
+msgid "Transform"
+msgstr "Przekształcanie"
 
 msgid "Collada"
 msgstr "Collada"
@@ -1158,17 +1221,8 @@ msgstr "Utwórz z"
 msgid "Delimiter"
 msgstr "Separator"
 
-msgid "Preload"
-msgstr "Ładuj przed"
-
-msgid "Mode"
-msgstr "Tryb"
-
 msgid "Lossy Quality"
 msgstr "Stratna jakość"
-
-msgid "BPTC LDR"
-msgstr "LDR BPTC"
 
 msgid "Mipmaps"
 msgstr "Mipmapy"
@@ -1223,12 +1277,6 @@ msgstr "Optymalizator"
 
 msgid "Max Angular Error"
 msgstr "Maks. błąd kątowy"
-
-msgid "Compression"
-msgstr "Kompresja"
-
-msgid "Page Size"
-msgstr "Rozmiar strony"
 
 msgid "Nodes"
 msgstr "Węzły"
@@ -1335,6 +1383,9 @@ msgstr "Używaj wątków"
 msgid "Available URLs"
 msgstr "Dostępne URL"
 
+msgid "Unset"
+msgstr "Wymaż"
+
 msgid "Error"
 msgstr "Błąd"
 
@@ -1386,6 +1437,9 @@ msgstr "Ostrzeżenia"
 msgid "ID"
 msgstr "ID"
 
+msgid "Speed"
+msgstr "Prędkość"
+
 msgid "Version Control"
 msgstr "Kontrola wersji"
 
@@ -1397,9 +1451,6 @@ msgstr "Ścieżka do publicznego klucza SSH"
 
 msgid "SSH Private Key Path"
 msgstr "Ścieżka do prywatnego klucza SSH"
-
-msgid "Audio"
-msgstr "Audio"
 
 msgid "Verbose stdout"
 msgstr "Werbalne stdout"
@@ -1413,20 +1464,32 @@ msgstr "iOS"
 msgid "Hide Home Indicator"
 msgstr "Ukryj wskaźnik powitalny"
 
+msgid "XR"
+msgstr "XR"
+
 msgid "Boot Splash"
 msgstr "Ekran uruchamiania"
 
 msgid "BG Color"
 msgstr "Kolor tła"
 
+msgid "Defaults"
+msgstr "Domyślne"
+
 msgid "Show Image"
 msgstr "Pokaż obraz"
+
+msgid "Image"
+msgstr "Obraz"
 
 msgid "Fullsize"
 msgstr "Pełny rozmiar"
 
 msgid "Use Filter"
 msgstr "Użyj filtra"
+
+msgid "Icon"
+msgstr "Ikona"
 
 msgid "Buffering"
 msgstr "Buforowanie"
@@ -1451,6 +1514,12 @@ msgstr "Projekt"
 
 msgid "Assembly Name"
 msgstr "Nazwa zespołu"
+
+msgid "Stretch"
+msgstr "Rozciągnij"
+
+msgid "Aspect"
+msgstr "Aspekt"
 
 msgid "Auto Accept Quit"
 msgstr "Automatyczne akceptowanie zamknięcia"
@@ -1606,7 +1675,7 @@ msgid "Eye Height"
 msgstr "Wysokość oczu"
 
 msgid "IOD"
-msgstr "IOD"
+msgstr "PD"
 
 msgid "Display Width"
 msgstr "Szerokość wyświetlacza"
@@ -1647,9 +1716,6 @@ msgstr "Nazwy"
 msgid "Strings"
 msgstr "Ciągi tekstowe"
 
-msgid "Limits"
-msgstr "Limity"
-
 msgid "Android"
 msgstr "Android"
 
@@ -1662,14 +1728,11 @@ msgstr "Wersja"
 msgid "Icons"
 msgstr "Ikony"
 
-msgid "Icon"
-msgstr "Ikona"
-
 msgid "Location"
 msgstr "Lokalizacja"
 
-msgid "Description"
-msgstr "Opis"
+msgid "Variant"
+msgstr "Wariant"
 
 msgid "Frame"
 msgstr "Klatka"
@@ -1677,11 +1740,14 @@ msgstr "Klatka"
 msgid "Point"
 msgstr "Punkt"
 
+msgid "Left"
+msgstr "Lewo"
+
 msgid "Top"
 msgstr "Góra"
 
-msgid "Speed"
-msgstr "Prędkość"
+msgid "Right"
+msgstr "Prawo"
 
 msgid "Input"
 msgstr "Wejście"
@@ -1713,9 +1779,6 @@ msgstr "Prostokąt widoczności"
 msgid "Navigation Layers"
 msgstr "Warstwy nawigacji"
 
-msgid "Transform"
-msgstr "Przekształcanie"
-
 msgid "Linear"
 msgstr "Liniowy"
 
@@ -1739,6 +1802,9 @@ msgstr "Obszar"
 
 msgid "Bitmask"
 msgstr "Maska bitowa"
+
+msgid "Cull Mask"
+msgstr "Cull Mask"
 
 msgid "Flags"
 msgstr "Flagi"
@@ -1791,6 +1857,9 @@ msgstr "Grupa przycisków"
 msgid "Localization"
 msgstr "Lokalizacja"
 
+msgid "Focus"
+msgstr "Zaznacz"
+
 msgid "Next"
 msgstr "Dalej"
 
@@ -1815,14 +1884,8 @@ msgstr "Tryb ikon"
 msgid "Step"
 msgstr "Krok"
 
-msgid "Stretch"
-msgstr "Rozciągnij"
-
 msgid "Syntax Highlighter"
 msgstr "Podświetlacz składni"
-
-msgid "Volume"
-msgstr "Głośność"
 
 msgid "Z Index"
 msgstr "Indeks Z"
@@ -1833,17 +1896,17 @@ msgstr "Powtórz"
 msgid "Transfer Mode"
 msgstr "Tryb transferu"
 
-msgid "Current Scene"
-msgstr "Aktualna scena"
-
 msgid "Audio Listener"
 msgstr "Słuchacz dźwięku"
 
 msgid "Current Screen"
 msgstr "Bieżący ekran"
 
-msgid "Aspect"
-msgstr "Aspekt"
+msgid "2D Physics"
+msgstr "Fizyka 2D"
+
+msgid "3D Physics"
+msgstr "Fizyka 3D"
 
 msgid "Format"
 msgstr "Format"
@@ -1923,9 +1986,6 @@ msgstr "Prawy dolny róg"
 msgid "Bottom Left"
 msgstr "Lewy dolny róg"
 
-msgid "Image"
-msgstr "Obraz"
-
 msgid "Transpose"
 msgstr "Transpozycja"
 
@@ -1934,6 +1994,9 @@ msgstr "Stała"
 
 msgid "Function"
 msgstr "Funkcja"
+
+msgid "Pan"
+msgstr "Pan"
 
 msgid "Feedback"
 msgstr "Informacja zwrotna"
@@ -1955,6 +2018,9 @@ msgstr "Wierzchołki"
 
 msgid "Fragment"
 msgstr "Fragmenty"
+
+msgid "Cull"
+msgstr "Cull"
 
 msgid "Reflections"
 msgstr "Odbicia"
