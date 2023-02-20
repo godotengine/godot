@@ -80,7 +80,7 @@
 			Percentage closer filtering (5 samples) applies to the shadow map. This is slower compared to hard shadow rendering. See [member shadow_filter].
 		</constant>
 		<constant name="SHADOW_FILTER_PCF13" value="2" enum="ShadowFilter">
-			Percentage closer filtering (13 samples) applies to the shadow map. This is the slowest shadow filtereing mode, and should be used sparingly. See [member shadow_filter].
+			Percentage closer filtering (13 samples) applies to the shadow map. This is the slowest shadow filtering mode, and should be used sparingly. See [member shadow_filter].
 		</constant>
 		<constant name="BLEND_MODE_ADD" value="0" enum="BlendMode">
 			Adds the value of pixels corresponding to the Light2D to the values of pixels under it. This is the common behavior of a light.
