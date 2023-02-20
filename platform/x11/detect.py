@@ -79,6 +79,7 @@ def get_opts():
         BoolVariable("separate_debug_symbols", "Create a separate file containing debugging symbols", False),
         BoolVariable("touch", "Enable touch events", True),
         BoolVariable("execinfo", "Use libexecinfo on systems where glibc is not available", False),
+        BoolVariable("use_embree4", "Use Embree 4 instead of Embree 3", False),
     ]
 
 
@@ -347,7 +348,11 @@ def configure(env):
     # Embree is only used in tools build on x86_64 and aarch64.
     if env["tools"] and not env["builtin_embree"] and is64:
         # No pkgconfig file so far, hardcode expected lib name.
-        env.Append(LIBS=["embree3"])
+        if env["use_embree4"]:
+            env.Append(LIBS=["embree4"])
+            env.Append(CPPDEFINES=["USE_EMBREE4"])
+        else:
+            env.Append(LIBS=["embree3"])
 
     ## Flags
 

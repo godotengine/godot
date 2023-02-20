@@ -43,6 +43,7 @@ def get_opts():
         BoolVariable("use_msan", "Use LLVM/GCC compiler memory sanitizer (MSAN))", False),
         BoolVariable("separate_debug_symbols", "Create a separate file containing debugging symbols", False),
         BoolVariable("execinfo", "Use libexecinfo on systems where glibc is not available", False),
+        BoolVariable("use_embree4", "Use Embree 4 instead of Embree 3", False),
     ]
 
 
@@ -260,12 +261,14 @@ def configure(env):
     if not env["builtin_pcre2"]:
         env.ParseConfig("pkg-config libpcre2-32 --cflags --libs")
 
-    # Embree is only compatible with x86_64. Yet another unreliable hack that will break
-    # cross-compilation, this will really need to be handle better. Thankfully only affects
-    # people who disable builtin_embree (likely distro packagers).
-    if env["tools"] and not env["builtin_embree"] and (is64 and platform.machine() == "x86_64"):
+    # Embree is only used in tools build on x86_64 and aarch64.
+    if env["tools"] and not env["builtin_embree"] and is64:
         # No pkgconfig file so far, hardcode expected lib name.
-        env.Append(LIBS=["embree3"])
+        if env["use_embree4"]:
+            env.Append(LIBS=["embree4"])
+            env.Append(CPPDEFINES=["USE_EMBREE4"])
+        else:
+            env.Append(LIBS=["embree3"])
 
     ## Flags
 
