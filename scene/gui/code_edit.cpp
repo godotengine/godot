@@ -896,6 +896,7 @@ void CodeEdit::indent_lines() {
 		set_caret_column(get_caret_column(c) + selection_offset, false, c);
 	}
 	end_complex_operation();
+	queue_redraw();
 }
 
 void CodeEdit::unindent_lines() {
@@ -973,6 +974,7 @@ void CodeEdit::unindent_lines() {
 		set_caret_column(initial_cursor_column - removed_characters, false, c);
 	}
 	end_complex_operation();
+	queue_redraw();
 }
 
 int CodeEdit::_calculate_spaces_till_next_left_indent(int p_column) const {
