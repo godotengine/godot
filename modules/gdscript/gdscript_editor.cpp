@@ -1353,6 +1353,21 @@ static GDScriptCompletionIdentifier _type_from_property(const PropertyInfo &p_pr
 	return ci;
 }
 
+#define MAX_COMPLETION_RECURSION 100
+struct RecursionCheck {
+	int *counter;
+	_FORCE_INLINE_ bool check() {
+		return (*counter) > MAX_COMPLETION_RECURSION;
+	}
+	RecursionCheck(int *p_counter) :
+			counter(p_counter) {
+		(*counter)++;
+	}
+	~RecursionCheck() {
+		(*counter)--;
+	}
+};
+
 static bool _guess_identifier_type(GDScriptParser::CompletionContext &p_context, const StringName &p_identifier, GDScriptCompletionIdentifier &r_type);
 static bool _guess_identifier_type_from_base(GDScriptParser::CompletionContext &p_context, const GDScriptCompletionIdentifier &p_base, const StringName &p_identifier, GDScriptCompletionIdentifier &r_type);
 static bool _guess_method_return_type_from_base(GDScriptParser::CompletionContext &p_context, const GDScriptCompletionIdentifier &p_base, const StringName &p_method, GDScriptCompletionIdentifier &r_type);
@@ -1383,6 +1398,12 @@ static bool _guess_expression_type(GDScriptParser::CompletionContext &p_context,
 
 	if (p_expression == nullptr) {
 		return false;
+	}
+
+	static int recursion_depth = 0;
+	RecursionCheck recursion(&recursion_depth);
+	if (unlikely(recursion.check())) {
+		ERR_FAIL_V_MSG(false, "Reached recursion limit while trying to guess type.");
 	}
 
 	if (p_expression->is_constant) {
@@ -1855,6 +1876,12 @@ static bool _guess_expression_type(GDScriptParser::CompletionContext &p_context,
 }
 
 static bool _guess_identifier_type(GDScriptParser::CompletionContext &p_context, const StringName &p_identifier, GDScriptCompletionIdentifier &r_type) {
+	static int recursion_depth = 0;
+	RecursionCheck recursion(&recursion_depth);
+	if (unlikely(recursion.check())) {
+		ERR_FAIL_V_MSG(false, "Reached recursion limit while trying to guess type.");
+	}
+
 	// Look in blocks first.
 	int last_assign_line = -1;
 	const GDScriptParser::ExpressionNode *last_assigned_expression = nullptr;
@@ -2072,6 +2099,12 @@ static bool _guess_identifier_type(GDScriptParser::CompletionContext &p_context,
 }
 
 static bool _guess_identifier_type_from_base(GDScriptParser::CompletionContext &p_context, const GDScriptCompletionIdentifier &p_base, const StringName &p_identifier, GDScriptCompletionIdentifier &r_type) {
+	static int recursion_depth = 0;
+	RecursionCheck recursion(&recursion_depth);
+	if (unlikely(recursion.check())) {
+		ERR_FAIL_V_MSG(false, "Reached recursion limit while trying to guess type.");
+	}
+
 	GDScriptParser::DataType base_type = p_base.type;
 	bool is_static = base_type.is_meta_type;
 	while (base_type.is_set()) {
@@ -2285,6 +2318,12 @@ static void _find_last_return_in_block(GDScriptParser::CompletionContext &p_cont
 }
 
 static bool _guess_method_return_type_from_base(GDScriptParser::CompletionContext &p_context, const GDScriptCompletionIdentifier &p_base, const StringName &p_method, GDScriptCompletionIdentifier &r_type) {
+	static int recursion_depth = 0;
+	RecursionCheck recursion(&recursion_depth);
+	if (unlikely(recursion.check())) {
+		ERR_FAIL_V_MSG(false, "Reached recursion limit while trying to guess type.");
+	}
+
 	GDScriptParser::DataType base_type = p_base.type;
 	bool is_static = base_type.is_meta_type;
 
