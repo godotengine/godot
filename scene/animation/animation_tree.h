@@ -87,7 +87,9 @@ public:
 	Vector<real_t> blends;
 	State *state = nullptr;
 
-	double _pre_process(const StringName &p_base_path, AnimationNode *p_parent, State *p_state, double p_time, bool p_seek, bool p_is_external_seeking, const Vector<StringName> &p_connections);
+	bool is_testing = false;
+
+	double _pre_process(const StringName &p_base_path, AnimationNode *p_parent, State *p_state, double p_time, bool p_seek, bool p_is_external_seeking, const Vector<StringName> &p_connections, bool p_test_only = false);
 
 	//all this is temporary
 	StringName base_path;
@@ -100,12 +102,15 @@ public:
 	Array _get_filters() const;
 	void _set_filters(const Array &p_filters);
 	friend class AnimationNodeBlendTree;
-	double _blend_node(const StringName &p_subpath, const Vector<StringName> &p_connections, AnimationNode *p_new_parent, Ref<AnimationNode> p_node, double p_time, bool p_seek, bool p_is_external_seeking, real_t p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_sync = true, real_t *r_max = nullptr);
+	double _blend_node(const StringName &p_subpath, const Vector<StringName> &p_connections, AnimationNode *p_new_parent, Ref<AnimationNode> p_node, double p_time, bool p_seek, bool p_is_external_seeking, real_t p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_sync = true, real_t *r_max = nullptr, bool p_test_only = false);
 
 protected:
+	virtual double _process(double p_time, bool p_seek, bool p_is_external_seeking, bool p_test_only = false);
+	double process(double p_time, bool p_seek, bool p_is_external_seeking, bool p_test_only = false);
+
 	void blend_animation(const StringName &p_animation, double p_time, double p_delta, bool p_seeked, bool p_is_external_seeking, real_t p_blend, Animation::LoopedFlag p_looped_flag = Animation::LOOPED_FLAG_NONE);
-	double blend_node(const StringName &p_sub_path, Ref<AnimationNode> p_node, double p_time, bool p_seek, bool p_is_external_seeking, real_t p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_sync = true);
-	double blend_input(int p_input, double p_time, bool p_seek, bool p_is_external_seeking, real_t p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_sync = true);
+	double blend_node(const StringName &p_sub_path, Ref<AnimationNode> p_node, double p_time, bool p_seek, bool p_is_external_seeking, real_t p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_sync = true, bool p_test_only = false);
+	double blend_input(int p_input, double p_time, bool p_seek, bool p_is_external_seeking, real_t p_blend, FilterAction p_filter = FILTER_IGNORE, bool p_sync = true, bool p_test_only = false);
 
 	void make_invalid(const String &p_reason);
 	AnimationTree *get_animation_tree() const;
@@ -119,7 +124,7 @@ protected:
 	GDVIRTUAL1RC(Ref<AnimationNode>, _get_child_by_name, StringName)
 	GDVIRTUAL1RC(Variant, _get_parameter_default_value, StringName)
 	GDVIRTUAL1RC(bool, _is_parameter_read_only, StringName)
-	GDVIRTUAL3RC(double, _process, double, bool, bool)
+	GDVIRTUAL4RC(double, _process, double, bool, bool, bool)
 	GDVIRTUAL0RC(String, _get_caption)
 	GDVIRTUAL0RC(bool, _has_filter)
 
@@ -138,7 +143,6 @@ public:
 
 	virtual void get_child_nodes(List<ChildNode> *r_child_nodes);
 
-	virtual double process(double p_time, bool p_seek, bool p_is_external_seeking);
 	virtual String get_caption() const;
 
 	virtual bool add_input(const String &p_name);

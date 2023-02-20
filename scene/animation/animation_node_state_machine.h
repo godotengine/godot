@@ -136,7 +136,6 @@ class AnimationNodeStateMachinePlayback : public Resource {
 	StringName current;
 	Transition current_transition;
 	Ref<Curve> current_curve;
-	bool force_auto_advance = false;
 
 	StringName fading_from;
 	float fading_time = 0.0;
@@ -149,17 +148,20 @@ class AnimationNodeStateMachinePlayback : public Resource {
 	StringName travel_request;
 	bool reset_request = false;
 	bool reset_request_on_teleport = false;
+	bool _reset_request_for_fading_from = false;
 	bool next_request = false;
 	bool stop_request = false;
 
 	bool _travel(AnimationNodeStateMachine *p_state_machine, const StringName &p_travel);
 	void _start(const StringName &p_state);
-	double _process(AnimationNodeStateMachine *p_state_machine, double p_time, bool p_seek, bool p_is_external_seeking);
+	double _process(AnimationNodeStateMachine *p_state_machine, double p_time, bool p_seek, bool p_is_external_seeking, bool p_test_only);
 
-	double process(AnimationNodeStateMachine *p_state_machine, double p_time, bool p_seek, bool p_is_external_seeking);
+	double process(AnimationNodeStateMachine *p_state_machine, double p_time, bool p_seek, bool p_is_external_seeking, bool p_test_only);
 
 	bool _check_advance_condition(const Ref<AnimationNodeStateMachine> p_state_machine, const Ref<AnimationNodeStateMachineTransition> p_transition) const;
+	bool _transition_to_next_recursive(AnimationNodeStateMachine *p_state_machine, bool p_test_only);
 	NextInfo _find_next(AnimationNodeStateMachine *p_state_machine);
+	bool _can_transition_to_next(AnimationNodeStateMachine *p_state_machine, NextInfo p_next);
 
 protected:
 	static void _bind_methods();
@@ -273,7 +275,7 @@ public:
 	void set_graph_offset(const Vector2 &p_offset);
 	Vector2 get_graph_offset() const;
 
-	virtual double process(double p_time, bool p_seek, bool p_is_external_seeking) override;
+	virtual double _process(double p_time, bool p_seek, bool p_is_external_seeking, bool p_test_only = false) override;
 	virtual String get_caption() const override;
 
 	virtual Ref<AnimationNode> get_child_by_name(const StringName &p_name) override;
