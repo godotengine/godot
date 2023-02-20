@@ -40,7 +40,11 @@
 #include "scene/resources/mesh.h"
 #include "servers/rendering/renderer_scene_occlusion_cull.h"
 
+#ifdef USE_EMBREE4
+#include <embree4/rtcore.h>
+#else
 #include <embree3/rtcore.h>
+#endif
 
 class RaycastOcclusionCull : public RendererSceneOcclusionCull {
 	typedef RTCRayHit16 CameraRayTile;

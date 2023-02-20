@@ -53,6 +53,7 @@ def get_opts():
         BoolVariable("x11", "Enable X11 display", True),
         BoolVariable("touch", "Enable touch events", True),
         BoolVariable("execinfo", "Use libexecinfo on systems where glibc is not available", False),
+        BoolVariable("use_embree4", "Use Embree 4 instead of Embree 3", False),
     ]
 
 
@@ -279,7 +280,11 @@ def configure(env: "Environment"):
 
     if not env["builtin_embree"]:
         # No pkgconfig file so far, hardcode expected lib name.
-        env.Append(LIBS=["embree3"])
+        if env["use_embree4"]:
+            env.Append(LIBS=["embree4"])
+            env.Append(CPPDEFINES=["USE_EMBREE4"])
+        else:
+            env.Append(LIBS=["embree3"])
 
     ## Flags
     if env["fontconfig"]:
