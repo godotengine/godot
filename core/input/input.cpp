@@ -352,8 +352,8 @@ float Input::get_axis(const StringName &p_negative_action, const StringName &p_p
 
 Vector2 Input::get_vector(const StringName &p_negative_x, const StringName &p_positive_x, const StringName &p_negative_y, const StringName &p_positive_y, float p_deadzone) const {
 	Vector2 vector = Vector2(
-			get_action_strength(p_positive_x) - get_action_strength(p_negative_x),
-			get_action_strength(p_positive_y) - get_action_strength(p_negative_y));
+			get_action_raw_strength(p_positive_x) - get_action_raw_strength(p_negative_x),
+			get_action_raw_strength(p_positive_y) - get_action_raw_strength(p_negative_y));
 
 	if (p_deadzone < 0.0f) {
 		// If the deadzone isn't specified, get it from the average of the actions.
