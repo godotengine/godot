@@ -69,6 +69,11 @@
 		</member>
 	</members>
 	<signals>
+		<signal name="synchronized">
+			<description>
+				Emitted when a new synchronization state is received by this synchronizer after the variables have been updated.
+			</description>
+		</signal>
 		<signal name="visibility_changed">
 			<param index="0" name="for_peer" type="int" />
 			<description>
