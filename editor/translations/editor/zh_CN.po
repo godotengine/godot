@@ -95,8 +95,8 @@ msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2023-02-10 06:54+0000\n"
-"Last-Translator: 风青山 <idleman@yeah.net>\n"
+"PO-Revision-Date: 2023-02-17 10:49+0000\n"
+"Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
 "Language: zh_CN\n"
@@ -246,6 +246,12 @@ msgstr "Xbox 拨片 4"
 
 msgid "PS4/5 Touchpad"
 msgstr "PS4/5 触控板"
+
+msgid "Joypad Button %d"
+msgstr "手柄按钮 %d"
+
+msgid "Pressure:"
+msgstr "压力："
 
 msgid "touched"
 msgstr "按下"
@@ -425,9 +431,6 @@ msgstr "清除光标和选区"
 msgid "Toggle Insert Mode"
 msgstr "开关插入模式"
 
-msgid "Text Submitted"
-msgstr "提交文本"
-
 msgid "Duplicate Nodes"
 msgstr "复制节点"
 
@@ -508,6 +511,12 @@ msgstr "无效的动作名称。动作名不能为空，也不能包含“/”�
 
 msgid "An action with the name '%s' already exists."
 msgstr "名为“%s”的动作已存在。"
+
+msgid "Cannot Revert - Action is same as initial"
+msgstr "无法还原—动作与初始动作相同"
+
+msgid "Revert Action"
+msgstr "还原动作"
 
 msgid "Add Event"
 msgstr "添加事件"
@@ -692,6 +701,9 @@ msgstr "修改轨道路径"
 msgid "Toggle this track on/off."
 msgstr "切换该轨道的开关。"
 
+msgid "Use Blend"
+msgstr "使用混合"
+
 msgid "Update Mode (How this property is set)"
 msgstr "更新模式（设置该属性的方式）"
 
@@ -761,6 +773,9 @@ msgstr "动画剪辑："
 msgid "Toggle Track Enabled"
 msgstr "启用/禁用轨道"
 
+msgid "Don't Use Blend"
+msgstr "禁用混合"
+
 msgid "Continuous"
 msgstr "连续"
 
@@ -811,6 +826,9 @@ msgstr "修改动画插值模式"
 
 msgid "Change Animation Loop Mode"
 msgstr "修改动画循环模式"
+
+msgid "Change Animation Use Blend"
+msgstr "修改动画使用混合"
 
 msgid ""
 "Compressed tracks can't be edited or removed. Re-import the animation with "
@@ -1052,18 +1070,6 @@ msgstr "使用贝塞尔曲线"
 msgid "Create RESET Track(s)"
 msgstr "创建 RESET 轨道"
 
-msgid "Anim. Optimizer"
-msgstr "动画优化器"
-
-msgid "Max. Velocity Error:"
-msgstr "最大速度误差："
-
-msgid "Max. Angular Error:"
-msgstr "最大角度误差："
-
-msgid "Max. Precision Error:"
-msgstr "最大精度误差："
-
 msgid "Optimize"
 msgstr "优化"
 
@@ -1087,9 +1093,6 @@ msgstr "缩放比率："
 
 msgid "Select Transition and Easing"
 msgstr "选择过渡和缓动"
-
-msgid "Anim. Baker"
-msgstr "动画烘焙器"
 
 msgid "Select Tracks to Copy"
 msgstr "选择要复制的轨道"
@@ -1173,6 +1176,9 @@ msgid ""
 "target node."
 msgstr "找不到目标方法。请指定一个有效的方法或把脚本附加到目标节点。"
 
+msgid "Attached Script"
+msgstr "附加脚本"
+
 msgid "Connect to Node:"
 msgstr "连接到节点："
 
@@ -1185,6 +1191,9 @@ msgstr "来自信号："
 msgid "Filter Nodes"
 msgstr "筛选节点"
 
+msgid "Go to Source"
+msgstr "跳转到源"
+
 msgid "Scene does not contain any script."
 msgstr "场景不包含脚本。"
 
@@ -1193,6 +1202,15 @@ msgstr "选择方法"
 
 msgid "Filter Methods"
 msgstr "筛选方法"
+
+msgid "No method found matching given filters."
+msgstr "没有找到匹配给定过滤器的方法。"
+
+msgid "Script Methods Only"
+msgstr "仅脚本方法"
+
+msgid "Compatible Methods Only"
+msgstr "仅兼容方法"
 
 msgid "Remove"
 msgstr "移除"
@@ -1260,6 +1278,9 @@ msgstr "断开连接"
 
 msgid "Connect a Signal to a Method"
 msgstr "连接信号到方法"
+
+msgid "Edit Connection: '%s'"
+msgstr "编辑连接：“%s”"
 
 msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
 msgstr "确定要从信号 “%s” 中移除所有连接吗？"
@@ -1452,6 +1473,15 @@ msgstr "错误:"
 msgid "%s Error"
 msgstr "%s 错误"
 
+msgid "%s Error:"
+msgstr "%s 错误："
+
+msgid "%s Source"
+msgstr "%s 源文件"
+
+msgid "%s Source:"
+msgstr "%s 源文件："
+
 msgid "Stack Trace"
 msgstr "栈追踪"
 
@@ -1465,7 +1495,7 @@ msgid "Debug session closed."
 msgstr "调试会话结束。"
 
 msgid "Line %d"
-msgstr "行 %d"
+msgstr "第 %d 行"
 
 msgid "Delete Breakpoint"
 msgstr "移除断点"
@@ -1519,7 +1549,7 @@ msgid "Collapse All"
 msgstr "全部折叠"
 
 msgid "Profiler"
-msgstr "性能分析器"
+msgstr "分析器"
 
 msgid "Visual Profiler"
 msgstr "可视分析器"
@@ -1972,6 +2002,9 @@ msgstr "添加自动加载"
 msgid "Path:"
 msgstr "路径："
 
+msgid "Set path or press \"%s\" to create a script."
+msgstr "设置路径或按“%s”创建脚本。"
+
 msgid "Node Name:"
 msgstr "节点名称："
 
@@ -2052,14 +2085,14 @@ msgid ""
 "Supports basic text layouts."
 msgstr ""
 "文本服务器的后备实现\n"
-"支持基本的文本布局。"
+"支持基础排版。"
 
 msgid ""
 "Text Server implementation powered by ICU and HarfBuzz libraries.\n"
 "Supports complex text layouts, BiDi, and contextual OpenType font features."
 msgstr ""
 "由 ICU 和 HarfBuzz 库提供支持的文本服务器实现。\n"
-"支持复杂的文本布局、BiDi 和上下文 OpenType 字体功能。"
+"支持复杂排版、BiDi 和上下文 OpenType 字体特性。"
 
 msgid ""
 "TrueType, OpenType, Type 1, and WOFF1 font format support using FreeType "
@@ -2099,7 +2132,7 @@ msgid "File '%s' format is invalid, import aborted."
 msgstr "文件 “%s” 的格式无效，导入中止。"
 
 msgid "Error saving profile to path: '%s'."
-msgstr "将配置文件保存到路径 “%s” 时出错。"
+msgstr "将配置保存到路径 “%s” 时出错。"
 
 msgid "New"
 msgstr "新建"
@@ -2108,7 +2141,7 @@ msgid "Save"
 msgstr "保存"
 
 msgid "Profile:"
-msgstr "配置文件："
+msgstr "配置："
 
 msgid "Reset to Defaults"
 msgstr "重置为默认值"
@@ -2120,25 +2153,25 @@ msgid "Actions:"
 msgstr "动作："
 
 msgid "Configure Engine Build Profile:"
-msgstr "配置引擎构建配置文件："
+msgstr "配置引擎构建配置："
 
 msgid "Please Confirm:"
 msgstr "请确认："
 
 msgid "Engine Build Profile"
-msgstr "引擎构建配置文件"
+msgstr "引擎构建配置"
 
 msgid "Load Profile"
-msgstr "加载配置文件"
+msgstr "加载配置"
 
 msgid "Export Profile"
-msgstr "导出配置文件"
+msgstr "导出配置"
 
 msgid "Forced classes on detect:"
 msgstr "强制检测类："
 
 msgid "Edit Build Configuration Profile"
-msgstr "编辑构建配置文件"
+msgstr "编辑构建配置"
 
 msgid "Filter Commands"
 msgstr "筛选命令"
@@ -2241,13 +2274,13 @@ msgid "(none)"
 msgstr "（无）"
 
 msgid "Remove currently selected profile, '%s'? Cannot be undone."
-msgstr "要移除当前所选的配置文件“%s”吗？无法撤销。"
+msgstr "要移除当前所选的配置“%s”吗？无法撤销。"
 
 msgid "Profile must be a valid filename and must not contain '.'"
-msgstr "配置文件必须是有效的文件名，并且不能包含 “.”"
+msgstr "配置必须是有效的文件名，并且不能包含 “.”"
 
 msgid "Profile with this name already exists."
-msgstr "同名的配置文件已经存在。"
+msgstr "同名的配置已经存在。"
 
 msgid "(Editor Disabled, Properties Disabled)"
 msgstr "（编辑器已禁用，属性已禁用）"
@@ -2273,22 +2306,22 @@ msgstr "主要特性："
 msgid ""
 "Profile '%s' already exists. Remove it first before importing, import "
 "aborted."
-msgstr "配置文件“%s”已存在。请在导入之前先移除该配置文件，导入已中止。"
+msgstr "配置“%s”已存在。请在导入之前先移除该配置，导入已中止。"
 
 msgid "Reset to Default"
 msgstr "重置为默认值"
 
 msgid "Current Profile:"
-msgstr "当前配置文件："
+msgstr "当前配置："
 
 msgid "Create Profile"
-msgstr "创建配置文件"
+msgstr "创建配置"
 
 msgid "Remove Profile"
-msgstr "移除配置文件"
+msgstr "移除配置"
 
 msgid "Available Profiles:"
-msgstr "可用配置文件："
+msgstr "可用配置："
 
 msgid "Make Current"
 msgstr "设为当前"
@@ -2300,25 +2333,25 @@ msgid "Export"
 msgstr "导出"
 
 msgid "Configure Selected Profile:"
-msgstr "配置所选配置文件："
+msgstr "配置所选配置："
 
 msgid "Extra Options:"
 msgstr "更多选项："
 
 msgid "Create or import a profile to edit available classes and properties."
-msgstr "创建或导入配置文件以编辑可用的类和属性。"
+msgstr "创建或导入配置以编辑可用的类和属性。"
 
 msgid "New profile name:"
-msgstr "新的配置文件名称："
+msgstr "新的配置名称："
 
 msgid "Godot Feature Profile"
-msgstr "Godot 功能配置文件"
+msgstr "Godot 功能配置"
 
 msgid "Import Profile(s)"
-msgstr "导入配置文件"
+msgstr "导入配置"
 
 msgid "Manage Editor Feature Profiles"
-msgstr "管理编辑器功能配置文件"
+msgstr "管理编辑器功能配置"
 
 msgid "Network"
 msgstr "网络"
@@ -2328,9 +2361,6 @@ msgstr "打开"
 
 msgid "Select Current Folder"
 msgstr "选择当前文件夹"
-
-msgid "File exists, overwrite?"
-msgstr "文件已存在，是否覆盖？"
 
 msgid "Select This Folder"
 msgstr "选择此文件夹"
@@ -2511,7 +2541,7 @@ msgstr ""
 "color]！"
 
 msgid "Top"
-msgstr "顶部"
+msgstr "顶"
 
 msgid "Class:"
 msgstr "类："
@@ -2819,6 +2849,9 @@ msgstr "修改区域设置地区筛选"
 msgid "Changed Locale Filter Mode"
 msgstr "修改区域设置筛选模式"
 
+msgid "[Default]"
+msgstr "[默认]"
+
 msgid "Select a Locale"
 msgstr "选择区域"
 
@@ -2834,11 +2867,19 @@ msgstr "编辑筛选器"
 msgid "Language:"
 msgstr "语言："
 
+msgctxt "Locale"
+msgid "Script:"
+msgstr "文字："
+
 msgid "Country:"
 msgstr "地区："
 
 msgid "Language"
 msgstr "语言"
+
+msgctxt "Locale"
+msgid "Script"
+msgstr "文字"
 
 msgid "Country"
 msgstr "地区"
@@ -3001,14 +3042,14 @@ msgid "Restored the Default layout to its base settings."
 msgstr "已将默认布局恢复为原始内容。"
 
 msgid "This object is marked as read-only, so it's not editable."
-msgstr "这个对象被标记为只读，所以它是不可编辑的。"
+msgstr "这个对象被标记为只读，所以无法编辑。"
 
 msgid ""
 "This resource belongs to a scene that was imported, so it's not editable.\n"
 "Please read the documentation relevant to importing scenes to better "
 "understand this workflow."
 msgstr ""
-"这个资源属于已导入的场景，不可编辑。\n"
+"这个资源属于已导入的场景，所以无法编辑。\n"
 "请阅读与导入场景相关的文档，以更佳理解此工作流。"
 
 msgid ""
@@ -3021,7 +3062,7 @@ msgstr ""
 msgid ""
 "This resource was imported, so it's not editable. Change its settings in the "
 "import panel and then re-import."
-msgstr "此资源已导入，因此无法编辑。在导入面板中更改设置并重新导入。"
+msgstr "这是导入的资源，因此无法编辑。请在导入面板中更改设置并重新导入。"
 
 msgid ""
 "This scene was imported, so changes to it won't be kept.\n"
@@ -3029,8 +3070,8 @@ msgid ""
 "Please read the documentation relevant to importing scenes to better "
 "understand this workflow."
 msgstr ""
-"此场景是导入的，因此不会保留对其所做的更改。\n"
-"实例化或继承它将允许您对其进行更改。\n"
+"这是导入的场景，因此不会保留对其所做的更改。\n"
+"你可以通过实例化或继承对其进行更改。\n"
 "请阅读与导入场景相关的文档以更好地理解此工作流程。"
 
 msgid "Changes may be lost!"
@@ -3582,6 +3623,22 @@ msgid "Select Android sources file"
 msgstr "选择 Android 源文件"
 
 msgid ""
+"This will set up your project for gradle Android builds by installing the "
+"source template to \"res://android/build\".\n"
+"You can then apply modifications and build your own custom APK on export "
+"(adding modules, changing the AndroidManifest.xml, etc.).\n"
+"Note that in order to make gradle builds instead of using pre-built APKs, "
+"the \"Use Gradle Build\" option should be enabled in the Android export "
+"preset."
+msgstr ""
+"即将为你的项目设置自定义 Android 构建，源码模板会被安装到“res://android/"
+"build”。\n"
+"你可以对其进行修改，在导出时构建自定义的 APK（添加模块、更改 AndroidManifest."
+"xml 等）。\n"
+"请注意，要使用自定义构建替代预先构建的 APK，应该在 Android 导出预设中启用“使"
+"用 Gradle 构建”选项。"
+
+msgid ""
 "The Android build template is already installed in this project and it won't "
 "be overwritten.\n"
 "Remove the \"res://android/build\" directory manually before attempting this "
@@ -3966,6 +4023,9 @@ msgstr "控制杆 4 向上"
 msgid "Joystick 4 Down"
 msgstr "控制杆 4 向下"
 
+msgid "Joypad Axis %d %s (%s)"
+msgstr "游戏手柄轴 %d %s （%s）"
+
 msgid "All Devices"
 msgstr "所有设备"
 
@@ -3977,6 +4037,16 @@ msgstr "正在监听输入..."
 
 msgid "Filter by event..."
 msgstr "按事件筛选..."
+
+msgid ""
+"Target platform requires 'ETC2/ASTC' texture compression. Enable 'Import "
+"ETC2 ASTC' in Project Settings."
+msgstr "目标平台需要“ETC2/ASTC”纹理压缩。请在项目设置中启用“导入 ETC2 ASTC”。"
+
+msgid ""
+"Target platform requires 'S3TC/BPTC' texture compression. Enable 'Import "
+"S3TC BPTC' in Project Settings."
+msgstr "目标平台需要“S3TC/BPTC”纹理压缩。请在项目设置中启用“导入 S3TC BPTC”。"
 
 msgid "Project export for platform:"
 msgstr "针对平台导出项目："
@@ -4014,17 +4084,14 @@ msgstr "无法创建文件“%s”。"
 msgid "Failed to export project files."
 msgstr "导出项目文件失败。"
 
-msgid "Can't open file to read from path \"%s\"."
-msgstr "无法打开位于“%s”的文件用于读取。"
-
-msgid "Can't open executable file from path \"%s\"."
-msgstr "无法打开位于“%s”的可执行文件。"
-
 msgid "Can't create encrypted file."
 msgstr "无法创建加密文件。"
 
 msgid "Can't open encrypted file to write."
 msgstr "无法打开加密文件进行写操作。"
+
+msgid "Can't open file to read from path \"%s\"."
+msgstr "无法打开位于“%s”的文件用于读取。"
 
 msgid "Save ZIP"
 msgstr "保存 ZIP"
@@ -4781,6 +4848,9 @@ msgstr "新建配置"
 msgid "Remove Variation"
 msgstr "移除变体"
 
+msgid "Preloaded glyphs: %d"
+msgstr "预加载字形：%d"
+
 msgid ""
 "Warning: There are no configurations specified, no glyphs will be pre-"
 "rendered."
@@ -4846,7 +4916,7 @@ msgid ""
 "Enter a text and select OpenType features to shape and add all required "
 "glyphs to pre-render list:"
 msgstr ""
-"输入文本并选择 OpenType 功能来塑形，并将所有必需的字形添加到预渲染列表中："
+"输入文本并选择 OpenType 特性来塑形，并将所有必需的字形添加到预渲染列表中："
 
 msgid "Shape Text and Add Glyphs"
 msgstr "塑形文本并添加字形"
@@ -5148,6 +5218,15 @@ msgid ""
 "Automatically remaps between 'Meta' ('Command') and 'Control' depending on "
 "current platform."
 msgstr "根据当前平台，在“Meta”（“Command”）和“Ctrl”之间自动重映射。"
+
+msgid "Keycode (Latin Equivalent)"
+msgstr "键码（等价拉丁字符）"
+
+msgid "Physical Keycode (Position on US QWERTY Keyboard)"
+msgstr "物理键码（美式 QWERTY 键盘上的位置）"
+
+msgid "Key Label (Unicode, Case-Insensitive)"
+msgstr "键标签（Unicode，不区分大小写）"
 
 msgid ""
 "The following resources will be duplicated and embedded within this resource/"
@@ -5761,6 +5840,9 @@ msgstr "从当前位置倒放选中动画（A）"
 
 msgid "Play selected animation backwards from end. (Shift+A)"
 msgstr "从结束时间倒放选中动画（Shift+A）"
+
+msgid "Pause/stop animation playback. (S)"
+msgstr "暂停/停止动画播放。 (S)"
 
 msgid "Play selected animation from start. (Shift+D)"
 msgstr "从头播放选中动画（Shift+D）"
@@ -6552,9 +6634,6 @@ msgstr "从 %s 实例化场景时出错"
 msgid "Change Default Type"
 msgstr "修改默认类型"
 
-msgid "Set target_position"
-msgstr "设置 target_position"
-
 msgid "Set Handle"
 msgstr "设置处理程序"
 
@@ -6657,14 +6736,14 @@ msgid ""
 "Enable to also set the Expand flag.\n"
 "Disable to only set Shrink/Fill flags."
 msgstr ""
-"启用，同时设置扩展标志。\n"
-"禁用，只设置收缩/填充标志。"
+"启用时还会设置 Expand 标志。\n"
+"禁用时只设置 Shrink/Fill 标志。"
 
 msgid "Some parents of the selected nodes do not support the Expand flag."
 msgstr "所选节点的某些父节点不支持扩展标志。"
 
 msgid "Align with Expand"
-msgstr "对齐展开"
+msgstr "对齐并扩展"
 
 msgid "Change Anchors, Offsets, Grow Direction"
 msgstr "更改锚点、偏移、增长方向"
@@ -6884,8 +6963,16 @@ msgstr ""
 msgid "Run Multiple Instances"
 msgstr "运行多个实例"
 
+msgid "Run %d Instance"
+msgid_plural "Run %d Instances"
+msgstr[0] "运行 %d 个实例"
+
 msgid "Overrides (%d)"
 msgstr "覆盖（%d）"
+
+msgctxt "Locale"
+msgid "Add Script"
+msgstr "添加文字"
 
 msgid "Add Locale"
 msgstr "添加区域"
@@ -6897,7 +6984,7 @@ msgid "No supported features"
 msgstr "不支持的特性"
 
 msgid "Features (%d of %d set)"
-msgstr "功能（%d / %d）"
+msgstr "特性（%d/%d）"
 
 msgid "Add Feature"
 msgstr "添加特性"
@@ -7345,6 +7432,12 @@ msgstr "数量："
 msgid "Populate"
 msgstr "填充"
 
+msgid "Set start_position"
+msgstr "设置 start_position"
+
+msgid "Set end_position"
+msgstr "设置 end_position"
+
 msgid "Create Navigation Polygon"
 msgstr "创建导航多边形"
 
@@ -7378,6 +7471,12 @@ msgstr "修改粒子 AABB"
 msgid "Change Radius"
 msgstr "修改半径"
 
+msgid "Change Probe Size"
+msgstr "修改探针大小"
+
+msgid "Change Decal Size"
+msgstr "修改贴花大小"
+
 msgid "Change Capsule Shape Radius"
 msgstr "修改胶囊体半径"
 
@@ -7398,6 +7497,15 @@ msgstr "开始位置"
 
 msgid "End Location"
 msgstr "结束位置"
+
+msgid "Change Start Position"
+msgstr "修改开始位置"
+
+msgid "Change End Position"
+msgstr "修改结束位置"
+
+msgid "Change Fog Volume Size"
+msgstr "修改雾体积大小"
 
 msgid "Transform Aborted."
 msgstr "变换中止。"
@@ -7929,10 +8037,10 @@ msgid "Perspective FOV (deg.):"
 msgstr "透视视角（角度）:"
 
 msgid "View Z-Near:"
-msgstr "视图 Z-Near："
+msgstr "视图近平面 Z："
 
 msgid "View Z-Far:"
-msgstr "视图 Z-Far："
+msgstr "视图远平面 Z："
 
 msgid "Transform Change"
 msgstr "修改变换"
@@ -8592,7 +8700,7 @@ msgid "Evaluate Selection"
 msgstr "所选内容求值"
 
 msgid "Trim Trailing Whitespace"
-msgstr "移除尾部空格"
+msgstr "移除行尾空格"
 
 msgid "Convert Indent to Spaces"
 msgstr "将缩进转为空格"
@@ -8716,7 +8824,7 @@ msgid "Cannot export a SkeletonProfile for a Skeleton3D node with no bones."
 msgstr "无法为没有骨骼的 Skeleton3D 节点导出 SkeletonProfile。"
 
 msgid "Export Skeleton Profile As..."
-msgstr "将骨架配置文件导出为..."
+msgstr "将骨架配置导出为..."
 
 msgid "Set Bone Parentage"
 msgstr "设置骨骼父子关系"
@@ -8740,7 +8848,7 @@ msgid "Create Physical Skeleton"
 msgstr "创建物理骨架"
 
 msgid "Export Skeleton Profile"
-msgstr "导出骨架配置文件"
+msgstr "导出骨架配置"
 
 msgid ""
 "Edit Mode\n"
@@ -8880,6 +8988,9 @@ msgstr "（空）"
 
 msgid "Animations:"
 msgstr "动画："
+
+msgid "Animation Speed"
+msgstr "动画速度"
 
 msgid "Filter Animations"
 msgstr "筛选动画"
@@ -9667,6 +9778,9 @@ msgstr "绘制图块"
 msgid "Paste tiles"
 msgstr "粘贴图块"
 
+msgid "Paint"
+msgstr "绘制"
+
 msgid "Shift: Draw line."
 msgstr "Shift：画直线。"
 
@@ -9684,11 +9798,6 @@ msgstr "连续"
 
 msgid "Place Random Tile"
 msgstr "放置随机图块"
-
-msgid ""
-"Defines the probability of painting nothing instead of a randomly selected "
-"tile."
-msgstr "定义不绘制任何内容而不是绘制随机选择的图块的概率。"
 
 msgid "Scattering:"
 msgstr "散布："
@@ -9888,9 +9997,6 @@ msgstr "图集设置。图块添加/移除工具（Shift 键创建大图块、Ct
 
 msgid "Select tiles."
 msgstr "选择图块。"
-
-msgid "Paint"
-msgstr "绘制"
 
 msgid "Paint properties."
 msgstr "绘制属性。"
@@ -10211,6 +10317,11 @@ msgstr "采样器"
 
 msgid "[default]"
 msgstr "[默认]"
+
+msgid ""
+"The 2D preview cannot correctly show the result retrieved from instance "
+"parameter."
+msgstr "2D 预览无法正确显示从实例参数中检索到的结果。"
 
 msgid "Add Input Port"
 msgstr "添加输入端口"
@@ -11419,6 +11530,9 @@ msgstr "渲染器可以稍后更改，但可能需要调整场景。"
 msgid "Version Control Metadata:"
 msgstr "版本控制元数据："
 
+msgid "Git"
+msgstr "Git"
+
 msgid "Missing Project"
 msgstr "缺失项目"
 
@@ -11722,11 +11836,11 @@ msgstr "添加输入动作"
 msgid "Change Action deadzone"
 msgstr "修改动作死区"
 
+msgid "Change Input Action Event(s)"
+msgstr "修改输入动作事件"
+
 msgid "Erase Input Action"
 msgstr "擦除输入动作"
-
-msgid "Rename Input Action Event"
-msgstr "重命名输入动作事件"
 
 msgid "Update Input Action Order"
 msgstr "更新输入动作顺序"
@@ -12716,6 +12830,14 @@ msgstr "%d（%s）"
 msgid "%s/s"
 msgstr "%s/秒"
 
+msgctxt "Network"
+msgid "Down"
+msgstr "下载"
+
+msgctxt "Network"
+msgid "Up"
+msgstr "上传"
+
 msgid "Incoming RPC"
 msgstr "传入 RPC"
 
@@ -12888,7 +13010,7 @@ msgid "Remove action set"
 msgstr "移除动作集"
 
 msgid "Add interaction profile"
-msgstr "添加交互配置文件"
+msgstr "添加交互配置"
 
 msgid "Error saving file %s: %s"
 msgstr "保存文件 %s 时出错：%s"
@@ -12900,7 +13022,7 @@ msgid "OpenXR Action map:"
 msgstr "OpenXR 动作映射："
 
 msgid "Remove interaction profile"
-msgstr "移除交互配置文件"
+msgstr "移除交互配置"
 
 msgid "Action Map"
 msgstr "动作映射"
@@ -12912,10 +13034,10 @@ msgid "Add an action set."
 msgstr "添加一个动作集。"
 
 msgid "Add profile"
-msgstr "添加配置文件"
+msgstr "添加配置"
 
 msgid "Add an interaction profile."
-msgstr "添加一个交互配置文件。"
+msgstr "添加一个交互配置。"
 
 msgid "Save this OpenXR action map."
 msgstr "保存这个 OpenXR 动作映射。"
@@ -13060,11 +13182,24 @@ msgstr "APK 扩展的公钥无效。"
 msgid "Invalid package name:"
 msgstr "无效的包名称："
 
+msgid "\"Use Gradle Build\" must be enabled to use the plugins."
+msgstr "必须启用“使用 Gradle 构建”才能使用插件。"
+
+msgid "OpenXR requires \"Use Gradle Build\" to be enabled"
+msgstr "OpenXR 需要启用“使用 Gradle 构建”"
+
 msgid "\"Hand Tracking\" is only valid when \"XR Mode\" is \"OpenXR\"."
 msgstr "“手部跟踪”只有在当“XR Mode”是“OpenXR”时才有效。"
 
 msgid "\"Passthrough\" is only valid when \"XR Mode\" is \"OpenXR\"."
 msgstr "“穿透”只有在当“XR Mode”是“OpenXR”时才有效。"
+
+msgid "\"Export AAB\" is only valid when \"Use Gradle Build\" is enabled."
+msgstr "“导出 AAB”只有在启用“使用 Gradle 构建”时才有效。"
+
+msgid ""
+"\"Min SDK\" can only be overridden when \"Use Gradle Build\" is enabled."
+msgstr "“最小 SDK”只有在启用“使用 Gradle 构建”时才能覆盖。"
 
 msgid "\"Min SDK\" should be a valid integer, but got \"%s\" which is invalid."
 msgstr "“最小 SDK”应当为有效的整数，但获得了无效的“%s”。"
@@ -13073,6 +13208,10 @@ msgid ""
 "\"Min SDK\" cannot be lower than %d, which is the version needed by the "
 "Godot library."
 msgstr "“最小 SDK”不能低于 %d，这是 Godot 库所需要的版本。"
+
+msgid ""
+"\"Target SDK\" can only be overridden when \"Use Gradle Build\" is enabled."
+msgstr "“目标 SDK”只有在启用“使用 Gradle 构建”时才能覆盖。"
 
 msgid ""
 "\"Target SDK\" should be a valid integer, but got \"%s\" which is invalid."
@@ -13087,6 +13226,14 @@ msgstr ""
 
 msgid "\"Target SDK\" version must be greater or equal to \"Min SDK\" version."
 msgstr "“目标 SDK”版本必须大于等于“最小 SDK”版本。"
+
+msgid ""
+"The \"%s\" renderer is designed for Desktop devices, and is not suitable for "
+"Android devices."
+msgstr "“%s”渲染器专为桌面设备设计，不适用于 Android 设备。"
+
+msgid "\"Min SDK\" should be greater or equal to %d for the \"%s\" renderer."
+msgstr "“最小 SDK”必须大于等于 %d，才可使用“%s”渲染器。"
 
 msgid "Code Signing"
 msgstr "代码签名"
@@ -13148,6 +13295,13 @@ msgstr "无效文件名！Android APK 必须有 *.apk 扩展。"
 
 msgid "Unsupported export format!"
 msgstr "不支持的导出格式！"
+
+msgid ""
+"Trying to build from a gradle built template, but no version info for it "
+"exists. Please reinstall from the 'Project' menu."
+msgstr ""
+"尝试从自定义构建模板构建，但是它所使用的版本信息不存在。请从“项目”菜单中重新"
+"安装。"
 
 msgid ""
 "Android build version mismatch: Template installed: %s, Godot version: %s. "
@@ -13916,6 +14070,11 @@ msgid ""
 msgstr "NavigationAgent2D 只能在继承 Node2D 的父节点下使用。"
 
 msgid ""
+"NavigationLink2D start position should be different than the end position to "
+"be useful."
+msgstr "NavigationLink2D 的开始位置应该与结束位置不同，才能发挥作用。"
+
+msgid ""
 "The NavigationObstacle2D only serves to provide collision avoidance to a "
 "Node2D object."
 msgstr "NavigationObstacle2D 只能用于为 Node2D 对象避免碰撞。"
@@ -13992,11 +14151,16 @@ msgstr ""
 "的图块一起进行 Y 排序。"
 
 msgid ""
+"A TileMap layer is set as Y-sorted, but Y-sort is not enabled on the TileMap "
+"node itself."
+msgstr "TileMap 图层设置为 Y 排序，但 TileMap 节点本身未启用 Y 排序。"
+
+msgid ""
 "Isometric TileSet will likely not look as intended without Y-sort enabled "
 "for the TileMap and all of its layers."
 msgstr ""
-"如果不对 TileMap 和它的所有层启用 Y-sort，Isometric TileSet 可能看起来不像预"
-"期的那样。"
+"如果不对 TileMap 和它的所有层启用 Y-sort，等轴 TileSet 可能看起来不像预期的那"
+"样。"
 
 msgid ""
 "External Skeleton3D node not set! Please set a path to an external "
@@ -14054,6 +14218,16 @@ msgid ""
 msgstr ""
 "CollisionPolygon3D 节点的缩放不统一，很可能无法正常工作。\n"
 "请统一其缩放（即各轴均相同），修改多边形的顶点。"
+
+msgid ""
+"CollisionShape3D only serves to provide a collision shape to a "
+"CollisionObject3D derived node.\n"
+"Please only use it as a child of Area3D, StaticBody3D, RigidBody3D, "
+"CharacterBody3D, etc. to give them a shape."
+msgstr ""
+"CollisionShape3D 节点只能为 CollisionObject3D 的派生节点提供碰撞形状。\n"
+"请将其用作 Area3D、StaticBody3D、RigidBody3D、CharacterBody3D 的子节点以提供"
+"形状。"
 
 msgid ""
 "A shape must be provided for CollisionShape3D to function. Please create a "
@@ -14200,6 +14374,11 @@ msgstr "正在生成探针加速结构"
 msgid ""
 "The NavigationAgent3D can be used only under a Node3D inheriting parent node."
 msgstr "NavigationAgent3D 只能在继承 Node3D 的父节点下使用。"
+
+msgid ""
+"NavigationLink3D start position should be different than the end position to "
+"be useful."
+msgstr "NavigationLink3D 的开始位置应该与结束位置不同，才能发挥作用。"
 
 msgid ""
 "The NavigationObstacle3D only serves to provide collision avoidance to a "
@@ -14439,9 +14618,6 @@ msgstr ""
 "颜色：#%s\n"
 "鼠标左键：应用颜色"
 
-msgid "Pick a color from the editor window."
-msgstr "从编辑器窗口中选择一种颜色。"
-
 msgid "Select a picker shape."
 msgstr "选择选取器形状。"
 
@@ -14489,8 +14665,13 @@ msgstr "你无权访问此文件夹的内容。"
 msgid "All Files"
 msgstr "所有文件"
 
-msgid "Must use a valid extension."
-msgstr "必须使用有效的扩展名。"
+msgid ""
+"Please be aware that GraphEdit and GraphNode will undergo extensive "
+"refactoring in a future 4.x version involving compatibility-breaking API "
+"changes."
+msgstr ""
+"请注意，GraphEdit 和 GraphNode 将在未来的 4.x 版本中进行重构，会涉及大量破坏"
+"兼容性的 API 更改。"
 
 msgid "Enable grid minimap."
 msgstr "启用栅格小地图。"
@@ -14522,7 +14703,7 @@ msgid "Right-to-Left Mark (RLM)"
 msgstr "从右至左标志（RLM）"
 
 msgid "Start of Left-to-Right Embedding (LRE)"
-msgstr "从左到右嵌入 （LRE） 的开始"
+msgstr "开始从左至右嵌入（LRE）"
 
 msgid "Start of Right-to-Left Embedding (RLE)"
 msgstr "开始从右至左嵌入（RLE）"
@@ -14711,6 +14892,13 @@ msgstr "着色器的源资源无效。"
 
 msgid "Invalid operator for that type."
 msgstr "运算符对该类型无效。"
+
+msgid ""
+"`%s` precision mode is not available for `gl_compatibility` profile.\n"
+"Reverted to `None` precision."
+msgstr ""
+"`%s` 精度模式在 `gl_compatibility` 配置下不可用。\n"
+"已恢复为 `None` 精度。"
 
 msgid "Default Color"
 msgstr "默认颜色"
@@ -15100,6 +15288,9 @@ msgstr "不允许空结构体。"
 msgid "Uniform instances are not yet implemented for '%s' shaders."
 msgstr "“%s”着色器尚未实现 uniform 实例。"
 
+msgid "Uniform instances are not supported in gl_compatibility shaders."
+msgstr "gl_compatibility 着色器尚未支持 uniform 实例。"
+
 msgid "Varyings cannot be used in '%s' shaders."
 msgstr "Varying 不能在“%s”着色器中使用。"
 
@@ -15295,7 +15486,7 @@ msgid "Expected a comma in the macro argument list."
 msgstr "希望在宏参数列表中添加一个逗号。"
 
 msgid "Unmatched elif."
-msgstr "elif 未配对。"
+msgstr "不匹配的 elif。"
 
 msgid "Missing condition."
 msgstr "缺少条件。"
@@ -15304,10 +15495,16 @@ msgid "Condition evaluation error."
 msgstr "条件评估错误。"
 
 msgid "Unmatched else."
-msgstr "else 未配对。"
+msgstr "不匹配的 else。"
+
+msgid "Invalid else."
+msgstr "无效的 else。"
 
 msgid "Unmatched endif."
-msgstr "endif 未配对。"
+msgstr "不匹配的 endif。"
+
+msgid "Invalid endif."
+msgstr "无效的 endif。"
 
 msgid "Invalid ifdef."
 msgstr "无效的 ifdef。"
@@ -15337,6 +15534,12 @@ msgstr "无效的 undef。"
 
 msgid "Macro expansion limit exceeded."
 msgstr "已超出宏展开限制。"
+
+msgid "Invalid macro argument list."
+msgstr "无效的宏参数列表。"
+
+msgid "Invalid macro argument."
+msgstr "无效的宏参数。"
 
 msgid "Invalid macro argument count."
 msgstr "无效的宏参数计数。"

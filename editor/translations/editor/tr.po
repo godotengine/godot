@@ -90,13 +90,16 @@
 # alpdenthedev <ekrem_ekrem_45@hotmail.com>, 2022.
 # Muhammed Said Gülberk <msgulberk@gmail.com>, 2022.
 # Cave Johnson <aperturelabs123@proton.me>, 2023.
+# Atilla Yiğit Şimşekoğlu <yigitsimsekoglu@gmail.com>, 2023.
+# Muhammed Mustafa Özbay <muhammed.ozby@outlook.com>, 2023.
+# Tolunay Mutlu <tlnymtlu@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-02-09 09:37+0000\n"
-"Last-Translator: Cave Johnson <aperturelabs123@proton.me>\n"
+"PO-Revision-Date: 2023-02-20 00:45+0000\n"
+"Last-Translator: Tolunay Mutlu <tlnymtlu@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
 "Language: tr\n"
@@ -125,7 +128,7 @@ msgid "Mouse Wheel Up"
 msgstr "Fare Tekerleği Yukarı"
 
 msgid "Mouse Wheel Down"
-msgstr "Fare Tekerleği Aşağı."
+msgstr "Fare Tekerleği Aşağı"
 
 msgid "Mouse Wheel Left"
 msgstr "Sol Fare Tekerlek Düğmesi"
@@ -133,8 +136,53 @@ msgstr "Sol Fare Tekerlek Düğmesi"
 msgid "Mouse Wheel Right"
 msgstr "Sağ Fare Tekerlek Düğmesi"
 
+msgid "Mouse Thumb Button 1"
+msgstr "Yan Fare Düğmesi 1"
+
+msgid "Mouse Thumb Button 2"
+msgstr "Yan Fare Düğmesi 2"
+
 msgid "Button"
 msgstr "Düğme"
+
+msgid "Double Click"
+msgstr "Çift Tıklama"
+
+msgid "Mouse motion at position (%s) with velocity (%s)"
+msgstr "Fare hareketi (%s) hızıyla (%s) pozisyonunda"
+
+msgid "Left Stick X-Axis, Joystick 0 X-Axis"
+msgstr "Sol Çubuk X-Ekseni, Oyun Çubuğu 0 X-Ekseni"
+
+msgid "Left Stick Y-Axis, Joystick 0 Y-Axis"
+msgstr "Sol Çubuk Y-Ekseni, Oyun Çubuğu 0 Y-Ekseni"
+
+msgid "Right Stick X-Axis, Joystick 1 X-Axis"
+msgstr "Sağ Çubuk X-Ekseni, Oyun Çubuğu 1 X-Ekseni"
+
+msgid "Right Stick Y-Axis, Joystick 1 Y-Axis"
+msgstr "Sağ Çubuk Y-Ekseni, Oyun Çubuğu 1 Y-Ekseni"
+
+msgid "Joystick 2 X-Axis, Left Trigger, Sony L2, Xbox LT"
+msgstr "Oyun Çubuğu 2 X-Ekseni, Sol Tetik, Sony L2, Xbox LT"
+
+msgid "Joystick 2 Y-Axis, Right Trigger, Sony R2, Xbox RT"
+msgstr "Oyun Çubuğu 2 Y-Ekseni, Sağ Tetik, Sony R2, Xbox RT"
+
+msgid "Joystick 3 X-Axis"
+msgstr "Oyun Çubuğu 3 X-Ekseni"
+
+msgid "Joystick 3 Y-Axis"
+msgstr "Oyun Çubuğu 3 Y-Ekseni"
+
+msgid "Joystick 4 X-Axis"
+msgstr "Oyun Çubuğu 4 X-Ekseni"
+
+msgid "Joystick 4 Y-Axis"
+msgstr "Oyun Çubuğu 4 Y-Ekseni"
+
+msgid "Unknown Joypad Axis"
+msgstr "Bilinmeyen Oyun Kolu Ekseni"
 
 msgid "Select"
 msgstr "Seç"
@@ -567,12 +615,6 @@ msgstr "Bezier Eğrileri Kullan"
 
 msgid "Create RESET Track(s)"
 msgstr "RESET İz(ler)i oluşturun"
-
-msgid "Anim. Optimizer"
-msgstr "Anim. Eniyileştirici"
-
-msgid "Max. Angular Error:"
-msgstr "Maks. Açısal Hata:"
 
 msgid "Optimize"
 msgstr "En İyileştir"
@@ -1370,6 +1412,9 @@ msgstr "3B Fizik"
 msgid "Navigation"
 msgstr "Gezinim"
 
+msgid "OpenGL"
+msgstr "OpenGL"
+
 msgid "Nodes and Classes:"
 msgstr "Düğümler ve Sınıflar:"
 
@@ -1577,9 +1622,6 @@ msgstr "Aç"
 msgid "Select Current Folder"
 msgstr "Geçerli Klasörü Seç"
 
-msgid "File exists, overwrite?"
-msgstr "Dosya var. Üzerine Yazılsın mı?"
-
 msgid "Select This Folder"
 msgstr "Bu Klasörü Seç"
 
@@ -1722,6 +1764,9 @@ msgstr "%s'yi geçersiz kılar:"
 msgid "default:"
 msgstr "varsayılan:"
 
+msgid "Operators"
+msgstr "Operatörler"
+
 msgid "Theme Properties"
 msgstr "Tema Özellikleri"
 
@@ -1755,6 +1800,9 @@ msgid ""
 msgstr ""
 "Bu özellik için henüz bir açıklama yok. Bize [color=$color][url=$url]katkıda "
 "bulunarak[/url][/color] yardım edebilirsiniz!"
+
+msgid "Constructor Descriptions"
+msgstr "Yapıcı metot açıklaması"
 
 msgid "Method Descriptions"
 msgstr "Yöntem Açıklamaları"
@@ -2608,6 +2656,9 @@ msgstr "Yeni Betik"
 msgid "Extend Script"
 msgstr "Betik Aç"
 
+msgid "Remote Debug"
+msgstr "Uzaktan Hata Ayıklama"
+
 msgid ""
 "No runnable export preset found for this platform.\n"
 "Please add a runnable preset in the Export menu or define an existing preset "
@@ -2618,7 +2669,7 @@ msgstr ""
 "bir ön ayarı çalıştırılabilir olarak tanımlayın."
 
 msgid "Project Run"
-msgstr "Proje Koşusu"
+msgstr "Projeyi Çalıştır"
 
 msgid "Write your logic in the _run() method."
 msgstr "Mantığınızı _run() metoduna yazın."
@@ -7344,9 +7395,6 @@ msgstr "Eylem Değiştir ölübölgesi"
 msgid "Erase Input Action"
 msgstr "Girdi Eylemini Sil"
 
-msgid "Rename Input Action Event"
-msgstr "Girdi Eylem Olayını Yeniden Adlandır"
-
 msgid "Project Settings (project.godot)"
 msgstr "Proje Ayarları (proje.godot)"
 
@@ -8519,9 +8567,6 @@ msgstr ""
 msgid "The AnimationPlayer root node is not a valid node."
 msgstr "AnimationOynatıcı kök düğümü geçerli bir düğüm değil."
 
-msgid "Pick a color from the editor window."
-msgstr "Düzenleme penceresinden renk seç."
-
 msgid "Switch between hexadecimal and code values."
 msgstr "Hex ve kod değerleri arasında geçiş yap."
 
@@ -8551,9 +8596,6 @@ msgstr "Uyarı!"
 
 msgid "Please Confirm..."
 msgstr "Lütfen Doğrulayın..."
-
-msgid "Must use a valid extension."
-msgstr "Geçerli bir uzantı kullanılmalı."
 
 msgid "Enable grid minimap."
 msgstr "Izgara haritasını etkinleştir."

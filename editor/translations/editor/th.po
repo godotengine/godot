@@ -14,13 +14,14 @@
 # SysError_ <ictsanook@hotmail.com>, 2021.
 # Kanda Ninthfish <akkhaporn@gmail.com>, 2022.
 # Absurdnoobman <jakkalin91@gmail.com>, 2022.
+# Nuttapong Nut <nuttapong.510123@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2022-11-26 14:36+0000\n"
-"Last-Translator: Absurdnoobman <jakkalin91@gmail.com>\n"
+"PO-Revision-Date: 2023-02-18 07:45+0000\n"
+"Last-Translator: Nuttapong Nut <nuttapong.510123@gmail.com>\n"
 "Language-Team: Thai <https://hosted.weblate.org/projects/godot-engine/godot/"
 "th/>\n"
 "Language: th\n"
@@ -28,7 +29,13 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.15-dev\n"
+"X-Generator: Weblate 4.16-dev\n"
+
+msgid "Unset"
+msgstr "ยกเลิกการตั้งค่า"
+
+msgid "Physical"
+msgstr "ทางกายภาพ"
 
 msgid "Button"
 msgstr "ปุ่ม"
@@ -388,12 +395,6 @@ msgstr "ใช้เส้นโค้งเบซิเยร์"
 
 msgid "Create RESET Track(s)"
 msgstr "สร้างแทร็กรีเซ็ท"
-
-msgid "Anim. Optimizer"
-msgstr "ตัวเพิ่มประสิทธิภาพแอนิเมชัน"
-
-msgid "Max. Angular Error:"
-msgstr "คลาดเคลื่อนเชิงมุมมากที่สุด:"
 
 msgid "Optimize"
 msgstr "เพิ่มประสิทธิภาพ"
@@ -5700,9 +5701,6 @@ msgstr "เปลี่ยน Action deadzone"
 msgid "Erase Input Action"
 msgstr "ลบการกระทำ"
 
-msgid "Rename Input Action Event"
-msgstr "เปลี่ยนชื่อการกระทำ"
-
 msgid "Project Settings (project.godot)"
 msgstr "ตัวเลือกโปรเจกต์ (project.godot)"
 
@@ -6604,9 +6602,6 @@ msgstr "ที่อยู่สำหรับ AnimationPlayer ไม่ได�
 msgid "The AnimationPlayer root node is not a valid node."
 msgstr "โหนดแม่ AnimationPlayer ไม่ใช่โหนดที่ถูกต้อง"
 
-msgid "Pick a color from the editor window."
-msgstr "เลือกสีจากหน้าต่างตัวแก้ไข"
-
 msgid "Switch between hexadecimal and code values."
 msgstr "สลับระหว่างค่าฐานสิบหกและโค้ด"
 
@@ -6633,9 +6628,6 @@ msgstr "แจ้งเตือน!"
 
 msgid "Please Confirm..."
 msgstr "กรุณายืนยัน..."
-
-msgid "Must use a valid extension."
-msgstr "นามสกุลไฟล์ไม่ถูกต้อง"
 
 msgid "Enable grid minimap."
 msgstr "เปิดเส้นกริดมินิแมพ"

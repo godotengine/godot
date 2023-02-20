@@ -60,13 +60,14 @@
 # voylin <0voylin0@gmail.com>, 2022.
 # Gert-dev <qnyasgjhapqyuhoibr@kiabws.com>, 2022.
 # Nnn <irri2020@outlook.com>, 2022.
+# Jasper <jasper@dj-dj.be>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-02-08 12:14+0000\n"
-"Last-Translator: Uxilo <jmolendijk93@gmail.com>\n"
+"PO-Revision-Date: 2023-02-13 03:50+0000\n"
+"Last-Translator: Jasper <jasper@dj-dj.be>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
 "Language: nl\n"
@@ -75,6 +76,9 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Weblate 4.16-dev\n"
+
+msgid "Unset"
+msgstr "Niet ingesteld"
 
 msgid "Physical"
 msgstr "Fysiek"
@@ -103,6 +107,48 @@ msgstr "Dubbel Klik"
 msgid "Mouse motion at position (%s) with velocity (%s)"
 msgstr "Muis beweging op positie (%s) met snelheid (%s)"
 
+msgid "Left Stick X-Axis, Joystick 0 X-Axis"
+msgstr "Linker Pook X-As, Joystick 0 X-As"
+
+msgid "Left Stick Y-Axis, Joystick 0 Y-Axis"
+msgstr "Linker Pook Y-As, Joystick 0 Y-As"
+
+msgid "Right Stick X-Axis, Joystick 1 X-Axis"
+msgstr "Rechter Pook X-As, Joystick 1 X-As"
+
+msgid "Right Stick Y-Axis, Joystick 1 Y-Axis"
+msgstr "Rechter Pook Y-As, Joystick 1 Y-As"
+
+msgid "Joystick 2 X-Axis, Left Trigger, Sony L2, Xbox LT"
+msgstr "Joystick 2 X-As, Linker Trekker, Sony L2, Xbox LT"
+
+msgid "Joystick 2 Y-Axis, Right Trigger, Sony R2, Xbox RT"
+msgstr "Joystick 2 Y-As, Rechter Trekker, Sony R2, Xbox RT"
+
+msgid "Unknown Joypad Axis"
+msgstr "Onbekende Joypad As"
+
+msgid "Joypad Motion on Axis %d (%s) with Value %.2f"
+msgstr "Joypad Beweging op As %d (%s) met Waarde %.2f"
+
+msgid "Bottom Action, Sony Cross, Xbox A, Nintendo B"
+msgstr "Onderste Actie, Sony Kruisje, Xbox A, Nintendo B"
+
+msgid "Right Action, Sony Circle, Xbox B, Nintendo A"
+msgstr "Rechter Actie, Sony Cirkel, Xbox B, Nintendo A"
+
+msgid "Left Action, Sony Square, Xbox X, Nintendo Y"
+msgstr "Linker Actie, Sony Vierkantje, Xbox X, Nintendo Y"
+
+msgid "Top Action, Sony Triangle, Xbox Y, Nintendo X"
+msgstr "Bovenste Actie, Sony Driehoekje, Xbox Y, Nintendo X"
+
+msgid "Back, Sony Select, Xbox Back, Nintendo -"
+msgstr "Terug, Sony Selecteer, Xbox Terug, Nintendo -"
+
+msgid "Guide, Sony PS, Xbox Home"
+msgstr "Gids, Sony PS, Xbox Thuis"
+
 msgid "Select"
 msgstr "Selecteer"
 
@@ -114,6 +160,9 @@ msgstr "Omhoog"
 
 msgid "Down"
 msgstr "Omlaag"
+
+msgid "Page Up"
+msgstr "Pagina Omhoog"
 
 msgid "End"
 msgstr "Einde"
@@ -135,6 +184,9 @@ msgstr "Opnieuw"
 
 msgid "Delete"
 msgstr "Verwijder"
+
+msgid "Caret Page Up"
+msgstr "Caret Pagina Omhoog"
 
 msgid "Select All"
 msgstr "Alles selecteren"
@@ -207,6 +259,9 @@ msgstr "Verwijder Actie"
 
 msgid "Cannot Remove Action"
 msgstr "Kan Actie Niet Verwijderen"
+
+msgid "Remove Event"
+msgstr "Remote Event"
 
 msgid "Filter by name..."
 msgstr "Filter op naam..."
@@ -553,12 +608,6 @@ msgstr "Gebruik Bezier Curves"
 msgid "Create RESET Track(s)"
 msgstr "Creëer RESET Track(s)"
 
-msgid "Anim. Optimizer"
-msgstr "Anim. Optimalisator"
-
-msgid "Max. Angular Error:"
-msgstr "Max. Fout in hoek:"
-
 msgid "Optimize"
 msgstr "Optimaliseren"
 
@@ -802,6 +851,9 @@ msgstr "Overeenkomsten:"
 
 msgid "Description:"
 msgstr "Omschrijving:"
+
+msgid "Remote %s:"
+msgstr "Remote %s:"
 
 msgid "Debugger"
 msgstr "Debugger"
@@ -1604,9 +1656,6 @@ msgstr "Openen"
 msgid "Select Current Folder"
 msgstr "Huidige Map Selecteren"
 
-msgid "File exists, overwrite?"
-msgstr "Bestand bestaat, overschrijven?"
-
 msgid "Select This Folder"
 msgstr "Deze map selecteren"
 
@@ -1749,6 +1798,9 @@ msgstr "overschrijft %s:"
 msgid "default:"
 msgstr "standaard:"
 
+msgid "Operators"
+msgstr "Operatoren"
+
 msgid "Theme Properties"
 msgstr "Thema-eigenschappen"
 
@@ -1863,6 +1915,9 @@ msgstr "Plaats Omlaag"
 
 msgid "Resize Array"
 msgstr "Array Grootte Wijzigen"
+
+msgid "New Size:"
+msgstr "Nieuwe Grootte:"
 
 msgid "Set %s"
 msgstr "Zet %s"
@@ -2073,8 +2128,14 @@ msgstr "Kan niet ongedaan maken terwijl de muis knoppen ingedrukt zijn."
 msgid "Nothing to undo."
 msgstr "Niks om ongedaan te maken."
 
+msgid "Remote Undo: %s"
+msgstr "Op afstand ongedaan maken: %s"
+
 msgid "Can't redo while mouse buttons are pressed."
 msgstr "Kan niet opnieuw doen terwijl de muis knoppen ingedrukt zijn."
+
+msgid "Remote Redo: %s"
+msgstr "Op afstand opnieuw doen: %s"
 
 msgid "Can't reload a scene that was never saved."
 msgstr "Een scène die nooit opgeslagen is kan niet opnieuw laden worden."
@@ -2556,6 +2617,9 @@ msgstr "Beeldvenster kiezen"
 msgid "Selected node is not a Viewport!"
 msgstr "Geselecteerde knoop is geen Viewport!"
 
+msgid "Size:"
+msgstr "Grootte:"
+
 msgid "Remove Item"
 msgstr "Verwijder Item"
 
@@ -2593,6 +2657,9 @@ msgstr "Nieuw Script"
 msgid "Extend Script"
 msgstr "Script uitbreiden"
 
+msgid "Remote Debug"
+msgstr "Remote Debug"
+
 msgid ""
 "No runnable export preset found for this platform.\n"
 "Please add a runnable preset in the Export menu or define an existing preset "
@@ -2621,6 +2688,13 @@ msgstr "Sneltoetsen"
 
 msgid "Binding"
 msgstr "Binding"
+
+msgid ""
+"Hold %s to round to integers.\n"
+"Hold Shift for more precise changes."
+msgstr ""
+"Houdt %s ingedrukt om op gehele getallen af te ronden.\n"
+"Houdt Shift ingedrukt voor preciezere veranderingen."
 
 msgid "All Devices"
 msgstr "Alle Apparaten"
@@ -3233,6 +3307,9 @@ msgstr "Omleidingen per lokalisatie:"
 msgid "Locale"
 msgstr "Localisatie"
 
+msgid "Set %s on %d nodes"
+msgstr "Verwijder %d knopen"
+
 msgid "Select a single node to edit its signals and groups."
 msgstr "Selecteer één knoop om zijn signalen groepen aan te passen."
 
@@ -3626,6 +3703,9 @@ msgstr "Knopen verbinden."
 msgid "Remove selected node or transition."
 msgstr "De uitgekozen knoop of overgang verwijderen."
 
+msgid "Transition:"
+msgstr "Overgang:"
+
 msgid "Play Mode:"
 msgstr "Afspeelmodus:"
 
@@ -3860,6 +3940,9 @@ msgstr "Verplaats %d CanvasItems"
 msgid "Move CanvasItem \"%s\" to (%d, %d)"
 msgstr "CanvasItem \"%s\" naar (%d, %d) verplaatsen"
 
+msgid "Scaling:"
+msgstr "Schaal:"
+
 msgid "Lock Selected"
 msgstr "Slot Geselecteerd"
 
@@ -3893,6 +3976,11 @@ msgstr "Alt + Slepen : Schalen."
 msgid "V: Set selected node's pivot position."
 msgstr "V: Stel het draaipunt in van de geselecteerde Node."
 
+msgid "Alt+RMB: Show list of all nodes at position clicked, including locked."
+msgstr ""
+"Alt+RMB: Toont een lijst van alle nodes op de aangeklikte positie, inclusief "
+"vergrendeld."
+
 msgid "Move Mode"
 msgstr "Verplaatsingsmodus"
 
@@ -3904,6 +3992,9 @@ msgstr "Schaalmodus"
 
 msgid "Shift: Scale proportionally."
 msgstr "Shift: Proportioneel schalen."
+
+msgid "Show list of selectable nodes at position clicked."
+msgstr "Toont een lijst van selecteerbare nodes op de aangeklikte positie."
 
 msgid "Click to change object's rotation pivot."
 msgstr "Klik om het draaipunt van het object aan te passen."
@@ -4273,6 +4364,14 @@ msgstr ""
 "Wanneer dit op afstand wordt gebruikt op een andere machine, is dit "
 "efficiënter met de netwerk bestandssysteem optie aan."
 
+msgid "Run %d Instance"
+msgid_plural "Run %d Instances"
+msgstr[0] "Run %d Instantie"
+msgstr[1] "Run %d Instanties"
+
+msgid " - Variation"
+msgstr " - Variatie"
+
 msgid "Convert to CPUParticles2D"
 msgstr "Omzetten naar CPUParticles2D"
 
@@ -4311,6 +4410,9 @@ msgstr "Oppervlakte Punten+Normaal (Gericht)"
 
 msgid "Volume"
 msgstr "Volume"
+
+msgid "Emission Source:"
+msgstr "Emissiebron:"
 
 msgid "Generate Visibility AABB"
 msgstr "Genereer Zichtbaarheid AABB"
@@ -4624,6 +4726,9 @@ msgstr "Arrangeer Rotatie naar Aanzicht"
 msgid "None"
 msgstr "Geen"
 
+msgid "Translating:"
+msgstr "Translatie:"
+
 msgid "Rotating %s degrees."
 msgstr "Roteren %s graden."
 
@@ -4644,6 +4749,9 @@ msgstr "Weergave Overdraw"
 
 msgid "Display Unshaded"
 msgstr "Weergave Zonder Shading"
+
+msgid "Normal Buffer"
+msgstr "Normale Buffer"
 
 msgid "View Environment"
 msgstr "Bekijk Omgeving"
@@ -5467,6 +5575,15 @@ msgstr "Ongeldige geometrie, kan geen light occluder creëren."
 msgid "Create LightOccluder2D Sibling"
 msgstr "Creëer LightOccluder2D Sibling"
 
+msgid "Simplification:"
+msgstr "Simplificatie:"
+
+msgid "Shrink (Pixels):"
+msgstr "Krimpen (Pixels):"
+
+msgid "Grow (Pixels):"
+msgstr "Vergroot (Pixels):"
+
 msgid "Update Preview"
 msgstr "Voorbeeld bijwerken"
 
@@ -5511,6 +5628,9 @@ msgstr "(leeg)"
 
 msgid "Animations:"
 msgstr "Animaties:"
+
+msgid "Delete Animation"
+msgstr "Animatie wissen"
 
 msgid "Animation Frames:"
 msgstr "Animatiebeelden:"
@@ -5559,6 +5679,29 @@ msgstr "Automatisch Snijden"
 
 msgid "Step:"
 msgstr "Stap:"
+
+msgid "1 color"
+msgid_plural "{num} colors"
+msgstr[0] "1 kleur"
+msgstr[1] "{num} kleuren"
+
+msgid "1 constant"
+msgid_plural "{num} constants"
+msgstr[0] "1 constante"
+msgstr[1] "{num} constantes"
+
+msgid "1 font size"
+msgid_plural "{num} font sizes"
+msgstr[0] "1 lettertype grootte"
+msgstr[1] "{num} lettertype groottes"
+
+msgid "1 stylebox"
+msgid_plural "{num} styleboxes"
+msgstr[0] "1 stijlbox"
+msgstr[1] "{num} stijlboxen"
+
+msgid "Updating the editor"
+msgstr "Editor aan het updaten"
 
 msgid "Remove Class Items"
 msgstr "Class Items Verwijderen"
@@ -5644,6 +5787,9 @@ msgstr "Horizontaal omdraaien"
 msgid "Flip Vertically"
 msgstr "Verticaal omdraaien"
 
+msgid "Scattering:"
+msgstr "Verspreiding:"
+
 msgid "Yes"
 msgstr "Ja"
 
@@ -5655,6 +5801,9 @@ msgstr "Fout"
 
 msgid "Commit"
 msgstr "Commit"
+
+msgid "Discard changes"
+msgstr "Wijzigingen ongedaan maken"
 
 msgid "Staged Changes"
 msgstr "Gefaseerde Wijzigingen"
@@ -5689,8 +5838,17 @@ msgstr "SSH Wachtwoord"
 msgid "Detect new changes"
 msgstr "Detecteer nieuwe veranderingen"
 
+msgid "Discard all changes"
+msgstr "Alle wijzigingen ongedaan maken"
+
 msgid "Commit Changes"
 msgstr "Commit veranderingen"
+
+msgid "Remote Name"
+msgstr "Remote Naam"
+
+msgid "Remote URL"
+msgstr "Remote URL"
 
 msgid "Modified"
 msgstr "Bewerkt"
@@ -6150,10 +6308,10 @@ msgid ""
 "incident vector, and Nref, the reference vector. If the dot product of I and "
 "Nref is smaller than zero the return value is N. Otherwise -N is returned."
 msgstr ""
-"Geeft de vector met dezelfde richting als de referentievector. De functie "
-"bevat drie vectorparameters: N, de oriëntatievector, I, de incidentvector en "
-"Nref, de referentievector. Als het inproduct van I en Nref kleiner dan nul "
-"is, is de terugkeerwaarde N, anders -N."
+"Geeft de vector dat naar dezelfde richting als de referentievector kijkt. De "
+"functie bevat drie vector parameters: N, de oriëntatievector, I, de "
+"incidenten vector en Nref, de referentievector. Als het punt product van I "
+"en Nref kleiner dan nul is, is de terugkeer waarde N, anders -N."
 
 msgid ""
 "Returns falloff based on the dot product of surface normal and view "
@@ -6369,6 +6527,12 @@ msgstr ""
 msgid "Are you sure to run %d projects at once?"
 msgstr "Weet je zeker dat je %d projecten wilt uitvoeren?"
 
+msgid "Remove %d projects from the list?"
+msgstr "%d projecten uit de lijst verwijderen?"
+
+msgid "Remove this project from the list?"
+msgstr "Dit project van de lijst verwijderen?"
+
 msgid ""
 "Remove all missing projects from the list?\n"
 "The project folders' contents won't be modified."
@@ -6435,9 +6599,6 @@ msgstr "Wijzig Action Deadzone"
 
 msgid "Erase Input Action"
 msgstr "Verwijder Input Actie"
-
-msgid "Rename Input Action Event"
-msgstr "Hernoem Input Action Event"
 
 msgid "Project Settings (project.godot)"
 msgstr "Projectinstellingen (project.godot)"
@@ -6553,6 +6714,9 @@ msgstr "3D Scène"
 
 msgid "User Interface"
 msgstr "Gebruikersomgeving"
+
+msgid "Root Name:"
+msgstr "Root Naam:"
 
 msgid "Error loading scene from %s"
 msgstr "Fout bij het laden van scène uit %s"
@@ -6738,6 +6902,16 @@ msgstr "(Verbonden vanaf)"
 
 msgid "Node configuration warning:"
 msgstr "Waarschuwing over knoopconfiguratie:"
+
+msgid "Node has one connection."
+msgid_plural "Node has {num} connections."
+msgstr[0] "Node heeft een connectie."
+msgstr[1] "Node heeft {num} connecties."
+
+msgid "Node is in this group:"
+msgid_plural "Node is in the following groups:"
+msgstr[0] "Node is in deze groep:"
+msgstr[1] "Node is in de volgende groepen:"
 
 msgid "Open Script:"
 msgstr "Open Script:"
@@ -7010,6 +7184,9 @@ msgstr "Grootte"
 msgid "Network Profiler"
 msgstr "Netwerk Profiler"
 
+msgid "Delete Property?"
+msgstr "Property verwijderen?"
+
 msgid "A NavigationMesh resource must be set or created for this node to work."
 msgstr "Een NavigationMesh-bron is nodig om deze knoop te laten werken."
 
@@ -7125,6 +7302,14 @@ msgstr "APK Expansion werkt niet samen met Android App Bundle."
 
 msgid "Invalid filename! Android APK requires the *.apk extension."
 msgstr "Bestandsnaam niet toegestaan! Android APK vereist een *.apk extensie."
+
+msgid ""
+"Android build version mismatch: Template installed: %s, Godot version: %s. "
+"Please reinstall Android build template from 'Project' menu."
+msgstr ""
+"Android build versie mismatch: Template geïnstalleerd: %s, Godot versie: %s. "
+"Gelieve het Android build template vanuit het 'Project' menu te "
+"Herinstalleren."
 
 msgid "Building Android Project (gradle)"
 msgstr "Bouwen van Android Project (gradle)"
@@ -7319,6 +7504,9 @@ msgstr ""
 "Niets is zichtbaar want meshes zijn niet toegewezen aan de tekendoorlopen "
 "(draw passes)."
 
+msgid "Generating Probe Volumes"
+msgstr "Sonde volumes aan het genereren"
+
 msgid "This body will be ignored until you set a mesh."
 msgstr "Dit lichaam zal worden genegeerd totdat je een mesh instelt."
 
@@ -7363,9 +7551,6 @@ msgstr ""
 msgid "The AnimationPlayer root node is not a valid node."
 msgstr "De AnimationPlayer wortel is een ongeldig knoop."
 
-msgid "Pick a color from the editor window."
-msgstr "Kies een kleur uit het editorvenster."
-
 msgid "Switch between hexadecimal and code values."
 msgstr "Wissel tussen hexadecimaal en codewaarden."
 
@@ -7395,9 +7580,6 @@ msgstr "Alarm!"
 
 msgid "Please Confirm..."
 msgstr "Bevestig alstublieft..."
-
-msgid "Must use a valid extension."
-msgstr "Een geldige extensie moet gebruikt worden."
 
 msgid "Enable grid minimap."
 msgstr "Rasteroverzicht inschakelen."
@@ -7441,3 +7623,15 @@ msgstr "Toewijzing aan uniform."
 
 msgid "Constants cannot be modified."
 msgstr "Constanten kunnen niet worden aangepast."
+
+msgid "Invalid argument name."
+msgstr "Ongeldige argument naam."
+
+msgid "Invalid macro argument list."
+msgstr "Ongeldige macro argumenten lijst."
+
+msgid "Invalid macro argument."
+msgstr "Ongeldig macro argument."
+
+msgid "Invalid macro argument count."
+msgstr "Ongeldige hoeveelheid macro argumenten."

@@ -30,7 +30,7 @@
 # Chia-Hsiang Cheng <cche0109@student.monash.edu>, 2021, 2022.
 # 曹恩逢 <nelson22768384@gmail.com>, 2022.
 # Number18 <secretemail7730@gmail.com>, 2022.
-# Haoyu Qiu <timothyqiu32@gmail.com>, 2022.
+# Haoyu Qiu <timothyqiu32@gmail.com>, 2022, 2023.
 # Otis Kao <momoslim@gmail.com>, 2022.
 # YuChiang Chang <chiang.c.tw@gmail.com>, 2022.
 # 菘菘 <rrt467778@gmail.com>, 2022.
@@ -45,8 +45,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-02-10 10:44+0000\n"
-"Last-Translator: abcabcc <xmmandxpp@outlook.com>\n"
+"PO-Revision-Date: 2023-02-18 17:29+0000\n"
+"Last-Translator: Eric K <eric900601@gmail.com>\n"
 "Language-Team: Chinese (Traditional) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hant/>\n"
 "Language: zh_TW\n"
@@ -57,7 +57,7 @@ msgstr ""
 "X-Generator: Weblate 4.16-dev\n"
 
 msgid "Unset"
-msgstr "未設置"
+msgstr "未設定"
 
 msgid "Physical"
 msgstr "物理"
@@ -83,8 +83,153 @@ msgstr "滑鼠滾輪向左"
 msgid "Mouse Wheel Right"
 msgstr "滑鼠滾輪向右"
 
+msgid "Mouse Thumb Button 1"
+msgstr "滑鼠側面鍵 1"
+
+msgid "Mouse Thumb Button 2"
+msgstr "滑鼠側面鍵 2"
+
 msgid "Button"
 msgstr "按鈕"
+
+msgid "Double Click"
+msgstr "雙擊"
+
+msgid "Mouse motion at position (%s) with velocity (%s)"
+msgstr "滑鼠於位置 (%s) 以 (%s) 的速度移動"
+
+msgid "Left Stick X-Axis, Joystick 0 X-Axis"
+msgstr "左類比搖桿 X軸、類比搖桿 0 X軸"
+
+msgid "Left Stick Y-Axis, Joystick 0 Y-Axis"
+msgstr "左類比搖桿 Y軸、類比搖桿 0 Y軸"
+
+msgid "Right Stick X-Axis, Joystick 1 X-Axis"
+msgstr "右類比搖桿 X軸、類比搖桿 1 X軸"
+
+msgid "Right Stick Y-Axis, Joystick 1 Y-Axis"
+msgstr "右類比搖桿 Y軸、類比搖桿 1 Y軸"
+
+msgid "Joystick 2 X-Axis, Left Trigger, Sony L2, Xbox LT"
+msgstr "類比搖桿 2 X軸、左肩板機、Sony L2、Xbox LT"
+
+msgid "Joystick 2 Y-Axis, Right Trigger, Sony R2, Xbox RT"
+msgstr "類比搖桿 2 Y軸、右肩板機、Sony R2、Xbox RT"
+
+msgid "Joystick 3 X-Axis"
+msgstr "類比搖桿 3 X軸"
+
+msgid "Joystick 3 Y-Axis"
+msgstr "類比搖桿 3 Y軸"
+
+msgid "Joystick 4 X-Axis"
+msgstr "類比搖桿 4 X軸"
+
+msgid "Joystick 4 Y-Axis"
+msgstr "類比搖桿 4 Y軸"
+
+msgid "Unknown Joypad Axis"
+msgstr "未知的搖桿軸"
+
+msgid "Joypad Motion on Axis %d (%s) with Value %.2f"
+msgstr "搖桿於軸 %d (%s) 進行值為 %.2f 的運動"
+
+msgid "Bottom Action, Sony Cross, Xbox A, Nintendo B"
+msgstr "下方動作鍵、Sony 叉鍵 (✕)、Xbox A、Nintendo B"
+
+msgid "Right Action, Sony Circle, Xbox B, Nintendo A"
+msgstr "右方動作鍵、Sony 圓圈 (○)、Xbox B、Nintendo A"
+
+msgid "Left Action, Sony Square, Xbox X, Nintendo Y"
+msgstr "左方動作鍵、Sony 方塊 (□)、Xbox X、Nintendo Y"
+
+msgid "Top Action, Sony Triangle, Xbox Y, Nintendo X"
+msgstr "上方動作鍵、Sony 三角 (△)、Xbox Y、Nintendo X"
+
+msgid "Back, Sony Select, Xbox Back, Nintendo -"
+msgstr "返回、Sony Select、Xbox Back、Nintendo -"
+
+msgid "Guide, Sony PS, Xbox Home"
+msgstr "指南、Sony PS、Xbox Home"
+
+msgid "Start, Nintendo +"
+msgstr "開始、Nintendo +"
+
+msgid "Left Stick, Sony L3, Xbox L/LS"
+msgstr "左類比搖桿、Sony L3、Xbox L/LS"
+
+msgid "Right Stick, Sony R3, Xbox R/RS"
+msgstr "右類比搖桿、Sony R3、Xbox R/RS"
+
+msgid "Left Shoulder, Sony L1, Xbox LB"
+msgstr "左肩鍵、Sony L1、Xbox LB"
+
+msgid "Right Shoulder, Sony R1, Xbox RB"
+msgstr "右肩鍵、Sony R1、Xbox RB"
+
+msgid "D-pad Up"
+msgstr "方向鍵 (D-pad) 上"
+
+msgid "D-pad Down"
+msgstr "方向鍵 (D-pad) 下"
+
+msgid "D-pad Left"
+msgstr "方向鍵 (D-pad) 左"
+
+msgid "D-pad Right"
+msgstr "方向鍵 (D-pad) 右"
+
+msgid "Xbox Share, PS5 Microphone, Nintendo Capture"
+msgstr "Xbox Share、PS5 麥克風、Nintendo 截圖"
+
+msgid "Xbox Paddle 1"
+msgstr "Xbox 撥片 1"
+
+msgid "Xbox Paddle 2"
+msgstr "Xbox 撥片 2"
+
+msgid "Xbox Paddle 3"
+msgstr "Xbox 撥片 3"
+
+msgid "Xbox Paddle 4"
+msgstr "Xbox 撥片 4"
+
+msgid "PS4/5 Touchpad"
+msgstr "PS4/5 觸控板"
+
+msgid "Joypad Button %d"
+msgstr "搖桿按鈕 %d"
+
+msgid "Pressure:"
+msgstr "感壓:"
+
+msgid "touched"
+msgstr "按下"
+
+msgid "released"
+msgstr "放開"
+
+msgid "Screen %s at (%s) with %s touch points"
+msgstr "螢幕 %s 於 (%s) 接收到 %s 個觸控點"
+
+msgid ""
+"Screen dragged with %s touch points at position (%s) with velocity of (%s)"
+msgstr "螢幕上有 %s 個觸控點於位置 (%s) 以速率 (%s) 拖動"
+
+msgid "Magnify Gesture at (%s) with factor %s"
+msgstr "於位置 (%s) 以倍率 %s 使用放大手勢"
+
+msgid "Pan Gesture at (%s) with delta (%s)"
+msgstr "於位置 (%s) 以加速度 (%s) 使用平移手勢"
+
+msgid "MIDI Input on Channel=%s Message=%s"
+msgstr "輸入MIDI，頻道=%s、訊息=%s"
+
+msgid "Input Event with Shortcut=%s"
+msgstr "輸入事件，快捷鍵=%s"
+
+msgid "Accept"
+msgstr "接受"
 
 msgid "Select"
 msgstr "選擇"
@@ -92,14 +237,35 @@ msgstr "選擇"
 msgid "Cancel"
 msgstr "取消"
 
+msgid "Focus Next"
+msgstr "聚焦下一個"
+
+msgid "Focus Prev"
+msgstr "聚焦上一個"
+
+msgid "Left"
+msgstr "左"
+
+msgid "Right"
+msgstr "右"
+
 msgid "Up"
-msgstr "上行"
+msgstr "上"
 
 msgid "Down"
-msgstr "下行"
+msgstr "下"
+
+msgid "Page Up"
+msgstr "畫面上捲"
+
+msgid "Page Down"
+msgstr "畫面下捲"
+
+msgid "Home"
+msgstr "頁首"
 
 msgid "End"
-msgstr "結束"
+msgstr "頁尾"
 
 msgid "Cut"
 msgstr "剪下"
@@ -114,16 +280,106 @@ msgid "Undo"
 msgstr "復原"
 
 msgid "Redo"
-msgstr "取消復原"
+msgstr "重做"
+
+msgid "Completion Query"
+msgstr "補全請求"
+
+msgid "New Line"
+msgstr "換行"
+
+msgid "New Blank Line"
+msgstr "新增空行"
+
+msgid "New Line Above"
+msgstr "向上換行"
 
 msgid "Indent"
 msgstr "縮排"
 
+msgid "Dedent"
+msgstr "取消縮排"
+
+msgid "Backspace"
+msgstr "退格"
+
+msgid "Backspace Word"
+msgstr "退格一個文字"
+
+msgid "Backspace all to Left"
+msgstr "退格至最左側"
+
 msgid "Delete"
 msgstr "刪除"
 
+msgid "Delete Word"
+msgstr "刪除文字"
+
+msgid "Delete all to Right"
+msgstr "刪除右側文字"
+
+msgid "Caret Left"
+msgstr "輸入指標左移"
+
+msgid "Caret Word Left"
+msgstr "輸入指標左移一個字"
+
+msgid "Caret Right"
+msgstr "輸入指標右移"
+
+msgid "Caret Word Right"
+msgstr "輸入指標右移一個字"
+
+msgid "Caret Up"
+msgstr "輸入指標上移"
+
+msgid "Caret Down"
+msgstr "輸入指標下移"
+
+msgid "Caret Line Start"
+msgstr "輸入指標移至最左側"
+
+msgid "Caret Line End"
+msgstr "輸入指標移至最右側"
+
+msgid "Caret Page Up"
+msgstr "輸入指標移至上頁"
+
+msgid "Caret Page Down"
+msgstr "輸入指標移至下頁"
+
+msgid "Caret Document Start"
+msgstr "輸入指標移至文件開頭"
+
+msgid "Caret Document End"
+msgstr "輸入指標移至文件結尾"
+
+msgid "Caret Add Below"
+msgstr "鄉下添加光標"
+
+msgid "Caret Add Above"
+msgstr "鄉上添加光標"
+
+msgid "Scroll Up"
+msgstr "向上滾動"
+
+msgid "Scroll Down"
+msgstr "向下滾動"
+
 msgid "Select All"
 msgstr "全部選擇"
+
+msgid "Select Word Under Caret"
+msgstr "選擇光標下的單詞"
+
+msgid "Add Selection for Next Occurrence"
+msgstr "將下一個匹配項添加到選區"
+
+msgid "Clear Carets and Selection"
+msgstr "清除光標和選區"
+
+msgid "Toggle Insert Mode"
+msgstr "開關插入模式"
 
 msgid "Duplicate Nodes"
 msgstr "重複節點"
@@ -131,8 +387,17 @@ msgstr "重複節點"
 msgid "Delete Nodes"
 msgstr "刪除節點"
 
+msgid "Go Up One Level"
+msgstr "向上一級"
+
 msgid "Refresh"
 msgstr "重新整理"
+
+msgid "Show Hidden"
+msgstr "顯示隱藏的文件"
+
+msgid "Swap Input Direction"
+msgstr "交換輸入方向"
 
 msgid "Invalid input %d (not passed) in expression"
 msgstr "運算式的輸入%d 無效（未傳遞）"
@@ -155,6 +420,12 @@ msgstr "用了無效的引數來建置「%s」"
 msgid "On call to '%s':"
 msgstr "呼叫「%s」時："
 
+msgid "Built-in script"
+msgstr "內建腳本"
+
+msgid "Built-in"
+msgstr "內建"
+
 msgid "B"
 msgstr "B"
 
@@ -176,6 +447,13 @@ msgstr "PiB"
 msgid "EiB"
 msgstr "EiB"
 
+msgid "Example: %s"
+msgstr "示例: %s"
+
+msgid "%d item"
+msgid_plural "%d items"
+msgstr[0] "%d 個項目"
+
 msgid ""
 "Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'"
@@ -184,11 +462,41 @@ msgstr "無效的操作名稱。名稱不可留空或包含 “/”, “:”, �
 msgid "An action with the name '%s' already exists."
 msgstr "已有名稱「%s」的操作。"
 
+msgid "Cannot Revert - Action is same as initial"
+msgstr "無法還原 - 動作與初始動作相同"
+
+msgid "Revert Action"
+msgstr "還原動作"
+
 msgid "Add Event"
 msgstr "新增事件"
 
+msgid "Remove Action"
+msgstr "移除動作"
+
+msgid "Cannot Remove Action"
+msgstr "無法移除動作"
+
+msgid "Edit Event"
+msgstr "編輯事件"
+
+msgid "Remove Event"
+msgstr "移除事件"
+
+msgid "Filter by name..."
+msgstr "按名稱篩選..."
+
+msgid "Clear All"
+msgstr "全部清除"
+
+msgid "Add New Action"
+msgstr "新增動作"
+
 msgid "Add"
 msgstr "新增"
+
+msgid "Show Built-in Actions"
+msgstr "顯示内置動作"
 
 msgid "Action"
 msgstr "操作"
@@ -202,6 +510,9 @@ msgstr "時間："
 msgid "Value:"
 msgstr "數值："
 
+msgid "Update Selected Key Handles"
+msgstr "更新所選按鍵控制點"
+
 msgid "Insert Key Here"
 msgstr "在此插入關鍵畫格"
 
@@ -211,11 +522,29 @@ msgstr "重複所選關鍵畫格"
 msgid "Delete Selected Key(s)"
 msgstr "刪除所選關鍵畫格"
 
+msgid "Make Handles Free"
+msgstr "改爲自由控制柄"
+
+msgid "Make Handles Linear"
+msgstr "改爲綫性控制柄"
+
+msgid "Make Handles Balanced"
+msgstr "改爲平衡控制柄"
+
+msgid "Make Handles Mirrored"
+msgstr "改爲鏡像控制柄"
+
+msgid "Make Handles Balanced (Auto Tangent)"
+msgstr "改爲平衡控制柄 (自動切綫)"
+
 msgid "Add Bezier Point"
 msgstr "新增貝茲曲線控制點"
 
 msgid "Move Bezier Points"
 msgstr "移動貝茲曲線控制點"
+
+msgid "Animation Change %s"
+msgstr "修改動畫 %s"
 
 msgid "Change Animation Length"
 msgstr "更改動畫長度"
@@ -261,6 +590,9 @@ msgstr "調整軌道路徑"
 
 msgid "Toggle this track on/off."
 msgstr "打開／關閉此軌道。"
+
+msgid "Use Blend"
+msgstr "使用混合"
 
 msgid "Update Mode (How this property is set)"
 msgstr "更新模式（屬性設定方法）"
@@ -514,12 +846,6 @@ msgstr "使用貝茲曲線"
 msgid "Create RESET Track(s)"
 msgstr "貼上關鍵畫格"
 
-msgid "Anim. Optimizer"
-msgstr "最佳化動畫工具"
-
-msgid "Max. Angular Error:"
-msgstr "最大角度誤差："
-
 msgid "Optimize"
 msgstr "最佳化"
 
@@ -636,6 +962,9 @@ msgstr "新增額外呼叫引數："
 msgid "Extra Call Arguments:"
 msgstr "額外呼叫引數："
 
+msgid "Unbind Signal Arguments:"
+msgstr "解除綁定訊號引數"
+
 msgid "Receiver Method:"
 msgstr "接收器方法："
 
@@ -681,6 +1010,9 @@ msgstr "斷開訊號連接"
 
 msgid "Connect a Signal to a Method"
 msgstr "連接訊號至方法"
+
+msgid "Edit Connection: '%s'"
+msgstr "編輯連結: '%s'"
 
 msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
 msgstr "確定要删除所有來自訊號「%s」的連接嗎？"
@@ -828,8 +1160,17 @@ msgstr "錯誤："
 msgid "%s Error"
 msgstr "%s 錯誤"
 
+msgid "%s Error:"
+msgstr "%s 錯誤:"
+
 msgid "Stack Trace"
 msgstr "堆疊回溯"
+
+msgid "Stack Trace:"
+msgstr "堆疊追蹤:"
+
+msgid "Delete All Breakpoints in:"
+msgstr "移除所有中斷點:"
 
 msgid "Copy Error"
 msgstr "複製錯誤"
@@ -1321,8 +1662,14 @@ msgstr "新增"
 msgid "Save"
 msgstr "儲存"
 
+msgid "Profile:"
+msgstr "設定:"
+
 msgid "Reset to Defaults"
 msgstr "重設為預設"
+
+msgid "Please Confirm:"
+msgstr "請確認:"
 
 msgid "Export Profile"
 msgstr "匯出設定檔"
@@ -1504,9 +1851,6 @@ msgstr "開啟"
 msgid "Select Current Folder"
 msgstr "選擇目前資料夾"
 
-msgid "File exists, overwrite?"
-msgstr "檔案已存在，是否覆蓋？"
-
 msgid "Select This Folder"
 msgstr "選擇此資料夾"
 
@@ -1619,6 +1963,9 @@ msgstr "由於有多個匯入器對檔案 %s 提供了不同的型別，已中�
 
 msgid "(Re)Importing Assets"
 msgstr "（重新）匯入素材"
+
+msgid "Error codes returned:"
+msgstr "傳回錯誤碼:"
 
 msgid "Top"
 msgstr "頂端"
@@ -1774,8 +2121,14 @@ msgstr "已解除釘選%s"
 msgid "Copy Property Path"
 msgstr "複製屬性路徑"
 
+msgid "Select existing layout:"
+msgstr "選擇既存的畫面佈局:"
+
 msgid "Changed Locale Filter Mode"
 msgstr "更改地區設定篩選模式"
+
+msgid "[Default]"
+msgstr "[預設]"
 
 msgid "Show All Locales"
 msgstr "顯示所有地區"
@@ -1788,6 +2141,16 @@ msgstr "編輯篩選條件"
 
 msgid "Language:"
 msgstr "語言："
+
+msgctxt "Locale"
+msgid "Script:"
+msgstr "文字:"
+
+msgid "Country:"
+msgstr "國家:"
+
+msgid "Language"
+msgstr "語言"
 
 msgid "Variant"
 msgstr "變體"
@@ -1971,11 +2334,17 @@ msgstr "當滑鼠按鍵被按下時無法復原。"
 msgid "Nothing to undo."
 msgstr "無變更以復原。"
 
+msgid "Remote Undo: %s"
+msgstr "遠端復原: %s"
+
 msgid "Can't redo while mouse buttons are pressed."
 msgstr "當滑鼠按鍵按下時無法復原。"
 
 msgid "Nothing to redo."
 msgstr "無變更以復原。"
+
+msgid "Remote Redo: %s"
+msgstr "遠端重做: %s"
 
 msgid "Can't reload a scene that was never saved."
 msgstr "無法重新載入從未儲存過的場景。"
@@ -2511,6 +2880,9 @@ msgstr "在 _run() 方法中填寫邏輯。"
 msgid "There is an edited scene already."
 msgstr "已有一個已編輯的場景。"
 
+msgid "Edit Built-in Action"
+msgstr "編輯內建動作"
+
 msgid "Common"
 msgstr "常見"
 
@@ -2528,6 +2900,9 @@ msgstr "快捷鍵"
 
 msgid "Binding"
 msgstr "綁定"
+
+msgid "Joypad Axis %d %s (%s)"
+msgstr "搖桿軸 %d %s (%s)"
 
 msgid "All Devices"
 msgstr "所有裝置"
@@ -2567,6 +2942,9 @@ msgstr "無法建立「%s」檔案。"
 
 msgid "Failed to export project files."
 msgstr "無法匯出專案檔。"
+
+msgid "Can't open encrypted file to write."
+msgstr "無法開啟加密檔案並寫入。"
 
 msgid "Can't open file to read from path \"%s\"."
 msgstr "無法打開位於「%s」的檔案用於讀取。"
@@ -3134,6 +3512,18 @@ msgstr "重新匯入"
 msgid "Offset:"
 msgstr "偏移："
 
+msgid "Loop:"
+msgstr "循環:"
+
+msgid "Beat Count:"
+msgstr "節拍數:"
+
+msgid "Music Playback:"
+msgstr "音樂播放:"
+
+msgid "Configuration:"
+msgstr "設定:"
+
 msgid "Importing Scene..."
 msgstr "正在匯入場景..."
 
@@ -3168,29 +3558,65 @@ msgstr "2D"
 msgid "3D"
 msgstr "3D"
 
+msgid "Select folder to extract material resources"
+msgstr "選擇資料夾以擷取材質資源"
+
+msgid "Set paths to save animations as resource files on Reimport"
+msgstr "設定路徑將動畫另存為可導入的資源檔案"
+
+msgid "Can't make material external to file, write error:"
+msgstr "無法另存材質為外部檔案，寫入錯誤:"
+
+msgid "Actions..."
+msgstr "動作..."
+
+msgid "Extract Materials"
+msgstr "擷取材質"
+
+msgid "Set Animation Save Paths"
+msgstr "設定動畫儲存路徑"
+
+msgid "Set Mesh Save Paths"
+msgstr "設定網格儲存路徑"
+
 msgid "Meshes"
 msgstr "網格"
 
 msgid "Materials"
 msgstr "材質"
 
+msgid "Save Extension:"
+msgstr "儲存副檔名:"
+
+msgid "Text: *.tres"
+msgstr "文本: *.tres"
+
+msgid "Binary: *.res"
+msgstr "二進位檔案: *.res"
+
+msgid "Text Resource"
+msgstr "文本資源"
+
+msgid "Binary Resource"
+msgstr "二進位檔案資源"
+
 msgid "Select Importer"
-msgstr "選擇匯入程式"
+msgstr "選擇匯入器"
 
 msgid "Importer:"
-msgstr "匯入程式："
+msgstr "匯入器:"
 
 msgid "Keep File (No Import)"
-msgstr "保留檔案（不匯入）"
+msgstr "保留檔案 (不匯入)"
 
 msgid "%d Files"
 msgstr "%d 個檔案"
 
 msgid "Set as Default for '%s'"
-msgstr "設為「%s」的預設"
+msgstr "設為「%s」的預設值"
 
 msgid "Clear Default for '%s'"
-msgstr "清除「%s」的預設"
+msgstr "清除「%s」的預設值"
 
 msgid ""
 "You have pending changes that haven't been applied yet. Click Reimport to "
@@ -3389,7 +3815,7 @@ msgid "Add Animation"
 msgstr "新增動畫"
 
 msgid "Add %s"
-msgstr "新增 %"
+msgstr "新增 %s"
 
 msgid "Load..."
 msgstr "載入..."
@@ -7195,9 +7621,6 @@ msgstr "修改操作盲區"
 msgid "Erase Input Action"
 msgstr "清除輸入操作"
 
-msgid "Rename Input Action Event"
-msgstr "重新命名輸入操作事件"
-
 msgid "Project Settings (project.godot)"
 msgstr "專案設定 (project.godot)"
 
@@ -8360,9 +8783,6 @@ msgstr "連接至 AnimationPlayer 的路徑並未連接至 AnimationPlayer 節�
 msgid "The AnimationPlayer root node is not a valid node."
 msgstr "AnimationPlayer 的根節點並非有效節點。"
 
-msgid "Pick a color from the editor window."
-msgstr "請自編輯器視窗選擇一個顏色。"
-
 msgid "Switch between hexadecimal and code values."
 msgstr "在 16 進位與代碼值之間切換。"
 
@@ -8390,9 +8810,6 @@ msgstr "警告！"
 
 msgid "Please Confirm..."
 msgstr "請確認..."
-
-msgid "Must use a valid extension."
-msgstr "必須使用有效的副檔名。"
 
 msgid "Enable grid minimap."
 msgstr "啟用網格迷你地圖。"
@@ -8465,3 +8882,171 @@ msgstr "指派至均勻。"
 
 msgid "Constants cannot be modified."
 msgstr "不可修改常數。"
+
+msgid "Invalid constant type (samplers are not allowed)."
+msgstr "無效的常數型別 (不可使用取樣器)。"
+
+msgid "Invalid function type (samplers are not allowed)."
+msgstr "無效的函式型別 (不可使用取樣器)。"
+
+msgid "Expected a function name after type."
+msgstr "型別後應為函式名稱。"
+
+msgid ""
+"The '%s' qualifier cannot be used within a function parameter declared with "
+"'%s'."
+msgstr "修飾字「%s」不應被用作宣告為「%s」的函式參數。"
+
+msgid "Expected a valid data type for argument."
+msgstr "應以具體的資料型別作為引數。"
+
+msgid "Opaque types cannot be output parameters."
+msgstr "Opaque 型別不應被用作輸出參數。"
+
+msgid "Void type not allowed as argument."
+msgstr "Void 型別不應被用作引數。"
+
+msgid "Expected an identifier for argument name."
+msgstr "應使用辨識字作為引數名稱。"
+
+msgid "Function '%s' expects no arguments."
+msgstr "函式「%s」不應該存在引數。"
+
+msgid "Function '%s' must be of '%s' return type."
+msgstr "函式「%s」的回傳值必須為「%s」型別。"
+
+msgid "Expected a '{' to begin function."
+msgstr "在函式開頭應添加「{」。"
+
+msgid "Expected at least one '%s' statement in a non-void function."
+msgstr "在非 void 函式中應至少有一個「%s」陳述句。"
+
+msgid "uniform buffer"
+msgstr "uniform 緩衝"
+
+msgid "Expected a '%s'."
+msgstr "應添加「%s」。"
+
+msgid "Expected a '%s' or '%s'."
+msgstr "應添加「%s」或「%s」。"
+
+msgid "Expected a '%s' after '%s'."
+msgstr "應添加「%s」於「%s」後方。"
+
+msgid "Redefinition of '%s'."
+msgstr "重複定義了「%s」。"
+
+msgid "Unknown directive."
+msgstr "未知的指令。"
+
+msgid "Invalid macro name."
+msgstr "無效的巨集名稱。"
+
+msgid "Macro redefinition."
+msgstr "巨集重定義。"
+
+msgid "Invalid argument name."
+msgstr "無效的引數名稱。"
+
+msgid "Expected a comma in the macro argument list."
+msgstr "巨集引數列表中應存在一個逗號。"
+
+msgid "Unmatched elif."
+msgstr "無法配對的 elif。"
+
+msgid "Missing condition."
+msgstr "找不到條件。"
+
+msgid "Condition evaluation error."
+msgstr "條件評估錯誤。"
+
+msgid "Unmatched else."
+msgstr "無法配對的 else。"
+
+msgid "Invalid else."
+msgstr "無效的 else。"
+
+msgid "Unmatched endif."
+msgstr "無法配對的 endif。"
+
+msgid "Invalid endif."
+msgstr "無效的 endif。"
+
+msgid "Invalid ifdef."
+msgstr "無效的 ifndef。"
+
+msgid "Invalid ifndef."
+msgstr "無效的 ifndef。"
+
+msgid ""
+"Shader include load failed. Does the shader include exist? Is there a cyclic "
+"dependency?"
+msgstr "著色器的標頭檔讀取失敗。請檢查該標頭檔是否存在，或者是否存在循環依賴？"
+
+msgid "Shader include resource type is wrong."
+msgstr "著色器標頭檔的資源型別不正確。"
+
+msgid "Cyclic include found."
+msgstr "發現了循環 include。"
+
+msgid "Shader max include depth exceeded."
+msgstr "超出著色器的最大包含深度。"
+
+msgid "Invalid pragma directive."
+msgstr "無效的 pragma 指令。"
+
+msgid "Invalid undef."
+msgstr "無效的 undef。"
+
+msgid "Macro expansion limit exceeded."
+msgstr "超出巨集展開的限制。"
+
+msgid "Invalid macro argument list."
+msgstr "無效的巨集引數列表。"
+
+msgid "Invalid macro argument."
+msgstr "無效的巨集引數。"
+
+msgid "Invalid macro argument count."
+msgstr "無效的巨集引數計數。"
+
+msgid "Can't find matching branch directive."
+msgstr "找不到對應的分支指令。"
+
+msgid "Invalid symbols placed before directive."
+msgstr "指令前被放置了無效的符號。"
+
+msgid "Unmatched conditional statement."
+msgstr "條件式沒有完成配對。"
+
+msgid ""
+"Direct floating-point comparison (this may not evaluate to `true` as you "
+"expect). Instead, use `abs(a - b) < 0.0001` for an approximate but "
+"predictable comparison."
+msgstr ""
+"直接進行浮點數的比較（可能不會像你期望的得到「true」）。請改用「abs(a - b) < "
+"0.0001」進行近似但可預測的比較。"
+
+msgid "The const '%s' is declared but never used."
+msgstr "常數「%s」已被宣告，但從未使用。"
+
+msgid "The function '%s' is declared but never used."
+msgstr "函式「%s」已被宣告，但從未使用。"
+
+msgid "The struct '%s' is declared but never used."
+msgstr "結構「%s」已被宣告，但從未使用。"
+
+msgid "The uniform '%s' is declared but never used."
+msgstr "Uniform「%s」已被宣告，但從未使用。"
+
+msgid "The varying '%s' is declared but never used."
+msgstr "Varying「%s」已被宣告，但從未使用。"
+
+msgid "The local variable '%s' is declared but never used."
+msgstr "區域變數「%s」已被宣告，但從未使用。"
+
+msgid ""
+"The total size of the %s for this shader on this device has been exceeded "
+"(%d/%d). The shader may not work correctly."
+msgstr ""
+"這個著色器已經超出此裝置的 %s 的總大小 (%d/%d)。該著色器可能無法正常運作。"

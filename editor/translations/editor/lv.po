@@ -386,12 +386,6 @@ msgstr "Izmanto Bezjē Līknes"
 msgid "Create RESET Track(s)"
 msgstr "Izveidot atiestatīšanas celiņu(s)"
 
-msgid "Anim. Optimizer"
-msgstr "Anim. Optimizētājs"
-
-msgid "Max. Angular Error:"
-msgstr "Maks. Rotācijas Kļūda:"
-
 msgid "Optimize"
 msgstr "Optimizēt"
 
@@ -1266,9 +1260,6 @@ msgstr "Atvērt"
 
 msgid "Select Current Folder"
 msgstr "Izvēlēties pašreizējo mapi"
-
-msgid "File exists, overwrite?"
-msgstr "Fails eksistē. Pārrakstīt ?"
 
 msgid "Select This Folder"
 msgstr "Izvēlēties Šo Mapi"
@@ -3515,9 +3506,6 @@ msgstr "Nederīga animācija: '%s'."
 msgid "Nothing connected to input '%s' of node '%s'."
 msgstr "Nekas nav savienots ar ieeju '%s' mezglam '%s'."
 
-msgid "Pick a color from the editor window."
-msgstr "Izvēlēties krāsu no redaktora loga."
-
 msgid "Add current color as a preset."
 msgstr "Pievienot pašreizējo krāsu kā iepriekšnoteiktu krāsu."
 
@@ -3526,9 +3514,6 @@ msgstr "Brīdinājums!"
 
 msgid "Please Confirm..."
 msgstr "Lūdzu apstipriniet..."
-
-msgid "Must use a valid extension."
-msgstr "Jābūt derīgai galotnei."
 
 msgid "Enable grid minimap."
 msgstr "Iespējot režģa minikarti."

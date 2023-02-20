@@ -440,12 +440,6 @@ msgstr "Usar Curvas Bezier"
 msgid "Create RESET Track(s)"
 msgstr "Crear RESET Track(s)"
 
-msgid "Anim. Optimizer"
-msgstr "Optimizador de animación"
-
-msgid "Max. Angular Error:"
-msgstr "Error Angular Max.:"
-
 msgid "Optimize"
 msgstr "Optimizar"
 
@@ -1441,9 +1435,6 @@ msgstr "Abrir"
 
 msgid "Select Current Folder"
 msgstr "Seleccionar Carpeta Actual"
-
-msgid "File exists, overwrite?"
-msgstr "El archivo existe, sobrescribir?"
 
 msgid "Select This Folder"
 msgstr "Seleccionar Esta Carpeta"
@@ -7093,9 +7084,6 @@ msgstr "Cambiar zona muerta de la Acción"
 msgid "Erase Input Action"
 msgstr "Borrar Acción de Entrada"
 
-msgid "Rename Input Action Event"
-msgstr "Renombrar Evento de Acción de Entrada"
-
 msgid "Project Settings (project.godot)"
 msgstr "Configuración de Proyecto (project.godot)"
 
@@ -8410,9 +8398,6 @@ msgstr ""
 msgid "The AnimationPlayer root node is not a valid node."
 msgstr "La raíz del nodo AnimationPlayer no es un nodo válido."
 
-msgid "Pick a color from the editor window."
-msgstr "Elegir un color de la ventana del editor."
-
 msgid "Switch between hexadecimal and code values."
 msgstr "Cambiar entre valores hexadecimales y de código."
 
@@ -8442,9 +8427,6 @@ msgstr "Alerta!"
 
 msgid "Please Confirm..."
 msgstr "Confirmá, por favor..."
-
-msgid "Must use a valid extension."
-msgstr "Debe ser una extensión válida."
 
 msgid "Enable grid minimap."
 msgstr "Activar minimapa de grilla."

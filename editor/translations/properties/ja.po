@@ -52,8 +52,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-02-10 00:55+0000\n"
-"Last-Translator: Saitos <purifyzombie@gmail.com>\n"
+"PO-Revision-Date: 2023-02-18 07:45+0000\n"
+"Last-Translator: ueshita <nalto32@gmail.com>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/ja/>\n"
 "Language: ja\n"
@@ -71,6 +71,9 @@ msgstr "構成"
 
 msgid "Name"
 msgstr "名前"
+
+msgid "Name Localized"
+msgstr "ローカライズされた名前"
 
 msgid "Description"
 msgstr "説明"
@@ -108,8 +111,23 @@ msgstr "ウィンドウ"
 msgid "Size"
 msgstr "サイズ"
 
+msgid "Viewport Width"
+msgstr "ビューポートの幅"
+
+msgid "Viewport Height"
+msgstr "ビューポートの高さ"
+
 msgid "Mode"
 msgstr "モード"
+
+msgid "Initial Position Type"
+msgstr "初期位置タイプ"
+
+msgid "Initial Position"
+msgstr "初期位置"
+
+msgid "Initial Screen"
+msgstr "初期スクリーン"
 
 msgid "Resizable"
 msgstr "サイズを変更可能"
@@ -294,9 +312,6 @@ msgstr "ページサイズ"
 msgid "Blocking Mode Enabled"
 msgstr "ブロッキングモードを有効化"
 
-msgid "Connection"
-msgstr "接続"
-
 msgid "Read Chunk Size"
 msgstr "読み取りチャンクサイズ"
 
@@ -314,9 +329,6 @@ msgstr "入力バッファの上限サイズ"
 
 msgid "Output Buffer Max Size"
 msgstr "出力バッファの上限サイズ"
-
-msgid "Stream Peer"
-msgstr "ストリーム ピア"
 
 msgid "Resource"
 msgstr "リソース"
@@ -341,9 +353,6 @@ msgstr "シード値"
 
 msgid "State"
 msgstr "状態"
-
-msgid "Source Code"
-msgstr "ソースコード"
 
 msgid "TLS"
 msgstr "TLS"
@@ -429,15 +438,6 @@ msgstr "アクセス"
 msgid "Display Mode"
 msgstr "表示モード"
 
-msgid "Current Dir"
-msgstr "現在のディレクトリ"
-
-msgid "Current File"
-msgstr "現在のファイル"
-
-msgid "Current Path"
-msgstr "現在のパス"
-
 msgid "Show Hidden Files"
 msgstr "隠しファイルを表示"
 
@@ -519,17 +519,11 @@ msgstr "集中モード"
 msgid "Base Type"
 msgstr "基底型"
 
-msgid "Edited Resource"
-msgstr "編集したリソース"
-
 msgid "Editable"
 msgstr "編集可能"
 
 msgid "Toggle Mode"
 msgstr "モード切り替え"
-
-msgid "Script Owner"
-msgstr "スクリプトのオーナー"
 
 msgid "Editor Language"
 msgstr "エディターの言語"
@@ -1503,6 +1497,15 @@ msgstr "警告"
 msgid "ID"
 msgstr "ID"
 
+msgid "Texture"
+msgstr "テクスチャ"
+
+msgid "Separation"
+msgstr "分離"
+
+msgid "Speed"
+msgstr "速さ"
+
 msgid "Version Control"
 msgstr "バージョンコントロール"
 
@@ -1581,12 +1584,6 @@ msgstr "iOS"
 msgid "Hide Home Indicator"
 msgstr "ホームインジケーターを隠す"
 
-msgid "Input Devices"
-msgstr "入力デバイス"
-
-msgid "Pointing"
-msgstr "ポインティング"
-
 msgid "XR"
 msgstr "XR"
 
@@ -1595,6 +1592,9 @@ msgstr "ブートスプラッシュ"
 
 msgid "BG Color"
 msgstr "背景色"
+
+msgid "Input Devices"
+msgstr "入力デバイス"
 
 msgid "Environment"
 msgstr "環境"
@@ -1622,6 +1622,9 @@ msgstr "バッファリング"
 
 msgid "Agile Event Flushing"
 msgstr "即座にイベントフラッシュ"
+
+msgid "Pointing"
+msgstr "ポインティング"
 
 msgid "Emulate Touch From Mouse"
 msgstr "マウスでタッチ操作をエミュレート"
@@ -2304,9 +2307,6 @@ msgstr "コピーモード"
 msgid "Anchor Mode"
 msgstr "アンカーモード"
 
-msgid "Custom Viewport"
-msgstr "カスタムビューポート"
-
 msgid "Left"
 msgstr "左"
 
@@ -2321,9 +2321,6 @@ msgstr "下"
 
 msgid "Smoothed"
 msgstr "スムージング"
-
-msgid "Speed"
-msgstr "速さ"
 
 msgid "Draw Screen"
 msgstr "スクリーンを描画する"
@@ -2363,9 +2360,6 @@ msgstr "ランダム性"
 
 msgid "Lifetime Randomness"
 msgstr "生存時間のランダム性"
-
-msgid "Texture"
-msgstr "テクスチャ"
 
 msgid "Points"
 msgstr "点"
@@ -2435,12 +2429,6 @@ msgstr "ボーダー"
 
 msgid "Round Precision"
 msgstr "丸め精度"
-
-msgid "Rotation Degrees"
-msgstr "回転角度"
-
-msgid "Global Rotation Degrees"
-msgstr "グローバル回転角度"
 
 msgid "Ignore Camera Zoom"
 msgstr "カメラのズームを無視"
@@ -2611,7 +2599,7 @@ msgid "Use AABB Center"
 msgstr "AABBセンターを使用"
 
 msgid "End"
-msgstr "終り"
+msgstr "End"
 
 msgid "Sync"
 msgstr "同期"
@@ -2691,9 +2679,6 @@ msgstr "ドラッグして再配置可能"
 msgid "Syntax Highlighter"
 msgstr "シンタックスハイライト"
 
-msgid "Volume"
-msgstr "ボリューム"
-
 msgid "Z Index"
 msgstr "Zインデックス"
 
@@ -2714,9 +2699,6 @@ msgstr "転送モード"
 
 msgid "Transfer Channel"
 msgstr "転送チャンネル"
-
-msgid "Current Scene"
-msgstr "現在のシーン"
 
 msgid "Screen Space AA"
 msgstr "スクリーンスペースAA"
@@ -2780,9 +2762,6 @@ msgstr "サブメニュー"
 
 msgid "Font Separator"
 msgstr "フォントセパレータ"
-
-msgid "Separation"
-msgstr "分離"
 
 msgid "Cursor"
 msgstr "カーソル"
@@ -2849,9 +2828,6 @@ msgstr "プレビュー"
 
 msgid "Transform Format"
 msgstr "変換形式"
-
-msgid "Transform Array"
-msgstr "Transformの配列"
 
 msgid "Parsed Geometry Type"
 msgstr "解析されたジオメトリ型"

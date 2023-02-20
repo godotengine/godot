@@ -20,20 +20,21 @@
 # KazanskiyMaks <kazanskiy.maks@gmail.com>, 2022, 2023.
 # Мирослав <hlopukmyroslav@gmail.com>, 2022.
 # Ostap <ostapbataj79@gmail.com>, 2022.
-# Wald Sin <naaveranos@gmail.com>, 2022.
+# Wald Sin <naaveranos@gmail.com>, 2022, 2023.
 # Гліб Соколов <ramithes@i.ua>, 2022.
 # Max Donchenko <maxx.donchenko@gmail.com>, 2022.
 # Artem <artem@molotov.work>, 2022.
 # Teashrock <kajitsu22@gmail.com>, 2022, 2023.
 # kirill7606 <k7606irill@gmail.com>, 2022.
 # Alex <anna.loban@yahoo.com>, 2023.
+# Ivan Nosatlev <maxonyt2@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-01-08 09:47+0000\n"
-"Last-Translator: KazanskiyMaks <kazanskiy.maks@gmail.com>\n"
+"PO-Revision-Date: 2023-02-14 23:41+0000\n"
+"Last-Translator: Wald Sin <naaveranos@gmail.com>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
 "Language: uk\n"
@@ -42,13 +43,107 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.15.1-dev\n"
+"X-Generator: Weblate 4.16-dev\n"
+
+msgid "Unset"
+msgstr "Зняти"
 
 msgid "Physical"
 msgstr "Фізичний"
 
+msgid "Left Mouse Button"
+msgstr "Ліва Кнопка Миші"
+
+msgid "Right Mouse Button"
+msgstr "Права Кнопка миші"
+
+msgid "Middle Mouse Button"
+msgstr "Середня Кнопка Миши"
+
+msgid "Mouse Wheel Up"
+msgstr "Коліщатко вгору"
+
+msgid "Mouse Wheel Down"
+msgstr "Коліщатко вниз"
+
 msgid "Button"
 msgstr "Кнопка"
+
+msgid "Mouse motion at position (%s) with velocity (%s)"
+msgstr "Рух миші в положенні (%s) зі швидкістю (%s)"
+
+msgid "Left Stick X-Axis, Joystick 0 X-Axis"
+msgstr "Лівий стік X-осі, Джойстик 0 X-осі"
+
+msgid "Left Stick Y-Axis, Joystick 0 Y-Axis"
+msgstr "Лівий стіл Y-осі, Джойстик 0 Y-осі"
+
+msgid "Right Stick X-Axis, Joystick 1 X-Axis"
+msgstr "Правий стік X-осі, Джойстик 1 X-осі"
+
+msgid "Right Stick Y-Axis, Joystick 1 Y-Axis"
+msgstr "Правий стік Y-осі, Джойстик 1 Y-осі"
+
+msgid "Joystick 2 X-Axis, Left Trigger, Sony L2, Xbox LT"
+msgstr "Джойстик 2 X-осі, Лівий Тригер, Sony L2, Xbox LT"
+
+msgid "Joystick 2 Y-Axis, Right Trigger, Sony R2, Xbox RT"
+msgstr "Джойстик 2 Y-осі, Правий Тригер, Sony R2, Xbox RT"
+
+msgid "Unknown Joypad Axis"
+msgstr "Невідома вісь джойстика"
+
+msgid "Joypad Motion on Axis %d (%s) with Value %.2f"
+msgstr "Рух джойпада по осі %d (%s) зі значенням %.2f"
+
+msgid "Bottom Action, Sony Cross, Xbox A, Nintendo B"
+msgstr "Нижня дія, Sony Cross, Xbox A, Nintendo B"
+
+msgid "Right Action, Sony Circle, Xbox B, Nintendo A"
+msgstr "Права дія, Sony Circle, Xbox B, Nintendo A"
+
+msgid "Left Action, Sony Square, Xbox X, Nintendo Y"
+msgstr "Ліва дія, Sony Square, Xbox X, Nintendo Y"
+
+msgid "Top Action, Sony Triangle, Xbox Y, Nintendo X"
+msgstr "Верхня дія, Sony Triangle, Xbox Y, Nintendo X"
+
+msgid "Back, Sony Select, Xbox Back, Nintendo -"
+msgstr "Назад, Sony Select, Xbox Back, Nintendo -"
+
+msgid "Guide, Sony PS, Xbox Home"
+msgstr "Посібник, Sony PS, Xbox Home"
+
+msgid "Start, Nintendo +"
+msgstr "Старт, Nintendo +"
+
+msgid "Left Stick, Sony L3, Xbox L/LS"
+msgstr "Лівий стік, Sony L3, Xbox L/LS"
+
+msgid "Right Stick, Sony R3, Xbox R/RS"
+msgstr "Правий стік, Sony R3, Xbox R/RS"
+
+msgid "D-pad Up"
+msgstr "D-pad Вгору"
+
+msgid "D-pad Down"
+msgstr "D-pad Вниз"
+
+msgid "PS4/5 Touchpad"
+msgstr "PS4/5 Тачпад"
+
+msgid "touched"
+msgstr "торкнувся"
+
+msgid "Screen %s at (%s) with %s touch points"
+msgstr "Екран %s в (%s) з сенсорними точками %s"
+
+msgid ""
+"Screen dragged with %s touch points at position (%s) with velocity of (%s)"
+msgstr "Екран перетягнуто з %s точок дотику на позицію (%s) зі швидкістю (%s)"
+
+msgid "MIDI Input on Channel=%s Message=%s"
+msgstr "MIDI Вхід на каналі=%s Повідомлення=%s"
 
 msgid "Select"
 msgstr "Виділити"
@@ -86,8 +181,17 @@ msgstr "Скасувати"
 msgid "Redo"
 msgstr "Повернути"
 
+msgid "New Blank Line"
+msgstr "Новий порожній рядок"
+
 msgid "Indent"
 msgstr "Відступ"
+
+msgid "Backspace Word"
+msgstr "Стерти слово"
+
+msgid "Backspace all to Left"
+msgstr "Стерти все вліво"
 
 msgid "Delete"
 msgstr "Вилучити"
@@ -95,11 +199,17 @@ msgstr "Вилучити"
 msgid "Select All"
 msgstr "Виділити все"
 
+msgid "Select Word Under Caret"
+msgstr "Виділити слово під вказівником"
+
 msgid "Duplicate Nodes"
 msgstr "Дублювати вузли"
 
 msgid "Delete Nodes"
 msgstr "Вилучити вузли"
+
+msgid "Go Up One Level"
+msgstr "Підніміться на рівень вище"
 
 msgid "Refresh"
 msgstr "Оновити"
@@ -148,6 +258,15 @@ msgstr "ПіБ"
 msgid "EiB"
 msgstr "ЕіБ"
 
+msgid "Example: %s"
+msgstr "Приклад: %s"
+
+msgid "%d item"
+msgid_plural "%d items"
+msgstr[0] "%d елемент"
+msgstr[1] "%d елемента"
+msgstr[2] "%d елементів"
+
 msgid ""
 "Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'"
@@ -158,11 +277,17 @@ msgstr ""
 msgid "An action with the name '%s' already exists."
 msgstr "Дія із назвою «%s» вже існує."
 
+msgid "Cannot Revert - Action is same as initial"
+msgstr "Неможливо повернути - дія така ж, як і початкова"
+
 msgid "Add Event"
 msgstr "Додати подію"
 
 msgid "Add"
 msgstr "Додати"
+
+msgid "Show Built-in Actions"
+msgstr "Показати вбудовані дії"
 
 msgid "Action"
 msgstr "Дія"
@@ -199,6 +324,12 @@ msgstr "Змінити тривалість анімації"
 
 msgid "Change Animation Loop"
 msgstr "Змінити цикл анімації"
+
+msgid "Can't change loop mode on animation instanced from imported scene."
+msgstr "Неможливо змінити режим циклу для анімації з імпортованої сцени."
+
+msgid "Can't change loop mode on animation embedded in another scene."
+msgstr "Неможливо змінити режим циклу для анімації, вбудованої в іншу сцену."
 
 msgid "Property Track"
 msgstr "Доріжка властивостей"
@@ -495,12 +626,6 @@ msgstr "Використовувати криві Безьє"
 
 msgid "Create RESET Track(s)"
 msgstr "Створити доріжки RESET"
-
-msgid "Anim. Optimizer"
-msgstr "Оптимізатор Анімації"
-
-msgid "Max. Angular Error:"
-msgstr "Макс. кутова похибка:"
 
 msgid "Optimize"
 msgstr "Оптимізувати"
@@ -1517,9 +1642,6 @@ msgstr "Відкрити"
 
 msgid "Select Current Folder"
 msgstr "Вибрати поточну теку"
-
-msgid "File exists, overwrite?"
-msgstr "Файл вже існує. Перезаписати?"
 
 msgid "Select This Folder"
 msgstr "Вибрати цю теку"
@@ -7437,9 +7559,6 @@ msgstr "Змінити «мертву» зону дії"
 msgid "Erase Input Action"
 msgstr "Витерти запис дії"
 
-msgid "Rename Input Action Event"
-msgstr "Перейменувати подію за вхідною дією"
-
 msgid "Project Settings (project.godot)"
 msgstr "Параметри проєкту (project.godot)"
 
@@ -8849,9 +8968,6 @@ msgstr ""
 "Ліва кнопка: застосувати колір\n"
 "Права кнопка: вилучити взірець"
 
-msgid "Pick a color from the editor window."
-msgstr "Вибрати колір з вікна редактора."
-
 msgid "Switch between hexadecimal and code values."
 msgstr "Перемикання між шістнадцятковими значеннями і кодами."
 
@@ -8884,9 +9000,6 @@ msgstr "Увага!"
 
 msgid "Please Confirm..."
 msgstr "Будь ласка, підтвердьте..."
-
-msgid "Must use a valid extension."
-msgstr "Необхідно використовувати допустиме розширення."
 
 msgid "Enable grid minimap."
 msgstr "Увімкнути мінікарту ґратки."

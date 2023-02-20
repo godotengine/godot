@@ -498,12 +498,6 @@ msgstr "베지어 곡선 사용"
 msgid "Create RESET Track(s)"
 msgstr "재설정 트랙 만들기"
 
-msgid "Anim. Optimizer"
-msgstr "애니메이션 최적화"
-
-msgid "Max. Angular Error:"
-msgstr "최대 각도 오류:"
-
 msgid "Optimize"
 msgstr "최적화"
 
@@ -1501,9 +1495,6 @@ msgstr "열기"
 
 msgid "Select Current Folder"
 msgstr "현재 폴더 선택"
-
-msgid "File exists, overwrite?"
-msgstr "파일이 존재합니다. 덮어쓰시겠습니까?"
 
 msgid "Select This Folder"
 msgstr "이 폴더 선택"
@@ -7296,9 +7287,6 @@ msgstr "액션 데드존 바꾸기"
 msgid "Erase Input Action"
 msgstr "입력 액션 지우기"
 
-msgid "Rename Input Action Event"
-msgstr "입력 액션 이벤트 이름 바꾸기"
-
 msgid "Project Settings (project.godot)"
 msgstr "프로젝트 설정 (project.godot)"
 
@@ -8471,9 +8459,6 @@ msgstr ""
 msgid "The AnimationPlayer root node is not a valid node."
 msgstr "AnimationPlayer 루트 노드가 올바른 노드가 아닙니다."
 
-msgid "Pick a color from the editor window."
-msgstr "에디터 창에서 색상을 고르세요."
-
 msgid "Switch between hexadecimal and code values."
 msgstr "16진수나 코드 값으로 전환합니다."
 
@@ -8504,9 +8489,6 @@ msgstr "경고!"
 
 msgid "Please Confirm..."
 msgstr "확인해주세요..."
-
-msgid "Must use a valid extension."
-msgstr "올바른 확장자를 사용해야 합니다."
 
 msgid "Enable grid minimap."
 msgstr "그리드 미니맵을 활성화합니다."

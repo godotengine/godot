@@ -445,12 +445,6 @@ msgstr "Aplica reinicialització"
 msgid "Use Bezier Curves"
 msgstr "Fés servir Corbes Bézier"
 
-msgid "Anim. Optimizer"
-msgstr "Optimitzador d'Animació"
-
-msgid "Max. Angular Error:"
-msgstr "Error Angular Max.:"
-
 msgid "Optimize"
 msgstr "Optimitza"
 
@@ -5635,9 +5629,6 @@ msgstr "Canviar zona morta de l'acció"
 msgid "Erase Input Action"
 msgstr "Elimina l'Acció d'Entrada"
 
-msgid "Rename Input Action Event"
-msgstr "Reanomena la Incidència de l'Acció d'Entrada"
-
 msgid "Project Settings (project.godot)"
 msgstr "Configuració del Projecte (project.godot)"
 
@@ -6278,9 +6269,6 @@ msgstr "Ep!"
 
 msgid "Please Confirm..."
 msgstr "Confirmeu..."
-
-msgid "Must use a valid extension."
-msgstr "Cal utilitzar una extensió vàlida."
 
 msgid "Enable grid minimap."
 msgstr "Activa el minimapa de quadrícula."

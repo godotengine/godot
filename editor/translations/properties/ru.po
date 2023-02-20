@@ -132,7 +132,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-02-10 10:44+0000\n"
+"PO-Revision-Date: 2023-02-13 07:39+0000\n"
 "Last-Translator: Danil Alexeev <danil@alexeev.xyz>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/ru/>\n"
@@ -366,9 +366,6 @@ msgstr "Размер страницы"
 msgid "Blocking Mode Enabled"
 msgstr "Блокирующий режим включён"
 
-msgid "Connection"
-msgstr "Соединение"
-
 msgid "Read Chunk Size"
 msgstr "Размер чанка чтения"
 
@@ -386,9 +383,6 @@ msgstr "Максимальный размер входящего буфера"
 
 msgid "Output Buffer Max Size"
 msgstr "Максимальный размер исходящего буфера"
-
-msgid "Stream Peer"
-msgstr "Узел потоковой передачи"
 
 msgid "Resource"
 msgstr "Ресурс"
@@ -413,9 +407,6 @@ msgstr "Зерно"
 
 msgid "State"
 msgstr "Состояние"
-
-msgid "Source Code"
-msgstr "Исходный код"
 
 msgid "Locale"
 msgstr "Локаль"
@@ -494,15 +485,6 @@ msgstr "Доступ"
 
 msgid "Display Mode"
 msgstr "Режим отображения"
-
-msgid "Current Dir"
-msgstr "Текущая директория"
-
-msgid "Current File"
-msgstr "Текущий файл"
-
-msgid "Current Path"
-msgstr "Текущий путь"
 
 msgid "Show Hidden Files"
 msgstr "Показывать скрытые файлы"
@@ -585,17 +567,11 @@ msgstr "Режим без отвлечения"
 msgid "Base Type"
 msgstr "Базовый тип"
 
-msgid "Edited Resource"
-msgstr "Редактируемый ресурс"
-
 msgid "Editable"
 msgstr "Редактируемый"
 
 msgid "Toggle Mode"
 msgstr "Режим отображения"
-
-msgid "Script Owner"
-msgstr "Владелец скрипта"
 
 msgid "Editor Language"
 msgstr "Язык редактора"
@@ -1284,9 +1260,6 @@ msgstr "Сотворить из"
 msgid "Delimiter"
 msgstr "Разделитель"
 
-msgid "Preload"
-msgstr "Предзагрузить"
-
 msgid "Columns"
 msgstr "Колонки"
 
@@ -1533,6 +1506,15 @@ msgstr "Предупреждения"
 msgid "ID"
 msgstr "Идентификатор"
 
+msgid "Texture"
+msgstr "Текстура"
+
+msgid "Separation"
+msgstr "Разделение"
+
+msgid "Speed"
+msgstr "Скорость"
+
 msgid "Version Control"
 msgstr "Контроль версий"
 
@@ -1611,17 +1593,17 @@ msgstr "iOS"
 msgid "Hide Home Indicator"
 msgstr "Скрыть индикатор «Домой»"
 
-msgid "Input Devices"
-msgstr "Устройства ввода"
-
-msgid "Pointing"
-msgstr "Указывающие"
+msgid "XR"
+msgstr "XR"
 
 msgid "Boot Splash"
 msgstr "Загрузочная заставка"
 
 msgid "BG Color"
 msgstr "Цвет фона"
+
+msgid "Input Devices"
+msgstr "Устройства ввода"
 
 msgid "Environment"
 msgstr "Окружение"
@@ -1649,6 +1631,9 @@ msgstr "Буферизация"
 
 msgid "Agile Event Flushing"
 msgstr "Быстрая отправка событий"
+
+msgid "Pointing"
+msgstr "Указывающие"
 
 msgid "Emulate Touch From Mouse"
 msgstr "Эмулировать сенсорный ввод мышью"
@@ -1961,9 +1946,6 @@ msgstr "Корни"
 
 msgid "Godot Bone Node"
 msgstr "Узел кости Godot"
-
-msgid "Inverse Binds"
-msgstr "Инвертировать Связи"
 
 msgid "Godot Skin"
 msgstr "Скин Godot"
@@ -2547,9 +2529,6 @@ msgstr "Режим копирования"
 msgid "Anchor Mode"
 msgstr "Режим якорей"
 
-msgid "Custom Viewport"
-msgstr "Пользовательское окно просмотра"
-
 msgid "Left"
 msgstr "Влево"
 
@@ -2561,9 +2540,6 @@ msgstr "Вправо"
 
 msgid "Bottom"
 msgstr "Внизу"
-
-msgid "Speed"
-msgstr "Скорость"
 
 msgid "Input"
 msgstr "Вход"
@@ -2606,9 +2582,6 @@ msgstr "Фиксированный FPS"
 
 msgid "Local Coords"
 msgstr "Локальные координаты"
-
-msgid "Texture"
-msgstr "Текстура"
 
 msgid "Emission Shape"
 msgstr "Форма излучения"
@@ -2759,18 +2732,6 @@ msgstr "Включить уклонение"
 
 msgid "Max Speed"
 msgstr "Макс скорость"
-
-msgid "Global Rotation"
-msgstr "Глобальный поворот"
-
-msgid "Global Rotation Degrees"
-msgstr "Глобальный поворот градусы"
-
-msgid "Global Scale"
-msgstr "Глобальный масштаб"
-
-msgid "Global Transform"
-msgstr "Глобальное преобразование"
 
 msgid "Scroll"
 msgstr "Прокрутка"
@@ -3291,15 +3252,6 @@ msgstr "Корневой узел"
 msgid "Current Animation"
 msgstr "Текущая анимация"
 
-msgid "Assigned Animation"
-msgstr "Привязанная анимация"
-
-msgid "Current Animation Length"
-msgstr "Длина текущей анимации"
-
-msgid "Current Animation Position"
-msgstr "Позиция текущей анимации"
-
 msgid "Default Blend Time"
 msgstr "Время смешения по умолчанию"
 
@@ -3555,9 +3507,6 @@ msgstr "Скрывать корень"
 msgid "Audio Track"
 msgstr "Аудиотрек"
 
-msgid "Volume"
-msgstr "Объём"
-
 msgid "Paused"
 msgstr "Остановлен"
 
@@ -3591,12 +3540,6 @@ msgstr "Режим передачи"
 msgid "Transfer Channel"
 msgstr "Канал передачи"
 
-msgid "Owner"
-msgstr "Владелец"
-
-msgid "Multiplayer"
-msgstr "Мультиплеер"
-
 msgid "Editor Description"
 msgstr "Редактировать описание"
 
@@ -3605,12 +3548,6 @@ msgstr "Осталось времени"
 
 msgid "Debug Navigation Hint"
 msgstr "Подсказка режима навигации"
-
-msgid "Edited Scene Root"
-msgstr "Редактировать корень сцены"
-
-msgid "Current Scene"
-msgstr "Текущая сцена"
 
 msgid "Contact Color"
 msgstr "Цвет контакта"
@@ -3639,9 +3576,6 @@ msgstr "Путь окна предпросмотра"
 msgid "Disable 3D"
 msgstr "Отключить 3D"
 
-msgid "World 2D"
-msgstr "Мир 2D"
-
 msgid "Transparent BG"
 msgstr "Прозрачный фон"
 
@@ -3665,12 +3599,6 @@ msgstr "Выбор объектов"
 
 msgid "Disable Input"
 msgstr "Отключить ввод"
-
-msgid "Canvas Transform"
-msgstr "Преобразование полотна"
-
-msgid "Global Canvas Transform"
-msgstr "Глобальное преобразование полотна"
 
 msgid "Clear Mode"
 msgstr "Режим очистки"
@@ -3791,9 +3719,6 @@ msgstr "Разделитель шрифта"
 
 msgid "V Separation"
 msgstr "V Разделение"
-
-msgid "Separation"
-msgstr "Разделение"
 
 msgid "Title Offset"
 msgstr "Смещение заголовка"
@@ -4113,9 +4038,6 @@ msgstr "До"
 msgid "Frames"
 msgstr "Кадры"
 
-msgid "Current Frame"
-msgstr "Текущий кадр"
-
 msgid "Pause"
 msgstr "Пауза"
 
@@ -4151,12 +4073,6 @@ msgstr "Значение по умолчанию"
 
 msgid "Color Default"
 msgstr "Цвет по умолчанию"
-
-msgid "Canvas"
-msgstr "Холст"
-
-msgid "Navigation Map"
-msgstr "Карта навигации"
 
 msgid "Plane"
 msgstr "Плоскость"

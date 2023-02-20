@@ -334,9 +334,6 @@ msgstr "Lägg till Val för Nästa Förekomst"
 msgid "Toggle Insert Mode"
 msgstr "Växla Läge Infoga"
 
-msgid "Text Submitted"
-msgstr "Text Skickad"
-
 msgid "Duplicate Nodes"
 msgstr "Dubblerade Noder"
 
@@ -816,18 +813,6 @@ msgstr "Uppstädning av Animation (inget att ångra)"
 msgid "Use Bezier Curves"
 msgstr "Använd Bezier-kurvor"
 
-msgid "Anim. Optimizer"
-msgstr "Anim. Optimerare"
-
-msgid "Max. Velocity Error:"
-msgstr "Max. Hastighetsfel:"
-
-msgid "Max. Angular Error:"
-msgstr "Max. Vinkel-fel:"
-
-msgid "Max. Precision Error:"
-msgstr "Max. Precisionsfel:"
-
 msgid "Optimize"
 msgstr "Optimera"
 
@@ -851,9 +836,6 @@ msgstr "Skalnings förhållande:"
 
 msgid "Select Transition and Easing"
 msgstr "Välj Övergång och Lättnad"
-
-msgid "Anim. Baker"
-msgstr "Anim. Bakare"
 
 msgid "Select Tracks to Copy"
 msgstr "Välj Spår att Kopiera"
@@ -3646,9 +3628,6 @@ msgstr "Varning!"
 
 msgid "Please Confirm..."
 msgstr "Vänligen Bekräfta..."
-
-msgid "Must use a valid extension."
-msgstr "Måste använda en giltigt filändelse."
 
 msgid "(Other)"
 msgstr "(Annat)"

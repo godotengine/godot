@@ -421,12 +421,6 @@ msgstr "Käytä Bezier-käyriä"
 msgid "Create RESET Track(s)"
 msgstr "Luo palautusraidat"
 
-msgid "Anim. Optimizer"
-msgstr "Animaation optimoija"
-
-msgid "Max. Angular Error:"
-msgstr "Max. kulmavirhe:"
-
 msgid "Optimize"
 msgstr "Optimoi"
 
@@ -1418,9 +1412,6 @@ msgstr "Avaa"
 
 msgid "Select Current Folder"
 msgstr "Valitse nykyinen kansio"
-
-msgid "File exists, overwrite?"
-msgstr "Tiedosto on jo olemassa, korvataanko?"
 
 msgid "Select This Folder"
 msgstr "Valitse tämä kansio"
@@ -7099,9 +7090,6 @@ msgstr "Vaihda toiminnon katvealue"
 msgid "Erase Input Action"
 msgstr "Tyhjennä syötetoiminto"
 
-msgid "Rename Input Action Event"
-msgstr "Nimeä syötetoiminto uudelleen"
-
 msgid "Project Settings (project.godot)"
 msgstr "Projektin asetukset (project.godot)"
 
@@ -8464,9 +8452,6 @@ msgstr ""
 "Vasen hiirenkorva: Aseta väri\n"
 "Oikea hiirenkorva: Poista esiasetus"
 
-msgid "Pick a color from the editor window."
-msgstr "Valitse väri editori-ikkunasta."
-
 msgid "Switch between hexadecimal and code values."
 msgstr "Vaihda heksadesimaali- ja koodiarvojen välillä."
 
@@ -8496,9 +8481,6 @@ msgstr "Huomio!"
 
 msgid "Please Confirm..."
 msgstr "Ole hyvä ja vahvista..."
-
-msgid "Must use a valid extension."
-msgstr "Käytä sopivaa tiedostopäätettä."
 
 msgid "Enable grid minimap."
 msgstr "Käytä ruudukon pienoiskarttaa."

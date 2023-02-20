@@ -32,8 +32,8 @@ msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-02-09 01:12+0000\n"
-"Last-Translator: Богдан Матвіїв <bomtvv@gmail.com>\n"
+"PO-Revision-Date: 2023-02-10 17:27+0000\n"
+"Last-Translator: Ivan Nosatlev <maxonyt2@gmail.com>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/uk/>\n"
 "Language: uk\n"
@@ -263,9 +263,6 @@ msgstr "Розмір сторінки"
 msgid "Blocking Mode Enabled"
 msgstr "Увімкнено режим блокування"
 
-msgid "Connection"
-msgstr "З'єднання"
-
 msgid "Read Chunk Size"
 msgstr "Розмір фрагмента читання"
 
@@ -283,9 +280,6 @@ msgstr "Макс. розмір буфера введення"
 
 msgid "Output Buffer Max Size"
 msgstr "Макс. розмір буфера виведення"
-
-msgid "Stream Peer"
-msgstr "Вузол потоку даних"
 
 msgid "Resource"
 msgstr "Ресурс"
@@ -310,9 +304,6 @@ msgstr "База"
 
 msgid "State"
 msgstr "Стан"
-
-msgid "Source Code"
-msgstr "Початковий код"
 
 msgid "Locale"
 msgstr "Мова"
@@ -395,15 +386,6 @@ msgstr "Доступ"
 msgid "Display Mode"
 msgstr "Режим показу"
 
-msgid "Current Dir"
-msgstr "Поточний каталог"
-
-msgid "Current File"
-msgstr "Поточний файл"
-
-msgid "Current Path"
-msgstr "Поточний шлях"
-
 msgid "Show Hidden Files"
 msgstr "Показувати приховані файли"
 
@@ -485,17 +467,11 @@ msgstr "Режим без відволікання"
 msgid "Base Type"
 msgstr "Базовий тип"
 
-msgid "Edited Resource"
-msgstr "Редагований ресурс"
-
 msgid "Editable"
 msgstr "Можна редагувати"
 
 msgid "Toggle Mode"
 msgstr "Перемкнути режим"
-
-msgid "Script Owner"
-msgstr "Власник скрипту"
 
 msgid "Editor Language"
 msgstr "Мова редактора"
@@ -1195,9 +1171,6 @@ msgstr "Створити на основі"
 msgid "Delimiter"
 msgstr "Роздільник"
 
-msgid "Preload"
-msgstr "Попередньо завантажити"
-
 msgid "Columns"
 msgstr "Стовпчики"
 
@@ -1378,6 +1351,9 @@ msgstr "Використовувати потоки обробки"
 msgid "Available URLs"
 msgstr "Доступні адреси"
 
+msgid "Unset"
+msgstr "Зняти"
+
 msgid "Error"
 msgstr "Помилка"
 
@@ -1446,6 +1422,15 @@ msgstr "Попередження"
 
 msgid "ID"
 msgstr "Ідентифікатор"
+
+msgid "Texture"
+msgstr "Текстура"
+
+msgid "Separation"
+msgstr "Розділення"
+
+msgid "Speed"
+msgstr "Швидкість"
 
 msgid "Version Control"
 msgstr "Керування версіями"
@@ -1525,17 +1510,14 @@ msgstr "iOS"
 msgid "Hide Home Indicator"
 msgstr "Приховати індикатор домівки"
 
-msgid "Input Devices"
-msgstr "Пристрої вводу"
-
-msgid "Pointing"
-msgstr "Фокус"
-
 msgid "Boot Splash"
 msgstr "Вітання системи"
 
 msgid "BG Color"
 msgstr "Колір тла"
+
+msgid "Input Devices"
+msgstr "Пристрої вводу"
 
 msgid "Environment"
 msgstr "Середовище"
@@ -1563,6 +1545,9 @@ msgstr "Буферизація"
 
 msgid "Agile Event Flushing"
 msgstr "Зріле витирання подій"
+
+msgid "Pointing"
+msgstr "Фокус"
 
 msgid "Emulate Touch From Mouse"
 msgstr "Емулювати дотик з миші"
@@ -1908,9 +1893,6 @@ msgstr "Корінь оболонки"
 
 msgid "Joints Original"
 msgstr "Початок з'єднання"
-
-msgid "Inverse Binds"
-msgstr "Зворотні зв'язки"
 
 msgid "Non Joints"
 msgstr "Без з'єднань"
@@ -2632,9 +2614,6 @@ msgstr "Режим копіювання"
 msgid "Anchor Mode"
 msgstr "Режим піктограм"
 
-msgid "Custom Viewport"
-msgstr "1 панель перегляду"
-
 msgid "Left"
 msgstr "Ліворуч"
 
@@ -2649,9 +2628,6 @@ msgstr "Внизу"
 
 msgid "Smoothed"
 msgstr "Згладжений"
-
-msgid "Speed"
-msgstr "Швидкість"
 
 msgid "Horizontal Enabled"
 msgstr "Увімкнено горизонтально"
@@ -2730,9 +2706,6 @@ msgstr "Локальні координати"
 
 msgid "Draw Order"
 msgstr "Порядок малювання"
-
-msgid "Texture"
-msgstr "Текстура"
 
 msgid "Emission Shape"
 msgstr "Маска випромінювання"
@@ -2940,21 +2913,6 @@ msgstr "Макс. швидкість"
 
 msgid "Estimate Radius"
 msgstr "Оцінка радіуса"
-
-msgid "Rotation Degrees"
-msgstr "Грудуси обертання"
-
-msgid "Global Rotation"
-msgstr "Загальна стала"
-
-msgid "Global Rotation Degrees"
-msgstr "Градуси загального обертання"
-
-msgid "Global Scale"
-msgstr "Загальний масштаб"
-
-msgid "Global Transform"
-msgstr "Зберегти загальне перетворення"
 
 msgid "Scroll"
 msgstr "Гортання"
@@ -3613,15 +3571,6 @@ msgstr "Кореневий вузол"
 msgid "Current Animation"
 msgstr "Встановити анімацію"
 
-msgid "Assigned Animation"
-msgstr "Додавання анімації"
-
-msgid "Current Animation Length"
-msgstr "Змінити тривалість анімації"
-
-msgid "Current Animation Position"
-msgstr "Додати точку анімації"
-
 msgid "Playback Options"
 msgstr "Параметри відтворення"
 
@@ -4018,9 +3967,6 @@ msgstr "Прапорці режиму скидання"
 msgid "Audio Track"
 msgstr "Доріжка"
 
-msgid "Volume"
-msgstr "Об'єм"
-
 msgid "Paused"
 msgstr "Призупинено"
 
@@ -4029,9 +3975,6 @@ msgstr "Розгорнути"
 
 msgid "Buffering Msec"
 msgstr "Буферизація (мс)"
-
-msgid "Stream Position"
-msgstr "Встановити криву в позиції"
 
 msgid "Self Modulate"
 msgstr "Самомодуляція"
@@ -4072,12 +4015,6 @@ msgstr "Режим передавання"
 msgid "Transfer Channel"
 msgstr "Канал перенесення"
 
-msgid "Owner"
-msgstr "Власник"
-
-msgid "Multiplayer"
-msgstr "Декілька гравців"
-
 msgid "Editor Description"
 msgstr "Опис"
 
@@ -4089,15 +4026,6 @@ msgstr "Підказка діагностики зіткнень"
 
 msgid "Debug Navigation Hint"
 msgstr "Підказка діагностики навігації"
-
-msgid "Edited Scene Root"
-msgstr "Новий корінь сцени"
-
-msgid "Current Scene"
-msgstr "Поточна сцена"
-
-msgid "Root"
-msgstr "Корінь"
 
 msgid "Multiplayer Poll"
 msgstr "Опитування щодо декількох гравців"
@@ -4161,12 +4089,6 @@ msgstr "Вибір об'єктів"
 
 msgid "Disable Input"
 msgstr "Вимкнути введення"
-
-msgid "Canvas Transform"
-msgstr "Перетворення полотна"
-
-msgid "Global Canvas Transform"
-msgstr "Загальне перетворення полотна"
 
 msgid "Render Target"
 msgstr "Призначення обробки"
@@ -4371,9 +4293,6 @@ msgstr "Фокус коментування"
 
 msgid "Resizer"
 msgstr "Засіб зміни розміру"
-
-msgid "Separation"
-msgstr "Розділення"
 
 msgid "Title Offset"
 msgstr "Відступ заголовка"
@@ -4885,9 +4804,6 @@ msgstr "HDR"
 msgid "Frames"
 msgstr "Кадри"
 
-msgid "Current Frame"
-msgstr "Поточний кадр"
-
 msgid "Pause"
 msgstr "Пауза"
 
@@ -4924,14 +4840,8 @@ msgstr "Типове значення"
 msgid "Color Default"
 msgstr "Завантажити типовий"
 
-msgid "Canvas"
-msgstr "Полотно"
-
 msgid "Fallback Environment"
 msgstr "Перегляд середовища"
-
-msgid "Scenario"
-msgstr "Сценарій"
 
 msgid "Plane"
 msgstr "Площина"

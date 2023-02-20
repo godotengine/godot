@@ -9,7 +9,7 @@
 # Luděk Novotný <gladosicek@gmail.com>, 2016, 2018.
 # Martin Novák <maidx@seznam.cz>, 2017, 2019.
 # zxey <r.hozak@seznam.cz>, 2018.
-# Vojtěch Šamla <auzkok@seznam.cz>, 2018, 2019, 2020, 2021, 2022.
+# Vojtěch Šamla <auzkok@seznam.cz>, 2018, 2019, 2020, 2021, 2022, 2023.
 # Peeter Angelo <contact@peeterangelo.com>, 2019.
 # VojtechBrezina <vojta.brezina@gmail.com>, 2019, 2021.
 # Garrom Orc Shaman <garromorcshaman@gmail.com>, 2019.
@@ -27,7 +27,7 @@
 # ProfJack <profjackcz@gmail.com>, 2021.
 # swifterik <blaha.j502@gmail.com>, 2021.
 # Daniel <dan@ger.cz>, 2021.
-# Jakub Janšta <jansta.ja@gmail.com>, 2021.
+# Jakub Janšta <jansta.ja@gmail.com>, 2021, 2023.
 # Petr Voparil <voparil.petr96@gmail.com>, 2022.
 # JoeMoos <josephmoose13@gmail.com>, 2022.
 # Mirinek <mirek.nozicka77@gmail.com>, 2022.
@@ -39,8 +39,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-02-09 01:51+0000\n"
-"Last-Translator: ElisHoli <eliskaholz@seznam.cz>\n"
+"PO-Revision-Date: 2023-02-18 04:10+0000\n"
+"Last-Translator: Vojtěch Šamla <auzkok@seznam.cz>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/godot-engine/godot/"
 "cs/>\n"
 "Language: cs\n"
@@ -50,8 +50,20 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
 "X-Generator: Weblate 4.16-dev\n"
 
+msgid "Left Mouse Button"
+msgstr "Levé tlačítko myši"
+
+msgid "Right Mouse Button"
+msgstr "Pravé tlačítko myši"
+
+msgid "Middle Mouse Button"
+msgstr "Prostřední tlačítko myši"
+
 msgid "Button"
 msgstr "Tlačítko"
+
+msgid "Double Click"
+msgstr "Dvojklik"
 
 msgid "Select"
 msgstr "Vybrat"
@@ -119,6 +131,12 @@ msgstr "Neplatné argumenty pro zkonstruování '%s'"
 msgid "On call to '%s':"
 msgstr "Při volání '%s':"
 
+msgid "Built-in script"
+msgstr "Vestavěný skript"
+
+msgid "Built-in"
+msgstr "Vestavěný"
+
 msgid "B"
 msgstr "B"
 
@@ -151,7 +169,19 @@ msgid "An action with the name '%s' already exists."
 msgstr "Akce s názvem \"%s\" již existuje."
 
 msgid "Add Event"
-msgstr "Přidat akci"
+msgstr "Přidat událost"
+
+msgid "Remove Action"
+msgstr "Odstranit akci"
+
+msgid "Cannot Remove Action"
+msgstr "Nelze odstranit akci"
+
+msgid "Edit Event"
+msgstr "Upravit událost"
+
+msgid "Remove Event"
+msgstr "Odstranit událost"
 
 msgid "Add"
 msgstr "Přidat"
@@ -232,13 +262,19 @@ msgid "Update Mode (How this property is set)"
 msgstr "Režim aktualizace (jak je tato vlastnost nastavena)"
 
 msgid "Interpolation Mode"
-msgstr "Interpolační režim"
+msgstr "Režim interpolace"
 
 msgid "Loop Wrap Mode (Interpolate end with beginning on loop)"
 msgstr "Režim uzavřené smyčky (Interpolace mezi koncem a začátkem smyčky)"
 
 msgid "Remove this track."
 msgstr "Odstranit tuto stopu."
+
+msgid "Time (s):"
+msgstr "Čas (s):"
+
+msgid "Position:"
+msgstr "Pozice:"
 
 msgid "Scale:"
 msgstr "Zvětšení:"
@@ -263,6 +299,9 @@ msgstr "Lineární"
 
 msgid "Cubic"
 msgstr "Kubická"
+
+msgid "Clamp Loop Interp"
+msgstr "Interpolace svorkové smyčky"
 
 msgid "Wrap Loop Interp"
 msgstr "Interpolace ovinutou smyčkou"
@@ -343,6 +382,12 @@ msgstr "Cesta stopy není validní, nelze vložit klíč metody."
 
 msgid "Add Method Track Key"
 msgstr "Přidat stopu volání metody"
+
+msgid "Method not found in object:"
+msgstr "Tato metoda nebyla v objektu nalezena:"
+
+msgid "Rotation"
+msgstr "Rotace"
 
 msgid "Scale"
 msgstr "Měřítko"
@@ -429,12 +474,6 @@ msgstr "Použít Bézierovy křivky"
 msgid "Create RESET Track(s)"
 msgstr "Vytvořit RESET stopu/stopy"
 
-msgid "Anim. Optimizer"
-msgstr "Optimalizátor animace"
-
-msgid "Max. Angular Error:"
-msgstr "Maximální úhlová chyba:"
-
 msgid "Optimize"
 msgstr "Optimalizuj"
 
@@ -482,15 +521,15 @@ msgstr "%d nahrazeno."
 
 msgid "%d match"
 msgid_plural "%d matches"
-msgstr[0] "%d shoda."
-msgstr[1] "%d shod."
-msgstr[2] "%d shody."
+msgstr[0] "%d shoda"
+msgstr[1] "%d shody"
+msgstr[2] "%d shod"
 
 msgid "%d of %d match"
 msgid_plural "%d of %d matches"
-msgstr[0] "%d shoda."
-msgstr[1] "%d shod."
-msgstr[2] "%d shody."
+msgstr[0] "%d shoda"
+msgstr[1] "%d shody"
+msgstr[2] "%d shod"
 
 msgid "Match Case"
 msgstr "Rozlišovat malá/velká"
@@ -611,6 +650,9 @@ msgstr "Odpojit"
 msgid "Connect a Signal to a Method"
 msgstr "Připojit signál k metodě"
 
+msgid "Edit Connection: '%s'"
+msgstr "Upravit spojení: \"%s\""
+
 msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
 msgstr ""
 "Jste si jisti, že chcete odstranit všechna připojení ze signálu \"%s\"?"
@@ -623,6 +665,9 @@ msgstr "Jste si jistí, že chcete odstranit všechna připojení z tohoto sign�
 
 msgid "Disconnect All"
 msgstr "Odpojit vše"
+
+msgid "Copy Name"
+msgstr "Kopírovat název"
 
 msgid "Edit..."
 msgstr "Upravit..."
@@ -656,6 +701,9 @@ msgstr "Shody:"
 
 msgid "Description:"
 msgstr "Popis:"
+
+msgid "Remote %s:"
+msgstr "Vzdálený %s:"
 
 msgid "Debugger"
 msgstr "Ladicí program"
@@ -753,8 +801,14 @@ msgstr "Varování:"
 msgid "Error:"
 msgstr "Chyba:"
 
+msgid "%s Error:"
+msgstr "Chyba %s:"
+
 msgid "Stack Trace"
 msgstr "Trasování zásobníku"
+
+msgid "Delete All Breakpoints in:"
+msgstr "Odstranit všechny breakpointy v:"
 
 msgid "Copy Error"
 msgstr "Kopírovat chybu"
@@ -1133,6 +1187,9 @@ msgstr "Otevřít rozložení audio sběrnice"
 msgid "There is no '%s' file."
 msgstr "Neexistuje '%s' soubor."
 
+msgid "Layout:"
+msgstr "Rozložení:"
+
 msgid "Invalid file, not an audio bus layout."
 msgstr "Neplatný soubor, není rozložení audio sběrnice."
 
@@ -1223,6 +1280,9 @@ msgstr "Navigace"
 msgid "OpenGL"
 msgstr "OpenGL"
 
+msgid "File saving failed."
+msgstr "Ukládání souboru selhalo."
+
 msgid "Nodes and Classes:"
 msgstr "Uzly a třídy:"
 
@@ -1240,6 +1300,9 @@ msgstr "Uložit"
 
 msgid "Reset to Defaults"
 msgstr "Obnovit výchozí"
+
+msgid "Please Confirm:"
+msgstr "Potvrďte prosím:"
 
 msgid "Export Profile"
 msgstr "Exportovat profil"
@@ -1424,9 +1487,6 @@ msgstr "Otevřít"
 msgid "Select Current Folder"
 msgstr "Vybrat stávající složku"
 
-msgid "File exists, overwrite?"
-msgstr "Soubor existuje, přepsat?"
-
 msgid "Select This Folder"
 msgstr "Vybrat tuto složku"
 
@@ -1542,6 +1602,9 @@ msgstr ""
 msgid "(Re)Importing Assets"
 msgstr "(Re)Importování assetů"
 
+msgid "Error codes returned:"
+msgstr "Vráceny chybové kódy:"
+
 msgid "Top"
 msgstr "Horní"
 
@@ -1565,6 +1628,9 @@ msgstr "Vlastnosti"
 
 msgid "default:"
 msgstr "výchozí:"
+
+msgid "Constructors"
+msgstr "Konstruktory"
 
 msgid "Operators"
 msgstr "Operátory"
@@ -1590,6 +1656,9 @@ msgstr "Styly"
 msgid "Enumerations"
 msgstr "Výčty"
 
+msgid "Annotations"
+msgstr "Anotace"
+
 msgid "Property Descriptions"
 msgstr "Popisy vlastnosti"
 
@@ -1603,8 +1672,14 @@ msgstr ""
 "V současné době neexistuje žádný popis pro tuto vlastnost. Prosím pomozte "
 "nám tím, že ho[color=$color][url=$url]vytvoříte[/url][/color]!"
 
+msgid "Constructor Descriptions"
+msgstr "Popisy konstruktorů"
+
 msgid "Method Descriptions"
 msgstr "Popisy metod"
+
+msgid "Operator Descriptions"
+msgstr "Popisy operátorů"
 
 msgid "%d match."
 msgstr "%d shoda."
@@ -1654,6 +1729,9 @@ msgstr "Metoda"
 msgid "Signal"
 msgstr "Signál"
 
+msgid "Annotation"
+msgstr "Anotace"
+
 msgid "Constant"
 msgstr "Konstantní"
 
@@ -1695,8 +1773,14 @@ msgstr "Připnuté %s"
 msgid "Unpinned %s"
 msgstr "Nepřipnuté %s"
 
+msgid "Select existing layout:"
+msgstr "Vybrat existující rozložení:"
+
 msgid "Changed Locale Filter Mode"
 msgstr "Změněn režim filtru pro nastavení jazyka"
+
+msgid "[Default]"
+msgstr "[Výchozí]"
 
 msgid "Show All Locales"
 msgstr "Zobrazit všechny jazyky"
@@ -1709,6 +1793,16 @@ msgstr "Editovat filtry"
 
 msgid "Language:"
 msgstr "Jazyk:"
+
+msgctxt "Locale"
+msgid "Script:"
+msgstr "Skript:"
+
+msgid "Country:"
+msgstr "Země:"
+
+msgid "Language"
+msgstr "Jazyk"
 
 msgid "Clear Output"
 msgstr "Vymazat výstup"
@@ -2467,11 +2561,29 @@ msgstr ""
 "Podržte %s pro zaokrouhlení na celá čísla.\n"
 " Pro přesnější změny podržte Shift."
 
+msgid "No notifications."
+msgstr "Žádné notifikace."
+
+msgid "Show notifications."
+msgstr "Zobrazit notifikace."
+
 msgid "All Devices"
 msgstr "Všechna zařízení"
 
 msgid "Device"
 msgstr "Zařízení"
+
+msgid "Filter by event..."
+msgstr "Filtrovat podle události..."
+
+msgid "Project export for platform:"
+msgstr "Exportovat projekt pro platformu:"
+
+msgid "Completed successfully."
+msgstr "Úspěšně dokončeno."
+
+msgid "Failed."
+msgstr "Selhalo."
 
 msgid "Storing File:"
 msgstr "Ukládám soubor:"
@@ -2490,6 +2602,12 @@ msgstr "Vlastní ladící šablona nebyla nalezena."
 
 msgid "Custom release template not found."
 msgstr "Vlastní šablona k uveřejnění nebyla nalezena."
+
+msgid "The given export path doesn't exist."
+msgstr "Zadaná cesta pro export neexistuje."
+
+msgid "Template file not found: \"%s\"."
+msgstr "Soubor šablony nenalezen: \"%s\"."
 
 msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
 msgstr "Při 32-bitovým exportu vestavěné PCK nemůže být větší než 4 GiB."
@@ -3005,6 +3123,9 @@ msgstr "Znovu importovat"
 msgid "Offset:"
 msgstr "Offset(Posun):"
 
+msgid "Loop:"
+msgstr "Smyčka:"
+
 msgid "Importing Scene..."
 msgstr "Importuji scénu..."
 
@@ -3398,8 +3519,14 @@ msgstr "Přidat uzel..."
 msgid "Enable Filtering"
 msgstr "Povolit filtrování"
 
+msgid "Animation name can't be empty."
+msgstr "Název animace nemůže být prázdný."
+
 msgid "Load Animation"
 msgstr "Načíst animaci"
+
+msgid "Invalid AnimationLibrary file."
+msgstr "Neplatný soubor AnimationLibrary."
 
 msgid "Animation Name:"
 msgstr "Jméno animace:"
@@ -3409,6 +3536,12 @@ msgstr "Vložená animace"
 
 msgid "Open in Inspector"
 msgstr "Otevřít v inspektoru"
+
+msgid "Copy animation to clipboard"
+msgstr "Zkopírovat animaci do schránky"
+
+msgid "Save animation to resource on disk"
+msgstr "Uložit animaci do zdroje na disku"
 
 msgid "Toggle Autoplay"
 msgstr "Zapnout Autoplay"
@@ -3935,7 +4068,7 @@ msgid "Use Grid Snap"
 msgstr "Použít mřížkové přichytávání"
 
 msgid "Snapping Options"
-msgstr "Možnosti přichycení"
+msgstr "Možnosti přichytávání"
 
 msgid "Use Rotation Snap"
 msgstr "Použít rotační přichytávání"
@@ -3950,7 +4083,7 @@ msgid "Use Pixel Snap"
 msgstr "Přichytávat na pixely"
 
 msgid "Smart Snapping"
-msgstr "Chytré přichcování"
+msgstr "Chytré přichytávání"
 
 msgid "Configure Snap..."
 msgstr "Nastavení přichytávání..."
@@ -3981,6 +4114,9 @@ msgstr "Zobrazit kosti"
 
 msgid "View"
 msgstr "Zobrazení"
+
+msgid "Show When Snapping"
+msgstr "Zobrazit při přichytávání"
 
 msgid "Hide"
 msgstr "Schovat"
@@ -4286,6 +4422,12 @@ msgstr ""
 "Při vzdáleném použití na zařízení je tato možnost efektivnější, když je "
 "povolen síťový souborový systém."
 
+msgid "Run %d Instance"
+msgid_plural "Run %d Instances"
+msgstr[0] "Spustit %d instanci"
+msgstr[1] "Spustit %d instance"
+msgstr[2] "Spustit %d instancí"
+
 msgid " - Variation"
 msgstr " - Variace"
 
@@ -4411,6 +4553,9 @@ msgstr "Žádná mesh pro debugování."
 
 msgid "Mesh has no UV in layer %d."
 msgstr "Model nemá ve vrstvě %d žádné UV."
+
+msgid "Could not create outline."
+msgstr "Nelze vytvořit obrys."
 
 msgid "Create Outline"
 msgstr "Vytvořit obrys"
@@ -6587,13 +6732,14 @@ msgid ""
 "Warning: You won't be able to open the project with previous versions of the "
 "engine anymore."
 msgstr ""
-"Konfigurační soubor projektu nespecifikuje verzi Godotu ve které byl "
-"vytvořen.\n"
+"Zvolený projekt \"%s\" nespecifikuje podporovanou verzi enginu Godot ve svém "
+"konfiguračním souboru (\"project.godot\").\n"
 "\n"
 "Cesta projektu: %s\n"
 "\n"
 "Pokud se rozhodnete ho otevřít, tak bude převeden do aktuálního formátu "
-"konfiguračního souboru Godotu.\n"
+"konfiguračního souboru Godot.\n"
+"\n"
 "Varování: Nebude možné otevřít projekt v dřívějších verzích enginu."
 
 msgid ""
@@ -6607,13 +6753,14 @@ msgid ""
 "Warning: You won't be able to open the project with previous versions of the "
 "engine anymore."
 msgstr ""
-"Následující konfigurační soubor projektu byl vytvořen starší verzí enginu a "
-"potřebuje být konvertován pro aktuální verzi:\n"
+"Vybraný projekt \"%s\" byl vytvořen starší verzí enginu a potřebuje být "
+"konvertován pro aktuální verzi.\n"
 "\n"
 "Cesta k projektu: %s\n"
 "\n"
 "Přejete si ho konvertovat?\n"
-"Varování: Nebude možné otevřít projekt v dřívějších verzích enginu."
+"\n"
+"Varování: Nebude možné otevřít projekt v předchozích verzích enginu."
 
 msgid ""
 "Can't open project \"%s\" at the following path:\n"
@@ -6719,8 +6866,14 @@ msgstr ""
 "V této chvíli nemáte žádný projekt.\n"
 "Přejete si prozkoumat oficiální ukázkové projekty v knihovně assetů?"
 
+msgid "Add Project Setting"
+msgstr "Přidat nastavení projektu"
+
 msgid "Delete Item"
 msgstr "Odstranit položku"
+
+msgid "(All)"
+msgstr "(Vše)"
 
 msgid "Add Input Action"
 msgstr "Přidat vstupní akci"
@@ -6730,9 +6883,6 @@ msgstr "Změnit mrtvou zónu akce"
 
 msgid "Erase Input Action"
 msgstr "Vymazat vstupní akce"
-
-msgid "Rename Input Action Event"
-msgstr "Přejmenovat událost vstupní akce"
 
 msgid "Project Settings (project.godot)"
 msgstr "Nastavení projektu (project.godot)"
@@ -7048,14 +7198,14 @@ msgstr "Varování konfigurace uzlu:"
 msgid "Node has one connection."
 msgid_plural "Node has {num} connections."
 msgstr[0] "Uzel má jedno připojení."
-msgstr[1] "Uzel má {num} připojení"
-msgstr[2] "Uzel má připojení"
+msgstr[1] "Uzel má {num} připojení."
+msgstr[2] "Uzel má {num} připojení."
 
 msgid "Node is in this group:"
 msgid_plural "Node is in the following groups:"
 msgstr[0] "Uzel je v této skupině:"
 msgstr[1] "Uzly je v těchto skupinách:"
-msgstr[2] "Uzel je ve skupinách"
+msgstr[2] "Uzel je v těchto skupinách:"
 
 msgid "Click to show signals dock."
 msgstr "Kliknutím zobrazíte panel signálů."
@@ -7179,6 +7329,9 @@ msgstr "Neplatná základní cesta."
 
 msgid "Wrong extension chosen."
 msgstr "Vybrána špatná přípona."
+
+msgid "Global shader parameter '%s' already exists'"
+msgstr "Globální parametr shaderu \"%s\" již existuje"
 
 msgid "Change Cylinder Radius"
 msgstr "Změnit poloměr Cylinder"
@@ -7469,6 +7622,9 @@ msgstr "Podepisování vydání %s..."
 msgid "Could not find keystore, unable to export."
 msgstr "Nepodařilo se najít úložiště klíčů, nelze exportovat."
 
+msgid "Could not start apksigner executable."
+msgstr "Nelze spustit program apksigner."
+
 msgid ""
 "output: \n"
 "%s"
@@ -7554,6 +7710,15 @@ msgstr "Znak '%s' není dovolen v identifikátoru."
 msgid "Invalid executable file."
 msgstr "Neplatný spouštěcí soubor."
 
+msgid "Could not start rcodesign executable."
+msgstr "Nelze spustit program rcodesign."
+
+msgid "Could not start xcrun executable."
+msgstr "Nelze spustit program xcrun."
+
+msgid "Could not start hdiutil executable."
+msgstr "Nelze spustit program hdiutil."
+
 msgid "Invalid package short name."
 msgstr "Neplatné krátké jméno balíčku."
 
@@ -7593,6 +7758,27 @@ msgstr "Neplatné rozměry Square 310x150 Logo obrázku (měly by být 310x150).
 msgid "Invalid splash screen image dimensions (should be 620x300)."
 msgstr "Neplatné rozměry obrázku uvítací obrazovky (měly by být 620x300)."
 
+msgid "Could not open template for export: \"%s\"."
+msgstr "Nelze otevřít šablonu pro export: \"%s\"."
+
+msgid "Invalid export template: \"%s\"."
+msgstr "Neplatná šablona pro export: \"%s\"."
+
+msgid "Could not write file: \"%s\"."
+msgstr "Nelze zapsat soubor: \"%s\"."
+
+msgid "Could not read file: \"%s\"."
+msgstr "Nelze přečíst soubor: \"%s\"."
+
+msgid "Could not read HTML shell: \"%s\"."
+msgstr "Nebylo možné přečíst HTML shell: \"%s\"."
+
+msgid "Could not create HTTP server directory: %s."
+msgstr "Nepodařilo se vytvořit adresář serveru HTTP: %s."
+
+msgid "Error starting HTTP server: %d."
+msgstr "Chyba při spuštění serveru HTTP: %d."
+
 msgid "Stop HTTP Server"
 msgstr "Zastavit HTTP Server"
 
@@ -7602,11 +7788,20 @@ msgstr "Spustit v prohlížeči"
 msgid "Run exported HTML in the system's default browser."
 msgstr "Spustit vyexportované HTML ve výchozím prohlížeči."
 
+msgid "Failed to rename temporary file \"%s\"."
+msgstr "Nelze přejmenovat dočasný soubor: \"%s\"."
+
+msgid "Failed to remove temporary file \"%s\"."
+msgstr "Nelze odstranit dočasný soubor: \"%s\"."
+
 msgid "Invalid icon path:"
 msgstr "Neplatná cesta ikony:"
 
 msgid "Invalid file version:"
 msgstr "Neplatná verze souboru:"
+
+msgid "Invalid product version:"
+msgstr "Neplatná verze produktu:"
 
 msgid ""
 "This node has no shape, so it can't collide or interact with other objects.\n"
@@ -7696,6 +7891,13 @@ msgstr ""
 msgid "PathFollow2D only works when set as a child of a Path2D node."
 msgstr "PathFollow2D funguje pouze když je dítětem uzlu Path2D."
 
+msgid ""
+"A PhysicalBone2D only works with a Skeleton2D or another PhysicalBone2D as a "
+"parent node!"
+msgstr ""
+"Uzel PhysicalBone2D funguje pouze s rodičovským uzlem Skeleton2D nebo jiným "
+"PhysicalBone2D!"
+
 msgid "Path property must point to a valid Node2D node to work."
 msgstr ""
 "Pro zajištění funkčnosti musí vlastnost path ukazovat na platný uzel Node2D."
@@ -7723,6 +7925,17 @@ msgstr ""
 "od CollisionObject3D.\n"
 "Používejte jej pouze jako potomka Area3D, StaticBody3D, RigidBody3D, "
 "CharacterBody3D atd., abyste jim dali tvar."
+
+msgid ""
+"CollisionShape3D only serves to provide a collision shape to a "
+"CollisionObject3D derived node.\n"
+"Please only use it as a child of Area3D, StaticBody3D, RigidBody3D, "
+"CharacterBody3D, etc. to give them a shape."
+msgstr ""
+"CollisionShape3D slouží pouze k poskytnutí kolizního tvaru objektu "
+"CollissionObject3D a od něj odvozených uzlů.\n"
+"Použijte ho pouze jako potomka Area3D, StaticBody3D, RigidBody3D, "
+"CharacterBody3D a dalších, pro určení jejich tvaru."
 
 msgid "Nothing is visible because no mesh has been assigned."
 msgstr "Nic není zobrazeno, protože nebyla přiřazena žádná mřížka."
@@ -7785,9 +7998,6 @@ msgstr ""
 "Barva: #%s\n"
 "LMB: Nastavit barvu"
 
-msgid "Pick a color from the editor window."
-msgstr "Vyberte barvu z okna editoru."
-
 msgid "Switch between hexadecimal and code values."
 msgstr "Přepni mezi hexadecimálními a kódovými hodnotami."
 
@@ -7817,9 +8027,6 @@ msgstr "Pozor!"
 msgid "Please Confirm..."
 msgstr "Potvrďte prosím..."
 
-msgid "Must use a valid extension."
-msgstr "Je nutné použít platnou příponu."
-
 msgid "Enable grid minimap."
 msgstr "Povolit minimapu mřížky."
 
@@ -7846,6 +8053,16 @@ msgstr ""
 "Výchozí prostředí specifikované v nastavení projektu (Vykreslování -> "
 "Zobrazovací výřez -> Výchozí prostředí) se nepodařilo načíst."
 
+msgid "Unsupported BMFont texture format."
+msgstr "Nepodporovaný formát textury BMFont."
+
+msgid ""
+"Shader keywords cannot be used as parameter names.\n"
+"Choose another name."
+msgstr ""
+"Klíčové slovo shaderu nemůže být použito jako název pro parametr.\n"
+"Vyberte jiný název."
+
 msgid ""
 "The sampler port is connected but not used. Consider changing the source to "
 "'SamplerPort'."
@@ -7858,6 +8075,9 @@ msgstr "Neplatný zdroj pro náhled."
 
 msgid "Invalid source for shader."
 msgstr "Neplatný zdroj pro shader."
+
+msgid "Filter"
+msgstr "Filtr"
 
 msgid "Invalid comparison function for that type."
 msgstr "Neplatná funkce pro porovnání tohoto typu."
