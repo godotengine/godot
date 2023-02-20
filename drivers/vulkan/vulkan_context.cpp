@@ -101,6 +101,7 @@ VkResult VulkanContext::vkCreateRenderPass2KHR(VkDevice p_device, const VkRender
 			attachments.push_back(att);
 		}
 
+		Vector<Vector<VkAttachmentReference>> attachment_references;
 		Vector<VkSubpassDescription> subpasses;
 		for (uint32_t i = 0; i < p_create_info->subpassCount; i++) {
 			// Here we need to do more, again it's just stripping out type and next
@@ -124,6 +125,10 @@ VkResult VulkanContext::vkCreateRenderPass2KHR(VkDevice p_device, const VkRender
 				p_create_info->pSubpasses[i].preserveAttachmentCount, /* preserveAttachmentCount */
 				p_create_info->pSubpasses[i].pPreserveAttachments /* pPreserveAttachments */
 			};
+			attachment_references.push_back(input_attachments);
+			attachment_references.push_back(color_attachments);
+			attachment_references.push_back(resolve_attachments);
+			attachment_references.push_back(depth_attachments);
 
 			subpasses.push_back(subpass);
 		}
