@@ -523,6 +523,82 @@ struct GDScriptUtilityFunctionsDefinitions {
 			}
 		}
 	}
+
+	static inline void is_instance_of(Variant *r_ret, const Variant **p_args, int p_arg_count, Callable::CallError &r_error) {
+		VALIDATE_ARG_COUNT(2);
+
+		if (p_args[1]->get_type() == Variant::INT) {
+			int builtin_type = *p_args[1];
+			if (builtin_type < 0 || builtin_type >= Variant::VARIANT_MAX) {
+				*r_ret = RTR("Invalid type argument for is_instance_of(), use TYPE_* constants for built-in types.");
+				r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+				r_error.argument = 1;
+				r_error.expected = Variant::NIL;
+				return;
+			}
+			*r_ret = p_args[0]->get_type() == builtin_type;
+			return;
+		}
+
+		bool was_type_freed = false;
+		Object *type_object = p_args[1]->get_validated_object_with_check(was_type_freed);
+		if (was_type_freed) {
+			*r_ret = RTR("Type argument is a previously freed instance.");
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.argument = 1;
+			r_error.expected = Variant::NIL;
+			return;
+		}
+		if (!type_object) {
+			*r_ret = RTR("Invalid type argument for is_instance_of(), should be a TYPE_* constant, a class or a script.");
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.argument = 1;
+			r_error.expected = Variant::NIL;
+			return;
+		}
+
+		bool was_value_freed = false;
+		Object *value_object = p_args[0]->get_validated_object_with_check(was_value_freed);
+		if (was_value_freed) {
+			*r_ret = RTR("Value argument is a previously freed instance.");
+			r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+			r_error.argument = 0;
+			r_error.expected = Variant::NIL;
+			return;
+		}
+		if (!value_object) {
+			*r_ret = false;
+			return;
+		}
+
+		GDScriptNativeClass *native_type = Object::cast_to<GDScriptNativeClass>(type_object);
+		if (native_type) {
+			*r_ret = ClassDB::is_parent_class(value_object->get_class_name(), native_type->get_name());
+			return;
+		}
+
+		Script *script_type = Object::cast_to<Script>(type_object);
+		if (script_type) {
+			bool result = false;
+			if (value_object->get_script_instance()) {
+				Script *script_ptr = value_object->get_script_instance()->get_script().ptr();
+				while (script_ptr) {
+					if (script_ptr == script_type) {
+						result = true;
+						break;
+					}
+					script_ptr = script_ptr->get_base_script().ptr();
+				}
+			}
+			*r_ret = result;
+			return;
+		}
+
+		*r_ret = RTR("Invalid type argument for is_instance_of(), should be a TYPE_* constant, a class or a script.");
+		r_error.error = Callable::CallError::CALL_ERROR_INVALID_ARGUMENT;
+		r_error.argument = 1;
+		r_error.expected = Variant::NIL;
+	}
 };
 
 struct GDScriptUtilityFunctionInfo {
@@ -638,6 +714,7 @@ void GDScriptUtilityFunctions::register_functions() {
 	REGISTER_FUNC_NO_ARGS(print_stack, false, Variant::NIL);
 	REGISTER_FUNC_NO_ARGS(get_stack, false, Variant::ARRAY);
 	REGISTER_FUNC(len, true, Variant::INT, VARARG("var"));
+	REGISTER_FUNC(is_instance_of, true, Variant::BOOL, VARARG("value"), VARARG("type"));
 }
 
 void GDScriptUtilityFunctions::unregister_functions() {

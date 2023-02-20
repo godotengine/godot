@@ -2463,9 +2463,6 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_binary_operator(Expression
 			operation->operation = BinaryOpNode::OP_LOGIC_OR;
 			operation->variant_op = Variant::OP_OR;
 			break;
-		case GDScriptTokenizer::Token::IS:
-			operation->operation = BinaryOpNode::OP_TYPE_TEST;
-			break;
 		case GDScriptTokenizer::Token::IN:
 			operation->operation = BinaryOpNode::OP_CONTENT_TEST;
 			operation->variant_op = Variant::OP_IN;
@@ -3161,6 +3158,22 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_lambda(ExpressionNode *p_p
 	return lambda;
 }
 
+GDScriptParser::ExpressionNode *GDScriptParser::parse_type_test(ExpressionNode *p_previous_operand, bool p_can_assign) {
+	TypeTestNode *type_test = alloc_node<TypeTestNode>();
+	reset_extents(type_test, p_previous_operand);
+	update_extents(type_test);
+
+	type_test->operand = p_previous_operand;
+	type_test->test_type = parse_type();
+	complete_extents(type_test);
+
+	if (type_test->test_type == nullptr) {
+		push_error(R"(Expected type specifier after "is".)");
+	}
+
+	return type_test;
+}
+
 GDScriptParser::ExpressionNode *GDScriptParser::parse_yield(ExpressionNode *p_previous_operand, bool p_can_assign) {
 	push_error(R"("yield" was removed in Godot 4.0. Use "await" instead.)");
 	return nullptr;
@@ -3529,7 +3542,7 @@ GDScriptParser::ParseRule *GDScriptParser::get_rule(GDScriptTokenizer::Token::Ty
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // EXTENDS,
 		{ &GDScriptParser::parse_lambda,                    nullptr,                                        PREC_NONE }, // FUNC,
 		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_CONTENT_TEST }, // IN,
-		{ nullptr,                                          &GDScriptParser::parse_binary_operator,      	PREC_TYPE_TEST }, // IS,
+		{ nullptr,                                          &GDScriptParser::parse_type_test,            	PREC_TYPE_TEST }, // IS,
 		{ nullptr,                                          nullptr,                                        PREC_NONE }, // NAMESPACE,
 		{ &GDScriptParser::parse_preload,					nullptr,                                        PREC_NONE }, // PRELOAD,
 		{ &GDScriptParser::parse_self,                   	nullptr,                                        PREC_NONE }, // SELF,
@@ -4379,9 +4392,6 @@ void GDScriptParser::TreePrinter::print_binary_op(BinaryOpNode *p_binary_op) {
 		case BinaryOpNode::OP_LOGIC_OR:
 			push_text(" OR ");
 			break;
-		case BinaryOpNode::OP_TYPE_TEST:
-			push_text(" IS ");
-			break;
 		case BinaryOpNode::OP_CONTENT_TEST:
 			push_text(" IN ");
 			break;
@@ -4583,6 +4593,9 @@ void GDScriptParser::TreePrinter::print_expression(ExpressionNode *p_expression)
 			break;
 		case Node::TERNARY_OPERATOR:
 			print_ternary_op(static_cast<TernaryOpNode *>(p_expression));
+			break;
+		case Node::TYPE_TEST:
+			print_type_test(static_cast<TypeTestNode *>(p_expression));
 			break;
 		case Node::UNARY_OPERATOR:
 			print_unary_op(static_cast<UnaryOpNode *>(p_expression));
@@ -4941,6 +4954,12 @@ void GDScriptParser::TreePrinter::print_type(TypeNode *p_type) {
 			print_identifier(p_type->type_chain[i]);
 		}
 	}
+}
+
+void GDScriptParser::TreePrinter::print_type_test(TypeTestNode *p_test) {
+	print_expression(p_test->operand);
+	push_text(" IS ");
+	print_type(p_test->test_type);
 }
 
 void GDScriptParser::TreePrinter::print_unary_op(UnaryOpNode *p_unary_op) {
