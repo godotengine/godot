@@ -1468,7 +1468,7 @@ Ref<Shortcut> ED_GET_SHORTCUT(const String &p_path) {
 	return sc;
 }
 
-void ED_SHORTCUT_OVERRIDE(const String &p_path, const String &p_feature, Key p_keycode) {
+void ED_SHORTCUT_OVERRIDE(const String &p_path, const String &p_feature, Key p_keycode, bool p_physical) {
 	ERR_FAIL_NULL_MSG(EditorSettings::get_singleton(), "EditorSettings not instantiated yet.");
 
 	Ref<Shortcut> sc = EditorSettings::get_singleton()->get_shortcut(p_path);
@@ -1477,10 +1477,10 @@ void ED_SHORTCUT_OVERRIDE(const String &p_path, const String &p_feature, Key p_k
 	PackedInt32Array arr;
 	arr.push_back((int32_t)p_keycode);
 
-	ED_SHORTCUT_OVERRIDE_ARRAY(p_path, p_feature, arr);
+	ED_SHORTCUT_OVERRIDE_ARRAY(p_path, p_feature, arr, p_physical);
 }
 
-void ED_SHORTCUT_OVERRIDE_ARRAY(const String &p_path, const String &p_feature, const PackedInt32Array &p_keycodes) {
+void ED_SHORTCUT_OVERRIDE_ARRAY(const String &p_path, const String &p_feature, const PackedInt32Array &p_keycodes, bool p_physical) {
 	ERR_FAIL_NULL_MSG(EditorSettings::get_singleton(), "EditorSettings not instantiated yet.");
 
 	Ref<Shortcut> sc = EditorSettings::get_singleton()->get_shortcut(p_path);
@@ -1505,7 +1505,7 @@ void ED_SHORTCUT_OVERRIDE_ARRAY(const String &p_path, const String &p_feature, c
 
 		Ref<InputEventKey> ie;
 		if (keycode != Key::NONE) {
-			ie = InputEventKey::create_reference(keycode);
+			ie = InputEventKey::create_reference(keycode, p_physical);
 			events.push_back(ie);
 		}
 	}
@@ -1518,13 +1518,13 @@ void ED_SHORTCUT_OVERRIDE_ARRAY(const String &p_path, const String &p_feature, c
 	sc->set_meta("original", events.duplicate(true));
 }
 
-Ref<Shortcut> ED_SHORTCUT(const String &p_path, const String &p_name, Key p_keycode) {
+Ref<Shortcut> ED_SHORTCUT(const String &p_path, const String &p_name, Key p_keycode, bool p_physical) {
 	PackedInt32Array arr;
 	arr.push_back((int32_t)p_keycode);
-	return ED_SHORTCUT_ARRAY(p_path, p_name, arr);
+	return ED_SHORTCUT_ARRAY(p_path, p_name, arr, p_physical);
 }
 
-Ref<Shortcut> ED_SHORTCUT_ARRAY(const String &p_path, const String &p_name, const PackedInt32Array &p_keycodes) {
+Ref<Shortcut> ED_SHORTCUT_ARRAY(const String &p_path, const String &p_name, const PackedInt32Array &p_keycodes, bool p_physical) {
 	Array events;
 
 	for (int i = 0; i < p_keycodes.size(); i++) {
@@ -1539,7 +1539,7 @@ Ref<Shortcut> ED_SHORTCUT_ARRAY(const String &p_path, const String &p_name, cons
 
 		Ref<InputEventKey> ie;
 		if (keycode != Key::NONE) {
-			ie = InputEventKey::create_reference(keycode);
+			ie = InputEventKey::create_reference(keycode, p_physical);
 			events.push_back(ie);
 		}
 	}

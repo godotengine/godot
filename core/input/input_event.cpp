@@ -474,10 +474,15 @@ String InputEventKey::to_string() {
 	return vformat("InputEventKey: keycode=%s, mods=%s, physical=%s, pressed=%s, echo=%s", kc, mods, physical, p, e);
 }
 
-Ref<InputEventKey> InputEventKey::create_reference(Key p_keycode) {
+Ref<InputEventKey> InputEventKey::create_reference(Key p_keycode, bool p_physical) {
 	Ref<InputEventKey> ie;
 	ie.instantiate();
-	ie->set_keycode(p_keycode & KeyModifierMask::CODE_MASK);
+	if (p_physical) {
+		ie->set_physical_keycode(p_keycode & KeyModifierMask::CODE_MASK);
+	} else {
+		ie->set_keycode(p_keycode & KeyModifierMask::CODE_MASK);
+	}
+
 	ie->set_unicode(char32_t(p_keycode & KeyModifierMask::CODE_MASK));
 
 	if ((p_keycode & KeyModifierMask::SHIFT) != Key::NONE) {
