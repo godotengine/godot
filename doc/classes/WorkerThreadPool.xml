@@ -1,8 +1,67 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="WorkerThreadPool" inherits="Object" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
+		A singleton that executes [Callable]s in a multithreaded way.
 	</brief_description>
 	<description>
+		Just like the signal system, the [WorkerThreadPool] uses [Callable]s. The [WorkerThreadPool] executes them in a multithreaded way. You can schedule the worker to process one [Callable] as an individual task. Which is then executed in another thread. Or schedule multiple elements of one [Callable] in a group task. These are executed in one or more threads. You decide. Set a task as [b]high_priority[/b] to let the worker process them earlier than others.
+		To schedule [Callable]s, pass them on to [method add_task] and [method add_group_task]:
+		[codeblocks]
+		[gdscript]
+		func do_something() -&gt; void:
+		    var is_very_important : bool = true
+		    var task_id : int = WorkerThreadPool.add_task(self.load_cheese_cake, is_very_important, "do it fast, but elsewhere")
+		    # and now we wait…
+		    WorkerThreadPool.wait_for_task_completion(task_id)
+
+		    # Or schedule the Callable processing multiple times.
+		    WorkerThreadPool.add_group_task(self._load_file_threaded, to_load.size(), -1, !is_very_important, "load the cheese elsewhere, and take your time")
+
+		func load_cheese_cake() -&gt; void:
+		    # total secret where it comes from
+
+
+		var to_load : Array = ["ham.png", "cheese.png", "baguette.png"]
+
+
+		func _load_file_threaded(index : int) -&gt; void:
+		    load_file(to_load[index])
+
+
+		func load_file(path : String) -&gt; void:
+		    # code to load file comes here
+		[/gdscript]
+		[csharp]
+		public void DoSomething()
+		{
+		    bool isVeryImportant = true;
+		    int taskID = WorkerThreadPool.AddTask(Callable.From(LoadCheeseCake), isVeryImportant, "do it fast, but elsewhere");
+		    // and now we wait…
+		    WorkerThreadPool.WaitForTaskCompletion(taskID);
+
+		    // Or schedule the Callable processing multiple times.
+		    WorkerThreadPool.AddGroupTask(Callable.From&lt;uint&gt;(LoadFileThreaded), _toLoad.Length, -1, !isVeryImportant, "load the cheese elsewhere, and take your time");
+		}
+
+		public void LoadCheeseCake()
+		{
+		    // total secret where it comes from
+		}
+
+		private string[] _toLoad = {"ham.png", "cheese.png", "baguette.png"};
+
+		private void LoadFileThreaded(uint index)
+		{
+		    LoadFile(_toLoad[index]);
+		}
+
+		public void LoadFile(string path)
+		{
+		    // code to load file comes here
+		}
+		[/csharp]
+		[/codeblocks]
+		[b]Note:[/b] The worker needs to receive "enough" work load to improve your game's performance. Too little work and your performance worsens. "enough" depends on your data and [Callable]'s calculation complexity.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -15,6 +74,9 @@
 			<param index="3" name="high_priority" type="bool" default="false" />
 			<param index="4" name="description" type="String" default="&quot;&quot;" />
 			<description>
+				Registers a [Callable] for execution on [param tasks_needed] threads. If [param tasks_needed] equals [code]-1[/code] (the default), the worker requests all computer processor cores.
+				[param elements] represents how many times your [Callable] is executed. Each execution receives a next higher index (up to [code]elements - 1[/code]).
+				Returns a group ID.
 			</description>
 		</method>
 		<method name="add_task">
@@ -23,36 +85,43 @@
 			<param index="1" name="high_priority" type="bool" default="false" />
 			<param index="2" name="description" type="String" default="&quot;&quot;" />
 			<description>
+				Registers a [Callable] for execution on another thread.
+				Returns a task ID.
 			</description>
 		</method>
 		<method name="get_group_processed_element_count" qualifiers="const">
 			<return type="int" />
 			<param index="0" name="group_id" type="int" />
 			<description>
+				Returns how many elements in this group have been worked through.
 			</description>
 		</method>
 		<method name="is_group_task_completed" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="group_id" type="int" />
 			<description>
+				Returns [code]true[/code] if the group task of given group ID is completed.
 			</description>
 		</method>
 		<method name="is_task_completed" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="task_id" type="int" />
 			<description>
+				Returns [code]true[/code] if the task of given task ID is completed.
 			</description>
 		</method>
 		<method name="wait_for_group_task_completion">
 			<return type="void" />
 			<param index="0" name="group_id" type="int" />
 			<description>
+				Calling this method halts the calling thread until all tasks are completed.
 			</description>
 		</method>
 		<method name="wait_for_task_completion">
 			<return type="void" />
 			<param index="0" name="task_id" type="int" />
 			<description>
+				Calling this method halts the calling thread until the task is completed.
 			</description>
 		</method>
 	</methods>
