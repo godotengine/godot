@@ -549,7 +549,18 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 	// and only save what has changed
 
 	bool instantiated_by_owner = false;
+	//the following line doesn't deal with nodes in sub-inherited scenes
 	Vector<SceneState::PackState> states_stack = PropertyUtils::get_node_states_stack(p_node, p_owner, &instantiated_by_owner);
+	//below fixes above issue so sub-inherited scenes can update properly after changes in ancestor scenes
+	bool node_inherited = false;
+	if (p_node != p_owner) {
+		for (HashSet<NodePath>::Iterator E = inherited_nodes.begin(); E; ++E) {
+			if (String(*E) == "./" + String(p_owner->get_path_to(p_node))) {
+				node_inherited = true; //so save_node becomes false
+				break;
+			}
+		}
+	}
 
 	if (!p_node->get_scene_file_path().is_empty() && p_node->get_owner() == p_owner && instantiated_by_owner) {
 		if (p_node->get_scene_instance_load_placeholder()) {
@@ -696,8 +707,9 @@ Error SceneState::_parse_node(Node *p_owner, Node *p_node, int p_parent_idx, Has
 	// that hold changes
 
 	bool save_node = nd.properties.size() || nd.groups.size(); // some local properties or groups exist
-	save_node = save_node || p_node == p_owner; // owner is always saved
 	save_node = save_node || (p_node->get_owner() == p_owner && instantiated_by_owner); //part of scene and not instanced
+	save_node = save_node && !node_inherited; //even if local properties exist, if the node is inherited, it should not be saved
+	save_node = save_node || p_node == p_owner; // owner is always saved
 
 	int idx = nodes.size();
 	int parent_node = NO_PARENT_SAVED;

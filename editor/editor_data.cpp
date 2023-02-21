@@ -635,7 +635,10 @@ bool EditorData::check_and_update_scene(int p_idx) {
 
 	HashSet<String> checked_scenes;
 
-	bool must_reload = _find_updated_instances(edited_scene[p_idx].root, edited_scene[p_idx].root, checked_scenes);
+	//_find_updated_instances() only detects changes in direct inherited scenes
+	//if the edited scene has inherited_nodes stored it means that an ancestor scene was saved and the current edited scene hasn't been reloaded since then
+	bool base_scene_updated = edited_scene[p_idx].root->get_scene_inherited_state().is_valid() && edited_scene[p_idx].inherited_nodes.size() > 0;
+	bool must_reload = _find_updated_instances(edited_scene[p_idx].root, edited_scene[p_idx].root, checked_scenes) || base_scene_updated;
 
 	if (must_reload) {
 		Ref<PackedScene> pscene;
@@ -644,6 +647,7 @@ bool EditorData::check_and_update_scene(int p_idx) {
 		EditorProgress ep("update_scene", TTR("Updating Scene"), 2);
 		ep.step(TTR("Storing local changes..."), 0);
 		// Pack first, so it stores diffs to previous version of saved scene.
+		pscene->get_state()->set_inherited_nodes(edited_scene[p_idx].inherited_nodes); //tell the packed scene which nodes are inherited
 		Error err = pscene->pack(edited_scene[p_idx].root);
 		ERR_FAIL_COND_V(err != OK, false);
 		ep.step(TTR("Updating scene..."), 1);
@@ -668,6 +672,9 @@ bool EditorData::check_and_update_scene(int p_idx) {
 			edited_scene.write[p_idx].path = new_scene->get_scene_file_path();
 		}
 		edited_scene.write[p_idx].selection = new_selection;
+
+		//information no longer needed, if kept, the editor won't add nodes of the same name as the ones deleted in an ancestor scene
+		clear_edited_scene_inherited_nodes(p_idx);
 
 		return true;
 	}
@@ -875,6 +882,35 @@ void EditorData::clear_edited_scenes() {
 		}
 	}
 	edited_scene.clear();
+}
+
+void EditorData::update_edited_scene_inherited_nodes(int p_edited_scene) {
+	//adds to the set of inherited nodes of the edited_scene specified by p_edited_scene
+	//helps correctly updating sub-inherited scenes
+	//the function is currently called when a scene is saved
+	if (p_edited_scene >= edited_scene.size()) {
+		return;
+	}
+	EditedScene es = edited_scene.get(p_edited_scene);
+	es.inherited_nodes.insert(NodePath(".")); //store something even if there are no inherited nodes to indicate scene save
+	Ref<SceneState> inherited_state = es.root->get_scene_inherited_state();
+	while (inherited_state.is_valid()) {
+		for (int i = 1; i < inherited_state->get_node_count(); i++) {
+			es.inherited_nodes.insert(inherited_state->get_node_path(i));
+		}
+		inherited_state = inherited_state->get_base_scene_state();
+	}
+	edited_scene.set(p_edited_scene, es);
+}
+
+void EditorData::clear_edited_scene_inherited_nodes(int p_edited_scene) {
+	//this function is called after the edited scene is updated, as it no longer needs the information on which nodes are inherited
+	if (p_edited_scene >= edited_scene.size()) {
+		return;
+	}
+	EditedScene es = edited_scene.get(p_edited_scene);
+	es.inherited_nodes.clear();
+	edited_scene.set(p_edited_scene, es);
 }
 
 void EditorData::set_plugin_window_layout(Ref<ConfigFile> p_layout) {
