@@ -712,7 +712,25 @@ String TranslationServer::get_tool_locale() {
 #else
 	{
 #endif
-		return get_locale();
+		// Look for best matching loaded translation.
+		String best_locale = "en";
+		int best_score = 0;
+
+		for (const Ref<Translation> &E : translations) {
+			const Ref<Translation> &t = E;
+			ERR_FAIL_COND_V(t.is_null(), best_locale);
+			String l = t->get_locale();
+
+			int score = compare_locales(locale, l);
+			if (score > 0 && score >= best_score) {
+				best_locale = l;
+				best_score = score;
+				if (score == 10) {
+					break; // Exact match, skip the rest.
+				}
+			}
+		}
+		return best_locale;
 	}
 }
 

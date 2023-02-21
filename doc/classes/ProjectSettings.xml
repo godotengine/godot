@@ -1187,7 +1187,10 @@
 			[b]Note:[/b] This property is only read when the project starts. To toggle pseudolocalization at run-time, use [member TranslationServer.pseudolocalization_enabled] instead.
 		</member>
 		<member name="internationalization/rendering/force_right_to_left_layout_direction" type="bool" setter="" getter="" default="false">
-			Force layout direction and text writing direction to RTL for all locales.
+			Force layout direction and text writing direction to RTL for all controls.
+		</member>
+		<member name="internationalization/rendering/root_node_layout_direction" type="int" setter="" getter="" default="0">
+			Root node default layout direction.
 		</member>
 		<member name="internationalization/rendering/text_driver" type="String" setter="" getter="" default="&quot;&quot;">
 			Specifies the [TextServer] to use. If left empty, the default will be used.
