@@ -731,7 +731,7 @@ GDScriptParser::DataType GDScriptAnalyzer::resolve_datatype(GDScriptParser::Type
 		}
 	}
 	if (!result.is_set()) {
-		push_error(vformat(R"("%s" was not found in the current scope.)", first), p_type);
+		push_error(vformat(R"(Could not find type "%s" in the current scope.)", first), p_type);
 		return bad_type;
 	}
 
