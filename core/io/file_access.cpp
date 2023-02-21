@@ -133,8 +133,8 @@ Ref<FileAccess> FileAccess::open_encrypted(const String &p_path, ModeFlags p_mod
 	Ref<FileAccessEncrypted> fae;
 	fae.instantiate();
 	Error err = fae->open_and_parse(fa, p_key, (p_mode_flags == WRITE) ? FileAccessEncrypted::MODE_WRITE_AES256 : FileAccessEncrypted::MODE_READ);
+	last_file_open_error = err;
 	if (err) {
-		last_file_open_error = err;
 		return Ref<FileAccess>();
 	}
 	return fae;
@@ -149,8 +149,8 @@ Ref<FileAccess> FileAccess::open_encrypted_pass(const String &p_path, ModeFlags 
 	Ref<FileAccessEncrypted> fae;
 	fae.instantiate();
 	Error err = fae->open_and_parse_password(fa, p_pass, (p_mode_flags == WRITE) ? FileAccessEncrypted::MODE_WRITE_AES256 : FileAccessEncrypted::MODE_READ);
+	last_file_open_error = err;
 	if (err) {
-		last_file_open_error = err;
 		return Ref<FileAccess>();
 	}
 	return fae;
@@ -161,9 +161,8 @@ Ref<FileAccess> FileAccess::open_compressed(const String &p_path, ModeFlags p_mo
 	fac.instantiate();
 	fac->configure("GCPF", (Compression::Mode)p_compress_mode);
 	Error err = fac->open_internal(p_path, p_mode_flags);
-
+	last_file_open_error = err;
 	if (err) {
-		last_file_open_error = err;
 		return Ref<FileAccess>();
 	}
 
