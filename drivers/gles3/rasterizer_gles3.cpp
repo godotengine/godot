@@ -198,7 +198,11 @@ void RasterizerGLES3::finalize() {
 	memdelete(config);
 }
 
+RasterizerGLES3 *RasterizerGLES3::singleton = nullptr;
+
 RasterizerGLES3::RasterizerGLES3() {
+	singleton = this;
+
 #ifdef GLAD_ENABLED
 	if (!gladLoaderLoadGL()) {
 		ERR_PRINT("Error initializing GLAD");
