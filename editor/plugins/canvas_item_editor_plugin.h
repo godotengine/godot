@@ -212,7 +212,8 @@ private:
 	bool selected_from_canvas = false;
 
 	Point2 grid_offset;
-	Point2 grid_step = Point2(8, 8); // A power-of-two value works better as a default.
+	// A power-of-two value works better as a default grid size.
+	Point2 grid_step = Point2(8, 8);
 	int primary_grid_steps = 8;
 	int grid_step_multiplier = 0;
 
