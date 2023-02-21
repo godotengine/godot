@@ -1459,22 +1459,19 @@ String VisualShaderNodeParticleOutput::generate_code(Shader::Mode p_mode, Visual
 			code += tab + "	}\n";
 			code += tab + "	TRANSFORM = EMISSION_TRANSFORM * TRANSFORM;\n";
 			code += tab + "}\n";
-		} else if (shader_type == VisualShader::TYPE_COLLIDE) { // position
-			if (!p_input_vars[4].is_empty()) {
-				code += tab + "TRANSFORM = " + p_input_vars[4] + ";\n";
-			}
 		}
 
-		if (shader_type == VisualShader::TYPE_PROCESS) {
+		if (shader_type == VisualShader::TYPE_PROCESS || shader_type == VisualShader::TYPE_COLLIDE) {
 			code += tab + "CUSTOM.y += DELTA / LIFETIME;\n\n";
 			code += tab + "if (CUSTOM.y / CUSTOM.w > 1.0) ACTIVE = false;\n\n";
 		}
 
-		if (shader_type == VisualShader::TYPE_START || shader_type == VisualShader::TYPE_PROCESS) {
+		if (shader_type == VisualShader::TYPE_START || shader_type == VisualShader::TYPE_PROCESS || shader_type == VisualShader::TYPE_COLLIDE) {
 			int scale = 5;
 			int rotation_axis = 6;
 			int rotation = 7;
 			int position = 4;
+
 			if (shader_type == VisualShader::TYPE_PROCESS) {
 				scale = 4;
 				rotation_axis = 5;
@@ -1482,40 +1479,53 @@ String VisualShaderNodeParticleOutput::generate_code(Shader::Mode p_mode, Visual
 				position = 7;
 			}
 
+			if (shader_type == VisualShader::TYPE_COLLIDE) {
+				position = 5;
+				scale = 6;
+				rotation_axis = 7;
+				rotation = 8;
+			}
+
 			code += tab + "vec3 currentPosition = TRANSFORM[3].xyz;\n";
 			code += tab + "vec3 currentScale = vec3(length(TRANSFORM[0].xyz), length(TRANSFORM[1].xyz), length(TRANSFORM[2].xyz));\n";
-			code += tab + "TRANSFORM = mat4(1.0);\n";
 
-			// Rotation
-			if (shader_type == VisualShader::TYPE_START)
-				code += tab + "USERDATA1 = vec4(0, 1, 0, 0);\n";
-
-			if (!p_input_vars[rotation_axis].is_empty())
-				code += tab + "USERDATA1.xyz = " + p_input_vars[rotation_axis] + ";\n";
-
-			if (!p_input_vars[rotation].is_empty())
-				code += tab + "USERDATA1.w = " + p_input_vars[rotation] + ";\n\n";
-
-			code += tab + "TRANSFORM *= __build_rotation_mat4(USERDATA1.xyz, USERDATA1.w);\n";
-
-			// Scale
-			code += tab + "mat4 scaleMatrix = mat4(1.0);";
-			if (!p_input_vars[scale].is_empty()) { // scale
-				code += tab + "scaleMatrix[0].x = " + p_input_vars[scale] + ".x;\n";
-				code += tab + "scaleMatrix[1].y = " + p_input_vars[scale] + ".y;\n";
-				code += tab + "scaleMatrix[2].z = " + p_input_vars[scale] + ".z;\n";
+			// If we're in a collide shader and a transform is specified, use it. Otherwise, compose it from the other inputs.
+			if (shader_type == VisualShader::TYPE_COLLIDE && !p_input_vars[4].is_empty()) {
+				code += tab + "TRANSFORM = " + p_input_vars[4] + ";\n";
 			} else {
-				code += tab + "scaleMatrix[0].x = currentScale.x;\n";
-				code += tab + "scaleMatrix[1].y = currentScale.y;\n";
-				code += tab + "scaleMatrix[2].z = currentScale.z;\n";
-			}
-			code += tab + "TRANSFORM *= scaleMatrix;\n";
+				code += tab + "TRANSFORM = mat4(1.0);\n";
 
-			// Position
-			if (!p_input_vars[position].is_empty()) { // position
-				code += tab + "TRANSFORM[3].xyz = " + p_input_vars[position] + ";\n";
-			} else {
-				code += tab + "TRANSFORM[3].xyz = currentPosition;\n";
+				// Rotation
+				if (shader_type == VisualShader::TYPE_START)
+					code += tab + "USERDATA1 = vec4(0, 1, 0, 0);\n";
+
+				if (!p_input_vars[rotation_axis].is_empty())
+					code += tab + "USERDATA1.xyz = " + p_input_vars[rotation_axis] + ";\n";
+
+				if (!p_input_vars[rotation].is_empty())
+					code += tab + "USERDATA1.w = " + p_input_vars[rotation] + ";\n\n";
+
+				code += tab + "TRANSFORM *= __build_rotation_mat4(USERDATA1.xyz, USERDATA1.w);\n";
+
+				// Scale
+				code += tab + "mat4 scaleMatrix = mat4(1.0);";
+				if (!p_input_vars[scale].is_empty()) { // scale
+					code += tab + "scaleMatrix[0].x = " + p_input_vars[scale] + ".x;\n";
+					code += tab + "scaleMatrix[1].y = " + p_input_vars[scale] + ".y;\n";
+					code += tab + "scaleMatrix[2].z = " + p_input_vars[scale] + ".z;\n";
+				} else {
+					code += tab + "scaleMatrix[0].x = currentScale.x;\n";
+					code += tab + "scaleMatrix[1].y = currentScale.y;\n";
+					code += tab + "scaleMatrix[2].z = currentScale.z;\n";
+				}
+				code += tab + "TRANSFORM *= scaleMatrix;\n";
+
+				// Position
+				if (!p_input_vars[position].is_empty()) { // position
+					code += tab + "TRANSFORM[3].xyz = " + p_input_vars[position] + ";\n";
+				} else {
+					code += tab + "TRANSFORM[3].xyz = currentPosition;\n";
+				}
 			}
 		}
 
