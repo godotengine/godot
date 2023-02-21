@@ -281,7 +281,7 @@ void RasterizerGLES3::prepare_for_blitting_render_targets() {
 	utils->capture_timestamps_end();
 }
 
-void RasterizerGLES3::_blit_render_target_to_screen(RID p_render_target, DisplayServer::WindowID p_screen, const Rect2 &p_screen_rect, uint32_t p_layer) {
+void RasterizerGLES3::_blit_render_target_to_screen(RID p_render_target, DisplayServer::WindowID p_screen, const Rect2 &p_screen_rect, uint32_t p_layer, bool p_first) {
 	GLES3::RenderTarget *rt = GLES3::TextureStorage::get_singleton()->get_render_target(p_render_target);
 
 	ERR_FAIL_COND(!rt);
@@ -307,12 +307,14 @@ void RasterizerGLES3::_blit_render_target_to_screen(RID p_render_target, Display
 	glReadBuffer(GL_COLOR_ATTACHMENT0);
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, GLES3::TextureStorage::system_fbo);
 
-	if (p_screen_rect.position != Vector2()) {
-		// Viewport doesn't cover entire window so clear window to black before blitting.
+	if (p_first) {
 		Size2i win_size = DisplayServer::get_singleton()->window_get_size();
-		glViewport(0, 0, win_size.width, win_size.height);
-		glClearColor(0.0, 0.0, 0.0, 1.0);
-		glClear(GL_COLOR_BUFFER_BIT);
+		if (p_screen_rect.position != Vector2() || p_screen_rect.size != rt->size) {
+			// Viewport doesn't cover entire window so clear window to black before blitting.
+			glViewport(0, 0, win_size.width, win_size.height);
+			glClearColor(0.0, 0.0, 0.0, 1.0);
+			glClear(GL_COLOR_BUFFER_BIT);
+		}
 	}
 
 	Vector2i screen_rect_end = p_screen_rect.get_end();
@@ -334,7 +336,7 @@ void RasterizerGLES3::blit_render_targets_to_screen(DisplayServer::WindowID p_sc
 		RID rid_rt = blit.render_target;
 
 		Rect2 dst_rect = blit.dst_rect;
-		_blit_render_target_to_screen(rid_rt, p_screen, dst_rect, blit.multi_view.use_layer ? blit.multi_view.layer : 0);
+		_blit_render_target_to_screen(rid_rt, p_screen, dst_rect, blit.multi_view.use_layer ? blit.multi_view.layer : 0, i == 0);
 	}
 }
 
