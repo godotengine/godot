@@ -1326,28 +1326,30 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 						OPCODE_BREAK;
 					}
 
-					ScriptInstance *scr_inst = val_obj->get_script_instance();
-					if (!scr_inst) {
-						err_text = "Trying to assign value of type '" + val_obj->get_class_name() +
-								"' to a variable of type '" + base_type->get_path().get_file() + "'.";
-						OPCODE_BREAK;
-					}
-
-					Script *src_type = val_obj->get_script_instance()->get_script().ptr();
-					bool valid = false;
-
-					while (src_type) {
-						if (src_type == base_type) {
-							valid = true;
-							break;
+					if (val_obj) { // src is not null
+						ScriptInstance *scr_inst = val_obj->get_script_instance();
+						if (!scr_inst) {
+							err_text = "Trying to assign value of type '" + val_obj->get_class_name() +
+									"' to a variable of type '" + base_type->get_path().get_file() + "'.";
+							OPCODE_BREAK;
 						}
-						src_type = src_type->get_base_script().ptr();
-					}
 
-					if (!valid) {
-						err_text = "Trying to assign value of type '" + val_obj->get_script_instance()->get_script()->get_path().get_file() +
-								"' to a variable of type '" + base_type->get_path().get_file() + "'.";
-						OPCODE_BREAK;
+						Script *src_type = scr_inst->get_script().ptr();
+						bool valid = false;
+
+						while (src_type) {
+							if (src_type == base_type) {
+								valid = true;
+								break;
+							}
+							src_type = src_type->get_base_script().ptr();
+						}
+
+						if (!valid) {
+							err_text = "Trying to assign value of type '" + val_obj->get_script_instance()->get_script()->get_path().get_file() +
+									"' to a variable of type '" + base_type->get_path().get_file() + "'.";
+							OPCODE_BREAK;
+						}
 					}
 				}
 #endif // DEBUG_ENABLED
