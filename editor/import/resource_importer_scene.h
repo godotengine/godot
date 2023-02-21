@@ -373,7 +373,7 @@ Vector<Ref<Shape3D>> ResourceImporterScene::get_collision_shapes(const Ref<Mesh>
 			}
 
 			if (p_options.has(SNAME("decomposition/max_convex_hulls"))) {
-				decomposition_settings.max_convex_hulls = p_options[SNAME("decomposition/max_convex_hulls")];
+				decomposition_settings.max_convex_hulls = MAX(1, (int)p_options[SNAME("decomposition/max_convex_hulls")]);
 			}
 
 			if (p_options.has(SNAME("decomposition/project_hull_vertices"))) {
