@@ -321,8 +321,8 @@ void generate_SSIL(out vec3 r_color, out vec4 r_edges, out float r_obscurance, o
 	// edge mask for between this and left/right/top/bottom neighbor pixels - not used in quality level 0 so initialize to "no edge" (1 is no edge, 0 is edge)
 	vec4 edgesLRTB = vec4(1.0, 1.0, 1.0, 1.0);
 
-	// Move center pixel slightly towards camera to avoid imprecision artifacts due to using of 16bit depth buffer; a lot smaller offsets needed when using 32bit floats
-	pix_center_pos *= 0.9992;
+	// Move center pixel slightly towards camera to avoid imprecision artifacts due to using of 16bit depth buffer.
+	pix_center_pos *= 0.99;
 
 	if (!p_adaptive_base && (p_quality_level >= SSIL_DEPTH_BASED_EDGES_ENABLE_AT_QUALITY_PRESET)) {
 		edgesLRTB = calculate_edges(pix_z, pix_left_z, pix_right_z, pix_top_z, pix_bottom_z);
