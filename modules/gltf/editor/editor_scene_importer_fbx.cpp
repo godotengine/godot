@@ -93,7 +93,7 @@ Node *EditorSceneFormatImporterFBX::import_scene(const String &p_path, uint32_t 
 	Ref<GLTFState> state;
 	state.instantiate();
 	print_verbose(vformat("glTF path: %s", sink));
-	Error err = gltf->append_from_file(sink, state, p_flags);
+	Error err = gltf->append_from_file(sink, state, p_flags, p_path.get_base_dir());
 	if (err != OK) {
 		if (r_err) {
 			*r_err = FAILED;
