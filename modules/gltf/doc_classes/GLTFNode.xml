@@ -35,8 +35,6 @@
 		</member>
 		<member name="height" type="int" setter="set_height" getter="get_height" default="-1">
 		</member>
-		<member name="joint" type="bool" setter="set_joint" getter="get_joint" default="false">
-		</member>
 		<member name="light" type="int" setter="set_light" getter="get_light" default="-1">
 		</member>
 		<member name="mesh" type="int" setter="set_mesh" getter="get_mesh" default="-1">
