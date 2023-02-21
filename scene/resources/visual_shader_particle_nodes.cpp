@@ -1193,7 +1193,7 @@ String VisualShaderNodeParticleOutput::get_caption() const {
 int VisualShaderNodeParticleOutput::get_input_port_count() const {
 	switch (shader_type) {
 		case VisualShader::TYPE_START:
-			return 8;
+			return 9;
 		case VisualShader::TYPE_PROCESS:
 			return 8;
 		case VisualShader::TYPE_COLLIDE:
@@ -1330,6 +1330,12 @@ String VisualShaderNodeParticleOutput::get_input_port_name(int p_port) const {
 			}
 			port_name = "angle_in_radians";
 			break;
+		case 8:
+			if (shader_type == VisualShader::TYPE_START) {
+				port_name = "lifetime_factor";
+				break;
+			}
+			break;
 		default:
 			break;
 	}
@@ -1342,7 +1348,7 @@ String VisualShaderNodeParticleOutput::get_input_port_name(int p_port) const {
 bool VisualShaderNodeParticleOutput::is_port_separator(int p_index) const {
 	if (shader_type == VisualShader::TYPE_START || shader_type == VisualShader::TYPE_PROCESS) {
 		String port_name = get_input_port_name(p_index);
-		return bool(port_name == "Scale");
+		return bool(port_name == "Scale" || port_name == "Lifetime Factor");
 	}
 	if (shader_type == VisualShader::TYPE_START_CUSTOM || shader_type == VisualShader::TYPE_PROCESS_CUSTOM) {
 		String port_name = get_input_port_name(p_index);
@@ -1399,7 +1405,11 @@ String VisualShaderNodeParticleOutput::generate_code(Shader::Mode p_mode, Visual
 
 			// In ParticlesProcessMaterial's shader code, `CUSTOM.w` is set to the randomized lifetime
 			// ratio of the particle (a 0.0-1.0 value.)
-			code += tab + "CUSTOM.w = 1.0;\n";
+			if (!p_input_vars[8].is_empty()) {
+				code += tab + "CUSTOM.w = " + p_input_vars[8] + ";\n";
+			} else {
+				code += tab + "CUSTOM.w = 1.0;\n";
+			}
 
 			code += tab + "if (RESTART_POSITION) {\n";
 			if (!p_input_vars[4].is_empty()) {
@@ -1420,6 +1430,7 @@ String VisualShaderNodeParticleOutput::generate_code(Shader::Mode p_mode, Visual
 
 		if (shader_type == VisualShader::TYPE_PROCESS) {
 			code += tab + "CUSTOM.y += DELTA / LIFETIME;\n\n";
+			code += tab + "if (CUSTOM.y / CUSTOM.w > 1.0) ACTIVE = false;\n\n";
 		}
 
 		if (shader_type == VisualShader::TYPE_START || shader_type == VisualShader::TYPE_PROCESS) {
