@@ -92,6 +92,8 @@ typedef void (*DependencyErrorNotify)(void *p_ud, const String &p_loading, const
 typedef Error (*ResourceLoaderImport)(const String &p_path);
 typedef void (*ResourceLoadedCallback)(Ref<Resource> p_resource, const String &p_path);
 
+struct RCSemaphore;
+
 class ResourceLoader {
 	enum {
 		MAX_LOADERS = 64
@@ -136,7 +138,7 @@ private:
 	struct ThreadLoadTask {
 		Thread *thread = nullptr;
 		Thread::ID loader_id = 0;
-		Semaphore *semaphore = nullptr;
+		Ref<RCSemaphore> semaphore;
 		String local_path;
 		String remapped_path;
 		String type_hint;
