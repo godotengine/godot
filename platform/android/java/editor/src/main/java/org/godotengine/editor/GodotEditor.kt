@@ -40,6 +40,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.window.layout.WindowMetricsCalculator
 import org.godotengine.godot.FullScreenGodotApp
+import org.godotengine.godot.GodotLib
 import org.godotengine.godot.utils.PermissionsUtil
 import org.godotengine.godot.utils.ProcessPhoenix
 import java.util.*
@@ -90,11 +91,19 @@ open class GodotEditor : FullScreenGodotApp() {
 		}
 
 		super.onCreate(savedInstanceState)
+	}
 
-		// Enable long press, panning and scaling gestures
-		godotFragment?.renderView?.inputHandler?.apply {
-			enableLongPress(enableLongPressGestures())
-			enablePanningAndScalingGestures(enablePanAndScaleGestures())
+	override fun onGodotSetupCompleted() {
+		super.onGodotSetupCompleted()
+		val longPressEnabled = enableLongPressGestures()
+		val panScaleEnabled = enablePanAndScaleGestures()
+
+		runOnUiThread {
+			// Enable long press, panning and scaling gestures
+			godotFragment?.renderView?.inputHandler?.apply {
+				enableLongPress(longPressEnabled)
+				enablePanningAndScalingGestures(panScaleEnabled)
+			}
 		}
 	}
 
@@ -210,12 +219,14 @@ open class GodotEditor : FullScreenGodotApp() {
 	/**
 	 * Enable long press gestures for the Godot Android editor.
 	 */
-	protected open fun enableLongPressGestures() = true
+	protected open fun enableLongPressGestures() =
+		java.lang.Boolean.parseBoolean(GodotLib.getEditorSetting("interface/touchscreen/enable_long_press_as_right_click"))
 
 	/**
 	 * Enable pan and scale gestures for the Godot Android editor.
 	 */
-	protected open fun enablePanAndScaleGestures() = true
+	protected open fun enablePanAndScaleGestures() =
+		java.lang.Boolean.parseBoolean(GodotLib.getEditorSetting("interface/touchscreen/enable_pan_and_scale_gestures"))
 
 	override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
 		super.onActivityResult(requestCode, resultCode, data)
