@@ -160,111 +160,60 @@ bool NavigationServer2D::get_debug_enabled() const {
 	return NavigationServer3D::get_singleton()->get_debug_enabled();
 }
 
-#ifdef DEBUG_ENABLED
-void NavigationServer2D::set_debug_navigation_edge_connection_color(const Color &p_color) {
-	NavigationServer3D::get_singleton()->set_debug_navigation_edge_connection_color(p_color);
-}
+#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 
 Color NavigationServer2D::get_debug_navigation_edge_connection_color() const {
 	return NavigationServer3D::get_singleton()->get_debug_navigation_edge_connection_color();
-}
-
-void NavigationServer2D::set_debug_navigation_geometry_face_color(const Color &p_color) {
-	NavigationServer3D::get_singleton()->set_debug_navigation_geometry_face_color(p_color);
 }
 
 Color NavigationServer2D::get_debug_navigation_geometry_face_color() const {
 	return NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_color();
 }
 
-void NavigationServer2D::set_debug_navigation_geometry_face_disabled_color(const Color &p_color) {
-	NavigationServer3D::get_singleton()->set_debug_navigation_geometry_face_disabled_color(p_color);
-}
-
 Color NavigationServer2D::get_debug_navigation_geometry_face_disabled_color() const {
 	return NavigationServer3D::get_singleton()->get_debug_navigation_geometry_face_disabled_color();
-}
-
-void NavigationServer2D::set_debug_navigation_link_connection_color(const Color &p_color) {
-	NavigationServer3D::get_singleton()->set_debug_navigation_link_connection_color(p_color);
 }
 
 Color NavigationServer2D::get_debug_navigation_link_connection_color() const {
 	return NavigationServer3D::get_singleton()->get_debug_navigation_link_connection_color();
 }
 
-void NavigationServer2D::set_debug_navigation_link_connection_disabled_color(const Color &p_color) {
-	NavigationServer3D::get_singleton()->set_debug_navigation_link_connection_disabled_color(p_color);
-}
-
 Color NavigationServer2D::get_debug_navigation_link_connection_disabled_color() const {
 	return NavigationServer3D::get_singleton()->get_debug_navigation_link_connection_disabled_color();
-}
-
-void NavigationServer2D::set_debug_navigation_geometry_edge_color(const Color &p_color) {
-	NavigationServer3D::get_singleton()->set_debug_navigation_geometry_edge_color(p_color);
 }
 
 Color NavigationServer2D::get_debug_navigation_geometry_edge_color() const {
 	return NavigationServer3D::get_singleton()->get_debug_navigation_geometry_edge_color();
 }
 
-void NavigationServer2D::set_debug_navigation_geometry_edge_disabled_color(const Color &p_color) {
-	NavigationServer3D::get_singleton()->set_debug_navigation_geometry_edge_disabled_color(p_color);
-}
-
 Color NavigationServer2D::get_debug_navigation_geometry_edge_disabled_color() const {
 	return NavigationServer3D::get_singleton()->get_debug_navigation_geometry_edge_disabled_color();
-}
-
-void NavigationServer2D::set_debug_navigation_enable_edge_connections(const bool p_value) {
-	NavigationServer3D::get_singleton()->set_debug_navigation_enable_edge_connections(p_value);
 }
 
 bool NavigationServer2D::get_debug_navigation_enable_edge_connections() const {
 	return NavigationServer3D::get_singleton()->get_debug_navigation_enable_edge_connections();
 }
 
-void NavigationServer2D::set_debug_navigation_enable_geometry_face_random_color(const bool p_value) {
-	NavigationServer3D::get_singleton()->set_debug_navigation_enable_geometry_face_random_color(p_value);
-}
-
 bool NavigationServer2D::get_debug_navigation_enable_geometry_face_random_color() const {
 	return NavigationServer3D::get_singleton()->get_debug_navigation_enable_geometry_face_random_color();
-}
-
-void NavigationServer2D::set_debug_navigation_enable_edge_lines(const bool p_value) {
-	NavigationServer3D::get_singleton()->set_debug_navigation_enable_edge_lines(p_value);
 }
 
 bool NavigationServer2D::get_debug_navigation_enable_edge_lines() const {
 	return NavigationServer3D::get_singleton()->get_debug_navigation_enable_edge_lines();
 }
 
-void NavigationServer2D::set_debug_navigation_agent_path_color(const Color &p_color) {
-	NavigationServer3D::get_singleton()->set_debug_navigation_agent_path_color(p_color);
-}
-
 Color NavigationServer2D::get_debug_navigation_agent_path_color() const {
 	return NavigationServer3D::get_singleton()->get_debug_navigation_agent_path_color();
-}
-
-void NavigationServer2D::set_debug_navigation_enable_agent_paths(const bool p_value) {
-	NavigationServer3D::get_singleton()->set_debug_navigation_enable_agent_paths(p_value);
 }
 
 bool NavigationServer2D::get_debug_navigation_enable_agent_paths() const {
 	return NavigationServer3D::get_singleton()->get_debug_navigation_enable_agent_paths();
 }
 
-void NavigationServer2D::set_debug_navigation_agent_path_point_size(float p_point_size) {
-	NavigationServer3D::get_singleton()->set_debug_navigation_agent_path_point_size(p_point_size);
-}
-
 float NavigationServer2D::get_debug_navigation_agent_path_point_size() const {
 	return NavigationServer3D::get_singleton()->get_debug_navigation_agent_path_point_size();
 }
-#endif // DEBUG_ENABLED
+#endif // defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 
 void NavigationServer2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_maps"), &NavigationServer2D::get_maps);

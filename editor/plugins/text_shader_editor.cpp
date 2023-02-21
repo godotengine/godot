@@ -86,10 +86,12 @@ void GDShaderSyntaxHighlighter::set_disabled_branch_color(const Color &p_color) 
 
 /*** SHADER SCRIPT EDITOR ****/
 
+#ifdef DEBUG_ENABLED
 static bool saved_warnings_enabled = false;
 static bool saved_treat_warning_as_errors = false;
 static HashMap<ShaderWarning::Code, bool> saved_warnings;
 static uint32_t saved_warning_flags = 0U;
+#endif
 
 void ShaderTextEditor::_notification(int p_what) {
 	switch (p_what) {
@@ -489,6 +491,7 @@ void ShaderTextEditor::_validate_script() {
 	} else {
 		ShaderLanguage sl;
 
+#ifdef DEBUG_ENABLED
 		sl.enable_warning_checking(saved_warnings_enabled);
 		uint32_t flags = saved_warning_flags;
 		if (shader.is_null()) {
@@ -509,7 +512,7 @@ void ShaderTextEditor::_validate_script() {
 			}
 		}
 		sl.set_warning_flags(flags);
-
+#endif
 		ShaderLanguage::ShaderCompileInfo comp_info;
 		comp_info.global_shader_uniform_type_func = _get_global_shader_uniform_type;
 
@@ -551,6 +554,7 @@ void ShaderTextEditor::_validate_script() {
 			warnings_panel->clear();
 		}
 		warnings.clear();
+#ifdef DEBUG_ENABLED
 		for (List<ShaderWarning>::Element *E = sl.get_warnings_ptr(); E; E = E->next()) {
 			warnings.push_back(E->get());
 		}
@@ -560,12 +564,14 @@ void ShaderTextEditor::_validate_script() {
 		} else {
 			set_warning_count(0);
 		}
+#endif
 	}
 
 	emit_signal(SNAME("script_validated"), last_compile_result == OK); // Notify that validation finished, to update the list of scripts
 }
 
 void ShaderTextEditor::_update_warning_panel() {
+#ifdef DEBUG_ENABLED
 	int warning_count = 0;
 
 	warnings_panel->push_table(2);
@@ -606,6 +612,7 @@ void ShaderTextEditor::_update_warning_panel() {
 	warnings_panel->pop(); // Table.
 
 	set_warning_count(warning_count);
+#endif
 }
 
 void ShaderTextEditor::_bind_methods() {
@@ -761,6 +768,7 @@ void TextShaderEditor::_project_settings_changed() {
 }
 
 void TextShaderEditor::_update_warnings(bool p_validate) {
+#ifdef DEBUG_ENABLED
 	bool changed = false;
 
 	bool warnings_enabled = GLOBAL_GET("debug/shader_language/warnings/enable").booleanize();
@@ -795,6 +803,7 @@ void TextShaderEditor::_update_warnings(bool p_validate) {
 	if (p_validate && changed && shader_editor && shader_editor->get_edited_shader().is_valid()) {
 		shader_editor->validate_script();
 	}
+#endif
 }
 
 void TextShaderEditor::_check_for_external_edit() {
@@ -1051,11 +1060,13 @@ void TextShaderEditor::_make_context_menu(bool p_selection, Vector2 p_position) 
 }
 
 TextShaderEditor::TextShaderEditor() {
+#ifdef DEBUG_ENABLED
 	GLOBAL_DEF("debug/shader_language/warnings/enable", true);
 	GLOBAL_DEF("debug/shader_language/warnings/treat_warnings_as_errors", false);
 	for (int i = 0; i < (int)ShaderWarning::WARNING_MAX; i++) {
 		GLOBAL_DEF("debug/shader_language/warnings/" + ShaderWarning::get_name_from_code((ShaderWarning::Code)i).to_lower(), true);
 	}
+#endif
 	_update_warnings(false);
 
 	shader_editor = memnew(ShaderTextEditor);

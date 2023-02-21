@@ -169,6 +169,14 @@ opts.Add(EnumVariable("arch", "CPU architecture", "auto", ["auto"] + architectur
 opts.Add(BoolVariable("dev_build", "Developer build with dev-only debugging code (DEV_ENABLED)", False))
 opts.Add(
     EnumVariable(
+        "debug_features",
+        "Enable warnings and debug apis (DEBUG_ENABLED). By default unless template_release",
+        "auto",
+        ("auto", "yes", "no")
+    )
+)
+opts.Add(
+    EnumVariable(
         "optimize", "Optimization level", "speed_trace", ("none", "custom", "debug", "speed", "speed_trace", "size")
     )
 )
@@ -392,7 +400,10 @@ env_base.platform_apis = platform_apis
 
 env_base.editor_build = env_base["target"] == "editor"
 env_base.dev_build = env_base["dev_build"]
-env_base.debug_features = env_base["target"] in ["editor", "template_debug"]
+if env_base["debug_features"] == "auto":
+    env_base.debug_features = env_base["target"] in ["editor", "template_debug"]
+else:
+    env_base.debug_features = env_base["debug_features"] == "yes"
 
 if env_base.dev_build:
     opt_level = "none"

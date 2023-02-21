@@ -280,7 +280,7 @@ public:
 private:
 	bool debug_enabled = false;
 
-#ifdef DEBUG_ENABLED
+#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 	bool debug_dirty = true;
 	void _emit_navigation_debug_changed_signal();
 
@@ -315,8 +315,10 @@ private:
 
 	Ref<StandardMaterial3D> debug_navigation_agent_path_line_material;
 	Ref<StandardMaterial3D> debug_navigation_agent_path_point_material;
+#endif // defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 
 public:
+#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 	void set_debug_navigation_edge_connection_color(const Color &p_color);
 	Color get_debug_navigation_edge_connection_color() const;
 
@@ -381,7 +383,7 @@ public:
 
 	Ref<StandardMaterial3D> get_debug_navigation_agent_path_line_material();
 	Ref<StandardMaterial3D> get_debug_navigation_agent_path_point_material();
-#endif // DEBUG_ENABLED
+#endif // defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 };
 
 typedef NavigationServer3D *(*NavigationServer3DCallback)();

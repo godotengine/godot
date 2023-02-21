@@ -59,6 +59,7 @@ void ExtendGDScriptParser::update_diagnostics() {
 		diagnostics.push_back(diagnostic);
 	}
 
+#ifdef DEBUG_ENABLED
 	const List<GDScriptWarning> &parser_warnings = get_warnings();
 	for (const GDScriptWarning &warning : parser_warnings) {
 		lsp::Diagnostic diagnostic;
@@ -78,6 +79,7 @@ void ExtendGDScriptParser::update_diagnostics() {
 		diagnostic.range = range;
 		diagnostics.push_back(diagnostic);
 	}
+#endif
 }
 
 void ExtendGDScriptParser::update_symbols() {

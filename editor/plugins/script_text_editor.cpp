@@ -496,6 +496,7 @@ void ScriptTextEditor::_update_warnings() {
 	warnings_panel->clear();
 
 	bool has_connections_table = false;
+#ifdef DEBUG_ENABLED
 	// Add missing connections.
 	if (GLOBAL_GET("debug/gdscript/warnings/enable").booleanize()) {
 		Node *base = get_tree()->get_edited_scene_root();
@@ -518,6 +519,7 @@ void ScriptTextEditor::_update_warnings() {
 			warning_nb += missing_connections.size();
 		}
 	}
+#endif // DEBUG_ENABLED
 
 	code_editor->set_warning_count(warning_nb);
 

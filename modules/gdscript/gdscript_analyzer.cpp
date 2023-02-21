@@ -43,7 +43,7 @@
 #include "gdscript_utility_functions.h"
 #include "scene/resources/packed_scene.h"
 
-#if defined(TOOLS_ENABLED) && !defined(DISABLE_DEPRECATED)
+#if defined(TOOLS_ENABLED) && defined(DEBUG_ENABLED) && !defined(DISABLE_DEPRECATED)
 #define SUGGEST_GODOT4_RENAMES
 #include "editor/renames_map_3_to_4.h"
 #endif

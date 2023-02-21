@@ -237,7 +237,7 @@ public:
 	void set_debug_enabled(bool p_enabled);
 	bool get_debug_enabled() const;
 
-#ifdef DEBUG_ENABLED
+#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 	void set_debug_navigation_edge_connection_color(const Color &p_color);
 	Color get_debug_navigation_edge_connection_color() const;
 
@@ -276,12 +276,12 @@ public:
 
 	void set_debug_navigation_agent_path_point_size(float p_point_size);
 	float get_debug_navigation_agent_path_point_size() const;
-#endif // DEBUG_ENABLED
+#endif // defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 
-#ifdef DEBUG_ENABLED
+#if defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 private:
 	void _emit_navigation_debug_changed_signal();
-#endif // DEBUG_ENABLED
+#endif // defined(DEBUG_ENABLED) || defined(TOOLS_ENABLED)
 };
 
 #endif // NAVIGATION_SERVER_2D_H

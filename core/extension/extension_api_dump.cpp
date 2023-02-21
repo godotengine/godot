@@ -37,7 +37,7 @@
 #include "core/templates/pair.h"
 #include "core/version.h"
 
-#ifdef TOOLS_ENABLED
+#ifdef DEBUG_METHODS_ENABLED
 
 static String get_builtin_or_variant_type_name(const Variant::Type p_type) {
 	if (p_type == Variant::NIL) {

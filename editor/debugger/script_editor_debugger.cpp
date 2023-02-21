@@ -244,9 +244,11 @@ void ScriptEditorDebugger::request_remote_tree() {
 	_put_msg("scene:request_scene_tree", Array());
 }
 
+#ifdef DEBUG_ENABLED
 const SceneDebuggerTree *ScriptEditorDebugger::get_remote_tree() {
 	return scene_tree;
 }
+#endif
 
 void ScriptEditorDebugger::update_remote_object(ObjectID p_obj_id, const String &p_prop, const Variant &p_value) {
 	Array msg;
@@ -344,15 +346,19 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 		clicked_ctrl->set_text(p_data[0]);
 		clicked_ctrl_type->set_text(p_data[1]);
 	} else if (p_msg == "scene:scene_tree") {
+#ifdef DEBUG_ENABLED
 		scene_tree->nodes.clear();
 		scene_tree->deserialize(p_data);
 		emit_signal(SNAME("remote_tree_updated"));
 		_update_buttons_state();
+#endif
 	} else if (p_msg == "scene:inspect_object") {
+#ifdef DEBUG_ENABLED
 		ObjectID id = inspector->add_object(p_data);
 		if (id.is_valid()) {
 			emit_signal(SNAME("remote_object_updated"), id);
 		}
+#endif
 	} else if (p_msg == "servers:memory_usage") {
 		vmem_tree->clear();
 		TreeItem *root = vmem_tree->create_item();
@@ -1983,7 +1989,9 @@ ScriptEditorDebugger::ScriptEditorDebugger() {
 		info_left->add_child(memnew(Label(TTR("Clicked Control Type:"))));
 		info_left->add_child(clicked_ctrl_type);
 
+#ifdef DEBUG_ENABLED
 		scene_tree = memnew(SceneDebuggerTree);
+#endif
 		live_edit_root = memnew(LineEdit);
 		live_edit_root->set_editable(false);
 		live_edit_root->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -2027,5 +2035,7 @@ ScriptEditorDebugger::~ScriptEditorDebugger() {
 		peer->close();
 		peer.unref();
 	}
+#ifdef DEBUG_ENABLED
 	memdelete(scene_tree);
+#endif
 }
