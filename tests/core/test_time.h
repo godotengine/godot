@@ -91,7 +91,7 @@ TEST_CASE("[Time] Datetime dictionary conversion methods") {
 	datetime[YEAR_KEY] = 2014;
 	datetime[MONTH_KEY] = 2;
 	datetime[DAY_KEY] = 9;
-	datetime[WEEKDAY_KEY] = Weekday::WEEKDAY_SUNDAY;
+	datetime[WEEKDAY_KEY] = (int64_t)Weekday::WEEKDAY_SUNDAY;
 	datetime[HOUR_KEY] = 22;
 	datetime[MINUTE_KEY] = 10;
 	datetime[SECOND_KEY] = 30;
@@ -100,7 +100,7 @@ TEST_CASE("[Time] Datetime dictionary conversion methods") {
 	date_only[YEAR_KEY] = 2014;
 	date_only[MONTH_KEY] = 2;
 	date_only[DAY_KEY] = 9;
-	date_only[WEEKDAY_KEY] = Weekday::WEEKDAY_SUNDAY;
+	date_only[WEEKDAY_KEY] = (int64_t)Weekday::WEEKDAY_SUNDAY;
 
 	Dictionary time_only;
 	time_only[HOUR_KEY] = 22;
