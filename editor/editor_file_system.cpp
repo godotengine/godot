@@ -2264,8 +2264,7 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 					_reimport_file(reimport_files[i].path);
 				} else {
 					Ref<ResourceImporter> importer = ResourceFormatImporter::get_singleton()->get_importer_by_name(reimport_files[from].importer);
-					ERR_CONTINUE(!importer.is_valid());
-
+					ERR_CONTINUE_MSG(!importer.is_valid(), "Failed to find importer for: " + reimport_files[from].importer);
 					importer->import_threaded_begin();
 
 					ImportThreadData tdata;
