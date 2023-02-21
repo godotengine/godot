@@ -2527,6 +2527,11 @@ void TileSet::reset_state() {
 	while (!source_ids.is_empty()) {
 		remove_source(source_ids[0]);
 	}
+
+	tile_shape = TILE_SHAPE_SQUARE;
+	tile_layout = TILE_LAYOUT_STACKED;
+	tile_offset_axis = TILE_OFFSET_AXIS_HORIZONTAL;
+	tile_size = Size2i(16, 16);
 }
 
 const Vector2i TileSetSource::INVALID_ATLAS_COORDS = Vector2i(-1, -1);
