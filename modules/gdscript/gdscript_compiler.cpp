@@ -2265,13 +2265,15 @@ Error GDScriptCompiler::_populate_class_members(GDScript *p_script, const GDScri
 
 	GDScriptDataType base_type = _gdtype_from_datatype(p_class->base_type, p_script);
 
+	int native_idx = GDScriptLanguage::get_singleton()->get_global_map()[base_type.native_type];
+	p_script->native = GDScriptLanguage::get_singleton()->get_global_array()[native_idx];
+	ERR_FAIL_COND_V(p_script->native.is_null(), ERR_BUG);
+
 	// Inheritance
 	switch (base_type.kind) {
-		case GDScriptDataType::NATIVE: {
-			int native_idx = GDScriptLanguage::get_singleton()->get_global_map()[base_type.native_type];
-			p_script->native = GDScriptLanguage::get_singleton()->get_global_array()[native_idx];
-			ERR_FAIL_COND_V(p_script->native.is_null(), ERR_BUG);
-		} break;
+		case GDScriptDataType::NATIVE:
+			// Nothing more to do.
+			break;
 		case GDScriptDataType::GDSCRIPT: {
 			Ref<GDScript> base = Ref<GDScript>(base_type.script_type);
 			if (base.is_null()) {
@@ -2303,7 +2305,6 @@ Error GDScriptCompiler::_populate_class_members(GDScript *p_script, const GDScri
 			p_script->base = base;
 			p_script->_base = base.ptr();
 			p_script->member_indices = base->member_indices;
-			p_script->native = base->native;
 		} break;
 		default: {
 			_set_error("Parser bug: invalid inheritance.", nullptr);
