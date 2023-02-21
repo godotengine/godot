@@ -1348,7 +1348,7 @@ String VisualShaderNodeParticleOutput::get_input_port_name(int p_port) const {
 bool VisualShaderNodeParticleOutput::is_port_separator(int p_index) const {
 	if (shader_type == VisualShader::TYPE_START || shader_type == VisualShader::TYPE_PROCESS) {
 		String port_name = get_input_port_name(p_index);
-		return bool(port_name == "Scale" || port_name == "Lifetime Factor");
+		return bool(port_name == "Position" || port_name == "Color" || port_name == "Lifetime Factor");
 	}
 	if (shader_type == VisualShader::TYPE_START_CUSTOM || shader_type == VisualShader::TYPE_PROCESS_CUSTOM) {
 		String port_name = get_input_port_name(p_index);
