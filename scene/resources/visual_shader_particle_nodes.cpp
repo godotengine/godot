@@ -1197,7 +1197,7 @@ int VisualShaderNodeParticleOutput::get_input_port_count() const {
 		case VisualShader::TYPE_PROCESS:
 			return 8;
 		case VisualShader::TYPE_COLLIDE:
-			return 5;
+			return 9;
 		case VisualShader::TYPE_START_CUSTOM:
 		case VisualShader::TYPE_PROCESS_CUSTOM:
 			return 6;
@@ -1244,15 +1244,24 @@ VisualShaderNodeParticleOutput::PortType VisualShaderNodeParticleOutput::get_inp
 			if (shader_type == VisualShader::TYPE_PROCESS) {
 				return PORT_TYPE_VECTOR_3D; // rotation_axis
 			}
+			if (shader_type == VisualShader::TYPE_COLLIDE) {
+				return PORT_TYPE_VECTOR_3D; // position
+			}
 			return PORT_TYPE_VECTOR_3D; // scale (scalar)
 		case 6:
 			if (shader_type == VisualShader::TYPE_START) {
 				return PORT_TYPE_VECTOR_3D; // rotation_axis
 			}
+			if (shader_type == VisualShader::TYPE_COLLIDE) {
+				return PORT_TYPE_VECTOR_3D; // scale
+			}
 			break;
 		case 7:
 			if (shader_type == VisualShader::TYPE_PROCESS) {
 				return PORT_TYPE_VECTOR_3D; // position
+			}
+			if (shader_type == VisualShader::TYPE_COLLIDE) {
+				return PORT_TYPE_VECTOR_3D; // rotation_axis
 			}
 			break; // angle (scalar)
 	}
@@ -1314,11 +1323,19 @@ String VisualShaderNodeParticleOutput::get_input_port_name(int p_port) const {
 				port_name = "rotation_axis";
 				break;
 			}
+			if (shader_type == VisualShader::TYPE_COLLIDE) {
+				port_name = "position";
+				break;
+			}
 			port_name = "scale";
 			break;
 		case 6:
 			if (shader_type == VisualShader::TYPE_PROCESS) {
 				port_name = "angle_in_radians";
+				break;
+			}
+			if (shader_type == VisualShader::TYPE_COLLIDE) {
+				port_name = "scale";
 				break;
 			}
 			port_name = "rotation_axis";
@@ -1328,11 +1345,19 @@ String VisualShaderNodeParticleOutput::get_input_port_name(int p_port) const {
 				port_name = "position";
 				break;
 			}
+			if (shader_type == VisualShader::TYPE_COLLIDE) {
+				port_name = "rotation_axis";
+				break;
+			}
 			port_name = "angle_in_radians";
 			break;
 		case 8:
 			if (shader_type == VisualShader::TYPE_START) {
 				port_name = "lifetime_factor";
+				break;
+			}
+			if (shader_type == VisualShader::TYPE_COLLIDE) {
+				port_name = "angle_in_radians";
 				break;
 			}
 			break;
@@ -1346,14 +1371,26 @@ String VisualShaderNodeParticleOutput::get_input_port_name(int p_port) const {
 }
 
 bool VisualShaderNodeParticleOutput::is_port_separator(int p_index) const {
-	if (shader_type == VisualShader::TYPE_START || shader_type == VisualShader::TYPE_PROCESS) {
-		String port_name = get_input_port_name(p_index);
-		return bool(port_name == "Position" || port_name == "Color" || port_name == "Lifetime Factor");
+	String port_name = get_input_port_name(p_index);
+
+	switch (shader_type) {
+		case VisualShader::TYPE_START:
+			return bool(port_name == "Position" || port_name == "Color" || port_name == "Lifetime Factor");
+
+		case VisualShader::TYPE_PROCESS:
+			return bool(port_name == "Color" || port_name == "Scale");
+
+		case VisualShader::TYPE_START_CUSTOM:
+		case VisualShader::TYPE_PROCESS_CUSTOM:
+			return bool(port_name == "Velocity");
+
+		case VisualShader::TYPE_COLLIDE:
+			return bool(port_name == "Color" || port_name == "Transform");
+
+		default:
+			break;
 	}
-	if (shader_type == VisualShader::TYPE_START_CUSTOM || shader_type == VisualShader::TYPE_PROCESS_CUSTOM) {
-		String port_name = get_input_port_name(p_index);
-		return bool(port_name == "Velocity");
-	}
+
 	return false;
 }
 
