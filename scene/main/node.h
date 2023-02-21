@@ -94,7 +94,7 @@ private:
 
 	// This Data struct is to avoid namespace pollution in derived classes.
 	struct Data {
-		String scene_file_path;
+		String scene_file_path = "";
 		Ref<SceneState> instance_state;
 		Ref<SceneState> inherited_state;
 
@@ -109,7 +109,7 @@ private:
 		int index = -1;
 		int depth = -1;
 		int blocked = 0; // Safeguard that throws an error when attempting to modify the tree in a harmful way while being traversed.
-		StringName name;
+		StringName name = StringName();
 		SceneTree *tree = nullptr;
 		bool inside_tree = false;
 		bool ready_notified = false; // This is a small hack, so if a node is added during _ready() to the tree, it correctly gets the _ready() notification.
