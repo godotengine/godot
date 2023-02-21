@@ -190,6 +190,13 @@ public class GodotLib {
 	public static native String getGlobal(String p_key);
 
 	/**
+	 * Used to access Godot's editor settings.
+	 * @param settingKey Setting key
+	 * @return String value of the setting
+	 */
+	public static native String getEditorSetting(String settingKey);
+
+	/**
 	 * Invoke method |p_method| on the Godot object specified by |p_id|
 	 * @param p_id Id of the Godot object to invoke
 	 * @param p_method Name of the method to invoke
