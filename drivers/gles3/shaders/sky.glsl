@@ -21,12 +21,13 @@ out vec2 uv_interp;
 /* clang-format on */
 
 void main() {
-	uv_interp = vertex_attrib;
 #ifdef USE_INVERTED_Y
-	gl_Position = vec4(uv_interp, 1.0, 1.0);
+	uv_interp = vertex_attrib;
 #else
-	gl_Position = vec4(uv_interp.x, uv_interp.y * -1.0, 1.0, 1.0);
+	// We're doing clockwise culling so flip the order
+	uv_interp = vec2(vertex_attrib.x, vertex_attrib.y * -1.0);
 #endif
+	gl_Position = vec4(uv_interp, 1.0, 1.0);
 }
 
 /* clang-format off */
@@ -144,9 +145,6 @@ void main() {
 	cube_normal.z = -1.0;
 	cube_normal.x = (uv_interp.x + projection.x) / projection.y;
 	cube_normal.y = (-uv_interp.y - projection.z) / projection.w;
-#endif
-#ifndef USE_INVERTED_Y
-	cube_normal.y *= -1.0;
 #endif
 	cube_normal = mat3(orientation) * cube_normal;
 	cube_normal = normalize(cube_normal);
