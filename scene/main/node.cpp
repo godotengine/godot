@@ -2453,6 +2453,7 @@ void Node::replace_by(Node *p_node, bool p_keep_groups) {
 	List<Node *> owned = data.owned;
 	List<Node *> owned_by_owner;
 	Node *owner = (data.owner == this) ? p_node : data.owner;
+	ERR_FAIL_COND_MSG(!owner, "Invalid owner for new node or current node.");
 
 	if (p_keep_groups) {
 		List<GroupInfo> groups;
