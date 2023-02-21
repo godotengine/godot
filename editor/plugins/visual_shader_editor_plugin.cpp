@@ -5554,6 +5554,8 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("Transform", "Input/All", "VisualShaderNodeInput", vformat(input_param_shader_modes, "transform", "TRANSFORM"), { "transform" }, VisualShaderNode::PORT_TYPE_TRANSFORM, -1, Shader::MODE_PARTICLES));
 	add_options.push_back(AddOption("Position", "Input/All", "VisualShaderNodeInput", "Current position of the particle.", { "position" }, VisualShaderNode::PORT_TYPE_VECTOR_3D, -1, Shader::MODE_PARTICLES));
 	add_options.push_back(AddOption("Scale", "Input/All", "VisualShaderNodeInput", "Current scale of the particle.", { "scale" }, VisualShaderNode::PORT_TYPE_VECTOR_3D, -1, Shader::MODE_PARTICLES));
+	add_options.push_back(AddOption("RotationAxis", "Input/All", "VisualShaderNodeInput", "Current rotation axis of the particle.", { "rotation_axis" }, VisualShaderNode::PORT_TYPE_VECTOR_3D, -1, Shader::MODE_PARTICLES));
+	add_options.push_back(AddOption("RotationAngle", "Input/All", "VisualShaderNodeInput", "Current rotation angle (in radians) of the particle.", { "rotation_angle" }, VisualShaderNode::PORT_TYPE_SCALAR, -1, Shader::MODE_PARTICLES));
 	add_options.push_back(AddOption("Velocity", "Input/All", "VisualShaderNodeInput", vformat(input_param_shader_modes, "velocity", "VELOCITY"), { "velocity" }, VisualShaderNode::PORT_TYPE_VECTOR_3D, -1, Shader::MODE_PARTICLES));
 
 	/////////////////
