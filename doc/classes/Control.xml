@@ -801,7 +801,7 @@
 				Shows the given control at the mouse pointer. A good time to call this method is in [method _get_drag_data]. The control must not be in the scene tree. You should not free the control, and you should not keep a reference to the control beyond the duration of the drag. It will be deleted automatically after the drag has ended.
 				[codeblocks]
 				[gdscript]
-				export (Color, RGBA) var color = Color(1, 0, 0, 1)
+				@export var color = Color(1, 0, 0, 1)
 
 				func _get_drag_data(position):
 				    # Use a control that is not in the tree
