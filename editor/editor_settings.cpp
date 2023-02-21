@@ -1384,8 +1384,13 @@ float EditorSettings::get_auto_display_scale() const {
 
 // Shortcuts
 
+void EditorSettings::_add_shortcut_default(const String &p_name, const Ref<Shortcut> &p_shortcut) {
+	shortcuts[p_name] = p_shortcut;
+}
+
 void EditorSettings::add_shortcut(const String &p_name, const Ref<Shortcut> &p_shortcut) {
 	shortcuts[p_name] = p_shortcut;
+	shortcuts[p_name]->set_meta("customized", true);
 }
 
 bool EditorSettings::is_shortcut(const String &p_name, const Ref<InputEvent> &p_event) const {
@@ -1489,8 +1494,8 @@ void ED_SHORTCUT_OVERRIDE_ARRAY(const String &p_path, const String &p_feature, c
 		}
 	}
 
-	// Override the existing shortcut only if it wasn't customized by the user (i.e. still "original").
-	if (sc->has_meta("original") && Shortcut::is_event_array_equal(sc->get_events(), sc->get_meta("original"))) {
+	// Override the existing shortcut only if it wasn't customized by the user.
+	if (!sc->has_meta("customized")) {
 		sc->set_events(events);
 	}
 
@@ -1535,6 +1540,7 @@ Ref<Shortcut> ED_SHORTCUT_ARRAY(const String &p_path, const String &p_name, cons
 	Ref<Shortcut> sc = EditorSettings::get_singleton()->get_shortcut(p_path);
 	if (sc.is_valid()) {
 		sc->set_name(p_name); //keep name (the ones that come from disk have no name)
+		sc->set_meta("original", events.duplicate(true)); //to compare against changes
 		return sc;
 	}
 
@@ -1542,7 +1548,7 @@ Ref<Shortcut> ED_SHORTCUT_ARRAY(const String &p_path, const String &p_name, cons
 	sc->set_name(p_name);
 	sc->set_events(events);
 	sc->set_meta("original", events.duplicate(true)); //to compare against changes
-	EditorSettings::get_singleton()->add_shortcut(p_path, sc);
+	EditorSettings::get_singleton()->_add_shortcut_default(p_path, sc);
 
 	return sc;
 }
