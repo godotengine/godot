@@ -720,7 +720,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("title_offset", "GraphNode", 26 * scale);
 	theme->set_constant("title_h_offset", "GraphNode", 0);
 	theme->set_constant("close_offset", "GraphNode", 22 * scale);
-	theme->set_constant("close_h_offset", "GraphNode", 22 * scale);
+	theme->set_constant("close_h_offset", "GraphNode", 12 * scale);
 	theme->set_constant("port_offset", "GraphNode", 0);
 
 	// Tree
