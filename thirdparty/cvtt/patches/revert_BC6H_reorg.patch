@@ -1,0 +1,393 @@
+diff --git a/thirdparty/cvtt/ConvectionKernels_BC67.cpp b/thirdparty/cvtt/ConvectionKernels_BC67.cpp
+index 021d658c08..011f51570b 100644
+--- a/thirdparty/cvtt/ConvectionKernels_BC67.cpp
++++ b/thirdparty/cvtt/ConvectionKernels_BC67.cpp
+@@ -76,6 +76,205 @@ namespace cvtt
+             };
+         }
+ 
++        namespace BC6HData
++        {
++            enum EField
++            {
++                NA, // N/A
++                M,  // Mode
++                D,  // Shape
++                RW,
++                RX,
++                RY,
++                RZ,
++                GW,
++                GX,
++                GY,
++                GZ,
++                BW,
++                BX,
++                BY,
++                BZ,
++            };
++
++            struct ModeDescriptor
++            {
++                EField m_eField;
++                uint8_t   m_uBit;
++            };
++
++            const ModeDescriptor g_modeDescriptors[14][82] =
++            {
++                {   // Mode 1 (0x00) - 10 5 5 5
++                    { M, 0 },{ M, 1 },{ GY, 4 },{ BY, 4 },{ BZ, 4 },{ RW, 0 },{ RW, 1 },{ RW, 2 },{ RW, 3 },{ RW, 4 },
++                    { RW, 5 },{ RW, 6 },{ RW, 7 },{ RW, 8 },{ RW, 9 },{ GW, 0 },{ GW, 1 },{ GW, 2 },{ GW, 3 },{ GW, 4 },
++                    { GW, 5 },{ GW, 6 },{ GW, 7 },{ GW, 8 },{ GW, 9 },{ BW, 0 },{ BW, 1 },{ BW, 2 },{ BW, 3 },{ BW, 4 },
++                    { BW, 5 },{ BW, 6 },{ BW, 7 },{ BW, 8 },{ BW, 9 },{ RX, 0 },{ RX, 1 },{ RX, 2 },{ RX, 3 },{ RX, 4 },
++                    { GZ, 4 },{ GY, 0 },{ GY, 1 },{ GY, 2 },{ GY, 3 },{ GX, 0 },{ GX, 1 },{ GX, 2 },{ GX, 3 },{ GX, 4 },
++                    { BZ, 0 },{ GZ, 0 },{ GZ, 1 },{ GZ, 2 },{ GZ, 3 },{ BX, 0 },{ BX, 1 },{ BX, 2 },{ BX, 3 },{ BX, 4 },
++                    { BZ, 1 },{ BY, 0 },{ BY, 1 },{ BY, 2 },{ BY, 3 },{ RY, 0 },{ RY, 1 },{ RY, 2 },{ RY, 3 },{ RY, 4 },
++                    { BZ, 2 },{ RZ, 0 },{ RZ, 1 },{ RZ, 2 },{ RZ, 3 },{ RZ, 4 },{ BZ, 3 },{ D, 0 },{ D, 1 },{ D, 2 },
++                    { D, 3 },{ D, 4 },
++                },
++
++                {   // Mode 2 (0x01) - 7 6 6 6
++                    { M, 0 },{ M, 1 },{ GY, 5 },{ GZ, 4 },{ GZ, 5 },{ RW, 0 },{ RW, 1 },{ RW, 2 },{ RW, 3 },{ RW, 4 },
++                    { RW, 5 },{ RW, 6 },{ BZ, 0 },{ BZ, 1 },{ BY, 4 },{ GW, 0 },{ GW, 1 },{ GW, 2 },{ GW, 3 },{ GW, 4 },
++                    { GW, 5 },{ GW, 6 },{ BY, 5 },{ BZ, 2 },{ GY, 4 },{ BW, 0 },{ BW, 1 },{ BW, 2 },{ BW, 3 },{ BW, 4 },
++                    { BW, 5 },{ BW, 6 },{ BZ, 3 },{ BZ, 5 },{ BZ, 4 },{ RX, 0 },{ RX, 1 },{ RX, 2 },{ RX, 3 },{ RX, 4 },
++                    { RX, 5 },{ GY, 0 },{ GY, 1 },{ GY, 2 },{ GY, 3 },{ GX, 0 },{ GX, 1 },{ GX, 2 },{ GX, 3 },{ GX, 4 },
++                    { GX, 5 },{ GZ, 0 },{ GZ, 1 },{ GZ, 2 },{ GZ, 3 },{ BX, 0 },{ BX, 1 },{ BX, 2 },{ BX, 3 },{ BX, 4 },
++                    { BX, 5 },{ BY, 0 },{ BY, 1 },{ BY, 2 },{ BY, 3 },{ RY, 0 },{ RY, 1 },{ RY, 2 },{ RY, 3 },{ RY, 4 },
++                    { RY, 5 },{ RZ, 0 },{ RZ, 1 },{ RZ, 2 },{ RZ, 3 },{ RZ, 4 },{ RZ, 5 },{ D, 0 },{ D, 1 },{ D, 2 },
++                    { D, 3 },{ D, 4 },
++                },
++
++                {   // Mode 3 (0x02) - 11 5 4 4
++                    { M, 0 },{ M, 1 },{ M, 2 },{ M, 3 },{ M, 4 },{ RW, 0 },{ RW, 1 },{ RW, 2 },{ RW, 3 },{ RW, 4 },
++                    { RW, 5 },{ RW, 6 },{ RW, 7 },{ RW, 8 },{ RW, 9 },{ GW, 0 },{ GW, 1 },{ GW, 2 },{ GW, 3 },{ GW, 4 },
++                    { GW, 5 },{ GW, 6 },{ GW, 7 },{ GW, 8 },{ GW, 9 },{ BW, 0 },{ BW, 1 },{ BW, 2 },{ BW, 3 },{ BW, 4 },
++                    { BW, 5 },{ BW, 6 },{ BW, 7 },{ BW, 8 },{ BW, 9 },{ RX, 0 },{ RX, 1 },{ RX, 2 },{ RX, 3 },{ RX, 4 },
++                    { RW,10 },{ GY, 0 },{ GY, 1 },{ GY, 2 },{ GY, 3 },{ GX, 0 },{ GX, 1 },{ GX, 2 },{ GX, 3 },{ GW,10 },
++                    { BZ, 0 },{ GZ, 0 },{ GZ, 1 },{ GZ, 2 },{ GZ, 3 },{ BX, 0 },{ BX, 1 },{ BX, 2 },{ BX, 3 },{ BW,10 },
++                    { BZ, 1 },{ BY, 0 },{ BY, 1 },{ BY, 2 },{ BY, 3 },{ RY, 0 },{ RY, 1 },{ RY, 2 },{ RY, 3 },{ RY, 4 },
++                    { BZ, 2 },{ RZ, 0 },{ RZ, 1 },{ RZ, 2 },{ RZ, 3 },{ RZ, 4 },{ BZ, 3 },{ D, 0 },{ D, 1 },{ D, 2 },
++                    { D, 3 },{ D, 4 },
++                },
++
++                {   // Mode 4 (0x06) - 11 4 5 4
++                    { M, 0 },{ M, 1 },{ M, 2 },{ M, 3 },{ M, 4 },{ RW, 0 },{ RW, 1 },{ RW, 2 },{ RW, 3 },{ RW, 4 },
++                    { RW, 5 },{ RW, 6 },{ RW, 7 },{ RW, 8 },{ RW, 9 },{ GW, 0 },{ GW, 1 },{ GW, 2 },{ GW, 3 },{ GW, 4 },
++                    { GW, 5 },{ GW, 6 },{ GW, 7 },{ GW, 8 },{ GW, 9 },{ BW, 0 },{ BW, 1 },{ BW, 2 },{ BW, 3 },{ BW, 4 },
++                    { BW, 5 },{ BW, 6 },{ BW, 7 },{ BW, 8 },{ BW, 9 },{ RX, 0 },{ RX, 1 },{ RX, 2 },{ RX, 3 },{ RW,10 },
++                    { GZ, 4 },{ GY, 0 },{ GY, 1 },{ GY, 2 },{ GY, 3 },{ GX, 0 },{ GX, 1 },{ GX, 2 },{ GX, 3 },{ GX, 4 },
++                    { GW,10 },{ GZ, 0 },{ GZ, 1 },{ GZ, 2 },{ GZ, 3 },{ BX, 0 },{ BX, 1 },{ BX, 2 },{ BX, 3 },{ BW,10 },
++                    { BZ, 1 },{ BY, 0 },{ BY, 1 },{ BY, 2 },{ BY, 3 },{ RY, 0 },{ RY, 1 },{ RY, 2 },{ RY, 3 },{ BZ, 0 },
++                    { BZ, 2 },{ RZ, 0 },{ RZ, 1 },{ RZ, 2 },{ RZ, 3 },{ GY, 4 },{ BZ, 3 },{ D, 0 },{ D, 1 },{ D, 2 },
++                    { D, 3 },{ D, 4 },
++                },
++
++                {   // Mode 5 (0x0a) - 11 4 4 5
++                    { M, 0 },{ M, 1 },{ M, 2 },{ M, 3 },{ M, 4 },{ RW, 0 },{ RW, 1 },{ RW, 2 },{ RW, 3 },{ RW, 4 },
++                    { RW, 5 },{ RW, 6 },{ RW, 7 },{ RW, 8 },{ RW, 9 },{ GW, 0 },{ GW, 1 },{ GW, 2 },{ GW, 3 },{ GW, 4 },
++                    { GW, 5 },{ GW, 6 },{ GW, 7 },{ GW, 8 },{ GW, 9 },{ BW, 0 },{ BW, 1 },{ BW, 2 },{ BW, 3 },{ BW, 4 },
++                    { BW, 5 },{ BW, 6 },{ BW, 7 },{ BW, 8 },{ BW, 9 },{ RX, 0 },{ RX, 1 },{ RX, 2 },{ RX, 3 },{ RW,10 },
++                    { BY, 4 },{ GY, 0 },{ GY, 1 },{ GY, 2 },{ GY, 3 },{ GX, 0 },{ GX, 1 },{ GX, 2 },{ GX, 3 },{ GW,10 },
++                    { BZ, 0 },{ GZ, 0 },{ GZ, 1 },{ GZ, 2 },{ GZ, 3 },{ BX, 0 },{ BX, 1 },{ BX, 2 },{ BX, 3 },{ BX, 4 },
++                    { BW,10 },{ BY, 0 },{ BY, 1 },{ BY, 2 },{ BY, 3 },{ RY, 0 },{ RY, 1 },{ RY, 2 },{ RY, 3 },{ BZ, 1 },
++                    { BZ, 2 },{ RZ, 0 },{ RZ, 1 },{ RZ, 2 },{ RZ, 3 },{ BZ, 4 },{ BZ, 3 },{ D, 0 },{ D, 1 },{ D, 2 },
++                    { D, 3 },{ D, 4 },
++                },
++
++                {   // Mode 6 (0x0e) - 9 5 5 5
++                    { M, 0 },{ M, 1 },{ M, 2 },{ M, 3 },{ M, 4 },{ RW, 0 },{ RW, 1 },{ RW, 2 },{ RW, 3 },{ RW, 4 },
++                    { RW, 5 },{ RW, 6 },{ RW, 7 },{ RW, 8 },{ BY, 4 },{ GW, 0 },{ GW, 1 },{ GW, 2 },{ GW, 3 },{ GW, 4 },
++                    { GW, 5 },{ GW, 6 },{ GW, 7 },{ GW, 8 },{ GY, 4 },{ BW, 0 },{ BW, 1 },{ BW, 2 },{ BW, 3 },{ BW, 4 },
++                    { BW, 5 },{ BW, 6 },{ BW, 7 },{ BW, 8 },{ BZ, 4 },{ RX, 0 },{ RX, 1 },{ RX, 2 },{ RX, 3 },{ RX, 4 },
++                    { GZ, 4 },{ GY, 0 },{ GY, 1 },{ GY, 2 },{ GY, 3 },{ GX, 0 },{ GX, 1 },{ GX, 2 },{ GX, 3 },{ GX, 4 },
++                    { BZ, 0 },{ GZ, 0 },{ GZ, 1 },{ GZ, 2 },{ GZ, 3 },{ BX, 0 },{ BX, 1 },{ BX, 2 },{ BX, 3 },{ BX, 4 },
++                    { BZ, 1 },{ BY, 0 },{ BY, 1 },{ BY, 2 },{ BY, 3 },{ RY, 0 },{ RY, 1 },{ RY, 2 },{ RY, 3 },{ RY, 4 },
++                    { BZ, 2 },{ RZ, 0 },{ RZ, 1 },{ RZ, 2 },{ RZ, 3 },{ RZ, 4 },{ BZ, 3 },{ D, 0 },{ D, 1 },{ D, 2 },
++                    { D, 3 },{ D, 4 },
++                },
++
++                {   // Mode 7 (0x12) - 8 6 5 5
++                    { M, 0 },{ M, 1 },{ M, 2 },{ M, 3 },{ M, 4 },{ RW, 0 },{ RW, 1 },{ RW, 2 },{ RW, 3 },{ RW, 4 },
++                    { RW, 5 },{ RW, 6 },{ RW, 7 },{ GZ, 4 },{ BY, 4 },{ GW, 0 },{ GW, 1 },{ GW, 2 },{ GW, 3 },{ GW, 4 },
++                    { GW, 5 },{ GW, 6 },{ GW, 7 },{ BZ, 2 },{ GY, 4 },{ BW, 0 },{ BW, 1 },{ BW, 2 },{ BW, 3 },{ BW, 4 },
++                    { BW, 5 },{ BW, 6 },{ BW, 7 },{ BZ, 3 },{ BZ, 4 },{ RX, 0 },{ RX, 1 },{ RX, 2 },{ RX, 3 },{ RX, 4 },
++                    { RX, 5 },{ GY, 0 },{ GY, 1 },{ GY, 2 },{ GY, 3 },{ GX, 0 },{ GX, 1 },{ GX, 2 },{ GX, 3 },{ GX, 4 },
++                    { BZ, 0 },{ GZ, 0 },{ GZ, 1 },{ GZ, 2 },{ GZ, 3 },{ BX, 0 },{ BX, 1 },{ BX, 2 },{ BX, 3 },{ BX, 4 },
++                    { BZ, 1 },{ BY, 0 },{ BY, 1 },{ BY, 2 },{ BY, 3 },{ RY, 0 },{ RY, 1 },{ RY, 2 },{ RY, 3 },{ RY, 4 },
++                    { RY, 5 },{ RZ, 0 },{ RZ, 1 },{ RZ, 2 },{ RZ, 3 },{ RZ, 4 },{ RZ, 5 },{ D, 0 },{ D, 1 },{ D, 2 },
++                    { D, 3 },{ D, 4 },
++                },
++
++                {   // Mode 8 (0x16) - 8 5 6 5
++                    { M, 0 },{ M, 1 },{ M, 2 },{ M, 3 },{ M, 4 },{ RW, 0 },{ RW, 1 },{ RW, 2 },{ RW, 3 },{ RW, 4 },
++                    { RW, 5 },{ RW, 6 },{ RW, 7 },{ BZ, 0 },{ BY, 4 },{ GW, 0 },{ GW, 1 },{ GW, 2 },{ GW, 3 },{ GW, 4 },
++                    { GW, 5 },{ GW, 6 },{ GW, 7 },{ GY, 5 },{ GY, 4 },{ BW, 0 },{ BW, 1 },{ BW, 2 },{ BW, 3 },{ BW, 4 },
++                    { BW, 5 },{ BW, 6 },{ BW, 7 },{ GZ, 5 },{ BZ, 4 },{ RX, 0 },{ RX, 1 },{ RX, 2 },{ RX, 3 },{ RX, 4 },
++                    { GZ, 4 },{ GY, 0 },{ GY, 1 },{ GY, 2 },{ GY, 3 },{ GX, 0 },{ GX, 1 },{ GX, 2 },{ GX, 3 },{ GX, 4 },
++                    { GX, 5 },{ GZ, 0 },{ GZ, 1 },{ GZ, 2 },{ GZ, 3 },{ BX, 0 },{ BX, 1 },{ BX, 2 },{ BX, 3 },{ BX, 4 },
++                    { BZ, 1 },{ BY, 0 },{ BY, 1 },{ BY, 2 },{ BY, 3 },{ RY, 0 },{ RY, 1 },{ RY, 2 },{ RY, 3 },{ RY, 4 },
++                    { BZ, 2 },{ RZ, 0 },{ RZ, 1 },{ RZ, 2 },{ RZ, 3 },{ RZ, 4 },{ BZ, 3 },{ D, 0 },{ D, 1 },{ D, 2 },
++                    { D, 3 },{ D, 4 },
++                },
++
++                {   // Mode 9 (0x1a) - 8 5 5 6
++                    { M, 0 },{ M, 1 },{ M, 2 },{ M, 3 },{ M, 4 },{ RW, 0 },{ RW, 1 },{ RW, 2 },{ RW, 3 },{ RW, 4 },
++                    { RW, 5 },{ RW, 6 },{ RW, 7 },{ BZ, 1 },{ BY, 4 },{ GW, 0 },{ GW, 1 },{ GW, 2 },{ GW, 3 },{ GW, 4 },
++                    { GW, 5 },{ GW, 6 },{ GW, 7 },{ BY, 5 },{ GY, 4 },{ BW, 0 },{ BW, 1 },{ BW, 2 },{ BW, 3 },{ BW, 4 },
++                    { BW, 5 },{ BW, 6 },{ BW, 7 },{ BZ, 5 },{ BZ, 4 },{ RX, 0 },{ RX, 1 },{ RX, 2 },{ RX, 3 },{ RX, 4 },
++                    { GZ, 4 },{ GY, 0 },{ GY, 1 },{ GY, 2 },{ GY, 3 },{ GX, 0 },{ GX, 1 },{ GX, 2 },{ GX, 3 },{ GX, 4 },
++                    { BZ, 0 },{ GZ, 0 },{ GZ, 1 },{ GZ, 2 },{ GZ, 3 },{ BX, 0 },{ BX, 1 },{ BX, 2 },{ BX, 3 },{ BX, 4 },
++                    { BX, 5 },{ BY, 0 },{ BY, 1 },{ BY, 2 },{ BY, 3 },{ RY, 0 },{ RY, 1 },{ RY, 2 },{ RY, 3 },{ RY, 4 },
++                    { BZ, 2 },{ RZ, 0 },{ RZ, 1 },{ RZ, 2 },{ RZ, 3 },{ RZ, 4 },{ BZ, 3 },{ D, 0 },{ D, 1 },{ D, 2 },
++                    { D, 3 },{ D, 4 },
++                },
++
++                {   // Mode 10 (0x1e) - 6 6 6 6
++                    { M, 0 },{ M, 1 },{ M, 2 },{ M, 3 },{ M, 4 },{ RW, 0 },{ RW, 1 },{ RW, 2 },{ RW, 3 },{ RW, 4 },
++                    { RW, 5 },{ GZ, 4 },{ BZ, 0 },{ BZ, 1 },{ BY, 4 },{ GW, 0 },{ GW, 1 },{ GW, 2 },{ GW, 3 },{ GW, 4 },
++                    { GW, 5 },{ GY, 5 },{ BY, 5 },{ BZ, 2 },{ GY, 4 },{ BW, 0 },{ BW, 1 },{ BW, 2 },{ BW, 3 },{ BW, 4 },
++                    { BW, 5 },{ GZ, 5 },{ BZ, 3 },{ BZ, 5 },{ BZ, 4 },{ RX, 0 },{ RX, 1 },{ RX, 2 },{ RX, 3 },{ RX, 4 },
++                    { RX, 5 },{ GY, 0 },{ GY, 1 },{ GY, 2 },{ GY, 3 },{ GX, 0 },{ GX, 1 },{ GX, 2 },{ GX, 3 },{ GX, 4 },
++                    { GX, 5 },{ GZ, 0 },{ GZ, 1 },{ GZ, 2 },{ GZ, 3 },{ BX, 0 },{ BX, 1 },{ BX, 2 },{ BX, 3 },{ BX, 4 },
++                    { BX, 5 },{ BY, 0 },{ BY, 1 },{ BY, 2 },{ BY, 3 },{ RY, 0 },{ RY, 1 },{ RY, 2 },{ RY, 3 },{ RY, 4 },
++                    { RY, 5 },{ RZ, 0 },{ RZ, 1 },{ RZ, 2 },{ RZ, 3 },{ RZ, 4 },{ RZ, 5 },{ D, 0 },{ D, 1 },{ D, 2 },
++                    { D, 3 },{ D, 4 },
++                },
++
++                {   // Mode 11 (0x03) - 10 10
++                    { M, 0 },{ M, 1 },{ M, 2 },{ M, 3 },{ M, 4 },{ RW, 0 },{ RW, 1 },{ RW, 2 },{ RW, 3 },{ RW, 4 },
++                    { RW, 5 },{ RW, 6 },{ RW, 7 },{ RW, 8 },{ RW, 9 },{ GW, 0 },{ GW, 1 },{ GW, 2 },{ GW, 3 },{ GW, 4 },
++                    { GW, 5 },{ GW, 6 },{ GW, 7 },{ GW, 8 },{ GW, 9 },{ BW, 0 },{ BW, 1 },{ BW, 2 },{ BW, 3 },{ BW, 4 },
++                    { BW, 5 },{ BW, 6 },{ BW, 7 },{ BW, 8 },{ BW, 9 },{ RX, 0 },{ RX, 1 },{ RX, 2 },{ RX, 3 },{ RX, 4 },
++                    { RX, 5 },{ RX, 6 },{ RX, 7 },{ RX, 8 },{ RX, 9 },{ GX, 0 },{ GX, 1 },{ GX, 2 },{ GX, 3 },{ GX, 4 },
++                    { GX, 5 },{ GX, 6 },{ GX, 7 },{ GX, 8 },{ GX, 9 },{ BX, 0 },{ BX, 1 },{ BX, 2 },{ BX, 3 },{ BX, 4 },
++                    { BX, 5 },{ BX, 6 },{ BX, 7 },{ BX, 8 },{ BX, 9 },{ NA, 0 },{ NA, 0 },{ NA, 0 },{ NA, 0 },{ NA, 0 },
++                    { NA, 0 },{ NA, 0 },{ NA, 0 },{ NA, 0 },{ NA, 0 },{ NA, 0 },{ NA, 0 },{ NA, 0 },{ NA, 0 },{ NA, 0 },
++                    { NA, 0 },{ NA, 0 },
++                },
++
++                {   // Mode 12 (0x07) - 11 9
++                    { M, 0 },{ M, 1 },{ M, 2 },{ M, 3 },{ M, 4 },{ RW, 0 },{ RW, 1 },{ RW, 2 },{ RW, 3 },{ RW, 4 },
++                    { RW, 5 },{ RW, 6 },{ RW, 7 },{ RW, 8 },{ RW, 9 },{ GW, 0 },{ GW, 1 },{ GW, 2 },{ GW, 3 },{ GW, 4 },
++                    { GW, 5 },{ GW, 6 },{ GW, 7 },{ GW, 8 },{ GW, 9 },{ BW, 0 },{ BW, 1 },{ BW, 2 },{ BW, 3 },{ BW, 4 },
++                    { BW, 5 },{ BW, 6 },{ BW, 7 },{ BW, 8 },{ BW, 9 },{ RX, 0 },{ RX, 1 },{ RX, 2 },{ RX, 3 },{ RX, 4 },
++                    { RX, 5 },{ RX, 6 },{ RX, 7 },{ RX, 8 },{ RW,10 },{ GX, 0 },{ GX, 1 },{ GX, 2 },{ GX, 3 },{ GX, 4 },
++                    { GX, 5 },{ GX, 6 },{ GX, 7 },{ GX, 8 },{ GW,10 },{ BX, 0 },{ BX, 1 },{ BX, 2 },{ BX, 3 },{ BX, 4 },
++                    { BX, 5 },{ BX, 6 },{ BX, 7 },{ BX, 8 },{ BW,10 },{ NA, 0 },{ NA, 0 },{ NA, 0 },{ NA, 0 },{ NA, 0 },
++                    { NA, 0 },{ NA, 0 },{ NA, 0 },{ NA, 0 },{ NA, 0 },{ NA, 0 },{ NA, 0 },{ NA, 0 },{ NA, 0 },{ NA, 0 },
++                    { NA, 0 },{ NA, 0 },
++                },
++
++                {   // Mode 13 (0x0b) - 12 8
++                    { M, 0 },{ M, 1 },{ M, 2 },{ M, 3 },{ M, 4 },{ RW, 0 },{ RW, 1 },{ RW, 2 },{ RW, 3 },{ RW, 4 },
++                    { RW, 5 },{ RW, 6 },{ RW, 7 },{ RW, 8 },{ RW, 9 },{ GW, 0 },{ GW, 1 },{ GW, 2 },{ GW, 3 },{ GW, 4 },
++                    { GW, 5 },{ GW, 6 },{ GW, 7 },{ GW, 8 },{ GW, 9 },{ BW, 0 },{ BW, 1 },{ BW, 2 },{ BW, 3 },{ BW, 4 },
++                    { BW, 5 },{ BW, 6 },{ BW, 7 },{ BW, 8 },{ BW, 9 },{ RX, 0 },{ RX, 1 },{ RX, 2 },{ RX, 3 },{ RX, 4 },
++                    { RX, 5 },{ RX, 6 },{ RX, 7 },{ RW,11 },{ RW,10 },{ GX, 0 },{ GX, 1 },{ GX, 2 },{ GX, 3 },{ GX, 4 },
++                    { GX, 5 },{ GX, 6 },{ GX, 7 },{ GW,11 },{ GW,10 },{ BX, 0 },{ BX, 1 },{ BX, 2 },{ BX, 3 },{ BX, 4 },
++                    { BX, 5 },{ BX, 6 },{ BX, 7 },{ BW,11 },{ BW,10 },{ NA, 0 },{ NA, 0 },{ NA, 0 },{ NA, 0 },{ NA, 0 },
++                    { NA, 0 },{ NA, 0 },{ NA, 0 },{ NA, 0 },{ NA, 0 },{ NA, 0 },{ NA, 0 },{ NA, 0 },{ NA, 0 },{ NA, 0 },
++                    { NA, 0 },{ NA, 0 },
++                },
++
++                {   // Mode 14 (0x0f) - 16 4
++                    { M, 0 },{ M, 1 },{ M, 2 },{ M, 3 },{ M, 4 },{ RW, 0 },{ RW, 1 },{ RW, 2 },{ RW, 3 },{ RW, 4 },
++                    { RW, 5 },{ RW, 6 },{ RW, 7 },{ RW, 8 },{ RW, 9 },{ GW, 0 },{ GW, 1 },{ GW, 2 },{ GW, 3 },{ GW, 4 },
++                    { GW, 5 },{ GW, 6 },{ GW, 7 },{ GW, 8 },{ GW, 9 },{ BW, 0 },{ BW, 1 },{ BW, 2 },{ BW, 3 },{ BW, 4 },
++                    { BW, 5 },{ BW, 6 },{ BW, 7 },{ BW, 8 },{ BW, 9 },{ RX, 0 },{ RX, 1 },{ RX, 2 },{ RX, 3 },{ RW,15 },
++                    { RW,14 },{ RW,13 },{ RW,12 },{ RW,11 },{ RW,10 },{ GX, 0 },{ GX, 1 },{ GX, 2 },{ GX, 3 },{ GW,15 },
++                    { GW,14 },{ GW,13 },{ GW,12 },{ GW,11 },{ GW,10 },{ BX, 0 },{ BX, 1 },{ BX, 2 },{ BX, 3 },{ BW,15 },
++                    { BW,14 },{ BW,13 },{ BW,12 },{ BW,11 },{ BW,10 },{ NA, 0 },{ NA, 0 },{ NA, 0 },{ NA, 0 },{ NA, 0 },
++                    { NA, 0 },{ NA, 0 },{ NA, 0 },{ NA, 0 },{ NA, 0 },{ NA, 0 },{ NA, 0 },{ NA, 0 },{ NA, 0 },{ NA, 0 },
++                    { NA, 0 },{ NA, 0 },
++                },
++            };
++        }
++
+         namespace BC7Data
+         {
+             enum AlphaMode
+@@ -2998,9 +3197,9 @@ void cvtt::Internal::BC6HComputer::Pack(uint32_t flags, const PixelBlockF16* inp
+ 
+         const BC7Data::BC6HModeInfo& modeInfo = BC7Data::g_hdrModes[mode];
+ 
+-        BC6H_IO::WriteFunc_t writeFunc = BC6H_IO::g_writeFuncs[mode];
++        const BC6HData::ModeDescriptor *desc = BC6HData::g_modeDescriptors[mode];
+ 
+-        const int headerBits = modeInfo.m_partitioned ? 82 : 65;
++        const size_t headerBits = modeInfo.m_partitioned ? 82 : 65;
+ 
+         for (int subset = 0; subset < 2; subset++)
+         {
+@@ -3017,16 +3216,58 @@ void cvtt::Internal::BC6HComputer::Pack(uint32_t flags, const PixelBlockF16* inp
+         uint16_t modeID = modeInfo.m_modeID;
+ 
+         PackingVector pv;
++        pv.Init();
+ 
+-        {
+-            uint32_t header[3];
+-            writeFunc(header, modeID, partition,
+-                eps[0][0][0], eps[0][1][0], eps[1][0][0], eps[1][1][0],
+-                eps[0][0][1], eps[0][1][1], eps[1][0][1], eps[1][1][1],
+-                eps[0][0][2], eps[0][1][2], eps[1][0][2], eps[1][1][2]
+-            );
+-
+-            pv.InitPacked(header, headerBits);
++        for (size_t i = 0; i < headerBits; i++) {
++            int32_t codedValue = 0;
++            switch (desc[i].m_eField) {
++                case BC6HData::M:
++                    codedValue = modeID;
++                    break;
++                case BC6HData::D:
++                    codedValue = partition;
++                    break;
++                case BC6HData::RW:
++                    codedValue = eps[0][0][0];
++                    break;
++                case BC6HData::RX:
++                    codedValue = eps[0][1][0];
++                    break;
++                case BC6HData::RY:
++                    codedValue = eps[1][0][0];
++                    break;
++                case BC6HData::RZ:
++                    codedValue = eps[1][1][0];
++                    break;
++                case BC6HData::GW:
++                    codedValue = eps[0][0][1];
++                    break;
++                case BC6HData::GX:
++                    codedValue = eps[0][1][1];
++                    break;
++                case BC6HData::GY:
++                    codedValue = eps[1][0][1];
++                    break;
++                case BC6HData::GZ:
++                    codedValue = eps[1][1][1];
++                    break;
++                case BC6HData::BW:
++                    codedValue = eps[0][0][2];
++                    break;
++                case BC6HData::BX:
++                    codedValue = eps[0][1][2];
++                    break;
++                case BC6HData::BY:
++                    codedValue = eps[1][0][2];
++                    break;
++                case BC6HData::BZ:
++                    codedValue = eps[1][1][2];
++                    break;
++                default:
++                    assert(false);
++                    break;
++            }
++            pv.Pack(static_cast<uint16_t>((codedValue >> desc[i].m_uBit) & 1), 1);
+         }
+ 
+         int fixupIndex1 = 0;
+@@ -3058,11 +3299,14 @@ void cvtt::Internal::BC6HComputer::SignExtendSingle(int &v, int bits)
+ 
+ void cvtt::Internal::BC6HComputer::UnpackOne(PixelBlockF16 &output, const uint8_t *pBC, bool isSigned)
+ {
++    UnpackingVector pv;
++    pv.Init(pBC);
++
+     int numModeBits = 2;
+-    int modeBits = pBC[0] & 0x3;
++    int modeBits = pv.Unpack(2);
+     if (modeBits != 0 && modeBits != 1)
+     {
+-        modeBits = pBC[0] & 0x1f;
++        modeBits |= pv.Unpack(3) << 2;
+         numModeBits += 3;
+     }
+ 
+@@ -3088,10 +3332,10 @@ void cvtt::Internal::BC6HComputer::UnpackOne(PixelBlockF16 &output, const uint8_
+     }
+ 
+     const BC7Data::BC6HModeInfo& modeInfo = BC7Data::g_hdrModes[mode];
+-    const int headerBits = modeInfo.m_partitioned ? 82 : 65;
+-    const BC6H_IO::ReadFunc_t readFunc = BC6H_IO::g_readFuncs[mode];
++    const size_t headerBits = modeInfo.m_partitioned ? 82 : 65;
++    const BC6HData::ModeDescriptor *desc = BC6HData::g_modeDescriptors[mode];
+ 
+-    uint16_t partition = 0;
++    int32_t partition = 0;
+     int32_t eps[2][2][3];
+ 
+     for (int subset = 0; subset < 2; subset++)
+@@ -3099,24 +3343,55 @@ void cvtt::Internal::BC6HComputer::UnpackOne(PixelBlockF16 &output, const uint8_
+             for (int ch = 0; ch < 3; ch++)
+                 eps[subset][epi][ch] = 0;
+ 
+-    UnpackingVector pv;
+-    pv.Init(pBC);
+-
+-    {
+-        uint32_t header[3];
+-        uint16_t codedEPs[2][2][3];
+-        pv.UnpackStart(header, headerBits);
++    for (size_t i = numModeBits; i < headerBits; i++) {
++        int32_t *pCodedValue = NULL;
+ 
+-        readFunc(header, partition,
+-            codedEPs[0][0][0], codedEPs[0][1][0], codedEPs[1][0][0], codedEPs[1][1][0],
+-            codedEPs[0][0][1], codedEPs[0][1][1], codedEPs[1][0][1], codedEPs[1][1][1],
+-            codedEPs[0][0][2], codedEPs[0][1][2], codedEPs[1][0][2], codedEPs[1][1][2]
+-        );
++        switch (desc[i].m_eField) {
++            case BC6HData::D:
++                pCodedValue = &partition;
++                break;
++            case BC6HData::RW:
++                pCodedValue = &eps[0][0][0];
++                break;
++            case BC6HData::RX:
++                pCodedValue = &eps[0][1][0];
++                break;
++            case BC6HData::RY:
++                pCodedValue = &eps[1][0][0];
++                break;
++            case BC6HData::RZ:
++                pCodedValue = &eps[1][1][0];
++                break;
++            case BC6HData::GW:
++                pCodedValue = &eps[0][0][1];
++                break;
++            case BC6HData::GX:
++                pCodedValue = &eps[0][1][1];
++                break;
++            case BC6HData::GY:
++                pCodedValue = &eps[1][0][1];
++                break;
++            case BC6HData::GZ:
++                pCodedValue = &eps[1][1][1];
++                break;
++            case BC6HData::BW:
++                pCodedValue = &eps[0][0][2];
++                break;
++            case BC6HData::BX:
++                pCodedValue = &eps[0][1][2];
++                break;
++            case BC6HData::BY:
++                pCodedValue = &eps[1][0][2];
++                break;
++            case BC6HData::BZ:
++                pCodedValue = &eps[1][1][2];
++                break;
++            default:
++                assert(false);
++                break;
++        }
+ 
+-        for (int subset = 0; subset < 2; subset++)
+-            for (int epi = 0; epi < 2; epi++)
+-                for (int ch = 0; ch < 3; ch++)
+-                    eps[subset][epi][ch] = codedEPs[subset][epi][ch];
++        (*pCodedValue) |= pv.Unpack(1) << desc[i].m_uBit;
+     }
+ 
+     uint16_t modeID = modeInfo.m_modeID;
