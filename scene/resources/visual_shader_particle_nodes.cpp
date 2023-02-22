@@ -1463,7 +1463,7 @@ String VisualShaderNodeParticleOutput::generate_code(Shader::Mode p_mode, Visual
 
 		if (shader_type == VisualShader::TYPE_PROCESS || shader_type == VisualShader::TYPE_COLLIDE) {
 			code += tab + "CUSTOM.y += DELTA / LIFETIME;\n\n";
-			code += tab + "if (CUSTOM.y / CUSTOM.w > 1.0) ACTIVE = false;\n\n";
+			code += tab + "if (CUSTOM.y > CUSTOM.w) ACTIVE = false;\n\n";
 		}
 
 		if (shader_type == VisualShader::TYPE_START || shader_type == VisualShader::TYPE_PROCESS || shader_type == VisualShader::TYPE_COLLIDE) {
