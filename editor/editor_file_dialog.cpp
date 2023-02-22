@@ -1015,6 +1015,19 @@ void EditorFileDialog::add_filter(const String &p_filter, const String &p_descri
 	invalidate();
 }
 
+void EditorFileDialog::set_filters(const Vector<String> &p_filters) {
+	if (filters == p_filters) {
+		return;
+	}
+	filters = p_filters;
+	update_filters();
+	invalidate();
+}
+
+Vector<String> EditorFileDialog::get_filters() const {
+	return filters;
+}
+
 String EditorFileDialog::get_current_dir() const {
 	return dir_access->get_current_dir();
 }
@@ -1570,6 +1583,8 @@ void EditorFileDialog::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("clear_filters"), &EditorFileDialog::clear_filters);
 	ClassDB::bind_method(D_METHOD("add_filter", "filter", "description"), &EditorFileDialog::add_filter, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("set_filters", "filters"), &EditorFileDialog::set_filters);
+	ClassDB::bind_method(D_METHOD("get_filters"), &EditorFileDialog::get_filters);
 	ClassDB::bind_method(D_METHOD("get_current_dir"), &EditorFileDialog::get_current_dir);
 	ClassDB::bind_method(D_METHOD("get_current_file"), &EditorFileDialog::get_current_file);
 	ClassDB::bind_method(D_METHOD("get_current_path"), &EditorFileDialog::get_current_path);
@@ -1579,6 +1594,7 @@ void EditorFileDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_file_mode", "mode"), &EditorFileDialog::set_file_mode);
 	ClassDB::bind_method(D_METHOD("get_file_mode"), &EditorFileDialog::get_file_mode);
 	ClassDB::bind_method(D_METHOD("get_vbox"), &EditorFileDialog::get_vbox);
+	ClassDB::bind_method(D_METHOD("get_line_edit"), &EditorFileDialog::get_line_edit);
 	ClassDB::bind_method(D_METHOD("set_access", "access"), &EditorFileDialog::set_access);
 	ClassDB::bind_method(D_METHOD("get_access"), &EditorFileDialog::get_access);
 	ClassDB::bind_method(D_METHOD("set_show_hidden_files", "show"), &EditorFileDialog::set_show_hidden_files);
@@ -1605,6 +1621,7 @@ void EditorFileDialog::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_dir", PROPERTY_HINT_DIR, "", PROPERTY_USAGE_NONE), "set_current_dir", "get_current_dir");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_file", PROPERTY_HINT_FILE, "*", PROPERTY_USAGE_NONE), "set_current_file", "get_current_file");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_current_path", "get_current_path");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "filters"), "set_filters", "get_filters");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_hidden_files"), "set_show_hidden_files", "is_showing_hidden_files");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disable_overwrite_warning"), "set_disable_overwrite_warning", "is_overwrite_warning_disabled");
 
