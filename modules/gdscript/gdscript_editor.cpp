@@ -33,6 +33,7 @@
 #include "core/config/engine.h"
 #include "core/core_constants.h"
 #include "core/io/file_access.h"
+#include "core/math/expression.h"
 #include "gdscript_analyzer.h"
 #include "gdscript_compiler.h"
 #include "gdscript_parser.h"
@@ -389,7 +390,24 @@ void GDScriptLanguage::debug_get_globals(List<String> *p_globals, List<Variant> 
 }
 
 String GDScriptLanguage::debug_parse_stack_level_expression(int p_level, const String &p_expression, int p_max_subitems, int p_max_depth) {
-	return "";
+	List<String> names;
+	List<Variant> values;
+	debug_get_stack_level_locals(p_level, &names, &values, p_max_subitems, p_max_depth);
+
+	Vector<String> name_vector;
+	for (int i = 0; i < names.size(); ++i) {
+		name_vector.push_back(names[i]);
+	}
+
+	Array value_array;
+	for (int i = 0; i < values.size(); ++i) {
+		value_array.push_back(values[i]);
+	}
+
+	Expression expression;
+	expression.parse(p_expression, name_vector);
+	Variant return_val = expression.execute(value_array, debug_get_stack_level_instance(p_level)->get_owner());
+	return String(return_val);
 }
 
 void GDScriptLanguage::get_recognized_extensions(List<String> *p_extensions) const {

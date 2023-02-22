@@ -211,7 +211,7 @@ void LocalDebugger::debug(bool p_can_continue, bool p_is_error_breakpoint) {
 			if (line.get_slice_count(" ") <= 1) {
 				print_line("Usage: print <expre>");
 			} else {
-				String expr = line.get_slicec(' ', 2);
+				String expr = line.get_slicec(' ', 1);
 				String res = script_lang->debug_parse_stack_level_expression(current_frame, expr);
 				print_line(res);
 			}
