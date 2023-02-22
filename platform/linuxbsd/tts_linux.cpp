@@ -35,11 +35,6 @@
 
 TTS_Linux *TTS_Linux::singleton = nullptr;
 
-void TTS_Linux::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_speech_event", "msg_id", "client_id", "type"), &TTS_Linux::_speech_event);
-	ClassDB::bind_method(D_METHOD("_speech_index_mark", "msg_id", "client_id", "type", "index_mark"), &TTS_Linux::_speech_index_mark);
-}
-
 void TTS_Linux::speech_init_thread_func(void *p_userdata) {
 	TTS_Linux *tts = (TTS_Linux *)p_userdata;
 	if (tts) {
@@ -82,7 +77,7 @@ void TTS_Linux::speech_init_thread_func(void *p_userdata) {
 void TTS_Linux::speech_event_index_mark(size_t p_msg_id, size_t p_client_id, SPDNotificationType p_type, char *p_index_mark) {
 	TTS_Linux *tts = TTS_Linux::get_singleton();
 	if (tts) {
-		tts->call_deferred(SNAME("_speech_index_mark"), p_msg_id, p_client_id, (int)p_type, String::utf8(p_index_mark));
+		callable_mp(tts, &TTS_Linux::_speech_index_mark).call_deferred(p_msg_id, p_client_id, (int)p_type, String::utf8(p_index_mark));
 	}
 }
 
@@ -97,7 +92,7 @@ void TTS_Linux::_speech_index_mark(size_t p_msg_id, size_t p_client_id, int p_ty
 void TTS_Linux::speech_event_callback(size_t p_msg_id, size_t p_client_id, SPDNotificationType p_type) {
 	TTS_Linux *tts = TTS_Linux::get_singleton();
 	if (tts) {
-		tts->call_deferred(SNAME("_speech_event"), p_msg_id, p_client_id, (int)p_type);
+		callable_mp(tts, &TTS_Linux::_speech_event).call_deferred(p_msg_id, p_client_id, (int)p_type);
 	}
 }
 
