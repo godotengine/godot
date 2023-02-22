@@ -125,6 +125,7 @@ void EditorResourcePreview::_preview_ready(const String &p_str, const Ref<Textur
 	}
 
 	MessageQueue::get_singleton()->push_call(id, p_func, path, p_texture, p_small_texture, p_ud);
+	exit.set();
 }
 
 void EditorResourcePreview::_generate_preview(Ref<ImageTexture> &r_texture, Ref<ImageTexture> &r_small_texture, const QueueItem &p_item, const String &cache_base) {
