@@ -506,7 +506,11 @@ void Polygon3DEditor::edit(Node *p_node) {
 		wip.clear();
 		wip_active = false;
 		edited_point = -1;
-		p_node->add_child(imgeom);
+		if (imgeom->get_parent()) {
+			imgeom->reparent(p_node, false);
+		} else {
+			p_node->add_child(imgeom);
+		}
 		_polygon_draw();
 		set_process(true);
 		prev_depth = -1;
