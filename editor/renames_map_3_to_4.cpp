@@ -1174,7 +1174,7 @@ const char *RenamesMap3To4::gdscript_properties_renames[][2] = {
 	{ "unit_db", "volume_db" }, // AudioStreamPlayer3D
 	{ "unit_offset", "progress_ratio" }, // PathFollow2D, PathFollow3D
 	{ "vseparation", "v_separation" }, // Theme
-	{ "frames", "sprite_frames" }, // AnimatedSprite2D, AnimatedSprite3D
+	// { "frames", "sprite_frames" }, // AnimatedSprite2D, AnimatedSprite3D -- GH-73696
 
 	{ nullptr, nullptr },
 };
