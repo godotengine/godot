@@ -46,7 +46,6 @@
 #endif
 
 class TTS_Linux : public Object {
-	GDCLASS(TTS_Linux, Object);
 	_THREAD_SAFE_CLASS_
 
 	List<DisplayServer::TTSUtterance> queue;
@@ -65,7 +64,6 @@ class TTS_Linux : public Object {
 	static TTS_Linux *singleton;
 
 protected:
-	static void _bind_methods();
 	void _speech_event(size_t p_msg_id, size_t p_client_id, int p_type);
 	void _speech_index_mark(size_t p_msg_id, size_t p_client_id, int p_type, const String &p_index_mark);
 
