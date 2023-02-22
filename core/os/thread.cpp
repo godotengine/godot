@@ -50,8 +50,8 @@ void Thread::_set_platform_functions(const PlatformFunctions &p_functions) {
 	platform_functions = p_functions;
 }
 
-void Thread::callback(Thread *p_self, const Settings &p_settings, Callback p_callback, void *p_userdata) {
-	Thread::caller_id = _thread_id_hash(p_self->thread.get_id());
+void Thread::callback(ID p_caller_id, const Settings &p_settings, Callback p_callback, void *p_userdata) {
+	Thread::caller_id = p_caller_id;
 	if (platform_functions.set_priority) {
 		platform_functions.set_priority(p_settings.priority);
 	}
@@ -79,7 +79,7 @@ void Thread::start(Thread::Callback p_callback, void *p_user, const Settings &p_
 		std::thread empty_thread;
 		thread.swap(empty_thread);
 	}
-	std::thread new_thread(&Thread::callback, this, p_settings, p_callback, p_user);
+	std::thread new_thread(&Thread::callback, _thread_id_hash(thread.get_id()), p_settings, p_callback, p_user);
 	thread.swap(new_thread);
 	id = _thread_id_hash(thread.get_id());
 }
