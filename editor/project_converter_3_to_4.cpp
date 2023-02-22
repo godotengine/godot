@@ -410,6 +410,12 @@ bool ProjectConverter3To4::convert() {
 				rename_common(RenamesMap3To4::input_map_renames, reg_container.input_map_regexes, lines);
 			} else if (file_name.ends_with(".csproj")) {
 				// TODO
+			} else if (file_name.ends_with(".import")) {
+				for (int x = 0; x < lines.size(); x++) {
+					if (lines[x].contains("nodes/root_type=\"Spatial\"")) {
+						lines.set(x, "nodes/root_type=\"Node3D\"");
+					}
+				}
 			} else {
 				ERR_PRINT(file_name + " is not supported!");
 				continue;
@@ -636,7 +642,7 @@ Vector<String> ProjectConverter3To4::check_for_files() {
 			String file_name = dir->_get_next();
 
 			while (file_name != "") {
-				if (file_name == ".git" || file_name == ".import" || file_name == ".godot") {
+				if (file_name == ".git" || file_name == ".godot") {
 					file_name = dir->_get_next();
 					continue;
 				}
@@ -644,7 +650,7 @@ Vector<String> ProjectConverter3To4::check_for_files() {
 					directories_to_check.append(current_dir.path_join(file_name) + "/");
 				} else {
 					bool proper_extension = false;
-					if (file_name.ends_with(".gd") || file_name.ends_with(".shader") || file_name.ends_with(".gdshader") || file_name.ends_with(".tscn") || file_name.ends_with(".tres") || file_name.ends_with(".godot") || file_name.ends_with(".cs") || file_name.ends_with(".csproj"))
+					if (file_name.ends_with(".gd") || file_name.ends_with(".shader") || file_name.ends_with(".gdshader") || file_name.ends_with(".tscn") || file_name.ends_with(".tres") || file_name.ends_with(".godot") || file_name.ends_with(".cs") || file_name.ends_with(".csproj") || file_name.ends_with(".import"))
 						proper_extension = true;
 
 					if (proper_extension) {
