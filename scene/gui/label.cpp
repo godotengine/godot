@@ -209,7 +209,10 @@ bool Label::_shape() {
 
 				// Fill after min_size calculation.
 
-				int visible_lines = get_visible_line_count();
+				int visible_lines = lines_rid.size();
+				if (max_lines_visible >= 0 && visible_lines > max_lines_visible) {
+					visible_lines = max_lines_visible;
+				}
 				if (autowrap_mode != TextServer::AUTOWRAP_OFF) {
 					bool lines_hidden = visible_lines > 0 && visible_lines < lines_rid.size();
 					if (lines_hidden) {
