@@ -908,7 +908,9 @@ public:
 			default_renderer_type = EditorSettings::get_singleton()->get_setting("project_manager/default_renderer");
 		}
 
-		Button *rs_button = memnew(CheckBox);
+		Button *rs_button = nullptr;
+#ifndef WEB_ENABLED
+		rs_button = memnew(CheckBox);
 		rs_button->set_button_group(renderer_button_group);
 		rs_button->set_text(TTR("Forward+"));
 		rs_button->set_meta(SNAME("rendering_method"), "forward_plus");
@@ -927,6 +929,7 @@ public:
 		if (default_renderer_type == "mobile") {
 			rs_button->set_pressed(true);
 		}
+#endif
 
 		rs_button = memnew(CheckBox);
 		rs_button->set_button_group(renderer_button_group);
