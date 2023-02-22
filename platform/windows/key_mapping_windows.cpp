@@ -257,8 +257,8 @@ void KeyMappingWindows::initialize() {
 	scansym_map[0x17] = Key::I;
 	scansym_map[0x18] = Key::O;
 	scansym_map[0x19] = Key::P;
-	scansym_map[0x1A] = Key::BRACELEFT;
-	scansym_map[0x1B] = Key::BRACERIGHT;
+	scansym_map[0x1A] = Key::BRACKETLEFT;
+	scansym_map[0x1B] = Key::BRACKETRIGHT;
 	scansym_map[0x1C] = Key::ENTER;
 	scansym_map[0x1D] = Key::CTRL;
 	scansym_map[0x1E] = Key::A;

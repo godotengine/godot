@@ -98,10 +98,10 @@ void KeyMappingMacOS::initialize() {
 	keysym_map[0x1b] = Key::MINUS;
 	keysym_map[0x1c] = Key::KEY_8;
 	keysym_map[0x1d] = Key::KEY_0;
-	keysym_map[0x1e] = Key::BRACERIGHT;
+	keysym_map[0x1e] = Key::BRACKETRIGHT;
 	keysym_map[0x1f] = Key::O;
 	keysym_map[0x20] = Key::U;
-	keysym_map[0x21] = Key::BRACELEFT;
+	keysym_map[0x21] = Key::BRACKETLEFT;
 	keysym_map[0x22] = Key::I;
 	keysym_map[0x23] = Key::P;
 	keysym_map[0x24] = Key::ENTER;
