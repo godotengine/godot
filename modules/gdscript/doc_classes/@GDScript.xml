@@ -126,6 +126,20 @@
 			<param index="0" name="value" type="Variant" />
 			<param index="1" name="type" type="Variant" />
 			<description>
+				Returns [code]true[/code] if [param value] is an instance of [param type]. The [param type] value must be one of the following:
+				- A constant from the [enum Variant.Type] enumeration, for example [constant TYPE_INT].
+				- An [Object]-derived class which exists in [ClassDB], for example [Node].
+				- A [Script] (you can use any class, including inner one).
+				Unlike the right operand of the [code]is[/code] operator, [param type] can be a non-constant value. The [code]is[/code] operator supports more features (such as typed arrays) and is more performant. Use the operator instead of this method if you do not need dynamic type checking.
+				Examples:
+				[codeblock]
+				print(is_instance_of(a, TYPE_INT))
+				print(is_instance_of(a, Node))
+				print(is_instance_of(a, MyClass))
+				print(is_instance_of(a, MyClass.InnerClass))
+				[/codeblock]
+				[b]Note:[/b] If [param value] and/or [param type] are freed objects (see [method @GlobalScope.is_instance_valid]), or [param type] is not one of the above options, this method will raise an runtime error.
+				See also [method @GlobalScope.typeof], [method type_exists], [method Array.is_same_typed] (and other [Array] methods).
 			</description>
 		</method>
 		<method name="len">
