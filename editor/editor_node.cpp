@@ -3984,6 +3984,15 @@ HashMap<StringName, Variant> EditorNode::get_modified_properties_for_node(Node *
 	return modified_property_map;
 }
 
+void EditorNode::update_ownership_table_for_addition_node_ancestors(Node *p_current_node, HashMap<Node *, Node *> &p_ownership_table) {
+	p_ownership_table.insert(p_current_node, p_current_node->get_owner());
+
+	for (int i = 0; i < p_current_node->get_child_count(); i++) {
+		Node *child = p_current_node->get_child(i);
+		update_ownership_table_for_addition_node_ancestors(child, p_ownership_table);
+	}
+}
+
 void EditorNode::update_diff_data_for_node(
 		Node *p_edited_scene,
 		Node *p_root,
@@ -4079,6 +4088,16 @@ void EditorNode::update_diff_data_for_node(
 		if (node_3d) {
 			new_additive_node_entry.transform_3d = node_3d->get_relative_transform(node_3d->get_parent());
 		}
+
+		// Gathers the ownership of all ancestor nodes for later use.
+		HashMap<Node *, Node *> ownership_table;
+		for (int i = 0; i < p_node->get_child_count(); i++) {
+			Node *child = p_node->get_child(i);
+			update_ownership_table_for_addition_node_ancestors(child, ownership_table);
+		}
+
+		new_additive_node_entry.ownership_table = ownership_table;
+
 		p_addition_list.push_back(new_additive_node_entry);
 
 		return;
@@ -6202,6 +6221,18 @@ void EditorNode::reload_instances_with_path_in_edited_scenes(const String &p_ins
 						if (node_3d) {
 							node_3d->set_transform(additive_node_entry.transform_3d);
 						}
+					}
+
+					// Restore the ownership of its ancestors
+					for (KeyValue<Node *, Node *> &E : additive_node_entry.ownership_table) {
+						Node *current_ancestor = E.key;
+						Node *ancestor_owner = E.value;
+
+						if (ancestor_owner == original_node) {
+							ancestor_owner = instantiated_node;
+						}
+
+						current_ancestor->set_owner(ancestor_owner);
 					}
 				}
 
