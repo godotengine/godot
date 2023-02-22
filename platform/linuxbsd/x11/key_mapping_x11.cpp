@@ -217,8 +217,8 @@ void KeyMappingX11::initialize() {
 	scancode_map[0x1F] = Key::I;
 	scancode_map[0x20] = Key::O;
 	scancode_map[0x21] = Key::P;
-	scancode_map[0x22] = Key::BRACELEFT;
-	scancode_map[0x23] = Key::BRACERIGHT;
+	scancode_map[0x22] = Key::BRACKETLEFT;
+	scancode_map[0x23] = Key::BRACKETRIGHT;
 	scancode_map[0x24] = Key::ENTER;
 	scancode_map[0x25] = Key::CTRL;
 	scancode_map[0x26] = Key::A;
