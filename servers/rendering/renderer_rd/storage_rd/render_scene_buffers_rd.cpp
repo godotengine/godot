@@ -486,6 +486,11 @@ Ref<RenderBufferCustomDataRD> RenderSceneBuffersRD::get_custom_data(const String
 // Depth texture
 
 bool RenderSceneBuffersRD::has_depth_texture() {
+	if (render_target.is_null()) {
+		// not applicable when there is no render target (likely this is for a reflection probe)
+		return false;
+	}
+
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 	RID depth = texture_storage->render_target_get_override_depth(render_target);
 	if (depth.is_valid()) {
@@ -496,6 +501,11 @@ bool RenderSceneBuffersRD::has_depth_texture() {
 }
 
 RID RenderSceneBuffersRD::get_depth_texture() {
+	if (render_target.is_null()) {
+		// not applicable when there is no render target (likely this is for a reflection probe)
+		return RID();
+	}
+
 	RendererRD::TextureStorage *texture_storage = RendererRD::TextureStorage::get_singleton();
 	RID depth = texture_storage->render_target_get_override_depth(render_target);
 	if (depth.is_valid()) {
