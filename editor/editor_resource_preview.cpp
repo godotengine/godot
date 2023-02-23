@@ -424,8 +424,10 @@ void EditorResourcePreview::check_for_invalidation(const String &p_path) {
 }
 
 void EditorResourcePreview::start() {
-	ERR_FAIL_COND_MSG(thread.is_started(), "Thread already started.");
-	thread.start(_thread_func, this);
+	if (DisplayServer::get_singleton()->get_name() != "headless") {
+		ERR_FAIL_COND_MSG(thread.is_started(), "Thread already started.");
+		thread.start(_thread_func, this);
+	}
 }
 
 void EditorResourcePreview::stop() {
