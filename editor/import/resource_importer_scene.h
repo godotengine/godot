@@ -39,6 +39,7 @@
 #include "scene/resources/box_shape_3d.h"
 #include "scene/resources/capsule_shape_3d.h"
 #include "scene/resources/cylinder_shape_3d.h"
+#include "scene/resources/importer_mesh.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/shape_3d.h"
 #include "scene/resources/sphere_shape_3d.h"
@@ -298,7 +299,7 @@ public:
 	ResourceImporterScene(bool p_animation_import = false);
 
 	template <class M>
-	static Vector<Ref<Shape3D>> get_collision_shapes(const Ref<Mesh> &p_mesh, const M &p_options, float p_applied_root_scale);
+	static Vector<Ref<Shape3D>> get_collision_shapes(const Ref<ImporterMesh> &p_mesh, const M &p_options, float p_applied_root_scale);
 
 	template <class M>
 	static Transform3D get_collision_shapes_transform(const M &p_options);
@@ -314,7 +315,8 @@ public:
 };
 
 template <class M>
-Vector<Ref<Shape3D>> ResourceImporterScene::get_collision_shapes(const Ref<Mesh> &p_mesh, const M &p_options, float p_applied_root_scale) {
+Vector<Ref<Shape3D>> ResourceImporterScene::get_collision_shapes(const Ref<ImporterMesh> &p_mesh, const M &p_options, float p_applied_root_scale) {
+	ERR_FAIL_COND_V(p_mesh.is_null(), Vector<Ref<Shape3D>>());
 	ShapeType generate_shape_type = SHAPE_TYPE_DECOMPOSE_CONVEX;
 	if (p_options.has(SNAME("physics/shape_type"))) {
 		generate_shape_type = (ShapeType)p_options[SNAME("physics/shape_type")].operator int();

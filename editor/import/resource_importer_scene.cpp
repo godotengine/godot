@@ -353,13 +353,12 @@ static String _fixstr(const String &p_what, const String &p_str) {
 
 static void _pre_gen_shape_list(Ref<ImporterMesh> &mesh, Vector<Ref<Shape3D>> &r_shape_list, bool p_convex) {
 	ERR_FAIL_NULL_MSG(mesh, "Cannot generate shape list with null mesh value");
-	ERR_FAIL_NULL_MSG(mesh->get_mesh(), "Cannot generate shape list with null mesh value");
 	if (!p_convex) {
 		Ref<ConcavePolygonShape3D> shape = mesh->create_trimesh_shape();
 		r_shape_list.push_back(shape);
 	} else {
 		Vector<Ref<Shape3D>> cd;
-		cd.push_back(mesh->get_mesh()->create_convex_shape(true, /*Passing false, otherwise VHACD will be used to simplify (Decompose) the Mesh.*/ false));
+		cd.push_back(mesh->create_convex_shape(true, /*Passing false, otherwise VHACD will be used to simplify (Decompose) the Mesh.*/ false));
 		if (cd.size()) {
 			for (int i = 0; i < cd.size(); i++) {
 				r_shape_list.push_back(cd[i]);
@@ -1230,7 +1229,7 @@ Node *ResourceImporterScene::_post_fix_node(Node *p_node, Node *p_root, HashMap<
 						shapes = collision_map[m];
 					} else {
 						shapes = get_collision_shapes(
-								m->get_mesh(),
+								m,
 								node_settings,
 								p_applied_root_scale);
 					}
