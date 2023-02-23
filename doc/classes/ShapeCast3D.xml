@@ -14,7 +14,7 @@
 	<methods>
 		<method name="add_exception">
 			<return type="void" />
-			<param index="0" name="node" type="Object" />
+			<param index="0" name="node" type="CollisionObject3D" />
 			<description>
 				Adds a collision exception so the shape does not report collisions with the specified [CollisionObject3D] node.
 			</description>
@@ -108,7 +108,7 @@
 		</method>
 		<method name="remove_exception">
 			<return type="void" />
-			<param index="0" name="node" type="Object" />
+			<param index="0" name="node" type="CollisionObject3D" />
 			<description>
 				Removes a collision exception so the shape does report collisions with the specified [CollisionObject3D] node.
 			</description>
