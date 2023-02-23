@@ -86,7 +86,7 @@ int Label::get_line_height(int p_line) const {
 	}
 }
 
-bool Label::_shape() {
+void Label::_shape() {
 	Ref<StyleBox> style = theme_cache.normal_style;
 	int width = (get_size().width - style->get_minimum_size().width);
 
@@ -101,7 +101,7 @@ bool Label::_shape() {
 		}
 		const Ref<Font> &font = (settings.is_valid() && settings->get_font().is_valid()) ? settings->get_font() : theme_cache.font;
 		int font_size = settings.is_valid() ? settings->get_font_size() : theme_cache.font_size;
-		ERR_FAIL_COND_V(font.is_null(), true);
+		ERR_FAIL_COND(font.is_null());
 		String txt = (uppercase) ? TS->string_to_upper(xl_text, language) : xl_text;
 		if (visible_chars >= 0 && visible_chars_behavior == TextServer::VC_CHARS_BEFORE_SHAPING) {
 			txt = txt.substr(0, visible_chars);
@@ -121,7 +121,6 @@ bool Label::_shape() {
 		dirty = false;
 		font_dirty = false;
 		lines_dirty = true;
-		// Note for future maintainers: forgetting stable width here (e.g., setting it to -1) may fix still undiscovered bugs.
 	}
 
 	if (lines_dirty) {
@@ -129,143 +128,126 @@ bool Label::_shape() {
 			TS->free_rid(lines_rid[i]);
 		}
 		lines_rid.clear();
-	}
 
-	Size2i prev_minsize = minsize;
-	minsize = Size2();
+		BitField<TextServer::LineBreakFlag> autowrap_flags = TextServer::BREAK_MANDATORY;
+		switch (autowrap_mode) {
+			case TextServer::AUTOWRAP_WORD_SMART:
+				autowrap_flags = TextServer::BREAK_WORD_BOUND | TextServer::BREAK_ADAPTIVE | TextServer::BREAK_MANDATORY;
+				break;
+			case TextServer::AUTOWRAP_WORD:
+				autowrap_flags = TextServer::BREAK_WORD_BOUND | TextServer::BREAK_MANDATORY;
+				break;
+			case TextServer::AUTOWRAP_ARBITRARY:
+				autowrap_flags = TextServer::BREAK_GRAPHEME_BOUND | TextServer::BREAK_MANDATORY;
+				break;
+			case TextServer::AUTOWRAP_OFF:
+				break;
+		}
+		autowrap_flags = autowrap_flags | TextServer::BREAK_TRIM_EDGE_SPACES;
 
-	bool can_process_lines = false;
-	if (xl_text.length() == 0) {
-		can_process_lines = true;
-		lines_dirty = false;
-	} else {
-		// With autowrap on or off with trimming enabled, we won't compute the minimum size until width is stable
-		// (two shape requests in a row with the same width.) This avoids situations in which the initial width is
-		// very narrow and the label would break text into many very short lines, causing a very tall label that can
-		// leave a deformed container. In the remaining case (namely, autowrap off and no trimming), the label is
-		// free to dictate its own width, something that will be taken advtantage of.
-		bool can_dictate_width = autowrap_mode == TextServer::AUTOWRAP_OFF && overrun_behavior == TextServer::OVERRUN_NO_TRIMMING;
-		bool is_width_stable = get_size().width == stable_width;
-		can_process_lines = can_dictate_width || is_width_stable;
-		stable_width = get_size().width;
-
-		if (can_process_lines) {
-			if (lines_dirty) {
-				BitField<TextServer::LineBreakFlag> autowrap_flags = TextServer::BREAK_MANDATORY;
-				switch (autowrap_mode) {
-					case TextServer::AUTOWRAP_WORD_SMART:
-						autowrap_flags = TextServer::BREAK_WORD_BOUND | TextServer::BREAK_ADAPTIVE | TextServer::BREAK_MANDATORY;
-						break;
-					case TextServer::AUTOWRAP_WORD:
-						autowrap_flags = TextServer::BREAK_WORD_BOUND | TextServer::BREAK_MANDATORY;
-						break;
-					case TextServer::AUTOWRAP_ARBITRARY:
-						autowrap_flags = TextServer::BREAK_GRAPHEME_BOUND | TextServer::BREAK_MANDATORY;
-						break;
-					case TextServer::AUTOWRAP_OFF:
-						break;
-				}
-				autowrap_flags = autowrap_flags | TextServer::BREAK_TRIM_EDGE_SPACES;
-
-				PackedInt32Array line_breaks = TS->shaped_text_get_line_breaks(text_rid, width, 0, autowrap_flags);
-				for (int i = 0; i < line_breaks.size(); i = i + 2) {
-					RID line = TS->shaped_text_substr(text_rid, line_breaks[i], line_breaks[i + 1] - line_breaks[i]);
-					lines_rid.push_back(line);
-				}
-			}
-
-			if (can_dictate_width) {
-				for (int i = 0; i < lines_rid.size(); i++) {
-					if (minsize.width < TS->shaped_text_get_size(lines_rid[i]).x) {
-						minsize.width = TS->shaped_text_get_size(lines_rid[i]).x;
-					}
-				}
-
-				width = (minsize.width - style->get_minimum_size().width);
-			}
-
-			if (lines_dirty) {
-				BitField<TextServer::TextOverrunFlag> overrun_flags = TextServer::OVERRUN_NO_TRIM;
-				switch (overrun_behavior) {
-					case TextServer::OVERRUN_TRIM_WORD_ELLIPSIS:
-						overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
-						overrun_flags.set_flag(TextServer::OVERRUN_TRIM_WORD_ONLY);
-						overrun_flags.set_flag(TextServer::OVERRUN_ADD_ELLIPSIS);
-						break;
-					case TextServer::OVERRUN_TRIM_ELLIPSIS:
-						overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
-						overrun_flags.set_flag(TextServer::OVERRUN_ADD_ELLIPSIS);
-						break;
-					case TextServer::OVERRUN_TRIM_WORD:
-						overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
-						overrun_flags.set_flag(TextServer::OVERRUN_TRIM_WORD_ONLY);
-						break;
-					case TextServer::OVERRUN_TRIM_CHAR:
-						overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
-						break;
-					case TextServer::OVERRUN_NO_TRIMMING:
-						break;
-				}
-
-				// Fill after min_size calculation.
-
-				int visible_lines = lines_rid.size();
-				if (max_lines_visible >= 0 && visible_lines > max_lines_visible) {
-					visible_lines = max_lines_visible;
-				}
-				if (autowrap_mode != TextServer::AUTOWRAP_OFF) {
-					bool lines_hidden = visible_lines > 0 && visible_lines < lines_rid.size();
-					if (lines_hidden) {
-						overrun_flags.set_flag(TextServer::OVERRUN_ENFORCE_ELLIPSIS);
-					}
-					if (horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL) {
-						for (int i = 0; i < lines_rid.size(); i++) {
-							if (i < visible_lines - 1 || lines_rid.size() == 1) {
-								TS->shaped_text_fit_to_width(lines_rid[i], width);
-							} else if (i == (visible_lines - 1)) {
-								TS->shaped_text_overrun_trim_to_width(lines_rid[visible_lines - 1], width, overrun_flags);
-							}
-						}
-					} else if (lines_hidden) {
-						TS->shaped_text_overrun_trim_to_width(lines_rid[visible_lines - 1], width, overrun_flags);
-					}
-				} else {
-					// Autowrap disabled.
-					for (int i = 0; i < lines_rid.size(); i++) {
-						if (horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL) {
-							TS->shaped_text_fit_to_width(lines_rid[i], width);
-							overrun_flags.set_flag(TextServer::OVERRUN_JUSTIFICATION_AWARE);
-							TS->shaped_text_overrun_trim_to_width(lines_rid[i], width, overrun_flags);
-							TS->shaped_text_fit_to_width(lines_rid[i], width, TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_CONSTRAIN_ELLIPSIS);
-						} else {
-							TS->shaped_text_overrun_trim_to_width(lines_rid[i], width, overrun_flags);
-						}
-					}
-				}
-
-				int last_line = MIN(lines_rid.size(), visible_lines + lines_skipped);
-				int line_spacing = settings.is_valid() ? settings->get_line_spacing() : theme_cache.line_spacing;
-				for (int64_t i = lines_skipped; i < last_line; i++) {
-					minsize.height += TS->shaped_text_get_size(lines_rid[i]).y + line_spacing;
-				}
-
-				lines_dirty = false;
-			}
-		} else {
-			callable_mp(this, &Label::_shape).call_deferred();
+		PackedInt32Array line_breaks = TS->shaped_text_get_line_breaks(text_rid, width, 0, autowrap_flags);
+		for (int i = 0; i < line_breaks.size(); i = i + 2) {
+			RID line = TS->shaped_text_substr(text_rid, line_breaks[i], line_breaks[i + 1] - line_breaks[i]);
+			lines_rid.push_back(line);
 		}
 	}
 
-	if (draw_pending) {
-		queue_redraw();
-		draw_pending = false;
+	if (xl_text.length() == 0) {
+		minsize = Size2(1, get_line_height());
+		return;
 	}
 
-	if (minsize != prev_minsize) {
+	if (autowrap_mode == TextServer::AUTOWRAP_OFF) {
+		minsize.width = 0.0f;
+		for (int i = 0; i < lines_rid.size(); i++) {
+			if (minsize.width < TS->shaped_text_get_size(lines_rid[i]).x) {
+				minsize.width = TS->shaped_text_get_size(lines_rid[i]).x;
+			}
+		}
+	}
+
+	if (lines_dirty) {
+		BitField<TextServer::TextOverrunFlag> overrun_flags = TextServer::OVERRUN_NO_TRIM;
+		switch (overrun_behavior) {
+			case TextServer::OVERRUN_TRIM_WORD_ELLIPSIS:
+				overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
+				overrun_flags.set_flag(TextServer::OVERRUN_TRIM_WORD_ONLY);
+				overrun_flags.set_flag(TextServer::OVERRUN_ADD_ELLIPSIS);
+				break;
+			case TextServer::OVERRUN_TRIM_ELLIPSIS:
+				overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
+				overrun_flags.set_flag(TextServer::OVERRUN_ADD_ELLIPSIS);
+				break;
+			case TextServer::OVERRUN_TRIM_WORD:
+				overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
+				overrun_flags.set_flag(TextServer::OVERRUN_TRIM_WORD_ONLY);
+				break;
+			case TextServer::OVERRUN_TRIM_CHAR:
+				overrun_flags.set_flag(TextServer::OVERRUN_TRIM);
+				break;
+			case TextServer::OVERRUN_NO_TRIMMING:
+				break;
+		}
+
+		// Fill after min_size calculation.
+
+		if (autowrap_mode != TextServer::AUTOWRAP_OFF) {
+			int visible_lines = get_visible_line_count();
+			bool lines_hidden = visible_lines > 0 && visible_lines < lines_rid.size();
+			if (lines_hidden) {
+				overrun_flags.set_flag(TextServer::OVERRUN_ENFORCE_ELLIPSIS);
+			}
+			if (horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL) {
+				for (int i = 0; i < lines_rid.size(); i++) {
+					if (i < visible_lines - 1 || lines_rid.size() == 1) {
+						TS->shaped_text_fit_to_width(lines_rid[i], width);
+					} else if (i == (visible_lines - 1)) {
+						TS->shaped_text_overrun_trim_to_width(lines_rid[visible_lines - 1], width, overrun_flags);
+					}
+				}
+			} else if (lines_hidden) {
+				TS->shaped_text_overrun_trim_to_width(lines_rid[visible_lines - 1], width, overrun_flags);
+			}
+		} else {
+			// Autowrap disabled.
+			for (int i = 0; i < lines_rid.size(); i++) {
+				if (horizontal_alignment == HORIZONTAL_ALIGNMENT_FILL) {
+					TS->shaped_text_fit_to_width(lines_rid[i], width);
+					overrun_flags.set_flag(TextServer::OVERRUN_JUSTIFICATION_AWARE);
+					TS->shaped_text_overrun_trim_to_width(lines_rid[i], width, overrun_flags);
+					TS->shaped_text_fit_to_width(lines_rid[i], width, TextServer::JUSTIFICATION_WORD_BOUND | TextServer::JUSTIFICATION_KASHIDA | TextServer::JUSTIFICATION_CONSTRAIN_ELLIPSIS);
+				} else {
+					TS->shaped_text_overrun_trim_to_width(lines_rid[i], width, overrun_flags);
+				}
+			}
+		}
+		lines_dirty = false;
+	}
+
+	_update_visible();
+
+	if (autowrap_mode == TextServer::AUTOWRAP_OFF || !clip || overrun_behavior == TextServer::OVERRUN_NO_TRIMMING) {
 		update_minimum_size();
 	}
+}
 
-	return can_process_lines;
+void Label::_update_visible() {
+	int line_spacing = settings.is_valid() ? settings->get_line_spacing() : theme_cache.line_spacing;
+	Ref<StyleBox> style = theme_cache.normal_style;
+	int lines_visible = lines_rid.size();
+
+	if (max_lines_visible >= 0 && lines_visible > max_lines_visible) {
+		lines_visible = max_lines_visible;
+	}
+
+	minsize.height = 0;
+	int last_line = MIN(lines_rid.size(), lines_visible + lines_skipped);
+	for (int64_t i = lines_skipped; i < last_line; i++) {
+		minsize.height += TS->shaped_text_get_size(lines_rid[i]).y + line_spacing;
+		if (minsize.height > (get_size().height - style->get_minimum_size().height + line_spacing)) {
+			break;
+		}
+	}
 }
 
 inline void draw_glyph(const Glyph &p_gl, const RID &p_canvas, const Color &p_font_color, const Vector2 &p_ofs) {
@@ -375,11 +357,7 @@ void Label::_notification(int p_what) {
 			}
 
 			if (dirty || font_dirty || lines_dirty) {
-				if (!_shape()) {
-					// There will be another pass.
-					draw_pending = true;
-					break;
-				}
+				_shape();
 			}
 
 			RID ci = get_canvas_item();
@@ -622,8 +600,6 @@ void Label::_notification(int p_what) {
 				}
 				ofs.y += TS->shaped_text_get_descent(lines_rid[i]) + vsep + line_spacing;
 			}
-
-			draw_pending = false;
 		} break;
 
 		case NOTIFICATION_THEME_CHANGED: {
@@ -915,7 +891,7 @@ void Label::set_lines_skipped(int p_lines) {
 	}
 
 	lines_skipped = p_lines;
-	lines_dirty = true;
+	_update_visible();
 	queue_redraw();
 }
 
@@ -929,7 +905,7 @@ void Label::set_max_lines_visible(int p_lines) {
 	}
 
 	max_lines_visible = p_lines;
-	lines_dirty = true;
+	_update_visible();
 	queue_redraw();
 }
 
