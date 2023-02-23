@@ -839,6 +839,14 @@ bool GraphEdit::is_in_input_hotzone(GraphNode *p_node, int p_port, const Vector2
 }
 
 bool GraphEdit::is_in_output_hotzone(GraphNode *p_node, int p_port, const Vector2 &p_mouse_pos, const Vector2i &p_port_size) {
+	if (p_node->is_resizable()) {
+		Ref<Texture2D> resizer = p_node->get_theme_icon(SNAME("resizer"));
+		Rect2 resizer_rect = Rect2(p_node->get_position() / zoom + p_node->get_size() - resizer->get_size(), resizer->get_size());
+		if (resizer_rect.has_point(p_mouse_pos)) {
+			return false;
+		}
+	}
+
 	bool success;
 	if (GDVIRTUAL_CALL(_is_in_output_hotzone, p_node, p_port, p_mouse_pos, success)) {
 		return success;
@@ -848,10 +856,10 @@ bool GraphEdit::is_in_output_hotzone(GraphNode *p_node, int p_port, const Vector
 	}
 }
 
-bool GraphEdit::is_in_port_hotzone(const Vector2 &pos, const Vector2 &p_mouse_pos, const Vector2i &p_port_size, bool p_left) {
+bool GraphEdit::is_in_port_hotzone(const Vector2 &p_pos, const Vector2 &p_mouse_pos, const Vector2i &p_port_size, bool p_left) {
 	Rect2 hotzone = Rect2(
-			pos.x - (p_left ? port_hotzone_outer_extent : port_hotzone_inner_extent),
-			pos.y - p_port_size.height / 2.0,
+			p_pos.x - (p_left ? port_hotzone_outer_extent : port_hotzone_inner_extent),
+			p_pos.y - p_port_size.height / 2.0,
 			port_hotzone_inner_extent + port_hotzone_outer_extent,
 			p_port_size.height);
 
@@ -1175,9 +1183,9 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 		minimap->queue_redraw();
 	}
 
-	Ref<InputEventMouseButton> b = p_ev;
-	if (b.is_valid()) {
-		if (b->get_button_index() == MouseButton::RIGHT && b->is_pressed()) {
+	Ref<InputEventMouseButton> mb = p_ev;
+	if (mb.is_valid()) {
+		if (mb->get_button_index() == MouseButton::RIGHT && mb->is_pressed()) {
 			if (box_selecting) {
 				box_selecting = false;
 				for (int i = get_child_count() - 1; i >= 0; i--) {
@@ -1194,12 +1202,12 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 				if (connecting) {
 					force_connection_drag_end();
 				} else {
-					emit_signal(SNAME("popup_request"), b->get_position());
+					emit_signal(SNAME("popup_request"), mb->get_position());
 				}
 			}
 		}
 
-		if (b->get_button_index() == MouseButton::LEFT && !b->is_pressed() && dragging) {
+		if (mb->get_button_index() == MouseButton::LEFT && !mb->is_pressed() && dragging) {
 			if (!just_selected && drag_accum == Vector2() && Input::get_singleton()->is_key_pressed(Key::CTRL)) {
 				//deselect current node
 				for (int i = get_child_count() - 1; i >= 0; i--) {
@@ -1208,7 +1216,7 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 					if (gn) {
 						Rect2 r = gn->get_rect();
 						r.size *= zoom;
-						if (r.has_point(b->get_position())) {
+						if (r.has_point(mb->get_position())) {
 							gn->set_selected(false);
 						}
 					}
@@ -1240,7 +1248,7 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 			connections_layer->queue_redraw();
 		}
 
-		if (b->get_button_index() == MouseButton::LEFT && b->is_pressed()) {
+		if (mb->get_button_index() == MouseButton::LEFT && mb->is_pressed()) {
 			GraphNode *gn = nullptr;
 
 			// Find node which was clicked on.
@@ -1255,14 +1263,14 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 					continue;
 				}
 
-				if (gn_selected->has_point((b->get_position() - gn_selected->get_position()) / zoom)) {
+				if (gn_selected->has_point((mb->get_position() - gn_selected->get_position()) / zoom)) {
 					gn = gn_selected;
 					break;
 				}
 			}
 
 			if (gn) {
-				if (_filter_input(b->get_position())) {
+				if (_filter_input(mb->get_position())) {
 					return;
 				}
 
@@ -1297,7 +1305,7 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 				}
 
 			} else {
-				if (_filter_input(b->get_position())) {
+				if (_filter_input(mb->get_position())) {
 					return;
 				}
 				if (panner->is_panning()) {
@@ -1306,8 +1314,8 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 
 				// Left-clicked on empty space, start box select.
 				box_selecting = true;
-				box_selecting_from = b->get_position();
-				if (b->is_ctrl_pressed()) {
+				box_selecting_from = mb->get_position();
+				if (mb->is_ctrl_pressed()) {
 					box_selection_mode_additive = true;
 					previous_selected.clear();
 					for (int i = get_child_count() - 1; i >= 0; i--) {
@@ -1318,7 +1326,7 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 
 						previous_selected.push_back(gn2);
 					}
-				} else if (b->is_shift_pressed()) {
+				} else if (mb->is_shift_pressed()) {
 					box_selection_mode_additive = false;
 					previous_selected.clear();
 					for (int i = get_child_count() - 1; i >= 0; i--) {
@@ -1344,7 +1352,7 @@ void GraphEdit::gui_input(const Ref<InputEvent> &p_ev) {
 			}
 		}
 
-		if (b->get_button_index() == MouseButton::LEFT && !b->is_pressed() && box_selecting) {
+		if (mb->get_button_index() == MouseButton::LEFT && !mb->is_pressed() && box_selecting) {
 			// Box selection ended. Nodes were selected during mouse movement.
 			box_selecting = false;
 			box_selecting_rect = Rect2();
