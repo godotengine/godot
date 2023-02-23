@@ -410,6 +410,8 @@ Vector<Ref<Shape3D>> ResourceImporterScene::get_collision_shapes(const Ref<Mesh>
 		box.instantiate();
 		if (p_options.has(SNAME("primitive/size"))) {
 			box->set_size(p_options[SNAME("primitive/size")].operator Vector3() * p_applied_root_scale);
+		} else {
+			box->set_size(Vector3(2, 2, 2) * p_applied_root_scale);
 		}
 
 		Vector<Ref<Shape3D>> shapes;
@@ -421,6 +423,8 @@ Vector<Ref<Shape3D>> ResourceImporterScene::get_collision_shapes(const Ref<Mesh>
 		sphere.instantiate();
 		if (p_options.has(SNAME("primitive/radius"))) {
 			sphere->set_radius(p_options[SNAME("primitive/radius")].operator float() * p_applied_root_scale);
+		} else {
+			sphere->set_radius(1.0f * p_applied_root_scale);
 		}
 
 		Vector<Ref<Shape3D>> shapes;
@@ -431,9 +435,13 @@ Vector<Ref<Shape3D>> ResourceImporterScene::get_collision_shapes(const Ref<Mesh>
 		cylinder.instantiate();
 		if (p_options.has(SNAME("primitive/height"))) {
 			cylinder->set_height(p_options[SNAME("primitive/height")].operator float() * p_applied_root_scale);
+		} else {
+			cylinder->set_height(1.0f * p_applied_root_scale);
 		}
 		if (p_options.has(SNAME("primitive/radius"))) {
 			cylinder->set_radius(p_options[SNAME("primitive/radius")].operator float() * p_applied_root_scale);
+		} else {
+			cylinder->set_radius(1.0f * p_applied_root_scale);
 		}
 
 		Vector<Ref<Shape3D>> shapes;
@@ -444,9 +452,13 @@ Vector<Ref<Shape3D>> ResourceImporterScene::get_collision_shapes(const Ref<Mesh>
 		capsule.instantiate();
 		if (p_options.has(SNAME("primitive/height"))) {
 			capsule->set_height(p_options[SNAME("primitive/height")].operator float() * p_applied_root_scale);
+		} else {
+			capsule->set_height(1.0f * p_applied_root_scale);
 		}
 		if (p_options.has(SNAME("primitive/radius"))) {
 			capsule->set_radius(p_options[SNAME("primitive/radius")].operator float() * p_applied_root_scale);
+		} else {
+			capsule->set_radius(1.0f * p_applied_root_scale);
 		}
 
 		Vector<Ref<Shape3D>> shapes;
