@@ -58,13 +58,19 @@ void Thread::callback(Thread *p_self, const Settings &p_settings, Callback p_cal
 	if (platform_functions.init) {
 		platform_functions.init();
 	}
-	ScriptServer::thread_enter(); // Scripts may need to attach a stack.
+
+	// Currently causes a race condition due to the fact that threads are
+	// spawned before ScriptServer is even initialized.
+	// This is currently unused since neither GDScript nor C# require
+	// attaching a stack to new threads, so we just disable for now.
+
+	//ScriptServer::thread_enter();
 	if (platform_functions.wrapper) {
 		platform_functions.wrapper(p_callback, p_userdata);
 	} else {
 		p_callback(p_userdata);
 	}
-	ScriptServer::thread_exit();
+	//ScriptServer::thread_exit();
 	if (platform_functions.term) {
 		platform_functions.term();
 	}
