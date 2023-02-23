@@ -114,6 +114,8 @@ void SceneReplicationConfig::add_property(const NodePath &p_path, int p_index) {
 
 	if (p_index < 0 || p_index == properties.size()) {
 		properties.push_back(ReplicationProperty(p_path));
+		sync_props.push_back(p_path);
+		spawn_props.push_back(p_path);
 		return;
 	}
 
@@ -126,6 +128,16 @@ void SceneReplicationConfig::add_property(const NodePath &p_path, int p_index) {
 		c++;
 	}
 	properties.insert_before(I, ReplicationProperty(p_path));
+	sync_props.clear();
+	spawn_props.clear();
+	for (const ReplicationProperty &prop : properties) {
+		if (prop.sync) {
+			sync_props.push_back(p_path);
+		}
+		if (prop.spawn) {
+			spawn_props.push_back(p_path);
+		}
+	}
 }
 
 void SceneReplicationConfig::remove_property(const NodePath &p_path) {
