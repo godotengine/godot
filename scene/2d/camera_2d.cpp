@@ -414,15 +414,19 @@ Camera2D::Camera2DProcessCallback Camera2D::get_process_callback() const {
 }
 
 void Camera2D::_make_current(Object *p_which) {
+	if (!viewport || (custom_viewport && !ObjectDB::get_instance(custom_viewport_id))) {
+		return;
+	}
+
 	if (p_which == this) {
 		if (is_inside_tree()) {
-			get_viewport()->_camera_2d_set(this);
+			viewport->_camera_2d_set(this);
 			queue_redraw();
 		}
 	} else {
 		if (is_inside_tree()) {
-			if (get_viewport()->get_camera_2d() == this) {
-				get_viewport()->_camera_2d_set(nullptr);
+			if (viewport->get_camera_2d() == this) {
+				viewport->_camera_2d_set(nullptr);
 			}
 			queue_redraw();
 		}
@@ -449,7 +453,7 @@ void Camera2D::make_current() {
 
 void Camera2D::clear_current() {
 	ERR_FAIL_COND(!is_current());
-	if (viewport && !(custom_viewport && !ObjectDB::get_instance(custom_viewport_id))) {
+	if (viewport && !(custom_viewport && !ObjectDB::get_instance(custom_viewport_id)) && viewport->is_inside_tree()) {
 		viewport->assign_next_enabled_camera_2d(group_name);
 	}
 }
