@@ -340,6 +340,7 @@ void WebSocketMultiplayerPeer::_poll_server() {
 					to_remove.insert(id);
 					continue;
 				}
+				peer.connection = tls;
 			}
 			Ref<StreamPeerTLS> tls = static_cast<Ref<StreamPeerTLS>>(peer.connection);
 			tls->poll();
