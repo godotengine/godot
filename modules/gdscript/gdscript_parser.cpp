@@ -3138,6 +3138,14 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_lambda(ExpressionNode *p_p
 	bool previous_in_lambda = in_lambda;
 	in_lambda = true;
 
+	// Save break/continue state.
+	bool could_break = can_break;
+	bool could_continue = can_continue;
+
+	// Disallow break/continue.
+	can_break = false;
+	can_continue = false;
+
 	function->body = parse_suite("lambda declaration", body, true);
 	complete_extents(function);
 	complete_extents(lambda);
@@ -3155,6 +3163,11 @@ GDScriptParser::ExpressionNode *GDScriptParser::parse_lambda(ExpressionNode *p_p
 	current_function = previous_function;
 	in_lambda = previous_in_lambda;
 	lambda->function = function;
+
+	// Reset break/continue state.
+	can_break = could_break;
+	can_continue = could_continue;
+
 	return lambda;
 }
 
