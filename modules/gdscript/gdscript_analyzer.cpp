@@ -1861,24 +1861,20 @@ void GDScriptAnalyzer::resolve_for(GDScriptParser::ForNode *p_for) {
 					Vector<Variant> args;
 					args.resize(call->arguments.size());
 					for (int i = 0; i < call->arguments.size(); i++) {
-						reduce_expression(call->arguments[i]);
+						GDScriptParser::ExpressionNode *argument = call->arguments[i];
+						reduce_expression(argument);
 
-						if (!call->arguments[i]->is_constant) {
+						if (!argument->is_constant) {
 							all_is_constant = false;
-						} else if (all_is_constant) {
-							args.write[i] = call->arguments[i]->reduced_value;
+							break;
+						}
+						if (argument->reduced_value.get_type() != Variant::INT && argument->reduced_value.get_type() != Variant::FLOAT) {
+							push_error(vformat(R"*(Invalid argument for "range()" call. Argument %d should be int or float but "%s" was given.)*", i + 1, Variant::get_type_name(argument->reduced_value.get_type())), argument);
+							all_is_constant = false;
+							break;
 						}
 
-						GDScriptParser::DataType arg_type = call->arguments[i]->get_datatype();
-						if (!arg_type.is_variant()) {
-							if (arg_type.kind != GDScriptParser::DataType::BUILTIN) {
-								all_is_constant = false;
-								push_error(vformat(R"*(Invalid argument for "range()" call. Argument %d should be int or float but "%s" was given.)*", i + 1, arg_type.to_string()), call->arguments[i]);
-							} else if (arg_type.builtin_type != Variant::INT && arg_type.builtin_type != Variant::FLOAT) {
-								all_is_constant = false;
-								push_error(vformat(R"*(Invalid argument for "range()" call. Argument %d should be int or float but "%s" was given.)*", i + 1, arg_type.to_string()), call->arguments[i]);
-							}
-						}
+						args.write[i] = argument->reduced_value;
 					}
 
 					Variant reduced;
