@@ -235,9 +235,7 @@ void RayCast::add_exception_rid(const RID &p_rid) {
 void RayCast::add_exception(const Object *p_object) {
 	ERR_FAIL_NULL(p_object);
 	const CollisionObject *co = Object::cast_to<CollisionObject>(p_object);
-	if (!co) {
-		return;
-	}
+	ERR_FAIL_COND_MSG(!co, "The passed Node must be an instance of CollisionObject.");
 	add_exception_rid(co->get_rid());
 }
 
@@ -248,9 +246,7 @@ void RayCast::remove_exception_rid(const RID &p_rid) {
 void RayCast::remove_exception(const Object *p_object) {
 	ERR_FAIL_NULL(p_object);
 	const CollisionObject *co = Object::cast_to<CollisionObject>(p_object);
-	if (!co) {
-		return;
-	}
+	ERR_FAIL_COND_MSG(!co, "The passed Node must be an instance of CollisionObject.");
 	remove_exception_rid(co->get_rid());
 }
 
