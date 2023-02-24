@@ -56,13 +56,13 @@ namespace GodotTools.Build
             process.StartInfo = new ProcessStartInfo(dotNetExe, "--list-sdks")
             {
                 UseShellExecute = false,
-                RedirectStandardOutput = true
+                RedirectStandardOutput = true,
+                StandardOutputEncoding = Encoding.UTF8,
             };
 
             process.StartInfo.EnvironmentVariables["DOTNET_CLI_UI_LANGUAGE"] = "en-US";
 
             var lines = new List<string>();
-            process.StartInfo.StandardOutputEncoding = Encoding.UTF8;
             process.OutputDataReceived += (_, e) =>
             {
                 if (!string.IsNullOrWhiteSpace(e.Data))
