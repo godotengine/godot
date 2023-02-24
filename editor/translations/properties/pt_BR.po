@@ -162,8 +162,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2023-02-20 00:45+0000\n"
-"Last-Translator: Elizandro Baldin <ejbaldin@gmail.com>\n"
+"PO-Revision-Date: 2023-02-23 01:26+0000\n"
+"Last-Translator: Murilo Gama <murilovsky2030@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot-properties/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -260,6 +260,9 @@ msgstr "Depuração"
 msgid "Settings"
 msgstr "Configurações"
 
+msgid "Profiler"
+msgstr "Analisador"
+
 msgid "Compression"
 msgstr "Compressão"
 
@@ -277,6 +280,9 @@ msgstr "Limites"
 
 msgid "GUI"
 msgstr "GUI (Interface Gráfica de Usuário)"
+
+msgid "Vulkan"
+msgstr "Vulkan"
 
 msgid "Low Processor Usage Mode"
 msgstr "Modo de Baixo Uso de Processador"
@@ -508,6 +514,9 @@ msgstr "Acesso"
 
 msgid "Display Mode"
 msgstr "Modo de Exibição"
+
+msgid "Filters"
+msgstr "Filtros"
 
 msgid "Show Hidden Files"
 msgstr "Mostrar Arquivos Ocultos"
@@ -1209,7 +1218,7 @@ msgid "Zoom"
 msgstr "Zoom"
 
 msgid "Export"
-msgstr "Exportação"
+msgstr "Exportar"
 
 msgid "Custom Template"
 msgstr "Modelo Customizado"
@@ -1238,9 +1247,6 @@ msgstr "ETC"
 msgid "ETC2"
 msgstr "ETC2"
 
-msgid "No BPTC Fallbacks"
-msgstr "Sem Fallbacks para imagens BPTC"
-
 msgid "Export Path"
 msgstr "Caminho de Exportação"
 
@@ -1254,7 +1260,7 @@ msgid "Compress"
 msgstr "Comprimir"
 
 msgid "Language"
-msgstr "Dialeto"
+msgstr "Idioma/Dialeto"
 
 msgid "Outline Size"
 msgstr "Tamanho do Contorno"
@@ -1455,7 +1461,7 @@ msgid "Loop End"
 msgstr "Fim do Loop"
 
 msgid "Asset Library"
-msgstr "Biblioteca de Assets"
+msgstr "Biblioteca de Recursos"
 
 msgid "Use Threads"
 msgstr "Usar Threads"
@@ -1621,6 +1627,9 @@ msgstr "iOS"
 
 msgid "Hide Home Indicator"
 msgstr "Esconder Indicador de Home"
+
+msgid "XR"
+msgstr "XR"
 
 msgid "Boot Splash"
 msgstr "Imagem de Exibição ao Iniciar"
@@ -2735,6 +2744,9 @@ msgstr "Emitindo"
 msgid "Time"
 msgstr "Tempo"
 
+msgid "One Shot"
+msgstr "Disparo Único"
+
 msgid "Preprocess"
 msgstr "Pré processamento"
 
@@ -3371,9 +3383,6 @@ msgstr "Mouse"
 msgid "Default Cursor Shape"
 msgstr "Forma do Cursor Padrão"
 
-msgid "Filters"
-msgstr "Filtros"
-
 msgid "Scroll Offset"
 msgstr "Deslocamento da Rolagem"
 
@@ -3511,6 +3520,12 @@ msgstr "Tamanho Mínimo"
 
 msgid "Max Size"
 msgstr "Tamanho Máximo"
+
+msgid "2D Physics"
+msgstr "Física 2D"
+
+msgid "3D Physics"
+msgstr "Física 3D"
 
 msgid "Format"
 msgstr "Formato"
@@ -3770,6 +3785,9 @@ msgstr "Usar HDR"
 msgid "From"
 msgstr "À Partir de"
 
+msgid "To"
+msgstr "Para"
+
 msgid "Frames"
 msgstr "Quadros"
 
@@ -3862,6 +3880,9 @@ msgstr "Reflexões"
 
 msgid "Overrides"
 msgstr "Sobrescreve"
+
+msgid "OpenGL"
+msgstr "OpenGL"
 
 msgid "Shaders"
 msgstr "Shaders"

@@ -486,6 +486,9 @@ msgstr "Доступ"
 msgid "Display Mode"
 msgstr "Режим отображения"
 
+msgid "Filters"
+msgstr "Фильтры"
+
 msgid "Show Hidden Files"
 msgstr "Показывать скрытые файлы"
 
@@ -1211,9 +1214,6 @@ msgstr "ETC"
 
 msgid "ETC2"
 msgstr "ETC2"
-
-msgid "No BPTC Fallbacks"
-msgstr "Запасной вариант BPTC"
 
 msgid "Export Path"
 msgstr "Путь экспорта"
@@ -3332,9 +3332,6 @@ msgstr "Диалог"
 
 msgid "Autowrap"
 msgstr "Автоперенос"
-
-msgid "Filters"
-msgstr "Фильтры"
 
 msgid "Scroll Offset"
 msgstr "Смещение прокрутки"

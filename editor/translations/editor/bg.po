@@ -23,7 +23,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-02-18 04:10+0000\n"
+"PO-Revision-Date: 2023-02-23 11:35+0000\n"
 "Last-Translator: Любомир Василев <lyubomirv@gmx.com>\n"
 "Language-Team: Bulgarian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/bg/>\n"
@@ -118,8 +118,20 @@ msgstr "Копиране"
 msgid "Paste"
 msgstr "Поставяне"
 
+msgid "Undo"
+msgstr "Отмяна"
+
+msgid "Redo"
+msgstr "Повторение"
+
 msgid "New Line"
 msgstr "Нов ред"
+
+msgid "New Blank Line"
+msgstr "Нов празен ред"
+
+msgid "New Line Above"
+msgstr "Нов ред отгоре"
 
 msgid "Indent"
 msgstr "Увеличаване на отстъпа"
@@ -177,6 +189,12 @@ msgstr "Превъртане надолу"
 
 msgid "Select All"
 msgstr "Избиране на всичко"
+
+msgid "Select Word Under Caret"
+msgstr "Избиране на думата под курсора"
+
+msgid "Add Selection for Next Occurrence"
+msgstr "Добавяне на следващото срещане към избраното"
 
 msgid "Clear Carets and Selection"
 msgstr "Изчистване на курсорите и избраното"
@@ -503,6 +521,15 @@ msgstr "Добавянето на нова пътечка без корен е �
 msgid "Add Bezier Track"
 msgstr "Добавяне на нова пътечка на Безие"
 
+msgid "Add Position Key"
+msgstr "Добавяне на ключ за позицията"
+
+msgid "Add Rotation Key"
+msgstr "Добавяне на ключ за ротацията"
+
+msgid "Add Scale Key"
+msgstr "Добавяне на ключ за скалирането"
+
 msgid "Add Track Key"
 msgstr "Добавяне на ключ за пътечката"
 
@@ -533,11 +560,59 @@ msgstr "Клипбордът е празен!"
 msgid "Paste Tracks"
 msgstr "Поставяне на пътечки"
 
+msgid ""
+"This animation belongs to an imported scene, so changes to imported tracks "
+"will not be saved.\n"
+"\n"
+"To modify this animation, navigate to the scene's Advanced Import settings "
+"and select the animation.\n"
+"Some options, including looping, are available here. To add custom tracks, "
+"enable \"Save To File\" and\n"
+"\"Keep Custom Tracks\"."
+msgstr ""
+"Тази анимация принадлежи на внесена сцена, така че промените по внесените "
+"пътечки няма да бъдат запазени.\n"
+"\n"
+"Ако искате да промените тази анимация, идете в Разширените настройки за "
+"внасяне на сцената и изберете анимацията.\n"
+"Някои настройки, включително тази за повтарянето, са налични тук. За да "
+"добавите собствени пътечки, включете\n"
+"„Запазване във файл“ и „Запазване на собствените пътечки“."
+
+msgid "Warning: Editing imported animation"
+msgstr "Внимание: Редактиране на внесена анимация"
+
+msgid "Select an AnimationPlayer node to create and edit animations."
+msgstr ""
+"Изберете обект от тип AnimationPlayer, за да създавате и редактирате "
+"анимации."
+
+msgid "Imported Scene"
+msgstr "Внесена сцена"
+
+msgid "Toggle between the bezier curve editor and track editor."
+msgstr "Превключване между редактора на пътечки и този за криви на Безие."
+
+msgid "Only show tracks from nodes selected in tree."
+msgstr "Показване само на пътечките на обектите избрани в йерархията."
+
+msgid "Group tracks by node or display them as plain list."
+msgstr "Групиране на пътечките по обект, или показване като общ списък."
+
 msgid "Snap:"
 msgstr "Прилепване:"
 
 msgid "Animation step value."
 msgstr "Стойност за стъпката на анимацията."
+
+msgid "Seconds"
+msgstr "Секунди"
+
+msgid "FPS"
+msgstr "Кадри/сек"
+
+msgid "Edit"
+msgstr "Редактиране"
 
 msgid "Animation properties."
 msgstr "Свойства на анимацията."
@@ -551,8 +626,29 @@ msgstr "Преминаване към следващата стъпка"
 msgid "Go to Previous Step"
 msgstr "Преминаване към предходната стъпка"
 
+msgid "Bake Animation"
+msgstr "Изпичане на анимацията"
+
+msgid "Optimize Animation (no undo)"
+msgstr "Оптимизиране на анимацията (не може да бъде отменено)"
+
+msgid "Clean-Up Animation (no undo)"
+msgstr "Почистване на анимацията (не може да бъде отменено)"
+
+msgid "Pick a node to animate:"
+msgstr "Изберете обект, който да бъде анимиран:"
+
 msgid "Create RESET Track(s)"
 msgstr "Създаване на пътечка/и за НУЛИРАНЕ"
+
+msgid "Max Velocity Error:"
+msgstr "Макс. грешка в скоростта:"
+
+msgid "Max Angular Error:"
+msgstr "Макс. грешка в ъгъла:"
+
+msgid "Max Precision Error:"
+msgstr "Макс. грешка в точността:"
 
 msgid "Optimize"
 msgstr "Оптимизиране"
@@ -615,6 +711,9 @@ msgstr "Отдалечаване"
 msgid "Errors"
 msgstr "Грешки"
 
+msgid "Attached Script"
+msgstr "Закачен скрипт"
+
 msgid "Connect to Node:"
 msgstr "Свързване към обект:"
 
@@ -624,6 +723,9 @@ msgstr "Свързване към скрипт:"
 msgid "From Signal:"
 msgstr "От сигнал:"
 
+msgid "Filter Nodes"
+msgstr "Филтриране на обектите"
+
 msgid "Go to Source"
 msgstr "Към източника"
 
@@ -632,6 +734,15 @@ msgstr "Сцената не съдържа скриптове."
 
 msgid "Select Method"
 msgstr "Избиране на метод"
+
+msgid "Filter Methods"
+msgstr "Филтриране на методите"
+
+msgid "Script Methods Only"
+msgstr "Само методи от скрипта"
+
+msgid "Compatible Methods Only"
+msgstr "Само съвместими методи"
 
 msgid "Remove"
 msgstr "Премахване"
@@ -681,6 +792,9 @@ msgstr "Редактиране на връзката: „%s“"
 msgid "Signals"
 msgstr "Сигнали"
 
+msgid "Filter Signals"
+msgstr "Филтриране на сигналите"
+
 msgid "Disconnect All"
 msgstr "Разкачване на всички"
 
@@ -692,6 +806,9 @@ msgstr "Редактиране..."
 
 msgid "Go to Method"
 msgstr "Към метода"
+
+msgid "Change Type of \"%s\""
+msgstr "Промяна на типа на „%s“"
 
 msgid "Create New %s"
 msgstr "Създаване на %s"
@@ -748,7 +865,7 @@ msgid "%s Error:"
 msgstr "Грешка в %s:"
 
 msgid "%s Source"
-msgstr "Изходен код на %s:"
+msgstr "Изходен код на %s"
 
 msgid "%s Source:"
 msgstr "Изходен код на %s:"
@@ -1413,6 +1530,12 @@ msgstr "Името на мета-данните трябва да бъде пр�
 msgid "Copy Property Path"
 msgstr "Копиране на пътя на свойството"
 
+msgid "[Default]"
+msgstr "[По подразбиране]"
+
+msgid "Select a Locale"
+msgstr "Изберете език"
+
 msgid "Show All Locales"
 msgstr "Показване на всички езици"
 
@@ -1445,11 +1568,26 @@ msgstr "Страна"
 msgid "Variant"
 msgstr "Вариант"
 
+msgid "Filter Messages"
+msgstr "Филтриране на съобщенията"
+
 msgid "Clear Output"
 msgstr "Изчистване на изхода"
 
 msgid "Copy Selection"
 msgstr "Копиране на избраното"
+
+msgid "Toggle visibility of standard output messages."
+msgstr "Превключване на видимостта на стандартните съобщения."
+
+msgid "Toggle visibility of errors."
+msgstr "Превключване на видимостта на грешките."
+
+msgid "Toggle visibility of warnings."
+msgstr "Превключване на видимостта на предупрежденията."
+
+msgid "Toggle visibility of editor messages."
+msgstr "Превключване на видимостта на съобщенията от редактора."
 
 msgid "OK"
 msgstr "Добре"
@@ -1462,6 +1600,15 @@ msgstr "Форматът на избрания файл е непознат:"
 
 msgid "Error while saving."
 msgstr "Грешка при записване."
+
+msgid "Error while parsing file '%s'."
+msgstr "Грешка при анализа на файла „%s“."
+
+msgid "Missing file '%s' or one its dependencies."
+msgstr "Липсва файл „%s“ или някоя от зависимостите му."
+
+msgid "Error while loading file '%s'."
+msgstr "Грешка при зареждането на файла „%s“."
 
 msgid "Saving Scene"
 msgstr "Запазване на сцената"
@@ -1502,8 +1649,36 @@ msgstr "Бързо отваряне..."
 msgid "Quick Open Scene..."
 msgstr "Бързо отваряне на сцена..."
 
+msgid "Quick Open Script..."
+msgstr "Бързо отваряне на скрипт…"
+
+msgid "Save & Reload"
+msgstr "Запазване и презареждане"
+
+msgid "Save modified resources before reloading?"
+msgstr "Да се запазят ли променените ресурси преди презареждането?"
+
 msgid "Save & Quit"
 msgstr "Запазване и изход"
+
+msgid "Save modified resources before closing?"
+msgstr "Да се запазят ли променените ресурси преди затварянето?"
+
+msgid "Save changes to '%s' before reloading?"
+msgstr "Да се запазят ли промените по „%s“ преди презареждането?"
+
+msgid "Save changes to '%s' before closing?"
+msgstr "Да се запазят ли промените по „%s“ преди затварянето?"
+
+msgid "%s no longer exists! Please specify a new save location."
+msgstr "%s вече не съществува! Посочете друго място за запазване."
+
+msgid ""
+"The current scene has no root node, but %d modified external resource(s) "
+"were saved anyway."
+msgstr ""
+"Текущата сцена няма коренен обект, но въпреки това %d променени външни "
+"ресурса бяха запазени."
 
 msgid "Save Scene As..."
 msgstr "Запазване на сцената като..."
@@ -1511,11 +1686,35 @@ msgstr "Запазване на сцената като..."
 msgid "Current scene not saved. Open anyway?"
 msgstr "Текущата сцена не е запазена. Отваряне въпреки това?"
 
+msgid "Can't undo while mouse buttons are pressed."
+msgstr "Отмяната е невъзможна, докато бутоните на мишката са натиснати."
+
+msgid "Nothing to undo."
+msgstr "Няма нищо за отмяна."
+
+msgid "Global Undo: %s"
+msgstr "Глобална отмяна: %s"
+
 msgid "Remote Undo: %s"
 msgstr "Отдалечена отмяна: %s"
 
+msgid "Scene Undo: %s"
+msgstr "Отмяна в сцената: %s"
+
+msgid "Can't redo while mouse buttons are pressed."
+msgstr "Повторението е невъзможно, докато бутоните на мишката са натиснати."
+
+msgid "Nothing to redo."
+msgstr "Няма нищо за повтаряне."
+
+msgid "Global Redo: %s"
+msgstr "Глобално повторение: %s"
+
 msgid "Remote Redo: %s"
 msgstr "Отдалечено повторение: %s"
+
+msgid "Scene Redo: %s"
+msgstr "Повторение в сцената: %s"
 
 msgid "Can't reload a scene that was never saved."
 msgstr "Сцена, която никога не е била запазвана, не може да бъде презаредена."
@@ -1523,8 +1722,22 @@ msgstr "Сцена, която никога не е била запазвана,
 msgid "Reload Saved Scene"
 msgstr "Презареждане на запазената сцена"
 
+msgid ""
+"The current scene has unsaved changes.\n"
+"Reload the saved scene anyway? This action cannot be undone."
+msgstr ""
+"Има не запазени промени в текущата сцена.\n"
+"Да се презареди ли въпреки това запазеното ѝ състояние? Това действие е "
+"необратимо."
+
 msgid "Quick Run Scene..."
 msgstr "Бързо пускане на сцена..."
+
+msgid "Save changes to the following scene(s) before reloading?"
+msgstr "Запазване на промените в следната/и сцена/и преди презареждане?"
+
+msgid "Save changes to the following scene(s) before quitting?"
+msgstr "Запазване на промените в следната/и сцена/и преди излизане?"
 
 msgid "Pick a Main Scene"
 msgstr "Изберете главна сцена"
@@ -1856,6 +2069,9 @@ msgstr "Файловете на проекта не могат да бъдат �
 
 msgid "Failed to export project files."
 msgstr "Файловете на проекта не бяха изнесени успешно."
+
+msgid "Can't open file for writing at path \"%s\"."
+msgstr "Файлът не може да бъде отворен за запис към пътя „%s“."
 
 msgid "Can't open encrypted file to write."
 msgstr "Не може да бъде отворен шифрован файл за запис."
@@ -3427,6 +3643,9 @@ msgstr "Заключване на въртенето на изгледа"
 msgid "Normal Buffer"
 msgstr "Буфер за нормалите"
 
+msgid "Display Advanced..."
+msgstr "Показване на допълнителни…"
+
 msgid "View Environment"
 msgstr "Показване на обкръжението"
 
@@ -4506,6 +4725,12 @@ msgstr "Константа за цвят."
 msgid "Color parameter."
 msgstr "Свойство за цвят."
 
+msgid "Float function."
+msgstr "Функция за с плаваща точка."
+
+msgid "Float operator."
+msgstr "Оператор с плаваща точка."
+
 msgid "Integer function."
 msgstr "Целочислена функция."
 
@@ -4524,8 +4749,17 @@ msgstr "Сумира две трансформации."
 msgid "Divides two transforms."
 msgstr "Разделя две трансформации."
 
+msgid "Multiplies two transforms."
+msgstr "Умножава две трансформации."
+
+msgid "Subtracts two transforms."
+msgstr "Изважда две трансформации."
+
 msgid "Transform constant."
 msgstr "Константа за трансформация."
+
+msgid "Transform parameter."
+msgstr "Свойство на трансформация."
 
 msgid "Vector function."
 msgstr "Векторна функция."
@@ -4646,8 +4880,47 @@ msgstr "Изберете папка за сканиране"
 msgid "Remove All"
 msgstr "Премахване на всичко"
 
+msgid ""
+"This option will perform full project conversion, updating scenes, resources "
+"and scripts from Godot 3.x to work in Godot 4.0.\n"
+"\n"
+"Note that this is a best-effort conversion, i.e. it makes upgrading the "
+"project easier, but it will not open out-of-the-box and will still require "
+"manual adjustments.\n"
+"\n"
+"IMPORTANT: Make sure to backup your project before converting, as this "
+"operation makes it impossible to open it in older versions of Godot."
+msgstr ""
+"Тази опция ще направи пълно преобразуване на проекта, така че сцените, "
+"ресурсите и скриптовете от Godot 3.x да работят в Godot 4.0.\n"
+"\n"
+"Имайте предвид, че това преобразуване може да не успее да се справи с "
+"всичко, тоест е възможно проектът да не работи веднага, а да има нужда от "
+"допълнителни ръчни поправки.\n"
+"\n"
+"ВАЖНО: Направете резервно копие на проекта си преди преобразуването, тъй "
+"след като тази операция е много вероятно той да не може да бъде отворен с по-"
+"стара версия на Godot."
+
 msgid "Can't run project"
 msgstr "Проектът не може да бъде пуснат"
+
+msgid ""
+"You currently don't have any projects.\n"
+"Would you like to explore official example projects in the Asset Library?"
+msgstr ""
+"В момента няма никакви проекти.\n"
+"Искате ли да разгледате официалните примерни проекти в библиотеката с "
+"ресурси?"
+
+msgid "Add Project Setting"
+msgstr "Добавяне на настройка в проекта"
+
+msgid "Delete Item"
+msgstr "Изтриване на елемента"
+
+msgid "(All)"
+msgstr "(Всички)"
 
 msgid "Project Settings (project.godot)"
 msgstr "Настройки на проекта (project.godot)"
@@ -4682,6 +4955,18 @@ msgstr "Разширени настройки"
 msgid "Substitute"
 msgstr "Заместване"
 
+msgid "Node name."
+msgstr "Име на обекта."
+
+msgid "Node type."
+msgstr "Тип на обекта."
+
+msgid "Current scene name."
+msgstr "Име на текущата сцена."
+
+msgid "Root node name."
+msgstr "Име на коренния обект."
+
 msgid ""
 "Sequential integer counter.\n"
 "Compare counter options."
@@ -4695,8 +4980,14 @@ msgstr "Брояч по нива"
 msgid "If set, the counter restarts for each group of child nodes."
 msgstr "Ако е зададено, броячът се подновява за всяка група дъщерни обекти."
 
+msgid "Initial value for the counter."
+msgstr "Начална стойност на брояча."
+
 msgid "Step"
 msgstr "Стъпка"
+
+msgid "Amount by which counter is incremented for each node."
+msgstr "Стойност, с която броячът се увеличава при всеки следващ обект."
 
 msgid "Padding"
 msgstr "Отстъп"
@@ -4732,8 +5023,14 @@ msgstr "Нулиране"
 msgid "Regular Expression Error:"
 msgstr "Грешка в регулярния израз:"
 
+msgid "Scene name is valid."
+msgstr "Името на сцената е правилно."
+
 msgid "Scene name is empty."
 msgstr "Името на сцената е празно."
+
+msgid "File name invalid."
+msgstr "Името на файла е неправилно."
 
 msgid "2D Scene"
 msgstr "2-измерна сцена"
@@ -4812,6 +5109,9 @@ msgstr[1] "Обектът има {num} връзки."
 msgid "Open Script:"
 msgstr "Отваряне на скрипт:"
 
+msgid "Filename is invalid."
+msgstr "Името на файла е неправилно."
+
 msgid "Path is not local."
 msgstr "Пътят не е локален."
 
@@ -4847,6 +5147,9 @@ msgstr "Ще създаде нов скиптов файл."
 
 msgid "Script file already exists."
 msgstr "Скриптовият файл вече съществува."
+
+msgid "No suitable template."
+msgstr "Няма подходящ шаблон."
 
 msgid "Class Name:"
 msgstr "Име на класа:"
@@ -4957,6 +5260,9 @@ msgstr "Размер"
 msgid "Network Profiler"
 msgstr "Профилиране на мрежата"
 
+msgid "Not possible to add a new property to synchronize without a root."
+msgstr "Добавянето на ново свойство за синхронизиране без корен е невъзможно."
+
 msgid "Delete Property?"
 msgstr "Изтриване на свойството?"
 
@@ -4982,6 +5288,12 @@ msgstr "Настройка на генератора на навигационн
 
 msgid "Done!"
 msgstr "Готово!"
+
+msgid "Error loading %s: %s."
+msgstr "Грешка при зареждането на %s: %s."
+
+msgid "Add an action set."
+msgstr "Добавяне на набор от действия."
 
 msgid "Package name is missing."
 msgstr "Липсва име на пакета."
@@ -5086,6 +5398,12 @@ msgstr "Неправилно име! Android APK изисква разширен
 msgid "Unsupported export format!"
 msgstr "Неподдържан формат за изнасяне!"
 
+msgid ""
+"Unable to overwrite res://android/build/res/*.xml files with project name."
+msgstr ""
+"Файловете res://android/build/res/*.xml не могат да бъдат презаписани с "
+"името на проекта."
+
 msgid "Could not export project files to gradle project."
 msgstr "Файловете на проекта не могат да бъдат изнесени като проект на gradle."
 
@@ -5113,6 +5431,9 @@ msgstr ""
 "Изнесеният файл не може да бъде копиран и преименуван. Потърсете резултатите "
 "в папката на проекта на gradle."
 
+msgid "Package not found: \"%s\"."
+msgstr "Пакетът не е намерен: „%s“."
+
 msgid "Creating APK..."
 msgstr "Създаване на APK…"
 
@@ -5131,8 +5452,47 @@ msgstr ""
 msgid "Adding files..."
 msgstr "Добавяне на файлове..."
 
+msgid "Could not export project files."
+msgstr "Файловете на проекта не могат да бъдат изнесени."
+
+msgid "Export template not found."
+msgstr "Шаблонът за изнасяне не е намерен."
+
+msgid "Could not open file \"%s\"."
+msgstr "Файлът „%s“ не може да бъде отворен."
+
+msgid "Exporting project..."
+msgstr "Изнасяне на проекта…"
+
+msgid "Starting project..."
+msgstr "Стартиране на проекта…"
+
+msgid "Could not open icon file \"%s\"."
+msgstr "Файлът на иконката „%s“ не може да бъде отворен."
+
+msgid "Apple ID password not specified."
+msgstr "Не е въведена парола за Apple ID."
+
+msgid "Cannot sign file %s."
+msgstr "Файлът „%s“ не може да бъде подписан."
+
 msgid "Creating app bundle"
 msgstr "Създаване на пакета на приложението"
+
+msgid "Could not find template app to export: \"%s\"."
+msgstr "Не е намерено шаблонно приложение за изнасяне: „%s“."
+
+msgid "Could not create directory: \"%s\"."
+msgstr "Папката на не може да бъде създадена: „%s“."
+
+msgid "Could not create directory \"%s\"."
+msgstr "Папката „%s“ не може да бъде създадена."
+
+msgid "Could not created symlink \"%s\" -> \"%s\"."
+msgstr "Не може да бъде създадена символна връзка „%s“ -> „%s“."
+
+msgid "Could not open \"%s\"."
+msgstr "Не може да се отвори „%s“."
 
 msgid "Invalid bundle identifier:"
 msgstr "Неправилен идентификатор на пакета:"
@@ -5154,6 +5514,33 @@ msgstr "Неправилен GUID на издател."
 
 msgid "Invalid background color."
 msgstr "Неправилен фонов цвят."
+
+msgid "Could not open template for export: \"%s\"."
+msgstr "Шаблонът не може да се отвори за изнасяне: „%s“."
+
+msgid "Could not write file: \"%s\"."
+msgstr "Файлът не може да бъде записан: „%s“."
+
+msgid "Could not read file: \"%s\"."
+msgstr "Файлът не може да бъде прочетен: „%s“."
+
+msgid "Could not read HTML shell: \"%s\"."
+msgstr "HTML-обвивката не може да бъде прочетена: „%s“."
+
+msgid "Could not create HTTP server directory: %s."
+msgstr "Папката на HTTP-сървъра не може да бъде създадена: %s."
+
+msgid "Error starting HTTP server: %d."
+msgstr "Грешка при стартирането на HTTP-сървър: %d."
+
+msgid "Failed to rename temporary file \"%s\"."
+msgstr "Временният файл не може да бъде преименуван: „%s“."
+
+msgid "Invalid icon file \"%s\"."
+msgstr "Неправилен файл за иконка „%s“."
+
+msgid "Failed to remove temporary file \"%s\"."
+msgstr "Временният файл „%s“ не може да бъде премахнат."
 
 msgid "Invalid icon path:"
 msgstr "Неправилен път до иконката:"
@@ -5284,7 +5671,7 @@ msgid "(Other)"
 msgstr "(Други)"
 
 msgid "Unsupported BMFont texture format."
-msgstr "Неподдържан формат за текстури BMFont"
+msgstr "Неподдържан формат за текстури BMFont."
 
 msgid ""
 "Shader keywords cannot be used as parameter names.\n"

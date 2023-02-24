@@ -617,6 +617,9 @@ msgstr "Mode d'affichage"
 msgid "File Mode"
 msgstr "Mode fichier"
 
+msgid "Filters"
+msgstr "Filtres"
+
 msgid "Show Hidden Files"
 msgstr "Afficher les fichiers cachés"
 
@@ -1507,9 +1510,6 @@ msgstr "ETC"
 
 msgid "ETC2"
 msgstr "ETC2"
-
-msgid "No BPTC Fallbacks"
-msgstr "Pas de Repli BPTC"
 
 msgid "Export Path"
 msgstr "Chemin d'exportation"
@@ -4456,9 +4456,6 @@ msgstr "Retour à la ligne automatique"
 
 msgid "Mode Overrides Title"
 msgstr "Le Mode remplace le Titre"
-
-msgid "Filters"
-msgstr "Filtres"
 
 msgid "Right Disconnects"
 msgstr "La droite déconnecte"

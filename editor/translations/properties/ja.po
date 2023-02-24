@@ -438,6 +438,9 @@ msgstr "アクセス"
 msgid "Display Mode"
 msgstr "表示モード"
 
+msgid "Filters"
+msgstr "フィルター"
+
 msgid "Show Hidden Files"
 msgstr "隠しファイルを表示"
 
@@ -1211,9 +1214,6 @@ msgstr "ETC"
 
 msgid "ETC2"
 msgstr "ETC2"
-
-msgid "No BPTC Fallbacks"
-msgstr "BPTCにフォールバックしない"
 
 msgid "Export Path"
 msgstr "エクスポート先のパス"
@@ -2642,9 +2642,6 @@ msgstr "前"
 
 msgid "Default Cursor Shape"
 msgstr "デフォルトのカーソル形状"
-
-msgid "Filters"
-msgstr "フィルター"
 
 msgid "Use Snap"
 msgstr "スナップを使用"

@@ -51,13 +51,14 @@
 # Saitos <purifyzombie@gmail.com>, 2023.
 # UENO Masahiro <ueno.mshr@gmail.com>, 2023.
 # ueshita <nalto32@gmail.com>, 2023.
+# a-ori-a <ma_hiro25@outlook.jp>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-02-18 07:45+0000\n"
-"Last-Translator: ueshita <nalto32@gmail.com>\n"
+"PO-Revision-Date: 2023-02-24 12:28+0000\n"
+"Last-Translator: a-ori-a <ma_hiro25@outlook.jp>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
 "Language: ja\n"
@@ -2361,6 +2362,9 @@ msgstr "開く"
 msgid "Select Current Folder"
 msgstr "現在のフォルダーを選択"
 
+msgid "Cannot save file with an empty filename."
+msgstr "空のファイル名でファイルを保存することはできません。"
+
 msgid "Select This Folder"
 msgstr "このフォルダーを選択"
 
@@ -2497,7 +2501,7 @@ msgid "Import resources of type: %s"
 msgstr "次のタイプのリソースをインポート: %s"
 
 msgid "No return value."
-msgstr "戻り値はありません、"
+msgstr "戻り値はありません。"
 
 msgid "Deprecated"
 msgstr "重複"
@@ -3608,7 +3612,7 @@ msgstr ""
 "に記録されます。"
 
 msgid "Choose a renderer."
-msgstr "レンダラーを選択"
+msgstr "レンダラーを選択。"
 
 msgid "Forward+"
 msgstr "Forward+"
