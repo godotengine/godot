@@ -1,4 +1,4 @@
 func test():
 	var lambda := func(unused: Variant) -> void:
 		pass
-	lambda.call()
+	lambda.call("something")
