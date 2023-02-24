@@ -594,6 +594,9 @@ void SceneImportSettings::open_settings(const String &p_path, bool p_for_animati
 	// Visibility
 	data_mode->set_tab_hidden(1, p_for_animation);
 	data_mode->set_tab_hidden(2, p_for_animation);
+	if (p_for_animation) {
+		data_mode->set_current_tab(0);
+	}
 
 	action_menu->get_popup()->set_item_disabled(action_menu->get_popup()->get_item_id(ACTION_EXTRACT_MATERIALS), p_for_animation);
 	action_menu->get_popup()->set_item_disabled(action_menu->get_popup()->get_item_id(ACTION_CHOOSE_MESH_SAVE_PATHS), p_for_animation);
