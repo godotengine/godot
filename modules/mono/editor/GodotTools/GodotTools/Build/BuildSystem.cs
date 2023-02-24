@@ -38,6 +38,7 @@ namespace GodotTools.Build
             startInfo.RedirectStandardError = true;
             startInfo.UseShellExecute = false;
             startInfo.CreateNoWindow = true;
+            startInfo.StandardOutputEncoding = Encoding.UTF8;
             startInfo.EnvironmentVariables["DOTNET_CLI_UI_LANGUAGE"]
                 = ((string)editorSettings.GetSetting("interface/editor/editor_language")).Replace('_', '-');
 
@@ -102,6 +103,7 @@ namespace GodotTools.Build
             startInfo.RedirectStandardOutput = true;
             startInfo.RedirectStandardError = true;
             startInfo.UseShellExecute = false;
+            startInfo.StandardOutputEncoding = Encoding.UTF8;
             startInfo.EnvironmentVariables["DOTNET_CLI_UI_LANGUAGE"]
                 = ((string)editorSettings.GetSetting("interface/editor/editor_language")).Replace('_', '-');
 
@@ -114,7 +116,6 @@ namespace GodotTools.Build
                 process.OutputDataReceived += (_, e) => stdOutHandler.Invoke(e.Data);
             if (stdErrHandler != null)
                 process.ErrorDataReceived += (_, e) => stdErrHandler.Invoke(e.Data);
-
             process.Start();
 
             process.BeginOutputReadLine();
