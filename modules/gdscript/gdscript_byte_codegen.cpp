@@ -1058,7 +1058,7 @@ void GDScriptByteCodeGenerator::write_call_gdscript_utility(const Address &p_tar
 void GDScriptByteCodeGenerator::write_call_utility(const Address &p_target, const StringName &p_function, const Vector<Address> &p_arguments) {
 	bool is_validated = true;
 	if (Variant::is_utility_function_vararg(p_function)) {
-		is_validated = true; // Vararg works fine with any argument, since they can be any type.
+		is_validated = false; // Vararg needs runtime checks, can't use validated call.
 	} else if (p_arguments.size() == Variant::get_utility_function_argument_count(p_function)) {
 		bool all_types_exact = true;
 		for (int i = 0; i < p_arguments.size(); i++) {
@@ -1107,7 +1107,7 @@ void GDScriptByteCodeGenerator::write_call_builtin_type(const Address &p_target,
 
 	// Check if all types are correct.
 	if (Variant::is_builtin_method_vararg(p_type, p_method)) {
-		is_validated = true; // Vararg works fine with any argument, since they can be any type.
+		is_validated = false; // Vararg needs runtime checks, can't use validated call.
 	} else if (p_arguments.size() == Variant::get_builtin_method_argument_count(p_type, p_method)) {
 		bool all_types_exact = true;
 		for (int i = 0; i < p_arguments.size(); i++) {
