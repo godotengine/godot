@@ -61,7 +61,7 @@ namespace GodotTools.Build
             process.StartInfo.EnvironmentVariables["DOTNET_CLI_UI_LANGUAGE"] = "en-US";
 
             var lines = new List<string>();
-
+            process.StartInfo.StandardOutputEncoding = Encoding.UTF8;
             process.OutputDataReceived += (_, e) =>
             {
                 if (!string.IsNullOrWhiteSpace(e.Data))

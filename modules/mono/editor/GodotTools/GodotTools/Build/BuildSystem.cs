@@ -50,7 +50,7 @@ namespace GodotTools.Build
                 process.OutputDataReceived += (_, e) => stdOutHandler.Invoke(e.Data);
             if (stdErrHandler != null)
                 process.ErrorDataReceived += (_, e) => stdErrHandler.Invoke(e.Data);
-
+            process.StartInfo.StandardOutputEncoding = Encoding.UTF8;
             process.Start();
 
             process.BeginOutputReadLine();
@@ -114,7 +114,7 @@ namespace GodotTools.Build
                 process.OutputDataReceived += (_, e) => stdOutHandler.Invoke(e.Data);
             if (stdErrHandler != null)
                 process.ErrorDataReceived += (_, e) => stdErrHandler.Invoke(e.Data);
-
+            process.StartInfo.StandardOutputEncoding = Encoding.UTF8;
             process.Start();
 
             process.BeginOutputReadLine();
