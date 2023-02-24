@@ -1857,29 +1857,40 @@ void GDScriptAnalyzer::resolve_for(GDScriptParser::ForNode *p_for) {
 					push_error(vformat(R"*(Invalid call for "range()" function. Expected at most 3 arguments, %d given.)*", call->arguments.size()), call->callee);
 				} else {
 					// Now we can optimize it.
-					bool all_is_constant = true;
+					bool can_reduce = true;
 					Vector<Variant> args;
 					args.resize(call->arguments.size());
 					for (int i = 0; i < call->arguments.size(); i++) {
 						GDScriptParser::ExpressionNode *argument = call->arguments[i];
 						reduce_expression(argument);
 
-						if (!argument->is_constant) {
-							all_is_constant = false;
-							break;
+						if (argument->is_constant) {
+							if (argument->reduced_value.get_type() != Variant::INT && argument->reduced_value.get_type() != Variant::FLOAT) {
+								can_reduce = false;
+								push_error(vformat(R"*(Invalid argument for "range()" call. Argument %d should be int or float but "%s" was given.)*", i + 1, Variant::get_type_name(argument->reduced_value.get_type())), argument);
+							}
+							if (can_reduce) {
+								args.write[i] = argument->reduced_value;
+							}
+						} else {
+							can_reduce = false;
+							GDScriptParser::DataType argument_type = argument->get_datatype();
+							if (argument_type.is_variant() || !argument_type.is_hard_type()) {
+								mark_node_unsafe(argument);
+							}
+							if (!argument_type.is_variant() && (argument_type.builtin_type != Variant::INT && argument_type.builtin_type != Variant::FLOAT)) {
+								if (!argument_type.is_hard_type()) {
+									downgrade_node_type_source(argument);
+								} else {
+									push_error(vformat(R"*(Invalid argument for "range()" call. Argument %d should be int or float but "%s" was given.)*", i + 1, argument_type.to_string()), argument);
+								}
+							}
 						}
-						if (argument->reduced_value.get_type() != Variant::INT && argument->reduced_value.get_type() != Variant::FLOAT) {
-							push_error(vformat(R"*(Invalid argument for "range()" call. Argument %d should be int or float but "%s" was given.)*", i + 1, Variant::get_type_name(argument->reduced_value.get_type())), argument);
-							all_is_constant = false;
-							break;
-						}
-
-						args.write[i] = argument->reduced_value;
 					}
 
 					Variant reduced;
 
-					if (all_is_constant) {
+					if (can_reduce) {
 						switch (args.size()) {
 							case 1:
 								reduced = (int32_t)args[0];
