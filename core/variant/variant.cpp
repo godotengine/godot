@@ -2506,6 +2506,11 @@ Variant::Variant(const char32_t *p_wstring) {
 	memnew_placement(_data._mem, String(p_wstring));
 }
 
+Variant::Variant(const wchar_t *p_wstring) {
+	type = STRING;
+	memnew_placement(_data._mem, String(p_wstring));
+}
+
 Variant::Variant(const Vector3 &p_vector3) {
 	type = VECTOR3;
 	memnew_placement(_data._mem, Vector3(p_vector3));
