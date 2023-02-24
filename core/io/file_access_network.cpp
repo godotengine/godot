@@ -469,6 +469,15 @@ void FileAccessNetwork::configure() {
 	GLOBAL_DEF(PropertyInfo(Variant::INT, "network/remote_fs/page_read_ahead", PROPERTY_HINT_RANGE, "0,8,1,or_greater"), 4);
 }
 
+void FileAccessNetwork::close() {
+	_close();
+
+	FileAccessNetworkClient *nc = FileAccessNetworkClient::singleton;
+	nc->lock_mutex();
+	nc->accesses.erase(id);
+	nc->unlock_mutex();
+}
+
 FileAccessNetwork::FileAccessNetwork() {
 	FileAccessNetworkClient *nc = FileAccessNetworkClient::singleton;
 	nc->lock_mutex();

@@ -45,8 +45,6 @@ void GLTFNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_skin", "skin"), &GLTFNode::set_skin);
 	ClassDB::bind_method(D_METHOD("get_skeleton"), &GLTFNode::get_skeleton);
 	ClassDB::bind_method(D_METHOD("set_skeleton", "skeleton"), &GLTFNode::set_skeleton);
-	ClassDB::bind_method(D_METHOD("get_joint"), &GLTFNode::get_joint);
-	ClassDB::bind_method(D_METHOD("set_joint", "joint"), &GLTFNode::set_joint);
 	ClassDB::bind_method(D_METHOD("get_position"), &GLTFNode::get_position);
 	ClassDB::bind_method(D_METHOD("set_position", "position"), &GLTFNode::set_position);
 	ClassDB::bind_method(D_METHOD("get_rotation"), &GLTFNode::get_rotation);
@@ -67,7 +65,6 @@ void GLTFNode::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "camera"), "set_camera", "get_camera"); // GLTFCameraIndex
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "skin"), "set_skin", "get_skin"); // GLTFSkinIndex
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "skeleton"), "set_skeleton", "get_skeleton"); // GLTFSkeletonIndex
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "joint"), "set_joint", "get_joint"); // bool
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "position"), "set_position", "get_position"); // Vector3
 	ADD_PROPERTY(PropertyInfo(Variant::QUATERNION, "rotation"), "set_rotation", "get_rotation"); // Quaternion
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "scale"), "set_scale", "get_scale"); // Vector3
@@ -129,14 +126,6 @@ GLTFSkeletonIndex GLTFNode::get_skeleton() {
 
 void GLTFNode::set_skeleton(GLTFSkeletonIndex p_skeleton) {
 	skeleton = p_skeleton;
-}
-
-bool GLTFNode::get_joint() {
-	return joint;
-}
-
-void GLTFNode::set_joint(bool p_joint) {
-	joint = p_joint;
 }
 
 Vector3 GLTFNode::get_position() {

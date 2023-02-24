@@ -353,12 +353,6 @@ msgstr "Prejsť na predchádzajúci krok"
 msgid "Use Bezier Curves"
 msgstr "Použiť Bezier Curves"
 
-msgid "Anim. Optimizer"
-msgstr "Optimalizér Animácií"
-
-msgid "Max. Angular Error:"
-msgstr "Max. Angular Error:"
-
 msgid "Optimize"
 msgstr "Optimalizácia"
 
@@ -3474,9 +3468,6 @@ msgid ""
 msgstr ""
 "Okluzorový polygón musí byť nastavený (alebo vykreslený) aby sa okluzor "
 "prejavil."
-
-msgid "Must use a valid extension."
-msgstr "Musíte použiť platné rozšírenie."
 
 msgid "Invalid source for preview."
 msgstr "Neplatný zdroj pre predzobrazenie."

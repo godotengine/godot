@@ -39,7 +39,11 @@
 #include <unistd.h>
 
 #ifdef UDEV_ENABLED
+#ifdef SOWRAP_ENABLED
 #include "libudev-so_wrap.h"
+#else
+#include <libudev.h>
+#endif
 #endif
 
 #define LONG_BITS (sizeof(long) * 8)
@@ -70,6 +74,7 @@ void JoypadLinux::Joypad::reset() {
 
 JoypadLinux::JoypadLinux(Input *in) {
 #ifdef UDEV_ENABLED
+#ifdef SOWRAP_ENABLED
 #ifdef DEBUG_ENABLED
 	int dylibloader_verbose = 1;
 #else
@@ -81,6 +86,7 @@ JoypadLinux::JoypadLinux(Input *in) {
 	} else {
 		print_verbose("JoypadLinux: udev enabled, but couldn't be loaded. Falling back to /dev/input to detect joypads.");
 	}
+#endif
 #else
 	print_verbose("JoypadLinux: udev disabled, parsing /dev/input to detect joypads.");
 #endif

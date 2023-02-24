@@ -78,6 +78,12 @@ public:
 	void set_end_position(Vector2 p_position);
 	Vector2 get_end_position() const { return end_position; }
 
+	void set_global_start_position(Vector2 p_position);
+	Vector2 get_global_start_position() const;
+
+	void set_global_end_position(Vector2 p_position);
+	Vector2 get_global_end_position() const;
+
 	void set_enter_cost(real_t p_enter_cost);
 	real_t get_enter_cost() const { return enter_cost; }
 

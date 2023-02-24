@@ -656,6 +656,7 @@ void DisplayServerAndroid::_cursor_set_shape_helper(CursorShape p_shape, bool fo
 }
 
 void DisplayServerAndroid::cursor_set_shape(DisplayServer::CursorShape p_shape) {
+	ERR_FAIL_INDEX(p_shape, CURSOR_MAX);
 	_cursor_set_shape_helper(p_shape);
 }
 
@@ -664,6 +665,7 @@ DisplayServer::CursorShape DisplayServerAndroid::cursor_get_shape() const {
 }
 
 void DisplayServerAndroid::cursor_set_custom_image(const Ref<Resource> &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
+	ERR_FAIL_INDEX(p_shape, CURSOR_MAX);
 	String cursor_path = p_cursor.is_valid() ? p_cursor->get_path() : "";
 	if (!cursor_path.is_empty()) {
 		cursor_path = ProjectSettings::get_singleton()->globalize_path(cursor_path);

@@ -395,6 +395,7 @@ DisplayServer::CursorShape DisplayServerWeb::cursor_get_shape() const {
 }
 
 void DisplayServerWeb::cursor_set_custom_image(const Ref<Resource> &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
+	ERR_FAIL_INDEX(p_shape, CURSOR_MAX);
 	if (p_cursor.is_valid()) {
 		Ref<Texture2D> texture = p_cursor;
 		Ref<AtlasTexture> atlas_texture = p_cursor;

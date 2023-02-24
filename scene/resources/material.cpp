@@ -369,7 +369,15 @@ void ShaderMaterial::set_shader_parameter(const StringName &p_param, const Varia
 		param_cache.erase(p_param);
 		RS::get_singleton()->material_set_param(_get_material(), p_param, Variant());
 	} else {
-		param_cache[p_param] = p_value;
+		Variant *v = param_cache.getptr(p_param);
+		if (!v) {
+			// Never assigned, also update the remap cache.
+			remap_cache["shader_parameter/" + p_param.operator String()] = p_param;
+			param_cache.insert(p_param, p_value);
+		} else {
+			*v = p_value;
+		}
+
 		if (p_value.get_type() == Variant::OBJECT) {
 			RID tex_rid = p_value;
 			if (tex_rid == RID()) {
@@ -955,11 +963,14 @@ void BaseMaterial3D::_update_shader() {
 		} break;
 		case BILLBOARD_PARTICLES: {
 			//make billboard
-			code += "	mat4 mat_world = mat4(normalize(INV_VIEW_MATRIX[0]) * length(MODEL_MATRIX[0]), normalize(INV_VIEW_MATRIX[1]) * length(MODEL_MATRIX[0]),normalize(INV_VIEW_MATRIX[2]) * length(MODEL_MATRIX[2]), MODEL_MATRIX[3]);\n";
+			code += "	mat4 mat_world = mat4(normalize(INV_VIEW_MATRIX[0]), normalize(INV_VIEW_MATRIX[1]) ,normalize(INV_VIEW_MATRIX[2]), MODEL_MATRIX[3]);\n";
 			//rotate by rotation
 			code += "	mat_world = mat_world * mat4(vec4(cos(INSTANCE_CUSTOM.x), -sin(INSTANCE_CUSTOM.x), 0.0, 0.0), vec4(sin(INSTANCE_CUSTOM.x), cos(INSTANCE_CUSTOM.x), 0.0, 0.0), vec4(0.0, 0.0, 1.0, 0.0), vec4(0.0, 0.0, 0.0, 1.0));\n";
 			//set modelview
 			code += "	MODELVIEW_MATRIX = VIEW_MATRIX * mat_world;\n";
+			if (flags[FLAG_BILLBOARD_KEEP_SCALE]) {
+				code += "	MODELVIEW_MATRIX = MODELVIEW_MATRIX * mat4(vec4(length(MODEL_MATRIX[0].xyz), 0.0, 0.0, 0.0),vec4(0.0, length(MODEL_MATRIX[1].xyz), 0.0, 0.0), vec4(0.0, 0.0, length(MODEL_MATRIX[2].xyz), 0.0), vec4(0.0, 0.0, 0.0, 1.0));\n";
+			}
 			//set modelview normal
 			code += "	MODELVIEW_NORMAL_MATRIX = mat3(MODELVIEW_MATRIX);\n";
 

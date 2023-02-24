@@ -50,7 +50,7 @@
 #include "servers/display_server.h"
 
 EditorFileDialog::GetIconFunc EditorFileDialog::get_icon_func = nullptr;
-EditorFileDialog::GetIconFunc EditorFileDialog::get_large_icon_func = nullptr;
+EditorFileDialog::GetIconFunc EditorFileDialog::get_thumbnail_func = nullptr;
 
 EditorFileDialog::RegisterFunc EditorFileDialog::register_func = nullptr;
 EditorFileDialog::RegisterFunc EditorFileDialog::unregister_func = nullptr;
@@ -472,6 +472,14 @@ void EditorFileDialog::_action_pressed() {
 			}
 		}
 
+		// First check we're not having an empty name.
+		String file_name = file_text.strip_edges().get_file();
+		if (file_name.is_empty()) {
+			error_dialog->set_text(TTR("Cannot save file with an empty filename."));
+			error_dialog->popup_centered(Size2(250, 80) * EDSCALE);
+			return;
+		}
+
 		// Add first extension of filter if no valid extension is found.
 		if (!valid) {
 			int idx = filter->get_selected();
@@ -480,9 +488,15 @@ void EditorFileDialog::_action_pressed() {
 			f += "." + ext;
 		}
 
+		if (file_name.begins_with(".")) { // Could still happen if typed manually.
+			error_dialog->set_text(TTR("Cannot save file with a name starting with a dot."));
+			error_dialog->popup_centered(Size2(250, 80) * EDSCALE);
+			return;
+		}
+
 		if (dir_access->file_exists(f) && !disable_overwrite_warning) {
-			confirm_save->set_text(TTR("File exists, overwrite?"));
-			confirm_save->popup_centered(Size2(200, 80));
+			confirm_save->set_text(vformat(TTR("File \"%s\" already exists.\nDo you want to overwrite it?"), f));
+			confirm_save->popup_centered(Size2(250, 80) * EDSCALE);
 		} else {
 			_save_to_recent();
 			hide();
@@ -888,7 +902,15 @@ void EditorFileDialog::update_file_list() {
 			if (get_icon_func) {
 				Ref<Texture2D> icon = get_icon_func(cdir.path_join(files.front()->get()));
 				if (display_mode == DISPLAY_THUMBNAILS) {
-					item_list->set_item_icon(-1, file_thumbnail);
+					Ref<Texture2D> thumbnail;
+					if (get_thumbnail_func) {
+						thumbnail = get_thumbnail_func(cdir.path_join(files.front()->get()));
+					}
+					if (thumbnail.is_null()) {
+						thumbnail = file_thumbnail;
+					}
+
+					item_list->set_item_icon(-1, thumbnail);
 					item_list->set_item_tag_icon(-1, icon);
 				} else {
 					item_list->set_item_icon(-1, icon);
@@ -991,6 +1013,19 @@ void EditorFileDialog::add_filter(const String &p_filter, const String &p_descri
 	}
 	update_filters();
 	invalidate();
+}
+
+void EditorFileDialog::set_filters(const Vector<String> &p_filters) {
+	if (filters == p_filters) {
+		return;
+	}
+	filters = p_filters;
+	update_filters();
+	invalidate();
+}
+
+Vector<String> EditorFileDialog::get_filters() const {
+	return filters;
 }
 
 String EditorFileDialog::get_current_dir() const {
@@ -1548,6 +1583,8 @@ void EditorFileDialog::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("clear_filters"), &EditorFileDialog::clear_filters);
 	ClassDB::bind_method(D_METHOD("add_filter", "filter", "description"), &EditorFileDialog::add_filter, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("set_filters", "filters"), &EditorFileDialog::set_filters);
+	ClassDB::bind_method(D_METHOD("get_filters"), &EditorFileDialog::get_filters);
 	ClassDB::bind_method(D_METHOD("get_current_dir"), &EditorFileDialog::get_current_dir);
 	ClassDB::bind_method(D_METHOD("get_current_file"), &EditorFileDialog::get_current_file);
 	ClassDB::bind_method(D_METHOD("get_current_path"), &EditorFileDialog::get_current_path);
@@ -1557,6 +1594,7 @@ void EditorFileDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_file_mode", "mode"), &EditorFileDialog::set_file_mode);
 	ClassDB::bind_method(D_METHOD("get_file_mode"), &EditorFileDialog::get_file_mode);
 	ClassDB::bind_method(D_METHOD("get_vbox"), &EditorFileDialog::get_vbox);
+	ClassDB::bind_method(D_METHOD("get_line_edit"), &EditorFileDialog::get_line_edit);
 	ClassDB::bind_method(D_METHOD("set_access", "access"), &EditorFileDialog::set_access);
 	ClassDB::bind_method(D_METHOD("get_access"), &EditorFileDialog::get_access);
 	ClassDB::bind_method(D_METHOD("set_show_hidden_files", "show"), &EditorFileDialog::set_show_hidden_files);
@@ -1583,6 +1621,7 @@ void EditorFileDialog::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_dir", PROPERTY_HINT_DIR, "", PROPERTY_USAGE_NONE), "set_current_dir", "get_current_dir");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_file", PROPERTY_HINT_FILE, "*", PROPERTY_USAGE_NONE), "set_current_file", "get_current_file");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "current_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NONE), "set_current_path", "get_current_path");
+	ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "filters"), "set_filters", "get_filters");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "show_hidden_files"), "set_show_hidden_files", "is_showing_hidden_files");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disable_overwrite_warning"), "set_disable_overwrite_warning", "is_overwrite_warning_disabled");
 
@@ -1682,6 +1721,11 @@ EditorFileDialog::EditorFileDialog() {
 	ED_SHORTCUT("file_dialog/focus_path", TTR("Focus Path"), KeyModifierMask::CMD_OR_CTRL | Key::D);
 	ED_SHORTCUT("file_dialog/move_favorite_up", TTR("Move Favorite Up"), KeyModifierMask::CMD_OR_CTRL | Key::UP);
 	ED_SHORTCUT("file_dialog/move_favorite_down", TTR("Move Favorite Down"), KeyModifierMask::CMD_OR_CTRL | Key::DOWN);
+
+	if (EditorSettings::get_singleton()) {
+		ED_SHORTCUT_OVERRIDE("file_dialog/toggle_favorite", "macos", KeyModifierMask::META | KeyModifierMask::CTRL | Key::F);
+		ED_SHORTCUT_OVERRIDE("file_dialog/toggle_mode", "macos", KeyModifierMask::META | KeyModifierMask::CTRL | Key::V);
+	}
 
 	HBoxContainer *pathhb = memnew(HBoxContainer);
 

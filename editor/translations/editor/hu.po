@@ -400,12 +400,6 @@ msgstr "Visszaállítás"
 msgid "Use Bezier Curves"
 msgstr "Bézier görbék használata"
 
-msgid "Anim. Optimizer"
-msgstr "Animáció optimalizáló"
-
-msgid "Max. Angular Error:"
-msgstr "Maximum szög hiba:"
-
 msgid "Optimize"
 msgstr "Optimalizálás"
 
@@ -4407,9 +4401,6 @@ msgstr "Figyelem!"
 
 msgid "Please Confirm..."
 msgstr "Kérjük erősítse meg..."
-
-msgid "Must use a valid extension."
-msgstr "Használjon érvényes kiterjesztést."
 
 msgid "Enable grid minimap."
 msgstr "Rács kistérkép engedélyezése."

@@ -404,12 +404,6 @@ msgstr "Folosește curbe Bezier"
 msgid "Create RESET Track(s)"
 msgstr "Creați o pista RESET"
 
-msgid "Anim. Optimizer"
-msgstr "Optimizator de animație"
-
-msgid "Max. Angular Error:"
-msgstr "Eroare Angulară Max:"
-
 msgid "Optimize"
 msgstr "Optimizați"
 
@@ -1216,9 +1210,6 @@ msgstr "Deschide"
 
 msgid "Select Current Folder"
 msgstr "Selectaţi directorul curent"
-
-msgid "File exists, overwrite?"
-msgstr "Fișierul există, înlocuiți?"
 
 msgid "Select This Folder"
 msgstr "Selectaţi directorul curent"
@@ -3734,9 +3725,6 @@ msgstr "Animație nevalidă: '%s'."
 
 msgid "Nothing connected to input '%s' of node '%s'."
 msgstr "Nimic conectat la intrarea '%s' a nodului '%s'."
-
-msgid "Must use a valid extension."
-msgstr "Trebuie să utilizaţi o extensie valida."
 
 msgid "Enable grid minimap."
 msgstr "Activează minimapa in format grilă."

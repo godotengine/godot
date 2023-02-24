@@ -148,13 +148,8 @@ GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::D
 			}
 		} break;
 		case GDScriptParser::DataType::ENUM:
-			result.has_type = true;
 			result.kind = GDScriptDataType::BUILTIN;
-			if (p_datatype.is_meta_type) {
-				result.builtin_type = Variant::DICTIONARY;
-			} else {
-				result.builtin_type = Variant::INT;
-			}
+			result.builtin_type = p_datatype.builtin_type;
 			break;
 		case GDScriptParser::DataType::RESOLVING:
 		case GDScriptParser::DataType::UNRESOLVED: {
@@ -216,6 +211,10 @@ static bool _can_use_ptrcall(const MethodBind *p_method, const Vector<GDScriptCo
 	return true;
 }
 
+inline static bool is_category_or_group(const PropertyInfo &p_info) {
+	return p_info.usage & PROPERTY_USAGE_CATEGORY || p_info.usage & PROPERTY_USAGE_GROUP || p_info.usage & PROPERTY_USAGE_SUBGROUP;
+}
+
 GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &codegen, Error &r_error, const GDScriptParser::ExpressionNode *p_expression, bool p_root, bool p_initializer, const GDScriptCodeGenerator::Address &p_index_addr) {
 	if (p_expression->is_constant && !(p_expression->get_datatype().is_meta_type && p_expression->get_datatype().kind == GDScriptParser::DataType::CLASS)) {
 		return codegen.add_constant(p_expression->reduced_value);
@@ -251,10 +250,10 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 			// Try members.
 			if (!codegen.function_node || !codegen.function_node->is_static) {
 				// Try member variables.
-				if (codegen.script->member_indices.has(identifier)) {
+				if (codegen.script->member_indices.has(identifier) && !is_category_or_group(codegen.script->member_info[identifier])) {
 					if (codegen.script->member_indices[identifier].getter != StringName() && codegen.script->member_indices[identifier].getter != codegen.function_name) {
 						// Perform getter.
-						GDScriptCodeGenerator::Address temp = codegen.add_temporary();
+						GDScriptCodeGenerator::Address temp = codegen.add_temporary(codegen.script->member_indices[identifier].data_type);
 						Vector<GDScriptCodeGenerator::Address> args; // No argument needed.
 						gen->write_call_self(temp, codegen.script->member_indices[identifier].getter, args);
 						return temp;
@@ -494,17 +493,10 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 		} break;
 		case GDScriptParser::Node::CAST: {
 			const GDScriptParser::CastNode *cn = static_cast<const GDScriptParser::CastNode *>(p_expression);
-			GDScriptParser::DataType og_cast_type = cn->get_datatype();
-			GDScriptDataType cast_type = _gdtype_from_datatype(og_cast_type, codegen.script);
+			GDScriptDataType cast_type = _gdtype_from_datatype(cn->get_datatype(), codegen.script);
 
 			GDScriptCodeGenerator::Address result;
 			if (cast_type.has_type) {
-				if (og_cast_type.kind == GDScriptParser::DataType::ENUM) {
-					// Enum types are usually treated as dictionaries, but in this case we want to cast to an integer.
-					cast_type.kind = GDScriptDataType::BUILTIN;
-					cast_type.builtin_type = Variant::INT;
-				}
-
 				// Create temporary for result first since it will be deleted last.
 				result = codegen.add_temporary(cast_type);
 
@@ -817,28 +809,6 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 						gen->pop_temporary();
 					}
 				} break;
-				case GDScriptParser::BinaryOpNode::OP_TYPE_TEST: {
-					GDScriptCodeGenerator::Address operand = _parse_expression(codegen, r_error, binary->left_operand);
-
-					if (binary->right_operand->type == GDScriptParser::Node::IDENTIFIER && GDScriptParser::get_builtin_type(static_cast<const GDScriptParser::IdentifierNode *>(binary->right_operand)->name) != Variant::VARIANT_MAX) {
-						// `is` with builtin type)
-						Variant::Type type = GDScriptParser::get_builtin_type(static_cast<const GDScriptParser::IdentifierNode *>(binary->right_operand)->name);
-						gen->write_type_test_builtin(result, operand, type);
-					} else {
-						GDScriptCodeGenerator::Address type = _parse_expression(codegen, r_error, binary->right_operand);
-						if (r_error) {
-							return GDScriptCodeGenerator::Address();
-						}
-						gen->write_type_test(result, operand, type);
-						if (type.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-							gen->pop_temporary();
-						}
-					}
-
-					if (operand.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-						gen->pop_temporary();
-					}
-				} break;
 				default: {
 					GDScriptCodeGenerator::Address left_operand = _parse_expression(codegen, r_error, binary->left_operand);
 					GDScriptCodeGenerator::Address right_operand = _parse_expression(codegen, r_error, binary->right_operand);
@@ -891,6 +861,28 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 			}
 
 			gen->write_end_ternary();
+
+			return result;
+		} break;
+		case GDScriptParser::Node::TYPE_TEST: {
+			const GDScriptParser::TypeTestNode *type_test = static_cast<const GDScriptParser::TypeTestNode *>(p_expression);
+			GDScriptCodeGenerator::Address result = codegen.add_temporary(_gdtype_from_datatype(type_test->get_datatype(), codegen.script));
+
+			GDScriptCodeGenerator::Address operand = _parse_expression(codegen, r_error, type_test->operand);
+			GDScriptDataType test_type = _gdtype_from_datatype(type_test->test_datatype, codegen.script);
+			if (r_error) {
+				return GDScriptCodeGenerator::Address();
+			}
+
+			if (test_type.has_type) {
+				gen->write_type_test(result, operand, test_type);
+			} else {
+				gen->write_assign_true(result);
+			}
+
+			if (operand.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
+				gen->pop_temporary();
+			}
 
 			return result;
 		} break;
@@ -2277,13 +2269,15 @@ Error GDScriptCompiler::_populate_class_members(GDScript *p_script, const GDScri
 
 	GDScriptDataType base_type = _gdtype_from_datatype(p_class->base_type, p_script);
 
+	int native_idx = GDScriptLanguage::get_singleton()->get_global_map()[base_type.native_type];
+	p_script->native = GDScriptLanguage::get_singleton()->get_global_array()[native_idx];
+	ERR_FAIL_COND_V(p_script->native.is_null(), ERR_BUG);
+
 	// Inheritance
 	switch (base_type.kind) {
-		case GDScriptDataType::NATIVE: {
-			int native_idx = GDScriptLanguage::get_singleton()->get_global_map()[base_type.native_type];
-			p_script->native = GDScriptLanguage::get_singleton()->get_global_array()[native_idx];
-			ERR_FAIL_COND_V(p_script->native.is_null(), ERR_BUG);
-		} break;
+		case GDScriptDataType::NATIVE:
+			// Nothing more to do.
+			break;
 		case GDScriptDataType::GDSCRIPT: {
 			Ref<GDScript> base = Ref<GDScript>(base_type.script_type);
 			if (base.is_null()) {
@@ -2315,7 +2309,6 @@ Error GDScriptCompiler::_populate_class_members(GDScript *p_script, const GDScri
 			p_script->base = base;
 			p_script->_base = base.ptr();
 			p_script->member_indices = base->member_indices;
-			p_script->native = base->native;
 		} break;
 		default: {
 			_set_error("Parser bug: invalid inheritance.", nullptr);

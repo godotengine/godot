@@ -33,7 +33,7 @@
 		[/csharp]
 		[/codeblocks]
 		In the example above, the file will be saved in the user data folder as specified in the [url=$DOCS_URL/tutorials/io/data_paths.html]Data paths[/url] documentation.
-		There is no method to close a file in order to free it from use. Instead, [FileAccess] will close when it's freed, which happens when it goes out of scope or when it gets assigned with [code]null[/code]. In C# the reference must be disposed after we are done using it, this can be done with the [code]using[/code] statement or calling the [code]Dispose[/code] method directly.
+		[FileAccess] will close when it's freed, which happens when it goes out of scope or when it gets assigned with [code]null[/code]. In C# the reference must be disposed after we are done using it, this can be done with the [code]using[/code] statement or calling the [code]Dispose[/code] method directly.
 		[codeblocks]
 		[gdscript]
 		var file = FileAccess.open("res://something") # File is opened and locked for use.
@@ -52,6 +52,13 @@
 		<link title="3D Voxel Demo">https://godotengine.org/asset-library/asset/676</link>
 	</tutorials>
 	<methods>
+		<method name="close">
+			<return type="void" />
+			<description>
+				Closes the currently opened file and prevents subsequent read/write operations. Use [method flush] to persist the data to disk without closing the file.
+				[b]Note:[/b] [FileAccess] will automatically close when it's freed, which happens when it goes out of scope or when it gets assigned with [code]null[/code]. In C# the reference must be disposed after we are done using it, this can be done with the [code]using[/code] statement or calling the [code]Dispose[/code] method directly.
+			</description>
+		</method>
 		<method name="eof_reached" qualifiers="const">
 			<return type="bool" />
 			<description>

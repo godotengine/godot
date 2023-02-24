@@ -4,17 +4,43 @@
 		Creates a link between two positions that [NavigationServer3D] can route agents through.
 	</brief_description>
 	<description>
-		Creates a link between two positions that [NavigationServer3D] can route agents through.  Links can be used to express navigation methods that aren't just traveling along the surface of the navigation mesh, like zip-lines, teleporters, or jumping across gaps.
+		Creates a link between two positions that [NavigationServer3D] can route agents through. Links can be used to express navigation methods that aren't just traveling along the surface of the navigation mesh, like zip-lines, teleporters, or jumping across gaps.
 	</description>
 	<tutorials>
 		<link title="Using NavigationLinks">$DOCS_URL/tutorials/navigation/navigation_using_navigationlinks.html</link>
 	</tutorials>
 	<methods>
+		<method name="get_global_end_position" qualifiers="const">
+			<return type="Vector3" />
+			<description>
+				Returns the [member end_position] that is relative to the link as a global position.
+			</description>
+		</method>
+		<method name="get_global_start_position" qualifiers="const">
+			<return type="Vector3" />
+			<description>
+				Returns the [member start_position] that is relative to the link as a global position.
+			</description>
+		</method>
 		<method name="get_navigation_layer_value" qualifiers="const">
 			<return type="bool" />
 			<param index="0" name="layer_number" type="int" />
 			<description>
 				Returns whether or not the specified layer of the [member navigation_layers] bitmask is enabled, given a [code]layer_number[/code] between 1 and 32.
+			</description>
+		</method>
+		<method name="set_global_end_position">
+			<return type="void" />
+			<param index="0" name="position" type="Vector3" />
+			<description>
+				Sets the [member end_position] that is relative to the link from a global [param position].
+			</description>
+		</method>
+		<method name="set_global_start_position">
+			<return type="void" />
+			<param index="0" name="position" type="Vector3" />
+			<description>
+				Sets the [member start_position] that is relative to the link from a global [param position].
 			</description>
 		</method>
 		<method name="set_navigation_layer_value">

@@ -416,12 +416,6 @@ msgstr "Áp dụng đặt lại"
 msgid "Use Bezier Curves"
 msgstr "Sử dụng đường cong Bezier"
 
-msgid "Anim. Optimizer"
-msgstr "Bộ tối ưu hóa hoạt hình"
-
-msgid "Max. Angular Error:"
-msgstr "Sai lệch góc lớn nhất:"
-
 msgid "Optimize"
 msgstr "Tối ưu"
 
@@ -1248,9 +1242,6 @@ msgstr "Mở"
 
 msgid "Select Current Folder"
 msgstr "Chọn thư mục hiện tại"
-
-msgid "File exists, overwrite?"
-msgstr "Tệp đã tồn tại, ghi đè chứ?"
 
 msgid "Select This Folder"
 msgstr "Chọn thư mục này"
@@ -5789,17 +5780,11 @@ msgstr "Animation vô hiệu: '%s'."
 msgid "Nothing connected to input '%s' of node '%s'."
 msgstr "Không có kết nối đến input '%s' của node '%s'."
 
-msgid "Pick a color from the editor window."
-msgstr "Chọn một màu từ cửa sổ biên tập."
-
 msgid "Alert!"
 msgstr "Cảnh báo!"
 
 msgid "Please Confirm..."
 msgstr "Xin hãy xác nhận..."
-
-msgid "Must use a valid extension."
-msgstr "Sử dụng phần mở rộng hợp lệ."
 
 msgid "(Other)"
 msgstr "(Khác)"

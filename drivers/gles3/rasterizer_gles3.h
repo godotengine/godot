@@ -67,8 +67,9 @@ protected:
 	GLES3::CopyEffects *copy_effects = nullptr;
 	RasterizerCanvasGLES3 *canvas = nullptr;
 	RasterizerSceneGLES3 *scene = nullptr;
+	static RasterizerGLES3 *singleton;
 
-	void _blit_render_target_to_screen(RID p_render_target, DisplayServer::WindowID p_screen, const Rect2 &p_screen_rect, uint32_t p_layer);
+	void _blit_render_target_to_screen(RID p_render_target, DisplayServer::WindowID p_screen, const Rect2 &p_screen_rect, uint32_t p_layer, bool p_first = true);
 
 public:
 	RendererUtilities *get_utilities() { return utilities; }
@@ -107,6 +108,7 @@ public:
 	_ALWAYS_INLINE_ double get_frame_delta_time() const { return delta; }
 	_ALWAYS_INLINE_ double get_total_time() const { return time_total; }
 
+	static RasterizerGLES3 *get_singleton() { return singleton; }
 	RasterizerGLES3();
 	~RasterizerGLES3();
 };

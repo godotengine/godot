@@ -32,11 +32,10 @@
 #define OGG_PACKET_SEQUENCE_H
 
 #include "core/io/resource.h"
-#include "core/object/gdvirtual.gen.inc"
-#include "core/variant/native_ptr.h"
 #include "core/variant/typed_array.h"
 #include "core/variant/variant.h"
-#include "thirdparty/libogg/ogg/ogg.h"
+
+#include <ogg/ogg.h>
 
 class OggPacketSequencePlayback;
 

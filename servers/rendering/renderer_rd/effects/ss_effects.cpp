@@ -484,7 +484,7 @@ void SSEffects::downsample_depth(Ref<RenderSceneBuffersRD> p_render_buffers, uin
 		downsample_uniform_set = uniform_set_cache->get_cache_vec(shader, 2, u_depths);
 	}
 
-	float depth_linearize_mul = -p_projection.columns[3][2];
+	float depth_linearize_mul = -p_projection.columns[3][2] * 0.5;
 	float depth_linearize_add = p_projection.columns[2][2];
 	if (depth_linearize_mul * depth_linearize_add < 0) {
 		depth_linearize_add = -depth_linearize_add;
@@ -572,7 +572,15 @@ void SSEffects::gather_ssil(RD::ComputeListID p_compute_list, const RID *p_ssil_
 		RD::get_singleton()->compute_list_bind_uniform_set(p_compute_list, uniform_set_cache->get_cache(shader, 2, u_ssil_slice, u_edges_slice), 2);
 		RD::get_singleton()->compute_list_set_push_constant(p_compute_list, &ssil.gather_push_constant, sizeof(SSILGatherPushConstant));
 
-		Size2i size = Size2i(p_settings.full_screen_size.x >> (ssil_half_size ? 2 : 1), p_settings.full_screen_size.y >> (ssil_half_size ? 2 : 1));
+		Size2i size;
+		// Calculate size same way as we created the buffer
+		if (ssil_half_size) {
+			size.x = (p_settings.full_screen_size.x + 3) / 4;
+			size.y = (p_settings.full_screen_size.y + 3) / 4;
+		} else {
+			size.x = (p_settings.full_screen_size.x + 1) / 2;
+			size.y = (p_settings.full_screen_size.y + 1) / 2;
+		}
 
 		RD::get_singleton()->compute_list_dispatch_threads(p_compute_list, size.x, size.y, 1);
 	}
@@ -668,8 +676,14 @@ void SSEffects::screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_rende
 		ssil.gather_push_constant.screen_size[0] = p_settings.full_screen_size.x;
 		ssil.gather_push_constant.screen_size[1] = p_settings.full_screen_size.y;
 
-		ssil.gather_push_constant.half_screen_pixel_size[0] = 1.0 / p_ssil_buffers.buffer_width;
-		ssil.gather_push_constant.half_screen_pixel_size[1] = 1.0 / p_ssil_buffers.buffer_height;
+		ssil.gather_push_constant.half_screen_pixel_size[0] = 2.0 / p_settings.full_screen_size.x;
+		ssil.gather_push_constant.half_screen_pixel_size[1] = 2.0 / p_settings.full_screen_size.y;
+		if (ssil_half_size) {
+			ssil.gather_push_constant.half_screen_pixel_size[0] *= 2.0;
+			ssil.gather_push_constant.half_screen_pixel_size[1] *= 2.0;
+		}
+		ssil.gather_push_constant.half_screen_pixel_size_x025[0] = ssil.gather_push_constant.half_screen_pixel_size[0] * 0.75;
+		ssil.gather_push_constant.half_screen_pixel_size_x025[1] = ssil.gather_push_constant.half_screen_pixel_size[1] * 0.75;
 		float tan_half_fov_x = 1.0 / p_projection.columns[0][0];
 		float tan_half_fov_y = 1.0 / p_projection.columns[1][1];
 		ssil.gather_push_constant.NDC_to_view_mul[0] = tan_half_fov_x * 2.0;
@@ -679,9 +693,6 @@ void SSEffects::screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_rende
 		ssil.gather_push_constant.z_near = p_projection.get_z_near();
 		ssil.gather_push_constant.z_far = p_projection.get_z_far();
 		ssil.gather_push_constant.is_orthogonal = p_projection.is_orthogonal();
-
-		ssil.gather_push_constant.half_screen_pixel_size_x025[0] = ssil.gather_push_constant.half_screen_pixel_size[0] * 0.25;
-		ssil.gather_push_constant.half_screen_pixel_size_x025[1] = ssil.gather_push_constant.half_screen_pixel_size[1] * 0.25;
 
 		ssil.gather_push_constant.radius = p_settings.radius;
 		float radius_near_limit = (p_settings.radius * 1.2f);
@@ -733,7 +744,7 @@ void SSEffects::screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_rende
 			RD::Uniform u_depth_texture_view;
 			u_depth_texture_view.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
 			u_depth_texture_view.binding = 0;
-			u_depth_texture_view.append_id(default_sampler);
+			u_depth_texture_view.append_id(ss_effects.mirror_sampler);
 			u_depth_texture_view.append_id(depth_texture_view);
 
 			RD::Uniform u_normal_buffer;
@@ -884,8 +895,9 @@ void SSEffects::screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_rende
 
 				RD::get_singleton()->compute_list_set_push_constant(compute_list, &ssil.blur_push_constant, sizeof(SSILBlurPushConstant));
 
-				int x_groups = (p_settings.full_screen_size.x >> (ssil_half_size ? 2 : 1));
-				int y_groups = (p_settings.full_screen_size.y >> (ssil_half_size ? 2 : 1));
+				// Use the size of the actual buffer we're processing here or we won't cover the entire image.
+				int x_groups = p_ssil_buffers.buffer_width;
+				int y_groups = p_ssil_buffers.buffer_height;
 
 				RD::get_singleton()->compute_list_dispatch_threads(compute_list, x_groups, y_groups, 1);
 				if (ssil_quality > RS::ENV_SSIL_QUALITY_VERY_LOW) {
@@ -982,7 +994,15 @@ void SSEffects::gather_ssao(RD::ComputeListID p_compute_list, const RID *p_ao_sl
 		RD::get_singleton()->compute_list_bind_uniform_set(p_compute_list, uniform_set_cache->get_cache(shader, 2, u_ao_slice), 2);
 		RD::get_singleton()->compute_list_set_push_constant(p_compute_list, &ssao.gather_push_constant, sizeof(SSAOGatherPushConstant));
 
-		Size2i size = Size2i(p_settings.full_screen_size.x >> (ssao_half_size ? 2 : 1), p_settings.full_screen_size.y >> (ssao_half_size ? 2 : 1));
+		Size2i size;
+		// Make sure we use the same size as with which our buffer was created
+		if (ssao_half_size) {
+			size.x = (p_settings.full_screen_size.x + 3) / 4;
+			size.y = (p_settings.full_screen_size.y + 3) / 4;
+		} else {
+			size.x = (p_settings.full_screen_size.x + 1) / 2;
+			size.y = (p_settings.full_screen_size.y + 1) / 2;
+		}
 
 		RD::get_singleton()->compute_list_dispatch_threads(p_compute_list, size.x, size.y, 1);
 	}
@@ -1056,8 +1076,14 @@ void SSEffects::generate_ssao(Ref<RenderSceneBuffersRD> p_render_buffers, SSAORe
 		ssao.gather_push_constant.screen_size[0] = p_settings.full_screen_size.x;
 		ssao.gather_push_constant.screen_size[1] = p_settings.full_screen_size.y;
 
-		ssao.gather_push_constant.half_screen_pixel_size[0] = 1.0 / p_ssao_buffers.buffer_width;
-		ssao.gather_push_constant.half_screen_pixel_size[1] = 1.0 / p_ssao_buffers.buffer_height;
+		ssao.gather_push_constant.half_screen_pixel_size[0] = 2.0 / p_settings.full_screen_size.x;
+		ssao.gather_push_constant.half_screen_pixel_size[1] = 2.0 / p_settings.full_screen_size.y;
+		if (ssao_half_size) {
+			ssao.gather_push_constant.half_screen_pixel_size[0] *= 2.0;
+			ssao.gather_push_constant.half_screen_pixel_size[1] *= 2.0;
+		}
+		ssao.gather_push_constant.half_screen_pixel_size_x025[0] = ssao.gather_push_constant.half_screen_pixel_size[0] * 0.75;
+		ssao.gather_push_constant.half_screen_pixel_size_x025[1] = ssao.gather_push_constant.half_screen_pixel_size[1] * 0.75;
 		float tan_half_fov_x = 1.0 / p_projection.columns[0][0];
 		float tan_half_fov_y = 1.0 / p_projection.columns[1][1];
 		ssao.gather_push_constant.NDC_to_view_mul[0] = tan_half_fov_x * 2.0;
@@ -1065,9 +1091,6 @@ void SSEffects::generate_ssao(Ref<RenderSceneBuffersRD> p_render_buffers, SSAORe
 		ssao.gather_push_constant.NDC_to_view_add[0] = tan_half_fov_x * -1.0;
 		ssao.gather_push_constant.NDC_to_view_add[1] = tan_half_fov_y;
 		ssao.gather_push_constant.is_orthogonal = p_projection.is_orthogonal();
-
-		ssao.gather_push_constant.half_screen_pixel_size_x025[0] = ssao.gather_push_constant.half_screen_pixel_size[0] * 0.25;
-		ssao.gather_push_constant.half_screen_pixel_size_x025[1] = ssao.gather_push_constant.half_screen_pixel_size[1] * 0.25;
 
 		ssao.gather_push_constant.radius = p_settings.radius;
 		float radius_near_limit = (p_settings.radius * 1.2f);
@@ -1105,7 +1128,7 @@ void SSEffects::generate_ssao(Ref<RenderSceneBuffersRD> p_render_buffers, SSAORe
 			RD::Uniform u_depth_texture_view;
 			u_depth_texture_view.uniform_type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
 			u_depth_texture_view.binding = 0;
-			u_depth_texture_view.append_id(default_sampler);
+			u_depth_texture_view.append_id(ss_effects.mirror_sampler);
 			u_depth_texture_view.append_id(depth_texture_view);
 
 			RD::Uniform u_normal_buffer;
@@ -1260,8 +1283,7 @@ void SSEffects::generate_ssao(Ref<RenderSceneBuffersRD> p_render_buffers, SSAORe
 				}
 				RD::get_singleton()->compute_list_set_push_constant(compute_list, &ssao.blur_push_constant, sizeof(SSAOBlurPushConstant));
 
-				Size2i size(p_settings.full_screen_size.x >> (ssao_half_size ? 2 : 1), p_settings.full_screen_size.y >> (ssao_half_size ? 2 : 1));
-				RD::get_singleton()->compute_list_dispatch_threads(compute_list, size.x, size.y, 1);
+				RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_ssao_buffers.buffer_width, p_ssao_buffers.buffer_height, 1);
 			}
 
 			if (ssao_quality > RS::ENV_SSAO_QUALITY_VERY_LOW) {

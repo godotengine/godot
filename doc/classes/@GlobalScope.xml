@@ -1140,7 +1140,7 @@
 			<return type="float" />
 			<param index="0" name="x" type="float" />
 			<description>
-				Returns [code]-1.0[/code] if [param x] is negative, [code]1.0[/code] if [param x] is positive, and [code]0.0[/code] if if [param x] is zero.
+				Returns [code]-1.0[/code] if [param x] is negative, [code]1.0[/code] if [param x] is positive, and [code]0.0[/code] if [param x] is zero.
 				[codeblock]
 				sign(-6.5) # Returns -1.0
 				sign(0.0)  # Returns 0.0

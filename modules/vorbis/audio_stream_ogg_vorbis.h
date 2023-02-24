@@ -34,7 +34,8 @@
 #include "core/variant/variant.h"
 #include "modules/ogg/ogg_packet_sequence.h"
 #include "servers/audio/audio_stream.h"
-#include "thirdparty/libvorbis/vorbis/codec.h"
+
+#include <vorbis/codec.h>
 
 class AudioStreamOggVorbis;
 

@@ -74,7 +74,7 @@
 		<method name="is_echo" qualifiers="const">
 			<return type="bool" />
 			<description>
-				Returns [code]true[/code] if this input event is an echo event (only for events of type [InputEventKey]).
+				Returns [code]true[/code] if this input event is an echo event (only for events of type [InputEventKey]). Any other event type returns [code]false[/code].
 			</description>
 		</method>
 		<method name="is_match" qualifiers="const">

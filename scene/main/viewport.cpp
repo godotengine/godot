@@ -1330,7 +1330,7 @@ void Viewport::_gui_show_tooltip() {
 	Window *window = gui.tooltip_popup->get_parent_visible_window();
 	Rect2i vr;
 	if (gui.tooltip_popup->is_embedded()) {
-		vr = gui.tooltip_popup->_get_embedder()->get_visible_rect();
+		vr = gui.tooltip_popup->get_embedder()->get_visible_rect();
 	} else {
 		vr = window->get_usable_parent_rect();
 	}
@@ -1851,7 +1851,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 				Window *w = Object::cast_to<Window>(this);
 				if (w) {
 					if (w->is_embedded()) {
-						embedder = w->_get_embedder();
+						embedder = w->get_embedder();
 
 						viewport_pos = get_final_transform().xform(mpos) + w->get_position(); // To parent coords.
 					}

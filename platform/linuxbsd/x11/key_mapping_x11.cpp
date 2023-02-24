@@ -217,8 +217,8 @@ void KeyMappingX11::initialize() {
 	scancode_map[0x1F] = Key::I;
 	scancode_map[0x20] = Key::O;
 	scancode_map[0x21] = Key::P;
-	scancode_map[0x22] = Key::BRACELEFT;
-	scancode_map[0x23] = Key::BRACERIGHT;
+	scancode_map[0x22] = Key::BRACKETLEFT;
+	scancode_map[0x23] = Key::BRACKETRIGHT;
 	scancode_map[0x24] = Key::ENTER;
 	scancode_map[0x25] = Key::CTRL;
 	scancode_map[0x26] = Key::A;
@@ -232,7 +232,7 @@ void KeyMappingX11::initialize() {
 	scancode_map[0x2E] = Key::L;
 	scancode_map[0x2F] = Key::SEMICOLON;
 	scancode_map[0x30] = Key::APOSTROPHE;
-	scancode_map[0x31] = Key::SECTION;
+	scancode_map[0x31] = Key::QUOTELEFT;
 	scancode_map[0x32] = Key::SHIFT;
 	scancode_map[0x33] = Key::BACKSLASH;
 	scancode_map[0x34] = Key::Z;
@@ -275,7 +275,7 @@ void KeyMappingX11::initialize() {
 	scancode_map[0x59] = Key::KP_3;
 	scancode_map[0x5A] = Key::KP_0;
 	scancode_map[0x5B] = Key::KP_PERIOD;
-	scancode_map[0x5E] = Key::QUOTELEFT;
+	scancode_map[0x5E] = Key::SECTION;
 	scancode_map[0x5F] = Key::F11;
 	scancode_map[0x60] = Key::F12;
 	scancode_map[0x68] = Key::KP_ENTER;

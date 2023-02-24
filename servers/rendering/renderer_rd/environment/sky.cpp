@@ -276,7 +276,7 @@ void SkyRD::ReflectionData::update_reflection_data(int p_size, int p_mipmaps, bo
 	int mipmaps = p_mipmaps;
 	uint32_t w = p_size, h = p_size;
 
-	EffectsRD *effects = RendererCompositorRD::singleton->get_effects();
+	EffectsRD *effects = RendererCompositorRD::get_singleton()->get_effects();
 	ERR_FAIL_NULL_MSG(effects, "Effects haven't been initialized");
 	bool prefer_raster_effects = effects->get_prefer_raster_effects();
 
@@ -756,7 +756,7 @@ void SkyRD::init() {
 
 		sky_shader.shader.initialize(sky_modes, defines);
 
-		if (!RendererCompositorRD::singleton->is_xr_enabled()) {
+		if (!RendererCompositorRD::get_singleton()->is_xr_enabled()) {
 			sky_shader.shader.set_variant_enabled(SKY_VERSION_BACKGROUND_MULTIVIEW, false);
 			sky_shader.shader.set_variant_enabled(SKY_VERSION_HALF_RES_MULTIVIEW, false);
 			sky_shader.shader.set_variant_enabled(SKY_VERSION_QUARTER_RES_MULTIVIEW, false);

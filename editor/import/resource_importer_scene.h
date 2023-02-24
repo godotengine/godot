@@ -39,6 +39,7 @@
 #include "scene/resources/box_shape_3d.h"
 #include "scene/resources/capsule_shape_3d.h"
 #include "scene/resources/cylinder_shape_3d.h"
+#include "scene/resources/importer_mesh.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/shape_3d.h"
 #include "scene/resources/sphere_shape_3d.h"
@@ -298,7 +299,7 @@ public:
 	ResourceImporterScene(bool p_animation_import = false);
 
 	template <class M>
-	static Vector<Ref<Shape3D>> get_collision_shapes(const Ref<Mesh> &p_mesh, const M &p_options, float p_applied_root_scale);
+	static Vector<Ref<Shape3D>> get_collision_shapes(const Ref<ImporterMesh> &p_mesh, const M &p_options, float p_applied_root_scale);
 
 	template <class M>
 	static Transform3D get_collision_shapes_transform(const M &p_options);
@@ -314,7 +315,8 @@ public:
 };
 
 template <class M>
-Vector<Ref<Shape3D>> ResourceImporterScene::get_collision_shapes(const Ref<Mesh> &p_mesh, const M &p_options, float p_applied_root_scale) {
+Vector<Ref<Shape3D>> ResourceImporterScene::get_collision_shapes(const Ref<ImporterMesh> &p_mesh, const M &p_options, float p_applied_root_scale) {
+	ERR_FAIL_COND_V(p_mesh.is_null(), Vector<Ref<Shape3D>>());
 	ShapeType generate_shape_type = SHAPE_TYPE_DECOMPOSE_CONVEX;
 	if (p_options.has(SNAME("physics/shape_type"))) {
 		generate_shape_type = (ShapeType)p_options[SNAME("physics/shape_type")].operator int();
@@ -373,7 +375,7 @@ Vector<Ref<Shape3D>> ResourceImporterScene::get_collision_shapes(const Ref<Mesh>
 			}
 
 			if (p_options.has(SNAME("decomposition/max_convex_hulls"))) {
-				decomposition_settings.max_convex_hulls = p_options[SNAME("decomposition/max_convex_hulls")];
+				decomposition_settings.max_convex_hulls = MAX(1, (int)p_options[SNAME("decomposition/max_convex_hulls")]);
 			}
 
 			if (p_options.has(SNAME("decomposition/project_hull_vertices"))) {
@@ -410,6 +412,8 @@ Vector<Ref<Shape3D>> ResourceImporterScene::get_collision_shapes(const Ref<Mesh>
 		box.instantiate();
 		if (p_options.has(SNAME("primitive/size"))) {
 			box->set_size(p_options[SNAME("primitive/size")].operator Vector3() * p_applied_root_scale);
+		} else {
+			box->set_size(Vector3(2, 2, 2) * p_applied_root_scale);
 		}
 
 		Vector<Ref<Shape3D>> shapes;
@@ -421,6 +425,8 @@ Vector<Ref<Shape3D>> ResourceImporterScene::get_collision_shapes(const Ref<Mesh>
 		sphere.instantiate();
 		if (p_options.has(SNAME("primitive/radius"))) {
 			sphere->set_radius(p_options[SNAME("primitive/radius")].operator float() * p_applied_root_scale);
+		} else {
+			sphere->set_radius(1.0f * p_applied_root_scale);
 		}
 
 		Vector<Ref<Shape3D>> shapes;
@@ -431,9 +437,13 @@ Vector<Ref<Shape3D>> ResourceImporterScene::get_collision_shapes(const Ref<Mesh>
 		cylinder.instantiate();
 		if (p_options.has(SNAME("primitive/height"))) {
 			cylinder->set_height(p_options[SNAME("primitive/height")].operator float() * p_applied_root_scale);
+		} else {
+			cylinder->set_height(1.0f * p_applied_root_scale);
 		}
 		if (p_options.has(SNAME("primitive/radius"))) {
 			cylinder->set_radius(p_options[SNAME("primitive/radius")].operator float() * p_applied_root_scale);
+		} else {
+			cylinder->set_radius(1.0f * p_applied_root_scale);
 		}
 
 		Vector<Ref<Shape3D>> shapes;
@@ -444,9 +454,13 @@ Vector<Ref<Shape3D>> ResourceImporterScene::get_collision_shapes(const Ref<Mesh>
 		capsule.instantiate();
 		if (p_options.has(SNAME("primitive/height"))) {
 			capsule->set_height(p_options[SNAME("primitive/height")].operator float() * p_applied_root_scale);
+		} else {
+			capsule->set_height(1.0f * p_applied_root_scale);
 		}
 		if (p_options.has(SNAME("primitive/radius"))) {
 			capsule->set_radius(p_options[SNAME("primitive/radius")].operator float() * p_applied_root_scale);
+		} else {
+			capsule->set_radius(1.0f * p_applied_root_scale);
 		}
 
 		Vector<Ref<Shape3D>> shapes;

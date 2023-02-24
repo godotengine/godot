@@ -1560,7 +1560,7 @@ void EditorFileSystem::_update_script_classes() {
 
 			ScriptServer::add_global_class(efd->files[index]->script_class_name, efd->files[index]->script_class_extends, lang, path);
 			EditorNode::get_editor_data().script_class_set_icon_path(efd->files[index]->script_class_name, efd->files[index]->script_class_icon_path);
-			EditorNode::get_editor_data().script_class_set_name(efd->files[index]->file, efd->files[index]->script_class_name);
+			EditorNode::get_editor_data().script_class_set_name(path, efd->files[index]->script_class_name);
 		}
 	}
 

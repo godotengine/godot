@@ -32,6 +32,11 @@
 			<description>
 			</description>
 		</method>
+		<method name="_get_global_name" qualifiers="virtual const">
+			<return type="StringName" />
+			<description>
+			</description>
+		</method>
 		<method name="_get_instance_base_type" qualifiers="virtual const">
 			<return type="StringName" />
 			<description>

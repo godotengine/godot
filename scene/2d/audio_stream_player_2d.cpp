@@ -234,7 +234,7 @@ float AudioStreamPlayer2D::get_volume_db() const {
 }
 
 void AudioStreamPlayer2D::set_pitch_scale(float p_pitch_scale) {
-	ERR_FAIL_COND(p_pitch_scale <= 0.0);
+	ERR_FAIL_COND(!(p_pitch_scale > 0.0));
 	pitch_scale = p_pitch_scale;
 	for (Ref<AudioStreamPlayback> &playback : stream_playbacks) {
 		AudioServer::get_singleton()->set_playback_pitch_scale(playback, p_pitch_scale);

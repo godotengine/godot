@@ -4141,6 +4141,13 @@ void EditorPropertyResource::_notification(int p_what) {
 				_update_property_bg();
 			}
 		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			const EditorInspector *ei = get_parent_inspector();
+			if (ei && !ei->is_main_editor_inspector()) {
+				fold_resource();
+			}
+		} break;
 	}
 }
 
@@ -4174,9 +4181,12 @@ struct EditorPropertyRangeHint {
 	bool radians = false;
 };
 
-static EditorPropertyRangeHint _parse_range_hint(PropertyHint p_hint, const String &p_hint_text, double p_default_step) {
+static EditorPropertyRangeHint _parse_range_hint(PropertyHint p_hint, const String &p_hint_text, double p_default_step, bool is_int = false) {
 	EditorPropertyRangeHint hint;
 	hint.step = p_default_step;
+	if (is_int) {
+		hint.hide_slider = false; // Always show slider for ints, unless specified in hint range.
+	}
 	Vector<String> slices = p_hint_text.split(",");
 	if (p_hint == PROPERTY_HINT_RANGE) {
 		ERR_FAIL_COND_V_MSG(slices.size() < 2, hint,
@@ -4294,7 +4304,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 			} else {
 				EditorPropertyInteger *editor = memnew(EditorPropertyInteger);
 
-				EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, 1);
+				EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, 1, true);
 				editor->setup(hint.min, hint.max, hint.step, hint.hide_slider, hint.or_greater, hint.or_less, hint.suffix);
 
 				return editor;
@@ -4383,7 +4393,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 		} break;
 		case Variant::VECTOR2I: {
 			EditorPropertyVector2i *editor = memnew(EditorPropertyVector2i(p_wide));
-			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, 1);
+			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, 1, true);
 			editor->setup(hint.min, hint.max, p_hint == PROPERTY_HINT_LINK, hint.suffix);
 			return editor;
 
@@ -4396,7 +4406,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 		} break;
 		case Variant::RECT2I: {
 			EditorPropertyRect2i *editor = memnew(EditorPropertyRect2i(p_wide));
-			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, 1);
+			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, 1, true);
 			editor->setup(hint.min, hint.max, hint.suffix);
 
 			return editor;
@@ -4410,7 +4420,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 		} break;
 		case Variant::VECTOR3I: {
 			EditorPropertyVector3i *editor = memnew(EditorPropertyVector3i(p_wide));
-			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, 1);
+			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, 1, true);
 			editor->setup(hint.min, hint.max, p_hint == PROPERTY_HINT_LINK, hint.suffix);
 			return editor;
 
@@ -4424,7 +4434,7 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 		} break;
 		case Variant::VECTOR4I: {
 			EditorPropertyVector4i *editor = memnew(EditorPropertyVector4i);
-			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, 1);
+			EditorPropertyRangeHint hint = _parse_range_hint(p_hint, p_hint_text, 1, true);
 			editor->setup(hint.min, hint.max, hint.suffix);
 			return editor;
 

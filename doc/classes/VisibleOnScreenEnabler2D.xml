@@ -24,7 +24,7 @@
 			Corresponds to [constant Node.PROCESS_MODE_ALWAYS].
 		</constant>
 		<constant name="ENABLE_MODE_WHEN_PAUSED" value="2" enum="EnableMode">
-			Corresponds to [constant Node.PROCESS_MODE_WHEN_PAUSED.
+			Corresponds to [constant Node.PROCESS_MODE_WHEN_PAUSED].
 		</constant>
 	</constants>
 </class>

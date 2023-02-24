@@ -142,24 +142,23 @@ void SceneImportSettings::_fill_material(Tree *p_tree, const Ref<Material> &p_ma
 	String import_id;
 	bool has_import_id = false;
 
-	bool created = false;
-	if (!material_set.has(p_material)) {
-		material_set.insert(p_material);
-		created = true;
-	}
-
 	if (p_material->has_meta("import_id")) {
 		import_id = p_material->get_meta("import_id");
 		has_import_id = true;
 	} else if (!p_material->get_name().is_empty()) {
 		import_id = p_material->get_name();
 		has_import_id = true;
+	} else if (unnamed_material_name_map.has(p_material)) {
+		import_id = unnamed_material_name_map[p_material];
 	} else {
-		import_id = "@MATERIAL:" + itos(material_set.size() - 1);
+		import_id = "@MATERIAL:" + itos(material_map.size());
+		unnamed_material_name_map[p_material] = import_id;
 	}
 
+	bool created = false;
 	if (!material_map.has(import_id)) {
 		MaterialData md;
+		created = true;
 		md.has_import_id = has_import_id;
 		md.material = p_material;
 
@@ -169,6 +168,7 @@ void SceneImportSettings::_fill_material(Tree *p_tree, const Ref<Material> &p_ma
 	}
 
 	MaterialData &material_data = material_map[import_id];
+	ERR_FAIL_COND(p_material != material_data.material);
 
 	Ref<Texture2D> icon = get_theme_icon(SNAME("StandardMaterial3D"), SNAME("EditorIcons"));
 
@@ -444,9 +444,45 @@ void SceneImportSettings::_update_view_gizmos() {
 		collider_view->set_visible(show_collider_view);
 		if (generate_collider) {
 			// This collider_view doesn't have a mesh so we need to generate a new one.
+			Ref<ImporterMesh> mesh;
+			mesh.instantiate();
+			// ResourceImporterScene::get_collision_shapes() expects ImporterMesh, not Mesh.
+			// TODO: Duplicate code with EditorSceneFormatImporterESCN::import_scene()
+			// Consider making a utility function to convert from Mesh to ImporterMesh.
+			Ref<Mesh> mesh_3d_mesh = mesh_node->get_mesh();
+			Ref<ArrayMesh> array_mesh_3d_mesh = mesh_3d_mesh;
+			if (array_mesh_3d_mesh.is_valid()) {
+				// For the MeshInstance3D nodes, we need to convert the ArrayMesh to an ImporterMesh specially.
+				mesh->set_name(array_mesh_3d_mesh->get_name());
+				for (int32_t blend_i = 0; blend_i < array_mesh_3d_mesh->get_blend_shape_count(); blend_i++) {
+					mesh->add_blend_shape(array_mesh_3d_mesh->get_blend_shape_name(blend_i));
+				}
+				for (int32_t surface_i = 0; surface_i < array_mesh_3d_mesh->get_surface_count(); surface_i++) {
+					mesh->add_surface(array_mesh_3d_mesh->surface_get_primitive_type(surface_i),
+							array_mesh_3d_mesh->surface_get_arrays(surface_i),
+							array_mesh_3d_mesh->surface_get_blend_shape_arrays(surface_i),
+							array_mesh_3d_mesh->surface_get_lods(surface_i),
+							array_mesh_3d_mesh->surface_get_material(surface_i),
+							array_mesh_3d_mesh->surface_get_name(surface_i),
+							array_mesh_3d_mesh->surface_get_format(surface_i));
+				}
+				mesh->set_blend_shape_mode(array_mesh_3d_mesh->get_blend_shape_mode());
+			} else if (mesh_3d_mesh.is_valid()) {
+				// For the MeshInstance3D nodes, we need to convert the Mesh to an ImporterMesh specially.
+				mesh->set_name(mesh_3d_mesh->get_name());
+				for (int32_t surface_i = 0; surface_i < mesh_3d_mesh->get_surface_count(); surface_i++) {
+					mesh->add_surface(mesh_3d_mesh->surface_get_primitive_type(surface_i),
+							mesh_3d_mesh->surface_get_arrays(surface_i),
+							Array(),
+							mesh_3d_mesh->surface_get_lods(surface_i),
+							mesh_3d_mesh->surface_get_material(surface_i),
+							mesh_3d_mesh->surface_get_material(surface_i).is_valid() ? mesh_3d_mesh->surface_get_material(surface_i)->get_name() : String(),
+							mesh_3d_mesh->surface_get_format(surface_i));
+				}
+			}
 
 			// Generate the mesh collider.
-			Vector<Ref<Shape3D>> shapes = ResourceImporterScene::get_collision_shapes(mesh_node->get_mesh(), e.value.settings, 1.0);
+			Vector<Ref<Shape3D>> shapes = ResourceImporterScene::get_collision_shapes(mesh, e.value.settings, 1.0);
 			const Transform3D transform = ResourceImporterScene::get_collision_shapes_transform(e.value.settings);
 
 			Ref<ArrayMesh> collider_view_mesh;
@@ -558,16 +594,19 @@ void SceneImportSettings::open_settings(const String &p_path, bool p_for_animati
 	// Visibility
 	data_mode->set_tab_hidden(1, p_for_animation);
 	data_mode->set_tab_hidden(2, p_for_animation);
+	if (p_for_animation) {
+		data_mode->set_current_tab(0);
+	}
 
 	action_menu->get_popup()->set_item_disabled(action_menu->get_popup()->get_item_id(ACTION_EXTRACT_MATERIALS), p_for_animation);
 	action_menu->get_popup()->set_item_disabled(action_menu->get_popup()->get_item_id(ACTION_CHOOSE_MESH_SAVE_PATHS), p_for_animation);
 
 	base_path = p_path;
 
-	material_set.clear();
 	mesh_set.clear();
 	animation_map.clear();
 	material_map.clear();
+	unnamed_material_name_map.clear();
 	mesh_map.clear();
 	node_map.clear();
 	defaults.clear();

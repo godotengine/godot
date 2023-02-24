@@ -390,12 +390,6 @@ msgstr "Ir ao Anterior Paso"
 msgid "Use Bezier Curves"
 msgstr "Usar Curvas Bezier"
 
-msgid "Anim. Optimizer"
-msgstr "Optimizador de Animación"
-
-msgid "Max. Angular Error:"
-msgstr "Erro Angular Máximo:"
-
 msgid "Optimize"
 msgstr "Optimizar"
 
@@ -3896,9 +3890,6 @@ msgstr "Engadir Acción de Entrada"
 
 msgid "Erase Input Action"
 msgstr "Eliminar Acción de Entrada"
-
-msgid "Rename Input Action Event"
-msgstr "Renomear Evento de Entrada"
 
 msgid "Project Settings (project.godot)"
 msgstr "Configuración do Proxecto (project.godot)"

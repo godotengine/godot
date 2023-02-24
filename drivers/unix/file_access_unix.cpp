@@ -318,6 +318,10 @@ Error FileAccessUnix::_set_unix_permissions(const String &p_file, uint32_t p_per
 	return FAILED;
 }
 
+void FileAccessUnix::close() {
+	_close();
+}
+
 CloseNotificationFunc FileAccessUnix::close_notification_func = nullptr;
 
 FileAccessUnix::~FileAccessUnix() {

@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  godot_view_gesture_recognizer.h                                       */
+/*  condition_variable.h                                                  */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,19 +28,33 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-// GLViewGestureRecognizer allows iOS gestures to work correctly by
-// emulating UIScrollView's UIScrollViewDelayedTouchesBeganGestureRecognizer.
-// It catches all gestures incoming to UIView and delays them for 150ms
-// (the same value used by UIScrollViewDelayedTouchesBeganGestureRecognizer)
-// If touch cancellation or end message is fired it fires delayed
-// begin touch immediately as well as last touch signal
+#ifndef CONDITION_VARIABLE_H
+#define CONDITION_VARIABLE_H
 
-#import <UIKit/UIKit.h>
+#include <condition_variable>
 
-@interface GodotViewGestureRecognizer : UIGestureRecognizer
+// An object one or multiple threads can wait on a be notified by some other.
+// Normally, you want to use a semaphore for such scenarios, but when the
+// condition is something different than a count being greater than zero
+// (which is the built-in logic in a semaphore) or you want to provide your
+// own mutex to tie the wait-notify to some other behavior, you need to use this.
 
-@property(nonatomic, readonly, assign) NSTimeInterval delayTimeInterval;
+class ConditionVariable {
+	mutable std::condition_variable condition;
 
-- (instancetype)init;
+public:
+	template <class BinaryMutexT>
+	_ALWAYS_INLINE_ void wait(const MutexLock<BinaryMutexT> &p_lock) const {
+		condition.wait(const_cast<std::unique_lock<std::mutex> &>(p_lock.lock));
+	}
 
-@end
+	_ALWAYS_INLINE_ void notify_one() const {
+		condition.notify_one();
+	}
+
+	_ALWAYS_INLINE_ void notify_all() const {
+		condition.notify_all();
+	}
+};
+
+#endif // CONDITION_VARIABLE_H

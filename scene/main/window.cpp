@@ -485,7 +485,7 @@ void Window::set_ime_position(const Point2i &p_pos) {
 bool Window::is_embedded() const {
 	ERR_FAIL_COND_V(!is_inside_tree(), false);
 
-	return _get_embedder() != nullptr;
+	return get_embedder() != nullptr;
 }
 
 bool Window::is_in_edited_scene_root() const {
@@ -710,7 +710,7 @@ void Window::set_visible(bool p_visible) {
 	// Stop any queued resizing, as the window will be resized right now.
 	updating_child_controls = false;
 
-	Viewport *embedder_vp = _get_embedder();
+	Viewport *embedder_vp = get_embedder();
 
 	if (!embedder_vp) {
 		if (!p_visible && window_id != DisplayServer::INVALID_WINDOW_ID) {
@@ -1053,7 +1053,7 @@ void Window::_update_window_callbacks() {
 	DisplayServer::get_singleton()->window_set_drop_files_callback(callable_mp(this, &Window::_window_drop_files), window_id);
 }
 
-Viewport *Window::_get_embedder() const {
+Viewport *Window::get_embedder() const {
 	Viewport *vp = get_parent_viewport();
 
 	while (vp) {
@@ -1088,7 +1088,7 @@ void Window::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			bool embedded = false;
 			{
-				embedder = _get_embedder();
+				embedder = get_embedder();
 				if (embedder) {
 					embedded = true;
 					if (!visible) {
@@ -1431,7 +1431,7 @@ void Window::popup_centered_clamped(const Size2i &p_size, float p_fallback_ratio
 	Rect2 parent_rect;
 
 	if (is_embedded()) {
-		parent_rect = _get_embedder()->get_visible_rect();
+		parent_rect = get_embedder()->get_visible_rect();
 	} else {
 		DisplayServer::WindowID parent_id = get_parent_visible_window()->get_window_id();
 		int parent_screen = DisplayServer::get_singleton()->window_get_current_screen(parent_id);
@@ -1462,7 +1462,7 @@ void Window::popup_centered(const Size2i &p_minsize) {
 	Rect2 parent_rect;
 
 	if (is_embedded()) {
-		parent_rect = _get_embedder()->get_visible_rect();
+		parent_rect = get_embedder()->get_visible_rect();
 	} else {
 		DisplayServer::WindowID parent_id = get_parent_visible_window()->get_window_id();
 		int parent_screen = DisplayServer::get_singleton()->window_get_current_screen(parent_id);
@@ -1488,7 +1488,7 @@ void Window::popup_centered_ratio(float p_ratio) {
 	Rect2 parent_rect;
 
 	if (is_embedded()) {
-		parent_rect = _get_embedder()->get_visible_rect();
+		parent_rect = get_embedder()->get_visible_rect();
 	} else {
 		DisplayServer::WindowID parent_id = get_parent_visible_window()->get_window_id();
 		int parent_screen = DisplayServer::get_singleton()->window_get_current_screen(parent_id);
@@ -1509,7 +1509,7 @@ void Window::popup_centered_ratio(float p_ratio) {
 void Window::popup(const Rect2i &p_screen_rect) {
 	emit_signal(SNAME("about_to_popup"));
 
-	if (!_get_embedder() && get_flag(FLAG_POPUP)) {
+	if (!get_embedder() && get_flag(FLAG_POPUP)) {
 		// Send a focus-out notification when opening a Window Manager Popup.
 		SceneTree *scene_tree = get_tree();
 		if (scene_tree) {
@@ -1545,7 +1545,7 @@ void Window::popup(const Rect2i &p_screen_rect) {
 
 	Rect2i parent_rect;
 	if (is_embedded()) {
-		parent_rect = _get_embedder()->get_visible_rect();
+		parent_rect = get_embedder()->get_visible_rect();
 	} else {
 		int screen_id = DisplayServer::get_singleton()->window_get_current_screen(get_window_id());
 		parent_rect = DisplayServer::get_singleton()->screen_get_usable_rect(screen_id);
@@ -1587,7 +1587,7 @@ Rect2i Window::get_usable_parent_rect() const {
 	ERR_FAIL_COND_V(!is_inside_tree(), Rect2());
 	Rect2i parent_rect;
 	if (is_embedded()) {
-		parent_rect = _get_embedder()->get_visible_rect();
+		parent_rect = get_embedder()->get_visible_rect();
 	} else {
 		const Window *w = is_visible() ? this : get_parent_visible_window();
 		//find a parent that can contain us
@@ -2154,9 +2154,9 @@ Transform2D Window::get_final_transform() const {
 
 Transform2D Window::get_screen_transform_internal(bool p_absolute_position) const {
 	Transform2D embedder_transform;
-	if (_get_embedder()) {
+	if (get_embedder()) {
 		embedder_transform.translate_local(get_position());
-		embedder_transform = _get_embedder()->get_screen_transform_internal(p_absolute_position) * embedder_transform;
+		embedder_transform = get_embedder()->get_screen_transform_internal(p_absolute_position) * embedder_transform;
 	} else if (p_absolute_position) {
 		embedder_transform.translate_local(get_position());
 	}
@@ -2170,8 +2170,8 @@ Transform2D Window::get_popup_base_transform() const {
 	Transform2D popup_base_transform;
 	popup_base_transform.set_origin(get_position());
 	popup_base_transform *= get_final_transform();
-	if (_get_embedder()) {
-		return _get_embedder()->get_popup_base_transform() * popup_base_transform;
+	if (get_embedder()) {
+		return get_embedder()->get_popup_base_transform() * popup_base_transform;
 	}
 	return popup_base_transform;
 }

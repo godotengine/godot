@@ -272,15 +272,14 @@ namespace GodotTools
                         }
                     }
 
-                    string resourcePath = ProjectSettings.GlobalizePath("res://");
-                    args.Add(resourcePath);
+                    args.Add(Path.GetDirectoryName(GodotSharpDirs.ProjectSlnPath));
 
                     string scriptPath = ProjectSettings.GlobalizePath(script.ResourcePath);
 
                     if (line >= 0)
                     {
                         args.Add("-g");
-                        args.Add($"{scriptPath}:{line}:{col}");
+                        args.Add($"{scriptPath}:{line + 1}:{col + 1}");
                     }
                     else
                     {

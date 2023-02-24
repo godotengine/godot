@@ -38,7 +38,11 @@
 #include "core/templates/safe_refcount.h"
 #include "servers/audio_server.h"
 
+#ifdef SOWRAP_ENABLED
 #include "pulse-so_wrap.h"
+#else
+#include <pulse/pulseaudio.h>
+#endif
 
 class AudioDriverPulseAudio : public AudioDriver {
 	Thread thread;

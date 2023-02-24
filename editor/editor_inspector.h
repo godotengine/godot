@@ -38,6 +38,7 @@
 class AcceptDialog;
 class Button;
 class ConfirmationDialog;
+class EditorInspector;
 class LineEdit;
 class OptionButton;
 class PanelContainer;
@@ -147,6 +148,7 @@ public:
 
 	Object *get_edited_object();
 	StringName get_edited_property() const;
+	EditorInspector *get_parent_inspector() const;
 
 	void set_doc_path(const String &p_doc_path);
 
@@ -223,7 +225,7 @@ public:
 protected:
 	static void _bind_methods();
 
-	GDVIRTUAL1RC(bool, _can_handle, Variant)
+	GDVIRTUAL1RC(bool, _can_handle, Object *)
 	GDVIRTUAL1(_parse_begin, Object *)
 	GDVIRTUAL2(_parse_category, Object *, String)
 	GDVIRTUAL2(_parse_group, Object *, String)
@@ -498,7 +500,6 @@ class EditorInspector : public ScrollContainer {
 	bool restrict_to_basic = false;
 
 	void _edit_set(const String &p_name, const Variant &p_value, bool p_refresh_all, const String &p_changed_field);
-	bool _is_main_editor_inspector() const;
 
 	void _property_changed(const String &p_path, const Variant &p_value, const String &p_name = "", bool p_changing = false, bool p_update_all = false);
 	void _multiple_properties_changed(Vector<String> p_paths, Array p_values, bool p_changing = false);
@@ -552,6 +553,7 @@ public:
 
 	static EditorProperty *instantiate_property_editor(Object *p_object, const Variant::Type p_type, const String &p_path, const PropertyHint p_hint, const String &p_hint_text, const uint32_t p_usage, const bool p_wide = false);
 
+	bool is_main_editor_inspector() const;
 	String get_selected_path() const;
 
 	void update_tree();

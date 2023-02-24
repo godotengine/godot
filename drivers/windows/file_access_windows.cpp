@@ -375,6 +375,10 @@ Error FileAccessWindows::_set_unix_permissions(const String &p_file, uint32_t p_
 	return ERR_UNAVAILABLE;
 }
 
+void FileAccessWindows::close() {
+	_close();
+}
+
 FileAccessWindows::~FileAccessWindows() {
 	_close();
 }
@@ -391,6 +395,7 @@ void FileAccessWindows::initialize() {
 		reserved_file_index++;
 	}
 }
+
 void FileAccessWindows::finalize() {
 	invalid_files.clear();
 }

@@ -175,7 +175,7 @@
 		<method name="get_point_capacity" qualifiers="const">
 			<return type="int" />
 			<description>
-				Returns the capacity of the structure backing the points, useful in conjunction with [code]reserve_space[/code].
+				Returns the capacity of the structure backing the points, useful in conjunction with [method reserve_space].
 			</description>
 		</method>
 		<method name="get_point_connections">

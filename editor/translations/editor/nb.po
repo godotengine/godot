@@ -370,12 +370,6 @@ msgstr "Gå til forrige steg"
 msgid "Use Bezier Curves"
 msgstr "Bruk Bezier-kurver"
 
-msgid "Anim. Optimizer"
-msgstr "Anim. Optimaliserer"
-
-msgid "Max. Angular Error:"
-msgstr "Max. Vinklet Feilmelding:"
-
 msgid "Optimize"
 msgstr "Optimaliser"
 
@@ -3184,9 +3178,6 @@ msgstr "Avinstallerer …"
 
 msgid "Invalid animation: '%s'."
 msgstr "Ugyldig animasjon: '%s'."
-
-msgid "Must use a valid extension."
-msgstr "Må ha en gyldig filutvidelse."
 
 msgid "(Other)"
 msgstr "(Annet)"

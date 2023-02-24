@@ -60,7 +60,6 @@ public:
 	typedef void (*RegisterFunc)(FileDialog *);
 
 	static GetIconFunc get_icon_func;
-	static GetIconFunc get_large_icon_func;
 	static RegisterFunc register_func;
 	static RegisterFunc unregister_func;
 

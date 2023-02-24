@@ -308,7 +308,6 @@ private:
 	TileLayout tile_layout = TILE_LAYOUT_STACKED;
 	TileOffsetAxis tile_offset_axis = TILE_OFFSET_AXIS_HORIZONTAL;
 	Size2i tile_size = Size2i(16, 16); //Size2(64, 64);
-	Vector2 tile_skew = Vector2(0, 0);
 
 	// Rendering.
 	bool uv_clipping = false;

@@ -1329,12 +1329,14 @@ void DisplayServerX11::delete_sub_window(WindowID p_id) {
 		wd.xic = nullptr;
 	}
 	XDestroyWindow(x11_display, wd.x11_xim_window);
+#ifdef XKB_ENABLED
 	if (xkb_loaded) {
 		if (wd.xkb_state) {
 			xkb_compose_state_unref(wd.xkb_state);
 			wd.xkb_state = nullptr;
 		}
 	}
+#endif
 
 	XUnmapWindow(x11_display, wd.x11_window);
 	XDestroyWindow(x11_display, wd.x11_window);
@@ -2055,6 +2057,22 @@ void DisplayServerX11::_validate_mode_on_map(WindowID p_window) {
 	} else if (wd.minimized && !_window_minimize_check(p_window)) {
 		_set_wm_minimized(p_window, true);
 	}
+
+	if (wd.on_top) {
+		Atom wm_state = XInternAtom(x11_display, "_NET_WM_STATE", False);
+		Atom wm_above = XInternAtom(x11_display, "_NET_WM_STATE_ABOVE", False);
+
+		XClientMessageEvent xev;
+		memset(&xev, 0, sizeof(xev));
+		xev.type = ClientMessage;
+		xev.window = wd.x11_window;
+		xev.message_type = wm_state;
+		xev.format = 32;
+		xev.data.l[0] = _NET_WM_STATE_ADD;
+		xev.data.l[1] = wm_above;
+		xev.data.l[3] = 1;
+		XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, (XEvent *)&xev);
+	}
 }
 
 bool DisplayServerX11::window_is_maximize_allowed(WindowID p_window) const {
@@ -2597,6 +2615,8 @@ DisplayServerX11::CursorShape DisplayServerX11::cursor_get_shape() const {
 void DisplayServerX11::cursor_set_custom_image(const Ref<Resource> &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
 	_THREAD_SAFE_METHOD_
 
+	ERR_FAIL_INDEX(p_shape, CURSOR_MAX);
+
 	if (p_cursor.is_valid()) {
 		HashMap<CursorShape, Vector<Variant>>::Iterator cursor_c = cursors_cache.find(p_shape);
 
@@ -2942,11 +2962,13 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 	XLookupString(&xkeyevent_no_mod, nullptr, 0, &keysym_keycode, nullptr);
 
 	String keysym;
+#ifdef XKB_ENABLED
 	if (xkb_loaded) {
 		KeySym keysym_unicode_nm = 0; // keysym used to find unicode
 		XLookupString(&xkeyevent_no_mod, nullptr, 0, &keysym_unicode_nm, nullptr);
 		keysym = String::chr(xkb_keysym_to_utf32(xkb_keysym_to_upper(keysym_unicode_nm)));
 	}
+#endif
 
 	// Meanwhile, XLookupString returns keysyms useful for unicode.
 
@@ -3035,6 +3057,7 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 			}
 		} while (status == XBufferOverflow);
 #endif
+#ifdef XKB_ENABLED
 	} else if (xkeyevent->type == KeyPress && wd.xkb_state && xkb_loaded) {
 		xkb_compose_feed_result res = xkb_compose_state_feed(wd.xkb_state, keysym_unicode);
 		if (res == XKB_COMPOSE_FEED_ACCEPTED) {
@@ -3093,6 +3116,7 @@ void DisplayServerX11::_handle_key_event(WindowID p_window, XKeyEvent *p_event, 
 				return;
 			}
 		}
+#endif
 	}
 
 	/* Phase 2, obtain a Godot keycode from the keysym */
@@ -4948,11 +4972,11 @@ DisplayServerX11::WindowID DisplayServerX11::_create_window(WindowMode p_mode, V
 		window_attributes_ime.event_mask = KeyPressMask | KeyReleaseMask | StructureNotifyMask | ExposureMask;
 
 		wd.x11_xim_window = XCreateWindow(x11_display, wd.x11_window, 0, 0, 1, 1, 0, CopyFromParent, InputOnly, CopyFromParent, CWEventMask, &window_attributes_ime);
-
+#ifdef XKB_ENABLED
 		if (dead_tbl && xkb_loaded) {
 			wd.xkb_state = xkb_compose_state_new(dead_tbl, XKB_COMPOSE_STATE_NO_FLAGS);
 		}
-
+#endif
 		// Enable receiving notification when the window is initialized (MapNotify)
 		// so the focus can be set at the right time.
 		if (!wd.no_focus && !wd.is_popup) {
@@ -5217,6 +5241,7 @@ static ::XIMStyle _get_best_xim_style(const ::XIMStyle &p_style_a, const ::XIMSt
 DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode p_mode, VSyncMode p_vsync_mode, uint32_t p_flags, const Vector2i *p_position, const Vector2i &p_resolution, int p_screen, Error &r_error) {
 	KeyMappingX11::initialize();
 
+#ifdef SOWRAP_ENABLED
 #ifdef DEBUG_ENABLED
 	int dylibloader_verbose = 1;
 #else
@@ -5231,9 +5256,9 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 		r_error = ERR_UNAVAILABLE;
 		ERR_FAIL_MSG("Can't load XCursor dynamically.");
 	}
-
+#ifdef XKB_ENABLED
 	xkb_loaded = (initialize_xkbcommon(dylibloader_verbose) == 0);
-
+#endif
 	if (initialize_xext(dylibloader_verbose) != 0) {
 		r_error = ERR_UNAVAILABLE;
 		ERR_FAIL_MSG("Can't load Xext dynamically.");
@@ -5258,7 +5283,13 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 		r_error = ERR_UNAVAILABLE;
 		ERR_FAIL_MSG("Can't load Xinput2 dynamically.");
 	}
+#else
+#ifdef XKB_ENABLED
+	xkb_loaded = true;
+#endif
+#endif
 
+#ifdef XKB_ENABLED
 	if (xkb_loaded) {
 		xkb_ctx = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
 		if (xkb_ctx) {
@@ -5275,6 +5306,7 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 			dead_tbl = xkb_compose_table_new_from_locale(xkb_ctx, locale, XKB_COMPOSE_COMPILE_NO_FLAGS);
 		}
 	}
+#endif
 
 	Input::get_singleton()->set_event_dispatch_function(_dispatch_input_events);
 
@@ -5717,16 +5749,19 @@ DisplayServerX11::~DisplayServerX11() {
 			wd.xic = nullptr;
 		}
 		XDestroyWindow(x11_display, wd.x11_xim_window);
+#ifdef XKB_ENABLED
 		if (xkb_loaded) {
 			if (wd.xkb_state) {
 				xkb_compose_state_unref(wd.xkb_state);
 				wd.xkb_state = nullptr;
 			}
 		}
+#endif
 		XUnmapWindow(x11_display, wd.x11_window);
 		XDestroyWindow(x11_display, wd.x11_window);
 	}
 
+#ifdef XKB_ENABLED
 	if (xkb_loaded) {
 		if (dead_tbl) {
 			xkb_compose_table_unref(dead_tbl);
@@ -5735,6 +5770,7 @@ DisplayServerX11::~DisplayServerX11() {
 			xkb_context_unref(xkb_ctx);
 		}
 	}
+#endif
 
 	//destroy drivers
 #if defined(VULKAN_ENABLED)

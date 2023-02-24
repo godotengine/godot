@@ -39,7 +39,12 @@
 #include "core/templates/safe_refcount.h"
 #include "core/templates/vector.h"
 
+#ifdef SOWRAP_ENABLED
 #include "../alsa/asound-so_wrap.h"
+#else
+#include <alsa/asoundlib.h>
+#endif
+
 #include <stdio.h>
 
 class MIDIDriverALSAMidi : public MIDIDriver {

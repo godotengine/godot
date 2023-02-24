@@ -913,7 +913,7 @@ void GridMapEditor::update_palette() {
 }
 
 void GridMapEditor::edit(GridMap *p_gridmap) {
-	if (!p_gridmap && node) {
+	if (node) {
 		node->disconnect("cell_size_changed", callable_mp(this, &GridMapEditor::_draw_grids));
 	}
 
@@ -1197,6 +1197,7 @@ GridMapEditor::GridMapEditor() {
 	options->get_popup()->add_item(TTR("Cursor Back Rotate Z"), MENU_OPTION_CURSOR_BACK_ROTATE_Z, KeyModifierMask::SHIFT + Key::D);
 	options->get_popup()->add_item(TTR("Cursor Clear Rotation"), MENU_OPTION_CURSOR_CLEAR_ROTATION, Key::W);
 	options->get_popup()->add_separator();
+	// TRANSLATORS: This is a toggle to select after pasting the new content.
 	options->get_popup()->add_check_item(TTR("Paste Selects"), MENU_OPTION_PASTE_SELECTS);
 	options->get_popup()->add_separator();
 	options->get_popup()->add_item(TTR("Duplicate Selection"), MENU_OPTION_SELECTION_DUPLICATE, KeyModifierMask::CTRL + Key::C);

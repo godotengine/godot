@@ -41,7 +41,11 @@
 #include "servers/audio_server.h"
 
 #ifdef FONTCONFIG_ENABLED
+#ifdef SOWRAP_ENABLED
 #include "fontconfig-so_wrap.h"
+#else
+#include <fontconfig/fontconfig.h>
+#endif
 #endif
 
 class OS_LinuxBSD : public OS_Unix {
