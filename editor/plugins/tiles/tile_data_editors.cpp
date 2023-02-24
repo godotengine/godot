@@ -784,7 +784,7 @@ void GenericTilePolygonEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_polygon", "index"), &GenericTilePolygonEditor::remove_polygon);
 	ClassDB::bind_method(D_METHOD("clear_polygons"), &GenericTilePolygonEditor::clear_polygons);
 	ClassDB::bind_method(D_METHOD("set_polygon", "index", "polygon"), &GenericTilePolygonEditor::set_polygon);
-	ClassDB::bind_method(D_METHOD("get_polygon", "index"), &GenericTilePolygonEditor::set_polygon);
+	ClassDB::bind_method(D_METHOD("get_polygon", "index"), &GenericTilePolygonEditor::get_polygon);
 
 	ADD_SIGNAL(MethodInfo("polygons_changed"));
 }
