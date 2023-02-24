@@ -265,15 +265,15 @@ BitField<MouseButtonMask> DisplayServerWindows::mouse_get_button_state() const {
 void DisplayServerWindows::clipboard_set(const String &p_text) {
 	_THREAD_SAFE_METHOD_
 
-	if (!windows.has(last_focused_window)) {
-		return; // No focused window?
+	if (!windows.has(MAIN_WINDOW_ID)) {
+		return;
 	}
 
 	// Convert LF line endings to CRLF in clipboard content.
 	// Otherwise, line endings won't be visible when pasted in other software.
 	String text = p_text.replace("\r\n", "\n").replace("\n", "\r\n"); // Avoid \r\r\n.
 
-	if (!OpenClipboard(windows[last_focused_window].hWnd)) {
+	if (!OpenClipboard(windows[MAIN_WINDOW_ID].hWnd)) {
 		ERR_FAIL_MSG("Unable to open clipboard.");
 	}
 	EmptyClipboard();
@@ -306,12 +306,12 @@ void DisplayServerWindows::clipboard_set(const String &p_text) {
 String DisplayServerWindows::clipboard_get() const {
 	_THREAD_SAFE_METHOD_
 
-	if (!windows.has(last_focused_window)) {
-		return String(); // No focused window?
+	if (!windows.has(MAIN_WINDOW_ID)) {
+		return String();
 	}
 
 	String ret;
-	if (!OpenClipboard(windows[last_focused_window].hWnd)) {
+	if (!OpenClipboard(windows[MAIN_WINDOW_ID].hWnd)) {
 		ERR_FAIL_V_MSG("", "Unable to open clipboard.");
 	}
 
