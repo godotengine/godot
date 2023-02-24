@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Text;
 using JetBrains.Annotations;
 using OS = GodotTools.Utils.OS;
 
@@ -61,7 +62,7 @@ namespace GodotTools.Build
             process.StartInfo.EnvironmentVariables["DOTNET_CLI_UI_LANGUAGE"] = "en-US";
 
             var lines = new List<string>();
-
+            process.StartInfo.StandardOutputEncoding = Encoding.UTF8;
             process.OutputDataReceived += (_, e) =>
             {
                 if (!string.IsNullOrWhiteSpace(e.Data))
