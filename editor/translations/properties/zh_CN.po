@@ -92,7 +92,7 @@ msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2023-02-17 10:49+0000\n"
+"PO-Revision-Date: 2023-02-20 23:46+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot-properties/zh_Hans/>\n"
@@ -736,6 +736,9 @@ msgstr "显示模式"
 msgid "File Mode"
 msgstr "文件模式"
 
+msgid "Filters"
+msgstr "过滤"
+
 msgid "Show Hidden Files"
 msgstr "显示隐藏文件"
 
@@ -939,9 +942,6 @@ msgstr "主题"
 
 msgid "Preset"
 msgstr "预设"
-
-msgid "Enable Touchscreen Touch Area"
-msgstr "启用触摸屏触摸区"
 
 msgid "Icon and Font Color"
 msgstr "图标与字体颜色"
@@ -1684,9 +1684,6 @@ msgstr "ETC"
 msgid "ETC2"
 msgstr "ETC2"
 
-msgid "No BPTC Fallbacks"
-msgstr "无 BPTC 回退"
-
 msgid "SSH"
 msgstr "SSH"
 
@@ -1993,6 +1990,9 @@ msgstr "阴影网格"
 msgid "Lightmap UV"
 msgstr "光照贴图 UV"
 
+msgid "LODs"
+msgstr "LOD"
+
 msgid "Normal Split Angle"
 msgstr "法线拆分角度"
 
@@ -2046,6 +2046,9 @@ msgstr "网格"
 
 msgid "Ensure Tangents"
 msgstr "确保切线"
+
+msgid "Generate LODs"
+msgstr "生成 LOD"
 
 msgid "Create Shadow Meshes"
 msgstr "创建阴影网格"
@@ -2311,11 +2314,35 @@ msgstr "ID"
 msgid "Texture"
 msgstr "纹理"
 
+msgid "Margins"
+msgstr "边距"
+
 msgid "Separation"
 msgstr "间距"
 
+msgid "Texture Region Size"
+msgstr "纹理区域大小"
+
+msgid "Use Texture Padding"
+msgstr "使用纹理内边距"
+
+msgid "Atlas Coords"
+msgstr "图集坐标"
+
+msgid "Size in Atlas"
+msgstr "图集中尺寸"
+
+msgid "Alternative ID"
+msgstr "备选 ID"
+
 msgid "Speed"
 msgstr "速度"
+
+msgid "Frames Count"
+msgstr "帧数"
+
+msgid "Duration"
+msgstr "时长"
 
 msgid "Version Control"
 msgstr "版本控制"
@@ -2745,6 +2772,9 @@ msgstr "编辑器中显示原生符号"
 
 msgid "Use Thread"
 msgstr "使用线程"
+
+msgid "glTF"
+msgstr "glTF"
 
 msgid "Embedded Image Handling"
 msgstr "嵌入图像处理"
@@ -4639,6 +4669,18 @@ msgstr "时间下限"
 msgid "Max Speed"
 msgstr "最大速度"
 
+msgid "Use Custom"
+msgstr "使用自定义"
+
+msgid "Path Custom Color"
+msgstr "路径自定义颜色"
+
+msgid "Path Custom Point Size"
+msgstr "路径自定义点大小"
+
+msgid "Path Custom Line Width"
+msgstr "路径自定义线宽"
+
 msgid "Bidirectional"
 msgstr "双向的"
 
@@ -6219,9 +6261,6 @@ msgstr "模式覆盖标题"
 
 msgid "Root Subfolder"
 msgstr "根部子文件夹"
-
-msgid "Filters"
-msgstr "过滤"
 
 msgid "Right Disconnects"
 msgstr "右侧断开连接"
@@ -8569,6 +8608,12 @@ msgstr "目标节点路径"
 msgid "Tip Nodepath"
 msgstr "尖端节点路径"
 
+msgid "CCDIK Data Chain Length"
+msgstr "CCDIK 数据链长度"
+
+msgid "FABRIK Data Chain Length"
+msgstr "FABRIK 数据链长度"
+
 msgid "Jiggle Data Chain Length"
 msgstr "Jiggle 数据链长度"
 
@@ -8794,6 +8839,21 @@ msgstr "默认字体大小"
 msgid "Terrains"
 msgstr "地形"
 
+msgid "Custom Data"
+msgstr "自定义数据"
+
+msgid "Tile Proxies"
+msgstr "图块代理"
+
+msgid "Source Level"
+msgstr "源级别"
+
+msgid "Coords Level"
+msgstr "坐标级别"
+
+msgid "Alternative Level"
+msgstr "备选级别"
+
 msgid "Tile Shape"
 msgstr "图块形状"
 
@@ -8820,6 +8880,24 @@ msgstr "地形集"
 
 msgid "Custom Data Layers"
 msgstr "自定义数据层"
+
+msgid "Scenes"
+msgstr "场景"
+
+msgid "Scene"
+msgstr "场景"
+
+msgid "Display Placeholder"
+msgstr "显示占位符"
+
+msgid "Polygons Count"
+msgstr "多边形数"
+
+msgid "One Way"
+msgstr "单向"
+
+msgid "One Way Margin"
+msgstr "单向边距"
 
 msgid "Transpose"
 msgstr "转置"

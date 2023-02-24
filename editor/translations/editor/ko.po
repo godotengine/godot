@@ -16,7 +16,7 @@
 # Jiyoon Kim <kimjiy@dickinson.edu>, 2019.
 # Ervin <zetsmart@gmail.com>, 2019.
 # Tilto_ <tilto0822@develable.xyz>, 2020.
-# Myeongjin Lee <aranet100@gmail.com>, 2020, 2021, 2022.
+# Myeongjin Lee <aranet100@gmail.com>, 2020, 2021, 2022, 2023.
 # Doyun Kwon <caen4516@gmail.com>, 2020.
 # Jun Hyung Shin <shmishmi79@gmail.com>, 2020.
 # Yongjin Jo <wnrhd114@gmail.com>, 2020.
@@ -39,17 +39,18 @@
 # 박민규 <80dots@gmail.com>, 2022.
 # 이지민 <jiminaleejung@gmail.com>, 2022.
 # nulltable <un5450@naver.com>, 2022.
-# Godoto <aicompose@gmail.com>, 2022.
+# Godoto <aicompose@gmail.com>, 2022, 2023.
 # gaenyang <gaenyang@outlook.com>, 2022.
 # 오지훈 <jule1130@naver.com>, 2023.
 # 이정희 <daemul72@gmail.com>, 2023.
+# nulta <un5450@naver.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-02-09 15:26+0000\n"
-"Last-Translator: 이정희 <daemul72@gmail.com>\n"
+"PO-Revision-Date: 2023-02-24 12:28+0000\n"
+"Last-Translator: Myeongjin Lee <aranet100@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
 "Language: ko\n"
@@ -59,17 +60,196 @@ msgstr ""
 "Plural-Forms: nplurals=1; plural=0;\n"
 "X-Generator: Weblate 4.16-dev\n"
 
+msgid "Unset"
+msgstr "설정 해제"
+
 msgid "Physical"
 msgstr "물리"
 
+msgid "Left Mouse Button"
+msgstr "마우스 왼쪽 버튼"
+
+msgid "Right Mouse Button"
+msgstr "마우스 오른쪽 버튼"
+
+msgid "Middle Mouse Button"
+msgstr "마우스 가운데 버튼"
+
+msgid "Mouse Wheel Up"
+msgstr "마우스 휠 위로"
+
+msgid "Mouse Wheel Down"
+msgstr "마우스 휠 아래로"
+
+msgid "Mouse Wheel Left"
+msgstr "마우스 휠 왼쪽"
+
+msgid "Mouse Wheel Right"
+msgstr "마우스 휠 오른쪽"
+
+msgid "Mouse Thumb Button 1"
+msgstr "마우스 엄지 버튼 1"
+
+msgid "Mouse Thumb Button 2"
+msgstr "마우스 엄지 버튼 2"
+
 msgid "Button"
 msgstr "버튼"
+
+msgid "Double Click"
+msgstr "더블 클릭"
+
+msgid "Mouse motion at position (%s) with velocity (%s)"
+msgstr "마우스 위치에서의 마우스 움직임(%s) 및 속도(%s)"
+
+msgid "Left Stick X-Axis, Joystick 0 X-Axis"
+msgstr "왼쪽 스틱 X축, 조이스틱 0 X축"
+
+msgid "Left Stick Y-Axis, Joystick 0 Y-Axis"
+msgstr "왼쪽 스틱 Y축, 조이스틱 0 Y축"
+
+msgid "Right Stick X-Axis, Joystick 1 X-Axis"
+msgstr "오른쪽 스틱 X축, 조이스틱 1 X축"
+
+msgid "Right Stick Y-Axis, Joystick 1 Y-Axis"
+msgstr "오른쪽 스틱 Y축, 조이스틱 1 Y축"
+
+msgid "Joystick 2 X-Axis, Left Trigger, Sony L2, Xbox LT"
+msgstr "조이스틱 2 X축, 왼쪽 트리거, 소니 L2, Xbox LT"
+
+msgid "Joystick 2 Y-Axis, Right Trigger, Sony R2, Xbox RT"
+msgstr "조이스틱 2 Y축, 오른쪽 트리거, 소니 R2, Xbox RT"
+
+msgid "Joystick 3 X-Axis"
+msgstr "조이스틱 3 X축"
+
+msgid "Joystick 3 Y-Axis"
+msgstr "조이스틱 3 Y축"
+
+msgid "Joystick 4 X-Axis"
+msgstr "조이스틱 4 X축"
+
+msgid "Joystick 4 Y-Axis"
+msgstr "조이스틱 4 Y축"
+
+msgid "Unknown Joypad Axis"
+msgstr "알 수 없는 조이패드 축"
+
+msgid "Joypad Motion on Axis %d (%s) with Value %.2f"
+msgstr "축 %d(%s)의 조이패드 동작 값 %.2f"
+
+msgid "Bottom Action, Sony Cross, Xbox A, Nintendo B"
+msgstr "바텀 액션, 소니 크로스, Xbox A, 닌텐도 B"
+
+msgid "Right Action, Sony Circle, Xbox B, Nintendo A"
+msgstr "라이트 액션, 소니 서클, Xbox B, 닌텐도 A"
+
+msgid "Left Action, Sony Square, Xbox X, Nintendo Y"
+msgstr "레프트 액션, 소니 스퀘어, Xbox X, 닌텐도 Y"
+
+msgid "Top Action, Sony Triangle, Xbox Y, Nintendo X"
+msgstr "탑 액션, 소니 트라이앵글, Xbox Y, 닌텐도 X"
+
+msgid "Back, Sony Select, Xbox Back, Nintendo -"
+msgstr "뒤로, 소니 셀렉트, 엑스박스 뒤로, 닌텐도 -"
+
+msgid "Guide, Sony PS, Xbox Home"
+msgstr "가이드, 소니 PS, Xbox 홈"
+
+msgid "Start, Nintendo +"
+msgstr "시작, 닌텐도 +"
+
+msgid "Left Stick, Sony L3, Xbox L/LS"
+msgstr "왼쪽 스틱, 소니 L3, Xbox L/LS"
+
+msgid "Right Stick, Sony R3, Xbox R/RS"
+msgstr "오른쪽 스틱, 소니 R3, Xbox R/RS"
+
+msgid "Left Shoulder, Sony L1, Xbox LB"
+msgstr "왼쪽 어깨, 소니 L1, Xbox LB"
+
+msgid "Right Shoulder, Sony R1, Xbox RB"
+msgstr "오른쪽 어깨, 소니 R1, Xbox RB"
+
+msgid "D-pad Up"
+msgstr "D-패드 위로"
+
+msgid "D-pad Down"
+msgstr "D-패드 아래로"
+
+msgid "D-pad Left"
+msgstr "D-패드 왼쪽"
+
+msgid "D-pad Right"
+msgstr "D-패드 오른쪽"
+
+msgid "Xbox Share, PS5 Microphone, Nintendo Capture"
+msgstr "Xbox 공유, PS5 마이크, 닌텐도 캡처"
+
+msgid "Xbox Paddle 1"
+msgstr "Xbox 패들 1"
+
+msgid "Xbox Paddle 2"
+msgstr "Xbox 패들 2"
+
+msgid "Xbox Paddle 3"
+msgstr "Xbox 패들 3"
+
+msgid "Xbox Paddle 4"
+msgstr "Xbox 패들 4"
+
+msgid "PS4/5 Touchpad"
+msgstr "PS4/5 터치패드"
+
+msgid "Joypad Button %d"
+msgstr "조이패드 버튼 %d"
+
+msgid "Pressure:"
+msgstr "압력:"
+
+msgid "touched"
+msgstr "터치"
+
+msgid "Screen %s at (%s) with %s touch points"
+msgstr "터치 포인트가 %s개인 (%s)의 %s 화면"
+
+msgid ""
+"Screen dragged with %s touch points at position (%s) with velocity of (%s)"
+msgstr ""
+"(%s)의 속도로 (%s)의 위치에서 %s개의 터치 포인트로 화면을 드래그했습니다"
+
+msgid "Magnify Gesture at (%s) with factor %s"
+msgstr "(%s)에서 %s 요소로 제스처 확대"
+
+msgid "Pan Gesture at (%s) with delta (%s)"
+msgstr "델타(%s)가 있는 (%s)의 팬 제스처"
+
+msgid "MIDI Input on Channel=%s Message=%s"
+msgstr "채널의 미디 입력=%s 메시지=%s"
+
+msgid "Input Event with Shortcut=%s"
+msgstr "바로 가기가 있는 이벤트 입력=%s"
+
+msgid "Accept"
+msgstr "수락"
 
 msgid "Select"
 msgstr "선택"
 
 msgid "Cancel"
 msgstr "취소"
+
+msgid "Focus Next"
+msgstr "다음을 포커스"
+
+msgid "Focus Prev"
+msgstr "이전을 포커스"
+
+msgid "Left"
+msgstr "왼쪽"
+
+msgid "Right"
+msgstr "오른쪽"
 
 msgid "Up"
 msgstr "위"
@@ -95,20 +275,47 @@ msgstr "실행 취소"
 msgid "Redo"
 msgstr "다시 실행"
 
+msgid "New Blank Line"
+msgstr "새로운 빈 줄"
+
 msgid "Indent"
 msgstr "들여쓰기"
+
+msgid "Backspace Word"
+msgstr "백스페이스 단어"
+
+msgid "Backspace all to Left"
+msgstr "모두 왼쪽으로 백스페이스"
 
 msgid "Delete"
 msgstr "삭제"
 
+msgid "Caret Add Above"
+msgstr "위에 캐럿 추가"
+
+msgid "Scroll Up"
+msgstr "스크롤 업"
+
 msgid "Select All"
 msgstr "모두 선택"
+
+msgid "Select Word Under Caret"
+msgstr "캐럿 아래에서 단어 선택"
+
+msgid "Add Selection for Next Occurrence"
+msgstr "다음 발생을 위한 선택 항목 추가"
+
+msgid "Submit Text"
+msgstr "텍스트 제출"
 
 msgid "Duplicate Nodes"
 msgstr "노드 복제"
 
 msgid "Delete Nodes"
 msgstr "노드 삭제"
+
+msgid "Go Up One Level"
+msgstr "한 단계 위로 이동"
 
 msgid "Refresh"
 msgstr "새로고침"
@@ -134,6 +341,12 @@ msgstr "'%s' 를 생성하기 위한 인수가 올바르지 않습니다"
 msgid "On call to '%s':"
 msgstr "'%s'을(를) 호출 시:"
 
+msgid "Built-in script"
+msgstr "내장 스크립트"
+
+msgid "Built-in"
+msgstr "내장"
+
 msgid "B"
 msgstr "B"
 
@@ -155,6 +368,13 @@ msgstr "PiB"
 msgid "EiB"
 msgstr "EiB"
 
+msgid "Example: %s"
+msgstr "예: %s"
+
+msgid "%d item"
+msgid_plural "%d items"
+msgstr[0] "%d개 항목"
+
 msgid ""
 "Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'"
@@ -165,11 +385,20 @@ msgstr ""
 msgid "An action with the name '%s' already exists."
 msgstr "이름 '%s'을(를) 가진 액션이 이미 있습니다."
 
+msgid "Cannot Revert - Action is same as initial"
+msgstr "되돌릴 수 없음 - 동작이 초기값과 동일합니다"
+
 msgid "Add Event"
 msgstr "이벤트 추가"
 
+msgid "Cannot Remove Action"
+msgstr "액션을 제거할 수 없음"
+
 msgid "Add"
 msgstr "추가"
+
+msgid "Show Built-in Actions"
+msgstr "기본 제공 작업 표시"
 
 msgid "Action"
 msgstr "액션"
@@ -192,11 +421,29 @@ msgstr "선택한 키 복제"
 msgid "Delete Selected Key(s)"
 msgstr "선택한 키 삭제"
 
+msgid "Make Handles Linear"
+msgstr "핸들 선형 만들기"
+
+msgid "Make Handles Balanced"
+msgstr "균형 잡힌 핸들 만들기"
+
+msgid "Make Handles Mirrored"
+msgstr "핸들 미러링하기"
+
+msgid "Make Handles Balanced (Auto Tangent)"
+msgstr "핸들 균형 만들기(자동 탄젠트)"
+
+msgid "Make Handles Mirrored (Auto Tangent)"
+msgstr "핸들 미러링 만들기(자동 탄젠트)"
+
 msgid "Add Bezier Point"
 msgstr "베지어 점 추가"
 
 msgid "Move Bezier Points"
 msgstr "베지어 점 이동"
+
+msgid "Animation Change %s"
+msgstr "애니메이션 변경 %s"
 
 msgid "Change Animation Length"
 msgstr "애니메이션 길이 바꾸기"
@@ -204,8 +451,18 @@ msgstr "애니메이션 길이 바꾸기"
 msgid "Change Animation Loop"
 msgstr "애니메이션 루프 바꾸기"
 
+msgid "Can't change loop mode on animation instanced from imported scene."
+msgstr ""
+"임포트된 씬에서 인스턴스화된 애니메이션의 루프 모드를 변경할 수 없습니다."
+
+msgid "Can't change loop mode on animation embedded in another scene."
+msgstr "다른 장면에 임베드된 애니메이션의 루프 모드를 변경할 수 없습니다."
+
 msgid "Property Track"
 msgstr "속성 트랙"
+
+msgid "Blend Shape Track"
+msgstr "블렌드 모양 트랙"
 
 msgid "Call Method Track"
 msgstr "메서드 호출 트랙"
@@ -242,6 +499,9 @@ msgstr "트랙 경로 바꾸기"
 
 msgid "Toggle this track on/off."
 msgstr "이 트랙을 켜기/끄기를 토글합니다."
+
+msgid "Use Blend"
+msgstr "블렌드 사용"
 
 msgid "Update Mode (How this property is set)"
 msgstr "업데이트 모드 (이 속성이 설정되는 방법)"
@@ -282,6 +542,18 @@ msgstr "입력 핸들:"
 msgid "Out-Handle:"
 msgstr "출력 핸들:"
 
+msgid "Handle mode: Free\n"
+msgstr "핸들 모드: 무료\n"
+
+msgid "Handle mode: Linear\n"
+msgstr "핸들 모드: 선형\n"
+
+msgid "Handle mode: Balanced\n"
+msgstr "핸들 모드: 균형 잡힌\n"
+
+msgid "Handle mode: Mirrored\n"
+msgstr "핸들 모드: 미러링\n"
+
 msgid "Stream:"
 msgstr "스트림:"
 
@@ -296,6 +568,9 @@ msgstr "애니메이션 클립:"
 
 msgid "Toggle Track Enabled"
 msgstr "트랙 활성화 토글"
+
+msgid "Don't Use Blend"
+msgstr "블렌드 사용 안 함"
 
 msgid "Continuous"
 msgstr "연속적"
@@ -341,6 +616,13 @@ msgstr "애니메이션 보간 모드 바꾸기"
 
 msgid "Change Animation Loop Mode"
 msgstr "애니메이션 루프 모드 바꾸기"
+
+msgid ""
+"Compressed tracks can't be edited or removed. Re-import the animation with "
+"compression disabled in order to edit."
+msgstr ""
+"압축된 트랙은 편집하거나 제거할 수 없습니다. 편집하려면 압축을 비활성화한 상"
+"태로 애니메이션을 다시 가져옵니다."
 
 msgid "Remove Anim Track"
 msgstr "애니메이션 트랙 제거"
@@ -430,6 +712,9 @@ msgstr "클립보드가 비었습니다!"
 msgid "Paste Tracks"
 msgstr "트랙 붙여 넣기"
 
+msgid "Make Easing Keys"
+msgstr "완화 키 만들기"
+
 msgid ""
 "This option does not work for Bezier editing, as it's only a single track."
 msgstr ""
@@ -440,6 +725,9 @@ msgstr "경고: 가져온 애니메이션을 편집하고 있음"
 
 msgid "Select an AnimationPlayer node to create and edit animations."
 msgstr "애니메이션을 만들고 편집하려면 AnimationPlayer노드를 선택하세요."
+
+msgid "Toggle between the bezier curve editor and track editor."
+msgstr "베지어 커브 편집기와 트랙 편집기 사이를 전환합니다."
 
 msgid "Only show tracks from nodes selected in tree."
 msgstr "트리에서 선택한 노드만 트랙에 표시됩니다."
@@ -519,6 +807,12 @@ msgstr "정리"
 msgid "Scale Ratio:"
 msgstr "스케일 비율:"
 
+msgid "Select Transition and Easing"
+msgstr "전환 및 완화 선택"
+
+msgid "Animation Baker"
+msgstr "애니메이션 베이커"
+
 msgid "Select Tracks to Copy"
 msgstr "복사할 트랙 선택"
 
@@ -542,6 +836,10 @@ msgstr "행 번호:"
 
 msgid "%d replaced."
 msgstr "%d개 찾아 바꿈."
+
+msgid "%d match"
+msgid_plural "%d matches"
+msgstr[0] "%d개 일치"
 
 msgid "Match Case"
 msgstr "대소문자 구분"
@@ -607,6 +905,9 @@ msgstr "씬에 스크립트가 없습니다."
 msgid "Select Method"
 msgstr "메서드 선택"
 
+msgid "No method found matching given filters."
+msgstr "지정된 필터와 일치하는 메서드를 찾을 수 없습니다."
+
 msgid "Remove"
 msgstr "제거"
 
@@ -615,6 +916,9 @@ msgstr "별도의 호출 인수 추가:"
 
 msgid "Extra Call Arguments:"
 msgstr "별도의 호출 인수:"
+
+msgid "Allows to drop arguments sent by signal emitter."
+msgstr "신호 이미터에서 보낸 인수를 삭제할 수 있습니다."
 
 msgid "Receiver Method:"
 msgstr "받는 메서드:"
@@ -691,6 +995,12 @@ msgstr "새 %s 만들기"
 msgid "No results for \"%s\"."
 msgstr "\"%s\"에 대한 결과가 없습니다."
 
+msgid "This class is marked as deprecated."
+msgstr "이 클래스는 더 이상 사용되지 않는 것으로 표시되어 있습니다."
+
+msgid "This class is marked as experimental."
+msgstr "이 클래스는 실험 단계로 표시되어 있습니다."
+
 msgid "No description available for %s."
 msgstr "%s의 사용 가능한 설명이 없습니다."
 
@@ -727,8 +1037,20 @@ msgstr "노드 경로 복사"
 msgid "Instance:"
 msgstr "인스턴스:"
 
+msgid ""
+"This node has been instantiated from a PackedScene file:\n"
+"%s\n"
+"Click to open the original file in the Editor."
+msgstr ""
+"이 노드는 PackedScene 파일에서 인스턴스화되었습니다:\n"
+"%s\n"
+"클릭하면 에디터에서 원본 파일을 엽니다."
+
 msgid "Toggle Visibility"
 msgstr "가시성 토글"
+
+msgid "ms"
+msgstr "ms"
 
 msgid "Monitors"
 msgstr "모니터"
@@ -799,6 +1121,9 @@ msgstr "시간"
 msgid "Calls"
 msgstr "호출"
 
+msgid "Execution resumed."
+msgstr "실행이 재개되었습니다."
+
 msgid "Bytes:"
 msgstr "바이트:"
 
@@ -813,6 +1138,9 @@ msgstr "%s 오류"
 
 msgid "Stack Trace"
 msgstr "스택 추적"
+
+msgid "Debug session closed."
+msgstr "디버그 세션이 종료되었습니다."
 
 msgid "Copy Error"
 msgstr "오류 복사"
@@ -944,6 +1272,9 @@ msgstr "씬 열기"
 
 msgid "Owners of: %s (Total: %d)"
 msgstr "소유자: %s(총: %d)"
+
+msgid "Localization remap for path '%s' and locale '%s'."
+msgstr "경로 '%s' 및 로케일 '%s'에 대한 지역화 재매핑."
 
 msgid ""
 "Remove the selected files from the project? (Cannot be undone.)\n"
@@ -1279,6 +1610,9 @@ msgstr "%s는 잘못된 경로입니다. 리소스 경로(res://)에 있지 않�
 msgid "Path:"
 msgstr "경로:"
 
+msgid "Set path or press \"%s\" to create a script."
+msgstr "경로를 설정하거나 \"%s\"를 눌러 스크립트를 만듭니다."
+
 msgid "Node Name:"
 msgstr "노드 이름:"
 
@@ -1293,6 +1627,87 @@ msgstr "3D 물리"
 
 msgid "Navigation"
 msgstr "네비게이션"
+
+msgid "XR"
+msgstr "XR"
+
+msgid "Vulkan"
+msgstr "벌칸"
+
+msgid "Text Server: Advanced"
+msgstr "텍스트 서버: 고급"
+
+msgid "TTF, OTF, Type 1, WOFF1 Fonts"
+msgstr "TTF, OTF, 유형 1, WOFF1 글꼴"
+
+msgid "Multi-channel Signed Distance Field Font Rendering"
+msgstr "멀티 채널 부호화된 디스턴스 필드 폰트 렌더링"
+
+msgid "3D Nodes as well as RenderingServer access to 3D features."
+msgstr "3D 노드뿐만 아니라 3D 기능에 대한 렌더링 서버 액세스도 가능합니다."
+
+msgid "2D Physics nodes and PhysicsServer2D."
+msgstr "2D 피직스 노드 및 PhysicsServer2D."
+
+msgid "3D Physics nodes and PhysicsServer3D."
+msgstr "3D 피직스 노드 및 PhysicsServer3D."
+
+msgid "XR (AR and VR)."
+msgstr "XR(AR 및 VR)."
+
+msgid ""
+"RenderingDevice based rendering (if disabled, the OpenGL back-end is "
+"required)."
+msgstr "렌더링 장치 기반 렌더링(비활성화하면 OpenGL 백엔드가 필요함)."
+
+msgid ""
+"OpenGL back-end (if disabled, the RenderingDevice back-end is required)."
+msgstr "OpenGL 백엔드(비활성화된 경우 RenderingDevice 백엔드가 필요함)."
+
+msgid "Vulkan back-end of RenderingDevice."
+msgstr "RenderingDevice의 벌칸 백엔드."
+
+msgid ""
+"Fallback implementation of Text Server\n"
+"Supports basic text layouts."
+msgstr ""
+"텍스트 서버의 폴백 구현\n"
+"기본 텍스트 레이아웃을 지원합니다."
+
+msgid ""
+"Text Server implementation powered by ICU and HarfBuzz libraries.\n"
+"Supports complex text layouts, BiDi, and contextual OpenType font features."
+msgstr ""
+"ICU 및 HarfBuzz 라이브러리로 구동되는 텍스트 서버 구현.\n"
+"복잡한 텍스트 레이아웃, BiDi 및 상황에 맞는 OpenType 글꼴 기능을 지원합니다."
+
+msgid ""
+"TrueType, OpenType, Type 1, and WOFF1 font format support using FreeType "
+"library (if disabled, WOFF2 support is also disabled)."
+msgstr ""
+"FreeType 라이브러리를 사용하여 트루타입, 오픈타입, 타입 1 및 WOFF1 글꼴 형식"
+"을 지원합니다(비활성화하면 WOFF2 지원도 비활성화됩니다)."
+
+msgid "WOFF2 font format support using FreeType and Brotli libraries."
+msgstr "프리타입 및 브로틀리 라이브러리를 사용한 WOFF2 글꼴 형식 지원."
+
+msgid ""
+"SIL Graphite smart font technology support (supported by Advanced Text "
+"Server only)."
+msgstr "SIL 그라파이트 스마트 글꼴 기술 지원(고급 텍스트 서버에서만 지원)."
+
+msgid ""
+"Multi-channel signed distance field font rendering support using msdfgen "
+"library (pre-rendered MSDF fonts can be used even if this option disabled)."
+msgstr ""
+"msdfgen 라이브러리를 사용하여 다중 채널 서명된 거리 필드 글꼴 렌더링 지원(이 "
+"옵션을 비활성화해도 사전 렌더링된 MSDF 글꼴을 사용할 수 있음)."
+
+msgid "Text Rendering and Font Options:"
+msgstr "텍스트 렌더링 및 글꼴 옵션:"
+
+msgid "File saving failed."
+msgstr "파일 저장 실패."
 
 msgid "Nodes and Classes:"
 msgstr "노드와 클래스:"
@@ -1312,8 +1727,17 @@ msgstr "저장"
 msgid "Reset to Defaults"
 msgstr "기본값으로 재설정"
 
+msgid "Engine Build Profile"
+msgstr "엔진 빌드 프로필"
+
 msgid "Export Profile"
 msgstr "프로필 내보내기"
+
+msgid "Forced classes on detect:"
+msgstr "감지 시 강제 클래스:"
+
+msgid "Edit Build Configuration Profile"
+msgstr "빌드 설정 프로필 편집"
 
 msgid "Paste Params"
 msgstr "매개변수 붙여넣기"
@@ -1398,6 +1822,9 @@ msgid ""
 msgstr ""
 "개별 애셋에 대한 가져오기 설정을 구성할 수 있게 합니다. 작동하려면 파일시스"
 "템 독이 필요합니다."
+
+msgid "Provides an overview of the editor's and each scene's undo history."
+msgstr "편집기 및 각 씬의 실행 취소 기록에 대한 개요를 제공합니다."
 
 msgid "(current)"
 msgstr "(현재)"
@@ -1496,6 +1923,19 @@ msgstr "열기"
 msgid "Select Current Folder"
 msgstr "현재 폴더 선택"
 
+msgid "Cannot save file with an empty filename."
+msgstr "파일 이름이 비어 있는 파일을 저장할 수 없습니다."
+
+msgid "Cannot save file with a name starting with a dot."
+msgstr "점으로 시작하는 이름의 파일을 저장할 수 없습니다."
+
+msgid ""
+"File \"%s\" already exists.\n"
+"Do you want to overwrite it?"
+msgstr ""
+"\"%s\" 파일이 이미 있습니다.\n"
+"덮어쓰시겠습니까?"
+
 msgid "Select This Folder"
 msgstr "이 폴더 선택"
 
@@ -1531,6 +1971,9 @@ msgstr "디렉토리 또는 파일 열기"
 
 msgid "Save a File"
 msgstr "파일로 저장"
+
+msgid "Favorited folder does not exist anymore and will be removed."
+msgstr "즐겨찾기 폴더가 더 이상 존재하지 않으며 제거됩니다."
 
 msgid "Go Back"
 msgstr "뒤로"
@@ -1611,6 +2054,39 @@ msgstr ""
 msgid "(Re)Importing Assets"
 msgstr "애셋 (다시) 가져오는 중"
 
+msgid "Experimental"
+msgstr "실험적"
+
+msgid "This method supports a variable number of arguments."
+msgstr "이 메서드는 다양한 인수를 지원합니다."
+
+msgid ""
+"This method is called by the engine.\n"
+"It can be overridden to customize built-in behavior."
+msgstr ""
+"이 메서드는 엔진에서 호출됩니다.\n"
+"이 메서드를 재정의하여 기본 제공 동작을 사용자 정의할 수 있습니다."
+
+msgid ""
+"This method has no side effects.\n"
+"It does not modify the object in any way."
+msgstr ""
+"이 방법은 부작용이 없습니다.\n"
+"어떤 방식으로든 객체를 수정하지 않습니다."
+
+msgid ""
+"This method does not need an instance to be called.\n"
+"It can be called directly using the class name."
+msgstr ""
+"이 메서드는 호출할 인스턴스가 필요하지 않습니다.\n"
+"클래스 이름을 사용하여 직접 호출할 수 있습니다."
+
+msgid "Error codes returned:"
+msgstr "반환된 오류 코드:"
+
+msgid "There is currently no description for this %s."
+msgstr "현재 이 %s에 대한 설명이 없습니다."
+
 msgid "Top"
 msgstr "맨 위"
 
@@ -1623,8 +2099,24 @@ msgstr "상속:"
 msgid "Inherited by:"
 msgstr "상속한 클래스:"
 
+msgid ""
+"This class is marked as deprecated. It will be removed in future versions."
+msgstr ""
+"이 클래스는 더 이상 사용되지 않는 것으로 표시되어 있습니다. 향후 버전에서 제"
+"거될 예정입니다."
+
+msgid ""
+"This class is marked as experimental. It is subject to likely change or "
+"possible removal in future versions. Use at your own discretion."
+msgstr ""
+"이 클래스는 실험적이라고 표시되어 있습니다. 향후 버전에서 변경되거나 제거될 "
+"수 있습니다. 사용자 재량에 따라 사용하세요."
+
 msgid "Description"
 msgstr "설명"
+
+msgid "There is currently no description for this class."
+msgstr "현재 이 클래스에 대한 설명이 없습니다."
 
 msgid "Online Tutorials"
 msgstr "온라인 튜토리얼"
@@ -1637,6 +2129,9 @@ msgstr "%s 오버라이드:"
 
 msgid "default:"
 msgstr "디폴트:"
+
+msgid "Constructors"
+msgstr "생성자"
 
 msgid "Operators"
 msgstr "연산자"
@@ -1662,11 +2157,17 @@ msgstr "스타일"
 msgid "Enumerations"
 msgstr "목록"
 
+msgid "There is currently no description for this annotation."
+msgstr "현재 이 주석에 대한 설명이 없습니다."
+
 msgid "Property Descriptions"
 msgstr "속성 설명"
 
 msgid "(value)"
 msgstr "(값)"
+
+msgid "There is currently no description for this property."
+msgstr "현재 이 속성에 대한 설명이 없습니다."
 
 msgid ""
 "There is currently no description for this property. Please help us by "
@@ -1735,6 +2236,12 @@ msgstr "속성"
 msgid "Theme Property"
 msgstr "테마 속성"
 
+msgid "This member is marked as deprecated."
+msgstr "이 멤버는 사용되지 않는 것으로 표시되어 있습니다."
+
+msgid "This member is marked as experimental."
+msgstr "이 멤버는 실험단계로 표시됩니다."
+
 msgid "Property:"
 msgstr "속성:"
 
@@ -1745,6 +2252,9 @@ msgstr "값을 고정하면 값이 기본값과 같더라도 강제로 저장됩
 msgid "Open Documentation"
 msgstr "문서 열기"
 
+msgid "Element %d: %s%d*"
+msgstr "요소 %d: %s%d*"
+
 msgid "Move Up"
 msgstr "위로 이동"
 
@@ -1753,6 +2263,9 @@ msgstr "아래로 이동"
 
 msgid "Resize Array"
 msgstr "배열 크기 바꾸기"
+
+msgid "Add Metadata"
+msgstr "메타데이터 추가"
 
 msgid "Set %s"
 msgstr "Set %s"
@@ -1765,6 +2278,15 @@ msgstr "%s 고정됨"
 
 msgid "Unpinned %s"
 msgstr "%s 고정 해제됨"
+
+msgid "Add metadata %s"
+msgstr "메타데이터 %s 추가"
+
+msgid "Metadata name can't be empty."
+msgstr "메타데이터 이름은 비워둘 수 없습니다."
+
+msgid "Names starting with _ are reserved for editor-only metadata."
+msgstr "_로 시작하는 이름은 편집기 전용 메타데이터를 위해 예약되어 있습니다."
 
 msgid "Copy Property Path"
 msgstr "속성 경로 복사"
@@ -1784,6 +2306,9 @@ msgstr "필터 편집"
 msgid "Language:"
 msgstr "언어:"
 
+msgid "Language"
+msgstr "언어"
+
 msgid "Variant"
 msgstr "변종"
 
@@ -1792,6 +2317,17 @@ msgstr "출력 지우기"
 
 msgid "Copy Selection"
 msgstr "선택 항목 복사"
+
+msgid ""
+"Collapse duplicate messages into one log entry. Shows number of occurrences."
+msgstr ""
+"중복된 메시지를 하나의 로그 항목으로 축소합니다. 발생 횟수를 표시합니다."
+
+msgid "Focus Search/Filter Bar"
+msgstr "초점 검색/필터 바"
+
+msgid "Native Shader Source Inspector"
+msgstr "네이티브 셰이더 소스 인스펙터"
 
 msgid "New Window"
 msgstr "새 창"
@@ -1838,6 +2374,9 @@ msgstr "요청한 파일 형식을 알 수 없음:"
 
 msgid "Error while saving."
 msgstr "저장 중 오류."
+
+msgid "Scene file '%s' appears to be invalid/corrupt."
+msgstr "장면 파일 '%s'이(가) 잘못되었거나 손상된 것 같습니다."
 
 msgid "Saving Scene"
 msgstr "씬 저장 중"
@@ -1895,6 +2434,9 @@ msgstr "레이아웃 이름을 찾을 수 없습니다!"
 msgid "Restored the Default layout to its base settings."
 msgstr "디폴트 레이아웃을 기본 설정으로 복원하였습니다."
 
+msgid "This object is marked as read-only, so it's not editable."
+msgstr "이 개체는 읽기 전용으로 표시되어 있으므로 편집할 수 없습니다."
+
 msgid ""
 "This resource belongs to a scene that was imported, so it's not editable.\n"
 "Please read the documentation relevant to importing scenes to better "
@@ -1913,6 +2455,25 @@ msgstr ""
 
 msgid "Changes may be lost!"
 msgstr "변경사항을 잃을 수도 있습니다!"
+
+msgid "This object is read-only."
+msgstr "이 개체는 읽기 전용입니다."
+
+msgid ""
+"Movie Maker mode is enabled, but no movie file path has been specified.\n"
+"A default movie file path can be specified in the project settings under the "
+"Editor > Movie Writer category.\n"
+"Alternatively, for running single scenes, a `movie_file` string metadata can "
+"be added to the root node,\n"
+"specifying the path to a movie file that will be used when recording that "
+"scene."
+msgstr ""
+"무비 메이커 모드가 활성화되었지만 무비 파일 경로가 지정되지 않았습니다.\n"
+"기본 동영상 파일 경로는 프로젝트 설정의 편집기 > 무비 메이커 카테고리에서 지"
+"정할 수 있습니다.\n"
+"또는 단일 장면을 실행하려면 루트 노드에 `movie_file` 문자열 메타데이터를 추가"
+"할 수 있습니다,\n"
+"해당 장면을 녹화할 때 사용할 동영상 파일의 경로를 지정할 수 있습니다."
 
 msgid "There is no defined scene to run."
 msgstr "실행할 씬이 정의되지 않았습니다."
@@ -2293,8 +2854,32 @@ msgstr "Godot 정보"
 msgid "Support Godot Development"
 msgstr "Godot 개발 지원"
 
+msgid "Run the project's default scene."
+msgstr "프로젝트의 기본 씬을 실행합니다."
+
 msgid "Run Project"
 msgstr "프로젝트 실행"
+
+msgid "Run a specific scene."
+msgstr "특정 장면을 실행합니다."
+
+msgid "Run Specific Scene"
+msgstr "특정 장면 실행"
+
+msgid ""
+"Enable Movie Maker mode.\n"
+"The project will run at stable FPS and the visual and audio output will be "
+"recorded to a video file."
+msgstr ""
+"무비 메이커 모드를 활성화합니다.\n"
+"프로젝트가 안정적인 FPS로 실행되고 시각 및 오디오 출력이 비디오 파일로 녹화됩"
+"니다."
+
+msgid "Mobile"
+msgstr "모바일"
+
+msgid "Compatibility"
+msgstr "호환성"
 
 msgid "Update Continuously"
 msgstr "상시 업데이트"
@@ -2397,6 +2982,9 @@ msgstr "다음 에디터 열기"
 msgid "Open the previous Editor"
 msgstr "이전 에디터 열기"
 
+msgid "Ok"
+msgstr "확인"
+
 msgid "Warning!"
 msgstr "경고!"
 
@@ -2448,11 +3036,29 @@ msgstr "비트 %d, 값 %d"
 msgid "Rename"
 msgstr "이름 바꾸기"
 
+msgid "Temporary Euler may be changed implicitly!"
+msgstr "임시 오일러는 암시적으로 변경될 수 있습니다!"
+
+msgid ""
+"Temporary Euler will not be stored in the object with the original value. "
+"Instead, it will be stored as Quaternion with irreversible conversion.\n"
+"This is due to the fact that the result of Euler->Quaternion can be "
+"determined uniquely, but the result of Quaternion->Euler can be multi-"
+"existent."
+msgstr ""
+"임시 오일러는 원래 값으로 오브젝트에 저장되지 않습니다. 대신 되돌릴 수 없는 "
+"변환을 통해 쿼터니언으로 저장됩니다.\n"
+"이는 오일러->쿼터니언의 결과는 고유하게 결정될 수 있지만, 쿼터니언-> 오일러"
+"의 결과는 다중 존재할 수 있기 때문입니다."
+
 msgid "Assign..."
 msgstr "지정..."
 
 msgid "Invalid RID"
 msgstr "잘못된 RID"
+
+msgid "Recursion detected, unable to assign resource to property."
+msgstr "재귀가 감지되어 프로퍼티에 리소스를 할당할 수 없습니다."
 
 msgid ""
 "Can't create a ViewportTexture on resources saved as a file.\n"
@@ -2478,11 +3084,20 @@ msgstr "뷰포트를 선택하세요"
 msgid "Selected node is not a Viewport!"
 msgstr "선택된 노드는 뷰포트가 아닙니다!"
 
+msgid "(Nil) %s"
+msgstr "(무) %s"
+
+msgid "%s (size %s)"
+msgstr "%s(크기 %s)"
+
 msgid "Size:"
 msgstr "크기:"
 
 msgid "Remove Item"
 msgstr "항목 제거"
+
+msgid "Dictionary (size %d)"
+msgstr "사전(크기 %d)"
 
 msgid "New Key:"
 msgstr "새 키:"
@@ -2515,6 +3130,9 @@ msgstr "새 스크립트"
 
 msgid "Extend Script"
 msgstr "스크립트 상속"
+
+msgid "No Remote Debug export presets configured."
+msgstr "원격 디버그 내보내기 프리셋이 구성되지 않았습니다."
 
 msgid ""
 "No runnable export preset found for this platform.\n"
@@ -2552,11 +3170,74 @@ msgstr "단축키"
 msgid "Binding"
 msgstr "바인딩"
 
+msgid "Left Stick Left, Joystick 0 Left"
+msgstr "왼쪽 스틱 왼쪽, 조이스틱 0 왼쪽"
+
+msgid "Left Stick Right, Joystick 0 Right"
+msgstr "왼쪽 스틱 오른쪽, 조이스틱 0 오른쪽"
+
+msgid "Left Stick Up, Joystick 0 Up"
+msgstr "왼쪽 스틱 위로, 조이스틱 0 위로"
+
+msgid "Left Stick Down, Joystick 0 Down"
+msgstr "왼쪽 스틱 아래로, 조이스틱 0 아래로"
+
+msgid "Right Stick Left, Joystick 1 Left"
+msgstr "오른쪽 스틱 왼쪽, 조이스틱 1 왼쪽"
+
+msgid "Right Stick Right, Joystick 1 Right"
+msgstr "오른쪽 스틱 오른쪽, 조이스틱 1 오른쪽"
+
+msgid "Right Stick Up, Joystick 1 Up"
+msgstr "오른쪽 스틱 위로, 조이스틱 1 위로"
+
+msgid "Right Stick Down, Joystick 1 Down"
+msgstr "오른쪽 스틱 아래로, 조이스틱 1 아래로"
+
+msgid "Joystick 2 Left"
+msgstr "조이스틱 2 왼쪽"
+
+msgid "Left Trigger, Sony L2, Xbox LT, Joystick 2 Right"
+msgstr "왼쪽 트리거, 소니 L2, Xbox LT, 조이스틱 2 오른쪽"
+
+msgid "Joystick 2 Up"
+msgstr "조이스틱 2 위로"
+
+msgid "Right Trigger, Sony R2, Xbox RT, Joystick 2 Down"
+msgstr "오른쪽 트리거, 소니 R2, Xbox RT, 조이스틱 2 다운"
+
+msgid "Joystick 3 Left"
+msgstr "조이스틱 3 왼쪽"
+
+msgid "Joystick 3 Right"
+msgstr "조이스틱 3 오른쪽"
+
+msgid "Joystick 3 Up"
+msgstr "조이스틱 3 위로"
+
+msgid "Joystick 3 Down"
+msgstr "조이스틱 3 아래로"
+
+msgid "Joystick 4 Left"
+msgstr "조이스틱 4 왼쪽"
+
+msgid "Joystick 4 Right"
+msgstr "조이스틱 4 오른쪽"
+
+msgid "Joystick 4 Up"
+msgstr "조이스틱 4 업"
+
+msgid "Joystick 4 Down"
+msgstr "조이스틱 4 아래로"
+
 msgid "All Devices"
 msgstr "모든 기기"
 
 msgid "Device"
 msgstr "기기"
+
+msgid "Listening for input..."
+msgstr "입력 대기 중..."
 
 msgid "Project export for platform:"
 msgstr "플랫폼용 프로젝트 내보내기:"
@@ -2575,6 +3256,9 @@ msgstr "저장하려는 파일:"
 
 msgid "No export template found at the expected path:"
 msgstr "예상 경로에서 내보내기 템플릿을 찾을 수 없습니다:"
+
+msgid "Could not open file to read from path \"%s\"."
+msgstr "경로 \"%s\"에서 파일을 열지 못했습니다."
 
 msgid "Packing"
 msgstr "패킹 중"
@@ -2865,11 +3549,21 @@ msgstr "선택한 씬 내보내기 (종속된 리소스 포함)"
 msgid "Export selected resources (and dependencies)"
 msgstr "선택한 리소스 내보내기 (종속된 리소스 포함)"
 
+msgid "Export as dedicated server"
+msgstr "전용 서버로 내보내기"
+
 msgid "Export Mode:"
 msgstr "내보내기 모드:"
 
 msgid "Resources to export:"
 msgstr "내보내는 리소스:"
+
+msgid ""
+"\"Strip Visuals\" will replace the following resources with placeholders:"
+msgstr "\"스트립 비주얼\"은 다음 리소스를 자리 표시자로 대체합니다:"
+
+msgid "Strip Visuals"
+msgstr "스트립 비주얼"
 
 msgid "Keep"
 msgstr "유지"
@@ -2896,6 +3590,12 @@ msgstr "커스텀(쉼표로 구분):"
 
 msgid "Feature List:"
 msgstr "기능 목록:"
+
+msgid "Encrypt Exported PCK"
+msgstr "내보낸 PCK 암호화"
+
+msgid "Encrypt Index (File Names and Info)"
+msgstr "인덱스 암호화(파일 이름 및 정보)"
 
 msgid "Invalid Encryption Key (must be 64 hexadecimal characters long)"
 msgstr "잘못된 암호화 키 (길이가 16진수 형식의 64자이어야 합니다)"
@@ -2939,6 +3639,23 @@ msgstr "내보내기 템플릿 관리"
 
 msgid "Export With Debug"
 msgstr "디버그와 함께 내보내기"
+
+msgid "Path to FBX2glTF executable is empty."
+msgstr "FBX2glTF 실행 파일 경로가 비어 있습니다."
+
+msgid "Error executing this file (wrong version or architecture)."
+msgstr ""
+"이 파일을 실행하는 동안 오류가 발생했습니다(잘못된 버전 또는 아키텍처)."
+
+msgid ""
+"FBX2glTF is required for importing FBX files.\n"
+"Please download it and provide a valid path to the binary:"
+msgstr ""
+"FBX 파일을 임포트하려면 FBX2glTF가 필요합니다.\n"
+"다운로드하고 바이너리의 유효한 경로를 제공하세요:"
+
+msgid "Click this link to download FBX2glTF"
+msgstr "이 링크를 클릭하여 FBX2glTF를 다운로드하세요"
 
 msgid "Browse"
 msgstr "검색"
@@ -3159,11 +3876,132 @@ msgstr "그룹 에디터"
 msgid "Manage Groups"
 msgstr "그룹 관리"
 
+msgid "The Beginning"
+msgstr "시작"
+
 msgid "Reimport"
 msgstr "다시 가져오기"
 
 msgid "Offset:"
 msgstr "오프셋:"
+
+msgid ""
+"Loop offset (from beginning). Note that if BPM is set, this setting will be "
+"ignored."
+msgstr "루프 오프셋(시작부터). BPM이 설정되어 있으면 이 설정은 무시됩니다."
+
+msgid "BPM:"
+msgstr "BPM:"
+
+msgid ""
+"Configure the Beats Per Measure (tempo) used for the interactive streams.\n"
+"This is required in order to configure beat information."
+msgstr ""
+"인터랙티브 스트림에 사용되는 박자당 비트 수(템포)를 구성합니다.\n"
+"이는 비트 정보를 구성하기 위해 필요합니다."
+
+msgid ""
+"Configure the amount of Beats used for music-aware looping. If zero, it will "
+"be autodetected from the length.\n"
+"It is recommended to set this value (either manually or by clicking on a "
+"beat number in the preview) to ensure looping works properly."
+msgstr ""
+"음악 인식 루핑에 사용되는 비트의 양을 구성합니다. 0이면 길이에서 자동 감지됩"
+"니다.\n"
+"루핑이 제대로 작동하도록 하려면 이 값을 수동으로 설정하거나 미리보기에서 비"
+"트 번호를 클릭하여 설정하는 것이 좋습니다."
+
+msgid "Bar Beats:"
+msgstr "바 비트:"
+
+msgid ""
+"Configure the Beats Per Bar. This used for music-aware transitions between "
+"AudioStreams."
+msgstr "바당 비트를 구성합니다. 오디오스트림 간 음악 인식 전환에 사용됩니다."
+
+msgid "Preloaded glyphs: %d"
+msgstr "미리 로드된 글리프: %d"
+
+msgid ""
+"Warning: There are no configurations specified, no glyphs will be pre-"
+"rendered."
+msgstr "경고: 지정된 구성이 없으며 글리프가 미리 렌더링되지 않습니다."
+
+msgid ""
+"Warning: Multiple configurations have identical settings. Duplicates will be "
+"ignored."
+msgstr "경고: 여러 구성에 동일한 설정이 있습니다. 중복은 무시됩니다."
+
+msgid ""
+"Note: LCD Subpixel antialiasing is selected, each of the glyphs will be pre-"
+"rendered for all supported subpixel layouts (5x)."
+msgstr ""
+"참고: LCD 서브픽셀 앤티앨리어싱을 선택하면 지원되는 모든 서브픽셀 레이아웃"
+"(5x)에 대해 각 글리프가 미리 렌더링됩니다."
+
+msgid ""
+"Note: Subpixel positioning is selected, each of the glyphs might be pre-"
+"rendered for multiple subpixel offsets (up to 4x)."
+msgstr ""
+"참고: 서브픽셀 위치 지정이 선택되면 각 글리프는 여러 서브픽셀 오프셋(최대 4"
+"배)에 대해 미리 렌더링될 수 있습니다."
+
+msgid "Advanced Import Settings for '%s'"
+msgstr "'%s'에 대한 고급 가져오기 설정"
+
+msgid "Select font rendering options, fallback font, and metadata override:"
+msgstr "글꼴 렌더링 옵션, 대체 글꼴 및 메타데이터 재정의 옵션을 선택합니다:"
+
+msgid "Pre-render Configurations"
+msgstr "프리렌더 설정"
+
+msgid ""
+"Add font size, and variation coordinates, and select glyphs to pre-render:"
+msgstr "글꼴 크기와 변형 좌표를 추가하고 미리 렌더링할 글리프를 선택합니다:"
+
+msgid "Select translations to add all required glyphs to pre-render list:"
+msgstr "번역을 선택하여 필요한 모든 글리프를 사전 렌더링 목록에 추가합니다:"
+
+msgid "Shape all Strings in the Translations and Add Glyphs"
+msgstr "번역에서 모든 문자열 모양 만들기 및 글리프 추가하기"
+
+msgid "Glyphs from the Text"
+msgstr "텍스트의 글리프"
+
+msgid ""
+"Enter a text and select OpenType features to shape and add all required "
+"glyphs to pre-render list:"
+msgstr ""
+"텍스트를 입력하고 OpenType 기능을 선택하여 모양을 만들고 필요한 모든 글리프"
+"를 사전 렌더링 목록에 추가합니다:"
+
+msgid "Shape Text and Add Glyphs"
+msgstr "텍스트 모양 및 글리프 추가"
+
+msgid "Glyphs from the Character Map"
+msgstr "캐릭터 맵의 문양"
+
+msgid ""
+"Add or remove glyphs from the character map to pre-render list:\n"
+"Note: Some stylistic alternatives and glyph variants do not have one-to-one "
+"correspondence to character, and not shown in this map, use \"Glyphs from "
+"the text\" tab to add these."
+msgstr ""
+"문자 맵에서 사전 렌더링 목록에 글리프를 추가하거나 제거합니다:\n"
+"참고: 일부 문체 대체 및 글리프 변형은 문자와 일대일 대응이 없으며 이 맵에 표"
+"시되지 않으므로 '텍스트의 글리프' 탭을 사용하여 추가할 수 있습니다."
+
+msgid "Dynamically rendered TrueType/OpenType font"
+msgstr "동적으로 렌더링된 트루타입/오픈타입 글꼴"
+
+msgid "Prerendered multichannel(+true) signed distance field"
+msgstr "미리 렌더링된 다중 채널(+true) 부호화된 거리 필드"
+
+msgid "Can't load font texture:"
+msgstr "글꼴 텍스처를 로드할 수 없습니다:"
+
+msgid "Image margin too big."
+msgstr "이미지 여백이 너무 큽니다."
 
 msgid "Importing Scene..."
 msgstr "씬 가져오는 중..."
@@ -3586,8 +4424,17 @@ msgstr "노드 추가..."
 msgid "Enable Filtering"
 msgstr "필터 활성화"
 
+msgid "Animation name can't be empty."
+msgstr "애니메이션 이름은 비워둘 수 없습니다."
+
 msgid "Load Animation"
 msgstr "애니메이션 불러오기"
+
+msgid "Invalid AnimationLibrary file."
+msgstr "잘못된 AnimationLibrary 파일입니다."
+
+msgid "Invalid Animation file."
+msgstr "잘못된 애니메이션 파일입니다."
 
 msgid "Animation Name:"
 msgstr "애니메이션 이름:"
@@ -3597,6 +4444,18 @@ msgstr "붙여 넣은 애니메이션"
 
 msgid "Open in Inspector"
 msgstr "인스펙터에서 열기"
+
+msgid "Paste Animation to Library from clipboard"
+msgstr "애니메이션을 클립보드에서 라이브러리로 붙여넣기"
+
+msgid "Save animation library to resource on disk"
+msgstr "애니메이션 라이브러리를 디스크에 리소스로 저장"
+
+msgid "Copy animation to clipboard"
+msgstr "애니메이션을 클립보드에 복사"
+
+msgid "Save animation to resource on disk"
+msgstr "애니메이션을 디스크에 리소스로 저장"
 
 msgid "Storage"
 msgstr "보관소"
@@ -4516,6 +5375,13 @@ msgstr ""
 "기기에서 원격으로 사용 중이면, 네트워크 파일시스템 옵션이 활성화되어 있다면 "
 "더욱 효율적입니다."
 
+msgid "Run %d Instance"
+msgid_plural "Run %d Instances"
+msgstr[0] "%d 인스턴스 실행"
+
+msgid " - Variation"
+msgstr " - 바리에이션"
+
 msgid "Convert to CPUParticles2D"
 msgstr "CPUParticles2D로 변환"
 
@@ -4645,6 +5511,18 @@ msgstr "디버그할 메시가 없습니다."
 
 msgid "Mesh has no UV in layer %d."
 msgstr "레이어 %d에서 메시에 UV가 없습니다."
+
+msgid "MeshInstance3D lacks a Mesh."
+msgstr "MeshInstance3D에 메시가 없습니다."
+
+msgid "Mesh has no surface to create outlines from."
+msgstr "메시에 윤곽선을 만들 표면이 없습니다."
+
+msgid "Mesh primitive type is not PRIMITIVE_TRIANGLES."
+msgstr "메시 기본 타입이 PRIMITIVE_TRIANGLES이 아닙니다."
+
+msgid "Could not create outline."
+msgstr "윤곽선을 만들 수 없습니다."
 
 msgid "Create Outline"
 msgstr "윤곽선 만들기"
@@ -4929,6 +5807,9 @@ msgstr "키가 비활성화되어 있습니다 (키가 삽입되지 않습니다
 
 msgid "Animation Key Inserted."
 msgstr "애니메이션 키를 삽입했습니다."
+
+msgid "Objects: %d\n"
+msgstr "오브젝트: %d\n"
 
 msgid "Top View."
 msgstr "상단면 보기."
@@ -5819,6 +6700,9 @@ msgstr "LightOccluder2D 만들기"
 msgid "LightOccluder2D Preview"
 msgstr "LightOccluder2D 미리보기"
 
+msgid "Can't convert a Sprite2D from a foreign scene."
+msgstr "다른 씬으로부터 Sprite2D를 변환할 수 없습니다."
+
 msgid "Can't convert a sprite using animation frames to mesh."
 msgstr "애니메이션 프레임을 사용하는 스프라이트를 메시로 변환할 수 없습니다."
 
@@ -5951,20 +6835,48 @@ msgstr "단계:"
 msgid "Styleboxes"
 msgstr "스타일박스"
 
+msgid "1 color"
+msgid_plural "{num} colors"
+msgstr[0] "{num} 색"
+
 msgid "No colors found."
 msgstr "색을 찾을 수 없습니다."
+
+msgid "1 constant"
+msgid_plural "{num} constants"
+msgstr[0] "{num} 상수"
 
 msgid "No constants found."
 msgstr "상수를 찾을 수 없습니다."
 
+msgid "1 font"
+msgid_plural "{num} fonts"
+msgstr[0] "{num} 폰트"
+
 msgid "No fonts found."
 msgstr "글꼴을 찾을 수 없습니다."
+
+msgid "1 font size"
+msgid_plural "{num} font sizes"
+msgstr[0] "{num} 폰트 크기"
+
+msgid "1 icon"
+msgid_plural "{num} icons"
+msgstr[0] "{num} 아이콘"
 
 msgid "No icons found."
 msgstr "아이콘을 찾을 수 없습니다."
 
+msgid "1 stylebox"
+msgid_plural "{num} styleboxes"
+msgstr[0] "{num} 스타일박스"
+
 msgid "No styleboxes found."
 msgstr "스타일박스를 찾을 수 없습니다."
+
+msgid "{num} currently selected"
+msgid_plural "{num} currently selected"
+msgstr[0] "현재 선택 {num}개"
 
 msgid "Nothing was selected for the import."
 msgstr "가져올 것이 선택되지 않았습니다."
@@ -7104,6 +8016,15 @@ msgstr "프로젝트 이름을 정하는 게 좋을 것입니다."
 msgid "Invalid project path (changed anything?)."
 msgstr "잘못된 프로젝트 경로 (무언가를 변경하셨습니까?)."
 
+msgid ""
+"Couldn't load project at '%s' (error %d). It may be missing or corrupted."
+msgstr ""
+"프로젝트 경로에서 프로젝트를 불러올 수 없습니다 (오류 %d). 누락되거나 손상된 "
+"것 같습니다."
+
+msgid "Couldn't save project at '%s' (error %d)."
+msgstr "'%s'에서 프로젝트를 저장 할 수 없었습니다."
+
 msgid "Couldn't create project.godot in project path."
 msgstr "프로젝트 경로에서 project.godot 파일을 만들 수 없습니다."
 
@@ -7290,11 +8211,17 @@ msgstr "입력 액션 지우기"
 msgid "Project Settings (project.godot)"
 msgstr "프로젝트 설정 (project.godot)"
 
+msgid "Select a Setting or Type its Name"
+msgstr "설정을 선택하거나 그 이름을 입력해주세요"
+
 msgid "Input Map"
 msgstr "입력 맵"
 
 msgid "Localization"
 msgstr "현지화"
+
+msgid "Autoload"
+msgstr "자동 로드"
 
 msgid "Plugins"
 msgstr "플러그인(Plugin)"
@@ -7644,6 +8571,14 @@ msgstr ""
 "할 수 있습니다.\n"
 "비활성화하려면 클릭하세요."
 
+msgid "Node has one connection."
+msgid_plural "Node has {num} connections."
+msgstr[0] "노드에 연결이 {num}개 있습니다."
+
+msgid "Node is in this group:"
+msgid_plural "Node is in the following groups:"
+msgstr[0] "노드가 다음 그룹에 속해 있습니다:"
+
 msgid "Open Script:"
 msgstr "스크립트 열기:"
 
@@ -7773,6 +8708,9 @@ msgstr "잘못된 기본 경로."
 
 msgid "Wrong extension chosen."
 msgstr "잘못된 확장자 선택."
+
+msgid "Global shader parameter '%s' already exists'"
+msgstr "글로벌 셰이더 매개변수 '%s'이(가) 이미 있습니다"
 
 msgid "Change Cylinder Radius"
 msgstr "원기둥 반지름 바꾸기"
@@ -8202,6 +9140,9 @@ msgstr "xcrun 실행 파일을 시작하지 못했습니다."
 msgid "Cannot sign file %s."
 msgstr "파일 %s를 서명할 수 없습니다."
 
+msgid "Could not start hdiutil executable."
+msgstr "hdiutil 실행 파일을 시작할 수 없었습니다."
+
 msgid "Invalid bundle identifier:"
 msgstr "잘못된 bundle 식별자:"
 
@@ -8392,6 +9333,13 @@ msgstr ""
 msgid "PathFollow2D only works when set as a child of a Path2D node."
 msgstr "PathFollow2D는 Path2D 노드의 자식 노드로 있을 때만 작동합니다."
 
+msgid ""
+"A PhysicalBone2D only works with a Skeleton2D or another PhysicalBone2D as a "
+"parent node!"
+msgstr ""
+"PhysicalBone2D는 Skeleton2D나 다른 PhysicalBone2D가 부모 노드로 있어야만 작동"
+"합니다!"
+
 msgid "Path property must point to a valid Node2D node to work."
 msgstr "Path 속성은 올바른 Node2D 노드를 가리켜야 합니다."
 
@@ -8532,6 +9480,9 @@ msgid ""
 msgstr ""
 "무엇이든 렌더링하려면 뷰포트 크기가 양쪽 차원에서 2픽셀 이상이어야 합니다."
 
+msgid "Unsupported BMFont texture format."
+msgstr "지원되지 않는 BMFont 텍스처 형식입니다."
+
 msgid ""
 "The sampler port is connected but not used. Consider changing the source to "
 "'SamplerPort'."
@@ -8565,3 +9516,404 @@ msgstr "Uniform에 대입."
 
 msgid "Constants cannot be modified."
 msgstr "상수는 수정할 수 없습니다."
+
+msgid ""
+"Sampler argument %d of function '%s' called more than once using different "
+"built-ins. Only calling with the same built-in is supported."
+msgstr ""
+"다른 내장 함수를 사용하여 '%s' 함수의 샘플러 인수 %d를 두 번 이상 호출했습니"
+"다. 동일한 내장 함수를 사용한 호출만 지원됩니다."
+
+msgid "Array size is already defined."
+msgstr "배열 크기가 이미 정의되어 있습니다."
+
+msgid "Unknown array size is forbidden in that context."
+msgstr "해당 컨텍스트에서는 알 수 없는 배열 크기는 금지됩니다."
+
+msgid "Array size expressions are not supported."
+msgstr "배열 크기 표현식은 지원되지 않습니다."
+
+msgid "Expected a positive integer constant."
+msgstr "양의 정수 상수를 기대합니다."
+
+msgid "Array size mismatch."
+msgstr "배열 크기 불일치."
+
+msgid "Expected array initialization."
+msgstr "예상 배열 초기화."
+
+msgid "Expected '(' after the type name."
+msgstr "유형 이름 뒤에 '('가 예상됩니다."
+
+msgid "A constant value cannot be passed for '%s' parameter."
+msgstr "'%s' 매개 변수에 상수 값을 전달할 수 없습니다."
+
+msgid "Unknown identifier in expression: '%s'."
+msgstr "식의 알 수 없는 식별자: '%s'입니다."
+
+msgid ""
+"%s has been removed in favor of using hint_%s with a uniform.\n"
+"To continue with minimal code changes add 'uniform sampler2D %s : hint_%s, "
+"filter_linear_mipmap;' near the top of your shader."
+msgstr ""
+"유니폼에 hint_%s를 사용하기 위해 %s가 제거되었습니다.\n"
+"최소한의 코드 변경으로 계속하려면 셰이더 상단에 '유니폼 샘플러2D %s : "
+"hint_%s, filter_linear_mipmap;'을 추가하세요."
+
+msgid ""
+"Varying with integer data type must be declared with `flat` interpolation "
+"qualifier."
+msgstr ""
+"정수 데이터 유형으로 변경하려면 `flat` 보간 한정자를 사용하여 선언해야 합니"
+"다."
+
+msgid "Can't use function as identifier: '%s'."
+msgstr "함수를 식별자로 사용할 수 없습니다: '%s'."
+
+msgid "Only integer expressions are allowed for indexing."
+msgstr "인덱싱에는 정수 표현식만 허용됩니다."
+
+msgid "Index [%d] out of range [%d..%d]."
+msgstr "인덱스 [%d]가 범위[%d..%d]를 벗어났습니다."
+
+msgid "Expected expression, found: '%s'."
+msgstr "예상 표현식을 찾았습니다: '%s'."
+
+msgid "Empty statement. Remove ';' to fix this warning."
+msgstr "빈 문입니다. 이 경고를 수정하려면 ';'을 제거하세요."
+
+msgid "Expected an identifier as a member."
+msgstr "회원으로서 식별자를 예상했습니다."
+
+msgid "Cannot combine symbols from different sets in expression '.%s'."
+msgstr "표현식 '.%s'에서 서로 다른 집합의 기호를 결합할 수 없습니다."
+
+msgid "An object of type '%s' can't be indexed."
+msgstr "'%s' 유형의 개체를 인덱싱할 수 없습니다."
+
+msgid "Invalid base type for increment/decrement operator."
+msgstr "증분/감소 연산자에 대한 기본 유형이 잘못되었습니다."
+
+msgid "Invalid use of increment/decrement operator in a constant expression."
+msgstr "상수 표현식에 증분/감소 연산자를 잘못 사용했습니다."
+
+msgid "Missing matching ':' for select operator."
+msgstr "선택 연산자에 일치하는 ':'가 없습니다."
+
+msgid "A switch may only contain '%s' and '%s' blocks."
+msgstr "스위치에는 '%s' 및 '%s' 블록만 포함할 수 있습니다."
+
+msgid "Expected variable type after precision modifier."
+msgstr "정밀도 수정자 뒤에 예상되는 변수 유형입니다."
+
+msgid "Expected an identifier or '[' after type."
+msgstr "유형 뒤에 식별자 또는 '['를 입력할 것으로 예상했습니다."
+
+msgid "Expected an identifier."
+msgstr "식별자를 예상했습니다."
+
+msgid "Expected array initializer."
+msgstr "예상 배열 초기화기입니다."
+
+msgid "Expected data type after precision modifier."
+msgstr "정밀도 수정자 뒤에 예상되는 데이터 유형입니다."
+
+msgid "Expected a constant expression."
+msgstr "상수 표현식을 기대했습니다."
+
+msgid "Expected initialization of constant."
+msgstr "상수의 예상 초기화."
+
+msgid ""
+"Expected constant expression for argument %d of function call after '='."
+msgstr "'=' 뒤에 오는 함수 호출의 인수 %d에 대해 예상되는 상수 표현식입니다."
+
+msgid "Expected a boolean expression."
+msgstr "부울 표현식을 예상했습니다."
+
+msgid "Expected an integer expression."
+msgstr "정수 표현식을 예상했습니다."
+
+msgid "Cases must be defined before default case."
+msgstr "기본 케이스보다 먼저 케이스를 정의해야 합니다."
+
+msgid "Default case must be defined only once."
+msgstr "기본 케이스는 한 번만 정의해야 합니다."
+
+msgid "'%s' must be placed within a '%s' block."
+msgstr "'%s'는 '%s' 블록 내에 배치해야 합니다."
+
+msgid "Using '%s' in the '%s' processor function is incorrect."
+msgstr "'%s' 프로세서 함수에서 '%s'를 사용하는 것은 올바르지 않습니다."
+
+msgid "Expected '%s' with an expression of type '%s'."
+msgstr "'%s' 유형의 식에 '%s'를 예상했습니다."
+
+msgid "Expected return with an expression of type '%s'."
+msgstr "'%s' 유형의 식에 대한 예상 반환입니다."
+
+msgid "'%s' is not allowed outside of a loop or '%s' statement."
+msgstr "'%s'는 루프 또는 '%s' 문 외부에서 허용되지 않습니다."
+
+msgid "'%s' is not allowed outside of a loop."
+msgstr "'%s'는 루프 외부에서 허용되지 않습니다."
+
+msgid "The middle expression is expected to be a boolean operator."
+msgstr "중간 표현식은 부울 연산자로 예상됩니다."
+
+msgid "The left expression is expected to be a variable declaration."
+msgstr "왼쪽 표현식은 변수 선언으로 예상됩니다."
+
+msgid "The precision modifier cannot be used on structs."
+msgstr "정밀도 수정자는 구조체에는 사용할 수 없습니다."
+
+msgid "The precision modifier cannot be used on boolean types."
+msgstr "정밀도 수정자는 부울 유형에는 사용할 수 없습니다."
+
+msgid "Expected '%s' at the beginning of shader. Valid types are: %s."
+msgstr "셰이더 시작 부분에 '%s'가 예상됩니다. 유효한 유형은 %s."
+
+msgid ""
+"Expected an identifier after '%s', indicating the type of shader. Valid "
+"types are: %s."
+msgstr ""
+"셰이더 유형을 나타내는 '%s' 뒤에 식별자가 있을 것으로 예상됩니다. 유효한 유형"
+"은 다음과 같습니다: %s."
+
+msgid "Expected an identifier for render mode."
+msgstr "렌더링 모드에 대한 식별자를 기대했습니다."
+
+msgid ""
+"Redefinition of render mode: '%s'. The '%s' mode has already been set to "
+"'%s'."
+msgstr "렌더링 모드의 재정의: '%s'. '%s' 모드가 이미 '%s'로 설정되었습니다."
+
+msgid "Expected a struct identifier."
+msgstr "구조 식별자를 예상했습니다."
+
+msgid "Nested structs are not allowed."
+msgstr "중첩 구조는 허용되지 않습니다."
+
+msgid "A '%s' data type is not allowed here."
+msgstr "여기에서는 '%s' 데이터 유형이 허용되지 않습니다."
+
+msgid "Expected an identifier or '['."
+msgstr "식별자 또는 '['를 예상했습니다."
+
+msgid "Empty structs are not allowed."
+msgstr "빈 구조는 허용되지 않습니다."
+
+msgid "Uniform instances are not yet implemented for '%s' shaders."
+msgstr "'%s' 셰이더에 대한 유니폼 인스턴스가 아직 구현되지 않았습니다."
+
+msgid "Uniform instances are not supported in gl_compatibility shaders."
+msgstr "유니폼 인스턴스는 gl_compatibility 셰이더에서 지원되지 않습니다."
+
+msgid "Interpolation qualifiers are not supported for uniforms."
+msgstr "유니폼에는 보간 한정자가 지원되지 않습니다."
+
+msgid "The '%s' data type is not supported for uniforms."
+msgstr "유니폼에는 '%s' 데이터 유형이 지원되지 않습니다."
+
+msgid "Interpolation modifier '%s' cannot be used with boolean types."
+msgstr "보간 수정자 '%s'는 부울 유형과 함께 사용할 수 없습니다."
+
+msgid "Global uniform '%s' does not exist. Create it in Project Settings."
+msgstr "글로벌 유니폼 '%s'가 존재하지 않습니다. 프로젝트 설정에서 생성하세요."
+
+msgid "Global uniform '%s' must be of type '%s'."
+msgstr "글로벌 유니폼 '%s'는 '%s' 유형이어야 합니다."
+
+msgid "The '%s' qualifier is not supported for sampler types."
+msgstr "샘플러 유형에는 '%s' 한정자가 지원되지 않습니다."
+
+msgid "The '%s' qualifier is not supported for matrix types."
+msgstr "행렬 유형에는 '%s' 한정자가 지원되지 않습니다."
+
+msgid "The '%s' qualifier is not supported for uniform arrays."
+msgstr "균일 배열에는 '%s' 한정자가 지원되지 않습니다."
+
+msgid "Expected valid type hint after ':'."
+msgstr "':' 뒤에 예상되는 유효한 유형 힌트입니다."
+
+msgid "This hint is not supported for uniform arrays."
+msgstr "이 힌트는 균일 배열에는 지원되지 않습니다."
+
+msgid "Source color hint is for '%s', '%s' or sampler types only."
+msgstr "소스 색상 힌트는 '%s', '%s' 또는 샘플러 유형에만 해당됩니다."
+
+msgid "Range hint is for '%s' and '%s' only."
+msgstr "범위 힌트는 '%s' 및 '%s'에만 해당됩니다."
+
+msgid "Expected ',' after integer constant."
+msgstr "정수 상수 뒤에 ','가 예상됩니다."
+
+msgid "Can only specify '%s' once."
+msgstr "'%s'를 한 번만 지정할 수 있습니다."
+
+msgid "The instance index can't be negative."
+msgstr "인스턴스 인덱스는 음수일 수 없습니다."
+
+msgid "Allowed instance uniform indices must be within [0..%d] range."
+msgstr "허용되는 인스턴스 균일 인덱스는 [0..%d] 범위 내에 있어야 합니다."
+
+msgid ""
+"'hint_normal_roughness_texture' is not supported in gl_compatibility shaders."
+msgstr ""
+"'힌트_노멀_거칠기_텍스처'는 gl_compatibility 셰이더에서 지원되지 않습니다."
+
+msgid "This hint is only for sampler types."
+msgstr "이 힌트는 샘플러 유형에만 해당됩니다."
+
+msgid "Redefinition of hint: '%s'. The hint has already been set to '%s'."
+msgstr "힌트 재정의: '%s'. 힌트가 이미 '%s'로 설정되었습니다."
+
+msgid ""
+"Redefinition of filter mode: '%s'. The filter mode has already been set to "
+"'%s'."
+msgstr "필터 모드의 재정의: '%s'. 필터 모드가 이미 '%s'로 설정되었습니다."
+
+msgid ""
+"Redefinition of repeat mode: '%s'. The repeat mode has already been set to "
+"'%s'."
+msgstr "반복 모드의 재정의: '%s'. 반복 모드가 이미 '%s'로 설정되었습니다."
+
+msgid "Too many '%s' uniforms in shader, maximum supported is %d."
+msgstr "셰이더에 '%s' 유니폼이 너무 많아서 지원되는 최대값이 %d입니다."
+
+msgid "Setting default values to uniform arrays is not supported."
+msgstr "기본값을 균일 배열로 설정하는 것은 지원되지 않습니다."
+
+msgid "Expected constant expression after '='."
+msgstr "'=' 뒤에 예상되는 상수 표현식입니다."
+
+msgid "Expected an uniform subgroup identifier."
+msgstr "균일한 하위 그룹 식별자를 기대했습니다."
+
+msgid "Expected an uniform group identifier."
+msgstr "균일한 그룹 식별자를 기대했습니다."
+
+msgid "Expected an uniform group identifier or `;`."
+msgstr "균일한 그룹 식별자 또는 `;`가 예상됩니다."
+
+msgid "Group needs to be opened before."
+msgstr "이전에 그룹을 열어야 합니다."
+
+msgid "Shader type is already defined."
+msgstr "셰이더 유형이 이미 정의되어 있습니다."
+
+msgid "Expected constant, function, uniform or varying."
+msgstr "예상 상수, 함수, 균일 또는 가변."
+
+msgid "Expected a function name after type."
+msgstr "유형 뒤에 함수 이름을 예상했습니다."
+
+msgid "Expected '(' after function identifier."
+msgstr "함수 식별자 뒤에 '('가 예상됩니다."
+
+msgid ""
+"Global non-constant variables are not supported. Expected '%s' keyword "
+"before constant definition."
+msgstr ""
+"전역 비상수 변수는 지원되지 않습니다. 상수 정의 앞에 '%s' 키워드가 예상되었습"
+"니다."
+
+msgid "Expected an identifier after type."
+msgstr "유형 뒤에 식별자를 입력할 것으로 예상됩니다."
+
+msgid ""
+"The '%s' qualifier cannot be used within a function parameter declared with "
+"'%s'."
+msgstr ""
+"'%s'로 선언된 함수 매개 변수 내에서는 '%s' 한정자를 사용할 수 없습니다."
+
+msgid "Expected a valid data type for argument."
+msgstr "인수의 유효한 데이터 유형이 예상됩니다."
+
+msgid "Void type not allowed as argument."
+msgstr "무효 유형은 인자로 허용되지 않습니다."
+
+msgid "Expected an identifier for argument name."
+msgstr "인자 이름에 대한 식별자를 기대했습니다."
+
+msgid "Function '%s' expects no arguments."
+msgstr "함수 '%s'에 인수가 없습니다."
+
+msgid "Function '%s' must be of '%s' return type."
+msgstr "함수 '%s'는 반환 유형이 '%s'여야 합니다."
+
+msgid "Expected at least one '%s' statement in a non-void function."
+msgstr "무효화되지 않은 함수에서 하나 이상의 '%s' 문이 예상됩니다."
+
+msgid "Unknown directive."
+msgstr "알 수 없는 지시문."
+
+msgid "Macro redefinition."
+msgstr "매크로 재정의."
+
+msgid "Expected a comma in the macro argument list."
+msgstr "매크로 인수 목록에 쉼표가 예상됩니다."
+
+msgid "Unmatched elif."
+msgstr "타의 추종을 불허하는 엘리프."
+
+msgid "Unmatched endif."
+msgstr "타의 추종을 불허하는 엔디프."
+
+msgid ""
+"Shader include load failed. Does the shader include exist? Is there a cyclic "
+"dependency?"
+msgstr ""
+"셰이더 포함 로드에 실패했습니다. 셰이더 인클루드가 존재합니까? 순환 종속성이 "
+"있습니까?"
+
+msgid "Shader include resource type is wrong."
+msgstr "셰이더 포함 리소스 유형이 잘못되었습니다."
+
+msgid "Cyclic include found."
+msgstr "순환 포함이 발견되었습니다."
+
+msgid "Shader max include depth exceeded."
+msgstr "셰이더 최대 포함 깊이가 초과되었습니다."
+
+msgid "Macro expansion limit exceeded."
+msgstr "매크로 확장 제한을 초과했습니다."
+
+msgid "Can't find matching branch directive."
+msgstr "일치하는 브랜치 지시문을 찾을 수 없습니다."
+
+msgid "Unmatched conditional statement."
+msgstr "타의 추종을 불허하는 조건문."
+
+msgid ""
+"Direct floating-point comparison (this may not evaluate to `true` as you "
+"expect). Instead, use `abs(a - b) < 0.0001` for an approximate but "
+"predictable comparison."
+msgstr ""
+"직접 부동소수점 비교(예상대로 '참'으로 평가되지 않을 수 있음). 대신, 근사치이"
+"지만 예측 가능한 비교를 위해 `abs(a - b) < 0.0001`을 사용합니다."
+
+msgid "The const '%s' is declared but never used."
+msgstr "상수 '%s'가 선언되었지만 사용되지 않았습니다."
+
+msgid "The function '%s' is declared but never used."
+msgstr "함수 '%s'가 선언되었지만 사용되지 않았습니다."
+
+msgid "The struct '%s' is declared but never used."
+msgstr "구조체 '%s'가 선언되었지만 사용되지 않았습니다."
+
+msgid "The uniform '%s' is declared but never used."
+msgstr "균일한 '%s'가 선언되었지만 사용되지 않았습니다."
+
+msgid "The varying '%s' is declared but never used."
+msgstr "다양한 '%s'가 선언되었지만 사용되지 않았습니다."
+
+msgid "The local variable '%s' is declared but never used."
+msgstr "로컬 변수 '%s'가 선언되었지만 사용되지 않았습니다."
+
+msgid ""
+"The total size of the %s for this shader on this device has been exceeded "
+"(%d/%d). The shader may not work correctly."
+msgstr ""
+"이 장치에서 이 셰이더에 대한 %s의 총 크기를 초과했습니다(%d/%d). 셰이더가 제"
+"대로 작동하지 않을 수 있습니다."

@@ -86,7 +86,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-02-16 21:23+0000\n"
+"PO-Revision-Date: 2023-02-23 00:29+0000\n"
 "Last-Translator: Mirko <miknsop@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
@@ -910,6 +910,9 @@ msgstr "Rotazione"
 msgid "Scale"
 msgstr "Scala"
 
+msgid "BlendShape"
+msgstr "BlendShape"
+
 msgid "Methods"
 msgstr "Metodi"
 
@@ -1405,6 +1408,9 @@ msgstr "Tempo"
 
 msgid "Calls"
 msgstr "Chiamate"
+
+msgid "Linked"
+msgstr "Collegato"
 
 msgid "CPU"
 msgstr "CPU"
@@ -3581,9 +3587,6 @@ msgstr ""
 msgid "Choose a renderer."
 msgstr "Scegli un renderer."
 
-msgid "Forward+"
-msgstr "Forward+"
-
 msgid "Mobile"
 msgstr "Mobile"
 
@@ -4665,9 +4668,6 @@ msgstr "Script..."
 
 msgid "Resource..."
 msgstr "Risorsa..."
-
-msgid "TextFile..."
-msgstr "TextFile..."
 
 msgid "New Scene..."
 msgstr "Nuova Scena…"
@@ -6040,6 +6040,9 @@ msgstr "Sposta Nodo"
 msgid "Transition exists!"
 msgstr "La transizione esiste!"
 
+msgid "To"
+msgstr "A"
+
 msgid "Add Node and Transition"
 msgstr "Aggiungi un nodo e una transizione"
 
@@ -6756,6 +6759,9 @@ msgstr "Questo nodo è il figlio di un Control normale."
 
 msgid "Use anchors and the rectangle for positioning."
 msgstr "Utilizza le ancore e il rettangolo per il posizionamento."
+
+msgid "Custom"
+msgstr "Personalizzato"
 
 msgid "Expand"
 msgstr "Espandi"
@@ -8648,6 +8654,9 @@ msgstr "Standard"
 msgid "Plain Text"
 msgstr "Testo semplice"
 
+msgid "JSON"
+msgstr "JSON"
+
 msgid "Connections to method:"
 msgstr "Connessioni al metodo:"
 
@@ -10062,9 +10071,6 @@ msgstr "Nome Remoto"
 
 msgid "Remote URL"
 msgstr "URL Remoto"
-
-msgid "Fetch"
-msgstr "Fetch"
 
 msgid "Pull"
 msgstr "Pull"

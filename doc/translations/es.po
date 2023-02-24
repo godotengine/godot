@@ -13859,9 +13859,6 @@ msgstr "[Transform2D] Global."
 msgid "Position, relative to the node's parent."
 msgstr "Posición, relativa al padre del nodo."
 
-msgid "Rotation in radians, relative to the node's parent."
-msgstr "Rotación en radianes, en relación con el padre del nodo."
-
 msgid "Local [Transform2D]."
 msgstr "[Transform2D] Local ."
 

@@ -123,7 +123,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-02-20 00:45+0000\n"
+"PO-Revision-Date: 2023-02-24 12:28+0000\n"
 "Last-Translator: Hipolyte Ponthieu <7hip.po6@orange.fr>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
@@ -401,6 +401,9 @@ msgstr "Tout supprimer à droite"
 msgid "Caret Left"
 msgstr "Curseur à Gauche"
 
+msgid "Caret Right"
+msgstr "Curseur à droite"
+
 msgid "Caret Word Right"
 msgstr "Curseur à droite du mot"
 
@@ -573,9 +576,6 @@ msgstr "Inverser les Anses"
 
 msgid "Make Handles Balanced (Auto Tangent)"
 msgstr "Équilibrer les Anses (Tangente Automatique)"
-
-msgid "Make Handles Mirrored (Auto Tangent)"
-msgstr "Appliquer manipulations en miroir (Auto-Tangente)"
 
 msgid "Add Bezier Point"
 msgstr "Ajouter un point de Bézier"

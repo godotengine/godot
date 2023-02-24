@@ -78,7 +78,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-02-20 10:58+0000\n"
+"PO-Revision-Date: 2023-02-24 12:28+0000\n"
 "Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pl/>\n"
@@ -416,6 +416,9 @@ msgstr "Wyczyść kursory i zaznaczenie"
 msgid "Toggle Insert Mode"
 msgstr "Przełącz tryb wstawiania"
 
+msgid "Submit Text"
+msgstr "Zatwierdź tekst"
+
 msgid "Duplicate Nodes"
 msgstr "Duplikuj węzły"
 
@@ -485,6 +488,12 @@ msgstr "EiB"
 
 msgid "Example: %s"
 msgstr "Przykład: %s"
+
+msgid "%d item"
+msgid_plural "%d items"
+msgstr[0] "%d pozycja"
+msgstr[1] "%d pozycje"
+msgstr[2] "%d pozycji"
 
 msgid ""
 "Invalid action name. It cannot be empty nor contain '/', ':', '=', '\\' or "
@@ -1067,6 +1076,18 @@ msgstr "Użyj krzywych Beziera"
 msgid "Create RESET Track(s)"
 msgstr "Utwórz ścieżki RESET"
 
+msgid "Animation Optimizer"
+msgstr "Optymalizator animacji"
+
+msgid "Max Velocity Error:"
+msgstr "Maks. błąd prędkościowy:"
+
+msgid "Max Angular Error:"
+msgstr "Maks. błąd kątowy:"
+
+msgid "Max Precision Error:"
+msgstr "Maks. błąd precyzji:"
+
 msgid "Optimize"
 msgstr "Zoptymalizuj"
 
@@ -1090,6 +1111,9 @@ msgstr "Współczynnik skali:"
 
 msgid "Select Transition and Easing"
 msgstr "Wybierz przejście i łagodzenie"
+
+msgid "Animation Baker"
+msgstr "Wypiekacz animacji"
 
 msgid "Select Tracks to Copy"
 msgstr "Wybierz ścieżki do skopiowania"
@@ -2384,6 +2408,19 @@ msgstr "Otwórz"
 msgid "Select Current Folder"
 msgstr "Wybierz bieżący katalog"
 
+msgid "Cannot save file with an empty filename."
+msgstr "Nie można zapisać pliku z pusta nazwą."
+
+msgid "Cannot save file with a name starting with a dot."
+msgstr "Nie można zapisać pliku z nazwą zaczynającą się od kropki."
+
+msgid ""
+"File \"%s\" already exists.\n"
+"Do you want to overwrite it?"
+msgstr ""
+"Plik \"%s\" już istnieje.\n"
+"Czy chcesz go nadpisać?"
+
 msgid "Select This Folder"
 msgstr "Wybierz ten folder"
 
@@ -3638,6 +3675,9 @@ msgstr ""
 msgid "Choose a renderer."
 msgstr "Wybierz renderer."
 
+msgid "Forward+"
+msgstr "Przedni+"
+
 msgid "Mobile"
 msgstr "Mobilny"
 
@@ -3665,6 +3705,9 @@ msgstr "Inspektor"
 msgid "Node"
 msgstr "Węzeł"
 
+msgid "History"
+msgstr "Historia"
+
 msgid "Expand Bottom Panel"
 msgstr "Rozwiń panel dolny"
 
@@ -3682,6 +3725,25 @@ msgstr "Zarządzaj szablonami"
 
 msgid "Install from file"
 msgstr "Zainstaluj z pliku"
+
+msgid "Select Android sources file"
+msgstr "Wybierz plik źródeł Androida"
+
+msgid ""
+"This will set up your project for gradle Android builds by installing the "
+"source template to \"res://android/build\".\n"
+"You can then apply modifications and build your own custom APK on export "
+"(adding modules, changing the AndroidManifest.xml, etc.).\n"
+"Note that in order to make gradle builds instead of using pre-built APKs, "
+"the \"Use Gradle Build\" option should be enabled in the Android export "
+"preset."
+msgstr ""
+"Ta opcja przygotuje twój projekt do buildów gradle Androida, instalując "
+"źródłowy szablon w \"res://android/build\".\n"
+"Możesz wtedy dodać modyfikacje i zbudować podczas eksportu własny APK "
+"(dodając moduły, zmieniając AndroidManifest.xml itp.)\n"
+"Pamiętaj, że aby stworzyć build gradle zamiast używać gotowego APK, opcja "
+"\"Use Gradle Build\" powinna być włączona w profilu eksportu Androida."
 
 msgid ""
 "The Android build template is already installed in this project and it won't "
@@ -3752,6 +3814,9 @@ msgstr "Otwórz następny edytor"
 msgid "Open the previous Editor"
 msgstr "Otwórz poprzedni edytor"
 
+msgid "Ok"
+msgstr "Ok"
+
 msgid "Warning!"
 msgstr "Ostrzeżenie!"
 
@@ -3776,6 +3841,9 @@ msgstr "Edytuj wtyczkę"
 msgid "Installed Plugins:"
 msgstr "Zainstalowane wtyczki:"
 
+msgid "Create New Plugin"
+msgstr "Utwórz nową wtyczkę"
+
 msgid "Version"
 msgstr "Wersja"
 
@@ -3791,6 +3859,9 @@ msgstr "Edytuj tekst:"
 msgid "On"
 msgstr "Włącz"
 
+msgid "Renaming layer %d:"
+msgstr "Zmiana nazwy warstwy %d:"
+
 msgid "No name provided."
 msgstr "Nie podano nazwy."
 
@@ -3803,11 +3874,44 @@ msgstr "Bit %d, wartość %d"
 msgid "Rename"
 msgstr "Zmień nazwę"
 
+msgid "Rename layer"
+msgstr "Zmień nazwę warstwy"
+
+msgid "Layer %d"
+msgstr "Warstwa %d"
+
+msgid "No Named Layers"
+msgstr "Brak nazwanych warstw"
+
+msgid "Edit Layer Names"
+msgstr "Edytuj nazwy warstw"
+
+msgid "<empty>"
+msgstr "<pusty>"
+
+msgid "Temporary Euler may be changed implicitly!"
+msgstr "Tymczasowy Euler może zostać niejawnie zmieniony!"
+
+msgid ""
+"Temporary Euler will not be stored in the object with the original value. "
+"Instead, it will be stored as Quaternion with irreversible conversion.\n"
+"This is due to the fact that the result of Euler->Quaternion can be "
+"determined uniquely, but the result of Quaternion->Euler can be multi-"
+"existent."
+msgstr ""
+"Tymczasowy Euler nie będzie przechowany w obiekcie z oryginalną wartością. "
+"Zamiast tego, będzie przechowany jako kwaternion z nieodwracalną konwersją.\n"
+"To przez to, że rezultat Euler->kwaternion może być określony unikalnie, ale "
+"rezultat kwaternion->Euler może być wieloistniejący."
+
 msgid "Assign..."
 msgstr "Przypisz..."
 
 msgid "Invalid RID"
 msgstr "Nieprawidłowy RID"
+
+msgid "Recursion detected, unable to assign resource to property."
+msgstr "Wykryto rekurencję, nie można przypisać zasobu do właściwości."
 
 msgid ""
 "Can't create a ViewportTexture on resources saved as a file.\n"
@@ -3833,11 +3937,23 @@ msgstr "Wybierz Viewport"
 msgid "Selected node is not a Viewport!"
 msgstr "Wybrany węzeł to nie Viewport!"
 
+msgid "(Nil) %s"
+msgstr "(Nic) %s"
+
+msgid "%s (size %s)"
+msgstr "%s (rozmiar %s)"
+
 msgid "Size:"
 msgstr "Rozmiar:"
 
 msgid "Remove Item"
 msgstr "Usuń element"
+
+msgid "Dictionary (Nil)"
+msgstr "Słownik (nic)"
+
+msgid "Dictionary (size %d)"
+msgstr "Słownik (rozmiar %d)"
 
 msgid "New Key:"
 msgstr "Nowy klucz:"
@@ -3847,6 +3963,15 @@ msgstr "Nowa wartość:"
 
 msgid "Add Key/Value Pair"
 msgstr "Dodaj parę klucz/wartość"
+
+msgid "Localizable String (Nil)"
+msgstr "Lokalizowalny ciąg znaków (nic)"
+
+msgid "Localizable String (size %d)"
+msgstr "Lokalizowalny ciąg znaków (rozmiar %d)"
+
+msgid "Add Translation"
+msgstr "Dodaj tłumaczenie"
 
 msgid ""
 "The selected resource (%s) does not match any type expected for this "
@@ -3858,8 +3983,14 @@ msgstr ""
 msgid "Quick Load"
 msgstr "Szybkie załadowanie"
 
+msgid "Inspect"
+msgstr "Inspekcjonuj"
+
 msgid "Make Unique"
 msgstr "Zrób unikalny"
+
+msgid "Make Unique (Recursive)"
+msgstr "Zrób unikalny (rekurencyjnie)"
 
 msgid "Convert to %s"
 msgstr "Konwertuj do %s"
@@ -3872,6 +4003,15 @@ msgstr "Nowy skrypt"
 
 msgid "Extend Script"
 msgstr "Rozszerz skrypt"
+
+msgid "New Shader"
+msgstr "Nowy szader"
+
+msgid "No Remote Debug export presets configured."
+msgstr "Brak skonfigurowanych profili zdalnego debugowania."
+
+msgid "Remote Debug"
+msgstr "Zdalne debugowanie"
 
 msgid ""
 "No runnable export preset found for this platform.\n"
@@ -3891,11 +4031,29 @@ msgstr "Wpisz swoją logikę w metodzie _run()."
 msgid "There is an edited scene already."
 msgstr "Edytowana scena już istnieje."
 
+msgid ""
+"Couldn't run editor script, did you forget to override the '_run' method?"
+msgstr ""
+"Nie udało się uruchomić skryptu edytora, zapomniałeś przeładować metodę "
+"`_run`?"
+
+msgid "Edit Built-in Action"
+msgstr "Wbudowana akcja edytora"
+
+msgid "Edit Shortcut"
+msgstr "Edytuj skrót"
+
+msgid "Common"
+msgstr "Pospolite"
+
 msgid "Editor Settings"
 msgstr "Ustawienia edytora"
 
 msgid "General"
 msgstr "Ogólne"
+
+msgid "Filter Settings"
+msgstr "Filtruj ustawienia"
 
 msgid "The editor must be restarted for changes to take effect."
 msgstr "Edytor musi zostać zrestartowany, by zmiany miały efekt."
@@ -3906,11 +4064,110 @@ msgstr "Skróty"
 msgid "Binding"
 msgstr "Wiązanie"
 
+msgid ""
+"Hold %s to round to integers.\n"
+"Hold Shift for more precise changes."
+msgstr ""
+"Przytrzymaj %s, by zaokrąglić do liczb całkowitych.\n"
+"Przytrzymaj Shift dla bardziej precyzyjnych zmian."
+
+msgid "No notifications."
+msgstr "Brak powiadomień."
+
+msgid "Show notifications."
+msgstr "Pokaż powiadomienia."
+
+msgid "Silence the notifications."
+msgstr "Wycisz powiadomienia."
+
+msgid "Left Stick Left, Joystick 0 Left"
+msgstr "Lewa gałka w lewo, Joystick 0 w lewo"
+
+msgid "Left Stick Right, Joystick 0 Right"
+msgstr "Lewa gałka w prawo, Joystick 0 w prawo"
+
+msgid "Left Stick Up, Joystick 0 Up"
+msgstr "Lewa gałka w górę, Joystick 0 w górę"
+
+msgid "Left Stick Down, Joystick 0 Down"
+msgstr "Lewa gałka w dół, Joystick 0 w dół"
+
+msgid "Right Stick Left, Joystick 1 Left"
+msgstr "Prawa gałka w lewo, Joystick 1 w lewo"
+
+msgid "Right Stick Right, Joystick 1 Right"
+msgstr "Prawa gałka w prawo, Joystick 1 w prawo"
+
+msgid "Right Stick Up, Joystick 1 Up"
+msgstr "Prawa gałka w górę, Joystick 1 w górę"
+
+msgid "Right Stick Down, Joystick 1 Down"
+msgstr "Prawa gałka w dół, Joystick 1 w dół"
+
+msgid "Joystick 2 Left"
+msgstr "Joystick 2 w lewo"
+
+msgid "Left Trigger, Sony L2, Xbox LT, Joystick 2 Right"
+msgstr "Lewy spust, Sony L2, Xbox LT, Joystick 2 w prawo"
+
+msgid "Joystick 2 Up"
+msgstr "Joystick 2 w górę"
+
+msgid "Right Trigger, Sony R2, Xbox RT, Joystick 2 Down"
+msgstr "Prawy spust, Sony R2, Xbox RT, Joystick 2 w dół"
+
+msgid "Joystick 3 Left"
+msgstr "Joystick 3 w lewo"
+
+msgid "Joystick 3 Right"
+msgstr "Joystick 3 w prawo"
+
+msgid "Joystick 3 Up"
+msgstr "Joystick 3 w górę"
+
+msgid "Joystick 3 Down"
+msgstr "Joystick 3 w dół"
+
+msgid "Joystick 4 Left"
+msgstr "Joystick 4 w lewo"
+
+msgid "Joystick 4 Right"
+msgstr "Joystick 4 w prawo"
+
+msgid "Joystick 4 Up"
+msgstr "Joystick 4 w górę"
+
+msgid "Joystick 4 Down"
+msgstr "Joystick 4 w dół"
+
+msgid "Joypad Axis %d %s (%s)"
+msgstr "Oś joypada %d %s (%s)"
+
 msgid "All Devices"
 msgstr "Wszystkie urządzenia"
 
 msgid "Device"
 msgstr "Urządzenie"
+
+msgid "Listening for input..."
+msgstr "Czekam na akcję..."
+
+msgid "Filter by event..."
+msgstr "Filtruj po zdarzeniu..."
+
+msgid ""
+"Target platform requires 'ETC2/ASTC' texture compression. Enable 'Import "
+"ETC2 ASTC' in Project Settings."
+msgstr ""
+"Platforma docelowa wymaga kompresji tekstur \"ETC2/ASTC\". Włącz \"Import "
+"ETC2 ASTC\" w Ustawieniach Projektu."
+
+msgid ""
+"Target platform requires 'S3TC/BPTC' texture compression. Enable 'Import "
+"S3TC BPTC' in Project Settings."
+msgstr ""
+"Platforma docelowa wymaga kompresji tekstur \"S3TC/BPTC\". Włącz \"Import "
+"S3TC BPTC\" w Ustawieniach Projektu."
 
 msgid "Project export for platform:"
 msgstr "Eksportowanie projektu dla platformy:"
@@ -3924,11 +4181,17 @@ msgstr "Zakończono pomyślnie."
 msgid "Failed."
 msgstr "Nie powiodło się."
 
+msgid "Storing File: %s"
+msgstr "Przechowywanie pliku: %s"
+
 msgid "Storing File:"
 msgstr "Zapisywanie pliku:"
 
 msgid "No export template found at the expected path:"
 msgstr "Nie znaleziono szablonu eksportu w przewidywanej lokalizacji:"
+
+msgid "ZIP Creation"
+msgstr "Tworzenie ZIP"
 
 msgid "Could not open file to read from path \"%s\"."
 msgstr "Nie udało się otworzyć pliku do odczytu ze ścieżki \"%s\"."
@@ -3944,6 +4207,18 @@ msgstr "Nie można utworzyć pliku \"%s\"."
 
 msgid "Failed to export project files."
 msgstr "Eksportowanie plików projektu nie powiodło się."
+
+msgid "Can't open file for writing at path \"%s\"."
+msgstr "Nie można otworzyć pliku do zapisu pod ścieżką \"%s\"."
+
+msgid "Can't open file for reading-writing at path \"%s\"."
+msgstr "Nie można otworzyć pliku do odczytu-zapisu pod ścieżką \"%s\"."
+
+msgid "Can't create encrypted file."
+msgstr "Nie można utworzyć zaszyfrowanego pliku."
+
+msgid "Can't open encrypted file to write."
+msgstr "Nie można otworzyć zaszyfrowanego pliku do zapisu:"
 
 msgid "Can't open file to read from path \"%s\"."
 msgstr "Nie można otworzyć pliku do zapisu:"
@@ -4070,6 +4345,9 @@ msgstr "Pobieranie"
 msgid "Connection Error"
 msgstr "Błąd połączenia"
 
+msgid "TLS Handshake Error"
+msgstr "Błąd handshake'u TLS"
+
 msgid "Can't open the export templates file."
 msgstr "Nie można otworzyć pliku szablonów eksportu."
 
@@ -4184,6 +4462,9 @@ msgstr ""
 msgid "Delete preset '%s'?"
 msgstr "Usunąć profil \"%s\"?"
 
+msgid "%s Export"
+msgstr "Eksport %s"
+
 msgid "Release"
 msgstr "Wydanie"
 
@@ -4224,11 +4505,25 @@ msgstr "Eksportuj wybrane sceny (i zależności)"
 msgid "Export selected resources (and dependencies)"
 msgstr "Eksportuj wybrane zasoby (oraz zależności)"
 
+msgid "Export all resources in the project except resources checked below"
+msgstr ""
+"Eksportuj wszystkie zasoby w projekcie, oprócz zasobów zaznaczonych poniżej"
+
+msgid "Export as dedicated server"
+msgstr "Eksportuj jako serwer dedykowany"
+
 msgid "Export Mode:"
 msgstr "Tryb eksportu:"
 
 msgid "Resources to export:"
 msgstr "Zasoby do eksportu:"
+
+msgid ""
+"\"Strip Visuals\" will replace the following resources with placeholders:"
+msgstr "\"Usuń wizualne\" podmieni następujące zasoby na zastępcze:"
+
+msgid "Strip Visuals"
+msgstr "Usuń wizualne"
 
 msgid "Keep"
 msgstr "Bez zmian"
@@ -4255,6 +4550,15 @@ msgstr "Niestandardowe (oddzielone przecinkami):"
 
 msgid "Feature List:"
 msgstr "Lista funkcji:"
+
+msgid "Encryption"
+msgstr "Szyfrowanie"
+
+msgid "Encrypt Exported PCK"
+msgstr "Zaszyfruj eksportowany PCK"
+
+msgid "Encrypt Index (File Names and Info)"
+msgstr "Szyfruj indeks (nazwy plików i informacje)"
 
 msgid "Invalid Encryption Key (must be 64 hexadecimal characters long)"
 msgstr ""

@@ -95,7 +95,7 @@ msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2023-02-17 10:49+0000\n"
+"PO-Revision-Date: 2023-02-21 14:51+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
@@ -430,6 +430,9 @@ msgstr "清除光标和选区"
 
 msgid "Toggle Insert Mode"
 msgstr "开关插入模式"
+
+msgid "Submit Text"
+msgstr "提交文本"
 
 msgid "Duplicate Nodes"
 msgstr "复制节点"
@@ -1070,6 +1073,18 @@ msgstr "使用贝塞尔曲线"
 msgid "Create RESET Track(s)"
 msgstr "创建 RESET 轨道"
 
+msgid "Animation Optimizer"
+msgstr "动画优化器"
+
+msgid "Max Velocity Error:"
+msgstr "最大速度误差："
+
+msgid "Max Angular Error:"
+msgstr "最大角度误差："
+
+msgid "Max Precision Error:"
+msgstr "最大精度误差："
+
 msgid "Optimize"
 msgstr "优化"
 
@@ -1093,6 +1108,9 @@ msgstr "缩放比率："
 
 msgid "Select Transition and Easing"
 msgstr "选择过渡和缓动"
+
+msgid "Animation Baker"
+msgstr "动画烘焙器"
 
 msgid "Select Tracks to Copy"
 msgstr "选择要复制的轨道"
@@ -2361,6 +2379,19 @@ msgstr "打开"
 
 msgid "Select Current Folder"
 msgstr "选择当前文件夹"
+
+msgid "Cannot save file with an empty filename."
+msgstr "无法使用空文件名保存文件。"
+
+msgid "Cannot save file with a name starting with a dot."
+msgstr "无法使用以点开头的名称保存文件。"
+
+msgid ""
+"File \"%s\" already exists.\n"
+"Do you want to overwrite it?"
+msgstr ""
+"文件“%s”已存在。\n"
+"是否要覆盖？"
 
 msgid "Select This Folder"
 msgstr "选择此文件夹"
@@ -4060,6 +4091,9 @@ msgstr "成功完成。"
 msgid "Failed."
 msgstr "失败。"
 
+msgid "Storing File: %s"
+msgstr "保存文件：%s"
+
 msgid "Storing File:"
 msgstr "保存文件："
 
@@ -4083,6 +4117,12 @@ msgstr "无法创建文件“%s”。"
 
 msgid "Failed to export project files."
 msgstr "导出项目文件失败。"
+
+msgid "Can't open file for writing at path \"%s\"."
+msgstr "无法以写入模式打开位于“%s”的文件。"
+
+msgid "Can't open file for reading-writing at path \"%s\"."
+msgstr "无法以读写模式打开位于“%s”的文件。"
 
 msgid "Can't create encrypted file."
 msgstr "无法创建加密文件。"
@@ -5833,7 +5873,7 @@ msgid "[Global] (create)"
 msgstr "[全局]（创建）"
 
 msgid "Duplicated Animation Name:"
-msgstr "重复的动画名称："
+msgstr "副本动画名称："
 
 msgid "Play selected animation backwards from current pos. (A)"
 msgstr "从当前位置倒放选中动画（A）"
@@ -6633,6 +6673,9 @@ msgstr "从 %s 实例化场景时出错"
 
 msgid "Change Default Type"
 msgstr "修改默认类型"
+
+msgid "Set Target Position"
+msgstr "设置目标位置"
 
 msgid "Set Handle"
 msgstr "设置处理程序"
@@ -8611,6 +8654,9 @@ msgstr "标准"
 msgid "Plain Text"
 msgstr "纯文本"
 
+msgid "JSON"
+msgstr "JSON"
+
 msgid "Connections to method:"
 msgstr "与方法的连接："
 
@@ -9778,6 +9824,9 @@ msgstr "绘制图块"
 msgid "Paste tiles"
 msgstr "粘贴图块"
 
+msgid "Selection"
+msgstr "选择"
+
 msgid "Paint"
 msgstr "绘制"
 
@@ -9787,8 +9836,24 @@ msgstr "Shift：画直线。"
 msgid "Shift+Ctrl: Draw rectangle."
 msgstr "Shift+Ctrl：画矩形。"
 
+msgctxt "Tool"
+msgid "Line"
+msgstr "直线"
+
+msgid "Rect"
+msgstr "矩形"
+
+msgid "Bucket"
+msgstr "油漆桶"
+
+msgid "Picker"
+msgstr "选取"
+
 msgid "Alternatively hold Ctrl with other tools to pick tile."
 msgstr "也可以在使用其他工具时按住 Ctrl 键来挑选图块。"
+
+msgid "Eraser"
+msgstr "橡皮"
 
 msgid "Alternatively use RMB to erase tiles."
 msgstr "也可以用鼠标右键擦除图块。"
@@ -9798,6 +9863,10 @@ msgstr "连续"
 
 msgid "Place Random Tile"
 msgstr "放置随机图块"
+
+msgid ""
+"Modifies the chance of painting nothing instead of a randomly selected tile."
+msgstr "修改不绘制任何内容的概率，不会绘制随机选择的图块。"
 
 msgid "Scattering:"
 msgstr "散布："
@@ -9840,6 +9909,9 @@ msgstr "仅匹配角落"
 msgid "Matches Sides Only"
 msgstr "仅匹配侧边"
 
+msgid "Terrain Set %d (%s)"
+msgstr "地形集 %d（%s）"
+
 msgid ""
 "Connect mode: paints a terrain, then connects it with the surrounding tiles "
 "with the same terrain."
@@ -9849,6 +9921,9 @@ msgid ""
 "Path mode: paints a terrain, thens connects it to the previous tile painted "
 "within the same stroke."
 msgstr "路径模式：绘制一个地形，并在同一笔画内将其与前一个图块连接起来。"
+
+msgid "Terrains"
+msgstr "地形"
 
 msgid "Replace Tiles with Proxies"
 msgstr "用代理替换图块"
@@ -9953,6 +10028,42 @@ msgstr ""
 "源：%d\n"
 "图集坐标：%s\n"
 "备选：%d"
+
+msgid "Rendering"
+msgstr "渲染"
+
+msgid "Texture Origin"
+msgstr "纹理原点"
+
+msgid "Modulate"
+msgstr "调制"
+
+msgid "Z Index"
+msgstr "Z 索引"
+
+msgid "Y Sort Origin"
+msgstr "Y 排序原点"
+
+msgid "Occlusion Layer %d"
+msgstr "遮挡层 %d"
+
+msgid "Probability"
+msgstr "概率"
+
+msgid "Physics"
+msgstr "物理"
+
+msgid "Physics Layer %d"
+msgstr "物理层 %d"
+
+msgid "Navigation Layer %d"
+msgstr "导航层 %d"
+
+msgid "Custom Data"
+msgstr "自定义数据"
+
+msgid "Custom Data %d"
+msgstr "自定义数据 %d"
 
 msgid "Select a property editor"
 msgstr "请选择属性编辑器"
@@ -11841,6 +11952,9 @@ msgstr "修改输入动作事件"
 
 msgid "Erase Input Action"
 msgstr "擦除输入动作"
+
+msgid "Rename Input Action"
+msgstr "重命名输入动作"
 
 msgid "Update Input Action Order"
 msgstr "更新输入动作顺序"
@@ -14618,6 +14732,9 @@ msgstr ""
 "颜色：#%s\n"
 "鼠标左键：应用颜色"
 
+msgid "Pick a color from the application window."
+msgstr "从应用程序窗口中选择一种颜色。"
+
 msgid "Select a picker shape."
 msgstr "选择选取器形状。"
 
@@ -14664,6 +14781,9 @@ msgstr "你无权访问此文件夹的内容。"
 
 msgid "All Files"
 msgstr "所有文件"
+
+msgid "Invalid extension, or empty filename."
+msgstr "扩展名无效或文件名为空。"
 
 msgid ""
 "Please be aware that GraphEdit and GraphNode will undergo extensive "
@@ -15353,6 +15473,10 @@ msgstr "实例索引不能为负。"
 
 msgid "Allowed instance uniform indices must be within [0..%d] range."
 msgstr "实例 uniform 索引必须在 [0...%d] 范围内。"
+
+msgid ""
+"'hint_normal_roughness_texture' is not supported in gl_compatibility shaders."
+msgstr "gl_compatibility 着色器尚未支持“hint_normal_roughness_texture”。"
 
 msgid "This hint is only for sampler types."
 msgstr "这个提示仅适用于采样器类型。"

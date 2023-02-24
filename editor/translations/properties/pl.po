@@ -75,7 +75,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-02-20 10:58+0000\n"
+"PO-Revision-Date: 2023-02-23 00:30+0000\n"
 "Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/pl/>\n"
@@ -449,6 +449,9 @@ msgstr "Dostęp"
 
 msgid "Display Mode"
 msgstr "Tryb wyświetlania"
+
+msgid "Filters"
+msgstr "Filtry"
 
 msgid "Show Hidden Files"
 msgstr "Pokaż ukryte pliki"
@@ -1170,9 +1173,6 @@ msgstr "ETC"
 msgid "ETC2"
 msgstr "ETC2"
 
-msgid "No BPTC Fallbacks"
-msgstr "Brak fallbacków BPTC"
-
 msgid "Export Path"
 msgstr "Ścieżka eksportu"
 
@@ -1451,6 +1451,9 @@ msgstr "Ścieżka do publicznego klucza SSH"
 
 msgid "SSH Private Key Path"
 msgstr "Ścieżka do prywatnego klucza SSH"
+
+msgid "Common"
+msgstr "Pospolite"
 
 msgid "Verbose stdout"
 msgstr "Werbalne stdout"
@@ -1865,9 +1868,6 @@ msgstr "Dalej"
 
 msgid "Previous"
 msgstr "Wstecz"
-
-msgid "Filters"
-msgstr "Filtry"
 
 msgid "Use Snap"
 msgstr "Użyj przyciągania"

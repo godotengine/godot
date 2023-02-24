@@ -424,6 +424,9 @@ msgstr "存取"
 msgid "Display Mode"
 msgstr "顯示模式"
 
+msgid "Filters"
+msgstr "篩選器"
+
 msgid "Show Hidden Files"
 msgstr "顯示隱藏的檔案"
 
@@ -1167,9 +1170,6 @@ msgstr "ETC"
 
 msgid "ETC2"
 msgstr "ETC2"
-
-msgid "No BPTC Fallbacks"
-msgstr "無 BPTC 後備"
 
 msgid "Export Path"
 msgstr "匯出路徑"
@@ -2433,9 +2433,6 @@ msgstr "上一頁"
 
 msgid "Default Cursor Shape"
 msgstr "預設游標形狀"
-
-msgid "Filters"
-msgstr "篩選器"
 
 msgid "Scroll Offset"
 msgstr "捲軸偏移量"

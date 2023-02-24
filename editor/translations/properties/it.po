@@ -82,8 +82,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-02-16 02:38+0000\n"
-"Last-Translator: Riteo Siuga <riteo@posteo.net>\n"
+"PO-Revision-Date: 2023-02-23 00:30+0000\n"
+"Last-Translator: Mirko <miknsop@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/it/>\n"
 "Language: it\n"
@@ -479,6 +479,9 @@ msgstr "Accedi"
 
 msgid "Display Mode"
 msgstr "Modalità di visualizzazione"
+
+msgid "Filters"
+msgstr "Filtri"
 
 msgid "Show Hidden Files"
 msgstr "Mostra File Nascosti"
@@ -1196,9 +1199,6 @@ msgstr "ETC"
 
 msgid "ETC2"
 msgstr "ETC2"
-
-msgid "No BPTC Fallbacks"
-msgstr "Nessun fallback per BPTC"
 
 msgid "Export Path"
 msgstr "Percorso di Esportazione"
@@ -2757,9 +2757,6 @@ msgstr "Mouse"
 msgid "Default Cursor Shape"
 msgstr "Forma Cursore Predefinita"
 
-msgid "Filters"
-msgstr "Filtri"
-
 msgid "Use Snap"
 msgstr "Usa Scatto"
 
@@ -3027,6 +3024,9 @@ msgstr "Atlas"
 msgid "Image Size"
 msgstr "Dimensione Immagine"
 
+msgid "To"
+msgstr "A"
+
 msgid "Transpose"
 msgstr "Trasponi"
 
@@ -3044,6 +3044,9 @@ msgstr "Indice di superficie"
 
 msgid "Fallback Environment"
 msgstr "Ambiente di ripiego"
+
+msgid "Custom"
+msgstr "Personalizzato"
 
 msgid "Is Active"
 msgstr "È attiva"

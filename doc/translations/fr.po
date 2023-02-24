@@ -14134,9 +14134,6 @@ msgstr "[Transform2D] global."
 msgid "Position, relative to the node's parent."
 msgstr "La position, relative au nœud parent."
 
-msgid "Rotation in radians, relative to the node's parent."
-msgstr "La rotation en radians, relative au parent de ce nœud."
-
 msgid "Local [Transform2D]."
 msgstr "[Transform2D] locale."
 
@@ -21611,9 +21608,6 @@ msgstr ""
 
 msgid "Real-time global illumination (GI) probe."
 msgstr "Sonde d’éclairage global (GI) en temps réel."
-
-msgid "GI probes"
-msgstr "Les sondes GI"
 
 msgid "Calls [method bake] with [code]create_visual_debug[/code] enabled."
 msgstr "Appelle [method bake] avec [code]create_visual_debug[/code] activé."

@@ -381,6 +381,9 @@ msgstr "Acesso"
 msgid "Display Mode"
 msgstr "Modo de Visualização"
 
+msgid "Filters"
+msgstr "Filtros"
+
 msgid "Show Hidden Files"
 msgstr "Mostrar arquivos ocultos"
 
@@ -1109,9 +1112,6 @@ msgstr "ETC"
 
 msgid "ETC2"
 msgstr "ETC2"
-
-msgid "No BPTC Fallbacks"
-msgstr "Sem Fallbacks para imagens BPTC"
 
 msgid "Export Path"
 msgstr "Exportar Caminho"
@@ -3320,9 +3320,6 @@ msgstr "Rato"
 
 msgid "Default Cursor Shape"
 msgstr "Forma do Cursor Predefinida"
-
-msgid "Filters"
-msgstr "Filtros"
 
 msgid "Scroll Offset"
 msgstr "Deslocamento da Rolagem"

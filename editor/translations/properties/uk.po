@@ -386,6 +386,9 @@ msgstr "Доступ"
 msgid "Display Mode"
 msgstr "Режим показу"
 
+msgid "Filters"
+msgstr "Фільтри"
+
 msgid "Show Hidden Files"
 msgstr "Показувати приховані файли"
 
@@ -1119,9 +1122,6 @@ msgstr "ETC"
 
 msgid "ETC2"
 msgstr "ETC2"
-
-msgid "No BPTC Fallbacks"
-msgstr "Без резервного BPTC"
 
 msgid "Export Path"
 msgstr "Шлях експорту"
@@ -3672,9 +3672,6 @@ msgstr "Автозацикленість"
 
 msgid "Mode Overrides Title"
 msgstr "Режим перевизначення заголовків"
-
-msgid "Filters"
-msgstr "Фільтри"
 
 msgid "Right Disconnects"
 msgstr "Праворуч роз'єднує"

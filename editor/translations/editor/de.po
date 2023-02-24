@@ -75,7 +75,7 @@
 # Zae Chao <zaevi@live.com>, 2021.
 # Tim <tim14speckenwirth@gmail.com>, 2021.
 # Antonio Noack <corperateraider@gmail.com>, 2022.
-# ‎ <artism90@googlemail.com>, 2022.
+# ‎ <artism90@googlemail.com>, 2022, 2023.
 # Coxcopi70f00b67b61542fe <hn_vogel@gmx.net>, 2022.
 # Andreas <self@andreasbresser.de>, 2022.
 # ARez <dark.gaming@fantasymail.de>, 2022.
@@ -98,8 +98,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-02-20 00:45+0000\n"
-"Last-Translator: So Wieso <sowieso@dukun.de>\n"
+"PO-Revision-Date: 2023-02-23 22:17+0000\n"
+"Last-Translator: ‎ <artism90@googlemail.com>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot/de/>\n"
 "Language: de\n"
@@ -435,6 +435,9 @@ msgstr "Cursor und Auswahl entfernen"
 
 msgid "Toggle Insert Mode"
 msgstr "Einfügemodus umschalten"
+
+msgid "Submit Text"
+msgstr "Text einreichen"
 
 msgid "Duplicate Nodes"
 msgstr "Nodes duplizieren"
@@ -1017,7 +1020,7 @@ msgstr "Achtung: Es wird eine importierte Animation bearbeitet"
 
 msgid "Select an AnimationPlayer node to create and edit animations."
 msgstr ""
-"Ein AnimationPlayer-Node auswählen, um Animationen zu erzeugen oder zu "
+"Einen AnimationPlayer-Node auswählen, um Animationen zu erzeugen oder zu "
 "bearbeiten."
 
 msgid "Imported Scene"
@@ -1090,13 +1093,25 @@ msgid "Clean-Up Animation (no undo)"
 msgstr "Animation bereinigen (kann nicht rückgängig gemacht werden)"
 
 msgid "Pick a node to animate:"
-msgstr "Node zum animieren auswählen:"
+msgstr "Node zum Animieren auswählen:"
 
 msgid "Use Bezier Curves"
 msgstr "Bezier-Kurven nutzen"
 
 msgid "Create RESET Track(s)"
 msgstr "RESET Spur(en) erstellen"
+
+msgid "Animation Optimizer"
+msgstr "Animationsoptimierer"
+
+msgid "Max Velocity Error:"
+msgstr "Max Geschwindigkeitsfehler:"
+
+msgid "Max Angular Error:"
+msgstr "Max. Winkelfehler:"
+
+msgid "Max Precision Error:"
+msgstr "Max. Präzisionsfehler:"
 
 msgid "Optimize"
 msgstr "Optimieren"
@@ -1121,6 +1136,9 @@ msgstr "Skalierungsverhältnis:"
 
 msgid "Select Transition and Easing"
 msgstr "Übergang und Glättung auswählen"
+
+msgid "Animation Baker"
+msgstr "Animationsbäcker"
 
 msgid "Select Tracks to Copy"
 msgstr "Zu kopierende Spuren auswählen"
@@ -1406,7 +1424,7 @@ msgid ""
 msgstr ""
 "Dieses Node wurde aus einer PackedScene-Datei instantiiert:\n"
 "%s\n"
-"Zum öffnen der originalen Datei im Editor klicken."
+"Zum Öffnen der originalen Datei im Editor klicken."
 
 msgid "Toggle Visibility"
 msgstr "Sichtbarkeit umschalten"
@@ -1617,7 +1635,7 @@ msgid "Misc"
 msgstr "Verschiedenes"
 
 msgid "Clicked Control:"
-msgstr "Angeklicktes Control-Node:"
+msgstr "Angeklickter Control-Node:"
 
 msgid "Clicked Control Type:"
 msgstr "Typ des angeklickten Control-Nodes:"
@@ -2403,7 +2421,7 @@ msgid "Make Current"
 msgstr "Als aktuell auswählen"
 
 msgid "Import"
-msgstr "Importieren"
+msgstr "Import"
 
 msgid "Export"
 msgstr "Exportieren"
@@ -2439,6 +2457,21 @@ msgstr "Öffnen"
 
 msgid "Select Current Folder"
 msgstr "Gegenwärtigen Ordner auswählen"
+
+msgid "Cannot save file with an empty filename."
+msgstr "Datei kann nicht mit leerem Dateiname gespeichert werden."
+
+msgid "Cannot save file with a name starting with a dot."
+msgstr ""
+"Datei kann nicht mit einem Dateinamen, welcher mit einem Punkt beginnt, "
+"gespeichert werden."
+
+msgid ""
+"File \"%s\" already exists.\n"
+"Do you want to overwrite it?"
+msgstr ""
+"Datei „%s“ existiert bereits.\n"
+"Soll sie überschrieben werden?"
 
 msgid "Select This Folder"
 msgstr "Diesen Ordner auswählen"
@@ -2626,7 +2659,7 @@ msgstr ""
 "erwünscht!"
 
 msgid "Top"
-msgstr "Oben"
+msgstr "Kopf"
 
 msgid "Class:"
 msgstr "Klasse:"
@@ -3207,7 +3240,7 @@ msgstr ""
 "Ein Standard-Videodateipfad kann in den Projekteinstellungen unter der "
 "Kategorie Editor > Videoerstellung festgelegt werden.\n"
 "Als Alternative zum Abspielen einzelner Szenen, kann ein Metadatum namens "
-"‚movie_file‘ zur Wurzel-Node hinzugefügt werden,\n"
+"‚movie_file‘ zum Wurzel-Node hinzugefügt werden,\n"
 "welches den Pfad zur Videodatei angibt, welche benutzt wird um die Szene "
 "aufzunehmen."
 
@@ -3744,7 +3777,7 @@ msgid "Inspector"
 msgstr "Inspektor"
 
 msgid "Node"
-msgstr "das Node"
+msgstr "Node"
 
 msgid "History"
 msgstr "Verlauf"
@@ -4226,6 +4259,9 @@ msgstr "Erfolgreich fertiggestellt."
 msgid "Failed."
 msgstr "Fehlgeschlagen."
 
+msgid "Storing File: %s"
+msgstr "Speichere Datei: %s"
+
 msgid "Storing File:"
 msgstr "Speichere Datei:"
 
@@ -4249,6 +4285,12 @@ msgstr "Datei „%s“ konnte nicht erstellt werden."
 
 msgid "Failed to export project files."
 msgstr "Projektdateien konnten nicht exportiert werden."
+
+msgid "Can't open file for writing at path \"%s\"."
+msgstr "Datei im Pfad „%s“ kann nicht zum schreiben geöffnet werden."
+
+msgid "Can't open file for reading-writing at path \"%s\"."
+msgstr "Datei im Pfad „%s“kann nicht zum Lesen und Schreiben geöffnet werden."
 
 msgid "Can't create encrypted file."
 msgstr "Verschlüsselte Datei kann nicht erzeugt werden."
@@ -4975,7 +5017,7 @@ msgid "Manage Groups"
 msgstr "Gruppen verwalten"
 
 msgid "The Beginning"
-msgstr "Der Anfang"
+msgstr "Unverändert"
 
 msgid "Global"
 msgstr "Global"
@@ -5880,7 +5922,7 @@ msgid "Node Renamed"
 msgstr "Node umbenannt"
 
 msgid "Add Node..."
-msgstr "Knoten hinzufügen..."
+msgstr "Node hinzufügen..."
 
 msgid "Enable Filtering"
 msgstr "Filtern aktivieren"
@@ -6239,8 +6281,8 @@ msgid ""
 msgstr ""
 "Nodes auswählen und verschieben.\n"
 "RMT: Node an Klickposition hinzufügen.\n"
-"Umsch+LMT+Ziehen: Verbindet das ausgewählte Node mit einem anderen oder "
-"erstellt ein neues Node falls ein Gebiet ohne Nodes ausgewählt wurde."
+"Umsch+LMT+Ziehen: Verbindet den ausgewählten Node mit einem anderen oder "
+"erstellt einen neuen Node, falls ein Gebiet ohne Nodes ausgewählt wurde."
 
 msgid "Create new nodes."
 msgstr "Neue Nodes erstellen."
@@ -6252,7 +6294,7 @@ msgid "Group Selected Node(s)"
 msgstr "Gewählte Nodes gruppieren"
 
 msgid "Ungroup Selected Node"
-msgstr "Ausgewähltes Node aus Gruppierung lösen"
+msgstr "Ausgewählten Node aus Gruppierung lösen"
 
 msgid "Remove selected node or transition."
 msgstr "Ausgewählten Node oder Übergang entfernen."
@@ -6657,13 +6699,13 @@ msgid "Select Mode"
 msgstr "Auswahlmodus"
 
 msgid "Drag: Rotate selected node around pivot."
-msgstr "Ziehen: Ausgewähltes Node um Pivotpunkt rotieren."
+msgstr "Ziehen: Ausgewählten Node um Pivotpunkt rotieren."
 
 msgid "Alt+Drag: Move selected node."
-msgstr "Alt+Ziehen = Ausgewähltes Node verschieben."
+msgstr "Alt+Ziehen = Ausgewählten Node verschieben."
 
 msgid "Alt+Drag: Scale selected node."
-msgstr "Alt+Ziehen = Ausgewähltes Node skalieren."
+msgstr "Alt+Ziehen = Ausgewählten Node skalieren."
 
 msgid "V: Set selected node's pivot position."
 msgstr "V: Pivotpunkt des ausgewählten Nodes festlegen."
@@ -6758,13 +6800,13 @@ msgid "Snap to Guides"
 msgstr "An Hilfslinien einrasten"
 
 msgid "Lock selected node, preventing selection and movement."
-msgstr "Ausgewähltes Node sperren um Auswahl und Verschiebung zu verhindern."
+msgstr "Ausgewählten Node sperren um Auswahl und Verschiebung zu verhindern."
 
 msgid "Lock Selected Node(s)"
 msgstr "Gewählte Nodes sperren"
 
 msgid "Unlock selected node, allowing selection and movement."
-msgstr "Ausgewähltes Node entsperren um Auswahl und Verschiebung zu erlauben."
+msgstr "Ausgewählten Node entsperren um Auswahl und Verschiebung zu erlauben."
 
 msgid "Unlock Selected Node(s)"
 msgstr "Gewählte Nodes entsperren"
@@ -6885,21 +6927,21 @@ msgstr "%s hinzufügen…"
 
 msgid "Drag and drop to add as child of current scene's root node."
 msgstr ""
-"Ziehen und loslassen um als Unterobjekt des Wurzelnodes der aktuellen Szene "
+"Ziehen und loslassen um als Unterobjekt des Wurzel-Nodes der aktuellen Szene "
 "hinzuzufügen."
 
 msgid "Hold Ctrl when dropping to add as child of selected node."
 msgstr ""
-"Strg-Taste beim loslassen halten um als Unterobjekt des ausgewählten Nodes "
+"Strg-Taste beim Loslassen halten um als Unterobjekt des ausgewählten Nodes "
 "hinzuzufügen."
 
 msgid "Hold Shift when dropping to add as sibling of selected node."
 msgstr ""
-"Umschalttaste beim loslassen halten um als Nachbar-Node des ausgewählten "
-"Nodes hinzuzufügen."
+"Umsch beim Loslassen halten um als Nachbar-Node des ausgewählten Nodes "
+"hinzuzufügen."
 
 msgid "Hold Alt when dropping to add as a different node type."
-msgstr "Alttaste beim loslassen halten um als anderen Nodetyp hinzuzufügen."
+msgstr "Alttaste beim Loslassen halten um als anderen Nodetyp hinzuzufügen."
 
 msgid "Cannot instantiate multiple nodes without root."
 msgstr "In­s­tan­zi­ie­ren mehrerer Nodes nicht möglich ohne Wurzel-Node."
@@ -6913,11 +6955,14 @@ msgstr "Fehler beim Instanziieren der Szene aus %s"
 msgid "Change Default Type"
 msgstr "Standardtyp ändern"
 
+msgid "Set Target Position"
+msgstr "Zielposition festlegen"
+
 msgid "Set Handle"
 msgstr "Wähle Griff"
 
 msgid "This node doesn't have a control parent."
-msgstr "Dieses Node besitzt kein Control-Überelement."
+msgstr "Dieser Node besitzt kein übergeordnetes Control-Element."
 
 msgid ""
 "Use the appropriate layout properties depending on where you are going to "
@@ -6927,13 +6972,13 @@ msgstr ""
 "Layouteigenschaften verwendet werden."
 
 msgid "This node is a child of a container."
-msgstr "Dieses Node ist ein Unterobjekt eines Containers."
+msgstr "Dieser Node ist ein Unterelement eines Containers."
 
 msgid "Use container properties for positioning."
 msgstr "Containereigenschaften zur Positionierung benutzen."
 
 msgid "This node is a child of a regular control."
-msgstr "Dieses Node ist ein Unterelement eines gewöhnlichen Controls."
+msgstr "Dieser Node ist ein Unterelement eines gewöhnlichen Controls."
 
 msgid "Use anchors and the rectangle for positioning."
 msgstr "Anker und Rechteck zur Positionierung benutzen."
@@ -6948,16 +6993,16 @@ msgid "Container Default"
 msgstr "Containerstandard"
 
 msgid "Fill"
-msgstr "Füllung"
+msgstr "Füllen"
 
 msgid "Shrink Begin"
-msgstr "Verkleinern-Start"
+msgstr "Anfang verkleinern"
 
 msgid "Shrink Center"
-msgstr "Verkleinern-Mitte"
+msgstr "Mitte verkleinern"
 
 msgid "Shrink End"
-msgstr "Verkleinern-Ende"
+msgstr "Ende verkleinern"
 
 msgid "Custom"
 msgstr "Eigenes"
@@ -7022,7 +7067,8 @@ msgstr ""
 
 msgid "Some parents of the selected nodes do not support the Expand flag."
 msgstr ""
-"Manche Überobjekte des ausgewählten Nodes unterstützen das Expand-Flag nicht."
+"Manche übergeordnete Elemente des ausgewählten Nodes unterstützen das Expand-"
+"Flag nicht."
 
 msgid "Align with Expand"
 msgstr "Nach Expand ausrichten"
@@ -7061,7 +7107,7 @@ msgstr ""
 "ihrer Versätze."
 
 msgid "Sizing settings for children of a Container node."
-msgstr "Größeneinstellungen für Unterobjekte eines Container-Nodes."
+msgstr "Größeneinstellungen für Unterelemente eines Container-Nodes."
 
 msgid "Horizontal alignment"
 msgstr "Horizontale Ausrichtung"
@@ -8173,9 +8219,9 @@ msgid ""
 "Drag and drop to override the material of any geometry node.\n"
 "Hold Ctrl when dropping to override a specific surface."
 msgstr ""
-"Ziehen und Loslassen um das Material jeglichen Geometrie-Nodes zu "
+"Ziehen und Loslassen, um das Material jeglichen Geometrie-Nodes zu "
 "überschreiben.\n"
-"Strg beim Loslassen gedrückt halten um eine spezielle Oberfläche zu "
+"Strg beim Loslassen gedrückt halten, um eine spezielle Oberfläche zu "
 "überschreiben."
 
 msgid "XForm Dialog"
@@ -8241,8 +8287,8 @@ msgid ""
 "If a DirectionalLight3D node is added to the scene, preview sunlight is "
 "disabled."
 msgstr ""
-"Vorschausonnenlicht umschalten.\n"
-"Die Sonnenlichtvorschau wird deaktiviert, falls ein DirectionalLight3D-Node "
+"Vorschau-Sonnenlicht umschalten.\n"
+"Die Sonnenlicht-Vorschau wird deaktiviert, falls ein DirectionalLight3D-Node "
 "zur Szene hinzugefügt wird."
 
 msgid ""
@@ -8470,7 +8516,7 @@ msgid ""
 msgstr ""
 "Fügt ein WorldEnvironment-Node, das den Environment-Vorschaueinstellungen "
 "entspricht, der aktuellen Szene hinzu.\n"
-"Umsch beim Klicken halten, um ebenfalls die Vorschausonne zur aktuellen "
+"Umsch beim Klicken halten, um ebenfalls die Vorschau-Sonne der aktuellen "
 "Szene hinzuzufügen."
 
 msgid ""
@@ -8486,7 +8532,7 @@ msgid ""
 "visual layers are part of the OccluderInstance3D's Bake Mask property."
 msgstr ""
 "Keine Meshes zum Backen.\n"
-"Bitte sicherstellen dass mindestens ein MeshInstance3D-Node in der Szene "
+"Bitte sicherstellen, dass mindestens ein MeshInstance3D-Node in der Szene "
 "ist, dessen sichtbare Ebenen in der Backmaske-Eigenschaft des "
 "OccluderInstance3D enthalten sind."
 
@@ -8902,7 +8948,7 @@ msgid "History Next"
 msgstr "Vorwärts im Verlauf"
 
 msgid "Theme"
-msgstr "Motiv, Design, oder anscheinend Thema¯\\_(ツ)_/¯"
+msgstr "Thema"
 
 msgid "Import Theme..."
 msgstr "Thema importieren..."
@@ -8962,6 +9008,9 @@ msgstr "Standard"
 msgid "Plain Text"
 msgstr "Normaler Text"
 
+msgid "JSON"
+msgstr "JSON"
+
 msgid "Connections to method:"
 msgstr "Verbindungen mit Methode:"
 
@@ -8992,7 +9041,7 @@ msgid "Only resources from filesystem can be dropped."
 msgstr "Nur Ressourcen aus dem Dateisystem können hier fallen gelassen werden."
 
 msgid "Can't drop nodes without an open scene."
-msgstr "Ohne geöffnete Szene können Nodes nicht fallen gelassen werden."
+msgstr "Ohne geöffnete Szene können Nodes nicht fallengelassen werden."
 
 msgid "Can't drop nodes because script '%s' is not used in this scene."
 msgstr ""
@@ -9146,7 +9195,7 @@ msgstr "Shader-Datei"
 
 msgid "This skeleton has no bones, create some children Bone2D nodes."
 msgstr ""
-"Dieses Skelett hat keine Knochen, Bone2D-Nodes sollten als Unterobjekte "
+"Dieses Skelett hat keine Knochen, Bone2D-Nodes sollten als Unterelemente "
 "hinzugefügt werden."
 
 msgid "Set Rest Pose to Bones"
@@ -9692,6 +9741,15 @@ msgstr "Themen-Typ entfernen"
 msgid "Remove Data Type Items From Theme"
 msgstr "Datentypelemente aus Thema entfernen"
 
+msgid "Remove Class Items From Theme"
+msgstr "Klassen-Elemente aus Thema entfernen"
+
+msgid "Remove Custom Items From Theme"
+msgstr "Eigene Elemente aus Thema entfernen"
+
+msgid "Remove All Items From Theme"
+msgstr "Alle Elemente aus Thema entfernen"
+
 msgid "Add Color Item"
 msgstr "Farbelement hinzufügen"
 
@@ -9700,6 +9758,9 @@ msgstr "Konstantes Element hinzufügen"
 
 msgid "Add Font Item"
 msgstr "Schriftart-Element hinzufügen"
+
+msgid "Add Font Size Item"
+msgstr "Schriftgröße-Element hinzufügen"
 
 msgid "Add Icon Item"
 msgstr "Symbol-Element hinzufügen"
@@ -9716,11 +9777,17 @@ msgstr "Konstantes Element umbenennen"
 msgid "Rename Font Item"
 msgstr "Schriftart-Element umbenennen"
 
+msgid "Rename Font Size Item"
+msgstr "Schriftgröße-Element umbenennen"
+
 msgid "Rename Icon Item"
 msgstr "Symbol-Element umbenennen"
 
 msgid "Rename Stylebox Item"
 msgstr "StyleBox-Element umbenennen"
+
+msgid "Rename Theme Item"
+msgstr "Thema-Element umbenennen"
 
 msgid "Invalid file, not a Theme resource."
 msgstr "Ungültige Datei, keine Thema-Ressource."
@@ -9771,7 +9838,7 @@ msgid "Default Theme"
 msgstr "Standard-Thema"
 
 msgid "Editor Theme"
-msgstr "Editor-Motiv"
+msgstr "Editor-Thema"
 
 msgid "Select Another Theme Resource:"
 msgstr "Andere Thema-Ressource auswählen:"
@@ -9821,6 +9888,12 @@ msgstr "Typ hinzufügen"
 
 msgid "Override All Default Theme Items"
 msgstr "Alle Standard-Themaelemente überschreiben"
+
+msgid "Override Theme Item"
+msgstr "Thema-Element überschreiben"
+
+msgid "Set Color Item in Theme"
+msgstr "Farbelement in Thema festlegen"
 
 msgid "Set Constant Item in Theme"
 msgstr "Konstantes Element in Thema festlegen"
@@ -10085,6 +10158,9 @@ msgstr "Vertikal spiegeln"
 msgid "Snap to half-pixel"
 msgstr "Auf Halbpixel einrasten"
 
+msgid "Painting Tiles Property"
+msgstr "Zeichenkachel-Eigenschaft"
+
 msgid "Painting:"
 msgstr "Anmalend:"
 
@@ -10094,17 +10170,75 @@ msgstr "Keine Gelände"
 msgid "No terrain"
 msgstr "Kein Gelände"
 
+msgid "Painting Terrain Set"
+msgstr "Zeichen-Terrain-Set"
+
+msgid "Painting Terrain"
+msgstr "Zeichen-Terrain"
+
 msgid "No Texture Atlas Source (ID: %d)"
 msgstr "Keine Texturatlas-Quelle (ID: %d)"
 
 msgid "Scene Collection Source (ID: %d)"
 msgstr "Quelle der Szenensammlung (ID: %d)"
 
+msgid "Unknown Type Source (ID: %d)"
+msgstr "Unbekannte Typ-Quelle (ID: %d)"
+
+msgid "Add TileSet pattern"
+msgstr "TileSet-Muster hinzufügen"
+
+msgid "Remove TileSet patterns"
+msgstr "TileSet-Muster entfernen"
+
+msgid "Tile with Invalid Scene"
+msgstr "Kachel mit ungültiger Szene"
+
+msgid "Delete tiles"
+msgstr "Kacheln löschen"
+
+msgid "Change selection"
+msgstr "Auswahl ändern"
+
+msgid "Move tiles"
+msgstr "Kacheln verschieben"
+
+msgid "Paint tiles"
+msgstr "Kacheln zeichnen"
+
+msgid "Paste tiles"
+msgstr "Kacheln einfügen"
+
+msgid "Selection"
+msgstr "Auswahl"
+
+msgid "Paint"
+msgstr "Zeichnen"
+
+msgid "Shift: Draw line."
+msgstr "Umsch: Gerade zeichnen."
+
 msgid "Shift+Ctrl: Draw rectangle."
 msgstr "Umsch+Strg: Rechteck zeichnen."
 
+msgctxt "Tool"
+msgid "Line"
+msgstr "Gerade"
+
+msgid "Rect"
+msgstr "Rechteck"
+
+msgid "Bucket"
+msgstr "Eimer"
+
+msgid "Picker"
+msgstr "Pipette"
+
 msgid "Alternatively hold Ctrl with other tools to pick tile."
 msgstr "Alternativ Strg mit anderen Werkzeugen halten um Kachel auszuwählen."
+
+msgid "Eraser"
+msgstr "Radiergummi"
 
 msgid "Alternatively use RMB to erase tiles."
 msgstr "Alternativ RMT verwenden um Kacheln zu löschen."
@@ -10115,11 +10249,24 @@ msgstr "Fortlaufend"
 msgid "Place Random Tile"
 msgstr "Zufällige Kachel platzieren"
 
+msgid ""
+"Modifies the chance of painting nothing instead of a randomly selected tile."
+msgstr ""
+"Legt die Wahrscheinlichkeit, nichts zu zeichnen, statt einer zufälligen "
+"ausgewählten Kachel, fest."
+
 msgid "Scattering:"
 msgstr "Streuung:"
 
 msgid "Tiles"
 msgstr "Kacheln"
+
+msgid ""
+"This TileMap's TileSet has no source configured. Edit the TileSet resource "
+"to add one."
+msgstr ""
+"Für das TileSet dieses TileMaps wurde keine Quelle konfiguriert. Bitte die "
+"TileSet-Ressource bearbeiten um eine hinzuzufügen."
 
 msgid "Sort sources"
 msgstr "Quellen sortieren"
@@ -10133,8 +10280,19 @@ msgstr "Nach ID sortieren (absteigend)"
 msgid "Invalid source selected."
 msgstr "Ungültige Quelle ausgewählt."
 
+msgid "Patterns"
+msgstr "Muster"
+
+msgid "Drag and drop or paste a TileMap selection here to store a pattern."
+msgstr ""
+"Ziehen und Loslassen oder Einfügen der TileMap-Auswahl um als Muster zu "
+"speichern."
+
 msgid "Paint terrain"
 msgstr "Bemale Gelände"
+
+msgid "Matches Corners and Sides"
+msgstr "stimmt mit Ecken und Seiten überein"
 
 msgid "Matches Corners Only"
 msgstr "stimmt nur mit Ecken überein"
@@ -10142,11 +10300,43 @@ msgstr "stimmt nur mit Ecken überein"
 msgid "Matches Sides Only"
 msgstr "stimmt nur mit Seiten überein"
 
+msgid "Terrain Set %d (%s)"
+msgstr "TerrainSet %d (%s)"
+
+msgid ""
+"Connect mode: paints a terrain, then connects it with the surrounding tiles "
+"with the same terrain."
+msgstr ""
+"Verbindungsmodus: Terrain zeichnen und dann mit benachbarten Kacheln des "
+"selben Terrains verbinden."
+
+msgid ""
+"Path mode: paints a terrain, thens connects it to the previous tile painted "
+"within the same stroke."
+msgstr ""
+"Pfadmodus: Terrain zeichnen und dann mit der vorherigen Kachel des selben "
+"Pinselstrichs verbinden."
+
+msgid "Terrains"
+msgstr "Terrains"
+
 msgid "Replace Tiles with Proxies"
 msgstr "Kacheln mit Stellvertretern ersetzen"
 
 msgid "No Layers"
 msgstr "Keine Ebenen"
+
+msgid "Select Next Tile Map Layer"
+msgstr "Nächste Ebene der TileMap auswählen"
+
+msgid "Select Previous Tile Map Layer"
+msgstr "Vorherige Ebene der TileMap auswählen"
+
+msgid "TileMap Layers"
+msgstr "TileMap-Ebenen"
+
+msgid "Highlight Selected TileMap Layer"
+msgstr "Ausgewählte TileMap-Ebene hervorheben"
 
 msgid "Toggle grid visibility."
 msgstr "Sichtbarkeit des Gitters umschalten."
@@ -10160,8 +10350,35 @@ msgstr "Das bearbeitete TileMap-Node hat keine TileSet-Ressource."
 msgid "Remove Tile Proxies"
 msgstr "Kachel-Stellvertreter entfernen"
 
+msgid "Create Alternative-level Tile Proxy"
+msgstr "Alternativ-Kachel-Proxy erzeugen"
+
+msgid "Create Coords-level Tile Proxy"
+msgstr "Koordinaten-Kachel-Proxy erzeugen"
+
+msgid "Create source-level Tile Proxy"
+msgstr "Quell-Kachel-Proxy erzeugen"
+
+msgid "Delete All Invalid Tile Proxies"
+msgstr "Alle ungültigen Kachel-Proxys löschen"
+
 msgid "Delete All Tile Proxies"
 msgstr "Alle Kachel-Vertreter löschen"
+
+msgid "Tile Proxies Management"
+msgstr "Kachel-Proxy-Verwaltung"
+
+msgid "Source-level proxies"
+msgstr "Quell-Proxys"
+
+msgid "Coords-level proxies"
+msgstr "Koordinaten-Proxys"
+
+msgid "Alternative-level proxies"
+msgstr "Alternativ-Proxys"
+
+msgid "Add a new tile proxy:"
+msgstr "Neuen Kachel-Proxy hinzufügen:"
 
 msgid "From Source"
 msgstr "Von einer Quelle"
@@ -10184,6 +10401,9 @@ msgstr "Zu einer Alternative"
 msgid "Global actions:"
 msgstr "Globale Aktionen:"
 
+msgid "Clear Invalid"
+msgstr "Ungültige löschen"
+
 msgid "Atlas"
 msgstr "Atlas"
 
@@ -10203,6 +10423,42 @@ msgstr ""
 "Quelle: %d\n"
 "Altaskoordinaten: %s\n"
 "Alternative: %d"
+
+msgid "Rendering"
+msgstr "Rendering"
+
+msgid "Texture Origin"
+msgstr "Texturursprung"
+
+msgid "Modulate"
+msgstr "Modulation"
+
+msgid "Z Index"
+msgstr "Z-Index"
+
+msgid "Y Sort Origin"
+msgstr "Y-Sortierungsursprung"
+
+msgid "Occlusion Layer %d"
+msgstr "Verdeckungsebene %d"
+
+msgid "Probability"
+msgstr "Wahrscheinlichkeit"
+
+msgid "Physics"
+msgstr "Physik"
+
+msgid "Physics Layer %d"
+msgstr "Physik-Ebene %d"
+
+msgid "Navigation Layer %d"
+msgstr "Navigationsebene %d"
+
+msgid "Custom Data"
+msgstr "Benutzerdefinierte Daten"
+
+msgid "Custom Data %d"
+msgstr "Benutzerdefinierte Daten %d"
 
 msgid "Select a property editor"
 msgstr "Eigenschafts-Editor auswählen"
@@ -10237,8 +10493,21 @@ msgstr "Kacheln in undurchsichtigen Texturbereichen erstellen"
 msgid "Remove tiles in fully transparent texture regions"
 msgstr "Kacheln in komplett durchsichtigen Texturbereichen entfernen"
 
+msgid "Setup"
+msgstr "Einrichtung"
+
+msgid ""
+"Atlas setup. Add/Remove tiles tool (use the shift key to create big tiles, "
+"control for rectangle editing)."
+msgstr ""
+"Atlaseinrichtung. Werkzeug zum hinzufügen/entfernen von Kacheln (Umsch um "
+"große Kacheln zu erzeugen, Strg für Rechteck-Bearbeitung)."
+
 msgid "Select tiles."
 msgstr "Kacheln auswählen."
+
+msgid "Paint properties."
+msgstr "Zeicheneigenschaften."
 
 msgid "No tiles selected."
 msgstr "Keine Kacheln ausgewählt."
@@ -10288,6 +10557,9 @@ msgstr "Sortiere Quellen"
 
 msgid "Scenes Collection"
 msgstr "Szenensammlung"
+
+msgid "Open Atlas Merging Tool"
+msgstr "Werkzeug zum Zusammenführen von Atlanten öffnen"
 
 msgid "Manage Tile Proxies"
 msgstr "Kachel-Stellvertreter verwalten"
@@ -10563,11 +10835,36 @@ msgstr "Abtaster"
 msgid "[default]"
 msgstr "[Standard]"
 
+msgid ""
+"The 2D preview cannot correctly show the result retrieved from instance "
+"parameter."
+msgstr ""
+"Das Ergebnis des Instanzparameters kann nicht richtig von der 2D-Vorschau "
+"dargestellt werden."
+
 msgid "Add Input Port"
 msgstr "Eingangsschnittstelle hinzufügen"
 
 msgid "Add Output Port"
 msgstr "Ausgangsschnittstelle hinzufügen"
+
+msgid "Change Input Port Type"
+msgstr "Eingangsschnittstellentyp ändern"
+
+msgid "Change Output Port Type"
+msgstr "Ausgangsschnittstellentyp ändern"
+
+msgid "Change Input Port Name"
+msgstr "Eingangsschnittstellenname ändern"
+
+msgid "Change Output Port Name"
+msgstr "Ausgangsschnittstellenname ändern"
+
+msgid "Expand Output Port"
+msgstr "Ausgangsschnittstelle erweitern"
+
+msgid "Shrink Output Port"
+msgstr "Ausgangsschnittstelle verringern"
 
 msgid "Remove Input Port"
 msgstr "Eingangsschnittstelle entfernen"
@@ -10580,6 +10877,12 @@ msgstr "VisualShader-Ausdruck festlegen"
 
 msgid "Resize VisualShader Node"
 msgstr "VisualShader-Nodegröße anpassen"
+
+msgid "Hide Port Preview"
+msgstr "Schnittstellenvorschau verbergen"
+
+msgid "Show Port Preview"
+msgstr "Schnittstellenvorschau anzeigen"
 
 msgid "Set Comment Node Title"
 msgstr "Titel des Kommentar-Nodes festlegen"
@@ -10704,6 +11007,9 @@ msgstr "Node hinzufügen"
 msgid "Clear Copy Buffer"
 msgstr "Kopierpuffer leeren"
 
+msgid "High-end node"
+msgstr "Hochleistungs-Node"
+
 msgid "Create Shader Node"
 msgstr "Shader-Node erzeugen"
 
@@ -10763,6 +11069,9 @@ msgstr "Farbkonstante."
 
 msgid "Color parameter."
 msgstr "Farbparameter."
+
+msgid "(Fragment/Light mode only) Derivative function."
+msgstr "(nur für Fragment-/Light-Modus) Ableitungsfunktion."
 
 msgid "Returns the boolean result of the %s comparison between two parameters."
 msgstr "Gibt den Wahrheitswert des %s-Vergleiches der beiden Parameter zurück."
@@ -10841,6 +11150,13 @@ msgstr ""
 "Wert wahr oder falsch ist."
 
 msgid ""
+"Returns an associated transform if the provided boolean value is true or "
+"false."
+msgstr ""
+"Gibt ein zugehöriges Transform zurück, je nach dem ob der übergebene Wert "
+"wahr oder falsch ist."
+
+msgid ""
 "Returns an associated unsigned integer scalar if the provided boolean value "
 "is true or false."
 msgstr ""
@@ -10862,6 +11178,9 @@ msgstr "Boolean-Konstante."
 
 msgid "Boolean parameter."
 msgstr "Boolean-Parameter."
+
+msgid "Translated to '%s' in Godot Shading Language."
+msgstr "Zu ‚%s‘ übersetzt in Godots Shadersprache."
 
 msgid "'%s' input parameter for all shader modes."
 msgstr "‚%s‘-Eingabeparameter für alle Shadermodi."
@@ -10901,6 +11220,13 @@ msgstr "‚%s‘-Eingabeparameter für Start- und Prozess-Shadermodus."
 
 msgid "'%s' input parameter for process and collide shader modes."
 msgstr "‚%s‘-Eingabeparameter für Prozess- und Kollision-Shadermodus."
+
+msgid ""
+"A node for help to multiply a position input vector by rotation using "
+"specific axis. Intended to work with emitters."
+msgstr ""
+"Ein Node zur Multiplikation eines Positions-Eingangsvektor mit Rotation über "
+"eine bestimmte Achse. Zur Verwendung mit Emittern vorgesehen."
 
 msgid "Float function."
 msgstr "Float-Funktion."
@@ -10947,6 +11273,12 @@ msgstr "Gibt den inversen hyperbolischen Tangens des Parameters zurück."
 msgid "Returns the result of bitwise NOT (~a) operation on the integer."
 msgstr ""
 "Gibt das Ergebnis der bitweisen NICHT (~a) Operation für die Ganzzahl zurück."
+
+msgid ""
+"Returns the result of bitwise NOT (~a) operation on the unsigned integer."
+msgstr ""
+"Gibt das Ergebnis der bitweisen NICHT (~a) Operation für die positive "
+"Ganzzahl zurück."
 
 msgid ""
 "Finds the nearest integer that is greater than or equal to the parameter."
@@ -11007,6 +11339,11 @@ msgstr "Gibt den kleineren zweier Parameter zurück."
 
 msgid "Linear interpolation between two scalars."
 msgstr "Lineare Interpolation zwischen zwei Skalaren."
+
+msgid "Performs a fused multiply-add operation (a * b + c) on scalars."
+msgstr ""
+"Führt eine zusammengesetzte Multiplizieren-Addieren-Operation (a * b + c) "
+"auf Skalaren durch."
 
 msgid "Returns the opposite value of the parameter."
 msgstr "Gibt den inversen Wert des Parameters zurück."
@@ -11083,24 +11420,82 @@ msgstr "Gibt den hyperbolischen Tangens des Parameters zurück."
 msgid "Finds the truncated value of the parameter."
 msgstr "Gibt den abgeschnittenen Wert des Parameters zurück."
 
+msgid "Sums two floating-point scalars."
+msgstr "Addiert zwei Fließkommaskalare."
+
 msgid "Sums two integer scalars."
-msgstr "Summiert zwei Ganzzahl-Skalare."
+msgstr "Addiert zwei Ganzzahlskalare."
+
+msgid "Sums two unsigned integer scalars."
+msgstr "Addiert zwei vorzeichenlose Ganzzahlskalare."
 
 msgid "Returns the result of bitwise AND (a & b) operation for two integers."
 msgstr ""
-"Gibt das Ergebnis der bitweisen UND (a & b) Operation für zwei Ganzzahlen "
+"Gibt das Ergebnis der bitweisen UND-Operation (a & b) für zwei Ganzzahlen "
 "zurück."
+
+msgid ""
+"Returns the result of bitwise AND (a & b) operation for two unsigned "
+"integers."
+msgstr ""
+"Gibt das Ergebnis der bitweisen UND-Operation (a & b) für zwei "
+"vorzeichenlose Ganzzahlen zurück."
+
+msgid ""
+"Returns the result of bitwise left shift (a << b) operation on the integer."
+msgstr ""
+"Gibt das Ergebnis der bitweisen Linksschub-Operation (a << b) der Ganzzahl "
+"zurück."
+
+msgid ""
+"Returns the result of bitwise left shift (a << b) operation on the unsigned "
+"integer."
+msgstr ""
+"Gibt das Ergebnis der bitweisen Linksschub-Operation (a << b) der "
+"vorzeichenlosen Ganzzahl zurück."
 
 msgid "Returns the result of bitwise OR (a | b) operation for two integers."
 msgstr ""
-"Gibt das Ergebnis der bitweisen ODER (a | b) Operation für zwei Ganzzahlen "
+"Gibt das Ergebnis der bitweisen ODER-Operation (a | b) für zwei Ganzzahlen "
 "zurück."
 
+msgid ""
+"Returns the result of bitwise OR (a | b) operation for two unsigned integers."
+msgstr ""
+"Gibt das Ergebnis der bitweisen ODER-Operation (a | b) für zwei "
+"vorzeichenlose Ganzzahlen zurück."
+
+msgid ""
+"Returns the result of bitwise right shift (a >> b) operation on the integer."
+msgstr ""
+"Gibt das Ergebnis der bitweisen Rechtsschub-Operation (a >> b) der Ganzzahl "
+"zurück."
+
+msgid ""
+"Returns the result of bitwise right shift (a >> b) operation on the unsigned "
+"integer."
+msgstr ""
+"Gibt das Ergebnis der bitweisen Rechtsschub-Operation (a >> b) der "
+"vorzeichenlosen Ganzzahl zurück."
+
+msgid "Returns the result of bitwise XOR (a ^ b) operation on the integer."
+msgstr ""
+"Gibt das Ergebnis der bitweisen XOR-Operation (a ^ b) der Ganzzahl zurück."
+
+msgid ""
+"Returns the result of bitwise XOR (a ^ b) operation on the unsigned integer."
+msgstr ""
+"Gibt das Ergebnis der bitweisen XOR-Operation (a ^ b) der vorzeichenlosen "
+"Ganzzahl zurück."
+
 msgid "Divides two floating-point scalars."
-msgstr "Teilt zwei Gleitkomma-Skalare."
+msgstr "Dividiert zwei Gleitkommaskalare."
 
 msgid "Divides two integer scalars."
-msgstr "Teilt zwei Ganzzahl-Skalare."
+msgstr "Dividiert zwei Ganzzahlskalare."
+
+msgid "Divides two unsigned integer scalars."
+msgstr "Dividiert zwei vorzeichenlose Ganzzahlskalare."
 
 msgid "Multiplies two floating-point scalars."
 msgstr "Multipliziert zwei Gleitkomma-Skalare."
@@ -11139,17 +11534,37 @@ msgstr "Skalare Ganzzahlkonstante."
 msgid "Scalar unsigned integer constant."
 msgstr "Skalare vorzeichenlose Ganzzahlkonstante."
 
+msgid "Scalar floating-point parameter."
+msgstr "Skalarer Gleitkommaparameter."
+
 msgid "Scalar integer parameter."
 msgstr "Skalarer Ganzzahlparameter."
 
+msgid "Scalar unsigned integer parameter."
+msgstr "Skalarer vorzeichenloser Ganzzahlparameter."
+
 msgid "Converts screen UV to a SDF."
 msgstr "Konvertiert Bildschirm-UV zu SDF."
+
+msgid "Casts a ray against the screen SDF and returns the distance travelled."
+msgstr ""
+"Wirft einen Strahl gegen das Bildschirm-SDF und gibt die zurückgelegte "
+"Distanz zurück."
+
+msgid "Converts a SDF to screen UV."
+msgstr "Konvertiert ein SDF zu Bildschirm-UV."
 
 msgid "Performs a SDF texture lookup."
 msgstr "Führt ein Nachschlagen in der SDF-Textur durch."
 
 msgid "Performs a SDF normal texture lookup."
 msgstr "Führt ein Nachschlagen in der SDF-Normalentextur durch."
+
+msgid "Function to be applied on texture coordinates."
+msgstr "Eine Funktion zum Anwenden auf Texturkoordinaten."
+
+msgid "Polar coordinates conversion applied on texture coordinates."
+msgstr "Polarkoordinatenkonvertierung wurde auf Texturkoordinaten angewandt."
 
 msgid "Perform the cubic texture lookup."
 msgstr "Führt ein Nachschlagen in der kubischen Textur durch."
@@ -11503,6 +11918,13 @@ msgstr "Eine „project.godot” oder „.zip“-Datei auswählen."
 msgid "This directory already contains a Godot project."
 msgstr "Dieses Verzeichnis beinhaltet bereits ein Godot-Projekt."
 
+msgid ""
+"The selected path is not empty. Choosing an empty folder is highly "
+"recommended."
+msgstr ""
+"Der ausgewählte Pfad ist nicht leer. Ein leeres Verzeichnis wird zwingend "
+"empfohlen."
+
 msgid "New Game Project"
 msgstr "Neues Spiel"
 
@@ -11520,7 +11942,49 @@ msgstr ""
 "Es existiert bereits ein Ordner an diesem Pfad mit dem angegebenen Namen."
 
 msgid "It would be a good idea to name your project."
-msgstr "Es wird empfohlen das Projekt zu benennen."
+msgstr "Es wird empfohlen, das Projekt zu benennen."
+
+msgid "Supports desktop platforms only."
+msgstr "Nur auf Desktop-Plattformen lauffähig."
+
+msgid "Advanced 3D graphics available."
+msgstr "Fortgeschrittene 3D-Grafiken möglich."
+
+msgid "Can scale to large complex scenes."
+msgstr "Für große, komplexe Szenen geeignet."
+
+msgid "Uses RenderingDevice backend."
+msgstr "Verwendet RenderingDevice-Backend."
+
+msgid "Slower rendering of simple scenes."
+msgstr "Weniger schnelles Rendering bei einfachen Szenen."
+
+msgid "Supports desktop + mobile platforms."
+msgstr "Auf Desktop- und mobilen Plattformen lauffähig."
+
+msgid "Less advanced 3D graphics."
+msgstr "Weniger fortgeschrittene 3D-Grafiken möglich."
+
+msgid "Less scalable for complex scenes."
+msgstr "Weniger skalierbar für komplexe Szenen."
+
+msgid "Fast rendering of simple scenes."
+msgstr "Schnelles Rendering bei einfachen Szenen."
+
+msgid "Supports desktop, mobile + web platforms."
+msgstr "Auf Desktop-, mobilen sowie Webplattformen lauffähig."
+
+msgid "Least advanced 3D graphics (currently work-in-progress)."
+msgstr "Am wenigsten fortgeschrittene 3D-Grafiken (aktuell in Arbeit)."
+
+msgid "Intended for low-end/older devices."
+msgstr "Vorgesehen für günstige/ältere Geräte."
+
+msgid "Uses OpenGL 3 backend (OpenGL 3.3/ES 3.0/WebGL2)."
+msgstr "Verwendet OpenGL-3-Backend (OpenGL 3.3/ES 3.0/WebGL2)."
+
+msgid "Fastest rendering of simple scenes."
+msgstr "Schnellstes Rendering bei einfachen Szenen."
 
 msgid "Invalid project path (changed anything?)."
 msgstr "Ungültiger Projektpfad (etwas geändert?)."
@@ -11599,8 +12063,8 @@ msgstr "Renderer:"
 
 msgid "The renderer can be changed later, but scenes may need to be adjusted."
 msgstr ""
-"Der Renderer kann auch später noch geändert werden, allerdings müssen dann "
-"möglicherweise manche Szenen angepasst werden."
+"Ein Wechsel des Renderers ist jederzeit zulässig, bereits vorhandene Szenen "
+"müssen dabei unter Umständen angepasst werden."
 
 msgid "Version Control Metadata:"
 msgstr "Metadaten der Versionsverwaltung:"
@@ -11681,14 +12145,14 @@ msgstr ""
 "\n"
 "Es gibt drei Entscheidungsmöglichkeiten:\n"
 "- Lediglich die Konfigurationsdatei („project.godot“) konvertieren. Dies ist "
-"hilfreich um das Projekt lediglich zu öffnen, ohne Szenen, Ressourcen oder "
-"Skripte zu konvertieren\n"
+"hilfreich, um das Projekt lediglich zu öffnen, ohne Szenen, Ressourcen oder "
+"Skripte zu konvertieren.\n"
 "- Das gesamte Projekt inklusive Szenen, Ressourcen und Skripten "
-"konvertieren. Das wird empfohlen wenn mit der neuen Godot-Version "
-"weitergearbeitet werden soll\n"
-"- Nicht tun und zurückkehren\n"
+"konvertieren. Dies wird empfohlen, wenn mit der neuen Godot-Version "
+"weitergearbeitet werden soll.\n"
+"- Nichts unternehmen und zurückkehren.\n"
 "\n"
-"Achtung: Falls eine der Konvertierungsmöglichkeiten ausgewählt wird, kann "
+"Achtung: Sollte eine der Konvertierungsmöglichkeiten ausgewählt werden, kann "
 "das Projekt nicht mehr mit älteren Godot-Versionen geöffnet werden."
 
 msgid "Convert project.godot Only"
@@ -11995,7 +12459,7 @@ msgstr "Pro-Ebene-Zähler"
 
 msgid "If set, the counter restarts for each group of child nodes."
 msgstr ""
-"Falls gesetzt, startet der Zähler für jede Gruppe aus Unterobjekten neu."
+"Falls gesetzt, startet der Zähler für jede Gruppe aus Unterelementen neu."
 
 msgid "Initial value for the counter."
 msgstr "Anfangswert für Zähler."
@@ -12004,7 +12468,7 @@ msgid "Step"
 msgstr "Schritt"
 
 msgid "Amount by which counter is incremented for each node."
-msgstr "Wert um welchen der Zähler für jedes Node erhöht wird."
+msgstr "Wert um welchen der Zähler für jeden Node erhöht wird."
 
 msgid "Padding"
 msgstr "Versatz"
@@ -12100,8 +12564,19 @@ msgstr "Wurzelname:"
 msgid "Create New Scene"
 msgstr "Szene erstellen"
 
+msgid "No parent to instantiate the scenes at."
+msgstr ""
+"Kein Eltern-Node, unter dem Szenen instanziiert werden können, vorhanden."
+
 msgid "Error loading scene from %s"
 msgstr "Fehler beim Laden der Szene von %s"
+
+msgid ""
+"Cannot instantiate the scene '%s' because the current scene exists within "
+"one of its nodes."
+msgstr ""
+"Kann Szene '%s'  nicht instanziieren, da die aktuelle Szene in einer ihrer "
+"Nodes existiert."
 
 msgid "Replace with Branch Scene"
 msgstr "Mit verzweigter Szene ersetzen"
@@ -12124,10 +12599,10 @@ msgstr "Dupliziere Node(s)"
 
 msgid "Can't reparent nodes in inherited scenes, order of nodes can't change."
 msgstr ""
-"Nodes in geerbtet Szenen können nicht umgehängt oder umgeordnet werden."
+"Nodes in geerbten Szenen können nicht umgehängt oder umgeordnet werden."
 
 msgid "Node must belong to the edited scene to become root."
-msgstr "Node muss zur bearbeiteten Szene gehören um ihre Wurzel zu werden."
+msgstr "Node muss zur bearbeiteten Szene gehören, um ihre Wurzel zu werden."
 
 msgid "Instantiated scenes can't become root"
 msgstr "Instantiierte Szenen können keine Wurzel werden"
@@ -12136,7 +12611,7 @@ msgid "Make node as Root"
 msgstr "Node zur Szenenwurzel machen"
 
 msgid "Delete %d nodes and any children?"
-msgstr "%d Nodes und ihre Unterobjekte löschen?"
+msgstr "%d Nodes und seine Unterelemente löschen?"
 
 msgid "Delete %d nodes?"
 msgstr "%d Nodes löschen?"
@@ -12145,7 +12620,7 @@ msgid "Delete the root node \"%s\"?"
 msgstr "Das Wurzelnode „%s“ löschen?"
 
 msgid "Delete node \"%s\" and its children?"
-msgstr "Node „%s“ und Unterobjekte löschen?"
+msgstr "Node „%s“ und seine Unterelemente löschen?"
 
 msgid "Delete node \"%s\"?"
 msgstr "Node „%s“ löschen?"
@@ -12160,7 +12635,7 @@ msgid ""
 "Saving the branch as a scene requires selecting only one node, but you have "
 "selected %d nodes."
 msgstr ""
-"Um den Zweig als Szene speichern zu können darf nur ein Node ausgewählt "
+"Um den Zweig als Szene speichern zu können, darf nur ein Node ausgewählt "
 "sein. Es sind allerdings %d Nodes ausgewählt."
 
 msgid ""
@@ -12223,6 +12698,9 @@ msgstr "Neue Szenenwurzel"
 msgid "Create Root Node:"
 msgstr "Erzeuge Wurzel-Node:"
 
+msgid "Switch to Favorite Nodes"
+msgstr "Zu Node-Favoriten wechseln"
+
 msgid "Other Node"
 msgstr "Anderer Node"
 
@@ -12242,7 +12720,7 @@ msgid "Remove Node(s)"
 msgstr "Entferne Node(s)"
 
 msgid "Change type of node(s)"
-msgstr "Nodetyp(en) ändern"
+msgstr "Node-Typ(en) ändern"
 
 msgid "This operation requires a single selected node."
 msgstr "Diese Aktion benötigt einen einzelnen ausgewählten Node."
@@ -12275,6 +12753,9 @@ msgstr "Als Platzhalter laden"
 msgid "Filters"
 msgstr "Filter"
 
+msgid "Selects all Nodes of the given type."
+msgstr "Wählt alle Nodes des angegebenen Typs aus."
+
 msgid ""
 "Cannot attach a script: there are no languages registered.\n"
 "This is probably because this editor was built with all language modules "
@@ -12284,7 +12765,7 @@ msgstr ""
 "Vermutliche Ursache ist dass der Editor ohne Sprachmodulen gebaut wurde."
 
 msgid "Can't paste root node into the same scene."
-msgstr "Einfügen der Wurzelnode in dieselbe Szene nicht möglich."
+msgstr "Einfügen der Wurzel-Node in dieselbe Szene nicht möglich."
 
 msgid "Paste Node(s)"
 msgstr "Node(s) einfügen"
@@ -12306,6 +12787,13 @@ msgstr "Löschen (keine Bestätigung)"
 
 msgid "Add/Create a New Node."
 msgstr "Hinzufügen/Erstellen eines neuen Nodes."
+
+msgid ""
+"Instantiate a scene file as a Node. Creates an inherited scene if no root "
+"node exists."
+msgstr ""
+"Instanziiert eine Szenendatei als Node. Erzeugt eine geerbte Szene, falls "
+"kein Wurzel-Node existiert."
 
 msgid "Attach a new or existing script to the selected node."
 msgstr "Ein neues oder existierendes Skript dem ausgewählten Node anhängen."
@@ -12352,9 +12840,9 @@ msgid ""
 "with the '%s' prefix in a node path.\n"
 "Click to disable this."
 msgstr ""
-"Dieses Node kann an jeder beliebigen Stelle der Szene, unter der Verwendung "
+"Dieser Node kann an jeder beliebigen Stelle der Szene, unter der Verwendung "
 "des Präfix ‚%s‘ im Node-Pfad, aufgerufen werden.\n"
-"Zum deaktivieren, hier klicken."
+"Zum Deaktivieren, hier klicken."
 
 msgid "Node has one connection."
 msgid_plural "Node has {num} connections."
@@ -12389,7 +12877,7 @@ msgstr ""
 
 msgid "Another node already uses this unique name in the scene."
 msgstr ""
-"Ein anderes Node nutzt schon diesen einzigartigen Namen in dieser Szene."
+"Ein anderer Node nutzt schon diesen einzigartigen Namen in dieser Szene."
 
 msgid "Rename Node"
 msgstr "Node umbenennen"
@@ -13677,13 +14165,13 @@ msgid ""
 "The \"Remote Path\" property must point to a valid Node3D or Node3D-derived "
 "node to work."
 msgstr ""
-"Die „Remote Path“-Eigenschaft muss auf ein gültiges Node3D oder ein von "
-"Node3D abgeleitetes Node verweisen."
+"Die „Remote Path“-Eigenschaft muss auf ein gültiges Node3D oder einen von "
+"Node3D abgeleiteten Node verweisen."
 
 msgid ""
 "This node cannot interact with other objects unless a Shape3D is assigned."
 msgstr ""
-"Das Node kann nicht mit anderen Objekten interagieren, solange kein Shape3D "
+"Der Node kann nicht mit anderen Objekten interagieren, solange kein Shape3D "
 "zugewiesen wurde."
 
 msgid ""
@@ -13953,7 +14441,7 @@ msgid ""
 "intended content.\n"
 "Consider adding a SubViewport as a child to provide something displayable."
 msgstr ""
-"Dieses Node hat kein untergeordnetes SubViewport und kann daher seinen "
+"Dieser Node hat kein untergeordnetes SubViewport und kann daher seinen "
 "beabsichtigten Inhalt nicht darstellen.\n"
 "Das Hinzufügen eines untergeordneten SubViewports würde etwas Darstellbares "
 "liefern."
@@ -13998,7 +14486,7 @@ msgid ""
 "This node is marked as experimental and may be subject to removal or major "
 "changes in future versions."
 msgstr ""
-"Dieses Node ist als experimentell markiert und könnte in zukünftigen "
+"Dieser Node ist als experimentell markiert und könnte in zukünftigen "
 "Versionen entfernt oder stark umgeändert werden."
 
 msgid ""
@@ -14012,7 +14500,7 @@ msgid ""
 "ShaderGlobalsOverride is not active because another node of the same type is "
 "in the scene."
 msgstr ""
-"ShaderGlobalsOverride ist nicht aktiv, weil ein anderes Node diesen Typs in "
+"ShaderGlobalsOverride ist nicht aktiv, weil ein anderer Node diesen Typs in "
 "der Szene ist."
 
 msgid ""
