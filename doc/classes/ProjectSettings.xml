@@ -2174,6 +2174,9 @@
 			Enables the use of physically based units for light sources. Physically based units tend to be much larger than the arbitrary units used by Godot, but they can be used to match lighting within Godot to real-world lighting. Due to the large dynamic range of lighting conditions present in nature, Godot bakes exposure into the various lighting quantities before rendering. Most light sources bake exposure automatically at run time based on the active [CameraAttributes] resource, but [LightmapGI] and [VoxelGI] require a [CameraAttributes] resource to be set at bake time to reduce the dynamic range. At run time, Godot will automatically reconcile the baked exposure with the active exposure to ensure lighting remains consistent.
 		</member>
 		<member name="rendering/limits/cluster_builder/max_clustered_elements" type="float" setter="" getter="" default="512">
+			The maximum number of clustered elements ([OmniLight3D] + [SpotLight3D] + [Decal] + [ReflectionProbe]) that can be rendered at once in the camera view. If there are more clustered elements present in the camera view, some of them will not be rendered (leading to pop-in during camera movement). Enabling distance fade on lights and decals ([member Light3D.distance_fade_enabled], [member Decal.distance_fade_enabled]) can help avoid reaching this limit.
+			Decreasing this value may improve GPU performance on certain setups, even if the maximum number of clustered elements is never reached in the project.
+			[b]Note:[/b] This setting is only effective when using the Forward+ rendering method, not Mobile and Compatibility.
 		</member>
 		<member name="rendering/limits/forward_renderer/threaded_render_minimum_instances" type="int" setter="" getter="" default="500">
 		</member>
