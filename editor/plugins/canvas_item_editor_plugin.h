@@ -256,6 +256,7 @@ private:
 		}
 	};
 	Vector<_SelectResult> selection_results;
+	Vector<_SelectResult> selection_results_menu;
 
 	struct _HoverResult {
 		Point2 position;

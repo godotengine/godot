@@ -290,6 +290,7 @@ private:
 	ObjectID clicked;
 	ObjectID material_target;
 	Vector<_RayResult> selection_results;
+	Vector<_RayResult> selection_results_menu;
 	bool clicked_wants_append = false;
 	bool selection_in_progress = false;
 
