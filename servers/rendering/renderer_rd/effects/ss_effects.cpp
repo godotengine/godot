@@ -572,7 +572,15 @@ void SSEffects::gather_ssil(RD::ComputeListID p_compute_list, const RID *p_ssil_
 		RD::get_singleton()->compute_list_bind_uniform_set(p_compute_list, uniform_set_cache->get_cache(shader, 2, u_ssil_slice, u_edges_slice), 2);
 		RD::get_singleton()->compute_list_set_push_constant(p_compute_list, &ssil.gather_push_constant, sizeof(SSILGatherPushConstant));
 
-		Size2i size = Size2i(p_settings.full_screen_size.x >> (ssil_half_size ? 2 : 1), p_settings.full_screen_size.y >> (ssil_half_size ? 2 : 1));
+		Size2i size;
+		// Calculate size same way as we created the buffer
+		if (ssil_half_size) {
+			size.x = (p_settings.full_screen_size.x + 3) / 4;
+			size.y = (p_settings.full_screen_size.y + 3) / 4;
+		} else {
+			size.x = (p_settings.full_screen_size.x + 1) / 2;
+			size.y = (p_settings.full_screen_size.y + 1) / 2;
+		}
 
 		RD::get_singleton()->compute_list_dispatch_threads(p_compute_list, size.x, size.y, 1);
 	}
@@ -887,8 +895,9 @@ void SSEffects::screen_space_indirect_lighting(Ref<RenderSceneBuffersRD> p_rende
 
 				RD::get_singleton()->compute_list_set_push_constant(compute_list, &ssil.blur_push_constant, sizeof(SSILBlurPushConstant));
 
-				int x_groups = (p_settings.full_screen_size.x >> (ssil_half_size ? 2 : 1));
-				int y_groups = (p_settings.full_screen_size.y >> (ssil_half_size ? 2 : 1));
+				// Use the size of the actual buffer we're processing here or we won't cover the entire image.
+				int x_groups = p_ssil_buffers.buffer_width;
+				int y_groups = p_ssil_buffers.buffer_height;
 
 				RD::get_singleton()->compute_list_dispatch_threads(compute_list, x_groups, y_groups, 1);
 				if (ssil_quality > RS::ENV_SSIL_QUALITY_VERY_LOW) {
@@ -985,7 +994,15 @@ void SSEffects::gather_ssao(RD::ComputeListID p_compute_list, const RID *p_ao_sl
 		RD::get_singleton()->compute_list_bind_uniform_set(p_compute_list, uniform_set_cache->get_cache(shader, 2, u_ao_slice), 2);
 		RD::get_singleton()->compute_list_set_push_constant(p_compute_list, &ssao.gather_push_constant, sizeof(SSAOGatherPushConstant));
 
-		Size2i size = Size2i(p_settings.full_screen_size.x >> (ssao_half_size ? 2 : 1), p_settings.full_screen_size.y >> (ssao_half_size ? 2 : 1));
+		Size2i size;
+		// Make sure we use the same size as with which our buffer was created
+		if (ssao_half_size) {
+			size.x = (p_settings.full_screen_size.x + 3) / 4;
+			size.y = (p_settings.full_screen_size.y + 3) / 4;
+		} else {
+			size.x = (p_settings.full_screen_size.x + 1) / 2;
+			size.y = (p_settings.full_screen_size.y + 1) / 2;
+		}
 
 		RD::get_singleton()->compute_list_dispatch_threads(p_compute_list, size.x, size.y, 1);
 	}
@@ -1266,8 +1283,7 @@ void SSEffects::generate_ssao(Ref<RenderSceneBuffersRD> p_render_buffers, SSAORe
 				}
 				RD::get_singleton()->compute_list_set_push_constant(compute_list, &ssao.blur_push_constant, sizeof(SSAOBlurPushConstant));
 
-				Size2i size(p_settings.full_screen_size.x >> (ssao_half_size ? 2 : 1), p_settings.full_screen_size.y >> (ssao_half_size ? 2 : 1));
-				RD::get_singleton()->compute_list_dispatch_threads(compute_list, size.x, size.y, 1);
+				RD::get_singleton()->compute_list_dispatch_threads(compute_list, p_ssao_buffers.buffer_width, p_ssao_buffers.buffer_height, 1);
 			}
 
 			if (ssao_quality > RS::ENV_SSAO_QUALITY_VERY_LOW) {
