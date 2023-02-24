@@ -5,5 +5,7 @@ extends RefCounted
 @export_category("RefCounted")
 
 func test():
-	prints("Not shadowed", Resource.new())
-	prints("Not shadowed", RefCounted.new())
+	var res = Resource.new()
+	var ref = RefCounted.new()
+	prints("Resource class not shadowed:", res is Resource)
+	prints("RefCounted class not shadowed:", ref is RefCounted)
