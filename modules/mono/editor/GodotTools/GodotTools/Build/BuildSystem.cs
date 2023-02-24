@@ -116,7 +116,6 @@ namespace GodotTools.Build
                 process.OutputDataReceived += (_, e) => stdOutHandler.Invoke(e.Data);
             if (stdErrHandler != null)
                 process.ErrorDataReceived += (_, e) => stdErrHandler.Invoke(e.Data);
-
             process.Start();
 
             process.BeginOutputReadLine();
