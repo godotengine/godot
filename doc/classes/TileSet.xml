@@ -300,7 +300,7 @@
 			<param index="1" name="coords_from" type="Vector2i" />
 			<param index="2" name="alternative_from" type="int" />
 			<description>
-				Returns if there is and alternative-level proxy for the given identifiers.
+				Returns if there is an alternative-level proxy for the given identifiers.
 			</description>
 		</method>
 		<method name="has_coords_level_tile_proxy">
