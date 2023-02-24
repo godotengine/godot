@@ -162,7 +162,7 @@
 			<return type="float" />
 			<param index="0" name="link" type="RID" />
 			<description>
-				Returns the [code]enter_cost[/code] of this [code]link[/code].
+				Returns the enter cost of this [param link].
 			</description>
 		</method>
 		<method name="link_get_map" qualifiers="const">
@@ -197,7 +197,7 @@
 			<return type="float" />
 			<param index="0" name="link" type="RID" />
 			<description>
-				Returns the [code]travel_cost[/code] of this [code]link[/code].
+				Returns the travel cost of this [param link].
 			</description>
 		</method>
 		<method name="link_is_bidirectional" qualifiers="const">
@@ -477,7 +477,7 @@
 			<return type="float" />
 			<param index="0" name="region" type="RID" />
 			<description>
-				Returns the [code]enter_cost[/code] of this [param region].
+				Returns the enter cost of this [param region].
 			</description>
 		</method>
 		<method name="region_get_map" qualifiers="const">
@@ -505,7 +505,7 @@
 			<return type="float" />
 			<param index="0" name="region" type="RID" />
 			<description>
-				Returns the [code]travel_cost[/code] of this [param region].
+				Returns the travel cost of this [param region].
 			</description>
 		</method>
 		<method name="region_owns_point" qualifiers="const">

@@ -258,7 +258,7 @@
 			Indicates this custom channel contains half precision float colors, encoded as [PackedByteArray].
 		</constant>
 		<constant name="ARRAY_CUSTOM_R_FLOAT" value="4" enum="ArrayCustomFormat">
-			Indicates this custom channel contains full float colors, in a [PackedFloat32Array]. Only the red green channel is used.
+			Indicates this custom channel contains full float colors, in a [PackedFloat32Array]. Only the red channel is used.
 		</constant>
 		<constant name="ARRAY_CUSTOM_RG_FLOAT" value="5" enum="ArrayCustomFormat">
 			Indicates this custom channel contains full float colors, in a [PackedFloat32Array]. Only red and green channels are used.
