@@ -32,6 +32,7 @@
 #define RENDERING_DEVICE_VULKAN_H
 
 #include "core/os/thread_safe.h"
+#include "core/os/thread.h"
 #include "core/templates/local_vector.h"
 #include "core/templates/oa_hash_map.h"
 #include "core/templates/rid_owner.h"
@@ -619,6 +620,8 @@ class RenderingDeviceVulkan : public RenderingDevice {
 			Vector<UniformInfo> uniform_info;
 			VkDescriptorSetLayout descriptor_set_layout = VK_NULL_HANDLE;
 		};
+		Vector<VkDescriptorSetLayout> pre_raster_layouts;
+		Vector<VkDescriptorSetLayout> fragment_layouts;
 
 		uint32_t vertex_input_mask = 0; // Inputs used, this is mostly for validation.
 		uint32_t fragment_output_mask = 0;
@@ -642,6 +645,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		Vector<uint32_t> set_formats;
 		Vector<VkPipelineShaderStageCreateInfo> pipeline_stages;
 		Vector<SpecializationConstant> specialization_constants;
+		Vector<VkPipelineLayout> library_pipeline_layouts;
 		VkPipelineLayout pipeline_layout = VK_NULL_HANDLE;
 		String name; // Used for debug.
 	};
@@ -786,6 +790,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		Vector<uint32_t> set_formats;
 		VkPipelineLayout pipeline_layout = VK_NULL_HANDLE; // Not owned, needed for push constants.
 		VkPipeline pipeline = VK_NULL_HANDLE;
+		VkPipeline optimized_pipeline = VK_NULL_HANDLE;
 		uint32_t push_constant_size = 0;
 		uint32_t push_constant_stages_mask = 0;
 	};
@@ -803,6 +808,12 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	};
 
 	RID_Owner<ComputePipeline, true> compute_pipeline_owner;
+
+	struct OptimizedPipelineInfo{
+		VkDevice* device = nullptr;
+		RenderPipeline* render_pipeline = nullptr;
+		VkGraphicsPipelineCreateInfo* create_info = nullptr;
+	};
 
 	struct PipelineLibraryKey{
 		RID shader;
@@ -1407,6 +1418,8 @@ class RenderingDeviceVulkan : public RenderingDevice {
 #endif
 
 	VkSampleCountFlagBits _ensure_supported_sample_count(TextureSamples p_requested_sample_count) const;
+	Thread optimized_pipeline_thread;
+	static void create_optimized_render_pipeline(void* p_pipelinedata);
 
 public:
 	virtual RID texture_create(const TextureFormat &p_format, const TextureView &p_view, const Vector<Vector<uint8_t>> &p_data = Vector<Vector<uint8_t>>());

@@ -964,7 +964,7 @@ Error VulkanContext::_check_capabilities() {
 			}
 
 			if(graphics_pipeline_library_capabilities.graphics_pipeline_library_supported){
-				graphics_pipeline_library_capabilities.fast_link = gplProperties.graphicsPipelineLibraryFastLinking;
+				graphics_pipeline_library_capabilities.fast_link = gplProperties.graphicsPipelineLibraryFastLinking && GLOBAL_GET("rendering/rendering_device/vulkan/graphics_pipeline_library/fast_link");
 				graphics_pipeline_library_capabilities.independent_interpolation_decoration = gplProperties.graphicsPipelineLibraryIndependentInterpolationDecoration;
 			} else {
 				print_verbose("- Vulkan graphics pipeline library not supported");
