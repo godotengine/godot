@@ -3499,7 +3499,7 @@ bool Variant::identity_compare(const Variant &p_variant) const {
 
 	switch (type) {
 		case OBJECT: {
-			return _get_obj().obj == p_variant._get_obj().obj;
+			return _get_obj().id == p_variant._get_obj().id;
 		} break;
 
 		case DICTIONARY: {
