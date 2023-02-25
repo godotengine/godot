@@ -238,7 +238,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 			// Try class members.
 			if (_is_class_member_property(codegen, identifier)) {
 				// Get property.
-				GDScriptCodeGenerator::Address temp = codegen.add_temporary(); // TODO: Could get the type of the class member here.
+				GDScriptCodeGenerator::Address temp = codegen.add_temporary(_gdtype_from_datatype(p_expression->get_datatype(), codegen.script));
 				gen->write_get_member(temp, identifier);
 				return temp;
 			}
