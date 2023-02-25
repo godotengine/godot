@@ -585,23 +585,14 @@ void main() {
 						if (spot_lights.data[light_index].shadow_opacity > 0.001) {
 							//has shadow
 							vec4 uv_rect = spot_lights.data[light_index].atlas_rect;
-							vec2 flip_offset = spot_lights.data[light_index].direction.xy;
 
-							vec3 local_vert = (spot_lights.data[light_index].shadow_matrix * vec4(view_pos, 1.0)).xyz;
+							vec4 v = vec4(view_pos, 1.0);
 
-							float shadow_len = length(local_vert); //need to remember shadow len from here
-							vec3 shadow_sample = normalize(local_vert);
+							vec4 splane = (spot_lights.data[light_index].shadow_matrix * v);
+							splane.z -= spot_lights.data[light_index].shadow_bias / (d * spot_lights.data[light_index].inv_radius);
+							splane /= splane.w;
 
-							if (shadow_sample.z >= 0.0) {
-								uv_rect.xy += flip_offset;
-							}
-
-							shadow_sample.z = 1.0 + abs(shadow_sample.z);
-							vec3 pos = vec3(shadow_sample.xy / shadow_sample.z, shadow_len - spot_lights.data[light_index].shadow_bias);
-							pos.z *= spot_lights.data[light_index].inv_radius;
-
-							pos.xy = pos.xy * 0.5 + 0.5;
-							pos.xy = uv_rect.xy + pos.xy * uv_rect.zw;
+							vec3 pos = vec3(splane.xy * spot_lights.data[light_index].atlas_rect.zw + spot_lights.data[light_index].atlas_rect.xy, splane.z);
 
 							float depth = texture(sampler2D(shadow_atlas, linear_sampler), pos.xy).r;
 
