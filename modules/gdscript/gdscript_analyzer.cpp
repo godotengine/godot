@@ -2618,7 +2618,7 @@ void GDScriptAnalyzer::reduce_binary_op(GDScriptParser::BinaryOpNode *p_binary_o
 		result = get_operation_type(p_binary_op->variant_op, left_type, right_type, valid, p_binary_op);
 		if (!valid) {
 			push_error(vformat(R"(Invalid operands "%s" and "%s" for "%s" operator.)", left_type.to_string(), right_type.to_string(), Variant::get_operator_name(p_binary_op->variant_op)), p_binary_op);
-		} else if (result.type_source != GDScriptParser::DataType::ANNOTATED_EXPLICIT) {
+		} else if (!result.is_hard_type()) {
 			mark_node_unsafe(p_binary_op);
 		}
 	} else {
