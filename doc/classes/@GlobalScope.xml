@@ -656,7 +656,7 @@
 		<method name="max" qualifiers="vararg">
 			<return type="Variant" />
 			<description>
-				Returns the maximum of the given values. This function can take any number of arguments.
+				Returns the maximum of the given numeric values. This function can take any number of arguments.
 				[codeblock]
 				max(1, 7, 3, -6, 5) # Returns 7
 				[/codeblock]
@@ -689,7 +689,7 @@
 		<method name="min" qualifiers="vararg">
 			<return type="Variant" />
 			<description>
-				Returns the minimum of the given values. This function can take any number of arguments.
+				Returns the minimum of the given numeric values. This function can take any number of arguments.
 				[codeblock]
 				min(1, 7, 3, -6, 5) # Returns -6
 				[/codeblock]
