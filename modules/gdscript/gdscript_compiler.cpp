@@ -2022,6 +2022,32 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 	bool is_initializer = p_func && !p_for_lambda && p_func->identifier->name == GDScriptLanguage::get_singleton()->strings._init;
 	bool is_implicit_ready = !p_func && p_for_ready;
 
+	if (!p_for_lambda && is_implicit_initializer) {
+		// Initialize the default values for type variables before anything.
+		// This avoids crashes if they are accessed with validated calls before being properly initialized.
+		// It may happen with out-of-order access or with `@onready` variables.
+		for (const GDScriptParser::ClassNode::Member &member : p_class->members) {
+			if (member.type != GDScriptParser::ClassNode::Member::VARIABLE) {
+				continue;
+			}
+
+			const GDScriptParser::VariableNode *field = member.variable;
+			GDScriptDataType field_type = _gdtype_from_datatype(field->get_datatype(), codegen.script);
+			GDScriptCodeGenerator::Address dst_address(GDScriptCodeGenerator::Address::MEMBER, codegen.script->member_indices[field->identifier->name].index, field_type);
+
+			if (field_type.has_type) {
+				codegen.generator->write_newline(field->start_line);
+
+				if (field_type.has_container_element_type()) {
+					codegen.generator->write_construct_typed_array(dst_address, field_type.get_container_element_type(), Vector<GDScriptCodeGenerator::Address>());
+				} else if (field_type.kind == GDScriptDataType::BUILTIN) {
+					codegen.generator->write_construct(dst_address, field_type.builtin_type, Vector<GDScriptCodeGenerator::Address>());
+				}
+				// The `else` branch is for objects, in such case we leave it as `null`.
+			}
+		}
+	}
+
 	if (!p_for_lambda && (is_implicit_initializer || is_implicit_ready)) {
 		// Initialize class fields.
 		for (int i = 0; i < p_class->members.size(); i++) {
@@ -2055,16 +2081,6 @@ GDScriptFunction *GDScriptCompiler::_parse_function(Error &r_error, GDScript *p_
 				if (src_address.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
 					codegen.generator->pop_temporary();
 				}
-			} else if (field_type.has_type) {
-				codegen.generator->write_newline(field->start_line);
-
-				// Initialize with default for type.
-				if (field_type.has_container_element_type()) {
-					codegen.generator->write_construct_typed_array(dst_address, field_type.get_container_element_type(), Vector<GDScriptCodeGenerator::Address>());
-				} else if (field_type.kind == GDScriptDataType::BUILTIN) {
-					codegen.generator->write_construct(dst_address, field_type.builtin_type, Vector<GDScriptCodeGenerator::Address>());
-				}
-				// The `else` branch is for objects, in such case we leave it as `null`.
 			}
 		}
 	}
