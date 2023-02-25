@@ -211,10 +211,6 @@ static bool _can_use_ptrcall(const MethodBind *p_method, const Vector<GDScriptCo
 	return true;
 }
 
-inline static bool is_category_or_group(const PropertyInfo &p_info) {
-	return p_info.usage & PROPERTY_USAGE_CATEGORY || p_info.usage & PROPERTY_USAGE_GROUP || p_info.usage & PROPERTY_USAGE_SUBGROUP;
-}
-
 GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &codegen, Error &r_error, const GDScriptParser::ExpressionNode *p_expression, bool p_root, bool p_initializer, const GDScriptCodeGenerator::Address &p_index_addr) {
 	if (p_expression->is_constant && !(p_expression->get_datatype().is_meta_type && p_expression->get_datatype().kind == GDScriptParser::DataType::CLASS)) {
 		return codegen.add_constant(p_expression->reduced_value);
@@ -250,7 +246,7 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 			// Try members.
 			if (!codegen.function_node || !codegen.function_node->is_static) {
 				// Try member variables.
-				if (codegen.script->member_indices.has(identifier) && !is_category_or_group(codegen.script->member_info[identifier])) {
+				if (codegen.script->member_indices.has(identifier)) {
 					if (codegen.script->member_indices[identifier].getter != StringName() && codegen.script->member_indices[identifier].getter != codegen.function_name) {
 						// Perform getter.
 						GDScriptCodeGenerator::Address temp = codegen.add_temporary(codegen.script->member_indices[identifier].data_type);
