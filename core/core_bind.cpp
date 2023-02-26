@@ -33,6 +33,7 @@
 #include "core/config/project_settings.h"
 #include "core/crypto/crypto_core.h"
 #include "core/debugger/engine_debugger.h"
+#include "core/debugger/script_debugger.h"
 #include "core/io/file_access_compressed.h"
 #include "core/io/file_access_encrypted.h"
 #include "core/io/marshalls.h"
@@ -1687,6 +1688,70 @@ void Engine::_bind_methods() {
 
 Engine *Engine::singleton = nullptr;
 
+////// ScriptDebugger //////
+
+void ScriptDebugger::set_lines_left(int p_left) {
+	::EngineDebugger::get_script_debugger()->set_lines_left(p_left);
+}
+
+int ScriptDebugger::get_lines_left() {
+	return ::EngineDebugger::get_script_debugger()->get_lines_left();
+}
+
+void ScriptDebugger::set_depth(int p_depth) {
+	::EngineDebugger::get_script_debugger()->set_depth(p_depth);
+}
+
+int ScriptDebugger::get_depth() {
+	return ::EngineDebugger::get_script_debugger()->get_depth();
+}
+
+bool ScriptDebugger::is_breakpoint(int p_line, const StringName &p_source) {
+	return ::EngineDebugger::get_script_debugger()->is_breakpoint(p_line, p_source);
+}
+
+Dictionary ScriptDebugger::get_breakpoints() {
+	Dictionary d;
+	for (const KeyValue<int, HashSet<StringName>> &E : ::EngineDebugger::get_script_debugger()->get_breakpoints()) {
+		Array a;
+		for (const StringName &F : E.value) {
+			a.push_back(F);
+		}
+
+		d[E.key] = a;
+	}
+
+	return d;
+}
+
+void ScriptDebugger::debug(ScriptLanguage *p_lang, bool p_can_continue, bool p_is_error_breakpoint) {
+	::EngineDebugger::get_script_debugger()->debug(p_lang, p_can_continue, p_is_error_breakpoint);
+}
+
+void ScriptDebugger::send_error(const String &p_func, const String &p_file, int p_line, const String &p_err, const String &p_descr, bool p_editor_notify, bool p_is_warning, const TypedArray<Dictionary> &p_stack_info) {
+	Vector<ScriptLanguage::StackInfo> stack_info;
+	for (int i = 0; i < p_stack_info.size(); i++) {
+		stack_info.push_back(ScriptLanguage::StackInfo::from_dict(p_stack_info[i]));
+	}
+
+	::EngineDebugger::get_script_debugger()->send_error(p_func, p_file, p_line, p_err, p_descr, p_editor_notify, p_is_warning ? ERR_HANDLER_WARNING : ERR_HANDLER_ERROR, stack_info);
+}
+
+void ScriptDebugger::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_lines_left", "left"), &ScriptDebugger::set_lines_left);
+	ClassDB::bind_method(D_METHOD("get_lines_left"), &ScriptDebugger::get_lines_left);
+
+	ClassDB::bind_method(D_METHOD("set_depth", "depth"), &ScriptDebugger::set_depth);
+	ClassDB::bind_method(D_METHOD("get_depth"), &ScriptDebugger::get_depth);
+
+	ClassDB::bind_method(D_METHOD("is_breakpoint", "line", "source"), &ScriptDebugger::is_breakpoint);
+	ClassDB::bind_method(D_METHOD("get_breakpoints"), &ScriptDebugger::get_breakpoints);
+
+	ClassDB::bind_method(D_METHOD("debug", "lang", "can_continue", "is_error_breakpoint"), &ScriptDebugger::debug, DEFVAL(true), DEFVAL(false));
+
+	ClassDB::bind_method(D_METHOD("send_error", "func", "file", "line", "error", "description", "editor_notify", "is_warning", "stack_info"), &ScriptDebugger::send_error);
+}
+
 ////// EngineDebugger //////
 
 bool EngineDebugger::is_active() {
@@ -1765,16 +1830,33 @@ Error EngineDebugger::call_capture(void *p_user, const String &p_cmd, const Arra
 	return OK;
 }
 
+void EngineDebugger::line_poll() {
+	::EngineDebugger::get_singleton()->line_poll();
+}
+
+EngineDebugger::EngineDebugger() {
+	singleton = this;
+	script_debugger = memnew(ScriptDebugger);
+}
+
 EngineDebugger::~EngineDebugger() {
 	for (const KeyValue<StringName, Callable> &E : captures) {
 		::EngineDebugger::unregister_message_capture(E.key);
 	}
 	captures.clear();
+
+	if (script_debugger) {
+		memdelete(script_debugger);
+	}
+	script_debugger = nullptr;
 }
 
 EngineDebugger *EngineDebugger::singleton = nullptr;
+ScriptDebugger *EngineDebugger::script_debugger = nullptr;
 
 void EngineDebugger::_bind_methods() {
+	ClassDB::bind_static_method("EngineDebugger", D_METHOD("get_script_debugger"), &EngineDebugger::get_script_debugger);
+
 	ClassDB::bind_method(D_METHOD("is_active"), &EngineDebugger::is_active);
 
 	ClassDB::bind_method(D_METHOD("register_profiler", "name", "profiler"), &EngineDebugger::register_profiler);
@@ -1791,6 +1873,8 @@ void EngineDebugger::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("has_capture", "name"), &EngineDebugger::has_capture);
 
 	ClassDB::bind_method(D_METHOD("send_message", "message", "data"), &EngineDebugger::send_message);
+
+	ClassDB::bind_method(D_METHOD("line_poll"), &EngineDebugger::line_poll);
 }
 
 } // namespace core_bind

@@ -516,6 +516,27 @@ public:
 	Engine() { singleton = this; }
 };
 
+class ScriptDebugger : public Object {
+	GDCLASS(ScriptDebugger, Object);
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_lines_left(int p_left);
+	int get_lines_left();
+
+	void set_depth(int p_depth);
+	int get_depth();
+
+	bool is_breakpoint(int p_line, const StringName &p_source);
+	Dictionary get_breakpoints();
+
+	void debug(ScriptLanguage *p_lang, bool p_can_continue = true, bool p_is_error_breakpoint = false);
+
+	void send_error(const String &p_func, const String &p_file, int p_line, const String &p_err, const String &p_descr, bool p_editor_notify, bool p_is_warning, const TypedArray<Dictionary> &p_stack_info);
+};
+
 class EngineDebugger : public Object {
 	GDCLASS(EngineDebugger, Object);
 
@@ -525,9 +546,11 @@ class EngineDebugger : public Object {
 protected:
 	static void _bind_methods();
 	static EngineDebugger *singleton;
+	static ScriptDebugger *script_debugger;
 
 public:
 	static EngineDebugger *get_singleton() { return singleton; }
+	static ScriptDebugger *get_script_debugger() { return script_debugger; }
 
 	bool is_active();
 
@@ -546,7 +569,9 @@ public:
 
 	static Error call_capture(void *p_user, const String &p_cmd, const Array &p_data, bool &r_captured);
 
-	EngineDebugger() { singleton = this; }
+	void line_poll();
+
+	EngineDebugger();
 	~EngineDebugger();
 };
 
