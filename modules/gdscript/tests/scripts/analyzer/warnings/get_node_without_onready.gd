@@ -8,6 +8,10 @@ var without_self = get_node(^"Node")
 var with_cast = get_node(^"Node") as Node
 var shorthand_with_cast = $Node as Node
 
+var parent_with_self = self.get_parent()
+var parent_without_self = get_parent()
+var parent_with_cast = get_parent() as Node
+
 func test():
 	print("warn")
 

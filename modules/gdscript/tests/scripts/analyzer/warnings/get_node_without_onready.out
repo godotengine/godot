@@ -19,4 +19,16 @@ GDTEST_OK
 >> Line: 9
 >> GET_NODE_DEFAULT_WITHOUT_ONREADY
 >> The default value is using "$" which won't return nodes in the scene tree before "_ready()" is called. Use the "@onready" annotation to solve this.
+>> WARNING
+>> Line: 11
+>> GET_NODE_DEFAULT_WITHOUT_ONREADY
+>> The default value is using "get_parent()" which won't return nodes in the scene tree before "_ready()" is called. Use the "@onready" annotation to solve this.
+>> WARNING
+>> Line: 12
+>> GET_NODE_DEFAULT_WITHOUT_ONREADY
+>> The default value is using "get_parent()" which won't return nodes in the scene tree before "_ready()" is called. Use the "@onready" annotation to solve this.
+>> WARNING
+>> Line: 13
+>> GET_NODE_DEFAULT_WITHOUT_ONREADY
+>> The default value is using "get_parent()" which won't return nodes in the scene tree before "_ready()" is called. Use the "@onready" annotation to solve this.
 warn

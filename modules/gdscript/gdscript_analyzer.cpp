@@ -883,11 +883,11 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 							expr = static_cast<GDScriptParser::CastNode *>(expr)->operand;
 						}
 						bool is_get_node = expr->type == GDScriptParser::Node::GET_NODE;
-						bool is_using_shorthand = is_get_node;
+						String get_node_string = "$";
 						if (!is_get_node && expr->type == GDScriptParser::Node::CALL) {
-							is_using_shorthand = false;
 							GDScriptParser::CallNode *call = static_cast<GDScriptParser::CallNode *>(expr);
-							if (call->function_name == SNAME("get_node")) {
+							if (call->function_name == SNAME("get_node") || call->function_name == SNAME("get_parent")) {
+								get_node_string = call->function_name.operator String() + "()";
 								switch (call->get_callee_type()) {
 									case GDScriptParser::Node::IDENTIFIER: {
 										is_get_node = true;
@@ -902,7 +902,7 @@ void GDScriptAnalyzer::resolve_class_member(GDScriptParser::ClassNode *p_class, 
 							}
 						}
 						if (is_get_node) {
-							parser->push_warning(member.variable, GDScriptWarning::GET_NODE_DEFAULT_WITHOUT_ONREADY, is_using_shorthand ? "$" : "get_node()");
+							parser->push_warning(member.variable, GDScriptWarning::GET_NODE_DEFAULT_WITHOUT_ONREADY, get_node_string);
 						}
 					}
 				}
