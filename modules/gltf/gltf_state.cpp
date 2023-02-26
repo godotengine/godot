@@ -82,8 +82,6 @@ void GLTFState::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_unique_animation_names", "unique_animation_names"), &GLTFState::set_unique_animation_names);
 	ClassDB::bind_method(D_METHOD("get_skeletons"), &GLTFState::get_skeletons);
 	ClassDB::bind_method(D_METHOD("set_skeletons", "skeletons"), &GLTFState::set_skeletons);
-	ClassDB::bind_method(D_METHOD("get_skeleton_to_node"), &GLTFState::get_skeleton_to_node);
-	ClassDB::bind_method(D_METHOD("set_skeleton_to_node", "skeleton_to_node"), &GLTFState::set_skeleton_to_node);
 	ClassDB::bind_method(D_METHOD("get_create_animations"), &GLTFState::get_create_animations);
 	ClassDB::bind_method(D_METHOD("set_create_animations", "create_animations"), &GLTFState::set_create_animations);
 	ClassDB::bind_method(D_METHOD("get_animations"), &GLTFState::get_animations);
@@ -117,7 +115,6 @@ void GLTFState::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "unique_names", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_unique_names", "get_unique_names"); // Set<String>
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "unique_animation_names", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_unique_animation_names", "get_unique_animation_names"); // Set<String>
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "skeletons", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_skeletons", "get_skeletons"); // Vector<Ref<GLTFSkeleton>>
-	ADD_PROPERTY(PropertyInfo(Variant::DICTIONARY, "skeleton_to_node", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_skeleton_to_node", "get_skeleton_to_node"); // RBMap<GLTFSkeletonIndex,
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "create_animations"), "set_create_animations", "get_create_animations"); // bool
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "animations", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_animations", "get_animations"); // Vector<Ref<GLTFAnimation>>
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "handle_binary_image", PROPERTY_HINT_ENUM, "Discard All Textures,Extract Textures,Embed As Basis Universal,Embed as Uncompressed", PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_INTERNAL | PROPERTY_USAGE_EDITOR), "set_handle_binary_image", "get_handle_binary_image"); // enum
@@ -313,14 +310,6 @@ TypedArray<GLTFSkeleton> GLTFState::get_skeletons() {
 
 void GLTFState::set_skeletons(TypedArray<GLTFSkeleton> p_skeletons) {
 	GLTFTemplateConvert::set_from_array(skeletons, p_skeletons);
-}
-
-Dictionary GLTFState::get_skeleton_to_node() {
-	return GLTFTemplateConvert::to_dict(skeleton_to_node);
-}
-
-void GLTFState::set_skeleton_to_node(Dictionary p_skeleton_to_node) {
-	GLTFTemplateConvert::set_from_dict(skeleton_to_node, p_skeleton_to_node);
 }
 
 bool GLTFState::get_create_animations() {
