@@ -616,6 +616,8 @@ class TextServerAdvanced : public TextServerExtension {
 
 	_FORCE_INLINE_ void _add_featuers(const Dictionary &p_source, Vector<hb_feature_t> &r_ftrs);
 
+	Mutex ft_mutex;
+
 	// HarfBuzz bitmap font interface.
 
 	static hb_font_funcs_t *funcs;
