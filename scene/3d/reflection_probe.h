@@ -118,6 +118,8 @@ public:
 
 	virtual AABB get_aabb() const override;
 
+	virtual PackedStringArray get_configuration_warnings() const override;
+
 	ReflectionProbe();
 	~ReflectionProbe();
 };

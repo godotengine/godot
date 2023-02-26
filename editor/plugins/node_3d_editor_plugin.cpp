@@ -7922,7 +7922,9 @@ void Node3DEditor::_load_default_preview_settings() {
 	environ_sky_color->set_pick_color(Color(0.385, 0.454, 0.55));
 	environ_ground_color->set_pick_color(Color(0.2, 0.169, 0.133));
 	environ_energy->set_value(1.0);
-	environ_glow_button->set_pressed(true);
+	if (OS::get_singleton()->get_current_rendering_method() != "gl_compatibility") {
+		environ_glow_button->set_pressed(true);
+	}
 	environ_tonemap_button->set_pressed(true);
 	environ_ao_button->set_pressed(false);
 	environ_gi_button->set_pressed(false);

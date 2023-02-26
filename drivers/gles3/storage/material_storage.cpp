@@ -3373,6 +3373,32 @@ void SceneShaderData::set_code(const String &p_code) {
 	uses_vertex_time = gen_code.uses_vertex_time;
 	uses_fragment_time = gen_code.uses_fragment_time;
 
+#ifdef DEBUG_ENABLED
+	if (uses_particle_trails) {
+		WARN_PRINT_ONCE_ED("Particle trails are only available when using the Forward+ or Mobile rendering backends.");
+	}
+
+	if (uses_sss) {
+		WARN_PRINT_ONCE_ED("Sub-surface scattering is only available when using the Forward+ rendering backend.");
+	}
+
+	if (uses_transmittance) {
+		WARN_PRINT_ONCE_ED("Transmittance is only available when using the Forward+ rendering backend.");
+	}
+
+	if (uses_screen_texture) {
+		WARN_PRINT_ONCE_ED("Reading from the screen texture is not supported when using the GL Compatibility backend yet. Support will be added in a future release.");
+	}
+
+	if (uses_depth_texture) {
+		WARN_PRINT_ONCE_ED("Reading from the depth texture is not supported when using the GL Compatibility backend yet. Support will be added in a future release.");
+	}
+
+	if (uses_normal_texture) {
+		WARN_PRINT_ONCE_ED("Reading from the normal-roughness texture is only available when using the Forward+ or Mobile rendering backends.");
+	}
+#endif
+
 #if 0
 	print_line("**compiling shader:");
 	print_line("**defines:\n");
