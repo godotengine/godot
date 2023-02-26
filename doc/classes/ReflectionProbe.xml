@@ -11,7 +11,7 @@
 		[b]Note:[/b] When using the Mobile rendering method, reflection probes will only correctly affect meshes whose visibility AABB intersects with the reflection probe's AABB. If using a shader to deform the mesh in a way that makes it go outside its AABB, [member GeometryInstance3D.extra_cull_margin] must be increased on the mesh. Otherwise, the reflection probe may not be visible on the mesh.
 	</description>
 	<tutorials>
-		<link title="Reflection probes">$DOCS_URL/tutorials/3d/reflection_probes.html</link>
+		<link title="Reflection probes">$DOCS_URL/tutorials/3d/global_illumination/reflection_probes.html</link>
 	</tutorials>
 	<members>
 		<member name="ambient_color" type="Color" setter="set_ambient_color" getter="get_ambient_color" default="Color(0, 0, 0, 1)">
