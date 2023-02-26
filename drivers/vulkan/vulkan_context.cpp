@@ -1339,9 +1339,26 @@ Error VulkanContext::_create_physical_device(VkSurfaceKHR p_surface) {
 	//  features based on this query
 	vkGetPhysicalDeviceFeatures(gpu, &physical_device_features);
 
-	// Check required features
-	ERR_FAIL_COND_V_MSG(!physical_device_features.imageCubeArray, ERR_CANT_CREATE, "Your GPU doesn't support image cube arrays which are required to use the Vulkan-based renderers in Godot.");
-	ERR_FAIL_COND_V_MSG(!physical_device_features.independentBlend, ERR_CANT_CREATE, "Your GPU doesn't support independentBlend which is required to use the Vulkan-based renderers in Godot.");
+	// Check required features and abort if any of them is missing.
+	if (!physical_device_features.imageCubeArray || !physical_device_features.independentBlend) {
+		String error_string = vformat("Your GPU (%s) does not support the following features which are required to use Vulkan-based renderers in Godot:\n\n", device_name);
+		if (!physical_device_features.imageCubeArray) {
+			error_string += "- No support for image cube arrays.\n";
+		}
+		if (!physical_device_features.independentBlend) {
+			error_string += "- No support for independentBlend.\n";
+		}
+		error_string += "\nThis is usually a hardware limitation, so updating graphics drivers won't help in most cases.";
+
+#if defined(ANDROID_ENABLED) || defined(IOS_ENABLED)
+		// Android/iOS platform ports currently don't exit themselves when this method returns `ERR_CANT_CREATE`.
+		OS::get_singleton()->alert(error_string + "\nClick OK to exit (black screen will be visible).");
+#else
+		OS::get_singleton()->alert(error_string + "\nClick OK to exit.");
+#endif
+
+		return ERR_CANT_CREATE;
+	}
 
 	physical_device_features.robustBufferAccess = false; // Turn off robust buffer access, which can hamper performance on some hardware.
 
