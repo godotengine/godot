@@ -251,8 +251,12 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 
 	/* we're expecting more header packets. */
 	while ((theora_p && theora_p < 3) || (vorbis_p && vorbis_p < 3)) {
+		int ret = 0;
+
 		/* look for further theora headers */
-		int ret = ogg_stream_packetout(&to, &op);
+		if (theora_p && theora_p < 3) {
+			ret = ogg_stream_packetout(&to, &op);
+		}
 		while (theora_p && theora_p < 3 && ret) {
 			if (ret < 0) {
 				fprintf(stderr, "Error parsing Theora stream headers; corrupt stream?\n");
@@ -269,7 +273,9 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 		}
 
 		/* look for more vorbis header packets */
-		ret = ogg_stream_packetout(&vo, &op);
+		if (vorbis_p && vorbis_p < 3) {
+			ret = ogg_stream_packetout(&vo, &op);
+		}
 		while (vorbis_p && vorbis_p < 3 && ret) {
 			if (ret < 0) {
 				fprintf(stderr, "Error parsing Vorbis stream headers; corrupt stream?\n");
