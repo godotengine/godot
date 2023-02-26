@@ -531,6 +531,8 @@ class TextServerFallback : public TextServerExtension {
 
 	void _realign(ShapedTextDataFallback *p_sd) const;
 
+	Mutex ft_mutex;
+
 protected:
 	static void _bind_methods(){};
 
