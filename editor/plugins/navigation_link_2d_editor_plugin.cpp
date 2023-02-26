@@ -66,23 +66,27 @@ bool NavigationLink2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_e
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT) {
 		if (mb->is_pressed()) {
 			// Start position
-			if (xform.xform(node->get_start_position()).distance_to(mb->get_position()) < grab_threshold) {
-				start_grabbed = true;
-				original_start_position = node->get_start_position();
+			if (node->get_start_node_path().is_empty()) {
+				if (xform.xform(node->get_start_position()).distance_to(mb->get_position()) < grab_threshold) {
+					start_grabbed = true;
+					original_start_position = node->get_start_position();
 
-				return true;
-			} else {
-				start_grabbed = false;
+					return true;
+				} else {
+					start_grabbed = false;
+				}
 			}
 
 			// End position
-			if (xform.xform(node->get_end_position()).distance_to(mb->get_position()) < grab_threshold) {
-				end_grabbed = true;
-				original_end_position = node->get_end_position();
+			if (node->get_end_node_path().is_empty()) {
+				if (xform.xform(node->get_end_position()).distance_to(mb->get_position()) < grab_threshold) {
+					end_grabbed = true;
+					original_end_position = node->get_end_position();
 
-				return true;
-			} else {
-				end_grabbed = false;
+					return true;
+				} else {
+					end_grabbed = false;
+				}
 			}
 		} else {
 			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
@@ -148,8 +152,12 @@ void NavigationLink2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 
 	// Only drawing the handles here, since the debug rendering will fill in the rest.
 	const Ref<Texture2D> handle = get_theme_icon(SNAME("EditorHandle"), SNAME("EditorIcons"));
-	p_overlay->draw_texture(handle, global_start_position - handle->get_size() / 2);
-	p_overlay->draw_texture(handle, global_end_position - handle->get_size() / 2);
+	if (node->get_start_node_path().is_empty()) {
+		p_overlay->draw_texture(handle, global_start_position - handle->get_size() / 2);
+	}
+	if (node->get_end_node_path().is_empty()) {
+		p_overlay->draw_texture(handle, global_end_position - handle->get_size() / 2);
+	}
 }
 
 void NavigationLink2DEditor::edit(NavigationLink2D *p_node) {

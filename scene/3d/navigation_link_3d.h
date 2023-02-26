@@ -40,7 +40,9 @@ class NavigationLink3D : public Node3D {
 	RID link;
 	bool bidirectional = true;
 	uint32_t navigation_layers = 1;
+	NodePath end_node_path;
 	Vector3 end_position;
+	NodePath start_node_path;
 	Vector3 start_position;
 	real_t enter_cost = 0.0;
 	real_t travel_cost = 1.0;
@@ -55,6 +57,7 @@ class NavigationLink3D : public Node3D {
 protected:
 	static void _bind_methods();
 	void _notification(int p_what);
+	void _validate_property(PropertyInfo &p_property) const;
 
 #ifndef DISABLE_DEPRECATED
 	bool _set(const StringName &p_name, const Variant &p_value);
@@ -88,6 +91,12 @@ public:
 
 	void set_global_end_position(Vector3 p_position);
 	Vector3 get_global_end_position() const;
+
+	void set_start_node_path(const NodePath &p_path);
+	NodePath get_start_node_path() const { return start_node_path; }
+
+	void set_end_node_path(const NodePath &p_path);
+	NodePath get_end_node_path() const { return end_node_path; }
 
 	void set_enter_cost(real_t p_enter_cost);
 	real_t get_enter_cost() const { return enter_cost; }
