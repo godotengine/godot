@@ -679,6 +679,11 @@ void ShaderPreprocessor::process_include(Tokenizer *p_tokenizer) {
 		path = state->current_filename.get_base_dir().path_join(path);
 	}
 
+	if (!ResourceLoader::exists(path)) {
+		set_error(RTR("Shader include file does not exist: ") + path, line);
+		return;
+	}
+
 	Ref<Resource> res = ResourceLoader::load(path);
 	if (res.is_null()) {
 		set_error(RTR("Shader include load failed. Does the shader include exist? Is there a cyclic dependency?"), line);
