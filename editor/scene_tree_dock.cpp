@@ -2142,6 +2142,9 @@ void SceneTreeDock::_delete_confirm(bool p_cut) {
 
 	_push_item(nullptr);
 
+	// Fixes the EditorInspector still holding references to MultiNodeEdit objects.
+	InspectorDock::get_singleton()->get_inspector()->edit(nullptr);
+
 	// Fixes the EditorSelectionHistory from still offering deleted notes
 	EditorSelectionHistory *editor_history = EditorNode::get_singleton()->get_editor_selection_history();
 	editor_history->cleanup_history();
