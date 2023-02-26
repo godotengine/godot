@@ -95,7 +95,7 @@ bool EditorExportPlatformMacOS::get_export_option_visibility(const EditorExportP
 		int notary_tool = p_preset->get("notarization/notarization");
 		switch (notary_tool) {
 			case 1: { // "rcodesign"
-				if (p_option == "notarization/apple_id_name" || p_option == "notarization/apple_id_password" || p_option == "notarization/apple_team_id") {
+				if (p_option == "notarization/apple_id_name" || p_option == "notarization/apple_id_password") {
 					return false;
 				}
 			} break;
@@ -106,7 +106,7 @@ bool EditorExportPlatformMacOS::get_export_option_visibility(const EditorExportP
 				// All options are visible.
 			} break;
 			default: { // disabled
-				if (p_option == "notarization/apple_id_name" || p_option == "notarization/apple_id_password" || p_option == "notarization/apple_team_id" || p_option == "notarization/api_uuid" || p_option == "notarization/api_key" || p_option == "notarization/api_key_id") {
+				if (p_option == "notarization/apple_id_name" || p_option == "notarization/apple_id_password" || p_option == "notarization/api_uuid" || p_option == "notarization/api_key" || p_option == "notarization/api_key_id") {
 					return false;
 				}
 			} break;
@@ -136,20 +136,32 @@ void EditorExportPlatformMacOS::get_export_options(List<ExportOption> *r_options
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/short_version"), "1.0"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/version"), "1.0"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/copyright"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/min_macos_version"), "10.12"));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::DICTIONARY, "application/copyright_localized", PROPERTY_HINT_LOCALIZABLE_STRING), Dictionary()));
+
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "xcode/platform_build"), "14C18"));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "xcode/sdk_version"), "13.1"));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "xcode/sdk_build"), "22C55"));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "xcode/sdk_name"), "macosx13.1"));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "xcode/xcode_version"), "1420"));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "xcode/xcode_build"), "14C18"));
+
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "display/high_res"), true));
 
 #ifdef MACOS_ENABLED
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "codesign/codesign", PROPERTY_HINT_ENUM, "Disabled,Built-in (ad-hoc only),rcodesign,Xcode codesign"), 3, true));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "codesign/installer_identity", PROPERTY_HINT_PLACEHOLDER_TEXT, "3rd Party Mac Developer Installer: (ID)"), ""));
 #else
 	r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "codesign/codesign", PROPERTY_HINT_ENUM, "Disabled,Built-in (ad-hoc only),rcodesign"), 1, true));
 #endif
 	// "codesign" only options:
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "codesign/identity", PROPERTY_HINT_PLACEHOLDER_TEXT, "Type: Name (ID)"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "codesign/apple_team_id", PROPERTY_HINT_PLACEHOLDER_TEXT, "ID"), ""));
 	// "rcodesign" only options:
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "codesign/certificate_file", PROPERTY_HINT_GLOBAL_FILE, "*.pfx,*.p12"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "codesign/certificate_password", PROPERTY_HINT_PASSWORD), ""));
 	// "codesign" and "rcodesign" only options:
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "codesign/provisioning_profile", PROPERTY_HINT_GLOBAL_FILE, "*.provisionprofile"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "codesign/entitlements/custom_file", PROPERTY_HINT_GLOBAL_FILE, "*.plist"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/allow_jit_code_execution"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/entitlements/allow_unsigned_executable_memory"), false));
@@ -183,7 +195,6 @@ void EditorExportPlatformMacOS::get_export_options(List<ExportOption> *r_options
 	// "altool" and "notarytool" only options:
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "notarization/apple_id_name", PROPERTY_HINT_PLACEHOLDER_TEXT, "Apple ID email"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "notarization/apple_id_password", PROPERTY_HINT_PASSWORD, "Enable two-factor authentication and provide app-specific password"), ""));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "notarization/apple_team_id", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide team ID if your Apple ID belongs to multiple teams"), ""));
 	// "altool", "notarytool" and "rcodesign" only options:
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "notarization/api_uuid", PROPERTY_HINT_PLACEHOLDER_TEXT, "App Store Connect issuer ID UUID"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "notarization/api_key", PROPERTY_HINT_GLOBAL_FILE, "*.p8"), ""));
@@ -424,8 +435,22 @@ void EditorExportPlatformMacOS::_fix_plist(const Ref<EditorExportPreset> &p_pres
 			strnew += lines[i].replace("$app_category", cat.to_lower()) + "\n";
 		} else if (lines[i].find("$copyright") != -1) {
 			strnew += lines[i].replace("$copyright", p_preset->get("application/copyright")) + "\n";
+		} else if (lines[i].find("$min_version") != -1) {
+			strnew += lines[i].replace("$min_version", p_preset->get("application/min_macos_version")) + "\n";
 		} else if (lines[i].find("$highres") != -1) {
 			strnew += lines[i].replace("$highres", p_preset->get("display/high_res") ? "\t<true/>" : "\t<false/>") + "\n";
+		} else if (lines[i].find("$platfbuild") != -1) {
+			strnew += lines[i].replace("$platfbuild", p_preset->get("xcode/platform_build")) + "\n";
+		} else if (lines[i].find("$sdkver") != -1) {
+			strnew += lines[i].replace("$sdkver", p_preset->get("xcode/sdk_version")) + "\n";
+		} else if (lines[i].find("$sdkname") != -1) {
+			strnew += lines[i].replace("$sdkname", p_preset->get("xcode/sdk_name")) + "\n";
+		} else if (lines[i].find("$sdkbuild") != -1) {
+			strnew += lines[i].replace("$sdkbuild", p_preset->get("xcode/sdk_build")) + "\n";
+		} else if (lines[i].find("$xcodever") != -1) {
+			strnew += lines[i].replace("$xcodever", p_preset->get("xcode/xcode_version")) + "\n";
+		} else if (lines[i].find("$xcodebuild") != -1) {
+			strnew += lines[i].replace("$xcodebuild", p_preset->get("xcode/xcode_build")) + "\n";
 		} else if (lines[i].find("$usage_descriptions") != -1) {
 			String descriptions;
 			if (!((String)p_preset->get("privacy/microphone_usage_description")).is_empty()) {
@@ -612,9 +637,9 @@ Error EditorExportPlatformMacOS::_notarize(const Ref<EditorExportPreset> &p_pres
 
 			args.push_back("--no-progress");
 
-			if (p_preset->get("notarization/apple_team_id")) {
+			if (p_preset->get("codesign/apple_team_id")) {
 				args.push_back("--team-id");
-				args.push_back(p_preset->get("notarization/apple_team_id"));
+				args.push_back(p_preset->get("codesign/apple_team_id"));
 			}
 
 			String str;
@@ -693,9 +718,9 @@ Error EditorExportPlatformMacOS::_notarize(const Ref<EditorExportPreset> &p_pres
 			args.push_back("--type");
 			args.push_back("osx");
 
-			if (p_preset->get("notarization/apple_team_id")) {
+			if (p_preset->get("codesign/apple_team_id")) {
 				args.push_back("--asc-provider");
-				args.push_back(p_preset->get("notarization/apple_team_id"));
+				args.push_back(p_preset->get("codesign/apple_team_id"));
 			}
 
 			args.push_back("--file");
@@ -978,6 +1003,42 @@ Error EditorExportPlatformMacOS::_export_macos_plugins_for(Ref<EditorExportPlugi
 	return error;
 }
 
+Error EditorExportPlatformMacOS::_create_pkg(const Ref<EditorExportPreset> &p_preset, const String &p_pkg_path, const String &p_app_path_name) {
+	List<String> args;
+
+	if (FileAccess::exists(p_pkg_path)) {
+		OS::get_singleton()->move_to_trash(p_pkg_path);
+	}
+
+	args.push_back("productbuild");
+	args.push_back("--component");
+	args.push_back(p_app_path_name);
+	args.push_back("/Applications");
+	String ident = p_preset->get("codesign/installer_identity");
+	if (!ident.is_empty()) {
+		args.push_back("--timestamp");
+		args.push_back("--sign");
+		args.push_back(ident);
+	}
+	args.push_back("--quiet");
+	args.push_back(p_pkg_path);
+
+	String str;
+	Error err = OS::get_singleton()->execute("xcrun", args, &str, nullptr, true);
+	if (err != OK) {
+		add_message(EXPORT_MESSAGE_ERROR, TTR("PKG Creation"), TTR("Could not start productbuild executable."));
+		return err;
+	}
+
+	print_verbose("productbuild returned: " + str);
+	if (str.find("productbuild: error:") != -1) {
+		add_message(EXPORT_MESSAGE_ERROR, TTR("PKG Creation"), TTR("`productbuild` failed."));
+		return FAILED;
+	}
+
+	return OK;
+}
+
 Error EditorExportPlatformMacOS::_create_dmg(const String &p_dmg_path, const String &p_pkg_name, const String &p_app_path_name) {
 	List<String> args;
 
@@ -1106,8 +1167,10 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 	pkg_name = OS::get_singleton()->get_safe_dir_name(pkg_name);
 
 	String export_format;
-	if (use_dmg() && p_path.ends_with("dmg")) {
+	if (use_dmg_or_pkg() && p_path.ends_with("dmg")) {
 		export_format = "dmg";
+	} else if (use_dmg_or_pkg() && p_path.ends_with("pkg")) {
+		export_format = "pkg";
 	} else if (p_path.ends_with("zip")) {
 		export_format = "zip";
 	} else if (p_path.ends_with("app")) {
@@ -1549,6 +1612,16 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 					ent_f->store_line("<true/>");
 				}
 
+				String pprof = p_preset->get("codesign/provisioning_profile");
+				String teamid = p_preset->get("codesign/apple_team_id");
+				String bid = p_preset->get("application/bundle_identifier");
+				if (!pprof.is_empty() && !teamid.is_empty()) {
+					ent_f->store_line("<key>com.apple.developer.team-identifier</key>");
+					ent_f->store_line("<string>" + teamid + "</string>");
+					ent_f->store_line("<key>com.apple.application-identifier</key>");
+					ent_f->store_line("<string>" + teamid + "." + bid + "</string>");
+				}
+
 				if ((bool)p_preset->get("codesign/entitlements/app_sandbox/enabled")) {
 					ent_f->store_line("<key>com.apple.security.app-sandbox</key>");
 					ent_f->store_line("<true/>");
@@ -1669,6 +1742,12 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 		}
 
 		if (err == OK && sign_enabled) {
+			String pprof = p_preset->get("codesign/provisioning_profile").operator String();
+			if (!pprof.is_empty()) {
+				Ref<DirAccess> da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+				err = da->copy(pprof, tmp_app_path_name + "/Contents/embedded.provisionprofile");
+			}
+
 			if (ep.step(TTR("Code signing bundle"), 2)) {
 				return ERR_SKIP;
 			}
@@ -1689,6 +1768,14 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 					return ERR_SKIP;
 				}
 				err = _code_sign(p_preset, p_path, ent_path, false);
+			}
+		} else if (export_format == "pkg") {
+			// Create a Installer.
+			if (err == OK) {
+				if (ep.step(TTR("Making PKG installer"), 3)) {
+					return ERR_SKIP;
+				}
+				err = _create_pkg(p_preset, p_path, tmp_app_path_name);
 			}
 		} else if (export_format == "zip") {
 			// Create ZIP.
@@ -1712,7 +1799,7 @@ Error EditorExportPlatformMacOS::export_project(const Ref<EditorExportPreset> &p
 
 		bool noto_enabled = (p_preset->get("notarization/notarization").operator int() > 0);
 		if (err == OK && noto_enabled) {
-			if (export_format == "app") {
+			if (export_format == "app" || export_format == "pkg") {
 				add_message(EXPORT_MESSAGE_INFO, TTR("Notarization"), TTR("Notarization requires the app to be archived first, select the DMG or ZIP export format instead."));
 			} else {
 				if (ep.step(TTR("Sending archive for notarization"), 4)) {
@@ -1826,6 +1913,11 @@ bool EditorExportPlatformMacOS::has_valid_project_configuration(const Ref<Editor
 		default: {
 		};
 	}
+
+	if (p_preset->get("codesign/apple_team_id") == "" && p_preset->get("codesign/provisioning_profile") != "") {
+		err += TTR("Provisioning Profile: Apple Team ID not specified.") + "\n";
+		valid = false;
+	}
 	int notary_tool = p_preset->get("notarization/notarization");
 
 	if (notary_tool > 0) {
@@ -1862,7 +1954,7 @@ bool EditorExportPlatformMacOS::has_valid_project_configuration(const Ref<Editor
 					}
 				}
 			}
-			if (notary_tool == 2 && p_preset->get("notarization/apple_team_id") == "") {
+			if (p_preset->get("codesign/apple_team_id") == "") {
 				err += TTR("Notarization: Apple Team ID not specified.") + "\n";
 				valid = false;
 			}

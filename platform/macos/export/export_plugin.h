@@ -86,16 +86,17 @@ class EditorExportPlatformMacOS : public EditorExportPlatform {
 	Error _export_macos_plugins_for(Ref<EditorExportPlugin> p_editor_export_plugin, const String &p_app_path_name,
 			Ref<DirAccess> &dir_access, bool p_sign_enabled, const Ref<EditorExportPreset> &p_preset,
 			const String &p_ent_path);
+	Error _create_pkg(const Ref<EditorExportPreset> &p_preset, const String &p_pkg_path, const String &p_app_path_name);
 	Error _create_dmg(const String &p_dmg_path, const String &p_pkg_name, const String &p_app_path_name);
 	Error _export_debug_script(const Ref<EditorExportPreset> &p_preset, const String &p_app_name, const String &p_pkg_name, const String &p_path);
 
 	bool use_codesign() const { return true; }
 #ifdef MACOS_ENABLED
-	bool use_dmg() const {
+	bool use_dmg_or_pkg() const {
 		return true;
 	}
 #else
-	bool use_dmg() const {
+	bool use_dmg_or_pkg() const {
 		return false;
 	}
 #endif
@@ -143,8 +144,9 @@ public:
 	virtual bool is_executable(const String &p_path) const override;
 	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const override {
 		List<String> list;
-		if (use_dmg()) {
+		if (use_dmg_or_pkg()) {
 			list.push_back("dmg");
+			list.push_back("pkg");
 		}
 		list.push_back("zip");
 		list.push_back("app");
