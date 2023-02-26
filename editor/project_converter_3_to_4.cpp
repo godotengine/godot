@@ -78,11 +78,11 @@ public:
 	RegEx reg_image_unlock = RegEx("([a-zA-Z0-9_\\.]+)\\.unlock\\(\\)");
 	RegEx reg_instantiate = RegEx("\\.instance\\(([^\\)]*)\\)");
 	// Simple OS properties with getters/setters.
-	RegEx reg_os_current_screen = RegEx("\\bOS\\.(set_|get_)?current_screen\\b");
-	RegEx reg_os_min_window_size = RegEx("\\bOS\\.(set_|get_)?min_window_size\\b");
-	RegEx reg_os_max_window_size = RegEx("\\bOS\\.(set_|get_)?max_window_size\\b");
-	RegEx reg_os_window_position = RegEx("\\bOS\\.(set_|get_)?window_position\\b");
-	RegEx reg_os_window_size = RegEx("\\bOS\\.(set_|get_)?window_size\\b");
+	RegEx reg_os_current_screen = RegEx("\\bOS\\.((set_|get_)?)current_screen\\b");
+	RegEx reg_os_min_window_size = RegEx("\\bOS\\.((set_|get_)?)min_window_size\\b");
+	RegEx reg_os_max_window_size = RegEx("\\bOS\\.((set_|get_)?)max_window_size\\b");
+	RegEx reg_os_window_position = RegEx("\\bOS\\.((set_|get_)?)window_position\\b");
+	RegEx reg_os_window_size = RegEx("\\bOS\\.((set_|get_)?)window_size\\b");
 	RegEx reg_os_getset_screen_orient = RegEx("\\bOS\\.(s|g)et_screen_orientation\\b");
 	// OS property getters/setters for non trivial replacements.
 	RegEx reg_os_set_window_resizable = RegEx(make_regex_gds_os_property_set("set_window_resizable"));
