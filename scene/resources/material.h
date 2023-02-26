@@ -543,8 +543,6 @@ private:
 
 	static HashMap<uint64_t, Ref<StandardMaterial3D>> materials_for_2d; //used by Sprite3D, Label3D and other stuff
 
-	void _validate_high_end(const String &text, PropertyInfo &property) const;
-
 protected:
 	static void _bind_methods();
 	void _validate_property(PropertyInfo &p_property) const;
