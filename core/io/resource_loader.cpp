@@ -447,15 +447,24 @@ Ref<Resource> ResourceLoader::load_threaded_get(const String &p_path, Error *r_e
 
 	ThreadLoadTask &load_task = thread_load_tasks[local_path];
 
-	if (!load_task.cond_var && load_task.status == THREAD_LOAD_IN_PROGRESS) {
-		// A condition variable was never created for this task.
-		// That happens when a load has been initiated with subthreads disabled,
-		// but now another load thread needs to interact with this one (either
-		// because of subthreads being used this time, or because it's simply a
-		// threaded load running on a different thread).
-		// Since we want to be notified when the load ends, we must create the
-		// condition variable now.
-		load_task.cond_var = memnew(ConditionVariable);
+	if (load_task.status == THREAD_LOAD_IN_PROGRESS) {
+		if (load_task.loader_id == Thread::get_caller_id()) {
+			// Load is in progress, but it's precisely this thread the one in charge.
+			// That means this is a cyclic load.
+			if (r_error) {
+				*r_error = ERR_BUSY;
+			}
+			return Ref<Resource>();
+		} else if (!load_task.cond_var) {
+			// Load is in progress, but a condition variable was never created for it.
+			// That happens when a load has been initiated with subthreads disabled,
+			// but now another load thread needs to interact with this one (either
+			// because of subthreads being used this time, or because it's simply a
+			// threaded load running on a different thread).
+			// Since we want to be notified when the load ends, we must create the
+			// condition variable now.
+			load_task.cond_var = memnew(ConditionVariable);
+		}
 	}
 
 	//cond var still exists, meaning it's still loading, request poll
