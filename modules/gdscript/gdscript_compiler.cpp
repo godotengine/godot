@@ -85,7 +85,7 @@ void GDScriptCompiler::_set_error(const String &p_error, const GDScriptParser::N
 }
 
 GDScriptDataType GDScriptCompiler::_gdtype_from_datatype(const GDScriptParser::DataType &p_datatype, GDScript *p_owner) {
-	if (!p_datatype.is_set() || !p_datatype.is_hard_type()) {
+	if (!p_datatype.is_set() || !p_datatype.is_hard_type() || p_datatype.is_coroutine) {
 		return GDScriptDataType();
 	}
 
