@@ -834,29 +834,29 @@ GDScriptCodeGenerator::Address GDScriptCompiler::_parse_expression(CodeGen &code
 			}
 			gen->write_ternary_condition(condition);
 
-			if (condition.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-				gen->pop_temporary();
-			}
-
 			GDScriptCodeGenerator::Address true_expr = _parse_expression(codegen, r_error, ternary->true_expr);
 			if (r_error) {
 				return GDScriptCodeGenerator::Address();
 			}
 			gen->write_ternary_true_expr(true_expr);
-			if (true_expr.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
-				gen->pop_temporary();
-			}
 
 			GDScriptCodeGenerator::Address false_expr = _parse_expression(codegen, r_error, ternary->false_expr);
 			if (r_error) {
 				return GDScriptCodeGenerator::Address();
 			}
 			gen->write_ternary_false_expr(false_expr);
+
+			gen->write_end_ternary();
+
 			if (false_expr.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
 				gen->pop_temporary();
 			}
-
-			gen->write_end_ternary();
+			if (true_expr.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
+				gen->pop_temporary();
+			}
+			if (condition.mode == GDScriptCodeGenerator::Address::TEMPORARY) {
+				gen->pop_temporary();
+			}
 
 			return result;
 		} break;
