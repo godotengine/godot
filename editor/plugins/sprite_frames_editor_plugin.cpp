@@ -1049,6 +1049,11 @@ void SpriteFramesEditor::_zoom_reset() {
 	frame_list->set_fixed_icon_size(Size2(thumbnail_default_size, thumbnail_default_size));
 }
 
+void SpriteFramesEditor::_update_texture_filter(CanvasItem::TextureFilter p_texture_filter) {
+	frame_list->set_texture_filter(p_texture_filter);
+	split_sheet_preview->set_texture_filter(p_texture_filter);
+}
+
 void SpriteFramesEditor::_update_library(bool p_skip_selector) {
 	if (frames.is_null()) {
 		return;
@@ -1103,6 +1108,34 @@ void SpriteFramesEditor::_update_library(bool p_skip_selector) {
 		} else {
 			autoplay->set_pressed(String(edited_anim) == autoplay_name);
 		}
+
+		// Use same image filtering in frame previews as the sprite
+		CanvasItem *ci = Object::cast_to<CanvasItem>(animated_sprite);
+		if (ci) {
+			_update_texture_filter(ci->get_texture_filter());
+		}
+	} else {
+		// There is no base node. Use the filter configured in project settings
+		int global_texture_filter = GLOBAL_GET("rendering/textures/canvas_textures/default_texture_filter");
+		CanvasItem::TextureFilter tf;
+		switch (global_texture_filter) {
+			case 0:
+				tf = CanvasItem::TEXTURE_FILTER_NEAREST;
+				break;
+			case 1:
+				tf = CanvasItem::TEXTURE_FILTER_LINEAR;
+				break;
+			case 2:
+				tf = CanvasItem::TEXTURE_FILTER_LINEAR_WITH_MIPMAPS;
+				break;
+			case 3:
+				tf = CanvasItem::TEXTURE_FILTER_NEAREST_WITH_MIPMAPS;
+				break;
+			default:
+				tf = CanvasItem::TEXTURE_FILTER_NEAREST_WITH_MIPMAPS;
+				break;
+		}
+		_update_texture_filter(tf);
 	}
 
 	frame_list->clear();

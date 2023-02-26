@@ -161,6 +161,7 @@ class SpriteFramesEditor : public HSplitContainer {
 	void _up_pressed();
 	void _down_pressed();
 	void _frame_duration_changed(double p_value);
+	void _update_texture_filter(CanvasItem::TextureFilter p_texture_filter);
 	void _update_library(bool p_skip_selector = false);
 
 	void _update_stop_icon();
