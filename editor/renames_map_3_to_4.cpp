@@ -577,9 +577,9 @@ const char *RenamesMap3To4::gdscript_function_renames[][2] = {
 
 	// Builtin types
 	// Remember to add them to the builtin_types_excluded_functions variable, because for now these functions cannot be listed.
-	//	{ "empty", "is_empty" }, // Array -- Used as custom rule. Be careful, this will be used everywhere.
-	//	{ "remove", "remove_at" }, // Array -- Breaks Directory and several more.
-	{ "clamped", "clamp" }, // Vector2 -- Be careful, this will be used everywhere.
+	//{ "empty", "is_empty" }, // Array -- Used as custom rule. Be careful, this will be used everywhere.
+	//{ "remove", "remove_at" }, // Array -- Breaks Directory and several more.
+	{ "clamped", "limit_length" }, // Vector2
 	{ "get_rotation_quat", "get_rotation_quaternion" }, // Basis
 	{ "grow_margin", "grow_side" }, // Rect2
 	{ "invert", "reverse" }, // Array -- Give it a check. Be careful, this will be used everywhere.
@@ -1024,9 +1024,9 @@ const char *RenamesMap3To4::csharp_function_renames[][2] = {
 	{ "GetUniformName", "GetParameterName" }, // ParameterRef
 
 	// Builtin types
-	//	{ "Empty", "IsEmpty" }, // Array -- Used as custom rule. Be careful, this will be used everywhere.
-	//	{ "Remove", "RemoveAt" }, // Array -- Breaks Directory and several more.
-	{ "Clamped", "Clamp" }, // Vector2 -- Be careful, this will be used everywhere.
+	// { "Empty", "IsEmpty" }, // Array -- Used as custom rule. Be careful, this will be used everywhere.
+	// { "Remove", "RemoveAt" }, // Array -- Breaks Directory and several more.
+	{ "Clamped", "LimitLength" }, // Vector2
 	{ "GetRotationQuat", "GetRotationQuaternion" }, // Basis
 	{ "GrowMargin", "GrowSide" }, // Rect2
 	{ "Invert", "Reverse" }, // Array -- Give it a check. Be careful, this will be used everywhere.
