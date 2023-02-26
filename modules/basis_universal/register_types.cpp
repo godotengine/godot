@@ -74,7 +74,7 @@ static Vector<uint8_t> basis_universal_packer(const Ref<Image> &p_image, Image::
 				params.m_source_images.push_back(buimg_image);
 			}
 			basisu::vector<basisu::image> images;
-			for (int32_t mip_map_i = 1; mip_map_i < image->get_mipmap_count(); mip_map_i++) {
+			for (int32_t mip_map_i = 1; mip_map_i <= image->get_mipmap_count(); mip_map_i++) {
 				Ref<Image> mip_map = image->get_image_from_mipmap(mip_map_i);
 				Vector<uint8_t> mip_map_vec = mip_map->get_data();
 				basisu::image buimg_mipmap(mip_map->get_width(), mip_map->get_height());
@@ -247,7 +247,7 @@ static Ref<Image> basis_universal_unpacker_ptr(const uint8_t *p_data, int p_size
 		dst[i] = 0x00;
 	}
 	uint32_t mip_count = Image::get_image_required_mipmaps(info.m_orig_width, info.m_orig_height, imgfmt);
-	for (uint32_t level_i = 0; level_i < mip_count; level_i++) {
+	for (uint32_t level_i = 0; level_i <= mip_count; level_i++) {
 		basist::basisu_image_level_info level;
 		tr.get_image_level_info(ptr, size, level, 0, level_i);
 		int ofs = Image::get_image_mipmap_offset(info.m_width, info.m_height, imgfmt, level_i);
