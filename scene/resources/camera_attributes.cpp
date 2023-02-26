@@ -394,6 +394,13 @@ void CameraAttributesPhysical::_update_frustum() {
 
 	bool use_far = (far < frustum_far) && (far > 0.0);
 	bool use_near = near > frustum_near;
+#ifdef DEBUG_ENABLED
+	if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
+		// Force disable DoF in editor builds to suppress warnings.
+		use_far = false;
+		use_near = false;
+	}
+#endif
 	RS::get_singleton()->camera_attributes_set_dof_blur(
 			get_rid(),
 			use_far,

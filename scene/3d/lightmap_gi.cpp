@@ -1458,6 +1458,17 @@ Ref<CameraAttributes> LightmapGI::get_camera_attributes() const {
 	return camera_attributes;
 }
 
+PackedStringArray LightmapGI::get_configuration_warnings() const {
+	PackedStringArray warnings = Node::get_configuration_warnings();
+
+	if (OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
+		warnings.push_back(RTR("LightmapGI nodes are not supported when using the GL Compatibility backend yet. Support will be added in a future release."));
+		return warnings;
+	}
+
+	return warnings;
+}
+
 void LightmapGI::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == "environment_custom_sky" && environment_mode != ENVIRONMENT_MODE_CUSTOM_SKY) {
 		p_property.usage = PROPERTY_USAGE_NONE;

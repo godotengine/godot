@@ -114,8 +114,8 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 	actions.usage_flag_pointers["ALPHA_TEXTURE_COORDINATE"] = &uses_alpha_antialiasing;
 	actions.render_mode_flags["depth_prepass_alpha"] = &uses_depth_prepass_alpha;
 
-	// actions.usage_flag_pointers["SSS_STRENGTH"] = &uses_sss;
-	// actions.usage_flag_pointers["SSS_TRANSMITTANCE_DEPTH"] = &uses_transmittance;
+	actions.usage_flag_pointers["SSS_STRENGTH"] = &uses_sss;
+	actions.usage_flag_pointers["SSS_TRANSMITTANCE_DEPTH"] = &uses_transmittance;
 
 	actions.usage_flag_pointers["DISCARD"] = &uses_discard;
 	actions.usage_flag_pointers["TIME"] = &uses_time;
@@ -149,6 +149,16 @@ void SceneShaderForwardMobile::ShaderData::set_code(const String &p_code) {
 	uses_screen_texture = gen_code.uses_screen_texture;
 	uses_depth_texture = gen_code.uses_depth_texture;
 	uses_normal_texture = gen_code.uses_normal_roughness_texture;
+
+#ifdef DEBUG_ENABLED
+	if (uses_sss) {
+		WARN_PRINT_ONCE_ED("Sub-surface scattering is only available when using the Forward+ rendering backend.");
+	}
+
+	if (uses_transmittance) {
+		WARN_PRINT_ONCE_ED("Transmittance is only available when using the Forward+ rendering backend.");
+	}
+#endif
 
 #if 0
 	print_line("**compiling shader:");

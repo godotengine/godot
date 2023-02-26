@@ -56,11 +56,8 @@ void Light3D::set_shadow(bool p_enable) {
 	shadow = p_enable;
 	RS::get_singleton()->light_set_shadow(light, p_enable);
 
-	if (type == RenderingServer::LIGHT_SPOT || type == RenderingServer::LIGHT_OMNI) {
-		update_configuration_warnings();
-	}
-
 	notify_property_list_changed();
+	update_configuration_warnings();
 }
 
 bool Light3D::has_shadow() const {
@@ -174,6 +171,10 @@ AABB Light3D::get_aabb() const {
 
 PackedStringArray Light3D::get_configuration_warnings() const {
 	PackedStringArray warnings = VisualInstance3D::get_configuration_warnings();
+
+	if (has_shadow() && OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
+		warnings.push_back(RTR("Shadows are not supported when using the GL Compatibility backend yet. Support will be added in a future release."));
+	}
 
 	if (!get_scale().is_equal_approx(Vector3(1, 1, 1))) {
 		warnings.push_back(RTR("A light's scale does not affect the visual size of the light."));
@@ -603,6 +604,10 @@ PackedStringArray OmniLight3D::get_configuration_warnings() const {
 		warnings.push_back(RTR("Projector texture only works with shadows active."));
 	}
 
+	if (get_projector().is_valid() && OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
+		warnings.push_back(RTR("Projector textures are not supported when using the GL Compatibility backend yet. Support will be added in a future release."));
+	}
+
 	return warnings;
 }
 
@@ -633,6 +638,10 @@ PackedStringArray SpotLight3D::get_configuration_warnings() const {
 
 	if (!has_shadow() && get_projector().is_valid()) {
 		warnings.push_back(RTR("Projector texture only works with shadows active."));
+	}
+
+	if (get_projector().is_valid() && OS::get_singleton()->get_current_rendering_method() == "gl_compatibility") {
+		warnings.push_back(RTR("Projector textures are not supported when using the GL Compatibility backend yet. Support will be added in a future release."));
 	}
 
 	return warnings;
