@@ -428,6 +428,8 @@ public:
 	virtual int profiling_get_frame_data(ProfilingInfo *p_info_arr, int p_info_max) = 0;
 
 	virtual void frame();
+	virtual void set_physics_process_delta_time(double p_time);
+	virtual void set_process_delta_time(double p_time);
 
 	virtual bool handles_global_class_type(const String &p_type) const { return false; }
 	virtual String get_global_class_name(const String &p_path, String *r_base_type = nullptr, String *r_icon_path = nullptr) const { return String(); }

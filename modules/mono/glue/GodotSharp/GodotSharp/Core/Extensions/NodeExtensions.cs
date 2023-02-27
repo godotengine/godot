@@ -1,4 +1,6 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 
 namespace Godot
 {
@@ -194,6 +196,31 @@ namespace Godot
         public T GetParentOrNull<T>() where T : class
         {
             return GetParent() as T;
+        }
+
+        internal static double CachedPhysicsProcessDeltaTime;
+        internal static double CachedProcessDeltaTime;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [SuppressMessage("Performance", "CA1822:Mark members as static")]
+        public partial double GetPhysicsProcessDeltaTime() => CachedPhysicsProcessDeltaTime;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [SuppressMessage("Performance", "CA1822:Mark members as static")]
+        public partial double GetProcessDeltaTime() => CachedProcessDeltaTime;
+
+        /// <inheritdoc cref="GetPhysicsProcessDeltaTime()"/>
+        public static double PhysicsDeltaTime
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => CachedPhysicsProcessDeltaTime;
+        }
+
+        /// <inheritdoc cref="GetProcessDeltaTime()"/>
+        public static double DeltaTime
+        {
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            get => CachedProcessDeltaTime;
         }
     }
 }

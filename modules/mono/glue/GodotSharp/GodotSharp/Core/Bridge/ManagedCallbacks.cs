@@ -14,6 +14,7 @@ namespace Godot.Bridge
         public delegate* unmanaged<IntPtr, godot_array*, godot_bool> DelegateUtils_TrySerializeDelegateWithGCHandle;
         public delegate* unmanaged<godot_array*, IntPtr*, godot_bool> DelegateUtils_TryDeserializeDelegateWithGCHandle;
         public delegate* unmanaged<void> ScriptManagerBridge_FrameCallback;
+        public delegate* unmanaged<double, godot_bool, void> ScriptManagerBridge_SetProcessDeltaTime;
         public delegate* unmanaged<godot_string_name*, IntPtr, IntPtr> ScriptManagerBridge_CreateManagedForGodotObjectBinding;
         public delegate* unmanaged<IntPtr, IntPtr, godot_variant**, int, godot_bool> ScriptManagerBridge_CreateManagedForGodotObjectScriptInstance;
         public delegate* unmanaged<IntPtr, godot_string_name*, void> ScriptManagerBridge_GetScriptNativeName;
@@ -53,6 +54,7 @@ namespace Godot.Bridge
                 DelegateUtils_TrySerializeDelegateWithGCHandle = &DelegateUtils.TrySerializeDelegateWithGCHandle,
                 DelegateUtils_TryDeserializeDelegateWithGCHandle = &DelegateUtils.TryDeserializeDelegateWithGCHandle,
                 ScriptManagerBridge_FrameCallback = &ScriptManagerBridge.FrameCallback,
+                ScriptManagerBridge_SetProcessDeltaTime = &ScriptManagerBridge.SetProcessDeltaTime,
                 ScriptManagerBridge_CreateManagedForGodotObjectBinding = &ScriptManagerBridge.CreateManagedForGodotObjectBinding,
                 ScriptManagerBridge_CreateManagedForGodotObjectScriptInstance = &ScriptManagerBridge.CreateManagedForGodotObjectScriptInstance,
                 ScriptManagerBridge_GetScriptNativeName = &ScriptManagerBridge.GetScriptNativeName,

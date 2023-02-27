@@ -631,6 +631,14 @@ void CSharpLanguage::frame() {
 	}
 }
 
+void CSharpLanguage::set_physics_process_delta_time(double p_time) {
+	GDMonoCache::managed_callbacks.ScriptManagerBridge_SetProcessDeltaTime(p_time, /* physics: */ true);
+}
+
+void CSharpLanguage::set_process_delta_time(double p_time) {
+	GDMonoCache::managed_callbacks.ScriptManagerBridge_SetProcessDeltaTime(p_time, /* physics: */ false);
+}
+
 struct CSharpScriptDepSort {
 	// Must support sorting so inheritance works properly (parent must be reloaded first)
 	bool operator()(const Ref<CSharpScript> &A, const Ref<CSharpScript> &B) const {

@@ -467,6 +467,8 @@ public:
 	}
 
 	void frame() override;
+	void set_physics_process_delta_time(double p_time) override;
+	void set_process_delta_time(double p_time) override;
 
 	/* TODO? */ void get_public_functions(List<MethodInfo> *p_functions) const override {}
 	/* TODO? */ void get_public_constants(List<Pair<String, Variant>> *p_constants) const override {}

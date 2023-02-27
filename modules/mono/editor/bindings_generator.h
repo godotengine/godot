@@ -164,6 +164,12 @@ class BindingsGenerator {
 		 */
 		bool is_internal = false;
 
+		/**
+		 * Declare the C# method with the `partial` keyword, skipping the body. Useful
+		 * when we want to replace the generated method body with a custom implementation.
+		 */
+		bool declare_as_partial = false;
+
 		List<ArgumentInterface> arguments;
 
 		const DocData::MethodDoc *method_doc = nullptr;

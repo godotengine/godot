@@ -87,6 +87,19 @@ namespace Godot.Bridge
         }
 
         [UnmanagedCallersOnly]
+        internal static void SetProcessDeltaTime(double deltaTime, godot_bool physics)
+        {
+            if (physics.ToBool())
+            {
+                Node.CachedPhysicsProcessDeltaTime = deltaTime;
+            }
+            else
+            {
+                Node.CachedProcessDeltaTime = deltaTime;
+            }
+        }
+
+        [UnmanagedCallersOnly]
         internal static unsafe IntPtr CreateManagedForGodotObjectBinding(godot_string_name* nativeTypeName,
             IntPtr godotObject)
         {

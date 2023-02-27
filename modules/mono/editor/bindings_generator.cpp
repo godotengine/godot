@@ -2057,7 +2057,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 
 	// Generate method
 	{
-		if (!p_imethod.is_virtual && !p_imethod.requires_object_call) {
+		if (!p_imethod.is_virtual && !p_imethod.requires_object_call && !p_imethod.declare_as_partial) {
 			p_output << MEMBER_BEGIN "[DebuggerBrowsable(DebuggerBrowsableState.Never)]\n"
 					 << INDENT1 "private static readonly IntPtr " << method_bind_field << " = ";
 
@@ -2112,7 +2112,11 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 			p_output.append("virtual ");
 		}
 
-		if (cs_in_expr_is_unsafe) {
+		if (p_imethod.declare_as_partial) {
+			p_output.append("partial ");
+		}
+
+		if (cs_in_expr_is_unsafe && !p_imethod.declare_as_partial) {
 			p_output.append("unsafe ");
 		}
 
@@ -2120,7 +2124,14 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 
 		p_output.append(return_cs_type + " ");
 		p_output.append(p_imethod.proxy_name + "(");
-		p_output.append(arguments_sig + ")\n" OPEN_BLOCK_L1);
+		p_output.append(arguments_sig + ")");
+
+		if (p_imethod.declare_as_partial) {
+			p_output.append(";\n");
+			return OK;
+		}
+
+		p_output.append("\n" OPEN_BLOCK_L1);
 
 		if (p_imethod.is_virtual) {
 			// Godot virtual method must be overridden, therefore we return a default value by default.
@@ -3251,6 +3262,17 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 
 		class_list.pop_front();
 	}
+
+	// Declare `GetProcessDeltaTime` and `GetPhysicsProcessDeltaTime` as partial.
+	// This allows us to use a custom implementation of these methods, which returns a cached value.
+
+	const MethodInterface *process_delta_time_imethod = obj_types.get("Node").find_method_by_name("get_process_delta_time");
+	ERR_FAIL_COND_V(process_delta_time_imethod == nullptr, false);
+	const_cast<MethodInterface *>(process_delta_time_imethod)->declare_as_partial = true;
+
+	const MethodInterface *physics_process_delta_time_imethod = obj_types.get("Node").find_method_by_name("get_physics_process_delta_time");
+	ERR_FAIL_COND_V(physics_process_delta_time_imethod == nullptr, false);
+	const_cast<MethodInterface *>(physics_process_delta_time_imethod)->declare_as_partial = true;
 
 	return true;
 }

@@ -461,6 +461,12 @@ void ScriptLanguage::get_core_type_words(List<String> *p_core_type_words) const 
 void ScriptLanguage::frame() {
 }
 
+void ScriptLanguage::set_physics_process_delta_time(double p_time) {
+}
+
+void ScriptLanguage::set_process_delta_time(double p_time) {
+}
+
 bool PlaceHolderScriptInstance::set(const StringName &p_name, const Variant &p_value) {
 	if (script->is_placeholder_fallback_enabled()) {
 		return false;
