@@ -148,7 +148,6 @@ uint64_t RendererCompositorRD::frame = 1;
 void RendererCompositorRD::finalize() {
 	memdelete(scene);
 	memdelete(canvas);
-	memdelete(effects);
 	memdelete(fog);
 	memdelete(particles_storage);
 	memdelete(light_storage);
@@ -320,9 +319,6 @@ RendererCompositorRD::RendererCompositorRD() {
 	}
 
 	scene->init();
-
-	// now we're ready to create our effects,
-	effects = memnew(EffectsRD(!scene->_render_buffers_can_be_storage()));
 }
 
 RendererCompositorRD::~RendererCompositorRD() {

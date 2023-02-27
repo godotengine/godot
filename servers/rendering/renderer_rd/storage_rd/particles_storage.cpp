@@ -47,6 +47,10 @@ ParticlesStorage::ParticlesStorage() {
 
 	MaterialStorage *material_storage = MaterialStorage::get_singleton();
 
+	/* Effects */
+
+	sort_effects = memnew(SortEffects);
+
 	/* Particles */
 
 	{
@@ -205,6 +209,11 @@ ParticlesStorage::~ParticlesStorage() {
 
 	material_storage->material_free(particles_shader.default_material);
 	material_storage->shader_free(particles_shader.default_shader);
+
+	if (sort_effects) {
+		memdelete(sort_effects);
+		sort_effects = nullptr;
+	}
 
 	singleton = nullptr;
 }
@@ -1228,7 +1237,7 @@ void ParticlesStorage::particles_set_view_axis(RID p_particles, const Vector3 &p
 		RD::get_singleton()->compute_list_dispatch_threads(compute_list, particles->amount, 1, 1);
 
 		RD::get_singleton()->compute_list_end();
-		RendererCompositorRD::get_singleton()->get_effects()->sort_buffer(particles->particles_sort_uniform_set, particles->amount);
+		sort_effects->sort_buffer(particles->particles_sort_uniform_set, particles->amount);
 	}
 
 	if (particles->trails_enabled && particles->trail_bind_poses.size() > 1) {
