@@ -70,7 +70,7 @@ Error GLTFDocumentExtensionConvertImporterMesh::import_post(Ref<GLTFState> p_sta
 		}
 		queue.pop_front();
 	}
-	while (!queue.is_empty()) {
+	while (!delete_queue.is_empty()) {
 		List<Node *>::Element *E = delete_queue.front();
 		Node *node = E->get();
 		memdelete(node);
