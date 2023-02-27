@@ -561,6 +561,8 @@ Node *ResourceImporterScene::_pre_fix_node(Node *p_node, Node *p_root, HashMap<R
 	bool isroot = p_node == p_root;
 
 	if (!isroot && _teststr(name, "noimp")) {
+		p_node->get_parent()->remove_child(p_node);
+		p_node->set_owner(nullptr);
 		memdelete(p_node);
 		return nullptr;
 	}

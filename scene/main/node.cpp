@@ -2498,6 +2498,9 @@ void Node::replace_by(Node *p_node, bool p_keep_groups) {
 		owned_by_owner[i]->set_owner(owner);
 	}
 
+	// Clears it out of the original owners 'owned' array (may want to move this to the node destructor instead).
+	set_owner(nullptr);
+
 	p_node->set_scene_file_path(get_scene_file_path());
 }
 
