@@ -153,6 +153,7 @@ public:
 	LocalVector<RegEx *> enum_regexes;
 	LocalVector<RegEx *> gdscript_function_regexes;
 	LocalVector<RegEx *> project_settings_regexes;
+	LocalVector<RegEx *> project_godot_regexes;
 	LocalVector<RegEx *> input_map_regexes;
 	LocalVector<RegEx *> gdscript_properties_regexes;
 	LocalVector<RegEx *> gdscript_signals_regexes;
@@ -173,9 +174,13 @@ public:
 			for (unsigned int current_index = 0; RenamesMap3To4::gdscript_function_renames[current_index][0]; current_index++) {
 				gdscript_function_regexes.push_back(memnew(RegEx(String("\\b") + RenamesMap3To4::gdscript_function_renames[current_index][0] + "\\b")));
 			}
-			// Project Settings.
+			// Project Settings in scripts.
 			for (unsigned int current_index = 0; RenamesMap3To4::project_settings_renames[current_index][0]; current_index++) {
 				project_settings_regexes.push_back(memnew(RegEx(String("\\b") + RenamesMap3To4::project_settings_renames[current_index][0] + "\\b")));
+			}
+			// Project Settings in project.godot.
+			for (unsigned int current_index = 0; RenamesMap3To4::project_godot_renames[current_index][0]; current_index++) {
+				project_godot_regexes.push_back(memnew(RegEx(String("\\b") + RenamesMap3To4::project_godot_renames[current_index][0] + "\\b")));
 			}
 			// Input Map.
 			for (unsigned int current_index = 0; RenamesMap3To4::input_map_renames[current_index][0]; current_index++) {
@@ -251,6 +256,9 @@ public:
 			memdelete(regex);
 		}
 		for (RegEx *regex : project_settings_regexes) {
+			memdelete(regex);
+		}
+		for (RegEx *regex : project_godot_regexes) {
 			memdelete(regex);
 		}
 		for (RegEx *regex : input_map_regexes) {
@@ -405,7 +413,7 @@ bool ProjectConverter3To4::convert() {
 
 				custom_rename(lines, "\\.shader", ".gdshader");
 			} else if (file_name.ends_with("project.godot")) {
-				rename_common(RenamesMap3To4::project_settings_renames, reg_container.project_settings_regexes, lines);
+				rename_common(RenamesMap3To4::project_godot_renames, reg_container.project_godot_regexes, lines);
 				rename_common(RenamesMap3To4::builtin_types_renames, reg_container.builtin_types_regexes, lines);
 				rename_common(RenamesMap3To4::input_map_renames, reg_container.input_map_regexes, lines);
 			} else if (file_name.ends_with(".csproj")) {
@@ -577,7 +585,7 @@ bool ProjectConverter3To4::validate_conversion() {
 
 				changed_elements.append_array(check_for_custom_rename(lines, "\\.shader", ".gdshader"));
 			} else if (file_name.ends_with("project.godot")) {
-				changed_elements.append_array(check_for_rename_common(RenamesMap3To4::project_settings_renames, reg_container.project_settings_regexes, lines));
+				changed_elements.append_array(check_for_rename_common(RenamesMap3To4::project_godot_renames, reg_container.project_godot_regexes, lines));
 				changed_elements.append_array(check_for_rename_common(RenamesMap3To4::builtin_types_renames, reg_container.builtin_types_regexes, lines));
 				changed_elements.append_array(check_for_rename_common(RenamesMap3To4::input_map_renames, reg_container.input_map_regexes, lines));
 			} else if (file_name.ends_with(".csproj")) {
@@ -1106,6 +1114,7 @@ bool ProjectConverter3To4::test_array_names() {
 	valid = valid && test_single_array(RenamesMap3To4::shaders_renames, true);
 	valid = valid && test_single_array(RenamesMap3To4::gdscript_signals_renames);
 	valid = valid && test_single_array(RenamesMap3To4::project_settings_renames);
+	valid = valid && test_single_array(RenamesMap3To4::project_godot_renames);
 	valid = valid && test_single_array(RenamesMap3To4::input_map_renames);
 	valid = valid && test_single_array(RenamesMap3To4::builtin_types_renames);
 	valid = valid && test_single_array(RenamesMap3To4::color_renames);

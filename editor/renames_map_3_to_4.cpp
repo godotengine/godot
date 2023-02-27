@@ -1289,6 +1289,9 @@ const char *RenamesMap3To4::csharp_signals_renames[][2] = {
 };
 
 const char *RenamesMap3To4::project_settings_renames[][2] = {
+	// Project setting paths in scripts include the category, but in project.godot,
+	// the category is the section delimiter, so we need to support the paths without it.
+	// The project.godot remaps are defined in the project_godot_renames, keep them in sync!
 	{ "audio/channel_disable_threshold_db", "audio/buses/channel_disable_threshold_db" },
 	{ "audio/channel_disable_time", "audio/buses/channel_disable_time" },
 	{ "audio/default_bus_layout", "audio/buses/default_bus_layout" },
@@ -1298,6 +1301,10 @@ const char *RenamesMap3To4::project_settings_renames[][2] = {
 	{ "audio/output_latency", "audio/driver/output_latency" },
 	{ "audio/output_latency.web", "audio/driver/output_latency.web" },
 	{ "audio/video_delay_compensation_ms", "audio/video/video_delay_compensation_ms" },
+	{ "display/window/size/width", "display/window/size/viewport_width" },
+	{ "display/window/size/height", "display/window/size/viewport_height" },
+	{ "display/window/size/test_width", "display/window/size/window_width_override" },
+	{ "display/window/size/test_height", "display/window/size/window_height_override" },
 	{ "display/window/vsync/use_vsync", "display/window/vsync/vsync_mode" },
 	{ "editor/main_run_args", "editor/run/main_run_args" },
 	{ "gui/common/swap_ok_cancel", "gui/common/swap_cancel_ok" },
@@ -1325,10 +1332,52 @@ const char *RenamesMap3To4::project_settings_renames[][2] = {
 	{ "rendering/quality/shadow_atlas/size.mobile", "rendering/lights_and_shadows/shadow_atlas/size.mobile" },
 	{ "rendering/vram_compression/import_etc2", "rendering/textures/vram_compression/import_etc2_astc" },
 	{ "rendering/vram_compression/import_s3tc", "rendering/textures/vram_compression/import_s3tc_bptc" },
+
+	{ nullptr, nullptr },
+};
+
+const char *RenamesMap3To4::project_godot_renames[][2] = {
+	// Should be kept in sync with project_settings_renames.
+	{ "channel_disable_threshold_db", "buses/channel_disable_threshold_db" },
+	{ "channel_disable_time", "buses/channel_disable_time" },
+	{ "default_bus_layout", "buses/default_bus_layout" },
+	// { "driver", "driver/driver" }, -- Risk of conflicts.
+	{ "enable_audio_input", "driver/enable_input" },
+	// { "mix_rate", "driver/mix_rate" }, -- Risk of conflicts.
+	{ "output_latency", "driver/output_latency" },
+	{ "output_latency.web", "driver/output_latency.web" },
+	{ "video_delay_compensation_ms", "video/video_delay_compensation_ms" },
 	{ "window/size/width", "window/size/viewport_width" },
 	{ "window/size/height", "window/size/viewport_height" },
 	{ "window/size/test_width", "window/size/window_width_override" },
 	{ "window/size/test_height", "window/size/window_height_override" },
+	{ "window/vsync/use_vsync", "window/vsync/vsync_mode" },
+	{ "main_run_args", "run/main_run_args" },
+	{ "common/swap_ok_cancel", "common/swap_cancel_ok" },
+	{ "limits/debugger_stdout/max_chars_per_second", "limits/debugger/max_chars_per_second" },
+	{ "limits/debugger_stdout/max_errors_per_second", "limits/debugger/max_errors_per_second" },
+	{ "limits/debugger_stdout/max_messages_per_frame", "limits/debugger/max_queued_messages" },
+	{ "limits/debugger_stdout/max_warnings_per_second", "limits/debugger/max_warnings_per_second" },
+	{ "ssl/certificates", "tls/certificate_bundle_override" },
+	{ "2d/thread_model", "2d/run_on_thread" }, // TODO: Not sure.
+	{ "environment/default_clear_color", "environment/defaults/default_clear_color" },
+	{ "environment/default_environment", "environment/defaults/default_environment" },
+	{ "quality/depth_prepass/disable_for_vendors", "driver/depth_prepass/disable_for_vendors" },
+	{ "quality/depth_prepass/enable", "driver/depth_prepass/enable" },
+	{ "quality/shading/force_blinn_over_ggx", "shading/overrides/force_blinn_over_ggx" },
+	{ "quality/shading/force_blinn_over_ggx.mobile", "shading/overrides/force_blinn_over_ggx.mobile" },
+	{ "quality/shading/force_lambert_over_burley", "shading/overrides/force_lambert_over_burley" },
+	{ "quality/shading/force_lambert_over_burley.mobile", "shading/overrides/force_lambert_over_burley.mobile" },
+	{ "quality/shading/force_vertex_shading", "shading/overrides/force_vertex_shading" },
+	{ "quality/shading/force_vertex_shading.mobile", "shading/overrides/force_vertex_shading.mobile" },
+	{ "quality/shadow_atlas/quadrant_0_subdiv", "lights_and_shadows/shadow_atlas/quadrant_0_subdiv" },
+	{ "quality/shadow_atlas/quadrant_1_subdiv", "lights_and_shadows/shadow_atlas/quadrant_1_subdiv" },
+	{ "quality/shadow_atlas/quadrant_2_subdiv", "lights_and_shadows/shadow_atlas/quadrant_2_subdiv" },
+	{ "quality/shadow_atlas/quadrant_3_subdiv", "lights_and_shadows/shadow_atlas/quadrant_3_subdiv" },
+	{ "quality/shadow_atlas/size", "lights_and_shadows/shadow_atlas/size" },
+	{ "quality/shadow_atlas/size.mobile", "lights_and_shadows/shadow_atlas/size.mobile" },
+	{ "vram_compression/import_etc2", "textures/vram_compression/import_etc2_astc" },
+	{ "vram_compression/import_s3tc", "textures/vram_compression/import_s3tc_bptc" },
 
 	{ nullptr, nullptr },
 };
