@@ -215,7 +215,7 @@ static Ref<Image> basis_universal_unpacker_ptr(const uint8_t *p_data, int p_size
 		case BASIS_DECOMPRESS_RG_AS_RA: {
 			if (RS::get_singleton()->has_os_feature("s3tc")) {
 				format = basist::transcoder_texture_format::cTFBC3; // get this from renderer
-				imgfmt = Image::FORMAT_DXT5_RA_AS_RG;
+				imgfmt = Image::FORMAT_DXT5;
 			} else if (RS::get_singleton()->has_os_feature("etc2")) {
 				format = basist::transcoder_texture_format::cTFETC2; // get this from renderer
 				imgfmt = Image::FORMAT_ETC2_RGBA8;
