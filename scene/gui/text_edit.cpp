@@ -1548,7 +1548,7 @@ void TextEdit::_notification(int p_what) {
 				ime_text = DisplayServer::get_singleton()->ime_get_text();
 				ime_selection = DisplayServer::get_singleton()->ime_get_selection();
 
-				if (!ime_text.is_empty()) {
+				if (!ime_text.is_empty() && has_selection()) {
 					delete_selection();
 				}
 
