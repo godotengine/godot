@@ -865,6 +865,15 @@
 				[b]Note:[/b] This method is implemented on Android and iOS.
 			</description>
 		</method>
+		<method name="screen_get_pixel" qualifiers="const">
+			<return type="Color" />
+			<param index="0" name="position" type="Vector2i" />
+			<description>
+				Returns color of the display pixel at the [param position].
+				[b]Note:[/b] This method is implemented on Linux (X11), macOS, and Windows.
+				[b]Note:[/b] On macOS, this method requires "Screen Recording" permission, if permission is not granted it will return desktop wallpaper color.
+			</description>
+		</method>
 		<method name="screen_get_position" qualifiers="const">
 			<return type="Vector2i" />
 			<param index="0" name="screen" type="int" default="-1" />
@@ -1542,6 +1551,9 @@
 		</constant>
 		<constant name="FEATURE_EXTEND_TO_TITLE" value="20" enum="Feature">
 			Display server supports expanding window content to the title. See [constant WINDOW_FLAG_EXTEND_TO_TITLE]. [b]macOS[/b]
+		</constant>
+		<constant name="FEATURE_SCREEN_CAPTURE" value="21" enum="Feature">
+			Display server supports reading screen pixels. See [method screen_get_pixel].
 		</constant>
 		<constant name="MOUSE_MODE_VISIBLE" value="0" enum="MouseMode">
 			Makes the mouse cursor visible if it is hidden.
