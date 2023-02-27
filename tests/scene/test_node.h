@@ -365,8 +365,6 @@ TEST_CASE("[SceneTree][Node] Testing node operations with a more complex simple 
 	}
 
 	SUBCASE("Replaced nodes should be be removed and the replacing node added") {
-		SceneTree::get_singleton()->get_root()->remove_child(node2);
-
 		node1->replace_by(node2);
 
 		CHECK_EQ(SceneTree::get_singleton()->get_root()->get_child_count(), 1);
@@ -382,8 +380,6 @@ TEST_CASE("[SceneTree][Node] Testing node operations with a more complex simple 
 	}
 
 	SUBCASE("Replacing nodes should keep the groups of the replaced nodes") {
-		SceneTree::get_singleton()->get_root()->remove_child(node2);
-
 		node1->add_to_group("nodes");
 		node1->replace_by(node2, true);
 
