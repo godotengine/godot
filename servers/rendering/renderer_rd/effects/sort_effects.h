@@ -1,5 +1,5 @@
 /**************************************************************************/
-/*  effects_rd.h                                                          */
+/*  sort_effects.h                                                        */
 /**************************************************************************/
 /*                         This file is part of:                          */
 /*                             GODOT ENGINE                               */
@@ -28,35 +28,19 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                 */
 /**************************************************************************/
 
-#ifndef EFFECTS_RD_H
-#define EFFECTS_RD_H
+#ifndef SORT_EFFECTS_RD_H
+#define SORT_EFFECTS_RD_H
 
-#include "core/math/projection.h"
 #include "servers/rendering/renderer_rd/pipeline_cache_rd.h"
-#include "servers/rendering/renderer_rd/shaders/roughness_limiter.glsl.gen.h"
-#include "servers/rendering/renderer_rd/shaders/sort.glsl.gen.h"
+#include "servers/rendering/renderer_rd/shaders/effects/sort.glsl.gen.h"
 #include "servers/rendering/renderer_scene_render.h"
 
 #include "servers/rendering_server.h"
 
-class EffectsRD {
+namespace RendererRD {
+
+class SortEffects {
 private:
-	bool prefer_raster_effects;
-
-	struct RoughnessLimiterPushConstant {
-		int32_t screen_size[2];
-		float curve;
-		uint32_t pad;
-	};
-
-	struct RoughnessLimiter {
-		RoughnessLimiterPushConstant push_constant;
-		RoughnessLimiterShaderRD shader;
-		RID shader_version;
-		RID pipeline;
-
-	} roughness_limiter;
-
 	enum SortMode {
 		SORT_MODE_BLOCK,
 		SORT_MODE_STEP,
@@ -64,70 +48,24 @@ private:
 		SORT_MODE_MAX
 	};
 
-	struct Sort {
-		struct PushConstant {
-			uint32_t total_elements;
-			uint32_t pad[3];
-			int32_t job_params[4];
-		};
-
-		SortShaderRD shader;
-		RID shader_version;
-		RID pipelines[SORT_MODE_MAX];
-	} sort;
-
-	RID default_sampler;
-	RID default_mipmap_sampler;
-	RID index_buffer;
-	RID index_array;
-
-	HashMap<RID, RID> texture_to_uniform_set_cache;
-	HashMap<RID, RID> input_to_uniform_set_cache;
-
-	HashMap<RID, RID> image_to_uniform_set_cache;
-
-	struct TexturePair {
-		RID texture1;
-		RID texture2;
-		_FORCE_INLINE_ bool operator<(const TexturePair &p_pair) const {
-			if (texture1 == p_pair.texture1) {
-				return texture2 < p_pair.texture2;
-			} else {
-				return texture1 < p_pair.texture1;
-			}
-		}
+	struct PushConstant {
+		uint32_t total_elements;
+		uint32_t pad[3];
+		int32_t job_params[4];
 	};
 
-	struct TextureSamplerPair {
-		RID texture;
-		RID sampler;
-		_FORCE_INLINE_ bool operator<(const TextureSamplerPair &p_pair) const {
-			if (texture == p_pair.texture) {
-				return sampler < p_pair.sampler;
-			} else {
-				return texture < p_pair.texture;
-			}
-		}
-	};
+	SortShaderRD shader;
+	RID shader_version;
+	RID pipelines[SORT_MODE_MAX];
 
-	RBMap<TexturePair, RID> texture_pair_to_uniform_set_cache;
-	RBMap<RID, RID> texture_to_compute_uniform_set_cache;
-	RBMap<TexturePair, RID> texture_pair_to_compute_uniform_set_cache;
-	RBMap<TexturePair, RID> image_pair_to_compute_uniform_set_cache;
-	RBMap<TextureSamplerPair, RID> texture_sampler_to_compute_uniform_set_cache;
-
-	RID _get_uniform_set_from_image(RID p_texture);
-	RID _get_compute_uniform_set_from_texture(RID p_texture, bool p_use_mipmaps = false);
-
+protected:
 public:
-	bool get_prefer_raster_effects();
-
-	void roughness_limit(RID p_source_normal, RID p_roughness, const Size2i &p_size, float p_curve);
+	SortEffects();
+	~SortEffects();
 
 	void sort_buffer(RID p_uniform_set, int p_size);
-
-	EffectsRD(bool p_prefer_raster_effects);
-	~EffectsRD();
 };
 
-#endif // EFFECTS_RD_H
+} // namespace RendererRD
+
+#endif // SORT_EFFECTS_RD_H
