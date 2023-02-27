@@ -67,7 +67,11 @@
 
 #ifdef TOOLS_ENABLED
 static bool _create_project_solution_if_needed() {
-	CRASH_COND(CSharpLanguage::get_singleton()->get_godotsharp_editor() == nullptr);
+	ERR_FAIL_COND_V_MSG(GDMono::get_singleton()->is_runtime_initialized(), false,
+			"Cannot create C# project because the .NET runtime is not loaded.");
+	ERR_FAIL_COND_V_MSG(CSharpLanguage::get_singleton()->get_godotsharp_editor() == nullptr, false,
+			"Cannot create C# project because the editor plugin is not initialized.");
+
 	return CSharpLanguage::get_singleton()->get_godotsharp_editor()->call("CreateProjectSolutionIfNeeded");
 }
 #endif
@@ -92,6 +96,109 @@ String CSharpLanguage::get_extension() const {
 	return "cs";
 }
 
+#ifdef TOOLS_ENABLED
+void CSharpLanguage::_editor_init_callback() {
+	CSharpDepsDownloader *csharp_deps_downloader = memnew(CSharpDepsDownloader);
+	EditorNode::get_singleton()->add_editor_plugin(csharp_deps_downloader);
+	CSharpLanguage::get_singleton()->csharp_deps_downloader = csharp_deps_downloader;
+
+	CSharpLanguage::get_singleton()->_try_load_godotsharp_editor();
+}
+
+void CSharpLanguage::_try_load_godotsharp_editor() {
+	// Load GodotTools and initialize GodotSharpEditor
+
+	if (!GDMono::get_singleton()->is_runtime_initialized()) {
+		if (gdmono->did_previously_fail_to_initialize_hostfxr() && !gdmono->is_missing_runtime_config()) {
+			_show_missing_dotnet_sdk_message();
+		}
+
+		return;
+	}
+
+	String godot_tools_assembly_path = GodotSharpDirs::get_data_editor_tools_dir().path_join("GodotTools.dll");
+
+	if (!FileAccess::exists(godot_tools_assembly_path)) {
+		print_line("The C# editor plugin is missing.");
+		return;
+	}
+
+	int32_t interop_funcs_size = 0;
+	const void **interop_funcs = godotsharp::get_editor_interop_funcs(interop_funcs_size);
+
+	Object *editor_plugin_obj = GDMono::get_singleton()->get_plugin_callbacks().LoadToolsAssemblyCallback(
+			godot_tools_assembly_path.utf16(),
+			interop_funcs, interop_funcs_size);
+	ERR_FAIL_COND_MSG(editor_plugin_obj == nullptr, "Cannot initialize C# editor plugin.");
+
+	EditorPlugin *editor_plugin = Object::cast_to<EditorPlugin>(editor_plugin_obj);
+	CRASH_COND(editor_plugin == nullptr);
+
+	// Add plugin to EditorNode and enable it
+	EditorNode::add_editor_plugin(editor_plugin);
+	ED_SHORTCUT("mono/build_solution", TTR("Build Solution"), KeyModifierMask::ALT | Key::B);
+	ED_SHORTCUT_OVERRIDE("mono/build_solution", "macos", KeyModifierMask::META | KeyModifierMask::CTRL | Key::B);
+	editor_plugin->enable_plugin();
+
+	godotsharp_editor = editor_plugin;
+}
+
+void CSharpLanguage::_show_missing_dotnet_sdk_message() {
+	OS::get_singleton()->alert(
+			TTR("Unable to load .NET runtime, no compatible version was found.\n"
+				"C# features will be disabled.\n\n"
+				"Please install the .NET SDK 6.0 or later from https://dotnet.microsoft.com/en-us/download and restart Godot."),
+			TTR("Failed to load .NET runtime"));
+}
+
+bool CSharpLanguage::_is_missing_godotsharp_dependencies() {
+	String godot_plugins_assembly_path = GodotSharpDirs::get_api_assemblies_dir().path_join("GodotPlugins.dll");
+	String godotsharp_assembly_path = GodotSharpDirs::get_api_assemblies_dir().path_join("GodotSharp.dll");
+	String godotsharp_editor_assembly_path = GodotSharpDirs::get_api_assemblies_dir().path_join("GodotSharpEditor.dll");
+	String godot_tools_assembly_path = GodotSharpDirs::get_data_editor_tools_dir().path_join("GodotTools.dll");
+
+	return !FileAccess::exists(godot_plugins_assembly_path) ||
+			!FileAccess::exists(godotsharp_assembly_path) ||
+			!FileAccess::exists(godotsharp_editor_assembly_path) ||
+			!FileAccess::exists(godot_tools_assembly_path);
+}
+
+void CSharpLanguage::_request_godotsharp_dependencies() {
+	// TODO: Url
+	csharp_deps_downloader->download_deps("URL_GOES_HERE");
+}
+
+void CSharpLanguage::ensure_dotnet_initialized() {
+	if (gdmono->did_previously_fail_to_initialize_hostfxr() && !gdmono->is_missing_runtime_config()) {
+		// We previously failed to load hostfxr from the .NET Sdk. We don't further attempt to load it,
+		// as it may cause slow-downs or results in spam of error messages. This may change in the future.
+		return;
+	}
+
+	if (gdmono->is_runtime_initialized() && get_godotsharp_editor() != nullptr) {
+		// Everything initialized
+		return;
+	}
+
+	if (_is_missing_godotsharp_dependencies()) {
+		_request_godotsharp_dependencies();
+	} else {
+		if (!gdmono->is_runtime_initialized()) {
+			gdmono->initialize();
+
+			if (!gdmono->is_runtime_initialized() && gdmono->did_previously_fail_to_initialize_hostfxr()) {
+				_show_missing_dotnet_sdk_message();
+				return;
+			}
+		}
+
+		if (get_godotsharp_editor() == nullptr) {
+			_try_load_godotsharp_editor();
+		}
+	}
+}
+#endif
+
 void CSharpLanguage::init() {
 #ifdef DEBUG_METHODS_ENABLED
 	if (OS::get_singleton()->get_cmdline_args().find("--class-db-json")) {
@@ -114,16 +221,16 @@ void CSharpLanguage::init() {
 	GLOBAL_DEF("dotnet/project/solution_directory", "");
 #endif
 
-	gdmono = memnew(GDMono);
-	gdmono->initialize();
-
 #ifdef TOOLS_ENABLED
-	if (gdmono->is_runtime_initialized()) {
-		gdmono->initialize_load_assemblies();
-	}
-
 	EditorNode::add_init_callback(&_editor_init_callback);
 #endif
+
+	gdmono = memnew(GDMono);
+
+	// Initialize only if there are signs that the project uses C#
+	if (gdmono->should_initialize()) {
+		gdmono->initialize();
+	}
 }
 
 void CSharpLanguage::finish() {
@@ -664,10 +771,16 @@ void CSharpLanguage::reload_all_scripts() {
 void CSharpLanguage::reload_tool_script(const Ref<Script> &p_script, bool p_soft_reload) {
 	(void)p_script; // UNUSED
 
+	if (!GDMono::get_singleton()->is_runtime_initialized()) {
+		return;
+	}
+
 	CRASH_COND(!Engine::get_singleton()->is_editor_hint());
 
 #ifdef TOOLS_ENABLED
-	get_godotsharp_editor()->get_node(NodePath("HotReloadAssemblyWatcher"))->call("RestartTimer");
+	if (get_godotsharp_editor() != nullptr) {
+		get_godotsharp_editor()->get_node(NodePath("HotReloadAssemblyWatcher"))->call("RestartTimer");
+	}
 #endif
 
 #ifdef GD_MONO_HOT_RELOAD
@@ -1078,10 +1191,15 @@ void CSharpLanguage::get_recognized_extensions(List<String> *p_extensions) const
 
 #ifdef TOOLS_ENABLED
 Error CSharpLanguage::open_in_external_editor(const Ref<Script> &p_script, int p_line, int p_col) {
+	ERR_FAIL_COND_V(get_godotsharp_editor() == nullptr, ERR_UNAVAILABLE);
 	return (Error)(int)get_godotsharp_editor()->call("OpenInExternalEditor", p_script, p_line, p_col);
 }
 
 bool CSharpLanguage::overrides_external_editor() {
+	if (get_godotsharp_editor() == nullptr) {
+		return false;
+	}
+
 	return get_godotsharp_editor()->call("OverridesExternalEditor");
 }
 #endif
@@ -1123,31 +1241,6 @@ void CSharpLanguage::_on_scripts_domain_about_to_unload() {
 	}
 #endif
 }
-
-#ifdef TOOLS_ENABLED
-void CSharpLanguage::_editor_init_callback() {
-	// Load GodotTools and initialize GodotSharpEditor
-
-	int32_t interop_funcs_size = 0;
-	const void **interop_funcs = godotsharp::get_editor_interop_funcs(interop_funcs_size);
-
-	Object *editor_plugin_obj = GDMono::get_singleton()->get_plugin_callbacks().LoadToolsAssemblyCallback(
-			GodotSharpDirs::get_data_editor_tools_dir().path_join("GodotTools.dll").utf16(),
-			interop_funcs, interop_funcs_size);
-	CRASH_COND(editor_plugin_obj == nullptr);
-
-	EditorPlugin *godotsharp_editor = Object::cast_to<EditorPlugin>(editor_plugin_obj);
-	CRASH_COND(godotsharp_editor == nullptr);
-
-	// Add plugin to EditorNode and enable it
-	EditorNode::add_editor_plugin(godotsharp_editor);
-	ED_SHORTCUT("mono/build_solution", TTR("Build Solution"), KeyModifierMask::ALT | Key::B);
-	ED_SHORTCUT_OVERRIDE("mono/build_solution", "macos", KeyModifierMask::META | KeyModifierMask::CTRL | Key::B);
-	godotsharp_editor->enable_plugin();
-
-	get_singleton()->godotsharp_editor = godotsharp_editor;
-}
-#endif
 
 void CSharpLanguage::set_language_index(int p_idx) {
 	ERR_FAIL_COND(lang_idx != -1);
@@ -2306,6 +2399,10 @@ bool CSharpScript::can_instantiate() const {
 }
 
 StringName CSharpScript::get_instance_base_type() const {
+	if (!valid) {
+		return StringName();
+	}
+
 	StringName native_name;
 	GDMonoCache::managed_callbacks.ScriptManagerBridge_GetScriptNativeName(this, &native_name);
 	return native_name;
@@ -2509,7 +2606,8 @@ Error CSharpScript::reload(bool p_keep_state) {
 
 	String script_path = get_path();
 
-	valid = GDMonoCache::managed_callbacks.ScriptManagerBridge_AddScriptBridge(this, &script_path);
+	valid = GDMonoCache::godot_api_cache_updated &&
+			GDMonoCache::managed_callbacks.ScriptManagerBridge_AddScriptBridge(this, &script_path);
 
 	if (valid) {
 #ifdef DEBUG_ENABLED
@@ -2706,6 +2804,8 @@ void CSharpScript::get_members(HashSet<StringName> *p_members) {
 /*************** RESOURCE ***************/
 
 Ref<Resource> ResourceFormatLoaderCSharpScript::load(const String &p_path, const String &p_original_path, Error *r_error, bool p_use_sub_threads, float *r_progress, CacheMode p_cache_mode) {
+	CSharpLanguage::get_singleton()->ensure_dotnet_initialized();
+
 	if (r_error) {
 		*r_error = ERR_FILE_CANT_OPEN;
 	}
@@ -2749,6 +2849,8 @@ String ResourceFormatLoaderCSharpScript::get_resource_type(const String &p_path)
 }
 
 Error ResourceFormatSaverCSharpScript::save(const Ref<Resource> &p_resource, const String &p_path, uint32_t p_flags) {
+	CSharpLanguage::get_singleton()->ensure_dotnet_initialized();
+
 	Ref<CSharpScript> sqscr = p_resource;
 	ERR_FAIL_COND_V(sqscr.is_null(), ERR_INVALID_PARAMETER);
 

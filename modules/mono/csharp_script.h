@@ -42,6 +42,8 @@
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_plugin.h"
+
+#include "modules/mono/editor/csharp_deps_downloader.h"
 #endif
 
 class CSharpScript;
@@ -348,8 +350,15 @@ class CSharpLanguage : public ScriptLanguage {
 
 #ifdef TOOLS_ENABLED
 	EditorPlugin *godotsharp_editor = nullptr;
+	CSharpDepsDownloader *csharp_deps_downloader = nullptr;
 
 	static void _editor_init_callback();
+	void _try_load_godotsharp_editor();
+
+	bool _is_missing_godotsharp_dependencies();
+	void _request_godotsharp_dependencies();
+
+	void _show_missing_dotnet_sdk_message();
 #endif
 
 	static void *_instance_binding_create_callback(void *p_token, void *p_instance);
@@ -415,6 +424,12 @@ public:
 	String get_extension() const override;
 	void init() override;
 	void finish() override;
+
+#ifdef TOOLS_ENABLED
+	void ensure_dotnet_initialized();
+#else
+	void ensure_dotnet_initialized() {}
+#endif
 
 	void finalize();
 

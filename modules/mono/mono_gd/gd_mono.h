@@ -59,8 +59,10 @@ struct PluginCallbacks {
 } // namespace gdmono
 
 class GDMono {
-	bool runtime_initialized;
-	bool finalizing_scripts_domain;
+	bool runtime_initialized = false;
+	bool finalizing_scripts_domain = false;
+
+	bool missing_runtime_config = false;
 
 	void *hostfxr_dll_handle = nullptr;
 	bool is_native_aot = false;
@@ -70,6 +72,7 @@ class GDMono {
 
 #ifdef TOOLS_ENABLED
 	bool _load_project_assembly();
+	void _try_load_project_assembly();
 #endif
 
 	uint64_t api_core_hash;
@@ -80,6 +83,7 @@ class GDMono {
 
 #ifdef TOOLS_ENABLED
 	gdmono::PluginCallbacks plugin_callbacks;
+	bool failed_to_initialize_hostfxr = false;
 #endif
 
 protected:
@@ -126,6 +130,10 @@ public:
 		return finalizing_scripts_domain;
 	}
 
+	_FORCE_INLINE_ bool is_missing_runtime_config() {
+		return missing_runtime_config;
+	}
+
 	_FORCE_INLINE_ const String &get_project_assembly_path() const {
 		return project_assembly_path;
 	}
@@ -137,16 +145,19 @@ public:
 	const gdmono::PluginCallbacks &get_plugin_callbacks() {
 		return plugin_callbacks;
 	}
+
+	_FORCE_INLINE_ bool did_previously_fail_to_initialize_hostfxr() {
+		return failed_to_initialize_hostfxr;
+	}
 #endif
 
 #ifdef GD_MONO_HOT_RELOAD
 	Error reload_project_assemblies();
 #endif
 
+	bool should_initialize();
+
 	void initialize();
-#ifdef TOOLS_ENABLED
-	void initialize_load_assemblies();
-#endif
 
 	GDMono();
 	~GDMono();
