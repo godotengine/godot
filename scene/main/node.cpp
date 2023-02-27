@@ -2489,7 +2489,16 @@ void Node::replace_by(Node *p_node, bool p_keep_groups) {
 		}
 	}
 
+	// this is allowed to be a nullptr
 	p_node->set_owner(owner);
+
+	// this happens when the node is a root node
+	// it has no owner so replace fails
+	// we override the owner and make it this, but only set it for children.
+	if (owner == nullptr) {
+		owner = this;
+	}
+
 	for (int i = 0; i < owned.size(); i++) {
 		owned[i]->set_owner(p_node);
 	}
