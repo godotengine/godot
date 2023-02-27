@@ -502,6 +502,9 @@ void ImportDock::_reimport_and_restart() {
 void ImportDock::_advanced_options() {
 	if (params->paths.size() == 1 && params->importer.is_valid()) {
 		params->importer->show_advanced_options(params->paths[0]);
+		// Workaround bug that causes Godot to reuse stale settings if Reimport is clicked.
+		import->set_disabled(true);
+		import_as->set_disabled(true);
 	}
 }
 void ImportDock::_reimport() {
