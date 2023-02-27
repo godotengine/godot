@@ -37,7 +37,9 @@
 		[codeblocks]
 		[gdscript]
 		var file = FileAccess.open("res://something") # File is opened and locked for use.
-		file = null # File is closed.
+		# file is closed when the variable goes out of scope
+		# although the cleaner approach would be to call file.close()
+		file = null
 		[/gdscript]
 		[csharp]
 		using var file = FileAccess.Open("res://something"); // File is opened and locked for use.
