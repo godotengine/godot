@@ -413,7 +413,6 @@ public:
 	/* LANGUAGE FUNCTIONS */
 	String get_type() const override;
 	String get_extension() const override;
-	Error execute_file(const String &p_path) override;
 	void init() override;
 	void finish() override;
 
