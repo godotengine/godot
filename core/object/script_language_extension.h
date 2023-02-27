@@ -202,7 +202,6 @@ public:
 	EXBIND0(init)
 	EXBIND0RC(String, get_type)
 	EXBIND0RC(String, get_extension)
-	EXBIND1R(Error, execute_file, const String &)
 	EXBIND0(finish)
 
 	/* EDITOR FUNCTIONS */
@@ -595,23 +594,6 @@ public:
 		GDVIRTUAL_REQUIRED_CALL(_profiling_get_accumulated_data, p_info_arr, p_info_max, ret);
 		return ret;
 	}
-
-	GDVIRTUAL1R(GDExtensionPtr<void>, _alloc_instance_binding_data, Object *)
-
-	virtual void *alloc_instance_binding_data(Object *p_object) override {
-		GDExtensionPtr<void> ret = nullptr;
-		GDVIRTUAL_REQUIRED_CALL(_alloc_instance_binding_data, p_object, ret);
-		return ret.operator void *();
-	}
-
-	GDVIRTUAL1(_free_instance_binding_data, GDExtensionPtr<void>)
-
-	virtual void free_instance_binding_data(void *p_data) override {
-		GDVIRTUAL_REQUIRED_CALL(_free_instance_binding_data, p_data);
-	}
-
-	EXBIND1(refcount_incremented_instance_binding, Object *)
-	EXBIND1R(bool, refcount_decremented_instance_binding, Object *)
 
 	EXBIND0(frame)
 
