@@ -91,11 +91,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="get_skeleton_to_node">
-			<return type="Dictionary" />
-			<description>
-			</description>
-		</method>
 		<method name="get_skeletons">
 			<return type="GLTFSkeleton[]" />
 			<description>
@@ -193,12 +188,6 @@
 		<method name="set_nodes">
 			<return type="void" />
 			<param index="0" name="nodes" type="GLTFNode[]" />
-			<description>
-			</description>
-		</method>
-		<method name="set_skeleton_to_node">
-			<return type="void" />
-			<param index="0" name="skeleton_to_node" type="Dictionary" />
 			<description>
 			</description>
 		</method>
