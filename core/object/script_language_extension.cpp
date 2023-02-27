@@ -84,7 +84,6 @@ void ScriptLanguageExtension::_bind_methods() {
 	GDVIRTUAL_BIND(_init);
 	GDVIRTUAL_BIND(_get_type);
 	GDVIRTUAL_BIND(_get_extension);
-	GDVIRTUAL_BIND(_execute_file, "path");
 	GDVIRTUAL_BIND(_finish);
 
 	GDVIRTUAL_BIND(_get_reserved_words);
@@ -143,12 +142,6 @@ void ScriptLanguageExtension::_bind_methods() {
 
 	GDVIRTUAL_BIND(_profiling_get_accumulated_data, "info_array", "info_max");
 	GDVIRTUAL_BIND(_profiling_get_frame_data, "info_array", "info_max");
-
-	GDVIRTUAL_BIND(_alloc_instance_binding_data, "object");
-	GDVIRTUAL_BIND(_free_instance_binding_data, "data");
-
-	GDVIRTUAL_BIND(_refcount_incremented_instance_binding, "object");
-	GDVIRTUAL_BIND(_refcount_decremented_instance_binding, "object");
 
 	GDVIRTUAL_BIND(_frame);
 
