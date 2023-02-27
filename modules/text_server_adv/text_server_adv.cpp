@@ -3082,6 +3082,37 @@ int64_t TextServerAdvanced::_font_get_glyph_index(const RID &p_font_rid, int64_t
 #endif
 }
 
+int64_t TextServerAdvanced::_font_get_char_from_glyph_index(const RID &p_font_rid, int64_t p_size, int64_t p_glyph_index) const {
+	FontAdvanced *fd = font_owner.get_or_null(p_font_rid);
+	ERR_FAIL_COND_V(!fd, 0);
+
+	MutexLock lock(fd->mutex);
+	Vector2i size = _get_size(fd, p_size);
+	ERR_FAIL_COND_V(!_ensure_cache_for_size(fd, size), 0);
+
+#ifdef MODULE_FREETYPE_ENABLED
+	if (fd->cache[size]->inv_glyph_map.is_empty()) {
+		FT_Face face = fd->cache[size]->face;
+		FT_UInt gindex;
+		FT_ULong charcode = FT_Get_First_Char(face, &gindex);
+		while (gindex != 0) {
+			if (charcode != 0) {
+				fd->cache[size]->inv_glyph_map[gindex] = charcode;
+			}
+			charcode = FT_Get_Next_Char(face, charcode, &gindex);
+		}
+	}
+
+	if (fd->cache[size]->inv_glyph_map.has(p_glyph_index)) {
+		return fd->cache[size]->inv_glyph_map[p_glyph_index];
+	} else {
+		return 0;
+	}
+#else
+	return p_glyph_index;
+#endif
+}
+
 bool TextServerAdvanced::_font_has_char(const RID &p_font_rid, int64_t p_char) const {
 	FontAdvanced *fd = font_owner.get_or_null(p_font_rid);
 	ERR_FAIL_COND_V_MSG((p_char >= 0xd800 && p_char <= 0xdfff) || (p_char > 0x10ffff), false, "Unicode parsing error: Invalid unicode codepoint " + String::num_int64(p_char, 16) + ".");

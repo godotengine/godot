@@ -99,6 +99,14 @@
 			<description>
 			</description>
 		</method>
+		<method name="_font_get_char_from_glyph_index" qualifiers="virtual const">
+			<return type="int" />
+			<param index="0" name="font_rid" type="RID" />
+			<param index="1" name="size" type="int" />
+			<param index="2" name="glyph_index" type="int" />
+			<description>
+			</description>
+		</method>
 		<method name="_font_get_descent" qualifiers="virtual const">
 			<return type="float" />
 			<param index="0" name="font_rid" type="RID" />
