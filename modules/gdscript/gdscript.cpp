@@ -2027,11 +2027,6 @@ String GDScriptLanguage::get_extension() const {
 	return "gd";
 }
 
-Error GDScriptLanguage::execute_file(const String &p_path) {
-	// ??
-	return OK;
-}
-
 void GDScriptLanguage::finish() {
 	if (_call_stack) {
 		memdelete_arr(_call_stack);
