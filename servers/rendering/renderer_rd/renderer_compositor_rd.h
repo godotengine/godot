@@ -33,7 +33,6 @@
 
 #include "core/os/os.h"
 #include "servers/rendering/renderer_compositor.h"
-#include "servers/rendering/renderer_rd/effects_rd.h"
 #include "servers/rendering/renderer_rd/environment/fog.h"
 #include "servers/rendering/renderer_rd/forward_clustered/render_forward_clustered.h"
 #include "servers/rendering/renderer_rd/forward_mobile/render_forward_mobile.h"
@@ -60,7 +59,6 @@ protected:
 	RendererRD::ParticlesStorage *particles_storage = nullptr;
 	RendererRD::TextureStorage *texture_storage = nullptr;
 	RendererRD::Fog *fog = nullptr;
-	EffectsRD *effects = nullptr;
 	RendererSceneRenderRD *scene = nullptr;
 
 	enum BlitMode {
@@ -115,7 +113,6 @@ public:
 		return scene->get_gi();
 	}
 	RendererFog *get_fog() { return fog; }
-	EffectsRD *get_effects() { return effects; }
 	RendererCanvasRender *get_canvas() { return canvas; }
 	RendererSceneRender *get_scene() { return scene; }
 
