@@ -4558,6 +4558,7 @@ void CanvasItemEditor::_popup_callback(int p_op) {
 				}
 				undo_redo->add_undo_method(viewport, "queue_redraw");
 				undo_redo->commit_action();
+				viewport->queue_redraw();
 			}
 
 		} break;
