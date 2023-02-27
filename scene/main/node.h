@@ -236,6 +236,8 @@ private:
 	void _release_unique_name_in_owner();
 	void _acquire_unique_name_in_owner();
 
+	void _clean_up_owner();
+
 	_FORCE_INLINE_ void _update_children_cache() const {
 		if (unlikely(data.children_cache_dirty)) {
 			_update_children_cache_impl();
