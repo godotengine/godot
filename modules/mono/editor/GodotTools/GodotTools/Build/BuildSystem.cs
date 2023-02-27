@@ -41,6 +41,12 @@ namespace GodotTools.Build
             startInfo.EnvironmentVariables["DOTNET_CLI_UI_LANGUAGE"]
                 = ((string)editorSettings.GetSetting("interface/editor/editor_language")).Replace('_', '-');
 
+            if (OperatingSystem.IsWindows())
+            {
+                startInfo.StandardOutputEncoding = Encoding.UTF8;
+                startInfo.StandardErrorEncoding = Encoding.UTF8;
+            }
+
             // Needed when running from Developer Command Prompt for VS
             RemovePlatformVariable(startInfo.EnvironmentVariables);
 
@@ -104,6 +110,12 @@ namespace GodotTools.Build
             startInfo.UseShellExecute = false;
             startInfo.EnvironmentVariables["DOTNET_CLI_UI_LANGUAGE"]
                 = ((string)editorSettings.GetSetting("interface/editor/editor_language")).Replace('_', '-');
+
+            if (OperatingSystem.IsWindows())
+            {
+                startInfo.StandardOutputEncoding = Encoding.UTF8;
+                startInfo.StandardErrorEncoding = Encoding.UTF8;
+            }
 
             // Needed when running from Developer Command Prompt for VS
             RemovePlatformVariable(startInfo.EnvironmentVariables);
