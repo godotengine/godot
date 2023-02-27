@@ -1598,6 +1598,8 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 				continue;
 			}
 
+			// TODO: Should we skip virtual methods? Virtual methods should already have been called from the derived class overridden implementation of this method.
+
 			// We also call HasGodotClassMethod to ensure the method is overridden and avoid calling
 			// the stub implementation. This solution adds some extra overhead to calls, but it's
 			// much simpler than other solutions. This won't be a problem once we move to function
@@ -1640,6 +1642,11 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			}
 
 			output << ");\n";
+
+			if (itype.cname == name_cache.type_Node && (imethod.cname == name_cache.method_process || imethod.cname == name_cache.method_physics_process)) {
+				// Call the `float` overload as well (although this should be unreachable, see TODO above)
+				output << INDENT3 << imethod.proxy_name << "(VariantUtils.ConvertTo<float>(args[0]));\n";
+			}
 
 			if (imethod.return_type.cname != name_cache.type_void) {
 				const TypeInterface *return_type = _get_type_or_null(imethod.return_type);
@@ -2091,6 +2098,12 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 
 		if (default_args_doc.get_string_length()) {
 			p_output.append(default_args_doc.as_string());
+		}
+
+		if (p_itype.cname == name_cache.type_Node && (p_imethod.cname == name_cache.method_process || p_imethod.cname == name_cache.method_physics_process)) {
+			// We only want the `float` overload of `_Process` and `_PhysicsProcess` to be included in code-completion suggestions.
+			// The `float` overload is declared manually. The generated one is the `double` overload, so we hide it with this attribute.
+			p_output.append(MEMBER_BEGIN "[System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]");
 		}
 
 		if (p_imethod.is_deprecated) {
@@ -3251,6 +3264,18 @@ bool BindingsGenerator::_populate_object_type_interfaces() {
 
 		class_list.pop_front();
 	}
+
+	// Mark the `double` overload of `_Physics` and `_PhysicsProcess` as deprecated, to discourage its use.
+
+	MethodInterface *process_imethod = const_cast<MethodInterface *>(obj_types.get("Node").find_method_by_name(name_cache.method_process));
+	ERR_FAIL_COND_V(process_imethod == nullptr, false);
+	process_imethod->is_deprecated = true;
+	process_imethod->deprecation_message = "Use the float overload instead.";
+
+	MethodInterface *physics_process_imethod = const_cast<MethodInterface *>(obj_types.get("Node").find_method_by_name(name_cache.method_physics_process));
+	ERR_FAIL_COND_V(physics_process_imethod == nullptr, false);
+	physics_process_imethod->is_deprecated = true;
+	physics_process_imethod->deprecation_message = "Use the float overload instead.";
 
 	return true;
 }
