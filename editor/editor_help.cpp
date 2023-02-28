@@ -2343,6 +2343,7 @@ EditorHelp::EditorHelp() {
 	status_bar->add_child(toggle_scripts_button);
 
 	class_desc->set_selection_enabled(true);
+	class_desc->set_context_menu_enabled(true);
 
 	class_desc->hide();
 }

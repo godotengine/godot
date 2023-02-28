@@ -380,6 +380,7 @@ EditorLog::EditorLog() {
 	log->set_use_bbcode(true);
 	log->set_scroll_follow(true);
 	log->set_selection_enabled(true);
+	log->set_context_menu_enabled(true);
 	log->set_focus_mode(FOCUS_CLICK);
 	log->set_v_size_flags(SIZE_EXPAND_FILL);
 	log->set_h_size_flags(SIZE_EXPAND_FILL);

@@ -8072,6 +8072,7 @@ EditorNode::EditorNode() {
 
 	execute_outputs = memnew(RichTextLabel);
 	execute_outputs->set_selection_enabled(true);
+	execute_outputs->set_context_menu_enabled(true);
 	execute_output_dialog = memnew(AcceptDialogAutoReparent);
 	execute_output_dialog->add_child(execute_outputs);
 	execute_output_dialog->set_title("");

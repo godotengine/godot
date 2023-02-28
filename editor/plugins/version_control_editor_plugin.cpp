@@ -1504,6 +1504,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	diff->set_v_size_flags(TextEdit::SIZE_EXPAND_FILL);
 	diff->set_use_bbcode(true);
 	diff->set_selection_enabled(true);
+	diff->set_context_menu_enabled(true);
 	version_control_dock->add_child(diff);
 
 	_update_set_up_warning("");
