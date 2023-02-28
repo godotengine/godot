@@ -624,6 +624,10 @@ void TileMap::set_layer_name(int p_layer, String p_name) {
 		p_layer = layers.size() + p_layer;
 	}
 	ERR_FAIL_INDEX(p_layer, (int)layers.size());
+
+	if (layers[p_layer].name == p_name) {
+		return;
+	}
 	layers[p_layer].name = p_name;
 	emit_signal(SNAME("changed"));
 }
@@ -638,6 +642,10 @@ void TileMap::set_layer_enabled(int p_layer, bool p_enabled) {
 		p_layer = layers.size() + p_layer;
 	}
 	ERR_FAIL_INDEX(p_layer, (int)layers.size());
+
+	if (layers[p_layer].enabled == p_enabled) {
+		return;
+	}
 	layers[p_layer].enabled = p_enabled;
 	_clear_layer_internals(p_layer);
 	_recreate_layer_internals(p_layer);
@@ -656,6 +664,10 @@ void TileMap::set_layer_modulate(int p_layer, Color p_modulate) {
 		p_layer = layers.size() + p_layer;
 	}
 	ERR_FAIL_INDEX(p_layer, (int)layers.size());
+
+	if (layers[p_layer].modulate == p_modulate) {
+		return;
+	}
 	layers[p_layer].modulate = p_modulate;
 	_rendering_update_layer(p_layer);
 	emit_signal(SNAME("changed"));
@@ -671,6 +683,10 @@ void TileMap::set_layer_y_sort_enabled(int p_layer, bool p_y_sort_enabled) {
 		p_layer = layers.size() + p_layer;
 	}
 	ERR_FAIL_INDEX(p_layer, (int)layers.size());
+
+	if (layers[p_layer].y_sort_enabled == p_y_sort_enabled) {
+		return;
+	}
 	layers[p_layer].y_sort_enabled = p_y_sort_enabled;
 	_clear_layer_internals(p_layer);
 	_recreate_layer_internals(p_layer);
@@ -689,6 +705,10 @@ void TileMap::set_layer_y_sort_origin(int p_layer, int p_y_sort_origin) {
 		p_layer = layers.size() + p_layer;
 	}
 	ERR_FAIL_INDEX(p_layer, (int)layers.size());
+
+	if (layers[p_layer].y_sort_origin == p_y_sort_origin) {
+		return;
+	}
 	layers[p_layer].y_sort_origin = p_y_sort_origin;
 	_clear_layer_internals(p_layer);
 	_recreate_layer_internals(p_layer);
@@ -705,6 +725,10 @@ void TileMap::set_layer_z_index(int p_layer, int p_z_index) {
 		p_layer = layers.size() + p_layer;
 	}
 	ERR_FAIL_INDEX(p_layer, (int)layers.size());
+
+	if (layers[p_layer].z_index == p_z_index) {
+		return;
+	}
 	layers[p_layer].z_index = p_z_index;
 	_rendering_update_layer(p_layer);
 	emit_signal(SNAME("changed"));
@@ -718,6 +742,9 @@ int TileMap::get_layer_z_index(int p_layer) const {
 }
 
 void TileMap::set_collision_animatable(bool p_enabled) {
+	if (collision_animatable == p_enabled) {
+		return;
+	}
 	collision_animatable = p_enabled;
 	_clear_internals();
 	set_notify_local_transform(p_enabled);
@@ -731,6 +758,9 @@ bool TileMap::is_collision_animatable() const {
 }
 
 void TileMap::set_collision_visibility_mode(TileMap::VisibilityMode p_show_collision) {
+	if (collision_visibility_mode == p_show_collision) {
+		return;
+	}
 	collision_visibility_mode = p_show_collision;
 	_clear_internals();
 	_recreate_internals();
@@ -742,6 +772,9 @@ TileMap::VisibilityMode TileMap::get_collision_visibility_mode() {
 }
 
 void TileMap::set_navigation_visibility_mode(TileMap::VisibilityMode p_show_navigation) {
+	if (navigation_visibility_mode == p_show_navigation) {
+		return;
+	}
 	navigation_visibility_mode = p_show_navigation;
 	_clear_internals();
 	_recreate_internals();
@@ -768,6 +801,9 @@ RID TileMap::get_navigation_map(int p_layer) const {
 }
 
 void TileMap::set_y_sort_enabled(bool p_enable) {
+	if (is_y_sort_enabled() == p_enable) {
+		return;
+	}
 	Node2D::set_y_sort_enabled(p_enable);
 	_clear_internals();
 	_recreate_internals();
