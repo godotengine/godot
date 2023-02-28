@@ -32,8 +32,8 @@ msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-02-10 17:27+0000\n"
-"Last-Translator: Ivan Nosatlev <maxonyt2@gmail.com>\n"
+"PO-Revision-Date: 2023-02-28 22:26+0000\n"
+"Last-Translator: Мирослав <hlopukmyroslav@gmail.com>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/uk/>\n"
 "Language: uk\n"
@@ -42,7 +42,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.16-dev\n"
+"X-Generator: Weblate 4.16-rc\n"
 
 msgid "Application"
 msgstr "Програма"
@@ -52,6 +52,9 @@ msgstr "Налаштування"
 
 msgid "Name"
 msgstr "Назва"
+
+msgid "Name Localized"
+msgstr "Назва локалізації"
 
 msgid "Description"
 msgstr "Опис"
@@ -89,8 +92,23 @@ msgstr "Вікно"
 msgid "Size"
 msgstr "Розмір"
 
+msgid "Viewport Width"
+msgstr "Ширина вікна перегляду"
+
+msgid "Viewport Height"
+msgstr "Висота вікна перегляду"
+
 msgid "Mode"
 msgstr "Режим"
+
+msgid "Initial Position Type"
+msgstr "Тип початкової позиції"
+
+msgid "Initial Position"
+msgstr "Початкова позиція"
+
+msgid "Initial Screen"
+msgstr "Початковий екран"
 
 msgid "Resizable"
 msgstr "Зі зміною розміру"
@@ -98,8 +116,23 @@ msgstr "Зі зміною розміру"
 msgid "Borderless"
 msgstr "Без рамки"
 
+msgid "Always on Top"
+msgstr "Завжди Згори"
+
 msgid "Transparent"
 msgstr "Прозорість"
+
+msgid "Extend to Title"
+msgstr "Розширити до Заголовка"
+
+msgid "No Focus"
+msgstr "Без Фокусу"
+
+msgid "Window Width Override"
+msgstr "Перевизначення ширини вікна"
+
+msgid "Window Height Override"
+msgstr "Перевизначення висоти вікна"
 
 msgid "Energy Saving"
 msgstr "Заощадження енергії"
@@ -110,17 +143,53 @@ msgstr "Не вимикати екран"
 msgid "Audio"
 msgstr "Аудіо"
 
+msgid "Buses"
+msgstr "Шини"
+
+msgid "Default Bus Layout"
+msgstr "Розташування шини за замовчуванням"
+
+msgid "General"
+msgstr "Загальне"
+
+msgid "2D Panning Strength"
+msgstr "Сила 2D панорамування"
+
+msgid "3D Panning Strength"
+msgstr "Сила 3D панорамування"
+
 msgid "Editor"
 msgstr "Редактор"
 
 msgid "Main Run Args"
 msgstr "Аргументи основного запуску"
 
+msgid "Script"
+msgstr "Скрипт"
+
+msgid "Search in File Extensions"
+msgstr "Пошук у розширеннях файлів"
+
+msgid "Templates Search Path"
+msgstr "Шлях пошуку шаблонів"
+
+msgid "Naming"
+msgstr "Іменування"
+
+msgid "Default Signal Callback Name"
+msgstr "Ім'я сигналу зворотного виклику за замовчуванням"
+
+msgid "Default Signal Callback to Self Name"
+msgstr "Сигнал зворотного виклику за замовчуванням до власного імені"
+
 msgid "Physics"
 msgstr "Фізика"
 
 msgid "2D"
 msgstr "Двовимірна графіка"
+
+msgid "Run on Separate Thread"
+msgstr "Запуск на окремому потоці"
 
 msgid "3D"
 msgstr "Просторова графіка"
@@ -131,8 +200,29 @@ msgstr "Діагностика"
 msgid "Settings"
 msgstr "Параметри"
 
+msgid "Profiler"
+msgstr "Профайлер"
+
+msgid "Max Functions"
+msgstr "Максимум функцій"
+
 msgid "Compression"
 msgstr "Стиснення"
+
+msgid "Formats"
+msgstr "Формати"
+
+msgid "Zstd"
+msgstr "Zstd"
+
+msgid "Long Distance Matching"
+msgstr "Зіставлення на великій відстані"
+
+msgid "Compression Level"
+msgstr "Рівень стиснення"
+
+msgid "Window Log Size"
+msgstr "Розмір вікна журналу"
 
 msgid "Crash Handler"
 msgstr "Обробник аварій"
@@ -146,11 +236,44 @@ msgstr "Обробка"
 msgid "Occlusion Culling"
 msgstr "Переглянути відбраковування замикання"
 
+msgid "BVH Build Quality"
+msgstr "Якість збірки BVH"
+
+msgid "Memory"
+msgstr "Пам'ять"
+
 msgid "Limits"
 msgstr "Обмеження"
 
+msgid "Multithreaded Server"
+msgstr "Багатопотоковий сервер"
+
+msgid "Internationalization"
+msgstr "Інтернаціоналізація"
+
+msgid "Force Right to Left Layout Direction"
+msgstr "Примусовий напрямок макета справа наліво"
+
 msgid "GUI"
 msgstr "Інтерфейс"
+
+msgid "Timers"
+msgstr "Таймери"
+
+msgid "Incremental Search Max Interval Msec"
+msgstr "Максимальний інтервал інкрементального пошуку, мсек"
+
+msgid "Rendering Device"
+msgstr "Пристрій рендерингу"
+
+msgid "Block Size (KB)"
+msgstr "Розмір блоку (Кб)"
+
+msgid "Max Size (MB)"
+msgstr "Максимальний розмір (Мб)"
+
+msgid "Texture Upload Region Size Px"
+msgstr "Розмір області завантаження текстури Px"
 
 msgid "Low Processor Usage Mode"
 msgstr "Режим низького використання процесора"
@@ -160,6 +283,12 @@ msgstr "Час сну в режимі низького використання 
 
 msgid "Print Error Messages"
 msgstr "Виводити повідомлення про помилки"
+
+msgid "Max Physics Steps per Frame"
+msgstr "Максимум фізичних кроків на кадр"
+
+msgid "Max FPS"
+msgstr "Макс. FPS"
 
 msgid "Time Scale"
 msgstr "Шкала часу"
@@ -176,6 +305,24 @@ msgstr "Використати накопичувальне введення"
 msgid "Device"
 msgstr "Пристрій"
 
+msgid "Window ID"
+msgstr "Ідентифікатор вікна"
+
+msgid "Command or Control Autoremap"
+msgstr "Командна або керуюча автомапа"
+
+msgid "Alt Pressed"
+msgstr "Натиснуто Alt"
+
+msgid "Shift Pressed"
+msgstr "Натиснуто Shift"
+
+msgid "Ctrl Pressed"
+msgstr "Натиснуто Ctrl"
+
+msgid "Meta Pressed"
+msgstr "Натиснуто Meta"
+
 msgid "Pressed"
 msgstr "Натиснута"
 
@@ -189,7 +336,7 @@ msgid "Button Mask"
 msgstr "Кнопка"
 
 msgid "Position"
-msgstr "Розташування"
+msgstr "Позиція"
 
 msgid "Global Position"
 msgstr "Загальне розташування"
@@ -199,6 +346,9 @@ msgstr "Множник"
 
 msgid "Button Index"
 msgstr "Індекс кнопки"
+
+msgid "Double Click"
+msgstr "Подвійне клацання"
 
 msgid "Tilt"
 msgstr "Нахил"
@@ -251,11 +401,23 @@ msgstr "Значення контролера"
 msgid "Shortcut"
 msgstr "Скорочення"
 
+msgid "Events"
+msgstr "Події"
+
+msgid "Include Navigational"
+msgstr "Включити навігацію"
+
+msgid "Include Hidden"
+msgstr "Включити приховане"
+
 msgid "Big Endian"
 msgstr "Зворотний"
 
 msgid "Network"
 msgstr "Мережа"
+
+msgid "Remote FS"
+msgstr "Віддалений FS"
 
 msgid "Page Size"
 msgstr "Розмір сторінки"
@@ -299,11 +461,53 @@ msgstr "Зміщення"
 msgid "Cell Size"
 msgstr "Розмір комірки"
 
+msgid "Jumping Enabled"
+msgstr "Стрибки увімкнено"
+
+msgid "Default Compute Heuristic"
+msgstr "Евристика обчислення за замовчуванням"
+
+msgid "Default Estimate Heuristic"
+msgstr "Евристика оцінки за замовчуванням"
+
+msgid "Diagonal Mode"
+msgstr "Діагональний режим"
+
 msgid "Seed"
 msgstr "База"
 
 msgid "State"
 msgstr "Стан"
+
+msgid "Message Queue"
+msgstr "Черга повідомлень"
+
+msgid "Max Size (KB)"
+msgstr "Максимальний розмір (Кб)"
+
+msgid "TCP"
+msgstr "TCP"
+
+msgid "Connect Timeout Seconds"
+msgstr "Час очікування на з'єднання у секундах"
+
+msgid "Packet Peer Stream"
+msgstr "Пакетний потік вузла"
+
+msgid "Max Buffer (Power of 2)"
+msgstr "Макс. буфер (степінь 2)"
+
+msgid "Certificate Bundle Override"
+msgstr "Перевизначення пакету сертифікатів"
+
+msgid "Max Threads"
+msgstr "Макс. потоків"
+
+msgid "Use System Threads for Low Priority Tasks"
+msgstr "Використання системних потоків для низькопріоритетних завдань"
+
+msgid "Low Priority Thread Ratio"
+msgstr "Коефіцієнт низького пріоритету потоку"
 
 msgid "Locale"
 msgstr "Мова"
@@ -314,14 +518,35 @@ msgstr "Тест"
 msgid "Fallback"
 msgstr "Резерв"
 
+msgid "Pseudolocalization"
+msgstr "Псевдолокалізація"
+
+msgid "Use Pseudolocalization"
+msgstr "Використання псевдолокалізації"
+
+msgid "Replace With Accents"
+msgstr "Замінити з акцентами"
+
+msgid "Double Vowels"
+msgstr "Подвійні голосні"
+
+msgid "Fake BiDi"
+msgstr "Фальшивий BiDi"
+
 msgid "Override"
 msgstr "Перевизначити"
+
+msgid "Expansion Ratio"
+msgstr "Коефіцієнт розширення"
 
 msgid "Prefix"
 msgstr "Префікс"
 
 msgid "Suffix"
 msgstr "Суфікс"
+
+msgid "Skip Placeholders"
+msgstr "Пропустити заповнювачі"
 
 msgid "Rotation"
 msgstr "Обертання"
@@ -347,6 +572,9 @@ msgstr "Дескриптор входу"
 msgid "Out Handle"
 msgstr "Дескриптор виходу"
 
+msgid "Handle Mode"
+msgstr "Ручний режим"
+
 msgid "Stream"
 msgstr "Потік"
 
@@ -362,11 +590,20 @@ msgstr "Анімація"
 msgid "Easing"
 msgstr "Пом'якшення"
 
+msgid "Debug Adapter"
+msgstr "Налагоджувальний адаптер"
+
 msgid "Remote Port"
 msgstr "Віддалений порт"
 
+msgid "Sync Breakpoints"
+msgstr "Точки розриву синхронізації"
+
 msgid "Debugger"
 msgstr "Засіб діагностики"
+
+msgid "Auto Switch to Remote Scene Tree"
+msgstr "Автоматичний перехід до віддаленого Дерева Сцен"
 
 msgid "Remote Scene Tree Refresh Interval"
 msgstr "Інтервал оновлення ієрархії віддаленої сцени"
@@ -386,6 +623,9 @@ msgstr "Доступ"
 msgid "Display Mode"
 msgstr "Режим показу"
 
+msgid "File Mode"
+msgstr "Режим файлу"
+
 msgid "Filters"
 msgstr "Фільтри"
 
@@ -400,6 +640,9 @@ msgstr "Імпорт"
 
 msgid "Reimport Missing Imported Files"
 msgstr "Повторно імпортувати пропущені імпортовані файли"
+
+msgid "Use Multiple Threads"
+msgstr "Використання кількох потоків"
 
 msgid "Text Editor"
 msgstr "Текстовий редактор"
@@ -425,8 +668,17 @@ msgstr "Позначено"
 msgid "Keying"
 msgstr "Набір"
 
+msgid "Deletable"
+msgstr "Видалити"
+
+msgid "Scene Name Casing"
+msgstr "Регістр назв сцени"
+
 msgid "Interface"
 msgstr "Інтерфейс"
+
+msgid "Save on Focus Loss"
+msgstr "Зберігати при втраті фокусування"
 
 msgid "Show Update Spinner"
 msgstr "Показувати індикатор оновлення"
@@ -439,6 +691,9 @@ msgstr "Параметри локалізації"
 
 msgid "Scene Tabs"
 msgstr "Вкладки сцен"
+
+msgid "Restore Scenes on Load"
+msgstr "Відновлення сцен під час завантаження"
 
 msgid "Inspector"
 msgstr "Інспектор"
@@ -461,8 +716,17 @@ msgstr "Редагування горизонтального вектора2"
 msgid "Horizontal Vector Types Editing"
 msgstr "Редагування типів горизонтального вектора"
 
+msgid "Open Resources in Current Inspector"
+msgstr "Відкрити ресурси у поточному Інспекторі"
+
+msgid "Resources to Open in New Inspector"
+msgstr "Ресурси, які слід відкрити у новому Інспекторі"
+
 msgid "Default Color Picker Mode"
 msgstr "Типовий режим піпетки кольорів"
+
+msgid "Default Color Picker Shape"
+msgstr "Палітра кольорів за замовчуванням"
 
 msgid "Distraction Free Mode"
 msgstr "Режим без відволікання"
@@ -481,6 +745,15 @@ msgstr "Мова редактора"
 
 msgid "Display Scale"
 msgstr "Масштаб показу"
+
+msgid "Enable Pseudolocalization"
+msgstr "Увімкнути псевдолокалізацію"
+
+msgid "Use Embedded Menu"
+msgstr "Використання вбудованого меню"
+
+msgid "Expand to Title"
+msgstr "Розгорнути до заголовка"
 
 msgid "Custom Display Scale"
 msgstr "Нетиповий масштаб дисплея"
@@ -3112,6 +3385,9 @@ msgstr "Назва кістки"
 msgid "Keep Aspect"
 msgstr "Зберегти пропорції"
 
+msgid "Cull Mask"
+msgstr "Маска Вибракування"
+
 msgid "Doppler Tracking"
 msgstr "Доріжка властивостей"
 
@@ -4956,6 +5232,9 @@ msgstr "Вершина"
 
 msgid "Fragment"
 msgstr "Фрагмент"
+
+msgid "Cull"
+msgstr "Вибракування"
 
 msgid "Unshaded"
 msgstr "Без тіней"

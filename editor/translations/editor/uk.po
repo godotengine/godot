@@ -18,7 +18,7 @@
 # Miroslav <zinmirx@gmail.com>, 2020.
 # IllusiveMan196 <hamsterrv@gmail.com>, 2021, 2022.
 # KazanskiyMaks <kazanskiy.maks@gmail.com>, 2022, 2023.
-# Мирослав <hlopukmyroslav@gmail.com>, 2022.
+# Мирослав <hlopukmyroslav@gmail.com>, 2022, 2023.
 # Ostap <ostapbataj79@gmail.com>, 2022.
 # Wald Sin <naaveranos@gmail.com>, 2022, 2023.
 # Гліб Соколов <ramithes@i.ua>, 2022.
@@ -33,8 +33,8 @@ msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-02-14 23:41+0000\n"
-"Last-Translator: Wald Sin <naaveranos@gmail.com>\n"
+"PO-Revision-Date: 2023-02-28 22:26+0000\n"
+"Last-Translator: Мирослав <hlopukmyroslav@gmail.com>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
 "Language: uk\n"
@@ -43,7 +43,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
 "n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 4.16-dev\n"
+"X-Generator: Weblate 4.16-rc\n"
 
 msgid "Unset"
 msgstr "Зняти"
@@ -66,8 +66,23 @@ msgstr "Коліщатко вгору"
 msgid "Mouse Wheel Down"
 msgstr "Коліщатко вниз"
 
+msgid "Mouse Wheel Left"
+msgstr "Ліве Коліщатко Мишки"
+
+msgid "Mouse Wheel Right"
+msgstr "Праве Коліщатко Мишки"
+
+msgid "Mouse Thumb Button 1"
+msgstr "Кнопка великого пальця мишки 1"
+
+msgid "Mouse Thumb Button 2"
+msgstr "Кнопка великого пальця мишки 2"
+
 msgid "Button"
 msgstr "Кнопка"
+
+msgid "Double Click"
+msgstr "Подвійне клацання"
 
 msgid "Mouse motion at position (%s) with velocity (%s)"
 msgstr "Рух миші в положенні (%s) зі швидкістю (%s)"
@@ -89,6 +104,18 @@ msgstr "Джойстик 2 X-осі, Лівий Тригер, Sony L2, Xbox LT"
 
 msgid "Joystick 2 Y-Axis, Right Trigger, Sony R2, Xbox RT"
 msgstr "Джойстик 2 Y-осі, Правий Тригер, Sony R2, Xbox RT"
+
+msgid "Joystick 3 X-Axis"
+msgstr "Джойстик 3 X-вісь"
+
+msgid "Joystick 3 Y-Axis"
+msgstr "Джойстик 3 Вісь Y"
+
+msgid "Joystick 4 X-Axis"
+msgstr "Джойстик 4 X-вісь"
+
+msgid "Joystick 4 Y-Axis"
+msgstr "Джойстик 4 Вісь Y"
 
 msgid "Unknown Joypad Axis"
 msgstr "Невідома вісь джойстика"
@@ -123,17 +150,41 @@ msgstr "Лівий стік, Sony L3, Xbox L/LS"
 msgid "Right Stick, Sony R3, Xbox R/RS"
 msgstr "Правий стік, Sony R3, Xbox R/RS"
 
+msgid "Left Shoulder, Sony L1, Xbox LB"
+msgstr "Ліво-плечева кнопка, Sony L1, Xbox LB"
+
+msgid "Right Shoulder, Sony R1, Xbox RB"
+msgstr "Право-плечева кнопка, Sony R1, Xbox RB"
+
 msgid "D-pad Up"
 msgstr "D-pad Вгору"
 
 msgid "D-pad Down"
 msgstr "D-pad Вниз"
 
+msgid "D-pad Left"
+msgstr "D-pad Ліворуч"
+
+msgid "D-pad Right"
+msgstr "D-pad Праворуч"
+
+msgid "Xbox Share, PS5 Microphone, Nintendo Capture"
+msgstr "Xbox Share, мікрофон PS5, захоплення Nintendo"
+
 msgid "PS4/5 Touchpad"
 msgstr "PS4/5 Тачпад"
 
+msgid "Joypad Button %d"
+msgstr "Кнопка джойпада %d"
+
+msgid "Pressure:"
+msgstr "Тиск:"
+
 msgid "touched"
 msgstr "торкнувся"
+
+msgid "released"
+msgstr "випущено"
 
 msgid "Screen %s at (%s) with %s touch points"
 msgstr "Екран %s в (%s) з сенсорними точками %s"
@@ -142,14 +193,32 @@ msgid ""
 "Screen dragged with %s touch points at position (%s) with velocity of (%s)"
 msgstr "Екран перетягнуто з %s точок дотику на позицію (%s) зі швидкістю (%s)"
 
+msgid "Magnify Gesture at (%s) with factor %s"
+msgstr "Збільшити жест на (%s) з коефіцієнтом %s"
+
+msgid "Pan Gesture at (%s) with delta (%s)"
+msgstr "Жест панорамування на (%s) з дельтою (%s)"
+
 msgid "MIDI Input on Channel=%s Message=%s"
 msgstr "MIDI Вхід на каналі=%s Повідомлення=%s"
+
+msgid "Input Event with Shortcut=%s"
+msgstr "Подія введення з Ярликом=%s"
+
+msgid "Accept"
+msgstr "Прийняти"
 
 msgid "Select"
 msgstr "Виділити"
 
 msgid "Cancel"
 msgstr "Скасувати"
+
+msgid "Focus Next"
+msgstr "Фокусувати наступний"
+
+msgid "Focus Prev"
+msgstr "Фокусувати попередній"
 
 msgid "Left"
 msgstr "Ліворуч"
@@ -162,6 +231,15 @@ msgstr "Вивантаження"
 
 msgid "Down"
 msgstr "Отримання"
+
+msgid "Page Up"
+msgstr "На сторінку вище"
+
+msgid "Page Down"
+msgstr "На сторінку нижче"
+
+msgid "Home"
+msgstr "Домівка"
 
 msgid "End"
 msgstr "Кінець"
@@ -181,11 +259,23 @@ msgstr "Скасувати"
 msgid "Redo"
 msgstr "Повернути"
 
+msgid "Completion Query"
+msgstr "Запит на завершення"
+
+msgid "New Line"
+msgstr "Новий рядок"
+
 msgid "New Blank Line"
 msgstr "Новий порожній рядок"
 
+msgid "New Line Above"
+msgstr "Новий рядок зверху"
+
 msgid "Indent"
 msgstr "Відступ"
+
+msgid "Dedent"
+msgstr "Зменшити Відступ"
 
 msgid "Backspace Word"
 msgstr "Стерти слово"
@@ -196,11 +286,32 @@ msgstr "Стерти все вліво"
 msgid "Delete"
 msgstr "Вилучити"
 
+msgid "Delete Word"
+msgstr "Видалити слово"
+
+msgid "Delete all to Right"
+msgstr "Видалити все справа"
+
+msgid "Scroll Up"
+msgstr "Прокрутити вверх"
+
+msgid "Scroll Down"
+msgstr "Прокрутити вниз"
+
 msgid "Select All"
 msgstr "Виділити все"
 
 msgid "Select Word Under Caret"
 msgstr "Виділити слово під вказівником"
+
+msgid "Add Selection for Next Occurrence"
+msgstr "Додати виділення для наступного входження"
+
+msgid "Toggle Insert Mode"
+msgstr "Перемкнути режим вставки"
+
+msgid "Submit Text"
+msgstr "Надіслати текст"
 
 msgid "Duplicate Nodes"
 msgstr "Дублювати вузли"
@@ -213,6 +324,12 @@ msgstr "Підніміться на рівень вище"
 
 msgid "Refresh"
 msgstr "Оновити"
+
+msgid "Show Hidden"
+msgstr "Показувати приховане"
+
+msgid "Swap Input Direction"
+msgstr "Змінити напрям введення"
 
 msgid "Invalid input %d (not passed) in expression"
 msgstr "Некоректні вхідні дані %d (не передано) у виразі"
@@ -236,6 +353,12 @@ msgstr "Некоректні аргументи для створення \"%s\"
 
 msgid "On call to '%s':"
 msgstr "При виклику \"%s\":"
+
+msgid "Built-in script"
+msgstr "Вбудований скрипт"
+
+msgid "Built-in"
+msgstr "Вбудований"
 
 msgid "B"
 msgstr "Б"
@@ -280,8 +403,32 @@ msgstr "Дія із назвою «%s» вже існує."
 msgid "Cannot Revert - Action is same as initial"
 msgstr "Неможливо повернути - дія така ж, як і початкова"
 
+msgid "Revert Action"
+msgstr "Відмінити дію"
+
 msgid "Add Event"
 msgstr "Додати подію"
+
+msgid "Remove Action"
+msgstr "Вилучити дію"
+
+msgid "Cannot Remove Action"
+msgstr "Неможливо вилучити дію"
+
+msgid "Edit Event"
+msgstr "Редагувати подію"
+
+msgid "Remove Event"
+msgstr "Вилучити подію"
+
+msgid "Filter by name..."
+msgstr "Фільтрувати по назві..."
+
+msgid "Clear All"
+msgstr "Очистити все"
+
+msgid "Add New Action"
+msgstr "Додати нову дію"
 
 msgid "Add"
 msgstr "Додати"
@@ -301,6 +448,9 @@ msgstr "Час:"
 msgid "Value:"
 msgstr "Значення:"
 
+msgid "Update Selected Key Handles"
+msgstr "Оновити ручки виділених ключів"
+
 msgid "Insert Key Here"
 msgstr "Тут можна вставити ключ"
 
@@ -310,14 +460,68 @@ msgstr "Дублювати позначені ключі"
 msgid "Delete Selected Key(s)"
 msgstr "Вилучити позначені ключі"
 
+msgid "Make Handles Free"
+msgstr "Зробити ручки вільними"
+
+msgid "Make Handles Linear"
+msgstr "Зробити ручки лінійними"
+
+msgid "Make Handles Balanced"
+msgstr "Зробити ручки збалансованими"
+
+msgid "Make Handles Mirrored"
+msgstr "Зробити ручки дзеркальними"
+
+msgid "Make Handles Balanced (Auto Tangent)"
+msgstr "Зробити ручки збалансованими (автоматичний тангенс)"
+
+msgid "Make Handles Mirrored (Auto Tangent)"
+msgstr "Зробити ручки дзеркальними (автоматичний тангенс)"
+
 msgid "Add Bezier Point"
 msgstr "Додати точку Безьє"
 
 msgid "Move Bezier Points"
 msgstr "Перемістити точки Безьє"
 
+msgid "Animation Duplicate Keys"
+msgstr "Дублювати ключі анімації"
+
+msgid "Animation Delete Keys"
+msgstr "Вилучити ключі анімації"
+
 msgid "Focus"
 msgstr "Фокусування"
+
+msgid "Select All Keys"
+msgstr "Виділити всі ключі"
+
+msgid "Deselect All Keys"
+msgstr "Зняти виділення з усіх ключів"
+
+msgid "Animation Change Transition"
+msgstr "Змінити перехід анімації"
+
+msgid "Animation Change %s"
+msgstr "Зміна анімації %s"
+
+msgid "Animation Change Keyframe Value"
+msgstr "Змінити значення ключового кадру анімації"
+
+msgid "Animation Change Call"
+msgstr "Змінити виклик анімації"
+
+msgid "Animation Multi Change Transition"
+msgstr "Кілька змін переходу анімації"
+
+msgid "Animation Multi Change %s"
+msgstr "Кілька змін анімації %s"
+
+msgid "Animation Multi Change Keyframe Value"
+msgstr "Кілька змін значення ключового кадру анімації"
+
+msgid "Animation Multi Change Call"
+msgstr "Виклик кількох змін анімації"
 
 msgid "Change Animation Length"
 msgstr "Змінити тривалість анімації"
@@ -333,6 +537,18 @@ msgstr "Неможливо змінити режим циклу для анім�
 
 msgid "Property Track"
 msgstr "Доріжка властивостей"
+
+msgid "3D Position Track"
+msgstr "Доріжка 3D позицій"
+
+msgid "3D Rotation Track"
+msgstr "Доріжка 3D обертань"
+
+msgid "3D Scale Track"
+msgstr "Доріжка 3D масштабування"
+
+msgid "Blend Shape Track"
+msgstr "Доріжка змішаних форм"
 
 msgid "Call Method Track"
 msgstr "Доріжка виклику методів"
@@ -364,11 +580,17 @@ msgstr "Функції:"
 msgid "Audio Clips:"
 msgstr "Звукові кліпи:"
 
+msgid "Animation Clips:"
+msgstr "Кліпи анімації:"
+
 msgid "Change Track Path"
 msgstr "Змінити шлях доріжки"
 
 msgid "Toggle this track on/off."
 msgstr "Увімкнути або вимкнути цю доріжку."
+
+msgid "Use Blend"
+msgstr "Змішувати"
 
 msgid "Update Mode (How this property is set)"
 msgstr "Оновити режим (спосіб встановлення цієї властивості)"
@@ -394,6 +616,9 @@ msgstr "Обертання:"
 msgid "Scale:"
 msgstr "Масштаб:"
 
+msgid "Blend Shape:"
+msgstr "Форма змішування:"
+
 msgid "Type:"
 msgstr "Тип:"
 
@@ -409,6 +634,18 @@ msgstr "Дескриптор входу:"
 msgid "Out-Handle:"
 msgstr "Дескриптор виходу:"
 
+msgid "Handle mode: Free\n"
+msgstr "Ручний режим: Вільний\n"
+
+msgid "Handle mode: Linear\n"
+msgstr "Ручний режим: Лінійний\n"
+
+msgid "Handle mode: Balanced\n"
+msgstr "Ручний режим: Збалансований\n"
+
+msgid "Handle mode: Mirrored\n"
+msgstr "Ручний режим: Дзеркальний\n"
+
 msgid "Stream:"
 msgstr "Потік:"
 
@@ -423,6 +660,9 @@ msgstr "Кліп анімації:"
 
 msgid "Toggle Track Enabled"
 msgstr "Увімкнути/Вимкнути доріжку"
+
+msgid "Don't Use Blend"
+msgstr "Не змішувати"
 
 msgid "Continuous"
 msgstr "Неперервна"
@@ -441,6 +681,12 @@ msgstr "Лінійний"
 
 msgid "Cubic"
 msgstr "Кубічна"
+
+msgid "Linear Angle"
+msgstr "Лінійний кут"
+
+msgid "Cubic Angle"
+msgstr "Кубічний кут"
 
 msgid "Clamp Loop Interp"
 msgstr "Затиснута інтерполяція циклу"
@@ -469,14 +715,33 @@ msgstr "Змінити режим інтерполяції анімації"
 msgid "Change Animation Loop Mode"
 msgstr "Змінити режим циклу анімації"
 
+msgid "Change Animation Use Blend"
+msgstr "Змінити змішування анімації"
+
+msgid ""
+"Compressed tracks can't be edited or removed. Re-import the animation with "
+"compression disabled in order to edit."
+msgstr ""
+"Стиснуті доріжки не можна редагувати або видаляти. Для редагування повторно "
+"імпортуйте анімацію з вимкненим стисненням."
+
 msgid "Remove Anim Track"
 msgstr "Видалити доріжку"
+
+msgid "Create new track for %s and insert key?"
+msgstr "Створити нову доріжку для %s і вставити ключ?"
+
+msgid "Create %d new tracks and insert keys?"
+msgstr "Створити %d нові доріжки і вставити ключі?"
 
 msgid "Create"
 msgstr "Створити"
 
+msgid "Animation Insert Key"
+msgstr "Вставити ключ анімації"
+
 msgid "node '%s'"
-msgstr "вузол «%s»"
+msgstr "вузол '%s'"
 
 msgid "animation"
 msgstr "анімація"
@@ -485,13 +750,21 @@ msgid "AnimationPlayer can't animate itself, only other players."
 msgstr "AnimationPlayer не може анімувати себе, лише інших відтворювачів."
 
 msgid "property '%s'"
-msgstr "властивість «%s»"
+msgstr "властивість '%s'"
 
 msgid "Change Animation Step"
 msgstr "Змінити крок анімації"
 
 msgid "Rearrange Tracks"
 msgstr "Перевпорядкувати доріжки"
+
+msgid "Blend Shape tracks only apply to MeshInstance3D nodes."
+msgstr "Доріжки форми змішування застосовуються лише до вузлів MeshInstance3D."
+
+msgid "Position/Rotation/Scale 3D tracks only apply to 3D-based nodes."
+msgstr ""
+"Доріжки 3D позиції/обертання/масштабування застосовуються тільки до 3D-"
+"вузлів."
 
 msgid ""
 "Audio tracks can only point to nodes of type:\n"
@@ -521,6 +794,18 @@ msgstr "Додати доріжку Безьє"
 msgid "Track path is invalid, so can't add a key."
 msgstr "Шлях доріжки є некоректним, отже не можна додавати ключ."
 
+msgid "Track is not of type Node3D, can't insert key"
+msgstr "Доріжка не належить до типу Node3D, ключ не можна вставити"
+
+msgid "Add Position Key"
+msgstr "Додати ключ позиції"
+
+msgid "Add Rotation Key"
+msgstr "Додати ключ обертання"
+
+msgid "Add Scale Key"
+msgstr "Додати ключ масштабування"
+
 msgid "Add Track Key"
 msgstr "Додати ключ доріжки"
 
@@ -533,14 +818,20 @@ msgstr "Додати ключ доріжки методів"
 msgid "Method not found in object:"
 msgstr "Не знайдено метод у об'єкті:"
 
+msgid "Animation Move Keys"
+msgstr "Перемістити ключі анімації"
+
 msgid "Position"
-msgstr "Розташування"
+msgstr "Позиція"
 
 msgid "Rotation"
 msgstr "Обертання"
 
 msgid "Scale"
 msgstr "Масштаб"
+
+msgid "BlendShape"
+msgstr "Форма Змішування"
 
 msgid "Methods"
 msgstr "Методи"
@@ -557,17 +848,51 @@ msgstr "Буфер обміну порожній!"
 msgid "Paste Tracks"
 msgstr "Вставити доріжки"
 
+msgid "Make Easing Keys"
+msgstr "Створити ключі плавного переходу"
+
 msgid ""
 "This option does not work for Bezier editing, as it's only a single track."
 msgstr ""
 "Цей параметр не працює для редагування кривих Безьє, оскільки це лише "
 "одинарна доріжка."
 
+msgid "Animation Add RESET Keys"
+msgstr "Додати до анімації RESET-ключі"
+
+msgid "Bake Animation as Linear keys."
+msgstr "Запекти анімацію як лінійні ключі."
+
+msgid ""
+"This animation belongs to an imported scene, so changes to imported tracks "
+"will not be saved.\n"
+"\n"
+"To modify this animation, navigate to the scene's Advanced Import settings "
+"and select the animation.\n"
+"Some options, including looping, are available here. To add custom tracks, "
+"enable \"Save To File\" and\n"
+"\"Keep Custom Tracks\"."
+msgstr ""
+"Ця анімація належить до імпортованої сцени, тому зміни у імпортованих "
+"доріжках не буде збережено.\n"
+"\n"
+"Щоб змінити цю анімацію, перейдіть до Додаткових налаштувань імпорту сцени і "
+"виберіть анімацію.\n"
+"Деякі опції, зокрема зациклення, доступні тут. Щоб додати власні доріжки, "
+"увімкніть опції \"Зберегти у файл\" і\n"
+"\"Зберегти власні доріжки\"."
+
 msgid "Warning: Editing imported animation"
 msgstr "Попередження: Редагуємо імпортовану анімацію"
 
 msgid "Select an AnimationPlayer node to create and edit animations."
 msgstr "Виберіть вузол AnimationPlayer для створення і редагування анімацій."
+
+msgid "Imported Scene"
+msgstr "Імпортована сцена"
+
+msgid "Toggle between the bezier curve editor and track editor."
+msgstr "Перемикання між редактором кривих Безьє та редактором доріжок."
 
 msgid "Only show tracks from nodes selected in tree."
 msgstr "Показувати доріжки лише для вузлів, які позначено у ієрархії."
@@ -603,6 +928,9 @@ msgstr "Вибір масштабу"
 msgid "Scale From Cursor"
 msgstr "Масштаб від курсору"
 
+msgid "Make Easing Selection"
+msgstr "Зробити плавний вибір"
+
 msgid "Duplicate Selection"
 msgstr "Дублювати позначене"
 
@@ -621,11 +949,35 @@ msgstr "До попереднього кроку"
 msgid "Apply Reset"
 msgstr "Застосувати скидання"
 
+msgid "Bake Animation"
+msgstr "Запекти анімацію"
+
+msgid "Optimize Animation (no undo)"
+msgstr "Оптимізувати анімацію (без скасування)"
+
+msgid "Clean-Up Animation (no undo)"
+msgstr "Очищення анімації (без скасування)"
+
+msgid "Pick a node to animate:"
+msgstr "Виберіть вузол для анімації:"
+
 msgid "Use Bezier Curves"
 msgstr "Використовувати криві Безьє"
 
 msgid "Create RESET Track(s)"
 msgstr "Створити доріжки RESET"
+
+msgid "Animation Optimizer"
+msgstr "Оптимізатор Анімації"
+
+msgid "Max Velocity Error:"
+msgstr "Помилка максимальної швидкості:"
+
+msgid "Max Angular Error:"
+msgstr "Максимальна кутова похибка:"
+
+msgid "Max Precision Error:"
+msgstr "Максимальна похибка точності:"
 
 msgid "Optimize"
 msgstr "Оптимізувати"
@@ -648,11 +1000,20 @@ msgstr "Очищення"
 msgid "Scale Ratio:"
 msgstr "Співвідношення масштабу:"
 
+msgid "Select Transition and Easing"
+msgstr "Вибрати Перехід та Плавність"
+
+msgid "Animation Baker"
+msgstr "Запікання анімації"
+
 msgid "Select Tracks to Copy"
 msgstr "Виберіть доріжки для копіювання"
 
 msgid "Select All/None"
 msgstr "Позначити все/Скасувати позначення"
+
+msgid "Animation Change Keyframe Time"
+msgstr "Змінити час ключового кадру анімації"
 
 msgid "Add Audio Track Clip"
 msgstr "Додати кліп звукової доріжки"
@@ -671,6 +1032,18 @@ msgstr "Номер рядка:"
 
 msgid "%d replaced."
 msgstr "%d замінено."
+
+msgid "%d match"
+msgid_plural "%d matches"
+msgstr[0] "%d збіг"
+msgstr[1] "%d збіги"
+msgstr[2] "%d збігів"
+
+msgid "%d of %d match"
+msgid_plural "%d of %d matches"
+msgstr[0] "%d з %d збіг"
+msgstr[1] "%d з %d збіги"
+msgstr[2] "%d з %d збігів"
 
 msgid "Match Case"
 msgstr "Враховувати регістр"
@@ -721,6 +1094,9 @@ msgstr ""
 "Цільовий метод не знайдено! Вкажіть дійсний метод або приєднайте скрипт до "
 "цільового вузла."
 
+msgid "Attached Script"
+msgstr "Прикріплений скрипт"
+
 msgid "Connect to Node:"
 msgstr "З'єднати з вузлом:"
 
@@ -730,11 +1106,29 @@ msgstr "З'єднання зі скриптом:"
 msgid "From Signal:"
 msgstr "З сигналу:"
 
+msgid "Filter Nodes"
+msgstr "Фільтрувати вузли"
+
+msgid "Go to Source"
+msgstr "Перейти до джерела"
+
 msgid "Scene does not contain any script."
 msgstr "У сцені немає жодного скрипту."
 
 msgid "Select Method"
 msgstr "Вибір методу"
+
+msgid "Filter Methods"
+msgstr "Фільтрувати методи"
+
+msgid "No method found matching given filters."
+msgstr "Не знайдено жодного методу, який відповідав би заданим фільтрам."
+
+msgid "Script Methods Only"
+msgstr "Лише методи скрипта"
+
+msgid "Compatible Methods Only"
+msgstr "Лише сумісні методи"
 
 msgid "Remove"
 msgstr "Вилучити"
@@ -744,6 +1138,12 @@ msgstr "Додати додатковий аргумент виклику:"
 
 msgid "Extra Call Arguments:"
 msgstr "Додаткові аргументи виклику:"
+
+msgid "Allows to drop arguments sent by signal emitter."
+msgstr "Дозволяє відкидати аргументи, надіслані джерелом сигналу."
+
+msgid "Unbind Signal Arguments:"
+msgstr "Відв'язати аргументи сигналу:"
 
 msgid "Receiver Method:"
 msgstr "Метод-отримувач:"
@@ -778,6 +1178,9 @@ msgstr "З'єднати"
 msgid "Signal:"
 msgstr "Сигнал:"
 
+msgid "No description."
+msgstr "Без опису."
+
 msgid "Connect '%s' to '%s'"
 msgstr "Приєднати '%s' до %s'"
 
@@ -796,11 +1199,17 @@ msgstr "Роз'єднати"
 msgid "Connect a Signal to a Method"
 msgstr "З'єднати сигнал із методом"
 
+msgid "Edit Connection: '%s'"
+msgstr "Редагувати з’єднання: '%s'"
+
 msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
-msgstr "Ви справді хочете вилучити усі з'єднання з сигналу «%s»?"
+msgstr "Ви справді хочете вилучити усі з'єднання з сигналу \"%s\"?"
 
 msgid "Signals"
 msgstr "Сигнали"
+
+msgid "Filter Signals"
+msgstr "Фільтрувати сигнали"
 
 msgid "Are you sure you want to remove all connections from this signal?"
 msgstr "Ви справді хочете вилучити усі з'єднання з цього сигналу?"
@@ -808,11 +1217,17 @@ msgstr "Ви справді хочете вилучити усі з'єднанн
 msgid "Disconnect All"
 msgstr "Роз'єднати усі"
 
+msgid "Copy Name"
+msgstr "Копіювати назву"
+
 msgid "Edit..."
 msgstr "Змінити…"
 
 msgid "Go to Method"
 msgstr "Перейти до методу"
+
+msgid "Change Type of \"%s\""
+msgstr "Змінити тип \"%s\""
 
 msgid "Change"
 msgstr "Змінити"
@@ -823,6 +1238,12 @@ msgstr "Створити новий %s"
 msgid "No results for \"%s\"."
 msgstr "Нічого не знайдено для «%s»."
 
+msgid "This class is marked as deprecated."
+msgstr "Цей клас позначено як застарілий."
+
+msgid "This class is marked as experimental."
+msgstr "Цей клас позначено як експериментальний."
+
 msgid "No description available for %s."
 msgstr "Немає опису для %s."
 
@@ -831,6 +1252,9 @@ msgstr "Вибране:"
 
 msgid "Recent:"
 msgstr "Нещодавні:"
+
+msgid "(Un)favorite selected item."
+msgstr "(Не)обрати вибраний елемент."
 
 msgid "Search:"
 msgstr "Пошук:"
@@ -858,6 +1282,15 @@ msgstr "Копіювати вузол шляху"
 
 msgid "Instance:"
 msgstr "Екземпляр:"
+
+msgid ""
+"This node has been instantiated from a PackedScene file:\n"
+"%s\n"
+"Click to open the original file in the Editor."
+msgstr ""
+"Цей вузол було створено з файлу PackedScene:\n"
+"%s\n"
+"Клацніть, щоб відкрити оригінальний файл у редакторі."
 
 msgid "Toggle Visibility"
 msgstr "Перемкнути видимість"
@@ -986,7 +1419,7 @@ msgid "Collapse All"
 msgstr "Згорнути все"
 
 msgid "Profiler"
-msgstr "Засіб профілювання"
+msgstr "Профайлер"
 
 msgid "List of Video Memory Usage by Resource:"
 msgstr "Список використання відеопам'яті за ресурсами:"
@@ -7567,6 +8000,9 @@ msgstr "Карта введення"
 
 msgid "Localization"
 msgstr "Локалізація"
+
+msgid "Autoload"
+msgstr "Автозавантаження"
 
 msgid "Plugins"
 msgstr "Плаґіни (додатки)"

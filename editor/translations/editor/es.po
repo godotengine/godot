@@ -103,7 +103,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-02-24 12:28+0000\n"
+"PO-Revision-Date: 2023-02-28 22:26+0000\n"
 "Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
@@ -112,7 +112,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.16-dev\n"
+"X-Generator: Weblate 4.16-rc\n"
 
 msgid "Unset"
 msgstr "Desactivar"
@@ -897,7 +897,7 @@ msgid "Animation Add RESET Keys"
 msgstr "Añadir Claves de Animación de RESET"
 
 msgid "Bake Animation as Linear keys."
-msgstr "Bake de Animación como claves Lineales."
+msgstr "Bakear Animación como claves Lineales."
 
 msgid ""
 "This animation belongs to an imported scene, so changes to imported tracks "
@@ -982,7 +982,7 @@ msgid "Apply Reset"
 msgstr "Aplicar Reset"
 
 msgid "Bake Animation"
-msgstr "Bake de Animación"
+msgstr "Bakear Animación"
 
 msgid "Optimize Animation (no undo)"
 msgstr "Optimizar Animación (No se puede deshacer)"
@@ -4681,6 +4681,9 @@ msgstr ""
 msgid "Error running post-import script:"
 msgstr "Error ejecutando el script de posimportacion:"
 
+msgid "Did you return a Node-derived object in the `_post_import()` method?"
+msgstr "¿Retornaste un objeto derivado de Node en el método `_post_import()`?"
+
 msgid "Saving..."
 msgstr "Guardando..."
 
@@ -4699,6 +4702,21 @@ msgstr ""
 "compresión de la textura rojo-verde para reducir el uso de memoria (el canal "
 "azul se descarta)."
 
+msgid ""
+"%s: Texture detected as used as a roughness map in 3D. Enabling roughness "
+"limiter based on the detected associated normal map at %s."
+msgstr ""
+"%s: Se ha detectado que la textura se utiliza como mapa de rugosidad en 3D. "
+"Se habilitará un limitador de rugosidad en función del mapa normal asociado "
+"detectado en %s."
+
+msgid ""
+"%s: Texture detected as used in 3D. Enabling mipmap generation and setting "
+"the texture compression mode to %s."
+msgstr ""
+"%s: Se detectó una textura utilizada en 3D. Se ha habilitado la generación "
+"de mipmaps y se ha establecido el modo de compresión de textura a %s."
+
 msgid "2D/3D (Auto-Detect)"
 msgstr "2D/3D (Detección Automática)"
 
@@ -4707,6 +4725,12 @@ msgstr "2D"
 
 msgid "3D"
 msgstr "3D"
+
+msgid "<Unnamed Material>"
+msgstr "<Material sin Nombre>"
+
+msgid "Import ID: %s"
+msgstr "ID de Importación: %s"
 
 msgid "Error opening scene"
 msgstr "Error al abrir la escena"
@@ -4722,10 +4746,16 @@ msgstr ""
 "reimportación.\n"
 "Por favor, dale un nombre o asegúrese de exportarlo con un ID único."
 
+msgid "Extract"
+msgstr "Extraer"
+
 msgid "Set paths to save meshes as resource files on Reimport"
 msgstr ""
 "Establecer rutas para guardar las mallas como archivos de recursos al "
 "Reimportar"
+
+msgid "Set Paths"
+msgstr "Establecer Rutas"
 
 msgid "Set paths to save animations as resource files on Reimport"
 msgstr ""
@@ -4735,6 +4765,12 @@ msgstr ""
 msgid "Actions..."
 msgstr "Acciones..."
 
+msgid "Extract Materials"
+msgstr "Extraer Materiales"
+
+msgid "Set Animation Save Paths"
+msgstr "Establecer Rutas de Guardado de Animaciones"
+
 msgid "Meshes"
 msgstr "Mallas"
 
@@ -4743,6 +4779,18 @@ msgstr "Materiales"
 
 msgid "Save Extension:"
 msgstr "Guardar Extensión:"
+
+msgid "Text: *.tres"
+msgstr "Texto: *.tres"
+
+msgid "Binary: *.res"
+msgstr "Binario: *.res"
+
+msgid "Text Resource"
+msgstr "Recurso de Texto"
+
+msgid "Binary Resource"
+msgstr "Recurso Binario"
 
 msgid "Select Importer"
 msgstr "Seleccionar Importador"
@@ -4802,14 +4850,41 @@ msgstr ""
 "Selecciona un archivo de recursos en el sistema de archivos o en el "
 "inspector para ajustar la configuración de importación."
 
+msgid "Mouse Buttons"
+msgstr "Botones del Mouse"
+
+msgid "Joypad Buttons"
+msgstr "Botones del Joypad"
+
 msgid "Joypad Axes"
 msgstr "Ejes del Joypad"
+
+msgid "Event Configuration"
+msgstr "Configuración de Eventos"
+
+msgid "Manual Selection"
+msgstr "Selección Manual"
+
+msgid "Filter Inputs"
+msgstr "Filtros de Entrada"
+
+msgid "Additional Options"
+msgstr "Opciones Adicionales"
 
 msgid "Device:"
 msgstr "Dispositivo:"
 
+msgid "Command / Control (auto)"
+msgstr "Comando / Control (auto)"
+
 msgid "Failed to load resource."
 msgstr "Error al cargar el recurso."
+
+msgid "(Current)"
+msgstr "(Actual)"
+
+msgid "Expand Non-Default"
+msgstr "Expandir No Predeterminado"
 
 msgid "Property Name Style"
 msgstr "Estilo de Nombre de Propiedad"
@@ -4871,6 +4946,9 @@ msgstr "Historial de objetos editados recientemente."
 msgid "Open documentation for this object."
 msgstr "Abrir la documentación de este objeto."
 
+msgid "Filter Properties"
+msgstr "Filtrar Propiedades"
+
 msgid "Manage object properties."
 msgstr "Administrar propiedades de los objetos."
 
@@ -4895,6 +4973,12 @@ msgstr "Eliminar Remapeo de Recursos"
 msgid "Remove Resource Remap Option"
 msgstr "Eliminar Opción de Remapeo de Recursos"
 
+msgid "Removed"
+msgstr "Eliminado"
+
+msgid "%s cannot be found."
+msgstr "%s no se encuentra."
+
 msgid "Translations"
 msgstr "Traducciones"
 
@@ -4913,14 +4997,26 @@ msgstr "Remapeos por idioma:"
 msgid "Locale"
 msgstr "Idioma"
 
+msgid "POT Generation"
+msgstr "Generación de POT"
+
+msgid "Generate POT"
+msgstr "Generar POT"
+
 msgid "Set %s on %d nodes"
 msgstr "Establecer %s en %d nodos"
+
+msgid "%s (%d Selected)"
+msgstr "%s (%d Seleccionado)"
 
 msgid "Select a single node to edit its signals and groups."
 msgstr "Selecciona un único nodo para editar sus señales y grupos."
 
 msgid "Subfolder name is not a valid folder name."
 msgstr "El nombre de la subcarpeta no es un nombre de carpeta válido."
+
+msgid "Subfolder cannot be one which already exists."
+msgstr "La subcarpeta no puede ser una ya existente."
 
 msgid "Edit a Plugin"
 msgstr "Editar Plugin"
@@ -4991,8 +5087,15 @@ msgstr "Cargar..."
 msgid "Move Node Point"
 msgstr "Mover Punto de Nodo"
 
+msgid "Change BlendSpace1D Config"
+msgstr "Cambiar Configuración de BlendSpace1D"
+
 msgid "Change BlendSpace1D Labels"
 msgstr "Cambiar Etiquetas de BlendSpace1D"
+
+msgid "This type of node can't be used. Only animation nodes are allowed."
+msgstr ""
+"Este tipo de nodo no se puede utilizar. Solo se permiten nodos de animación."
 
 msgid "This type of node can't be used. Only root nodes are allowed."
 msgstr ""
@@ -5048,6 +5151,9 @@ msgstr "El triángulo ya existe."
 msgid "Add Triangle"
 msgstr "Añadir Triángulo"
 
+msgid "Change BlendSpace2D Config"
+msgstr "Cambiar Configuración de BlendSpace2D"
+
 msgid "Change BlendSpace2D Labels"
 msgstr "Cambiar Etiquetas de BlendSpace2D"
 
@@ -5078,6 +5184,9 @@ msgstr ""
 
 msgid "Parameter Changed:"
 msgstr "Parámetro Modificado:"
+
+msgid "Inspect Filters"
+msgstr "Inspeccionar Filtros"
 
 msgid "Output node can't be added to the blend tree."
 msgstr "El nodo de salida no puede ser agregado al blend tree."
@@ -5140,6 +5249,9 @@ msgstr "Clips de Audio"
 msgid "Functions"
 msgstr "Funciones"
 
+msgid "Inspect Filtered Tracks:"
+msgstr "Inspeccionar Pistas Filtradas:"
+
 msgid "Edit Filtered Tracks:"
 msgstr "Editar Pistas Filtradas:"
 
@@ -5158,8 +5270,71 @@ msgstr "Nombre de la Librería:"
 msgid "Animation name can't be empty."
 msgstr "El nombre de la animación no puede estar vacío."
 
+msgid "Animation name contains invalid characters: '/', ':', ',' or '['."
+msgstr ""
+"Nombre de animación contiene caracteres inválidos: '/', ':', ',' or '['."
+
+msgid "Animation with the same name already exists."
+msgstr "Ya existe una animación con el mismo nombre."
+
+msgid "Library name contains invalid characters: '/', ':', ',' or '['."
+msgstr ""
+"Nombre de librería contiene caracteres inválidos: '/', ':', ',' or '['."
+
+msgid "Library with the same name already exists."
+msgstr "Ya existe una librería con el mismo nombre."
+
+msgid "Animation name is valid."
+msgstr "El nombre de la animación es válido."
+
+msgid "Library name is valid."
+msgstr "El nombre de la librería es válido."
+
+msgid "Add Animation to Library: %s"
+msgstr "Añadir Animación a la Librería: %s"
+
+msgid "Add Animation Library: %s"
+msgstr "Añadir Librería de Animación: %s"
+
 msgid "Load Animation"
 msgstr "Cargar Animación"
+
+msgid ""
+"This animation library can't be saved because it does not belong to the "
+"edited scene. Make it unique first."
+msgstr ""
+"Esta librería de animación no se puede guardar porque no pertenece a la "
+"escena editada. Hazla única primero."
+
+msgid ""
+"This animation library can't be saved because it was imported from another "
+"file. Make it unique first."
+msgstr ""
+"Esta librería de animaciones no puede ser guardada porque fue importada "
+"desde otro archivo. Hazla única primero."
+
+msgid "Save Library"
+msgstr "Guardar Librería"
+
+msgid ""
+"This animation can't be saved because it does not belong to the edited "
+"scene. Make it unique first."
+msgstr ""
+"Esta animación no se puede guardar porque no pertenece a la escena editada. "
+"Hazla única primero."
+
+msgid ""
+"This animation can't be saved because it was imported from another file. "
+"Make it unique first."
+msgstr ""
+"Esta animación no se puede guardar porque se importó desde otro archivo. "
+"Hazla única primero."
+
+msgid "Save Animation"
+msgstr "Guardar Animación"
+
+msgid "Make Animation Unique: %s"
+msgstr "Hacer Animación Única: %s"
 
 msgid "Invalid AnimationLibrary file."
 msgstr "Archivo AnimationLibrary inválido."
@@ -5167,14 +5342,29 @@ msgstr "Archivo AnimationLibrary inválido."
 msgid "Invalid Animation file."
 msgstr "Archivo Animation inválido."
 
+msgid "Load Animation into Library: %s"
+msgstr "Cargar Animación en Librería: %s"
+
 msgid "Save Animation library to File: %s"
 msgstr "Guardar librería de Animación en Archivo: %s"
 
 msgid "Save Animation to File: %s"
 msgstr "Guardar Animación en Archivo: %s"
 
+msgid "Rename Animation Library: %s"
+msgstr "Renombrar Librería de Animación: %s"
+
+msgid "[Global]"
+msgstr "[Global]"
+
+msgid "Rename Animation: %s"
+msgstr "Renombrar Animación: %s"
+
 msgid "Animation Name:"
 msgstr "Nombre de Animación:"
+
+msgid "No animation resource in clipboard!"
+msgstr "¡No hay recursos de animación en el portapapeles!"
 
 msgid "Pasted Animation"
 msgstr "Animación Pegada"
@@ -5182,11 +5372,26 @@ msgstr "Animación Pegada"
 msgid "Open in Inspector"
 msgstr "Abrir en el Inspector"
 
+msgid "Remove Animation Library: %s"
+msgstr "Eliminar Librería de Animación: %s"
+
+msgid "Remove Animation from Library: %s"
+msgstr "Eliminar Animación de la Librería: %s"
+
+msgid "[imported]"
+msgstr "[importado]"
+
+msgid "Add Animation to Library"
+msgstr "Añadir Animación a la Librería"
+
 msgid "Paste Animation to Library from clipboard"
 msgstr "Pegar Animación a la Biblioteca desde el portapapeles"
 
 msgid "Save animation library to resource on disk"
 msgstr "Guardar biblioteca de animaciones como recurso en el disco"
+
+msgid "Remove animation library"
+msgstr "Eliminar librería de animación"
 
 msgid "Copy animation to clipboard"
 msgstr "Copiar animación al portapapeles"
@@ -5194,8 +5399,17 @@ msgstr "Copiar animación al portapapeles"
 msgid "Save animation to resource on disk"
 msgstr "Guardar animación como recurso en disco"
 
+msgid "Remove animation from Library"
+msgstr "Eliminar Animación de la Librería"
+
 msgid "Edit Animation Libraries"
 msgstr "Editar Librerías de Animación"
+
+msgid "Add Library"
+msgstr "Añadir Librería"
+
+msgid "Load Library"
+msgstr "Cargar Librería"
 
 msgid "Storage"
 msgstr "Almacenamiento"
@@ -5215,11 +5429,17 @@ msgstr "Renombrar Animación"
 msgid "Change Animation Name:"
 msgstr "Cambiar nombre de animación:"
 
+msgid "Delete Animation '%s'?"
+msgstr "¿Eliminar Animación '%s'?"
+
 msgid "Remove Animation"
 msgstr "Eliminar Animación"
 
 msgid "Invalid animation name!"
 msgstr "¡Nombre de animación inválido!"
+
+msgid "Animation '%s' already exists!"
+msgstr "¡La animación '%s' ya existe!"
 
 msgid "Duplicate Animation"
 msgstr "Duplicar Animación"
@@ -5229,6 +5449,9 @@ msgstr "Mezclar el Siguiente Cambio"
 
 msgid "Change Blend Time"
 msgstr "Cambiar Tiempo de Mezcla"
+
+msgid "[Global] (create)"
+msgstr "[Global] (crear)"
 
 msgid "Duplicated Animation Name:"
 msgstr "Nombre de Animación Duplicado:"
@@ -5240,6 +5463,9 @@ msgstr ""
 msgid "Play selected animation backwards from end. (Shift+A)"
 msgstr ""
 "Reproducir hacia atrás la animación seleccionada desde el final. (Shift + A)"
+
+msgid "Pause/stop animation playback. (S)"
+msgstr "Pausar/detener la reproducción de la animación. (S)"
 
 msgid "Play selected animation from start. (Shift+D)"
 msgstr "Reproducir animación seleccionada desde el principio. (Shift + D)"
@@ -5331,6 +5557,9 @@ msgstr "¡La transición existe!"
 msgid "To"
 msgstr "A"
 
+msgid "Add Node and Transition"
+msgstr "Añadir Nodo y Transición"
+
 msgid "Add Transition"
 msgstr "Añadir Transición"
 
@@ -5367,6 +5596,9 @@ msgstr "Conectar nodos."
 msgid "Group Selected Node(s)"
 msgstr "Agrupar Nodo(s) Seleccionado(s)"
 
+msgid "Ungroup Selected Node"
+msgstr "Desagrupar Nodo Seleccionado"
+
 msgid "Remove selected node or transition."
 msgstr "Eliminar el nodo o transición seleccionado/a."
 
@@ -5378,6 +5610,9 @@ msgstr "Modo de Reproducción:"
 
 msgid "Delete Selected"
 msgstr "Eliminar Seleccionados"
+
+msgid "Delete All"
+msgstr "Eliminar Todo"
 
 msgid "Root"
 msgstr "Raíz"
@@ -5527,6 +5762,17 @@ msgstr "Último"
 msgid "All"
 msgstr "Todos"
 
+msgid "No results for \"%s\" for support level(s): %s."
+msgstr ""
+"No se encontraron resultados para \"%s\" para el(los) nivel(es) de soporte: "
+"%s."
+
+msgid "Search Templates, Projects, and Demos"
+msgstr "Buscar Plantillas, Proyectos y Demostraciones"
+
+msgid "Search Assets (Excluding Templates, Projects, and Demos)"
+msgstr "Buscar Recursos (Excepto Plantillas, Proyectos y Demostraciones)"
+
 msgid "Import..."
 msgstr "Importar..."
 
@@ -5583,6 +5829,9 @@ msgstr "Step de Rotación:"
 
 msgid "Scale Step:"
 msgstr "Pasos de Escalado:"
+
+msgid "Move Node(s) to Position"
+msgstr "Mover Nodo(s) a Posición"
 
 msgid "Move Vertical Guide"
 msgstr "Mover Guía Vertical"
@@ -5644,6 +5893,15 @@ msgstr "Agrupado"
 msgid "Add Node Here"
 msgstr "Añadir Nodo Aquí"
 
+msgid "Instantiate Scene Here"
+msgstr "Instanciar Escena Aquí"
+
+msgid "Paste Node(s) Here"
+msgstr "Pegar Nodo(s) Aquí"
+
+msgid "Move Node(s) Here"
+msgstr "Mover Nodo(s) Aquí"
+
 msgid "Moving:"
 msgstr "Moviendo:"
 
@@ -5687,6 +5945,9 @@ msgstr "Pegar Pose"
 
 msgid "Clear Guides"
 msgstr "Limpiar Guías"
+
+msgid "Create Custom Bone2D(s) from Node(s)"
+msgstr "Crear Bone2D(s) Personalizados a partir de Nodo(s)"
 
 msgid "Zoom to 3.125%"
 msgstr "Zoom al 3,125%"
@@ -5753,6 +6014,9 @@ msgstr "Modo de Escalado"
 msgid "Shift: Scale proportionally."
 msgstr "Shift: Escala proporcional."
 
+msgid "Show list of selectable nodes at position clicked."
+msgstr "Mostrar lista de nodos seleccionables en la posición pulsada."
+
 msgid "Click to change object's rotation pivot."
 msgstr "Haz clic para cambiar el pivote de rotación de un objeto."
 
@@ -5816,8 +6080,18 @@ msgstr "Ajustar a las Guías"
 msgid "Lock Selected Node(s)"
 msgstr "Bloquear Nodo(s) Seleccionado(s)"
 
+msgid "Unlock selected node, allowing selection and movement."
+msgstr ""
+"Desbloquear el nodo seleccionado, permitiendo su selección y movimiento."
+
 msgid "Unlock Selected Node(s)"
 msgstr "Desbloquear Nodo(s) Seleccionado(s)"
+
+msgid "Make selected node's children not selectable."
+msgstr "Hacer que los hijos del nodo seleccionado no sean seleccionables."
+
+msgid "Make selected node's children selectable."
+msgstr "Hacer seleccionables los nodos hijos del nodo seleccionado."
 
 msgid "Ungroup Selected Node(s)"
 msgstr "Desagrupar Nodo(s) Seleccionado(s)"
@@ -5827,6 +6101,9 @@ msgstr "Opciones de Esqueleto"
 
 msgid "Show Bones"
 msgstr "Mostrar Huesos"
+
+msgid "Make Bone2D Node(s) from Node(s)"
+msgstr "Crear Nodo(s) Bone2D a partir de Nodo(s)"
 
 msgid "View"
 msgstr "Ver"
@@ -5863,6 +6140,9 @@ msgstr "Mostrar Viewport"
 
 msgid "Show Group And Lock Icons"
 msgstr "Mostrar Grupo y Bloquear Iconos"
+
+msgid "Show Transformation Gizmos"
+msgstr "Mostrar Gizmos de Transformación"
 
 msgid "Center Selection"
 msgstr "Centrar Selección"
@@ -5921,20 +6201,43 @@ msgstr "Dividir paso de cuadrícula por 2"
 msgid "Adding %s..."
 msgstr "Añadiendo %s..."
 
+msgid "Hold Ctrl when dropping to add as child of selected node."
+msgstr ""
+"Mantén presionado Ctrl al soltar para agregar como hijo del nodo "
+"seleccionado."
+
 msgid "Cannot instantiate multiple nodes without root."
 msgstr "No se pueden instanciar varios nodos sin un nodo raíz."
 
 msgid "Create Node"
 msgstr "Crear Nodo"
 
+msgid "Error instantiating scene from %s"
+msgstr "Error al instanciar escena desde %s"
+
 msgid "Change Default Type"
 msgstr "Cambiar Tipo Predeterminado"
+
+msgid "Set Target Position"
+msgstr "Establecer Posición del Objetivo"
 
 msgid "Set Handle"
 msgstr "Establecer Manipulador"
 
+msgid "Container Default"
+msgstr "Contenedor Predeterminado"
+
 msgid "Fill"
 msgstr "Rellenar"
+
+msgid "Shrink Begin"
+msgstr "Inicio de Reducción"
+
+msgid "Shrink Center"
+msgstr "Centro de Reducción"
+
+msgid "Shrink End"
+msgstr "Fin de Reducción"
 
 msgid "Custom"
 msgstr "Personalizado"
@@ -5990,8 +6293,39 @@ msgstr "Ancho Derecha"
 msgid "Full Rect"
 msgstr "Completo"
 
+msgid "Change Vertical Size Flags"
+msgstr "Cambiar Indicadores de Tamaño Vertical"
+
+msgid "Change Horizontal Size Flags"
+msgstr "Cambiar Indicadores de Tamaño Horizontal"
+
+msgid "Presets for the anchor and offset values of a Control node."
+msgstr "Presets para los valores de ancla y desplazamiento de un nodo Control."
+
+msgid "Anchor preset"
+msgstr "Configuración preestablecida de anclaje"
+
+msgid "Set to Current Ratio"
+msgstr "Establecer a Proporción Actual"
+
+msgid ""
+"When active, moving Control nodes changes their anchors instead of their "
+"offsets."
+msgstr ""
+"Cuando está activo, mover nodos de Control cambia sus anclas en lugar de sus "
+"desplazamientos."
+
+msgid "Horizontal alignment"
+msgstr "Alineación Horizontal"
+
+msgid "Vertical alignment"
+msgstr "Alineación Vertical"
+
 msgid "Load Emission Mask"
 msgstr "Cargar Máscara de Emisión"
+
+msgid "CPUParticles2D"
+msgstr "CPUParticles2D"
 
 msgid "Generated Point Count:"
 msgstr "Conteo de Puntos Generados:"
@@ -6013,6 +6347,9 @@ msgstr "Capturar desde píxel"
 
 msgid "Emission Colors"
 msgstr "Colores de Emisión"
+
+msgid "CPUParticles3D"
+msgstr "CPUParticles3D"
 
 msgid "Create Emission Points From Node"
 msgstr "Crear Puntos de Emisión Desde el Nodo"
@@ -6117,6 +6454,16 @@ msgstr ""
 "Cuando esta opción está activada, las formas de colisión y los nodos de "
 "raycast (para 2D y 3D) serán visibles en el proyecto en ejecución."
 
+msgid "Visible Paths"
+msgstr "Trayectos Visibles"
+
+msgid ""
+"When this option is enabled, curve resources used by path nodes will be "
+"visible in the running project."
+msgstr ""
+"Cuando esta opción está habilitada, los recursos de curva utilizados por "
+"nodos de trayectoria serán visibles en el proyecto en ejecución."
+
 msgid "Visible Navigation"
 msgstr "Navegación Visible"
 
@@ -6155,10 +6502,32 @@ msgstr ""
 "Cuando se utiliza de forma remota en un dispositivo, esto es más eficiente "
 "cuando la opción de sistema de archivos en red está activada."
 
+msgid "Keep Debug Server Open"
+msgstr "Mantener Abierto el Servidor de Depuración"
+
 msgid "Run %d Instance"
 msgid_plural "Run %d Instances"
 msgstr[0] "Ejecutar %d Instancia"
 msgstr[1] "Ejecutar %d Instancias"
+
+msgid "Overrides (%d)"
+msgstr "Anulaciones (%d)"
+
+msgctxt "Locale"
+msgid "Add Script"
+msgstr "Añadir Script"
+
+msgid "Add Locale"
+msgstr "Añadir Idioma"
+
+msgid "Variation Coordinates (%d)"
+msgstr "Coordenadas de Variación (%d)"
+
+msgid "No supported features"
+msgstr "Características no soportadas"
+
+msgid "Add Feature"
+msgstr "Añadir Característica"
 
 msgid " - Variation"
 msgstr " - Variación"
@@ -6166,11 +6535,23 @@ msgstr " - Variación"
 msgid "Convert to CPUParticles2D"
 msgstr "Convertir a CPUParticles2D"
 
+msgid "Generating Visibility Rect (Waiting for Particle Simulation)"
+msgstr ""
+"Generando Rectángulo de Visibilidad (Esperando la Simulación de Partículas)"
+
 msgid "Generate Visibility Rect"
 msgstr "Generar Rect. de Visibilidad"
 
+msgid "Can only set point into a ParticleProcessMaterial process material"
+msgstr ""
+"Solo se puede establecer un punto en un material de procesamiento de "
+"partículas de tipo ParticleProcessMaterial"
+
 msgid "Clear Emission Mask"
 msgstr "Borrar máscara de emisión"
+
+msgid "GPUParticles2D"
+msgstr "GPUParticles2D"
 
 msgid "Generation Time (sec):"
 msgstr "Tiempo de Generación (seg):"
@@ -6180,6 +6561,9 @@ msgstr "Las caras de la geometría no contienen ningún área."
 
 msgid "The geometry doesn't contain any faces."
 msgstr "La geometría no contiene ninguna cara."
+
+msgid "\"%s\" doesn't inherit from Node3D."
+msgstr "\"%s\" no hereda de Node3D."
 
 msgid "\"%s\" doesn't contain geometry."
 msgstr "\"%s\" no tiene geometría."
@@ -6205,8 +6589,35 @@ msgstr "Volumen"
 msgid "Emission Source:"
 msgstr "Fuente de Emisión:"
 
+msgid "A processor material of type 'ParticleProcessMaterial' is required."
+msgstr "Se requiere un material procesador de tipo 'ParticleProcessMaterial'."
+
+msgid "Convert to CPUParticles3D"
+msgstr "Convertir a CPUParticles3D"
+
 msgid "Generate Visibility AABB"
 msgstr "Generar AABB de visibilidad"
+
+msgid "GPUParticles3D"
+msgstr "GPUParticles3D"
+
+msgid "Generate AABB"
+msgstr "Generar AABB"
+
+msgid "Low"
+msgstr "Bajo"
+
+msgid "Moderate"
+msgstr "Moderado"
+
+msgid "High"
+msgstr "Alto"
+
+msgid "Cell size: %s"
+msgstr "Tamaño de la celda: %s"
+
+msgid "Bake SDF"
+msgstr "Bakear SDF"
 
 msgid "Gradient Edited"
 msgstr "Degradado Editado"
@@ -6220,6 +6631,9 @@ msgstr "Intercambiar Puntos de Relleno de Degradado"
 msgid "Toggle Grid Snap"
 msgstr "Cambiar Snap de Cuadrícula"
 
+msgid "Configure"
+msgstr "Configurar"
+
 msgid "Create Occluder Polygon"
 msgstr "Crear Polígono Oclusor"
 
@@ -6231,10 +6645,20 @@ msgstr ""
 "lightmaps.\n"
 "Guarda tu escena e inténtalo de nuevo."
 
+msgid ""
+"No meshes to bake. Make sure they contain an UV2 channel and that the 'Bake "
+"Light' flag is on."
+msgstr ""
+"No hay mallas para bakear. Asegúrate de que contengan un canal UV2 y de que "
+"la opción 'Bakear Luz' esté activada."
+
 msgid "Failed creating lightmap images, make sure path is writable."
 msgstr ""
 "Error al crear las imágenes del lightmap, asegúrate de que se puede escribir "
 "en la ruta."
+
+msgid "No editor scene root found."
+msgstr "No se encontró la raíz de la escena del editor."
 
 msgid "Bake Lightmaps"
 msgstr "Bakear Lightmaps"
@@ -6288,11 +6712,31 @@ msgstr "Crear Múltiples Formas Convexas"
 msgid "Create Navigation Mesh"
 msgstr "Crear Malla de Navegación"
 
+msgid "Create Debug Tangents"
+msgstr "Crear Tangentes de Depuración"
+
 msgid "Contained Mesh is not of type ArrayMesh."
 msgstr "La Malla contenedora no es del tipo ArrayMesh."
 
+msgid ""
+"Mesh cannot unwrap UVs because it does not belong to the edited scene. Make "
+"it unique first."
+msgstr ""
+"La malla no puede desplegar los UVs porque no pertenece a la escena editada. "
+"Primero haz que sea única."
+
+msgid ""
+"Mesh cannot unwrap UVs because it was imported from another file type. Make "
+"it unique first."
+msgstr ""
+"La malla no puede desplegar los UV porque fue importada de otro tipo de "
+"archivo. Hazla única primero."
+
 msgid "UV Unwrap failed, mesh may not be manifold?"
 msgstr "Fallo del UV Unwrap ¿la malla podría no ser múltiple?"
+
+msgid "Unwrap UV2"
+msgstr "Desenvolver UV2"
 
 msgid "No mesh to debug."
 msgstr "No hay mallas para depurar."
@@ -6320,6 +6764,16 @@ msgstr "Malla"
 
 msgid "Create Trimesh Static Body"
 msgstr "Crear StaticBody Triangular"
+
+msgid ""
+"Creates a StaticBody3D and assigns a polygon-based collision shape to it "
+"automatically.\n"
+"This is the most accurate (but slowest) option for collision detection."
+msgstr ""
+"Crea un StaticBody3D y le asigna automáticamente una forma de colisión "
+"basada en polígonos.\n"
+"Esta es la opción más precisa (pero más lenta) para la detección de "
+"colisiones."
 
 msgid "Create Trimesh Collision Sibling"
 msgstr "Crear Collider Triangular Hermano"
@@ -6367,6 +6821,17 @@ msgstr ""
 
 msgid "Create Outline Mesh..."
 msgstr "Crear Malla de Contorno..."
+
+msgid ""
+"Creates a static outline mesh. The outline mesh will have its normals "
+"flipped automatically.\n"
+"This can be used instead of the StandardMaterial Grow property when using "
+"that property isn't possible."
+msgstr ""
+"Crea una malla de contorno estática. La malla de contorno tendrá sus "
+"normales invertidas automáticamente.\n"
+"Esto se puede utilizar en lugar de la propiedad Grow del material estándar "
+"cuando el uso de esa propiedad no es posible."
 
 msgid "View UV1"
 msgstr "Ver UV1"
@@ -6433,6 +6898,9 @@ msgstr ""
 msgid "Mesh source is invalid (invalid path)."
 msgstr "El origen de la malla es inválido (ruta inválida)."
 
+msgid "Mesh source is invalid (not a MeshInstance3D)."
+msgstr "La fuente de la malla es inválida (no es una MeshInstance3D)."
+
 msgid "Mesh source is invalid (contains no Mesh resource)."
 msgstr ""
 "El origen de la malla es inválido (no contiene ningún recurso de Malla)."
@@ -6494,6 +6962,12 @@ msgstr "Cantidad:"
 msgid "Populate"
 msgstr "Rellenar"
 
+msgid "Set start_position"
+msgstr "Establecer posición inicial"
+
+msgid "Set end_position"
+msgstr "Establecer posición final"
+
 msgid "Create Navigation Polygon"
 msgstr "Crear polígono de navegación"
 
@@ -6515,14 +6989,23 @@ msgstr "Cambiar Tamaño de Cámara"
 msgid "Change Sphere Shape Radius"
 msgstr "Cambiar Radio de la Forma Esférica"
 
+msgid "Change Box Shape Size"
+msgstr "Cambiar Tamaño de la Forma de Caja"
+
 msgid "Change Notifier AABB"
 msgstr "Cambiar Notificador AABB"
 
 msgid "Change Particles AABB"
 msgstr "Cambiar partículas AABB"
 
+msgid "Change Radius"
+msgstr "Cambiar Radio"
+
 msgid "Change Probe Size"
 msgstr "Cambiar Tamaño de la Sonda"
+
+msgid "Change Decal Size"
+msgstr "Cambiar tamaño de Decal"
 
 msgid "Change Capsule Shape Radius"
 msgstr "Cambiar Radio de la Forma de la Cápsula"
@@ -6535,6 +7018,24 @@ msgstr "Cambiar Radio de la Forma del Cilindro"
 
 msgid "Change Cylinder Shape Height"
 msgstr "Cambiar Altura de la Forma del Cilindro"
+
+msgid "Change Separation Ray Shape Length"
+msgstr "Cambiar Longitud de la Forma del Rayo de Separación"
+
+msgid "Start Location"
+msgstr "Ubicación Inicial"
+
+msgid "End Location"
+msgstr "Ubicación Final"
+
+msgid "Change Start Position"
+msgstr "Cambiar Posición Inicial"
+
+msgid "Change End Position"
+msgstr "Cambiar Posición Final"
+
+msgid "Change Fog Volume Size"
+msgstr "Cambiar Tamaño del Volumen de Niebla"
 
 msgid "Transform Aborted."
 msgstr "Transformación Abortada."
@@ -6596,6 +7097,15 @@ msgstr "Transformación en Eje-Z."
 msgid "View Plane Transform."
 msgstr "Ver Transformación en Plano."
 
+msgid "YZ-Plane Transform."
+msgstr "Transformación YZ-Plane."
+
+msgid "XZ-Plane Transform."
+msgstr "Transformación XZ-Plane."
+
+msgid "XY-Plane Transform."
+msgstr "Transformación XY-Plane."
+
 msgid "Keying is disabled (no key inserted)."
 msgstr "Insertar claves está desactivado (no se insertaron claves)."
 
@@ -6656,6 +7166,9 @@ msgstr "Alinear la Transformación con la Vista"
 msgid "Align Rotation with View"
 msgstr "Alinear la Rotación con la Vista"
 
+msgid "Set Material Override"
+msgstr "Establecer Anulación de Material"
+
 msgid "None"
 msgstr "Ninguno"
 
@@ -6686,20 +7199,56 @@ msgstr "Mostrar Wireframe"
 msgid "Display Overdraw"
 msgstr "Mostrar Overdraw"
 
+msgid "Display Lighting"
+msgstr "Mostrar Iluminación"
+
 msgid "Display Unshaded"
 msgstr "Mostrar Sin Sombreado"
+
+msgid "Directional Shadow Splits"
+msgstr "Dirección de Divisiones de Sombras"
+
+msgid "Normal Buffer"
+msgstr "Búfer de Normales"
 
 msgid "Shadow Atlas"
 msgstr "Sombra del Atlas"
 
+msgid "Directional Shadow Map"
+msgstr "Mapa de Sombras Direccionales"
+
+msgid "Decal Atlas"
+msgstr "Atlas de Decal"
+
+msgid "VoxelGI Lighting"
+msgstr "Iluminación de VoxelGI"
+
+msgid "VoxelGI Albedo"
+msgstr "Albedo de VoxelGI"
+
+msgid "VoxelGI Emission"
+msgstr "Emisión de VoxelGI"
+
 msgid "SDFGI Probes"
 msgstr "Sondas SDFGI"
+
+msgid "Scene Luminance"
+msgstr "Iluminación de Escena"
 
 msgid "SSAO"
 msgstr "SSAO"
 
+msgid "Disable Mesh LOD"
+msgstr "Desactivar LOD de Mesh"
+
 msgid "ReflectionProbe Cluster"
 msgstr "Clúster ReflectionProbe"
+
+msgid "Occlusion Culling Buffer"
+msgstr "Búfer de Occlusion Culling"
+
+msgid "Motion Vectors"
+msgstr "Vectores de Movimiento"
 
 msgid "Display Advanced..."
 msgstr "Mostrar Avanzado..."
@@ -6713,6 +7262,9 @@ msgstr "Ver Gizmos"
 msgid "View Information"
 msgstr "Ver Información"
 
+msgid "View Frame Time"
+msgstr "Tiempo de Fotograma de Vista"
+
 msgid "Half Resolution"
 msgstr "Media Resolución"
 
@@ -6724,6 +7276,9 @@ msgstr "Activar Doppler"
 
 msgid "Cinematic Preview"
 msgstr "Vista Previa Cinemática"
+
+msgid "Not available when using the OpenGL renderer."
+msgstr "No disponible al utilizar el renderizador OpenGL."
 
 msgid "Freelook Left"
 msgstr "Vista Libre Izquierda"
@@ -6749,6 +7304,15 @@ msgstr "Modificador de Velocidad de Vista Libre"
 msgid "Freelook Slow Modifier"
 msgstr "Modificador de Velocidad de Vista Libre"
 
+msgid "Cancel Transformation"
+msgstr "Cancelar Transformación"
+
+msgid "Begin Rotate Transformation"
+msgstr "Iniciar Transformación de Rotación"
+
+msgid "Begin Scale Transformation"
+msgstr "Iniciar Transformación de Escala"
+
 msgid "Toggle Camera Preview"
 msgstr "Alternar Vista Previa de la Cámara"
 
@@ -6760,6 +7324,9 @@ msgid ""
 msgstr ""
 "Para alejar más, cambia los planos de corte de la cámara (Vista -> "
 "Configuración...)"
+
+msgid "Overriding material..."
+msgstr "Material de anulación..."
 
 msgid "XForm Dialog"
 msgstr "Diálogo XForm"
@@ -6783,6 +7350,12 @@ msgstr "Ajustar Nodos al Suelo"
 
 msgid "Couldn't find a solid floor to snap the selection to."
 msgstr "No se pudo encontrar un suelo sólido para ajustar la selección."
+
+msgid "Add Preview Sun to Scene"
+msgstr "Añadir Vista Previa del Sol a la Escena"
+
+msgid "Add Preview Environment to Scene"
+msgstr "Añadir Entorno de Vista Previa a la Escena"
 
 msgid "Preview disabled."
 msgstr "Vista previa desactivada."
@@ -6934,6 +7507,9 @@ msgstr "Anterior"
 msgid "Post"
 msgstr "Posterior"
 
+msgid "Preview Sun"
+msgstr "Vista Previa del Sol"
+
 msgid "Sun Direction"
 msgstr "Dirección del Sol"
 
@@ -6981,6 +7557,25 @@ msgstr "GI"
 
 msgid "Post Process"
 msgstr "Post-Procesado"
+
+msgid "Add Environment to Scene"
+msgstr "Añadir Entorno a la Escena"
+
+msgid ""
+"Can't determine a save path for the occluder.\n"
+"Save your scene and try again."
+msgstr ""
+"No se puede determinar una ruta de guardado para el ocluder.\n"
+"Guarda tu escena y vuelve a intentarlo."
+
+msgid "Could not save the new occluder at the specified path:"
+msgstr "No se ha podido guardar el nuevo oclusor en la ruta especificada:"
+
+msgid "Bake Occluders"
+msgstr "Bakear Occluders"
+
+msgid "Select occluder bake file:"
+msgstr "Selecciona archivo de bakeo oclusor:"
 
 msgid "Remove Point from Curve"
 msgstr "Borrar Punto de la Curva"
@@ -9139,7 +9734,7 @@ msgid "Voxel GI data is an imported resource."
 msgstr "Los datos de GI de vóxel son un recurso importado."
 
 msgid "Bake VoxelGI"
-msgstr "Bake VoxelGI"
+msgstr "Bakear VoxelGI"
 
 msgid "Select path for VoxelGI Data File"
 msgstr "Seleccionar ruta para el archivo de datos VoxelGI"

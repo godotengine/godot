@@ -94,13 +94,14 @@
 # Muhammed Mustafa Özbay <muhammed.ozby@outlook.com>, 2023.
 # Tolunay Mutlu <tlnymtlu@gmail.com>, 2023.
 # atahanacar <atahanacar@gmx.com>, 2023.
+# efella <furkanefe911@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-02-22 12:24+0000\n"
-"Last-Translator: Atilla Yiğit Şimşekoğlu <yigitsimsekoglu@gmail.com>\n"
+"PO-Revision-Date: 2023-02-25 10:57+0000\n"
+"Last-Translator: efella <furkanefe911@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
 "Language: tr\n"
@@ -209,6 +210,12 @@ msgstr "Sol Çubuk, Sony L3, Xbox L/LS"
 msgid "Right Stick, Sony R3, Xbox R/RS"
 msgstr "Sağ Çubuk, Sony R3, Xbox R/RS"
 
+msgid "Left Shoulder, Sony L1, Xbox LB"
+msgstr "Sol Tetik tuşu, Sony L1, Xbox LB"
+
+msgid "Right Shoulder, Sony R1, Xbox RB"
+msgstr "Sağ Tetik tuşu, Sony R1, Xbox RB"
+
 msgid "D-pad Up"
 msgstr "D-pad Yukarı"
 
@@ -220,6 +227,9 @@ msgstr "D-pad Sol"
 
 msgid "D-pad Right"
 msgstr "D-pad Sağ"
+
+msgid "Joypad Button %d"
+msgstr "Oyun Kolu Düğmesi %d"
 
 msgid "Pressure:"
 msgstr "Basınç:"

@@ -75,8 +75,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-02-23 00:30+0000\n"
-"Last-Translator: Tomek <kobewi4e@gmail.com>\n"
+"PO-Revision-Date: 2023-02-26 20:44+0000\n"
+"Last-Translator: Marcin Sokołowski <sokolekster@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/pl/>\n"
 "Language: pl\n"
@@ -206,6 +206,9 @@ msgstr "Debugowanie"
 
 msgid "Settings"
 msgstr "Ustawienia"
+
+msgid "Profiler"
+msgstr "Profiler"
 
 msgid "Compression"
 msgstr "Kompresja"
@@ -1620,6 +1623,9 @@ msgstr "Materiały"
 msgid "Animations"
 msgstr "Animacje"
 
+msgid "Count"
+msgstr "Liczba"
+
 msgid "Loop"
 msgstr "Zapętl"
 
@@ -1734,6 +1740,12 @@ msgstr "Ikony"
 msgid "Location"
 msgstr "Lokalizacja"
 
+msgid "Notarization"
+msgstr "Poświadczenie notarialne"
+
+msgid "Tiles"
+msgstr "Płytki"
+
 msgid "Variant"
 msgstr "Wariant"
 
@@ -1779,6 +1791,12 @@ msgstr "Kolory"
 msgid "Visibility Rect"
 msgstr "Prostokąt widoczności"
 
+msgid "Default Color"
+msgstr "Kolor domyślny"
+
+msgid "Fill"
+msgstr "Wypełnienie"
+
 msgid "Navigation Layers"
 msgstr "Warstwy nawigacji"
 
@@ -1809,6 +1827,9 @@ msgstr "Maska bitowa"
 msgid "Cull Mask"
 msgstr "Cull Mask"
 
+msgid "Modulate"
+msgstr "Moduluj"
+
 msgid "Flags"
 msgstr "Flagi"
 
@@ -1836,6 +1857,9 @@ msgstr "Przejdź"
 msgid "End"
 msgstr "Koniec"
 
+msgid "Pose"
+msgstr "Pozycja"
+
 msgid "Sync"
 msgstr "Synchronizuj"
 
@@ -1856,6 +1880,9 @@ msgstr "Węzeł główny"
 
 msgid "Button Group"
 msgstr "Grupa przycisków"
+
+msgid "Indentation"
+msgstr "Wcięcia"
 
 msgid "Localization"
 msgstr "Lokalizacja"
@@ -1886,6 +1913,9 @@ msgstr "Krok"
 
 msgid "Syntax Highlighter"
 msgstr "Podświetlacz składni"
+
+msgid "Expand"
+msgstr "Rozwiń"
 
 msgid "Z Index"
 msgstr "Indeks Z"
@@ -1935,8 +1965,20 @@ msgstr "Kursor"
 msgid "Node"
 msgstr "Węzeł"
 
+msgid "Sky"
+msgstr "Niebo"
+
 msgid "Source"
 msgstr "Źródło"
+
+msgid "SSAO"
+msgstr "SSAO"
+
+msgid "SSIL"
+msgstr "SSIL"
+
+msgid "Glow"
+msgstr "Blask"
 
 msgid "2"
 msgstr "2"
@@ -1971,6 +2013,9 @@ msgstr "Podgląd"
 msgid "B"
 msgstr "B"
 
+msgid "Ground Color"
+msgstr "Kolor podłoża"
+
 msgid "Blend"
 msgstr "Mieszanie"
 
@@ -1986,14 +2031,29 @@ msgstr "Prawy dolny róg"
 msgid "Bottom Left"
 msgstr "Lewy dolny róg"
 
+msgid "Atlas"
+msgstr "Atlas"
+
+msgid "To"
+msgstr "Do"
+
+msgid "Terrains"
+msgstr "Tereny"
+
 msgid "Transpose"
 msgstr "Transpozycja"
+
+msgid "Probability"
+msgstr "Prawdopodobieństwo"
 
 msgid "Constant"
 msgstr "Stała"
 
 msgid "Function"
 msgstr "Funkcja"
+
+msgid "Custom"
+msgstr "Niestandardowe"
 
 msgid "Pan"
 msgstr "Pan"
@@ -2022,11 +2082,20 @@ msgstr "Fragmenty"
 msgid "Cull"
 msgstr "Cull"
 
+msgid "Shadow Atlas"
+msgstr "Atlas cieni"
+
 msgid "Reflections"
 msgstr "Odbicia"
 
+msgid "GI"
+msgstr "GI"
+
 msgid "Overrides"
 msgstr "Nadpisuje"
+
+msgid "OpenGL"
+msgstr "OpenGL"
 
 msgid "Property"
 msgstr "Właściwość"
