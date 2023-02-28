@@ -34,6 +34,7 @@
 #include "core/math/math_defs.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
+#include "core/string/translation.h"
 #include "label.h"
 #include "scene/scene_string_names.h"
 #include "servers/display_server.h"
@@ -1799,8 +1800,7 @@ void RichTextLabel::_notification(int p_what) {
 
 		case NOTIFICATION_LAYOUT_DIRECTION_CHANGED:
 		case NOTIFICATION_TRANSLATION_CHANGED: {
-			_stop_thread();
-			main->first_invalid_line.store(0); //invalidate ALL
+			_apply_translation();
 			queue_redraw();
 		} break;
 
@@ -5123,13 +5123,17 @@ void RichTextLabel::set_text(const String &p_bbcode) {
 	if (text == p_bbcode) {
 		return;
 	}
-
 	text = p_bbcode;
+	_apply_translation();
+}
+
+void RichTextLabel::_apply_translation() {
+	String xl_text = atr(text);
 	if (use_bbcode) {
-		parse_bbcode(p_bbcode);
+		parse_bbcode(xl_text);
 	} else { // raw text
 		clear();
-		add_text(p_bbcode);
+		add_text(xl_text);
 	}
 }
 
@@ -5144,13 +5148,7 @@ void RichTextLabel::set_use_bbcode(bool p_enable) {
 	use_bbcode = p_enable;
 	notify_property_list_changed();
 
-	const String current_text = text;
-	if (use_bbcode) {
-		parse_bbcode(current_text);
-	} else { // raw text
-		clear();
-		add_text(current_text);
-	}
+	_apply_translation();
 }
 
 bool RichTextLabel::is_using_bbcode() const {
@@ -5285,7 +5283,7 @@ float RichTextLabel::get_visible_ratio() const {
 void RichTextLabel::set_effects(Array p_effects) {
 	custom_effects = p_effects;
 	if ((!text.is_empty()) && use_bbcode) {
-		parse_bbcode(text);
+		parse_bbcode(atr(text));
 	}
 }
 
@@ -5300,7 +5298,7 @@ void RichTextLabel::install_effect(const Variant effect) {
 	ERR_FAIL_COND_MSG(rteffect.is_null(), "Invalid RichTextEffect resource.");
 	custom_effects.push_back(effect);
 	if ((!text.is_empty()) && use_bbcode) {
-		parse_bbcode(text);
+		parse_bbcode(atr(text));
 	}
 }
 
