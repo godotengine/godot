@@ -76,6 +76,7 @@
 			<param index="0" name="type" type="int" enum="Viewport.RenderInfoType" />
 			<param index="1" name="info" type="int" enum="Viewport.RenderInfo" />
 			<description>
+				Returns rendering statistics of the given type. See [enum RenderInfoType] and [enum RenderInfo] for options.
 			</description>
 		</method>
 		<method name="get_screen_transform" qualifiers="const">
@@ -165,6 +166,7 @@
 			<return type="void" />
 			<param index="0" name="text" type="String" />
 			<description>
+				Helper method which calls the [code]set_text()[/code] method on the currently focused [Control], provided that it is defined (e.g. if the focused Control is [Button] or [LineEdit]).
 			</description>
 		</method>
 		<method name="push_unhandled_input">

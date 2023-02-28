@@ -72,11 +72,13 @@
 			If [code]true[/code], polygon edges will be anti-aliased.
 		</member>
 		<member name="bones" type="Array" setter="_set_bones" getter="_get_bones" default="[]">
+			Internal list of [Bone2D] nodes used by the assigned [member skeleton]. Edited using the Polygon2D editor ("UV" button on the top toolbar).
 		</member>
 		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color(1, 1, 1, 1)">
 			The polygon's fill color. If [code]texture[/code] is defined, it will be multiplied by this color. It will also be the default color for vertices not set in [code]vertex_colors[/code].
 		</member>
 		<member name="internal_vertex_count" type="int" setter="set_internal_vertex_count" getter="get_internal_vertex_count" default="0">
+			Number of internal vertices, used for UV mapping.
 		</member>
 		<member name="invert_border" type="float" setter="set_invert_border" getter="get_invert_border" default="100.0">
 			Added padding applied to the bounding box when [member invert_enabled] is set to [code]true[/code]. Setting this value too small may result in a "Bad Polygon" error.
@@ -95,6 +97,7 @@
 			The list of polygons, in case more than one is being represented. Every individual polygon is stored as a [PackedInt32Array] where each [int] is an index to a point in [member polygon]. If empty, this property will be ignored, and the resulting single polygon will be composed of all points in [member polygon], using the order they are stored in.
 		</member>
 		<member name="skeleton" type="NodePath" setter="set_skeleton" getter="get_skeleton" default="NodePath(&quot;&quot;)">
+			Path to a [Skeleton2D] node used for skeleton-based deformations of this polygon. If empty or invalid, skeletal deformations will not be used.
 		</member>
 		<member name="texture" type="Texture2D" setter="set_texture" getter="get_texture">
 			The polygon's fill texture. Use [code]uv[/code] to set texture coordinates.

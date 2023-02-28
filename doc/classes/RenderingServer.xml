@@ -33,6 +33,7 @@
 			<description>
 				Creates a camera attributes object and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]camera_attributes_[/code] RenderingServer functions.
 				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] static method.
+				This is the internal equivalent of the [CameraAttributes] resource.
 			</description>
 		</method>
 		<method name="camera_attributes_set_auto_exposure">
@@ -100,6 +101,7 @@
 			<description>
 				Creates a camera and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]camera_*[/code] RenderingServer functions.
 				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] static method.
+				This is the internal equivalent of the [Camera3D] node.
 			</description>
 		</method>
 		<method name="camera_set_camera_attributes">
@@ -178,6 +180,7 @@
 			<description>
 				Creates a canvas and returns the assigned [RID]. It can be accessed with the RID that is returned. This RID will be used in all [code]canvas_*[/code] RenderingServer functions.
 				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] static method.
+				Canvas has no [Resource] or [Node] equivalent.
 			</description>
 		</method>
 		<method name="canvas_item_add_animation_slice">
@@ -350,6 +353,7 @@
 			<param index="4" name="modulate" type="Color" default="Color(1, 1, 1, 1)" />
 			<param index="5" name="transpose" type="bool" default="false" />
 			<description>
+				Draws a 2D textured rectangle on the [CanvasItem] pointed to by the [param item] [RID]. See also [method CanvasItem.draw_texture_rect] and [method Texture2D.draw_rect].
 			</description>
 		</method>
 		<method name="canvas_item_add_texture_rect_region">
@@ -362,6 +366,7 @@
 			<param index="5" name="transpose" type="bool" default="false" />
 			<param index="6" name="clip_uv" type="bool" default="true" />
 			<description>
+				Draws the specified region of a 2D textured rectangle on the [CanvasItem] pointed to by the [param item] [RID]. See also [method CanvasItem.draw_texture_rect_region] and [method Texture2D.draw_rect_region].
 			</description>
 		</method>
 		<method name="canvas_item_add_triangle_array">
@@ -388,7 +393,9 @@
 		<method name="canvas_item_create">
 			<return type="RID" />
 			<description>
-				Creates a new [CanvasItem] instance and returns its [RID].
+				Creates a canvas item and returns the assigned [RID]. It can be accessed with the RID that is returned. This RID will be used in all [code]canvas_item_*[/code] RenderingServer functions.
+				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] static method.
+				This is the internal equivalent of the [CanvasItem] node.
 			</description>
 		</method>
 		<method name="canvas_item_set_canvas_group_mode">
@@ -482,6 +489,7 @@
 			<param index="0" name="item" type="RID" />
 			<param index="1" name="color" type="Color" />
 			<description>
+				Sets a color modulation to the [CanvasItem]. This also affects child canvas items.
 			</description>
 		</method>
 		<method name="canvas_item_set_parent">
@@ -489,6 +497,7 @@
 			<param index="0" name="item" type="RID" />
 			<param index="1" name="parent" type="RID" />
 			<description>
+				Sets a parent [CanvasItem] to the [CanvasItem]. The item will inherit transform, modulation and visibility from its parent, like [CanvasItem] nodes in the scene tree.
 			</description>
 		</method>
 		<method name="canvas_item_set_self_modulate">
@@ -496,6 +505,7 @@
 			<param index="0" name="item" type="RID" />
 			<param index="1" name="color" type="Color" />
 			<description>
+				Sets a color self-modulation to the [CanvasItem]. It does not affect the child canvas items.
 			</description>
 		</method>
 		<method name="canvas_item_set_sort_children_by_y">
@@ -503,6 +513,7 @@
 			<param index="0" name="item" type="RID" />
 			<param index="1" name="enabled" type="bool" />
 			<description>
+				Enables or disables Y-sorting of a [CanvasItem].
 			</description>
 		</method>
 		<method name="canvas_item_set_transform">
@@ -510,6 +521,7 @@
 			<param index="0" name="item" type="RID" />
 			<param index="1" name="transform" type="Transform2D" />
 			<description>
+				Sets the transform of the [CanvasItem]. It affects where and how the item will be drawn. Child canvas items' transforms are multiplied by their parent's transform.
 			</description>
 		</method>
 		<method name="canvas_item_set_use_parent_material">
@@ -536,6 +548,8 @@
 			<param index="3" name="enter_callable" type="Callable" />
 			<param index="4" name="exit_callable" type="Callable" />
 			<description>
+				Sets the given [CanvasItem] as visibility notifier. [param area] defines the area of detecting visibility. [param enter_callable] is called when the [CanvasItem] enters the screen, [param exit_callable] is called when the [CanvasItem] exits the screen. If [param enable] is [code]false[/code], the item will no longer function as notifier.
+				This method can be used to manually mimic [VisibleOnScreenNotifier2D].
 			</description>
 		</method>
 		<method name="canvas_item_set_visible">
@@ -543,6 +557,7 @@
 			<param index="0" name="item" type="RID" />
 			<param index="1" name="visible" type="bool" />
 			<description>
+				Sets the visibility of the [CanvasItem].
 			</description>
 		</method>
 		<method name="canvas_item_set_z_as_relative_to_parent">
@@ -832,6 +847,9 @@
 		<method name="canvas_texture_create">
 			<return type="RID" />
 			<description>
+				Creates a canvas texture and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]canvas_texture_*[/code] RenderingServer functions.
+				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] static method.
+				This is the internal equivalent of the [CanvasTexture] resource.
 			</description>
 		</method>
 		<method name="canvas_texture_set_channel">
@@ -855,6 +873,7 @@
 			<param index="0" name="canvas_texture" type="RID" />
 			<param index="1" name="filter" type="int" enum="RenderingServer.CanvasItemTextureFilter" />
 			<description>
+				Sets the texture filter used by the [CanvasTexture].
 			</description>
 		</method>
 		<method name="canvas_texture_set_texture_repeat">
@@ -862,6 +881,7 @@
 			<param index="0" name="canvas_texture" type="RID" />
 			<param index="1" name="repeat" type="int" enum="RenderingServer.CanvasItemTextureRepeat" />
 			<description>
+				Sets the texture repeat used by the [CanvasTexture].
 			</description>
 		</method>
 		<method name="create_local_rendering_device" qualifiers="const">
@@ -874,6 +894,9 @@
 		<method name="decal_create">
 			<return type="RID" />
 			<description>
+				Creates a decal and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]decal_*[/code] RenderingServer functions.
+				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] static method.
+				This is the internal equivalent of the [Decal] node.
 			</description>
 		</method>
 		<method name="decal_set_albedo_mix">
@@ -919,6 +942,7 @@
 			<param index="0" name="decal" type="RID" />
 			<param index="1" name="color" type="Color" />
 			<description>
+				Sets the color modulation of the [Decal].
 			</description>
 		</method>
 		<method name="decal_set_normal_fade">
@@ -933,6 +957,7 @@
 			<param index="0" name="decal" type="RID" />
 			<param index="1" name="size" type="Vector3" />
 			<description>
+				Sets the size of the [Decal].
 			</description>
 		</method>
 		<method name="decal_set_texture">
@@ -941,6 +966,7 @@
 			<param index="1" name="type" type="int" enum="RenderingServer.DecalTexture" />
 			<param index="2" name="texture" type="RID" />
 			<description>
+				Sets the texture of the [Decal].
 			</description>
 		</method>
 		<method name="decals_set_filter">
@@ -955,6 +981,7 @@
 				Creates a directional light and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID can be used in most [code]light_*[/code] RenderingServer functions.
 				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] static method.
 				To place in a scene, attach this directional light to an instance using [method instance_set_base] using the returned RID.
+				This is the internal equivalent of the [DirectionalLight3D] node.
 			</description>
 		</method>
 		<method name="directional_shadow_atlas_set_size">
@@ -983,6 +1010,7 @@
 			<description>
 				Creates an environment and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]environment_*[/code] RenderingServer functions.
 				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] static method.
+				This is the internal equivalent of the [Environment] resource.
 			</description>
 		</method>
 		<method name="environment_glow_set_use_bicubic_upscale">
@@ -1244,7 +1272,9 @@
 		<method name="fog_volume_create">
 			<return type="RID" />
 			<description>
-				Creates a new fog volume and allocates an RID.
+				Creates a fog volume and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]fog_volume_*[/code] RenderingServer functions.
+				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] static method.
+				This is the internal equivalent of the [FogVolume] node.
 			</description>
 		</method>
 		<method name="fog_volume_set_material">
@@ -1461,6 +1491,7 @@
 				Creates a visual instance and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]instance_*[/code] RenderingServer functions.
 				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] static method.
 				An instance is a way of placing a 3D object in the scenario. Objects like particles, meshes, and reflection probes need to be associated with an instance to be visible in the scenario using [method instance_set_base].
+				This is the internal equivalent of the [VisualInstance3D] node.
 			</description>
 		</method>
 		<method name="instance_create2">
@@ -1821,7 +1852,9 @@
 		<method name="lightmap_create">
 			<return type="RID" />
 			<description>
-				Creates a new [LightmapGI] instance.
+				Creates a lightmap GI and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]instance_*[/code] RenderingServer functions.
+				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] static method.
+				This is the internal equivalent of the [LightmapGI] node.
 			</description>
 		</method>
 		<method name="lightmap_get_probe_capture_bsp_tree" qualifiers="const">
@@ -1908,6 +1941,7 @@
 			<description>
 				Creates an empty material and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]material_*[/code] RenderingServer functions.
 				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] static method.
+				This is the internal equivalent of the [Material] resource.
 			</description>
 		</method>
 		<method name="material_get_param" qualifiers="const">
@@ -1982,6 +2016,7 @@
 				Creates a new mesh and adds it to the RenderingServer. It can be accessed with the RID that is returned. This RID will be used in all [code]mesh_*[/code] RenderingServer functions.
 				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] static method.
 				To place in a scene, attach this mesh to an instance using [method instance_set_base] using the returned RID.
+				This is the internal equivalent of the [Mesh] resource.
 			</description>
 		</method>
 		<method name="mesh_create_from_surfaces">
@@ -2154,6 +2189,7 @@
 				Creates a new multimesh on the RenderingServer and returns an [RID] handle. This RID will be used in all [code]multimesh_*[/code] RenderingServer functions.
 				Once finished with your RID, you will want to free the RID using the RenderingServer's [method free_rid] static method.
 				To place in a scene, attach this multimesh to an instance using [method instance_set_base] using the returned RID.
+				This is the internal equivalent of the [MultiMesh] resource.
 			</description>
 		</method>
 		<method name="multimesh_get_aabb" qualifiers="const">
