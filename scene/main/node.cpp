@@ -1546,6 +1546,10 @@ bool Node::is_greater_than(const Node *p_node) const {
 	return res;
 }
 
+List<Node *> Node::get_owned() {
+	return data.owned;
+}
+
 void Node::get_owned_by(Node *p_by, List<Node *> *p_owned) {
 	if (data.owner == p_by) {
 		p_owned->push_back(this);
@@ -2448,32 +2452,47 @@ static void find_owned_by(Node *p_by, Node *p_node, List<Node *> *p_owned) {
 
 void Node::replace_by(Node *p_node, bool p_keep_groups) {
 	ERR_FAIL_NULL(p_node);
+
+	// Remove existing parent
+	if (p_node->data.parent) {
+		p_node->data.parent->remove_child(p_node);
+	}
+
+	// We have to exit if this is valid still.
 	ERR_FAIL_COND(p_node->data.parent);
 
 	List<Node *> owned = data.owned;
-	List<Node *> owned_by_owner;
-	Node *owner = (data.owner == this) ? p_node : data.owner;
 
-	if (p_keep_groups) {
-		List<GroupInfo> groups;
-		get_groups(&groups);
+	// if our owner equals ourself then return the new node
+	// otherwise return the owner of the original node.
+	Node *owner = (this == data.owner) ? p_node : data.owner;
 
-		for (const GroupInfo &E : groups) {
-			p_node->add_to_group(E.name, E.persistent);
+	// untested assumptions
+	{
+		if (p_keep_groups) {
+			List<GroupInfo> groups;
+			get_groups(&groups);
+
+			for (const GroupInfo &E : groups) {
+				p_node->add_to_group(E.name, E.persistent);
+			}
 		}
+
+		_replace_connections_target(p_node);
 	}
 
-	_replace_connections_target(p_node);
-
+	// if our current owner is valid, find the nodes owned by itself, and get all elements.
+	List<Node *> owned_by_owner;
 	if (data.owner) {
-		for (int i = 0; i < get_child_count(); i++) {
-			find_owned_by(data.owner, get_child(i), &owned_by_owner);
-		}
+		owned_by_owner = data.owner->get_owned();
 	}
 
 	Node *parent = data.parent;
-	int index_in_parent = data.index;
+	const int index_in_parent = data.index;
 
+	// if our current parent is valid
+	// we have to write the new replacement to the node
+	// and set the correct position so it matches exactly
 	if (data.parent) {
 		parent->remove_child(this);
 		parent->add_child(p_node);

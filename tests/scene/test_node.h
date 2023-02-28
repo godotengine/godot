@@ -158,6 +158,29 @@ TEST_CASE("[SceneTree][Node] Testing node operations with a very simple scene tr
 	memdelete(node);
 }
 
+TEST_CASE("[SceneTree][Node] Replace node operations") {
+	Node *root_node = memnew(Node);
+	Node *root_node_two = memnew(Node);
+	Node *child_node = memnew(Node);
+	Node *child_of_child_node = memnew(Node);
+
+	SceneTree::get_singleton()->get_root()->add_child(root_node);
+	SceneTree::get_singleton()->get_root()->add_child(root_node_two);
+
+	CHECK(root_node->is_inside_tree());
+	CHECK(root_node_two->is_inside_tree());
+	root_node->add_child(child_node);
+	child_node->add_child(child_of_child_node);
+	child_node->set_owner(root_node);
+	child_of_child_node->set_owner(root_node);
+	CHECK_EQ(root_node->orphan_node_count, 0);
+	CHECK_EQ(root_node->get_owned().size(), 2);
+	root_node_two->replace_by(root_node);
+	CHECK_EQ(root_node->orphan_node_count, 1);
+	memdelete(root_node_two);
+	CHECK_EQ(root_node->orphan_node_count, 0);
+}
+
 TEST_CASE("[SceneTree][Node] Testing node operations with a more complex simple scene tree") {
 	Node *node1 = memnew(Node);
 	Node *node2 = memnew(Node);
