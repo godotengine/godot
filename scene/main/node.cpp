@@ -2440,16 +2440,6 @@ void Node::_duplicate_signals(const Node *p_original, Node *p_copy) const {
 	}
 }
 
-static void find_owned_by(Node *p_by, Node *p_node, List<Node *> *p_owned) {
-	if (p_node->get_owner() == p_by) {
-		p_owned->push_back(p_node);
-	}
-
-	for (int i = 0; i < p_node->get_child_count(); i++) {
-		find_owned_by(p_by, p_node->get_child(i), p_owned);
-	}
-}
-
 void Node::replace_by(Node *p_node, bool p_keep_groups) {
 	ERR_FAIL_NULL(p_node);
 
