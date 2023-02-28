@@ -2699,20 +2699,13 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 	uint64_t frame_number = RSG::rasterizer->get_frame_number();
 	float lightmap_probe_update_speed = RSG::light_storage->lightmap_get_probe_capture_update_speed() * RSG::rasterizer->get_frame_delta_time();
 
-	uint32_t sdfgi_last_light_index = 0xFFFFFFFF;
+	void *sdfgi_last_light_id = nullptr;
 	uint32_t sdfgi_last_light_cascade = 0xFFFFFFFF;
 
 	RID instance_pair_buffer[MAX_INSTANCE_PAIRS];
 
 	Transform3D inv_cam_transform = cull_data.cam_transform.inverse();
 	float z_near = cull_data.camera_matrix->get_z_near();
-
-	for (uint64_t i = p_from; i < p_to; i++) {
-		bool mesh_visible = false;
-
-		InstanceData &idata = cull_data.scenario->instance_data[i];
-		uint32_t visibility_flags = idata.flags & (InstanceData::FLAG_VISIBILITY_DEPENDENCY_HIDDEN_CLOSE_RANGE | InstanceData::FLAG_VISIBILITY_DEPENDENCY_HIDDEN | InstanceData::FLAG_VISIBILITY_DEPENDENCY_FADE_CHILDREN);
-		int32_t visibility_check = -1;
 
 #define HIDDEN_BY_VISIBILITY_CHECKS (visibility_flags == InstanceData::FLAG_VISIBILITY_DEPENDENCY_HIDDEN_CLOSE_RANGE || visibility_flags == InstanceData::FLAG_VISIBILITY_DEPENDENCY_HIDDEN)
 #define LAYER_CHECK (cull_data.visible_layers & idata.layer_mask)
@@ -2722,9 +2715,73 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 #define VIS_CHECK (visibility_check < 0 ? (visibility_check = (visibility_flags != InstanceData::FLAG_VISIBILITY_DEPENDENCY_NEEDS_CHECK || (VIS_RANGE_CHECK && VIS_PARENT_CHECK))) : visibility_check)
 #define OCCLUSION_CULLED (cull_data.occlusion_buffer != nullptr && (cull_data.scenario->instance_data[i].flags & InstanceData::FLAG_IGNORE_OCCLUSION_CULLING) == 0 && cull_data.occlusion_buffer->is_occluded(cull_data.scenario->instance_aabbs[i].bounds, cull_data.cam_transform.origin, inv_cam_transform, *cull_data.camera_matrix, z_near))
 
+	struct KeepInstance {
+		bool obj_visible = false;
+		uint64_t shadows_visible = 0;
+		uint64_t sdfgi_visible = 0;
+		InstanceData *data = nullptr;
+	};
+	static_assert((sizeof(KeepInstance::shadows_visible) * 8) > RendererSceneRender::MAX_DIRECTIONAL_LIGHTS * RendererSceneRender::MAX_DIRECTIONAL_LIGHT_CASCADES);
+	static_assert((sizeof(KeepInstance::sdfgi_visible) * 8) > SDFGI_MAX_CASCADES * SDFGI_MAX_REGIONS_PER_CASCADE);
+
+	LocalVector<KeepInstance> keep_instances;
+	keep_instances.resize(p_to - p_from);
+	SafeNumeric<uint64_t> num_keep;
+
+	for (uint64_t i = p_from; i < p_to; i++) {
+		KeepInstance keep_instance;
+
+		InstanceData &idata = cull_data.scenario->instance_data[i];
+		uint32_t visibility_flags = idata.flags & (InstanceData::FLAG_VISIBILITY_DEPENDENCY_HIDDEN_CLOSE_RANGE | InstanceData::FLAG_VISIBILITY_DEPENDENCY_HIDDEN | InstanceData::FLAG_VISIBILITY_DEPENDENCY_FADE_CHILDREN);
+		int32_t visibility_check = -1;
+
 		if (!HIDDEN_BY_VISIBILITY_CHECKS) {
 			if ((LAYER_CHECK && IN_FRUSTUM(cull_data.cull->frustum) && VIS_CHECK && !OCCLUSION_CULLED) || (cull_data.scenario->instance_data[i].flags & InstanceData::FLAG_IGNORE_ALL_CULLING)) {
-				uint32_t base_type = idata.flags & InstanceData::FLAG_BASE_TYPE_MASK;
+				keep_instance.obj_visible = true;
+				keep_instance.data = &idata;
+			}
+
+			for (uint32_t j = 0; j < cull_data.cull->shadow_count; j++) {
+				for (uint32_t k = 0; k < cull_data.cull->shadows[j].cascade_count; k++) {
+					if (IN_FRUSTUM(cull_data.cull->shadows[j].cascades[k].frustum) && VIS_CHECK && LAYER_CHECK) {
+						keep_instance.shadows_visible |= uint64_t(1) << (j * RendererSceneRender::MAX_DIRECTIONAL_LIGHT_CASCADES + k);
+						keep_instance.data = &idata;
+					}
+				}
+			}
+		}
+
+		for (uint32_t j = 0; j < cull_data.cull->sdfgi.region_count; j++) {
+			if (cull_data.scenario->instance_aabbs[i].in_aabb(cull_data.cull->sdfgi.region_aabb[j])) {
+				keep_instance.sdfgi_visible |= uint64_t(1) << j;
+				keep_instance.data = &idata;
+			}
+		}
+
+		if (keep_instance.data) {
+			keep_instances[num_keep.postincrement()] = keep_instance;
+		}
+	}
+
+	keep_instances.resize(num_keep.get());
+	//printf("%lu -> %lu\n", p_to - p_from, num_keep.get());
+
+#undef HIDDEN_BY_VISIBILITY_CHECKS
+#undef LAYER_CHECK
+#undef IN_FRUSTUM
+#undef VIS_RANGE_CHECK
+#undef VIS_PARENT_CHECK
+#undef VIS_CHECK
+#undef OCCLUSION_CULLED
+
+	for (const KeepInstance &kept_instance : keep_instances) {
+		bool mesh_visible = false;
+
+		InstanceData &idata = *kept_instance.data;
+		const uint32_t base_type = idata.flags & InstanceData::FLAG_BASE_TYPE_MASK;
+
+		if (true) { // Temporary fixture to avoid re-indenting the whole block
+			if (kept_instance.obj_visible) {
 				if (base_type == RS::INSTANCE_LIGHT) {
 					cull_result.lights.push_back(idata.instance);
 					cull_result.light_instances.push_back(RID::from_uint64(idata.instance_data_rid));
@@ -2913,12 +2970,10 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 				}
 			}
 
-			for (uint32_t j = 0; j < cull_data.cull->shadow_count; j++) {
-				for (uint32_t k = 0; k < cull_data.cull->shadows[j].cascade_count; k++) {
-					if (IN_FRUSTUM(cull_data.cull->shadows[j].cascades[k].frustum) && VIS_CHECK) {
-						uint32_t base_type = idata.flags & InstanceData::FLAG_BASE_TYPE_MASK;
-
-						if (((1 << base_type) & RS::INSTANCE_GEOMETRY_MASK) && idata.flags & InstanceData::FLAG_CAST_SHADOWS && LAYER_CHECK) {
+			if (kept_instance.shadows_visible && ((1 << base_type) & RS::INSTANCE_GEOMETRY_MASK) && (idata.flags & InstanceData::FLAG_CAST_SHADOWS)) {
+				for (uint32_t j = 0; j < cull_data.cull->shadow_count; j++) {
+					for (uint32_t k = 0; k < cull_data.cull->shadows[j].cascade_count; k++) {
+						if (kept_instance.shadows_visible & (uint64_t(1) << (j * RendererSceneRender::MAX_DIRECTIONAL_LIGHT_CASCADES + k))) {
 							cull_result.directional_shadows[j].cascade_geometry_instances[k].push_back(idata.instance_geometry);
 							mesh_visible = true;
 						}
@@ -2927,23 +2982,13 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 			}
 		}
 
-#undef HIDDEN_BY_VISIBILITY_CHECKS
-#undef LAYER_CHECK
-#undef IN_FRUSTUM
-#undef VIS_RANGE_CHECK
-#undef VIS_PARENT_CHECK
-#undef VIS_CHECK
-#undef OCCLUSION_CULLED
-
 		for (uint32_t j = 0; j < cull_data.cull->sdfgi.region_count; j++) {
-			if (cull_data.scenario->instance_aabbs[i].in_aabb(cull_data.cull->sdfgi.region_aabb[j])) {
-				uint32_t base_type = idata.flags & InstanceData::FLAG_BASE_TYPE_MASK;
-
+			if (kept_instance.sdfgi_visible & (uint64_t(1) << j)) {
 				if (base_type == RS::INSTANCE_LIGHT) {
 					InstanceLightData *instance_light = (InstanceLightData *)idata.instance->base_data;
 					if (instance_light->bake_mode == RS::LIGHT_BAKE_STATIC && cull_data.cull->sdfgi.region_cascade[j] <= instance_light->max_sdfgi_cascade) {
-						if (sdfgi_last_light_index != i || sdfgi_last_light_cascade != cull_data.cull->sdfgi.region_cascade[j]) {
-							sdfgi_last_light_index = i;
+						if (sdfgi_last_light_id != kept_instance.data || sdfgi_last_light_cascade != cull_data.cull->sdfgi.region_cascade[j]) {
+							sdfgi_last_light_id = kept_instance.data;
 							sdfgi_last_light_cascade = cull_data.cull->sdfgi.region_cascade[j];
 							cull_result.sdfgi_cascade_lights[sdfgi_last_light_cascade].push_back(instance_light->instance);
 						}
@@ -2957,8 +3002,8 @@ void RendererSceneCull::_scene_cull(CullData &cull_data, InstanceCullResult &cul
 			}
 		}
 
-		if (mesh_visible && cull_data.scenario->instance_data[i].flags & InstanceData::FLAG_USES_MESH_INSTANCE) {
-			cull_result.mesh_instances.push_back(cull_data.scenario->instance_data[i].instance->mesh_instance);
+		if (mesh_visible && idata.flags & InstanceData::FLAG_USES_MESH_INSTANCE) {
+			cull_result.mesh_instances.push_back(idata.instance->mesh_instance);
 		}
 	}
 }
