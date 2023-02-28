@@ -610,15 +610,31 @@ void ProjectList::_scan_folder_recursive(const String &p_path, List<String> *r_p
 
 	da->list_dir_begin();
 	String n = da->get_next();
+	PackedStringArray dirs = {};
+	bool project = false;
+	bool ignore = false;
+
 	while (!n.is_empty()) {
 		if (da->current_is_dir() && n[0] != '.') {
-			_scan_folder_recursive(da->get_current_dir().path_join(n), r_projects);
+			dirs.append(da->get_current_dir().path_join(n));
 		} else if (n == "project.godot") {
-			r_projects->push_back(da->get_current_dir());
+			project = true;
+		} else if (n == ".gdignore") {
+			ignore = true;
+			break;
 		}
 		n = da->get_next();
 	}
 	da->list_dir_end();
+
+	if (!ignore) {
+		if (project) {
+			r_projects->push_back(da->get_current_dir());
+		}
+		for (String &dir : dirs) {
+			_scan_folder_recursive(dir, r_projects);
+		}
+	}
 }
 
 // Project list items.
