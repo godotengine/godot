@@ -408,6 +408,10 @@ def configure(env: "Environment"):
                 print("Error: Xi library not found. Aborting.")
                 sys.exit(255)
             env.ParseConfig("pkg-config xi --cflags --libs")
+            if os.system("pkg-config --exists xfixes"):
+                print("Error: Xfixes library not found. Aborting.")
+                sys.exit(255)
+            env.ParseConfig("pkg-config xfixes --cflags --libs")
         env.Append(CPPDEFINES=["X11_ENABLED"])
 
     if env["vulkan"]:
