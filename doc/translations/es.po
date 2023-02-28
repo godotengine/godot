@@ -8345,9 +8345,6 @@ msgstr ""
 "Si ha definido las variables de entrada en [method parse], puede especificar "
 "sus valores en el array de entradas, en el mismo orden."
 
-msgid "Returns the error text if [method parse] has failed."
-msgstr "Devuelve el texto de error si el [method parse] ha fallado."
-
 msgid "Returns [code]true[/code] if [method execute] has failed."
 msgstr "Devuelve [code]true[/code] si [method execute] ha fallado."
 
@@ -13021,9 +13018,6 @@ msgstr "Nodo que instancia mallas en un escenario."
 
 msgid "The [Mesh] resource for the instance."
 msgstr "El recurso [Mesh] para la instancia."
-
-msgid "Sets the skin to be used by this instance."
-msgstr "Establece la piel que se utilizará en esta instancia."
 
 msgid "Library of meshes."
 msgstr "Biblioteca de mallas."

@@ -92,7 +92,7 @@ msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2023-02-20 23:46+0000\n"
+"PO-Revision-Date: 2023-02-25 00:15+0000\n"
 "Last-Translator: Haoyu Qiu <timothyqiu32@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot-properties/zh_Hans/>\n"
@@ -975,6 +975,18 @@ msgstr "额外间距"
 
 msgid "Custom Theme"
 msgstr "自定义主题"
+
+msgid "Touchscreen"
+msgstr "触摸屏"
+
+msgid "Increase Scrollbar Touch Area"
+msgstr "增大滚动条触摸区域"
+
+msgid "Enable Long Press as Right Click"
+msgstr "启用将长按作为右键"
+
+msgid "Enable Pan and Scale Gestures"
+msgstr "启用平移及缩放手势"
 
 msgid "Display Close Button"
 msgstr "显示关闭按钮"
@@ -2868,9 +2880,6 @@ msgstr "唯一动画名称"
 
 msgid "Skeletons"
 msgstr "骨架"
-
-msgid "Skeleton to Node"
-msgstr "骨架转节点"
 
 msgid "Create Animations"
 msgstr "创建动画"

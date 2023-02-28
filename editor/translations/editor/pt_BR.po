@@ -159,13 +159,14 @@
 # Levi Ferreira <leviferreiramorais@gmail.com>, 2023.
 # Leonardo <leotada523@gmail.com>, 2023.
 # Elizandro Baldin <ejbaldin@gmail.com>, 2023.
+# Felipe Nogueira <contato.fnog@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2023-02-24 12:28+0000\n"
-"Last-Translator: Elizandro Baldin <ejbaldin@gmail.com>\n"
+"PO-Revision-Date: 2023-02-28 22:26+0000\n"
+"Last-Translator: Felipe Nogueira <contato.fnog@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -173,7 +174,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.16-dev\n"
+"X-Generator: Weblate 4.16-rc\n"
 
 msgid "Unset"
 msgstr "Desativar"
@@ -6280,10 +6281,10 @@ msgid "Travel"
 msgstr "Viagem"
 
 msgid "Start and end nodes are needed for a sub-transition."
-msgstr "Nó inicial e final são necessários para uma sub-transição."
+msgstr "Os nós iniciais e finais são necessários para uma subtransição."
 
 msgid "No playback resource set at path: %s."
-msgstr "Sem recurso de playback definido no caminho: %s."
+msgstr "Nenhum recurso de reprodução definido no caminho: %s."
 
 msgid "Node Removed"
 msgstr "Nó Removido"
@@ -6309,13 +6310,13 @@ msgid "Connect nodes."
 msgstr "Conectar nós."
 
 msgid "Group Selected Node(s)"
-msgstr "Agrupar nós selecionados"
+msgstr "Agrupar Nó(s) Selecionado(s)"
 
 msgid "Ungroup Selected Node"
-msgstr "Desagrupar Nó selecionado"
+msgstr "Desagrupar Nó Selecionado"
 
 msgid "Remove selected node or transition."
-msgstr "Remover nó ou trilha selecionada."
+msgstr "Remova o nó ou transição selecionada."
 
 msgid "Transition:"
 msgstr "Transição:"
@@ -6324,7 +6325,7 @@ msgid "New Transitions Should Auto Advance"
 msgstr "Novas Transições Devem Avançar Automaticamente"
 
 msgid "Play Mode:"
-msgstr "Modo Panorâmico:"
+msgstr "Modo de Reprodução:"
 
 msgid "Delete Selected"
 msgstr "Excluir Selecionados"
@@ -6336,10 +6337,10 @@ msgid "Root"
 msgstr "Raiz"
 
 msgid "AnimationTree"
-msgstr "Árvore de Animação"
+msgstr "AnimationTree"
 
 msgid "Contents:"
-msgstr "Conteúdo:"
+msgstr "Conteúdos:"
 
 msgid "View Files"
 msgstr "Ver Arquivos"
@@ -6381,7 +6382,7 @@ msgid "Request failed, too many redirects"
 msgstr "A solicitação falhou, muitos redirecionamentos"
 
 msgid "Redirect loop."
-msgstr "Loop de redirecionamento."
+msgstr "Repetição de redirecionamento."
 
 msgid "Request failed, timeout"
 msgstr "A solicitação falhou, tempo esgotado"
@@ -6405,7 +6406,7 @@ msgid "Failed SHA-256 hash check"
 msgstr "Falha na verificação da hash SHA-256"
 
 msgid "Asset Download Error:"
-msgstr "Erro no Download do Asset:"
+msgstr "Erro no Download do Recurso:"
 
 msgid "Ready to install!"
 msgstr "Pronto para instalar!"
@@ -6432,7 +6433,7 @@ msgid "Retry"
 msgstr "Tentar Novamente"
 
 msgid "Download Error"
-msgstr "Erro ao baixar"
+msgstr "Erro ao Baixar"
 
 msgid "Recently Updated"
 msgstr "Atualizado Recentemente"
@@ -6517,10 +6518,10 @@ msgid "Support"
 msgstr "Suporte"
 
 msgid "Failed to get repository configuration."
-msgstr "Falhou em obter o repositório de configuração."
+msgstr "Falha ao obter a configuração do repositório."
 
 msgid "Assets ZIP File"
-msgstr "Arquivo ZIP de Assets"
+msgstr "Arquivo ZIP de Recursos"
 
 msgid "Audio Preview Play/Pause"
 msgstr "Tocar/Pausar Pré-visualização do Áudio"
@@ -6535,13 +6536,13 @@ msgid "Preview"
 msgstr "Visualização"
 
 msgid "Configure Snap"
-msgstr "Configurar o Snap"
+msgstr "Configurar Ajuste"
 
 msgid "Grid Offset:"
 msgstr "Deslocamento da Grade:"
 
 msgid "Grid Step:"
-msgstr "Passo de grade:"
+msgstr "Passo de Grade:"
 
 msgid "Primary Line Every:"
 msgstr "Linha Primária a Cada:"
@@ -6556,7 +6557,7 @@ msgid "Rotation Step:"
 msgstr "Passo de Rotação:"
 
 msgid "Scale Step:"
-msgstr "Escala:"
+msgstr "Escala do Passo:"
 
 msgid "Move Node(s) to Position"
 msgstr "Mover Nó(s) para Posição"
@@ -6598,7 +6599,7 @@ msgid "Scale Node2D \"%s\" to (%s, %s)"
 msgstr "Dimensionar Node2D \"%s\" para (%s, %s)"
 
 msgid "Resize Control \"%s\" to (%d, %d)"
-msgstr "Redimensinar Controle \"%s\" para (%d, %d)"
+msgstr "Redimensionar Controle \"%s\" para (%d, %d)"
 
 msgid "Scale %d CanvasItems"
 msgstr "Dimensionar %d CanvasItem"
@@ -6628,7 +6629,7 @@ msgid "Paste Node(s) Here"
 msgstr "Colar Nó(s) Aqui"
 
 msgid "Move Node(s) Here"
-msgstr "Mover Nó(s) pra cá"
+msgstr "Mover Nó(s) Aqui"
 
 msgid "px"
 msgstr "px"
@@ -6649,7 +6650,7 @@ msgid ""
 "Project Camera Override\n"
 "Overrides the running project's camera with the editor viewport camera."
 msgstr ""
-"Sobrepor câmera do projeto.\n"
+"Sobrepor Câmera do Projeto.\n"
 "Sobrepõe a câmera do projeto em execução com a câmera da janela de exibição "
 "do editor."
 
@@ -6658,7 +6659,7 @@ msgid ""
 "No project instance running. Run the project from the editor to use this "
 "feature."
 msgstr ""
-"Sobrepor câmera do projeto.\n"
+"Sobrepor Câmera do Projeto.\n"
 "Sem instâncias do projeto em execução. Execute o projeto pelo editor para "
 "usar essa funcionalidade."
 
@@ -6681,16 +6682,16 @@ msgid "Clear Guides"
 msgstr "Limpar Guias"
 
 msgid "Create Custom Bone2D(s) from Node(s)"
-msgstr "Criar Esqueleto(s) Personalizado(s) a partir do(s) Nó(s)"
+msgstr "Crie Bone2D(s) personalizado(s) a partir do(s) nó(s)"
 
 msgid "Zoom to 3.125%"
-msgstr "Zoom para 3.125%"
+msgstr "Zoom de 3.125%"
 
 msgid "Zoom to 6.25%"
-msgstr "Zoom para 6.25%"
+msgstr "Zoom de 6.25%"
 
 msgid "Zoom to 12.5%"
-msgstr "Zoom para 12.5%"
+msgstr "Zoom de 12.5%"
 
 msgid "Zoom to 25%"
 msgstr "Zoom de 25%"
@@ -6711,13 +6712,13 @@ msgid "Zoom to 800%"
 msgstr "Zoom de 800%"
 
 msgid "Zoom to 1600%"
-msgstr "Zoom para 1600%"
+msgstr "Zoom de 1600%"
 
 msgid "Select Mode"
 msgstr "Modo de Seleção"
 
 msgid "Drag: Rotate selected node around pivot."
-msgstr "Arrastar: Gire nó em tono do pivô."
+msgstr "Arrastar: Gire o nó em torno do pivô."
 
 msgid "Alt+Drag: Move selected node."
 msgstr "Alt+Arrastar: Mover nó selecionado."
@@ -6734,7 +6735,7 @@ msgstr ""
 "clicada, incluindo os bloqueados."
 
 msgid "RMB: Add node at position clicked."
-msgstr "BDM: Adiciona node à posição clicada."
+msgstr "Botão Direito do Mouse: Adiciona nó na posição clicada."
 
 msgid "Move Mode"
 msgstr "Modo de Movimentação"
@@ -6749,7 +6750,7 @@ msgid "Shift: Scale proportionally."
 msgstr "Shift: Dimensiona proporcionalmente."
 
 msgid "Show list of selectable nodes at position clicked."
-msgstr "Mostrar lista de Nós selecionáveis na posição clicada."
+msgstr "Mostra lista de nós selecionáveis na posição clicada."
 
 msgid "Click to change object's rotation pivot."
 msgstr "Clique para alterar o pivô de rotação do objeto."
@@ -6760,8 +6761,8 @@ msgstr "Modo Panorâmico"
 msgid ""
 "You can also use Pan View shortcut (Space by default) to pan in any mode."
 msgstr ""
-"Você também pode usar o atalho de visão Pan (Barra de Espaço por padrão) "
-"para usar Pan em qualquer modo."
+"Você também pode usar o atalho de visão Panorâmica (Barra de Espaço por "
+"padrão) para usar Pan em qualquer modo."
 
 msgid "Ruler Mode"
 msgstr "Modo de Régua"
@@ -6773,19 +6774,19 @@ msgid "Use Smart Snap"
 msgstr "Usar Encaixe Inteligente"
 
 msgid "Toggle grid snapping."
-msgstr "Alternar Encaixe de grade."
+msgstr "Alternar encaixe de grade."
 
 msgid "Use Grid Snap"
 msgstr "Usar Encaixe de Grade"
 
 msgid "Snapping Options"
-msgstr "Opções de encaixe"
+msgstr "Opções de Encaixe"
 
 msgid "Use Rotation Snap"
 msgstr "Usar Encaixe de Rotação"
 
 msgid "Use Scale Snap"
-msgstr "Usar Encaixe Escalar"
+msgstr "Usar Encaixe Dimensionado"
 
 msgid "Snap Relative"
 msgstr "Encaixe Relativo"
@@ -6794,7 +6795,7 @@ msgid "Use Pixel Snap"
 msgstr "Usar Encaixe de Pixel"
 
 msgid "Smart Snapping"
-msgstr "Encaixe inteligente"
+msgstr "Encaixe Inteligente"
 
 msgid "Configure Snap..."
 msgstr "Configurar Encaixe..."
@@ -6818,16 +6819,16 @@ msgid "Snap to Guides"
 msgstr "Encaixar nas Guias"
 
 msgid "Lock selected node, preventing selection and movement."
-msgstr "Travar Nó selecionada, prevenindo sua seleção e movimentação."
+msgstr "Travar Nó selecionado, prevenindo sua seleção e movimentação."
 
 msgid "Lock Selected Node(s)"
-msgstr "Bloquear nós selecionados"
+msgstr "Bloquear Nó(s) Selecionado(s)"
 
 msgid "Unlock selected node, allowing selection and movement."
 msgstr "Destravar o Nó selecionado, permitindo sua seleção e movimentação."
 
 msgid "Unlock Selected Node(s)"
-msgstr "Desbloqueie os nós selecionados"
+msgstr "Desbloquear Nó(s) Selecionado(s)"
 
 msgid "Make selected node's children not selectable."
 msgstr "Tornar os filhos deste Nó não selecionáveis."
@@ -6836,10 +6837,10 @@ msgid "Make selected node's children selectable."
 msgstr "Tornar os filhos deste Nó selecionáveis."
 
 msgid "Ungroup Selected Node(s)"
-msgstr "Desagrupar nós selecionados"
+msgstr "Desagrupar Nó(s) Selecionado(s)"
 
 msgid "Skeleton Options"
-msgstr "Opções de esqueleto"
+msgstr "Opções de Esqueleto"
 
 msgid "Show Bones"
 msgstr "Mostrar Ossos"
@@ -6866,7 +6867,7 @@ msgid "Grid"
 msgstr "Grade"
 
 msgid "Show Helpers"
-msgstr "Mostrar auxiliadores"
+msgstr "Mostrar Suportes"
 
 msgid "Show Rulers"
 msgstr "Mostrar Réguas"
@@ -6881,19 +6882,19 @@ msgid "Show Viewport"
 msgstr "Mostrar Viewport"
 
 msgid "Show Group And Lock Icons"
-msgstr "Exibir grupo e travar ícones"
+msgstr "Mostrar Grupo e Bloquear Ícones"
 
 msgid "Show Transformation Gizmos"
 msgstr "Exibir Gizmos de Transformação"
 
 msgid "Center Selection"
-msgstr "Seleção Central"
+msgstr "Centrar Seleção"
 
 msgid "Frame Selection"
-msgstr "Seleção de Frame"
+msgstr "Seleção de Quadro"
 
 msgid "Preview Canvas Scale"
-msgstr "Pré-visualização da escala do Canvas"
+msgstr "Pré-visualização da Escala do Canvas"
 
 msgid "Translation mask for inserting keys."
 msgstr "Máscara de translação para inserção de chaves."
@@ -6914,10 +6915,10 @@ msgid ""
 "Keys must be inserted manually for the first time."
 msgstr ""
 "Inserir chaves automaticamente quando os objetos são transladados, "
-"rotacionados ou escalados (com base na máscara).\n"
-"As chaves são adicionadas apenas às faixas existentes, nenhuma nova trilha "
+"rotacionados ou escalonados(com base na máscara).\n"
+"As chaves são adicionadas apenas às faixas existentes, nenhuma nova faixa "
 "será criada.\n"
-"As chaves devem ser inseridas manualmente pela primeira vez."
+"As chaves devem ser inseridas manualmente na primeira vez."
 
 msgid "Auto Insert Key"
 msgstr "Inserir Chave Automaticamente"
@@ -6926,7 +6927,7 @@ msgid "Animation Key and Pose Options"
 msgstr "Opções de Chave e Pose de Animação"
 
 msgid "Insert Key (Existing Tracks)"
-msgstr "Inserir Chave (Trilhas Existentes)"
+msgstr "Inserir Chave (Faixas Existentes)"
 
 msgid "Copy Pose"
 msgstr "Copiar Pose"
@@ -6955,10 +6956,10 @@ msgid "Hold Shift when dropping to add as sibling of selected node."
 msgstr "Segure Shift ao soltar para adicionar como irmão do Nó selecionado."
 
 msgid "Hold Alt when dropping to add as a different node type."
-msgstr "Segure alt ao soltar para adicionar o Nó como um de outro tipo."
+msgstr "Segure Alt ao soltar para adicionar o Nó como um de outro tipo."
 
 msgid "Cannot instantiate multiple nodes without root."
-msgstr "Impossível instanciar múltiplos nós sem uma raiz."
+msgstr "Impossível instanciar múltiplos nós sem um nó raiz."
 
 msgid "Create Node"
 msgstr "Criar Nó"
@@ -6978,14 +6979,51 @@ msgstr "Definir Manipulador"
 msgid "This node doesn't have a control parent."
 msgstr "Esse Nó não tem um Control como pai."
 
+msgid ""
+"Use the appropriate layout properties depending on where you are going to "
+"put it."
+msgstr ""
+"Use as propriedades de layout apropriadas, dependendo de onde você vai "
+"colocá-la."
+
 msgid "This node is a child of a container."
 msgstr "Este nó é filho de um container."
 
 msgid "Use container properties for positioning."
 msgstr "Usar propriedades do container para o posicionamento."
 
+msgid "This node is a child of a regular control."
+msgstr "Este nó é filho de um control regular."
+
+msgid "Use anchors and the rectangle for positioning."
+msgstr "Use âncoras e o retângulo para posicionamento."
+
+msgid "Collapse positioning hint."
+msgstr "Recolher dica de posicionamento."
+
+msgid "Expand positioning hint."
+msgstr "Expandir dica de posicionamento."
+
+msgid "Container Default"
+msgstr "Padrão do Conteiner"
+
 msgid "Fill"
 msgstr "Preencher"
+
+msgid "Shrink Begin"
+msgstr "Diminuir Início"
+
+msgid "Shrink Center"
+msgstr "Encolher Centro"
+
+msgid "Shrink End"
+msgstr "Encolher Final"
+
+msgid "Custom"
+msgstr "Personalizar"
+
+msgid "Expand"
+msgstr "Expandir"
 
 msgid "Top Left"
 msgstr "Superior Esquerda"
@@ -7018,10 +7056,10 @@ msgid "Center Bottom"
 msgstr "Centro Inferior"
 
 msgid "Bottom Right"
-msgstr "Inferior direita"
+msgstr "Inferior Direita"
 
 msgid "Bottom Wide"
-msgstr "Largura inferior"
+msgstr "Largura Inferior"
 
 msgid "Left Wide"
 msgstr "Largura Esquerda"
@@ -7033,10 +7071,69 @@ msgid "Right Wide"
 msgstr "Largura Direita"
 
 msgid "Full Rect"
-msgstr "Rect Completo"
+msgstr "Reto Completo"
+
+msgid ""
+"Enable to also set the Expand flag.\n"
+"Disable to only set Shrink/Fill flags."
+msgstr ""
+"Habilite para definir também o marcador Expandir.\n"
+"Desative para definir apenas os marcadores Encolher/Preencher."
+
+msgid "Some parents of the selected nodes do not support the Expand flag."
+msgstr "Alguns pais dos nós selecionados não suportam o marcador Expandir."
+
+msgid "Align with Expand"
+msgstr "Alinhar com Expandir"
+
+msgid "Change Anchors, Offsets, Grow Direction"
+msgstr "Alterar Âncoras, Deslocamentos, Direção de Expansão"
+
+msgid "Change Anchors, Offsets (Keep Ratio)"
+msgstr "Alterar Âncoras, Deslocamentos (Manter Proporção)"
+
+msgid "Change Vertical Size Flags"
+msgstr "Alterar Marcadores Verticais de Tamanho"
+
+msgid "Change Horizontal Size Flags"
+msgstr "Alterar Marcadores Horizontais de Tamanho"
+
+msgid "Presets for the anchor and offset values of a Control node."
+msgstr ""
+"Predefinições para os valores de âncora e deslocamento de um nó Control."
+
+msgid "Anchor preset"
+msgstr "Predefinição de Âncora"
+
+msgid "Set to Current Ratio"
+msgstr "Definir para Proporção Atual"
+
+msgid "Adjust anchors and offsets to match the current rect size."
+msgstr ""
+"Ajusta âncoras e deslocamentos para corresponder ao tamanho do retângulo "
+"atual."
+
+msgid ""
+"When active, moving Control nodes changes their anchors instead of their "
+"offsets."
+msgstr ""
+"Quando ativos, os nós Control em movimento alteram suas âncoras em vez de "
+"seus deslocamentos."
+
+msgid "Sizing settings for children of a Container node."
+msgstr "Configurações de dimensionamento para filhos de um nó de Container."
+
+msgid "Horizontal alignment"
+msgstr "Alinhamento Horizontal"
+
+msgid "Vertical alignment"
+msgstr "Alinhamento Vertical"
 
 msgid "Load Emission Mask"
 msgstr "Carregar Máscara de Emissão"
+
+msgid "CPUParticles2D"
+msgstr "CPUParticles2D"
 
 msgid "Generated Point Count:"
 msgstr "Gerar Contagem de Pontos:"
@@ -7059,6 +7156,9 @@ msgstr "Capturar a partir do Pixel"
 msgid "Emission Colors"
 msgstr "Cores de Emissão"
 
+msgid "CPUParticles3D"
+msgstr "CPUParticles3D"
+
 msgid "Create Emission Points From Node"
 msgstr "Criar Pontos de Emissão a Partir do Nó"
 
@@ -7075,7 +7175,7 @@ msgid "Ease Out"
 msgstr "Esmaecer de Saída"
 
 msgid "Smoothstep"
-msgstr "Passo suave"
+msgstr "Passo Suave"
 
 msgid "Modify Curve Point"
 msgstr "Modificar Ponto da Curva"
@@ -7105,7 +7205,7 @@ msgid "Remove Curve Point"
 msgstr "Remover Ponto da Curva"
 
 msgid "Toggle Curve Linear Tangent"
-msgstr "Alternar Curva Targente Linear"
+msgstr "Alternar Curva Tangente Linear"
 
 msgid "Hold Shift to edit tangents individually"
 msgstr "Segure Shift para editar tangentes individualmente"
@@ -7127,12 +7227,12 @@ msgid ""
 "mobile device).\n"
 "You don't need to enable it to use the GDScript debugger locally."
 msgstr ""
-"Quando esta opção está ativa, usando o deploy em um clique fará com que o "
-"executável tente se conectar ao IP deste computador e então o projeto em "
-"execução poderá ser debugado.\n"
-"Esta opção é indicada para debug remoto (tipicamente com um dispositivo "
-"móvel).\n"
-"Você não precisa ativá-la para usar o debugger do GDScript localmente."
+"Quando esta opção estiver habilitada, usar a implantação com um clique fará "
+"com que o executável tente se conectar ao IP deste computador para que o "
+"projeto em execução possa ser depurado.\n"
+"Esta opção destina-se a ser usada para depuração remota (normalmente com um "
+"dispositivo móvel).\n"
+"Você não precisa ativá-la para usar o depurador GDScript localmente."
 
 msgid "Small Deploy with Network Filesystem"
 msgstr "Pequena Implantação com Sistema de Arquivos de Rede"
@@ -7162,6 +7262,16 @@ msgstr ""
 "Quando esta opção está ativa, formas de colisão e nós do tipo RayCast (2D e "
 "3D) serão visíveis durante a execução do projeto."
 
+msgid "Visible Paths"
+msgstr "Caminhos Visíveis"
+
+msgid ""
+"When this option is enabled, curve resources used by path nodes will be "
+"visible in the running project."
+msgstr ""
+"Quando esta opção está ativa, recursos de curva usados por Nós de Caminho "
+"estarão visíveis ao rodar o projeto."
+
 msgid "Visible Navigation"
 msgstr "Navegação Visível"
 
@@ -7181,13 +7291,13 @@ msgid ""
 "When used remotely on a device, this is more efficient when the network "
 "filesystem option is enabled."
 msgstr ""
-"Quando esta opção está ativa, quaisquer alterações feitas à cena no editor "
-"serão replicadas no projeto em execução.\n"
-"Quando usado remotamente em um dispositivo, isso é mais eficiente quando a "
-"opção de sistema de arquivos via rede está ativada."
+"Quando esta opção estiver ativa, quaisquer alterações feitas na cena do "
+"editor serão replicadas no projeto em execução.\n"
+"Quando usado remotamente em um dispositivo, isso é mais eficiente se a opção "
+"de sistema de arquivos de rede está ativa."
 
 msgid "Synchronize Script Changes"
-msgstr "Sincronizar Mudanças de Script"
+msgstr "Sincronizar Alterações de Script"
 
 msgid ""
 "When this option is enabled, any script that is saved will be reloaded in "
@@ -7195,36 +7305,90 @@ msgid ""
 "When used remotely on a device, this is more efficient when the network "
 "filesystem option is enabled."
 msgstr ""
-"Quando esta opção está ativa, qualquer script que é salvo será recarregado "
+"Quando esta opção está ativa, qualquer script que for salvo será recarregado "
 "no projeto em execução.\n"
-"Quando usado remotamente em um dispositivo, isso é mais eficiente quando a "
-"opção de sistema de arquivos via rede está ativada."
+"Quando usado remotamente em um dispositivo, isso é mais eficiente se a opção "
+"de sistema de arquivos via rede estiver ativa."
+
+msgid "Keep Debug Server Open"
+msgstr "Manter Servidor de Depuração Aberto"
+
+msgid ""
+"When this option is enabled, the editor debug server will stay open and "
+"listen for new sessions started outside of the editor itself."
+msgstr ""
+"Quando essa opção está habilitada, o servidor de depuração vai se manter "
+"aberto e verificando por novas sessões que começarem por fora do próprio "
+"editor."
+
+msgid "Run Multiple Instances"
+msgstr "Executar Múltiplas Instâncias"
 
 msgid "Run %d Instance"
 msgid_plural "Run %d Instances"
 msgstr[0] "Executando %d Instância"
 msgstr[1] "Executando %d Instâncias"
 
+msgid "Overrides (%d)"
+msgstr "Sobrescreveu (%d)"
+
+msgctxt "Locale"
+msgid "Add Script"
+msgstr "Adicionar Script"
+
+msgid "Add Locale"
+msgstr "Adicionar Localização"
+
+msgid "Variation Coordinates (%d)"
+msgstr "Coordenadas de Variação (%d)"
+
+msgid "No supported features"
+msgstr "Funcionalidades não suportadas"
+
+msgid "Features (%d of %d set)"
+msgstr "Funcionalidades (%d de %d definidas)"
+
+msgid "Add Feature"
+msgstr "Adicionar Funcionalidade"
+
 msgid " - Variation"
 msgstr " - Variação"
+
+msgid "Unable to preview font"
+msgstr "Incapaz de visualizar a fonte"
 
 msgid "Convert to CPUParticles2D"
 msgstr "Converter para CPUParticles2D"
 
+msgid "Generating Visibility Rect (Waiting for Particle Simulation)"
+msgstr ""
+"Gerando Retângulo de Visibilidade (Aguardando por Simulação de Partículas)"
+
 msgid "Generate Visibility Rect"
 msgstr "Gerar Retângulo de Visibilidade"
+
+msgid "Can only set point into a ParticleProcessMaterial process material"
+msgstr ""
+"Só é permitido colocar um ponto em um material processado "
+"ParticleProcessMaterial"
 
 msgid "Clear Emission Mask"
 msgstr "Limpar Máscara de Emissão"
 
+msgid "GPUParticles2D"
+msgstr "GPUParticles2D"
+
 msgid "Generation Time (sec):"
-msgstr "Gerando Tempo (seg):"
+msgstr "Gerando Tempo (seg.):"
 
 msgid "The geometry's faces don't contain any area."
 msgstr "As faces da geometria não contêm área."
 
 msgid "The geometry doesn't contain any faces."
 msgstr "A geometria não contém nenhuma face."
+
+msgid "\"%s\" doesn't inherit from Node3D."
+msgstr "\"%s\" não herda do Node3D."
 
 msgid "\"%s\" doesn't contain geometry."
 msgstr "\"%s\" não contém geometria."
@@ -7248,22 +7412,77 @@ msgid "Volume"
 msgstr "Volume"
 
 msgid "Emission Source:"
-msgstr "Fonte de emissão:"
+msgstr "Fonte de Emissão:"
+
+msgid "A processor material of type 'ParticleProcessMaterial' is required."
+msgstr ""
+"Um material processador do tipo 'ParticleProcessMaterial' é necessário."
+
+msgid "Convert to CPUParticles3D"
+msgstr "Converter para CPUParticles3D"
+
+msgid "Generating Visibility AABB (Waiting for Particle Simulation)"
+msgstr "Gerando Visibilidade AABB (Aguardando Simulação de Partículas)"
 
 msgid "Generate Visibility AABB"
-msgstr "Gerar AABB de Visibilidade"
+msgstr "Gerar Visibilidade AABB"
+
+msgid "GPUParticles3D"
+msgstr "GPUParticles3D"
+
+msgid "Generate AABB"
+msgstr "Gerar AABB"
+
+msgid "Low"
+msgstr "Baixa"
+
+msgid "Moderate"
+msgstr "Média"
+
+msgid "High"
+msgstr "Alta"
+
+msgid "Subdivisions: %s"
+msgstr "Subdivisões: %s"
+
+msgid "Cell size: %s"
+msgstr "Tamanho da célula: %s"
+
+msgid "Video RAM size: %s MB (%s)"
+msgstr "RAM de Vídeo: %s MB ( %s)"
+
+msgid "Bake SDF"
+msgstr "Gerar SDF"
+
+msgid ""
+"No faces detected during GPUParticlesCollisionSDF3D bake.\n"
+"Check whether there are visible meshes matching the bake mask within its "
+"extents."
+msgstr ""
+"Não foram detectadas faces durante a geração da GPUParticlesCollisionSDF3D.\n"
+"Verifique se existem malhas visíveis que combinam com a máscara de geração "
+"dentro de suas extensões."
+
+msgid "Select path for SDF Texture"
+msgstr "Selecione o caminho para Textura SDF"
 
 msgid "Gradient Edited"
 msgstr "Gradiente Editado"
+
+msgid "Reverse/mirror gradient."
+msgstr "Gradiente reverso/espelhado."
 
 msgid "Swap GradientTexture2D Fill Points"
 msgstr "Trocar Pontos de Preenchimento do GradientTexture2D"
 
 msgid "Swap Gradient Fill Points"
-msgstr "Trocar Pontos de Preenchimento do Degradê"
+msgstr "Trocar Pontos de Preenchimento de Gradiente"
 
 msgid "Toggle Grid Snap"
 msgstr "Alternar Encaixe da Grade"
+
+msgid "Configure"
+msgstr "Configurar"
 
 msgid "Create Occluder Polygon"
 msgstr "Criar Polígono de Oclusão"
@@ -7272,25 +7491,39 @@ msgid ""
 "Can't determine a save path for lightmap images.\n"
 "Save your scene and try again."
 msgstr ""
-"Não foi possível determinar um caminho para salvar as imagens do lightmap.\n"
+"Não foi possível determinar um caminho para salvar as imagens do mapa de "
+"iluminação.\n"
 "Salve sua cena e tente novamente."
+
+msgid ""
+"No meshes to bake. Make sure they contain an UV2 channel and that the 'Bake "
+"Light' flag is on."
+msgstr ""
+"Nenhuma malha para gerar. Verifique se elas contêm um canal UV2 e se o "
+"marcador 'Gerar Iluminação' está ativo."
 
 msgid "Failed creating lightmap images, make sure path is writable."
 msgstr ""
-"Falha ao criar imagens do lightmap, certifique-se de que o caminho tem "
-"permissões de escrita."
+"Falha ao criar imagens do mapa de iluminação, certifique-se de que o caminho "
+"tem permissões de escrita."
+
+msgid "No editor scene root found."
+msgstr "Nenhuma cena raiz do editor encontrada."
+
+msgid "Lightmap data is not local to the scene."
+msgstr "Os dados do mapa de iluminação não são locais para a cena."
 
 msgid "Bake Lightmaps"
-msgstr "Faça mapas de luz"
+msgstr "Gerar Mapas de Iluminação"
 
 msgid "LightMap Bake"
-msgstr "Bake de Mapa de Luz"
+msgstr "Gerar Mapa de Iluminação"
 
 msgid "Select lightmap bake file:"
-msgstr "Selecione o arquivo de lightmap bake:"
+msgstr "Selecione o arquivo de mapa de iluminação gerado:"
 
 msgid "Mesh is empty!"
-msgstr "Mesh está vazia!"
+msgstr "A Malha está vazia!"
 
 msgid "Couldn't create a Trimesh collision shape."
 msgstr "Não foi possível criar uma forma de colisão Trimesh."
@@ -7311,7 +7544,7 @@ msgid "Couldn't create a single convex collision shape."
 msgstr "Não foi possível criar uma forma de colisão convexa simples."
 
 msgid "Create Simplified Convex Shape"
-msgstr "Criar Forma(s) Convexa(s) Simplificadas"
+msgstr "Criar Forma(s) Convexa(s) Simplificada(s)"
 
 msgid "Create Single Convex Shape"
 msgstr "Criar Forma(s) Convexa(s) Simples"
@@ -7323,31 +7556,79 @@ msgid "Couldn't create any collision shapes."
 msgstr "Não foi possível criar nenhuma forma de colisão."
 
 msgid "Create Multiple Convex Shapes"
-msgstr "Criar Múltiplas Forma(s) Convexa(s)"
+msgstr "Criar Múltipla(s) Forma(s) Convexa(s)"
 
 msgid "Create Navigation Mesh"
 msgstr "Criar Malha de Navegação"
 
+msgid "Create Debug Tangents"
+msgstr "Criar Tangentes de Depuração"
+
 msgid "Contained Mesh is not of type ArrayMesh."
 msgstr "Malha contida não é do tipo ArrayMesh."
 
+msgid ""
+"Mesh cannot unwrap UVs because it does not belong to the edited scene. Make "
+"it unique first."
+msgstr ""
+"A malha não pode desempacotar UVs porque não pertence à cena editada. Torne -"
+"a única primeiro."
+
+msgid ""
+"Mesh cannot unwrap UVs because it belongs to another resource which was "
+"imported from another file type. Make it unique first."
+msgstr ""
+"A malha não pode desempacotar UVs porque pertence a outro recurso que foi "
+"importado de outro tipo de arquivo. Torne -o único primeiro."
+
+msgid ""
+"Mesh cannot unwrap UVs because it was imported from another file type. Make "
+"it unique first."
+msgstr ""
+"A malha não pode desempacotar UVs porque foi importada de outro tipo de "
+"arquivo. Torne -a única primeiro."
+
 msgid "UV Unwrap failed, mesh may not be manifold?"
-msgstr "Falha ao desembrulhar UV. A malha pode não ter múltiplas faces?"
+msgstr "Falhou ao desempacotar UV, a malha pode não ser múltipla?"
+
+msgid "Unwrap UV2"
+msgstr "Desempacotar UV2"
 
 msgid "No mesh to debug."
 msgstr "Nenhuma malha para depurar."
 
 msgid "Mesh has no UV in layer %d."
-msgstr "Modelo não tem UV na camada %d."
+msgstr "Malha não tem UV na camada %d."
+
+msgid "MeshInstance3D lacks a Mesh."
+msgstr "MeshInstance3D não possui uma Malha."
+
+msgid "Mesh has no surface to create outlines from."
+msgstr "A malha não tem superfície para criar contornos a partir de."
+
+msgid "Mesh primitive type is not PRIMITIVE_TRIANGLES."
+msgstr "O tipo primitivo de malha não é PRIMITIVE_TRIANGLES."
+
+msgid "Could not create outline."
+msgstr "Não foi possível criar contorno."
 
 msgid "Create Outline"
 msgstr "Criar Contorno"
 
 msgid "Mesh"
-msgstr "Mesh"
+msgstr "Malha"
 
 msgid "Create Trimesh Static Body"
 msgstr "Criar Corpo Trimesh Estático"
+
+msgid ""
+"Creates a StaticBody3D and assigns a polygon-based collision shape to it "
+"automatically.\n"
+"This is the most accurate (but slowest) option for collision detection."
+msgstr ""
+"Cria um StaticBody3D e atribui uma forma de colisão baseada em polígono "
+"automaticamente.\n"
+"Esta é a opção mais precisa (mas mais lenta) para detecção de colisão."
 
 msgid "Create Trimesh Collision Sibling"
 msgstr "Criar Colisão Trimesh Irmã"
@@ -7360,7 +7641,7 @@ msgstr ""
 "Este é a opção mais precisa (mas lenta) para detecção de colisão."
 
 msgid "Create Single Convex Collision Sibling"
-msgstr "Criar um irmão de Colisão Convexa"
+msgstr "Criar Uma Colisão Convexa Irmã"
 
 msgid ""
 "Creates a single convex collision shape.\n"
@@ -7382,7 +7663,7 @@ msgstr ""
 "mais simples em alguns casos, com menos precisão."
 
 msgid "Create Multiple Convex Collision Siblings"
-msgstr "Criar Múltipla Colisão Convexa Irmã(s)"
+msgstr "Criar Múltipla(s) Colisão(ões) Convexa(s) Irmã(s)"
 
 msgid ""
 "Creates a polygon-based collision shape.\n"
@@ -7396,6 +7677,17 @@ msgstr ""
 msgid "Create Outline Mesh..."
 msgstr "Criar Malha de Contorno..."
 
+msgid ""
+"Creates a static outline mesh. The outline mesh will have its normals "
+"flipped automatically.\n"
+"This can be used instead of the StandardMaterial Grow property when using "
+"that property isn't possible."
+msgstr ""
+"Cria uma malha de esboço estática. A malha de contorno terá suas "
+"perpendiculares invertidas automaticamente.\n"
+"Isso pode ser usado em vez da propriedade StandardMaterial Grow ao usar essa "
+"propriedade se possível."
+
 msgid "View UV1"
 msgstr "Visualizar UV1"
 
@@ -7403,7 +7695,7 @@ msgid "View UV2"
 msgstr "Visualizar UV2"
 
 msgid "Unwrap UV2 for Lightmap/AO"
-msgstr "Desembrulhar UV2 para Lightmap/AO"
+msgstr "Desempacotar UV2 para Lightmap/AO"
 
 msgid "Create Outline Mesh"
 msgstr "Criar Malha de Contorno"
@@ -7434,10 +7726,10 @@ msgid "Remove Selected Item"
 msgstr "Remover Item Selecionado"
 
 msgid "Import from Scene (Ignore Transforms)"
-msgstr "Importar da Cena (Ignora Transforms)"
+msgstr "Importar da Cena (Ignorando Transformações)"
 
 msgid "Import from Scene (Apply Transforms)"
-msgstr "Importar da Cena (Aplica Transforms)"
+msgstr "Importar da Cena (Aplicando Transformações)"
 
 msgid "Update from Scene"
 msgstr "Atualizar a partir de Cena"
@@ -7454,13 +7746,16 @@ msgstr ""
 
 msgid "No mesh source specified (and MultiMesh contains no Mesh)."
 msgstr ""
-"Nenhuma malha de origem especificada (e MultiMesh contém nenhuma Malha)."
+"Nenhuma malha de origem especificada (e MultiMesh não contém nenhuma Malha)."
 
 msgid "Mesh source is invalid (invalid path)."
 msgstr "Malha de origem é inválida (caminho inválido)."
 
+msgid "Mesh source is invalid (not a MeshInstance3D)."
+msgstr "Malha de origem é inválida (não é uma MeshInstance3D)."
+
 msgid "Mesh source is invalid (contains no Mesh resource)."
-msgstr "Malha de origem é inválida (contém nenhum recurso de Mesh)."
+msgstr "A fonte da Malha é inválida (não contêm um recurso Mesh)."
 
 msgid "No surface source specified."
 msgstr "Nenhuma superfície de origem especificada."
@@ -7475,7 +7770,7 @@ msgid "Surface source is invalid (no faces)."
 msgstr "Superfície de origem é inválida (sem faces)."
 
 msgid "Select a Source Mesh:"
-msgstr "Selecione uma Malha de origem:"
+msgstr "Selecione uma Malha de Origem:"
 
 msgid "Select a Target Surface:"
 msgstr "Selecione uma Superfície Destino:"
@@ -7502,16 +7797,16 @@ msgid "Z-Axis"
 msgstr "Eixo-Z"
 
 msgid "Mesh Up Axis:"
-msgstr "Malha acima do Eixo:"
+msgstr "Malha Acima do Eixo:"
 
 msgid "Random Rotation:"
-msgstr "Rotação aleatória:"
+msgstr "Rotação Aleatória:"
 
 msgid "Random Tilt:"
-msgstr "Inclinação aleatória:"
+msgstr "Inclinação Aleatória:"
 
 msgid "Random Scale:"
-msgstr "Escala aleatória:"
+msgstr "Escala Aleatória:"
 
 msgid "Amount:"
 msgstr "Quantidade:"
@@ -7626,6 +7921,15 @@ msgstr "Chave de Animação Inserida."
 
 msgid "Objects: %d\n"
 msgstr "Objetos: %d\n"
+
+msgid "CPU Time: %s ms"
+msgstr "Tempo de CPU: %s ms"
+
+msgid "GPU Time: %s ms"
+msgstr "Tempo de GPU: %s ms"
+
+msgid "FPS: %d"
+msgstr "FPS: %d"
 
 msgid "Top View."
 msgstr "Visão Superior."
@@ -7922,6 +8226,17 @@ msgstr "Cor do Sol"
 
 msgid "Glow"
 msgstr "Brilho"
+
+msgid ""
+"Can't determine a save path for the occluder.\n"
+"Save your scene and try again."
+msgstr ""
+"Não foi possível determinar um caminho para salvar as imagens do mapa de "
+"ailuminação.\n"
+"Salve sua cena e tente novamente."
+
+msgid "Select occluder bake file:"
+msgstr "Selecione o arquivo de geração de oclusão:"
 
 msgid "Remove Point from Curve"
 msgstr "Remover Ponto da Curva"
@@ -10986,6 +11301,12 @@ msgstr "Atribua um recurso MeshLibrary a este GridMap para usar seus meshes."
 msgid "Begin Bake"
 msgstr "Iniciar Bake"
 
+msgid "Baking lightprobes"
+msgstr "Gerando sondas de iluminação"
+
+msgid "Integrating light probes %d%%"
+msgstr "Integrando sondas de iluminação %d%%"
+
 msgid "Class name can't be a reserved keyword"
 msgstr "Nome da classe não pode ser uma palavra reservada"
 
@@ -11738,6 +12059,9 @@ msgid ""
 "Nothing is visible because meshes have not been assigned to draw passes."
 msgstr ""
 "Nada está visível porque as meshes não foram atribuídas a passes de desenho."
+
+msgid "Preparing Lightmapper"
+msgstr "Preparando o mapeador de iluminação"
 
 msgid "This body will be ignored until you set a mesh."
 msgstr "Este corpo será ignorado até você definir uma malha."
