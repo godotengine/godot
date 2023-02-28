@@ -11,5 +11,5 @@ used by this platform.
   - Instructions on building this platform port from source.
 - [Exporting for Windows](https://docs.godotengine.org/en/latest/tutorials/export/exporting_for_windows.html)
   - Instructions on using the compiled export templates to export a project.
-- [Changing application icon for Windows](https://docs.godotengine.org/en/stable/tutorials/export/changing_application_icon_for_windows.html)
+- [Changing application icon for Windows](https://docs.godotengine.org/en/latest/tutorials/export/changing_application_icon_for_windows.html)
   - Instructions on using a custom icon for the exported project executable.
