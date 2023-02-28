@@ -2174,6 +2174,7 @@ ScriptTextEditor::ScriptTextEditor() {
 	warnings_panel->set_h_size_flags(SIZE_EXPAND_FILL);
 	warnings_panel->set_meta_underline(true);
 	warnings_panel->set_selection_enabled(true);
+	warnings_panel->set_context_menu_enabled(true);
 	warnings_panel->set_focus_mode(FOCUS_CLICK);
 	warnings_panel->hide();
 
@@ -2182,6 +2183,7 @@ ScriptTextEditor::ScriptTextEditor() {
 	errors_panel->set_h_size_flags(SIZE_EXPAND_FILL);
 	errors_panel->set_meta_underline(true);
 	errors_panel->set_selection_enabled(true);
+	errors_panel->set_context_menu_enabled(true);
 	errors_panel->set_focus_mode(FOCUS_CLICK);
 	errors_panel->hide();
 
