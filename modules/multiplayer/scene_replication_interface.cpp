@@ -311,7 +311,7 @@ bool SceneReplicationInterface::is_rpc_visible(const ObjectID &p_oid, int p_peer
 	if (tnode.remote_peer && uint32_t(p_peer) == tnode.remote_peer) {
 		return true; // RPCs on spawned nodes are always visible to spawner.
 	} else if (spawned_nodes.has(p_oid)) {
-		// It's a spwaned node we control, this can be fast
+		// It's a spawned node we control, this can be fast.
 		if (p_peer) {
 			return peers_info.has(p_peer) && peers_info[p_peer].spawn_nodes.has(p_oid);
 		} else {

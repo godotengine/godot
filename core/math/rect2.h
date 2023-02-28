@@ -144,7 +144,7 @@ struct _NO_DISCARD_ Rect2 {
 		return size.x > 0.0f && size.y > 0.0f;
 	}
 
-	// Returns the instersection between two Rect2s or an empty Rect2 if there is no intersection
+	// Returns the intersection between two Rect2s or an empty Rect2 if there is no intersection.
 	inline Rect2 intersection(const Rect2 &p_rect) const {
 		Rect2 new_rect = p_rect;
 
