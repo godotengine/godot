@@ -93,13 +93,15 @@
 # Jakob <js2k2@gmx.de>, 2023.
 # DafabHoid <github@dafabhoid.de>, 2023.
 # Jummit <jummit@web.de>, 2023.
+# Ettore Atalan <atalanttore@googlemail.com>, 2023.
+# Luke Pucknat <lukesollichstun@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-02-23 22:17+0000\n"
-"Last-Translator: ‎ <artism90@googlemail.com>\n"
+"PO-Revision-Date: 2023-02-28 22:26+0000\n"
+"Last-Translator: Luke Pucknat <lukesollichstun@gmail.com>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot/de/>\n"
 "Language: de\n"
@@ -107,7 +109,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.16-dev\n"
+"X-Generator: Weblate 4.16-rc\n"
 
 msgid "Unset"
 msgstr "Nicht gesetzt"
@@ -2628,7 +2630,7 @@ msgid ""
 "It can be overridden to customize built-in behavior."
 msgstr ""
 "Diese Methode wird von der Engine aufgerufen.\n"
-"Sie kann überschrieben werden um eingebautes Verhalten zu anzupassen."
+"Sie kann überschrieben werden, um eingebautes Verhalten anzupassen."
 
 msgid ""
 "This method has no side effects.\n"
@@ -4548,7 +4550,7 @@ msgid "%s Export"
 msgstr "%s-Export"
 
 msgid "Release"
-msgstr "Veröffentlichung"
+msgstr "Release"
 
 msgid "Exporting All"
 msgstr "Exportiere alles"
@@ -4592,7 +4594,7 @@ msgstr ""
 "Alle Ressourcen des Projekts, außer den unten ausgewählten, exportieren"
 
 msgid "Export as dedicated server"
-msgstr "Als dedizierter Server exportieren"
+msgstr "Als dedizierten Server exportieren"
 
 msgid "Export Mode:"
 msgstr "Export-Modus:"
@@ -4636,13 +4638,13 @@ msgid "Feature List:"
 msgstr "Funktionalitätsliste:"
 
 msgid "Encryption"
-msgstr "Verschlüsslung"
+msgstr "Verschlüsselung"
 
 msgid "Encrypt Exported PCK"
 msgstr "Exportiertes PCK verschlüsseln"
 
 msgid "Encrypt Index (File Names and Info)"
-msgstr "Verschlüsslungsindex (Dateinamen und Info)"
+msgstr "Index verschlüsseln (Dateinamen und Info)"
 
 msgid ""
 "Filters to include files/folders\n"
@@ -11575,6 +11577,12 @@ msgstr "Führt ein Nachschlagen in der Kurventextur durch."
 msgid "Perform the three components curve texture lookup."
 msgstr "Führt ein Drei-Komponenten-Nachschlagen in der kubischen Textur durch."
 
+msgid ""
+"Returns the depth value obtained from the depth prepass in a linear space."
+msgstr ""
+"Gibt den Tiefenwert zurück, der beim Tiefenvorabdurchlauf im linearen Raum "
+"ermittelt wurde."
+
 msgid "Perform the 2D texture lookup."
 msgstr "Führt ein Nachschlagen in der 2D-Textur durch."
 
@@ -11583,6 +11591,27 @@ msgstr "Führt ein Nachschlagen in der 2D-Array-Textur durch."
 
 msgid "Perform the 3D texture lookup."
 msgstr "Führt ein Nachschlagen in der 3D-Textur durch."
+
+msgid "Apply panning function on texture coordinates."
+msgstr "Schwenkfunktion auf Texturkoordinaten anwenden."
+
+msgid "Apply scaling function on texture coordinates."
+msgstr "Skalierungsfunktion auf Texturkoordinaten anwenden."
+
+msgid "Cubic texture parameter lookup."
+msgstr "Kubische Texturparameter-Ermittlung."
+
+msgid "2D texture parameter lookup."
+msgstr "2D-Texturparameter-Ermittlung."
+
+msgid "2D texture parameter lookup with triplanar."
+msgstr "2D-Texturparameter-Ermittlung mittels Triplanar."
+
+msgid "2D array of textures parameter lookup."
+msgstr "2D-Array der Texturparameter-Ermittlung."
+
+msgid "3D texture parameter lookup."
+msgstr "3D-Texturparameter-Ermittlung."
 
 msgid "Transform function."
 msgstr "Transformierungsfunktion."
@@ -11616,6 +11645,13 @@ msgstr "Extrahiert vier Vektoren aus Transform."
 msgid "Calculates the determinant of a transform."
 msgstr "Berechnet die Determinante eines Transforms."
 
+msgid ""
+"Calculates how the object should face the camera to be applied on Model View "
+"Matrix output port for 3D objects."
+msgstr ""
+"Berechnet wie das Objekt zur Kamera ausgerichtet werden muss, um auf die "
+"Model-View-Matrix-Ausgabeschnittstelle für 3D-Objekte angewandt zu werden."
+
 msgid "Calculates the inverse of a transform."
 msgstr "Invertiert ein Transform."
 
@@ -11631,6 +11667,9 @@ msgstr "Teilt ein Transform durch ein anderes."
 msgid "Multiplies two transforms."
 msgstr "Multipliziert zwei Transform."
 
+msgid "Performs per-component multiplication of two transforms."
+msgstr "Führt Multiplikation pro Komponente zwischen zwei Transforms durch."
+
 msgid "Subtracts two transforms."
 msgstr "Subtrahiert ein Transform von einem anderen."
 
@@ -11642,6 +11681,30 @@ msgstr "Transformkonstante."
 
 msgid "Transform parameter."
 msgstr "Transform-Parameter."
+
+msgid ""
+"The distance fade effect fades out each pixel based on its distance to "
+"another object."
+msgstr ""
+"Der Distanzausblendeffekt blendet jeden Pixel basierend auf dem Abstand zu "
+"einem anderen Objekt aus."
+
+msgid ""
+"The proximity fade effect fades out each pixel based on its distance to "
+"another object."
+msgstr ""
+"Der Nahausblendeffekt blendet jeden Pixel basierend auf dem Abstand zu einem "
+"anderen Objekt aus."
+
+msgid "Returns a random value between the minimum and maximum input values."
+msgstr ""
+"Gibt einen zufälligen Wert zwischen Eingabewerten für Minimum und Maximum "
+"zurück."
+
+msgid "Remaps a given input from the input range to the output range."
+msgstr ""
+"Bildet einen Eingabewert aus dem Eingangsintervall auf einen Wert im "
+"Ausgangsintervall ab."
 
 msgid "Vector function."
 msgstr "Vektorfunktion."
@@ -11722,6 +11785,11 @@ msgstr "Lineare Interpolation zwischen zwei Vektoren."
 
 msgid "Linear interpolation between two vectors using scalar."
 msgstr "Lineare Interpolation zwischen zwei Vektoren, benutzt ein Skalar."
+
+msgid "Performs a fused multiply-add operation (a * b + c) on vectors."
+msgstr ""
+"Führt eine zusammengesetzte Multiplizieren-Addieren-Operation (a * b + c) "
+"auf Vektoren durch."
 
 msgid "Calculates the normalize product of vector."
 msgstr "Berechnet den normierten Vektor."
@@ -11857,6 +11925,12 @@ msgid "4D vector parameter."
 msgstr "4D-Vektorparameter."
 
 msgid ""
+"A rectangular area with a description string for better graph organization."
+msgstr ""
+"Ein rechteckiger Bereich mit einem Beschreibungstext zum besseren "
+"Überblicken von Graphen."
+
+msgid ""
 "Custom Godot Shader Language expression, with custom amount of input and "
 "output ports. This is a direct injection of code into the vertex/fragment/"
 "light function, do not use it to write the function declarations inside."
@@ -11922,7 +11996,7 @@ msgid ""
 "The selected path is not empty. Choosing an empty folder is highly "
 "recommended."
 msgstr ""
-"Der ausgewählte Pfad ist nicht leer. Ein leeres Verzeichnis wird zwingend "
+"Der ausgewählte Pfad ist nicht leer. Ein leeres Verzeichnis wird dringend "
 "empfohlen."
 
 msgid "New Game Project"
@@ -12369,6 +12443,9 @@ msgstr "Projekteinstellung hinzufügen"
 msgid "Delete Item"
 msgstr "Eintrag löschen"
 
+msgid "(All)"
+msgstr "(Alle)"
+
 msgid "Add Input Action"
 msgstr "Füge Eingabeaktion hinzu"
 
@@ -12392,6 +12469,10 @@ msgstr "Erweiterte Einstellungen"
 
 msgid "Select a Setting or Type its Name"
 msgstr "Einstellung auswählen oder Namen eingeben"
+
+msgid "Changed settings will be applied to the editor after restarting."
+msgstr ""
+"Veränderte Einstellungen werden nach dem Neustarten auf den Editor angewandt."
 
 msgid "Input Map"
 msgstr "Eingabe-Zuordnung"
@@ -12561,6 +12642,9 @@ msgstr "Szenenname:"
 msgid "Root Name:"
 msgstr "Wurzelname:"
 
+msgid "Leave empty to use scene name"
+msgstr "Leer lassen, um den Szenennamen zu verwenden"
+
 msgid "Create New Scene"
 msgstr "Szene erstellen"
 
@@ -12575,8 +12659,11 @@ msgid ""
 "Cannot instantiate the scene '%s' because the current scene exists within "
 "one of its nodes."
 msgstr ""
-"Kann Szene '%s'  nicht instanziieren, da die aktuelle Szene in einer ihrer "
-"Nodes existiert."
+"Szene ‚%s‘ kann nicht instanziiert werden, da die aktuelle Szene in einer "
+"ihrer Nodes existiert."
+
+msgid "Instantiate Scene(s)"
+msgstr "Szene(n) instantiieren"
 
 msgid "Replace with Branch Scene"
 msgstr "Mit verzweigter Szene ersetzen"
@@ -14207,13 +14294,6 @@ msgstr "Stelle Plot fertig"
 
 msgid "Generating Distance Field"
 msgstr "Generiere Distanzfeld"
-
-msgid ""
-"VoxelGIs are not supported by the OpenGL video driver.\n"
-"Use a LightmapGI instead."
-msgstr ""
-"VoxelGIs werden vom OpenGL-Videotreiber nicht unterstützt.\n"
-"LightmapGI kann stattdessen verwendet werden."
 
 msgid ""
 "To have any visible effect, WorldEnvironment requires its \"Environment\" "

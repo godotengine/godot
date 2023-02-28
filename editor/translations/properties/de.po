@@ -93,7 +93,7 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-02-23 22:17+0000\n"
+"PO-Revision-Date: 2023-02-28 17:36+0000\n"
 "Last-Translator: ‎ <artism90@googlemail.com>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot-properties/de/>\n"
@@ -102,7 +102,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 4.16-dev\n"
+"X-Generator: Weblate 4.16-rc\n"
 
 msgid "Application"
 msgstr "Anwendung"
@@ -171,7 +171,7 @@ msgid "Initial Screen"
 msgstr "Anfangsbildschirm"
 
 msgid "Resizable"
-msgstr "Verstellbar"
+msgstr "Fenstergröße skalierbar"
 
 msgid "Borderless"
 msgstr "Rahmenlos"
@@ -540,7 +540,7 @@ msgid "Test"
 msgstr "Test"
 
 msgid "Fallback"
-msgstr "Ausweichlösung"
+msgstr "Fallback"
 
 msgid "Pseudolocalization"
 msgstr "Pseudo-Lokalisierung"
@@ -1142,8 +1142,11 @@ msgstr "Einfaches Schwenken"
 msgid "Display Grid"
 msgstr "Gitter anzeigen"
 
+msgid "Polygon Editor"
+msgstr "Polygon-Editor"
+
 msgid "Point Grab Radius"
-msgstr "Punktauswahlsradius"
+msgstr "Punktauswahlradius"
 
 msgid "Show Previous Outline"
 msgstr "Vorigen Umriss anzeigen"
@@ -1172,8 +1175,11 @@ msgstr "Visuelle Editoren"
 msgid "Minimap Opacity"
 msgstr "Deckkraft Minikarte"
 
+msgid "Visual Shader"
+msgstr "Visueller Shader"
+
 msgid "Window Placement"
-msgstr "Fensterplatzierung"
+msgstr "Fensterpositionierung"
 
 msgid "Rect"
 msgstr "Rechteck"
@@ -1217,6 +1223,9 @@ msgstr "Projektverwaltung"
 msgid "Sorting Order"
 msgstr "Sortierreihenfolge"
 
+msgid "Default Renderer"
+msgstr "Standard-Renderer"
+
 msgid "Highlighting"
 msgstr "Hervorhebung"
 
@@ -1258,6 +1267,9 @@ msgstr "Vervollständigung Existierend-Farbe"
 
 msgid "Completion Scroll Color"
 msgstr "Vervollständigung Scrollen-Farbe"
+
+msgid "Completion Scroll Hovered Color"
+msgstr "Vervollständigung Scrollen-Hover-Farbe"
 
 msgid "Completion Font Color"
 msgstr "Vervollständigung Schriftfarbe"
@@ -1337,11 +1349,17 @@ msgstr "Vergrößerung"
 msgid "Export"
 msgstr "Exportieren"
 
+msgid "Convert Text Resources to Binary"
+msgstr "Textressourcen in Binärformat konvertieren"
+
 msgid "Custom Template"
 msgstr "Eigene Vorlage"
 
 msgid "Release"
-msgstr "Veröffentlichung"
+msgstr "Release"
+
+msgid "Export Console Script"
+msgstr "Konsolenskript exportieren"
 
 msgid "Binary Format"
 msgstr "Binärformat"
@@ -1364,6 +1382,12 @@ msgstr "ETC"
 msgid "ETC2"
 msgstr "ETC2"
 
+msgid "SSH"
+msgstr "SSH"
+
+msgid "SCP"
+msgstr "SCP"
+
 msgid "Export Path"
 msgstr "Exportpfad"
 
@@ -1373,14 +1397,32 @@ msgstr "Dateiserver"
 msgid "Password"
 msgstr "Passwort"
 
+msgid "Antialiasing"
+msgstr "Kantenglättung"
+
+msgid "Generate Mipmaps"
+msgstr "Mipmaps generieren"
+
+msgid "Allow System Fallback"
+msgstr "System-Fallback erlauben"
+
+msgid "Force Autohinter"
+msgstr "Autohinter erzwingen"
+
 msgid "Hinting"
-msgstr "Hinweisen"
+msgstr "Hinting"
+
+msgid "Subpixel Positioning"
+msgstr "Subpixel-Positionierung"
 
 msgid "Oversampling"
 msgstr "Überabtastung"
 
 msgid "Metadata Overrides"
 msgstr "Metadaten-Überschreibungen"
+
+msgid "Fallbacks"
+msgstr "Fallbacks"
 
 msgid "Compress"
 msgstr "Komprimieren"
@@ -2264,6 +2306,9 @@ msgstr "K2"
 msgid "Spawn Limit"
 msgstr "Spawn-Limit"
 
+msgid "Auth Callback"
+msgstr "Auth-Callback"
+
 msgid "Allow Object Decoding"
 msgstr "Objektdekodierung erlauben"
 
@@ -2388,7 +2433,7 @@ msgid "Force System User"
 msgstr "Systemnutzer erzwingen"
 
 msgid "Launcher Icons"
-msgstr "Start Icon"
+msgstr "Startsymbole"
 
 msgid "Main 192 X 192"
 msgstr "Haupticon 192 x 192"
@@ -2436,7 +2481,7 @@ msgid "Code"
 msgstr "Code"
 
 msgid "Package"
-msgstr "Packet"
+msgstr "Paket"
 
 msgid "Unique Name"
 msgstr "Eindeutiger Name"
@@ -2447,8 +2492,11 @@ msgstr "Signiert"
 msgid "App Category"
 msgstr "Anwendungskategorie"
 
+msgid "Retain Data on Uninstall"
+msgstr "Daten beibehalten nach Deinstallation"
+
 msgid "Exclude From Recents"
-msgstr "Aus kürzliche Anwendungen ausschließen"
+msgstr "Aus Kürzliche Anwendungen ausschließen"
 
 msgid "Graphics"
 msgstr "Grafik"
@@ -2609,6 +2657,9 @@ msgstr "Signatur"
 msgid "Short Version"
 msgstr "Kurzversion"
 
+msgid "Icon Interpolation"
+msgstr "Symbol-Interpolation"
+
 msgid "Capabilities"
 msgstr "Fähigkeiten"
 
@@ -2667,7 +2718,10 @@ msgid "macOS"
 msgstr "macOS"
 
 msgid "Copyright"
-msgstr "Urheberrecht"
+msgstr "Copyright"
+
+msgid "Copyright Localized"
+msgstr "Copyright-Lokalisierung"
 
 msgid "High Res"
 msgstr "Hohe Auflösung"
@@ -2715,7 +2769,7 @@ msgid "Apple Events"
 msgstr "Apple-Ereignisse"
 
 msgid "Debugging"
-msgstr "Debuggen"
+msgstr "Debugging"
 
 msgid "App Sandbox"
 msgstr "Anwendungssandbox"
@@ -3364,6 +3418,12 @@ msgstr "Zeithorizont"
 
 msgid "Max Speed"
 msgstr "Max Geschw"
+
+msgid "Path Custom Point Size"
+msgstr "Pfad Benutzerdefinierte Punktgröße"
+
+msgid "Path Custom Line Width"
+msgstr "Pfad Benutzerdefinierte Linienbreite"
 
 msgid "Enter Cost"
 msgstr "Eintrittskosten"
@@ -4733,6 +4793,9 @@ msgstr "Zeit übrig"
 msgid "Debug Collisions Hint"
 msgstr "Kollisionshinweise debuggen"
 
+msgid "Debug Paths Hint"
+msgstr "Pfadhinweise debuggen"
+
 msgid "Debug Navigation Hint"
 msgstr "Navigationshinweise debuggen"
 
@@ -5882,6 +5945,9 @@ msgstr "Ebene"
 msgid "Default Theme Scale"
 msgstr "Standardthema Skalierung"
 
+msgid "Fallback values"
+msgstr "Fallback-Werte"
+
 msgid "Random Pitch"
 msgstr "Zufälliger Pitch"
 
@@ -6121,6 +6187,9 @@ msgstr "Schattenatlas"
 
 msgid "Shader Compiler"
 msgstr "Shader-Compiler"
+
+msgid "Strip Debug"
+msgstr "Debuginformationen entfernen"
 
 msgid "Reflections"
 msgstr "Reflexionen"

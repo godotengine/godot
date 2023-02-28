@@ -162,8 +162,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine properties\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2023-02-23 01:26+0000\n"
-"Last-Translator: Murilo Gama <murilovsky2030@gmail.com>\n"
+"PO-Revision-Date: 2023-02-28 17:36+0000\n"
+"Last-Translator: Elizandro Baldin <ejbaldin@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot-properties/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -171,7 +171,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 4.16-dev\n"
+"X-Generator: Weblate 4.16-rc\n"
 
 msgid "Application"
 msgstr "Aplicação"
@@ -1740,7 +1740,7 @@ msgid "Collision Mask"
 msgstr "Máscara de Colisão"
 
 msgid "Mesh"
-msgstr "Mesh"
+msgstr "Malha"
 
 msgid "Material"
 msgstr "Material"
@@ -3455,6 +3455,9 @@ msgstr "Esconder Raiz"
 msgid "Paused"
 msgstr "Pausado"
 
+msgid "Expand"
+msgstr "Expandir"
+
 msgid "Self Modulate"
 msgstr "Auto Modular"
 
@@ -3768,7 +3771,7 @@ msgid "Top Right"
 msgstr "Superior Direita"
 
 msgid "Bottom Right"
-msgstr "Inferior direita"
+msgstr "Inferior Direita"
 
 msgid "Bottom Left"
 msgstr "Inferior Esquerda"
@@ -3802,6 +3805,9 @@ msgstr "Função"
 
 msgid "Plane"
 msgstr "Plano"
+
+msgid "Custom"
+msgstr "Personalizar"
 
 msgid "Random Pitch"
 msgstr "Timbre Aleatório"

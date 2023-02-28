@@ -61,13 +61,14 @@
 # Gert-dev <qnyasgjhapqyuhoibr@kiabws.com>, 2022.
 # Nnn <irri2020@outlook.com>, 2022.
 # Jasper <jasper@dj-dj.be>, 2023.
+# Kevin Nijmeijer <Kevinchrisnij@gmail.com>, 2023.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-02-13 03:50+0000\n"
-"Last-Translator: Jasper <jasper@dj-dj.be>\n"
+"PO-Revision-Date: 2023-02-25 00:15+0000\n"
+"Last-Translator: Kevin Nijmeijer <Kevinchrisnij@gmail.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
 "Language: nl\n"
@@ -98,6 +99,18 @@ msgstr "Scrollwiel Omhoog"
 msgid "Mouse Wheel Down"
 msgstr "Scrollwiel Omlaag"
 
+msgid "Mouse Wheel Left"
+msgstr "Muiswielknop Links"
+
+msgid "Mouse Wheel Right"
+msgstr "Muiswielknop Rechts"
+
+msgid "Mouse Thumb Button 1"
+msgstr "Muis Duim Knop 1"
+
+msgid "Mouse Thumb Button 2"
+msgstr "Muis Duim Knop 2"
+
 msgid "Button"
 msgstr "Button (Knop)"
 
@@ -125,6 +138,18 @@ msgstr "Joystick 2 X-As, Linker Trekker, Sony L2, Xbox LT"
 msgid "Joystick 2 Y-Axis, Right Trigger, Sony R2, Xbox RT"
 msgstr "Joystick 2 Y-As, Rechter Trekker, Sony R2, Xbox RT"
 
+msgid "Joystick 3 X-Axis"
+msgstr "Joystick 3 X-As"
+
+msgid "Joystick 3 Y-Axis"
+msgstr "Joystick 3 Y-As"
+
+msgid "Joystick 4 X-Axis"
+msgstr "Joystick 4 X-As"
+
+msgid "Joystick 4 Y-Axis"
+msgstr "Joystick 4 Y-As"
+
 msgid "Unknown Joypad Axis"
 msgstr "Onbekende Joypad As"
 
@@ -148,6 +173,9 @@ msgstr "Terug, Sony Selecteer, Xbox Terug, Nintendo -"
 
 msgid "Guide, Sony PS, Xbox Home"
 msgstr "Gids, Sony PS, Xbox Thuis"
+
+msgid "Start, Nintendo +"
+msgstr "Start, Nintendo +"
 
 msgid "Select"
 msgstr "Selecteer"

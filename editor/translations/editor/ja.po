@@ -18,7 +18,7 @@
 # sugusan <sugusan.development@gmail.com>, 2018, 2019, 2021.
 # Nathan Lovato <nathan.lovato.art@gmail.com>, 2018.
 # nyanode <akaruooyagi@yahoo.co.jp>, 2018.
-# nitenook <admin@alterbaum.net>, 2018, 2019, 2020, 2021, 2022.
+# nitenook <admin@alterbaum.net>, 2018, 2019, 2020, 2021, 2022, 2023.
 # Rob Matych <robertsmatych@gmail.com>, 2018.
 # Hidetsugu Takahashi <manzyun@gmail.com>, 2019.
 # Wataru Onuki <watonu@magadou.com>, 2019.
@@ -57,8 +57,8 @@ msgstr ""
 "Project-Id-Version: Godot Engine editor interface\n"
 "Report-Msgid-Bugs-To: https://github.com/godotengine/godot\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2023-02-24 12:28+0000\n"
-"Last-Translator: a-ori-a <ma_hiro25@outlook.jp>\n"
+"PO-Revision-Date: 2023-02-28 17:36+0000\n"
+"Last-Translator: nitenook <admin@alterbaum.net>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
 "Language: ja\n"
@@ -66,7 +66,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 4.16-dev\n"
+"X-Generator: Weblate 4.16-rc\n"
 
 msgid "Unset"
 msgstr "未設定"
@@ -392,6 +392,9 @@ msgstr "キャレットと選択をクリア"
 
 msgid "Toggle Insert Mode"
 msgstr "インサートモードを切り替える"
+
+msgid "Submit Text"
+msgstr "テキストを送信"
 
 msgid "Duplicate Nodes"
 msgstr "ノードを複製"
@@ -1047,6 +1050,15 @@ msgstr "ベジェ曲線を使用"
 msgid "Create RESET Track(s)"
 msgstr "RESETトラックを作成"
 
+msgid "Animation Optimizer"
+msgstr "アニメーションの最適化"
+
+msgid "Max Velocity Error:"
+msgstr "最大速度エラー:"
+
+msgid "Max Angular Error:"
+msgstr "最大角度エラー:"
+
 msgid "Optimize"
 msgstr "最適化"
 
@@ -1070,6 +1082,9 @@ msgstr "スケール比:"
 
 msgid "Select Transition and Easing"
 msgstr "トランジションとイージングを選択"
+
+msgid "Animation Baker"
+msgstr "アニメーションベイカー:"
 
 msgid "Select Tracks to Copy"
 msgstr "コピーするトラックを選択"
@@ -2364,6 +2379,16 @@ msgstr "現在のフォルダーを選択"
 
 msgid "Cannot save file with an empty filename."
 msgstr "空のファイル名でファイルを保存することはできません。"
+
+msgid "Cannot save file with a name starting with a dot."
+msgstr "ドットで始まる名前のファイルは保存できません。"
+
+msgid ""
+"File \"%s\" already exists.\n"
+"Do you want to overwrite it?"
+msgstr ""
+"ファイル \"%s\" はすでに存在します。\n"
+"上書きしますか？"
 
 msgid "Select This Folder"
 msgstr "このフォルダーを選択"
@@ -4122,6 +4147,9 @@ msgstr "正常に完了しました。"
 msgid "Failed."
 msgstr "失敗しました。"
 
+msgid "Storing File: %s"
+msgstr "ファイルの保存: %s"
+
 msgid "Storing File:"
 msgstr "ファイルの保存:"
 
@@ -4145,6 +4173,12 @@ msgstr "ファイル \"%s\" を作成できませんでした。"
 
 msgid "Failed to export project files."
 msgstr "プロジェクトファイルをエクスポートできませんでした。"
+
+msgid "Can't open file for writing at path \"%s\"."
+msgstr "パス \"%s\" に書き込み用のファイルを開くことができません。"
+
+msgid "Can't open file for reading-writing at path \"%s\"."
+msgstr "パス \"%s\" で読み取り/書き込み用にファイルを開くことができません。"
 
 msgid "Can't create encrypted file."
 msgstr "暗号化されたファイルを作成できません。"
@@ -5094,6 +5128,20 @@ msgstr ""
 "クスチャ圧縮を有効にしてメモリ使用量を削減します（青チャンネルは破棄されま"
 "す）。"
 
+msgid ""
+"%s: Texture detected as used as a roughness map in 3D. Enabling roughness "
+"limiter based on the detected associated normal map at %s."
+msgstr ""
+"%s:3Dでラフネスマップとして使用されるテクスチャが検出されました。%sで検出され"
+"た関連する法線マップに基づくラフネスリミッターを有効にします。"
+
+msgid ""
+"%s: Texture detected as used in 3D. Enabling mipmap generation and setting "
+"the texture compression mode to %s."
+msgstr ""
+"%s:3Dで使用されるテクスチャが検出されました。ミップマップ生成を有効にして、テ"
+"クスチャ圧縮モードを %s に設定しました。"
+
 msgid "2D/3D (Auto-Detect)"
 msgstr "2D/3D (自動切換え)"
 
@@ -5102,6 +5150,12 @@ msgstr "2D"
 
 msgid "3D"
 msgstr "3D"
+
+msgid "<Unnamed Material>"
+msgstr "<名前の無いマテリアル>"
+
+msgid "Import ID: %s"
+msgstr "インポート ID: %s"
 
 msgid ""
 "Type: %s\n"
