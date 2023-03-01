@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="RigidBody2D" inherits="PhysicsBody2D" version="4.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
+<class name="RigidBody2D" inherits="PhysicsBody2D" version="4.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../class.xsd">
 	<brief_description>
 		Physics Body which is moved by 2D physics simulation. Useful for objects that have gravity and can be pushed by other objects.
 	</brief_description>
