@@ -4795,6 +4795,7 @@ void EditorNode::_dock_select_input(const Ref<InputEvent> &p_input) {
 			dock_slot[nrect]->add_child(dock);
 			dock_popup_selected_idx = nrect;
 			dock_slot[nrect]->set_current_tab(dock_slot[nrect]->get_tab_count() - 1);
+			dock_slot[nrect]->set_tab_title(dock_slot[nrect]->get_tab_count() - 1, TTRGET(dock->get_name()));
 			dock_slot[nrect]->show();
 			dock_select->queue_redraw();
 
@@ -5152,6 +5153,7 @@ void EditorNode::_load_docks_from_config(Ref<ConfigFile> p_layout, const String 
 			}
 			dock_slot[i]->add_child(node);
 			dock_slot[i]->move_child(node, 0);
+			dock_slot[i]->set_tab_title(0, TTRGET(node->get_name()));
 			dock_slot[i]->show();
 		}
 	}
