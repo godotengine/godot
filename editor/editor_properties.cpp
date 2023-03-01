@@ -59,9 +59,13 @@ void EditorPropertyNil::update_property() {
 }
 
 EditorPropertyNil::EditorPropertyNil() {
-	Label *prop_label = memnew(Label);
+	prop_label = memnew(Label);
 	prop_label->set_text("<null>");
 	add_child(prop_label);
+}
+
+void EditorPropertyNil::setup(const String &p_hint_string) {
+	prop_label->set_text(p_hint_string);
 }
 
 ///////////////////// TEXT /////////////////////////
@@ -4245,6 +4249,9 @@ EditorProperty *EditorInspectorDefaultPlugin::get_editor_for_property(Object *p_
 		// atomic types
 		case Variant::NIL: {
 			EditorPropertyNil *editor = memnew(EditorPropertyNil);
+			if (p_hint == PROPERTY_HINT_ENCODING_ERROR) {
+				editor->setup(p_hint_text);
+			}
 			return editor;
 		} break;
 		case Variant::BOOL: {
