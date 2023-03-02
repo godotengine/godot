@@ -2907,6 +2907,13 @@ RID TextureStorage::render_target_get_rd_texture_slice(RID p_render_target, uint
 	}
 }
 
+RID TextureStorage::render_target_get_rd_texture_msaa(RID p_render_target) {
+	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
+	ERR_FAIL_COND_V(!rt, RID());
+
+	return rt->color_multisample;
+}
+
 RID TextureStorage::render_target_get_rd_backbuffer(RID p_render_target) {
 	RenderTarget *rt = render_target_owner.get_or_null(p_render_target);
 	ERR_FAIL_COND_V(!rt, RID());

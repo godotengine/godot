@@ -5258,6 +5258,9 @@ DisplayServerX11::DisplayServerX11(const String &p_rendering_driver, WindowMode 
 	}
 #ifdef XKB_ENABLED
 	xkb_loaded = (initialize_xkbcommon(dylibloader_verbose) == 0);
+	if (!xkb_context_new || !xkb_compose_table_new_from_locale || !xkb_compose_table_unref || !xkb_context_unref || !xkb_compose_state_feed || !xkb_compose_state_unref || !xkb_compose_state_new || !xkb_compose_state_get_status || !xkb_compose_state_get_utf8 || !xkb_keysym_to_utf32 || !xkb_keysym_to_upper) {
+		xkb_loaded = false;
+	}
 #endif
 	if (initialize_xext(dylibloader_verbose) != 0) {
 		r_error = ERR_UNAVAILABLE;
