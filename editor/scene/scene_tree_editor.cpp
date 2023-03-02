@@ -57,6 +57,7 @@
 #include "scene/gui/label.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/main/scene_tree.h"
+#include "scene/main/viewport.h"
 #include "scene/main/window.h"
 #include "scene/resources/packed_scene.h"
 
@@ -322,6 +323,8 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 		} else {
 			_revoke_unique_name();
 		}
+	} else if (p_id == BUTTON_VIEWPORT) {
+		CanvasItemEditor::get_singleton()->set_viewport_override(nullptr);
 	}
 }
 
@@ -710,6 +713,10 @@ void SceneTreeEditor::_update_node(Node *p_node, TreeItem *p_item, bool p_part_o
 		}
 		if (p_node->has_meta("_edit_group_")) {
 			p_item->add_button(0, get_editor_theme_icon(SNAME("Group")), BUTTON_GROUP, false, TTR("Children are not selectable.\nClick to make them selectable."));
+		}
+
+		if (_is_overriding_viewport(p_node)) {
+			p_item->add_button(0, get_editor_theme_icon(SNAME("ViewportOverride")), BUTTON_VIEWPORT, false, TTR("This viewport overrides the editor's viewport.\nClick to disable override."));
 		}
 
 		if (p_node->has_method("is_visible") && p_node->has_method("set_visible") && p_node->has_signal(SceneStringName(visibility_changed))) {
@@ -1472,6 +1479,14 @@ void SceneTreeEditor::_reset_visibility_drag() {
 	visibility_drag_start_pos = Vector2();
 	visibility_drag_start_node = ObjectID();
 	visibility_drag_nodes.clear();
+}
+
+bool SceneTreeEditor::_is_overriding_viewport(Node *p_node) const {
+	Viewport *vp = Object::cast_to<Viewport>(p_node);
+	if (!vp) {
+		return false;
+	}
+	return CanvasItemEditor::get_singleton()->get_current_viewport() == vp;
 }
 
 void SceneTreeEditor::_notification(int p_what) {
