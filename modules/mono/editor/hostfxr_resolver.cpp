@@ -198,7 +198,13 @@ bool get_default_installation_dir(String &r_dotnet_root) {
 	r_dotnet_root = path::join(program_files_dir, "dotnet");
 	return true;
 #elif defined(MACOS_ENABLED)
-	r_dotnet_root = "/usr/local/share/dotnet";
+	if (DirAccess::exists("/usr/local/share/dotnet/host/fxr")) { // Look for native version.
+		r_dotnet_root = "/usr/local/share/dotnet";
+	} else if (DirAccess::exists("/opt/homebrew/opt/dotnet/libexec/host/fxr")) { // Look for ARM homebrew version.
+		r_dotnet_root = "/opt/homebrew/opt/dotnet/libexec";
+	} else if (DirAccess::exists("/usr/local/opt/dotnet/libexec/host/fxr")) { // Look for Intel homebrew version.
+		r_dotnet_root = "/usr/local/opt/dotnet/libexec";
+	}
 
 #if defined(__x86_64) || defined(__x86_64__) || defined(__amd64__) || defined(_M_X64)
 	// When emulating x64 on arm
