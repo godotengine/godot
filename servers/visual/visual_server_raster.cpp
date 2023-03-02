@@ -38,6 +38,8 @@
 #include "visual_server_globals.h"
 #include "visual_server_scene.h"
 
+#include "godot_tracy/profiler.h"
+
 // careful, these may run in different threads than the visual server
 
 int VisualServerRaster::changes[2] = { 0 };
@@ -95,6 +97,7 @@ void VisualServerRaster::request_frame_drawn_callback(Object *p_where, const Str
 }
 
 void VisualServerRaster::draw(bool p_swap_buffers, double frame_step) {
+	ZoneScopedN("VisualServerRaster::draw");
 	//needs to be done before changes is reset to 0, to not force the editor to redraw
 	VS::get_singleton()->emit_signal("frame_pre_draw");
 
