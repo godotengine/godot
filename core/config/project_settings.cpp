@@ -1356,6 +1356,7 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF_INTERNAL("application/config/features", PackedStringArray());
 	GLOBAL_DEF_INTERNAL("internationalization/locale/translation_remaps", PackedStringArray());
 	GLOBAL_DEF_INTERNAL("internationalization/locale/translations", PackedStringArray());
+	GLOBAL_DEF_INTERNAL("internationalization/locale/translations_pot_files", PackedStringArray());
 }
 
 ProjectSettings::~ProjectSettings() {
