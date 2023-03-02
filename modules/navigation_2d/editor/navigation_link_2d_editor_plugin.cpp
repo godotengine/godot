@@ -65,7 +65,7 @@ bool NavigationLink2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_e
 	}
 
 	real_t grab_threshold = EDITOR_GET("editors/polygon_editor/point_grab_radius");
-	Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_screen_transform();
+	Transform2D xform = canvas_item_editor->get_canvas_transform() * CanvasItemEditor::get_canvas_item_transform(node);
 
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid() && mb->get_button_index() == MouseButton::LEFT) {
@@ -122,7 +122,7 @@ bool NavigationLink2DEditor::forward_canvas_gui_input(const Ref<InputEvent> &p_e
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (mm.is_valid()) {
 		Vector2 point = canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(mm->get_position()));
-		point = node->get_screen_transform().affine_inverse().xform(point);
+		point = CanvasItemEditor::get_canvas_item_transform(node).affine_inverse().xform(point);
 
 		if (start_grabbed) {
 			node->set_start_position(point);
@@ -152,7 +152,7 @@ void NavigationLink2DEditor::forward_canvas_draw_over_viewport(Control *p_overla
 		return;
 	}
 
-	Transform2D gt = canvas_item_editor->get_canvas_transform() * node->get_screen_transform();
+	Transform2D gt = canvas_item_editor->get_canvas_transform() * CanvasItemEditor::get_canvas_item_transform(node);
 	Vector2 global_start_position = gt.xform(node->get_start_position());
 	Vector2 global_end_position = gt.xform(node->get_end_position());
 

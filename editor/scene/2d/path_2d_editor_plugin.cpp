@@ -84,7 +84,7 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid()) {
-		Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_screen_transform();
+		Transform2D xform = canvas_item_editor->get_canvas_transform() * CanvasItemEditor::get_canvas_item_transform(node);
 
 		Vector2 gpoint = mb->get_position();
 		Vector2 cpoint = canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint));
@@ -309,7 +309,7 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 		if (control_points_in_range == 2) {
 			control_points_in_range = 0;
 			Ref<Curve2D> curve = node->get_curve();
-			Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_screen_transform();
+			Transform2D xform = canvas_item_editor->get_canvas_transform() * CanvasItemEditor::get_canvas_item_transform(node);
 			Point2 relative = xform.affine_inverse().basis_xform(mm->get_relative());
 			real_t angle_in = relative.angle_to(curve->get_point_position(action_point - 1) - curve->get_point_position(action_point));
 			real_t angle_out = relative.angle_to(curve->get_point_position(action_point + 1) - curve->get_point_position(action_point));
@@ -329,7 +329,7 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 			// Handle Edge Follow
 			bool old_edge = on_edge;
 
-			Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_screen_transform();
+			Transform2D xform = canvas_item_editor->get_canvas_transform() * CanvasItemEditor::get_canvas_item_transform(node);
 			Vector2 gpoint = mm->get_position();
 
 			Ref<Curve2D> curve = node->get_curve();
@@ -374,7 +374,7 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 		if (action != ACTION_NONE) {
 			// Handle point/control movement.
-			Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_screen_transform();
+			Transform2D xform = canvas_item_editor->get_canvas_transform() * CanvasItemEditor::get_canvas_item_transform(node);
 			Vector2 gpoint = mm->get_position();
 			Vector2 cpoint = canvas_item_editor->snap_point(canvas_item_editor->get_canvas_transform().affine_inverse().xform(gpoint));
 			cpoint = node->to_local(node->get_viewport()->get_popup_base_transform().affine_inverse().xform(cpoint));
@@ -429,7 +429,7 @@ void Path2DEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 		return;
 	}
 
-	Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_screen_transform();
+	Transform2D xform = canvas_item_editor->get_canvas_transform() * CanvasItemEditor::get_canvas_item_transform(node);
 
 	const Ref<Texture2D> path_sharp_handle = get_editor_theme_icon(SNAME("EditorPathSharpHandle"));
 	const Ref<Texture2D> path_smooth_handle = get_editor_theme_icon(SNAME("EditorPathSmoothHandle"));
