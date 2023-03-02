@@ -401,6 +401,10 @@ void ProjectSettings::_get_property_list(List<PropertyInfo> *p_list) const {
 			vc.flags = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_STORAGE;
 		}
 
+		if (v->internal) {
+			vc.flags |= PROPERTY_USAGE_INTERNAL;
+		}
+
 		if (v->basic) {
 			vc.flags |= PROPERTY_USAGE_EDITOR_BASIC_SETTING;
 		}
@@ -1242,7 +1246,7 @@ void ProjectSettings::_add_builtin_input_map() {
 			action["events"] = events;
 
 			String action_name = "input/" + E.key;
-			GLOBAL_DEF_INTERNAL(action_name, action);
+			GLOBAL_DEF(action_name, action);
 			input_presets.push_back(action_name);
 		}
 	}
