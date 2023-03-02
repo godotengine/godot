@@ -128,7 +128,7 @@ protected:
 	static void _bind_methods();
 	bool is_body_excluded_from_query(const RID &p_body) const;
 
-	GDVIRTUAL8R(bool, _intersect_ray, const Vector3 &, const Vector3 &, uint32_t, bool, bool, bool, bool, GDExtensionPtr<PhysicsServer3DExtensionRayResult>)
+	GDVIRTUAL9R(bool, _intersect_ray, const Vector3 &, const Vector3 &, uint32_t, bool, bool, bool, bool, bool, GDExtensionPtr<PhysicsServer3DExtensionRayResult>)
 	GDVIRTUAL6R(int, _intersect_point, const Vector3 &, uint32_t, bool, bool, GDExtensionPtr<PhysicsServer3DExtensionShapeResult>, int)
 	GDVIRTUAL9R(int, _intersect_shape, RID, const Transform3D &, const Vector3 &, real_t, uint32_t, bool, bool, GDExtensionPtr<PhysicsServer3DExtensionShapeResult>, int)
 	GDVIRTUAL10R(bool, _cast_motion, RID, const Transform3D &, const Vector3 &, real_t, uint32_t, bool, bool, GDExtensionPtr<real_t>, GDExtensionPtr<real_t>, GDExtensionPtr<PhysicsServer3DExtensionShapeRestInfo>)
@@ -140,7 +140,7 @@ public:
 	virtual bool intersect_ray(const RayParameters &p_parameters, RayResult &r_result) override {
 		exclude = &p_parameters.exclude;
 		bool ret = false;
-		GDVIRTUAL_REQUIRED_CALL(_intersect_ray, p_parameters.from, p_parameters.to, p_parameters.collision_mask, p_parameters.collide_with_bodies, p_parameters.collide_with_areas, p_parameters.hit_from_inside, p_parameters.hit_back_faces, &r_result, ret);
+		GDVIRTUAL_REQUIRED_CALL(_intersect_ray, p_parameters.from, p_parameters.to, p_parameters.collision_mask, p_parameters.collide_with_bodies, p_parameters.collide_with_areas, p_parameters.hit_from_inside, p_parameters.hit_back_faces, p_parameters.pick_ray, &r_result, ret);
 		exclude = nullptr;
 		return ret;
 	}
