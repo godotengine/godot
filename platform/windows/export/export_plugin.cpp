@@ -879,7 +879,11 @@ Error EditorExportPlatformWindows::run(const Ref<EditorExportPreset> &p_preset, 
 	print_line("Creating temporary directory...");
 	ep.step(TTR("Creating temporary directory..."), 2);
 	String temp_dir;
+#ifndef WINDOWS_ENABLED
 	err = ssh_run_on_remote(host, port, extra_args_ssh, "powershell -command \\\"\\$tmp = Join-Path \\$Env:Temp \\$(New-Guid); New-Item -Type Directory -Path \\$tmp | Out-Null; Write-Output \\$tmp\\\"", &temp_dir);
+#else
+	err = ssh_run_on_remote(host, port, extra_args_ssh, "powershell -command \"$tmp = Join-Path $Env:Temp $(New-Guid); New-Item -Type Directory -Path $tmp ^| Out-Null; Write-Output $tmp\"", &temp_dir);
+#endif
 	if (err != OK || temp_dir.is_empty()) {
 		CLEANUP_AND_RETURN(err);
 	}
@@ -889,6 +893,10 @@ Error EditorExportPlatformWindows::run(const Ref<EditorExportPreset> &p_preset, 
 	err = ssh_push_to_remote(host, port, extra_args_scp, basepath + ".zip", temp_dir);
 	if (err != OK) {
 		CLEANUP_AND_RETURN(err);
+	}
+
+	if (cmd_args.is_empty()) {
+		cmd_args = " ";
 	}
 
 	{

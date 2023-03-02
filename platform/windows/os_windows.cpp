@@ -673,9 +673,8 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 		}
 
 		CloseHandle(pipe[0]); // Close pipe read handle.
-	} else {
-		WaitForSingleObject(pi.pi.hProcess, INFINITE);
 	}
+	WaitForSingleObject(pi.pi.hProcess, INFINITE);
 
 	if (r_exitcode) {
 		DWORD ret2;
