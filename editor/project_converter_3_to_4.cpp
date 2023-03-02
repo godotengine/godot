@@ -139,6 +139,9 @@ public:
 	LocalVector<RegEx *> class_gd_regexes;
 	LocalVector<RegEx *> class_shader_regexes;
 
+	// Keycode.
+	RegEx input_map_keycode = RegEx("\\b,\"((physical_)?)scancode\":(\\d+)\\b");
+
 	LocalVector<RegEx *> class_regexes;
 
 	RegEx class_temp_tscn = RegEx("\\bTEMP_RENAMED_CLASS.tscn\\b");
@@ -415,6 +418,7 @@ bool ProjectConverter3To4::convert() {
 			} else if (file_name.ends_with("project.godot")) {
 				rename_common(RenamesMap3To4::project_godot_renames, reg_container.project_godot_regexes, lines);
 				rename_common(RenamesMap3To4::builtin_types_renames, reg_container.builtin_types_regexes, lines);
+				rename_input_map_scancode(lines, reg_container);
 				rename_common(RenamesMap3To4::input_map_renames, reg_container.input_map_regexes, lines);
 			} else if (file_name.ends_with(".csproj")) {
 				// TODO
@@ -587,6 +591,7 @@ bool ProjectConverter3To4::validate_conversion() {
 			} else if (file_name.ends_with("project.godot")) {
 				changed_elements.append_array(check_for_rename_common(RenamesMap3To4::project_godot_renames, reg_container.project_godot_regexes, lines));
 				changed_elements.append_array(check_for_rename_common(RenamesMap3To4::builtin_types_renames, reg_container.builtin_types_regexes, lines));
+				changed_elements.append_array(check_for_rename_input_map_scancode(lines, reg_container));
 				changed_elements.append_array(check_for_rename_common(RenamesMap3To4::input_map_renames, reg_container.input_map_regexes, lines));
 			} else if (file_name.ends_with(".csproj")) {
 				// TODO
@@ -912,6 +917,10 @@ bool ProjectConverter3To4::test_conversion(RegExContainer &reg_container) {
 	valid = valid && test_conversion_gdscript_builtin("button.pressed SF", "button.pressed SF", &ProjectConverter3To4::rename_gdscript_functions, "custom rename", reg_container, false);
 
 	valid = valid && test_conversion_with_regex("AAA Color.white AF", "AAA Color.WHITE AF", &ProjectConverter3To4::rename_colors, "custom rename", reg_container);
+
+	// Note: Do not change to *scancode*, it is applied before that conversion.
+	valid = valid && test_conversion_with_regex("\"device\":-1,\"scancode\":16777231,\"physical_scancode\":16777232", "\"device\":-1,\"scancode\":4194319,\"physical_scancode\":4194320", &ProjectConverter3To4::rename_input_map_scancode, "custom rename", reg_container);
+	valid = valid && test_conversion_with_regex("\"device\":-1,\"scancode\":65,\"physical_scancode\":66", "\"device\":-1,\"scancode\":65,\"physical_scancode\":66", &ProjectConverter3To4::rename_input_map_scancode, "custom rename", reg_container);
 
 	// Custom rule conversion
 	{
@@ -2492,6 +2501,59 @@ Vector<String> ProjectConverter3To4::check_for_rename_gdscript_keywords(Vector<S
 		current_line++;
 	}
 
+	return found_renames;
+}
+
+void ProjectConverter3To4::rename_input_map_scancode(Vector<String> &lines, const RegExContainer &reg_container) {
+	// The old Special Key, now colliding with CMD_OR_CTRL.
+	const int old_spkey = (1 << 24);
+
+	for (String &line : lines) {
+		if (uint64_t(line.length()) <= maximum_line_length) {
+			TypedArray<RegExMatch> reg_match = reg_container.input_map_keycode.search_all(line);
+
+			for (int i = 0; i < reg_match.size(); ++i) {
+				Ref<RegExMatch> match = reg_match[i];
+				PackedStringArray strings = match->get_strings();
+				int key = strings[3].to_int();
+
+				if (key & old_spkey) {
+					// Create new key, clearing old Special Key and setting new one.
+					key = (key & ~old_spkey) | (int)Key::SPECIAL;
+
+					line = line.replace(strings[0], String(",\"") + strings[1] + "scancode\":" + String::num_int64(key));
+				}
+			}
+		}
+	}
+}
+
+Vector<String> ProjectConverter3To4::check_for_rename_input_map_scancode(Vector<String> &lines, const RegExContainer &reg_container) {
+	Vector<String> found_renames;
+
+	// The old Special Key, now colliding with CMD_OR_CTRL.
+	const int old_spkey = (1 << 24);
+
+	int current_line = 1;
+	for (String &line : lines) {
+		if (uint64_t(line.length()) <= maximum_line_length) {
+			TypedArray<RegExMatch> reg_match = reg_container.input_map_keycode.search_all(line);
+
+			for (int i = 0; i < reg_match.size(); ++i) {
+				Ref<RegExMatch> match = reg_match[i];
+				PackedStringArray strings = match->get_strings();
+				int key = strings[3].to_int();
+
+				if (key & old_spkey) {
+					// Create new key, clearing old Special Key and setting new one.
+					key = (key & ~old_spkey) | (int)Key::SPECIAL;
+
+					found_renames.append(line_formatter(current_line, strings[3], String::num_int64(key), line));
+				}
+			}
+		}
+		current_line++;
+	}
 	return found_renames;
 }
 
