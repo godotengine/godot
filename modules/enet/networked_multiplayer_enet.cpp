@@ -33,6 +33,8 @@
 #include "core/io/marshalls.h"
 #include "core/os/os.h"
 
+#include "godot_tracy/profiler.h"
+
 void NetworkedMultiplayerENet::set_transfer_mode(TransferMode p_mode) {
 	transfer_mode = p_mode;
 }
@@ -213,6 +215,8 @@ Error NetworkedMultiplayerENet::create_client(const String &p_address, int p_por
 }
 
 void NetworkedMultiplayerENet::poll() {
+	ZoneScopedN("NetworkedMultiplayerENet::poll");
+	ZoneColor(Color(1, 1, 0).to_rgba32());
 	ERR_FAIL_COND_MSG(!active, "The multiplayer instance isn't currently active.");
 
 	_pop_current_packet();
@@ -535,6 +539,9 @@ Error NetworkedMultiplayerENet::get_packet(const uint8_t **r_buffer, int &r_buff
 }
 
 Error NetworkedMultiplayerENet::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
+	ZoneScopedN("NetworkedMultiplayerENet::put_packet");
+	ZoneColor(Color(1, 1, 0).to_rgba32());
+
 	ERR_FAIL_COND_V_MSG(!active, ERR_UNCONFIGURED, "The multiplayer instance isn't currently active.");
 	ERR_FAIL_COND_V_MSG(connection_status != CONNECTION_CONNECTED, ERR_UNCONFIGURED, "The multiplayer instance isn't currently connected to any server or client.");
 
