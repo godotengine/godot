@@ -334,6 +334,8 @@ _FORCE_INLINE_ bool is_connected_to_prev(char32_t p_chr, char32_t p_pchr) {
 
 /*************************************************************************/
 
+bool TextServerAdvanced::icu_data_loaded = false;
+
 bool TextServerAdvanced::_has_feature(Feature p_feature) const {
 	switch (p_feature) {
 		case FEATURE_SIMPLE_LAYOUT:
@@ -6599,5 +6601,6 @@ TextServerAdvanced::~TextServerAdvanced() {
 		uset_close(allowed);
 		allowed = nullptr;
 	}
-	u_cleanup();
+
+	std::atexit(u_cleanup);
 }
