@@ -39,9 +39,14 @@
 template <class MutexT>
 class MutexLock;
 
+template <class... MutexTs>
+class MutexMultiLock;
+
 template <class StdMutexT>
 class MutexImpl {
 	friend class MutexLock<MutexImpl<StdMutexT>>;
+	template <class... MutexTs>
+	friend class MutexMultiLock;
 
 	using StdMutexType = StdMutexT;
 
@@ -120,6 +125,16 @@ class MutexLock {
 public:
 	_ALWAYS_INLINE_ explicit MutexLock(const MutexT &p_mutex) :
 			lock(p_mutex.mutex) {
+	}
+};
+
+template <class... MutexTs>
+class MutexMultiLock {
+	std::scoped_lock<typename MutexTs::StdMutexType...> lock;
+
+public:
+	_ALWAYS_INLINE_ explicit MutexMultiLock(const MutexTs &...p_mutex) :
+			lock(p_mutex.mutex...) {
 	}
 };
 

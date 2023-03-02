@@ -951,6 +951,7 @@ void Object::get_meta_list(List<StringName> *p_list) const {
 }
 
 void Object::add_user_signal(const MethodInfo &p_signal) {
+	MutexLock signal_lock(signal_mutex);
 	ERR_FAIL_COND_MSG(p_signal.name.is_empty(), "Signal name cannot be empty.");
 	ERR_FAIL_COND_MSG(ClassDB::has_signal(get_class_name(), p_signal.name), "User signal's name conflicts with a built-in signal of '" + get_class_name() + "'.");
 	ERR_FAIL_COND_MSG(signal_map.has(p_signal.name), "Trying to add already existing signal '" + p_signal.name + "'.");
@@ -960,16 +961,12 @@ void Object::add_user_signal(const MethodInfo &p_signal) {
 }
 
 bool Object::_has_user_signal(const StringName &p_name) const {
+	MutexLock signal_lock(signal_mutex);
 	if (!signal_map.has(p_name)) {
 		return false;
 	}
 	return signal_map[p_name].user.name.length() > 0;
 }
-
-struct _ObjectSignalDisconnectData {
-	StringName signal;
-	Callable callable;
-};
 
 Error Object::_emit_signal(const Variant **p_args, int p_argcount, Callable::CallError &r_error) {
 	r_error.error = Callable::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
@@ -1001,8 +998,11 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 		return ERR_CANT_ACQUIRE_RESOURCE; //no emit, signals blocked
 	}
 
+	signal_mutex.lock();
+
 	SignalData *s = signal_map.getptr(p_name);
 	if (!s) {
+		signal_mutex.unlock();
 #ifdef DEBUG_ENABLED
 		bool signal_is_valid = ClassDB::has_signal(get_class_name(), p_name);
 		//check in script
@@ -1012,7 +1012,7 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 		return ERR_UNAVAILABLE;
 	}
 
-	List<_ObjectSignalDisconnectData> disconnect_data;
+	List<Connection> call_list;
 
 	//copy on write will ensure that disconnecting the signal or even deleting the object will not affect the signal calling.
 	//this happens automatically and will not change the performance of calling.
@@ -1023,11 +1023,27 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 
 	OBJ_DEBUG_LOCK
 
-	Error err = OK;
-
 	for (int i = 0; i < ssize; i++) {
 		const Connection &c = slot_map.getv(i).conn;
+		call_list.push_back(c);
 
+		bool disconnect = c.flags & CONNECT_ONE_SHOT;
+#ifdef TOOLS_ENABLED
+		if (disconnect && (c.flags & CONNECT_PERSIST) && Engine::get_singleton()->is_editor_hint()) {
+			//this signal was connected from the editor, and is being edited. just don't disconnect for now
+			disconnect = false;
+		}
+#endif
+		if (disconnect) {
+			_disconnect(p_name, c.callable);
+		}
+	}
+
+	signal_mutex.unlock();
+
+	Error err = OK;
+
+	for (const Connection &c : call_list) {
 		Object *target = c.callable.get_object();
 		if (!target) {
 			// Target might have been deleted during signal callback, this is expected and OK.
@@ -1060,27 +1076,6 @@ Error Object::emit_signalp(const StringName &p_name, const Variant **p_args, int
 				}
 			}
 		}
-
-		bool disconnect = c.flags & CONNECT_ONE_SHOT;
-#ifdef TOOLS_ENABLED
-		if (disconnect && (c.flags & CONNECT_PERSIST) && Engine::get_singleton()->is_editor_hint()) {
-			//this signal was connected from the editor, and is being edited. just don't disconnect for now
-			disconnect = false;
-		}
-#endif
-		if (disconnect) {
-			_ObjectSignalDisconnectData dd;
-			dd.signal = p_name;
-			dd.callable = c.callable;
-			disconnect_data.push_back(dd);
-		}
-	}
-
-	while (!disconnect_data.is_empty()) {
-		const _ObjectSignalDisconnectData &dd = disconnect_data.front()->get();
-
-		_disconnect(dd.signal, dd.callable);
-		disconnect_data.pop_front();
 	}
 
 	return err;
@@ -1139,12 +1134,12 @@ TypedArray<Dictionary> Object::_get_signal_connection_list(const StringName &p_s
 }
 
 TypedArray<Dictionary> Object::_get_incoming_connections() const {
+	MutexLock signal_lock(signal_mutex);
 	TypedArray<Dictionary> ret;
 	int connections_amount = connections.size();
 	for (int idx_conn = 0; idx_conn < connections_amount; idx_conn++) {
 		ret.push_back(connections[idx_conn]);
 	}
-
 	return ret;
 }
 
@@ -1168,6 +1163,7 @@ bool Object::has_signal(const StringName &p_name) const {
 }
 
 void Object::get_signal_list(List<MethodInfo> *p_signals) const {
+	MutexLock signal_lock(signal_mutex);
 	if (!script.is_null()) {
 		Ref<Script> scr = script;
 		if (scr.is_valid()) {
@@ -1187,6 +1183,7 @@ void Object::get_signal_list(List<MethodInfo> *p_signals) const {
 }
 
 void Object::get_all_signal_connections(List<Connection> *p_connections) const {
+	MutexLock signal_lock(signal_mutex);
 	for (const KeyValue<StringName, SignalData> &E : signal_map) {
 		const SignalData *s = &E.value;
 
@@ -1197,6 +1194,7 @@ void Object::get_all_signal_connections(List<Connection> *p_connections) const {
 }
 
 void Object::get_signal_connection_list(const StringName &p_signal, List<Connection> *p_connections) const {
+	MutexLock signal_lock(signal_mutex);
 	const SignalData *s = signal_map.getptr(p_signal);
 	if (!s) {
 		return; //nothing
@@ -1208,6 +1206,7 @@ void Object::get_signal_connection_list(const StringName &p_signal, List<Connect
 }
 
 int Object::get_persistent_signal_connection_count() const {
+	MutexLock signal_lock(signal_mutex);
 	int count = 0;
 
 	for (const KeyValue<StringName, SignalData> &E : signal_map) {
@@ -1224,6 +1223,7 @@ int Object::get_persistent_signal_connection_count() const {
 }
 
 void Object::get_signals_connected_to_this(List<Connection> *p_connections) const {
+	MutexLock signal_lock(signal_mutex);
 	for (const Connection &E : connections) {
 		p_connections->push_back(E);
 	}
@@ -1234,6 +1234,8 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, ui
 
 	Object *target_object = p_callable.get_object();
 	ERR_FAIL_COND_V_MSG(!target_object, ERR_INVALID_PARAMETER, "Cannot connect to '" + p_signal + "' to callable '" + p_callable + "': the callable object is null.");
+
+	MutexMultiLock signal_lock(signal_mutex, target_object->signal_mutex);
 
 	SignalData *s = signal_map.getptr(p_signal);
 	if (!s) {
@@ -1290,6 +1292,7 @@ Error Object::connect(const StringName &p_signal, const Callable &p_callable, ui
 }
 
 bool Object::is_connected(const StringName &p_signal, const Callable &p_callable) const {
+	MutexLock signal_lock(signal_mutex);
 	ERR_FAIL_COND_V_MSG(p_callable.is_null(), false, "Cannot determine if connected to '" + p_signal + "': the provided callable is null.");
 	const SignalData *s = signal_map.getptr(p_signal);
 	if (!s) {
@@ -1319,6 +1322,8 @@ void Object::_disconnect(const StringName &p_signal, const Callable &p_callable,
 
 	Object *target_object = p_callable.get_object();
 	ERR_FAIL_COND_MSG(!target_object, "Cannot disconnect '" + p_signal + "' from callable '" + p_callable + "': the callable object is null.");
+
+	MutexMultiLock signal_lock(signal_mutex, target_object->signal_mutex);
 
 	SignalData *s = signal_map.getptr(p_signal);
 	if (!s) {
@@ -1777,6 +1782,7 @@ void Object::detach_from_objectdb() {
 }
 
 Object::~Object() {
+	MutexLock signal_lock(signal_mutex);
 	if (script_instance) {
 		memdelete(script_instance);
 	}
@@ -1803,7 +1809,9 @@ Object::~Object() {
 		const VMap<Callable, SignalData::Slot>::Pair *slot_list = s->slot_map.get_array();
 
 		for (int i = 0; i < slot_count; i++) {
+			slot_list[i].value.conn.callable.get_object()->signal_mutex.lock();
 			slot_list[i].value.conn.callable.get_object()->connections.erase(slot_list[i].value.cE);
+			slot_list[i].value.conn.callable.get_object()->signal_mutex.unlock();
 		}
 
 		signal_map.erase(E.key);

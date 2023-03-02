@@ -595,6 +595,7 @@ private:
 
 	HashMap<StringName, SignalData> signal_map;
 	List<Connection> connections;
+	Mutex signal_mutex;
 #ifdef DEBUG_ENABLED
 	SafeRefCount _lock_index;
 #endif
